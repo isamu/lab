@@ -96,9 +96,26 @@ Pick the easiest way that can say the requirement:
 | Requirement | Use |
 | --- | --- |
 | An existing rule covers it | A level, a number, `prefer`, `jargon` or `required_sections` in `chaff.yaml` |
-| A fixed phrase or pattern, with the team's own message | `custom_rules` of type `words` or `pattern` (coming in the next release) |
-| Decided by part of speech or inflection | `custom_rules` of type `tokens` (coming in the next release) |
-| Counting or comparing that the above cannot express | a Node function, `type: module` (a later release) |
+| A fixed phrase or pattern, with the team's own message | `custom_rules` of type `words` or `pattern` |
+| Decided by part of speech or inflection | `custom_rules` of type `tokens` |
+| Counting or comparing that the above cannot express | a Node function, `type: module` |
+| The same rules shared across repositories | a rule pack of YAML files: `npx chaffjs init --plugin <name>`, then `plugins:` in `chaff.yaml` |
+
+A `words` rule names the words, the team's text for each field `explain` shows, and one example:
+
+```yaml
+custom_rules:
+  - id: banned-word
+    type: words
+    words: [禁止ワード]
+    severity: warning
+    name: { ja: 禁止ワード }
+    why: { ja: この文書で避ける語です }
+    message: { ja: "「{matched}」は使いません" }
+    how_to_fix: { ja: 別の言い方にします }
+    example:
+      ja: { before: 禁止ワードを使った文, after: 別の言い方の文 }
+```
 
 Test a new team rule the same way: `explain`, then a sample it must report and a sample it must not, before
 committing `chaff.yaml`. The guide page "Adding a rule" covers each way and how to add a rule to chaff itself.
