@@ -6,7 +6,7 @@ import { ensurePackageFiles, setupBrowserFiles, type BrowserSetup } from "chaffj
 import type { BrowserCheck, BrowserCheckOptions } from "./browser/check-text.ts";
 
 export type { BrowserSetup, PackageFiles } from "chaffjs/browser-files";
-export type { BrowserCheck, BrowserCheckOptions, BrowserFinding } from "./browser/check-text.ts";
+export type { BrowserAiScore, BrowserCheck, BrowserCheckOptions, BrowserFinding } from "./browser/check-text.ts";
 export type { NotRunEntry } from "./grade/result.ts";
 
 export const setupBrowser = (setup: BrowserSetup): void => setupBrowserFiles(setup);

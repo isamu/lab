@@ -25,14 +25,14 @@ const notScoredText = (notScored: NotScored, view: ScoreView): string =>
     : view.text.noBaseline(view.groupName, notScored.compared, notScored.needed);
 
 /** The level line, or why there is none. */
-const headlineOf = (score: AiScore, view: ScoreView): string => {
+export const aiScoreHeadline = (score: AiScore, view: ScoreView): string => {
   if (score.level !== undefined) return view.text.headline(score.level, view.groupName);
   return view.text.summaryNotScored(score.notScored === undefined ? "" : notScoredText(score.notScored, view));
 };
 
 /** The one line the lint report ends a file with. */
 export const aiScoreSummaryLine = (score: AiScore, path: string, view: ScoreView): string =>
-  score.level === undefined ? headlineOf(score, view) : view.text.summary(headlineOf(score, view), score.signs, path);
+  score.level === undefined ? aiScoreHeadline(score, view) : view.text.summary(aiScoreHeadline(score, view), score.signs, path);
 
 const signalLine = (signal: SignalPlace, view: ScoreView): string => {
   const { human } = signal;
@@ -78,7 +78,7 @@ const structureBlock = (score: AiScore, view: ScoreView): string[] => {
 
 /** For a person: the level, the signs, each signal and structure measure that showed, and what was not compared and why. */
 export const renderAiScoreFriendly = (path: string, score: AiScore, view: ScoreView): string[] => {
-  const head = [path, headlineOf(score, view)];
+  const head = [path, aiScoreHeadline(score, view)];
   if (score.notScored !== undefined) return head;
   return [
     ...head,

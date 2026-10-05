@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "examples": "node ../scripts/rule-examples.ts src/generated/rule-examples.json && node ../scripts/guide-screens.ts src/generated/guide-screens.json",
+    "examples": "node ../scripts/rule-examples.ts src/generated/rule-examples.json && node ../scripts/guide-screens.ts src/generated/guide-screens.json && node ../scripts/browser-files.ts public/playground",
     "dev": "yarn examples && astro dev",
     "build": "yarn examples && astro build",
     "preview": "astro preview",

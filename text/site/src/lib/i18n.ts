@@ -89,6 +89,25 @@ const ja = {
   turnOn: "試験中のこのルールを動かす（chaff.yaml）",
   technical: "技術的な情報",
   referenceLink: "例と実際の出力つきの一覧（リファレンス）",
+  playground: "試す",
+  playgroundIntro:
+    "見本を選ぶか、自分の文章を貼って「チェックする」を押します。chaff はこのページの中で動き、書いたものはブラウザの外へ出ません。",
+  playgroundLoads:
+    "このページが読み込むのは chaff のコードと規則、それに日本語を初めて確かめるときの辞書だけです。辞書は大きいので、最初の一回は少し待ちます。",
+  playgroundText: "文章",
+  playgroundLanguage: "言語",
+  playgroundAuto: "文章から決める",
+  playgroundGenre: "ジャンル",
+  playgroundGenreDefault: "決めない（技術ブログとして読む）",
+  playgroundCheck: "チェックする",
+  playgroundSample: "見本",
+  playgroundChecking: "確かめています…",
+  playgroundFindings: "指摘 {n} 件",
+  playgroundNoFindings: "指摘はありません。動かなかった rule は下に並べています。",
+  playgroundNotRun: "動かなかった rule（{n} 件）",
+  playgroundLine: "{n} 行目",
+  playgroundError: "確かめられませんでした: {message}",
+  playgroundCli: "同じ結果を手元で出すには: npx chaffjs --genre <ジャンル> <ファイル>",
 };
 
 export type UiKey = keyof typeof ja;
@@ -176,6 +195,25 @@ const en: Record<UiKey, string> = {
   turnOn: "Turn this experimental rule on (chaff.yaml)",
   technical: "Technical details",
   referenceLink: "The list with examples and real output (Reference)",
+  playground: "Try it",
+  playgroundIntro:
+    "Pick a sample or paste your own text, then press Check. chaff runs inside this page: what you write never leaves your browser.",
+  playgroundLoads:
+    "The page loads only chaff's code and rules, and, the first time you check Japanese, its dictionary. The dictionary is large, so that first check takes a moment.",
+  playgroundText: "Text",
+  playgroundLanguage: "Language",
+  playgroundAuto: "From the text",
+  playgroundGenre: "Genre",
+  playgroundGenreDefault: "None (read as a tech blog)",
+  playgroundCheck: "Check",
+  playgroundSample: "Sample",
+  playgroundChecking: "Checking…",
+  playgroundFindings: "Findings: {n}",
+  playgroundNoFindings: "No findings. The rules that did not run are listed below.",
+  playgroundNotRun: "Rules that did not run ({n})",
+  playgroundLine: "Line {n}",
+  playgroundError: "Could not check: {message}",
+  playgroundCli: "The same result on your machine: npx chaffjs --genre <genre> <file>",
 };
 
 const UI: Record<Lang, Record<UiKey, string>> = { ja, en };
