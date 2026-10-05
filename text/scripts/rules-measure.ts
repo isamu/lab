@@ -5,7 +5,8 @@
 // scripts/rules-measure-sets.ts), so the rules that compare documents are measured too. The bench columns come from the
 // committed bench expectations.
 //   --json                print the measurement as JSON instead of the table
-//   --write                write the corpus part to corpus/rules-measure.json, which test/test_rule_policy.ts holds the rules to
+//   --write                write the corpus part to corpus/rules-measure.json, which test/test_rule_policy.ts holds the rules to,
+//                          and the AI-likeness score's human shares (scripts/ai-score-shares.ts)
 //   --apply                measure, write corpus/rules-measure.json, and set each rule's status and severity, and the groups each
 //                          is measured off for (off_for), from it: the one step that places a rule that just landed (--from <json> skips the run)
 //   --baseline <dir>       also run every .md in <dir> (never committed) and add a baseline column
@@ -32,6 +33,8 @@ import { allRules, applyMeasurement, genreDataOf, MEASURE_FILE, readGenresText, 
 import { japaneseRatio } from "../packages/chaff/src/detect-language.ts";
 import { presetLevels } from "../packages/chaff/src/genre-load.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
+import { measuredLevelsOf } from "../packages/chaff/src/ai-score/signals.ts";
+import { writeAiScoreShares } from "./ai-score-shares.ts";
 import type { Level, RuleDefinition } from "../packages/chaff/src/plugin.ts";
 import type { RunResult } from "../packages/chaff/src/run.ts";
 
@@ -53,12 +56,8 @@ const argValue = (name: string): string | undefined => {
 /** Each rule at its genre's level, and at normal where the genre turns it off: the share is measured either way. */
 const measuredLevels =
   (genre: string) =>
-  (rules: readonly RuleDefinition[]): Record<string, Level> => {
-    const preset = presetLevels(genre);
-    return Object.fromEntries(
-      rules.map((rule) => [rule.id, preset[rule.id] === undefined || preset[rule.id] === "off" ? "normal" : (preset[rule.id] ?? "normal")]),
-    );
-  };
+  (rules: readonly RuleDefinition[]): Record<string, Level> =>
+    measuredLevelsOf(rules, presetLevels(genre));
 
 /** A document to measure. set: the documents it runs with (scripts/rules-measure-sets.ts), all of one language. */
 type Input = { readonly file: string; readonly readAs: string; readonly language: string; readonly genre: string; readonly set: string };
@@ -157,6 +156,9 @@ const measurement = await measure();
 const apply = process.argv.includes("--apply");
 // Applied first: a measurement that leaves a rule out throws before any file is written.
 const applied = apply ? applyMeasurement(withoutBaseline(measurement)) : [];
-if (apply || process.argv.includes("--write")) writeFileSync(MEASURE_FILE, `${JSON.stringify(withoutBaseline(measurement), null, 2)}\n`);
+if (apply || process.argv.includes("--write")) {
+  writeFileSync(MEASURE_FILE, `${JSON.stringify(withoutBaseline(measurement), null, 2)}\n`);
+  await writeAiScoreShares(withoutBaseline(measurement));
+}
 if (apply) applied.forEach((line) => console.log(line));
 else console.log(process.argv.includes("--json") ? JSON.stringify(measurement, null, 2) : tableOf(measurement).join("\n"));
