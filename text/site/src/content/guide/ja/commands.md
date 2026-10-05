@@ -28,6 +28,7 @@ chaff のコマンドとオプションを一覧にしました。どれも、�
 | `npx chaffjs cite <原文> <引用.json>` | 回答の引用が原文にあるかを確かめます |
 | `npx chaffjs compare <前> <後>` | 書き換えで事実（数・日付・URL・コード・名前・引用など）が落ちても足されてもいないかを確かめます |
 | `npx chaffjs facts <file>` | `compare` が照合する事実を、書き直す前の控えとして一覧にします |
+| `npx chaffjs ai-score <file>...` | AI らしさを低・中・高で簡易判定します。生成文に多い目印を、同じジャンルの人の文書と比べます。書いたのが AI かどうかは判定しません |
 | `npx chaffjs outline <file> [<後>]` | 見出しの構成を出し、形（見出しの数・節の平均の長さ・箇条書きの割合・太字）を測り、構成を人の記事と比べます。2 つなら前と後を並べます |
 | `npx chaffjs fix-plan <file>` | 書き直す人や AI に渡す「直す計画」を出します。指摘をルールごとにまとめ、直す方向と、直したあとの確かめのコマンドを付けます。`--json` で JSON に、`--depth` で書き直してよい深さを決めます |
 | `npx chaffjs grade <items.jsonl>` | model の出力を JSONL のまま採点します（指摘の率・事実・引用・合否）。何も送りません。`--out <results.jsonl>` で出力ごとの結果を書き、`--json` でまとめを JSON で出します |
@@ -458,6 +459,25 @@ after.md の構成: 見出し 5、節の平均 101 字、箇条書き 0%、太�
 ```
 
 この例では、文は滑らかになり、箇条書きと太字は消えましたが、見出しはほとんど残っていて、構成はあまり動いていません。`--compact` は 1 節 1 行と、ファイルごとに構成の AI らしさと ✗ の項目を 1 行で出します。`--json` は構成と形と、構成の項目それぞれの値と位置を出します（2 つなら `before` と `after`）。測るだけなので、ファイルが読めれば終了コードはいつも 0 です。
+
+## AI らしさを簡易判定する
+
+`ai-score` は、生成文に多い目印のうち、同じジャンルの人の文書にはめったに出ないものがいくつ出ているかを数えます。
+目印が 3 つから「中」、5 つから「高」です。書いたのが AI かどうかの判定ではありません。人の文書と比べて、読み返す場所が多いかどうかの目安です。
+
+<!-- chaff-screen: rewrite -->
+```
+$ npx chaffjs ai-score before.md after.md --compact
+before.md: ai-score high 6/28 ai-tell announcing-opener closing-cliche colon-lead-in contrast-framing structure:bold-labels
+after.md: ai-score low 1/27 section-length-uniformity
+```
+
+上の `before.md` と `after.md` は、前の節で構成を測った記事です。1 ファイル 1 行で、段階、目印の数と比べた項目の数、数えた目印を出します。
+`--compact` を付けなければ、目印ごとに件数と、人の文書の何本に出たかを並べます。その画面は [AIっぽさを直す](./ai-sounding#ai-らしさを簡易判定する) にあります。
+`--format json`（`--json`）は同じものを JSON で出します。
+短すぎる文書や、人の文書の基準が足りないジャンルでは、段階を出さずに理由を言います。
+ふだんの `npx chaffjs <file>` も、ファイルごとの報告の最後に 1 行で段階を出します（`--compact` では出しません）。
+測るだけなので、ファイルが読めれば終了コードはいつも 0 です。
 
 ## 直す計画を出す
 

@@ -148,6 +148,20 @@ The Japanese word list of `ai-tell` includes the metaphors of technical writing 
 Which phrases go in was measured on technical articles written before generative AI and on the corpus.
 Phrases people already wrote as often before (解像度を上げる, 腹落ち) are left out.
 
+## A quick AI-likeness score
+
+`npx chaffjs ai-score <file>` counts how many of the signs above show in a document that human documents of the same genre rarely show, and says low, medium or high.
+**It is not a verdict on whether AI wrote the text.** It says whether there is more to reread than in human documents.
+
+- The signs are the findings of the rules above and the structure measures of `chaff outline`. Only those that 90% of human documents do not show count.
+- The human documents are the corpus's human documents, by genre group (blog, technical, business and so on), and technical articles written before generative AI. Both are numbers shipped with chaff.
+- Three signs make "medium" and five make "high": the number `ai-generated-composite` reports at, and its relaxed level.
+- A structure measure and the rule that reads the same shape (section length variation and `section-length-uniformity`, for one) count once when both show.
+- A document that is too short (under 500 characters in Japanese, 200 words in English), or in a genre without enough human documents (academic, speech), gets no level and the reason instead.
+- A plain `npx chaffjs <file>` also ends its report with the level on one line, and `chaff grade` puts `aiScore` in each output's result ([Using chaff for AI evals](./ai-evals)).
+
+The [tech article example](#example-a-bold-rewrite-of-a-tech-article) below ends with a screen.
+
 ## Three ways to fix it
 
 | Way | Depth | What it changes | When to use it |
@@ -679,6 +693,42 @@ None of the three is a fact the rewrite lost, so none was restored.
 
 This rewrite barely moved the outline: `npx chaffjs outline ai.md rewritten.md` shows six headings becoming five.
 When the structure itself should change, use the full rewrite, as in the next example.
+
+The quick AI-likeness score (`ai-score`) compares the article before and after.
+
+```
+$ npx chaffjs ai-score ai.md rewritten.md --genre blog/tech
+ai.md
+AI-likeness: medium (somewhat more signs than human-written documents (Blog))
+  4 signs (of 26 compared, ones 90% of human documents do not show); medium from 3, high from 5
+  Not a verdict on whether AI wrote it: how many signs common in generated text show, compared with human documents.
+
+Wording and shape
+  ✗ Too many sentences that announce before they say: 3  in 0 of 23 human-written documents (Blog)
+  ✗ Cliched closing: 1  in 0 of 23 human-written documents (Blog)
+  ✗ Too many contrast frames: 2  in 0 of 23 human-written documents (Blog)
+  · the other 15 did not show
+
+Structure (against human articles)
+  ✗ list items opening with a bold label: 3  higher than 95% of human articles
+  · the other 9 are usual for human articles
+
+rewritten.md
+AI-likeness: low (about as many signs as human-written documents (Blog))
+  1 sign (of 25 compared, ones 90% of human documents do not show); medium from 3, high from 5
+  Not a verdict on whether AI wrote it: how many signs common in generated text show, compared with human documents.
+
+Wording and shape
+  · the other 18 did not show
+
+Structure (against human articles)
+  ✗ sections of one or two paragraphs: 100% (mean 1.3 paragraphs)  higher than 90% of human articles
+  · the other 8 are usual for human articles
+```
+
+Before the rewrite, three wording signs and the bold-label outline make it medium.
+After it, one sign is left, the short sections, and it reads low.
+Neither says who wrote the text.
 
 ## Example: a full rewrite of a blog post
 

@@ -101,8 +101,15 @@ It also holds pass or fail with the reasons, and the stamp. This is the start of
 ```json
 {"id":"q3","language":"en","genre":"blog/tech","size":{"unit":"word","value":30},"findings":[],"rates":{},"notRun":[…],
  "facts":{"dropped":[{"kind":"number","key":"6 hours","text":"6","line":4,"allowed":false},…],"added":[…],"reformed":1},
- "citations":null,"pass":false,"failedBecause":["facts.dropped 3 > 0","facts.added 1 > 0"],"stamp":{…}}
+ "citations":null,"aiScore":{"level":null,"notScored":"too-short","signs":0,"compared":20,"shown":[]},
+ "pass":false,"failedBecause":["facts.dropped 3 > 0","facts.added 1 > 0"],"stamp":{…}}
 ```
+
+`aiScore` is the quick AI-likeness score ([Making AI-sounding text sound human](./ai-sounding#a-quick-ai-likeness-score)).
+`level` is `low`, `medium` or `high`, or `null` when the output was not scored, with the reason in `notScored` (`too-short` or `no-baseline`).
+`signs` is how many signs counted, `compared` how many were compared with human documents, and `shown` which signs counted.
+The answers in this example are short, so none is scored. It is not a verdict on whether AI wrote the output, and it is not part of pass or fail.
+The summary counts the outputs at each level, and the variant table adds an "AI low/med/high" row, to compare how far prompts or models push the shapes of generated text.
 
 The stamp holds the chaff version, a hash of the rules and a hash of the settings. Two runs are comparable when the two hashes match.
 
@@ -238,6 +245,7 @@ How to read it:
 - "Quotations failed" is failed out of checked. Facts are counted as in the summary, leaving out the kinds the rubric allows.
 - When outputs carry `contexts`, an "Unsupported facts" row gives the facts found in no retrieved passage out of those checked.
 - With a `grade:` rubric, a "Penalty points" row adds up each variant's points.
+- "AI low/med/high" counts each variant's outputs at each level of the quick AI-likeness score, with the outputs not scored in brackets.
 - The pass rate is a share of outputs, not a score. chaff still gives no mark out of a maximum.
 
 When the label is in another field, name it: `--variant-key model` or `--variant-key prompt`. Then every line must have that field.
