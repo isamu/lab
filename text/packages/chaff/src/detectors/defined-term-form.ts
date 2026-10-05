@@ -3,6 +3,7 @@
 // name is read from the tokens' parts of speech.
 import { definedTerms, usesOf, type BodyText, type DefinedTerm } from "../structure/definition-use.ts";
 import { escapeRegExp } from "../orthography.ts";
+import { prefixGroupsOf, prefixVariants, variantUses } from "../structure/term-prefix.ts";
 import { quoteAt } from "./structure-tree.ts";
 import type { Detector, Finding, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 
@@ -91,10 +92,22 @@ const isVerbAt = (doc: ProseDocument, offset: number): boolean => {
   return VERBAL.has(token.pos) || afterSubject;
 };
 
+/** The term written with another prefix of its group (本件業務 where 本業務 is defined), after the sentence that defines it. */
+const prefixFindings = (doc: ProseDocument, texts: readonly BodyText[], term: DefinedTerm, definingEnd: number, defined: readonly string[]): Finding[] =>
+  prefixVariants(term.term, prefixGroupsOf(doc.lexicons["defined-term-prefix"] ?? [])).flatMap((variant) =>
+    defined.includes(variant)
+      ? []
+      : variantUses(doc.source, texts, variant, definingEnd, defined).map((offset) =>
+          finding(doc, "defined-term-form", offset, "prefix", { term: term.term, written: variant, line: term.line }),
+        ),
+  );
+
 export const definedTermForm: Detector = (doc, options): Finding[] => {
   if (doc.structure === undefined) return [];
   const texts = bodyOf(doc);
-  return firstDefinitions(definedTerms(doc.structure)).flatMap(({ term, spans }) => {
+  const terms = definedTerms(doc.structure);
+  const defined = terms.map((term) => term.term);
+  return firstDefinitions(terms).flatMap(({ term, spans }) => {
     const uses = usesOf(term.term, texts, spans, "loose");
     const definingEnd = definingSentenceEnd(doc, term.span);
     const quoted = quotedUses(doc.source, term.term, uses, definingEnd).map((offset) =>
@@ -104,7 +117,7 @@ export const definedTermForm: Detector = (doc, options): Finding[] => {
     const lower = lowerCaseUses(doc.source, term.term, nounUses, definingEnd, options.limit).map((offset) =>
       finding(doc, "defined-term-form", offset, "case", { term: term.term, line: term.line }),
     );
-    return [...quoted, ...lower];
+    return [...quoted, ...lower, ...prefixFindings(doc, texts, term, definingEnd, defined)];
   });
 };
 

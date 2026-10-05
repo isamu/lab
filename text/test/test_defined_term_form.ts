@@ -1,6 +1,7 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { lowerCaseUses, nameBefore, quotedUses } from "../packages/chaff/src/detectors/defined-term-form.ts";
+import { prefixGroupsOf, prefixVariants, variantUses } from "../packages/chaff/src/structure/term-prefix.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
@@ -76,6 +77,91 @@ describe("defined-term-form: a defined term in another form", () => {
   it("does not run in a statute, which quotes a term to point at its definition", () => {
     const source = `${JA_TERMS}\n第2条\u3000「本サービス」の範囲は、別に定める。\n`;
     assert.deepEqual(findingsOf(ja, "defined-term-form", source, "legal/statute"), []);
+  });
+});
+
+describe("defined-term-form: a Japanese term written with its other prefix (本・本件)", () => {
+  const CONTRACT = ["# 業務委託契約書", "", "第1条\u3000甲は、乙に対し、ウェブサイトの保守の業務（以下「本業務」という。）を委託する。", ""].join("\n");
+
+  it("reports 本件業務 where 本業務 is defined, and 本物品 where 本件物品 is", () => {
+    assert.deepEqual(valuesOf(ja, "defined-term-form", `${CONTRACT}\n第2条\u3000乙は、本件業務の一部を再委託できる。\n`, "written"), ["prefix 本件業務"]);
+    const goods = [
+      "# 売買契約書",
+      "",
+      "第1条\u3000甲は、木製家具（以下「本件物品」という。）を乙に売り渡す。",
+      "",
+      "第2条\u3000本物品の代金は、別表のとおりとする。",
+      "",
+    ].join("\n");
+    assert.deepEqual(valuesOf(ja, "defined-term-form", goods, "written"), ["prefix 本物品"]);
+  });
+
+  it("does not report the defined form, a form defined too, a longer word, or a use before the definition", () => {
+    assert.deepEqual(valuesOf(ja, "defined-term-form", `${CONTRACT}\n第2条\u3000乙は、本業務の一部を再委託できる。\n`, "written"), []);
+    const both = `${CONTRACT}\n第2条\u3000乙は、追加の作業（以下「本件業務」という。）を行う。\n\n第3条\u3000本件業務の対価は別に定める。\n`;
+    assert.deepEqual(valuesOf(ja, "defined-term-form", both, "written"), []);
+    const sample = [
+      "# 売買契約書",
+      "",
+      "第1条\u3000甲は、木製家具（以下「本件物品」という。）を乙に売り渡す。",
+      "",
+      "第2条\u3000甲は、見本物品を乙に渡す。",
+      "",
+    ].join("\n");
+    assert.deepEqual(valuesOf(ja, "defined-term-form", sample, "written"), []);
+    const compound = [
+      "# 業務委託契約書",
+      "",
+      "第1条\u3000甲は、保守業務（以下「本件業務」という。）を乙に委託する。",
+      "",
+      "第2条\u3000本業務委託契約に基づき、乙は成果物を納入する。",
+      "",
+    ].join("\n");
+    assert.deepEqual(valuesOf(ja, "defined-term-form", compound, "written"), []);
+    const before = ["# 業務委託契約書", "", "本件業務について定める。", "", "第1条\u3000甲は、保守の業務（以下「本業務」という。）を乙に委託する。", ""].join(
+      "\n",
+    );
+    assert.deepEqual(valuesOf(ja, "defined-term-form", before, "written"), []);
+  });
+});
+
+describe("prefixVariants, prefixGroupsOf and variantUses", () => {
+  const groups = [["本", "本件"]];
+
+  it("gives the other prefixes of the term's group, the longest prefix first", () => {
+    assert.deepEqual(prefixVariants("本業務", groups), ["本件業務"]);
+    assert.deepEqual(prefixVariants("本件物品", groups), ["本物品"]);
+  });
+
+  it("gives nothing for a term that is the prefix alone, has no prefix, or with no group", () => {
+    assert.deepEqual(prefixVariants("本", groups), []);
+    assert.deepEqual(prefixVariants("本件人", groups), []);
+    assert.deepEqual(prefixVariants("秘密情報", groups), []);
+    assert.deepEqual(prefixVariants("本業務", []), []);
+    assert.deepEqual(prefixVariants("", groups), []);
+  });
+
+  it("groups lexicon entries by group, leaving out entries with none, empty patterns and groups of one", () => {
+    assert.deepEqual(
+      prefixGroupsOf([
+        { pattern: "本", group: "this" },
+        { pattern: "本件", group: "this" },
+        { pattern: "当該" },
+        { pattern: "", group: "this" },
+        { pattern: "x", group: "alone" },
+      ]),
+      [["本", "本件"]],
+    );
+    assert.deepEqual(prefixGroupsOf([]), []);
+  });
+
+  it("finds a variant after the definition, not inside a longer word on either side nor at a defined term's start", () => {
+    const source = "本件業務と見本件業務と本件業務規程";
+    const texts = [{ start: 0, text: source }];
+    assert.deepEqual(variantUses(source, texts, "本件業務", -1, []), [0]);
+    assert.deepEqual(variantUses(source, texts, "本件業務", 0, []), []);
+    assert.deepEqual(variantUses("本件業務の本件業務", [{ start: 0, text: "本件業務の本件業務" }], "本件業務", -1, ["本件業務の"]), [5]);
+    assert.deepEqual(variantUses(source, [], "本件業務", -1, []), []);
   });
 });
 

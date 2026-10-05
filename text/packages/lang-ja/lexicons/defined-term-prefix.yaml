@@ -1,0 +1,8 @@
+# 定義した語の頭に付けて、この文書のものを指す語。同じ group の語は互いに言い換えで、
+# 「本業務」と定義したあとの「本件業務」は、定義した語を別の形で書いたもの（defined-term-form）。
+# 「当該」は、前に書いたものを指す普通の語で、定義した語の言い換えではないので入れない。
+id: defined-term-prefix
+language: ja
+entries:
+  - { pattern: 本, group: this }
+  - { pattern: 本件, group: this }
