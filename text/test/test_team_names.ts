@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { buildDocument, type TeamRules } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
-import { loadConfig } from "../packages/chaff/src/config/load.ts";
+import { loadConfig } from "../packages/chaff/src/config/read.ts";
 import { nameProblems } from "../packages/chaff/src/config/name-problems.ts";
 import { nameSpans } from "../packages/chaff/src/team-names.ts";
 import { runInit } from "../packages/chaff/src/init.ts";

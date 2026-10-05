@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { loadConfig } from "../packages/chaff/src/config/load.ts";
+import { loadConfig } from "../packages/chaff/src/config/read.ts";
 import { ruleProblems } from "../packages/chaff/src/config/rule-problems.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";

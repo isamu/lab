@@ -1,24 +1,9 @@
 import { createContext, Script } from "node:vm";
+import { PATTERN_BUDGET_MS, PatternTimeout, type TextMatches } from "./pattern-timeout.ts";
 
 // A team's regular expression, run with a time limit. regex-safety.ts refuses the shapes known to run away before a pattern
 // is used; no reading of the pattern can prove every shape safe, so this is the backstop. V8 can interrupt a regular
 // expression only through vm's timeout, so the matching runs in a vm context.
-
-/** How long one rule's pattern may take over one document. Far above what a sane pattern needs on any real document. */
-export const PATTERN_BUDGET_MS = 1000;
-
-/** A pattern that did not finish within its budget. run.ts lists the rule as not run, with this as the reason. */
-export class PatternTimeout extends Error {
-  readonly budget_ms: number;
-  constructor(budgetMs: number) {
-    super(`the pattern did not finish within ${String(budgetMs)} ms`);
-    this.name = "PatternTimeout";
-    this.budget_ms = budgetMs;
-  }
-}
-
-/** Each text's matches: where it starts and what it matched. Empty matches are left out. */
-export type TextMatches = readonly (readonly { readonly index: number; readonly text: string }[])[];
 
 const SCRIPT = new Script(
   `texts.map((text) => [...text.matchAll(new RegExp(source, flags))].filter((m) => m[0] !== "").map((m) => ({ index: m.index, text: m[0] })))`,

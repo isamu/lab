@@ -1,6 +1,6 @@
-import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { parse } from "yaml";
+import { readDir, readText } from "./package-files.ts";
 
 /** One rule a group or genre turns off by default, from the rule file's off_for, with why. */
 export type RuleOff = { readonly rule: string; readonly target: string; readonly reason: string };
@@ -34,7 +34,7 @@ const offForBlock = (rule: string, text: string): string | undefined => {
 /** The offs of one rule file. The rule is named by the file, which is named by the rule's id. */
 const offsInFile = (dir: string, file: string): RuleOff[] => {
   const rule = file.replace(/\.yaml$/u, "");
-  const block = offForBlock(rule, readFileSync(join(dir, file), "utf8").replaceAll("\r\n", "\n"));
+  const block = offForBlock(rule, readText(join(dir, file)).replaceAll("\r\n", "\n"));
   const parsed: unknown = block === undefined ? undefined : parse(block);
   return ruleOffsOf(rule, isRecord(parsed) ? parsed["off_for"] : undefined);
 };
@@ -44,7 +44,7 @@ const offsInFile = (dir: string, file: string): RuleOff[] => {
  * at startup, before any rule is.
  */
 export const loadRuleOffs = (dir: string): RuleOff[] =>
-  readdirSync(dir)
+  readDir(dir)
     .filter((file) => file.endsWith(".yaml"))
     .toSorted((left, right) => left.localeCompare(right, "en"))
     .flatMap((file) => offsInFile(dir, file));

@@ -7,14 +7,11 @@ import { loadLexicons } from "./lexicons.ts";
 import { predicateFrameAfter } from "./predicate-frame.ts";
 import { distributiveVocabulary, isEchoAt, type Inflection } from "./reduplication.ts";
 import { isRaDroppedAt, raDroppedVocabulary } from "./ra-dropped.ts";
-import { createRequire } from "node:module";
-import { dirname, join } from "node:path";
 import type { Token } from "chaffjs/plugin";
-
-const require = createRequire(import.meta.url);
+import { kuromojiDictionaryPath, kuromojiModule } from "./kuromoji-module.ts";
 
 /**
- * kuromoji は CommonJS で、辞書を非同期に読む。ESM からは createRequire で取る。
+ * kuromoji は辞書を非同期に読む。
  * 辞書の初期化に 1.5 秒かかるので、prepare が呼ばれるまで触らない。
  */
 type Tokenizer = Record<string, unknown>;
@@ -60,8 +57,6 @@ const toMorpheme = (value: unknown): Morpheme[] => {
   ];
 };
 
-const dictionaryPath = (): string => join(dirname(require.resolve("@sglkc/kuromoji/package.json")), "dict");
-
 /** 取り出した関数をそのまま呼ぶと receiver が外れる。kuromoji の build は this.dic_path を読む。 */
 const callMethod = (owner: Record<string, unknown>, name: string, args: readonly unknown[]): unknown => {
   const method: unknown = owner[name];
@@ -70,9 +65,9 @@ const callMethod = (owner: Record<string, unknown>, name: string, args: readonly
 };
 
 const buildWith = (done: BuildDone): void => {
-  const module: unknown = require("@sglkc/kuromoji");
+  const module = kuromojiModule();
   if (!isRecord(module)) throw new Error("@sglkc/kuromoji が object を export していません");
-  const builder: unknown = callMethod(module, "builder", [{ dicPath: dictionaryPath() }]);
+  const builder: unknown = callMethod(module, "builder", [{ dicPath: kuromojiDictionaryPath() }]);
   if (!isRecord(builder)) throw new Error("@sglkc/kuromoji の builder が object を返しませんでした");
   callMethod(builder, "build", [done]);
 };

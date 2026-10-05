@@ -1,7 +1,7 @@
 import { dirname } from "node:path";
-import { readYamlFile } from "./yaml-file.ts";
+import { workingDir } from "./working-dir.ts";
 import { isLevel } from "../levels.ts";
-import { defaultModel } from "../judge.ts";
+import { defaultModel } from "../backends/default-model.ts";
 import { isBackend, type BackendName } from "../backends/types.ts";
 import type { Level } from "../plugin.ts";
 import type { PathRule } from "./by-path.ts";
@@ -95,7 +95,7 @@ export const EMPTY: Config = {
   names: [],
   unreadableNames: [],
   byPath: [],
-  baseDir: process.cwd(),
+  baseDir: workingDir(),
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
@@ -171,9 +171,8 @@ const namesOf = (raw: unknown): { readonly names: string[]; readonly unreadable:
 
 const byPathOf = (raw: unknown): PathRule[] => (Array.isArray(raw) ? raw.map(toPathRule).filter((rule) => rule !== undefined) : []);
 
-/** 設定ファイルが無くても動く。あっても、既定から変えたものだけが書かれている。spec §18。 */
-export const loadConfig = (path: string): Config => {
-  const raw: unknown = readYamlFile(path);
+/** 読んだ chaff.yaml の中身（raw）を設定にする。ファイルは読まない。path は raw を読んだ場所。 */
+export const configOf = (raw: unknown, path: string): Config => {
   if (!isRecord(raw)) return { ...EMPTY, path };
   const declared: unknown = raw["ai_backend"];
   const backend: BackendName = isBackend(declared) ? declared : DEFAULT_BACKEND;

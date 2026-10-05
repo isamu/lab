@@ -5,7 +5,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { hyphenGroups, isHyphen, latinBoundaries, minorityStyle, occurrencesOutside, type Boundary } from "../packages/chaff/src/orthography.ts";
-import { loadConfig } from "../packages/chaff/src/config/load.ts";
+import { loadConfig } from "../packages/chaff/src/config/read.ts";
 import { buildDocument, teamRules } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules, type Settings } from "../packages/chaff/src/run.ts";

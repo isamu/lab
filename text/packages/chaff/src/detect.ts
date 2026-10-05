@@ -1,11 +1,10 @@
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import { parse } from "yaml";
 import { japaneseRatio, latinRatio } from "./detect-language.ts";
 import { referenceListSpans } from "./reference-lists.ts";
 import { withoutSpans } from "./soft-break.ts";
 import { languageSample } from "./language-sample.ts";
+import { PACKAGE_DIR, readText } from "./package-files.ts";
 
 export type LanguageGuess = { readonly language: string; readonly confidence: number; readonly from: string };
 
@@ -15,12 +14,12 @@ export type LanguageGuess = { readonly language: string; readonly confidence: nu
  */
 const JAPANESE_FLOOR = 0.15;
 
-const HEADINGS_FILE = join(dirname(fileURLToPath(import.meta.url)), "..", "reference-headings.yaml");
+const HEADINGS_FILE = join(PACKAGE_DIR, "reference-headings.yaml");
 
 const isStringList = (value: unknown): value is string[] => Array.isArray(value) && value.every((entry) => typeof entry === "string");
 
 const readHeadings = (): string[] => {
-  const raw: unknown = parse(readFileSync(HEADINGS_FILE, "utf8"));
+  const raw: unknown = parse(readText(HEADINGS_FILE));
   const headings: unknown = typeof raw === "object" && raw !== null && "headings" in raw ? raw.headings : undefined;
   if (!isStringList(headings)) throw new Error(`${HEADINGS_FILE}: headings は文字列の並びであること`);
   return headings;
