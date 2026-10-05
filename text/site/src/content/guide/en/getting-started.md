@@ -89,6 +89,8 @@ article.md   blog/tech · English   genre from the default
 
   {not-run}
 
+AI-likeness: not scored (too short: 66 words; scored from 200)
+
 ```
 
 With findings, each one gets its own block. This is a run on a real article.

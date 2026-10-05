@@ -2,6 +2,7 @@ import type { AtomKind } from "../compare/atom.ts";
 import type { CitationStatus } from "../structure/cite.ts";
 import type { Severity } from "../plugin.ts";
 import type { OutputSize } from "./rates.ts";
+import type { GradeAiScore } from "./ai-score.ts";
 
 // The shape of one line of `chaff grade --out`, and of what `grade()` returns. Spec §29.3.
 
@@ -75,6 +76,8 @@ export type GradeResult = {
   readonly contexts?: GradeContexts | undefined;
   /** Only with a `grade:` rubric. */
   readonly score?: GradeScore | undefined;
+  /** The AI-likeness quick score. Absent only in results written before it existed. Never part of pass or fail. */
+  readonly aiScore?: GradeAiScore | undefined;
   readonly pass: boolean;
   /** Each condition the output failed, with how far: `facts.dropped 3 > 0`. */
   readonly failedBecause: readonly string[];

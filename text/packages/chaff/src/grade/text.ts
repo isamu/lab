@@ -13,6 +13,8 @@ export type GradeText = {
   readonly unknownRule: string;
   readonly rubricProblem: (problem: RubricProblem) => string;
   readonly penalty: (total: number) => string;
+  /** The outputs at each level of the AI-likeness quick score. */
+  readonly aiScore: (low: number, medium: number, high: number, notScored: number) => string;
   readonly noStructure: (source: string, language: string) => string;
   readonly unreadable: (path: string, why: string) => string;
   readonly problem: (problem: ItemProblem) => string;
@@ -110,6 +112,8 @@ export const GRADE_TEXT: Texts<GradeText> = {
     unknownRule: "grade: に書かれているが、chaff の知らないルール",
     rubricProblem: (problem) => `chaff.yaml の ${problem.path} は${EXPECTED_JA[problem.expected]}で書いてください（書かれていたのは ${problem.written}）`,
     penalty: (total) => `減点の和: ${String(total)}`,
+    aiScore: (low, medium, high, notScored) =>
+      `AI らしさ: 低 ${String(low)}、中 ${String(medium)}、高 ${String(high)}、測っていない ${String(notScored)}（書いたのが AI かどうかの判定ではありません。合否には入りません）`,
     noStructure: (source, language) => `原文 ${source} の言語 ${language} のパッケージは文書の構造を読めない`,
     unreadable: (path, why) => `${path} を読めませんでした: ${why}`,
     problem: (problem) => PROBLEM_JA[problem.kind](problem),
@@ -142,6 +146,8 @@ export const GRADE_TEXT: Texts<GradeText> = {
     unknownRule: "named under grade: but not a rule chaff knows",
     rubricProblem: (problem) => `chaff.yaml: ${problem.path} must be ${EXPECTED_EN[problem.expected]} (found ${problem.written})`,
     penalty: (total) => `Penalty points: ${String(total)}`,
+    aiScore: (low, medium, high, notScored) =>
+      `AI-likeness: low ${String(low)}, medium ${String(medium)}, high ${String(high)}, not scored ${String(notScored)} (not a verdict on whether AI wrote them; not part of pass or fail)`,
     noStructure: (source, language) => `the ${language} package cannot read the structure of source ${source}`,
     unreadable: (path, why) => `Could not read ${path}: ${why}`,
     problem: (problem) => PROBLEM_EN[problem.kind](problem),

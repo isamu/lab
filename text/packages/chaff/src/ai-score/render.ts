@@ -1,7 +1,7 @@
 import type { LengthUnit, Localized } from "../plugin.ts";
 import { localized } from "../render/text.ts";
 import type { StructureText } from "../outline/structure-text.ts";
-import { HIGH_SIGNS, MEDIUM_SIGNS, type AiScore, type NotScored, type SignalPlace, type StructurePlace } from "./score.ts";
+import { HIGH_SIGNS, MEDIUM_SIGNS, shownSignsOf, type AiScore, type NotScored, type SignalPlace, type StructurePlace } from "./score.ts";
 import type { AiScoreText } from "./text.ts";
 
 /** What a rendering needs besides the score: the texts, the rules' names, and the genre group's name, in one language. */
@@ -29,6 +29,10 @@ const headlineOf = (score: AiScore, view: ScoreView): string => {
   if (score.level !== undefined) return view.text.headline(score.level, view.groupName);
   return view.text.summaryNotScored(score.notScored === undefined ? "" : notScoredText(score.notScored, view));
 };
+
+/** The one line the lint report ends a file with. */
+export const aiScoreSummaryLine = (score: AiScore, path: string, view: ScoreView): string =>
+  score.level === undefined ? headlineOf(score, view) : view.text.summary(headlineOf(score, view), score.signs, path);
 
 const signalLine = (signal: SignalPlace, view: ScoreView): string => {
   const { human } = signal;
@@ -89,10 +93,8 @@ export const renderAiScoreFriendly = (path: string, score: AiScore, view: ScoreV
 
 /** For grep: the level (or not-scored) and the signs, on one line. */
 export const renderAiScoreCompact = (path: string, score: AiScore): string => {
-  const signals = score.signals.filter((signal) => signal.unusual).map((signal) => signal.rule);
-  const measures = (score.structure ?? []).filter((place) => place.beyond && place.sameAs === undefined).map((place) => place.feature.id);
   const level = score.level ?? `not-scored:${score.notScored?.reason ?? ""}`;
-  return [`${path}: ai-score ${level} ${String(score.signs)}/${String(score.compared)}`, ...signals, ...measures].join(" ");
+  return [`${path}: ai-score ${level} ${String(score.signs)}/${String(score.compared)}`, ...shownSignsOf(score)].join(" ");
 };
 
 /** The score as data, for the JSON report and chaff grade's results. */

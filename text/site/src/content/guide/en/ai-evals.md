@@ -69,6 +69,7 @@ A `chaff.yaml` in the folder you run from applies to every check, as in the [con
 
    Facts: 3 dropped (date 1, number 2), 1 added (date 1)
    Quotations: 2 checked, 1 failed
+   AI-likeness: low 0, medium 0, high 0, not scored 3 (not a verdict on whether AI wrote them; not part of pass or fail)
 
    …
      {not-run: cite}
@@ -217,6 +218,7 @@ Failed outputs
   Facts dropped      0           3
   Facts added        0           1
   Quotations failed  0/2         1/2
+  AI low/med/high    0/0/0 (3)   0/0/0 (3)
 
 Rule rates (per 1,000 words)
                            prompt-a  prompt-b

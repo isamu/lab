@@ -36,6 +36,7 @@ export type {
   SupportedFact,
 } from "./grade/result.ts";
 export type { OutputSize } from "./grade/rates.ts";
+export type { AiLevelCounts, GradeAiScore } from "./grade/ai-score.ts";
 export { toScorer, type ChaffScore } from "./grade/scorer.ts";
 export type { Disagreement, VariantColumn, VariantComparison, VariantRates } from "./grade/variants.ts";
 export type { VariantInput } from "./grade/variants-input.ts";

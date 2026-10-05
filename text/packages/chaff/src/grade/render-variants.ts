@@ -14,11 +14,15 @@ type Rows = readonly (readonly string[])[];
 const passedCell = (column: VariantColumn, text: VariantText): string =>
   text.passedCell(column.passed, column.outputs, column.passRate === undefined ? "–" : `${String(column.passRate)}%`);
 
+const aiScoreCellOf = (column: VariantColumn, text: VariantText): string =>
+  column.aiScore === undefined ? "–" : text.aiScoreCell(column.aiScore.low, column.aiScore.medium, column.aiScore.high, column.aiScore.notScored);
+
 /** The header and one row per measure, a column per variant. */
 const measureRows = (comparison: VariantComparison, text: VariantText): Rows => {
   const { columns } = comparison;
   const scored = columns.some((column) => column.penalty !== undefined);
   const grounded = columns.some((column) => column.contexts !== undefined);
+  const aiScored = columns.some((column) => column.aiScore !== undefined);
   return [
     ["", ...comparison.variants],
     [text.passed, ...columns.map((column) => passedCell(column, text))],
@@ -29,6 +33,7 @@ const measureRows = (comparison: VariantComparison, text: VariantText): Rows => 
       ? [[text.unsupportedFacts, ...columns.map((column) => text.citationsCell(column.contexts?.unsupported ?? 0, column.contexts?.checked ?? 0))]]
       : []),
     ...(scored ? [[text.penalty, ...columns.map((column) => String(column.penalty ?? 0))]] : []),
+    ...(aiScored ? [[text.aiScore, ...columns.map((column) => aiScoreCellOf(column, text))]] : []),
   ];
 };
 
