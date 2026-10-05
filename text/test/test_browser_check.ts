@@ -102,7 +102,7 @@ const serveDictionary = async (): Promise<{ readonly server: Server; readonly ur
 };
 
 describe("chaffjs/browser finds what the command line finds", () => {
-  const state: { server?: Server } = {};
+  const state: { server?: Server; browser?: typeof import("../packages/chaff/src/browser.ts") } = {};
   after(() => state.server?.close());
 
   const checkedInBrowser = new Map<string, Comparable>();
@@ -114,6 +114,7 @@ describe("chaffjs/browser finds what the command line finds", () => {
     state.server = dictionary.server;
     const files = browserFiles();
     const browser = await import("../packages/chaff/src/browser.ts");
+    state.browser = browser;
     browser.setupBrowser({
       files: (name) => {
         asked.push(name);
@@ -160,6 +161,23 @@ describe("chaffjs/browser finds what the command line finds", () => {
         "packages/lang-ja/dist/browser/kuromoji-module.js",
         "packages/lang-ja/dist/browser/package-files.js",
       ],
+    );
+  });
+
+  it("does not apply settings that read files, and says so in the document's language", async () => {
+    const config = { by_path: [{ files: "*.md", genre: "legal/contract" }], include: ["*.yaml"], plugins: ["chaff-plugin-x"] };
+    const result = await state.browser?.check("# メモ\n\n今日は晴れです。\n", { config });
+    assert.equal(result?.genre, "blog/tech");
+    assert.deepEqual(
+      result?.notRun.filter((entry) => ["plugins", "include", "by_path"].includes(entry.rule)).map((entry) => entry.rule),
+      ["plugins", "include", "by_path"],
+    );
+    assert.ok(result?.notRun.every((entry) => !["plugins", "include", "by_path"].includes(entry.rule) || entry.reason.includes("ブラウザ")));
+  });
+
+  it("refuses a dictionary URL kuromoji could not resolve", () => {
+    ["/lab/playground/kuromoji/", "https://example.com/dict"].forEach((url) =>
+      assert.throws(() => state.browser?.setupBrowser({ files: () => Promise.resolve({}), kuromojiDictionaryUrl: url }), /absolute URL ending in \//u),
     );
   });
 

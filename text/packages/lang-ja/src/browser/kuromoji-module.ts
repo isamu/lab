@@ -9,10 +9,13 @@ import { dictionaryBytes } from "./dictionary-bytes.ts";
 
 type BuildDone = (error: unknown, tokenizer: unknown) => void;
 
+/** kuromoji joins the folder and the file name by collapsing every run of slashes, https:// included: keep only the name. */
+export const dictionaryFileUrl = (joined: string, dicPath: string): string => new URL(joined.slice(joined.lastIndexOf("/") + 1), dicPath).href;
+
 const build = (dicPath: string, done: BuildDone): void => {
   const loader = new DictionaryLoader(dicPath);
   loader.loadArrayBuffer = (url, loaded) => {
-    dictionaryBytes(url).then(
+    dictionaryBytes(dictionaryFileUrl(url, dicPath)).then(
       (buffer) => loaded(null, buffer),
       (error: unknown) => loaded(error, null),
     );

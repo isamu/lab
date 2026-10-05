@@ -53,7 +53,8 @@ const REASON: Texts<string> = {
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 
-const configFrom = (raw: unknown): Config => (raw === undefined ? EMPTY : withStyle(configOf(raw, `/${CONFIG_FILE}`), loadStyles()));
+/** by_path is dropped: it matches file paths, and a text checked here has none. plugins and include act only on files. */
+const configFrom = (raw: unknown): Config => (raw === undefined ? EMPTY : withStyle({ ...configOf(raw, `/${CONFIG_FILE}`), byPath: [] }, loadStyles()));
 
 const unappliedSettings = (raw: unknown, language: string): NotRunEntry[] =>
   isRecord(raw) ? NEEDS_FILES.filter((key) => raw[key] !== undefined).map((key) => ({ rule: key, reason: REASON[uiLanguageOf(language)] })) : [];

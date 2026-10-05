@@ -15,7 +15,10 @@ type Store = { setup: BrowserSetup | undefined; readonly installed: Map<string, 
 
 const store: Store = { setup: undefined, installed: new Map() };
 
+/** Each dictionary file is fetched at new URL(file name, kuromojiDictionaryUrl), so that URL must be absolute and end in /. */
 export const setupBrowserFiles = (setup: BrowserSetup): void => {
+  if (!URL.canParse(setup.kuromojiDictionaryUrl) || !setup.kuromojiDictionaryUrl.endsWith("/"))
+    throw new Error(`chaff: kuromojiDictionaryUrl must be an absolute URL ending in /: ${setup.kuromojiDictionaryUrl}`);
   store.setup = setup;
 };
 

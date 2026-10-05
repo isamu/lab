@@ -165,7 +165,7 @@ npx chaffjs skill                 Claude Code の skill を入れる（--global 
 型と `defineRule` / `definePlugin` は `chaffjs/api` から読み込みます。プラグインのルールは `<名前>/<ルール>` と呼ばれ、chaff のルールと同じに `explain`・`relax`・`stet`・SARIF で扱えます。
 読み込むとそのコードが動くので、信頼できるものだけを入れてください。作り方は手引きの「[プラグインを作る](https://isamu.github.io/lab/ja/guide/writing-plugins/)」にあります。
 
-`chaffjs/browser` は、ファイルもサーバも無いウェブページの中で一つの文章を確かめます（`setupBrowser()` で規則と辞書の置き場所を渡し、`check(text, { language, genre, config })`）。結果は `chaff <file>` と同じ指摘です。ファイルを読む設定（`plugins`・`include`・`by_path`）は動かなかったものとして理由つきで返します。package.json の `browser` と `import.meta.glob` を読むバンドラ（Vite）向けです。
+`chaffjs/browser` は、ファイルもサーバも無いウェブページの中で一つの文章を確かめます（`setupBrowser()` で規則と辞書の置き場所を渡し、`check(text, { language, genre, config })`）。結果は `chaff <file>` と同じ指摘です。ファイルを読む設定（`plugins`・`include`・`by_path`）は動かなかったものとして理由つきで返します。package.json の `browser` と `import.meta.glob` を読むバンドラ（Vite）向けです。`vite dev` では `optimizeDeps.exclude` に `chaffjs` を入れます（先にまとめると `import.meta.glob` が残ります）。
 
 ## ドキュメント
 
@@ -182,7 +182,8 @@ facts, the quotations and the team's requirements. `grade` runs the same checks 
 `chaffjs/browser` checks one text inside a web page, with no file system and no server: `setupBrowser()` says where
 the rules and the dictionary are served, and `check(text, { language, genre, config })` returns the findings
 `chaff <file>` gives. Settings that read files (`plugins`, `include`, `by_path`) come back as not run, with the reason.
-It is built for a bundler that reads package.json's `browser` field and `import.meta.glob` (Vite).
+It is built for a bundler that reads package.json's `browser` field and `import.meta.glob` (Vite); under `vite dev`, list
+`chaffjs` in `optimizeDeps.exclude`, since pre-bundling would leave `import.meta.glob` untransformed.
 
 Every command returns an exit code, so it runs in CI on every change.
 It reads Japanese and English and never rewrites the text.

@@ -4,6 +4,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { gunzipSync } from "node:zlib";
 import { unpacked } from "../packages/lang-ja/src/browser/dictionary-bytes.ts";
+import { dictionaryFileUrl } from "../packages/lang-ja/src/browser/kuromoji-module.ts";
 import { kuromojiDictionaryDir } from "../scripts/browser-files.ts";
 
 // Each dictionary file as it arrives: still gzip (GitHub Pages) or already unpacked by the browser (a server that sends
@@ -27,6 +28,12 @@ describe("kuromoji's dictionary in a browser", () => {
       const plain = gunzipSync(readFileSync(join(DIR, file)));
       assert.deepEqual(Buffer.from(await unpacked(bytesOf(plain))), plain, file);
     }
+  });
+
+  it("fetches each file from the URL given, though kuromoji's join collapses https:// to https:/", () => {
+    assert.equal(dictionaryFileUrl("https:/cdn.example/dict/base.dat.gz", "https://cdn.example/dict/"), "https://cdn.example/dict/base.dat.gz");
+    assert.equal(dictionaryFileUrl("http:/127.0.0.1:9/cc.dat.gz", "http://127.0.0.1:9/"), "http://127.0.0.1:9/cc.dat.gz");
+    assert.equal(dictionaryFileUrl("https:/a.example/x/y/unk.dat.gz", "https://a.example/x/y/"), "https://a.example/x/y/unk.dat.gz");
   });
 
   it("tells them apart for every file: no unpacked file starts as gzip does", () => {
