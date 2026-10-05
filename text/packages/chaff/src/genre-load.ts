@@ -1,13 +1,11 @@
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import { parse } from "yaml";
 import { parseGenres, presetLevelsOf, presetProfileOf, withRuleOffs, type GenreData, type PresetLevels } from "./genre-parse.ts";
 import { loadRuleOffs } from "./rule-offs.ts";
+import { PACKAGE_DIR, readText } from "./package-files.ts";
 
-const PACKAGE = join(dirname(fileURLToPath(import.meta.url)), "..");
-const GENRES_FILE = join(PACKAGE, "genres.yaml");
-const RULES_DIR = join(PACKAGE, "rules");
+const GENRES_FILE = join(PACKAGE_DIR, "genres.yaml");
+const RULES_DIR = join(PACKAGE_DIR, "rules");
 
 const loaded: { value: GenreData | undefined } = { value: undefined };
 
@@ -15,7 +13,7 @@ const loaded: { value: GenreData | undefined } = { value: undefined };
 export const loadGenres = (): GenreData => {
   if (loaded.value !== undefined) return loaded.value;
   try {
-    loaded.value = withRuleOffs(parseGenres(parse(readFileSync(GENRES_FILE, "utf8"))), loadRuleOffs(RULES_DIR));
+    loaded.value = withRuleOffs(parseGenres(parse(readText(GENRES_FILE))), loadRuleOffs(RULES_DIR));
   } catch (error) {
     throw new Error(`cannot read ${GENRES_FILE}: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
   }

@@ -14,8 +14,6 @@ export type AnthropicClient = { readonly messages: { readonly create: (params: A
 const isTextBlock = (block: unknown): block is { readonly text: string } =>
   typeof block === "object" && block !== null && "text" in block && typeof block.text === "string";
 
-export const DEFAULT_MODEL = "claude-opus-5";
-
 /**
  * 認証情報があるか。
  *

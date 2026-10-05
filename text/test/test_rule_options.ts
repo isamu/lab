@@ -4,7 +4,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fitsOption, optionProblems, optionsOf, settleOptions, type OptionLayer } from "../packages/chaff/src/rule-options.ts";
-import { loadConfig } from "../packages/chaff/src/config/load.ts";
+import { loadConfig } from "../packages/chaff/src/config/read.ts";
 import { configOptionProblems } from "../packages/chaff/src/config/option-problems.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runCli } from "./cli-run.ts";

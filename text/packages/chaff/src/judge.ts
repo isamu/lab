@@ -78,8 +78,6 @@ export type JudgeOptions = {
 const judgeFor = (options: JudgeOptions): Judge =>
   options.backend === "openai" ? openai.judge(options.openaiClient) : anthropic.judge(options.anthropicClient);
 
-export const defaultModel = (backend: BackendName): string => (backend === "openai" ? openai.DEFAULT_MODEL : anthropic.DEFAULT_MODEL);
-
 export const hasCredentials = (backend: BackendName): boolean => (backend === "openai" ? openai.hasCredentials() : anthropic.hasCredentials());
 
 export const isAuthFailure = (backend: BackendName, error: unknown): boolean =>

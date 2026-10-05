@@ -10,8 +10,6 @@ export type OpenAIClient = {
   readonly chat: { readonly completions: { readonly create: (params: OpenAI.ChatCompletionCreateParamsNonStreaming) => Promise<OpenAIResponse> } };
 };
 
-export const DEFAULT_MODEL = "gpt-5";
-
 export const hasCredentials = (): boolean => (process.env["OPENAI_API_KEY"] ?? "").length > 0;
 
 export const isAuthFailure = (error: unknown): boolean => error instanceof OpenAI.APIError && error.status === 401;

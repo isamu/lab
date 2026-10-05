@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { definedLevels, resolve } from "../packages/chaff/src/levels.ts";
 import { applyLevel } from "../packages/chaff/src/config/write.ts";
-import { loadConfig } from "../packages/chaff/src/config/load.ts";
+import { loadConfig } from "../packages/chaff/src/config/read.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 
 const RULES = loadRules("ja");

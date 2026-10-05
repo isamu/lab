@@ -15,7 +15,7 @@ import { presetLevels } from "./genre-load.ts";
 import { bodySectionOf } from "./body-section.ts";
 import { optionValues, settleOptions, type OptionLayer } from "./rule-options.ts";
 import { byPosition } from "./finding-order.ts";
-import { PatternTimeout } from "./custom/bounded-match.ts";
+import { PatternTimeout } from "./custom/pattern-timeout.ts";
 import { PluginRuleFailure } from "./extension/module-detector.ts";
 import { failureReason } from "./extension/failure-text.ts";
 import { tagCoverage } from "./tag-coverage.ts";
