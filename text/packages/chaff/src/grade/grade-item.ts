@@ -1,9 +1,8 @@
 import { checkSource, type SourceCheck } from "../check-source.ts";
 import type { Allowed } from "../compare/outcome.ts";
 import { missingSections } from "../detectors/team.ts";
-import { messageOf } from "../render/text.ts";
 import { uiLanguageOf, type UiLanguage } from "../ui.ts";
-import type { Finding } from "../plugin.ts";
+import { findingOf } from "./finding.ts";
 import { citationsAgainst, factsAgainst, OUTPUT_PATH, type CitationsRead, type ItemReading } from "./checks.ts";
 import { contextsAgainst, type ContextsRead } from "./contexts.ts";
 import type { GradeItem } from "./item.ts";
@@ -19,17 +18,6 @@ import { defaultVerdict, type Verdict } from "./verdict.ts";
 
 /** One run's settings, its `grade:` rubric when chaff.yaml has one, and its stamp, which every result carries. */
 export type GradeSetup = GradeSettings & { readonly stamp: Stamp; readonly rubric?: Rubric | undefined };
-
-const findingOf = (finding: Finding, check: SourceCheck): GradeFinding => {
-  const rule = check.rules.find((entry) => entry.id === finding.rule);
-  return {
-    rule: finding.rule,
-    level: finding.severity,
-    line: finding.line,
-    column: finding.column,
-    message: rule === undefined ? finding.rule : messageOf(rule, finding, check.language),
-  };
-};
 
 /** The fact kinds the rubric lets change (`allow_dropped`, `allow_added`), as compare's --allow-dropped and --allow-added. */
 const allowedBy = (rubric: Rubric | undefined): Allowed => ({

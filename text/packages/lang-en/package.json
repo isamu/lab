@@ -11,6 +11,12 @@
       "import": "./dist/index.js"
     }
   },
+  "browser": {
+    "./src/package-files.ts": "./src/browser/package-files.ts",
+    "./src/wink-modules.ts": "./src/browser/wink-modules.ts",
+    "./dist/package-files.js": "./dist/browser/package-files.js",
+    "./dist/wink-modules.js": "./dist/browser/wink-modules.js"
+  },
   "files": [
     "LICENSE",
     "README.md",

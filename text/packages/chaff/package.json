@@ -41,7 +41,28 @@
     "./grade": {
       "types": "./src/grade-api.ts",
       "import": "./dist/grade-api.js"
+    },
+    "./browser": {
+      "types": "./src/browser.ts",
+      "import": "./dist/browser.js"
+    },
+    "./browser-files": {
+      "types": "./src/browser-files.ts",
+      "import": "./dist/browser-files.js"
     }
+  },
+  "browser": {
+    "./src/package-files.ts": "./src/browser/package-files.ts",
+    "./src/adapter-import.ts": "./src/browser/adapter-import.ts",
+    "./src/detectors/index.ts": "./src/browser/detectors.ts",
+    "./src/custom/bounded-match.ts": "./src/browser/bounded-match.ts",
+    "./src/config/working-dir.ts": "./src/browser/working-dir.ts",
+    "./dist/package-files.js": "./dist/browser/package-files.js",
+    "./dist/adapter-import.js": "./dist/browser/adapter-import.js",
+    "./dist/detectors/index.js": "./dist/browser/detectors.js",
+    "./dist/custom/bounded-match.js": "./dist/browser/bounded-match.js",
+    "./dist/config/working-dir.js": "./dist/browser/working-dir.js",
+    "node:path": "./dist/browser/path.js"
   },
   "files": [
     "LICENSE",
