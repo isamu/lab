@@ -11,6 +11,12 @@
       "import": "./dist/index.js"
     }
   },
+  "browser": {
+    "./src/package-files.ts": "./src/browser/package-files.ts",
+    "./src/kuromoji-module.ts": "./src/browser/kuromoji-module.ts",
+    "./dist/package-files.js": "./dist/browser/package-files.js",
+    "./dist/kuromoji-module.js": "./dist/browser/kuromoji-module.js"
+  },
   "files": [
     "LICENSE",
     "README.md",
