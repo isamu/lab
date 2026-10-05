@@ -49,8 +49,7 @@ export const AI_SCORE_TEXT: Texts<AiScoreText> = {
     level: { low: "低", medium: "中", high: "高" },
     headline: (level, group) => `AI らしさ: ${AI_SCORE_TEXT.ja.level[level]}（人が書いた文書（${group}）と比べて${HEADLINE_JA[level]}）`,
     tooShort: (length, minimum, unit) => `短すぎます: ${String(length)} ${unitJa(unit)}。${String(minimum)} ${unitJa(unit)}から測ります`,
-    noBaseline: (group, compared, needed) =>
-      `人が書いた文書（${group}）と比べられる目印が ${String(compared)} 項目しかありません。${String(needed)} 項目から測ります`,
+    noBaseline: (group, compared, needed) => `人が書いた文書（${group}）と比べられる目印は ${String(compared)} 項目です。${String(needed)} 項目から測ります`,
     disclaimer: "※ 書いたのが AI かどうかの判定ではありません。生成文に多い目印が、人の文書と比べてどれだけ出ているかです。",
     signs: (signs, compared, medium, high) =>
       `目印 ${String(signs)} 個（比べた ${String(compared)} 項目のうち、人の文書の 9 割には出ないもの）。中は ${String(medium)} 個から、高は ${String(high)} 個から`,
@@ -77,8 +76,7 @@ export const AI_SCORE_TEXT: Texts<AiScoreText> = {
     level: { low: "low", medium: "medium", high: "high" },
     headline: (level, group) => `AI-likeness: ${AI_SCORE_TEXT.en.level[level]} (${HEADLINE_EN[level]} human-written documents (${group}))`,
     tooShort: (length, minimum, unit) => `too short: ${String(length)} ${unitEn(length, unit)}; scored from ${String(minimum)}`,
-    noBaseline: (group, compared, needed) =>
-      `only ${String(compared)} ${compared === 1 ? "sign" : "signs"} can be compared with human-written documents (${group}); scored from ${String(needed)}`,
+    noBaseline: (group, compared, needed) => `${String(compared)} of the ${String(needed)} comparable signs needed against human-written documents (${group})`,
     disclaimer: "Not a verdict on whether AI wrote it: how many signs common in generated text show, compared with human documents.",
     signs: (signs, compared, medium, high) =>
       `${String(signs)} ${signs === 1 ? "sign" : "signs"} (of ${String(compared)} compared, ones 90% of human documents do not show); medium from ${String(medium)}, high from ${String(high)}`,
