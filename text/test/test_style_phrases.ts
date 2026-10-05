@@ -59,6 +59,24 @@ describe("weasel-word", () => {
     assert.deepEqual(findingsOf(RULE, "Some argue that the old API is slower.\n"), ['"some argue" does not say who']);
     assert.deepEqual(findingsOf(RULE, "The 2021 Smith study suggests that short meetings save time. Two reviewers argue that the old API is slower.\n"), []);
   });
+
+  it("日本語で、出典の無い言い回しを言う（活用した形も）", () => {
+    assert.deepEqual(findingsOf(RULE, "在宅勤務は生産性を上げると言われています。\n", ja), ["「と言われている」は、誰が言ったのかを言っていません"]);
+    assert.deepEqual(findingsOf(RULE, "この寺は空海が建てたと言われていた。\n", ja), ["「と言われている」は、誰が言ったのかを言っていません"]);
+    assert.deepEqual(findingsOf(RULE, "ある研究によると、短い会議は時間を節約します。\n", ja), ["「ある研究によると」は、誰が言ったのかを言っていません"]);
+    assert.deepEqual(findingsOf(RULE, "多くの専門家が、この方式を勧めています。\n", ja), ["「多くの専門家が」は、誰が言ったのかを言っていません"]);
+    assert.deepEqual(findingsOf(RULE, "多くの人が考えているほど、移行は難しくありません。\n", ja), ["「多くの人が考える」は、誰が言ったのかを言っていません"]);
+  });
+
+  it("日本語で、出典を名指す形と、言い伝えでない「言われる」「一般的に」は言わない", () => {
+    const named = "厚生労働省の研究によると、短い会議は時間を節約します。山田（2021）は、在宅勤務で生産性が上がったと報告しています。\n";
+    assert.deepEqual(findingsOf(RULE, named, ja), []);
+    assert.deepEqual(findingsOf(RULE, "上司に「直せ」と言われると、別の方向に整えてしまう。\n", ja), []);
+    assert.deepEqual(findingsOf(RULE, "外務省のロビーのようだったと言われるほど、多くの外国人が訪れた。\n", ja), []);
+    assert.deepEqual(findingsOf(RULE, "この関数は、イベントリスナーとして一般的に使用されます。\n", ja), []);
+    assert.deepEqual(findingsOf(RULE, "多くの人が会場に集まった。\n", ja), []);
+    assert.deepEqual(findingsOf(RULE, "「急がば回れ」とよく言われるように、近道は遠回りになります。\n", ja), []);
+  });
 });
 
 describe("homophone-slip", () => {

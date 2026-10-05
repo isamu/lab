@@ -1,4 +1,16 @@
-table  12  12  0  0
+table  24  24  0  0
+ja/blog  weasel-iwareteiru  found
+ja/design  weasel-iwareteiru  found
+ja/email  weasel-iwareteiru  found
+ja/figures  weasel-iwareteiru  found
+ja/itinerary  weasel-iwareteiru  found
+ja/minutes  weasel-iwareteiru  found
+ja/note  weasel-iwareteiru  found
+ja/press  weasel-iwareteiru  found
+ja/proposal  weasel-iwareteiru  found
+ja/quote  weasel-iwareteiru  found
+ja/readme  weasel-iwareteiru  found
+ja/requirements  weasel-iwareteiru  found
 en/blog  weasel-experts  found
 en/design  weasel-experts  found
 en/email  weasel-experts  found

@@ -7978,35 +7978,35 @@
     "weasel-word": {
       "groups": {
         "academic": {
-          "documents": 5,
+          "documents": 6,
           "fired": 1
         },
         "blog": {
-          "documents": 9,
-          "fired": 1
+          "documents": 23,
+          "fired": 3
         },
         "business": {
-          "documents": 39,
+          "documents": 78,
           "fired": 3
         },
         "docs": {
-          "documents": 10,
+          "documents": 20,
           "fired": 1
         },
         "legal": {
-          "documents": 14,
+          "documents": 35,
           "fired": 0
         },
         "literature": {
-          "documents": 9,
+          "documents": 13,
           "fired": 2
         },
         "speech": {
-          "documents": 3,
+          "documents": 7,
           "fired": 0
         },
         "technical": {
-          "documents": 26,
+          "documents": 48,
           "fired": 0
         }
       },
