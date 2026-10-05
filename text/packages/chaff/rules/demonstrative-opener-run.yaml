@@ -4,7 +4,7 @@ status: stable
 how_to_find: opener-run
 word_list: demonstrative-opener
 requires: [pos]
-languages: [ja]
+languages: [ja, en]
 severity: info
 
 name:
@@ -13,15 +13,15 @@ name:
 
 why:
   ja: 「これは」「その結果」「この方法は」のように指示語で始まる文が続くと、読み手は一文ごとに「どれのことか」を前に戻って確かめることになります。指すものが一つ前の文なのか、もっと前なのかも曖昧になります。数えるのは同じ段落の中の連続だけです。
-  en: In Japanese, sentence after sentence opening with a demonstrative (これは, その結果) sends the reader back each time to find what it points at, and blurs whether it means the last sentence or one before. Only runs within one paragraph are counted.
+  en: Sentence after sentence opening with a word that points back (This, That, It; これは, その結果) sends the reader back each time to find what it points at, and blurs whether it means the last sentence or one before. Only runs within one paragraph are counted.
 
 message:
   ja: 「{word}」など、指示語で始まる文が {count} 文続いています（{limit} 文まで）
-  en: '{count} sentences in a row open with a demonstrative such as "{word}" (limit {limit})'
+  en: '{count} sentences in a row open with a word that points back, such as "{word}" (limit {limit})'
 
 how_to_fix:
   ja: 指示語のどれかを、指している名詞に置き換えてください（その結果 → 調査の結果）。
-  en: Replace one of the demonstratives with the noun it points at (その結果 → 調査の結果).
+  en: Replace one of the demonstratives with the noun it points at (This → The new procedure; その結果 → 調査の結果).
 
 levels: { strict: 1, normal: 2, relaxed: 3 }
 
@@ -30,17 +30,22 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: readability
 summary:
   ja: 「これは」「その」「この」のような指示語で始まる文が、同じ段落の中で続く所
-  en: Japanese sentences in a row, within one paragraph, that open with a demonstrative (これ, その)
+  en: Sentences in a row, within one paragraph, that open with a word pointing back (This, That, It; これ, その)
 example:
   ja:
     before: |
       新しい手順を導入しました。これは作業を減らすためです。その結果、残業が減りました。この効果は来月も続く見込みです。
     after: |
       新しい手順を導入しました。作業を減らすためです。その結果、残業が減りました。残業の減少は来月も続く見込みです。
+  en:
+    before: |
+      We introduced a new procedure. This was meant to cut the work. It reduced overtime. That effect should continue next month.
+    after: |
+      We introduced a new procedure. This was meant to cut the work. The procedure reduced overtime, and the reduction should continue next month.
 
 not_flagged:
-  ja: 段落が変われば数え直します。「それぞれ」のように一語になったものと、接続詞の「そして」は数えません。
-  en: The count restarts at each paragraph. Words such as それぞれ and the conjunction そして are not counted.
+  ja: 段落が変われば数え直します。「それぞれ」のように一語になったものと、接続詞の「そして」は数えません。英語では、「This Agreement」「This section」のように文書そのものを指す書き出しと、「It is worth」「It seems」のように後ろを指す It は数えません。
+  en: The count restarts at each paragraph. Words such as それぞれ and the conjunction そして are not counted. In English, an opening that names the document itself ("This Agreement", "This section") and an "it" that stands for what follows ("It is worth", "It seems") are not counted.
 level_meaning:
   ja: 指示語で始まる文 {limit} 文の連続まで
   en: up to {limit} such sentences in a row
@@ -58,3 +63,15 @@ rewrite:
     avoid:
       - 指しているものを取り違える
       - 指示語を別の指示語（同様に、前述の）に替えるだけ
+  en:
+    direction: Of the demonstratives in the run, replace the ones whose referent is furthest away with the noun they point at. One that points at the sentence just before may stay.
+    pairs:
+      - before: We introduced a new procedure. This was meant to cut the work. It reduced overtime. That effect should continue next month.
+        after: We introduced a new procedure. This was meant to cut the work. The procedure reduced overtime, and the reduction should continue next month.
+      - before: The audit found three gaps. These came from an old manual. It is two years old. This will be fixed next month.
+        after: The audit found three gaps. They came from a manual that is two years old. We will revise the manual next month.
+    keep:
+      - what each word points at, and the order of the sentences
+    avoid:
+      - mistaking what a word points at
+      - swapping one pointer for another (the above, the former, said)

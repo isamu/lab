@@ -1,0 +1,125 @@
+# Openings with This, That or It that do not point back at the sentence before: the document itself ("This Agreement
+# may be modified…", "This section explains…"), an "it" that stands for what follows ("It is worth noting that…"), and a
+# "that" that opens a clause ("That the plan failed is clear"). An "it" before an adjective listed here is read as standing
+# for what follows; one that points back there is missed, never misreported. demonstrative-opener-run does not count a
+# sentence that opens with one.
+id: demonstrative-not-opener
+language: en
+entries:
+  - pattern: this agreement
+  - pattern: these terms
+  - pattern: this document
+  - pattern: this section
+  - pattern: this subsection
+  - pattern: this chapter
+  - pattern: this part
+  - pattern: this article
+  - pattern: this policy
+  - pattern: this statement
+  - pattern: this notice
+  - pattern: this report
+  - pattern: this paper
+  - pattern: this page
+  - pattern: this guide
+  - pattern: this memo
+  - pattern: this specification
+  - pattern: this rfc
+  - pattern: this act
+  - pattern: this appendix
+  - pattern: it should be noted
+  - pattern: it seems
+  - pattern: it appears
+  - pattern: it turns out
+  - pattern: it is worth
+  - pattern: it was worth
+  - pattern: it is important
+  - pattern: it was important
+  - pattern: it is possible
+  - pattern: it was possible
+  - pattern: it is impossible
+  - pattern: it was impossible
+  - pattern: it is necessary
+  - pattern: it was necessary
+  - pattern: it is likely
+  - pattern: it was likely
+  - pattern: it is unlikely
+  - pattern: it was unlikely
+  - pattern: it is clear
+  - pattern: it was clear
+  - pattern: it is unclear
+  - pattern: it was unclear
+  - pattern: it is obvious
+  - pattern: it was obvious
+  - pattern: it is evident
+  - pattern: it was evident
+  - pattern: it is recommended
+  - pattern: it was recommended
+  - pattern: it is reasonable
+  - pattern: it was reasonable
+  - pattern: it is helpful
+  - pattern: it was helpful
+  - pattern: it is useful
+  - pattern: it was useful
+  - pattern: it is essential
+  - pattern: it was essential
+  - pattern: it is difficult
+  - pattern: it was difficult
+  - pattern: it is easy
+  - pattern: it was easy
+  - pattern: it is hard
+  - pattern: it was hard
+  - pattern: it is true
+  - pattern: it was true
+  - pattern: it is natural
+  - pattern: it was natural
+  - pattern: it is common
+  - pattern: it was common
+  - pattern: it is rare
+  - pattern: it was rare
+  - pattern: it is advisable
+  - pattern: it was advisable
+  - pattern: it is better
+  - pattern: it was better
+  - pattern: it is best
+  - pattern: it was best
+  - pattern: it is enough
+  - pattern: it was enough
+  - pattern: it is fair
+  - pattern: it was fair
+  - pattern: it is safe
+  - pattern: it was safe
+  - pattern: it is tempting
+  - pattern: it was tempting
+  - pattern: it is interesting
+  - pattern: it was interesting
+  - pattern: it is surprising
+  - pattern: it was surprising
+  - pattern: it is known
+  - pattern: it was known
+  - pattern: it is expected
+  - pattern: it was expected
+  - pattern: it is assumed
+  - pattern: it was assumed
+  - pattern: it is noted
+  - pattern: it was noted
+  - pattern: it's worth
+  - pattern: that the
+  - pattern: that a
+  - pattern: that an
+  - pattern: that it
+  - pattern: that this
+  - pattern: that these
+  - pattern: that there
+  - pattern: that we
+  - pattern: that they
+  - pattern: that he
+  - pattern: that she
+  - pattern: that i
+  - pattern: that you
+  - pattern: that our
+  - pattern: that their
+  - pattern: that such
+  - pattern: that no
+  - pattern: that any
+  - pattern: that some
+  - pattern: that all
