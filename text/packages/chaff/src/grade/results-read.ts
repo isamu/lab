@@ -52,12 +52,28 @@ const isScoreItem = (value: unknown): boolean => isRecord(value) && isNumber(val
 
 const isScore = (value: unknown): boolean => value === undefined || (isRecord(value) && isNumber(value["penalty"]) && isArrayOf(value["items"], isScoreItem));
 
+const AI_LEVELS: ReadonlySet<unknown> = new Set(["low", "medium", "high", null]);
+const NOT_SCORED: ReadonlySet<unknown> = new Set(["too-short", "no-baseline", null]);
+
+/** Absent in results written before the quick score existed. */
+const isAiScore = (value: unknown): boolean =>
+  value === undefined ||
+  (isRecord(value) &&
+    AI_LEVELS.has(value["level"]) &&
+    NOT_SCORED.has(value["notScored"]) &&
+    isNumber(value["signs"]) &&
+    isNumber(value["compared"]) &&
+    isArrayOf(value["shown"], isString));
+
 const isNotRun = (value: unknown): boolean => isRecord(value) && isString(value["rule"]) && isString(value["reason"]);
 
 const isRates = (value: unknown): boolean => isRecord(value) && Object.values(value).every(isNumber);
 
 /** The id, and the variant when the output had one. */
 const isLabel = (value: Record<string, unknown>): boolean => isString(value["id"]) && (value["variant"] === undefined || isString(value["variant"]));
+
+/** The parts a result carries only sometimes: contexts, a rubric's score, the quick score. Each is checked when present. */
+const hasOptionalParts = (value: Record<string, unknown>): boolean => isContexts(value["contexts"]) && isScore(value["score"]) && isAiScore(value["aiScore"]);
 
 /** A line `--out` writes, every field checked: a line that only looks like one would be compared as if it had been graded. */
 export const isGradeResult = (value: unknown): value is GradeResult =>
@@ -71,8 +87,7 @@ export const isGradeResult = (value: unknown): value is GradeResult =>
   isArrayOf(value["notRun"], isNotRun) &&
   isFacts(value["facts"]) &&
   isCitations(value["citations"]) &&
-  isContexts(value["contexts"]) &&
-  isScore(value["score"]) &&
+  hasOptionalParts(value) &&
   typeof value["pass"] === "boolean" &&
   isArrayOf(value["failedBecause"], isString) &&
   isStamp(value["stamp"]);

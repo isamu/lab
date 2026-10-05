@@ -140,6 +140,8 @@ rules.md   legal/statute · English   genre from --genre
   The text was not changed. Fixing it is the writer's job.
 
   {not-run}
+
+AI-likeness: not scored (too short: 66 words; scored from 200)
 ```
 
 ## What each finding means

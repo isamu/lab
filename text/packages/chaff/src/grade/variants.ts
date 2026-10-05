@@ -1,6 +1,7 @@
 import type { LengthUnit } from "../plugin.ts";
 import { rateRows, sameReading } from "./pairing.ts";
 import type { GradeResult } from "./result.ts";
+import type { AiLevelCounts } from "./ai-score.ts";
 import { summaryOf } from "./summary.ts";
 import { variantGroupsOf, type VariantGroups } from "./variants-input.ts";
 
@@ -21,6 +22,8 @@ export type VariantColumn = {
   readonly contexts?: { readonly checked: number; readonly unsupported: number } | undefined;
   /** Only with a `grade:` rubric. */
   readonly penalty?: number | undefined;
+  /** The outputs at each level of the AI-likeness quick score. Absent when no result carries one. */
+  readonly aiScore?: AiLevelCounts | undefined;
 };
 
 /** One rule's rate per 1,000 units in each variant, by variant label; 0 where the variant had no finding of it. */
@@ -66,6 +69,7 @@ const columnOf = (variant: string, results: readonly GradeResult[]): VariantColu
     citations: summary.citations,
     ...(summary.contexts === undefined ? {} : { contexts: { checked: summary.contexts.checked, unsupported: sum(summary.contexts.unsupported) } }),
     ...(summary.penalty === undefined ? {} : { penalty: summary.penalty }),
+    ...(summary.aiScore === undefined ? {} : { aiScore: summary.aiScore }),
   };
 };
 
