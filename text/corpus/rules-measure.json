@@ -7840,6 +7840,30 @@
         "falseAlarms": 0
       }
     },
+    "vague-deadline": {
+      "groups": {
+        "academic": {
+          "documents": 6,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 20,
+          "fired": 1
+        },
+        "legal": {
+          "documents": 35,
+          "fired": 14
+        },
+        "literature": {
+          "documents": 13,
+          "fired": 4
+        },
+        "speech": {
+          "documents": 7,
+          "fired": 0
+        }
+      }
+    },
     "vague-figure-reference": {
       "groups": {
         "academic": {

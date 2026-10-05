@@ -1,0 +1,12 @@
+# What a time limit stated as a number is written with. A sentence holding one has a deadline, and vague-deadline leaves it.
+id: concrete-deadline
+language: en
+entries:
+  - pattern: " days"
+  - pattern: " day "
+  - pattern: business day
+  - pattern: " hours"
+  - pattern: " weeks"
+  - pattern: " months"
+  - pattern: no later than
+  - pattern: by the end of

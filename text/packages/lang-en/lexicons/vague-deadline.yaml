@@ -1,0 +1,14 @@
+# Time limits that leave the deadline to the reader. An obligation written with one of these alone cannot be shown to be met or
+# missed (vague-deadline). "Immediately" means at once and leaves no period, so it is not here.
+id: vague-deadline
+language: en
+entries:
+  - pattern: promptly
+  - pattern: as soon as practicable
+  - pattern: as soon as reasonably practicable
+  - pattern: as soon as possible
+  - pattern: within a reasonable time
+  - pattern: within a reasonable period
+  - pattern: without undue delay
+  - pattern: in a timely manner
+  - pattern: forthwith
