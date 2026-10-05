@@ -5522,8 +5522,24 @@
     },
     "party-role-name": {
       "groups": {
+        "academic": {
+          "documents": 6,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 20,
+          "fired": 0
+        },
         "legal": {
-          "documents": 11,
+          "documents": 34,
+          "fired": 1
+        },
+        "literature": {
+          "documents": 13,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 7,
           "fired": 0
         }
       }
