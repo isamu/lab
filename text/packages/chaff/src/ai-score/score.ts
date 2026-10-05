@@ -113,3 +113,9 @@ export const aiScoreOf = (input: ScoreInput): AiScore => {
   const notScored = notScoredOf(input, compared);
   return { group: input.group, level: notScored === undefined ? levelOf(signs) : undefined, notScored, signs, compared, signals, structure: placements };
 };
+
+/** The signs that counted, for one line: rule ids, and structure measures as structure:<id>. */
+export const shownSignsOf = (score: AiScore): string[] => [
+  ...score.signals.filter((signal) => signal.unusual).map((signal) => signal.rule),
+  ...(score.structure ?? []).filter((place) => place.beyond && place.sameAs === undefined).map((place) => `structure:${place.feature.id}`),
+];

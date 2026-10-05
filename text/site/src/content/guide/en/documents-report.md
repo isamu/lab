@@ -140,6 +140,8 @@ enquiries.md   business/report · English   genre from --genre
   The text was not changed. Fixing it is the writer's job.
 
   {not-run}
+
+AI-likeness: not scored (too short: 153 words; scored from 200)
 ```
 
 There are three findings.
@@ -367,6 +369,8 @@ enquiries-fixed.md   business/report · English   genre from --genre
   The text was not changed. Fixing it is the writer's job.
 
   {not-run}
+
+AI-likeness: not scored (too short: 127 words; scored from 200)
 ```
 
 No findings.

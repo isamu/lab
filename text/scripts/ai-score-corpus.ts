@@ -13,7 +13,7 @@ import { profileFor } from "../packages/chaff/src/profile/for-file.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import { aiScoreOfDocument } from "../packages/chaff/src/ai-score/of-document.ts";
-import type { AiScore } from "../packages/chaff/src/ai-score/score.ts";
+import { shownSignsOf, type AiScore } from "../packages/chaff/src/ai-score/score.ts";
 import { docEntries, docPath, parsedAs } from "./corpus-docs.ts";
 import { corpusLanguages } from "./corpus-findings.ts";
 
@@ -87,11 +87,6 @@ const scoreOf = (input: Input): AiScore => {
 
 const outcomeOf = (score: AiScore): string => score.level ?? `not scored (${score.notScored?.reason ?? ""})`;
 
-const signsOf = (score: AiScore): string[] => [
-  ...score.signals.filter((signal) => signal.unusual).map((signal) => signal.rule),
-  ...(score.structure ?? []).filter((place) => place.beyond && place.sameAs === undefined).map((place) => `structure:${place.feature.id}`),
-];
-
 await ja.prepare?.({ pos: true });
 await en.prepare?.({ pos: true });
 const inputs = [...corpusInputs(process.argv.includes("--all")), ...pairedInputs(), ...sampleInputs()];
@@ -99,7 +94,7 @@ const scored = inputs.map((input) => ({ input, score: scoreOf(input) }));
 if (process.argv.includes("--verbose")) {
   scored.forEach(({ input, score }) =>
     console.log(
-      `${input.pile}  ${input.id}  ${input.genre}  ${outcomeOf(score)}  ${String(score.signs)}/${String(score.compared)}  ${signsOf(score).join(" ")}`,
+      `${input.pile}  ${input.id}  ${input.genre}  ${outcomeOf(score)}  ${String(score.signs)}/${String(score.compared)}  ${shownSignsOf(score).join(" ")}`,
     ),
   );
 }

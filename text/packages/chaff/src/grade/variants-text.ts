@@ -10,6 +10,9 @@ export type VariantText = {
   readonly citationsCell: (failed: number, checked: number) => string;
   readonly unsupportedFacts: string;
   readonly penalty: string;
+  /** The row of the AI-likeness quick score, and its cell: outputs at low / medium / high, then (not scored). */
+  readonly aiScore: string;
+  readonly aiScoreCell: (low: number, medium: number, high: number, notScored: number) => string;
   readonly ratesHeading: (unit: string) => string;
   readonly unit: Readonly<Record<"char" | "word", string>>;
   readonly disagreeHeading: (count: number) => string;
@@ -40,6 +43,8 @@ export const VARIANT_TEXT: Texts<VariantText> = {
     citationsCell: (failed, checked) => `${String(failed)}/${String(checked)}`,
     unsupportedFacts: "一節に無い事実",
     penalty: "減点の和",
+    aiScore: "AI らしさ 低/中/高",
+    aiScoreCell: (low, medium, high, notScored) => `${String(low)}/${String(medium)}/${String(high)}（${String(notScored)}）`,
     ratesHeading: (unit) => `ルールごとの率（1,000 ${unit}あたり）`,
     unit: { char: "字", word: "語" },
     disagreeHeading: (count) => `合否が分かれた出力 ${String(count)} 件`,
@@ -68,6 +73,8 @@ export const VARIANT_TEXT: Texts<VariantText> = {
     citationsCell: (failed, checked) => `${String(failed)}/${String(checked)}`,
     unsupportedFacts: "Unsupported facts",
     penalty: "Penalty points",
+    aiScore: "AI low/med/high",
+    aiScoreCell: (low, medium, high, notScored) => `${String(low)}/${String(medium)}/${String(high)} (${String(notScored)})`,
     ratesHeading: (unit) => `Rule rates (per 1,000 ${unit})`,
     unit: { char: "characters", word: "words" },
     disagreeHeading: (count) => `${String(count)} ${count === 1 ? "output" : "outputs"} where pass or fail differs`,

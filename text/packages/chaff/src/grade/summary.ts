@@ -2,6 +2,7 @@ import type { LengthUnit } from "../plugin.ts";
 import { compareText, sortedByKey, tally } from "./order.ts";
 import { rateOf } from "./rates.ts";
 import type { GradeFact, GradeResult, NotRunEntry, Stamp } from "./result.ts";
+import { aiLevelCountsOf, type AiLevelCounts } from "./ai-score.ts";
 
 // The summary of a run (spec §29.3), from the per-output results alone, so the same results always sum the same way.
 
@@ -23,6 +24,8 @@ export type GradeSummary = {
   readonly notRun: readonly (NotRunEntry & { readonly outputs: number })[];
   /** The penalty points of every output, added up. Only with a `grade:` rubric. */
   readonly penalty?: number | undefined;
+  /** How many outputs reached each level of the AI-likeness quick score. Absent when no result carries one. */
+  readonly aiScore?: AiLevelCounts | undefined;
   readonly stamp: Stamp | undefined;
 };
 
@@ -86,6 +89,11 @@ const contextsOf = (results: readonly GradeResult[]): Pick<GradeSummary, "contex
   };
 };
 
+const aiScoreOf = (results: readonly GradeResult[]): Pick<GradeSummary, "aiScore"> => {
+  const counts = aiLevelCountsOf(results.map((result) => result.aiScore));
+  return counts === undefined ? {} : { aiScore: counts };
+};
+
 export const summaryOf = (results: readonly GradeResult[]): GradeSummary => {
   const sizes = sizesOf(results);
   return {
@@ -107,6 +115,7 @@ export const summaryOf = (results: readonly GradeResult[]): GradeSummary => {
     ...contextsOf(results),
     notRun: notRunOf(results),
     ...penaltyOf(results),
+    ...aiScoreOf(results),
     stamp: results[0]?.stamp,
   };
 };

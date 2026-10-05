@@ -65,6 +65,7 @@ export const renderSummary = (path: string, summary: GradeSummary, text: GradeTe
     text.citations(summary.citations.checked, summary.citations.failed),
     ...contextsLine(summary, text),
     ...(summary.penalty === undefined ? [] : [text.penalty(summary.penalty)]),
+    ...(summary.aiScore === undefined ? [] : [text.aiScore(summary.aiScore.low, summary.aiScore.medium, summary.aiScore.high, summary.aiScore.notScored)]),
     ...block(text.notRunHeading(summary.notRun.length), table(summary.notRun.map((entry) => [entry.rule, text.inOutputs(entry.outputs), entry.reason]))),
     ...stampLines(summary, text),
   ].join("\n");

@@ -12,6 +12,8 @@ import type { Rubric } from "./rubric.ts";
 import { rubricVerdict } from "./rubric-verdict.ts";
 import type { GradeSettings } from "./stamp.ts";
 import { GRADE_TEXT } from "./text.ts";
+import { aiScoreOfDocument } from "../ai-score/of-document.ts";
+import { gradeAiScoreOf } from "./ai-score.ts";
 import { defaultVerdict, type Verdict } from "./verdict.ts";
 
 /** One run's settings, its `grade:` rubric when chaff.yaml has one, and its stamp, which every result carries. */
@@ -114,6 +116,7 @@ export const gradeItem = async (item: GradeItem, setup: GradeSetup): Promise<Gra
     citations: citationsOf(checked),
     ...(checked.contexts === undefined ? {} : { contexts: checked.contexts.contexts }),
     ...(score === undefined ? {} : { score }),
+    aiScore: gradeAiScoreOf(aiScoreOfDocument(checked.check.doc, checked.check.rules, checked.check.genre.genre)),
     pass: verdict.pass,
     failedBecause: verdict.failedBecause,
     stamp: setup.stamp,

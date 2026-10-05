@@ -41,6 +41,7 @@ import { settingWarnings } from "./config/warnings.ts";
 import { readConfigIn } from "./config/read.ts";
 import { settingSourcesOf } from "./config/option-problems.ts";
 import { renderSummary, type FileOutcome } from "./render/summary.ts";
+import { aiScoreLineOf } from "./ai-score/lint-line.ts";
 
 import type { Finding, Level, RuleDefinition } from "./plugin.ts";
 import { CLI_TEXT, type CliText, type GenreSource } from "./cli-text.ts";
@@ -110,7 +111,9 @@ const present = (check: SourceCheck, argv: readonly string[]): Inspected => {
   const result = { ...raw, findings: split.fresh };
   const { header, notes } = fileHeader(path, source, language, { genre, from, unread }, { shelved: split.shelved, hushed: applied.suppressed.length });
   const notRun = notRunAmong(applied.named, raw.skipped);
-  const text = argv.includes("--compact") ? renderCompact(header, result, rules, language) : renderFriendly(header, result, rules, language, notes);
+  const text = argv.includes("--compact")
+    ? renderCompact(header, result, rules, language)
+    : [renderFriendly(header, result, rules, language, notes), aiScoreLineOf(check)].join("\n");
   return {
     text,
     rules,
