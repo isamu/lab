@@ -1,0 +1,76 @@
+id: missing-final-period
+layer: L2
+status: stable
+how_to_find: missing-final-period
+requires: [pos]
+languages: [ja]
+severity: info
+
+name:
+  ja: 「。」で終わらない段落
+  en: A paragraph ending without 。
+
+why:
+  ja: ほかの段落が「。」で終わる文書で、一つの段落だけが「〜しました」のように句点無しで終わると、書きかけで止まったか、貼り合わせた所に見えます。どちらの書き方が正しいかは決めず、文書の中で少ないほうを指します。見出しのような短い行、「：」で次へ続く行、注の行、表のように空白で並べた行、名詞で終わる行（体言止めの項目）は、文ではないので数えません。
+  en: In a Japanese document whose paragraphs end with 。, one paragraph that stops without it (〜しました) reads as unfinished, or as pasted in from elsewhere. chaff does not pick a side; it points at the paragraphs that differ from most of the document. Short lines such as captions, lines leading into a list with ：, notes, lines laid out with runs of spaces, and lines ending in a noun (an item in noun style) are not sentences and are not counted.
+
+message:
+  ja: この段落は「。」で終わっていません（この文書の段落はふつう「。」で終わります。{of} 段落のうち {count} 段落）
+  en: "This paragraph ends without 。, where the document's paragraphs usually end with it ({count} of {of})"
+
+how_to_fix:
+  ja: 段落の終わりに「。」を付けてください。
+  en: Add 。 at the end of the paragraph.
+
+# 少ないほうが、数えた段落の何パーセントまでなら「混ざっている」と見るか。これを超えたら、文書が使い分けている。
+levels: { strict: 34, normal: 25, relaxed: 15 }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: Verse and dialogue end lines without 。 on purpose.
+  speech: A transcript breaks where the speaker stops, not where a written sentence would end.
+
+group: consistency
+summary:
+  ja: 「。」で終わる段落の多い文書で、「。」無しで終わった段落
+  en: A paragraph ending without 。 in a document whose other paragraphs end with it
+example:
+  ja:
+    before: |
+      申請は市役所の窓口で受け付けます。
+
+      受付の時間は平日の午前九時から午後五時までです。
+
+      提出した書類は二週間ほどで審査が終わります。
+
+      審査の結果は郵送でお知らせしました
+    after: |
+      申請は市役所の窓口で受け付けます。
+
+      受付の時間は平日の午前九時から午後五時までです。
+
+      提出した書類は二週間ほどで審査が終わります。
+
+      審査の結果は郵送でお知らせしました。
+
+not_flagged:
+  ja: 日本語の文書だけで動きます。十五字に満たない行、「：」で終わる行、※ や ＊ で始まる注の行、空白を二つ続けて並べた行、名詞や連用形で終わる行（受付時間の案内、可能性あり）は文として数えません。閉じ括弧で終わる行（〜をご覧ください）と、「？」「！」で終わる行も数えません。段落の多くが「。」で終わらない文書（スライド、一覧）は指しません。
+  en: Only in Japanese documents. Lines under fifteen characters, lines ending in ：, note lines starting with ※ or ＊, lines laid out with two spaces in a row, and lines ending in a noun or a continuative form are not counted as sentences, nor are lines ending in a closing bracket, ？ or ！. A document whose paragraphs mostly end without 。 (slides, lists) is not reported.
+level_meaning:
+  ja: 「。」の無い段落が {limit}% までなら指摘
+  en: reported while paragraphs without 。 are at most {limit}% of the counted paragraphs
+sources: [textlint-ja-presets]
+rewrite:
+  depth: light
+  ja:
+    direction: 指した段落の終わりに「。」を一つ付けます。文は変えません。
+    pairs:
+      - before: 審査の結果は郵送でお知らせしました
+        after: 審査の結果は郵送でお知らせしました。
+      - before: 詳しい手順は担当者から説明します
+        after: 詳しい手順は担当者から説明します。
+    keep:
+      - 段落の言葉と順
+    avoid:
+      - 文を書き換える
+      - 名詞で終わる項目にまで「。」を付ける

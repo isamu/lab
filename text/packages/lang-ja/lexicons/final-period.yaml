@@ -1,0 +1,29 @@
+# 段落の終わりの印。missing-final-period が読む。
+# group: end は句点。group: other-end は句点でなく文を閉じる印（？、！）で、その段落は数えない。group: note は注の行の頭の印で、注は「。」を付けずに書くことが多いので、その行は数えない。
+id: final-period
+language: ja
+entries:
+  - pattern: 。
+    group: end
+  - pattern: ．
+    group: end
+  - pattern: ！
+    group: other-end
+  - pattern: ？
+    group: other-end
+  - pattern: "!"
+    group: other-end
+  - pattern: "?"
+    group: other-end
+  - pattern: ※
+    group: note
+  - pattern: ＊
+    group: note
+  - pattern: "*"
+    group: note
+  - pattern: 注）
+    group: note
+  - pattern: 注：
+    group: note
+  - pattern: "注:"
+    group: note
