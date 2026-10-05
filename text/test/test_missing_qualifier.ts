@@ -43,11 +43,33 @@ describe("date-without-year: 年の無い日付", () => {
     assert.deepEqual(yearGaps(points, `${line}${" ".repeat(200)}`), []);
     const sameYear = "\n同年12月28日まで";
     const later = [at("2026-10-31", 0), at("2026-11-30", 0), at("12-28", sameYear.indexOf("12"))];
-    assert.equal(yearGaps(later, sameYear, ["同年"]).length, 0);
+    assert.equal(yearGaps(later, sameYear, [{ word: "同年" }]).length, 0);
     assert.equal(yearGaps(later, sameYear, []).length, 1);
     const eachYear = "\nその年の1月1日から12月31日まで";
     const span = [at("2026-10-31", 0), at("2026-11-30", 0), at("01-01", eachYear.indexOf("1月")), at("12-31", eachYear.indexOf("12月"))];
-    assert.equal(yearGaps(span, eachYear, ["その年"]).length, 0);
+    assert.equal(yearGaps(span, eachYear, [{ word: "その年" }]).length, 0);
+  });
+
+  it("年の変わり目をまたぐのは、すぐ前の日付が向こう側の月にあるときだけ", () => {
+    assert.deepEqual(kinds([at("2024-12-21"), at("10-01"), at("02-15")]), []);
+    assert.deepEqual(kinds([at("2024-12-21"), at("12-10"), at("02-15")]), ["02-15:boundary"]);
+    assert.deepEqual(kinds([at("2024-12-21"), at("10-01"), at("10-05"), at("02-15")]), []);
+    assert.deepEqual(kinds([at("01-15")]), []);
+  });
+
+  it("後ろに立つ年の語と、少し離れて前に立つ年の語も読む", () => {
+    const after = "\nby April 15 each year";
+    const dated = [at("2026-10-31", 0), at("2026-11-30", 0)];
+    const point = at("04-15", after.indexOf("April"));
+    const tail = { ...point, end: point.offset + "April 15".length };
+    assert.equal(yearGaps([...dated, tail], after, [{ word: "each year", position: "after" }]).length, 0);
+    assert.equal(yearGaps([...dated, tail], after, [{ word: "each year", position: "before" }]).length, 1);
+    const before = "\nannually, by October 30";
+    const late = at("10-30", before.indexOf("October"));
+    assert.equal(yearGaps([...dated, late], before, [{ word: "annually", position: "before" }]).length, 0);
+    assert.equal(yearGaps([...dated, late], before, [{ word: "annually" }]).length, 1);
+    const far = "\nannually, as the rules say, by October 30";
+    assert.equal(yearGaps([...dated, at("10-30", far.indexOf("October"))], far, [{ word: "annually", position: "before" }]).length, 1);
   });
 
   it("月だけ・年だけの日付は数えない", () => {
@@ -61,6 +83,23 @@ describe("date-without-year: 年の無い日付", () => {
     assert.deepEqual(namedRuleRun("date-without-year", boundary, ja).findings, [
       "「1月15日」には年がありません。年の変わり目をまたぐ日付が並んでいるので、どちらの年か決まりません",
     ]);
+  });
+
+  it("英語の文書でも言う", () => {
+    const source = "# Schedule\n\n- October 14, 2026: briefing\n- October 21, 2026: applications close\n- October 28: results sent\n";
+    assert.deepEqual(namedRuleRun("date-without-year", source, en).findings, ['"October 28" has no year (the document\'s other 2 dates do)']);
+    const boundary = "# Plan\n\nWe start on December 1, 2026.\n\nThe midpoint report is due December 10.\n\nWe finish on January 15.\n";
+    assert.deepEqual(namedRuleRun("date-without-year", boundary, en).findings, ['"January 15" has no year, and the dates around it cross the turn of a year']);
+  });
+
+  it("英語で、年を一度だけ書く書き方と、毎年の日付と、範囲の終わりの年は言わない", () => {
+    const style = "# Schedule\n\nThe course opens on October 14, 2026.\n\nThe second class is on October 21 and the third on October 28.\n";
+    assert.deepEqual(namedRuleRun("date-without-year", style, en).findings, []);
+    const yearly =
+      "# Reports\n\nThe 2025 report was filed on October 30, 2025, and the 2024 one on October 29, 2024.\n\nReports are due by October 30 each year.\n";
+    assert.deepEqual(namedRuleRun("date-without-year", yearly, en).findings, []);
+    const range = "# Dates\n\nOpened on May 1, 2026 and closed on May 9, 2026.\n\nThe fair runs June 5 – 7, 2026.\n";
+    assert.deepEqual(namedRuleRun("date-without-year", range, en).findings, []);
   });
 });
 

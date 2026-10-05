@@ -1,0 +1,52 @@
+# Words beside a date that give its year in words. date-without-year does not report a yearless date with one of these
+# next to it: "June 30 of that year" has a year, and "by April 15 each year" or "annually, by October 30" is every year's.
+# An entry stands after the date unless it says before; one before may end a few characters short of the date.
+id: year-reference
+language: en
+entries:
+  - pattern: of each year
+    position: after
+  - pattern: of every year
+    position: after
+  - pattern: each year
+    position: after
+  - pattern: every year
+    position: after
+  - pattern: annually
+    position: after
+  - pattern: of that year
+    position: after
+  - pattern: of the same year
+    position: after
+  - pattern: of the following year
+    position: after
+  - pattern: of the next year
+    position: after
+  - pattern: of the previous year
+    position: after
+  - pattern: of the preceding year
+    position: after
+  - pattern: of this year
+    position: after
+  - pattern: of next year
+    position: after
+  - pattern: of last year
+    position: after
+  - pattern: of the fiscal year
+    position: after
+  - pattern: annually
+    position: before
+  - pattern: each year
+    position: before
+  - pattern: every year
+    position: before
+  - pattern: that year
+    position: before
+  - pattern: the same year
+    position: before
+  - pattern: this year
+    position: before
+  - pattern: next year
+    position: before
+  - pattern: last year
+    position: before
