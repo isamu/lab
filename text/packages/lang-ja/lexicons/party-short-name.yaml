@@ -1,0 +1,12 @@
+# 契約が当事者に定める呼び名。この語を括弧に入れて定めた所（以下「甲」という）を、当事者の定義と読む（party-role-name）。
+id: party-short-name
+language: ja
+entries:
+  - pattern: 甲
+  - pattern: 乙
+  - pattern: 丙
+  - pattern: 丁
+  - pattern: 当社
+  - pattern: 弊社
+  - pattern: ユーザー
+  - pattern: 会員

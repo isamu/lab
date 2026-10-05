@@ -1,0 +1,7 @@
+# Short names a contract gives its parties. A definition of one of these in brackets ("we") is read as naming a party (party-role-name).
+id: party-short-name
+language: en
+entries:
+  - pattern: we
+  - pattern: us
+  - pattern: you

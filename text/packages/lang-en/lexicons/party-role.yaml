@@ -1,0 +1,23 @@
+# Role words for a party to a contract. In a document that gave its parties short names, party-role-name points at one of
+# these written instead, unless the document defines it. Words for people who are not parties (subcontractor) are left out.
+id: party-role
+language: en
+entries:
+  - pattern: Service Provider
+  - pattern: Provider
+  - pattern: Supplier
+  - pattern: Vendor
+  - pattern: Contractor
+  - pattern: Customer
+  - pattern: Client
+  - pattern: Company
+  - pattern: Licensor
+  - pattern: Licensee
+  - pattern: Discloser
+  - pattern: Recipient
+  - pattern: Disclosing Party
+  - pattern: Receiving Party
+  - pattern: Buyer
+  - pattern: Seller
+  - pattern: Purchaser
+  - pattern: Operator

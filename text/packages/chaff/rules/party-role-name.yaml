@@ -1,0 +1,94 @@
+id: party-role-name
+layer: L3
+status: stable
+how_to_find: party-role-name
+requires: [structure]
+severity: info
+
+name:
+  ja: 当事者を、定めた呼び名でなく立場の語で書いている
+  en: A party named by its role instead of the name the contract gave it
+
+why:
+  ja: 「株式会社しおさい技研（以下「乙」という。）」と定めた契約で、途中から「受託者」と書くと、読み手は受託者が乙のことか、別の誰か（再委託先など）なのかを確かめることになります。ひな形の条項を貼り合わせたときに、元の契約の呼び方が残ると起きます。文の途中で括弧に入れて当事者の呼び名を定めた文書で、その後ろに書いた立場の語（委託者・受託者・開示者・受領者・売主・買主・運営者、the Vendor、the Recipient など）を指します。語は言語ごとの語彙表にあります。
+  en: Once a contract says "Harbour Works Ltd (the "Supplier")", writing "the Vendor" later makes the reader check whether the Supplier is meant or someone else, such as a subcontractor. It happens when clauses from another template are pasted in with that template's names. In a document that gives its parties short names in brackets, chaff points at each later role word (the Vendor, the Recipient, the Company, 受託者, 売主) that the document did not define. The words are in each language's word list.
+
+message:
+  ja: 「{role}」は、この契約が当事者に定めた呼び名（{names}）ではありません
+  en: '"{role}" is not a name this contract gave a party ({names})'
+
+how_to_fix:
+  ja: 定めた呼び名（甲・乙など）に書き換えてください。当事者でない人を指すなら、その人を定義してから使います。
+  en: Use the name the contract gave the party. If someone else is meant, define them first.
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [legal, docs, academic, literature, speech]
+off_for:
+  docs: "Defined terms and short names are a contract's apparatus: the legal genres check them."
+  academic: "Defined terms and short names are a contract's apparatus: the legal genres check them."
+  literature: "Defined terms and short names are a contract's apparatus: the legal genres check them."
+  speech: "Defined terms and short names are a contract's apparatus: the legal genres check them."
+  legal/statute: "A statute names people by their role (委託者, the employer) on purpose: it defines no parties."
+
+group: consistency
+summary:
+  ja: 当事者を「甲」「乙」と定めたあとで、「委託者」「受託者」のような立場の語で書いている所
+  en: A party given a short name ("the Supplier") and later called by a role word (the Vendor)
+example:
+  ja:
+    config: { genre: legal/contract }
+    before: |
+      # 業務委託契約書
+
+      株式会社みなと製作所（以下「甲」という。）と北浜商事株式会社（以下「乙」という。）は、次のとおり契約を結ぶ。
+
+      第1条　受託者は、甲の会議室の予約を代わりに行う。
+    after: |
+      # 業務委託契約書
+
+      株式会社みなと製作所（以下「甲」という。）と北浜商事株式会社（以下「乙」という。）は、次のとおり契約を結ぶ。
+
+      第1条　乙は、甲の会議室の予約を代わりに行う。
+  en:
+    config: { genre: legal/contract }
+    before: |
+      # Services Agreement
+
+      This agreement is between Harbour Works Ltd (the "Supplier") and North Trading Inc (the "Customer").
+
+      1. The Customer pays the Vendor within thirty days of each invoice.
+    after: |
+      # Services Agreement
+
+      This agreement is between Harbour Works Ltd (the "Supplier") and North Trading Inc (the "Customer").
+
+      1. The Customer pays the Supplier within thirty days of each invoice.
+
+not_flagged:
+  ja: 当事者の呼び名を定める前（「売主 有限会社たちばな木工（以下「甲」という。）」の売主）、定めた語そのもの（「開示者」と定義した文書の開示者）、定義した語の一部、長い語の一部（再委託先、委託者側）は見ません。当事者の定義は、呼び名が甲・乙・当社のような語か立場の語であるもの、または括弧のすぐ前に会社の形（株式会社、Ltd）があるものだけを読みます。法務のジャンルで見ます。法令・規程は当事者を定めず、立場の語で人を呼ぶので見ません。
+  en: 'Uses before the parties are named, a role word the document defines itself ("Recipient" means), a role word inside a defined term (Receiving Party) or a longer word, and a lower-case role word (the vendor, an ordinary noun) are not reported. A party is read from a short name in brackets that is a party word (we) or a role word itself, or that follows a company name (Ltd, Inc.). The legal genres run this rule, except statutes, which name people by their role and define no parties.'
+rewrite:
+  depth: light
+  ja:
+    direction: 立場の語を、定めた呼び名に置き換えてください。どちらの当事者か分からなければ、書き手に確かめます。当事者でない人を指しているなら、その人を定義します。
+    pairs:
+      - before: 受託者は、甲の会議室の予約を代わりに行う。
+        after: 乙は、甲の会議室の予約を代わりに行う。
+      - before: 委託者は、毎月末日までに委託料を支払う。
+        after: 甲は、毎月末日までに委託料を支払う。
+    keep:
+      - 条の番号と中身
+    avoid:
+      - 甲と乙を取り違える
+  en:
+    direction: Replace the role word with the name the contract gave the party. If it is not clear which party is meant, ask the writer. If someone else is meant, define them.
+    pairs:
+      - before: The Customer pays the Vendor within thirty days.
+        after: The Customer pays the Supplier within thirty days.
+      - before: The Recipient shall return all documents on request.
+        after: The Customer shall return all documents on request.
+    keep:
+      - the clause numbers and their content
+    avoid:
+      - swapping the parties

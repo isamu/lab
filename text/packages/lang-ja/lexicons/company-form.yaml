@@ -1,0 +1,17 @@
+# 会社や法人の名前に付く形。括弧で呼び名を定めたすぐ前にあれば、その呼び名は当事者のもの（party-role-name）。
+id: company-form
+language: ja
+entries:
+  - pattern: 株式会社
+  - pattern: 有限会社
+  - pattern: 合同会社
+  - pattern: 合資会社
+  - pattern: 合名会社
+  - pattern: 一般社団法人
+  - pattern: 一般財団法人
+  - pattern: 公益社団法人
+  - pattern: 公益財団法人
+  - pattern: 特定非営利活動法人
+  - pattern: 学校法人
+  - pattern: 医療法人
+  - pattern: 社会福祉法人
