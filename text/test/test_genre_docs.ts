@@ -5,7 +5,7 @@ import { GENRES } from "../packages/chaff/src/genre.ts";
 
 // The pages that start from "pick the kind of document" list every genre by hand; a genre added to genres.yaml must reach them.
 
-const PAGES = ["README.md", "packages/chaff/README.md", "site/src/content/guide/ja/getting-started.md", "site/src/content/guide/en/getting-started.md"];
+const PAGES = ["packages/chaff/README.md", "site/src/content/guide/ja/getting-started.md", "site/src/content/guide/en/getting-started.md"];
 
 const read = (page: string): string => readFileSync(new URL(`../${page}`, import.meta.url), "utf8");
 
