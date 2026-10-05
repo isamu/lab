@@ -4,7 +4,7 @@ status: stable
 how_to_find: phrase-match
 word_list: weasel-word
 requires: [pos]
-languages: [en]
+languages: [ja, en]
 severity: info
 
 name:
@@ -12,8 +12,8 @@ name:
   en: Weasel words
 
 why:
-  ja: 英語の「many experts say」「it is widely believed」「studies show」は、主張を名前の無い大勢や、どれとも言わない研究に預けます。読み手は誰がそう言ったのかを確かめられず、書き手は主張に責任を持たずに済みます。言い回しは言語ごとの語彙表にあります。
-  en: '"Many experts say", "it is widely believed" and "studies show" lend a claim to an unnamed crowd or to research no one names. The reader cannot check who said it, and the writer need not stand behind it. The phrases are listed in the lexicon.'
+  ja: 「〜と言われています」「多くの専門家が」「ある研究によると」（英語の many experts say, studies show）は、主張を名前の無い大勢や、どれとも言わない研究に預けます。読み手は誰がそう言ったのかを確かめられず、書き手は主張に責任を持たずに済みます。言い回しは言語ごとの語彙表にあります。
+  en: '"Many experts say", "it is widely believed" and "studies show" (と言われています, ある研究によると) lend a claim to an unnamed crowd or to research no one names. The reader cannot check who said it, and the writer need not stand behind it. The phrases are listed in the lexicon.'
 
 message:
   ja: 「{matched}」は、誰が言ったのかを言っていません
@@ -33,9 +33,14 @@ off_for:
 
 group: wording
 summary:
-  ja: 英語で、「many experts say」「studies show」のように、主張を名前の無い誰かに預ける言い回し
-  en: Phrases such as "many experts say" and "studies show" that credit a claim to no one in particular
+  ja: 「〜と言われています」「ある研究によると」（many experts say, studies show）のように、主張を名前の無い誰かに預ける言い回し
+  en: Phrases such as "many experts say" and "studies show" (と言われています, ある研究によると) that credit a claim to no one in particular
 example:
+  ja:
+    before: |
+      在宅勤務は生産性を上げると言われています。
+    after: |
+      2023年のスタンフォード大学の調査（1,600人）では、在宅勤務で生産性が4%上がりました。
   en:
     before: |
       Many experts say remote work raises output.
@@ -43,13 +48,26 @@ example:
       A 2023 Stanford study of 1,600 staff found remote work raised output by 4%.
 
 not_flagged:
-  ja: 一覧にある言い回しだけを見ます。英語の文書だけで動きます。すぐ後ろに出典が書いてあっても指摘します（文の中で研究の名前を言えるため）。
-  en: Only the phrases on chaff's list are checked, and only in English documents. A citation right after the phrase does not silence it, since the sentence can name the study itself.
+  ja: 一覧にある言い回しだけを見ます。すぐ後ろに出典が書いてあっても指摘します（文の中で研究の名前を言えるため）。日本語では、前に出典が来やすい「研究によると」「専門家によると」は「ある」「最近の」「多くの」が付いた形だけを、「と言われる」は「と言われている」だけを見ます（「よく言われる話」のように言い回しを話題にするものは見ません）。「一般的に」だけでは指しません。
+  en: Only the phrases on chaff's list are checked. A citation right after the phrase does not silence it, since the sentence can name the study itself. In Japanese, 研究によると and 専門家によると, which often follow their source, are checked only as ある・最近の・多くの forms, と言われる only as と言われている (not よく言われる, which mostly talks about the saying itself), and 一般的に alone is not checked.
 level_meaning:
   ja: 当てはまる言い回しが {limit} 箇所あれば指摘
   en: reported once there are {limit}
 rewrite:
   depth: light
+  ja:
+    direction: 名前の無い大勢（多くの専門家、ある研究）を、本文や出典が名指す人や研究に置き換えてください。名指していなければ作らずに書き手に聞くか、書き手自身の主張として書きます。
+    pairs:
+      - before: ある研究によると、短い会議は時間を節約します［3］。
+        after: 山田（2021）は、15分の会議で各チームの時間が週2時間減ったと報告しています［3］。
+      - before: 旧APIのほうが遅いと言われています。
+        after: 5月の負荷試験では、旧APIのほうが30%遅い結果でした。
+    keep:
+      - 出典の番号やリンク
+      - 主張そのもの
+    avoid:
+      - 本文に無い研究や名前を作る
+      - 別の名前の無い大勢（一部の研究者）に替えるだけ
   en:
     direction: Replace the unnamed crowd ("many experts", "studies") with the person or study the text or its sources name. If they name none, do not invent one; ask the writer, or state the claim as the writer's own.
     pairs:

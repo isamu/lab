@@ -17,6 +17,7 @@ const english = (id: string, rule: string, added: string): Mutation => ({ id, ru
 export const MUTATIONS: readonly Mutation[] = [
   english("wordy-in-order-to", "wordy-phrase", "In order to save time, we met online. Due to the fact that the room was booked, we stayed home."),
   english("weasel-experts", "weasel-word", "Many experts say this approach works."),
+  { id: "weasel-iwareteiru", rule: "weasel-word", languages: ["ja"], plant: appendTo("ja", "この方式は効果が高いと言われています。") },
   english("homophone-its-own", "homophone-slip", "Each team keeps it's own notes."),
   english("so-opener", "sentence-initial-so", "So, the plan stays as it is."),
   { id: "nado-doubled", rule: "doubled-nado", languages: ["ja"], plant: appendTo("ja", "詳細は資料等などを参照してください。") },
