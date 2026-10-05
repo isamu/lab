@@ -11,6 +11,7 @@ import { allFindings } from "./corpus-findings.ts";
 import { docEntries, docPath, parsedAs } from "./corpus-docs.ts";
 import { firedOn, formatRows, PILES, ruleRows, type BenchRun, type Pile } from "./ai-bench-score.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
+import { aiShapeRuleIds } from "../packages/chaff/src/ai-score/signals.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PAIRED = join(ROOT, "test", "fixtures", "ai-samples", "paired");
@@ -43,15 +44,7 @@ const corpusInputs = (language: string): Input[] =>
     .map((entry) => ({ pile: "corpus" as const, id: entry.id, file: docPath(CORPUS, entry), readAs: parsedAs(entry), genre: entry.genre }))
     .filter((input) => existsSync(input.file));
 
-/** Shapes of generated text whose rules sit in another group of the reference (a markup density, a template blank). */
-const ALSO_AI_SHAPES: readonly string[] = ["bold-density", "chat-citation-residue", "emoji-density", "unfilled-placeholder"];
-
-/** The rules of group ai-tells, the signals ai-generated-composite reads, and ALSO_AI_SHAPES, in rule-file order. */
-const aiShapeRules = (language: string): string[] => {
-  const rules = loadRules(language);
-  const read = new Set([...ALSO_AI_SHAPES, ...rules.flatMap((rule) => (rule.id === "ai-generated-composite" ? rule.from : []))]);
-  return rules.filter((rule) => rule.guide?.group === "ai-tells" || read.has(rule.id)).map((rule) => rule.id);
-};
+const aiShapeRules = (language: string): string[] => aiShapeRuleIds(loadRules(language));
 
 const runOf = async (input: Input, language: string, rules: readonly string[]): Promise<BenchRun> => {
   const findings = await allFindings(input.readAs, readFileSync(input.file, "utf8"), language, input.genre);
