@@ -3,3 +3,5 @@ node_modules/
 .astro/
 # yarn examples: what chaff prints on each rule's example and on the guide's screens, made before every build.
 src/generated/
+# yarn examples: chaff's rules, lexicons and kuromoji's dictionary for the playground (scripts/browser-files.ts).
+public/playground/

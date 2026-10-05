@@ -1,0 +1,244 @@
+---
+import Base from "../../../layouts/Base.astro";
+import { LANGS, isLang, t } from "../../../lib/i18n";
+import { genreGroups } from "../../../lib/genres";
+import { PLAYGROUND_SAMPLES } from "../../../lib/playgroundSamples";
+
+export const getStaticPaths = () => LANGS.map((lang) => ({ params: { lang } }));
+
+const { lang } = Astro.params;
+if (!isLang(lang)) throw new Error(`unknown language ${String(lang)}`);
+// What the script writes on the page, in the page's language.
+const words = {
+  checking: t(lang, "playgroundChecking"),
+  findings: t(lang, "playgroundFindings"),
+  noFindings: t(lang, "playgroundNoFindings"),
+  notRun: t(lang, "playgroundNotRun"),
+  line: t(lang, "playgroundLine"),
+  error: t(lang, "playgroundError"),
+  why: t(lang, "why"),
+  howToFix: t(lang, "howToFix"),
+};
+const samples = PLAYGROUND_SAMPLES[lang];
+const first = samples[0];
+const field = "mt-1 w-full rounded border border-zinc-300 bg-white p-2 dark:border-zinc-700 dark:bg-zinc-900";
+---
+
+<Base lang={lang} title={t(lang, "playground")} path="playground" description={t(lang, "playgroundIntro")}>
+  <h1 class="text-3xl font-bold">{t(lang, "playground")}</h1>
+  <p class="mt-2 leading-relaxed">{t(lang, "playgroundIntro")}</p>
+  <p class="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{t(lang, "playgroundLoads")}</p>
+
+  <form id="playground" class="mt-6" data-words={JSON.stringify(words)} data-samples={JSON.stringify(samples)}>
+    <fieldset class="m-0 min-w-0 border-0 p-0">
+      <label class="block text-sm">
+        {t(lang, "playgroundSample")}
+        <select name="sample" class={field}>
+          {samples.map((sample) => (
+            <option value={sample.id}>{sample.name}</option>
+          ))}
+        </select>
+      </label>
+      <label for="playground-text" class="mt-3 block font-semibold">
+        {t(lang, "playgroundText")}
+      </label>
+      <textarea
+        id="playground-text"
+        name="text"
+        rows="12"
+        class={`${field} font-mono text-sm leading-relaxed`}
+      >{first?.text ?? ""}</textarea>
+      <div class="mt-3 flex flex-wrap items-end gap-4">
+        <label class="block text-sm">
+          {t(lang, "playgroundLanguage")}
+          <select name="language" class={field}>
+            <option value="">{t(lang, "playgroundAuto")}</option>
+            <option value="ja">{t(lang, "langJa")}</option>
+            <option value="en">{t(lang, "langEn")}</option>
+          </select>
+        </label>
+        <label class="block text-sm">
+          {t(lang, "playgroundGenre")}
+          <select name="genre" class={field}>
+            <option value="">{t(lang, "playgroundGenreDefault")}</option>
+            {genreGroups.map((group) => (
+              <optgroup label={group.name[lang]}>
+                {group.genres.map((genre) => (
+                  <option value={genre.id} selected={genre.id === first?.genre}>{`${genre.name[lang]} (${genre.id})`}</option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+        </label>
+        <button
+          type="submit"
+          class="rounded bg-zinc-900 px-4 py-2 text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+        >
+          {t(lang, "playgroundCheck")}
+        </button>
+      </div>
+    </fieldset>
+  </form>
+
+  <section id="playground-score" class="mt-8 rounded border border-zinc-200 p-3 dark:border-zinc-800" hidden>
+    <p class="font-semibold"></p>
+    <p class="mt-1 text-sm"></p>
+    <p class="mt-1 text-sm text-zinc-600 dark:text-zinc-400"></p>
+  </section>
+
+  <section class="mt-8" aria-labelledby="playground-status">
+    <p id="playground-status" role="status" aria-live="polite" class="font-semibold"></p>
+    <ol id="playground-findings" class="mt-4 space-y-6"></ol>
+    <details id="playground-not-run" class="mt-6 text-sm" hidden>
+      <summary class="cursor-pointer text-zinc-600 dark:text-zinc-400"></summary>
+      <ul class="mt-2 space-y-1"></ul>
+    </details>
+  </section>
+  <p class="mt-10 font-mono text-sm text-zinc-600 dark:text-zinc-400">{t(lang, "playgroundCli")}</p>
+</Base>
+
+<script>
+  import { checkText, findingsByLine, type LineFindings } from "../../../lib/playground";
+  import type { BrowserCheck, BrowserFinding } from "../../../../../packages/chaff/src/browser.ts";
+
+  type Words = Readonly<Record<"checking" | "findings" | "noFindings" | "notRun" | "line" | "error" | "why" | "howToFix", string>>;
+
+  const SEVERITY: Readonly<Record<string, string>> = {
+    error: "border-red-400 text-red-700 dark:border-red-600 dark:text-red-400",
+    warning: "border-amber-400 text-amber-700 dark:border-amber-600 dark:text-amber-400",
+    info: "border-zinc-300 text-zinc-600 dark:border-zinc-700 dark:text-zinc-400",
+  };
+
+  const isWords = (value: unknown): value is Words =>
+    typeof value === "object" && value !== null && Object.values(value).every((entry) => typeof entry === "string");
+
+  const element = (tag: string, className: string, text?: string): HTMLElement => {
+    const made = document.createElement(tag);
+    made.className = className;
+    if (text !== undefined) made.textContent = text;
+    return made;
+  };
+
+  const filled = (template: string, values: Readonly<Record<string, string | number>>): string =>
+    template.replace(/\{(\w+)\}/gu, (whole, key: string) => (key in values ? String(values[key]) : whole));
+
+  const findingItem = (finding: BrowserFinding, words: Words): HTMLElement => {
+    const item = element("li", "border-l-2 border-zinc-200 pl-3 dark:border-zinc-800");
+    const head = element("p", "flex flex-wrap items-baseline gap-2");
+    head.append(
+      element("span", `rounded border px-1.5 py-0.5 font-mono text-xs ${SEVERITY[finding.level] ?? ""}`, finding.level),
+      element("span", "font-semibold", finding.name),
+      element("span", "font-mono text-xs text-zinc-500", `${String(finding.line)}:${String(finding.column)} ${finding.rule}`),
+    );
+    item.append(head, element("p", "mt-1", finding.message));
+    if (finding.why !== "") item.append(element("p", "mt-1 text-sm text-zinc-600 dark:text-zinc-400", `${words.why}: ${finding.why}`));
+    if (finding.howToFix !== "") item.append(element("p", "mt-1 text-sm", `→ ${finding.howToFix}`));
+    return item;
+  };
+
+  const lineItem = (entry: LineFindings, words: Words): HTMLElement => {
+    const item = element("li", "");
+    const quote = element("blockquote", "rounded bg-zinc-100 p-2 font-mono text-sm whitespace-pre-wrap dark:bg-zinc-900");
+    quote.append(element("span", "mr-2 text-zinc-500", filled(words.line, { n: entry.line })), entry.text);
+    const list = element("ul", "mt-2 space-y-3");
+    list.append(...entry.findings.map((finding) => findingItem(finding, words)));
+    item.append(quote, list);
+    return item;
+  };
+
+  const showNotRun = (details: HTMLElement, result: BrowserCheck, words: Words): void => {
+    const summary = details.querySelector("summary");
+    const list = details.querySelector("ul");
+    if (summary === null || list === null) return;
+    summary.textContent = filled(words.notRun, { n: result.notRun.length });
+    list.replaceChildren(...result.notRun.map((entry) => element("li", "", `${entry.rule}: ${entry.reason}`)));
+    details.hidden = result.notRun.length === 0;
+  };
+
+  type Sample = { readonly id: string; readonly genre: string; readonly text: string };
+
+  const isSamples = (value: unknown): value is readonly Sample[] =>
+    Array.isArray(value) &&
+    value.every((entry: unknown) => typeof entry === "object" && entry !== null && "id" in entry && "genre" in entry && "text" in entry);
+
+  /** Picking a sample puts its text in the text area and sets its genre; the visitor can change either. */
+  const followSamples = (form: HTMLFormElement): void => {
+    const samples: unknown = JSON.parse(form.dataset["samples"] ?? "[]");
+    const picker = form.querySelector<HTMLSelectElement>("select[name=sample]");
+    const text = form.querySelector<HTMLTextAreaElement>("textarea[name=text]");
+    const genre = form.querySelector<HTMLSelectElement>("select[name=genre]");
+    if (!isSamples(samples) || picker === null || text === null || genre === null) return;
+    picker.addEventListener("change", () => {
+      const sample = samples.find((entry) => entry.id === picker.value);
+      if (sample === undefined) return;
+      text.value = sample.text;
+      genre.value = sample.genre;
+    });
+  };
+
+  const form = document.querySelector<HTMLFormElement>("#playground");
+  const status = document.querySelector<HTMLElement>("#playground-status");
+  const findings = document.querySelector<HTMLElement>("#playground-findings");
+  const notRun = document.querySelector<HTMLElement>("#playground-not-run");
+  const words: unknown = JSON.parse(form?.dataset["words"] ?? "null");
+
+  /** The AI-likeness line as the lint report words it: the level or why it was not scored, the signs, and that it is no verdict. */
+  const showScore = (section: HTMLElement, result: BrowserCheck): void => {
+    const [headline, signs, disclaimer] = section.querySelectorAll("p");
+    if (headline === undefined || signs === undefined || disclaimer === undefined) return;
+    headline.textContent = result.aiScore.headline;
+    signs.textContent = result.aiScore.signsLine ?? "";
+    signs.hidden = result.aiScore.signsLine === undefined;
+    disclaimer.textContent = result.aiScore.disclaimer;
+    section.hidden = false;
+  };
+
+  const show = (
+    text: string,
+    result: BrowserCheck,
+    words: Words,
+    shown: { status: HTMLElement; findings: HTMLElement; notRun: HTMLElement },
+  ): void => {
+    shown.status.textContent = result.findings.length === 0 ? words.noFindings : filled(words.findings, { n: result.findings.length });
+    shown.findings.replaceChildren(...findingsByLine(text, result.findings).map((entry) => lineItem(entry, words)));
+    showNotRun(shown.notRun, result, words);
+    const score = document.querySelector<HTMLElement>("#playground-score");
+    if (score !== null) showScore(score, result);
+  };
+
+  const clearResult = (shown: { findings: HTMLElement; notRun: HTMLElement }): void => {
+    shown.findings.replaceChildren();
+    shown.notRun.hidden = true;
+    const score = document.querySelector<HTMLElement>("#playground-score");
+    if (score !== null) score.hidden = true;
+  };
+
+  const run = async (
+    form: HTMLFormElement,
+    words: Words,
+    shown: { status: HTMLElement; findings: HTMLElement; notRun: HTMLElement },
+  ): Promise<void> => {
+    const data = new FormData(form);
+    const text = String(data.get("text") ?? "");
+    // The form stays as it was checked until the result is shown, and the last result goes, so no result stands beside another text.
+    const controls = form.querySelector("fieldset");
+    if (controls !== null) controls.disabled = true;
+    clearResult(shown);
+    shown.status.textContent = words.checking;
+    try {
+      show(text, await checkText(text, String(data.get("language") ?? ""), String(data.get("genre") ?? "")), words, shown);
+    } catch (error) {
+      shown.status.textContent = filled(words.error, { message: error instanceof Error ? error.message : String(error) });
+    } finally {
+      if (controls !== null) controls.disabled = false;
+    }
+  };
+
+  if (form !== null) followSamples(form);
+  if (form !== null && status !== null && findings !== null && notRun !== null && isWords(words)) {
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      void run(form, words, { status, findings, notRun });
+    });
+  }
+</script>

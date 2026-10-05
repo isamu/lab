@@ -14,6 +14,7 @@ on:
       - "text/scripts/rule-examples.ts"
       - "text/scripts/guide-screens.ts"
       - "text/scripts/guide-screens-parse.ts"
+      - "text/scripts/browser-files.ts"
       - "text/yarn.lock"
       - ".github/workflows/chaff-site-deploy.yml"
   workflow_dispatch:

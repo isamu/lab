@@ -44,7 +44,7 @@ const DOCUMENTS: readonly Document[] = [...benchSamples("ja"), ...benchSamples("
 /** grade's own checks besides the rules: a browser check has none of them to report. */
 const GRADE_ONLY = new Set(["compare", "cite", "contexts"]);
 
-type Comparable = { readonly language: string; readonly genre: string; readonly findings: unknown; readonly notRun: unknown };
+type Comparable = { readonly language: string; readonly genre: string; readonly findings: unknown; readonly notRun: unknown; readonly aiScore: unknown };
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 
@@ -59,6 +59,7 @@ const fromGrade = (line: string): [string, Comparable] => {
       genre: String(result["genre"]),
       findings: result["findings"],
       notRun: notRun.filter((entry) => !(isRecord(entry) && GRADE_ONLY.has(String(entry["rule"])))),
+      aiScore: result["aiScore"],
     },
   ];
 };
@@ -129,6 +130,13 @@ describe("chaffjs/browser finds what the command line finds", () => {
         genre: result.genre,
         findings: result.findings.map(({ rule, level, line, column, message }) => ({ rule, level, line, column, message })),
         notRun: result.notRun,
+        aiScore: {
+          level: result.aiScore.level,
+          notScored: result.aiScore.notScored,
+          signs: result.aiScore.signs,
+          compared: result.aiScore.compared,
+          shown: result.aiScore.shown,
+        },
       });
     }
   });
@@ -181,7 +189,7 @@ describe("chaffjs/browser finds what the command line finds", () => {
     );
   });
 
-  it("gives every document the same language, genre, findings and rules not run as chaff grade", () => {
+  it("gives every document the same language, genre, findings, rules not run and AI-likeness score as chaff grade", () => {
     const cli = gradedByCli();
     assert.equal(cli.size, DOCUMENTS.length);
     DOCUMENTS.forEach((doc) => assert.deepEqual(checkedInBrowser.get(doc.id), cli.get(doc.id), doc.id));

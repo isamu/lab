@@ -1,6 +1,11 @@
+import { aiScoreOfDocument } from "../ai-score/of-document.ts";
+import { aiScoreHeadline } from "../ai-score/render.ts";
+import { HIGH_SIGNS, MEDIUM_SIGNS } from "../ai-score/score.ts";
+import { scoreViewOf } from "../ai-score/view.ts";
 import { checkSource, type SourceCheck } from "../check-source.ts";
 import { configOf, CONFIG_FILE, EMPTY, type Config } from "../config/load.ts";
 import { withStyle } from "../config/style.ts";
+import { gradeAiScoreOf, type GradeAiScore } from "../grade/ai-score.ts";
 import { findingOf } from "../grade/finding.ts";
 import type { GradeFinding, NotRunEntry } from "../grade/result.ts";
 import type { Finding } from "../plugin.ts";
@@ -33,10 +38,22 @@ export type BrowserFinding = GradeFinding & {
   readonly quote: string;
 };
 
+/**
+ * The AI-likeness quick score as chaff grade gives it, with the lint report's words in the document's language: the
+ * level or why it was not scored, the signs, and the note that it is not a verdict on who wrote the text.
+ */
+export type BrowserAiScore = GradeAiScore & {
+  readonly headline: string;
+  /** The signs and the thresholds, when the text was scored. */
+  readonly signsLine: string | undefined;
+  readonly disclaimer: string;
+};
+
 export type BrowserCheck = {
   readonly language: string;
   readonly genre: string;
   readonly findings: readonly BrowserFinding[];
+  readonly aiScore: BrowserAiScore;
   /** Each rule that did not run, and why: so no finding is never read as "checked and fine". */
   readonly notRun: readonly NotRunEntry[];
 };
@@ -65,6 +82,17 @@ const browserFindingOf = (finding: Finding, check: SourceCheck): BrowserFinding 
   return { ...findingOf(finding, check), name: fill(rule?.name), why: fill(rule?.why), howToFix: fill(rule?.how_to_fix), quote: finding.quote };
 };
 
+const aiScoreFor = (check: SourceCheck): BrowserAiScore => {
+  const score = aiScoreOfDocument(check.doc, check.rules, check.genre.genre);
+  const view = scoreViewOf(check.language, check.doc.lengthUnit, score.group, check.rules);
+  return {
+    ...gradeAiScoreOf(score),
+    headline: aiScoreHeadline(score, view),
+    signsLine: score.level === undefined ? undefined : view.text.signs(score.signs, score.compared, MEDIUM_SIGNS, HIGH_SIGNS),
+    disclaimer: view.text.disclaimer,
+  };
+};
+
 export const checkText = async (text: string, options: BrowserCheckOptions): Promise<BrowserCheck> => {
   const choice = { language: options.language, genre: options.genre, experimental: options.experimental ?? false };
   const check = await checkSource(options.path ?? DEFAULT_PATH, text, configFrom(options.config), choice);
@@ -72,6 +100,7 @@ export const checkText = async (text: string, options: BrowserCheckOptions): Pro
     language: check.language,
     genre: check.genre.genre,
     findings: check.applied.kept.map((finding) => browserFindingOf(finding, check)),
+    aiScore: aiScoreFor(check),
     notRun: [...check.raw.skipped.map((skipped) => ({ rule: skipped.rule, reason: skipped.why })), ...unappliedSettings(options.config, check.language)],
   };
 };
