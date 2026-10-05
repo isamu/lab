@@ -5520,6 +5520,14 @@
         }
       }
     },
+    "party-role-name": {
+      "groups": {
+        "legal": {
+          "documents": 11,
+          "fired": 0
+        }
+      }
+    },
     "percent-sum-mismatch": {
       "groups": {
         "academic": {

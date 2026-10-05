@@ -1,0 +1,15 @@
+# Forms that end a company name. Right before a short name in brackets, they show the short name is a party's (party-role-name).
+id: company-form
+language: en
+entries:
+  - pattern: Ltd
+  - pattern: Limited
+  - pattern: Inc
+  - pattern: Incorporated
+  - pattern: LLC
+  - pattern: LLP
+  - pattern: Corporation
+  - pattern: Corp
+  - pattern: plc
+  - pattern: PLC
+  - pattern: GmbH

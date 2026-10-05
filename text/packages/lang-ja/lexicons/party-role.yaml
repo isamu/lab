@@ -1,0 +1,26 @@
+# 契約の当事者を立場で呼ぶ語。当事者に呼び名（甲・乙）を定めた文書で、定めずにこの語を書くと party-role-name が指す。
+# 再委託先・委託先のように当事者でない人を指す語は入れない。
+id: party-role
+language: ja
+entries:
+  - pattern: 委託者
+  - pattern: 受託者
+  - pattern: 発注者
+  - pattern: 受注者
+  - pattern: 開示者
+  - pattern: 受領者
+  - pattern: 開示当事者
+  - pattern: 受領当事者
+  - pattern: 売主
+  - pattern: 買主
+  - pattern: 貸主
+  - pattern: 借主
+  - pattern: 賃貸人
+  - pattern: 賃借人
+  - pattern: 注文者
+  - pattern: 請負人
+  - pattern: 譲渡人
+  - pattern: 譲受人
+  - pattern: 運営者
+  - pattern: ライセンサー
+  - pattern: ライセンシー
