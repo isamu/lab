@@ -15,6 +15,7 @@
     "rules:measure": "node scripts/rules-measure.ts",
     "bench": "node scripts/bench.ts",
     "bench:ai": "node scripts/ai-bench.ts",
+    "ai-score:corpus": "node scripts/ai-score-corpus.ts",
     "build": "yarn workspace @chaffjs/lang-ja build && yarn workspace @chaffjs/lang-en build && yarn workspace chaffjs build",
     "duplication": "npx --yes jscpd@4 . --format typescript,javascript --ignore \"**/node_modules/**,**/dist/**,**/*.d.ts\" --reporters console",
     "example": "node packages/chaff/bin/chaff.js examples/ --compact",
