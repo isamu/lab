@@ -1,6 +1,6 @@
-import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { parse } from "yaml";
+import { exists, readText } from "./package-files.ts";
 import { loadGenres } from "./genre-load.ts";
 import { parseGenres, type GenreData } from "./genre-parse.ts";
 
@@ -15,5 +15,5 @@ export const knownGenres = (): string[] => idsOf(loadGenres());
  */
 export const genresBeside = (rulesDir: string): string[] => {
   const file = join(rulesDir, "..", "genres.yaml");
-  return existsSync(file) ? idsOf(parseGenres(parse(readFileSync(file, "utf8")))) : knownGenres();
+  return exists(file) ? idsOf(parseGenres(parse(readText(file)))) : knownGenres();
 };

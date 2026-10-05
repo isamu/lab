@@ -1,3 +1,4 @@
+import { importPackage } from "./adapter-import.ts";
 import type { LanguageAdapter } from "./plugin.ts";
 
 const ADAPTER_PACKAGE: Readonly<Record<string, string>> = { ja: "@chaffjs/lang-ja", en: "@chaffjs/lang-en" };
@@ -102,7 +103,7 @@ const importFirst = async (specifiers: readonly string[], language: string, impo
  * core だけで起動し、文字種で言語を当ててから、その言語のアダプタを読む。
  * 全言語を静的に import すると、使わない言語のぶんまで npx の初回取得が膨らむ。
  */
-export const loadAdapter = async (language: string, importer: Importer = (specifier) => import(specifier)): Promise<LanguageAdapter> => {
+export const loadAdapter = async (language: string, importer: Importer = importPackage): Promise<LanguageAdapter> => {
   const { specifier, module } = await importFirst(packagesFor(language), language, importer);
   if (typeof module !== "object" || module === null) throw new Error(`${specifier} did not export a module`);
   const candidate = pickExport(module);

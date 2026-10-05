@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 import { collectTargets } from "../packages/chaff/src/files.ts";
 import { targetsOf, withIncludes } from "../packages/chaff/src/cli-args.ts";
-import { loadConfig } from "../packages/chaff/src/config/load.ts";
+import { loadConfig } from "../packages/chaff/src/config/read.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { isYamlPath, outsideValues, valuesText, yamlValueSpans } from "../packages/chaff/src/yaml-values.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";

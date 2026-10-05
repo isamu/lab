@@ -1,4 +1,3 @@
-import { createRequire } from "node:module";
 import type { Token } from "chaffjs/plugin";
 import { straightApostrophes } from "./apostrophe.ts";
 import { loadLexicons } from "./lexicons.ts";
@@ -7,8 +6,7 @@ import { lowercasedAt, properNounChecked, rereadAt, sentenceInitialCommonWord } 
 import { isStativeParticiple, stativeVocabulary } from "./stative-participle.ts";
 import { isEmphasisedAdverb } from "./emphasis.ts";
 import { gerundFeatures } from "./gerund.ts";
-
-const require = createRequire(import.meta.url);
+import { winkLexiconWords, winkPosTagger } from "./wink-modules.ts";
 
 /** wink は CommonJS で、辞書を同期に持つ。初期化は 130 ms ほど。 */
 type Tagged = { readonly value: string; readonly pos: string; readonly lemma?: string };
@@ -31,7 +29,7 @@ const callMethod = (owner: Record<string, unknown>, name: string, args: readonly
 };
 
 const build = (): Tagger => {
-  const factory: unknown = require("wink-pos-tagger");
+  const factory = winkPosTagger();
   if (!isCallable(factory)) throw new Error("wink-pos-tagger が関数を export していません");
   const tagger: unknown = factory();
   if (!isRecord(tagger)) throw new Error("wink-pos-tagger が object を返しませんでした");
@@ -218,7 +216,7 @@ type Vocabulary = (word: string) => readonly string[] | undefined;
 const isTags = (value: unknown): value is readonly string[] => Array.isArray(value) && value.every((tag) => typeof tag === "string");
 
 const buildVocabulary = (): Vocabulary => {
-  const words: unknown = createRequire(require.resolve("wink-pos-tagger"))("wink-lexicon/src/lexicon.js");
+  const words = winkLexiconWords();
   if (!isRecord(words)) throw new Error("wink-lexicon の語彙が object ではありません");
   return (word) => {
     const tags = Object.hasOwn(words, word) ? words[word] : undefined;

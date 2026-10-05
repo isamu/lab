@@ -9,7 +9,7 @@ import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules, type Settings } from "../packages/chaff/src/run.ts";
 import { definedLevels, severityAt } from "../packages/chaff/src/levels.ts";
 import { applyLevel } from "../packages/chaff/src/config/write.ts";
-import { loadConfig } from "../packages/chaff/src/config/load.ts";
+import { loadConfig } from "../packages/chaff/src/config/read.ts";
 import { ruleProblems } from "../packages/chaff/src/config/rule-problems.ts";
 import { renderExplain } from "../packages/chaff/src/render/explain.ts";
 import { rulesJson } from "../packages/chaff/src/render/rules-json.ts";

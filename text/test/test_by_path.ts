@@ -4,7 +4,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { applyByPath, matches, type PathRule } from "../packages/chaff/src/config/by-path.ts";
-import { loadConfig } from "../packages/chaff/src/config/load.ts";
+import { loadConfig } from "../packages/chaff/src/config/read.ts";
 
 describe("glob の照合", () => {
   const hit = (glob: string, path: string): boolean => matches(glob, "base", join("base", path));

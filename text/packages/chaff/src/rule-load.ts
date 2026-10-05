@@ -1,6 +1,4 @@
-import { readFileSync, readdirSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
+import { join } from "node:path";
 import { parse } from "yaml";
 import type { LanguageLevels, LevelSets, LevelTable, RuleDefinition, Severity } from "./plugin.ts";
 import { rankOfSeverity, severityAt } from "./levels.ts";
@@ -8,8 +6,9 @@ import { optionsOf } from "./rule-options.ts";
 import { ruleGuideOf } from "./rule-guide.ts";
 import { fieldProblemSentence, fieldProblems } from "./rule-fields.ts";
 import { genresBeside } from "./known-genres.ts";
+import { PACKAGE_DIR, readDir, readText } from "./package-files.ts";
 
-const RULES_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "rules");
+const RULES_DIR = join(PACKAGE_DIR, "rules");
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 
@@ -191,7 +190,7 @@ const ruleOf = (raw: Record<string, unknown>, levels: LevelTable, levelSets: Lev
  */
 const parseRule = (dir: string, file: string): unknown => {
   try {
-    return parse(readFileSync(join(dir, file), "utf8"));
+    return parse(readText(join(dir, file)));
   } catch (error) {
     throw new Error(`${file} を読めません: ${error instanceof Error ? error.message.split("\n")[0] : String(error)}`, { cause: error });
   }
@@ -199,7 +198,7 @@ const parseRule = (dir: string, file: string): unknown => {
 
 export const loadRules = (language: string, dir: string = RULES_DIR): RuleDefinition[] => {
   const genres = genresBeside(dir);
-  return readdirSync(dir)
+  return readDir(dir)
     .filter((file) => file.endsWith(".yaml"))
     .toSorted((left, right) => left.localeCompare(right, "en"))
     .map((file) => toRule(parseRule(dir, file), language, file, genres));

@@ -1,10 +1,8 @@
-import { readFileSync, readdirSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
 import { parse } from "yaml";
 import type { Lexicon, LexiconEntry } from "chaffjs/plugin";
+import { PACKAGE_DIR, joinPath, readDir, readText } from "./package-files.ts";
 
-const DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "lexicons");
+const DIR = joinPath(PACKAGE_DIR, "lexicons");
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 
@@ -32,10 +30,10 @@ const toEntry = (raw: unknown): LexiconEntry | undefined => {
  */
 export const loadLexicons = (dir: string = DIR): Record<string, Lexicon> =>
   Object.fromEntries(
-    readdirSync(dir)
+    readDir(dir)
       .filter((file) => file.endsWith(".yaml"))
       .flatMap((file): [string, Lexicon][] => {
-        const raw: unknown = parse(readFileSync(join(dir, file), "utf8"));
+        const raw: unknown = parse(readText(joinPath(dir, file)));
         if (!isRecord(raw) || typeof raw["id"] !== "string" || !Array.isArray(raw["entries"])) return [];
         return [[raw["id"], raw["entries"].map(toEntry).filter((entry) => entry !== undefined)]];
       }),
