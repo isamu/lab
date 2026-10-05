@@ -4,7 +4,7 @@ status: stable
 how_to_find: phrase-match
 word_list: cliche
 requires: [pos]
-languages: [en]
+languages: [ja, en]
 severity: info
 
 name:
@@ -12,15 +12,15 @@ name:
   en: Cliché
 
 why:
-  ja: 英語の「at the end of the day」「low-hanging fruit」「move the needle」のような決まり文句は、使われすぎて中身が抜けた比喩です。読み手は見慣れた形を読み飛ばし、この文書で何が言いたいのかが残りません。言い回しの一覧は言語ごとの語彙表にあり、それぞれに何を書けばよいかが付いています。
-  en: '"At the end of the day", "low-hanging fruit" and "move the needle" are figures of speech worn down to filler. The reader skims the familiar shape and learns nothing about this document. The phrases are listed in the lexicon, each with what to write instead.'
+  ja: 「今さら聞けない」「徹底解説」「〜の極意」や、英語の「at the end of the day」「low-hanging fruit」のような決まり文句は、使われすぎて中身が抜けた言い回しです。読み手は見慣れた形を読み飛ばし、この文書で何が言いたいのかが残りません。言い回しの一覧は言語ごとの語彙表にあり、それぞれに何を書けばよいかが付いています。
+  en: '"At the end of the day", "low-hanging fruit" and "move the needle" (今さら聞けない, 徹底解説) are figures of speech worn down to filler. The reader skims the familiar shape and learns nothing about this document. The phrases are listed in the lexicon, each with what to write instead.'
 
 message:
   ja: 「{matched}」は使い古された決まり文句です
   en: '"{matched}" is a cliché'
 
 how_to_fix:
-  ja: 決まり文句が指していた中身を、そのまま書いてください（low-hanging fruit → 簡単に済む作業の名前）。
+  ja: 決まり文句が指していた中身を、そのまま書いてください（徹底解説 → 何を説明するのか、low-hanging fruit → 簡単に済む作業の名前）。
   en: Say what the phrase stood for ("low-hanging fruit" → name the easy tasks).
 
 levels: { strict: 1, normal: 1, relaxed: 2 }
@@ -32,9 +32,14 @@ off_for:
 
 group: wording
 summary:
-  ja: 英語で、「at the end of the day」「low-hanging fruit」のような使い古された決まり文句
-  en: A worn phrase such as "at the end of the day" or "low-hanging fruit"
+  ja: 「今さら聞けない」「徹底解説」や「at the end of the day」のような、使い古された決まり文句
+  en: A worn phrase such as "at the end of the day" or "low-hanging fruit" (今さら聞けない, 徹底解説)
 example:
+  ja:
+    before: |
+      この記事では、今さら聞けない Git の基本を徹底解説します。
+    after: |
+      この記事では、Git を初めて使う人向けに、コミットとブランチの使い方を説明します。
   en:
     before: |
       At the end of the day, the new cache is faster.
@@ -42,14 +47,29 @@ example:
       The new cache cuts load time from 2 seconds to 0.5.
 
 not_flagged:
-  ja: 一覧にある言い回しだけを見ます。ほかの規則が見る言い回し（ai-tell の「game-changer」、empty-intensifier の「needless to say」）は入れていません。英語の文書だけで動き、文学と講演の書き起こしは対象にしません。
-  en: Only the phrases on chaff's list are checked. Phrases another rule reads ("game-changer" in ai-tell, "needless to say" in empty-intensifier) are not on it. English documents only; literature and speech transcripts are not checked.
+  ja: 一覧にある言い回しだけを見ます。見出しの中は見ず、本文の文だけを見ます。ほかの規則が見る言い回し（closing-cliche の「いかがでしたか」、ai-tell の「深く掘り下げる」「game-changer」、empty-intensifier の「needless to say」）は入れていません。「結論から言うと」は人の記事にも同じくらいあるので、「〜まとめ」「〜な件」は普通の文（まとめました、重要な件）と分けられないので見ません。文学と講演の書き起こしは対象にしません。
+  en: Only the phrases on chaff's list are checked, in body sentences; headings are not read. Phrases another rule reads (いかがでしたか in closing-cliche, "game-changer" in ai-tell, "needless to say" in empty-intensifier) are not on it. In Japanese, 結論から言うと is left out because human articles use it as often, and 〜まとめ and 〜な件 because ordinary sentences share them (まとめました, 重要な件). Literature and speech transcripts are not checked.
 level_meaning:
   ja: 当てはまる言い回しが {limit} 箇所あれば指摘
   en: reported once there are {limit}
 sources: [write-good, proselint]
 rewrite:
   depth: light
+  ja:
+    direction: 決まり文句を、この文書でそれが指している中身に置き換えてください。語彙表の言い回しごとの書き方に従います。本文が中身を言っていなければ、作らずに書き手に聞いてください。
+    pairs:
+      - before: この記事では、Docker の設定を徹底解説します。
+        after: この記事では、Docker のネットワーク設定の手順を説明します。
+      - before: 今さら聞けない SQL の書き方を紹介します。
+        after: SQL を初めて書く人向けに、SELECT 文の書き方を紹介します。
+      - before: 速く書くための極意は、毎日書くことです。
+        after: 速く書くには、毎日書いてください。
+    keep:
+      - 文が言っている主張
+      - 文の中の数・名前・日付
+    avoid:
+      - 決まり文句を別の決まり文句に替える
+      - 本文に無い数や日付を作る
   en:
     direction: Replace the cliché with what it stood for in this document, following the lexicon's note for the phrase. If the text does not say what that is, ask the writer rather than invent it.
     pairs:

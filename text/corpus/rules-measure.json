@@ -1103,35 +1103,35 @@
     "cliche": {
       "groups": {
         "academic": {
-          "documents": 5,
+          "documents": 6,
           "fired": 0
         },
         "blog": {
-          "documents": 9,
+          "documents": 23,
           "fired": 0
         },
         "business": {
-          "documents": 39,
+          "documents": 78,
           "fired": 1
         },
         "docs": {
-          "documents": 10,
+          "documents": 20,
           "fired": 0
         },
         "legal": {
-          "documents": 14,
+          "documents": 35,
           "fired": 0
         },
         "literature": {
-          "documents": 9,
+          "documents": 13,
           "fired": 2
         },
         "speech": {
-          "documents": 3,
+          "documents": 7,
           "fired": 0
         },
         "technical": {
-          "documents": 26,
+          "documents": 48,
           "fired": 1
         }
       },
@@ -8011,8 +8011,8 @@
         }
       },
       "bench": {
-        "planted": 12,
-        "found": 12,
+        "planted": 24,
+        "found": 24,
         "falseAlarms": 0
       }
     },
