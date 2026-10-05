@@ -104,8 +104,15 @@ Node.js 24 以上が要ります。`npx chaffjs` は、初めて使うときに 
 ```json
 {"id":"q3","language":"ja","genre":"blog/tech","size":{"unit":"char","value":73},"findings":[],"rates":{},"notRun":[…],
  "facts":{"dropped":[{"kind":"number","key":"6 時間","text":"6 時間","line":4,"allowed":false},…],"added":[…],"reformed":1},
- "citations":null,"pass":false,"failedBecause":["facts.dropped 3 > 0","facts.added 1 > 0"],"stamp":{…}}
+ "citations":null,"aiScore":{"level":null,"notScored":"too-short","signs":0,"compared":22,"shown":[]},
+ "pass":false,"failedBecause":["facts.dropped 3 > 0","facts.added 1 > 0"],"stamp":{…}}
 ```
+
+`aiScore` は AI らしさの簡易判定です（[AIっぽさを直す](./ai-sounding#ai-らしさを簡易判定する)）。
+`level` は `low`・`medium`・`high` のどれかで、測らなかったときは `null` にし、`notScored` に理由（`too-short` か `no-baseline`）を入れます。
+`signs` は数えた目印の数、`compared` は人の文書と比べた項目の数、`shown` は数えた目印です。
+この例の回答は短いので測っていません。書いたのが AI かどうかの判定ではなく、合否にも入りません。
+要約には段階ごとの出力の数が、variant の表には「AI らしさ 低/中/高」の行が出ます。prompt や model で生成文の形がどれだけ増えたかを比べるのに使います。
 
 再現の印（`stamp`）には、chaff の版と、ルールのハッシュと、設定のハッシュが入ります。ハッシュが 2 つとも同じ回どうしなら比べられます。
 
@@ -240,6 +247,7 @@ prompts-ja.jsonl: 6 件の出力、4 件が通り、2 件が落ちた
 - 「外れた引用」は、照らした数のうち外れた数です。事実は要約と同じに数え、`grade:` で許した種類は数えません。
 - 出力に `contexts` があれば、「一節に無い事実」の行が足されます。照らした事実のうち、検索で取ったどの一節にも無かった数です。
 - `chaff.yaml` に `grade:` があれば、「減点の和」の行が足されます。
+- 「AI らしさ 低/中/高」は、段階ごとの出力の数で、かっこの中は測らなかった出力の数です。
 - 通った割合は出力の割合で、点ではありません。満点のある点は、ここでも出しません。
 
 `--variant-key` を渡すと、どの行にもその欄が要ります。`variant` の欄を使うときも、一行にでもあれば全行に要ります。

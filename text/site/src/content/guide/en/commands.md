@@ -28,6 +28,7 @@ The list `npx chaffjs --help` prints, as a table.
 | `npx chaffjs cite <source> <quotes.json>` | Checks that quoted passages are in the source |
 | `npx chaffjs compare <before> <after>` | Checks that a rewrite dropped no fact and added none (numbers, dates, URLs, code, names, quotations…) |
 | `npx chaffjs facts <file>` | Lists the facts `compare` checks, as an inventory to keep before a rewrite |
+| `npx chaffjs ai-score <file>...` | A quick AI-likeness score, low, medium or high: signs common in generated text, compared with human documents of the genre. Not a verdict on whether AI wrote it |
 | `npx chaffjs outline <file> [<after>]` | Shows the outline, measures its shape (headings, average section length, text in lists, bold) and scores its structure against human articles; two files side by side |
 | `npx chaffjs fix-plan <file>` | Prints a plan for whoever rewrites the file: the findings by rule, how to rewrite each, and the checks to run after. `--json` gives it as JSON, `--depth` sets how deep the rewrite may go |
 | `npx chaffjs grade <items.jsonl>` | Grades a JSONL file of model outputs: finding rates, facts, quotations, pass or fail. Sends nothing. `--out <results.jsonl>` writes one result per output, `--json` prints the summary as JSON |
@@ -474,6 +475,25 @@ How the shape changed (before.md → after.md)
 
 In this example the rewrite smoothed the sentences and dropped the lists and the bold, but kept almost every heading: the outline barely moved. `--compact` gives one section per line, then a line per file with the structure score and the measures past the line.
 `--json` gives the outline, the shape and every structure measure with where it stands (`before` and `after` for two files). It only measures, so it ends with 0 whenever the files can be read.
+
+## A quick AI-likeness score
+
+`ai-score` counts the signs common in generated text that human documents of the same genre rarely show.
+Three signs make "medium" and five make "high". It does not say whether AI wrote the text; it says whether there is more to reread than in human documents.
+
+<!-- chaff-screen: rewrite -->
+```
+$ npx chaffjs ai-score before.md after.md --compact
+before.md: ai-score medium 4/26 announcing-opener closing-cliche contrast-framing structure:bold-labels
+after.md: ai-score low 1/25 structure:short-sections
+```
+
+`before.md` and `after.md` are the articles the outline was measured on above. Each file gets one line: the level, the signs out of those compared, and the signs that counted.
+Without `--compact`, each sign comes with its count and how many human documents show it; [Making AI-sounding text sound human](./ai-sounding#a-quick-ai-likeness-score) has that screen.
+`--format json` (or `--json`) gives the same as JSON.
+A document that is too short, or in a genre without enough human documents to compare with, gets no level and the reason instead.
+A plain `npx chaffjs <file>` also ends each file's report with the level on one line (not with `--compact`).
+It only measures, so it ends with 0 whenever the files can be read.
 
 ## Planning a rewrite
 
