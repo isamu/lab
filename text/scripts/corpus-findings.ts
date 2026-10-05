@@ -54,8 +54,16 @@ export const registerCountsOf = (path: string, source: string, language: string,
   return { polite: peers.filter((entry) => entry.register === "polite").length, plain: peers.filter((entry) => entry.register === "plain").length };
 };
 
-/** What a corpus run is given besides the document: the team's words, which rules to run, and the levels chaff.yaml would set. */
-export type RunChoice = { readonly team?: TeamWords; readonly only?: (id: string) => boolean; readonly settings?: Settings };
+/**
+ * What a corpus run is given besides the document: the team's words, which rules to run, the levels chaff.yaml would set,
+ * and whether the experimental rules run (as --experimental; true when left out).
+ */
+export type RunChoice = {
+  readonly team?: TeamWords;
+  readonly only?: (id: string) => boolean;
+  readonly settings?: Settings;
+  readonly experimental?: boolean;
+};
 
 /** Every rule's run on one document of the given genre, as if --experimental, with the rules it ran. */
 export const allRulesRun = async (
@@ -66,10 +74,10 @@ export const allRulesRun = async (
   choice: RunChoice = {},
 ): Promise<{ readonly result: RunResult; readonly rules: readonly RuleDefinition[] }> => {
   await adapterOf(language).prepare?.({ pos: true });
-  const { team = EMPTY, only = () => true, settings = {} } = choice;
+  const { team = EMPTY, only = () => true, settings = {}, experimental = true } = choice;
   const rules = loadRules(language).filter((rule) => only(rule.id));
   return {
-    result: runRules(documentOf(path, source, language, genre, team), rules, settings, true, genre),
+    result: runRules(documentOf(path, source, language, genre, team), rules, settings, experimental, genre),
     rules,
   };
 };
@@ -120,6 +128,10 @@ export const allFindings = async (
   team?: TeamWords,
   settings: Settings = {},
 ): Promise<CorpusFinding[]> => findingsWith(path, source, language, genre, { ...(team === undefined ? {} : { team }), settings });
+
+/** The findings `chaff --genre <genre>` gives one document: the genre's levels, and no experimental rule it leaves off. */
+export const genreFindings = async (path: string, source: string, language: string, genre: string): Promise<CorpusFinding[]> =>
+  findingsWith(path, source, language, genre, { experimental: false });
 
 /**
  * Every rule's run on the files of one run of the given genre, as if --experimental: each file's own rules, then the

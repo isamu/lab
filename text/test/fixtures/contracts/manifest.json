@@ -1,0 +1,600 @@
+{
+  "note": "Self-written contracts, each in a clean version and a planted one that differs only on the lines below. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should. yarn contracts scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/outsourcing",
+      "language": "ja",
+      "genre": "legal/contract",
+      "clean": "ja/outsourcing.clean.md",
+      "planted": "ja/outsourcing.planted.md",
+      "mistakes": [
+        {
+          "kind": "total-in-prose",
+          "rule": "total-mismatch",
+          "line": 12,
+          "clean": "運用費60,000円",
+          "planted": "運用費50,000円"
+        },
+        {
+          "kind": "party-role-name",
+          "rule": "party-role-name",
+          "line": 13,
+          "clean": "3. 甲は、毎月末日まで",
+          "planted": "3. 委託者は、毎月末日まで"
+        },
+        {
+          "kind": "party-full-name",
+          "rule": "defined-name-repeated",
+          "line": 17,
+          "clean": "書面で甲に報告",
+          "planted": "書面で株式会社みなと商会に報告"
+        },
+        {
+          "kind": "vague-deadline",
+          "rule": "vague-deadline",
+          "line": 18,
+          "clean": "受けた日から10日以内に、その内容",
+          "planted": "受けたときは、速やかにその内容"
+        },
+        {
+          "kind": "undefined-term",
+          "rule": "undefined-term",
+          "line": 19,
+          "clean": "7日以内に、本業務に関する資料",
+          "planted": "7日以内に、本成果物に関する資料"
+        },
+        {
+          "kind": "date-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 23,
+          "clean": "2026年4月1日（水）",
+          "planted": "2026年4月1日（火）"
+        },
+        {
+          "kind": "connective-hierarchy",
+          "rule": "connective-hierarchy",
+          "line": 27,
+          "clean": "技術上及び営業上",
+          "planted": "技術上並びに営業上"
+        },
+        {
+          "kind": "dangling-clause-reference",
+          "rule": "dangling-reference",
+          "line": 28,
+          "clean": "第6条に定める再委託先",
+          "planted": "第11条に定める再委託先"
+        },
+        {
+          "kind": "reference-wrong-title",
+          "rule": "reference-title-mismatch",
+          "line": 33,
+          "clean": "第5条（秘密保持）に定める",
+          "planted": "第5条（損害賠償）に定める"
+        },
+        {
+          "kind": "defined-term-variant",
+          "rule": "defined-term-form",
+          "line": 32,
+          "clean": "本業務の一部",
+          "planted": "本件業務の一部"
+        },
+        {
+          "kind": "numbering-gap",
+          "rule": "numbering-gap",
+          "line": 44,
+          "clean": "## 第9条（管轄裁判所）",
+          "planted": "## 第10条（管轄裁判所）"
+        },
+        {
+          "kind": "party-order",
+          "rule": "party-order",
+          "line": 42,
+          "clean": "甲及び乙が誠実に",
+          "planted": "乙及び甲が誠実に"
+        },
+        {
+          "kind": "obligation-no-deadline",
+          "rule": "obligation-without-deadline",
+          "line": 38,
+          "clean": "日割りで計算し、解除の日から30日以内に支払う",
+          "planted": "日割りで計算して支払う"
+        }
+      ]
+    },
+    {
+      "id": "ja/nda",
+      "language": "ja",
+      "genre": "legal/contract",
+      "clean": "ja/nda.clean.md",
+      "planted": "ja/nda.planted.md",
+      "mistakes": [
+        {
+          "kind": "duration-mismatch",
+          "rule": "duration-mismatch",
+          "line": 29,
+          "clean": "2026年4月1日から1年間",
+          "planted": "2026年4月1日から6か月間"
+        },
+        {
+          "kind": "amount-two-ways",
+          "rule": "currency-notation-consistency",
+          "line": 25,
+          "clean": "前項の上限額5,000,000円",
+          "planted": "前項の上限額500万円"
+        },
+        {
+          "kind": "dangling-clause-reference",
+          "rule": "dangling-reference",
+          "line": 30,
+          "clean": "第2条及び第4条の規定",
+          "planted": "第2条及び第7条の規定"
+        },
+        {
+          "kind": "numbering-gap",
+          "rule": "numbering-gap",
+          "line": 32,
+          "clean": "## 第6条（合意管轄）",
+          "planted": "## 第5条（合意管轄）"
+        },
+        {
+          "kind": "defined-term-variant",
+          "rule": "defined-term-form",
+          "line": 7,
+          "clean": "本検討のために",
+          "planted": "本件検討のために"
+        },
+        {
+          "kind": "party-full-name",
+          "rule": "defined-name-repeated",
+          "line": 15,
+          "clean": "1. 甲及び乙は、相手方の秘密情報を厳重に",
+          "planted": "1. 北浜精機株式会社及び乙は、相手方の秘密情報を厳重に"
+        },
+        {
+          "kind": "party-role-name",
+          "rule": "party-role-name",
+          "line": 16,
+          "clean": "2. 甲及び乙は、相手方の秘密情報を本検討",
+          "planted": "2. 受領者は、相手方の秘密情報を本検討"
+        },
+        {
+          "kind": "vague-deadline",
+          "rule": "vague-deadline",
+          "line": 20,
+          "clean": "その日から14日以内に",
+          "planted": "遅滞なく"
+        }
+      ]
+    },
+    {
+      "id": "ja/terms",
+      "language": "ja",
+      "genre": "legal/contract",
+      "clean": "ja/terms.clean.md",
+      "planted": "ja/terms.planted.md",
+      "mistakes": [
+        {
+          "kind": "date-range-reversed",
+          "rule": "date-range-reversed",
+          "line": 34,
+          "clean": "2026年7月1日から2026年9月30日まで",
+          "planted": "2026年7月1日から2025年9月30日まで"
+        },
+        {
+          "kind": "undefined-term",
+          "rule": "undefined-term",
+          "line": 7,
+          "clean": "本サービスの利用に関わる",
+          "planted": "本アプリの利用に関わる"
+        },
+        {
+          "kind": "defined-term-variant",
+          "rule": "defined-term-form",
+          "line": 11,
+          "clean": "1. 本サービスの利用を希望",
+          "planted": "1. 本件サービスの利用を希望"
+        },
+        {
+          "kind": "reference-wrong-title",
+          "rule": "reference-title-mismatch",
+          "line": 29,
+          "clean": "が第4条（禁止事項）",
+          "planted": "が第4条（利用料金）"
+        },
+        {
+          "kind": "dangling-clause-reference",
+          "rule": "dangling-reference",
+          "line": 38,
+          "clean": "重過失による場合を除き",
+          "planted": "重過失による場合及び第11条に定める場合を除き"
+        },
+        {
+          "kind": "connective-hierarchy",
+          "rule": "connective-hierarchy",
+          "line": 17,
+          "clean": "クレジットカード又は口座振替",
+          "planted": "クレジットカード若しくは口座振替"
+        },
+        {
+          "kind": "vague-deadline",
+          "rule": "vague-deadline",
+          "line": 30,
+          "clean": "停止の日から3営業日以内に",
+          "planted": "速やかに"
+        },
+        {
+          "kind": "party-role-name",
+          "rule": "party-role-name",
+          "line": 42,
+          "clean": "当社は、本規約を変更する",
+          "planted": "運営者は、本規約を変更する"
+        },
+        {
+          "kind": "party-full-name",
+          "rule": "defined-name-repeated",
+          "line": 12,
+          "clean": "2. 当社は、申請者が",
+          "planted": "2. 株式会社さくらソフトは、申請者が"
+        },
+        {
+          "kind": "date-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 51,
+          "clean": "2026年6月1日（月）",
+          "planted": "2026年6月1日（火）"
+        }
+      ]
+    },
+    {
+      "id": "ja/sale",
+      "language": "ja",
+      "genre": "legal/contract",
+      "clean": "ja/sale.clean.md",
+      "planted": "ja/sale.planted.md",
+      "mistakes": [
+        {
+          "kind": "total-in-table",
+          "rule": "total-mismatch",
+          "line": 39,
+          "clean": "| 小計         |      |          | 800,000  |",
+          "planted": "| 小計         |      |          | 820,000  |"
+        },
+        {
+          "kind": "amount-two-ways",
+          "rule": "currency-notation-consistency",
+          "line": 11,
+          "clean": "合計額880,000円",
+          "planted": "合計額88万円"
+        },
+        {
+          "kind": "dangling-clause-reference",
+          "rule": "dangling-reference",
+          "line": 12,
+          "clean": "第3条に定める検査",
+          "planted": "第7条に定める検査"
+        },
+        {
+          "kind": "reference-wrong-title",
+          "rule": "reference-title-mismatch",
+          "line": 21,
+          "clean": "が第2条（代金）",
+          "planted": "が第2条（引渡し）"
+        },
+        {
+          "kind": "date-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 16,
+          "clean": "2026年5月15日（金）",
+          "planted": "2026年5月15日（木）"
+        },
+        {
+          "kind": "vague-deadline",
+          "rule": "vague-deadline",
+          "line": 26,
+          "clean": "前項の請求を受けた日から14日以内に",
+          "planted": "前項の請求を受けたときは、相当の期間内に"
+        },
+        {
+          "kind": "obligation-no-deadline",
+          "rule": "obligation-without-deadline",
+          "line": 17,
+          "clean": "納入を受けた日から7日以内に検査を行い",
+          "planted": "納入を受けたときは、検査を行い"
+        },
+        {
+          "kind": "connective-hierarchy",
+          "rule": "connective-hierarchy",
+          "line": 25,
+          "clean": "種類、品質又は数量",
+          "planted": "種類、品質若しくは数量"
+        },
+        {
+          "kind": "party-role-name",
+          "rule": "party-role-name",
+          "line": 7,
+          "clean": "乙はこれを買い受ける",
+          "planted": "買主はこれを買い受ける"
+        },
+        {
+          "kind": "defined-term-variant",
+          "rule": "defined-term-form",
+          "line": 11,
+          "clean": "1. 本件物品の代金は",
+          "planted": "1. 本物品の代金は"
+        }
+      ]
+    },
+    {
+      "id": "en/services",
+      "language": "en",
+      "genre": "legal/contract",
+      "clean": "en/services.clean.md",
+      "planted": "en/services.planted.md",
+      "mistakes": [
+        {
+          "kind": "total-in-prose",
+          "rule": "total-mismatch",
+          "line": 15,
+          "clean": "$3,000 for support",
+          "planted": "$2,000 for support"
+        },
+        {
+          "kind": "dangling-clause-reference",
+          "rule": "dangling-reference",
+          "line": 27,
+          "clean": "engaged under Section 5.",
+          "planted": "engaged under Section 9."
+        },
+        {
+          "kind": "reference-wrong-title",
+          "rule": "reference-title-mismatch",
+          "line": 31,
+          "clean": "Section 4 (Confidentiality)",
+          "planted": "Section 4 (Termination)"
+        },
+        {
+          "kind": "defined-term-variant",
+          "rule": "defined-term-form",
+          "line": 13,
+          "clean": "fee of $9,000 for the Services",
+          "planted": "fee of $9,000 for the services"
+        },
+        {
+          "kind": "party-role-name",
+          "rule": "party-role-name",
+          "line": 17,
+          "clean": "The Supplier shall invoice",
+          "planted": "The Vendor shall invoice"
+        },
+        {
+          "kind": "party-full-name",
+          "rule": "defined-name-repeated",
+          "line": 31,
+          "clean": "The Supplier may subcontract",
+          "planted": "Harbour Works Ltd may subcontract"
+        },
+        {
+          "kind": "undefined-term",
+          "rule": "undefined-term",
+          "line": 7,
+          "clean": "(the \"Services\") to the Customer.",
+          "planted": "(the \"Services\") to the Customer and its Affiliates."
+        },
+        {
+          "kind": "date-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 3,
+          "clean": "Friday, March 20, 2026",
+          "planted": "Thursday, March 20, 2026"
+        },
+        {
+          "kind": "duration-mismatch",
+          "rule": "duration-mismatch",
+          "line": 21,
+          "clean": "twelve (12) months, until",
+          "planted": "six (6) months, until"
+        },
+        {
+          "kind": "numbering-gap",
+          "rule": "numbering-gap",
+          "line": 39,
+          "clean": "## 7. Governing Law",
+          "planted": "## 8. Governing Law"
+        },
+        {
+          "kind": "vague-deadline",
+          "rule": "vague-deadline",
+          "line": 17,
+          "clean": "pay each invoice within thirty (30) days of receiving it",
+          "planted": "pay each invoice promptly"
+        },
+        {
+          "kind": "obligation-no-deadline",
+          "rule": "obligation-without-deadline",
+          "line": 9,
+          "clean": "to the Customer by the fifth business day of each month.",
+          "planted": "to the Customer."
+        }
+      ]
+    },
+    {
+      "id": "en/nda",
+      "language": "en",
+      "genre": "legal/contract",
+      "clean": "en/nda.clean.md",
+      "planted": "en/nda.planted.md",
+      "mistakes": [
+        {
+          "kind": "date-range-reversed",
+          "rule": "date-range-reversed",
+          "line": 27,
+          "clean": "to Wednesday, March 31, 2027",
+          "planted": "to Tuesday, March 31, 2026"
+        },
+        {
+          "kind": "amount-two-ways",
+          "rule": "currency-notation-consistency",
+          "line": 33,
+          "clean": "The amount of $50,000",
+          "planted": "The amount of USD 50,000"
+        },
+        {
+          "kind": "reference-wrong-title",
+          "rule": "reference-title-mismatch",
+          "line": 33,
+          "clean": "Section 3 (Obligations)",
+          "planted": "Section 3 (Return of Information)"
+        },
+        {
+          "kind": "dangling-clause-reference",
+          "rule": "dangling-reference",
+          "line": 29,
+          "clean": "in Section 3 survive",
+          "planted": "in Section 8 survive"
+        },
+        {
+          "kind": "party-role-name",
+          "rule": "party-role-name",
+          "line": 17,
+          "clean": "3.2 Each Party shall protect",
+          "planted": "3.2 The Recipient shall protect"
+        },
+        {
+          "kind": "vague-deadline",
+          "rule": "vague-deadline",
+          "line": 19,
+          "clean": "within five (5) business days of becoming aware",
+          "planted": "promptly after becoming aware"
+        },
+        {
+          "kind": "obligation-no-deadline",
+          "rule": "obligation-without-deadline",
+          "line": 23,
+          "clean": "Within fifteen (15) days of a written request, each",
+          "planted": "On a written request, each"
+        },
+        {
+          "kind": "defined-term-variant",
+          "rule": "defined-term-form",
+          "line": 15,
+          "clean": "Information only for the Purpose",
+          "planted": "Information only for the purpose"
+        },
+        {
+          "kind": "numbering-gap",
+          "rule": "numbering-gap",
+          "line": 35,
+          "clean": "## 7. Governing Law",
+          "planted": "## 6. Governing Law"
+        },
+        {
+          "kind": "undefined-term",
+          "rule": "undefined-term",
+          "line": 7,
+          "clean": "may disclose information to each other",
+          "planted": "may disclose Proprietary Data to each other"
+        },
+        {
+          "kind": "date-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 39,
+          "clean": "on Friday, March 27, 2026",
+          "planted": "on Thursday, March 27, 2026"
+        }
+      ]
+    },
+    {
+      "id": "en/terms",
+      "language": "en",
+      "genre": "legal/contract",
+      "clean": "en/terms.clean.md",
+      "planted": "en/terms.planted.md",
+      "mistakes": [
+        {
+          "kind": "total-in-prose",
+          "rule": "total-mismatch",
+          "line": 13,
+          "clean": "base fee of $6 and",
+          "planted": "base fee of $5 and"
+        },
+        {
+          "kind": "date-range-reversed",
+          "rule": "date-range-reversed",
+          "line": 17,
+          "clean": "to September 30, 2026",
+          "planted": "to September 30, 2025"
+        },
+        {
+          "kind": "reference-wrong-title",
+          "rule": "reference-title-mismatch",
+          "line": 29,
+          "clean": "Section 3 (Acceptable Use)",
+          "planted": "Section 3 (Accounts)"
+        },
+        {
+          "kind": "dangling-clause-reference",
+          "rule": "dangling-reference",
+          "line": 31,
+          "clean": "under Section 4.1, we",
+          "planted": "under Section 4.3, we"
+        },
+        {
+          "kind": "vague-deadline",
+          "rule": "vague-deadline",
+          "line": 15,
+          "clean": "by email within three (3) days",
+          "planted": "by email promptly"
+        },
+        {
+          "kind": "defined-term-variant",
+          "rule": "defined-term-form",
+          "line": 39,
+          "clean": "your use of the App.",
+          "planted": "your use of the Application."
+        },
+        {
+          "kind": "party-full-name",
+          "rule": "defined-name-repeated",
+          "line": 39,
+          "clean": "law, Pinecone is not liable",
+          "planted": "law, Pinecone Software Ltd is not liable"
+        },
+        {
+          "kind": "party-role-name",
+          "rule": "party-role-name",
+          "line": 35,
+          "clean": "We will notify you of any change",
+          "planted": "The Company will notify you of any change"
+        },
+        {
+          "kind": "obligation-no-deadline",
+          "rule": "obligation-without-deadline",
+          "line": 35,
+          "clean": "by email at least thirty (30) days before it takes effect.",
+          "planted": "by email."
+        },
+        {
+          "kind": "undefined-term",
+          "rule": "undefined-term",
+          "line": 9,
+          "clean": "under your account.",
+          "planted": "under your Account."
+        },
+        {
+          "kind": "numbering-gap",
+          "rule": "numbering-gap",
+          "line": 41,
+          "clean": "## 7. Contact",
+          "planted": "## 9. Contact"
+        },
+        {
+          "kind": "date-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 45,
+          "clean": "Monday, June 1, 2026",
+          "planted": "Tuesday, June 1, 2026"
+        }
+      ]
+    }
+  ]
+}
