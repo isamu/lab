@@ -65,7 +65,7 @@ What a good document of this genre does. Rewrite toward it, and check the result
 - Does it say what was tried and failed, the limits, and the assumptions?
 - Does the ending point to what to read or try next, rather than restate the body?
 
-Rules that matter most for this genre: `closing-cliche`, `empty-conclusion`, `padded-intro`, `paragraph-length-variance`, `rule-of-three`, `section-length-uniformity`, `sentence-rhythm`
+Rules that matter most for this genre: `closing-cliche`, `empty-conclusion`, `padded-intro`, `paragraph-length-variance`, `quote-without-source`, `rule-of-three`, `section-length-uniformity`, `sentence-rhythm`
 
 …
 ```
@@ -97,6 +97,7 @@ $ npx chaffjs rules --json --genre blog/tech
       "empty-conclusion",
       "padded-intro",
       "paragraph-length-variance",
+      "quote-without-source",
       "rule-of-three",
       "section-length-uniformity",
       "sentence-rhythm"

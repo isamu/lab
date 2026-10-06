@@ -137,7 +137,7 @@ $ npx chaffjs ronbun.md --genre academic/paper
   - 図表が参照の順に番号付けされ、本文の数字と図表の数字が一致しているか
   - 主張の強さが結果に見合っているか（示した・示唆する、を使い分けているか）
 
-  このジャンルで特に効く rule: abstract-length, citation-reference-mismatch, citation-style-mix, figure-reference-order
+  このジャンルで特に効く rule: abstract-length, citation-reference-mismatch, citation-style-mix, figure-reference-order, quote-without-source
   chaff.yaml の guide: で書き換えられます。出さないときは --no-guide。
 
 ════════════════════════════════════════════════════════════
