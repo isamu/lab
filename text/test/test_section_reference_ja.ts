@@ -7,6 +7,7 @@ import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { loadProfiles } from "../packages/chaff/src/profile/load.ts";
 import type { Mention, StructurePatterns } from "../packages/chaff/src/plugin.ts";
+import { chapterReading } from "../packages/chaff/src/structure/issues.ts";
 
 // 算用数字で番号を振った文書の「3.2節」「第3章」「3.2.1項」。木の通し番号（### 3.2）と同じ番地で読み、無ければ参照先が無いと言う。
 
@@ -164,6 +165,60 @@ describe("日本語: 読んだ番地が木に無ければ参照先が無い", ()
       dangling(lines("第一条　目的を定める。", "第二条　第九章及び第三節の規定による。", "第三条　前条による。", "第四条　本文。"), "c.txt", true),
       [],
     ));
+});
+
+describe("日本語: 一章一ファイルの連載では、ほかの章はほかのファイルにある", () => {
+  // 「# 第10章」を題にした文書の中の「### 1.」〜「### 8.」は節で、章ではない。「第9章」「第11章」は隣のファイルの章。
+  const sections = Array.from({ length: 8 }, (_, index) => [`### ${String(index + 1)}. 失敗その${String(index + 1)}`, "", "説明の文です。", ""]).flat();
+  const chapter = (...body: string[]): string => lines("# 第10章\u3000ありがちな失敗", "", ...sections, ...body);
+  const titleMismatches = (source: string): unknown[] =>
+    runRules(buildDocument("d.md", source, ja), loadRules("ja"), {}, true, "docs/manual")
+      .findings.filter((finding) => finding.rule === "reference-title-mismatch")
+      .map((finding) => finding.values["label"] ?? finding.quote);
+
+  it("ほかの章への参照は、この文書の節に当てず、参照先が無いとも言わない", () => {
+    assert.deepEqual(dangling(chapter("くわしくは[第9章「キャッシュ」](09-c.md)に書いてある。", "", "次の[第11章](11-d.md)では別の話をする。")), []);
+    assert.deepEqual(titleMismatches(chapter("第8章「ホームタイムライン」も見てほしい。")), []);
+  });
+
+  it("ほかの章で限った条（第1章の第2条）も、この文書の節に当てない。限っていない条は当てる", () => {
+    assert.deepEqual(titleMismatches(chapter("申込みは、第1章の第2条（利用登録）を終えた方だけができる。")), []);
+    assert.deepEqual(titleMismatches(chapter("申込みは、第2条（利用登録）を終えた方だけができる。")).length, 1);
+  });
+
+  it("自分の章への参照は、この文書のものとして見る。並べた条（第1章、第2条）は限られていない", () => {
+    assert.deepEqual(titleMismatches(lines("# 第1章 総則", "", "### 第1条 目的", "", "第1章「料金」に定める。")).length, 1);
+    assert.deepEqual(titleMismatches(chapter("第9章、第2条（利用登録）を見る。")).length, 1);
+  });
+
+  it("題でない章が一つだけの文書では、無い章を言う", () =>
+    assert.deepEqual(dangling(lines("# 規則", "", "## 第1章 総則", "", "### 第1条 目的", "", "第2章に定める。")), ["第2章"]));
+
+  it("章が二つ以上ある文書で、無い章を指せば言う", () =>
+    assert.deepEqual(
+      dangling(lines("## 第1章 総則", "", "### 1. 目的", "", "本文。", "", "第9章に定める。", "", "## 第2章 運用", "", "### 2. 手順", "", "本文。")),
+      ["第9章"],
+    ));
+
+  it("章の無い文書では、「第3章」はこれまでどおり「## 3.」の節に当たる", () =>
+    assert.deepEqual(dangling(lines("# 設計書", "", "## 1. 概要", "", "本文。", "", "## 2. 構成", "", "本文。", "", "## 3. 運用", "", "第3章で扱う。")), []));
+});
+
+describe("chapterReading", () => {
+  const titled = { addresses: ["ch10"], titled: true };
+
+  it("章が書いてある文書の章の参照は、節に落とさない。題が章の文書なら、ほかの章はほかのファイル", () => {
+    assert.deepEqual(chapterReading("ch9", titled), { fallback: false, elsewhere: true });
+    assert.deepEqual(chapterReading("ch10", titled), { fallback: false, elsewhere: false });
+    assert.deepEqual(chapterReading("ch9", { addresses: ["h1/ch1", "h1/ch2"], titled: false }), { fallback: false, elsewhere: false });
+    assert.deepEqual(chapterReading("ch2", { addresses: ["h1/ch1"], titled: false }), { fallback: false, elsewhere: false });
+  });
+
+  it("章の無い文書や、章でない参照は、これまでどおり", () => {
+    assert.deepEqual(chapterReading("ch3", { addresses: [], titled: false }), { fallback: true, elsewhere: false });
+    assert.deepEqual(chapterReading("3.2", titled), { fallback: true, elsewhere: false });
+    assert.deepEqual(chapterReading("", { addresses: [], titled: false }), { fallback: true, elsewhere: false });
+  });
 });
 
 describe("日本語: 節の番号は数量ではない", () => {
