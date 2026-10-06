@@ -5,7 +5,7 @@ import { CHAPTER_DEPTH, PART_DEPTH } from "./depth.ts";
 
 const DEFINITIONS = [
   /["“](?<term>[^"”\n]{1,60})["”] (?:means|shall mean|refers to|has the meaning)\b/gu,
-  /\((?:the |hereinafter )?["“](?<term>[^"”\n]{1,60})["”]\)/gu,
+  /\((?:the |these |this |hereinafter |each,? an? |collectively,? the )?["“](?<term>[^"”\n]{1,60})["”]\)/gu,
   /\(hereinafter referred to as ["“](?<term>[^"”\n]{1,60})["”]\)/gu,
 ];
 
@@ -34,7 +34,30 @@ const isPointer = (text: string, end: number): boolean => POINTER.test(text.slic
 /** ("Seller") has no word that says it defines: the same parentheses quote an example ("silently fails"). */
 const BARE = /^\(["“]/u;
 
-export const definitions = (text: string): Mention[] =>
+/**
+ * A bracket that gives one thing several names: ("Pinecone", "we" or "us"), (the "Company", "we", "us", or "our"). The
+ * first name is the inline definition (it follows the long name); the others are defined there too.
+ */
+const NAME_LIST = /\((?:the |collectively,? the |each,? an? )?["“][^"”\n]{1,60}["”](?:(?:, (?:(?:and|or) )?| (?:and|or) )(?:the )?["“][^"”\n]{1,60}["”])+\)/gu;
+const QUOTED_NAME = /["“](?<term>[^"”\n]{1,60})["”]/gu;
+
+/** A list of names starts with a capitalised one ("Pinecone"); ("mine", "not mine", "yours") quotes examples. */
+const CAPITALISED = /^\p{Lu}/u;
+
+const nameListDefinitions = (text: string): Mention[] =>
+  [...text.matchAll(NAME_LIST)].flatMap((match) =>
+    [...match[0].matchAll(QUOTED_NAME)].flatMap((name, index, names) => {
+      const term = name.groups?.["term"];
+      if (term === undefined || !CAPITALISED.test(names[0]?.groups?.["term"] ?? "")) return [];
+      const start = index === 0 ? match.index : match.index + name.index;
+      const end = index === 0 ? match.index + match[0].length : start + name[0].length;
+      const bare = BARE.test(match[0]) ? { form: "bare" } : {};
+      const scope = APPLIES.test(text) ? { scope: "local" } : {};
+      return [{ start, end, attrs: { term, ...scope, ...(index === 0 ? { placement: "inline" } : {}), ...bare } }];
+    }),
+  );
+
+const patternDefinitions = (text: string): Mention[] =>
   DEFINITIONS.flatMap((pattern) =>
     [...text.matchAll(pattern)].flatMap((match) => {
       const term = match.groups?.["term"];
@@ -47,3 +70,6 @@ export const definitions = (text: string): Mention[] =>
       return [{ start: match.index, end, attrs: { term, ...scope, ...(inline ? { placement: "inline" } : {}), ...bare } }];
     }),
   );
+
+export const definitions = (text: string): Mention[] =>
+  [...patternDefinitions(text), ...nameListDefinitions(text)].toSorted((left, right) => left.start - right.start);
