@@ -1,4 +1,8 @@
 jstage-jkg-72-4-133  4
+jstage-jniph-74-1-2-rehabilitation  4
+jstage-jniph-74-2-119-wbgt  4
+jstage-jniph-74-2-157-heat-policy  4
+jstage-jnlp-32-1-114-nmt  4
 mhlw-norovirus-qa  1
 tcu-rishu-toroku-2026-kouki  2
 utelecon-account-leave  2

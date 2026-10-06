@@ -16,9 +16,9 @@ genai-web-api  4
 genai-web-procedure  9
 jstage-jkg-72-4-133  6
 jstage-jniph-74-1-2-rehabilitation  7
-jstage-jniph-74-2-119-wbgt  12
+jstage-jniph-74-2-119-wbgt  8
 jstage-jniph-74-2-157-heat-policy  7
-jstage-jnlp-32-1-114-nmt  11
+jstage-jnlp-32-1-114-nmt  1
 koenote-requirements  1
 meti-keiryoshi-exam-correction  1
 meti-press-level4-bus  2

@@ -1,2 +1,0 @@
-python-code-quality-list-2016-03  7
-wikipedia-en-markdown  10

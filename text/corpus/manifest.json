@@ -1856,7 +1856,7 @@
       "source": "url",
       "genre": "business/email",
       "language": "en",
-      "url": "https://en.wikisource.org/w/index.php?oldid=2329193&action=render",
+      "url": "https://en.wikisource.org/w/index.php?oldid=2329193&action=render&useparsoid=0",
       "license": "Public domain (letters written 1848-1864; the edition was published in 1907); transcription by Wikisource (https://en.wikisource.org/wiki/Life_and_Works_of_Abraham_Lincoln/Volume_9/Greeley,_Horace); the rendered page, converted to Markdown",
       "redistribute": true,
       "format": "html"

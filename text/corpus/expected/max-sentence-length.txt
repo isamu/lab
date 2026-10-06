@@ -3,7 +3,7 @@
 18f-handbook-travel  4
 18f-handbook-travel-faq  16
 acas-letter-disciplinary-hearing-warning  2
-aoml-hurricane-faq  490
+aoml-hurricane-faq  65
 apidatagov-developer-manual  1
 arxiv-2609-27842-genai-assessment  18
 arxiv-2609-38219-abs-tamazight-speech  1
@@ -60,7 +60,7 @@ nta-taxanswer-1120  4
 openapi-spec-3-1-0  3
 python-code-quality-list-2016-03  23
 rfc3693-geopriv-requirements  19
-rfc9293-tcp  262
+rfc9293-tcp  51
 rfc9457  9
 rust-rfc-2094-nll  12
 soumu-kokumin-cyber-phishing  1
@@ -70,7 +70,7 @@ tc39-agenda-2026-07  1
 typescript-5-4-release-notes  2
 usajobs-va-it-specialist-customer-support  9
 w3c-secure-contexts  9
-wikipedia-en-markdown  12
+wikipedia-en-markdown  1
 wikipedia-ja-talk-oden  1
 wikisource-lincoln-letters-greeley  32
 wikivoyage-belgian-coast-tram  6
