@@ -3,6 +3,8 @@
 
 export type PlaygroundSample = { readonly id: string; readonly genre: string; readonly name: string; readonly text: string };
 
+const FENCE = "```";
+
 const ja: readonly PlaygroundSample[] = [
   {
     id: "blog",
@@ -12,7 +14,21 @@ const ja: readonly PlaygroundSample[] = [
 
 この記事では、Redis を使ったキャッシュの入れ方を説明します。とても非常に効果的な方法です。
 
-まず、キャッシュの有効期限を決めます。次に、読み出しの処理を書き換えます。最後に、書き込みの処理を書き換えます。
+## インストール
+
+npm から 4.6.0 を入れます。
+
+${FENCE}bash
+npm install redis@4.7.0
+${FENCE}
+
+## 手順
+
+1. キャッシュの有効期限を決めます。
+2. 読み出しの処理を書き換えます。
+4. 書き込みの処理を書き換えます。
+
+うまくいかないときは、手順5からやり直してください。
 
 設定は2026年10月6日（月）に本番へ反映しました。いかがでしたか？
 `,
@@ -22,6 +38,7 @@ const ja: readonly PlaygroundSample[] = [
     genre: "business/email",
     name: "メール",
     text: `件名: 見積書の送付について
+日付: 2026年10月6日
 
 株式会社サンプル
 山田様
@@ -29,8 +46,15 @@ const ja: readonly PlaygroundSample[] = [
 いつもお世話になっております。
 
 ご依頼いただいた見積書を添付いたします。ご確認のほど、よろしくお願い申し上げます。
-なお、ご不明な点がございましたら、お気軽にお問い合わせください。
-お手数ですが、来週中にご返信いただけますと幸いです。
+
+打ち合わせで決めた点は、以下の3点です。
+
+- 公開日は11月30日とする
+- 写真は御社で用意する
+- 公開後1か月の保守を見積に含める
+- 問い合わせの送り先を営業部とする
+
+お手数ですが、10月9日（木）までにご返信いただけますと幸いです。
 
 よろしくお願いいたします。
 `,
@@ -60,9 +84,15 @@ const ja: readonly PlaygroundSample[] = [
     name: "プレスリリース",
     text: `# 新製品「サンプル Pro」発売のお知らせ
 
-株式会社サンプル（本社: 東京都千代田区）は、業界最高の性能を持つ新製品「サンプル Pro」を2026年11月1日（月）に発売します。
+2026年10月6日
 
-「サンプル Pro」は、従来の製品と比べて処理速度が大幅に向上しました。画期的な新機能を多数搭載し、お客様の業務を革新的に変える、非常に重要な一歩です。
+株式会社サンプル（本社: 東京都千代田区）は、新製品「サンプル Pro」を2026年11月1日（月）に発売します。
+
+「サンプル Pro」には、2016年の創業から8年の技術を注ぎました。お客様の業務を変える、非常に重要な一歩です。
+
+利用企業は2026年9月末で1,200社となり、前年同月の1,000社から25%増えました。
+
+利用企業の業種別の内訳は、小売が45%、製造が35%、物流が25%です。
 
 価格はオープン価格です。
 `,
@@ -78,7 +108,21 @@ const en: readonly PlaygroundSample[] = [
 
 In this post we we add a cache in front of the API , and it was deployed on Monday, October 6, 2026.
 
-The change was reviewed carefully and it was decided that the old endpoint will be kept for now because the clients that were written last year still call it on every request that they make to the service.
+## Install
+
+Install version 4.6.0 from npm:
+
+${FENCE}bash
+npm install redis@4.7.0
+${FENCE}
+
+## Steps
+
+1. Choose how long entries live.
+2. Rewrite the read path.
+4. Rewrite the write path.
+
+If it fails, start again from step 5.
 
 I hope this helps!
 `,
@@ -88,12 +132,22 @@ I hope this helps!
     genre: "business/email",
     name: "Email",
     text: `Subject: Quote for the website project
+Date: Monday, October 6, 2025
 
 Hi Dana,
 
 I hope this email finds you well. As per our call, please find attached the quote for the the website project.
 
-Please let me know if you have any questions. Please reply by Friday, October 9, 2025.
+We agreed on the following three points:
+
+- The site goes live on November 30.
+- Your team provides the photos.
+- One month of maintenance is included.
+- The contact form writes to your sales team.
+
+The quote comes to $5,500: $3,000 for the design and USD 2,500 for the build.
+
+Please let me know if you have any questions. Please reply by Friday, October 9.
 
 Best regards,
 Sam
@@ -124,9 +178,15 @@ This Agreement runs from Wednesday, April 1, 2026 to Tuesday, March 31, 2026.
     name: "Press release",
     text: `# Sample Inc. launches Sample Pro
 
+October 6, 2026
+
 Sample Inc. today announced Sample Pro, the most unique tool in the industry, available on Monday, November 1, 2026.
 
-Sample Pro is a revolutionary, game-changing product that dramatically improves speed. It leverages cutting-edge technology to empower teams.
+In the 8 years since our founding in 2016, we have kept improving it on what our customers tell us.
+
+At the end of September 2026, 1,200 companies used Sample, up 25% from 1,000 companies a year earlier.
+
+By industry, retailers make up 45% of those companies, manufacturers 35% and logistics companies 25%.
 `,
   },
 ];
