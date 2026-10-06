@@ -54,11 +54,24 @@ const nameAfter = (source: string, end: number): { name: string; at: number } | 
 /** 項や号の札（(a)、(ii)、（イ））。名前ではなく、参照の続き。 */
 const ITEM_LABEL = /^(?:[a-z]{1,2}|[ivxlcdm]{1,5}|.)$/iu;
 
+const LATIN_ASIDE = /^[\p{Script=Latin}\s.]+$/u;
+
+/**
+ * The name holds the aside. An English aside is a whole word or phrase: "or" in "Return of Information" is not the aside
+ * "or". Other asides are found anywhere (上記 in 上記参照).
+ */
+export const holdsAside = (name: string, aside: string): boolean => {
+  if (aside.trim() === "") return false;
+  if (!LATIN_ASIDE.test(aside)) return normalized(name).includes(normalized(aside));
+  const words = ` ${name
+    .normalize("NFKC")
+    .toLowerCase()
+    .replaceAll(/[^\p{L}\p{N}]+/gu, " ")} `;
+  return aside.trim() !== "" && words.includes(` ${aside.trim().toLowerCase()} `);
+};
+
 const isName = (name: string, words: ReferenceWords): boolean =>
-  LETTER.test(name) &&
-  !DIGIT.test(name) &&
-  !ITEM_LABEL.test(name.normalize("NFKC")) &&
-  !words.asides.some((aside) => normalized(name).includes(normalized(aside)));
+  LETTER.test(name) && !DIGIT.test(name) && !ITEM_LABEL.test(name.normalize("NFKC")) && !words.asides.some((aside) => holdsAside(name, aside));
 
 const agrees = (name: string, heading: string): boolean => {
   const [a, b] = [normalized(name), normalized(heading)];
