@@ -1,6 +1,7 @@
 commonpaper-mutual-nda  1
 crs-rl32781-salt  1
 github-general-privacy-statement  1
+github-terms-of-service  1
 mhlw-kokuji-h18-107-keiji-jiko  3
 ppc-guidelines-tsusoku  10
 rust-rfc-2094-nll  1
