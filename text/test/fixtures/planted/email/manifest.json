@@ -1,0 +1,209 @@
+{
+  "note": "Self-written business emails and meeting minutes, each in a clean version and a planted one that differs only on the lines below. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should. yarn planted email scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/email",
+      "language": "ja",
+      "genre": "business/email",
+      "clean": "ja/email.clean.md",
+      "planted": "ja/email.planted.md",
+      "mistakes": [
+        {
+          "kind": "relative-date",
+          "rule": "relative-date-mismatch",
+          "line": 9,
+          "clean": "来週月曜（10月12日）",
+          "planted": "来週月曜（10月13日）"
+        },
+        {
+          "kind": "amount-two-ways",
+          "rule": "currency-notation-consistency",
+          "line": 11,
+          "clean": "制作費25万円",
+          "planted": "制作費250,000円"
+        },
+        {
+          "kind": "attachment-not-attached",
+          "rule": "attachment-not-attached",
+          "line": 13,
+          "clean": "見積書は、明日郵送いたします。",
+          "planted": "見積書を添付いたします。"
+        },
+        {
+          "kind": "date-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 15,
+          "clean": "10月9日（金）までにご確認",
+          "planted": "10月9日（木）までにご確認"
+        },
+        {
+          "kind": "announced-count",
+          "rule": "announced-count-mismatch",
+          "line": 17,
+          "clean": "以下の4点です",
+          "planted": "以下の3点です"
+        },
+        {
+          "kind": "request-no-deadline",
+          "rule": "request-without-deadline",
+          "line": 24,
+          "clean": "当日の議題を、10月9日までにお送りください。",
+          "planted": "当日の議題をお送りください。"
+        },
+        {
+          "kind": "name-variant",
+          "rule": "name-variant",
+          "line": 26,
+          "clean": "斎藤様と松本様に",
+          "planted": "斉藤様と松本様に"
+        }
+      ]
+    },
+    {
+      "id": "ja/minutes",
+      "language": "ja",
+      "genre": "business/meeting-notes",
+      "clean": "ja/minutes.clean.md",
+      "planted": "ja/minutes.planted.md",
+      "mistakes": [
+        {
+          "kind": "announced-count",
+          "rule": "announced-count-mismatch",
+          "line": 9,
+          "clean": "次の4点を決めた。",
+          "planted": "次の3点を決めた。"
+        },
+        {
+          "kind": "date-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 12,
+          "clean": "11月30日（月）とする",
+          "planted": "11月30日（火）とする"
+        },
+        {
+          "kind": "amount-two-ways",
+          "rule": "currency-notation-consistency",
+          "line": 13,
+          "clean": "保守の費用は月額3万円",
+          "planted": "保守の費用は月額30,000円"
+        },
+        {
+          "kind": "name-variant",
+          "rule": "name-variant",
+          "line": 19,
+          "clean": "- 松本: 問い合わせ",
+          "planted": "- 松元: 問い合わせ"
+        },
+        {
+          "kind": "relative-date",
+          "rule": "relative-date-mismatch",
+          "line": 24,
+          "clean": "来週月曜（10月12日）",
+          "planted": "来週月曜（10月19日）"
+        }
+      ]
+    },
+    {
+      "id": "en/email",
+      "language": "en",
+      "genre": "business/email",
+      "clean": "en/email.clean.md",
+      "planted": "en/email.planted.md",
+      "mistakes": [
+        {
+          "kind": "relative-date",
+          "rule": "relative-date-mismatch",
+          "line": 6,
+          "clean": "next Monday (October 12)",
+          "planted": "next Monday (October 13)"
+        },
+        {
+          "kind": "amount-two-ways",
+          "rule": "currency-notation-consistency",
+          "line": 8,
+          "clean": "$2,500 for building",
+          "planted": "USD 2,500 for building"
+        },
+        {
+          "kind": "attachment-not-attached",
+          "rule": "attachment-not-attached",
+          "line": 10,
+          "clean": "The quote will follow by post tomorrow.",
+          "planted": "Please find the quote attached."
+        },
+        {
+          "kind": "date-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 12,
+          "clean": "Friday, October 9, 2026",
+          "planted": "Thursday, October 9, 2026"
+        },
+        {
+          "kind": "announced-count",
+          "rule": "announced-count-mismatch",
+          "line": 14,
+          "clean": "the following four points:",
+          "planted": "the following three points:"
+        },
+        {
+          "kind": "request-no-deadline",
+          "rule": "request-without-deadline",
+          "line": 21,
+          "clean": "for the meeting by October 9.",
+          "planted": "for the meeting."
+        },
+        {
+          "kind": "name-variant",
+          "rule": "name-variant",
+          "line": 23,
+          "clean": "Thank you again, Ms. Whitfield,",
+          "planted": "Thank you again, Ms. Whitfeld,"
+        }
+      ]
+    },
+    {
+      "id": "en/minutes",
+      "language": "en",
+      "genre": "business/meeting-notes",
+      "clean": "en/minutes.clean.md",
+      "planted": "en/minutes.planted.md",
+      "mistakes": [
+        {
+          "kind": "announced-count",
+          "rule": "announced-count-mismatch",
+          "line": 9,
+          "clean": "the following four points:",
+          "planted": "the following three points:"
+        },
+        {
+          "kind": "date-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 12,
+          "clean": "Monday, November 30, 2026",
+          "planted": "Tuesday, November 30, 2026"
+        },
+        {
+          "kind": "amount-two-ways",
+          "rule": "currency-notation-consistency",
+          "line": 13,
+          "clean": "Maintenance costs $300 a month",
+          "planted": "Maintenance costs USD 300 a month"
+        },
+        {
+          "kind": "name-variant",
+          "rule": "name-variant",
+          "line": 19,
+          "clean": "- Kenji Okafor: send",
+          "planted": "- Kenji Okafur: send"
+        },
+        {
+          "kind": "relative-date",
+          "rule": "relative-date-mismatch",
+          "line": 24,
+          "clean": "next Monday (October 12)",
+          "planted": "next Monday (October 19)"
+        }
+      ]
+    }
+  ]
+}
