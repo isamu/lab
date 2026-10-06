@@ -8,15 +8,16 @@ import {
   misalignedPlants,
   parseExpectation,
   parseManifest,
+  pickSets,
   recallByKind,
-  type ContractDocument,
-} from "../scripts/contracts-score.ts";
+  type PlantedDocument,
+} from "../scripts/planted-score.ts";
 
-// yarn contracts の数え方。植えた誤りを種類ごとに数え、きれいな版の指摘を数え、記録と比べる。
+// yarn planted の数え方。植えた誤りを種類ごとに数え、きれいな版の指摘を数え、記録と比べる。
 
 const mistake = (kind: string, rule: string, line: number) => ({ kind, rule, line, clean: "a", planted: "b" });
 
-const documents: ContractDocument[] = [
+const documents: PlantedDocument[] = [
   {
     id: "ja/one",
     language: "ja",
@@ -62,7 +63,7 @@ describe("parseManifest", () => {
 });
 
 describe("misalignedPlants", () => {
-  const document: ContractDocument = {
+  const document: PlantedDocument = {
     id: "ja/two",
     language: "ja",
     genre: "legal/contract",
@@ -185,4 +186,12 @@ describe("formatRecall", () => {
     ]);
     assert.deepEqual(formatRecall([]), []);
   });
+});
+
+describe("pickSets", () => {
+  const sets = ["tech", "contracts", "email"];
+  it("名前が無ければ全部を名前順に", () => assert.deepEqual(pickSets(sets, []), ["contracts", "email", "tech"]));
+  it("名前があればその順に、重ねず", () => assert.deepEqual(pickSets(sets, ["tech", "contracts", "tech"]), ["tech", "contracts"]));
+  it("無い名前は、ある名前を添えて落とす", () => assert.throws(() => pickSets(sets, ["contract"]), /no set contract \(sets: contracts, email, tech\)/u));
+  it("一つも無い所で名前を頼まれても落とす", () => assert.throws(() => pickSets([], ["tech"]), /no set tech/u));
 });

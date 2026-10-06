@@ -1,5 +1,6 @@
-// The pure half of `yarn contracts`: reading the manifest of planted contract mistakes (test/fixtures/contracts/), scoring
-// the findings on the planted and clean documents per kind of mistake, and comparing the score with the committed one.
+// The pure half of `yarn planted`: picking the planted sets to run (test/fixtures/planted/<set>/), reading a set's manifest
+// of planted mistakes, scoring the findings on the planted and clean documents per kind of mistake, and comparing the
+// score with the set's committed one.
 
 /** One planted mistake: the line it is on (1-based), the text the clean document has there and what the planted one has instead. */
 export type PlantedMistake = {
@@ -10,7 +11,7 @@ export type PlantedMistake = {
   readonly planted: string;
 };
 
-export type ContractDocument = {
+export type PlantedDocument = {
   readonly id: string;
   readonly language: string;
   readonly genre: string;
@@ -37,18 +38,30 @@ export type Expectation = {
   readonly clean: readonly string[];
 };
 
+/**
+ * The sets a run covers: every set when none is named, else the named ones in the order given. A name that is not a set
+ * is an error that lists the sets, so a typo does not pass as a run that scored nothing.
+ */
+export const pickSets = (available: readonly string[], requested: readonly string[]): string[] => {
+  const sorted = available.toSorted((left, right) => left.localeCompare(right, "en"));
+  if (requested.length === 0) return sorted;
+  const unknown = requested.filter((name) => !available.includes(name));
+  if (unknown.length > 0) throw new Error(`planted: no set ${unknown.join(", ")} (sets: ${sorted.join(", ")})`);
+  return [...new Set(requested)];
+};
+
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 
 const stringField = (entry: Record<string, unknown>, field: string, where: string): string => {
   const value = entry[field];
-  if (typeof value !== "string" || value === "") throw new Error(`contracts manifest: ${where} has no ${field}`);
+  if (typeof value !== "string" || value === "") throw new Error(`planted manifest: ${where} has no ${field}`);
   return value;
 };
 
 const mistakeOf = (value: unknown, where: string): PlantedMistake => {
-  if (!isRecord(value)) throw new Error(`contracts manifest: ${where} is not an object`);
+  if (!isRecord(value)) throw new Error(`planted manifest: ${where} is not an object`);
   const { line } = value;
-  if (typeof line !== "number" || !Number.isInteger(line) || line < 1) throw new Error(`contracts manifest: ${where} has no line`);
+  if (typeof line !== "number" || !Number.isInteger(line) || line < 1) throw new Error(`planted manifest: ${where} has no line`);
   return {
     kind: stringField(value, "kind", where),
     rule: stringField(value, "rule", where),
@@ -58,12 +71,12 @@ const mistakeOf = (value: unknown, where: string): PlantedMistake => {
   };
 };
 
-const documentOf = (value: unknown, index: number): ContractDocument => {
+const documentOf = (value: unknown, index: number): PlantedDocument => {
   const where = `documents[${String(index)}]`;
-  if (!isRecord(value)) throw new Error(`contracts manifest: ${where} is not an object`);
+  if (!isRecord(value)) throw new Error(`planted manifest: ${where} is not an object`);
   const id = stringField(value, "id", where);
   const { mistakes } = value;
-  if (!Array.isArray(mistakes)) throw new Error(`contracts manifest: ${id} has no mistakes`);
+  if (!Array.isArray(mistakes)) throw new Error(`planted manifest: ${id} has no mistakes`);
   return {
     id,
     language: stringField(value, "language", where),
@@ -74,8 +87,8 @@ const documentOf = (value: unknown, index: number): ContractDocument => {
   };
 };
 
-export const parseManifest = (value: unknown): ContractDocument[] => {
-  if (!isRecord(value) || !Array.isArray(value.documents)) throw new Error("contracts manifest: no documents");
+export const parseManifest = (value: unknown): PlantedDocument[] => {
+  if (!isRecord(value) || !Array.isArray(value.documents)) throw new Error("planted manifest: no documents");
   return value.documents.map(documentOf);
 };
 
@@ -83,7 +96,7 @@ export const parseManifest = (value: unknown): ContractDocument[] => {
  * Each planted mistake whose line does not hold its text: the clean line must have `clean` and the planted line
  * `planted`. A line that moved when one of the documents was edited would score a finding against the wrong line.
  */
-export const misalignedPlants = (document: ContractDocument, cleanLines: readonly string[], plantedLines: readonly string[]): string[] =>
+export const misalignedPlants = (document: PlantedDocument, cleanLines: readonly string[], plantedLines: readonly string[]): string[] =>
   document.mistakes.flatMap((mistake) => {
     const cleanLine = cleanLines[mistake.line - 1] ?? "";
     const plantedLine = plantedLines[mistake.line - 1] ?? "";
@@ -97,7 +110,7 @@ export const misalignedPlants = (document: ContractDocument, cleanLines: readonl
 const keyOf = (language: string, kind: string): string => `${language}\u0000${kind}`;
 
 /** Per language and kind, in the order the manifest first names them: which planted mistakes their rule reported on their line. */
-export const recallByKind = (documents: readonly ContractDocument[], plantedFindings: ReadonlyMap<string, readonly LineFinding[]>): KindRecall[] => {
+export const recallByKind = (documents: readonly PlantedDocument[], plantedFindings: ReadonlyMap<string, readonly LineFinding[]>): KindRecall[] => {
   const byKind = new Map<string, KindRecall>();
   documents.forEach((document) => {
     const findings = plantedFindings.get(document.id) ?? [];
@@ -117,11 +130,11 @@ export const recallByKind = (documents: readonly ContractDocument[], plantedFind
 };
 
 /** The rules the manifest expects to report a planted mistake: a clean document should get none of their findings. */
-export const measuredRules = (documents: readonly ContractDocument[]): ReadonlySet<string> =>
+export const measuredRules = (documents: readonly PlantedDocument[]): ReadonlySet<string> =>
   new Set(documents.flatMap((document) => document.mistakes.map((mistake) => mistake.rule)));
 
 /** The measured rules' findings on the clean documents, as "<clean file>:<line> <rule>", sorted. */
-export const cleanFindingLines = (documents: readonly ContractDocument[], cleanFindings: ReadonlyMap<string, readonly LineFinding[]>): string[] => {
+export const cleanFindingLines = (documents: readonly PlantedDocument[], cleanFindings: ReadonlyMap<string, readonly LineFinding[]>): string[] => {
   const measured = measuredRules(documents);
   return documents
     .flatMap((document) =>
