@@ -12,7 +12,7 @@ const inputOf = (doc: ProseDocument): ReferenceInput | undefined => {
   return {
     source: doc.source,
     references: inDocumentOrder(tree).filter((node) => node.kind === "reference" && node.attrs["document"] === undefined),
-    targetOf: referenceResolver(tree),
+    targetOf: referenceResolver(tree, doc.source),
     words: {
       asides: patternsOf(doc, "reference-aside"),
       topicLinks: patternsOf(doc, "reference-topic-link"),

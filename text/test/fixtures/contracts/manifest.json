@@ -1,5 +1,5 @@
 {
-  "note": "Self-written contracts, each in a clean version and a planted one that differs only on the lines below. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should. yarn contracts scores them; expected.json is the committed score.",
+  "note": "Self-written contracts, each in a clean version and a planted one that differs only on the lines below. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should. yarn contracts scores them; expected.json is the committed score. A document with no mistakes (its planted file is its clean file) is there for its clean side only: a chapter of a set of terms that refers to the other chapters, in other files.",
   "documents": [
     {
       "id": "ja/outsourcing",
@@ -323,6 +323,14 @@
           "planted": "1. 本物品の代金は"
         }
       ]
+    },
+    {
+      "id": "ja/terms-chapter",
+      "language": "ja",
+      "genre": "legal/contract",
+      "clean": "ja/terms-chapter.clean.md",
+      "planted": "ja/terms-chapter.clean.md",
+      "mistakes": []
     },
     {
       "id": "en/services",

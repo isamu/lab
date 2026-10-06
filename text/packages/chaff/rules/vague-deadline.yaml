@@ -1,0 +1,95 @@
+id: vague-deadline
+layer: L2
+status: stable
+how_to_find: vague-deadline
+severity: info
+
+name:
+  ja: 期限を「速やかに」のような語で残している
+  en: A time limit left to the reader (promptly)
+
+why:
+  ja: 契約の義務に「速やかに」「遅滞なく」とだけ書くと、何日目までなら守ったことになるのかを、当事者がそれぞれ自分に都合よく読みます。争いになったとき、守ったかどうかを決める物差しがありません。期限は「通知を受けた日から7日以内に」のように数で書くと、誰が読んでも同じに決まります。期限をどう書くかは書き手が決めることなので、chaff は、ほかの期限の多くを数で書いた文書の中で、期限を読み手に決めさせる語（語の一覧は言語ごとの語彙表にあります）を少ないほうとして指します。数の期限（日以内、営業日）を書いた文が、その語を書いた文より多いときだけで、その語と同じ文に数の期限があれば指しません。
+  en: 'An obligation written with "promptly" or "without undue delay" alone lets each party read the deadline its own way, and a dispute has no measure of whether it was met. A number ("within seven days of receiving notice") reads the same to everyone. How to write limits is the drafter''s choice, so chaff points only at the minority: in a document where more sentences state a limit in numbers (days, business days) than hold a word that leaves the limit to the reader (each language''s word list has them), it points at those words, unless their own sentence states a number too.'
+
+message:
+  ja: 「{word}」では期限が決まりません。何日以内かを数で書くと、守ったかどうかを決められます
+  en: '"{word}" sets no deadline; a number of days makes it one that can be met or missed'
+
+how_to_fix:
+  ja: 「通知を受けた日から7日以内に」のように、起点と日数で期限を書いてください。急ぐことを伝えたいだけなら、「速やかに、遅くとも7日以内に」のように数の期限を添えます。
+  en: 'Write the limit as a start and a number of days ("within seven days of receiving notice"). To stress urgency too, add the number: "promptly, and in any case within seven days".'
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [legal, docs, academic, literature, speech]
+off_for:
+  docs: "A deadline is a contract's obligation: the contract genre checks it."
+  academic: "A deadline is a contract's obligation: the contract genre checks it."
+  literature: "A deadline is a contract's obligation: the contract genre checks it."
+  speech: "A deadline is a contract's obligation: the contract genre checks it."
+  legal/statute: "A statute uses 速やかに, 遅滞なく and 直ちに as graded terms of art, and promptly as a duty it does not quantify."
+  legal/judgment: "A court decision quotes the statutes and contracts it reads (遅滞なく報告しなければならない); their limits are not the decision's own."
+  legal/patent: "A patent sets no deadlines: promptly describes a step of a process (promptly cooled)."
+
+group: wording
+summary:
+  ja: ほかの期限を日数で書いた契約で、一部の期限だけを「速やかに」「遅滞なく」と書いた所
+  en: A deadline written as "promptly" or "without undue delay" in a contract that gives its other deadlines in days
+example:
+  ja:
+    config: { genre: legal/contract }
+    before: |
+      第1条　乙は、毎月5日までに、前月の業務を甲に報告する。
+
+      第2条　甲は、報告を受けた日から10日以内に、結果を乙に通知する。
+
+      第3条　乙は、甲から求めを受けたときは、速やかに資料を提出する。
+    after: |
+      第1条　乙は、毎月5日までに、前月の業務を甲に報告する。
+
+      第2条　甲は、報告を受けた日から10日以内に、結果を乙に通知する。
+
+      第3条　乙は、甲から求めを受けた日から7日以内に、資料を提出する。
+  en:
+    config: { genre: legal/contract }
+    before: |
+      1. The Supplier shall deliver each report by the fifth business day of the month.
+
+      2. The Customer shall pay each invoice within thirty days of receiving it.
+
+      3. The Supplier shall notify the Customer promptly of any breach.
+    after: |
+      1. The Supplier shall deliver each report by the fifth business day of the month.
+
+      2. The Customer shall pay each invoice within thirty days of receiving it.
+
+      3. The Supplier shall notify the Customer of any breach within five business days of becoming aware of it.
+
+not_flagged:
+  ja: 数の期限を書いた文が、期限を読み手に決めさせる語を書いた文より多くない文書では、書き手がそう書くと決めたとみなして指しません。同じ文に日数の期限（7日以内、5営業日）があれば指しません（「速やかに、遅くとも7日以内に」）。権利を定める文（「速やかに本契約を解除することができる」）は、誰かが守る期限ではないので見ません。今すぐを言う「直ちに」と、解除の手続きの決まった言い方「相当の期間を定めて催告し」は見ません。法令は「速やかに」「遅滞なく」「直ちに」を段の違う決まった語として使うので見ません。判決は法令や契約を引いて書くので、特許は期限を定めないので見ません。契約書・規約のジャンルで見ます。
+  en: 'A document where sentences stating a limit in numbers are not more than those with a vague one is taken to write its limits that way on purpose, and is not reported. A sentence that also states a limit in numbers ("promptly, and in any case within seven days") is not reported, nor one that grants a right ("We may promptly suspend your account"), which sets no deadline anyone must meet. A bare unit ("24 hours a day") does not count as a limit in numbers; "within … days" does. "Immediately", which means at once, is not read. Statutes use "promptly" and "without delay" as terms of art, court decisions quote statutes and contracts, and patents set no deadlines, so none of them is read; the contract genre runs this rule.'
+rewrite:
+  depth: light
+  ja:
+    direction: 「速やかに」「遅滞なく」を、起点と日数の期限に書き換えます。日数は書き手が決めることなので、決まっていなければ書き手に確かめます。
+    pairs:
+      - before: 乙は、速やかに資料を提出する。
+        after: 乙は、甲の求めを受けた日から7日以内に、資料を提出する。
+      - before: 甲は、前項の請求を受けたときは、遅滞なく修補する。
+        after: 甲は、前項の請求を受けた日から14日以内に修補する。
+    keep:
+      - 義務を負う当事者と、すること
+    avoid:
+      - 日数を書き手に確かめずに決める
+  en:
+    direction: Replace "promptly" or "without undue delay" with a start and a number of days. The number is the writer's decision; if it is not known, ask.
+    pairs:
+      - before: The Supplier shall notify the Customer promptly.
+        after: The Supplier shall notify the Customer within five business days.
+      - before: The Customer shall pay each invoice within a reasonable time.
+        after: The Customer shall pay each invoice within thirty days of receiving it.
+    keep:
+      - the party bound and what it must do
+    avoid:
+      - choosing the number of days without asking the writer

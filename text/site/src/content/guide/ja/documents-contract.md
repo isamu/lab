@@ -164,7 +164,7 @@ $ npx chaffjs keiyaku.md --genre legal/contract
   - 金額・日付・期間・条番号の参照が、条項どうしと別表とで一致しているか
   - 解除・損害賠償・準拠法・紛争の解決を定めた条項があるか
 
-  このジャンルで特に効く rule: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, party-role-name, requirement-smell, total-mismatch
+  このジャンルで特に効く rule: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, party-role-name, requirement-smell, total-mismatch, vague-deadline
   chaff.yaml の guide: で書き換えられます。出さないときは --no-guide。
 
 ════════════════════════════════════════════════════════════
