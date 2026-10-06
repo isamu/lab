@@ -39,14 +39,19 @@ const ja: readonly PlaygroundSample[] = [
     id: "contract",
     genre: "legal/contract",
     name: "契約書の条項",
-    text: `第1条（目的）
-本契約は、甲が乙に委託する業務の条件を定める。
+    text: `株式会社みなと商会（以下「甲」という。）と株式会社しおさい技研（以下「乙」という。）は、次のとおり業務委託契約を結ぶ。
+
+第1条（目的）
+甲は、ウェブサイトの保守の業務（以下「本業務」という。）を乙に委託し、受託者はこれを受託する。
 
 第2条（委託料）
-甲は、乙に対し、委託料として金十万円（100,000円）を支払う。ただし、第5条に定める場合を除く。
+本業務の委託料の内訳は、保守費60,000円、運用費30,000円とし、合計100,000円とする。甲は、毎月末日までに委託料を支払う。
 
-第4条（秘密保持）
-乙は、業務上知り得た甲の秘密を、甲の書面による承諾なく第三者に開示してはならない。乙は、秘密を適切に管理するものとする等。
+第4条（報告）
+乙は、毎月5日までに本件業務の状況を甲に報告する。甲は、報告を受けた日から10日以内に結果を通知する。乙は、甲の求めがあれば速やかに資料を出す。ただし、第8条に定める場合を除く。
+
+第5条（期間）
+本契約の期間は、2026年4月1日（火）から2027年3月31日までとする。
 `,
   },
   {
@@ -98,14 +103,19 @@ Sam
     id: "contract",
     genre: "legal/contract",
     name: "Contract clause",
-    text: `Article 1 (Purpose)
-This Agreement sets out the terms on which the Client engages the Contractor.
+    text: `This agreement is made between Harbour Works Ltd (the "Supplier") and Northwind Retail Inc. (the "Customer").
 
-Article 2 (Fees)
-The Client shall pay the Contractor a fee of one hundred thousand dollars ($100,000), except as set out in Article 5.
+Section 1 (Services)
+The Supplier shall provide the hosting and support services (the "Services") to the Customer.
 
-Article 4 (Confidentiality)
-The Contractor shall not disclose the Client's confidential information to any third party, and shall take reasonable steps etc. to keep it safe.
+Section 2 (Fees)
+The monthly fee consists of $6,000 for hosting and $2,000 for support, for a total of $9,000. The Customer shall pay each invoice within thirty days of receiving it.
+
+Section 4 (Reports)
+The Supplier shall deliver a report by the fifth business day of each month. The Vendor shall fix any defect promptly, except as set out in Section 8.
+
+Section 5 (Term)
+This Agreement runs from Wednesday, April 1, 2026 to Tuesday, March 31, 2026.
 `,
   },
   {
