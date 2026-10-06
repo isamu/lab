@@ -67,6 +67,13 @@ describe("unbalanced-bracket: 括弧が組になっていない", () => {
     assert.deepEqual(findingsOf("サイト（https://example.jp/をご覧ください。\n"), ["「（」が閉じていません"]);
   });
 
+  it("コードに書いた URL の直後の閉じ括弧も、読み手には見える", () => {
+    assert.deepEqual(findingsOf("- **接続先**：サーバーの住所（`https://example.jp`）。設定に書く\n"), []);
+    assert.deepEqual(findingsOf("住所（`https://example.jp`）と（`https://example.com/a`）です。\n"), []);
+    assert.deepEqual(findingsOf("住所（`https://example.jp`です。\n"), ["「（」が閉じていません"]);
+    assert.deepEqual(findingsOf("住所は `https://example.jp`）です。\n"), ["「）」に対応する開きがありません"]);
+  });
+
   it("テキストの文書でも動く", () => {
     assert.deepEqual(findingsOf("資料（別紙を参照してください。\n", ja, "a.txt").length, 1);
   });
@@ -81,5 +88,17 @@ describe("withRunOnRestored", () => {
     assert.equal(withRunOnRestored(prose, source, [{ start: 0, end: source.length }]), `x（${" ".repeat(url.length)}）y`);
     assert.equal(withRunOnRestored(prose, source, []), prose);
     assert.equal(withRunOnRestored("", "", []), "");
+  });
+
+  it("コードの中の URL は、コードが終わった後ろの見える字だけを戻す", () => {
+    const code = "`https://a.jp`";
+    const source = `x（${code}）y`;
+    const prose = `x（${" ".repeat(code.length + 2)}`;
+    const texts = [
+      { start: 0, end: 2 },
+      { start: 2 + code.length, end: source.length },
+    ];
+    assert.equal(withRunOnRestored(prose, source, texts), `x（${" ".repeat(code.length)}）y`);
+    assert.equal(withRunOnRestored(prose, source, texts.slice(0, 1)), prose);
   });
 });
