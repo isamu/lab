@@ -2,6 +2,33 @@
 
 Newest first.
 
+## 0.27.0 — 2026-10-07
+
+Mistakes in technical documents, emails, minutes, reports and press releases are caught more often, measured on
+planted sets for each genre (`yarn planted`). New checks compare a version in prose with the code below it and a rate of
+change with its two values; dates without a year, relative days in emails, sentence breakdowns of percentages and
+numbered Markdown steps are now checked too.
+
+### Rules
+
+- version-mismatch: a version named above a code block that the block does not use (#701).
+- change-rate-mismatch: a rate of change the two values in its sentence do not give (#700).
+- date-weekday-mismatch checks a date written without its year (#697); relative-date-mismatch reads "next Monday" and
+  「明日」 against an email's date field (#703); percent-sum-mismatch adds a breakdown written in one sentence (#699);
+  numbering-gap compares the numbers of a Markdown ordered list (#698); summary-fact-mismatch reads a value followed by
+  「で、」 (#704).
+
+### Fixes
+
+- orthographic-variant leaves acronym-spelling capitals and capitalised function names alone; article-sound knows
+  acronyms said as words (#694).
+
+### Tests and tooling
+
+- `yarn planted [set]` runs planted sets for contracts, technical docs, email and minutes, and reports (#695 #696).
+- `yarn rules:measure` measures a pinned list of documents, so its result does not depend on a local cache (#693).
+- The playground's samples show their genre's own checks (#702).
+
 ## 0.26.0 — 2026-10-06
 
 chaff runs in the browser. `chaffjs/browser` checks a text in a web page with the same rules and messages as the
