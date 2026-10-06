@@ -148,6 +148,7 @@ const rangeWordsOf = (doc: ProseDocument): RangeWords => ({
   closers: (doc.lexicons["range-closer"] ?? []).map((entry) => entry.pattern),
   frames: (doc.lexicons["range-frame"] ?? []).flatMap((entry) => rangeFrameOf(entry.pattern) ?? []),
   changes: (doc.lexicons["date-change-word"] ?? []).map((entry) => entry.pattern),
+  weekdays: (doc.lexicons["weekday"] ?? []).map((entry) => entry.pattern),
 });
 
 /** 期間の終わりが始まりより前。範囲の記号と語は言語パッケージの語彙表（range-connector、range-opener、range-closer）から取る。 */
