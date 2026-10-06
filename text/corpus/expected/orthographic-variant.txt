@@ -28,7 +28,7 @@ ietf-draft-httpapi-ratelimit-headers-10  5
 jma-faq-typhoon  1
 jma-yougo-kaze  1
 jp-2011-056072-seiu-kenyo-gasa  7
-kantei-221-shisei-hoshin  10
+kantei-221-shisei-hoshin  8
 kantei-unga81-general-debate-speech  1
 kimino-mayor-2022-09  1
 kokkai-217-sangiin-shohisha-7  22
@@ -36,7 +36,7 @@ maff-kyodo-ryori-okaisan-ja  1
 mdn-using-fetch-ja  1
 mext-heatstroke-after-holidays  5
 mhlw-icd-committee-26-minutes  2
-mhlw-norovirus-qa  15
+mhlw-norovirus-qa  17
 moriguchi-satsuki-gakuen-ijime-houshin  3
 nasa-press-prima-new-mission-class  1
 neeview-changelog-ja  13
@@ -44,7 +44,7 @@ nsf-19-582-reu-solicitation  1
 nta-taxanswer-1120  1
 nws-glossary-a  2
 ppc-guidelines-tsusoku  132
-qiita-jnchito-good-sample-code  6
+qiita-jnchito-good-sample-code  4
 react-ja-thinking  3
 rfc3693-geopriv-requirements  2
 ruby-3-4-0-released-ja  2
