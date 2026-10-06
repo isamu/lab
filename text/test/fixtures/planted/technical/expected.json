@@ -7,7 +7,7 @@
       "fence-language-mix": "1/1",
       "table-extra-cell": "1/1",
       "undefined-acronym": "0/1",
-      "step-skip": "0/1",
+      "step-skip": "1/1",
       "step-reference-past-end": "1/1",
       "unit-spacing": "1/1"
     },
@@ -18,7 +18,7 @@
       "fence-language-mix": "1/1",
       "table-extra-cell": "1/1",
       "undefined-acronym": "0/1",
-      "step-skip": "0/1",
+      "step-skip": "1/1",
       "step-reference-past-end": "1/1",
       "unit-spacing": "1/1"
     }

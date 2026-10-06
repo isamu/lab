@@ -10,8 +10,8 @@ name:
   en: Skipped or repeated number
 
 why:
-  ja: 第3条の次が第5条、(a) の次が (c)、同じ第2項が二つ。番号が飛ぶか重なると、読み手は何かが消えたのか、参照がどちらを指すのかを判断できません。同じ親の中で並ぶ番号だけを比べます。枝番号（第3条の2）は並びの外として扱います。
-  en: Article 5 right after Article 3, (c) right after (a), two paragraphs numbered 2. A reader cannot tell whether something was removed, or which one a reference means. Only numbers side by side under the same parent are compared.
+  ja: 第3条の次が第5条、(a) の次が (c)、同じ第2項が二つ。番号が飛ぶか重なると、読み手は何かが消えたのか、参照がどちらを指すのかを判断できません。同じ親の中で並ぶ番号だけを比べます。枝番号（第3条の2）は並びの外として扱います。Markdown の番号付きの箇条書き（手順の「1.」「2.」「4.」）も、書いた番号を比べます。表示は最初の番号から数え直しますが、原文と「手順4を参照」は書いた番号を見ます。
+  en: Article 5 right after Article 3, (c) right after (a), two paragraphs numbered 2. A reader cannot tell whether something was removed, or which one a reference means. Only numbers side by side under the same parent are compared. The numbers written on a Markdown ordered list (steps "1.", "2.", "4.") are compared too. The page renders them counted from the first, but the source and a "see step 4" use the numbers as written.
 
 message:
   ja: 「{previous}」の次が「{label}」です（{expected} 番目のはず）
@@ -74,5 +74,5 @@ example:
       Working hours are from nine to six.
 
 not_flagged:
-  ja: 同じ親の下で隣り合う番号だけを比べます。別の章の番号どうしは比べません。
-  en: Only numbers side by side under the same parent are compared.
+  ja: 同じ親の下で隣り合う番号だけを比べます。別の章の番号どうしは比べません。どの項目にも同じ番号（「1.」）を書いた箇条書きと、引用の中の箇条書きは見ません。
+  en: Only numbers side by side under the same parent are compared. A list that writes the same number on every item ("1." on each) and a list inside a quotation are not checked.
