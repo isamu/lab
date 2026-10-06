@@ -1,7 +1,8 @@
 // `yarn rules:measure`: for every rule, on how many human documents of each genre group it reports, and how its
 // findings fared in the bench. Every rule runs at its genre's level (normal where the genre turns it off, so an off
-// rule is still measured), experimental ones included, on the corpus (corpus/docs, corpus/laws and the fetched
-// corpus/.cache) with each document's genre. A document runs with the others of its set (its publisher, or the statutes;
+// rule is still measured), experimental ones included, on the corpus documents pinned in corpus/rules-measure-documents.json
+// (from corpus/docs, corpus/laws and the fetched corpus/.cache; a pinned one missing here stops the run, an unpinned one
+// in the cache is left out) with each document's genre. A document runs with the others of its set (its publisher, or the statutes;
 // scripts/rules-measure-sets.ts), so the rules that compare documents are measured too. The bench columns come from the
 // committed bench expectations.
 //   --json                print the measurement as JSON instead of the table
@@ -17,6 +18,7 @@ import { join } from "node:path";
 import { corpusLanguages, runSetAtLevels } from "./corpus-findings.ts";
 import { documentSets, setOf } from "./rules-measure-sets.ts";
 import { docEntries, docPath, parsedAs } from "./corpus-docs.ts";
+import { missingPinned, parsePinned, pinnedOnly, type Candidate } from "./rules-measure-pinned.ts";
 import {
   aiBenchRows,
   benchRowOf,
@@ -41,6 +43,7 @@ import type { RunResult } from "../packages/chaff/src/run.ts";
 const ROOT = join(import.meta.dirname, "..");
 const CORPUS = join(ROOT, "corpus");
 const LAWS = join(CORPUS, "laws");
+const PINNED_FILE = join(CORPUS, "rules-measure-documents.json");
 const BENCH_EXPECTED = join(ROOT, "test", "fixtures", "bench", "expected");
 const AI_EXPECTED = join(ROOT, "test", "fixtures", "ai-samples", "paired", "expected.txt");
 const STATUTE_GENRE = "legal/statute";
@@ -86,22 +89,42 @@ const runAll = async (inputs: readonly Input[]): Promise<DocumentRun[]> =>
 
 const manifest: unknown = JSON.parse(readFileSync(join(CORPUS, "manifest.json"), "utf8"));
 
-const corpusInputs = (): Input[] => {
+/** A corpus document that could be measured: its id in the pinned list, and whether its text is on this machine. */
+type CorpusInput = Input & Candidate;
+
+const corpusCandidates = (): CorpusInput[] => {
   const languages = corpusLanguages(manifest);
   const laws = readdirSync(LAWS)
     .filter((file) => file.endsWith(".txt"))
     .map((file) => {
       const language = languages.get(file) ?? "ja";
-      return { file: join(LAWS, file), readAs: file, language, genre: STATUTE_GENRE, set: setOf(language, undefined, "laws") };
+      return {
+        id: file,
+        statute: true,
+        present: true,
+        file: join(LAWS, file),
+        readAs: file,
+        language,
+        genre: STATUTE_GENRE,
+        set: setOf(language, undefined, "laws"),
+      };
     });
-  const docs = docEntries(manifest).map((entry) => ({
-    file: docPath(CORPUS, entry),
-    readAs: parsedAs(entry),
-    language: entry.language,
-    genre: entry.genre,
-    set: setOf(entry.language, entry.url, "docs"),
-  }));
-  return [...laws, ...docs].filter((input) => existsSync(input.file));
+  const docs = docEntries(manifest).map((entry) => {
+    const file = docPath(CORPUS, entry);
+    const set = setOf(entry.language, entry.url, "docs");
+    return { id: entry.id, statute: false, present: existsSync(file), file, readAs: parsedAs(entry), language: entry.language, genre: entry.genre, set };
+  });
+  return [...laws, ...docs];
+};
+
+/** The pinned documents, all of them: a measurement over fewer would place the rules differently from the committed one. */
+const corpusInputs = (): Input[] => {
+  const candidates = corpusCandidates();
+  const pinned = parsePinned(readFileSync(PINNED_FILE, "utf8"), PINNED_FILE);
+  const missing = missingPinned(candidates, pinned);
+  if (missing.length > 0)
+    throw new Error(`rules:measure: ${String(missing.length)} pinned in ${PINNED_FILE} not found here; run \`yarn corpus:fetch\`:\n  ${missing.join("\n  ")}`);
+  return pinnedOnly(candidates, pinned);
 };
 
 /** The baseline folder is one set per language, as a team's folder is one run. */

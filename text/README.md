@@ -75,6 +75,7 @@ yarn screens:update  # サイトの手引きに載せた画面を、chaff がい
 
 `yarn rules:measure --write` は測った結果を `corpus/rules-measure.json` に書き、`--apply` はそれに合わせて各ルールの `status`（experimental / stable）と、切るジャンルの群（`off_for`）を書き換えます。
 `test/test_rule_policy.ts` が、各ルールの設定をこのファイルと突き合わせます。
+測る文書は `corpus/rules-measure-documents.json` に固定してあり、手元に無いものがあれば `yarn corpus:fetch` を促して止まり、載っていない取得済みの文書は測りません（どの手元でも同じ結果になるように）。
 
 サイトは `site/` で `yarn build` のあと `yarn docs:links` を回すと、サイトと README のリンク切れを見ます。
 
@@ -124,7 +125,8 @@ and on [the English site](https://isamu.github.io/lab/en/). **Try chaff in your 
 - **Commands:** `yarn format`, `yarn lint`, `yarn typecheck`, `yarn build` and `yarn test`. To share a machine, run
   `CHAFF_TEST_JOBS=4 yarn test`; `--part 2/5` runs one part. `yarn corpus` and `yarn bench` compare the results on
   real documents and on seeded mistakes with what is committed (`--update` to accept a change). `yarn rules:measure`
-  measures each rule on human documents (`--apply` sets its status and the genres it is off for). `yarn screens:update`
+  measures each rule on the human documents pinned in `corpus/rules-measure-documents.json` (`--apply` sets its status
+  and the genres it is off for); it stops when a pinned one has not been fetched (`yarn corpus:fetch`). `yarn screens:update`
   rewrites the guide's screens to what chaff prints now.
 - **Adding a rule:** a rule file under `packages/chaff/rules/` with `status: experimental`, a detector registered in
   `src/detectors/registry/` if it needs a new one, a test that fails first, then `yarn bench`, `yarn corpus` and
