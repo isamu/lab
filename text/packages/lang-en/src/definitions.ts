@@ -38,24 +38,45 @@ const BARE = /^\(["“]/u;
  * A bracket that gives one thing several names: ("Pinecone", "we" or "us"), (the "Company", "we", "us", or "our"). The
  * first name is the inline definition (it follows the long name); the others are defined there too.
  */
-const NAME_LIST = /\((?:the |collectively,? the |each,? an? )?["“][^"”\n]{1,60}["”](?:(?:, (?:(?:and|or) )?| (?:and|or) )(?:the )?["“][^"”\n]{1,60}["”])+\)/gu;
+const BRACKET = /\((?<inside>[^()\n]{1,300})\)/gu;
 const QUOTED_NAME = /["“](?<term>[^"”\n]{1,60})["”]/gu;
-
+/** What may come before the first name: (the "Company", (each, a "Party", (collectively, the "Parties". */
+const LIST_LEAD = /^(?:the |collectively,? the |each,? an? )?$/u;
+/** What may come between two names: a comma, and or or, and the. */
+const LIST_JOINT = /^(?:, (?:and |or )?| and | or )(?:the )?$/u;
 /** A list of names starts with a capitalised one ("Pinecone"); ("mine", "not mine", "yours") quotes examples. */
 const CAPITALISED = /^\p{Lu}/u;
 
+type QuotedName = { readonly term: string; readonly start: number; readonly end: number };
+
+/** The quoted names of a bracket that holds nothing but two or more names, joined as a list; otherwise none. */
+const namesInList = (inside: string): QuotedName[] => {
+  const names = [...inside.matchAll(QUOTED_NAME)].map((match) => ({
+    term: match.groups?.["term"] ?? "",
+    start: match.index,
+    end: match.index + match[0].length,
+  }));
+  const [first] = names;
+  if (first === undefined || names.length < 2 || !CAPITALISED.test(first.term) || !LIST_LEAD.test(inside.slice(0, first.start))) return [];
+  const joined = names.slice(1).every((name, index) => LIST_JOINT.test(inside.slice(names[index]?.end ?? 0, name.start)));
+  return joined && inside.slice(names.at(-1)?.end ?? 0) === "" ? names : [];
+};
+
+/**
+ * A bracket that gives one thing several names: ("Pinecone", "we" or "us"), (the "Company", "we", "us", or "our"). The
+ * first name is the inline definition (it follows the long name); the others are defined there too.
+ */
 const nameListDefinitions = (text: string): Mention[] =>
-  [...text.matchAll(NAME_LIST)].flatMap((match) =>
-    [...match[0].matchAll(QUOTED_NAME)].flatMap((name, index, names) => {
-      const term = name.groups?.["term"];
-      if (term === undefined || !CAPITALISED.test(names[0]?.groups?.["term"] ?? "")) return [];
-      const start = index === 0 ? match.index : match.index + name.index;
-      const end = index === 0 ? match.index + match[0].length : start + name[0].length;
-      const bare = BARE.test(match[0]) ? { form: "bare" } : {};
-      const scope = APPLIES.test(text) ? { scope: "local" } : {};
-      return [{ start, end, attrs: { term, ...scope, ...(index === 0 ? { placement: "inline" } : {}), ...bare } }];
-    }),
-  );
+  [...text.matchAll(BRACKET)].flatMap((match) => {
+    const inside = match.groups?.["inside"] ?? "";
+    const bare = BARE.test(match[0]) ? { form: "bare" } : {};
+    const scope = APPLIES.test(text) ? { scope: "local" } : {};
+    return namesInList(inside).map((name, index) => {
+      const start = index === 0 ? match.index : match.index + 1 + name.start;
+      const end = index === 0 ? match.index + match[0].length : match.index + 1 + name.end;
+      return { start, end, attrs: { term: name.term, ...scope, ...(index === 0 ? { placement: "inline" } : {}), ...bare } };
+    });
+  });
 
 const patternDefinitions = (text: string): Mention[] =>
   DEFINITIONS.flatMap((pattern) =>
