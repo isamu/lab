@@ -2,3 +2,4 @@ bonterms-cloud-terms  4
 denpa-shinsei-riyo-kiyaku  1
 nta-tsutatsu-shohi-05-01  1
 ppc-guidelines-tsusoku  4
+rfc9293-tcp  1

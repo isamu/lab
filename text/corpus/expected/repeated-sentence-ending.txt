@@ -2,6 +2,9 @@ aozora-terada-tensai-to-kokubo  1
 da-machine-readability-limitations  1
 da-minister-press-conference-2026-09-18  4
 jma-faq-typhoon  1
+jstage-jniph-74-1-2-rehabilitation  1
+jstage-jniph-74-2-119-wbgt  1
+jstage-jniph-74-2-157-heat-policy  1
 kantei-221-shisei-hoshin  4
 kantei-unga81-general-debate-speech  2
 kokkai-217-sangiin-shohisha-7  1

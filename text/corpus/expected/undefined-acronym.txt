@@ -39,9 +39,9 @@ govuk-style-guide-a-to-z  34
 ietf-draft-httpapi-ratelimit-headers-10  14
 irs-online-account-faq  6
 jstage-jkg-72-4-133  7
-jstage-jniph-74-1-2-rehabilitation  9
-jstage-jniph-74-2-119-wbgt  20
-jstage-jniph-74-2-157-heat-policy  15
+jstage-jniph-74-1-2-rehabilitation  5
+jstage-jniph-74-2-119-wbgt  5
+jstage-jniph-74-2-157-heat-policy  5
 jstage-jnlp-32-1-114-nmt  7
 jstage-jnlp-32-1-114-nmt-en  5
 kep-2214-indexed-job  6

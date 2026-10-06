@@ -1,5 +1,6 @@
 18f-blog-oracle-databases  1
 18f-handbook-travel-faq  1
+aoml-hurricane-faq  15
 arxiv-2609-38203-abs-verbal-fluency  1
 arxiv-2609-38219-abs-tamazight-speech  3
 arxiv-astro-ph-new-2025-01-03  12
@@ -19,6 +20,8 @@ kep-2214-indexed-job  1
 maff-kyodo-ryori-okaisan-en  1
 nodejs-tsc-minutes-2026-05-06  3
 nws-glossary-a  4
+python-code-quality-list-2016-03  2
+rfc9293-tcp  1
 rust-lang-minutes-2022-11-22  1
 rust-rfc-2094-nll  4
 typescript-5-4-release-notes  1
