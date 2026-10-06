@@ -70,8 +70,18 @@ relaxing a rule.
   limit itself (`max-sentence-length: 260`).
 - `prefer:` maps spellings to the team's (`e-mail: email`); `preferred-term: normal` turns the rule on.
 - Unknown rule names and unreadable values are reported on stderr — read stderr after editing `chaff.yaml`.
-- `genre:` sets the kind of document; `by_path` sets one per folder; `--genre` overrides both for one run.
-  `rules:` wins over the genre's preset.
+- `genre:` sets the kind of document. `by_path` sets it per path, as a list of `files` globs, each with `genre`,
+  `language` or `profile`, and an entry in any other shape is reported on stderr and not used:
+
+  ```yaml
+  by_path:
+    - files: ["guides/**/*.md"]
+      genre: docs/manual
+  ```
+
+  A file's front matter `genre:` (or `type:`) sets that one file, when neither `genre:` nor a matching `by_path`
+  entry does. Strongest first: `--genre` for one run, then `by_path`, `genre:`, front matter, the path, the content,
+  and `blog/tech`. `rules:` wins over the genre's preset.
 
 ## Turn a team's style note into chaff.yaml
 

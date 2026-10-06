@@ -40,6 +40,8 @@ export type Config = {
   readonly include?: readonly string[];
   /** パスごとの上書き。設定ファイルのある場所からの相対で照合する。 */
   readonly byPath: readonly PathRule[];
+  /** by_path entries that could not be read (a map instead of a list, an entry without files), as written. */
+  readonly unreadableByPath?: readonly string[];
   readonly baseDir: string;
   /** Options set on rules that take them: { rule id: { option: value } }, as written. rule-options.ts checks them against the rules. */
   readonly options?: Readonly<Record<string, unknown>>;
@@ -169,7 +171,17 @@ const namesOf = (raw: unknown): { readonly names: string[]; readonly unreadable:
   };
 };
 
-const byPathOf = (raw: unknown): PathRule[] => (Array.isArray(raw) ? raw.map(toPathRule).filter((rule) => rule !== undefined) : []);
+/** by_path は files を持つ項目の並び。並びでない値と、読めない項目は読めないものとして返す。黙って捨てると、書いた人は効いたつもりでいる。 */
+export const byPathOf = (raw: unknown): { readonly rules: PathRule[]; readonly unreadable: string[] } => {
+  if (raw === undefined || raw === null) return { rules: [], unreadable: [] };
+  if (!Array.isArray(raw)) return { rules: [], unreadable: [printed(raw)] };
+  const entries: unknown[] = raw;
+  const read = entries.map((entry) => ({ entry, rule: toPathRule(entry) }));
+  return {
+    rules: read.flatMap(({ rule }) => (rule === undefined ? [] : [rule])),
+    unreadable: read.filter(({ rule }) => rule === undefined).map(({ entry }) => printed(entry)),
+  };
+};
 
 /** 読んだ chaff.yaml の中身（raw）を設定にする。ファイルは読まない。path は raw を読んだ場所。 */
 export const configOf = (raw: unknown, path: string): Config => {
@@ -177,6 +189,7 @@ export const configOf = (raw: unknown, path: string): Config => {
   const declared: unknown = raw["ai_backend"];
   const backend: BackendName = isBackend(declared) ? declared : DEFAULT_BACKEND;
   const names = namesOf(raw["names"]);
+  const byPath = byPathOf(raw["by_path"]);
   const options: unknown = raw["options"];
   return {
     genre: str(raw["genre"]),
@@ -196,7 +209,8 @@ export const configOf = (raw: unknown, path: string): Config => {
     names: names.names,
     unreadableNames: names.unreadable,
     include: globsOf(raw["include"]),
-    byPath: byPathOf(raw["by_path"]),
+    byPath: byPath.rules,
+    unreadableByPath: byPath.unreadable,
     baseDir: dirname(path),
     options: isRecord(options) ? options : {},
     unreadableOptions: options === undefined || options === null || isRecord(options) ? undefined : printed(options),
