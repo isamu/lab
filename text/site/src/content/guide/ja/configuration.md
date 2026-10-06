@@ -85,7 +85,9 @@ rules:
 `chaff.yaml` の `rules` はジャンルより強いので、`ngram-repetition: normal` と書けば動きます。
 どのジャンルが何を変えるかは[ジャンルのページ](../../genres/)に、一覧の表は[はじめかた](./getting-started)にあります。
 
-`genre` を書かなければ、パスと内容から自動で決まります。
+`genre` を書かなければ、文書の front matter の `genre:`（か `type:`）、パス、内容の順に決まります。
+front matter は、その文書 1 つだけを別の種類にしたいときに使えます。`chaff.yaml` の `genre` か、当たる `by_path` があればそちらが勝ちます。
+強い順に、`--genre`、`by_path`、`chaff.yaml` の `genre`、front matter、パス、内容です。
 `README.md`、`*-spec.md`、`docs/` は技術文書として見ます。
 決めた根拠は、画面の 1 行目に出ます。
 
@@ -344,6 +346,7 @@ by_path:
 
 後に書いたものが勝ちます。照合は設定ファイルのある場所からの相対です。
 どこで実行しても、結果が変わりません。
+`by_path` は `files` を持つ項目の並びです。フォルダとジャンルの対（`guides: docs/manual`）のような別の形や、`files` の無い項目は使わず、検査の前にそう言います。
 
 ## Markdown 以外のファイルも見る
 
