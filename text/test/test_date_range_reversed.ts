@@ -6,7 +6,7 @@ import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
-import { rangeFrameOf } from "../packages/chaff/src/structure/date-range.ts";
+import { rangeFrameOf, withoutTrailingWeekday } from "../packages/chaff/src/structure/date-range.ts";
 
 // 期間の終わりが始まりより前（date-range-reversed）。「4月1日〜3月31日」のように、範囲の記号でつないだ二つの日付を比べる。
 
@@ -91,6 +91,14 @@ describe("date-range-reversed", () => {
     assert.deepEqual(found(doc("The agreement runs from 1 November 2026 to 31 October 2027.")), []);
   });
 
+  it("a weekday written before either date does not break the period", () => {
+    assert.deepEqual(found(doc("It is effective from Wednesday, April 1, 2026 to Tuesday, March 31, 2026.")), ["2026-04-01>2026-03-31"]);
+    assert.deepEqual(found(doc("It runs Wednesday, April 1, 2026 through Tuesday, March 31, 2026.")), ["2026-04-01>2026-03-31"]);
+    assert.deepEqual(found(doc("It is effective from Wed, April 1, 2026 to Tue, March 31, 2026.")), ["2026-04-01>2026-03-31"]);
+    assert.deepEqual(found(doc("It is effective from Wednesday, April 1, 2026 to Wednesday, March 31, 2027.")), []);
+    assert.deepEqual(found(doc("It moved from Wednesday, April 1, 2026 to a later day, March 31, 2026.")), []);
+  });
+
   it("the frame needs its lead right before the first date, as a whole word, in the same sentence", () => {
     assert.deepEqual(found(doc("Apart from 1 November 2026 to 31 October 2026 nothing changes.")), ["2026-11-01>2026-10-31"]);
     assert.deepEqual(found(doc("Signed 1 November 2026 to 31 October 2026.")), []);
@@ -131,5 +139,20 @@ describe("rangeFrameOf", () => {
 
   it("is undefined without exactly two non-empty parts", () => {
     ["to", "", "from …", "… to", "from … to … end"].forEach((pattern) => assert.equal(rangeFrameOf(pattern), undefined, pattern));
+  });
+});
+
+describe("withoutTrailingWeekday", () => {
+  const weekdays = ["Tuesday", "Wednesday"];
+  it("takes a weekday name and its comma off the end, whole words only", () => {
+    assert.equal(withoutTrailingWeekday("to tuesday,", weekdays), "to");
+    assert.equal(withoutTrailingWeekday("from wednesday", weekdays), "from");
+    assert.equal(withoutTrailingWeekday("to", weekdays), "to");
+    assert.equal(withoutTrailingWeekday("from wed.,", weekdays), "from");
+    assert.equal(withoutTrailingWeekday("to tue,", weekdays), "to");
+    assert.equal(withoutTrailingWeekday("to tu,", weekdays), "to tu,");
+    assert.equal(withoutTrailingWeekday("to nottuesday,", weekdays), "to nottuesday,");
+    assert.equal(withoutTrailingWeekday("to tuesday,", []), "to tuesday,");
+    assert.equal(withoutTrailingWeekday("", weekdays), "");
   });
 });

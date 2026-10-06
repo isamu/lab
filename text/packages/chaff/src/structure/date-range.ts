@@ -18,6 +18,29 @@ export type RangeWords = {
   readonly frames: readonly RangeFrame[];
   /** 同じ文にあれば、組を期間ではなく日付の変更と読む語（moved from … to、… was postponed）。 */
   readonly changes: readonly string[];
+  /** 日付の前に添える曜日の名（Wednesday, April 1, 2026）。つなぎ目と前の語を読むときに除く。無ければ空。 */
+  readonly weekdays?: readonly string[];
+};
+
+/** 曜日の略し方の短いほう（Tue、Wed）。名の頭のこの字数以上が書いてあれば、その曜日と読む。 */
+const WEEKDAY_ABBREVIATION = 3;
+const LETTER = /\p{L}/u;
+
+/** The text's last word (past a full stop) and where it starts. */
+const lastWord = (text: string): { readonly word: string; readonly start: number } => {
+  const body = text.endsWith(".") ? text.slice(0, -1) : text;
+  const chars = [...body];
+  const start = chars.findLastIndex((char) => !LETTER.test(char)) + 1;
+  return { word: chars.slice(start).join(""), start: chars.slice(0, start).join("").length };
+};
+
+/** 終わりに付いた曜日の名か略し方とその後ろのコンマ（"to tuesday," の tuesday,、"from wed." の wed.）を除く。 */
+export const withoutTrailingWeekday = (text: string, weekdays: readonly string[]): string => {
+  const trimmed = text.replace(/,$/u, "").trimEnd();
+  const { word, start } = lastWord(trimmed);
+  const lower = word.toLowerCase();
+  const isWeekday = lower.length >= WEEKDAY_ABBREVIATION && weekdays.some((name) => name.toLowerCase().startsWith(lower));
+  return isWeekday ? trimmed.slice(0, start).trimEnd() : text;
 };
 
 export type RangeFrame = { readonly lead: string; readonly joint: string };
@@ -87,13 +110,15 @@ const sentenceAround = (source: string, start: DatedSpan, end: DatedSpan): { rea
 /** 前の語と間の語の組（from … to）。同じ文のどこかに変更の語（moved、postponed）があれば、日付を動かした文で、期間ではない。 */
 const framed = (source: string, start: DatedSpan, end: DatedSpan, joint: string, words: RangeWords): boolean => {
   const sentence = sentenceAround(source, start, end);
-  const frame = words.frames.find((candidate) => candidate.joint === joint && endsWithWord(sentence.before, candidate.lead));
+  const before = withoutTrailingWeekday(sentence.before, words.weekdays ?? []);
+  const frame = words.frames.find((candidate) => candidate.joint === joint && endsWithWord(before, candidate.lead));
   return frame !== undefined && !words.changes.some((change) => hasWord(sentence.text, change.toLowerCase()));
 };
 
 const isRange = (source: string, start: DatedSpan, end: DatedSpan, words: RangeWords): boolean => {
-  const joint = jointOf(source, start, end);
-  if (joint === undefined) return false;
+  const written = jointOf(source, start, end);
+  if (written === undefined) return false;
+  const joint = withoutTrailingWeekday(written, words.weekdays ?? []);
   return (
     isOneOf(joint, words.connectors) || (isOneOf(joint, words.openers) && closedAfter(source, end, words.closers)) || framed(source, start, end, joint, words)
   );

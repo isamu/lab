@@ -1,6 +1,7 @@
 import { endingTokens, isClosed } from "../sentence-shape.ts";
 import { enumeratedRuns, enumeratorStarts, numberedStarts } from "./enumerated-runs.ts";
 import { continuesInto, groupOf, registerOf, slipsOf, type Register } from "./register.ts";
+import { isRunInLabel } from "./run-in-label.ts";
 import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span } from "../plugin.ts";
 
 /**
@@ -8,7 +9,7 @@ import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span } f
  *
  * どちらが正しいかは決めない。決めると、方針の違う書き手にそのまま無視される。
  * 見るのは文書の中での一貫性だけで、少数派のほうを指摘する。spec §12.3 の方針を日本語にも。
- * 終止符で終わらないもの（見出しの下の `MaaSサービス` のような名前だけの行）は文として数えない。
+ * 終止符で終わらないもの（見出しの下の `MaaSサービス` のような名前だけの行）と、項目や段落の頭の太字の札（**速く書ける。**）は文として数えない。
  */
 type Entry = { readonly sentence: Sentence; readonly register: Register; readonly group: number | undefined };
 
@@ -35,7 +36,7 @@ export const judgedSentences = (doc: ProseDocument, polite: readonly LexiconEntr
   const neutral = doc.lexicons["neutral-ending"] ?? [];
   const lists = doc.lists.map((list) => list.span);
   const found = doc.sentences.flatMap((sentence, index): { sentence: Sentence; register: Register }[] => {
-    if (!isClosed(sentence) || continuesInto(sentence, doc.sentences[index + 1])) return [];
+    if (!isClosed(sentence) || continuesInto(sentence, doc.sentences[index + 1]) || isRunInLabel(doc.source, sentence.span)) return [];
     const register = registerOfSentence(sentence, polite, neutral);
     return register === undefined ? [] : [{ sentence, register }];
   });
