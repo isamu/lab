@@ -5,6 +5,7 @@ import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
+import { holdsAside } from "../packages/chaff/src/structure/reference-text.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
 // 参照に添えた名前と参照先の見出し（reference-title-mismatch）、参照に添えた話題と参照先の中身（reference-topic-missing）。
@@ -30,6 +31,12 @@ describe("reference-title-mismatch", () => {
   before(async () => {
     await ja.prepare?.({ pos: true });
     await en.prepare?.({ pos: true });
+  });
+
+  it("an English aside is a whole word: a name that holds its letters (or in Information) is still a name", () => {
+    assert.deepEqual(titleEn("See Section 2 (Return of Information) for the price."), ["Section 2:Return of Information≠Pricing"]);
+    assert.deepEqual(titleEn("See Section 2 (or as agreed) for the price."), []);
+    assert.deepEqual(titleEn("See Section 2 (above) for the price."), []);
   });
 
   it("a name in brackets or quotes that is not the target's heading (ja)", () => {
@@ -130,5 +137,16 @@ describe("reference-topic-missing", () => {
     assert.deepEqual(topicEn("See Section 2 for more information."), []);
     assert.deepEqual(topicEn("See Section 2 for further caveats."), []);
     assert.deepEqual(topicJa("第2章で述べた内容は改定されます。"), []);
+  });
+});
+
+describe("holdsAside", () => {
+  it("finds an English aside as a word or phrase, anything else anywhere", () => {
+    assert.equal(holdsAside("Return of Information", "or"), false);
+    assert.equal(holdsAside("Pricing or Refunds", "or"), true);
+    assert.equal(holdsAside("as amended", "as amended"), true);
+    assert.equal(holdsAside("et seq.", "et seq"), true);
+    assert.equal(holdsAside("上記参照", "上記"), true);
+    assert.equal(holdsAside("Pricing", ""), false);
   });
 });
