@@ -1,5 +1,6 @@
 # 値のすぐ後ろに来てよい語（fact-conflict、summary-fact-mismatch）。ここに無い語が続く値（「3,000円から」「10月5日に開催」）は、
 # 条件の付いた値として読まない。行の終わりと表の升の終わりは、ここに書かなくても終わり。
+# 「新規の取引先は48社で、そのうち…」の「で、」は、文が続いても値はそこで終わる（報告書の書き方）。「で」だけ（「3,000円で購入」）は続き。
 id: fact-value-end
 language: ja
 entries:
@@ -12,5 +13,6 @@ entries:
   - pattern: である
   - pattern: だ
   - pattern: まで
+  - pattern: "で、"
   - pattern: となります
   - pattern: となっております

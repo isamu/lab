@@ -132,6 +132,15 @@ describe("summary-fact-mismatch", () => {
     assert.deepEqual(doc("参加費は3,500円です。"), []);
   });
 
+  it("a report's body that goes on after the value (「48社で、」) and a summary in the past (「52社だった」) (ja)", () => {
+    const doc = (summary: string): string[] =>
+      summaryJa("# 営業報告", "", "## 概要", "", summary, "", "## 取引先", "", "新規の取引先は48社で、そのうち32社が首都圏の企業だった。");
+    assert.deepEqual(doc("新規の取引先は52社だった。"), ["新規の取引先:52社≠48社"]);
+    assert.deepEqual(doc("新規の取引先は48社だった。"), []);
+    // 「で」のあとが読点でなければ、値の続き（「3,000円で購入」）で、項目の値ではない。
+    assert.deepEqual(summaryJa("# 報告", "", "## 概要", "", "単価は3,000円だった。", "", "## 詳細", "", "単価は3,500円で購入した。"), []);
+  });
+
   it("a summary section against the body (en)", () => {
     const doc = (summary: string): string[] => summaryEn("# Report", "", "## Summary", "", summary, "", "## Details", "", "- Seats: 40");
     assert.deepEqual(doc("- Seats: 30"), ["Seats:30≠40"]);
