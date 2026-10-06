@@ -2,6 +2,39 @@
 
 Newest first.
 
+## 0.26.0 — 2026-10-06
+
+chaff runs in the browser. `chaffjs/browser` checks a text in a web page with the same rules and messages as the
+command line, and the site has a playground where a text is checked without leaving the browser. `chaff ai-score`
+gives a quick AI-likeness level (low, medium, high): it counts the signs of generated text that human documents of the
+same genre rarely show, and it is not a verdict on who wrote the text. Contracts get much better coverage, measured on
+a planted contract set.
+
+### Commands and settings
+
+- `chaffjs/browser` and the playground page (#661 #662 #666 #688).
+- `chaff ai-score`, with a line in the report and an `aiScore` field in `chaff grade` (#663 #664 #665).
+- `by_path` that cannot be read is reported, and its shape and front matter `genre:` are documented (#689).
+
+### Rules
+
+- Contracts: totals in a sentence (#670), defined-term variants such as 本件業務 (#677), party-role-name (#678),
+  vague-deadline (#679), defined-name-repeated and date-range-reversed read more forms (#684 #685), clause titles
+  matched by word (#687), and multi-name definitions in English (#682).
+- quote-without-source: a quotation given to someone with no source in its paragraph (#691).
+- English: date-without-year, demonstrative-opener-run (#657 #658). Japanese: weasel-word, cliche (#659 #660).
+
+### Fixes
+
+- A chapter reference in a one-chapter file points at another file (#680); unbalanced-bracket keeps the bracket after
+  a URL in code (#681); no-mixed-desumasu skips bold run-in labels (#683); orthographic-variant leaves readings, kana
+  suffixes, cut katakana and idioms apart (#686).
+
+### Docs and tests
+
+- The three READMEs are tidied and link the playground (#668); a planted contract set measures recall per mistake kind
+  (`yarn contracts`, #669).
+
 ## 0.25.0 — 2026-10-05
 
 Three more rules: Japanese conjunction levels in legal and official writing, a missing space after a comma in English,
