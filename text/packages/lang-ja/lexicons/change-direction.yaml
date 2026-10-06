@@ -1,0 +1,20 @@
+# 値が動いた向きを言う語（change-rate-mismatch）。group は向き: rise は増えた、fall は減った。率のすぐ前か後ろにあるものを読む。
+# 「増減」のように両方を含む語は、両方の向きに当たるので、向きが決まらず比べない。
+id: change-direction
+language: ja
+entries:
+  - { pattern: 増加, group: rise }
+  - { pattern: 増え, group: rise }
+  - { pattern: 増, group: rise }
+  - { pattern: 上昇, group: rise }
+  - { pattern: 伸び, group: rise }
+  - { pattern: 拡大, group: rise }
+  - { pattern: 上回, group: rise }
+  - { pattern: 減少, group: fall }
+  - { pattern: 減っ, group: fall }
+  - { pattern: 減り, group: fall }
+  - { pattern: 減, group: fall }
+  - { pattern: 低下, group: fall }
+  - { pattern: 下落, group: fall }
+  - { pattern: 縮小, group: fall }
+  - { pattern: 下回, group: fall }

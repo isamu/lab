@@ -1,0 +1,5 @@
+# Phrases that hold a word of change-direction but say no direction (change-rate-mismatch): "up to 25%" is a ceiling.
+id: change-direction-not
+language: en
+entries:
+  - pattern: up to

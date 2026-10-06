@@ -1,0 +1,9 @@
+# Words that mark the value a change is measured from (change-rate-mismatch). position is the side of the value the word
+# stands on: "from $10 million" before it.
+id: change-base
+language: en
+entries:
+  - { pattern: from, position: before }
+  - { pattern: compared with, position: before }
+  - { pattern: compared to, position: before }
+  - { pattern: versus, position: before }

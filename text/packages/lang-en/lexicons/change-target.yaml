@@ -1,0 +1,6 @@
+# Words that mark the value a change reached (change-rate-mismatch): "rose 20% from 1,000 to 1,200". position is the side of
+# the value the word stands on.
+id: change-target
+language: en
+entries:
+  - { pattern: to, position: before }
