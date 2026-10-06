@@ -1,0 +1,167 @@
+{
+  "note": "Self-written technical documents (a README and a step-by-step guide), each in a clean version and a planted one that differs only on the lines below. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should. yarn planted technical scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/readme",
+      "language": "ja",
+      "genre": "technical/readme",
+      "clean": "ja/readme.clean.md",
+      "planted": "ja/readme.planted.md",
+      "mistakes": [
+        {
+          "kind": "broken-anchor",
+          "rule": "broken-link",
+          "line": 10,
+          "clean": "[オプション](#オプション)",
+          "planted": "[オプション](#オプション一覧)"
+        },
+        {
+          "kind": "version-mismatch",
+          "rule": "version-mismatch",
+          "line": 14,
+          "clean": "npm から 2.4.0 を入れます",
+          "planted": "npm から 2.3.0 を入れます"
+        },
+        {
+          "kind": "heading-command",
+          "rule": "heading-command-missing",
+          "line": 28,
+          "clean": "## `tidyq check`",
+          "planted": "## `tidyq verify`"
+        },
+        {
+          "kind": "fence-language-mix",
+          "rule": "code-fence-language-mix",
+          "line": 40,
+          "clean": "```json",
+          "planted": "```"
+        },
+        {
+          "kind": "table-extra-cell",
+          "rule": "table-row-overflow",
+          "line": 50,
+          "clean": "| `--encoding` | utf-8 | 読む文字コード |",
+          "planted": "| `--encoding` | utf-8 | 読む文字コード | Shift_JIS も読む |"
+        }
+      ]
+    },
+    {
+      "id": "ja/guide",
+      "language": "ja",
+      "genre": "docs/manual",
+      "clean": "ja/guide.clean.md",
+      "planted": "ja/guide.planted.md",
+      "mistakes": [
+        {
+          "kind": "undefined-acronym",
+          "rule": "undefined-acronym",
+          "line": 7,
+          "clean": "社内の ETL（抽出・変換・格納）サーバー",
+          "planted": "社内の ETL サーバー"
+        },
+        {
+          "kind": "step-skip",
+          "rule": "numbering-gap",
+          "line": 15,
+          "clean": "5. 書き出したファイル",
+          "planted": "6. 書き出したファイル"
+        },
+        {
+          "kind": "step-reference-past-end",
+          "rule": "step-reference-missing",
+          "line": 21,
+          "clean": "手順 3 に戻って",
+          "planted": "手順 7 に戻って"
+        },
+        {
+          "kind": "unit-spacing",
+          "rule": "unit-spacing-consistency",
+          "line": 23,
+          "clean": "2 GB を超えて",
+          "planted": "2GB を超えて"
+        }
+      ]
+    },
+    {
+      "id": "en/readme",
+      "language": "en",
+      "genre": "technical/readme",
+      "clean": "en/readme.clean.md",
+      "planted": "en/readme.planted.md",
+      "mistakes": [
+        {
+          "kind": "broken-anchor",
+          "rule": "broken-link",
+          "line": 10,
+          "clean": "[Options](#options)",
+          "planted": "[Options](#option-list)"
+        },
+        {
+          "kind": "version-mismatch",
+          "rule": "version-mismatch",
+          "line": 14,
+          "clean": "Install version 2.4.0 from npm",
+          "planted": "Install version 2.3.0 from npm"
+        },
+        {
+          "kind": "heading-command",
+          "rule": "heading-command-missing",
+          "line": 28,
+          "clean": "## `tidyq check`",
+          "planted": "## `tidyq verify`"
+        },
+        {
+          "kind": "fence-language-mix",
+          "rule": "code-fence-language-mix",
+          "line": 40,
+          "clean": "```json",
+          "planted": "```"
+        },
+        {
+          "kind": "table-extra-cell",
+          "rule": "table-row-overflow",
+          "line": 50,
+          "clean": "| `--encoding` | utf-8 | The encoding to read |",
+          "planted": "| `--encoding` | utf-8 | The encoding to read | Also reads Shift_JIS |"
+        }
+      ]
+    },
+    {
+      "id": "en/guide",
+      "language": "en",
+      "genre": "docs/manual",
+      "clean": "en/guide.clean.md",
+      "planted": "en/guide.planted.md",
+      "mistakes": [
+        {
+          "kind": "undefined-acronym",
+          "rule": "undefined-acronym",
+          "line": 7,
+          "clean": "internal ETL (extract, transform, load) server",
+          "planted": "internal ETL server"
+        },
+        {
+          "kind": "step-skip",
+          "rule": "numbering-gap",
+          "line": 15,
+          "clean": "5. Send the written files",
+          "planted": "6. Send the written files"
+        },
+        {
+          "kind": "step-reference-past-end",
+          "rule": "step-reference-missing",
+          "line": 21,
+          "clean": "go back to step 3",
+          "planted": "go back to step 7"
+        },
+        {
+          "kind": "unit-spacing",
+          "rule": "unit-spacing-consistency",
+          "line": 23,
+          "clean": "larger than 2 GB",
+          "planted": "larger than 2GB"
+        }
+      ]
+    }
+  ]
+}

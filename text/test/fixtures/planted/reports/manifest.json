@@ -1,0 +1,223 @@
+{
+  "note": "Self-written reports and press releases, each in a clean version and a planted one that differs only on the lines below. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should. yarn planted reports scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/results",
+      "language": "ja",
+      "genre": "business/report",
+      "clean": "ja/results.clean.md",
+      "planted": "ja/results.planted.md",
+      "mistakes": [
+        {
+          "kind": "summary-fact",
+          "rule": "summary-fact-mismatch",
+          "line": 9,
+          "clean": "新規の取引先は48社だった。",
+          "planted": "新規の取引先は52社だった。"
+        },
+        {
+          "kind": "date-range-reversed",
+          "rule": "date-range-reversed",
+          "line": 13,
+          "clean": "2026年4月1日〜2026年9月30日",
+          "planted": "2026年4月1日〜2025年9月30日"
+        },
+        {
+          "kind": "change-rate",
+          "rule": "change-rate-mismatch",
+          "line": 15,
+          "clean": "比べて20%の増加",
+          "planted": "比べて25%の増加"
+        },
+        {
+          "kind": "percent-sum",
+          "rule": "percent-sum-mismatch",
+          "line": 17,
+          "clean": "研修が20%だった",
+          "planted": "研修が25%だった"
+        },
+        {
+          "kind": "figure-missing",
+          "rule": "dangling-figure-reference",
+          "line": 29,
+          "clean": "地域別の内訳は表2に示す",
+          "planted": "地域別の内訳は表3に示す"
+        },
+        {
+          "kind": "elapsed-years",
+          "rule": "elapsed-years-mismatch",
+          "line": 41,
+          "clean": "設立から10年",
+          "planted": "設立から12年"
+        }
+      ]
+    },
+    {
+      "id": "ja/press",
+      "language": "ja",
+      "genre": "business/press-release",
+      "clean": "ja/press.clean.md",
+      "planted": "ja/press.planted.md",
+      "mistakes": [
+        {
+          "kind": "summary-fact",
+          "rule": "summary-fact-mismatch",
+          "line": 7,
+          "clean": "新版を2026年11月2日から提供します",
+          "planted": "新版を2026年11月9日から提供します"
+        },
+        {
+          "kind": "change-rate",
+          "rule": "change-rate-mismatch",
+          "line": 11,
+          "clean": "1,000社から20%増えました",
+          "planted": "1,000社から25%増えました"
+        },
+        {
+          "kind": "percent-sum",
+          "rule": "percent-sum-mismatch",
+          "line": 13,
+          "clean": "物流が20%です",
+          "planted": "物流が25%です"
+        },
+        {
+          "kind": "date-range-reversed",
+          "rule": "date-range-reversed",
+          "line": 17,
+          "clean": "2027年3月31日までは",
+          "planted": "2026年3月31日までは"
+        },
+        {
+          "kind": "figure-missing",
+          "rule": "dangling-figure-reference",
+          "line": 19,
+          "clean": "価格は表1のとおり",
+          "planted": "価格は表2のとおり"
+        },
+        {
+          "kind": "elapsed-years",
+          "rule": "elapsed-years-mismatch",
+          "line": 30,
+          "clean": "創業から20年",
+          "planted": "創業から25年"
+        },
+        {
+          "kind": "quote-no-source",
+          "rule": "quote-without-source",
+          "line": 32,
+          "clean": "ミナトリサーチが2026年9月に公表した調査報告で、同社のアナリストの森花子氏は",
+          "planted": "業界のアナリストは"
+        }
+      ]
+    },
+    {
+      "id": "en/results",
+      "language": "en",
+      "genre": "business/report",
+      "clean": "en/results.clean.md",
+      "planted": "en/results.planted.md",
+      "mistakes": [
+        {
+          "kind": "summary-fact",
+          "rule": "summary-fact-mismatch",
+          "line": 9,
+          "clean": "We gained 48 new customers.",
+          "planted": "We gained 52 new customers."
+        },
+        {
+          "kind": "date-range-reversed",
+          "rule": "date-range-reversed",
+          "line": 13,
+          "clean": "from April 1, 2026 to September 30, 2026",
+          "planted": "from April 1, 2026 to September 30, 2025"
+        },
+        {
+          "kind": "change-rate",
+          "rule": "change-rate-mismatch",
+          "line": 15,
+          "clean": "an increase of 20% from $10 million",
+          "planted": "an increase of 25% from $10 million"
+        },
+        {
+          "kind": "percent-sum",
+          "rule": "percent-sum-mismatch",
+          "line": 17,
+          "clean": "and training 20%",
+          "planted": "and training 25%"
+        },
+        {
+          "kind": "figure-missing",
+          "rule": "dangling-figure-reference",
+          "line": 29,
+          "clean": "Table 2 breaks them down",
+          "planted": "Table 3 breaks them down"
+        },
+        {
+          "kind": "elapsed-years",
+          "rule": "elapsed-years-mismatch",
+          "line": 41,
+          "clean": "Ten years after the founding",
+          "planted": "Twelve years after the founding"
+        }
+      ]
+    },
+    {
+      "id": "en/press",
+      "language": "en",
+      "genre": "business/press-release",
+      "clean": "en/press.clean.md",
+      "planted": "en/press.planted.md",
+      "mistakes": [
+        {
+          "kind": "summary-fact",
+          "rule": "summary-fact-mismatch",
+          "line": 7,
+          "clean": "Hakobune on November 2, 2026.",
+          "planted": "Hakobune on November 9, 2026."
+        },
+        {
+          "kind": "change-rate",
+          "rule": "change-rate-mismatch",
+          "line": 11,
+          "clean": "up 20% from 1,000 companies",
+          "planted": "up 25% from 1,000 companies"
+        },
+        {
+          "kind": "percent-sum",
+          "rule": "percent-sum-mismatch",
+          "line": 13,
+          "clean": "logistics companies 20%",
+          "planted": "logistics companies 25%"
+        },
+        {
+          "kind": "date-range-reversed",
+          "rule": "date-range-reversed",
+          "line": 17,
+          "clean": "to March 31, 2027, the new",
+          "planted": "to March 31, 2026, the new"
+        },
+        {
+          "kind": "figure-missing",
+          "rule": "dangling-figure-reference",
+          "line": 19,
+          "clean": "The prices are in Table 1.",
+          "planted": "The prices are in Table 2."
+        },
+        {
+          "kind": "elapsed-years",
+          "rule": "elapsed-years-mismatch",
+          "line": 30,
+          "clean": "In the 20 years since",
+          "planted": "In the 25 years since"
+        },
+        {
+          "kind": "quote-no-source",
+          "rule": "quote-without-source",
+          "line": 32,
+          "clean": "said Hanako Mori, an analyst at Minato Research, in a report the firm published in September 2026.",
+          "planted": "said an analyst."
+        }
+      ]
+    }
+  ]
+}
