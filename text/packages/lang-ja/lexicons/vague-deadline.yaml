@@ -1,0 +1,15 @@
+# 期限を読み手に決めさせる語。契約の義務にこれだけを書くと、守ったかどうかを誰も決められない（vague-deadline）。
+# 「直ちに」は今すぐを言い、期間を残さないので入れない。「相当の期間を定めて催告し」は民法の解除の手続きの決まった言い方なので入れない。
+id: vague-deadline
+language: ja
+entries:
+  - pattern: 速やかに
+  - pattern: すみやかに
+  - pattern: 可及的速やかに
+  - pattern: 遅滞なく
+  - pattern: 早急に
+  - pattern: 相当の期間内に
+  - pattern: 相当期間内に
+  - pattern: 合理的な期間内に
+  - pattern: できる限り早く
+  - pattern: できるだけ早く

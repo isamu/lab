@@ -1,0 +1,19 @@
+# How a time limit stated as a number is written. A sentence holding one has a deadline, and vague-deadline leaves it; the
+# document's count of these sentences is what its vague limits are compared with. "within … days" is a frame: "days" within
+# a few words after "within". A bare unit ("24 hours a day", "on business days") is not a deadline, so units stand only in frames.
+id: concrete-deadline
+language: en
+entries:
+  - pattern: within … day
+  - pattern: within … hours
+  - pattern: within … week
+  - pattern: within … month
+  - pattern: no later than
+  - pattern: business day of
+  - pattern: days of
+  - pattern: days after
+  - pattern: days before
+  - pattern: days prior
+  - pattern: days following
+  - pattern: days from
+  - pattern: days' notice

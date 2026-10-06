@@ -1,0 +1,15 @@
+# 期限を数で書いた所に付く語。同じ文にあれば、その文は期限を決めている（vague-deadline は指さない）。
+id: concrete-deadline
+language: ja
+entries:
+  - pattern: 日以内
+  - pattern: 営業日以内
+  - pattern: 時間以内
+  - pattern: 週間以内
+  - pattern: か月以内
+  - pattern: ヶ月以内
+  - pattern: カ月以内
+  - pattern: 箇月以内
+  - pattern: 日前まで
+  - pattern: 日まで
+  - pattern: 末日まで

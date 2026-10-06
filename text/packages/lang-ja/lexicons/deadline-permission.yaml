@@ -1,0 +1,8 @@
+# 文を義務でなく権利にする語。文の終わり（position: after）にあれば、その文の「速やかに」は誰かが守る期限ではない
+# （「速やかに本契約を解除することができる」）。vague-deadline は指さない。
+id: deadline-permission
+language: ja
+entries:
+  - { pattern: ことができる, position: after }
+  - { pattern: ことができます, position: after }
+  - { pattern: ことを妨げない, position: after }
