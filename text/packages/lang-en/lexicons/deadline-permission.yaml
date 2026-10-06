@@ -1,0 +1,7 @@
+# Words that make a sentence a right rather than a duty ("We may promptly suspend your account"). A vague limit in such a
+# sentence sets no deadline anyone must meet, so vague-deadline leaves it.
+id: deadline-permission
+language: en
+entries:
+  - pattern: may
+  - pattern: can

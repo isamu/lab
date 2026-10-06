@@ -427,7 +427,7 @@ Guide: Contract and terms (legal/contract)
   - Are termination, liability, governing law and dispute resolution covered?
   - Does each payment say when it is due, counted from what?
 
-  Rules that matter most for this genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, party-role-name, requirement-smell, total-mismatch
+  Rules that matter most for this genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, party-role-name, requirement-smell, total-mismatch, vague-deadline
   Written in: genres.yaml → chaff.yaml
   Change it with guide: in chaff.yaml; leave it out with --no-guide.
 
@@ -464,7 +464,7 @@ Guide: Contract and terms (legal/contract)
   - Does each payment say when it is due, counted from what?
   - Is the governing law the law of England and Wales?
 
-  Rules that matter most for this genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, party-role-name, requirement-smell, total-mismatch
+  Rules that matter most for this genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, party-role-name, requirement-smell, total-mismatch, vague-deadline
   Written in: genres.yaml → chaff.yaml
   Change it with guide: in chaff.yaml; leave it out with --no-guide.
 
