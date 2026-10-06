@@ -112,9 +112,21 @@ const unitAfterSpace = (number: string, rest: string): string | undefined => {
 /** ordinal: 単位のすぐ後ろが順番の「目」「め」。空白を詰めて読み直したときは、読み直した語で見る（「3 つめ」の「つめ」は詰めると つ + め）。 */
 type Unit = { readonly unit: string; readonly end: number; readonly ordinal: boolean };
 
+/** Punctuation and symbols only: what the analyser glues to a percent sign as one unknown word (「%、」「%）」「%。」). */
+const MARKS_ONLY = /^[\p{P}\p{S}]+$/u;
+
+/** 「45%、」: IPADIC reads a half-width percent sign and the comma after it as one word. The sign alone is the unit. */
+const gluedPercent = (morph: Morph | undefined): Unit | undefined => {
+  const sign = morph?.surface.charAt(0) ?? "";
+  if (morph === undefined || !PERCENT.has(sign) || !MARKS_ONLY.test(morph.surface.slice(1))) return undefined;
+  return { unit: sign, end: morph.start + sign.length, ordinal: false };
+};
+
 const counterAt = (text: string, morphs: readonly Morph[], number: string, end: number): Unit | undefined => {
   const next = morphs[end];
   if (next !== undefined && isCounter(next)) return { unit: next.surface, end: next.end, ordinal: isOrdinalSuffix(morphs[end + 1]) };
+  const glued = gluedPercent(next);
+  if (glued !== undefined) return glued;
   if (!isSpace(next)) return undefined;
   const rest = text.slice(next.end);
   const unit = unitAfterSpace(number, rest);

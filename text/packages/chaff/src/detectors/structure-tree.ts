@@ -9,6 +9,7 @@ import { totalMismatches, type Amount } from "../structure/total.ts";
 import { proseTotalMismatches } from "../structure/prose-total.ts";
 import { rangeFrameOf, reversedRanges, type DatedSpan, type RangeWords } from "../structure/date-range.ts";
 import { percentSumMismatches, type ShareWords } from "../structure/percent-sum.ts";
+import { proseShareMismatches } from "../structure/percent-sum-prose.ts";
 import { isQuotedAlone } from "../quoted-span.ts";
 
 const QUOTE_LENGTH = 80;
@@ -235,10 +236,24 @@ const shareWordsOf = (doc: ProseDocument): ShareWords => ({
 });
 
 /** 構成比や内訳の百分率の和が 100% にならない。割合の語と百分率の単位は言語パッケージの語彙表から取る。 */
+/**
+ * 表や箇条書きの内訳と、一つの文に並べた内訳（「構成比は、Aが50%、Bが30%、Cが20%」）。箇条書きの項目の文は両方に読まれうるので、
+ * 表や箇条書きが指した行の文は重ねて言わない。
+ */
+const percentSumIssues = (doc: ProseDocument, tree: NonNullable<ProseDocument["structure"]>): StructureIssue[] => {
+  const amounts = amountsOf(tree);
+  const words = shareWordsOf(doc);
+  const runs = percentSumMismatches(doc.source, amounts, words);
+  const reported = new Set(runs.map((issue) => lineStartAt(doc.source, issue.offset)));
+  const sentences = doc.sentences.map((sentence) => sentence.span);
+  const prose = proseShareMismatches(doc.source, sentences, amounts, words).filter((issue) => !reported.has(lineStartAt(doc.source, issue.offset)));
+  return [...runs, ...prose].toSorted((left, right) => left.offset - right.offset);
+};
+
 export const percentSumMismatch: Detector = (doc): Finding[] =>
   doc.structure === undefined
     ? []
-    : percentSumMismatches(doc.source, amountsOf(doc.structure), shareWordsOf(doc)).map((issue) => ({
+    : percentSumIssues(doc, doc.structure).map((issue) => ({
         rule: "percent-sum-mismatch",
         severity: "warning",
         line: 0,

@@ -1,5 +1,6 @@
 # Words that name the parts of one whole (they add up to 100%). When a table's header, or the sentence or heading right
 # above a list or a table, has one of these, its percentages are added and compared with 100%.
+# "made up" and "accounted for" say the same of each part ("A made up 50% of sales, B 30% and C 20%").
 # "rate" and "percentage" are left out: they also name a rate per row. So is a bare "share" ("share price return").
 id: share-label
 language: en
@@ -10,3 +11,9 @@ entries:
   - pattern: composition
   - pattern: split
   - pattern: allocation
+  - pattern: made up
+  - pattern: make up
+  - pattern: makes up
+  - pattern: accounted for
+  - pattern: account for
+  - pattern: accounts for
