@@ -1,0 +1,7 @@
+# Words that count days from the base date (relative-date-mismatch): "tomorrow (October 7)". group is how many days later.
+id: relative-day
+language: en
+entries:
+  - { pattern: tomorrow, group: "1" }
+  - { pattern: today, group: "0" }
+  - { pattern: yesterday, group: "-1" }

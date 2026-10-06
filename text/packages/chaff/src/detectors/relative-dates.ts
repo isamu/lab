@@ -4,6 +4,7 @@ import { overlapsAny, spanIndex } from "../compare/spans.ts";
 import type { DurationUnit } from "../derived/date-arithmetic.ts";
 import { relativeMismatches, type DatedValue, type Relative } from "../derived/relative-dates.ts";
 import { quoteAt } from "./structure-tree.ts";
+import { dayWordFindings } from "./relative-day-words.ts";
 
 /** 期間の単位の語彙表。relative-year-unit は、向きの語が付くときだけ期間になる単位（「1年前」の年）。 */
 const DURATION_LEXICONS: readonly (readonly [string, DurationUnit])[] = [
@@ -96,7 +97,7 @@ export const relativeDateMismatch: Detector = (doc): Finding[] => {
     relatives: relativesOf(doc, amounts),
     links: patternsOf(doc, "relative-link"),
   };
-  return relativeMismatches(input).map((mismatch) => ({
+  const counted = relativeMismatches(input).map((mismatch): Finding => ({
     rule: "relative-date-mismatch",
     severity: "warning",
     line: 0,
@@ -110,4 +111,5 @@ export const relativeDateMismatch: Detector = (doc): Finding[] => {
       offset: mismatch.target.start,
     },
   }));
+  return [...counted, ...dayWordFindings(doc, dates)];
 };

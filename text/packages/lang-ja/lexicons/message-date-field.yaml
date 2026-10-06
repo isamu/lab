@@ -1,0 +1,10 @@
+# メールや議事録の頭で、その文書の日付を書く欄（relative-date-mismatch）: 「日付: 2026年10月6日」「日時: 2026年10月5日（月）」。
+# 「来週月曜」「明日」は、この欄の日付から数える。
+id: message-date-field
+language: ja
+entries:
+  - pattern: 日付
+  - pattern: 日時
+  - pattern: 送信日時
+  - pattern: 開催日時
+  - pattern: Date

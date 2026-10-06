@@ -1,0 +1,8 @@
+# Words that count weeks from the week of the base date (relative-date-mismatch): "next Monday". group is how many weeks
+# later (last is -1). Read only right before a weekday (lexicon weekday).
+id: relative-week
+language: en
+entries:
+  - { pattern: next, group: "1" }
+  - { pattern: this, group: "0" }
+  - { pattern: last, group: "-1" }

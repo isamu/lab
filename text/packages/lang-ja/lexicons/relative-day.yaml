@@ -1,0 +1,9 @@
+# 日を基準の日付から数える語（relative-date-mismatch）: 「明日（10月7日）」。group は何日あとか（昨日は -1）。
+id: relative-day
+language: ja
+entries:
+  - { pattern: 明後日, group: "2" }
+  - { pattern: 明日, group: "1" }
+  - { pattern: 本日, group: "0" }
+  - { pattern: 今日, group: "0" }
+  - { pattern: 昨日, group: "-1" }
