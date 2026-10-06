@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { checkSource } from "../packages/chaff/src/check-source.ts";
 import { EMPTY } from "../packages/chaff/src/config/load.ts";
 import { GENRES } from "../packages/chaff/src/genre.ts";
-import { PLAYGROUND_SAMPLES } from "../site/src/lib/playgroundSamples.ts";
+import { PLAYGROUND_SAMPLES, type PlaygroundSample } from "../site/src/lib/playgroundSamples.ts";
 
 // The playground opens on a sample, so a visitor sees a result with one click: each sample must still get findings
 // from chaff, in its own language and genre, after a rule changes.
@@ -33,20 +33,30 @@ describe("the playground's samples", () => {
   });
 });
 
-/** The contract sample shows the mistakes a contract is checked for, not only readability: one of each in both languages. */
-const CONTRACT_RULES = ["total-mismatch", "party-role-name", "dangling-reference", "numbering-gap", "vague-deadline"];
+/**
+ * Each sample shows the mistakes its kind of document is checked for, not only readability: one of each in both languages.
+ * The tech blog its steps and its install command, the email its dates and attachments, the press release its figures.
+ */
+const SAMPLE_RULES: Readonly<Record<string, readonly string[]>> = {
+  blog: ["version-mismatch", "numbering-gap", "step-reference-missing", "date-weekday-mismatch"],
+  email: ["attachment-not-attached", "announced-count-mismatch", "date-weekday-mismatch"],
+  contract: ["total-mismatch", "party-role-name", "dangling-reference", "numbering-gap", "vague-deadline"],
+  press: ["date-weekday-mismatch", "elapsed-years-mismatch", "change-rate-mismatch", "percent-sum-mismatch"],
+};
 
-describe("the playground's contract sample", () => {
+/** The rules of SAMPLE_RULES that do not report on the sample. */
+const missingRules = async (language: string, sample: PlaygroundSample): Promise<string[]> => {
+  const check = await checkSource("document.md", sample.text, EMPTY, { language, genre: sample.genre, experimental: false });
+  const rules = new Set(check.applied.kept.map(ruleOf));
+  return (SAMPLE_RULES[sample.id] ?? []).filter((rule) => !rules.has(rule));
+};
+
+describe("the playground's samples show their kind's checks", () => {
   Object.entries(PLAYGROUND_SAMPLES).forEach(([language, samples]) => {
-    it(`${language}: shows the contract checks`, async () => {
-      const sample = samples.find((candidate) => candidate.id === "contract");
-      assert.ok(sample !== undefined);
-      const check = await checkSource("document.md", sample.text, EMPTY, { language, genre: sample.genre, experimental: false });
-      const rules = new Set(check.applied.kept.map(ruleOf));
-      assert.deepEqual(
-        CONTRACT_RULES.filter((rule) => !rules.has(rule)),
-        [],
-      );
+    samples.forEach((sample) => {
+      it(`${language} ${sample.id}: ${(SAMPLE_RULES[sample.id] ?? []).join(", ")}`, async () => {
+        assert.deepEqual(await missingRules(language, sample), []);
+      });
     });
   });
 });
