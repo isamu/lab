@@ -111,7 +111,7 @@ rules.md   legal/statute · English   genre from --genre
   ✖  Skipped or repeated number
 
      "Article 4" follows "Article 2" (expected number 3)
-     Article 5 right after Article 3, (c) right after (a), two paragraphs numbered 2. A reader cannot tell whether something was removed, or which one a reference means. Only numbers side by side under the same parent are compared.
+     Article 5 right after Article 3, (c) right after (a), two paragraphs numbered 2. A reader cannot tell whether something was removed, or which one a reference means. Only numbers side by side under the same parent are compared. The numbers written on a Markdown ordered list (steps "1.", "2.", "4.") are compared too. The page renders them counted from the first, but the source and a "see step 4" use the numbers as written.
 
      → Renumber. If a provision was removed on purpose, keep its number with a note such as "Section 4 [Deleted]".
 
@@ -207,7 +207,7 @@ rules.md   blog/tech · English   genre from the default
   ✖  Skipped or repeated number
 
      "Article 4" follows "Article 2" (expected number 3)
-     Article 5 right after Article 3, (c) right after (a), two paragraphs numbered 2. A reader cannot tell whether something was removed, or which one a reference means. Only numbers side by side under the same parent are compared.
+     Article 5 right after Article 3, (c) right after (a), two paragraphs numbered 2. A reader cannot tell whether something was removed, or which one a reference means. Only numbers side by side under the same parent are compared. The numbers written on a Markdown ordered list (steps "1.", "2.", "4.") are compared too. The page renders them counted from the first, but the source and a "see step 4" use the numbers as written.
 
      → Renumber. If a provision was removed on purpose, keep its number with a note such as "Section 4 [Deleted]".
 

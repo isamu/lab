@@ -1,6 +1,7 @@
 import type { Detector, Finding, ProseDocument, StructureNode } from "../plugin.ts";
 import { danglingReferences, duplicateDefinitions, inDocumentOrder, type StructureIssue } from "../structure/issues.ts";
 import { numberingBreaks } from "../structure/numbering.ts";
+import { listNumberBreaks, writtenNumbers } from "../structure/list-numbering.ts";
 import { weekdayMismatches } from "../structure/weekday.ts";
 import { documentDateOf } from "./document-date.ts";
 import { dateOrderBreaks } from "../structure/date-order.ts";
@@ -36,7 +37,39 @@ const findingsOf =
         }));
 
 export const danglingReference: Detector = findingsOf("dangling-reference", danglingReferences);
-export const numberingGap: Detector = findingsOf("numbering-gap", numberingBreaks);
+const structureNumberingGap: Detector = findingsOf("numbering-gap", numberingBreaks);
+
+const lineStartAt = (source: string, offset: number): number => source.lastIndexOf("\n", offset - 1) + 1;
+
+/** The written numbers of the document's Markdown ordered lists that skip or repeat (structure/list-numbering.ts). */
+const QUOTED_LINE = /^[ \t]*>/u;
+
+/** 引用の中の箇条書きは、ほかの文書の例で、この文書の番号ではない。 */
+const isQuotedList = (source: string, start: number): boolean => QUOTED_LINE.test(source.slice(lineStartAt(source, start), start));
+
+const listNumberingGaps = (doc: ProseDocument): Finding[] =>
+  doc.lists
+    .filter((list) => !isQuotedList(doc.source, list.span.start))
+    .flatMap((list) => listNumberBreaks(writtenNumbers(doc.source, list.itemSpans) ?? []))
+    .map((issue) => ({
+      rule: "numbering-gap",
+      severity: "error",
+      line: 0,
+      column: 0,
+      quote: quoteAt(doc.source, issue.offset),
+      values: { ...issue.values, offset: issue.offset },
+    }));
+
+/**
+ * 番号の抜けと重なり: 番地の木の並び（条、項、号）と、Markdown の番号付きの箇条書きに書いた番号。条の中の「1.」「2.」は
+ * 両方に読まれるので、木が指した行の箇条書きは重ねて言わない。
+ */
+export const numberingGap: Detector = (doc, options): Finding[] => {
+  const fromTree = structureNumberingGap(doc, options);
+  const reported = new Set(fromTree.map((finding) => lineStartAt(doc.source, Number(finding.values["offset"]))));
+  const fromLists = listNumberingGaps(doc).filter((finding) => !reported.has(lineStartAt(doc.source, Number(finding.values["offset"]))));
+  return [...fromTree, ...fromLists].toSorted((left, right) => Number(left.values["offset"]) - Number(right.values["offset"]));
+};
 export const duplicateDefinition: Detector = findingsOf("duplicate-definition", duplicateDefinitions);
 
 /** 曜日の名前は言語パッケージの語彙表（weekday、日曜日から順）から取る。無ければ番号のまま。 */
