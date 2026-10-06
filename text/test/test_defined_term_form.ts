@@ -228,4 +228,18 @@ describe("defined-name-repeated: a long name used again after its short name", (
     const signed = `${JA_PARTIES}\n第1条\u3000乙は、甲の予約を行う。\n\n甲\u3000東京都千代田区一丁目 株式会社みなと製作所\n\n株式会社みなと製作所\n\n第2条\u3000株式会社みなと製作所大阪支店は対象外とする。\n`;
     assert.deepEqual(valuesOf(ja, "defined-name-repeated", signed, "term"), []);
   });
+
+  it("reads a long name followed by a joining word (及び) as standing alone, but not one inside a longer word", () => {
+    assert.deepEqual(valuesOf(ja, "defined-name-repeated", `${JA_PARTIES}\n第1条\u3000株式会社みなと製作所及び乙は、秘密を守る。\n`, "term"), ["name 甲"]);
+    assert.deepEqual(valuesOf(ja, "defined-name-repeated", `${JA_PARTIES}\n第1条\u3000株式会社みなと製作所大阪支店は対象外とする。\n`, "term"), []);
+  });
+
+  it("reports the long name when the short name is its first word, but not a line that gives the short name beside it", () => {
+    const head = ["# Terms", "", 'These terms govern the App provided by Pinecone Software Ltd ("Pinecone").', ""];
+    assert.deepEqual(
+      valuesOf(en, "defined-name-repeated", [...head, "To the extent permitted by law, Pinecone Software Ltd is not liable.", ""].join("\n"), "term"),
+      ["name Pinecone"],
+    );
+    assert.deepEqual(valuesOf(en, "defined-name-repeated", [...head, "Pinecone (Pinecone Software Ltd) is not liable.", ""].join("\n"), "term"), []);
+  });
 });

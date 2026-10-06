@@ -175,13 +175,21 @@ const isNameLine = (source: string, offset: number, name: string, term: string):
   const end = source.indexOf("\n", offset);
   const line = source.slice(start, end === -1 ? source.length : end).trim();
   const SLACK = 12;
-  return line.includes(term) || [...line].length <= [...name].length + SLACK;
+  // The short name inside the long one ("Pinecone" in "Pinecone Software Ltd") is not the short name written beside it.
+  return line.replaceAll(name, "").includes(term) || [...line].length <= [...name].length + SLACK;
 };
 
 /** A name inside a longer word (東京大学 in 東京大学大学院, Acme in Acmeware) is part of another name. */
 const WORD_CHAR = /[\p{Script=Han}\p{Script=Katakana}\p{Script=Latin}\p{N}ー]/u;
-const standsAlone = (source: string, offset: number, name: string): boolean =>
-  !WORD_CHAR.test(source.charAt(offset - 1)) && !WORD_CHAR.test(source.charAt(offset + name.length));
+/**
+ * A name inside a longer word (東京大学 in 東京大学大学院, Acme in Acmeware) is part of another name. A joining word right after
+ * it (北浜精機株式会社及び乙) starts the next item of a list, and the name stands alone.
+ */
+export const standsAlone = (source: string, offset: number, name: string, joiners: readonly string[] = []): boolean => {
+  const after = offset + name.length;
+  const joined = joiners.some((joiner) => joiner !== "" && source.startsWith(joiner, after));
+  return !WORD_CHAR.test(source.charAt(offset - 1)) && (joined || !WORD_CHAR.test(source.charAt(after)));
+};
 
 /**
  * Each use of a long name after the definition gave it a short name, outside a signature line. A name that is itself a
@@ -189,6 +197,7 @@ const standsAlone = (source: string, offset: number, name: string): boolean =>
  */
 export const repeatedNames = (doc: ProseDocument, terms: readonly DefinedTerm[]): RepeatedName[] => {
   const defined = new Set(terms.map((term) => term.term));
+  const joiners = (doc.lexicons["enumeration-joiner"] ?? []).map((entry) => entry.pattern);
   return terms
     .filter((term) => term.inline)
     .flatMap((term) => {
@@ -200,7 +209,7 @@ export const repeatedNames = (doc: ProseDocument, terms: readonly DefinedTerm[])
       return doc.sentences
         .filter((later) => later.span.start > term.span.end)
         .flatMap((later) => [...later.text.matchAll(pattern)].map((match) => later.span.start + match.index))
-        .filter((offset) => standsAlone(doc.source, offset, name) && !isNameLine(doc.source, offset, name, term.term))
+        .filter((offset) => standsAlone(doc.source, offset, name, joiners) && !isNameLine(doc.source, offset, name, term.term))
         .map((offset) => ({ offset, name, term: term.term, line: term.line }));
     });
 };
