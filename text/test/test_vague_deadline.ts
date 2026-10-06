@@ -61,38 +61,60 @@ describe("vague-deadline", () => {
 describe("vagueDeadlines", () => {
   const text = (value: string, start = 0) => ({ start, text: value });
   const LIMITS = [text("7日以内", 100), text("10日以内", 200), text("within 30 days", 300)];
+  const words = (vague: string[], concrete: string[] = ["日以内", "within … day"], permissions: { pattern: string; position?: "after" }[] = []) => ({
+    vague,
+    concrete,
+    permissions,
+  });
 
   it("finds each vague word, ignoring case, the longest one where two overlap", () => {
     assert.deepEqual(
       vagueDeadlines(
         [text("Promptly, as soon as reasonably practicable.", 10), ...LIMITS],
-        ["promptly", "as soon as practicable", "as soon as reasonably practicable"],
-        ["日以内", " days"],
+        words(["promptly", "as soon as practicable", "as soon as reasonably practicable"]),
       ),
       [
         { offset: 10, word: "Promptly" },
         { offset: 20, word: "as soon as reasonably practicable" },
       ],
     );
-    assert.deepEqual(vagueDeadlines([text("可及的速やかに"), ...LIMITS], ["速やかに", "可及的速やかに"], ["日以内"]), [{ offset: 0, word: "可及的速やかに" }]);
+    assert.deepEqual(vagueDeadlines([text("可及的速やかに"), ...LIMITS], words(["速やかに", "可及的速やかに"])), [{ offset: 0, word: "可及的速やかに" }]);
   });
 
   it("does not read an English word inside a longer one", () => {
-    assert.deepEqual(vagueDeadlines([text("unpromptly done"), ...LIMITS], ["promptly"], ["日以内"]), []);
+    assert.deepEqual(vagueDeadlines([text("unpromptly done"), ...LIMITS], words(["promptly"])), []);
   });
 
   it("counts sentences: vague ones are reported only when fewer than the concrete ones", () => {
-    assert.deepEqual(vagueDeadlines([text("速やかに"), text("7日以内", 10)], ["速やかに"], ["日以内"]), []);
-    assert.deepEqual(vagueDeadlines([text("速やかに、速やかに"), text("7日以内", 10), text("8日以内", 20)], ["速やかに"], ["日以内"]), [
+    assert.deepEqual(vagueDeadlines([text("速やかに"), text("7日以内", 10)], words(["速やかに"])), []);
+    assert.deepEqual(vagueDeadlines([text("速やかに、速やかに"), text("7日以内", 10), text("8日以内", 20)], words(["速やかに"])), [
       { offset: 0, word: "速やかに" },
       { offset: 5, word: "速やかに" },
     ]);
   });
 
+  it("reads a frame: the unit within reach after its lead, not a bare unit", () => {
+    const frame = words(["promptly"], ["within … day"]);
+    assert.deepEqual(vagueDeadlines([text("Notify promptly."), text("Pay within thirty (30) days."), text("Reply within one day.", 40)], frame).length, 1);
+    assert.deepEqual(vagueDeadlines([text("Notify promptly."), text("Open 24 hours a day."), text("Closed on business days.", 40)], frame), []);
+    const far = text(`Pay within ${"x".repeat(40)} days.`);
+    assert.deepEqual(vagueDeadlines([text("Notify promptly."), far, far], frame), []);
+    assert.deepEqual(vagueDeadlines([text("Notify promptly, within one day."), ...LIMITS], frame), []);
+  });
+
+  it("leaves a sentence that grants a right: a word anywhere, or an ending", () => {
+    const rights = words(["promptly", "速やかに"], ["日以内", "within … day"], [{ pattern: "may" }, { pattern: "ことができる", position: "after" }]);
+    assert.deepEqual(vagueDeadlines([text("We may promptly suspend it."), ...LIMITS], rights), []);
+    assert.deepEqual(vagueDeadlines([text("甲は、速やかに解除することができる。"), ...LIMITS], rights), []);
+    assert.deepEqual(vagueDeadlines([text("The mayor shall act promptly."), ...LIMITS], rights), [{ offset: 20, word: "promptly" }]);
+    assert.deepEqual(vagueDeadlines([text("甲は、解除することができる場合は速やかに通知する。"), ...LIMITS], rights).length, 1);
+  });
+
   it("leaves a sentence with a concrete limit, and says nothing for empty input", () => {
-    assert.deepEqual(vagueDeadlines([text("速やかに、7日以内に"), ...LIMITS], ["速やかに"], ["日以内"]), []);
-    assert.deepEqual(vagueDeadlines([], ["速やかに"], []), []);
-    assert.deepEqual(vagueDeadlines([text("速やかに"), ...LIMITS], [], ["日以内"]), []);
-    assert.deepEqual(vagueDeadlines([text("速やかに"), ...LIMITS], [""], [""]), []);
+    assert.deepEqual(vagueDeadlines([text("速やかに、7日以内に"), ...LIMITS], words(["速やかに"])), []);
+    assert.deepEqual(vagueDeadlines([], words(["速やかに"], [])), []);
+    assert.deepEqual(vagueDeadlines([text("速やかに"), ...LIMITS], words([])), []);
+    assert.deepEqual(vagueDeadlines([text("速やかに"), ...LIMITS], words([""], [""], [{ pattern: "" }])), []);
+    assert.deepEqual(vagueDeadlines([text("速やかに"), ...LIMITS], words(["速やかに"], ["…", "within …", "a … b … c"])), []);
   });
 });

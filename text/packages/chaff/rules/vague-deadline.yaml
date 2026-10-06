@@ -29,6 +29,8 @@ off_for:
   literature: "A deadline is a contract's obligation: the contract genre checks it."
   speech: "A deadline is a contract's obligation: the contract genre checks it."
   legal/statute: "A statute uses 速やかに, 遅滞なく and 直ちに as graded terms of art, and promptly as a duty it does not quantify."
+  legal/judgment: "A court decision quotes the statutes and contracts it reads (遅滞なく報告しなければならない); their limits are not the decision's own."
+  legal/patent: "A patent sets no deadlines: promptly describes a step of a process (promptly cooled)."
 
 group: wording
 summary:
@@ -65,8 +67,8 @@ example:
       3. The Supplier shall notify the Customer of any breach within five business days of becoming aware of it.
 
 not_flagged:
-  ja: 数の期限を書いた文が、期限を読み手に決めさせる語を書いた文より多くない文書では、書き手がそう書くと決めたとみなして指しません。同じ文に日数の期限（7日以内、5営業日）があれば指しません（「速やかに、遅くとも7日以内に」）。今すぐを言う「直ちに」と、解除の手続きの決まった言い方「相当の期間を定めて催告し」は見ません。法令は「速やかに」「遅滞なく」「直ちに」を段の違う決まった語として使うので見ません。法務のジャンルで見ます。
-  en: 'A document where sentences stating a limit in numbers are not more than those with a vague one is taken to write its limits that way on purpose, and is not reported. A sentence that also states a limit in numbers ("promptly, and in any case within seven days") is not reported. "Immediately", which means at once, is not read. Statutes use "promptly" and "without delay" as terms of art and are not read; the other legal genres run this rule.'
+  ja: 数の期限を書いた文が、期限を読み手に決めさせる語を書いた文より多くない文書では、書き手がそう書くと決めたとみなして指しません。同じ文に日数の期限（7日以内、5営業日）があれば指しません（「速やかに、遅くとも7日以内に」）。権利を定める文（「速やかに本契約を解除することができる」）は、誰かが守る期限ではないので見ません。今すぐを言う「直ちに」と、解除の手続きの決まった言い方「相当の期間を定めて催告し」は見ません。法令は「速やかに」「遅滞なく」「直ちに」を段の違う決まった語として使うので見ません。判決は法令や契約を引いて書くので、特許は期限を定めないので見ません。契約書・規約のジャンルで見ます。
+  en: 'A document where sentences stating a limit in numbers are not more than those with a vague one is taken to write its limits that way on purpose, and is not reported. A sentence that also states a limit in numbers ("promptly, and in any case within seven days") is not reported, nor one that grants a right ("We may promptly suspend your account"), which sets no deadline anyone must meet. A bare unit ("24 hours a day") does not count as a limit in numbers; "within … days" does. "Immediately", which means at once, is not read. Statutes use "promptly" and "without delay" as terms of art, court decisions quote statutes and contracts, and patents set no deadlines, so none of them is read; the contract genre runs this rule.'
 rewrite:
   depth: light
   ja:

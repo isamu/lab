@@ -7848,15 +7848,15 @@
         },
         "docs": {
           "documents": 20,
-          "fired": 1
+          "fired": 0
         },
         "legal": {
           "documents": 35,
-          "fired": 14
+          "fired": 10
         },
         "literature": {
           "documents": 13,
-          "fired": 4
+          "fired": 2
         },
         "speech": {
           "documents": 7,
