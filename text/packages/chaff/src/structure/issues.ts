@@ -31,8 +31,9 @@ const textOf = (node: StructureNode, key: string): string => {
  * 参照がこの文書のどこかを指しているか。fallback は言語パッケージが付ける別の行き先で、
  * 日本語の「第4条第1項」は、番号の無い第 1 項を持つ第4条を指しうる。
  */
-const resolves = (node: StructureNode, addresses: ReadonlySet<string>): boolean =>
-  addresses.has(textOf(node, "target")) || (node.attrs["fallback"] !== undefined && addresses.has(fallbackKey(node)));
+const resolves = (node: StructureNode, addresses: ReadonlySet<string>, chapters: Chapters): boolean =>
+  addresses.has(textOf(node, "target")) ||
+  (node.attrs["fallback"] !== undefined && chapterReading(textOf(node, "target"), chapters).fallback && addresses.has(fallbackKey(node)));
 
 /**
  * fallbackLabel があれば、fallback はその見出しの番号で書かれた節点だけに当たる。
@@ -47,6 +48,53 @@ const addressesOf = (node: StructureNode): string[] =>
   node.kind === "chapter" && node.address.includes("/") ? [node.address, node.address.slice(node.address.lastIndexOf("/") + 1)] : [node.address];
 
 const keysOf = (node: StructureNode): string[] => addressesOf(node).flatMap((address) => [address, labelled(address, textOf(node, "label"))]);
+
+/** An address without its numbers: the kind of unit it names (ch9 and ch10 are both ch). */
+const unitOf = (address: string): string => address.replaceAll(/[\d.]+/gu, "");
+
+/** The document's chapters: their addresses, and whether the one chapter is the document itself (its title, first of all). */
+export type Chapters = { readonly addresses: readonly string[]; readonly titled: boolean };
+
+/**
+ * How a document's chapters bear on a reference to a chapter (第9章, Chapter 9). Pure.
+ *   fallback: whether the reference may fall back to a numbered section ("## 9. …"). Only in a document with no chapter:
+ *     where chapters are written, a chapter reference names a chapter, and section 9 is not chapter 9.
+ *   elsewhere: the reference names a chapter of another file. A document that is one chapter (第10章 as its title, a series
+ *     of one chapter per file) holds no other chapter, so 第9章 is the next file's. Its own chapter is still its own.
+ */
+export const chapterReading = (target: string, chapters: Chapters): { readonly fallback: boolean; readonly elsewhere: boolean } => {
+  const shortAddresses = chapters.addresses.map((address) => address.slice(address.lastIndexOf("/") + 1));
+  const toChapter = new Set(shortAddresses.map(unitOf)).has(unitOf(target));
+  const series = chapters.titled && chapters.addresses.length === 1 && !shortAddresses.includes(target);
+  return { fallback: !toChapter, elsewhere: toChapter && series };
+};
+
+/** A chapter is the document's title when it is not under another heading (ch10, not h1/ch1) and nothing numbered comes before it. */
+const chaptersOf = (nodes: readonly StructureNode[]): Chapters => {
+  const chapters = nodes.filter((node) => node.kind === "chapter");
+  const first = nodes.find((node) => NUMBERED.has(node.kind));
+  const titled = chapters.length === 1 && first === chapters[0] && !(first?.address.includes("/") ?? true);
+  return { addresses: chapters.map((node) => node.address), titled };
+};
+
+/** What may stand between a chapter and the reference it qualifies: nothing (第1章第2条) or の (第1章の第2条). A list mark (第1章、第2条) names two. */
+const QUALIFIER_GAPS: ReadonlySet<string> = new Set(["", "の"]);
+
+/**
+ * The references that point into another file: a chapter reference read as elsewhere (chapterReading), and the reference
+ * right after one, which it qualifies (第1章の第2条 is article 2 of that other chapter).
+ */
+const elsewhereReferences = (nodes: readonly StructureNode[], source: string): ReadonlySet<StructureNode> => {
+  const chapters = chaptersOf(nodes);
+  const references = nodes.filter((node) => node.kind === "reference");
+  const elsewhere = new Set<StructureNode>();
+  references.forEach((node, index) => {
+    const before = references[index - 1];
+    const qualified = before !== undefined && elsewhere.has(before) && QUALIFIER_GAPS.has(source.slice(before.span.end, node.span.start).trim());
+    if (qualified || chapterReading(textOf(node, "target"), chapters).elsewhere) elsewhere.add(node);
+  });
+  return elsewhere;
+};
 
 /**
  * 他の文書を指す参照か。citedTag（"[HTTP-CACHING]"）は、書き方だけでは差し込み欄の "[BUYER-1]" と見分けられないので、
@@ -77,10 +125,12 @@ export const danglingReferences = (tree: StructureNode, source: string): Structu
   const otherNumbering = (node: StructureNode): boolean =>
     numberings.size > 0 && typeof numbering(node) === "string" && !numberings.has(String(numbering(node))) && citedElsewhere.has(numbering(node));
   const articleLabels = nodes.filter((node) => node.kind === "article").map((node) => textOf(node, "label"));
+  const chapters = chaptersOf(nodes);
+  const elsewhere = elsewhereReferences(nodes, source);
   return nodes
     .filter((node) => node.kind === "reference" && !citesOther(node) && !otherNumbering(node))
-    .filter((node) => !namesAbsentUnit(node, articleLabels))
-    .filter((node) => !resolves(node, addresses))
+    .filter((node) => !namesAbsentUnit(node, articleLabels) && !elsewhere.has(node))
+    .filter((node) => !resolves(node, addresses, chapters))
     .map((node) => ({ offset: node.span.start, values: { label: textOf(node, "label"), target: textOf(node, "target") } }));
 };
 
@@ -88,15 +138,20 @@ export const danglingReferences = (tree: StructureNode, source: string): Structu
  * 参照が指す節点。danglingReferences と同じ引き方（番地、章の短い番地、fallback）で、番号の付いたまとまりを引く。
  * 同じ鍵の節点が二つ以上ある（番号の振り直しや別表の条）ときは、どれを指すのか決まらないので undefined。
  */
-export const referenceResolver = (tree: StructureNode): ((reference: StructureNode) => StructureNode | undefined) => {
+export const referenceResolver = (tree: StructureNode, source: string): ((reference: StructureNode) => StructureNode | undefined) => {
+  const nodes = inDocumentOrder(tree);
+  const chapters = chaptersOf(nodes);
+  const elsewhere = elsewhereReferences(nodes, source);
   const byKey = new Map<string, StructureNode | null>();
   inDocumentOrder(tree)
     .filter((node) => NUMBERED.has(node.kind))
     .forEach((node) => keysOf(node).forEach((key) => byKey.set(key, byKey.has(key) && byKey.get(key) !== node ? null : node)));
   const resolve = (reference: StructureNode): StructureNode | undefined => {
+    if (elsewhere.has(reference)) return undefined;
     const target = byKey.get(textOf(reference, "target"));
     if (target !== undefined) return target ?? undefined;
-    return reference.attrs["fallback"] === undefined ? undefined : (byKey.get(fallbackKey(reference)) ?? undefined);
+    const fallback = reference.attrs["fallback"] !== undefined && chapterReading(textOf(reference, "target"), chapters).fallback;
+    return fallback ? (byKey.get(fallbackKey(reference)) ?? undefined) : undefined;
   };
   // Article 6 は Section 6 ではない。番号の書き方が両方にあって違えば、別の文書の条かもしれないので引かない。
   return (reference) => {
