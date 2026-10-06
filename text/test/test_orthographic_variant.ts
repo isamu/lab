@@ -6,6 +6,7 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { oddSpellings } from "../packages/chaff/src/spelling-variants.ts";
 import { kanjiSkeleton, katakanaKey, lemmaReading } from "../packages/chaff/src/kana-spelling.ts";
 import { furiganaSpans } from "../packages/chaff/src/furigana.ts";
+import { acronymsIn, isCapitalsNotSpelling } from "../packages/chaff/src/capitals-with-small.ts";
 
 // 表記ゆれ（orthographic-variant）。例文はすべて自作。
 
@@ -105,6 +106,37 @@ describe("orthographic-variant: カタカナ語と英字", () => {
 
   it("大文字だけの語（強調や略語）は数えない", () => {
     assert.deepEqual(findingsOf("Read the terms. The terms apply. THE TERMS ARE FINAL.\n", en), []);
+  });
+
+  it("大文字に小文字の語尾が付いた語（略語の字を示す CLImatology、関数名の SENDs）は数えない", () => {
+    const acronym = "The CLIPER model (CLImatology and PERsistence) is the baseline. Climatology is slow. We read climatology daily. Old climatology helps.\n";
+    assert.deepEqual(findingsOf(acronym, en), []);
+    assert.deepEqual(
+      findingsOf("A program may issue several SENDs before a CLOSE. The peer sends data. The host sends a reply. Each side sends a FIN.\n", en),
+      [],
+    );
+    assert.deepEqual(findingsOf("A connection is OPENed passively. It opened at noon. We opened it again. They opened a second one.\n", en), []);
+  });
+
+  it("ハイフンでつないだ語は、大文字の部分があっても語として比べる（GitHub-SENDs と Github-SENDs）", () => {
+    assert.deepEqual(findingsOf("GitHub-SENDs return. GitHub-SENDs retry. Github-SENDs timeout.\n", en), [
+      '"Github-SENDs" here, where the document usually writes "GitHub-SENDs" (1 of 3)',
+    ]);
+  });
+
+  it("名前の大文字（HBase、RSpec）は書き方なので、ゆれは数える", () => {
+    assert.deepEqual(findingsOf("HBase stores rows. HBase scales out. Hbase was down today.\n", en), [
+      '"Hbase" here, where the document usually writes "HBase" (1 of 3)',
+    ]);
+  });
+
+  it("大文字の混じる書き方のゆれは、それでも数える（JavaScript と Javascript、IPv6 と ipv6）", () => {
+    assert.deepEqual(findingsOf("JavaScript runs here. JavaScript is fast. Javascript is popular.\n", en), [
+      '"Javascript" here, where the document usually writes "JavaScript" (1 of 3)',
+    ]);
+    assert.deepEqual(findingsOf("IPv6 is enabled. IPv6 works here. Turn on ipv6 later.\n", en), [
+      '"ipv6" here, where the document usually writes "IPv6" (1 of 3)',
+    ]);
   });
 });
 
@@ -233,5 +265,35 @@ describe("kana-spelling: 読みと字の鍵", () => {
     assert.equal(katakanaKey("インターフェース"), katakanaKey("インタフェイス"));
     assert.equal(katakanaKey("ヴァイオリン"), katakanaKey("バイオリン"));
     assert.notEqual(katakanaKey("ウィンドウ"), katakanaKey("ウインド"));
+  });
+});
+
+describe("capitals-with-small: capitals that are not a spelling of the plain word", () => {
+  it("acronymsIn: the words in capitals only", () => {
+    assert.deepEqual(acronymsIn("The CLIPER model (CLImatology and PERsistence) and CAMEX-3 use NASA data."), ["CLIPER", "CAMEX", "NASA"]);
+    assert.deepEqual(acronymsIn("HBase and a I"), []);
+    assert.deepEqual(acronymsIn(""), []);
+  });
+
+  it("a name in capitals with an ending, and the letters of an acronym of the sentence", () => {
+    assert.deepEqual(
+      ["SENDs", "RECEIVEs", "OPENed", "ACKing", "URLs"].map((word) => isCapitalsNotSpelling(word, [])),
+      [true, true, true, true, true],
+    );
+    assert.deepEqual(
+      ["CLImatology", "PERsistence", "EXperiment"].map((word) => isCapitalsNotSpelling(word, ["CLIPER", "CAMEX"])),
+      [true, true, true],
+    );
+  });
+
+  it("not a name spelled with capitals, capitals with no acronym to spell, or other words", () => {
+    assert.deepEqual(
+      ["HBase", "RSpec", "EMail", "CLImatology", "GitHub", "IPv6", "Email", "SEND", "sends", "", "-"].map((word) => isCapitalsNotSpelling(word, ["NASA"])),
+      [false, false, false, false, false, false, false, false, false, false, false],
+    );
+    assert.equal(isCapitalsNotSpelling("CLImatology", []), false);
+    assert.equal(isCapitalsNotSpelling("SCIMple", ["SCIM"]), false);
+    assert.equal(isCapitalsNotSpelling("GitHub-SENDs", []), false);
+    assert.equal(isCapitalsNotSpelling("SCIMple", ["SCIMS"]), true);
   });
 });

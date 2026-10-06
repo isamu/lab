@@ -6,7 +6,8 @@
 #   vowel              word beginnings said with a vowel against the two groups above ("an hour", "an onerous"); checked first
 #   word               capitals read as a word, not letter by letter ("a NASA probe"); the word's own sound decides.
 #                      Capitals of four letters or more with a vowel that are not listed may be words, and are not reported
-#   either             words and capitals said both ways, never reported ("a SQL" and "an SQL", "a historic" and "an historic")
+#   either             words and capitals said both ways, never reported ("a SQL" and "an SQL", "a historic" and "an historic");
+#                      capitals often said as the words they stand for ("a RST" for "a reset") are here too
 # Word beginnings match the start of the word, in lower case; capitals match whole.
 id: article-sound
 language: en
@@ -73,9 +74,14 @@ entries:
   - { pattern: ROM, group: word }
   - { pattern: SIM, group: word }
   - { pattern: MAC, group: word }
+  - { pattern: SYN, group: word }
+  - { pattern: FIN, group: word }
   - { pattern: SQL, group: either }
   - { pattern: FAQ, group: either }
   - { pattern: URL, group: either }
+  - { pattern: RST, group: either }
+  - { pattern: RCV, group: either }
+  - { pattern: SWS, group: either }
   - { pattern: herb, group: either }
   - { pattern: histor, group: either }
   - { pattern: hotel, group: either }

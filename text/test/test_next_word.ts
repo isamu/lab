@@ -37,6 +37,11 @@ describe("startsWithVowelSound: the sound a word starts with, from lexicon artic
     assert.deepEqual(["SALT", "HTTP", "HR", "NTSB"].map(soundOf), [undefined, undefined, undefined, true]);
     assert.deepEqual(["mRNA", "iPhone", "eBay"].map(soundOf), [true, true, true]);
   });
+
+  it("short capitals said as a word (SYN, FIN), or as the word they stand for (RST: reset)", () => {
+    assert.deepEqual(["SYN", "FIN", "RST", "RCV", "SWS"].map(soundOf), [false, false, undefined, undefined, undefined]);
+    assert.deepEqual(["SUV", "NBA", "FBI"].map(soundOf), [true, true, true]);
+  });
 });
 
 describe("article-sound", () => {
@@ -56,12 +61,22 @@ describe("article-sound", () => {
       '"A apple" takes "An" before that sound',
       '"a MBA" takes "an" before that sound',
     ]);
+    assert.deepEqual(findingsOf(RULE, "The peer sends an SYN and later an FIN.\n"), [
+      '"an SYN" takes "a" before that sound',
+      '"an FIN" takes "a" before that sound',
+    ]);
   });
 
   it("the right article, a letter label, a digit and words said both ways are not", () => {
     const right =
       "A user waited an hour. An MBA, a NASA probe, a one-off and an X-ray. Pick option A or B. It was a 8-hour day. Run a SQL query or an SQL query. If a is zero, stop. Pass a `URL` object, an lvalue. Buy grade A eggs for vitamin A intake. It was a historic and an historic day.\n";
     assert.deepEqual(findingsOf(RULE, right), []);
+  });
+
+  it("capitals said as a word take the word's article (a SYN), and those said both ways are left alone (a RST, an RST)", () => {
+    const tcp =
+      "A SYN arrives first. The peer answers with a SYN and a FIN. Send a RST or an RST to abort. Keep a RCV.WND that fits, and a SWS avoidance algorithm.\n";
+    assert.deepEqual(findingsOf(RULE, tcp), []);
   });
 });
 

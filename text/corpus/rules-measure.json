@@ -564,7 +564,7 @@
         },
         "technical": {
           "documents": 27,
-          "fired": 4
+          "fired": 3
         }
       },
       "bench": {
@@ -5296,7 +5296,7 @@
         },
         "business": {
           "documents": 80,
-          "fired": 23
+          "fired": 22
         },
         "docs": {
           "documents": 21,
@@ -5316,7 +5316,7 @@
         },
         "technical": {
           "documents": 49,
-          "fired": 12
+          "fired": 11
         }
       },
       "bench": {

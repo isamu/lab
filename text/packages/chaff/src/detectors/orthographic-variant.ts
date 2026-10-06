@@ -5,6 +5,7 @@ import { isKatakanaWord, stemOf } from "../long-vowel.ts";
 import { QUOTATION_MARKS, isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
 import { furiganaSpans } from "../furigana.ts";
+import { acronymsIn, isCapitalsNotSpelling } from "../capitals-with-small.ts";
 
 /** A word found in the document: where it is, which sentence it is in, its key and spelling, and how it is written when that differs. */
 type Placed = KeyedWord & { readonly sentence: Sentence; readonly offset: number; readonly shown?: string };
@@ -150,17 +151,20 @@ const isPartOfAddress = (text: string, start: number, end: number): boolean =>
 
 /**
  * Latin words keyed without hyphens and case (e-mail and email, GitHub and Github). A word in capitals only (TEAMS, MAY) is
- * emphasis or an acronym, not a spelling of the word, and is left out.
+ * emphasis or an acronym, not a spelling of the word, and is left out; so are a name in capitals with an ending (SENDs) and
+ * the letters of an acronym of the sentence picked out (CLImatology for CLIPER).
  */
-const latinWords = (sentence: Sentence, isOpen: IsOpen, skip: ReadonlySet<string>): Placed[] =>
-  [...sentence.text.matchAll(LATIN_WORD)].flatMap((match): Placed[] => {
+const latinWords = (sentence: Sentence, isOpen: IsOpen, skip: ReadonlySet<string>): Placed[] => {
+  const acronyms = acronymsIn(sentence.text);
+  return [...sentence.text.matchAll(LATIN_WORD)].flatMap((match): Placed[] => {
     const word = match[0];
     const plain = word.toLowerCase().replaceAll("-", "");
     const end = match.index + word.length;
-    if (plain.length < MIN_LATIN_KEY || !LOWER.test(word) || skip.has(word.toLowerCase())) return [];
+    if (plain.length < MIN_LATIN_KEY || !LOWER.test(word) || isCapitalsNotSpelling(word, acronyms) || skip.has(word.toLowerCase())) return [];
     if (isPartOfAddress(sentence.text, match.index, end) || !isOpen(match.index, end)) return [];
     return [{ key: `latin|${plain}`, spelling: latinSpelling(word), shown: word, sentence, offset: sentence.span.start + match.index }];
   });
+};
 
 /** How the usual spelling is written where it first appears (gitHub is shown GitHub). */
 const shownUsual = (words: readonly Placed[], { word, usual }: OddSpelling<Placed>): string =>
