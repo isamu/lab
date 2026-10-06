@@ -51,8 +51,8 @@ example:
       新しい料金は来月から始まります。請求書の形式も変わります。支払いの期限は月末です。古い料金は三月で終わります。
 
 not_flagged:
-  ja: どちらの調子が正しいかは決めません。多いほうに揃っていない、少ないほうの文だけを指します。本文と箇条書きは別々に数えます。箇条書きの中の少ないほうが文書全体では多いほうなら、その文は指しません。
-  en: Neither register is called right; only the sentences in the minority are pointed at. The body and each list are counted apart, and a sentence in a list's minority is left alone when its register is the document's majority.
+  ja: どちらの調子が正しいかは決めません。多いほうに揃っていない、少ないほうの文だけを指します。本文と箇条書きは別々に数えます。箇条書きの中の少ないほうが文書全体では多いほうなら、その文は指しません。項目や段落の頭の太字の札（「- **速く書ける。** 説明です。」の「速く書ける。」）は見出しと同じく文に数えません。
+  en: Neither register is called right; only the sentences in the minority are pointed at. The body and each list are counted apart, and a sentence in a list's minority is left alone when its register is the document's majority. A bold label that opens an item or a paragraph and is followed by more text on its line is a heading, not a sentence.
 level_meaning:
   ja: 少ないほうの調子の文が {limit} 文以下のとき、それを指摘
   en: reported when the minority register has {limit} sentences or fewer
