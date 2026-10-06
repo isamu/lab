@@ -5,6 +5,7 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { oddSpellings } from "../packages/chaff/src/spelling-variants.ts";
 import { kanjiSkeleton, katakanaKey, lemmaReading } from "../packages/chaff/src/kana-spelling.ts";
+import { furiganaSpans } from "../packages/chaff/src/furigana.ts";
 
 // 表記ゆれ（orthographic-variant）。例文はすべて自作。
 
@@ -114,6 +115,60 @@ describe("orthographic-variant: 使い方で分ける", () => {
 
   it("「者」（人）と「もの」は書き分け", () => {
     assert.deepEqual(findingsOf("申請するものとする。届け出るものとする。申請した者に通知する。\n"), []);
+  });
+});
+
+describe("orthographic-variant: 語の書き方ではないもの", () => {
+  it("ふりがなの括弧の中は語の読みで、書き方ではない", () => {
+    const glossary = "- **Bearerトークン（べあらーとーくん）** はヘッダで示すトークンの渡し方です。\n- トークンは通行証です。\n- トークンを送ります。\n";
+    assert.deepEqual(findingsOf(glossary), []);
+    assert.equal(findingsOf("窓口で申請できます。郵送でもできます。代理の人も（申請出来ます）。\n").length, 1);
+  });
+
+  it("名詞に続けて書いたかなの名詞（全員ぶん）は、同じ読みの名詞（文）と比べない", () => {
+    assert.deepEqual(findingsOf("一つの文で書きます。次の文も短くします。全員ぶん用意します。\n"), []);
+    assert.equal(findingsOf("一つの文で書きます。次の文も短くします。そのぶんは長いです。\n").length, 1);
+  });
+
+  it("カタカナの語の途中で切られたもの（ミスっ → ミ・スる）は語ではない", () => {
+    assert.deepEqual(findingsOf("設定をミスっていると動きません。準備をする。確認をする。記録をする。\n"), []);
+    // カタカナ二字の語幹の動詞は語。名詞に続けて書いても数える。
+    assert.equal(findingsOf("ジムサボる。授業をさぼる。会議をさぼる。練習をさぼる。\n").length, 1);
+  });
+
+  it("て形の後ろの補助動詞は、分割器がて形を接続詞と読んでも補助動詞（追ってみる）", () => {
+    assert.deepEqual(findingsOf("画面を見る。記録を見る。結果を見る。追ってみると分かる。\n"), []);
+    assert.equal(findingsOf("画面を見る。記録を見る。結果を見る。表をみる。\n").length, 1);
+    // かなの接続詞（そして）は て形ではない。
+    assert.equal(findingsOf("画面を見る。記録を見る。結果を見る。そしてみる。\n").length, 1);
+  });
+
+  it("慣用句の動詞（気をつける）は、それだけの動詞（名札を付ける）と別に比べる", () => {
+    assert.deepEqual(findingsOf("名札を付ける。印を付ける。色を付ける。足元に気をつける。\n"), []);
+    assert.equal(findingsOf("名札を付ける。印を付ける。色を付ける。紙につける。\n").length, 1);
+    // 慣用句は動詞まで含めて決まる。「目を」の後ろでも、慣用句でない動詞は数える。
+    assert.equal(findingsOf("画面を見る。記録を見る。結果を見る。目をみる。\n").length, 1);
+  });
+});
+
+describe("furiganaSpans: 語の直後のふりがなの括弧", () => {
+  it("漢字・カタカナ・英字の直後の、ひらがなだけの括弧", () => {
+    assert.deepEqual(furiganaSpans("脆弱性（ぜいじゃくせい）"), [{ start: 3, end: 12 }]);
+    assert.deepEqual(furiganaSpans("HTTP(えいち てぃー)"), [{ start: 4, end: 13 }]);
+    assert.deepEqual(furiganaSpans("トークン（とーくん）と鍵（かぎ）"), [
+      { start: 4, end: 10 },
+      { start: 12, end: 16 },
+    ]);
+  });
+
+  it("ひらがなの後ろ、文の頭、カタカナや漢字の混ざる括弧、ひらがなの無い括弧は読みではない", () => {
+    assert.deepEqual(furiganaSpans("これは（たぶん）正しい"), []);
+    assert.deepEqual(furiganaSpans("（ふりがな）"), []);
+    assert.deepEqual(furiganaSpans("鍵（カギ）"), []);
+    assert.deepEqual(furiganaSpans("鍵（かぎ、別名）"), []);
+    assert.deepEqual(furiganaSpans("鍵（ー）"), []);
+    assert.deepEqual(furiganaSpans("鍵 （かぎ）"), []);
+    assert.deepEqual(furiganaSpans(""), []);
   });
 });
 

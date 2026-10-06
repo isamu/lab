@@ -1,0 +1,25 @@
+# 慣用句（名詞・助詞・動詞の辞書の形）。慣用句の中の動詞は、それだけの動詞と別に比べる。
+# 「気をつける」と「名札を付ける」は同じ「ツケル」でも、書き分けは慣用句の書き方の決まりで、ゆれではない。
+# 慣用句どうしは比べるので、「気をつける」と「気を付ける」のゆれは指摘する。
+# pattern は書いた名詞と助詞に、動詞の辞書の形をつないだもの。漢字とかなの両方の書き方を挙げる。
+# 「カケル」「ツク」は orthographic-variant-distinct で比べないので、ここには要らない。
+id: orthographic-variant-idiom
+language: ja
+entries:
+  - pattern: 気をつける
+  - pattern: 気を付ける
+  - pattern: 身につける
+  - pattern: 身に付ける
+  - pattern: 目をつける
+  - pattern: 目を付ける
+  - pattern: 手をつける
+  - pattern: 手を付ける
+  - pattern: 味をつける
+  - pattern: 味を付ける
+  - pattern: 片をつける
+  - pattern: 片を付ける
+  - pattern: けりをつける
+  - pattern: 決着をつける
+  - pattern: 決着を付ける
+  - pattern: 難癖をつける
+  - pattern: 難癖を付ける
