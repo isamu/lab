@@ -7,3 +7,4 @@ entries:
   - { pattern: compared with, position: before }
   - { pattern: compared to, position: before }
   - { pattern: versus, position: before }
+  - { pattern: →, position: after }

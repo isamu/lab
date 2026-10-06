@@ -49,6 +49,13 @@
           "line": 41,
           "clean": "設立から10年",
           "planted": "設立から12年"
+        },
+        {
+          "kind": "change-rate",
+          "rule": "change-rate-mismatch",
+          "line": 43,
+          "clean": "前年比20%の増加",
+          "planted": "前年比25%の増加"
         }
       ]
     },
@@ -158,6 +165,13 @@
           "line": 41,
           "clean": "Ten years after the founding",
           "planted": "Twelve years after the founding"
+        },
+        {
+          "kind": "change-rate",
+          "rule": "change-rate-mismatch",
+          "line": 43,
+          "clean": "an increase of 20%.",
+          "planted": "an increase of 25%."
         }
       ]
     },

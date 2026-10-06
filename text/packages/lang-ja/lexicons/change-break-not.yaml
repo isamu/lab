@@ -1,0 +1,13 @@
+# change-break の語を含むが、別の主題も主語も立てない言い方（change-rate-mismatch）: 「150万円に上がり」の「が」、
+# 「前年比では」「前年比でも」、時を言う主題（「昨年の100万円から今年は150万円」「2026年度は」「今期は」）。
+id: change-break-not
+language: ja
+entries:
+  - pattern: 上が
+  - pattern: 下が
+  - pattern: 広が
+  - pattern: 比では
+  - pattern: でも
+  - pattern: 年は
+  - pattern: 年度は
+  - pattern: 期は

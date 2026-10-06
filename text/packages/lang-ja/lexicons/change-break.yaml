@@ -1,0 +1,8 @@
+# 二つの値のあいだや、値から率までのあいだにあれば、別のものの値や率だと分かる語（change-rate-mismatch）:
+# 「100万円から150万円に増え、利益は20%増えた」「売上は100万円、費用は150万円で」。主題や主語を立てる助詞。
+id: change-break
+language: ja
+entries:
+  - pattern: は
+  - pattern: も
+  - pattern: が

@@ -6,7 +6,7 @@ import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { prepare } from "../packages/lang-ja/src/pos.ts";
-import { changeRateMismatches, type ChangeText } from "../packages/chaff/src/structure/change-rate.ts";
+import { changeRateMismatches, gapLength, type ChangeText } from "../packages/chaff/src/structure/change-rate.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
 // 一つの文の、もとの値・今の値・増減率の食い違い（change-rate-mismatch）。例文は自作。
@@ -65,6 +65,71 @@ describe("change-rate-mismatch", () => {
   });
 });
 
+describe("change-rate-mismatch: the two values written together before the rate", () => {
+  // Each form with a wrong rate, then the same with the right one.
+  const ja_forms: readonly (readonly [string, string])[] = [
+    ["売上は昨年の100万円から今年は150万円になり、前年比20%の増加でした。", "売上は昨年の100万円から今年は150万円になり、前年比50%の増加でした。"],
+    ["売上は100万円から150万円に増え、前年比20%の増加でした。", "売上は100万円から150万円に増え、前年比50%の増加でした。"],
+    ["売上は100万円から150万円へ伸び、前年同期比20%の伸びとなった。", "売上は100万円から150万円へ伸び、前年同期比50%の伸びとなった。"],
+    ["売上は100万円から150万円になり、前年比でも20%の増加でした。", "売上は100万円から150万円になり、前年比でも50%の増加でした。"],
+    ["売上は100万円から150万円に上がり、20%の増加となった。", "売上は100万円から150万円に上がり、50%の増加となった。"],
+    ["売上は前年の100万円、今年の150万円で、前年比20%の増加でした。", "売上は前年の100万円、今年の150万円で、前年比50%の増加でした。"],
+    ["売上は100万円→150万円で、前年比20%増でした。", "売上は100万円→150万円で、前年比50%増でした。"],
+    ["売上は2025年度は100万円、2026年度は150万円で、20%の増加でした。", "売上は2025年度は100万円、2026年度は150万円で、50%の増加でした。"],
+    ["売上は200万円から150万円に下がり、前年比20%の減少となった。", "売上は200万円から150万円に下がり、前年比25%の減少となった。"],
+  ];
+  const en_forms: readonly (readonly [string, string])[] = [
+    ["Revenue rose from $1.0 million to $1.5 million, an increase of 20%.", "Revenue rose from $1.0 million to $1.5 million, an increase of 50%."],
+    ["Revenue rose from $1.0 million to $1.5 million, with an increase of 20%.", "Revenue rose from $1.0 million to $1.5 million, with an increase of 50%."],
+    ["Revenue rose from $1.0 million last year to $1.5 million, up 20%.", "Revenue rose from $1.0 million last year to $1.5 million, up 50%."],
+    ["Revenue was $1.0 million in 2025 and $1.5 million in 2026, up 20%.", "Revenue was $1.0 million in 2025 and $1.5 million in 2026, up 50%."],
+    ["Revenue was $1.5 million in 2026 and $1.0 million in 2025, grew 20%.", "Revenue was $1.5 million in 2026 and $1.0 million in 2025, grew 50%."],
+    ["Users grew from 1,000 users to 1,500 users, an increase of 20%.", "Users grew from 1,000 users to 1,500 users, an increase of 50%."],
+    ["Revenue fell from $2.0 million to $1.5 million, down 20%.", "Revenue fell from $2.0 million to $1.5 million, down 25%."],
+  ];
+
+  it("ja: reports a wrong rate in each form, and not the right one", () => {
+    ja_forms.forEach(([wrong, right]) => {
+      assert.equal(found(wrong, ja).length, 1, wrong);
+      assert.deepEqual(found(right, ja), [], right);
+    });
+  });
+
+  it("en: reports a wrong rate in each form, and not the right one", () => {
+    en_forms.forEach(([wrong, right]) => {
+      assert.equal(found(wrong, en).length, 1, wrong);
+      assert.deepEqual(found(right, en), [], right);
+    });
+  });
+
+  it("allows the rounding of the two values", () => {
+    assert.deepEqual(found("売上は昨年の3.0億円から今年は3.6億円になり、前年比22%の増加だった。", ja), []);
+    assert.deepEqual(found("売上は昨年の3.0億円から今年は3.6億円になり、前年比25%の増加だった。", ja), ["25:20"]);
+  });
+
+  it("does not take an unrelated percentage as the rate", () => {
+    assert.deepEqual(found("売上は昨年の100万円から今年は150万円になり、前年比20%の増加、利益率は10%でした。", ja), ["20:50"]);
+    assert.deepEqual(found("売上は昨年の100万円から今年は150万円になり、前年比50%の増加、利益率は10%でした。", ja), []);
+    assert.deepEqual(found("シェアは20%で、売上は100万円から150万円に増加した。", ja), []);
+    assert.deepEqual(found("売上は100万円から150万円になり、構成比は20%に上昇した。", ja), []);
+    assert.deepEqual(found("Revenue rose from $1.0 million to $1.5 million, and its share of sales was 20%.", en), []);
+  });
+
+  it("does not compare a rate of another subject, after another value, or among three values", () => {
+    ["は", "も", "が"].forEach((particle) => assert.deepEqual(found(`売上は100万円から150万円に増え、利益${particle}20%増えた。`, ja), []));
+    assert.deepEqual(found("売上は100万円から150万円に増え、客数1,000人で20%増えた。", ja), []);
+    ["and costs rose 20%", "while margins grew 20%", "with margins up 20%"].forEach((tail) =>
+      assert.deepEqual(found(`Revenue rose from $1.0 million to $1.5 million, ${tail}.`, en), []),
+    );
+    assert.deepEqual(found("Revenue rose from $1.0 million to $1.5 million; costs rose 20%.", en), []);
+    // The two values of two subjects.
+    assert.deepEqual(found("2025年の売上は100万円、2026年の費用は150万円で20%増でした。", ja), []);
+    assert.deepEqual(found("売上は100万円から、費用は150万円で前年比20%増でした。", ja), []);
+    assert.deepEqual(found("Revenue was $1.0 million in 2025, $1.2 million in 2026 and $1.5 million in 2027, up 20%.", en), []);
+    assert.deepEqual(found("Revenue was $1.0 million in 2025 and $1.5 million in 2025, up 20%.", en), []);
+  });
+});
+
 describe("changeRateMismatches", () => {
   const sentence = { start: 0, end: 100 };
   const base: ChangeText = {
@@ -77,6 +142,9 @@ describe("changeRateMismatches", () => {
     directions: [{ start: 31, end: 32, sign: 1 }],
     marks: [{ start: 26, end: 28, position: "after" }],
     targets: [],
+    periods: [],
+    breaks: [],
+    source: "・".repeat(100),
   };
 
   it("reports the rate and the computed one", () => {
@@ -94,6 +162,57 @@ describe("changeRateMismatches", () => {
       figures: [base.figures[0], { start: 20, end: 26, value: 0, unit: "社", step: 1 }].flatMap((figure) => (figure === undefined ? [] : [figure])),
     };
     assert.deepEqual(changeRateMismatches(zero), []);
+  });
+
+  // 「A（0-5）から（5-7）B（7-12）になり（12-20）20%（20-23）増（23-24）」
+  const pair: ChangeText = {
+    ...base,
+    figures: [
+      { start: 0, end: 5, value: 100, unit: "円", step: 1 },
+      { start: 7, end: 12, value: 150, unit: "円", step: 1 },
+    ],
+    rates: [{ start: 20, end: 23, value: 20, decimals: 0 }],
+    directions: [{ start: 23, end: 24, sign: 1 }],
+    marks: [{ start: 5, end: 7, position: "after" }],
+  };
+
+  it("reads two values written together before the rate", () => {
+    assert.deepEqual(changeRateMismatches(pair), [{ offset: 20, values: { rate: "20", computed: "50" } }]);
+    assert.deepEqual(changeRateMismatches({ ...pair, rates: [{ start: 20, end: 23, value: 50, decimals: 0 }] }), []);
+    assert.deepEqual(changeRateMismatches({ ...pair, breaks: [{ start: 14, end: 15, beforeRateOnly: false }] }), []);
+    assert.deepEqual(changeRateMismatches({ ...pair, breaks: [{ start: 14, end: 15, beforeRateOnly: true }] }), []);
+    // A word that joins the two values ("… in 2025 and …") parts them only when it is not read before the rate alone.
+    assert.deepEqual(changeRateMismatches({ ...pair, breaks: [{ start: 5, end: 6, beforeRateOnly: true }] }), [
+      { offset: 20, values: { rate: "20", computed: "50" } },
+    ]);
+    assert.deepEqual(changeRateMismatches({ ...pair, breaks: [{ start: 5, end: 6, beforeRateOnly: false }] }), []);
+    assert.deepEqual(
+      changeRateMismatches({ ...pair, rates: [{ start: 40, end: 43, value: 20, decimals: 0 }], directions: [{ start: 43, end: 44, sign: 1 }] }),
+      [],
+    );
+    assert.deepEqual(changeRateMismatches({ ...pair, marks: [] }), []);
+  });
+
+  it("takes the value of the earlier year as the earlier one", () => {
+    // Each year right after its value: A, its year, B, its year.
+    const years = (first: number, second: number): ChangeText => ({
+      ...pair,
+      marks: [],
+      periods: [
+        { start: 5, end: 7, year: first },
+        { start: 12, end: 14, year: second },
+      ],
+    });
+    assert.deepEqual(changeRateMismatches(years(2025, 2026)), [{ offset: 20, values: { rate: "20", computed: "50" } }]);
+    assert.deepEqual(changeRateMismatches(years(2026, 2025)), [{ offset: 20, values: { rate: "20", computed: "33" } }]);
+    assert.deepEqual(changeRateMismatches(years(2025, 2025)), []);
+    assert.deepEqual(changeRateMismatches({ ...years(2025, 2026), periods: [{ start: 5, end: 7, year: 2025 }] }), []);
+  });
+
+  it("measures a gap with a Latin word as one character", () => {
+    assert.equal(gapLength(" million, an increase of ", { start: 0, end: 25 }), 10);
+    assert.equal(gapLength("になり、前年比", { start: 0, end: 7 }), 7);
+    assert.equal(gapLength("", { start: 0, end: 0 }), 0);
   });
 
   it("allows half the rate's last digit", () => {

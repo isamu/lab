@@ -1,0 +1,13 @@
+# Words that, between the two values or between the later value and the rate, show a value or the rate is of something
+# else (change-rate-mismatch): "rose from $1.0 million to $1.5 million, and costs rose 20%". group rate: read only between
+# the later value and the rate, since the two values themselves may be joined by it ("$1.0 million in 2025 and $1.5 million
+# in 2026").
+id: change-break
+language: en
+entries:
+  - { pattern: and, group: rate }
+  - { pattern: with, group: rate }
+  - pattern: but
+  - pattern: while
+  - pattern: whereas
+  - pattern: ";"

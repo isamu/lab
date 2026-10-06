@@ -1,0 +1,11 @@
+# Phrases that hold a word of change-break but start no other subject (change-rate-mismatch): "up 25% compared with
+# $1,000", "to $1.5 million, with an increase of 20%".
+id: change-break-not
+language: en
+entries:
+  - pattern: compared with
+  - pattern: with an increase
+  - pattern: with a decrease
+  - pattern: with a rise
+  - pattern: with a decline
+  - pattern: with a drop
