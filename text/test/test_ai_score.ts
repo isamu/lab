@@ -219,7 +219,7 @@ describe("aiScoreOfDocument on written samples", () => {
   });
 
   it("does not score a genre group with no human baseline", async () => {
-    const score = await scoreOf(ja, "ja-ai.md", "academic/paper");
+    const score = await scoreOf(ja, "ja-ai.md", "speech/address");
     assert.equal(score.level, undefined);
     assert.equal(score.notScored?.reason, "no-baseline");
   });

@@ -1942,7 +1942,8 @@ rule を既定で動かすかどうかは、**人の書いた文書で測った�
 
 **測るもの（`yarn rules:measure`）。** rule ごと、ジャンルの group（技術文書、ブログ、ビジネス文書、法務……）ごとに:
 
-1. **人の文書で出る割合。** corpus（`corpus/docs`、`corpus/laws`、取得した `corpus/.cache`）の各文書を、
+1. **人の文書で出る割合。** corpus（`corpus/docs`、`corpus/laws`、取得した `corpus/.cache`）のうち
+   `corpus/rules-measure-documents.json` に固定した文書を、
    その文書のジャンルの段で読む。ジャンルが止めている rule も normal で動かして測る（止めた rule も測り続けるため）。
    分母は、その rule が実際に動いた文書（記法や見出しが無くて動けなかった文書は入れない）。
 2. **bench で指摘が正しかった割合。** 植えた誤りを見つけた数と、きれいな見本での誤報の数（`yarn bench`）、

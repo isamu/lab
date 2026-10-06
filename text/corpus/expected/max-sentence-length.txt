@@ -5,9 +5,6 @@
 acas-letter-disciplinary-hearing-warning  2
 aoml-hurricane-faq  65
 apidatagov-developer-manual  1
-arxiv-2609-27842-genai-assessment  18
-arxiv-2609-38219-abs-tamazight-speech  1
-arxiv-astro-ph-new-2025-01-03  27
 asf-board-minutes-2025-01  14
 automattic-offer-letter-us  53
 bls-glossary  31
@@ -36,9 +33,6 @@ govuk-guidance-academy-senior-pay  1
 ietf-draft-httpapi-ratelimit-headers-10  7
 irs-online-account-faq  4
 jma-tokubetsu-keiho  1
-jstage-jniph-74-1-2-rehabilitation  2
-jstage-jniph-74-2-157-heat-policy  1
-jstage-jnlp-32-1-114-nmt  1
 kantei-221-shisei-hoshin  8
 kantei-unga81-general-debate-speech  4
 kantei-unga81-general-debate-speech-en  49

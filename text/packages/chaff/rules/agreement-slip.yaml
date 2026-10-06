@@ -5,7 +5,7 @@ how_to_find: agreement-slip
 requires: [pos]
 languages: [en]
 extra_word_lists: [singular-determiner, plural-determiner, invariant-noun, count-adjective, dependent-possessive, finite-auxiliary, misnumbered-phrase]
-severity: warning
+severity: info
 
 name:
   ja: 語の形が合っていない
@@ -31,7 +31,7 @@ how_to_fix:
   ja: 限定詞か名詞のどちらかに揃えてください（a significant change / significant changes）。所有の語なら、主語の語に直してください（Your can → You can、their is → there is）。
   en: Make the determiner and the noun agree ("a significant change" or "significant changes"). For a possessive, write the subject you meant ("Your can" becomes "You can", "their is" becomes "there is").
 
-levels: { strict: error, normal: warning, relaxed: info }
+levels: { strict: warning, normal: info, relaxed: info }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
 off_for:
