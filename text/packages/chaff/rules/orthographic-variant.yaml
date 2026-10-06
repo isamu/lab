@@ -56,8 +56,8 @@ example:
       Send the form by email. We answer every email within a day. Attach the receipt to the email.
 
 not_flagged:
-  ja: 読みが同じでも漢字の違う語（書く・描く）、補助動詞・形式名詞と本来の使い方の書き分け（見て下さい・資料を下さい）、書き分けが意味の違いになる語（成る・なる、言う・いう）、語末の「ー」だけの違い（katakana-long-vowel が見ます）、鉤括弧や引用符の中、chaff.yaml の names に書いた名前は見ません。英字は、頭の字の大文字小文字（Email と email）と、大文字だけの語（強調や略語）を書き方の違いにしません。少ないほうが三分の一を超えるときも言いません。文学のジャンルでは既定で止めています（その時代の書き方のため）。
-  en: The case of a word's first letter (Email, email; Long-Term, long-term) is not a spelling, nor is a word in capitals only (emphasis or an acronym). Hyphenated words that are another word (re-sign, resign), part of an address (github.com), anything in quotation marks and the team's names are not compared. Nothing is reported when the minority is more than a third. The literature preset turns it off, since old spelling belongs to its time.
+  ja: 読みが同じでも漢字の違う語（書く・描く）、補助動詞・形式名詞と本来の使い方の書き分け（見て下さい・資料を下さい）、書き分けが意味の違いになる語（成る・なる、言う・いう）、語末の「ー」だけの違い（katakana-long-vowel が見ます）、鉤括弧や引用符の中、語の直後のふりがなの括弧の中（HTTP（えいちてぃーてぃーぴー））、chaff.yaml の names に書いた名前は見ません。名詞に続けて書いたかなの名詞（全員ぶん）と慣用句の動詞（気をつける）は、同じ読みの語（文、名札を付ける）と別に比べます。英字は、頭の字の大文字小文字（Email と email）と、大文字だけの語（強調や略語）を書き方の違いにしません。少ないほうが三分の一を超えるときも言いません。文学のジャンルでは既定で止めています（その時代の書き方のため）。
+  en: The case of a word's first letter (Email, email; Long-Term, long-term) is not a spelling, nor is a word in capitals only (emphasis or an acronym). Hyphenated words that are another word (re-sign, resign), part of an address (github.com), anything in quotation marks, a Japanese reading in brackets right after a word (HTTP（えいちてぃーてぃーぴー）) and the team's names are not compared. Nothing is reported when the minority is more than a third. The literature preset turns it off, since old spelling belongs to its time.
 level_meaning:
   ja: 少ないほうが語の {limit}% 以下のとき指摘
   en: reported when the minority spelling is {limit}% of the word's uses or less
