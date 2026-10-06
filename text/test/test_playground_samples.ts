@@ -32,3 +32,21 @@ describe("the playground's samples", () => {
     });
   });
 });
+
+/** The contract sample shows the mistakes a contract is checked for, not only readability: one of each in both languages. */
+const CONTRACT_RULES = ["total-mismatch", "party-role-name", "dangling-reference", "numbering-gap", "vague-deadline"];
+
+describe("the playground's contract sample", () => {
+  Object.entries(PLAYGROUND_SAMPLES).forEach(([language, samples]) => {
+    it(`${language}: shows the contract checks`, async () => {
+      const sample = samples.find((candidate) => candidate.id === "contract");
+      assert.ok(sample !== undefined);
+      const check = await checkSource("document.md", sample.text, EMPTY, { language, genre: sample.genre, experimental: false });
+      const rules = new Set(check.applied.kept.map(ruleOf));
+      assert.deepEqual(
+        CONTRACT_RULES.filter((rule) => !rules.has(rule)),
+        [],
+      );
+    });
+  });
+});
