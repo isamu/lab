@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
-import { weekdayOf } from "../packages/chaff/src/structure/weekday.ts";
+import { weekdayOf, withNearestYear } from "../packages/chaff/src/structure/weekday.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
@@ -65,14 +65,72 @@ describe("日本語: 日付のすぐ後ろの曜日", () => {
     assert.deepEqual(weekdays(ja, "2026年10月1日（木の机を運ぶ）"), [undefined]);
   });
 
-  it("食い違いを言う。年の無い日付と曜日の無い日付は見ない", () => {
+  it("食い違いを言う。曜日の無い日付と、年を書いた日付が文書に無い年の無い日付は見ない", () => {
     assert.deepEqual(found("# 旅程\n\n2026年10月1日（金）に出発する。", ja, "ja"), ["2026-10-01:金曜日:木曜日"]);
-    assert.deepEqual(found("# 旅程\n\n10月1日（金）に出発する。2026年10月1日に着く。", ja, "ja"), []);
+    assert.deepEqual(found("# 旅程\n\n10月1日（金）に出発する。", ja, "ja"), []);
+    assert.deepEqual(found("# 旅程\n\n2026年10月1日に出発する。", ja, "ja"), []);
+  });
+
+  it("年の無い日付は、年を書いた日付（前にあればそれ、無ければ後ろ）から 5 か月以内の年として比べる", () => {
+    const mail = (body: string): string => `件名: 打ち合わせ\n日付: 2026年10月6日\n\n${body}\n`;
+    assert.deepEqual(found(mail("10月9日（木）までにご確認ください。"), ja, "ja"), ["2026-10-09:木曜日:金曜日"]);
+    assert.deepEqual(found(mail("10月9日（金）までにご確認ください。"), ja, "ja"), []);
+    // 12月の文書の1月は翌年。2027年1月5日は火曜日。
+    assert.deepEqual(found("# 予定\n\n2026年12月20日に決めた。次は1月5日（火）に集まる。", ja, "ja"), []);
+    assert.deepEqual(found("# 予定\n\n2026年12月20日に決めた。次は1月5日（月）に集まる。", ja, "ja"), ["2027-01-05:月曜日:火曜日"]);
+    // 前に年を書いた日付が無ければ、後ろの最初のもの。
+    assert.deepEqual(found("# 旅程\n\n10月1日（金）に出発する。2026年10月1日に着く。", ja, "ja"), ["2026-10-01:金曜日:木曜日"]);
+    // 半年離れた日付は、どちらの年とも読めるので見ない。
+    assert.deepEqual(found(mail("4月5日（火）に始めた。"), ja, "ja"), []);
+  });
+
+  it("年は同じ節の日付、無ければ文書の日付、無ければ書き出しの日付から決める。別の節の日付からは決めない", () => {
+    // 年度ごとの節: 2023年1月24日は火曜日。
+    const fiscal = (weekday: string): string =>
+      `# 催し\n\n## 今後の予定\n\n2026年11月19日（木）に開く。\n\n## 令和4年度\n\n講習会（2022年11月24日）。1月24日（${weekday}）に講義。\n`;
+    assert.deepEqual(found(fiscal("火"), ja, "ja"), []);
+    assert.deepEqual(found(fiscal("水"), ja, "ja"), ["2023-01-24:水曜日:火曜日"]);
+    assert.deepEqual(found("# 催し\n\n## 今後の予定\n\n2026年11月19日（木）に開く。\n\n## 令和4年度\n\n1月24日（水）に講義。\n", ja, "ja"), []);
+    // 文書の日付は、ほかの節の翌年の日付より先に使う。2026年8月30日は日曜日。
+    const notice = (weekday: string): string =>
+      `# 採用試験の案内\n\n更新日：2026年07月27日\n\n## 採用予定日\n\n2027年4月1日\n\n## 試験日\n\n8月30日(${weekday}曜日)\n`;
+    assert.deepEqual(found(notice("日"), ja, "ja"), []);
+    assert.deepEqual(found(notice("月"), ja, "ja"), ["2026-08-30:月曜日:日曜日"]);
+    // 見出しが年を名指す節は、節の中に年を書いた日付が無ければ見ない。2024年10月9日は水曜日。
+    assert.deepEqual(found("更新日：2026年10月6日\n\n# 2024年度 学校行事\n\n10月9日（水） 運動会\n", ja, "ja"), []);
+    assert.deepEqual(found("更新日：2026年10月6日\n\n# 令和6年度 学校行事\n\n10月9日（水） 運動会\n", ja, "ja"), []);
+    // あり得ない日付（2月30日）は年を決めない。文書の日付で読む。
+    assert.deepEqual(found("更新日：2026年10月6日\n\n# 提出\n\n下書きの誤り：2026年2月30日\n\n10月9日（木）までに提出してください。\n", ja, "ja"), [
+      "2026-10-09:木曜日:金曜日",
+    ]);
+    // 議事録の頭の日時は、後ろの節の日付の年を決める。2026年11月30日は月曜日。
+    const minutes = "# 定例会 議事録\n\n- 日時: 2026年10月5日（月）10時\n\n## 決定事項\n\n公開日は11月30日（火）とする。\n";
+    assert.deepEqual(found(minutes, ja, "ja"), ["2026-11-30:火曜日:月曜日"]);
   });
 
   it("旅程の見本: 2 日目の曜日だけが違う", () => {
     const source = readFileSync(new URL("fixtures/dates/itinerary-ja.md", import.meta.url), "utf8");
     assert.deepEqual(found(source, ja, "ja"), ["2026-10-02:土曜日:金曜日"]);
+  });
+});
+
+describe("withNearestYear", () => {
+  const cases: readonly (readonly [string, string, string | undefined])[] = [
+    ["10-09", "2026-10-06", "2026-10-09"],
+    ["01-05", "2026-12-20", "2027-01-05"],
+    ["12-20", "2027-01-05", "2026-12-20"],
+    ["03-01", "2026-10-06", "2027-03-01"],
+    ["04-05", "2026-10-06", undefined],
+    ["02-29", "2028-01-10", "2028-02-29"],
+    ["02-29", "2026-12-01", undefined],
+    ["13-01", "2026-10-06", undefined],
+    ["10-09", "10-06", undefined],
+    ["10-09", "2026-02-30", undefined],
+    ["2026-10-09", "2026-10-06", undefined],
+    ["", "2026-10-06", undefined],
+  ];
+  cases.forEach(([monthDay, anchor, expected]) => {
+    it(`${monthDay || "(empty)"} near ${anchor} → ${String(expected)}`, () => assert.equal(withNearestYear(monthDay, anchor), expected));
   });
 });
 
@@ -99,9 +157,22 @@ describe("English: the weekday beside a date", () => {
     assert.deepEqual(weekdays(en, "From 1 October 2026 to 3 October 2026 (Saturday)."), [undefined, 6]);
   });
 
-  it("says which day it really is; a date without its year is not checked", () => {
+  it("says which day it really is; a date without its year is not checked when no date gives one", () => {
     assert.deepEqual(found("# Trip\n\nWe leave on Friday, 1 October 2026.", en, "en"), ["2026-10-01:Friday:Thursday"]);
     assert.deepEqual(found("# Trip\n\nWe leave on Friday, 1 October.", en, "en"), []);
+  });
+
+  it("a date without its year takes the year of the dated date near it", () => {
+    const mail = (body: string): string => `Subject: Meeting\nDate: Tuesday, October 6, 2026\n\n${body}\n`;
+    assert.deepEqual(found(mail("Please reply by Thursday, October 9."), en, "en"), ["2026-10-09:Thursday:Friday"]);
+    assert.deepEqual(found(mail("Please reply by Friday, October 9."), en, "en"), []);
+    assert.deepEqual(found(mail("We started on Tuesday, April 5."), en, "en"), []);
+    // A date quoted alone is an example, and does not give the year.
+    assert.deepEqual(
+      found('# Manual examples\n\n"Thursday, October 1, 2026" is the example format.\n\nThe page may show Thursday, October 2.\n', en, "en"),
+      [],
+    );
+    assert.deepEqual(found("# 2024 events\n\nThe fair was on Wednesday, October 9.\n", en, "en"), []);
   });
 
   it("a date quoted alone with its weekday is an example of the mistake, not a date of the document (#621)", () => {
