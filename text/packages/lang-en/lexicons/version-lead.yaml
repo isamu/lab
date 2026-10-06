@@ -1,0 +1,14 @@
+# Latin words that, right before a version, say it is the version installed (version-mismatch): "Install version 2.4.0",
+# "release 2.4.0", "install 2.4.0". Any other Latin word there names another program ("Requires Node.js 18.17.0").
+id: version-lead
+language: en
+entries:
+  - pattern: version
+  - pattern: release
+  - pattern: v
+  - pattern: install
+  - pattern: installs
+  - pattern: use
+  - pattern: pin
+  - pattern: download
+  - pattern: get
