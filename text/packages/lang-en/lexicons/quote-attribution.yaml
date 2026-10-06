@@ -1,0 +1,21 @@
+# Words that give a quotation to someone. A quotation in the same sentence is then someone's words, not the writer's own
+# or a title (quote-without-source). position: before is a cue that stands before the quotation (according to X, "…"); the others
+# stand on either side (X said, "…" / "…," X said).
+id: quote-attribution
+language: en
+entries:
+  - pattern: said
+  - pattern: says
+  - pattern: once said
+  - pattern: wrote
+  - pattern: writes
+  - pattern: put it
+  - pattern: puts it
+  - { pattern: according to, position: before }
+  - pattern: stated
+  - pattern: remarked
+  - pattern: famously
+  - { pattern: in the words of, position: before }
+  - pattern: quoted
+  - pattern: argued
+  - pattern: observed

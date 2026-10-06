@@ -1,0 +1,23 @@
+# 引いた言葉を誰かに帰する言い回し。鉤括弧の引用と同じ文にあれば、その引用は人の言葉として引いている（quote-without-source）。
+# 書き手自身の言葉や、題名を括弧で示すだけの文と分ける。position: after は引用のすぐ後ろ（「…」と述べた）、before は引用の少し前（によれば「…」）。
+id: quote-attribution
+language: ja
+entries:
+  - { pattern: と述べ, position: after }
+  - { pattern: と語っ, position: after }
+  - { pattern: と語る, position: after }
+  - { pattern: と言っ, position: after }
+  - { pattern: と言う, position: after }
+  - { pattern: と言わ, position: after }
+  - { pattern: と書い, position: after }
+  - { pattern: と書く, position: after }
+  - { pattern: と記し, position: after }
+  - { pattern: と説い, position: after }
+  - { pattern: と説く, position: after }
+  - { pattern: と残し, position: after }
+  - { pattern: と指摘, position: after }
+  - { pattern: と主張, position: after }
+  - { pattern: によれば, position: before }
+  - { pattern: によると, position: before }
+  - { pattern: の言葉, position: before }
+  - { pattern: の名言, position: before }

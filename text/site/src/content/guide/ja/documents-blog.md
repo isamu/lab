@@ -156,7 +156,7 @@ $ npx chaffjs kiji.md --genre blog/tech
   - 試してうまくいかなかったこと、制約、前提を書いているか
   - 結びが本文の言い直しではなく、次に読むもの・試すものを示しているか
 
-  このジャンルで特に効く rule: closing-cliche, empty-conclusion, padded-intro, paragraph-length-variance, rule-of-three, section-length-uniformity, sentence-rhythm
+  このジャンルで特に効く rule: closing-cliche, empty-conclusion, padded-intro, paragraph-length-variance, quote-without-source, rule-of-three, section-length-uniformity, sentence-rhythm
   chaff.yaml の guide: で書き換えられます。出さないときは --no-guide。
 
 ════════════════════════════════════════════════════════════

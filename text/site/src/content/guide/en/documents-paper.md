@@ -119,7 +119,7 @@ Guide: Academic paper (academic/paper)
   - Are figures and tables numbered in the order they are referred to, and do the numbers in the text match them?
   - Does each claim go no further than the results (shows, or suggests)?
 
-  Rules that matter most for this genre: abstract-length, citation-reference-mismatch, citation-style-mix, figure-reference-order
+  Rules that matter most for this genre: abstract-length, citation-reference-mismatch, citation-style-mix, figure-reference-order, quote-without-source
   Change it with guide: in chaff.yaml; leave it out with --no-guide.
 
 ════════════════════════════════════════════════════════════

@@ -152,7 +152,7 @@ Guide: Tech blog (blog/tech)
   - Does it say what was tried and failed, the limits, and the assumptions?
   - Does the ending point to what to read or try next, rather than restate the body?
 
-  Rules that matter most for this genre: closing-cliche, empty-conclusion, padded-intro, paragraph-length-variance, rule-of-three, section-length-uniformity, sentence-rhythm
+  Rules that matter most for this genre: closing-cliche, empty-conclusion, padded-intro, paragraph-length-variance, quote-without-source, rule-of-three, section-length-uniformity, sentence-rhythm
   Change it with guide: in chaff.yaml; leave it out with --no-guide.
 
 ════════════════════════════════════════════════════════════
