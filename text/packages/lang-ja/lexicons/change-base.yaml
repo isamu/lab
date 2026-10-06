@@ -1,0 +1,9 @@
+# 比べるもとの値に付く語（change-rate-mismatch）。position は語が値のどちら側にあるか: 「1,000社から」「10億円に比べて」は後ろ。
+id: change-base
+language: ja
+entries:
+  - { pattern: から, position: after }
+  - { pattern: に比べ, position: after }
+  - { pattern: と比べ, position: after }
+  - { pattern: に比し, position: after }
+  - { pattern: より, position: after }

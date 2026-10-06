@@ -1,0 +1,7 @@
+# 動いた先の値に付く語（change-rate-mismatch）: 「1,000社から1,200社に20%増えた」。position は語が値のどちら側にあるか。
+id: change-target
+language: ja
+entries:
+  - { pattern: に, position: after }
+  - { pattern: へ, position: after }
+  - { pattern: まで, position: after }

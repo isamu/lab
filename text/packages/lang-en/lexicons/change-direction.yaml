@@ -1,0 +1,27 @@
+# Words that say which way a value moved (change-rate-mismatch). group is the direction: rise or fall. Matched as whole
+# words, right before or after the rate.
+id: change-direction
+language: en
+entries:
+  - { pattern: up, group: rise }
+  - { pattern: increase, group: rise }
+  - { pattern: increased, group: rise }
+  - { pattern: increases, group: rise }
+  - { pattern: rise, group: rise }
+  - { pattern: rose, group: rise }
+  - { pattern: risen, group: rise }
+  - { pattern: grew, group: rise }
+  - { pattern: growth, group: rise }
+  - { pattern: higher, group: rise }
+  - { pattern: down, group: fall }
+  - { pattern: decrease, group: fall }
+  - { pattern: decreased, group: fall }
+  - { pattern: decreases, group: fall }
+  - { pattern: decline, group: fall }
+  - { pattern: declined, group: fall }
+  - { pattern: fall, group: fall }
+  - { pattern: fell, group: fall }
+  - { pattern: fallen, group: fall }
+  - { pattern: drop, group: fall }
+  - { pattern: dropped, group: fall }
+  - { pattern: lower, group: fall }
