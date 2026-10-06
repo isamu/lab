@@ -226,7 +226,8 @@ announced-count-mismatch を normal にしました（…/chaff.yaml）
 | ルール | `strict` | `normal` | `relaxed` |
 | --- | --- | --- | --- |
 | `numbering-gap` `dangling-reference` `date-weekday-mismatch` `total-mismatch` | （無い） | エラー | 注意 |
-| `duplicate-definition` `date-order` `doubled-word` `agreement-slip` `announced-count-mismatch` `dangling-figure-reference` `date-range-reversed` `percent-sum-mismatch` `unfilled-placeholder` | エラー | 注意 | 参考 |
+| `duplicate-definition` `date-order` `doubled-word` `announced-count-mismatch` `dangling-figure-reference` `date-range-reversed` `percent-sum-mismatch` `unfilled-placeholder` | エラー | 注意 | 参考 |
+| `agreement-slip` | 注意 | 参考 | 参考 |
 
 エラーが 1 件でも残ると、chaff は失敗で終わります。注意と参考だけなら成功で終わります。
 `explain` でも、数字の代わりに重さが出ます。

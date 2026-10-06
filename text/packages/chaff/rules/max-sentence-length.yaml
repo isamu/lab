@@ -79,6 +79,7 @@ use_for: [blog, business, technical, legal, docs, academic, literature, speech]
 off_for:
   literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
   speech/transcript: "A transcript records what was said: its sentences, repeats and register are the speaker's, not the writer's to fix."
+  academic: measured by yarn rules:measure
   legal: measured by yarn rules:measure
 sources: [shibasaki-tamaoka-2010, yasashii-nihongo-2020, koyobun-2022, gov-uk-clear-language]
 

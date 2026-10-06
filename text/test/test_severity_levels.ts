@@ -31,7 +31,7 @@ const ruleOf = (id: string, rules: readonly RuleDefinition[] = RULES_JA): RuleDe
 };
 
 const NO_LIMIT_ERRORS = ["numbering-gap", "dangling-reference", "date-weekday-mismatch", "total-mismatch"];
-const NO_LIMIT_WARNINGS = ["duplicate-definition", "date-order", "doubled-word", "agreement-slip"];
+const NO_LIMIT_WARNINGS = ["duplicate-definition", "date-order", "doubled-word"];
 const LOWER: Readonly<Record<Severity, Severity>> = { error: "warning", warning: "info", info: "info" };
 
 const tmpConfig = (body?: string): string => {
