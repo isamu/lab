@@ -10,8 +10,8 @@ name:
   en: Date and weekday disagree
 
 why:
-  ja: 「2026年10月1日（金）」のように、日付と曜日が食い違っていると、読み手はどちらが正しいのか確かめに行くことになります。日程を書き写すときや、年をまたいで予定を使い回すときに起きます。年まで書いた日付の曜日だけを、暦と比べます。
-  en: When a date and its weekday disagree ("Friday, 1 October 2026"), the reader has to find out which one is right. It happens when a schedule is copied, or reused for another year. Only dates written with their year are checked against the calendar.
+  ja: 「2026年10月1日（金）」のように、日付と曜日が食い違っていると、読み手はどちらが正しいのか確かめに行くことになります。日程を書き写すときや、年をまたいで予定を使い回すときに起きます。年を書いていない日付（メールの「10月9日（金）」）は、年を書いたすぐ前の日付（前に無ければ文書で最初のもの）から5か月以内に収まる年の日付として、暦と比べます。
+  en: When a date and its weekday disagree ("Friday, 1 October 2026"), the reader has to find out which one is right. It happens when a schedule is copied, or reused for another year. A date written without its year ("Friday, October 9" in an email) is checked as the date in the year that puts it within five months of the dated date just before it (or, with none before, the first one in the document).
 
 message:
   ja: 「{date}」は{actual}です（{written}と書いてあります）
@@ -40,5 +40,5 @@ example:
     after: The next meeting is on Thursday, 1 October 2026.
 
 not_flagged:
-  ja: 年を書いていない日付は、どの年か決まらないので暦と照らしません。
-  en: Dates without a year are not checked, since the year is unknown.
+  ja: 年を書いていない日付は、文書に年を書いた日付が無いときと、年を書いた日付から5か月より離れていてどちらの年とも読めるときは、暦と照らしません。
+  en: A date without its year is not checked when the document gives no date with a year, or when it is more than five months from the dated date and could be in either year.

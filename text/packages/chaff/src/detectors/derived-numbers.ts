@@ -1,6 +1,6 @@
 import type { Detector, Finding, ProseDocument, Span, StructureNode } from "../plugin.ts";
 import { inDocumentOrder } from "../structure/issues.ts";
-import { dateStampIndexes, stampCandidates } from "../date-stamp.ts";
+import { documentDateOf } from "./document-date.ts";
 import { overlapsAny, spanIndex } from "../compare/spans.ts";
 import { yearOf, type DurationUnit } from "../derived/date-arithmetic.ts";
 import { durationMismatches, type DatedValue, type Duration } from "../derived/durations.ts";
@@ -142,16 +142,8 @@ const markedAges = (doc: ProseDocument): Elapsed[] =>
 
 /** 文書の日付の年: 日付だけの段落か「更新日：」の段落（date-stamp）の、最初の日付。 */
 const referenceYear = (doc: ProseDocument, tree: StructureNode): number | undefined => {
-  const dates = datesOf(tree);
-  const candidates = stampCandidates(
-    doc.source,
-    doc.paragraphs.map((paragraph) => paragraph.span),
-    dates,
-  );
-  const stamps = dateStampIndexes(candidates, patternsOf(doc, "date-stamp-label"));
-  const paragraph = doc.paragraphs.find((_, index) => stamps.has(index));
-  const date = paragraph === undefined ? undefined : dates.find((candidate) => candidate.start >= paragraph.span.start && candidate.end <= paragraph.span.end);
-  return date === undefined ? undefined : yearOf(date.value);
+  const date = documentDateOf(doc, tree);
+  return date === undefined ? undefined : yearOf(date);
 };
 
 /** 起点の年から数えた年数が、文書の日付と合わない。 */

@@ -1,7 +1,8 @@
-import type { Detector, Finding, ProseDocument } from "../plugin.ts";
+import type { Detector, Finding, ProseDocument, StructureNode } from "../plugin.ts";
 import { danglingReferences, duplicateDefinitions, inDocumentOrder, type StructureIssue } from "../structure/issues.ts";
 import { numberingBreaks } from "../structure/numbering.ts";
 import { weekdayMismatches } from "../structure/weekday.ts";
+import { documentDateOf } from "./document-date.ts";
 import { dateOrderBreaks } from "../structure/date-order.ts";
 import { totalMismatches, type Amount } from "../structure/total.ts";
 import { proseTotalMismatches } from "../structure/prose-total.ts";
@@ -59,10 +60,33 @@ const quotedDates = (doc: ProseDocument, from: DatedSpan | undefined, until: Dat
 
 const dateAt = (dates: readonly DatedSpan[], offset: number): number => dates.findIndex((date) => date.offset === offset);
 
+/** A year written as figures in a heading: 2024年度, FY2024, "2024 events". */
+const YEAR_FIGURES = /(?<![0-9０-９])(?:1[89]|20)\d{2}(?![0-9０-９])/u;
+const ERA_YEAR_NUMBER = /^[ \t]?(?:[0-9０-９]{1,2}|元)/u;
+
+/** 見出しが年を名指すか: 数字の年（2024年度、FY2024）か、暦の元号の年（語彙表 calendar-era、令和6年度）。 */
+const namesYear = (heading: string, eras: readonly string[]): boolean =>
+  YEAR_FIGURES.test(heading) ||
+  eras.some((era) => {
+    const at = heading.indexOf(era);
+    return at !== -1 && ERA_YEAR_NUMBER.test(heading.slice(at + era.length));
+  });
+
 export const dateWeekdayMismatch: Detector = (doc): Finding[] => {
   if (doc.structure === undefined) return [];
   const dates = datedSpans(doc.structure);
-  return weekdayMismatches(doc.structure)
+  const sections = doc.sections.filter((section) => section.depth > 0);
+  const eras = (doc.lexicons["calendar-era"] ?? []).map((entry) => entry.pattern);
+  const context = {
+    stamp: documentDateOf(doc, doc.structure),
+    sectionStarts: sections.map((section) => section.span.start),
+    yearHeadings: sections.filter((section) => namesYear(section.heading, eras)).map((section) => section.span.start),
+    anchorable: (node: StructureNode): boolean => {
+      const date = dates[dateAt(dates, node.span.start)];
+      return !quotedDates(doc, date, date, WEEKDAY_WORDS);
+    },
+  };
+  return weekdayMismatches(doc.structure, context)
     .filter((issue) => {
       const date = dates[dateAt(dates, issue.offset)];
       return !quotedDates(doc, date, date, WEEKDAY_WORDS);
