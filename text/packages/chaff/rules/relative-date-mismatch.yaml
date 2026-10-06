@@ -10,8 +10,8 @@ name:
   en: A relative date that does not match its base date
 
 why:
-  ja: 「10月2日に申し込み、3日後の10月6日に通知」のように、相対の期間と日付を一緒に書くと、読み手はどちらが正しいのか分かりません。日程をずらしたときに、日付か期間の片方だけを直すと起きます。「3日後の」「1か月前の」のすぐ後ろの日付を、同じ文で前にある日付（文が「2週間後、」で始まるなら前の文の日付）に期間を足した（前なら引いた）日と比べます。
-  en: 'When a relative length and a date are written together ("Applications open on May 1, 2026. Two weeks later, on May 16, 2026, …"), the reader cannot tell which is right. It happens when a schedule moves and only the date or only the length is changed. The date right after "N days later" or "N weeks earlier" is compared with the nearest earlier date in the same sentence (or in the previous sentence when the sentence opens with the relative length), plus or minus the length.'
+  ja: 「10月2日に申し込み、3日後の10月6日に通知」のように、相対の期間と日付を一緒に書くと、読み手はどちらが正しいのか分かりません。日程をずらしたときに、日付か期間の片方だけを直すと起きます。「3日後の」「1か月前の」のすぐ後ろの日付を、同じ文で前にある日付（文が「2週間後、」で始まるなら前の文の日付）に期間を足した（前なら引いた）日と比べます。メールや議事録の「来週月曜（10月12日）」「明日（10月7日）」も、メールや議事録の頭の日付の欄（「日付：」「日時：」）の日付から数えた日と比べます。週は月曜からとも日曜からとも、「来週月曜」はすぐ次の月曜とも読み、どの読み方にも合わない日付だけを指します。
+  en: 'When a relative length and a date are written together ("Applications open on May 1, 2026. Two weeks later, on May 16, 2026, …"), the reader cannot tell which is right. It happens when a schedule moves and only the date or only the length is changed. The date right after "N days later" or "N weeks earlier" is compared with the nearest earlier date in the same sentence (or in the previous sentence when the sentence opens with the relative length), plus or minus the length. A day word in an email or minutes ("next Monday (October 12)", "tomorrow (October 7)") is compared with the day it counts to from the date field at the head of the email or the minutes ("Date:"). A week may start on Monday or on Sunday, and "next Monday" may be the coming Monday; only a date that fits none of these readings is reported.'
 
 message:
   ja: "{base}の{relative}なら{expected}のはずですが、{target}と書かれています"
@@ -42,8 +42,8 @@ example:
       Applications close on May 1, 2026. Two weeks later, on May 15, 2026, results are sent.
 
 not_flagged:
-  ja: 期間のすぐ後ろ（「の」や読点だけを挟む）に日付があるときだけ見ます。基準の日付が同じ文（文の頭の「2週間後、」なら前の文）に無いもの、「3営業日後」のように単位が日・週・月・年でないものは見ません。
-  en: Only a date right after the relative length (with "on" or punctuation between) is checked. A relative length with no date before it in the same sentence (or the previous one, when the sentence opens with it), and units other than days, weeks, months and years ("3 business days later"), are left alone.
+  ja: 期間のすぐ後ろ（「の」や読点だけを挟む）に日付があるときだけ見ます。基準の日付が同じ文（文の頭の「2週間後、」なら前の文）に無いもの、「3営業日後」のように単位が日・週・月・年でないものは見ません。「来週月曜」「明日」は、頭に日付の欄が無い文書、すぐ後ろに日付の無い語、引用した返信の中の語、日付を名指す見出しの節（「## 10月1日の会」）の語は見ません。
+  en: Only a date right after the relative length (with "on" or punctuation between) is checked. A relative length with no date before it in the same sentence (or the previous one, when the sentence opens with it), and units other than days, weeks, months and years ("3 business days later"), are left alone. A day word ("next Monday", "tomorrow") is left alone when the document has no date field at its head, when no date follows the word, in a quoted reply, and in a section whose heading names a date ("## October 1 meeting").
 rewrite:
   depth: light
   ja:

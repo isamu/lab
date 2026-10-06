@@ -1,0 +1,9 @@
+# 週を基準の日付の週から数える語（relative-date-mismatch）: 「来週月曜」。group は何週あとか（先週は -1）。すぐ後ろに曜日（語彙表 weekday）を書いたときだけ読む。
+id: relative-week
+language: ja
+entries:
+  - { pattern: 再来週, group: "2" }
+  - { pattern: 先々週, group: "-2" }
+  - { pattern: 来週, group: "1" }
+  - { pattern: 今週, group: "0" }
+  - { pattern: 先週, group: "-1" }

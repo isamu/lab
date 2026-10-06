@@ -1,0 +1,8 @@
+# The field at the head of an email or minutes that gives its date (relative-date-mismatch): "Date: Tuesday, October 6, 2026".
+# "next Monday" and "tomorrow" are counted from that date.
+id: message-date-field
+language: en
+entries:
+  - pattern: Date
+  - pattern: Sent
+  - pattern: When

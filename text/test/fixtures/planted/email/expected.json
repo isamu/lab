@@ -1,7 +1,7 @@
 {
   "recall": {
     "ja": {
-      "relative-date": "0/2",
+      "relative-date": "2/2",
       "amount-two-ways": "0/2",
       "attachment-not-attached": "1/1",
       "date-weekday": "2/2",
@@ -10,7 +10,7 @@
       "name-variant": "0/2"
     },
     "en": {
-      "relative-date": "0/2",
+      "relative-date": "2/2",
       "amount-two-ways": "2/2",
       "attachment-not-attached": "1/1",
       "date-weekday": "2/2",
