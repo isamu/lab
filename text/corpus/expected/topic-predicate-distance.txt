@@ -11,6 +11,8 @@ da-service-design-guidelines-2  3
 genai-web-procedure  1
 herp-da-data-product-manager  1
 jma-tokubetsu-keiho  1
+jstage-jniph-74-1-2-rehabilitation  1
+jstage-jniph-74-2-119-wbgt  1
 k8s-overview-ja  2
 kantei-unga81-general-debate-speech  4
 kokkai-217-sangiin-shohisha-7  60

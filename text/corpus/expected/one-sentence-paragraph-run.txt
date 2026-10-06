@@ -1,5 +1,6 @@
 18f-handbook-travel-faq  1
 acas-letter-disciplinary-hearing-warning  1
+aoml-hurricane-faq  3
 arxiv-2609-27842-genai-assessment  1
 arxiv-2609-38203-abs-verbal-fluency  2
 arxiv-2609-38219-abs-tamazight-speech  2
@@ -22,6 +23,10 @@ herp-da-data-product-manager  1
 ietf-draft-httpapi-ratelimit-headers-10  18
 jma-yougo-kaze  9
 jstage-jkg-72-4-133  3
+jstage-jniph-74-1-2-rehabilitation  3
+jstage-jniph-74-2-119-wbgt  3
+jstage-jniph-74-2-157-heat-policy  4
+jstage-jnlp-32-1-114-nmt  3
 jstage-jnlp-32-1-114-nmt-en  3
 kimino-cleanup-notice  2
 kimino-staff-exam-guide  1
@@ -44,6 +49,7 @@ nws-glossary-a  37
 oecd-global-drought-outlook-summary  1
 pep-0020-zen-of-python  2
 rfc3693-geopriv-requirements  2
+rfc9293-tcp  12
 rfc9457  3
 rust-lang-minutes-2022-11-22  5
 saitama-shokuiku-soboro-oyakodon  2
