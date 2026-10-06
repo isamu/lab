@@ -5,6 +5,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { applyByPath, matches, type PathRule } from "../packages/chaff/src/config/by-path.ts";
 import { loadConfig } from "../packages/chaff/src/config/read.ts";
+import { byPathOf } from "../packages/chaff/src/config/load.ts";
+import { byPathProblems } from "../packages/chaff/src/config/by-path-problems.ts";
 
 describe("glob の照合", () => {
   const hit = (glob: string, path: string): boolean => matches(glob, "base", join("base", path));
@@ -76,6 +78,22 @@ describe("パスごとの上書き", () => {
   });
 });
 
+describe("byPathOf: by_path の読み", () => {
+  it("files のある項目を読み、読めない項目だけを返す", () => {
+    const read = byPathOf([{ files: "a/*.md", genre: "docs/manual" }, { genre: "x" }, "a/*.md", null, { files: [] }]);
+    assert.deepEqual(read.rules, [{ files: ["a/*.md"], genre: "docs/manual", language: undefined, profile: undefined }]);
+    assert.deepEqual(read.unreadable, ['{"genre":"x"}', '"a/*.md"', "null", '{"files":[]}']);
+  });
+
+  it("並びでない値は丸ごと読めない。書いていなければ何も無い", () => {
+    assert.deepEqual(byPathOf({ guides: "docs/manual" }), { rules: [], unreadable: ['{"guides":"docs/manual"}'] });
+    assert.deepEqual(byPathOf("guides"), { rules: [], unreadable: ['"guides"'] });
+    assert.deepEqual(byPathOf(undefined), { rules: [], unreadable: [] });
+    assert.deepEqual(byPathOf(null), { rules: [], unreadable: [] });
+    assert.deepEqual(byPathOf([]), { rules: [], unreadable: [] });
+  });
+});
+
 describe("設定ファイルからの読み込み", () => {
   const write = (body: string): string => {
     const dir = mkdtempSync(join(tmpdir(), "chaff-"));
@@ -97,12 +115,28 @@ describe("設定ファイルからの読み込み", () => {
     assert.deepEqual(config.byPath[0]?.files, ["docs/*.md"]);
   });
 
-  it("files が無い項目は落とす", () => {
-    assert.deepEqual(loadConfig(write("by_path:\n  - genre: business/report\n")).byPath, []);
+  it("files が無い項目は落とし、読めなかったと言う", () => {
+    const config = loadConfig(write("by_path:\n  - genre: business/report\n"));
+    assert.deepEqual(config.byPath, []);
+    assert.equal(byPathProblems(config).length, 1);
   });
 
-  it("by_path が無くても落ちない", () => {
-    assert.deepEqual(loadConfig(write("genre: blog/tech\n")).byPath, []);
+  it("by_path が無くても落ちず、何も言わない", () => {
+    const config = loadConfig(write("genre: blog/tech\n"));
+    assert.deepEqual(config.byPath, []);
+    assert.deepEqual(byPathProblems(config), []);
+  });
+
+  it("並びでなく、フォルダとジャンルの対で書いた by_path は使わず、書き方を両方の言語で言う", () => {
+    const config = loadConfig(write("by_path:\n  guides: docs/manual\n"));
+    assert.deepEqual(config.byPath, []);
+    const [jaProblem] = byPathProblems(config, "ja");
+    const [enProblem] = byPathProblems(config, "en");
+    assert.match(jaProblem ?? "", /by_path/u);
+    assert.match(jaProblem ?? "", /guides/u);
+    assert.match(jaProblem ?? "", /files/u);
+    assert.match(enProblem ?? "", /by_path/u);
+    assert.match(enProblem ?? "", /files/u);
   });
 
   it("文書の種類（profile）を、全体とパスごとに読む", () => {

@@ -85,7 +85,9 @@ A rule the genre turns off is listed under "did not run" with the genre as the r
 `rules` in `chaff.yaml` wins over the genre, so `ngram-repetition: normal` turns it back on.
 Every genre and what it changes is on the [Genres](../../genres/) page, and the table is in [Getting started](./getting-started).
 
-Leave `genre` out and it is worked out from the path and the content.
+Leave `genre` out and it is worked out from the file's front matter (`genre:` or `type:`), then the path, then the content.
+Front matter sets one document apart; `genre` in `chaff.yaml` or a matching `by_path` entry wins over it.
+Strongest first: `--genre`, `by_path`, `genre` in `chaff.yaml`, front matter, the path, the content.
 `README.md`, `*-spec.md` and `docs/` are read as technical documents.
 Where it came from is shown on the first line of the screen.
 
@@ -346,6 +348,7 @@ by_path:
 
 The last match wins. Paths are matched from the folder that holds the settings file,
 so the result is the same wherever you run it.
+`by_path` is a list of entries with `files`. Any other shape, such as a folder mapped to a genre (`guides: docs/manual`), and an entry without `files` are not used, and chaff says so before it checks anything.
 
 ## Checking files other than Markdown
 
