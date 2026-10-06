@@ -1,0 +1,12 @@
+# 版を、入れる版ではなく範囲の端や起点にする語（version-mismatch）: 「2.3.0 から」「20.0.0 以上」。position は語が版のどちら側にあるか。
+id: version-range
+language: ja
+entries:
+  - { pattern: から, position: after }
+  - { pattern: より, position: after }
+  - { pattern: 以上, position: after }
+  - { pattern: 以降, position: after }
+  - { pattern: 以前, position: after }
+  - { pattern: 以下, position: after }
+  - { pattern: 未満, position: after }
+  - { pattern: まで, position: after }

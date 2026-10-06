@@ -1,0 +1,20 @@
+# Words that make a version a bound or a starting point rather than the version installed (version-mismatch): "from 2.3.0",
+# "20.0.0 or later". position is the side of the version the word stands on.
+id: version-range
+language: en
+entries:
+  - { pattern: from, position: before }
+  - { pattern: before, position: before }
+  - { pattern: prior to, position: before }
+  - { pattern: until, position: before }
+  - { pattern: below, position: before }
+  - { pattern: above, position: before }
+  - { pattern: at least, position: before }
+  - { pattern: or later, position: after }
+  - { pattern: or newer, position: after }
+  - { pattern: or higher, position: after }
+  - { pattern: or above, position: after }
+  - { pattern: and later, position: after }
+  - { pattern: and above, position: after }
+  - { pattern: or earlier, position: after }
+  - { pattern: or older, position: after }

@@ -1,0 +1,77 @@
+id: version-mismatch
+layer: L1
+status: stable
+how_to_find: version-mismatch
+requires: [markdown]
+severity: warning
+
+name:
+  ja: 説明の版とコードの版が違う
+  en: The version in the text is not the one in the code
+
+why:
+  ja: 「2.3.0 を入れます」のすぐ下のコマンドが「tidyq@2.4.0」だと、読み手はどちらを入れればよいか分かりません。新しい版を出したときに、コード例か説明の片方だけを直すと起きます。コードブロックのすぐ上の段落に書いた版（2.3.0 のように点で三つに区切った番号）を、そのコードブロックにある版と比べます。コードに版がちょうど一つあり、段落の版がそれと違うとき指します。
+  en: 'When "Install version 2.3.0" sits right above a command that installs tidyq@2.4.0, the reader cannot tell which to install. It happens when a release updates the example or the text but not both. chaff compares a version written in the paragraph right above a code block (a number in three dotted parts, such as 2.3.0) with the version the block shows. It reports when the block shows exactly one version and the paragraph names another.'
+
+message:
+  ja: 「{written}」と書いていますが、すぐ下のコードは {code} です
+  en: '"{written}" is written, but the code below has {code}'
+
+how_to_fix:
+  ja: 説明とコードのどちらが今の版かを確かめて、もう一方を直してください。
+  en: Check which of the text and the code has the current version, and correct the other.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [technical, docs, blog, legal, academic, literature, speech]
+off_for:
+  legal: "Code blocks, shell prompts, command headings and numbered steps belong to technical writing."
+  academic: "Code blocks, shell prompts, command headings and numbered steps belong to technical writing."
+  literature: "Code blocks, shell prompts, command headings and numbered steps belong to technical writing."
+  speech: "Code blocks, shell prompts, command headings and numbered steps belong to technical writing."
+
+group: facts
+summary:
+  ja: コードブロックのすぐ上の説明が名指す版と、コードの版が違う所
+  en: A version named right above a code block that the block does not use
+example:
+  ja:
+    config: { genre: technical/readme }
+    before: |
+      # インストール
+
+      npm から 2.3.0 を入れます。
+
+      ```bash
+      npm install --global tidyq@2.4.0
+      ```
+    after: |
+      # インストール
+
+      npm から 2.4.0 を入れます。
+
+      ```bash
+      npm install --global tidyq@2.4.0
+      ```
+  en:
+    config: { genre: technical/readme }
+    before: |
+      # Installation
+
+      Install version 2.3.0 from npm:
+
+      ```bash
+      npm install --global tidyq@2.4.0
+      ```
+    after: |
+      # Installation
+
+      Install version 2.4.0 from npm:
+
+      ```bash
+      npm install --global tidyq@2.4.0
+      ```
+
+not_flagged:
+  ja: 版の無いコードブロック、版が二つ以上あるコードブロック（「2.3.0 から 2.4.0 へ」の更新）、範囲の端や起点として書いた版（「2.3.0 から」「20.0.0 以上」）、別のプログラムの名前のすぐ後ろの版（「Node.js 18.17.0 が必要」）、見出しや箇条書きや表の版、版だけの行、二つに区切った番号（22.04、3.1）と先頭が四桁の番号（2024.01.15）は比べません。
+  en: 'A code block with no version or with two or more (an upgrade from one to the other), a version written as a bound or a starting point ("from 2.3.0", "20.0.0 or later"), a version right after the name of another program ("Requires Node.js 18.17.0"), a version in a heading, a list item, a table or a line of its own, and numbers in two parts (22.04, 3.1) or with a four-digit first part (2024.01.15) are not compared.'

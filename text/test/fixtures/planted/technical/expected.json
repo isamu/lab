@@ -2,7 +2,7 @@
   "recall": {
     "ja": {
       "broken-anchor": "1/1",
-      "version-mismatch": "0/1",
+      "version-mismatch": "1/1",
       "heading-command": "1/1",
       "fence-language-mix": "1/1",
       "table-extra-cell": "1/1",
@@ -13,7 +13,7 @@
     },
     "en": {
       "broken-anchor": "1/1",
-      "version-mismatch": "0/1",
+      "version-mismatch": "1/1",
       "heading-command": "1/1",
       "fence-language-mix": "1/1",
       "table-extra-cell": "1/1",

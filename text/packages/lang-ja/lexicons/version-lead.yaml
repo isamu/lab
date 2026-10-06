@@ -1,0 +1,8 @@
+# 版のすぐ前で、入れる版だと言う英字の語（version-mismatch）: 「version 2.4.0 を入れます」。ほかの英字の語は、別のプログラムの名前
+# （「Node.js 18.17.0 が必要です」）。日本語の語のあとの版（「npm から 2.4.0 を」）は、コードの版と比べる。
+id: version-lead
+language: ja
+entries:
+  - pattern: version
+  - pattern: release
+  - pattern: v
