@@ -142,7 +142,7 @@ describe("use-before-definition: 定義より前で使っている語", () => {
 
   it("見出しの行の語は、使った所ではない", () => {
     assert.deepEqual(early("## 買主の義務\n\n株式会社やまと（以下「買主」という。）は、代金を支払う。\n", ja), []);
-    assert.deepEqual(early("## Duties of the Seller\n\nHarbour Ltd (the \"Seller\") ships the goods.\n"), []);
+    assert.deepEqual(early('## Duties of the Seller\n\nHarbour Ltd (the "Seller") ships the goods.\n'), []);
     assert.deepEqual(early("## 義務\n\n買主は、代金を支払う。株式会社やまと（以下「買主」という。）と契約する。\n", ja), [
       "「買主」を、3 行目の定義より前で使っています",
     ]);
