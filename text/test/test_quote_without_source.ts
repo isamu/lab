@@ -20,6 +20,9 @@ describe("quote-without-source: 人の言葉として引いた文に出典がな
     ]);
     assert.equal(findingsOf('As one engineer put it, "adding people to a late project only makes it later."\n', en).length, 1);
     assert.equal(findingsOf("先輩によれば「設計は会話の形をそのまま写したものになる」らしい。\n").length, 1);
+    ["と語りました", "と語られた", "と説きました"].forEach((cue) =>
+      assert.equal(findingsOf(`ある研究者は「遅れているプロジェクトに人を足すと、さらに遅れる」${cue}。\n`).length, 1, cue),
+    );
   });
 
   it("同じ段落にリンク、URL、脚注、番号の引用、括弧の中の年があれば出典がある", () => {
@@ -35,6 +38,7 @@ describe("quote-without-source: 人の言葉として引いた文に出典がな
   it("誰にも帰していない引用、短い鉤括弧、引用の中の言い回しは見ない", () => {
     assert.deepEqual(findingsOf("画面の「保存」を押すと言っていた。\n"), []);
     assert.deepEqual(findingsOf("見出しは「遅れているプロジェクトに人を足す前に」とした。\n"), []);
+    assert.deepEqual(findingsOf("見出しは「遅れているプロジェクトに人を足す前に」と言い換えた。\n"), []);
     assert.deepEqual(findingsOf("「彼はそう述べていたが、本当かは分からない」と書いたメモがある。\n").length, 1);
     assert.deepEqual(findingsOf("メモの題は「彼はそう述べていたが、本当かは分からない」だ。\n"), []);
   });

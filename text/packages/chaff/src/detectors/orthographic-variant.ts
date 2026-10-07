@@ -6,6 +6,7 @@ import { QUOTATION_MARKS, isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
 import { furiganaSpans } from "../furigana.ts";
 import { acronymsIn, isCapitalsNotSpelling } from "../capitals-with-small.ts";
+import { isPartOfAddress } from "./address-word.ts";
 
 /** A word found in the document: where it is, which sentence it is in, its key and spelling, and how it is written when that differs. */
 type Placed = KeyedWord & { readonly sentence: Sentence; readonly offset: number; readonly shown?: string };
@@ -50,7 +51,21 @@ const followsTeForm = (previous: Token | undefined): boolean =>
   (previous?.pos === "SCONJ" && (previous.surface === "て" || previous.surface === "で")) ||
   (previous?.pos === "CCONJ" && TE_FORM_CONJUNCTION.test(previous.surface));
 
-const isHelper = ({ token, previous }: InContext): boolean => token.features?.["Bound"] === "Yes" || followsTeForm(previous);
+/** は or も after a word ending in で, て or く: the ない after them negates (事実ではない, どれでもない, 高くはない); it is not 無い. */
+const TOPIC_AFTER_LINK = new Set(["は", "も"]);
+const LINK_END = /[でてく]$/u;
+const NEGATION = new Set(["ない", "無い"]);
+
+/** では and でも read as one word after a space (2 ではなく). */
+const LINK_AND_TOPIC = new Set(["では", "でも"]);
+
+const followsLinkAndTopic = (previous: Token | undefined, before: Token | undefined): boolean =>
+  LINK_AND_TOPIC.has(previous?.surface ?? "") || (previous?.pos === "ADP" && TOPIC_AFTER_LINK.has(previous.surface) && LINK_END.test(before?.surface ?? ""));
+
+const negatesAfterTopic = ({ token, previous, before }: InContext): boolean =>
+  token.pos === "ADJ" && NEGATION.has(token.lemma ?? "") && followsLinkAndTopic(previous, before);
+
+const isHelper = (word: InContext): boolean => word.token.features?.["Bound"] === "Yes" || followsTeForm(word.previous) || negatesAfterTopic(word);
 
 const isTouching = (left: Token | undefined, right: Token): boolean => left !== undefined && left.span.end === right.span.start;
 
@@ -84,6 +99,13 @@ const KATAKANA_END = /\p{Script=Katakana}$/u;
 const isCutFromKatakana = ({ token, previous }: InContext): boolean =>
   ONE_KATAKANA_HEAD.test(token.surface) && token.surface.length > 1 && isTouching(previous, token) && KATAKANA_END.test(previous?.surface ?? "");
 
+/**
+ * で read as the verb 出る right after a word with no particle between (JSON でない): the copula's で, which the tokenizer
+ * misreads after a space or a name. 出る after a particle (結果がでない) or at the head of a sentence (でない音) is the verb.
+ */
+const isCopulaReadAsVerb = ({ token, previous }: InContext): boolean =>
+  token.pos === "VERB" && token.surface === "で" && previous !== undefined && previous.pos !== "ADP";
+
 type Skips = { readonly skip: ReadonlySet<string>; readonly idioms: ReadonlySet<string> };
 
 const readingKeyOf = (word: InContext, { skip, idioms }: Skips): string | undefined => {
@@ -91,7 +113,7 @@ const readingKeyOf = (word: InContext, { skip, idioms }: Skips): string | undefi
   const lemma = token.lemma;
   if (!CONTENT.has(token.pos) || token.reading === undefined || lemma === undefined || !JAPANESE_WORD.test(lemma) || skip.has(lemma)) return undefined;
   const reading = lemmaReading(token.surface, lemma, token.reading);
-  if (reading === undefined || [...reading].length < MIN_READING || skip.has(reading) || isCutFromKatakana(word)) return undefined;
+  if (reading === undefined || [...reading].length < MIN_READING || skip.has(reading) || isCutFromKatakana(word) || isCopulaReadAsVerb(word)) return undefined;
   return `${token.pos}|${useOf(word, idioms)}|${reading}`;
 };
 
@@ -142,12 +164,6 @@ const latinSpelling = (word: string): string =>
     .split("-")
     .map((part) => part.charAt(0).toLowerCase() + part.slice(1))
     .join("-");
-
-/** A word joined to a dot, an at sign or a slash is part of an address or a file name (github.com, user@example), spelled as it must be. */
-const ADDRESS_NEIGHBOUR = /[.@/\\_]/u;
-
-const isPartOfAddress = (text: string, start: number, end: number): boolean =>
-  ADDRESS_NEIGHBOUR.test(text.charAt(start - 1)) || (ADDRESS_NEIGHBOUR.test(text.charAt(end)) && /\w/u.test(text.charAt(end + 1)));
 
 /**
  * Latin words keyed without hyphens and case (e-mail and email, GitHub and Github). A word in capitals only (TEAMS, MAY) is

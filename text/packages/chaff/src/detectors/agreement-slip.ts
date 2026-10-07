@@ -116,9 +116,15 @@ const mayBeNoun = (token: Token): boolean => token.features?.["AlsoNoun"] === "Y
 const mayBeVerb = (determiner: Determiner, modifiers: readonly Token[], noun: Token, next: Token | undefined, finite: ReadonlySet<string>): boolean =>
   noun.features?.["AlsoVerb"] === "Yes" && !(next !== undefined && finite.has(lower(next))) && (standsAlone(determiner) || modifiers.some(mayBeNoun));
 
+/** 冠詞は名詞句の頭に立つ。形容詞や数の後ろの a は、記号の名前（the eight 3-hourly a indices）。 */
+const AFTER_MODIFIER = new Set(["ADJ", "NUM"]);
+
+const isLetterName = (tokens: readonly Token[], at: number, determiner: Determiner): boolean =>
+  isArticle(determiner.head) && AFTER_MODIFIER.has(tokens[at - 1]?.pos ?? "");
+
 const numberSlipAt = (source: string, tokens: readonly Token[], at: number, lists: AgreementLists): Slip | undefined => {
   const determiner = determinerAt(tokens, at, lists);
-  if (determiner === undefined || isNamePart(tokens, at)) return undefined;
+  if (determiner === undefined || isNamePart(tokens, at) || isLetterName(tokens, at, determiner)) return undefined;
   const modifiers = modifiersAfter(tokens, at + determiner.length, lists.count);
   if (modifiers === undefined || !readsAsDeterminer(determiner, modifiers)) return undefined;
   const nounAt = at + determiner.length + modifiers.length;

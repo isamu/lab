@@ -58,6 +58,15 @@ describe("agreement-slip — 純関数", () => {
     assert.deepEqual(slips([A, w("revised", "VERB", PART), w("rules", "NOUN", PLUR, "rule"), END]), ["number a revised rules"]);
   });
 
+  it("形容詞や数の後ろの a は冠詞でなく記号の名前なので数えない", () => {
+    const indices = w("indices", "NOUN", PLUR, "index");
+    assert.deepEqual(slips([w("the", "DET", ART), w("eight", "NUM"), w("hourly", "ADJ"), A, indices, END]), []);
+    assert.deepEqual(slips([w("the", "DET", ART), w("eight", "NUM"), A, indices, END]), []);
+    assert.deepEqual(slips([w("on", "ADP"), A, w("tropical", "ADJ"), w("islands", "NOUN", PLUR, "island"), END]), ["number a tropical islands"]);
+    assert.deepEqual(slips([w("such", "DET"), A, w("great", "ADJ"), w("results", "NOUN", PLUR, "result"), END]), ["number a great results"]);
+    assert.deepEqual(slips([w("eight", "NUM"), w("these", "DET"), w("new", "ADJ"), w("feature", "NOUN"), END]), ["number these new feature"]);
+  });
+
   it("複数の限定詞・句の後ろの単数の名詞を数える", () => {
     assert.deepEqual(slips([w("these", "DET"), w("new", "ADJ"), w("feature", "NOUN"), END]), ["number these new feature"]);
     assert.deepEqual(slips([w("one", "NUM"), w("of", "ADP"), w("the", "DET", ART), w("best", "ADJ"), w("way", "NOUN"), END]), ["number one of the best way"]);

@@ -14,13 +14,23 @@ const isAdjacent = (source: string, before: Paragraph, after: Paragraph): boolea
   return between.trim() === "" && BLANK_LINE.test(between);
 };
 
+/** A sentence's last mark, past closing quotes, brackets and emphasis marks. */
+const SENTENCE_END = /[。．.!?！？]["'”’」』)）\]］}｝】》〕〉〛*_]*$/u;
+
+/**
+ * Whether a paragraph ends as a sentence does. One that does not is a label, a field, a line of a flattened table or a heading
+ * written as plain text (日時：, Authors, 490 Ratings), which sets nothing apart.
+ */
+export const endsAsSentence = (source: string, paragraph: Paragraph): boolean =>
+  SENTENCE_END.test(source.slice(paragraph.span.start, paragraph.span.end).trim());
+
 /**
  * Each run of adjacent one-sentence paragraphs, in document order, as the paragraphs it holds. A paragraph of two sentences or
- * more, or anything between two paragraphs, ends the run.
+ * more, a paragraph that does not end as a sentence, or anything between two paragraphs, ends the run.
  */
 export const oneSentenceRuns = (source: string, paragraphs: readonly Paragraph[]): Paragraph[][] =>
   paragraphs.reduce<Paragraph[][]>((runs, paragraph, at) => {
-    if (paragraph.sentences.length !== 1) return runs;
+    if (paragraph.sentences.length !== 1 || !endsAsSentence(source, paragraph)) return runs;
     const previous = paragraphs[at - 1];
     const current = runs.at(-1);
     const continues = previous !== undefined && current?.at(-1) === previous && isAdjacent(source, previous, paragraph);
