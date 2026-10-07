@@ -26,7 +26,12 @@ how_to_fix:
 
 levels: { strict: warning, normal: info, relaxed: info }
 
-use_for: [technical, docs, blog]
+use_for: [technical, docs, blog, legal, academic, literature, speech]
+off_for:
+  legal: "Warnings with an action to take are a convention of manuals and technical writing."
+  academic: "Warnings with an action to take are a convention of manuals and technical writing."
+  literature: "Warnings with an action to take are a convention of manuals and technical writing."
+  speech: "Warnings with an action to take are a convention of manuals and technical writing."
 
 group: wording
 summary:
