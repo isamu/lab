@@ -7,7 +7,8 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { prepare } from "../packages/lang-ja/src/pos.ts";
 import { changeRateMismatches, gapLength, type ChangeText } from "../packages/chaff/src/structure/change-rate.ts";
-import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
+import type { LanguageAdapter, Token } from "../packages/chaff/src/plugin.ts";
+import { startsOtherSubject } from "../packages/chaff/src/structure/subject-change.ts";
 
 // 一つの文の、もとの値・今の値・増減率の食い違い（change-rate-mismatch）。例文は自作。
 
@@ -18,7 +19,10 @@ const found = (text: string, adapter: LanguageAdapter): string[] =>
     .findings.filter((finding) => finding.rule === RULE)
     .map((finding) => `${String(finding.values["rate"])}:${String(finding.values["computed"])}`);
 
-before(async () => prepare());
+before(async () => {
+  await prepare();
+  await en.prepare?.({ pos: true });
+});
 
 describe("change-rate-mismatch", () => {
   it("ja: もとの値（から・に比べて）と今の値から計算した率と、書いた率が違う", () => {
@@ -100,6 +104,15 @@ describe("change-rate-mismatch: the two values written together before the rate"
       assert.equal(found(wrong, en).length, 1, wrong);
       assert.deepEqual(found(right, en), [], right);
     });
+  });
+
+  it("en: an and that starts a clause about another subject does not join the two values", () => {
+    assert.deepEqual(found("Revenue was $2,000 in 2025 and costs were $2,500 in 2026, up 20%.", en), []);
+    assert.deepEqual(found("Revenue was $1.0 million in 2025 and costs $1.5 million in 2026, up 20%.", en), []);
+    assert.deepEqual(found("Revenue was $2,000 in 2025 and revenue was $2,500 in 2026, up 20%.", en), ["20:25"]);
+    assert.deepEqual(found("Revenue was $2,000 in 2025 and revenue $2,500 in 2026, up 20%.", en), ["20:25"]);
+    assert.deepEqual(found("In 2025, revenue was $2,000 and costs were $2,500 in 2026, up 20%.", en), []);
+    assert.deepEqual(found("ACME's revenue was $2,000 in 2025 and revenue was $2,500 in 2026, up 20%.", en), ["20:25"]);
   });
 
   it("allows the rounding of the two values", () => {
@@ -220,5 +233,67 @@ describe("changeRateMismatches", () => {
     assert.deepEqual(changeRateMismatches({ ...base, rates: [{ start: 28, end: 32, value: 20.4, decimals: 1 }] }), [
       { offset: 28, values: { rate: "20.4", computed: "20.0" } },
     ]);
+  });
+});
+
+describe("startsOtherSubject: a joining word followed by another subject", () => {
+  const sentence = (...parts: readonly (readonly [string, string, string?])[]): Token[] =>
+    parts.map(([surface, pos, lemma], index) => ({
+      surface,
+      pos,
+      span: { start: index * 10, end: index * 10 + surface.length },
+      ...(lemma === undefined ? {} : { lemma }),
+    }));
+  const AND = ["and", "CCONJ"] as const;
+
+  it("a noun other than the subject after the joining word", () => {
+    const tokens = sentence(
+      ["Revenue", "NOUN"],
+      ["was", "AUX"],
+      ["$", "SYM"],
+      ["2,000", "NUM"],
+      AND,
+      ["the", "DET"],
+      ["operating", "NOUN"],
+      ["costs", "NOUN", "cost"],
+      ["were", "AUX"],
+    );
+    assert.equal(startsOtherSubject(tokens, 4), true);
+    const name = sentence(["Revenue", "NOUN"], ["was", "AUX"], ["2,000", "NUM"], AND, ["Acme", "PROPN"], ["reported", "VERB"]);
+    assert.equal(startsOtherSubject(name, 3), true);
+  });
+
+  it("the head of each noun run is compared, past a determiner, a possessive or an adjective", () => {
+    const tokens = sentence(
+      ["Operating", "NOUN", "operating"],
+      ["revenue", "NOUN"],
+      ["was", "AUX"],
+      ["2,000", "NUM"],
+      AND,
+      ["our", "PRON"],
+      ["new", "ADJ"],
+      ["operating", "NOUN"],
+      ["costs", "NOUN", "cost"],
+    );
+    assert.equal(startsOtherSubject(tokens, 4), true);
+  });
+
+  it("the same subject again, a value, or a word that is not a noun", () => {
+    const same = sentence(["Revenues", "NOUN", "revenue"], ["was", "AUX"], ["2,000", "NUM"], AND, ["revenue", "NOUN"], ["was", "AUX"]);
+    assert.equal(startsOtherSubject(same, 3), false);
+    const value = sentence(["Revenue", "NOUN"], ["was", "AUX"], ["2,000", "NUM"], AND, ["$", "SYM"], ["2,500", "NUM"]);
+    assert.equal(startsOtherSubject(value, 3), false);
+    const adverb = sentence(["Revenue", "NOUN"], ["was", "AUX"], ["2,000", "NUM"], AND, ["then", "ADV"], ["costs", "NOUN"]);
+    assert.equal(startsOtherSubject(adverb, 3), false);
+  });
+
+  it("no subject before the joining word, or nothing after it", () => {
+    const noSubject = sentence(["In", "ADP"], ["2025", "NUM"], AND, ["costs", "NOUN"]);
+    assert.equal(startsOtherSubject(noSubject, 2), false);
+    const owner = sentence(["ACME", "PROPN"], ["revenue", "NOUN"], ["was", "AUX"], ["2,000", "NUM"], AND, ["revenue", "NOUN"]);
+    assert.equal(startsOtherSubject(owner, 4), false);
+    const last = sentence(["Revenue", "NOUN"], AND);
+    assert.equal(startsOtherSubject(last, 1), false);
+    assert.equal(startsOtherSubject([], 0), false);
   });
 });

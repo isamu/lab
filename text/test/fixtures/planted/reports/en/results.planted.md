@@ -41,3 +41,5 @@ Table 2: New customers by region
 In the twelve years since our founding in 2016, the sales department has grown to 25 people.
 
 Staff costs rose from $3.0 million last year to $3.6 million this year, an increase of 25%.
+
+Training revenue was $2,000 in 2025 and costs were $2,500 in 2026, up 20%.
