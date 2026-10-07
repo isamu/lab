@@ -46,7 +46,8 @@ describe("English definitions", () => {
     assert.deepEqual(read('Openers that announce ("The key point is") pile up.'), []);
     assert.deepEqual(read('| `closing-cliche` | A stock closing ("In conclusion", "I hope this helps") |'), []);
     assert.deepEqual(read('It points at sections ("sections 44 and 45") by number.'), []);
-    assert.deepEqual(read('| `a` | A sign-off ("Cheers", "I hope this helps") |'), []);
+    assert.deepEqual(read('| `a` | A sign-off ("Cheers", "I hope this helps") |'), ["Cheers inline bare"]);
+    assert.deepEqual(read('Harbour Cloud Ltd ("Provider", "service provider") hosts the data.'), ["Provider inline bare"]);
   });
 
   it("still reads a capitalised name, a one-word name and a statute's lower-case party after an article", () => {

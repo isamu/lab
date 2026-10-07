@@ -74,12 +74,14 @@ const nameListDefinitions = (text: string): Mention[] =>
     const bare = isBare ? { form: "bare" } : {};
     const scope = APPLIES.test(text) ? { scope: "local" } : {};
     const names = namesInList(inside);
-    // One phrase among the names (("Cheers", "I hope this helps")) makes the whole bracket a list of examples.
-    if (isBare && names.some((name) => readsAsExample(name.term))) return [];
-    return names.map((name, index) => {
+    // A phrase first makes the bracket a list of examples; a phrase later is an example beside a name (("Cheers", "I hope
+    // this helps")), or an alias in sentence case (("Provider", "service provider")). The name is kept, the phrase is not.
+    if (isBare && readsAsExample(names[0]?.term ?? "")) return [];
+    return names.flatMap((name, index) => {
+      if (isBare && readsAsExample(name.term)) return [];
       const start = index === 0 ? match.index : match.index + 1 + name.start;
       const end = index === 0 ? match.index + match[0].length : match.index + 1 + name.end;
-      return { start, end, attrs: { term: name.term, ...scope, ...(index === 0 ? { placement: "inline" } : {}), ...bare } };
+      return [{ start, end, attrs: { term: name.term, ...scope, ...(index === 0 ? { placement: "inline" } : {}), ...bare } }];
     });
   });
 
