@@ -56,8 +56,25 @@ const cueStarts = (text: string, cue: string): number[] => {
 
 type Quoted = { readonly start: number; readonly end: number };
 
+/** The word lists the rule reads: quote-attribution, and quote-advice (「…」と述べる方が: a wording suggested, not quoted). */
+export type QuoteWords = { readonly cues: readonly LexiconEntry[]; readonly advice?: readonly LexiconEntry[] };
+
+const patternsIn = (entries: readonly LexiconEntry[], group: string): string[] =>
+  entries.filter((entry) => entry.group === group && entry.pattern !== "").map((entry) => entry.pattern);
+
+/**
+ * Whether the words right after the closing mark suggest saying it that way: a say word, then an advice word (「…」と書く方が適切です).
+ * A say word alone is not enough: 「…」と述べる方が多い reports what people say.
+ */
+const isAdvice = (text: string, quoted: Quoted, advice: readonly LexiconEntry[]): boolean => {
+  const after = quoted.end + 1;
+  const tails = patternsIn(advice, "advice");
+  return patternsIn(advice, "say").some((say) => text.startsWith(say, after) && tails.some((tail) => text.startsWith(tail, after + say.length)));
+};
+
 /** A cue just before the quotation's opening mark, or just after its closing mark. position says which side it may stand on. */
-const isAttributed = (text: string, quoted: Quoted, cues: readonly LexiconEntry[]): boolean =>
+const isAttributed = (text: string, quoted: Quoted, { cues, advice = [] }: QuoteWords): boolean =>
+  !isAdvice(text, quoted, advice) &&
   cues.some((cue) =>
     cueStarts(text, cue.pattern).some((at) => {
       const before = cue.position !== "after" && at + cue.pattern.length <= quoted.start - 1 && at + cue.pattern.length >= quoted.start - 1 - CUE_REACH_BEFORE;
@@ -66,15 +83,17 @@ const isAttributed = (text: string, quoted: Quoted, cues: readonly LexiconEntry[
     }),
   );
 
-const quotesIn = (sentence: QuoteText, cues: readonly LexiconEntry[]): UnsourcedQuote[] => {
+const quotesIn = (sentence: QuoteText, words: QuoteWords): UnsourcedQuote[] => {
   return quotedSpans(sentence.text, QUOTATION_MARKS)
-    .filter((span) => [...sentence.text.slice(span.start, span.end).trim()].length >= MIN_QUOTE_CHARS && isAttributed(sentence.text, span, cues))
+    .filter((span) => [...sentence.text.slice(span.start, span.end).trim()].length >= MIN_QUOTE_CHARS && isAttributed(sentence.text, span, words))
     .map((span) => ({ offset: sentence.start + span.start, quote: sentence.text.slice(span.start, span.end).trim() }));
 };
 
 /** Each quotation given to someone, in a paragraph that names no source. cues: the word list quote-attribution. */
-export const unsourcedQuotes = (paragraphs: readonly QuoteParagraph[], cues: readonly LexiconEntry[]): UnsourcedQuote[] =>
-  paragraphs.filter((paragraph) => !namesSource(paragraph.source)).flatMap((paragraph) => paragraph.sentences.flatMap((sentence) => quotesIn(sentence, cues)));
+export const unsourcedQuotes = (paragraphs: readonly QuoteParagraph[], cues: readonly LexiconEntry[], advice: readonly LexiconEntry[] = []): UnsourcedQuote[] =>
+  paragraphs
+    .filter((paragraph) => !namesSource(paragraph.source))
+    .flatMap((paragraph) => paragraph.sentences.flatMap((sentence) => quotesIn(sentence, { cues, advice })));
 
 /** Each block quotation given to someone by a dash line (— Name) with no source in it or on that line. */
 export const unsourcedBlockQuotes = (quotations: readonly BlockQuotation[]): UnsourcedQuote[] =>
@@ -98,6 +117,7 @@ const paragraphQuotesOf = (doc: ProseDocument): UnsourcedQuote[] =>
       sentences: paragraph.sentences.map((sentence) => ({ start: sentence.span.start, text: sentence.text })),
     })),
     doc.lexicons["quote-attribution"] ?? [],
+    doc.lexicons["quote-advice"] ?? [],
   );
 
 /** Every quotation in the document given to someone with no source, in document order: what the rule and `cite --scaffold` list. */
