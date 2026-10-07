@@ -1,8 +1,11 @@
 // A quotation the text gives to someone (「…」と述べている, according to X, "…") in a paragraph that names no source for it:
 // no link, no footnote or numbered citation, no year in brackets. Whether the words are really that person's is for
 // `chaff cite` against the source; this only says that there is nothing to check them against. The words that give a
-// quotation to someone come from the language package's word list quote-attribution. Pure.
+// quotation to someone come from the language package's word list quote-attribution. A Markdown block quotation is
+// given to someone by a dash line (> … / — Name) instead. Pure.
 import { QUOTATION_MARKS, quotedSpans } from "../quoted-span.ts";
+import { readMarkdown } from "../markdown-read.ts";
+import { blockQuotations, type BlockQuotation } from "./block-quotation.ts";
 import type { Detector, Finding, LexiconEntry, ProseDocument } from "../plugin.ts";
 
 export type QuoteText = { readonly start: number; readonly text: string };
@@ -73,18 +76,38 @@ const quotesIn = (sentence: QuoteText, cues: readonly LexiconEntry[]): Unsourced
 export const unsourcedQuotes = (paragraphs: readonly QuoteParagraph[], cues: readonly LexiconEntry[]): UnsourcedQuote[] =>
   paragraphs.filter((paragraph) => !namesSource(paragraph.source)).flatMap((paragraph) => paragraph.sentences.flatMap((sentence) => quotesIn(sentence, cues)));
 
-export const quoteWithoutSource: Detector = (doc: ProseDocument): Finding[] =>
+/** Each block quotation given to someone by a dash line (— Name) with no source in it or on that line. */
+export const unsourcedBlockQuotes = (quotations: readonly BlockQuotation[]): UnsourcedQuote[] =>
+  quotations
+    .filter((quotation) => [...quotation.quote].length >= MIN_QUOTE_CHARS && !namesSource(quotation.passage))
+    .map(({ offset, quote }) => ({ offset, quote }));
+
+/** A dash and a `>` must both be there before the Markdown is read again. */
+const MAY_HOLD_BLOCK_QUOTE = /^[ \t]*>/mu;
+const MAY_HOLD_DASH = /[—―–]|--/u;
+
+const blockQuotesOf = (doc: ProseDocument): UnsourcedQuote[] => {
+  if (!MAY_HOLD_BLOCK_QUOTE.test(doc.source) || !MAY_HOLD_DASH.test(doc.source) || doc.markup?.markdown !== true) return [];
+  return unsourcedBlockQuotes(blockQuotations(readMarkdown(doc.source).root, doc.source));
+};
+
+const paragraphQuotesOf = (doc: ProseDocument): UnsourcedQuote[] =>
   unsourcedQuotes(
     doc.paragraphs.map((paragraph) => ({
       source: doc.source.slice(paragraph.span.start, paragraph.span.end),
       sentences: paragraph.sentences.map((sentence) => ({ start: sentence.span.start, text: sentence.text })),
     })),
     doc.lexicons["quote-attribution"] ?? [],
-  ).map((hit) => ({
-    rule: "quote-without-source",
-    severity: "info",
-    line: 0,
-    column: 0,
-    quote: hit.quote,
-    values: { quote: hit.quote, offset: hit.offset },
-  }));
+  );
+
+export const quoteWithoutSource: Detector = (doc: ProseDocument): Finding[] =>
+  [...paragraphQuotesOf(doc), ...blockQuotesOf(doc)]
+    .toSorted((left, right) => left.offset - right.offset)
+    .map((hit) => ({
+      rule: "quote-without-source",
+      severity: "info",
+      line: 0,
+      column: 0,
+      quote: hit.quote,
+      values: { quote: hit.quote, offset: hit.offset },
+    }));
