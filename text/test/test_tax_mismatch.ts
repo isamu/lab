@@ -45,6 +45,17 @@ describe("tax-mismatch: 税額が小計に税率を掛けた額と合わない",
     assert.deepEqual(findingsOf("- Design: $8,000\n- Sales tax (10%): $800\n", en), []);
   });
 
+  it("小計と税の行の間に金額の行（値引き、送料）があれば、税の掛かる額が決まらないので比べない", () => {
+    assert.deepEqual(
+      findingsOf(table(["| 作業費 | 100,000円 |", "| 小計 | 100,000円 |", "| 値引き | -10,000円 |", "| 消費税（10%） | 9,000円 |", "| 合計 | 99,000円 |"])),
+      [],
+    );
+    assert.deepEqual(
+      findingsOf(enTable(["| Design | $1,000.00 |", "| Subtotal | $1,000.00 |", "| Shipping | $50.00 |", "| Sales tax (8%) | $84.00 |"]), en),
+      [],
+    );
+  });
+
   it("負の印のある金額（値引き）は足し方が決まらないので比べない", () => {
     assert.deepEqual(findingsOf("- Item: $1,000\n- Discount: -$200\n- Sales tax (10%): $80\n", en), []);
     assert.deepEqual(findingsOf(table(["| 設計 | 300,000円 |", "| 値引き | ▲50,000円 |", "| 消費税（10%） | 25,000円 |"])), []);

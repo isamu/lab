@@ -67,5 +67,5 @@ example:
       | Sales tax (10%) | $800 |
 
 not_flagged:
-  ja: 端数は切り捨て・四捨五入・切り上げのどれでも合っていると読みます。率を書いていない税の行、合計に含まれる税（「うち消費税」「内税」）の行、率の違う税の行が並ぶ表（軽減税率の8%と10%）は比べません。文の中に書いた税は読みません。
-  en: Rounding down, to the nearest or up are all read as right. A tax line with no rate, a line for tax included in the total ("tax included"), and a table with tax lines of different rates are not compared. A tax written in a sentence is not read.
+  ja: 端数は切り捨て・四捨五入・切り上げのどれでも合っていると読みます。率を書いていない税の行、合計に含まれる税（「うち消費税」「内税」）の行、率の違う税の行が並ぶ表（軽減税率の8%と10%）、小計と税の行の間に金額の行（値引き・送料）がある表は比べません。文の中に書いた税は読みません。
+  en: Rounding down, to the nearest or up are all read as right. A tax line with no rate, a line for tax included in the total ("tax included"), a table with tax lines of different rates, and a table with an amount line (a discount, shipping) between the subtotal and the tax are not compared. A tax written in a sentence is not read.

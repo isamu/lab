@@ -58,10 +58,17 @@ const amountAt = (source: string, row: Row, column: number, unit: string): Amoun
   return matching.length === 1 && only !== undefined && !isSigned(source, row, only) ? only : undefined;
 };
 
-/** The base the tax is on: the last total row above, or the sum of the item rows above when there is no total row. */
+/**
+ * The base the tax is on: the last total row above, or the sum of the item rows above when there is no total row. A row
+ * with an amount between the total and the tax (a discount, shipping) may or may not be taxed, so there is no base.
+ */
 const baseOf = (source: string, above: readonly Row[], tax: Amount, column: number, words: TaxWords): Amount | undefined => {
-  const lastTotal = above.findLast((row) => isTotalLabel(row.text, words.totals));
-  if (lastTotal !== undefined) return amountAt(source, lastTotal, column, tax.unit);
+  const lastTotalIndex = above.findLastIndex((row) => isTotalLabel(row.text, words.totals));
+  const lastTotal = above[lastTotalIndex];
+  if (lastTotal !== undefined) {
+    const between = above.slice(lastTotalIndex + 1);
+    return between.some((row) => row.amounts.length > 0) ? undefined : amountAt(source, lastTotal, column, tax.unit);
+  }
   const items = above.map((row) => amountAt(source, row, column, tax.unit));
   if (items.length === 0 || items.some((item) => item === undefined)) return undefined;
   const values = items.flatMap((item) => (item === undefined ? [] : [item.value]));
