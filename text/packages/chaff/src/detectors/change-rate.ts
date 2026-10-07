@@ -1,8 +1,9 @@
 // change-rate-mismatch: the reading half. Builds the figures, the rates and the words of structure/change-rate.ts from the
 // tree's quantities, the numbers counted with a word ("1,200 companies"), the calendar years, and the lexicons change-direction,
 // change-base, change-target, change-break, percent-unit and amount-multiplier.
-import type { Detector, Finding, LexiconEntry, ProseDocument, Span, StructureNode } from "../plugin.ts";
+import type { Detector, Finding, LexiconEntry, ProseDocument, Span, StructureNode, Token } from "../plugin.ts";
 import { inDocumentOrder } from "../structure/issues.ts";
+import { startsOtherSubject } from "../structure/subject-change.ts";
 import { changeRateMismatches, type BaseMark, type Break, type Direction, type Figure, type Period, type Rate } from "../structure/change-rate.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { quoteAt } from "./structure-tree.ts";
@@ -99,12 +100,24 @@ const directionsOf = (doc: ProseDocument): Direction[] =>
     return sign === undefined ? [] : [{ start, end, sign }];
   });
 
+/** The sentence's tokens, and the index of the token that starts at offset (-1 when none does). */
+const tokenAt = (doc: ProseDocument, offset: number): { readonly tokens: readonly Token[]; readonly index: number } => {
+  const tokens = doc.sentences.find((sentence) => sentence.span.start <= offset && offset < sentence.span.end)?.tokens ?? [];
+  return { tokens, index: tokens.findIndex((token) => token.span.start === offset) };
+};
+
+/** A word that may join two values ("and") does not when another subject follows it ("and costs were"). */
+const joinsTwoValues = (doc: ProseDocument, start: number): boolean => {
+  const { tokens, index } = tokenAt(doc, start);
+  return index < 0 || !startsOtherSubject(tokens, index);
+};
+
 /** Lexicon change-break (「は」, "and"), less the phrases of change-break-not (「上がり」 holds が but starts no subject). */
 const breaksOf = (doc: ProseDocument): Break[] =>
   spansWithout(doc, doc.lexicons["change-break"] ?? [], "change-break-not").map(({ start, end, entry }) => ({
     start,
     end,
-    beforeRateOnly: entry.group === "rate",
+    beforeRateOnly: entry.group === "rate" && joinsTwoValues(doc, start),
   }));
 
 /** A calendar year written alone or with a unit of calendar year (2025, 2025年, 2025年度), and not part of an amount ($2025). */

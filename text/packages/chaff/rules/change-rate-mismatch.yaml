@@ -3,6 +3,7 @@ layer: L3
 status: stable
 how_to_find: change-rate
 requires: [structure]
+uses: [pos]
 severity: warning
 
 name:
@@ -40,5 +41,5 @@ example:
     after: 1,300 companies used the app, up 30% from 1,000 companies a year earlier.
 
 not_flagged:
-  ja: 向きの語の付いた率が二つある文、もとの値が「から」「に比べて」や年で名指されていない文、二つの値と率のあいだで主語が変わる文（「…に増え、利益は20%増えた」）、同じ単位の今の値が一つでない文、向きの語が率のそばに無い文は比べません。「前年比20%増」のように値が一つしか無いもの、ポイントの差、倍は見ません。丸めで届く範囲の率は言いません。
-  en: 'A sentence with two rates that each have a word of direction, with no value marked as the earlier one (by a word or a year), with another subject between the values and the rate ("…, and costs rose 20%"), with no single current value in the same unit, or with no word of direction beside the rate is not compared. A change given with one value ("up 20% year on year"), percentage points and "times" are not read. A rate the rounding of the values can reach is not reported.'
+  ja: 向きの語の付いた率が二つある文、もとの値が「から」「に比べて」や年で名指されていない文、二つの値と率のあいだで主語が変わる文（「…に増え、利益は20%増えた」）、二つの値のあいだで主語が変わる文（"$1,000 in 2025 and costs were $1,500 in 2026"）、同じ単位の今の値が一つでない文、向きの語が率のそばに無い文は比べません。「前年比20%増」のように値が一つしか無いもの、ポイントの差、倍は見ません。丸めで届く範囲の率は言いません。
+  en: 'A sentence with two rates that each have a word of direction, with no value marked as the earlier one (by a word or a year), with another subject between the values and the rate ("…, and costs rose 20%") or between the two values ("$1,000 in 2025 and costs were $1,500 in 2026"), with no single current value in the same unit, or with no word of direction beside the rate is not compared. A change given with one value ("up 20% year on year"), percentage points and "times" are not read. A rate the rounding of the values can reach is not reported.'
