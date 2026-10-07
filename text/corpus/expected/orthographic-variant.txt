@@ -62,7 +62,6 @@ us-4683202-nucleic-acid-amplification  5
 utokyo-gakui-kisoku  1
 vue-docs-ja-reactivity-fundamentals  2
 wikipedia-ja-idobata-template-collapse  2
-wikipedia-ja-talk-oden  11
+wikipedia-ja-talk-oden  9
 zenn-coji-ai-smell-lint  2
 zenn-kaityo256-happy-presentation  9
-zenn-kaityo256-what-is-linker  1

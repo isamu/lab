@@ -1,4 +1,4 @@
-table  13  13  0  0
+table  26  26  0  0
 ja/blog  nado-doubled  found
 ja/design  nado-doubled  found
 ja/email  nado-doubled  found
@@ -12,3 +12,16 @@ ja/proposal  nado-doubled  found
 ja/quote  nado-doubled  found
 ja/readme  nado-doubled  found
 ja/requirements  nado-doubled  found
+en/blog  and-etc  found
+en/design  and-etc  found
+en/email  and-etc  found
+en/figures  and-etc  found
+en/itinerary  and-etc  found
+en/minutes  and-etc  found
+en/note  and-etc  found
+en/policy  and-etc  found
+en/press  and-etc  found
+en/proposal  and-etc  found
+en/quote  and-etc  found
+en/readme  and-etc  found
+en/requirements  and-etc  found

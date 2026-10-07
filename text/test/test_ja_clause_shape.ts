@@ -162,4 +162,9 @@ describe("colloquial-opener", () => {
     assert.deepEqual(findingsOf(RULE, "在庫が足りません。そのため、出荷は来週になります。\n"), []);
     assert.deepEqual(findingsOf(RULE, "在庫が足りません。なので、出荷は来週です。\n", "normal", "blog/tech"), []);
   });
+
+  it("インラインコードの後ろの「でも」は文の頭ではない", () => {
+    assert.deepEqual(findingsOf(RULE, "`explain` でも、数字の代わりに重さが出ます。\n"), []);
+    assert.deepEqual(findingsOf(RULE, "`explain` を使います。でも、数字は出ません。\n"), ["「でも」で始まる文が 1 個あります（1 個から）"]);
+  });
 });
