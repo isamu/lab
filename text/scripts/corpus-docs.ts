@@ -5,7 +5,7 @@ import { aozoraToMarkdown } from "./aozora-markdown.ts";
 import { congressionalRecordToMarkdown } from "./congressional-record-markdown.ts";
 import { googlePatentsToMarkdown } from "./google-patents-markdown.ts";
 import { gutenbergText } from "./gutenberg-text.ts";
-import { htmlToMarkdown } from "./html-markdown.ts";
+import { htmlToMarkdown } from "../packages/chaff/src/html/html-markdown.ts";
 import { kokkaiToMarkdown } from "./kokkai-markdown.ts";
 import { wikitextToMarkdown } from "./wikitext-markdown.ts";
 

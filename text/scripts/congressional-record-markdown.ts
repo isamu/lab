@@ -4,7 +4,7 @@
 // and a line at the quote's depth with no quote open is an item of a list (the names of a roll call). The GPO
 // banner, the page markers ([[Page S2257]], which split a paragraph where the printed page turns), the time stamps
 // and the rules between items are dropped. Pure.
-import { decodeEntities, tidyLines } from "./markup-text.ts";
+import { decodeEntities, tidyLines } from "../packages/chaff/src/html/markup-text.ts";
 
 type Kind = "title" | "paragraph" | "quote" | "item";
 

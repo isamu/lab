@@ -40,6 +40,7 @@ const USAGE_JA = `chaff — 文章の読みにくいところを見つけます�
   chaff tree <file> [--format sexp|json]  文書を番地の付いた木にする（条・項・定義・参照）
   chaff cite <原文> <引用.json>           回答の引用（番地と引用文）が原文にあるかを確かめる
   chaff cite --scaffold <file>           出典の無い引用を、出典を書き込む引用.json のひな形にする
+  chaff cite --url <URL> <引用.json>      引用が Web のページにあるかを確かめる（取得したページは HTML から Markdown にして読む）
   chaff compare <前> <後>                書き換えで事実（数・日付・URL・コード・名前・引用…）が落ちても足されてもいないかを確かめる
   chaff facts <file>                     compare が照合する事実を、書き直す前の控えとして一覧にする
   chaff outline <file> [<後>]            見出しの構成と形（見出しの数・節の平均の長さ・箇条書きの割合・太字）を測る。2 つなら前と後を並べる
@@ -89,6 +90,7 @@ const USAGE_EN = `chaff — finds what makes writing hard to read. It never rewr
   chaff tree <file> [--format sexp|json]  the document as a tree of addresses (sections, clauses, definitions, references)
   chaff cite <source> <quotes.json>       check that quoted passages (address and text) are in the source
   chaff cite --scaffold <file>            a quotes.json to fill in with sources, from the quotations that give none
+  chaff cite --url <URL> <quotes.json>    check quotations against a web page (fetched, HTML read as Markdown)
   chaff compare <before> <after>          check that a rewrite dropped no fact and added none (numbers, dates, URLs, code, names, quotations…)
   chaff facts <file>                      list the facts compare checks, as an inventory to keep before a rewrite
   chaff outline <file> [<after>]          measure the outline and its shape (headings, average section length, text in lists, bold); two files side by side

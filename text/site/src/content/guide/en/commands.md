@@ -27,6 +27,7 @@ The list `npx chaffjs --help` prints, as a table.
 | `npx chaffjs tree <file>` | Turns a document into a tree of addresses. `--format sexp` or `--format json` chooses the form |
 | `npx chaffjs cite <source> <quotes.json>` | Checks that quoted passages are in the source |
 | `npx chaffjs cite --scaffold <file>` | Writes the quotations that give no source as a quotes.json to fill in |
+| `npx chaffjs cite --url <URL> <quotes.json>` | Checks quoted passages against a web page |
 | `npx chaffjs compare <before> <after>` | Checks that a rewrite dropped no fact and added none (numbers, dates, URLs, code, names, quotations…) |
 | `npx chaffjs facts <file>` | Lists the facts `compare` checks, as an inventory to keep before a rewrite |
 | `npx chaffjs ai-score <file>...` | A quick AI-likeness score, low, medium or high: signs common in generated text, compared with human documents of the genre. Not a verdict on whether AI wrote it |
