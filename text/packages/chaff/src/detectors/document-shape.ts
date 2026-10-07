@@ -86,6 +86,11 @@ const SENTENCES_INSIDE = /[。．！？](?=\s*\S)|\p{Ll}{2}[.!?]["'”’)]?\s+[
 
 export const isParagraphHeading = (heading: string): boolean => SENTENCES_INSIDE.test(heading.trim());
 
+/** A heading that asks a question: its length is the reader's question, not a name to shorten (FAQ, "Will this … increase …?"). */
+const QUESTION_END = /[?？]["'”’)）」』]*$/u;
+
+export const isQuestionHeading = (heading: string): boolean => QUESTION_END.test(heading.trim());
+
 /** The heading's words without a number label at its head (Chapter 2, 1.), from the section the heading opens. */
 const unlabeledOf = (doc: ProseDocument, heading: MarkupHeading): string =>
   doc.sections.find((section) => section.span.start === heading.end)?.unlabeledHeading ?? heading.text;
@@ -96,7 +101,7 @@ export const titleLength: Detector = (doc, options): Finding[] => {
   const title = headings.find((heading) => heading.depth === 1);
   return headings
     .map((heading) => ({ heading, words: unlabeledOf(doc, heading) }))
-    .filter(({ words }) => !isParagraphHeading(words))
+    .filter(({ words }) => !isParagraphHeading(words) && !isQuestionHeading(words))
     .map(({ heading, words }) => ({ heading, count: headingLength(words, doc.lengthUnit) }))
     .filter(({ count }) => count > options.limit)
     .map(({ heading, count }) => ({

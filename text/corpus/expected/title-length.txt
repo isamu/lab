@@ -1,6 +1,4 @@
 da-area-data-model  1
-dailymed-advil-otc-label  1
 govuk-cddo-roadmap-2022-2025  1
-kep-2214-indexed-job  1
 kobayashi-nento-shokan-2026  1
 maff-kyodo-ryori-okaisan-ja  1

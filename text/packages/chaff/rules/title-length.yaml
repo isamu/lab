@@ -79,8 +79,8 @@ example:
       What every store does during the move in the 2025 financial year.
 
 not_flagged:
-  ja: 見出しの頭の番号（「第2章」「1.」）は数えません。英字の語は一語を二文字と数えます。報告書・プレスリリース・議事録・仕様書・論文は上限が高く、法務・文学・話し言葉のジャンルと、見出しが質問の文になる FAQ では見ません。
-  en: A number label at the head of a heading (Chapter 2, 1.) is not counted. Reports, press releases, minutes, specifications and papers have a higher limit; legal, literary and speech genres, and FAQs (whose headings are questions), do not run this rule.
+  ja: 見出しの頭の番号（「第2章」「1.」）は数えません。英字の語は一語を二文字と数えます。報告書・プレスリリース・議事録・仕様書・論文は上限が高く、法務・文学・話し言葉のジャンルと、見出しが質問の文になる FAQ では見ません。ほかのジャンルでも、？で終わる質問の見出しは、長さが読み手の問いそのものなので見ません。
+  en: A number label at the head of a heading (Chapter 2, 1.) is not counted. Reports, press releases, minutes, specifications and papers have a higher limit; legal, literary and speech genres, and FAQs (whose headings are questions), do not run this rule. In any genre, a heading that ends with a question mark is not counted, since its length is the reader's question.
 level_meaning:
   ja: 題や見出しが {limit} 文字を超えたら指摘
   en: reported when a title or heading runs past {limit} words
