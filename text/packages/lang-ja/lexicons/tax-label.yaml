@@ -1,0 +1,8 @@
+# 税の行を示す語。表や箇条書きの行の頭（表なら最初の列）にこの語があり率（10%）を書いた行の金額を、上の小計に率を掛けた額と比べる（tax-mismatch）。
+id: tax-label
+language: ja
+entries:
+  - pattern: 消費税等
+  - pattern: 消費税額
+  - pattern: 消費税
+  - pattern: 税額

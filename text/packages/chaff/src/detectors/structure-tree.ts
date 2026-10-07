@@ -158,7 +158,7 @@ export const dateOrder: Detector = (doc): Finding[] =>
       }));
 
 /** 木の数量を、原文の位置と一緒に並べる。 */
-const amountsOf = (tree: NonNullable<ProseDocument["structure"]>): Amount[] =>
+export const amountsOf = (tree: NonNullable<ProseDocument["structure"]>): Amount[] =>
   inDocumentOrder(tree).flatMap((node) =>
     node.kind === "quantity" ? [{ offset: node.span.start, end: node.span.end, value: Number(node.attrs["value"]), unit: String(node.attrs["unit"]) }] : [],
   );
