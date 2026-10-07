@@ -10,8 +10,8 @@ name:
   en: A count of years that does not match its starting year
 
 why:
-  ja: 「2015年創業」と書いた文書の「創業5年」や、「1980年生まれ（30歳）」は、どちらかが古いままです。去年の文書を写して日付だけ直したときによく起きます。文書の日付（日付だけの段落や「更新日：」の段落）の年から起点の年を引き、書いた年数と比べます。誕生日の前後や「10年目」の数え方があるので、一年までの違いは指しません。
-  en: 'A document that says "founded in 2015" and "5 years since its founding", or "born in 1980 (aged 30)", has kept one figure from an older version. It happens when last year''s document is copied and only the date is changed. The starting year is taken from the document''s own date (a paragraph holding only a date, or "Updated:") and compared with the count of years. A difference of one year is not pointed out, because of birthdays and of counting the tenth year as 10.'
+  ja: 「2015年創業」と書いた文書の「創業5年」や、「1980年生まれ（30歳）」は、どちらかが古いままです。去年の文書を写して日付だけ直したときによく起きます。文書の日付（日付だけの段落や「更新日：」の段落）の年から起点の年を引き、書いた年数と比べます。誕生日の前後や「10年目」の数え方があるので、一年までの違いは指しません。英語の文書で語で書いた年数（ten years since its founding）も読みます。
+  en: 'A document that says "founded in 2015" and "5 years since its founding", or "born in 1980 (aged 30)", has kept one figure from an older version. It happens when last year''s document is copied and only the date is changed. The starting year is taken from the document''s own date (a paragraph holding only a date, or "Updated:") and compared with the count of years. A difference of one year is not pointed out, because of birthdays and of counting the tenth year as 10. A count written as a word ("ten years since its founding") is read as well.'
 
 message:
   ja: "{origin}から{reference}年までは{expected}年ですが、「{written}」と書かれています"

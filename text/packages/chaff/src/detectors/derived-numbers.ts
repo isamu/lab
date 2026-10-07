@@ -5,6 +5,7 @@ import { overlapsAny, spanIndex } from "../compare/spans.ts";
 import { yearOf, type DurationUnit } from "../derived/date-arithmetic.ts";
 import { durationMismatches, type DatedValue, type Duration } from "../derived/durations.ts";
 import { elapsedMismatches, type Elapsed, type OriginWord, type Year } from "../derived/elapsed.ts";
+import { numberWordCounts } from "../derived/number-word-counts.ts";
 import { quoteAt } from "./structure-tree.ts";
 
 /** 期間の単位の語彙表。木の数量の単位がどれかに入れば、その単位の期間。 */
@@ -122,8 +123,14 @@ const isAge = (doc: ProseDocument, quantity: Quantity): boolean =>
   positioned(doc, "age-marker", "before").some((word) => textBefore(doc, quantity).endsWith(word)) ||
   positioned(doc, "age-marker", "after").some((word) => textAfter(doc, quantity).startsWith(word));
 
-const elapsedOf = (doc: ProseDocument, quantities: readonly Quantity[]): Elapsed[] =>
-  quantities.filter((quantity) => !isAge(doc, quantity) && patternsOf(doc, "elapsed-unit").some((unit) => unit.normalize("NFKC") === quantity.unit));
+/** 年数: 単位が年数の語の数量（10 years、創業10年）と、木が読まない語で書いた数（ten years）。 */
+const elapsedOf = (doc: ProseDocument, quantities: readonly Quantity[]): Elapsed[] => {
+  const units = patternsOf(doc, "elapsed-unit");
+  const counted = quantities.filter((quantity) => !isAge(doc, quantity) && units.some((unit) => unit.normalize("NFKC") === quantity.unit));
+  const taken = spanIndex(quantities);
+  const worded = numberWordCounts(doc.source, patternsOf(doc, "count-number"), units).filter((count) => !overlapsAny(taken, count));
+  return [...counted, ...worded].toSorted((left, right) => left.start - right.start);
+};
 
 /** 「aged 45」の 45: 英語の木は単位の無い数を読まないので、年齢の印のすぐ後ろの数を読む。 */
 const AGE_NUMBER = /^\s*(\d{1,3})(?!\d)/u;
