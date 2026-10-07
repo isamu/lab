@@ -45,17 +45,32 @@ export const namesEntry = (entryKey: string, citedKey: string): boolean => {
   return !LATIN.test(citedKey) && [...surname].length >= MIN_PREFIX_SURNAME && entryKey.startsWith(citedKey);
 };
 
+/**
+ * namesEntry, and also a one-character Japanese surname (森, 林) against the full name it heads (森達也) when no other entry
+ * of that year starts with it: the list then leaves no other work it could name, where 林 beside 林田太郎 and 林正 does.
+ */
+export const namesEntryAmong =
+  (entryKeys: readonly string[]) =>
+  (entryKey: string, citedKey: string): boolean => {
+    if (namesEntry(entryKey, citedKey)) return true;
+    if (LATIN.test(citedKey) || !entryKey.startsWith(citedKey)) return false;
+    return entryKeys.filter((key) => key.startsWith(citedKey)).length === 1;
+  };
+
 const numberedSide = (entries: readonly ReferenceEntry[], marks: readonly CitationMark[]): Side => ({
   entries: entries.flatMap((entry) => (entry.number === undefined ? [] : [{ key: String(entry.number), start: entry.start }])),
   citations: marks.filter((mark) => NUMBERED_STYLES.has(mark.style)).map((mark) => ({ mark, keys: mark.numbers.map(String) })),
   names: (entryKey, citedKey) => entryKey === citedKey,
 });
 
-const authorYearSide = (entries: readonly ReferenceEntry[], marks: readonly CitationMark[]): Side => ({
-  entries: entries.flatMap((entry) => (entry.authorYear === undefined ? [] : [{ key: keyOf(entry.authorYear), start: entry.start }])),
-  citations: marks.filter((mark) => mark.style === "author-year").map((mark) => ({ mark, keys: mark.authorYears.map(keyOf) })),
-  names: namesEntry,
-});
+const authorYearSide = (entries: readonly ReferenceEntry[], marks: readonly CitationMark[]): Side => {
+  const keyed = entries.flatMap((entry) => (entry.authorYear === undefined ? [] : [{ key: keyOf(entry.authorYear), start: entry.start }]));
+  return {
+    entries: keyed,
+    citations: marks.filter((mark) => mark.style === "author-year").map((mark) => ({ mark, keys: mark.authorYears.map(keyOf) })),
+    names: namesEntryAmong(keyed.map((entry) => entry.key)),
+  };
+};
 
 export const sideSlips = (side: Side): CitationSlip[] => {
   if (side.entries.length < MIN_ENTRIES || side.citations.length === 0) return [];
