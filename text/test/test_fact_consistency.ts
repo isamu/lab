@@ -6,6 +6,8 @@ import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
+import { countedFacts, type CountedPhrase } from "../packages/chaff/src/facts/counted-facts.ts";
+import type { FactValue } from "../packages/chaff/src/facts/fact-values.ts";
 
 // 同じ項目に違う値（fact-conflict）と、冒頭や要約の値が本文と違う（summary-fact-mismatch）。
 
@@ -152,7 +154,62 @@ describe("summary-fact-mismatch", () => {
     assert.deepEqual(summaryEn(...lines), []);
   });
 
+  it("a summary value with no label, named by its verb and what it counts (en)", () => {
+    const doc = (summary: string, body: string): string[] => summaryEn("# Report", "", "## Summary", "", summary, "", "## Customers", "", body);
+    assert.deepEqual(doc("We gained 52 new customers.", "We gained 48 new customers, 32 of them in the capital region."), ["new customers:52≠48"]);
+    assert.deepEqual(doc("We gained 48 new customers.", "We gained 48 new customers, 32 of them in the capital region."), []);
+  });
+
+  it("a counted value is paired only with the same verb and the same noun", () => {
+    const doc = (summary: string, body: string): string[] => summaryEn("# Report", "", "## Summary", "", summary, "", "## Details", "", body);
+    assert.deepEqual(doc("We interviewed 12 people.", "In the end, 3 people declined."), []);
+    assert.deepEqual(doc("We interviewed 12 people.", "We interviewed 10 managers."), []);
+    assert.deepEqual(doc("We gained 52 new customers.", "We gained 48 new customers in May and 30 new customers in June."), []);
+    assert.deepEqual(doc("We reported 2026 revenue.", "We reported 2025 revenue."), []);
+    assert.deepEqual(doc("We gained 52 in the region.", "We gained 48 in the region."), []);
+    assert.deepEqual(doc("The count we gained was 52 new.", "The count we gained was 48 new."), []);
+    assert.deepEqual(doc("North America gained 52 customers.", "Europe gained 48 customers."), []);
+    assert.deepEqual(doc("We selected 2 proposals.", "We selected 1 of 3 proposals."), []);
+    assert.deepEqual(doc("We gained 15 customers.", "We gained between 10 and 12 customers."), []);
+    assert.deepEqual(doc("Gained 15 customers.", "Gained 12 customers."), []);
+  });
+
+  it("the counted words are compared by their lemma, so one and many are the same thing", () => {
+    const doc = (summary: string, body: string): string[] => summaryEn("# Report", "", "## Summary", "", summary, "", "## Details", "", body);
+    assert.deepEqual(doc("We gained 1 new customer.", "We gained 2 new customers."), ["new customer:1≠2"]);
+  });
+
   it("a document with no headings has no body to compare with", () => {
     assert.deepEqual(summaryJa("参加費は3,000円です。", "", "参加費は3,500円です。"), []);
+  });
+});
+
+describe("countedFacts: a number named by what it counts", () => {
+  const bare = (source: string, written: string, unit = ""): FactValue => {
+    const start = source.indexOf(written);
+    return { start, end: start + written.length, kind: "quantity", key: written, unit };
+  };
+  const phrase = (source: string, label: string): CountedPhrase => {
+    const start = source.indexOf(label);
+    return { start, end: start + label.length, label, key: `counted ${label.toLowerCase()}` };
+  };
+  const keys = (source: string, values: readonly FactValue[], phrases: readonly CountedPhrase[]): string[] =>
+    countedFacts(source, values, phrases).map((fact) => `${fact.label}=${fact.value.key}|${fact.key}`);
+
+  it("a number with no unit, one space, then the counted words", () => {
+    const source = "We gained 52 New Customers.";
+    assert.deepEqual(keys(source, [bare(source, "52")], [phrase(source, "New Customers")]), ["New Customers=52|counted new customers"]);
+  });
+
+  it("not a number with a unit, a year, or one not right before the words", () => {
+    const withUnit = "We gained $52 customers.";
+    assert.deepEqual(keys(withUnit, [bare(withUnit, "52", "$")], [phrase(withUnit, "customers")]), []);
+    const year = "We reported 2026 revenue.";
+    assert.deepEqual(keys(year, [bare(year, "2026")], [phrase(year, "revenue")]), []);
+    const apart = "We gained 52  customers.";
+    assert.deepEqual(keys(apart, [bare(apart, "52")], [phrase(apart, "customers")]), []);
+    const date: FactValue = { start: 0, end: 2, kind: "date", key: "2026-05-01", unit: "" };
+    assert.deepEqual(keys("05 customers", [date], [phrase("05 customers", "customers")]), []);
+    assert.deepEqual(keys("", [], []), []);
   });
 });
