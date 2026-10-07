@@ -63,6 +63,44 @@ const flagsMissingFrom = (usage: string, language: string, flags: Readonly<Recor
     return names.filter((name) => !lines.includes(name)).map((name) => `${language}: ${command} ${name}`);
   });
 
+/** Each command's own options, as its parser reads them. The options several commands share are in SHARED_FLAGS. */
+const COMMAND_FLAGS: Readonly<Record<string, readonly string[]>> = {
+  "ai-score": ["--format", "--json", "--compact"],
+  cite: ["--format"],
+  compare: ["--allow-dropped", "--allow-added", "--distinct", "--json", "--compact"],
+  enable: ["--why"],
+  eval: ["--rule"],
+  facts: ["--json", "--compact"],
+  feedback: ["--rule", "--line", "--missed", "--with-config"],
+  "fix-plan": ["--depth", "--json"],
+  grade: ["--out", "--baseline", "--allow-stamp-mismatch", "--variant-key", "--format", "--json", "--compact"],
+  init: ["--genre", "--plugin"],
+  outline: ["--json", "--compact"],
+  relax: ["--why"],
+  rules: ["--json"],
+  skill: ["--global", "--force"],
+  tree: ["--format"],
+};
+
+const SHARED_FLAGS: readonly string[] = [
+  "--compact",
+  "--no-guide",
+  "--experimental",
+  "--genre",
+  "--show-baseline",
+  "--watch",
+  "--dry-run",
+  "--sarif",
+  "--include",
+  "--language",
+];
+
+/** "<language>: <flag>" for each shared option that has no line of its own in the usage. */
+const sharedMissingFrom = (usage: string, language: string): string[] => {
+  const lines = usage.split("\n");
+  return SHARED_FLAGS.filter((name) => !lines.some((line) => line.startsWith(`  ${name} `))).map((name) => `${language}: ${name}`);
+};
+
 describe("どのコマンドも --help に応える", () => {
   it("どのコマンドにも、日本語と英語の使い方に行がある", () => {
     const missing = Object.entries(CLI_TEXT).flatMap(([language, text]) =>
@@ -71,10 +109,20 @@ describe("どのコマンドも --help に応える", () => {
     assert.deepEqual(missing, []);
   });
 
-  it("grade と fix-plan の使い方は、そのコマンドだけの指定を日本語と英語の両方で挙げる", () => {
-    const flags: Readonly<Record<string, readonly string[]>> = { grade: ["--baseline", "--compact", "--out", "--json"], "fix-plan": ["--depth", "--json"] };
-    const missing = Object.entries(CLI_TEXT).flatMap(([language, text]) => flagsMissingFrom(text.usage, language, flags));
+  it("どのコマンドの使い方も、そのコマンドだけの指定を日本語と英語の両方で挙げる", () => {
+    const missing = Object.entries(CLI_TEXT).flatMap(([language, text]) => flagsMissingFrom(text.usage, language, COMMAND_FLAGS));
     assert.deepEqual(missing, []);
+  });
+
+  it("共通の指定は、日本語と英語の両方の使い方に行がある", () => {
+    const missing = Object.entries(CLI_TEXT).flatMap(([language, text]) => sharedMissingFrom(text.usage, language));
+    assert.deepEqual(missing, []);
+  });
+
+  it("指定が 1 つ欠ければ、欠けたものを名指しする", () => {
+    const usage = CLI_TEXT.en.usage.replaceAll("--allow-stamp-mismatch", "");
+    assert.deepEqual(flagsMissingFrom(usage, "en", COMMAND_FLAGS), ["en: grade --allow-stamp-mismatch"]);
+    assert.deepEqual(sharedMissingFrom(CLI_TEXT.ja.usage.replace("  --language ", "  "), "ja"), ["ja: --language"]);
   });
 
   it("init --help は使い方を出し、chaff.yaml を書かない", async () => {

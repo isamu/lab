@@ -67,11 +67,16 @@ describe("chaff ai-score", () => {
       "thresholds",
       "signals",
       "structure",
+      "together",
     ]);
     assert.equal(document["level"], "high");
     assert.equal(document["notScored"], null);
     assert.equal(document["group"], "blog");
-    assert.deepEqual(document["thresholds"], { medium: 3, high: 5 });
+    assert.deepEqual(document["thresholds"], { medium: 3, high: 5, together: 2 });
+    const together = document["together"];
+    assert.ok(isRecord(together));
+    assert.equal(together["counted"], true);
+    assert.ok(Array.isArray(together["fired"]) && together["fired"].includes("padded-intro"));
     const signals = document["signals"];
     assert.ok(Array.isArray(signals));
     const padded: unknown = signals.find((signal: unknown) => isRecord(signal) && signal["rule"] === "padded-intro");

@@ -42,6 +42,10 @@ describe("startsWithVowelSound: the sound a word starts with, from lexicon artic
     assert.deepEqual(["SYN", "FIN", "RST", "RCV", "SWS"].map(soundOf), [false, false, undefined, undefined, undefined]);
     assert.deepEqual(["SUV", "NBA", "FBI"].map(soundOf), [true, true, true]);
   });
+
+  it("short capitals with a vowel said as a word (RAG, MIR, SEP) take the word's sound", () => {
+    assert.deepEqual(["RAG", "MIR", "SEP"].map(soundOf), [false, false, false]);
+  });
 });
 
 describe("article-sound", () => {
@@ -77,6 +81,11 @@ describe("article-sound", () => {
     const tcp =
       "A SYN arrives first. The peer answers with a SYN and a FIN. Send a RST or an RST to abort. Keep a RCV.WND that fits, and a SWS avoidance algorithm.\n";
     assert.deepEqual(findingsOf(RULE, tcp), []);
+  });
+
+  it("an acronym said as a word takes the article of its sound (a RAG answer), not of its first letter's name", () => {
+    assert.deepEqual(findingsOf(RULE, "Check a RAG answer, a MIR lvalue and a SEP plan.\n"), []);
+    assert.deepEqual(findingsOf(RULE, "Check an RAG answer.\n"), ['"an RAG" takes "a" before that sound']);
   });
 });
 
