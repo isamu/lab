@@ -8,7 +8,7 @@ export type GradeAiScore = {
   readonly notScored: NotScored["reason"] | null;
   readonly signs: number;
   readonly compared: number;
-  /** The signs that counted: rule ids, and structure measures as structure:<id>. */
+  /** The signs that counted: rule ids, structure measures as structure:<id>, and ai-generated-composite:strict. */
   readonly shown: readonly string[];
 };
 
