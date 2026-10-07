@@ -133,19 +133,12 @@ export const checkScreen = async (page: GuidePage, documents: Readonly<Record<st
  * chaff, so a screen that cannot be run is listed here rather than silently left out.
  */
 const WATCH = "--watch waits for the file to be saved, and its lines carry the time";
-const REAL_ARTICLE = "an excerpt of a real article, which the repository does not keep";
 const GRADE_BASELINE =
   "reads a.results.jsonl that the run before it wrote; a kept copy carries the chaff version and the rules' hash, and goes stale with every rule";
 
 export const UNCHECKED: Readonly<Record<string, Readonly<Record<string, string>>>> = {
-  "ja/getting-started.md": { "$ npx chaffjs sample.md": REAL_ARTICLE },
-  "en/getting-started.md": { "$ npx chaffjs sample.md": REAL_ARTICLE },
-  "ja/commands.md": { "$ npx chaffjs article.md --watch": WATCH, "$ npx chaffjs sample.md --compact": REAL_ARTICLE },
-  "en/commands.md": {
-    "$ npx chaffjs article.md --watch": WATCH,
-    "$ npx chaffjs sample.md --compact": REAL_ARTICLE,
-    "$ npx chaffjs feedback sample.md --rule heading-echo --line 142": REAL_ARTICLE,
-  },
+  "ja/commands.md": { "$ npx chaffjs article.md --watch": WATCH },
+  "en/commands.md": { "$ npx chaffjs article.md --watch": WATCH },
   "ja/ai-evals.md": {
     "$ npx chaffjs grade prompt-a.jsonl --out a.results.jsonl": GRADE_BASELINE,
     "$ npx chaffjs grade prompt-b.jsonl --baseline a.results.jsonl": GRADE_BASELINE,
