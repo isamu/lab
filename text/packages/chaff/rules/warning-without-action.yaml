@@ -1,0 +1,64 @@
+id: warning-without-action
+layer: L3
+status: stable
+how_to_find: warning-action
+# The labels and the words of an action come from the language's warning-label and warning-action lexicons; an English
+# sentence that opens with its verb is read from the parts of speech when they are available.
+uses: [pos]
+languages: [ja, en]
+severity: info
+
+name:
+  ja: することの書かれていない注意書き
+  en: Warning that gives no action
+
+why:
+  ja: 「注意：復元すると、今のデータベースは置き換わります。」のように危険だけを書いた注意書きは、読み手を不安にするだけで、何をすれば防げるのかを教えません。手順書の注意書きは、何が起きるかと、それを防ぐために読み手がすること（先に書き出す、電源を切らない）を一緒に書くものです。「注意」「警告」「危険」で始まる段落の、どの文にも「〜してください」「〜しないこと」のような読み手のすることが無いとき指します。
+  en: 'A warning that only names a risk ("Warning: the restore replaces the current database.") alarms the reader without saying how to avoid it. A warning in a manual says what happens and what the reader does to prevent it (export first, do not unplug the drive). A paragraph that opens with Warning, Caution or Danger is reported when none of its sentences tells the reader what to do: no "do not", "make sure", "must" and no sentence that opens with its verb ("Export today''s orders first").'
+
+message:
+  ja: この注意書きは危険を述べるだけで、読み手がすることを書いていません
+  en: This warning names a risk but not what the reader should do
+
+how_to_fix:
+  ja: 危険を避けるために読み手がすることを、同じ段落に書き足してください（「先に〜を書き出してください」「〜の間は電源を切らないでください」）。
+  en: Add what the reader does to avoid the risk to the same paragraph ("Export today's orders first", "Do not unplug the drive while it runs").
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [technical, docs, blog, legal, academic, literature, speech]
+off_for:
+  legal: "Warnings with an action to take are a convention of manuals and technical writing."
+  academic: "Warnings with an action to take are a convention of manuals and technical writing."
+  literature: "Warnings with an action to take are a convention of manuals and technical writing."
+  speech: "Warnings with an action to take are a convention of manuals and technical writing."
+
+group: wording
+summary:
+  ja: 「注意」「警告」で始まる段落で、危険だけを書き、読み手のすること（〜してください、〜しないこと）が無いもの
+  en: A paragraph opening with Warning or Caution that names a risk and no action for the reader
+example:
+  ja:
+    config: { genre: docs/manual }
+    before: |
+      # バックアップを復元する
+
+      注意：復元すると、今のデータベースは置き換わります。
+    after: |
+      # バックアップを復元する
+
+      注意：復元すると、今のデータベースは置き換わります。先に、今日の注文を書き出してください。
+  en:
+    config: { genre: docs/manual }
+    before: |
+      # Restoring a backup
+
+      Warning: the restore replaces the current database.
+    after: |
+      # Restoring a backup
+
+      Warning: the restore replaces the current database. Export today's orders first.
+
+not_flagged:
+  ja: 「注意」「警告」「危険」をそれだけで頭に置いた段落（「注意：」「**警告**」「> [!WARNING]」）だけを読みます。GitHub の注意（> [!WARNING]）は引用の終わりまでを一つの注意書きとして読みます。箇条書きの項目の中の注意書き、「メモ」「ヒント」「重要」の段落、「注意深く」のように語の一部になったもの、どれかの文が読み手のすること（〜してください、〜しないこと、〜する必要があります）で終わる注意書きは指しません。技術文書・手順書・ブログでだけ動きます。
+  en: 'Only paragraphs opening with Warning, Caution or Danger standing alone ("Warning:", "**Caution**", "> [!WARNING]") are read. A GitHub alert (> [!WARNING]) is read to the end of its block quote. Warnings inside list items, notes, tips and "Important" paragraphs, words that merely start with the label ("Warnings are logged"), and warnings with any sentence that gives an action (do not, make sure, must, or a sentence opening with its verb) are not reported. Technical documents, manuals and blogs only.'
