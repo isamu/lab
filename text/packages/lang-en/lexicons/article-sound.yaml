@@ -76,6 +76,9 @@ entries:
   - { pattern: MAC, group: word }
   - { pattern: SYN, group: word }
   - { pattern: FIN, group: word }
+  - { pattern: RAG, group: word }
+  - { pattern: MIR, group: word }
+  - { pattern: SEP, group: word }
   - { pattern: SQL, group: either }
   - { pattern: FAQ, group: either }
   - { pattern: URL, group: either }

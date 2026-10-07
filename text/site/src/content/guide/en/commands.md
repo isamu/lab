@@ -487,7 +487,7 @@ Three signs make "medium" and five make "high". It does not say whether AI wrote
 <!-- chaff-screen: rewrite -->
 ```
 $ npx chaffjs ai-score before.md after.md --compact
-before.md: ai-score medium 4/26 announcing-opener closing-cliche contrast-framing structure:bold-labels
+before.md: ai-score high 5/26 announcing-opener closing-cliche contrast-framing structure:bold-labels ai-generated-composite:strict
 after.md: ai-score low 1/25 structure:short-sections
 ```
 

@@ -34,18 +34,25 @@ const USAGE_JA = `chaff — 文章の読みにくいところを見つけます�
   chaff init --plugin <名前>     YAML だけのルールの束（chaff-plugin-<名前>/）を作る
   chaff plugin-test [フォルダ]   プラグインの各ルールを、そのルールの例にかけて確かめる
   chaff --version                chaffjs と言語パッケージの版
-  chaff eval <dir>               手元の文書で閾値を測り直す
+  chaff eval <dir> [--rule <rule>]  手元の文書で閾値を測り直す（--rule でそのルールだけ）
   chaff explain <rule>           そのルールの意図と根拠を読む
   chaff genres                   ジャンル（文書の種類）の一覧と、それぞれ何向けか
   chaff tree <file> [--format sexp|json]  文書を番地の付いた木にする（条・項・定義・参照）
-  chaff cite <原文> <引用.json>           回答の引用（番地と引用文）が原文にあるかを確かめる
+  chaff cite <原文> <引用.json> [--format text|json]  回答の引用（番地と引用文）が原文にあるかを確かめる
   chaff cite --scaffold <file>           出典の無い引用を、出典を書き込む引用.json のひな形にする
-  chaff compare <前> <後>                書き換えで事実（数・日付・URL・コード・名前・引用…）が落ちても足されてもいないかを確かめる
-  chaff facts <file>                     compare が照合する事実を、書き直す前の控えとして一覧にする
-  chaff outline <file> [<後>]            見出しの構成と形（見出しの数・節の平均の長さ・箇条書きの割合・太字）を測る。2 つなら前と後を並べる
-  chaff ai-score <file>... [--format json]  AI らしさの簡易判定（低・中・高）。生成文に多い目印を、同じジャンルの人の文書と比べる（書いたのが AI かは判定しない）
-  chaff grade <items.jsonl> [--out <results.jsonl>] [--baseline <前の results.jsonl>] [--compact] [--json]
+  chaff compare <前> <後> [--json|--compact]  書き換えで事実（数・日付・URL・コード・名前・引用…）が落ちても足されてもいないかを確かめる
+                                 --allow-dropped <種類> と --allow-added <種類> は、その種類の欠落・追加を許す（カンマで並べる。種類は number date time url code name quote heading reference footnote）
+                                 --distinct は、何回述べたかではなく、述べているかだけを比べる
+  chaff facts <file> [--json|--compact]  compare が照合する事実を、書き直す前の控えとして一覧にする
+  chaff outline <file> [<後>] [--json|--compact]  見出しの構成と形（見出しの数・節の平均の長さ・箇条書きの割合・太字）を測る。2 つなら前と後を並べる
+  chaff ai-score <file>... [--format text|json] [--json] [--compact]
+                                 AI らしさの簡易判定（低・中・高）。生成文に多い目印を、同じジャンルの人の文書と比べる（書いたのが AI かは判定しない）
+                                 --json は --format json と同じ。--compact はファイルごとに 1 行
+  chaff grade <items.jsonl> [--out <results.jsonl>] [--baseline <前の results.jsonl>] [--allow-stamp-mismatch]
+              [--variant-key <欄>] [--format text|json|markdown] [--json] [--compact]
                                  AI の出力を JSONL でまとめて採点する（指摘の率・事実・引用・合否。何も送らない）
+                                 --allow-stamp-mismatch はルールか設定が前の回と違っても比べる（そのことを先に出す）
+                                 --variant-key は variant の欄の代わりにその欄で出力を分けて並べる。--json は --format json と同じ。markdown は PR のコメント向け
   chaff fix-plan <file> [--depth light|structure|register] [--json]
                                  指摘をルールごとにまとめ、直す方向と確かめのコマンドを、書き直す人や AI 向けの計画にする（何も送らない）
   chaff rules                    ルールの一覧を、グループごとに表で出す（いまの段階つき）
@@ -54,7 +61,8 @@ const USAGE_JA = `chaff — 文章の読みにくいところを見つけます�
   chaff suppressions <dir>       stet で黙らせている指摘を数える
   chaff relax|strict|off <rule> [--why "理由"]
   chaff enable <rule> [--why "理由"]  試験中のルールを 1 つだけ動かす（chaff.yaml の rules に <rule>: normal と書く）
-  chaff skill [--global]         Claude Code の skill を入れる（.claude/skills/chaff/、--global で ~/.claude/）
+  chaff skill [--global] [--force]  Claude Code の skill を入れる（.claude/skills/chaff/、--global で ~/.claude/）
+                                 手で直したらしい skill は置き換えない。--force で置き換える
   chaff feedback <file> --rule <rule> [--line N] | --missed --line N
                                  誤った指摘・見逃しの報告の下書きを作る（何も送らない。--with-config で chaff.yaml 全体も載せる）
 
@@ -67,6 +75,7 @@ const USAGE_JA = `chaff — 文章の読みにくいところを見つけます�
   --dry-run         test で、何を AI に送るかだけを見る（API を呼びません）
   --sarif <path>    指摘を SARIF で書き出す（GitHub の PR の行に出すため）
   --include <glob>  フォルダを見るとき、Markdown のほかにこのファイルも検査する（--include "*.yaml"。chaff.yaml の include と同じ）
+  --language <ja|en>  tree・cite・compare・facts・outline・ai-score で、文書の言語を決める（chaff.yaml と中身からの推定より優先）
 
 この箇所だけ黙らせる:  <!-- stet: rule-id — 理由 -->
 
@@ -83,18 +92,25 @@ const USAGE_EN = `chaff — finds what makes writing hard to read. It never rewr
   chaff init --plugin <name>     create a YAML rule pack, chaff-plugin-<name>/
   chaff plugin-test [folder]     run each rule of a plugin on the rule's own example
   chaff --version                the version of chaffjs and its language packages
-  chaff eval <dir>               re-measure the limits on your own documents
+  chaff eval <dir> [--rule <rule>]  re-measure the limits on your own documents (--rule: that rule only)
   chaff explain <rule>           read what a rule is for and why
   chaff genres                   list the genres (kinds of document) and what each is for
   chaff tree <file> [--format sexp|json]  the document as a tree of addresses (sections, clauses, definitions, references)
-  chaff cite <source> <quotes.json>       check that quoted passages (address and text) are in the source
+  chaff cite <source> <quotes.json> [--format text|json]  check that quoted passages (address and text) are in the source
   chaff cite --scaffold <file>            a quotes.json to fill in with sources, from the quotations that give none
-  chaff compare <before> <after>          check that a rewrite dropped no fact and added none (numbers, dates, URLs, code, names, quotations…)
-  chaff facts <file>                      list the facts compare checks, as an inventory to keep before a rewrite
-  chaff outline <file> [<after>]          measure the outline and its shape (headings, average section length, text in lists, bold); two files side by side
-  chaff ai-score <file>... [--format json]  quick AI-likeness score (low, medium, high): signs common in generated text against human documents of the genre (not a verdict on who wrote it)
-  chaff grade <items.jsonl> [--out <results.jsonl>] [--baseline <earlier results.jsonl>] [--compact] [--json]
+  chaff compare <before> <after> [--json|--compact]  check that a rewrite dropped no fact and added none (numbers, dates, URLs, code, names, quotations…)
+                                 --allow-dropped <kinds> and --allow-added <kinds> allow those kinds to go or come (comma-separated: number date time url code name quote heading reference footnote)
+                                 --distinct compares only whether a fact is stated, not how many times
+  chaff facts <file> [--json|--compact]   list the facts compare checks, as an inventory to keep before a rewrite
+  chaff outline <file> [<after>] [--json|--compact]  measure the outline and its shape (headings, average section length, text in lists, bold); two files side by side
+  chaff ai-score <file>... [--format text|json] [--json] [--compact]
+                                 quick AI-likeness score (low, medium, high): signs common in generated text against human documents of the genre (not a verdict on who wrote it)
+                                 --json is --format json; --compact prints one line per file
+  chaff grade <items.jsonl> [--out <results.jsonl>] [--baseline <earlier results.jsonl>] [--allow-stamp-mismatch]
+              [--variant-key <field>] [--format text|json|markdown] [--json] [--compact]
                                  grade a JSONL file of model outputs (finding rates, facts, quotations, pass or fail; sends nothing)
+                                 --allow-stamp-mismatch compares with the baseline even when its rules or settings differ, saying so first
+                                 --variant-key splits the outputs by that field instead of variant; --json is --format json; markdown is for a PR comment
   chaff fix-plan <file> [--depth light|structure|register] [--json]
                                  a plan for whoever rewrites the file, a person or an AI: findings by rule, how to rewrite each, the checks to run after (sends nothing)
   chaff rules                    the rules as a table, by group, with the level each runs at now
@@ -103,7 +119,8 @@ const USAGE_EN = `chaff — finds what makes writing hard to read. It never rewr
   chaff suppressions <dir>       count the findings silenced with stet
   chaff relax|strict|off <rule> [--why "reason"]
   chaff enable <rule> [--why "reason"]  turn on one experimental rule alone (writes <rule>: normal under rules in chaff.yaml)
-  chaff skill [--global]         install the Claude Code skill (.claude/skills/chaff/; --global for ~/.claude/)
+  chaff skill [--global] [--force]  install the Claude Code skill (.claude/skills/chaff/; --global for ~/.claude/)
+                                 a skill that looks edited by hand is kept; --force replaces it
   chaff feedback <file> --rule <rule> [--line N] | --missed --line N
                                  draft a report of a wrong or missed finding (sends nothing; --with-config adds all of chaff.yaml)
 
@@ -116,6 +133,7 @@ const USAGE_EN = `chaff — finds what makes writing hard to read. It never rewr
   --dry-run         with test, show what would be sent to the AI (no API call)
   --sarif <path>    write the findings as SARIF (for comments on a GitHub PR)
   --include <glob>  in a folder, check these files besides Markdown (--include "*.yaml"; as include in chaff.yaml)
+  --language <ja|en>  with tree, cite, compare, facts, outline and ai-score, the document's language (wins over chaff.yaml and the guess from the text)
 
 Silence one spot:  <!-- stet: rule-id — reason -->
 

@@ -136,6 +136,7 @@ describe("gradeAiScoreOf", () => {
         { rule: "no-em-dash", count: 0, human: { documents: 20, fired: 0 }, unusual: false },
       ],
       structure: undefined,
+      together: { fired: ["ai-tell"], counted: false },
     };
     assert.deepEqual(gradeAiScoreOf(full), { level: null, notScored: "no-baseline", signs: 1, compared: 2, shown: ["ai-tell"] });
   });
