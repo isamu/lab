@@ -1,0 +1,26 @@
+# 人の名前で、字体だけが違う同じ字（斎藤 と 斉藤、渡辺 と 渡邊）。group が同じ字どうしを同じ字と見る（name-variant）。
+# 戸籍の字をそのまま書く人もいるので、一つの文書で両方を書いたときだけ指す。字面どおりに照らす。
+id: name-variant-char
+language: ja
+entries:
+  - { pattern: 斎, group: 斎 }
+  - { pattern: 斉, group: 斎 }
+  - { pattern: 齋, group: 斎 }
+  - { pattern: 齊, group: 斎 }
+  - { pattern: 辺, group: 辺 }
+  - { pattern: 邊, group: 辺 }
+  - { pattern: 邉, group: 辺 }
+  - { pattern: 高, group: 高 }
+  - { pattern: 髙, group: 高 }
+  - { pattern: 崎, group: 崎 }
+  - { pattern: 﨑, group: 崎 }
+  - { pattern: 吉, group: 吉 }
+  - { pattern: 𠮷, group: 吉 }
+  - { pattern: 沢, group: 沢 }
+  - { pattern: 澤, group: 沢 }
+  - { pattern: 浜, group: 浜 }
+  - { pattern: 濱, group: 浜 }
+  - { pattern: 広, group: 広 }
+  - { pattern: 廣, group: 広 }
+  - { pattern: 島, group: 島 }
+  - { pattern: 嶋, group: 島 }

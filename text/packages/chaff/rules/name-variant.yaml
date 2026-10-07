@@ -24,6 +24,9 @@ messages:
   reading:
     ja: 「{name}」は、ほかの所では同じ読みの「{usual}」と書いています
     en: '"{name}" is written "{usual}", read the same, elsewhere in the document'
+  character:
+    ja: 「{name}」は、ほかの所では字体の違う同じ字で「{usual}」と書いています
+    en: '"{name}" is written "{usual}", with another form of the same character, elsewhere in the document'
   near:
     ja: 「{name}」は、ほかの所で何度も書いた「{usual}」と一字違いです
     en: '"{name}" is one letter away from "{usual}", which the document uses more than once'
@@ -61,8 +64,8 @@ example:
       The code lives on GitHub. Reviews happen on GitHub, and releases are tagged on GitHub.
 
 not_flagged:
-  ja: 品詞解析が固有名詞と読んだ語だけを見ます。大文字だけの名前（ACME INC、NASA）は見ません。一字違いの英字の名前は、6 字以上で、多いほうが二度以上、少ないほうが一度だけのときに限ります（Iran と Iraq は別の名前）。
-  en: Only words the tagger reads as proper nouns are checked. Names in capitals only (ACME INC, NASA) are left out. Names one letter apart are reported only when six letters or longer, with the usual form used at least twice and the other once (Iran and Iraq are different names).
+  ja: 品詞解析が固有名詞と読んだ語だけを見ます。大文字だけの名前（ACME INC、NASA）は見ません。一字違いの英字の名前は、6 字以上で、多いほうが二度以上、少ないほうが一度だけのときに限ります（Iran と Iraq は別の名前）。人の名前どうしは、字体の違う同じ字（斎藤 と 斉藤、渡辺 と 渡邊）か、読みが同じで一字だけ違い、多いほうが二度以上、少ないほうが一度だけのとき（松本 と 松元）に限ります（伊藤 と 伊東 は別の人のことがある）。人の名前とは、品詞解析が人名と読んだ語か、「様」「さん」「氏」の付いた名前です（解析器が名前と読めない字体の字を含む名前は、敬称の前の 2〜4 字の漢字を名前と読みます）。
+  en: Only words the tagger reads as proper nouns are checked. Names in capitals only (ACME INC, NASA) are left out. Names one letter apart are reported only when six letters or longer, with the usual form used at least twice and the other once (Iran and Iraq are different names). Two Japanese person names are compared only when written with another form of the same character (斎藤 and 斉藤), or read the same with one character different, the usual form used at least twice and the other once (松本 and 松元); 伊藤 and 伊東 can be two people. A person's name is one the tagger reads as such, or one followed by 様, さん or 氏 (when a name holds a character form the tagger cannot read, the two to four kanji before the honorific are taken as the name).
 rewrite:
   depth: light
   ja:

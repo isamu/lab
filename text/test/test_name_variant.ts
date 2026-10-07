@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { isNearWord, nameKey, nameVariants, type NameMention } from "../packages/chaff/src/name-variants.ts";
+import { isNearWord, mentionsIn, nameKey, nameVariants, suffixedNamesIn, type NameMention } from "../packages/chaff/src/name-variants.ts";
+import type { Token } from "../packages/chaff/src/plugin.ts";
 
 // 同じ名前の書き分け（name-variant）。例文はすべて自作。
 
@@ -42,6 +43,41 @@ describe("name-variant: 同じ名前の書き分け", () => {
   it("a plural or a label is not a misspelt name", () => {
     assert.deepEqual(variants("Send it to the Service. The Service replies. Other Services wait.\n"), []);
     assert.deepEqual(variants("See Appendix B. Appendix B lists fees. Appendix C lists dates.\n"), []);
+  });
+
+  it("人の名前を、字体の違う同じ字で書き分ける（斎藤様 と 斉藤様）", () => {
+    assert.deepEqual(
+      variants("斎藤様\n\nいつもお世話になっております。斉藤様と松本様にお目にかかれるのを楽しみにしております。斎藤様には、よろしくお願いいたします。\n", ja),
+      ["「斉藤」は、ほかの所では字体の違う同じ字で「斎藤」と書いています"],
+    );
+  });
+
+  it("読みが同じ一語の人の名前が一字違い。多いほうが二度以上、少ないほうが一度だけ", () => {
+    assert.deepEqual(variants("出席者は高橋、松本、斎藤。\n\n松元は文言案を出す。斎藤は写真を松本へ渡す。\n", ja), [
+      "「松元」は、ほかの所では同じ読みの「松本」と書いています",
+    ]);
+  });
+
+  it("解析器が名前と読めない字体の字（髙）は、敬称の前の漢字を名前と読む", () => {
+    assert.deepEqual(variants("高橋様\n\n高橋様から回答をいただきました。髙橋様からも回答をいただきました。\n", ja), [
+      "「髙橋」は、ほかの所では字体の違う同じ字で「高橋」と書いています",
+    ]);
+  });
+
+  it("敬称の前の漢字が名前より長い（株式会社髙橋様）か、字体の字を含まないなら、名前と読まない", () => {
+    const chars = new Map([
+      ["高", "高"],
+      ["髙", "高"],
+    ]);
+    const names = (source: string): string[] => suffixedNamesIn(source, ["様"], chars, []).map((found) => `${found.surface}@${String(found.offset)}`);
+    assert.deepEqual(names("髙橋様と𠮷髙様"), ["髙橋@0", "𠮷髙@4"]);
+    assert.deepEqual(names("株式会社髙橋様"), []);
+    assert.deepEqual(names("鈴木様と髙様"), []);
+    assert.deepEqual(suffixedNamesIn("髙橋様", ["様"], chars, [{ ...mention("髙橋", 0), person: true }]), []);
+  });
+
+  it("名前を一つの書き方でだけ書いた文書は言わない", () => {
+    assert.deepEqual(variants("斎藤様\n\n斎藤様と松本様に、よろしくお伝えください。\n", ja), []);
   });
 
   it("名前の読みが同じで、一語だけ字が違う", () => {
@@ -115,6 +151,53 @@ describe("the reading behind name-variant", () => {
       homophones.map((variant) => `${variant.mention.surface}<${variant.usual}`),
       ["山田太朗<山田太郎"],
     );
+  });
+
+  it("字体の違う同じ字は、人の名前どうしで、語彙表の字の違いだけのとき", () => {
+    const chars = new Map([
+      ["斎", "斎"],
+      ["斉", "斎"],
+      ["島", "島"],
+      ["嶋", "島"],
+    ]);
+    const person = (surface: string, offset: number): NameMention => ({ ...mention(surface, offset), person: true });
+    const pairOf = (mentions: readonly NameMention[]): string[] =>
+      nameVariants(mentions, chars).map((variant) => `${variant.mention.surface}<${variant.usual}`);
+    assert.deepEqual(pairOf([person("斎藤", 0), person("斉藤", 5)]), ["斉藤<斎藤"]);
+    assert.deepEqual(pairOf([person("斉藤", 0), person("斎藤", 5), person("斎藤", 9)]), ["斉藤<斎藤"]);
+    assert.deepEqual(pairOf([mention("鹿島", 0), mention("鹿嶋", 5)]), []);
+    assert.deepEqual(pairOf([person("斎藤", 0), person("斉木", 5)]), []);
+    assert.deepEqual(nameVariants([person("斎藤", 0), person("斉藤", 5)]), []);
+  });
+
+  it("読みが同じ一語の人の名前は、一字違いで、多いほうが二度以上、少ないほうが一度だけのとき", () => {
+    const person = (surface: string, offset: number, reading: string, isPerson = true): NameMention => ({
+      ...mention(surface, offset, reading, [surface]),
+      person: isPerson,
+    });
+    const pairOf = (mentions: readonly NameMention[]): string[] => nameVariants(mentions).map((variant) => `${variant.mention.surface}<${variant.usual}`);
+    assert.deepEqual(pairOf([person("松本", 0, "マツモト"), person("松本", 3, "マツモト"), person("松元", 6, "マツモト")]), ["松元<松本"]);
+    assert.deepEqual(pairOf([person("伊藤", 0, "イトウ"), person("伊東", 3, "イトウ")]), []);
+    assert.deepEqual(pairOf([person("松本", 0, "マツモト"), person("松本", 3, "マツモト"), person("松元", 6, "マツモト", false)]), []);
+    assert.deepEqual(pairOf([person("毅", 0, "ツヨシ"), person("毅", 3, "ツヨシ"), person("剛史", 6, "ツヨシ")]), []);
+    assert.deepEqual(pairOf([person("松本子", 0, "マツモト"), person("松本子", 3, "マツモト"), person("松元", 6, "マツモト")]), []);
+    assert.deepEqual(pairOf([person("剛史", 0, "ツヨシ"), person("剛史", 3, "ツヨシ"), person("強志", 6, "ツヨシ")]), []);
+    assert.deepEqual(pairOf([person("松本", 0, "マツモト", false), person("松本", 3, "マツモト"), person("松元", 6, "マツモト")]), ["松元<松本"]);
+  });
+
+  it("人の名前と読むのは、解析器が人名と読む語か、敬称の付いた名前", () => {
+    const token = (surface: string, start: number, pos: string, nameType?: string): Token => ({
+      surface,
+      pos,
+      span: { start, end: start + surface.length },
+      ...(nameType === undefined ? {} : { features: { NameType: nameType } }),
+    });
+    const placeThenSuffix = [token("松本", 0, "PROPN", "Geo"), token("様", 2, "NOUN")];
+    const personOf = (tokens: readonly Token[], suffixes: readonly string[] = []): (boolean | undefined)[] =>
+      mentionsIn(tokens, "松本様", suffixes).map((found) => found.person);
+    assert.deepEqual(personOf(placeThenSuffix, ["様"]), [true]);
+    assert.deepEqual(personOf(placeThenSuffix), [false]);
+    assert.deepEqual(personOf([token("松本", 0, "PROPN", "Sur")]), [true]);
   });
 
   it("a same-reading pair must share all but one word", () => {
