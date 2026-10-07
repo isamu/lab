@@ -11,7 +11,7 @@ const RULE = "due-before-issue";
 
 const findingsOf = (source: string, adapter = ja): readonly string[] => namedRuleRun(RULE, source, adapter).findings;
 
-const WORDS: DueWords = { issue: ["発行日"], due: ["お支払期限"] };
+const WORDS: DueWords = { issue: ["発行日"], due: ["お支払期限"], passed: [] };
 
 describe("due-before-issue: 期限が発行日より前", () => {
   it("発行日より前の期限を指す", () => {
@@ -41,6 +41,20 @@ describe("due-before-issue: 期限が発行日より前", () => {
     assert.deepEqual(findingsOf("# 例\n\n```\n発行日：2026年11月30日\nお支払期限：2026年11月25日\n```\n"), []);
   });
 
+  it("過ぎた期限を報告する行と、発行日から離れた期限は比べない", () => {
+    assert.deepEqual(findingsOf("# 証明書の棚卸し\n\n発行日：2026年10月8日\n\n| 項目 | 内容 |\n| --- | --- |\n| 有効期限 | 2026年3月31日（期限切れ） |\n"), []);
+    assert.deepEqual(findingsOf("# Account statement\n\nIssued: October 8, 2026\n\n- Due: September 15, 2026 (invoice 1041, overdue)\n", en), []);
+    const far = ["発行日：2026年11月30日", ...Array.from({ length: 8 }, (_, index) => `\n第${String(index + 1)}項。`), "\nお支払期限：2026年11月25日"].join(
+      "\n",
+    );
+    assert.deepEqual(findingsOf(`# 請求書\n\n${far}\n`), []);
+  });
+
+  it("作成日は発行日と読まない。業務文書のジャンルだけで動く", () => {
+    assert.deepEqual(findingsOf("# 棚卸し\n\n作成日：2026年10月8日\n\n有効期限：2026年3月31日\n"), []);
+    assert.deepEqual(namedRuleRun(RULE, "# 請求書\n\n発行日：2026年11月30日\n\nお支払期限：2026年11月25日\n", ja, "a.md", "technical/readme").findings, []);
+  });
+
   it("発行日が無いか、一行に日付が二つある行は比べない", () => {
     assert.deepEqual(findingsOf("# 請求書\n\nお支払期限：2026年11月25日\n"), []);
     assert.deepEqual(findingsOf("# 請求書\n\n発行日：2026年11月30日\n\nお支払期限：2026年11月25日（再発行 2026年12月1日）\n"), []);
@@ -51,7 +65,7 @@ describe("due-before-issue: 期限が発行日より前", () => {
       { offset: 4, value: "2026-11-30" },
       { offset: 20, value: "2026-11-25" },
     ];
-    assert.deepEqual(dueBeforeIssue("発行日：2026年11月30日\nお支払期限：2026年11月25日", dates, { issue: [], due: [] }), []);
+    assert.deepEqual(dueBeforeIssue("発行日：2026年11月30日\nお支払期限：2026年11月25日", dates, { issue: [], due: [], passed: [] }), []);
     assert.deepEqual(dueBeforeIssue("", [], WORDS), []);
     assert.deepEqual(findingsOf(""), []);
   });

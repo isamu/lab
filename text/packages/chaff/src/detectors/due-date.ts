@@ -1,5 +1,5 @@
 // due-before-issue: the reading half. The issue-date and due-date words come from the language's lexicons
-// (issue-date-label, due-date-label); the dates are the structure tree's, and the lines are read with code masked.
+// (issue-date-label, due-date-label, deadline-passed-word); the dates are the structure tree's, and the lines are read with code masked.
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { dueBeforeIssue, type DueWords } from "../structure/due-date.ts";
 import { proseAndTablesOf } from "../table-text.ts";
@@ -7,7 +7,11 @@ import { datedPoints, quoteAt } from "./structure-tree.ts";
 
 const patternsOf = (doc: ProseDocument, lexicon: string): string[] => (doc.lexicons[lexicon] ?? []).map((entry) => entry.pattern);
 
-const wordsOf = (doc: ProseDocument): DueWords => ({ issue: patternsOf(doc, "issue-date-label"), due: patternsOf(doc, "due-date-label") });
+const wordsOf = (doc: ProseDocument): DueWords => ({
+  issue: patternsOf(doc, "issue-date-label"),
+  due: patternsOf(doc, "due-date-label"),
+  passed: patternsOf(doc, "deadline-passed-word"),
+});
 
 export const dueDate: Detector = (doc): Finding[] =>
   doc.structure === undefined

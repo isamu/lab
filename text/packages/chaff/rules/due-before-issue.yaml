@@ -25,9 +25,7 @@ how_to_fix:
 
 levels: { normal: error, relaxed: warning }
 
-use_for: [business, technical, blog, legal, docs, academic, literature, speech]
-off_for:
-  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+use_for: [business]
 
 group: facts
 summary:
@@ -54,5 +52,5 @@ example:
       Payment due: December 25, 2026
 
 not_flagged:
-  ja: 行の頭に発行日や期限の語が無い日付（文の中の「12月25日までにお支払いください」）、年の無い日付、一行に日付が二つある行は比べません。発行日が二つあれば、最初のものと比べます。
-  en: A date without a word at the head of its line (a due date in a sentence), a date without its year, and a line with two dates are not compared. With two issue dates, the first is used.
+  ja: 行の頭に発行日や期限の語が無い日付（文の中の「12月25日までにお支払いください」）、年の無い日付、一行に日付が二つある行は比べません。発行日が二つあれば、最初のものと比べます。発行日から8行以上離れた期限と、期限が過ぎたことを書いた行（「期限切れ」「延滞」）は、この文書の期限ではなく報告している期限と読んで比べません。業務文書のジャンルだけで動きます。
+  en: A date without a word at the head of its line (a due date in a sentence), a date without its year, and a line with two dates are not compared. With two issue dates, the first is used. A due date eight lines or more from the issue date, and a line that says the deadline has passed (overdue, expired), are read as reporting on a deadline rather than setting this document's own, and are not compared. It runs in the business genres only.
