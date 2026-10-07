@@ -27,6 +27,12 @@ export const MIN_BASELINE_DOCUMENTS = Math.ceil(1 / RARE_SHARE);
 export const MEDIUM_SIGNS = 3;
 export const HIGH_SIGNS = 5;
 
+/**
+ * In the composite's own signals: ai-generated-composite's strict level, held to it by test_ai_score.ts. That many of
+ * them firing in one document is one more sign: `yarn ai-score:corpus --all` shows how many human documents reach it.
+ */
+export const TOGETHER_SIGNALS = 2;
+
 export type AiLevel = "low" | "medium" | "high";
 
 /** One AI-shape rule's run on the document: how many findings it made, or why it did not run. */
@@ -42,6 +48,9 @@ export type SignalPlace = SignalRun & {
 
 /** One structure measure against human articles. sameAs: the rule that reads the same shape, when that rule already counts it. */
 export type StructurePlace = Placement & { readonly sameAs: string | undefined };
+
+/** The composite's signals that fired in the document, and whether enough fired together to count as one more sign. */
+export type Together = { readonly fired: readonly string[]; readonly counted: boolean };
 
 export type NotScored =
   | { readonly reason: "too-short"; readonly length: number; readonly minimum: number; readonly unit: LengthUnit }
@@ -59,6 +68,7 @@ export type AiScore = {
   readonly signals: readonly SignalPlace[];
   /** The structure measures against human articles, or undefined where they are not compared for the genre. */
   readonly structure: readonly StructurePlace[] | undefined;
+  readonly together: Together;
 };
 
 /** What the score is computed from. structure: undefined where the structure baseline does not apply to the genre. */
@@ -70,6 +80,8 @@ export type ScoreInput = {
   readonly signals: readonly SignalRun[];
   readonly shares: HumanShares;
   readonly structure: StructureScore | undefined;
+  /** The ids of ai-generated-composite's signals that fired, at the levels the human shares were measured at. */
+  readonly compositeFired: readonly string[];
 };
 
 export const levelOf = (signs: number): AiLevel => {
@@ -106,16 +118,25 @@ export const aiScoreOf = (input: ScoreInput): AiScore => {
   const signals = input.signals.map((run) => placeSignal(run, input.shares, input.group));
   const placements = input.structure?.placements.map((placement) => placeStructure(placement, signals));
   const measures = placements ?? [];
-  const signs = signals.filter((signal) => signal.unusual).length + measures.filter((place) => place.beyond && place.sameAs === undefined).length;
+  const together = { fired: input.compositeFired, counted: input.compositeFired.length >= TOGETHER_SIGNALS };
+  const signs =
+    signals.filter((signal) => signal.unusual).length +
+    measures.filter((place) => place.beyond && place.sameAs === undefined).length +
+    (together.counted ? 1 : 0);
   const compared =
     signals.filter((signal) => signal.human !== undefined).length +
     measures.filter((place) => place.pastShare !== undefined && !comparedTwice(place, signals)).length;
   const notScored = notScoredOf(input, compared);
-  return { group: input.group, level: notScored === undefined ? levelOf(signs) : undefined, notScored, signs, compared, signals, structure: placements };
+  const level = notScored === undefined ? levelOf(signs) : undefined;
+  return { group: input.group, level, notScored, signs, compared, signals, structure: placements, together };
 };
 
-/** The signs that counted, for one line: rule ids, and structure measures as structure:<id>. */
+/** How the together sign shows in one line: the composite's id at the level whose count it uses. */
+export const TOGETHER_SIGN = "ai-generated-composite:strict";
+
+/** The signs that counted, for one line: rule ids, structure measures as structure:<id>, and TOGETHER_SIGN. */
 export const shownSignsOf = (score: AiScore): string[] => [
   ...score.signals.filter((signal) => signal.unusual).map((signal) => signal.rule),
   ...(score.structure ?? []).filter((place) => place.beyond && place.sameAs === undefined).map((place) => `structure:${place.feature.id}`),
+  ...(score.together.counted ? [TOGETHER_SIGN] : []),
 ];

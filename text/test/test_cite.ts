@@ -213,17 +213,73 @@ describe("parseCitations", () => {
   });
 });
 
+describe("parseCitations and a missing address", () => {
+  const cases: readonly (readonly [string, string, boolean])[] = [
+    ["no address", '[{"quote":"x"}]', true],
+    ["an empty address", '[{"address":"","quote":"x"}]', true],
+    ["an address of null", '[{"address":null,"quote":"x"}]', false],
+    ["neither an address nor a quote", '[{"address":"","quote":""}]', false],
+    ["no address and a blank quote", '[{"quote":" \\n"}]', false],
+    ["an address and an empty quote", '[{"address":"3","quote":""}]', true],
+  ];
+  cases.forEach(([name, text, ok]) => {
+    it(name, () => assert.equal("citations" in parseCitations(text), ok));
+  });
+
+  it("reads a missing address as empty", () => {
+    assert.deepEqual(parseCitations('[{"quote":"x"}]'), { citations: [{ address: "", quote: "x" }] });
+  });
+
+  it("names the entry that is empty", () => {
+    assert.deepEqual(parseCitations('[{"quote":"x"},{"quote":""}]', "en"), {
+      error: "Entry 2 has neither an address nor a quote, so there is nothing to check",
+    });
+  });
+});
+
+describe("a citation with no address is looked for anywhere in the source", () => {
+  type Found = readonly [string, string | undefined, number | undefined];
+  const located = (source: string, citations: readonly Citation[], markdown = false): Found[] => {
+    if (ja.structure === undefined) throw new Error("no structure");
+    const tree = buildStructure({ path: "c", source, language: "ja", markdown }, ja.structure);
+    return checkCitations(source, tree, citations).map((result) => [result.status, result.foundAt, result.line]);
+  };
+
+  it("matches, with the innermost address and the line it is on", () => {
+    assert.deepEqual(located(CONTRACT, [{ address: "", quote: "年3%の遅延損害金" }]), [["ok", "2.2", 5]]);
+  });
+
+  it("a blank address is the same as none", () => {
+    assert.deepEqual(located(CONTRACT, [{ address: "  ", quote: "本件業務を委託する" }]), [["ok", "1", 2]]);
+  });
+
+  it("a source with no addresses still gives the line", () => {
+    const article = lines("ブログの本文です。", "", "設計の本には「変更は小さく、頻繁に」と書いてある。");
+    assert.deepEqual(located(article, [{ address: "", quote: "変更は小さく、頻繁に" }], true), [["ok", undefined, 3]]);
+  });
+
+  it("is not found when the words are not there", () => {
+    assert.deepEqual(located(CONTRACT, [{ address: "", quote: "検収後60日以内" }]), [["quote-not-found", undefined, undefined]]);
+  });
+
+  it("an empty quote with no address is not a match: it names nothing", () => {
+    assert.deepEqual(located(CONTRACT, [{ address: "", quote: " \n" }]), [["missing-address", undefined, undefined]]);
+  });
+});
+
 describe("chaff cite exits 1 when any citation is off", () => {
   const ROOT = fileURLToPath(new URL("./fixtures/structure/ja/contract.txt", import.meta.url));
   const dir = mkdtempSync(join(tmpdir(), "chaff-cite-"));
   const flag = (argv: readonly string[], name: string): string | undefined => (argv.includes(name) ? argv[argv.indexOf(name) + 1] : undefined);
   const context = { config: { ...EMPTY, language: "ja", baseDir: dir }, flag };
+  const printed: string[] = [];
   const run = async (citations: string): Promise<number> => {
     const path = join(dir, "claims.json");
     writeFileSync(path, citations);
+    printed.length = 0;
     const silent = { log: console.log, error: console.error };
-    console.log = () => undefined;
-    console.error = () => undefined;
+    console.log = (text: string) => printed.push(text);
+    console.error = (text: string) => printed.push(text);
     try {
       return await runCite([ROOT, path], ["cite", ROOT, path], context);
     } finally {
@@ -231,6 +287,16 @@ describe("chaff cite exits 1 when any citation is off", () => {
       console.error = silent.error;
     }
   };
+
+  it("a quote with no address says where it was found", async () => {
+    assert.equal(await run('[{"quote":"前項の委託料を支払わなければならない"}]'), 0);
+    assert.match(printed.join("\n"), /^✓ （番地なし）「前項の委託料を支払わなければならない」: 一致（4\.2、\d+ 行目）$/u);
+  });
+
+  it("a quote with no address that is not there", async () => {
+    assert.equal(await run('[{"quote":"前項の委託料を支払うものとする"}]'), 1);
+    assert.equal(printed.join("\n"), "✗ （番地なし）「前項の委託料を支払うものとする」: 引用文が原文のどこにもありません");
+  });
 
   it("0 when every citation holds", async () => {
     assert.equal(await run('[{"address":"4.2","quote":"前項の委託料を支払わなければならない"}]'), 0);

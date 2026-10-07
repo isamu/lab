@@ -263,6 +263,16 @@ $ npx chaffjs cite contract.txt claims.json
 If any quotation fails, the run ends with exit code `1`,
 so an answer's quotations can be checked like a unit test.
 
+When you do not know where a quotation is, leave `address` out or empty.
+It matches if the words are anywhere in the source, and you are told the address and line where they are.
+This also works for a source with no addresses, such as an article without headings.
+
+<!-- chaff-screen: cite-anywhere -->
+```
+$ npx chaffjs cite contract.txt claims.json
+✓ (anywhere) "within 30 days of accepting": matches (4.2, line 19)
+```
+
 ## A quotation with no source
 
 Before `cite` can check a quotation, someone has to know where the words came from.

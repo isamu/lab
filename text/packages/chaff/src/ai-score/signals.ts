@@ -28,6 +28,9 @@ export const SAME_SHAPE: Readonly<Partial<Record<FeatureId, string>>> = {
   "three-item-lists": "rule-of-three",
 };
 
+/** The signals ai-generated-composite reads: the together sign counts how many of them fired. */
+export const compositeSignalIds = (rules: readonly RuleDefinition[]): readonly string[] => rules.find((rule) => rule.id === COMPOSITE)?.from ?? [];
+
 /** The composite's levels: the score's level boundaries are held to them (test_ai_score.ts). */
 export const compositeLevels = (rules: readonly RuleDefinition[]): LevelTable => rules.find((rule) => rule.id === COMPOSITE)?.levels ?? {};
 

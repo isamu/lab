@@ -584,7 +584,7 @@
         },
         "docs": {
           "documents": 11,
-          "fired": 4
+          "fired": 3
         },
         "legal": {
           "documents": 14,
@@ -600,7 +600,7 @@
         },
         "technical": {
           "documents": 27,
-          "fired": 3
+          "fired": 2
         }
       },
       "bench": {
