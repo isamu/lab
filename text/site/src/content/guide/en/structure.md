@@ -278,6 +278,8 @@ $ npx chaffjs cite contract.txt claims.json
 Before `cite` can check a quotation, someone has to know where the words came from.
 When a document gives words to someone ("X said …", "according to X") and names no source, there is nothing to check them against.
 `quote-without-source` points at such a quotation: in quotation marks, given to someone, in a paragraph with no link, no footnote, no numbered citation and no year in brackets.
+A block quotation (`>`) with a dash line, "— Name", at its end or right after it is given to someone too.
+A year or a link on that line ("— Name, Title (1975)") counts as its source.
 It runs in blogs, papers, manuals, legal documents, literature and speeches.
 
 ```markdown file=meetup.md
@@ -286,6 +288,12 @@ It runs in blogs, papers, manuals, legal documents, literature and speeches.
 The keynote opened with a number. Dana Reyes, who runs the on-call rotation at a payments company, said "most outages start with a change nobody reviewed".
 
 The second talk was about rollbacks. Its slides are at https://example.com/rollbacks, and its claim, "a rollback you have never run is not a rollback", is on slide 4.
+
+The closing slide quoted an old line:
+
+> A change you cannot undo is a change you have not finished.
+>
+> — Kim Lee
 ```
 
 ```
@@ -295,12 +303,43 @@ meetup.md   blog/tech · English   genre from the default
 
   3:106   info    "most outages start with a change nobody reviewed" is given to someone, but no source (a link, a footnote, a reference) is given
                   quote-without-source
+  9:3     info    "A change you cannot undo is a change you have not finished." is given to someone, but no source (a link, a footnote, a reference) is given
+                  quote-without-source
 
 {counts}
 ```
 
 The second quotation has a link in its paragraph, so it is not reported.
+The block quotation names only who said it, so it is.
 chaff does not open the link to see whether the words are there. With the source saved as a file, `cite` checks that.
+
+`cite --scaffold` writes the quotations that give no source as a quotes.json for you to fill in:
+
+```
+$ npx chaffjs cite --scaffold meetup.md
+[
+  {
+    "source": "",
+    "address": "",
+    "quote": "most outages start with a change nobody reviewed"
+  },
+  {
+    "source": "",
+    "address": "",
+    "quote": "A change you cannot undo is a change you have not finished."
+  }
+]
+```
+
+Save it, and write in each `source` the file the words come from, relative to the quotes file (`"source": "talk-transcript.md"`).
+`address` can stay empty: the words are then looked for anywhere in that file.
+When every quotation names its source, give `cite` the quotes file alone:
+
+```bash
+npx chaffjs cite quotes.json
+```
+
+Each line of the result starts with the source it checked. With a source on the command line as well, a quotation that names its own is an error, so the two are never mixed up.
 
 ## What chaff does, and what it does not
 
