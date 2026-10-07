@@ -139,12 +139,14 @@ describe("doubled-nado", () => {
   });
 
   it('English: "and etc." and its kin are reported from the first', () => {
-    assert.deepEqual(findingsOf(RULE, "Bring pens, paper and etc. to the workshop.\n"), ['"and etc" says "and so on" twice']);
+    assert.deepEqual(findingsOf(RULE, "Bring pens, paper and etc. to the workshop.\n"), ['"and etc." says "and so on" twice']);
+    assert.deepEqual(findingsOf(RULE, "We bring pens, paper and etc.\n"), ['"and etc." says "and so on" twice']);
     assert.deepEqual(findingsOf(RULE, "We cover travel, meals, etc. and so on.\n"), ['"etc. and so on" says "and so on" twice']);
   });
 
   it("English: etc. alone, and so on alone, and a word ending in etc are not", () => {
     assert.deepEqual(findingsOf(RULE, "Bring pens, paper, etc. to the workshop. We cover travel, meals and so on. The fetch and etcd logs stay.\n"), []);
+    assert.deepEqual(findingsOf(RULE, "Cars use the cash lanes and ETC lanes at the toll gate.\n"), []);
   });
 
   it("English: every lexicon phrase is found in a sentence", () => {
