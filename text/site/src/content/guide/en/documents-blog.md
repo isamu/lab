@@ -32,6 +32,7 @@ These are the main rules for this genre.
 | `title-case-consistency` | Headings that mix Title Case and sentence case | Always (info) |
 | `announced-count-mismatch` | A count announced that differs from the list below it | Always |
 | `broken-link` | A link to a heading the article does not have | Always |
+| `quote-without-source` | Words given to someone ("X said …") with no source in the paragraph | Always (info) |
 | `empty-conclusion` | A conclusion that says nothing new | When an AI reads it, with `npx chaffjs test` |
 
 What it does not do is decided too.

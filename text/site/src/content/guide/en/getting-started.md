@@ -7,6 +7,8 @@ Start by running it once on something you wrote.
 npx chaffjs article.md
 ```
 
+To try it before installing anything, paste a text into the [playground](../../playground/), which runs chaff in your browser ([Checking in a browser](./browser)).
+
 ## Pick the kind of document
 
 A contract's sentences run longer than a blog's, a poem repeats its words, and a transcript keeps what was said.
@@ -47,6 +49,9 @@ npx chaffjs genres                               list the genres and what each i
 | Records of what was said (press conferences, debates) | `speech/transcript` |
 
 What each genre leaves out, and what it adds, is on the [Genres](../../genres/) page.
+
+With the genre set, the report opens with the genre's guide: what a good document of that kind does, as questions to check the draft against.
+`--no-guide` leaves it out, and `guide:` in `chaff.yaml` changes it ([Changing the genre's guide](./configuration#changing-the-genres-guide)).
 
 With no genre set, a document is checked as a technical article (`blog/tech`).
 When it looks like another kind, the screen says so under the first line.

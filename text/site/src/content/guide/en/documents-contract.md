@@ -26,10 +26,10 @@ For this genre, these rules run with nothing added.
 | Rule | What it finds |
 | --- | --- |
 | `date-range-reversed` | A period whose end comes before its start |
-| `total-mismatch` | A total that is not the sum of the amounts above it |
+| `total-mismatch` | A total that is not the sum of its items, in a table or in a sentence |
 | `dangling-reference` | A reference to an article the document does not have |
 | `numbering-gap` | A skipped or repeated article number |
-| `date-weekday-mismatch` | A date whose weekday disagrees with the calendar |
+| `date-weekday-mismatch` | A date whose weekday disagrees with the calendar. A date without its year is read in the year that puts it within five months of the dated date before it |
 | `duplicate-definition` | The same term defined twice |
 | `dangling-figure-reference` | A figure, table or schedule the text refers to that the document does not have |
 
@@ -38,11 +38,10 @@ What it does not do is decided too.
 - It does not judge whether the terms are fair, or lawful. People read and decide that.
 - It does not say whether a clause favours one party.
 - It does not decide which of two definitions is right. It shows where the second one is.
-- It does not check the weekday of a date written without a year, since the year is unknown.
 - It does not flag passives, or sentences that open the same way. In a contract, those are the usual way of writing.
 
 How article numbers and references are read is the same as in [Internal rules and regulations](./documents-statute).
-This page looks mainly at dates and amounts.
+This page looks at dates and amounts first, then at [names, terms and deadlines](#names-terms-and-deadlines).
 
 ## Try it
 
@@ -194,6 +193,80 @@ A team changes the lines with `guide:` in `chaff.yaml` ([Changing the genre's gu
 
 Renumbering turns Article 5 into Article 4, and moves the reference to Article 9 too.
 After fixing, run chaff again to check that the references still match.
+
+## Names, terms and deadlines
+
+A contract names its parties and its terms once, then uses those names.
+A clause pasted from another template brings that template's names with it, and its deadlines may be written another way.
+These rules check the names and the deadlines.
+
+| Rule | What it finds |
+| --- | --- |
+| `party-role-name` | A party called by a role the contract never gave it ("the Vendor", where the parties are the Supplier and the Customer) |
+| `defined-name-repeated` | A party's full name used again after its short name was defined |
+| `defined-term-form` | A defined term written in another form: quoted again, or a capitalised term in lower case |
+| `vague-deadline` | "Promptly" or "without undue delay", in a contract that writes its other limits in days |
+| `duration-mismatch` | A start date and a length of time that do not reach the end date written beside them |
+| `reference-title-mismatch` | A clause referred to by a name its heading does not have |
+
+This licence was saved as `licence.md`. The companies are made up.
+
+```markdown file=licence.md
+# Software Licence Agreement
+
+This Agreement is made between Harbour Works Ltd (the "Supplier") and Kite Analytics Inc. (the "Customer").
+
+## Article 1 (Licence)
+
+The Supplier grants the Customer a licence to use its analytics software.
+
+## Article 2 (Fees)
+
+The Customer shall pay the fees within 30 days of each invoice. The Vendor shall send each invoice by email.
+
+## Article 3 (Support)
+
+Harbour Works Ltd shall answer each support request within 2 business days.
+A reported defect shall be fixed promptly.
+
+## Article 4 (Term)
+
+This Agreement runs for 12 months, from April 1, 2027 to March 31, 2029.
+
+## Article 5 (Termination)
+
+Either party may end this Agreement on 60 days' written notice, as set out in Article 2 (Notices).
+```
+
+```
+$ npx chaffjs licence.md --genre legal/contract --compact
+
+licence.md   legal/contract · English   genre from --genre
+
+  11:69   info    "Vendor" is not a name this contract gave a party (Supplier, Customer)
+                  party-role-name
+  15:1    info    "Harbour Works Ltd" was given the short name "Supplier" on line 3
+                  defined-name-repeated
+  16:34   info    "promptly" sets no deadline; a number of days makes it one that can be met or missed
+                  vague-deadline
+  20:58   warning April 1, 2027 plus 12 months ends around 2028-03-31, but the end is given as March 31, 2029
+                  duration-mismatch
+  24:90   info    Article 2 is called "Notices" here, but its heading is "(Fees)"
+                  reference-title-mismatch
+
+{counts}
+```
+
+| Line | Finding | How to fix it |
+| --- | --- | --- |
+| 11 | `party-role-name` | Write "the Supplier". If someone else sends the invoices, define them first |
+| 15 | `defined-name-repeated` | Write "The Supplier" |
+| 16 | `vague-deadline` | Write the limit in days, from a stated start: "within 10 business days of the report" |
+| 20 | `duration-mismatch` | Decide which is right, the length or the end date, and fix the other |
+| 24 | `reference-title-mismatch` | Point to the article on notices. If there is none, add it |
+
+Most of these are `info`: how to name the parties is the drafter's choice, and chaff only points at a name that differs from the rest.
+`duration-mismatch` is a `warning`, since the length and the two dates cannot all be right.
 
 ## No checks that read meaning
 

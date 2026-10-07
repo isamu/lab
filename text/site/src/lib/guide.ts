@@ -22,6 +22,7 @@ const ORDER = [
   "house-style",
   "languages",
   "ci",
+  "browser",
   "commands",
   "reference",
   "ai-sounding",
