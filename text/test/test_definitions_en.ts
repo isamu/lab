@@ -1,6 +1,9 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { definitions } from "../packages/lang-en/src/definitions.ts";
+import { readsAsExample } from "../packages/lang-en/src/example-name.ts";
+import { namedRuleRun } from "./rule-run.ts";
+import { adapter as en } from "../packages/lang-en/src/index.ts";
 
 // The English definition reader: a bracket that names a thing, and one that gives it several names. Self-written text.
 
@@ -37,5 +40,67 @@ describe("English definitions", () => {
     assert.deepEqual(read('Words such as ("always" "never") are vague.'), []);
     assert.deepEqual(read('Set mode to one of ("Read" "Write").'), []);
     assert.deepEqual(read(""), []);
+  });
+
+  it("does not read bare brackets that quote a phrase as definitions, alone or as a list", () => {
+    assert.deepEqual(read('Openers that announce ("The key point is") pile up.'), []);
+    assert.deepEqual(read('| `closing-cliche` | A stock closing ("In conclusion", "I hope this helps") |'), []);
+    assert.deepEqual(read('It points at sections ("sections 44 and 45") by number.'), []);
+  });
+
+  it("still reads a capitalised name, a one-word name and a statute's lower-case party after an article", () => {
+    assert.deepEqual(read('The data addendum ("Use of Customer Data") applies.'), ["Use of Customer Data inline bare"]);
+    assert.deepEqual(read('Harbour Ltd ("Seller") sells.'), ["Seller inline bare"]);
+    assert.deepEqual(read("the period of twelve months (“the annual period”) starts."), ["the annual period inline bare"]);
+    assert.deepEqual(read('The client ("Example 4") is shown.'), ["Example 4 inline bare"]);
+  });
+});
+
+describe("readsAsExample", () => {
+  it("several words with a lower-case word a name would capitalise", () => {
+    assert.deepEqual(["The key point is", "I hope this helps", "silently fails", "Here's the thing", "virtual projects"].map(readsAsExample), [
+      true,
+      true,
+      true,
+      true,
+      true,
+    ]);
+  });
+
+  it("one word, a capitalised name with its small words, or an article in lower case before a party", () => {
+    assert.deepEqual(
+      [
+        "Seller",
+        "seller",
+        "Terms of Use",
+        "Proprietary Information Agreement",
+        "the seller",
+        "a sub-processor",
+        "Fetch API",
+        "iOS App",
+        "2019 Regulations",
+        "",
+      ].map(readsAsExample),
+      [false, false, false, false, false, false, false, false, false, false],
+    );
+  });
+});
+
+describe("duplicate-definition over quoted examples", () => {
+  const duplicates = (source: string): readonly string[] => namedRuleRun("duplicate-definition", source, en).findings;
+
+  it("the same example quoted in two table rows is not a term defined twice", () => {
+    const table = [
+      "| Rule | What it finds |",
+      "| --- | --- |",
+      '| `assistant-residue` | What is left of a chat reply ("I hope this helps", "As of my last knowledge update") |',
+      '| `closing-cliche` | A stock closing ("In conclusion", "I hope this helps") |',
+      "",
+    ].join("\n");
+    assert.deepEqual(duplicates(table), []);
+  });
+
+  it("a name defined twice is still reported", () => {
+    assert.deepEqual(duplicates('Harbour Ltd ("Seller") sells.\n\nHill Ltd ("Seller") also sells.\n'), ['"Seller" is also defined on line 1']);
   });
 });

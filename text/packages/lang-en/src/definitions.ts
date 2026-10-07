@@ -1,5 +1,6 @@
 import type { Mention } from "chaffjs/plugin";
 import { CHAPTER_DEPTH, PART_DEPTH } from "./depth.ts";
+import { readsAsExample } from "./example-name.ts";
 
 // Definitions in English documents, and how far a definition holds.
 
@@ -69,9 +70,12 @@ const namesInList = (inside: string): QuotedName[] => {
 const nameListDefinitions = (text: string): Mention[] =>
   [...text.matchAll(BRACKET)].flatMap((match) => {
     const inside = match.groups?.["inside"] ?? "";
-    const bare = BARE.test(match[0]) ? { form: "bare" } : {};
+    const isBare = BARE.test(match[0]);
+    const bare = isBare ? { form: "bare" } : {};
     const scope = APPLIES.test(text) ? { scope: "local" } : {};
-    return namesInList(inside).map((name, index) => {
+    const names = namesInList(inside);
+    if (isBare && readsAsExample(names[0]?.term ?? "")) return [];
+    return names.map((name, index) => {
       const start = index === 0 ? match.index : match.index + 1 + name.start;
       const end = index === 0 ? match.index + match[0].length : match.index + 1 + name.end;
       return { start, end, attrs: { term: name.term, ...scope, ...(index === 0 ? { placement: "inline" } : {}), ...bare } };
@@ -82,12 +86,13 @@ const patternDefinitions = (text: string): Mention[] =>
   DEFINITIONS.flatMap((pattern) =>
     [...text.matchAll(pattern)].flatMap((match) => {
       const term = match.groups?.["term"];
-      if (term === undefined) return [];
+      const isBare = BARE.test(match[0]);
+      if (term === undefined || (isBare && readsAsExample(term))) return [];
       const end = match.index + match[0].length;
       const inline = match[0].startsWith("(");
       const namesAParty = inline && APPLIES.test(text);
       const scope = isPointer(text, end) || namesAParty ? { scope: "local" } : {};
-      const bare = BARE.test(match[0]) ? { form: "bare" } : {};
+      const bare = isBare ? { form: "bare" } : {};
       return [{ start: match.index, end, attrs: { term, ...scope, ...(inline ? { placement: "inline" } : {}), ...bare } }];
     }),
   );
