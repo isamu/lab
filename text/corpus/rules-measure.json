@@ -7437,6 +7437,22 @@
         "cleanSamples": 12
       }
     },
+    "ui-label-variant": {
+      "groups": {
+        "blog": {
+          "documents": 23,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 21,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 49,
+          "fired": 1
+        }
+      }
+    },
     "unbalanced-bracket": {
       "groups": {
         "academic": {
