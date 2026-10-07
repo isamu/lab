@@ -6,6 +6,7 @@ import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
+import { numberWordCounts } from "../packages/chaff/src/derived/number-word-counts.ts";
 
 // 始まり + 期間 ≠ 終わり（duration-mismatch）と、起点の年から数えた年数（elapsed-years-mismatch）。
 
@@ -115,6 +116,19 @@ describe("elapsed-years-mismatch", () => {
     assert.deepEqual(elapsedEn("Acme was founded in 2015.", "", "We mark 11 years since its founding."), []);
   });
 
+  it("a count of years written as a word", () => {
+    assert.deepEqual(elapsedEn("Acme was founded in 2010.", "", "Twelve years since its founding, we have 25 people."), ["Twelve years/16"]);
+    assert.deepEqual(elapsedEn("In the twelve years since our founding in 2016, the team has grown."), ["twelve years/10"]);
+    assert.deepEqual(elapsedEn("In the ten years since our founding in 2016, the team has grown."), []);
+  });
+
+  it("a number word that is an age, or not attached to the origin word, is not a count since founding", () => {
+    assert.deepEqual(elapsedEn("Jane Doe, born in 1980, is ten years old."), []);
+    assert.deepEqual(elapsedEn("Acme was founded in 2014.", "", "Ten years old machines are still in use since its founding."), []);
+    assert.deepEqual(elapsedEn("Acme was founded in 2014.", "", "For ten years we waited."), []);
+    assert.deepEqual(elapsedEn("Acme was founded in 2005.", "", "We mark twenty-one years since its founding."), []);
+  });
+
   it("a document with no date of its own is not checked", () => {
     const source = ["# 会社案内", "", "当社は2015年に創業し、今年で創業5年を迎えます。"].join("\n");
     assert.deepEqual(run("elapsed-years-mismatch", source, ja, "ja"), []);
@@ -122,5 +136,28 @@ describe("elapsed-years-mismatch", () => {
 
   it("the document's own date is not the founding year", () => {
     assert.deepEqual(elapsedJa("2026年4月1日現在、創業5年です。"), []);
+  });
+});
+
+describe("numberWordCounts: a count written as a word before its unit", () => {
+  const WORDS = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"];
+  const UNITS = ["year", "years"];
+  const counts = (source: string, words: readonly string[] = WORDS, units: readonly string[] = UNITS): string[] =>
+    numberWordCounts(source, words, units).map((count) => `${source.slice(count.start, count.end)}=${String(count.amount)}`);
+
+  it("reads the word's position as its number, in any case", () => {
+    assert.deepEqual(counts("Twelve years on, one year later, ELEVEN YEARS"), ["Twelve years=12", "one year=1", "ELEVEN YEARS=11"]);
+  });
+
+  it("needs the word to stand alone and the unit right after it", () => {
+    assert.deepEqual(counts("fortyten years, tenyears, ten yearsago, ten long years, ten"), []);
+    assert.deepEqual(counts("二十年と十年", ["十"], ["年"]), []);
+    assert.deepEqual(counts("twenty-one years, thirty–two years"), []);
+  });
+
+  it("reads nothing without number words or units", () => {
+    assert.deepEqual(counts("ten years", [], UNITS), []);
+    assert.deepEqual(counts("ten years", WORDS, []), []);
+    assert.deepEqual(counts(""), []);
   });
 });

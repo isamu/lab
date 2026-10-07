@@ -163,8 +163,8 @@
           "kind": "elapsed-years",
           "rule": "elapsed-years-mismatch",
           "line": 41,
-          "clean": "Ten years after the founding",
-          "planted": "Twelve years after the founding"
+          "clean": "In the ten years since our founding",
+          "planted": "In the twelve years since our founding"
         },
         {
           "kind": "change-rate",
