@@ -7241,7 +7241,7 @@
         },
         "docs": {
           "documents": 21,
-          "fired": 5
+          "fired": 3
         },
         "legal": {
           "documents": 28,
@@ -7257,7 +7257,7 @@
         },
         "technical": {
           "documents": 45,
-          "fired": 3
+          "fired": 1
         }
       }
     },
