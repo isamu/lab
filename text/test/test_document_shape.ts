@@ -192,6 +192,13 @@ describe("title-length: a title or heading too long to scan", () => {
     assert.ok(result.skipped.some((entry) => entry.rule === "title-length"));
   });
 
+  it("does not report a heading that asks a question", () => {
+    assert.equal(fired(en, `# Title\n\nText.\n\n${LONG_EN}?\n\nText.\n`, "title-length"), 0);
+    assert.equal(fired(ja, `# 題\n\n本文です。\n\n${LONG_JA}知っておくべきことは何ですか？\n\n本文です。\n`, "title-length"), 0);
+    assert.equal(fired(en, `# Title\n\nText.\n\n${LONG_EN} ("what changes?")\n\nText.\n`, "title-length"), 0);
+    assert.equal(fired(en, `# Title\n\nText.\n\n${LONG_EN} (why?) and how\n\nText.\n`, "title-length"), 1);
+  });
+
   it("does not report a short heading", () => assert.equal(fired(ja, "# 在庫システム\n\n## 移行の手順\n\n本文です。\n", "title-length"), 0));
 
   it("does not count a number label at the head", () =>

@@ -1,0 +1,16 @@
+# 注意書きの文を、読み手のすることを言う文にする文末（「書き出してください」「電源を切らないこと」）。文の終わりで比べる。
+# 「ことがあります」のような途中の「こと」は見ない。
+id: warning-action
+language: ja
+entries:
+  - pattern: ください
+  - pattern: 下さい
+  - pattern: お願いします
+  - pattern: ましょう
+  - pattern: こと
+  - pattern: いけません
+  - pattern: なりません
+  - pattern: 必要があります
+  - pattern: 必要です
+  - pattern: 禁止です
+  - pattern: おすすめします

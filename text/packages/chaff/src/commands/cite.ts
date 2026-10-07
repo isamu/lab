@@ -2,12 +2,13 @@ import { dirname, isAbsolute, join } from "node:path";
 import { checkCitations, isAnywhere, type CitationResult } from "../structure/cite.ts";
 import { bySource, parseCitations, sourceOf, sourceProblem, type Claim } from "./cite-claims.ts";
 import { runScaffold } from "./cite-scaffold.ts";
+import { isWebSource, readPageTree, type CiteContext } from "./cite-page.ts";
 import { readSource, readTree, type TreeContext } from "./tree.ts";
 import type { Texts } from "../ui.ts";
 
 const FORMATS: ReadonlySet<string> = new Set(["text", "json"]);
 const QUOTE_WIDTH = 40;
-const VALUED: ReadonlySet<string> = new Set(["--format", "--language", "--genre"]);
+const VALUED: ReadonlySet<string> = new Set(["--format", "--language", "--genre", "--url"]);
 
 export const citeTargets = (argv: readonly string[]): string[] =>
   argv.slice(1).filter((arg, index, all) => !arg.startsWith("--") && !VALUED.has(all[index - 1] ?? ""));
@@ -26,7 +27,8 @@ const TEXT: Texts<CiteText> = {
     quoted: (text) => `「${text}」`,
     usage: [
       "使い方: chaff cite <原文> <引用.json> [--format text|json] [--language ja|en|…]",
-      "        chaff cite <引用.json>            （引用ごとに source で原文を書いたとき）",
+      "        chaff cite --url <URL> <引用.json> （原文が Web のページのとき）",
+      "        chaff cite <引用.json>            （引用ごとに source で原文のファイルか URL を書いたとき）",
       "        chaff cite --scaffold <文書>      （出典の無い引用から引用.json のひな形を作る）",
     ].join("\n"),
     anywhere: "（番地なし）",
@@ -44,7 +46,8 @@ const TEXT: Texts<CiteText> = {
     quoted: (text) => ` "${text}"`,
     usage: [
       "usage: chaff cite <source> <quotes.json> [--format text|json] [--language ja|en|…]",
-      "       chaff cite <quotes.json>             (each quotation names its source)",
+      "       chaff cite --url <URL> <quotes.json> (the source is a web page)",
+      "       chaff cite <quotes.json>             (each quotation names its source, a file or a URL)",
       "       chaff cite --scaffold <document>     (a quotes.json to fill in, from the quotations with no source)",
     ].join("\n"),
     anywhere: "(anywhere)",
@@ -80,14 +83,20 @@ const describe = (result: CitationResult, text: CiteText): string => {
   return `${mark} ${sourcePrefix(result)}${address}${text.quoted(quote)}: ${text.results[result.status](result)}${whereFound(result, text)}`;
 };
 
-/** Each claim checked against one source file. undefined when the file cannot be read as a tree (already said why). */
-const checkAgainst = async (path: string, claims: readonly Claim[], argv: readonly string[], context: TreeContext): Promise<CitationResult[] | undefined> => {
-  const read = await readTree(path, argv, context);
+/** Each claim checked against one source, a file or a web page. undefined when it cannot be read as a tree (already said why). */
+const checkAgainst = async (
+  location: string,
+  claims: readonly Claim[],
+  argv: readonly string[],
+  context: CiteContext,
+): Promise<CitationResult[] | undefined> => {
+  const read = isWebSource(location) ? await readPageTree(location, argv, context) : await readTree(location, argv, context);
   return read === undefined ? undefined : checkCitations(read.source, read.tree, claims);
 };
 
-/** A claim's source, read from where the claims file is: a scaffold sits next to the document that quotes. */
+/** A claim's source, read from where the claims file is: a scaffold sits next to the document that quotes. A URL is a URL. */
 const sourcePath = (claimsPath: string, source: string): string => {
+  if (isWebSource(source)) return source;
   // A claims file written on Windows says sources\talk.md; it names the same file everywhere.
   const portable = source.replaceAll("\\", "/");
   return isAbsolute(portable) ? portable : join(dirname(claimsPath), portable);
@@ -101,7 +110,7 @@ const checkEachSource = async (
   claimsPath: string,
   claims: readonly Claim[],
   argv: readonly string[],
-  context: TreeContext,
+  context: CiteContext,
 ): Promise<CitationResult[] | undefined> => {
   const groups = bySource(claims);
   const checked = await groups.reduce<Promise<(CitationResult[] | undefined)[]>>(async (previous, group) => {
@@ -133,19 +142,31 @@ const usageError = (text: CiteText): number => {
   return 1;
 };
 
+/** The claims file, and the one source the command line gives (a file, or a page after --url), if any. */
+type Run = { readonly claimsPath: string; readonly sourceGiven: string | undefined };
+
+/** What the arguments ask to check, or undefined when they do not fit any usage. */
+const runOf = (targets: readonly string[], argv: readonly string[], context: CiteContext): Run | undefined => {
+  const url = context.flag(argv, "--url");
+  if (argv.includes("--url") && (url === undefined || !isWebSource(url))) return undefined;
+  const claimsPath = targets.at(-1);
+  if (claimsPath === undefined || targets.length > (url === undefined ? 2 : 1)) return undefined;
+  return { claimsPath, sourceGiven: url ?? (targets.length === 2 ? targets[0] : undefined) };
+};
+
 /**
  * 回答の引用が原文にあるかを確かめる。書き換えはしない。原文は引数で一つ渡すか、引用ごとに source で書く。
  * 一つでも外れていれば 1 で終わるので、AI の回答を単体試験のように検査できる。
  */
-export const runCite = async (targets: readonly string[], argv: readonly string[], context: TreeContext): Promise<number> => {
+export const runCite = async (targets: readonly string[], argv: readonly string[], context: CiteContext): Promise<number> => {
   const text = TEXT[context.ui ?? "ja"];
   const format = context.flag(argv, "--format") ?? "text";
   if (!FORMATS.has(format)) return usageError(text);
   // The scaffold is always JSON: it is a file to fill in.
-  if (argv.includes("--scaffold")) return runScaffold(targets, argv, context, text.usage);
-  const claimsPath = targets.at(-1);
-  if (claimsPath === undefined || targets.length > 2) return usageError(text);
-  const sourceGiven = targets.length === 2 ? targets[0] : undefined;
+  if (argv.includes("--scaffold")) return argv.includes("--url") ? usageError(text) : runScaffold(targets, argv, context, text.usage);
+  const run = runOf(targets, argv, context);
+  if (run === undefined) return usageError(text);
+  const { claimsPath, sourceGiven } = run;
   const claims = await readClaims(claimsPath, sourceGiven !== undefined, context);
   if (claims === undefined) return 1;
   const results = sourceGiven === undefined ? await checkEachSource(claimsPath, claims, argv, context) : await checkAgainst(sourceGiven, claims, argv, context);
