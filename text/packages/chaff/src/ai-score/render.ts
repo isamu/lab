@@ -1,7 +1,17 @@
 import type { LengthUnit, Localized } from "../plugin.ts";
 import { localized } from "../render/text.ts";
 import type { StructureText } from "../outline/structure-text.ts";
-import { HIGH_SIGNS, MEDIUM_SIGNS, shownSignsOf, type AiScore, type NotScored, type SignalPlace, type StructurePlace } from "./score.ts";
+import {
+  HIGH_SIGNS,
+  MEDIUM_SIGNS,
+  shownSignsOf,
+  TOGETHER_SIGNALS,
+  type AiScore,
+  type NotScored,
+  type SignalPlace,
+  type StructurePlace,
+  type Together,
+} from "./score.ts";
 import type { AiScoreText } from "./text.ts";
 
 /** What a rendering needs besides the score: the texts, the rules' names, and the genre group's name, in one language. */
@@ -46,7 +56,15 @@ const signalLine = (signal: SignalPlace, view: ScoreView): string => {
 const namesLine = (names: readonly string[], line: (names: string) => string, view: ScoreView): string[] =>
   names.length === 0 ? [] : [`  ${line(names.join(view.text.listSeparator))}`];
 
-const signalLines = (signals: readonly SignalPlace[], view: ScoreView): string[] => {
+const COMPOSITE = "ai-generated-composite";
+
+const togetherLines = (together: Together, view: ScoreView): string[] => {
+  if (!together.counted) return [];
+  const names = together.fired.map((rule) => nameOf(rule, view)).join(view.text.listSeparator);
+  return [`  ${view.text.together(nameOf(COMPOSITE, view), names, together.fired.length, TOGETHER_SIGNALS)}`];
+};
+
+const signalLines = (signals: readonly SignalPlace[], together: Together, view: ScoreView): string[] => {
   const compared = signals.filter((signal) => signal.human !== undefined);
   const shown = compared.filter((signal) => signal.count > 0);
   const quiet = compared.length - shown.length;
@@ -55,6 +73,7 @@ const signalLines = (signals: readonly SignalPlace[], view: ScoreView): string[]
   return [
     view.text.signalsHeading,
     ...shown.map((signal) => `  ${signalLine(signal, view)}`),
+    ...togetherLines(together, view),
     ...(quiet > 0 ? [`  ${view.text.quiet(quiet)}`] : []),
     ...namesLine(unshared, view.text.noHumanShare, view),
     ...namesLine(notRun, view.text.notRun, view),
@@ -85,7 +104,7 @@ export const renderAiScoreFriendly = (path: string, score: AiScore, view: ScoreV
     `  ${view.text.signs(score.signs, score.compared, MEDIUM_SIGNS, HIGH_SIGNS)}`,
     `  ${view.text.disclaimer}`,
     "",
-    ...signalLines(score.signals, view),
+    ...signalLines(score.signals, score.together, view),
     "",
     ...structureBlock(score, view),
   ];
@@ -104,7 +123,7 @@ export const aiScoreJson = (score: AiScore): Readonly<Record<string, unknown>> =
   group: score.group,
   signs: score.signs,
   compared: score.compared,
-  thresholds: { medium: MEDIUM_SIGNS, high: HIGH_SIGNS },
+  thresholds: { medium: MEDIUM_SIGNS, high: HIGH_SIGNS, together: TOGETHER_SIGNALS },
   signals: score.signals.map((signal) => ({
     rule: signal.rule,
     count: signal.count,
@@ -121,4 +140,5 @@ export const aiScoreJson = (score: AiScore): Readonly<Record<string, unknown>> =
       beyond: place.beyond,
       sameAs: place.sameAs ?? null,
     })) ?? null,
+  together: { fired: score.together.fired, counted: score.together.counted },
 });

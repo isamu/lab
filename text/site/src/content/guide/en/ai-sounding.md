@@ -157,6 +157,7 @@ Phrases people already wrote as often before (解像度を上げる, 腹落ち) 
 - The signs are the findings of the rules above and the structure measures of `chaff outline`. Only those that 90% of human documents do not show count.
 - The human documents are the corpus's human documents, by genre group (blog, technical, business and so on), and technical articles written before generative AI. Both are numbers shipped with chaff.
 - Three signs make "medium" and five make "high": the number `ai-generated-composite` reports at, and its relaxed level.
+- Two or more of the rules `ai-generated-composite` reads showing in one document (its strict level) count as one more sign. No human document in the corpus shows two of them together; `yarn ai-score:corpus --all` counts them.
 - A structure measure and the rule that reads the same shape (section length variation and `section-length-uniformity`, for one) count once when both show.
 - A document that is too short (under 500 characters in Japanese, 200 words in English), or in a genre without enough human documents (academic, speech), gets no level and the reason instead.
 - A plain `npx chaffjs <file>` also ends its report with the level on one line, and `chaff grade` puts `aiScore` in each output's result ([Using chaff for AI evals](./ai-evals)).

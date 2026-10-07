@@ -371,14 +371,15 @@ The quick AI-likeness score (`ai-score`) compares the article before and after.
 ```text
 $ npx chaffjs ai-score ai.md rewritten.md --genre blog/tech
 ai.md
-AI-likeness: medium (somewhat more signs than human-written documents (Blog))
-  4 signs (of 26 compared, ones 90% of human documents do not show); medium from 3, high from 5
+AI-likeness: high (more signs than human-written documents (Blog))
+  5 signs (of 26 compared, ones 90% of human documents do not show); medium from 3, high from 5
   Not a verdict on whether AI wrote it: how many signs common in generated text show, compared with human documents.
 
 Wording and shape
   ✗ Too many sentences that announce before they say: 3  in 0 of 23 human-written documents (Blog)
   ✗ Cliched closing: 1  in 0 of 23 human-written documents (Blog)
   ✗ Too many contrast frames: 2  in 0 of 23 human-written documents (Blog)
+  ✗ Several signals of generated text together: 3 of its signals (Cliched closing, Too many contrast frames, Too many sentences that announce before they say); from 2, its strict level, that is one more sign
   · the other 15 did not show
 
 Structure (against human articles)
