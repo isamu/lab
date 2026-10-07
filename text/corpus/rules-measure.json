@@ -6483,37 +6483,37 @@
     "sentence-initial-conjunction-run": {
       "groups": {
         "academic": {
-          "documents": 5,
+          "documents": 10,
           "fired": 0
         },
         "blog": {
-          "documents": 9,
-          "fired": 0
+          "documents": 23,
+          "fired": 1
         },
         "business": {
-          "documents": 41,
+          "documents": 80,
           "fired": 0
         },
         "docs": {
-          "documents": 11,
+          "documents": 21,
           "fired": 0
         },
         "legal": {
-          "documents": 14,
+          "documents": 35,
           "fired": 1
         },
         "literature": {
-          "documents": 9,
+          "documents": 13,
           "fired": 4
         },
         "speech": {
-          "documents": 3,
-          "fired": 1
+          "documents": 7,
+          "fired": 2
         }
       },
       "bench": {
-        "planted": 1,
-        "found": 1,
+        "planted": 4,
+        "found": 4,
         "falseAlarms": 0
       }
     },

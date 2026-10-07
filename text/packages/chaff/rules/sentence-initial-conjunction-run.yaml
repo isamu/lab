@@ -3,7 +3,8 @@ layer: L3
 status: stable
 how_to_find: conjunction-run
 word_list: sentence-opener
-languages: [en]
+languages: [ja, en]
+uses: [pos]
 severity: info
 
 name:
@@ -11,8 +12,8 @@ name:
   en: Run of sentences opening with a conjunction
 
 why:
-  ja: 接続詞で始まる文は 1 つなら効きますが、続くとどの文も前の文の付け足しに見えて、何が主張なのかが分からなくなります。
-  en: One sentence opening with "And" or "But" lands. A run of them makes every sentence read as an afterthought.
+  ja: 「そして」「しかし」「また」（英語の And、But）で始まる文は 1 つなら効きますが、続くとどの文も前の文の付け足しに見えて、何が主張なのかが分からなくなります。語の一覧は言語ごとの語彙表にあります。
+  en: One sentence opening with "And" or "But" (そして, しかし) lands. A run of them makes every sentence read as an afterthought. The words are listed in the lexicon.
 
 message:
   ja: 接続詞で始まる文が {count} 文続いています（{limit} 文まで）
@@ -32,9 +33,14 @@ off_for:
 
 group: readability
 summary:
-  ja: 英語で、And や But で始まる文が続く所
-  en: A run of sentences that open with "And", "But" or "So"
+  ja: 「そして」「しかし」（And、But）で始まる文が続く所
+  en: A run of sentences that open with "And", "But" or "So" (そして, しかし)
 example:
+  ja:
+    before: |
+      月曜に更新を出しました。しかし、ログイン画面が壊れました。そして、直すのに二日かかりました。また、その間は一部の人が入れませんでした。
+    after: |
+      月曜に出した更新で、ログイン画面が壊れました。直すのに二日かかり、その間は一部の人が入れませんでした。
   en:
     before: |
       We shipped the update on Monday. But the login page broke. And the fix took two days. So some customers could not sign in.
@@ -42,8 +48,8 @@ example:
       We shipped the update on Monday, and the login page broke. The fix took two days, during which some customers could not sign in.
 
 not_flagged:
-  ja: And や But で始まる文が一つだけなら指しません。
-  en: One sentence opening with "And" or "But" is not reported.
+  ja: 接続詞で始まる文が一つだけなら指しません。日本語では、話し言葉の文頭（でも、だから、なので）は colloquial-opener が、「さらに」「加えて」は stock-transition が見るので数えません。
+  en: One sentence opening with "And" or "But" is not reported. In Japanese, spoken openers (でも, だから, なので) are colloquial-opener's and さらに, 加えて are stock-transition's, so they are not counted.
 level_meaning:
   ja: 接続詞で始まる文の連続 {limit} 文まで
   en: up to {limit} sentences in a row opening with a conjunction
