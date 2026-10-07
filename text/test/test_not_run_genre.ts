@@ -51,7 +51,7 @@ describe("rules use_for keeps out of the genre", () => {
   });
 
   it("a rule for another language says so first: no genre would run it on this document", () => {
-    assert.equal(whyOf(runJa("technical/readme"), "sentence-initial-conjunction-run"), REASONS.ja.otherLanguage("ja"));
+    assert.equal(whyOf(runJa("technical/readme"), "expletive-construction"), REASONS.ja.otherLanguage("ja"));
   });
 
   it("a rule the genre covers is not listed for the genre", () => {

@@ -1,6 +1,6 @@
 // Seeded mistakes of stock phrasing for `yarn bench`, in either language: a preamble before the first heading, a
 // clichéd closing, a padded opening, an empty intensifier, hedges stacked in one sentence, a chat reply's knowledge-cutoff line, a template
-// blank left unfilled, one paragraph opener repeated, sentences chained with "And",
+// blank left unfilled, one paragraph opener repeated, sentences chained with "And" (そして),
 // a spelling the team does not use, and a pet phrase used in paragraph after paragraph. Pure and deterministic, like scripts/bench-mutations.ts.
 import {
   isJapanese,
@@ -217,18 +217,19 @@ export const repeatOpener = (source: string, context: PlantContext): Plant | und
 
 // --- sentence-initial-conjunction-run ---
 
-const CHAIN = "And ";
+const CHAIN = { ja: "そして、", en: "And " };
 
-/** 段落の二文目から、上限より一つ多い文を "And" で始める。どの文も足せる語で始まる段落だけ。 */
+/** 段落の二文目から、上限より一つ多い文を接続詞（And、そして）で始める。どの文も足せる語で始まる段落だけ。 */
 const chainLine = (line: string, count: number): string | undefined => {
   const [first, ...rest] = splitSentences(line);
-  const chained = rest.slice(0, count).map((sentence) => prefixed(CHAIN, sentence));
+  const chain = isJapanese(line) ? CHAIN.ja : CHAIN.en;
+  const chained = rest.slice(0, count).map((sentence) => prefixed(chain, sentence));
   if (first === undefined || chained.length < count || chained.some((sentence) => sentence === undefined)) return undefined;
   return joinSentences([first, ...chained.flatMap((sentence) => sentence ?? []), ...rest.slice(count)]);
 };
 
-/** 文を "And" でつなぎ続ける。上限より一つ多い文を続けて "And" で始める。 */
-export const chainWithAnd = (source: string, context: PlantContext): Plant | undefined => {
+/** 文を接続詞でつなぎ続ける。上限より一つ多い文を続けて "And"（日本語は「そして、」）で始める。 */
+export const chainWithConjunction = (source: string, context: PlantContext): Plant | undefined => {
   const limit = context.limits["sentence-initial-conjunction-run"];
   if (limit === undefined) return undefined;
   return rewriteFirst(
@@ -313,7 +314,8 @@ export const PHRASING_MUTATIONS: readonly Mutation[] = [
   { id: "blank-left", rule: "unfilled-placeholder", languages: ["ja", "en"], plant: leaveBlank },
   { id: "chat-link-pasted", rule: "chat-citation-residue", languages: ["ja", "en"], plant: pasteChatLink },
   { id: "opener-repeated", rule: "repeated-conjunction", languages: ["ja", "en"], plant: repeatOpener },
-  { id: "and-chained", rule: "sentence-initial-conjunction-run", languages: ["en"], plant: chainWithAnd },
+  { id: "and-chained", rule: "sentence-initial-conjunction-run", languages: ["en"], plant: chainWithConjunction },
+  { id: "soshite-chained", rule: "sentence-initial-conjunction-run", languages: ["ja"], plant: chainWithConjunction },
   { id: "spelling-avoided", rule: "preferred-term", languages: ["ja", "en"], plant: avoidedSpelling },
   { id: "pet-phrase", rule: "ngram-repetition", languages: ["ja", "en"], plant: repeatPetPhrase },
 ];
