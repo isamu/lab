@@ -84,8 +84,8 @@
           "kind": "default-two-ways",
           "rule": "default-value-mismatch",
           "line": 19,
-          "clean": "最大 72 文字",
-          "planted": "最大 80 文字"
+          "clean": "`width` の既定値は 72 文字",
+          "planted": "`width` の既定値は 80 文字"
         },
         {
           "kind": "deprecated-in-example",
@@ -97,14 +97,14 @@
         {
           "kind": "broken-anchor",
           "rule": "broken-link",
-          "line": 29,
+          "line": 34,
           "clean": "[変更履歴](#変更履歴)",
           "planted": "[変更履歴](#更新履歴)"
         },
         {
           "kind": "changelog-date-order",
           "rule": "date-order",
-          "line": 38,
+          "line": 43,
           "clean": "3.1.0（2026-06-02）",
           "planted": "3.1.0（2026-10-02）"
         }
@@ -223,8 +223,8 @@
           "kind": "default-two-ways",
           "rule": "default-value-mismatch",
           "line": 19,
-          "clean": "at most 72 characters",
-          "planted": "at most 80 characters"
+          "clean": "`width` defaults to 72 characters",
+          "planted": "`width` defaults to 80 characters"
         },
         {
           "kind": "deprecated-in-example",
@@ -236,14 +236,14 @@
         {
           "kind": "broken-anchor",
           "rule": "broken-link",
-          "line": 29,
+          "line": 34,
           "clean": "[changes](#changes)",
           "planted": "[changes](#changelog)"
         },
         {
           "kind": "changelog-date-order",
           "rule": "date-order",
-          "line": 38,
+          "line": 43,
           "clean": "3.1.0 (2026-06-02)",
           "planted": "3.1.0 (2026-10-02)"
         }

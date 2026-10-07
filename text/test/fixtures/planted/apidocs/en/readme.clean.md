@@ -16,7 +16,7 @@ import { wrap } from "wrapkit";
 console.log(wrap("Plain text reads best in short lines.", 20).join("\n"));
 ```
 
-By default each line is at most 72 characters; pass a width to change it.
+`width` defaults to 72 characters; pass a width to change it.
 
 ## Options
 
@@ -25,6 +25,11 @@ Pass `prefix` to quote every line and `hyphenate: true` to break long words. The
 ```js
 wrap(text, 40, { prefix: "  " });
 ```
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `width` | 72 | The longest line, in characters |
+| `prefix` | "" | Text put before every line |
 
 See the [API reference](#api-reference) and the [changes](#changes).
 
