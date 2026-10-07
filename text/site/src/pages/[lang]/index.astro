@@ -21,6 +21,11 @@ npx chaffjs --genre legal/contract ${lang === "ja" ? "契約書.md" : "contract.
       {t(lang, "pickGenre")}
     </a>
   </p>
+  <p class="mt-1">
+    <a href={href(`${lang}/playground`)} class="text-blue-700 underline dark:text-blue-400">
+      {t(lang, "tryInBrowser")}
+    </a>
+  </p>
   {firstGuidePage && (
     <p class="mt-8">
       <a

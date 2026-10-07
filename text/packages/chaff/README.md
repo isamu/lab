@@ -238,7 +238,7 @@ const result = await check(text, { genre: "business/report" });
 - `vite dev` で使うときは、`optimizeDeps.exclude` に `chaffjs` を入れてください。
 - 日本語の辞書は、日本語の文章を初めてかけたときに取りに行きます。
 
-[プレイグラウンド](https://isamu.github.io/lab/ja/playground/) がこの入口で動いています。ファイルと辞書の置き方の実例は、そのソース（リポジトリの `text/site/src/lib/playground.ts` と `text/scripts/browser-files.ts`）にあります。
+[プレイグラウンド](https://isamu.github.io/lab/ja/playground/) がこの入口で動いています。ファイルと辞書の置き方の実例は、そのソース（リポジトリの `text/site/src/lib/playground.ts` と `text/scripts/browser-files.ts`）にあります。`check()` の値と結果の中身は、手引きの「[ブラウザでかける](https://isamu.github.io/lab/ja/guide/browser/)」にあります。
 
 ## ほかにできること
 
@@ -317,6 +317,7 @@ text that human documents of the same genre rarely show. It is not a verdict on 
 **In a browser.** `chaffjs/browser` exports `setupBrowser({ files, kuromojiDictionaryUrl })` and `check(text, options)`.
 `chaffjs/browser` needs a bundler that reads package.json's `browser` field and `import.meta.glob` (Vite). With
 `vite dev`, put `chaffjs` in `optimizeDeps.exclude`. The Japanese dictionary is fetched on the first Japanese check.
+The options of `check()` and what it returns are in [Checking in a browser](https://isamu.github.io/lab/en/guide/browser/).
 
 The guide and the reference of every rule are on [the English site](https://isamu.github.io/lab/en/):
 [Getting started](https://isamu.github.io/lab/en/guide/getting-started/),
