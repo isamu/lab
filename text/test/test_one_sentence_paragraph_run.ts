@@ -51,6 +51,7 @@ describe("oneSentenceRuns: 隣り合う一文の段落", () => {
     assert.deepEqual(findingsOf(`${english}\n`, en), []);
     const sentences = ["One is here.", "Two is here!", "Is three here?", '"Four is here."', "(Five is here.)"].join("\n\n");
     assert.deepEqual(findingsOf(`${sentences}\n`, en), ["5 one-sentence paragraphs in a row (limit 4)"]);
+    assert.deepEqual(runLengths("【一つ目です。】\n\n《二つ目です。》\n\n［三つ目です。］\n"), [3]);
   });
 
   it("段落が無ければ何も無い", () => {

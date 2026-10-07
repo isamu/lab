@@ -82,5 +82,5 @@ example:
       Users may use the Service free of charge.
 
 not_flagged:
-  ja: 二つの定義が食い違っているかは決めません。二つ目を指すだけです。語を名前にした見出しは定義に数えません。
-  en: Whether the two definitions conflict is not decided; only the second is pointed at. A heading that names the term is not a definition.
+  ja: 二つの定義が食い違っているかは決めません。二つ目を指すだけです。語を名前にした見出しは定義に数えません。英語で、括弧に引用符だけで入れた語句のうち、名前らしく大文字で始めていない語を含むもの（("The key point is")）は、例を引いたものとして定義に数えません。
+  en: 'Whether the two definitions conflict is not decided; only the second is pointed at. A heading that names the term is not a definition. In English, a phrase quoted alone in brackets with a word a name would capitalise left in lower case ("The key point is") quotes an example, and is not a definition.'
