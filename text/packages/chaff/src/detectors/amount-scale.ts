@@ -1,14 +1,17 @@
 // amount-scale-consistency: the reading half. The amounts are currency-notation's (the lexicon currency-notation says
 // how a currency is written); the words of scale and their values are the lexicon amount-multiplier (weight).
-import type { Detector, Finding, ProseDocument } from "../plugin.ts";
+import type { Detector, Finding, Lexicon, ProseDocument } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
-import { amountValue, scaleMixes, type ScaleWord, type ScaledAmount } from "../structure/amount-scale.ts";
+import { amountValue, scaleMixes, withoutRoundTextFigures, type ScaleWord, type ScaledAmount } from "../structure/amount-scale.ts";
 import { AMOUNT, amountsIn, formsOf, type WrittenAmount } from "./currency-notation.ts";
 import { quoteAround } from "./quote-around.ts";
 import { proseAndTablesOf } from "../table-text.ts";
 
 /** How far back a larger part of one amount may start (1億2,000万円 is read from 2,000万円). */
 const LEADING_REACH = 40;
+
+/** How far from an amount a marker of an estimate is looked for. */
+const MARKER_REACH = 12;
 
 const scaleWordsOf = (doc: ProseDocument): ScaleWord[] =>
   (doc.lexicons["amount-multiplier"] ?? []).flatMap((entry) => (entry.weight === undefined ? [] : [{ word: entry.pattern, value: entry.weight }]));
@@ -45,15 +48,41 @@ const scaledAmountsOf = (text: string, amounts: readonly WrittenAmount[], words:
     return [{ offset: amount.offset - leading.length, written, currency: amount.currency, value, unit: unitOf(number, words) }];
   });
 
+/** Whether a marker of an estimate (約, 程度, about) stands right before or after the amount. */
+const isApproximate = (text: string, amount: ScaledAmount, markers: Lexicon): boolean => {
+  const before = text
+    .slice(Math.max(0, amount.offset - MARKER_REACH), amount.offset)
+    .trimEnd()
+    .toLowerCase();
+  const after = text
+    .slice(amount.offset + amount.written.length, amount.offset + amount.written.length + MARKER_REACH)
+    .trimStart()
+    .toLowerCase();
+  return markers.some((entry) => (entry.position === "after" ? after.startsWith(entry.pattern.toLowerCase()) : before.endsWith(entry.pattern.toLowerCase())));
+};
+
+/** Whether the amount is on a table row (the text has the tables read back in, and only tables start a line with |). */
+const onTableRow = (text: string, amount: ScaledAmount): boolean =>
+  text
+    .slice(text.lastIndexOf("\n", amount.offset) + 1)
+    .trimStart()
+    .startsWith("|");
+
 export const amountScale: Detector = (doc): Finding[] => {
   const text = proseAndTablesOf(doc);
   const words = scaleWordsOf(doc);
-  const amounts = amountsIn(
+  const markers = doc.lexicons["approximate-marker"] ?? [];
+  const amounts = scaledAmountsOf(
     text,
-    formsOf(doc),
-    words.map((word) => word.word),
-  );
-  return scaleMixes(scaledAmountsOf(text, amounts, words)).map(({ odd, usual }) => ({
+    amountsIn(
+      text,
+      formsOf(doc),
+      words.map((word) => word.word),
+    ),
+    words,
+  ).filter((amount) => !isApproximate(text, amount, markers));
+  const mixes = withoutRoundTextFigures(scaleMixes(amounts), amounts, (amount) => onTableRow(text, amount));
+  return mixes.map(({ odd, usual }) => ({
     rule: "amount-scale-consistency",
     severity: "info",
     line: 0,
