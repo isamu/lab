@@ -15,7 +15,7 @@ const isAdjacent = (source: string, before: Paragraph, after: Paragraph): boolea
 };
 
 /** A sentence's last mark, past closing quotes, brackets and emphasis marks. */
-const SENTENCE_END = /[。．.!?！？]["'”’」』)）\]*_]*$/u;
+const SENTENCE_END = /[。．.!?！？]["'”’」』)）\]］}｝】》〕〉〛*_]*$/u;
 
 /**
  * Whether a paragraph ends as a sentence does. One that does not is a label, a field, a line of a flattened table or a heading
