@@ -1,0 +1,18 @@
+# 電話番号の前に置く語。group は何の番号か（電話・ファクス・携帯）で、違う group の番号どうしは比べない。
+# phone-number-variant は、番号と同じ行で、番号のいちばん近く前にある語の group をその番号の種類とする。
+id: phone-label
+language: ja
+entries:
+  - { pattern: 電話, group: phone }
+  - { pattern: TEL, group: phone }
+  - { pattern: Tel, group: phone }
+  - { pattern: 代表, group: phone }
+  - { pattern: 直通, group: phone }
+  - { pattern: お問合せ, group: phone }
+  - { pattern: お問い合わせ, group: phone }
+  - { pattern: FAX, group: fax }
+  - { pattern: Fax, group: fax }
+  - { pattern: ファクス, group: fax }
+  - { pattern: ファックス, group: fax }
+  - { pattern: 携帯, group: mobile }
+  - { pattern: 携帯電話, group: mobile }
