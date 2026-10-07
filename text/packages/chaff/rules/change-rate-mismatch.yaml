@@ -37,8 +37,8 @@ example:
     before: 利用企業は1,300社となり、前年の1,000社から20%増えました。
     after: 利用企業は1,300社となり、前年の1,000社から30%増えました。
   en:
-    before: 1,300 companies used the app, up 20% from 1,000 companies a year earlier.
-    after: 1,300 companies used the app, up 30% from 1,000 companies a year earlier.
+    before: Revenue was $1.0 million in 2025 and $1.5 million in 2026, up 20%.
+    after: Revenue was $1.0 million in 2025 and $1.5 million in 2026, up 50%.
 
 not_flagged:
   ja: 向きの語の付いた率が二つある文、もとの値が「から」「に比べて」や年で名指されていない文、二つの値と率のあいだで主語が変わる文（「…に増え、利益は20%増えた」）、二つの値のあいだで主語が変わる文（"$1,000 in 2025 and costs were $1,500 in 2026"）、同じ単位の今の値が一つでない文、向きの語が率のそばに無い文は比べません。「前年比20%増」のように値が一つしか無いもの、ポイントの差、倍は見ません。丸めで届く範囲の率は言いません。
