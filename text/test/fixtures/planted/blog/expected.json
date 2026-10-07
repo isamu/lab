@@ -1,13 +1,13 @@
 {
   "recall": {
     "ja": {
-      "version-mismatch": "0/1",
+      "version-mismatch": "1/1",
       "heading-command": "1/1",
       "date-weekday": "1/1",
       "broken-anchor": "1/1"
     },
     "en": {
-      "version-mismatch": "0/1",
+      "version-mismatch": "1/1",
       "heading-command": "1/1",
       "date-weekday": "1/1",
       "broken-anchor": "1/1"

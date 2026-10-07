@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
-import { editsOf, isKnownWord, suggestionFor, wordsToCheck, type Speller } from "../packages/chaff/src/spelling.ts";
+import { editsOf, isKnownWord, isSplitWord, suggestionFor, wordsToCheck, type Speller } from "../packages/chaff/src/spelling.ts";
 import { unknownWord } from "../packages/chaff/src/detectors/unknown-word.ts";
 import { buildDocument, type TeamRules } from "../packages/chaff/src/document.ts";
 
@@ -23,6 +23,18 @@ describe("unknown-word: a word not in the dictionary, one letter from one that i
 
   it("inflected, prefixed and listed words are known", () => {
     assert.deepEqual(unknown("We refactored the backend, reuploaded the datasets and stopped the unshipped orders whilst testing."), []);
+  });
+
+  it("the rest of a word split by emphasis or a bracketed letter is not a word", () => {
+    assert.deepEqual(unknown("Your avatar is a **G**lobally **R**ecognized image."), []);
+    assert.deepEqual(unknown('The court said that "[e]xpressions in the opinion" were dicta.'), []);
+    assert.deepEqual(unknown("The **report** is attched to this email."), ['"attched" is not in the dictionary; did you mean "attached"?']);
+    assert.deepEqual(unknown("See [the notes] attched below."), ['"attched" is not in the dictionary; did you mean "attached"?']);
+  });
+
+  it("a Greek plural and common web words are known", () => {
+    assert.deepEqual(unknown("Coal workers' pneumoconioses rose. Embed the page in an iframe, read the ebook, and ask whomever you like."), []);
+    assert.deepEqual(unknown("Both hypothses failed."), ['"hypothses" is not in the dictionary; did you mean "hypotheses"?']);
   });
 
   it("words of everyday AI evaluation are known (#621)", () => {
@@ -94,5 +106,17 @@ describe("spelling: the pieces", () => {
       ["file", "mail", "stop"],
     );
     assert.deepEqual(wordsToCheck("", 4, 10), []);
+  });
+
+  it("isSplitWord: the rest of a word whose first letter is set apart", () => {
+    const at = (source: string, word: string): boolean => isSplitWord(source, source.indexOf(word));
+    assert.equal(at("a **G**lobally b", "lobally"), true);
+    assert.equal(at("a _G_lobally b", "lobally"), true);
+    assert.equal(at('said "[e]xpressions"', "xpressions"), true);
+    assert.equal(at("a **globally** b", "globally"), false);
+    assert.equal(at("see [1] report", "report"), false);
+    assert.equal(at("see [note]report", "report"), true);
+    assert.equal(at("report", "report"), false);
+    assert.equal(isSplitWord("", 0), false);
   });
 });
