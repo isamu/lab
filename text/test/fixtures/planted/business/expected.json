@@ -2,7 +2,7 @@
   "recall": {
     "ja": {
       "validity-reversed": "2/2",
-      "amount-two-ways": "0/2",
+      "amount-two-ways": "1/2",
       "quantity-times-price": "0/2",
       "items-subtotal": "1/1",
       "date-weekday": "2/2",
@@ -14,7 +14,7 @@
     },
     "en": {
       "validity-reversed": "2/2",
-      "amount-two-ways": "0/2",
+      "amount-two-ways": "1/2",
       "quantity-times-price": "0/2",
       "items-subtotal": "1/1",
       "date-weekday": "2/2",

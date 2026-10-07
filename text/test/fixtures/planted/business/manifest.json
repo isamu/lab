@@ -100,8 +100,8 @@
           "kind": "amount-two-ways",
           "rule": "amount-scale-consistency",
           "line": 11,
-          "clean": "税込で2,200,000円",
-          "planted": "税込で220万円"
+          "clean": "開発の費用は1,200,000円",
+          "planted": "開発の費用は120万円"
         },
         {
           "kind": "total-subtotal-tax",
@@ -232,8 +232,8 @@
           "kind": "amount-two-ways",
           "rule": "amount-scale-consistency",
           "line": 11,
-          "clean": "The total cost is $2,200,000 including tax",
-          "planted": "The total cost is $2.2 million including tax"
+          "clean": "development, is $1,200,000.",
+          "planted": "development, is $1.2 million."
         },
         {
           "kind": "total-subtotal-tax",
