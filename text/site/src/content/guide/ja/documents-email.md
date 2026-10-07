@@ -143,7 +143,7 @@ $ npx chaffjs mail.md --genre business/email
   - 「添付します」と書いたものを、本当に添付しているか
   - 宛名・挨拶・結び・署名がそろっているか
 
-  このジャンルで特に効く rule: attachment-not-attached, cushion-phrase-density, email-greeting-closing, email-subject-length, preamble-length, request-without-deadline, risk-disclosure, unsourced-number
+  このジャンルで特に効く rule: attachment-not-attached, cushion-phrase-density, due-before-issue, email-greeting-closing, email-subject-length, preamble-length, request-without-deadline, risk-disclosure, unsourced-number
   chaff.yaml の guide: で書き換えられます。出さないときは --no-guide。
 
 ════════════════════════════════════════════════════════════

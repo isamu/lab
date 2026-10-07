@@ -129,7 +129,7 @@ Guide: Meeting notes (business/meeting-notes)
   - Does each action item have an owner and a deadline?
   - Are the next meeting and the items carried over recorded?
 
-  Rules that matter most for this genre: cushion-phrase-density, preamble-length, request-without-deadline, risk-disclosure, unsourced-number
+  Rules that matter most for this genre: cushion-phrase-density, due-before-issue, preamble-length, request-without-deadline, risk-disclosure, unsourced-number
   Change it with guide: in chaff.yaml; leave it out with --no-guide.
 
 ════════════════════════════════════════════════════════════

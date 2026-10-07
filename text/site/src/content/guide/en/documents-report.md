@@ -83,7 +83,7 @@ Guide: Report (business/report)
   - Are facts kept apart from opinions and guesses?
   - Are the next actions given with an owner and a deadline?
 
-  Rules that matter most for this genre: cushion-phrase-density, empty-conclusion, padded-intro, preamble-length, request-without-deadline, risk-disclosure, unsourced-number
+  Rules that matter most for this genre: cushion-phrase-density, due-before-issue, empty-conclusion, padded-intro, preamble-length, request-without-deadline, risk-disclosure, unsourced-number
   Change it with guide: in chaff.yaml; leave it out with --no-guide.
 
 ════════════════════════════════════════════════════════════
@@ -354,7 +354,7 @@ Guide: Report (business/report)
   - Are facts kept apart from opinions and guesses?
   - Are the next actions given with an owner and a deadline?
 
-  Rules that matter most for this genre: cushion-phrase-density, empty-conclusion, padded-intro, preamble-length, request-without-deadline, risk-disclosure, unsourced-number
+  Rules that matter most for this genre: cushion-phrase-density, due-before-issue, empty-conclusion, padded-intro, preamble-length, request-without-deadline, risk-disclosure, unsourced-number
   Change it with guide: in chaff.yaml; leave it out with --no-guide.
 
 ════════════════════════════════════════════════════════════

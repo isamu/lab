@@ -82,7 +82,7 @@ $ npx chaffjs houkoku.md --genre business/report
   - 事実と、意見・推測を書き分けているか
   - 次の行動を、担当と期限つきで書いているか
 
-  このジャンルで特に効く rule: cushion-phrase-density, empty-conclusion, padded-intro, preamble-length, request-without-deadline, risk-disclosure, unsourced-number
+  このジャンルで特に効く rule: cushion-phrase-density, due-before-issue, empty-conclusion, padded-intro, preamble-length, request-without-deadline, risk-disclosure, unsourced-number
   chaff.yaml の guide: で書き換えられます。出さないときは --no-guide。
 
 ════════════════════════════════════════════════════════════
@@ -335,7 +335,7 @@ $ npx chaffjs houkoku-fixed.md --genre business/report
   - 事実と、意見・推測を書き分けているか
   - 次の行動を、担当と期限つきで書いているか
 
-  このジャンルで特に効く rule: cushion-phrase-density, empty-conclusion, padded-intro, preamble-length, request-without-deadline, risk-disclosure, unsourced-number
+  このジャンルで特に効く rule: cushion-phrase-density, due-before-issue, empty-conclusion, padded-intro, preamble-length, request-without-deadline, risk-disclosure, unsourced-number
   chaff.yaml の guide: で書き換えられます。出さないときは --no-guide。
 
 ════════════════════════════════════════════════════════════
