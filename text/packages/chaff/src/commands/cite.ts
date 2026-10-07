@@ -1,6 +1,9 @@
-import { checkCitations, isAnywhere, type Citation, type CitationResult } from "../structure/cite.ts";
+import { dirname, isAbsolute, join } from "node:path";
+import { checkCitations, isAnywhere, type CitationResult } from "../structure/cite.ts";
+import { bySource, parseCitations, sourceOf, sourceProblem, type Claim } from "./cite-claims.ts";
+import { runScaffold } from "./cite-scaffold.ts";
 import { readSource, readTree, type TreeContext } from "./tree.ts";
-import type { Texts, UiLanguage } from "../ui.ts";
+import type { Texts } from "../ui.ts";
 
 const FORMATS: ReadonlySet<string> = new Set(["text", "json"]);
 const QUOTE_WIDTH = 40;
@@ -9,49 +12,9 @@ const VALUED: ReadonlySet<string> = new Set(["--format", "--language", "--genre"
 export const citeTargets = (argv: readonly string[]): string[] =>
   argv.slice(1).filter((arg, index, all) => !arg.startsWith("--") && !VALUED.has(all[index - 1] ?? ""));
 
-const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
-
-type RawCitation = { readonly address?: string; readonly quote: string };
-
-const isRawCitation = (value: unknown): value is RawCitation =>
-  isRecord(value) && (value["address"] === undefined || typeof value["address"] === "string") && typeof value["quote"] === "string";
-
-const citationOf = (raw: RawCitation): Citation => ({ address: raw.address ?? "", quote: raw.quote });
-
-/** Neither an address nor a quote: saying ✓ would pass an entry nobody filled in. */
-const isEmpty = (citation: Citation): boolean => isAnywhere(citation) && citation.quote.trim() === "";
-
-export type ParsedCitations = { readonly citations: readonly Citation[] } | { readonly error: string };
-
-const parseJson = (text: string, ui: UiLanguage): { readonly value: unknown } | { readonly error: string } => {
-  try {
-    return { value: JSON.parse(text) };
-  } catch (err) {
-    return { error: TEXT[ui].notJson(err instanceof Error ? err.message : String(err)) };
-  }
-};
-
-/** 引用の一覧。[{ address?, quote }] の配列だけを受け取る。address を省けば原文のどこか。形が違えば理由を返す。 */
-export const parseCitations = (text: string, ui: UiLanguage = "ja"): ParsedCitations => {
-  const parsed = parseJson(text, ui);
-  if ("error" in parsed) return parsed;
-  if (!Array.isArray(parsed.value)) return { error: TEXT[ui].notArray };
-  const entries: readonly unknown[] = parsed.value;
-  const bad = entries.findIndex((entry) => !isRawCitation(entry));
-  if (bad !== -1) return { error: TEXT[ui].badEntry(bad + 1) };
-  const citations = entries.filter(isRawCitation).map(citationOf);
-  const empty = citations.findIndex(isEmpty);
-  if (empty !== -1) return { error: TEXT[ui].emptyEntry(empty + 1) };
-  return { citations };
-};
-
 type CiteText = {
   readonly usage: string;
   readonly quoted: (text: string) => string;
-  readonly notJson: (why: string) => string;
-  readonly notArray: string;
-  readonly badEntry: (n: number) => string;
-  readonly emptyEntry: (n: number) => string;
   readonly anywhere: string;
   readonly foundAt: (parts: readonly string[]) => string;
   readonly line: (line: number) => string;
@@ -61,11 +24,11 @@ type CiteText = {
 const TEXT: Texts<CiteText> = {
   ja: {
     quoted: (text) => `「${text}」`,
-    usage: "使い方: chaff cite <原文> <引用.json> [--format text|json] [--language ja|en|…]",
-    notJson: (why) => `JSON として読めません: ${why}`,
-    notArray: '引用は配列で渡してください: [{ "address": "3.2", "quote": "…" }]',
-    badEntry: (n) => `${String(n)} 件目に quote（文字列）が無いか、address が文字列ではありません`,
-    emptyEntry: (n) => `${String(n)} 件目は address も quote も空で、確かめることがありません`,
+    usage: [
+      "使い方: chaff cite <原文> <引用.json> [--format text|json] [--language ja|en|…]",
+      "        chaff cite <引用.json>            （引用ごとに source で原文を書いたとき）",
+      "        chaff cite --scaffold <文書>      （出典の無い引用から引用.json のひな形を作る）",
+    ].join("\n"),
     anywhere: "（番地なし）",
     foundAt: (parts) => `（${parts.join("、")}）`,
     line: (line) => `${String(line)} 行目`,
@@ -79,11 +42,11 @@ const TEXT: Texts<CiteText> = {
   },
   en: {
     quoted: (text) => ` "${text}"`,
-    usage: "usage: chaff cite <source> <quotes.json> [--format text|json] [--language ja|en|…]",
-    notJson: (why) => `Not valid JSON: ${why}`,
-    notArray: 'Give the quotations as an array: [{ "address": "3.2", "quote": "…" }]',
-    badEntry: (n) => `Entry ${String(n)} needs quote (a string), and an address, if it has one, must be a string`,
-    emptyEntry: (n) => `Entry ${String(n)} has neither an address nor a quote, so there is nothing to check`,
+    usage: [
+      "usage: chaff cite <source> <quotes.json> [--format text|json] [--language ja|en|…]",
+      "       chaff cite <quotes.json>             (each quotation names its source)",
+      "       chaff cite --scaffold <document>     (a quotes.json to fill in, from the quotations with no source)",
+    ].join("\n"),
     anywhere: "(anywhere)",
     foundAt: (parts) => ` (${parts.join(", ")})`,
     line: (line) => `line ${String(line)}`,
@@ -103,35 +66,90 @@ const whereFound = (result: CitationResult, text: CiteText): string => {
   return text.foundAt([...(result.foundAt === undefined ? [] : [result.foundAt]), text.line(result.line)]);
 };
 
+/** A claim that names its own source says which, before its address. */
+const sourcePrefix = (result: CitationResult): string => {
+  const source = sourceOf(result.citation);
+  return source === undefined ? "" : `${source} `;
+};
+
 const describe = (result: CitationResult, text: CiteText): string => {
   const mark = result.status === "ok" ? "✓" : "✗";
   const oneLine = result.citation.quote.replace(/\s+/gu, " ").trim();
   const quote = oneLine.length > QUOTE_WIDTH ? `${oneLine.slice(0, QUOTE_WIDTH)}…` : oneLine;
   const address = isAnywhere(result.citation) ? text.anywhere : result.citation.address;
-  return `${mark} ${address}${text.quoted(quote)}: ${text.results[result.status](result)}${whereFound(result, text)}`;
+  return `${mark} ${sourcePrefix(result)}${address}${text.quoted(quote)}: ${text.results[result.status](result)}${whereFound(result, text)}`;
+};
+
+/** Each claim checked against one source file. undefined when the file cannot be read as a tree (already said why). */
+const checkAgainst = async (path: string, claims: readonly Claim[], argv: readonly string[], context: TreeContext): Promise<CitationResult[] | undefined> => {
+  const read = await readTree(path, argv, context);
+  return read === undefined ? undefined : checkCitations(read.source, read.tree, claims);
+};
+
+/** A claim's source, read from where the claims file is: a scaffold sits next to the document that quotes. */
+const sourcePath = (claimsPath: string, source: string): string => {
+  // A claims file written on Windows says sources\talk.md; it names the same file everywhere.
+  const portable = source.replaceAll("\\", "/");
+  return isAbsolute(portable) ? portable : join(dirname(claimsPath), portable);
 };
 
 /**
- * 回答の引用が原文にあるかを確かめる。書き換えはしない。
+ * Each claim checked against the source it names, in the claims file's order. Sources are read one at a time, so what
+ * an unreadable one prints comes in the same order every run; any unreadable source fails the run.
+ */
+const checkEachSource = async (
+  claimsPath: string,
+  claims: readonly Claim[],
+  argv: readonly string[],
+  context: TreeContext,
+): Promise<CitationResult[] | undefined> => {
+  const groups = bySource(claims);
+  const checked = await groups.reduce<Promise<(CitationResult[] | undefined)[]>>(async (previous, group) => {
+    const done = await previous;
+    return [...done, await checkAgainst(sourcePath(claimsPath, group.source), group.claims, argv, context)];
+  }, Promise.resolve([]));
+  const byClaim = new Map<Claim, CitationResult>();
+  const unread = groups.some((group, index) => {
+    const results = checked[index];
+    results?.forEach((result, at) => byClaim.set(group.claims[at] ?? result.citation, result));
+    return results === undefined;
+  });
+  return unread ? undefined : claims.flatMap((claim) => byClaim.get(claim) ?? []);
+};
+
+const readClaims = async (claimsPath: string, sourceGiven: boolean, context: TreeContext): Promise<readonly Claim[] | undefined> => {
+  const text = await readSource(claimsPath, context);
+  if (text === undefined) return undefined;
+  const ui = context.ui ?? "ja";
+  const parsed = parseCitations(text, ui);
+  const problem = "error" in parsed ? parsed.error : sourceProblem(parsed.citations, sourceGiven, ui);
+  if (problem === undefined && "citations" in parsed) return parsed.citations;
+  console.error(`${claimsPath}: ${problem ?? ""}`);
+  return undefined;
+};
+
+const usageError = (text: CiteText): number => {
+  console.error(text.usage);
+  return 1;
+};
+
+/**
+ * 回答の引用が原文にあるかを確かめる。書き換えはしない。原文は引数で一つ渡すか、引用ごとに source で書く。
  * 一つでも外れていれば 1 で終わるので、AI の回答を単体試験のように検査できる。
  */
 export const runCite = async (targets: readonly string[], argv: readonly string[], context: TreeContext): Promise<number> => {
-  const [sourcePath, citationsPath] = targets;
+  const text = TEXT[context.ui ?? "ja"];
   const format = context.flag(argv, "--format") ?? "text";
-  if (sourcePath === undefined || citationsPath === undefined || targets.length !== 2 || !FORMATS.has(format)) {
-    console.error(TEXT[context.ui ?? "ja"].usage);
-    return 1;
-  }
-  const citationsText = await readSource(citationsPath, context);
-  if (citationsText === undefined) return 1;
-  const parsed = parseCitations(citationsText, context.ui ?? "ja");
-  if ("error" in parsed) {
-    console.error(`${citationsPath}: ${parsed.error}`);
-    return 1;
-  }
-  const read = await readTree(sourcePath, argv, context);
-  if (read === undefined) return 1;
-  const results = checkCitations(read.source, read.tree, parsed.citations);
-  console.log(format === "json" ? JSON.stringify(results, null, 2) : results.map((result) => describe(result, TEXT[context.ui ?? "ja"])).join("\n"));
+  if (!FORMATS.has(format)) return usageError(text);
+  // The scaffold is always JSON: it is a file to fill in.
+  if (argv.includes("--scaffold")) return runScaffold(targets, argv, context, text.usage);
+  const claimsPath = targets.at(-1);
+  if (claimsPath === undefined || targets.length > 2) return usageError(text);
+  const sourceGiven = targets.length === 2 ? targets[0] : undefined;
+  const claims = await readClaims(claimsPath, sourceGiven !== undefined, context);
+  if (claims === undefined) return 1;
+  const results = sourceGiven === undefined ? await checkEachSource(claimsPath, claims, argv, context) : await checkAgainst(sourceGiven, claims, argv, context);
+  if (results === undefined) return 1;
+  console.log(format === "json" ? JSON.stringify(results, null, 2) : results.map((result) => describe(result, text)).join("\n"));
   return results.every((result) => result.status === "ok") ? 0 : 1;
 };

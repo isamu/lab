@@ -1,0 +1,36 @@
+# 程度の無い語に付けた程度。uncomparable-graded が読む。「最適」「最善」「完璧」は一番であること・欠けの無いことを言う語で、
+# 「より」「とても」を付けても何も足されない。rewrite は程度を外した形。
+# 「最も最適」「一番ベスト」のように最上を重ねたものは重言として redundant-expression が見るので、ここには入れない。
+# 「ほぼ完璧」のように近さを言う語は、本当の主張なので入れない（英語の almost unique と同じ）。
+# 「より最適」は「より最適化する」（さらに最適化する）に当たらないよう、後ろの「な」「に」まで書く。
+id: uncomparable-graded
+language: ja
+entries:
+  - pattern: より最適な
+    rewrite: 最適な（または、より適した）
+  - pattern: より最適に
+    rewrite: 最適に（または、より適した形に）
+  - pattern: もっと最適な
+    rewrite: 最適な（または、もっと適した）
+  - pattern: とても最適
+    rewrite: 最適
+  - pattern: 非常に最適
+    rewrite: 最適
+  - pattern: かなり最適
+    rewrite: 最適
+  - pattern: 極めて最適
+    rewrite: 最適
+  - pattern: より最善
+    rewrite: 最善（または、より良い）
+  - pattern: より最良
+    rewrite: 最良（または、より良い）
+  - pattern: より最新
+    rewrite: 最新（または、より新しい）
+  - pattern: より完璧
+    rewrite: 完璧（または、より完成度の高い）
+  - pattern: とても完璧
+    rewrite: 完璧
+  - pattern: 非常に完璧
+    rewrite: 完璧
+  - pattern: かなり完璧
+    rewrite: 完璧
