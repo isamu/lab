@@ -56,6 +56,36 @@ describe("version-mismatch", () => {
     assert.deepEqual(found(readme("Install 2.3.0:", "npm install pkg@2.4.0"), en), ["3 2.3.0>2.4.0"]);
   });
 
+  it("reads a version of any length written right after the name of a program the block pins", () => {
+    const docker = "docker run --name ci-cache -p 6379:6379 -d redis:7.4";
+    assert.deepEqual(found(readme("We run Redis 7.2 in a container:", docker), en), ["3 7.2>7.4"]);
+    assert.deepEqual(found(readme("Redis 7.2 をコンテナで動かします。", docker), ja), ["3 7.2>7.4"]);
+    assert.deepEqual(found(readme("We run Redis 7.2.1 in a container:", docker), en), ["3 7.2.1>7.4"]);
+    assert.deepEqual(found(readme("Use Python 3.11:", "FROM python:3.12-slim"), en), ["3 3.11>3.12"]);
+    assert.deepEqual(found(readme("Use Redis 7.2:", "docker pull library/redis:7.4-alpine"), en), ["3 7.2>7.4"]);
+  });
+
+  it("does not report a named version of the pinned series, a bound, another program, or a name pinned twice", () => {
+    const docker = "docker run -d redis:7.4";
+    assert.deepEqual(found(readme("We run Redis 7.4 in a container:", docker), en), []);
+    assert.deepEqual(found(readme("We run Redis 7 in a container:", docker), en), []);
+    assert.deepEqual(found(readme("We run Redis 7.4.1 in a container:", docker), en), []);
+    assert.deepEqual(found(readme("Redis 7.2 or later works:", docker), en), []);
+    assert.deepEqual(found(readme("Moving from Redis 7.2:", docker), en), []);
+    assert.deepEqual(found(readme("We tried Postgres 15 first:", docker), en), []);
+    assert.deepEqual(found(readme("Redis 7.2 before, now:", "docker run -d redis:7.2", "docker run -d redis:7.4"), en), []);
+    assert.deepEqual(found(readme("Port 6379 is open, Redis 7.4:", docker), en), []);
+    assert.deepEqual(found(readme("Install version 2.3.0 of tidyq:", "npm install tidyq@2.4.0"), en), ["3 2.3.0>2.4.0"]);
+    assert.deepEqual(found(readme("Install tidyq 2.3.0:", "npm install tidyq@2.4.0"), en), ["3 2.3.0>2.4.0"]);
+    assert.deepEqual(found(readme("Set port 1234:", "port=4321"), en), []);
+    assert.deepEqual(found(readme("Use Node 20 in CI:", "node=18"), en), []);
+  });
+
+  it("compares the parts as written, and reports a named version against its own pin", () => {
+    assert.deepEqual(found(readme("Use Ubuntu 22.4:", "FROM ubuntu:22.04"), en), ["3 22.4>22.04"]);
+    assert.deepEqual(found(readme("We run Redis 7.2.0 here:", "docker run -d redis:7.4  # tested with 1.0.0"), en), ["3 7.2.0>7.4"]);
+  });
+
   it("reads only the paragraph right above, with CRLF line ends too", () => {
     const source = ["# tidyq", "", "Earlier 9.9.9 was used.", "", "Install version 2.3.0:", "", `${FENCE}bash`, "npm install pkg@2.4.0", FENCE, ""].join(
       "\r\n",

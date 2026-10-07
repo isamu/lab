@@ -45,8 +45,29 @@ The direction is tracked in isamu/lab#130.
 
 ## Working here
 
-- `yarn format`, `yarn lint`, `yarn typecheck`, `yarn build`, `yarn test` (node:test, `test/test_*.ts`).
+- `yarn format`, `yarn lint`, `yarn lint:oxlint`, `yarn typecheck`, `yarn build`, `yarn test` (node:test,
+  `test/test_*.ts`; `CHAFF_TEST_JOBS=4 yarn test` caps the processes when several checkouts share a machine).
+- `yarn corpus`, `yarn bench` and `yarn planted` compare findings with committed expectations (`--update` accepts a
+  change). `yarn rules:measure --apply` places a new or changed rule, over the documents pinned in
+  `corpus/rules-measure-documents.json`. `yarn screens:update` regenerates the guide's screens.
 - A change that claims Japanese output is unchanged is proved by diffing the old and new builds over many
   commands, not by reading.
 - Tests use only public-domain or self-written text. Never commit a document that may not be redistributed.
-- Releases: `docs/ChangeLog.md` (Unreleased, then the version), `npm publish` is run by the maintainer.
+- Releases: `docs/ChangeLog.md` is written at release from the merged PRs' titles; a PR does not edit it.
+  `npm publish` is run by the maintainer.
+
+## How to work here (methods that proved themselves)
+
+- **Planted sets per genre** (`test/fixtures/planted/`, `yarn planted`): a clean and a planted version, recall
+  recorded per kind, CI fails on a drop. This found real gaps (contracts). Extend a set before fixing a miss.
+- **Place rules by measurement** on the pinned human corpus (`yarn rules:measure --apply`), not by hand. Retune a
+  limit rather than turn a core rule off.
+- **A rule touches only its own files**: its YAML (with `off_for`), its registry file, its own expectations and
+  plants, the generated guide screens. Shared hand-edited lists caused most merge conflicts.
+- **Small PRs, landed as soon as CI is green.** Parallel agents split by rule and file, never two in one file.
+- **Light local checks:** `yarn typecheck`, the changed test files (`node --test test/test_<name>.ts`), and
+  `yarn corpus` + `yarn planted` for a rule change. CI runs lint and the full sharded suite.
+- **Read every new corpus finding before accepting it.** Narrow a rule rather than accept a false positive.
+- **Behaviour-preserving changes:** run old and new side by side over generated and corpus inputs.
+- **After a release:** install the published package in a fresh folder and run it on a real sentence; that caught
+  misses the tests did not.
