@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { charsetOf, decodeFetched } from "../scripts/fetched-text.ts";
+import { charsetOf, decodeFetched } from "../packages/chaff/src/html/fetched-text.ts";
 
 // 取得した本文を、宣言された文字コードで読む。例文はすべて自作。
 

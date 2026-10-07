@@ -1,0 +1,15 @@
+# 文頭の接続詞。sentence-initial-conjunction-run が、これで始まる文の連続を数える。一つなら効くが、続くとどの文も前の文の付け足しに見える。
+# 話し言葉の文頭（でも、だから、なので）は colloquial-opener が、「さらに」「加えて」は stock-transition が見るので入れない。
+id: sentence-opener
+language: ja
+entries:
+  - pattern: そして
+  - pattern: しかし
+  - pattern: しかしながら
+  - pattern: また
+  - pattern: それから
+  - pattern: それに
+  - pattern: ところが
+  - pattern: けれども
+  - pattern: だが
+  - pattern: つまり

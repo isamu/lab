@@ -27,6 +27,7 @@ chaff のコマンドとオプションを一覧にしました。どれも、�
 | `npx chaffjs tree <file>` | 文書を番地の付いた木にします。`--format sexp` か `--format json` で形を選びます |
 | `npx chaffjs cite <原文> <引用.json>` | 回答の引用が原文にあるかを確かめます |
 | `npx chaffjs cite --scaffold <file>` | 出典の無い引用を、出典を書き込む引用.json のひな形にします |
+| `npx chaffjs cite --url <URL> <引用.json>` | 引用が Web のページにあるかを確かめます |
 | `npx chaffjs compare <前> <後>` | 書き換えで事実（数・日付・URL・コード・名前・引用など）が落ちても足されてもいないかを確かめます |
 | `npx chaffjs facts <file>` | `compare` が照合する事実を、書き直す前の控えとして一覧にします |
 | `npx chaffjs ai-score <file>...` | AI らしさを低・中・高で簡易判定します。生成文に多い目印を、同じジャンルの人の文書と比べます。書いたのが AI かどうかは判定しません |

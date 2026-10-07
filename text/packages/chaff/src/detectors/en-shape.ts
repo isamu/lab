@@ -1,7 +1,8 @@
 import { lengthOf } from "../measure.ts";
 import { isClosed } from "../sentence-shape.ts";
 import { isTitleCase, minorityCase, pageTitleOf } from "./heading-case.ts";
-import type { Detector, Finding, ProseDocument, Section, Sentence, Token } from "../plugin.ts";
+import type { Detector, Finding, Lexicon, ProseDocument, Section, Sentence, Token } from "../plugin.ts";
+import { entryOpens } from "./lexicon-match.ts";
 
 const PER = 1000;
 
@@ -74,21 +75,36 @@ const firstWord = (sentence: Sentence): string =>
     .split(/\s+/u)[0]
     ?.replace(/[^A-Za-z]/gu, "") ?? "";
 
+/** A head written as one Latin word ("And") is read off the first word; any other (しかし) off the tokens, since Japanese has no spaces. */
+const LATIN_WORD = /^[A-Za-z]+$/u;
+
+type Heads = { readonly latin: ReadonlySet<string>; readonly other: Lexicon };
+
+const headsOf = (lexicon: Lexicon): Heads => ({
+  latin: new Set(lexicon.filter((entry) => LATIN_WORD.test(entry.pattern)).map((entry) => entry.pattern.toLowerCase())),
+  other: lexicon.filter((entry) => !LATIN_WORD.test(entry.pattern)),
+});
+
+const opensWithHead = (sentence: Sentence, heads: Heads): boolean =>
+  heads.latin.has(firstWord(sentence).toLowerCase()) || (sentence.tokens !== undefined && heads.other.some((entry) => entryOpens(sentence, entry)));
+
+const headRuns = (sentences: readonly Sentence[], heads: Heads): Sentence[][] =>
+  sentences.filter(isClosed).reduce<Sentence[][]>(
+    (acc, sentence) => {
+      const last = acc.at(-1) ?? [];
+      if (!opensWithHead(sentence, heads)) return [...acc.slice(0, -1), last, []];
+      return [...acc.slice(0, -1), [...last, sentence]];
+    },
+    [[]],
+  );
+
 /**
  * 接続詞で始まる文が続く。1 つなら効くが、続くと文が前の文の付け足しに見えて、
  * 何が主張なのかが分からなくなる。
  */
 export const conjunctionRun: Detector = (doc, options): Finding[] => {
-  const heads = new Set((options.lexicon ?? []).map((entry) => entry.pattern.toLowerCase()));
-  const runs = doc.sentences.filter(isClosed).reduce<Sentence[][]>(
-    (acc, sentence) => {
-      const last = acc.at(-1) ?? [];
-      if (!heads.has(firstWord(sentence).toLowerCase())) return [...acc.slice(0, -1), last, []];
-      return [...acc.slice(0, -1), [...last, sentence]];
-    },
-    [[]],
-  );
-  return runs
+  const joiner = doc.lengthUnit === "char" ? "" : " ";
+  return headRuns(doc.sentences, headsOf(options.lexicon ?? []))
     .filter((run) => run.length > options.limit)
     .flatMap((run) => {
       const first = run[0];
@@ -100,7 +116,7 @@ export const conjunctionRun: Detector = (doc, options): Finding[] => {
               severity: "info" as const,
               line: 0,
               column: 0,
-              quote: run.map((sentence) => sentence.text.trim()).join(" "),
+              quote: run.map((sentence) => sentence.text.trim()).join(joiner),
               values: { count: run.length, limit: options.limit, offset: first.span.start },
             },
           ];

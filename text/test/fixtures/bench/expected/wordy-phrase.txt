@@ -1,4 +1,16 @@
-table  12  12  0  0
+table  24  24  0  0
+ja/blog  wordy-kanou  found
+ja/design  wordy-kanou  found
+ja/email  wordy-kanou  found
+ja/figures  wordy-kanou  found
+ja/itinerary  wordy-kanou  found
+ja/minutes  wordy-kanou  found
+ja/note  wordy-kanou  found
+ja/press  wordy-kanou  found
+ja/proposal  wordy-kanou  found
+ja/quote  wordy-kanou  found
+ja/readme  wordy-kanou  found
+ja/requirements  wordy-kanou  found
 en/blog  wordy-in-order-to  found
 en/design  wordy-in-order-to  found
 en/email  wordy-in-order-to  found

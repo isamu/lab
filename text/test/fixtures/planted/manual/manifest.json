@@ -31,7 +31,7 @@
         },
         {
           "kind": "ui-label-variant",
-          "rule": "name-variant",
+          "rule": "ui-label-variant",
           "line": 25,
           "clean": "もう一度［復元を開始］を押します",
           "planted": "もう一度［復元開始］を押します"
@@ -75,7 +75,7 @@
         },
         {
           "kind": "ui-label-variant",
-          "rule": "name-variant",
+          "rule": "ui-label-variant",
           "line": 25,
           "clean": "click **Start Restore** again",
           "planted": "click **Start restore** again"

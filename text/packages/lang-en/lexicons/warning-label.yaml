@@ -1,0 +1,8 @@
+# Words a warning opens with, standing alone ("Warning:", "**Caution**", "> [!WARNING]"). warning-without-action reads the
+# paragraph after one. "Note" and "Tip" are left out: they give information, not a risk.
+id: warning-label
+language: en
+entries:
+  - pattern: warning
+  - pattern: caution
+  - pattern: danger

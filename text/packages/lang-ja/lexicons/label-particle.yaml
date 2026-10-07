@@ -1,0 +1,7 @@
+# 画面の札（ボタン名など）で、あっても無くても同じ札と読む語（［復元を開始］と［復元開始］）。ui-label-variant は、この語と空白と
+# 大文字・小文字だけが違う二つの札を、同じ札の二通りの書き方と見る。
+id: label-particle
+language: ja
+entries:
+  - pattern: を
+  - pattern: の
