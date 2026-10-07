@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { htmlToMarkdown } from "../scripts/html-markdown.ts";
-import { decodeEntities } from "../scripts/markup-text.ts";
+import { htmlToMarkdown } from "../packages/chaff/src/html/html-markdown.ts";
+import { decodeEntities } from "../packages/chaff/src/html/markup-text.ts";
 
 // HTML の報告書を Markdown に。見出し・段落・箇条書き・リンクの文字だけを残す。例文はすべて自作。
 

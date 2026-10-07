@@ -1,0 +1,19 @@
+# 回りくどい言い回し。一語か二語で言えることを何語もかけて言う形。wordy-phrase が読む。rewrite は短い形。
+# 翻訳調（を可能にする、という事実）は translationese が、「〜を行う」は nominalization が、重言は redundant-expression が見るので入れない。
+# 「することができる」は人の書いた文章でもふつうの形なので入れない。「必要性がある」は「業務上の必要性」のように名詞として要る所があるので入れない。
+# 「に関しましては」は敬語の形として使われるので入れない。動詞は原形で書けば活用した形（言えます、できます）にも当たる。
+id: wordy-phrase
+language: ja
+entries:
+  - pattern: することが可能
+    rewrite: できる
+  - pattern: であると言える
+    rewrite: だ、である
+  - pattern: であるといえる
+    rewrite: だ、である
+  - pattern: ということができる
+    rewrite: と言える
+  - pattern: 現時点において
+    rewrite: 現在、今
+  - pattern: という形で
+    rewrite: として、で

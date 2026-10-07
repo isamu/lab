@@ -10,7 +10,8 @@ import {
   needsAttention,
   type FetchOutcome,
 } from "../scripts/corpus-health-report.ts";
-import { CONNECT_TIMEOUT_MS, HttpStatusError, withConnectTimeout } from "../scripts/fetch-text.ts";
+import { CONNECT_TIMEOUT_MS, withConnectTimeout } from "../scripts/fetch-text.ts";
+import { HttpStatusError } from "../packages/chaff/src/html/fetch-page.ts";
 import { hostOf, isHostGivenUp, paceWait_ms, type HostPace } from "../scripts/fetch-pacing.ts";
 import { isTransientFetchError, RETRY_DELAYS_MS, withRetry, type RetryOptions } from "../scripts/retry.ts";
 

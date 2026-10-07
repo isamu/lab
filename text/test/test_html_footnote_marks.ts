@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { withoutFootnoteMarks } from "../scripts/html-footnote-marks.ts";
-import { htmlToMarkdown } from "../scripts/html-markdown.ts";
+import { withoutFootnoteMarks } from "../packages/chaff/src/html/html-footnote-marks.ts";
+import { htmlToMarkdown } from "../packages/chaff/src/html/html-markdown.ts";
 
 // 連邦準備制度理事会の講演（2025 年 8 月 22 日、パブリックドメイン）を縮めたもの。脚注番号は <a href="#fn1"><sup>1</sup></a>。
 const FED =
