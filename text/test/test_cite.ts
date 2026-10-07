@@ -262,8 +262,8 @@ describe("a citation with no address is looked for anywhere in the source", () =
     assert.deepEqual(located(CONTRACT, [{ address: "", quote: "検収後60日以内" }]), [["quote-not-found", undefined, undefined]]);
   });
 
-  it("an empty quote with no address points nowhere", () => {
-    assert.deepEqual(located(CONTRACT, [{ address: "", quote: "" }]), [["ok", undefined, undefined]]);
+  it("an empty quote with no address is not a match: it names nothing", () => {
+    assert.deepEqual(located(CONTRACT, [{ address: "", quote: " \n" }]), [["missing-address", undefined, undefined]]);
   });
 });
 

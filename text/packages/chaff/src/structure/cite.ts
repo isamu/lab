@@ -90,11 +90,11 @@ const innermostHolding = (nodes: readonly Addressed[], occurrence: Occurrence): 
 
 /**
  * 番地を書かない引用。原文のどこかに書いてあれば一致で、見つかった場所の番地と行を添える。番地の無い原文（見出しの無い記事）にも使える。
- * 引用文も空なら、確かめることが無い。番地の無い原文は常にあるので一致とし、行は付けない。
+ * 引用文も空なら、何も示していないので番地が無いとする。一致にすると、書き忘れた引用が通る。
  */
 const anywhere = (citation: Citation, whole: Normalized, nodes: readonly Addressed[], starts: readonly number[]): CitationResult => {
   const key = normalize(citation.quote).text;
-  if (key === "") return { citation, status: "ok" };
+  if (key === "") return { citation, status: "missing-address" };
   const at = whole.text.indexOf(key);
   if (at === -1) return { citation, status: "quote-not-found" };
   const occurrence = { start: whole.index[at] ?? 0, last: whole.index[at + key.length - 1] ?? 0 };
