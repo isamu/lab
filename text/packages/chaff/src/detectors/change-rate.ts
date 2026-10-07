@@ -1,9 +1,9 @@
 // change-rate-mismatch: the reading half. Builds the figures, the rates and the words of structure/change-rate.ts from the
-// tree's quantities, the numbers counted with a word ("1,200 companies"), and the lexicons change-direction, change-base,
-// percent-unit and amount-multiplier.
-import type { Detector, Finding, ProseDocument, Span, StructureNode } from "../plugin.ts";
+// tree's quantities, the numbers counted with a word ("1,200 companies"), the calendar years, and the lexicons change-direction,
+// change-base, change-target, change-break, percent-unit and amount-multiplier.
+import type { Detector, Finding, LexiconEntry, ProseDocument, Span, StructureNode } from "../plugin.ts";
 import { inDocumentOrder } from "../structure/issues.ts";
-import { changeRateMismatches, type BaseMark, type Direction, type Figure, type Rate } from "../structure/change-rate.ts";
+import { changeRateMismatches, type BaseMark, type Break, type Direction, type Figure, type Period, type Rate } from "../structure/change-rate.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { quoteAt } from "./structure-tree.ts";
 
@@ -82,13 +82,40 @@ const spansOf = (source: string, word: string): Span[] => {
 
 const SIGNS: Readonly<Record<string, 1 | -1>> = { rise: 1, fall: -1 };
 
-/** Phrases that hold a direction word but give no direction ("up to 25%" is a ceiling): lexicon change-direction-not. */
-const directionsOf = (doc: ProseDocument): Direction[] => {
-  const not = patternsOf(doc, "change-direction-not").flatMap((phrase) => spansOf(doc.source, phrase));
-  return (doc.lexicons["change-direction"] ?? []).flatMap((entry) => {
+/** Where the words of a lexicon stand, less those inside a phrase of its "-not" lexicon ("up to 25%" is a ceiling). */
+const spansWithout = (doc: ProseDocument, entries: readonly LexiconEntry[], notLexicon: string): (Span & { readonly entry: LexiconEntry })[] => {
+  const not = patternsOf(doc, notLexicon).flatMap((phrase) => spansOf(doc.source, phrase));
+  return entries.flatMap((entry) =>
+    spansOf(doc.source, entry.pattern)
+      .filter((span) => !not.some((phrase) => phrase.start <= span.start && span.end <= phrase.end))
+      .map((span) => ({ ...span, entry })),
+  );
+};
+
+/** Lexicon change-direction, less the phrases of change-direction-not. */
+const directionsOf = (doc: ProseDocument): Direction[] =>
+  spansWithout(doc, doc.lexicons["change-direction"] ?? [], "change-direction-not").flatMap(({ start, end, entry }) => {
     const sign = SIGNS[entry.group ?? ""];
-    const spans = spansOf(doc.source, entry.pattern).filter((span) => !not.some((phrase) => phrase.start <= span.start && span.end <= phrase.end));
-    return sign === undefined ? [] : spans.map((span) => ({ ...span, sign }));
+    return sign === undefined ? [] : [{ start, end, sign }];
+  });
+
+/** Lexicon change-break (「は」, "and"), less the phrases of change-break-not (「上がり」 holds が but starts no subject). */
+const breaksOf = (doc: ProseDocument): Break[] =>
+  spansWithout(doc, doc.lexicons["change-break"] ?? [], "change-break-not").map(({ start, end, entry }) => ({
+    start,
+    end,
+    beforeRateOnly: entry.group === "rate",
+  }));
+
+/** A calendar year written alone or with a unit of calendar year (2025, 2025年, 2025年度), and not part of an amount ($2025). */
+const CALENDAR_YEAR = /(?<!\d|\d[.,])(?:1[89]|2[01])\d{2}(?!\d|[.,]\d)/gu;
+
+const periodsOf = (doc: ProseDocument, figures: readonly Figure[]): Period[] => {
+  const yearUnits = new Set(patternsOf(doc, "calendar-year-unit").map((unit) => `${unit}|`));
+  const amounts = figures.filter((figure) => !yearUnits.has(figure.unit));
+  return [...doc.source.matchAll(CALENDAR_YEAR)].flatMap((match) => {
+    const span = { start: match.index, end: match.index + match[0].length };
+    return amounts.some((figure) => figure.start < span.end && span.start < figure.end) ? [] : [{ ...span, year: Number(match[0]) }];
   });
 };
 
@@ -103,13 +130,17 @@ export const changeRate: Detector = (doc): Finding[] => {
   const units = patternsOf(doc, "percent-unit");
   const multipliers = patternsOf(doc, "amount-multiplier").map((word) => word.toLowerCase());
   const taken = nodes.map((node) => node.span);
+  const figures = [...treeFigures(doc, nodes, units, multipliers), ...countedFigures(doc, taken, multipliers)];
   const text = {
     sentences: doc.sentences.map((sentence) => sentence.span),
-    figures: [...treeFigures(doc, nodes, units, multipliers), ...countedFigures(doc, taken, multipliers)],
+    figures,
     rates: ratesOf(doc, nodes, units),
     directions: directionsOf(doc),
     marks: marksOf(doc, "change-base"),
     targets: marksOf(doc, "change-target"),
+    periods: periodsOf(doc, figures),
+    breaks: breaksOf(doc),
+    source: doc.source,
   };
   return changeRateMismatches(text).map((issue) => ({
     rule: "change-rate-mismatch",
