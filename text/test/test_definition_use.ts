@@ -150,7 +150,8 @@ describe("use-before-definition: 定義より前で使っている語", () => {
 
   it("条の前の見出しの行と、章・節の行の語は、使った所ではない", () => {
     const statute = (head: string): readonly string[] =>
-      namedRuleRun("use-before-definition", `${head}第一条　株式会社やまと（以下「買主」という。）は、代金を支払う。\n`, ja, "a.txt", "legal/statute").findings;
+      namedRuleRun("use-before-definition", `${head}第一条\u3000株式会社やまと（以下「買主」という。）は、代金を支払う。\n`, ja, "a.txt", "legal/statute")
+        .findings;
     assert.deepEqual(statute("第一章　買主の義務\n\n（買主の義務）\n"), []);
     assert.deepEqual(statute("買主は、検収する。\n\n（買主の義務）\n"), ["「買主」を、4 行目の定義より前で使っています"]);
   });
