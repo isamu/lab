@@ -1,0 +1,269 @@
+{
+  "note": "Self-written quotes, invoices and proposals, each in a clean version and a planted one that differs only on the lines below. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should. yarn planted business scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/quote",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/quote.clean.md",
+      "planted": "ja/quote.planted.md",
+      "mistakes": [
+        {
+          "kind": "validity-reversed",
+          "rule": "date-range-reversed",
+          "line": 7,
+          "clean": "2026年10月1日〜2026年10月31日",
+          "planted": "2026年10月1日〜2025年10月31日"
+        },
+        {
+          "kind": "amount-two-ways",
+          "rule": "amount-scale-consistency",
+          "line": 17,
+          "clean": "お見積金額は1,320,000円",
+          "planted": "お見積金額は132万円"
+        },
+        {
+          "kind": "quantity-times-price",
+          "rule": "line-amount-mismatch",
+          "line": 24,
+          "clean": "| 4画面 | 150,000円 | 600,000円 |",
+          "planted": "| 4画面 | 160,000円 | 600,000円 |"
+        },
+        {
+          "kind": "items-subtotal",
+          "rule": "total-mismatch",
+          "line": 26,
+          "clean": "| 小計 | | | 1,200,000円 |",
+          "planted": "| 小計 | | | 1,250,000円 |"
+        },
+        {
+          "kind": "date-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 32,
+          "clean": "2026年12月18日（金）",
+          "planted": "2026年12月18日（木）"
+        }
+      ]
+    },
+    {
+      "id": "ja/invoice",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/invoice.clean.md",
+      "planted": "ja/invoice.planted.md",
+      "mistakes": [
+        {
+          "kind": "issue-after-due",
+          "rule": "due-before-issue",
+          "line": 7,
+          "clean": "お支払期限：2026年12月25日",
+          "planted": "お支払期限：2026年11月25日"
+        },
+        {
+          "kind": "quantity-times-price",
+          "rule": "line-amount-mismatch",
+          "line": 18,
+          "clean": "| 3人日 | 60,000円 | 180,000円 |",
+          "planted": "| 4人日 | 60,000円 | 180,000円 |"
+        },
+        {
+          "kind": "tax-amount",
+          "rule": "tax-mismatch",
+          "line": 21,
+          "clean": "| 消費税（10%） | | | 30,000円 |",
+          "planted": "| 消費税（10%） | | | 33,000円 |"
+        },
+        {
+          "kind": "currency-two-ways",
+          "rule": "currency-notation-consistency",
+          "line": 24,
+          "clean": "ご請求金額は330,000円です。",
+          "planted": "ご請求金額は¥330,000です。"
+        },
+        {
+          "kind": "company-name-variant",
+          "rule": "name-variant",
+          "line": 28,
+          "clean": "株式会社アオバシステム 経理部",
+          "planted": "株式会社アオバ・システム 経理部"
+        }
+      ]
+    },
+    {
+      "id": "ja/proposal",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/proposal.clean.md",
+      "planted": "ja/proposal.planted.md",
+      "mistakes": [
+        {
+          "kind": "amount-two-ways",
+          "rule": "amount-scale-consistency",
+          "line": 11,
+          "clean": "税込で2,200,000円",
+          "planted": "税込で220万円"
+        },
+        {
+          "kind": "total-subtotal-tax",
+          "rule": "total-mismatch",
+          "line": 22,
+          "clean": "| 合計 | 2,200,000円 |",
+          "planted": "| 合計 | 2,300,000円 |"
+        },
+        {
+          "kind": "date-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 27,
+          "clean": "2026年12月1日（火）",
+          "planted": "2026年12月1日（水）"
+        },
+        {
+          "kind": "validity-reversed",
+          "rule": "date-range-reversed",
+          "line": 33,
+          "clean": "2026年9月15日〜2026年12月15日",
+          "planted": "2026年9月15日〜2025年12月15日"
+        },
+        {
+          "kind": "company-name-variant",
+          "rule": "name-variant",
+          "line": 35,
+          "clean": "株式会社アオバシステム 営業部",
+          "planted": "アオバシステム株式会社 営業部"
+        }
+      ]
+    },
+    {
+      "id": "en/quote",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/quote.clean.md",
+      "planted": "en/quote.planted.md",
+      "mistakes": [
+        {
+          "kind": "validity-reversed",
+          "rule": "date-range-reversed",
+          "line": 7,
+          "clean": "October 1, 2026 – October 31, 2026",
+          "planted": "October 1, 2026 – October 31, 2025"
+        },
+        {
+          "kind": "amount-two-ways",
+          "rule": "amount-scale-consistency",
+          "line": 17,
+          "clean": "The quoted amount is $1,320,000,",
+          "planted": "The quoted amount is $1.32 million,"
+        },
+        {
+          "kind": "quantity-times-price",
+          "rule": "line-amount-mismatch",
+          "line": 24,
+          "clean": "| 4 | $150,000 | $600,000 |",
+          "planted": "| 4 | $160,000 | $600,000 |"
+        },
+        {
+          "kind": "items-subtotal",
+          "rule": "total-mismatch",
+          "line": 26,
+          "clean": "| Subtotal | | | $1,200,000 |",
+          "planted": "| Subtotal | | | $1,250,000 |"
+        },
+        {
+          "kind": "date-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 32,
+          "clean": "Friday, December 18, 2026",
+          "planted": "Thursday, December 18, 2026"
+        }
+      ]
+    },
+    {
+      "id": "en/invoice",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/invoice.clean.md",
+      "planted": "en/invoice.planted.md",
+      "mistakes": [
+        {
+          "kind": "issue-after-due",
+          "rule": "due-before-issue",
+          "line": 7,
+          "clean": "Payment due: December 25, 2026",
+          "planted": "Payment due: November 25, 2026"
+        },
+        {
+          "kind": "quantity-times-price",
+          "rule": "line-amount-mismatch",
+          "line": 18,
+          "clean": "| 3 days | $6,000 | $18,000 |",
+          "planted": "| 4 days | $6,000 | $18,000 |"
+        },
+        {
+          "kind": "tax-amount",
+          "rule": "tax-mismatch",
+          "line": 21,
+          "clean": "| Sales tax (10%) | | | $3,000 |",
+          "planted": "| Sales tax (10%) | | | $3,300 |"
+        },
+        {
+          "kind": "currency-two-ways",
+          "rule": "currency-notation-consistency",
+          "line": 24,
+          "clean": "The amount due is $33,000.",
+          "planted": "The amount due is USD 33,000."
+        },
+        {
+          "kind": "company-name-variant",
+          "rule": "name-variant",
+          "line": 28,
+          "clean": "the accounts team at Aoba Systems Inc.",
+          "planted": "the accounts team at Aoba System Inc."
+        }
+      ]
+    },
+    {
+      "id": "en/proposal",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/proposal.clean.md",
+      "planted": "en/proposal.planted.md",
+      "mistakes": [
+        {
+          "kind": "amount-two-ways",
+          "rule": "amount-scale-consistency",
+          "line": 11,
+          "clean": "The total cost is $2,200,000 including tax",
+          "planted": "The total cost is $2.2 million including tax"
+        },
+        {
+          "kind": "total-subtotal-tax",
+          "rule": "total-mismatch",
+          "line": 22,
+          "clean": "| Total | $2,200,000 |",
+          "planted": "| Total | $2,300,000 |"
+        },
+        {
+          "kind": "date-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 27,
+          "clean": "Tuesday, December 1, 2026",
+          "planted": "Wednesday, December 1, 2026"
+        },
+        {
+          "kind": "validity-reversed",
+          "rule": "date-range-reversed",
+          "line": 33,
+          "clean": "to December 15, 2026.",
+          "planted": "to December 15, 2025."
+        },
+        {
+          "kind": "company-name-variant",
+          "rule": "name-variant",
+          "line": 35,
+          "clean": "the sales team at Aoba Systems Inc.",
+          "planted": "the sales team at Aoba Systems Ltd."
+        }
+      ]
+    }
+  ]
+}
