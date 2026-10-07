@@ -11,6 +11,9 @@ entries:
     instead_of: ""
   - pattern: ies
     instead_of: "y"
+  # The Greek plural: "pneumoconioses" is "pneumoconiosis".
+  - pattern: ses
+    instead_of: "sis"
   - pattern: ied
     instead_of: "y"
   - pattern: ed

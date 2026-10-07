@@ -39,6 +39,7 @@ const USAGE_JA = `chaff — 文章の読みにくいところを見つけます�
   chaff genres                   ジャンル（文書の種類）の一覧と、それぞれ何向けか
   chaff tree <file> [--format sexp|json]  文書を番地の付いた木にする（条・項・定義・参照）
   chaff cite <原文> <引用.json> [--format text|json]  回答の引用（番地と引用文）が原文にあるかを確かめる
+  chaff cite --scaffold <file>           出典の無い引用を、出典を書き込む引用.json のひな形にする
   chaff compare <前> <後> [--json|--compact]  書き換えで事実（数・日付・URL・コード・名前・引用…）が落ちても足されてもいないかを確かめる
                                  --allow-dropped <種類> と --allow-added <種類> は、その種類の欠落・追加を許す（カンマで並べる。種類は number date time url code name quote heading reference footnote）
                                  --distinct は、何回述べたかではなく、述べているかだけを比べる
@@ -96,6 +97,7 @@ const USAGE_EN = `chaff — finds what makes writing hard to read. It never rewr
   chaff genres                   list the genres (kinds of document) and what each is for
   chaff tree <file> [--format sexp|json]  the document as a tree of addresses (sections, clauses, definitions, references)
   chaff cite <source> <quotes.json> [--format text|json]  check that quoted passages (address and text) are in the source
+  chaff cite --scaffold <file>            a quotes.json to fill in with sources, from the quotations that give none
   chaff compare <before> <after> [--json|--compact]  check that a rewrite dropped no fact and added none (numbers, dates, URLs, code, names, quotations…)
                                  --allow-dropped <kinds> and --allow-added <kinds> allow those kinds to go or come (comma-separated: number date time url code name quote heading reference footnote)
                                  --distinct compares only whether a fact is stated, not how many times

@@ -1,5 +1,5 @@
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
-import { isKnownWord, suggestionFor, wordsToCheck, type CheckedWord, type Speller } from "../spelling.ts";
+import { isKnownWord, isSplitWord, suggestionFor, wordsToCheck, type CheckedWord, type Speller } from "../spelling.ts";
 import { quoteAt } from "./structure-tree.ts";
 
 /** これより短い語は見ない。短い語は一字違いの語が多すぎて言い直しが決まらず（tost は test か toast か）、略した語（impl）も多い。 */
@@ -26,13 +26,13 @@ const usedOnce = (words: readonly CheckedWord[]): CheckedWord[] => {
 
 /**
  * 辞書に無い英語の語で、一字違いの辞書の語があるもの（recieve → receive）。辞書は adapter が持ち、無い言語では動かない。
- * 大文字を含む語（固有名詞・略語）、コード・URL の中、二度以上使う語、言い直しの無い語は言わない。
+ * 大文字を含む語（固有名詞・略語）、コード・URL の中、頭の字を分けた語の残り、二度以上使う語、言い直しの無い語は言わない。
  */
 export const unknownWord: Detector = (doc): Finding[] => {
   if (doc.dictionary === undefined) return [];
   const speller = spellerOf(doc, doc.dictionary());
   const known = new Set(patternsOf(doc, "known-misspelling"));
-  const words = wordsToCheck(doc.prose ?? doc.source, MIN_LENGTH, MAX_LENGTH);
+  const words = wordsToCheck(doc.prose ?? doc.source, MIN_LENGTH, MAX_LENGTH).filter(({ offset }) => !isSplitWord(doc.source, offset));
   const used = new Set(words.map(({ word }) => word).filter((word) => isKnownWord(word, speller)));
   return usedOnce(words).flatMap(({ offset, word }) => {
     if (known.has(word) || isKnownWord(word, speller)) return [];
