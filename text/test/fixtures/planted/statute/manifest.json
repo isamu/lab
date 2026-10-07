@@ -1,0 +1,93 @@
+{
+  "note": "Self-written internal regulations (records management), each in a clean version and a planted one that differs only on the lines below. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. yarn planted statute scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/records",
+      "language": "ja",
+      "genre": "legal/statute",
+      "clean": "ja/records.clean.md",
+      "planted": "ja/records.planted.md",
+      "mistakes": [
+        {
+          "kind": "connective-hierarchy",
+          "rule": "connective-hierarchy",
+          "line": 5,
+          "clean": "保管及び廃棄",
+          "planted": "保管並びに廃棄"
+        },
+        {
+          "kind": "defined-term-variant",
+          "rule": "defined-term-form",
+          "line": 13,
+          "clean": "管理責任者が部門ごとに",
+          "planted": "文書管理責任者が部門ごとに"
+        },
+        {
+          "kind": "dangling-article",
+          "rule": "dangling-reference",
+          "line": 15,
+          "clean": "第4条に定める",
+          "planted": "第9条に定める"
+        },
+        {
+          "kind": "connective-hierarchy",
+          "rule": "connective-hierarchy",
+          "line": 25,
+          "clean": "紙の文書又は電子の文書",
+          "planted": "紙の文書若しくは電子の文書"
+        },
+        {
+          "kind": "dangling-paragraph",
+          "rule": "dangling-reference",
+          "line": 29,
+          "clean": "第4条第2項",
+          "planted": "第4条第3項"
+        },
+        {
+          "kind": "article-gap",
+          "rule": "numbering-gap",
+          "line": 31,
+          "clean": "## 第7条（改廃）",
+          "planted": "## 第8条（改廃）"
+        }
+      ]
+    },
+    {
+      "id": "en/records",
+      "language": "en",
+      "genre": "legal/statute",
+      "clean": "en/records.clean.md",
+      "planted": "en/records.planted.md",
+      "mistakes": [
+        {
+          "kind": "dangling-article",
+          "rule": "dangling-reference",
+          "line": 15,
+          "clean": "set out in Section 4.",
+          "planted": "set out in Section 12."
+        },
+        {
+          "kind": "defined-term-variant",
+          "rule": "defined-term-form",
+          "line": 25,
+          "clean": "approval of the Records Officer",
+          "planted": "approval of the records officer"
+        },
+        {
+          "kind": "dangling-paragraph",
+          "rule": "dangling-reference",
+          "line": 29,
+          "clean": "Despite Section 4(b)",
+          "planted": "Despite Section 4(c)"
+        },
+        {
+          "kind": "article-gap",
+          "rule": "numbering-gap",
+          "line": 35,
+          "clean": "## Section 8. Commencement",
+          "planted": "## Section 9. Commencement"
+        }
+      ]
+    }
+  ]
+}
