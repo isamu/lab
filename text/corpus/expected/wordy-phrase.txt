@@ -12,6 +12,7 @@ gitlab-meetings  6
 gitlab-values  10
 govuk-guidance-academy-senior-pay  2
 irs-online-account-faq  2
+k8s-overview-ja  2
 nsf-19-582-reu-solicitation  2
 openapi-spec-3-1-0  3
 rfc9293-tcp  10

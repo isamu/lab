@@ -40,6 +40,25 @@ describe("wordy-phrase", () => {
     ]);
     assert.deepEqual(findingsOf(RULE, "Except on Friday, we met online. The office is near the station. To save time, we stayed.\n", en, "strict"), []);
   });
+
+  it("Japanese: two sentences with a wordy phrase are reported at normal, one is not", () => {
+    const two = "資料は社内から閲覧することが可能です。現時点において、追加の予定はありません。\n";
+    assert.deepEqual(findingsOf(RULE, two, ja), ["「することが可能」は、もっと短く言えます", "「現時点において」は、もっと短く言えます"]);
+    assert.deepEqual(findingsOf(RULE, "資料は社内から閲覧することが可能です。\n", ja), []);
+    assert.deepEqual(findingsOf(RULE, "今回の結果は成功であると言えます。\n", ja, "strict"), ["「であると言える」は、もっと短く言えます"]);
+  });
+
+  it("Japanese: the short forms, することができる and 必要性 are not reported", () => {
+    const short = "資料は社内から閲覧できます。現在、追加の予定はありません。今回の結果は成功です。\n";
+    assert.deepEqual(findingsOf(RULE, short, ja, "strict"), []);
+    assert.deepEqual(findingsOf(RULE, "資料は社内から閲覧することができます。業務上の必要性があります。\n", ja, "strict"), []);
+  });
+
+  it("Japanese: every lexicon phrase is found in a sentence", () => {
+    const lexicon = ja.lexicons[RULE] ?? [];
+    assert.ok(lexicon.length > 0);
+    lexicon.forEach((entry) => assert.equal(findingsOf(RULE, `この件は${entry.pattern}。\n`, ja, "strict").length, 1, entry.pattern));
+  });
 });
 
 describe("weasel-word", () => {
