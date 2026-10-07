@@ -353,7 +353,7 @@ A `source` in the quotes file may be an `http://` or `https://` address too.
 chaff fetches the page once and reads it as `chaff tree` reads a file.
 HTML is turned into Markdown first, so the page's headings become addresses (`h1.2`); a page with no headings still works with an empty `address`.
 After the fetch nothing depends on the network: the same page gives the same result.
-A page that cannot be fetched within 30 seconds, answers with an HTTP error, or is not text (a PDF, an image) ends the run with exit code `1` and says which address failed.
+A page that cannot be fetched within 30 seconds, answers with an HTTP error, is larger than 20 MB, or is not text (a PDF, an image) ends the run with exit code `1` and says which address failed.
 
 ## What chaff does, and what it does not
 

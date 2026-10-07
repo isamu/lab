@@ -17,14 +17,45 @@ export type FetchedPage = { readonly text: string; readonly contentType: string 
 /** What fetches: the global fetch, or a stand-in in tests. */
 export type Fetcher = (url: string, init: { readonly signal: AbortSignal }) => Promise<Response>;
 
-export const fetchPage = async (url: string, timeout_ms: number, fetcher: Fetcher = fetch): Promise<FetchedPage> => {
+export type FetchLimits = {
+  readonly timeout_ms: number;
+  /** A body longer than this is refused while it is read, before it is decoded. Undefined: no limit. */
+  readonly max_bytes?: number | undefined;
+};
+
+const tooLarge = (max_bytes: number): Error => new Error(`the page is larger than ${String(max_bytes)} bytes`);
+
+/** A read that gave bytes; a finished read (done) is not one. */
+const isChunk = (read: unknown): read is { readonly value: Uint8Array } =>
+  typeof read === "object" && read !== null && Reflect.get(read, "done") !== true && Reflect.get(read, "value") instanceof Uint8Array;
+
+/** The body's bytes, stopping as soon as they pass max_bytes. */
+const bodyBytes = async (response: Response, max_bytes: number | undefined): Promise<Uint8Array> => {
+  if (max_bytes === undefined || response.body === null) return new Uint8Array(await response.arrayBuffer());
+  const declared = Number(response.headers.get("content-length") ?? Number.NaN);
+  if (declared > max_bytes) throw tooLarge(max_bytes);
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for (let read: unknown = await reader.read(); isChunk(read); read = await reader.read()) {
+    size += read.value.byteLength;
+    if (size > max_bytes) {
+      await reader.cancel();
+      throw tooLarge(max_bytes);
+    }
+    chunks.push(read.value);
+  }
+  return Buffer.concat(chunks);
+};
+
+export const fetchPage = async (url: string, limits: FetchLimits, fetcher: Fetcher = fetch): Promise<FetchedPage> => {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeout_ms);
+  const timer = setTimeout(() => controller.abort(), limits.timeout_ms);
   try {
     const response = await fetcher(url, { signal: controller.signal });
     if (!response.ok) throw new HttpStatusError(response.status);
     const contentType = response.headers.get("content-type");
-    return { text: decodeFetched(new Uint8Array(await response.arrayBuffer()), contentType), contentType };
+    return { text: decodeFetched(await bodyBytes(response, limits.max_bytes), contentType), contentType };
   } catch (err) {
     throw new Error(`${url}: ${err instanceof Error ? err.message : String(err)}`, { cause: err });
   } finally {

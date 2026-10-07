@@ -2263,7 +2263,7 @@ npx chaffjs cite contract.txt claims.json --format json
 原文ごとに一度だけ木を作り、結果は引用.json の順に出す。
 
 原文は Web のページでもよい（`chaff cite --url <URL> claims.json`、または `source` に `http(s)://` のアドレス）。
-取得は `html/fetch-page.ts` だけが行う（AbortController で 30 秒、誤りはアドレスを持つ。HTTP の誤りは `cause` に状態）。
+取得は `html/fetch-page.ts` だけが行う（AbortController で 30 秒、20 MB を超える本文は読む途中で断る。誤りはアドレスを持つ。HTTP の誤りは `cause` に状態）。
 Content-Type が HTML（型が無く本文が HTML で始まるものも）なら Markdown に直してから読む（コーパスと同じ変換。見出しが番地になる）。Markdown とテキストはそのまま。それ以外（PDF、画像）は読めないと言って 1 で終わる。
 取得した後の判定はネットワークに頼らない。同じページからは同じ結果が出る。文字の出力は各行の先頭に `source` を、JSON は `citation.source` を持つ。
 

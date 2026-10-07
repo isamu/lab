@@ -65,19 +65,19 @@ describe("pageDocument", () => {
 describe("fetchPage", () => {
   it("gives the text and its Content-Type", async () => {
     const { fetcher, asked } = answering("Words.", "text/plain");
-    assert.deepEqual(await fetchPage(URL_TALK, 1000, fetcher), { text: "Words.", contentType: "text/plain" });
+    assert.deepEqual(await fetchPage(URL_TALK, { timeout_ms: 1000 }, fetcher), { text: "Words.", contentType: "text/plain" });
     assert.deepEqual(asked, [URL_TALK]);
   });
 
   it("decodes the encoding the page declares", async () => {
     const shiftJis = new Uint8Array([0x93, 0xfa, 0x96, 0x7b]);
     const fetcher: Fetcher = () => Promise.resolve(new Response(shiftJis, { headers: { "content-type": "text/plain; charset=shift_jis" } }));
-    assert.equal((await fetchPage(URL_TALK, 1000, fetcher)).text, "日本");
+    assert.equal((await fetchPage(URL_TALK, { timeout_ms: 1000 }, fetcher)).text, "日本");
   });
 
   it("an HTTP error names the URL and keeps the status as the cause", async () => {
     const { fetcher } = answering("gone", "text/plain", 404);
-    const error = await fetchPage(URL_TALK, 1000, fetcher).catch((err: unknown) => err);
+    const error = await fetchPage(URL_TALK, { timeout_ms: 1000 }, fetcher).catch((err: unknown) => err);
     assert.ok(error instanceof Error);
     assert.equal(error.message, `${URL_TALK}: HTTP 404`);
     assert.ok(error.cause instanceof HttpStatusError && error.cause.status === 404);
@@ -85,14 +85,38 @@ describe("fetchPage", () => {
 
   it("gives up after the timeout, and says which URL", async () => {
     const hanging: Fetcher = (_url, init) => new Promise((_resolve, reject) => init.signal.addEventListener("abort", () => reject(new Error("aborted"))));
-    const error = await fetchPage(URL_TALK, 10, hanging).catch((err: unknown) => err);
+    const error = await fetchPage(URL_TALK, { timeout_ms: 10 }, hanging).catch((err: unknown) => err);
     assert.ok(error instanceof Error);
     assert.equal(error.message, `${URL_TALK}: aborted`);
   });
 
+  it("refuses a body longer than the limit while reading it, and names the URL", async () => {
+    const pulled: number[] = [];
+    const chunk = new Uint8Array(10).fill(0x61);
+    const endless = new ReadableStream<Uint8Array>({
+      pull: (controller) => {
+        pulled.push(chunk.byteLength);
+        controller.enqueue(chunk);
+      },
+    });
+    const fetcher: Fetcher = () => Promise.resolve(new Response(endless, { headers: { "content-type": "text/plain" } }));
+    await assert.rejects(fetchPage(URL_TALK, { timeout_ms: 1000, max_bytes: 25 }, fetcher), { message: `${URL_TALK}: the page is larger than 25 bytes` });
+    assert.ok(pulled.length <= 4, `read ${String(pulled.length)} chunks`);
+  });
+
+  it("refuses at once a body whose Content-Length is over the limit", async () => {
+    const fetcher: Fetcher = () => Promise.resolve(new Response("a".repeat(30), { headers: { "content-type": "text/plain", "content-length": "30" } }));
+    await assert.rejects(fetchPage(URL_TALK, { timeout_ms: 1000, max_bytes: 25 }, fetcher), { message: `${URL_TALK}: the page is larger than 25 bytes` });
+  });
+
+  it("a body exactly at the limit is read", async () => {
+    const fetcher: Fetcher = () => Promise.resolve(new Response("a".repeat(25), { headers: { "content-type": "text/plain" } }));
+    assert.equal((await fetchPage(URL_TALK, { timeout_ms: 1000, max_bytes: 25 }, fetcher)).text, "a".repeat(25));
+  });
+
   it("a network failure names the URL", async () => {
     const failing: Fetcher = () => Promise.reject(new TypeError("fetch failed"));
-    await assert.rejects(fetchPage(URL_TALK, 1000, failing), { message: `${URL_TALK}: fetch failed` });
+    await assert.rejects(fetchPage(URL_TALK, { timeout_ms: 1000 }, failing), { message: `${URL_TALK}: fetch failed` });
   });
 });
 

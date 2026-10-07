@@ -10,7 +10,7 @@ export const CONNECT_TIMEOUT_MS = 30_000;
 /** Where undici keeps the dispatcher Node's fetch uses; the undici package's setGlobalDispatcher writes the same slot. */
 const GLOBAL_DISPATCHER = Symbol.for("undici.globalDispatcher.1");
 
-export const fetchText = async (url: string): Promise<string> => (await fetchPage(url, TIMEOUT_MS)).text;
+export const fetchText = async (url: string): Promise<string> => (await fetchPage(url, { timeout_ms: TIMEOUT_MS })).text;
 
 const isDispatcher = (value: unknown): value is object => typeof value === "object" && value !== null && typeof Reflect.get(value, "dispatch") === "function";
 

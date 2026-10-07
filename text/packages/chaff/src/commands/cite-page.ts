@@ -13,6 +13,9 @@ export type CiteContext = TreeContext & {
 /** Long enough for a slow page, short enough that a dead host does not hold up a run of checks. */
 const PAGE_TIMEOUT_MS = 30_000;
 
+/** Far beyond any article or statute page; a log or a dump served as text is refused instead of read whole. */
+const MAX_PAGE_BYTES = 20 * 1024 * 1024;
+
 const WEB = /^https?:\/\//iu;
 
 export const isWebSource = (source: string): boolean => WEB.test(source);
@@ -40,7 +43,7 @@ const TEXT: Texts<{
  */
 export const readPageTree = async (url: string, argv: readonly string[], context: CiteContext): Promise<SourceTree | undefined> => {
   const text = TEXT[context.ui ?? "ja"];
-  const fetched = await fetchPage(url, PAGE_TIMEOUT_MS, context.fetcher).catch((err: unknown) => {
+  const fetched = await fetchPage(url, { timeout_ms: PAGE_TIMEOUT_MS, max_bytes: MAX_PAGE_BYTES }, context.fetcher).catch((err: unknown) => {
     console.error(text.unfetched(err instanceof Error ? err.message : String(err)));
     return undefined;
   });
