@@ -12,7 +12,7 @@
       "requirements-gap": "1/1",
       "fee-total": "1/1",
       "announced-count": "1/1",
-      "annex-missing": "0/1"
+      "annex-missing": "1/1"
     },
     "en": {
       "date-weekday": "2/2",
@@ -22,7 +22,7 @@
       "requirements-gap": "1/1",
       "fee-total": "1/1",
       "announced-count": "0/1",
-      "annex-missing": "0/1"
+      "annex-missing": "1/1"
     }
   },
   "clean": []

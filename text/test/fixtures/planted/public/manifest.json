@@ -66,7 +66,7 @@
         },
         {
           "kind": "phone-two-ways",
-          "rule": "fact-conflict",
+          "rule": "phone-number-variant",
           "line": 35,
           "clean": "ごみ減量課　電話：0120-123-456",
           "planted": "ごみ減量課　電話：0120-123-465"
@@ -91,8 +91,8 @@
           "kind": "requirements-gap",
           "rule": "numbering-gap",
           "line": 19,
-          "clean": "(3) 全5回",
-          "planted": "(4) 全5回"
+          "clean": "（3）全5回",
+          "planted": "（4）全5回"
         },
         {
           "kind": "fee-total",
@@ -110,7 +110,7 @@
         },
         {
           "kind": "annex-missing",
-          "rule": "dangling-reference",
+          "rule": "dangling-figure-reference",
           "line": 39,
           "clean": "記入例は、別紙1のとおり",
           "planted": "記入例は、別紙2のとおり"
@@ -131,7 +131,7 @@
         },
         {
           "kind": "phone-two-ways",
-          "rule": "fact-conflict",
+          "rule": "phone-number-variant",
           "line": 49,
           "clean": "045-123-4567へ",
           "planted": "045-123-4576へ"
@@ -168,7 +168,7 @@
         },
         {
           "kind": "phone-two-ways",
-          "rule": "fact-conflict",
+          "rule": "phone-number-variant",
           "line": 35,
           "clean": "phone: 0120-123-456",
           "planted": "phone: 0120-123-465"
@@ -212,7 +212,7 @@
         },
         {
           "kind": "annex-missing",
-          "rule": "dangling-reference",
+          "rule": "dangling-figure-reference",
           "line": 39,
           "clean": "form is in Annex 1",
           "planted": "form is in Annex 2"
@@ -233,7 +233,7 @@
         },
         {
           "kind": "phone-two-ways",
-          "rule": "fact-conflict",
+          "rule": "phone-number-variant",
           "line": 49,
           "clean": "call 045-123-4567",
           "planted": "call 045-123-4576"
