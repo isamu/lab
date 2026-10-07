@@ -51,7 +51,7 @@ export const cellNumber = (cell: Cell): CellNumber | undefined => {
   const match = ONE_NUMBER.exec(text);
   if (match === null) return undefined;
   const [, before = "", whole = "", fraction = "", after = ""] = match;
-  if (NEGATIVE.test(before)) return undefined;
+  if (NEGATIVE.test(before) || NEGATIVE.test(after)) return undefined;
   return {
     before: before.trim(),
     value: Number(`${whole.replaceAll(",", "")}${fraction}`),
@@ -63,10 +63,12 @@ export const cellNumber = (cell: Cell): CellNumber | undefined => {
   };
 };
 
-/** The number a quantity cell starts with ("4", "3人日", "2.5 hours"), undefined when it does not start with one. */
+/** The number a quantity cell starts with ("4", "3人日", "2.5 hours"), undefined when it does not, or holds another ("2 x 3"). */
 export const quantityOf = (cell: Cell): number | undefined => {
-  const match = LEADING_NUMBER.exec(plain(cell.text));
-  return match === null ? undefined : Number(`${(match[1] ?? "").replaceAll(",", "")}${match[2] ?? ""}`);
+  const text = plain(cell.text);
+  const match = LEADING_NUMBER.exec(text);
+  if (match === null || /\d/u.test(text.slice(match[0].length))) return undefined;
+  return Number(`${(match[1] ?? "").replaceAll(",", "")}${match[2] ?? ""}`);
 };
 
 const columnNamed = (header: readonly Cell[], names: readonly string[]): number => {

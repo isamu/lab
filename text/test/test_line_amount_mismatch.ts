@@ -38,6 +38,8 @@ describe("line-amount-mismatch: 数量×単価が金額と合わない", () => {
     assert.deepEqual(findingsOf(table(["| 値引き | 1 | -50,000円 | -60,000円 |"])), []);
     assert.deepEqual(findingsOf(table(["| 保守 | 一式 | 80,000円 | 90,000円 |"])), []);
     assert.deepEqual(findingsOf(table(["| 小計 | | | 1,200,000円 |"])), []);
+    assert.deepEqual(findingsOf(enTable(["| A | 2 x 3 | $10 | $60 |"]), en), []);
+    assert.deepEqual(findingsOf(enTable(["| A | 2 | $10- | $25- |"]), en), []);
   });
 
   it("三つの列がそろわない表と、コードの中の表は読まない", () => {
@@ -63,6 +65,7 @@ describe("line-amount-mismatch: 数量×単価が金額と合わない", () => {
     assert.equal(quantityOf(cell("3人日")), 3);
     assert.equal(quantityOf(cell(" 2.5 hours")), 2.5);
     assert.equal(quantityOf(cell("一式")), undefined);
+    assert.equal(quantityOf(cell("2 x 3")), undefined);
   });
 
   it("語の無い言語と空の入力", () => {
