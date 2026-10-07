@@ -1,0 +1,11 @@
+# 関数の引数を並べた表の、最初の列の見出し（parameter-table-mismatch）。ほかの語（オプション、項目）の表は別のものを並べた表で、
+# シグネチャとは比べない。
+id: parameter-header
+language: ja
+entries:
+  - pattern: 引数
+  - pattern: パラメーター
+  - pattern: パラメータ
+  - pattern: parameter
+  - pattern: parameters
+  - pattern: argument
