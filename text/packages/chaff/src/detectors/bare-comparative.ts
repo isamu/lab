@@ -1,5 +1,6 @@
-import type { Detector, Finding, Lexicon, Sentence, Span, Token } from "../plugin.ts";
+import type { Detector, Finding, Lexicon, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 import { quotedIn } from "../quoted-span.ts";
+import { followsInlineCode } from "./code-before.ts";
 
 /**
  * 比べる相手の無い比較（より良い結果、さらに高速に、The new engine is faster.）。何より良いのか、何より速いのかが書かれていない。
@@ -132,6 +133,10 @@ export const listsOf = (lexicon: Lexicon): ComparativeLists => ({
 /** 鉤括弧の中の比較（「給与所得の確定申告がさらに簡単に！」ページ）は題や語を挙げたもので、書き手の比較ではない。 */
 const insideSpan = (found: BareComparative, span: Span): boolean => found.first.span.start >= span.start && found.last.span.end <= span.end;
 
+/** より right after inline code (`relaxed` より長い) is the particle "than" after a word the masking hid, not the adverb. */
+const isThanAfterCode = (doc: ProseDocument, found: BareComparative): boolean =>
+  found.first.surface === "より" && followsInlineCode(doc.source, doc.prose, found.first.span.start);
+
 export const bareComparative: Detector = (doc): Finding[] => {
   const lists = listsOf(doc.lexicons["comparative-baseline"] ?? []);
   return doc.sentences.flatMap((sentence, at) => {
@@ -139,7 +144,7 @@ export const bareComparative: Detector = (doc): Finding[] => {
     if (sentence.embeddedLanguage !== undefined || nearby.some((near) => namesBaseline(near, lists.baselines))) return [];
     const quoted = quotedIn(sentence);
     return bareComparativesIn(sentence.tokens ?? [], lists)
-      .filter((found) => !quoted.some((span) => insideSpan(found, span)))
+      .filter((found) => !quoted.some((span) => insideSpan(found, span)) && !isThanAfterCode(doc, found))
       .map((found) => ({
         rule: "",
         severity: "info",

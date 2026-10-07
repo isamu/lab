@@ -1,0 +1,244 @@
+{
+  "note": "Self-written public and administrative documents (a city notice and a course application guide), each in a clean version and a planted one that differs only on the lines below. The Japanese ones are written in 公用文 notation (kana for auxiliary verbs and formal nouns, Arabic numerals, 及び for a one-level list). Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should. yarn planted public scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/notice",
+      "language": "ja",
+      "genre": "business/report",
+      "clean": "ja/notice.clean.md",
+      "planted": "ja/notice.planted.md",
+      "mistakes": [
+        {
+          "kind": "date-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 7,
+          "clean": "2026年11月2日（月）",
+          "planted": "2026年11月2日（火）"
+        },
+        {
+          "kind": "koyobun-connective",
+          "rule": "connective-hierarchy",
+          "line": 11,
+          "clean": "住所及び氏名",
+          "planted": "住所並びに氏名"
+        },
+        {
+          "kind": "koyobun-number",
+          "rule": "number-style-consistency",
+          "line": 13,
+          "clean": "5点までです",
+          "planted": "五点までです"
+        },
+        {
+          "kind": "koyobun-formal-noun",
+          "rule": "orthographic-variant",
+          "line": 15,
+          "clean": "取り消すことができます",
+          "planted": "取り消す事ができます"
+        },
+        {
+          "kind": "nado-closed-list",
+          "rule": "nado-closed-list",
+          "line": 17,
+          "clean": "寝具及び自転車に限ります",
+          "planted": "寝具及び自転車等に限ります"
+        },
+        {
+          "kind": "period-reversed",
+          "rule": "date-range-reversed",
+          "line": 19,
+          "clean": "2026年10月5日から2026年10月30日まで",
+          "planted": "2026年10月5日から2026年9月30日まで"
+        },
+        {
+          "kind": "koyobun-auxiliary",
+          "rule": "orthographic-variant",
+          "line": 23,
+          "clean": "処理券を購入してください",
+          "planted": "処理券を購入して下さい"
+        },
+        {
+          "kind": "koyobun-auxiliary",
+          "rule": "orthographic-variant",
+          "line": 25,
+          "clean": "貼っておいてください",
+          "planted": "貼って置いてください"
+        },
+        {
+          "kind": "phone-two-ways",
+          "rule": "phone-number-variant",
+          "line": 35,
+          "clean": "ごみ減量課　電話：0120-123-456",
+          "planted": "ごみ減量課　電話：0120-123-465"
+        }
+      ]
+    },
+    {
+      "id": "ja/guide",
+      "language": "ja",
+      "genre": "business/report",
+      "clean": "ja/guide.clean.md",
+      "planted": "ja/guide.planted.md",
+      "mistakes": [
+        {
+          "kind": "period-reversed",
+          "rule": "date-range-reversed",
+          "line": 7,
+          "clean": "から2026年10月30日（金）まで",
+          "planted": "から2026年9月30日（水）まで"
+        },
+        {
+          "kind": "requirements-gap",
+          "rule": "numbering-gap",
+          "line": 19,
+          "clean": "（3）全5回",
+          "planted": "（4）全5回"
+        },
+        {
+          "kind": "fee-total",
+          "rule": "total-mismatch",
+          "line": 29,
+          "clean": "| 合計 | 3,500円 |",
+          "planted": "| 合計 | 3,800円 |"
+        },
+        {
+          "kind": "announced-count",
+          "rule": "announced-count-mismatch",
+          "line": 33,
+          "clean": "次の3点を添えて",
+          "planted": "次の4点を添えて"
+        },
+        {
+          "kind": "annex-missing",
+          "rule": "dangling-figure-reference",
+          "line": 39,
+          "clean": "記入例は、別紙1のとおり",
+          "planted": "記入例は、別紙2のとおり"
+        },
+        {
+          "kind": "nado-closed-list",
+          "rule": "nado-closed-list",
+          "line": 41,
+          "clean": "健康保険証に限ります",
+          "planted": "健康保険証等に限ります"
+        },
+        {
+          "kind": "date-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 47,
+          "clean": "2026年10月30日（金）も",
+          "planted": "2026年10月30日（木）も"
+        },
+        {
+          "kind": "phone-two-ways",
+          "rule": "phone-number-variant",
+          "line": 49,
+          "clean": "045-123-4567へ",
+          "planted": "045-123-4576へ"
+        }
+      ]
+    },
+    {
+      "id": "en/notice",
+      "language": "en",
+      "genre": "business/report",
+      "clean": "en/notice.clean.md",
+      "planted": "en/notice.planted.md",
+      "mistakes": [
+        {
+          "kind": "date-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 7,
+          "clean": "From Monday, November 2, 2026",
+          "planted": "From Tuesday, November 2, 2026"
+        },
+        {
+          "kind": "nado-closed-list",
+          "rule": "nado-closed-list",
+          "line": 17,
+          "clean": "bedding and bicycles only",
+          "planted": "bedding, bicycles, etc. only"
+        },
+        {
+          "kind": "period-reversed",
+          "rule": "date-range-reversed",
+          "line": 19,
+          "clean": "from October 5, 2026 to October 30, 2026",
+          "planted": "from October 5, 2026 to September 30, 2026"
+        },
+        {
+          "kind": "phone-two-ways",
+          "rule": "phone-number-variant",
+          "line": 35,
+          "clean": "phone: 0120-123-456",
+          "planted": "phone: 0120-123-465"
+        }
+      ]
+    },
+    {
+      "id": "en/guide",
+      "language": "en",
+      "genre": "business/report",
+      "clean": "en/guide.clean.md",
+      "planted": "en/guide.planted.md",
+      "mistakes": [
+        {
+          "kind": "period-reversed",
+          "rule": "date-range-reversed",
+          "line": 7,
+          "clean": "2026 to Friday, October 30, 2026",
+          "planted": "2026 to Wednesday, September 30, 2026"
+        },
+        {
+          "kind": "requirements-gap",
+          "rule": "numbering-gap",
+          "line": 19,
+          "clean": "(3) You can attend",
+          "planted": "(4) You can attend"
+        },
+        {
+          "kind": "fee-total",
+          "rule": "total-mismatch",
+          "line": 29,
+          "clean": "| Total | $35 |",
+          "planted": "| Total | $38 |"
+        },
+        {
+          "kind": "announced-count",
+          "rule": "announced-count-mismatch",
+          "line": 33,
+          "clean": "the following three documents",
+          "planted": "the following four documents"
+        },
+        {
+          "kind": "annex-missing",
+          "rule": "dangling-figure-reference",
+          "line": 39,
+          "clean": "form is in Annex 1",
+          "planted": "form is in Annex 2"
+        },
+        {
+          "kind": "nado-closed-list",
+          "rule": "nado-closed-list",
+          "line": 41,
+          "clean": "only a driving licence or a health insurance card as",
+          "planted": "only a driving licence, a health insurance card, etc. as"
+        },
+        {
+          "kind": "date-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 47,
+          "clean": "day, Friday, October 30",
+          "planted": "day, Thursday, October 30"
+        },
+        {
+          "kind": "phone-two-ways",
+          "rule": "phone-number-variant",
+          "line": 49,
+          "clean": "call 045-123-4567",
+          "planted": "call 045-123-4576"
+        }
+      ]
+    }
+  ]
+}
