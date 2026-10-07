@@ -1,0 +1,74 @@
+id: amount-scale-consistency
+layer: L2
+status: stable
+how_to_find: amount-scale
+severity: info
+
+name:
+  ja: 同じ桁の金額を二通りに書いている
+  en: Amounts of one size written two ways
+
+why:
+  ja: 「設計費30万円、制作費250,000円」のように、同じくらいの金額を「万」と数字だけの二通りで書くと、読み手は桁を数え直し、別の扱いの金額かと迷います。別々の見積もりやメールを寄せ集めたときに起きます。小さな金額を数字で、大きな金額を「万」「億」で書くのはふつうの書き方なので、同じ桁（十万の位なら十万の位どうし）の金額だけを比べ、その桁で少ないほうを指します。
+  en: When amounts of one size are written two ways ("$1.5 million for design, $2,500,000 for building"), the reader counts the zeros again and wonders whether the two are different kinds of amount. It happens when quotes and emails are pasted together. Small amounts in digits and large ones with "million" is a normal way of writing, so only amounts of the same order of magnitude are compared, and the way that order uses less is pointed at.
+
+message:
+  ja: 「{written}」と書いています（この文書は同じ桁の金額を「{usual}」のように書きます）
+  en: '"{written}" here, where the document writes amounts of this size like "{usual}"'
+
+how_to_fix:
+  ja: 同じ桁の金額は、文書の多いほうの書き方にそろえてください。
+  en: Write amounts of the same size the way the rest of the document does.
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: consistency
+summary:
+  ja: 「30万円」と「250,000円」のように、同じ桁の金額を「万」と数字だけの二通りで書いている所
+  en: Amounts of one order of magnitude written both with and without a word of scale, such as "$1.5 million" and "$2,500,000"
+example:
+  ja:
+    before: |
+      お見積もりの総額は55万円です。内訳は、設計費30万円、制作費250,000円です。
+    after: |
+      お見積もりの総額は55万円です。内訳は、設計費30万円、制作費25万円です。
+  en:
+    before: |
+      The total is $4 million: $1.5 million for design and $2,500,000 for building.
+    after: |
+      The total is $4 million: $1.5 million for design and $2.5 million for building.
+
+not_flagged:
+  ja: 桁の違う金額（「480円」と「30万円」）は比べません。小さな金額は数字で、大きな金額は「万」で書くのはふつうの書き方です。端数のある金額（「1,234,567円」）は「万」で書けないので比べません。通貨ごとに比べ、コードの中は読みません。
+  en: Amounts of different sizes ("$480" and "$3 million") are not compared; digits for small amounts and "million" for large ones is a normal way of writing. A precise amount ("$1,234,567") cannot be written with "million" and is not compared. Each currency is compared with itself, and code is not read.
+level_meaning:
+  ja: 同じ桁の金額を二通りに書いたとき、少ないほうを指摘
+  en: reported when amounts of one size are written two ways, at the less common way
+
+rewrite:
+  ja:
+    direction: 同じ桁の金額を、文書で多いほうの書き方にそろえてください。金額そのものは変えません。
+    pairs:
+      - before: 設計費30万円、制作費250,000円
+        after: 設計費30万円、制作費25万円
+      - before: 上限は5,000,000円とする。前項の上限額500万円には
+        after: 上限は5,000,000円とする。前項の上限額5,000,000円には
+    keep:
+      - 金額
+      - どの通貨か
+    avoid:
+      - 桁の違う金額まで同じ書き方にそろえる
+  en:
+    direction: Write amounts of the same size the way the document mostly does. Keep the amounts as they are.
+    pairs:
+      - before: $1.5 million for design and $2,500,000 for building
+        after: $1.5 million for design and $2.5 million for building
+      - before: The cap is $5,000,000. The cap of $5 million includes legal fees.
+        after: The cap is $5,000,000. The cap of $5,000,000 includes legal fees.
+    keep:
+      - the amounts
+      - which currency each amount is in
+    avoid:
+      - rewriting amounts of a different size to match

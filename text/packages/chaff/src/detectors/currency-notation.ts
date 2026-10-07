@@ -14,7 +14,7 @@ export type WrittenAmount = { readonly offset: number; readonly written: string;
 /** 少ないほうの書き方の金額と、多いほうの書き方の例、その通貨の金額の数。 */
 export type CurrencyMinority = { readonly odd: WrittenAmount; readonly usual: string; readonly count: number; readonly of: number };
 
-const AMOUNT = "[0-9０-９]+(?:[,，][0-9０-９]{3})*(?:[.．][0-9０-９]+)?";
+export const AMOUNT = "[0-9０-９]+(?:[,，][0-9０-９]{3})*(?:[.．][0-9０-９]+)?";
 
 const alternation = (words: readonly string[]): string => words.map(escapeRegExp).join("|");
 
@@ -71,7 +71,7 @@ export const currencyMinorities = (amounts: readonly WrittenAmount[], limit: num
     )
     .toSorted((left, right) => left.odd.offset - right.odd.offset);
 
-const formsOf = (doc: ProseDocument): CurrencyForm[] =>
+export const formsOf = (doc: ProseDocument): CurrencyForm[] =>
   (doc.lexicons["currency-notation"] ?? []).flatMap((entry) =>
     entry.position === undefined || entry.group === undefined ? [] : [{ pattern: entry.pattern, position: entry.position, currency: entry.group }],
   );
