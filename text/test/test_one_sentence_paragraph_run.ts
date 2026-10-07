@@ -43,6 +43,16 @@ describe("oneSentenceRuns: 隣り合う一文の段落", () => {
     assert.deepEqual(findingsOf(lines, en), []);
   });
 
+  it("文の終わりの印で終わらない段落（札、項目、表の欄）は数えず、そこで切れる", () => {
+    assert.deepEqual(runLengths("日時：\n\n令和7年12月8日（月）14時から16時まで\n\n場所：\n\nオンライン\n\n議題\n"), []);
+    assert.deepEqual(runLengths("一つ目です。\n\n二つ目です。\n\n備考\n\n三つ目です。\n\n四つ目です。\n"), [2, 2]);
+    assert.deepEqual(runLengths("「一つ目」です。\n\n二つ目です（例）。\n\n**三つ目です。**\n\n四つ目です」\n"), [3]);
+    const english = ["Authors", "OECD", "Tags", "17 June 2025", "Download PDF", "Share:"].join("\n\n");
+    assert.deepEqual(findingsOf(`${english}\n`, en), []);
+    const sentences = ["One is here.", "Two is here!", "Is three here?", '"Four is here."', "(Five is here.)"].join("\n\n");
+    assert.deepEqual(findingsOf(`${sentences}\n`, en), ["5 one-sentence paragraphs in a row (limit 4)"]);
+  });
+
   it("段落が無ければ何も無い", () => {
     assert.deepEqual(runLengths("# 見出し\n"), []);
   });
