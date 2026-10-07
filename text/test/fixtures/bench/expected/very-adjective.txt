@@ -1,4 +1,10 @@
-table  6  6  0  0
+table  12  12  0  0
+ja/blog  totemo-pile  found
+ja/design  totemo-pile  found
+ja/email  totemo-pile  found
+ja/figures  totemo-pile  found
+ja/press  totemo-pile  found
+ja/proposal  totemo-pile  found
 en/blog  very-pile  found
 en/design  very-pile  found
 en/email  very-pile  found

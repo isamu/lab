@@ -1,5 +1,6 @@
 import type { Detector, Finding, Lexicon, Sentence, Token } from "../plugin.ts";
 import { densityFindings } from "./ai-phrasing.ts";
+import { entryEndsAt } from "./lexicon-match.ts";
 
 /**
  * The word kinds an article can stand before. A conjunction, a preposition or a verb after "a" is the letter a ("option A
@@ -127,30 +128,65 @@ const ADJECTIVE = "ADJ";
 
 type Intensified = { readonly sentence: Sentence; readonly matched: string; readonly offset: number };
 
-type IntensifierWords = { readonly intensifiers: ReadonlySet<string>; readonly exceptions: ReadonlySet<string> };
+type IntensifierWords = {
+  readonly intensifiers: Lexicon;
+  readonly exceptions: ReadonlySet<string>;
+  /** Words after a noun that make it an adjective (便利な, 静かだ). Japanese only: its adjectival nouns are tagged as nouns. */
+  readonly copulas: ReadonlySet<string>;
+};
+
+/** An adjective, or a noun the lexicon's copula, an auxiliary (not the particle で), makes one: 便利 in 便利な. */
+const isAdjectiveAt = (tokens: readonly Token[], at: number, copulas: ReadonlySet<string>): boolean => {
+  const token = tokens[at];
+  if (token?.pos === ADJECTIVE) return true;
+  const after = tokens[at + 1];
+  return token?.pos === "NOUN" && after?.pos === "AUX" && copulas.has(after.surface);
+};
+
+const isBlank = (token: Token): boolean => token.surface.trim() === "";
+
+/** The intensifier that ends right before the token at `at`, past a line break (非常に / 危険), as the index of its first token. */
+const intensifierStart = (tokens: readonly Token[], at: number, intensifiers: Lexicon): number | undefined => {
+  const end = tokens.findLastIndex((token, index) => index < at && !isBlank(token)) + 1;
+  const entry = intensifiers.find((candidate) => entryEndsAt(tokens, candidate, end));
+  return entry === undefined ? undefined : end - (entry.tokens?.length ?? 1);
+};
+
+/** The intensifier and the adjective as words: "very important" in a spaced language, 非常に危険 in one measured in characters. */
+const matchedText = (tokens: readonly Token[], start: number, at: number, spaced: boolean): string =>
+  tokens
+    .slice(start, at + 1)
+    .filter((token) => !isBlank(token))
+    .map((token) => token.surface)
+    .join(spaced ? " " : "");
 
 /** The lexicon's intensifier right before an adjective ("very important"), not before an excepted word ("the very first"). */
-const intensifiedIn = (source: string, sentence: Sentence, words: IntensifierWords): Intensified[] => {
+const intensifiedIn = (source: string, sentence: Sentence, words: IntensifierWords, spaced: boolean): Intensified[] => {
   const tokens = sentence.tokens ?? [];
-  return tokens.flatMap((token, at) => {
-    const next = tokens[at + 1];
-    if (next === undefined || !words.intensifiers.has(token.surface.toLowerCase()) || next.pos !== ADJECTIVE) return [];
-    if (!adjacent(source, token, next)) return [];
-    return words.exceptions.has(next.surface.toLowerCase()) ? [] : [{ sentence, matched: `${token.surface} ${next.surface}`, offset: token.span.start }];
+  return tokens.flatMap((next, at) => {
+    const start = intensifierStart(tokens, at, words.intensifiers);
+    const first = start === undefined ? undefined : tokens[start];
+    const last = tokens.findLast((token, index) => index < at && !isBlank(token));
+    if (start === undefined || first === undefined || last === undefined || !isAdjectiveAt(tokens, at, words.copulas)) return [];
+    if (!adjacent(source, last, next) || words.exceptions.has(next.surface.toLowerCase())) return [];
+    return [{ sentence, matched: matchedText(tokens, start, at, spaced), offset: first.span.start }];
   });
 };
 
 const EXCEPTIONS = "very-exception";
+const COPULAS = "very-copula";
 
 /** "very" + adjective, dense for the document's length: each one leans on "very" instead of a stronger word. */
 export const intensifiedAdjective: Detector = (doc, options): Finding[] => {
   const words = {
-    intensifiers: new Set((options.lexicon ?? []).map((entry) => entry.pattern)),
+    intensifiers: options.lexicon ?? [],
     exceptions: new Set((doc.lexicons[EXCEPTIONS] ?? []).map((entry) => entry.pattern)),
+    copulas: new Set((doc.lexicons[COPULAS] ?? []).map((entry) => entry.pattern)),
   };
+  const spaced = doc.lengthUnit !== "char";
   return densityFindings(
     doc,
-    doc.sentences.flatMap((sentence) => intensifiedIn(doc.source, sentence, words)),
+    doc.sentences.flatMap((sentence) => intensifiedIn(doc.source, sentence, words, spaced)),
     options.limit,
   );
 };
