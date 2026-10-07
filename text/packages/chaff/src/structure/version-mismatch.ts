@@ -1,5 +1,6 @@
 // A version written in the lead-in to a code block ("Install version 2.3.0 from npm:") that the block itself does not
 // show (npm install tidyq@2.4.0). Pure: reads the source, the code blocks, and the prose with code covered.
+import { escapeRegExp } from "../orthography.ts";
 import type { Span } from "../plugin.ts";
 import type { StructureIssue } from "./issues.ts";
 
@@ -85,19 +86,72 @@ const leadInOf = (source: string, blockStart: number): Span | undefined => {
   return text === "" || NOT_PROSE.test(text) || !LETTER.test(words) ? undefined : { start, end: lines.length };
 };
 
-/**
- * Each version in a code block's lead-in that differs from the one version the block shows. A block with no version, or
- * with two (an upgrade from one to the other), says nothing to compare; a version marked as a bound, or named after another
- * program, is not the one installed.
- */
-export const versionMismatches = (source: string, prose: string, blocks: readonly CodeBlock[], words: VersionWords): StructureIssue[] =>
-  blocks.flatMap((block) => {
-    const shown = [...new Set(versionsIn(block.code).map((found) => found.version))];
-    const leadIn = leadInOf(source, block.start);
-    const [code] = shown;
-    if (shown.length !== 1 || code === undefined || leadIn === undefined) return [];
-    const names = pinnedNames(block.code);
-    return versionsIn(prose.slice(leadIn.start, leadIn.end), leadIn.start)
-      .filter((found) => found.version !== code && !isBound(prose, found, words.ranges) && isAboutBlock(prose, found, names, words.versionWords))
-      .map((found) => ({ offset: found.start, values: { written: found.version, code } }));
+/** A pin with the version it pins, of any number of parts: redis 7.4 in redis:7.4-alpine and in library/redis:7.4. */
+const PIN_VERSION = /^([\w.-]+)(?:@|==|=|:)[v^~]?(\d+(?:\.\d+)*)/u;
+const HAS_LETTER = /[A-Za-z]/u;
+
+/** Each name the block pins, with the one version it pins it to; a name pinned to two versions is left out. */
+const pinnedVersions = (code: string): Map<string, string> => {
+  const byName = new Map<string, Set<string>>();
+  codeWords(code).forEach((word) => {
+    const match = PIN_VERSION.exec(word.slice(word.lastIndexOf("/") + 1));
+    if (match?.[1] === undefined || match[2] === undefined || !HAS_LETTER.test(match[1])) return;
+    const name = match[1].toLowerCase();
+    byName.set(name, new Set([...(byName.get(name) ?? []), match[2]]));
   });
+  const single = new Map<string, string>();
+  byName.forEach((versions, name) => {
+    const [only] = versions;
+    if (versions.size === 1 && only !== undefined) single.set(name, only);
+  });
+  return single;
+};
+
+/** 7 and 7.4, or 7.4 and 7.4.1: one names the other's series, so they agree. */
+const sameSeries = (written: string, pinned: string): boolean => {
+  const [shorter, longer] = [written.split("."), pinned.split(".")].toSorted((left, right) => left.length - right.length);
+  return (shorter ?? []).every((part, index) => part === longer?.[index]);
+};
+
+/**
+ * Each version written right after the name of a program the block pins ("We run Redis 7.2" over redis:7.4) that is not of
+ * the pinned version's series. The name says whose version it is, so a version of two parts is read here, where a bare 7.2
+ * is too often a decimal; one part (port 6379, Node 20) is too often another number.
+ */
+const namedMismatches = (prose: string, leadIn: Span, code: string, ranges: readonly RangeWord[]): StructureIssue[] =>
+  [...pinnedVersions(code)].flatMap(([name, pinned]) => {
+    const pattern = new RegExp(`(?<![\\w.-])${escapeRegExp(name)}\\s+v?(\\d+(?:\\.\\d+){1,2})(?![\\w.]|\\.\\d)`, "giu");
+    return [...prose.slice(leadIn.start, leadIn.end).matchAll(pattern)].flatMap((match) => {
+      const written = match[1] ?? "";
+      const span = { start: leadIn.start + match.index, end: leadIn.start + match.index + match[0].length };
+      if (sameSeries(written, pinned) || isBound(prose, span, ranges)) return [];
+      return [{ offset: span.end - written.length, values: { written, code: pinned } }];
+    });
+  });
+
+/**
+ * Each version in the lead-in that differs from the one version the block shows. A block with no version, or with two (an
+ * upgrade from one to the other), says nothing to compare; a version marked as a bound, or named after another program, is
+ * not the one installed.
+ */
+const shownMismatches = (prose: string, leadIn: Span, code: string, words: VersionWords): StructureIssue[] => {
+  const shown = [...new Set(versionsIn(code).map((found) => found.version))];
+  const [only] = shown;
+  if (shown.length !== 1 || only === undefined) return [];
+  const names = pinnedNames(code);
+  return versionsIn(prose.slice(leadIn.start, leadIn.end), leadIn.start)
+    .filter((found) => found.version !== only && !isBound(prose, found, words.ranges) && isAboutBlock(prose, found, names, words.versionWords))
+    .map((found) => ({ offset: found.start, values: { written: found.version, code: only } }));
+};
+
+/** Both readings of one block; a version both report is reported once, against the pin of the program it names. */
+const blockMismatches = (source: string, prose: string, block: CodeBlock, words: VersionWords): StructureIssue[] => {
+  const leadIn = leadInOf(source, block.start);
+  if (leadIn === undefined) return [];
+  const issues = [...namedMismatches(prose, leadIn, block.code, words.ranges), ...shownMismatches(prose, leadIn, block.code, words)];
+  return issues.filter((issue, index) => issues.findIndex((other) => other.offset === issue.offset) === index);
+};
+
+/** Each version in a code block's lead-in that differs from the version the block installs. */
+export const versionMismatches = (source: string, prose: string, blocks: readonly CodeBlock[], words: VersionWords): StructureIssue[] =>
+  blocks.flatMap((block) => blockMismatches(source, prose, block, words));
