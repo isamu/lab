@@ -11,11 +11,11 @@ All notable changes to wrapkit, newest first. Versions follow semantic versionin
 
 - Fixed a crash when `width` is less than 1.
 
-## 3.1.0 - 2026-06-02
+## 3.3.0 - 2026-06-02
 
 - Added the `hyphenate` option.
 
-## 2.0.0 - 2026-03-20
+## 3.0.0 - 2026-03-20
 
 - `indent` is deprecated; use `prefix`.
 - `wrap` returns an array of lines instead of one string.
