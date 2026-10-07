@@ -10,8 +10,8 @@ name:
   en: The version in the text is not the one in the code
 
 why:
-  ja: 「2.3.0 を入れます」のすぐ下のコマンドが「tidyq@2.4.0」だと、読み手はどちらを入れればよいか分かりません。新しい版を出したときに、コード例か説明の片方だけを直すと起きます。コードブロックのすぐ上の段落に書いた版（2.3.0 のように点で三つに区切った番号）を、そのコードブロックにある版と比べます。コードに版がちょうど一つあり、段落の版がそれと違うとき指します。
-  en: 'When "Install version 2.3.0" sits right above a command that installs tidyq@2.4.0, the reader cannot tell which to install. It happens when a release updates the example or the text but not both. chaff compares a version written in the paragraph right above a code block (a number in three dotted parts, such as 2.3.0) with the version the block shows. It reports when the block shows exactly one version and the paragraph names another.'
+  ja: 「2.3.0 を入れます」のすぐ下のコマンドが「tidyq@2.4.0」だと、読み手はどちらを入れればよいか分かりません。新しい版を出したときに、コード例か説明の片方だけを直すと起きます。コードブロックのすぐ上の段落に書いた版（2.3.0 のように点で三つに区切った番号）を、そのコードブロックにある版と比べます。コードに版がちょうど一つあり、段落の版がそれと違うとき指します。コードが redis:7.4 のように名前と版で固定したソフトを、段落が「Redis 7.2」のように名前のすぐ後の版で書いたときは、7.4 のような二つに区切った番号も比べます。7.4 と 7.4.1 のように一方が他方の系列なら同じと見ます。
+  en: 'When "Install version 2.3.0" sits right above a command that installs tidyq@2.4.0, the reader cannot tell which to install. It happens when a release updates the example or the text but not both. chaff compares a version written in the paragraph right above a code block (a number in three dotted parts, such as 2.3.0) with the version the block shows. It reports when the block shows exactly one version and the paragraph names another. When the block pins a program by name (redis:7.4) and the paragraph writes a version right after that name (Redis 7.2), versions of two parts are compared too; 7.4 and 7.4.1 are the same series.'
 
 message:
   ja: 「{written}」と書いていますが、すぐ下のコードは {code} です
