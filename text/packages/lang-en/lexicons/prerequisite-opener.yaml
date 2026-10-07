@@ -1,0 +1,10 @@
+# Phrases a sentence opens with to give a prerequisite of the whole task ("Before you begin, stop the order service").
+# prerequisite-after-step reports one written after the numbered steps of its section. "Before step 4" names one step and
+# is left out.
+id: prerequisite-opener
+language: en
+entries:
+  - pattern: before you begin
+  - pattern: before you start
+  - pattern: before beginning
+  - pattern: before starting

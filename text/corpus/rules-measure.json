@@ -5767,6 +5767,22 @@
         "falseAlarms": 0
       }
     },
+    "prerequisite-after-step": {
+      "groups": {
+        "blog": {
+          "documents": 23,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 21,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 49,
+          "fired": 0
+        }
+      }
+    },
     "proper-noun-density": {
       "groups": {
         "academic": {
