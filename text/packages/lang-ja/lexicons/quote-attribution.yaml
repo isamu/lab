@@ -6,6 +6,8 @@ entries:
   - { pattern: と述べ, position: after }
   - { pattern: と語っ, position: after }
   - { pattern: と語る, position: after }
+  - { pattern: と語り, position: after }
+  - { pattern: と語ら, position: after }
   - { pattern: と言っ, position: after }
   - { pattern: と言う, position: after }
   - { pattern: と言わ, position: after }
@@ -14,6 +16,7 @@ entries:
   - { pattern: と記し, position: after }
   - { pattern: と説い, position: after }
   - { pattern: と説く, position: after }
+  - { pattern: と説き, position: after }
   - { pattern: と残し, position: after }
   - { pattern: と指摘, position: after }
   - { pattern: と主張, position: after }

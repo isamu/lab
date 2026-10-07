@@ -34,6 +34,13 @@ describe("comparative-without-baseline: 比べる相手の無い比較", () => {
     assert.deepEqual(findingsOf("障害から復旧しました。新しい版はさらに高速です。", ja), ["「さらに高速」は、何と比べているかが書かれていません"]);
   });
 
+  it("インラインコードの後ろの「より」は相手を受ける助詞", () => {
+    assert.deepEqual(findingsOf("手本の文章が `relaxed` より長いこともあります。", ja), []);
+    assert.deepEqual(findingsOf("`relaxed` を選びました。処理はさらに高速です。", ja), ["「さらに高速」は、何と比べているかが書かれていません"]);
+    assert.deepEqual(findingsOf("新しい版の `v2` さらに高速です。", ja), ["「さらに高速」は、何と比べているかが書かれていません"]);
+    assert.deepEqual(findingsOf("新しい版の \\` より高速です。", ja), ["「より高速」は、何と比べているかが書かれていません"]);
+  });
+
   it("比べる相手が同じ文か前の二文にあれば言わない", () => {
     assert.deepEqual(findingsOf("従来方式では誤検出が多くありました。今回は閾値を調整しました。より高い精度で判定します。", ja), []);
     assert.deepEqual(findingsOf("従来より高速です。旧版に比べて、さらに高速になりました。", ja), []);
