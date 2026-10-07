@@ -104,6 +104,22 @@
       ]
     },
     {
+      "id": "ja/reply",
+      "language": "ja",
+      "genre": "business/email",
+      "clean": "ja/reply.clean.md",
+      "planted": "ja/reply.planted.md",
+      "mistakes": [
+        {
+          "kind": "name-variant-no-honorific",
+          "rule": "name-variant",
+          "line": 13,
+          "clean": "斎藤まで",
+          "planted": "斉藤まで"
+        }
+      ]
+    },
+    {
       "id": "en/email",
       "language": "en",
       "genre": "business/email",

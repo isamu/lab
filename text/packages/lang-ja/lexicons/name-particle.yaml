@@ -1,0 +1,19 @@
+# 名前のすぐ後ろに来る語（斉藤です、斉藤までご連絡ください）。ここに置いた名前を、名前の来る場所にあると読む（name-variant）。
+# 字面どおりに照らす。行き先や出どころの助詞（へ、に、から、まで）は地名にも付く（鹿嶋まで伺います）ので、連絡の語が続くときだけ。
+# 「の」は入れない。名前と同じ字のふつうの語（沢山の）が多い。
+id: name-particle
+language: ja
+entries:
+  - pattern: です
+  - pattern: でした
+  - pattern: でございます
+  - pattern: が
+  - pattern: は
+  - pattern: まで連絡
+  - pattern: までご連絡
+  - pattern: までお知らせ
+  - pattern: までお問い合わせ
+  - pattern: までお尋ね
+  - pattern: までご一報
+  - pattern: から連絡
+  - pattern: からご連絡

@@ -3,7 +3,17 @@ import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { isNearWord, mentionsIn, nameKey, nameVariants, suffixedNamesIn, type NameMention } from "../packages/chaff/src/name-variants.ts";
+import {
+  cuedNamesIn,
+  isCharacterPair,
+  isNearWord,
+  mentionsIn,
+  nameKey,
+  nameVariants,
+  suffixedNamesIn,
+  type NameEvidence,
+  type NameMention,
+} from "../packages/chaff/src/name-variants.ts";
 import type { Token } from "../packages/chaff/src/plugin.ts";
 
 // 同じ名前の書き分け（name-variant）。例文はすべて自作。
@@ -74,6 +84,24 @@ describe("name-variant: 同じ名前の書き分け", () => {
     assert.deepEqual(names("株式会社髙橋様"), []);
     assert.deepEqual(names("鈴木様と髙様"), []);
     assert.deepEqual(suffixedNamesIn("髙橋様", ["様"], chars, [{ ...mention("髙橋", 0), person: true }]), []);
+  });
+
+  it("敬称の無い名前も、片方に「担当の」などが付き、もう片方が名前の来る場所にあれば言う", () => {
+    assert.deepEqual(variants("担当の斎藤です。費用は25万円です。斉藤まで連絡ください。\n", ja), [
+      "「斉藤」は、ほかの所では字体の違う同じ字で「斎藤」と書いています",
+    ]);
+    assert.deepEqual(variants("担当の髙橋です。資料の件は高橋までご連絡ください。\n", ja), [
+      "「高橋」は、ほかの所では字体の違う同じ字で「髙橋」と書いています",
+    ]);
+    assert.deepEqual(variants("斎藤様\n\nご不明な点は、斉藤までお尋ねください。\n", ja), ["「斉藤」は、ほかの所では字体の違う同じ字で「斎藤」と書いています"]);
+  });
+
+  it("地名やふつうの語は、敬称の無い名前と読まない（鹿島 と 鹿嶋、沢山 と 澤山）", () => {
+    assert.deepEqual(variants("鹿島から鹿嶋まで車で行きます。\n", ja), []);
+    assert.deepEqual(variants("担当の鹿島です。明日は鹿嶋まで伺います。鹿嶋へ参ります。\n", ja), []);
+    assert.deepEqual(variants("担当の澤山です。資料は沢山あります。沢山の資料を送ります。\n", ja), []);
+    assert.deepEqual(variants("鹿嶋市の鹿島神宮へ参ります。担当の鹿嶋です。\n", ja), []);
+    assert.deepEqual(variants("高い山と髙い山。高橋さんは来ます。\n", ja), []);
   });
 
   it("名前を一つの書き方でだけ書いた文書は言わない", () => {
@@ -198,6 +226,37 @@ describe("the reading behind name-variant", () => {
     assert.deepEqual(personOf(placeThenSuffix, ["様"]), [true]);
     assert.deepEqual(personOf(placeThenSuffix), [false]);
     assert.deepEqual(personOf([token("松本", 0, "PROPN", "Sur")]), [true]);
+  });
+
+  it("字体の違う二つを同じ人と見るのは、どちらも人の名前か、片方に前置きか敬称があり、もう片方が名前の来る場所にあるとき", () => {
+    const evidence = (person: boolean, named: boolean, nameLike: boolean): NameEvidence => ({ person, named, nameLike });
+    const tagged = evidence(true, false, false);
+    const named = evidence(false, true, true);
+    const slot = evidence(false, false, true);
+    const none = evidence(false, false, false);
+    assert.equal(isCharacterPair(tagged, tagged), true);
+    assert.equal(isCharacterPair(named, slot), true);
+    assert.equal(isCharacterPair(slot, named), true);
+    assert.equal(isCharacterPair(named, named), true);
+    assert.equal(isCharacterPair(slot, slot), false);
+    assert.equal(isCharacterPair(tagged, slot), false);
+    assert.equal(isCharacterPair(named, none), false);
+    assert.equal(isCharacterPair(none, none), false);
+  });
+
+  it("敬称の無い名前の候補は、字体の字を含み、名前の来る場所にあり、ほかの現れと重ならない漢字", () => {
+    const chars = new Map([
+      ["高", "高"],
+      ["髙", "高"],
+    ]);
+    const cues = { leads: ["担当の"], suffixes: ["様"], particles: ["まで"] };
+    const names = (source: string, taken: readonly NameMention[] = []): string[] =>
+      cuedNamesIn(source, cues, chars, taken).map((found) => `${found.surface}@${String(found.offset)}:${found.cue ?? ""}`);
+    assert.deepEqual(names("担当の髙橋です。髙橋まで。"), ["髙橋@3:person", "髙橋@8:slot"]);
+    assert.deepEqual(names("髙橋と申します。鈴木まで。"), []);
+    assert.deepEqual(names("髙橋製作所まで"), []);
+    assert.deepEqual(names("髙橋まで", [{ ...mention("髙橋", 0), person: true }]), []);
+    assert.deepEqual(names(""), []);
   });
 
   it("a same-reading pair must share all but one word", () => {

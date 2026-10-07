@@ -1,5 +1,6 @@
 import type { Token } from "./plugin.ts";
 import { escapeRegExp } from "./orthography.ts";
+import { nameCueAt, type NameCue, type NameCues } from "./name-cue.ts";
 
 // 同じ名前（人・会社・製品）を、文書の中で少しだけ違う形に書いた所。どの形が正しいかは決めず、少ないほうを指す。
 // 三通りで同じ名前と見る。書き方の違いだけ（GitHub と Github、Mac OS と macOS）、読みが同じ（山田太郎 と 山田太朗）、
@@ -7,7 +8,7 @@ import { escapeRegExp } from "./orthography.ts";
 
 /**
  * words は名前の語（記号を除く）。読みが同じ二つの名前が、どの語で違うかを見るため。person は人の名前と読めるもの（解析器が
- * 人名と読むか、敬称が付く）。
+ * 人名と読むか、敬称が付く）。cue は前後の語から見た名前らしさ（name-cue.ts）。
  */
 export type NameMention = {
   readonly surface: string;
@@ -15,6 +16,7 @@ export type NameMention = {
   readonly reading: string | undefined;
   readonly words: readonly string[];
   readonly person?: boolean;
+  readonly cue?: NameCue;
 };
 
 export type NameVariant = { readonly mention: NameMention; readonly usual: string; readonly kind: "spelling" | "reading" | "near" | "character" };
@@ -126,6 +128,22 @@ export const suffixedNamesIn = (source: string, suffixes: readonly string[], cha
     }),
   );
 
+const HAN_RUN = /\p{Script=Han}+/gu;
+
+/**
+ * 解析器が名前と読めず、敬称も無いが、前後の語で名前と読める、字体の違う字を含む漢字（担当の髙橋です、髙橋まで）。
+ * ほかの名前の現れと重ならないもの。
+ */
+export const cuedNamesIn = (source: string, cues: NameCues, chars: VariantChars, taken: readonly NameMention[]): NameMention[] =>
+  [...source.matchAll(HAN_RUN)].flatMap((match) => {
+    const [run] = match;
+    const cue = nameCueAt(source, match.index, run, cues);
+    if (cue === undefined || cue === "bare" || ![...run].some((letter) => chars.has(letter))) return [];
+    const end = match.index + run.length;
+    if (taken.some((mention) => mention.offset < end && match.index < mention.offset + mention.surface.length)) return [];
+    return [{ surface: run, offset: match.index, reading: undefined, words: [run], cue }];
+  });
+
 /** 比べる形。幅（ＡＷＳ と AWS）、大文字小文字、空白と記号は名前を変えない。 */
 export const nameKey = (surface: string): string =>
   surface
@@ -133,19 +151,38 @@ export const nameKey = (surface: string): string =>
     .toLowerCase()
     .replaceAll(/[\s\p{P}\p{S}]/gu, "");
 
-/** person: どれかの現れが人の名前と読める。 */
-type Tally = { readonly surface: string; readonly first: NameMention; readonly count: number; readonly person: boolean };
+/**
+ * 名前の現れから言えること。person: 人の名前と読める。named: 人を指す前置きか敬称が付く。nameLike: 名前の来る場所にある（前置き
+ * か敬称、名前のすぐ後ろに来る語）。解析器の人名の印は地名にも付く（鹿嶋へ）ので、nameLike には数えない。
+ */
+export type NameEvidence = { readonly person: boolean; readonly named: boolean; readonly nameLike: boolean };
 
+type Tally = NameEvidence & { readonly surface: string; readonly first: NameMention; readonly count: number };
+
+const evidenceOf = (mention: NameMention): NameEvidence => ({
+  person: mention.person === true,
+  named: mention.cue === "person",
+  nameLike: mention.cue === "person" || mention.cue === "slot",
+});
+
+/** 書き方ごとの数と、どれかの現れが言えること。 */
 const talliesOf = (mentions: readonly NameMention[]): Tally[] => {
-  const tallies = new Map<string, { surface: string; first: NameMention; count: number; person: boolean }>();
+  const tallies = new Map<string, Tally>();
   mentions.forEach((mention) => {
     const tally = tallies.get(mention.surface);
-    const person = mention.person === true;
-    if (tally === undefined) tallies.set(mention.surface, { surface: mention.surface, first: mention, count: 1, person });
-    else {
-      tally.count += 1;
-      tally.person ||= person;
-    }
+    const evidence = evidenceOf(mention);
+    tallies.set(
+      mention.surface,
+      tally === undefined
+        ? { surface: mention.surface, first: mention, count: 1, ...evidence }
+        : {
+            ...tally,
+            count: tally.count + 1,
+            person: tally.person || evidence.person,
+            named: tally.named || evidence.named,
+            nameLike: tally.nameLike || evidence.nameLike,
+          },
+    );
   });
   return [...tallies.values()];
 };
@@ -249,14 +286,23 @@ const nearVariants = (tallies: readonly Tally[]): NameVariant[] => variantsIn(gr
 /** 字体の違う字（斎と斉）を組の代表の字に寄せた形。 */
 const characterKey = (tally: Tally, chars: VariantChars): string => [...tally.surface].map((letter) => chars.get(letter) ?? letter).join("");
 
+/**
+ * 字体の違う字で書き分けた二つを、同じ人の名前と見るか。どちらも人の名前と読めるか、片方に人を指す前置きか敬称が付き
+ * （担当の斎藤です）、もう片方が名前の来る場所にある（斉藤まで）。地名にも同じ組がある（鹿島 と 鹿嶋）ので、名前の来る場所どうし
+ * だけでは見ない。
+ */
+export const isCharacterPair = (left: NameEvidence, right: NameEvidence): boolean =>
+  (left.person && right.person) || (left.named && right.nameLike) || (right.named && left.nameLike);
+
 /** 人の名前を、字体の違う同じ字（斎藤 と 斉藤、渡辺 と 渡邊）で書き分けた所。 */
 const characterVariants = (tallies: readonly Tally[], chars: VariantChars): NameVariant[] =>
   variantsIn(
     groupBy(
-      tallies.filter((tally) => tally.person),
+      tallies.filter((tally) => tally.person || tally.nameLike),
       (tally) => [characterKey(tally, chars)],
     ),
     "character",
+    isCharacterPair,
   );
 
 /** 字数が同じで、一字だけが違う（松本 と 松元）。 */

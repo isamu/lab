@@ -1,0 +1,11 @@
+# 人の名前のすぐ前に置いて、その名前が人だと言う語（担当の斎藤です、私、斎藤が）。敬称の無い名前を人の名前と読む（name-variant）。
+# 字面どおりに照らす。名前は、前後に漢字が続かない 2〜4 字の漢字に限る。
+id: person-lead
+language: ja
+entries:
+  - pattern: 担当の
+  - pattern: 担当は
+  - pattern: 担当者の
+  - pattern: 担当者は
+  - pattern: 私、
+  - pattern: 私は
