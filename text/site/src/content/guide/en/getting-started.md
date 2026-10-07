@@ -93,20 +93,20 @@ AI-likeness: not scored (too short: 66 words; scored from 200)
 
 ```
 
-With findings, each one gets its own block. This is a run on a real article.
+With findings, each one gets its own block. This is a run on a short article written for this guide.
 
 ```
 $ npx chaffjs sample.md
 
 sample.md   blog/tech · English   genre from the default
 
-─── line 21 ──────────────────────────────────────────────────
+─── line 3 ───────────────────────────────────────────────────
 
-    If you imagine MCP, it’s easier to understand: a ToolsAgent is an agent that allows an LLM to call functions (Agents) by…
+    Our end-to-end suite spent most of its time building the same fixtures again on every run, so we started keeping them in…
 
-  ⚠  Sentence too long
+  ·  Sentence too long
 
-     This sentence runs 31 words (limit 25)
+     This sentence runs 41 words (limit 40)
      In a long sentence the reader loses the subject before reaching the verb.
 
      → Split it in two at the conjunction.
@@ -114,32 +114,30 @@ sample.md   blog/tech · English   genre from the default
      Relax this rule:  npx chaffjs relax max-sentence-length
 
 
-─── line 21 ──────────────────────────────────────────────────
+─── line 11 ──────────────────────────────────────────────────
 
-    Internally, it passes the tools schema to an OpenAI LLM agent, then dynamically calls the appropriate agent(s) within Gr…
+    The restoreFixtures step restores the fixtures.
 
-  ⚠  Sentence too long
+  ·  Heading echoed
 
-     This sentence runs 27 words (limit 25)
-     In a long sentence the reader loses the subject before reaching the verb.
-
-     → Split it in two at the conjunction.
-
-     Relax this rule:  npx chaffjs relax max-sentence-length
-
-
-─── line 142 ─────────────────────────────────────────────────
-
-    Set the tools schema in agentFunctionInfo.
-
-  ⚠  Heading echoed
-
-     The first sentence repeats the heading "agentFunctionInfo"
+     The first sentence repeats the heading "restoreFixtures"
      When the first sentence repeats the heading, the reader gains nothing by reading on.
 
      → Start from what the heading promised, not from the heading itself.
 
      Relax this rule:  npx chaffjs relax heading-echo
+
+
+────────────────────────────────────────────────────────────
+
+  2 notes   All judged by machine
+              (the same text gives the same result every time)
+
+  The text was not changed. Fixing it is the writer's job.
+
+  {not-run}
+
+AI-likeness: not scored (too short: 111 words; scored from 200)
 ```
 
 From top to bottom, the screen says:
@@ -147,9 +145,9 @@ From top to bottom, the screen says:
 | Part of the screen | What it means |
 | --- | --- |
 | First line | The file, its genre, its language, and where the genre came from |
-| `─── line 21 ───` | One finding starts here; the number is the line |
+| `─── line 3 ───` | One finding starts here; the number is the line |
 | The indented sentence | The sentence the finding is about |
-| `⚠` and `·` | How serious the finding is, followed by its title |
+| `·` and `⚠` | How serious the finding is (`·` a note, `⚠` a warning), followed by its title |
 | The two lines under the title | What is happening, and why it is hard to read |
 | The line starting with `→` | How to fix it |
 | Relax this rule | The command that adjusts that rule for your team |

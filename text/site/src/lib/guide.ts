@@ -2,7 +2,8 @@ import { getCollection, type CollectionEntry } from "astro:content";
 import type { Lang } from "./i18n";
 
 // The order a newcomer reads the guide in: a first run, then their kind of document, then fitting chaff to the team,
-// the reference, and last the uses that build on all of it (AI-written text, AI evals, rules of your own).
+// the reference, and last the uses that build on all of it (AI-written text, AI evals, each followed by its worked
+// examples, then rules of your own).
 // A page not listed here follows, by name.
 const ORDER = [
   "getting-started",
@@ -24,7 +25,9 @@ const ORDER = [
   "commands",
   "reference",
   "ai-sounding",
+  "ai-sounding-examples",
   "ai-evals",
+  "ai-evals-examples",
   "adding-rules",
   "writing-plugins",
   "bibliography",

@@ -63,10 +63,12 @@ $ npx chaffjs sample.md --compact
 
 sample.md   blog/tech · 日本語   ジャンルは既定から
 
-  3:1     info    一文に節が 8 つつながっています（5 つまで）
-                  clause-chain
+  7:1     info    この文に中黒が 6 個あります（5 個まで）
+                  no-nakaguro-parallel
+  9:1     info    この文は 166 文字あります（160 文字まで）
+                  max-sentence-length
 
-指摘 1 件、動いていない rule 19 件
+{counts}
 ```
 
 最後の行は、指摘の数と、動かなかったルールの数です。
