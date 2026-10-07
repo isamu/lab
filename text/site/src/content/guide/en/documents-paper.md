@@ -25,6 +25,7 @@ These are the main rules for this genre. All of them run by default.
 | `spelling-consistency` | British and American spellings mixed in one document |
 | `doubled-word` | The same word written twice in a row |
 | `dangling-figure-reference` | A figure or table the text refers to that the document does not have |
+| `quote-without-source` | Words given to someone ("X argued …") with no citation in the paragraph |
 
 What it does not do is decided too.
 
