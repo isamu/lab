@@ -72,7 +72,7 @@ describe("personMentions (en)", () => {
   });
 
   it("still reads one after a word that opens a clause or an adverb at the head", () => {
-    assert.deepEqual(forms("If one can, ask. First one must ask.", en), ["one can>one", "one must>one"]);
+    assert.deepEqual(forms("If one can, ask. First one must ask. There is little one can do.", en), ["one can>one", "one must>one", "one can>one"]);
   });
 
   it("looks only at the word right before, across spaces only", () => {
