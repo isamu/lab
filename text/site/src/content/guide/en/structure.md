@@ -341,6 +341,20 @@ npx chaffjs cite quotes.json
 
 Each line of the result starts with the source it checked. With a source on the command line as well, a quotation that names its own is an error, so the two are never mixed up.
 
+### A source on the web
+
+When the source is a web page, give its address instead of a file:
+
+```bash
+npx chaffjs cite --url https://example.com/talk quotes.json
+```
+
+A `source` in the quotes file may be an `http://` or `https://` address too.
+chaff fetches the page once and reads it as `chaff tree` reads a file.
+HTML is turned into Markdown first, so the page's headings become addresses (`h1.2`); a page with no headings still works with an empty `address`.
+After the fetch nothing depends on the network: the same page gives the same result.
+A page that cannot be fetched within 30 seconds, answers with an HTTP error, or is not text (a PDF, an image) ends the run with exit code `1` and says which address failed.
+
 ## What chaff does, and what it does not
 
 chaff only decides whether something is broken. It never rewrites the document.

@@ -1,6 +1,6 @@
-// Fetches a corpus source as text, in the encoding it declares, with a timeout. A non-2xx answer throws an error
-// whose cause carries the HTTP status, so a caller can tell a dead source (404) from a transient one (503).
-import { decodeFetched } from "./fetched-text.ts";
+// Fetches a corpus source as text through chaff's own fetch (packages/chaff/src/html/fetch-page.ts), with the corpus's
+// long timeout, and gives Node's fetch a longer time to connect.
+import { fetchPage } from "../packages/chaff/src/html/fetch-page.ts";
 
 const TIMEOUT_MS = 120_000;
 
@@ -10,28 +10,7 @@ export const CONNECT_TIMEOUT_MS = 30_000;
 /** Where undici keeps the dispatcher Node's fetch uses; the undici package's setGlobalDispatcher writes the same slot. */
 const GLOBAL_DISPATCHER = Symbol.for("undici.globalDispatcher.1");
 
-export class HttpStatusError extends Error {
-  readonly status: number;
-
-  constructor(status: number) {
-    super(`HTTP ${String(status)}`);
-    this.status = status;
-  }
-}
-
-export const fetchText = async (url: string): Promise<string> => {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
-  try {
-    const response = await fetch(url, { signal: controller.signal });
-    if (!response.ok) throw new HttpStatusError(response.status);
-    return decodeFetched(new Uint8Array(await response.arrayBuffer()), response.headers.get("content-type"));
-  } catch (err) {
-    throw new Error(`${url}: ${err instanceof Error ? err.message : String(err)}`, { cause: err });
-  } finally {
-    clearTimeout(timer);
-  }
-};
+export const fetchText = async (url: string): Promise<string> => (await fetchPage(url, TIMEOUT_MS)).text;
 
 const isDispatcher = (value: unknown): value is object => typeof value === "object" && value !== null && typeof Reflect.get(value, "dispatch") === "function";
 

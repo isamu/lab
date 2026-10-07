@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { withLostParagraphTagsRestored } from "../scripts/html-lost-tags.ts";
-import { htmlToMarkdown } from "../scripts/html-markdown.ts";
+import { withLostParagraphTagsRestored } from "../packages/chaff/src/html/html-lost-tags.ts";
+import { htmlToMarkdown } from "../packages/chaff/src/html/html-markdown.ts";
 
 // 16 CFR 310.4(b)（米国連邦規則、パブリックドメイン）を縮めたもの。eCFR は (2) の段落を開く <P> の "<" を落として配っている。
 const ECFR =

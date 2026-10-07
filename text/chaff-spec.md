@@ -2260,7 +2260,12 @@ npx chaffjs cite contract.txt claims.json --format json
 
 原文は引数で一つ渡すか、項目ごとに `source`（原文のファイル。相対パスは引用.json のある場所から）で書く。
 `chaff cite claims.json` と引用.json だけを渡したときは、どの項目にも `source` が要る。原文を引数でも渡したときに `source` を書いた項目があれば誤り（どちらで確かめたかが混ざらないため）。
-原文ごとに一度だけ木を作り、結果は引用.json の順に出す。文字の出力は各行の先頭に `source` を、JSON は `citation.source` を持つ。
+原文ごとに一度だけ木を作り、結果は引用.json の順に出す。
+
+原文は Web のページでもよい（`chaff cite --url <URL> claims.json`、または `source` に `http(s)://` のアドレス）。
+取得は `html/fetch-page.ts` だけが行う（AbortController で 30 秒、誤りはアドレスを持つ。HTTP の誤りは `cause` に状態）。
+Content-Type が HTML（型が無く本文が HTML で始まるものも）なら Markdown に直してから読む（コーパスと同じ変換。見出しが番地になる）。Markdown とテキストはそのまま。それ以外（PDF、画像）は読めないと言って 1 で終わる。
+取得した後の判定はネットワークに頼らない。同じページからは同じ結果が出る。文字の出力は各行の先頭に `source` を、JSON は `citation.source` を持つ。
 
 `chaff cite --scaffold <文書>` は、`quote-without-source` が見つける引用（人の言葉として引き、出典の無いもの）を `[{ "source": "", "address": "", "quote": "…" }]` の形で出す。
 ジャンルとルールの段階には従わない（ひな形を求めること自体が、そうした引用をすべて求めること）。書き手が `source` を埋めれば、そのまま `chaff cite claims.json` に渡せる。
