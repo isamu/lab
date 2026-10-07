@@ -1,0 +1,22 @@
+# Words that leave a list open (group: open) and words that close it (group: limit): right after the open word
+# (position: after, "bicycles, etc. only") or before the list they govern (position: before, "only A, B, etc.").
+# "Only A, B, etc." closes the list and leaves it open at once, and the reader cannot tell what is covered. nado-closed-list reads it.
+# group: not-limit holds phrases that hold a limit word without closing anything ("not only", "not limited to").
+id: nado-closed-list
+language: en
+entries:
+  - { pattern: etc., group: open }
+  - { pattern: and so on, group: open }
+  - { pattern: and the like, group: open }
+  - { pattern: only, group: limit, position: after }
+  - { pattern: only, group: limit, position: before }
+  - { pattern: limited to, group: limit, position: before }
+  - { pattern: restricted to, group: limit, position: before }
+  - { pattern: solely, group: limit, position: before }
+  - { pattern: exclusively, group: limit, position: before }
+  - { pattern: not only, group: not-limit }
+  - { pattern: not limited to, group: not-limit }
+  - { pattern: not restricted to, group: not-limit }
+  - { pattern: not solely, group: not-limit }
+  - { pattern: not exclusively, group: not-limit }
+  - { pattern: if only, group: not-limit }

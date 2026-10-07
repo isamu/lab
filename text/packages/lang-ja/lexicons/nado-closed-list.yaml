@@ -1,0 +1,39 @@
+# 一覧を開いたままにする語（group: open）と、一覧を閉じる語（group: limit、position: after は開く語のすぐ後ろ）。
+# 「自転車等に限ります」は、「等」で一覧を開いたまま「限ります」で閉じていて、何が対象かを読み手が決められない。nado-closed-list が読む。
+# group: not-limit は、閉じる語で始まっても閉じない言い方（「に限らず」）。閉じる語より先に見る。
+id: nado-closed-list
+language: ja
+entries:
+  - { pattern: 等, group: open }
+  - { pattern: 等々, group: open }
+  - { pattern: など, group: open }
+  - { pattern: に限り, group: limit, position: after }
+  - { pattern: に限る, group: limit, position: after }
+  - { pattern: に限ります, group: limit, position: after }
+  - { pattern: に限られ, group: limit, position: after }
+  - { pattern: に限定, group: limit, position: after }
+  - { pattern: のみ, group: limit, position: after }
+  - { pattern: だけ, group: limit, position: after }
+  - { pattern: に限らず, group: not-limit }
+  - { pattern: に限らない, group: not-limit }
+  - { pattern: に限られず, group: not-limit }
+  - { pattern: に限られない, group: not-limit }
+  - { pattern: に限定されず, group: not-limit }
+  - { pattern: に限定されない, group: not-limit }
+  - { pattern: に限定せず, group: not-limit }
+  - { pattern: に限定しない, group: not-limit }
+  - { pattern: のみならず, group: not-limit }
+  - { pattern: のみでなく, group: not-limit }
+  - { pattern: のみではなく, group: not-limit }
+  - { pattern: だけでなく, group: not-limit }
+  - { pattern: だけではなく, group: not-limit }
+  - { pattern: だけでは, group: not-limit }
+  - { pattern: のみでは, group: not-limit }
+  - { pattern: に限りません, group: not-limit }
+  - { pattern: に限られません, group: not-limit }
+  - { pattern: に限定されません, group: not-limit }
+  - { pattern: に限定しません, group: not-limit }
+  - { pattern: に限るものでは, group: not-limit }
+  - { pattern: に限られるものでは, group: not-limit }
+  - { pattern: に限定されるものでは, group: not-limit }
+  - { pattern: に限定するものでは, group: not-limit }
