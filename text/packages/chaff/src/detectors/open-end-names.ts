@@ -3,19 +3,19 @@ import { escapeRegExp } from "../orthography.ts";
 import { entryRanges, type TokenRange } from "./lexicon-match.ts";
 
 // A word that leaves a list open (等, etc.) is also part of names a document gives itself: 「業務執行取締役等」,
-// 銀行等（…をいう。）, the head of a definition item (四の二　親会社等　…をいう。), and longer nouns built on them
+// 銀行等（…をいう。）, the head of a definition item (四の二 親会社等 …をいう。), and longer nouns built on them
 // (監査等委員会設置会社). There the document closes the list, so the word leaves nothing open. Pure: the document and the
 // language's words come in.
 
 /** The parts of speech a name is made of. */
 const NAME_POS = new Set(["NOUN", "PROPN"]);
 /** A quoted name: what 「」『』“”"" hold, short enough to be a term rather than a sentence. */
-const QUOTED = /「(?<a>[^「」\n]{1,40})」|『(?<b>[^『』\n]{1,40})』|“(?<c>[^“”\n]{1,40})”|"(?<d>[^"\n]{1,40})"/gu;
+const QUOTED = /[「『“"]([^「」『』“”"\n]{1,40})[」』”"]/gu;
 /** The brackets of an aside that can define the name in front of it: 銀行等（銀行…をいう。）. */
 const ASIDE_CLOSE: Readonly<Record<string, string>> = { "（": "）", "(": ")" };
 /** How far an aside is read for its closing bracket. A definition's aside is a clause, not a page. */
 const MAX_ASIDE_CHARS = 600;
-/** The label before the head of a definition item, with the space after it (四の二　, (a) ). */
+/** The label before the head of a definition item, with the space after it (四の二 , (a) ). */
 const ITEM_LABEL = /^\s*\S{1,8}\s+$/u;
 /** A word right after the head that makes it the subject of a sentence (親会社等は), not the head of an item. */
 const FUNCTION_POS = new Set(["ADP", "AUX", "PART", "SCONJ", "CCONJ", "PUNCT"]);
@@ -43,7 +43,8 @@ type QuotedName = { readonly name: string; readonly at: readonly number[] };
  */
 export type OpenEndNames = { readonly quoted: readonly QuotedName[]; readonly defined: ReadonlySet<string>; readonly heads: readonly string[] };
 
-const attached = (left: Token | undefined, right: Token | undefined): boolean => left !== undefined && right !== undefined && left.span.end === right.span.start;
+const attached = (left: Token | undefined, right: Token | undefined): boolean =>
+  left !== undefined && right !== undefined && left.span.end === right.span.start;
 const isNameToken = (token: Token | undefined): boolean => token !== undefined && NAME_POS.has(token.pos);
 
 /** The index of the first noun of the run written right before index, or index itself when none is. */
@@ -92,7 +93,7 @@ const definedInAside = (source: string, occurrence: Occurrence, statements: read
   return aside !== undefined && says(aside, statements);
 };
 
-/** Whether the noun heads a definition item: a label before it, no particle right after the word, and a definition in the rest (四の二　親会社等　…をいう。). */
+/** Whether the noun heads a definition item: a label before it, no particle right after the word, and a definition in the rest (四の二 親会社等 …をいう。). */
 const headsItem = (source: string, occurrence: Occurrence, statements: readonly string[]): boolean => {
   const next = occurrence.tokens[occurrence.range.end];
   if (next !== undefined && next.surface.trim() !== "" && FUNCTION_POS.has(next.pos)) return false;
@@ -102,7 +103,7 @@ const headsItem = (source: string, occurrence: Occurrence, statements: readonly 
 
 const quotedNames = (source: string, words: readonly LexiconEntry[]): QuotedName[] =>
   [...source.matchAll(QUOTED)].flatMap((match) => {
-    const name = Object.values(match.groups ?? {}).find((text) => text !== undefined) ?? "";
+    const name = match[1] ?? "";
     const at = words.flatMap((word) => [...name.matchAll(new RegExp(escapeRegExp(word.pattern), "gu"))].map((found) => found.index));
     return at.length === 0 ? [] : [{ name, at }];
   });

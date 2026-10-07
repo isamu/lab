@@ -72,7 +72,8 @@ describe("requirement-smell (ja)", () => {
   it("等 that ends a name the document defines closes its own list: in an aside, in quotes, or at the head of an item", () => {
     const aside = "受託者は、委託先等（委託先及び再委託先をいう。以下同じ。）を監督しなければならない。受託者は、委託先等に報告させなければならない。";
     assert.deepEqual(found(aside, ja), []);
-    const quoted = "受託者は、委託先及び再委託先（以下この条において「委託先等」という。）を監督しなければならない。受託者は、当該委託先等に報告させなければならない。";
+    const quoted =
+      "受託者は、委託先及び再委託先（以下この条において「委託先等」という。）を監督しなければならない。受託者は、当該委託先等に報告させなければならない。";
     assert.deepEqual(found(quoted, ja), []);
     assert.deepEqual(found("一　委託先等　委託先及び再委託先をいう。\n\n受託者は、委託先等を監督しなければならない。", ja), []);
   });
