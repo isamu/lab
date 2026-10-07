@@ -1,31 +1,39 @@
-// The prose with the rows of its Markdown tables read back in. The prose masks tables, but a quote or an invoice keeps
-// most of its amounts in one, and a rule comparing how amounts are written has to see them. Pure.
-import { linesOf, type Line } from "./structure/lines.ts";
+// The prose with its Markdown tables read back in. The prose masks tables, but a quote or an invoice keeps most of its
+// amounts in one, and a rule comparing how amounts are written has to see them.
+import type { ProseDocument, Span } from "./plugin.ts";
+import { maskSpans } from "./mask.ts";
+import { opaqueSpans, readMarkdown, spansOfType } from "./markdown-read.ts";
 import { TABLE_RULE } from "./structure/runs.ts";
 
-/** A row whose prose was masked whole, with no code in it: code in a cell stays masked. */
-const readableRow = (row: Line, prose: string): boolean =>
-  row.text.includes("|") && !row.text.includes("`") && prose.slice(row.start, row.start + row.text.length).trim() === "";
+const within = (inner: Span, outer: Span): boolean => inner.start >= outer.start && inner.end <= outer.end;
 
-/** The header row (the line before |---|) and the body rows after it, up to the first line without a |. */
-const tableRowsOf = (lines: readonly Line[]): Line[] =>
-  lines.flatMap((line, index) => {
-    const header = lines[index - 1];
-    if (!TABLE_RULE.test(line.text) || header === undefined || !header.text.includes("|")) return [];
-    const after = lines.slice(index + 1);
-    const end = after.findIndex((row) => !row.text.includes("|"));
-    return [header, ...(end === -1 ? after : after.slice(0, end))];
-  });
-
-/** The prose, with each masked table row (header and body, not the |---| rule) as the source writes it. Offsets are kept. */
-export const proseWithTables = (prose: string, source: string): string => {
-  const rows = tableRowsOf(linesOf(source)).filter((row) => readableRow(row, prose));
-  if (rows.length === 0) return prose;
+/**
+ * The prose, with each table span as the source writes it, except what stays hidden inside it (code in a cell). Offsets
+ * are kept. Pure.
+ */
+export const proseWithTables = (prose: string, source: string, tables: readonly Span[], hidden: readonly Span[]): string => {
+  if (tables.length === 0) return prose;
+  const shown = maskSpans(source, hidden);
   const pieces: string[] = [];
-  const end = rows.reduce((from, row) => {
-    pieces.push(prose.slice(from, row.start), row.text);
-    return row.start + row.text.length;
-  }, 0);
+  const end = tables
+    .toSorted((left, right) => left.start - right.start)
+    .reduce((from, table) => {
+      if (table.start < from) return from;
+      pieces.push(prose.slice(from, table.start), shown.slice(table.start, table.end));
+      return table.end;
+    }, 0);
   pieces.push(prose.slice(end));
   return pieces.join("");
+};
+
+const hasTableRule = (source: string): boolean => source.split("\n").some((line) => TABLE_RULE.test(line) && line.includes("-"));
+
+/** The document's prose with its tables, outside code and quoted replies. A document that is not Markdown keeps its prose. */
+export const proseAndTablesOf = (doc: ProseDocument): string => {
+  const prose = doc.prose ?? doc.source;
+  if (doc.prose === undefined || doc.markup?.markdown !== true || !hasTableRule(doc.source)) return prose;
+  const { root } = readMarkdown(doc.source);
+  const quoted = [...spansOfType(root, "blockquote"), ...(doc.replyQuotes ?? [])];
+  const tables = spansOfType(root, "table").filter((table) => !quoted.some((quote) => within(table, quote)));
+  return proseWithTables(doc.prose, doc.source, tables, opaqueSpans(root));
 };

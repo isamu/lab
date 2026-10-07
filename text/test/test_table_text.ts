@@ -1,46 +1,61 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { proseWithTables } from "../packages/chaff/src/table-text.ts";
+import { adapter as ja } from "../packages/lang-ja/src/index.ts";
+import { buildDocument } from "../packages/chaff/src/document.ts";
+import { proseAndTablesOf, proseWithTables } from "../packages/chaff/src/table-text.ts";
 
-// 表の行を本文に戻す（proseWithTables）。例文はすべて自作。
+// 表を本文に戻す（proseWithTables、proseAndTablesOf）。例文はすべて自作。
 
-const masked = (source: string, from: number, to: number): string =>
-  `${source.slice(0, from)}${source.slice(from, to).replace(/[^\r\n]/gu, " ")}${source.slice(to)}`;
+const blank = (text: string): string => text.replace(/[^\n]/gu, " ");
 
-describe("proseWithTables: 覆った表の行を原文のとおりに戻す", () => {
-  it("見出しの行と本体の行を戻し、区切りの行と表の外はそのまま", () => {
+describe("proseWithTables: 覆った表を原文のとおりに戻す", () => {
+  it("表の範囲だけを戻し、表の外と位置はそのまま", () => {
     const source = "総額\n\n| 品目 | 金額 |\n| --- | --- |\n| 設計 | 300円 |\n\n後";
-    const start = source.indexOf("|");
-    const end = source.indexOf("\n\n後");
-    const restored = proseWithTables(masked(source, start, end), source);
+    const table = { start: source.indexOf("|"), end: source.indexOf("\n\n後") };
+    const prose = `${source.slice(0, table.start)}${blank(source.slice(table.start, table.end))}${source.slice(table.end)}`;
+    assert.equal(proseWithTables(prose, source, [table], []), source);
+  });
+
+  it("表の中で隠す範囲（升のコード）は覆ったまま", () => {
+    const source = "| a | b |\n| --- | --- |\n| `x` | 1円 |\n";
+    const code = { start: source.indexOf("`"), end: source.lastIndexOf("`") + 1 };
+    const restored = proseWithTables(blank(source), source, [{ start: 0, end: source.length }], [code]);
     assert.equal(restored.length, source.length);
-    assert.equal(restored, `総額\n\n| 品目 | 金額 |\n${" ".repeat("| --- | --- |".length)}\n| 設計 | 300円 |\n\n後`);
+    assert.ok(restored.includes("|     | 1円 |"));
   });
 
-  it("コードを含む行は覆ったまま", () => {
-    const source = "| a | b |\n| --- | --- |\n| x | `1円` |\n";
-    const prose = masked(source, 0, source.length - 1);
-    assert.equal(proseWithTables(prose, source).split("\n")[2]?.trim(), "");
-    assert.equal(proseWithTables(prose, source).split("\n")[0], "| a | b |");
+  it("表の無い入力と、空の入力", () => {
+    assert.equal(proseWithTables("本文です。\n", "本文です。\n", [], []), "本文です。\n");
+    assert.equal(proseWithTables("", "", [], []), "");
   });
 
-  it("覆っていない行（本文で表の形をしたもの）は本文のまま", () => {
-    const source = "| a | b |\n| --- | --- |\n";
-    const prose = "| x | y |\n| --- | --- |\n";
-    assert.equal(proseWithTables(prose, source), prose);
+  it("重なる範囲は一度だけ戻す", () => {
+    const source = "| a |\n| --- |\n| 1円 |\n";
+    const all = { start: 0, end: source.length };
+    assert.equal(proseWithTables(blank(source), source, [all, { start: 2, end: 5 }], []), source);
+  });
+});
+
+describe("proseAndTablesOf: 文書の本文と表", () => {
+  const textOf = (source: string, path = "t.md"): string => proseAndTablesOf(buildDocument(path, source, ja));
+
+  it("表を読み、コードの塊の中の表の形は読まない", () => {
+    assert.ok(textOf("# 見積\n\n| 品目 | 金額 |\n| --- | --- |\n| 設計 | 30万円 |\n").includes("30万円"));
+    assert.ok(!textOf("# 例\n\n```\n| 品目 | 金額 |\n| --- | --- |\n| 設計 | 30万円 |\n```\n").includes("30万円"));
   });
 
-  it("表の無い文書と、空の入力", () => {
-    assert.equal(proseWithTables("本文です。\n", "本文です。\n"), "本文です。\n");
-    assert.equal(proseWithTables("", ""), "");
-    assert.equal(proseWithTables("   \n", "| a |\n"), "   \n");
+  it("升のコードは読まず、同じ行のほかの升は読む", () => {
+    const text = textOf("# 見積\n\n| 品目 | 金額 |\n| --- | --- |\n| `設計` | 30万円 |\n");
+    assert.ok(text.includes("30万円"));
+    assert.ok(!text.includes("`設計`"));
   });
 
-  it("\\r\\n の文書でも位置を保つ", () => {
-    const source = "| a | b |\r\n| --- | --- |\r\n| x | 5円 |\r\n";
-    const prose = source.replace(/[^\r\n]/gu, " ");
-    const restored = proseWithTables(prose, source);
-    assert.equal(restored.length, source.length);
-    assert.ok(restored.includes("| x | 5円 |\r\n"));
+  it("引用の中の表は読まない", () => {
+    assert.ok(!textOf("# 返信\n\n> | 品目 | 金額 |\n> | --- | --- |\n> | 設計 | 30万円 |\n").includes("30万円"));
+  });
+
+  it("表の無い文書は本文のまま", () => {
+    const doc = buildDocument("t.md", "# 見積\n\n総額は30万円です。\n", ja);
+    assert.equal(proseAndTablesOf(doc), doc.prose);
   });
 });
