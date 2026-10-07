@@ -75,14 +75,19 @@ const baseOf = (source: string, above: readonly Row[], tax: Amount, column: numb
   return { offset: tax.offset, end: tax.end, unit: tax.unit, value: values.reduce((sum, value) => sum + value, 0) };
 };
 
-/** Whether the written tax is base × rate, rounded down, to nearest or up, to the unit or to the cent. */
-export const taxMatches = (writtenCents: number, base: number, rate: number): boolean => {
-  // base × rate% in cents: base × 100 × rate / 100.
-  const exactCents = base * rate;
+/**
+ * Whether a written amount is an exact one rounded down, to nearest or up, to the cent or (when toUnit) to the unit. Both
+ * in cents. An amount written with cents ($59.00) is rounded to the cent only.
+ */
+export const roundedMatches = (writtenCents: number, exactCents: number, toUnits = true): boolean => {
   const toCent = [Math.floor(exactCents), Math.round(exactCents), Math.ceil(exactCents)];
-  const toUnit = [Math.floor, Math.round, Math.ceil].map((round) => round(exactCents / CENTS) * CENTS);
+  const toUnit = toUnits ? [Math.floor, Math.round, Math.ceil].map((round) => round(exactCents / CENTS) * CENTS) : [];
   return [...toCent, ...toUnit].some((candidate) => Math.abs(candidate - writtenCents) < 1);
 };
+
+/** Whether the written tax is base × rate, rounded down, to nearest or up, to the unit or to the cent. */
+// base × rate% in cents: base × 100 × rate / 100.
+export const taxMatches = (writtenCents: number, base: number, rate: number): boolean => roundedMatches(writtenCents, base * rate);
 
 const issueOf = (source: string, rows: readonly Row[], index: number, rate: number, words: TaxWords): StructureIssue[] => {
   const row = rows[index];

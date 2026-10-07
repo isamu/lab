@@ -3,7 +3,7 @@
     "ja": {
       "validity-reversed": "2/2",
       "amount-two-ways": "2/2",
-      "quantity-times-price": "0/2",
+      "quantity-times-price": "2/2",
       "items-subtotal": "1/1",
       "date-weekday": "2/2",
       "issue-after-due": "0/1",
@@ -15,7 +15,7 @@
     "en": {
       "validity-reversed": "2/2",
       "amount-two-ways": "2/2",
-      "quantity-times-price": "0/2",
+      "quantity-times-price": "2/2",
       "items-subtotal": "1/1",
       "date-weekday": "2/2",
       "issue-after-due": "0/1",

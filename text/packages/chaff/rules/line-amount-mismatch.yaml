@@ -1,0 +1,57 @@
+id: line-amount-mismatch
+layer: L3
+status: stable
+how_to_find: line-amount
+# The column names come from the language's quantity-column, unit-price-column and line-amount-column lexicons.
+languages: [ja, en]
+severity: error
+
+name:
+  ja: 数量×単価が金額と合わない
+  en: Quantity times unit price is not the line amount
+
+why:
+  ja: 見積書や請求書の明細で、数量と単価を掛けた額がその行の金額と合わないと、読み手はどれが正しいのかを問い合わせることになります。数量か単価だけを直して金額を直し忘れたときに起きます。見出しに数量・単価・金額の列がある表で、行ごとに数量の升の頭の数と単価を掛け、金額の升と比べます。
+  en: When quantity times unit price in a line of a quote or an invoice is not the line's amount, the reader has to ask which one is right. It happens when the quantity or the price is changed and the amount is not. In a table with quantity, unit price and amount columns, each row's quantity (the number its cell starts with) times its unit price is compared with its amount.
+
+message:
+  ja: 金額「{written}」が、数量×単価（{quantity} × {price} = {expected}）と合いません
+  en: "The amount {written} is not quantity × unit price ({quantity} × {price} = {expected})"
+
+how_to_fix:
+  ja: 数量・単価・金額のどれが正しいかを確かめて直してください。小計と合計も一緒に直します。
+  en: Check which of the quantity, the price and the amount is right and correct the others. Correct the subtotal and the total with them.
+
+levels: { normal: error, relaxed: warning }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 見積書や請求書の明細で、数量×単価がその行の金額と合わない所
+  en: A line of a quote or an invoice whose quantity times unit price is not its amount
+example:
+  ja:
+    before: |
+      | 品目 | 数量 | 単価 | 金額 |
+      | --- | --- | --- | --- |
+      | 画面開発 | 4画面 | 160,000円 | 600,000円 |
+    after: |
+      | 品目 | 数量 | 単価 | 金額 |
+      | --- | --- | --- | --- |
+      | 画面開発 | 4画面 | 150,000円 | 600,000円 |
+  en:
+    before: |
+      | Item | Quantity | Unit price | Amount |
+      | --- | --- | --- | --- |
+      | Screens | 4 | $1,600 | $6,000 |
+    after: |
+      | Item | Quantity | Unit price | Amount |
+      | --- | --- | --- | --- |
+      | Screens | 4 | $1,500 | $6,000 |
+
+not_flagged:
+  ja: 端数は切り捨て・四捨五入・切り上げのどれでも合っていると読みます。単価と金額の書き方（円、万円、$）が違う行、升に数が二つ以上あるか負の印のある行、数量の升が数で始まらない行（「1式」は 1 と読みます）は比べません。見出しに三つの列がそろわない表と、コードの中は読みません。
+  en: Rounding down, to the nearest or up are all read as right. A row whose price and amount are written with different marks ($ and USD, 円 and 万円), a cell with two numbers or a negative sign, and a quantity cell that does not start with a number are not compared. A table without all three columns, and code, are not read.
