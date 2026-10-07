@@ -1,0 +1,58 @@
+id: due-before-issue
+layer: L3
+status: stable
+how_to_find: due-date
+# The issue-date and due-date words come from the language's issue-date-label and due-date-label lexicons.
+requires: [dates]
+languages: [ja, en]
+severity: error
+
+name:
+  ja: 期限が発行日より前
+  en: A due date before the issue date
+
+why:
+  ja: 請求書の「お支払期限」や見積書の「有効期限」が「発行日」より前だと、受け取った時点で期限が過ぎていることになり、読み手はどちらの日付が正しいのかを問い合わせることになります。前の月の請求書を使い回して、片方の日付だけ直したときに起きます。発行日の語で始まる行と期限の語で始まる行の日付を比べ、期限が発行日より前なら指します。
+  en: When the payment due date of an invoice or the expiry of a quote is before its issue date, the document is overdue on arrival and the reader has to ask which date is right. It happens when last month's invoice is reused and only one date is changed. The date on a line starting with an issue word (Issued, Invoice date) is compared with the date on a line starting with a due word (Payment due, Valid until), and an earlier due date is pointed out.
+
+message:
+  ja: 期限 {due} が、発行日 {issued} より前です
+  en: "The due date {due} is before the issue date {issued}"
+
+how_to_fix:
+  ja: 発行日と期限のどちらが正しいかを確かめて、片方を直してください。
+  en: Check which is right, the issue date or the due date, and correct the other.
+
+levels: { normal: error, relaxed: warning }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 請求書や見積書で、支払期限や有効期限が発行日より前の所
+  en: A payment due date or an expiry before the issue date of an invoice or a quote
+example:
+  ja:
+    before: |
+      発行日：2026年11月30日
+
+      お支払期限：2026年11月25日
+    after: |
+      発行日：2026年11月30日
+
+      お支払期限：2026年12月25日
+  en:
+    before: |
+      Issued: November 30, 2026
+
+      Payment due: November 25, 2026
+    after: |
+      Issued: November 30, 2026
+
+      Payment due: December 25, 2026
+
+not_flagged:
+  ja: 行の頭に発行日や期限の語が無い日付（文の中の「12月25日までにお支払いください」）、年の無い日付、一行に日付が二つある行は比べません。発行日が二つあれば、最初のものと比べます。
+  en: A date without a word at the head of its line (a due date in a sentence), a date without its year, and a line with two dates are not compared. With two issue dates, the first is used.
