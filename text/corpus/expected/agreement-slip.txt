@@ -1,5 +1,4 @@
 aoml-hurricane-faq  2
 apidatagov-developer-manual  1
 arxiv-astro-ph-new-2025-01-03  1
-nws-glossary-a  1
 rust-lang-minutes-2022-11-22  1

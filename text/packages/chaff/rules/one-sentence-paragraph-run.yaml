@@ -26,7 +26,6 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 off_for:
   legal: "A clause, a definition or a claim is a paragraph of one sentence by form."
   literature: "Dialogue and verse set each line apart."
-  academic: measured by yarn rules:measure
 
 group: readability
 summary:
@@ -65,8 +64,8 @@ example:
       In the room, no food or drink is allowed. Put the desks back when you leave.
 
 not_flagged:
-  ja: 上限までの一文の段落、見出し・箇条書き・表・コードを挟んだ段落、改行一つでつないだ行は数えません。法務と文学のジャンルでは既定で止めています（条項や定義、台詞や詩の行は、一文ずつ立てるのが形のため）。
-  en: One-sentence paragraphs up to the limit, paragraphs separated by a heading, a list, a table or code, and lines joined by a single line break are not counted together. The legal and literature presets turn it off, since a clause, a definition, a line of dialogue or of verse stands alone by form.
+  ja: 上限までの一文の段落、見出し・箇条書き・表・コードを挟んだ段落、改行一つでつないだ行、文の終わりの印（。．.!?）で終わらない段落（「日時：」のような札、項目、平文にした表の欄）は数えません。法務と文学のジャンルでは既定で止めています（条項や定義、台詞や詩の行は、一文ずつ立てるのが形のため）。
+  en: One-sentence paragraphs up to the limit, paragraphs separated by a heading, a list, a table or code, lines joined by a single line break, and paragraphs that do not end with a sentence mark (a label such as Date:, a field, a cell of a table written as plain text) are not counted together. The legal and literature presets turn it off, since a clause, a definition, a line of dialogue or of verse stands alone by form.
 level_meaning:
   ja: 一文だけの段落の連続 {limit} 個まで
   en: up to {limit} one-sentence paragraphs in a row
