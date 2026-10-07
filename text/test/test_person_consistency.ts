@@ -67,6 +67,14 @@ describe("personMentions (en)", () => {
     assert.deepEqual(forms("Yourselves and youth.", en), []);
   });
 
+  it("leaves out one after an adjective, which makes it a noun for a thing", () => {
+    assert.deepEqual(forms("The last one cannot be taken back. A new one would help. The other one must stay.", en), []);
+  });
+
+  it("still reads one after a word that opens a clause or an adverb at the head", () => {
+    assert.deepEqual(forms("If one can, ask. First one must ask.", en), ["one can>one", "one must>one"]);
+  });
+
   it("looks only at the word right before, across spaces only", () => {
     assert.deepEqual(forms("For, one can ask.", en), ["one can>one"]);
   });
