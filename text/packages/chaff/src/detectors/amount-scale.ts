@@ -5,6 +5,7 @@ import { escapeRegExp } from "../orthography.ts";
 import { amountValue, scaleMixes, type ScaleWord, type ScaledAmount } from "../structure/amount-scale.ts";
 import { AMOUNT, amountsIn, formsOf, type WrittenAmount } from "./currency-notation.ts";
 import { quoteAround } from "./quote-around.ts";
+import { proseWithTables } from "../table-text.ts";
 
 /** How far back a larger part of one amount may start (1億2,000万円 is read from 2,000万円). */
 const LEADING_REACH = 40;
@@ -45,7 +46,7 @@ const scaledAmountsOf = (text: string, amounts: readonly WrittenAmount[], words:
   });
 
 export const amountScale: Detector = (doc): Finding[] => {
-  const text = doc.prose ?? doc.source;
+  const text = doc.prose === undefined ? doc.source : proseWithTables(doc.prose, doc.source);
   const words = scaleWordsOf(doc);
   const amounts = amountsIn(
     text,

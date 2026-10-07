@@ -84,6 +84,22 @@ describe("amount-scale-consistency: 同じ桁の金額を二通りに書いて�
     assert.deepEqual(findingsOf("設計費30万円、制作費25万円です。`250,000円` は例です。\n"), []);
   });
 
+  it("表の升の金額も比べる。見積書や請求書の金額は表にある", () => {
+    const table = "| 品目 | 金額 |\n| --- | --- |\n| 設計 | 1,200,000円 |\n| 合計 | 1,320,000円 |\n";
+    assert.deepEqual(findingsOf(`# 見積\n\nお見積金額は132万円です。\n\n${table}`), [
+      "「132万円」と書いています（この文書は同じ桁の金額を「1,200,000円」のように書きます）",
+    ]);
+    assert.deepEqual(findingsOf(`# 見積\n\nお見積金額は1,320,000円です。\n\n${table}`), []);
+    const enTable = "| Item | Amount |\n| --- | --- |\n| Design | $1,200,000 |\n| Total | $1,320,000 |\n";
+    assert.deepEqual(findingsOf(`# Quote\n\nThe quoted amount is $1.32 million.\n\n${enTable}`, en), [
+      '"$1.32 million" here, where the document writes amounts of this size like "$1,200,000"',
+    ]);
+  });
+
+  it("表の升のコードの中は読まない", () => {
+    assert.deepEqual(findingsOf("設計費30万円、制作費25万円です。\n\n| 例 | 書き方 |\n| --- | --- |\n| 数字 | `250,000円` |\n"), []);
+  });
+
   it("金額の値を読む。大きい桁から続けて書いた金額（1億2,000万円）も一つに", () => {
     assert.equal(amountValue("1億2,000万", WORDS), 120_000_000);
     assert.equal(amountValue("3万5千", WORDS), 35_000);
