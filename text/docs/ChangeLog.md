@@ -2,6 +2,28 @@
 
 Newest first.
 
+## 0.28.0 — 2026-10-07
+
+A new rule catches an amount of one size written both with 万 or million and in plain digits, and more slips are read:
+Japanese surnames written with another form of a character (斎藤／斉藤), English year counts written as words,
+English summaries whose counts differ from the body, and a rate of change no longer pairs values across a change of
+subject. The guide gained a page on checking in the browser, and its longest pages were split.
+
+### Rules
+
+- amount-scale-consistency: amounts of one size written with and without 万, 億 or million (#712).
+- name-variant reads Japanese surnames written with another form of a character, or one character off (#716).
+- elapsed-years-mismatch reads a count of years written as a word (#717).
+- summary-fact-mismatch reads an English count with no label, matched by who counts, the verb and the thing counted
+  (#718).
+- change-rate-mismatch does not pair two values across an "and" that starts another subject (#719).
+
+### Docs
+
+- A page on checking in the browser; the playground, `ai-score`, the genre's guide, `quote-without-source` and the
+  contract checks in the guide; worked examples moved to their own pages; adding-rules describes the current flow;
+  `--help` lists `fix-plan --depth` and `grade --baseline`/`--compact` (#708–#711, #713, #714).
+
 ## 0.27.1 — 2026-10-07
 
 ### Fixes
