@@ -18,7 +18,7 @@ const BEFORE_LABEL = /^(?:>[ \t]*)*(?:\*\*|__)?(?:\[!)?/u;
 /** What closes the label: the end of bold or of an alert, then a colon or an exclamation mark, or the end of the line. */
 const LABEL_CLOSE = /^(?:\*\*|__)?\]?[ \t]*/u;
 const LABEL_MARK = /^[:：!！](?:\*\*|__)?[ \t]*/u;
-const SENTENCE_END_MARKS = new Set([..." \t\r\n。．.!！?？」』)）"]);
+const SENTENCE_END_MARKS = new Set(" \t\r\n。．.!！?？」』)）");
 const LATIN_START = /^[A-Za-z]/u;
 const LETTER = /\p{L}/u;
 
