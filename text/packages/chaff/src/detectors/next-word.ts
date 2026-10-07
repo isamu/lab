@@ -145,9 +145,18 @@ const isAdjectiveAt = (tokens: readonly Token[], at: number, copulas: ReadonlySe
 
 const isBlank = (token: Token): boolean => token.surface.trim() === "";
 
-/** The intensifier that ends right before the token at `at`, past a line break (非常に / 危険), as the index of its first token. */
-const intensifierStart = (tokens: readonly Token[], at: number, intensifiers: Lexicon): number | undefined => {
-  const end = tokens.findLastIndex((token, index) => index < at && !isBlank(token)) + 1;
+/** For each token, the index of the last non-blank token before it, or -1: one pass, so a long sentence is not rescanned per token. */
+const previousWords = (tokens: readonly Token[]): number[] =>
+  tokens.reduce<{ readonly before: number[]; readonly last: number }>(
+    ({ before, last }, token, index) => {
+      before.push(last);
+      return { before, last: isBlank(token) ? last : index };
+    },
+    { before: [], last: -1 },
+  ).before;
+
+/** The intensifier that ends at `end` (past a line break: 非常に / 危険), as the index of its first token. */
+const intensifierStart = (tokens: readonly Token[], end: number, intensifiers: Lexicon): number | undefined => {
   const entry = intensifiers.find((candidate) => entryEndsAt(tokens, candidate, end));
   return entry === undefined ? undefined : end - (entry.tokens?.length ?? 1);
 };
@@ -163,10 +172,12 @@ const matchedText = (tokens: readonly Token[], start: number, at: number, spaced
 /** The lexicon's intensifier right before an adjective ("very important"), not before an excepted word ("the very first"). */
 const intensifiedIn = (source: string, sentence: Sentence, words: IntensifierWords, spaced: boolean): Intensified[] => {
   const tokens = sentence.tokens ?? [];
+  const before = previousWords(tokens);
   return tokens.flatMap((next, at) => {
-    const start = intensifierStart(tokens, at, words.intensifiers);
+    const lastAt = before[at] ?? -1;
+    const start = intensifierStart(tokens, lastAt + 1, words.intensifiers);
     const first = start === undefined ? undefined : tokens[start];
-    const last = tokens.findLast((token, index) => index < at && !isBlank(token));
+    const last = tokens[lastAt];
     if (start === undefined || first === undefined || last === undefined || !isAdjectiveAt(tokens, at, words.copulas)) return [];
     if (!adjacent(source, last, next) || words.exceptions.has(next.surface.toLowerCase())) return [];
     return [{ sentence, matched: matchedText(tokens, start, at, spaced), offset: first.span.start }];
