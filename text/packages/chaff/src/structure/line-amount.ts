@@ -91,8 +91,13 @@ const shownExpected = (amount: CellNumber, exactCents: number): string => {
   return `${amount.before}${number}${amount.after}`;
 };
 
+/** Another cell than the item name with a number in it (a discount, a tax rate): the amount may not be quantity × price alone. */
+const hasOtherNumber = (cells: readonly Cell[], columns: Columns): boolean =>
+  cells.some((cell, index) => index > 0 && !Object.values(columns).includes(index) && /\d/u.test(plain(cell.text)));
+
 const rowIssue = (row: Line, columns: Columns): StructureIssue[] => {
   const cells = cellsOf(row);
+  if (hasOtherNumber(cells, columns)) return [];
   const quantityCell = cells[columns.quantity];
   const priceCell = cells[columns.unitPrice];
   const amountCell = cells[columns.amount];

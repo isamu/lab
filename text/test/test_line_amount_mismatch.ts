@@ -42,6 +42,18 @@ describe("line-amount-mismatch: 数量×単価が金額と合わない", () => {
     assert.deepEqual(findingsOf(enTable(["| A | 2 | $10- | $25- |"]), en), []);
   });
 
+  it("ほかの列に数のある行（値引き、税率）と、単位あたりの単価は比べない", () => {
+    assert.deepEqual(findingsOf("| 品目 | 数量 | 単価 | 値引 | 金額 |\n| --- | --- | --- | --- | --- |\n| 設計 | 10 | 5,000円 | 5,000円 | 45,000円 |\n"), []);
+    assert.deepEqual(
+      findingsOf("| Item | Qty | Unit price | Discount | Amount |\n| --- | --- | --- | --- | --- |\n| Widget | 10 | $50.00 | 10% | $450.00 |\n", en),
+      [],
+    );
+    assert.deepEqual(findingsOf("| Item | Quantity | Rate | Amount |\n| --- | --- | --- | --- |\n| Engineer | 2 days | $100/hour | $1,600 |\n", en), []);
+    assert.deepEqual(findingsOf("| 品目 | 数量 | 単価 | 備考 | 金額 |\n| --- | --- | --- | --- | --- |\n| 設計 | 10 | 5,000円 | 急ぎ | 45,000円 |\n"), [
+      "金額「45,000円」が、数量×単価（10 × 5,000円 = 50,000円）と合いません",
+    ]);
+  });
+
   it("三つの列がそろわない表と、コードの中の表は読まない", () => {
     assert.deepEqual(findingsOf("| 品目 | 数量 | 金額 |\n| --- | --- | --- |\n| 開発 | 4 | 650,000円 |\n"), []);
     assert.deepEqual(findingsOf(`# 例\n\n\`\`\`\n${table(["| 開発 | 4 | 150,000円 | 650,000円 |"])}\`\`\`\n`), []);
