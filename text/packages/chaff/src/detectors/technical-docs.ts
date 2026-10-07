@@ -190,6 +190,11 @@ const MIN_STEPS = 3;
 const isInflected = (token: Token): boolean =>
   token.lemma !== undefined && token.lemma !== "" && token.surface.toLowerCase() !== token.lemma && token.features?.["VerbForm"] !== "Part";
 
+const NOMINAL = new Set(["NOUN", "PROPN"]);
+
+/** A determiner right after a noun opens a clause inside the phrase (a buffer that is big): the verb after it is the clause's, not a subject's. */
+const opensClause = (words: readonly Token[]): boolean => words.some((token, at) => at > 0 && token.pos === "DET" && NOMINAL.has(words[at - 1]?.pos ?? ""));
+
 /**
  * A step written as a statement: a subject, then its verb. The subject opens with an article or a pronoun (The installer
  * asks, You click), or it is a name or a noun whose verb is inflected (Docker builds). A noun before a base-form verb is
@@ -201,7 +206,8 @@ export const isStatement = (tokens: readonly Token[]): boolean => {
   if (head === undefined || words.length < MIN_STEP_TOKENS || !SUBJECT_HEAD.has(head.pos)) return false;
   const verbAt = rest.findIndex((token) => PREDICATE.has(token.pos));
   const verb = rest[verbAt];
-  if (verb === undefined || !rest.slice(0, verbAt).every((token) => SUBJECT_PART.has(token.pos))) return false;
+  const subject = [head, ...rest.slice(0, verbAt)];
+  if (verb === undefined || !rest.slice(0, verbAt).every((token) => SUBJECT_PART.has(token.pos)) || opensClause(subject)) return false;
   // Punctuation before the verb is no subject: a label (Guests: the users who …) or an opening phrase (On the left bar, select …).
   const interrupted = tokens.some((token) => token.pos === "PUNCT" && token.span.start > head.span.start && token.span.start < verb.span.start);
   return !interrupted && (SUBJECT_OPENER.has(head.pos) || isInflected(verb));
