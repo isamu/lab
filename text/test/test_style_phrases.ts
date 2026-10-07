@@ -130,11 +130,28 @@ describe("doubled-nado", () => {
   const RULE = "doubled-nado";
 
   it("「など」と「等」を重ねた所を言う", () => {
-    assert.deepEqual(findingsOf(RULE, "申請書等などを提出してください。\n", ja), ["「等など」は、「など」と「等」を重ねています"]);
-    assert.deepEqual(findingsOf(RULE, "交通費、宿泊費など等は会社が負担します。\n", ja), ["「など等」は、「など」と「等」を重ねています"]);
+    assert.deepEqual(findingsOf(RULE, "申請書等などを提出してください。\n", ja), ["「等など」は、「ほかにもある」を二度言っています"]);
+    assert.deepEqual(findingsOf(RULE, "交通費、宿泊費など等は会社が負担します。\n", ja), ["「など等」は、「ほかにもある」を二度言っています"]);
   });
 
   it("片方だけ、「などなど」、語の一部の「等」は言わない", () => {
     assert.deepEqual(findingsOf(RULE, "申請書などを提出してください。書類等は返却しません。お菓子などなど。平等などの理念。\n", ja), []);
+  });
+
+  it('English: "and etc." and its kin are reported from the first', () => {
+    assert.deepEqual(findingsOf(RULE, "Bring pens, paper and etc. to the workshop.\n"), ['"and etc." says "and so on" twice']);
+    assert.deepEqual(findingsOf(RULE, "We bring pens, paper and etc.\n"), ['"and etc." says "and so on" twice']);
+    assert.deepEqual(findingsOf(RULE, "We cover travel, meals, etc. and so on.\n"), ['"etc. and so on" says "and so on" twice']);
+  });
+
+  it("English: etc. alone, and so on alone, and a word ending in etc are not", () => {
+    assert.deepEqual(findingsOf(RULE, "Bring pens, paper, etc. to the workshop. We cover travel, meals and so on. The fetch and etcd logs stay.\n"), []);
+    assert.deepEqual(findingsOf(RULE, "Cars use the cash lanes and ETC lanes at the toll gate.\n"), []);
+  });
+
+  it("English: every lexicon phrase is found in a sentence", () => {
+    const lexicon = en.lexicons[RULE] ?? [];
+    assert.ok(lexicon.length > 0);
+    lexicon.forEach((entry) => assert.equal(findingsOf(RULE, `Bring pens, paper ${entry.pattern} to the room.\n`).length, 1, entry.pattern));
   });
 });
