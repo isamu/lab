@@ -1,0 +1,79 @@
+{
+  "note": "Self-written tech blog posts (moving a CI cache), each in a clean version and a planted one that differs only on the lines below. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. yarn planted blog scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/cache",
+      "language": "ja",
+      "genre": "blog/tech",
+      "clean": "ja/cache.clean.md",
+      "planted": "ja/cache.planted.md",
+      "mistakes": [
+        {
+          "kind": "version-mismatch",
+          "rule": "version-mismatch",
+          "line": 9,
+          "clean": "Redis 7.4 をコンテナ",
+          "planted": "Redis 7.2 をコンテナ"
+        },
+        {
+          "kind": "heading-command",
+          "rule": "heading-command-missing",
+          "line": 15,
+          "clean": "## `cachectl warm`",
+          "planted": "## `cachectl prime`"
+        },
+        {
+          "kind": "date-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 25,
+          "clean": "2026年10月15日（木）",
+          "planted": "2026年10月15日（水）"
+        },
+        {
+          "kind": "broken-anchor",
+          "rule": "broken-link",
+          "line": 29,
+          "clean": "(#redis-を用意する)",
+          "planted": "(#redis-を入れる)"
+        }
+      ]
+    },
+    {
+      "id": "en/cache",
+      "language": "en",
+      "genre": "blog/tech",
+      "clean": "en/cache.clean.md",
+      "planted": "en/cache.planted.md",
+      "mistakes": [
+        {
+          "kind": "version-mismatch",
+          "rule": "version-mismatch",
+          "line": 9,
+          "clean": "We run Redis 7.4",
+          "planted": "We run Redis 7.2"
+        },
+        {
+          "kind": "heading-command",
+          "rule": "heading-command-missing",
+          "line": 15,
+          "clean": "## `cachectl warm`",
+          "planted": "## `cachectl prime`"
+        },
+        {
+          "kind": "date-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 25,
+          "clean": "Thursday, 15 October 2026",
+          "planted": "Wednesday, 15 October 2026"
+        },
+        {
+          "kind": "broken-anchor",
+          "rule": "broken-link",
+          "line": 29,
+          "clean": "(#setting-up-redis)",
+          "planted": "(#installing-redis)"
+        }
+      ]
+    }
+  ]
+}
