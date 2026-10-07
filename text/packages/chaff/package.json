@@ -89,6 +89,7 @@
     "@anthropic-ai/sdk": "^0.125.0",
     "@chaffjs/lang-en": "0.25.0",
     "@chaffjs/lang-ja": "0.27.0",
+    "character-entities": "^2.0.2",
     "mdast-util-from-markdown": "^2.0.3",
     "mdast-util-frontmatter": "^2.0.1",
     "mdast-util-gfm-table": "^2.0.0",

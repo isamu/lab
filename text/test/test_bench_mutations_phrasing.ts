@@ -5,7 +5,7 @@ import { MIN_DOCUMENT_LENGTH } from "../packages/chaff/src/detectors/signals.ts"
 import {
   TEAM_PREFER,
   avoidedSpelling,
-  chainWithAnd,
+  chainWithConjunction,
   closeWithCliche,
   dropFirstHeading,
   intensify,
@@ -151,9 +151,9 @@ describe("repeatOpener", () => {
   });
 });
 
-describe("chainWithAnd", () => {
+describe("chainWithConjunction", () => {
   it("段落の二文目から、上限より一つ多い文を And で始める", () => {
-    const plant = chainWithAnd(
+    const plant = chainWithConjunction(
       lines("# Note", "", "Roomly is new. It is fast. The panel is small. We like it. Done."),
       limits({ "sentence-initial-conjunction-run": 2 }),
     );
@@ -162,9 +162,17 @@ describe("chainWithAnd", () => {
 
   it("文が足りなければ、足せない語（人名）で始まる文があれば、上限が分からなければ植えない", () => {
     const rule = limits({ "sentence-initial-conjunction-run": 2 });
-    assert.equal(chainWithAnd("Roomly is new. It is fast. The panel is small.", rule), undefined);
-    assert.equal(chainWithAnd("Roomly is new. It is fast. Ito likes it. We agree.", rule), undefined);
-    assert.equal(chainWithAnd("Roomly is new. It is fast. The panel is small. We like it.", limits({})), undefined);
+    assert.equal(chainWithConjunction("Roomly is new. It is fast. The panel is small.", rule), undefined);
+    assert.equal(chainWithConjunction("Roomly is new. It is fast. Ito likes it. We agree.", rule), undefined);
+    assert.equal(chainWithConjunction("Roomly is new. It is fast. The panel is small. We like it.", limits({})), undefined);
+  });
+
+  it("日本語の段落では、二文目から上限より一つ多い文を「そして、」で始める", () => {
+    const plant = chainWithConjunction(
+      lines("# メモ", "", "会議室を予約しました。資料を配りました。議事録を残しました。結果を共有しました。以上です。"),
+      limits({ "sentence-initial-conjunction-run": 2 }),
+    );
+    assert.deepEqual(at(plant), [3, "会議室を予約しました。そして、資料を配りました。そして、議事録を残しました。そして、結果を共有しました。以上です。"]);
   });
 });
 

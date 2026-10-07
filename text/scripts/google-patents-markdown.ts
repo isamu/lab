@@ -3,7 +3,7 @@
 // kept; the page's metadata, citations, family and similar-document tables are Google's and are dropped. A
 // <heading> in the description (the patent office's section title, BACKGROUND OF THE INVENTION) becomes a heading.
 // Pure.
-import { htmlToMarkdown } from "./html-markdown.ts";
+import { htmlToMarkdown } from "../packages/chaff/src/html/html-markdown.ts";
 
 const PATENT_SECTIONS = ["abstract", "description", "claims"] as const;
 
