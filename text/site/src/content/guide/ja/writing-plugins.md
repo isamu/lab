@@ -100,7 +100,7 @@ import { API_VERSION, defineRule, definePlugin } from "chaffjs/api";
 | `links` `markup` | リンクの場所と、記法（見出し・画像・リンクの行き先） |
 | `lexicons` | 語の一覧。名前で引く |
 
-`options.lexicon` には、ルールの `word_list` に書いた語の一覧が、文書の言語のぶんだけ入ります。
+`options.lexicon` には、ルールの `word_list` に書いた語の一覧のうち、文書の言語のものが入ります。
 `doc` は凍らせてあり、書き換えられません。一つのルールが、次のルールの見るものを変えないためです。
 
 ## 返すもの

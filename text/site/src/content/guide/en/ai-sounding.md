@@ -46,7 +46,7 @@ When the genre is set (`--genre`, `genre` or `by_path` in `chaff.yaml`, or front
 An AI that rewrites to the plan reads it first, and checks the rewrite against each line when it is done.
 Most of the lines are what no rule can check, so they are the part of the instruction only reading can follow.
 
-```
+```text
 $ npx chaffjs fix-plan draft.md --genre blog/tech
 
 # Fix plan: draft.md
@@ -78,7 +78,7 @@ The guide comes as data too, for an AI that reads JSON.
 | `rules --json` | A top-level `guide` of the same shape, for the genre of `--genre` or `chaff.yaml` |
 | `--sarif <path>` | `runs[0].properties.guides`: one per genre and language in the run, each with its `language` |
 
-```
+```text
 $ npx chaffjs rules --json --genre blog/tech
 
 …

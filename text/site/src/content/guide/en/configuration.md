@@ -251,6 +251,8 @@ A number written for one of these rules only runs it at `normal`, and chaff says
 
 The writing you want to hold up as a model can run longer than `relaxed` allows. Then write the limit as a positive number.
 
+<!-- stet: cross-doc-fact-conflict — an example of a limit; other pages set other numbers on purpose -->
+
 ```yaml
 rules:
   max-sentence-length: 260
@@ -384,6 +386,7 @@ fix_plan:
 
 `light` rewrites words and sentences only, `structure` goes as far as reorganising sections, headings and paragraphs, and `register` as far as converting the style. A deeper depth includes the shallower.
 Findings of a rule that reaches deeper than the depth are listed in the plan by name and spot count only.
+
 `--depth` on the command line wins for that run.
 Any other value stops `fix-plan` before it prints a plan, with the values it takes and what they mean.
 Each rule's depth is in `npx chaffjs explain <rule>` and in `rewrite_depth` of `npx chaffjs rules --json`.
