@@ -1,28 +1,21 @@
 // Whether a name quoted in bare brackets (("The key point is")) reads as a quoted example rather than a defined term.
 
-/** Words a capitalised name keeps in lower case (Terms of Use, Statement of Work). */
-const MINOR_WORDS: ReadonlySet<string> = new Set([
-  "a",
-  "an",
-  "the",
-  "and",
-  "or",
-  "but",
-  "nor",
-  "of",
-  "in",
-  "on",
-  "at",
-  "to",
-  "for",
-  "with",
-  "as",
-  "by",
-  "from",
-  "per",
-  "via",
-  "vs",
-]);
+/**
+ * Words a capitalised name keeps in lower case: articles, conjunctions, prepositions, determiners and the particles of
+ * personal and company names (Terms of Use, Fees under this Agreement, Banco de Chile, Ludwig van Beethoven).
+ */
+const MINOR_WORDS: ReadonlySet<string> = new Set(
+  [
+    "a an the and or but nor so yet",
+    "of in on at to for with as by from per via vs into onto upon under over between among within without about after",
+    "before against along across around through throughout during until toward towards beneath beside besides beyond",
+    "near off out up down than like unless whether arising",
+    "this that these those each every any all such its their his her our your",
+    "de del della di da du des la le van von der den ter ten y e",
+  ]
+    .join(" ")
+    .split(" "),
+);
 
 const WORD = /[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu;
 const LOWER_START = /^\p{Ll}/u;

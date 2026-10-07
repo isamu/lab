@@ -74,7 +74,8 @@ const nameListDefinitions = (text: string): Mention[] =>
     const bare = isBare ? { form: "bare" } : {};
     const scope = APPLIES.test(text) ? { scope: "local" } : {};
     const names = namesInList(inside);
-    if (isBare && readsAsExample(names[0]?.term ?? "")) return [];
+    // One phrase among the names (("Cheers", "I hope this helps")) makes the whole bracket a list of examples.
+    if (isBare && names.some((name) => readsAsExample(name.term))) return [];
     return names.map((name, index) => {
       const start = index === 0 ? match.index : match.index + 1 + name.start;
       const end = index === 0 ? match.index + match[0].length : match.index + 1 + name.end;
