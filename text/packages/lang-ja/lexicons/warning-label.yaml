@@ -1,0 +1,11 @@
+# 注意書きの頭に、それだけで置く語（「注意：」「**警告**」「> [!WARNING]」）。warning-without-action はこの語で始まる段落を読む。
+# 「メモ」「ヒント」は入れない。危険ではなく情報を伝える。
+id: warning-label
+language: ja
+entries:
+  - pattern: 注意
+  - pattern: ご注意
+  - pattern: 警告
+  - pattern: 危険
+  - pattern: warning
+  - pattern: caution
