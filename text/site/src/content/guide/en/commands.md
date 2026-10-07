@@ -63,10 +63,12 @@ $ npx chaffjs sample.md --compact
 
 sample.md   blog/tech · English   genre from the default
 
-  3:1     info    This sentence runs 59 words (limit 40)
+  3:1     info    This sentence runs 41 words (limit 40)
                   max-sentence-length
+  11:1    info    The first sentence repeats the heading "restoreFixtures"
+                  heading-echo
 
-1 finding, 28 rules not run
+{counts}
 ```
 
 The last line counts the findings and the rules that did not run.
@@ -307,13 +309,13 @@ The draft, `.chaff-feedback.md`, holds the version and OS, the one finding with 
 A report becomes a test and a fix.
 
 ```
-$ npx chaffjs feedback sample.md --rule heading-echo --line 142
-  Wrote a draft report to .chaff-feedback.md. From the document it includes only the lines around 142. Read it before sending, and delete anything you do not want to share.
+$ npx chaffjs feedback sample.md --rule heading-echo --line 11
+  Wrote a draft report to .chaff-feedback.md. From the document it includes only the lines around 11. Read it before sending, and delete anything you do not want to share.
 
   To send it (either):
-    gh issue create -R isamu/lab --title 'False positive: heading-echo — The first sentence repeats the heading "agentFunctionInfo"' --body-file .chaff-feedback.md
+    gh issue create -R isamu/lab --title 'False positive: heading-echo — The first sentence repeats the heading "restoreFixtures"' --body-file .chaff-feedback.md
   In a browser (paste the contents of .chaff-feedback.md into the page):
-    https://github.com/isamu/lab/issues/new?title=False%20positive%3A%20heading-echo%20%E2%80%94%20The%20first%20sentence%20repeats%20the%20heading%20%22agentFunctionInfo%22
+    https://github.com/isamu/lab/issues/new?title=False%20positive%3A%20heading-echo%20%E2%80%94%20The%20first%20sentence%20repeats%20the%20heading%20%22restoreFixtures%22
 
   chaff has not sent anything.
 ```
