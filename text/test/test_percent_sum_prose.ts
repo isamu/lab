@@ -35,6 +35,29 @@ describe("percent-sum-mismatch: a breakdown in one sentence", () => {
     assert.deepEqual(found(doc("The breakdown is 40% retail, 35% manufacturing and 20% logistics."), en), ["3 95%"]);
   });
 
+  it("adds a sentence with no share word when one of its parts is the rest of the whole (その他, other)", () => {
+    assert.deepEqual(found(doc("数字の誤りが 45%、欄の抜けが 30%、欄の入れ違いが 20%、その他が 8% である。"), ja), ["3 103%"]);
+    assert.deepEqual(found(doc("数字の誤りが 45%、欄の抜けが 30%、欄の入れ違いが 20%、その他が 5% である。"), ja), []);
+    assert.deepEqual(found(doc("Wrong digits 45%, missing fields 30%, swapped fields 20% and other 8%."), en), ["3 103%"]);
+    assert.deepEqual(found(doc("Wrong digits 45%, missing fields 30%, swapped fields 20% and other 5%."), en), []);
+    assert.deepEqual(found(doc("Retail 50%, wholesale 30%, and others: 15%."), en), ["3 95%"]);
+  });
+
+  it("does not read the rest in another word, or with something between it and the percentage", () => {
+    assert.deepEqual(found(doc("Retail grew 50%, wholesale 30%, and another 15%."), en), []);
+    assert.deepEqual(found(doc("Retail grew 50%, wholesale 30%, and otherwise 15%."), en), []);
+    assert.deepEqual(found(doc("Retail grew 50%, wholesale 30%, other costs rose 15%."), en), []);
+    assert.deepEqual(found(doc("小売が45%、製造が35%、その他の部門も25%伸びた。"), ja), []);
+  });
+
+  it("does not read the rest in a sentence of changes, before the last share, or as what is left", () => {
+    assert.deepEqual(found(doc("Sales grew 45%, costs 30%, margins 20%, and other 8% year over year."), en), []);
+    assert.deepEqual(found(doc("Sales 45%, costs 30%, margins 20%, and the rest 8% next year."), en), []);
+    assert.deepEqual(found(doc("Other 8%, retail 45%, wholesale 30% and online 20%."), en), []);
+    assert.deepEqual(found(doc("工程Aは45%、工程Bは30%、工程Cは20%、残り8%は来週実施する。"), ja), []);
+    assert.deepEqual(found(doc("小売が45%、製造が30%、物流が20%、その他が8%増加した。"), ja), []);
+  });
+
   it("does not add: no share word, two parts, a change (+3%), multiple answers, a total, or a listing of some parts", () => {
     assert.deepEqual(found(doc("小売が45%、製造が35%、物流が25%伸びた。"), ja), []);
     assert.deepEqual(found(doc("内訳は、小売が45%、製造が35%だった。"), ja), []);
