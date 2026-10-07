@@ -100,14 +100,16 @@ const paragraphQuotesOf = (doc: ProseDocument): UnsourcedQuote[] =>
     doc.lexicons["quote-attribution"] ?? [],
   );
 
+/** Every quotation in the document given to someone with no source, in document order: what the rule and `cite --scaffold` list. */
+export const documentQuotesWithoutSource = (doc: ProseDocument): UnsourcedQuote[] =>
+  [...paragraphQuotesOf(doc), ...blockQuotesOf(doc)].toSorted((left, right) => left.offset - right.offset);
+
 export const quoteWithoutSource: Detector = (doc: ProseDocument): Finding[] =>
-  [...paragraphQuotesOf(doc), ...blockQuotesOf(doc)]
-    .toSorted((left, right) => left.offset - right.offset)
-    .map((hit) => ({
-      rule: "quote-without-source",
-      severity: "info",
-      line: 0,
-      column: 0,
-      quote: hit.quote,
-      values: { quote: hit.quote, offset: hit.offset },
-    }));
+  documentQuotesWithoutSource(doc).map((hit) => ({
+    rule: "quote-without-source",
+    severity: "info",
+    line: 0,
+    column: 0,
+    quote: hit.quote,
+    values: { quote: hit.quote, offset: hit.offset },
+  }));
