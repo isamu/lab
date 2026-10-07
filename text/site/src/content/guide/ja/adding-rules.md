@@ -59,7 +59,7 @@ AI に渡すのは、JSON だけでも足ります。
 80 字はどの段階とも違うので、数をそのまま書きます。
 「です・ます」は `no-mixed-desumasu` が見ます。
 ただし、このルールは、どちらの調子が正しいかを決めず、混ざった文だけを指します。
-全部を だ・である で書いた文書は指しません。この違いは、チームに伝えておきます。
+全部を「だ・である」で書いた文書は指しません。この違いは、チームに伝えておきます。
 
 ```yaml file=chaff.yaml
 language: ja
@@ -74,7 +74,7 @@ rules:
 
 決まりに沿わない見本を一つ作って、かけてみます。実際の出力です。
 
-```
+```text
 $ npx chaffjs sample.md --compact
 
 sample.md   technical/spec · 日本語   ジャンルは chaff.yaml から
@@ -277,7 +277,7 @@ chaff の決まりで、ルールは機械で決まるものだけです。意�
 | 語の一覧 | `packages/lang-ja/lexicons/` と `packages/lang-en/lexicons/` | 語の一覧で見つけるルールだけ。言語ごとに書く |
 | テスト | `test/test_<id>.ts` | 指摘すべき例と、指摘してはいけない例の両方 |
 | 見本への仕込み | `test/fixtures/bench/plants/<id>.yaml` と `scripts/bench-plants/` のモジュール | きれいな見本に誤りを一つ入れて、見つかるかを測る。YAML には `planted: [ja, en]`（仕込む言語）か、仕込めない理由の `not_planted:` を書く。モジュールは仕込む誤りを `MUTATIONS` として出す。どちらも共有の一覧ではない |
-| ChangeLog | `docs/ChangeLog.md` の `Unreleased` | 何が見つかるようになったか |
+| PR の題 | pull request | 何が見つかるようになったか。ルールの PR は `docs/ChangeLog.md` を書き換えない。ChangeLog は、リリースのときに、前のリリースから取り込んだ PR の題から書く |
 
 一度に渡した複数のファイルどうしを比べるルール（あるファイルだけ違う書き方の語など）は、別の種類の関数で書きます。
 関数は、その回の文書をすべて受け取り、指摘を、それがあるファイルのパスと一緒に返します（型は `CrossDetector`）。
@@ -300,13 +300,15 @@ off_for:
 `genres.yaml` には、ジャンルそのものについてのこと（名前、説明、文書の種類、見分け方、ジャンルが決める強さ）だけを書き、新しいルールのためには書き換えません。
 
 新しいルールは `status: experimental` で入ります。測るまでは、`--experimental` を付けたときだけ動きます。
-`yarn rules:measure --apply` が置き場所を決めます。corpus に chaff をかけ、人の文書にどれだけ指摘が出るかから、ルールの `status` と `severity` を書きます。
+`yarn rules:measure --apply` が置き場所を決めます。`corpus/rules-measure-documents.json` に固定した corpus の文書に chaff をかけるので、どの手元でも同じ文書で測ります。
+先に `yarn corpus:fetch` を走らせます。固定した文書が欠けていると止まり、取ってきた文書でも固定していないものは使いません。
+人の文書にどれだけ指摘が出るかから、ルールの `status` と `severity` を書きます。
 測って止めた group は、`off_for` に `measured by yarn rules:measure` と書かれます。
 ルールの置き場所が `corpus/rules-measure.json` の測った結果と合わなくなると、`yarn test` が止まります。
 
 手引きの画面に、ルールが増えるたびに変わる行は書き写しません。
 画面には、動いていないルールを並べる所に `{not-run}`（一覧の下のヒントも含みます）、`--compact` が最後に出す集計の行に `{counts}` と書きます。
-一覧のうち一つのルールの行だけを見せるときは `{not-run: <rule>}` と書きます。一覧はいちばん長い id に合わせて詰めるので、書き写した行はルールが増えるたびに変わります。
+一覧から、あるルールの行だけを見せるときは `{not-run: <rule>}` と書きます。一覧はいちばん長い id に合わせて詰めるので、書き写した行はルールが増えるたびに変わります。
 サイトを作るときに、chaff の出力からどれも入れます。
 
 `yarn test` は、どの画面もその文書にかけ直し、chaff の出力と違えば止まります。
@@ -314,7 +316,7 @@ off_for:
 違いは `node scripts/guide-screens.ts --check ja/<ページ>.md` で見られます。
 
 新しいルールが画面を変えたときは、`yarn screens:update` を走らせ、ページの差分を読みます。
-画面を chaff の今の出力に書き直し、「…」の行はできるだけ元の場所に残します。
+画面を chaff のいまの出力に書き直し、「…」の行はできるだけ元の場所に残します。
 ページを指定すると、そのページだけを直します（`yarn screens:update ja/commands.md`）。
 
 `scripts/guide-screens.ts` の `UNCHECKED` に挙げた画面はかけられないので、そのまま残します。
@@ -329,8 +331,18 @@ off_for:
 ```bash
 yarn test     テストをすべて動かす
 yarn bench    見本に仕込んだ誤りを、ルールが見つけるかを測る
+yarn planted  誤りを仕込んだ文書の組と、そのきれいな版にかけて、種類ごとに見つけた数を出す
 yarn corpus   集めた実際の文書にかけて、corpus/expected/ からの増減を見る
 ```
+
+`yarn test` は、コアの数だけテストのプロセスを並べます。同じ手元でほかの作業コピーもテストするときは、`CHAFF_TEST_JOBS=4 yarn test` で 4 つに抑えます。
+
+`yarn planted` は、`test/fixtures/planted/<組>/` の組（contracts、email、reports、technical）にかけます。
+組は、一つのジャンルの自分で書いた文書の集まりです。どの文書にも、きれいな版と、誤りを仕込んだ版があります。
+組の `manifest.json` には、仕込んだ誤りの種類、行、それを指摘するはずのルールが並んでいます。
+誤りの種類ごとに、その行で指摘できた数と、きれいな版に出た指摘を出し、組の `expected.json` と違えば止まります。
+新しいルールが、組に仕込んだ種類の誤りを見つけるときは、その誤りを manifest に足します。まだどのルールも見つけない種類にも、見つけるはずのルールの名前が書いてあります。足したら `yarn planted --update` を走らせ、`expected.json` の差分を読みます。
+組の名前を渡すと、その組だけにかけます（`yarn planted contracts`）。
 
 `yarn corpus` で増えた指摘は、一つずつ読みます。誤った指摘なら、その形を例にしてテストに足し、直します。
 増えた指摘が正しいと確かめたら、`yarn corpus --update` で `corpus/expected/` を更新します。
