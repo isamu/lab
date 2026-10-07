@@ -1,0 +1,65 @@
+id: ui-label-variant
+layer: L3
+status: stable
+how_to_find: ui-label
+# A label is text in bold or in ［］; the words a label is written with or without come from the label-particle lexicon.
+languages: [ja, en]
+severity: info
+
+name:
+  ja: 二通りに書いた画面の札
+  en: Screen label written two ways
+
+why:
+  ja: 手順書で同じボタンを［復元を開始］とも［復元開始］とも書くと、読み手は画面に二つのボタンがあるのかと探します。画面の文字と同じ綴りで書くのが手順書の決まりです。画面の文言が変わったあとに一部だけ直すと起きます。太字か［］で囲んだ札のうち、大文字・小文字、空白、「を」「の」だけが違う二つを同じ札と見て、少ないほうを指します。
+  en: "When a manual writes the same button as **Start Restore** in one step and **Start restore** in another, the reader looks for two buttons. A manual spells every label exactly as the screen does. It happens when the screen's wording changes and only some steps are updated. Labels in bold (or in ［］) that differ only in case, spaces or a particle are read as one label, and the form written less often is pointed out."
+
+message:
+  ja: 「{written}」は、ほかの所では「{usual}」と書いています
+  en: '"{written}" is written as "{usual}" elsewhere'
+
+how_to_fix:
+  ja: 画面の文字を確かめて、どちらか一方にそろえてください。
+  en: Check the screen and use its spelling in every step.
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [technical, docs, blog]
+
+group: consistency
+summary:
+  ja: 太字や［］の画面の札で、大文字・小文字や空白、「を」「の」だけが違う二通りの書き方
+  en: A bold or bracketed screen label written two ways that differ only in case, spaces or a particle
+example:
+  ja:
+    config: { genre: docs/manual }
+    before: |
+      # 復元する
+
+      ［復元を開始］を押します。終わらないときは、もう一度［復元を開始］を押します。
+
+      失敗したら、前のバックアップを選んで［復元開始］を押します。
+    after: |
+      # 復元する
+
+      ［復元を開始］を押します。終わらないときは、もう一度［復元を開始］を押します。
+
+      失敗したら、前のバックアップを選んで［復元を開始］を押します。
+  en:
+    config: { genre: docs/manual }
+    before: |
+      # Restore
+
+      Click **Start Restore**. If nothing happens, click **Start Restore** again.
+
+      If it fails, select the previous backup and click **Start restore**.
+    after: |
+      # Restore
+
+      Click **Start Restore**. If nothing happens, click **Start Restore** again.
+
+      If it fails, select the previous backup and click **Start Restore**.
+
+not_flagged:
+  ja: 太字か［］で囲んだ札だけを見ます。かぎ括弧の語、コードの中の語、字の違う札（［保存］と［上書き保存］）、最初の一字の大文字・小文字だけが違う強調（**Note** と **note**）、語の中の「の」（［その他］）は比べません。技術文書・手順書・ブログでだけ動きます。
+  en: "Only labels in bold or in ［］ are compared. Quoted words, code, labels with different words (**Save** and **Save As**), and emphasis differing only in its first letter's case (**Note** and **note**) are not. Technical documents, manuals and blogs only."
