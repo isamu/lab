@@ -11,8 +11,8 @@ name:
   en: A summary value that differs from the body
 
 why:
-  ja: 冒頭や「概要」の節は、本文を読まない人も読みます。そこに書いた値が本文と違うと、要約だけを読んだ人が間違った値を持ち帰ります。本文を直したあとに、要約を直し忘れると起きます。最初の見出しより前の文と、概要・要約・まとめの節の「項目：値」「項目は値です」を、本文の同じ項目の値と比べます。本文の値が一通りに揃っていて、要約の値がそれと違うときだけ指します。
-  en: 'The opening and the summary are read by people who never read the body. A value there that differs from the body sends them away with the wrong one. It happens when the body is corrected and the summary is not. Values written as "Item: value" or "The item is value" before the first heading, or in a section headed Summary, Abstract or Overview, are compared with the body''s values for the same item; it is pointed out only when the body gives one value throughout and the summary gives another.'
+  ja: 冒頭や「概要」の節は、本文を読まない人も読みます。そこに書いた値が本文と違うと、要約だけを読んだ人が間違った値を持ち帰ります。本文を直したあとに、要約を直し忘れると起きます。最初の見出しより前の文と、概要・要約・まとめの節の「項目：値」「項目は値です」を、本文の同じ項目の値と比べます。英語の文書では、名前の無い数も、数える動詞と数えるもの（We gained 52 new customers）が同じ本文の数と比べます。本文の値が一通りに揃っていて、要約の値がそれと違うときだけ指します。
+  en: 'The opening and the summary are read by people who never read the body. A value there that differs from the body sends them away with the wrong one. It happens when the body is corrected and the summary is not. Values written as "Item: value" or "The item is value" before the first heading, or in a section headed Summary, Abstract or Overview, are compared with the body''s values for the same item, and so is a count with no label, by the verb and the words of what it counts ("We gained 52 new customers"); it is pointed out only when the body gives one value throughout and the summary gives another.'
 
 message:
   ja: 冒頭・要約の「{label}」 {value} が、本文の {other} と違います
