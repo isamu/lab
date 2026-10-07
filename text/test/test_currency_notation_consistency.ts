@@ -68,6 +68,22 @@ describe("currency-notation-consistency: 通貨の書き方が混ざっている
     assert.deepEqual(findingsOf("料金は 100円、200円、300円 です。`¥400` は例です。\n"), []);
   });
 
+  it("表の升の金額も数える。請求書の金額は表にある", () => {
+    const table = "| 品目 | 金額 |\n| --- | --- |\n| 保守 | 80,000円 |\n| 開発 | 180,000円 |\n| 合計 | 260,000円 |\n";
+    assert.deepEqual(findingsOf(`# 請求書\n\nご請求金額は¥260,000です。\n\n${table}`), [
+      "「¥260,000」と書いています（この文書はこの通貨をふつう「80,000円」のように書きます。4 箇所のうち 1 箇所が違う）",
+    ]);
+    assert.deepEqual(findingsOf(`# 請求書\n\nご請求金額は260,000円です。\n\n${table}`), []);
+    const enTable = "| Item | Amount |\n| --- | --- |\n| Support | $8,000 |\n| Build | $18,000 |\n| Total | $26,000 |\n";
+    assert.deepEqual(findingsOf(`# Invoice\n\nThe amount due is USD 26,000.\n\n${enTable}`, en), [
+      '"USD 26,000" here, where the document usually writes this currency like "$8,000" (1 of 4)',
+    ]);
+  });
+
+  it("表の升のコードの中は読まない", () => {
+    assert.deepEqual(findingsOf("料金は 100円、200円、300円 です。\n\n| 例 | 書き方 |\n| --- | --- |\n| 記号 | `¥400` |\n"), []);
+  });
+
   it("空の文字列と書き方の無い言語", () => {
     assert.deepEqual(amountsIn("", FORMS, MULTIPLIERS), []);
     assert.deepEqual(amountsIn("100円 ¥200", [], []), []);
