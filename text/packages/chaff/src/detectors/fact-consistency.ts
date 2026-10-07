@@ -77,7 +77,7 @@ const changeWordsOf = (doc: ProseDocument): ChangeWords => ({
   to: wordsAt(doc, "fact-change-to"),
   notChange: patternsOf(doc, "fact-change-not"),
   subjectMarks: patternsOf(doc, "fact-change-subject-mark"),
-  joiners: patternsOf(doc, "fact-name-joiner"),
+  joiners: wordsAt(doc, "fact-name-joiner"),
   conditionsFrom: conditionsOf(doc, "fact-condition-from"),
   conditionsTo: conditionsOf(doc, "fact-condition-to"),
 });

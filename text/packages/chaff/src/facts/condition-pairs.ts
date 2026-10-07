@@ -19,8 +19,8 @@ export type ChangeWords = {
   readonly notChange: readonly string[];
   /** 名前と値のあいだで飛ばす語（は、が）。 */
   readonly subjectMarks: readonly string[];
-  /** 名前の語をつなぐ語（の、of）。 */
-  readonly joiners: readonly string[];
+  /** 名前の語をつなぐ語（の、of）。position が after の語（の）は、前の語が後ろの語を修飾する。短い名前はその前の語を書かないことがある（「無いときの誤りの率」の「誤りの率」）。 */
+  readonly joiners: readonly WordAt[];
   /** もとの側の条件（before、無いとき）と、動いた先の側の条件（after、あるとき）。同じ group の語どうしが組になる。 */
   readonly conditionsFrom: readonly ConditionWord[];
   readonly conditionsTo: readonly ConditionWord[];
@@ -28,8 +28,14 @@ export type ChangeWords = {
 
 export type ChangeSentence = { readonly span: Span; readonly text: string; readonly tokens: readonly Token[]; readonly summary: boolean };
 
-/** 名前（subject）の付いた、もとの値と先の値の組。 */
-export type ValuePair = { readonly subject: string; readonly key: string; readonly from: FactValue; readonly to: FactValue };
+/** 名前（subject）の付いた、もとの値と先の値の組。names は同じ項目を指す名前の書き方（修飾を落とした短い名前も）。 */
+export type ValuePair = {
+  readonly subject: string;
+  readonly key: string;
+  readonly names: readonly string[];
+  readonly from: FactValue;
+  readonly to: FactValue;
+};
 
 export type PairConflict = { readonly summary: ValuePair; readonly body: ValuePair };
 
@@ -99,8 +105,49 @@ const DIGIT = /\d/u;
 
 const isSkipped = (token: Token, marks: ReadonlySet<string>): boolean => isBlank(token) || marks.has(token.surface) || SKIPPED.has(token.pos);
 
+const joinerSet = (words: ChangeWords): ReadonlySet<string> => new Set(words.joiners.map((word) => word.pattern.toLowerCase()));
+
 const isNameToken = (token: Token, joiners: ReadonlySet<string>): boolean =>
   (NAME_WORD.has(token.pos) && !DIGIT.test(token.surface)) || joiners.has(token.surface.toLowerCase());
+
+const keyOf = (text: string): string => text.normalize("NFKC").toLowerCase().replace(SPACES, " ");
+
+/** 名前の並びを、つなぐ語で始まらず名詞で終わるところまで切る。 */
+const trimmedName = (run: readonly Token[], joiners: ReadonlySet<string>): Token[] => {
+  const named = run.slice(
+    Math.max(
+      0,
+      run.findIndex((token) => !joiners.has(token.surface.toLowerCase())),
+    ),
+  );
+  return named.slice(0, named.findLastIndex((token) => HEAD_WORD.has(token.pos)) + 1);
+};
+
+/** 一つの名前の書き方: 全体と、修飾の語（「無いときの」）を前から落としたもの。 */
+const namesOf = (source: string, named: readonly Token[], words: ChangeWords): string[] => {
+  const last = named.at(-1);
+  if (last === undefined) return [];
+  const dropping = new Set(words.joiners.filter((word) => word.position === "after").map((word) => word.pattern.toLowerCase()));
+  const starts = [0, ...named.flatMap((token, index) => (dropping.has(token.surface.toLowerCase()) ? [index + 1] : []))];
+  return starts.flatMap((start) => {
+    const first = named[start];
+    return first === undefined ? [] : [keyOf(source.slice(first.span.start, last.span.end))];
+  });
+};
+
+/** 文の中の名前の並び（名詞と、つなぐ語でつながる語）ごとの、名前の書き方。 */
+const namesIn = (source: string, sentence: ChangeSentence, words: ChangeWords): Set<string> => {
+  const joiners = joinerSet(words);
+  const runs = sentence.tokens.reduce<Token[][]>((found, token, index) => {
+    if (!isNameToken(token, joiners)) return found;
+    const previous = sentence.tokens[index - 1];
+    const current = previous !== undefined && isNameToken(previous, joiners) ? found.at(-1) : undefined;
+    if (current === undefined) found.push([token]);
+    else current.push(token);
+    return found;
+  }, []);
+  return new Set(runs.flatMap((run) => namesOf(source, trimmedName(run, joiners), words)));
+};
 
 /**
  * 変化の前の名前の語の並び（"error rate"、「誤りの率」）。その前の空白、は・が、動詞（"the rate fell from"）は飛ばす。
@@ -108,19 +155,16 @@ const isNameToken = (token: Token, joiners: ReadonlySet<string>): boolean =>
  */
 const nameTokens = (tokens: readonly Token[], words: ChangeWords): Token[] => {
   const marks = new Set(words.subjectMarks);
-  const joiners = new Set(words.joiners.map((word) => word.toLowerCase()));
+  const joiners = joinerSet(words);
   const head = tokens.slice(0, tokens.findLastIndex((token) => !isSkipped(token, marks)) + 1);
   const run = head.slice(head.findLastIndex((token) => !isNameToken(token, joiners)) + 1);
-  const named = run.slice(
-    Math.max(
-      0,
-      run.findIndex((token) => !joiners.has(token.surface.toLowerCase())),
-    ),
-  );
-  return HEAD_WORD.has(named.at(-1)?.pos ?? "") ? named : [];
+  const named = trimmedName(run, joiners);
+  return HEAD_WORD.has(run.at(-1)?.pos ?? "") ? named : [];
 };
 
-const subjectBefore = (source: string, sentence: ChangeSentence, offset: number, words: ChangeWords): { subject: string; key: string } | undefined => {
+type Subject = { readonly subject: string; readonly key: string; readonly names: readonly string[] };
+
+const subjectBefore = (source: string, sentence: ChangeSentence, offset: number, words: ChangeWords): Subject | undefined => {
   const named = nameTokens(
     sentence.tokens.filter((token) => token.span.end <= offset),
     words,
@@ -130,7 +174,7 @@ const subjectBefore = (source: string, sentence: ChangeSentence, offset: number,
   const subject = source.slice(first.span.start, last.span.end);
   const gap = source.slice(last.span.end, offset);
   if (words.notChange.some((word) => wordSpans(gap, word, 0).length > 0)) return undefined;
-  return { subject, key: subject.normalize("NFKC").toLowerCase().replace(SPACES, " ") };
+  return { subject, key: keyOf(subject), names: namesOf(source, named, words) };
 };
 
 /** 文の中の「XからYに」と、その前の名前。 */
@@ -198,11 +242,8 @@ const pairByOrder = (sentence: ChangeSentence, conditions: readonly Mark[], valu
   return c1.side === "from" ? { from: v1, to: v2 } : { from: v2, to: v1 };
 };
 
-const containsKey = (sentence: ChangeSentence, key: string): boolean => sentence.text.normalize("NFKC").toLowerCase().replace(SPACES, " ").includes(key);
-
 /** 本文の一文が、名前と、比べられる二つの値と、その二つの条件を書いていれば、その組。 */
 const conditionedPair = (sentence: ChangeSentence, values: readonly FactValue[], summary: ValuePair, words: ChangeWords): ValuePair | undefined => {
-  if (!containsKey(sentence, summary.key)) return undefined;
   const marks = [...conditionMarks(sentence, words.conditionsFrom, "from"), ...conditionMarks(sentence, words.conditionsTo, "to"), ...yearMarks(sentence)];
   const free = marks.filter((mark) => mark.group === "year" || !values.some((value) => overlaps(mark, value)));
   const measured = values.filter((value) => comparable(summary.from, value) && !free.some((mark) => overlaps(mark, value)));
@@ -222,8 +263,8 @@ const bodyPairs = (source: string, sentences: readonly ChangeSentence[], values:
     .filter((sentence) => !sentence.summary)
     .flatMap((sentence) => {
       const inside = within(sentence.span, values);
-      const changes = containsKey(sentence, summary.key) ? changesIn(source, sentence, inside, words) : [];
-      const conditioned = conditionedPair(sentence, inside, summary, words);
+      const changes = changesIn(source, sentence, inside, words).filter((change) => change.names.includes(summary.key));
+      const conditioned = namesIn(source, sentence, words).has(summary.key) ? conditionedPair(sentence, inside, summary, words) : undefined;
       return [...changes, ...(conditioned === undefined ? [] : [conditioned])];
     })
     .filter((pair) => comparable(summary.from, pair.from) && comparable(summary.to, pair.to));

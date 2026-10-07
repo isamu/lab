@@ -265,6 +265,18 @@ describe("summary-fact-mismatch: a summary's change against the body's two condi
     assert.deepEqual(paperJa("妊婦健診は 24 週から 35 週まで受けられる。", "健診が無いときの週は 24 週、あるときは 30 週。"), []);
   });
 
+  it("the name is matched as a whole name, not as a part of another one", () => {
+    // 本文の変化は、その変化の名前が要約の名前と同じときだけ。同じ文に名前が出てくるだけでは組にしない。
+    const tracked = "The error rate was tracked; the completion rate rose from 70% to 80%.";
+    assert.deepEqual(paperEn("The error rate fell from 2.4% to 1.6%.", tracked), []);
+    // "rate" は "error rate" の一部で、同じ項目ではない。
+    const calibration = "Before calibration, the error rate was 3%; after calibration, it was 2%.";
+    assert.deepEqual(paperEn("In the primary metric, the rate increased from 10% to 20%.", calibration), []);
+    // 「の」の前の修飾（「無いときの」）は落としてよい。英語の of の前後は落とさない。
+    assert.deepEqual(paperJa("誤りの率は 2.4% から 1.4% に下がった。", 休憩), ["誤りの率:2.4% → 1.4%≠2.4% → 1.6%"]);
+    assert.deepEqual(paperEn("Errors fell from 40 to 25.", "Before the change, the number of errors was 40; after it, 30."), []);
+  });
+
   it("the body's change is not compared with itself, and an unrelated from … to stays silent", () => {
     assert.deepEqual(summaryEn("# Study", "", "## Results", "", "The error rate fell from 2.4% to 1.4%.", "", withBreaks), []);
     assert.deepEqual(paperEn("The office moved from Austin to Dallas.", withBreaks), []);
