@@ -47,8 +47,8 @@ example:
       The report is attached to this email.
 
 not_flagged:
-  ja: 大文字を含む語、四字より短い語、コード・URL・メールアドレスの中の語、文書で二度以上使う語、一字違いの辞書の語が無い語、chaff.yaml の names に並べた語、語彙表 known-misspelling が別に言う語は指しません。
-  en: Words with a capital letter, words shorter than four letters, words in code, URLs and email addresses, words used twice or more in the document, words with no dictionary word one letter away, words listed under names in chaff.yaml, and the misspellings known-misspelling reports are not reported.
+  ja: 大文字を含む語、四字より短い語、コード・URL・メールアドレスの中の語、強調や角括弧で頭の字を分けた語の残り（**G**lobally の lobally、[e]xpressions の xpressions）、文書で二度以上使う語、一字違いの辞書の語が無い語、chaff.yaml の names に並べた語、語彙表 known-misspelling が別に言う語は指しません。
+  en: Words with a capital letter, words shorter than four letters, words in code, URLs and email addresses, the rest of a word whose first letter is set apart by emphasis or brackets (lobally in **G**lobally, xpressions in [e]xpressions), words used twice or more in the document, words with no dictionary word one letter away, words listed under names in chaff.yaml, and the misspellings known-misspelling reports are not reported.
 rewrite:
   depth: light
   en:

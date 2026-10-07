@@ -1,4 +1,17 @@
-table  13  13  0  0
+table  26  26  0  0
+ja/blog  uncomparable-yori-saiteki  found
+ja/design  uncomparable-yori-saiteki  found
+ja/email  uncomparable-yori-saiteki  found
+ja/figures  uncomparable-yori-saiteki  found
+ja/itinerary  uncomparable-yori-saiteki  found
+ja/minutes  uncomparable-yori-saiteki  found
+ja/note  uncomparable-yori-saiteki  found
+ja/policy  uncomparable-yori-saiteki  found
+ja/press  uncomparable-yori-saiteki  found
+ja/proposal  uncomparable-yori-saiteki  found
+ja/quote  uncomparable-yori-saiteki  found
+ja/readme  uncomparable-yori-saiteki  found
+ja/requirements  uncomparable-yori-saiteki  found
 en/blog  uncomparable-very-unique  found
 en/design  uncomparable-very-unique  found
 en/email  uncomparable-very-unique  found

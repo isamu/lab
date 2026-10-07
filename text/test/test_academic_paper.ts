@@ -2,7 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { authorKey, citationMarks, numbersIn, type CitationMark, type CitationWords } from "../packages/chaff/src/detectors/citation-marks.ts";
 import { citingFootnotes, minorityCitations } from "../packages/chaff/src/detectors/citation-style.ts";
-import { citationSlips, namesEntry } from "../packages/chaff/src/detectors/citation-entry.ts";
+import { citationSlips, namesEntry, namesEntryAmong } from "../packages/chaff/src/detectors/citation-entry.ts";
 import { labelOf } from "../packages/chaff/src/detectors/abstract-length.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
@@ -131,6 +131,30 @@ describe("citation-reference-mismatch: citations against the list", () => {
     assert.ok(!namesEntry("2020 smithson", "2020 smith"));
     assert.ok(!namesEntry("2020 林田太郎", "2020 林"));
     assert.ok(namesEntry("2020 林", "2020 林"));
+  });
+
+  it("matches a one-character surname against the one full name of that year it heads, and only that one", () => {
+    const among = namesEntryAmong(["2018 森達也", "2015 伊藤博", "2019 林田太郎", "2019 林正"]);
+    assert.ok(among("2018 森達也", "2018 森"));
+    assert.ok(!among("2015 伊藤博", "2018 森"));
+    assert.ok(!among("2019 林田太郎", "2019 林"));
+    assert.ok(!among("2019 林正", "2019 林"));
+    assert.ok(!namesEntryAmong(["2018 森", "2018 森達也"])("2018 森達也", "2018 森"));
+    assert.ok(namesEntryAmong(["2018 森", "2018 森達也"])("2018 森", "2018 森"));
+    assert.ok(!namesEntryAmong(["2020 smithson"])("2020 smithson", "2020 smith"));
+    assert.ok(!namesEntryAmong([])("2018 森達也", "2017 森"));
+  });
+
+  it("reads a Japanese paper citing a one-character surname and its co-author against full names", () => {
+    const body = "誤りは費用がかかる（伊藤, 2015）。疲労と結び付けられた（森・阿部, 2018）。計画は加藤（2020）に従った。";
+    const source = `# 休憩\n\n${body}\n${list("伊藤博 (2015). 入力の誤り.", "加藤亮 (2020). 現場調査.", "森達也・阿部優 (2018). 疲労と正確さ.")}`;
+    assert.deepEqual(variantsOf(ja, "citation-reference-mismatch", source), []);
+    assert.deepEqual(variantsOf(ja, "citation-reference-mismatch", source.replace("計画は加藤（2020）に従った。", "")), ["uncited"]);
+    assert.deepEqual(variantsOf(ja, "citation-reference-mismatch", source.replace("（森・阿部, 2018）", "（森, 2017）")), ["missing", "uncited"]);
+    // Co-authors are not compared, as for longer surnames: a bare （森, 2018） names the one 2018 entry 森達也・阿部優.
+    assert.deepEqual(variantsOf(ja, "citation-reference-mismatch", source.replace("（森・阿部, 2018）", "（森, 2018）")), []);
+    const twoMori = source.replace("加藤亮 (2020)", "森正 (2018)").replace("計画は加藤（2020）に従った。", "");
+    assert.deepEqual(variantsOf(ja, "citation-reference-mismatch", twoMori), ["missing"]);
   });
 
   it("reads unbulleted author-year entries one per line, and not a wrapped line", () => {

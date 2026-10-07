@@ -4,7 +4,7 @@ status: stable
 how_to_find: phrase-match
 word_list: uncomparable-graded
 requires: [pos]
-languages: [en]
+languages: [ja, en]
 severity: info
 
 name:
@@ -12,16 +12,16 @@ name:
   en: An uncomparable adjective given a degree
 
 why:
-  ja: 英語の「unique」「unanimous」「impossible」は、そうであるかないかの二つしかない状態を言います。「very unique」「more unanimous」と程度を付けても何も足されず、読み手は書き手が語の意味を確かめていないと受け取ります。語の一覧は言語ごとの語彙表にあります。
-  en: '"Unique", "unanimous" and "impossible" name a state that holds or does not. "Very unique" or "more unanimous" adds nothing, and tells the reader the writer did not weigh the word. The phrases are listed in the lexicon.'
+  ja: 「最適」「完璧」（英語の unique、unanimous、impossible）は、一番であるか・欠けが無いかを言う語で、程度がありません。「より最適な」「とても完璧」（very unique、more unanimous）と程度を付けても何も足されず、読み手は書き手が語の意味を確かめていないと受け取ります。語の一覧は言語ごとの語彙表にあります。
+  en: '"Unique", "unanimous" and "impossible" (最適, 完璧) name a state that holds or does not. "Very unique" or "more unanimous" (より最適な, とても完璧) adds nothing, and tells the reader the writer did not weigh the word. The phrases are listed in the lexicon.'
 
 message:
-  ja: 「{matched}」は、程度の無い形容詞に程度を付けています
+  ja: 「{matched}」は、程度の無い語に程度を付けています
   en: '"{matched}" grades an adjective that has no degrees'
 
 how_to_fix:
-  ja: 程度の語を外すか、本当に言いたい程度の言える語に替えてください（very unique → unique、または unusual）。
-  en: Drop the grade, or use a word that has degrees ("very unique" → "unique", or "unusual").
+  ja: 程度の語を外すか、本当に言いたい程度の言える語に替えてください（より最適な → 最適な、または より適した。very unique → unique、または unusual）。
+  en: Drop the grade, or use a word that has degrees ("very unique" → "unique", or "unusual"; より最適な → 最適な, or より適した).
 
 levels: { strict: 1, normal: 1, relaxed: 2 }
 
@@ -31,9 +31,14 @@ off_for:
 
 group: wording
 summary:
-  ja: 英語で、「very unique」「more unanimous」のように、程度の無い形容詞に付けた程度
-  en: A degree given to an adjective that has none, such as "very unique" or "more unanimous"
+  ja: 「より最適な」「とても完璧」（very unique、more unanimous）のように、程度の無い語に付けた程度
+  en: A degree given to an adjective that has none, such as "very unique" or "more unanimous" (より最適な, とても完璧)
 example:
+  ja:
+    before: |
+      より最適な案を選びました。
+    after: |
+      最適な案を選びました。
   en:
     before: |
       The design is very unique.
@@ -41,14 +46,28 @@ example:
       The design is unusual.
 
 not_flagged:
-  ja: 一覧にある組み合わせだけを見ます。「almost」「nearly」のように近さを言う語（almost unique、nearly impossible）は指しません。英語の文書だけで動き、文学のジャンルは対象にしません。
-  en: Only the pairs on chaff's list are checked. Words that say how close ("almost unique", "nearly impossible") are not reported. English documents only; literature is not checked.
+  ja: 一覧にある組み合わせだけを見ます。「ほぼ完璧」（almost unique、nearly impossible）のように近さを言う語は指しません。「最も最適」「一番ベスト」のように最上を重ねた形は redundant-expression が見ます。「より最適化する」は指しません。文学のジャンルは対象にしません。
+  en: Only the pairs on chaff's list are checked. Words that say how close ("almost unique", "nearly impossible", ほぼ完璧) are not reported. A superlative stacked on a superlative (最も最適) is redundant-expression's, and より最適化する (optimise further) is not reported. Literature is not checked.
 level_meaning:
   ja: 当てはまる言い回しが {limit} 箇所あれば指摘
   en: reported once there are {limit}
 sources: [proselint]
 rewrite:
   depth: light
+  ja:
+    direction: 程度の語（より、とても、非常に）を外してください。程度を言いたいのなら、程度のある語に替えます（より最適な → より適した）。文のほかの所は変えません。
+    pairs:
+      - before: より最適な案を選びました。
+        after: 最適な案を選びました。
+      - before: 仕上がりはとても完璧でした。
+        after: 仕上がりは完璧でした。
+      - before: 前の版より最善の方法です。
+        after: 前の版より良い方法です。
+    keep:
+      - 文の主張
+      - 文のほかの所
+    avoid:
+      - 別の程度の語（本当に最適）に替えるだけ
   en:
     direction: Drop the grade before the adjective, or swap the adjective for one that has degrees when a degree is meant. Change nothing else in the sentence.
     pairs:
