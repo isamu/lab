@@ -1,7 +1,8 @@
 import type { Token } from "../plugin.ts";
 
 // Whether a joining word ("and") starts a clause about another subject: "Revenue was $1,000 in 2025 and costs were $1,500
-// in 2026" joins two subjects, "… in 2025 and $1,500 in 2026" or "… and revenue was $1,500" one. Pure: reads the tagger's
+// in 2026" joins two subjects, "… in 2025 and $1,500 in 2026" or "… and revenue was $1,500" one. Two words for one thing
+// ("sales" and "revenue") read as two subjects, so the pair is left alone rather than read wrongly. Pure: reads the tagger's
 // parts of speech and lemmas.
 
 const NOUN: ReadonlySet<string> = new Set(["NOUN", "PROPN"]);
@@ -20,11 +21,15 @@ const leadingNoun = (tokens: readonly Token[]): Token | undefined => {
 };
 
 /**
- * The joining word at index is followed by a noun other than the sentence's subject (the first noun run before it). A noun
- * the sentence has not used before it starts another clause: "and costs were", "and costs $1,500".
+ * The joining word at index is followed by a noun the sentence has not used before it: "and costs were", "and costs $1,500"
+ * after "Revenue was $1,000", where "and revenue was" after "ACME's revenue was $1,000" names the same thing again. A
+ * sentence with no noun before the joining word gives nothing to compare with.
  */
 export const startsOtherSubject = (tokens: readonly Token[], index: number): boolean => {
   const next = leadingNoun(tokens.slice(index + 1));
-  const subject = leadingNoun(tokens.slice(0, index));
-  return next !== undefined && subject !== undefined && wordOf(next) !== wordOf(subject);
+  const before = tokens
+    .slice(0, index)
+    .filter((token) => NOUN.has(token.pos))
+    .map(wordOf);
+  return next !== undefined && before.length > 0 && !before.includes(wordOf(next));
 };

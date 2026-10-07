@@ -111,6 +111,8 @@ describe("change-rate-mismatch: the two values written together before the rate"
     assert.deepEqual(found("Revenue was $1.0 million in 2025 and costs $1.5 million in 2026, up 20%.", en), []);
     assert.deepEqual(found("Revenue was $2,000 in 2025 and revenue was $2,500 in 2026, up 20%.", en), ["20:25"]);
     assert.deepEqual(found("Revenue was $2,000 in 2025 and revenue $2,500 in 2026, up 20%.", en), ["20:25"]);
+    assert.deepEqual(found("In 2025, revenue was $2,000 and costs were $2,500 in 2026, up 20%.", en), []);
+    assert.deepEqual(found("ACME's revenue was $2,000 in 2025 and revenue was $2,500 in 2026, up 20%.", en), ["20:25"]);
   });
 
   it("allows the rounding of the two values", () => {
@@ -257,6 +259,8 @@ describe("startsOtherSubject: a joining word followed by another subject", () =>
       ["were", "AUX"],
     );
     assert.equal(startsOtherSubject(tokens, 4), true);
+    const name = sentence(["Revenue", "NOUN"], ["was", "AUX"], ["2,000", "NUM"], AND, ["Acme", "PROPN"], ["reported", "VERB"]);
+    assert.equal(startsOtherSubject(name, 3), true);
   });
 
   it("the head of each noun run is compared, past a determiner, a possessive or an adjective", () => {
@@ -286,6 +290,8 @@ describe("startsOtherSubject: a joining word followed by another subject", () =>
   it("no subject before the joining word, or nothing after it", () => {
     const noSubject = sentence(["In", "ADP"], ["2025", "NUM"], AND, ["costs", "NOUN"]);
     assert.equal(startsOtherSubject(noSubject, 2), false);
+    const owner = sentence(["ACME", "PROPN"], ["revenue", "NOUN"], ["was", "AUX"], ["2,000", "NUM"], AND, ["revenue", "NOUN"]);
+    assert.equal(startsOtherSubject(owner, 4), false);
     const last = sentence(["Revenue", "NOUN"], AND);
     assert.equal(startsOtherSubject(last, 1), false);
     assert.equal(startsOtherSubject([], 0), false);
