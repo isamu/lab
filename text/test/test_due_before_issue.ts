@@ -50,9 +50,8 @@ describe("due-before-issue: 期限が発行日より前", () => {
     assert.deepEqual(findingsOf(`# 請求書\n\n${far}\n`), []);
   });
 
-  it("作成日は発行日と読まない。業務文書のジャンルだけで動く", () => {
+  it("作成日は発行日と読まない", () => {
     assert.deepEqual(findingsOf("# 棚卸し\n\n作成日：2026年10月8日\n\n有効期限：2026年3月31日\n"), []);
-    assert.deepEqual(namedRuleRun(RULE, "# 請求書\n\n発行日：2026年11月30日\n\nお支払期限：2026年11月25日\n", ja, "a.md", "technical/readme").findings, []);
   });
 
   it("発行日が無いか、一行に日付が二つある行は比べない", () => {

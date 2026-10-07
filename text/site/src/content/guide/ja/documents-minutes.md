@@ -136,7 +136,7 @@ $ npx chaffjs gijiroku.md --genre business/meeting-notes
   - 宿題ごとに、担当と期限があるか
   - 次回の日程と、持ち越した議題を書いているか
 
-  このジャンルで特に効く rule: cushion-phrase-density, due-before-issue, preamble-length, request-without-deadline, risk-disclosure, unsourced-number
+  このジャンルで特に効く rule: cushion-phrase-density, preamble-length, request-without-deadline, risk-disclosure, unsourced-number
   chaff.yaml の guide: で書き換えられます。出さないときは --no-guide。
 
 ════════════════════════════════════════════════════════════

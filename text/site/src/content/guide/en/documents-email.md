@@ -140,7 +140,7 @@ Guide: Email and letter (business/email)
   - Is everything said to be attached actually attached?
   - Are the greeting, the closing and the signature in place?
 
-  Rules that matter most for this genre: attachment-not-attached, cushion-phrase-density, due-before-issue, email-greeting-closing, email-subject-length, preamble-length, request-without-deadline, risk-disclosure, unsourced-number
+  Rules that matter most for this genre: attachment-not-attached, cushion-phrase-density, email-greeting-closing, email-subject-length, preamble-length, request-without-deadline, risk-disclosure, unsourced-number
   Change it with guide: in chaff.yaml; leave it out with --no-guide.
 
 ════════════════════════════════════════════════════════════
