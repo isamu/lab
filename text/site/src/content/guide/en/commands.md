@@ -51,7 +51,7 @@ These options go with a check.
 | `--dry-run` | With `test`, shows what would be sent to an AI, without calling the API |
 | `--include <glob>` | In a folder, checks the files matching the glob besides Markdown (`--include "*.yaml"`). See [Configuration](./configuration) |
 
-`tree` and `cite` are explained in [Structure and quotations](./structure), `--sarif` in [CI](./ci), and `grade` in [Using chaff for AI evals](./ai-evals).
+`tree` and `cite` are explained in [Structure and quotations](./structure), `--sarif` in [CI](./ci) and `grade` in [Using chaff for AI evals](./ai-evals).
 
 ## One short entry per finding
 
@@ -413,7 +413,7 @@ Below the outline comes the structure block.
 It sets each structure measure against articles written before generated text was common, and says what share of them the value lies past.
 Where a value lies past 90% of them, it also gives the human median and that line, marked ✗.
 
-The measures are headings per 1000 words, sections of one or two paragraphs, section length variation, and headings in a stock form.
+The measures are headings per 1000 words, sections of one or two paragraphs, section length variation and headings in a stock form.
 Then come headings split into three, introduction and conclusion headings, a closing that restates the body, and three-item lists.
 Last come bold-label list items, emoji headings, and paired pros and cons.
 
@@ -492,6 +492,7 @@ after.md: ai-score low 1/25 structure:short-sections
 
 `before.md` and `after.md` are the articles the outline was measured on above. Each file gets one line: the level, the signs out of those compared, and the signs that counted.
 Without `--compact`, each sign comes with its count and how many human documents show it; [Making AI-sounding text sound human](./ai-sounding#a-quick-ai-likeness-score) has that screen.
+
 `--format json` (or `--json`) gives the same as JSON.
 A document that is too short, or in a genre without enough human documents to compare with, gets no level and the reason instead.
 A plain `npx chaffjs <file>` also ends each file's report with the level on one line (not with `--compact`).

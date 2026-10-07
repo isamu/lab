@@ -46,7 +46,7 @@ chaff が見つけた箇所を、ルールごとに「どう直すか」の指�
 計画に沿って書き直す AI は、まず指針を読み、書き終えたら一行ずつ確かめます。
 指針の多くはルールでは確かめられません。読んで従う指示です。
 
-```
+```text
 $ npx chaffjs fix-plan draft.md --genre blog/tech
 
 # 直す計画: draft.md
@@ -78,7 +78,7 @@ JSON を読む AI には、指針をデータでも渡します。
 | `rules --json` | 一番上の `guide`。形は同じで、`--genre` か `chaff.yaml` のジャンルのものです |
 | `--sarif <path>` | `runs[0].properties.guides`。実行に出てきたジャンルと言語ごとに 1 つで、それぞれ `language` を持ちます |
 
-```
+```text
 $ npx chaffjs rules --json --genre blog/tech
 
 …

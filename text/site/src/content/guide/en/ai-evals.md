@@ -1,7 +1,7 @@
 # Using chaff for AI evals
 
 chaff can grade a model's outputs next to your model-graded scores.
-The same output always gets the same result, every point names a line and a rule, and nothing is sent anywhere.
+The same output always gets the same result. Every point names a line and a rule, and nothing is sent anywhere.
 It does not judge meaning. Whether an answer is right stays with a model judge or a person.
 This page shows how, step by step and with real output.
 It covers grading a file of outputs, a rubric, comparing two runs, a library call and the eval frameworks it plugs into.
@@ -78,7 +78,7 @@ A `chaff.yaml` in the folder you run from applies to every check, as in the [con
    …
    ```
 
-3. **Read the result.** An output fails on an `error` finding, a fact dropped or added against `reference`, or a quotation not found.
+3. **Read the result.** An output fails on an `error` finding, on a fact dropped or added against `reference`, and on a quotation not found.
    Style findings never fail an output. They are a rate per 1,000 words (characters for Japanese), to compare prompts or models.
    "Not run" says what was not checked and why, so that 0 findings is never read as "checked and fine".
    `--compact` gives one line per output, for a CI log, and `--json` gives the summary as JSON.
@@ -245,7 +245,7 @@ How to read it:
 - "Quotations failed" is failed out of checked. Facts are counted as in the summary, leaving out the kinds the rubric allows.
 - When outputs carry `contexts`, an "Unsupported facts" row gives the facts found in no retrieved passage out of those checked.
 - With a `grade:` rubric, a "Penalty points" row adds up each variant's points.
-- "AI low/med/high" counts each variant's outputs at each level of the quick AI-likeness score, with the outputs not scored in brackets.
+- An "AI low/med/high" row counts each variant's outputs at each level of the quick AI-likeness score, with the outputs not scored in brackets.
 - The pass rate is a share of outputs, not a score. chaff still gives no mark out of a maximum.
 
 When the label is in another field, name it: `--variant-key model` or `--variant-key prompt`. Then every line must have that field.
