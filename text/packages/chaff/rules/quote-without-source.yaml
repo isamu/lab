@@ -17,8 +17,8 @@ message:
   en: '"{quote}" is given to someone, but no source (a link, a footnote, a reference) is given'
 
 how_to_fix:
-  ja: 同じ段落に出典を書いてください。Web で読めるならリンクを、本や論文なら「（著者, 書名, 年）」か脚注を付けます。出典が見つからないなら、言い回しを確かめられるまで人の言葉としては引かないでください。出典を書いたら、`chaff cite <出典> <引用.json>` で、その言葉が出典に本当にあるかを照らせます（chaff --format json の quote がそのまま使えます）。
-  en: 'Name the source in the same paragraph: a link when it can be read online, or "(Author, Title, year)" or a footnote for a book or a paper. If no source can be found, do not give the words to the person until they can be checked. With the source in hand, `chaff cite <source> <quotes.json>` checks that the words are really there (each finding''s quote in chaff --format json is the text to check).'
+  ja: 同じ段落に出典を書いてください。Web で読めるならリンクを、本や論文なら「（著者, 書名, 年）」か脚注を付けます。出典が見つからないなら、言い回しを確かめられるまで人の言葉としては引かないでください。`chaff cite --scaffold <文書>` がこうした引用を引用.json のひな形にするので、source に出典のファイルを書いて `chaff cite <引用.json>` を動かせば、その言葉が出典に本当にあるかを照らせます。
+  en: 'Name the source in the same paragraph: a link when it can be read online, or "(Author, Title, year)" or a footnote for a book or a paper. If no source can be found, do not give the words to the person until they can be checked. `chaff cite --scaffold <document>` writes these quotations as a quotes.json to fill in: put the source''s file in each `source`, and `chaff cite <quotes.json>` checks that the words are really there.'
 
 levels: { strict: warning, normal: info, relaxed: info }
 

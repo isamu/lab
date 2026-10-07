@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,7 +8,8 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { buildStructure } from "../packages/chaff/src/structure/of.ts";
 import { checkCitations, type Citation } from "../packages/chaff/src/structure/cite.ts";
-import { parseCitations, runCite } from "../packages/chaff/src/commands/cite.ts";
+import { runCite } from "../packages/chaff/src/commands/cite.ts";
+import { bySource, parseCitations, sourceProblem, type Claim } from "../packages/chaff/src/commands/cite-claims.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import { EMPTY } from "../packages/chaff/src/config/load.ts";
 
@@ -308,5 +309,197 @@ describe("chaff cite exits 1 when any citation is off", () => {
 
   it("1 when the file is not a list of citations", async () => {
     assert.equal(await run('{"address":"4.2"}'), 1);
+  });
+
+  it("1 when a claim names its own source and a source is given too", async () => {
+    assert.equal(await run('[{"source":"other.txt","quote":"前項の委託料を支払わなければならない"}]'), 1);
+    assert.match(printed.join("\n"), /1 件目が source を書いていますが/u);
+  });
+});
+
+describe("claims that name their own source", () => {
+  const parsed = (text: string): readonly Claim[] => {
+    const result = parseCitations(text);
+    if (!("citations" in result)) throw new Error(result.error);
+    return result.citations;
+  };
+
+  it("keeps source when it is given, and only then", () => {
+    assert.deepEqual(parsed('[{"source":"a.md","quote":"x"},{"quote":"y"}]'), [
+      { source: "a.md", address: "", quote: "x" },
+      { address: "", quote: "y" },
+    ]);
+  });
+
+  it("a source that is not a string is a bad entry", () => {
+    assert.equal("error" in parseCitations('[{"source":3,"quote":"x"}]'), true);
+  });
+
+  const problems: readonly (readonly [string, string, boolean, string | undefined])[] = [
+    ["every claim names one, none on the command line", '[{"source":"a.md","quote":"x"}]', false, undefined],
+    ["one on the command line, none in the claims", '[{"quote":"x"}]', true, undefined],
+    ["an empty source is no source", '[{"source":" ","quote":"x"}]', true, undefined],
+    ["a claim with no source and none on the command line", '[{"source":"a.md","quote":"x"},{"source":"","quote":"y"}]', false, "Entry 2 has no source"],
+    ["a claim with a source and one on the command line too", '[{"quote":"x"},{"source":"a.md","quote":"y"}]', true, "Entry 2 names a source"],
+  ];
+  problems.forEach(([name, text, sourceGiven, expected]) => {
+    it(name, () => {
+      const problem = sourceProblem(parsed(text), sourceGiven, "en");
+      if (expected === undefined) assert.equal(problem, undefined);
+      else assert.ok(problem?.startsWith(expected), problem ?? "no problem");
+    });
+  });
+
+  it("groups claims by source in the order the sources first appear", () => {
+    const claims = parsed('[{"source":"b.md","quote":"1"},{"source":"a.md","quote":"2"},{"source":" b.md ","quote":"3"}]');
+    assert.deepEqual(
+      bySource(claims).map((group) => [group.source, group.claims.map((claim) => claim.quote)]),
+      [
+        ["b.md", ["1", "3"]],
+        ["a.md", ["2"]],
+      ],
+    );
+  });
+});
+
+describe("chaff cite <claims.json> reads each claim's own source", () => {
+  const dir = mkdtempSync(join(tmpdir(), "chaff-cite-sources-"));
+  writeFileSync(join(dir, "talk.md"), "# Talk\n\nAdding people to a late project makes it later.\n");
+  writeFileSync(join(dir, "notes.md"), "# Notes\n\n## Rollbacks\n\nA rollback you have never run is not a rollback.\n");
+  const flag = (argv: readonly string[], name: string): string | undefined => (argv.includes(name) ? argv[argv.indexOf(name) + 1] : undefined);
+  const context = { config: { ...EMPTY, language: "en", baseDir: dir }, flag, ui: "en" as const };
+  const printed: string[] = [];
+  const run = async (claims: string, extra: readonly string[] = []): Promise<number> => {
+    const path = join(dir, "claims.json");
+    writeFileSync(path, claims);
+    printed.length = 0;
+    const saved = { log: console.log, error: console.error };
+    console.log = (text: string) => printed.push(text);
+    console.error = (text: string) => printed.push(text);
+    try {
+      return await runCite([path], ["cite", path, ...extra], context);
+    } finally {
+      console.log = saved.log;
+      console.error = saved.error;
+    }
+  };
+
+  it("checks each claim against its own file, next to the claims file, in the claims' order", async () => {
+    const code = await run(
+      JSON.stringify([
+        { source: "notes.md", address: "h1.1", quote: "never run" },
+        { source: "talk.md", quote: "late project makes it later" },
+        { source: "notes.md", quote: "a rollback is free" },
+      ]),
+    );
+    assert.equal(code, 1);
+    assert.deepEqual(printed.join("\n").split("\n"), [
+      '✓ notes.md h1.1 "never run": matches',
+      '✓ talk.md (anywhere) "late project makes it later": matches (h1, line 3)',
+      '✗ notes.md (anywhere) "a rollback is free": the quotation is nowhere in the source',
+    ]);
+  });
+
+  it("JSON results carry each claim's source", async () => {
+    assert.equal(await run(JSON.stringify([{ source: "talk.md", quote: "late project" }]), ["--format", "json"]), 0);
+    const results: unknown = JSON.parse(printed.join("\n"));
+    assert.deepEqual(results, [{ citation: { source: "talk.md", address: "", quote: "late project" }, status: "ok", line: 3, foundAt: "h1" }]);
+  });
+
+  it("1, with the reason, when a claim has no source", async () => {
+    assert.equal(await run(JSON.stringify([{ source: "", quote: "late project" }])), 1);
+    assert.match(printed.join("\n"), /Entry 1 has no source/u);
+  });
+
+  it("a source written with Windows separators names the same file", async () => {
+    mkdirSync(join(dir, "sources"), { recursive: true });
+    writeFileSync(join(dir, "sources", "talk.md"), "# Talk\n\nAdding people to a late project makes it later.\n");
+    assert.equal(await run(JSON.stringify([{ source: "sources\\talk.md", quote: "late project" }])), 0);
+  });
+
+  it("1 when a source cannot be read", async () => {
+    assert.equal(await run(JSON.stringify([{ source: "missing.md", quote: "late project" }])), 1);
+    assert.match(printed.join("\n"), /missing\.md/u);
+  });
+});
+
+describe("chaff cite --scaffold", () => {
+  const dir = mkdtempSync(join(tmpdir(), "chaff-cite-scaffold-"));
+  const flag = (argv: readonly string[], name: string): string | undefined => (argv.includes(name) ? argv[argv.indexOf(name) + 1] : undefined);
+  const context = { config: { ...EMPTY, language: "en", baseDir: dir }, flag, ui: "en" as const };
+  const captured = async (run: () => Promise<number>): Promise<{ readonly code: number; readonly out: string }> => {
+    const out: string[] = [];
+    const saved = { log: console.log, error: console.error };
+    console.log = (text: string) => out.push(text);
+    console.error = (text: string) => out.push(text);
+    try {
+      return { code: await run(), out: out.join("\n") };
+    } finally {
+      console.log = saved.log;
+      console.error = saved.error;
+    }
+  };
+  const scaffold = async (document: string, targets?: readonly string[]): Promise<{ readonly code: number; readonly out: string }> => {
+    const path = join(dir, "post.md");
+    writeFileSync(path, document);
+    const given = targets ?? [path];
+    return captured(() => runCite(given, ["cite", "--scaffold", ...given], context));
+  };
+
+  const POST = [
+    "# Notes",
+    "",
+    'Dana Reyes said "most outages start with a change nobody reviewed".',
+    "",
+    'The slides are at https://example.com/a, and they claim "a rollback you never ran is no rollback".',
+    "",
+    "> A change you cannot undo is a change you have not finished.",
+    ">",
+    "> — Kim Lee",
+    "",
+  ].join("\n");
+
+  it("writes one claim for each quotation with no source, with source and address to fill in", async () => {
+    const { code, out } = await scaffold(POST);
+    assert.equal(code, 0);
+    assert.deepEqual(JSON.parse(out), [
+      { source: "", address: "", quote: "most outages start with a change nobody reviewed" },
+      { source: "", address: "", quote: "A change you cannot undo is a change you have not finished." },
+    ]);
+  });
+
+  it("an empty list when every quotation names a source", async () => {
+    const { code, out } = await scaffold("# Notes\n\nNo one is quoted here.\n");
+    assert.equal(code, 0);
+    assert.deepEqual(JSON.parse(out), []);
+  });
+
+  it("the scaffold, filled in with a source, is checked by chaff cite <claims.json>", async () => {
+    const claims: unknown = JSON.parse((await scaffold(POST)).out);
+    assert.ok(Array.isArray(claims));
+    writeFileSync(join(dir, "talk.md"), "# Talk\n\nShe said most outages start with a change nobody reviewed.\n");
+    const filled = claims.map((claim: unknown) => ({ ...(typeof claim === "object" ? claim : {}), source: "talk.md" }));
+    const claimsPath = join(dir, "claims.json");
+    writeFileSync(claimsPath, JSON.stringify(filled));
+    const { code, out } = await captured(() => runCite([claimsPath], ["cite", claimsPath], context));
+    assert.equal(code, 1);
+    assert.deepEqual(out.split("\n"), [
+      '✓ talk.md (anywhere) "most outages start with a change nobody …": matches (h1, line 3)',
+      '✗ talk.md (anywhere) "A change you cannot undo is a change you…": the quotation is nowhere in the source',
+    ]);
+  });
+
+  it("1 and the usage for a format cite does not know", async () => {
+    const path = join(dir, "post.md");
+    writeFileSync(path, POST);
+    const { code, out } = await captured(() => runCite([path], ["cite", "--scaffold", path, "--format", "xml"], context));
+    assert.equal(code, 1);
+    assert.match(out, /^usage:/u);
+  });
+
+  it("1 and the usage without exactly one document", async () => {
+    const { code, out } = await scaffold(POST, []);
+    assert.equal(code, 1);
+    assert.match(out, /--scaffold/u);
   });
 });
