@@ -368,7 +368,7 @@ When the structure itself should change, use the full rewrite, as in the next ex
 
 The quick AI-likeness score (`ai-score`) compares the article before and after.
 
-```
+```text
 $ npx chaffjs ai-score ai.md rewritten.md --genre blog/tech
 ai.md
 AI-likeness: medium (somewhat more signs than human-written documents (Blog))
@@ -399,7 +399,7 @@ Structure (against human articles)
 ```
 
 Before the rewrite, three wording signs and the bold-label outline make it medium.
-After it, one sign is left, the short sections, and it reads low.
+After it, one sign is left (the short sections), and it reads low.
 Neither says who wrote the text.
 
 ## A full rewrite of a blog post
@@ -475,7 +475,7 @@ The writer's claims and experience, one line each:
 - the demos turned into real conversations.
 
 The old outline has seven headings, and its "Conclusion" says the body again. Its structure score is 4: four measures lie past 90% of human articles.
-They are sections of one or two paragraphs, headings in a stock form, the introduction and conclusion headings, and bold labels.
+They are sections of one or two paragraphs, headings in a stock form, the introduction and conclusion headings and bold labels.
 The plan's structure targets name the same four.
 The new outline, shown before writing:
 
@@ -611,7 +611,7 @@ The signals and the shape, before and after, from chaff's output:
 | Average section | 28 words | 39 words |
 | In lists | 14% | 0% |
 | Bold | 3 | 0 |
-| `compare` (headings set aside) | | no fact dropped or added |
+| `compare` (headings set aside) | — | no fact dropped or added |
 
 ## What to read next
 
