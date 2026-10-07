@@ -1990,6 +1990,55 @@ rule を既定で動かすかどうかは、**人の書いた文書で測った�
 
 `chaff eval` は別の道具で、rule の閾値を掃引して、手元の文書に合う値を提案する。
 
+### 21.2 測る文書の固定（`corpus/rules-measure-documents.json`）
+
+`yarn rules:measure` が測る文書は、`corpus/rules-measure.json` の隣にコミットした一覧で決まる。手元の
+`corpus/.cache` にたまたま何があるかで、測った結果（したがって rule の区分）が変わらないようにするため。
+
+```json
+{
+  "statutes": ["kaisha.txt", "minpo.txt", "uk-cra2015.txt"],
+  "documents": ["rfc9457", "k8s-overview-ja", "commonpaper-mutual-nda"]
+}
+```
+
+- `statutes` は `corpus/laws` の法令のファイル名で、`legal/statute` として読む。`documents` は `corpus/manifest.json`
+  の文書の id で、manifest に書いたジャンルで読む。どちらも空でない文字列の配列でなければ、測らずに止まる。
+- 一覧にある文書が一つでも手元に無ければ、測らずに止まり、無いものを挙げて `yarn corpus:fetch` を促す。
+  一部の文書で測った結果は、コミットした結果と区分が変わってしまうため。
+- 手元にあっても一覧に無い文書（ほかの目的で取得したもの）は測らない。
+- 文書は組にして動かす。corpus の文書は同じ出し手（取得元 URL の host）の文書と、法令はほかの法令と、一緒に動かす
+  （`scripts/rules-measure-sets.ts`）。複数の文書を比べるルールも、チームのフォルダで動くのと同じ形で測るため。
+  言語の違う文書は同じ組にしない。URL の無い文書は、フォルダ（`docs`、`laws`）ごとの組に入る。
+- 一覧を変えたら、`yarn rules:measure --apply` で測り直す（§21.1 の当てはめ方）。
+
+### 21.3 植えた誤りの組（`yarn planted`）
+
+自作の文書に誤りを植え、それを拾うはずのルールが拾うかを、種類ごとに数える。組は `test/fixtures/planted/<組>/`
+にあり、いまは `contracts`・`email`・`reports`・`technical`。文書はどれも自作。
+
+```text
+test/fixtures/planted/<組>/
+  manifest.json          文書と、植えた誤りの一覧
+  expected.json          コミットした点
+  ja/<名前>.clean.md     誤りの無い版
+  ja/<名前>.planted.md   誤りを植えた版（植えた行だけが違う）
+  en/…
+```
+
+- `manifest.json` は文書ごとに id、言語、ジャンル、clean 版と planted 版のファイル、植えた誤りを持つ。誤りは
+  種類（`kind`）、行、その行に clean 版が持つ文字列と planted 版が持つ文字列、拾うはずのルールを書く。まだ無い
+  ルールも、拾うべきルールとして名前を書いてよい。
+- 点を数える前に、どの誤りの行にも、clean 版と planted 版がそれぞれの文字列を持つかを確かめ、ずれていれば止まる。
+  文書を直して行がずれると、別の行の指摘で点を数えてしまうため。
+- どの文書も `chaff --genre <ジャンル>` と同じ条件で動かす（ジャンルの段階で、ほかの試験中のルールは動かさない）。
+- 出すもの: 言語と種類ごとに、拾うはずのルールが植えた行で報告した数と全体の数（見逃した誤りは文書の id と行で
+  挙げる）。それと、manifest が挙げるルールが clean 版で出した指摘。
+- その結果を組の `expected.json` と比べ、違えば終了コード 1 で終わる。拾った数が減っても増えても、clean 版の
+  指摘が増えても減っても落ちる。`--update` は、走らせた組の `expected.json` を書き直す。
+- `yarn planted <組>...` で組を選ぶ。無い組の名前は、組の一覧を出して止まる。名前を省けば全組。
+  `yarn contracts` は `yarn planted contracts`。CI は全組を走らせる。
+
 ## 22. Rule Status と CI
 
 ```text
@@ -2058,6 +2107,17 @@ tests/
 - `valid.md` には「その rule が誤検知しやすい正常な文章」を必ず 1 つ以上入れる。禁止語 rule では、その語を正当に使っている実例を valid 側に置く。これがないと fixture が実装を追認するだけになる。
 - L1 rule は **全 adapter で同一の期待結果**になることをテストする。言語を変えて結果が変わる L1 rule は、L1 ではない。
 - L1 detector が `doc.adapter` の `segment` 以外を参照していないことを、静的解析で検査する（§6）。
+
+### 23.1 試験の走らせ方（`yarn test`、`CHAFF_TEST_JOBS`）
+
+`yarn test` は `test/test_*.ts` と `examples/chaff-plugin-example/test/test_*.mjs` を `node --test` で走らせる。
+
+- 同時に走らせる試験のプロセスの数は、`CHAFF_TEST_JOBS` が正の整数ならその数、そうでなければコアの数
+  （`availableParallelism()`）。一台で何本ものチェックアウトが試験を走らせるとき、それぞれがコアを全部取らない
+  ように絞る（`CHAFF_TEST_JOBS=4 yarn test`）。
+- `yarn test --part <i>/<n>` は、n 個に分けたうちの i 番目だけを走らせる（`scripts/test-parts.ts`）。n が 2 以上なら、
+  1 番目は重いファイル（`HEAVY_FILES`）だけ、残りのファイルはほかの組にファイルごとに配る。CI はこの組を並べて走らせる。
+- ほかの引数は、ファイルより前に `node` へ渡る。
 
 ---
 
@@ -2761,3 +2821,74 @@ promptfoo の `score` に点の和を 0〜1 に写したものを使わないの
 | `stamp` | 使える |
 | 評価基盤の例（promptfoo・autoevals・evalite・Langfuse・DeepEval・Ragas・Inspect AI・OpenAI Evals・GitHub Action）と `toScorer` | 使える（`examples/evals/`） |
 | 自作の比べる例 | 予定（#488 の 5） |
+
+## 30. ブラウザで動かす（`chaffjs/browser` と playground）
+
+`chaffjs/browser` は、ファイルシステムもサーバーも無いウェブページの中で、一つの文章を `chaff <file>` と同じに
+検査する入口。検査する文章はどこにも送らない。
+
+```ts
+import { check, setupBrowser } from "chaffjs/browser";
+
+setupBrowser({
+  files: async (packageName) => (await fetch(`/files/${packageName}.json`)).json(),
+  kuromojiDictionaryUrl: "https://example.com/kuromoji/",
+});
+const result = await check(text, { genre: "business/report" });
+```
+
+### 30.1 ファイルの渡し方
+
+- chaff と言語パッケージが動きながら読むファイル（ルール、ジャンル、文書の種類、スタイル、語彙表）は、
+  `setupBrowser` の `files` が、パッケージ名ごとに「パッケージの中のパス → 本文」の形で返す。`files` は要るときに
+  呼ばれ、返したものは持っておく。chaffjs の分は最初の検査で、言語パッケージの分はその言語の文章を最初に検査する
+  ときに要る。
+- `node scripts/browser-files.ts <出力先>` が、`<出力先>/files/<パッケージ名>.json`（chaffjs、`@chaffjs/lang-ja`、
+  `@chaffjs/lang-en`）と、kuromoji の辞書（`<出力先>/kuromoji/`）を書く。
+- `kuromojiDictionaryUrl` は日本語の品詞解析に使う kuromoji の辞書の置き場所。`/` で終わる絶対 URL でなければ
+  `setupBrowser` が止まる。`setupBrowser` の前に `check` を呼んでもエラーになる。
+
+### 30.2 検査（`check(text, options)`）
+
+| 指定 | 意味 |
+| --- | --- |
+| `language` | `ja` か `en`。省けば、コマンドと同じく文章から推定する |
+| `genre` | `--genre` と同じ |
+| `config` | chaff.yaml の中身を読んだもの。省けば、chaff.yaml が無いときと同じ |
+| `path` | 文書の名前。Markdown 向けのルールは `.md` の名前でだけ動く。省けば `document.md` |
+| `experimental` | `--experimental` と同じ |
+
+返すもの:
+
+- 決めた言語とジャンル。
+- 指摘。`chaff grade` の指摘の形（ルール、段階、行、桁、メッセージ）に、ルールの名前・理由・直し方と、指摘の箇所の文字列を足したもの。
+- AI らしさの簡易判定。`chaff grade` の形に、lint の画面と同じ見出し、目印の数の行、書いた人を判定しないという注記を足したもの（§28.9）。
+- 動かなかったルールと、その理由（「0 件」を「確かめて問題なし」に見せないため）。
+
+ブラウザでは当てはめないもの:
+
+- chaff.yaml のうちファイルを読む設定（`plugins`、`include`、`by_path`）。当てはめず、動かなかったものとして
+  理由と一緒に返す。
+- チームの正規表現（`custom_rules`）の時間の上限。ブラウザには止める仕組み（`node:vm`）が無いため。暴走すると
+  知られている形を使う前に断るのは、コマンドと同じ。
+
+### 30.3 バンドラ
+
+package.json の `browser` 欄で、ファイルを読むモジュール、言語パッケージを名前で読み込むモジュール、検出器の一覧、
+正規表現の時間の上限、作業フォルダ、`node:path` を、ブラウザ向けのものに差し替える。検出器のフォルダは実行中に
+数えられないので、ビルドのときに `import.meta.glob` で並べる。`browser` 欄と `import.meta.glob` を読むバンドラ
+（Vite）向け。読み込める言語パッケージは `@chaffjs/lang-ja` と `@chaffjs/lang-en`。
+
+### 30.4 playground
+
+サイトの `/<言語>/playground/` は、`chaffjs/browser` でページの中の文章を検査する。
+
+- 文章を書くか見本を選び、言語（文章から推定・日本語・英語）とジャンル（選ばなければ chaff に任せる）を選んで
+  検査する。見本はこのページのために書いた文章で、chaff が見つける誤りを含む。`test/test_playground_samples.ts`
+  が、どの見本にもまだ指摘が出ることを確かめる。
+- 出すもの: AI らしさの簡易判定、行ごとの指摘（段階、ルールの名前、行:桁とルールの id、メッセージ、理由、直し方）、
+  動かなかったルールとその理由。
+- chaff のファイルと kuromoji の辞書は、サイトのビルドのたびに `scripts/browser-files.ts` が `public/playground/`
+  に書き、ページはそこから取る。ほかに通信はしない。
+- `node scripts/browser-size.ts site/dist`（サイトのビルドの後）は、ページがダウンロードさせる量（すぐ読む
+  スクリプト、最初の検査で読むスクリプト、chaff のファイル、辞書）を、そのままの大きさと gzip した大きさで測る。
