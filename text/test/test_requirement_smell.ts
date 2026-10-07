@@ -68,6 +68,43 @@ describe("requirement-smell (ja)", () => {
   it("a requirement without a smell, and a measurable one", () => {
     assert.deepEqual(found("予約の画面は、三秒以内に表示されること。", ja), []);
   });
+
+  it("等 that ends a name the document defines closes its own list: in an aside, in quotes, or at the head of an item", () => {
+    const aside = "受託者は、委託先等（委託先及び再委託先をいう。以下同じ。）を監督しなければならない。受託者は、委託先等に報告させなければならない。";
+    assert.deepEqual(found(aside, ja), []);
+    const quoted = "受託者は、委託先及び再委託先（以下この条において「委託先等」という。）を監督しなければならない。受託者は、当該委託先等に報告させなければならない。";
+    assert.deepEqual(found(quoted, ja), []);
+    assert.deepEqual(found("一　委託先等　委託先及び再委託先をいう。\n\n受託者は、委託先等を監督しなければならない。", ja), []);
+  });
+
+  it("a longer noun that ends in a defined name narrows it and leaves nothing open (当該委託先等, 海外委託先等)", () => {
+    const defined = "委託先等（委託先及び再委託先をいう。）を定める。";
+    assert.deepEqual(found(`${defined}受託者は、当該委託先等を監督しなければならない。`, ja), []);
+    assert.deepEqual(found(`${defined}受託者は、海外委託先等を監督しなければならない。`, ja), []);
+    assert.deepEqual(found(`${defined}受託者は、委託先の資料等を保存しなければならない。`, ja), ["open-end:等"]);
+  });
+
+  it("a longer noun with 等 inside is a name when the document defines it, or a noun that starts it", () => {
+    const head = "一　監査等委員会設置会社　監査等委員会を置く会社をいう。\n\n";
+    assert.deepEqual(found(`${head}監査等委員会設置会社は、報告を求めなければならない。`, ja), []);
+    assert.deepEqual(found(`${head}監査等委員会は、報告を求めなければならない。`, ja), []);
+    assert.deepEqual(found("監査等委員（監査等委員会の委員をいう。）を定める。設立時監査等委員は、三人以上でなければならない。", ja), []);
+  });
+
+  it("a longer noun with 等 inside that the document never defines leaves the list open (契約書等文書)", () => {
+    assert.deepEqual(found("システムは、契約書等文書を保存しなければならない。", ja), ["open-end:等"]);
+    assert.deepEqual(found("監査等委員会は、報告を求めなければならない。", ja), ["open-end:等"]);
+  });
+
+  it("等 after a name the document does not define still leaves the list open, beside one it does", () => {
+    assert.deepEqual(found("委託先等（委託先及び再委託先をいう。）を定める。受託者は、ログ等を保存しなければならない。", ja), ["open-end:等"]);
+    assert.deepEqual(found("受託者は、委託先等（委託先及び再委託先をいう。）及びログ等を管理しなければならない。", ja), ["open-end:等"]);
+  });
+
+  it("a requirement whose subject ends in 等 is no definition, even with とする in it", () => {
+    assert.deepEqual(found("ログ等は、三十日保存するものとする。", ja), ["open-end:等"]);
+    assert.deepEqual(found("一　ログ等は、三十日保存するものとする。", ja), ["open-end:等"]);
+  });
 });
 
 describe("requirement-smell (en)", () => {
