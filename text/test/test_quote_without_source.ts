@@ -45,6 +45,7 @@ describe("quote-without-source: 人の言葉として引いた文に出典がな
     assert.equal(findingsOf("ある研究者は「便利なメソッドを紹介する記事は役に立つ」と述べている。\n").length, 1);
     assert.equal(findingsOf("ある研究者は「便利なメソッドを紹介する記事は役に立つ」と述べ、方針を変えた。\n").length, 1);
     assert.equal(findingsOf("山田氏は講演では「道具はあくまで人が使うものにすぎない」と述べる方が多い。\n").length, 1);
+    assert.equal(findingsOf("山田氏によれば「道具はあくまで人が使うものにすぎない」と言う方が適切だという。\n").length, 1);
   });
 
   it("記事と論文では既定で動き、組織の記事、報告、仕様、手順書、契約、小説、話し言葉のジャンルでは止まっている", () => {

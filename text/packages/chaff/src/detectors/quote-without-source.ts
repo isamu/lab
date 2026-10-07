@@ -73,15 +73,17 @@ const isAdvice = (text: string, quoted: Quoted, advice: readonly LexiconEntry[])
 };
 
 /** A cue just before the quotation's opening mark, or just after its closing mark. position says which side it may stand on. */
-const isAttributed = (text: string, quoted: Quoted, { cues, advice = [] }: QuoteWords): boolean =>
-  !isAdvice(text, quoted, advice) &&
-  cues.some((cue) =>
+/** Advice after the quotation silences only the cue after it: 山田氏によれば「…」と言う方が適切だ still gives the words to someone. */
+const isAttributed = (text: string, quoted: Quoted, { cues, advice = [] }: QuoteWords): boolean => {
+  const advised = isAdvice(text, quoted, advice);
+  return cues.some((cue) =>
     cueStarts(text, cue.pattern).some((at) => {
       const before = cue.position !== "after" && at + cue.pattern.length <= quoted.start - 1 && at + cue.pattern.length >= quoted.start - 1 - CUE_REACH_BEFORE;
-      const after = cue.position !== "before" && at >= quoted.end + 1 && at <= quoted.end + 1 + CUE_REACH_AFTER;
+      const after = !advised && cue.position !== "before" && at >= quoted.end + 1 && at <= quoted.end + 1 + CUE_REACH_AFTER;
       return before || after;
     }),
   );
+};
 
 const quotesIn = (sentence: QuoteText, words: QuoteWords): UnsourcedQuote[] => {
   return quotedSpans(sentence.text, QUOTATION_MARKS)
