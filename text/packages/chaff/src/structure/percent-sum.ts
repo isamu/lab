@@ -15,6 +15,8 @@ export type ShareWords = {
   readonly exceptions: readonly string[];
   /** 全体の残りを名指す語（その他、other）。一つの文の百分率のすぐ前にあれば、その文は内訳。 */
   readonly rests?: readonly string[];
+  /** 値の動いた向きの語（伸び、grew）。その文の百分率は変化で、「その他」があっても内訳ではない。 */
+  readonly changes?: readonly string[];
   readonly units: readonly string[];
   readonly totalLabels: readonly string[];
 };

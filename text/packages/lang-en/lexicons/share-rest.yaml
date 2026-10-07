@@ -6,5 +6,3 @@ language: en
 entries:
   - pattern: other
   - pattern: others
-  - pattern: the rest
-  - pattern: remainder

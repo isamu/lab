@@ -50,6 +50,14 @@ describe("percent-sum-mismatch: a breakdown in one sentence", () => {
     assert.deepEqual(found(doc("小売が45%、製造が35%、その他の部門も25%伸びた。"), ja), []);
   });
 
+  it("does not read the rest in a sentence of changes, before the last share, or as what is left", () => {
+    assert.deepEqual(found(doc("Sales grew 45%, costs 30%, margins 20%, and other 8% year over year."), en), []);
+    assert.deepEqual(found(doc("Sales 45%, costs 30%, margins 20%, and the rest 8% next year."), en), []);
+    assert.deepEqual(found(doc("Other 8%, retail 45%, wholesale 30% and online 20%."), en), []);
+    assert.deepEqual(found(doc("工程Aは45%、工程Bは30%、工程Cは20%、残り8%は来週実施する。"), ja), []);
+    assert.deepEqual(found(doc("小売が45%、製造が30%、物流が20%、その他が8%増加した。"), ja), []);
+  });
+
   it("does not add: no share word, two parts, a change (+3%), multiple answers, a total, or a listing of some parts", () => {
     assert.deepEqual(found(doc("小売が45%、製造が35%、物流が25%伸びた。"), ja), []);
     assert.deepEqual(found(doc("内訳は、小売が45%、製造が35%だった。"), ja), []);
