@@ -5,7 +5,7 @@
       "figure-out-of-order": "1/1",
       "percent-sum": "0/1",
       "citation-no-entry": "1/1",
-      "reference-uncited": "0/1"
+      "reference-uncited": "1/1"
     },
     "en": {
       "abstract-body-mismatch": "0/1",
@@ -15,9 +15,5 @@
       "reference-uncited": "1/1"
     }
   },
-  "clean": [
-    "ja/breaks.clean.md:23 citation-reference-mismatch",
-    "ja/breaks.clean.md:37 citation-reference-mismatch",
-    "ja/breaks.clean.md:9 citation-reference-mismatch"
-  ]
+  "clean": []
 }
