@@ -58,7 +58,7 @@ const skipSpaces = (text: string, at: number): number => at + (text.slice(at).le
 /** The index of the ) that closes the ( at `open`, or -1. */
 const closingParen = (text: string, open: number): number => {
   const state = { depth: 0, at: -1 };
-  [...text.slice(open)].some((char, index) => {
+  Array.from(text.slice(open)).some((char, index) => {
     if (char === "(") state.depth += 1;
     if (char === ")") state.depth -= 1;
     if (state.depth === 0) state.at = open + index;
