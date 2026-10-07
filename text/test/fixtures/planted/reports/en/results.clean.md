@@ -38,6 +38,6 @@ Table 2: New customers by region
 
 ## Team
 
-Ten years after the founding of the company in 2016, the sales department has 25 people.
+In the ten years since our founding in 2016, the sales department has grown to 25 people.
 
 Staff costs rose from $3.0 million last year to $3.6 million this year, an increase of 20%.
