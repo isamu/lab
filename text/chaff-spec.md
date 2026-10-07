@@ -2318,6 +2318,13 @@ npx chaffjs cite contract.txt claims.json --format json
 `address` は省ける。省くか空（空白だけ）なら「原文のどこか」で、引用文が原文のどこかにあれば `ok`。そのとき `foundAt` と `line` に見つかった場所を添える（番地の無い原文なら `line` だけ）。
 `address` も `quote` も空の項目は、確かめることが無いので読み込みの誤りにする。
 
+原文は引数で一つ渡すか、項目ごとに `source`（原文のファイル。相対パスは引用.json のある場所から）で書く。
+`chaff cite claims.json` と引用.json だけを渡したときは、どの項目にも `source` が要る。原文を引数でも渡したときに `source` を書いた項目があれば誤り（どちらで確かめたかが混ざらないため）。
+原文ごとに一度だけ木を作り、結果は引用.json の順に出す。文字の出力は各行の先頭に `source` を、JSON は `citation.source` を持つ。
+
+`chaff cite --scaffold <文書>` は、`quote-without-source` が見つける引用（人の言葉として引き、出典の無いもの）を `[{ "source": "", "address": "", "quote": "…" }]` の形で出す。
+ジャンルとルールの段階には従わない（ひな形を求めること自体が、そうした引用をすべて求めること）。書き手が `source` を埋めれば、そのまま `chaff cite claims.json` に渡せる。
+
 | 結果 | 意味 |
 | --- | --- |
 | `ok` | 番地があり、引用文がその範囲（子を含む）に書いてある。番地を書かなければ、原文のどこかに書いてある |
