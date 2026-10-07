@@ -4,8 +4,8 @@
 // file, not the author's writing, so, as the Gutenberg format drops Project Gutenberg's header and licence, it is not
 // kept. The colophon is told by the blocks 青空文庫 marks it with (bibliographical_information, notation_notes); the rest
 // of the page goes through the HTML converter as before. Pure.
-import { withoutElementsWhere, type ElementRange } from "./html-elements.ts";
-import { htmlToMarkdown } from "./html-markdown.ts";
+import { withoutElementsWhere, type ElementRange } from "../packages/chaff/src/html/html-elements.ts";
+import { htmlToMarkdown } from "../packages/chaff/src/html/html-markdown.ts";
 
 const COLOPHON_CLASS = /^<div\b[^>]*\bclass\s*=\s*(["'])(?:[^"']*\s)?(?:bibliographical_information|notation_notes)(?:\s[^"']*)?\1/iu;
 

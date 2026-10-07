@@ -1,6 +1,6 @@
 // Retrying a fetch that failed for a reason that may pass: a timeout, a dropped connection, a 5xx, a 429. A 404 or
 // any other 4xx is the source's answer and is not retried. The wait is injected, so this runs without a clock.
-import { HttpStatusError } from "./fetch-text.ts";
+import { HttpStatusError } from "../packages/chaff/src/html/fetch-page.ts";
 
 /**
  * One wait before each retry, growing: a source that is still down after these is counted as failed. Long enough to

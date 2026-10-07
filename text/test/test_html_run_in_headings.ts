@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { withRunInHeadingsRead } from "../scripts/html-run-in-headings.ts";
-import { htmlToMarkdown } from "../scripts/html-markdown.ts";
+import { withRunInHeadingsRead } from "../packages/chaff/src/html/html-run-in-headings.ts";
+import { htmlToMarkdown } from "../packages/chaff/src/html/html-markdown.ts";
 
 // 連邦準備制度理事会の講演（2025 年 8 月 22 日、パブリックドメイン）を縮めたもの。節の題は <p><strong>題</strong><br /> 本文</p>。
 const FED =

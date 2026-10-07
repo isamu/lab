@@ -2,7 +2,7 @@
 // paragraphs, lists and the text of links. Templates are dropped except the few that carry the prose's own words (a
 // map marker's name, a listing's name and description, a converted quantity, a price, a phone number, the text a layout
 // template or a quotation wraps); tables, files, references and comments are dropped. Pure.
-import { decodeEntities, tidyLines } from "./markup-text.ts";
+import { decodeEntities, tidyLines } from "../packages/chaff/src/html/markup-text.ts";
 
 type Params = { readonly named: ReadonlyMap<string, string>; readonly positional: readonly string[] };
 
