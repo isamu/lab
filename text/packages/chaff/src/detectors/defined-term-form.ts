@@ -59,12 +59,9 @@ const UPPER_START = /^\p{Lu}/u;
  */
 export const lowerCaseUses = (source: string, term: string, uses: readonly number[], definedAt: number, limit: number): number[] => {
   if (!UPPER_START.test(term) || term.toLowerCase() === term) return [];
-  const later = uses.filter((offset) => offset > definedAt);
-  // An address (support@pinecone.example) spells the name as the address must be, not as the term.
-  const lower = later.filter(
-    (offset) =>
-      source.charAt(offset) === term.charAt(0).toLowerCase() && !isSentenceStart(source, offset) && !isPartOfAddress(source, offset, offset + term.length),
-  );
+  // An address (support@pinecone.example) spells the name as the address must be, in either case; it is not a use.
+  const later = uses.filter((offset) => offset > definedAt && !isPartOfAddress(source, offset, offset + term.length));
+  const lower = later.filter((offset) => source.charAt(offset) === term.charAt(0).toLowerCase() && !isSentenceStart(source, offset));
   const capital = later.filter((offset) => source.charAt(offset) === term.charAt(0));
   return lower.length > 0 && lower.length <= capital.length && lower.length <= limit ? lower : [];
 };

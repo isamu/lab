@@ -43,6 +43,7 @@ describe("defined-term-form: a defined term in another form", () => {
     assert.deepEqual(lowerCaseUses("a Services b services", "Services", [2, 13], 0, 2), [13]);
     assert.deepEqual(lowerCaseUses("a Pinecone b support@pinecone.example", "Pinecone", [2, 21], 0, 2), []);
     assert.deepEqual(lowerCaseUses("a Pinecone b https://pinecone.example", "Pinecone", [2, 21], 0, 2), []);
+    assert.deepEqual(lowerCaseUses("a Support@Pinecone.example b pinecone", "Pinecone", [10, 29], 0, 2), []);
   });
 
   it("does not report a lower-case use that is the common form, or a capital at a sentence's start", () => {
