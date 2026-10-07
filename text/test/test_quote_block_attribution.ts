@@ -28,6 +28,8 @@ describe("blockQuotations: a block quotation and its dash line", () => {
     ["an en dash", lines(`> ${QUOTE}`, "", "– Dana Reyes")],
     ["no space after the dash", lines(`> ${QUOTE}`, "", "—Dana Reyes")],
     ["a Japanese name after a horizontal bar", lines(`> ${QUOTE}`, "", "― 佐藤")],
+    ["a name ending in an abbreviation's period", lines(`> ${QUOTE}`, "", "— Dana Reyes, Acme Inc.")],
+    ["a name with an initial", lines(`> ${QUOTE}`, "", "— Dana R.")],
     ["inside a list item", lines(`- Notes:`, "", `  > ${QUOTE}`, "  >", "  > — Dana Reyes")],
   ];
   given.forEach(([name, source]) => {
@@ -44,6 +46,13 @@ describe("blockQuotations: a block quotation and its dash line", () => {
     ["a dash line alone in the quotation quotes nothing", lines("> — Dana Reyes")],
     ["a dash line in a code block", lines("```", `> ${QUOTE}`, "— Dana Reyes", "```")],
     ["a dash line that goes on a sentence", lines(`> ${QUOTE}`, "", "— and then the schedule slipped again.")],
+    [
+      "a Japanese remark after a dash ends like a sentence",
+      lines("> 戻せない変更は、まだ終わっていない変更だ。", "", "――私はこの言葉を、障害のたびに思い出す。"),
+    ],
+    ["an English remark after a dash ends like a sentence", lines(`> ${QUOTE}`, "", "— But the schedule slipped anyway.")],
+    ["a reply inside the quotation", lines("> Did the deploy finish before the freeze?", ">", "> — Not yet. Give it ten minutes.")],
+    ["a question going on across the dash", lines("> 失敗は成功のもとと言うけれど、本番では一度で十分だ。", "> ――本当にそうだろうか？")],
     ["an email signature after a reply", lines("> On Tuesday, Alice wrote:", `> ${QUOTE}`, "", "-- Dana Reyes")],
     ["code in the quotation is not its words", lines("> ```", `> ${QUOTE}`, "> ```", "> — Dana Reyes")],
   ];

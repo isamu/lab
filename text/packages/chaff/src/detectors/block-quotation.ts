@@ -24,7 +24,13 @@ const CJK_START = new RegExp(`^${CJK}`, "u");
 
 type Line = { readonly offset: number; readonly text: string };
 
-const isDashLine = (text: string): boolean => DASH_LINE.test(text) && [...text].length <= MAX_ATTRIBUTION_CHARS;
+/**
+ * A line that ends like a sentence is the writer going on (――私はこの言葉を思い出す。, — Not yet. Give it ten minutes.),
+ * not a name and a work. A period after a lower-case word ends a sentence; one after an initial or "Inc." does not.
+ */
+const SENTENCE_END = /(?:[。！？!?]|(?:^|[\s\p{P}])\p{Ll}+\.)$/u;
+
+const isDashLine = (text: string): boolean => DASH_LINE.test(text) && [...text].length <= MAX_ATTRIBUTION_CHARS && !SENTENCE_END.test(text);
 
 /** Each non-blank line of a node without its `>` marks, at the place in source where its words start. */
 const linesOf = (source: string, node: MarkdownNode): Line[] => {
