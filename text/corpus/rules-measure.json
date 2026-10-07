@@ -7717,15 +7717,15 @@
         },
         "business": {
           "documents": 41,
-          "fired": 9
+          "fired": 7
         },
         "docs": {
           "documents": 11,
-          "fired": 5
+          "fired": 4
         },
         "legal": {
           "documents": 14,
-          "fired": 5
+          "fired": 3
         },
         "literature": {
           "documents": 9,
@@ -7737,7 +7737,7 @@
         },
         "technical": {
           "documents": 27,
-          "fired": 10
+          "fired": 8
         }
       },
       "bench": {
