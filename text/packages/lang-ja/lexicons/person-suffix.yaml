@@ -1,0 +1,9 @@
+# 人の名前のすぐ後ろに付ける敬称（斎藤様、松本さん）。付いた名前を人の名前と読む（name-variant）。字面どおりに照らす。
+id: person-suffix
+language: ja
+entries:
+  - pattern: 様
+  - pattern: さま
+  - pattern: さん
+  - pattern: 氏
+  - pattern: 殿
