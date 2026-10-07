@@ -1,0 +1,93 @@
+{
+  "note": "Self-written short papers (breaks and data entry errors), each in a clean version and a planted one. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. Two plants are scored on a line that does not itself change: reference-uncited removes the only citation of an entry (line 13) and is scored on the entry; figure-out-of-order refers to Figure 2 early (line 9) and is scored where Figure 1 is first referred to, after it. yarn planted academic scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/breaks",
+      "language": "ja",
+      "genre": "academic/paper",
+      "clean": "ja/breaks.clean.md",
+      "planted": "ja/breaks.planted.md",
+      "mistakes": [
+        {
+          "kind": "abstract-body-mismatch",
+          "rule": "summary-fact-mismatch",
+          "line": 5,
+          "clean": "2.4% から 1.6% に",
+          "planted": "2.4% から 1.4% に"
+        },
+        {
+          "kind": "figure-out-of-order",
+          "rule": "figure-reference-order",
+          "line": 13,
+          "clean": "図 1",
+          "planted": "図 1"
+        },
+        {
+          "kind": "percent-sum",
+          "rule": "percent-sum-mismatch",
+          "line": 19,
+          "clean": "その他が 5%",
+          "planted": "その他が 8%"
+        },
+        {
+          "kind": "citation-no-entry",
+          "rule": "citation-reference-mismatch",
+          "line": 23,
+          "clean": "（森・阿部, 2018）。",
+          "planted": "（森・阿部, 2018; 杉山, 2019）。"
+        },
+        {
+          "kind": "reference-uncited",
+          "rule": "citation-reference-mismatch",
+          "line": 36,
+          "clean": "加藤亮 (2020)",
+          "planted": "加藤亮 (2020)"
+        }
+      ]
+    },
+    {
+      "id": "en/breaks",
+      "language": "en",
+      "genre": "academic/paper",
+      "clean": "en/breaks.clean.md",
+      "planted": "en/breaks.planted.md",
+      "mistakes": [
+        {
+          "kind": "abstract-body-mismatch",
+          "rule": "summary-fact-mismatch",
+          "line": 5,
+          "clean": "from 2.4% to 1.6%",
+          "planted": "from 2.4% to 1.4%"
+        },
+        {
+          "kind": "figure-out-of-order",
+          "rule": "figure-reference-order",
+          "line": 13,
+          "clean": "Figure 1",
+          "planted": "Figure 1"
+        },
+        {
+          "kind": "percent-sum",
+          "rule": "percent-sum-mismatch",
+          "line": 19,
+          "clean": "other 5%",
+          "planted": "other 8%"
+        },
+        {
+          "kind": "citation-no-entry",
+          "rule": "citation-reference-mismatch",
+          "line": 23,
+          "clean": "(Mori and Abe, 2018).",
+          "planted": "(Mori and Abe, 2018; Sugiyama, 2019)."
+        },
+        {
+          "kind": "reference-uncited",
+          "rule": "citation-reference-mismatch",
+          "line": 36,
+          "clean": "Kato, R. (2020)",
+          "planted": "Kato, R. (2020)"
+        }
+      ]
+    }
+  ]
+}

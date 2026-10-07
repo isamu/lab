@@ -1,0 +1,93 @@
+{
+  "note": "Self-written manuals (restoring a backup), each in a clean version and a planted one. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should. Two plants change a second line as well: step-order swaps the numbers of steps 3 and 4 (line 13 too), and prerequisite-after-step moves the instruction to stop the order service from Before you start (line 7) to the end. yarn planted manual scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/restore",
+      "language": "ja",
+      "genre": "docs/manual",
+      "clean": "ja/restore.clean.md",
+      "planted": "ja/restore.planted.md",
+      "mistakes": [
+        {
+          "kind": "step-order",
+          "rule": "numbering-gap",
+          "line": 14,
+          "clean": "4. ［復元を開始］を押します。",
+          "planted": "3. ［復元を開始］を押します。"
+        },
+        {
+          "kind": "warning-without-action",
+          "rule": "warning-without-action",
+          "line": 17,
+          "clean": "注意：復元すると、今のデータベースは置き換わります。［復元を開始］を押す前に、`vaultr export --today` で今日の注文を書き出してください。",
+          "planted": "注意：復元すると、今のデータベースは置き換わります。"
+        },
+        {
+          "kind": "step-skip",
+          "rule": "numbering-gap",
+          "line": 23,
+          "clean": "3. ［バックアップを検証］を押し、データ",
+          "planted": "4. ［バックアップを検証］を押し、データ"
+        },
+        {
+          "kind": "ui-label-variant",
+          "rule": "name-variant",
+          "line": 25,
+          "clean": "もう一度［復元を開始］を押します",
+          "planted": "もう一度［復元開始］を押します"
+        },
+        {
+          "kind": "prerequisite-after-step",
+          "rule": "prerequisite-after-step",
+          "line": 27,
+          "clean": "コンソールは、15 分操作しないとサインアウトします。",
+          "planted": "作業を始める前に、注文サービスを止めておきます。復元の間に注文が書き込まれないようにするためです。"
+        }
+      ]
+    },
+    {
+      "id": "en/restore",
+      "language": "en",
+      "genre": "docs/manual",
+      "clean": "en/restore.clean.md",
+      "planted": "en/restore.planted.md",
+      "mistakes": [
+        {
+          "kind": "step-order",
+          "rule": "numbering-gap",
+          "line": 14,
+          "clean": "4. Click **Start Restore**.",
+          "planted": "3. Click **Start Restore**."
+        },
+        {
+          "kind": "warning-without-action",
+          "rule": "warning-without-action",
+          "line": 17,
+          "clean": "Warning: the restore replaces the current database. Export today's orders with `vaultr export --today` before you click **Start Restore**.",
+          "planted": "Warning: the restore replaces the current database."
+        },
+        {
+          "kind": "step-skip",
+          "rule": "numbering-gap",
+          "line": 23,
+          "clean": "3. Click **Verify Backup** to confirm",
+          "planted": "4. Click **Verify Backup** to confirm"
+        },
+        {
+          "kind": "ui-label-variant",
+          "rule": "name-variant",
+          "line": 25,
+          "clean": "click **Start Restore** again",
+          "planted": "click **Start restore** again"
+        },
+        {
+          "kind": "prerequisite-after-step",
+          "rule": "prerequisite-after-step",
+          "line": 27,
+          "clean": "The console signs you out after 15 minutes of inactivity.",
+          "planted": "Before you begin, stop the order service, so that no order is written during the restore."
+        }
+      ]
+    }
+  ]
+}

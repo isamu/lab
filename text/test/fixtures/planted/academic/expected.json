@@ -1,0 +1,19 @@
+{
+  "recall": {
+    "ja": {
+      "abstract-body-mismatch": "0/1",
+      "figure-out-of-order": "1/1",
+      "percent-sum": "0/1",
+      "citation-no-entry": "1/1",
+      "reference-uncited": "1/1"
+    },
+    "en": {
+      "abstract-body-mismatch": "0/1",
+      "figure-out-of-order": "1/1",
+      "percent-sum": "0/1",
+      "citation-no-entry": "1/1",
+      "reference-uncited": "1/1"
+    }
+  },
+  "clean": []
+}

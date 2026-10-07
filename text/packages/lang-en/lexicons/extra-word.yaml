@@ -47,7 +47,9 @@ entries:
   - pattern: dialog
   - pattern: dogfood
   - pattern: dropdown
+  - pattern: ebook
   - pattern: ecommerce
+  - pattern: elearning
   - pattern: email
   - pattern: emoji
   - pattern: enum
@@ -69,6 +71,7 @@ entries:
   - pattern: html
   - pattern: http
   - pattern: https
+  - pattern: iframe
   - pattern: impl
   - pattern: inbox
   - pattern: incentivise
@@ -118,6 +121,7 @@ entries:
   - pattern: prepend
   - pattern: priori
   - pattern: quadrupole
+  - pattern: realtime
   - pattern: refactor
   - pattern: regex
   - pattern: regexp
@@ -179,6 +183,7 @@ entries:
   - pattern: whilst
   - pattern: whitelist
   - pattern: whither
+  - pattern: whomever
   - pattern: wiki
   - pattern: workaround
   - pattern: workflow
