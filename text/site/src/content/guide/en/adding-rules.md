@@ -75,7 +75,7 @@ rules:
 
 Make one sample that breaks both requirements, and run it. This is the real output.
 
-```
+```text
 $ npx chaffjs sample.md --compact
 
 sample.md   technical/spec · 日本語   ジャンルは chaff.yaml から
@@ -279,7 +279,7 @@ chaff's own rule is that a rule decides by machine alone. Anything that needs th
 | Word lists | `packages/lang-ja/lexicons/` and `packages/lang-en/lexicons/` | Only for a rule that finds words from a list. One per language |
 | Tests | `test/test_<id>.ts` | Examples it must report and examples it must not |
 | A planted mistake | `test/fixtures/bench/plants/<id>.yaml` and a module in `scripts/bench-plants/` | One mistake put into a clean sample, to measure whether the rule finds it. The YAML file holds `planted: [ja, en]` (the languages it is planted in) or `not_planted:` with why none can be planted; the module exports `MUTATIONS`, the mistakes it plants. Neither is a shared list |
-| ChangeLog | `Unreleased` in `docs/ChangeLog.md` | What chaff can now find |
+| The PR's title | the pull request | What chaff can now find. The rule's PR does not edit `docs/ChangeLog.md`: the ChangeLog is written at release, from the titles of the PRs merged since the last one |
 
 A rule that compares the files of one run (a word spelled one way in one file and another way in the rest) has a detector of another kind.
 It takes every document of the run and returns findings, each with the path of the file it is in (the type `CrossDetector`).
@@ -302,7 +302,10 @@ A rule turned off this way is listed under "did not run" with the genre as the r
 `genres.yaml` holds only what is about the genre itself (its name, summary, profile, how it is suggested, and the levels it sets); a new rule does not edit it.
 
 A new rule starts as `status: experimental`, so it runs only with `--experimental` until it is measured.
-`yarn rules:measure --apply` places it: it runs chaff over the corpus and sets the rule's `status` and `severity` from how often it reports on human documents.
+`yarn rules:measure --apply` places it. It runs chaff over the corpus documents pinned in `corpus/rules-measure-documents.json`, so every machine measures the same documents.
+Run `yarn corpus:fetch` first: a pinned document that is missing stops the run, and a fetched one that is not pinned is left out.
+
+From how often the rule reports on those human documents, it sets the rule's `status` and `severity`.
 It also writes a group it measured the rule off for into `off_for` as `measured by yarn rules:measure`.
 `yarn test` stops when a rule's placement no longer matches the measurement in `corpus/rules-measure.json`.
 
@@ -331,8 +334,19 @@ Last, check the rule on real documents.
 ```bash
 yarn test     run every test
 yarn bench    measure whether the rules find the mistakes planted in the samples
+yarn planted  score the planted sets: whole documents with mistakes of each kind, and their clean versions
 yarn corpus   run on the collected real documents and compare with corpus/expected/
 ```
+
+`yarn test` runs one test process per core. When other checkouts test on the same machine, `CHAFF_TEST_JOBS=4 yarn test` runs four at once instead.
+
+`yarn planted` runs the planted sets in `test/fixtures/planted/<set>/` (contracts, email, reports, technical).
+Each is a set of self-written documents of one genre, each in a clean version and a version with mistakes planted.
+The set's `manifest.json` lists every planted mistake: its kind, its line and the rule expected to report it.
+
+The run prints how many mistakes of each kind were reported on their line, and the findings the clean versions get. It fails when either differs from the set's `expected.json`.
+When a new rule finds a kind of mistake a set plants, add the mistake to the manifest (a kind no rule finds yet already names the rule that should), then run `yarn planted --update` and read the change to `expected.json`.
+Name a set to run only that one (`yarn planted contracts`).
 
 Read every new finding from `yarn corpus`. If one is wrong, add its shape to the tests as an example and fix it.
 When the new findings are confirmed right, `yarn corpus --update` updates `corpus/expected/`.
