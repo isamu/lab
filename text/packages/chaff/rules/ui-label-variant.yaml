@@ -24,7 +24,12 @@ how_to_fix:
 
 levels: { strict: warning, normal: info, relaxed: info }
 
-use_for: [technical, docs, blog]
+use_for: [technical, docs, blog, legal, academic, literature, speech]
+off_for:
+  legal: "Screen labels in bold or in brackets are a convention of manuals and technical writing."
+  academic: "Screen labels in bold or in brackets are a convention of manuals and technical writing."
+  literature: "Screen labels in bold or in brackets are a convention of manuals and technical writing."
+  speech: "Screen labels in bold or in brackets are a convention of manuals and technical writing."
 
 group: consistency
 summary:
