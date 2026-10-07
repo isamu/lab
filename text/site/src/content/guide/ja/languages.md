@@ -108,7 +108,7 @@ no-doubled-joshi   この言語では品詞解析が使えないため
 | `agreement-slip` | 限定詞と名詞の単数・複数の食い違い（a significant changes）や、You can を Your can と書いた所 |
 
 `-consistency` で終わるルールは、どちらの書き方が正しいかを決めません。
-1 つの文書で揃っているかだけを見て、少ないほうを指摘します。
+1 つの文書でそろっているかだけを見て、少ないほうを指摘します。
 
 `agreement-slip` は品詞を見ます。
 
