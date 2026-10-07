@@ -35,20 +35,38 @@ const toleranceOf = (source: string, shares: readonly Amount[]): number =>
 
 const isBroken = (sum: number, tolerance: number): boolean => Math.abs(sum - WHOLE) > tolerance && Math.abs(sum - WHOLE) <= BAND;
 
+/** How far before a percentage the word for the rest may stand: 「その他が 」, "and the rest, ". */
+const REST_REACH = 16;
+/** What may stand between the word for the rest and its percentage: a space, a colon, a particle, an opening parenthesis. */
+const REST_GAP = /^[\s:：、,がはで(（]*$/u;
+const LETTER_BEFORE = /\p{L}$/u;
+
+/** One of the shares is the rest of the whole (その他が 5%, other 5%): only the parts of one whole have a rest. */
+const namesRest = (source: string, sentence: Span, shares: readonly Amount[], rests: readonly string[]): boolean =>
+  shares.some((share) => {
+    const before = source.slice(Math.max(sentence.start, share.offset - REST_REACH), share.offset).toLowerCase();
+    return rests.some((word) => {
+      const at = before.lastIndexOf(word.toLowerCase());
+      if (at < 0 || !REST_GAP.test(before.slice(at + word.length))) return false;
+      return !(/^[A-Za-z]/u.test(word) && LETTER_BEFORE.test(before.slice(0, at)));
+    });
+  });
+
 const issueIn = (source: string, sentence: Span, percents: readonly Amount[], words: ShareWords): StructureIssue[] => {
   const text = source.slice(sentence.start, sentence.end);
-  if (!includesAny(text, words.labels) || includesAny(text, words.exceptions)) return [];
+  if (includesAny(text, words.exceptions)) return [];
   const shares = percents.filter((amount) => amount.offset >= sentence.start && amount.end <= sentence.end);
   if (shares.length < MIN_PARTS || shares.some((share) => isSigned(source, share))) return [];
+  if (!includesAny(text, words.labels) && !namesRest(source, sentence, shares, words.rests ?? [])) return [];
   const sum = shares.reduce((total, share) => total + share.value, 0);
   const decimals = Math.max(0, ...shares.map((share) => decimalsOf(source, share)));
   if (!isBroken(sum, toleranceOf(source, shares))) return [];
   return [{ offset: shares[0]?.offset ?? sentence.start, values: { sum: `${sum.toFixed(decimals)}${shares[0]?.unit ?? ""}` } }];
 };
 
-/** Each sentence that names a share word and three or more unsigned percentages whose sum misses 100% by more than rounding, and by no more than BAND. */
+/** Each sentence that names a share word (or names one share as the rest) and three or more unsigned percentages whose sum misses 100% by more than rounding, and by no more than BAND. */
 export const proseShareMismatches = (source: string, sentences: readonly Span[], amounts: readonly Amount[], words: ShareWords): StructureIssue[] => {
-  if (words.labels.length === 0) return [];
+  if (words.labels.length === 0 && (words.rests ?? []).length === 0) return [];
   const percents = amounts.filter((amount) => words.units.includes(amount.unit));
   return sentences.flatMap((sentence) => issueIn(source, sentence, percents, words));
 };

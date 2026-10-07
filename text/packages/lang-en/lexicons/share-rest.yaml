@@ -1,0 +1,10 @@
+# Words that name the rest of a whole as one of its parts ("other 5%"). Only the parts of one whole have a rest, so a
+# sentence with three or more percentages, one of them right after one of these, is read as a breakdown even when it
+# has no share-label word ("wrong digits 45%, missing fields 30%, swapped fields 20% and other 5%").
+id: share-rest
+language: en
+entries:
+  - pattern: other
+  - pattern: others
+  - pattern: the rest
+  - pattern: remainder

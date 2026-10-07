@@ -231,6 +231,7 @@ export const dateRangeReversed: Detector = (doc): Finding[] => {
 const shareWordsOf = (doc: ProseDocument): ShareWords => ({
   labels: (doc.lexicons["share-label"] ?? []).map((entry) => entry.pattern),
   exceptions: (doc.lexicons["share-exception"] ?? []).map((entry) => entry.pattern),
+  rests: (doc.lexicons["share-rest"] ?? []).map((entry) => entry.pattern),
   units: (doc.lexicons["percent-unit"] ?? []).map((entry) => entry.pattern),
   totalLabels: (doc.lexicons["total-label"] ?? []).map((entry) => entry.pattern),
 });
