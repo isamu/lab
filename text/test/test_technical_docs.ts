@@ -178,6 +178,13 @@ describe("step-statement-mix: a statement among numbered instructions", () => {
     assert.ok(!isStatement(tokens("Guests: the users who are invited.")));
   });
 
+  it("a verb after a noun and a determiner belongs to a clause, not to a subject", () => {
+    assert.ok(!isStatement(tokens("Search for an unallocated buffer that is big enough to hold the request.")));
+    assert.ok(!isStatement(tokens("Find the file that holds the settings.")));
+    assert.ok(isStatement(tokens("The buffer manager returns the buffer.")));
+    assert.ok(isStatement(tokens("The list of the users is shown.")));
+  });
+
   const steps = (...items: string[]): string => doc(items.map((item, index) => `${String(index + 1)}. ${item}`).join("\n"));
 
   it("reports the statement in a procedure of instructions", () => {
