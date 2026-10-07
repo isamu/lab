@@ -1,0 +1,20 @@
+# Words that make a sentence of a warning tell the reader what to do, matched as whole words ("Do not unplug the drive",
+# "Make sure the export finished"). A sentence that opens with its verb ("Export today's orders first") is an action too,
+# read from the parts of speech.
+id: warning-action
+language: en
+entries:
+  - pattern: do not
+  - pattern: don't
+  - pattern: never
+  - pattern: always
+  - pattern: make sure
+  - pattern: be sure
+  - pattern: ensure
+  - pattern: avoid
+  - pattern: must
+  - pattern: should
+  - pattern: need to
+  - pattern: have to
+  - pattern: please
+  - pattern: before you
