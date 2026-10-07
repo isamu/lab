@@ -1,10 +1,17 @@
-# 金額の数と通貨の書き方のあいだに入る、桁の語（100万円、$3 million）。字面どおりに照らす。
+# 金額の数と通貨の書き方のあいだに入る、桁の語（100万円、$3 million）。字面どおりに照らす。weight はその語が掛ける数
+# （amount-scale-consistency が 250,000円 と 30万円 を同じ桁と読む）。
 id: amount-multiplier
 language: ja
 entries:
   - pattern: 千
+    weight: 1000
   - pattern: 万
+    weight: 10000
   - pattern: 億
+    weight: 100000000
   - pattern: 兆
+    weight: 1000000000000
   - pattern: million
+    weight: 1000000
   - pattern: billion
+    weight: 1000000000

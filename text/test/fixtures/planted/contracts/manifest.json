@@ -117,7 +117,7 @@
         },
         {
           "kind": "amount-two-ways",
-          "rule": "currency-notation-consistency",
+          "rule": "amount-scale-consistency",
           "line": 25,
           "clean": "前項の上限額5,000,000円",
           "planted": "前項の上限額500万円"
@@ -261,7 +261,7 @@
         },
         {
           "kind": "amount-two-ways",
-          "rule": "currency-notation-consistency",
+          "rule": "amount-scale-consistency",
           "line": 11,
           "clean": "合計額880,000円",
           "planted": "合計額88万円"

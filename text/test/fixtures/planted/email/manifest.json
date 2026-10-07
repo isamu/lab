@@ -17,7 +17,7 @@
         },
         {
           "kind": "amount-two-ways",
-          "rule": "currency-notation-consistency",
+          "rule": "amount-scale-consistency",
           "line": 11,
           "clean": "制作費25万円",
           "planted": "制作費250,000円"
@@ -82,7 +82,7 @@
         },
         {
           "kind": "amount-two-ways",
-          "rule": "currency-notation-consistency",
+          "rule": "amount-scale-consistency",
           "line": 13,
           "clean": "保守の費用は月額3万円",
           "planted": "保守の費用は月額30,000円"

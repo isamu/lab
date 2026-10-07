@@ -1,8 +1,13 @@
 # Words of magnitude written between an amount's number and its currency ($3 million, 2 billion yen). Matched as written.
+# weight is the number the word multiplies by (amount-scale-consistency reads $2,500,000 and $1.5 million as one size).
 id: amount-multiplier
 language: en
 entries:
   - pattern: thousand
+    weight: 1000
   - pattern: million
+    weight: 1000000
   - pattern: billion
+    weight: 1000000000
   - pattern: trillion
+    weight: 1000000000000

@@ -15,7 +15,7 @@
       "party-order": "0/1",
       "obligation-no-deadline": "0/2",
       "duration-mismatch": "1/1",
-      "amount-two-ways": "0/2",
+      "amount-two-ways": "1/2",
       "date-range-reversed": "1/1",
       "total-in-table": "1/1"
     },
