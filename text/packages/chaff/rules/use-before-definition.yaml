@@ -50,8 +50,8 @@ example:
       This agreement is between Harbour Ltd (the "Seller") and Hill Ltd (the "Buyer"). The Seller ships within five days.
 
 not_flagged:
-  ja: 定義の条（「X」とは…をいう）で定義した語は、前で使っても言いません。定義の条は文書の頭にも終わりにも置く書き方があるためです。最初の一か所だけを指します。
-  en: Terms defined in a definitions clause ("X" means ...) are not checked, since a definitions clause may come first or last. Only the first early use is pointed at.
+  ja: 定義の条（「X」とは…をいう）で定義した語は、前で使っても言いません。定義の条は文書の頭にも終わりにも置く書き方があるためです。見出しの行（章・節の行、条の前の「（買主の義務）」のような見出し）の語と、漢字で終わる語にさらに漢字が続く長い語（「監査委員会」の「監査委員」）は、使った所に数えません。最初の一か所だけを指します。
+  en: Terms defined in a definitions clause ("X" means ...) are not checked, since a definitions clause may come first or last. A heading line (a chapter or section line, or the caption above an article) does not count as a use, nor does a longer word that runs on in kanji past a term ending in kanji. Only the first early use is pointed at.
 rewrite:
   depth: structure
   ja:

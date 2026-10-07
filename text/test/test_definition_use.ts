@@ -130,6 +130,31 @@ describe("use-before-definition: 定義より前で使っている語", () => {
     ]);
   });
 
+  it("漢字で終わる語に漢字が続く長い語は、その語の使用ではない（監査委員会の監査委員）", () => {
+    assert.deepEqual(early("監査委員会を置く。取締役のうち三人（以下「監査委員」という。）を選ぶ。\n", ja), []);
+    assert.deepEqual(early("監査委員が報告する。取締役のうち三人（以下「監査委員」という。）を選ぶ。\n", ja), [
+      "「監査委員」を、1 行目の定義より前で使っています",
+    ]);
+    assert.deepEqual(early("本サービス利用料を払う。この案内（以下「本サービス」という。）による。\n", ja), [
+      "「本サービス」を、1 行目の定義より前で使っています",
+    ]);
+  });
+
+  it("見出しの行の語は、使った所ではない", () => {
+    assert.deepEqual(early("## 買主の義務\n\n株式会社やまと（以下「買主」という。）は、代金を支払う。\n", ja), []);
+    assert.deepEqual(early("## Duties of the Seller\n\nHarbour Ltd (the \"Seller\") ships the goods.\n"), []);
+    assert.deepEqual(early("## 義務\n\n買主は、代金を支払う。株式会社やまと（以下「買主」という。）と契約する。\n", ja), [
+      "「買主」を、3 行目の定義より前で使っています",
+    ]);
+  });
+
+  it("条の前の見出しの行と、章・節の行の語は、使った所ではない", () => {
+    const statute = (head: string): readonly string[] =>
+      namedRuleRun("use-before-definition", `${head}第一条　株式会社やまと（以下「買主」という。）は、代金を支払う。\n`, ja, "a.txt", "legal/statute").findings;
+    assert.deepEqual(statute("第一章　買主の義務\n\n（買主の義務）\n"), []);
+    assert.deepEqual(statute("買主は、検収する。\n\n（買主の義務）\n"), ["「買主」を、4 行目の定義より前で使っています"]);
+  });
+
   it("一字の漢字の語は前の使用を探さない（令和の令、方法の法）", () => {
     assert.deepEqual(early("令和8年に改める。施行令（以下「令」という。）による。\n", ja), []);
   });
