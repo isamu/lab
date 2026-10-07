@@ -33,7 +33,7 @@ What it does not do is decided too.
 
 - It does not check that the minutes are true. Whether the meeting really decided that is for the people who were there.
 - It does not check that every action has an owner. An empty cell in the table is for a person to fill.
-- It does not check the weekday of a date written without a year, so the due dates in the table are not checked.
+- The due dates in the table give no weekday, so there is nothing to check there. A date without its year that does give one is read in the year that puts it within five months of the dated date before it, and checked.
 - It does not flag passives with nobody behind them ("it was decided"). Minutes record what the meeting did, so the meeting is the actor by the form.
   The rule would fire on almost every set of minutes.
 

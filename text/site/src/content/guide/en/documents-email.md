@@ -33,7 +33,7 @@ These are the main rules for this genre.
 What it does not do is decided too.
 
 - It does not check names or addresses. Whether "Ms Yamada" is right is for the sender to check.
-- It does not check the weekday of a date written without a year, since the year is unknown.
+- It does not check the weekday of a date when no date in the document gives a year, since the year is unknown. When one does, a date without its year is read in the year that puts it within five months of that dated date, and its weekday is checked.
 - It does not check whether the attachment is there. chaff reads only the text.
 - It does not decide whether the tone suits the reader. It marks where hedges pile up.
 
