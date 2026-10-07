@@ -56,11 +56,24 @@ describe("asksForHelp", () => {
   });
 });
 
+/** "<language>: <command> <flag>" for each flag a command's usage lines do not name. */
+const flagsMissingFrom = (usage: string, language: string, flags: Readonly<Record<string, readonly string[]>>): string[] =>
+  Object.entries(flags).flatMap(([command, names]) => {
+    const lines = commandUsage(usage, command).join("\n");
+    return names.filter((name) => !lines.includes(name)).map((name) => `${language}: ${command} ${name}`);
+  });
+
 describe("どのコマンドも --help に応える", () => {
   it("どのコマンドにも、日本語と英語の使い方に行がある", () => {
     const missing = Object.entries(CLI_TEXT).flatMap(([language, text]) =>
       COMMANDS.filter((command) => commandUsage(text.usage, command).length === 0).map((command) => `${language}: ${command}`),
     );
+    assert.deepEqual(missing, []);
+  });
+
+  it("grade と fix-plan の使い方は、そのコマンドだけの指定を日本語と英語の両方で挙げる", () => {
+    const flags: Readonly<Record<string, readonly string[]>> = { grade: ["--baseline", "--compact", "--out", "--json"], "fix-plan": ["--depth", "--json"] };
+    const missing = Object.entries(CLI_TEXT).flatMap(([language, text]) => flagsMissingFrom(text.usage, language, flags));
     assert.deepEqual(missing, []);
   });
 

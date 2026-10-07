@@ -263,6 +263,35 @@ $ npx chaffjs cite contract.txt claims.json
 If any quotation fails, the run ends with exit code `1`,
 so an answer's quotations can be checked like a unit test.
 
+## A quotation with no source
+
+Before `cite` can check a quotation, someone has to know where the words came from.
+When a document gives words to someone ("X said …", "according to X") and names no source, there is nothing to check them against.
+`quote-without-source` points at such a quotation: in quotation marks, given to someone, in a paragraph with no link, no footnote, no numbered citation and no year in brackets.
+It runs in blogs, papers, manuals, legal documents, literature and speeches.
+
+```markdown file=meetup.md
+# Notes from the platform meetup
+
+The keynote opened with a number. Dana Reyes, who runs the on-call rotation at a payments company, said "most outages start with a change nobody reviewed".
+
+The second talk was about rollbacks. Its slides are at https://example.com/rollbacks, and its claim, "a rollback you have never run is not a rollback", is on slide 4.
+```
+
+```
+$ npx chaffjs meetup.md --compact
+
+meetup.md   blog/tech · English   genre from the default
+
+  3:106   info    "most outages start with a change nobody reviewed" is given to someone, but no source (a link, a footnote, a reference) is given
+                  quote-without-source
+
+{counts}
+```
+
+The second quotation has a link in its paragraph, so it is not reported.
+chaff does not open the link to see whether the words are there. With the source saved as a file, `cite` checks that.
+
 ## What chaff does, and what it does not
 
 chaff only decides whether something is broken. It never rewrites the document.

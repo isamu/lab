@@ -31,6 +31,7 @@ chaff は、読み手を待たせる書き出しや、生成文によく出る�
 | `ai-generated-composite` | 生成文の形が、一つの記事に 3 種以上そろったこと | いつも |
 | `announced-count-mismatch` | 予告した数と、箇条書きの数の食い違い | いつも |
 | `broken-link` | 記事の中に無い見出しへのリンク | いつも |
+| `quote-without-source` | 人の言葉として引いたのに、段落に出典が無い引用 | いつも（info） |
 | `latin-spacing` | 日本語と英数字の間の空白の、付け方の揺れ | いつも（info） |
 | `empty-conclusion` | 中身の無い結び | `npx chaffjs test` で AI に読ませたとき |
 

@@ -27,6 +27,7 @@ chaff は、表記の揺れ、無い図への参照、句読点の混ざりを�
 | `katakana-long-vowel` | 「サーバー」と「サーバ」の混ざり。`style:` を書くと、決まりと違う書き方 |
 | `kutoten-consistency` | 「、。」と「，．」の混ざり |
 | `dangling-figure-reference` | 文書に無い図・表を指す所 |
+| `quote-without-source` | 人の言葉として引いたのに、段落に参照が無い引用 |
 
 見ないことも決めてあります。
 
