@@ -70,6 +70,22 @@ entries:
   - pattern: EU
   - pattern: UN
   - pattern: DNA
+  # Acronyms any general reader reads without an expansion: identifiers of publications, time standards, international bodies, everyday devices.
+  - pattern: DOI
+  - pattern: ISBN
+  - pattern: ISSN
+  - pattern: URI
+  - pattern: ISO
+  - pattern: UTC
+  - pattern: GMT
+  - pattern: GDP
+  - pattern: COVID
+  - pattern: NASA
+  - pattern: NATO
+  - pattern: SMS
+  - pattern: ZIP
+  - pattern: ATM
+  - pattern: PIN
   # & で繋いだ、仕事の文書で説明なしで通じる語。
   - pattern: Q&A
   - pattern: R&D
