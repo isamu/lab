@@ -1,7 +1,8 @@
 # A word right before a person-word that makes it something else: a determiner before "one" (no one can, the one we
 # chose), a preposition that makes "one" the object of a phrase (devices connected to one can cause a shock), or an
 # adjective that makes "one" a noun standing for a thing (the last one cannot be undone). Adjectives that are also
-# adverbs at the head of a sentence (first, next, later, better) are left out: "First one must ask" is the reader.
+# adverbs at the head of a sentence (first, next, later, better) are left out: "First one must ask" is the reader; so is
+# little, a quantifier in "there is little one can do".
 # instead_of is the form the word guards; "to you" is still the reader.
 id: person-not-after
 language: en
@@ -85,8 +86,6 @@ entries:
   - pattern: big
     instead_of: one
   - pattern: small
-    instead_of: one
-  - pattern: little
     instead_of: one
   - pattern: large
     instead_of: one
