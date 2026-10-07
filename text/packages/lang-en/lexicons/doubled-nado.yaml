@@ -1,0 +1,14 @@
+# "And so on" said twice: "etc." already holds "and" (et cetera, "and the rest"), so "and etc." says "and" twice. Read by
+# doubled-nado, the rule named after its Japanese twin (など and 等). rewrite keeps one of the two.
+# "Such as ..., etc." and "e.g. ..., etc." are left out: the words between the two cannot be matched as one phrase.
+id: doubled-nado
+language: en
+entries:
+  - pattern: and etc
+    rewrite: etc.
+  - pattern: "& etc"
+    rewrite: etc.
+  - pattern: and et cetera
+    rewrite: et cetera
+  - pattern: etc. and so on
+    rewrite: etc.
