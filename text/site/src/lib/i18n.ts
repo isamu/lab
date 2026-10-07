@@ -13,6 +13,7 @@ const ja = {
   rules: "ルール",
   genres: "ジャンル",
   pickGenre: "文書の種類を選ぶ（ジャンルの一覧）",
+  tryInBrowser: "何も入れずに、ブラウザで試す",
   genresIntro:
     "文書の種類（ジャンル）を選ぶと、ルールと閾値をその種類に合わせて見ます。契約書なら、一文の長さの上限を法務の文書に合わせ、条項の番号の抜けや無い条項への参照も見ます。設定は要りません。",
   genresSuggest:
@@ -118,6 +119,7 @@ const en: Record<UiKey, string> = {
   rules: "Rules",
   genres: "Genres",
   pickGenre: "Pick the kind of document (the genres)",
+  tryInBrowser: "Try it in your browser, with nothing to install",
   genresIntro:
     "Pick the kind of document (the genre) and chaff sets its rules and limits to that kind. A contract gets sentence limits fit for legal writing, and its clause numbering and references to clauses are checked too. No settings needed.",
   genresSuggest:

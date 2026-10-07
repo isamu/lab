@@ -35,7 +35,7 @@ These are the main rules for this genre. All but the last run with no settings.
 What it does not do is decided too.
 
 - It does not check that the figures are true. Whether 400 staff really took the survey is for the writer to check.
-- It does not check the weekday of a date written without a year, since the year is unknown.
+- It does not check the weekday of a date when no date in the document gives a year, since the year is unknown. When one does, a date without its year is read in the year that puts it within five months of that dated date, and its weekday is checked.
 - Percentages are added up only when a nearby header or sentence names the parts of a whole (breakdown, market share, composition).
   Growth rates and usage rates do not add up to 100%, and are not added.
 
