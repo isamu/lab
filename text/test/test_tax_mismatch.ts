@@ -37,6 +37,20 @@ describe("tax-mismatch: 税額が小計に税率を掛けた額と合わない",
     assert.deepEqual(findingsOf(table([...ITEMS, "| 消費税（10%） | 85,000円 |"])), ["税額「85,000円」が、上の金額の10%（80,000円）と合いません"]);
   });
 
+  it("全角の％の率と、項目が一つだけの並びも読む", () => {
+    assert.deepEqual(findingsOf(table(["| 小計 | 800,000円 |", "| 消費税（10％） | 88,000円 |"])), [
+      "税額「88,000円」が、上の金額の10%（80,000円）と合いません",
+    ]);
+    assert.deepEqual(findingsOf("- Design: $8,000\n- Sales tax (10%): $880\n", en), ["The tax $880 is not 10% of the amount above it ($800)"]);
+    assert.deepEqual(findingsOf("- Design: $8,000\n- Sales tax (10%): $800\n", en), []);
+  });
+
+  it("負の印のある金額（値引き）は足し方が決まらないので比べない", () => {
+    assert.deepEqual(findingsOf("- Item: $1,000\n- Discount: -$200\n- Sales tax (10%): $80\n", en), []);
+    assert.deepEqual(findingsOf(table(["| 設計 | 300,000円 |", "| 値引き | ▲50,000円 |", "| 消費税（10%） | 25,000円 |"])), []);
+    assert.deepEqual(findingsOf("- $8,000\n- Sales tax (10%): $880\n", en), ["The tax $880 is not 10% of the amount above it ($800)"]);
+  });
+
   it("箇条書きも読む", () => {
     assert.deepEqual(findingsOf("- 設計：300,000円\n- 開発：500,000円\n- 小計：800,000円\n- 消費税（10%）：80,000円\n"), []);
     assert.deepEqual(findingsOf("- 設計：300,000円\n- 開発：500,000円\n- 小計：800,000円\n- 消費税（10%）：88,000円\n"), [
@@ -70,8 +84,8 @@ describe("tax-mismatch: 税額が小計に税率を掛けた額と合わない",
     assert.deepEqual(findingsOf(table([...ITEMS, "| 小計 | 800,000円 |", "| 割引（10%） | 50,000円 |"])), []);
   });
 
-  it("上の金額が足りないか単位の違う表、文の中の税は読まない", () => {
-    assert.deepEqual(findingsOf(table(["| 設計 | 300,000円 |", "| 消費税（10%） | 33,000円 |"])), []);
+  it("上に金額が無いか単位の違う表、文の中の税は読まない", () => {
+    assert.deepEqual(findingsOf(table(["| 消費税（10%） | 33,000円 |"])), []);
     assert.deepEqual(findingsOf(table(["| 小計 | $8,000 |", "| 消費税（10%） | 88,000円 |"])), []);
     assert.deepEqual(findingsOf("小計は800,000円、消費税（10%）は88,000円です。\n"), []);
   });

@@ -18,7 +18,9 @@ export type TaxWords = {
 };
 
 const RATE = /(\d{1,2}(?:\.\d{1,2})?)[ \t]?[%％]/u;
-const PERCENT = "%";
+const PERCENT = new Set(["%", "％"]);
+/** A sign or an opening bracket right before an amount (-$200, ▲500, (1,200)): the amount may be negative. */
+const SIGNED = /[-−▲△(（][ \t]?(?:[$€£¥￥][ \t]?)?$/u;
 const CENTS = 100;
 const MAX_RATE = 100;
 
@@ -28,7 +30,7 @@ const rowsOf = (source: string, run: readonly Line[], amounts: readonly Amount[]
   run.map((line) => ({
     line,
     text: source.slice(line.start, line.end),
-    amounts: amounts.filter((amount) => amount.offset >= line.start && amount.offset <= line.end && amount.unit !== PERCENT),
+    amounts: amounts.filter((amount) => amount.offset >= line.start && amount.offset <= line.end && !PERCENT.has(amount.unit)),
   }));
 
 const rateOf = (text: string): number | undefined => {
@@ -39,10 +41,21 @@ const rateOf = (text: string): number | undefined => {
 const isTaxRow = (row: Row, words: TaxWords): boolean =>
   isTotalLabel(row.text, words.labels) && !words.included.some((word) => row.text.toLowerCase().includes(word.toLowerCase()));
 
-/** The one amount of the row in the column and unit of the tax amount, undefined when there is none or more than one. */
+/** The list marker at the start of a line (- $500) is not a sign. */
+const isSigned = (source: string, row: Row, amount: Amount): boolean => {
+  const before = source.slice(row.line.start, amount.offset);
+  const sign = SIGNED.exec(before);
+  return sign !== null && before.slice(0, sign.index).trim().length > 0;
+};
+
+/**
+ * The one amount of the row in the column and unit of the tax amount, undefined when there is none, more than one, or
+ * one that may be negative (a discount is not added as written).
+ */
 const amountAt = (source: string, row: Row, column: number, unit: string): Amount | undefined => {
   const matching = row.amounts.filter((amount) => amount.unit === unit && columnOf(source, row.line, amount.offset) === column);
-  return matching.length === 1 ? matching[0] : undefined;
+  const [only] = matching;
+  return matching.length === 1 && only !== undefined && !isSigned(source, row, only) ? only : undefined;
 };
 
 /** The base the tax is on: the last total row above, or the sum of the item rows above when there is no total row. */
@@ -50,7 +63,7 @@ const baseOf = (source: string, above: readonly Row[], tax: Amount, column: numb
   const lastTotal = above.findLast((row) => isTotalLabel(row.text, words.totals));
   if (lastTotal !== undefined) return amountAt(source, lastTotal, column, tax.unit);
   const items = above.map((row) => amountAt(source, row, column, tax.unit));
-  if (items.length < 2 || items.some((item) => item === undefined)) return undefined;
+  if (items.length === 0 || items.some((item) => item === undefined)) return undefined;
   const values = items.flatMap((item) => (item === undefined ? [] : [item.value]));
   return { offset: tax.offset, end: tax.end, unit: tax.unit, value: values.reduce((sum, value) => sum + value, 0) };
 };
@@ -67,7 +80,7 @@ export const taxMatches = (writtenCents: number, base: number, rate: number): bo
 const issueOf = (source: string, rows: readonly Row[], index: number, rate: number, words: TaxWords): StructureIssue[] => {
   const row = rows[index];
   const tax = row?.amounts.length === 1 ? row.amounts[0] : undefined;
-  if (row === undefined || tax === undefined) return [];
+  if (row === undefined || tax === undefined || isSigned(source, row, tax)) return [];
   const column = columnOf(source, row.line, tax.offset);
   const base = baseOf(source, rows.slice(0, index), tax, column, words);
   if (base === undefined || taxMatches(Math.round(tax.value * CENTS), base.value, rate)) return [];
