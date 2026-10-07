@@ -4,14 +4,18 @@ import { lineStarts, placeOf } from "../position.ts";
 // 回答の引用が原文にあるか。番地が木にあり、引用した文がその番地の範囲に書かれていれば一致。
 // 意味が合っているかは見ない。書いてあるかどうかだけを、機械で決める。
 
+/** address: where in the source the quote is, as `chaff tree` names it. Empty: anywhere in the source. */
 export type Citation = { readonly address: string; readonly quote: string };
+
+/** The address a citation leaves empty: it says the quote is somewhere in the source, not where. */
+export const isAnywhere = (citation: Citation): boolean => citation.address.trim() === "";
 
 export type CitationStatus = "ok" | "missing-address" | "quote-elsewhere" | "quote-not-found";
 
 export type CitationResult = {
   readonly citation: Citation;
   readonly status: CitationStatus;
-  /** 引用文が原文で見つかった位置の、いちばん内側の番地。quote-elsewhere のとき、本当はどこに書いてあるか。 */
+  /** 引用文が原文で見つかった位置の、いちばん内側の番地。quote-elsewhere のとき、本当はどこに書いてあるか。番地を書かない引用では、見つかった場所。 */
   readonly foundAt?: string;
   /** 引用文が見つかった行。引用文が空なら、番地の行。 */
   readonly line?: number;
@@ -85,8 +89,22 @@ const innermostHolding = (nodes: readonly Addressed[], occurrence: Occurrence): 
     .reduce<Addressed | undefined>((best, current) => (best === undefined || current.depth > best.depth ? current : best), undefined)?.node.address;
 
 /**
+ * 番地を書かない引用。原文のどこかに書いてあれば一致で、見つかった場所の番地と行を添える。番地の無い原文（見出しの無い記事）にも使える。
+ * 引用文も空なら、確かめることが無い。番地の無い原文は常にあるので一致とし、行は付けない。
+ */
+const anywhere = (citation: Citation, whole: Normalized, nodes: readonly Addressed[], starts: readonly number[]): CitationResult => {
+  const key = normalize(citation.quote).text;
+  if (key === "") return { citation, status: "ok" };
+  const at = whole.text.indexOf(key);
+  if (at === -1) return { citation, status: "quote-not-found" };
+  const occurrence = { start: whole.index[at] ?? 0, last: whole.index[at + key.length - 1] ?? 0 };
+  const foundAt = innermostHolding(nodes, occurrence);
+  return { citation, status: "ok", line: placeOf(starts, occurrence.start).line, ...(foundAt === undefined ? {} : { foundAt }) };
+};
+
+/**
  * 引用を一件ずつ確かめる。source は木を作った原文そのもの。
- * 引用文が空（空白だけ）なら番地だけを確かめる。同じ番地が二つある（附則が第1条から振り直す）ときは、どちらかにあれば一致。
+ * 引用文が空（空白だけ）なら番地だけを確かめる。番地が空なら、原文のどこかにあるかだけを確かめる。同じ番地が二つある（附則が第1条から振り直す）ときは、どちらかにあれば一致。
  * 原文は一度だけ揃え、引用ごとには番地の範囲を揃え直さない。長い契約書に引用が何百とあっても、引用ごとの代金は原文の長さに比例するだけ。
  */
 export const checkCitations = (source: string, tree: StructureNode, citations: readonly Citation[]): CitationResult[] => {
@@ -100,6 +118,7 @@ export const checkCitations = (source: string, tree: StructureNode, citations: r
   const whole = normalize(source);
   const starts = lineStarts(source);
   return citations.map((citation): CitationResult => {
+    if (isAnywhere(citation)) return anywhere(citation, whole, nodes, starts);
     // 第 1 項に番号の無い書き方では、「12.1」は第12条そのもの。参照の fallback と同じに読む。
     const firstParagraph = citation.address.endsWith(".1") ? byAddress.get(citation.address.slice(0, -2)) : undefined;
     const candidates = byAddress.get(citation.address) ?? firstParagraph ?? [];
