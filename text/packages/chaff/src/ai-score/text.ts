@@ -18,6 +18,8 @@ export type AiScoreText = {
   readonly fired: (name: string, count: number, fired: number, documents: number, group: string) => string;
   /** A signal that fired but is common in human documents of the group, so it does not count. */
   readonly common: (name: string, count: number, fired: number, documents: number) => string;
+  /** The composite's signals that fired together, enough at its strict level to count as one more sign. */
+  readonly together: (name: string, names: string, count: number, limit: number) => string;
   readonly quiet: (count: number) => string;
   /** The structure measures within what human articles show. */
   readonly usual: (count: number) => string;
@@ -59,6 +61,7 @@ export const AI_SCORE_TEXT: Texts<AiScoreText> = {
       `✗ ${name}: ${String(count)} 件  人が書いた文書（${group}）${String(documents)} 本のうち ${String(fired)} 本`,
     common: (name, count, fired, documents) =>
       `· ${name}: ${String(count)} 件  人の文書でも出る（${String(documents)} 本のうち ${String(fired)} 本）ので数えません`,
+    together: (name, names, count, limit) => `✗ ${name}: ${String(count)} 種（${names}）。厳しめの段階の ${String(limit)} 種から、目印 1 個に数えます`,
     quiet: (count) => `· ほかの ${String(count)} 項目は出ていません`,
     usual: (count) => `· ほかの ${String(count)} 項目は人の記事でふつうの値です`,
     noHumanShare: (names) => `比べていない（人の文書の基準が無い）: ${names}`,
@@ -86,6 +89,8 @@ export const AI_SCORE_TEXT: Texts<AiScoreText> = {
       `✗ ${name}: ${String(count)}  in ${String(fired)} of ${String(documents)} human-written documents (${group})`,
     common: (name, count, fired, documents) =>
       `· ${name}: ${String(count)}  common in human documents too (${String(fired)} of ${String(documents)}), not counted`,
+    together: (name, names, count, limit) =>
+      `✗ ${name}: ${String(count)} of its signals (${names}); from ${String(limit)}, its strict level, that is one more sign`,
     quiet: (count) => `· the other ${String(count)} did not show`,
     usual: (count) => `· the other ${String(count)} are usual for human articles`,
     noHumanShare: (names) => `not compared (no human baseline): ${names}`,

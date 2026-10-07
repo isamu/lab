@@ -15,6 +15,9 @@ import {
   MEDIUM_SIGNS,
   MIN_BASELINE_DOCUMENTS,
   RARE_SHARE,
+  shownSignsOf,
+  TOGETHER_SIGN,
+  TOGETHER_SIGNALS,
   type HumanShares,
   type ScoreInput,
   type SignalRun,
@@ -28,6 +31,7 @@ import type { StructureScore } from "../packages/chaff/src/structure-shape/score
 // medium or high. Every text here is written for the test (test/fixtures/ai-score/).
 
 const FIXTURES = join(import.meta.dirname, "fixtures", "ai-score");
+const PAIRED = join(import.meta.dirname, "fixtures", "ai-samples", "paired");
 const fixture = (name: string): string => readFileSync(join(FIXTURES, name), "utf8");
 
 const RARE: Readonly<Record<string, { documents: number; fired: number }>> = { blog: { documents: 20, fired: 0 } };
@@ -43,6 +47,7 @@ const input = (fired: number, overrides: Partial<ScoreInput> = {}): ScoreInput =
   signals: SIGNALS.map((rule, index): SignalRun => ({ rule, count: index < fired ? 1 : 0 })),
   shares: shares(SIGNALS),
   structure: undefined,
+  compositeFired: [],
   ...overrides,
 });
 
@@ -61,6 +66,7 @@ describe("levelOf: the boundaries", () => {
       const levels = compositeLevels(loadRules(language));
       assert.equal(MEDIUM_SIGNS, levels.normal, language);
       assert.equal(HIGH_SIGNS, levels.relaxed, language);
+      assert.equal(TOGETHER_SIGNALS, levels.strict, language);
     });
   });
 
@@ -159,6 +165,38 @@ describe("aiScoreOf", () => {
   });
 });
 
+describe("aiScoreOf: the together sign", () => {
+  const composite = (count: number): string[] => ["announcing-opener", "contrast-framing", "no-em-dash"].slice(0, count);
+
+  it("adds one sign when TOGETHER_SIGNALS of the composite's signals fired, and shows it", () => {
+    const score = aiScoreOf(input(MEDIUM_SIGNS - 1, { compositeFired: composite(TOGETHER_SIGNALS) }));
+    assert.equal(score.signs, MEDIUM_SIGNS);
+    assert.equal(score.level, "medium");
+    assert.deepEqual(score.together, { fired: composite(TOGETHER_SIGNALS), counted: true });
+    assert.equal(shownSignsOf(score).at(-1), TOGETHER_SIGN);
+  });
+
+  it("adds one sign however many fired together, not one per signal", () => {
+    assert.equal(aiScoreOf(input(0, { compositeFired: composite(TOGETHER_SIGNALS + 1) })).signs, 1);
+  });
+
+  it("adds nothing below TOGETHER_SIGNALS, and keeps what fired", () => {
+    const score = aiScoreOf(input(MEDIUM_SIGNS - 1, { compositeFired: composite(TOGETHER_SIGNALS - 1) }));
+    assert.equal(score.signs, MEDIUM_SIGNS - 1);
+    assert.equal(score.level, "low");
+    assert.deepEqual(score.together, { fired: composite(TOGETHER_SIGNALS - 1), counted: false });
+    assert.ok(!shownSignsOf(score).includes(TOGETHER_SIGN));
+    assert.equal(aiScoreOf(input(0)).together.counted, false);
+  });
+
+  it("is not compared against a genre group, so it neither adds to compared nor lifts a document out of no-baseline", () => {
+    assert.equal(aiScoreOf(input(0, { compositeFired: composite(TOGETHER_SIGNALS) })).compared, SIGNALS.length);
+    const none = aiScoreOf(input(0, { group: "academic", compositeFired: composite(TOGETHER_SIGNALS) }));
+    assert.equal(none.notScored?.reason, "no-baseline");
+    assert.equal(none.level, undefined);
+  });
+});
+
 describe("the signals", () => {
   it("are the AI-shape rules (group ai-tells, the composite's from, the markup shapes) but the two that add up others", () => {
     const rules = loadRules("ja");
@@ -216,6 +254,26 @@ describe("aiScoreOfDocument on written samples", () => {
     const score = aiScoreOfDocument(doc, loadRules("ja"), "blog/tech");
     assert.equal(score.level, undefined);
     assert.equal(score.notScored?.reason, "too-short");
+  });
+
+  it("reads the paired generated-style essays as medium through the together sign, and their human pairs as low", async () => {
+    await ja.prepare?.({ pos: true });
+    await en.prepare?.({ pos: true });
+    const essay = (adapter: LanguageAdapter, variant: string) => {
+      const name = join(PAIRED, adapter.id, "essay", `${variant}.md`);
+      return aiScoreOfDocument(buildDocument(name, readFileSync(name, "utf8"), adapter), loadRules(adapter.id), "blog/essay");
+    };
+    [ja, en].forEach((adapter) => {
+      const generated = essay(adapter, "ai");
+      assert.equal(generated.level, "medium", adapter.id);
+      assert.equal(generated.together.counted, true, adapter.id);
+      ["human", "rewritten"].forEach((variant) => {
+        const score = essay(adapter, variant);
+        assert.notEqual(score.level, "medium", `${adapter.id}/${variant}`);
+        assert.notEqual(score.level, "high", `${adapter.id}/${variant}`);
+        assert.equal(score.together.counted, false, `${adapter.id}/${variant}`);
+      });
+    });
   });
 
   it("does not score a genre group with no human baseline", async () => {

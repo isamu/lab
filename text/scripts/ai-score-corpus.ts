@@ -2,7 +2,9 @@
 //   corpus   the committed human documents (corpus/docs) and the statutes (corpus/laws); --all adds the fetched corpus/.cache
 //   paired   test/fixtures/ai-samples/paired/<lang>/<kind>/{ai,human,rewritten}.md, the generated style and its human pair
 //   samples  test/fixtures/ai-samples/<lang>/*.md and test/fixtures/ai-score/*.md, written in the generated style or plainly
-// Human documents should read low; --verbose lists each document with its level and the signs it showed.
+// Human documents should read low; --verbose lists each document with its level and the signs it showed. Each pile
+// also says how many documents reached the together sign (TOGETHER_SIGNALS of the composite's signals at once): the
+// count on human documents is what justifies counting it.
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
@@ -13,7 +15,7 @@ import { profileFor } from "../packages/chaff/src/profile/for-file.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import { aiScoreOfDocument } from "../packages/chaff/src/ai-score/of-document.ts";
-import { shownSignsOf, type AiScore } from "../packages/chaff/src/ai-score/score.ts";
+import { shownSignsOf, TOGETHER_SIGN, type AiScore } from "../packages/chaff/src/ai-score/score.ts";
 import { docEntries, docPath, parsedAs } from "./corpus-docs.ts";
 import { corpusLanguages } from "./corpus-findings.ts";
 
@@ -100,7 +102,9 @@ if (process.argv.includes("--verbose")) {
 }
 const tally = scored.reduce<Map<string, Map<string, number>>>((piles, { input, score }) => {
   const outcomes = piles.get(input.pile) ?? new Map<string, number>();
-  outcomes.set(outcomeOf(score), (outcomes.get(outcomeOf(score)) ?? 0) + 1);
+  const bump = (key: string): Map<string, number> => outcomes.set(key, (outcomes.get(key) ?? 0) + 1);
+  bump(outcomeOf(score));
+  if (score.together.counted) bump(TOGETHER_SIGN);
   return piles.set(input.pile, outcomes);
 }, new Map());
 tally.forEach((outcomes, pile) =>
