@@ -5769,12 +5769,28 @@
     },
     "prerequisite-after-step": {
       "groups": {
+        "academic": {
+          "documents": 10,
+          "fired": 0
+        },
         "blog": {
           "documents": 23,
           "fired": 0
         },
         "docs": {
           "documents": 21,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 35,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 13,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 7,
           "fired": 0
         },
         "technical": {
@@ -7439,12 +7455,28 @@
     },
     "ui-label-variant": {
       "groups": {
+        "academic": {
+          "documents": 10,
+          "fired": 0
+        },
         "blog": {
           "documents": 23,
           "fired": 0
         },
         "docs": {
           "documents": 21,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 35,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 13,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 7,
           "fired": 0
         },
         "technical": {
@@ -8194,12 +8226,28 @@
     },
     "warning-without-action": {
       "groups": {
+        "academic": {
+          "documents": 10,
+          "fired": 0
+        },
         "blog": {
           "documents": 23,
           "fired": 0
         },
         "docs": {
           "documents": 21,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 35,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 13,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 7,
           "fired": 0
         },
         "technical": {
