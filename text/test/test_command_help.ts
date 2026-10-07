@@ -64,6 +64,17 @@ describe("どのコマンドも --help に応える", () => {
     assert.deepEqual(missing, []);
   });
 
+  it("grade と fix-plan の使い方は、そのコマンドだけの指定を日本語と英語の両方で挙げる", () => {
+    const flags: Readonly<Record<string, readonly string[]>> = { grade: ["--baseline", "--compact", "--out", "--json"], "fix-plan": ["--depth", "--json"] };
+    const missing = Object.entries(CLI_TEXT).flatMap(([language, text]) =>
+      Object.entries(flags).flatMap(([command, names]) => {
+        const lines = commandUsage(text.usage, command).join("\n");
+        return names.filter((name) => !lines.includes(name)).map((name) => `${language}: ${command} ${name}`);
+      }),
+    );
+    assert.deepEqual(missing, []);
+  });
+
   it("init --help は使い方を出し、chaff.yaml を書かない", async () => {
     const run = await runCli({}, ["init", "--help"], "en_US.UTF-8");
     assert.equal(run.code, 0);
