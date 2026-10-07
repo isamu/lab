@@ -65,6 +65,20 @@ describe("L3 英語", () => {
     it("valid: 1 つだけなら指摘しない", () => {
       assert.ok(!idsFor("We shipped it. And we told the team. The schedule held.").includes("sentence-initial-conjunction-run"));
     });
+
+    const japaneseRun = (source: string): boolean => firedRules(ja, source).includes("sentence-initial-conjunction-run");
+
+    it("invalid: 日本語でも、接続詞で始まる文が 3 つ続けば指摘する", () => {
+      assert.ok(
+        japaneseRun("会議室を予約しました。そして、資料を配りました。しかし、議事録が漏れました。また、結果も共有していません。つまり、やり直しです。"),
+      );
+    });
+
+    it("valid: 日本語で 2 つまで、語の途中（またたく間）、話し言葉の文頭（でも）は数えない", () => {
+      assert.ok(!japaneseRun("会議室を予約しました。そして、資料を配りました。しかし、議事録が漏れました。結果は共有しました。"));
+      assert.ok(!japaneseRun("会議室を予約しました。そして、資料を配りました。またたく間に終わりました。しかし、議事録が漏れました。"));
+      assert.ok(!japaneseRun("会議室を予約しました。でも、資料は配りました。だから、議事録が漏れました。なので、やり直しです。"));
+    });
   });
 
   describe("title-case-consistency", () => {

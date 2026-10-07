@@ -1,2 +1,5 @@
-table  1  1  0  0
+table  4  4  0  0
+ja/blog  soshite-chained  found
+ja/figures  soshite-chained  found
+ja/proposal  soshite-chained  found
 en/press  and-chained  found

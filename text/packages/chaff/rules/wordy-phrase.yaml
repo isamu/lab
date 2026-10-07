@@ -4,7 +4,7 @@ status: stable
 how_to_find: phrase-match
 word_list: wordy-phrase
 requires: [pos]
-languages: [en]
+languages: [ja, en]
 severity: info
 
 name:
@@ -12,16 +12,16 @@ name:
   en: Wordy phrase
 
 why:
-  ja: 英語の「in order to」「due to the fact that」「at this point in time」は、「to」「because」「now」と同じことを何語もかけて言います。読み手は語を多く読むだけで、得るものは増えません。言い回しと短い形の組は言語ごとの語彙表にあります。契約や法令がわざと使う言い方（with regard to、prior to）は入れていません。
-  en: '"In order to", "due to the fact that" and "at this point in time" say in several words what "to", "because" and "now" say in one. The reader reads more and learns nothing more. The phrases and their short forms are listed in the lexicon. Phrases that contracts and statutes use on purpose ("with regard to", "prior to") are left out.'
+  ja: 「することが可能」「現時点において」（英語の in order to、at this point in time）は、「できる」「現在」と同じことを何語もかけて言います。読み手は語を多く読むだけで、得るものは増えません。言い回しと短い形の組は言語ごとの語彙表にあります。契約や法令がわざと使う言い方（with regard to、prior to）は入れていません。
+  en: '"In order to", "due to the fact that" and "at this point in time" (することが可能, 現時点において) say in several words what "to", "because" and "now" say in one. The reader reads more and learns nothing more. The phrases and their short forms are listed in the lexicon. Phrases that contracts and statutes use on purpose ("with regard to", "prior to") are left out.'
 
 message:
   ja: 「{matched}」は、もっと短く言えます
   en: '"{matched}" can be said in fewer words'
 
 how_to_fix:
-  ja: 短い形に置き換えてください（in order to → to、due to the fact that → because、in the event that → if）。
-  en: Use the short form ("in order to" → "to", "due to the fact that" → "because", "in the event that" → "if").
+  ja: 短い形に置き換えてください（することが可能です → できます、現時点において → 現在、in order to → to、due to the fact that → because）。
+  en: Use the short form ("in order to" → "to", "due to the fact that" → "because", "in the event that" → "if"; することが可能です → できます).
 
 # 指摘に要る文の数。1 つなら書き手の癖とは言えないので、2 つから。
 levels: { strict: 1, normal: 2, relaxed: 4 }
@@ -34,9 +34,14 @@ off_for:
 
 group: wording
 summary:
-  ja: 英語で、「in order to」「due to the fact that」のように、一語で言えることを何語もかけて言う所
-  en: Phrases such as "in order to" and "due to the fact that" that take several words to say what one says
+  ja: 「することが可能」「現時点において」（in order to、due to the fact that）のように、一語で言えることを何語もかけて言う所
+  en: Phrases such as "in order to" and "due to the fact that" (することが可能, 現時点において) that take several words to say what one says
 example:
+  ja:
+    before: |
+      資料は社内から閲覧することが可能です。現時点において、追加の予定はありません。
+    after: |
+      資料は社内から閲覧できます。現在、追加の予定はありません。
   en:
     before: |
       In order to save time, we met online. Due to the fact that the room was booked, we stayed home.
@@ -44,13 +49,26 @@ example:
       To save time, we met online. Because the room was booked, we stayed home.
 
 not_flagged:
-  ja: 一覧にある言い回しだけを見ます。英語の文書だけで動きます。契約や法令がわざと使う言い方（with regard to、prior to、in accordance with）は一覧に入れていません。
-  en: Only the phrases on chaff's list are checked, and only in English documents. Phrases that contracts and statutes use on purpose ("with regard to", "prior to", "in accordance with") are not on it.
+  ja: 一覧にある言い回しだけを見ます。契約や法令がわざと使う言い方（with regard to、prior to、in accordance with）は一覧に入れていません。日本語では、人の書いた文章でもふつうの「することができる」と、名詞として要る「必要性」は入れていません。翻訳調（を可能にする）は translationese-density が、「〜を行う」は nominalization が見ます。
+  en: Only the phrases on chaff's list are checked. Phrases that contracts and statutes use on purpose ("with regard to", "prior to", "in accordance with") are not on it. In Japanese, することができる, ordinary in human writing, and 必要性, which a noun phrase may need, are left out; translationese (を可能にする) is translationese-density's and 〜を行う is nominalization's.
 level_meaning:
   ja: 回りくどい言い回しを含む文が {limit} 文あれば指摘
   en: reported once {limit} sentences hold one
 rewrite:
   depth: light
+  ja:
+    direction: 回りくどい言い回しを、語彙表の短い形に置き換えてください。文のほかの所は変えません。
+    pairs:
+      - before: 資料は社内から閲覧することが可能です。
+        after: 資料は社内から閲覧できます。
+      - before: 現時点において、追加の予定はありません。
+        after: 現在、追加の予定はありません。
+      - before: 今回の結果は成功であると言えます。
+        after: 今回の結果は成功です。
+    keep:
+      - 文のほかの所と、文が言っていること
+    avoid:
+      - 言い回しを縮めるついでに、文のほかの所を書き換える
   en:
     direction: Replace the wordy phrase with its short form from the lexicon. Leave the rest of the sentence alone.
     pairs:
