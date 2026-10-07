@@ -87,14 +87,15 @@ const leadInOf = (source: string, blockStart: number): Span | undefined => {
 };
 
 /** A pin with the version it pins, of any number of parts: redis 7.4 in redis:7.4-alpine and in library/redis:7.4. */
-const PIN_VERSION = /^(?:[\w.-]+\/)*([\w.-]*[A-Za-z][\w.-]*)(?:@|==|=|:)[v^~]?(\d+(?:\.\d+)*)/u;
+const PIN_VERSION = /^([\w.-]+)(?:@|==|=|:)[v^~]?(\d+(?:\.\d+)*)/u;
+const HAS_LETTER = /[A-Za-z]/u;
 
 /** Each name the block pins, with the one version it pins it to; a name pinned to two versions is left out. */
 const pinnedVersions = (code: string): Map<string, string> => {
   const byName = new Map<string, Set<string>>();
   codeWords(code).forEach((word) => {
-    const match = PIN_VERSION.exec(word);
-    if (match?.[1] === undefined || match[2] === undefined) return;
+    const match = PIN_VERSION.exec(word.slice(word.lastIndexOf("/") + 1));
+    if (match?.[1] === undefined || match[2] === undefined || !HAS_LETTER.test(match[1])) return;
     const name = match[1].toLowerCase();
     byName.set(name, new Set([...(byName.get(name) ?? []), match[2]]));
   });
