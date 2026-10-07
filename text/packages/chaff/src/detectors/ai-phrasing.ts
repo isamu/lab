@@ -5,6 +5,7 @@ import { entryIn, entryOpens } from "./lexicon-match.ts";
 import { contrastSentences, type ContrastWords } from "./contrast-frame.ts";
 import { placeholderSpans } from "./placeholder-text.ts";
 import { colonLeadIns } from "./list-lead-in.ts";
+import { followsInlineCode } from "./code-before.ts";
 
 // 生成文に多い形。語はどれも言語パッケージの語彙表が持ち、ここは形だけを知る。
 
@@ -68,8 +69,12 @@ export const openerDensity: Detector = (doc, options): Finding[] => densityFindi
  * 予告の文頭（重要なのは、Here's the thing）の数。limit は指摘に要る数。
  * 密度ではなく数で見る。人の記事も長さによらず 1 つ 2 つは書き、生成文は短い記事にも重ねる。
  */
+/** Where the sentence's first word starts: its span may begin with the blanks that masked code left. */
+const firstWordAt = (sentence: Sentence): number => sentence.span.start + sentence.text.length - sentence.text.trimStart().length;
+
 export const openerPile: Detector = (doc, options): Finding[] => {
-  const hits = openerHits(doc, options.lexicon ?? []);
+  // A sentence that opens with inline code (`explain` でも) opens with the code, not with the word after it.
+  const hits = openerHits(doc, options.lexicon ?? []).filter((hit) => !followsInlineCode(doc.source, doc.prose, firstWordAt(hit.sentence)));
   return hits.length === 0 || hits.length < options.limit ? [] : hits.map((hit) => findingOf(hit, { count: hits.length, limit: options.limit }));
 };
 
