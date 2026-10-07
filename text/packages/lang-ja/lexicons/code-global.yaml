@@ -1,0 +1,27 @@
+# 例のコードが、ページで定義しなくても呼んでよい関数。プログラミング言語が用意している（undefined-function-call）。parse を説明する
+# ページが parseInt を呼んでもよい。説明する名前を頭に持ちそうな名前だけが要る。
+id: code-global
+language: ja
+entries:
+  - pattern: parseInt
+  - pattern: parseFloat
+  - pattern: setTimeout
+  - pattern: setInterval
+  - pattern: setImmediate
+  - pattern: clearTimeout
+  - pattern: clearInterval
+  - pattern: encodeURIComponent
+  - pattern: decodeURIComponent
+  - pattern: encodeURI
+  - pattern: decodeURI
+  - pattern: structuredClone
+  - pattern: queueMicrotask
+  - pattern: requestAnimationFrame
+  - pattern: printf
+  - pattern: println
+  - pattern: sprintf
+  - pattern: isinstance
+  - pattern: issubclass
+  - pattern: hasattr
+  - pattern: getattr
+  - pattern: setattr
