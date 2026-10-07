@@ -96,6 +96,24 @@ describe("amount-scale-consistency: 同じ桁の金額を二通りに書いて�
     ]);
   });
 
+  it("本文の丸めた額（概算・上限）は、表の細かい金額と比べない。表に同じ金額があれば比べる", () => {
+    const table = "| 項目 | 金額 |\n| --- | --- |\n| 本体 | 1,200,000円 |\n| 税込合計 | 1,320,000円 |\n";
+    assert.deepEqual(findingsOf(`# 見積\n\n総額は約130万円を見込んでいます。\n\n${table}`), []);
+    assert.deepEqual(findingsOf(`# 見積\n\n予算の上限は150万円です。\n\n${table}`), []);
+    assert.deepEqual(findingsOf(`# 見積\n\n本体は120万円です。\n\n${table}`), [
+      "「120万円」と書いています（この文書は同じ桁の金額を「1,200,000円」のように書きます）",
+    ]);
+    const enTable = "| Item | Amount |\n| --- | --- |\n| Base | $1,200,000 |\n| Total | $1,320,000 |\n";
+    assert.deepEqual(findingsOf(`# Budget\n\nThe project will cost about $1.3 million.\n\n${enTable}`, en), []);
+    assert.deepEqual(findingsOf(`# Budget\n\nThe budget cap is $1.5 million.\n\n${enTable}`, en), []);
+  });
+
+  it("目安の印（約、程度、about）の付いた金額は比べない", () => {
+    assert.deepEqual(findingsOf("設計費は300,000円、制作費は250,000円、保守費は約30万円です。\n"), []);
+    assert.deepEqual(findingsOf("設計費は300,000円、制作費は250,000円、保守費は30万円程度です。\n"), []);
+    assert.deepEqual(findingsOf("Design is $300,000, build is $250,000, and support is about $0.3 million.\n", en), []);
+  });
+
   it("表の升のコードの中と、コードの塊の中の表の形は読まない", () => {
     assert.deepEqual(findingsOf("設計費30万円、制作費25万円です。\n\n| 例 | 書き方 |\n| --- | --- |\n| 数字 | `250,000円` |\n"), []);
     assert.deepEqual(findingsOf("# 例\n\n```\n| 項目 | 金額 |\n| --- | --- |\n| 設計 | 30万円 |\n| 制作 | 250,000円 |\n```\n"), []);
