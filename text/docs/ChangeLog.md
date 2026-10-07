@@ -2,6 +2,14 @@
 
 Newest first.
 
+## 0.27.1 — 2026-10-07
+
+### Fixes
+
+- change-rate-mismatch reads the two values when the later one stands between the earlier one and the rate
+  (「昨年のAから今年はB、前年比X%」, "from A to B, an increase of X%"), and no longer pairs values across a change of
+  subject (「売上は…、利益は20%増えた」) (#706).
+
 ## 0.27.0 — 2026-10-07
 
 Mistakes in technical documents, emails, minutes, reports and press releases are caught more often, measured on
