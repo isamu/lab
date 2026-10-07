@@ -1,0 +1,73 @@
+id: prerequisite-after-step
+layer: L3
+status: stable
+how_to_find: prerequisite-order
+# The openers come from the language's prerequisite-opener lexicon; a procedure is a numbered list of three or more items.
+languages: [ja, en]
+severity: info
+
+name:
+  ja: 手順の後に書いた前提
+  en: Prerequisite written after the steps
+
+why:
+  ja: 「作業を始める前に、注文サービスを止めておきます。」が番号付きの手順の後にあると、読み手はそれを読む時には手順を終えています。前提・必要な権限・準備は、手順の前に書くものです。文を足したり節を並べ替えたりしたときに起きます。節の中で、番号付きの手順（三つ以上）より後に「作業を始める前に」「始める前に」で始まる文があるとき指します。
+  en: 'When "Before you begin, stop the order service." comes after the numbered steps, the reader has done the steps by the time they read it. Prerequisites, permissions and preparation go before the steps. It happens when a sentence is added at the end or sections are reordered. A sentence opening with "Before you begin" or "Before you start" after a numbered procedure (three steps or more) in the same section is reported.'
+
+message:
+  ja: 手順の前にするべきことを、手順の後に書いています
+  en: This prerequisite comes after the steps it applies to
+
+how_to_fix:
+  ja: この文を、手順の前（「始める前に」の節か、手順のすぐ上）に移してください。
+  en: Move the sentence before the steps, into a "Before you begin" section or right above the list.
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [technical, docs, blog]
+
+group: structure
+summary:
+  ja: 節の番号付きの手順より後にある、「作業を始める前に」「始める前に」で始まる文
+  en: A sentence opening with "Before you begin" after the numbered steps of its section
+example:
+  ja:
+    config: { genre: docs/manual }
+    before: |
+      # 復元する
+
+      1. コンソールを開きます。
+      2. バックアップを選びます。
+      3. ［復元を開始］を押します。
+
+      作業を始める前に、注文サービスを止めておきます。
+    after: |
+      # 復元する
+
+      作業を始める前に、注文サービスを止めておきます。
+
+      1. コンソールを開きます。
+      2. バックアップを選びます。
+      3. ［復元を開始］を押します。
+  en:
+    config: { genre: docs/manual }
+    before: |
+      # Restore
+
+      1. Open the console.
+      2. Select the backup.
+      3. Click **Start Restore**.
+
+      Before you begin, stop the order service.
+    after: |
+      # Restore
+
+      Before you begin, stop the order service.
+
+      1. Open the console.
+      2. Select the backup.
+      3. Click **Start Restore**.
+
+not_flagged:
+  ja: 番号付きの手順が三つ以上ある節の、その手順より後の文だけを読みます。手順の前にある前提、後の節の手順のための前提（その節の手順より前にあるもの）、「手順 4 の前に」のように一つの手順を名指す文、読点の続かない「始める前に戻すには」、引用やコードの中の手順は指しません。技術文書・手順書・ブログでだけ動きます。
+  en: 'Only sentences after a numbered procedure of three or more steps in the same section are read. A prerequisite before its steps, one for a later section''s steps (written before those steps), a sentence naming one step ("Before step 4, split the file" or "Before you begin step 3"), and a procedure in a block quote or a code block are not reported. Technical documents, manuals and blogs only.'

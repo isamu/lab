@@ -1,0 +1,10 @@
+# 作業全体の前提を言う文の頭（「作業を始める前に、注文サービスを止めておきます」）。prerequisite-after-step は、節の番号付きの手順の
+# 後にこの頭の文があれば指す。「手順 4 の前に」のように一つの手順を名指すものは入れない。
+id: prerequisite-opener
+language: ja
+entries:
+  - pattern: 作業を始める前に
+  - pattern: 作業の前に
+  - pattern: 作業に入る前に
+  - pattern: 始める前に
+  - pattern: 開始する前に

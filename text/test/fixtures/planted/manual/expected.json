@@ -5,14 +5,14 @@
       "warning-without-action": "1/1",
       "step-skip": "1/1",
       "ui-label-variant": "0/1",
-      "prerequisite-after-step": "0/1"
+      "prerequisite-after-step": "1/1"
     },
     "en": {
       "step-order": "1/1",
       "warning-without-action": "1/1",
       "step-skip": "1/1",
       "ui-label-variant": "0/1",
-      "prerequisite-after-step": "0/1"
+      "prerequisite-after-step": "1/1"
     }
   },
   "clean": []
