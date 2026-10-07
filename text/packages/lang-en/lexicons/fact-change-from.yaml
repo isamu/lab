@@ -1,0 +1,6 @@
+# The word that marks the value a change starts from in a summary (summary-fact-mismatch): "lowered the error rate from 2.4%
+# to 1.6%". position is the side of the value the word stands on.
+id: fact-change-from
+language: en
+entries:
+  - { pattern: from, position: before }

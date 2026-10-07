@@ -184,6 +184,93 @@ describe("summary-fact-mismatch", () => {
   });
 });
 
+describe("summary-fact-mismatch: a summary's change against the body's two conditions", () => {
+  const paperEn = (abstract: string, ...body: string[]): string[] => summaryEn("# Study", "", "## Abstract", "", abstract, "", "## Results", "", ...body);
+  const paperJa = (abstract: string, ...body: string[]): string[] => summaryJa("# 調査", "", "## 要旨", "", abstract, "", "## 結果", "", ...body);
+  const withBreaks = "Without breaks, the error rate was 2.4%; with breaks, it was 1.6%.";
+  const 休憩 = "休憩が無いときの誤りの率は 2.4%、休憩があるときは 1.6% だった。";
+
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+    await en.prepare?.({ pos: true });
+  });
+
+  it("a matching pair is silent (en, ja)", () => {
+    assert.deepEqual(paperEn("Breaks lowered the error rate from 2.4% to 1.6%.", withBreaks), []);
+    assert.deepEqual(paperJa("休憩を入れると、誤りの率は 2.4% から 1.6% に下がった。", 休憩), []);
+  });
+
+  it("a wrong or swapped pair is reported (en, ja)", () => {
+    assert.deepEqual(paperEn("Breaks lowered the error rate from 2.4% to 1.4%.", withBreaks), ["error rate:2.4% → 1.4%≠2.4% → 1.6%"]);
+    assert.deepEqual(paperEn("Breaks raised the error rate from 1.6% to 2.4%.", withBreaks), ["error rate:1.6% → 2.4%≠2.4% → 1.6%"]);
+    assert.deepEqual(paperJa("休憩を入れると、誤りの率は 2.4% から 1.4% に下がった。", 休憩), ["誤りの率:2.4% → 1.4%≠2.4% → 1.6%"]);
+    assert.deepEqual(paperJa("休憩を入れると、誤りの率は 1.6% から 2.4% に上がった。", 休憩), ["誤りの率:1.6% → 2.4%≠2.4% → 1.6%"]);
+  });
+
+  it("the condition may follow the value, and the value of the later condition may come first", () => {
+    const body = "The error rate was 1.6% with breaks, and 2.4% without them.";
+    assert.deepEqual(paperEn("Breaks lowered the error rate from 2.4% to 1.6%.", body), []);
+    assert.deepEqual(paperEn("Breaks lowered the error rate from 2.4% to 1.2%.", body), ["error rate:2.4% → 1.2%≠2.4% → 1.6%"]);
+  });
+
+  it("before and after, control and treatment, 導入前 and 導入後", () => {
+    const before = "Before the change, the error rate was 2.4%; after it, the rate was 1.6%.";
+    assert.deepEqual(paperEn("The change cut the error rate from 2.4% to 1.4%.", before), ["error rate:2.4% → 1.4%≠2.4% → 1.6%"]);
+    const arms = "In the control group the error rate was 2.4%, and in the treatment group 1.6%.";
+    assert.deepEqual(paperEn("The error rate fell from 2.4% to 1.6%.", arms), []);
+    assert.deepEqual(paperEn("The error rate fell from 3.4% to 1.6%.", arms), ["error rate:3.4% → 1.6%≠2.4% → 1.6%"]);
+    const 導入 = "導入前の待ち時間は 30 分、導入後は 12 分だった。";
+    assert.deepEqual(paperJa("新しい受付で、待ち時間は 30 分から 12 分に縮んだ。", 導入), []);
+    assert.deepEqual(paperJa("新しい受付で、待ち時間は 30 分から 15 分に縮んだ。", 導入), ["待ち時間:30 分 → 15 分≠30 分 → 12 分"]);
+  });
+
+  it("two years: the earlier one is where the change starts", () => {
+    const years = "In 2026 the error rate was 1.6%; in 2025 it was 2.4%.";
+    assert.deepEqual(paperEn("The error rate fell from 2.4% to 1.6%.", years), []);
+    assert.deepEqual(paperEn("The error rate fell from 2.4% to 1.8%.", years), ["error rate:2.4% → 1.8%≠2.4% → 1.6%"]);
+    // 条件と値の順が入り組むと、どの値がどの年のものか決めない。
+    assert.deepEqual(paperEn("The error rate fell from 2.4% to 1.8%.", "In 2026 the error rate was 1.6%, against 2.4% in 2025."), []);
+    assert.deepEqual(paperJa("誤りの率は 2.4% から 1.8% に下がった。", "2025年の誤りの率は 2.4%、2026年は 1.6% だった。"), [
+      "誤りの率:2.4% → 1.8%≠2.4% → 1.6%",
+    ]);
+  });
+
+  it("the body may state the change itself", () => {
+    assert.deepEqual(paperEn("The error rate fell from 2.4% to 1.4%.", "Over the study, the error rate fell from 2.4% to 1.6%."), [
+      "error rate:2.4% → 1.4%≠2.4% → 1.6%",
+    ]);
+  });
+
+  it("silent when the subject, a condition, or one settled pair is missing", () => {
+    assert.deepEqual(paperEn("The response time fell from 2.4% to 1.4%.", withBreaks), []);
+    assert.deepEqual(paperEn("Breaks lowered the error rate from 2.4% to 1.4%.", "The error rate was 2.4% in the morning and 1.6% in the afternoon."), []);
+    assert.deepEqual(
+      paperEn("The error rate fell from 2.4% to 1.4%.", withBreaks, "", "Before training, the error rate was 3.0%; after it, the rate was 2.0%."),
+      [],
+    );
+    assert.deepEqual(
+      paperEn("Fees for the error rate study ranged from $10 to $25.", "Without breaks, the error rate study cost $10; with breaks, it cost $20."),
+      [],
+    );
+    assert.deepEqual(paperJa("誤りの率は 2.4% から 1.4% に下がった。", "誤りの率は午前が 2.4%、午後が 1.6% だった。"), []);
+    const summary = "Breaks lowered the error rate from 2.4% to 1.4%.";
+    // 条件が値をまたぐと（with … without … 2.4% … 1.6%）、どの値がどの条件のものか決めない。
+    assert.deepEqual(paperEn(summary, "With breaks, against 2.4% without them, the error rate was 1.6%."), []);
+    assert.deepEqual(paperEn(summary, "The error rate was 1.6% with breaks and 2.4% without them."), []);
+    // 日付の中の年（2011-10-26）は年の条件ではない。
+    assert.deepEqual(paperEn(summary, "From 2011-10-26 the error rate was 2.4%; in 2026 it was 1.6%."), []);
+    // 同じ側の語が二つ（before と before）、二つの組が食い違う（before/after と with/without）ときも決めない。
+    assert.deepEqual(paperEn(summary, "Before the change the error rate was 2.4%, and before the audit it was 1.6%."), []);
+    assert.deepEqual(paperEn(summary, "Before the change the error rate was 2.4% with old screens, and after it 1.6% without them."), []);
+    assert.deepEqual(paperJa("妊婦健診は 24 週から 35 週まで受けられる。", "健診が無いときの週は 24 週、あるときは 30 週。"), []);
+  });
+
+  it("the body's change is not compared with itself, and an unrelated from … to stays silent", () => {
+    assert.deepEqual(summaryEn("# Study", "", "## Results", "", "The error rate fell from 2.4% to 1.4%.", "", withBreaks), []);
+    assert.deepEqual(paperEn("The office moved from Austin to Dallas.", withBreaks), []);
+  });
+});
+
 describe("countedFacts: a number named by what it counts", () => {
   const bare = (source: string, written: string, unit = ""): FactValue => {
     const start = source.indexOf(written);

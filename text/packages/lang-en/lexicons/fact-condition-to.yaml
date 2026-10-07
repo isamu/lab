@@ -1,0 +1,9 @@
+# Words that name the condition a change reaches (summary-fact-mismatch). group pairs each with its word in
+# fact-condition-from.
+id: fact-condition-to
+language: en
+entries:
+  - { pattern: after, group: time }
+  - { pattern: with, group: presence }
+  - { pattern: treatment, group: arm }
+  - { pattern: intervention, group: arm }

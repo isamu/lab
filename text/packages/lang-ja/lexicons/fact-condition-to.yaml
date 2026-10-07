@@ -1,0 +1,14 @@
+# 変化の先の側の条件を言う語（summary-fact-mismatch）。group で fact-condition-from の語と組になる。
+id: fact-condition-to
+language: ja
+entries:
+  - { pattern: 導入後, group: time }
+  - { pattern: 実施後, group: time }
+  - { pattern: 変更後, group: time }
+  - { pattern: 改善後, group: time }
+  - { pattern: 介入後, group: time }
+  - { pattern: 開始後, group: time }
+  - { pattern: あるとき, group: presence }
+  - { pattern: ある場合, group: presence }
+  - { pattern: 介入群, group: arm }
+  - { pattern: 実験群, group: arm }

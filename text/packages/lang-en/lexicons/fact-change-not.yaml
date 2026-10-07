@@ -1,0 +1,13 @@
+# Words that, between a name and "from", make "from X to Y" a range and not a change (summary-fact-mismatch):
+# "insurance amounts ranging from $10,000 to $25,000".
+id: fact-change-not
+language: en
+entries:
+  - pattern: range
+  - pattern: ranges
+  - pattern: ranged
+  - pattern: ranging
+  - pattern: vary
+  - pattern: varies
+  - pattern: varied
+  - pattern: varying

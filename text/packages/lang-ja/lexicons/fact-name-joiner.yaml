@@ -1,0 +1,5 @@
+# 一つの名前の語をつなぐ語（summary-fact-mismatch）: 「誤りの率」の の。
+id: fact-name-joiner
+language: ja
+entries:
+  - pattern: の

@@ -1,0 +1,10 @@
+# Words that name the condition a change starts from (summary-fact-mismatch). The body may give one item two values under two
+# conditions ("Without breaks, the error rate was 2.4%; with breaks, it was 1.6%"); a summary's "from 2.4% to 1.6%" is paired
+# with them. group names the pair: a word here pairs only with a word of fact-condition-to in the same group. Calendar
+# years pair by themselves, the earlier one first.
+id: fact-condition-from
+language: en
+entries:
+  - { pattern: before, group: time }
+  - { pattern: without, group: presence }
+  - { pattern: control, group: arm }

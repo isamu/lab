@@ -1,0 +1,5 @@
+# Words that join the words of one name (summary-fact-mismatch): "the number of errors fell from 40 to 25".
+id: fact-name-joiner
+language: en
+entries:
+  - pattern: of
