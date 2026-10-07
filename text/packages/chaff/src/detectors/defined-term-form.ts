@@ -5,6 +5,7 @@ import { definedTerms, usesOf, type BodyText, type DefinedTerm } from "../struct
 import { escapeRegExp } from "../orthography.ts";
 import { prefixGroupsOf, prefixVariants, variantUses } from "../structure/term-prefix.ts";
 import { quoteAt } from "./structure-tree.ts";
+import { isPartOfAddress } from "./address-word.ts";
 import type { Detector, Finding, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 
 const bodyOf = (doc: ProseDocument): BodyText[] => doc.sentences.map((sentence) => ({ start: sentence.span.start, text: sentence.text }));
@@ -52,15 +53,20 @@ export const quotedUses = (source: string, term: string, uses: readonly number[]
 const UPPER_START = /^\p{Lu}/u;
 
 /**
- * The uses of a capitalised term written in lower case ("services" where "Services" is defined), when they are the fewer
- * and at most limit: a document that mostly writes it in lower case uses the word in its ordinary sense on purpose.
+ * The uses of a capitalised term written in lower case ("services" where "Services" is defined), when they are no more
+ * than the capitalised uses and at most limit: a document that writes it in lower case more often uses the word in its
+ * ordinary sense on purpose. One of each is a slip to point at (the Software, then the software).
  */
 export const lowerCaseUses = (source: string, term: string, uses: readonly number[], definedAt: number, limit: number): number[] => {
   if (!UPPER_START.test(term) || term.toLowerCase() === term) return [];
   const later = uses.filter((offset) => offset > definedAt);
-  const lower = later.filter((offset) => source.charAt(offset) === term.charAt(0).toLowerCase() && !isSentenceStart(source, offset));
+  // An address (support@pinecone.example) spells the name as the address must be, not as the term.
+  const lower = later.filter(
+    (offset) =>
+      source.charAt(offset) === term.charAt(0).toLowerCase() && !isSentenceStart(source, offset) && !isPartOfAddress(source, offset, offset + term.length),
+  );
   const capital = later.filter((offset) => source.charAt(offset) === term.charAt(0));
-  return lower.length > 0 && lower.length < capital.length && lower.length <= limit ? lower : [];
+  return lower.length > 0 && lower.length <= capital.length && lower.length <= limit ? lower : [];
 };
 
 /** How far back a sentence's start is looked for: past a few spaces to the mark before them. */

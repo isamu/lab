@@ -38,6 +38,11 @@ describe("defined-term-form: a defined term in another form", () => {
     assert.deepEqual(quotedUses('a "Services" b', "Service", [3], 0), [3]);
     const lower = `${EN_TERMS}\n2. You may use the Services for business. The Services are provided as is.\n\n3. You must not resell the services.\n`;
     assert.deepEqual(valuesOf(en, "defined-term-form", lower, "term"), ["case Services"]);
+    const tie = `${EN_TERMS}\n2. You may install the Services. You must not resell the services.\n`;
+    assert.deepEqual(valuesOf(en, "defined-term-form", tie, "term"), ["case Services"]);
+    assert.deepEqual(lowerCaseUses("a Services b services", "Services", [2, 13], 0, 2), [13]);
+    assert.deepEqual(lowerCaseUses("a Pinecone b support@pinecone.example", "Pinecone", [2, 21], 0, 2), []);
+    assert.deepEqual(lowerCaseUses("a Pinecone b https://pinecone.example", "Pinecone", [2, 21], 0, 2), []);
   });
 
   it("does not report a lower-case use that is the common form, or a capital at a sentence's start", () => {
@@ -56,6 +61,8 @@ describe("defined-term-form: a defined term in another form", () => {
     assert.deepEqual(valuesOf(en, "defined-term-form", verb, "term"), []);
     assert.deepEqual(lowerCaseUses("x. Services y Services. services z", "Services", [3, 14, 24], 0, 2), []);
     assert.deepEqual(lowerCaseUses("a Services b Services c services", "Services", [2, 13, 24], 0, 2), [24]);
+    assert.deepEqual(lowerCaseUses("a services b services c Services", "Services", [2, 13, 24], 0, 2), []);
+    assert.deepEqual(lowerCaseUses("a services b", "Services", [2], 0, 2), []);
   });
 
   it("does not count the definition, a use inside the defining sentence, or a second definition", () => {

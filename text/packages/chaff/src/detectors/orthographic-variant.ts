@@ -6,6 +6,7 @@ import { QUOTATION_MARKS, isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
 import { furiganaSpans } from "../furigana.ts";
 import { acronymsIn, isCapitalsNotSpelling } from "../capitals-with-small.ts";
+import { isPartOfAddress } from "./address-word.ts";
 
 /** A word found in the document: where it is, which sentence it is in, its key and spelling, and how it is written when that differs. */
 type Placed = KeyedWord & { readonly sentence: Sentence; readonly offset: number; readonly shown?: string };
@@ -163,12 +164,6 @@ const latinSpelling = (word: string): string =>
     .split("-")
     .map((part) => part.charAt(0).toLowerCase() + part.slice(1))
     .join("-");
-
-/** A word joined to a dot, an at sign or a slash is part of an address or a file name (github.com, user@example), spelled as it must be. */
-const ADDRESS_NEIGHBOUR = /[.@/\\_]/u;
-
-const isPartOfAddress = (text: string, start: number, end: number): boolean =>
-  ADDRESS_NEIGHBOUR.test(text.charAt(start - 1)) || (ADDRESS_NEIGHBOUR.test(text.charAt(end)) && /\w/u.test(text.charAt(end + 1)));
 
 /**
  * Latin words keyed without hyphens and case (e-mail and email, GitHub and Github). A word in capitals only (TEAMS, MAY) is
