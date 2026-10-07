@@ -8,7 +8,7 @@ From: Aoba Systems Inc.
 
 ## Summary
 
-We propose to replace the order system and cut the manual entry work. The total cost is $2.2 million including tax, and the new system is planned to go live on Thursday, April 1, 2027.
+We propose to replace the order system and cut the manual entry work. The total cost is $2,200,000 including tax, and the new system is planned to go live on Thursday, April 1, 2027. The largest item, development, is $1.2 million.
 
 ## Cost
 

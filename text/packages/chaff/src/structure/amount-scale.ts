@@ -73,6 +73,24 @@ export const scaleMixes = (amounts: readonly ScaledAmount[]): ScaleMix[] => {
     .toSorted((left, right) => left.odd.offset - right.odd.offset);
 };
 
+/** The largest number of significant digits a round figure has (130万円, $1.5 million): a rounded total or a cap. */
+const ROUND_DIGITS = 2;
+
+/**
+ * Leaves out a round figure in the text (約130万円, a cap of $1.5 million) whose only evidence is the exact amounts of a
+ * table, none of them the same amount: the text gives the round size and the table the detail, which is not one amount
+ * written two ways. The same amount in the table (220万円 and 2,200,000円) stays a mix, and so does a mix within the text.
+ */
+export const withoutRoundTextFigures = (mixes: readonly ScaleMix[], amounts: readonly ScaledAmount[], inTable: (amount: ScaledAmount) => boolean): ScaleMix[] =>
+  mixes.filter(({ odd }) => {
+    if (inTable(odd) || significantDigits(odd.value) > ROUND_DIGITS) return true;
+    const others = amounts.filter(
+      (amount) =>
+        comparable(amount) && amount.currency === odd.currency && magnitudeOf(amount.value) === magnitudeOf(odd.value) && isScaled(amount) !== isScaled(odd),
+    );
+    return others.some((amount) => !inTable(amount) || amount.value === odd.value);
+  });
+
 /** A word of scale and the value it multiplies by (万 10000, million 1000000). */
 export type ScaleWord = { readonly word: string; readonly value: number };
 
