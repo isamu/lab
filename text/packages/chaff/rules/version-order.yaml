@@ -1,0 +1,85 @@
+id: version-order
+layer: L1
+status: stable
+how_to_find: version-order
+requires: [markdown]
+severity: warning
+
+name:
+  ja: 版の並びが前後している
+  en: A version out of order in a changelog
+
+why:
+  ja: 変更履歴は新しい版から順に（または古い版から順に）並べるのが決まりです。一つだけ並びから外れた版があると、読み手はどれが最新か、どの変更がどの版に入ったかを取り違えます。版を書き間違えたときや、項目を違う場所に足したときに起きます。見出しや箇条書き、表の行の先頭に書いた版（3.2.0、v3.2.0、[3.2.0]）を並びとして読み、並びの向きは多いほうで決めて、その向きの最も長い並びに入らない版を指します。
+  en: A changelog lists its versions newest first (or oldest first). One version out of that order makes the reader mistake which release is the latest, or which change went into which release. It happens when a version is mistyped or an entry is added in the wrong place. The versions at the start of headings, list items or table rows (3.2.0, v3.2.0, [3.2.0]) are read as a sequence; its direction is taken from most of its steps, and a version that fits in no longest run along that direction is pointed out.
+
+message:
+  ja: 「{version}」が、前後の版の並びから外れています（前は「{previous}」）
+  en: "{version} breaks the order of the versions around it (after {previous})"
+
+how_to_fix:
+  ja: 版の番号を確かめて、書き間違いなら直し、置き場所が違うなら正しい位置へ移してください。
+  en: Check the version number. Correct it if it is a typo, or move the entry to where it belongs.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [technical, docs, blog, legal, academic, literature, speech]
+off_for:
+  legal: "Changelogs and release lists belong to technical writing."
+  academic: "Changelogs and release lists belong to technical writing."
+  literature: "Changelogs and release lists belong to technical writing."
+  speech: "Changelogs and release lists belong to technical writing."
+
+group: facts
+summary:
+  ja: 変更履歴の見出しや版の一覧で、一つだけ順番から外れた版
+  en: One version out of order in a changelog or a list of releases
+example:
+  ja:
+    config: { genre: technical/readme }
+    before: |
+      # 変更履歴
+
+      ## 3.2.0 - 2026-09-14
+
+      ## 3.1.1 - 2026-07-08
+
+      ## 3.3.0 - 2026-06-02
+
+      ## 3.0.0 - 2026-03-20
+    after: |
+      # 変更履歴
+
+      ## 3.2.0 - 2026-09-14
+
+      ## 3.1.1 - 2026-07-08
+
+      ## 3.1.0 - 2026-06-02
+
+      ## 3.0.0 - 2026-03-20
+  en:
+    config: { genre: technical/readme }
+    before: |
+      # Changelog
+
+      ## 3.2.0 - 2026-09-14
+
+      ## 3.1.1 - 2026-07-08
+
+      ## 3.3.0 - 2026-06-02
+
+      ## 3.0.0 - 2026-03-20
+    after: |
+      # Changelog
+
+      ## 3.2.0 - 2026-09-14
+
+      ## 3.1.1 - 2026-07-08
+
+      ## 3.1.0 - 2026-06-02
+
+      ## 3.0.0 - 2026-03-20
+
+not_flagged:
+  ja: 並べた版が三つ未満のもの、上がりと下がりが同じ数で向きが決まらないもの、向きに沿う版が半分以下の一覧（名前順の一覧）、同じ版の繰り返し、文の中の版、コードブロックの中の例、点で三つに区切っていない番号（3.1、22.04）は見ません。末尾が 0 の版（3.1.0）が無く上がっていく並び（1.2.1、1.2.2）は節の番号として numbering-gap が見ます。見出しは同じ深さどうし、箇条書きと表は続いた行どうしを比べます。
+  en: "Fewer than three versions, a sequence with as many steps up as down, a list where no more than half of the versions follow one direction (sorted by name), a repeated version, versions in running text, examples in a code block, and numbers not in three dotted parts (3.1, 22.04) are not checked. A sequence that goes up with no version ending in zero (1.2.1, 1.2.2) is read as section numbers, which numbering-gap checks. Headings are compared with headings of the same depth, and list items and table rows with the lines they run on from."

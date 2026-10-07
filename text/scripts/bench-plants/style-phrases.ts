@@ -1,5 +1,5 @@
 // Seeded mistakes of phrasing for `yarn bench`: a sentence added to the first prose paragraph that holds a wordy phrase,
-// a weasel word, a confused homophone, an opening "So," or など doubled with 等. Pure and deterministic.
+// a weasel word, a confused homophone, an opening "So," or など doubled with 等 ("and etc." in English). Pure and deterministic.
 import { isJapanese, isListItem, isProse, rewriteFirst, type Mutation, type Plant } from "../bench-text.ts";
 
 /** Adds the sentence to the end of the first prose line in its language that ends a sentence. */
@@ -27,4 +27,5 @@ export const MUTATIONS: readonly Mutation[] = [
   english("homophone-its-own", "homophone-slip", "Each team keeps it's own notes."),
   english("so-opener", "sentence-initial-so", "So, the plan stays as it is."),
   { id: "nado-doubled", rule: "doubled-nado", languages: ["ja"], plant: appendTo("ja", "詳細は資料等などを参照してください。") },
+  english("and-etc", "doubled-nado", "Bring pens, paper and etc. to the workshop."),
 ];

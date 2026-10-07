@@ -1,6 +1,7 @@
 import type { StructureNode } from "../plugin.ts";
 import { inDocumentOrder, type StructureIssue } from "./issues.ts";
 import { numbersQuotedInside } from "./quoted-number.ts";
+import { isVersionHistory } from "./version-order.ts";
 
 const labelOf = (node: StructureNode): string => String(node.attrs["label"] ?? node.address);
 
@@ -43,11 +44,13 @@ const breaksIn = (sequence: readonly Ordered[]): StructureIssue[] =>
  * 文書全体の通し番号として比べると抜けに見える。最初の番号は見ない。日本語の項は 2 から番号を振る。
  * 1 に戻った番号は新しい並びの始まりとして扱うので、「(a) の後の (a)」の重なりは見逃す。
  * 同じ番号の節を中に持つ節（ほかの文書の条を引いた手本の見出し）は、並びに入れない。
+ * 変更履歴の版の見出し（## 3.1.0）は番号の並びではない。版の順番は version-order が見る。
  */
 export const numberingBreaks = (tree: StructureNode): StructureIssue[] => {
   const quoting = numbersQuotedInside(tree);
   return inDocumentOrder(tree)
     .flatMap((parent) => sequencesOf(parent, quoting))
+    .filter((sequence) => !isVersionHistory(sequence.map((ordered) => labelOf(ordered.node))))
     .flatMap(breaksIn)
     .toSorted((left, right) => left.offset - right.offset);
 };

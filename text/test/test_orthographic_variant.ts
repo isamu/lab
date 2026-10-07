@@ -64,6 +64,22 @@ describe("orthographic-variant: 読みで束ねる", () => {
     assert.deepEqual(findingsOf("できます。できます。できます。出来ます。出来ます。\n"), []);
   });
 
+  it("ではない・でもない・高くはない の「ない」は打ち消しで、「無い」と別に比べる", () => {
+    assert.deepEqual(findingsOf("無い分類は止めます。無い値も止めます。事実ではない。どれでもない。\n"), []);
+    assert.deepEqual(findingsOf("無い分類は止めます。無い値も止めます。条の番号は 2 ではなく 3 です。\n"), []);
+    assert.deepEqual(findingsOf("無い分類は止めます。無い値も止めます。書類がない。\n"), [
+      "「ない」と書いています（この文書はふつう「無い」と書く語です。3 箇所のうち 1 箇所が違う）",
+    ]);
+    assert.equal(findingsOf("良い例です。良い結果です。東京ではよい店を探します。\n").length, 1);
+  });
+
+  it("名前や空白のすぐ後ろの「でない」は「出ない」ではない", () => {
+    assert.deepEqual(findingsOf("結果が出ない。音が出ない。JSON でない行は止めます。\n"), []);
+    assert.deepEqual(findingsOf("結果が出ない。音が出ない。結果がでない。\n"), [
+      "「でる」と書いています（この文書はふつう「出る」と書く語です。3 箇所のうち 1 箇所が違う）",
+    ]);
+  });
+
   it("鉤括弧の中は引いた元の書き方なので数えない", () => {
     assert.deepEqual(findingsOf("できます。できます。規程は「申請出来る」と書いている。\n"), []);
   });
