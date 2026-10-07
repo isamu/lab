@@ -110,7 +110,8 @@ describe("very-adjective in Japanese: とても, すごく, 非常に before an 
   const RULE = "very-adjective";
   const padding = Array.from({ length: 30 }, (_unused, at) => `${String(at + 1)}番目の荷物は予定どおり届き、担当者が受け取りました。`).join("");
   const japaneseFindings = (source: string): readonly string[] => namedRuleRun(RULE, source, ja).findings;
-  const matchedIn = (source: string): readonly string[] => japaneseFindings(source).map((finding) => /「(.+?)」/u.exec(finding)?.[1] ?? finding);
+  const matchedIn = (source: string): readonly string[] =>
+    japaneseFindings(source).map((finding) => finding.slice(finding.indexOf("「") + 1, finding.indexOf("」")));
 
   it("an intensifier before an adjective or an adjectival noun, dense for the length, is reported", () => {
     const source = `新しい画面はとても便利で、読み込みもすごく速い。設定は非常に複雑だ。${padding}\n`;

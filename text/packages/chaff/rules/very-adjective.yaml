@@ -10,7 +10,7 @@ severity: info
 
 name:
   ja: 「とても + 形容詞」（very + 形容詞）の多用
-  en: Too many "very" + adjective (とても + adjective)
+  en: Too many "very" + adjective
 
 why:
   ja: 「とても便利」「非常に危険」（英語の very important、very good）の強めは、何がどう便利なのか、どの程度危険なのかを書けば要らない語です。一つ二つなら普通ですが、文書の長さのわりに多いと、どの強めも効かなくなります。強めの語と、数えない言い方（the very first、very few）は言語ごとの語彙表にあります。
