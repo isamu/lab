@@ -1,4 +1,5 @@
 import type { Detector, Finding, ProseDocument, StructureNode } from "../plugin.ts";
+import { countedFacts, countedPhraseAt, type CountedPhrase } from "../facts/counted-facts.ts";
 import { nameSpans } from "../compare/proper-nouns.ts";
 import { factValues, type FactValue } from "../facts/fact-values.ts";
 import { labelledFacts, type AttributePhrase, type FactWords } from "../facts/labelled-facts.ts";
@@ -50,5 +51,20 @@ const findingOf =
 /** 同じ節で、同じ名前に二通りの値（締切：10月5日 と 締切：10月7日）。 */
 export const factConflict: Detector = (doc): Finding[] => scopeConflicts(factsOf(doc)).map(findingOf("fact-conflict", doc));
 
+const countedPhrasesOf = (doc: ProseDocument): CountedPhrase[] =>
+  doc.sentences.flatMap((sentence) => {
+    const tokens = sentence.tokens ?? [];
+    return tokens.flatMap((token, index) => (token.pos === "NUM" ? countedPhraseAt(tokens, index) : []));
+  });
+
+/** The values named by what they count, scoped like the labelled ones. Only the summary is compared with them. */
+const countedFactsOf = (doc: ProseDocument): ScopedFact[] => {
+  const tree = doc.structure;
+  if (tree === undefined) return [];
+  const values = factValues(tree, doc.source, nameSpans(doc));
+  return scopedFacts(countedFacts(doc.source, values, countedPhrasesOf(doc)), tree, doc.source, patternsOf(doc, "summary-heading"));
+};
+
 /** 冒頭や要約の値が、本文の同じ名前の値と違う。 */
-export const summaryFactMismatch: Detector = (doc): Finding[] => summaryConflicts(factsOf(doc)).map(findingOf("summary-fact-mismatch", doc));
+export const summaryFactMismatch: Detector = (doc): Finding[] =>
+  summaryConflicts([...factsOf(doc), ...countedFactsOf(doc)]).map(findingOf("summary-fact-mismatch", doc));
