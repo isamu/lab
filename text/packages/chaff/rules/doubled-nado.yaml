@@ -9,7 +9,7 @@ severity: warning
 
 name:
   ja: 「など」と「等」の重ね
-  en: '"And so on" said twice (and etc., など等)'
+  en: '"And so on" said twice'
 
 why:
   ja: 「書類等など」「申請など等」のように「など」と「等」を重ねても、どちらも「ほかにもある」と言うだけで、意味は増えません。読み手には書き損じに見えます。英語の「and etc.」も、etc.（et cetera）がもう「and」を含むので同じ重ねです。組は言語ごとの語彙表にあります。
