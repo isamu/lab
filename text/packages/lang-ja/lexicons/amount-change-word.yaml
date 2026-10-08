@@ -1,0 +1,28 @@
+# 同じ文にあれば、二つの金額を範囲ではなく値段の変更と読む語（amount-range-reversed）：「月額を5,000円から3,000円に値下げします」。字面どおりに照らす。
+id: amount-change-word
+language: ja
+entries:
+  - pattern: 値下げ
+  - pattern: 値上げ
+  - pattern: 値引
+  - pattern: 引き下げ
+  - pattern: 引下げ
+  - pattern: 引き上げ
+  - pattern: 引上げ
+  - pattern: 減額
+  - pattern: 増額
+  - pattern: 改定
+  - pattern: 改訂
+  - pattern: 変更
+  - pattern: 見直
+  - pattern: 割引
+  - pattern: 下落
+  - pattern: 上昇
+  - pattern: 減少
+  - pattern: 増加
+  - pattern: 低下
+  - pattern: 削減
+  - pattern: 下が
+  - pattern: 上が
+  - pattern: 減っ
+  - pattern: 増え
