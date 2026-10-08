@@ -59,7 +59,7 @@ const knownForms = (defined: readonly string[], groups: TermWords["prefixGroups"
  */
 export const undefinedTerms = (source: string, sentences: readonly (readonly Token[])[], defined: readonly string[], words: TermWords): UndefinedTerm[] => {
   const prefixes = words.prefixes.filter((prefix) => prefix !== "");
-  const prefixed = defined.filter((term) => prefixes.some((prefix) => term.startsWith(prefix) && [...term.slice(prefix.length)].length >= MIN_REST));
+  const prefixed = defined.filter((term) => prefixes.some((prefix) => term.startsWith(prefix) && Array.from(term.slice(prefix.length)).length >= MIN_REST));
   if (prefixed.length === 0) return [];
   const known = knownForms(defined, words.prefixGroups);
   const isSelf = (term: string, prefix: string): boolean => {
