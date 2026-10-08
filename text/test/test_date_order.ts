@@ -7,6 +7,7 @@ import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
+import { messageOf } from "../packages/chaff/src/render/text.ts";
 import { longestInOrder, outOfPlace, siblingHeadingRuns, type HeadingSpan } from "../packages/chaff/src/structure/date-order.ts";
 
 // 日程として並べた日付の順番（date-order）。言語を問わず、箇条書きと表の行を並びとして読む。
@@ -14,7 +15,11 @@ import { longestInOrder, outOfPlace, siblingHeadingRuns, type HeadingSpan } from
 const found = (source: string, adapter: LanguageAdapter = en, language = "en"): string[] =>
   runRules(buildDocument("t.md", source, adapter), loadRules(language), { "date-order": "normal" }, false, "business/report")
     .findings.filter((finding) => finding.rule === "date-order")
-    .map((finding) => `${String(finding.values["date"])}<${String(finding.values["previous"])}`);
+    .map((finding) =>
+      finding.values["next"] === undefined
+        ? `${String(finding.values["date"])}<${String(finding.values["previous"])}`
+        : `${String(finding.values["date"])}>${String(finding.values["next"])}`,
+    );
 
 const list = (...dates: string[]): string => ["# Plan", "", ...dates.map((date) => `- ${date} step`)].join("\n");
 
@@ -404,8 +409,8 @@ describe("date-order: the date pointed at is the one out of place, not the one a
     assert.deepEqual(found(list("2026-01-01", "2026-03-01", "2026-02-01", "2026-02-01", "2026-04-01")), ["2026-03-01<2026-01-01"]);
   });
 
-  it("a first date out of place is not pointed at: the message needs a date before it", () => {
-    assert.deepEqual(found(list("2026-01-01", "2026-09-01", "2026-08-01", "2026-07-01")), ["2026-09-01<2026-01-01"]);
+  it("a first date out of place is pointed at, with the date after it", () => {
+    assert.deepEqual(found(list("2026-01-01", "2026-09-01", "2026-08-01", "2026-07-01")), ["2026-01-01>2026-09-01"]);
   });
 });
 
@@ -428,8 +433,60 @@ describe("outOfPlace", () => {
     assert.equal(outOfPlace(["2026-01", "2026-06", "2026-05", "2026-09"], 2, OLDEST_FIRST), 2);
   });
 
-  it("never the first date, and a step at the start of a two-date list stays on the later side", () => {
-    assert.equal(outOfPlace(["2026-01", "2026-09", "2026-08", "2026-07"], 1, NEWEST_FIRST), 1);
+  it("the first date when removing it leaves more in order, and a step at the start of a two-date list stays on the later side", () => {
+    assert.equal(outOfPlace(["2026-01", "2026-09", "2026-08", "2026-07"], 1, NEWEST_FIRST), 0);
+    assert.equal(outOfPlace(["2026-09", "2026-01", "2026-03", "2026-06"], 1, OLDEST_FIRST), 0);
     assert.equal(outOfPlace(["2026-09", "2026-01"], 1, OLDEST_FIRST), 1);
+  });
+
+  it("a tie at the start (the first two swapped) keeps the later side", () => {
+    assert.equal(outOfPlace(["2026-06", "2026-09", "2026-03", "2026-01"], 1, NEWEST_FIRST), 1);
+    assert.equal(outOfPlace(["2026-03", "2026-01", "2026-06", "2026-09"], 1, OLDEST_FIRST), 1);
+  });
+});
+
+describe("date-order: a first date out of place", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+  });
+
+  const messages = (source: string, adapter: LanguageAdapter = en, language = "en"): string[] => {
+    const rules = loadRules(language);
+    const rule = rules.find((entry) => entry.id === "date-order");
+    return runRules(buildDocument("t.md", source, adapter), rules, { "date-order": "normal" }, false, "business/report")
+      .findings.filter((finding) => finding.rule === "date-order")
+      .map((finding) => (rule === undefined ? "" : messageOf(rule, finding, language)));
+  };
+
+  const shapes = { list, table, headings };
+
+  Object.entries(shapes).forEach(([shape, write]) => {
+    it(`a too-old first date in a newest-first ${shape} is pointed at, before the next date`, () => {
+      assert.deepEqual(messages(write("2026-01-05", "2026-09-14", "2026-06-02", "2026-03-20")), [
+        "2026-01-05 breaks the order of the dates after it (before 2026-09-14)",
+      ]);
+    });
+
+    it(`a too-new first date in an oldest-first ${shape} is pointed at, before the next date`, () => {
+      assert.deepEqual(messages(write("2026-12-01", "2026-01-11", "2026-03-20", "2026-06-02")), [
+        "2026-12-01 breaks the order of the dates after it (before 2026-01-11)",
+      ]);
+    });
+
+    it(`the first two dates swapped in a ${shape} cannot be told apart: the second one is pointed at, as before`, () => {
+      assert.deepEqual(messages(write("2026-06-02", "2026-09-14", "2026-03-20", "2026-01-11")), [
+        "2026-09-14 breaks the order of the dates around it (after 2026-06-02)",
+      ]);
+    });
+
+    it(`a ${shape} in order says nothing, either way`, () => {
+      assert.deepEqual(messages(write("2026-09-14", "2026-06-02", "2026-03-20", "2026-01-05")), []);
+      assert.deepEqual(messages(write("2026-01-05", "2026-03-20", "2026-06-02", "2026-09-14")), []);
+    });
+  });
+
+  it("the Japanese message names the next date", () => {
+    const source = ["# 予定", "", "- 2026年1月5日 出発", "- 2026年9月14日 視察", "- 2026年6月2日 会議", "- 2026年3月20日 帰国"].join("\n");
+    assert.deepEqual(messages(source, ja, "ja"), ["「2026-01-05」が、後の日付の並びから外れています（次は「2026-09-14」）"]);
   });
 });

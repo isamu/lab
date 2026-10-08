@@ -17,6 +17,11 @@ message:
   ja: 「{date}」が、前後の日付の並びから外れています（前は「{previous}」）
   en: "{date} breaks the order of the dates around it (after {previous})"
 
+messages:
+  first:
+    ja: 「{date}」が、後の日付の並びから外れています（次は「{next}」）
+    en: "{date} breaks the order of the dates after it (before {next})"
+
 how_to_fix:
   ja: 日付を確かめて、書き間違いなら直し、順番が違うなら並べ替えてください。
   en: Check the date. Correct it if it is a typo, or move the row if the order is wrong.

@@ -84,10 +84,17 @@ const without = (values: readonly string[], index: number): string[] => values.f
 /**
  * 向きに逆らう一歩（at - 1 から at）のうち、並びから外れているほう。取り除いたとき残りが長く揃うほうを指す。
  * 前を取っても後ろを取っても同じだけ揃う（隣どうしの入れ替わり）なら、どちらとも決められないので後ろを指す。
- * 先頭の日付は指さない。言葉が「前は〜」と前の日付を添えるので、前の無い日付には言えない。
  */
 export const outOfPlace = (values: readonly string[], at: number, direction: number): number =>
-  at >= 2 && longestInOrder(without(values, at - 1), direction) > longestInOrder(without(values, at), direction) ? at - 1 : at;
+  longestInOrder(without(values, at - 1), direction) > longestInOrder(without(values, at), direction) ? at - 1 : at;
+
+/** 外れた日付に、前の日付を添える。先頭の日付には前が無いので、次の日付を添える。 */
+const issueAt = (dated: readonly DatedPoint[], at: number): StructureIssue[] => {
+  const point = dated[at];
+  if (point === undefined) return [];
+  const neighbour = at === 0 ? { next: dated[1]?.value ?? "" } : { previous: dated[at - 1]?.value ?? "" };
+  return [{ offset: point.offset, values: { date: point.value, ...neighbour } }];
+};
 
 /** 多いほうの向きに逆らう一歩ごとに、並びから外れた日付を指す。 */
 const againstMajority = (dated: readonly DatedPoint[]): StructureIssue[] => {
@@ -97,9 +104,7 @@ const againstMajority = (dated: readonly DatedPoint[]): StructureIssue[] => {
   if (majority === 0 || !mostlyInOrder(values, majority)) return [];
   return signs.flatMap((sign, index) => {
     if (sign !== -majority) return [];
-    const at = outOfPlace(values, index + 1, majority);
-    const point = dated[at];
-    return point === undefined ? [] : [{ offset: point.offset, values: { date: point.value, previous: dated[at - 1]?.value ?? "" } }];
+    return issueAt(dated, outOfPlace(values, index + 1, majority));
   });
 };
 
