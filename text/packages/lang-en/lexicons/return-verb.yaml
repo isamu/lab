@@ -1,0 +1,6 @@
+# The verb of a sentence that says what a function returns, right after the function's name: "measure returns a number"
+# (return-type-mismatch). The past (returned) tells history, as a changelog does, and is not read.
+id: return-verb
+language: en
+entries:
+  - pattern: returns

@@ -1,0 +1,10 @@
+# The label of a line that states what a function returns (Returns: `string[]`), and the header of a table column that
+# does (return-type-mismatch).
+id: return-label
+language: en
+entries:
+  - pattern: Returns
+  - pattern: Return
+  - pattern: Return value
+  - pattern: Return values
+  - pattern: Return type
