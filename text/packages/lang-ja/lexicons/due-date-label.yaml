@@ -1,0 +1,12 @@
+# 支払いや有効の期限を示す語。行の頭（表なら最初の列）にこの語と日付があり、発行日より前なら指す（due-before-issue）。
+id: due-date-label
+language: ja
+entries:
+  - pattern: お支払期限
+  - pattern: お支払い期限
+  - pattern: 支払期限
+  - pattern: お支払期日
+  - pattern: 支払期日
+  - pattern: お振込期限
+  - pattern: 振込期限
+  - pattern: 有効期限

@@ -1,6 +1,7 @@
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { formMinority } from "./form-minority.ts";
+import { proseAndTablesOf } from "../table-text.ts";
 import { quoteAround } from "./quote-around.ts";
 
 // 一つの文書で、同じ通貨の金額を二通りに書いた所（1,000円 と ¥1,000、$20 と 20 dollars）。どちらが正しいかは決めず、少ないほうを指す。
@@ -77,7 +78,7 @@ export const formsOf = (doc: ProseDocument): CurrencyForm[] =>
   );
 
 export const currencyNotation: Detector = (doc, options): Finding[] => {
-  const text = doc.prose ?? doc.source;
+  const text = proseAndTablesOf(doc);
   const multipliers = (doc.lexicons["amount-multiplier"] ?? []).map((entry) => entry.pattern);
   return currencyMinorities(amountsIn(text, formsOf(doc), multipliers), options.limit).map(({ odd, usual, count, of }) => ({
     rule: "",

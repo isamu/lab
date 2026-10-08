@@ -1,0 +1,5 @@
+# 強めの後ろにあっても very-adjective が数えない語。「とても重要」「非常に重要」は empty-intensifier が言うので、二度言わない。
+id: very-exception
+language: ja
+entries:
+  - pattern: 重要

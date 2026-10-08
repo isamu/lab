@@ -1,0 +1,5 @@
+# 要約で、変化のもとの値に付く語（summary-fact-mismatch）: 「誤りの率は 2.4% から 1.6% に下がった」。position は語が値のどちら側にあるか。
+id: fact-change-from
+language: ja
+entries:
+  - { pattern: から, position: after }

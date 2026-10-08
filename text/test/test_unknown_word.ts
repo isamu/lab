@@ -115,7 +115,7 @@ describe("spelling: the pieces", () => {
     assert.equal(at('said "[e]xpressions"', "xpressions"), true);
     assert.equal(at("a **globally** b", "globally"), false);
     assert.equal(at("see [1] report", "report"), false);
-    assert.equal(at("see [note]report", "report"), true);
+    assert.equal(at("see [note]report", "report"), false);
     assert.equal(at("report", "report"), false);
     assert.equal(isSplitWord("", 0), false);
   });

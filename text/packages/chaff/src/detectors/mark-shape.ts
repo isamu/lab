@@ -147,7 +147,24 @@ const reportFrom = (hits: readonly Hit[], limit: number): Finding[] => (hits.len
 /** A spaced hyphen or a double hyphen between words, standing for a dash ("late - very late", "late--very late"). */
 const HYPHEN_DASH = /(?<=[\p{L},;)]) -{1,2} (?=[\p{L}(])|(?<=\p{L})--(?=\p{L})/gu;
 
-export const hyphenDash: Detector = (doc, options): Finding[] => reportFrom(hitsOf(ownSentences(doc), HYPHEN_DASH), options.limit);
+/** A dash set as a character (an em dash, an en dash). */
+const TRUE_DASH = /[—–]/u;
+const DOUBLE_HYPHEN = "--";
+
+/**
+ * Whether the hit is a double hyphen in a document that sets no dash as a character: there "--" is how the document types its
+ * dash (plain-text standards, typewriter text, Markdown that a typographer turns into a dash), not a hyphen standing in for one.
+ */
+const isTypedDash = (hit: Hit, setsDashes: boolean): boolean => !setsDashes && hit.matched === DOUBLE_HYPHEN;
+
+export const hyphenDash: Detector = (doc, options): Finding[] => {
+  const sentences = ownSentences(doc);
+  const setsDashes = sentences.some((sentence) => TRUE_DASH.test(sentence.text));
+  return reportFrom(
+    hitsOf(sentences, HYPHEN_DASH).filter((hit) => !isTypedDash(hit, setsDashes)),
+    options.limit,
+  );
+};
 
 /** Every way of writing an abbreviation with some of its periods dropped but not all (e.g. → e.g, eg.). */
 export const partialForms = (abbreviation: string): string[] => {

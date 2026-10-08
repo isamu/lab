@@ -1,5 +1,6 @@
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
-import { definedTerms, unusedDefinitions, usesBeforeDefinition, type BodyText, type Mentioned } from "../structure/definition-use.ts";
+import { definedTerms, unusedDefinitions, usesBeforeDefinition, type BodyText, type IsTitle, type Mentioned } from "../structure/definition-use.ts";
+import { titleLineNumbers } from "../structure/title-lines.ts";
 import { expansionConflicts, expansionsIn } from "../acronym-expansions.ts";
 import { linesOf, lineNumberAt } from "../structure/lines.ts";
 import { isQuotedAlone } from "../quoted-span.ts";
@@ -29,11 +30,18 @@ export const unusedDefinition: Detector = (doc): Finding[] =>
         findingAt(doc, defined.span.start, { term: defined.term }),
       );
 
+/** 題・見出し（Markdown の見出し、章・節の行、条の前の見出しの行）の上の位置か。 */
+const titleIn = (doc: ProseDocument): IsTitle => {
+  const lines = linesOf(doc.source);
+  const numbers = titleLineNumbers(doc.structure, lines, doc.markup?.headings ?? []);
+  return (offset) => numbers.has(lineNumberAt(lines, offset) ?? 0);
+};
+
 /** 文の途中で括弧に入れて定義した語を、定義より前で使っている所。 */
 export const useBeforeDefinition: Detector = (doc): Finding[] =>
   doc.structure === undefined
     ? []
-    : usesBeforeDefinition(definedTerms(doc.structure), bodyOf(doc), mentionedIn(doc)).map((use) =>
+    : usesBeforeDefinition(definedTerms(doc.structure), bodyOf(doc), mentionedIn(doc), titleIn(doc)).map((use) =>
         findingAt(doc, use.offset, { term: use.term.term, defined: use.term.line }),
       );
 

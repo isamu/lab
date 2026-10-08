@@ -139,3 +139,9 @@ export const scopedFacts = (facts: readonly Fact[], tree: StructureNode, source:
       return { ...fact, ...scopeOf(fact, around.at(-1), at), part: partOf(around, tree, fact.value.start, summaryWords) };
     });
 };
+
+/** 文書のその位置が、冒頭、要約の節、本文のどれか。 */
+export const partsAt = (offsets: readonly number[], tree: StructureNode, summaryWords: readonly string[]): FactPart[] => {
+  const nodes = inDocumentOrder(tree).filter((node) => CONTAINERS.has(node.kind));
+  return offsets.map((offset) => partOf(containersAt(nodes, offset), tree, offset, summaryWords));
+};

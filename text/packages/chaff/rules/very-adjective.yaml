@@ -3,26 +3,26 @@ layer: L2
 status: stable
 how_to_find: intensified-adjective
 word_list: very-intensifier
-extra_word_lists: [very-exception]
+extra_word_lists: [very-exception, very-copula]
 requires: [pos]
-languages: [en]
+languages: [ja, en]
 severity: info
 
 name:
-  ja: 「very + 形容詞」の多用
+  ja: 「とても + 形容詞」（very + 形容詞）の多用
   en: Too many "very" + adjective
 
 why:
-  ja: 英語の「very important」「very good」は、強い一語（critical、excellent）か、何がどうなのかを言えば要らない語です。一つ二つなら普通ですが、文書の長さのわりに多いと、どの「very」も効かなくなります。「the very first」「very few」のように意味の決まった言い方は語彙表で除いています。
-  en: '"Very important" and "very good" lean on "very" where a stronger word (critical, excellent), or saying what and how much, would do. One or two are ordinary; many for the length make every "very" weightless. Set phrases such as "the very first" and "very few" are excepted in the lexicon.'
+  ja: 「とても便利」「非常に危険」（英語の very important、very good）の強めは、何がどう便利なのか、どの程度危険なのかを書けば要らない語です。一つ二つなら普通ですが、文書の長さのわりに多いと、どの強めも効かなくなります。強めの語と、数えない言い方（the very first、very few）は言語ごとの語彙表にあります。
+  en: '"Very important" and "very good" (とても便利, 非常に危険) lean on "very" where a stronger word (critical, excellent), or saying what and how much, would do. One or two are ordinary; many for the length make every "very" weightless. The intensifiers, and set phrases not counted such as "the very first" and "very few", are listed in the lexicon.'
 
 message:
-  ja: 「{matched}」など、very + 形容詞が 1000 語あたり {density} 個あります（{limit} 個まで）
+  ja: 「{matched}」など、強め + 形容詞が 1000 字あたり {density} 個あります（{limit} 個まで）
   en: '"{matched}" and other "very" + adjective: {density} per 1000 words (limit {limit})'
 
 how_to_fix:
-  ja: 強い一語に替えるか、何がどの程度なのかを書いてください（very important → critical、very fast → under a second）。
-  en: Use a stronger word, or say what and how much ("very important" → "critical", "very fast" → "under a second").
+  ja: 強めを外して、何がどの程度なのかを書いてください（とても速い → 1 秒以内に開く、very important → critical）。
+  en: Use a stronger word, or say what and how much ("very important" → "critical", "very fast" → "under a second"; とても速い → 1 秒以内に開く).
 
 levels: { strict: 1, normal: 2, relaxed: 4 }
 
@@ -33,9 +33,15 @@ off_for:
 
 group: wording
 summary:
-  ja: 英語で、「very important」「very good」のような very + 形容詞が、文書の長さのわりに多い所
-  en: '"Very" + adjective, such as "very important", dense for the document''s length'
+  ja: 「とても便利」「非常に危険」（very important）のような強め + 形容詞が、文書の長さのわりに多い所
+  en: '"Very" + adjective, such as "very important" (とても便利), dense for the document''s length'
 example:
+  ja:
+    pad: true
+    before: |
+      新しい画面はとても便利です。読み込みもすごく速いです。ただ、設定は非常に複雑です。
+    after: |
+      新しい画面では、よく使う三つの操作が一か所にまとまりました。読み込みは 1 秒以内です。ただ、設定の項目は 40 あります。
   en:
     pad: true
     before: |
@@ -44,13 +50,25 @@ example:
       The launch was critical. The team was stretched, and the plan held.
 
 not_flagged:
-  ja: 「very」の後ろが形容詞のときだけ数えます（very well は数えない）。「the very first」「very few」「very much」は数えません。短い文書は密度を測りません。小説と話し言葉では既定で止めています（会話の言葉のため）。
-  en: Only "very" before an adjective ("very well" is not counted), and not "the very first", "very few" or "very much". Short documents are not measured. The fiction and speech presets turn it off, since dialogue speaks that way.
+  ja: 強めの後ろが形容詞のときだけ数えます（very well、とても助かる は数えない）。日本語の「便利」「静か」のような語は、後ろに「な」「で」「だ」「です」が続くときだけ形容詞と見ます。「the very first」「very few」「very much」と、empty-intensifier が見る「とても重要」は数えません。「大変」は決まった挨拶（大変お世話になりました）に使うので数えません。短い文書は密度を測りません。小説と話し言葉では既定で止めています（会話の言葉のため）。
+  en: Only "very" before an adjective ("very well" is not counted), and not "the very first", "very few" or "very much". In Japanese, a word such as 便利 counts as an adjective only before な, で, だ or です; とても重要 is left to empty-intensifier, and 大変, used in set courtesies (大変お世話になりました), is not counted. Short documents are not measured. The fiction and speech presets turn it off, since dialogue speaks that way.
 level_meaning:
-  ja: very + 形容詞が 1000 語あたり {limit} 個まで
+  ja: 強め + 形容詞が 1000 字あたり {limit} 個まで
   en: up to {limit} "very" + adjective per 1000 words
 rewrite:
   depth: light
+  ja:
+    direction: 強め（とても、すごく、非常に）を外し、本文や出典が言う具体（数、何がどうなのか）に置き換えてください。本文が何も言っていなければ、強めを外した形容詞だけにします。
+    pairs:
+      - before: 新しい画面はとても便利です。
+        after: 新しい画面では、よく使う三つの操作が一か所にまとまりました。
+      - before: 読み込みがすごく速いです。
+        after: 読み込みは 1 秒以内です。
+    keep:
+      - 各文の主張
+    avoid:
+      - 強めを別の強め（本当に、極めて）に替えるだけ
+      - 本文に無い数を作る
   en:
     direction: Replace "very" + adjective with a stronger single word, or with what the text says about how much. If the text says nothing more, a plain adjective without "very" will do.
     pairs:
