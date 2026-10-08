@@ -1,0 +1,30 @@
+# 引いた言葉を、誰かの言葉ではなく「こう言うとよい」という言い方の勧めとして示す続き。鉤括弧の直後が say の語で始まり、
+# そのすぐ後ろに advice の語が続けば（「…」と述べる方が適切です）、quote-attribution の「と述べ」に当たっても人の言葉ではない。
+# 勧めの語まで見るのは、「…」と述べる方が多い（そう言う人が多い）が人の言葉を引いているから。
+#   say     引用を受ける言い方の、言い切りの形
+#   advice  その後ろに続く、勧めの言い方
+id: quote-advice
+language: ja
+entries:
+  - { pattern: と述べる, group: say }
+  - { pattern: と書く, group: say }
+  - { pattern: と言う, group: say }
+  - { pattern: と記す, group: say }
+  - { pattern: と語る, group: say }
+  - { pattern: と説く, group: say }
+  - { pattern: 方が適切, group: advice }
+  - { pattern: ほうが適切, group: advice }
+  - { pattern: 方がよい, group: advice }
+  - { pattern: ほうがよい, group: advice }
+  - { pattern: 方が良い, group: advice }
+  - { pattern: ほうが良い, group: advice }
+  - { pattern: 方がいい, group: advice }
+  - { pattern: ほうがいい, group: advice }
+  - { pattern: 方が伝わ, group: advice }
+  - { pattern: ほうが伝わ, group: advice }
+  - { pattern: べき, group: advice }
+  - { pattern: のがよい, group: advice }
+  - { pattern: のが良い, group: advice }
+  - { pattern: のが適切, group: advice }
+  - { pattern: とよい, group: advice }
+  - { pattern: と良い, group: advice }

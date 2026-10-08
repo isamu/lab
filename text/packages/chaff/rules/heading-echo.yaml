@@ -60,8 +60,8 @@ example:
       Attach the receipt and submit it by the end of the month.
 
 not_flagged:
-  ja: 短い見出し（言葉が少なく、重なりを測れないもの）は見ません。見出しの頭の番号の札（例 3：、Step 3:、1.、第2章）は重なりに数えません。
-  en: Headings too short to measure an overlap are not checked. A number label at the head of a heading (Step 3:, Example 4:, 1., Chapter 2:) is not counted in the overlap.
+  ja: 短い見出し（言葉が少なく、重なりを測れないもの）は見ません。見出しの頭の番号の札（例 3：、Step 3:、1.、第2章）は重なりに数えません。中身の置き場所（リンク、URL、コードで書いたファイルのパス）へ読者を渡す文（詳しくは `docs/api.md` にあります。）は繰り返しではありません。
+  en: Headings too short to measure an overlap are not checked. A number label at the head of a heading (Step 3:, Example 4:, 1., Chapter 2:) is not counted in the overlap. A sentence that sends the reader to where the content lives (a link, a web address, a file path in code, as in The full reference is in `docs/api.md`.) is not an echo.
 level_meaning:
   ja: 見出しと直後の文の重なりが {limit}% 以上なら指摘
   en: reported when the first sentence overlaps the heading by {limit}% or more

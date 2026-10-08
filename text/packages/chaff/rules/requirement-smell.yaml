@@ -4,7 +4,7 @@ status: stable
 how_to_find: requirement-smell
 # 要求の文の目印と、三つの見つけ方の語。語はすべて言語ごとの語彙表にある。
 word_list: requirement-marker
-extra_word_lists: [requirement-loophole, requirement-open-end, requirement-either]
+extra_word_lists: [requirement-loophole, requirement-open-end, requirement-either, definition-statement]
 uses: [pos]
 severity: info
 
@@ -74,5 +74,5 @@ example:
     config: { genre: technical/spec }
 
 not_flagged:
-  ja: 要求の文でない文（説明や背景）、法令、ブログやビジネス文書は見ません。語彙表にない言い方は指しません。
-  en: Sentences that state no requirement (background, explanation), statutes, and blogs and business documents are not checked. Phrases not on chaff's lists are not reported.
+  ja: 要求の文でない文（説明や背景）、法令、ブログやビジネス文書は見ません。語彙表にない言い方は指しません。文書が定めた名前の「等」（以下「委託先等」という、銀行等（…をいう。）、定義の号の頭の語）と、監査等委員会のように後ろへ語が続く「等」は、列挙を閉じているので指しません。
+  en: Sentences that state no requirement (background, explanation), statutes, and blogs and business documents are not checked. Phrases not on chaff's lists are not reported. An open-ended word inside a name the document defines (a quoted term, or one defined in the brackets after it) is not reported.

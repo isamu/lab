@@ -3,6 +3,7 @@ import { newContentMorphemes } from "./content-morphemes.ts";
 import { echoedHeadingUnits, trigrams } from "./heading-overlap.ts";
 import { titleTokens } from "../heading-label.ts";
 import { handsOver } from "./lead-in.ts";
+import { holdsLink, namesLocation } from "./location-pointer.ts";
 import { withoutQuotedVariants } from "./quoted-variant.ts";
 import type { Detector, Finding, LengthUnit, ProseDocument, Section } from "../plugin.ts";
 
@@ -55,6 +56,15 @@ const leadsIn = (doc: ProseDocument, section: Section, phrases: readonly string[
   return first !== undefined && handsOver(first.text, doc.source.slice(first.span.end, section.span.end), phrases);
 };
 
+/**
+ * 最初の文が、中身の置き場所（ページの外へのリンク・URL・コードで書いたファイルのパス）へ読者を渡している。
+ * 置き場所はコードやリンク先として本文から外れるので、残った文（The full reference is in .）は見出しの語だけに見える。
+ */
+const pointsElsewhere = (doc: ProseDocument, section: Section): boolean => {
+  const first = section.firstSentence;
+  return first !== undefined && (holdsLink(doc.source, first.span, doc.links) || namesLocation(doc.source.slice(first.span.start, first.span.end)));
+};
+
 /** 見出しとの重なりを測る文。用語集や表記の手引きは見出しの語の別の書き方を引用する（Not “datacentre”）ので、それは数えない。 */
 const echoedText = (section: Section): string => withoutQuotedVariants(section.firstSentence?.text ?? "", measuredHeading(section));
 
@@ -62,7 +72,7 @@ export const headingEcho: Detector = (doc, options): Finding[] => {
   const leadIns = (doc.lexicons["lead-in"] ?? []).map((entry) => entry.pattern);
   return doc.sections
     .filter((section) => section.heading.length > 0 && section.firstSentence !== undefined && addsLittle(section, doc.lengthUnit))
-    .filter((section) => !leadsIn(doc, section, leadIns))
+    .filter((section) => !leadsIn(doc, section, leadIns) && !pointsElsewhere(doc, section))
     .map((section) => ({ section, overlap: Math.round(containment(trigrams(measuredHeading(section)), trigrams(echoedText(section))) * 100) }))
     .filter(({ overlap }) => overlap >= options.limit)
     .map(({ section, overlap }) => ({
