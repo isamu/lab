@@ -1,0 +1,10 @@
+# Words that send the reader to other terms for how a duty is done ("pay the Fees according to the terms in the Order
+# Form"): the time is set there, and obligation-without-deadline leaves the duty.
+id: duty-terms-elsewhere
+language: en
+entries:
+  - pattern: according to the terms
+  - pattern: in accordance with
+  - pattern: as set out in
+  - pattern: as set forth in
+  - pattern: as specified in

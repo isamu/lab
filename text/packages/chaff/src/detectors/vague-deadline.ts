@@ -68,12 +68,12 @@ const concreteIn = (lower: string, entry: string): boolean => {
   );
 };
 
-const statesConcrete = (text: Text, concrete: readonly string[]): boolean => {
+export const statesConcrete = (text: Text, concrete: readonly string[]): boolean => {
   const lower = text.text.toLowerCase();
   return concrete.some((entry) => concreteIn(lower, entry));
 };
 
-const grantsRight = (text: Text, permissions: readonly LexiconEntry[]): boolean => {
+export const grantsRight = (text: Text, permissions: readonly LexiconEntry[]): boolean => {
   const lower = text.text.toLowerCase();
   const ending = withoutEnding(lower);
   return permissions
@@ -86,7 +86,7 @@ const isInsideLonger = (hit: Hit, hits: readonly Hit[]): boolean =>
   hits.some((other) => other.word.length > hit.word.length && other.at <= hit.at && hit.at + hit.word.length <= other.at + other.word.length);
 
 /** The vague limits in one sentence, in order. Matching ignores case. */
-const vagueIn = (text: Text, vague: readonly string[]): VagueDeadline[] => {
+export const vagueIn = (text: Text, vague: readonly string[]): VagueDeadline[] => {
   const lower = text.text.toLowerCase();
   const hits = vague
     .filter((word) => word !== "")

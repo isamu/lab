@@ -1,0 +1,7 @@
+# Words that, between a duty marker and the act, make the duty one not to act ("will not submit Sensitive Data"): a duty
+# not to act has no time to meet, and obligation-without-deadline leaves it.
+id: duty-negation
+language: en
+entries:
+  - pattern: not
+  - pattern: never
