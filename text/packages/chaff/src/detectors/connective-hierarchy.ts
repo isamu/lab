@@ -102,7 +102,9 @@ export const loneConnectivesIn = (sentence: Sentence, lists: ConnectiveLists): L
   if (lone.length === 0) return [];
   const reading = readingOf(sentence, lists.lookalikes);
   return lone
-    .flatMap((entry) => connectiveSpans(sentence, entry, reading, lists).map((span) => ({ offset: span.start, written: entry.pattern, usual: entry.rewrite ?? "" })))
+    .flatMap((entry) =>
+      connectiveSpans(sentence, entry, reading, lists).map((span) => ({ offset: span.start, written: entry.pattern, usual: entry.rewrite ?? "" })),
+    )
     .sort((a, b) => a.offset - b.offset);
 };
 
