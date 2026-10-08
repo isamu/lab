@@ -52,6 +52,8 @@ rewrite:
     pairs:
       - before: 90分×15回（計24時間）
         after: 90分×15回（計22.5時間）
+      - before: 1回90分、全15回、合計24時間
+        after: 1回90分、全16回、合計24時間
     keep:
       - 確かめた回数と1回の長さ
     avoid:
@@ -62,6 +64,8 @@ rewrite:
     pairs:
       - before: 15 sessions of 90 minutes (24 hours in total)
         after: 15 sessions of 90 minutes (22.5 hours in total)
+      - before: 90 minutes per session, 15 sessions, 24 hours in total
+        after: 90 minutes per session, 16 sessions, 24 hours in total
     keep:
       - the confirmed count and length
     avoid:
