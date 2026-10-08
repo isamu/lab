@@ -17,6 +17,7 @@ export const factWordsOf = (doc: ProseDocument): FactWords => ({
   valueEnds: patternsOf(doc, "fact-value-end"),
   determiners: patternsOf(doc, "fact-label-drop"),
   vague: patternsOf(doc, "fact-label-vague"),
+  leads: patternsOf(doc, "fact-label-lead"),
   attributes: (doc.lexicons["fact-attribute"] ?? []).map((entry): AttributePhrase => ({ pattern: entry.pattern, position: entry.position ?? "before" })),
 });
 
