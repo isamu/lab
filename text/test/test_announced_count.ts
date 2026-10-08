@@ -165,6 +165,45 @@ describe("announced-count-mismatch", () => {
     assert.deepEqual(found(doc("Check the following three items within 2 weeks:", "- A", "- B")), ["three items/2"]);
   });
 
+  it("people are counted: attendees announced before a list", () => {
+    const names = ["- 田中", "- 鈴木", "- 佐藤", "- 高橋", "- 伊藤", "- 渡辺"];
+    assert.deepEqual(found(doc("出席者は次の5名です。", ...names), ja), ["5名/6"]);
+    assert.deepEqual(found(doc("出席者は次の6名です。", ...names), ja), []);
+    assert.deepEqual(found(doc("以下の3人で担当します：", "- 田中", "- 鈴木"), ja), ["3人/2"]);
+    assert.deepEqual(found(doc("The following five people attended:", "- Tanaka", "- Suzuki", "- Sato", "- Ito")), ["five people/4"]);
+    assert.deepEqual(found(doc("The following four people attended:", "- Tanaka", "- Suzuki", "- Sato", "- Ito")), []);
+    assert.deepEqual(found(doc("The following three members voted:", "- Tanaka", "- Suzuki")), ["three members/2"]);
+  });
+
+  it("a count with others besides is not compared", () => {
+    assert.deepEqual(found(doc("次の5名ほかが出席しました。", "- 田中", "- 鈴木"), ja), []);
+    assert.deepEqual(found(doc("The following five people and others attended:", "- Tanaka", "- Suzuki")), []);
+  });
+
+  it("an inline list of names after a count in brackets", () => {
+    const inline = (line: string): string => ["# 議事録", "", line, ""].join("\n");
+    assert.deepEqual(found(inline("出席者（6名）：田中、鈴木、佐藤、高橋、伊藤"), ja), ["6名/5"]);
+    assert.deepEqual(found(inline("出席者（5名）：田中（議長）、鈴木、佐藤、高橋、伊藤"), ja), []);
+    assert.deepEqual(found(inline("出席者（5名ほか）：田中、鈴木"), ja), []);
+    assert.deepEqual(found(inline("出席者（6名）：田中、鈴木、佐藤、\n高橋、伊藤"), ja), ["6名/5"]);
+    assert.deepEqual(found(inline("Attendees (6): Tanaka, Suzuki, Sato, Takahashi, Ito")), ["6/5"]);
+    assert.deepEqual(found(inline("**Attendees (5):** Tanaka, Suzuki, Sato, Takahashi, Ito")), []);
+    assert.deepEqual(found(inline("Attendees (6): Tanaka, Suzuki, Sato, etc.")), []);
+    assert.deepEqual(found(inline("Attendees (3): Tanaka, Smith and Wesson")), []);
+    assert.deepEqual(found(["# Notes", "", "```", "Attendees (6): Tanaka, Suzuki", "```", ""].join("\n")), []);
+  });
+
+  it("the inline form has its own message", () => {
+    const result = runRules(
+      buildDocument("t.md", "# 議事録\n\n出席者（6名）：田中、鈴木\n", ja),
+      loadRules("ja"),
+      { [RULE]: "normal" },
+      false,
+      "business/report",
+    );
+    assert.equal(result.findings.find((finding) => finding.rule === RULE)?.variant, "inline");
+  });
+
   it("the number nearest the colon is still compared", () => {
     assert.deepEqual(found(doc("改善したのは 3 つの画面です:", "- A", "- B"), ja), ["3 つ/2"]);
   });

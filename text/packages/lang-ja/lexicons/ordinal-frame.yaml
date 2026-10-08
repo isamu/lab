@@ -1,0 +1,18 @@
+# 回・週・講・日を数える番号の書き方（第5回、第3週、Week 2）。{n} が番号で、1-2 や 1・2 のようにまとめた番号も読む。
+# 表の行の最初の欄、箇条書きの項目の頭、行の頭にこの形が続けば番号の並びで、numbering-gap が抜けと重なりを見る。
+# group が同じものどうしを一つの並びとして比べる。日本語の文書も英語の書き方（Week 1）で日程を書くので、英語の形も置く。
+# 英字は大文字小文字を問わない。
+id: ordinal-frame
+language: ja
+entries:
+  - { pattern: "第{n}回", group: session }
+  - { pattern: "第{n}週", group: week }
+  - { pattern: "第{n}講", group: lecture }
+  - { pattern: "Week {n}", group: week-en }
+  - { pattern: "Weeks {n}", group: week-en }
+  - { pattern: "Session {n}", group: session-en }
+  - { pattern: "Sessions {n}", group: session-en }
+  - { pattern: "Lecture {n}", group: lecture-en }
+  - { pattern: "Lectures {n}", group: lecture-en }
+  - { pattern: "Day {n}", group: day-en }
+  - { pattern: "Days {n}", group: day-en }

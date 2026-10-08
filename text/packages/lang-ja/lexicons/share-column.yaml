@@ -1,0 +1,10 @@
+# 表の列の見出しの升がこの語だけ（単位の括弧と % は除く）のとき、その列を一つの全体を分けた割合と読み、百分率を足して 100% と比べる。
+# 文の中では行ごとの率（利用者の割合）にも使うので、share-label には入れず、見出しの升そのものに限る。
+id: share-column
+language: ja
+entries:
+  - pattern: 割合
+  - pattern: 配点
+  - pattern: 比率
+  - pattern: ウェイト
+  - pattern: ウエイト

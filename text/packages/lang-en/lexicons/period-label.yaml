@@ -1,0 +1,19 @@
+# Words that open a line stating a document's period ("Trip dates: Oct 12–15", "Conference: May 3–5, 2026"). Only a
+# line that starts with one, then a colon or a space and the period, is read as the period by date-outside-period.
+# "Registration period" and "Application period" are left out: what follows them is not inside that period.
+id: period-label
+language: en
+entries:
+  - pattern: Trip dates
+  - pattern: Trip period
+  - pattern: Travel dates
+  - pattern: Travel period
+  - pattern: Tour dates
+  - pattern: Tour period
+  - pattern: Event dates
+  - pattern: Conference dates
+  - pattern: Programme dates
+  - pattern: Program dates
+  - pattern: Dates
+  - pattern: Conference
+  - pattern: Period

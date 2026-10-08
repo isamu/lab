@@ -1,0 +1,7 @@
+# 前の会議の宿題を振り返る節の見出しの語。この節の期限は会議より前でよいので比べない（due-before-issue）。
+id: earlier-section-word
+language: ja
+entries:
+  - pattern: 前回
+  - pattern: 前々回
+  - pattern: 振り返り

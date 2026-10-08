@@ -1,0 +1,8 @@
+# Words that mark the date of a meeting. Near the top of minutes, a line starting with one and a date gives the date the action items are compared with (due-before-issue).
+id: meeting-date-label
+language: en
+entries:
+  - pattern: Date
+  - pattern: Meeting date
+  - pattern: Date of meeting
+  - pattern: Date and time

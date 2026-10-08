@@ -1,0 +1,52 @@
+id: amount-range-reversed
+layer: L3
+status: stable
+how_to_find: amount-range
+# The amounts are read with currency-notation and amount-multiplier (amount-short-scale adds "k"); the joints are
+# range-connector, range-opener, range-closer and amount-range-word; amount-change-word and amount-bound-label come next.
+severity: warning
+
+name:
+  ja: 金額の範囲の上限が下限より小さい
+  en: An amount range whose upper end is below its lower end
+
+why:
+  ja: 「月給30万円〜25万円」「下限30万円・上限25万円」のように、金額の範囲の終わりが始まりより小さいと、読み手はどちらの金額が正しいのか、範囲がいくらからいくらまでなのかを問い合わせることになります。求人の給与や見積もりの幅で、片方の金額だけを書き換えたときや、二つを入れ替えて書いたときに起きます。同じ通貨の二つの金額の間が範囲の記号（〜、–）だけのときと、「から」でつなぎ終わりの金額のあとに「まで」が続くときを範囲として比べます。単位を一度だけ書いた範囲（30〜25万円）も読みます。同じ行に下限と上限を書いた二つの金額も比べます。
+  en: 'When an amount range ends below where it starts ("$90,000–$70,000 a year", "minimum $90,000, maximum $70,000"), the reader has to ask which amount is right and what the range is. It happens in a salary or a quote when only one of the two amounts is edited, or when the two are written the wrong way round. Two amounts in one currency are read as a range when only a range mark (–, —) or "to" stands between them, including a range that writes its currency or its "k" once ("$90–70k"). Two amounts on one line labelled minimum and maximum are compared too.'
+
+message:
+  ja: 金額の範囲「{range}」の上限が下限より小さくなっています
+  en: 'The amount range "{range}" ends below where it starts'
+
+how_to_fix:
+  ja: 範囲の二つの金額を確かめて、書き間違えたほうを直すか、小さいほうから書いてください。
+  en: Check both amounts, and correct the wrong one or write the smaller one first.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 「月給30万円〜25万円」のように、金額の範囲の終わりが始まりより小さい所
+  en: An amount range whose second amount is smaller than its first, such as "$90,000–$70,000"
+example:
+  ja:
+    before: |
+      給与は月給30万円〜25万円（経験により決定）です。
+    after: |
+      給与は月給25万円〜30万円（経験により決定）です。
+  en:
+    before: |
+      Salary: $90,000–$70,000 a year, depending on experience.
+    after: |
+      Salary: $70,000–$90,000 a year, depending on experience.
+
+not_flagged:
+  ja: 同じ文に値段を変える語のある二つの金額（「月額を5,000円から3,000円に値下げ」「改定」）、通貨の違う二つの金額、間に言葉のある二つの金額、計算の式（「5,000円-2,000円=3,000円」）は比べません。版の番号、ページ、日付のように通貨の無い数は読みません。単位を一度だけ書いた範囲は、二つの数が十倍以上違えば比べません（「5,000〜1万円」）。
+  en: 'Two amounts in a sentence with a word that changes a price ("the fee was reduced from $90 to $70", "cut", "dropped"), two amounts in different currencies, two amounts with words between them, and a sum ("$90 - $70 = $20") are not compared. Numbers without a currency, such as versions, pages and dates, are not read. A range that writes its "k" or its word of scale once is not compared when its two numbers are ten times apart or more.'
+level_meaning:
+  ja: 金額の範囲の終わりが始まりより小さいとき指摘
+  en: reported when an amount range ends below where it starts

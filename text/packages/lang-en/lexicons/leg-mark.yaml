@@ -1,0 +1,25 @@
+# The words that say a clock time is a departure or an arrival (arrival-before-departure). position says on which side
+# of the time the word is written, group whether it departs or arrives. A word before the time may have a place between
+# ("departs Boston 7:30 AM"). Matched as written, as a whole word.
+id: leg-mark
+language: en
+entries:
+  - { pattern: "departs", position: before, group: departure }
+  - { pattern: "Departs", position: before, group: departure }
+  - { pattern: "departing", position: before, group: departure }
+  - { pattern: "departure", position: before, group: departure }
+  - { pattern: "Departure", position: before, group: departure }
+  - { pattern: "dep", position: before, group: departure }
+  - { pattern: "Dep", position: before, group: departure }
+  - { pattern: "dep.", position: before, group: departure }
+  - { pattern: "Dep.", position: before, group: departure }
+  - { pattern: "leaves", position: before, group: departure }
+  - { pattern: "arrives", position: before, group: arrival }
+  - { pattern: "Arrives", position: before, group: arrival }
+  - { pattern: "arriving", position: before, group: arrival }
+  - { pattern: "arrival", position: before, group: arrival }
+  - { pattern: "Arrival", position: before, group: arrival }
+  - { pattern: "arr", position: before, group: arrival }
+  - { pattern: "Arr", position: before, group: arrival }
+  - { pattern: "arr.", position: before, group: arrival }
+  - { pattern: "Arr.", position: before, group: arrival }

@@ -1,0 +1,27 @@
+table  26  26  0  0
+ja/blog  arrival-before-departure-ja  found
+ja/design  arrival-before-departure-ja  found
+ja/email  arrival-before-departure-ja  found
+ja/figures  arrival-before-departure-ja  found
+ja/itinerary  arrival-before-departure-ja  found
+ja/minutes  arrival-before-departure-ja  found
+ja/note  arrival-before-departure-ja  found
+ja/policy  arrival-before-departure-ja  found
+ja/press  arrival-before-departure-ja  found
+ja/proposal  arrival-before-departure-ja  found
+ja/quote  arrival-before-departure-ja  found
+ja/readme  arrival-before-departure-ja  found
+ja/requirements  arrival-before-departure-ja  found
+en/blog  arrival-before-departure-en  found
+en/design  arrival-before-departure-en  found
+en/email  arrival-before-departure-en  found
+en/figures  arrival-before-departure-en  found
+en/itinerary  arrival-before-departure-en  found
+en/minutes  arrival-before-departure-en  found
+en/note  arrival-before-departure-en  found
+en/policy  arrival-before-departure-en  found
+en/press  arrival-before-departure-en  found
+en/proposal  arrival-before-departure-en  found
+en/quote  arrival-before-departure-en  found
+en/readme  arrival-before-departure-en  found
+en/requirements  arrival-before-departure-en  found

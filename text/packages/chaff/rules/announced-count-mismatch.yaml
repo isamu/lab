@@ -9,12 +9,17 @@ name:
   en: A list that does not have the number of items announced
 
 why:
-  ja: 「以下の3点」と書いたのに、すぐ下の箇条書きが2つや4つだと、読み手は抜けた項目があるのか、数え間違いなのかを確かめることになります。項目を足したり消したりしたあとに、予告の数を直し忘れると起きます。箇条書きのすぐ前の文が、「以下の」「次の」のような先を指す語か、終わりのコロン（：）と一緒に数（3点、2つ、4項目）を書いているときだけ、その数を箇条書きのいちばん外側の項目の数と比べます。
-  en: When a sentence says "the following three steps" and the list right below it has two or four, the reader has to check whether an item is missing or the count is wrong. It happens when an item is added or removed and the count is not updated. The number is compared with the items at the top level of the list only when the sentence right before the list announces it, with a word pointing ahead ("following", "below") or a colon at its end, and the number names what the list holds ("three steps", "two reasons").
+  ja: 「以下の3点」と書いたのに、すぐ下の箇条書きが2つや4つだと、読み手は抜けた項目があるのか、数え間違いなのかを確かめることになります。項目を足したり消したりしたあとに、予告の数を直し忘れると起きます。箇条書きのすぐ前の文が、「以下の」「次の」のような先を指す語か、終わりのコロン（：）と一緒に数（3点、2つ、4項目）を書いているときだけ、その数を箇条書きのいちばん外側の項目の数と比べます。「出席者（6名）：田中、鈴木、…」のように、ラベルの後ろの括弧に数を書き、コロンの後ろに読点やコンマで区切って名前を並べた行も、括弧の数と並べた名前の数を比べます。
+  en: 'When a sentence says "the following three steps" and the list right below it has two or four, the reader has to check whether an item is missing or the count is wrong. It happens when an item is added or removed and the count is not updated. The number is compared with the items at the top level of the list only when the sentence right before the list announces it, with a word pointing ahead ("following", "below") or a colon at its end, and the number names what the list holds ("three steps", "two reasons"). A line with a count in brackets after a label and names after the colon, split at commas ("Attendees (6): Tanaka, Suzuki, ..."), is checked the same way: the count against the names listed.'
 
 message:
   ja: 「{phrase}」と予告していますが、すぐ下の箇条書きは{listed}項目です
   en: '"{phrase}" is announced, but the number of items in the list below is {listed}'
+
+messages:
+  inline:
+    ja: 「{phrase}」と書いていますが、後ろに区切って並べたのは{listed}つです
+    en: '"{phrase}" is given, but {listed} are listed after it'
 
 how_to_fix:
   ja: 項目が抜けていないか確かめて、足りなければ足し、数が違うなら予告の数を直してください。
@@ -55,5 +60,5 @@ example:
       - Your bank account
 
 not_flagged:
-  ja: 目安の数（約3点、3つ以上）、順番（3つ目）、選ぶ数（以下から1つ選ぶ）、見出しや表の前の数、箇条書きがすぐ後ろに無い数は比べません。予告の文に数が二つあるときも比べません。コロンだけで予告する文は、コロンにいちばん近い数を予告の数とみなし、その数の後ろにまだ数があれば比べません（「1 つのページを 2 ページに分けました:」）。どの行も「ラベル：A / B」の形の箇条書きは、斜線（/）で区切って並べた項目の数が合っていれば指摘しません。
-  en: An estimate (about three, three or more), a rank (the first three), how many to pick (choose two), a number before a heading or a table, and a number with no list right after it are not compared. Nor is a sentence with two numbers in it. When only a colon announces the list, the number nearest the colon is the count, so a number followed by another one is not compared ("We merged three tasks into 2 pages:"). A list whose every item is a label, a colon and members split at slashes is not reported when the members add up to the count.
+  ja: 目安の数（約3点、3つ以上）、順番（3つ目）、選ぶ数（以下から1つ選ぶ）、見出しや表の前の数、箇条書きがすぐ後ろに無い数は比べません。予告の文に数が二つあるときも比べません。コロンだけで予告する文は、コロンにいちばん近い数を予告の数とみなし、その数の後ろにまだ数があれば比べません（「1 つのページを 2 ページに分けました:」）。どの行も「ラベル：A / B」の形の箇条書きは、斜線（/）で区切って並べた項目の数が合っていれば指摘しません。一行に並べた名前は、区切りが決まらないとき（名前の中に「と」「・」がある、括弧が閉じていない、途中で文が終わる）と、並びが閉じていないとき（「ほか」「など」で終わる、「5名ほか」）は比べません。
+  en: An estimate (about three, three or more), a rank (the first three), how many to pick (choose two), a number before a heading or a table, and a number with no list right after it are not compared. Nor is a sentence with two numbers in it. When only a colon announces the list, the number nearest the colon is the count, so a number followed by another one is not compared ("We merged three tasks into 2 pages:"). A list whose every item is a label, a colon and members split at slashes is not reported when the members add up to the count. Names listed on one line are not compared when the split is unclear ("and" or "&" inside a name, an unclosed bracket, a sentence ending midway) or the list is left open ("etc.", "and others").

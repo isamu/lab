@@ -1,0 +1,9 @@
+# 名前の前に置かれる決定の前置き（fact-conflict、summary-fact-mismatch）。「協議の結果、月会費は2,800円とする。」の
+# 「協議の結果、」は条件ではないので、外してから名前（月会費）を読む。ほかの読点の後ろの名前（「大人は、参加費は」）は読まない。
+id: fact-label-lead
+language: ja
+entries:
+  - pattern: 協議の結果、
+  - pattern: 審議の結果、
+  - pattern: 検討の結果、
+  - pattern: 話し合いの結果、

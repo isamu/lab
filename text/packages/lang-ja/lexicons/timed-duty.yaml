@@ -1,0 +1,18 @@
+# 決まった時にする義務の語（払う、渡す、出す、返す、知らせる）。文の終わりの述語がこれで、文に期限が無ければ、いつまでにするかが
+# 決まらない（obligation-without-deadline）。語幹を書き、後ろに続く形は duty-ending から取る。「賠償する」「保持する」は時に縛られないので入れない。
+id: timed-duty
+language: ja
+entries:
+  - pattern: 支払
+  - pattern: 振り込
+  - pattern: 振込
+  - pattern: 返金
+  - pattern: 納入
+  - pattern: 納品
+  - pattern: 引き渡
+  - pattern: 引渡
+  - pattern: 提出
+  - pattern: 返還
+  - pattern: 返却
+  - pattern: 通知
+  - pattern: 報告

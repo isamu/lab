@@ -1,0 +1,34 @@
+# 「出席者（6名）：田中、鈴木、佐藤」のように、数のあとに一行で並べた名前を数えるための語。
+# separator は名前の区切り。joiner は名前をつなぐ語で、名前の中にあると区切りが決まらないので数えない。
+# open は並びが閉じていないことを言う語（田中ほか、など）で、書いた名前より多いことがあるので数えない。
+id: count-member
+language: ja
+entries:
+  - pattern: 、
+    group: separator
+  - pattern: ，
+    group: separator
+  - pattern: ","
+    group: separator
+  - pattern: と
+    group: joiner
+  - pattern: や
+    group: joiner
+  - pattern: および
+    group: joiner
+  - pattern: 及び
+    group: joiner
+  - pattern: ならびに
+    group: joiner
+  - pattern: 並びに
+    group: joiner
+  - pattern: ・
+    group: joiner
+  - pattern: ほか
+    group: open
+  - pattern: 他
+    group: open
+  - pattern: など
+    group: open
+  - pattern: 等
+    group: open

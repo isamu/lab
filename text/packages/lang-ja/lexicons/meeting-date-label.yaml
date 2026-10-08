@@ -1,0 +1,9 @@
+# 会議の日を示す語。議事録の頭の方で、行の頭にこの語と日付があれば、宿題の期限と比べる会議の日とする（due-before-issue）。
+id: meeting-date-label
+language: ja
+entries:
+  - pattern: 日時
+  - pattern: 開催日時
+  - pattern: 開催日
+  - pattern: 会議日
+  - pattern: 日付
