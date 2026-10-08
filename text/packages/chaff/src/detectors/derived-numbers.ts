@@ -29,16 +29,21 @@ const endWithUnit = (source: string, end: number, unit: string): number => {
   return unit !== "" && source.startsWith(unit, end + gap) ? end + gap + unit.length : end;
 };
 
-/** The number in words before a figure in brackets: "six (" in "six (6) months". */
-const WORDS_BEFORE_BRACKET = /[\p{L}-]+ \($/u;
-const BRACKET_REACH = 20;
+const OPEN_BRACKET = " (";
+const WORD_LETTER = /[\p{L}-]/u;
+
+/** Where the word before " (" starts ("six (" in "six (6) months"), or undefined when no word stands there. */
+const wordStartBeforeBracket = (source: string, at: number): number | undefined => {
+  if (source.slice(Math.max(0, at - OPEN_BRACKET.length), at) !== OPEN_BRACKET) return undefined;
+  let start = at - OPEN_BRACKET.length;
+  while (start > 0 && WORD_LETTER.test(source.charAt(start - 1))) start -= 1;
+  return start < at - OPEN_BRACKET.length ? start : undefined;
+};
 
 /** 「six (6) months」は語の数から単位まで。括弧の中の数だけでは、指摘に引いたとき何の期間か読めない。 */
 const withWordsAround = (source: string, start: number, end: number, unit: string): Span => {
-  const before = WORDS_BEFORE_BRACKET.exec(source.slice(Math.max(0, start - BRACKET_REACH), start));
-  return source.charAt(end) === ")" && before !== null
-    ? { start: start - before[0].length, end: endWithUnit(source, end + 1, unit) }
-    : { start, end: endWithUnit(source, end, unit) };
+  const wordStart = source.charAt(end) === ")" ? wordStartBeforeBracket(source, start) : undefined;
+  return wordStart === undefined ? { start, end: endWithUnit(source, end, unit) } : { start: wordStart, end: endWithUnit(source, end + 1, unit) };
 };
 
 const quantitiesOf = (tree: StructureNode, source: string): Quantity[] =>

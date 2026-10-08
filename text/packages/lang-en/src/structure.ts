@@ -275,12 +275,15 @@ const currencyBefore = (text: string, at: number): string | undefined => {
 };
 
 const FIGURE_WORDS: ReadonlySet<string> = new Set((LEXICONS["bracketed-figure-word"] ?? []).map((entry) => entry.pattern));
-/** The word right before " (", with its hyphenated parts: "forty-five" in "forty-five (". */
-const WORD_BEFORE_BRACKET = /([\p{L}-]+) \($/u;
+const OPEN_BRACKET = " (";
+const NOT_WORD_LETTER = /[^\p{L}-]/u;
 const BRACKET_REACH = 30;
 
+/** The word right before " (" is a number word, or ends with one: "six (", "forty-five (". */
 const followsNumberWord = (text: string, start: number): boolean => {
-  const word = WORD_BEFORE_BRACKET.exec(text.slice(Math.max(0, start - BRACKET_REACH), start))?.[1] ?? "";
+  const before = text.slice(Math.max(0, start - BRACKET_REACH), start);
+  if (!before.endsWith(OPEN_BRACKET)) return false;
+  const word = before.slice(0, -OPEN_BRACKET.length).split(NOT_WORD_LETTER).at(-1) ?? "";
   return FIGURE_WORDS.has(word.toLowerCase().split("-").at(-1) ?? "");
 };
 
