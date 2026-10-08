@@ -7,7 +7,7 @@ import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
-import { longestInOrder, siblingHeadingRuns, type HeadingSpan } from "../packages/chaff/src/structure/date-order.ts";
+import { longestInOrder, outOfPlace, siblingHeadingRuns, type HeadingSpan } from "../packages/chaff/src/structure/date-order.ts";
 
 // 日程として並べた日付の順番（date-order）。言語を問わず、箇条書きと表の行を並びとして読む。
 
@@ -358,5 +358,78 @@ describe("longestInOrder", () => {
   it("empty and single lists", () => {
     assert.equal(longestInOrder([], 1), 0);
     assert.equal(longestInOrder(["2026-01-01"], -1), 1);
+  });
+});
+
+const table = (...dates: string[]): string => ["# Plan", "", "| Date | Step |", "| --- | --- |", ...dates.map((date) => `| ${date} | step |`)].join("\n");
+const headings = (...dates: string[]): string => ["# Changes", "", ...dates.flatMap((date) => [`## Release - ${date}`, "", "- A change.", ""])].join("\n");
+
+describe("date-order: the date pointed at is the one out of place, not the one after it", () => {
+  const shapes = { list, table, headings };
+
+  Object.entries(shapes).forEach(([shape, write]) => {
+    it(`a too-old date in a newest-first ${shape}`, () => {
+      assert.deepEqual(found(write("2026-09-14", "2026-01-05", "2026-06-02", "2026-03-20", "2026-01-11")), ["2026-01-05<2026-09-14"]);
+    });
+
+    it(`a too-new date in a newest-first ${shape}`, () => {
+      assert.deepEqual(found(write("2026-09-14", "2026-06-02", "2026-12-01", "2026-03-20", "2026-01-11")), ["2026-12-01<2026-06-02"]);
+    });
+
+    it(`a too-new date in an oldest-first ${shape}`, () => {
+      assert.deepEqual(found(write("2026-01-11", "2026-03-20", "2026-12-01", "2026-06-02", "2026-09-14")), ["2026-12-01<2026-03-20"]);
+    });
+
+    it(`a too-old date in an oldest-first ${shape}`, () => {
+      assert.deepEqual(found(write("2026-01-11", "2026-03-20", "2026-06-02", "2026-01-01", "2026-09-14")), ["2026-01-01<2026-06-02"]);
+    });
+
+    it(`two neighbours swapped in a ${shape} cannot be told apart: the later one is pointed at, as before`, () => {
+      assert.deepEqual(found(write("2026-09-14", "2026-05-08", "2026-06-02", "2026-03-20", "2026-01-11")), ["2026-06-02<2026-05-08"]);
+    });
+
+    it(`a ${shape} in order, or of two dates, says nothing`, () => {
+      assert.deepEqual(found(write("2026-09-14", "2026-06-02", "2026-03-20", "2026-01-11")), []);
+      assert.deepEqual(found(write("2026-01-11", "2026-03-20", "2026-06-02", "2026-09-14")), []);
+      assert.deepEqual(found(write("2026-01-11", "2026-09-14")), []);
+      assert.deepEqual(found(write("2026-09-14", "2026-01-11")), []);
+    });
+  });
+
+  it("two steps against the order that blame the same date report it once", () => {
+    assert.deepEqual(found(list("2026-01-01", "2026-02-01", "2026-06-01", "2026-05-01", "2026-03-01", "2026-04-01")), ["2026-05-01<2026-06-01"]);
+  });
+
+  it("equal dates next to the one out of place stay in order", () => {
+    assert.deepEqual(found(list("2026-01-01", "2026-03-01", "2026-02-01", "2026-02-01", "2026-04-01")), ["2026-03-01<2026-01-01"]);
+  });
+
+  it("a first date out of place is not pointed at: the message needs a date before it", () => {
+    assert.deepEqual(found(list("2026-01-01", "2026-09-01", "2026-08-01", "2026-07-01")), ["2026-09-01<2026-01-01"]);
+  });
+});
+
+describe("outOfPlace", () => {
+  const NEWEST_FIRST = -1;
+  const OLDEST_FIRST = 1;
+
+  it("the earlier side of the step when removing it leaves more in order", () => {
+    assert.equal(outOfPlace(["2026-09", "2026-01", "2026-06", "2026-03"], 2, NEWEST_FIRST), 1);
+    assert.equal(outOfPlace(["2026-01", "2026-03", "2026-12", "2026-06", "2026-09"], 3, OLDEST_FIRST), 2);
+  });
+
+  it("the later side when removing it leaves more in order", () => {
+    assert.equal(outOfPlace(["2026-09", "2026-06", "2026-12", "2026-03"], 2, NEWEST_FIRST), 2);
+    assert.equal(outOfPlace(["2026-01", "2026-03", "2026-06", "2026-01", "2026-09"], 3, OLDEST_FIRST), 3);
+  });
+
+  it("a tie (two neighbours swapped) keeps the later side", () => {
+    assert.equal(outOfPlace(["2026-09", "2026-05", "2026-06", "2026-03"], 2, NEWEST_FIRST), 2);
+    assert.equal(outOfPlace(["2026-01", "2026-06", "2026-05", "2026-09"], 2, OLDEST_FIRST), 2);
+  });
+
+  it("never the first date, and a step at the start of a two-date list stays on the later side", () => {
+    assert.equal(outOfPlace(["2026-01", "2026-09", "2026-08", "2026-07"], 1, NEWEST_FIRST), 1);
+    assert.equal(outOfPlace(["2026-09", "2026-01"], 1, OLDEST_FIRST), 1);
   });
 });

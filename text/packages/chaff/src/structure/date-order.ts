@@ -4,7 +4,7 @@ import { runsOf } from "./runs.ts";
 /**
  * 日程として並べた日付の順番。箇条書きの続いた項目、表の続いた行、同じ親の下で同じ深さに並ぶ見出しで、
  * 日付をちょうど一つ持つものを並びとして読む。
- * 並びの向き（古い順か新しい順か）は多いほうで決め、それに逆らう一歩だけを言う。新しい順に並べた履歴は正しい並び。
+ * 並びの向き（古い順か新しい順か）は多いほうで決め、それに逆らう一歩ごとに、その前後のうち並びから外れた日付を言う。新しい順に並べた履歴は正しい並び。
  * 向きが決まらない並び（上がりと下がりが同じ数）は何も言わない。逆らう一歩を言えるのは、日付が 4 つ以上の並びだけになる。
  * 向きに沿って並ぶ日付が半分以下の並びは、日付でなく別のもの（名前、版）で並べた一覧として何も言わない。
  */
@@ -79,19 +79,28 @@ export const longestInOrder = (values: readonly string[], direction: number): nu
 /** 日付のうち向きに沿うものが過半を占める。ひとつふたつの書き間違いなら残りが揃うが、名前順の一覧は揃わない。 */
 const mostlyInOrder = (values: readonly string[], direction: number): boolean => longestInOrder(values, direction) * 2 > values.length;
 
-/** 多いほうの向きに逆らう一歩。後ろの項目の日付を指す。 */
+const without = (values: readonly string[], index: number): string[] => values.filter((_, at) => at !== index);
+
+/**
+ * 向きに逆らう一歩（at - 1 から at）のうち、並びから外れているほう。取り除いたとき残りが長く揃うほうを指す。
+ * 前を取っても後ろを取っても同じだけ揃う（隣どうしの入れ替わり）なら、どちらとも決められないので後ろを指す。
+ * 先頭の日付は指さない。言葉が「前は〜」と前の日付を添えるので、前の無い日付には言えない。
+ */
+export const outOfPlace = (values: readonly string[], at: number, direction: number): number =>
+  at >= 2 && longestInOrder(without(values, at - 1), direction) > longestInOrder(without(values, at), direction) ? at - 1 : at;
+
+/** 多いほうの向きに逆らう一歩ごとに、並びから外れた日付を指す。 */
 const againstMajority = (dated: readonly DatedPoint[]): StructureIssue[] => {
-  const steps = dated
-    .slice(1)
-    .map((point, index) => ({ point, previous: dated[index], sign: Math.sign(point.value.localeCompare(dated[index]?.value ?? "")) }));
-  const up = steps.filter((step) => step.sign > 0).length;
-  const down = steps.filter((step) => step.sign < 0).length;
-  const majority = majorityOf(up, down);
   const values = dated.map((point) => point.value);
+  const signs = values.slice(1).map((value, index) => Math.sign(value.localeCompare(values[index] ?? "")));
+  const majority = majorityOf(signs.filter((sign) => sign > 0).length, signs.filter((sign) => sign < 0).length);
   if (majority === 0 || !mostlyInOrder(values, majority)) return [];
-  return steps
-    .filter((step) => step.sign === -majority)
-    .map((step) => ({ offset: step.point.offset, values: { date: step.point.value, previous: step.previous?.value ?? "" } }));
+  return signs.flatMap((sign, index) => {
+    if (sign !== -majority) return [];
+    const at = outOfPlace(values, index + 1, majority);
+    const point = dated[at];
+    return point === undefined ? [] : [{ offset: point.offset, values: { date: point.value, previous: dated[at - 1]?.value ?? "" } }];
+  });
 };
 
 const breaksIn = (dated: readonly DatedPoint[]): StructureIssue[] => (samePrecision(dated) ? againstMajority(dated) : []);
