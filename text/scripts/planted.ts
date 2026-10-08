@@ -1,7 +1,7 @@
 // `yarn planted [set...]`: the planted sets (test/fixtures/planted/<set>/), every set when none is named. Each document of
 // a set has a clean version and a planted one, and the set's manifest.json lists every planted mistake with its kind, line
 // and the rule expected to report it. Every document is run as `chaff --genre <genre>` would run it (the genre's levels, no
-// other experimental rule), and the script prints how many planted mistakes of each kind were reported on their line, per
+// other experimental rule), under a chaff.yaml naming the document's style when the manifest gives one, and the script prints how many planted mistakes of each kind were reported on their line, per
 // language, and the findings the clean versions get from those rules. The score is compared with the set's expected.json,
 // and the run fails when it differs: a recall that dropped or rose, or a clean document that gained or lost a finding.
 // --update rewrites the expected.json of the sets it ran. `yarn contracts` is `yarn planted contracts`.
@@ -38,7 +38,7 @@ const readText = (set: string, file: string): string => {
 const readJson = (set: string, file: string): unknown => JSON.parse(readText(set, file));
 
 const findingsOf = async (set: string, document: PlantedDocument, file: string): Promise<CorpusFinding[]> =>
-  genreFindings(join(ROOT, set, file), readText(set, file), document.language, document.genre);
+  genreFindings(join(ROOT, set, file), readText(set, file), document.language, document.genre, document.style);
 
 const runAll = async (set: string, documents: readonly PlantedDocument[], pick: (document: PlantedDocument) => string): Promise<Map<string, CorpusFinding[]>> =>
   new Map(

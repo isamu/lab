@@ -15,6 +15,8 @@ export type PlantedDocument = {
   readonly id: string;
   readonly language: string;
   readonly genre: string;
+  /** The house style (styles/*.yaml) the document is run with, as chaff.yaml's style: would set it. */
+  readonly style?: string;
   readonly clean: string;
   readonly planted: string;
   readonly mistakes: readonly PlantedMistake[];
@@ -58,6 +60,10 @@ const stringField = (entry: Record<string, unknown>, field: string, where: strin
   return value;
 };
 
+/** A style is optional; one that is written must be a name. */
+const styleOf = (entry: Record<string, unknown>, where: string): Pick<PlantedDocument, "style"> =>
+  entry["style"] === undefined ? {} : { style: stringField(entry, "style", where) };
+
 const mistakeOf = (value: unknown, where: string): PlantedMistake => {
   if (!isRecord(value)) throw new Error(`planted manifest: ${where} is not an object`);
   const { line } = value;
@@ -81,6 +87,7 @@ const documentOf = (value: unknown, index: number): PlantedDocument => {
     id,
     language: stringField(value, "language", where),
     genre: stringField(value, "genre", where),
+    ...styleOf(value, id),
     clean: stringField(value, "clean", where),
     planted: stringField(value, "planted", where),
     mistakes: mistakes.map((mistake: unknown, at) => mistakeOf(mistake, `${id} mistakes[${String(at)}]`)),
