@@ -2,14 +2,14 @@
   "recall": {
     "ja": {
       "connective-hierarchy": "2/2",
-      "defined-term-variant": "0/1",
+      "defined-term-variant": "1/1",
       "dangling-article": "1/1",
       "dangling-paragraph": "1/1",
       "article-gap": "1/1"
     },
     "en": {
       "dangling-article": "1/1",
-      "defined-term-variant": "0/1",
+      "defined-term-variant": "1/1",
       "dangling-paragraph": "1/1",
       "article-gap": "1/1"
     }

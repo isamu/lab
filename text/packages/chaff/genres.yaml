@@ -351,6 +351,8 @@ genres:
       total-mismatch: normal
       dangling-figure-reference: normal
       date-range-reversed: normal
+      # A statute uses its defined terms as defined, like a contract. Its profile says a quoted term is the term mentioned.
+      defined-term-form: normal
   - id: legal/judgment
     name: { ja: 判決, en: Court decision }
     summary:

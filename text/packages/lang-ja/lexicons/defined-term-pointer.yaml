@@ -1,0 +1,12 @@
+# 定義した語の前に付けて、そのうちのどれかを指す語。「当該管理責任者」は定義した語を使ったもので、語を長くしたのではない
+# （defined-term-form は、定義の文の語を頭に足した「文書管理責任者」を、定義と違う形として指す）。
+id: defined-term-pointer
+language: ja
+entries:
+  - pattern: 当該
+  - pattern: 前記
+  - pattern: 上記
+  - pattern: 同
+  - pattern: 各
+  - pattern: 全
+  - pattern: 他

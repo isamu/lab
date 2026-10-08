@@ -9,6 +9,7 @@ import { GENRES } from "../packages/chaff/src/genre.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { loadProfiles } from "../packages/chaff/src/profile/load.ts";
 import { chooseProfile } from "../packages/chaff/src/profile/select.ts";
+import { parseProfile } from "../packages/chaff/src/profile/parse.ts";
 import { profileFor } from "../packages/chaff/src/profile/for-file.ts";
 import { EMPTY } from "../packages/chaff/src/config/load.ts";
 import { resolve } from "../packages/chaff/src/levels.ts";
@@ -211,6 +212,9 @@ const STRUCTURE_PRESET = [
 /** A contract's preset adds the defined-term rules to the structure rules. */
 const CONTRACT_PRESET = [...STRUCTURE_PRESET, "defined-name-repeated", "defined-term-form"].toSorted((left, right) => left.localeCompare(right));
 
+/** A statute's preset adds the defined-term form to the structure rules: a statute uses its defined terms as defined too. */
+const STATUTE_PRESET = [...STRUCTURE_PRESET, "defined-term-form"].toSorted((left, right) => left.localeCompare(right));
+
 /** As runJa, with the structure rules and latin-spacing marked experimental: how a genre's preset treats an experimental rule. */
 const runJaExperimental = (source: string, genre: string, settings: Settings): RunResult =>
   runRules(buildDocument("t.md", source, ja), asExperimental(loadRules("ja"), [...CONTRACT_PRESET, "latin-spacing"]), settings, false, genre);
@@ -284,10 +288,10 @@ describe("既定の段で動かす", () => {
     assert.deepEqual(result.presetExperimental, []);
   });
 
-  it("法令・規程のジャンルは、契約書と同じ構造の rule を入れる", () => {
+  it("法令・規程のジャンルは、契約書と同じ構造の rule と、定義した語の形を見る rule を入れる", () => {
     assert.deepEqual(
       runJaExperimental(JA_REPORT, "legal/statute", {}).presetExperimental.toSorted((left, right) => left.localeCompare(right)),
-      STRUCTURE_PRESET,
+      STATUTE_PRESET,
     );
   });
 
@@ -358,7 +362,10 @@ describe("ジャンルの profile", () => {
   });
 
   it("ジャンルの profile にその言語が無ければ選ばない（内容からも選ばない）", () => {
-    assert.equal(chooseProfile(definitions, { ...request, language: "en", genre: "statute" }), undefined);
+    const jaOnly = parseProfile({ id: "ja-only", ja: { addresses: ["第[一二三]+条"] } });
+    assert.ok(jaOnly !== undefined);
+    assert.equal(chooseProfile([jaOnly], { ...request, language: "en", genre: "ja-only" }), undefined);
+    assert.equal(chooseProfile([jaOnly], { ...request, genre: "ja-only" })?.from, "genre");
   });
 });
 
