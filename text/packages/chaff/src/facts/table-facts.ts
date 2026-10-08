@@ -16,7 +16,7 @@ export type Cell = Span & { readonly text: string };
 const LETTER = /\p{L}/u;
 const TWO_COLUMNS = 2;
 
-const cellsOf = (line: Line): Cell[] => {
+export const cellsOf = (line: Line): Cell[] => {
   const bounds = [-1, ...[...line.text.matchAll(CELL_SEPARATOR)].map((match) => match.index), line.text.length];
   const cells = bounds.slice(1).map((end, index) => {
     const from = (bounds[index] ?? 0) + 1;
@@ -29,7 +29,7 @@ const cellsOf = (line: Line): Cell[] => {
 const plain = withoutEdgeMarks;
 
 /** 区切り行（|---|）の前の行が見出し、後ろに続く | の行が本体。 */
-const tablesOf = (lines: readonly Line[]): { header: Line; rows: Line[] }[] =>
+export const tablesOf = (lines: readonly Line[]): { header: Line; rows: Line[] }[] =>
   lines.flatMap((line, index) => {
     const header = lines[index - 1];
     if (!TABLE_RULE.test(line.text) || header === undefined || !header.text.includes("|")) return [];

@@ -1,0 +1,12 @@
+# The marks that say a clock time is on the next day (next) or the day before (previous) (time-order,
+# arrival-before-departure). Written after the time ("0:15 (next day)", "arr 9:50 +1"). Matched as written.
+id: day-shift-mark
+language: en
+entries:
+  - { pattern: "+1", position: after, group: next }
+  - { pattern: "next day", position: after, group: next }
+  - { pattern: "the next day", position: after, group: next }
+  - { pattern: "the following day", position: after, group: next }
+  - { pattern: "-1", position: after, group: previous }
+  - { pattern: "previous day", position: after, group: previous }
+  - { pattern: "the previous day", position: after, group: previous }

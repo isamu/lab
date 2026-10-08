@@ -15,6 +15,13 @@ export const isKanaOnly = (text: string): boolean => KANA_ONLY.test(text);
 /** The kanji of a spelling, in order: 引越 for both 引っ越し and 引越し, nothing for できる. */
 export const kanjiSkeleton = (text: string): string => [...text.matchAll(KANJI)].map((match) => match[0]).join("");
 
+/**
+ * Whether a spelling is the kanji alone of a word the others spell with okurigana: 取扱 beside 取扱い, 締切 beside 締切り. Official
+ * Japanese drops okurigana at the head of a compound (取扱事業者) and keeps it on the word alone, so the two are one convention.
+ */
+export const dropsOkurigana = (spelling: string, spellings: readonly string[]): boolean =>
+  spelling !== "" && kanjiSkeleton(spelling) === spelling && spellings.some((other) => other !== spelling && kanjiSkeleton(other) === spelling);
+
 /** The length, in UTF-16 units, of the start both strings share, compared character by character (𠮟 is one character, two units). */
 const sharedPrefixLength = (left: string, right: string): number => {
   const [leftChars, rightChars] = [[...left], [...right]];

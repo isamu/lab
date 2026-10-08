@@ -1,0 +1,9 @@
+# Words that make the act after them a duty: "The Supplier shall deliver", "We will notify you".
+id: duty-marker
+language: en
+entries:
+  - pattern: shall
+  - pattern: will
+  - pattern: must
+  - pattern: agrees to
+  - pattern: undertakes to

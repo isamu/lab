@@ -1,0 +1,6 @@
+# 期限の語（日まで）を含んでいても期限でない書き方。「解除の日までの委託料」の「までの」は、何の分かを言うだけで、
+# いつまでにするかを決めない（obligation-without-deadline）。
+id: stated-deadline-not
+language: ja
+entries:
+  - pattern: までの

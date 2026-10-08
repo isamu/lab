@@ -1,0 +1,8 @@
+# Words in the heading of a section reviewing an earlier meeting's items. Their deadlines may be before this meeting, and are not compared (due-before-issue).
+id: earlier-section-word
+language: en
+entries:
+  - pattern: Previous
+  - pattern: Earlier
+  - pattern: Last meeting
+  - pattern: Carried over

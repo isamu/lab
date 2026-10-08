@@ -1,0 +1,7 @@
+# Headings of the nights column of a stay table (duration-mismatch).
+id: stay-nights-column
+language: en
+entries:
+  - pattern: "Nights"
+  - pattern: "No. of nights"
+  - pattern: "Number of nights"

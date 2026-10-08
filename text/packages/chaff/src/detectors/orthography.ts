@@ -4,6 +4,7 @@ import { escapeRegExp, latinBoundaries, occurrencesOutside, type Boundary, type 
 import { minorityReport } from "../spacing-minority.ts";
 import { isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { digitRunAround, endsWithDivisionLabel, isNumberName, sequenceLabelStarts, type NameContext } from "../number-name.ts";
+import { isSpacedLocationPart, type FloorWords } from "../location-part.ts";
 
 /** チームが chaff.yaml の prefer に書いた「使わない書き方」。書いていなければ何も言わない。 */
 export const preferredTerm: Detector = (doc, options): Finding[] => {
@@ -35,12 +36,13 @@ const digitBeside = (boundary: Boundary): number => {
 
 /**
  * 文書全体で一度だけ読むもの（number-name.ts の NameContext に加えて）。calendar は日付・時刻の単位、
- * divisions は「第1節」のように「第」と番号の後ろに書く区切りの語。
+ * divisions は「第1節」のように「第」と番号の後ろに書く区切りの語、floors は階・部屋の番号を読む語（5階、201号室、地下 1階）。
  */
 type NumberContext = NameContext & {
   readonly calendar: CalendarUnits;
   readonly divisions: ReadonlySet<string>;
   readonly itemNumbers: ReadonlySet<string>;
+  readonly floors: FloorWords;
 };
 
 /** 文頭の項目の番号の後ろと見る境目の位置の上限。番号は短く文の頭にあるので、これより後ろの境目は番号の後ろではない。長い文で文頭からの切り出しを繰り返さない。 */
@@ -71,6 +73,7 @@ const calendarStarts = (sentence: Sentence, units: CalendarUnits): ReadonlySet<n
 /**
  * 番号・識別子として書かれた数（number-name.ts）、日付・時刻の数、「第1節」の後ろの境目、文頭の項目の番号（「一 JIS」）の後ろの境目は、空け方の好みではないので数えない。
  * 日付・時刻は前の境目（「は 9月」「午後3時」「令和 3 年」）も数えない。日付はまとめて一つの書き方で、数量の空け方の票にはしない。
+ * 「本社 5階」のように名前の後ろに空白で区切った階・部屋の番号の前の空白も、所在の組の区切りなので数えない（location-part.ts）。
  */
 const isCounted = (sentence: Sentence, boundary: Boundary, context: NumberContext, calendar: ReadonlySet<number>): boolean => {
   if (followsItemNumber(sentence.text, boundary, context.itemNumbers)) return false;
@@ -79,6 +82,7 @@ const isCounted = (sentence: Sentence, boundary: Boundary, context: NumberContex
   const run = digitRunAround(sentence.text, digitBeside(boundary));
   if (run === undefined) return true;
   if (calendar.has(run.start)) return false;
+  if (boundary.kind === "before-digit" && isSpacedLocationPart(sentence.text, run, sentence.tokens, sentence.span.start, context.floors)) return false;
   return !isNumberName(sentence.text, run, sentence.tokens, sentence.span.start, context);
 };
 
@@ -145,6 +149,7 @@ export const latinSpacing: Detector = (doc, options): Finding[] => {
     calendar: calendarUnitsOf(doc),
     divisions: labelsAt(doc, "after"),
     itemNumbers: numberedItems(patternList(doc, "item-number"), doc.prose ?? doc.source),
+    floors: { units: patternsOf(doc, "floor-unit"), levels: patternsOf(doc, "floor-level") },
   };
   const located: Located[] = doc.sentences.flatMap((sentence) => {
     const quoted = quotedSpans(sentence.text);

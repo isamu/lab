@@ -1,0 +1,7 @@
+# The marks that leave a clock time's zone to the place (time-order, arrival-before-departure). A time marked "local
+# time" need not be in the same zone as the times around it, so it is not compared with them. Matched as written.
+id: local-time-mark
+language: en
+entries:
+  - pattern: "local time"
+  - pattern: "Local time"

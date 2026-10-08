@@ -1,0 +1,9 @@
+# Short words of scale written right after an amount's number in a range ($90–70k), for amount-range-reversed only.
+# weight is the number the word multiplies by. Matched as written, so both cases are listed.
+id: amount-short-scale
+language: en
+entries:
+  - pattern: k
+    weight: 1000
+  - pattern: K
+    weight: 1000

@@ -1,0 +1,48 @@
+id: arrival-before-departure
+layer: L3
+status: stable
+how_to_find: arrival-before-departure
+requires: [dates]
+severity: warning
+
+name:
+  ja: 着が発より前
+  en: An arrival before its departure
+
+why:
+  ja: 「福岡 11:30発、羽田 11:05着」のように、同じ便や列車の着の時刻が発より前だと、どちらかの時刻を書き間違えています。読み手は乗る便を確かめ直すことになり、間違ったまま予定を組む人も出ます。同じ行の発と着（時刻のすぐ後ろの「発」「着」、表の出発と到着の列）を比べます。着に翌日の印（翌、+1）があれば一日足し、発と着の両方に日付があれば日付から比べます。
+  en: 'When a leg such as "departs Washington 1:30 PM, arrives Boston 1:05 PM" arrives before it departs, one of the times is wrong. The reader has to look the connection up again, and someone may plan around the wrong time. A departure and an arrival in one line are compared: times marked "departs" and "arrives" (or "dep" and "arr"), and the departure and arrival columns of a table. An arrival marked as the next day (+1, "next day") gets a day added, and when both times have a date, the dates are compared first.'
+
+message:
+  ja: 着「{arrival}」が発「{departure}」より前です
+  en: "Arrives at {arrival}, before it departs at {departure}"
+
+how_to_fix:
+  ja: 発と着の時刻を確かめて、書き間違えたほうを直してください。日をまたぐなら、着に「翌」や「+1」を書いてください。
+  en: Check both times and correct the wrong one. If the leg arrives on the next day, mark the arrival "+1" or "next day".
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 旅程の便や列車で、着の時刻が発の時刻より前の所
+  en: A flight or a train in an itinerary that arrives before it departs
+example:
+  ja:
+    before: |
+      - 11:30 JAL 316便（福岡 11:30発、羽田 11:05着）
+    after: |
+      - 11:30 JAL 316便（福岡 11:30発、羽田 13:05着）
+  en:
+    before: |
+      - 1:30 PM Flight AA 2177 (departs Washington 1:30 PM, arrives Boston 1:05 PM)
+    after: |
+      - 1:30 PM Flight AA 2177 (departs Washington 1:30 PM, arrives Boston 3:05 PM)
+
+not_flagged:
+  ja: 着に翌日の印（翌、+1）のあるもの、片方にだけ日付のあるもの、違う時間帯の印が二つあるものや「現地時間」の付いたもの（時刻をそのまま比べられない）は言いません。
+  en: 'An arrival marked as the next day (+1, "next day"), a pair where only one time has a date, and a line with two different time zones or a "local time" mark (the times cannot be compared as written) are not reported.'

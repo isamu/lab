@@ -1,0 +1,9 @@
+# Lead-ins before a name that record a decision (fact-conflict, summary-fact-mismatch): in "It was decided that the
+# fee is $28." the name is "the fee". They are dropped before the name is read.
+id: fact-label-lead
+language: en
+entries:
+  - pattern: it was decided that
+  - pattern: it was agreed that
+  - pattern: we decided that
+  - pattern: we agreed that

@@ -449,6 +449,42 @@
         "falseAlarms": 0
       }
     },
+    "amount-range-reversed": {
+      "groups": {
+        "academic": {
+          "documents": 10,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 23,
+          "fired": 0
+        },
+        "business": {
+          "documents": 80,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 21,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 35,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 13,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 7,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 49,
+          "fired": 0
+        }
+      }
+    },
     "amount-scale-consistency": {
       "groups": {
         "academic": {
@@ -566,6 +602,42 @@
         "samples": 6,
         "falseAlarms": 0,
         "cleanSamples": 12
+      }
+    },
+    "arrival-before-departure": {
+      "groups": {
+        "academic": {
+          "documents": 10,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 23,
+          "fired": 0
+        },
+        "business": {
+          "documents": 80,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 21,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 35,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 13,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 7,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 49,
+          "fired": 0
+        }
       }
     },
     "article-sound": {
@@ -2001,6 +2073,42 @@
         "planted": 6,
         "found": 6,
         "falseAlarms": 0
+      }
+    },
+    "date-outside-period": {
+      "groups": {
+        "academic": {
+          "documents": 10,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 23,
+          "fired": 0
+        },
+        "business": {
+          "documents": 80,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 21,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 35,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 13,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 7,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 49,
+          "fired": 0
+        }
       }
     },
     "date-range-reversed": {
@@ -5479,6 +5587,30 @@
         "falseAlarms": 0
       }
     },
+    "obligation-without-deadline": {
+      "groups": {
+        "academic": {
+          "documents": 10,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 21,
+          "fired": 2
+        },
+        "legal": {
+          "documents": 35,
+          "fired": 11
+        },
+        "literature": {
+          "documents": 13,
+          "fired": 2
+        },
+        "speech": {
+          "documents": 7,
+          "fired": 1
+        }
+      }
+    },
     "one-sentence-paragraph-run": {
       "groups": {
         "academic": {
@@ -5568,7 +5700,7 @@
         },
         "business": {
           "documents": 80,
-          "fired": 22
+          "fired": 23
         },
         "docs": {
           "documents": 21,
@@ -7540,6 +7672,42 @@
         "falseAlarms": 0
       }
     },
+    "time-order": {
+      "groups": {
+        "academic": {
+          "documents": 10,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 23,
+          "fired": 0
+        },
+        "business": {
+          "documents": 80,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 21,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 35,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 13,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 7,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 49,
+          "fired": 0
+        }
+      }
+    },
     "title-case-consistency": {
       "groups": {
         "academic": {
@@ -7940,7 +8108,7 @@
         },
         "business": {
           "documents": 80,
-          "fired": 29
+          "fired": 28
         },
         "docs": {
           "documents": 21,

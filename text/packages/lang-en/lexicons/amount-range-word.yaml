@@ -1,0 +1,6 @@
+# Words that join two amounts into a range on their own, beside range-connector's marks (amount-range-reversed):
+# "$50,000 to $70,000". A date needs "from … to" (range-frame); an amount does not. Matched as whole words.
+id: amount-range-word
+language: en
+entries:
+  - pattern: to

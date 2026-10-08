@@ -1,0 +1,16 @@
+# 文書が期間を書く行の頭の語（旅行期間：2026年10月12日〜10月15日）。この語で始まり、区切り（：、空白）の後に期間を書いた一行だけを、
+# date-outside-period が期間として読む。「申込期間」「募集期間」は、その後に並ぶ予定の期間ではないので入れない。
+id: period-label
+language: ja
+entries:
+  - pattern: 旅行期間
+  - pattern: 出張期間
+  - pattern: 滞在期間
+  - pattern: 研修期間
+  - pattern: 実施期間
+  - pattern: 開催期間
+  - pattern: 開催日程
+  - pattern: 会期
+  - pattern: 期間
+  - pattern: 日程
+  - pattern: 旅程

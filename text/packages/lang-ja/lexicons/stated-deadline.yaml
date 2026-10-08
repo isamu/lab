@@ -1,0 +1,13 @@
+# 期限を決める書き方のうち、concrete-deadline の数の期限のほかのもの（2026年5月15日までに、毎月末日限り、直ちに）。
+# 同じ文にあれば、その文の義務には期限がある（obligation-without-deadline は指さない）。「解除の日までの委託料」の「までの」は
+# 何の分かを言うだけで期限ではないので、「まで」だけは入れない。
+id: stated-deadline
+language: ja
+entries:
+  - pattern: までに
+  - pattern: 以内に
+  - pattern: 限り
+  - pattern: 直ちに
+  - pattern: ただちに
+  - pattern: 同時に
+  - pattern: 当日

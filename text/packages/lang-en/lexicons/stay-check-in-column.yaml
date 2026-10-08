@@ -1,0 +1,10 @@
+# Headings of the first-day column of a stay table (duration-mismatch). With a check-out and a nights column, each row's nights are compared with its dates.
+id: stay-check-in-column
+language: en
+entries:
+  - pattern: "Check-in"
+  - pattern: "Check in"
+  - pattern: "Check-in date"
+  - pattern: "Arrive"
+  - pattern: "Arrival"
+  - pattern: "Arrival date"
