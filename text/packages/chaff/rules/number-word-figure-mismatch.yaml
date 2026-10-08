@@ -1,0 +1,76 @@
+id: number-word-figure-mismatch
+layer: L1
+status: stable
+how_to_find: number-word-figure
+# The number words and how they join (digit, place, scale, and, 金) come from the number-word lexicon; the marks around
+# the figure from currency-notation and number-word's unit words; a word of scale inside the bracket from amount-multiplier.
+severity: warning
+
+name:
+  ja: 文字で書いた数と括弧の数字が違う
+  en: Number in words differs from its figure
+
+why:
+  ja: 契約書や公式の文書は、読み違いや書き換えを防ぐために数を「三（3）か月」「金参拾万円（300,000円）」のように文字と数字の二通りで書きます。二つが「三（4）か月」「金参拾万円（30,000円）」のように食い違うと、どちらが正しいか文書からは決まらず、後で争いの種になります。片方だけを書き換えたときや、ひな形の数字だけを差し替えたときに起きます。漢数字（大字の壱・弐・参・拾・萬も）と英語の数の語（forty-five、one hundred and five、Fifty Thousand）を数に直し、すぐ後ろの括弧の数字と比べます。
+  en: Contracts and formal documents write a number twice, in words and in figures ("thirty (30) days", "Fifty Thousand Dollars ($50,000)"), so that it cannot be misread or altered. When the two disagree ("thirty (13) days", "Fifty Thousand Dollars ($5,000)"), the document does not say which one holds, and the difference becomes a dispute. It happens when one of the two is edited, or when a template's figures are replaced and its words are not. The number words (forty-five, one hundred and five, Fifty Thousand; Japanese numerals, formal ones such as 壱 弐 参 拾 萬 included) are read as a number and compared with the figure in the brackets right after them.
+
+message:
+  ja: 「{written}」は、文字では{words}、括弧の数字では{figure}です
+  en: '"{written}" says {words} in words and {figure} in figures'
+
+how_to_fix:
+  ja: どちらの数が正しいかを確かめ、文字と数字を同じ数にそろえてください。
+  en: Check which number is meant, and make the words and the figure say the same number.
+
+levels: { strict: error, normal: warning, relaxed: warning }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: facts
+summary:
+  ja: 「三（4）か月」「金参拾万円（30,000円）」のように、文字で書いた数と後ろの括弧の数字が違う所
+  en: A number written in words followed by a figure in brackets that says another number, such as "six (7) months"
+example:
+  ja:
+    config: { genre: legal/contract }
+    before: |
+      乙は、甲に対し、本件業務の対価として金参拾万円（30,000円）を、業務の完了から三（4）か月以内に支払う。
+    after: |
+      乙は、甲に対し、本件業務の対価として金参拾万円（300,000円）を、業務の完了から三（3）か月以内に支払う。
+  en:
+    config: { genre: legal/contract }
+    before: |
+      The Buyer shall pay Fifty Thousand Dollars ($5,000) within thirty (13) days of delivery.
+    after: |
+      The Buyer shall pay Fifty Thousand Dollars ($50,000) within thirty (30) days of delivery.
+
+not_flagged:
+  ja: 文字と数字が同じ数のもの（「三（3）か月」「金参拾万円（300,000円）」）は指しません。括弧の中が数字だけでないもの（「三（第6条）」「三（甲）」）、数字の前が数の語でないもの（「第（6）号」）、ほかの字に続く漢数字（「統一（2）」「唯一（1）」）、万や億で始まる語（「万一（1）」）、二〇二六のように数字を並べただけの漢数字、小さな数の後の西暦らしい四桁（「二（2026）」）は読みません。分数（「百分の三」）の分母は読みません。
+  en: Words and a figure that agree ("six (6) months", "Fifty Thousand Dollars ($50,000)") are not reported. A bracket holding anything but a figure ("(Section 6)", "(the Term)"), a figure after a word that is not a number ("Section (6)"), a number word inside another word ("often (2)"), words that are not one well-formed number ("five five (55)", "thousand (1,000)") and a year in brackets after a small number ("two (2026)") are not read. A cheque-style amount ("Fifty Thousand and 00/100 Dollars") and fractions ("one-half (1/2)") are not read.
+level_meaning:
+  ja: 文字で書いた数と括弧の数字が違うとき指摘
+  en: reported when a number in words and its figure in brackets disagree
+
+rewrite:
+  ja:
+    direction: 正しいほうの数に、文字と数字の両方をそろえてください。どちらが正しいかは文書の外で確かめます。
+    pairs:
+      - before: 金参拾万円（30,000円）
+        after: 金参拾万円（300,000円）
+      - before: 三（4）か月
+        after: 三（3）か月
+    keep:
+      - 文字と数字の二通りで書く書き方
+    avoid:
+      - どちらが正しいかを確かめずに片方へ合わせる
+  en:
+    direction: Make the words and the figure say the number that is meant. Which one is right has to be checked outside the document.
+    pairs:
+      - before: Fifty Thousand Dollars ($5,000)
+        after: Fifty Thousand Dollars ($50,000)
+      - before: thirty (13) days
+        after: thirty (30) days
+    keep:
+      - writing the number both in words and in figures
+    avoid:
+      - matching one to the other without checking which is meant
