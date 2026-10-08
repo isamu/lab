@@ -103,6 +103,20 @@ const sharedMissingFrom = (usage: string, language: string): string[] => {
   return SHARED_FLAGS.filter((name) => !lines.some((line) => line.startsWith(`  ${name} `))).map((name) => `${language}: ${name}`);
 };
 
+/** The short usage a command prints itself when its arguments do not fit, one per command and language. */
+type OwnUsage = { readonly command: string; readonly language: string; readonly usage: string };
+
+const OWN_USAGES: readonly OwnUsage[] = [
+  { command: "grade", language: "ja", usage: GRADE_TEXT.ja.usage },
+  { command: "grade", language: "en", usage: GRADE_TEXT.en.usage },
+  { command: "ai-score", language: "ja", usage: AI_SCORE_TEXT.ja.usage },
+  { command: "ai-score", language: "en", usage: AI_SCORE_TEXT.en.usage },
+];
+
+/** "<language>: <command> <flag>" for each of the command's own options its short usage does not name. */
+const ownFlagsMissing = ({ command, language, usage }: OwnUsage): string[] =>
+  (COMMAND_FLAGS[command] ?? []).filter((name) => !usage.includes(name)).map((name) => `${language}: ${command} ${name}`);
+
 describe("どのコマンドも --help に応える", () => {
   it("どのコマンドにも、日本語と英語の使い方に行がある", () => {
     const missing = Object.entries(CLI_TEXT).flatMap(([language, text]) =>
@@ -128,12 +142,7 @@ describe("どのコマンドも --help に応える", () => {
   });
 
   it("grade と ai-score が誤りのときに出す使い方も、そのコマンドの指定を日本語と英語の両方で挙げる", () => {
-    const own = { grade: GRADE_TEXT, "ai-score": AI_SCORE_TEXT };
-    const missing = Object.entries(own).flatMap(([command, texts]) =>
-      Object.entries(texts).flatMap(([language, text]) =>
-        (COMMAND_FLAGS[command] ?? []).filter((name) => !text.usage.includes(name)).map((name) => `${language}: ${command} ${name}`),
-      ),
-    );
+    const missing = OWN_USAGES.flatMap(ownFlagsMissing);
     assert.deepEqual(missing, []);
   });
 
