@@ -274,11 +274,19 @@ const currencyBefore = (text: string, at: number): string | undefined => {
   return CURRENCIES.find((currency) => text.startsWith(currency, end - currency.length));
 };
 
-/** "six (6) months": a figure in brackets after a number in words, with the unit after the bracket. */
-const AFTER_NUMBER_WORD = /\p{L} \($/u;
+const FIGURE_WORDS: ReadonlySet<string> = new Set((LEXICONS["bracketed-figure-word"] ?? []).map((entry) => entry.pattern));
+/** The word right before " (", with its hyphenated parts: "forty-five" in "forty-five (". */
+const WORD_BEFORE_BRACKET = /([\p{L}-]+) \($/u;
+const BRACKET_REACH = 30;
 
+const followsNumberWord = (text: string, start: number): boolean => {
+  const word = WORD_BEFORE_BRACKET.exec(text.slice(Math.max(0, start - BRACKET_REACH), start))?.[1] ?? "";
+  return FIGURE_WORDS.has(word.toLowerCase().split("-").at(-1) ?? "");
+};
+
+/** "six (6) months": a figure in brackets after a number in words, with the unit after the bracket. */
 const unitAfterBracket = (text: string, start: number, end: number): string | undefined =>
-  text[end] === ")" && AFTER_NUMBER_WORD.test(text.slice(Math.max(0, start - 3), start)) ? unitAfter(text, end + 1) : undefined;
+  text[end] === ")" && followsNumberWord(text, start) ? unitAfter(text, end + 1) : undefined;
 
 const quantities = (text: string): Mention[] =>
   [...text.matchAll(NUMBER_RUN)].flatMap((match) => {

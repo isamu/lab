@@ -66,6 +66,7 @@ describe("duration-mismatch", () => {
     );
     assert.deepEqual(durationEn("This Agreement starts on April 1, 2026 and continues for twelve (12) months, until March 31, 2027."), []);
     assert.deepEqual(durationEn("This Agreement starts on April 1, 2026 and continues for thirty (30) days, until April 30, 2026."), []);
+    assert.deepEqual(durationEn("Section (6) months starts on April 1, 2026 and ends on March 31, 2027."), []);
   });
 
   it("the end of a month: one month after January 31 is the last day of February", () => {

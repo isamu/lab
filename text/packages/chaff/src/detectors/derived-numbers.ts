@@ -30,7 +30,7 @@ const endWithUnit = (source: string, end: number, unit: string): number => {
 };
 
 /** The number in words before a figure in brackets: "six (" in "six (6) months". */
-const WORDS_BEFORE_BRACKET = /\p{L}+ \($/u;
+const WORDS_BEFORE_BRACKET = /[\p{L}-]+ \($/u;
 const BRACKET_REACH = 20;
 
 /** 「six (6) months」は語の数から単位まで。括弧の中の数だけでは、指摘に引いたとき何の期間か読めない。 */

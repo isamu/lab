@@ -1,0 +1,34 @@
+# Number words a contract writes before the same figure in brackets: "six (6) months", "forty-five (45) days". The tree
+# reads the figure as a quantity only after one of these (the last part of a hyphenated word), never after "Section (6)".
+id: bracketed-figure-word
+language: en
+entries:
+  - pattern: one
+  - pattern: two
+  - pattern: three
+  - pattern: four
+  - pattern: five
+  - pattern: six
+  - pattern: seven
+  - pattern: eight
+  - pattern: nine
+  - pattern: ten
+  - pattern: eleven
+  - pattern: twelve
+  - pattern: thirteen
+  - pattern: fourteen
+  - pattern: fifteen
+  - pattern: sixteen
+  - pattern: seventeen
+  - pattern: eighteen
+  - pattern: nineteen
+  - pattern: twenty
+  - pattern: thirty
+  - pattern: forty
+  - pattern: fifty
+  - pattern: sixty
+  - pattern: seventy
+  - pattern: eighty
+  - pattern: ninety
+  - pattern: hundred
+  - pattern: thousand

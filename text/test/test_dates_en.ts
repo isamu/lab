@@ -95,6 +95,8 @@ describe("a tab between a number and its unit or currency", () => {
   it("does not read a bracketed list number, or a bracket with no unit after it", () => {
     assert.deepEqual(amounts("(6) months are listed below."), []);
     assert.deepEqual(amounts("six (6) apples"), []);
+    assert.deepEqual(amounts("Section (6) months, paragraph (2) days, item (5) percent."), []);
+    assert.deepEqual(amounts("within forty-five (45) days"), [[45, "days"]]);
     assert.deepEqual(amounts("six (6)"), []);
   });
   it("reads 30<tab>days and USD<tab>500", () => {
