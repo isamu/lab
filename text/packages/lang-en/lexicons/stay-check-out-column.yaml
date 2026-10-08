@@ -1,0 +1,10 @@
+# Headings of the leaving-day column of a stay table (duration-mismatch).
+id: stay-check-out-column
+language: en
+entries:
+  - pattern: "Check-out"
+  - pattern: "Check out"
+  - pattern: "Check-out date"
+  - pattern: "Depart"
+  - pattern: "Departure"
+  - pattern: "Departure date"
