@@ -78,7 +78,7 @@ export const asideAt = (source: string, offset: number): string | undefined => {
   const open = source.charAt(offset);
   const close = ASIDE_CLOSE[open];
   if (close === undefined) return undefined;
-  const chars = [...source.slice(offset + 1, offset + 1 + MAX_ASIDE_CHARS)];
+  const chars = Array.from(source.slice(offset + 1, offset + 1 + MAX_ASIDE_CHARS));
   const depths: number[] = [];
   chars.forEach((char) => depths.push((depths.at(-1) ?? 1) + (char === open ? 1 : 0) - (char === close ? 1 : 0)));
   const end = depths.indexOf(0);
