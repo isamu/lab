@@ -3,7 +3,7 @@ layer: L2
 status: stable
 how_to_find: connective-hierarchy
 word_list: connective-hierarchy
-extra_word_lists: [connective-lookalike]
+extra_word_lists: [connective-lookalike, connective-clause-end]
 requires: [pos]
 languages: [ja]
 severity: warning

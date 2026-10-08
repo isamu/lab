@@ -71,10 +71,15 @@ const standsAsConnective = (reading: Reading, span: Span): boolean => {
 
 /**
  * The clause of the text the letter at `at` is in: from the end of the last clause end before it (ときは、) to the end of
- * the first one after it. A list in a condition clause and one in the main clause are not levels of one list.
+ * the first one after it. A list in a condition clause and one in the main clause are not levels of one list. A clause
+ * end with a connective right after it (…ときは、又は…場合には) joins two conditions, and does not cut.
  */
-export const clauseAround = (text: string, at: number, clauseEnds: readonly LexiconEntry[]): string => {
-  const ends = clauseEnds.filter(({ pattern }) => pattern !== "").flatMap(({ pattern }) => placesOf(text, pattern).map((start) => start + pattern.length));
+export const clauseAround = (text: string, at: number, clauseEnds: readonly LexiconEntry[], connectives: readonly LexiconEntry[] = []): string => {
+  const joinsNext = (end: number): boolean => connectives.some(({ pattern }) => pattern !== "" && text.startsWith(pattern, end));
+  const ends = clauseEnds
+    .filter(({ pattern }) => pattern !== "")
+    .flatMap(({ pattern }) => placesOf(text, pattern).map((start) => start + pattern.length))
+    .filter((end) => !joinsNext(end));
   const start = Math.max(0, ...ends.filter((end) => end <= at));
   const end = Math.min(text.length, ...ends.filter((end) => end > at));
   return text.slice(start, end);
@@ -87,7 +92,7 @@ const hasInnerLevel = (clause: string, outer: LexiconEntry, connectives: readonl
 const connectiveSpans = (sentence: Sentence, outer: LexiconEntry, reading: Reading, lists: ConnectiveLists): Span[] =>
   placesOf(sentence.text, outer.pattern)
     .filter((at) => reading.hidden[at] !== true)
-    .filter((at) => !hasInnerLevel(clauseAround(sentence.text, at, lists.clauseEnds), outer, lists.connectives))
+    .filter((at) => !hasInnerLevel(clauseAround(sentence.text, at, lists.clauseEnds, lists.connectives), outer, lists.connectives))
     .map((at) => ({ start: sentence.span.start + at, end: sentence.span.start + at + outer.pattern.length }))
     .filter((span) => standsAsConnective(reading, span));
 

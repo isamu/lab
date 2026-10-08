@@ -52,6 +52,8 @@ describe("connective-hierarchy: 内の段の無い「並びに」「若しくは
     assert.deepEqual(loneIn("求めがあった場合には、書面若しくは電子メール又は口頭で通知する。"), []);
     assert.deepEqual(loneIn("会員若しくは職員が違反し、又は義務を怠ったときは、除名できる。"), []);
     assert.deepEqual(loneIn("理事又は監事が求めたときは、申請書及び添付書類並びに記録を提出する。"), []);
+    assert.deepEqual(loneIn("本契約は、甲若しくは乙が解散したときは、又は申立てがあった場合には、終了する。"), []);
+    assert.deepEqual(loneIn("甲は、成果物及び資料を納入したときには、並びに検査に合格した場合には、請求できる。"), []);
   });
 
   it("節は条件の節の終わりで区切る", () => {
@@ -61,6 +63,7 @@ describe("connective-hierarchy: 内の段の無い「並びに」「若しくは
     assert.equal(clauseAround("A若しくはBのときは、C又はD", 1, ends), "A若しくはBのときは、");
     assert.equal(clauseAround("", 0, ends), "");
     assert.equal(clauseAround("A若しくはB", 1, []), "A若しくはB");
+    assert.equal(clauseAround("A若しくはBのときは、又はCのときは、D", 1, ends, LISTS.connectives), "A若しくはBのときは、又はCのときは、");
   });
 
   it("一段の「及び」「又は」、仮名の「ならびに」「もしくは」、「並び」＋「に」は指さない", () => {
