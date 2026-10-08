@@ -6100,6 +6100,14 @@
         "falseAlarms": 0
       }
     },
+    "quote-unnamed-speaker": {
+      "groups": {
+        "business": {
+          "documents": 58,
+          "fired": 0
+        }
+      }
+    },
     "quote-without-source": {
       "groups": {
         "academic": {
