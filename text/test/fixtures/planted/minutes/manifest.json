@@ -1,0 +1,241 @@
+{
+  "note": "Self-written meeting minutes and job postings, each in a clean version and a planted one that differs only on the lines below. Minutes are read as business/meeting-notes; a job posting has no genre of its own and is read as business/press-release, the genre for an organisation's public notices. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should. yarn planted minutes scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/minutes",
+      "language": "ja",
+      "genre": "business/meeting-notes",
+      "clean": "ja/minutes.clean.md",
+      "planted": "ja/minutes.planted.md",
+      "mistakes": [
+        {
+          "kind": "attendee-count",
+          "rule": "announced-count-mismatch",
+          "line": 7,
+          "clean": "出席者（6名）",
+          "planted": "出席者（5名）"
+        },
+        {
+          "kind": "summary-decision",
+          "rule": "summary-fact-mismatch",
+          "line": 13,
+          "clean": "月会費：2,800円",
+          "planted": "月会費：3,000円"
+        },
+        {
+          "kind": "action-due-before-meeting",
+          "rule": "due-before-issue",
+          "line": 39,
+          "clean": "2026年10月9日（金）",
+          "planted": "2026年10月2日（金）"
+        },
+        {
+          "kind": "next-meeting-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 45,
+          "clean": "2026年10月20日（火）14:00〜",
+          "planted": "2026年10月20日（水）14:00〜"
+        },
+        {
+          "kind": "person-name-two-ways",
+          "rule": "name-variant",
+          "line": 41,
+          "clean": "| 佐々木 美穂 | 受付",
+          "planted": "| 佐々木 美保 | 受付"
+        }
+      ]
+    },
+    {
+      "id": "ja/review",
+      "language": "ja",
+      "genre": "business/meeting-notes",
+      "clean": "ja/review.clean.md",
+      "planted": "ja/review.planted.md",
+      "mistakes": [
+        {
+          "kind": "attendee-count",
+          "rule": "announced-count-mismatch",
+          "line": 7,
+          "clean": "次の5名です",
+          "planted": "次の6名です"
+        },
+        {
+          "kind": "summary-decision",
+          "rule": "summary-fact-mismatch",
+          "line": 17,
+          "clean": "リリース日：2026年11月18日（水）",
+          "planted": "リリース日：2026年11月25日（水）"
+        },
+        {
+          "kind": "action-due-before-meeting",
+          "rule": "due-before-issue",
+          "line": 29,
+          "clean": "期限 2026年11月11日（水）",
+          "planted": "期限 2026年11月2日（月）"
+        },
+        {
+          "kind": "next-meeting-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 34,
+          "clean": "2026年11月11日（水）10:00〜",
+          "planted": "2026年11月11日（木）10:00〜"
+        }
+      ]
+    },
+    {
+      "id": "ja/posting",
+      "language": "ja",
+      "genre": "business/press-release",
+      "clean": "ja/posting.clean.md",
+      "planted": "ja/posting.planted.md",
+      "mistakes": [
+        {
+          "kind": "salary-range-reversed",
+          "rule": "amount-range-reversed",
+          "line": 12,
+          "clean": "月給28万円〜36万円",
+          "planted": "月給36万円〜28万円"
+        },
+        {
+          "kind": "required-as-preferred",
+          "rule": "required-listed-as-preferred",
+          "line": 28,
+          "clean": "- 連結決算の経験",
+          "planted": "- 日商簿記2級以上"
+        },
+        {
+          "kind": "working-hours-total",
+          "rule": "duration-mismatch",
+          "line": 33,
+          "clean": "9:00〜18:00（休憩1時間",
+          "planted": "9:00〜17:30（休憩1時間"
+        },
+        {
+          "kind": "person-name-two-ways",
+          "rule": "name-variant",
+          "line": 43,
+          "clean": "松本 恵美から",
+          "planted": "松本 絵美から"
+        }
+      ]
+    },
+    {
+      "id": "en/minutes",
+      "language": "en",
+      "genre": "business/meeting-notes",
+      "clean": "en/minutes.clean.md",
+      "planted": "en/minutes.planted.md",
+      "mistakes": [
+        {
+          "kind": "attendee-count",
+          "rule": "announced-count-mismatch",
+          "line": 7,
+          "clean": "Attendees (6)",
+          "planted": "Attendees (5)"
+        },
+        {
+          "kind": "summary-decision",
+          "rule": "summary-fact-mismatch",
+          "line": 13,
+          "clean": "Monthly fee: $28",
+          "planted": "Monthly fee: $30"
+        },
+        {
+          "kind": "action-due-before-meeting",
+          "rule": "due-before-issue",
+          "line": 39,
+          "clean": "Friday, October 9, 2026",
+          "planted": "Friday, October 2, 2026"
+        },
+        {
+          "kind": "next-meeting-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 45,
+          "clean": "Tuesday, October 20, 2026, 2:00 p.m.",
+          "planted": "Wednesday, October 20, 2026, 2:00 p.m."
+        },
+        {
+          "kind": "person-name-two-ways",
+          "rule": "name-variant",
+          "line": 41,
+          "clean": "| Sofia Mendes | Write",
+          "planted": "| Sofia Mendez | Write"
+        }
+      ]
+    },
+    {
+      "id": "en/review",
+      "language": "en",
+      "genre": "business/meeting-notes",
+      "clean": "en/review.clean.md",
+      "planted": "en/review.planted.md",
+      "mistakes": [
+        {
+          "kind": "attendee-count",
+          "rule": "announced-count-mismatch",
+          "line": 7,
+          "clean": "The following five people",
+          "planted": "The following six people"
+        },
+        {
+          "kind": "summary-decision",
+          "rule": "summary-fact-mismatch",
+          "line": 17,
+          "clean": "Release date: Wednesday, November 18, 2026",
+          "planted": "Release date: Wednesday, November 25, 2026"
+        },
+        {
+          "kind": "action-due-before-meeting",
+          "rule": "due-before-issue",
+          "line": 29,
+          "clean": "(due Wednesday, November 11, 2026)",
+          "planted": "(due Monday, November 2, 2026)"
+        },
+        {
+          "kind": "next-meeting-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 34,
+          "clean": "Wednesday, November 11, 2026, 10:00 a.m.",
+          "planted": "Thursday, November 11, 2026, 10:00 a.m."
+        }
+      ]
+    },
+    {
+      "id": "en/posting",
+      "language": "en",
+      "genre": "business/press-release",
+      "clean": "en/posting.clean.md",
+      "planted": "en/posting.planted.md",
+      "mistakes": [
+        {
+          "kind": "salary-range-reversed",
+          "rule": "amount-range-reversed",
+          "line": 12,
+          "clean": "$70,000–$90,000",
+          "planted": "$90,000–$70,000"
+        },
+        {
+          "kind": "required-as-preferred",
+          "rule": "required-listed-as-preferred",
+          "line": 28,
+          "clean": "- Experience with consolidated accounts",
+          "planted": "- At least three years of bookkeeping experience"
+        },
+        {
+          "kind": "working-hours-total",
+          "rule": "duration-mismatch",
+          "line": 33,
+          "clean": "9:00 a.m. to 6:00 p.m.",
+          "planted": "9:00 a.m. to 5:30 p.m."
+        },
+        {
+          "kind": "person-name-two-ways",
+          "rule": "name-variant",
+          "line": 43,
+          "clean": "Rachel Whitford will reply",
+          "planted": "Rachel Whitfield will reply"
+        }
+      ]
+    }
+  ]
+}
