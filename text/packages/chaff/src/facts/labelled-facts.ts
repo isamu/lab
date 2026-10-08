@@ -19,6 +19,8 @@ export type FactWords = {
   readonly determiners: readonly string[];
   /** 名前にならない語（それ、it）。 */
   readonly vague: readonly string[];
+  /** 名前の前に置かれる決定の前置き（協議の結果、, it was decided that）。読点を含んでも条件ではないので、外してから名前を読む。 */
+  readonly leads: readonly string[];
   readonly attributes: readonly AttributePhrase[];
 };
 
@@ -38,6 +40,7 @@ const LETTER = /\p{L}/u;
 /** 名前に書かない記号。コードや属性（{style="…"}、"key"=）の中の値は、項目の値ではない。 */
 const CODE_MARK = /[{}<>=[\]"`]/u;
 const LATIN_WORD = /^[a-z ]+$/iu;
+const LATIN_LETTER = /^[a-z]$/iu;
 
 const lineStartOf = (source: string, offset: number): number => source.lastIndexOf("\n", offset - 1) + 1;
 
@@ -52,6 +55,15 @@ const beforeSeparator = (head: string, separator: string): string | undefined =>
   const rest = head.slice(0, head.length - separator.length);
   if (LATIN_WORD.test(separator) && !/\s$/u.test(rest)) return undefined;
   return rest;
+};
+
+/** 英字の前置きが語の途中で切れているか（「we agreed that」は「we agreed thatching」の頭ではない）。 */
+const endsInsideWord = (text: string, length: number): boolean => LATIN_LETTER.test(text.charAt(length - 1)) && LATIN_LETTER.test(text.charAt(length));
+
+/** 頭の決定の前置きを外した節。 */
+const withoutLead = (clause: string, words: FactWords): string => {
+  const lead = words.leads.find((phrase) => clause.toLowerCase().startsWith(phrase.toLowerCase()) && !endsInsideWord(clause, phrase.length));
+  return lead === undefined ? clause : clause.slice(lead.length).trimStart();
 };
 
 /** 最後の文の切れ目より後ろ。 */
@@ -97,7 +109,7 @@ const labelledFact = (source: string, value: FactValue, words: FactWords): Fact 
   for (const separator of words.separators) {
     const before = beforeSeparator(head, separator);
     if (before === undefined) continue;
-    const clause = afterLastBreak(before).replace(BLOCK_MARK, "").replace(ITEM_MARK, "");
+    const clause = withoutLead(afterLastBreak(before).replace(BLOCK_MARK, "").replace(ITEM_MARK, "").trimStart(), words);
     if (CLAUSE_COMMA.test(clause)) return undefined;
     const label = withoutEdgeMarks(clause);
     const key = keyOf(label, words);
