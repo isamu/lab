@@ -1,0 +1,10 @@
+# Units of a number of sessions (duration-product-mismatch). The count times the length of one is compared with the stated total ("15 sessions of 90 minutes").
+id: session-count-unit
+language: en
+entries:
+  - pattern: sessions
+  - pattern: classes
+  - pattern: lessons
+  - pattern: lectures
+  - pattern: meetings
+  - pattern: weeks

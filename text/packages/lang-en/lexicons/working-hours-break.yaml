@@ -1,0 +1,10 @@
+# Words beside the length of a break (duration-mismatch, working hours). before: written before the length ("break of 1 hour"); after: behind it ("a 1-hour break").
+id: working-hours-break
+language: en
+entries:
+  - { pattern: "break", position: before }
+  - { pattern: "break of", position: before }
+  - { pattern: "lunch break", position: before }
+  - { pattern: "lunch break of", position: before }
+  - { pattern: "break", position: after }
+  - { pattern: "lunch break", position: after }
