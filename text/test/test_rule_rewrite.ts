@@ -41,6 +41,9 @@ const COUNTS_ITS_WORDS: ReadonlySet<string> = new Set(["max-ten", "teki-overuse"
 /** Rules whose word list names the context around a finding (する after 〜たり, 開始 after より, に限り after 等), which an after keeps. */
 const LISTS_ITS_CONTEXT: ReadonlySet<string> = new Set(["tari-unpaired", "yori-as-from", "nado-closed-list"]);
 
+/** Word lists a rule reads around a finding (便利な's な) or passes over (the very first), not phrases it flags. */
+const UNFLAGGED_LISTS: ReadonlySet<string> = new Set(["very-copula", "very-exception"]);
+
 const MIN_PAIRS = 2;
 const MAX_PAIRS = 3;
 const READER_LANGUAGES = ["ja", "en"];
@@ -65,7 +68,7 @@ const lackingIn = (rewrite: RuleRewrite): string[] => [
  */
 const flaggedPhrases = (rule: RuleDefinition, language: string): string[] =>
   [rule.word_list, ...rule.extra_word_lists]
-    .flatMap((name) => (name === undefined ? [] : (lexiconsByLanguage[language]?.[name] ?? [])))
+    .flatMap((name) => (name === undefined || UNFLAGGED_LISTS.has(name) ? [] : (lexiconsByLanguage[language]?.[name] ?? [])))
     .filter((entry) => entry.instead_of === undefined)
     .map((entry) => entry.pattern.toLowerCase());
 

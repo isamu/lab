@@ -1,0 +1,7 @@
+# 変化の先の値に付く語（summary-fact-mismatch）: 「2.4% から 1.6% に」。position は語が値のどちら側にあるか。
+# 「から…まで」は多くが幅（「24週から35週まで」）なので入れない。
+id: fact-change-to
+language: ja
+entries:
+  - { pattern: に, position: after }
+  - { pattern: へ, position: after }

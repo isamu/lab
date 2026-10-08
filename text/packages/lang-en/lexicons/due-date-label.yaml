@@ -1,0 +1,10 @@
+# Words that mark a payment or validity deadline. A line starting with one and a date earlier than the issue date is reported (due-before-issue).
+id: due-date-label
+language: en
+entries:
+  - pattern: Payment due
+  - pattern: Due date
+  - pattern: Due
+  - pattern: Pay by
+  - pattern: Valid until
+  - pattern: Expires

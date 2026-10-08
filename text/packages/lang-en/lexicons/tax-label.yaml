@@ -1,0 +1,9 @@
+# Words that mark a tax line. A list or table line starting with one and giving a rate (10%) is compared with that rate of the subtotal above it (tax-mismatch).
+id: tax-label
+language: en
+entries:
+  - pattern: Sales tax
+  - pattern: Consumption tax
+  - pattern: Tax
+  - pattern: VAT
+  - pattern: GST

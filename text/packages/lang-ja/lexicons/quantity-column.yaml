@@ -1,0 +1,8 @@
+# 明細の表で数量の列の見出し。単価と金額の列と並ぶ表で、数量 × 単価を金額と比べる（line-amount-mismatch）。
+id: quantity-column
+language: ja
+entries:
+  - pattern: 数量
+  - pattern: 個数
+  - pattern: 数
+  - pattern: 工数

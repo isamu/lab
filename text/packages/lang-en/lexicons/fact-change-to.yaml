@@ -1,0 +1,6 @@
+# The word that marks the value a change reaches (summary-fact-mismatch): "from 2.4% to 1.6%". position is the side of the
+# value the word stands on.
+id: fact-change-to
+language: en
+entries:
+  - { pattern: to, position: before }

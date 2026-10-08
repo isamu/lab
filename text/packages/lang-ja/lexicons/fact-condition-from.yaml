@@ -1,0 +1,18 @@
+# 変化のもとの側の条件を言う語（summary-fact-mismatch）。本文が同じ項目の値を二つの条件で書いたとき（「休憩が無いときの誤りの率は
+# 2.4%、休憩があるときは 1.6%」）、要約の「2.4% から 1.6% に」をその二つと組にする。group は組の名前で、fact-condition-to の
+# 同じ group の語とだけ組になる。暦の年は、語彙表に書かなくても、早い年がもとの側の組になる。
+# 前・後 だけでは書かない。「一歩前進は百歩後退」の 前 と 後 も組になってしまう。
+id: fact-condition-from
+language: ja
+entries:
+  - { pattern: 導入前, group: time }
+  - { pattern: 実施前, group: time }
+  - { pattern: 変更前, group: time }
+  - { pattern: 改善前, group: time }
+  - { pattern: 介入前, group: time }
+  - { pattern: 開始前, group: time }
+  - { pattern: 無いとき, group: presence }
+  - { pattern: ないとき, group: presence }
+  - { pattern: 無い場合, group: presence }
+  - { pattern: ない場合, group: presence }
+  - { pattern: 対照群, group: arm }

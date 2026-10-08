@@ -1,0 +1,11 @@
+# 期限が過ぎたことを書く語。この語のある期限の行は、文書の期限ではなく、過ぎた期限の報告と読む（due-before-issue）。
+id: deadline-passed-word
+language: ja
+entries:
+  - pattern: 期限切れ
+  - pattern: 期限超過
+  - pattern: 超過
+  - pattern: 経過
+  - pattern: 延滞
+  - pattern: 未払
+  - pattern: 失効
