@@ -3601,7 +3601,7 @@
         },
         "business": {
           "documents": 41,
-          "fired": 14
+          "fired": 13
         },
         "docs": {
           "documents": 11,
@@ -3609,19 +3609,19 @@
         },
         "legal": {
           "documents": 14,
-          "fired": 1
+          "fired": 0
         },
         "literature": {
           "documents": 9,
-          "fired": 1
+          "fired": 0
         },
         "speech": {
           "documents": 3,
-          "fired": 1
+          "fired": 0
         },
         "technical": {
           "documents": 27,
-          "fired": 10
+          "fired": 7
         }
       },
       "bench": {
@@ -7988,7 +7988,7 @@
         },
         "legal": {
           "documents": 34,
-          "fired": 13
+          "fired": 12
         },
         "literature": {
           "documents": 13,

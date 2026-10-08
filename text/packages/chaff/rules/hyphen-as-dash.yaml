@@ -39,8 +39,8 @@ example:
       The release is late — very late.
 
 not_flagged:
-  ja: 語と語のあいだのものだけを見ます。箇条書きの印の「- 」、数の範囲（1 - 2）、語の中のハイフン（well-known）、コードは見ません。文学の文書では既定で止めています（古い版がダッシュを「--」で組むため）。
-  en: Only between words. A list marker ("- "), a number range ("1 - 2"), a hyphen inside a word ("well-known") and code are not reported. The literature presets turn it off, since older printed texts set the dash as "--".
+  ja: 語と語のあいだのものだけを見ます。箇条書きの印の「- 」、数の範囲（1 - 2）、語の中のハイフン（well-known）、コードは見ません。ダッシュの字（— や –）を一つも使わない文書の「--」は、その文書のダッシュの打ち方（文字だけの規格文書、Markdown で -- をダッシュにする書き方）なので見ません。文学の文書では既定で止めています（古い版がダッシュを「--」で組むため）。
+  en: Only between words. A list marker ("- "), a number range ("1 - 2"), a hyphen inside a word ("well-known") and code are not reported. Nor is "--" in a document that sets no dash as a character (— or –), where it is how the document types its dash, as plain-text standards and Markdown typographers do. The literature presets turn it off, since older printed texts set the dash as "--".
 level_meaning:
   ja: "{limit} 箇所あれば指摘"
   en: reported once there are {limit}
