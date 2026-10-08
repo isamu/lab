@@ -9,8 +9,8 @@ name:
   en: A currency written two ways
 
 why:
-  ja: 同じ通貨の金額を「1,000円」と「¥1,000」、「$20」と「USD 20」のように二通りに書くと、読み手は別の通貨か、別の扱いの金額かと迷います。見積もりや資料を寄せ集めたときに起きます。どの書き方が正しいかは決めず、通貨ごとに文書の中で少ないほうを指します。
-  en: When one currency is written two ways in one document ("$20" and "USD 20", "1,000円" and "¥1,000"), the reader wonders whether a different currency or a different kind of amount is meant. It happens when quotes and notes are pasted together. chaff does not decide which way is right; for each currency it points at the way the document uses less.
+  ja: 同じ通貨の金額を「1,000円」と「¥1,000」、「$20」と「USD 20」のように二通りに書くと、読み手は別の通貨か、別の扱いの金額かと迷います。見積もりや資料を寄せ集めたときに起きます。どの書き方が正しいかは決めず、通貨ごとに文書の中で少ないほうを指します。表の升の金額も数えます。
+  en: When one currency is written two ways in one document ("$20" and "USD 20", "1,000円" and "¥1,000"), the reader wonders whether a different currency or a different kind of amount is meant. It happens when quotes and notes are pasted together. chaff does not decide which way is right; for each currency it points at the way the document uses less. Amounts in table cells are counted too.
 
 message:
   ja: 「{written}」と書いています（この文書はこの通貨をふつう「{usual}」のように書きます。{of} 箇所のうち {count} 箇所が違う）

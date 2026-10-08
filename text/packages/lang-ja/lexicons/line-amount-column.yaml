@@ -1,0 +1,8 @@
+# 明細の表で、その行の金額（数量 × 単価）の列の見出し（line-amount-mismatch）。
+id: line-amount-column
+language: ja
+entries:
+  - pattern: 金額
+  - pattern: 金額（税抜）
+  - pattern: 金額（円）
+  - pattern: 小計
