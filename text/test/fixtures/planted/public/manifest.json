@@ -1,10 +1,11 @@
 {
-  "note": "Self-written public and administrative documents (a city notice and a course application guide), each in a clean version and a planted one that differs only on the lines below. The Japanese ones are written in 公用文 notation (kana for auxiliary verbs and formal nouns, Arabic numerals, 及び for a one-level list). Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should. yarn planted public scores them; expected.json is the committed score.",
+  "note": "Self-written public and administrative documents (a city notice and a course application guide), each in a clean version and a planted one that differs only on the lines below. The Japanese ones are written in 公用文 notation (kana for auxiliary verbs and formal nouns, Arabic numerals, 及び for a one-level list) and run with style: koyobun, as a team writing 公用文 would set it. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should. yarn planted public scores them; expected.json is the committed score.",
   "documents": [
     {
       "id": "ja/notice",
       "language": "ja",
       "genre": "business/report",
+      "style": "koyobun",
       "clean": "ja/notice.clean.md",
       "planted": "ja/notice.planted.md",
       "mistakes": [
@@ -77,6 +78,7 @@
       "id": "ja/guide",
       "language": "ja",
       "genre": "business/report",
+      "style": "koyobun",
       "clean": "ja/guide.clean.md",
       "planted": "ja/guide.planted.md",
       "mistakes": [

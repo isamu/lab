@@ -6,9 +6,12 @@ import { judgedSentences } from "../packages/chaff/src/detectors/sentence-ending
 import { lineNumberAt, linesOf } from "../packages/chaff/src/structure/lines.ts";
 import type { RegisterCounts } from "./bench-text.ts";
 import { buildDocument, teamRules } from "../packages/chaff/src/document.ts";
-import { EMPTY } from "../packages/chaff/src/config/load.ts";
+import { EMPTY, type Config } from "../packages/chaff/src/config/load.ts";
+import { limitsFor, withStyle } from "../packages/chaff/src/config/style.ts";
+import { optionLayersOf } from "../packages/chaff/src/config/option-problems.ts";
+import { loadStyles } from "../packages/chaff/src/style-load.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { runRules, runRulesWith, type RunResult, type Settings } from "../packages/chaff/src/run.ts";
+import { runRulesWith, type RunResult, type Settings } from "../packages/chaff/src/run.ts";
 import { runCrossRules } from "../packages/chaff/src/cross-run.ts";
 import { CROSS_DETECTORS } from "../packages/chaff/src/detectors/index.ts";
 import { profileFor } from "../packages/chaff/src/profile/for-file.ts";
@@ -56,13 +59,22 @@ export const registerCountsOf = (path: string, source: string, language: string,
 
 /**
  * What a corpus run is given besides the document: the team's words, which rules to run, the levels chaff.yaml would set,
- * and whether the experimental rules run (as --experimental; true when left out).
+ * whether the experimental rules run (as --experimental; true when left out), and the house style chaff.yaml would name.
  */
 export type RunChoice = {
   readonly team?: TeamWords;
   readonly only?: (id: string) => boolean;
   readonly settings?: Settings;
   readonly experimental?: boolean;
+  readonly style?: string | undefined;
+};
+
+/** A chaff.yaml that says only `style: <style>`, with the style applied as the CLI applies it. A style chaff does not have is an error. */
+export const styleConfig = (style: string | undefined): Config => {
+  if (style === undefined) return EMPTY;
+  const config = withStyle({ ...EMPTY, style }, loadStyles());
+  if (config.applied === undefined) throw new Error(`no style ${style}`);
+  return config;
 };
 
 /** Every rule's run on one document of the given genre, as if --experimental, with the rules it ran. */
@@ -74,12 +86,17 @@ export const allRulesRun = async (
   choice: RunChoice = {},
 ): Promise<{ readonly result: RunResult; readonly rules: readonly RuleDefinition[] }> => {
   await adapterOf(language).prepare?.({ pos: true });
-  const { team = EMPTY, only = () => true, settings = {}, experimental = true } = choice;
+  const { team = EMPTY, only = () => true, settings = {}, experimental = true, style } = choice;
   const rules = loadRules(language).filter((rule) => only(rule.id));
-  return {
-    result: runRules(documentOf(path, source, language, genre, team), rules, settings, experimental, genre),
-    rules,
+  const config = styleConfig(style);
+  const context = {
+    settings: { ...config.rules, ...settings },
+    experimental,
+    genre,
+    limits: limitsFor(config, language),
+    optionLayers: optionLayersOf(config),
   };
+  return { result: runRulesWith(documentOf(path, source, language, genre, team), rules, context), rules };
 };
 
 /** One file of a set, with its genre and the levels its rules run at. */
@@ -129,9 +146,12 @@ export const allFindings = async (
   settings: Settings = {},
 ): Promise<CorpusFinding[]> => findingsWith(path, source, language, genre, { ...(team === undefined ? {} : { team }), settings });
 
-/** The findings `chaff --genre <genre>` gives one document: the genre's levels, and no experimental rule it leaves off. */
-export const genreFindings = async (path: string, source: string, language: string, genre: string): Promise<CorpusFinding[]> =>
-  findingsWith(path, source, language, genre, { experimental: false });
+/**
+ * The findings `chaff --genre <genre>` gives one document: the genre's levels, and no experimental rule it leaves off. With
+ * a style, the run is the one a chaff.yaml naming that style gives: its levels over the genre's, its limits and options.
+ */
+export const genreFindings = async (path: string, source: string, language: string, genre: string, style?: string): Promise<CorpusFinding[]> =>
+  findingsWith(path, source, language, genre, { experimental: false, style });
 
 /**
  * Every rule's run on the files of one run of the given genre, as if --experimental: each file's own rules, then the
