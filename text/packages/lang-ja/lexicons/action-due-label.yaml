@@ -1,0 +1,9 @@
+# 宿題の期限を示す語。表の列の見出しがこの語だけなら、その列の日付を期限とする。箇条書きでは、この語のすぐ後の日付（期限 11月2日）を期限とする（due-before-issue）。
+id: action-due-label
+language: ja
+entries:
+  - pattern: 期限
+  - pattern: 締切
+  - pattern: 締め切り
+  - pattern: 〆切
+  - pattern: 期日

@@ -1,0 +1,7 @@
+# Words in the title of minutes. Only a document whose title (first line) has one has its action items compared with the meeting date (due-before-issue).
+id: minutes-title-word
+language: en
+entries:
+  - pattern: Minutes
+  - pattern: Meeting notes
+  - pattern: Meeting summary
