@@ -60,6 +60,13 @@ describe("parseManifest", () => {
     const fractional = { ...documents[0], mistakes: [{ ...mistake("total", "total-mismatch", 3), line: 2.5 }] };
     assert.throws(() => parseManifest({ documents: [fractional] }), /has no line/u);
   });
+
+  it("style は省けて、書いたなら名前でなければ止まる", () => {
+    assert.equal(parseManifest({ documents: [documents[0]] })[0]?.style, undefined);
+    assert.equal(parseManifest({ documents: [{ ...documents[0], style: "koyobun" }] })[0]?.style, "koyobun");
+    assert.throws(() => parseManifest({ documents: [{ ...documents[0], style: "" }] }), /ja\/one has no style/u);
+    assert.throws(() => parseManifest({ documents: [{ ...documents[0], style: 3 }] }), /ja\/one has no style/u);
+  });
 });
 
 describe("misalignedPlants", () => {

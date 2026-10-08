@@ -1,0 +1,20 @@
+# Commands that install a package pinned to one version (version-mismatch): {name} is the package, {version} the exact
+# version. Flags and other packages may stand between the command and the pin (npm install --save-dev wrapkit@3.2.0).
+# A range (wrapkit@^3.0.0, wrapkit>=3.0.0) or a tag (wrapkit@latest) pins no version and does not fit.
+id: install-command
+language: en
+entries:
+  - pattern: "npm install {name}@{version}"
+  - pattern: "npm i {name}@{version}"
+  - pattern: "npm add {name}@{version}"
+  - pattern: "yarn add {name}@{version}"
+  - pattern: "pnpm add {name}@{version}"
+  - pattern: "pnpm install {name}@{version}"
+  - pattern: "bun add {name}@{version}"
+  - pattern: "pip install {name}=={version}"
+  - pattern: "pip3 install {name}=={version}"
+  - pattern: "uv add {name}=={version}"
+  - pattern: "poetry add {name}=={version}"
+  - pattern: "cargo install {name}@{version}"
+  - pattern: "cargo add {name}@{version}"
+  - pattern: "gem install {name} -v {version}"
