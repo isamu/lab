@@ -1,0 +1,11 @@
+# The first column header of a table that lists a function's parameters (parameter-table-mismatch). A table headed by
+# another word (Option, Field) lists something else and is not compared with the signature.
+id: parameter-header
+language: en
+entries:
+  - pattern: parameter
+  - pattern: parameters
+  - pattern: param
+  - pattern: argument
+  - pattern: arguments
+  - pattern: arg

@@ -1,0 +1,10 @@
+# Phrases that negate a deprecation word (deprecated-option-used): a name "not deprecated" is not marked deprecated.
+id: deprecation-negated
+language: en
+entries:
+  - pattern: not deprecated
+  - pattern: not yet deprecated
+  - pattern: never deprecated
+  - pattern: no longer deprecated
+  - pattern: not obsolete
+  - pattern: undeprecated

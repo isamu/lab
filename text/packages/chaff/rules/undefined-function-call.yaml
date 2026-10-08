@@ -1,0 +1,77 @@
+id: undefined-function-call
+layer: L1
+status: stable
+how_to_find: undefined-call
+requires: [markdown]
+severity: warning
+
+name:
+  ja: ページに無い関数をコード例で呼んでいる
+  en: Example calls a function the page does not define
+
+why:
+  ja: "API リファレンスや README が「wrap」を説明しているのに、例が「wrapText(...)」を呼んでいると、読み手が例を写したとたんに「関数がありません」で止まります。関数の名前を変えたあとに例だけ古い名前のまま残ったときや、書き間違えたときに起きます。見出しの最初の語（## wrap）と import した名前を、このページが説明する関数として読み、コードブロックの中で、その名前を頭に持つより長い名前を呼んでいて、その名前がページのほかのどこにも無いときに指します。"
+  en: 'When an API reference or a README documents wrap and its example calls wrapText(...), the reader who copies the example stops at "not defined". It happens when a function is renamed and an example keeps the old name, or when the name is mistyped. The first word of a heading (## wrap) and the names an example imports are read as the functions the page documents. A call in a code block to a longer name that starts with one of them, written nowhere else on the page, is pointed out.'
+
+message:
+  ja: 「{name}」を呼んでいますが、このページが説明しているのは「{documented}」です
+  en: "`{name}` is called, but this page documents `{documented}`"
+
+how_to_fix:
+  ja: 例の関数の名前を、説明している関数の名前に直してください。別の関数なら、その関数をページで説明してください。
+  en: Call the function the page documents. If it is another function, document it on the page.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [technical, docs, blog, legal, academic, literature, speech]
+off_for:
+  legal: "Code examples belong to technical writing."
+  academic: "Code examples belong to technical writing."
+  literature: "Code examples belong to technical writing."
+  speech: "Code examples belong to technical writing."
+
+group: facts
+summary:
+  ja: コード例が、ページで説明している関数と違う、どこにも無い名前の関数を呼んでいる所
+  en: An example calling a name the page never defines, close to one it documents
+example:
+  ja:
+    config: { genre: technical/readme }
+    before: |
+      ## wrap
+
+      文章を決まった幅で折り返します。
+
+      ```js
+      const lines = wrapText("折り返したい長い文です。", 10);
+      ```
+    after: |
+      ## wrap
+
+      文章を決まった幅で折り返します。
+
+      ```js
+      const lines = wrap("折り返したい長い文です。", 10);
+      ```
+  en:
+    config: { genre: technical/readme }
+    before: |
+      ## wrap
+
+      Wraps text to a given width.
+
+      ```js
+      const lines = wrapText("A long sentence to wrap.", 10);
+      ```
+    after: |
+      ## wrap
+
+      Wraps text to a given width.
+
+      ```js
+      const lines = wrap("A long sentence to wrap.", 10);
+      ```
+
+not_flagged:
+  ja: 宣言（function wrapText(）、コメントの中の呼び出し、プログラミング言語が用意する関数（parseInt、語彙表 code-global）、ページのほかの所にも出てくる名前（例の中で定義した関数、二度呼んだ関数、文で説明した関数）、メンバーの呼び出し（console.log(、obj.wrapText(）、説明している名前で始まらない名前、4 文字より短い名前を頭に持つものは見ません。
+  en: "A declaration (function wrapText(), a commented-out call, a function the programming language provides (parseInt, lexicon code-global), a name written anywhere else on the page (defined in the example, called twice, or named in the text), a member call (console.log(, obj.wrapText(), a name that does not start with a documented one, and documented names shorter than four characters are not checked."

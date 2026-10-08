@@ -1,7 +1,7 @@
 {
   "recall": {
     "ja": {
-      "summary-fact": "1/2",
+      "summary-fact": "2/2",
       "date-range-reversed": "2/2",
       "change-rate": "2/3",
       "percent-sum": "2/2",
@@ -10,7 +10,7 @@
       "quote-no-source": "0/1"
     },
     "en": {
-      "summary-fact": "1/2",
+      "summary-fact": "2/2",
       "date-range-reversed": "2/2",
       "change-rate": "2/3",
       "percent-sum": "2/2",

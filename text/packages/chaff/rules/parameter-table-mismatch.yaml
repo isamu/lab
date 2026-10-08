@@ -1,0 +1,90 @@
+id: parameter-table-mismatch
+layer: L1
+status: stable
+how_to_find: parameter-table
+# The header words of a parameter table (Parameter, 引数) come from the parameter-header lexicon.
+requires: [markdown]
+severity: warning
+
+name:
+  ja: 引数の表とシグネチャが合わない
+  en: Parameter table that does not match the signature
+
+why:
+  ja: API リファレンスで、関数のシグネチャと、その下の引数の表が違う引数を並べていると、読み手はどちらが正しいか分からず、無い引数を渡したり、必要な引数を知らずに終わったりします。引数を足したり名前を変えたりしたときに、片方だけを直すと起きます。コードブロックがちょうど一つの関数を宣言し（function や def、または戻り値の型が付いたもの）、次の見出しかコードブロックより前に、最初の列の見出しが「引数」や「Parameter」の表があるとき、両者を比べます。表にだけある引数は表の行を、シグネチャにだけある引数はシグネチャを指します。
+  en: When an API reference's signature and the parameter table under it list different parameters, the reader cannot tell which is right, and passes a parameter that does not exist or never learns of one that does. It happens when a parameter is added or renamed in one place only. When a code block declares exactly one function (with function or def, or with a return type) and a table whose first header is Parameter or Argument follows it before the next heading or code block, the two are compared. A parameter only in the table is pointed out on its row, and one only in the signature on the signature.
+
+message:
+  ja: 「{function}」の引数の表とシグネチャで、「{name}」が片方にしかありません
+  en: "`{name}` is in only one of the signature of `{function}` and its parameter table"
+
+how_to_fix:
+  ja: 実際の関数の引数を確かめて、表かシグネチャのどちらかを直してください。
+  en: Check the function's real parameters, and correct the table or the signature.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [technical, docs, blog, legal, academic, literature, speech]
+off_for:
+  legal: "Signatures and parameter tables belong to technical writing."
+  academic: "Signatures and parameter tables belong to technical writing."
+  literature: "Signatures and parameter tables belong to technical writing."
+  speech: "Signatures and parameter tables belong to technical writing."
+
+group: facts
+summary:
+  ja: API リファレンスで、引数の表とシグネチャの引数が食い違う所
+  en: A parameter in only one of a signature and the parameter table under it
+example:
+  ja:
+    config: { genre: technical/readme }
+    before: |
+      ## measure
+
+      ```ts
+      measure(text: string, tabSize = 4): number
+      ```
+
+      | 引数 | 型 | 説明 |
+      | --- | --- | --- |
+      | `text` | string | 幅を測る行 |
+      | `tabWidth` | number | タブ1つの幅 |
+    after: |
+      ## measure
+
+      ```ts
+      measure(text: string, tabSize = 4): number
+      ```
+
+      | 引数 | 型 | 説明 |
+      | --- | --- | --- |
+      | `text` | string | 幅を測る行 |
+      | `tabSize` | number | タブ1つの幅 |
+  en:
+    config: { genre: technical/readme }
+    before: |
+      ## measure
+
+      ```ts
+      measure(text: string, tabSize = 4): number
+      ```
+
+      | Parameter | Type | Description |
+      | --- | --- | --- |
+      | `text` | string | The line to measure |
+      | `tabWidth` | number | The width of one tab |
+    after: |
+      ## measure
+
+      ```ts
+      measure(text: string, tabSize = 4): number
+      ```
+
+      | Parameter | Type | Description |
+      | --- | --- | --- |
+      | `text` | string | The line to measure |
+      | `tabSize` | number | The width of one tab |
+
+not_flagged:
+  ja: 関数の呼び出し（wrap(text, 10);）、二つ以上の関数を宣言したコードブロック、分割代入の引数（{ a, b }）、self や this、最初の列の見出しが引数でない表（オプション、項目）、見出しやほかのコードブロックを挟んだ表、行の頭に | の無い表は比べません。型を名前の前に書く宣言（Java の String wrap(String text)）は読みません。表の「options.prefix」は options の項目として読みます。
+  en: "A call (wrap(text, 10);), a code block that declares two or more functions, a destructured parameter ({ a, b }), self and this, a table whose first header is not a parameter word (Option, Field), a table after another heading or code block, and a table whose rows do not start with | are not compared. A declaration with its types before the names (Java's String wrap(String text)) is not read. options.prefix in a table is read as a field of options."

@@ -312,3 +312,45 @@ describe("countedFacts: a number named by what it counts", () => {
     assert.deepEqual(keys("", [], []), []);
   });
 });
+
+describe("summary-fact-mismatch: the opening's date for an event against the body's", () => {
+  const pressJa = (opening: string, ...body: string[]): string[] => summaryJa("# 新版の提供について", "", opening, "", "## 提供の時期", "", ...body);
+  const pressEn = (opening: string, ...body: string[]): string[] => summaryEn("# A new version", "", opening, "", "## Release date", "", ...body);
+
+  it("a different date for the same event is reported (ja, en)", () => {
+    assert.deepEqual(pressJa("当社は新版を2026年11月9日から提供します。", "提供開始日は2026年11月2日です。"), ["提供:2026年11月9日≠2026年11月2日"]);
+    assert.deepEqual(pressEn("We will release the new version on November 9, 2026.", "The release date is November 2, 2026."), [
+      "release:November 9, 2026≠November 2, 2026",
+    ]);
+  });
+
+  it("the same date is silent", () => {
+    assert.deepEqual(pressJa("当社は新版を2026年11月2日から提供します。", "提供開始日は2026年11月2日です。"), []);
+    assert.deepEqual(pressEn("We will release the new version on November 2, 2026.", "The release date is November 2, 2026."), []);
+  });
+
+  it("a different event is not the same date", () => {
+    assert.deepEqual(pressJa("当社は2026年10月6日に新版を発表しました。", "提供開始日は2026年11月2日です。"), []);
+    assert.deepEqual(pressEn("We announced the new version on October 6, 2026.", "The release date is November 2, 2026."), []);
+    assert.deepEqual(pressEn("We announced on October 6, 2026 that we will release the new version.", "The release date is November 2, 2026."), []);
+  });
+
+  it("a date range, a date without a year, or two dates for the event in the body are not compared", () => {
+    assert.deepEqual(pressJa("新版を2026年11月9日から2027年3月31日まで先行提供します。", "提供開始日は2026年11月2日です。"), []);
+    assert.deepEqual(pressJa("新版を11月9日から提供します。", "提供開始日は2026年11月2日です。"), []);
+    assert.deepEqual(pressEn("We will release the new version on November 9.", "The release date is November 2, 2026."), []);
+    const twoInBody = ["The release date is November 2, 2026.", "", "The second release is on December 7, 2026."];
+    assert.deepEqual(pressEn("We will release it on November 9, 2026.", ...twoInBody), []);
+  });
+
+  it("a body sentence naming something the opening does not is another event", () => {
+    assert.deepEqual(pressEn("Acme will release Hakobune on November 9, 2026.", "Acme will release Kagura on November 2, 2026."), []);
+    assert.deepEqual(pressEn("Acme will release Hakobune on November 9, 2026.", "Acme will release Hakobune on November 2, 2026."), [
+      "release:November 9, 2026≠November 2, 2026",
+    ]);
+  });
+
+  it("a word that only contains the event word is not the event", () => {
+    assert.deepEqual(pressEn("The prerelease opens on November 9, 2026.", "The release date is November 2, 2026."), []);
+  });
+});

@@ -1,0 +1,7 @@
+# The header of a table column that gives each option's or parameter's default (default-value-mismatch).
+id: default-header
+language: en
+entries:
+  - pattern: default
+  - pattern: default value
+  - pattern: defaults

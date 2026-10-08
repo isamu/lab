@@ -1,0 +1,14 @@
+# Words that name an event with a date (summary-fact-mismatch). When a sentence of the opening or the summary has one event word
+# and one date, that date is compared with the date of a body sentence that has a word of the same group and one date. group
+# names the words for one event. announce is a group so that a sentence giving both the day of the announcement and the day of
+# the release is not read.
+id: fact-event
+language: en
+entries:
+  - { pattern: release, group: release }
+  - { pattern: launch, group: release }
+  - { pattern: on sale, group: release }
+  - { pattern: held, group: held }
+  - { pattern: take place, group: held }
+  - { pattern: takes place, group: held }
+  - { pattern: announce, group: announce }
