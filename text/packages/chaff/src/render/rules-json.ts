@@ -21,6 +21,7 @@ const TEXT: Texts<{
   readonly offByGenre: (genre: string) => string;
   readonly offUnsuited: (genre: string) => string;
   readonly offExperimental: string;
+  readonly offOptIn: string;
   readonly valuesNote: string;
   readonly reason: string;
   readonly byFile: string;
@@ -32,6 +33,7 @@ const TEXT: Texts<{
     offByGenre: (genre) => `ジャンル ${genre} では見ない`,
     offUnsuited: (genre) => `ジャンル ${genre} の文書には向かない rule（use_for）`,
     offExperimental: "experimental な rule は既定で動かさない",
+    offOptIn: "決まった書き方（style）のための rule で、chaff.yaml の style か rules で動かす",
     valuesNote: "この 4 語のかわりに数字を直接書いてもよい。4 語のほうを勧める。",
     reason: "<理由>",
     byFile: "chaff.yaml の rules に <rule-id>: <level> を足す。既定のままのものは書かない。",
@@ -49,6 +51,7 @@ const TEXT: Texts<{
     offByGenre: (genre) => `the ${genre} genre does not check it`,
     offUnsuited: (genre) => `not a rule for ${genre} documents (use_for)`,
     offExperimental: "experimental rules do not run by default",
+    offOptIn: "a house style's rule: it runs when chaff.yaml names the style or gives it a level",
     valuesNote: "A number may be written instead of these four words. The words are recommended.",
     reason: "<reason>",
     byFile: "Add <rule-id>: <level> under rules in chaff.yaml. Leave out anything at its default.",
@@ -76,6 +79,7 @@ const now = (rule: RuleDefinition, config: Config, limits: Limits, genre: string
   const limit = rule.level_sets === "severity" ? undefined : limits[rule.id];
   if (limit !== undefined) return { level: "normal", limit, set_as: "number" };
   if (explicit !== undefined) return { level: explicit, ...effectAt(rule, explicit, genre) };
+  if (rule.opt_in === true) return { level: "off", why_off: text.offOptIn };
   if (rule.status === "experimental" && !config.experimental) {
     const alone = offOnlyAsExperimental(rule, config, genre, preset, language);
     return { level: "off", why_off: text.offExperimental, ...(alone ? { turn_on_with: `npx chaffjs enable ${rule.id}` } : {}) };

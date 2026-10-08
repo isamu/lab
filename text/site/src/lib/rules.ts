@@ -15,6 +15,8 @@ export type Rule = {
   readonly id: string;
   readonly layer: RuleDefinition["layer"];
   readonly status: RuleDefinition["status"];
+  /** Runs only with a style or a level in chaff.yaml (opt_in). */
+  readonly optIn: boolean;
   readonly severity: Localized;
   readonly languages: readonly Lang[];
   readonly name: Localized;
@@ -80,6 +82,7 @@ const ruleOf = (ja: RuleDefinition): Rule => {
     id: ja.id,
     layer: ja.layer,
     status: ja.status,
+    optIn: ja.opt_in === true,
     severity: { ja: ja.severity, en: en.severity },
     languages,
     name: readable("name"),

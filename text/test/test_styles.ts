@@ -40,7 +40,7 @@ describe("house styles", () => {
       const koyobun = styles.find((style) => style.id === "koyobun");
       assert.ok(koyobun !== undefined);
       assert.deepEqual(koyobun.limits, { "max-sentence-length": { ja: 60 } });
-      assert.deepEqual(koyobun.rules, { "max-sentence-length": "normal", "no-mixed-desumasu": "normal", [RULE]: "normal" });
+      assert.deepEqual(koyobun.rules, { "max-sentence-length": "normal", "no-mixed-desumasu": "normal", [RULE]: "normal", "kana-function-word": "normal" });
       assert.deepEqual(koyobun.options, { [RULE]: { ending: "keep" } });
     });
 
@@ -239,7 +239,8 @@ describe("house styles", () => {
 
     it("rules --json has no style field when chaff.yaml names none", async () => {
       const run = await runCli({ "chaff.yaml": "language: ja\n" }, ["rules", "--json"]);
-      assert.doesNotMatch(run.out, /"style":/u);
+      // A top-level field: a rule's example may carry a style in its own config.
+      assert.doesNotMatch(run.out, /^ {2}"style":/mu);
     });
 
     it("an unknown style stops the run and lists the styles", async () => {

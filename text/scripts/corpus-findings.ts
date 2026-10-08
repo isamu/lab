@@ -1,6 +1,6 @@
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import type { LanguageAdapter, Level, ProseDocument, RuleDefinition } from "../packages/chaff/src/plugin.ts";
+import type { AdapterNeeds, LanguageAdapter, Level, ProseDocument, RuleDefinition } from "../packages/chaff/src/plugin.ts";
 import { wordsOf } from "../packages/chaff/src/detectors/structure.ts";
 import { judgedSentences } from "../packages/chaff/src/detectors/sentence-ending.ts";
 import { lineNumberAt, linesOf } from "../packages/chaff/src/structure/lines.ts";
@@ -11,11 +11,12 @@ import { limitsFor, withStyle } from "../packages/chaff/src/config/style.ts";
 import { optionLayersOf } from "../packages/chaff/src/config/option-problems.ts";
 import { loadStyles } from "../packages/chaff/src/style-load.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
-import { runRulesWith, type RunResult, type Settings } from "../packages/chaff/src/run.ts";
+import { runRulesWith, type RunContext, type RunResult, type Settings } from "../packages/chaff/src/run.ts";
 import { runCrossRules } from "../packages/chaff/src/cross-run.ts";
 import { CROSS_DETECTORS } from "../packages/chaff/src/detectors/index.ts";
 import { profileFor } from "../packages/chaff/src/profile/for-file.ts";
 import { messageOf } from "../packages/chaff/src/render/text.ts";
+import { adapterNeedsOf } from "../packages/chaff/src/check-source.ts";
 
 export const STRUCTURE_RULES: readonly string[] = ["dangling-reference", "numbering-gap", "duplicate-definition"];
 
@@ -77,16 +78,11 @@ export const styleConfig = (style: string | undefined): Config => {
   return config;
 };
 
-/** Every rule's run on one document of the given genre, as if --experimental, with the rules it ran. */
-export const allRulesRun = async (
-  path: string,
-  source: string,
-  language: string,
-  genre: string,
-  choice: RunChoice = {},
-): Promise<{ readonly result: RunResult; readonly rules: readonly RuleDefinition[] }> => {
-  await adapterOf(language).prepare?.({ pos: true });
-  const { team = EMPTY, only = () => true, settings = {}, experimental = true, style } = choice;
+type CorpusRun = { readonly rules: RuleDefinition[]; readonly context: RunContext; readonly needs: AdapterNeeds };
+
+/** What one corpus run runs, with what, and what the adapter is asked to prepare for it, as `chaff` asks under the same chaff.yaml. */
+const corpusRunOf = (language: string, genre: string, choice: RunChoice): CorpusRun => {
+  const { only = () => true, settings = {}, experimental = true, style } = choice;
   const rules = loadRules(language).filter((rule) => only(rule.id));
   const config = styleConfig(style);
   const context = {
@@ -96,7 +92,23 @@ export const allRulesRun = async (
     limits: limitsFor(config, language),
     optionLayers: optionLayersOf(config),
   };
-  return { result: runRulesWith(documentOf(path, source, language, genre, team), rules, context), rules };
+  return { rules, context, needs: adapterNeedsOf(rules, { rules: context.settings }, experimental, genre, language) };
+};
+
+/** What a corpus run asks the language adapter to prepare. */
+export const corpusNeedsOf = (language: string, genre: string, choice: RunChoice = {}): AdapterNeeds => corpusRunOf(language, genre, choice).needs;
+
+/** Every rule's run on one document of the given genre, as if --experimental, with the rules it ran. */
+export const allRulesRun = async (
+  path: string,
+  source: string,
+  language: string,
+  genre: string,
+  choice: RunChoice = {},
+): Promise<{ readonly result: RunResult; readonly rules: readonly RuleDefinition[] }> => {
+  const { rules, context, needs } = corpusRunOf(language, genre, choice);
+  await adapterOf(language).prepare?.(needs);
+  return { result: runRulesWith(documentOf(path, source, language, genre, choice.team ?? EMPTY), rules, context), rules };
 };
 
 /** One file of a set, with its genre and the levels its rules run at. */
@@ -113,8 +125,8 @@ export type LevelledFile = {
  * the file's own run.
  */
 export const runSetAtLevels = async (files: readonly LevelledFile[], language: string): Promise<RunResult[]> => {
-  await adapterOf(language).prepare?.({ pos: true });
   const rules = loadRules(language);
+  await Promise.all(files.map(async (file) => adapterOf(language).prepare?.(adapterNeedsOf(rules, { rules: file.levels(rules) }, true, file.genre, language))));
   const inputs = files.map((file) => {
     const doc = documentOf(file.path, file.source, language, file.genre, EMPTY);
     const context = { settings: file.levels(rules), experimental: true, genre: file.genre };
@@ -162,9 +174,9 @@ export const runResults = async (
   language: string,
   genre: string,
 ): Promise<{ readonly results: ReadonlyMap<string, RunResult>; readonly rules: readonly RuleDefinition[] }> => {
-  await adapterOf(language).prepare?.({ pos: true });
   const rules = loadRules(language);
   const context = { settings: {}, experimental: true, genre };
+  await adapterOf(language).prepare?.(adapterNeedsOf(rules, { rules: context.settings }, context.experimental, genre, language));
   const inputs = [...files].map(([path, source]) => {
     const doc = documentOf(path, source, language, genre, EMPTY);
     return { doc, rules, context, raw: runRulesWith(doc, rules, context) };

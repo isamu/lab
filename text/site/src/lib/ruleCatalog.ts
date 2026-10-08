@@ -16,7 +16,7 @@ import { rules, type Rule } from "./rules";
 const OUTCOMES_FILE = resolve(process.cwd(), "src", "generated", "rule-examples.json");
 
 /** How a rule gets to run: on by default (its findings as information, for info), experimental, only with a list in chaff.yaml, or through chaff test. */
-export type RunsWhen = "default" | "info" | "experimental" | "team" | "test";
+export type RunsWhen = "default" | "info" | "experimental" | "style" | "team" | "test";
 
 export type CatalogEntry = {
   readonly rule: Rule;
@@ -59,6 +59,7 @@ const runsWhenOf = (rule: Rule, lang: Lang): RunsWhen => {
   if (rule.layer === "L4") return "test";
   if (rule.group === "team") return "team";
   if (rule.status !== "stable") return "experimental";
+  if (rule.optIn) return "style";
   return rule.severity[lang] === "info" ? "info" : "default";
 };
 

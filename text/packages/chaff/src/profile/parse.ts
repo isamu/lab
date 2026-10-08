@@ -90,7 +90,16 @@ const languagesOf = (id: string, raw: Record<string, unknown>): Record<string, D
         const unnumbered = unnumberedOf(section["unnumbered"]);
         return [
           language,
-          { id, addresses: strings(section["addresses"]), connectives: strings(section["connectives"]), addressEnd, caption, relative, unnumbered },
+          {
+            id,
+            addresses: strings(section["addresses"]),
+            connectives: strings(section["connectives"]),
+            addressEnd,
+            caption,
+            relative,
+            unnumbered,
+            ...(section["quote_mentions_term"] === true ? { quoteMentionsTerm: true } : {}),
+          },
         ];
       }),
   );

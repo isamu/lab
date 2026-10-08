@@ -275,6 +275,8 @@ export type DocumentProfile = {
    * inside の単位の行に、番号の後ろの本文が続くときだけ。
    */
   readonly unnumbered?: { readonly indent: string; readonly inside: string; readonly depth: number } | undefined;
+  /** 定義した語を括弧に入れて、語そのものを指す（「株主」とあるのは、"controller" has the same meaning）。定義し直しでも、括弧の付け忘れでもない。 */
+  readonly quoteMentionsTerm?: boolean | undefined;
 };
 
 /**
@@ -497,6 +499,8 @@ export type RuleDefinition = {
   /** 動かす言語。未指定は全言語。「ですます調」のように言語に固有の rule が使う。 */
   readonly languages: readonly string[] | undefined;
   readonly use_for: readonly string[];
+  /** Off unless chaff.yaml or its style gives the rule a level: a house style's own rule (a 公用文 spelling), wrong for other documents. */
+  readonly opt_in?: true;
   readonly severity: Severity;
   /** Options beyond the level (the direction and length for katakana-long-vowel). Most rules have none. */
   readonly options?: Readonly<Record<string, RuleOption>>;

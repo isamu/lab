@@ -3,20 +3,20 @@
     "ja": {
       "summary-fact": "2/2",
       "date-range-reversed": "2/2",
-      "change-rate": "2/3",
+      "change-rate": "3/3",
       "percent-sum": "2/2",
       "figure-missing": "2/2",
       "elapsed-years": "2/2",
-      "quote-no-source": "0/1"
+      "quote-no-source": "1/1"
     },
     "en": {
       "summary-fact": "2/2",
       "date-range-reversed": "2/2",
-      "change-rate": "2/3",
+      "change-rate": "3/3",
       "percent-sum": "2/2",
       "figure-missing": "2/2",
       "elapsed-years": "2/2",
-      "quote-no-source": "0/1"
+      "quote-no-source": "1/1"
     }
   },
   "clean": []

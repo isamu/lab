@@ -73,13 +73,17 @@ export const standingsOf = (
 ): Map<string, Standing> =>
   new Map(
     rules
+      .filter((rule) => rule.opt_in !== true)
       .toSorted((left, right) => left.id.localeCompare(right.id, "en"))
       .map((rule) => [rule.id, standingOf(rule, measurement.rules[rule.id], handOffGroups(data, rule.id, marks))] as const),
   );
 
-/** A rule that landed after the last measurement: the policy cannot place it until `yarn rules:measure --apply` runs. */
+/**
+ * A rule that landed after the last measurement: the policy cannot place it until `yarn rules:measure --apply` runs.
+ * A rule that runs only with a style (opt_in) is not placed by the measurement, which counts what runs by default.
+ */
 const unmeasured = (rule: RuleDefinition, measurement: Measurement): string[] =>
-  rule.layer === "L4" || rule.status === "deprecated" || Object.hasOwn(measurement.rules, rule.id)
+  rule.layer === "L4" || rule.status === "deprecated" || rule.opt_in === true || Object.hasOwn(measurement.rules, rule.id)
     ? []
     : [`${rule.id}: not measured yet (yarn rules:measure --apply)`];
 

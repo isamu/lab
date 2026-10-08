@@ -205,6 +205,7 @@ These rules check the names and the deadlines.
 | `party-role-name` | A party called by a role the contract never gave it ("the Vendor", where the parties are the Supplier and the Customer) |
 | `defined-name-repeated` | A party's full name used again after its short name was defined |
 | `defined-term-form` | A defined term written in another form: quoted again, or a capitalised term in lower case |
+| `undefined-term` | In Japanese, a term in the defined form (本成果物) that the contract never defines |
 | `vague-deadline` | "Promptly" or "without undue delay", in a contract that writes its other limits in days |
 | `obligation-without-deadline` | A duty to pay, deliver, return or notify with no time at all, in a contract that gives its other duties one |
 | `duration-mismatch` | A start date and a length of time that do not reach the end date written beside them |

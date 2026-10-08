@@ -27,7 +27,7 @@
           "rule": "change-rate-mismatch",
           "line": 15,
           "clean": "比べて20%の増加",
-          "planted": "比べて25%の増加"
+          "planted": "比べて35%の増加"
         },
         {
           "kind": "percent-sum",
@@ -110,7 +110,7 @@
         },
         {
           "kind": "quote-no-source",
-          "rule": "quote-without-source",
+          "rule": "quote-unnamed-speaker",
           "line": 32,
           "clean": "ミナトリサーチが2026年9月に公表した調査報告で、同社のアナリストの森花子氏は",
           "planted": "業界のアナリストは"
@@ -143,7 +143,7 @@
           "rule": "change-rate-mismatch",
           "line": 15,
           "clean": "an increase of 20% from $10 million",
-          "planted": "an increase of 25% from $10 million"
+          "planted": "an increase of 35% from $10 million"
         },
         {
           "kind": "percent-sum",
@@ -226,7 +226,7 @@
         },
         {
           "kind": "quote-no-source",
-          "rule": "quote-without-source",
+          "rule": "quote-unnamed-speaker",
           "line": 32,
           "clean": "said Hanako Mori, an analyst at Minato Research, in a report the firm published in September 2026.",
           "planted": "said an analyst."

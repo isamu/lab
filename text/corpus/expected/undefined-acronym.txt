@@ -27,14 +27,14 @@ gitlab-values  10
 go-1-23-release-notes  9
 govuk-cddo-roadmap-2022-2025  9
 govuk-incident-safe-browsing  3
-govuk-style-guide-a-to-z  33
+govuk-style-guide-a-to-z  32
 ietf-draft-httpapi-ratelimit-headers-10  10
 irs-online-account-faq  6
 kep-2214-indexed-job  6
 kobayashi-press-hananoa-2026-02  3
 koenote-requirements  6
 mhlw-icd-committee-26-minutes  3
-mhlw-kokuji-h18-107-keiji-jiko  8
+mhlw-kokuji-h18-107-keiji-jiko  7
 mhlw-norovirus-qa  5
 nasa-advisory-crew-13-coverage  8
 neeview-changelog-ja  18
@@ -44,7 +44,7 @@ nsf-19-582-reu-solicitation  3
 nstac-microdata-forum  3
 nttcom-onboarding-week1  3
 nws-glossary-a  33
-ppc-guidelines-tsusoku  4
+ppc-guidelines-tsusoku  3
 rfc3693-geopriv-requirements  19
 rfc9293-tcp  36
 rfc9457  12
@@ -54,7 +54,7 @@ rust-rfc-2094-nll  19
 soumu-kokumin-cyber-glossary-a  3
 soumu-wp-r06-ai-booms  3
 soumu-wp-r06-misinformation  9
-us-4683202-nucleic-acid-amplification  19
+us-4683202-nucleic-acid-amplification  18
 us-6285999-node-ranking  4
 usajobs-va-it-specialist-customer-support  42
 yamano-akashi-architecture  5

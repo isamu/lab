@@ -12,7 +12,7 @@ Sales for the first half were $12 million, up 20% from the same period last year
 
 This report covers the first half, from April 1, 2026 to September 30, 2025.
 
-Sales for the first half were $12 million, an increase of 25% from $10 million in the same period last year. The target for the second half is $14 million.
+Sales for the first half were $12 million, an increase of 35% from $10 million in the same period last year. The target for the second half is $14 million.
 
 By product, business software made up 50% of sales, maintenance 30% and training 25%. Table 1 gives the amount for each product.
 

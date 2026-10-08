@@ -5,6 +5,8 @@
 #   意識するとよい」。chaff の上限は「ここを超えたら見直す」所なので、その上の端の 60 字を和文の上限にする。英文には言っていないので、英文の上限は変えない。
 # Ⅲ－1 イ「一つの文書内では、常体と敬体のどちらかで統一する」: no-mixed-desumasu。どちらにするかは文書の相手で決まる（Ⅲ－1 ア）ので、決めない。
 # Ⅰ－3 エ「長音は、原則として長音符号を使って書く」: 英語の語末の -er、-or、-ar などは長音符号を付ける（コンピューター）。katakana-long-vowel の keep。
+# Ⅰ－1（3）ア「常用漢字表に使える漢字があっても仮名で書く場合」: 補助動詞（〜ていただく、〜てくださる）と形式名詞（こと、とき、ため、よう）。
+#   「公用文における漢字使用等について」（平成 22 年内閣訓令第 1 号）1 (2) キ の〜ておく、〜てくださいも同じ。kana-function-word。
 id: koyobun
 
 name:
@@ -12,19 +14,20 @@ name:
   en: 公用文作成の考え方 (Council for Cultural Affairs, 2022)
 
 summary:
-  ja: 一文が 60 字を超えたら見直します。一つの文書の中で「です・ます」と「である」を混ぜません。カタカナ語の語末の「ー」は付けます（コンピューター）。
-  en: Flags a Japanese sentence over 60 characters, a document that mixes です・ます with である, and a katakana word that drops its final ー (コンピューター).
+  ja: 一文が 60 字を超えたら見直します。一つの文書の中で「です・ます」と「である」を混ぜません。カタカナ語の語末の「ー」は付けます（コンピューター）。補助動詞と形式名詞はかなで書きます（〜てください、〜すること）。
+  en: Flags a Japanese sentence over 60 characters, a document that mixes です・ます with である, a katakana word that drops its final ー (コンピューター), and a helper verb or formal noun written in kanji where official style writes kana (〜てください, 〜すること).
 
 source:
   title:
-    ja: 文化審議会「公用文作成の考え方」（令和 4 年 1 月 7 日 建議）Ⅲ－3 ア、Ⅲ－1 イ、Ⅰ－3 エ
-    en: 公用文作成の考え方 (recommendation of the Council for Cultural Affairs, 7 January 2022), III-3 a, III-1 b and I-3 d
+    ja: 文化審議会「公用文作成の考え方」（令和 4 年 1 月 7 日 建議）Ⅲ－3 ア、Ⅲ－1 イ、Ⅰ－3 エ、Ⅰ－1（3）ア
+    en: 公用文作成の考え方 (recommendation of the Council for Cultural Affairs, 7 January 2022), III-3 a, III-1 b, I-3 d and I-1 (3) a
   url: https://www.bunka.go.jp/seisaku/bunkashingikai/kokugo/hokoku/pdf/93651301_01.pdf
 
 rules:
   max-sentence-length: normal
   no-mixed-desumasu: normal
   katakana-long-vowel: normal
+  kana-function-word: normal
 
 limits:
   max-sentence-length:

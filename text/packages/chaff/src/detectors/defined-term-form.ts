@@ -6,6 +6,7 @@ import { escapeRegExp } from "../orthography.ts";
 import { prefixGroupsOf, prefixVariants, variantUses } from "../structure/term-prefix.ts";
 import { quoteAt } from "./structure-tree.ts";
 import { isPartOfAddress } from "./address-word.ts";
+import { exactOffsets, extendedAfter, extendedBefore } from "./term-extension.ts";
 import type { Detector, Finding, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 
 const bodyOf = (doc: ProseDocument): BodyText[] => doc.sentences.map((sentence) => ({ start: sentence.span.start, text: sentence.text }));
@@ -51,18 +52,31 @@ export const quotedUses = (source: string, term: string, uses: readonly number[]
   });
 
 const UPPER_START = /^\p{Lu}/u;
+/** The capital that starts each later word of a term (the O of Records Officer). */
+const INNER_CAPITAL = /(?<=\s)\p{Lu}/gu;
+
+const innerCapitals = (term: string): number[] => [...term.matchAll(INNER_CAPITAL)].map((match) => match.index);
+
+/** Whether the letter at position at of the term is written in lower case at this use. */
+const isLowered = (source: string, term: string, offset: number, at: number): boolean => source.charAt(offset + at) === term.charAt(at).toLowerCase();
+
+/** The term with the capitals of its later words in lower case (Records officer), whose uses the term's own form does not find. */
+export const innerLowered = (term: string): string => term.replace(INNER_CAPITAL, (capital) => capital.toLowerCase());
 
 /**
- * The uses of a capitalised term written in lower case ("services" where "Services" is defined), when they are no more
- * than the capitalised uses and at most limit: a document that writes it in lower case more often uses the word in its
- * ordinary sense on purpose. One of each is a slip to point at (the Software, then the software).
+ * The uses of a capitalised term written in lower case ("services" where "Services" is defined, "records officer" where
+ * "Records Officer" is), when they are no more than the capitalised uses and at most limit: a document that writes it in
+ * lower case more often uses the word in its ordinary sense on purpose. One of each is a slip to point at (the Software,
+ * then the software).
  */
 export const lowerCaseUses = (source: string, term: string, uses: readonly number[], definedAt: number, limit: number): number[] => {
   if (!UPPER_START.test(term) || term.toLowerCase() === term) return [];
+  const inner = innerCapitals(term);
   // An address (support@pinecone.example) spells the name as the address must be, in either case; it is not a use.
   const later = uses.filter((offset) => offset > definedAt && !isPartOfAddress(source, offset, offset + term.length));
-  const lower = later.filter((offset) => source.charAt(offset) === term.charAt(0).toLowerCase() && !isSentenceStart(source, offset));
-  const capital = later.filter((offset) => source.charAt(offset) === term.charAt(0));
+  const innerLower = (offset: number): boolean => inner.some((at) => isLowered(source, term, offset, at));
+  const lower = later.filter((offset) => (isLowered(source, term, offset, 0) && !isSentenceStart(source, offset)) || innerLower(offset));
+  const capital = later.filter((offset) => source.charAt(offset) === term.charAt(0) && !innerLower(offset));
   return lower.length > 0 && lower.length <= capital.length && lower.length <= limit ? lower : [];
 };
 
@@ -77,22 +91,48 @@ const isSentenceStart = (source: string, offset: number): boolean => {
   return (offset < LOOK_BACK && text === "") || before.slice(text.length).includes("\n") || SENTENCE_END.has(text.at(-1) ?? "");
 };
 
+const definingSentence = (doc: ProseDocument, definition: Span): Sentence | undefined =>
+  doc.sentences.find((sentence) => sentence.span.start <= definition.start && definition.start < sentence.span.end);
+
 /** Where the sentence holding the definition ends: a use inside it ("Customer" means the party named "Customer") belongs to the definition. */
-const definingSentenceEnd = (doc: ProseDocument, definition: Span): number =>
-  doc.sentences.find((sentence) => sentence.span.start <= definition.start && definition.start < sentence.span.end)?.span.end ?? definition.end;
+const definingSentenceEnd = (doc: ProseDocument, definition: Span): number => definingSentence(doc, definition)?.span.end ?? definition.end;
 
 const VERBAL = new Set(["VERB", "AUX"]);
 
+const tokensAt = (doc: ProseDocument, offset: number): { readonly tokens: readonly Token[]; readonly at: number } => {
+  const tokens = doc.sentences.find((candidate) => candidate.span.start <= offset && offset < candidate.span.end)?.tokens ?? [];
+  return { tokens, at: tokens.findIndex((candidate) => candidate.span.start <= offset && offset < candidate.span.end) };
+};
+
 /** A word used as a verb ("you input"), not the defined thing ("the Input"): a different word that shares the spelling. */
 const isVerbAt = (doc: ProseDocument, offset: number): boolean => {
-  const tokens = doc.sentences.find((candidate) => candidate.span.start <= offset && offset < candidate.span.end)?.tokens ?? [];
-  const at = tokens.findIndex((candidate) => candidate.span.start <= offset && offset < candidate.span.end);
+  const { tokens, at } = tokensAt(doc, offset);
   const token = tokens[at];
   if (token === undefined) return false;
   // After a subject pronoun the word is its verb (you input), whatever the tagger says; after a possessive (your input) it is a noun.
   const before = tokens[at - 1];
   const afterSubject = before?.pos === "PRON" && before.features?.["Poss"] !== "Yes";
   return VERBAL.has(token.pos) || afterSubject;
+};
+
+const NAMING = new Set(["NOUN", "PROPN"]);
+
+/**
+ * A lower-case phrase that starts with a noun and has no adjective before it (the records officer) names the defined thing.
+ * One that starts with an adjective or a possessive (its own confidential information, your content), or that an
+ * adjective narrows (additional terms of service), is the ordinary phrase.
+ */
+const isNamingAt = (doc: ProseDocument, offset: number): boolean => {
+  const { tokens, at } = tokensAt(doc, offset);
+  return NAMING.has(tokens[at]?.pos ?? "") && tokens[at - 1]?.pos !== "ADJ";
+};
+
+/** The uses of the term, with those that write its later words in lower case (records officer for Records Officer), in order. */
+const withLoweredWords = (doc: ProseDocument, term: string, texts: readonly BodyText[], spans: readonly Span[], uses: readonly number[]): number[] => {
+  const lowered = innerLowered(term);
+  if (lowered === term) return [...uses];
+  const more = usesOf(lowered, texts, spans, "loose").filter((offset) => !uses.includes(offset) && isNamingAt(doc, offset));
+  return [...uses, ...more].toSorted((left, right) => left - right);
 };
 
 /** The term written with another prefix of its group (本件業務 where 本業務 is defined), after the sentence that defines it. */
@@ -105,6 +145,33 @@ const prefixFindings = (doc: ProseDocument, texts: readonly BodyText[], term: De
         ),
   );
 
+/** The term set in quotes again, unless the document's profile says a quoted term is the term mentioned (「株主」とあるのは). */
+const quotedFindings = (doc: ProseDocument, term: DefinedTerm, uses: readonly number[], definingEnd: number): Finding[] =>
+  doc.profile?.quoteMentionsTerm === true
+    ? []
+    : quotedUses(doc.source, term.term, uses, definingEnd).map((offset) =>
+        finding(doc, "defined-term-form", offset, "quoted", { term: term.term, line: term.line }),
+      );
+
+/** The term written longer with a word of its definition (文書管理責任者, the Application), after the sentence that defines it. */
+const extendedFindings = (doc: ProseDocument, texts: readonly BodyText[], term: DefinedTerm, spans: readonly Span[], defined: readonly string[]): Finding[] => {
+  const definition = definingSentence(doc, term.span)?.text ?? "";
+  const pointers = (doc.lexicons["defined-term-pointer"] ?? []).map((entry) => entry.pattern);
+  // Every sentence that defines the term (a second definition too) holds the long words it is defined from.
+  const defining = spans.map((span) => definingSentence(doc, span)?.span ?? span);
+  const definingEnd = definingSentenceEnd(doc, term.span);
+  return texts
+    .flatMap((text) => exactOffsets(text.text, text.start, term.term))
+    .filter((offset) => offset > definingEnd && !defining.some((span) => span.start <= offset && offset < span.end))
+    .flatMap((offset) => {
+      const before = extendedBefore(doc.source, offset, term.term, definition, pointers);
+      const written = before ?? (isSentenceStart(doc.source, offset) ? undefined : extendedAfter(doc.source, offset, term.term, definition));
+      if (written === undefined || defined.includes(written)) return [];
+      const start = before === undefined ? offset : offset + term.term.length - written.length;
+      return [finding(doc, "defined-term-form", start, "extended", { term: term.term, written, line: term.line })];
+    });
+};
+
 export const definedTermForm: Detector = (doc, options): Finding[] => {
   if (doc.structure === undefined) return [];
   const texts = bodyOf(doc);
@@ -113,14 +180,13 @@ export const definedTermForm: Detector = (doc, options): Finding[] => {
   return firstDefinitions(terms).flatMap(({ term, spans }) => {
     const uses = usesOf(term.term, texts, spans, "loose");
     const definingEnd = definingSentenceEnd(doc, term.span);
-    const quoted = quotedUses(doc.source, term.term, uses, definingEnd).map((offset) =>
-      finding(doc, "defined-term-form", offset, "quoted", { term: term.term, line: term.line }),
-    );
-    const nounUses = uses.filter((offset) => !isVerbAt(doc, offset));
+    const quoted = quotedFindings(doc, term, uses, definingEnd);
+    const caseUses = withLoweredWords(doc, term.term, texts, spans, uses);
+    const nounUses = caseUses.filter((offset) => !isVerbAt(doc, offset));
     const lower = lowerCaseUses(doc.source, term.term, nounUses, definingEnd, options.limit).map((offset) =>
       finding(doc, "defined-term-form", offset, "case", { term: term.term, line: term.line }),
     );
-    return [...quoted, ...lower, ...prefixFindings(doc, texts, term, definingEnd, defined)];
+    return [...quoted, ...lower, ...prefixFindings(doc, texts, term, definingEnd, defined), ...extendedFindings(doc, texts, term, spans, defined)];
   });
 };
 

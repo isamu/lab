@@ -83,7 +83,7 @@ $ npx chaffjs kitei.md --genre legal/statute
   - 義務（しなければならない）・禁止・権限（することができる）・努力義務を書き分けているか
   - 適用の範囲・例外（ただし書）・施行の日が読み取れるか
 
-  このジャンルで特に効く rule: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, duplicate-definition, numbering-gap, total-mismatch
+  このジャンルで特に効く rule: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, total-mismatch
   chaff.yaml の guide: で書き換えられます。出さないときは --no-guide。
 
 ════════════════════════════════════════════════════════════
@@ -334,7 +334,7 @@ $ npx chaffjs kitei-fixed.md --genre legal/statute
   - 義務（しなければならない）・禁止・権限（することができる）・努力義務を書き分けているか
   - 適用の範囲・例外（ただし書）・施行の日が読み取れるか
 
-  このジャンルで特に効く rule: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, duplicate-definition, numbering-gap, total-mismatch
+  このジャンルで特に効く rule: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, total-mismatch
   chaff.yaml の guide: で書き換えられます。出さないときは --no-guide。
 
 ════════════════════════════════════════════════════════════

@@ -1,8 +1,11 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
-import { lowerCaseUses, nameBefore, quotedUses } from "../packages/chaff/src/detectors/defined-term-form.ts";
+import { innerLowered, lowerCaseUses, nameBefore, quotedUses } from "../packages/chaff/src/detectors/defined-term-form.ts";
+import { extendedAfter, extendedBefore } from "../packages/chaff/src/detectors/term-extension.ts";
 import { prefixGroupsOf, prefixVariants, variantUses } from "../packages/chaff/src/structure/term-prefix.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
+import { profileFor } from "../packages/chaff/src/profile/for-file.ts";
+import { EMPTY } from "../packages/chaff/src/config/load.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
@@ -12,8 +15,15 @@ import type { Finding, LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 // A contract's defined terms in another form (quoted again, lower case), and a long name used again after its short
 // name was defined. Every example is self-written.
 
+/** As the CLI runs it: the genre's profile (a statute's) read with the document. */
 const findingsOf = (adapter: LanguageAdapter, rule: string, source: string, genre = "legal/contract"): Finding[] =>
-  runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), {}, false, genre).findings.filter((finding) => finding.rule === rule);
+  runRules(
+    buildDocument("t.md", source, adapter, undefined, profileFor(EMPTY, "t.md", source, adapter.id, genre)),
+    loadRules(adapter.id),
+    {},
+    false,
+    genre,
+  ).findings.filter((finding) => finding.rule === rule);
 
 const valuesOf = (adapter: LanguageAdapter, rule: string, source: string, key: string, genre?: string): string[] =>
   findingsOf(adapter, rule, source, genre).map((finding) => `${finding.variant ?? ""} ${String(finding.values[key])}`);
@@ -82,9 +92,115 @@ describe("defined-term-form: a defined term in another form", () => {
     assert.deepEqual(valuesOf(en, "defined-term-form", inDefinition, "term"), []);
   });
 
-  it("does not run in a statute, which quotes a term to point at its definition", () => {
+  it("does not report a quoted term in a statute, which quotes a term to talk about the term itself", () => {
+    const english = [
+      "# Regulation",
+      "",
+      'In this Regulation, "Records Officer" means the person who keeps records.',
+      "",
+      '"Records Officer" has the same meaning in Part 2.',
+      "",
+    ];
+    assert.deepEqual(findingsOf(en, "defined-term-form", english.join("\n"), "legal/statute"), []);
     const source = `${JA_TERMS}\n第2条\u3000「本サービス」の範囲は、別に定める。\n`;
     assert.deepEqual(findingsOf(ja, "defined-term-form", source, "legal/statute"), []);
+  });
+});
+
+describe("defined-term-form: a multi-word term written in lower case", () => {
+  const REGULATION = ["# Regulation", "", 'In this Regulation, "Records Officer" means the person appointed to manage the records.', ""].join("\n");
+
+  it("reports records officer where Records Officer is defined, in a statute and in a contract", () => {
+    const source = `${REGULATION}\nThe Records Officer keeps the records. A record is destroyed with the approval of the records officer.\n`;
+    assert.deepEqual(valuesOf(en, "defined-term-form", source, "term", "legal/statute"), ["case Records Officer"]);
+    assert.deepEqual(valuesOf(en, "defined-term-form", source, "term"), ["case Records Officer"]);
+    assert.equal(innerLowered("Records Officer"), "Records officer");
+    assert.equal(innerLowered("Services"), "Services");
+    assert.deepEqual(lowerCaseUses("a Records Officer b records officer", "Records Officer", [2, 20], 0, 2), [20]);
+    assert.deepEqual(lowerCaseUses("a Records Officer b Records officer", "Records Officer", [2, 20], 0, 2), [20]);
+    assert.deepEqual(lowerCaseUses("a records officer b records officer", "Records Officer", [2, 20], 0, 2), []);
+  });
+
+  it("does not report the ordinary phrase: after an adjective, from an adjective, or from a possessive", () => {
+    const nda = [
+      "# Agreement",
+      "",
+      '"Confidential Information" means non-public information a Party discloses.',
+      "",
+      "Each Party shall protect the other Party's Confidential Information with the care it uses for its own confidential information.",
+      "",
+    ].join("\n");
+    assert.deepEqual(valuesOf(en, "defined-term-form", nda, "term"), []);
+    const terms = [
+      "# Terms",
+      "",
+      'This document (the "Terms of Service") governs the site.',
+      "",
+      "The Terms of Service apply. Other sites may have additional terms of service.",
+      "",
+    ].join("\n");
+    assert.deepEqual(valuesOf(en, "defined-term-form", terms, "term"), []);
+  });
+});
+
+describe("defined-term-form: a term written longer with a word of its definition", () => {
+  const RULES_JA = [
+    "# 文書管理規程",
+    "",
+    "## 第2条（定義）",
+    "",
+    "この規程において「管理責任者」とは、各部門の長が指名する文書の管理の責任者をいう。",
+    "",
+  ].join("\n");
+
+  it("reports 文書管理責任者 where 管理責任者 is defined as 文書の管理の責任者, in a statute and in a contract", () => {
+    const source = `${RULES_JA}\n## 第3条（保管）\n\n文書は、文書管理責任者が部門ごとに保管する。\n`;
+    assert.deepEqual(valuesOf(ja, "defined-term-form", source, "written", "legal/statute"), ["extended 文書管理責任者"]);
+    assert.deepEqual(valuesOf(ja, "defined-term-form", source, "written"), ["extended 文書管理責任者"]);
+    assert.equal(extendedBefore("x文書管理責任者が", 3, "管理責任者", "文書の管理の責任者"), "文書管理責任者");
+    assert.equal(extendedBefore("x当該文書管理責任者が", 5, "管理責任者", "文書の管理の責任者", ["当該"]), "文書管理責任者");
+  });
+
+  it("reports the Application where the Pinecone Notes application is defined as the App", () => {
+    const source = [
+      "# Terms",
+      "",
+      'These terms govern the Pinecone Notes application (the "App").',
+      "",
+      "You may use the App. We are not liable for your use of the Application.",
+      "",
+    ].join("\n");
+    assert.deepEqual(valuesOf(en, "defined-term-form", source, "written"), ["extended Application"]);
+    assert.equal(extendedAfter("the Application.", 4, "App", "the Pinecone Notes application (the App)"), "Application");
+  });
+
+  it("does not report a pointing word, a short term, the long name, a plural, a lower-case term or another word", () => {
+    const pointer = `${RULES_JA}\n## 第3条（保管）\n\n文書は、当該管理責任者が保管する。\n`;
+    assert.deepEqual(valuesOf(ja, "defined-term-form", pointer, "written", "legal/statute"), []);
+    assert.equal(extendedBefore("x当該管理責任者", 3, "管理責任者", "当該部門の管理責任者", ["当該"]), undefined);
+    assert.equal(extendedBefore("x情報提供", 3, "提供", "情報を渡すこと"), undefined);
+    assert.equal(extendedBefore("x東京都", 3, "都", "東京都（以下「都」という。）"), undefined);
+    assert.equal(extendedBefore("x書管理責任者", 2, "管理責任者", "文書の管理の責任者"), undefined);
+    assert.equal(extendedBefore("x最終完全親会社等", 3, "完全親会社等", "最終完全親会社等の定め"), undefined);
+    assert.equal(extendedBefore("x文書管理責任者会議", 3, "管理責任者", "文書の管理の責任者"), undefined);
+    assert.equal(extendedBefore("x文書管理責任者𠮷", 3, "管理責任者", "文書の管理の責任者"), undefined);
+    assert.equal(extendedBefore("x𠮷文書管理責任者", 5, "管理責任者", "𠮷文書の管理の責任者"), "𠮷文書管理責任者");
+    const redefined = [
+      "# Terms",
+      "",
+      'These terms govern the Pinecone Notes application (the "App").',
+      "",
+      'In this section, the Application (the "App") means the application module.',
+      "",
+    ].join("\n");
+    assert.deepEqual(valuesOf(en, "defined-term-form", redefined, "written"), []);
+    assert.equal(extendedAfter("the Boxes.", 4, "Box", "a Box of boxes"), undefined);
+    assert.equal(extendedAfter("was controlled", 4, "control", "control means controlled"), undefined);
+    assert.equal(extendedAfter("the Apple", 4, "App", "the Pinecone Notes application"), undefined);
+    assert.equal(extendedAfter("the Application", 4, "App", "the Pinecone Notes app"), undefined);
+    assert.equal(extendedAfter("WebApplication", 3, "App", "an application"), undefined);
+    assert.equal(extendedAfter("", 0, "", ""), undefined);
+    assert.equal(extendedBefore("", 0, "", ""), undefined);
   });
 });
 

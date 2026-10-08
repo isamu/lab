@@ -1,0 +1,38 @@
+# 名前を出さずに人の言葉を引く語（quote-unnamed-speaker）。group で役目を分ける。
+#   role:        名前の代わりに話し手として書く役の語。一人に決まる役（代表取締役社長、当社CEO）は入れない。
+#   after-role:  役の語が話し手の句の頭（いちばん後ろの名詞）であるとき、すぐ後ろに来る語（アナリストは「…」）。
+#                役の語の後ろがこれでなければ（アナリストの森花子氏は）、役の語は話し手ではない。
+#   honorific:   名前に付く語。話し手の句にあれば、名前を出した話し手と見る（森花子氏）。
+#   anaphor:     役の語のすぐ前にあれば、前に名前を出した人を指し直す語（同アナリスト）。
+#   after-quote: 閉じ括弧のすぐ後ろにあれば、その引用を人の言葉として引く語（「…」と述べた、「…」と業界関係者は話す）。
+id: unnamed-speaker
+language: ja
+entries:
+  - { pattern: アナリスト, group: role }
+  - { pattern: 専門家, group: role }
+  - { pattern: 関係者, group: role }
+  - { pattern: 有識者, group: role }
+  - { pattern: 担当者, group: role }
+  - { pattern: 識者, group: role }
+  - { pattern: 消息筋, group: role }
+  - { pattern: 情報筋, group: role }
+  - { pattern: は, group: after-role }
+  - { pattern: が, group: after-role }
+  - { pattern: も, group: after-role }
+  - { pattern: らは, group: after-role }
+  - { pattern: たちは, group: after-role }
+  - { pattern: から, group: after-role }
+  - { pattern: によれば, group: after-role }
+  - { pattern: によると, group: after-role }
+  - { pattern: 氏, group: honorific }
+  - { pattern: さん, group: honorific }
+  - { pattern: 様, group: honorific }
+  - { pattern: 教授, group: honorific }
+  - { pattern: 准教授, group: honorific }
+  - { pattern: 博士, group: honorific }
+  - { pattern: 先生, group: honorific }
+  - { pattern: 同, group: anaphor }
+  - { pattern: この, group: anaphor }
+  - { pattern: その, group: anaphor }
+  - { pattern: 当該, group: anaphor }
+  - { pattern: と, group: after-quote }

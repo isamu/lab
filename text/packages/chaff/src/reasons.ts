@@ -9,6 +9,8 @@ export type Reasons = {
   readonly unreadTags: string;
   readonly semantic: string;
   readonly experimental: string;
+  /** A rule of one house style: it runs when chaff.yaml names that style, or gives the rule a level. */
+  readonly optIn: string;
   readonly turnedOff: string;
   readonly presetOff: (genre: string) => string;
   readonly noStructure: (language: string) => string;
@@ -41,6 +43,7 @@ export const REASONS: Texts<Reasons> = {
     unreadTags: "言語のパッケージがこの文書を読めなかったため（品詞の取れない段落があります）",
     semantic: "意味を読む検査のため（npx chaffjs test で動きます）",
     experimental: "まだ試験中のため",
+    optIn: "決まった書き方（chaff.yaml の style）のための rule で、style か rules で動かすため",
     turnedOff: "設定で止めているため",
     presetOff: (genre) => `ジャンル ${genre} では見ないため`,
     noStructure: (language) => `${language} のパッケージは文書の構造を読めないため`,
@@ -63,6 +66,7 @@ export const REASONS: Texts<Reasons> = {
     unreadTags: "the language package could not read this document (some paragraphs have no parts of speech)",
     semantic: "it reads meaning; npx chaffjs test runs it",
     experimental: "still experimental",
+    optIn: "it belongs to a house style, and runs when chaff.yaml names the style or gives it a level",
     turnedOff: "turned off in the settings",
     presetOff: (genre) => `the ${genre} genre does not check it`,
     noStructure: (language) => `the ${language} package cannot read a document's structure`,

@@ -274,12 +274,29 @@ const currencyBefore = (text: string, at: number): string | undefined => {
   return CURRENCIES.find((currency) => text.startsWith(currency, end - currency.length));
 };
 
+const FIGURE_WORDS: ReadonlySet<string> = new Set((LEXICONS["bracketed-figure-word"] ?? []).map((entry) => entry.pattern));
+const OPEN_BRACKET = " (";
+const NOT_WORD_LETTER = /[^\p{L}-]/u;
+const BRACKET_REACH = 30;
+
+/** The word right before " (" is a number word, or ends with one: "six (", "forty-five (". */
+const followsNumberWord = (text: string, start: number): boolean => {
+  const before = text.slice(Math.max(0, start - BRACKET_REACH), start);
+  if (!before.endsWith(OPEN_BRACKET)) return false;
+  const word = before.slice(0, -OPEN_BRACKET.length).split(NOT_WORD_LETTER).at(-1) ?? "";
+  return FIGURE_WORDS.has(word.toLowerCase().split("-").at(-1) ?? "");
+};
+
+/** "six (6) months": a figure in brackets after a number in words, with the unit after the bracket. */
+const unitAfterBracket = (text: string, start: number, end: number): string | undefined =>
+  text[end] === ")" && followsNumberWord(text, start) ? unitAfter(text, end + 1) : undefined;
+
 const quantities = (text: string): Mention[] =>
   [...text.matchAll(NUMBER_RUN)].flatMap((match) => {
     const digits = withoutTrailingPunctuation(match[0]);
     const value = Number(digits.replace(/,/gu, ""));
     const end = match.index + digits.length;
-    const unit = unitAfter(text, end) ?? currencyBefore(text, match.index);
+    const unit = unitAfter(text, end) ?? unitAfterBracket(text, match.index, end) ?? currencyBefore(text, match.index);
     return unit === undefined || Number.isNaN(value) || isWordChar(text[match.index - 1]) ? [] : [{ start: match.index, end, attrs: { value, unit } }];
   });
 

@@ -6,7 +6,7 @@ import { limitsFor } from "./config/style.ts";
 import { rulesOf } from "./custom/load.ts";
 import { guessLanguage } from "./detect.ts";
 import { buildDocument, teamRules } from "./document.ts";
-import type { CrossDetector, ProseDocument, RuleDefinition } from "./plugin.ts";
+import type { AdapterNeeds, CrossDetector, ProseDocument, RuleDefinition } from "./plugin.ts";
 import { profileFor } from "./profile/for-file.ts";
 import { resolveGenre, type ResolvedGenre } from "./resolve-genre.ts";
 import { neededBy, runRulesWith, type RunContext, type RunResult } from "./run.ts";
@@ -33,13 +33,22 @@ export type SourceCheck = {
   readonly applied: Applied;
 };
 
+/** What the language adapter is asked to prepare for these rules under this chaff.yaml: what the running rules read, nothing more. */
+export const adapterNeedsOf = (
+  rules: readonly RuleDefinition[],
+  config: Pick<Config, "rules">,
+  experimental: boolean,
+  genre: string,
+  language: string,
+): AdapterNeeds => neededBy(rules, config.rules, experimental, genre, language);
+
 /** Lints one text as `chaff <file>` does. The file need not exist: `chaff grade` checks a model's output from memory. */
 export const checkSource = async (path: string, source: string, config: Config, choice: CheckChoice): Promise<SourceCheck> => {
   const language = choice.language ?? documentLanguage(path, source, config);
   const adapter = await loadAdapter(language);
   const genre = resolveGenre(path, source, config, choice.genre);
   const rules = rulesOf(language, config);
-  await adapter.prepare?.(neededBy(rules, config.rules, choice.experimental, genre.genre, language));
+  await adapter.prepare?.(adapterNeedsOf(rules, config, choice.experimental, genre.genre, language));
   const doc = buildDocument(path, source, adapter, teamRules(config, language), profileFor(config, path, source, language, genre.genre));
   const context: RunContext = {
     settings: config.rules,

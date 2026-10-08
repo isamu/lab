@@ -84,6 +84,11 @@ entries:
   - pattern: ZIP
   - pattern: ATM
   - pattern: PIN
+  - pattern: FAX
+  - pattern: DVD
+  - pattern: DIY
+  - pattern: HIV
+  - pattern: UV
   # & で繋いだ、仕事の文書で説明なしで通じる語。
   - pattern: Q&A
   - pattern: R&D

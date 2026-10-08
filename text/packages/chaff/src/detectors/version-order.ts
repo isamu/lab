@@ -2,27 +2,16 @@
 // (structure/version-order.ts).
 import { quoteAt } from "./structure-tree.ts";
 import { codeFences } from "./code-fences.ts";
+import { siblingHeadingRunsOf } from "../structure/heading-runs.ts";
 import { runsOf, type Line } from "../structure/runs.ts";
 import { isVersionHistory, leadingVersion, versionOrderBreaks, type VersionPoint } from "../structure/version-order.ts";
 import type { Detector, Finding, MarkupHeading, ProseDocument } from "../plugin.ts";
 
-/** Headings at one depth, under one parent heading: a shallower heading ends the run, a deeper one (### Added) does not. */
-const headingRuns = (source: string, headings: readonly MarkupHeading[]): VersionPoint[][] => {
-  const runs: VersionPoint[][] = [];
-  const open = new Map<number, VersionPoint[]>();
-  headings.forEach((heading) => {
-    [...open.keys()].filter((depth) => depth > heading.depth).forEach((depth) => open.delete(depth));
-    const label = leadingVersion(heading.text);
-    if (label === undefined) return;
-    const run = open.get(heading.depth) ?? [];
-    if (!open.has(heading.depth)) {
-      open.set(heading.depth, run);
-      runs.push(run);
-    }
-    const at = source.indexOf(label, heading.start);
-    run.push({ offset: at === -1 ? heading.start : at, label });
-  });
-  return runs;
+const headingPoint = (source: string, heading: MarkupHeading): VersionPoint | undefined => {
+  const label = leadingVersion(heading.text);
+  if (label === undefined) return undefined;
+  const at = source.indexOf(label, heading.start);
+  return { offset: at === -1 ? heading.start : at, label };
 };
 
 /** The marker of a list item or the first pipe of a table row, before the item's text. */
@@ -43,7 +32,7 @@ const outsideFences = (source: string, run: readonly Line[]): Line[] => {
 };
 
 const pointRuns = (doc: ProseDocument): VersionPoint[][] => [
-  ...headingRuns(doc.source, doc.markup?.headings ?? []),
+  ...siblingHeadingRunsOf(doc.markup?.headings ?? [], (heading) => headingPoint(doc.source, heading)),
   ...runsOf(doc.source).map((run) => itemVersions(doc.source, outsideFences(doc.source, run))),
 ];
 

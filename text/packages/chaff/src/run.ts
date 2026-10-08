@@ -47,14 +47,16 @@ export const levelFor = (rule: RuleDefinition, settings: Settings, experimental:
   // ジャンルの既定は chaff.yaml より弱く、status の既定より強い。--experimental でも、ジャンルが止めたものは止めたまま。
   const fromPreset = preset[rule.id];
   if (fromPreset !== undefined) return fromPreset;
+  if (rule.opt_in === true) return "off";
   if (rule.status === "experimental" && !experimental) return "off";
   return "normal";
 };
 
-/** Why a rule at off did not run: chaff.yaml turned it off, the genre's preset did, or it is experimental. */
+/** Why a rule at off did not run: chaff.yaml turned it off, the genre's preset did, it waits for a style, or it is experimental. */
 const offSkip = (rule: RuleDefinition, settings: Settings, preset: Settings, genre: string, reasons: Reasons): Skipped => {
   if (settings[rule.id] !== undefined) return { rule: rule.id, why: reasons.turnedOff };
   if (preset[rule.id] !== undefined) return { rule: rule.id, why: reasons.presetOff(genre) };
+  if (rule.opt_in === true) return { rule: rule.id, why: reasons.optIn };
   return { rule: rule.id, why: reasons.experimental, offUntilExperimental: true };
 };
 

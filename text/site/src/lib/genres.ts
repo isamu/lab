@@ -54,9 +54,13 @@ export const genreGroups: readonly GenreGroupEntry[] = data.groups
 export type RuleInGenre = { readonly genre: string; readonly name: Localized; readonly standing: GenreStanding };
 
 /** How one rule stands in every genre, in the order chaff genres lists them. */
-export const standingsOf = (rule: Pick<Rule, "id" | "status" | "useFor">): readonly RuleInGenre[] =>
+export const standingsOf = (rule: Pick<Rule, "id" | "status" | "useFor" | "optIn">): readonly RuleInGenre[] =>
   data.genres.map((genre) => ({
     genre: genre.id,
     name: both(genre.name),
-    standing: standingIn({ id: rule.id, status: rule.status, use_for: rule.useFor }, genre.id, presetLevelsOf(data, genre.id)),
+    standing: standingIn(
+      { id: rule.id, status: rule.status, use_for: rule.useFor, ...(rule.optIn ? { opt_in: true } : {}) },
+      genre.id,
+      presetLevelsOf(data, genre.id),
+    ),
   }));

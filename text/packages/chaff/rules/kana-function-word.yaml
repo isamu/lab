@@ -1,0 +1,58 @@
+id: kana-function-word
+layer: L3
+status: stable
+how_to_find: kana-function-word
+word_list: kana-function-word
+requires: [pos]
+languages: [ja]
+severity: info
+# 公用文の決まりなので、chaff.yaml の style: koyobun（か rules: に書いたとき）だけで動く。ほかの文書では漢字で書いてかまわない。
+opt_in: true
+
+name:
+  ja: 公用文でかなで書く補助動詞・形式名詞
+  en: Japanese helper verbs and formal nouns in kana (公用文)
+
+why:
+  ja: 公用文では、補助動詞（〜てください、〜ていただく、〜ておく）と形式名詞（〜すること、〜のように、〜のため、〜するときは）をかなで書きます。漢字で書くのは本来の意味で使うときだけです（資料を下さい、本を置く、事が起きる）。漢字とかなを使い分けると、読み手は語が本来の意味か補助の意味かを字で見分けられます。文化審議会「公用文作成の考え方」（令和 4 年）が引く「公用文における漢字使用等について」の決まりです。chaff.yaml の style を koyobun にしたときだけ動きます。
+  en: A rule of Japanese official writing (公用文). Japanese government style writes helper verbs (〜てください "please", 〜ていただく, 〜ておく "in advance") and formal nouns (〜すること, 〜のように, 〜のため, 〜するときは) in kana, keeping the kanji for the full meaning (資料を下さい "give me the papers", 本を置く "put the book down", 事が起きる "something happens"). The split lets a reader see from the script which use is meant. It comes from 公用文における漢字使用等について, which 公用文作成の考え方 (Council for Cultural Affairs, 2022) follows. It runs only when chaff.yaml sets the style to koyobun.
+
+message:
+  ja: 「{matched}」は公用文ではかなで「{preferred}」と書きます
+  en: 'Official Japanese style writes "{matched}" in kana: "{preferred}"'
+
+how_to_fix:
+  ja: かなに直してください（見て下さい → 見てください、確認する事 → 確認すること）。本来の意味（物をくれる、物を置く、出来事）で使っているなら漢字のままです。
+  en: Write it in kana (見て下さい → 見てください, 確認する事 → 確認すること). Keep the kanji where the word has its full meaning (giving, putting something down, an event).
+
+placeholders:
+  matched:
+    ja: 見つけた語
+    en: the word found
+  preferred:
+    ja: かなで書いた形
+    en: the word in kana
+
+levels: { strict: 1, normal: 1, relaxed: 3 }
+
+use_for: [business, technical, legal, docs, academic, blog, speech, literature]
+sources: [koyobun-2022]
+
+group: wording
+summary:
+  ja: 公用文でかなで書く補助動詞・形式名詞（〜て下さい、〜て置く、〜する事）を漢字で書いた所。style が koyobun のときだけ
+  en: A Japanese helper verb or formal noun written in kanji where official style writes kana (〜て下さい, 〜て置く, 〜する事); only with the koyobun style
+example:
+  ja:
+    config: { style: koyobun }
+    before: |
+      申請書を確認する事が必要です。不明な点は担当者に聞いて下さい。
+    after: |
+      申請書を確認することが必要です。不明な点は担当者に聞いてください。
+
+not_flagged:
+  ja: 本来の意味で使った語（資料を下さい、本を置いて帰る、事が起きた、時が経つ）は指しません。「時」は「〜時は」「〜時には」のように条件を言うときだけ指し、「達した時から」のように時点を言う「時」は漢字のままです。「〜て行く」「〜て来る」「〜て見る」「所」「物」は、本来の意味（持って行く、開いて見る、家を建てる所）と品詞で分けられないので見ません。style が koyobun でない文書では動きません。
+  en: Words in their full meaning (資料を下さい, 本を置いて帰る, 事が起きた, 時が経つ) are not reported. 時 is reported only as a condition (〜時は, 〜時には); 時 for a point in time (達した時から) stays in kanji. 〜て行く, 〜て来る, 〜て見る, 所 and 物 are not checked, since the tagger cannot tell them from their full meaning (持って行く, 開いて見る "open and read", 家を建てる所). Without the koyobun style the rule does not run.
+level_meaning:
+  ja: 当てはまる語が {limit} 箇所あれば指摘
+  en: reported once there are {limit}

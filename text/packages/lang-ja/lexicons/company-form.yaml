@@ -1,17 +1,25 @@
 # 会社や法人の名前に付く形。括弧で呼び名を定めたすぐ前にあれば、その呼び名は当事者のもの（party-role-name）。
+# group が同じ語は、同じ形の書き方の違い（株式会社 と (株)）。position の無い語は、名前の前にも後ろにも立つ。name-variant は、
+# 一つの会社を違う組の形で書いた所と、形の語を名前の反対側に置いた所（株式会社アオバ と アオバ株式会社）を指す。
 id: company-form
 language: ja
 entries:
-  - pattern: 株式会社
-  - pattern: 有限会社
-  - pattern: 合同会社
-  - pattern: 合資会社
-  - pattern: 合名会社
-  - pattern: 一般社団法人
-  - pattern: 一般財団法人
-  - pattern: 公益社団法人
-  - pattern: 公益財団法人
-  - pattern: 特定非営利活動法人
-  - pattern: 学校法人
-  - pattern: 医療法人
-  - pattern: 社会福祉法人
+  - { pattern: 株式会社, group: 株式会社 }
+  - { pattern: (株), group: 株式会社 }
+  - { pattern: （株）, group: 株式会社 }
+  - { pattern: ㈱, group: 株式会社 }
+  - { pattern: 有限会社, group: 有限会社 }
+  - { pattern: (有), group: 有限会社 }
+  - { pattern: （有）, group: 有限会社 }
+  - { pattern: ㈲, group: 有限会社 }
+  - { pattern: 合同会社, group: 合同会社 }
+  - { pattern: 合資会社, group: 合資会社 }
+  - { pattern: 合名会社, group: 合名会社 }
+  - { pattern: 一般社団法人, group: 一般社団法人 }
+  - { pattern: 一般財団法人, group: 一般財団法人 }
+  - { pattern: 公益社団法人, group: 公益社団法人 }
+  - { pattern: 公益財団法人, group: 公益財団法人 }
+  - { pattern: 特定非営利活動法人, group: 特定非営利活動法人 }
+  - { pattern: 学校法人, group: 学校法人 }
+  - { pattern: 医療法人, group: 医療法人 }
+  - { pattern: 社会福祉法人, group: 社会福祉法人 }

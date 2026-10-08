@@ -1,0 +1,9 @@
+# 条件の節の終わり。connective-hierarchy が読み、文をここで区切って、外の段の語の下に立つ内の段の語を同じ節の中だけで探す。
+# 「…若しくは…があるときは、…又は…を請求する」の「又は」は、条件の節の「若しくは」の上に立つ語ではない。
+id: connective-clause-end
+language: ja
+entries:
+  - pattern: ときは、
+  - pattern: ときには、
+  - pattern: 場合は、
+  - pattern: 場合には、

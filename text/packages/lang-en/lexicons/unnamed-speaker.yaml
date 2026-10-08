@@ -1,0 +1,58 @@
+# Words that quote someone without a name (quote-unnamed-speaker). group says what each word does:
+#   role:        a role written in place of a speaker's name. A role that is one person (the CEO of Acme) is not one.
+#   after-role:  a word that may follow a role at the head of the speaker's phrase (an analyst at Acme, a source close to).
+#                A role followed by anything else (an official statement) is not the speaker.
+#   honorific:   a title before a name (Ms Mori): the phrase names its speaker.
+#   cue:         words that give a quotation to its speaker, besides quote-attribution's (told reporters, noted an analyst).
+#   anaphor:     a word right before the role that points back at someone (the analyst, our spokesperson): not reported.
+id: unnamed-speaker
+language: en
+entries:
+  - { pattern: analyst, group: role }
+  - { pattern: analysts, group: role }
+  - { pattern: expert, group: role }
+  - { pattern: experts, group: role }
+  - { pattern: source, group: role }
+  - { pattern: sources, group: role }
+  - { pattern: official, group: role }
+  - { pattern: officials, group: role }
+  - { pattern: insider, group: role }
+  - { pattern: insiders, group: role }
+  - { pattern: spokesperson, group: role }
+  - { pattern: spokesman, group: role }
+  - { pattern: spokeswoman, group: role }
+  - { pattern: observer, group: role }
+  - { pattern: observers, group: role }
+  - { pattern: at, group: after-role }
+  - { pattern: with, group: after-role }
+  - { pattern: from, group: after-role }
+  - { pattern: for, group: after-role }
+  - { pattern: in, group: after-role }
+  - { pattern: of, group: after-role }
+  - { pattern: on, group: after-role }
+  - { pattern: close, group: after-role }
+  - { pattern: familiar, group: after-role }
+  - { pattern: who, group: after-role }
+  - { pattern: Mr, group: honorific }
+  - { pattern: Mrs, group: honorific }
+  - { pattern: Ms, group: honorific }
+  - { pattern: Dr, group: honorific }
+  - { pattern: Prof, group: honorific }
+  - { pattern: say, group: cue }
+  - { pattern: told, group: cue }
+  - { pattern: tells, group: cue }
+  - { pattern: noted, group: cue }
+  - { pattern: notes, group: cue }
+  - { pattern: added, group: cue }
+  - { pattern: adds, group: cue }
+  - { pattern: explained, group: cue }
+  - { pattern: the, group: anaphor }
+  - { pattern: this, group: anaphor }
+  - { pattern: that, group: anaphor }
+  - { pattern: these, group: anaphor }
+  - { pattern: those, group: anaphor }
+  - { pattern: our, group: anaphor }
+  - { pattern: its, group: anaphor }
+  - { pattern: their, group: anaphor }
+  - { pattern: his, group: anaphor }
+  - { pattern: her, group: anaphor }

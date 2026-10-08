@@ -2194,7 +2194,7 @@
         },
         "legal": {
           "documents": 34,
-          "fired": 10
+          "fired": 2
         },
         "literature": {
           "documents": 13,
@@ -5320,6 +5320,42 @@
         "falseAlarms": 0
       }
     },
+    "number-word-figure-mismatch": {
+      "groups": {
+        "academic": {
+          "documents": 10,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 23,
+          "fired": 0
+        },
+        "business": {
+          "documents": 80,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 21,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 35,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 13,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 7,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 49,
+          "fired": 0
+        }
+      }
+    },
     "numbered-generic-heading": {
       "groups": {
         "academic": {
@@ -6122,6 +6158,34 @@
         "planted": 13,
         "found": 13,
         "falseAlarms": 0
+      }
+    },
+    "quote-unnamed-speaker": {
+      "groups": {
+        "academic": {
+          "documents": 10,
+          "fired": 0
+        },
+        "business": {
+          "documents": 58,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 21,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 35,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 13,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 7,
+          "fired": 0
+        }
       }
     },
     "quote-without-source": {
@@ -7957,6 +8021,30 @@
         },
         "technical": {
           "documents": 45,
+          "fired": 0
+        }
+      }
+    },
+    "undefined-term": {
+      "groups": {
+        "academic": {
+          "documents": 5,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 10,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 20,
+          "fired": 2
+        },
+        "literature": {
+          "documents": 4,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 4,
           "fired": 0
         }
       }

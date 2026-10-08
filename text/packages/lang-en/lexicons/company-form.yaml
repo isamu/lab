@@ -1,15 +1,18 @@
 # Forms that end a company name. Right before a short name in brackets, they show the short name is a party's (party-role-name).
+# group: one form written short or long (Inc and Incorporated). position: the form stands after the name. name-variant reports
+# one company written with forms of two groups (Aoba Systems Inc. and Aoba Systems Ltd.).
 id: company-form
 language: en
 entries:
-  - pattern: Ltd
-  - pattern: Limited
-  - pattern: Inc
-  - pattern: Incorporated
-  - pattern: LLC
-  - pattern: LLP
-  - pattern: Corporation
-  - pattern: Corp
-  - pattern: plc
-  - pattern: PLC
-  - pattern: GmbH
+  - { pattern: Ltd, group: ltd, position: after }
+  - { pattern: Limited, group: ltd, position: after }
+  - { pattern: Inc, group: inc, position: after }
+  - { pattern: Incorporated, group: inc, position: after }
+  - { pattern: LLC, group: llc, position: after }
+  - { pattern: LLP, group: llp, position: after }
+  - { pattern: Corporation, group: corp, position: after }
+  - { pattern: Corp, group: corp, position: after }
+  - { pattern: plc, group: plc, position: after }
+  - { pattern: PLC, group: plc, position: after }
+  - { pattern: GmbH, group: gmbh, position: after }
+  - { pattern: "Co., Ltd", group: co-ltd, position: after }

@@ -430,7 +430,7 @@ $ npx chaffjs keiyaku.md
   - 解除・損害賠償・準拠法・紛争の解決を定めた条項があるか
   - 支払いの期限を、いつから数えて何日と書いているか
 
-  このジャンルで特に効く rule: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, obligation-without-deadline, party-role-name, requirement-smell, total-mismatch, vague-deadline
+  このジャンルで特に効く rule: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, obligation-without-deadline, party-role-name, requirement-smell, total-mismatch, undefined-term, vague-deadline
   書いたところ: genres.yaml → chaff.yaml
   chaff.yaml の guide: で書き換えられます。出さないときは --no-guide。
 
@@ -467,7 +467,7 @@ $ npx chaffjs keiyaku.md
   - 支払いの期限を、いつから数えて何日と書いているか
   - 合意管轄を東京地方裁判所としているか
 
-  このジャンルで特に効く rule: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, obligation-without-deadline, party-role-name, requirement-smell, total-mismatch, vague-deadline
+  このジャンルで特に効く rule: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, obligation-without-deadline, party-role-name, requirement-smell, total-mismatch, undefined-term, vague-deadline
   書いたところ: genres.yaml → chaff.yaml
   chaff.yaml の guide: で書き換えられます。出さないときは --no-guide。
 
