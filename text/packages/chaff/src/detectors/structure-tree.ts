@@ -7,6 +7,7 @@ import { documentDateOf } from "./document-date.ts";
 import { dateOrderBreaks } from "../structure/date-order.ts";
 import { totalMismatches, type Amount } from "../structure/total.ts";
 import { proseTotalMismatches } from "../structure/prose-total.ts";
+import { countedAmounts, type SummedCounter } from "../structure/counted-amounts.ts";
 import { rangeFrameOf, reversedRanges, type DatedSpan, type RangeWords } from "../structure/date-range.ts";
 import { percentSumMismatches, type ShareWords } from "../structure/percent-sum.ts";
 import { proseShareMismatches } from "../structure/percent-sum-prose.ts";
@@ -173,9 +174,18 @@ export const amountsOf = (tree: NonNullable<ProseDocument["structure"]>): Amount
 
 const patternsOf = (doc: ProseDocument, lexicon: string): string[] => (doc.lexicons[lexicon] ?? []).map((entry) => entry.pattern);
 
+const summedCountersOf = (doc: ProseDocument): SummedCounter[] =>
+  (doc.lexicons["summed-counter"] ?? []).map((entry) => ({ pattern: entry.pattern, unit: entry.group ?? entry.pattern }));
+
+/** 木の数量に、解析器が助数詞と読まない足せる助数詞（16単位、3 credits）の付いた数を加えて、書いた順に並べる。 */
+const summableAmountsOf = (doc: ProseDocument, tree: NonNullable<ProseDocument["structure"]>): Amount[] => {
+  const known = amountsOf(tree);
+  return [...known, ...countedAmounts(doc.source, summedCountersOf(doc), known)].toSorted((left, right) => left.offset - right.offset);
+};
+
 /** 合計の行と内訳の行、文の中の合計と内訳。同じ金額は一度だけ言う。 */
 const totalIssues = (doc: ProseDocument, tree: NonNullable<ProseDocument["structure"]>): StructureIssue[] => {
-  const amounts = amountsOf(tree);
+  const amounts = summableAmountsOf(doc, tree);
   const lines = totalMismatches(doc.source, amounts, patternsOf(doc, "total-label"));
   const words = {
     totals: patternsOf(doc, "total-phrase"),
