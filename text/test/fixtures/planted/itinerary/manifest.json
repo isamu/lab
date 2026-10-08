@@ -1,0 +1,395 @@
+{
+  "note": "Self-written travel itineraries (a business trip, a group tour and a conference trip), each in a clean version and a planted one that differs only on the lines below. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: time-order (times out of order within a day), arrival-before-departure (a leg that arrives before it departs), connection-time-short (a connection shorter than the stated travel time between the two places) and date-outside-period (a date outside the trip's stated period). There is no itinerary genre; the documents run under business/proposal, the closest business genre. yarn planted itinerary scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/business-trip",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/business-trip.clean.md",
+      "planted": "ja/business-trip.planted.md",
+      "mistakes": [
+        {
+          "kind": "date-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 19,
+          "clean": "### 2026年11月11日（水）",
+          "planted": "### 2026年11月11日（木）"
+        },
+        {
+          "kind": "time-order",
+          "rule": "time-order",
+          "line": 23,
+          "clean": "- 14:00 九州支店にて報告会",
+          "planted": "- 11:00 九州支店にて報告会"
+        },
+        {
+          "kind": "stay-nights",
+          "rule": "duration-mismatch",
+          "line": 37,
+          "clean": "2026年11月12日（木） | 2泊 |",
+          "planted": "2026年11月12日（木） | 3泊 |"
+        },
+        {
+          "kind": "arrival-before-departure",
+          "rule": "arrival-before-departure",
+          "line": 30,
+          "clean": "福岡 11:30発、羽田 13:05着",
+          "planted": "福岡 11:30発、羽田 11:05着"
+        },
+        {
+          "kind": "connection-too-short",
+          "rule": "connection-time-short",
+          "line": 15,
+          "clean": "- 10:30 博多駅 筑紫口で株式会社",
+          "planted": "- 09:55 博多駅 筑紫口で株式会社"
+        },
+        {
+          "kind": "cost-total",
+          "rule": "total-mismatch",
+          "line": 46,
+          "clean": "| 合計 | 97,000円 |",
+          "planted": "| 合計 | 95,000円 |"
+        },
+        {
+          "kind": "date-outside-period",
+          "rule": "date-outside-period",
+          "line": 26,
+          "clean": "### 2026年11月12日（木）",
+          "planted": "### 2026年11月13日（金）"
+        },
+        {
+          "kind": "place-two-ways",
+          "rule": "name-variant",
+          "line": 29,
+          "clean": "- 10:00 博多駅 筑紫口で田中様",
+          "planted": "- 10:00 博多駅 ちくし口で田中様"
+        }
+      ]
+    },
+    {
+      "id": "ja/group-tour",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/group-tour.clean.md",
+      "planted": "ja/group-tour.planted.md",
+      "mistakes": [
+        {
+          "kind": "date-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 22,
+          "clean": "## 2日目　2026年11月22日（日）",
+          "planted": "## 2日目　2026年11月22日（月）"
+        },
+        {
+          "kind": "time-order",
+          "rule": "time-order",
+          "line": 18,
+          "clean": "| 14:00 | 伏見稲荷大社 参拝 |",
+          "planted": "| 12:00 | 伏見稲荷大社 参拝 |"
+        },
+        {
+          "kind": "stay-nights",
+          "rule": "duration-mismatch",
+          "line": 36,
+          "clean": "2026年11月22日チェックアウト、1泊）",
+          "planted": "2026年11月22日チェックアウト、2泊）"
+        },
+        {
+          "kind": "arrival-before-departure",
+          "rule": "arrival-before-departure",
+          "line": 31,
+          "clean": "京都 16:00発、東京 18:15着",
+          "planted": "京都 16:00発、東京 15:45着"
+        },
+        {
+          "kind": "connection-too-short",
+          "rule": "connection-time-short",
+          "line": 16,
+          "clean": "| 10:30 | 清水寺 拝観 |",
+          "planted": "| 10:15 | 清水寺 拝観 |"
+        },
+        {
+          "kind": "cost-total",
+          "rule": "total-mismatch",
+          "line": 47,
+          "clean": "| 合計 | 56,500円 |",
+          "planted": "| 合計 | 58,500円 |"
+        },
+        {
+          "kind": "date-outside-period",
+          "rule": "date-outside-period",
+          "line": 9,
+          "clean": "## 1日目　2026年11月21日（土）",
+          "planted": "## 1日目　2026年11月20日（金）"
+        },
+        {
+          "kind": "place-two-ways",
+          "rule": "name-variant",
+          "line": 32,
+          "clean": "| 18:15 | 東京駅 八重洲中央口にて解散 |",
+          "planted": "| 18:15 | 東京駅 八重州中央口にて解散 |"
+        }
+      ]
+    },
+    {
+      "id": "ja/conference",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/conference.clean.md",
+      "planted": "ja/conference.planted.md",
+      "mistakes": [
+        {
+          "kind": "date-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 11,
+          "clean": "発表は2027年2月9日（火）",
+          "planted": "発表は2027年2月9日（水）"
+        },
+        {
+          "kind": "time-order",
+          "rule": "time-order",
+          "line": 32,
+          "clean": "| 2月9日 13:00 | 一般講演",
+          "planted": "| 2月9日 09:00 | 一般講演"
+        },
+        {
+          "kind": "stay-nights",
+          "rule": "duration-mismatch",
+          "line": 24,
+          "clean": "2027年2月11日（木）まで3泊します",
+          "planted": "2027年2月11日（木）まで4泊します"
+        },
+        {
+          "kind": "arrival-before-departure",
+          "rule": "arrival-before-departure",
+          "line": 18,
+          "clean": "| 2月11日 15:30 | 2月11日 17:10 |",
+          "planted": "| 2月11日 15:30 | 2月11日 15:10 |"
+        },
+        {
+          "kind": "connection-too-short",
+          "rule": "connection-time-short",
+          "line": 20,
+          "clean": "2月8日は15:30に札幌駅 南口で",
+          "planted": "2月8日は15:00に札幌駅 南口で"
+        },
+        {
+          "kind": "cost-total",
+          "rule": "total-mismatch",
+          "line": 47,
+          "clean": "| 小計 | 100,000円 |",
+          "planted": "| 小計 | 110,000円 |"
+        },
+        {
+          "kind": "date-outside-period",
+          "rule": "date-outside-period",
+          "line": 38,
+          "clean": "2月11日（木）の午前は",
+          "planted": "2月12日（金）の午前は"
+        },
+        {
+          "kind": "place-two-ways",
+          "rule": "name-variant",
+          "line": 36,
+          "clean": "終日、札幌コンベンションセンターで",
+          "planted": "終日、札幌コンベンション・センターで"
+        }
+      ]
+    },
+    {
+      "id": "en/business-trip",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/business-trip.clean.md",
+      "planted": "en/business-trip.planted.md",
+      "mistakes": [
+        {
+          "kind": "date-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 19,
+          "clean": "### Wednesday, November 11, 2026",
+          "planted": "### Thursday, November 11, 2026"
+        },
+        {
+          "kind": "time-order",
+          "rule": "time-order",
+          "line": 23,
+          "clean": "- 2:00 PM Report meeting",
+          "planted": "- 11:00 AM Report meeting"
+        },
+        {
+          "kind": "stay-nights",
+          "rule": "duration-mismatch",
+          "line": 37,
+          "clean": "November 12, 2026 | 2 |",
+          "planted": "November 12, 2026 | 3 |"
+        },
+        {
+          "kind": "arrival-before-departure",
+          "rule": "arrival-before-departure",
+          "line": 30,
+          "clean": "departs Washington Reagan 1:30 PM, arrives Boston 3:05 PM",
+          "planted": "departs Washington Reagan 1:30 PM, arrives Boston 1:05 PM"
+        },
+        {
+          "kind": "connection-too-short",
+          "rule": "connection-time-short",
+          "line": 15,
+          "clean": "- 10:00 AM Meet Ms. Tanaka",
+          "planted": "- 9:15 AM Meet Ms. Tanaka"
+        },
+        {
+          "kind": "cost-total",
+          "rule": "total-mismatch",
+          "line": 46,
+          "clean": "| Total | $1,225 |",
+          "planted": "| Total | $1,255 |"
+        },
+        {
+          "kind": "date-outside-period",
+          "rule": "date-outside-period",
+          "line": 26,
+          "clean": "### Thursday, November 12, 2026",
+          "planted": "### Friday, November 13, 2026"
+        },
+        {
+          "kind": "place-two-ways",
+          "rule": "name-variant",
+          "line": 29,
+          "clean": "Ms. Tanaka at Metro Center, 11th Street exit",
+          "planted": "Ms. Tanaka at Metro Center, 11th St. exit"
+        }
+      ]
+    },
+    {
+      "id": "en/group-tour",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/group-tour.clean.md",
+      "planted": "en/group-tour.planted.md",
+      "mistakes": [
+        {
+          "kind": "date-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 22,
+          "clean": "## Day 2: Sunday 22 November 2026",
+          "planted": "## Day 2: Monday 22 November 2026"
+        },
+        {
+          "kind": "time-order",
+          "rule": "time-order",
+          "line": 18,
+          "clean": "| 14:00 | National Railway Museum |",
+          "planted": "| 12:00 | National Railway Museum |"
+        },
+        {
+          "kind": "stay-nights",
+          "rule": "duration-mismatch",
+          "line": 35,
+          "clean": "check out Sunday 22 November 2026, 1 night)",
+          "planted": "check out Sunday 22 November 2026, 2 nights)"
+        },
+        {
+          "kind": "arrival-before-departure",
+          "rule": "arrival-before-departure",
+          "line": 30,
+          "clean": "departs York 15:30, arrives London 17:35",
+          "planted": "departs York 15:30, arrives London 15:05"
+        },
+        {
+          "kind": "connection-too-short",
+          "rule": "connection-time-short",
+          "line": 16,
+          "clean": "| 10:00 | Guided tour of York Minster |",
+          "planted": "| 09:35 | Guided tour of York Minster |"
+        },
+        {
+          "kind": "cost-total",
+          "rule": "total-mismatch",
+          "line": 46,
+          "clean": "| Total | £303 |",
+          "planted": "| Total | £313 |"
+        },
+        {
+          "kind": "date-outside-period",
+          "rule": "date-outside-period",
+          "line": 9,
+          "clean": "## Day 1: Saturday 21 November 2026",
+          "planted": "## Day 1: Friday 20 November 2026"
+        },
+        {
+          "kind": "place-two-ways",
+          "rule": "name-variant",
+          "line": 31,
+          "clean": "| 17:35 | Group disbands at King's Cross station, Platform 0 entrance |",
+          "planted": "| 17:35 | Group disbands at Kings Cross station, Platform 0 entrance |"
+        }
+      ]
+    },
+    {
+      "id": "en/conference",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/conference.clean.md",
+      "planted": "en/conference.planted.md",
+      "mistakes": [
+        {
+          "kind": "date-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 11,
+          "clean": "afternoon session on Tuesday, February 9, 2027",
+          "planted": "afternoon session on Wednesday, February 9, 2027"
+        },
+        {
+          "kind": "time-order",
+          "rule": "time-order",
+          "line": 32,
+          "clean": "| Feb 9, 1:00 PM | General session",
+          "planted": "| Feb 9, 9:00 AM | General session"
+        },
+        {
+          "kind": "stay-nights",
+          "rule": "duration-mismatch",
+          "line": 24,
+          "clean": "I will stay three nights",
+          "planted": "I will stay four nights"
+        },
+        {
+          "kind": "arrival-before-departure",
+          "rule": "arrival-before-departure",
+          "line": 18,
+          "clean": "| Feb 11, 3:30 PM | Feb 11, 6:35 PM |",
+          "planted": "| Feb 11, 3:30 PM | Feb 11, 3:05 PM |"
+        },
+        {
+          "kind": "connection-too-short",
+          "rule": "connection-time-short",
+          "line": 20,
+          "clean": "Wynkoop Street entrance, at 3:15 PM",
+          "planted": "Wynkoop Street entrance, at 2:30 PM"
+        },
+        {
+          "kind": "cost-total",
+          "rule": "total-mismatch",
+          "line": 47,
+          "clean": "| Subtotal | $1,390 |",
+          "planted": "| Subtotal | $1,490 |"
+        },
+        {
+          "kind": "date-outside-period",
+          "rule": "date-outside-period",
+          "line": 38,
+          "clean": "On the morning of Thursday, February 11,",
+          "planted": "On the morning of Friday, February 12,"
+        },
+        {
+          "kind": "place-two-ways",
+          "rule": "name-variant",
+          "line": 36,
+          "clean": "all day at the Colorado Convention Center.",
+          "planted": "all day at the Colorado Convention Centre."
+        }
+      ]
+    }
+  ]
+}
