@@ -6,8 +6,7 @@ import { siblingHeadingRunsOf } from "../packages/chaff/src/structure/heading-ru
 
 type Heading = { readonly depth: number; readonly joins: boolean; readonly index: number };
 
-const runsOf = (headings: readonly Heading[]): number[][] =>
-  siblingHeadingRunsOf(headings, (heading) => (heading.joins ? heading.index : undefined));
+const runsOf = (headings: readonly Heading[]): number[][] => siblingHeadingRunsOf(headings, (heading) => (heading.joins ? heading.index : undefined));
 
 /**
  * The rule stated without the walk: two joining headings at one depth share a run exactly when no heading between them,
@@ -19,7 +18,9 @@ const expectedRuns = (headings: readonly Heading[]): number[][] => {
     left.depth === right.depth && headings.slice(left.index + 1, right.index).every((between) => between.depth >= left.depth);
   return joining
     .filter((heading) => !joining.some((earlier) => earlier.index < heading.index && sameRun(earlier, heading)))
-    .map((first) => joining.filter((heading) => heading.index === first.index || (heading.index > first.index && sameRun(first, heading))).map((heading) => heading.index));
+    .map((first) =>
+      joining.filter((heading) => heading.index === first.index || (heading.index > first.index && sameRun(first, heading))).map((heading) => heading.index),
+    );
 };
 
 const MAX_DEPTH = 6;
