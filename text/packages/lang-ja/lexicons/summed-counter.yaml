@@ -1,0 +1,14 @@
+# 合計の行で足してよい助数詞（16単位、4コマ、3回）。total-mismatch は、数のすぐ後ろにこの語がある数を、解析器が助数詞と
+# 読まなくても（単位、コマ）数量として足す。番号を言う語（号、番）は足しても意味が無いので入れない。
+id: summed-counter
+language: ja
+entries:
+  - pattern: 単位
+  - pattern: コマ
+  - pattern: 回
+  - pattern: 名
+  - pattern: 件
+  - pattern: 点
+  - pattern: 台
+  - pattern: 個
+  - pattern: 部
