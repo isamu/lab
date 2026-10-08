@@ -155,6 +155,7 @@ export const dateOrder: Detector = (doc): Finding[] =>
         column: 0,
         quote: quoteAt(doc.source, issue.offset),
         values: { ...issue.values, offset: issue.offset },
+        ...("next" in issue.values ? { variant: "first" } : {}),
       }));
 
 /** 木の数量を、原文の位置と一緒に並べる。 */
