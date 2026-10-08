@@ -78,7 +78,7 @@ const linesOf = (source: string): Line[] => {
 /** The index of the ) that closes the ( at `open`, or -1. */
 const closingParen = (text: string, open: number): number => {
   const state = { depth: 0, at: -1 };
-  [...text.slice(open)].some((char, index) => {
+  Array.from(text.slice(open)).some((char, index) => {
     if (char === "(") state.depth += 1;
     if (char === ")") state.depth -= 1;
     if (state.depth === 0) state.at = open + index;
@@ -99,7 +99,7 @@ const withoutArrayGenerics = (type: string): string => {
 const unionMembers = (type: string): string[] => {
   const state = { depth: 0, from: 0 };
   const members: string[] = [];
-  [...type].forEach((char, index) => {
+  Array.from(type).forEach((char, index) => {
     if ("(<[{".includes(char)) state.depth += 1;
     if (")>]}".includes(char)) state.depth -= 1;
     if (char !== "|" || state.depth !== 0) return;
