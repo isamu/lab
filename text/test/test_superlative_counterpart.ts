@@ -67,7 +67,7 @@ describe("引いた言葉の中の最上級", () => {
   });
 
   it("括弧の外だけなら指摘する。閉じない括弧は中身を作らない", () => {
-    assert.ok(superlativeReported(ja, "これは防ぎたかった唯一のことだ。"));
+    assert.ok(superlativeReported(ja, "これは唯一の欠点だ。"));
     assert.ok(superlativeReported(ja, "返答は「これは唯一のことだ。"));
     assert.ok(superlativeReported(en, "This is the best answer."));
   });
