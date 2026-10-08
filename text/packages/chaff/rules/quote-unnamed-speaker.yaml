@@ -28,7 +28,13 @@ how_to_fix:
 
 levels: { strict: warning, normal: info, relaxed: info }
 
-use_for: [business/press-release, business/report]
+use_for: [business/press-release, business/report, legal, docs, academic, literature, speech]
+off_for:
+  legal: "A quotation given to an unnamed role: only press releases and reports turn this on; quote-without-source reads quotations elsewhere."
+  docs: "A quotation given to an unnamed role: only press releases and reports turn this on; quote-without-source reads quotations elsewhere."
+  academic: "A quotation given to an unnamed role: only press releases and reports turn this on; quote-without-source reads quotations elsewhere."
+  literature: "A quotation given to an unnamed role: only press releases and reports turn this on; quote-without-source reads quotations elsewhere."
+  speech: "A quotation given to an unnamed role: only press releases and reports turn this on; quote-without-source reads quotations elsewhere."
 
 group: facts
 summary:
