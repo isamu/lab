@@ -7,7 +7,7 @@ import { nowFor } from "./rules-json.ts";
 // `chaff rules`: every rule, grouped the way the reference groups them, with the level it runs at now.
 // `chaff rules --json` carries the same and more, for an AI to read.
 
-type RunsWhen = "default" | "experimental" | "team" | "test";
+type RunsWhen = "default" | "experimental" | "style" | "team" | "test";
 
 const TEXT: Texts<{
   readonly heading: (genre: string, count: number) => string;
@@ -17,11 +17,12 @@ const TEXT: Texts<{
 }> = {
   ja: {
     heading: (genre, count) => `chaff のルール ${count} 本（ジャンル ${genre}）`,
-    runsWhen: { default: "既定", experimental: "試験中", team: "要設定", test: "AI" },
+    runsWhen: { default: "既定", experimental: "試験中", style: "style", team: "要設定", test: "AI" },
     ungrouped: "（グループ未設定）",
     footer: [
       "既定: 何も書かなくても動く   試験中: --experimental か chaff.yaml で動く",
       "要設定: chaff.yaml に語や見出しを書いたときだけ   AI: npx chaffjs test で動く",
+      "style: chaff.yaml の style（koyobun など）か rules で動く",
       "",
       "詳しく:    npx chaffjs explain <rule>",
       "AI に渡す: npx chaffjs rules --json",
@@ -29,11 +30,12 @@ const TEXT: Texts<{
   },
   en: {
     heading: (genre, count) => `chaff's ${count} rules (genre ${genre})`,
-    runsWhen: { default: "default", experimental: "experimental", team: "needs list", test: "AI" },
+    runsWhen: { default: "default", experimental: "experimental", style: "style", team: "needs list", test: "AI" },
     ungrouped: "(no group yet)",
     footer: [
       "default: runs with no settings   experimental: runs with --experimental or a level in chaff.yaml",
       "needs list: runs only on words or headings listed in chaff.yaml   AI: runs with npx chaffjs test",
+      "style: runs with a style in chaff.yaml (koyobun and others) or a level under rules",
       "",
       "More on one rule:  npx chaffjs explain <rule>",
       "For an AI:         npx chaffjs rules --json",
@@ -44,6 +46,7 @@ const TEXT: Texts<{
 const runsWhenOf = (rule: RuleDefinition): RunsWhen => {
   if (rule.layer === "L4") return "test";
   if (rule.guide?.group === "team") return "team";
+  if (rule.opt_in === true) return "style";
   return rule.status === "experimental" ? "experimental" : "default";
 };
 

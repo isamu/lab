@@ -105,10 +105,11 @@ const numberFor = (raw: unknown, language: string): number | undefined => {
 
 const stringList = (value: unknown): string[] | undefined => (Array.isArray(value) ? value.map((entry) => String(entry)) : undefined);
 
-/** What only some rules declare: options beyond the level, and token features the adapter computes on request. */
-const extrasOf = (raw: Record<string, unknown>, file: string): Pick<RuleDefinition, "options" | "token_features"> => ({
+/** What only some rules declare: options beyond the level, token features the adapter computes on request, and opt_in. */
+const extrasOf = (raw: Record<string, unknown>, file: string): Pick<RuleDefinition, "options" | "token_features" | "opt_in"> => ({
   ...(raw["options"] === undefined ? {} : { options: optionsOf(raw["options"], file) }),
   ...(raw["token_features"] === undefined ? {} : { token_features: stringList(raw["token_features"]) ?? [] }),
+  ...(raw["opt_in"] === true ? { opt_in: true } : {}),
 });
 
 /** The table flattenLevels reads, before its severities become numbers. */

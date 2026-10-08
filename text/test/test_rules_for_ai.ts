@@ -11,7 +11,7 @@ import { runCli } from "./cli-run.ts";
 const RULE_IDS = loadRules("en").map((rule) => rule.id);
 const GENRE_IDS = loadGenres().genres.map((genre) => genre.id);
 const READER_LANGUAGES = ["ja", "en"];
-const RUNS = new Set(["on", "experimental", "genre-off", "unsuited"]);
+const RUNS = new Set(["on", "experimental", "opt-in", "genre-off", "unsuited"]);
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 

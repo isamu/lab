@@ -26,6 +26,7 @@ const RUNS_WHEN: Record<RunsWhen, UiKey> = {
   default: "runsDefault",
   info: "runsInfo",
   experimental: "runsExperimental",
+  style: "runsStyle",
   team: "runsTeam",
   test: "runsTest",
 };
@@ -47,6 +48,7 @@ const onText = (entry: RuleInGenre): string =>
 const genreLists: [UiKey, readonly RuleInGenre[]][] = [
   ["genreOn", genresWhere("on")],
   ["genreExperimental", genresWhere("experimental")],
+  ["genreOptIn", genresWhere("opt-in")],
   ["genreOff", genresWhere("genre-off")],
   ["genreUnsuited", genresWhere("unsuited")],
 ];

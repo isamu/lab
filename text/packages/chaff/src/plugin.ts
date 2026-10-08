@@ -497,6 +497,8 @@ export type RuleDefinition = {
   /** 動かす言語。未指定は全言語。「ですます調」のように言語に固有の rule が使う。 */
   readonly languages: readonly string[] | undefined;
   readonly use_for: readonly string[];
+  /** Off unless chaff.yaml or its style gives the rule a level: a house style's own rule (a 公用文 spelling), wrong for other documents. */
+  readonly opt_in?: true;
   readonly severity: Severity;
   /** Options beyond the level (the direction and length for katakana-long-vowel). Most rules have none. */
   readonly options?: Readonly<Record<string, RuleOption>>;

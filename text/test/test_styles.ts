@@ -40,7 +40,7 @@ describe("house styles", () => {
       const koyobun = styles.find((style) => style.id === "koyobun");
       assert.ok(koyobun !== undefined);
       assert.deepEqual(koyobun.limits, { "max-sentence-length": { ja: 60 } });
-      assert.deepEqual(koyobun.rules, { "max-sentence-length": "normal", "no-mixed-desumasu": "normal", [RULE]: "normal" });
+      assert.deepEqual(koyobun.rules, { "max-sentence-length": "normal", "no-mixed-desumasu": "normal", [RULE]: "normal", "kana-function-word": "normal" });
       assert.deepEqual(koyobun.options, { [RULE]: { ending: "keep" } });
     });
 

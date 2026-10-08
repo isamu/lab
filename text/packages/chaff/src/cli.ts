@@ -50,6 +50,7 @@ import { notRunAmong } from "./not-run.ts";
 import { settingProblems } from "./setting-problems.ts";
 import { withExtensions } from "./extension/load.ts";
 import { offOnlyAsExperimental } from "./experimental-alone.ts";
+import { levelFor } from "./run.ts";
 import { DEFAULT_GENRE } from "./init-choice.ts";
 import { stoppingOnYamlFileError } from "./config/yaml-file.ts";
 
@@ -236,7 +237,7 @@ const explain = (config: Config, ruleId: string | undefined, genreFlag: string |
     return 1;
   }
   const preset = genre === undefined ? {} : presetLevels(genre);
-  const current = config.rules[rule.id] ?? preset[rule.id] ?? (rule.status === "experimental" && !config.experimental ? "off" : "normal");
+  const current = levelFor(rule, config.rules, config.experimental, preset);
   const alone = offOnlyAsExperimental(rule, config, genre ?? DEFAULT_GENRE, preset, language);
   console.log(renderExplain(rule, current, language, genre, { ...settingSourcesOf(config, rule.id, language), offOnlyAsExperimental: alone }));
   return 0;
