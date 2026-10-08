@@ -15,6 +15,9 @@ detect:
     min_lines: 3
 
 ja:
+  # 定義した語を括弧に入れるのは、語そのものを指すとき（「株主」とあるのは「社員」と読み替える、「個人情報」の定義）。
+  # 定義のあとの括弧を、定義し直しや付け忘れとして指さない（defined-term-form）。
+  quote_mentions_term: true
   # 番地の書き方。第 + 漢数字 + 単位、枝番号（の二）が続いてもよい。
   # 「前二項」「前三条」は直前の二つの項・三つの条を指す番地で、数量ではない。「前二年」は期間なので書かない。
   addresses:
@@ -64,3 +67,8 @@ ja:
       - "の[〇一二三四五六七八九十百千]+"
     # 並びの途中に挟まる括弧書き。
     aside: { open: （, close: ） }
+
+en:
+  # A statute quotes a defined term to talk about the term itself ("controller" has the same meaning as in Part 3,
+  # the definition of "the UK GDPR"), not to define it again (defined-term-form).
+  quote_mentions_term: true
