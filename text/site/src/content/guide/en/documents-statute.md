@@ -83,7 +83,7 @@ Guide: Statute and regulation (legal/statute)
   - Are duties (shall), prohibitions (shall not), powers (may) and best-effort duties written apart?
   - Can the scope, the exceptions (provided that) and the date of effect be found?
 
-  Rules that matter most for this genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, duplicate-definition, numbering-gap, total-mismatch
+  Rules that matter most for this genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, total-mismatch
   Change it with guide: in chaff.yaml; leave it out with --no-guide.
 
 ════════════════════════════════════════════════════════════
@@ -378,7 +378,7 @@ Guide: Statute and regulation (legal/statute)
   - Are duties (shall), prohibitions (shall not), powers (may) and best-effort duties written apart?
   - Can the scope, the exceptions (provided that) and the date of effect be found?
 
-  Rules that matter most for this genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, duplicate-definition, numbering-gap, total-mismatch
+  Rules that matter most for this genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, total-mismatch
   Change it with guide: in chaff.yaml; leave it out with --no-guide.
 
 ════════════════════════════════════════════════════════════
