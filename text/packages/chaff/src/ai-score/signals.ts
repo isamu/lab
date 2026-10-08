@@ -39,10 +39,11 @@ export const compositeLevels = (rules: readonly RuleDefinition[]): LevelTable =>
  * where the genre turns the rule off, so a share exists for every genre group the rule can run in. A rule that runs only
  * with a style (opt_in) stays off: how often it fires on documents that never chose the style says nothing about it.
  */
+const measuredLevel = (rule: RuleDefinition, preset: Readonly<Record<string, Level>>): Level => {
+  if (rule.opt_in === true) return "off";
+  const level = preset[rule.id];
+  return level === undefined || level === "off" ? "normal" : level;
+};
+
 export const measuredLevelsOf = (rules: readonly RuleDefinition[], preset: Readonly<Record<string, Level>>): Record<string, Level> =>
-  Object.fromEntries(
-    rules.map((rule) => [
-      rule.id,
-      rule.opt_in === true ? "off" : preset[rule.id] === undefined || preset[rule.id] === "off" ? "normal" : (preset[rule.id] ?? "normal"),
-    ]),
-  );
+  Object.fromEntries(rules.map((rule) => [rule.id, measuredLevel(rule, preset)]));
