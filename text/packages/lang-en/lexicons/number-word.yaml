@@ -1,0 +1,45 @@
+# The words of a number written out, for number-word-figure-mismatch: "six (7) months", "Fifty Thousand Dollars ($5,000)".
+# weight is the word's value. group says how it joins the words around it: digit adds (twenty-one), place multiplies the
+# digits before it within one group (five hundred), scale closes everything before it (fifty thousand), joiner may stand
+# between two number words (one hundred and five), unit may stand between the words and the bracket and after the figure
+# inside it (five percent (5%)). Matched without regard to case, as whole words.
+id: number-word
+language: en
+entries:
+  - { pattern: zero, weight: 0, group: digit }
+  - { pattern: one, weight: 1, group: digit }
+  - { pattern: two, weight: 2, group: digit }
+  - { pattern: three, weight: 3, group: digit }
+  - { pattern: four, weight: 4, group: digit }
+  - { pattern: five, weight: 5, group: digit }
+  - { pattern: six, weight: 6, group: digit }
+  - { pattern: seven, weight: 7, group: digit }
+  - { pattern: eight, weight: 8, group: digit }
+  - { pattern: nine, weight: 9, group: digit }
+  - { pattern: ten, weight: 10, group: digit }
+  - { pattern: eleven, weight: 11, group: digit }
+  - { pattern: twelve, weight: 12, group: digit }
+  - { pattern: thirteen, weight: 13, group: digit }
+  - { pattern: fourteen, weight: 14, group: digit }
+  - { pattern: fifteen, weight: 15, group: digit }
+  - { pattern: sixteen, weight: 16, group: digit }
+  - { pattern: seventeen, weight: 17, group: digit }
+  - { pattern: eighteen, weight: 18, group: digit }
+  - { pattern: nineteen, weight: 19, group: digit }
+  - { pattern: twenty, weight: 20, group: digit }
+  - { pattern: thirty, weight: 30, group: digit }
+  - { pattern: forty, weight: 40, group: digit }
+  - { pattern: fifty, weight: 50, group: digit }
+  - { pattern: sixty, weight: 60, group: digit }
+  - { pattern: seventy, weight: 70, group: digit }
+  - { pattern: eighty, weight: 80, group: digit }
+  - { pattern: ninety, weight: 90, group: digit }
+  - { pattern: hundred, weight: 100, group: place }
+  - { pattern: thousand, weight: 1000, group: scale }
+  - { pattern: million, weight: 1000000, group: scale }
+  - { pattern: billion, weight: 1000000000, group: scale }
+  - { pattern: trillion, weight: 1000000000000, group: scale }
+  - { pattern: and, group: joiner }
+  - { pattern: percent, group: unit }
+  - { pattern: per cent, group: unit }
+  - { pattern: "%", group: unit }

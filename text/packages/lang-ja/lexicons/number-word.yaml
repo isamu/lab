@@ -1,0 +1,54 @@
+# 数を漢数字で書いた語。number-word-figure-mismatch が「三（4）か月」「金参拾万円（30,000円）」を読む。weight はその字の値。
+# group は前後の字とのつながり方: digit は足す、place（十・百・千）はその前の digit に掛ける、scale（万・億）はそこまで全体に掛ける。
+# 大字（壱・弐・参・拾・萬）も同じ値で読む。lead は漢字に続けて一字の数を書くとき前に立ってよい字（金参拾万円、年五パーセント、期間三か月、第三号）。unit は数と括弧のあいだ、括弧の中の数の後ろに立ってよい語。
+id: number-word
+language: ja
+entries:
+  - { pattern: 〇, weight: 0, group: digit }
+  - { pattern: 零, weight: 0, group: digit }
+  - { pattern: 一, weight: 1, group: digit }
+  - { pattern: 二, weight: 2, group: digit }
+  - { pattern: 三, weight: 3, group: digit }
+  - { pattern: 四, weight: 4, group: digit }
+  - { pattern: 五, weight: 5, group: digit }
+  - { pattern: 六, weight: 6, group: digit }
+  - { pattern: 七, weight: 7, group: digit }
+  - { pattern: 八, weight: 8, group: digit }
+  - { pattern: 九, weight: 9, group: digit }
+  - { pattern: 壱, weight: 1, group: digit }
+  - { pattern: 壹, weight: 1, group: digit }
+  - { pattern: 弌, weight: 1, group: digit }
+  - { pattern: 弐, weight: 2, group: digit }
+  - { pattern: 貳, weight: 2, group: digit }
+  - { pattern: 弍, weight: 2, group: digit }
+  - { pattern: 参, weight: 3, group: digit }
+  - { pattern: 參, weight: 3, group: digit }
+  - { pattern: 弎, weight: 3, group: digit }
+  - { pattern: 肆, weight: 4, group: digit }
+  - { pattern: 伍, weight: 5, group: digit }
+  - { pattern: 陸, weight: 6, group: digit }
+  - { pattern: 漆, weight: 7, group: digit }
+  - { pattern: 柒, weight: 7, group: digit }
+  - { pattern: 捌, weight: 8, group: digit }
+  - { pattern: 玖, weight: 9, group: digit }
+  - { pattern: 十, weight: 10, group: place }
+  - { pattern: 拾, weight: 10, group: place }
+  - { pattern: 百, weight: 100, group: place }
+  - { pattern: 佰, weight: 100, group: place }
+  - { pattern: 陌, weight: 100, group: place }
+  - { pattern: 千, weight: 1000, group: place }
+  - { pattern: 阡, weight: 1000, group: place }
+  - { pattern: 仟, weight: 1000, group: place }
+  - { pattern: 万, weight: 10000, group: scale }
+  - { pattern: 萬, weight: 10000, group: scale }
+  - { pattern: 億, weight: 100000000, group: scale }
+  - { pattern: 兆, weight: 1000000000000, group: scale }
+  - { pattern: 金, group: lead }
+  - { pattern: 年, group: lead }
+  - { pattern: 月, group: lead }
+  - { pattern: 間, group: lead }
+  - { pattern: 額, group: lead }
+  - { pattern: 第, group: lead }
+  - { pattern: パーセント, group: unit }
+  - { pattern: "％", group: unit }
+  - { pattern: "%", group: unit }
