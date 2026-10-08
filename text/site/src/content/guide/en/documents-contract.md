@@ -165,7 +165,7 @@ Guide: Contract and terms (legal/contract)
   - Do amounts, dates, periods and clause references agree across the clauses and the schedules?
   - Are termination, liability, governing law and dispute resolution covered?
 
-  Rules that matter most for this genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, party-role-name, requirement-smell, total-mismatch, vague-deadline
+  Rules that matter most for this genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, obligation-without-deadline, party-role-name, requirement-smell, total-mismatch, vague-deadline
   Change it with guide: in chaff.yaml; leave it out with --no-guide.
 
 ════════════════════════════════════════════════════════════

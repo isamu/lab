@@ -96,6 +96,8 @@ describe("untimedDuties", () => {
     assert.deepEqual(untimedDuties([text("The Customer SHALL, at its option, Pay the fees.", 10), ...LIMITS], words()), [{ offset: 45, act: "Pay" }]);
     assert.deepEqual(untimedDuties([text("The Customer agrees to pay the fees."), ...LIMITS], words()), [{ offset: 23, act: "pay" }]);
     assert.deepEqual(untimedDuties([text("The Customer shall use, keep, store and then pay it."), ...LIMITS], words()), []);
+    assert.deepEqual(untimedDuties([text("The Vendor shall send each invoice by email."), ...LIMITS], words({ acts: ["invoice"] })), []);
+    assert.deepEqual(untimedDuties([text("The Vendor shall invoice the fees."), ...LIMITS], words({ acts: ["invoice"] })).length, 1);
     assert.deepEqual(untimedDuties([text("The Customer shall repay the fees."), ...LIMITS], words()), []);
   });
 

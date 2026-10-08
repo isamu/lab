@@ -37,7 +37,7 @@ const LATIN = /\p{Script=Latin}/u;
 const LETTER = /\p{L}/u;
 const DIGIT = /\p{Nd}/u;
 const SENTENCE_MARKS = new Set(["。", "．", ".", "!", "?", "！", "？", ";", ":"]);
-/** How many words may stand between the duty marker and the act: "shall, at its option, return". */
+/** How many words an aside between the duty marker and the act may hold: "shall, at its option, return". */
 const MARKER_REACH_WORDS = 4;
 /** How far before an amount's trailing mark its number may end (88万円, 1,000 円). */
 const AMOUNT_REACH = 3;
@@ -65,7 +65,15 @@ const latinActAt = (lower: string, words: DutyWords): { readonly act: string; re
       const reach = tokens.slice(end, end + MARKER_REACH_WORDS);
       const act = reach.findIndex((token) => acts.has(token.word));
       const found = reach[act];
-      return found === undefined || reach.slice(0, act).some((token) => negations.has(token.word)) ? [] : [found];
+      const marker = tokens[end - 1];
+      if (found === undefined || marker === undefined || reach.slice(0, act).some((token) => negations.has(token.word))) return [];
+      // The act is the verb right after the marker, or after an aside set off by a comma ("shall, at its option, return");
+      // a later act word is an object ("shall send each invoice").
+      const aside = lower
+        .slice(marker.at + marker.word.length, found.at)
+        .trimStart()
+        .startsWith(",");
+      return act === 0 || aside ? [found] : [];
     })
     .map((token) => ({ act: token.word, at: token.at }))[0];
 };
