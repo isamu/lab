@@ -1,0 +1,33 @@
+# Words that make two amounts in one sentence a change of price, not a range (amount-range-reversed):
+# "the fee was reduced from $90 to $70". Matched as whole words, without regard to case.
+id: amount-change-word
+language: en
+entries:
+  - pattern: reduced
+  - pattern: reduce
+  - pattern: reduction
+  - pattern: dropped
+  - pattern: drop
+  - pattern: drops
+  - pattern: cut
+  - pattern: cuts
+  - pattern: lowered
+  - pattern: decreased
+  - pattern: decrease
+  - pattern: fell
+  - pattern: fall
+  - pattern: falls
+  - pattern: discounted
+  - pattern: discount
+  - pattern: slashed
+  - pattern: marked down
+  - pattern: changed
+  - pattern: change
+  - pattern: revised
+  - pattern: adjusted
+  - pattern: raised
+  - pattern: increased
+  - pattern: increase
+  - pattern: rose
+  - pattern: saving
+  - pattern: save
