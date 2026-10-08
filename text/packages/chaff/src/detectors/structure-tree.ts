@@ -144,11 +144,11 @@ export const dateWeekdayMismatch: Detector = (doc): Finding[] => {
 const datedPoints = (tree: NonNullable<ProseDocument["structure"]>): { offset: number; value: string }[] =>
   inDocumentOrder(tree).flatMap((node) => (node.kind === "date" ? [{ offset: node.span.start, value: String(node.attrs["value"]) }] : []));
 
-/** 日程の並びに逆らう日付。並びの読み方は原文の行を見るので、木と原文の両方を渡す。 */
+/** 日程の並びに逆らう日付。並びの読み方は原文の行と見出しを見るので、木と原文と見出しを渡す。 */
 export const dateOrder: Detector = (doc): Finding[] =>
   doc.structure === undefined
     ? []
-    : dateOrderBreaks(doc.source, datedPoints(doc.structure)).map((issue) => ({
+    : dateOrderBreaks(doc.source, datedPoints(doc.structure), doc.markup?.headings ?? []).map((issue) => ({
         rule: "date-order",
         severity: "warning",
         line: 0,
