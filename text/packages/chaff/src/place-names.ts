@@ -61,7 +61,7 @@ const LOOKBACK = 40;
 
 /** end のすぐ前の、char の字の連なりの始まり。 */
 const runStart = (source: string, end: number, char: RegExp): number => {
-  const chars = [...source.slice(Math.max(0, end - LOOKBACK), end)];
+  const chars = Array.from(source.slice(Math.max(0, end - LOOKBACK), end));
   return end - chars.slice(chars.findLastIndex((letter) => !char.test(letter)) + 1).join("").length;
 };
 
@@ -125,7 +125,7 @@ const latinBaseBefore = (source: string, end: number, reader: PlaceReader): Span
  */
 const properIndexes = (source: string, base: Span, properWords: readonly Span[]): number[] => {
   const inside = properWords.filter((word) => word.end <= base.end);
-  return [...source.slice(base.start, base.end)].flatMap((_char, index, chars) => {
+  return Array.from(source.slice(base.start, base.end)).flatMap((_char, index, chars) => {
     const at = base.start + chars.slice(0, index).join("").length;
     return inside.some((word) => word.start <= at && at < word.end) ? [index] : [];
   });
