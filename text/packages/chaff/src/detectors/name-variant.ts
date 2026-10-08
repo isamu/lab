@@ -1,8 +1,11 @@
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
-import { cuedNamesIn, mentionsIn, nameVariants, suffixedNamesIn, type NameMention, type VariantChars } from "../name-variants.ts";
+import { cuedNamesIn, mentionsIn, nameVariants, suffixedNamesIn, withKnownNeighbours, type NameMention, type VariantChars } from "../name-variants.ts";
 import { nameCueAt, type NameCues } from "../name-cue.ts";
 import { quoteAt } from "./structure-tree.ts";
 import { companyMentionsIn, companyVariants, type CompanyForm, type IsProper } from "../company-names.ts";
+import { proseAndTablesOf } from "../table-text.ts";
+import { tableBodyCells } from "../facts/table-facts.ts";
+import { cellNamesIn, cellNameVariants, proseNamesOf } from "../table-names.ts";
 
 // 人の名前と読ませる敬称（様、さん）は語彙表 person-suffix、人を指す前置き（担当の）は person-lead、名前のすぐ後ろに来る語
 // （です、まで）は name-particle、字体の違う同じ字（斎・斉・齋）は name-variant-char が組（group）ごとに言う。
@@ -37,25 +40,35 @@ const nameMentionsOf = (doc: ProseDocument, prose: string, chars: VariantChars):
   const cues: NameCues = { leads: patternsOf(doc, "person-lead"), suffixes: patternsOf(doc, "person-suffix"), particles: patternsOf(doc, "name-particle") };
   const tagged = doc.sentences.flatMap((sentence) => mentionsIn(sentence.tokens ?? [], doc.source, cues.suffixes));
   const taggedOrSuffixed = [...tagged, ...suffixedNamesIn(prose, cues.suffixes, chars, tagged)];
-  return [...taggedOrSuffixed, ...cuedNamesIn(prose, cues, chars, taggedOrSuffixed)]
-    .map((mention): NameMention => {
-      const cue = mention.cue ?? nameCueAt(prose, mention.offset, mention.surface, cues);
-      return cue === undefined ? mention : { ...mention, cue };
-    })
-    .toSorted((left, right) => left.offset - right.offset);
+  const cued = [...taggedOrSuffixed, ...cuedNamesIn(prose, cues, chars, taggedOrSuffixed)].map((mention): NameMention => {
+    const cue = mention.cue ?? nameCueAt(prose, mention.offset, mention.surface, cues);
+    return cue === undefined ? mention : { ...mention, cue };
+  });
+  return withKnownNeighbours(cued, prose).toSorted((left, right) => left.offset - right.offset);
 };
+
+/**
+ * 表の升に書いた名前の書き分け。升は品詞解析を通らないので、名前の形をした升を本文の名前と比べる。ほかの見方がすでに指した所と
+ * 重なるものは除く。
+ */
+const tableFindings = (doc: ProseDocument, prose: string, mentions: readonly NameMention[], reported: readonly Reported[]): Reported[] =>
+  cellNameVariants(cellNamesIn(tableBodyCells(proseAndTablesOf(doc))), proseNamesOf(mentions, prose))
+    .filter(({ name }) => !reported.some((other) => other.offset < name.offset + name.surface.length && name.offset < other.offset + other.name.length))
+    .map(({ name, usual, kind }) => ({ offset: name.offset, name: name.surface, usual, kind }));
 
 /** 同じ名前を、文書の中で少しだけ違う形に書いた所（GitHub と Github、山田太郎 と 山田太朗）。少ないほうを指す。 */
 export const nameVariant: Detector = (doc): Finding[] => {
   const prose = doc.prose ?? doc.source;
   const chars = variantCharsOf(doc);
-  const names = nameVariants(nameMentionsOf(doc, prose, chars), chars).map(({ mention, usual, kind }): Reported => ({
+  const mentions = nameMentionsOf(doc, prose, chars);
+  const names = nameVariants(mentions, chars).map(({ mention, usual, kind }): Reported => ({
     offset: mention.offset,
     name: mention.surface,
     usual,
     kind,
   }));
-  return [...names, ...companyFindings(doc, prose, names)]
+  const namesAndCompanies = [...names, ...companyFindings(doc, prose, names)];
+  return [...namesAndCompanies, ...tableFindings(doc, prose, mentions, namesAndCompanies)]
     .toSorted((left, right) => left.offset - right.offset)
     .map(({ offset, name, usual, kind }) => ({
       rule: "",

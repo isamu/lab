@@ -11,7 +11,7 @@ import { withoutEdgeMarks } from "./trim-marks.ts";
  * 升に値だけを書いたときだけ読む。「3,000円（税込）」のように条件を書いた升は読まない。
  * 行の見出しが値を含むか字を含まない表（日付の列から始まる日程表）は、行に名前が無いので読まない。
  */
-type Cell = Span & { readonly text: string };
+export type Cell = Span & { readonly text: string };
 
 const LETTER = /\p{L}/u;
 const TWO_COLUMNS = 2;
@@ -69,3 +69,6 @@ export const tableFacts = (source: string, values: readonly FactValue[]): Fact[]
     const headings = cellsOf(table.header).map((cell) => plain(cell.text));
     return table.rows.flatMap((row) => rowFacts(row, headings, values, source));
   });
+
+/** 文書の表すべての、本体の行の升（見出しの行を除く）。text は書いたまま。 */
+export const tableBodyCells = (source: string): Cell[] => tablesOf(linesOf(source)).flatMap((table) => table.rows.flatMap(cellsOf));
