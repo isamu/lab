@@ -5,6 +5,8 @@ import { join } from "node:path";
 import { COMMANDS } from "../packages/chaff/src/cli.ts";
 import { CLI_TEXT } from "../packages/chaff/src/cli-text.ts";
 import { asksForHelp, commandHelp, commandUsage } from "../packages/chaff/src/command-help.ts";
+import { AI_SCORE_TEXT } from "../packages/chaff/src/ai-score/text.ts";
+import { GRADE_TEXT } from "../packages/chaff/src/grade/text.ts";
 import { runCli } from "./cli-run.ts";
 
 // chaff <コマンド> --help は、そのコマンドを動かさずに使い方を出す。init --help が chaff.yaml を書いてはいけない。
@@ -123,6 +125,16 @@ describe("どのコマンドも --help に応える", () => {
     const usage = CLI_TEXT.en.usage.replaceAll("--allow-stamp-mismatch", "");
     assert.deepEqual(flagsMissingFrom(usage, "en", COMMAND_FLAGS), ["en: grade --allow-stamp-mismatch"]);
     assert.deepEqual(sharedMissingFrom(CLI_TEXT.ja.usage.replace("  --language ", "  "), "ja"), ["ja: --language"]);
+  });
+
+  it("grade と ai-score が誤りのときに出す使い方も、そのコマンドの指定を日本語と英語の両方で挙げる", () => {
+    const own = { grade: GRADE_TEXT, "ai-score": AI_SCORE_TEXT };
+    const missing = Object.entries(own).flatMap(([command, texts]) =>
+      Object.entries(texts).flatMap(([language, text]) =>
+        (COMMAND_FLAGS[command] ?? []).filter((name) => !text.usage.includes(name)).map((name) => `${language}: ${command} ${name}`),
+      ),
+    );
+    assert.deepEqual(missing, []);
   });
 
   it("init --help は使い方を出し、chaff.yaml を書かない", async () => {
