@@ -1,0 +1,29 @@
+# Words that end a place name (Union Station, 11th Street, Colorado Convention Center). name-variant reads a name ending in one
+# of them as a place and reports one place written two ways (11th Street and 11th St., King's Cross and Kings Cross).
+# group: one word written short or long, or spelt two ways (Street and St., Center and Centre). Matched as written, so each
+# capitalisation the word takes after a name is listed.
+id: place-word
+language: en
+entries:
+  - { pattern: Street, group: street }
+  - { pattern: St., group: street }
+  - { pattern: Avenue, group: avenue }
+  - { pattern: Ave., group: avenue }
+  - { pattern: Road, group: road }
+  - { pattern: Rd., group: road }
+  - { pattern: Boulevard, group: boulevard }
+  - { pattern: Blvd., group: boulevard }
+  - { pattern: Square, group: square }
+  - { pattern: Sq., group: square }
+  - { pattern: Station, group: station }
+  - { pattern: station, group: station }
+  - { pattern: Center, group: center }
+  - { pattern: Centre, group: center }
+  - { pattern: Hall, group: hall }
+  - { pattern: Airport, group: airport }
+  - { pattern: airport, group: airport }
+  - { pattern: Terminal, group: terminal }
+  - { pattern: Park, group: park }
+  - { pattern: Bridge, group: bridge }
+  - { pattern: Plaza, group: plaza }
+  - { pattern: Tower, group: tower }
