@@ -60,6 +60,11 @@ describe("return-type-mismatch: reported", () => {
     assert.deepEqual(found(page(MEASURE, "`measure()` returns `string`."), en), ["7 measure: string / number"]);
   });
 
+  it("a statement that adds a type the signature does not return, and an export default declaration", () => {
+    assert.deepEqual(found(page(MEASURE, "Returns: `number | string`."), en), ["7 measure: number | string / number"]);
+    assert.deepEqual(found(page("export default function measure(text: string): number", "Returns: a string."), en), ["7 measure: string / number"]);
+  });
+
   it("two declarations with the same parameters and different return types", () => {
     const source = ["```ts", "wrap(text: string): string[]", "```", "", "```ts", "wrap(text: string): string", "```", ""].join("\n");
     assert.deepEqual(found(source, en), ["6 wrap: string / string[]"]);
@@ -106,6 +111,7 @@ describe("return-type-mismatch: silent", () => {
 
   it("the past, and a union stated in part", () => {
     assert.deepEqual(found(page(MEASURE, "measure returned a string before 3.0.", "measure は以前、文字列を返していました。"), en), []);
+    assert.deepEqual(found(page(MEASURE, "measure は文字列を返すことはありません。", "measure は文字列を返しません。"), ja), []);
     assert.deepEqual(found(page("measure(text: string): number | null", "Returns: `number`."), en), []);
     assert.deepEqual(found(page("load(path: string): Promise<string>", "load returns a string."), en), []);
   });

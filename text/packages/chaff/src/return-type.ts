@@ -29,7 +29,7 @@ const HEADING = /^ {0,3}#{1,6}[ \t]/u;
 const TABLE_ROW = /^[ \t]{0,3}\|/u;
 const DELIMITER_ROW = /^[ \t]{0,3}\|?[ \t]*:?-{3,}/u;
 const IDENTIFIER = /^[A-Za-z_$][\w$]*/u;
-const DECLARATION_HEAD = /^(?:(?:export|declare|async|public|static)\s+)*(?:(?:function\*?|def|fn|func)\s+)?/u;
+const DECLARATION_HEAD = /^(?:(?:export|default|declare|async|public|static)\s+)*(?:(?:function\*?|def|fn|func)\s+)?/u;
 const ARROW_HEAD = /^(?:(?:export|declare)\s+)*(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?/u;
 const RETURN_MARK = /^\s*(?::|->)\s*/u;
 /** What may close a declaration line after its return type: an arrow's `=>` or a body's `{` with what follows, `;`, Python's `:`. */
@@ -243,7 +243,7 @@ const tableStatements = (lines: readonly Line[], known: ReadonlySet<string>, wor
 const sentencePattern = (fn: string, words: ReturnWords): RegExp => {
   const subject = words.subjects.length === 0 ? "" : String.raw`(?:(?:${words.subjects.map(escaped).join("|")})[、,]?)?`;
   const verbs = words.verbs.map(escaped).join("|");
-  return new RegExp(String.raw`(?<![\w$.])\x60?${escaped(fn)}(?:\(\))?\x60?\s*${subject}([^。！？!?;]*?)(?:${verbs})(?![A-Za-z])`, "gu");
+  return new RegExp(String.raw`(?<![\w$.])\x60?${escaped(fn)}(?:\(\))?\x60?\s*${subject}([^。！？!?;]*?)(?:${verbs})(?![\p{L}\p{N}])`, "gu");
 };
 
 /** A sentence whose subject is a function's name and whose verb says it returns something. */
@@ -271,7 +271,7 @@ const agrees = (stated: Stated, returns: string): boolean => {
   const members = typeMembers(returns);
   if ("code" in stated) {
     const said = typeMembers(stated.code);
-    return isSubset(said, members) || isSubset(members, said);
+    return isSubset(said, members);
   }
   const kinds = members.filter((member) => !NOTHING_TYPES.has(member)).map(kindOfMember);
   return kinds.includes(undefined) || kinds.includes(stated.kind);
@@ -289,7 +289,10 @@ const signatureClashes = (signatures: readonly Signature[]): ReturnTypeClash[] =
   signatures.flatMap((later, index) => {
     const earlier = signatures
       .slice(0, index)
-      .find((signature) => signature.fn === later.fn && signature.params === later.params && !agrees({ code: later.returns, written: "" }, signature.returns));
+      .find(
+        (signature) =>
+          signature.fn === later.fn && signature.params === later.params && typeMembers(signature.returns).join("|") !== typeMembers(later.returns).join("|"),
+      );
     return earlier === undefined ? [] : [clashOf(later.fn, later.returns, earlier, later.offset)];
   });
 
