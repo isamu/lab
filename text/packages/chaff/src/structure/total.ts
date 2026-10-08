@@ -143,7 +143,8 @@ const signBefore = (source: string, total: Placed, start: number): string =>
   total.cents !== undefined && total.cents < 0 ? (SIGN_BEFORE.exec(source.slice(Math.max(0, start - SIGN_REACH), start))?.[0] ?? "") : "";
 
 /** 数の後ろに書いた単位。単位の組の名前（credit）と書いた語（credits）が違えば、書いた語を見せる。 */
-const unitAfterNumber = (written: string, unit: string): string => (written.endsWith(unit) ? unit : (/[^\d.,]+$/u.exec(written)?.[0] ?? ""));
+const unitAfterNumber = (written: string, unit: string): string =>
+  written.endsWith(unit) ? unit : written.slice(written.split("").findLastIndex((char) => char >= "0" && char <= "9") + 1);
 
 /** 合計の行に書いた金額と、上の和を、同じ書き方で見せる。負の和には、合計に書いた印（無ければ -）を付ける。 */
 const shownAmounts = (source: string, total: Placed, sumCents: number): Record<string, string> => {
