@@ -206,6 +206,7 @@ These rules check the names and the deadlines.
 | `defined-name-repeated` | A party's full name used again after its short name was defined |
 | `defined-term-form` | A defined term written in another form: quoted again, or a capitalised term in lower case |
 | `vague-deadline` | "Promptly" or "without undue delay", in a contract that writes its other limits in days |
+| `obligation-without-deadline` | A duty to pay, deliver, return or notify with no time at all, in a contract that gives its other duties one |
 | `duration-mismatch` | A start date and a length of time that do not reach the end date written beside them |
 | `reference-title-mismatch` | A clause referred to by a name its heading does not have |
 

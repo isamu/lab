@@ -1,0 +1,14 @@
+# Acts a duty binds to a point in time (pay, deliver, return, notify). After a duty marker (shall, will) in a sentence that
+# states no limit, nobody can say by when the act is due (obligation-without-deadline). "Indemnify" and "keep" are not here:
+# they bind for as long as the contract runs, not at a time.
+id: timed-duty
+language: en
+entries:
+  - pattern: pay
+  - pattern: remit
+  - pattern: refund
+  - pattern: invoice
+  - pattern: deliver
+  - pattern: submit
+  - pattern: return
+  - pattern: notify

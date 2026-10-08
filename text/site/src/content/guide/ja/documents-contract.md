@@ -203,6 +203,7 @@ keiyaku.md   legal/contract · 日本語   ジャンルは --genre から
 | `defined-name-repeated` | 短い呼び名を決めたあとに、当事者の正式な名前をまた書いた所 |
 | `defined-term-form` | 定義した語を別の形で書いた所（「本業務」と定義したのに「本件業務」） |
 | `vague-deadline` | ほかの期限を日数で書いている契約で、「速やかに」「遅滞なく」とだけ書いた所 |
+| `obligation-without-deadline` | ほかの義務に期限を書いている契約で、支払う・引き渡す・返還する・通知する義務に期限を書いていない所 |
 | `duration-mismatch` | 始まりの日と期間を足しても、隣に書いた終わりの日にならない所 |
 | `reference-title-mismatch` | 条を、その見出しと違う名前で指している所 |
 

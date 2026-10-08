@@ -1,0 +1,9 @@
+# 義務のやり方をほかの定めに任せる書き方（別途定める支払条件に従い支払う）。期限はそちらで決まるので、
+# obligation-without-deadline は指さない。
+id: duty-terms-elsewhere
+language: ja
+entries:
+  - pattern: に従い
+  - pattern: に従って
+  - pattern: の定めるところにより
+  - pattern: 別途定める
