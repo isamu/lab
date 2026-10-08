@@ -1,0 +1,8 @@
+# 名前（オプション、引数、関数）がもう使うべきでないことを言う語（deprecated-option-used）。文の中でこの語にいちばん近いコードの
+# 名前と、この語のある表の行の最初の列の名前を、非推奨として読む。
+id: deprecation-word
+language: ja
+entries:
+  - pattern: 非推奨
+  - pattern: 廃止予定
+  - pattern: deprecated

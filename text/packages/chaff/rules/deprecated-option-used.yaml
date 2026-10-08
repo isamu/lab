@@ -1,0 +1,78 @@
+id: deprecated-option-used
+layer: L1
+status: stable
+how_to_find: deprecated-use
+# The words that mark a name deprecated (deprecated, 非推奨) come from the deprecation-word lexicon.
+requires: [markdown]
+severity: warning
+
+name:
+  ja: 非推奨と書いた名前をコード例で使っている
+  en: Deprecated name used in an example
+
+why:
+  ja: "「`indent` は非推奨です」と書いた同じ文書のコード例が `{ indent: 2 }` を使っていると、読み手は例をそのまま写して、やがて動かなくなる書き方を覚えます。オプションを非推奨にしたときに、説明だけを直して例を直し忘れると起きます。文の中で「非推奨」「deprecated」にいちばん近いコードの名前と、それらの語のある表の行の最初の列の名前を非推奨の名前として読み、コードブロックの中でその名前をキー（indent:）、引数（indent=）、フラグ（--indent）として使っている行を指します。"
+  en: 'When a document says "`indent` is deprecated" and one of its code examples passes `{ indent: 2 }`, the reader copies the example and learns a form that will stop working. It happens when an option is deprecated and the text is updated but the example is not. The code name nearest to "deprecated" in a sentence, and the name in the first cell of a table row that says "deprecated", are read as deprecated. A code-block line that uses one as a key (indent:), an argument (indent=) or a flag (--indent) is pointed out.'
+
+message:
+  ja: 非推奨と書いた「{name}」を、コード例で使っています
+  en: "`{name}` is used in an example, but the document calls it deprecated"
+
+how_to_fix:
+  ja: 例を、非推奨の名前の代わりになるものを使う書き方に直してください。古い書き方を見せる例なら、その行に非推奨とコメントしてください。
+  en: Rewrite the example with what replaces the deprecated name. If the example shows the old form on purpose, say so in a comment on that line.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [technical, docs, blog, legal, academic, literature, speech]
+off_for:
+  legal: "Code examples and option tables belong to technical writing."
+  academic: "Code examples and option tables belong to technical writing."
+  literature: "Code examples and option tables belong to technical writing."
+  speech: "Code examples and option tables belong to technical writing."
+
+group: facts
+summary:
+  ja: 非推奨と書いたオプションを、同じ文書のコード例がまだ使っている所
+  en: An option the document calls deprecated, still used in one of its examples
+example:
+  ja:
+    config: { genre: technical/readme }
+    before: |
+      ## オプション
+
+      以前の `indent` オプションは非推奨です。代わりに `prefix` を使ってください。
+
+      ```js
+      wrap(text, 40, { indent: 2 });
+      ```
+    after: |
+      ## オプション
+
+      以前の `indent` オプションは非推奨です。代わりに `prefix` を使ってください。
+
+      ```js
+      wrap(text, 40, { prefix: "  " });
+      ```
+  en:
+    config: { genre: technical/readme }
+    before: |
+      ## Options
+
+      The older `indent` option is deprecated; use `prefix` instead.
+
+      ```js
+      wrap(text, 40, { indent: 2 });
+      ```
+    after: |
+      ## Options
+
+      The older `indent` option is deprecated; use `prefix` instead.
+
+      ```js
+      wrap(text, 40, { prefix: "  " });
+      ```
+
+not_flagged:
+  ja: 「非推奨ではない」のように打ち消した語、API を宣言するコードブロック（interface、class、type）、その行に非推奨と書いたコード（古い書き方を見せる例）、名前をキー・引数・フラグ以外で書いたもの（文字列の中、メンバーの読み出し obj.indent）、コードの外の文、コードで書いていない名前は見ません。
+  en: "A negated word (not deprecated), a block that declares an API (interface, class, type), a code line that says deprecated itself (an example of the old form), a name used other than as a key, an argument or a flag (inside a string, a member read obj.indent), sentences outside code, and names not written as code are not checked."
