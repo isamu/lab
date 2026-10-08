@@ -1,0 +1,5 @@
+# Words after a noun that make it an adjective, for very-adjective. English tags its adjectives as adjectives, so it has
+# none; Japanese lists な and だ here (便利な), whose adjectival nouns are tagged as nouns.
+id: very-copula
+language: en
+entries: []
