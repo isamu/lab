@@ -1,0 +1,77 @@
+id: nado-closed-list
+layer: L2
+status: stable
+how_to_find: nado-closed-list
+word_list: nado-closed-list
+# The open words, the limits and the phrases that look like a limit come from the language's nado-closed-list lexicon. The
+# parts of speech tell 等 from 同等 and 1等, and an English list from a clause ("Only members may use the gym, pool, etc.").
+requires: [pos]
+languages: [ja, en]
+severity: warning
+
+name:
+  ja: 「等」で開いた一覧を限っている
+  en: Open list that a limit closes
+
+why:
+  ja: 「家具、寝具及び自転車等に限ります」は、「等」で一覧を開いたまま（ほかにもある）、「限ります」で閉じています（ここに挙げたものだけ）。読み手は、挙げていないものが対象に入るのかを決められません。お知らせや募集要項では、申し込めるか・受け付けてもらえるかがそこで分かれます。「等」「など」のすぐ後ろに「に限り」「のみ」「だけ」が来た所を指します。
+  en: '"Collection covers furniture, bedding, bicycles, etc. only" leaves the list open (etc.: there are others) and closes it (only: nothing else) in the same breath. The reader cannot tell whether something not named is covered, and in a notice or an application guide that decides whether a request is accepted. chaff reports "etc.", "and so on" and "and the like" right before "only", or at the end of a list that "only" or "limited to" governs.'
+
+message:
+  ja: 「{open}」で一覧を開いたまま、「{limit}」で限っています
+  en: '"{open}" leaves the list open, but "{limit}" closes it'
+
+how_to_fix:
+  ja: 対象が挙げたものだけなら「等」「など」を消してください。ほかにもあるなら、それを書き足すか、限る言い方をやめてください（「〜などが対象です」）。
+  en: If only the items named are covered, delete "etc.". If others are too, name them, or drop the limit ("Collection covers furniture, bedding, bicycles and similar items").
+
+levels: { strict: warning, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: Fiction and essays use 等 and etc. loosely, and a limit there governs a story, not who may apply.
+  speech: Spoken Japanese and English say など and "and so on" as filler, also next to だけ and only.
+
+group: wording
+summary:
+  ja: 「自転車等に限ります」のように、「等」「など」で開いた一覧を「限り」「のみ」で閉じている所
+  en: An open list (etc., and so on) that "only" or "limited to" closes
+example:
+  ja:
+    before: |
+      収集の対象は、家具、寝具及び自転車等に限ります。
+    after: |
+      収集の対象は、家具、寝具及び自転車に限ります。
+  en:
+    before: |
+      Collection covers furniture, bedding, bicycles, etc. only.
+    after: |
+      Collection covers furniture, bedding and bicycles only.
+
+not_flagged:
+  ja: 「等」「など」「等々」のすぐ後ろ（読点や閉じ括弧を挟んでもよい）に「に限り」「に限る」「に限定」「のみ」「だけ」が来た所だけを見ます。「に限らず」「のみならず」「だけでなく」のように限らない言い方、「同等」「平等」のように「等」が語の一部のもの、「1等」のような等級は指しません。
+  en: 'Only "etc.", "and so on" and "and the like" right before "only", or at the end of a comma-separated list that "only", "limited to", "restricted to", "solely" or "exclusively" governs. A list with a verb between the limit and the open word ("Only members may use the gym, the pool, etc.": only governs members) is not reported, nor is "not only", "not limited to" or "including but not limited to".'
+rewrite:
+  depth: light
+  ja:
+    direction: 対象を挙げたものに限るなら「等」「など」を消します。ほかにも対象があるなら、限る言い方をやめるか、対象を書き足します。どちらかは書き手が決めます。
+    pairs:
+      - before: 収集の対象は、家具、寝具及び自転車等に限ります。
+        after: 収集の対象は、家具、寝具及び自転車に限ります。
+      - before: 本人確認の書類は、運転免許証及び健康保険証等のみ受け付けます。
+        after: 本人確認の書類は、運転免許証及び健康保険証のみ受け付けます。
+    keep:
+      - 挙げた項目とその順
+    avoid:
+      - 書かれていない項目を書き足す
+  en:
+    direction: If the list is closed, delete the open word; if others are covered, drop the limit or name them. The writer decides which.
+    pairs:
+      - before: Collection covers furniture, bedding, bicycles, etc. only.
+        after: Collection covers furniture, bedding and bicycles only.
+      - before: We accept only a driving licence, a health insurance card, etc. as proof of identity.
+        after: We accept only a driving licence or a health insurance card as proof of identity.
+    keep:
+      - the items named and their order
+    avoid:
+      - adding items the text does not name
