@@ -52,13 +52,15 @@ const alternation = (words: readonly string[]): string =>
 
 /**
  * 数と、それが数えるもの。数の前が数字・英字・数の字なら数の途中（十三、23、eleven の中）。
- * 英語は数と数える語の間に語を二つまで置ける（three key steps）。数える語が無くても、文がコロンで終わる直前の数（the following two:）は数に読む。
+ * 英語は数と数える語の間に語を二つまで置ける（three key steps）。数える語が無くても、文がコロンで終わる直前の数（the following two:）と、
+ * その後ろに語が一つだけある数（the following three documents:）は数に読む。どちらも先を指す語のすぐ後ろでだけ予告になる（pointsAhead）。
  */
 const phrasePattern = (words: CountWords): RegExp => {
   const numberChars = escapeRegExp([...new Set(words.numbers.join(""))].join(""));
   const numbers = words.numbers.length === 0 ? "\\p{Nd}+" : `\\p{Nd}+|${alternation(words.numbers)}`;
   const counted = `[ \\t\\u00a0]?(?:\\p{Ll}[\\p{Ll}-]*[ \\t]){0,2}(${alternation(words.counters)})(?![A-Za-z])`;
-  return new RegExp(`(?<![\\p{N}A-Za-z${numberChars}])(${numbers})(?:${counted}|(?=[ \\t]?[:：][ \\t]*$))`, "giu");
+  const uncounted = String.raw`(?:[ \t]\p{Ll}[\p{Ll}-]*)?(?=[ \t]?[:：][ \t]*$)`;
+  return new RegExp(`(?<![\\p{N}A-Za-z${numberChars}])(${numbers})(?:${counted}|${uncounted})`, "giu");
 };
 
 const valueOf = (written: string, numbers: readonly string[]): number => {
@@ -111,15 +113,20 @@ const pointsAhead = (sentence: string, phrase: Phrase, anchors: readonly string[
   return COLON_END.test(sentence.trimEnd()) && !number.test(sentence.slice(phrase.end));
 };
 
-/** 最後の一文の予告。数がちょうど一つで、目安や順番でなく、先を指しているときだけ。 */
+/**
+ * 最後の一文の予告。数がちょうど一つで、目安や順番でなく、先を指しているときだけ。数える語の無い数に語が続くもの
+ * （2 weeks:）は、先を指す語のすぐ後ろでなければ数に数えない（within 2 weeks: は期限で、予告の数を消さない）。
+ */
 const announcedIn = (sentence: string, words: CountWords, patterns: Patterns): Phrase | undefined => {
-  const phrases = [...sentence.matchAll(patterns.phrase)].map((match) => ({
-    start: match.index,
-    numberEnd: match.index + (match[1] ?? "").length,
-    end: match.index + match[0].length,
-    announced: valueOf(match[1] ?? "", words.numbers),
-    counted: match[2] !== undefined,
-  }));
+  const phrases = [...sentence.matchAll(patterns.phrase)]
+    .map((match) => ({
+      start: match.index,
+      numberEnd: match.index + (match[1] ?? "").length,
+      end: match.index + match[0].length,
+      announced: valueOf(match[1] ?? "", words.numbers),
+      counted: match[2] !== undefined,
+    }))
+    .filter((phrase) => phrase.counted || phrase.end === phrase.numberEnd || pointsAhead(sentence, phrase, words.anchors, patterns.number));
   const only = phrases.length === 1 ? phrases[0] : undefined;
   if (only === undefined || only.announced < 1 || isHedged(sentence, only, words)) return undefined;
   return pointsAhead(sentence, only, words.anchors, patterns.number) ? only : undefined;

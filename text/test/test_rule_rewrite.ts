@@ -38,8 +38,8 @@ const KEEPS_ONE: ReadonlySet<string> = new Set(["cushion-phrase-density", "exces
 /** Rules that count their word list's words in a sentence (読点, 的): an after keeps a few, under the limit. */
 const COUNTS_ITS_WORDS: ReadonlySet<string> = new Set(["max-ten", "teki-overuse", "adversative-ga-repeat", "demonstrative-opener-run"]);
 
-/** Rules whose word list names the context around a finding (する after 〜たり, 開始 after より), which an after keeps. */
-const LISTS_ITS_CONTEXT: ReadonlySet<string> = new Set(["tari-unpaired", "yori-as-from"]);
+/** Rules whose word list names the context around a finding (する after 〜たり, 開始 after より, に限り after 等), which an after keeps. */
+const LISTS_ITS_CONTEXT: ReadonlySet<string> = new Set(["tari-unpaired", "yori-as-from", "nado-closed-list"]);
 
 /** Word lists a rule reads around a finding (便利な's な) or passes over (the very first), not phrases it flags. */
 const UNFLAGGED_LISTS: ReadonlySet<string> = new Set(["very-copula", "very-exception"]);

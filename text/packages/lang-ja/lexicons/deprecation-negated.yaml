@@ -1,0 +1,9 @@
+# 非推奨の語を打ち消す言い方（deprecated-option-used）。「非推奨ではない」名前は、非推奨として読まない。
+id: deprecation-negated
+language: ja
+entries:
+  - pattern: 非推奨ではな
+  - pattern: 非推奨でな
+  - pattern: 非推奨ではありません
+  - pattern: 非推奨を解除
+  - pattern: not deprecated

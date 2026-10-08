@@ -57,6 +57,23 @@ describe("superlative-scope（ja）", () => {
   it("空白を挟んだ名詞は複合語ではない", () => {
     assert.ok(!isScoped(ja, "品質 最高です。", ["最高"]));
   });
+
+  it("原形の動詞か助動詞で終わる連体修飾の節は範囲を持つ", () => {
+    assert.ok(isScoped(ja, "バグを検出できる唯一のルールです。", ["唯一", "の"]));
+    assert.ok(isScoped(ja, "社員が選んだ最高の一品です。", ["最高"]));
+    assert.ok(isScoped(ja, "手の汚れを減らす最も有効な方法です。", ["最も"]));
+    assert.ok(isScoped(ja, "今年予想される最大の課題です。", ["最大"]));
+  });
+
+  it("原形でない語（連用形・形容動詞の「な」）と形容詞は節の終わりではない", () => {
+    assert.ok(!isScoped(ja, "首都であり最大の都市です。", ["最大"]));
+    assert.ok(!isScoped(ja, "大切な最大の理由です。", ["最大"]));
+    assert.ok(!isScoped(ja, "新しい最大の課題です。", ["最大"]));
+  });
+
+  it("主語の「が」の後ろの最上級は節ではない", () => {
+    assert.ok(!isScoped(ja, "この端末が唯一の実機です。", ["唯一", "の"]));
+  });
 });
 
 describe("superlative-scope（en）", () => {
@@ -154,6 +171,22 @@ describe("unqualified-superlative は範囲を持つ最上級を指摘しない"
     assert.ok(superlativeReported(ja, "最も効果的です。"));
     assert.ok(superlativeReported(ja, "最少の費用で最大の効果を上げる。"));
     assert.ok(superlativeReported(en, "It is the best solution."));
+  });
+
+  it("連体修飾の節が範囲を言う最上級は指摘しない（#394）", () => {
+    assert.ok(!superlativeReported(ja, "バグを検出できる唯一のルールです。"));
+    assert.ok(!superlativeReported(ja, "東京で最大の店です。"));
+  });
+
+  it("節も相手も無い最上級は指摘する（#394）", () => {
+    assert.ok(superlativeReported(ja, "最大の効果があります。"));
+    assert.ok(superlativeReported(ja, "首都であり最大の都市です。"));
+    assert.ok(superlativeReported(ja, "この端末が唯一の実機です。"));
+  });
+
+  it("英語は空白で語を分けるので、節の読みは英語に及ばない", () => {
+    assert.ok(superlativeReported(en, "Teams like the best tools."));
+    assert.ok(superlativeReported(en, "We offer the best service."));
   });
 
   it("品詞が無ければ範囲を読めないので、範囲のありそうな最上級も指摘する", () => {

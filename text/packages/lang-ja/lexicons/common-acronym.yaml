@@ -70,6 +70,20 @@ entries:
   - pattern: EU
   - pattern: UN
   - pattern: DNA
+  # 分野を問わず、一般の読み手が説明なしで読む略語（文献の番号、時刻の基準、日常の機器）。
+  - pattern: DOI
+  - pattern: ISBN
+  - pattern: ISSN
+  - pattern: URI
+  - pattern: ISO
+  - pattern: UTC
+  - pattern: GMT
+  - pattern: GDP
+  - pattern: COVID
+  - pattern: SMS
+  - pattern: ZIP
+  - pattern: ATM
+  - pattern: PIN
   # & で繋いだ、仕事の文書で説明なしで通じる語。
   - pattern: Q&A
   - pattern: R&D

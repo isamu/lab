@@ -1,0 +1,18 @@
+# Unit words written after the number of a quantity in an itemised table, each with the unit it counts (group). A price
+# written per a unit (per-unit-mark) is multiplied only by a quantity in the same unit (line-amount-mismatch).
+id: rate-unit
+language: en
+entries:
+  - { pattern: hour, group: hour }
+  - { pattern: hours, group: hour }
+  - { pattern: hr, group: hour }
+  - { pattern: hrs, group: hour }
+  - { pattern: h, group: hour }
+  - { pattern: day, group: day }
+  - { pattern: days, group: day }
+  - { pattern: week, group: week }
+  - { pattern: weeks, group: week }
+  - { pattern: month, group: month }
+  - { pattern: months, group: month }
+  - { pattern: year, group: year }
+  - { pattern: years, group: year }

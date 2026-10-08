@@ -1,0 +1,12 @@
+# 日付を持つ出来事を言う語（summary-fact-mismatch）。冒頭や要約の文が出来事の語と日付を一つずつ持つとき、その日付を、本文で同じ
+# group の語と一つの日付を持つ文の日付と比べる。group は同じ出来事を言う語の組。発表 は、提供する日と発表した日を一つの文に
+# 書いたとき、その文を読まないための組。
+id: fact-event
+language: ja
+entries:
+  - { pattern: 提供, group: release }
+  - { pattern: 発売, group: release }
+  - { pattern: 販売開始, group: release }
+  - { pattern: リリース, group: release }
+  - { pattern: 開催, group: held }
+  - { pattern: 発表, group: announce }

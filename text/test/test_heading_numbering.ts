@@ -37,6 +37,17 @@ describe("heading-numbering-mix: 兄弟の見出しの番号の付け方", () =>
     ]);
   });
 
+  it("番号のすぐ後ろがコードや鉤括弧の見出しも、番号付きと読む", () => {
+    assert.deepEqual(mixed(["## 30. API", "### 30.1 ファイルの渡し方", "### 30.2 `check(text, options)`", "### 30.3 バンドラ"]), []);
+    assert.deepEqual(mixed(["## 1. `chaff tree`", "## 2. 「概要」の読み方", "## 3. 結果"]), []);
+    assert.deepEqual(mixed(["## 背景", "## 2. `check()`", "## 課題"]), [
+      "見出し「2. `check()`」だけ番号があります（兄弟の見出しは「背景」など 2 個が番号なし）",
+    ]);
+    assert.deepEqual(mixed(["## 1. 背景", "## 2. 方針", "## `check()`"]), [
+      "見出し「`check()`」だけ番号がありません（兄弟の見出しは「1. 背景」など 2 個が番号付き）",
+    ]);
+  });
+
   it("番号でない頭の数（2026年、3つ）は番号と読まない", () => {
     assert.deepEqual(mixed(["## 2026年の計画", "## 3つの理由", "## まとめ"]), []);
   });
@@ -75,6 +86,10 @@ describe("numberingStyleOf", () => {
       "A. Plan",
       "2a. Gemini",
       "**1. 概要**",
+      "30.2 `check(text, options)`",
+      "1. `chaff tree`",
+      "2. 「概要」の読み方",
+      "3. “Quoted” words",
     ];
     assert.deepEqual(
       styles.map((text) => numberingStyleOf(text, labels)),
@@ -93,6 +108,10 @@ describe("numberingStyleOf", () => {
         "label:chapter",
         "letter",
         "letter",
+        "dot",
+        "dot",
+        "dotted",
+        "dot",
         "dot",
         "dot",
       ],
@@ -115,8 +134,11 @@ describe("numberingStyleOf", () => {
         "Chapters",
         "",
         "Apple",
+        "3 `reasons`",
+        "2026 「計画」",
+        "8.2.3 (`beta`)",
       ].map((text) => numberingStyleOf(text, labels)),
-      Array<string>(13).fill("none"),
+      Array<string>(16).fill("none"),
     );
   });
 });

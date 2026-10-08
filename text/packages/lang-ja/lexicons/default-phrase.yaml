@@ -1,0 +1,10 @@
+# コードの印で囲んだ名前のすぐ後ろで、その既定値を言う語。値はこの語のすぐ後ろ（default-value-mismatch）:「`width` の既定値は 72」。
+id: default-phrase
+language: ja
+entries:
+  - pattern: の既定値は
+  - pattern: のデフォルト値は
+  - pattern: のデフォルトは
+  - pattern: の初期値は
+  - pattern: は既定で
+  - pattern: はデフォルトで

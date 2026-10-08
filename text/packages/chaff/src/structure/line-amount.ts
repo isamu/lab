@@ -3,16 +3,24 @@ import { linesOf, type Line } from "./lines.ts";
 import { CELL_SEPARATOR } from "./bare-numbers.ts";
 import { TABLE_RULE } from "./runs.ts";
 import { roundedMatches } from "./tax.ts";
+import { perUnitPrice, quantityUnit, unitsAgree, type UnitWord } from "./line-amount-unit.ts";
 
 /**
  * 明細の表で、数量 × 単価が金額と合わない行。見出しの行から数量・単価・金額の列を語（quantity-column、unit-price-column、
  * line-amount-column）で見つけ、本体の行ごとに数量の升の頭の数と単価の升の数を掛け、金額の升の数と比べる。
- * 単価と金額は、数の前後に書いた印（$、円、万円）が同じときだけ比べる。端数は切り捨て・四捨五入・切り上げのどれでもよい。Pure.
+ * 単価と金額は、数の前後に書いた印（$、円、万円）が同じときだけ比べる。端数は切り捨て・四捨五入・切り上げのどれでもよい。
+ * 単価が何かあたり（$100/hour、月額、Rate の列）なら、数量がその単位か単位の無い数のときだけ比べる。Pure.
  */
 export type LineAmountWords = {
   readonly quantity: readonly string[];
   readonly unitPrice: readonly string[];
   readonly amount: readonly string[];
+  /** Unit words of a quantity (rate-unit). */
+  readonly units: readonly UnitWord[];
+  /** Marks saying a price is per a unit (per-unit-mark). */
+  readonly perUnitMarks: readonly UnitWord[];
+  /** Column headings that say the unit of their column (Hours, Rate). */
+  readonly headerUnits: readonly UnitWord[];
 };
 
 type Cell = { readonly start: number; readonly text: string };
@@ -71,6 +79,9 @@ export const quantityOf = (cell: Cell): number | undefined => {
   return Number(`${(match[1] ?? "").replaceAll(",", "")}${match[2] ?? ""}`);
 };
 
+/** What a quantity cell writes after its number ("days" in "2 days"). */
+const quantityWord = (cell: Cell): string => plain(cell.text).replace(LEADING_NUMBER, "").trim();
+
 const columnNamed = (header: readonly Cell[], names: readonly string[]): number => {
   const wanted = names.map((name) => name.toLowerCase());
   return header.findIndex((cell) => wanted.includes(plain(cell.text).toLowerCase()));
@@ -78,9 +89,22 @@ const columnNamed = (header: readonly Cell[], names: readonly string[]): number 
 
 type Columns = { readonly quantity: number; readonly unitPrice: number; readonly amount: number };
 
-const columnsOf = (header: readonly Cell[], words: LineAmountWords): Columns | undefined => {
+/** A table's columns, and the units its quantity and price headings say (undefined when they say none). */
+type Table = { readonly columns: Columns; readonly quantityUnit: string | undefined; readonly priceUnit: string | undefined };
+
+const headerUnit = (cell: Cell | undefined, words: LineAmountWords): string | undefined =>
+  cell === undefined ? undefined : words.headerUnits.find((word) => word.pattern.toLowerCase() === plain(cell.text).toLowerCase())?.unit;
+
+const tableOf = (header: readonly Cell[], words: LineAmountWords): Table | undefined => {
   const columns = { quantity: columnNamed(header, words.quantity), unitPrice: columnNamed(header, words.unitPrice), amount: columnNamed(header, words.amount) };
-  return Object.values(columns).some((index) => index < 0) || new Set(Object.values(columns)).size < 3 ? undefined : columns;
+  if (Object.values(columns).some((index) => index < 0) || new Set(Object.values(columns)).size < 3) return undefined;
+  return { columns, quantityUnit: headerUnit(header[columns.quantity], words), priceUnit: headerUnit(header[columns.unitPrice], words) };
+};
+
+/** The unit the quantity cell counts: its own word, else its heading's ("Hours"). */
+const rowQuantityUnit = (cell: Cell, table: Table, words: LineAmountWords): string | undefined => {
+  const unit = quantityUnit(quantityWord(cell), words.units);
+  return unit === "" && table.quantityUnit !== undefined ? table.quantityUnit : unit;
 };
 
 /** quantity × price, written the way the amount cell writes its number (grouping, decimals, marks). */
@@ -95,7 +119,8 @@ const shownExpected = (amount: CellNumber, exactCents: number): string => {
 const hasOtherNumber = (cells: readonly Cell[], columns: Columns): boolean =>
   cells.some((cell, index) => index > 0 && !Object.values(columns).includes(index) && /\d/u.test(plain(cell.text)));
 
-const rowIssue = (row: Line, columns: Columns): StructureIssue[] => {
+const rowIssue = (row: Line, table: Table, words: LineAmountWords): StructureIssue[] => {
+  const { columns } = table;
   const cells = cellsOf(row);
   if (hasOtherNumber(cells, columns)) return [];
   const quantityCell = cells[columns.quantity];
@@ -106,7 +131,10 @@ const rowIssue = (row: Line, columns: Columns): StructureIssue[] => {
   const price = cellNumber(priceCell);
   const amount = cellNumber(amountCell);
   if (quantity === undefined || price === undefined || amount === undefined) return [];
-  if (price.before !== amount.before || price.after !== amount.after) return [];
+  const perUnit = perUnitPrice(price.before, price.after, words.perUnitMarks);
+  const marks = perUnit ?? price;
+  if (marks.before !== amount.before || marks.after !== amount.after) return [];
+  if (!unitsAgree(rowQuantityUnit(quantityCell, table, words), perUnit?.unit ?? table.priceUnit)) return [];
   const exactCents = quantity * price.value * CENTS;
   if (roundedMatches(Math.round(amount.value * CENTS), exactCents, amount.decimals === 0)) return [];
   return [
@@ -129,6 +157,6 @@ const tablesOf = (lines: readonly Line[]): { header: Line; rows: Line[] }[] =>
 
 export const lineAmountMismatches = (source: string, words: LineAmountWords): StructureIssue[] =>
   tablesOf(linesOf(source)).flatMap(({ header, rows }) => {
-    const columns = columnsOf(cellsOf(header), words);
-    return columns === undefined ? [] : rows.flatMap((row) => rowIssue(row, columns));
+    const table = tableOf(cellsOf(header), words);
+    return table === undefined ? [] : rows.flatMap((row) => rowIssue(row, table, words));
   });

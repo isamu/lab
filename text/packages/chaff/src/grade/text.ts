@@ -103,7 +103,7 @@ const aside = (open: string, inner: string, close: string): string => (inner ===
 export const GRADE_TEXT: Texts<GradeText> = {
   ja: {
     usage:
-      "使い方: chaff grade <items.jsonl> [--out <results.jsonl>] [--baseline <前の results.jsonl>] [--variant-key <欄の名前>] [--format text|json|markdown] [--json] [--compact] [--experimental] [--genre <ジャンル>]",
+      "使い方: chaff grade <items.jsonl> [--out <results.jsonl>] [--baseline <前の results.jsonl>] [--allow-stamp-mismatch] [--variant-key <欄の名前>] [--format text|json|markdown] [--json] [--compact] [--experimental] [--genre <ジャンル>]",
     noReference: "reference が無い（事実は reference と照らす）",
     noCitations: "citations が無い（chaff は出力から引用を推測しない）",
     noContexts: "contexts が無い（回答の事実は、検索で取った一節と照らす）",
@@ -135,7 +135,7 @@ export const GRADE_TEXT: Texts<GradeText> = {
   },
   en: {
     usage:
-      "usage: chaff grade <items.jsonl> [--out <results.jsonl>] [--baseline <earlier results.jsonl>] [--variant-key <field>] [--format text|json|markdown] [--json] [--compact] [--experimental] [--genre <genre>]",
+      "usage: chaff grade <items.jsonl> [--out <results.jsonl>] [--baseline <earlier results.jsonl>] [--allow-stamp-mismatch] [--variant-key <field>] [--format text|json|markdown] [--json] [--compact] [--experimental] [--genre <genre>]",
     noReference: "no reference given (facts are checked against a reference)",
     noCitations: "no citations given (chaff does not guess quotations from the output)",
     noContexts: "no contexts given (the output's facts are checked against retrieved passages)",

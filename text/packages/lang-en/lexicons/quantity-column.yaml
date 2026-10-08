@@ -6,4 +6,4 @@ entries:
   - pattern: Qty
   - pattern: Qty.
   - pattern: Units
-  - pattern: Hours
+  - { pattern: Hours, group: hour }

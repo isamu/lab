@@ -168,19 +168,32 @@ export const countedByTable = (text: string): Counted[] =>
 /** quantities と dates は同じ行を続けて読む。直前の 1 行だけ覚えて、同じ行を二度解析しない。 */
 const last: { text: string | undefined; ready: boolean; found: readonly Counted[] } = { text: undefined, ready: false, found: [] };
 
+/** これより小さい「年」は期間（3年）で、暦の年ではない。 */
+const YEAR_FLOOR = 1000;
+
+/** 「2026年（令和8年）9月4日」: 西暦の年のすぐ後ろの括弧に書いた元号の年は、同じ年の言い換えで、数量でも別の日付でもない。 */
+const ERA_GLOSS = /^[（(](?:令和|平成|昭和|大正|明治)(?:[0-9〇一二三四五六七八九十]{1,3}|元)年[）)]/u;
+
+/** 括弧の言い換えを西暦の年に含め、括弧の中の年を落とす。年の後ろに月が続けば、一つの日付として読める。 */
+const withEraGlosses = (text: string, found: readonly Counted[]): Counted[] =>
+  found.reduce<Counted[]>((kept, item) => {
+    const previous = kept.at(-1);
+    if (previous !== undefined && item.end <= previous.end) return kept;
+    const gloss = item.unit === "年" && item.value >= YEAR_FLOOR ? ERA_GLOSS.exec(text.slice(item.end)) : null;
+    return [...kept, gloss === null ? item : { ...item, end: item.end + gloss[0].length }];
+  }, []);
+
 const counted = (text: string): readonly Counted[] => {
   if (last.text === text && last.ready === isReady()) return last.found;
   // IPADIC は全角の「４月」を一語の名詞と読む。全角数字は 1 文字ずつ半角にしてから読むので、位置は変わらない。
   const half = toHalfWidth(text);
   const morphs = morphemes(half);
-  const found = morphs === undefined ? countedByTable(text) : countedByMorphemes(half, morphs);
+  const found = withEraGlosses(half, morphs === undefined ? countedByTable(text) : countedByMorphemes(half, morphs));
   Object.assign(last, { text, ready: isReady(), found });
   return found;
 };
 
 const pad = (value: number): string => String(value).padStart(2, "0");
-
-const YEAR_FLOOR = 1000;
 
 type DateMatch = { readonly date: Mention; readonly used: number };
 
@@ -223,8 +236,36 @@ const toDates = (items: readonly Counted[]): { readonly dates: Mention[]; readon
   return { dates, rest };
 };
 
-export const quantities = (text: string): Mention[] =>
-  toDates(counted(text)).rest.map((item) => ({ start: item.start, end: item.end, attrs: { value: item.value, unit: item.unit } }));
+/**
+ * 「2026-10-02」。前後に数字や記号が続くもの（版 1.2026-10-02、URL やファイルの名前、時刻の付いた日時、番号の一部）は読まない。
+ * 4 桁と 2 桁 2 つの組でも、月と日として読めないもの、1000 より小さい年（0120-12-34）は日付でない。
+ */
+const ISO_DATE = /(?<![\w/.\-０-９])(?<y>[0-9０-９]{4})-(?<m>[0-9０-９]{2})-(?<d>[0-9０-９]{2})(?![\w/\-０-９]|\.[\w０-９])/gu;
+const MONTHS_IN_YEAR = 12;
+const DAYS_IN_MONTH = 31;
+
+const inRange = (value: number, high: number): boolean => value >= 1 && value <= high;
+
+const isoDateOf = (match: RegExpExecArray): Mention[] => {
+  const [year, month, day] = ["y", "m", "d"].map((name) => Number(toHalfWidth(match.groups?.[name] ?? "")));
+  if (year === undefined || month === undefined || day === undefined) return [];
+  if (year < YEAR_FLOOR || !inRange(month, MONTHS_IN_YEAR) || !inRange(day, DAYS_IN_MONTH)) return [];
+  return [{ start: match.index, end: match.index + match[0].length, attrs: { value: `${String(year)}-${pad(month)}-${pad(day)}` } }];
+};
+
+const isoDates = (text: string): Mention[] => [...text.matchAll(ISO_DATE)].flatMap(isoDateOf);
+
+type Span = { readonly start: number; readonly end: number };
+
+/** ISO の日付の中の数（「02」）を、数量や年月日の日付として二重に読まない。 */
+const overlaps = (item: Span, spans: readonly Span[]): boolean => spans.some((span) => item.start < span.end && span.start < item.end);
+
+export const quantities = (text: string): Mention[] => {
+  const iso = isoDates(text);
+  return toDates(counted(text))
+    .rest.filter((item) => !overlaps(item, iso))
+    .map((item) => ({ start: item.start, end: item.end, attrs: { value: item.value, unit: item.unit } }));
+};
 
 /** 日付のすぐ後ろに書いた曜日（「2026年10月1日（木）」「10月1日 木曜日」）。日曜日が 0。 */
 const WEEKDAY_CHARS = "日月火水木金土";
@@ -265,12 +306,18 @@ const inWesternYear = (text: string, date: Mention): Mention => {
   return { ...date, start: date.start - era.length, attrs: { ...date.attrs, value } };
 };
 
-export const dates = (text: string): Mention[] =>
-  toDates(counted(text)).dates.map((found) => {
-    const date = inWesternYear(text, found);
-    const weekday = weekdayAfter(text, date.end);
-    return weekday === undefined ? date : { ...date, attrs: { ...date.attrs, weekday } };
-  });
+const withWeekday = (text: string, date: Mention): Mention => {
+  const weekday = weekdayAfter(text, date.end);
+  return weekday === undefined ? date : { ...date, attrs: { ...date.attrs, weekday } };
+};
+
+export const dates = (text: string): Mention[] => {
+  const iso = isoDates(text);
+  const written = toDates(counted(text))
+    .dates.map((found) => inWesternYear(text, found))
+    .filter((date) => !overlaps(date, iso));
+  return [...written, ...iso].toSorted((left, right) => left.start - right.start).map((date) => withWeekday(text, date));
+};
 
 /** 数がそこで閉じる。助数詞（「万人」）か、名詞でない語（「万を」「万。」）か、行の終わり。 */
 const closesNumber = (morph: Morph | undefined): boolean => morph === undefined || isCounter(morph) || morph.pos !== "名詞";

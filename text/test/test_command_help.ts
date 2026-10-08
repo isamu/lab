@@ -5,6 +5,8 @@ import { join } from "node:path";
 import { COMMANDS } from "../packages/chaff/src/cli.ts";
 import { CLI_TEXT } from "../packages/chaff/src/cli-text.ts";
 import { asksForHelp, commandHelp, commandUsage } from "../packages/chaff/src/command-help.ts";
+import { AI_SCORE_TEXT } from "../packages/chaff/src/ai-score/text.ts";
+import { GRADE_TEXT } from "../packages/chaff/src/grade/text.ts";
 import { runCli } from "./cli-run.ts";
 
 // chaff <コマンド> --help は、そのコマンドを動かさずに使い方を出す。init --help が chaff.yaml を書いてはいけない。
@@ -101,6 +103,20 @@ const sharedMissingFrom = (usage: string, language: string): string[] => {
   return SHARED_FLAGS.filter((name) => !lines.some((line) => line.startsWith(`  ${name} `))).map((name) => `${language}: ${name}`);
 };
 
+/** The short usage a command prints itself when its arguments do not fit, one per command and language. */
+type OwnUsage = { readonly command: string; readonly language: string; readonly usage: string };
+
+const OWN_USAGES: readonly OwnUsage[] = [
+  { command: "grade", language: "ja", usage: GRADE_TEXT.ja.usage },
+  { command: "grade", language: "en", usage: GRADE_TEXT.en.usage },
+  { command: "ai-score", language: "ja", usage: AI_SCORE_TEXT.ja.usage },
+  { command: "ai-score", language: "en", usage: AI_SCORE_TEXT.en.usage },
+];
+
+/** "<language>: <command> <flag>" for each of the command's own options its short usage does not name. */
+const ownFlagsMissing = ({ command, language, usage }: OwnUsage): string[] =>
+  (COMMAND_FLAGS[command] ?? []).filter((name) => !usage.includes(name)).map((name) => `${language}: ${command} ${name}`);
+
 describe("どのコマンドも --help に応える", () => {
   it("どのコマンドにも、日本語と英語の使い方に行がある", () => {
     const missing = Object.entries(CLI_TEXT).flatMap(([language, text]) =>
@@ -123,6 +139,11 @@ describe("どのコマンドも --help に応える", () => {
     const usage = CLI_TEXT.en.usage.replaceAll("--allow-stamp-mismatch", "");
     assert.deepEqual(flagsMissingFrom(usage, "en", COMMAND_FLAGS), ["en: grade --allow-stamp-mismatch"]);
     assert.deepEqual(sharedMissingFrom(CLI_TEXT.ja.usage.replace("  --language ", "  "), "ja"), ["ja: --language"]);
+  });
+
+  it("grade と ai-score が誤りのときに出す使い方も、そのコマンドの指定を日本語と英語の両方で挙げる", () => {
+    const missing = OWN_USAGES.flatMap(ownFlagsMissing);
+    assert.deepEqual(missing, []);
   });
 
   it("init --help は使い方を出し、chaff.yaml を書かない", async () => {
