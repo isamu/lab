@@ -2,6 +2,68 @@
 
 Newest first.
 
+## 0.29.0 — 2026-10-08
+
+chaff now checks API documents, invoices and quotes, press releases and public notices as well as contracts: a
+parameter table against its signature, a deprecated name still used in an example, an install pin against the release
+list, tax and line amounts in invoice tables, a due date before the issue date, a summary's change against the body's
+two conditions, and an opening's event date against the body's. Japanese text reads ISO dates, changelog headings are
+read as a sequence of dates and versions, and many false findings on statutes, READMEs and guides are gone.
+
+### Rules
+
+- New: parameter-table-mismatch, deprecated-option-used, undefined-function-call and default-value-mismatch for API
+  documents (#786).
+- New: version-order, a changelog version out of order; numbering-gap leaves version headings alone (#770).
+- version-mismatch compares an install command's pinned version with the document's release list (#790).
+- New: tax-mismatch, line-amount-mismatch and due-before-issue; amount-scale-consistency and
+  currency-notation-consistency read amounts in tables (#764). line-amount-mismatch skips a quantity in another unit
+  than the price is per (#788).
+- New: nado-closed-list, a list left open by 等 or etc. that a limit closes (#768).
+- New: phone-number-variant, one phone number written with two neighbouring digits swapped (#771).
+- summary-fact-mismatch pairs a summary's change with the body's two conditions (#775) and compares the opening's
+  event date with the body's (#791).
+- date-order reads dates in a run of sibling headings (#787) and points at the date out of place, the first one too
+  (#795, #803).
+- name-variant reads company names written two ways (#796) and variant-character names without an honorific (#721).
+- very-adjective, uncomparable-graded, wordy-phrase and sentence-initial-conjunction-run check Japanese documents too;
+  doubled-nado checks English documents too (#738, #749, #755, #760).
+- quote-without-source reads block quotations given to someone by a dash line (#731) and leaves out wording advice
+  (#769). `chaff cite` reads a claim with no address as anywhere in the source (#724) and checks quotations against a
+  web page with `--url` (#759).
+- ai-score counts the composite's signals firing together as one more sign (#726).
+- New: kana-function-word, helper verbs and formal nouns that 公用文 writes in kana (〜て下さい, 〜て頂く, formal 事);
+  on only under the koyobun style, through a new `opt_in` rule field (#797).
+
+### Fixes
+
+- Japanese text reads ISO dates such as 2026-10-02, and 2026年（令和8年）9月4日 as one date (#784).
+- requirement-smell reads 等 inside a name the document defines as no open list (#772).
+- unbalanced-bracket reads an opener quoted as the last character of a quotation as text (#774) and skips a numbered
+  label inside an aside (#792).
+- heading-echo: a sentence that points to where the content lives is not an echo (#783).
+- heading-numbering-mix reads a number followed by code or a quote as a number (#782).
+- unqualified-superlative reads a relative clause before the superlative as its scope (#789).
+- announced-count-mismatch reads "the following three documents:" (#776).
+- common-acronym lists acronyms every general reader knows, such as DOI, ISO, UTC, SMS, FAX and DVD (#777, #794).
+- Rule fixes from the docs review: article-sound, duplicate-definition, person-consistency, orthographic-variant,
+  colloquial-opener, comparative-without-baseline, defined-term-form, one-sentence-paragraph-run, hyphen-as-dash,
+  use-before-definition, unknown-word and citation-reference-mismatch (#725, #729, #730, #739, #752, #753, #761,
+  #765).
+- `chaff grade` and `chaff ai-score` usage messages name all their options; `--help` lists every command's own options
+  (#723, #781).
+
+### Tests and tools
+
+- Planted sets for API documents, public notices, quotes and invoices, manuals, statutes, papers and tech blog posts
+  (#722, #751, #766, #767). A planted manifest can name a style per document (#793).
+- Corpus and planted runs prepare the Japanese adapter as the CLI does (#798).
+
+### Docs
+
+- text/CLAUDE.md's commands and working methods; the spec covers the browser entry, planted sets, the pinned
+  measurement list and CHAFF_TEST_JOBS (#727, #728).
+
 ## 0.28.0 — 2026-10-07
 
 A new rule catches an amount of one size written both with 万 or million and in plain digits, and more slips are read:
