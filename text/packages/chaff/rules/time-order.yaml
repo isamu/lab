@@ -1,0 +1,64 @@
+id: time-order
+layer: L3
+status: stable
+how_to_find: time-order
+severity: warning
+
+name:
+  ja: 一日の予定の時刻が前後している
+  en: A time out of order in a day's schedule
+
+why:
+  ja: 旅程や式次第のように、頭に時刻を書いた項目を並べた箇条書きや表で、ひとつだけ前の項目より早い時刻があると、書き間違いか順番の入れ替わりかを読み手が確かめることになり、集まる時刻を間違える人も出ます。一日の予定は早い順に並ぶので、その順に逆らう時刻を指します。日付の見出しが変わるところ、行の頭の日付が変わるところで一日を区切ります。23:30 の次の 0:15 のように夜をまたぐ時刻は、翌日の印（翌、+1）があれば翌日の時刻として読みます。
+  en: In a list or a table whose items start with a time, such as an itinerary or a programme, one time earlier than the item before it makes the reader check whether it is a typo or a swapped row, and someone turns up at the wrong time. A day's schedule runs from the earliest time, so a time against that order is pointed out. A day ends where a date heading or the date at the start of a row changes. A time past midnight, such as 0:15 after 23:30, is read as the next day's when it is marked so (+1, "next day").
+
+message:
+  ja: 「{time}」が、前後の時刻の並びから外れています（前は「{previous}」）
+  en: "{time} breaks the order of the times around it (after {previous})"
+
+messages:
+  first:
+    ja: 「{time}」が、後の時刻の並びから外れています（次は「{next}」）
+    en: "{time} breaks the order of the times after it (before {next})"
+
+how_to_fix:
+  ja: 時刻を確かめて、書き間違いなら直し、順番が違うなら並べ替えてください。
+  en: Check the time. Correct it if it is a typo, or move the item if the order is wrong.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 旅程や式次第で、一つだけ時刻の順番が前後している所
+  en: One time out of order in an itinerary or a day's programme
+example:
+  ja:
+    before: |
+      - 09:00 工場の見学
+      - 12:00 昼食
+      - 11:00 報告会
+      - 18:00 懇親会
+    after: |
+      - 09:00 工場の見学
+      - 12:00 昼食
+      - 14:00 報告会
+      - 18:00 懇親会
+  en:
+    before: |
+      - 9:00 AM Tour of the plant
+      - 12:00 PM Lunch
+      - 11:00 AM Report meeting
+      - 6:30 PM Dinner
+    after: |
+      - 9:00 AM Tour of the plant
+      - 12:00 PM Lunch
+      - 2:00 PM Report meeting
+      - 6:30 PM Dinner
+
+not_flagged:
+  ja: 時刻が二つしかない並び、早い順に並ぶ時刻が半分以下の並び（時刻で並べた一覧ではない）、項目の頭でなく文の中に書いた時刻は比べません。夜をまたいで半日より大きく戻る時刻（23:30 の次の 0:15）は、翌日の印が無くても翌日の時刻と読みます。「現地時間」の付いた時刻や時間帯の印が変わる所では一日を区切ります。
+  en: 'A run of only two times, a list where no more than half of the times are in order (not a schedule), and times written inside a sentence rather than at the start of an item are not compared. A time more than half a day earlier than the one before it (0:15 after 23:30) is read as past midnight even without a mark. A "local time" mark, or a change of time zone, starts a new day.'
