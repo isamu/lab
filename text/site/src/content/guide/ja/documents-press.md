@@ -135,7 +135,7 @@ $ npx chaffjs release.md --genre business/press-release
   - 強い形容（画期的・業界初）に裏付けがあるか
   - 問い合わせ先と、発表の日付を書いているか
 
-  このジャンルで特に効く rule: cushion-phrase-density, preamble-length, request-without-deadline, risk-disclosure, unsourced-number
+  このジャンルで特に効く rule: cushion-phrase-density, preamble-length, quote-unnamed-speaker, request-without-deadline, risk-disclosure, unsourced-number
   chaff.yaml の guide: で書き換えられます。出さないときは --no-guide。
 
 ════════════════════════════════════════════════════════════

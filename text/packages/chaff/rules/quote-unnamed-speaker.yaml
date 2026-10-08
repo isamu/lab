@@ -1,0 +1,67 @@
+id: quote-unnamed-speaker
+layer: L2
+status: stable
+how_to_find: quote-unnamed-speaker
+word_list: unnamed-speaker
+# The roles (アナリスト, an analyst), the words that may follow a role at the head of the speaker's phrase, titles and the
+# words pointing back come from the language's unnamed-speaker word list; the words that give a quotation to someone from
+# quote-attribution.
+extra_word_lists: [quote-attribution]
+languages: [ja, en]
+severity: info
+
+name:
+  ja: 名前の無い話し手の言葉を引いている
+  en: A quotation given to a speaker with no name
+
+why:
+  ja: プレスリリースや報告書は、引いた言葉で主張を支えます。「業界のアナリストは『…』と述べています」の話し手が誰なのかが書かれていないと、読み手はその人に確かめることも、その人の立場を量ることもできません。書き手が自分の言いたいことを名前の無い誰かに言わせている、と読まれることもあります。chaff はその人が本当に言ったかを知りませんが、確かめる相手が書かれていないことは言えます。鉤括弧や引用符で引いた言葉のすぐ前かすぐ後ろに話し手が書かれていて、その話し手が「アナリスト」「関係者」のような役の語だけで、名前が無いときに指します（役の語の一覧は言語ごとの語彙表 unnamed-speaker にあります）。
+  en: 'Press releases and reports back their claims with quotations. When the speaker of "Few products do this," said an analyst is not named, the reader can neither check with that person nor weigh where they stand, and may read it as the writer''s own claim put in an unnamed mouth. chaff cannot know who said what, but it can say that nobody to check with is named. It points at a quotation in quotation marks whose speaker, right before or right after it, is only a role ("an analyst", "a source", "officials"; the roles are in each language''s unnamed-speaker word list) with no name.'
+
+message:
+  ja: 「{quote}」の話し手が「{speaker}」とだけ書かれていて、名前がありません
+  en: '"{quote}" is given to "{speaker}", who is not named'
+
+how_to_fix:
+  ja: 話し手の名前と所属を書いてください（「ミナトリサーチのアナリスト、森花子氏は」）。名前を出せない相手なら、その言葉に頼らない書き方にするか、調査報告のような題名のある文書を出典にしてください。
+  en: 'Name the speaker and where they work ("said Hanako Mori, an analyst at Minato Research"). If the person cannot be named, do not lean on the quotation: say it without it, or cite a document named by its title.'
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [business/press-release, business/report, legal, docs, academic, literature, speech]
+off_for:
+  legal: "A quotation given to an unnamed role: only press releases and reports turn this on; quote-without-source reads quotations elsewhere."
+  docs: "A quotation given to an unnamed role: only press releases and reports turn this on; quote-without-source reads quotations elsewhere."
+  academic: "A quotation given to an unnamed role: only press releases and reports turn this on; quote-without-source reads quotations elsewhere."
+  literature: "A quotation given to an unnamed role: only press releases and reports turn this on; quote-without-source reads quotations elsewhere."
+  speech: "A quotation given to an unnamed role: only press releases and reports turn this on; quote-without-source reads quotations elsewhere."
+
+group: facts
+summary:
+  ja: 「業界のアナリストは『…』と述べています」のように、名前の無い話し手の言葉を引いた所
+  en: A quotation given to a speaker named only by a role ("…," said an analyst)
+example:
+  ja:
+    config: { genre: business/press-release }
+    before: |
+      # 新版の提供について
+
+      業界のアナリストは「在庫を一画面で見られる製品は、中小企業ではまだ少ない」と述べています。
+    after: |
+      # 新版の提供について
+
+      ミナトリサーチのアナリストの森花子氏は「在庫を一画面で見られる製品は、中小企業ではまだ少ない」と述べています。
+  en:
+    config: { genre: business/press-release }
+    before: |
+      # The new version
+
+      "Few products for small businesses show all their stock on one screen," said an analyst.
+    after: |
+      # The new version
+
+      "Few products for small businesses show all their stock on one screen," said Hanako Mori, an analyst at Minato Research.
+
+not_flagged:
+  ja: 話し手に名前があれば見ません。役の語の後ろに名前が続くもの（アナリストの森花子氏）、話し手の句に「氏」「さん」「様」「教授」のような名前に付く語があるものは、名前を出したと見ます。一人に決まる役（代表取締役社長、当社CEO）は役の語の一覧に無いので見ません。「同アナリスト」「このアナリスト」のように前に名前を出した人を指し直すもの、題名を示した文書（『2026年版在庫白書』によれば）、役の語が話し手でないもの（専門家会議の報告書）も見ません。10字に満たない短い引用は語や名前を引いたものと見て読みません。プレスリリースと報告書だけで見ます。ほかの文書で人の言葉に出典が無いことは quote-without-source が見ます。
+  en: 'A speaker with a name is not reported: a name after the role ("analyst Hanako Mori"), a name before it ("Hanako Mori, an analyst"), or a title (Ms, Dr). A role that is one person (the CEO of Acme) is not in the word list. A role that points back at someone named before ("the analyst", "our spokesperson"), a document named by its title, and a role that is not the speaker ("an official statement") are not reported. A quotation shorter than ten characters names a word or a thing and is not read. Only press releases and reports are read; elsewhere, quote-without-source looks for a quotation with no source.'

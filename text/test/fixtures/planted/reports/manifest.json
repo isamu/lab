@@ -110,7 +110,7 @@
         },
         {
           "kind": "quote-no-source",
-          "rule": "quote-without-source",
+          "rule": "quote-unnamed-speaker",
           "line": 32,
           "clean": "ミナトリサーチが2026年9月に公表した調査報告で、同社のアナリストの森花子氏は",
           "planted": "業界のアナリストは"
@@ -226,7 +226,7 @@
         },
         {
           "kind": "quote-no-source",
-          "rule": "quote-without-source",
+          "rule": "quote-unnamed-speaker",
           "line": 32,
           "clean": "said Hanako Mori, an analyst at Minato Research, in a report the firm published in September 2026.",
           "planted": "said an analyst."

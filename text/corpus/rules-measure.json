@@ -6136,6 +6136,34 @@
         "falseAlarms": 0
       }
     },
+    "quote-unnamed-speaker": {
+      "groups": {
+        "academic": {
+          "documents": 10,
+          "fired": 0
+        },
+        "business": {
+          "documents": 58,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 21,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 35,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 13,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 7,
+          "fired": 0
+        }
+      }
+    },
     "quote-without-source": {
       "groups": {
         "academic": {
