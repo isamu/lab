@@ -1,0 +1,41 @@
+# 公用文でかなで書く補助動詞・形式名詞と、その書き方。kana-function-word が読む。
+# 文化審議会「公用文作成の考え方」（令和 4 年）Ⅰ－1（3）ア と「公用文における漢字使用等について」（平成 22 年内閣訓令第 1 号）1 (2) キ の例から、
+# 補助の使い方と本来の使い方（資料を下さい、本を置く、事が起きる）を品詞で分けられる語だけを入れる。
+#
+# pattern は語の基本形（漢字）、rewrite はそのかな書き。語尾（送り仮名）は両方で同じにする。
+# group が分け方を決める。
+#   auxiliary:   「て・で」の後ろか、形態素解析が補助の印（Bound=Yes）を付けた所（見て下さい、ご覧下さい、読んで頂く）
+#   after-te:    「て・で」の後ろだけ（書いて置く）。補助の印が付かないので、て形で見る
+#   formal-noun: 形態素解析が形式名詞（NounType=Dependent）とした所（確認する事、次の様に、健康の為）
+#   conditional: 形式名詞で、すぐ後ろが「は」か「には」の所（事故の時は、不明な時には）。「法律の定める年齢に達した時」のように時点を言う「時」は
+#                考え方が漢字とするので、ほかの所は見ない
+#
+# 「〜て行く」「〜て来る」「〜て見る」は、「持って行く」「開いて見る」（民法 860 条の 3）のように本来の動きと品詞で分けられないので入れない。「所」「物」「訳」も、
+# 実質の名詞（家を建てる所、正しい物）と品詞で分けられないので入れない。
+id: kana-function-word
+language: ja
+entries:
+  - pattern: 下さる
+    rewrite: くださる
+    group: auxiliary
+  - pattern: 頂く
+    rewrite: いただく
+    group: auxiliary
+  - pattern: 頂ける
+    rewrite: いただける
+    group: auxiliary
+  - pattern: 置く
+    rewrite: おく
+    group: after-te
+  - pattern: 事
+    rewrite: こと
+    group: formal-noun
+  - pattern: 様
+    rewrite: よう
+    group: formal-noun
+  - pattern: 為
+    rewrite: ため
+    group: formal-noun
+  - pattern: 時
+    rewrite: とき
+    group: conditional
