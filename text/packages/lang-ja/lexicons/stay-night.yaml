@@ -1,0 +1,5 @@
+# 泊数の単位（duration-mismatch）。数のすぐ後ろにあれば泊数で、チェックインからチェックアウトまでの日数と比べる。
+id: stay-night
+language: ja
+entries:
+  - pattern: "泊"

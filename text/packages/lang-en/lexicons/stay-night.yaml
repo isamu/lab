@@ -1,0 +1,6 @@
+# Units of a number of nights (duration-mismatch). A count in one of them is compared with the days from check-in to check-out.
+id: stay-night
+language: en
+entries:
+  - pattern: "night"
+  - pattern: "nights"

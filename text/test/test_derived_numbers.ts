@@ -90,6 +90,99 @@ describe("duration-mismatch", () => {
   });
 });
 
+const stayFindings = (source: string, adapter: LanguageAdapter, language: string): string[] =>
+  runRules(buildDocument("t.md", source, adapter), loadRules(language), RULES, false, "business/report")
+    .findings.filter((finding) => finding.rule === "duration-mismatch")
+    .map((finding) => {
+      const { values } = finding;
+      const written = finding.variant === "nights-days" ? values["days"] : values["nights"];
+      return `${String(finding.variant)}:${String(written)}→${String(values["expected"])}`;
+    });
+const stayJa = (...lines: string[]): string[] => stayFindings(["# 旅程", "", ...lines, ""].join("\n"), ja, "ja");
+const stayEn = (...lines: string[]): string[] => stayFindings(["# Itinerary", "", ...lines, ""].join("\n"), en, "en");
+
+describe("duration-mismatch: nights of a stay", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+    await en.prepare?.({ pos: true });
+  });
+
+  it("nights against the days between two dates in a sentence (ja)", () => {
+    assert.deepEqual(stayJa("10月12日（月）〜10月14日（水）　3泊"), ["nights:3泊→2"]);
+    assert.deepEqual(stayJa("10月12日（月）〜10月14日（水）　2泊"), []);
+    assert.deepEqual(stayJa("ホテルに2027年2月8日（月）から2027年2月11日（木）まで4泊します。"), ["nights:4泊→3"]);
+    assert.deepEqual(stayJa("ホテルに2027年2月8日（月）から2027年2月11日（木）まで3泊します。"), []);
+  });
+
+  it("nights against the days between two dates in a sentence (en)", () => {
+    assert.deepEqual(stayEn("Check-in Oct 12, check-out Oct 14 (3 nights)."), ["nights:3 nights→2"]);
+    assert.deepEqual(stayEn("Check-in Oct 12, check-out Oct 14 (2 nights)."), []);
+    assert.deepEqual(stayEn("I will stay four nights from February 8, 2027 to February 11, 2027."), ["nights:four nights→3"]);
+    assert.deepEqual(stayEn("I will stay three nights from February 8, 2027 to February 11, 2027."), []);
+  });
+
+  it("a stay over the new year, written without years", () => {
+    assert.deepEqual(stayJa("12月30日〜1月2日　3泊"), []);
+    assert.deepEqual(stayEn("Check-in Dec 30, check-out Jan 2 (4 nights)."), ["nights:4 nights→3"]);
+  });
+
+  it("two dates without years written check-out first are the nearer way round", () => {
+    assert.deepEqual(stayEn("Check-out Oct 14; check-in Oct 12; 2 nights."), []);
+    assert.deepEqual(stayEn("Check-out Oct 14; check-in Oct 12; 3 nights."), ["nights:3 nights→2"]);
+  });
+
+  it("nights inside a link address or code are not read", () => {
+    assert.deepEqual(stayEn("Book [the offer](https://x.example/stay/3nights?in=2026-10-12&out=2026-10-14) for Oct 12 to Oct 14."), []);
+    assert.deepEqual(stayEn("Set `stay=3 nights` for Oct 12 to Oct 14."), []);
+  });
+
+  it("nights plus one is the days (N泊M日, N nights M days)", () => {
+    assert.deepEqual(stayJa("京都・奈良 1泊2日の旅行です。"), []);
+    assert.deepEqual(stayJa("京都・奈良 2泊2日の旅行です。"), ["nights-days:2日→3"]);
+    assert.deepEqual(stayEn("A trip of 2 days, 1 night to York."), []);
+    assert.deepEqual(stayEn("A trip of 3 days and 1 night to York."), ["nights-days:3 days→2"]);
+  });
+
+  it("N泊M日 beside two dates is judged by its nights, once", () => {
+    assert.deepEqual(stayJa("10月12日〜10月14日、2泊3日の旅行です。"), []);
+    assert.deepEqual(stayJa("10月12日〜10月20日、2泊3日の旅行です。"), ["nights:2泊→8"]);
+  });
+
+  it("a table with check-in, check-out and nights columns (ja)", () => {
+    const table = (nights: string): string[] =>
+      stayJa(
+        "| ホテル | チェックイン | チェックアウト | 泊数 |",
+        "| --- | --- | --- | --- |",
+        `| 駅前ホテル | 2026年11月10日（火） | 2026年11月12日（木） | ${nights} |`,
+      );
+    assert.deepEqual(table("3泊"), ["nights:3泊→2"]);
+    assert.deepEqual(table("2泊"), []);
+    assert.deepEqual(table("2"), []);
+  });
+
+  it("a table with check-in, check-out and nights columns (en)", () => {
+    const table = (nights: string): string[] =>
+      stayEn("| Hotel | Check-in | Check-out | Nights |", "| --- | --- | --- | --- |", `| Garden Hotel | November 10, 2026 | November 12, 2026 | ${nights} |`);
+    assert.deepEqual(table("3"), ["nights:3→2"]);
+    assert.deepEqual(table("2"), []);
+    assert.deepEqual(table("2 nights"), []);
+    assert.deepEqual(table("see note"), []);
+  });
+
+  it("a table without all three columns is not read", () => {
+    assert.deepEqual(stayEn("| Flight | Depart | Arrive |", "| --- | --- | --- |", "| AA 100 | Oct 12 | Oct 14 |"), []);
+    assert.deepEqual(stayEn("| Hotel | Check-in | Nights |", "| --- | --- | --- |", "| Garden Hotel | Oct 12 | 3 |"), []);
+  });
+
+  it("nights with no dates, a rough number of nights, or more dates are not judged", () => {
+    assert.deepEqual(stayJa("宿泊費（3泊）は33,000円です。"), []);
+    assert.deepEqual(stayEn("The hotel (3 nights) costs $630."), []);
+    assert.deepEqual(stayJa("10月1日から10月31日までの間、最大3泊できます。"), []);
+    assert.deepEqual(stayEn("Between Oct 1 and Oct 31, you may stay up to 3 nights."), []);
+    assert.deepEqual(stayJa("10月12日〜10月14日に2泊、10月14日〜10月16日に3泊します。"), []);
+  });
+});
+
 describe("elapsed-years-mismatch", () => {
   it("a founding year and the years since founding (ja)", () => {
     assert.deepEqual(elapsedJa("当社は2015年に創業し、今年で創業5年を迎えます。"), ["5年/11"]);

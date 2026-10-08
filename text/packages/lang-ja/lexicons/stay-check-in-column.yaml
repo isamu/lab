@@ -1,0 +1,8 @@
+# 宿泊の表で、泊まり始める日の列の見出し（duration-mismatch）。チェックアウトと泊数の列もある表で、行ごとに泊数を比べる。
+id: stay-check-in-column
+language: ja
+entries:
+  - pattern: "チェックイン"
+  - pattern: "チェックイン日"
+  - pattern: "宿泊日"
+  - pattern: "到着日"
