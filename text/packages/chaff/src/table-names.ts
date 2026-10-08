@@ -2,9 +2,9 @@ import { isNearWord, nameKey, type NameMention } from "./name-variants.ts";
 import type { Cell } from "./facts/table-facts.ts";
 import { withoutEdgeMarks } from "./facts/trim-marks.ts";
 
-// 表の升に書いた名前と、本文の名前の書き分け（本文は 佐々木 美穂、担当者の表は 佐々木 美保）。表の升は品詞解析を通らないので、
+// 表の升に書いた名前と、本文の名前の書き分け（本文は Sofia Mendes、担当者の表は Sofia Mendez）。表の升は品詞解析を通らないので、
 // 名前の形をした升だけを読み、本文で読めた名前と比べる。比べるのは姓と名のように二語以上の名前で、一語だけが違うときに限る。
-// 同じ語がほかにあることが、同じ人を指す手がかりになる。
+// 同じ語がほかにあることが、同じ人を指す手がかりになる。漢字・かなの名前は記号・幅の違いだけを見る（読みが分からない）。
 
 /** 表の升の名前。words は空白で分けた語。 */
 export type CellName = { readonly surface: string; readonly offset: number; readonly words: readonly string[] };
@@ -45,23 +45,19 @@ export const proseNamesOf = (mentions: readonly NameMention[], source: string): 
   return [...counts].map(([surface, count]) => ({ surface, words: surface.split(SPACE), count }));
 };
 
-const DIGIT = /\p{N}/u;
 const LATIN = /\p{Script=Latin}/u;
 /** 英字の語の中の記号（O'Connor、Anne-Marie）。一字違いは字だけで見る。 */
 const WORD_MARKS = /['’.-]/gu;
 
-/** 二つの語が一字違いか。英字は名前の見方と同じ（isNearWord）。漢字・かなは字数が同じで一字だけ違い、数字でないとき。 */
-const isNearNameWord = (left: string, right: string): boolean => {
-  if (LATIN.test(left) && LATIN.test(right)) {
-    return isNearWord(left.toLowerCase().replaceAll(WORD_MARKS, ""), right.toLowerCase().replaceAll(WORD_MARKS, ""));
-  }
-  const [leftChars, rightChars] = [[...left], [...right]];
-  const differ = leftChars.flatMap((char, index) => (char === rightChars[index] ? [] : [char, rightChars[index] ?? ""]));
-  return leftChars.length === rightChars.length && differ.length === 2 && !differ.some((char) => DIGIT.test(char));
-};
+/**
+ * 二つの英字の語が一字違いか（名前の見方と同じ isNearWord）。漢字・かなの語は見ない。升は読みが分からず、一字違いの名前
+ * （佐藤 太郎 と 佐藤 次郎）は別の人のことが多い。
+ */
+const isNearNameWord = (left: string, right: string): boolean =>
+  LATIN.test(left) && LATIN.test(right) && isNearWord(left.toLowerCase().replaceAll(WORD_MARKS, ""), right.toLowerCase().replaceAll(WORD_MARKS, ""));
 
 /**
- * 升の名前が、本文の名前の書き分けか。記号・幅・大小だけの違いか、語の数が同じで一語だけが一字違い、残りの語が同じとき。
+ * 升の名前が、本文の名前の書き分けか。記号・幅・大小だけの違いか、語の数が同じで英字の一語だけが一字違い、残りの語が同じとき。
  * 一字違いは、本文の形が二度以上、升の形が文書の中で一度だけのとき（別の人のこともある）。
  */
 export const cellNameRelation = (name: CellName, uses: number, prose: ProseName): CellNameVariant["kind"] | undefined => {

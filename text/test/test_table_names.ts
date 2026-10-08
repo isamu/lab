@@ -30,9 +30,14 @@ describe("name-variant: names in table cells", () => {
     ]);
   });
 
-  it("表の升の名前が、本文で何度も書いた名前と一字違い", () => {
-    assert.deepEqual(variants(`佐々木 美穂から説明があった。資料は佐々木 美穂が送ります。\n\n${TABLE_JA}`, ja), [
-      "「佐々木 美保」は、ほかの所で何度も書いた「佐々木 美穂」と一字違いです",
+  it("表の升の漢字の名前は、一字違いを言わない。記号・幅の違いだけを言う", () => {
+    assert.deepEqual(variants(`佐々木 美穂から説明があった。資料は佐々木 美穂が送ります。\n\n${TABLE_JA}`, ja), []);
+    assert.deepEqual(
+      variants(`佐藤 太郎から説明があった。資料は佐藤 太郎が送ります。\n\n| 担当 | 内容 |\n| --- | --- |\n| 佐藤 次郎 | 手順を書く |\n`, ja),
+      [],
+    );
+    assert.deepEqual(variants(`佐々木 美穂から説明があった。\n\n| 担当 | 内容 |\n| --- | --- |\n| 佐々木\u3000美穂 | 手順を書く |\n`, ja), [
+      "「佐々木\u3000美穂」は、ほかの所では「佐々木 美穂」と書いています（字の大小・幅・記号の違い）",
     ]);
   });
 
@@ -89,7 +94,8 @@ describe("the reading behind table names", () => {
     assert.equal(cellNameRelation(cellName("Sofia Mendez"), 1, proseName("Sofia Mendes", 2)), "near");
     assert.equal(cellNameRelation(cellName("Sofia Mendez"), 2, proseName("Sofia Mendes", 2)), undefined);
     assert.equal(cellNameRelation(cellName("Sofia Mendez"), 1, proseName("Sofia Mendes", 1)), undefined);
-    assert.equal(cellNameRelation(cellName("佐々木 美保"), 1, proseName("佐々木 美穂", 3)), "near");
+    assert.equal(cellNameRelation(cellName("佐々木 美保"), 1, proseName("佐々木 美穂", 3)), undefined);
+    assert.equal(cellNameRelation(cellName("佐藤 次郎"), 1, proseName("佐藤 太郎", 3)), undefined);
     assert.equal(cellNameRelation(cellName("Ann-Marie Smith"), 1, proseName("Anne-Marie Smith", 2)), "near");
     assert.equal(cellNameRelation(cellName("O’Conner Liam"), 1, proseName("O’Connor Liam", 2)), "near");
   });
