@@ -1,0 +1,8 @@
+# 宿題が済んだことを示す語。この語のある行の期限は、会議より前でも比べない（due-before-issue）。
+id: item-done-word
+language: ja
+entries:
+  - pattern: 済
+  - pattern: 完了
+  - pattern: 対応済
+  - pattern: 終了
