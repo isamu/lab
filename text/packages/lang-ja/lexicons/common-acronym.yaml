@@ -70,7 +70,7 @@ entries:
   - pattern: EU
   - pattern: UN
   - pattern: DNA
-  # 分野を問わず、一般の読み手が説明なしで読む略語（文献の番号、時刻の基準、国際機関、日常の機器）。
+  # 分野を問わず、一般の読み手が説明なしで読む略語（文献の番号、時刻の基準、日常の機器）。
   - pattern: DOI
   - pattern: ISBN
   - pattern: ISSN
@@ -80,8 +80,6 @@ entries:
   - pattern: GMT
   - pattern: GDP
   - pattern: COVID
-  - pattern: NASA
-  - pattern: NATO
   - pattern: SMS
   - pattern: ZIP
   - pattern: ATM

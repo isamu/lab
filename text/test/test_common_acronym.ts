@@ -30,9 +30,9 @@ const PENDING = { en: "SRE, XYZ and CBA are pending.", ja: "SRE、XYZ、CBAは�
       );
     });
 
-    it("一般の読み手が読む略語（DOI、ISO、UTC、SMS）は載せ、分野の略語（RFC、IANA、NIST）は載せない", () => {
-      ["DOI", "ISBN", "ISSN", "ISO", "UTC", "GDP", "NASA", "SMS"].forEach((word) => assert.ok(common.includes(word), word));
-      ["RFC", "IANA", "NIST", "GSA"].forEach((word) => assert.ok(!common.includes(word), word));
+    it("一般の読み手が読む略語（DOI、ISO、UTC、SMS）は載せ、分野の略語と機関の名前（RFC、IANA、NASA）は載せない", () => {
+      ["DOI", "ISBN", "ISSN", "ISO", "UTC", "GDP", "SMS"].forEach((word) => assert.ok(common.includes(word), word));
+      ["RFC", "IANA", "NIST", "GSA", "NASA"].forEach((word) => assert.ok(!common.includes(word), word));
     });
 
     it("語彙表のどの語も指摘しない。載っていない略語は指摘する", () => {

@@ -70,7 +70,7 @@ entries:
   - pattern: EU
   - pattern: UN
   - pattern: DNA
-  # Acronyms any general reader reads without an expansion: identifiers of publications, time standards, international bodies, everyday devices.
+  # Acronyms any general reader reads without an expansion: identifiers of publications, time standards, everyday devices.
   - pattern: DOI
   - pattern: ISBN
   - pattern: ISSN
@@ -80,8 +80,6 @@ entries:
   - pattern: GMT
   - pattern: GDP
   - pattern: COVID
-  - pattern: NASA
-  - pattern: NATO
   - pattern: SMS
   - pattern: ZIP
   - pattern: ATM

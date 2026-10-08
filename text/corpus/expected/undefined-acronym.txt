@@ -36,7 +36,7 @@ koenote-requirements  6
 mhlw-icd-committee-26-minutes  3
 mhlw-kokuji-h18-107-keiji-jiko  8
 mhlw-norovirus-qa  5
-nasa-advisory-crew-13-coverage  7
+nasa-advisory-crew-13-coverage  8
 neeview-changelog-ja  18
 noaa-press-flood-mapping  6
 nodejs-tsc-minutes-2026-05-06  5
