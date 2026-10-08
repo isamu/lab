@@ -81,7 +81,7 @@ export const wordsToCheck = (text: string, minLength: number, maxLength: number)
 };
 
 /** 頭の字を強調（**G**lobally）や角括弧（引用を変えた [e]xpressions）で分けた語の残りの、直前の形。 */
-const SPLIT_HEAD = /(?:\p{L}[*_~]+|\[\p{L}+\])$/u;
+const SPLIT_HEAD = /(?:\p{L}[*_~]+|\[\p{L}\])$/u;
 /** 直前を見る字の数。強調の印と頭の字が収まればよい。 */
 const SPLIT_LOOKBACK = 8;
 

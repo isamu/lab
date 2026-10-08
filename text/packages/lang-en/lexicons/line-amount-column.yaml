@@ -1,0 +1,8 @@
+# Headings of the column holding a line's amount (quantity × unit price) in an itemised table (line-amount-mismatch).
+id: line-amount-column
+language: en
+entries:
+  - pattern: Amount
+  - pattern: Line total
+  - pattern: Total
+  - pattern: Extended

@@ -1,0 +1,7 @@
+# 文書を出した日を示す語。行の頭（表なら最初の列）にこの語と日付があれば、期限の日付と比べる（due-before-issue）。
+id: issue-date-label
+language: ja
+entries:
+  - pattern: 発行日
+  - pattern: 請求日
+  - pattern: 見積日

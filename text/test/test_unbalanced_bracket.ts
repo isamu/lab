@@ -36,6 +36,16 @@ describe("unbalanced-bracket: 括弧が組になっていない", () => {
     );
   });
 
+  it("引用の閉じのすぐ前の開きは、括弧の字を引いたもの（読替えの「取締役（」とあるのは）", () => {
+    assert.deepEqual(findingsOf("同条第二項中「取締役（」とあるのは「清算人（」と読み替えるものとする。\n"), []);
+    assert.deepEqual(findingsOf("同項中「掲げる情報（」とあるのは、「掲げる情報（条例で定めるものを除く。）又は」と読み替える。\n"), []);
+  });
+
+  it("引用の中で、閉じの前に字を残した開きは閉じていない", () => {
+    assert.deepEqual(findingsOf("同条中「取締役（監査役」とあるのは「清算人」と読み替える。\n"), ["「（」が閉じていません"]);
+    assert.deepEqual(findingsOf("資料（」を参照してください。\n"), ["「（」が閉じていません", "「」」に対応する開きがありません"]);
+  });
+
   it("箇条の番号の印（1)、a)、事例）、数の後ろの閉じ）は開きを持たない", () => {
     assert.deepEqual(findingsOf("1) 最初に確認します。\n\n事例）窓口で受け付けます。上記事例2）の場合も同じです。\n"), []);
     assert.deepEqual(findingsOf("Evidence for areas a) to d) is required.\n", en), []);

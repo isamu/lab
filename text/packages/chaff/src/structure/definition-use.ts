@@ -135,6 +135,19 @@ const LABEL_SLACK = 3;
 const isLabel = (body: BodyText | undefined, term: string): boolean =>
   body !== undefined && (body.text.replaceAll(term, "").match(LETTER) ?? []).length <= LABEL_SLACK;
 
+/** 文書の位置が、題・見出し・条の見出しの行にあるか。見出しは節の中身に名前を付けるだけで、語を使った所ではない。 */
+export type IsTitle = (offset: number) => boolean;
+
+const NEVER_TITLE: IsTitle = () => false;
+
+const HAN = /\p{Script=Han}/u;
+
+/** 漢字で終わる語の後ろに漢字が続く現れは、もっと長い語の一部（監査委員会の監査委員、保険金請求権の保険金請求）。 */
+const continuesInHan = (texts: readonly BodyText[], term: string, offset: number): boolean => {
+  const body = sentenceAt(texts, offset);
+  return body !== undefined && HAN.test(term.at(-1) ?? "") && HAN.test(body.text.charAt(offset - body.start + term.length));
+};
+
 const CAPITAL_OR_NON_LATIN = /\p{Lu}|[^\p{Script=Latin}\p{N}\s\p{P}]/u;
 
 /**
@@ -145,18 +158,26 @@ const isDistinctive = (term: string): boolean => CAPITAL_OR_NON_LATIN.test(term)
 
 /**
  * 文の途中で括弧に入れて定義した語（(the "Seller")、以下「甲」という）を、その定義の文より前で使っている所。最初の一つだけ。
- * 定義の文の中の現れ（株式会社GovTech東京（以下「GovTech東京」という。））は、定義する名前そのものなので数えない。札の文も数えない。
+ * 定義の文の中の現れ（株式会社GovTech東京（以下「GovTech東京」という。））は、定義する名前そのものなので数えない。札の文も、
+ * isTitle が言う題・見出しの行も、漢字で終わる語にさらに漢字が続く長い語の一部も数えない。
  * 定義の条（"Seller" means、「甲」とは）は条の並びの頭にも終わりにも置く書き方があるので、前で使っても言わない。
  * 定義の語の無い括弧の引用（("The key point is")）は例の引用と同じ形なので、その語を引用符で挙げただけの現れ
  * （Its sentences open with "The key point is"）は使用ではない。定義の語のある定義（(the "Seller")、以下「買主」という）は、
  * 引用符に入れた現れ（The "Seller" ships）も使用。
  */
-export const usesBeforeDefinition = (terms: readonly DefinedTerm[], texts: readonly BodyText[], mentioned: Mentioned = NEVER_MENTIONED): TermUse[] =>
+export const usesBeforeDefinition = (
+  terms: readonly DefinedTerm[],
+  texts: readonly BodyText[],
+  mentioned: Mentioned = NEVER_MENTIONED,
+  isTitle: IsTitle = NEVER_TITLE,
+): TermUse[] =>
   groupsOf(terms)
     .filter((group) => group.first.inline && isDistinctive(group.first.term))
     .flatMap(({ first: defined, spans }) => {
       const defining = sentenceAt(texts, defined.span.start)?.start ?? defined.span.start;
       const uses = usesOf(defined.term, texts, spans, "exact", defined.bare === true ? mentioned : NEVER_MENTIONED);
-      const first = uses.find((offset) => !isLabel(sentenceAt(texts, offset), defined.term));
+      const first = uses.find(
+        (offset) => !isLabel(sentenceAt(texts, offset), defined.term) && !isTitle(offset) && !continuesInHan(texts, defined.term, offset),
+      );
       return first !== undefined && first < defining ? [{ term: defined, offset: first }] : [];
     });

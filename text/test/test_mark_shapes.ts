@@ -113,7 +113,19 @@ describe("hyphen-as-dash", () => {
 
   it("a spaced or doubled hyphen between words is reported", () => {
     assert.deepEqual(findingsOf(RULE, "The release is late - very late.\n"), ['"-" stands in for a dash']);
-    assert.deepEqual(findingsOf(RULE, "Two teams--sales and support--will attend.\n"), ['"--" stands in for a dash', '"--" stands in for a dash']);
+    assert.deepEqual(findingsOf(RULE, "Two teams—sales and support—will attend. Pick a date--any date--soon.\n"), [
+      '"--" stands in for a dash',
+      '"--" stands in for a dash',
+    ]);
+  });
+
+  it("a double hyphen in a document that sets no dash as a character is its typed dash", () => {
+    assert.deepEqual(findingsOf(RULE, "Two teams--sales and support--will attend. It is late -- very late.\n"), []);
+    assert.deepEqual(findingsOf(RULE, "Two teams--sales and support--will attend. It is late - very late.\n"), ['"-" stands in for a dash']);
+    assert.deepEqual(findingsOf(RULE, "Pages 10–12 hold it. Two teams--sales and support--will attend.\n"), [
+      '"--" stands in for a dash',
+      '"--" stands in for a dash',
+    ]);
   });
 
   it("a list marker, a number range and a hyphenated word are not", () => {

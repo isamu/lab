@@ -62,6 +62,7 @@ describe("agreement-slip — 純関数", () => {
     const indices = w("indices", "NOUN", PLUR, "index");
     assert.deepEqual(slips([w("the", "DET", ART), w("eight", "NUM"), w("hourly", "ADJ"), A, indices, END]), []);
     assert.deepEqual(slips([w("the", "DET", ART), w("eight", "NUM"), A, indices, END]), []);
+    assert.deepEqual(slips([w("the", "DET", ART), w("new", "ADJ"), w("an", "DET", ART), w("options", "NOUN", PLUR, "option"), END]), ["number an options"]);
     assert.deepEqual(slips([w("on", "ADP"), A, w("tropical", "ADJ"), w("islands", "NOUN", PLUR, "island"), END]), ["number a tropical islands"]);
     assert.deepEqual(slips([w("such", "DET"), A, w("great", "ADJ"), w("results", "NOUN", PLUR, "result"), END]), ["number a great results"]);
     assert.deepEqual(slips([w("eight", "NUM"), w("these", "DET"), w("new", "ADJ"), w("feature", "NOUN"), END]), ["number these new feature"]);

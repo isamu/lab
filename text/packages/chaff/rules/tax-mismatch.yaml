@@ -1,0 +1,71 @@
+id: tax-mismatch
+layer: L3
+status: stable
+how_to_find: tax-amount
+# The words of a tax row and of an included tax come from the language's tax-label and tax-included-word lexicons; the
+# subtotal row is found with total-label, the lexicon total-mismatch reads.
+requires: [quantities]
+languages: [ja, en]
+severity: error
+
+name:
+  ja: 税額が小計に税率を掛けた額と合わない
+  en: A tax that is not its rate of the subtotal
+
+why:
+  ja: 見積書や請求書の「消費税（10%）」の金額が、小計の10%と合わないと、読み手は税の計算を確かめ直し、合計も信じられなくなります。合計の額に税率を掛けてしまったときや、小計を直して税を直し忘れたときに起きます。表か箇条書きで、税の語（消費税・税額）で始まり率を書いた行の金額を、上の小計の行の金額（小計の行が無ければ上の項目の和）に率を掛けた額と比べます。
+  en: When the "Sales tax (10%)" of a quote or an invoice is not 10% of the subtotal, the reader has to work the tax out again and can no longer trust the total. It happens when the rate is applied to the total instead of the subtotal, or when the subtotal is changed and the tax is not. In a list or a table, the amount of a line starting with a tax word (Tax, Sales tax, VAT) and giving a rate is compared with that rate of the subtotal line above it (or, with no subtotal line, of the sum of the items above).
+
+message:
+  ja: 税額「{written}」が、上の金額の{rate}（{expected}）と合いません
+  en: "The tax {written} is not {rate} of the amount above it ({expected})"
+
+how_to_fix:
+  ja: 小計と税率を確かめて、税額を計算し直してください。合計も一緒に直します。
+  en: Check the subtotal and the rate and work the tax out again. Correct the total with it.
+
+levels: { normal: error, relaxed: warning }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 見積書や請求書で、「消費税（10%）」の金額が小計の10%と合わない所
+  en: A tax line in a quote or an invoice whose amount is not its rate of the subtotal
+example:
+  ja:
+    before: |
+      | 項目 | 金額 |
+      | --- | --- |
+      | 設計 | 300,000円 |
+      | 開発 | 500,000円 |
+      | 小計 | 800,000円 |
+      | 消費税（10%） | 88,000円 |
+    after: |
+      | 項目 | 金額 |
+      | --- | --- |
+      | 設計 | 300,000円 |
+      | 開発 | 500,000円 |
+      | 小計 | 800,000円 |
+      | 消費税（10%） | 80,000円 |
+  en:
+    before: |
+      | Item | Amount |
+      | --- | --- |
+      | Design | $3,000 |
+      | Build | $5,000 |
+      | Subtotal | $8,000 |
+      | Sales tax (10%) | $880 |
+    after: |
+      | Item | Amount |
+      | --- | --- |
+      | Design | $3,000 |
+      | Build | $5,000 |
+      | Subtotal | $8,000 |
+      | Sales tax (10%) | $800 |
+
+not_flagged:
+  ja: 端数は切り捨て・四捨五入・切り上げのどれでも合っていると読みます。率を書いていない税の行、合計に含まれる税（「うち消費税」「内税」）の行、率の違う税の行が並ぶ表（軽減税率の8%と10%）、小計と税の行の間に金額の行（値引き・送料）がある表は比べません。文の中に書いた税は読みません。
+  en: Rounding down, to the nearest or up are all read as right. A tax line with no rate, a line for tax included in the total ("tax included"), a table with tax lines of different rates, and a table with an amount line (a discount, shipping) between the subtotal and the tax are not compared. A tax written in a sentence is not read.
