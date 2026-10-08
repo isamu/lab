@@ -88,6 +88,15 @@ describe("a tab between a number and its unit or currency", () => {
     patterns()
       .quantities(text)
       .map((mention) => [mention.attrs["value"], mention.attrs["unit"]]);
+  it("reads the figure in brackets after a number in words, with its unit after the bracket", () => {
+    assert.deepEqual(amounts("Pay within thirty (30) days."), [[30, "days"]]);
+    assert.deepEqual(amounts("It runs for six (6) months."), [[6, "months"]]);
+  });
+  it("does not read a bracketed list number, or a bracket with no unit after it", () => {
+    assert.deepEqual(amounts("(6) months are listed below."), []);
+    assert.deepEqual(amounts("six (6) apples"), []);
+    assert.deepEqual(amounts("six (6)"), []);
+  });
   it("reads 30<tab>days and USD<tab>500", () => {
     assert.deepEqual(amounts("Within 30\tdays, pay USD\t500."), [
       [30, "days"],

@@ -274,12 +274,18 @@ const currencyBefore = (text: string, at: number): string | undefined => {
   return CURRENCIES.find((currency) => text.startsWith(currency, end - currency.length));
 };
 
+/** "six (6) months": a figure in brackets after a number in words, with the unit after the bracket. */
+const AFTER_NUMBER_WORD = /\p{L} \($/u;
+
+const unitAfterBracket = (text: string, start: number, end: number): string | undefined =>
+  text[end] === ")" && AFTER_NUMBER_WORD.test(text.slice(Math.max(0, start - 3), start)) ? unitAfter(text, end + 1) : undefined;
+
 const quantities = (text: string): Mention[] =>
   [...text.matchAll(NUMBER_RUN)].flatMap((match) => {
     const digits = withoutTrailingPunctuation(match[0]);
     const value = Number(digits.replace(/,/gu, ""));
     const end = match.index + digits.length;
-    const unit = unitAfter(text, end) ?? currencyBefore(text, match.index);
+    const unit = unitAfter(text, end) ?? unitAfterBracket(text, match.index, end) ?? currencyBefore(text, match.index);
     return unit === undefined || Number.isNaN(value) || isWordChar(text[match.index - 1]) ? [] : [{ start: match.index, end, attrs: { value, unit } }];
   });
 
