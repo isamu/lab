@@ -59,3 +59,7 @@ entries:
     position: after
   - pattern: ～
     position: after
+  - pattern: ほか
+    position: after
+  - pattern: 他
+    position: after

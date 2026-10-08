@@ -88,3 +88,8 @@ entries:
   - pattern: modes
   - pattern: pillars
   - pattern: exceptions
+  - pattern: people
+  - pattern: persons
+  - pattern: members
+  - pattern: attendees
+  - pattern: participants
