@@ -11,8 +11,15 @@ export type LoneConnective = { readonly offset: number; readonly written: string
 
 const CONJUNCTION = "CCONJ";
 
-/** The word lists the detector reads: the connectives, and the phrases that hold one's letters without being one (歯並びに). */
-export type ConnectiveLists = { readonly connectives: readonly LexiconEntry[]; readonly lookalikes: readonly LexiconEntry[] };
+/**
+ * The word lists the detector reads: the connectives, the phrases that hold one's letters without being one (歯並びに), and
+ * the ends of a condition clause (ときは、): an inner-level word is looked for in the outer-level word's own clause only.
+ */
+export type ConnectiveLists = {
+  readonly connectives: readonly LexiconEntry[];
+  readonly lookalikes: readonly LexiconEntry[];
+  readonly clauseEnds: readonly LexiconEntry[];
+};
 
 /**
  * The tagger does not always tell a connective from a noun and a particle: it reads 申請書並びに as 並び + に and
@@ -62,30 +69,44 @@ const standsAsConnective = (reading: Reading, span: Span): boolean => {
   return tagged || joinsNouns(previous, reading.byStart.get(span.end));
 };
 
-const hasInnerLevel = (sentence: Sentence, outer: LexiconEntry, connectives: readonly LexiconEntry[]): boolean =>
-  connectives.some((entry) => entry.instead_of === outer.pattern && sentence.text.includes(entry.pattern));
+/**
+ * The clause of the text the letter at `at` is in: from the end of the last clause end before it (ときは、) to the end of
+ * the first one after it. A list in a condition clause and one in the main clause are not levels of one list.
+ */
+export const clauseAround = (text: string, at: number, clauseEnds: readonly LexiconEntry[]): string => {
+  const ends = clauseEnds.filter(({ pattern }) => pattern !== "").flatMap(({ pattern }) => placesOf(text, pattern).map((start) => start + pattern.length));
+  const start = Math.max(0, ...ends.filter((end) => end <= at));
+  const end = Math.min(text.length, ...ends.filter((end) => end > at));
+  return text.slice(start, end);
+};
 
-/** Where one outer-level word stands as a connective in the sentence. */
-const connectiveSpans = (sentence: Sentence, outer: LexiconEntry, reading: Reading): Span[] =>
+const hasInnerLevel = (clause: string, outer: LexiconEntry, connectives: readonly LexiconEntry[]): boolean =>
+  connectives.some((entry) => entry.instead_of === outer.pattern && clause.includes(entry.pattern));
+
+/** Where one outer-level word stands as a connective in the sentence with no inner-level word in its clause. */
+const connectiveSpans = (sentence: Sentence, outer: LexiconEntry, reading: Reading, lists: ConnectiveLists): Span[] =>
   placesOf(sentence.text, outer.pattern)
     .filter((at) => reading.hidden[at] !== true)
+    .filter((at) => !hasInnerLevel(clauseAround(sentence.text, at, lists.clauseEnds), outer, lists.connectives))
     .map((at) => ({ start: sentence.span.start + at, end: sentence.span.start + at + outer.pattern.length }))
     .filter((span) => standsAsConnective(reading, span));
 
 /** The outer-level connectives of a sentence that stand over no inner level. */
 export const loneConnectivesIn = (sentence: Sentence, lists: ConnectiveLists): LoneConnective[] => {
-  const lone = lists.connectives.filter(
-    (entry) => entry.rewrite !== undefined && sentence.text.includes(entry.pattern) && !hasInnerLevel(sentence, entry, lists.connectives),
-  );
+  const lone = lists.connectives.filter((entry) => entry.rewrite !== undefined && sentence.text.includes(entry.pattern));
   if (lone.length === 0) return [];
   const reading = readingOf(sentence, lists.lookalikes);
   return lone
-    .flatMap((entry) => connectiveSpans(sentence, entry, reading).map((span) => ({ offset: span.start, written: entry.pattern, usual: entry.rewrite ?? "" })))
+    .flatMap((entry) => connectiveSpans(sentence, entry, reading, lists).map((span) => ({ offset: span.start, written: entry.pattern, usual: entry.rewrite ?? "" })))
     .sort((a, b) => a.offset - b.offset);
 };
 
 export const connectiveHierarchy: Detector = (doc, options): Finding[] => {
-  const lists = { connectives: options.lexicon ?? [], lookalikes: doc.lexicons["connective-lookalike"] ?? [] };
+  const lists = {
+    connectives: options.lexicon ?? [],
+    lookalikes: doc.lexicons["connective-lookalike"] ?? [],
+    clauseEnds: doc.lexicons["connective-clause-end"] ?? [],
+  };
   return doc.sentences.flatMap((sentence) =>
     loneConnectivesIn(sentence, lists).map((lone) => ({
       rule: "",

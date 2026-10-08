@@ -43,8 +43,8 @@ example:
       申請書及び添付書類を提出する。
 
 not_flagged:
-  ja: 日本語の文書だけで動きます。仮名の「ならびに」「もしくは」は、普通の文で一段の並べ方にも使われるので見ません。「及び」「および」「又は」「または」が同じ文にあれば、段の組を作ったと読みます。「」『』の中は、引いた語句の片方だけなので見ません。名詞の後ろで名詞をつなぐときだけ見ます（文字の並びに、正しい並びに、縦並びには見ません）。
-  en: Only in Japanese documents. The kana forms ならびに and もしくは, which plain writing also uses for a one-level list, are not read. A sentence holding 及び, および, 又は or または is read as having the other level. A phrase inside 「」 or 『』 quotes half of a list and is not read. Only a word joining two nouns is read (文字の並びに, 正しい並びに and 縦並びに, the noun 並び with に, are not).
+  ja: 日本語の文書だけで動きます。仮名の「ならびに」「もしくは」は、普通の文で一段の並べ方にも使われるので見ません。「及び」「および」「又は」「または」が同じ節にあれば、段の組を作ったと読みます（条件の節「…ときは、」と主の節は別の節です）。「」『』の中は、引いた語句の片方だけなので見ません。名詞の後ろで名詞をつなぐときだけ見ます（文字の並びに、正しい並びに、縦並びには見ません）。
+  en: Only in Japanese documents. The kana forms ならびに and もしくは, which plain writing also uses for a one-level list, are not read. A clause holding 及び, および, 又は or または is read as having the other level (a condition clause ending in ときは、 and the main clause are separate clauses). A phrase inside 「」 or 『』 quotes half of a list and is not read. Only a word joining two nouns is read (文字の並びに, 正しい並びに and 縦並びに, the noun 並び with に, are not).
 sources: [koyobun-2022]
 rewrite:
   depth: light
