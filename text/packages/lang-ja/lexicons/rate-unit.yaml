@@ -1,0 +1,19 @@
+# 明細の表で数量の数の後ろに書く単位と、それが数える単位（group）。単位あたりの単価（per-unit-mark）は、同じ単位の数量とだけ
+# 掛ける（line-amount-mismatch）。
+id: rate-unit
+language: ja
+entries:
+  - { pattern: 時間, group: hour }
+  - { pattern: 日, group: day }
+  - { pattern: 日間, group: day }
+  - { pattern: 週, group: week }
+  - { pattern: 週間, group: week }
+  - { pattern: か月, group: month }
+  - { pattern: ヶ月, group: month }
+  - { pattern: カ月, group: month }
+  - { pattern: ヵ月, group: month }
+  - { pattern: ケ月, group: month }
+  - { pattern: 箇月, group: month }
+  - { pattern: 月, group: month }
+  - { pattern: 年, group: year }
+  - { pattern: 年間, group: year }

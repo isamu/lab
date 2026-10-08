@@ -1,0 +1,25 @@
+# Marks written with a price that say it is per a unit ($100/hour, $300 per month), each with that unit (group, as in
+# rate-unit). Such a price is multiplied only by a quantity in the same unit, or by a bare number (line-amount-mismatch).
+id: per-unit-mark
+language: en
+entries:
+  - { pattern: /hour, group: hour }
+  - { pattern: /hr, group: hour }
+  - { pattern: /h, group: hour }
+  - { pattern: per hour, group: hour }
+  - { pattern: an hour, group: hour }
+  - { pattern: /day, group: day }
+  - { pattern: per day, group: day }
+  - { pattern: a day, group: day }
+  - { pattern: /week, group: week }
+  - { pattern: /wk, group: week }
+  - { pattern: per week, group: week }
+  - { pattern: a week, group: week }
+  - { pattern: /month, group: month }
+  - { pattern: /mo, group: month }
+  - { pattern: per month, group: month }
+  - { pattern: a month, group: month }
+  - { pattern: /year, group: year }
+  - { pattern: /yr, group: year }
+  - { pattern: per year, group: year }
+  - { pattern: a year, group: year }

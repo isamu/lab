@@ -1,0 +1,24 @@
+# 単価に添えて、それが何あたりかを言う印（10,000円/時、月額80,000円）と、その単位（group、rate-unit と同じ名前）。
+# こう書いた単価は、同じ単位の数量か、単位の無い数とだけ掛ける（line-amount-mismatch）。
+id: per-unit-mark
+language: ja
+entries:
+  - { pattern: /時間, group: hour }
+  - { pattern: /時, group: hour }
+  - { pattern: /h, group: hour }
+  - { pattern: 時間あたり, group: hour }
+  - { pattern: 時間当たり, group: hour }
+  - { pattern: 時給, group: hour }
+  - { pattern: /日, group: day }
+  - { pattern: 日あたり, group: day }
+  - { pattern: 日当たり, group: day }
+  - { pattern: 日額, group: day }
+  - { pattern: /週, group: week }
+  - { pattern: 週あたり, group: week }
+  - { pattern: 週額, group: week }
+  - { pattern: /月, group: month }
+  - { pattern: 月あたり, group: month }
+  - { pattern: 月額, group: month }
+  - { pattern: /年, group: year }
+  - { pattern: 年あたり, group: year }
+  - { pattern: 年額, group: year }
