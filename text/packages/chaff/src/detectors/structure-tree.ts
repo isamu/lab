@@ -11,6 +11,7 @@ import { rangeFrameOf, reversedRanges, type DatedSpan, type RangeWords } from ".
 import { percentSumMismatches, type ShareWords } from "../structure/percent-sum.ts";
 import { proseShareMismatches } from "../structure/percent-sum-prose.ts";
 import { isQuotedAlone } from "../quoted-span.ts";
+import { ordinalRunGaps } from "./ordinal-run-gaps.ts";
 
 const QUOTE_LENGTH = 80;
 
@@ -48,28 +49,34 @@ const QUOTED_LINE = /^[ \t]*>/u;
 /** 引用の中の箇条書きは、ほかの文書の例で、この文書の番号ではない。 */
 const isQuotedList = (source: string, start: number): boolean => QUOTED_LINE.test(source.slice(lineStartAt(source, start), start));
 
-const listNumberingGaps = (doc: ProseDocument): Finding[] =>
-  doc.lists
-    .filter((list) => !isQuotedList(doc.source, list.span.start))
-    .flatMap((list) => listNumberBreaks(writtenNumbers(doc.source, list.itemSpans) ?? []))
-    .map((issue) => ({
-      rule: "numbering-gap",
-      severity: "error",
-      line: 0,
-      column: 0,
-      quote: quoteAt(doc.source, issue.offset),
-      values: { ...issue.values, offset: issue.offset },
-    }));
+const listNumberingGaps = (doc: ProseDocument): StructureIssue[] =>
+  doc.lists.filter((list) => !isQuotedList(doc.source, list.span.start)).flatMap((list) => listNumberBreaks(writtenNumbers(doc.source, list.itemSpans) ?? []));
+
+const lineFindingOf = (doc: ProseDocument, issue: StructureIssue): Finding => ({
+  rule: "numbering-gap",
+  severity: "error",
+  line: 0,
+  column: 0,
+  quote: quoteAt(doc.source, issue.offset),
+  values: { ...issue.values, offset: issue.offset },
+});
 
 /**
- * 番号の抜けと重なり: 番地の木の並び（条、項、号）と、Markdown の番号付きの箇条書きに書いた番号。条の中の「1.」「2.」は
- * 両方に読まれるので、木が指した行の箇条書きは重ねて言わない。
+ * 番号の抜けと重なり: 番地の木の並び（条、項、号）、Markdown の番号付きの箇条書きに書いた番号、日程の第N回・Week N の並び
+ * （detectors/ordinal-run-gaps.ts）。一つの行が二つ以上に読まれる（条の中の「1.」、「1. Week 1」）ので、先に指した行は重ねて言わない。
  */
 export const numberingGap: Detector = (doc, options): Finding[] => {
   const fromTree = structureNumberingGap(doc, options);
   const reported = new Set(fromTree.map((finding) => lineStartAt(doc.source, Number(finding.values["offset"]))));
-  const fromLists = listNumberingGaps(doc).filter((finding) => !reported.has(lineStartAt(doc.source, Number(finding.values["offset"]))));
-  return [...fromTree, ...fromLists].toSorted((left, right) => Number(left.values["offset"]) - Number(right.values["offset"]));
+  const fromLines = [...listNumberingGaps(doc), ...ordinalRunGaps(doc)].filter((issue) => {
+    const line = lineStartAt(doc.source, issue.offset);
+    if (reported.has(line)) return false;
+    reported.add(line);
+    return true;
+  });
+  return [...fromTree, ...fromLines.map((issue) => lineFindingOf(doc, issue))].toSorted(
+    (left, right) => Number(left.values["offset"]) - Number(right.values["offset"]),
+  );
 };
 export const duplicateDefinition: Detector = findingsOf("duplicate-definition", duplicateDefinitions);
 
