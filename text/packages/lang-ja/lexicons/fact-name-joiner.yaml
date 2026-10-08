@@ -1,0 +1,6 @@
+# 一つの名前の語をつなぐ語（summary-fact-mismatch）: 「誤りの率」の の。position: after は、前の語が後ろの語を修飾するということ。
+# 本文の「休憩が無いときの誤りの率」は、要約の「誤りの率」と同じ項目として読む。
+id: fact-name-joiner
+language: ja
+entries:
+  - { pattern: の, position: after }

@@ -4,7 +4,8 @@ import { nameSpans } from "../compare/proper-nouns.ts";
 import { factValues, type FactValue } from "../facts/fact-values.ts";
 import { labelledFacts, type AttributePhrase, type FactWords } from "../facts/labelled-facts.ts";
 import { tableFacts } from "../facts/table-facts.ts";
-import { scopedFacts, type ScopedFact } from "../facts/fact-scope.ts";
+import { partsAt, scopedFacts, type ScopedFact } from "../facts/fact-scope.ts";
+import { conditionPairConflicts, type ChangeSentence, type ChangeWords, type ConditionWord, type PairConflict, type WordAt } from "../facts/condition-pairs.ts";
 import { scopeConflicts, summaryConflicts, type FactConflict } from "../facts/fact-conflicts.ts";
 import { quoteAt } from "./structure-tree.ts";
 
@@ -65,6 +66,64 @@ const countedFactsOf = (doc: ProseDocument): ScopedFact[] => {
   return scopedFacts(countedFacts(doc.source, values, countedPhrasesOf(doc)), tree, doc.source, patternsOf(doc, "summary-heading"));
 };
 
+const wordsAt = (doc: ProseDocument, id: string): WordAt[] =>
+  (doc.lexicons[id] ?? []).map((entry): WordAt => ({ pattern: entry.pattern, position: entry.position ?? "before" }));
+
+const conditionsOf = (doc: ProseDocument, id: string): ConditionWord[] =>
+  (doc.lexicons[id] ?? []).map((entry): ConditionWord => ({ pattern: entry.pattern, group: entry.group ?? entry.pattern }));
+
+const changeWordsOf = (doc: ProseDocument): ChangeWords => ({
+  from: wordsAt(doc, "fact-change-from"),
+  to: wordsAt(doc, "fact-change-to"),
+  notChange: patternsOf(doc, "fact-change-not"),
+  subjectMarks: patternsOf(doc, "fact-change-subject-mark"),
+  joiners: wordsAt(doc, "fact-name-joiner"),
+  conditionsFrom: conditionsOf(doc, "fact-condition-from"),
+  conditionsTo: conditionsOf(doc, "fact-condition-to"),
+});
+
+const changeSentencesOf = (doc: ProseDocument, tree: StructureNode): ChangeSentence[] => {
+  const parts = partsAt(
+    doc.sentences.map((sentence) => sentence.span.start),
+    tree,
+    patternsOf(doc, "summary-heading"),
+  );
+  return doc.sentences.map((sentence, index) => ({
+    span: sentence.span,
+    text: sentence.text,
+    tokens: sentence.tokens ?? [],
+    summary: parts[index] !== "body",
+  }));
+};
+
+const ARROW = " → ";
+
+const pairFinding =
+  (doc: ProseDocument) =>
+  ({ summary, body }: PairConflict): Finding => ({
+    rule: "summary-fact-mismatch",
+    severity: "warning",
+    line: 0,
+    column: 0,
+    quote: quoteAt(doc.source, summary.from.start),
+    values: {
+      label: summary.subject,
+      value: [shown(doc, summary.from), shown(doc, summary.to)].join(ARROW),
+      other: [shown(doc, body.from), shown(doc, body.to)].join(ARROW),
+      offset: summary.from.start,
+    },
+  });
+
+/** 要約の「XからYに」が、本文が条件で分けて書いた同じ名前の二つの値と違う。 */
+const conditionPairFindings = (doc: ProseDocument): Finding[] => {
+  const tree = doc.structure;
+  if (tree === undefined) return [];
+  const values = factValues(tree, doc.source, nameSpans(doc));
+  return conditionPairConflicts(doc.source, changeSentencesOf(doc, tree), values, changeWordsOf(doc)).map(pairFinding(doc));
+};
+
 /** 冒頭や要約の値が、本文の同じ名前の値と違う。 */
-export const summaryFactMismatch: Detector = (doc): Finding[] =>
-  summaryConflicts([...factsOf(doc), ...countedFactsOf(doc)]).map(findingOf("summary-fact-mismatch", doc));
+export const summaryFactMismatch: Detector = (doc): Finding[] => [
+  ...summaryConflicts([...factsOf(doc), ...countedFactsOf(doc)]).map(findingOf("summary-fact-mismatch", doc)),
+  ...conditionPairFindings(doc),
+];

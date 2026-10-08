@@ -1,0 +1,6 @@
+# 変化の前で、名前と値のあいだに書く語（summary-fact-mismatch）: 「誤りの率は 2.4% から」の は。名前はこの語の前。
+id: fact-change-subject-mark
+language: ja
+entries:
+  - pattern: は
+  - pattern: が

@@ -120,7 +120,7 @@ const mayBeVerb = (determiner: Determiner, modifiers: readonly Token[], noun: To
 const AFTER_MODIFIER = new Set(["ADJ", "NUM"]);
 
 const isLetterName = (tokens: readonly Token[], at: number, determiner: Determiner): boolean =>
-  isArticle(determiner.head) && AFTER_MODIFIER.has(tokens[at - 1]?.pos ?? "");
+  isArticle(determiner.head) && determiner.head.surface.length === 1 && AFTER_MODIFIER.has(tokens[at - 1]?.pos ?? "");
 
 const numberSlipAt = (source: string, tokens: readonly Token[], at: number, lists: AgreementLists): Slip | undefined => {
   const determiner = determinerAt(tokens, at, lists);
