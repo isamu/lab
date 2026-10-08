@@ -2,6 +2,7 @@ id: time-order
 layer: L3
 status: stable
 how_to_find: time-order
+requires: [dates]
 severity: warning
 
 name:
