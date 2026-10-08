@@ -5,4 +5,5 @@ entries:
   - pattern: Unit price
   - pattern: Unit cost
   - pattern: Price
-  - pattern: Rate
+  # A rate is a price per a period of time, and the header does not say which (group: a unit no quantity word counts).
+  - { pattern: Rate, group: unstated }
