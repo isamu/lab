@@ -1,0 +1,14 @@
+# Words put before a phone number. group is what the number is (phone, fax, mobile); numbers of different groups are never
+# compared. phone-number-variant takes the group of the nearest label before a number on its line.
+id: phone-label
+language: en
+entries:
+  - { pattern: phone, group: phone }
+  - { pattern: telephone, group: phone }
+  - { pattern: tel, group: phone }
+  - { pattern: call, group: phone }
+  - { pattern: fax, group: fax }
+  - { pattern: mobile, group: mobile }
+  - { pattern: cell, group: mobile }
+  - { pattern: cell phone, group: mobile }
+  - { pattern: mobile phone, group: mobile }

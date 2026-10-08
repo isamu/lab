@@ -1,0 +1,68 @@
+id: phone-number-variant
+layer: L3
+status: stable
+how_to_find: phone-number-variant
+word_list: phone-label
+# The labels (電話, Phone, FAX) and what each labels come from the language's phone-label lexicon; numbers after labels of
+# different kinds (a phone and a fax number) are never compared.
+languages: [ja, en]
+severity: warning
+
+name:
+  ja: 電話番号の数字の入れ違い
+  en: Phone number with two digits swapped
+
+why:
+  ja: 問合せ先の電話番号は、本文の上と下、申込先と問合せ先のように何度も書かれます。一か所だけ「0120-123-456」が「0120-123-465」になっていると、読み手はどちらが正しいか分からず、間違った方にかけることもあります。隣り合う二つの数字の入れ違いは、打ち間違いで最も多い形です。「電話」「TEL」のような同じ種類の語の後ろに書いた番号どうしを比べ、隣り合う二つの数字だけが入れ違った番号を指します。
+  en: 'A contact number is written more than once: at the top and the bottom, under "How to apply" and under "Contact". When one place reads 0120-123-465 for 0120-123-456, the reader cannot tell which is right and may call the wrong one. Two neighbouring digits swapped is the commonest slip in typing a number. chaff compares the numbers written after labels of the same kind (Phone, Tel, call) and reports one that is another with two neighbouring digits swapped.'
+
+message:
+  ja: 電話番号「{written}」は、「{other}」の隣り合う数字が入れ違っています
+  en: "The phone number {written} is {other} with two neighbouring digits swapped"
+
+how_to_fix:
+  ja: 正しい番号を確かめて、もう一方を直してください。
+  en: Check which number is right and correct the other.
+
+levels: { strict: error, normal: warning, relaxed: warning }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: A story's phone numbers are made up and need not agree; one may differ on purpose.
+  speech: A transcript writes what was said, numbers misspoken and corrected included.
+
+group: facts
+summary:
+  ja: 同じ文書で、電話番号の隣り合う数字が一か所だけ入れ違っている所（0120-123-456 と 0120-123-465）
+  en: One phone number written elsewhere with two neighbouring digits swapped (0120-123-456 and 0120-123-465)
+example:
+  ja:
+    before: |
+      # お知らせ
+
+      申込先　電話：0120-123-456
+
+      問合せ先　電話：0120-123-465
+    after: |
+      # お知らせ
+
+      申込先　電話：0120-123-456
+
+      問合せ先　電話：0120-123-456
+  en:
+    before: |
+      # Notice
+
+      To apply, phone: 0120-123-456
+
+      Contact, phone: 0120-123-465
+    after: |
+      # Notice
+
+      To apply, phone: 0120-123-456
+
+      Contact, phone: 0120-123-456
+
+not_flagged:
+  ja: 番号と同じ行で、前に「電話」「TEL」「お問合せ」のような語がある番号だけを読みます。語の無い数字の並び、種類の違う番号（電話とFAX）、数字が一つだけ違う番号（代表と直通、本店と支店の番号はよくそうなります）、離れた数字の入れ違いは指しません。数字が9桁から13桁で、ハイフンか括弧で区切ったものだけを番号と見ます。
+  en: "Only numbers with a label (phone, tel, call) before them on their line are read. Unlabelled runs of digits, numbers of different kinds (a phone and a fax number), numbers that differ in one digit (a main line and a direct line often do) and swaps of digits that are not neighbours are not reported. A number is 9 to 13 digits, grouped by hyphens or brackets."
