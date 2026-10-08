@@ -239,7 +239,8 @@ describe("house styles", () => {
 
     it("rules --json has no style field when chaff.yaml names none", async () => {
       const run = await runCli({ "chaff.yaml": "language: ja\n" }, ["rules", "--json"]);
-      assert.doesNotMatch(run.out, /"style":/u);
+      // A top-level field: a rule's example may carry a style in its own config.
+      assert.doesNotMatch(run.out, /^ {2}"style":/mu);
     });
 
     it("an unknown style stops the run and lists the styles", async () => {
