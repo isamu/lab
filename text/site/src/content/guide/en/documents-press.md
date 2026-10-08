@@ -134,7 +134,7 @@ Guide: Press release and notice (business/press-release)
   - Is every superlative (groundbreaking, first in the industry) backed by evidence?
   - Are the contact and the release date given?
 
-  Rules that matter most for this genre: cushion-phrase-density, preamble-length, request-without-deadline, risk-disclosure, unsourced-number
+  Rules that matter most for this genre: cushion-phrase-density, preamble-length, quote-unnamed-speaker, request-without-deadline, risk-disclosure, unsourced-number
   Change it with guide: in chaff.yaml; leave it out with --no-guide.
 
 ════════════════════════════════════════════════════════════
