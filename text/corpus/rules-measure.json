@@ -7937,6 +7937,30 @@
         }
       }
     },
+    "undefined-term": {
+      "groups": {
+        "academic": {
+          "documents": 5,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 10,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 20,
+          "fired": 2
+        },
+        "literature": {
+          "documents": 4,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 4,
+          "fired": 0
+        }
+      }
+    },
     "unfilled-placeholder": {
       "groups": {
         "academic": {

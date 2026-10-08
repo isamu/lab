@@ -1,0 +1,70 @@
+id: undefined-term
+layer: L3
+status: stable
+how_to_find: undefined-term
+requires: [structure, pos]
+languages: [ja]
+severity: info
+
+name:
+  ja: 定義した語の形で書いたのに、どこにも定義が無い
+  en: A term written like a defined term but defined nowhere
+
+why:
+  ja: 契約や規約は、「本業務」「本サービス」のように、頭に「本」を付けた語を定義して使います。同じ形の「本成果物」を定義せずに書くと、読み手は、どこかで定義した語なのか、何を指すのかが分かりません。定義が抜けたのか、別の定義した語（本業務）を書き違えたのかのどちらかです。文書が「本」を付けた語を一つ以上定義しているときだけ、その形で書いたのに定義も言い換えの形（本件業務）も無い語を、最初の一か所だけ指します。
+  en: "A Japanese contract defines its terms with the prefix 本 (本業務, 本サービス). A term in the same form that is never defined (本成果物) leaves the reader asking whether it was defined somewhere and what it means: either a definition is missing, or another defined term was miswritten. Only a document that defines at least one term with that prefix is read, and only the first use of each such term with no definition and no other-prefix form (本件業務) is reported."
+
+message:
+  ja: 「{term}」は定義した語の形ですが、この文書のどこにも定義がありません
+  en: '"{term}" is written like a defined term, but the document defines it nowhere'
+
+how_to_fix:
+  ja: 定義した語の書き違いなら、定義した語に直してください（本成果物 → 本業務）。新しい語なら、最初に使う所で「（以下「本成果物」という。）」と定義します。
+  en: If it is a defined term miswritten, use the defined term. If it is a new term, define it where it is first used.
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [legal, docs, academic, literature, speech]
+off_for:
+  docs: "Defined terms are a contract's apparatus: the legal genres check them."
+  academic: "Defined terms are a contract's apparatus: the legal genres check them."
+  literature: "Defined terms are a contract's apparatus: the legal genres check them."
+  speech: "Defined terms are a contract's apparatus: the legal genres check them."
+  legal/statute: "A statute's guidelines and circulars refer to 本項 and their own measures without defining them."
+  legal/judgment: "A court decision names the matters of its case 本件建物, 本件請求 as it goes, without defining them."
+  legal/patent: "A patent names its parts 本装置 and 本発明 without defining them."
+
+group: consistency
+summary:
+  ja: 「本業務」のように定義した語と同じ形の「本成果物」を、定義しないまま使っている所
+  en: A Japanese term in the defined form (本成果物) that the document never defines
+example:
+  ja:
+    config: { genre: legal/contract }
+    before: |
+      # 業務委託契約書
+
+      第1条　甲は、ウェブサイトの保守の業務（以下「本業務」という。）を乙に委託する。
+
+      第2条　乙は、本成果物を甲に提出する。
+    after: |
+      # 業務委託契約書
+
+      第1条　甲は、ウェブサイトの保守の業務（以下「本業務」という。）を乙に委託する。
+
+      第2条　乙は、本業務の報告書を甲に提出する。
+
+not_flagged:
+  ja: 文書が「本」を付けた語を一つも定義していなければ見ません。定義した語とその言い換え（本件業務、defined-term-form が見ます）、定義した語で始まる語（本サービス上）、この文書やその一部を指す語（本条、本項、本書、本契約、本利用規約、本サイト）、どこかでかぎ括弧に入れた語（定義の書き方を chaff が読めなかったもの）、一語の言葉（本人、本日、本社）は見ません。同じ語は最初の一か所だけ指します。英語の文書は見ません（下の理由）。法令・判決・特許は見ません。契約書・規約のジャンルで見ます。
+  en: "A document that defines no term with the prefix is not read. Defined terms and their other-prefix forms (本件業務, which defined-term-form reads), terms that start with a defined term (本サービス上), the document's names for itself and its parts (本条, 本項, 本書, 本契約, 本利用規約, 本サイト), terms set in quotes anywhere (a definition chaff could not read), and single words (本人, 本日, 本社) are not reported. Each term is reported once, at its first use. English is not read: a capitalised word there cannot be told from the name of a law, an organisation or a policy (the Federal Trade Commission Act, Acceptable Use Policies) without its meaning. Statutes, court decisions and patents are not read; the contract genre runs this rule."
+rewrite:
+  depth: light
+  ja:
+    direction: 定義した語の書き違いなら定義した語に直し、新しい語なら最初に使う所で定義します。どちらか分からなければ書き手に確かめます。
+    pairs:
+      - before: 乙は、本成果物に関する資料を甲に提出する。
+        after: 乙は、本業務に関する資料を甲に提出する。
+    keep:
+      - 条の番号と中身
+    avoid:
+      - 語の意味を推測して定義を書く
