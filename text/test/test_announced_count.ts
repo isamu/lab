@@ -38,6 +38,13 @@ describe("announced-count-mismatch", () => {
     assert.deepEqual(found(doc("Pay only the following two:", "- Speed")), ["two/1"]);
     assert.deepEqual(found(doc("The following expenses need no receipt when each is under $75:", "- Taxi", "- Wifi")), []);
     assert.deepEqual(found(doc("Check the following three items:", "- ID", "- Bank account", "- Address")), []);
+    assert.deepEqual(found(doc("Send the form with the following four documents:", "- A copy of your ID", "- The receipt", "- A return envelope")), [
+      "four documents/3",
+    ]);
+    assert.deepEqual(found(doc("Send the form with the following three documents:", "- A copy of your ID", "- The receipt", "- A return envelope")), []);
+    assert.deepEqual(found(doc("Over the following two weeks:", "- Plan", "- Build", "- Test")), []);
+    assert.deepEqual(found(doc("Over the following one week:", "- Plan", "- Build")), []);
+    assert.deepEqual(found(doc("Bring three documents:", "- ID", "- Receipt")), []);
   });
 
   it("nouns that name what a list holds (decisions, findings, priorities) count; plurals that measure or verbs do not", () => {

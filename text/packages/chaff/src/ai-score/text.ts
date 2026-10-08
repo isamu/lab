@@ -70,7 +70,7 @@ export const AI_SCORE_TEXT: Texts<AiScoreText> = {
     sameAs: (name) => `「${name}」と同じ形なので 1 つに数えます`,
     summary: (headline, signs, path) => `${headline}: 目印 ${String(signs)} 個 ※ 書いたのが AI かどうかの判定ではありません。内訳: chaff ai-score ${path}`,
     summaryNotScored: (reason) => `AI らしさ: 測っていません（${reason}）`,
-    usage: "使い方: chaff ai-score <file>... [--genre <ジャンル>] [--format text|json] [--compact]",
+    usage: "使い方: chaff ai-score <file>... [--genre <ジャンル>] [--language ja|en|…] [--format text|json] [--json] [--compact]",
     unknownFormat: (format) => `--format は text か json です（${format} は知りません）`,
     listSeparator: "、",
     aside: (main, inner) => `${main}（${inner}）`,
@@ -100,7 +100,7 @@ export const AI_SCORE_TEXT: Texts<AiScoreText> = {
     summary: (headline, signs, path) =>
       `${headline}: ${String(signs)} ${signs === 1 ? "sign" : "signs"}. Not a verdict on whether AI wrote it. Breakdown: chaff ai-score ${path}`,
     summaryNotScored: (reason) => `AI-likeness: not scored (${reason})`,
-    usage: "usage: chaff ai-score <file>... [--genre <genre>] [--format text|json] [--compact]",
+    usage: "usage: chaff ai-score <file>... [--genre <genre>] [--language ja|en|…] [--format text|json] [--json] [--compact]",
     unknownFormat: (format) => `--format is text or json (not ${format})`,
     listSeparator: ", ",
     aside: (main, inner) => `${main} (${inner})`,

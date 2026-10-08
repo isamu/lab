@@ -1,5 +1,6 @@
 # Words right before (before) or right after (after) a number that make it something other than the count of the list
-# below: an estimate (about three, three or more), a rank (the first three), how many to pick (choose two), a range.
+# below: an estimate (about three, three or more), a rank (the first three), how many to pick (choose two), a range, or a
+# length of time (the following two weeks:).
 id: count-hedge
 language: en
 entries:
@@ -64,4 +65,32 @@ entries:
   - pattern: "-"
     position: after
   - pattern: "–"
+    position: after
+  - pattern: seconds
+    position: after
+  - pattern: minutes
+    position: after
+  - pattern: hours
+    position: after
+  - pattern: days
+    position: after
+  - pattern: weeks
+    position: after
+  - pattern: months
+    position: after
+  - pattern: years
+    position: after
+  - pattern: second
+    position: after
+  - pattern: minute
+    position: after
+  - pattern: hour
+    position: after
+  - pattern: day
+    position: after
+  - pattern: week
+    position: after
+  - pattern: month
+    position: after
+  - pattern: year
     position: after

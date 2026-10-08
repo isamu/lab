@@ -5,7 +5,7 @@
       "koyobun-connective": "1/1",
       "koyobun-number": "1/1",
       "koyobun-formal-noun": "0/1",
-      "nado-closed-list": "0/2",
+      "nado-closed-list": "2/2",
       "period-reversed": "2/2",
       "koyobun-auxiliary": "1/2",
       "phone-two-ways": "2/2",
@@ -16,12 +16,12 @@
     },
     "en": {
       "date-weekday": "2/2",
-      "nado-closed-list": "0/2",
+      "nado-closed-list": "2/2",
       "period-reversed": "1/2",
       "phone-two-ways": "2/2",
       "requirements-gap": "1/1",
       "fee-total": "1/1",
-      "announced-count": "0/1",
+      "announced-count": "1/1",
       "annex-missing": "1/1"
     }
   },
