@@ -18,8 +18,11 @@ export type PinIssue = {
 };
 
 const NAME = "(@?[A-Za-z0-9][\\w.\\/-]*)";
-/** Exactly one version: not a range (^3.0.0, >=3.0.0), not a prerelease or build (3.0.0-beta.1), not a tag (latest). */
-const EXACT_VERSION = "(\\d{1,4}\\.\\d{1,4}\\.\\d{1,4})(?![\\w.+-])";
+/**
+ * Exactly one version: not a range (^3.0.0, >=3.0.0), not a prerelease or build (3.0.0-beta.1), not a tag (latest). A
+ * sentence's period may follow (install wrapkit@3.1.0.), a fourth part may not (3.1.0.1).
+ */
+const EXACT_VERSION = "(\\d{1,4}\\.\\d{1,4}\\.\\d{1,4})(?![\\w+-]|\\.\\w)";
 /** The rest of a command: on its line, up to a ; && | or a closing backtick. */
 const COMMAND_REST = "[^\\n;&|`]*";
 
@@ -55,10 +58,8 @@ export const pinsIn = (source: string, shapes: readonly string[]): Pin[] =>
     })
     .filter((pin, index, pins) => pins.findIndex((other) => other.offset === pin.offset) === index);
 
-const names = (text: string, name: string): boolean => {
-  const bare = name.slice(name.lastIndexOf("/") + 1);
-  return [name, bare].some((candidate) => new RegExp(`(?<![\\w@/.-])${escapeRegExp(candidate)}(?![\\w-])`, "iu").test(text));
-};
+/** The whole name, scope included: a page about react does not own @types/react. */
+const names = (text: string, name: string): boolean => new RegExp(`(?<![\\w@/.-])${escapeRegExp(name)}(?![\\w/-])`, "iu").test(text);
 
 /**
  * The pins of the document's own package: those its title names, or, when the title names none (a changelog titled

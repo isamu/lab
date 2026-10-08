@@ -12,8 +12,10 @@ const BARE = /\d[\w.-]*/u;
 /** The version as compared: 3.2.0 from [v3.2.0]. */
 const bareVersion = (label: string): string => BARE.exec(label)?.[0] ?? label;
 
+type Labelled = Release & { readonly label: string };
+
 /** Kept only when its versions read as a history (all versions, newest or oldest first), not as section numbers. */
-const asHistory = (run: readonly (Release & { readonly label: string })[]): Release[] =>
+const asHistory = (run: readonly Labelled[]): Release[] =>
   isVersionHistory(run.map((release) => release.label)) ? run.map(({ version, start, end }) => ({ version, start, end })) : [];
 
 /** A heading's section: up to the next heading of its depth or shallower. */
@@ -22,15 +24,24 @@ const sectionEnd = (headings: readonly Heading[], index: number, length: number)
   return headings.slice(index + 1).find((later) => later.depth <= depth)?.start ?? length;
 };
 
+/**
+ * Version headings one after another at one depth. A deeper heading (### Added) stays inside the run; any other heading
+ * at its depth or shallower (## Install) ends it, so versioned headings spread over a manual are no release list.
+ */
 const headingReleases = (headings: readonly Heading[], length: number): Release[] => {
-  const byDepth = new Map<number, (Release & { readonly label: string })[]>();
+  const runs: Labelled[][] = [];
+  const open: { depth: number; run: Labelled[] } = { depth: 0, run: [] };
   headings.forEach((heading, index) => {
     const label = leadingVersion(heading.text);
-    if (label === undefined) return;
-    const release = { label, version: bareVersion(label), start: heading.start, end: sectionEnd(headings, index, length) };
-    byDepth.set(heading.depth, [...(byDepth.get(heading.depth) ?? []), release]);
+    const continues = label !== undefined && heading.depth === open.depth;
+    if (!continues && (label !== undefined || heading.depth <= open.depth)) {
+      open.run = [];
+      open.depth = label === undefined ? 0 : heading.depth;
+      runs.push(open.run);
+    }
+    if (label !== undefined) open.run.push({ label, version: bareVersion(label), start: heading.start, end: sectionEnd(headings, index, length) });
   });
-  return [...byDepth.values()].flatMap(asHistory);
+  return runs.flatMap(asHistory);
 };
 
 const ITEM_MARKER = /^[ \t]*(?:[-*+]|\d{1,3}[.)])[ \t]*/u;

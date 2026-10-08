@@ -81,6 +81,35 @@ describe("version-mismatch: an install pin against the release list", () => {
     assert.deepEqual(found(readme("Text tools", "Tools for text.", "npm install wrapkit@3.1.0", RELEASES), en), []);
   });
 
+  it("reads a pin at the end of a sentence; a scoped package is not the one its last part names", () => {
+    const sentence = ["# wrapkit", "", "wrapkit wraps text.", "", "Install with npm install wrapkit@3.1.0.", "", ...RELEASES, ""].join("\n");
+    assert.deepEqual(found(sentence, en), ["5 newest 3.1.0>3.2.0"]);
+    assert.deepEqual(found(readme("react", "react hooks.", "npm install @types/react@3.1.0", RELEASES), en), []);
+    assert.deepEqual(found(readme("@wrapkit/core", "Wraps text.", "npm install @wrapkit/core@3.1.0", RELEASES), en), ["8 newest 3.1.0>3.2.0"]);
+  });
+
+  it("takes version headings as a release list only when nothing else stands between them", () => {
+    const manual = [
+      "# wrapkit",
+      "",
+      "wrapkit wraps text.",
+      "",
+      "## 2.0.0 API",
+      "",
+      "Calls.",
+      "",
+      "## Install",
+      "",
+      "npm install wrapkit@1.0.0",
+      "",
+      "## 1.0.0 Config",
+      "",
+      "Settings.",
+      "",
+    ];
+    assert.deepEqual(found(manual.join("\n"), en), []);
+  });
+
   it("does not take a prerelease as the newest, nor a release list inside a code block", () => {
     const releases = ["- 4.0.0-beta.1 (2026-10-01): preview.", ...RELEASES];
     assert.deepEqual(found(readme("wrapkit", "wrapkit wraps text.", "npm install wrapkit@3.2.0", releases), en), []);
