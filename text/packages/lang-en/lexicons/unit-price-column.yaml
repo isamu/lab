@@ -1,0 +1,8 @@
+# Headings of the unit price column of an itemised table (line-amount-mismatch).
+id: unit-price-column
+language: en
+entries:
+  - pattern: Unit price
+  - pattern: Unit cost
+  - pattern: Price
+  - pattern: Rate

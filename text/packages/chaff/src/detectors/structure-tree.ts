@@ -141,7 +141,7 @@ export const dateWeekdayMismatch: Detector = (doc): Finding[] => {
 };
 
 /** 木の日付を、原文の位置と一緒に並べる。 */
-const datedPoints = (tree: NonNullable<ProseDocument["structure"]>): { offset: number; value: string }[] =>
+export const datedPoints = (tree: NonNullable<ProseDocument["structure"]>): { offset: number; value: string }[] =>
   inDocumentOrder(tree).flatMap((node) => (node.kind === "date" ? [{ offset: node.span.start, value: String(node.attrs["value"]) }] : []));
 
 /** 日程の並びに逆らう日付。並びの読み方は原文の行と見出しを見るので、木と原文と見出しを渡す。 */
@@ -158,7 +158,7 @@ export const dateOrder: Detector = (doc): Finding[] =>
       }));
 
 /** 木の数量を、原文の位置と一緒に並べる。 */
-const amountsOf = (tree: NonNullable<ProseDocument["structure"]>): Amount[] =>
+export const amountsOf = (tree: NonNullable<ProseDocument["structure"]>): Amount[] =>
   inDocumentOrder(tree).flatMap((node) =>
     node.kind === "quantity" ? [{ offset: node.span.start, end: node.span.end, value: Number(node.attrs["value"]), unit: String(node.attrs["unit"]) }] : [],
   );

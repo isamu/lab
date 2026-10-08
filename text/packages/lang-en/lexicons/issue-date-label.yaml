@@ -1,0 +1,9 @@
+# Words that mark the date a document was issued. A line (or a table's first column) starting with one and a date is compared with the due dates (due-before-issue).
+id: issue-date-label
+language: en
+entries:
+  - pattern: Issued
+  - pattern: Issue date
+  - pattern: Date issued
+  - pattern: Invoice date
+  - pattern: Quote date
