@@ -163,7 +163,7 @@ $ npx chaffjs keiyaku.md --genre legal/contract
   - 金額・日付・期間・条番号の参照が、条項どうしと別表とで一致しているか
   - 解除・損害賠償・準拠法・紛争の解決を定めた条項があるか
 
-  このジャンルで特に効く rule: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, party-role-name, requirement-smell, total-mismatch, vague-deadline
+  このジャンルで特に効く rule: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, party-role-name, requirement-smell, total-mismatch, undefined-term, vague-deadline
   chaff.yaml の guide: で書き換えられます。出さないときは --no-guide。
 
 ════════════════════════════════════════════════════════════
@@ -202,6 +202,7 @@ keiyaku.md   legal/contract · 日本語   ジャンルは --genre から
 | `party-role-name` | 契約が決めていない役割の呼び名で当事者を指す所（甲と乙の契約に出てくる「受託者」） |
 | `defined-name-repeated` | 短い呼び名を決めたあとに、当事者の正式な名前をまた書いた所 |
 | `defined-term-form` | 定義した語を別の形で書いた所（「本業務」と定義したのに「本件業務」） |
+| `undefined-term` | 「本業務」のように定義した語と同じ形の「本成果物」を、定義しないまま使っている所 |
 | `vague-deadline` | ほかの期限を日数で書いている契約で、「速やかに」「遅滞なく」とだけ書いた所 |
 | `duration-mismatch` | 始まりの日と期間を足しても、隣に書いた終わりの日にならない所 |
 | `reference-title-mismatch` | 条を、その見出しと違う名前で指している所 |

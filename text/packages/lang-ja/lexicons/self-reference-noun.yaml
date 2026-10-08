@@ -1,0 +1,30 @@
+# 頭の「本」のあとに置いて、この文書そのものかその一部を指す語（本条、本項、本書、本サイト）。定義しなくても通じるので、
+# undefined-term は定義の無い語とみなさない。文書の種類（契約、規約）は document-kind から取り、「本利用規約」のように
+# 語の終わりにあっても同じ。
+id: self-reference-noun
+language: ja
+entries:
+  - pattern: 条
+  - pattern: 項
+  - pattern: 号
+  - pattern: 章
+  - pattern: 節
+  - pattern: 款
+  - pattern: 目
+  - pattern: 表
+  - pattern: 別表
+  - pattern: 別紙
+  - pattern: 付則
+  - pattern: 附則
+  - pattern: 書
+  - pattern: 書面
+  - pattern: 文書
+  - pattern: 欄
+  - pattern: 規定
+  - pattern: 定め
+  - pattern: 方針
+  - pattern: ポリシー
+  - pattern: サイト
+  - pattern: ウェブサイト
+  - pattern: ホームページ
+  - pattern: ページ
