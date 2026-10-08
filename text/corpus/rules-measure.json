@@ -7780,7 +7780,7 @@
         },
         "business": {
           "documents": 80,
-          "fired": 30
+          "fired": 29
         },
         "docs": {
           "documents": 21,
@@ -7788,7 +7788,7 @@
         },
         "legal": {
           "documents": 35,
-          "fired": 12
+          "fired": 11
         },
         "literature": {
           "documents": 13,
@@ -7796,11 +7796,11 @@
         },
         "speech": {
           "documents": 7,
-          "fired": 3
+          "fired": 2
         },
         "technical": {
           "documents": 49,
-          "fired": 14
+          "fired": 13
         }
       },
       "bench": {
