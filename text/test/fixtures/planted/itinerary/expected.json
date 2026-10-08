@@ -2,23 +2,23 @@
   "recall": {
     "ja": {
       "date-weekday": "3/3",
-      "time-order": "0/3",
-      "stay-nights": "0/3",
-      "arrival-before-departure": "0/3",
+      "time-order": "3/3",
+      "stay-nights": "3/3",
+      "arrival-before-departure": "3/3",
       "connection-too-short": "0/3",
       "cost-total": "3/3",
-      "date-outside-period": "0/3",
-      "place-two-ways": "0/3"
+      "date-outside-period": "3/3",
+      "place-two-ways": "2/3"
     },
     "en": {
       "date-weekday": "3/3",
-      "time-order": "0/3",
-      "stay-nights": "0/3",
-      "arrival-before-departure": "0/3",
+      "time-order": "3/3",
+      "stay-nights": "3/3",
+      "arrival-before-departure": "3/3",
       "connection-too-short": "0/3",
       "cost-total": "3/3",
-      "date-outside-period": "0/3",
-      "place-two-ways": "1/3"
+      "date-outside-period": "3/3",
+      "place-two-ways": "2/3"
     }
   },
   "clean": []
