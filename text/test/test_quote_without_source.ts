@@ -43,6 +43,15 @@ describe("quote-without-source: 人の言葉として引いた文に出典がな
     assert.deepEqual(findingsOf("メモの題は「彼はそう述べていたが、本当かは分からない」だ。\n"), []);
   });
 
+  it("言い方の勧め（「…」と述べる方が適切です）は人の言葉として引いていない", () => {
+    assert.deepEqual(findingsOf("この場合であれば、「便利なメソッドを紹介します」と述べる方が適切です。\n"), []);
+    assert.deepEqual(findingsOf("見出しには「設定の手順をひとつずつ説明します」と書くべきです。\n"), []);
+    assert.equal(findingsOf("ある研究者は「便利なメソッドを紹介する記事は役に立つ」と述べている。\n").length, 1);
+    assert.equal(findingsOf("ある研究者は「便利なメソッドを紹介する記事は役に立つ」と述べ、方針を変えた。\n").length, 1);
+    assert.equal(findingsOf("山田氏は講演では「道具はあくまで人が使うものにすぎない」と述べる方が多い。\n").length, 1);
+    assert.equal(findingsOf("山田氏によれば「道具はあくまで人が使うものにすぎない」と言う方が適切だという。\n").length, 1);
+  });
+
   it("記事と論文では既定で動き、組織の記事、報告、仕様、手順書、契約、小説、話し言葉のジャンルでは止まっている", () => {
     const quote = "ある研究者は「遅れているプロジェクトに人を足すと、さらに遅れる」と述べている。\n";
     ["blog/tech", "blog/essay", "academic/paper"].forEach((genre) => assert.ok(firedRules(ja, quote, genre).includes(RULE), genre));
@@ -54,6 +63,17 @@ describe("quote-without-source: 人の言葉として引いた文に出典がな
 
 describe("unsourcedQuotes", () => {
   const cues = [{ pattern: "と述べ", position: "after" as const }, { pattern: "によれば", position: "before" as const }, { pattern: "said" }];
+
+  it("勧めの続きが閉じ括弧のすぐ後ろにあれば、言い回しに当たっても引用ではない", () => {
+    const advice = [
+      { pattern: "と述べる", group: "say" },
+      { pattern: "方が", group: "advice" },
+    ];
+    assert.deepEqual(unsourcedQuotes([paragraph("「遅れているプロジェクトは遅れる」と述べる方が良い。")], cues, advice), []);
+    assert.equal(unsourcedQuotes([paragraph("「遅れているプロジェクトは遅れる」と述べた。")], cues, advice).length, 1);
+    assert.equal(unsourcedQuotes([paragraph("「遅れているプロジェクトは遅れる」と述べる人が多い。")], cues, advice).length, 1);
+    assert.equal(unsourcedQuotes([paragraph("「遅れているプロジェクトは遅れる」と述べる方が良い。")], cues, [{ pattern: "", group: "say" }]).length, 1);
+  });
 
   it("位置は文書の中の位置で、引用の中身を返す", () => {
     const text = "彼は「遅れているプロジェクトは遅れる」と述べた。";

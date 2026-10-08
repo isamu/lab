@@ -3,9 +3,8 @@ cdc-co-poisoning-basics  1
 chrome-blog-pwa-origin-migration  1
 da-annual-report-2024  1
 docusaurus-admonitions-mdx  3
-gitlab-jd-instructional-designer  5
-gitlab-values  9
-go-1-23-release-notes  1
+gitlab-jd-instructional-designer  2
+gitlab-values  8
 govuk-style-guide-a-to-z  20
 nasa-knows-spacewalk-k4  1
 neeview-changelog-ja  1
