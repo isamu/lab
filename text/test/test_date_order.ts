@@ -7,7 +7,7 @@ import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
-import { longestInOrder } from "../packages/chaff/src/structure/date-order.ts";
+import { longestInOrder, siblingHeadingRuns, type HeadingSpan } from "../packages/chaff/src/structure/date-order.ts";
 
 // 日程として並べた日付の順番（date-order）。言語を問わず、箇条書きと表の行を並びとして読む。
 
@@ -198,6 +198,143 @@ describe("date-order", () => {
   it("the Japanese sample itinerary: the third day goes back a month", () => {
     const source = readFileSync(new URL("fixtures/dates/schedule-ja.md", import.meta.url), "utf8");
     assert.deepEqual(found(source, ja, "ja"), ["2026-09-03<2026-10-02"]);
+  });
+});
+
+describe("date-order: a run of sibling headings", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+  });
+
+  const sections = (heading: string, ...titles: string[]): string =>
+    ["# Changelog", "", ...titles.flatMap((title) => [`${heading} ${title}`, "", "- A change.", ""])].join("\n");
+
+  it("a newest-first changelog with one heading dated after the one above it", () => {
+    const source = sections("##", "3.2.0 - 2026-09-14", "3.1.0 - 2026-10-02", "3.0.0 - 2026-03-20", "2.4.2 - 2026-01-11");
+    assert.deepEqual(found(source), ["2026-10-02<2026-09-14"]);
+  });
+
+  it("the date in brackets after the version, and an oldest-first changelog", () => {
+    const source = sections("##", "1.0.0 (2026-01-11)", "1.1.0 (2026-03-20)", "1.2.0 (2026-02-02)", "1.3.0 (2026-09-14)");
+    assert.deepEqual(found(source), ["2026-02-02<2026-03-20"]);
+  });
+
+  it("a changelog in order, either way, is a right order", () => {
+    assert.deepEqual(found(sections("##", "3.0.0 - 2026-09-14", "2.0.0 - 2026-06-02", "1.0.0 - 2026-03-20", "0.9.0 - 2026-01-11")), []);
+    assert.deepEqual(found(sections("##", "0.9.0 - 2026-01-11", "1.0.0 - 2026-03-20", "2.0.0 - 2026-06-02", "3.0.0 - 2026-09-14")), []);
+  });
+
+  it("a heading without a date (Unreleased) is left out, and deeper headings (### Added) do not break the run", () => {
+    const source = [
+      "# Changelog",
+      "",
+      "## Unreleased",
+      "",
+      "## 3.2.0 - 2026-09-14",
+      "### Added 2026-01-01",
+      "## 3.1.0 - 2026-10-02",
+      "### Fixed",
+      "## 3.0.0 - 2026-03-20",
+      "## 2.4.2 - 2026-01-11",
+    ].join("\n");
+    assert.deepEqual(found(source), ["2026-10-02<2026-09-14"]);
+  });
+
+  it("headings under different parents are separate runs", () => {
+    const source = [
+      "# Releases",
+      "",
+      "## 2026",
+      "### 2026-09-14",
+      "### 2026-06-02",
+      "### 2026-03-20",
+      "## 2025",
+      "### 2025-01-11",
+      "### 2025-06-02",
+      "### 2025-09-14",
+    ].join("\n");
+    assert.deepEqual(found(source), []);
+  });
+
+  it("headings of different depths are not one run, and a heading with two dates (a period) is left out", () => {
+    const mixed = ["# Log", "", "## 2026-09-14", "### 2026-10-02", "## 2026-06-02", "## 2026-03-20"].join("\n");
+    assert.deepEqual(found(mixed), []);
+    const period = sections("##", "Sprint 2026-09-01 to 2026-09-14", "Sprint 2026-10-01 to 2026-10-14", "3.0.0 - 2026-03-20", "2.0.0 - 2026-01-11");
+    assert.deepEqual(found(period), []);
+  });
+
+  it("questions with an update date added to some of them are not sorted by date: an undated heading ends the run", () => {
+    const faq = [
+      "# FAQ",
+      "",
+      "## How do I change my address? (updated Sept. 13, 2022)",
+      "## Can someone else see my account?",
+      "## Is chat available? (updated Nov. 14, 2024)",
+      "## Is there an app? (updated Oct. 3, 2023)",
+      "## Can I use it abroad? (updated Nov. 21, 2022)",
+    ].join("\n");
+    assert.deepEqual(found(faq), []);
+  });
+
+  it("headings written inside list items are reported once, not once per sequence", () => {
+    const source = ["# Releases", "", "- ## 3.2.0 - 2026-09-14", "- ## 3.1.0 - 2026-10-02", "- ## 3.0.0 - 2026-03-20", "- ## 2.4.2 - 2026-01-11"].join("\n");
+    assert.deepEqual(found(source), ["2026-10-02<2026-09-14"]);
+  });
+
+  it("dates in the body under the headings are not the headings' order", () => {
+    const source = [
+      "# Notes",
+      "",
+      "## Kickoff",
+      "",
+      "Held on 2026-09-14.",
+      "",
+      "## Review",
+      "",
+      "Held on 2026-10-02.",
+      "",
+      "## Retro",
+      "",
+      "Held on 2026-03-20.",
+    ].join("\n");
+    assert.deepEqual(found(source), []);
+  });
+
+  it("a heading in a code fence is not a heading", () => {
+    const source = [
+      "# Example",
+      "",
+      "```markdown",
+      "## 3.2.0 - 2026-09-14",
+      "## 3.1.0 - 2026-10-02",
+      "## 3.0.0 - 2026-03-20",
+      "## 2.4.2 - 2026-01-11",
+      "```",
+    ].join("\n");
+    assert.deepEqual(found(source), []);
+  });
+
+  it("Japanese headings, both ways", () => {
+    const broken = sections("##", "3.2.0（2026年9月14日）", "3.1.0（2026年10月2日）", "3.0.0（2026年3月20日）", "2.4.2（2026年1月11日）");
+    assert.deepEqual(found(broken, ja, "ja"), ["2026-10-02<2026-09-14"]);
+    const right = sections("##", "3.2.0（2026年9月14日）", "3.1.0（2026年6月2日）", "3.0.0（2026年3月20日）", "2.4.2（2026年1月11日）");
+    assert.deepEqual(found(right, ja, "ja"), []);
+  });
+});
+
+describe("siblingHeadingRuns", () => {
+  const heading = (depth: number, start: number): HeadingSpan => ({ depth, start, end: start + 1 });
+
+  it("one run per depth under one parent; a shallower heading closes the deeper runs", () => {
+    const runs = siblingHeadingRuns([heading(2, 0), heading(3, 1), heading(3, 2), heading(2, 3), heading(3, 4)]);
+    assert.deepEqual(
+      runs.map((run) => run.map((entry) => entry.start)),
+      [[0, 3], [1, 2], [4]],
+    );
+  });
+
+  it("no headings, no runs", () => {
+    assert.deepEqual(siblingHeadingRuns([]), []);
   });
 });
 
