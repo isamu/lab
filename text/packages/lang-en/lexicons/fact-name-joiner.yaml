@@ -1,0 +1,6 @@
+# Words that join the words of one name (summary-fact-mismatch): "the number of errors fell from 40 to 25". With no position,
+# the name is compared whole: "number of errors" is not "errors".
+id: fact-name-joiner
+language: en
+entries:
+  - pattern: of
