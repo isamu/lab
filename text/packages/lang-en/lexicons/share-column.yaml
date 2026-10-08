@@ -1,0 +1,12 @@
+# A table column whose header cell is only one of these words (a unit in brackets and % aside) is read as the parts of
+# one whole, and its percentages are added and compared with 100%. In a sentence these words also name a rate per row
+# ("the share of users who..."), so they are not share-label words.
+id: share-column
+language: en
+entries:
+  - pattern: weight
+  - pattern: weighting
+  - pattern: weights
+  - pattern: share
+  - pattern: percentage
+  - pattern: proportion
