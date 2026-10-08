@@ -1,0 +1,15 @@
+# Words that name a rate per row. When the sentence or heading right above a table, or a row of the table, has one, a column headed only
+# "Share" or "Percentage" is read as a rate per row and not added. Matched as whole words ("year-over-year" is found as "year over year").
+id: share-column-rate
+language: en
+entries:
+  - pattern: rate
+  - pattern: rates
+  - pattern: growth
+  - pattern: yoy
+  - pattern: year over year
+  - pattern: change
+  - pattern: interest
+  - pattern: yield
+  - pattern: return
+  - pattern: returns
