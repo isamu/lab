@@ -7,6 +7,7 @@ import { tableFacts } from "../facts/table-facts.ts";
 import { partsAt, scopedFacts, type ScopedFact } from "../facts/fact-scope.ts";
 import { conditionPairConflicts, type ChangeSentence, type ChangeWords, type ConditionWord, type PairConflict, type WordAt } from "../facts/condition-pairs.ts";
 import { scopeConflicts, summaryConflicts, type FactConflict } from "../facts/fact-conflicts.ts";
+import { eventDateConflicts, type EventDateConflict, type EventWord } from "../facts/event-dates.ts";
 import { quoteAt } from "./structure-tree.ts";
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
@@ -122,8 +123,39 @@ const conditionPairFindings = (doc: ProseDocument): Finding[] => {
   return conditionPairConflicts(doc.source, changeSentencesOf(doc, tree), values, changeWordsOf(doc)).map(pairFinding(doc));
 };
 
+const eventWordsOf = (doc: ProseDocument): EventWord[] =>
+  (doc.lexicons["fact-event"] ?? []).map((entry): EventWord => ({ pattern: entry.pattern, group: entry.group ?? entry.pattern }));
+
+const eventDateFinding =
+  (doc: ProseDocument) =>
+  ({ label, value, other }: EventDateConflict): Finding => ({
+    rule: "summary-fact-mismatch",
+    severity: "warning",
+    line: 0,
+    column: 0,
+    quote: quoteAt(doc.source, value.start),
+    values: { label, value: shown(doc, value), other: shown(doc, other), offset: value.start },
+  });
+
+/** 冒頭や要約の出来事の日付（11月9日から提供します）が、本文の同じ出来事の日付と違う。 */
+const eventDateFindings = (doc: ProseDocument): Finding[] => {
+  const tree = doc.structure;
+  if (tree === undefined) return [];
+  const values = factValues(tree, doc.source, nameSpans(doc));
+  const dates = values.filter((value) => value.kind === "date");
+  const names = values.filter((value) => value.kind === "name");
+  const sentences = changeSentencesOf(doc, tree).map(({ span, text, summary }) => ({
+    ...span,
+    text,
+    summary,
+    names: names.filter((name) => span.start <= name.start && name.end <= span.end).map((name) => name.key),
+  }));
+  return eventDateConflicts(sentences, dates, eventWordsOf(doc)).map(eventDateFinding(doc));
+};
+
 /** 冒頭や要約の値が、本文の同じ名前の値と違う。 */
 export const summaryFactMismatch: Detector = (doc): Finding[] => [
   ...summaryConflicts([...factsOf(doc), ...countedFactsOf(doc)]).map(findingOf("summary-fact-mismatch", doc)),
   ...conditionPairFindings(doc),
+  ...eventDateFindings(doc),
 ];
