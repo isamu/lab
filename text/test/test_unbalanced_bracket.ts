@@ -4,6 +4,7 @@ import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { bracketProblems, withRunOnRestored } from "../packages/chaff/src/detectors/unbalanced-bracket.ts";
+import { isLabelClose, isLabelInAside } from "../packages/chaff/src/detectors/bracket-label.ts";
 
 // 括弧の組（unbalanced-bracket）。例文はすべて自作。
 
@@ -49,6 +50,28 @@ describe("unbalanced-bracket: 括弧が組になっていない", () => {
   it("箇条の番号の印（1)、a)、事例）、数の後ろの閉じ）は開きを持たない", () => {
     assert.deepEqual(findingsOf("1) 最初に確認します。\n\n事例）窓口で受け付けます。上記事例2）の場合も同じです。\n"), []);
     assert.deepEqual(findingsOf("Evidence for areas a) to d) is required.\n", en), []);
+  });
+
+  it("括弧の中の、行の頭でも使う番号の印（「以下、事例3）まで同じ。）」）は、外の括弧と組にしない", () => {
+    assert.deepEqual(findingsOf("- 事例1）書類（申込書を含む。以下、事例3）まで同じ。）を紛失した場合\n"), []);
+    assert.deepEqual(findingsOf("事例1）窓口で受け付ける。\n\n事例2）書類（申込書を含む。以下、事例3）まで同じ。）を送る。\n"), []);
+    assert.deepEqual(findingsOf("- A1) Mail the form (see the notes; A3) and more) today.\n", en), []);
+  });
+
+  it("行の頭で使わない印、句読点の後ろでない印、閉じが足りない印は、その閉じで括弧を閉じる", () => {
+    assert.deepEqual(findingsOf("資料（例：1、2、3）を配ります。\n"), []);
+    assert.deepEqual(findingsOf("袋に入れる（この際、薬剤※（濃度約1,000 ppm）や水（量 2）を入れる。）\n"), []);
+    assert.deepEqual(findingsOf("資料（項目 1）を確認した）場合\n"), ["「）」に対応する開きがありません"]);
+    assert.deepEqual(findingsOf("書類（以下、事例3）まで同じ。）を送る。\n"), ["「）」に対応する開きがありません"]);
+    assert.deepEqual(findingsOf("Check the actions (e.g. phishing, etc) taken by the actor)?\n", en), ['")" closes nothing that was opened']);
+    assert.deepEqual(findingsOf("The result (case 2) is final) now.\n", en), ['")" closes nothing that was opened']);
+  });
+
+  it("括弧の中の印があっても、本当に足りない括弧は指す", () => {
+    const label = "- 事例1）受け付ける。\n";
+    assert.deepEqual(findingsOf(`${label}書類（申込書を含む。以下、事例3）まで同じ。）を紛失した）場合\n`), ["「）」に対応する開きがありません"]);
+    assert.deepEqual(findingsOf(`${label}書類申込書を含む。以下、事例3）まで同じ。）を紛失した場合\n`), ["「）」に対応する開きがありません"]);
+    assert.deepEqual(findingsOf(`${label}「「書類（以下、事例3）まで同じ。）」を見る。\n`), ["「「」が閉じていません"]);
   });
 
   it("印として読むのは丸括弧だけ", () => {
@@ -110,5 +133,41 @@ describe("withRunOnRestored", () => {
     ];
     assert.equal(withRunOnRestored(prose, source, texts), `x（${" ".repeat(code.length)}）y`);
     assert.equal(withRunOnRestored(prose, source, texts.slice(0, 1)), prose);
+  });
+});
+
+describe("isLabelInAside", () => {
+  const LABEL_LINE = "- 事例1）受け付ける。\n";
+  /** LABEL_LINE の後ろに aside を置いた節と、aside の中で before の後ろの最初の閉じの位置。 */
+  const sectionWith = (aside: string, before: string, labelLine = LABEL_LINE): [string, number] => {
+    const text = `${labelLine}${aside}`;
+    return [text, text.indexOf("）", labelLine.length + aside.indexOf(before))];
+  };
+
+  it("句読点の後ろの番号の印で、行の頭でも使い、同じ行の後ろの閉じで開いた括弧がすべて閉じれば印", () => {
+    assert.equal(isLabelInAside(...sectionWith("書類（以下、事例3）まで同じ。）", "事例3"), 1), true);
+    assert.equal(isLabelInAside(...sectionWith("書類（以下、事例12）まで同じ。）", "事例12"), 1), true);
+    assert.equal(isLabelInAside(...sectionWith("（a（以下、事例3）まで同じ。））", "事例3", "  * 事例9）x\n"), 2), true);
+  });
+
+  it("どれか一つでも欠ければ印ではない", () => {
+    assert.equal(isLabelInAside(...sectionWith("書類（以下、事例3）まで同じ。）", "事例3"), 2), false);
+    assert.equal(isLabelInAside(...sectionWith("書類（以下、事例3）まで同じ。）", "事例3", ""), 1), false);
+    assert.equal(isLabelInAside(...sectionWith("書類（以下、事例3）まで同じ。）", "事例3", "注1）受け付ける。\n"), 1), false);
+    assert.equal(isLabelInAside(...sectionWith("書類（以下 事例3）まで同じ。）", "事例3"), 1), false);
+    assert.equal(isLabelInAside(...sectionWith("書類（以下、事例）まで同じ。）", "事例"), 1), false);
+    assert.equal(isLabelInAside(...sectionWith("書類（以下、事例3）まで\n同じ。）", "事例3"), 1), false);
+    assert.equal(isLabelInAside(...sectionWith("書類（以下、事例3）まで（同じ）", "事例3"), 1), false);
+    assert.equal(isLabelInAside(...sectionWith("書類（以下、事例3）まで、4）", "事例3"), 1), false);
+    assert.equal(isLabelInAside("", 0, 0), false);
+  });
+});
+
+describe("isLabelClose", () => {
+  it("行の頭か空白・句読点の後ろの三文字までの印と、数の後ろの閉じ", () => {
+    assert.equal(isLabelClose("1) 確認", 1), true);
+    assert.equal(isLabelClose("上記事例2）", 5), true);
+    assert.equal(isLabelClose("資料をみる）", 5), false);
+    assert.equal(isLabelClose("", 0), false);
   });
 });

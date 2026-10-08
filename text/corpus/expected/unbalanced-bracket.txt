@@ -17,7 +17,7 @@ mhlw-icd-committee-26-minutes  2
 mhlw-kikan-gyomu-shokuin-boshu  1
 mhlw-norovirus-qa  2
 nps-yellowstone-faqs  1
-ppc-guidelines-tsusoku  23
+ppc-guidelines-tsusoku  22
 rfc9293-tcp  1
 saikosai-h26-09-02-nagano  1
 tokyoapp-service-terms  1

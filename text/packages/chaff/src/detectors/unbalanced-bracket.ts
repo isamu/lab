@@ -4,6 +4,7 @@ import { escapeRegExp } from "../orthography.ts";
 import { quoteAround } from "./quote-around.ts";
 import { mergeSpans } from "../span-merge.ts";
 import { firstEndingAfter } from "../soft-break.ts";
+import { isLabelClose, isLabelInAside } from "./bracket-label.ts";
 
 /**
  * 括弧の組。どの言語でも同じ字の決まりなので、語彙表ではなくここに置く。family は形（丸・角）で、全角と半角は同じ形の別の幅。
@@ -48,26 +49,16 @@ export type BracketProblem = {
 type Open = { readonly bracket: Bracket; readonly offset: number };
 type Scan = { readonly open: Open[]; readonly problems: BracketProblem[] };
 
-/**
- * 丸括弧の閉じの前の、行の頭か空白・句読点の後ろに書いた短い印（「1)」「a)」「事例）」「※）」）と、数の後ろの閉じ（「事例2）及び事例3）」）。
- * 箇条の番号や見出しの印で、開きを持たない書き方。顔文字の「:)」も同じ形。印に使うのは丸括弧だけ。
- */
-const LABEL_BEFORE = /(?:^|[\s、。,;:：])[^\s()（）[\]［］「」『』]{1,3}[ \t\u3000]?$|[\d０-９]$/u;
-
-const isLabel = (text: string, bracket: Bracket, offset: number): boolean => {
-  if (bracket.family !== "round") return false;
-  const lineStart = text.lastIndexOf("\n", offset - 1) + 1;
-  return LABEL_BEFORE.test(text.slice(lineStart, offset));
-};
-
 const unclosedOf = (entry: Open): BracketProblem => ({ kind: "unclosed", offset: entry.offset, mark: entry.bracket.open });
 
 const closeWith = (scan: Scan, text: string, bracket: Bracket, offset: number): void => {
   const at = scan.open.findLastIndex((entry) => entry.bracket.family === bracket.family);
+  const round = bracket.family === "round";
   if (at === -1) {
-    if (!isLabel(text, bracket, offset)) scan.problems.push({ kind: "unopened", offset, mark: bracket.close });
+    if (!(round && isLabelClose(text, offset))) scan.problems.push({ kind: "unopened", offset, mark: bracket.close });
     return;
   }
+  if (round && isLabelInAside(text, offset, scan.open.filter((entry) => entry.bracket.family === "round").length)) return;
   const opened = scan.open[at];
   // 間に残った開きは、この閉じより先に閉じるはずだったもの。ただし引用の閉じのすぐ前の開きは、括弧の字そのものを
   // 引いたもの（法令の読替え「取締役（」とあるのは「清算人（」と）で、組を作らない。
