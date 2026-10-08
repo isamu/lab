@@ -4,7 +4,7 @@ import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { oddSpellings } from "../packages/chaff/src/spelling-variants.ts";
-import { kanjiSkeleton, katakanaKey, lemmaReading } from "../packages/chaff/src/kana-spelling.ts";
+import { dropsOkurigana, kanjiSkeleton, katakanaKey, lemmaReading } from "../packages/chaff/src/kana-spelling.ts";
 import { furiganaSpans } from "../packages/chaff/src/furigana.ts";
 import { acronymsIn, isCapitalsNotSpelling } from "../packages/chaff/src/capitals-with-small.ts";
 
@@ -164,6 +164,26 @@ describe("orthographic-variant: 使い方で分ける", () => {
   it("「者」（人）と「もの」は書き分け", () => {
     assert.deepEqual(findingsOf("申請するものとする。届け出るものとする。申請した者に通知する。\n"), []);
   });
+
+  it("複合語の頭で送り仮名を省いた語（取扱事業者）は、それだけの語（取扱い）と別に比べる", () => {
+    assert.deepEqual(findingsOf("取扱事業者は記録を残す。取扱事業者は報告する。取扱事業者が届け出る。記録の取扱いを定める。\n"), []);
+    assert.deepEqual(findingsOf("締切日を守る。締切日を決める。締切日を書く。提出の締切りは明日です。\n"), []);
+  });
+
+  it("漢字だけの書き方が無い語（引越し と 引っ越し）は、複合語の頭も分けずに比べる", () => {
+    assert.deepEqual(findingsOf("引越し業者に頼む。引越し業者を選ぶ。引越し業者と話す。引っ越しの日を決める。\n"), [
+      "「引っ越し」と書いています（この文書はふつう「引越し」と書く語です。4 箇所のうち 1 箇所が違う）",
+    ]);
+  });
+
+  it("それだけの語どうし、複合語の頭どうしのゆれは数える", () => {
+    assert.deepEqual(findingsOf("記録の取扱いを定める。書類の取扱いを決める。鍵の取扱いを守る。現金の取扱を記す。\n"), [
+      "「取扱」と書いています（この文書はふつう「取扱い」と書く語です。4 箇所のうち 1 箇所が違う）",
+    ]);
+    assert.deepEqual(findingsOf("取扱事業者は記録を残す。取扱事業者は報告する。取扱事業者が届け出る。取扱い事業者が答える。\n"), [
+      "「取扱い」と書いています（この文書はふつう「取扱」と書く語です。4 箇所のうち 1 箇所が違う）",
+    ]);
+  });
 });
 
 describe("orthographic-variant: 語の書き方ではないもの", () => {
@@ -274,6 +294,17 @@ describe("kana-spelling: 読みと字の鍵", () => {
     assert.equal(kanjiSkeleton("引越し"), "引越");
     assert.equal(kanjiSkeleton("できる"), "");
     assert.equal(kanjiSkeleton("人々"), "人々");
+  });
+
+  it("送り仮名を省いた漢字だけの書き方", () => {
+    assert.equal(dropsOkurigana("取扱", ["取扱", "取扱い"]), true);
+    assert.equal(dropsOkurigana("締切", ["締切り", "締切"]), true);
+    assert.equal(dropsOkurigana("取扱い", ["取扱", "取扱い"]), false);
+    assert.equal(dropsOkurigana("取扱", ["取扱"]), false);
+    // かなだけの書き方（まち）は送り仮名ではない。漢字の違う書き方（町・街）とも別。
+    assert.equal(dropsOkurigana("町", ["町", "まち"]), false);
+    assert.equal(dropsOkurigana("町", ["町", "街"]), false);
+    assert.equal(dropsOkurigana("", ["", "取扱い"]), false);
   });
 
   it("カタカナ語の鍵", () => {
