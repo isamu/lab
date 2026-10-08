@@ -23,7 +23,8 @@ read as a sequence of dates and versions, and many false findings on statutes, R
 - New: phone-number-variant, one phone number written with two neighbouring digits swapped (#771).
 - summary-fact-mismatch pairs a summary's change with the body's two conditions (#775) and compares the opening's
   event date with the body's (#791).
-- date-order reads dates in a run of sibling headings (#787) and points at the date out of place (#795).
+- date-order reads dates in a run of sibling headings (#787) and points at the date out of place, the first one too
+  (#795, #803).
 - name-variant reads company names written two ways (#796) and variant-character names without an honorific (#721).
 - very-adjective, uncomparable-graded, wordy-phrase and sentence-initial-conjunction-run check Japanese documents too;
   doubled-nado checks English documents too (#738, #749, #755, #760).
@@ -31,6 +32,8 @@ read as a sequence of dates and versions, and many false findings on statutes, R
   (#769). `chaff cite` reads a claim with no address as anywhere in the source (#724) and checks quotations against a
   web page with `--url` (#759).
 - ai-score counts the composite's signals firing together as one more sign (#726).
+- New: kana-function-word, helper verbs and formal nouns that 公用文 writes in kana (〜て下さい, 〜て頂く, formal 事);
+  on only under the koyobun style, through a new `opt_in` rule field (#797).
 
 ### Fixes
 
