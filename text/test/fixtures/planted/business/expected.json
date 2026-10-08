@@ -9,7 +9,7 @@
       "issue-after-due": "1/1",
       "tax-amount": "1/1",
       "currency-two-ways": "1/1",
-      "company-name-variant": "0/2",
+      "company-name-variant": "2/2",
       "total-subtotal-tax": "1/1"
     },
     "en": {
@@ -21,7 +21,7 @@
       "issue-after-due": "1/1",
       "tax-amount": "1/1",
       "currency-two-ways": "1/1",
-      "company-name-variant": "0/2",
+      "company-name-variant": "2/2",
       "total-subtotal-tax": "1/1"
     }
   },
