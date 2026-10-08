@@ -1,0 +1,8 @@
+# Words that say a name (an option, a parameter, a function) should no longer be used (deprecated-option-used): the code
+# name nearest to one of them in a sentence, or the first cell of a table row that has one, is read as deprecated.
+id: deprecation-word
+language: en
+entries:
+  - pattern: deprecated
+  - pattern: obsolete
+  - pattern: no longer supported

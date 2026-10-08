@@ -1,0 +1,27 @@
+# Functions a code example may call without the page defining them, because the programming language provides them
+# (undefined-function-call): a page about parse may call parseInt. Only names that extend a likely documented name matter.
+id: code-global
+language: en
+entries:
+  - pattern: parseInt
+  - pattern: parseFloat
+  - pattern: setTimeout
+  - pattern: setInterval
+  - pattern: setImmediate
+  - pattern: clearTimeout
+  - pattern: clearInterval
+  - pattern: encodeURIComponent
+  - pattern: decodeURIComponent
+  - pattern: encodeURI
+  - pattern: decodeURI
+  - pattern: structuredClone
+  - pattern: queueMicrotask
+  - pattern: requestAnimationFrame
+  - pattern: printf
+  - pattern: println
+  - pattern: sprintf
+  - pattern: isinstance
+  - pattern: issubclass
+  - pattern: hasattr
+  - pattern: getattr
+  - pattern: setattr

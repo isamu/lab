@@ -1,0 +1,79 @@
+id: default-value-mismatch
+layer: L1
+status: stable
+how_to_find: default-values
+# A default column's header (Default, 既定値) and a default stated in prose (defaults to, の既定値は) come from the
+# default-header and default-phrase lexicons.
+requires: [markdown]
+severity: warning
+
+name:
+  ja: 既定値を二通りに書いている
+  en: Default value stated two ways
+
+why:
+  ja: "シグネチャが width = 72 なのに説明が「`width` の既定値は 80」だと、読み手は指定しなかったときの動きを読み違えます。既定値を変えたときに、コードか表か文のどれかだけを直すと起きます。宣言の引数の既定値（width = 72）、見出しが「既定値」の列の値、「`width` の既定値は」の後ろの値を集め、同じ名前の値がコード、表、文の順でいちばん確かなものと違うとき、違うほうを指します。"
+  en: 'When the signature says width = 72 and the text says "`width` defaults to 80", the reader misjudges what happens when the option is left out. It happens when a default changes and only the code, the table or the text is updated. The defaults in a declaration (width = 72), in a column headed Default, and after "`width` defaults to" are collected. When a name''s value differs from its most authoritative statement (code, then a table, then a sentence), the differing one is pointed out.'
+
+message:
+  ja: 「{name}」の既定値を「{value}」と書いていますが、ほかの所では「{expected}」です
+  en: "The default of `{name}` is given as {value} here, but as {expected} elsewhere"
+
+how_to_fix:
+  ja: 実際の既定値を確かめて、違うほうを直してください。
+  en: Check the real default, and correct the statement that differs.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [technical, docs, blog, legal, academic, literature, speech]
+off_for:
+  legal: "Signatures and option tables belong to technical writing."
+  academic: "Signatures and option tables belong to technical writing."
+  literature: "Signatures and option tables belong to technical writing."
+  speech: "Signatures and option tables belong to technical writing."
+
+group: facts
+summary:
+  ja: 引数やオプションの既定値が、シグネチャ・表・文で食い違う所
+  en: A parameter's default that differs between the signature, a table and the text
+example:
+  ja:
+    config: { genre: technical/readme }
+    before: |
+      ## wrap
+
+      ```ts
+      wrap(text: string, width = 72): string[]
+      ```
+
+      `width` の既定値は 80 文字です。
+    after: |
+      ## wrap
+
+      ```ts
+      wrap(text: string, width = 72): string[]
+      ```
+
+      `width` の既定値は 72 文字です。
+  en:
+    config: { genre: technical/readme }
+    before: |
+      ## wrap
+
+      ```ts
+      wrap(text: string, width = 72): string[]
+      ```
+
+      `width` defaults to 80 characters.
+    after: |
+      ## wrap
+
+      ```ts
+      wrap(text: string, width = 72): string[]
+      ```
+
+      `width` defaults to 72 characters.
+
+not_flagged:
+  ja: 呼び出しで渡した値（wrap(text, width=40)）、コードの印で囲んでいない名前、既定値を言う語から離れた値、同じ重さの二つの文や二つのコード（別の関数が同じ名前の引数に違う既定値を持つ）が食い違うだけのものは見ません。複数行に分けたシグネチャ、ハイフンの付いた名前（--max-width）、行の頭に | の無い表、値が言い方の途中にある英語の文（`x` is true by default）は読みません。
+  en: "A value passed in a call (wrap(text, width=40)), a name not in code marks, a value away from the default phrase, and a disagreement only between statements of the same weight (two functions giving one parameter name different defaults) are not checked. A signature split over several lines, names with dashes (--max-width), tables whose rows do not start with |, and sentences with the value inside the phrase (`x` is true by default) are not read."
