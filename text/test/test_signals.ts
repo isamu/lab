@@ -389,6 +389,14 @@ describe("undefined-acronym: 略語でない大文字を数えない（コーパ
       assert.deepEqual(acronymsIn("# Contact\n\nWrite to 2300 Main Street, Kansas City, MO 64108 or Berkeley, CA 94720-1234."), []);
     });
 
+    it("valid: 郵便番号の無い所在地の州略号（地名、読点、州）", () => {
+      assert.deepEqual(acronymsIn("# Locations\n\nChicago, IL\nMiami, FL\n\nThe office in Nashville, TN used the map."), []);
+    });
+
+    it("invalid: 地名の後ろでも、大文字の語が続く州略号の形は数える", () => {
+      assert.deepEqual(acronymsIn("# Teams\n\nAsk Sales, PA Team for help."), ["PA"]);
+    });
+
     it("invalid: 住所の形でない CA は数える（certificate authority）", () => {
       assert.deepEqual(acronymsIn("# Certs\n\nThe CA signs each certificate."), ["CA"]);
     });
