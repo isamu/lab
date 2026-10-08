@@ -93,6 +93,13 @@ describe("notAcronymSpans: 米国の住所", () => {
     ["Washington, DC 20405", ["DC"]],
     ["Berkeley,\nCA  94720", ["CA"]],
     ["Berkeley,  CA 94720", ["CA"]],
+    ["Chicago, IL", ["IL"]],
+    ["Albany, NY\nArlington, TX", ["NY", "TX"]],
+    ["Albany, NY\r\nArlington, TX", ["NY", "TX"]],
+    ["Washington, DC: Association of Colleges", ["DC"]],
+    ["Georgetown, TX, allowing them to close roads", ["TX"]],
+    ["the office in Nashville, TN used it", ["TN"]],
+    ["Minneapolis/St. Paul, MN, 2000", ["MN"]],
   ].forEach(([text, words]) => {
     it(`valid: ${String(text)}`, () => assert.deepEqual(covered(String(text)), words));
   });
@@ -103,6 +110,10 @@ describe("notAcronymSpans: 米国の住所", () => {
     ["Berkeley, CA 947201", []],
     ["Berkeley CA 94720", []],
     ["notes, XX 94720", []],
+    ["the review, CA certificates", []],
+    ["Sales, PA Team", []],
+    ["Acme, INC.", []],
+    ["day in DC, and", []],
   ].forEach(([text, words]) => {
     it(`invalid: ${String(text)}`, () => assert.deepEqual(covered(String(text)), words));
   });

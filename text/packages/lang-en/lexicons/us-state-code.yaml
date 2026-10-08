@@ -1,5 +1,5 @@
 # US postal codes of the states, the district and the territories, read only inside an address
-# (, CA 94720). Matched as written.
+# (, CA 94720) or after a place name (Chicago, IL). Matched as written.
 id: us-state-code
 language: en
 entries:
