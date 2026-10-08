@@ -27,3 +27,4 @@ qiita-jnchito-good-sample-code  1
 typescript-5-4-release-notes  1
 usajobs-va-it-specialist-customer-support  2
 wikivoyage-belgian-coast-tram  4
+wikivoyage-magnificent-mile  1

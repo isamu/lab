@@ -1,0 +1,20 @@
+# 場所の名前の終わりに立つ語（博多駅、八重洲中央口、札幌コンベンションセンター）。name-variant は、この語で終わる名前を場所の名前と読み、
+# 同じ所を二通りに書いた所（八重洲中央口 と 八重州中央口、筑紫口 と ちくし口）を指す。group が同じ語は同じ語の別の書き方。
+id: place-word
+language: ja
+entries:
+  - { pattern: 口 }
+  - { pattern: 駅 }
+  - { pattern: 会館 }
+  - { pattern: 公会堂 }
+  - { pattern: センター }
+  - { pattern: ホール }
+  - { pattern: 会議場 }
+  - { pattern: 空港 }
+  - { pattern: 公園 }
+  - { pattern: 広場 }
+  - { pattern: 通り }
+  - { pattern: 橋 }
+  - { pattern: タワー }
+  - { pattern: ターミナル }
+  - { pattern: 港 }
