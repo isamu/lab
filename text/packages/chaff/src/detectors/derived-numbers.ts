@@ -36,7 +36,9 @@ const BRACKET_REACH = 20;
 /** 「six (6) months」は語の数から単位まで。括弧の中の数だけでは、指摘に引いたとき何の期間か読めない。 */
 const withWordsAround = (source: string, start: number, end: number, unit: string): Span => {
   const before = WORDS_BEFORE_BRACKET.exec(source.slice(Math.max(0, start - BRACKET_REACH), start));
-  return source.charAt(end) === ")" && before !== null ? { start: start - before[0].length, end: endWithUnit(source, end + 1, unit) } : { start, end: endWithUnit(source, end, unit) };
+  return source.charAt(end) === ")" && before !== null
+    ? { start: start - before[0].length, end: endWithUnit(source, end + 1, unit) }
+    : { start, end: endWithUnit(source, end, unit) };
 };
 
 const quantitiesOf = (tree: StructureNode, source: string): Quantity[] =>
