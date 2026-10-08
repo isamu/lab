@@ -1,0 +1,8 @@
+# Words that, right after a name in code marks, state its default, with the value right after them
+# (default-value-mismatch): "`width` defaults to 72", "`width` default is 72".
+id: default-phrase
+language: en
+entries:
+  - pattern: defaults to
+  - pattern: default is
+  - pattern: default value is

@@ -1,0 +1,9 @@
+# オプションや引数の既定値を並べた表の列の見出し（default-value-mismatch）。
+id: default-header
+language: ja
+entries:
+  - pattern: 既定値
+  - pattern: デフォルト
+  - pattern: デフォルト値
+  - pattern: 初期値
+  - pattern: default
