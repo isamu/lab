@@ -4,7 +4,8 @@ Newest first.
 
 ## 0.29.0 — 2026-10-08
 
-chaff now checks API documents, invoices and quotes, press releases and public notices as well as contracts: a
+chaff now checks API documents, invoices and quotes, press releases, public notices, itineraries, meeting minutes and
+syllabi as well as contracts: a
 parameter table against its signature, a deprecated name still used in an example, an install pin against the release
 list, tax and line amounts in invoice tables, a due date before the issue date, a summary's change against the body's
 two conditions, and an opening's event date against the body's. Japanese text reads ISO dates, changelog headings are
@@ -21,6 +22,24 @@ read as a sequence of dates and versions, and many false findings on statutes, R
   than the price is per (#788).
 - New: nado-closed-list, a list left open by 等 or etc. that a limit closes (#768).
 - New: phone-number-variant, one phone number written with two neighbouring digits swapped (#771).
+- New: number-word-figure-mismatch, a number in words and its bracketed figure that disagree ("six (7) months",
+  金参拾万円（30,000円）) (#809).
+- New: undefined-term, a Japanese term written with the prefix of the document's defined terms (本成果物) but defined
+  nowhere (#805).
+- New: obligation-without-deadline, a timed duty with no deadline in a contract that gives its others one (#801).
+- New: time-order and arrival-before-departure, a time out of order in a day's schedule and an arrival before its
+  departure (#814).
+- New: date-outside-period, a dated item outside the stated period (#818).
+- New: amount-range-reversed, an amount range whose upper end is below its lower end (#824).
+- duration-mismatch checks the nights of a stay against its dates (#813).
+- due-before-issue reads action items due before the meeting in minutes (#823).
+- name-variant reads place names ending in a place word (#819).
+- announced-count-mismatch counts attendees, and names listed on one line (#820).
+- summary-fact-mismatch reads a decision (とする。, set at) as the item's value (#822).
+- total-mismatch adds up 単位, コマ, credits, units and sessions (#827); percent-sum-mismatch reads a column headed 割合
+  or Weight as shares of a whole (#828); numbering-gap reads 第N回 / Week N schedule runs (#829).
+- New: quote-unnamed-speaker, a quotation in a press release or report given to a role with no name ("said an
+  analyst") (#800).
 - summary-fact-mismatch pairs a summary's change with the body's two conditions (#775) and compares the opening's
   event date with the body's (#791).
 - date-order reads dates in a run of sibling headings (#787) and points at the date out of place, the first one too
@@ -38,6 +57,13 @@ read as a sequence of dates and versions, and many false findings on statutes, R
 ### Fixes
 
 - Japanese text reads ISO dates such as 2026-10-02, and 2026年（令和8年）9月4日 as one date (#784).
+- connective-hierarchy looks for the inner level in the outer word's own clause (#804).
+- defined-term-form runs on statutes (a quoted term there talks about the term itself), reads multi-word terms in
+  lower case, and reports a defined term made longer (文書管理責任者 for 管理責任者) (#802).
+- duration-mismatch reads a length written "six (6) months" (#806).
+- orthographic-variant compares compound heads without okurigana apart (取扱事業者 beside 取扱い) (#816).
+- undefined-acronym reads a state code after a place name as a place (Chicago, IL) (#817).
+- latin-spacing does not count the space between a building and its floor (#825).
 - requirement-smell reads 等 inside a name the document defines as no open list (#772).
 - unbalanced-bracket reads an opener quoted as the last character of a quotation as text (#774) and skips a numbered
   label inside an aside (#792).
@@ -56,8 +82,10 @@ read as a sequence of dates and versions, and many false findings on statutes, R
 ### Tests and tools
 
 - Planted sets for API documents, public notices, quotes and invoices, manuals, statutes, papers and tech blog posts
-  (#722, #751, #766, #767). A planted manifest can name a style per document (#793).
+  (#722, #751, #766, #767). A planted manifest can name a style per document (#793); the reports change-rate plant is
+  now a provable mistake (#799).
 - Corpus and planted runs prepare the Japanese adapter as the CLI does (#798).
+- version-order and date-order share one walk over sibling headings (#808); one English number-word list (#811).
 
 ### Docs
 
