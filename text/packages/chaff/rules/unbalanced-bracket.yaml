@@ -9,8 +9,8 @@ name:
   en: Unbalanced bracket
 
 why:
-  ja: 閉じ忘れた「（」や、開きの無い「」」があると、読み手はどこまでが括弧の中なのか分からなくなります。全角の「（」を半角の「)」で閉じるのも、書き換えの途中で残った印です。見出しで区切った節ごとに、「」『』（）()［］[]【】〔〕〈〉《》“” の組を数えます。詩の連や長い引用は段落をまたぐので、段落を越えて組にします。行の頭や空白の後ろの「1)」「a)」「事例）」のような三文字までの番号の印と数の後ろの「）」、コードと URL、引用の閉じのすぐ前の開き（法令の読替えの「取締役（」とあるのは）は数えません。英語の小説のように、次の段落も同じ開きで始まるなら、閉じない開きは続きとして数えません。
-  en: A "(" never closed, or a ")" never opened, leaves the reader unsure where the aside ends. A full-width "（" closed by a half-width ")" is left over from an edit too. Brackets are paired within each section under a heading ((), [], “”, and the Japanese 「」『』（）［］【】〔〕〈〉《》), across paragraphs, since a stanza or a long quotation may span several. A short label of up to three characters such as "1)", "a)" or "iv)" at the start of a line or after a space, a ")" right after a number, code, URLs, and an opening bracket quoted as the last character of a quotation (「取締役（」, as statutes quote the text they amend) are not counted. An opening quotation mark carried into a paragraph that opens with the same mark, as in fiction, is not counted.
+  ja: 閉じ忘れた「（」や、開きの無い「」」があると、読み手はどこまでが括弧の中なのか分からなくなります。全角の「（」を半角の「)」で閉じるのも、書き換えの途中で残った印です。見出しで区切った節ごとに、「」『』（）()［］[]【】〔〕〈〉《》“” の組を数えます。詩の連や長い引用は段落をまたぐので、段落を越えて組にします。行の頭や空白の後ろの「1)」「a)」「事例）」のような三文字までの番号の印と数の後ろの「）」、括弧の中の番号の印（「（…以下、事例5）まで同じ。）」の「事例5）」。同じ字の印を行の頭でも使っていて、同じ行の後ろの閉じで括弧が閉じるときに限る）、コードと URL、引用の閉じのすぐ前の開き（法令の読替えの「取締役（」とあるのは）は数えません。英語の小説のように、次の段落も同じ開きで始まるなら、閉じない開きは続きとして数えません。
+  en: A "(" never closed, or a ")" never opened, leaves the reader unsure where the aside ends. A full-width "（" closed by a half-width ")" is left over from an edit too. Brackets are paired within each section under a heading ((), [], “”, and the Japanese 「」『』（）［］【】〔〕〈〉《》), across paragraphs, since a stanza or a long quotation may span several. A short label of up to three characters such as "1)", "a)" or "iv)" at the start of a line or after a space, a ")" right after a number, a numbered label inside an aside ("A3)" in "(see the notes; A3) and more)", when the same label is used at the start of a line and later closes on the same line still close the aside), code, URLs, and an opening bracket quoted as the last character of a quotation (「取締役（」, as statutes quote the text they amend) are not counted. An opening quotation mark carried into a paragraph that opens with the same mark, as in fiction, is not counted.
 
 message:
   ja: 「{mark}」が組になっていません
@@ -52,5 +52,5 @@ example:
       The plan (see below) is ready.
 
 not_flagged:
-  ja: 行の頭や空白の後ろの「1)」「a)」「事例）」のような三文字までの番号の印、数の後ろの「）」、コードと URL は数えません。段落をまたいで閉じる括弧と、次の段落を同じ引用符で始める台詞も指しません。
-  en: Labels of up to three characters such as "1)" or "a)" at the start of a line or after a space, a ")" right after a number, code and URLs are not counted. A bracket closed in a later paragraph, and a quotation carried into a paragraph that opens with the same mark, are not reported.
+  ja: 行の頭や空白の後ろの「1)」「a)」「事例）」のような三文字までの番号の印、数の後ろの「）」、行の頭でも使う番号の印を括弧の中に書いたもの（「以下、事例5）まで同じ。」）、コードと URL は数えません。段落をまたいで閉じる括弧と、次の段落を同じ引用符で始める台詞も指しません。
+  en: Labels of up to three characters such as "1)" or "a)" at the start of a line or after a space, a ")" right after a number, a numbered label also used at the start of a line, written inside an aside ("(see the notes; A3) and more)"), code and URLs are not counted. A bracket closed in a later paragraph, and a quotation carried into a paragraph that opens with the same mark, are not reported.
