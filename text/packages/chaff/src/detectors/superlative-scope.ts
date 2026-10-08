@@ -42,6 +42,18 @@ const compound = (tokens: readonly Token[], range: TokenRange): boolean => {
   return before !== undefined && first !== undefined && NOMINAL.has(before.pos) && before.span.end === first.span.start;
 };
 
+const CLAUSE_END = new Set(["VERB", "AUX"]);
+
+/**
+ * 連体修飾の節が空白を挟まずに付いた最上級（バグを検出できる唯一の・社員が選んだ最高の）。節が何の中で最もなのかを言う。
+ * 節の終わりは原形の動詞か助動詞。「首都であり最大の」の「あり」と「大切な最大の」の「な」は原形でないので節の終わりと読まない。
+ */
+const clauseBefore = (tokens: readonly Token[], range: TokenRange): boolean => {
+  const before = tokens[range.start - 1];
+  const first = tokens[range.start];
+  return before !== undefined && first !== undefined && CLAUSE_END.has(before.pos) && before.surface === before.lemma && before.span.end === first.span.start;
+};
+
 /** 名前 + 範囲の語 + 最上級（日本で最も・トヨタで最も・東京都で最大）。「費用で最大の効果」の「費用」は名前ではないので範囲にしない。 */
 const namedBefore = (tokens: readonly Token[], range: TokenRange, markers: Lexicon): boolean =>
   isMarker(tokens[range.start - 1], markers) && isNamed(tokens[range.start - 2]);
@@ -68,4 +80,4 @@ const phraseAfter = (tokens: readonly Token[], range: TokenRange, markers: Lexic
 };
 
 export const scoped = (tokens: readonly Token[], range: TokenRange, markers: ScopeMarkers): boolean =>
-  compound(tokens, range) || namedBefore(tokens, range, markers.before) || phraseAfter(tokens, range, markers.after);
+  compound(tokens, range) || clauseBefore(tokens, range) || namedBefore(tokens, range, markers.before) || phraseAfter(tokens, range, markers.after);
