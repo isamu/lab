@@ -4,7 +4,7 @@
  */
 
 /** 見出しの升から外す飾り: 括弧に入れた単位（(%)、（％）、[%]）、% の記号、強調の印。単位でない括弧（（達成率））は残す。 */
-const DECORATION = /[(（［[]\s*(?:[%％]|percent|pct)?\s*[)）］\]]|[%％*_]/giu;
+const DECORATION = /[(（［[](?:\s|[%％]|percent|pct)*[)）］\]]|[%％*_]/giu;
 const LATIN = /^\p{ASCII}+$/u;
 const WORD_BREAK = /[^\p{L}\p{N}]+/u;
 
