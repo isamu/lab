@@ -57,6 +57,18 @@ describe("duration-mismatch", () => {
     assert.deepEqual(durationEn("The trial lasts 10 days, from May 1, 2026 to May 10, 2026."), []);
   });
 
+  it("a length written in words with the figure in brackets (en)", () => {
+    const source = "This Agreement starts on April 1, 2026 and continues for six (6) months, until March 31, 2027.";
+    assert.deepEqual(durationEn(source), ["March 31, 2027→2026-09-30"]);
+    assert.deepEqual(
+      run("duration-mismatch", `# Notice\n\n${source}\n`, en, "en").map((values) => values["duration"]),
+      ["six (6) months"],
+    );
+    assert.deepEqual(durationEn("This Agreement starts on April 1, 2026 and continues for twelve (12) months, until March 31, 2027."), []);
+    assert.deepEqual(durationEn("This Agreement starts on April 1, 2026 and continues for thirty (30) days, until April 30, 2026."), []);
+    assert.deepEqual(durationEn("Section (6) months starts on April 1, 2026 and ends on March 31, 2027."), []);
+  });
+
   it("the end of a month: one month after January 31 is the last day of February", () => {
     assert.deepEqual(durationEn("It runs for 1 month from January 31, 2026 to February 28, 2026."), []);
   });

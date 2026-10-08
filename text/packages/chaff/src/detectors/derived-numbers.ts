@@ -29,11 +29,28 @@ const endWithUnit = (source: string, end: number, unit: string): number => {
   return unit !== "" && source.startsWith(unit, end + gap) ? end + gap + unit.length : end;
 };
 
+const OPEN_BRACKET = " (";
+const WORD_LETTER = /[\p{L}-]/u;
+
+/** Where the word before " (" starts ("six (" in "six (6) months"), or undefined when no word stands there. */
+const wordStartBeforeBracket = (source: string, at: number): number | undefined => {
+  if (source.slice(Math.max(0, at - OPEN_BRACKET.length), at) !== OPEN_BRACKET) return undefined;
+  let start = at - OPEN_BRACKET.length;
+  while (start > 0 && WORD_LETTER.test(source.charAt(start - 1))) start -= 1;
+  return start < at - OPEN_BRACKET.length ? start : undefined;
+};
+
+/** 「six (6) months」は語の数から単位まで。括弧の中の数だけでは、指摘に引いたとき何の期間か読めない。 */
+const withWordsAround = (source: string, start: number, end: number, unit: string): Span => {
+  const wordStart = source.charAt(end) === ")" ? wordStartBeforeBracket(source, start) : undefined;
+  return wordStart === undefined ? { start, end: endWithUnit(source, end, unit) } : { start: wordStart, end: endWithUnit(source, end + 1, unit) };
+};
+
 const quantitiesOf = (tree: StructureNode, source: string): Quantity[] =>
   inDocumentOrder(tree).flatMap((node): Quantity[] => {
     if (node.kind !== "quantity") return [];
     const unit = String(node.attrs["unit"] ?? "");
-    return [{ start: node.span.start, end: endWithUnit(source, node.span.end, unit), amount: Number(node.attrs["value"]), unit: unit.normalize("NFKC") }];
+    return [{ ...withWordsAround(source, node.span.start, node.span.end, unit), amount: Number(node.attrs["value"]), unit: unit.normalize("NFKC") }];
   });
 
 const datesOf = (tree: StructureNode): DatedValue[] =>
