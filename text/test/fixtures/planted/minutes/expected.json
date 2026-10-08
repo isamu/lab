@@ -1,0 +1,25 @@
+{
+  "recall": {
+    "ja": {
+      "attendee-count": "0/2",
+      "summary-decision": "1/2",
+      "action-due-before-meeting": "0/2",
+      "next-meeting-weekday": "2/2",
+      "person-name-two-ways": "1/2",
+      "salary-range-reversed": "0/1",
+      "required-as-preferred": "0/1",
+      "working-hours-total": "0/1"
+    },
+    "en": {
+      "attendee-count": "0/2",
+      "summary-decision": "2/2",
+      "action-due-before-meeting": "0/2",
+      "next-meeting-weekday": "2/2",
+      "person-name-two-ways": "0/2",
+      "salary-range-reversed": "0/1",
+      "required-as-preferred": "0/1",
+      "working-hours-total": "0/1"
+    }
+  },
+  "clean": []
+}
