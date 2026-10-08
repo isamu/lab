@@ -8,7 +8,7 @@
       "param-not-in-signature": "1/1",
       "return-type-two-ways": "0/1",
       "deprecated-in-example": "2/2",
-      "install-version": "0/2",
+      "install-version": "2/2",
       "changelog-date-order": "1/2",
       "changelog-version-order": "1/1"
     },
@@ -20,7 +20,7 @@
       "param-not-in-signature": "1/1",
       "return-type-two-ways": "0/1",
       "deprecated-in-example": "2/2",
-      "install-version": "0/2",
+      "install-version": "2/2",
       "changelog-date-order": "1/2",
       "changelog-version-order": "1/1"
     }

@@ -1,0 +1,20 @@
+# 一つの版に固定してパッケージを入れるコマンド（version-mismatch）。{name} はパッケージ、{version} はちょうどその版。
+# コマンドと固定の間にはオプションや別のパッケージがあってもよい（npm install --save-dev wrapkit@3.2.0）。
+# 範囲（wrapkit@^3.0.0、wrapkit>=3.0.0）やタグ（wrapkit@latest）は版を固定しないので当たらない。
+id: install-command
+language: ja
+entries:
+  - pattern: "npm install {name}@{version}"
+  - pattern: "npm i {name}@{version}"
+  - pattern: "npm add {name}@{version}"
+  - pattern: "yarn add {name}@{version}"
+  - pattern: "pnpm add {name}@{version}"
+  - pattern: "pnpm install {name}@{version}"
+  - pattern: "bun add {name}@{version}"
+  - pattern: "pip install {name}=={version}"
+  - pattern: "pip3 install {name}=={version}"
+  - pattern: "uv add {name}=={version}"
+  - pattern: "poetry add {name}=={version}"
+  - pattern: "cargo install {name}@{version}"
+  - pattern: "cargo add {name}@{version}"
+  - pattern: "gem install {name} -v {version}"
