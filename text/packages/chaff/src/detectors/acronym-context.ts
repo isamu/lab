@@ -9,8 +9,8 @@ import { seriesLabelSpans } from "./series-label.ts";
 
 /**
  * 大文字の語が略語ではなく、決まった書き方の一部として読める所（3:30 PM、1pm ET、USD 1,000、Kansas City, MO 64108）。
- * どれも閉じた集合で、しかも隣の数字があるときだけ認める。PM（project manager）、CT、CA（certificate authority）は
- * 数字の隣でなければ略語のまま数える。語は言語パッケージの語彙表から読み、書き方の組み立てだけをここに置く。
+ * どれも閉じた集合で、しかも隣の数字（州は地名でもよい）があるときだけ認める。PM（project manager）、CT、CA（certificate authority）は
+ * その隣でなければ略語のまま数える。語は言語パッケージの語彙表から読み、書き方の組み立てだけをここに置く。
  */
 
 type Span = { readonly start: number; readonly end: number };
@@ -75,6 +75,13 @@ const titledName = (titles: string): readonly RegExp[] => [
   new RegExp(String.raw`(?<![\p{L}\p{N}_])${titles}\s+${SURNAME_IN_CAPITALS}${GIVEN_NAME_AFTER}`, "gu"),
 ];
 
+/**
+ * 郵便番号の無い所在地（Chicago, IL、Charleston, SC and…、Washington, DC: Association…）。頭が大文字の地名と読点の後ろで、
+ * 文や行の終わり・区切り・小文字の語が続くときだけ州と読む。数字や大文字の語が続くもの（Berkeley, CA 947、Sales, PA Team）は外さない。
+ */
+const placeAndState = (states: string): RegExp =>
+  new RegExp(String.raw`(?<=\p{Lu}\p{Ll}[\p{L}'’.-]*,\s+)${states}(?=[ \t]*(?:\r?\n|$)|[,.;:)\]!?]|\s+\p{Ll})`, "gu");
+
 // 強調の記号は空白に置き換えてある（**3:30** PM）ので、部品の間の空白は数を問わない。
 const patternsOf = (words: NotationWords): readonly RegExp[] => [
   new RegExp(String.raw`${CLOCK_12}\s*${oneOf(words.meridiem)}`, "gu"),
@@ -82,6 +89,7 @@ const patternsOf = (words: NotationWords): readonly RegExp[] => [
   new RegExp(String.raw`${oneOf(words.currencies)}\s*[$€£¥]?${AMOUNT}`, "gu"),
   new RegExp(String.raw`(?<![\w.,])${AMOUNT}\s*${oneOf(words.currencies)}`, "gu"),
   new RegExp(String.raw`,\s+${oneOf(words.usStates)}\s+\d{5}(?:-\d{4})?(?!\d)`, "gu"),
+  placeAndState(oneOf(words.usStates)),
   new RegExp(oneOf(words.emphasis), "gu"),
   ...numberedPatterns(words),
   new RegExp(String.raw`(?<![\p{L}\p{N}_])${oneOf(words.honorifics)}\s+${SURNAME_IN_CAPITALS}`, "gu"),

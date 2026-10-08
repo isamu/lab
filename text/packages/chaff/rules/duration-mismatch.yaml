@@ -10,12 +10,20 @@ name:
   en: A start plus a length of time that does not reach the stated end
 
 why:
-  ja: 「4月1日から3か月間（7月31日まで）」のように、始まりと期間と終わりを一緒に書くと、読み手は三つのうちどれが正しいのか分かりません。期間か日付の片方だけを直したときに起きます。一つの文に日付が二つと期間が一つあるとき、始まりに期間を足した日を終わりと比べます。終わりの日を含めて数える書き方（4月1日から3か月間は6月30日まで）、含めない書き方（7月1日まで）、初日を数えずに期間が過ぎた日（「4月1日から2週間が経過した日（4月16日）」）のどれとも合わないときだけ指します。
-  en: 'When a start, a length and an end are written together ("for 3 months from April 1, 2026, until July 31, 2026"), the reader cannot tell which of the three is right. It happens when the length or one date is changed and not the other. In a sentence with two dates and one length of time, the start plus the length is compared with the end. Three ways of counting are accepted: with the last day included (April 1 plus 3 months is June 30), without it (July 1), and the day after the period has passed when the first day is not counted (July 2); it is pointed out only when the end matches none.'
+  ja: 「4月1日から3か月間（7月31日まで）」のように、始まりと期間と終わりを一緒に書くと、読み手は三つのうちどれが正しいのか分かりません。期間か日付の片方だけを直したときに起きます。一つの文に日付が二つと期間が一つあるとき、始まりに期間を足した日を終わりと比べます。終わりの日を含めて数える書き方（4月1日から3か月間は6月30日まで）、含めない書き方（7月1日まで）、初日を数えずに期間が過ぎた日（「4月1日から2週間が経過した日（4月16日）」）のどれとも合わないときだけ指します。泊数は二つの日付の差の日数と比べます（10月12日から10月14日までは2泊）。一つの文に日付が二つと泊数が一つある所と、チェックイン・チェックアウト・泊数の列がそろった表の行を見ます。「2泊3日」のように泊数と日数を並べたら、日数は泊数より一つ多いはずです。
+  en: 'When a start, a length and an end are written together ("for 3 months from April 1, 2026, until July 31, 2026"), the reader cannot tell which of the three is right. It happens when the length or one date is changed and not the other. In a sentence with two dates and one length of time, the start plus the length is compared with the end. Three ways of counting are accepted: with the last day included (April 1 plus 3 months is June 30), without it (July 1), and the day after the period has passed when the first day is not counted (July 2); it is pointed out only when the end matches none. A number of nights is compared with the days between two dates (Oct 12 to Oct 14 is 2 nights), in a sentence with two dates and one number of nights, and in each row of a table with check-in, check-out and nights columns. Where nights and days are written together ("2 days, 1 night"), the days must be one more than the nights.'
 
 message:
   ja: "{start}から{duration}なら、終わりは{expected}ごろのはずですが、{end}と書かれています"
   en: "{start} plus {duration} ends around {expected}, but the end is given as {end}"
+
+messages:
+  nights:
+    ja: "{start}から{end}までなら{expected}泊のはずですが、{nights}と書かれています"
+    en: "{start} to {end} makes {expected} as the number of nights, but {nights} is written"
+  nights-days:
+    ja: "{nights}なら日数は{expected}日のはずですが、{days}と書かれています"
+    en: "{nights} makes {expected} days, but {days} is written"
 
 how_to_fix:
   ja: 期間と終わりの日付のどちらが正しいかを確かめて、もう一方を直してください。
@@ -42,8 +50,8 @@ example:
       The trial runs for 3 months from April 1, 2026 (until June 30, 2026).
 
 not_flagged:
-  ja: 三通りの数え方（終わりを含める、含めない、初日を数えずに過ぎた日）のどれとも合わないときだけ指します。「約3か月」「3か月程度」のような目安の期間、日付が三つ以上か期間が二つ以上ある文、年を書いた日付と書かない日付の組は見ません。
-  en: Only an end that matches none of the three ways of counting is pointed out. A rough length ("about 3 months"), a sentence with three or more dates or two or more lengths, and a pair of one date with a year and one without are left alone.
+  ja: 三通りの数え方（終わりを含める、含めない、初日を数えずに過ぎた日）のどれとも合わないときだけ指します。「約3か月」「3か月程度」のような目安の期間、日付が三つ以上か期間が二つ以上ある文、年を書いた日付と書かない日付の組は見ません。「最大3泊」のような目安の泊数と、日付の無い泊数も見ません。
+  en: Only an end that matches none of the three ways of counting is pointed out. A rough length ("about 3 months"), a sentence with three or more dates or two or more lengths, and a pair of one date with a year and one without are left alone. So are a rough number of nights ("up to 3 nights") and nights written without dates.
 rewrite:
   depth: light
   ja:

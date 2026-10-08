@@ -2,10 +2,10 @@
 18f-handbook-projects-in-distress  6
 18f-handbook-travel  4
 18f-handbook-travel-faq  16
-aoml-hurricane-faq  75
+aoml-hurricane-faq  68
 asf-board-minutes-2025-01  153
 automattic-privacy-policy  8
-bls-glossary  6
+bls-glossary  5
 bonterms-cloud-terms  3
 cisa-scuba-teams  5
 cloudgov-security-ir-guide  10
@@ -38,9 +38,8 @@ mhlw-kokuji-h18-107-keiji-jiko  7
 mhlw-norovirus-qa  5
 nasa-advisory-crew-13-coverage  8
 neeview-changelog-ja  18
-noaa-press-flood-mapping  6
+noaa-press-flood-mapping  3
 nodejs-tsc-minutes-2026-05-06  5
-nsf-19-582-reu-solicitation  3
 nstac-microdata-forum  3
 nttcom-onboarding-week1  3
 nws-glossary-a  33
@@ -56,5 +55,5 @@ soumu-wp-r06-ai-booms  3
 soumu-wp-r06-misinformation  9
 us-4683202-nucleic-acid-amplification  18
 us-6285999-node-ranking  4
-usajobs-va-it-specialist-customer-support  42
+usajobs-va-it-specialist-customer-support  20
 yamano-akashi-architecture  5

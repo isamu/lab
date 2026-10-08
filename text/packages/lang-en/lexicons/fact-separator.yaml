@@ -9,3 +9,8 @@ entries:
   - pattern: was
   - pattern: were
   - pattern: will be
+  # A decision names its value too: "The monthly fee will be set at $28."
+  - pattern: will be set at
+  - pattern: was set at
+  - pattern: is set at
+  - pattern: has been set at

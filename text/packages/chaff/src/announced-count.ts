@@ -44,7 +44,7 @@ const lastSentenceStart = (text: string): number => {
   return ends.at(-1) ?? 0;
 };
 
-const alternation = (words: readonly string[]): string =>
+export const alternation = (words: readonly string[]): string =>
   words
     .toSorted((a, b) => b.length - a.length)
     .map(escapeRegExp)
@@ -63,7 +63,7 @@ const phrasePattern = (words: CountWords): RegExp => {
   return new RegExp(`(?<![\\p{N}A-Za-z${numberChars}])(${numbers})(?:${counted}|${uncounted})`, "giu");
 };
 
-const valueOf = (written: string, numbers: readonly string[]): number => {
+export const valueOf = (written: string, numbers: readonly string[]): number => {
   const digits = Number(written.normalize("NFKC"));
   if (!Number.isNaN(digits)) return digits;
   return numbers.findIndex((number) => number.toLowerCase() === written.toLowerCase()) + 1;

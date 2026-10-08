@@ -274,7 +274,13 @@ const currencyBefore = (text: string, at: number): string | undefined => {
   return CURRENCIES.find((currency) => text.startsWith(currency, end - currency.length));
 };
 
-const FIGURE_WORDS: ReadonlySet<string> = new Set((LEXICONS["bracketed-figure-word"] ?? []).map((entry) => entry.pattern));
+/** A count of days or months is written "six (6)" or "one thousand (1,000)": never "zero (0)", never "two million (2,000,000)". */
+const FEWEST_COUNTED = 1;
+const MOST_COUNTED = 1000;
+
+const countsPeriods = (weight: number | undefined): boolean => weight !== undefined && weight >= FEWEST_COUNTED && weight <= MOST_COUNTED;
+
+const FIGURE_WORDS: ReadonlySet<string> = new Set((LEXICONS["number-word"] ?? []).filter((entry) => countsPeriods(entry.weight)).map((entry) => entry.pattern));
 const OPEN_BRACKET = " (";
 const NOT_WORD_LETTER = /[^\p{L}-]/u;
 const BRACKET_REACH = 30;

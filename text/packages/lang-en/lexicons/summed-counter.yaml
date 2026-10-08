@@ -1,0 +1,17 @@
+# Counters that a total line may add up ("16 credits", "4 sessions"). total-mismatch reads a number directly followed by one
+# of these as a quantity in that unit. The singular and the plural share a group, so "1 credit" and "3 credits" add up.
+id: summed-counter
+language: en
+entries:
+  - pattern: credits
+    group: credit
+  - pattern: credit
+    group: credit
+  - pattern: units
+    group: unit
+  - pattern: unit
+    group: unit
+  - pattern: sessions
+    group: session
+  - pattern: session
+    group: session

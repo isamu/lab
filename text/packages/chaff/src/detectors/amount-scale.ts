@@ -13,7 +13,7 @@ const LEADING_REACH = 40;
 /** How far from an amount a marker of an estimate is looked for. */
 const MARKER_REACH = 12;
 
-const scaleWordsOf = (doc: ProseDocument): ScaleWord[] =>
+export const scaleWordsOf = (doc: ProseDocument): ScaleWord[] =>
   (doc.lexicons["amount-multiplier"] ?? []).flatMap((entry) => (entry.weight === undefined ? [] : [{ word: entry.pattern, value: entry.weight }]));
 
 /** The larger parts written right before an amount the currency notation read from its last part (1億 before 2,000万円). */
@@ -38,15 +38,18 @@ const unitOf = (number: string, words: readonly ScaleWord[]): number | undefined
   return values.length === 0 ? undefined : Math.max(...values);
 };
 
+/** One written amount read as a value, with the larger parts written before it (1億 before 2,000万円). */
+export const scaledAmountOf = (text: string, amount: WrittenAmount, words: readonly ScaleWord[]): ScaledAmount | undefined => {
+  const leading = amount.form.startsWith("after:") ? leadingParts(text, amount.offset, words) : "";
+  const written = `${leading}${amount.written}`;
+  const number = `${leading}${numberPart(amount)}`;
+  const value = amountValue(number, words);
+  if (value === undefined) return undefined;
+  return { offset: amount.offset - leading.length, written, currency: amount.currency, value, unit: unitOf(number, words) };
+};
+
 const scaledAmountsOf = (text: string, amounts: readonly WrittenAmount[], words: readonly ScaleWord[]): ScaledAmount[] =>
-  amounts.flatMap((amount) => {
-    const leading = amount.form.startsWith("after:") ? leadingParts(text, amount.offset, words) : "";
-    const written = `${leading}${amount.written}`;
-    const number = `${leading}${numberPart(amount)}`;
-    const value = amountValue(number, words);
-    if (value === undefined) return [];
-    return [{ offset: amount.offset - leading.length, written, currency: amount.currency, value, unit: unitOf(number, words) }];
-  });
+  amounts.flatMap((amount) => scaledAmountOf(text, amount, words) ?? []);
 
 /** Whether a marker of an estimate (約, 程度, about) stands right before or after the amount. */
 const isApproximate = (text: string, amount: ScaledAmount, markers: Lexicon): boolean => {

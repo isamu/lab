@@ -1,0 +1,15 @@
+# Words saying a list shows only some of its items (selected weeks, highlights). In the run's heading, or on a line right
+# above the run (a table's header row), they mean the numbers skip by choice, and numbering-gap does not compare the
+# Week N or Session N run. Matched as whole words; case does not matter.
+id: partial-listing-marker
+language: en
+entries:
+  - pattern: selected
+  - pattern: selection
+  - pattern: highlights
+  - pattern: highlight
+  - pattern: excerpt
+  - pattern: excerpts
+  - pattern: sample
+  - pattern: examples
+  - pattern: notable

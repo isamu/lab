@@ -1,0 +1,14 @@
+# Labels of the lower and upper bound of an amount (amount-range-reversed): "minimum $90,000, maximum $70,000".
+# group lower or upper says which bound; link is a word that may stand between a label and its amount ("minimum of").
+# Matched as whole words, without regard to case.
+id: amount-bound-label
+language: en
+entries:
+  - { pattern: min, group: lower }
+  - { pattern: minimum, group: lower }
+  - { pattern: from, group: lower }
+  - { pattern: max, group: upper }
+  - { pattern: maximum, group: upper }
+  - { pattern: to, group: upper }
+  - { pattern: of, group: link }
+  - { pattern: is, group: link }

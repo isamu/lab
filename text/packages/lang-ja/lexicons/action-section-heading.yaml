@@ -1,0 +1,9 @@
+# 宿題の節の見出しの語。この見出しの下の表と箇条書きの期限を、会議の日と比べる（due-before-issue）。
+id: action-section-heading
+language: ja
+entries:
+  - pattern: 宿題
+  - pattern: アクションアイテム
+  - pattern: 対応事項
+  - pattern: 今後の対応
+  - pattern: 次回までの

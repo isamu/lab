@@ -1,0 +1,46 @@
+# Words that let a date stand outside the stated period. When the item, the sentence or the section heading holds one,
+# date-outside-period does not compare the date: plans before or after the period ("post-trip", "the day before"),
+# deadlines and bookings ("book by", "registration deadline") and earlier editions ("previous", "past").
+id: period-aside
+language: en
+entries:
+  - pattern: pre-trip
+  - pattern: post-trip
+  - pattern: pre-tour
+  - pattern: post-tour
+  - pattern: pre-conference
+  - pattern: post-conference
+  - pattern: pre-event
+  - pattern: post-event
+  - pattern: follow-up
+  - pattern: follow up
+  - pattern: day before
+  - pattern: day after
+  - pattern: night before
+  - pattern: prior to
+  - pattern: deadline
+  - pattern: due
+  - pattern: book by
+  - pattern: booking
+  - pattern: register by
+  - pattern: registration closes
+  - pattern: registration opens
+  - pattern: apply by
+  - pattern: submit by
+  - pattern: submission
+  - pattern: pay by
+  - pattern: payment
+  - pattern: setup
+  - pattern: set-up
+  - pattern: move-in
+  - pattern: move-out
+  - pattern: teardown
+  - pattern: past
+  - pattern: previous
+  - pattern: last year
+  - pattern: postponed
+  - pattern: updated
+  - pattern: published
+  - pattern: issued
+  - pattern: early bird
+  - pattern: early-bird

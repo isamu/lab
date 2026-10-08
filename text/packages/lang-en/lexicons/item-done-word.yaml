@@ -1,0 +1,9 @@
+# Words saying an action item is done. A line with one is not compared, even when its deadline is before the meeting (due-before-issue).
+id: item-done-word
+language: en
+entries:
+  - pattern: Done
+  - pattern: Completed
+  - pattern: Complete
+  - pattern: Closed
+  - pattern: Finished

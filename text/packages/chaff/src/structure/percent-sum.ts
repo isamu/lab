@@ -3,6 +3,7 @@ import { runsOf, TABLE_ROW, TABLE_RULE, type Line } from "./runs.ts";
 import { columnOf, isTotalLabel, type Amount } from "./total.ts";
 import { CELL_SEPARATOR } from "./bare-numbers.ts";
 import { joined, lineAbove, linesAbove } from "../text-above.ts";
+import { isShareColumn, mentionsAny } from "./share-column.ts";
 
 /**
  * 一つの全体を分けた割合（構成比、内訳、breakdown）の和が 100% にならない。箇条書きの続いた項目か、表の続いた行の百分率を足す。
@@ -11,6 +12,10 @@ import { joined, lineAbove, linesAbove } from "../text-above.ts";
  */
 export type ShareWords = {
   readonly labels: readonly string[];
+  /** 表の列の見出しの升がその語だけのとき、全体を分けた割合の列と読む語（割合、Weight）。 */
+  readonly columnLabels?: readonly string[];
+  /** 行ごとの率を名指す語（前年比、達成率、growth）。表の上の文にあれば、columnLabels の列は足さない。 */
+  readonly rates?: readonly string[];
   /** 足しても 100% にならない集計（複数回答）。 */
   readonly exceptions: readonly string[];
   /** 全体の残りを名指す語（その他、other）。一つの文の百分率のすぐ前にあれば、その文は内訳。 */
@@ -101,12 +106,13 @@ const tolerance = (shares: readonly Share[]): number => Math.max(1, shares.lengt
 /** 和は、項目のいちばん細かい桁で、最初の項目の単位を付けて見せる。 */
 const shownSum = (shares: readonly Share[]): string => `${sumOf(shares).toFixed(decimalsOf(shares))}${shares[0]?.unit ?? ""}`;
 
-type Named = { readonly header: readonly string[]; readonly above: string };
+type Named = { readonly header: readonly string[]; readonly above: string; readonly rows: string };
 
 /** 列が全体を分けた割合と名指されているか。表は列の見出しか、百分率の列が一つだけの表の上の文。箇条書きは上の文。 */
 const namesShares = (named: Named, column: number, percentColumns: number, words: ShareWords): boolean => {
   const header = named.header[column] ?? "";
   if (named.header.length > 0 && includesAny(header, words.labels)) return true;
+  if (isShareColumn(header, words.columnLabels ?? []) && !mentionsAny(`${named.above} ${named.rows}`, words.rates ?? [])) return true;
   return (named.header.length === 0 || percentColumns === 1) && includesAny(named.above, words.labels);
 };
 
@@ -114,7 +120,11 @@ const namesShares = (named: Named, column: number, percentColumns: number, words
 const isBreakdown = (source: string, run: readonly Line[], totalLabels: readonly string[]): boolean =>
   run.length >= MIN_PARTS && !run.some((line) => isTotalLabel(source.slice(line.start, line.end), totalLabels));
 
-const namingOf = (source: string, run: readonly Line[], first: Line): Named => ({ header: headerCells(source, first), above: textAbove(source, run) });
+const namingOf = (source: string, run: readonly Line[], first: Line): Named => ({
+  header: headerCells(source, first),
+  above: textAbove(source, run),
+  rows: run.map((line) => source.slice(line.start, line.end)).join("\n"),
+});
 
 const mismatchesIn = (source: string, run: readonly Line[], percents: readonly Amount[], words: ShareWords): StructureIssue[] => {
   const first = run[0];

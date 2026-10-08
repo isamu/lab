@@ -1,0 +1,11 @@
+# 時刻が発か着かを言う印（time-order、arrival-before-departure）。position は時刻のどちら側に書くか、group は発（departure）
+# か着（arrival）か。after の印は時刻のすぐ後ろ（「08:00発」）、before の印は時刻の少し前（「出発 08:00」）に書く。字面どおりに照らす。
+id: leg-mark
+language: ja
+entries:
+  - { pattern: "発", position: after, group: departure }
+  - { pattern: "出発", position: after, group: departure }
+  - { pattern: "出発", position: before, group: departure }
+  - { pattern: "着", position: after, group: arrival }
+  - { pattern: "到着", position: after, group: arrival }
+  - { pattern: "到着", position: before, group: arrival }

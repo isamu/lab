@@ -1,0 +1,7 @@
+# 宿泊の表で、泊数の列の見出し（duration-mismatch）。
+id: stay-nights-column
+language: ja
+entries:
+  - pattern: "泊数"
+  - pattern: "宿泊数"
+  - pattern: "宿泊日数"

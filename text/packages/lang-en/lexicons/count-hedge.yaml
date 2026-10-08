@@ -94,3 +94,5 @@ entries:
     position: after
   - pattern: year
     position: after
+  - pattern: and others
+    position: after

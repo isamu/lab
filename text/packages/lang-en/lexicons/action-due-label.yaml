@@ -1,0 +1,8 @@
+# Words that mark an action item's deadline. A table column headed by one alone holds deadlines; in a list item, the date right after one (due Oct 3) is the deadline (due-before-issue).
+id: action-due-label
+language: en
+entries:
+  - pattern: Due
+  - pattern: Due date
+  - pattern: Deadline
+  - pattern: Due by

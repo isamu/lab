@@ -1,0 +1,15 @@
+# How a schedule numbers its weeks, sessions, lectures and days (Week 5, Session 3, Day 2). {n} is the number; a joined
+# number such as 1-2 is read too. When the first cell of table rows, the start of list items or the start of lines carry
+# this form, numbering-gap compares the numbers for a skip or a repeat. Entries with the same group make one run. Case
+# does not matter.
+id: ordinal-frame
+language: en
+entries:
+  - { pattern: "Week {n}", group: week }
+  - { pattern: "Weeks {n}", group: week }
+  - { pattern: "Session {n}", group: session }
+  - { pattern: "Sessions {n}", group: session }
+  - { pattern: "Lecture {n}", group: lecture }
+  - { pattern: "Lectures {n}", group: lecture }
+  - { pattern: "Day {n}", group: day }
+  - { pattern: "Days {n}", group: day }

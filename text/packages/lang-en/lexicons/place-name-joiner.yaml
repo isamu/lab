@@ -1,0 +1,10 @@
+# Small words inside a place name (University of Tokyo Station, Newcastle upon Tyne Station). name-variant reads the name across
+# them, so "University of Tokyo Station" is not taken for "Tokyo Station".
+id: place-name-joiner
+language: en
+entries:
+  - { pattern: of }
+  - { pattern: upon }
+  - { pattern: de }
+  - { pattern: del }
+  - { pattern: la }

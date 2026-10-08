@@ -1,0 +1,15 @@
+# The headings of a table's departure and arrival columns (arrival-before-departure). A column whose heading, without a
+# note in brackets after it, is one of these is read as the departure or the arrival column. Matched as written.
+id: leg-column
+language: en
+entries:
+  - { pattern: "Departs", group: departure }
+  - { pattern: "Departure", group: departure }
+  - { pattern: "Departure time", group: departure }
+  - { pattern: "Dep", group: departure }
+  - { pattern: "Dep.", group: departure }
+  - { pattern: "Arrives", group: arrival }
+  - { pattern: "Arrival", group: arrival }
+  - { pattern: "Arrival time", group: arrival }
+  - { pattern: "Arr", group: arrival }
+  - { pattern: "Arr.", group: arrival }

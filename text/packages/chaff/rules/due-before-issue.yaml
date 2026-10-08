@@ -2,7 +2,8 @@ id: due-before-issue
 layer: L3
 status: stable
 how_to_find: due-date
-# The issue-date and due-date words come from the language's issue-date-label and due-date-label lexicons.
+# The issue-date and due-date words come from the language's issue-date-label and due-date-label lexicons; the words of
+# minutes from minutes-title-word, meeting-date-label, action-section-heading, earlier-section-word, action-due-label and item-done-word.
 requires: [dates]
 languages: [ja, en]
 severity: error
@@ -12,12 +13,17 @@ name:
   en: A due date before the issue date
 
 why:
-  ja: 請求書の「お支払期限」や見積書の「有効期限」が「発行日」より前だと、受け取った時点で期限が過ぎていることになり、読み手はどちらの日付が正しいのかを問い合わせることになります。前の月の請求書を使い回して、片方の日付だけ直したときに起きます。発行日の語で始まる行と期限の語で始まる行の日付を比べ、期限が発行日より前なら指します。
-  en: When the payment due date of an invoice or the expiry of a quote is before its issue date, the document is overdue on arrival and the reader has to ask which date is right. It happens when last month's invoice is reused and only one date is changed. The date on a line starting with an issue word (Issued, Invoice date) is compared with the date on a line starting with a due word (Payment due, Valid until), and an earlier due date is pointed out.
+  ja: 請求書の「お支払期限」や見積書の「有効期限」が「発行日」より前だと、受け取った時点で期限が過ぎていることになり、読み手はどちらの日付が正しいのかを問い合わせることになります。前の月の請求書を使い回して、片方の日付だけ直したときに起きます。発行日の語で始まる行と期限の語で始まる行の日付を比べ、期限が発行日より前なら指します。議事録の宿題も同じで、会議の日（日時）より前の期限は、会議の時点で過ぎています。宿題の節の、期限の列の日付や「（期限 11月2日）」を、頭の方の「日時」の日付と比べます。
+  en: When the payment due date of an invoice or the expiry of a quote is before its issue date, the document is overdue on arrival and the reader has to ask which date is right. It happens when last month's invoice is reused and only one date is changed. The date on a line starting with an issue word (Issued, Invoice date) is compared with the date on a line starting with a due word (Payment due, Valid until), and an earlier due date is pointed out. Minutes are read the same way. An action item due before the meeting it was set in is overdue when it is written down. The dates in the due column, or after "due" in a list item, of an action-items section are compared with the date on the "Date" line near the top.
 
 message:
   ja: 期限 {due} が、発行日 {issued} より前です
   en: "The due date {due} is before the issue date {issued}"
+
+messages:
+  meeting:
+    ja: 宿題の期限 {due} が、会議の日 {meeting} より前です
+    en: "The action item's due date {due} is before the meeting date {meeting}"
 
 how_to_fix:
   ja: 発行日と期限のどちらが正しいかを確かめて、片方を直してください。
@@ -35,8 +41,8 @@ off_for:
 
 group: facts
 summary:
-  ja: 請求書や見積書で、支払期限や有効期限が発行日より前の所
-  en: A payment due date or an expiry before the issue date of an invoice or a quote
+  ja: 請求書や見積書で、支払期限や有効期限が発行日より前の所。議事録で、宿題の期限が会議の日より前の所
+  en: A payment due date or an expiry before the issue date of an invoice or a quote, or an action item in minutes due before the meeting
 example:
   ja:
     before: |
@@ -58,5 +64,5 @@ example:
       Payment due: December 25, 2026
 
 not_flagged:
-  ja: 行の頭に発行日や期限の語が無い日付（文の中の「12月25日までにお支払いください」）、年の無い日付、一行に日付が二つある行は比べません。発行日が二つあれば、最初のものと比べます。発行日から8行以上離れた期限と、期限が過ぎたことを書いた行（「期限切れ」「延滞」）は、この文書の期限ではなく報告している期限と読んで比べません。法令・規約、手引き、論文、文学、スピーチのジャンルでは止めています。
-  en: A date without a word at the head of its line (a due date in a sentence), a date without its year, and a line with two dates are not compared. With two issue dates, the first is used. A due date eight lines or more from the issue date, and a line that says the deadline has passed (overdue, expired), are read as reporting on a deadline rather than setting this document's own, and are not compared. It is off in the legal, docs, academic, literature and speech genres.
+  ja: 行の頭に発行日や期限の語が無い日付（文の中の「12月25日までにお支払いください」）、年の無い日付、一行に日付が二つある行は比べません。発行日が二つあれば、最初のものと比べます。発行日から8行以上離れた期限と、期限が過ぎたことを書いた行（「期限切れ」「延滞」）は、この文書の期限ではなく報告している期限と読んで比べません。議事録として読むのは題に「議事録」などのある文書だけです。議事録では、宿題の節（見出しに「宿題」など）の外の日付、済んだ印のある宿題（升だけの「済」、括弧の中や行末の「完了」、チェック済みの箱）、前回の宿題を振り返る節、年の無い日付で年を越す期限（12月の会議の「1月10日」）は比べません。法令・規約、手引き、論文、文学、スピーチのジャンルでは止めています。
+  en: A date without a word at the head of its line (a due date in a sentence), a date without its year, and a line with two dates are not compared. With two issue dates, the first is used. A due date eight lines or more from the issue date, and a line that says the deadline has passed (overdue, expired), are read as reporting on a deadline rather than setting this document's own, and are not compared. Only a document whose title names it as minutes (Minutes, Meeting notes) is read as minutes. In minutes, a date outside an action-items section (a heading with Action items or the like), an item marked done (a Done cell, done in brackets or at the end of the line, a checked box), a section reviewing the previous meeting's items, and a deadline without a year that falls early in the next year (Jan 10 at a December meeting) are not compared. It is off in the legal, docs, academic, literature and speech genres.

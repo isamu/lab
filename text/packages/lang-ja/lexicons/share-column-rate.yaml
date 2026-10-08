@@ -1,0 +1,16 @@
+# 行ごとの率を名指す語。表のすぐ上の文や見出し、または表の行にあれば、見出しが「割合」「比率」だけの列も率の列と読み、足さない。
+id: share-column-rate
+language: ja
+entries:
+  - pattern: 前年比
+  - pattern: 前年同期比
+  - pattern: 達成率
+  - pattern: 伸び率
+  - pattern: 成長率
+  - pattern: 増加率
+  - pattern: 減少率
+  - pattern: 利率
+  - pattern: 金利
+  - pattern: 利回り
+  - pattern: 合格率
+  - pattern: 利用率

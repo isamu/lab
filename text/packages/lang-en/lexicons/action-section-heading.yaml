@@ -1,0 +1,9 @@
+# Words in the heading of an action-items section. The deadlines in its tables and lists are compared with the meeting date (due-before-issue).
+id: action-section-heading
+language: en
+entries:
+  - pattern: Action items
+  - pattern: Action item
+  - pattern: Actions
+  - pattern: Next steps
+  - pattern: Follow-ups

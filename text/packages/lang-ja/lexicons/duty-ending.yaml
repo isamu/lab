@@ -1,0 +1,28 @@
+# 義務の語（timed-duty の語幹）のあとに続いて文を終える形。「支払う」「通知するものとする」「通知します」。
+# 「することができる」は権利なので入れない（deadline-permission）。
+id: duty-ending
+language: ja
+entries:
+  - pattern: う
+  - pattern: む
+  - pattern: す
+  - pattern: する
+  - pattern: います
+  - pattern: みます
+  - pattern: します
+  - pattern: うものとする
+  - pattern: むものとする
+  - pattern: すものとする
+  - pattern: するものとする
+  - pattern: うものとします
+  - pattern: むものとします
+  - pattern: すものとします
+  - pattern: するものとします
+  - pattern: わなければならない
+  - pattern: まなければならない
+  - pattern: さなければならない
+  - pattern: しなければならない
+  - pattern: わなければなりません
+  - pattern: まなければなりません
+  - pattern: さなければなりません
+  - pattern: しなければなりません

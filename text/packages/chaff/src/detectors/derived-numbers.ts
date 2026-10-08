@@ -6,6 +6,17 @@ import { yearOf, type DurationUnit } from "../derived/date-arithmetic.ts";
 import { durationMismatches, type DatedValue, type Duration } from "../derived/durations.ts";
 import { elapsedMismatches, type Elapsed, type OriginWord, type Year } from "../derived/elapsed.ts";
 import { numberWordCounts } from "../derived/number-word-counts.ts";
+import {
+  nightsDaysMismatches,
+  nightsDaysPairs,
+  stayNightsMismatches,
+  tableNightsMismatches,
+  type Count,
+  type NightsMismatch,
+  type StayColumnWords,
+} from "../derived/stays.ts";
+import { escapeRegExp } from "../orthography.ts";
+import { proseAndTablesOf } from "../table-text.ts";
 import { quoteAt } from "./structure-tree.ts";
 
 /** 期間の単位の語彙表。木の数量の単位がどれかに入れば、その単位の期間。 */
@@ -82,24 +93,87 @@ const durationsOf = (doc: ProseDocument, quantities: readonly Quantity[]): Durat
 
 const sentencesOf = (doc: ProseDocument): Span[] => doc.sentences.map((sentence) => sentence.span);
 
-/** 始まり + 期間 ≠ 終わり。 */
+const LATIN_UNIT = /^[a-z]+$/iu;
+
+/** 数字と泊数の単位（3泊、3 nights）。英字の単位は語の切れ目まで。 */
+const digitNights = (text: string, units: readonly string[]): Count[] =>
+  units.flatMap((unit) => {
+    const tail = LATIN_UNIT.test(unit) ? "(?![\\p{L}\\p{N}])" : "";
+    const pattern = new RegExp(`(?<![\\p{N}.,])(\\p{Nd}+)\\s?${escapeRegExp(unit)}${tail}`, "giu");
+    return [...text.matchAll(pattern)].map((match) => ({
+      start: match.index,
+      end: match.index + match[0].length,
+      amount: Number((match[1] ?? "").normalize("NFKC")),
+    }));
+  });
+
+/** 泊数（3泊、3 nights、three nights）。text は地の文と表（リンク先や code は読まない）。目安の泊数（最大3泊）は除く。 */
+const nightsOf = (doc: ProseDocument, text: string): Count[] => {
+  const units = patternsOf(doc, "stay-night");
+  const digits = digitNights(text, units);
+  const taken = spanIndex(digits);
+  const worded = numberWordCounts(text, patternsOf(doc, "count-number"), units).filter((count) => !overlapsAny(taken, count));
+  return [...digits, ...worded].filter((count) => !isApproximate(doc, count)).toSorted((left, right) => left.start - right.start);
+};
+
+const finding = (doc: ProseDocument, offset: number, values: Record<string, string | number>, variant?: string): Finding => ({
+  rule: "duration-mismatch",
+  severity: "warning",
+  line: 0,
+  column: 0,
+  quote: quoteAt(doc.source, offset),
+  ...(variant === undefined ? {} : { variant }),
+  values: { ...values, offset },
+});
+
+const written = (doc: ProseDocument, span: Span): string => doc.source.slice(span.start, span.end);
+
+const nightsFinding = (doc: ProseDocument, mismatch: NightsMismatch): Finding =>
+  finding(
+    doc,
+    mismatch.nights.start,
+    { start: written(doc, mismatch.start), end: written(doc, mismatch.end), nights: written(doc, mismatch.nights).trim(), expected: mismatch.expected },
+    "nights",
+  );
+
+const stayColumnWords = (doc: ProseDocument): StayColumnWords => ({
+  checkIn: patternsOf(doc, "stay-check-in-column"),
+  checkOut: patternsOf(doc, "stay-check-out-column"),
+  nights: patternsOf(doc, "stay-nights-column"),
+  units: patternsOf(doc, "stay-night"),
+});
+
+/** 始まり + 期間 ≠ 終わり。泊数が二つの日付の差と合わない。「2泊3日」の日数が泊数より一つ多くない。 */
 export const durationMismatch: Detector = (doc): Finding[] => {
   if (doc.structure === undefined) return [];
+  const dates = datesOf(doc.structure);
   const durations = durationsOf(doc, quantitiesOf(doc.structure, doc.source));
-  return durationMismatches(sentencesOf(doc), datesOf(doc.structure), durations).map((mismatch) => ({
-    rule: "duration-mismatch",
-    severity: "warning",
-    line: 0,
-    column: 0,
-    quote: quoteAt(doc.source, mismatch.end.start),
-    values: {
-      start: doc.source.slice(mismatch.start.start, mismatch.start.end),
-      duration: doc.source.slice(mismatch.duration.start, mismatch.duration.end),
-      end: doc.source.slice(mismatch.end.start, mismatch.end.end),
+  const proseAndTables = proseAndTablesOf(doc);
+  const nights = nightsOf(doc, proseAndTables);
+  const pairs = nightsDaysPairs(
+    doc.source,
+    nights,
+    durations.filter((duration) => duration.unit === "day"),
+    patternsOf(doc, "stay-pair-joiner"),
+  );
+  const pairedDays = spanIndex(pairs.map((pair) => pair.days));
+  const lengths = durationMismatches(
+    sentencesOf(doc),
+    dates,
+    durations.filter((duration) => !overlapsAny(pairedDays, duration)),
+  ).map((mismatch) =>
+    finding(doc, mismatch.end.start, {
+      start: written(doc, mismatch.start),
+      duration: written(doc, mismatch.duration),
+      end: written(doc, mismatch.end),
       expected: mismatch.expected,
-      offset: mismatch.end.start,
-    },
-  }));
+    }),
+  );
+  const stays = [...stayNightsMismatches(sentencesOf(doc), dates, nights), ...tableNightsMismatches(proseAndTables, dates, stayColumnWords(doc))];
+  const nightsDays = nightsDaysMismatches(pairs).map((mismatch) =>
+    finding(doc, mismatch.days.start, { nights: written(doc, mismatch.nights), days: written(doc, mismatch.days), expected: mismatch.expected }, "nights-days"),
+  );
+  return [...lengths, ...stays.map((mismatch) => nightsFinding(doc, mismatch)), ...nightsDays];
 };
 
 /** 四桁の年。木が日付と読まなかった英語の年（founded in 2015、born 1980）もここで読む。 */

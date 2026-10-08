@@ -1,0 +1,15 @@
+# 時刻が翌日（next）か前日（previous）のものだと言う印（time-order、arrival-before-departure）。before は時刻の前
+# （「翌 0:15」）、after は時刻の後ろ（「0:15（翌日）」「9:50着 +1」）に書く。字面どおりに照らす。
+id: day-shift-mark
+language: ja
+entries:
+  - { pattern: "翌", position: before, group: next }
+  - { pattern: "翌日", position: before, group: next }
+  - { pattern: "翌朝", position: before, group: next }
+  - { pattern: "翌", position: after, group: next }
+  - { pattern: "翌日", position: after, group: next }
+  - { pattern: "+1", position: after, group: next }
+  - { pattern: "＋1", position: after, group: next }
+  - { pattern: "前日", position: before, group: previous }
+  - { pattern: "前日", position: after, group: previous }
+  - { pattern: "-1", position: after, group: previous }
