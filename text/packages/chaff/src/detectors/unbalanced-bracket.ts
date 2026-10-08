@@ -69,10 +69,12 @@ const closeWith = (scan: Scan, text: string, bracket: Bracket, offset: number): 
     return;
   }
   const opened = scan.open[at];
-  // 間に残った開きは、この閉じより先に閉じるはずだったもの。
+  // 間に残った開きは、この閉じより先に閉じるはずだったもの。ただし引用の閉じのすぐ前の開きは、括弧の字そのものを
+  // 引いたもの（法令の読替え「取締役（」とあるのは「清算人（」と）で、組を作らない。
   scan.open
     .splice(at)
     .slice(1)
+    .filter((inner) => !(QUOTATIONS.has(bracket.family) && inner.offset === offset - 1))
     .forEach((inner) => scan.problems.push(unclosedOf(inner)));
   if (opened !== undefined && opened.bracket !== bracket) scan.problems.push({ kind: "mismatch", offset, mark: bracket.close, partner: opened.bracket.open });
 };

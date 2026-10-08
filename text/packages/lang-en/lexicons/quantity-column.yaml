@@ -1,0 +1,9 @@
+# Headings of the quantity column of an itemised table. With a unit price and an amount column, quantity × unit price is compared with the amount (line-amount-mismatch).
+id: quantity-column
+language: en
+entries:
+  - pattern: Quantity
+  - pattern: Qty
+  - pattern: Qty.
+  - pattern: Units
+  - pattern: Hours

@@ -9,8 +9,8 @@ name:
   en: Amounts of one size written two ways
 
 why:
-  ja: 「設計費30万円、制作費250,000円」のように、同じくらいの金額を「万」と数字だけの二通りで書くと、読み手は桁を数え直し、別の扱いの金額かと迷います。別々の見積もりやメールを寄せ集めたときに起きます。小さな金額を数字で、大きな金額を「万」「億」で書くのはふつうの書き方なので、同じ桁（十万の位なら十万の位どうし）の金額だけを比べ、その桁で少ないほうを指します。
-  en: When amounts of one size are written two ways ("$1.5 million for design, $2,500,000 for building"), the reader counts the zeros again and wonders whether the two are different kinds of amount. It happens when quotes and emails are pasted together. Small amounts in digits and large ones with "million" is a normal way of writing, so only amounts of the same order of magnitude are compared, and the way that order uses less is pointed at.
+  ja: 「設計費30万円、制作費250,000円」のように、同じくらいの金額を「万」と数字だけの二通りで書くと、読み手は桁を数え直し、別の扱いの金額かと迷います。別々の見積もりやメールを寄せ集めたときに起きます。小さな金額を数字で、大きな金額を「万」「億」で書くのはふつうの書き方なので、同じ桁（十万の位なら十万の位どうし）の金額だけを比べ、その桁で少ないほうを指します。表の升の金額も比べます。
+  en: When amounts of one size are written two ways ("$1.5 million for design, $2,500,000 for building"), the reader counts the zeros again and wonders whether the two are different kinds of amount. It happens when quotes and emails are pasted together. Small amounts in digits and large ones with "million" is a normal way of writing, so only amounts of the same order of magnitude are compared, and the way that order uses less is pointed at. Amounts in table cells are compared too.
 
 message:
   ja: 「{written}」と書いています（この文書は同じ桁の金額を「{usual}」のように書きます）
@@ -41,8 +41,8 @@ example:
       The total is $4 million: $1.5 million for design and $2.5 million for building.
 
 not_flagged:
-  ja: 桁の違う金額（「480円」と「30万円」）は比べません。小さな金額は数字で、大きな金額は「万」で書くのはふつうの書き方です。端数のある金額（「1,234,567円」）は「万」で書けないので比べません。通貨ごとに比べ、コードの中は読みません。
-  en: Amounts of different sizes ("$480" and "$3 million") are not compared; digits for small amounts and "million" for large ones is a normal way of writing. A precise amount ("$1,234,567") cannot be written with "million" and is not compared. Each currency is compared with itself, and code is not read.
+  ja: 桁の違う金額（「480円」と「30万円」）は比べません。小さな金額は数字で、大きな金額は「万」で書くのはふつうの書き方です。端数のある金額（「1,234,567円」）は「万」で書けないので比べません。目安の印の付いた金額（「約130万円」「30万円程度」）と、表の細かい金額しか比べる相手の無い本文の丸めた額（「上限は150万円」）は比べません。通貨ごとに比べ、コードの中は読みません。
+  en: Amounts of different sizes ("$480" and "$3 million") are not compared; digits for small amounts and "million" for large ones is a normal way of writing. A precise amount ("$1,234,567") cannot be written with "million" and is not compared. An estimate ("about $1.3 million") is not compared, nor is a round figure in the text ("a cap of $1.5 million") whose only counterparts are the exact amounts of a table. Each currency is compared with itself, and code is not read.
 level_meaning:
   ja: 同じ桁の金額を二通りに書いたとき、少ないほうを指摘
   en: reported when amounts of one size are written two ways, at the less common way

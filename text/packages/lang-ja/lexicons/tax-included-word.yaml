@@ -1,0 +1,8 @@
+# 税の行が、上の金額に足す税ではなく合計に含まれる税（内税）だと分かる語。この語のある税の行は比べない（tax-mismatch）。
+id: tax-included-word
+language: ja
+entries:
+  - pattern: うち
+  - pattern: 内税
+  - pattern: 税込
+  - pattern: 込み

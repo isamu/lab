@@ -1,0 +1,10 @@
+# Words saying a deadline has passed. A due line with one reports on a past deadline rather than setting the document's own (due-before-issue).
+id: deadline-passed-word
+language: en
+entries:
+  - pattern: overdue
+  - pattern: past due
+  - pattern: expired
+  - pattern: lapsed
+  - pattern: unpaid
+  - pattern: outstanding

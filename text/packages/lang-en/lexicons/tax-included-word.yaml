@@ -1,0 +1,8 @@
+# Words that mark a tax line as tax included in the total, not added to it. Such a line is not compared (tax-mismatch).
+id: tax-included-word
+language: en
+entries:
+  - pattern: included
+  - pattern: includes
+  - pattern: incl.
+  - pattern: inclusive
