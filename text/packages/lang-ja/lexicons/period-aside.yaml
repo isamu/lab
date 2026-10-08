@@ -1,0 +1,32 @@
+# 期間の外に置いてよい日付を示す語。日程の項目、文、節の見出しにこの語があれば、date-outside-period はその日付を期間と比べない。
+# 期間の前後の予定（前泊、事前説明会、搬入）、締め切りと予約の日（申込締切）、過去の回（前回）。
+id: period-aside
+language: ja
+entries:
+  - pattern: 前泊
+  - pattern: 後泊
+  - pattern: 前日
+  - pattern: 翌日
+  - pattern: 事前
+  - pattern: 事後
+  - pattern: 締切
+  - pattern: 締め切り
+  - pattern: 〆切
+  - pattern: 期限
+  - pattern: 申込
+  - pattern: 申し込み
+  - pattern: 予約
+  - pattern: 支払
+  - pattern: 振込
+  - pattern: 提出
+  - pattern: 搬入
+  - pattern: 搬出
+  - pattern: 設営
+  - pattern: 撤去
+  - pattern: 過去
+  - pattern: 前回
+  - pattern: 昨年
+  - pattern: 次回
+  - pattern: 延期
+  - pattern: 発行
+  - pattern: 更新
