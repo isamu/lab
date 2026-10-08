@@ -1,0 +1,17 @@
+# Ways of giving a duty its time besides a number of days (concrete-deadline): a date or day ("by the fifth business day",
+# "on or before March 1"), or at once ("immediately"). A sentence holding one has a deadline, and obligation-without-deadline
+# leaves it. "by" alone is not here: "by email" says how, not when.
+id: stated-deadline
+language: en
+entries:
+  - pattern: by the
+  - pattern: on or before
+  - pattern: prior to
+  - pattern: before
+  - pattern: immediately
+  - pattern: at the end of
+  - pattern: on the … day
+  - pattern: at the time
+  - pattern: within the
+  # "timely" leaves the time to the reader, but it speaks of time: vague-deadline's kind, not a duty with none.
+  - pattern: timely

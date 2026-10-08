@@ -1,0 +1,13 @@
+# 表の発と着の列の見出し（arrival-before-departure）。見出しの升の名前（後ろの括弧書きを除く）がこの語と同じ列を、
+# 発（departure）の列か着（arrival）の列と読む。字面どおりに照らす。
+id: leg-column
+language: ja
+entries:
+  - { pattern: "出発", group: departure }
+  - { pattern: "発", group: departure }
+  - { pattern: "出発時刻", group: departure }
+  - { pattern: "発時刻", group: departure }
+  - { pattern: "到着", group: arrival }
+  - { pattern: "着", group: arrival }
+  - { pattern: "到着時刻", group: arrival }
+  - { pattern: "着時刻", group: arrival }

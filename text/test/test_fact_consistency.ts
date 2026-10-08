@@ -179,6 +179,43 @@ describe("summary-fact-mismatch", () => {
     assert.deepEqual(doc("We gained 1 new customer.", "We gained 2 new customers."), ["new customer:1≠2"]);
   });
 
+  it("a decision in the body (「とする。」「に決定した」) is the item's value; a supposition is not (ja)", () => {
+    const doc = (body: string): string[] => summaryJa("# 議事録", "", "## 要旨", "", "月会費：3,000円", "", "## 議事", "", body);
+    const decisions = [
+      "月会費は2,800円とする。",
+      "月会費は2,800円とした。",
+      "月会費は2,800円としました。",
+      "月会費は2,800円と決定した。",
+      "月会費は2,800円に決定した。",
+      "月会費は2,800円に決定。",
+      "月会費は2,800円とすることで合意した。",
+      "協議の結果、月会費は2,800円とする。",
+    ];
+    decisions.forEach((body) => assert.deepEqual(doc(body), ["月会費:3,000円≠2,800円"], body));
+    assert.deepEqual(doc("月会費は3,000円とする。"), []);
+    const suppositions = [
+      "月会費は2,800円とすると、赤字になる。",
+      "月会費は2,800円とすれば、参加者が増える。",
+      "月会費は2,800円とする場合の収支を試算した。",
+      "月会費は2,800円とするか検討する。",
+      "月会費は2,800円に決定した場合、収支を見直す。",
+      "月会費は2,800円とすることで合意するか、次回に諮る。",
+      "大人は、月会費は2,800円とする。",
+    ];
+    suppositions.forEach((body) => assert.deepEqual(doc(body), [], body));
+  });
+
+  it("a decision in the body (set at, it was decided that) is the item's value; a condition is not (en)", () => {
+    const doc = (body: string): string[] => summaryEn("# Minutes", "", "## Summary", "", "Monthly fee: $30", "", "## Discussion", "", body);
+    const decisions = ["The monthly fee will be set at $28.", "The monthly fee was set at $28.", "It was decided that the monthly fee is $28."];
+    decisions.forEach((body) => assert.deepEqual(doc(body), ["Monthly fee:$30≠$28"], body));
+    assert.deepEqual(doc("The monthly fee will be set at $30."), []);
+    assert.deepEqual(doc("The monthly fee will be set at $28 per adult."), []);
+    assert.deepEqual(doc("For adults, the monthly fee will be set at $28."), []);
+    // A lead ends at a word's end: "we agreed thatching cost" does not lose "we agreed that".
+    assert.deepEqual(conflictEn("We agreed thatching cost is $28.", "", "Ching cost is $30."), []);
+  });
+
   it("a document with no headings has no body to compare with", () => {
     assert.deepEqual(summaryJa("参加費は3,000円です。", "", "参加費は3,500円です。"), []);
   });

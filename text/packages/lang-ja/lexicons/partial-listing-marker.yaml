@@ -1,0 +1,16 @@
+# 一部だけを選んで並べたことを示す語（抜粋、主な回）。並びの見出しか、並びのすぐ前の行（表の見出し行）にあれば、
+# 番号が飛ぶのは選んだからで、numbering-gap は第N回・Week N の並びを比べない。字面どおりに照らす。英字の語は語として、
+# 大文字小文字を問わずに照らす。
+id: partial-listing-marker
+language: ja
+entries:
+  - pattern: 抜粋
+  - pattern: 抜すい
+  - pattern: 抜き出し
+  - pattern: 主な
+  - pattern: 主要な
+  - pattern: 一例
+  - pattern: ハイライト
+  - pattern: selected
+  - pattern: highlights
+  - pattern: excerpt

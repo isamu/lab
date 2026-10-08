@@ -165,7 +165,7 @@ Guide: Contract and terms (legal/contract)
   - Do amounts, dates, periods and clause references agree across the clauses and the schedules?
   - Are termination, liability, governing law and dispute resolution covered?
 
-  Rules that matter most for this genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, party-role-name, requirement-smell, total-mismatch, vague-deadline
+  Rules that matter most for this genre: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, obligation-without-deadline, party-role-name, requirement-smell, total-mismatch, vague-deadline
   Change it with guide: in chaff.yaml; leave it out with --no-guide.
 
 ════════════════════════════════════════════════════════════
@@ -207,6 +207,7 @@ These rules check the names and the deadlines.
 | `defined-term-form` | A defined term written in another form: quoted again, or a capitalised term in lower case |
 | `undefined-term` | In Japanese, a term in the defined form (本成果物) that the contract never defines |
 | `vague-deadline` | "Promptly" or "without undue delay", in a contract that writes its other limits in days |
+| `obligation-without-deadline` | A duty to pay, deliver, return or notify with no time at all, in a contract that gives its other duties one |
 | `duration-mismatch` | A start date and a length of time that do not reach the end date written beside them |
 | `reference-title-mismatch` | A clause referred to by a name its heading does not have |
 

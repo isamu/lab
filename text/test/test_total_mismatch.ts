@@ -181,6 +181,55 @@ describe("total-mismatch", () => {
     assert.deepEqual(found(doc("- A | 410", "- B | 380", "- Total | 999")), []);
   });
 
+  describe("counters the analyser does not read as counters: 単位, コマ, credits", () => {
+    const credits = (unit: string, total: string): string =>
+      unit.startsWith(" ")
+        ? doc(
+            "| Course | Credits |",
+            "| --- | --- |",
+            `| Algebra | 4${unit} |`,
+            `| Analysis | 6${unit} |`,
+            `| English | 6${unit} |`,
+            `| Total | ${total}${unit} |`,
+          )
+        : doc("| 科目 | 単位数 |", "| --- | --- |", `| 線形代数 | 4${unit} |`, `| 解析学 | 6${unit} |`, `| 英語 | 6${unit} |`, `| 合計 | ${total}${unit} |`);
+
+    it("a credits table whose total is not the sum is reported, in the way it is written", () => {
+      assert.deepEqual(found(credits("単位", "18"), ja, "ja"), ["18単位≠16単位"]);
+      assert.deepEqual(found(credits("コマ", "18"), ja, "ja"), ["18コマ≠16コマ"]);
+      assert.deepEqual(found(credits(" credits", "18")), ["18 credits≠16 credits"]);
+      assert.deepEqual(found(credits(" sessions", "17")), ["17 sessions≠16 sessions"]);
+    });
+
+    it("a credits table that adds up is silent", () => {
+      assert.deepEqual(found(credits("単位", "16"), ja, "ja"), []);
+      assert.deepEqual(found(credits(" credits", "16")), []);
+      assert.deepEqual(found(credits(" Units", "16")), []);
+    });
+
+    it("the singular and the plural are one unit", () => {
+      assert.deepEqual(found(doc("- Ethics: 1 credit", "- Algebra: 3 credits", "- Total: 5 credits")), ["5 credits≠4 credits"]);
+      assert.deepEqual(found(doc("- Ethics: 1 credit", "- Algebra: 3 credits", "- Total: 4 credits")), []);
+    });
+
+    it("a column mixing units is not added", () => {
+      const mixed = doc("| 科目 | 量 |", "| --- | --- |", "| 線形代数 | 4単位 |", "| 演習 | 6コマ |", "| 英語 | 6単位 |", "| 合計 | 18単位 |");
+      assert.deepEqual(found(mixed, ja, "ja"), []);
+      assert.deepEqual(found(doc("- Algebra: 4 credits", "- Lab: 6 sessions", "- Total: 18 credits")), []);
+    });
+
+    it("単位 that is not a number of credits is not an amount: a caption, a rate, an ordinal, a longer word", () => {
+      const caption = (total: string): string =>
+        ["# 予算", "", "単位：千円", "", "| 項目 | 金額 |", "| --- | --- |", "| 人件費 | 1,200 |", "| 外注費 | 300 |", `| 合計 | ${total} |`].join("\n");
+      assert.deepEqual(found(caption("1,500"), ja, "ja"), []);
+      assert.deepEqual(found(caption("1,600"), ja, "ja"), ["1,600≠1,500"]);
+      assert.deepEqual(found(doc("- 線形代数: 1単位あたり2時間", "- 解析学: 1単位あたり2時間", "- 合計: 5単位あたり"), ja, "ja"), []);
+      assert.deepEqual(found(doc("- 履修: 第2単位", "- 演習: 第3単位", "- 合計: 9単位"), ja, "ja"), []);
+      assert.deepEqual(found(doc("- A: 4コマ漫画", "- B: 6コマ漫画", "- 合計: 18コマ"), ja, "ja"), []);
+      assert.deepEqual(found(doc("- 3 unit-priced line items", "- 4 unit-priced add-ons", "- Total: 8 units shipped")), []);
+    });
+  });
+
   it("the sample invoices: the Japanese one's total is off; the English one adds up", () => {
     assert.deepEqual(found(fixture("invoice-ja.md"), ja, "ja"), ["2,000,000円≠2,090,000円"]);
     assert.deepEqual(found(fixture("invoice-en.md")), []);

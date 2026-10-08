@@ -1,6 +1,6 @@
 import type { Detector, Finding, ProseDocument, Sentence, Token } from "../plugin.ts";
 import { groupBy, oddSpellings, type KeyedWord, type OddSpelling } from "../spelling-variants.ts";
-import { kanjiSkeleton, katakanaKey, lemmaReading } from "../kana-spelling.ts";
+import { dropsOkurigana, kanjiSkeleton, katakanaKey, lemmaReading } from "../kana-spelling.ts";
 import { isKatakanaWord, stemOf } from "../long-vowel.ts";
 import { QUOTATION_MARKS, isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
@@ -8,8 +8,11 @@ import { furiganaSpans } from "../furigana.ts";
 import { acronymsIn, isCapitalsNotSpelling } from "../capitals-with-small.ts";
 import { isPartOfAddress } from "./address-word.ts";
 
-/** A word found in the document: where it is, which sentence it is in, its key and spelling, and how it is written when that differs. */
-type Placed = KeyedWord & { readonly sentence: Sentence; readonly offset: number; readonly shown?: string };
+/**
+ * A word found in the document: where it is, which sentence it is in, its key and spelling, how it is written when that differs, and
+ * whether it is written onto the noun after it (取扱事業者).
+ */
+type Placed = KeyedWord & { readonly sentence: Sentence; readonly offset: number; readonly shown?: string; readonly compoundHead?: boolean };
 
 type IsOpen = (start: number, end: number) => boolean;
 
@@ -124,22 +127,28 @@ const readingWords = (sentence: Sentence, isOpen: IsOpen, skips: Skips): Placed[
     const key = readingKeyOf({ token, previous: tokens[at - 1], before: tokens[at - 2] }, skips);
     const local = token.span.start - sentence.span.start;
     if (key === undefined || token.lemma === undefined || !isOpen(local, local + token.surface.length)) return [];
-    return [{ key, spelling: token.lemma, sentence, offset: token.span.start }];
+    const next = tokens[at + 1];
+    const compoundHead = token.pos === "NOUN" && next?.pos === "NOUN" && isTouching(token, next);
+    return [{ key, spelling: token.lemma, sentence, offset: token.span.start, compoundHead }];
   });
 };
 
 /**
  * Same reading is not yet same word: 書く and 描く are both カク. Spellings meet only when they keep the same kanji (引っ越し, 引越し)
  * or one is all kana. A kana spelling joins the kanji one only when the reading has a single kanji spelling in the document;
- * with two (橋 and 箸 beside はし) it cannot say which, and is left out.
+ * with two (橋 and 箸 beside はし) it cannot say which, and is left out. Official Japanese drops okurigana at the head of a compound
+ * (取扱事業者 beside 個人情報の取扱い), so where the document writes a word both ways, its compound heads are compared apart.
  */
 const byKanji = (words: readonly Placed[]): Placed[] =>
   [...groupBy(words, (word) => word.key).values()].flatMap((group) => {
     const skeletons = [...new Set(group.map((word) => kanjiSkeleton(word.spelling)).filter((skeleton) => skeleton !== ""))];
+    const spellings = [...new Set(group.map((word) => word.spelling))];
+    const apart = spellings.some((spelling) => dropsOkurigana(spelling, spellings)) ? "|compound" : "";
     return group.flatMap((word): Placed[] => {
       const own = kanjiSkeleton(word.spelling);
       if (own === "" && skeletons.length > 1) return [];
-      return [{ ...word, key: `${word.key}|${own === "" ? (skeletons[0] ?? "") : own}` }];
+      const use = word.compoundHead === true ? apart : "";
+      return [{ ...word, key: `${word.key}|${own === "" ? (skeletons[0] ?? "") : own}${use}` }];
     });
   });
 

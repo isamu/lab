@@ -1,0 +1,25 @@
+# Words for counting names listed on one line after a count ("Attendees (6): Tanaka, Suzuki, Sato").
+# separator splits the names. joiner joins two names; inside a name it leaves the split unclear, so the line is not
+# counted (a joiner opening the last name, "..., and Ito", only ends the list). open says the list goes on ("etc.",
+# "and others"), so there may be more people than names written, and the line is not counted.
+id: count-member
+language: en
+entries:
+  - pattern: ","
+    group: separator
+  - pattern: and
+    group: joiner
+  - pattern: "&"
+    group: joiner
+  - pattern: or
+    group: joiner
+  - pattern: plus
+    group: joiner
+  - pattern: etc
+    group: open
+  - pattern: and others
+    group: open
+  - pattern: et al
+    group: open
+  - pattern: among others
+    group: open

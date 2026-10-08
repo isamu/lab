@@ -1,0 +1,9 @@
+# What may stand between a number of nights and a number of days ("2 days, 1 night"), where the days are one more than the nights (duration-mismatch).
+id: stay-pair-joiner
+language: en
+entries:
+  - pattern: ","
+  - pattern: "/"
+  - pattern: "and"
+  - pattern: ", and"
+  - pattern: "&"

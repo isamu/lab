@@ -74,5 +74,5 @@ example:
       Working hours are from nine to six.
 
 not_flagged:
-  ja: 同じ親の下で隣り合う番号だけを比べます。別の章の番号どうしは比べません。どの項目にも同じ番号（「1.」）を書いた箇条書きと、引用の中の箇条書きは見ません。
-  en: Only numbers side by side under the same parent are compared. A list that writes the same number on every item ("1." on each) and a list inside a quotation are not checked.
+  ja: 同じ親の下で隣り合う番号だけを比べます。別の章の番号どうしは比べません。どの項目にも同じ番号（「1.」）を書いた箇条書きと、引用の中の箇条書きは見ません。日程の番号（第N週、Week N）は、表の最初の欄、箇条書きの頭、行の頭に並べば比べます。三つに満たない並び、見出しか表の見出し行が「抜粋」「主な」のように一部だけと言うもの、番号の多くが飛ぶもの（選んだ週だけの表）を比べません。
+  en: Only numbers side by side under the same parent are compared. A list that writes the same number on every item ("1." on each) and a list inside a quotation are not checked. A schedule's numbers (Week N, Session N) are compared when they lead table rows, list items or lines; a run shorter than three, one whose heading or header row says it shows only some ("Selected weeks", "Highlights"), and one where most numbers skip (a table of chosen weeks) are not compared.

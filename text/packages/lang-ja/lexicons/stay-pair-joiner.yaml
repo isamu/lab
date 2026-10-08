@@ -1,0 +1,7 @@
+# 泊数と日数の間に挟んでよい字（duration-mismatch）。「2泊3日」は何も挟まない。日数は泊数より一つ多いはず。
+id: stay-pair-joiner
+language: ja
+entries:
+  - pattern: "・"
+  - pattern: "/"
+  - pattern: "、"

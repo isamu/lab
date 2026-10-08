@@ -1,0 +1,95 @@
+id: obligation-without-deadline
+layer: L2
+status: stable
+how_to_find: obligation-without-deadline
+severity: info
+
+name:
+  ja: 時を決めてする義務に、期限が無い
+  en: A duty to act with no deadline (shall pay, shall return)
+
+why:
+  ja: 支払う、引き渡す、返還する、通知するといった義務は、いつまでにするかが決まって初めて、守ったか破ったかを決められます。期限の無い「甲は、委託料を支払う」では、一年後に払っても違反と言えません。期限をどう書くかは書き手が決めることなので、chaff は、ほかの義務の多くに期限（7日以内に、毎月末日までに）を書いた文書の中で、期限を一つも書いていない義務（語の一覧は言語ごとの語彙表にあります）を少ないほうとして指します。期限を書いた文が、期限の無い義務の文より多いときだけです。
+  en: 'A duty to pay, deliver, return or notify can be met or missed only once it has a time. "The Customer shall pay the fees" with no time is not breached by paying a year later. How to write limits is the drafter''s choice, so chaff points only at the minority: in a document where more sentences state a limit (within seven days, by the fifth business day) than hold a duty with none, it points at those duties (each language''s word list has the acts read).'
+
+message:
+  ja: 「{word}」義務に期限がありません。いつまでにするかを書くと、守ったかどうかを決められます
+  en: '"{word}" is a duty with no deadline; a time makes it one that can be met or missed'
+
+how_to_fix:
+  ja: 「解除の日から30日以内に」「毎月末日までに」のように、起点と日数か日付で期限を書いてください。
+  en: 'State when the act is due: a start and a number of days ("within thirty days of termination") or a date ("by the fifth business day of each month").'
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [legal, docs, academic, literature, speech]
+off_for:
+  docs: "A deadline is a contract's obligation: the contract genre checks it."
+  academic: "A deadline is a contract's obligation: the contract genre checks it."
+  literature: "A deadline is a contract's obligation: the contract genre checks it."
+  speech: "A deadline is a contract's obligation: the contract genre checks it."
+  legal/statute: "A statute sets duties whose time other provisions or regulations fix; a bare 支払う there is not a missing term."
+  legal/judgment: "A court decision quotes the statutes and contracts it reads; their duties are not the decision's own."
+  legal/patent: "A patent sets no deadlines: return and deliver describe steps of a process."
+
+group: wording
+summary:
+  ja: ほかの義務に期限を書いた契約で、支払う・引き渡す・返還する・通知する義務に期限を書いていない所
+  en: A duty to pay, deliver, return or notify with no deadline, in a contract that gives its other duties one
+example:
+  ja:
+    config: { genre: legal/contract }
+    before: |
+      第1条　乙は、毎月5日までに、前月の業務を甲に報告する。
+
+      第2条　甲は、報告を受けた日から10日以内に、結果を乙に通知する。
+
+      第3条　甲は、本契約が解除されたときは、解除の日までの委託料を乙に支払う。
+    after: |
+      第1条　乙は、毎月5日までに、前月の業務を甲に報告する。
+
+      第2条　甲は、報告を受けた日から10日以内に、結果を乙に通知する。
+
+      第3条　甲は、本契約が解除されたときは、解除の日から30日以内に、解除の日までの委託料を乙に支払う。
+  en:
+    config: { genre: legal/contract }
+    before: |
+      1. The Supplier shall deliver each report by the fifth business day of the month.
+
+      2. The Customer shall pay each invoice within thirty days of receiving it.
+
+      3. On termination, the Supplier shall return all Confidential Information to the Customer.
+    after: |
+      1. The Supplier shall deliver each report by the fifth business day of the month.
+
+      2. The Customer shall pay each invoice within thirty days of receiving it.
+
+      3. On termination, the Supplier shall return all Confidential Information to the Customer within ten days.
+
+not_flagged:
+  ja: 期限を書いた文が、期限の無い義務の文より多くない文書では、書き手がそう書くと決めたとみなして指しません。同じ文に期限（7日以内、毎月末日までに、直ちに）があれば指しません。「速やかに」「遅滞なく」だけの期限は vague-deadline が見ます。権利を定める文（「返還を請求することができる」）と、金額を書いた文（「月額150,000円を支払う」は値段を決める文で、いつ払うかは別の条が決めます）は見ません。義務は文の終わりの述語で読み、条件の中の語（「通知したときは」）は見ません。法令・判決・特許は見ません。契約書・規約のジャンルで見ます。
+  en: 'A document where sentences stating a limit are not more than those holding a duty with none is taken to write its duties that way on purpose, and is not reported. A sentence that states a limit (within seven days, by the fifth business day, immediately) is not reported; one with "promptly" alone is vague-deadline''s. A sentence that grants a right (may) or states an amount (shall pay a monthly fee of $9,000, which sets the price; another clause says when) is not read. "by email" says how, not when, and is not a limit. Statutes, court decisions and patents are not read; the contract genre runs this rule.'
+rewrite:
+  depth: light
+  ja:
+    direction: 義務の文に、起点と日数か日付で期限を加えます。日数は書き手が決めることなので、決まっていなければ書き手に確かめます。
+    pairs:
+      - before: 甲は、解除の日までの委託料を日割りで計算して支払う。
+        after: 甲は、解除の日までの委託料を日割りで計算し、解除の日から30日以内に支払う。
+      - before: 乙は、納入を受けたときは、検査を行い、その結果を甲に通知する。
+        after: 乙は、納入を受けた日から7日以内に検査を行い、その結果を甲に通知する。
+    keep:
+      - 義務を負う当事者と、すること
+    avoid:
+      - 日数を書き手に確かめずに決める
+  en:
+    direction: Add a time to the duty, as a start and a number of days or a date. The number is the writer's decision; if it is not known, ask.
+    pairs:
+      - before: On a written request, each Party shall return the other Party's Confidential Information.
+        after: Within fifteen days of a written request, each Party shall return the other Party's Confidential Information.
+      - before: The Company will notify you of any change to these Terms by email.
+        after: The Company will notify you of any change to these Terms by email at least thirty days before it takes effect.
+    keep:
+      - the party bound and what it must do
+    avoid:
+      - choosing the number of days without asking the writer

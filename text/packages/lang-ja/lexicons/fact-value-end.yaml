@@ -16,3 +16,23 @@ entries:
   - pattern: "で、"
   - pattern: となります
   - pattern: となっております
+  # 決定の書き方（議事録の「月会費は2,800円とする。」）。句点まで書いた形だけで、仮定や未決（「とすると」
+  # 「とする場合」「に決定した場合」「とするか検討」）はここに無いので読まない。
+  - pattern: とする。
+  - pattern: とします。
+  - pattern: とした。
+  - pattern: としました。
+  - pattern: とすることとした。
+  - pattern: とすることとします。
+  - pattern: とすることに決定した。
+  - pattern: とすることに決定しました。
+  - pattern: とすることで合意した。
+  - pattern: とすることで合意しました。
+  - pattern: と決定した。
+  - pattern: と決定しました。
+  - pattern: と決定。
+  - pattern: に決定した。
+  - pattern: に決定しました。
+  - pattern: に決定。
+  - pattern: に決まった。
+  - pattern: に決まりました。

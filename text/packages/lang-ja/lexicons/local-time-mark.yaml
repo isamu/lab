@@ -1,0 +1,8 @@
+# 時刻がどこの時間帯かを場所に任せて言う印（time-order、arrival-before-departure）。「現地時間」の付いた時刻は、
+# 前後の時刻と同じ時間帯とは限らないので、そのまま比べない。字面どおりに照らす。
+id: local-time-mark
+language: ja
+entries:
+  - pattern: "現地時間"
+  - pattern: "現地時刻"
+  - pattern: "日本時間"

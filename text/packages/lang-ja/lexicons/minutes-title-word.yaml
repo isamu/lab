@@ -1,0 +1,9 @@
+# 議事録の題の語。題（最初の行）にこの語のある文書だけ、宿題の期限を会議の日と比べる（due-before-issue）。
+id: minutes-title-word
+language: ja
+entries:
+  - pattern: 議事録
+  - pattern: 議事メモ
+  - pattern: 会議録
+  - pattern: 打ち合わせメモ
+  - pattern: 打合せメモ

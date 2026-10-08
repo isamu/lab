@@ -1,0 +1,7 @@
+# 宿泊の表で、発つ日の列の見出し（duration-mismatch）。
+id: stay-check-out-column
+language: ja
+entries:
+  - pattern: "チェックアウト"
+  - pattern: "チェックアウト日"
+  - pattern: "出発日"
