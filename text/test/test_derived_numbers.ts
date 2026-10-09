@@ -88,6 +88,21 @@ describe("duration-mismatch", () => {
   it("a date with a year and one without are not paired", () => {
     assert.deepEqual(durationJa("2026年4月1日から3か月間（7月31日まで）です。"), []);
   });
+
+  it("a length written before its noun (a 3-month trial)", () => {
+    assert.deepEqual(durationEn("The 3-month trial starts April 1, 2026 and ends June 15, 2026."), ["June 15, 2026→2026-06-30"]);
+    assert.deepEqual(durationEn("The 3-month trial starts April 1, 2026 and ends June 30, 2026."), []);
+    assert.deepEqual(durationEn("A 10-day course runs from May 1, 2026 to May 15, 2026."), ["May 15, 2026→2026-05-10"]);
+    assert.deepEqual(durationEn("A 2-week course runs from May 1, 2026 to May 14, 2026."), []);
+    assert.deepEqual(durationJa("2026年4月1日から3ヶ月間の試行は2026年6月15日に終わる。"), ["2026年6月15日→2026-06-30"]);
+  });
+
+  it("a length before its noun beside dates far more than twice as far apart is another length", () => {
+    assert.deepEqual(durationEn("Our 7-day returns window applies to orders placed April 1, 2026 through June 15, 2026."), []);
+    assert.deepEqual(durationEn("The 30-day guarantee covers purchases from January 1, 2026 to December 31, 2026."), []);
+    assert.deepEqual(durationEn("Our 24-hour support desk opens April 1, 2026 and closes June 15, 2026."), []);
+    assert.deepEqual(durationEn("The 3-month-old program started April 1, 2026 and ends June 15, 2026."), []);
+  });
 });
 
 const stayFindings = (source: string, adapter: LanguageAdapter, language: string): string[] =>
@@ -141,6 +156,19 @@ describe("duration-mismatch: nights of a stay", () => {
     assert.deepEqual(stayJa("京都・奈良 2泊2日の旅行です。"), ["nights-days:2日→3"]);
     assert.deepEqual(stayEn("A trip of 2 days, 1 night to York."), []);
     assert.deepEqual(stayEn("A trip of 3 days and 1 night to York."), ["nights-days:3 days→2"]);
+  });
+
+  it("nights and days written before their noun (a 2-night, 4-day tour)", () => {
+    assert.deepEqual(stayEn("We run a 2-night, 4-day tour."), ["nights-days:4-day→3"]);
+    assert.deepEqual(stayEn("We run a 2-night, 3-day tour."), []);
+    assert.deepEqual(stayEn("Join our 3-day/2-night tour."), []);
+    assert.deepEqual(stayEn("We stay 3-night from Oct 12 to Oct 14."), ["nights:3-night→2"]);
+    assert.deepEqual(stayJa("2泊4日の旅行です。"), ["nights-days:4日→3"]);
+  });
+
+  it("nights before their noun beside a much longer span are the length of an offer", () => {
+    assert.deepEqual(stayEn("Our 2-night spa package is available October 1, 2026 to December 20, 2026."), []);
+    assert.deepEqual(stayEn("Our 2-night spa package runs October 1, 2026 to October 4, 2026."), ["nights:2-night→3"]);
   });
 
   it("N泊M日 beside two dates is judged by its nights, once", () => {
