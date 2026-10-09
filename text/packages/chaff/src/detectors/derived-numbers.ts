@@ -19,6 +19,7 @@ import { numeralCounts } from "../derived/unit-counts.ts";
 import { timeLengths, type LengthWords, type TimeLength } from "../derived/time-lengths.ts";
 import { workingHoursMismatches, type WorkingHoursMismatch } from "../derived/working-hours.ts";
 import { sessionHoursMismatches } from "../derived/session-hours.ts";
+import { hoursAndMinutes, type HoursAndMinutes } from "../derived/hours-and-minutes.ts";
 import { clockTimes } from "../compare/clock-time.ts";
 import { secondsOf, type Mark } from "../structure/time-marks.ts";
 import { proseAndTablesOf } from "../table-text.ts";
@@ -161,19 +162,23 @@ const HOUR_DECIMALS = 100;
 
 const hoursOf = (minutes: number): number => Math.round((minutes / MINUTES_PER_HOUR) * HOUR_DECIMALS) / HOUR_DECIMALS;
 
-const workingHoursFinding = (doc: ProseDocument, mismatch: WorkingHoursMismatch): Finding =>
-  finding(
-    doc,
-    mismatch.total.start,
-    {
-      start: written(doc, mismatch.start),
-      end: written(doc, mismatch.end),
-      break: written(doc, mismatch.break),
-      total: written(doc, mismatch.total),
-      expected: hoursOf(mismatch.expected),
-    },
-    "working-hours",
-  );
+/** The variant suffix for each way of writing the computed length: 4時間15分 takes none, 7時間 "-hours", 45分 "-minutes". */
+const SHAPE_SUFFIX: Readonly<Record<HoursAndMinutes["shape"], string>> = { "hours-minutes": "", hours: "-hours", minutes: "-minutes" };
+
+const workingHoursFinding = (doc: ProseDocument, mismatch: WorkingHoursMismatch): Finding[] => {
+  const length = hoursAndMinutes(mismatch.expected);
+  if (length === undefined) return [];
+  const values = {
+    start: written(doc, mismatch.start),
+    end: written(doc, mismatch.end),
+    break: written(doc, mismatch.break),
+    total: written(doc, mismatch.total),
+    expected: hoursOf(mismatch.expected),
+    hours: length.hours,
+    minutes: length.minutes,
+  };
+  return [finding(doc, mismatch.total.start, values, `working-hours${SHAPE_SUFFIX[length.shape]}`)];
+};
 
 /** 始業から終業まで、休憩を除いた時間が、書いた実働と合わない。 */
 const workingHoursOf = (doc: ProseDocument, text: string): Finding[] => {
@@ -185,7 +190,7 @@ const workingHoursOf = (doc: ProseDocument, text: string): Finding[] => {
     totals: marksOf(doc, "working-hours-total"),
     approximate: marksOf(doc, "approximate-marker"),
   };
-  return workingHoursMismatches(text, doc.source, sentencesOf(doc), times, lengthsOf(doc, text), words).map((mismatch) => workingHoursFinding(doc, mismatch));
+  return workingHoursMismatches(text, doc.source, sentencesOf(doc), times, lengthsOf(doc, text), words).flatMap((mismatch) => workingHoursFinding(doc, mismatch));
 };
 
 /** 始まり + 期間 ≠ 終わり。泊数が二つの日付の差と合わない。「2泊3日」の日数が泊数より一つ多くない。 */
@@ -233,20 +238,29 @@ export const durationProductMismatch: Detector = (doc): Finding[] => {
   const text = proseAndTablesOf(doc);
   const counts = unitCountsOf(doc, text, patternsOf(doc, "session-count-unit")).filter((count) => !isOrdinal(doc, text, count));
   const words = { totals: marksOf(doc, "session-total"), approximate: marksOf(doc, "approximate-marker") };
-  return sessionHoursMismatches(text, doc.source, sentencesOf(doc), counts, lengthsOf(doc, text), words).map((mismatch) => ({
-    rule: "duration-product-mismatch",
-    severity: "warning",
-    line: 0,
-    column: 0,
-    quote: quoteAt(doc.source, mismatch.total.start),
-    values: {
-      count: written(doc, mismatch.count),
-      length: written(doc, mismatch.length),
-      total: written(doc, mismatch.total),
-      expected: hoursOf(mismatch.expected),
-      offset: mismatch.total.start,
-    },
-  }));
+  return sessionHoursMismatches(text, doc.source, sentencesOf(doc), counts, lengthsOf(doc, text), words).flatMap((mismatch): Finding[] => {
+    const length = hoursAndMinutes(mismatch.expected);
+    if (length === undefined) return [];
+    return [
+      {
+        rule: "duration-product-mismatch",
+        severity: "warning",
+        line: 0,
+        column: 0,
+        quote: quoteAt(doc.source, mismatch.total.start),
+        ...(length.shape === "hours-minutes" ? {} : { variant: length.shape }),
+        values: {
+          count: written(doc, mismatch.count),
+          length: written(doc, mismatch.length),
+          total: written(doc, mismatch.total),
+          expected: hoursOf(mismatch.expected),
+          hours: length.hours,
+          minutes: length.minutes,
+          offset: mismatch.total.start,
+        },
+      },
+    ];
+  });
 };
 
 /** 四桁の年。木が日付と読まなかった英語の年（founded in 2015、born 1980）もここで読む。 */
