@@ -1,0 +1,20 @@
+# 人数ごとの材料の表で、同じ単位の別の書き方（scaled-quantity-mismatch）。group が同じ語は同じ単位として比べる（大さじ2 と 大匙4）。
+id: scaled-unit-form
+language: ja
+entries:
+  - pattern: 大さじ
+    group: 大さじ
+  - pattern: 大匙
+    group: 大さじ
+  - pattern: 大サジ
+    group: 大さじ
+  - pattern: 小さじ
+    group: 小さじ
+  - pattern: 小匙
+    group: 小さじ
+  - pattern: 小サジ
+    group: 小さじ
+  - pattern: 個
+    group: 個
+  - pattern: コ
+    group: 個

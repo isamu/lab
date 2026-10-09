@@ -1,0 +1,59 @@
+# Spellings of one unit in a servings table (scaled-quantity-mismatch). The singular, the plural and the short form share a
+# group, so "1 teaspoon" and "2 tsp" are amounts in one unit and can be compared.
+id: scaled-unit-form
+language: en
+entries:
+  - pattern: tablespoons
+    group: tablespoon
+  - pattern: tablespoon
+    group: tablespoon
+  - pattern: tbsp
+    group: tablespoon
+  - pattern: teaspoons
+    group: teaspoon
+  - pattern: teaspoon
+    group: teaspoon
+  - pattern: tsp
+    group: teaspoon
+  - pattern: cups
+    group: cup
+  - pattern: cup
+    group: cup
+  - pattern: cloves
+    group: clove
+  - pattern: clove
+    group: clove
+  - pattern: slices
+    group: slice
+  - pattern: slice
+    group: slice
+  - pattern: cans
+    group: can
+  - pattern: can
+    group: can
+  - pattern: pieces
+    group: piece
+  - pattern: piece
+    group: piece
+  - pattern: sheets
+    group: sheet
+  - pattern: sheet
+    group: sheet
+  - pattern: eggs
+    group: egg
+  - pattern: egg
+    group: egg
+  - pattern: ounces
+    group: ounce
+  - pattern: ounce
+    group: ounce
+  - pattern: oz
+    group: ounce
+  - pattern: pounds
+    group: pound
+  - pattern: pound
+    group: pound
+  - pattern: lb
+    group: pound
+  - pattern: lbs
+    group: pound

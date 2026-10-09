@@ -1,0 +1,12 @@
+# Amounts left to the cook, which need not grow with the number of servings (scaled-quantity-mismatch). A row with a cell that
+# holds one of these is not compared.
+id: unscaled-amount
+language: en
+entries:
+  - pattern: "to taste"
+  - pattern: "as needed"
+  - pattern: "as required"
+  - pattern: "a pinch"
+  - pattern: "a dash"
+  - pattern: "optional"
+  - pattern: "to serve"
