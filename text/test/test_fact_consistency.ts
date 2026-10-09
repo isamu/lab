@@ -127,6 +127,82 @@ describe("fact-conflict", () => {
   });
 });
 
+describe("fact-conflict: one thing's retention period stated two ways", () => {
+  const ja2 = (first: string, second: string): string[] => conflictJa("## 第4条（保存期間）", "", first, "", "## 第5条（削除）", "", second);
+  const en2 = (first: string, second: string): string[] => conflictEn("## 4. Retention", "", first, "", "## 5. Deletion", "", second);
+
+  it("keeping for one length and deleting after another, in different sections (ja, en)", () => {
+    assert.deepEqual(ja2("当社は、退会の日から1年間個人情報を保存し、その後に削除します。", "当社は、退会の日から3年間を経過した個人情報を削除します。"), [
+      "個人情報:3年間≠1年間",
+    ]);
+    assert.deepEqual(
+      en2(
+        "When you close your account, we keep your personal information for one (1) year from the closing date and then delete it.",
+        "Even without a request, we delete personal information three (3) years after the account was closed.",
+      ),
+      ["personal information:three (3) years≠one (1) year"],
+    );
+  });
+
+  it("the same length is silent, and twelve months is one year", () => {
+    assert.deepEqual(ja2("当社は、個人情報を1年間保存します。", "当社は、退会の日から1年を経過した個人情報を削除します。"), []);
+    assert.deepEqual(en2("We keep personal information for 1 year.", "We delete personal information 12 months after the account is closed."), []);
+    assert.deepEqual(en2("We keep personal information for 1 year.", "We delete personal information 18 months after the account is closed."), [
+      "personal information:18 months≠1 year",
+    ]);
+  });
+
+  it("a period written as a label, and a passive (ja, en)", () => {
+    assert.deepEqual(ja2("お問い合わせの記録は、6か月間保管します。", "お問い合わせの記録の保存期間は1年です。"), ["お問い合わせの記録:1年≠6か月間"]);
+    assert.deepEqual(en2("Account data is retained for 3 years.", "We store account data for 5 years."), ["account datum:5 years≠3 years"]);
+  });
+
+  it("different things with different lengths are silent", () => {
+    assert.deepEqual(ja2("アクセスログは90日間保存します。", "当社は、個人情報を1年間保存します。"), []);
+    assert.deepEqual(en2("We store logs for 90 days.", "We keep account data for 1 year."), []);
+    assert.deepEqual(ja2("お問い合わせの記録は、6か月間保管します。", "決済の記録は、7年間保管します。"), []);
+  });
+
+  it("a bound or an estimate is a range, not a second value", () => {
+    assert.deepEqual(en2("We keep logs for 30 days.", "We keep logs for up to 90 days."), []);
+    assert.deepEqual(en2("We keep logs for 30 days.", "We keep logs for at least 90 days."), []);
+    assert.deepEqual(en2("We keep logs for 30 days.", "We keep logs for no more than 90 days."), []);
+    assert.deepEqual(ja2("ログを30日間保存します。", "ログを最長90日間保存します。"), []);
+    assert.deepEqual(ja2("ログを30日間保存します。", "ログを最低90日間保存します。"), []);
+    assert.deepEqual(ja2("ログを30日間保存します。", "ログを約90日間保存します。"), []);
+    assert.deepEqual(ja2("ログの保存期間は30日間です。", "ログの保存期間は最長90日間です。"), []);
+    assert.deepEqual(ja2("ログの保存期間は30日間です。", "ログの保存期間は90日間以上です。"), []);
+    assert.deepEqual(ja2("ログの保存期間は30日間です。", "ログの保存期間は少なくとも90日間です。"), []);
+    assert.deepEqual(en2("We keep logs for 30 days.", "We keep logs for 90 days or more."), []);
+    assert.deepEqual(en2("We keep logs for 30 days.", "We delete logs within 90 days after collection."), []);
+    assert.deepEqual(ja2("ログの保存期間は30日間です。", "ログの保存期間は90日間です。"), ["ログ:90日間≠30日間"]);
+    assert.deepEqual(en2("We keep logs for 30 days.", "We keep logs for 90 days, or longer if the law requires it."), []);
+    assert.deepEqual(en2("We keep logs for 30 days.", "We keep logs for 90 days or fewer."), []);
+  });
+
+  it("deleting a number of years later (3年後に削除, 3年経過後に削除)", () => {
+    assert.deepEqual(ja2("個人情報を1年間保存します。", "個人情報は3年後に削除します。"), ["個人情報:3年≠1年間"]);
+    assert.deepEqual(ja2("個人情報を1年間保存します。", "個人情報は3年経過後に削除します。"), ["個人情報:3年≠1年間"]);
+    assert.deepEqual(ja2("個人情報を1年間保存します。", "個人情報は1年後に削除します。"), []);
+  });
+
+  it("a length that is not how long the thing is kept is not read", () => {
+    assert.deepEqual(ja2("当社は、個人情報を1年間保存します。", "当社は、過去3年間の個人情報を保存します。"), []);
+    assert.deepEqual(en2("We keep personal information for 1 year.", "We store 3 years of personal information."), []);
+    assert.deepEqual(en2("We keep personal information for 1 year.", "We delete personal information within 3 years."), []);
+    assert.deepEqual(en2("We keep personal information for 1 year.", "We have stored personal information since 3 years ago."), []);
+  });
+
+  it("a sentence with two lengths, or both kinds of verb with their marks, is not read", () => {
+    assert.deepEqual(en2("We keep logs for 30 days.", "We keep logs for 90 days and backups for 1 year."), []);
+    assert.deepEqual(en2("We keep logs for 30 days.", "We keep logs for 90 days and delete them 90 days after that."), []);
+  });
+
+  it("three or more lengths for one thing are a list", () => {
+    assert.deepEqual(conflictEn("We keep logs for 30 days.", "", "We keep logs for 60 days.", "", "We keep logs for 90 days."), []);
+  });
+});
+
 describe("summary-fact-mismatch", () => {
   it("the opening against the body (ja)", () => {
     const doc = (opening: string): string[] => summaryJa("# 説明会", "", opening, "", "## 申し込み", "", "参加費は3,500円です。");
