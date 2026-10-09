@@ -30,6 +30,6 @@ entries:
   - { pattern: House, group: house }
   - { pattern: Building, group: building }
   - { pattern: Residences, group: residences }
-  - { pattern: Residence, group: residences }
+  - { pattern: Residence, group: residence }
   - { pattern: Apartments, group: apartments }
   - { pattern: Court, group: court }
