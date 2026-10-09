@@ -1,0 +1,24 @@
+# 文書の末尾や冒頭の、日付とこの語だけの行（2024年10月1日 制定、最終改定日：2026年9月1日）。group は、文書を初めて定めた日
+# （established）か、直した日（updated）か。date-stamp-order は、定めた日が直した日より後の行を指す。
+# 施行日は入れない。改定を先に決めて後から施行する（改定 3月1日、施行 4月1日）のはふつうのことで、施行日は改定日より後になりうる。
+id: stamp-order-label
+language: ja
+entries:
+  - { pattern: 制定, group: established }
+  - { pattern: 制定日, group: established }
+  - { pattern: 策定, group: established }
+  - { pattern: 策定日, group: established }
+  - { pattern: 作成, group: established }
+  - { pattern: 作成日, group: established }
+  - { pattern: 初版, group: established }
+  - { pattern: 改定, group: updated }
+  - { pattern: 改定日, group: updated }
+  - { pattern: 最終改定, group: updated }
+  - { pattern: 最終改定日, group: updated }
+  - { pattern: 改正, group: updated }
+  - { pattern: 改正日, group: updated }
+  - { pattern: 最終改正, group: updated }
+  - { pattern: 最終改正日, group: updated }
+  - { pattern: 最終更新, group: updated }
+  - { pattern: 最終更新日, group: updated }
+  - { pattern: 更新日, group: updated }

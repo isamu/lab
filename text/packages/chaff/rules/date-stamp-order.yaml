@@ -1,0 +1,82 @@
+id: date-stamp-order
+layer: L3
+status: stable
+how_to_find: date-stamp-order
+word_list: stamp-order-label
+# The stamp words (制定, 最終改定, Established, Last updated) and whether each dates the first version or a change come from the
+# language's stamp-order-label lexicon.
+requires: [dates]
+languages: [ja, en]
+severity: error
+
+name:
+  ja: 制定日が改定日より後
+  en: An established date after the last update
+
+why:
+  ja: 規約やポリシーの末尾の「2023年4月1日 制定」「2026年9月1日 最終改定」は、この文書がいつ定められ、いつ直されたかを示します。定めた日が直した日より後だと、まだ無い文書を直したことになり、読み手はどちらの日付が正しいのか、今の版がいつのものなのかが分かりません。前の版の日付を書き換えるときに、片方だけ直し損ねると起きます。日付と制定・改定の語だけの行を読み、制定の日付が改定の日付より後なら、両方の行を指します。どちらが違っているかは分からないので、両方を確かめてもらいます。
+  en: 'The "Established: April 1, 2023" and "Last updated: September 1, 2026" lines of a policy or terms say when the document was first set and when it was last changed. An established date after an update means the document was changed before it existed, and the reader cannot tell which date is right or how old the current version is. It happens when the dates of the previous version are rewritten and one is missed. Lines holding only a date and an established or updated word are read, and when the established date is later than an update both lines are reported: nothing tells which of the two is wrong.'
+
+message:
+  ja: 制定の日付 {established} が、改定の日付 {updated} より後です
+  en: "The established date {established} is after the update {updated}"
+
+messages:
+  updated:
+    ja: 改定の日付 {updated} が、制定の日付 {established} より前です
+    en: "The update {updated} is before the established date {established}"
+
+how_to_fix:
+  ja: 制定と改定のどちらの日付が正しいかを確かめて、もう一方を直してください。
+  en: Check which is right, the established date or the update, and correct the other.
+
+levels: { strict: error, normal: error, relaxed: warning }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: A story's dates belong to the story, and a document quoted in it may be dated as the author likes.
+  speech: A transcript writes what was said, dates misspoken and corrected included.
+
+group: facts
+summary:
+  ja: 規約やポリシーの末尾で、制定の日付が改定の日付より後になっている所
+  en: An established date later than the last update at the foot of a policy or terms
+example:
+  ja:
+    before: |
+      # 利用規約
+
+      本規約は、日本法に準拠します。
+
+      2027年4月1日 制定
+
+      2026年7月1日 最終改定
+    after: |
+      # 利用規約
+
+      本規約は、日本法に準拠します。
+
+      2023年4月1日 制定
+
+      2026年7月1日 最終改定
+  en:
+    before: |
+      # Terms of Use
+
+      These Terms are governed by the laws of Japan.
+
+      Established: April 1, 2027
+
+      Last updated: July 1, 2026
+    after: |
+      # Terms of Use
+
+      These Terms are governed by the laws of Japan.
+
+      Established: April 1, 2023
+
+      Last updated: July 1, 2026
+
+not_flagged:
+  ja: 日付と制定・改定の語のほかに何かが書かれた行（「2020年12月21日に重点計画を策定」）と年の無い日付は読みません。一行に日付が二つあるときは、全角空白や縦棒で区切った一つひとつ（「作成：平成16年2月4日　最終改定：令和3年11月19日」）を読みます。制定か改定のどちらかの行が無ければ何も言いません。7行以上離れた刻印は、一つのファイルにまとめた別の文書の刻印と見て比べません。施行日は比べません。改定を先に決めて後から施行するのはふつうのことで、施行日は改定日より後になりえます。
+  en: A line with anything besides the date and the stamp word (We adopted the policy on April 1, 2023) and a date without its year are not read. A line with two dates is read part by part, split at tabs and bars. Without both an established and an updated line nothing is said. Stamps seven lines or more apart are taken as the stamps of two documents in one file and are not compared. An effective date is not compared. A policy is often updated ahead of the day it takes effect, so an effective date after the update is normal.
