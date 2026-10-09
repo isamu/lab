@@ -1,0 +1,9 @@
+# 定めなくても当事者の呼び名と読む語。決まった順（甲乙丙丁）の名前で、間に語を置かずに並べてもよい（甲乙、甲乙丙）。
+# 文書が括弧で定めた呼び名（以下「委託者」という）は party-order が文書から取り、ここには入れない。
+id: party-order-label
+language: ja
+entries:
+  - pattern: 甲
+  - pattern: 乙
+  - pattern: 丙
+  - pattern: 丁
