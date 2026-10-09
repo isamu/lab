@@ -1,0 +1,13 @@
+# 型番を書く欄の語（型番：KM-SP300）。name-variant は、この語の後ろ（「：」や空白を挟んでよい）の英大文字と数字の語を文書の型番と読み、
+# ほかの所でハイフン・空白・大小・幅だけ違えて書いた同じ型番を指す。
+id: model-code-label
+language: ja
+entries:
+  - pattern: 型番
+  - pattern: 品番
+  - pattern: 型式
+  - pattern: 形式
+  - pattern: 型名
+  - pattern: 形名
+  - pattern: 製品番号
+  - pattern: 部品番号

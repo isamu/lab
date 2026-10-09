@@ -9,6 +9,7 @@ import { cellNamesIn, cellNameVariants, proseNamesOf } from "../table-names.ts";
 import { placeMentionsIn, placeVariants, type PlaceChars, type PlaceReader, type PlaceWord } from "../place-names.ts";
 import type { TableCell, Token } from "../plugin.ts";
 import { proseWithCells } from "../table-cells.ts";
+import { modelCodeFindings } from "./name-variant-model-codes.ts";
 import { labelledSpans, orderNamesOf, quotedSpans, stemOf, titleCaseSpans, wordOrderVariants, type OrderWord } from "../name-word-order.ts";
 
 // 人の名前と読ませる敬称（様、さん）は語彙表 person-suffix、人を指す前置き（担当の）は person-lead、名前のすぐ後ろに来る語
@@ -174,7 +175,9 @@ export const nameVariant: Detector = (doc): Finding[] => {
   const namesAndCompanies = [...names, ...companyFindings(doc, prose, names)];
   const withTables = [...namesAndCompanies, ...tableFindings(doc, prose, mentions, namesAndCompanies)];
   const withPlaces = [...withTables, ...placeFindings(doc, prose, withTables, chars)];
-  return [...withPlaces, ...orderFindings(doc, prose, withPlaces)]
+  const withOrder = [...withPlaces, ...orderFindings(doc, prose, withPlaces)];
+  const codes = modelCodeFindings(doc, prose).filter((code) => !overlapsAny(withOrder, code.offset, code.name.length));
+  return [...withOrder, ...codes]
     .toSorted((left, right) => left.offset - right.offset)
     .map(({ offset, name, usual, kind }) => ({
       rule: "",
