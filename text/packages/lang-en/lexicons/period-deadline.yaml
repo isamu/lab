@@ -1,7 +1,8 @@
 # Words that mark a deadline for the work of the period ("Submit the assignment by …", "Deadline: …"). For a period stated
 # at the top of the document or in its overview section ("Term: …"), date-outside-period reports a dated item or sentence
-# anywhere later that holds one of these and a date with a year after the period ends. Payment deadlines may fall after the
-# period, so they are left out (period-aside keeps them silent).
+# anywhere later that holds one of these and a date after the period ends (a date without a year takes the term's year
+# only when the term lies within one year). Payment deadlines may fall after the period, so they are left out
+# (period-aside keeps them silent); grades released and resits are left out by period-after-term.
 id: period-deadline
 language: en
 entries:
@@ -13,6 +14,14 @@ entries:
   - pattern: is due
   - pattern: are due
   - pattern: "due:"
+  # A piece of work followed by "due" ("Final report due February 19, 2027").
+  - pattern: report due
+  - pattern: paper due
+  - pattern: essay due
+  - pattern: project due
+  - pattern: homework due
+  # "Assignment: February 19, 2027" dates the work's submission.
+  - pattern: assignment
   - pattern: submit
   - pattern: submission
   - pattern: hand in

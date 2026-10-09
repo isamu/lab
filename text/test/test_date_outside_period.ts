@@ -326,6 +326,78 @@ describe("date-outside-period: a deadline after the document's term", () => {
     assert.deepEqual(foundEn(syllabusEn(TERM_EN, "Submit the written assignment by Friday, February 12, 2027.", "## 1 Instructor")), []);
   });
 
+  it("a deadline labelled by its work: 課題, Assignment, and a report followed by 'due'", () => {
+    assert.deepEqual(foundJa(syllabusJa(TERM_JA, "- 課題：2027年2月19日")), ["2027年2月19日"]);
+    assert.deepEqual(foundEn(syllabusEn(TERM_EN, "- Assignment: February 19, 2027")), ["February 19, 2027"]);
+    assert.deepEqual(foundEn(syllabusEn(TERM_EN, "Final report due February 19, 2027.")), ["February 19, 2027"]);
+    assert.deepEqual(foundEn(syllabusEn(TERM_EN, "Final report due January 29, 2027.")), []);
+  });
+
+  it("silent for work that may fall after the term, even with a deadline word: grades released, grade appeals, resits", () => {
+    assert.deepEqual(foundJa(syllabusJa(TERM_JA, "成績発表は2027年3月10日、成績照会の締切は2027年3月17日です。")), []);
+    assert.deepEqual(foundJa(syllabusJa(TERM_JA, "- 再試験の申込締切：2027年2月19日")), []);
+    assert.deepEqual(foundEn(syllabusEn(TERM_EN, "The deadline for grade appeals is March 17, 2027.")), []);
+    assert.deepEqual(foundEn(syllabusEn(TERM_EN, "- Resit registration deadline: February 19, 2027")), []);
+  });
+
+  it("a report weighted in the grade is still compared: 成績 and grade alone do not silence it", () => {
+    assert.deepEqual(foundJa(syllabusJa(TERM_JA, "課題レポート（成績の30%）は2027年2月12日までに提出してください。")), ["2027年2月12日"]);
+    assert.deepEqual(foundEn(syllabusEn(TERM_EN, "The report (30% of the grade) is due on February 12, 2027.")), ["February 12, 2027"]);
+  });
+
+  it("a deadline without a year takes the year of a term within one year; across two years it is not compared", () => {
+    const termJa = "開講期間：2026年4月8日（水）から2026年7月28日（火）まで";
+    const termEn = "Term: April 8, 2026 to July 28, 2026";
+    assert.deepEqual(foundJa(syllabusJa(termJa, "課題レポートは、8月10日（月）までに提出してください。")), ["8月10日"]);
+    assert.deepEqual(foundJa(syllabusJa(termJa, "課題レポートは、7月21日（火）までに提出してください。")), []);
+    assert.deepEqual(foundEn(syllabusEn(termEn, "Submit the written assignment by Monday, August 10.")), ["August 10"]);
+    assert.deepEqual(foundEn(syllabusEn(termEn, "Submit the written assignment by Tuesday, July 21.")), []);
+    assert.deepEqual(foundEn(syllabusEn(TERM_EN, "Submit the written assignment by Friday, February 12.")), []);
+  });
+
+  it("two term lines: a deadline is compared with the nearer one before it", () => {
+    const ja = lines(
+      "# シラバス",
+      "",
+      "## 概要",
+      "",
+      "開講期間：2026年4月8日から2026年7月28日まで",
+      "",
+      "## 課題（前期）",
+      "",
+      "前期の課題レポートは2026年7月21日までに提出してください。",
+      "",
+      "## 後期の概要",
+      "",
+      "授業期間：2026年10月6日から2027年2月5日まで",
+      "",
+      "## 課題（後期）",
+      "",
+      "後期の課題レポートは2027年1月29日までに提出してください。最終レポートは2027年2月19日までに提出してください。",
+    );
+    assert.deepEqual(foundJa(ja), ["2027年2月19日"]);
+    const en = lines(
+      "# Syllabus",
+      "",
+      "## Overview",
+      "",
+      "Term: April 8, 2026 to July 28, 2026",
+      "",
+      "## Spring assignment",
+      "",
+      "Submit the spring report by August 10, 2026.",
+      "",
+      "## Autumn overview",
+      "",
+      "Term: October 6, 2026 to February 5, 2027",
+      "",
+      "## Autumn assignment",
+      "",
+      "Submit the autumn report by January 29, 2027.",
+    );
+    assert.deepEqual(foundEn(en), ["August 10, 2026"]);
+  });
+
   it("silent for a trip's period: an expense report may be due after the trip", () => {
     const ja = lines(
       "# 出張旅程表",
