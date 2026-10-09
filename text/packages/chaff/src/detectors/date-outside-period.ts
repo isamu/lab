@@ -8,7 +8,7 @@ const patternsOf = (doc: ProseDocument, lexicon: string): string[] => (doc.lexic
 
 /** 期間の語、期間の外に置く語、文書の仕事の期間の語、締め切りの語、概要の節の見出しの語、範囲の記号（range-connector、range-opener、range-frame の間の語）、月と曜日の名は語彙表から取る。 */
 const wordsOf = (doc: ProseDocument): OutsideWords => ({
-  labels: [...patternsOf(doc, "period-term-label"), ...patternsOf(doc, "period-label")],
+  labels: patternsOf(doc, "period-label"),
   terms: patternsOf(doc, "period-term-label"),
   asides: patternsOf(doc, "period-aside"),
   deadlines: patternsOf(doc, "period-deadline"),

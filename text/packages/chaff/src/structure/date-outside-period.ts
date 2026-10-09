@@ -1,7 +1,7 @@
 import { escapeRegExp } from "../orthography.ts";
 import type { StructureIssue } from "./issues.ts";
 import { TABLE_ROW } from "./runs.ts";
-import { afterLabel, statedPeriod, type DateMention, type Period, type PeriodWords } from "./stated-period.ts";
+import { statedPeriod, type DateMention, type Period, type PeriodWords } from "./stated-period.ts";
 
 /**
  * 書いた期間の外の日付。期間の語で始まる一行（旅行期間：…）が期間を書き、その後ろ、同じ節の中の箇条書きの項目、表の行、見出しの日付を比べる。
@@ -16,7 +16,7 @@ type Span = { readonly start: number; readonly end: number };
 
 export type OutsideWords = PeriodWords & {
   readonly asides: readonly string[];
-  /** 文書の仕事がその中で済む期間の語（開講期間、Term）。labels にも入れる。 */
+  /** 文書の仕事がその中で済む期間の語（開講期間、Term）。この期間は締め切りとだけ比べる。 */
   readonly terms: readonly string[];
   readonly deadlines: readonly string[];
   readonly overviews: readonly string[];
@@ -136,12 +136,11 @@ const enclosingHeadings = (offset: number, headings: readonly HeadingSpan[]): He
     .toReversed()
     .reduce<HeadingSpan[]>((chain, heading) => (heading.depth < (chain.at(-1)?.depth ?? Infinity) ? [...chain, heading] : chain), []);
 
-/** 文書の仕事の期間か: その語（period-term-label）で始まり、表題（文書の頭の # の見出し）のほかの見出しより前か、概要の節（period-overview-heading）の行。 */
-const isDocumentTerm = (period: Stated, context: Context, words: OutsideWords): boolean => {
-  if (afterLabel(context.source.slice(period.line.start, period.line.end), words.terms) === undefined) return false;
+/** 文書の仕事の期間か: 表題（文書の頭の # の見出し）のほかの見出しより前か、概要の節（period-overview-heading）の行。 */
+const isDocumentTerm = (period: Stated, context: Context, overviews: readonly string[]): boolean => {
   const sections = context.headings.filter((heading, index) => heading.start < period.line.start && !(index === 0 && heading.depth === 1));
   if (sections.length === 0) return true;
-  return enclosingHeadings(period.line.start, context.headings).some((heading) => mentions(context.source.slice(heading.start, heading.end), words.overviews));
+  return enclosingHeadings(period.line.start, context.headings).some((heading) => mentions(context.source.slice(heading.start, heading.end), overviews));
 };
 
 const afterEnd = (value: string, period: Period): boolean => hasYear(value) && hasYear(period.end) && value > period.end;
@@ -160,8 +159,23 @@ const issueOf = (source: string, date: DateMention, period: Stated): StructureIs
   values: { date: source.slice(date.offset, date.end), period: period.written },
 });
 
-const inScope = (date: DateMention, period: Stated): boolean => date.offset > period.scopeStart && date.offset < period.scopeEnd;
-const inDocument = (date: DateMention, period: Stated): boolean => date.offset > period.line.end && date.offset < period.nextPeriod;
+/** 期間の行の後ろ、同じ節の日程の日付で、期間の外のもの。 */
+const outsideInSection = (dates: readonly DateMention[], context: Context, words: OutsideWords): StructureIssue[] =>
+  statedPeriods(context.source, context.lines, dates, context.headings, words).flatMap((period) =>
+    dates
+      .filter((date) => date.offset > period.scopeStart && date.offset < period.scopeEnd && outsideOne(date, period, context, words.asides))
+      .map((date) => issueOf(context.source, date, period)),
+  );
+
+/** 文書の仕事の期間の行の後ろ、次の仕事の期間の行までの、期間の終わりより後の締め切り。 */
+const lateDeadlines = (dates: readonly DateMention[], context: Context, words: OutsideWords): StructureIssue[] =>
+  statedPeriods(context.source, context.lines, dates, context.headings, { ...words, labels: words.terms })
+    .filter((period) => isDocumentTerm(period, context, words.overviews))
+    .flatMap((period) =>
+      dates
+        .filter((date) => date.offset > period.line.end && date.offset < period.nextPeriod && lateDeadline(date, period, context, words))
+        .map((date) => issueOf(context.source, date, period)),
+    );
 
 export const datesOutsidePeriod = (
   source: string,
@@ -172,14 +186,7 @@ export const datesOutsidePeriod = (
 ): StructureIssue[] => {
   const lines = linesOf(source);
   const context: Context = { source, lines, headings, sentences };
-  return statedPeriods(source, lines, dates, headings, words).flatMap((period) => {
-    const documentWide = isDocumentTerm(period, context, words);
-    return dates
-      .filter(
-        (date) =>
-          (inScope(date, period) && outsideOne(date, period, context, words.asides)) ||
-          (documentWide && inDocument(date, period) && lateDeadline(date, period, context, words)),
-      )
-      .map((date) => issueOf(source, date, period));
-  });
+  const inSection = outsideInSection(dates, context, words);
+  const reported = new Set(inSection.map((issue) => issue.offset));
+  return [...inSection, ...lateDeadlines(dates, context, words).filter((issue) => !reported.has(issue.offset))];
 };

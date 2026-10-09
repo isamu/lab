@@ -6,7 +6,13 @@ id: period-deadline
 language: en
 entries:
   - pattern: deadline
-  - pattern: due
+  # Not "due" alone: "cancelled due to maintenance" names no deadline.
+  - pattern: due on
+  - pattern: due by
+  - pattern: due date
+  - pattern: is due
+  - pattern: are due
+  - pattern: "due:"
   - pattern: submit
   - pattern: submission
   - pattern: hand in

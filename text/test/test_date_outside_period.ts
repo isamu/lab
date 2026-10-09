@@ -298,6 +298,29 @@ describe("date-outside-period: a deadline after the document's term", () => {
     assert.deepEqual(foundEn(syllabusEn(TERM_EN, "The payment for course materials is due on March 1, 2027.")), []);
   });
 
+  it("another period stated in between does not end the term's reach", () => {
+    const en = lines(
+      "# Syllabus",
+      "",
+      TERM_EN,
+      "",
+      "## Exams",
+      "",
+      "Period: February 1–3, 2027",
+      "",
+      "## Assignments",
+      "",
+      "The final report is due on February 12, 2027.",
+    );
+    assert.deepEqual(foundEn(en), ["February 12, 2027"]);
+  });
+
+  it("a term is compared with deadlines only: a dated item that is not a deadline, and 'due to', stay silent", () => {
+    assert.deepEqual(foundEn(lines("# Syllabus", "", TERM_EN, "", "- March 10, 2027: grades are published")), []);
+    assert.deepEqual(foundJa(lines("# シラバス", "", TERM_JA, "", "- 2027年3月10日 成績公開")), []);
+    assert.deepEqual(foundEn(syllabusEn(TERM_EN, "Classes may be cancelled due to maintenance on March 1, 2027.")), []);
+  });
+
   it("silent when the term is stated in a later section that is not an overview", () => {
     assert.deepEqual(foundJa(syllabusJa(TERM_JA, "課題レポートは、2027年2月12日（金）までに提出してください。", "## 1 担当教員")), []);
     assert.deepEqual(foundEn(syllabusEn(TERM_EN, "Submit the written assignment by Friday, February 12, 2027.", "## 1 Instructor")), []);
