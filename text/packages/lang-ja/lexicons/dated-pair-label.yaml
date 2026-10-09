@@ -13,3 +13,12 @@ entries:
   - { pattern: "入居時期", group: listing, position: after }
   - { pattern: "入居予定日", group: listing, position: after }
   - { pattern: "入居日", group: listing, position: after }
+  - { pattern: "掲載日", group: job, position: before }
+  - { pattern: "掲載開始日", group: job, position: before }
+  - { pattern: "募集開始日", group: job, position: before }
+  - { pattern: "応募締切", group: job, position: after }
+  - { pattern: "応募締切日", group: job, position: after }
+  - { pattern: "応募締め切り", group: job, position: after }
+  - { pattern: "応募期限", group: job, position: after }
+  - { pattern: "募集締切", group: job, position: after }
+  - { pattern: "募集締切日", group: job, position: after }
