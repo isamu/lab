@@ -1,0 +1,6 @@
+# 文書全体で一つの値を持つ項目の名前（fact-conflict）。表の升の値と、別の節の文の値を比べる。group が同じ名前は同じ項目。
+# 名前に条件を書いたもの（正社員の試用期間）は、名前が違うので比べない。
+id: fact-document-term
+language: ja
+entries:
+  - { pattern: 試用期間, group: trial-period }

@@ -26,8 +26,8 @@ export type FactWords = {
   readonly valueLeads?: readonly string[];
 };
 
-/** approximate: 値の前に目安の語（約、about）があった。 */
-export type Fact = { readonly label: string; readonly key: string; readonly value: FactValue; readonly approximate?: boolean };
+/** approximate: 値の前に目安の語（約、about）があった。table: 表の升の値。 */
+export type Fact = { readonly label: string; readonly key: string; readonly value: FactValue; readonly approximate?: boolean; readonly table?: boolean };
 
 const MAX_LABEL_LENGTH = 24;
 const MAX_LABEL_WORDS = 5;

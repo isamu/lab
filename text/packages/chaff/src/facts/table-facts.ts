@@ -59,7 +59,7 @@ const rowFacts = (row: Line, headings: readonly string[], values: readonly FactV
     const column = headings[index + 1] ?? "";
     if (value === undefined || (headings.length > TWO_COLUMNS && column === "")) return [];
     const label = headings.length > TWO_COLUMNS ? `${rowLabel} ${column}` : rowLabel;
-    return [{ label, key: keyOf(label), value }];
+    return [{ label, key: keyOf(label), value, table: true }];
   });
 };
 

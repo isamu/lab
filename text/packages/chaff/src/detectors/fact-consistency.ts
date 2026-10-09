@@ -15,6 +15,7 @@ import { quoteAt } from "./structure-tree.ts";
 import { measuredOf, valuesWith } from "./measured-facts.ts";
 import { durationValues, type DurationWord } from "../facts/duration-values.ts";
 import { overlapsAny, spanIndex } from "../compare/spans.ts";
+import { documentTermConflicts, type TermWord, type TermWords } from "../facts/document-terms.ts";
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
 
@@ -122,8 +123,21 @@ const retentionFindings = (doc: ProseDocument): Finding[] => {
   }));
 };
 
+const termWordsOf = (doc: ProseDocument): TermWords => ({
+  terms: (doc.lexicons["fact-document-term"] ?? []).map((entry): TermWord => ({ pattern: entry.pattern, group: entry.group ?? entry.pattern })),
+  determiners: patternsOf(doc, "fact-label-drop"),
+});
+
+/** 文書全体で一つの項目（試用期間）の、表の値と違う別の節の文の値。 */
+const termFindings = (doc: ProseDocument): Finding[] =>
+  documentTermConflicts(factsOf(doc), termWordsOf(doc)).map((conflict) => ({ ...findingOf("fact-conflict", doc)(conflict), variant: "term" }));
+
 /** 同じ節で、同じ名前に二通りの値（締切：10月5日 と 締切：10月7日）。文書のどこでも、同じものに二通りの保存期間。 */
-export const factConflict: Detector = (doc): Finding[] => [...scopeConflicts(factsOf(doc)).map(findingOf("fact-conflict", doc)), ...retentionFindings(doc)];
+export const factConflict: Detector = (doc): Finding[] => [
+  ...scopeConflicts(factsOf(doc)).map(findingOf("fact-conflict", doc)),
+  ...termFindings(doc),
+  ...retentionFindings(doc),
+];
 
 const countedPhrasesOf = (doc: ProseDocument): CountedPhrase[] =>
   doc.sentences.flatMap((sentence) => {
