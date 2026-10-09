@@ -1,0 +1,31 @@
+# 手順の中の時間で、その手順にかかる時間ではないもの（step-time-sum-mismatch）。after は時間のすぐ後ろ（10分後、5分ごと）、
+# before は前に書く。group: range は範囲をつなぐ記号（10〜15分）で、範囲を書いた手順は時間を読まない。
+id: step-time-not-own
+language: ja
+entries:
+  - pattern: 後
+    position: after
+  - pattern: たったら
+    position: after
+  - pattern: 経ったら
+    position: after
+  - pattern: ごと
+    position: after
+  - pattern: おき
+    position: after
+  - pattern: 置き
+    position: after
+  - pattern: 前
+    position: after
+  - pattern: 残り
+    position: before
+  - pattern: 〜
+    group: range
+  - pattern: ～
+    group: range
+  - pattern: "-"
+    group: range
+  - pattern: –
+    group: range
+  - pattern: から
+    group: range

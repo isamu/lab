@@ -505,3 +505,16 @@ describe("heading-echo の絞り込み", () => {
     assert.ok(!idsFor("## Generating Output\n\nVarious outputs can be generated:\n\n- Movie\n- PDF", "blog/tech", en).includes("heading-echo"));
   });
 });
+
+describe("no-em-dash", () => {
+  /** Twenty ranges written with `joiner` between two numbers. */
+  const step = (joiner: string, index: number): string => `Step ${String(index)} took ${String(index)}${joiner}${String(index + 2)} days. `;
+  const ranges = (joiner: string): string => ["# Report\n\n", ...Array.from({ length: 20 }, (_, index) => step(joiner, index)), BULK_EN].join("");
+
+  it("valid: an en dash between digits is a range mark, not a dash", () => assert.ok(!idsFor(ranges("–"), "business/report", en).includes("no-em-dash")));
+
+  it("invalid: as many em dashes, or en dashes between words, are reported", () => {
+    assert.ok(idsFor(ranges("—"), "business/report", en).includes("no-em-dash"));
+    assert.ok(idsFor(`# Report\n\n${"The plan – as agreed – ships today. ".repeat(10)}${BULK_EN}`, "business/report", en).includes("no-em-dash"));
+  });
+});

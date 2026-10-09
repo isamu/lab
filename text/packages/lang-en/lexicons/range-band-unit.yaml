@@ -1,0 +1,34 @@
+# The units a band is counted in (range-band-mismatch). Group integer has no value between two numbers (ages, people,
+# points): 6 to 11 then 12 and over is contiguous, and 7 to 12 then 12 to 14 overlap at 12. Group continuous has values in
+# between (weights, lengths, money, durations): two bands that meet at one number with a range mark ("50-60 kg", "60-70 kg")
+# are contiguous, and so are two a step of the written digits apart (59 kg then 60 kg). Times of day and dates are not units
+# here. A plural is the same unit as its singular. position before is a unit written before the number ($5).
+id: range-band-unit
+language: en
+entries:
+  - { pattern: "years", group: integer }
+  - { pattern: "years old", group: integer }
+  - { pattern: "yrs", group: integer }
+  - { pattern: "people", group: integer }
+  - { pattern: "persons", group: integer }
+  - { pattern: "guests", group: integer }
+  - { pattern: "points", group: integer }
+  - { pattern: "pts", group: integer }
+  - { pattern: "nights", group: integer }
+  - { pattern: "kg", group: continuous }
+  - { pattern: "g", group: continuous }
+  - { pattern: "mg", group: continuous }
+  - { pattern: "lb", group: continuous }
+  - { pattern: "lbs", group: continuous }
+  - { pattern: "oz", group: continuous }
+  - { pattern: "cm", group: continuous }
+  - { pattern: "mm", group: continuous }
+  - { pattern: "km", group: continuous }
+  - { pattern: "miles", group: continuous }
+  - { pattern: "%", group: continuous }
+  - { pattern: "hours", group: continuous }
+  - { pattern: "minutes", group: continuous }
+  - { pattern: "months", group: continuous }
+  - { pattern: "$", group: continuous, position: before }
+  - { pattern: "£", group: continuous, position: before }
+  - { pattern: "€", group: continuous, position: before }

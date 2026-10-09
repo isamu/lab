@@ -1,0 +1,17 @@
+# 表の列見出しで、その列が何人分・何倍の量かを言う語（scaled-quantity-mismatch）。before は数の前（×2）、after は数の後ろ（4人分）。
+# 見出しの升が、この語と数だけのときに読む。
+id: servings-column
+language: ja
+entries:
+  - pattern: "人分"
+    position: after
+  - pattern: "人前"
+    position: after
+  - pattern: "皿分"
+    position: after
+  - pattern: "倍"
+    position: after
+  - pattern: "×"
+    position: before
+  - pattern: "x"
+    position: before

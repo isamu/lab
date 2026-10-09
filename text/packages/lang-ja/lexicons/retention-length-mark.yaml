@@ -1,0 +1,12 @@
+# 保存期間の語の組が期間を言うのに、期間のすぐ前（before）か後ろ（after）に要る語（fact-conflict）。組に語が無ければ要らない。
+# 消す語は、期間が過ぎた後でなければ保存期間ではない（「3年間を経過した個人情報を削除」「1年後に削除」）。
+id: retention-length-mark
+language: ja
+entries:
+  - { pattern: を経過, group: delete, position: after }
+  - { pattern: が経過, group: delete, position: after }
+  - { pattern: 経過, group: delete, position: after }
+  - { pattern: 経過後に, group: delete, position: after }
+  - { pattern: 経過後, group: delete, position: after }
+  - { pattern: 後に, group: delete, position: after }
+  - { pattern: 後, group: delete, position: after }

@@ -43,6 +43,24 @@ describe("unit-mismatch: area", () => {
     assert.deepEqual(foundEn("Floor area: 400 square metres", "", "Floor area: 4,306 square feet"), []);
   });
 
+  it("one area in two units in one table cell", () => {
+    const table = (cell: string): string[] => ["| 項目 | 内容 |", "| --- | --- |", `| 専有面積 | ${cell} |`];
+    assert.deepEqual(foundJa(...table("52.80㎡（約15.97坪）")), []);
+    assert.deepEqual(foundJa(...table("165.29㎡（50.00坪）")), []);
+    assert.deepEqual(foundJa(...table("52.80㎡（約17.97坪）")), [":17.97坪≠52.80㎡"]);
+    assert.deepEqual(foundJa(...table("165.29㎡（55.00坪）")), [":55.00坪≠165.29㎡"]);
+    assert.deepEqual(foundEn("| Item | Value |", "| --- | --- |", "| Floor area | 68 m² (732 sq ft) |"), []);
+    assert.deepEqual(foundEn("| Item | Value |", "| --- | --- |", "| Floor area | 4,306 sq ft (400 m²) |"), []);
+    assert.deepEqual(foundEn("| Item | Value |", "| --- | --- |", "| Floor area | 68 m² (832 sq ft) |"), [":832 sq ft≠68 m²"]);
+    assert.deepEqual(foundEn("The plot is 5 acres (about 2 ha)."), []);
+    assert.deepEqual(foundEn("The plot is 5 acres (about 5 ha)."), [":5 ha≠5 acres"]);
+  });
+
+  it("a rounded tsubo agrees within the rounding written", () => {
+    assert.deepEqual(foundJa("延床面積は100㎡（30坪）です。"), []);
+    assert.deepEqual(foundJa("延床面積は100㎡（33坪）です。"), [":33坪≠100㎡"]);
+  });
+
   it("畳 is not read as an area, and an area is not compared with a length", () => {
     assert.deepEqual(foundJa("居室：10㎡", "", "居室：6畳"), []);
     assert.deepEqual(foundJa("広さ：10㎡", "", "広さ：10m"), []);

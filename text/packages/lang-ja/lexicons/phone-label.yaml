@@ -6,6 +6,7 @@ entries:
   - { pattern: 電話, group: phone }
   - { pattern: TEL, group: phone }
   - { pattern: Tel, group: phone }
+  - { pattern: "☎", group: phone }
   - { pattern: 代表, group: phone }
   - { pattern: 直通, group: phone }
   - { pattern: お問合せ, group: phone }

@@ -1,10 +1,11 @@
+cc-by-4-legalcode-ja  1
 commonpaper-mutual-nda  1
 crs-rl32781-salt  1
 github-general-privacy-statement  1
 github-terms-of-service  1
+mext-heatstroke-after-holidays  1
 mhlw-kokuji-h18-107-keiji-jiko  1
 ppc-guidelines-tsusoku  10
 rust-rfc-2094-nll  1
 sre-next-bunsho-kanri  1
 tokyoapp-service-terms  1
-utokyo-gakui-kisoku  1

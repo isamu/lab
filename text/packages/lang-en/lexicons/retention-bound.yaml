@@ -1,0 +1,25 @@
+# Words that make a length a range, beyond those in approximate-marker (fact-conflict). A length with an upper or lower bound
+# ("no more than 1 year", "a minimum of 3 years") is not compared with an exact length elsewhere. before: written before the
+# number.
+id: retention-bound
+language: en
+entries:
+  - { pattern: no more than, position: before }
+  - { pattern: not more than, position: before }
+  - { pattern: no longer than, position: before }
+  - { pattern: not longer than, position: before }
+  - { pattern: more than, position: before }
+  - { pattern: longer than, position: before }
+  - { pattern: less than, position: before }
+  - { pattern: no less than, position: before }
+  - { pattern: not less than, position: before }
+  - { pattern: a maximum of, position: before }
+  - { pattern: a minimum of, position: before }
+  - { pattern: maximum of, position: before }
+  - { pattern: minimum of, position: before }
+  - { pattern: within, position: before }
+  - { pattern: or more, position: after }
+  - { pattern: or less, position: after }
+  - { pattern: or longer, position: after }
+  - { pattern: or fewer, position: after }
+  - { pattern: or shorter, position: after }

@@ -11,12 +11,20 @@ name:
   en: One item given in two units that do not convert
 
 why:
-  ja: 「距離：5 km」と「距離：3000 m」のように、同じ項目の量を違う単位で書くと、読み手は換算してどちらが正しいかを確かめることになります。片方の単位を書き換えたときに、数を直し忘れると起きます。「項目：量」「項目は量です」と書いた所と表の升を読み、同じ節の同じ項目で単位の違う量（長さ、重さ、時間、体積、データの量、面積）を換算して比べます。面積の坪は 400/121 ㎡（約 3.306 ㎡）で数えます。畳（帖）は、大きさが地方や建物で違い、広告の決まりも 1.62 ㎡ 以上という下限しか決めていないので、面積の単位として読みません。丸めた書き方（1 mile と 1.6 km）は、2% までの差なら合っているとみなします。
-  en: 'When one item is given as "Distance: 5 km" and later "Distance: 3000 m", the reader has to convert to find out which is right. It happens when the unit of one is rewritten and its number is not. Values written as "Item: value" or "The item is value", and table cells, are read; within one section, the same item in two different units (of length, mass, time, volume, data or area) is converted and compared. A tsubo is 400/121 m² (about 3.306 m²). A tatami mat (畳) is not read as a unit of area: its size differs by region and building, and the advertising rules only set a minimum of 1.62 m². A rounded figure (1 mile and 1.6 km) agrees when the difference is within 2%.'
+  ja: 「距離：5 km」と「距離：3000 m」のように、同じ項目の量を違う単位で書くと、読み手は換算してどちらが正しいかを確かめることになります。片方の単位を書き換えたときに、数を直し忘れると起きます。三つの所を読みます。①「項目：量」「項目は量です」と書いた所と表の升で、同じ節の同じ項目の量。②一つの量を括弧で二つの単位に並べた所（180℃（350°F）、300kPa（約44psi））。③材料の表に書いた品物を、手順で違う単位で書いた所（表の「しょうゆ｜大さじ1」と手順の「しょうゆ30ml」）。表の量は行の最初の量（人数ごとの列があれば最初の列）で、節が違っても比べます。手順の量が表の量より多いときだけ言います（少ない量は、その一部を使う所かもしれません）。量の種類は長さ、重さ、時間、体積（大さじ 15 mL、小さじ 5 mL、カップ 200 mL）、データの量、温度、圧力、面積です。面積の坪は 400/121 ㎡（約 3.306 ㎡）で数えます。畳（帖）は、大きさが地方や建物で違い、広告の決まりも 1.62 ㎡ 以上という下限しか決めていないので、面積の単位として読みません。丸めた書き方（1 mile と 1.6 km）は、2% までの差なら合っているとみなします。括弧で並べた二つの量は、どちらもそれぞれの桁で同じ値を丸めたものでありうるなら合うとみなします（44 psi は 1 の位、100 miles は 10 の位）。温度は割合では比べられないので、オーブンの目盛り（25 °F 刻み）より小さい 15 °F（約 8 ℃）までの差を合うとみなします（換算表は 170 ℃ を 325 °F と書きます）。32 °F より小さい °F の量は温度の差（0.5 ℃ の上昇は 0.9 °F）としても比べます。「度」は、同じ行に「オーブン」「温度」のような語があるときだけ温度として読みます。
+  en: 'When one item is given as "Distance: 5 km" and later "Distance: 3000 m", the reader has to convert to find out which is right. It happens when the unit of one is rewritten and its number is not. Three places are read: values written as "Item: value" or "The item is value", and table cells, for the same item within one section; one value given in two units with the second in brackets ("180°C (350°F)", "300 kPa (about 44 psi)"); and an item of an ingredients table given in another unit in a step ("Soy sauce | 1 tablespoon" in the table, "30 ml of soy sauce" in a step), wherever in the document, against the first amount in the row (the first column when there is one per number of servings); only an amount larger than the one in the table is reported, since a smaller one may be a part of it. The kinds of quantity are length, mass, time, volume, data, temperature, pressure and area. A tsubo is 400/121 m² (about 3.306 m²). A tatami mat (畳) is not read as a unit of area: its size differs by region and building, and the advertising rules only set a minimum of 1.62 m². A tablespoon is 14.8 mL (US) or 15 mL (metric), a teaspoon 4.9 or 5 mL, a cup 240 mL (the US legal cup) or 250 mL, and either agrees. A rounded figure (1 mile and 1.6 km) agrees when the difference is within 2%; two values side by side also agree when both could be roundings of one value at their last digits (44 psi to the unit, 100 miles to the ten). A temperature cannot be compared by a share, so it agrees within 15 °F (about 8 °C), less than one 25 °F step of an oven dial (conversion tables give 170 °C as 325 °F). A Fahrenheit figure below 32 °F is also compared as a difference (a rise of 0.5 °C is 0.9 °F). "degrees" alone is read as a temperature only when a word such as "oven" or "temperature" is on the same line.'
 
 message:
   ja: "「{label}」が {value} と書かれていますが、同じ節の前の所では {other} で、換算すると合いません"
   en: '"{label}" is {value} here, but {other} earlier in the same section, and they do not convert'
+
+messages:
+  bracket:
+    ja: "{value} を {other} と並べていますが、換算すると合いません"
+    en: "{value} is given next to {other}, and they do not convert"
+  item:
+    ja: "「{label}」が {value} と書かれていますが、表では {other} で、換算すると合いません"
+    en: '"{label}" is {value} here, but {other} in the table, and they do not convert'
 
 how_to_fix:
   ja: どちらの量が正しいかを確かめて、もう一方を換算して直してください。一つの文書では、同じ項目の単位を揃えると読み手が比べやすくなります。
@@ -55,8 +63,8 @@ example:
       - Distance: 5000 m
 
 not_flagged:
-  ja: 単位が同じ量（食い違いは fact-conflict が見ます）、種類の違う量（長さと重さ）、違う見出しや違う親の項目の下の量、2% までの差は見ません。GB や MB は 1000 倍でも 1024 倍でも合えば合うとみなします。
-  en: Values in the same unit (fact-conflict looks at those), of different kinds (a length and a mass), under different headings or parent items, and differences within 2% are left alone. GB and MB agree when they match at either 1000 or 1024.
+  ja: 単位が同じ量（食い違いは fact-conflict が見ます）、種類の違う量（長さと重さ）、違う見出しや違う親の項目の下の量、2% までの差は見ません。GB や MB は 1000 倍でも 1024 倍でも合えば合うとみなします。単位が一つだけの温度（180℃に予熱）、表に無い名前の品物、量の前に分数が続く量（大さじ1と1/2）、表より少ない手順の量、表の中の量どうしは、括弧や品物の比べ方では見ません。スラッシュで並べた量（1 GB / 500 MB）は、別の選択肢のことがあるので比べません。
+  en: Values in the same unit (fact-conflict looks at those), of different kinds (a length and a mass), under different headings or parent items, and differences within 2% are left alone. GB and MB agree when they match at either 1000 or 1024. A temperature given in one unit only, an ingredient under another name, an amount with a fraction (1 1/2 cups), a step amount smaller than the table's, and amounts inside the table itself are left out of the bracket and ingredient comparisons. Values separated by a slash (1 GB / 500 MB) are not compared, since they may be alternatives.
 rewrite:
   depth: light
   ja:

@@ -10,8 +10,8 @@ name:
   en: Too long before the point
 
 why:
-  ja: 業務文書の読み手は結論を探しに来ています。最初の見出しまでに段落が重なると、探す手間だけが増えます。
-  en: A reader of a business document is looking for the decision. Paragraphs before the first heading only delay it.
+  ja: 業務文書の読み手は結論を探しに来ています。最初の見出しまでに段落が重なると、探す手間だけが増えます。文の閉じない段落（分類の札、著者の行）と、値が会社名だけの宛先・差出人の欄（英語の To 欄）は数えません。
+  en: A reader of a business document is looking for the decision. Paragraphs before the first heading only delay it. A paragraph with no closed sentence (a category label, an author line) and an address field whose value is only a name ("To" followed by a company name) are not counted.
 
 message:
   ja: 最初の見出しまでに {count} 段落あります（{limit} 段落まで）

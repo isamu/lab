@@ -1,0 +1,15 @@
+# Words put before a postal address. group is whose address it is (head office, branch); addresses of different groups are
+# never compared. address names no one office and is compared with any. contact-variant takes the group of the nearest label
+# before an address on its line.
+id: address-label
+language: en
+entries:
+  - { pattern: address, group: address }
+  - { pattern: located at, group: address }
+  - { pattern: office, group: address }
+  - { pattern: by post to, group: address }
+  - { pattern: head office, group: head-office }
+  - { pattern: registered office, group: head-office }
+  - { pattern: headquarters, group: head-office }
+  - { pattern: branch, group: branch }
+  - { pattern: branch office, group: branch }

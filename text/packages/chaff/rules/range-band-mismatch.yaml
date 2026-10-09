@@ -1,0 +1,70 @@
+id: range-band-mismatch
+layer: L3
+status: stable
+how_to_find: range-band-mismatch
+# The ends of a band are read with range-band-word, its unit with range-band-unit, and the bare numbers of a column with
+# range-band-heading.
+severity: warning
+
+name:
+  ja: 重なるか、間が空いた区分の幅
+  en: Bands that overlap or leave a gap
+
+why:
+  ja: 「7〜12歳」のあとに「12〜14歳」、「1〜6歳」のあとに「8歳以上」のように、表の列や箇条書きに並べた年齢・体重・金額・点数の区分が重なったり間が空いたりすると、12歳はどちらの量か、7歳はどの区分かを読み手が決められません。用量や料金の表で、一つの区分の端だけを書き換えたときに起きます。以上・以下は端を含み、未満・超は含まないと読みます。年齢・人数・点数のように間に値の無い数は、6〜11歳のあとの12歳〜を続いていると読み、同じ数で接する二つの区分は重なると読みます。重さ・金額・期間のように間に値のある量は、「〜」で同じ数に接する区分（50〜60kg、60〜70kg）と、書いた桁の一つ分だけ離れた区分（59kgまでと60kgから）を続いていると読みます。
+  en: 'When the bands of a table column or a list (ages, weights, amounts, scores) overlap or leave a gap, as "7 to 12" followed by "12 to 14", or "1 to 6 years" followed by "8 years and over", the reader cannot tell which amount a 12-year-old takes or which band a 7-year-old is in. It happens in a dosage or a fee table when only one end of one band is edited. "And over", "or more" and "up to" include their end; "under", "over", "more than" and "less than" do not. Ages, people and points have no value in between, so 6 to 11 then 12 and over is contiguous and two bands that share an end number overlap. Weights, money and durations do, so two bands that meet at one number with a range mark ("50-60 kg", "60-70 kg") are contiguous, and so are two a step of the written digits apart (59 kg then 60 kg).'
+
+message:
+  ja: 区分「{earlier}」と「{later}」の幅が重なっています
+  en: 'The bands "{earlier}" and "{later}" overlap'
+messages:
+  gap:
+    ja: 区分「{earlier}」と「{later}」の間が空いています
+    en: 'The bands "{earlier}" and "{later}" leave a gap between them'
+
+how_to_fix:
+  ja: 区分の端の数を確かめて、書き間違えたほうを直してください。
+  en: Check the end numbers of the two bands, and correct the wrong one.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 表の列や箇条書きの「7〜12歳」「12〜14歳」のように、隣り合う区分の幅が重なるか、間が空いた所
+  en: Neighbouring bands of a table column or a list that overlap or leave a gap, such as "7 to 12" then "12 to 14"
+example:
+  ja:
+    before: |
+      | 年齢 | 1回量 |
+      | --- | --- |
+      | 15歳以上 | 2錠 |
+      | 12〜14歳 | 1錠 |
+      | 7〜12歳 | 半錠 |
+    after: |
+      | 年齢 | 1回量 |
+      | --- | --- |
+      | 15歳以上 | 2錠 |
+      | 12〜14歳 | 1錠 |
+      | 7〜11歳 | 半錠 |
+  en:
+    before: |
+      | Age | Dose |
+      | --- | --- |
+      | 1 to 6 years | 1 chew |
+      | 8 years and over | 2 chews |
+    after: |
+      | Age | Dose |
+      | --- | --- |
+      | 1 to 6 years | 1 chew |
+      | 7 years and over | 2 chews |
+
+not_flagged:
+  ja: 区分は、表の一つの列の続いた行か、一つの箇条書きの続いた項目の頭に、同じ単位で書いたものだけを比べます。単位を書かない数は、列の見出しが何を数えるか言うとき（年齢、体重(kg)）だけ読みます。一方の端だけを書いた区分が重なっていく段階（〜100万円、〜200万円、5人以上、10人以上）は、重なるように書いたものとして読みません。半分を超えて重なる区分（大きさの目安）と、二つだけの区分で、狭いほうの幅より大きく離れたものも言いません。時刻、日付と年（暦の年と分けられない）、負の数、単位の違う区分は読みません。
+  en: 'Only bands in consecutive rows of one table column, or at the head of consecutive items of one list, in one unit, are compared. Bare numbers are read only when the column heading says what they count ("Age", "Weight (kg)"). Tiers bounded at one end that are meant to nest ("up to $100", "up to $200", "5 or more", "10 or more") are not read as overlapping. Bands that overlap by more than half (size guides), and two bands alone that are further apart than the narrower one is wide, are not reported. Times of day, dates, negative numbers and bands in different units are not read.'
+level_meaning:
+  ja: 隣り合う区分の幅が重なるか、間が空いたとき指摘
+  en: reported when neighbouring bands overlap or leave a gap

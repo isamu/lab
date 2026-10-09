@@ -1,0 +1,9 @@
+# 締め切りを示す語（2026年11月13日までに、申込締切）。申込の語（event-registration-word）と同じ文にあれば deadline-after-event が読む。
+id: event-deadline-word
+language: ja
+entries:
+  - pattern: まで
+  - pattern: 締切
+  - pattern: 締め切り
+  - pattern: 〆切
+  - pattern: 期限
