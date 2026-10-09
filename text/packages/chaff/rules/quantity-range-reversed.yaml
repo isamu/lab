@@ -1,0 +1,53 @@
+id: quantity-range-reversed
+layer: L3
+status: stable
+how_to_find: quantity-range
+# The quantities are read with the unit lexicons (unit-length, unit-mass, unit-time, unit-volume, unit-data, unit-temperature,
+# unit-pressure, with unit-context); the joints are range-connector, range-opener, range-closer and quantity-range-word;
+# quantity-change-word and quantity-bound-label come next.
+severity: warning
+
+name:
+  ja: 量の範囲の上限が下限より小さい
+  en: A measured range whose upper end is below its lower end
+
+why:
+  ja: 「使用温度範囲：-10〜-40℃」「重さ 5〜2 kg」のように、測った量の範囲の終わりが始まりより小さいと、読み手はどちらの値が正しいのか、範囲がどこからどこまでなのかを確かめることになります。仕様書の温度や寸法で、片方の値だけを書き換えたときや、負の符号を書き足したとき、二つを入れ替えて書いたときに起きます。同じ単位の二つの量の間が範囲の記号（〜、–）だけのときと、「から」でつなぎ終わりの量のあとに「まで」が続くときを範囲として比べます。単位を一度だけ書いた範囲（30〜10 cm）も読みます。負の数は符号ごと読むので、-10〜-40℃ は終わりが小さく、-40〜-10℃ はそのままです。数の直後のハイフン（5-10 kg）は負の符号ではなく範囲の記号と読みます。同じ行に下限と上限を書いた二つの量も比べます。
+  en: 'When a measured range ends below where it starts ("Operating temperature: -10 to -40 °C", "Weight: 5–2 kg"), the reader has to ask which value is right and what the range is. It happens in a spec sheet when only one of the two values is edited, when a minus sign is added, or when the two are written the wrong way round. Two quantities in one unit are read as a range when only a range mark (–, —) or "to" stands between them, including a range that writes its unit once ("30–10 cm"). A negative number is read with its sign, so -10 to -40 °C ends below its start and -40 to -10 °C does not. A hyphen right after a number ("5-10 kg") is a range mark, not a minus sign. Two quantities on one line labelled minimum and maximum are compared too.'
+
+message:
+  ja: 量の範囲「{range}」の上限が下限より小さくなっています
+  en: 'The range "{range}" ends below where it starts'
+
+how_to_fix:
+  ja: 範囲の二つの値と符号を確かめて、書き間違えたほうを直すか、小さいほうから書いてください。
+  en: Check both values and their signs, and correct the wrong one or write the smaller one first.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 「使用温度範囲：-10〜-40℃」のように、測った量の範囲の終わりが始まりより小さい所
+  en: A measured range whose second value is smaller than its first, such as "-10 to -40 °C"
+example:
+  ja:
+    before: |
+      使用温度範囲：-10〜-40℃（凍結しないこと）
+    after: |
+      使用温度範囲：-10〜40℃（凍結しないこと）
+  en:
+    before: |
+      Operating temperature: -10 to -40 °C (no freezing)
+    after: |
+      Operating temperature: -10 to 40 °C (no freezing)
+
+not_flagged:
+  ja: 同じ文に値を変える語や下る順を言う語のある二つの量（「40℃から10℃まで冷却」「カウントダウン 10〜0秒」「重い順」）、単位の違う二つの量、間に言葉のある二つの量、計算の式は比べません。百分率や単位の無い数は読みません。
+  en: 'Two quantities in a sentence with a word that changes a value or names a descending order ("cooled from 40 °C to 10 °C", "from 100 m down to 10 m", "countdown"), two quantities in different units, two quantities with words between them, and a sum are not compared. Percentages and numbers without a unit are not read.'
+level_meaning:
+  ja: 測った量の範囲の終わりが始まりより小さいとき指摘
+  en: reported when a measured range ends below where it starts
