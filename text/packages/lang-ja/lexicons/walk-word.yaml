@@ -1,0 +1,16 @@
+# 徒歩の分数を読む語（walk-time-distance-mismatch）。group walk は分数を徒歩の時間にする語、position は分数のどちら側に書くか。
+# group gap は徒歩の語と分数の間に挟んでよい語（徒歩で5分）。group bound は分数を上限や目安にする語（徒歩10分以内）で、その分数は比べない。
+# group range は二つの数を範囲にする語（5分から10分）で、範囲の数は比べない。
+id: walk-word
+language: ja
+entries:
+  - { pattern: "徒歩", position: before, group: walk }
+  - { pattern: "歩いて", position: before, group: walk }
+  - { pattern: "で", group: gap }
+  - { pattern: "から", group: range }
+  - { pattern: "ないし", group: range }
+  - { pattern: "以内", position: after, group: bound }
+  - { pattern: "以下", position: after, group: bound }
+  - { pattern: "未満", position: after, group: bound }
+  - { pattern: "圏内", position: after, group: bound }
+  - { pattern: "程度", position: after, group: bound }

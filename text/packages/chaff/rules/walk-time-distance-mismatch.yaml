@@ -1,0 +1,51 @@
+id: walk-time-distance-mismatch
+layer: L3
+status: stable
+how_to_find: walk-time-distance-mismatch
+severity: warning
+
+name:
+  ja: 距離と合わない徒歩の分数
+  en: A walking time that does not match the stated distance
+
+why:
+  ja: 「駅 徒歩3分（約600m）」のように、徒歩の分数と距離が合わないと、どちらかを書き間違えています。不動産の広告では、道路距離80mを1分とし、1分未満の端数を切り上げて分数を出すと決められていて（不動産の表示に関する公正競争規約施行規則）、600mなら8分です。徒歩の語の付いた分数と、そのすぐ前か後ろの括弧などに書いた距離だけを組にして比べます。速さは文書に書いたもの（道路距離80mを1分、分速80m）を使い、書いていなければ80mで1分、端数は切り上げとして比べます。約の付いた距離は、書いた桁の幅を持たせます（約1.2kmは1.15〜1.25km）。
+  en: 'When a listing says "a 3-minute walk (600 m)" while it states that walking times assume 80 m per minute, the time or the distance is wrong: 600 m is 8 minutes at that rate. A number of minutes with a word of walking ("walk", "on foot") is compared only with a distance written right before or after it, and only at a rate the document states itself ("80 m per minute", "5 km/h"); English has no standard walking speed, so without a stated rate nothing is compared. Part minutes may be rounded either way, or only up when the rate line says so. An approximate distance ("about 1.2 km") is read with the width of its last digit.'
+
+message:
+  ja: 「{minutes}」は「{distance}」と合いません（分速{rate}mで{expected}分）
+  en: '"{minutes}" does not match "{distance}" ({expected} minutes at {rate} m per minute)'
+
+how_to_fix:
+  ja: 距離と分数を確かめて、書き間違えたほうを直してください。分数は道路距離を80mで割り、端数を切り上げて出します。
+  en: Check the distance and the walking time, and correct the wrong one, using the rate the document states.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 「徒歩3分（約600m）」のように、徒歩の分数が書いた距離と合わない所
+  en: A walking time that does not match the distance beside it, at the rate the document states
+example:
+  ja:
+    before: |
+      | 交通 | あおば線「青葉台」駅 徒歩3分（約600m） |
+    after: |
+      | 交通 | あおば線「青葉台」駅 徒歩8分（約600m） |
+  en:
+    before: |
+      | Access | Ashford Station, a 3-minute walk (600 m) |
+
+      Walking times assume 80 m per minute along the road, rounded up to the next minute.
+    after: |
+      | Access | Ashford Station, an 8-minute walk (600 m) |
+
+      Walking times assume 80 m per minute along the road, rounded up to the next minute.
+
+not_flagged:
+  ja: 距離の無い分数、徒歩の語の無い分数（バスで10分、駅から5分）、分数と離れて書いた距離、範囲（徒歩5〜7分、400〜600m）、上限や目安の分数（徒歩10分以内、徒歩10分程度）、約の付いた分数（徒歩約5分）、速さを二つ以上書いた文書は比べません。
+  en: 'Minutes with no distance, minutes without a word of walking ("10 minutes by bus"), a distance written apart from the minutes, ranges ("5-7 minutes", "400-600 m"), limits ("within a 10-minute walk"), approximate minutes ("about 5 minutes on foot"), a document stating no rate, and a document stating two rates are not compared.'
