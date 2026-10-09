@@ -1,0 +1,84 @@
+id: party-order
+layer: L3
+status: stable
+how_to_find: party-order
+word_list: party-order-joiner
+extra_word_lists: [party-order-label, party-short-name, party-role, company-form]
+requires: [structure]
+# An English contract has no fixed order for its parties: "the Supplier and the Customer" and "the Customer and the Supplier"
+# are both plain English. Japanese contracts list 甲 before 乙 by convention, so the rule is Japanese only.
+languages: [ja]
+severity: info
+
+name:
+  ja: 当事者の呼び名を、ほかの所と逆の順に並べている
+  en: Parties listed in the reverse of the document's usual order
+
+why:
+  ja: 契約書は当事者の呼び名を決まった順に並べます（甲及び乙、甲又は乙、甲乙、甲・乙・丙）。ほかの所で「甲及び乙」と書いた契約に「乙及び甲」が一つだけあると、読み手は順を変えた意味（乙を先に立てる理由）を探して止まります。条項を貼り合わせたときや、書き直したときに起きます。並べる語（及び・又は・と・・）でつないだ呼び名だけを数え、同じ二つの呼び名を逆の順に並べた所が、ふだんの順の半分以下のときに指します。
+  en: A Japanese contract lists its parties in a fixed order (甲及び乙, 甲又は乙, 甲乙, 甲・乙・丙). In a contract that writes 甲及び乙 everywhere else, a single 乙及び甲 makes the reader look for a reason to put 乙 first. It comes from pasted or rewritten clauses. Only names joined by a listing word (及び, 又は, と, ・) are counted, and a listing is reported when its order is written at most half as often as the reverse.
+
+message:
+  ja: 「{written}」は、この文書がほかの所で書く順（「{usual}」）と逆です
+  en: '"{written}" lists the parties in the reverse of the order this document uses elsewhere ("{usual}")'
+
+how_to_fix:
+  ja: ほかの所と同じ順に並べ替えてください。順に意味がある（乙を先に立てる）なら、そのままにします。
+  en: List the parties in the same order as elsewhere. If the order is meant (the second party first on purpose), leave it.
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [legal, docs, academic, literature, speech]
+off_for:
+  docs: "The order of a contract's parties is a contract's convention: the contract genre checks it."
+  academic: "The order of a contract's parties is a contract's convention: the contract genre checks it."
+  literature: "The order of a contract's parties is a contract's convention: the contract genre checks it."
+  speech: "The order of a contract's parties is a contract's convention: the contract genre checks it."
+  legal/statute: "A statute defines no parties: it names people by their role."
+  legal/judgment: "A court decision quotes each side's words in that side's order."
+  legal/patent: "A patent has no parties."
+
+group: consistency
+summary:
+  ja: 「甲及び乙」と書く契約の中の「乙及び甲」
+  en: 乙及び甲 in a contract that otherwise writes 甲及び乙
+example:
+  ja:
+    config: { genre: legal/contract }
+    before: |
+      # 業務委託契約書
+
+      株式会社みなと商会（以下「甲」という。）と株式会社しおさい技研（以下「乙」という。）は、次のとおり契約を結ぶ。
+
+      第1条　甲又は乙は、相手方が本契約に違反したときは、本契約を解除することができる。
+
+      第2条　本契約に定めのない事項は、乙及び甲が協議して定める。
+
+      第3条　本書2通を作成し、甲乙記名押印の上、各1通を保有する。
+    after: |
+      # 業務委託契約書
+
+      株式会社みなと商会（以下「甲」という。）と株式会社しおさい技研（以下「乙」という。）は、次のとおり契約を結ぶ。
+
+      第1条　甲又は乙は、相手方が本契約に違反したときは、本契約を解除することができる。
+
+      第2条　本契約に定めのない事項は、甲及び乙が協議して定める。
+
+      第3条　本書2通を作成し、甲乙記名押印の上、各1通を保有する。
+
+not_flagged:
+  ja: 向きのある言い方（乙から甲への通知、甲に対し乙は、甲が乙に）は、並べたのではなく順に意味があるので数えません。「、」は、あとに並べる語がある並び（甲、乙及び丙）だけをつなぎます。長い語の頭（甲種株式の甲、乙種の乙）は呼び名と読みません。二つの順の数が同じか近い（逆の順が半分より多い）ときは、どちらがふだんの順とも言えないので指しません。呼び名は甲・乙・丙・丁と、文書が括弧で当事者に定めた呼び名（以下「委託者」という）です。契約書のジャンルで、日本語の文書だけで動きます。
+  en: A direction (乙から甲への通知, 甲に対し乙は, 甲が乙に) is not a listing and is not counted. A comma joins names only in a listing that goes on to a listing word (甲、乙及び丙). A name that starts a longer word (the 甲 of 甲種株式) is not read. When the two orders are written about as often (the reverse more than half as often), neither is the usual order and nothing is reported. The names are 甲, 乙, 丙 and 丁 and the short names the document gives its parties in brackets. Contracts only, in Japanese documents only.
+rewrite:
+  depth: light
+  ja:
+    direction: 当事者の呼び名を、文書のほかの所と同じ順に並べ替えます。並べた語と、並べる語（及び・又は）は変えません。
+    pairs:
+      - before: 乙及び甲が協議して定める。
+        after: 甲及び乙が協議して定める。
+      - before: 乙又は甲は、本契約を解除することができる。
+        after: 甲又は乙は、本契約を解除することができる。
+    keep:
+      - 並べる語（及び・又は・と）
+    avoid:
+      - 向きのある言い方（乙から甲へ）の順を変える
