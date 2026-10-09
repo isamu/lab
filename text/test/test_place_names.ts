@@ -113,6 +113,14 @@ describe("name-variant: 場所の名前の書き分け", () => {
     assert.deepEqual(variants(table("東京駅 南口"), ja), []);
   });
 
+  it("表の升の中の名前も読みで比べる（日程表だけに書いた 筑紫口 と ちくし口）", () => {
+    const rows = (last: string): string =>
+      `| 時刻 | 内容 |\n| --- | --- |\n| 10:00 | 博多駅 筑紫口で合流 |\n| 12:00 | 博多駅 筑紫口から近い |\n| 18:00 | 博多駅 ${last}で会う |\n`;
+    assert.deepEqual(variants(rows("ちくし口"), ja), ["「ちくし口」は、ほかの所では同じ読みの「筑紫口」と書いています"]);
+    assert.deepEqual(variants(rows("筑紫口"), ja), []);
+    assert.deepEqual(variants(rows("博多口"), ja), []);
+  });
+
   it("a place name in a table cell is read too (King's Cross and Kings Cross)", () => {
     const table = (last: string): string =>
       `Meeting point: King's Cross station\n\n| Time | Plan |\n| --- | --- |\n| 06:40 | Meet at King's Cross station |\n| 17:35 | Group disbands at ${last} station |\n`;
