@@ -126,7 +126,7 @@ sample.md   blog/tech · English   genre from the default
   ·  Heading echoed
 
      The first sentence repeats the heading "restoreFixtures"
-     When the first sentence repeats the heading, the reader gains nothing by reading on.
+     When the first sentence repeats the heading, the reader gains nothing by reading on. A sentence that states a figure the heading does not have (an amount, a number, a date) gives the content even when it repeats the heading, and is not reported.
 
      → Start from what the heading promised, not from the heading itself.
 
