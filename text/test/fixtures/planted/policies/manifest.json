@@ -1,0 +1,223 @@
+{
+  "note": "Self-written privacy policies and terms of use for a fictional diary app, in Japanese and English, each in a clean version and a planted one that differs only on the lines below. They run as legal/contract, the genre whose summary names terms of service and privacy policies. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: date-stamp-order (an established date later than the last-updated date under it) and contact-variant (one email address or postal address written two ways in one document). yarn planted policies scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/privacy",
+      "language": "ja",
+      "genre": "legal/contract",
+      "clean": "ja/privacy.clean.md",
+      "planted": "ja/privacy.planted.md",
+      "mistakes": [
+        {
+          "kind": "term-before-definition",
+          "rule": "use-before-definition",
+          "line": 3,
+          "clean": "における個人情報の取扱い",
+          "planted": "における利用者の個人情報の取扱い"
+        },
+        {
+          "kind": "announced-count",
+          "rule": "announced-count-mismatch",
+          "line": 15,
+          "clean": "次の4つの目的",
+          "planted": "次の3つの目的"
+        },
+        {
+          "kind": "dangling-section-reference",
+          "rule": "dangling-reference",
+          "line": 33,
+          "clean": "第7条に定める窓口",
+          "planted": "第9条に定める窓口"
+        },
+        {
+          "kind": "retention-two-ways",
+          "rule": "fact-conflict",
+          "line": 35,
+          "clean": "退会の日から1年間を経過",
+          "planted": "退会の日から3年間を経過"
+        },
+        {
+          "kind": "vague-deadline",
+          "rule": "vague-deadline",
+          "line": 39,
+          "clean": "その事実を知った日から30日以内に、",
+          "planted": "速やかに、"
+        },
+        {
+          "kind": "contact-two-ways",
+          "rule": "contact-variant",
+          "line": 50,
+          "clean": "質問は、privacy@hibari-lab.example で",
+          "planted": "質問は、privacy@hibarilab.example で"
+        },
+        {
+          "kind": "stamp-dates-reversed",
+          "rule": "date-stamp-order",
+          "line": 54,
+          "clean": "2023年4月1日 制定",
+          "planted": "2027年4月1日 制定"
+        }
+      ]
+    },
+    {
+      "id": "ja/terms",
+      "language": "ja",
+      "genre": "legal/contract",
+      "clean": "ja/terms.clean.md",
+      "planted": "ja/terms.planted.md",
+      "mistakes": [
+        {
+          "kind": "term-before-definition",
+          "rule": "use-before-definition",
+          "line": 3,
+          "clean": "を利用する条件を定める",
+          "planted": "をユーザーが利用する条件を定める"
+        },
+        {
+          "kind": "announced-count",
+          "rule": "announced-count-mismatch",
+          "line": 21,
+          "clean": "次の4つの行為",
+          "planted": "次の3つの行為"
+        },
+        {
+          "kind": "vague-deadline",
+          "rule": "vague-deadline",
+          "line": 31,
+          "clean": "停止の日から5営業日以内に、",
+          "planted": "速やかに、"
+        },
+        {
+          "kind": "dangling-section-reference",
+          "rule": "dangling-reference",
+          "line": 35,
+          "clean": "第7条に定める宛先",
+          "planted": "第9条に定める宛先"
+        },
+        {
+          "kind": "contact-two-ways",
+          "rule": "contact-variant",
+          "line": 47,
+          "clean": "本店所在地（東京都千代田区丸の内二丁目4番1号）",
+          "planted": "本店所在地（東京都千代田区丸の内二丁目1番4号）"
+        },
+        {
+          "kind": "stamp-dates-reversed",
+          "rule": "date-stamp-order",
+          "line": 53,
+          "clean": "2026年9月1日 最終改定",
+          "planted": "2024年9月1日 最終改定"
+        }
+      ]
+    },
+    {
+      "id": "en/privacy",
+      "language": "en",
+      "genre": "legal/contract",
+      "clean": "en/privacy.clean.md",
+      "planted": "en/privacy.planted.md",
+      "mistakes": [
+        {
+          "kind": "term-before-definition",
+          "rule": "use-before-definition",
+          "line": 3,
+          "clean": "handles personal information in",
+          "planted": "handles the personal information of Users in"
+        },
+        {
+          "kind": "announced-count",
+          "rule": "announced-count-mismatch",
+          "line": 15,
+          "clean": "following four purposes",
+          "planted": "following three purposes"
+        },
+        {
+          "kind": "dangling-section-reference",
+          "rule": "dangling-reference",
+          "line": 34,
+          "clean": "contact point in Section 7.",
+          "planted": "contact point in Section 9."
+        },
+        {
+          "kind": "retention-two-ways",
+          "rule": "fact-conflict",
+          "line": 38,
+          "clean": "one (1) year after the account was closed",
+          "planted": "three (3) years after the account was closed"
+        },
+        {
+          "kind": "vague-deadline",
+          "rule": "vague-deadline",
+          "line": 42,
+          "clean": "within thirty (30) days of becoming aware of it",
+          "planted": "promptly after becoming aware of it"
+        },
+        {
+          "kind": "contact-two-ways",
+          "rule": "contact-variant",
+          "line": 53,
+          "clean": "sent to privacy@hibari-lab.example.",
+          "planted": "sent to privacy@hibarilab.example."
+        },
+        {
+          "kind": "stamp-dates-reversed",
+          "rule": "date-stamp-order",
+          "line": 55,
+          "clean": "Established: April 1, 2023",
+          "planted": "Established: April 1, 2027"
+        }
+      ]
+    },
+    {
+      "id": "en/terms",
+      "language": "en",
+      "genre": "legal/contract",
+      "clean": "en/terms.clean.md",
+      "planted": "en/terms.planted.md",
+      "mistakes": [
+        {
+          "kind": "term-before-definition",
+          "rule": "use-before-definition",
+          "line": 3,
+          "clean": "set out the conditions for using",
+          "planted": "set out the conditions for each Member using"
+        },
+        {
+          "kind": "announced-count",
+          "rule": "announced-count-mismatch",
+          "line": 23,
+          "clean": "following four kinds",
+          "planted": "following three kinds"
+        },
+        {
+          "kind": "vague-deadline",
+          "rule": "vague-deadline",
+          "line": 34,
+          "clean": "within five (5) business days of the suspension",
+          "planted": "promptly"
+        },
+        {
+          "kind": "dangling-section-reference",
+          "rule": "dangling-reference",
+          "line": 38,
+          "clean": "address in Section 7.",
+          "planted": "address in Section 9."
+        },
+        {
+          "kind": "contact-two-ways",
+          "rule": "contact-variant",
+          "line": 51,
+          "clean": "head office at 2-4-1 Marunouchi",
+          "planted": "head office at 2-1-4 Marunouchi"
+        },
+        {
+          "kind": "stamp-dates-reversed",
+          "rule": "date-stamp-order",
+          "line": 55,
+          "clean": "Last updated: September 1, 2026",
+          "planted": "Last updated: September 1, 2024"
+        }
+      ]
+    }
+  ]
+}
