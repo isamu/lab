@@ -8,7 +8,7 @@ The Parties wish to evaluate a possible joint research project (the "Purpose") a
 
 ## 2. Confidential Information
 
-"Confidential Information" means any non-public information that a Party discloses to the other Party for the Purpose and marks as confidential at the time of disclosure.
+"Confidential Information" means any non-public information that a Party discloses to the other Party for the Purpose and marks as confidential at the time of disclosure. Information disclosed orally is Confidential Information only if the disclosing Party confirms in writing within ten (10) days of the disclosure that it is confidential.
 
 ## 3. Obligations
 
@@ -30,11 +30,11 @@ On a written request, each Party shall return or destroy the other Party's Confi
 
 ## 6. Remedies
 
-A Party that breaches Section 3 (Return of Information) shall pay the other Party liquidated damages of $50,000 for each breach. The amount of USD 50,000 does not limit any other remedy available at law.
+A Party that breaches Section 3 (Return of Information) shall pay the other Party liquidated damages of $50,000 for each breach, up to $250,000 in total. The amount of USD 50,000 does not limit any other remedy available at law.
 
 ## 6. Governing Law
 
-This Agreement is governed by the laws of the State of California.
+This Agreement is governed by the laws of the State of California. A Party that intends to bring a claim under this Agreement shall first give the other Party written notice of it, and the Parties shall meet to discuss the claim within thirty (30) days of that notice.
 
 Signed by the Parties on Thursday, March 27, 2026.
 
