@@ -10,6 +10,7 @@ const countWordsOf = (doc: ProseDocument): CountWords => ({
   anchors: patternsOf(doc, "count-anchor"),
   numbers: patternsOf(doc, "count-number"),
   counters: patternsOf(doc, "count-counter"),
+  frames: patternsOf(doc, "count-frame"),
   hedgesBefore: patternsOf(doc, "count-hedge", "before"),
   hedgesAfter: patternsOf(doc, "count-hedge", "after"),
 });
