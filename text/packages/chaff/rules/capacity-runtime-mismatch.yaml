@@ -1,0 +1,66 @@
+id: capacity-runtime-mismatch
+layer: L3
+status: stable
+how_to_find: capacity-runtime-mismatch
+# Item names are read with battery-label (capacity, consumption, runtime, standby, peak, bound), units with battery-unit and
+# unit-time, ranges with range-connector, rough values with approximate-marker.
+severity: warning
+
+name:
+  ja: 電池の容量を消費電流で割った時間より長い使用時間
+  en: A runtime longer than the battery capacity divided by the consumption
+
+why:
+  ja: 「容量 5000 mAh、消費電流 500 mA、連続使用時間 15時間」のように書くと、5000 mAh ÷ 500 mA は 10時間なので、15時間はどうやっても届きません。消費電流か使用時間のどちらかを、別の条件の値や別の機種の値に書き換えたときに起きます。実際の使用時間は変換の損失で割り算の値より短くなるのが普通なので、短いほうは言いません。割り算の値を、使用時間の書いた桁の一つ分（15時間なら1時間）より大きく超えたときだけ言います。三つのどれかに「約」「最大」などが付いていれば、その幅を二倍にします。
+  en: 'When a spec states "Capacity 5000 mAh, current draw 500 mA, runtime 15 hours", 5000 mAh at 500 mA lasts 10 hours, so 15 hours cannot be reached. It happens when the consumption or the runtime is replaced with the value of another condition or another model. A real runtime is normally shorter than the division because of conversion losses, so a shorter one is not reported. Only a runtime above the division by more than one step of its last written digit (1 hour for "15 hours") is reported; when any of the three is marked "about" or "up to", that margin is doubled.'
+
+message:
+  ja: "{capacity} ÷ {consumption} は {expected} 時間ですが、使用時間は{runtime}と書かれています"
+  en: "{capacity} at {consumption} lasts {expected} hours, but the runtime is given as {runtime}"
+
+how_to_fix:
+  ja: 容量・消費電流・使用時間が同じ条件の値かを確かめて、違っているほうを直してください。
+  en: Check that the capacity, the consumption and the runtime are values of the same condition, and correct the one that is not.
+
+levels: { normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: facts
+summary:
+  ja: 「5000 mAh、500 mA、連続使用時間15時間」のように、容量を消費電流で割った時間より長い使用時間
+  en: A runtime longer than the capacity divided by the consumption, such as 5000 mAh at 500 mA stated as 15 hours
+example:
+  ja:
+    before: |
+      | 項目 | 仕様 |
+      | --- | --- |
+      | バッテリー容量 | 5000 mAh |
+      | 消費電流 | 500 mA |
+      | 連続使用時間 | 15時間 |
+    after: |
+      | 項目 | 仕様 |
+      | --- | --- |
+      | バッテリー容量 | 5000 mAh |
+      | 消費電流 | 500 mA |
+      | 連続使用時間 | 10時間 |
+  en:
+    before: |
+      | Item | Specification |
+      | --- | --- |
+      | Battery capacity | 50 Wh |
+      | Power consumption | 10 W |
+      | Runtime | 8 hours |
+    after: |
+      | Item | Specification |
+      | --- | --- |
+      | Battery capacity | 50 Wh |
+      | Power consumption | 10 W |
+      | Runtime | 5 hours |
+
+not_flagged:
+  ja: 容量・消費電流・使用時間を、表の行（項目名と値）か「項目名：値」の行に書き、同じ節の同じ表か行にそろっているときだけ読みます。幅の広い表は列ごとに一台と読みます。mAh は mA でだけ、Wh は W でだけ割り、mAh を W で割ることはしません（電圧が公称か動作時かを決められないため）。最大の消費電流（項目名の「最大」、列の見出しの「最大」）は使わず、待機の消費電流は待受時間とだけ組みます。消費電流と使用時間が二つ以上あれば、括弧の中の条件（音量50%）が同じものどうしだけを組みます。範囲（8〜10時間、300〜500 mA）は書き手に有利な端（使用時間の短いほう、消費電流の小さいほう、容量の大きいほう）で比べます。「以上」「以下」「以内」で片側だけを決めた値と、文の中に書いた値は読みません。
+  en: 'Only a capacity, a consumption and a runtime written as table rows (item name and value) or "item name: value" lines, in the same table or the lines of the same section, are read; a wider table is one device per column. mAh is divided only by mA and Wh only by W; mAh is never divided by W, since whether the voltage is the nominal or the operating one cannot be told. A maximum consumption ("max" in the item name, a "Max" column) is not used, and a standby consumption pairs only with a standby time. With two or more consumptions and runtimes, only those with the same condition in brackets ("(50% volume)") are paired. A range ("8-10 hours", "300-500 mA") is compared at the end that favours the writer (the shorter runtime, the smaller consumption, the larger capacity). A value bounded on one side ("at least", "under") and values in running sentences are not read.'
+level_meaning:
+  ja: 容量を消費電流で割った時間を、使用時間が書いた桁を超えて上回るとき指摘
+  en: reported when the runtime is above the capacity divided by the consumption by more than its written precision
