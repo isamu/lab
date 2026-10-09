@@ -3,14 +3,9 @@ import type { Measured, Tolerance } from "./measures.ts";
 const HALF = 0.5;
 const DECIMAL_BASE = 10;
 
-const decimalsOf = (amount: number): number => {
-  const [, fraction = ""] = String(Math.abs(amount)).split(".");
-  return fraction.length;
-};
-
 /** 目安の量（約1.2kg）が言える幅を、基準の単位で。書いた最後の桁の半分（約1.2kg は 1.15〜1.25 kg）。 */
 const writtenHalfStep = (value: Measured): number => {
-  const step = HALF * DECIMAL_BASE ** -decimalsOf(value.amount);
+  const step = HALF * DECIMAL_BASE ** -value.decimals;
   return step * Math.max(...value.factors);
 };
 

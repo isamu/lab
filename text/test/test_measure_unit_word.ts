@@ -52,7 +52,7 @@ describe("standsAsUnitWord", () => {
   });
 });
 
-const measured = (amount: number, factors: readonly number[]): Measured => ({
+const measured = (amount: number, factors: readonly number[], decimals = String(amount).split(".")[1]?.length ?? 0): Measured => ({
   start: 0,
   end: 1,
   kind: "quantity",
@@ -62,6 +62,7 @@ const measured = (amount: number, factors: readonly number[]): Measured => ({
   factors,
   zero: 0,
   amount,
+  decimals,
 });
 
 describe("approximateTolerance", () => {
@@ -71,6 +72,7 @@ describe("approximateTolerance", () => {
     assert.deepEqual(approximateTolerance(base, [measured(1.2, [1000])]), { relative: 0.02, absolute: 50 });
     assert.deepEqual(approximateTolerance(base, [measured(12, [1])]), { relative: 0.02, absolute: 0.5 });
     assert.deepEqual(approximateTolerance(base, [measured(-1.25, [1])]), { relative: 0.02, absolute: 0.005 });
+    assert.deepEqual(approximateTolerance(base, [measured(1.2, [1000], 2)]), { relative: 0.02, absolute: 5 });
   });
 
   it("takes the widest of the given values and factors", () => {

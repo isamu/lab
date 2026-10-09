@@ -22,6 +22,8 @@ export type Measured = FactValue & {
   readonly factors: readonly number[];
   readonly zero: number;
   readonly amount: number;
+  /** 書いた小数の桁数（1.20 なら 2）。amount は数なので末尾の 0 を持たない。 */
+  readonly decimals: number;
 };
 
 /** 換算して合うとみなす差。relative は大きいほうの値に対する割合、absolute は基準の単位での差。どちらかに収まれば合う。 */
@@ -91,7 +93,8 @@ export const measuredValues = (source: string, units: readonly MeasureUnit[]): M
     const start = signedStart(source, match.index);
     const found = unitAfter(source, start, end, longestFirst) ?? unitBefore(source, start, end, longestFirst);
     if (found === undefined) return [];
-    const magnitude = Number(match[0].normalize("NFKC").replace(/,/gu, ""));
+    const written = match[0].normalize("NFKC").replace(/,/gu, "");
+    const magnitude = Number(written);
     const amount = start < match.index ? -magnitude : magnitude;
     const { unit } = found;
     return [
@@ -105,6 +108,7 @@ export const measuredValues = (source: string, units: readonly MeasureUnit[]): M
         factors: unit.factors,
         zero: unit.zero,
         amount,
+        decimals: written.split(".")[1]?.length ?? 0,
       },
     ];
   });
