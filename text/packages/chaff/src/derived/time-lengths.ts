@@ -44,8 +44,8 @@ const numberOf = (written: string, numberWords: readonly string[]): number => {
 /** A digit number not inside a longer one, or a number word standing as a word of its own. */
 const numberPattern = (numberWords: readonly string[]): string => {
   const words = alternation(numberWords);
-  const digits = "(?<![\\p{N}.,．/⁄])(\\p{Nd}+(?:[.．]\\p{Nd}+)?)";
-  return words === "" ? digits : `(?:${digits}|(?<![\\p{L}\\p{N}\\p{Pd}])(${words}))`;
+  const digits = "(?<![\\p{N}.,．/⁄])(?<digits>\\p{Nd}+(?:[.．]\\p{Nd}+)?)";
+  return words === "" ? digits : `(?:${digits}|(?<![\\p{L}\\p{N}\\p{Pd}])(?<word>${words}))`;
 };
 
 const SEPARATOR = "[\\s\\-‐]?";
@@ -71,17 +71,18 @@ const smallestUnit = (number: string | undefined, minutes: string | undefined, h
 const hourLengths = (text: string, words: LengthWords): Read[] => {
   const [hours, minutes, halves] = [alternation(words.hourUnits), alternation(words.minuteUnits), alternation(words.halves)];
   if (hours === "") return [];
-  const minutePart = minutes === "" ? "" : `|\\s?(\\p{Nd}{1,2})\\s?(?:${minutes})`;
-  const halfPart = halves === "" ? "" : `|\\s?(${halves})`;
+  const minutePart = minutes === "" ? "" : `|\\s?(?<extra>\\p{Nd}{1,2})\\s?(?:${minutes})`;
+  const halfPart = halves === "" ? "" : `|\\s?(?<half>${halves})`;
   const tail = minutePart === "" && halfPart === "" ? "" : `(?:${minutePart.slice(1)}${halfPart})?`;
   const pattern = new RegExp(`${numberPattern(words.numberWords)}${SEPARATOR}(?:${hours})${tail}`, "giu");
   return [...text.matchAll(pattern)].flatMap((match): Read[] => {
     const end = match.index + match[0].length;
     if (runsOn(text, end)) return [];
-    const amount = numberOf(match[1] ?? match[2] ?? "", words.numberWords);
-    const extra = match[3] === undefined ? 0 : Number(match[3].normalize("NFKC"));
-    const half = match[4] === undefined ? 0 : HALF_HOUR;
-    return [{ span: { start: match.index, end }, minutes: amount * MINUTES_PER_HOUR + extra + half, unit: smallestUnit(match[1], match[3], match[4]) }];
+    const { digits, word, extra, half } = match.groups ?? {};
+    const amount = numberOf(digits ?? word ?? "", words.numberWords);
+    const extraMinutes = extra === undefined ? 0 : Number(extra.normalize("NFKC"));
+    const halfMinutes = half === undefined ? 0 : HALF_HOUR;
+    return [{ span: { start: match.index, end }, minutes: amount * MINUTES_PER_HOUR + extraMinutes + halfMinutes, unit: smallestUnit(digits, extra, half) }];
   });
 };
 
@@ -91,7 +92,9 @@ const minuteLengths = (text: string, words: LengthWords): Read[] => {
   const pattern = new RegExp(`${numberPattern(words.numberWords)}${SEPARATOR}(?:${minutes})`, "giu");
   return [...text.matchAll(pattern)].flatMap((match): Read[] => {
     const end = match.index + match[0].length;
-    return runsOn(text, end) ? [] : [{ span: { start: match.index, end }, minutes: numberOf(match[1] ?? match[2] ?? "", words.numberWords), unit: 1 }];
+    return runsOn(text, end)
+      ? []
+      : [{ span: { start: match.index, end }, minutes: numberOf(match.groups?.["digits"] ?? match.groups?.["word"] ?? "", words.numberWords), unit: 1 }];
   });
 };
 
