@@ -178,8 +178,8 @@ const WORDS: ScaleWords = {
     { pattern: "tsp", group: "teaspoon" },
   ],
   measures: [
-    { pattern: "kg", dimension: "unit-mass", factors: [1000] },
-    { pattern: "g", dimension: "unit-mass", factors: [1] },
+    { pattern: "kg", dimension: "unit-mass", factors: [1000], zero: 0, before: false, context: [] },
+    { pattern: "g", dimension: "unit-mass", factors: [1], zero: 0, before: false, context: [] },
   ],
 };
 

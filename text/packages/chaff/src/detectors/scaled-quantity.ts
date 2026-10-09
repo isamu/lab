@@ -9,7 +9,11 @@ const DIMENSIONS = ["unit-mass", "unit-volume"] as const;
 
 const measuresOf = (doc: ProseDocument): MeasureUnit[] =>
   DIMENSIONS.flatMap((dimension) =>
-    (doc.lexicons[dimension] ?? []).flatMap((entry) => (entry.weight === undefined ? [] : [{ pattern: entry.pattern, dimension, factors: [entry.weight] }])),
+    (doc.lexicons[dimension] ?? []).flatMap((entry) =>
+      entry.weight === undefined
+        ? []
+        : [{ pattern: entry.pattern, dimension, factors: [entry.weight], zero: 0, before: entry.position === "before", context: [] }],
+    ),
   );
 
 const wordsOf = (doc: ProseDocument): ScaleWords => ({
