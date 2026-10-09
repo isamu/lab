@@ -86,6 +86,12 @@ describe("fact-conflict: a measured value in a table row against the prose, in t
     assert.deepEqual(specJa("総重量：650 g"), []);
   });
 
+  it("a value inside a fenced code block is not the item's value", () => {
+    assert.deepEqual(foundEn("Weight: 410 g", "", "```", "Weight: 450 g", "```"), []);
+    assert.deepEqual(foundEn("Weight: 410 g", "", "```", "Weight: 0.5 kg", "```"), []);
+    assert.deepEqual(foundEn("Weight: 410 g", "", "Weight: 450 g"), ["fact-conflict Weight:450 g≠410 g"]);
+  });
+
   it("two models in one document: one column or one section each", () => {
     const columns = foundJa("| 項目 | S3 | S5 |", "| --- | --- | --- |", "| 重さ | 410 g | 620 g |");
     assert.deepEqual(columns, []);

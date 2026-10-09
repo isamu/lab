@@ -2,6 +2,7 @@ import type { ProseDocument, StructureNode } from "../plugin.ts";
 import { nameSpans } from "../compare/proper-nouns.ts";
 import { overlapsAny, spanIndex } from "../compare/spans.ts";
 import { factValues, type FactValue } from "../facts/fact-values.ts";
+import { codeFences } from "./code-fences.ts";
 import { measuredValues, type Measured, type MeasureUnit } from "../facts/measures.ts";
 
 /** 量の種類ごとの語彙表。weight が基準の単位への倍率で、同じ単位を二度書けば倍率が二つ（GB の 10^9 と 2^30）。 */
@@ -33,8 +34,11 @@ const unitsOf = (doc: ProseDocument): MeasureUnit[] => {
   });
 };
 
-/** 文書の中の、単位の語彙表の単位が付いた量。 */
-export const measuredOf = (doc: ProseDocument): Measured[] => measuredValues(doc.source, unitsOf(doc));
+/** 文書の中の、単位の語彙表の単位が付いた量。コードの塊の中の量は、項目の値ではない。 */
+export const measuredOf = (doc: ProseDocument): Measured[] => {
+  const fences = codeFences(doc.source);
+  return measuredValues(doc.source, unitsOf(doc)).filter((value) => !fences.some((fence) => fence.start <= value.start && value.end <= fence.end));
+};
 
 /** fact-conflict の値に、単位の付いた量を足す。量と重なる値（量の数だけを読んだもの）は量に置き換える。 */
 export const valuesWith = (tree: StructureNode, doc: ProseDocument, measured: readonly Measured[]): FactValue[] => {
