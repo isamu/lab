@@ -1,0 +1,65 @@
+id: step-time-sum-mismatch
+layer: L3
+status: stable
+how_to_find: step-time-sum-mismatch
+word_list: step-time-total
+extra_word_lists: [step-time-not-own, approximate-marker, unit-time]
+severity: warning
+
+name:
+  ja: 所要時間が、手順に書いた時間の和と合わない
+  en: A total time that is not the sum of the steps' times
+
+why:
+  ja: 「所要時間：60分」と書いたレシピや手順書で、番号を付けた手順の時間（（10分）、40分焼く）を足すと80分になると、読み手は時間の見積もりを誤ります。手順を足したり時間を書き換えたりしたときに、所要時間だけ直し忘れると起きます。手順の外に所要時間の見出し（所要時間、合計時間、合計）のすぐ後ろに書いた時間が一つだけあり、番号付きの手順がどれもその手順にかかる時間をちょうど一つ書いているときに、その和と比べます。所要時間か手順の時間に目安の印（約、程度）があるときは、所要時間の1割（少なくとも5分）までの差を合うとみなします。
+  en: 'When a recipe or a guide says "Total time: 60 minutes" and the times written in its numbered steps ("(10 minutes)", "bake for 40 minutes") add up to 80, the reader plans with the wrong figure. It happens when a step is added or a time is changed and the total is not. The rule runs when the document states one total outside its steps (a length right after Total time, Total, Time required) and every numbered step states exactly one time of its own, and compares the two. When the total or a step time is rough ("about 1 hour", "20 minutes or so"), a difference up to a tenth of the total, and at least 5 minutes, agrees.'
+
+message:
+  ja: 「{written}」が、手順{steps}つに書いた時間の和（{sum}分）と合いません
+  en: '"{written}" is not the sum of the times in the {steps} steps ({sum} minutes)'
+
+how_to_fix:
+  ja: 所要時間と手順の時間のどちらが正しいかを確かめて、片方を直してください。手順を同時に進める（煮ている間にソースを作る）なら、そう書き添えてください。
+  en: Check which is right, the total or the steps' times, and correct the other. If steps run at the same time (the sauce is made while the meat rests), say so.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: レシピや手順書で、所要時間が手順の時間の和と合わない所
+  en: A recipe or guide whose total time is not the sum of its steps' times
+example:
+  ja:
+    before: |
+      所要時間：30分
+
+      1. 玉ねぎを薄切りにします（5分）。
+      2. 弱火で炒めます（20分）。
+      3. 水を加えて煮ます（15分）。
+    after: |
+      所要時間：40分
+
+      1. 玉ねぎを薄切りにします（5分）。
+      2. 弱火で炒めます（20分）。
+      3. 水を加えて煮ます（15分）。
+  en:
+    before: |
+      Total time: 30 minutes
+
+      1. Slice the onions (5 minutes).
+      2. Fry them over a low heat (20 minutes).
+      3. Add the water and simmer (15 minutes).
+    after: |
+      Total time: 40 minutes
+
+      1. Slice the onions (5 minutes).
+      2. Fry them over a low heat (20 minutes).
+      3. Add the water and simmer (15 minutes).
+
+not_flagged:
+  ja: 時間を書いていない手順や、時間を二つ以上書いた手順が一つでもあるとき、範囲で書いた時間（10〜15分）、その手順にかかる時間でないもの（10分後、5分ごと、残り5分）、温度（180℃に予熱）は、和を取らず言いません。所要時間が二つの違う値で書いてあるときも言いません。手順を同時に進める作り方は読み分けられないので、そのときは指すことがあります。
+  en: 'A step with no time or with two, a range ("10 to 15 minutes"), a time that is not how long the step takes ("after 10 minutes", "every 5 minutes", "10 minutes later") and a temperature ("preheat to 180°C") make the rule stop rather than add up. Two different totals are not compared either. Steps that run at the same time cannot be told apart, and may be reported.'
