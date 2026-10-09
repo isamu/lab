@@ -1,0 +1,12 @@
+# 期間が範囲であることを言う語のうち、approximate-marker に無いもの（fact-conflict）。「最低1年間」「3年未満」のような上限や
+# 下限の期間は、別の所のちょうどの期間とは比べない。position: before は数の前に書く語。
+id: retention-bound
+language: ja
+entries:
+  - { pattern: 最低, position: before }
+  - { pattern: 少なくとも, position: before }
+  - { pattern: 最短, position: before }
+  - { pattern: 未満, position: after }
+  - { pattern: 超, position: after }
+  - { pattern: を超え, position: after }
+  - { pattern: まで, position: after }

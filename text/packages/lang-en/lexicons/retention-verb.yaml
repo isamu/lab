@@ -1,0 +1,12 @@
+# Words that state how long something is kept (fact-conflict). keep: held for the length; delete: removed after it ("delete
+# personal information 3 years after"). position: after means what is kept is written after the word ("keep your data"); a
+# passive ("data is retained") is read before it.
+id: retention-verb
+language: en
+entries:
+  - { pattern: keep, group: keep, position: after }
+  - { pattern: retain, group: keep, position: after }
+  - { pattern: store, group: keep, position: after }
+  - { pattern: delete, group: delete, position: after }
+  - { pattern: erase, group: delete, position: after }
+  - { pattern: destroy, group: delete, position: after }
