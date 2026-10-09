@@ -140,7 +140,7 @@ const bareFramed = (source: string, start: DatedSpan, end: DatedSpan, written: s
   return (isLabelled(start.offset) || withWeekdays) && !isChange(source, start, end, words);
 };
 
-const isRange = (source: string, start: DatedSpan, end: DatedSpan, words: RangeWords, isLabelled: (offset: number) => boolean): boolean => {
+export const isRange = (source: string, start: DatedSpan, end: DatedSpan, words: RangeWords, isLabelled: (offset: number) => boolean): boolean => {
   const written = jointOf(source, start, end);
   if (written === undefined) return false;
   const joint = withoutTrailingWeekday(written, words.weekdays ?? []);

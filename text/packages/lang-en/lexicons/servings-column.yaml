@@ -1,0 +1,26 @@
+# Words in a table's column heading that say how many servings, or what multiple of the recipe, the column holds
+# (scaled-quantity-mismatch). before: written before the number (Serves 4, ×2); after: after it (4 servings).
+# A heading is read only when its cell is one of these words and a number.
+id: servings-column
+language: en
+entries:
+  - pattern: "serves"
+    position: before
+  - pattern: "servings"
+    position: after
+  - pattern: "serving"
+    position: after
+  - pattern: "portions"
+    position: after
+  - pattern: "people"
+    position: after
+  - pattern: "persons"
+    position: after
+  - pattern: "batches"
+    position: after
+  - pattern: "batch"
+    position: after
+  - pattern: "×"
+    position: before
+  - pattern: "x"
+    position: before

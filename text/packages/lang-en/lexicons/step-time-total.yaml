@@ -1,0 +1,9 @@
+# Labels of the time the whole procedure takes (step-time-sum-mismatch). The length right after one (spaces and a colon
+# between) is compared with the sum of the times in the numbered steps. "Prep time" and "Cook time" are parts, not totals.
+id: step-time-total
+language: en
+entries:
+  - pattern: total time
+  - pattern: total
+  - pattern: time required
+  - pattern: ready in

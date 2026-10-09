@@ -1,0 +1,5 @@
+# 期間のすぐ後ろにあれば、期間は名詞を修飾していて保存期間ではない（fact-conflict）: 「過去3年間の記録を保存します」。
+id: retention-length-modifier
+language: ja
+entries:
+  - pattern: の

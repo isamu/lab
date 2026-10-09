@@ -1,0 +1,15 @@
+# 催しの後に来てよいものの語（アンケートの回答、参加費の支払、資料の公開）。同じ文にあれば、申込の語があっても deadline-after-event は比べない。
+id: event-aside
+language: ja
+entries:
+  - pattern: アンケート
+  - pattern: 感想
+  - pattern: 報告
+  - pattern: 支払
+  - pattern: 振込
+  - pattern: 振り込
+  - pattern: 精算
+  - pattern: 返金
+  - pattern: 資料
+  - pattern: 動画
+  - pattern: 録画

@@ -13,6 +13,7 @@ const JA_WORDS: CountWords = {
   counters: ["名", "人", "つ"],
   hedgesBefore: [],
   hedgesAfter: [],
+  frames: [],
 };
 const EN_WORDS: CountWords = {
   anchors: ["following"],
@@ -20,6 +21,7 @@ const EN_WORDS: CountWords = {
   counters: ["people", "members", "attendees"],
   hedgesBefore: [],
   hedgesAfter: [],
+  frames: [],
 };
 
 const ja = (text: string): string[] => inlineCountMismatches(text, JA_WORDS, JA_MEMBERS).map((mismatch) => `${mismatch.phrase}/${String(mismatch.listed)}`);

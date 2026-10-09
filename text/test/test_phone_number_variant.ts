@@ -46,6 +46,14 @@ describe("phone-number-variant", () => {
     assert.deepEqual(found(en1("Hotel 045-123-4567", "", "Hotel 045-123-4576"), en), []);
   });
 
+  it("reads numbers grouped by spaces after a label", () => {
+    const en1 = (...lines: string[]): string => ["# Notice", "", ...lines, ""].join("\n");
+    assert.deepEqual(found(en1("Office, Tel: 020 7946 0186", "", "To check, call the office on Tel: 020 7946 0168."), en), [5]);
+    assert.deepEqual(found(en1("Phone: +44 20 7946 0186", "", "Phone: +44 20 7946 0168"), en), [5]);
+    assert.deepEqual(found(doc("☎ 03 1234 5678", "", "電話 03 1234 5687"), ja), [5]);
+    assert.deepEqual(found(en1("Call us. Order 2026 1009 1234", "", "Call us. Order 2026 1009 1243"), en), []);
+  });
+
   it("reports each writing of one side of a tie once, not both sides", () => {
     const en1 = (...lines: string[]): string => ["# Notice", "", ...lines, ""].join("\n");
     assert.deepEqual(found(en1("Phone: 0120-123-456", "", "Phone: 0120-123-465", "", "Phone: 0120-123-456", "", "Phone: 0120-123-465"), en), [5, 9]);
@@ -80,6 +88,41 @@ describe("phone numbers", () => {
         ["0312345679", "fax"],
       ],
     );
+  });
+
+  it("reads digits grouped by spaces right after a label or with a country code", () => {
+    const en = [
+      { pattern: "tel", group: "phone" },
+      { pattern: "call", group: "phone" },
+      { pattern: "☎", group: "phone" },
+    ];
+    const digitsOf = (text: string, lexicon = en): string[] => labelledPhoneNumbers(text, lexicon).map((number) => number.digits);
+    assert.deepEqual(digitsOf("Tel: 020 7946 0186"), ["02079460186"]);
+    assert.deepEqual(digitsOf("call the office on Tel: 020 7946 0186."), ["02079460186"]);
+    assert.deepEqual(digitsOf("☎ 03 1234 5678"), ["0312345678"]);
+    assert.deepEqual(digitsOf("☎\uFE0F 03 1234 5678"), ["0312345678"]);
+    assert.deepEqual(digitsOf("電話：03 1234 5678", labels), ["0312345678"]);
+    assert.deepEqual(digitsOf("Tel. 020 7946 0186"), ["02079460186"]);
+    assert.deepEqual(digitsOf("For the office, call +44 20 7946 0186"), ["442079460186"]);
+    assert.deepEqual(digitsOf("Tel: 020 7946 0186 24 hours"), ["02079460186"]);
+    assert.deepEqual(labelledPhoneNumbers("Tel: 020 7946 0186", en)[0]?.written, "020 7946 0186");
+  });
+
+  it("reads no spaced digits away from a label: dates, amounts, ids, postcodes", () => {
+    const en = [
+      { pattern: "tel", group: "phone" },
+      { pattern: "call", group: "phone" },
+    ];
+    const digitsOf = (text: string): string[] => labelledPhoneNumbers(text, en).map((number) => number.digits);
+    assert.deepEqual(digitsOf("Call us; ticket 2026 10 09 1234"), []);
+    assert.deepEqual(digitsOf("Tel list 1 234 567 890"), []);
+    assert.deepEqual(digitsOf("call about order 4417 2938 1150"), []);
+    assert.deepEqual(digitsOf("Tel: 2026 10 09"), []);
+    assert.deepEqual(digitsOf("020 7946 0186"), []);
+    assert.deepEqual(digitsOf("Tel: 020-7946 0186"), []);
+    assert.deepEqual(digitsOf("電話：03 1234 5678"), []);
+    assert.deepEqual(digitsOf("Tel: 2026 10 09 020 7946 0186"), []);
+    assert.deepEqual(digitsOf("Tel: 020 7946 0186 2026"), []);
   });
 
   it("reads nothing from empty text or without labels", () => {

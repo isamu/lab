@@ -1,0 +1,6 @@
+# Right after a length, a word that makes the length describe a noun, not a retention period (fact-conflict): "we store
+# 3 years of records".
+id: retention-length-modifier
+language: en
+entries:
+  - pattern: of

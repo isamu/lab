@@ -48,8 +48,8 @@ example:
       "Service" means the booking website we run. Users may use the Service free of charge.
 
 not_flagged:
-  ja: 定義の書き方（「X」とは、以下「X」という）で書いた語だけを見ます。複数形と所有の形（Services、Seller's）は使用に数えます。同じ語の二つ目の定義は duplicate-definition が言います。
-  en: Only terms defined in a recognised form ("X" means, (the "X")) are checked. Plurals and possessives (Services, Seller's) count as uses. A second definition of the same term is duplicate-definition's to report.
+  ja: 定義の書き方（「X」とは、以下「X」という、規約やポリシーの以下「X」といいます）で書いた語だけを見ます。複数形と所有の形（Services、Seller's）と、見出しの中の語も使用に数えます。同じ語の二つ目の定義は duplicate-definition が言います。
+  en: Only terms defined in a recognised form ("X" means, (the "X")) are checked. Plurals and possessives (Services, Seller's) count as uses, and so does the term in a heading. A second definition of the same term is duplicate-definition's to report.
 rewrite:
   depth: light
   ja:

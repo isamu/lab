@@ -24,3 +24,36 @@ entries:
     weight: 1
   - pattern: "gallon"
     weight: 3.785411784
+  # Kitchen measures carry two factors: the US measure (tablespoon 14.8 mL, teaspoon 4.9 mL, cup 240 mL, the US legal cup) and the metric one (15, 5 and 250 mL); either may match.
+  - pattern: "tablespoons"
+    weight: 0.0147868
+  - pattern: "tablespoons"
+    weight: 0.015
+  - pattern: "tablespoon"
+    weight: 0.0147868
+  - pattern: "tablespoon"
+    weight: 0.015
+  - pattern: "tbsp"
+    weight: 0.0147868
+  - pattern: "tbsp"
+    weight: 0.015
+  - pattern: "teaspoons"
+    weight: 0.00492892
+  - pattern: "teaspoons"
+    weight: 0.005
+  - pattern: "teaspoon"
+    weight: 0.00492892
+  - pattern: "teaspoon"
+    weight: 0.005
+  - pattern: "tsp"
+    weight: 0.00492892
+  - pattern: "tsp"
+    weight: 0.005
+  - pattern: "cups"
+    weight: 0.24
+  - pattern: "cups"
+    weight: 0.25
+  - pattern: "cup"
+    weight: 0.24
+  - pattern: "cup"
+    weight: 0.25

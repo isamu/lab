@@ -72,4 +72,95 @@ describe("unit-mismatch", () => {
   it("a unit that is the start of a word is not a unit", () => {
     assert.deepEqual(foundEn("Distance: 5 km", "", "Distance: 3 miners."), []);
   });
+
+  it("one temperature in two units: the conversion within 15 °F agrees", () => {
+    assert.deepEqual(foundJa("オーブンを180℃（350°F）に予熱します。"), []);
+    assert.deepEqual(foundJa("オーブンを180℃（400°F）に予熱します。"), [":400°F≠180℃"]);
+    assert.deepEqual(foundJa("オーブンを170℃（325°F）に予熱します。"), []);
+    assert.deepEqual(foundEn("Preheat the oven to 180°C (350°F)."), []);
+    assert.deepEqual(foundEn("Preheat the oven to 180°C (400°F)."), [":400°F≠180°C"]);
+    assert.deepEqual(foundEn("The high was 25 °C (77 °F) and the low 10 °C (50 °F)."), []);
+    assert.deepEqual(foundEn("The high was 25 °C (97 °F)."), [":97 °F≠25 °C"]);
+    assert.deepEqual(foundEn("Being off by a mere 0.5°C (1°F) matters."), []);
+    assert.deepEqual(foundEn("Preheat the oven to 100 °C (180 °F)."), [":180 °F≠100 °C"]);
+    assert.deepEqual(foundEn("The freezer is -20 °C (-4 °F)."), []);
+    assert.deepEqual(foundEn("The freezer is -20 °C (-40 °F)."), [":-40 °F≠-20 °C"]);
+    assert.deepEqual(foundEn("Temperature: -20 °C", "", "Temperature: -40 °F"), ["Temperature:-40 °F≠-20 °C"]);
+    assert.deepEqual(foundEn("Store at 20-25°C (68-77°F)."), []);
+  });
+
+  it("a temperature in one unit only is left alone", () => {
+    assert.deepEqual(foundJa("180℃に予熱したオーブンで焼きます。", "", "最高気温は30℃です。"), []);
+    assert.deepEqual(foundEn("Bake in the oven preheated to 180°C.", "", "The tea is best at 80 °C."), []);
+  });
+
+  it("度 is a temperature only next to a temperature word; degrees needs its scale", () => {
+    assert.deepEqual(foundJa("オーブンを180度（400°F）に予熱します。"), [":400°F≠180度"]);
+    assert.deepEqual(foundJa("ハンドルを90度（400°F）回します。"), []);
+    assert.deepEqual(foundEn("Preheat the oven to 350 degrees Fahrenheit (100 °C)."), [":100 °C≠350 degrees Fahrenheit"]);
+  });
+
+  it("one pressure in two units", () => {
+    assert.deepEqual(foundJa("空気圧は300kPa（約44psi）まで入れます。"), []);
+    assert.deepEqual(foundJa("空気圧は300kPa（約60psi）まで入れます。"), [":60psi≠300kPa"]);
+    assert.deepEqual(foundEn("Pump the tire to 300 kPa (about 44 psi)."), []);
+    assert.deepEqual(foundEn("Pump the tire to 3 bar (about 60 psi)."), [":60 psi≠3 bar"]);
+    assert.deepEqual(foundEn("Pump the tire to 3 bar (44 psi)."), []);
+  });
+
+  it("a bracketed conversion agrees when both figures could round one value", () => {
+    assert.deepEqual(foundEn("The route is 5 km (3 miles) long."), []);
+    assert.deepEqual(foundEn("The swell is now about 3 m (9 feet) high."), []);
+    assert.deepEqual(foundEn("A storm within about 100 miles (165 km) counts."), []);
+    assert.deepEqual(foundEn("A storm within about 100 miles (200 km) counts."), [":200 km≠100 miles"]);
+    assert.deepEqual(foundEn("The route is 5 km (3.5 miles) long."), [":3.5 miles≠5 km"]);
+    assert.deepEqual(foundEn("The route is 5 km (3 miles and a bit) long."), []);
+    assert.deepEqual(foundEn("Plans: 1 GB / 500 MB."), []);
+  });
+
+  it("an ingredient in the table and in a step (ja)", () => {
+    const table = [
+      "## 材料",
+      "",
+      "| 材料 | 4人分 | 8人分 |",
+      "| --- | --- | --- |",
+      "| しょうゆ | 大さじ1 | 大さじ2 |",
+      "| 水 | 100ml | 200ml |",
+      "",
+      "## 作り方",
+      "",
+    ];
+    assert.deepEqual(foundJa(...table, "1. ケチャップ、しょうゆ15mlと水を入れます。"), []);
+    assert.deepEqual(foundJa(...table, "1. ケチャップ、しょうゆ30mlと水を入れます。"), ["しょうゆ:30ml≠大さじ1"]);
+    assert.deepEqual(foundJa(...table, "1. ケチャップ、しょうゆ大さじ1と水を入れます。"), []);
+    assert.deepEqual(foundJa(...table, "1. 鍋に水カップ1を入れます。"), ["水:カップ1≠100ml"]);
+    assert.deepEqual(foundJa(...table, "1. 鍋に水カップ1/2を入れます。"), []);
+    assert.deepEqual(foundJa(...table, "1. 鍋にカップ1の水を入れます。"), ["水:カップ1≠100ml"]);
+    assert.deepEqual(foundJa(...table, "1. 鍋にみりん30mlを入れます。"), []);
+    assert.deepEqual(foundJa(...table, "1. 先に水50ccを入れます。"), []);
+  });
+
+  it("an ingredient in the table and in a step (en)", () => {
+    const table = [
+      "## Ingredients",
+      "",
+      "| Ingredient | Serves 4 | Serves 8 |",
+      "| --- | --- | --- |",
+      "| Soy sauce | 1 tablespoon | 2 tablespoons |",
+      "| Milk | 1 cup | 2 cups |",
+      "",
+      "## Method",
+      "",
+    ];
+    assert.deepEqual(foundEn(...table, "1. Add 15 ml of soy sauce."), []);
+    assert.deepEqual(foundEn(...table, "1. Add 30 ml of the soy sauce."), ["Soy sauce:30 ml≠1 tablespoon"]);
+    assert.deepEqual(foundEn(...table, "1. Add the soy sauce 30 ml."), ["Soy sauce:30 ml≠1 tablespoon"]);
+    assert.deepEqual(foundEn(...table, "1. Warm 240 ml of milk."), []);
+    assert.deepEqual(foundEn(...table, "1. Warm 250 ml of milk."), []);
+    assert.deepEqual(foundEn(...table, "1. Warm 500 ml of milk."), ["Milk:500 ml≠1 cup"]);
+    assert.deepEqual(foundEn(...table, "1. Warm 100 ml of milk, then add the rest."), []);
+    assert.deepEqual(foundEn(...table, "1. Warm 1 1/2 cups of milk."), []);
+    assert.deepEqual(foundEn(...table, "1. Add 30 ml of fish sauce."), []);
+    assert.deepEqual(foundEn(...table, "1. Add 30 ml of soy sauces."), []);
+  });
 });

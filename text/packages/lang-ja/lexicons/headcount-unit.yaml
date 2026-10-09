@@ -1,0 +1,11 @@
+# 定員と人数を数える語（count-over-capacity）。同じ組（group）の数だけを比べる。head は人、place は席で、人と比べる。
+# party は組や家族で、人とは比べない。ここに無い語（件、社）で数えた数は人数ではない。
+id: headcount-unit
+language: ja
+entries:
+  - { pattern: 名, group: head }
+  - { pattern: 人, group: head }
+  - { pattern: 席, group: place }
+  - { pattern: 組, group: party }
+  - { pattern: 家族, group: party }
+  - { pattern: 世帯, group: party }

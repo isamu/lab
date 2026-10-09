@@ -1,0 +1,12 @@
+# Words that mark the date of an event. A line starting with one and holding a date with its year and a time of day
+# ("Date: Friday, November 20, 2026, 2:00 PM") is read as the event's date by deadline-after-event. The time keeps the
+# "Date:" at the head of a letter or a memo from being read as an event.
+id: event-date-label
+language: en
+entries:
+  - pattern: Date
+  - pattern: Dates
+  - pattern: Date and time
+  - pattern: Date & time
+  - pattern: When
+  - pattern: Event date

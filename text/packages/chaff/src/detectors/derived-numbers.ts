@@ -25,14 +25,14 @@ import { proseAndTablesOf } from "../table-text.ts";
 import { quoteAt } from "./structure-tree.ts";
 
 /** 期間の単位の語彙表。木の数量の単位がどれかに入れば、その単位の期間。 */
-const DURATION_LEXICONS: readonly (readonly [string, DurationUnit])[] = [
+export const DURATION_LEXICONS: readonly (readonly [string, DurationUnit])[] = [
   ["duration-day", "day"],
   ["duration-week", "week"],
   ["duration-month", "month"],
   ["duration-year", "year"],
 ];
 
-type Quantity = Span & { readonly amount: number; readonly unit: string };
+export type Quantity = Span & { readonly amount: number; readonly unit: string };
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
 
@@ -62,7 +62,7 @@ const withWordsAround = (source: string, start: number, end: number, unit: strin
   return wordStart === undefined ? { start, end: endWithUnit(source, end, unit) } : { start: wordStart, end: endWithUnit(source, end + 1, unit) };
 };
 
-const quantitiesOf = (tree: StructureNode, source: string): Quantity[] =>
+export const quantitiesOf = (tree: StructureNode, source: string): Quantity[] =>
   inDocumentOrder(tree).flatMap((node): Quantity[] => {
     if (node.kind !== "quantity") return [];
     const unit = String(node.attrs["unit"] ?? "");

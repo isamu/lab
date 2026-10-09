@@ -1,13 +1,12 @@
 import type { ScopedFact } from "./fact-scope.ts";
 import { sameMeasure, type Measured } from "./measures.ts";
+import { toleranceOf } from "./unit-tolerance.ts";
 
 /**
  * 同じ名前の量を、違う単位で書いて、換算すると合わない（「距離：5 km」と「距離：3000 m」）。比べるのは同じ範囲の、同じ種類の量で、
- * 単位が違うものだけ。同じ単位どうしの食い違いは fact-conflict が見る。丸めた書き方（1 mile と 1.6 km）は、差が TOLERANCE 以内なら合う。
+ * 単位が違うものだけ。同じ単位どうしの食い違いは fact-conflict が見る。丸めた書き方（1 mile と 1.6 km）は、差が量の種類ごとの許す差（unit-tolerance）以内なら合う。
  */
 export type UnitConflict = { readonly fact: ScopedFact; readonly measured: Measured; readonly other: Measured };
-
-const TOLERANCE = 0.02;
 
 const groupKey = (fact: ScopedFact): string => `${fact.scope}\u0000${fact.key}`;
 
@@ -21,7 +20,7 @@ const conflictsInDimension = (reads: readonly Read[]): UnitConflict[] =>
   reads.flatMap(({ fact, measured }, index) => {
     const others = reads.slice(0, index).filter((earlier) => earlier.measured.unit !== measured.unit);
     const [first] = others;
-    if (first === undefined || others.some((earlier) => sameMeasure(earlier.measured, measured, TOLERANCE))) return [];
+    if (first === undefined || others.some((earlier) => sameMeasure(earlier.measured, measured, toleranceOf(measured.dimension)))) return [];
     return [{ fact, measured, other: first.measured }];
   });
 

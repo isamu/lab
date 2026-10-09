@@ -1,0 +1,209 @@
+{
+  "note": "Self-written medicine-style dosage leaflets about fictional products (an over-the-counter tablet and a dog supplement), each marked at the top as a sample with no real dosing advice, in a clean version and a planted one that differs only on the lines below. They run as docs/manual: a leaflet is instructions for use, and no genre is made for package inserts. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: product-exceeds-maximum (a dose times the times a day above the stated daily maximum), range-band-mismatch (the bands of a table overlapping or leaving a gap) and interval-count-mismatch (a times-a-day limit that disagrees with the dosing table it sits beside). yarn planted dosage scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/otc",
+      "language": "ja",
+      "genre": "docs/manual",
+      "clean": "ja/otc.clean.md",
+      "planted": "ja/otc.planted.md",
+      "mistakes": [
+        {
+          "kind": "unit-amount",
+          "rule": "unit-mismatch",
+          "line": 12,
+          "clean": "1錠の重さは0.25gです",
+          "planted": "1錠の重さは2.5gです"
+        },
+        {
+          "kind": "age-band-overlap",
+          "rule": "range-band-mismatch",
+          "line": 22,
+          "clean": "| 7〜11歳 |",
+          "planted": "| 7〜12歳 |"
+        },
+        {
+          "kind": "daily-maximum",
+          "rule": "product-exceeds-maximum",
+          "line": 25,
+          "clean": "1日の最大量は6錠です",
+          "planted": "1日の最大量は4錠です"
+        },
+        {
+          "kind": "dose-interval",
+          "rule": "interval-count-mismatch",
+          "line": 27,
+          "clean": "1日3回を超えて",
+          "planted": "1日6回を超えて"
+        },
+        {
+          "kind": "strengths-total",
+          "rule": "total-mismatch",
+          "line": 36,
+          "clean": "| 合計 | 435mg |",
+          "planted": "| 合計 | 445mg |"
+        },
+        {
+          "kind": "product-name",
+          "rule": "name-variant",
+          "line": 40,
+          "clean": "ミナモール錠を服用",
+          "planted": "ミナモル錠を服用"
+        }
+      ]
+    },
+    {
+      "id": "ja/pet",
+      "language": "ja",
+      "genre": "docs/manual",
+      "clean": "ja/pet.clean.md",
+      "planted": "ja/pet.planted.md",
+      "mistakes": [
+        {
+          "kind": "unit-amount",
+          "rule": "unit-mismatch",
+          "line": 12,
+          "clean": "1粒の重さは0.5gです",
+          "planted": "1粒の重さは5gです"
+        },
+        {
+          "kind": "age-band-gap",
+          "rule": "range-band-mismatch",
+          "line": 21,
+          "clean": "| 7歳以上 |",
+          "planted": "| 8歳以上 |"
+        },
+        {
+          "kind": "daily-maximum",
+          "rule": "product-exceeds-maximum",
+          "line": 25,
+          "clean": "1日の最大量は4粒です",
+          "planted": "1日の最大量は3粒です"
+        },
+        {
+          "kind": "dose-interval",
+          "rule": "interval-count-mismatch",
+          "line": 27,
+          "clean": "1日2回を超えて",
+          "planted": "1日4回を超えて"
+        },
+        {
+          "kind": "strengths-total",
+          "rule": "total-mismatch",
+          "line": 36,
+          "clean": "| 合計 | 350mg |",
+          "planted": "| 合計 | 380mg |"
+        },
+        {
+          "kind": "product-name",
+          "rule": "name-variant",
+          "line": 40,
+          "clean": "わんぱくケア粒は、直射日光",
+          "planted": "わんぱくケア錠は、直射日光"
+        }
+      ]
+    },
+    {
+      "id": "en/otc",
+      "language": "en",
+      "genre": "docs/manual",
+      "clean": "en/otc.clean.md",
+      "planted": "en/otc.planted.md",
+      "mistakes": [
+        {
+          "kind": "unit-amount",
+          "rule": "unit-mismatch",
+          "line": 12,
+          "clean": "one tablet is 0.25 g",
+          "planted": "one tablet is 2.5 g"
+        },
+        {
+          "kind": "age-band-overlap",
+          "rule": "range-band-mismatch",
+          "line": 22,
+          "clean": "| 7 to 11 |",
+          "planted": "| 7 to 12 |"
+        },
+        {
+          "kind": "daily-maximum",
+          "rule": "product-exceeds-maximum",
+          "line": 25,
+          "clean": "daily dose is 6 tablets",
+          "planted": "daily dose is 4 tablets"
+        },
+        {
+          "kind": "dose-interval",
+          "rule": "interval-count-mismatch",
+          "line": 27,
+          "clean": "more than 3 doses a day",
+          "planted": "more than 6 doses a day"
+        },
+        {
+          "kind": "strengths-total",
+          "rule": "total-mismatch",
+          "line": 36,
+          "clean": "| Total | 435 mg |",
+          "planted": "| Total | 445 mg |"
+        },
+        {
+          "kind": "product-name",
+          "rule": "name-variant",
+          "line": 40,
+          "clean": "taking Minamol Tablets",
+          "planted": "taking Minamoll Tablets"
+        }
+      ]
+    },
+    {
+      "id": "en/pet",
+      "language": "en",
+      "genre": "docs/manual",
+      "clean": "en/pet.clean.md",
+      "planted": "en/pet.planted.md",
+      "mistakes": [
+        {
+          "kind": "unit-amount",
+          "rule": "unit-mismatch",
+          "line": 12,
+          "clean": "one chew is 0.5 g",
+          "planted": "one chew is 5 g"
+        },
+        {
+          "kind": "age-band-gap",
+          "rule": "range-band-mismatch",
+          "line": 21,
+          "clean": "| 7 years and over |",
+          "planted": "| 8 years and over |"
+        },
+        {
+          "kind": "daily-maximum",
+          "rule": "product-exceeds-maximum",
+          "line": 25,
+          "clean": "daily amount is 4 chews",
+          "planted": "daily amount is 3 chews"
+        },
+        {
+          "kind": "dose-interval",
+          "rule": "interval-count-mismatch",
+          "line": 27,
+          "clean": "more than 2 feedings a day",
+          "planted": "more than 4 feedings a day"
+        },
+        {
+          "kind": "strengths-total",
+          "rule": "total-mismatch",
+          "line": 36,
+          "clean": "| Total | 350 mg |",
+          "planted": "| Total | 380 mg |"
+        },
+        {
+          "kind": "product-name",
+          "rule": "name-variant",
+          "line": 40,
+          "clean": "Keep Pawsley Chews",
+          "planted": "Keep Pawsly Chews"
+        }
+      ]
+    }
+  ]
+}

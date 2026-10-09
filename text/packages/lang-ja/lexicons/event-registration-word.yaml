@@ -1,0 +1,11 @@
+# 催しへの申込を示す語。この語と締め切りの語（event-deadline-word）のある文の日付が催しの日より後なら、deadline-after-event が指す。
+# 「登録」「受付」だけは入れない。会員登録の更新や当日の受付の時刻も指してしまう。
+id: event-registration-word
+language: ja
+entries:
+  - pattern: 申込
+  - pattern: 申し込
+  - pattern: 出欠
+  - pattern: 参加登録
+  - pattern: 予約
+  - pattern: エントリー

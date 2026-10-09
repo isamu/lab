@@ -1,0 +1,20 @@
+# 文脈が要る単位（unit-mismatch）。group の単位は、同じ行にこの表の語がどれかあるときだけ単位として読む（「180度」はオーブンの行では温度、「90度回す」は角度）。
+id: unit-context
+language: ja
+entries:
+  - pattern: "オーブン"
+    group: "度"
+  - pattern: "予熱"
+    group: "度"
+  - pattern: "温度"
+    group: "度"
+  - pattern: "気温"
+    group: "度"
+  - pattern: "水温"
+    group: "度"
+  - pattern: "油温"
+    group: "度"
+  - pattern: "室温"
+    group: "度"
+  - pattern: "体温"
+    group: "度"

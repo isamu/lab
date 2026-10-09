@@ -247,7 +247,7 @@ export const totalMismatch: Detector = (doc): Finding[] =>
         values: { ...issue.values, offset: issue.offset },
       }));
 
-const rangeWordsOf = (doc: ProseDocument): RangeWords => ({
+export const rangeWordsOf = (doc: ProseDocument): RangeWords => ({
   connectors: (doc.lexicons["range-connector"] ?? []).map((entry) => entry.pattern),
   openers: (doc.lexicons["range-opener"] ?? []).map((entry) => entry.pattern),
   closers: (doc.lexicons["range-closer"] ?? []).map((entry) => entry.pattern),
