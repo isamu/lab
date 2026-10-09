@@ -33,23 +33,28 @@ export const isEmphasisedAdverb = (surface: string, tagsOf: TagsOf): boolean => 
   return tags.length > 0 && tags.every((tag) => ADVERB_TAGS.has(tag));
 };
 
+/** After a verb, a word the tagger read as a noun must also be a verb in the dictionary (DID form), or it is what the capitals name (DID token). */
+const canFollowVerb = (next: TaggedWord, tagsOf: TagsOf): boolean => !next.pos.startsWith("NN") || (tagsOf(next.value.toLowerCase()) ?? []).includes("VB");
+
 /**
  * The tagger read the capitals word, in its sentence, as one of the dictionary's readings of the lower-case word, and that
  * reading is a closed class (AFTER the departure, NOR a remote position), or a verb right after its subject (a hurricane DID
- * form). A verb after anything else stays a name: on the GOES satellites, the states are: LISTEN. Adjectives stay too: the
- * WHOLE month reads like the SAFE framework, and only meaning tells them apart. A line in capitals alone (AT.) has no
- * sentence around the word to read it in.
+ * form). The word sits inside lower-case prose, with a lower-case word on each side: at the start of a sentence (ON
+ * Semiconductor), at its end (via IT.) or on a line alone (AT.) there is nothing to read it in. A verb after anything but its
+ * subject, or before a noun, stays a name: on the GOES satellites, the states are: LISTEN, the user DID token. Adjectives
+ * stay too: the WHOLE month reads like the SAFE framework, and only meaning tells them apart.
  */
-const isReadAsWord = (tagged: readonly TaggedWord[], at: number, tags: readonly string[]): boolean => {
-  const pos = tagged[at]?.pos ?? "";
-  if (!tags.includes(pos) || !tagged.some((word) => LOWERCASE.test(word.value))) return false;
-  const previous = tagged[at - 1]?.pos ?? "";
-  if (CLOSED_CLASS_TAGS.has(pos)) return pos === "CD" || !NOUN_PHRASE_OPENERS.has(previous);
-  return pos.startsWith("VB") && SUBJECT_TAGS.has(previous);
+const isReadAsWord = (tagged: readonly TaggedWord[], at: number, tagsOf: TagsOf): boolean => {
+  const word = tagged[at];
+  const [previous, next] = [tagged[at - 1], tagged[at + 1]];
+  if (word === undefined || previous === undefined || next === undefined) return false;
+  if (!(tagsOf(word.value.toLowerCase()) ?? []).includes(word.pos) || !LOWERCASE.test(previous.value) || !LOWERCASE.test(next.value)) return false;
+  if (CLOSED_CLASS_TAGS.has(word.pos)) return word.pos === "CD" || !NOUN_PHRASE_OPENERS.has(previous.pos);
+  return word.pos.startsWith("VB") && SUBJECT_TAGS.has(previous.pos) && canFollowVerb(next, tagsOf);
 };
 
-/** A word joined to its neighbour with no space (US-CERT, SOME/2) is part of a compound or a label, not a word on its own. */
-const JOINED = /[\p{L}\p{N}_&/-]/u;
+/** A word joined to its neighbour with no space (US-CERT, SOME/2, IT's) is part of a compound, a label or a name, not a word on its own. */
+const JOINED = /[\p{L}\p{N}_&/'’-]/u;
 
 type WordSpan = { readonly start: number; readonly end: number };
 
@@ -58,5 +63,5 @@ export const standsAlone = (text: string, span: WordSpan): boolean => !JOINED.te
 /** A capitals word the sentence reads as an English word (not the adverb-only case above), so emphasis and not an acronym. */
 export const isEmphasisedWord = (tagged: readonly TaggedWord[], at: number, tagsOf: TagsOf): boolean => {
   const surface = tagged[at]?.value ?? "";
-  return CAPITALS.test(surface) && isReadAsWord(tagged, at, tagsOf(surface.toLowerCase()) ?? []);
+  return CAPITALS.test(surface) && isReadAsWord(tagged, at, tagsOf);
 };

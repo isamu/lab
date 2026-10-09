@@ -23,7 +23,7 @@ fr-2026-16371-nvd-rfi  4
 genai-web-procedure  3
 github-general-privacy-statement  4
 gitlab-meetings  10
-gitlab-values  9
+gitlab-values  10
 go-1-23-release-notes  9
 govuk-cddo-roadmap-2022-2025  9
 govuk-incident-safe-browsing  3
@@ -39,7 +39,7 @@ mhlw-norovirus-qa  5
 nasa-advisory-crew-13-coverage  8
 neeview-changelog-ja  18
 noaa-press-flood-mapping  3
-nodejs-tsc-minutes-2026-05-06  4
+nodejs-tsc-minutes-2026-05-06  5
 nstac-microdata-forum  3
 nttcom-onboarding-week1  3
 nws-glossary-a  33

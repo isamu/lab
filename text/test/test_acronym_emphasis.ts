@@ -63,6 +63,10 @@ describe("undefined-acronym: 文の中で前置詞・接続詞・数詞・代名
     ["The loan follows FAR 12.212 for this.", ["FAR"]],
     ["It resumes at SOME/2 later.", ["SOME"]],
     ["The AS number and the AID program are new.", ["AID", "AS"]],
+    // 前後が小文字の語でなければ、文の中で読めない。動詞の後ろの名詞が動詞として引けなければ、大文字の語の名前。
+    ["ON Semiconductor parts are available.", ["ON"]],
+    ["The user DID token expired.", ["DID"]],
+    ["The team uses OR's model.", ["OR"]],
     // 形容詞は、強調（the WHOLE month）と名前（the SAFE framework）を意味でしか見分けられないので数える。
     ["Stay for the WHOLE month under the SAFE framework.", ["SAFE", "WHOLE"]],
   ].forEach(([body, expected]) => {
@@ -93,6 +97,9 @@ describe("lang-en: 大文字で書いた、副詞としてしか引けない語"
     ["The IT team met.", "IT"],
     ["AT.", "AT"],
     ["Send it to US-CERT now.", "US"],
+    ["Contact the team via IT.", "IT"],
+    ["Contact IT's office today.", "IT"],
+    ["OR tools are installed.", "OR"],
   ].forEach(([text, surface]) => {
     it(`印を付けない: ${String(surface)} in ${String(text)}`, () => assert.equal(tokenOf(String(text), String(surface))?.features?.["Emph"], undefined));
   });
