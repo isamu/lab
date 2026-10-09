@@ -42,7 +42,7 @@ noaa-press-flood-mapping  3
 nodejs-tsc-minutes-2026-05-06  5
 nstac-microdata-forum  3
 nttcom-onboarding-week1  3
-nws-glossary-a  33
+nws-glossary-a  10
 ppc-guidelines-tsusoku  3
 rfc3693-geopriv-requirements  19
 rfc9293-tcp  36

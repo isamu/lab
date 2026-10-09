@@ -292,10 +292,50 @@ const proseLines = (lines: readonly string[]): string[] => {
   return withoutFences(lines.map((line, index) => (index < skipped || INDENTED.test(line) ? "" : line)));
 };
 
-/** 用語集の見出し語として、すぐ後ろに名前を書いた略語。 */
+/**
+ * 名前で確かめられた見出し語がこれだけある文書は、用語集。用語集では、見出し語の後ろの段落はどれも定義なので、名前の文字が揃わない
+ * 項目（ADVIS: In hydrologic terms, a program…、AMVER: Automated Mutual Assistance Vessel Rescue System）も説明済みと読む。
+ * 用語集でない文書の、略語だけの行（PDF、IMAGE）や見出し（### MATLAB）の後ろは、定義ではなく本文や添え書き。
+ */
+const GLOSSARY_ENTRIES = 5;
+
+/** 見出し語の行。大文字の語を空白か / で並べたもの（A AMS、AMVER/SEAS）。1 文字の語（A）は略語ではないので見出し語に数えない。 */
+const HEADWORD_WORD = String.raw`[A-Z][A-Z&-]*`;
+const HEADWORD_LINE = new RegExp(String.raw`^(?:#{1,6}\s+)?(?<words>${HEADWORD_WORD}(?:[ /]${HEADWORD_WORD})*)\s*(?<colon>[:：])?(?:\s+#+)?$`, "u");
+const HEADING_LINE = /^#{1,6}\s/u;
+
+/** 定義の段落。小文字の語を含み（次の見出し語ではなく）、見出しでもない行。 */
+const isDefinitionLine = (line: string): boolean => /\p{Ll}/u.test(line) && !HEADING_LINE.test(line);
+
+/** 用語集の、見出し語だけの行と、その次の空でない行が定義の段落のもの。 */
+const glossaryLineTerms = (lines: readonly string[], index: number): string[] => {
+  const line = (lines[index] ?? "").trim();
+  const groups = HEADWORD_LINE.exec(line.replaceAll(STRONG, ""))?.groups;
+  if (groups?.["words"] === undefined || (groups["colon"] !== undefined && !MARKED_LINE.test(line))) return [];
+  const next = lines.slice(index + 1, index + 1 + NEXT_LINE_REACH).find((candidate) => candidate.trim() !== "");
+  return next !== undefined && isDefinitionLine(next.trim()) ? groups["words"].split(/[ /]/u).filter((word) => WHOLE_TERM.test(word)) : [];
+};
+
+/** 用語集の、印を付けた見出し語と区切りの後ろの定義（**ADVIS**: In hydrologic terms…、- ADVIS — a program…）。 */
+const glossaryLeadTerm = (line: string): string[] => {
+  const lead = TERM_LEAD.exec(line.trim());
+  const term = lead?.groups?.["strongTerm"] ?? lead?.groups?.["term"];
+  return term !== undefined && /\p{Ll}/u.test(lead?.groups?.["rest"] ?? "") ? [term] : [];
+};
+
+const termsOf = (lines: readonly string[], index: number): string[] => {
+  const line = lines[index] ?? "";
+  return TABLE_ROW.test(line) ? tableTerms(line) : [...lineTerm(lines, index), ...leadTerm(line)];
+};
+
+const glossaryTermsOf = (lines: readonly string[], index: number): string[] => [...glossaryLineTerms(lines, index), ...glossaryLeadTerm(lines[index] ?? "")];
+
+/** 用語集の見出し語として、すぐ後ろに名前を書いた略語。用語集と読める文書では、名前でなくても定義を書いた略語。 */
 export const termEntryAcronyms = (source: string): ReadonlySet<string> => {
   const lines = proseLines(source.split(/\r?\n/u));
-  return new Set(lines.flatMap((line, index) => (TABLE_ROW.test(line) ? tableTerms(line) : [...lineTerm(lines, index), ...leadTerm(line)])));
+  const named = lines.flatMap((_, index) => termsOf(lines, index));
+  if (new Set(named).size < GLOSSARY_ENTRIES) return new Set(named);
+  return new Set([...named, ...lines.flatMap((_, index) => glossaryTermsOf(lines, index))]);
 };
 
 export type ExpandedAt = (body: string, acronym: string, at: number) => boolean;
