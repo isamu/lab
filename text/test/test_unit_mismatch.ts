@@ -159,7 +159,10 @@ describe("unit-mismatch", () => {
     assert.deepEqual(foundJa("重さ：1500 g", "", "重さは最大1.2kgです。"), []);
     assert.deepEqual(foundEn("Weight: 1500 g", "", "The weight is about 1.2 kg."), ["The weight:1.2 kg≠1500 g"]);
     assert.deepEqual(foundEn("Weight: 1250 g", "", "The weight is about 1.2 kg."), []);
-    assert.deepEqual(foundEn("Weight: 1250 g", "", "The weight is 1.2 kg."), ["The weight:1.2 kg≠1250 g"]);
+    assert.deepEqual(foundEn("Weight: 1250 g", "", "The weight is 1.2 kg."), []);
+    assert.deepEqual(foundEn("Weight: 1300 g", "", "The weight is 1.2 kg."), ["The weight:1.2 kg≠1300 g"]);
+    assert.deepEqual(foundEn("Weight: 1500 g", "", "The weight is about 1 kg."), []);
+    assert.deepEqual(foundEn("Weight: 1500 g", "", "The weight is 1 kg."), ["The weight:1 kg≠1500 g"]);
     assert.deepEqual(foundEn("Weight: 1250 g", "", "The weight is about 1.20 kg."), ["The weight:1.20 kg≠1250 g"]);
     assert.deepEqual(foundEn("Weight: 1500 g", "", "The weight is up to 1.2 kg."), []);
   });
