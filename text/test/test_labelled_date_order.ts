@@ -5,7 +5,7 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { datesOutOfOrder, pairedDatesOutOfOrder, type OrderLabel } from "../packages/chaff/src/structure/labelled-date-order.ts";
 
-// 前後の決まった日付の組（due-before-issue の order）。物件の案内の入居可能日と掲載日。例文はすべて自作。
+// 前後の決まった日付の組（due-before-issue の order）。物件の案内の入居可能日と掲載日、求人の応募締切と掲載日。例文はすべて自作。
 
 const RULE = "due-before-issue";
 
@@ -17,12 +17,18 @@ const listingJa = (listed: string, moveIn: string): string =>
 const listingEn = (listed: string, moveIn: string): string =>
   `# Flat to Let: 1 Example Road\n\nListed: ${listed}\n\n| Item | Details |\n| --- | --- |\n| Address | 1 Example Road |\n| Available from | ${moveIn} |\n`;
 
+const postingJa = (postedLabel: string, posted: string, deadlineLabel: string, deadline: string): string =>
+  `# 求人票 架空商事株式会社 一般事務\n\n${postedLabel}：${posted}\n\n${deadlineLabel}：${deadline}\n\n## 仕事内容\n\n1. 書類の作成\n2. 電話の応対\n`;
+
+const postingEn = (postedLabel: string, posted: string, deadlineLabel: string, deadline: string): string =>
+  `# Job Posting: Office Assistant, Example Trading\n\n${postedLabel}: ${posted}\n\n${deadlineLabel}: ${deadline}\n\n## Duties\n\n1. Prepare documents\n2. Answer the phone\n`;
+
 const LABELS: readonly OrderLabel[] = [
   { pattern: "掲載日", group: "listing", position: "before" },
   { pattern: "入居可能日", group: "listing", position: "after" },
 ];
 
-describe("due-before-issue (order): 入居可能日が掲載日より前", () => {
+describe("due-before-issue (order): 入居可能日や応募締切が掲載日より前", () => {
   it("掲載日より前の入居可能日を指す", () => {
     assert.deepEqual(findingsOf(listingJa("2026年10月1日", "2025年11月1日")), ["「入居可能日」の 2025-11-01 が、「掲載日」の 2026-10-01 より前です"]);
     assert.deepEqual(findingsOf(listingEn("October 1, 2026", "August 1, 2026"), en), ['"Available from" 2026-08-01 is before "Listed" 2026-10-01']);
@@ -60,6 +66,38 @@ describe("due-before-issue (order): 入居可能日が掲載日より前", () =>
     };
     assert.deepEqual(findingsOf(listing(40)), []);
     assert.equal(findingsOf(listing(30)).length, 1);
+  });
+
+  it("求人の応募締切が掲載日より前なら指す", () => {
+    assert.deepEqual(findingsOf(postingJa("掲載日", "2026年10月1日", "応募締切", "2026年9月30日")), [
+      "「応募締切」の 2026-09-30 が、「掲載日」の 2026-10-01 より前です",
+    ]);
+    assert.deepEqual(findingsOf(postingJa("募集開始日", "2026年10月1日", "応募期限", "2026年9月1日")), [
+      "「応募期限」の 2026-09-01 が、「募集開始日」の 2026-10-01 より前です",
+    ]);
+    assert.deepEqual(findingsOf(postingEn("Posted", "October 1, 2026", "Application deadline", "September 30, 2026"), en), [
+      '"Application deadline" 2026-09-30 is before "Posted" 2026-10-01',
+    ]);
+    assert.deepEqual(findingsOf(postingEn("Posted on", "2026-10-01", "Application closing date", "2026-09-15"), en), [
+      '"Application closing date" 2026-09-15 is before "Posted on" 2026-10-01',
+    ]);
+  });
+
+  it("掲載日より後の応募締切、年の無い日付、随時や採用まで続く締切は言わない", () => {
+    assert.deepEqual(findingsOf(postingJa("掲載日", "2026年10月1日", "応募締切", "2026年10月31日")), []);
+    assert.deepEqual(findingsOf(postingJa("掲載日", "2026年10月1日", "応募締切", "9月30日")), []);
+    assert.deepEqual(findingsOf(postingJa("掲載日", "2026年10月1日", "応募締切", "随時（採用が決まり次第終了）")), []);
+    assert.deepEqual(findingsOf(postingEn("Posted", "October 1, 2026", "Application deadline", "October 31, 2026"), en), []);
+    assert.deepEqual(findingsOf(postingEn("Posted", "October 1, 2026", "Application deadline", "September 30"), en), []);
+    assert.deepEqual(findingsOf(postingEn("Posted", "October 1, 2026", "Application deadline", "Open until filled"), en), []);
+  });
+
+  it("Posted は応募締切とだけ組み、ブログや更新履歴の日付とは組まない", () => {
+    assert.deepEqual(findingsOf("# Release notes\n\nPosted: October 1, 2026\n\nAvailable from: September 1, 2026\n", en), []);
+    assert.deepEqual(findingsOf("# Sold\n\nPosted: October 1, 2026\n\nClosing date: September 15, 2026\n", en), []);
+    assert.deepEqual(findingsOf("# Weekly update\n\nPosted on: October 1, 2026\n\nDue date: September 1, 2026\n", en), []);
+    assert.deepEqual(findingsOf("# Blog\n\nPosted: October 1, 2026\n\nThe application deadline was September 30, 2026.\n", en), []);
+    assert.deepEqual(findingsOf("# 求人\n\n掲載日：2026年10月1日\n\n応募者数：2026年9月1日時点で3名\n"), []);
   });
 
   it("組の片方しか語の無い語彙表、組の名の無い語、空の入力", () => {

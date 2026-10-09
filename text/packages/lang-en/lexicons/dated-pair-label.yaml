@@ -12,3 +12,11 @@ entries:
   - { pattern: "Move-in date", group: listing, position: after }
   - { pattern: "Move-in", group: listing, position: after }
   - { pattern: "Move in", group: listing, position: after }
+  # A bare "Posted" heads blog and release-note dates too, so it pairs only with an application deadline, never with
+  # "Available". A bare "Closing date" is left out: a sale or a reporting period closes too.
+  - { pattern: "Posted on", group: job, position: before }
+  - { pattern: "Posted", group: job, position: before }
+  - { pattern: "Date posted", group: job, position: before }
+  - { pattern: "Application deadline", group: job, position: after }
+  - { pattern: "Apply by", group: job, position: after }
+  - { pattern: "Application closing date", group: job, position: after }
