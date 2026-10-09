@@ -1,0 +1,6 @@
+# 名前の頭から落とす前置き（fact-conflict、unit-mismatch）。仕様書の「本体の幅は 5.5 インチ」は、表の 幅 の行と同じ項目。英語の its に当たる、文書が説明しているもの自身を指す語だけを入れる（「箱の幅」は別の項目なので入れない）。
+id: fact-label-drop
+language: ja
+entries:
+  - pattern: "本体の"
+  - pattern: "製品の"
