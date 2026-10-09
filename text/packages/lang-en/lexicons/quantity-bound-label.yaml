@@ -1,0 +1,13 @@
+# Labels of the lower and upper bound of a measured quantity (quantity-range-reversed): "min 5 kg, max 2 kg".
+# "from" and "to" are not labels here as they are for an amount: "from 30 °C to 10 °C" is more often a change than a range.
+# group lower or upper says which bound; link is a word that may stand between a label and its quantity ("minimum of").
+# Matched as whole words, without regard to case.
+id: quantity-bound-label
+language: en
+entries:
+  - { pattern: min, group: lower }
+  - { pattern: minimum, group: lower }
+  - { pattern: max, group: upper }
+  - { pattern: maximum, group: upper }
+  - { pattern: of, group: link }
+  - { pattern: is, group: link }

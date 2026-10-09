@@ -1,0 +1,35 @@
+# 同じ文にあれば、二つの量を範囲ではなく変化や下る順と読む語（quantity-range-reversed）：「40℃から10℃まで冷却する」
+# 「カウントダウン 10〜0秒」。字面どおりに照らす。
+id: quantity-change-word
+language: ja
+entries:
+  - pattern: 下げ
+  - pattern: 上げ
+  - pattern: 下が
+  - pattern: 上が
+  - pattern: 低下
+  - pattern: 上昇
+  - pattern: 減少
+  - pattern: 増加
+  - pattern: 減ら
+  - pattern: 増や
+  - pattern: 減っ
+  - pattern: 増え
+  - pattern: 冷却
+  - pattern: 冷ま
+  - pattern: 冷や
+  - pattern: 降温
+  - pattern: 昇温
+  - pattern: 加熱
+  - pattern: 変更
+  - pattern: 変化
+  - pattern: 短縮
+  - pattern: 縮め
+  - pattern: 削減
+  - pattern: 落と
+  - pattern: カウントダウン
+  - pattern: 降順
+  - pattern: 大きい順
+  - pattern: 高い順
+  - pattern: 長い順
+  - pattern: 重い順
