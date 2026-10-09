@@ -5,13 +5,15 @@ import { measuredAmounts, type MeasureMarks, type SummedMeasure } from "../packa
 // 足してよい、単位の付いた量（measuredAmounts）。total-mismatch が表と箇条書きの合計で足す。
 
 const measures: SummedMeasure[] = [
-  { pattern: "mg", dimension: "mass", factors: [0.001] },
-  { pattern: "g", dimension: "mass", factors: [1] },
-  { pattern: "kg", dimension: "mass", factors: [1000] },
-  { pattern: "mL", dimension: "volume", factors: [0.001] },
-  { pattern: "L", dimension: "volume", factors: [1] },
-  { pattern: "cup", dimension: "volume", factors: [0.24, 0.25] },
-  { pattern: "m", dimension: "length", factors: [1] },
+  { pattern: "mg", dimension: "mass", factors: [0.001], before: false, context: [] },
+  { pattern: "g", dimension: "mass", factors: [1], before: false, context: [] },
+  { pattern: "kg", dimension: "mass", factors: [1000], before: false, context: [] },
+  { pattern: "mL", dimension: "volume", factors: [0.001], before: false, context: [] },
+  { pattern: "L", dimension: "volume", factors: [1], before: false, context: [] },
+  { pattern: "cup", dimension: "volume", factors: [0.24, 0.25], before: false, context: [] },
+  { pattern: "m", dimension: "length", factors: [1], before: false, context: [] },
+  { pattern: "大さじ", dimension: "volume", factors: [0.015], before: true, context: [] },
+  { pattern: "度", dimension: "angle", factors: [1], before: false, context: ["角"] },
 ];
 
 const marks: MeasureMarks = {
@@ -56,12 +58,19 @@ describe("measuredAmounts", () => {
     assert.deepEqual(read("300 mg per tablet"), ["300 mg=300mass?×-"]);
     assert.deepEqual(read("2 cup"), ["2 cup=2volume?×-"]);
     assert.deepEqual(read("$3 / 200 g"), ["200 g=200mass?×-"]);
+    assert.deepEqual(read("大さじ1"), ["大さじ1=1volume?×-"]);
+    assert.deepEqual(read("大さじ 2"), ["大さじ 2=2volume?×-"]);
   });
 
   it("a list bullet, or a word that only starts or ends with a mark, is not a mark", () => {
     assert.deepEqual(read("- 300 mg"), ["300 mg=300mass×1"]);
     assert.deepEqual(read("Tabout 300 mg"), ["300 mg=300mass×1"]);
     assert.deepEqual(read("300 mg personal"), ["300 mg=300mass×1"]);
+  });
+
+  it("a unit that needs a context word on its line is read only with that word", () => {
+    assert.deepEqual(read("角 30度"), ["30度=30angle×1"]);
+    assert.deepEqual(read("30度"), []);
   });
 
   it("an amount the tree already read is not read again", () => {

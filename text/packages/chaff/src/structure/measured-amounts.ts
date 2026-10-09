@@ -1,11 +1,12 @@
 import type { Amount } from "./total.ts";
+import type { MeasureUnit } from "../facts/measures.ts";
 import { CONTINUES_WORD, NUMBER, overlapsAny, valueOf } from "./counted-amounts.ts";
 
 /**
  * 足してよい、単位の付いた量（300 mg、0.5 g、2 L、3 cm）。単位は量の種類（dimension）と、基準の単位への倍率（factors）を持つ。
  * 同じ種類の量は、その種類で一番小さい単位に直して足す（500 mg と 0.5 g は 1,000 mg）。倍率が二つある単位（cup）は換算が決まらない。
  */
-export type SummedMeasure = { readonly pattern: string; readonly dimension: string; readonly factors: readonly number[] };
+export type SummedMeasure = Pick<MeasureUnit, "pattern" | "dimension" | "factors" | "before" | "context">;
 
 /** 足せない量の印。目安の印（約、about、程度）、範囲の印（〜）、何あたりかの印（数の前の $3 / 200 g、単位の後ろの 300 mg/錠、per tablet）。 */
 export type MeasureMarks = {
@@ -63,12 +64,24 @@ const markedAfter = (source: string, end: number, marks: MeasureMarks): boolean 
 
 type Found = { readonly measure: SummedMeasure; readonly end: number };
 
+const lineAt = (source: string, offset: number): string => {
+  const end = source.indexOf("\n", offset);
+  return source.slice(lineStartOf(source, offset), end === -1 ? source.length : end);
+};
+
+/** 文脈の語が要る単位（unit-context）は、同じ行にその語があるときだけ単位。 */
+const inContext = (measure: SummedMeasure, source: string, offset: number): boolean => {
+  if (measure.context.length === 0) return true;
+  const line = lineAt(source, offset).toLowerCase();
+  return measure.context.some((word) => line.includes(word.toLowerCase()));
+};
+
 /** 数のすぐ後ろ（空白一つまで）の単位。長い単位から試す（mg を m で切らない）。大文字と小文字は区別する（mL と ML は別）。 */
 const measureAfter = (source: string, end: number, measures: readonly SummedMeasure[], marks: MeasureMarks): Found | undefined => {
   const gap = source.charAt(end) === " " ? 1 : 0;
   const rest = source.slice(end + gap, end + gap + LOOKAHEAD);
   const measure = measures.find((candidate) => {
-    if (!rest.startsWith(candidate.pattern)) return false;
+    if (candidate.before || !rest.startsWith(candidate.pattern) || !inContext(candidate, source, end)) return false;
     const unitEnd = end + gap + candidate.pattern.length;
     return markedAfter(source, unitEnd, marks) || !CONTINUES_WORD.test(rest.slice(candidate.pattern.length));
   });
@@ -101,13 +114,25 @@ const amountOf = (source: string, start: number, written: string, found: Found, 
   return { offset: start, end: found.end, value: value * scale, unit: measure.dimension, scale };
 };
 
+/**
+ * 数のすぐ前（空白一つまで）の単位（大さじ1）は、足さない量として読む。読まずに捨てると、その行が空の升に見えてしまう。
+ */
+const measureBefore = (source: string, start: number, end: number, measures: readonly SummedMeasure[]): Amount | undefined => {
+  const gap = source.charAt(start - 1) === " " ? 1 : 0;
+  const head = source.slice(Math.max(0, start - gap - LOOKAHEAD), start - gap);
+  const measure = measures.find((candidate) => candidate.before && head.endsWith(candidate.pattern) && inContext(candidate, source, start));
+  return measure === undefined ? undefined : unsummable(start - gap - measure.pattern.length, end, valueOf(source.slice(start, end)), measure);
+};
+
 /** 文書の中の、単位の付いた量。値は量の種類で一番小さい単位に直す。木がすでに数量として読んだもの（known）とは重ねない。 */
 export const measuredAmounts = (source: string, measures: readonly SummedMeasure[], marks: MeasureMarks, known: readonly Amount[]): Amount[] => {
   const longestFirst = measures.toSorted((left, right) => right.pattern.length - left.pattern.length);
   const bases = baseFactors(measures);
   return [...source.matchAll(NUMBER)].flatMap((match): Amount[] => {
-    const found = measureAfter(source, match.index + match[0].length, longestFirst, marks);
-    if (found === undefined || overlapsAny(match.index, found.end, known)) return [];
-    return [amountOf(source, match.index, match[0], found, bases, marks)];
+    const end = match.index + match[0].length;
+    const found = measureAfter(source, end, longestFirst, marks);
+    if (found !== undefined) return overlapsAny(match.index, found.end, known) ? [] : [amountOf(source, match.index, match[0], found, bases, marks)];
+    const before = measureBefore(source, match.index, end, longestFirst);
+    return before === undefined || overlapsAny(before.offset, before.end, known) ? [] : [before];
   });
 };

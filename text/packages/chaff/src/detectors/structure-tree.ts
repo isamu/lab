@@ -9,6 +9,7 @@ import { totalMismatches, type Amount } from "../structure/total.ts";
 import { proseTotalMismatches } from "../structure/prose-total.ts";
 import { countedAmounts, type SummedCounter } from "../structure/counted-amounts.ts";
 import { measuredAmounts, type MeasureMarks, type SummedMeasure } from "../structure/measured-amounts.ts";
+import { measureUnitsOf } from "../facts/measure-units.ts";
 import { rangeFrameOf, reversedRanges, type DatedSpan, type RangeWords } from "../structure/date-range.ts";
 import { afterLabel } from "../structure/stated-period.ts";
 import { percentSumMismatches, type ShareWords } from "../structure/percent-sum.ts";
@@ -188,15 +189,9 @@ const summableAmountsOf = (doc: ProseDocument, tree: NonNullable<ProseDocument["
 /** 合計の行で足す量の種類。換算の倍率は語彙表の weight。 */
 const SUMMED_DIMENSIONS = ["unit-mass", "unit-volume", "unit-length"] as const;
 
-/** 単位ごとの倍率。同じ単位を二度書いたもの（cup の米国と メートル法）は倍率が二つ。数の前に書く単位（大さじ1）は読まない。 */
+/** 足す単位。零点のずれた単位（°F）は足せないので除く。 */
 const summedMeasuresOf = (doc: ProseDocument): SummedMeasure[] =>
-  SUMMED_DIMENSIONS.flatMap((dimension) => {
-    const factors = new Map<string, number[]>();
-    (doc.lexicons[dimension] ?? []).forEach((entry) => {
-      if (entry.weight !== undefined && entry.position !== "before") factors.set(entry.pattern, [...(factors.get(entry.pattern) ?? []), entry.weight]);
-    });
-    return [...factors.entries()].map(([pattern, weights]) => ({ pattern, dimension, factors: weights }));
-  });
+  measureUnitsOf(doc).filter((unit) => unit.zero === 0 && SUMMED_DIMENSIONS.some((dimension) => dimension === unit.dimension));
 
 const positionedOf = (doc: ProseDocument, lexicon: string, position: "before" | "after"): string[] =>
   (doc.lexicons[lexicon] ?? []).filter((entry) => (entry.position ?? "before") === position).map((entry) => entry.pattern);

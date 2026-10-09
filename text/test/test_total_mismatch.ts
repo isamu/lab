@@ -267,6 +267,7 @@ describe("total-mismatch", () => {
       assert.deepEqual(found(doc("- A: about 200 mg", "- B: 100 mg", "- Total: 400 mg")), []);
       assert.deepEqual(found(doc("| A | 5 mg (per tablet) |", "| B | 10 mg (per tablet) |", "| Total | 20 mg (per tablet) |")), []);
       assert.deepEqual(found(doc("- Flour: $3 / 200 g", "- Sugar: $2 / 100 g", "- Total: 900 g")), []);
+      assert.deepEqual(found(doc("- 醤油: 大さじ1", "- 酒: 15mL", "- みりん: 30mL", "- 合計: 60mL"), ja, "ja"), []);
     });
 
     it("units whose factors do not divide evenly add up without a rounding difference", () => {
