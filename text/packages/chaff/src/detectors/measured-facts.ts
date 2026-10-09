@@ -13,7 +13,7 @@ export const measuredOf = (doc: ProseDocument): Measured[] => {
 };
 
 /** fact-conflict の値に、単位の付いた量を足す。量と重なる値（量の数だけを読んだもの）は量に置き換える。 */
-export const valuesWith = (tree: StructureNode, doc: ProseDocument, measured: readonly Measured[]): FactValue[] => {
+export const valuesWith = (tree: StructureNode, doc: ProseDocument, measured: readonly FactValue[]): FactValue[] => {
   const taken = spanIndex(measured);
   const others = factValues(tree, doc.source, nameSpans(doc)).filter((value) => !overlapsAny(taken, value));
   return [...others, ...measured].toSorted((left, right) => left.start - right.start);
