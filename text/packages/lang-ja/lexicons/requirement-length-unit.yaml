@@ -1,0 +1,12 @@
+# 経験の長さの単位（required-listed-as-preferred）。weight は月で数えた長さ。「Python 3年以上」から長さを外して技能を比べ、
+# 歓迎のほうが長い経験を求めているかを長さで決める。
+id: requirement-length-unit
+language: ja
+entries:
+  - { pattern: 年, weight: 12 }
+  - { pattern: 年間, weight: 12 }
+  - { pattern: か月, weight: 1 }
+  - { pattern: ヶ月, weight: 1 }
+  - { pattern: カ月, weight: 1 }
+  - { pattern: ヵ月, weight: 1 }
+  - { pattern: ケ月, weight: 1 }

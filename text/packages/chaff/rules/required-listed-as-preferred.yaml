@@ -1,0 +1,102 @@
+id: required-listed-as-preferred
+layer: L3
+status: stable
+how_to_find: requirement-lists
+# The headings and labels come from requirement-heading; a length of experience is read with requirement-length-unit,
+# requirement-length-word and number-word, and requirement-item-ending is taken off the end of an item.
+languages: [ja, en]
+severity: warning
+
+name:
+  ja: 必須の条件を歓迎の条件にも挙げている
+  en: A required skill listed again as preferred
+
+why:
+  ja: 求人の「必須」に挙げた資格や経験を「歓迎」にも挙げると、読み手はそれが必ず要るのか、あれば良いだけなのかが分からず、応募するかどうかを決められません。どちらかの項目を書き換えたつもりで、別の行を写したときに起きます。必須（必須スキル、応募資格）と歓迎（歓迎スキル、尚可）の見出しや札の下の箇条書きを比べ、同じ項目が両方にあれば、歓迎のほうを指します。大文字と小文字、全角と半角、記号、項目の終わりの「の方」「こと」は区別しません。経験の長さ（3年以上）は外して比べ、歓迎のほうが長い経験を求めていなければ同じ項目と読みます。
+  en: 'When a posting lists a qualification under "Required" and again under "Preferred", the reader cannot tell whether it is a must or only welcome, and cannot decide whether to apply. It happens when one line is copied in place of the one that was meant to be rewritten. The list items under a required heading or label (Required, Requirements, Must have) are compared with those under a preferred one (Preferred, Nice to have, Bonus points), and an item in both is pointed out where it is preferred. Case, full and half width and punctuation are ignored. A length of experience (3+ years) is taken out before comparing, and the two are read as the same item unless the preferred one asks for more experience.'
+
+message:
+  ja: 「{item}」は必須の条件（{required}）にも挙げています
+  en: '"{item}" is also listed as required ({required})'
+
+how_to_fix:
+  ja: 必ず要るなら歓迎から消し、あれば良いだけなら必須から消してください。歓迎で上の水準を求めるなら、「5年以上」のように違いを書いてください。
+  en: Remove it from the preferred list if it is a must, or from the required list if it is only welcome. If the preferred item asks for more, say how much more, such as "5+ years".
+
+# chaff explain と規則の一覧には指摘が無いので、{item} と {required} をこう読ませる。
+placeholders:
+  item:
+    ja: 〇〇
+    en: the item
+  required:
+    ja: 必須の項目
+    en: the required item
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: structure
+summary:
+  ja: 求人で、必須に挙げた資格や経験を歓迎にも挙げている所
+  en: A skill or qualification in a job posting listed both as required and as preferred
+example:
+  ja:
+    before: |
+      # 求人：経理スタッフ
+
+      ## 必須
+
+      - 日商簿記2級以上
+      - 経理の実務経験3年以上
+
+      ## 歓迎
+
+      - 日商簿記2級以上
+      - 英語の書類を読めること
+    after: |
+      # 求人：経理スタッフ
+
+      ## 必須
+
+      - 日商簿記2級以上
+      - 経理の実務経験3年以上
+
+      ## 歓迎
+
+      - 連結決算の経験
+      - 英語の書類を読めること
+  en:
+    before: |
+      # Job posting: Accounts Assistant
+
+      ## Required
+
+      - A degree in accounting or finance
+      - At least three years of bookkeeping experience
+
+      ## Preferred
+
+      - At least three years of bookkeeping experience
+      - Reading business documents in Japanese
+    after: |
+      # Job posting: Accounts Assistant
+
+      ## Required
+
+      - A degree in accounting or finance
+      - At least three years of bookkeeping experience
+
+      ## Preferred
+
+      - Experience with consolidated accounts
+      - Reading business documents in Japanese
+
+not_flagged:
+  ja: 歓迎のほうが長い経験を求める項目（必須「Python」、歓迎「Python 5年以上」）は、上の水準を歓迎していると読んで指しません。違う言葉で同じことを言う項目（「簿記2級」と「日商簿記2級」）、資格の級の違い（「2級以上」と「1級」）、表に書いた条件、一つの行に「必須：Python、Go」のように並べた条件は比べません。見出しや札の無い箇条書きは読みません。
+  en: 'A preferred item asking for more experience (required "Python", preferred "5+ years of Python") is read as welcoming a higher level, and is not pointed out. Two items saying the same thing in other words ("bookkeeping" and "accounting"), different grades of a certificate, conditions written in a table, and conditions run together on one line ("Required: Python, Go") are not compared. A list without a required or preferred heading or label is not read.'
+level_meaning:
+  ja: 必須と歓迎の両方に同じ項目があるとき指摘
+  en: reported when the same item is listed as required and as preferred

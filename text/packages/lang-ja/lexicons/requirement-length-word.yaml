@@ -1,0 +1,8 @@
+# 経験の長さと一緒に外す語（required-listed-as-preferred）。before は数の前、after は単位の後ろに付く語（3年以上の）。
+id: requirement-length-word
+language: ja
+entries:
+  - { pattern: 以上, group: after }
+  - { pattern: 超, group: after }
+  - { pattern: 程度, group: after }
+  - { pattern: の, group: after }
