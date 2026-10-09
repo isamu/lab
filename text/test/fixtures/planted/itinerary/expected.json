@@ -5,7 +5,7 @@
       "time-order": "3/3",
       "stay-nights": "3/3",
       "arrival-before-departure": "3/3",
-      "connection-too-short": "0/3",
+      "connection-too-short": "3/3",
       "cost-total": "3/3",
       "date-outside-period": "3/3",
       "place-two-ways": "2/3"
@@ -15,7 +15,7 @@
       "time-order": "3/3",
       "stay-nights": "3/3",
       "arrival-before-departure": "3/3",
-      "connection-too-short": "0/3",
+      "connection-too-short": "3/3",
       "cost-total": "3/3",
       "date-outside-period": "3/3",
       "place-two-ways": "2/3"

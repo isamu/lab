@@ -13,7 +13,7 @@ import { crossesZones, dayShiftOf, withoutDayShiftBefore, zonesIn, SECONDS_PER_D
  */
 
 /** 頭に時刻を書いた項目。seconds は 0 時からの秒、shift は翌日の印（1）か無印（0）。 */
-type Stop = {
+export type Stop = {
   readonly offset: number;
   readonly written: string;
   readonly seconds: number;
@@ -130,11 +130,12 @@ const breaksIn = (day: readonly Stop[]): StructureIssue[] => {
   return values.slice(1).flatMap((value, index) => (value < (values[index] ?? "") ? issueAt(day, outOfPlace(values, index + 1, 1)) : []));
 };
 
-/** 一日の予定の時刻のうち、早い順から外れたもの。 */
-export const timeOrderBreaks = (source: string, times: readonly TimeSpan[], dates: readonly DateSpan[], words: TimeWords): StructureIssue[] => {
+/** 一日の予定として並べた時刻を、日ごとに。並びの中で日付か時間帯が変われば別の日。 */
+export const scheduleDays = (source: string, times: readonly TimeSpan[], dates: readonly DateSpan[], words: TimeWords): Stop[][] => {
   const inputs = { source, times, dates, words };
-  return runsOf(source).flatMap((run) => {
-    const stops = run.flatMap((line) => stopOf(line, inputs) ?? []);
-    return daysOf(stops).flatMap(breaksIn);
-  });
+  return runsOf(source).flatMap((run) => daysOf(run.flatMap((line) => stopOf(line, inputs) ?? [])));
 };
+
+/** 一日の予定の時刻のうち、早い順から外れたもの。 */
+export const timeOrderBreaks = (source: string, times: readonly TimeSpan[], dates: readonly DateSpan[], words: TimeWords): StructureIssue[] =>
+  scheduleDays(source, times, dates, words).flatMap(breaksIn);

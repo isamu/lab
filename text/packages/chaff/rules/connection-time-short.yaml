@@ -1,0 +1,52 @@
+id: connection-time-short
+layer: L3
+status: stable
+how_to_find: connection-time-short
+requires: [dates]
+severity: warning
+
+name:
+  ja: 移動の時間より短い乗り継ぎ
+  en: A connection shorter than the stated travel time
+
+why:
+  ja: 「福岡 09:50着」のあと「09:55 博多駅で合流（福岡空港から地下鉄で約10分）」のように、文書に書いた移動の時間より次の予定までの間が短いと、どちらかの時刻か移動の時間を書き間違えています。そのまま動くと次の予定に遅れます。移動の時間は、文書に書いたもの（移動の語と同じ文の「約10分」「乗り換えに30分」）だけを使い、実際にかかる時間は推し量りません。移動を書いた予定（「10:00 京都駅から貸切バスで清水寺へ（約30分）」）はその時刻から次の予定まで、予定に添えた移動の時間はすぐ前の着の時刻からその予定までの間と比べます。
+  en: 'When a schedule leaves less time than the travel time it states itself, as in "arrives Washington Reagan 9:05 AM" followed by "9:15 AM Meet Ms. Tanaka at Metro Center (25 minutes from the airport by Metro)", one of the times or the travel time is wrong, and whoever follows it will be late. Only travel times the document states are used (a length in the same sentence as a word of travel: "about 40 minutes by train", "allow 45 minutes"); real travel times are never assumed. A line that is itself a move ("09:30 Coach from York station to the Minster (about 15 minutes)") is measured from its time to the next item of the day; a travel time added to an item is measured from the arrival just before it.'
+
+message:
+  ja: 「{from}」から「{time}」まで{gap}分しかなく、書いてある移動の時間（{travel}）より短いです
+  en: "Only {gap} minutes from {from} to {time}, less than the stated travel time ({travel})"
+
+how_to_fix:
+  ja: 着の時刻、次の予定の時刻、移動の時間を確かめて、書き間違えたものを直してください。
+  en: Check the arrival, the next time and the stated travel time, and correct the wrong one.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 旅程で、次の予定までの間が文書に書いた移動の時間より短い所
+  en: An itinerary that leaves less time for a connection than the travel time it states
+example:
+  ja:
+    before: |
+      - 08:00 JAL 305便（羽田 08:00発、福岡 09:50着）
+      - 09:55 博多駅で合流（福岡空港から地下鉄で約10分）
+    after: |
+      - 08:00 JAL 305便（羽田 08:00発、福岡 09:50着）
+      - 10:30 博多駅で合流（福岡空港から地下鉄で約10分）
+  en:
+    before: |
+      - 7:30 AM Flight AA 2140 (departs Boston 7:30 AM, arrives Washington Reagan 9:05 AM)
+      - 9:15 AM Meet Ms. Tanaka at Metro Center (25 minutes from the airport by Metro)
+    after: |
+      - 7:30 AM Flight AA 2140 (departs Boston 7:30 AM, arrives Washington Reagan 9:05 AM)
+      - 10:00 AM Meet Ms. Tanaka at Metro Center (25 minutes from the airport by Metro)
+
+not_flagged:
+  ja: 移動の時間を書いていない所、上限として書いた時間（徒歩10分以内）、すぐ前の時刻が着でない所、日付の違う時刻、翌日の印のある時刻、時刻が戻る所（夜をまたぐ）、時間帯の印の違う時刻は言いません。
+  en: 'No stated travel time, a time given as an upper limit ("within 10 minutes"), a time whose previous time is not an arrival, times on different dates, a time marked as the next day, a time that goes back (overnight), and times with different time zones are not reported.'
