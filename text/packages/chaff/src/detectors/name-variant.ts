@@ -6,7 +6,7 @@ import { companyMentionsIn, companyVariants, type CompanyForm, type IsProper } f
 import { proseAndTablesOf } from "../table-text.ts";
 import { tableBodyCells } from "../facts/table-facts.ts";
 import { cellNamesIn, cellNameVariants, proseNamesOf } from "../table-names.ts";
-import { placeMentionsIn, placeVariants, type PlaceReader, type PlaceWord } from "../place-names.ts";
+import { placeMentionsIn, placeVariants, type PlaceChars, type PlaceReader, type PlaceWord } from "../place-names.ts";
 import type { TableCell, Token } from "../plugin.ts";
 import { proseWithCells } from "../table-cells.ts";
 import { labelledSpans, orderNamesOf, quotedSpans, stemOf, titleCaseSpans, wordOrderVariants, type OrderWord } from "../name-word-order.ts";
@@ -32,6 +32,18 @@ const properOf = (doc: ProseDocument): IsProper => {
 /** 場所の名前の終わりに立つ語（口、駅、Street、St.）は語彙表 place-word が、同じ語の別の書き方の組（group）とともに言う。 */
 const placeWordsOf = (doc: ProseDocument): PlaceWord[] =>
   (doc.lexicons["place-word"] ?? []).map((entry) => ({ pattern: entry.pattern, group: entry.group ?? entry.pattern }));
+
+/**
+ * 場所の名前の字。方角や位置の字（東、上、新）は語彙表 place-direction、読みの同じ字（洲 と 州）は place-name-char と、字体の違う
+ * 同じ字の name-variant-char が組（group）ごとに言う。
+ */
+const placeCharsOf = (doc: ProseDocument, chars: VariantChars): PlaceChars => ({
+  directions: new Set(patternsOf(doc, "place-direction")),
+  sameReading: new Map([
+    ...chars,
+    ...(doc.lexicons["place-name-char"] ?? []).flatMap((entry): [string, string][] => (entry.group === undefined ? [] : [[entry.pattern, entry.group]])),
+  ]),
+});
 
 /** 名前の頭に立たない語の品詞（The、at、and）。 */
 const FUNCTION_POS: ReadonlySet<string> = new Set(["DET", "ADP", "PRON", "CCONJ", "SCONJ", "AUX", "PART"]);
@@ -87,8 +99,8 @@ const companyFindings = (doc: ProseDocument, prose: string, reported: readonly R
     .map(({ mention, usual, kind }) => ({ offset: mention.offset, name: mention.surface, usual, kind: kind === "spelling" ? kind : `company-${kind}` }));
 
 /** 場所の名前の書き分け。表の本体の升の中の名前も読む（見出しの行は読まない）。人や会社の名前の見方がすでに指した所と重なるものは除く。 */
-const placeFindings = (doc: ProseDocument, prose: string, reported: readonly Reported[]): Reported[] =>
-  placeVariants(placeMentionsIn(proseWithCells(prose, cellsOf(doc)), placeWordsOf(doc), placeReaderOf(doc)))
+const placeFindings = (doc: ProseDocument, prose: string, reported: readonly Reported[], chars: VariantChars): Reported[] =>
+  placeVariants(placeMentionsIn(proseWithCells(prose, cellsOf(doc)), placeWordsOf(doc), placeReaderOf(doc)), placeCharsOf(doc, chars))
     .filter(({ mention }) => !overlapsAny(reported, mention.offset, mention.surface.length))
     .map(({ mention, usual, kind }) => ({ offset: mention.offset, name: mention.surface, usual, kind }));
 
@@ -161,7 +173,7 @@ export const nameVariant: Detector = (doc): Finding[] => {
   }));
   const namesAndCompanies = [...names, ...companyFindings(doc, prose, names)];
   const withTables = [...namesAndCompanies, ...tableFindings(doc, prose, mentions, namesAndCompanies)];
-  const withPlaces = [...withTables, ...placeFindings(doc, prose, withTables)];
+  const withPlaces = [...withTables, ...placeFindings(doc, prose, withTables, chars)];
   return [...withPlaces, ...orderFindings(doc, prose, withPlaces)]
     .toSorted((left, right) => left.offset - right.offset)
     .map(({ offset, name, usual, kind }) => ({
