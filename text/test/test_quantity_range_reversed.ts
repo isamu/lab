@@ -95,6 +95,11 @@ describe("quantity-range-reversed, English", () => {
     assert.deepEqual(found(doc("Load: min 20 kg, max 50 kg")), []);
   });
 
+  it("one unit spelled two ways is compared; different units are not", () => {
+    assert.deepEqual(found(doc("Operating temperature: 40 °C to 10 ℃")), ["40 °C to 10 ℃"]);
+    assert.deepEqual(found(doc("Length: 5 m to 20 cm")), []);
+  });
+
   it("different units, and numbers without a unit, are not compared", () => {
     assert.deepEqual(found(doc("Weight: 5 kg to 2 lb")), []);
     assert.deepEqual(found(doc("Pages 30–10 of the manual")), []);
@@ -148,7 +153,7 @@ describe("quantityRangeEnds", () => {
 
   it("keeps a quantity whose unit stands alone, keyed by its unit", () => {
     assert.deepEqual(values("5–2 cm"), [2]);
-    assert.deepEqual(endsOf("5–2 cm")[0]?.currency, "unit-length:cm");
+    assert.deepEqual(endsOf("5–2 cm")[0]?.currency, "unit-length:1");
     assert.deepEqual(endsOf("大さじ2")[0]?.position, "before");
     assert.deepEqual(values("-10〜-40 °C"), [-40]);
   });
@@ -158,6 +163,7 @@ describe("quantityRangeEnds", () => {
     assert.deepEqual(values("equal to 10-8 cm"), []);
     assert.deepEqual(values("equal to 10−8 cm"), []);
     assert.deepEqual(values("110-8 cm"), [8]);
+    assert.deepEqual(values("有効長は１０－８ cmです。"), []);
   });
 
   it("reads nothing from nothing", () => {
