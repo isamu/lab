@@ -152,8 +152,8 @@ const continuesInHan = (texts: readonly BodyText[], term: string, offset: number
 const KATAKANA = /[\p{Script=Katakana}ーｰﾞﾟ]/u;
 const NAKAGURO = /[・･]/u;
 
-/** 片仮名の語の外側（before は語の前、after は語の後ろ）に、片仮名か「・片仮名」が続くか。 */
-const katakanaJoins = (outside: string): boolean => KATAKANA.test(outside.charAt(0)) || (NAKAGURO.test(outside.charAt(0)) && KATAKANA.test(outside.charAt(1)));
+/** 語の外側の隣の字（next）とその向こうの字（beyond）が、片仮名か「・片仮名」か。 */
+const katakanaJoins = (next: string, beyond: string): boolean => KATAKANA.test(next) || (NAKAGURO.test(next) && KATAKANA.test(beyond));
 
 /**
  * 片仮名の端に片仮名が続く現れ、または「・」で片仮名とつないだ現れは、もっと長い名前の一部
@@ -163,9 +163,10 @@ const insideKatakanaName = (texts: readonly BodyText[], term: string, offset: nu
   const body = sentenceAt(texts, offset);
   if (body === undefined) return false;
   const at = offset - body.start;
-  const before = [...body.text.slice(Math.max(0, at - 2), at)].reverse().join("");
-  const after = body.text.slice(at + term.length, at + term.length + 2);
-  return (KATAKANA.test(term.charAt(0)) && katakanaJoins(before)) || (KATAKANA.test(term.at(-1) ?? "") && katakanaJoins(after));
+  const end = at + term.length;
+  const joinedBefore = at > 0 && katakanaJoins(body.text.charAt(at - 1), at > 1 ? body.text.charAt(at - 2) : "");
+  const joinedAfter = katakanaJoins(body.text.charAt(end), body.text.charAt(end + 1));
+  return (KATAKANA.test(term.charAt(0)) && joinedBefore) || (KATAKANA.test(term.at(-1) ?? "") && joinedAfter);
 };
 
 /** 長い名前の写しと読むのに、語の前で定義の名前と重ならなければならない字の数（手引き の前の「の」と「成」）。 */
