@@ -110,3 +110,80 @@ describe("略語の用語集：見出し語のすぐ後ろの名前", () => {
     assert.deepEqual(reportedAcronyms(ja, "# 用語集\n\n## SLA\n\nサービス品質の約束。\n\nSLA を結ぶ。\n"), ["SLA"]);
   });
 });
+
+/** 名前で確かめられる見出し語が揃った、NWS の用語集（パブリックドメイン）の項目。これだけあれば用語集と読む。 */
+const NAMED_ENTRIES = [
+  "AAWU\n\nAlaskan Aviation Weather Unit",
+  "ABT\n\nAbout",
+  "ABV\n\nAbove",
+  "ADAS\n\nAutomated Data Acquisition System",
+  "AFD\n\nArea Forecast Discussion",
+];
+
+const glossaryWith = (...entries: readonly string[]): string => ["Here are the results for the letter a", ...NAMED_ENTRIES, ...entries, ""].join("\n\n");
+
+describe("略語の用語集：用語集では、見出し語の後ろの段落は名前でなくても定義", () => {
+  [
+    ["名前の文字が揃わない定義", "ADVIS\n\nIn hydrologic terms, a program which combines two methods to estimate streamflow.", "ADVIS"],
+    ["名前の文字が足りない定義", "AMVER\n\nAutomated Mutual Assistance Vessel Rescue System. A system operated by the Coast Guard.", "AMVER"],
+    ["見出し語が 2 語（1 文字の語と略語）", "A AMS\n\nArctic Air Mass", "AMS"],
+    ["見出し語が / で並ぶ", "AMVER/SEAS\n\nA software program that generates reports.", "SEAS"],
+    ["番号を付けた定義", "AC\n\n1. Abbreviation for Altocumulus, a cloud of a class.", "AC"],
+  ].forEach(([form, entry, acronym]) => {
+    it(`valid: ${String(form)}`, () => assert.deepEqual(reportedAcronyms(en, glossaryWith(String(entry), `Forecasters run ${String(acronym)} daily.`)), []));
+  });
+
+  [
+    ["定義の中の略語", "ALERT\n\nAutomated Local Event Reporting in Real Time, sent via VHF radio link.", "VHF"],
+    ["見出し語の次が見出し", "ADVIS\n\n## Next letter", "ADVIS"],
+    ["見出し語の次が別の見出し語", "ADVIS\n\nAFRED\n\nAbbreviation for the A Index for Fredericksburg.", "ADVIS"],
+    ["印の無い行頭の略語とコロン（メモの見出し）", "RTO: back by Friday.", "RTO"],
+  ].forEach(([form, entry, acronym]) => {
+    it(`invalid: ${String(form)}`, () =>
+      assert.deepEqual(reportedAcronyms(en, glossaryWith(String(entry), `Forecasters run ${String(acronym)} daily.`)), [String(acronym)]));
+  });
+
+  it("invalid: 空白で並べた大文字の語（見出しや略語の並び）は見出し語ではない", () => {
+    assert.deepEqual(reportedAcronyms(en, glossaryWith("XYZ QRS\n\nThese tools are used together.", "Teams run XYZ daily.")), ["XYZ", "QRS"]);
+  });
+
+  [
+    ["略語だけの行と、名前でない段落", "ADVIS\n\nIn hydrologic terms, a program which estimates streamflow.", "ADVIS"],
+    ["略語の見出しと、その節の本文", "### MATLAB\n\nInitial support for reading the stream format was added.", "MATLAB"],
+    ["略語だけの行と、添え書き", "KGI\n\nQuarterly Minutes", "KGI"],
+  ].forEach(([form, entry, acronym]) => {
+    it(`invalid: 用語集でない文書の${String(form)}`, () =>
+      assert.deepEqual(reportedAcronyms(en, `# Notes\n\n${String(entry)}\n\nThe team uses ${String(acronym)} daily.\n`), [String(acronym)]));
+  });
+});
+
+/** 名前を添えた箇条書きの見出し語が揃った文書。箇条書きの書き方の用語集。 */
+const LISTED_ENTRIES = [
+  "- AAWU: Alaskan Aviation Weather Unit",
+  "- ABT: About",
+  "- ABV: Above",
+  "- ADAS: Automated Data Acquisition System",
+  "- AFD: Area Forecast Discussion",
+];
+
+const listWith = (...lines: readonly string[]): string => ["# Glossary", LISTED_ENTRIES.join("\n"), ...lines, ""].join("\n\n");
+
+describe("略語の用語集：見出し語の書き方ごとに、用語集かを数える", () => {
+  [
+    ["強調した見出し語とコロン", "**ADVIS**: In hydrologic terms, a program which estimates streamflow.", "ADVIS"],
+    ["箇条書きの見出し語とダッシュ", "- ADVIS — a program which estimates streamflow.", "ADVIS"],
+  ].forEach(([form, entry, acronym]) => {
+    it(`valid: ${String(form)}`, () => assert.deepEqual(reportedAcronyms(en, listWith(String(entry), `Forecasters run ${String(acronym)} daily.`)), []));
+  });
+
+  it("invalid: 箇条書きの用語集でも、略語だけの行の後ろの段落は定義と読まない", () => {
+    assert.deepEqual(reportedAcronyms(en, listWith("XYZ\n\nThese tools are used together.", "Teams run XYZ daily.")), ["XYZ"]);
+  });
+
+  it("invalid: 名前を添えた見出し語が足りなければ、箇条書きの後ろの定義は名前を求める", () => {
+    const source = ["# Notes", LISTED_ENTRIES.slice(1).join("\n"), "- ADVIS — a program which estimates streamflow.", "Forecasters run ADVIS daily.", ""].join(
+      "\n\n",
+    );
+    assert.deepEqual(reportedAcronyms(en, source), ["ADVIS"]);
+  });
+});
