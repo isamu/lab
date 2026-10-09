@@ -6,7 +6,7 @@ import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
-import { marginOf, statedTotal, stepItems, stepTime, type StepTimeWords } from "../packages/chaff/src/structure/step-times.ts";
+import { marginOf, statedTotal, stepItems, stepLists, stepTime, type StepTimeWords } from "../packages/chaff/src/structure/step-times.ts";
 
 // 所要時間が、手順に書いた時間の和と合わない（step-time-sum-mismatch）。
 
@@ -116,6 +116,34 @@ describe("step-time-sum-mismatch: what it does not report", () => {
     const source = recipe("所要時間：60分", "焼きます（40分）。");
     assert.deepEqual(slipsJa(source), []);
   });
+
+  it("en: a total written as a range is no exact total", () => {
+    const steps = ["", "1. Chop (10 minutes).", "2. Cook (40 minutes)."];
+    assert.deepEqual(slipsEn(["# R", "", "- Total time: 10 minutes to 15 minutes", ...steps].join("\n")), []);
+    assert.deepEqual(slipsEn(["# R", "", "- Total time: one to two hours", ...steps].join("\n")), []);
+  });
+
+  it("en: two numbered lists may be two procedures, and are not added up", () => {
+    const source = [
+      "# R",
+      "",
+      "- Total time: 30 minutes",
+      "",
+      "1. Chop (10 minutes).",
+      "2. Cook (40 minutes).",
+      "",
+      "## Sauce",
+      "",
+      "1. Boil (5 minutes).",
+      "2. Thicken (5 minutes).",
+    ].join("\n");
+    assert.deepEqual(slipsEn(source), []);
+  });
+
+  it("en: a loose list with blank lines between its items is one list", () => {
+    const source = ["# R", "", "- Total time: 30 minutes", "", "1. Chop (10 minutes).", "", "2. Cook (40 minutes)."].join("\n");
+    assert.deepEqual(slipsEn(source), ["30 minutes!=50@3"]);
+  });
 });
 
 const WORDS: StepTimeWords = {
@@ -141,6 +169,16 @@ describe("step-time-sum-mismatch: the pure parts", () => {
       ["1. one\n   more", "2) two", "10. ten"],
     );
     assert.deepEqual(stepItems(""), []);
+  });
+
+  it("stepLists splits at a line that is neither an item, indented, nor blank, and keeps CRLF continuations", () => {
+    const source = "1. one\r\n   more\r\n\r\n2. two\r\ntext\r\n1. again";
+    assert.deepEqual(
+      stepLists(source).map((list) => list.map((item) => source.slice(item.start, item.end))),
+      [["1. one\r\n   more", "2. two"], ["1. again"]],
+    );
+    assert.deepEqual(stepLists("1.5 hours is long\n2.5 too"), []);
+    assert.deepEqual(stepLists("1．全角\n2）括弧").length, 1);
   });
 
   it("stepTime reads one own length, and nothing from none, two, or a range", () => {

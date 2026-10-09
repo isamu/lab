@@ -35,20 +35,35 @@ export const ROUGH_SHARE = 0.1;
 export const ROUGH_MINUTES = 5;
 const MIN_STEPS = 2;
 
-const STEP_ITEM = /^\s*\p{Nd}{1,3}[.)．）]\s*/u;
+/** 1. or 1) with a space after it (so 1.5 hours is no step); the full-width 1．or 1）may run straight on. */
+const STEP_ITEM = /^\s*\p{Nd}{1,3}(?:[.)]\s|[．）])/u;
 const INDENTED = /^\s+\S/u;
 
-/** The numbered steps of the source: each item's line and the indented lines that go on under it. */
-export const stepItems = (source: string): Span[] =>
-  linesOf(source).reduce<Span[]>((items, line) => {
-    const last = items[items.length - 1];
-    const end = line.start + line.text.length;
-    if (STEP_ITEM.test(line.text)) items.push({ start: line.start, end });
-    else if (last !== undefined && last.end === line.start - 1 && INDENTED.test(line.text) && !STEP_ITEM.test(line.text)) {
-      items[items.length - 1] = { start: last.start, end };
-    }
-    return items;
-  }, []);
+type ListRead = { readonly lists: Span[][]; readonly open: boolean; readonly lastLine: number };
+
+/** One line's place in the numbered lists: a new item, a line under the last item, a blank, or the end of the list. */
+const readLine = (read: ListRead, line: { readonly text: string; readonly start: number; readonly number: number }): ListRead => {
+  const end = line.start + line.text.length;
+  const list = read.lists[read.lists.length - 1];
+  const last = list?.[list.length - 1];
+  if (STEP_ITEM.test(line.text)) {
+    if (read.open && list !== undefined) list.push({ start: line.start, end });
+    else read.lists.push([{ start: line.start, end }]);
+    return { lists: read.lists, open: true, lastLine: line.number };
+  }
+  if (line.text.trim() === "") return read;
+  if (read.open && list !== undefined && last !== undefined && INDENTED.test(line.text)) {
+    if (read.lastLine === line.number - 1) list[list.length - 1] = { start: last.start, end };
+    return { ...read, lastLine: line.number };
+  }
+  return { ...read, open: false };
+};
+
+/** The numbered lists of the source, each a run of items with only blank or indented lines between them. An item holds its line and the indented lines right under it. */
+export const stepLists = (source: string): Span[][] => linesOf(source).reduce<ListRead>(readLine, { lists: [], open: false, lastLine: 0 }).lists;
+
+/** Every numbered step of the source. */
+export const stepItems = (source: string): Span[] => stepLists(source).flat();
 
 const lower = (text: string): string => text.toLowerCase();
 
@@ -73,12 +88,15 @@ const markStartingAt = (text: string, at: number, patterns: readonly string[]): 
   return patterns.some((pattern) => isWordAt(tail, gap, pattern));
 };
 
-const RANGE_BEFORE = /\p{Nd}\s*$/u;
+const DIGIT_BEFORE = /\p{Nd}\s*$/u;
 
-/** Whether the length is the second end of a range: a number and a joiner right before it. */
-const endsRange = (text: string, at: number, joiners: readonly string[]): boolean => {
-  const start = markEndingAt(text, at, joiners.map(lower));
-  return start !== undefined && RANGE_BEFORE.test(text.slice(0, start));
+/** Whether the length is the second end of a range: a joiner right before it, after a number, a number word or a unit (10〜15分, one to two hours, 10 minutes to 15 minutes). */
+const endsRange = (text: string, at: number, words: StepTimeWords): boolean => {
+  const start = markEndingAt(text, at, words.rangeJoiners.map(lower));
+  if (start === undefined) return false;
+  const { numberWords, hourUnits, minuteUnits } = words.lengths;
+  const ends = [...numberWords, ...hourUnits, ...minuteUnits].map(lower).filter((word) => word !== "");
+  return DIGIT_BEFORE.test(text.slice(0, start)) || markEndingAt(text, start, ends) !== undefined;
 };
 
 type Reading = { readonly time: ReadTime; readonly from: number; readonly own: boolean; readonly range: boolean };
@@ -96,7 +114,7 @@ const readingsOf = (text: string, words: StepTimeWords): Reading[] =>
       time: { start: length.start, end: length.end, minutes: length.minutes, approximate: roughBefore !== undefined || roughAfter },
       from,
       own: !notOwn,
-      range: endsRange(text, length.start, words.rangeJoiners),
+      range: endsRange(text, length.start, words),
     };
   });
 
@@ -110,17 +128,22 @@ export const stepTime = (text: string, words: StepTimeWords): ReadTime | undefin
 
 const outside = (offset: number, items: readonly Span[]): boolean => !items.some((item) => offset >= item.start && offset < item.end);
 
+/** The totals written on one line. A line with a range (Total time: 10 to 15 minutes) states no exact total. */
+const totalsOn = (line: { readonly text: string; readonly start: number }, words: StepTimeWords): ReadTime[] => {
+  const readings = readingsOf(line.text, words);
+  if (readings.some((reading) => reading.range)) return [];
+  return readings.flatMap((reading): ReadTime[] => {
+    const label = labelOf(line.text, { start: reading.from, end: reading.time.end }, words.totals);
+    if (label === undefined || !reading.own) return [];
+    return [{ ...reading.time, start: line.start + reading.time.start, end: line.start + reading.time.end }];
+  });
+};
+
 /** The total time the source states outside its steps: a length with a total label right before it. Only one value is read. */
 export const statedTotal = (source: string, items: readonly Span[], words: StepTimeWords): ReadTime | undefined => {
   const totals = linesOf(source)
     .filter((line) => outside(line.start, items))
-    .flatMap((line) =>
-      readingsOf(line.text, words).flatMap((reading): ReadTime[] => {
-        const label = labelOf(line.text, { start: reading.from, end: reading.time.end }, words.totals);
-        if (label === undefined || reading.range || !reading.own) return [];
-        return [{ ...reading.time, start: line.start + reading.time.start, end: line.start + reading.time.end }];
-      }),
-    );
+    .flatMap((line) => totalsOn(line, words));
   const values = new Set(totals.map((total) => total.minutes));
   return values.size === 1 ? totals[0] : undefined;
 };
@@ -128,10 +151,14 @@ export const statedTotal = (source: string, items: readonly Span[], words: StepT
 /** The margin a rough figure allows: ROUGH_SHARE of the total, at least ROUGH_MINUTES. */
 export const marginOf = (total: number, rough: boolean): number => (rough ? Math.max(ROUGH_MINUTES, total * ROUGH_SHARE) : 0);
 
-/** The stated total against the sum of the steps' times, when every step's time is readable and they do not agree. */
+/**
+ * The stated total against the sum of the steps' times, when the document has one numbered list, every step's time is readable,
+ * and they do not agree. Two lists may be two procedures, or one of them no procedure, so a document with two is not read.
+ */
 export const stepTimeSlip = (source: string, words: StepTimeWords): StepTimeSlip | undefined => {
-  const items = stepItems(source);
-  if (items.length < MIN_STEPS) return undefined;
+  const lists = stepLists(source);
+  const [items] = lists;
+  if (lists.length !== 1 || items === undefined || items.length < MIN_STEPS) return undefined;
   const total = statedTotal(source, items, words);
   if (total === undefined) return undefined;
   const times = items.map((item) => stepTime(source.slice(item.start, item.end), words));
