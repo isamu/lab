@@ -2,7 +2,7 @@
   "recall": {
     "ja": {
       "week-numbering": "1/1",
-      "class-hours": "0/1",
+      "class-hours": "1/1",
       "exam-weekday": "1/1",
       "grading-weights": "1/1",
       "deadline-after-term": "0/1",
@@ -12,7 +12,7 @@
     },
     "en": {
       "week-numbering": "1/1",
-      "class-hours": "0/1",
+      "class-hours": "1/1",
       "exam-weekday": "1/1",
       "grading-weights": "1/1",
       "deadline-after-term": "0/1",
