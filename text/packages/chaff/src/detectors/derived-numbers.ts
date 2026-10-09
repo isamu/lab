@@ -15,7 +15,12 @@ import {
   type NightsMismatch,
   type StayColumnWords,
 } from "../derived/stays.ts";
-import { escapeRegExp } from "../orthography.ts";
+import { numeralCounts } from "../derived/unit-counts.ts";
+import { timeLengths, type LengthWords, type TimeLength } from "../derived/time-lengths.ts";
+import { workingHoursMismatches, type WorkingHoursMismatch } from "../derived/working-hours.ts";
+import { sessionHoursMismatches } from "../derived/session-hours.ts";
+import { clockTimes } from "../compare/clock-time.ts";
+import { secondsOf, type Mark } from "../structure/time-marks.ts";
 import { proseAndTablesOf } from "../table-text.ts";
 import { quoteAt } from "./structure-tree.ts";
 
@@ -93,28 +98,17 @@ const durationsOf = (doc: ProseDocument, quantities: readonly Quantity[]): Durat
 
 const sentencesOf = (doc: ProseDocument): Span[] => doc.sentences.map((sentence) => sentence.span);
 
-const LATIN_UNIT = /^[a-z]+$/iu;
-
-/** 数字と泊数の単位（3泊、3 nights）。英字の単位は語の切れ目まで。 */
-const digitNights = (text: string, units: readonly string[]): Count[] =>
-  units.flatMap((unit) => {
-    const tail = LATIN_UNIT.test(unit) ? "(?![\\p{L}\\p{N}])" : "";
-    const pattern = new RegExp(`(?<![\\p{N}.,])(\\p{Nd}+)\\s?${escapeRegExp(unit)}${tail}`, "giu");
-    return [...text.matchAll(pattern)].map((match) => ({
-      start: match.index,
-      end: match.index + match[0].length,
-      amount: Number((match[1] ?? "").normalize("NFKC")),
-    }));
-  });
-
 /** 泊数（3泊、3 nights、three nights）。text は地の文と表（リンク先や code は読まない）。目安の泊数（最大3泊）は除く。 */
-const nightsOf = (doc: ProseDocument, text: string): Count[] => {
-  const units = patternsOf(doc, "stay-night");
-  const digits = digitNights(text, units);
-  const taken = spanIndex(digits);
+/** 数と単位（3泊、15 sessions、three nights）。 */
+const unitCountsOf = (doc: ProseDocument, text: string, units: readonly string[]): Count[] => {
+  const numerals = numeralCounts(text, units);
+  const taken = spanIndex(numerals);
   const worded = numberWordCounts(text, patternsOf(doc, "count-number"), units).filter((count) => !overlapsAny(taken, count));
-  return [...digits, ...worded].filter((count) => !isApproximate(doc, count)).toSorted((left, right) => left.start - right.start);
+  return [...numerals, ...worded].toSorted((left, right) => left.start - right.start);
 };
+
+const nightsOf = (doc: ProseDocument, text: string): Count[] =>
+  unitCountsOf(doc, text, patternsOf(doc, "stay-night")).filter((count) => !isApproximate(doc, count));
 
 const finding = (doc: ProseDocument, offset: number, values: Record<string, string | number>, variant?: string): Finding => ({
   rule: "duration-mismatch",
@@ -142,6 +136,57 @@ const stayColumnWords = (doc: ProseDocument): StayColumnWords => ({
   nights: patternsOf(doc, "stay-nights-column"),
   units: patternsOf(doc, "stay-night"),
 });
+
+const marksOf = (doc: ProseDocument, id: string): Mark[] =>
+  (doc.lexicons[id] ?? []).map((entry) => ({ pattern: entry.pattern, position: entry.position, group: entry.group }));
+
+const SECONDS_PER_HOUR = 3600;
+const SECONDS_PER_MINUTE = 60;
+
+/** The hour and minute units of unit-time, told apart by their weight in seconds. */
+const unitsWeighing = (doc: ProseDocument, seconds: number): string[] =>
+  (doc.lexicons["unit-time"] ?? []).filter((entry) => entry.weight === seconds).map((entry) => entry.pattern);
+
+const lengthWords = (doc: ProseDocument): LengthWords => ({
+  hourUnits: unitsWeighing(doc, SECONDS_PER_HOUR),
+  minuteUnits: unitsWeighing(doc, SECONDS_PER_MINUTE),
+  halves: patternsOf(doc, "length-half"),
+  numberWords: patternsOf(doc, "count-number"),
+});
+
+const lengthsOf = (doc: ProseDocument, text: string): TimeLength[] => timeLengths(text, lengthWords(doc));
+
+const MINUTES_PER_HOUR = 60;
+const HOUR_DECIMALS = 100;
+
+const hoursOf = (minutes: number): number => Math.round((minutes / MINUTES_PER_HOUR) * HOUR_DECIMALS) / HOUR_DECIMALS;
+
+const workingHoursFinding = (doc: ProseDocument, mismatch: WorkingHoursMismatch): Finding =>
+  finding(
+    doc,
+    mismatch.total.start,
+    {
+      start: written(doc, mismatch.start),
+      end: written(doc, mismatch.end),
+      break: written(doc, mismatch.break),
+      total: written(doc, mismatch.total),
+      expected: hoursOf(mismatch.expected),
+    },
+    "working-hours",
+  );
+
+/** 始業から終業まで、休憩を除いた時間が、書いた実働と合わない。 */
+const workingHoursOf = (doc: ProseDocument, text: string): Finding[] => {
+  const times = clockTimes(text).map((time) => ({ start: time.start, end: time.end, seconds: secondsOf(time.key) }));
+  const words = {
+    joiners: patternsOf(doc, "clock-range-joiner"),
+    dayShifts: marksOf(doc, "day-shift-mark"),
+    breaks: marksOf(doc, "working-hours-break"),
+    totals: marksOf(doc, "working-hours-total"),
+    approximate: marksOf(doc, "approximate-marker"),
+  };
+  return workingHoursMismatches(text, doc.source, sentencesOf(doc), times, lengthsOf(doc, text), words).map((mismatch) => workingHoursFinding(doc, mismatch));
+};
 
 /** 始まり + 期間 ≠ 終わり。泊数が二つの日付の差と合わない。「2泊3日」の日数が泊数より一つ多くない。 */
 export const durationMismatch: Detector = (doc): Finding[] => {
@@ -173,7 +218,35 @@ export const durationMismatch: Detector = (doc): Finding[] => {
   const nightsDays = nightsDaysMismatches(pairs).map((mismatch) =>
     finding(doc, mismatch.days.start, { nights: written(doc, mismatch.nights), days: written(doc, mismatch.days), expected: mismatch.expected }, "nights-days"),
   );
-  return [...lengths, ...stays.map((mismatch) => nightsFinding(doc, mismatch)), ...nightsDays];
+  return [...lengths, ...stays.map((mismatch) => nightsFinding(doc, mismatch)), ...nightsDays, ...workingHoursOf(doc, proseAndTables)];
+};
+
+/** 番号の書き方（ordinal-frame）の頭の語のすぐ後ろの数。「第15回」は15番目の回で、15回ではない。 */
+const isOrdinal = (doc: ProseDocument, text: string, count: Span): boolean =>
+  patternsOf(doc, "ordinal-frame").some((frame) => {
+    const head = frame.split("{n}")[0] ?? "";
+    return head !== "" && text.slice(Math.max(0, count.start - head.length), count.start).toLowerCase() === head.toLowerCase();
+  });
+
+/** 回数 × 1回の長さが、書いた合計と合わない（90分×15回（計24時間））。 */
+export const durationProductMismatch: Detector = (doc): Finding[] => {
+  const text = proseAndTablesOf(doc);
+  const counts = unitCountsOf(doc, text, patternsOf(doc, "session-count-unit")).filter((count) => !isOrdinal(doc, text, count));
+  const words = { totals: marksOf(doc, "session-total"), approximate: marksOf(doc, "approximate-marker") };
+  return sessionHoursMismatches(text, doc.source, sentencesOf(doc), counts, lengthsOf(doc, text), words).map((mismatch) => ({
+    rule: "duration-product-mismatch",
+    severity: "warning",
+    line: 0,
+    column: 0,
+    quote: quoteAt(doc.source, mismatch.total.start),
+    values: {
+      count: written(doc, mismatch.count),
+      length: written(doc, mismatch.length),
+      total: written(doc, mismatch.total),
+      expected: hoursOf(mismatch.expected),
+      offset: mismatch.total.start,
+    },
+  }));
 };
 
 /** 四桁の年。木が日付と読まなかった英語の年（founded in 2015、born 1980）もここで読む。 */

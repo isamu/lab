@@ -1,0 +1,11 @@
+# Words beside the total of a number of sessions times their length (duration-product-mismatch). before: written before the length ("a total of 24 hours"); after: behind it ("24 hours in total").
+id: session-total
+language: en
+entries:
+  - { pattern: "total", position: before }
+  - { pattern: "total of", position: before }
+  - { pattern: "in total", position: before }
+  - { pattern: "in total", position: after }
+  - { pattern: "total", position: after }
+  - { pattern: "altogether", position: after }
+  - { pattern: "in all", position: after }

@@ -1,0 +1,11 @@
+# 回数 × 1回の長さの合計に付ける語（duration-product-mismatch）。before は長さの前（合計24時間、計24時間）。
+id: session-total
+language: ja
+entries:
+  - { pattern: "計", position: before }
+  - { pattern: "合計", position: before }
+  - { pattern: "総計", position: before }
+  - { pattern: "総時間", position: before }
+  - { pattern: "授業時間数", position: before }
+  - { pattern: "総授業時間", position: before }
+  - { pattern: "総授業時間数", position: before }

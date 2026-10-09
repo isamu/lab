@@ -1,0 +1,7 @@
+# 授業や講座の回数の単位（duration-product-mismatch）。回数 × 1回の長さを、書いた合計と比べる（90分×15回）。
+id: session-count-unit
+language: ja
+entries:
+  - pattern: 回
+  - pattern: コマ
+  - pattern: 週

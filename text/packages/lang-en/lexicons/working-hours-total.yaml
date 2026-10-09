@@ -1,0 +1,11 @@
+# Words beside the hours worked once the break is taken out (duration-mismatch, working hours). before: written before the length; after: behind it ("8 hours of work", "8 hours a day").
+id: working-hours-total
+language: en
+entries:
+  - { pattern: "net", position: before }
+  - { pattern: "of work", position: after }
+  - { pattern: "of working time", position: after }
+  - { pattern: "work", position: after }
+  - { pattern: "a day", position: after }
+  - { pattern: "per day", position: after }
+  - { pattern: "net", position: after }

@@ -69,3 +69,6 @@ export const tableFacts = (source: string, values: readonly FactValue[]): Fact[]
     const headings = cellsOf(table.header).map((cell) => plain(cell.text));
     return table.rows.flatMap((row) => rowFacts(row, headings, values, source));
   });
+
+/** 文書の表すべての、本体の行の升（見出しの行を除く）。text は書いたまま。 */
+export const tableBodyCells = (source: string): Cell[] => tablesOf(linesOf(source)).flatMap((table) => table.rows.flatMap(cellsOf));
