@@ -2,6 +2,7 @@ id: time-range-reversed
 layer: L3
 status: stable
 how_to_find: time-range-reversed
+requires: [dates]
 severity: warning
 
 name:
