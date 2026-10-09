@@ -26,7 +26,7 @@ export type IsProper = (start: number, end: number) => boolean;
 
 const LATIN = /\p{Script=Latin}/u;
 const LETTER = /\p{L}/u;
-/** 漢字・かなの名前に使う字。ひらがなは名前の外（の、は、まで）。 */
+/** 漢字・かなの名前に使う字。ひらがなは名前の頭にだけ立つ（kanaHeadOf）。 */
 const CJK_NAME = /[\p{Script=Katakana}\p{Script=Han}\p{Script=Latin}\p{N}ー・&＆]/u;
 const NOT_HAN_LETTER = /(?!\p{Script=Han})\p{L}/u;
 /** 英字の名前の一語。大文字か数字で始まる。 */
@@ -65,17 +65,69 @@ const CJK_BEFORE = new RegExp(`${CJK_NAME.source}+$`, "u");
 const CJK_AFTER = new RegExp(`^${CJK_NAME.source}+`, "u");
 const SPACES: ReadonlySet<string> = new Set([" ", "\u3000"]);
 
-/** 漢字・かなの名前: 形の語の隣の、名前に使う字の続き。形の語との間の空白一つは名前の外。 */
-const cjkBaseBefore = (source: string, end: number): Span | undefined => {
-  const stop = SPACES.has(source.charAt(end - 1)) ? end - 1 : end;
-  const match = CJK_BEFORE.exec(source.slice(0, stop));
-  return match === null ? undefined : { start: match.index, end: stop };
+/**
+ * 名前の頭のひらがなを切り分ける語（語彙表 company-name-kana）。particles は前の語に続けて書く語（は、と、における）、openers は
+ * 句読点や行の頭に立つ語（また、なお）、ends は名前の頭の終わりに来ない字（の、る、て）。
+ */
+export type KanaStops = { readonly particles: readonly string[]; readonly openers: readonly string[]; readonly ends: readonly string[] };
+
+/** ひらがなの前に何があるか。word は語や閉じ括弧（当社はこもれび、）により）、form は会社の形の語（株式会社こもれび）、boundary は句読点や行の頭。 */
+export type KanaLead = "word" | "form" | "boundary";
+
+const MIN_KANA_HEAD_LENGTH = 2;
+
+const longestPrefix = (text: string, words: readonly string[]): string | undefined =>
+  words.filter((word) => text.startsWith(word)).toSorted((left, right) => right.length - left.length)[0];
+
+/**
+ * 漢字やカタカナの名前のすぐ前のひらがなのうち、名前の頭と読む所（はこもれび の こもれび）。語のすぐ後ろなら助詞で始まるときだけ、
+ * その後ろを読む。形の語のすぐ後ろなら助詞で始まらないときだけ。二字以上で、句読点の後に立つ語で始まらず、助詞や動詞の終わりの字で終わらないもの。
+ * 語彙表が無ければ（英語の文書）ひらがなは名前に入れない。
+ */
+export const kanaHeadOf = (kana: string, lead: KanaLead, stops: KanaStops): string | undefined => {
+  if (stops.particles.length === 0) return undefined;
+  const particle = longestPrefix(kana, stops.particles);
+  if ((lead === "word" && particle === undefined) || (lead === "form" && particle !== undefined)) return undefined;
+  const head = lead === "word" ? kana.slice(particle?.length ?? 0) : kana;
+  if ([...head].length < MIN_KANA_HEAD_LENGTH || longestPrefix(head, stops.openers) !== undefined) return undefined;
+  return stops.ends.some((end) => head.endsWith(end)) ? undefined : head;
 };
 
-const cjkBaseAfter = (source: string, start: number): Span | undefined => {
+/** ひらがなをその前の語に続けて読む字。閉じ括弧や数字の後ろのひらがなも助詞（）により、第3条の）。 */
+const GLUED = /[\p{L}\p{N}\p{Pe}\p{Pf}]/u;
+const HIRAGANA = /\p{Script=Hiragana}/u;
+const KANA_AFTER = /^\p{Script=Hiragana}+/u;
+
+/** end の前に続くひらがなの始まり。 */
+const kanaRunStart = (source: string, end: number): number => {
+  let start = end;
+  while (start > 0 && HIRAGANA.test(source.charAt(start - 1))) start -= 1;
+  return start;
+};
+
+/** 名前の前に続くひらがなのうち、名前の頭と読む所を足した始まり。 */
+const withKanaHead = (source: string, start: number, stops: KanaStops): number => {
+  const kanaStart = kanaRunStart(source, start);
+  if (kanaStart === start) return start;
+  const lead = GLUED.test(source.charAt(kanaStart - 1)) ? "word" : "boundary";
+  return start - (kanaHeadOf(source.slice(kanaStart, start), lead, stops)?.length ?? 0);
+};
+
+/** 漢字・かなの名前: 形の語の隣の、名前に使う字の続き。形の語との間の空白一つは名前の外。 */
+const cjkBaseBefore = (source: string, end: number, stops: KanaStops): Span | undefined => {
+  const stop = SPACES.has(source.charAt(end - 1)) ? end - 1 : end;
+  const match = CJK_BEFORE.exec(source.slice(0, stop));
+  return match === null ? undefined : { start: withKanaHead(source, match.index, stops), end: stop };
+};
+
+/** 形の語の後ろの名前。ひらがなで始まる名前（株式会社こもれび珈琲）は、ひらがなの後ろに名前に使う字が続くときだけ。 */
+const cjkBaseAfter = (source: string, start: number, stops: KanaStops): Span | undefined => {
   const from = SPACES.has(source.charAt(start)) ? start + 1 : start;
-  const match = CJK_AFTER.exec(source.slice(from));
-  return match === null ? undefined : { start: from, end: from + match[0].length };
+  const kana = KANA_AFTER.exec(source.slice(from))?.[0] ?? "";
+  const head = kana === "" ? "" : kanaHeadOf(kana, "form", stops);
+  if (head === undefined) return undefined;
+  const match = CJK_AFTER.exec(source.slice(from + head.length));
+  return match === null ? undefined : { start: from, end: from + head.length + match[0].length };
 };
 
 /** 名前の部分の字数。一字（法令の項目の印 イ、ロ）は名前と読まない。 */
@@ -94,22 +146,22 @@ const mentionOf = (source: string, base: Span, form: Span, group: string): Compa
   return { surface: source.slice(start, end), offset: start, base: source.slice(base.start, base.end), form: group, position };
 };
 
-const baseBefore = (source: string, at: number, latin: boolean, isProper: IsProper): Span | undefined =>
-  latin ? latinBaseBefore(source, at, isProper) : cjkBaseBefore(source, at);
+const baseBefore = (source: string, at: number, latin: boolean, isProper: IsProper, stops: KanaStops): Span | undefined =>
+  latin ? latinBaseBefore(source, at, isProper) : cjkBaseBefore(source, at, stops);
 
 /** 形の語の一つの現れから、会社の名前の現れ。名前が前にあればそれを、無ければ後ろを取る。 */
-const mentionAt = (source: string, form: CompanyForm, at: number, isProper: IsProper): CompanyMention | undefined => {
+const mentionAt = (source: string, form: CompanyForm, at: number, isProper: IsProper, stops: KanaStops): CompanyMention | undefined => {
   const formSpan = { start: at, end: at + form.pattern.length };
   const latin = LATIN.test(form.pattern);
   if (latin && CONTINUED.test(source.slice(formSpan.end))) return undefined;
-  const before = form.position === "before" ? undefined : baseBefore(source, at, latin, isProper);
+  const before = form.position === "before" ? undefined : baseBefore(source, at, latin, isProper, stops);
   if (before !== undefined && isNameBase(source, before, isProper)) return mentionOf(source, before, formSpan, form.group);
-  const after = form.position === "after" || latin ? undefined : cjkBaseAfter(source, formSpan.end);
+  const after = form.position === "after" || latin ? undefined : cjkBaseAfter(source, formSpan.end, stops);
   return after !== undefined && isNameBase(source, after, isProper) ? mentionOf(source, after, formSpan, form.group) : undefined;
 };
 
 /** 文書の中の会社の名前の現れ。長い形の語（Co., Ltd）を先に取り、その中の短い語（Ltd）は数えない。 */
-export const companyMentionsIn = (source: string, forms: readonly CompanyForm[], isProper: IsProper): CompanyMention[] => {
+export const companyMentionsIn = (source: string, forms: readonly CompanyForm[], isProper: IsProper, stops: KanaStops): CompanyMention[] => {
   const taken: Span[] = [];
   return forms
     .toSorted((left, right) => right.pattern.length - left.pattern.length)
@@ -118,7 +170,7 @@ export const companyMentionsIn = (source: string, forms: readonly CompanyForm[],
         const end = at + form.pattern.length;
         if (!standsAsWord(source, form.pattern, at) || taken.some((span) => span.start < end && at < span.end)) return [];
         taken.push({ start: at, end });
-        const mention = mentionAt(source, form, at, isProper);
+        const mention = mentionAt(source, form, at, isProper, stops);
         return mention === undefined ? [] : [mention];
       }),
     )
