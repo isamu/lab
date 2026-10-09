@@ -8,7 +8,7 @@
       "deadline-after-term": "1/1",
       "instructor-name": "1/1",
       "credits-total": "1/1",
-      "prerequisite-name": "0/1"
+      "prerequisite-name": "1/1"
     },
     "en": {
       "week-numbering": "1/1",
@@ -18,7 +18,7 @@
       "deadline-after-term": "1/1",
       "instructor-name": "1/1",
       "credits-total": "1/1",
-      "prerequisite-name": "0/1"
+      "prerequisite-name": "1/1"
     }
   },
   "clean": []

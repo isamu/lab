@@ -1,0 +1,8 @@
+# 名前を書く欄の語（前提科目：統計学基礎）。name-variant は、この語と「：」の後ろ、句読点までを名前と読み、同じ語を違う順に並べた名前と比べる。
+id: name-label
+language: ja
+entries:
+  - pattern: 前提科目
+  - pattern: 科目名
+  - pattern: 授業名
+  - pattern: 講義名
