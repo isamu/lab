@@ -1,6 +1,10 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { buildDocument } from "../packages/chaff/src/document.ts";
+import { EMPTY } from "../packages/chaff/src/config/load.ts";
+import { profileFor } from "../packages/chaff/src/profile/for-file.ts";
+import { loadProfiles } from "../packages/chaff/src/profile/load.ts";
+import { parseProfile } from "../packages/chaff/src/profile/parse.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
@@ -10,13 +14,25 @@ import { expectedMinutes, marginOf, type WalkRate } from "../packages/chaff/src/
 
 // 距離と合わない徒歩の分数（walk-time-distance-mismatch）。徒歩の分数と隣の距離を、文書の速さで比べる。
 
-const findings = (source: string, adapter: LanguageAdapter, language: string): string[] =>
-  runRules(buildDocument("t.md", source, adapter), loadRules(language), { "walk-time-distance-mismatch": "normal" }, false, "business/press-release")
+/** As the CLI runs it: the profile chaff.yaml names, or the one the content has the shape of. */
+const findings = (source: string, adapter: LanguageAdapter, profile?: string): string[] =>
+  runRules(
+    buildDocument("t.md", source, adapter, undefined, profileFor({ ...EMPTY, profile }, "t.md", source, adapter.id, GENRE)),
+    loadRules(adapter.id),
+    { "walk-time-distance-mismatch": "normal" },
+    false,
+    GENRE,
+  )
     .findings.filter((finding) => finding.rule === "walk-time-distance-mismatch")
     .map((finding) => `${String(finding.values["minutes"])}|${String(finding.values["distance"])}|${String(finding.values["expected"])}`);
 
-const walkJa = (...paragraphs: string[]): string[] => findings(paragraphs.join("\n\n"), ja, "ja");
-const walkEn = (...paragraphs: string[]): string[] => findings(paragraphs.join("\n\n"), en, "en");
+/** A Japanese property listing (profile listing): 80 m a minute, rounded up, when the document states no rate. */
+const walkJa = (...paragraphs: string[]): string[] => findings(paragraphs.join("\n\n"), ja, "listing");
+/** Any other Japanese document: compared only at a rate it states. */
+const plainJa = (...paragraphs: string[]): string[] => findings(paragraphs.join("\n\n"), ja);
+const walkEn = (...paragraphs: string[]): string[] => findings(paragraphs.join("\n\n"), en);
+
+const GENRE = "business/press-release";
 
 const EN_RATE = "Walking times assume 80 m per minute along the road, rounded up to the next minute.";
 
@@ -97,8 +113,41 @@ describe("walk-time-distance-mismatch (ja)", () => {
     assert.deepEqual(walkJa("駅 徒歩5分から10分（800m）"), []);
   });
 
+  it("outside a listing, assumes no rate: a tourism line stays silent unless the document states its rate", () => {
+    assert.deepEqual(plainJa("駅から徒歩10分（約500m）の高台にある寺です。"), []);
+    assert.deepEqual(walkJa("駅から徒歩10分（約500m）の高台にある寺です。"), ["徒歩10分|500m|6–7"]);
+    assert.deepEqual(plainJa("駅から徒歩10分（約500m）。", "徒歩の分数は分速80mで計算しています。"), ["徒歩10分|500m|5–7"]);
+  });
+
+  it("reads a document shaped like a listing as one without being told", () => {
+    const listing = ["| 交通 | 駅 徒歩3分（約600m） |", "| 賃料 | 98,000円 |", "| 敷金 | 1か月 |"].join("\n");
+    assert.deepEqual(plainJa(listing), ["徒歩3分|600m|7–9"]);
+    assert.deepEqual(findings(listing, ja, "none"), []);
+  });
+
   it("does not compare when the document states two different rates", () => {
     assert.deepEqual(walkJa("駅 徒歩3分（800m）", "徒歩は分速80mで計算。", "高齢者の徒歩は分速60mで計算。"), []);
+  });
+});
+
+describe("walk_rate in a profile", () => {
+  const rateOf = (walkRate: unknown): unknown => parseProfile({ id: "t", ja: { walk_rate: walkRate } })?.languages["ja"]?.walkRate;
+
+  it("reads a positive rate and whether it rounds up", () => {
+    assert.deepEqual(rateOf({ metres_per_minute: 80, round_up: true }), { metresPerMinute: 80, roundUp: true });
+    assert.deepEqual(rateOf({ metres_per_minute: 60 }), { metresPerMinute: 60, roundUp: false });
+  });
+
+  it("drops a missing, zero, negative, non-numeric or non-finite rate", () => {
+    [undefined, null, "80", {}, { metres_per_minute: 0 }, { metres_per_minute: -80 }, { metres_per_minute: "80" }, { metres_per_minute: Infinity }].forEach(
+      (walkRate) => assert.equal(rateOf(walkRate), undefined, JSON.stringify(walkRate)),
+    );
+  });
+
+  it("the bundled listing profile walks at 80 m a minute, rounded up, in Japanese only", () => {
+    const listing = loadProfiles().find((definition) => definition.id === "listing");
+    assert.deepEqual(listing?.languages["ja"]?.walkRate, { metresPerMinute: 80, roundUp: true });
+    assert.equal(listing?.languages["en"], undefined);
   });
 });
 

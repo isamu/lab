@@ -1,7 +1,7 @@
 // A walking time that does not match the stated distance at the document's walking speed (walk-time-distance-mismatch).
-// The words and the default speed come from the language package: walk-word, walk-rate, unit-length, unit-time and
-// unit-equivalent-hedge.
-import { walkTimeMismatches, type WalkMark, type WalkWords } from "../structure/walk-time.ts";
+// The words come from the language package (walk-word, walk-rate, unit-length, unit-time, unit-equivalent-hedge); the speed
+// used when the document states none comes from its profile (profiles/listing.yaml).
+import { walkTimeMismatches, type WalkMark, type WalkRate, type WalkWords } from "../structure/walk-time.ts";
 import { proseAndTablesOf } from "../table-text.ts";
 import { quoteAt } from "./structure-tree.ts";
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
@@ -25,12 +25,17 @@ const walkWords = (doc: ProseDocument): WalkWords => ({
   perTimes: marksOf(doc, "walk-rate", "per"),
   roundUps: patternsOf(doc, "walk-rate", "round-up"),
   notRoundUps: patternsOf(doc, "walk-rate", "not-round-up"),
-  defaultRate: marksOf(doc, "walk-rate", "default")[0]?.weight,
 });
+
+/** The speed the document's profile walks at when the document states none (a real-estate listing: 80 m a minute, rounded up). */
+const profileRate = (doc: ProseDocument): WalkRate | undefined => {
+  const rate = doc.profile?.walkRate;
+  return rate === undefined ? undefined : { metresPerMinute: rate.metresPerMinute, rounding: rate.roundUp ? "up" : "any" };
+};
 
 /** The prose with its tables put back, so code is not read; offsets are the source's. */
 export const walkTimeDistanceMismatch: Detector = (doc): Finding[] =>
-  walkTimeMismatches(proseAndTablesOf(doc), walkWords(doc)).map((issue) => ({
+  walkTimeMismatches(proseAndTablesOf(doc), walkWords(doc), profileRate(doc)).map((issue) => ({
     rule: "walk-time-distance-mismatch",
     severity: "warning",
     line: 0,

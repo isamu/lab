@@ -3,7 +3,7 @@ import type { StructureIssue } from "./issues.ts";
 /**
  * 書いた距離と合わない徒歩の分数（駅 徒歩3分（約600m）、a 3-minute walk (600 m)）。徒歩の語に付いた分数と、そのすぐ前かすぐ後ろの
  * 距離だけを組にし、文書の速さで歩いた分数と比べる。速さは文書に書いたもの（道路距離80mを1分、80 m per minute、5 km/h）を使い、
- * 書いていなければ言語パッケージの既定（日本語の不動産広告の 80m で1分、端数切り上げ）を使う。既定の無い言語は速さを推し量らない。
+ * 書いていなければ呼ぶ側が渡す速さ（文書の種類の速さ。不動産の広告は 80m で1分、切り上げ）を使う。どちらも無ければ速さを推し量らない。
  * 約の付いた距離は、書いた一番下の桁の半分だけ幅を持たせる（約1.2km は 1.15〜1.25km）。小数の距離は書いた桁の半分の幅を持つ。
  * 範囲（5〜7分）、上限（10分以内）、約の付いた分数は比べない。語は言語パッケージの語彙表から受け取る。
  */
@@ -38,8 +38,6 @@ export type WalkWords = {
   readonly roundUps: readonly string[];
   /** 速さの行にあれば、切り上げの語があっても切り上げではないと言う語（切り上げません、not rounded up）。 */
   readonly notRoundUps: readonly string[];
-  /** 文書に速さが無いときの既定の速さ（m/分）。端数は切り上げる。無ければ比べない。 */
-  readonly defaultRate: number | undefined;
 };
 
 /** 1分に歩く m と、端数の扱い。up は切り上げだけ、any は切り上げでも切り捨てでも合う。 */
@@ -240,16 +238,16 @@ const linesOf = (source: string): { readonly text: string; readonly start: numbe
 
 /**
  * 文書の速さ。徒歩の語のある行に書いた速さが一つ（一つの値）だけなら、それを使う。端数は、その行に切り上げの語があれば切り上げだけ、
- * 無ければどちらでもよい。二つ以上の値があれば、どの分数がどれで計ったか決められないので比べない。書いていなければ既定（切り上げ）。
+ * 無ければどちらでもよい。二つ以上の値があれば、どの分数がどれで計ったか決められないので比べない。書いていなければ fallback。
  */
-export const statedRate = (source: string, words: WalkWords): WalkRate | undefined => {
+export const statedRate = (source: string, words: WalkWords, fallback?: WalkRate): WalkRate | undefined => {
   const stated = linesOf(source)
     .filter((line) => hasWalkWord(line.text, words))
     .flatMap((line) =>
       ratesIn(line.text, words).map((rate) => ({ rate, up: containsAny(line.text, words.roundUps) && !containsAny(line.text, words.notRoundUps) })),
     );
   const first = stated[0];
-  if (first === undefined) return words.defaultRate === undefined ? undefined : { metresPerMinute: words.defaultRate, rounding: "up" };
+  if (first === undefined) return fallback;
   if (stated.some((other) => other.rate !== first.rate)) return undefined;
   return { metresPerMinute: first.rate, rounding: stated.some((other) => other.up) ? "up" : "any" };
 };
@@ -264,8 +262,8 @@ export const expectedMinutes = (distance: Pick<Distance, "metres" | "margin">, r
 const rangeText = (low: number, high: number): string => (low === high ? String(low) : `${String(low)}–${String(high)}`);
 
 /** 距離と合わない徒歩の分数。分数の位置を指す。 */
-export const walkTimeMismatches = (source: string, words: WalkWords): StructureIssue[] => {
-  const rate = statedRate(source, words);
+export const walkTimeMismatches = (source: string, words: WalkWords, fallback?: WalkRate): StructureIssue[] => {
+  const rate = statedRate(source, words, fallback);
   if (rate === undefined) return [];
   return linesOf(source).flatMap((line) =>
     walkPairs(line.text, words).flatMap(({ minutes, distance }) => {

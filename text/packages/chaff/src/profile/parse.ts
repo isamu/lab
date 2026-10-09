@@ -53,6 +53,14 @@ const unnumberedOf = (value: unknown): DocumentProfile["unnumbered"] => {
   return indent === undefined || inside === undefined || !Number.isInteger(depth) || typeof depth !== "number" ? undefined : { indent, inside, depth };
 };
 
+/** 正の速さが無ければ読まない。 */
+const walkRateOf = (value: unknown): DocumentProfile["walkRate"] => {
+  if (!isRecord(value)) return undefined;
+  const metresPerMinute = value["metres_per_minute"];
+  if (typeof metresPerMinute !== "number" || !Number.isFinite(metresPerMinute) || metresPerMinute <= 0) return undefined;
+  return { metresPerMinute, roundUp: value["round_up"] === true };
+};
+
 /** 単位が一つも無ければ読まない。何を指すのか決められない。 */
 const relativeOf = (value: unknown): RelativeVocabulary | undefined => {
   if (!isRecord(value)) return undefined;
@@ -88,6 +96,7 @@ const languagesOf = (id: string, raw: Record<string, unknown>): Record<string, D
         const caption = text(section["caption"]);
         const relative = relativeOf(section["relative"]);
         const unnumbered = unnumberedOf(section["unnumbered"]);
+        const walkRate = walkRateOf(section["walk_rate"]);
         return [
           language,
           {
@@ -99,6 +108,7 @@ const languagesOf = (id: string, raw: Record<string, unknown>): Record<string, D
             relative,
             unnumbered,
             ...(section["quote_mentions_term"] === true ? { quoteMentionsTerm: true } : {}),
+            ...(walkRate === undefined ? {} : { walkRate }),
           },
         ];
       }),
