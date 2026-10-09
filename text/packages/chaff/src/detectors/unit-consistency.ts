@@ -24,11 +24,12 @@ const valuesWith = (tree: StructureNode, doc: ProseDocument, measured: readonly 
 
 type Mismatch = { readonly label: string; readonly measured: Measured; readonly other: Measured; readonly variant?: string };
 
-/** 同じ範囲の同じ名前の量（「距離：5 km」と「距離：3000 m」）。 */
+/** 同じ範囲の同じ名前の量（「距離：5 km」と「距離：3000 m」）。名前と量のあいだの目安の語（「重さは約1.2kg」）は外して読む。 */
 const labelledMismatches = (doc: ProseDocument, tree: StructureNode, measured: readonly Measured[]): Mismatch[] => {
   const byStart = new Map(measured.map((value) => [value.start, value]));
   const values = valuesWith(tree, doc, measured);
-  const facts = [...labelledFacts(doc.source, values, factWordsOf(doc)), ...tableFacts(doc.source, values)];
+  const words = { ...factWordsOf(doc), valueLeads: patternsOf(doc, "measure-value-lead") };
+  const facts = [...labelledFacts(doc.source, values, words), ...tableFacts(doc.source, values)];
   const scoped = scopedFacts(facts, tree, doc.source, []);
   return unitConflicts(scoped, (fact) => byStart.get(fact.value.start)).map((conflict) => ({
     label: conflict.fact.label,

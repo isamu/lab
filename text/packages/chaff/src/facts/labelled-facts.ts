@@ -22,9 +22,12 @@ export type FactWords = {
   /** 名前の前に置かれる決定の前置き（協議の結果、, it was decided that）。読点を含んでも条件ではないので、外してから名前を読む。 */
   readonly leads: readonly string[];
   readonly attributes: readonly AttributePhrase[];
+  /** 区切りと値のあいだに置ける目安の語（約、about）。あれば値を目安として読む。無ければ、区切りのすぐ後ろの値だけ。 */
+  readonly valueLeads?: readonly string[];
 };
 
-export type Fact = { readonly label: string; readonly key: string; readonly value: FactValue };
+/** approximate: 値の前に目安の語（約、about）があった。 */
+export type Fact = { readonly label: string; readonly key: string; readonly value: FactValue; readonly approximate?: boolean };
 
 const MAX_LABEL_LENGTH = 24;
 const MAX_LABEL_WORDS = 5;
@@ -57,6 +60,15 @@ const beforeSeparator = (head: string, separator: string): string | undefined =>
   return rest;
 };
 
+/** 頭の後ろの目安の語（「重さは約」の約、"is about" の about）を外したもの。英字の語は、前が語の切れ目のときだけ。 */
+const withoutValueLead = (head: string, leads: readonly string[]): string => {
+  const lowered = head.toLowerCase();
+  const lead = leads.find(
+    (word) => lowered.endsWith(word.toLowerCase()) && !(LATIN_LETTER.test(word.charAt(0)) && LATIN_LETTER.test(head.charAt(head.length - word.length - 1))),
+  );
+  return lead === undefined ? head : trimEndOf(head.slice(0, head.length - lead.length), EDGE_MARKS);
+};
+
 /** 英字の前置きが語の途中で切れているか（「we agreed that」は「we agreed thatching」の頭ではない）。 */
 const endsInsideWord = (text: string, length: number): boolean => LATIN_LETTER.test(text.charAt(length - 1)) && LATIN_LETTER.test(text.charAt(length));
 
@@ -75,11 +87,18 @@ const afterLastBreak = (text: string): string => {
 
 const wordsOf = (text: string): string[] => text.split(/\s+/u).filter((word) => word !== "");
 
+/** 語を空白で分けない言語の、名前の頭の前置き（「本体の幅」の 本体の）。前置きだけの名前は落とさない。 */
+const withoutPrefix = (key: string, determiners: readonly string[]): string => {
+  const prefix = determiners.find((word) => !LATIN_WORD.test(word) && key.length > word.length && key.startsWith(word));
+  return prefix === undefined ? key : key.slice(prefix.length);
+};
+
 /** 名前を一つの書き方に。全角と半角、大文字と小文字、空白の数を揃え、頭の冠詞を落とす。 */
 const keyOf = (label: string, words: FactWords): string => {
   const [first, ...rest] = wordsOf(label.normalize("NFKC").toLowerCase());
-  const determiners = new Set(words.determiners.map((word) => word.toLowerCase()));
-  return (first !== undefined && determiners.has(first) ? rest : [first ?? "", ...rest]).join(" ");
+  const determiners = words.determiners.map((word) => word.normalize("NFKC").toLowerCase());
+  const key = (first !== undefined && determiners.includes(first) ? rest : [first ?? "", ...rest]).join(" ");
+  return withoutPrefix(key, determiners);
 };
 
 const containsSeparator = (label: string, words: FactWords): boolean =>
@@ -98,14 +117,17 @@ const isLabel = (label: string, key: string, words: FactWords): boolean =>
   !words.vague.some((word) => word.toLowerCase() === key);
 
 /** 値の後ろが文の切れ目か。行の終わり、表の升の終わり、語彙表の終わりの語。 */
+/** 値の後ろが文の切れ目か。行の終わり、表の升の終わり、語彙表の終わりの語。半角の数のまわりに空白を置く書き方（「14 cm です」）もある。 */
 const endsAfter = (source: string, value: FactValue, words: FactWords): boolean => {
-  const after = source.slice(value.end, lineEndOf(source, value.end)).replace(MARKS_AFTER_VALUE, "");
-  if (after.trim() === "" || after.trimStart().startsWith("|")) return true;
+  const after = source.slice(value.end, lineEndOf(source, value.end)).replace(MARKS_AFTER_VALUE, "").trimStart();
+  if (after === "" || after.startsWith("|")) return true;
   return words.valueEnds.some((end) => after.startsWith(end));
 };
 
 const labelledFact = (source: string, value: FactValue, words: FactWords): Fact | undefined => {
-  const head = trimEndOf(source.slice(lineStartOf(source, value.start), value.start), EDGE_MARKS);
+  const written = trimEndOf(source.slice(lineStartOf(source, value.start), value.start), EDGE_MARKS);
+  const head = withoutValueLead(written, words.valueLeads ?? []);
+  const approximate = head.length < written.length ? { approximate: true } : {};
   for (const separator of words.separators) {
     const before = beforeSeparator(head, separator);
     if (before === undefined) continue;
@@ -113,7 +135,7 @@ const labelledFact = (source: string, value: FactValue, words: FactWords): Fact 
     if (CLAUSE_COMMA.test(clause)) return undefined;
     const label = withoutEdgeMarks(clause);
     const key = keyOf(label, words);
-    return isLabel(label, key, words) ? { label, key, value } : undefined;
+    return isLabel(label, key, words) ? { label, key, value, ...approximate } : undefined;
   }
   return undefined;
 };

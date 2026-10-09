@@ -1,6 +1,7 @@
 import type { ScopedFact } from "./fact-scope.ts";
 import { sameMeasure, type Measured } from "./measures.ts";
 import { toleranceOf } from "./unit-tolerance.ts";
+import { approximateTolerance } from "./approximate-tolerance.ts";
 
 /**
  * 同じ名前の量を、違う単位で書いて、換算すると合わない（「距離：5 km」と「距離：3000 m」）。比べるのは同じ範囲の、同じ種類の量で、
@@ -12,15 +13,21 @@ const groupKey = (fact: ScopedFact): string => `${fact.scope}\u0000${fact.key}`;
 
 type Read = { readonly fact: ScopedFact; readonly measured: Measured };
 
+const agree = (left: Read, right: Read): boolean => {
+  const approximate = [left, right].filter(({ fact }) => fact.approximate === true).map(({ measured }) => measured);
+  return sameMeasure(left.measured, right.measured, approximateTolerance(toleranceOf(right.measured.dimension), approximate));
+};
+
 /**
  * 一つの種類（長さなら長さ）の量のうち、前にある単位の違う量のどれとも換算して合わないもの。どれか一つと合えば、食い違いは同じ単位
  * どうし（3 km と 5 km）の側にあり、fact-conflict が見る。
  */
 const conflictsInDimension = (reads: readonly Read[]): UnitConflict[] =>
-  reads.flatMap(({ fact, measured }, index) => {
+  reads.flatMap((read, index) => {
+    const { fact, measured } = read;
     const others = reads.slice(0, index).filter((earlier) => earlier.measured.unit !== measured.unit);
     const [first] = others;
-    if (first === undefined || others.some((earlier) => sameMeasure(earlier.measured, measured, toleranceOf(measured.dimension)))) return [];
+    if (first === undefined || others.some((earlier) => agree(earlier, read))) return [];
     return [{ fact, measured, other: first.measured }];
   });
 
