@@ -13,6 +13,8 @@ import type { DurationUnit } from "../derived/date-arithmetic.ts";
 import { DURATION_LEXICONS, quantitiesOf, type Quantity } from "./derived-numbers.ts";
 import { quoteAt } from "./structure-tree.ts";
 import { measuredOf, valuesWith } from "./measured-facts.ts";
+import { durationValues, type DurationWord } from "../facts/duration-values.ts";
+import { overlapsAny, spanIndex } from "../compare/spans.ts";
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
 
@@ -27,9 +29,17 @@ export const factWordsOf = (doc: ProseDocument): FactWords => ({
 
 const factsByDocument = new WeakMap<ProseDocument, readonly ScopedFact[]>();
 
-/** 単位の語彙表の量（410 g、1.2 kg）も値として読む。木が単位を読まない量は、数だけでは升や文の値にならない。 */
+const durationWordsOf = (doc: ProseDocument): DurationWord[] =>
+  DURATION_LEXICONS.flatMap(([id, unit]) => patternsOf(doc, id).map((pattern): DurationWord => ({ pattern, unit })));
+
+/**
+ * 単位の語彙表の量（410 g、1.2 kg）と期間（3 months）も値として読む。木が単位を読まない量は、数だけでは升や文の値にならない。
+ * 期間と重なる量は読まない（3 months の 3 m）。
+ */
 const readFacts = (doc: ProseDocument, tree: StructureNode): ScopedFact[] => {
-  const values = valuesWith(tree, doc, measuredOf(doc));
+  const durations = durationValues(doc.source, factValues(tree, doc.source, nameSpans(doc)), durationWordsOf(doc));
+  const taken = spanIndex(durations);
+  const values = valuesWith(tree, doc, [...measuredOf(doc).filter((value) => !overlapsAny(taken, value)), ...durations]);
   const facts = [...labelledFacts(doc.source, values, factWordsOf(doc)), ...tableFacts(doc.source, values)];
   return scopedFacts(facts, tree, doc.source, patternsOf(doc, "summary-heading"));
 };
