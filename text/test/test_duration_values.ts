@@ -33,6 +33,7 @@ describe("durationValues: a quantity in a duration unit, up to the end of the un
   it("a number whose unit follows after a space (en)", () => {
     assert.deepEqual(read("Probation: 3 months", quantity("Probation: 3 months", "3", "months")), ["3 months/month"]);
     assert.deepEqual(read("Probation: 1 month.", quantity("Probation: 1 month.", "1", "month")), ["1 month/month"]);
+    assert.deepEqual(read("Probation: 3\tmonths", quantity("Probation: 3\tmonths", "3", "months")), ["3\tmonths/month"]);
     assert.deepEqual(read("Leave: 10days", quantity("Leave: 10days", "10", "days")), ["10days/day"]);
   });
 

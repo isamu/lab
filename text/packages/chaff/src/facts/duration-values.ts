@@ -11,12 +11,14 @@ export type DurationWord = { readonly pattern: string; readonly unit: DurationUn
 
 const folded = (text: string): string => text.normalize("NFKC").toLowerCase();
 
+const UNIT_GAPS = new Set([" ", "\t"]);
+
 /** 書いた単位の始まり。数のすぐ後ろか、空白一つの後ろ。木の値が単位まで含んでいれば、その単位の頭。 */
 const unitStartOf = (source: string, value: FactValue): number | undefined => {
   const written = folded(value.unit);
   if (written === "") return undefined;
   if (folded(source.slice(value.end - value.unit.length, value.end)) === written) return value.end - value.unit.length;
-  const gap = source.charAt(value.end) === " " ? 1 : 0;
+  const gap = UNIT_GAPS.has(source.charAt(value.end)) ? 1 : 0;
   return folded(source.slice(value.end + gap, value.end + gap + value.unit.length)) === written ? value.end + gap : undefined;
 };
 
