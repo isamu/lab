@@ -333,6 +333,12 @@ describe("date-outside-period: a deadline after the document's term", () => {
     assert.deepEqual(foundEn(syllabusEn(TERM_EN, "Final report due January 29, 2027.")), []);
   });
 
+  it("silent for an assignment's other dates, and for 'due to': only a label or a deadline word marks a deadline", () => {
+    assert.deepEqual(foundJa(syllabusJa(TERM_JA, "課題の解説動画は2027年2月19日に公開します。")), []);
+    assert.deepEqual(foundEn(syllabusEn(TERM_EN, "The assignment brief will be available on February 19, 2027.")), []);
+    assert.deepEqual(foundEn(syllabusEn(TERM_EN, "The migration project due to start on February 19, 2027 remains blocked.")), []);
+  });
+
   it("silent for work that may fall after the term, even with a deadline word: grades released, grade appeals, resits", () => {
     assert.deepEqual(foundJa(syllabusJa(TERM_JA, "成績発表は2027年3月10日、成績照会の締切は2027年3月17日です。")), []);
     assert.deepEqual(foundJa(syllabusJa(TERM_JA, "- 再試験の申込締切：2027年2月19日")), []);

@@ -14,14 +14,13 @@ entries:
   - pattern: is due
   - pattern: are due
   - pattern: "due:"
-  # A piece of work followed by "due" ("Final report due February 19, 2027").
+  # A piece of work followed by "due" ("Final report due February 19, 2027"). Not "project due": "the project due to start".
   - pattern: report due
   - pattern: paper due
   - pattern: essay due
-  - pattern: project due
   - pattern: homework due
-  # "Assignment: February 19, 2027" dates the work's submission.
-  - pattern: assignment
+  # A label: "Assignment: February 19, 2027" dates the submission. Not "assignment" alone: "the assignment brief is available on …".
+  - pattern: "assignment:"
   - pattern: submit
   - pattern: submission
   - pattern: hand in
