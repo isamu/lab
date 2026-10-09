@@ -1,0 +1,37 @@
+# The words of annual-pay-mismatch. link may stand between a label and its amount ("monthly salary of $4,800"). per-month
+# makes a pay label monthly. none says there is no bonus, after the label ("Bonus: none") or before it ("No bonus"). each
+# makes a bonus count per payment and extra says another bonus is paid besides; neither bonus is read. include says a pay
+# holds overtime or allowances; on an annual line or a note beside it, the document is not compared. open leaves an
+# amount's range open ("from $70,000", "$70,000+").
+id: annual-pay-word
+language: en
+entries:
+  - { pattern: is, group: link }
+  - { pattern: of, group: link }
+  - { pattern: at, group: link }
+  - { pattern: a month, group: per-month }
+  - { pattern: per month, group: per-month }
+  - { pattern: monthly, group: per-month }
+  - { pattern: /month, group: per-month }
+  - { pattern: /mo, group: per-month }
+  - { pattern: none, group: none, position: after }
+  - { pattern: not paid, group: none, position: after }
+  - { pattern: no, group: none, position: before }
+  - { pattern: each, group: each }
+  - { pattern: per payment, group: each }
+  - { pattern: per occasion, group: each }
+  - { pattern: additional, group: extra }
+  - { pattern: separately, group: extra }
+  - { pattern: overtime, group: include }
+  - { pattern: allowance, group: include }
+  - { pattern: allowances, group: include }
+  - { pattern: incentive, group: include }
+  - { pattern: incentives, group: include }
+  - { pattern: commission, group: include }
+  - { pattern: commissions, group: include }
+  - { pattern: tips, group: include }
+  - { pattern: from, group: open, position: before }
+  - { pattern: starting at, group: open, position: before }
+  - { pattern: "+", group: open, position: after }
+  - { pattern: and up, group: open, position: after }
+  - { pattern: and above, group: open, position: after }

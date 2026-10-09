@@ -1,0 +1,31 @@
+# annual-pay-mismatch の語。link は見出しと金額の間に挟んでよい語（年収例は450万円）。per-month は pay の見出しを月給として
+# 読ませる語。none は賞与が無いと言う語。each は月数が1回あたりだと言う語、extra はほかにも賞与があると言う語で、どちらも
+# その賞与を読まない。include は年収や月給に残業代・手当が入っていると言う語で、年収の行やその注記にあれば文書を比べない。
+# open は金額の幅を開いたままにする語（400万円から）。
+id: annual-pay-word
+language: ja
+entries:
+  - { pattern: は, group: link }
+  - { pattern: 月額, group: per-month }
+  - { pattern: /月, group: per-month }
+  - { pattern: ／月, group: per-month }
+  - { pattern: 毎月, group: per-month }
+  - { pattern: なし, group: none, position: after }
+  - { pattern: 無し, group: none, position: after }
+  - { pattern: ナシ, group: none, position: after }
+  - { pattern: 無, group: none, position: after }
+  - { pattern: 各, group: each }
+  - { pattern: それぞれ, group: each }
+  - { pattern: 1回あたり, group: each }
+  - { pattern: 別途, group: extra }
+  - { pattern: 決算賞与, group: extra }
+  - { pattern: 残業, group: include }
+  - { pattern: 時間外, group: include }
+  - { pattern: 手当, group: include }
+  - { pattern: インセンティブ, group: include }
+  - { pattern: 歩合, group: include }
+  - { pattern: みなし, group: include }
+  - { pattern: から, group: open, position: after }
+  - { pattern: 以下, group: open, position: after }
+  - { pattern: 未満, group: open, position: after }
+  - { pattern: 超, group: open, position: after }
