@@ -58,7 +58,9 @@ const numbersOf = (text: string): number[] => [...halfWidth(text).matchAll(NUMBE
 /** The 二丁目 a street ends with, or "" when it ends with none. */
 const chomeOf = (street: string): string => {
   if (!street.endsWith(CHOME)) return "";
-  const numeral = [...street.slice(0, -CHOME.length)].reverse().findIndex((char) => !KANJI_NUMERALS.includes(char));
+  const numeral = Array.from(street.slice(0, -CHOME.length))
+    .toReversed()
+    .findIndex((char) => !KANJI_NUMERALS.includes(char));
   const length = numeral === -1 ? street.length - CHOME.length : numeral;
   return length === 0 ? "" : street.slice(street.length - CHOME.length - length);
 };
