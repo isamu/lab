@@ -1,0 +1,16 @@
+# 住所の前に置く語。group は誰の住所か（本店・支店）で、違う group の住所どうしは比べない。address は誰のとも言わない語で、どの住所とも比べる。
+# contact-variant は、住所と同じ行で、住所のいちばん近く前にある語の group をその住所の持ち主とする。
+id: address-label
+language: ja
+entries:
+  - { pattern: 住所, group: address }
+  - { pattern: 所在地, group: address }
+  - { pattern: 宛先, group: address }
+  - { pattern: 送付先, group: address }
+  - { pattern: 本店, group: head-office }
+  - { pattern: 本社, group: head-office }
+  - { pattern: 本店所在地, group: head-office }
+  - { pattern: 本社所在地, group: head-office }
+  - { pattern: 支店, group: branch }
+  - { pattern: 支社, group: branch }
+  - { pattern: 営業所, group: branch }
