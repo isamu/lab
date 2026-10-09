@@ -1,6 +1,6 @@
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { cuedNamesIn, mentionsIn, nameVariants, suffixedNamesIn, withKnownNeighbours, type NameMention, type VariantChars } from "../name-variants.ts";
-import { literalSpellingsIn, type SpellingInput } from "../name-spelling-chars.ts";
+import type { SpellingInput } from "../name-spelling-chars.ts";
 import { nameCueAt, type NameCues } from "../name-cue.ts";
 import { quoteAt } from "./structure-tree.ts";
 import { companyMentionsIn, companyVariants, type CompanyForm, type IsProper } from "../company-names.ts";
@@ -159,17 +159,10 @@ const nameMentionsOf = (doc: ProseDocument, prose: string, chars: VariantChars):
 const spellingCharsOf = (doc: ProseDocument): VariantChars =>
   new Map((doc.lexicons["name-spelling-char"] ?? []).flatMap((entry): [string, string][] => (entry.group === undefined ? [] : [[entry.pattern, entry.group]])));
 
-/**
- * 書き方だけを比べる名前。表の升の中の、解析器が固有名詞と読む語（物件名の升の 桜ケ丘）と、読めた名前の同じ音の字を替えた形で
- * 本文と升にそのまま書いたもの（解析器が 桜・が・丘 と読む 桜が丘）。
- */
-const spellingInputOf = (doc: ProseDocument, prose: string, mentions: readonly NameMention[]): SpellingInput => {
-  const chars = spellingCharsOf(doc);
+/** 名前の中の同じ音の字は、表の升の中の、解析器が固有名詞と読む語（物件名の升の 桜ケ丘）とも比べる。 */
+const spellingInputOf = (doc: ProseDocument): SpellingInput => {
   const suffixes = patternsOf(doc, "person-suffix");
-  const cells = cellsOf(doc);
-  const inCells = cells.flatMap((cell) => mentionsIn(cell.tokens ?? [], doc.source, suffixes));
-  const literal = chars.size === 0 ? [] : literalSpellingsIn(proseWithCells(prose, cells), [...mentions, ...inCells], chars);
-  return { chars, alsoWritten: [...inCells, ...literal] };
+  return { chars: spellingCharsOf(doc), alsoWritten: cellsOf(doc).flatMap((cell) => mentionsIn(cell.tokens ?? [], doc.source, suffixes)) };
 };
 
 /** 表の升に書いた名前の書き分け。名前の形をした升を、本文の名前と比べる。ほかの見方がすでに指した所と重なるものは除く。 */
@@ -183,7 +176,7 @@ export const nameVariant: Detector = (doc): Finding[] => {
   const prose = doc.prose ?? doc.source;
   const chars = variantCharsOf(doc);
   const mentions = nameMentionsOf(doc, prose, chars);
-  const names = nameVariants(mentions, chars, spellingInputOf(doc, prose, mentions)).map(({ mention, usual, kind }): Reported => ({
+  const names = nameVariants(mentions, chars, spellingInputOf(doc)).map(({ mention, usual, kind }): Reported => ({
     offset: mention.offset,
     name: mention.surface,
     usual,

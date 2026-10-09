@@ -2,7 +2,7 @@ import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
-import { foldSpelling, literalSpellingsIn, otherSpellings, type SpellingChars } from "../packages/chaff/src/name-spelling-chars.ts";
+import { foldSpelling, foldedKeysOf, type SpellingChars } from "../packages/chaff/src/name-spelling-chars.ts";
 import { nameVariants, type NameMention } from "../packages/chaff/src/name-variants.ts";
 
 // 一語の名前の中で同じ音を書く字（桜ヶ丘・桜ケ丘・桜が丘）。例文はすべて自作。
@@ -32,9 +32,9 @@ describe("name-variant: 名前の中の ヶ・ケ・が", () => {
     assert.deepEqual(variants(listing("桜ヶ丘")), []);
   });
 
-  it("解析器が一語と読まない 桜が丘 も、読めた名前の書き方と比べる", () => {
-    assert.deepEqual(variants("桜ヶ丘に住んでいます。桜ヶ丘は静かな町です。駅の名前は桜が丘です。\n"), [KANA_MESSAGE("桜が丘", "桜ヶ丘")]);
+  it("解析器が一語と読む 霞が関 は比べ、桜・が・丘 と読む書き方は助詞の が と分けられないので比べない", () => {
     assert.deepEqual(variants("霞ヶ関で降ります。霞ヶ関から歩き、帰りも霞が関から乗ります。\n"), [KANA_MESSAGE("霞が関", "霞ヶ関")]);
+    assert.deepEqual(variants("桜ヶ丘に住んでいます。桜ヶ丘は静かな町です。春は桜が丘を彩ります。\n"), []);
   });
 
   it("字を抜いた形、違う漢字の名前、長い語の一部は言わない", () => {
@@ -56,22 +56,12 @@ describe("the characters for one sound inside a name", () => {
     assert.equal(foldSpelling("", KE), "");
   });
 
-  it("otherSpellings gives every other member at each foldable place", () => {
-    assert.deepEqual(new Set(otherSpellings("桜ヶ丘", KE)), new Set(["桜が丘", "桜ケ丘"]));
-    assert.equal(otherSpellings("八ヶ岳ヶ原", KE).length, 8);
-    assert.deepEqual(otherSpellings("桜丘", KE), []);
-    assert.deepEqual(otherSpellings("ケイコ", KE), []);
-    assert.deepEqual(otherSpellings("桜ヶ丘", new Map()), []);
-  });
-
-  it("literalSpellingsIn finds another spelling written as is, not inside a longer kanji word nor over a mention", () => {
-    const known = mention("桜ヶ丘", 0, "サクラガオカ");
-    assert.deepEqual(literalSpellingsIn("桜ヶ丘と桜が丘", [known], KE), [{ surface: "桜が丘", offset: 4, reading: "サクラガオカ", words: ["桜が丘"] }]);
-    assert.deepEqual(literalSpellingsIn("桜ヶ丘と夜桜が丘", [known], KE), []);
-    assert.deepEqual(literalSpellingsIn("桜ヶ丘と桜が丘陵", [known], KE), []);
-    assert.deepEqual(literalSpellingsIn("桜ヶ丘と桜が丘", [known, mention("桜が丘", 4)], KE), []);
-    assert.deepEqual(literalSpellingsIn("桜ヶ丘と桜が丘", [known], new Map()), []);
-    assert.deepEqual(literalSpellingsIn("", [], KE), []);
+  it("foldedKeysOf gives a key only to a name holding a foldable character", () => {
+    assert.deepEqual(foldedKeysOf("桜ケ丘", KE), ["桜ヶ丘"]);
+    assert.deepEqual(foldedKeysOf("桜ヶ丘", KE), ["桜ヶ丘"]);
+    assert.deepEqual(foldedKeysOf("桜丘", KE), []);
+    assert.deepEqual(foldedKeysOf("Content-Type", KE), []);
+    assert.deepEqual(foldedKeysOf("桜ケ丘", new Map()), []);
   });
 
   it("nameVariants: the fold is a kana variant; a name written only once each way is still compared, and the cell forms count", () => {
