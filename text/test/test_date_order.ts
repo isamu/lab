@@ -9,6 +9,7 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import { messageOf } from "../packages/chaff/src/render/text.ts";
 import { longestInOrder, outOfPlace, siblingHeadingRuns, type HeadingSpan } from "../packages/chaff/src/structure/date-order.ts";
+import { breakDateTie } from "../packages/chaff/src/structure/date-order-tie.ts";
 
 // 日程として並べた日付の順番（date-order）。言語を問わず、箇条書きと表の行を並びとして読む。
 
@@ -389,8 +390,13 @@ describe("date-order: the date pointed at is the one out of place, not the one a
       assert.deepEqual(found(write("2026-01-11", "2026-03-20", "2026-06-02", "2026-01-01", "2026-09-14")), ["2026-01-01<2026-06-02"]);
     });
 
-    it(`two neighbours swapped in a ${shape} cannot be told apart: the later one is pointed at, as before`, () => {
-      assert.deepEqual(found(write("2026-09-14", "2026-05-08", "2026-06-02", "2026-03-20", "2026-01-11")), ["2026-06-02<2026-05-08"]);
+    it(`two neighbours swapped in a ${shape}: the one farther from its outer neighbour is pointed at`, () => {
+      assert.deepEqual(found(write("2026-09-14", "2026-05-08", "2026-06-02", "2026-03-20", "2026-01-11")), ["2026-05-08<2026-09-14"]);
+      assert.deepEqual(found(write("2026-09-14", "2026-07-08", "2026-08-02", "2026-03-20", "2026-01-11")), ["2026-08-02<2026-07-08"]);
+    });
+
+    it(`two neighbours swapped in a ${shape} as far from their outer neighbours: the later one, as before`, () => {
+      assert.deepEqual(found(write("2026-08-31", "2026-06-01", "2026-07-01", "2026-04-01", "2026-01-11")), ["2026-07-01<2026-06-01"]);
     });
 
     it(`a ${shape} in order, or of two dates, says nothing`, () => {
@@ -414,6 +420,65 @@ describe("date-order: the date pointed at is the one out of place, not the one a
   });
 });
 
+describe("date-order: a tie broken by the versions on the same lines", () => {
+  const releases = (...lines: string[]): string => ["# Releases", "", ...lines.map((line) => `- ${line}`)].join("\n");
+
+  it("versions in order back the positions: the date against more of the others is pointed at", () => {
+    const source = releases("1.0.0 (2026-01-10)", "1.1.0 (2026-04-10)", "1.2.0 (2026-01-05)", "1.3.0 (2026-02-10)", "1.4.0 (2026-03-10)");
+    assert.deepEqual(found(source), ["2026-04-10<2026-01-10"]);
+  });
+
+  it("without versions, or with versions out of order, the same dates keep the later one", () => {
+    assert.deepEqual(found(list("2026-01-10", "2026-04-10", "2026-01-05", "2026-02-10", "2026-03-10")), ["2026-01-05<2026-04-10"]);
+    const source = releases("1.0.0 (2026-01-10)", "1.1.0 (2026-04-10)", "1.2.0 (2026-01-05)", "1.4.0 (2026-02-10)", "1.3.0 (2026-03-10)");
+    assert.deepEqual(found(source), ["2026-01-05<2026-04-10"]);
+  });
+
+  it("a changelog whose versions are out of order too falls back to the gap (the swapped pair stays inside its neighbours)", () => {
+    const source = [
+      "# Changelog",
+      "",
+      ...["3.2.0 - 2026-09-14", "3.1.1 - 2026-05-08", "3.3.0 - 2026-06-02", "3.0.0 - 2026-03-20"].flatMap((title) => [`## ${title}`, "", "- A change.", ""]),
+    ].join("\n");
+    assert.deepEqual(found(source), ["2026-05-08<2026-09-14"]);
+  });
+});
+
+describe("breakDateTie", () => {
+  const NEWEST_FIRST = -1;
+  const OLDEST_FIRST = 1;
+  const dates = (...values: string[]) => values.map((value) => ({ value, version: undefined }));
+
+  it("a swap inside its outer neighbours: the side farther from its outer neighbour", () => {
+    assert.equal(breakDateTie(dates("2026-09-14", "2026-05-08", "2026-06-02", "2026-03-20"), 1, 2, NEWEST_FIRST), 1);
+    assert.equal(breakDateTie(dates("2026-01-10", "2026-01-20", "2026-01-15", "2026-03-25"), 1, 2, OLDEST_FIRST), 2);
+    assert.equal(breakDateTie(dates("2026-01", "2026-06", "2026-03", "2026-12"), 1, 2, OLDEST_FIRST), 2);
+    assert.equal(breakDateTie(dates("12-01", "05-01", "07-01", "04-01"), 1, 2, NEWEST_FIRST), 1);
+  });
+
+  it("no decision: equal gaps, a pair at either end, a pair outside its neighbours, or dates that are not dates", () => {
+    assert.equal(breakDateTie(dates("2026-08-31", "2026-06-01", "2026-07-01", "2026-04-01"), 1, 2, NEWEST_FIRST), undefined);
+    assert.equal(breakDateTie(dates("2026-06-01", "2026-09-01", "2026-03-01"), 0, 1, NEWEST_FIRST), undefined);
+    assert.equal(breakDateTie(dates("2026-09-01", "2026-03-01", "2026-06-01"), 1, 2, NEWEST_FIRST), undefined);
+    assert.equal(breakDateTie(dates("2026-01-01", "2026-02-01", "2026-03-01", "2026-01-15", "2026-01-20"), 2, 3, OLDEST_FIRST), undefined);
+    assert.equal(breakDateTie(dates("09:00", "11:00", "10:00", "12:00"), 1, 2, OLDEST_FIRST), undefined);
+    assert.equal(breakDateTie([], 1, 2, OLDEST_FIRST), undefined);
+  });
+
+  it("versions in order decide by how many other dates each one is against", () => {
+    const entries = ["2026-01-10", "2026-04-10", "2026-01-05", "2026-02-10", "2026-03-10"].map((value, index) => ({ value, version: `1.${index}.0` }));
+    assert.equal(breakDateTie(entries, 1, 2, OLDEST_FIRST), 1);
+  });
+
+  it("versions with one missing or out of order are no evidence", () => {
+    const values = ["2026-01-10", "2026-04-10", "2026-01-05", "2026-02-10", "2026-03-10"];
+    const missing = values.map((value, index) => ({ value, version: index === 3 ? undefined : `1.${index}.0` }));
+    const backwards = values.map((value, index) => ({ value, version: `1.${values.length - index}.0` }));
+    assert.equal(breakDateTie(missing, 1, 2, OLDEST_FIRST), undefined);
+    assert.equal(breakDateTie(backwards, 1, 2, OLDEST_FIRST), undefined);
+  });
+});
+
 describe("outOfPlace", () => {
   const NEWEST_FIRST = -1;
   const OLDEST_FIRST = 1;
@@ -428,7 +493,15 @@ describe("outOfPlace", () => {
     assert.equal(outOfPlace(["2026-01", "2026-03", "2026-06", "2026-01", "2026-09"], 3, OLDEST_FIRST), 3);
   });
 
-  it("a tie (two neighbours swapped) keeps the later side", () => {
+  it("a tie (two neighbours swapped) keeps the later side, unless the tie-break decides", () => {
+    assert.equal(
+      outOfPlace(["2026-09", "2026-05", "2026-06", "2026-03"], 2, NEWEST_FIRST, () => 1),
+      1,
+    );
+    assert.equal(
+      outOfPlace(["2026-09", "2026-01", "2026-06", "2026-03"], 2, NEWEST_FIRST, () => 2),
+      1,
+    );
     assert.equal(outOfPlace(["2026-09", "2026-05", "2026-06", "2026-03"], 2, NEWEST_FIRST), 2);
     assert.equal(outOfPlace(["2026-01", "2026-06", "2026-05", "2026-09"], 2, OLDEST_FIRST), 2);
   });

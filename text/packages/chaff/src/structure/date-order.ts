@@ -1,6 +1,8 @@
 import type { StructureIssue } from "./issues.ts";
 import { siblingHeadingRunsOf } from "./heading-runs.ts";
 import { runsOf } from "./runs.ts";
+import { breakDateTie, type TieEntry } from "./date-order-tie.ts";
+import { leadingVersion } from "./version-order.ts";
 
 /**
  * 日程として並べた日付の順番。箇条書きの続いた項目、表の続いた行、同じ親の下で同じ深さに並ぶ見出しで、
@@ -32,17 +34,30 @@ const onlyDateIn = (line: Span, points: readonly DatedPoint[]): DatedPoint | und
   return inside.length === 1 ? inside[0] : undefined;
 };
 
-const datedLines = (run: readonly Span[], points: readonly DatedPoint[]): DatedPoint[] =>
+/** 日付を一つ持つ一行。行が版で始まれば（「## 3.1.1 - 2026-05-08」「- 3.1.0 (2026-06-02)」）その版を添える。 */
+type DatedEntry = DatedPoint & Pick<TieEntry, "version">;
+
+/** 見出しの #、箇条書きの記号、表の最初の |。 */
+const LINE_MARKER = /^[ \t]*(?:#{1,6}|[-*+]|\d{1,3}[.)]|\|)?[ \t]*/u;
+
+const entryOf = (source: string, line: Span, points: readonly DatedPoint[]): DatedEntry | undefined => {
+  const date = onlyDateIn(line, points);
+  if (date === undefined) return undefined;
+  const text = source.slice(line.start, line.end);
+  return { ...date, version: leadingVersion(text.slice(LINE_MARKER.exec(text)?.[0].length ?? 0)) };
+};
+
+const datedLines = (source: string, run: readonly Span[], points: readonly DatedPoint[]): DatedEntry[] =>
   run.flatMap((line) => {
-    const date = onlyDateIn(line, points);
-    return date === undefined ? [] : [date];
+    const entry = entryOf(source, line, points);
+    return entry === undefined ? [] : [entry];
   });
 
 /** 見出しの並びは、日付を一つ持つ見出しが続くあいだだけ。日付の無い見出しが混じる並び（問いに更新日を添えた FAQ）は、日付で並べたものではない。 */
-const datedStretches = (run: readonly Span[], points: readonly DatedPoint[]): DatedPoint[][] =>
-  run.reduce<DatedPoint[][]>(
+const datedStretches = (source: string, run: readonly Span[], points: readonly DatedPoint[]): DatedEntry[][] =>
+  run.reduce<DatedEntry[][]>(
     (stretches, heading) => {
-      const date = onlyDateIn(heading, points);
+      const date = entryOf(source, heading, points);
       if (date === undefined) return [...stretches, []];
       return [...stretches.slice(0, -1), [...(stretches.at(-1) ?? []), date]];
     },
@@ -71,10 +86,19 @@ const without = (values: readonly string[], index: number): string[] => values.f
 
 /**
  * 向きに逆らう一歩（at - 1 から at）のうち、並びから外れているほう。取り除いたとき残りが長く揃うほうを指す。
- * 前を取っても後ろを取っても同じだけ揃う（隣どうしの入れ替わり）なら、どちらとも決められないので後ろを指す。
+ * 前を取っても後ろを取っても同じだけ揃う（隣どうしの入れ替わり）なら、tieBreak が決めたほう、決まらなければ後ろを指す。
  */
-export const outOfPlace = (values: readonly string[], at: number, direction: number): number =>
-  longestInOrder(without(values, at - 1), direction) > longestInOrder(without(values, at), direction) ? at - 1 : at;
+export const outOfPlace = (
+  values: readonly string[],
+  at: number,
+  direction: number,
+  tieBreak: (before: number, after: number) => number | undefined = () => undefined,
+): number => {
+  const withoutBefore = longestInOrder(without(values, at - 1), direction);
+  const withoutAfter = longestInOrder(without(values, at), direction);
+  if (withoutBefore === withoutAfter) return tieBreak(at - 1, at) ?? at;
+  return withoutBefore > withoutAfter ? at - 1 : at;
+};
 
 /** 外れた日付に、前の日付を添える。先頭の日付には前が無いので、次の日付を添える。 */
 const issueAt = (dated: readonly DatedPoint[], at: number): StructureIssue[] => {
@@ -85,18 +109,21 @@ const issueAt = (dated: readonly DatedPoint[], at: number): StructureIssue[] => 
 };
 
 /** 多いほうの向きに逆らう一歩ごとに、並びから外れた日付を指す。 */
-const againstMajority = (dated: readonly DatedPoint[]): StructureIssue[] => {
+const againstMajority = (dated: readonly DatedEntry[]): StructureIssue[] => {
   const values = dated.map((point) => point.value);
   const signs = values.slice(1).map((value, index) => Math.sign(value.localeCompare(values[index] ?? "")));
   const majority = majorityOf(signs.filter((sign) => sign > 0).length, signs.filter((sign) => sign < 0).length);
   if (majority === 0 || !mostlyInOrder(values, majority)) return [];
   return signs.flatMap((sign, index) => {
     if (sign !== -majority) return [];
-    return issueAt(dated, outOfPlace(values, index + 1, majority));
+    return issueAt(
+      dated,
+      outOfPlace(values, index + 1, majority, (before, after) => breakDateTie(dated, before, after, majority)),
+    );
   });
 };
 
-const breaksIn = (dated: readonly DatedPoint[]): StructureIssue[] => (samePrecision(dated) ? againstMajority(dated) : []);
+const breaksIn = (dated: readonly DatedEntry[]): StructureIssue[] => (samePrecision(dated) ? againstMajority(dated) : []);
 
 /** 見出しを箇条書きの中に書けば（「- ## 3.1.0 - 2026-10-02」）、同じ日付が両方の並びに入る。一度だけ言う。 */
 const oncePerOffset = (issues: readonly StructureIssue[]): StructureIssue[] =>
@@ -104,6 +131,6 @@ const oncePerOffset = (issues: readonly StructureIssue[]): StructureIssue[] =>
 
 export const dateOrderBreaks = (source: string, points: readonly DatedPoint[], headings: readonly HeadingSpan[] = []): StructureIssue[] =>
   oncePerOffset([
-    ...runsOf(source).flatMap((run) => breaksIn(datedLines(run, points))),
-    ...siblingHeadingRuns(headings).flatMap((run) => datedStretches(run, points).flatMap(breaksIn)),
+    ...runsOf(source).flatMap((run) => breaksIn(datedLines(source, run, points))),
+    ...siblingHeadingRuns(headings).flatMap((run) => datedStretches(source, run, points).flatMap(breaksIn)),
   ]);
