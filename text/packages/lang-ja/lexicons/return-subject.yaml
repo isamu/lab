@@ -1,0 +1,8 @@
+# 関数名のあとに来て、その関数を文の主語にする語（return-type-mismatch）。「measure は、…を返します」。
+# 英語は名前のすぐ後に動詞が来るので、この表を持たない。
+id: return-subject
+language: ja
+entries:
+  - pattern: は
+  - pattern: が
+  - pattern: では

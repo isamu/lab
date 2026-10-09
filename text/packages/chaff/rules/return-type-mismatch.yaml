@@ -1,0 +1,79 @@
+id: return-type-mismatch
+layer: L1
+status: stable
+how_to_find: return-type
+# The words come from the return-label (Returns, 戻り値), return-verb (returns, 返します), return-subject (は) and
+# return-type-word (string, 文字列) lexicons.
+requires: [markdown]
+severity: warning
+
+name:
+  ja: 戻り値の型が二通りに書かれている
+  en: A return type stated two ways
+
+why:
+  ja: API リファレンスで、関数のシグネチャと、「戻り値：」の行や表や文が違う型を返すと書いていると、読み手はどちらを信じてよいか分からず、返った値を間違った型として扱います。戻り値を変えたときに、片方だけを直すと起きます。コードブロックのシグネチャ（戻り値の型が付いたもの）を基準に、同じ見出しの下の「戻り値：」の行、戻り値の列を持つ表の行、関数名を主語にして「返します」と言う文を、同じ名前の関数どうしで比べます。Array<string> と string[] のような同じ型の別の書き方は同じと読み、「文字列」「数値」のような語は種類として比べます。
+  en: When an API reference's signature and a "Returns:" line, a table or a sentence say a function returns different types, the reader cannot tell which to trust and handles the value as the wrong type. It happens when a return type is changed in one place only. The signature in a code block (one with a return type) is the reference; a "Returns:" line under the same heading, a row of a table with a return column, and a sentence whose subject is the function's name and whose verb is "returns" are compared with it, for the same function only. Two spellings of one type (Array<string> and string[]) are the same, and words such as "string" or "number" are compared as kinds of value.
+
+message:
+  ja: 「{function}」の戻り値が「{stated}」と書かれていますが、シグネチャでは「{signature}」です
+  en: "`{function}` is said to return {stated} here, but its signature returns `{signature}`"
+
+how_to_fix:
+  ja: 実際の戻り値を確かめて、シグネチャか説明のどちらかを直してください。
+  en: Check what the function really returns, and correct the signature or the description.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [technical, docs, blog, legal, academic, literature, speech]
+off_for:
+  legal: "Signatures and return types belong to technical writing."
+  academic: "Signatures and return types belong to technical writing."
+  literature: "Signatures and return types belong to technical writing."
+  speech: "Signatures and return types belong to technical writing."
+
+group: facts
+summary:
+  ja: API リファレンスで、シグネチャと説明が違う戻り値の型を言う所
+  en: A return type that the signature and the description state differently
+example:
+  ja:
+    config: { genre: technical/readme }
+    before: |
+      ## measure
+
+      ```ts
+      measure(text: string, tabSize = 4): number
+      ```
+
+      measure は、幅を "12" のような文字列で返します。
+    after: |
+      ## measure
+
+      ```ts
+      measure(text: string, tabSize = 4): number
+      ```
+
+      measure は、幅を桁数の数値で返します。
+  en:
+    config: { genre: technical/readme }
+    before: |
+      ## measure
+
+      ```ts
+      measure(text: string, tabSize = 4): number
+      ```
+
+      measure returns the width as a string such as "12".
+    after: |
+      ## measure
+
+      ```ts
+      measure(text: string, tabSize = 4): number
+      ```
+
+      measure returns the width as a number of columns.
+
+not_flagged:
+  ja: シグネチャの無い関数、別の名前の関数、引数の違う二つの宣言（オーバーロード。どちらかに合えば合っているとします）、型を読めないもの（オブジェクトの型、括弧で囲んだ型）、型の名前の無い文、二つの種類を言う文（文字列の配列）、null だけを言う文（いつ null が返るかの説明）、ユニオンの一部だけを言うもの（number | null に対する number）、Promise やクラス名のように種類の語では比べられない型は見ません。「返していました」「返しません」のような過去や否定、関数名が主語でない文、名前と動詞の間に語を挟んだ英語の文（measure usually returns）、二つ以上の関数を宣言した見出しの下の「戻り値：」の行、コードブロックの中は読みません。
+  en: 'A function with no signature, a different function, two declarations with different parameters (overloads; a statement that fits either is fine), a type that cannot be read (an object type, a type in brackets), a sentence with no type in it, a sentence naming two kinds (an array of strings), a sentence naming only null (when null comes back), part of a union (number against number | null), and a type that a kind word cannot be compared with (Promise, a class name) are not reported. The past (returned), a sentence whose subject is not the function''s name or that puts a word between the name and returns (measure usually returns), a "Returns:" line under a heading that declares two or more functions, and code blocks are not read.'

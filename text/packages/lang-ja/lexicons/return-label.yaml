@@ -1,0 +1,8 @@
+# 関数が返すものを書く行のラベル（戻り値：`string[]`）と、それを書く表の列の見出し（return-type-mismatch）。
+id: return-label
+language: ja
+entries:
+  - pattern: 戻り値
+  - pattern: 返り値
+  - pattern: 戻り値の型
+  - pattern: 返却値
