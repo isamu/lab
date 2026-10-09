@@ -1,0 +1,11 @@
+# Labels of a contact field (Attention:, Contact:). On a field line whose label ends with one of these, the value names the party
+# in full, and defined-name-repeated skips it unless the name goes on as a sentence; the value's length and where the name sits
+# in it do not matter. Matched without regard to case.
+id: contact-label
+language: en
+entries:
+  - pattern: attention
+  - pattern: attn
+  - pattern: contact
+  - pattern: address
+  - pattern: addressee
