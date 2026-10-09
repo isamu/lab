@@ -1,0 +1,25 @@
+{
+  "recall": {
+    "ja": {
+      "dimension-units": "0/1",
+      "table-vs-text": "0/1",
+      "battery-runtime": "0/1",
+      "firmware-version-order": "1/1",
+      "model-number": "0/1",
+      "parts-weight-total": "0/1",
+      "temperature-range-reversed": "0/1",
+      "revision-date-order": "1/1"
+    },
+    "en": {
+      "dimension-units": "0/1",
+      "table-vs-text": "0/1",
+      "battery-runtime": "0/1",
+      "firmware-version-order": "1/1",
+      "model-number": "0/1",
+      "parts-weight-total": "0/1",
+      "temperature-range-reversed": "0/1",
+      "revision-date-order": "1/1"
+    }
+  },
+  "clean": []
+}
