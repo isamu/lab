@@ -2,23 +2,23 @@
   "recall": {
     "ja": {
       "event-weekday": "2/2",
-      "deadline-after-event": "0/2",
+      "deadline-after-event": "2/2",
       "fee-total": "2/2",
       "venue-two-ways": "1/2",
-      "session-end-before-start": "0/2",
-      "capacity-below-count": "0/2",
+      "session-end-before-start": "2/2",
+      "capacity-below-count": "2/2",
       "programme-time-order": "2/2",
       "phone-swapped": "2/2"
     },
     "en": {
       "event-weekday": "2/2",
-      "deadline-after-event": "0/2",
+      "deadline-after-event": "2/2",
       "fee-total": "2/2",
       "venue-two-ways": "1/2",
-      "session-end-before-start": "0/2",
-      "capacity-below-count": "0/2",
+      "session-end-before-start": "2/2",
+      "capacity-below-count": "2/2",
       "programme-time-order": "2/2",
-      "phone-swapped": "1/2"
+      "phone-swapped": "2/2"
     }
   },
   "clean": []
