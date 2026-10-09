@@ -8,6 +8,7 @@ import { dateOrderBreaks } from "../structure/date-order.ts";
 import { totalMismatches, type Amount } from "../structure/total.ts";
 import { proseTotalMismatches } from "../structure/prose-total.ts";
 import { countedAmounts, type SummedCounter } from "../structure/counted-amounts.ts";
+import { measuredAmounts, type MeasureMarks, type SummedMeasure } from "../structure/measured-amounts.ts";
 import { rangeFrameOf, reversedRanges, type DatedSpan, type RangeWords } from "../structure/date-range.ts";
 import { afterLabel } from "../structure/stated-period.ts";
 import { percentSumMismatches, type ShareWords } from "../structure/percent-sum.ts";
@@ -184,10 +185,37 @@ const summableAmountsOf = (doc: ProseDocument, tree: NonNullable<ProseDocument["
   return [...known, ...countedAmounts(doc.source, summedCountersOf(doc), known)].toSorted((left, right) => left.offset - right.offset);
 };
 
-/** 合計の行と内訳の行、文の中の合計と内訳。同じ金額は一度だけ言う。 */
+/** 合計の行で足す量の種類。換算の倍率は語彙表の weight。 */
+const SUMMED_DIMENSIONS = ["unit-mass", "unit-volume", "unit-length"] as const;
+
+/** 単位ごとの倍率。同じ単位を二度書いたもの（cup の米国と メートル法）は倍率が二つ。数の前に書く単位（大さじ1）は読まない。 */
+const summedMeasuresOf = (doc: ProseDocument): SummedMeasure[] =>
+  SUMMED_DIMENSIONS.flatMap((dimension) => {
+    const factors = new Map<string, number[]>();
+    (doc.lexicons[dimension] ?? []).forEach((entry) => {
+      if (entry.weight !== undefined && entry.position !== "before") factors.set(entry.pattern, [...(factors.get(entry.pattern) ?? []), entry.weight]);
+    });
+    return [...factors.entries()].map(([pattern, weights]) => ({ pattern, dimension, factors: weights }));
+  });
+
+const positionedOf = (doc: ProseDocument, lexicon: string, position: "before" | "after"): string[] =>
+  (doc.lexicons[lexicon] ?? []).filter((entry) => (entry.position ?? "before") === position).map((entry) => entry.pattern);
+
+const measureMarksOf = (doc: ProseDocument): MeasureMarks => ({
+  roughBefore: positionedOf(doc, "approximate-marker", "before"),
+  roughAfter: positionedOf(doc, "approximate-marker", "after"),
+  connectors: patternsOf(doc, "range-connector"),
+  perMarks: patternsOf(doc, "measure-per-mark"),
+});
+
+/** 表と箇条書きの合計で足す数量。金額と助数詞の数に、単位の付いた量（300 mg、0.5 g）を加える。 */
+const lineAmountsOf = (doc: ProseDocument, amounts: readonly Amount[]): Amount[] =>
+  [...amounts, ...measuredAmounts(doc.source, summedMeasuresOf(doc), measureMarksOf(doc), amounts)].toSorted((left, right) => left.offset - right.offset);
+
+/** 合計の行と内訳の行、文の中の合計と内訳。同じ金額は一度だけ言う。単位の付いた量は、表と箇条書きの合計だけで足す。 */
 const totalIssues = (doc: ProseDocument, tree: NonNullable<ProseDocument["structure"]>): StructureIssue[] => {
   const amounts = summableAmountsOf(doc, tree);
-  const lines = totalMismatches(doc.source, amounts, patternsOf(doc, "total-label"));
+  const lines = totalMismatches(doc.source, lineAmountsOf(doc, amounts), patternsOf(doc, "total-label"));
   const words = {
     totals: patternsOf(doc, "total-phrase"),
     breakdowns: patternsOf(doc, "breakdown-phrase"),

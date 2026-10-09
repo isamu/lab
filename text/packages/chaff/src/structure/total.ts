@@ -8,7 +8,14 @@ import { bareNumbersIn, CELL_SEPARATOR, NO_UNIT } from "./bare-numbers.ts";
  * 小計と税のあとの総計のように、足し方が何通りかある。どの足し方でも合わないときだけ言う。
  * 表の升に数だけを書いた列（単位は見出しにある）も足す。そのときは上の行の升がどれも数でなければ足さない。年や番号の列を足さないため。
  */
-export type Amount = { readonly offset: number; readonly end: number; readonly value: number; readonly unit: string };
+export type Amount = {
+  readonly offset: number;
+  readonly end: number;
+  readonly value: number;
+  readonly unit: string;
+  /** 単位の付いた量（0.5 g）は、量の種類の一番小さい単位（mg）に直して足す。scale は書いた単位一つがその単位いくつか（g なら 1,000）。 */
+  readonly scale?: number;
+};
 
 const CENTS = 100;
 
@@ -169,6 +176,30 @@ export const shownTotal = (source: string, total: Amount, sumCents: number): Rec
 const readsAsSum = (cell: Cell, writtenCents: number, above: RowsAbove): boolean =>
   cell.unit !== NO_UNIT || above.parts.some((part) => part < 0) || above.parts.every((part) => part < writtenCents);
 
+/** 書いた数の小数の桁（0.25 g なら 2）。 */
+const decimalsOf = (written: string): number => /[.．](\d+)/u.exec(written.normalize("NFKC"))?.[1]?.length ?? 0;
+
+/** 見せる和の小数の桁の上限。合計より細かい単位の内訳（1 g の合計に 250 mg の内訳）の和を、合計の単位で見せるため。 */
+const MAX_SHOWN_DECIMALS = 3;
+
+/** 換算の倍率が割り切れない単位（8 oz + 8 oz = 1 lb）で、丸めの差を合うとみなす割合。 */
+const MEASURE_TOLERANCE = 1e-6;
+
+/** 単位の付いた量の合計。和は合計に書いた単位と書き方で見せる（1 g の合計に 300 mg と 0.6 g の内訳なら 0.9 g）。 */
+const measuredMismatch = (source: string, total: Placed, scale: number, sums: readonly number[], reported: number): StructureIssue[] => {
+  const number = source.slice(total.offset, total.end);
+  const digits = decimalsOf(number);
+  const written = total.value * CENTS;
+  if (sums.some((sum) => Math.abs(sum - written) <= Math.abs(written) * MEASURE_TOLERANCE)) return [];
+  const inTotalUnit = (cents: number): number => cents / CENTS / scale;
+  const sum = inTotalUnit(reported).toLocaleString("en-US", {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: Math.max(digits, MAX_SHOWN_DECIMALS),
+    useGrouping: !UNGROUPED.test(number),
+  });
+  return [{ offset: total.offset, values: { written: number, sum: `${sum}${unitAfterNumber(number, total.unit)}` } }];
+};
+
 const mismatchesIn = (source: string, entries: readonly Entry[]): StructureIssue[] =>
   entries.flatMap((entry, index) => {
     if (!entry.label) return [];
@@ -176,6 +207,7 @@ const mismatchesIn = (source: string, entries: readonly Entry[]): StructureIssue
       const writtenCents = valueIn(entry, total);
       const above = windowAbove(entries.slice(0, index), total);
       if (typeof writtenCents !== "number" || above === undefined || !enoughRows(above) || !readsAsSum(total, writtenCents, above)) return [];
+      if (total.scale !== undefined) return measuredMismatch(source, total, total.scale, candidateSums(above), reportedSum(above));
       if (candidateSums(above).includes(writtenCents)) return [];
       return [{ offset: total.offset, values: shownAmounts(source, total, reportedSum(above)) }];
     });
