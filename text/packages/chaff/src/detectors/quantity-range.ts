@@ -4,14 +4,13 @@
 // quantity-change-word (its lead group: a word right before the range) and quantity-bound-label say what makes a pair a
 // change and what labels a bound.
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
-import { measuredValues, type MeasureUnit } from "../facts/measures.ts";
+import { measuredValues } from "../facts/measures.ts";
+import { measureUnitsOf } from "../facts/measure-units.ts";
 import { reversedAmountRanges, type AmountRangeWords } from "../structure/amount-range.ts";
 import { quantityRangeEnds, unledRanges } from "../structure/quantity-range.ts";
 import { AMOUNT } from "./currency-notation.ts";
 import { proseAndTablesOf } from "../table-text.ts";
 import { quoteAround } from "./quote-around.ts";
-
-const DIMENSIONS = ["unit-length", "unit-mass", "unit-time", "unit-volume", "unit-data", "unit-temperature", "unit-pressure"] as const;
 
 /** A bare end may carry a minus sign (-10〜-40℃); a hyphen right after a digit or a letter is a range mark (5-10 kg). */
 const SIGNED_NUMBER = `(?:[-−－](?=[0-9０-９]))?${AMOUNT}`;
@@ -21,23 +20,6 @@ const patternsOf = (doc: ProseDocument, lexicon: string, group?: string): string
 
 const ungroupedOf = (doc: ProseDocument, lexicon: string): string[] =>
   (doc.lexicons[lexicon] ?? []).filter((entry) => entry.group === undefined).map((entry) => entry.pattern);
-
-/** Each unit once per dimension and position; the factors and zero do not matter here, only which unit two ends share. */
-const unitsOf = (doc: ProseDocument): MeasureUnit[] => {
-  const contexts = doc.lexicons["unit-context"] ?? [];
-  return DIMENSIONS.flatMap((dimension) =>
-    (doc.lexicons[dimension] ?? [])
-      .filter((entry) => entry.weight !== undefined)
-      .map((entry) => ({
-        pattern: entry.pattern,
-        dimension,
-        factors: [entry.weight ?? 1],
-        zero: 0,
-        before: entry.position === "before",
-        context: contexts.filter((context) => context.group === entry.pattern).map((context) => context.pattern),
-      })),
-  );
-};
 
 const wordsOf = (doc: ProseDocument): AmountRangeWords => ({
   connectors: [...patternsOf(doc, "range-connector"), ...patternsOf(doc, "quantity-range-word")],
@@ -53,7 +35,7 @@ const wordsOf = (doc: ProseDocument): AmountRangeWords => ({
 
 export const quantityRange: Detector = (doc): Finding[] => {
   const text = proseAndTablesOf(doc);
-  const reversed = reversedAmountRanges(text, quantityRangeEnds(text, measuredValues(text, unitsOf(doc))), wordsOf(doc));
+  const reversed = reversedAmountRanges(text, quantityRangeEnds(text, measuredValues(text, measureUnitsOf(doc))), wordsOf(doc));
   return unledRanges(text, reversed, patternsOf(doc, "quantity-change-word", "lead")).map((issue) => ({
     rule: "quantity-range-reversed",
     severity: "warning",
