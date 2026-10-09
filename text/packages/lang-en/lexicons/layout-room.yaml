@@ -1,0 +1,16 @@
+# The rooms a listing's room breakdown names ("Rooms: Bedroom 1, Bedroom 2, Living room") for layout-code-mismatch. Group
+# room is counted by the layout code ("2 bedrooms"); storage is not (a den, a study, a box room). Group unclear is a room some
+# listings count as a bedroom and others do not, or a plural that names several ("Bedrooms 2 and 3"); a breakdown that names
+# one is not compared. An entry that names a room twice ("Bedroom 1 and Bedroom 2") is not compared either. living, dining and kitchen are
+# the parts of a Japanese code (L, D, K); an English code says nothing about them, so none is listed here.
+id: layout-room
+language: en
+entries:
+  - { pattern: "bedroom", group: room }
+  - { pattern: "bedrooms", group: unclear }
+  - { pattern: "den", group: storage }
+  - { pattern: "study", group: storage }
+  - { pattern: "box room", group: storage }
+  - { pattern: "storage room", group: storage }
+  - { pattern: "office", group: unclear }
+  - { pattern: "nursery", group: unclear }
