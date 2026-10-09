@@ -20,3 +20,22 @@ export const hoursAndMinutes = (totalMinutes: number): HoursAndMinutes | undefin
   if (hours === 0) return { hours, minutes, shape: "minutes" };
   return { hours, minutes, shape: minutes === 0 ? "hours" : "hours-minutes" };
 };
+
+/** Whether a computed length would be written as the stated one: a message saying "8 hours, but 8 hours is written" says nothing. */
+export const readsTheSame = (computedMinutes: number, statedMinutes: number): boolean => Math.round(computedMinutes) === Math.round(statedMinutes);
+
+const HOUR_DECIMALS = 100;
+
+/** The computed length for a message: decimal hours as `expected` (kept for JSON readers), hours and minutes to write. */
+export type ComputedLength = {
+  readonly shape: HoursAndMinutes["shape"];
+  readonly values: { readonly expected: number; readonly hours: number; readonly minutes: number };
+};
+
+/** undefined when the computed length cannot be written, or would be written as the stated one. */
+export const computedLength = (computedMinutes: number, statedMinutes: number): ComputedLength | undefined => {
+  const length = hoursAndMinutes(computedMinutes);
+  if (length === undefined || readsTheSame(computedMinutes, statedMinutes)) return undefined;
+  const expected = Math.round((computedMinutes / MINUTES_PER_HOUR) * HOUR_DECIMALS) / HOUR_DECIMALS;
+  return { shape: length.shape, values: { expected, hours: length.hours, minutes: length.minutes } };
+};

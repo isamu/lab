@@ -1,6 +1,6 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
-import { hoursAndMinutes } from "../packages/chaff/src/derived/hours-and-minutes.ts";
+import { computedLength, hoursAndMinutes, readsTheSame } from "../packages/chaff/src/derived/hours-and-minutes.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { namedRuleRun } from "./rule-run.ts";
@@ -35,6 +35,33 @@ describe("hoursAndMinutes", () => {
   });
 });
 
+describe("readsTheSame", () => {
+  it("lengths that round to the same whole minute read the same", () => {
+    assert.equal(readsTheSame(419.5, 420), true);
+    assert.equal(readsTheSame(480, 480), true);
+  });
+
+  it("lengths a whole minute or more apart do not", () => {
+    assert.equal(readsTheSame(419.4, 420), false);
+    assert.equal(readsTheSame(450, 480), false);
+    assert.equal(readsTheSame(Number.NaN, 480), false);
+  });
+});
+
+describe("computedLength", () => {
+  it("hours and minutes to write, and the decimal hours kept as expected", () => {
+    assert.deepEqual(computedLength(255, 285), { shape: "hours-minutes", values: { expected: 4.25, hours: 4, minutes: 15 } });
+    assert.deepEqual(computedLength(480, 420), { shape: "hours", values: { expected: 8, hours: 8, minutes: 0 } });
+    assert.deepEqual(computedLength(35, 60), { shape: "minutes", values: { expected: 0.58, hours: 0, minutes: 35 } });
+  });
+
+  it("undefined when the length cannot be written or reads as the stated one", () => {
+    assert.equal(computedLength(-5, 60), undefined);
+    assert.equal(computedLength(Number.NaN, 60), undefined);
+    assert.equal(computedLength(419.5, 420), undefined);
+  });
+});
+
 const workJa = (line: string): readonly string[] => namedRuleRun("duration-mismatch", `# 募集要項\n\n${line}\n`, ja).findings;
 const workEn = (line: string): readonly string[] => namedRuleRun("duration-mismatch", `# Job posting\n\n${line}\n`, en).findings;
 const sessionsJa = (line: string): readonly string[] => namedRuleRun("duration-product-mismatch", `# シラバス\n\n${line}\n`, ja).findings;
@@ -47,7 +74,9 @@ describe("duration messages write the computed length in hours and minutes", () 
   });
 
   it("working hours (ja)", () => {
-    assert.deepEqual(workJa("| 勤務時間 | 10:00〜15:00（休憩45分）実働4時間45分 |"), ["10:00から15:00まで、休憩45分を除くと4時間15分のはずですが、4時間45分と書かれています"]);
+    assert.deepEqual(workJa("| 勤務時間 | 10:00〜15:00（休憩45分）実働4時間45分 |"), [
+      "10:00から15:00まで、休憩45分を除くと4時間15分のはずですが、4時間45分と書かれています",
+    ]);
     assert.deepEqual(workJa("勤務時間：9:00〜18:00（休憩60分）実働7時間"), ["9:00から18:00まで、休憩60分を除くと8時間のはずですが、7時間と書かれています"]);
     assert.deepEqual(workJa("勤務時間：9:00〜9:50（休憩15分）実働1時間"), ["9:00から9:50まで、休憩15分を除くと35分のはずですが、1時間と書かれています"]);
   });
@@ -62,7 +91,9 @@ describe("duration messages write the computed length in hours and minutes", () 
     assert.deepEqual(workEn("Hours: 9:00–10:31 with a break of 30 minutes, 2 hours a day"), [
       "9:00 to 10:31 less the break (30 minutes) makes 1 hour 1 minute, but 2 hours is written",
     ]);
-    assert.deepEqual(workEn("Hours: 9:00–9:50 with a 15-minute break, 1 hour a day"), ["9:00 to 9:50 less the break (15-minute) makes 35 minutes, but 1 hour is written"]);
+    assert.deepEqual(workEn("Hours: 9:00–9:50 with a 15-minute break, 1 hour a day"), [
+      "9:00 to 9:50 less the break (15-minute) makes 35 minutes, but 1 hour is written",
+    ]);
   });
 
   it("sessions times a length", () => {
@@ -72,6 +103,13 @@ describe("duration messages write the computed length in hours and minutes", () 
       "15 sessions of 90 minutes make 22 hours 30 minutes, but the total is given as 24 hours",
     ]);
     assert.deepEqual(sessionsEn("4 sessions of 15 minutes (2 hours in total)."), ["4 sessions of 15 minutes make 1 hour, but the total is given as 2 hours"]);
+  });
+
+  it("a part of a minute from seconds is rounded, and a length that rounds to the stated total stays silent", () => {
+    assert.deepEqual(workJa("勤務時間：9:00:40〜17:00（休憩1時間、実働7時間）"), [
+      "9:00:40から17:00まで、休憩1時間を除くと6時間59分のはずですが、7時間と書かれています",
+    ]);
+    assert.deepEqual(workJa("勤務時間：9:00:30〜17:00（休憩1時間、実働7時間）"), []);
   });
 
   it("hours that add up stay silent", () => {

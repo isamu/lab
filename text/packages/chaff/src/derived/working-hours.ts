@@ -21,7 +21,7 @@ export type WorkingHoursMismatch = {
   readonly start: Span;
   readonly end: Span;
   readonly break: Span;
-  readonly total: Span;
+  readonly total: TimeLength;
   /** The total the times and the break give, in minutes. */
   readonly expected: number;
 };
