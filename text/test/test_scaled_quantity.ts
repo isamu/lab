@@ -152,6 +152,17 @@ describe("scaled-quantity-mismatch: what it does not report", () => {
     const source = table("材料 | 4人分 | 8人分", "合いびき肉 | 500g | 1000g", "玉ねぎ | 1個 | 2個", "牛乳 | 60ml | 120ml", "ケチャップ | 大さじ4 | 大さじ8");
     assert.deepEqual(slipsJa(source), []);
   });
+
+  it("ja: with three columns, a row with the same amount in every column may be fixed on purpose", () => {
+    const source = table(
+      "材料 | 2人分 | 4人分 | 8人分",
+      "米 | 1合 | 2合 | 4合",
+      "水 | 200ml | 400ml | 800ml",
+      "卵 | 2個 | 4個 | 8個",
+      "塩 | 小さじ1 | 小さじ1 | 小さじ1",
+    );
+    assert.deepEqual(slipsJa(source), []);
+  });
 });
 
 const WORDS: ScaleWords = {
@@ -181,6 +192,7 @@ describe("scaled-quantity-mismatch: the pure parts", () => {
     assert.equal(servingsOf("4人分（基本）", WORDS.columns), undefined);
     assert.equal(servingsOf("分量", WORDS.columns), undefined);
     assert.equal(servingsOf("", WORDS.columns), undefined);
+    assert.equal(servingsOf("٤人分", WORDS.columns), undefined);
   });
 
   it("amountOf reads one number and its unit", () => {
@@ -189,6 +201,7 @@ describe("scaled-quantity-mismatch: the pure parts", () => {
     assert.deepEqual(amountOf("1 kg", WORDS), { amount: 1000, written: 1, unit: "=unit-mass" });
     assert.equal(amountOf("1 1/2 cups", WORDS)?.amount, 1.5);
     assert.equal(amountOf("½", WORDS)?.amount, 0.5);
+    assert.equal(amountOf("1½ cups", WORDS)?.amount, 1.5);
     assert.equal(amountOf("1,000g", WORDS)?.amount, 1000);
   });
 
@@ -197,6 +210,7 @@ describe("scaled-quantity-mismatch: the pure parts", () => {
     assert.equal(amountOf("大さじ1と1/2", WORDS), undefined);
     assert.equal(amountOf("2 (300 g)", WORDS), undefined);
     assert.equal(amountOf("", WORDS), undefined);
+    assert.equal(amountOf("1/0 cup", WORDS), undefined);
   });
 
   it("expectedOf answers in the unit the cell is written in", () => {

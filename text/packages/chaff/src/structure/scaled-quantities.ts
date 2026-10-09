@@ -43,7 +43,7 @@ export const MIN_SCALED_ROWS = 3;
 const SAME = 1e-9;
 const MIN_COLUMNS = 2;
 
-const NUMBER_TEXT = "\\p{Nd}+(?:\\.\\p{Nd}+)?";
+const NUMBER_TEXT = "[0-9]+(?:\\.[0-9]+)?";
 
 /** The number of servings a column heading names (4人分, Serves 8, ×2), or undefined. */
 export const servingsOf = (heading: string, marks: readonly Mark[]): number | undefined => {
@@ -56,12 +56,12 @@ export const servingsOf = (heading: string, marks: readonly Mark[]): number | un
     })
     .find((number) => number !== undefined);
   const servings = read === undefined ? undefined : Number(read);
-  return servings === undefined || servings <= 0 ? undefined : servings;
+  return servings === undefined || !Number.isFinite(servings) || servings <= 0 ? undefined : servings;
 };
 
 /** A whole or decimal number (1,000 and 1.5), with a fraction after it (1 1/2) or as a fraction (1/2, ½). */
-const WHOLE = String.raw`\p{Nd}+(?:,\p{Nd}{3})*(?:\.\p{Nd}+)?`;
-const FRACTION = String.raw`(?:\s(\p{Nd}+)[/⁄](\p{Nd}+)|[/⁄](\p{Nd}+))?`;
+const WHOLE = String.raw`[0-9]+(?:,[0-9]{3})*(?:\.[0-9]+)?`;
+const FRACTION = String.raw`(?:\s([0-9]+)[/⁄]([0-9]+)|[/⁄]([0-9]+))?`;
 const AMOUNT = new RegExp(String.raw`(?<![\p{N}.,/⁄])(${WHOLE})${FRACTION}(?![\p{N}/⁄])`, "gu");
 
 const valueOf = (match: RegExpMatchArray): number => {
@@ -88,13 +88,19 @@ const unitKey = (text: string, numberAt: Span, forms: ScaleWords["unitForms"]): 
   return grouped.replace(/\s+/gu, "");
 };
 
+/** NFKC writes ½ as 1⁄2, so 1½ would read as 11⁄2: a space keeps the whole number apart (1 1⁄2). */
+const VULGAR_AFTER_DIGIT = /([0-9０-９])([¼½¾⅐-⅞])/gu;
+
+const normalized = (cellText: string): string => withoutEdgeMarks(cellText.replace(VULGAR_AFTER_DIGIT, "$1 $2").normalize("NFKC").trim());
+
 /** One cell's amount and the unit it is in. undefined when the cell holds no number, or more than one (1と1/2, 2 (300 g)). */
 export const amountOf = (cellText: string, words: ScaleWords): Amount | undefined => {
-  const text = withoutEdgeMarks(cellText.normalize("NFKC").trim());
+  const text = normalized(cellText);
   const numbers = [...text.matchAll(AMOUNT)];
   const [only] = numbers;
   if (numbers.length !== 1 || only === undefined) return undefined;
   const written = valueOf(only);
+  if (!Number.isFinite(written)) return undefined;
   const [measured] = measuredValues(text, words.measures);
   const factor = measured?.factors[0];
   if (measured !== undefined && factor !== undefined && measured.start === only.index && measured.end === text.length) {
@@ -178,17 +184,29 @@ const baseSlip = (base: Column, other: Column, { pair, scaled }: Departure): Sca
   scaledRows: scaled,
 });
 
+type Found = { readonly other: Column; readonly departure: Departure | undefined };
+
+/** Whether the row's cells outside the first column scale with each other (a row fixed in every column does not). */
+const othersAgree = (found: readonly Found[]): boolean => {
+  const perServing = found.map(({ other, departure }) => (departure === undefined ? Number.NaN : departure.pair.to.amount / other.servings));
+  const [first] = perServing;
+  return first !== undefined && perServing.every((value) => Math.abs(value - first) <= SAME * Math.max(Math.abs(first), 1));
+};
+
 /**
  * One table's slips. Each column is compared with the first servings column. When the same row departs in every other column
- * (three or more columns), it is the first column's cell that is off, and that cell is reported once.
+ * (three or more columns) and those columns scale with each other, it is the first column's cell that is off, and that cell is
+ * reported once; a row that departs everywhere without that (the same amount in every column) may be fixed on purpose.
  */
 const tableSlips = (columns: readonly Column[], rows: readonly Row[], words: ScaleWords): ScaleSlip[] => {
   const [base, ...others] = columns;
   if (base === undefined) return [];
-  const found = others.map((other) => ({ other, departure: departureOf(rows, base, other, words) }));
+  const found: Found[] = others.map((other) => ({ other, departure: departureOf(rows, base, other, words) }));
   const [first] = found;
   const offRows = new Set(found.map(({ departure }) => departure?.pair.row));
-  if (others.length > 1 && offRows.size === 1 && first?.departure !== undefined) return [baseSlip(base, first.other, first.departure)];
+  if (others.length > 1 && offRows.size === 1 && first?.departure !== undefined) {
+    return othersAgree(found) ? [baseSlip(base, first.other, first.departure)] : [];
+  }
   return found.flatMap(({ other, departure }) => (departure === undefined ? [] : [columnSlip(base, other, departure)]));
 };
 
