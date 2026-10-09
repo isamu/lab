@@ -508,8 +508,8 @@ describe("heading-echo の絞り込み", () => {
 
 describe("no-em-dash", () => {
   /** Twenty ranges written with `joiner` between two numbers. */
-  const ranges = (joiner: string): string =>
-    `# Report\n\n${Array.from({ length: 20 }, (_, index) => `Step ${String(index)} took ${String(index)}${joiner}${String(index + 2)} days. `).join("")}${BULK_EN}`;
+  const step = (joiner: string, index: number): string => `Step ${String(index)} took ${String(index)}${joiner}${String(index + 2)} days. `;
+  const ranges = (joiner: string): string => ["# Report\n\n", ...Array.from({ length: 20 }, (_, index) => step(joiner, index)), BULK_EN].join("");
 
   it("valid: an en dash between digits is a range mark, not a dash", () => assert.ok(!idsFor(ranges("–"), "business/report", en).includes("no-em-dash")));
 
