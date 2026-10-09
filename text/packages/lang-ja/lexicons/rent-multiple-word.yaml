@@ -1,0 +1,30 @@
+# rent-multiple-mismatch の語。month は月数の後ろの語（1か月）。link は見出しや月数と金額の間に挟んでよい語
+# （賃料は 98,000円、10か月分（10,000,000円））。skip は、金額が月数分そのものではないと言う語（税込みの礼金は賃料の
+# 何か月分に税を足した額）で、これのある記載は比べない。period は月額でないと言う語（年額、坪単価）で、これのある行の賃料は月額として読まない。
+id: rent-multiple-word
+language: ja
+entries:
+  - { pattern: か月, group: month }
+  - { pattern: ヶ月, group: month }
+  - { pattern: カ月, group: month }
+  - { pattern: ヵ月, group: month }
+  - { pattern: ケ月, group: month }
+  - { pattern: 箇月, group: month }
+  - { pattern: は, group: link }
+  - { pattern: の, group: link }
+  - { pattern: 分, group: link }
+  - { pattern: 相当, group: link }
+  - { pattern: 相当額, group: link }
+  - { pattern: 月額, group: link }
+  - { pattern: 年額, group: period }
+  - { pattern: 年間, group: period }
+  - { pattern: 週額, group: period }
+  - { pattern: 日額, group: period }
+  - { pattern: 1日, group: period }
+  - { pattern: 1泊, group: period }
+  - { pattern: 坪単価, group: period }
+  - { pattern: 坪あたり, group: period }
+  - { pattern: ㎡単価, group: period }
+  - { pattern: 税込, group: skip }
+  - { pattern: 税込み, group: skip }
+  - { pattern: 内税, group: skip }

@@ -1,0 +1,12 @@
+# 物件の月々の費用の見出し（rent-multiple-mismatch）。rent は賃料、fee は賃料と一緒に払う月々の費用。敷金などの「何か月分」は、
+# 賃料だけの何倍か、賃料と fee を足した額の何倍かのどちらでもよいとして比べる（文書はどちらかを言わないことが多い）。
+id: rent-label
+language: ja
+entries:
+  - { pattern: 賃料, group: rent }
+  - { pattern: 家賃, group: rent }
+  - { pattern: 月額賃料, group: rent }
+  - { pattern: 月額家賃, group: rent }
+  - { pattern: 管理費, group: fee }
+  - { pattern: 共益費, group: fee }
+  - { pattern: 管理費・共益費, group: fee }

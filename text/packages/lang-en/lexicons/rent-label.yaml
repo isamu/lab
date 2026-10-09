@@ -1,0 +1,14 @@
+# The labels of a listing's monthly costs (rent-multiple-mismatch). rent is the rent; fee is a monthly charge paid with it.
+# A deposit given in months may be that many months of the rent alone or of the rent and the fee: listings do both and
+# seldom say which, so either is accepted.
+id: rent-label
+language: en
+entries:
+  - { pattern: Rent, group: rent }
+  - { pattern: Monthly rent, group: rent }
+  - { pattern: Rent per month, group: rent }
+  - { pattern: Service charge, group: fee }
+  - { pattern: Maintenance fee, group: fee }
+  - { pattern: Management fee, group: fee }
+  - { pattern: Common area fee, group: fee }
+  - { pattern: HOA fee, group: fee }
