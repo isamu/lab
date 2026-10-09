@@ -1,0 +1,23 @@
+{
+  "recall": {
+    "ja": {
+      "term-before-definition": "0/2",
+      "announced-count": "2/2",
+      "dangling-section-reference": "2/2",
+      "retention-two-ways": "0/1",
+      "vague-deadline": "2/2",
+      "contact-two-ways": "0/2",
+      "stamp-dates-reversed": "0/2"
+    },
+    "en": {
+      "term-before-definition": "2/2",
+      "announced-count": "1/2",
+      "dangling-section-reference": "2/2",
+      "retention-two-ways": "0/1",
+      "vague-deadline": "2/2",
+      "contact-two-ways": "0/2",
+      "stamp-dates-reversed": "0/2"
+    }
+  },
+  "clean": ["en/privacy.clean.md:46 announced-count-mismatch"]
+}
