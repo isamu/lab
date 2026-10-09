@@ -12,6 +12,10 @@ export type ReturnWords = {
   /** What may follow the function's name before the verb (は, が); none for a language that puts the verb first. */
   readonly subjects: readonly string[];
   readonly kinds: ReadonlyMap<string, string>;
+  /** Words opening a clause about when (when, とき): a type word on the far side of one names the input, not the result. */
+  readonly clauses: readonly string[];
+  /** Words making the type word before them one item of the result (per, ごと). */
+  readonly items: readonly string[];
 };
 
 /** A statement that disagrees with every signature of its function: what it says, what a signature says, and where. */
@@ -160,21 +164,60 @@ const escaped = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/gu, S
 
 const isSpaced = (word: string): boolean => /^[A-Za-z]/u.test(word);
 
-/** The type words in a stretch of text: whole words where words are spaced, any occurrence where they are not. */
-const typeWordsIn = (text: string, kinds: ReadonlyMap<string, string>): [string, string][] => {
-  const bare = text.replace(/`[^`]*`/gu, " ");
-  return [...kinds].filter(([word]) => (isSpaced(word) ? new RegExp(String.raw`\b${escaped(word)}\b`, "iu").test(bare) : bare.includes(word)));
+/** A word's occurrences: whole words where words are spaced, any occurrence where they are not. */
+const wordPattern = (word: string): RegExp => (isSpaced(word) ? new RegExp(String.raw`\b${escaped(word)}\b`, "giu") : new RegExp(escaped(word), "gu"));
+
+const startsWithWord = (text: string, word: string): boolean =>
+  isSpaced(word) ? new RegExp(String.raw`^${escaped(word)}\b`, "iu").test(text) : text.startsWith(word);
+
+/** "returns true when …" is a boolean: a literal says its kind in any language, in code or not. */
+const LITERAL_KINDS: ReadonlyMap<string, string> = new Map([
+  ["true", "boolean"],
+  ["false", "boolean"],
+]);
+
+/** Whether `word` stands in `text` as a whole value, not followed by a word making it one item (string per line). */
+const namesWhole = (text: string, word: string, items: readonly string[]): boolean =>
+  [...text.matchAll(wordPattern(word))].some((match) => {
+    const next = text.slice(match.index + match[0].length).trimStart();
+    return !items.some((item) => startsWithWord(next, item));
+  });
+
+/** The type words in a stretch of text, outside code spans other than a literal (`false`). */
+const typeWordsIn = (text: string, words: ReturnWords): [string, string][] => {
+  const bare = text.replace(/`([^`]*)`/gu, (_whole, inner: string) => (LITERAL_KINDS.has(inner.toLowerCase()) ? ` ${inner} ` : " "));
+  return [...words.kinds, ...LITERAL_KINDS].filter(([word]) => namesWhole(bare, word, words.items));
+};
+
+/** A language with no subject words (en) puts the verb right after the name, and a clause about when after the result. */
+const isVerbFirst = (words: ReturnWords): boolean => words.subjects.length === 0;
+
+/**
+ * The part of a statement that can name what is returned, without a clause about when (when …, …とき): before the first
+ * clause word where the verb comes first, after the last where the verb comes last.
+ */
+const returnedPart = (text: string, words: ReturnWords): string => {
+  const cuts = words.clauses.flatMap((word) =>
+    [...text.matchAll(wordPattern(word))].map((match) => ({ from: match.index, to: match.index + match[0].length })),
+  );
+  if (cuts.length === 0) return text;
+  return isVerbFirst(words) ? text.slice(0, Math.min(...cuts.map((cut) => cut.from))) : text.slice(Math.max(...cuts.map((cut) => cut.to)));
+};
+
+/** The one kind a stretch's type words name. */
+const kindIn = (text: string, returnWords: ReturnWords): Stated | undefined => {
+  const words = typeWordsIn(text, returnWords);
+  const named = new Set(words.map(([, kind]) => kind));
+  return named.size === 1 && words[0] !== undefined ? { kind: words[0][1], written: words[0][0] } : undefined;
 };
 
 /** What a stretch of text says is returned: one readable code span, else the one kind its type words name. */
-const statedIn = (text: string, kinds: ReadonlyMap<string, string>): Stated | undefined => {
-  const trimmed = text.trim();
+const statedIn = (text: string, words: ReturnWords): Stated | undefined => {
+  const trimmed = returnedPart(text, words).trim();
   if (TYPE_TEXT.test(trimmed) && isReadableCode(trimmed)) return { code: trimmed, written: trimmed };
   const spans = new Set([...trimmed.matchAll(/`([^`]+)`/gu)].map((match) => match[1] ?? "").filter(isReadableCode));
   if (spans.size === 1) return { code: [...spans][0] ?? "", written: [...spans][0] ?? "" };
-  const words = typeWordsIn(trimmed, kinds);
-  const named = new Set(words.map(([, kind]) => kind));
-  return spans.size === 0 && named.size === 1 && words[0] !== undefined ? { kind: words[0][1], written: words[0][0] } : undefined;
+  return spans.size === 0 ? kindIn(trimmed, words) : undefined;
 };
 
 const firstSentence = (text: string): string => text.split(SENTENCE_END)[0] ?? "";
@@ -203,7 +246,7 @@ const labelStatements = (lines: readonly Line[], functions: ReadonlyMap<number, 
     const head = line.fenced ? null : label.exec(line.text);
     const fn = functions.get(line.section);
     if (head === null || fn === undefined) return [];
-    const stated = statedIn(firstSentence(line.text.slice(head[0].length)), words.kinds);
+    const stated = statedIn(firstSentence(line.text.slice(head[0].length)), words);
     return stated === undefined ? [] : [{ fn, stated, offset: line.start }];
   });
 };
@@ -234,7 +277,7 @@ const tableStatements = (lines: readonly Line[], known: ReadonlySet<string>, wor
     }
     const cells = cellsOf(line.text);
     const fn = rowFunction(cells[0] ?? "");
-    const stated = state.column > 0 && known.has(fn) ? statedIn(cells[state.column] ?? "", words.kinds) : undefined;
+    const stated = state.column > 0 && known.has(fn) ? statedIn(cells[state.column] ?? "", words) : undefined;
     return stated === undefined ? [] : [{ fn, stated, offset: line.start }];
   });
 };
@@ -254,10 +297,11 @@ const sentenceStatements = (lines: readonly Line[], known: ReadonlySet<string>, 
     prose.flatMap((line) =>
       [...line.text.matchAll(sentencePattern(fn, words))].flatMap((match) => {
         const between = match[1] ?? "";
-        // Where the verb comes first (en), nothing stands between the name and the verb.
-        if (words.subjects.length === 0 && between.trim() !== "") return [];
+        // Where the verb comes first, nothing stands between the name and the verb.
+        const verbFirst = isVerbFirst(words);
+        if (verbFirst && between.trim() !== "") return [];
         const after = firstSentence(line.text.slice(match.index + match[0].length));
-        const stated = statedIn(`${between} ${after}`, words.kinds);
+        const stated = statedIn(verbFirst ? after : between, words);
         return stated === undefined ? [] : [{ fn, stated, offset: line.start + match.index }];
       }),
     ),

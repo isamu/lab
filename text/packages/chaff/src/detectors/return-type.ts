@@ -1,6 +1,6 @@
 // return-type-mismatch: one function's return type stated two ways on a page, the signature against a "Returns:" line, a
-// table's return column or a sentence (return-type.ts). The words come from the return-label, return-verb, return-subject
-// and return-type-word lexicons.
+// table's return column or a sentence (return-type.ts). The words come from the return-label, return-verb, return-subject,
+// return-type-word, return-clause and return-item lexicons.
 import { quoteAt } from "./structure-tree.ts";
 import { returnTypeClashes, type ReturnWords } from "../return-type.ts";
 import type { Detector, Finding, Lexicon } from "../plugin.ts";
@@ -15,6 +15,8 @@ const wordsOf = (lexicons: Readonly<Record<string, Lexicon>>): ReturnWords => ({
   verbs: patterns(lexicons["return-verb"]),
   subjects: patterns(lexicons["return-subject"]),
   kinds: kindsOf(lexicons["return-type-word"]),
+  clauses: patterns(lexicons["return-clause"]),
+  items: patterns(lexicons["return-item"]),
 });
 
 export const returnType: Detector = (doc): Finding[] =>

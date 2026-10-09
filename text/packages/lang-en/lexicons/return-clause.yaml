@@ -1,0 +1,16 @@
+# The words that open a clause about when or what, so a type word after them is not the returned one (return-type-mismatch):
+# in "returns true when the string is empty", string names the input. Only the words before the first of these are read.
+id: return-clause
+language: en
+entries:
+  - pattern: when
+  - pattern: whenever
+  - pattern: if
+  - pattern: unless
+  - pattern: where
+  - pattern: while
+  - pattern: until
+  - pattern: that
+  - pattern: which
+  - pattern: whose
+  - pattern: for

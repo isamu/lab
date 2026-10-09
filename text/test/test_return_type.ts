@@ -34,6 +34,8 @@ const EN_WORDS: ReturnWords = {
     ["number", "number"],
     ["array", "array"],
   ]),
+  clauses: ["when"],
+  items: ["per"],
 };
 
 before(async () => prepare());
@@ -114,6 +116,32 @@ describe("return-type-mismatch: silent", () => {
     assert.deepEqual(found(page(MEASURE, "measure は文字列を返すことはありません。", "measure は文字列を返しません。"), ja), []);
     assert.deepEqual(found(page("measure(text: string): number | null", "Returns: `number`."), en), []);
     assert.deepEqual(found(page("load(path: string): Promise<string>", "load returns a string."), en), []);
+  });
+
+  it("ja and en: a type word naming the input or one item of the result", () => {
+    const blank = (...body: string[]): string => page("isBlank(text: string): boolean", ...body);
+    assert.deepEqual(found(blank("`isBlank` returns true when the string has only spaces.", "Returns: `false` if the string has a letter."), en), []);
+    assert.deepEqual(
+      found(blank("`isBlank` は、文字列が空白だけのときに true を返します。", "isBlank は、文字列に文字がある場合 `false` を返します。"), ja),
+      [],
+    );
+    assert.deepEqual(
+      found(page("wrap(text: string): string[]", "`wrap` returns one string per line.", "wrap returns a list with one string for each line."), en),
+      [],
+    );
+    assert.deepEqual(found(page("wrap(text: string): string[]", "wrap は、1行ごとに配列の要素を1つ返します。"), ja), []);
+  });
+
+  it("ja: a Returns line or a return cell with the clause before the value", () => {
+    const blank = (...body: string[]): string => page("isBlank(text: string): boolean", ...body);
+    assert.deepEqual(found(blank("戻り値：文字列が空の場合 `false`。"), ja), []);
+    assert.deepEqual(found(blank("| 関数 | 戻り値 |", "| --- | --- |", "| `isBlank()` | 文字列が空のとき `true` |"), ja), []);
+    assert.deepEqual(found(blank("戻り値：空の場合は文字列。"), ja), ["7 isBlank: 文字列 / boolean"]);
+  });
+
+  it("ja and en: a clause after the returned type still leaves it read", () => {
+    assert.deepEqual(found(page("isBlank(text: string): boolean", "isBlank returns a string when the text is empty."), en), ["7 isBlank: string / boolean"]);
+    assert.deepEqual(found(page("isBlank(text: string): boolean", "isBlank は、空のときに文字列を返します。"), ja), ["7 isBlank: 文字列 / boolean"]);
   });
 
   it("a Returns line under a heading with two functions is not assigned", () => {

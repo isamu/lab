@@ -1,0 +1,7 @@
+# The words that make a type word one item of the result, not the result (return-type-mismatch): "returns one string per
+# line" returns an array. A type word followed by one of these is not read.
+id: return-item
+language: en
+entries:
+  - pattern: per
+  - pattern: each

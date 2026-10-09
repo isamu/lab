@@ -1,0 +1,8 @@
+# 値の種類の語のあとに来て、それが結果全体でなく一つ分だと言う語（return-type-mismatch）。「文字列ごとに」の文字列は
+# 戻り値の型ではない。この語が続く種類の語は読まない。
+id: return-item
+language: ja
+entries:
+  - pattern: ごと
+  - pattern: ずつ
+  - pattern: 毎
