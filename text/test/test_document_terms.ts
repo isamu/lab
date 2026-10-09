@@ -6,16 +6,17 @@ import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
-import { documentTermConflicts, type TermWord } from "../packages/chaff/src/facts/document-terms.ts";
+import { documentTermConflicts, type TermWord, type TermWords } from "../packages/chaff/src/facts/document-terms.ts";
 import type { ScopedFact } from "../packages/chaff/src/facts/fact-scope.ts";
 
 // 文書全体で一つの値を持つ項目（試用期間）の、表の値と別の節の文の値。
 
-const WORDS: readonly TermWord[] = [
+const TERMS: readonly TermWord[] = [
   { pattern: "試用期間", group: "trial" },
   { pattern: "Probation", group: "trial" },
   { pattern: "probation period", group: "trial" },
 ];
+const WORDS: TermWords = { terms: TERMS, determiners: ["the"] };
 
 type Place = {
   readonly key: string;
@@ -23,6 +24,7 @@ type Place = {
   readonly scope: string;
   readonly table?: boolean;
   readonly record?: boolean;
+  readonly summary?: boolean;
   readonly unit?: string;
 };
 
@@ -31,7 +33,7 @@ const factOf = (place: Place, index: number): ScopedFact => ({
   key: place.key.toLowerCase(),
   value: { start: index * 10, end: index * 10 + 2, kind: "quantity", key: String(place.amount), unit: place.unit ?? "month" },
   scope: place.scope,
-  part: "body",
+  part: place.summary === true ? "summary" : "body",
   record: place.record ?? false,
   ...(place.table === true ? { table: true } : {}),
 });
@@ -82,9 +84,23 @@ describe("documentTermConflicts: a table's value against a sentence in another s
     assert.deepEqual(conflicts({ key: "試用期間", amount: 3, scope: "s1", table: true }, { key: "試用期間", amount: 6, scope: "s1" }), []);
   });
 
+  it("a table heading written with an article is the same name", () => {
+    assert.deepEqual(conflicts({ key: "The probation period", amount: 3, scope: "s1", table: true }, { key: "probation period", amount: 6, scope: "s2" }), [
+      "probation period@s2:6≠3",
+    ]);
+    assert.deepEqual(conflicts({ key: "The probation", amount: 3, scope: "s1", table: true }, { key: "probation", amount: 6, scope: "s2" }), [
+      "probation@s2:6≠3",
+    ]);
+  });
+
+  it("an opening or summary value is left to summary-fact-mismatch", () => {
+    assert.deepEqual(conflicts({ key: "試用期間", amount: 6, scope: "s0", summary: true }, { key: "試用期間", amount: 3, scope: "s3", table: true }), []);
+    assert.deepEqual(conflicts({ key: "試用期間", amount: 3, scope: "s0", summary: true, table: true }, { key: "試用期間", amount: 6, scope: "s3" }), []);
+  });
+
   it("nothing to compare", () => {
     assert.deepEqual(conflicts(), []);
-    assert.deepEqual(documentTermConflicts([factOf({ key: "試用期間", amount: 3, scope: "s1", table: true }, 0)], []), []);
+    assert.deepEqual(documentTermConflicts([factOf({ key: "試用期間", amount: 3, scope: "s1", table: true }, 0)], { terms: [], determiners: [] }), []);
   });
 });
 
@@ -115,6 +131,27 @@ describe("fact-conflict: a whole-document item across sections", () => {
   it("the terms table and a later sentence, under another name of the same item (en)", () => {
     assert.deepEqual(en2(...TERMS_EN, "## Other", "", "The probation period is 6. Pay is the same."), ["The probation period:6≠3"]);
     assert.deepEqual(en2(...TERMS_EN, "## Other", "", "The probation period is 3. Pay is the same."), []);
+  });
+
+  it("an opening sentence is reported once, by summary-fact-mismatch", () => {
+    const source = [
+      "# Job posting",
+      "",
+      "The probation period is 6.",
+      "",
+      ...TERMS_EN.map((line) => line.replace("| Probation |", "| Probation period |")),
+    ].join("\n");
+    const findings = runRules(
+      buildDocument("t.md", source, en),
+      loadRules("en"),
+      { "fact-conflict": "normal", "summary-fact-mismatch": "normal" },
+      false,
+      "business/report",
+    ).findings;
+    assert.deepEqual(
+      findings.filter((finding) => finding.rule === "fact-conflict" || finding.rule === "summary-fact-mismatch").map((finding) => finding.rule),
+      ["summary-fact-mismatch"],
+    );
   });
 
   it("sections per type of employment stay apart", () => {

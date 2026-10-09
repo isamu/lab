@@ -37,14 +37,28 @@ const conflictsInClass = (facts: readonly ScopedFact[]): FactConflict[] => {
   return facts.filter((fact) => fact.table !== true && !sameValue(cell, fact.value) && !sameScopeAs(fact, cells)).map((fact) => ({ fact, other: cell }));
 };
 
-const groupOf = (fact: ScopedFact, words: readonly TermWord[]): string | undefined => words.find((word) => folded(word.pattern) === fact.key)?.group;
+/** 名前の頭の冠詞（the）を落とした形。文の名前は落としてあるが、表の行の見出しは書いたまま。 */
+const withoutDeterminer = (key: string, determiners: readonly string[]): string => {
+  const [first, ...rest] = key.split(" ");
+  return rest.length > 0 && determiners.some((word) => folded(word) === first) ? rest.join(" ") : key;
+};
 
-/** 語彙表の項目ごとに、表の値と違う文の値。記録の欄（繰り返す名前）は比べない。 */
-export const documentTermConflicts = (facts: readonly ScopedFact[], words: readonly TermWord[]): FactConflict[] => {
+const groupOf = (fact: ScopedFact, words: TermWords): string | undefined => {
+  const key = withoutDeterminer(fact.key, words.determiners);
+  return words.terms.find((word) => folded(word.pattern) === key)?.group;
+};
+
+export type TermWords = { readonly terms: readonly TermWord[]; readonly determiners: readonly string[] };
+
+/**
+ * 語彙表の項目ごとに、表の値と違う文の値。記録の欄（繰り返す名前）は比べない。冒頭や要約の値は、本文の値と summary-fact-mismatch
+ * が比べるので、本文の値だけを読む。
+ */
+export const documentTermConflicts = (facts: readonly ScopedFact[], words: TermWords): FactConflict[] => {
   const groups = new Map<string, ScopedFact[]>();
   facts.forEach((fact) => {
     const group = groupOf(fact, words);
-    if (group === undefined || fact.record) return;
+    if (group === undefined || fact.record || fact.part !== "body") return;
     groups.set(group, [...(groups.get(group) ?? []), fact]);
   });
   return [...groups.values()].flatMap((members) => comparableClasses(members).flatMap(conflictsInClass));
