@@ -23,8 +23,8 @@ const finding = (doc: ProseDocument, rule: string, offset: number, variant: stri
 
 const OPENING_QUOTES = new Set(["「", "『", '"', "“"]);
 const CLOSING_QUOTES = new Set(["」", "』", '"', "”"]);
-/** A quoted term right before these is defined again (「X」とは, "X" means), which duplicate-definition reads. */
-const DEFINING_AFTER = /^(?:とは|という|\s+(?:means|shall mean|refers to|has the meaning))/u;
+/** A quoted term right before these is defined again (「X」とは, 「X」といいます, "X" means), which duplicate-definition reads. */
+const DEFINING_AFTER = /^(?:とは|という|といい(?:ます)?(?=[。、，）)\s]|$)|\s+(?:means|shall mean|refers to|has the meaning))/u;
 /** The ending a use may carry past the term: a plural or a possessive (Services, Service's). */
 const WORD_ENDING = /^(?:e?s|['’]s?)/u;
 
