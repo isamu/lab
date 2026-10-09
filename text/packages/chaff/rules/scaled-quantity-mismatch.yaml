@@ -1,0 +1,69 @@
+id: scaled-quantity-mismatch
+layer: L3
+status: stable
+how_to_find: scaled-quantity-mismatch
+word_list: servings-column
+extra_word_lists: [unscaled-amount, scaled-unit-form]
+severity: warning
+
+name:
+  ja: 人数の列で、一行だけ量が比のとおりに増えていない
+  en: One row of a servings table that does not scale with the others
+
+why:
+  ja: 「4人分｜8人分」のように人数ごとの列を並べた材料の表で、ほかの行は2倍になっているのに一行だけ同じ量（ケチャップ 大さじ4｜大さじ4）だと、その列で作る人は量を間違えます。列を足したときに一行だけ直し忘れると起きます。見出しが人数や倍数（4人分、8人前、×2、Serves 4、8 servings）だけの列を二つ以上持つ表で、行ごとに最初の列の量と比べ、少なくとも3行がちょうど列の比のとおりに増え、比のとおりでない行がちょうど一行のときに、その升を指します。量は数と単位で読み、単位が同じ升どうし（g と kg は換算して）だけを比べます。列が三つ以上あり、同じ行がどの列とも合わないときは、最初の列の升を指します。
+  en: In an ingredients table with one column per number of servings ("Serves 4 | Serves 8"), when every other row doubles and one stays the same (Ketchup 4 tablespoons | 4 tablespoons), whoever cooks from that column gets the amount wrong. It happens when a column is added and one row is not updated. A table is read when two or more of its column headings are only a number of servings or a multiple (Serves 4, 8 servings, ×2, 4人分). Each row is compared with the first such column, and a cell is reported when at least three rows scale exactly by the columns' ratio and exactly one does not. Amounts are read with their units, and only cells in the same unit are compared (g and kg are converted). With three or more columns, a row that is off against every other column is reported once, at its first column.
+
+message:
+  ja: 「{item}」の{column}「{written}」が、ほかの{scaledRows}行と同じ比で増えていません（{otherColumn}「{other}」から比のとおりなら {expected}）
+  en: '"{item}" {column} "{written}" does not scale like the other {scaledRows} rows (from {otherColumn} "{other}", the ratio gives {expected})'
+
+how_to_fix:
+  ja: その行の量を、列の人数の比に合わせて直してください。わざと増やさない量（塩少々のような量）なら「少々」「適量」と書くと指しません。
+  en: Correct the amount to the columns' ratio. If the amount is meant to stay the same, write it as an amount left to the cook ("to taste", "as needed") and it is not reported.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 人数ごとの列を持つ材料の表で、一行だけ比のとおりに増えていない量
+  en: An ingredients table with a column per number of servings where one row does not scale
+example:
+  ja:
+    before: |
+      | 材料 | 4人分 | 8人分 |
+      | --- | --- | --- |
+      | 合いびき肉 | 500g | 1000g |
+      | 玉ねぎ | 1個 | 2個 |
+      | 牛乳 | 60ml | 120ml |
+      | ケチャップ | 大さじ4 | 大さじ4 |
+    after: |
+      | 材料 | 4人分 | 8人分 |
+      | --- | --- | --- |
+      | 合いびき肉 | 500g | 1000g |
+      | 玉ねぎ | 1個 | 2個 |
+      | 牛乳 | 60ml | 120ml |
+      | ケチャップ | 大さじ4 | 大さじ8 |
+  en:
+    before: |
+      | Ingredient | Serves 4 | Serves 8 |
+      | --- | --- | --- |
+      | Ground beef | 500 g | 1 kg |
+      | Onion | 1 | 2 |
+      | Milk | 60 ml | 120 ml |
+      | Ketchup | 4 tablespoons | 4 tablespoons |
+    after: |
+      | Ingredient | Serves 4 | Serves 8 |
+      | --- | --- | --- |
+      | Ground beef | 500 g | 1 kg |
+      | Onion | 1 | 2 |
+      | Milk | 60 ml | 120 ml |
+      | Ketchup | 4 tablespoons | 8 tablespoons |
+
+not_flagged:
+  ja: 作る人に任せた量（少々、適量、お好みで）の行、数が一つでない升（大さじ1と1/2、2個（約300g））、単位の違う升（1個と200g）、比のとおりに増える行が3行より少ない表、比のとおりでない行が二行以上ある表（人数で量を変えない作り方かもしれません）は言いません。見出しが人数だけでない列（分量、メモ）は読みません。
+  en: 'Rows left to the cook ("to taste", "as needed", "optional"), cells with no number or more than one ("1 1/2" is one number; "2 (about 300 g)" is two), cells in different units (1 and 200 g), tables where fewer than three rows scale exactly, and tables where two or more rows do not scale (the recipe may not scale by design) are not reported. Columns whose heading is not only a number of servings (Amount, Notes) are not read.'
