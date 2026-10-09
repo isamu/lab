@@ -1,0 +1,38 @@
+# The words that make a length of time a travel time (connection-time-short). Group travel names a move: a length in
+# the same sentence ("25 minutes by Metro", "allow 45 minutes") is read as the time it takes. Group bound makes a length
+# an upper limit ("within 10 minutes"), which is not used. position says on which side of the length a bound is written.
+# Matched as whole words, case aside.
+id: travel-time-word
+language: en
+entries:
+  - { pattern: "travel", group: travel }
+  - { pattern: "travel time", group: travel }
+  - { pattern: "transfer", group: travel }
+  - { pattern: "connection", group: travel }
+  - { pattern: "minimum connection time", group: travel }
+  - { pattern: "allow", group: travel }
+  - { pattern: "walk", group: travel }
+  - { pattern: "walking", group: travel }
+  - { pattern: "on foot", group: travel }
+  - { pattern: "drive", group: travel }
+  - { pattern: "driving", group: travel }
+  - { pattern: "by car", group: travel }
+  - { pattern: "by Metro", group: travel }
+  - { pattern: "by subway", group: travel }
+  - { pattern: "by underground", group: travel }
+  - { pattern: "by Tube", group: travel }
+  - { pattern: "by rail", group: travel }
+  - { pattern: "by train", group: travel }
+  - { pattern: "train", group: travel }
+  - { pattern: "coach", group: travel }
+  - { pattern: "bus", group: travel }
+  - { pattern: "shuttle", group: travel }
+  - { pattern: "taxi", group: travel }
+  - { pattern: "cab", group: travel }
+  - { pattern: "within", position: before, group: bound }
+  - { pattern: "up to", position: before, group: bound }
+  - { pattern: "under", position: before, group: bound }
+  - { pattern: "less than", position: before, group: bound }
+  - { pattern: "no more than", position: before, group: bound }
+  - { pattern: "at most", position: before, group: bound }
+  - { pattern: "or less", position: after, group: bound }
