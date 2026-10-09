@@ -6,6 +6,7 @@
 import { definedTerms } from "../structure/definition-use.ts";
 import { prefixGroupsOf, prefixVariants } from "../structure/term-prefix.ts";
 import { quoteAt } from "./structure-tree.ts";
+import { capitalisedTerms, namedWords, readableText, setApartSpans, type Defined } from "./capitalised-term.ts";
 import type { Detector, Finding, ProseDocument, Token } from "../plugin.ts";
 
 export type UndefinedTerm = { readonly offset: number; readonly term: string };
@@ -89,15 +90,31 @@ const findingOf = (doc: ProseDocument, use: UndefinedTerm): Finding => ({
   values: { term: use.term, offset: use.offset },
 });
 
+const NAME_LISTS = ["proper-name-word", "place-region", "calendar-name", "month-name", "company-form", "party-role"] as const;
+
+/** Capitalised terms, for a language whose package lists the words that join one name (name-joiner); Japanese has none. */
+const capitalisedUses = (doc: ProseDocument, sentences: readonly (readonly Token[])[], defined: readonly Defined[]): UndefinedTerm[] => {
+  if (doc.lexicons["name-joiner"] === undefined) return [];
+  const words = {
+    names: NAME_LISTS.flatMap((id) => patternsOf(doc, id)),
+    divisions: patternsOf(doc, "numbered-division"),
+    joiners: patternsOf(doc, "name-joiner"),
+  };
+  const marked = [...(doc.markup?.headings ?? []), ...doc.links, ...setApartSpans(doc.source)];
+  return capitalisedTerms({ source: doc.source, readable: readableText(doc.source), sentences, defined, named: namedWords(doc.source), marked, words });
+};
+
 export const undefinedTerm: Detector = (doc): Finding[] => {
   if (doc.structure === undefined) return [];
   const prefixEntries = doc.lexicons["defined-term-prefix"] ?? [];
   const sentences = doc.sentences.map((sentence) => sentence.tokens ?? []);
-  const defined = definedTerms(doc.structure).map((term) => term.term);
-  return undefinedTerms(doc.source, sentences, defined, {
+  const definitions = definedTerms(doc.structure);
+  const defined = definitions.map((term) => term.term);
+  const prefixed = undefinedTerms(doc.source, sentences, defined, {
     prefixes: prefixEntries.map((entry) => entry.pattern),
     prefixGroups: prefixGroupsOf(prefixEntries),
     selfNouns: [...patternsOf(doc, "self-reference-noun"), ...patternsOf(doc, "document-kind")],
     isQuoted: (term) => QUOTE_PAIRS.some(([open, close]) => doc.source.includes(`${open}${term}${close}`)),
-  }).map((use) => findingOf(doc, use));
+  });
+  return [...prefixed, ...capitalisedUses(doc, sentences, definitions)].map((use) => findingOf(doc, use));
 };

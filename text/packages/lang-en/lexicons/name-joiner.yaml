@@ -1,0 +1,9 @@
+# Small words inside one capitalised name (Statement of Work, Trials and Betas, the Office of Foreign Assets Control).
+# undefined-term reads a run of capitalised words across them, so "Work" alone is not taken for a term. Matched as written.
+id: name-joiner
+language: en
+entries:
+  - pattern: of
+  - pattern: for
+  - pattern: and
+  - pattern: in
