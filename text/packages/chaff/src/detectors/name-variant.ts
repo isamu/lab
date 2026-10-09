@@ -7,7 +7,8 @@ import { proseAndTablesOf } from "../table-text.ts";
 import { tableBodyCells } from "../facts/table-facts.ts";
 import { cellNamesIn, cellNameVariants, proseNamesOf } from "../table-names.ts";
 import { placeMentionsIn, placeVariants, type PlaceReader, type PlaceWord } from "../place-names.ts";
-import type { Token } from "../plugin.ts";
+import type { TableCell, Token } from "../plugin.ts";
+import { proseWithCells } from "../table-cells.ts";
 
 // 人の名前と読ませる敬称（様、さん）は語彙表 person-suffix、人を指す前置き（担当の）は person-lead、名前のすぐ後ろに来る語
 // （です、まで）は name-particle、字体の違う同じ字（斎・斉・齋）は name-variant-char が組（group）ごとに言う。
@@ -34,7 +35,14 @@ const placeWordsOf = (doc: ProseDocument): PlaceWord[] =>
 /** 名前の頭に立たない語の品詞（The、at、and）。 */
 const FUNCTION_POS: ReadonlySet<string> = new Set(["DET", "ADP", "PRON", "CCONJ", "SCONJ", "AUX", "PART"]);
 
-const tokensOf = (doc: ProseDocument): Token[] => doc.sentences.flatMap((sentence) => sentence.tokens ?? []);
+/** 表の本体の升。本文が表を覆わない文書（Markdown でない）には無い。 */
+const cellsOf = (doc: ProseDocument): readonly TableCell[] => doc.tableCells?.() ?? tableBodyCells(proseAndTablesOf(doc));
+
+/** 文の語と表の升の語を、文書の順に。 */
+const tokensOf = (doc: ProseDocument): Token[] =>
+  [...doc.sentences.flatMap((sentence) => sentence.tokens ?? []), ...cellsOf(doc).flatMap((cell) => cell.tokens ?? [])].toSorted(
+    (left, right) => left.span.start - right.span.start,
+  );
 
 /** 場所の名前の語の数の上限。名前の読みを探す範囲。 */
 const MAX_PLACE_TOKENS = 20;
@@ -77,9 +85,9 @@ const companyFindings = (doc: ProseDocument, prose: string, reported: readonly R
     .filter(({ mention }) => !overlapsAny(reported, mention.offset, mention.surface.length))
     .map(({ mention, usual, kind }) => ({ offset: mention.offset, name: mention.surface, usual, kind: kind === "spelling" ? kind : `company-${kind}` }));
 
-/** 場所の名前の書き分け。人や会社の名前の見方がすでに指した所と重なるものは除く。 */
+/** 場所の名前の書き分け。表の本体の升の中の名前も読む（見出しの行は読まない）。人や会社の名前の見方がすでに指した所と重なるものは除く。 */
 const placeFindings = (doc: ProseDocument, prose: string, reported: readonly Reported[]): Reported[] =>
-  placeVariants(placeMentionsIn(prose, placeWordsOf(doc), placeReaderOf(doc)))
+  placeVariants(placeMentionsIn(proseWithCells(prose, cellsOf(doc)), placeWordsOf(doc), placeReaderOf(doc)))
     .filter(({ mention }) => !overlapsAny(reported, mention.offset, mention.surface.length))
     .map(({ mention, usual, kind }) => ({ offset: mention.offset, name: mention.surface, usual, kind }));
 
@@ -95,12 +103,9 @@ const nameMentionsOf = (doc: ProseDocument, prose: string, chars: VariantChars):
   return withKnownNeighbours(cued, prose).toSorted((left, right) => left.offset - right.offset);
 };
 
-/**
- * 表の升に書いた名前の書き分け。升は品詞解析を通らないので、名前の形をした升を本文の名前と比べる。ほかの見方がすでに指した所と
- * 重なるものは除く。
- */
+/** 表の升に書いた名前の書き分け。名前の形をした升を、本文の名前と比べる。ほかの見方がすでに指した所と重なるものは除く。 */
 const tableFindings = (doc: ProseDocument, prose: string, mentions: readonly NameMention[], reported: readonly Reported[]): Reported[] =>
-  cellNameVariants(cellNamesIn(tableBodyCells(proseAndTablesOf(doc))), proseNamesOf(mentions, prose))
+  cellNameVariants(cellNamesIn(cellsOf(doc)), proseNamesOf(mentions, prose))
     .filter(({ name }) => !reported.some((other) => other.offset < name.offset + name.surface.length && name.offset < other.offset + other.name.length))
     .map(({ name, usual, kind }) => ({ offset: name.offset, name: name.surface, usual, kind }));
 

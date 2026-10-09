@@ -3,8 +3,18 @@ import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { cellNameRelation, cellNamesIn, cellNameVariants, proseNamesOf, type CellName, type ProseName } from "../packages/chaff/src/table-names.ts";
+import {
+  cellNameRelation,
+  cellNamesIn,
+  cellNameVariants,
+  proseNamesOf,
+  readingWithin,
+  type CellName,
+  type ProseName,
+} from "../packages/chaff/src/table-names.ts";
+import type { Token } from "../packages/chaff/src/plugin.ts";
 import { withKnownNeighbours, type NameMention } from "../packages/chaff/src/name-variants.ts";
+import { isNearSurname } from "../packages/chaff/src/surname-near.ts";
 
 // 表の升の名前と、解析器が名前の一語を読み落とした所（name-variant）。例文はすべて自作。
 
@@ -12,8 +22,15 @@ const variants = (source: string, adapter = en): readonly string[] => namedRuleR
 
 const cell = (text: string, start = 0): { start: number; end: number; text: string } => ({ start, end: start + text.length, text });
 const cellName = (surface: string): CellName => ({ surface, offset: 0, words: surface.split(" ") });
-const proseName = (surface: string, count: number): ProseName => ({ surface, words: surface.split(" "), count });
-const mention = (surface: string, offset: number): NameMention => ({ surface, offset, reading: undefined, words: surface.split(" ") });
+const proseName = (surface: string, count: number, reading?: string): ProseName => ({ surface, words: surface.split(" "), count, reading });
+const mention = (surface: string, offset: number, reading?: string): NameMention => ({ surface, offset, reading, words: surface.split(" ") });
+const cellRead = (surface: string, reading: string): CellName => ({ ...cellName(surface), reading });
+const token = (surface: string, start: number, pos: string, reading?: string): Token => ({
+  surface,
+  span: { start, end: start + surface.length },
+  pos,
+  ...(reading === undefined ? {} : { reading }),
+});
 
 const TABLE_EN = "| Owner | Task |\n| --- | --- |\n| Sofia Mendez | Write the procedure |\n";
 const TABLE_JA = "| 担当 | 内容 |\n| --- | --- |\n| 佐々木 美保 | 手順を書く |\n";
@@ -30,12 +47,21 @@ describe("name-variant: names in table cells", () => {
     ]);
   });
 
-  it("表の升の漢字の名前は、一字違いを言わない。記号・幅の違いだけを言う", () => {
-    assert.deepEqual(variants(`佐々木 美穂から説明があった。資料は佐々木 美穂が送ります。\n\n${TABLE_JA}`, ja), []);
+  it("表の升の漢字の名前は、本文と同じ読みなら言う", () => {
+    assert.deepEqual(variants(`佐々木 美穂から説明があった。資料は佐々木 美穂が送ります。\n\n${TABLE_JA}`, ja), [
+      "「佐々木 美保」は、ほかの所では同じ読みの「佐々木 美穂」と書いています",
+    ]);
+  });
+
+  it("表の升の漢字の名前の、読みの違う一字違いと、本文で一度だけの名前は言わない", () => {
     assert.deepEqual(
       variants(`佐藤 太郎から説明があった。資料は佐藤 太郎が送ります。\n\n| 担当 | 内容 |\n| --- | --- |\n| 佐藤 次郎 | 手順を書く |\n`, ja),
       [],
     );
+    assert.deepEqual(variants(`佐々木 美穂から説明があった。\n\n${TABLE_JA}`, ja), []);
+  });
+
+  it("表の升の漢字の名前の、記号・幅の違いを言う", () => {
     assert.deepEqual(variants(`佐々木 美穂から説明があった。\n\n| 担当 | 内容 |\n| --- | --- |\n| 佐々木\u3000美穂 | 手順を書く |\n`, ja), [
       "「佐々木\u3000美穂」は、ほかの所では「佐々木 美穂」と書いています（字の大小・幅・記号の違い）",
     ]);
@@ -53,6 +79,38 @@ describe("name-variant: names in table cells", () => {
       variants("Send the form to Rachel Whitford by Friday. Rachel Whitfort will reply within two weeks.\n\nQuestions: Rachel Whitford, Finance Department\n"),
       ['"Rachel Whitfort" is one letter away from "Rachel Whitford", which the document uses more than once'],
     );
+  });
+
+  it("the same given name with a surname a few letters away (Rachel Whitford and Rachel Whitfield)", () => {
+    const posting = (slip: string): string =>
+      `Send the form to Rachel Whitford by Friday. ${slip} will reply within two weeks.\n\nQuestions: Rachel Whitford, Finance Department\n`;
+    assert.deepEqual(variants(posting("Rachel Whitfield")), [
+      '"Rachel Whitfield" has the given name of "Rachel Whitford", which the document uses more than once, and a surname a few letters away',
+    ]);
+    assert.deepEqual(variants(posting("Rachel Whitford")), []);
+    assert.deepEqual(variants(posting("Daniel Whitfield")), []);
+    assert.deepEqual(variants(posting("Whitfield")), []);
+  });
+});
+
+describe("isNearSurname", () => {
+  it("seven letters or more, the first four the same, two letters apart (three in the longer)", () => {
+    assert.equal(isNearSurname("whitford", "whitfield"), true);
+    assert.equal(isNearSurname("whitfield", "whitford"), true);
+    assert.equal(isNearSurname("andersson", "anderton"), true);
+    assert.equal(isNearSurname("whitford", "whitfeld"), true);
+  });
+
+  it("short surnames, other beginnings, wider gaps and the same surname are not near", () => {
+    assert.equal(isNearSurname("whitford", "whitford"), false);
+    assert.equal(isNearSurname("hansen", "hanson"), false);
+    assert.equal(isNearSurname("robertson", "robinson"), false);
+    assert.equal(isNearSurname("whitford", "whitehead"), false);
+    assert.equal(isNearSurname("whitford", "whitfieldson"), false);
+    assert.equal(isNearSurname("whitford", "whitfords"), false);
+    assert.equal(isNearSurname("robertsons", "robertson"), false);
+    assert.equal(isNearSurname("o'connor", "o'connell"), false);
+    assert.equal(isNearSurname("", ""), false);
   });
 });
 
@@ -78,14 +136,20 @@ describe("the reading behind table names", () => {
 
   it("proseNamesOf counts each mention, and two mentions one space apart as one name too", () => {
     const source = "佐々木 美穂が来た。";
-    assert.deepEqual(proseNamesOf([mention("佐々木", 0), mention("美穂", 4)], source), [
-      { surface: "佐々木", words: ["佐々木"], count: 1 },
-      { surface: "美穂", words: ["美穂"], count: 1 },
-      { surface: "佐々木 美穂", words: ["佐々木", "美穂"], count: 1 },
+    assert.deepEqual(proseNamesOf([mention("佐々木", 0, "ササキ"), mention("美穂", 4, "ミホ")], source), [
+      { surface: "佐々木", words: ["佐々木"], count: 1, reading: "ササキ" },
+      { surface: "美穂", words: ["美穂"], count: 1, reading: "ミホ" },
+      { surface: "佐々木 美穂", words: ["佐々木", "美穂"], count: 1, reading: "ササキミホ" },
     ]);
+    assert.deepEqual(proseNamesOf([mention("佐々木", 0), mention("美穂", 4, "ミホ")], source)[2], {
+      surface: "佐々木 美穂",
+      words: ["佐々木", "美穂"],
+      count: 1,
+      reading: undefined,
+    });
     assert.deepEqual(proseNamesOf([mention("佐々木", 0), mention("美穂", 5)], "佐々木、美穂"), [
-      { surface: "佐々木", words: ["佐々木"], count: 1 },
-      { surface: "美穂", words: ["美穂"], count: 1 },
+      { surface: "佐々木", words: ["佐々木"], count: 1, reading: undefined },
+      { surface: "美穂", words: ["美穂"], count: 1, reading: undefined },
     ]);
   });
 
@@ -96,8 +160,35 @@ describe("the reading behind table names", () => {
     assert.equal(cellNameRelation(cellName("Sofia Mendez"), 1, proseName("Sofia Mendes", 1)), undefined);
     assert.equal(cellNameRelation(cellName("佐々木 美保"), 1, proseName("佐々木 美穂", 3)), undefined);
     assert.equal(cellNameRelation(cellName("佐藤 次郎"), 1, proseName("佐藤 太郎", 3)), undefined);
+    assert.equal(cellNameRelation(cellRead("佐藤 次郎", "サトウジロウ"), 1, proseName("佐藤 太郎", 3, "サトウタロウ")), undefined);
     assert.equal(cellNameRelation(cellName("Ann-Marie Smith"), 1, proseName("Anne-Marie Smith", 2)), "near");
     assert.equal(cellNameRelation(cellName("O’Conner Liam"), 1, proseName("O’Connor Liam", 2)), "near");
+  });
+
+  it("cellNameRelation: a CJK name read the same, one word different, against a form used twice, the cell form once", () => {
+    assert.equal(cellNameRelation(cellRead("佐々木 美保", "ササキミホ"), 1, proseName("佐々木 美穂", 3, "ササキミホ")), "reading");
+    assert.equal(cellNameRelation(cellRead("佐々木 美保", "ササキミホ"), 2, proseName("佐々木 美穂", 3, "ササキミホ")), undefined);
+    assert.equal(cellNameRelation(cellRead("佐々木 美保", "ササキミホ"), 1, proseName("佐々木 美穂", 1, "ササキミホ")), undefined);
+    assert.equal(cellNameRelation(cellRead("佐々木 美保", "ササキミホ"), 1, proseName("佐々木 美穂", 3)), undefined);
+    assert.equal(cellNameRelation(cellRead("佐佐木 美保", "ササキミホ"), 1, proseName("佐々木 美穂", 3, "ササキミホ")), undefined);
+    assert.equal(cellNameRelation(cellRead("佐々木 美保 子", "ササキミホコ"), 1, proseName("佐々木 美穂", 3, "ササキミホコ")), undefined);
+  });
+
+  it("readingWithin joins the readings of the words inside, without spaces and marks, or nothing when a word has none", () => {
+    const tokens = [token("佐々木", 1, "PROPN", "ササキ"), token(" ", 4, "PUNCT"), token("美保", 5, "PROPN", "ミホ"), token("Kim", 8, "PROPN")];
+    assert.equal(readingWithin(tokens, 1, 7), "ササキミホ");
+    assert.equal(readingWithin(tokens, 5, 7), "ミホ");
+    assert.equal(readingWithin(tokens, 1, 11), undefined);
+    assert.equal(readingWithin(tokens, 20, 30), undefined);
+    assert.equal(readingWithin([], 0, 5), undefined);
+  });
+
+  it("cellNamesIn reads the name's reading from the cell's words", () => {
+    const [name] = cellNamesIn([
+      { ...cell(" 佐々木 美保 ", 20), tokens: [token("佐々木", 21, "PROPN", "ササキ"), token(" ", 24, "PUNCT"), token("美保", 25, "PROPN", "ミホ")] },
+    ]);
+    assert.equal(name?.reading, "ササキミホ");
+    assert.equal(cellNamesIn([cell("佐々木 美保")])[0]?.reading, undefined);
   });
 
   it("cellNameRelation: two words different, other lengths, short or numbered words are other names", () => {

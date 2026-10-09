@@ -8,7 +8,7 @@
       "connection-too-short": "0/3",
       "cost-total": "3/3",
       "date-outside-period": "3/3",
-      "place-two-ways": "2/3"
+      "place-two-ways": "3/3"
     },
     "en": {
       "date-weekday": "3/3",
@@ -18,7 +18,7 @@
       "connection-too-short": "0/3",
       "cost-total": "3/3",
       "date-outside-period": "3/3",
-      "place-two-ways": "2/3"
+      "place-two-ways": "3/3"
     }
   },
   "clean": []
