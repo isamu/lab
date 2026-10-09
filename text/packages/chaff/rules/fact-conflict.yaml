@@ -11,8 +11,8 @@ name:
   en: One item given two different values
 
 why:
-  ja: 同じ節の中で「締切：10月5日」と「締切：10月7日」のように、同じ項目に違う値を書くと、読み手はどちらを信じればよいか分かりません。日程や料金を直したときに、一か所だけ直し忘れると起きます。「項目：値」「項目は値です」と書いた所と表の升を読み、同じ節で同じ項目名（全角半角、大文字小文字は揃えて比べます）に、同じ単位で違う値があれば指します（単位の語彙表にある単位の量、410 g と 450 g も比べます）。保存期間は節をまたいで比べます。「個人情報を1年間保存します」と「3年間を経過した個人情報を削除します」のように、同じもの（同じ名詞句）に二通りの長さが書いてあれば指します。
-  en: 'When one section says "Deadline: May 3" and later "Deadline: May 5", the reader cannot tell which to trust. It happens when a date or a price is changed in one place and not in the other. Values written as "Item: value" or "The item is value", and table cells, are read; the same item name (case and width aside) with two different values in the same unit within one section is pointed out (measured quantities such as 410 g and 450 g included). A retention period is compared across the whole document: "we keep personal information for 1 year" and "we delete personal information 3 years after the account is closed" give one thing (the same noun phrase) two lengths.'
+  ja: 同じ節の中で「締切：10月5日」と「締切：10月7日」のように、同じ項目に違う値を書くと、読み手はどちらを信じればよいか分かりません。日程や料金を直したときに、一か所だけ直し忘れると起きます。「項目：値」「項目は値です」と書いた所と表の升を読み、同じ節で同じ項目名（全角半角、大文字小文字は揃えて比べます）に、同じ単位で違う値があれば指します（単位の語彙表にある単位の量、410 g と 450 g も比べます）。保存期間は節をまたいで比べます。「個人情報を1年間保存します」と「3年間を経過した個人情報を削除します」のように、同じもの（同じ名詞句）に二通りの長さが書いてあれば指します。文書全体で一つの値を持つ項目（語彙表 fact-document-term の名前、試用期間など）も節をまたいで比べます。表の升に「試用期間 | 3ヶ月」とあり、別の節の文が「試用期間は6ヶ月で」と書いていれば指します。
+  en: 'When one section says "Deadline: May 3" and later "Deadline: May 5", the reader cannot tell which to trust. It happens when a date or a price is changed in one place and not in the other. Values written as "Item: value" or "The item is value", and table cells, are read; the same item name (case and width aside) with two different values in the same unit within one section is pointed out (measured quantities such as 410 g and 450 g included). A retention period is compared across the whole document: "we keep personal information for 1 year" and "we delete personal information 3 years after the account is closed" give one thing (the same noun phrase) two lengths. An item that has one value for the whole document (a name in the fact-document-term lexicon, such as probation period) is compared across sections too: a table cell "Probation | 3 months" and a sentence in another section "The probation period is 6 months" disagree.'
 
 message:
   ja: 「{label}」が {value} と書かれていますが、同じ節の前の所では {other} です
@@ -22,6 +22,9 @@ messages:
   retention:
     ja: 「{label}」の保存期間が {value} と書かれていますが、前の所では {other} です
     en: 'The retention period of "{label}" is {value} here, but {other} earlier in the document'
+  term:
+    ja: 「{label}」が {value} と書かれていますが、表では {other} です
+    en: '"{label}" is {value} here, but {other} in the table'
 
 how_to_fix:
   ja: どちらの値が正しいかを確かめて、もう一方を直してください。別のもの（別の回、別の対象）の値なら、項目名にそれを書き分けてください（「第2回の締切」）。
@@ -62,8 +65,8 @@ example:
       - Deadline: May 3, 2026
 
 not_flagged:
-  ja: 違う見出しの下、違う親の項目の下、太字だけの行や「第2回：」のような行の後ろの値は、別のものの値として比べません。値の後ろに条件が続くもの（「3,000円から」「10月5日に開催」）、読点のあとから始まる項目名（「大人は、参加費は」）、単位の違う値（単位の食い違いは別に見ます）も比べません。同じ項目に三通り以上の値があれば、一覧として何も言いません。保存期間は、別のもの（ログは90日、個人情報は1年）や、上限・下限・目安の長さ（最長、以上、約）とは比べません。
-  en: Values under different headings, under different parent list items, or after a bold-only line or a line like "Session 2:" are taken as values of different things. A value followed by a condition ("$300 per person", "May 3 at noon"), a name that starts after a comma ("For adults, the fee"), and values in different units are not compared. An item with three or more different values is read as a list and left alone. A retention period is not compared with that of another thing (logs 90 days, account data 1 year) or with a bound or an estimate (up to, at least, about).
+  ja: 違う見出しの下、違う親の項目の下、太字だけの行や「第2回：」のような行の後ろの値は、別のものの値として比べません。値の後ろに条件が続くもの（「3,000円から」「10月5日に開催」）、読点のあとから始まる項目名（「大人は、参加費は」）、単位の違う値（単位の食い違いは別に見ます）も比べません。同じ項目に三通り以上の値があれば、一覧として何も言いません。保存期間は、別のもの（ログは90日、個人情報は1年）や、上限・下限・目安の長さ（最長、以上、約）とは比べません。文書全体の項目は、表の升と文のあいだだけで比べます。表どうしや文どうし（雇用形態ごとの節）、表が二通りの値を書いた項目、名前に条件を書いた値（正社員の試用期間）は比べません。
+  en: Values under different headings, under different parent list items, or after a bold-only line or a line like "Session 2:" are taken as values of different things. A value followed by a condition ("$300 per person", "May 3 at noon"), a name that starts after a comma ("For adults, the fee"), and values in different units are not compared. An item with three or more different values is read as a list and left alone. A retention period is not compared with that of another thing (logs 90 days, account data 1 year) or with a bound or an estimate (up to, at least, about). A whole-document item is compared only between a table cell and a sentence; two tables or two sentences (sections per type of employment), an item the tables give two values, and a qualified name (part-time probation period) are left alone.
 rewrite:
   depth: light
   ja:
