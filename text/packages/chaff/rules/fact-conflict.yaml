@@ -11,8 +11,8 @@ name:
   en: One item given two different values
 
 why:
-  ja: 同じ節の中で「締切：10月5日」と「締切：10月7日」のように、同じ項目に違う値を書くと、読み手はどちらを信じればよいか分かりません。日程や料金を直したときに、一か所だけ直し忘れると起きます。「項目：値」「項目は値です」と書いた所と表の升を読み、同じ節で同じ項目名（全角半角、大文字小文字は揃えて比べます）に、同じ単位で違う値があれば指します。保存期間は節をまたいで比べます。「個人情報を1年間保存します」と「3年間を経過した個人情報を削除します」のように、同じもの（同じ名詞句）に二通りの長さが書いてあれば指します。
-  en: 'When one section says "Deadline: May 3" and later "Deadline: May 5", the reader cannot tell which to trust. It happens when a date or a price is changed in one place and not in the other. Values written as "Item: value" or "The item is value", and table cells, are read; the same item name (case and width aside) with two different values in the same unit within one section is pointed out. A retention period is compared across the whole document: "we keep personal information for 1 year" and "we delete personal information 3 years after the account is closed" give one thing (the same noun phrase) two lengths.'
+  ja: 同じ節の中で「締切：10月5日」と「締切：10月7日」のように、同じ項目に違う値を書くと、読み手はどちらを信じればよいか分かりません。日程や料金を直したときに、一か所だけ直し忘れると起きます。「項目：値」「項目は値です」と書いた所と表の升を読み、同じ節で同じ項目名（全角半角、大文字小文字は揃えて比べます）に、同じ単位で違う値があれば指します（単位の語彙表にある単位の量、410 g と 450 g も比べます）。保存期間は節をまたいで比べます。「個人情報を1年間保存します」と「3年間を経過した個人情報を削除します」のように、同じもの（同じ名詞句）に二通りの長さが書いてあれば指します。
+  en: 'When one section says "Deadline: May 3" and later "Deadline: May 5", the reader cannot tell which to trust. It happens when a date or a price is changed in one place and not in the other. Values written as "Item: value" or "The item is value", and table cells, are read; the same item name (case and width aside) with two different values in the same unit within one section is pointed out (measured quantities such as 410 g and 450 g included). A retention period is compared across the whole document: "we keep personal information for 1 year" and "we delete personal information 3 years after the account is closed" give one thing (the same noun phrase) two lengths.'
 
 message:
   ja: 「{label}」が {value} と書かれていますが、同じ節の前の所では {other} です
