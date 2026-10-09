@@ -1,6 +1,9 @@
 import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
+import { buildDocument } from "../packages/chaff/src/document.ts";
+import { loadRules } from "../packages/chaff/src/rule-load.ts";
+import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { oddSpellings } from "../packages/chaff/src/spelling-variants.ts";
@@ -393,5 +396,49 @@ describe("capitals-with-small: capitals that are not a spelling of the plain wor
     assert.equal(isCapitalsNotSpelling("SCIMple", ["SCIM"]), false);
     assert.equal(isCapitalsNotSpelling("GitHub-SENDs", []), false);
     assert.equal(isCapitalsNotSpelling("SCIMple", ["SCIMS"]), true);
+  });
+});
+
+describe("orthographic-variant: 表の本体の升の語も数える", () => {
+  const recipe = (cell: string, header = "材料"): string =>
+    `# 煮物\n\n| ${header} | 分量 |\n| --- | --- |\n| ${cell} | 小さじ2 |\n\n水で溶いた片栗粉を加えます。\n\nとろみが弱いときは、かたくり粉を足します。\n`;
+
+  it("升の 片栗粉 が票になり、本文の かたくり粉 が少ないほうになる", () => {
+    assert.deepEqual(findingsOf(recipe("片栗粉")), ["「かたくり粉」と書いています（この文書はふつう「片栗粉」と書く語です。3 箇所のうち 1 箇所が違う）"]);
+  });
+
+  it("本文だけでは同数で、どちらにも寄らない。見出しの行の語は票にならない", () => {
+    assert.deepEqual(findingsOf(recipe("砂糖")), []);
+    assert.deepEqual(findingsOf(recipe("砂糖", "片栗粉")), []);
+  });
+
+  it("升の中の少ないほうは、升の位置で言う", () => {
+    const source = "# 予定\n\n引っ越しは月末です。引っ越しの日を決めます。\n\n| 項目 | 金額 |\n| --- | --- |\n| 引越し費用 | 5万円 |\n";
+    const found = runRules(buildDocument("a.md", source, ja), loadRules("ja"), { [RULE]: "normal" }, false, "business/report").findings.filter(
+      (finding) => finding.rule === RULE,
+    );
+    assert.deepEqual(
+      found.map((finding) => [finding.line, finding.values["written"]]),
+      [[7, "引越し"]],
+    );
+  });
+
+  it("英字: 語句の升は数え、小文字一語の升（項目名や値）は数えない", () => {
+    const table = (cell: string): string =>
+      `# API\n\n| Field | Notes |\n| --- | --- |\n| ${cell} | set by the client |\n\nThe Content-Type header is required. Send the Content-Type with every request.\n`;
+    assert.deepEqual(findingsOf(table("contentType"), en), []);
+    assert.deepEqual(findingsOf(table("the contentType header"), en), ['"contentType" here, where the document usually writes "Content-Type" (1 of 3)']);
+    assert.deepEqual(findingsOf(table("ContentType"), en), ['"ContentType" here, where the document usually writes "Content-Type" (1 of 3)']);
+  });
+
+  it("英字: 升のリンクの行き先は語に数えない", () => {
+    const table = (cell: string): string =>
+      `# API\n\n| Field | Notes |\n| --- | --- |\n| ${cell} | set by the client |\n\nThe Content-Type header is required. Send the Content-Type with every request.\n`;
+    assert.deepEqual(findingsOf(table("[contentType](#contentType)"), en), []);
+    assert.deepEqual(findingsOf(table('See [the header](#contentType "contentType")'), en), []);
+    assert.deepEqual(findingsOf(table("See [the header][contentType]"), en), []);
+    assert.deepEqual(findingsOf(table("See [the contentType header](#header)"), en), [
+      '"contentType" here, where the document usually writes "Content-Type" (1 of 3)',
+    ]);
   });
 });

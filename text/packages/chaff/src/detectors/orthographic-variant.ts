@@ -1,4 +1,4 @@
-import type { Detector, Finding, ProseDocument, Sentence, Token } from "../plugin.ts";
+import type { Detector, Finding, ProseDocument, Sentence, TableCell, Token } from "../plugin.ts";
 import { groupBy, oddSpellings, type KeyedWord, type OddSpelling } from "../spelling-variants.ts";
 import { dropsOkurigana, kanjiKeyAmong, katakanaKey, lemmaReading } from "../kana-spelling.ts";
 import { isKatakanaWord, stemOf } from "../long-vowel.ts";
@@ -250,6 +250,23 @@ const findingOf = (words: readonly Placed[], odd: OddSpelling<Placed>): Finding 
   values: { written: odd.word.shown ?? odd.word.spelling, other: shownUsual(words, odd), count: odd.count, of: odd.of, offset: odd.word.offset },
 });
 
+/** A cell that is one Latin word in lower case (openapi, contentType): a field name or a value, spelled by the data and not by the writer. */
+const DATA_KEY_CELL = /^\p{Ll}[A-Za-z0-9]*$/u;
+
+type Place = { readonly sentence: Sentence; readonly isOpen: IsOpen; readonly readsLatin: boolean };
+
+/** A link's brackets and where it goes (`[`, `](#contentType)`, `][ref]`). The prose hides them outside tables; a cell keeps the Markdown as written. */
+const LINK_CHROME = /\]\([^)]*\)|\]\[[^\]]*\]|\[/gu;
+
+const withoutLinkChrome = (text: string): string => text.replaceAll(LINK_CHROME, (chrome) => " ".repeat(chrome.length));
+
+/** A body cell of a table read as a sentence of its own: the prose covers tables, so a cell's words (片栗粉 in a list of ingredients) are not in the sentences. Header rows stay out. */
+const cellPlace = (cell: TableCell, names: readonly string[]): Place => {
+  const text = withoutLinkChrome(cell.text);
+  const sentence: Sentence = { span: { start: cell.start, end: cell.end }, text, tokens: cell.tokens ?? [] };
+  return { sentence, isOpen: isOpenIn(sentence, names), readsLatin: !DATA_KEY_CELL.test(text.trim()) };
+};
+
 /**
  * One word written two ways in one document (出来る and できる, 引っ越し and 引越し, ウィンドウ and ウインドウ, e-mail and email),
  * found without a list of words: the document's own words are grouped by reading or by an evened-out spelling, and the way the
@@ -257,11 +274,15 @@ const findingOf = (words: readonly Placed[], odd: OddSpelling<Placed>): Finding 
  */
 export const orthographicVariant: Detector = (doc, options): Finding[] => {
   const skips: Skips = { skip: new Set([...patternsOf(doc, DISTINCT), ...patternsOf(doc, FUKUSHI)]), idioms: new Set(patternsOf(doc, IDIOM)) };
-  const placed = doc.sentences.map((sentence) => ({ sentence, isOpen: isOpenIn(sentence, doc.names ?? []) }));
+  const names = doc.names ?? [];
+  const placed: Place[] = [
+    ...doc.sentences.map((sentence) => ({ sentence, isOpen: isOpenIn(sentence, names), readsLatin: true })),
+    ...(doc.tableCells?.() ?? []).map((cell) => cellPlace(cell, names)),
+  ];
   const reading = byKanji(placed.flatMap(({ sentence, isOpen }) => readingWords(sentence, isOpen, skips)));
   const katakana = placed.flatMap(({ sentence, isOpen }) => katakanaWords(sentence, isOpen));
   const runs = placed.flatMap(({ sentence, isOpen }) => katakanaRunWords(sentence, isOpen));
-  const latin = placed.flatMap(({ sentence, isOpen }) => latinWords(sentence, isOpen, skips.skip));
+  const latin = placed.flatMap(({ sentence, isOpen, readsLatin }) => (readsLatin ? latinWords(sentence, isOpen, skips.skip) : []));
   const odd = [reading, katakana, latin].flatMap((words) => oddSpellings(words, options.limit));
   const oddRuns = oddSpellings(runs, options.limit).filter(({ word }) => !odd.some((other) => coversOffset(word, other.word.offset)));
   const all = [...reading, ...katakana, ...runs, ...latin];
