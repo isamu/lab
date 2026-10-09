@@ -93,4 +93,19 @@ describe("preamble-length と文でない段落", () => {
     const [finding] = findingsFor(`${directive}First.\n\nSecond.\n\nThird.\n\n### Pack light\n\nBody.\n`, en);
     assert.equal(finding?.values["count"], 3);
   });
+
+  it("English: address fields closed by Inc. are not preamble; a field whose value is a sentence is", () => {
+    const fields =
+      "# Quotation\n\nQuote number: Q-1\n\nTo: Minato Manufacturing Inc.\n\nFrom: Aoba Systems Inc.\n\nWe are pleased to quote as follows.\n\n## Amount\n\nText.\n";
+    assert.deepEqual(findingsFor(fields, en), []);
+    const notes = "# Guide\n\nNote: This guide covers the setup.\n\nWarning: The steps delete old files.\n\nRead them first.\n\n## Setup\n\nText.\n";
+    assert.equal(findingsFor(notes, en)[0]?.values["count"], 3);
+    const summary = "# Report\n\nSummary: Sales up 5%.\n\nSecond.\n\nThird.\n\n## Body\n\nText.\n";
+    assert.equal(findingsFor(summary, en)[0]?.values["count"], 3);
+  });
+
+  it("日本語: 体言止めの結論の欄は前置きに数える", () => {
+    const source = "# 表題\n\n結論：売上前年比5%増。\n\n二つ目です。\n\n三つ目です。\n\n## 本題\n\n中身です。\n";
+    assert.equal(findingsFor(source, ja)[0]?.values["count"], 3);
+  });
 });
