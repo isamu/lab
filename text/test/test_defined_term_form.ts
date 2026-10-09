@@ -80,6 +80,10 @@ describe("defined-term-form: a defined term in another form", () => {
     const defining = ["# Terms", "", '"Customer" means the party named as "Customer" on the Cover Page.', "", "The Customer pays.", ""].join("\n");
     assert.deepEqual(valuesOf(en, "defined-term-form", defining, "term"), []);
     assert.deepEqual(quotedUses("「甲」とは、甲をいう。", "甲", [1], 0), []);
+    assert.deepEqual(quotedUses("x（以下「甲」といいます。）", "甲", [5], 0), []);
+    assert.deepEqual(quotedUses("x（以下「甲」といい、", "甲", [5], 0), []);
+    assert.deepEqual(quotedUses("x「甲」と書きます。", "甲", [2], 0), [2]);
+    assert.deepEqual(quotedUses("x「甲」といいかけた。", "甲", [2], 0), [2]);
     assert.deepEqual(quotedUses('x "Fee" has the meaning in 1.', "Fee", [3], 0), []);
     const inDefinition = [
       "# Terms",
