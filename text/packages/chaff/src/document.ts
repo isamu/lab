@@ -25,6 +25,7 @@ import { cutTextSpans } from "./span-cut.ts";
 import { markdownFigures } from "./text-figures.ts";
 import { documentMarkup } from "./markup.ts";
 import { BARE_URL } from "./bare-url.ts";
+import { lazyCells, tableCellsOf } from "./table-cells.ts";
 import type { BulletList, LanguageAdapter, Markup, Paragraph, ProseDocument, Sentence, Span, StructureNode, DocumentProfile } from "./plugin.ts";
 
 /**
@@ -355,7 +356,7 @@ const documentOf = (path: string, source: string, adapter: LanguageAdapter, team
     markdown,
     profile,
   }));
-  return {
+  const doc: ProseDocument = {
     path,
     source,
     language: adapter.id,
@@ -381,7 +382,9 @@ const documentOf = (path: string, source: string, adapter: LanguageAdapter, team
     get markup(): Markup {
       return documentMarkup(root, source, markdown, [...emailLayout.replyQuotes, ...syntax]);
     },
+    tableCells: lazyCells(() => tableCellsOf(doc, (text) => adapter.segment(text))),
   };
+  return doc;
 };
 
 /**

@@ -1,18 +1,19 @@
 import { isNearWord, nameKey, type NameMention } from "./name-variants.ts";
-import type { Cell } from "./facts/table-facts.ts";
+import type { TableCell, Token } from "./plugin.ts";
 import { withoutEdgeMarks } from "./facts/trim-marks.ts";
 
 // 表の升に書いた名前と、本文の名前の書き分け（本文は Sofia Mendes、担当者の表は Sofia Mendez）。表の升は品詞解析を通らないので、
 // 名前の形をした升だけを読み、本文で読めた名前と比べる。比べるのは姓と名のように二語以上の名前で、一語だけが違うときに限る。
-// 同じ語がほかにあることが、同じ人を指す手がかりになる。漢字・かなの名前は記号・幅の違いだけを見る（読みが分からない）。
+// 同じ語がほかにあることが、同じ人を指す手がかりになる。漢字・かなの名前は、本文と同じく読みが同じときに限る（佐々木 美穂 と
+// 佐々木 美保）。読みの違う一字違い（佐藤 太郎 と 佐藤 次郎）は別の人のことが多い。
 
-/** 表の升の名前。words は空白で分けた語。 */
-export type CellName = { readonly surface: string; readonly offset: number; readonly words: readonly string[] };
+/** 表の升の名前。words は空白で分けた語。reading は升の語の読み（読めなければ無い）。 */
+export type CellName = { readonly surface: string; readonly offset: number; readonly words: readonly string[]; readonly reading?: string | undefined };
 
-/** 本文の名前の書き方と、その数。 */
-export type ProseName = { readonly surface: string; readonly words: readonly string[]; readonly count: number };
+/** 本文の名前の書き方と、その数。reading は最初の現れの読み。 */
+export type ProseName = { readonly surface: string; readonly words: readonly string[]; readonly count: number; readonly reading?: string | undefined };
 
-export type CellNameVariant = { readonly name: CellName; readonly usual: string; readonly kind: "spelling" | "near" };
+export type CellNameVariant = { readonly name: CellName; readonly usual: string; readonly kind: "spelling" | "reading" | "near" };
 
 /** 英字の名前の升: 大文字で始まる語が二つから四つ。小文字の語（Write the procedure）を含む升は名前でない。 */
 const LATIN_NAME = /^\p{Lu}[\p{L}'’.-]*(?: \p{Lu}[\p{L}'’.-]*){1,3}$/u;
@@ -21,12 +22,20 @@ const CJK_NAME = /^[\p{Script=Han}\p{Script=Katakana}ー々]+(?:[ \u3000][\p{Scr
 const SPACE = /[ \u3000]/u;
 const LOWER = /\p{Ll}/u;
 
+/** 範囲の中の語の読みをつないだもの。記号と空白の語は読まない。読めない語があれば無い。 */
+export const readingWithin = (tokens: readonly Token[], start: number, end: number): string | undefined => {
+  const words = tokens.filter((token) => token.span.start >= start && token.span.end <= end && token.pos !== "PUNCT" && token.surface.trim() !== "");
+  const readings = words.map((token) => token.reading);
+  return words.length > 0 && readings.every((reading) => reading !== undefined && reading !== "") ? readings.join("") : undefined;
+};
+
 /** 名前の形をした升。升の字の前後の空白と強調の印は名前の外。 */
-export const cellNamesIn = (cells: readonly Cell[]): CellName[] =>
+export const cellNamesIn = (cells: readonly TableCell[]): CellName[] =>
   cells.flatMap((cell) => {
     const surface = withoutEdgeMarks(cell.text.trim());
     if (!(LATIN_NAME.test(surface) && LOWER.test(surface)) && !CJK_NAME.test(surface)) return [];
-    return [{ surface, offset: cell.start + cell.text.indexOf(surface), words: surface.split(SPACE) }];
+    const offset = cell.start + cell.text.indexOf(surface);
+    return [{ surface, offset, words: surface.split(SPACE), reading: readingWithin(cell.tokens ?? [], offset, offset + surface.length) }];
   });
 
 /**
@@ -35,15 +44,22 @@ export const cellNamesIn = (cells: readonly Cell[]): CellName[] =>
  */
 export const proseNamesOf = (mentions: readonly NameMention[], source: string): ProseName[] => {
   const sorted = mentions.toSorted((left, right) => left.offset - right.offset);
-  const joined = sorted.flatMap((mention, index) => {
+  const joined = sorted.flatMap((mention, index): Written[] => {
     const next = sorted[index + 1];
     const end = mention.offset + mention.surface.length;
-    return next !== undefined && next.offset === end + 1 && SPACE.test(source.charAt(end)) ? [`${mention.surface}${source.charAt(end)}${next.surface}`] : [];
+    if (next === undefined || next.offset !== end + 1 || !SPACE.test(source.charAt(end))) return [];
+    const reading = mention.reading === undefined || next.reading === undefined ? undefined : `${mention.reading}${next.reading}`;
+    return [{ surface: `${mention.surface}${source.charAt(end)}${next.surface}`, reading }];
   });
-  const counts = new Map<string, number>();
-  [...sorted.map((mention) => mention.surface), ...joined].forEach((surface) => counts.set(surface, (counts.get(surface) ?? 0) + 1));
-  return [...counts].map(([surface, count]) => ({ surface, words: surface.split(SPACE), count }));
+  const forms = new Map<string, ProseName>();
+  [...sorted, ...joined].forEach(({ surface, reading }) => {
+    const form = forms.get(surface);
+    forms.set(surface, form === undefined ? { surface, words: surface.split(SPACE), count: 1, reading } : { ...form, count: form.count + 1 });
+  });
+  return [...forms.values()];
 };
+
+type Written = { readonly surface: string; readonly reading: string | undefined };
 
 const LATIN = /\p{Script=Latin}/u;
 /** 英字の語の中の記号（O'Connor、Anne-Marie）。一字違いは字だけで見る。 */
@@ -57,8 +73,9 @@ const isNearNameWord = (left: string, right: string): boolean =>
   LATIN.test(left) && LATIN.test(right) && isNearWord(left.toLowerCase().replaceAll(WORD_MARKS, ""), right.toLowerCase().replaceAll(WORD_MARKS, ""));
 
 /**
- * 升の名前が、本文の名前の書き分けか。記号・幅・大小だけの違いか、語の数が同じで英字の一語だけが一字違い、残りの語が同じとき。
- * 一字違いは、本文の形が二度以上、升の形が文書の中で一度だけのとき（別の人のこともある）。
+ * 升の名前が、本文の名前の書き分けか。記号・幅・大小だけの違いか、語の数が同じで一語だけが違い、残りの語が同じとき。違う一語は、
+ * 英字なら一字違い、漢字・かなら名前全体の読みが同じ（本文の名前の見方と同じ）。この二つは、本文の形が二度以上、升の形が文書の
+ * 中で一度だけのとき（別の人のこともある）。
  */
 export const cellNameRelation = (name: CellName, uses: number, prose: ProseName): CellNameVariant["kind"] | undefined => {
   if (name.surface === prose.surface || name.words.length !== prose.words.length) return undefined;
@@ -66,11 +83,12 @@ export const cellNameRelation = (name: CellName, uses: number, prose: ProseName)
   const differ = name.words.flatMap((word, index) => (word === prose.words[index] ? [] : [index]));
   const [at] = differ;
   if (differ.length !== 1 || at === undefined || uses !== 1 || prose.count < 2) return undefined;
-  return isNearNameWord(name.words[at] ?? "", prose.words[at] ?? "") ? "near" : undefined;
+  if (isNearNameWord(name.words[at] ?? "", prose.words[at] ?? "")) return "near";
+  return name.reading !== undefined && name.reading === prose.reading ? "reading" : undefined;
 };
 
-/** 記号・幅・大小だけの違いを、一字違いより先に取る。 */
-const KIND_ORDER: readonly CellNameVariant["kind"][] = ["spelling", "near"];
+/** 記号・幅・大小だけの違いを、読みの同じものと一字違いより先に取る。 */
+const KIND_ORDER: readonly CellNameVariant["kind"][] = ["spelling", "reading", "near"];
 
 /**
  * 表の升の名前のうち、本文の名前の書き分けのもの。記号だけの違いを先に、その中で本文の形のうち一番多いものと比べる。
