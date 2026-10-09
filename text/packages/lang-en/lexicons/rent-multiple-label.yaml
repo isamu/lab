@@ -1,0 +1,11 @@
+# The labels of a move-in cost given in months of rent (rent-multiple-mismatch). When one states both a number of months
+# and an amount ("Deposit: 2 months ($3,200)"), the amount is compared with that many months of the rent.
+id: rent-multiple-label
+language: en
+entries:
+  - pattern: Deposit
+  - pattern: Security deposit
+  - pattern: Damage deposit
+  - pattern: Key money
+  - pattern: Bond
+  - pattern: Renewal fee

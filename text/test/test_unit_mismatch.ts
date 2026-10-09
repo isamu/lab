@@ -118,6 +118,55 @@ describe("unit-mismatch", () => {
     assert.deepEqual(foundEn("Plans: 1 GB / 500 MB."), []);
   });
 
+  it("in is an inch only after a number, on a line about a size, as a word no number follows", () => {
+    assert.deepEqual(foundEn("Width: 120 mm", "", "Width: 5.5 in"), ["Width:5.5 in≠120 mm"]);
+    assert.deepEqual(foundEn("Width: 120 mm", "", "Width: 4.7 in"), []);
+    assert.deepEqual(foundEn("Size of the display: 30 cm", "", "Size of the display: 13.3-in"), ["Size of the display:13.3-in≠30 cm"]);
+    assert.deepEqual(foundEn("Size of the display: 34 cm", "", "Size of the display: 13.3-in"), []);
+    assert.deepEqual(foundEn("The panel is 12 x 8 in (30 cm)."), [":30 cm≠8 in"]);
+    assert.deepEqual(foundEn("The panel is 12 x 8 in (20 cm)."), []);
+    assert.deepEqual(foundEn("The panel is 8 in (30 cm)."), []);
+  });
+
+  it("in as a preposition after a number is not an inch", () => {
+    assert.deepEqual(foundEn("Width: 120 mm", "", "Width: 1 in 3 users"), []);
+    assert.deepEqual(foundEn("Width: 120 mm", "", "Width: 2 in 10 users"), []);
+    assert.deepEqual(foundEn("Width: 120 mm", "", "Width: 2-in-1 display"), []);
+    assert.deepEqual(foundEn("Width: 120 mm", "", "Width: 15 interns on the display team"), []);
+    assert.deepEqual(foundEn("Stock: 120 mm", "", "Stock: 5 in"), []);
+    assert.deepEqual(foundEn("The box (12 cm) ships in 2 weeks.", "", "It comes in 5 colors (30 mm)."), []);
+  });
+
+  it("インチ is a length (ja)", () => {
+    assert.deepEqual(foundJa("幅：30 cm", "", "幅：15.6 インチ"), ["幅:15.6 インチ≠30 cm"]);
+    assert.deepEqual(foundJa("幅：40 cm", "", "幅：15.6インチ"), []);
+  });
+
+  it("a prose value spaced from です is read against the table row (ja)", () => {
+    const table = ["| 項目 | 仕様 |", "| --- | --- |", "| 幅 | 120 mm |", "| 重さ | 1500 g |", ""];
+    assert.deepEqual(foundJa(...table, "幅は 14 cm です。"), ["幅:14 cm≠120 mm"]);
+    assert.deepEqual(foundJa(...table, "幅は 12 cm です。"), []);
+    assert.deepEqual(foundJa(...table, "本体の幅は 5.5 インチで、片手で持てます。"), ["本体の幅:5.5 インチ≠120 mm"]);
+    assert.deepEqual(foundJa(...table, "箱の幅は 14 cm です。"), []);
+    assert.deepEqual(foundJa(...table, "幅は広いです。"), []);
+    assert.deepEqual(foundJa(...table, "幅は 14 cm から選べます。"), []);
+  });
+
+  it("an approximate value is read and agrees within its last written digit", () => {
+    assert.deepEqual(foundJa("重さ：1500 g", "", "重さは約1.2kgです。"), ["重さ:1.2kg≠1500 g"]);
+    assert.deepEqual(foundJa("重さ：1250 g", "", "重さは約1.2kgです。"), []);
+    assert.deepEqual(foundJa("重さ：1300 g", "", "重さは約1.2kgです。"), ["重さ:1.2kg≠1300 g"]);
+    assert.deepEqual(foundJa("重さ：1500 g", "", "重さは最大1.2kgです。"), []);
+    assert.deepEqual(foundEn("Weight: 1500 g", "", "The weight is about 1.2 kg."), ["The weight:1.2 kg≠1500 g"]);
+    assert.deepEqual(foundEn("Weight: 1250 g", "", "The weight is about 1.2 kg."), []);
+    assert.deepEqual(foundEn("Weight: 1250 g", "", "The weight is 1.2 kg."), []);
+    assert.deepEqual(foundEn("Weight: 1300 g", "", "The weight is 1.2 kg."), ["The weight:1.2 kg≠1300 g"]);
+    assert.deepEqual(foundEn("Weight: 1500 g", "", "The weight is about 1 kg."), []);
+    assert.deepEqual(foundEn("Weight: 1500 g", "", "The weight is 1 kg."), ["The weight:1 kg≠1500 g"]);
+    assert.deepEqual(foundEn("Weight: 1250 g", "", "The weight is about 1.20 kg."), ["The weight:1.20 kg≠1250 g"]);
+    assert.deepEqual(foundEn("Weight: 1500 g", "", "The weight is up to 1.2 kg."), []);
+  });
+
   it("an ingredient in the table and in a step (ja)", () => {
     const table = [
       "## 材料",

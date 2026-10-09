@@ -6,8 +6,8 @@
       "walk-distance": "2/2",
       "move-in-before-listing": "2/2",
       "layout-code-rooms": "1/1",
-      "building-name": "0/2",
-      "deposit-months-yen": "0/2"
+      "building-name": "2/2",
+      "deposit-months-yen": "2/2"
     },
     "en": {
       "area-two-units": "2/2",
@@ -15,8 +15,8 @@
       "walk-distance": "2/2",
       "move-in-before-listing": "2/2",
       "layout-code-rooms": "1/1",
-      "building-name": "0/2",
-      "deposit-months-yen": "0/2"
+      "building-name": "1/2",
+      "deposit-months-yen": "2/2"
     }
   },
   "clean": []

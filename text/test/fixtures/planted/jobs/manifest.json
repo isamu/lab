@@ -1,0 +1,103 @@
+{
+  "note": "Self-written job postings for fictional employers (a full-time office job and a part-time café job), each in a clean version and a planted one that differs only on the lines below. They run as business/report: no genre is made for job postings. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: annual-pay-mismatch (an example annual pay that is not the monthly salary times twelve plus the stated bonus months) and annual-holidays-mismatch (annual days off fewer than the stated weekly days off give over a year: two days a week is at least 104). yarn planted jobs scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/office",
+      "language": "ja",
+      "genre": "business/report",
+      "clean": "ja/office.clean.md",
+      "planted": "ja/office.planted.md",
+      "mistakes": [
+        { "kind": "deadline-before-posting", "rule": "due-before-issue", "line": 7, "clean": "応募締切：2026年10月31日", "planted": "応募締切：2026年9月30日" },
+        { "kind": "duty-numbering", "rule": "numbering-gap", "line": 21, "clean": "5. 経費精算の確認", "planted": "6. 経費精算の確認" },
+        { "kind": "salary-range-reversed", "rule": "amount-range-reversed", "line": 29, "clean": "月給25万円〜30万円", "planted": "月給30万円〜25万円" },
+        { "kind": "annual-pay", "rule": "annual-pay-mismatch", "line": 31, "clean": "| 420万円（", "planted": "| 450万円（" },
+        { "kind": "working-hours", "rule": "duration-mismatch", "line": 32, "clean": "実働8時間", "planted": "実働7時間" },
+        { "kind": "annual-holidays", "rule": "annual-holidays-mismatch", "line": 34, "clean": "| 125日 |", "planted": "| 90日 |" },
+        { "kind": "trial-period", "rule": "fact-conflict", "line": 44, "clean": "試用期間は3ヶ月で", "planted": "試用期間は6ヶ月で" },
+        { "kind": "company-name", "rule": "name-variant", "line": 48, "clean": "株式会社みなと精機 総務部", "planted": "株式会社みなと精器 総務部" }
+      ]
+    },
+    {
+      "id": "ja/parttime",
+      "language": "ja",
+      "genre": "business/report",
+      "clean": "ja/parttime.clean.md",
+      "planted": "ja/parttime.planted.md",
+      "mistakes": [
+        { "kind": "deadline-before-posting", "rule": "due-before-issue", "line": 7, "clean": "応募締切：2026年10月25日", "planted": "応募締切：2026年9月25日" },
+        { "kind": "duty-numbering", "rule": "numbering-gap", "line": 18, "clean": "4. 閉店後の清掃", "planted": "5. 閉店後の清掃" },
+        { "kind": "salary-range-reversed", "rule": "amount-range-reversed", "line": 24, "clean": "1,100円〜1,300円", "planted": "1,300円〜1,100円" },
+        { "kind": "working-hours", "rule": "duration-mismatch", "line": 25, "clean": "実働4時間15分", "planted": "実働4時間45分" },
+        {
+          "kind": "company-name",
+          "rule": "name-variant",
+          "line": 31,
+          "clean": "株式会社こもれび珈琲の採用ページ",
+          "planted": "こもれび珈琲株式会社の採用ページ"
+        }
+      ]
+    },
+    {
+      "id": "en/office",
+      "language": "en",
+      "genre": "business/report",
+      "clean": "en/office.clean.md",
+      "planted": "en/office.planted.md",
+      "mistakes": [
+        {
+          "kind": "deadline-before-posting",
+          "rule": "due-before-issue",
+          "line": 7,
+          "clean": "Application deadline: October 31, 2026",
+          "planted": "Application deadline: September 30, 2026"
+        },
+        { "kind": "duty-numbering", "rule": "numbering-gap", "line": 21, "clean": "5. Check expense claims", "planted": "6. Check expense claims" },
+        { "kind": "salary-range-reversed", "rule": "amount-range-reversed", "line": 29, "clean": "$4,500–$5,000 a month", "planted": "$5,000–$4,500 a month" },
+        { "kind": "annual-pay", "rule": "annual-pay-mismatch", "line": 31, "clean": "| $72,000 (", "planted": "| $75,000 (" },
+        { "kind": "working-hours", "rule": "duration-mismatch", "line": 32, "clean": "8 hours a day", "planted": "7 hours a day" },
+        { "kind": "annual-holidays", "rule": "annual-holidays-mismatch", "line": 34, "clean": "| 125 days |", "planted": "| 90 days |" },
+        {
+          "kind": "trial-period",
+          "rule": "fact-conflict",
+          "line": 44,
+          "clean": "The probation period is 3 months",
+          "planted": "The probation period is 6 months"
+        },
+        {
+          "kind": "company-name",
+          "rule": "name-variant",
+          "line": 48,
+          "clean": "General Affairs, Harbor Precision Ltd.",
+          "planted": "General Affairs, Harbour Precision Ltd."
+        }
+      ]
+    },
+    {
+      "id": "en/parttime",
+      "language": "en",
+      "genre": "business/report",
+      "clean": "en/parttime.clean.md",
+      "planted": "en/parttime.planted.md",
+      "mistakes": [
+        {
+          "kind": "deadline-before-posting",
+          "rule": "due-before-issue",
+          "line": 7,
+          "clean": "Application deadline: October 25, 2026",
+          "planted": "Application deadline: September 25, 2026"
+        },
+        { "kind": "duty-numbering", "rule": "numbering-gap", "line": 18, "clean": "4. Clean up after closing", "planted": "5. Clean up after closing" },
+        { "kind": "salary-range-reversed", "rule": "amount-range-reversed", "line": 24, "clean": "$16–$19 an hour", "planted": "$19–$16 an hour" },
+        { "kind": "working-hours", "rule": "duration-mismatch", "line": 25, "clean": "4 hours 15 minutes a day", "planted": "4 hours 45 minutes a day" },
+        {
+          "kind": "company-name",
+          "rule": "name-variant",
+          "line": 31,
+          "clean": "careers page of Sunleaf Coffee Co.",
+          "planted": "careers page of Sunleef Coffee Co."
+        }
+      ]
+    }
+  ]
+}
