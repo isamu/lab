@@ -243,3 +243,109 @@ describe("date-outside-period: English", () => {
     assert.deepEqual(foundEn(source), []);
   });
 });
+
+// 文書の仕事の期間（開講期間、Term）を文書の頭か概要の節で書いたとき、後ろのどの節でも、締め切りの語のある項目や文の、期間の終わりより後の日付。
+const syllabusJa = (term: string, deadline: string, overview = "## 1 授業の概要"): string =>
+  lines("# シラバス「データ分析入門」", "", overview, "", term, "", "## 2 試験", "", "期末試験は2027年2月2日（火）に行います。", "", "## 3 課題", "", deadline);
+
+const syllabusEn = (term: string, deadline: string, overview = "## 1 Course overview"): string =>
+  lines(
+    "# Syllabus: Introduction to Data Analysis",
+    "",
+    overview,
+    "",
+    term,
+    "",
+    "## 2 Examination",
+    "",
+    "The examination is on Tuesday, February 2, 2027.",
+    "",
+    "## 3 Assignment",
+    "",
+    deadline,
+  );
+
+const TERM_JA = "開講期間：2026年10月6日（火）から2027年2月5日（金）まで";
+const TERM_EN = "Term: Tuesday, October 6, 2026 to Friday, February 5, 2027";
+
+describe("date-outside-period: a deadline after the document's term", () => {
+  it("a submission deadline in a later section after the term's end is reported, in a sentence and in a list item", () => {
+    assert.deepEqual(foundJa(syllabusJa(TERM_JA, "課題レポートは、2027年2月12日（金）までに学習支援システムで提出してください。")), ["2027年2月12日"]);
+    assert.deepEqual(foundJa(syllabusJa(TERM_JA, "- 提出期限：2027年2月19日")), ["2027年2月19日"]);
+    assert.deepEqual(foundEn(syllabusEn(TERM_EN, "Submit the written assignment through the learning system by Friday, February 12, 2027.")), [
+      "February 12, 2027",
+    ]);
+    assert.deepEqual(foundEn(syllabusEn(TERM_EN, "The final report is due on February 19, 2027.")), ["February 19, 2027"]);
+  });
+
+  it("a term line before the first section, under the title only, is the document's term too", () => {
+    assert.deepEqual(foundJa(lines("# シラバス", "", TERM_JA, "", "## 課題", "", "レポートの締切は2027年3月1日です。")), ["2027年3月1日"]);
+    assert.deepEqual(foundEn(lines("# Syllabus", "", TERM_EN, "", "## Assignment", "", "The deadline for the report is March 1, 2027.")), ["March 1, 2027"]);
+  });
+
+  it("silent for a deadline inside the term, or before it starts", () => {
+    assert.deepEqual(foundJa(syllabusJa(TERM_JA, "課題レポートは、2027年1月29日（金）までに提出してください。")), []);
+    assert.deepEqual(foundJa(syllabusJa(TERM_JA, "履修登録の締切は2026年9月30日です。")), []);
+    assert.deepEqual(foundEn(syllabusEn(TERM_EN, "Submit the written assignment by Friday, January 29, 2027.")), []);
+    assert.deepEqual(foundEn(syllabusEn(TERM_EN, "The registration deadline is September 30, 2026.")), []);
+  });
+
+  it("silent for a later date that is not a deadline, a payment deadline, or a date without a year", () => {
+    assert.deepEqual(foundJa(syllabusJa(TERM_JA, "成績は2027年3月10日に公開します。")), []);
+    assert.deepEqual(foundJa(syllabusJa(TERM_JA, "教材費の支払期限は2027年3月1日です。")), []);
+    assert.deepEqual(foundJa(syllabusJa(TERM_JA, "課題レポートは、2月12日（金）までに提出してください。")), []);
+    assert.deepEqual(foundEn(syllabusEn(TERM_EN, "Grades are published on March 10, 2027.")), []);
+    assert.deepEqual(foundEn(syllabusEn(TERM_EN, "The payment for course materials is due on March 1, 2027.")), []);
+  });
+
+  it("another period stated in between does not end the term's reach", () => {
+    const en = lines(
+      "# Syllabus",
+      "",
+      TERM_EN,
+      "",
+      "## Exams",
+      "",
+      "Period: February 1–3, 2027",
+      "",
+      "## Assignments",
+      "",
+      "The final report is due on February 12, 2027.",
+    );
+    assert.deepEqual(foundEn(en), ["February 12, 2027"]);
+  });
+
+  it("a term is compared with deadlines only: a dated item that is not a deadline, and 'due to', stay silent", () => {
+    assert.deepEqual(foundEn(lines("# Syllabus", "", TERM_EN, "", "- March 10, 2027: grades are published")), []);
+    assert.deepEqual(foundJa(lines("# シラバス", "", TERM_JA, "", "- 2027年3月10日 成績公開")), []);
+    assert.deepEqual(foundEn(syllabusEn(TERM_EN, "Classes may be cancelled due to maintenance on March 1, 2027.")), []);
+  });
+
+  it("silent when the term is stated in a later section that is not an overview", () => {
+    assert.deepEqual(foundJa(syllabusJa(TERM_JA, "課題レポートは、2027年2月12日（金）までに提出してください。", "## 1 担当教員")), []);
+    assert.deepEqual(foundEn(syllabusEn(TERM_EN, "Submit the written assignment by Friday, February 12, 2027.", "## 1 Instructor")), []);
+  });
+
+  it("silent for a trip's period: an expense report may be due after the trip", () => {
+    const ja = lines(
+      "# 出張旅程表",
+      "",
+      "出張期間：2026年11月10日〜2026年11月12日",
+      "",
+      "## 精算",
+      "",
+      "精算書は、2026年11月16日（月）までに経理部へ提出してください。",
+    );
+    assert.deepEqual(foundJa(ja), []);
+    const en = lines(
+      "# Itinerary",
+      "",
+      "Trip period: November 10, 2026 – November 12, 2026",
+      "",
+      "## Expenses",
+      "",
+      "Submit the expense report by November 16, 2026.",
+    );
+    assert.deepEqual(foundEn(en), []);
+  });
+});

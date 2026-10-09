@@ -1,0 +1,10 @@
+# Words of a heading over what holds for the whole document ("Course overview", "Basic information"). A period line in
+# such a section ("Term: …") is the document's period, and date-outside-period compares it with the deadlines
+# (period-deadline) of every later section.
+id: period-overview-heading
+language: en
+entries:
+  - pattern: overview
+  - pattern: basic information
+  - pattern: general information
+  - pattern: at a glance

@@ -1,0 +1,19 @@
+# Words that mark a deadline for the work of the period ("Submit the assignment by …", "Deadline: …"). For a period stated
+# at the top of the document or in its overview section ("Term: …"), date-outside-period reports a dated item or sentence
+# anywhere later that holds one of these and a date with a year after the period ends. Payment deadlines may fall after the
+# period, so they are left out (period-aside keeps them silent).
+id: period-deadline
+language: en
+entries:
+  - pattern: deadline
+  # Not "due" alone: "cancelled due to maintenance" names no deadline.
+  - pattern: due on
+  - pattern: due by
+  - pattern: due date
+  - pattern: is due
+  - pattern: are due
+  - pattern: "due:"
+  - pattern: submit
+  - pattern: submission
+  - pattern: hand in
+  - pattern: turn in
