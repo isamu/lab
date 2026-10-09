@@ -1,0 +1,34 @@
+# Words of amount (unlisted-item-used): left out of a thing's name ("a pinch of salt", "2 cups water"). A word with a
+# digit is left out without being here. Matched in any case.
+id: item-amount
+language: en
+entries:
+  - pattern: pinch
+  - pattern: dash
+  - pattern: handful
+  - pattern: little
+  - pattern: bit
+  - pattern: cup
+  - pattern: cups
+  - pattern: tablespoon
+  - pattern: tablespoons
+  - pattern: tbsp
+  - pattern: teaspoon
+  - pattern: teaspoons
+  - pattern: tsp
+  - pattern: ounce
+  - pattern: ounces
+  - pattern: oz
+  - pattern: pound
+  - pattern: pounds
+  - pattern: lb
+  - pattern: g
+  - pattern: kg
+  - pattern: ml
+  - pattern: clove
+  - pattern: cloves
+  - pattern: piece
+  - pattern: pieces
+  - pattern: rest
+  - pattern: remaining
+  - pattern: more
