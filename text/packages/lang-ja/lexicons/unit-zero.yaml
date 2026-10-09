@@ -1,0 +1,8 @@
+# 零点が基準の単位とずれている単位（unit-mismatch）。weight は、基準の単位で 0 のときにこの単位で読む値（0 ℃ は 32 °F）。量は (値 − weight) × 倍率 で基準の単位に直す。
+id: unit-zero
+language: ja
+entries:
+  - pattern: "℉"
+    weight: 32
+  - pattern: "°F"
+    weight: 32

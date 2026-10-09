@@ -1,0 +1,14 @@
+# 温度（基準はセルシウス度）の単位（unit-mismatch）。weight は基準の単位への倍率で、目盛りの零点のずれは unit-zero が持つ。「度」は角度や回数にも使うので、同じ行に unit-context の語（オーブン、温度）があるときだけ温度として読む。
+id: unit-temperature
+language: ja
+entries:
+  - pattern: "℃"
+    weight: 1
+  - pattern: "°C"
+    weight: 1
+  - pattern: "度"
+    weight: 1
+  - pattern: "℉"
+    weight: 0.5555555555555556
+  - pattern: "°F"
+    weight: 0.5555555555555556
