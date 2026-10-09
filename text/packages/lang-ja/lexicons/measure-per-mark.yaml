@@ -1,0 +1,8 @@
+# 単位の後ろに書いて、量が何あたりかを言う印（300mg/錠、5mg/mL、300mgあたり）。total-mismatch は、こう書いた量を足さない。
+id: measure-per-mark
+language: ja
+entries:
+  - pattern: "/"
+  - pattern: "／"
+  - pattern: "あたり"
+  - pattern: "当たり"
