@@ -85,13 +85,18 @@ const tableSlots = (doc: ProseDocument, words: BatteryWords): Slot[] =>
     });
   });
 
-/** "Battery life: up to 10 hours", "- 消費電流：500 mA". */
-const LABEL_LINE = /^(\s*(?:[-*+]\s+|\d+[.)]\s+)?)([^:：|]{1,80}?)\s*[:：]\s*(.+?)\s*$/u;
+const LIST_MARKER = /^\s*(?:[-*+]|\d+[.)])\s+/u;
+const COLON = /[:：]/u;
+const MAX_LABEL = 80;
 
+/** "Battery life: up to 10 hours", "- 消費電流：500 mA". */
 const lineSlot = (doc: ProseDocument, line: Line, words: BatteryWords): Slot[] => {
-  const match = LABEL_LINE.exec(line.text);
-  const [, marker, label, value] = match ?? [];
-  if (match === null || marker === undefined || label === undefined || value === undefined) return [];
+  const body = line.text.slice(LIST_MARKER.exec(line.text)?.[0].length ?? 0);
+  const colon = COLON.exec(body)?.index;
+  if (colon === undefined) return [];
+  const label = body.slice(0, colon).trim();
+  const value = body.slice(colon + 1).trim();
+  if (label === "" || label.length > MAX_LABEL || value === "") return [];
   const start = line.start + line.text.lastIndexOf(value);
   const entry = entryOf(label, { start, end: start + value.length, text: value }, words, false);
   return entry === undefined ? [] : [{ key: `section ${sectionAt(doc, line.start)}`, entry }];

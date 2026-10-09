@@ -64,11 +64,19 @@ const wordsOf = (words: BatteryWords, group: string): string[] => words.labels.f
 
 const holds = (text: string, patterns: readonly string[]): boolean => patterns.some((pattern) => text.includes(pattern));
 
-const EDGE_MARKS = /^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu;
+const WORD_CHAR = /[\p{L}\p{N}]/u;
+
+/** The text without the marks at its ends (Max. → max). */
+const withoutEdgeMarks = (text: string): string => {
+  const chars = [...text];
+  const first = chars.findIndex((char) => WORD_CHAR.test(char));
+  const last = chars.findLastIndex((char) => WORD_CHAR.test(char));
+  return first === -1 ? "" : chars.slice(first, last + 1).join("");
+};
 
 /** Whether a condition or a heading is only one of the words, with a word of the state after it (待機時, Max., idle mode). */
 const isOnly = (text: string, patterns: readonly string[], words: BatteryWords): boolean => {
-  const bare = folded(text).replace(EDGE_MARKS, "");
+  const bare = withoutEdgeMarks(folded(text));
   const suffixes = ["", ...wordsOf(words, "state")];
   return patterns.some((pattern) => suffixes.some((suffix) => [pattern + suffix, `${pattern} ${suffix}`].includes(bare)));
 };
@@ -181,12 +189,11 @@ const splitRange = (text: string, connectors: readonly string[]): readonly strin
 };
 
 /** A side written without a unit (8〜10時間) takes the unit of the other side. */
-const withUnit = (side: Side, other: Side): Side | undefined =>
-  side.unit !== undefined
-    ? side
-    : other.unit === undefined
-      ? undefined
-      : { value: side.value * other.unit.weight, step: side.step * other.unit.weight, unit: other.unit };
+const withUnit = (side: Side, other: Side): Side | undefined => {
+  if (side.unit !== undefined) return side;
+  if (other.unit === undefined) return undefined;
+  return { value: side.value * other.unit.weight, step: side.step * other.unit.weight, unit: other.unit };
+};
 
 const rangeOf = (core: string, units: readonly ScaledUnit[], connectors: readonly string[], compound: boolean): [Side, Side] | undefined => {
   const parts = splitRange(core, connectors);

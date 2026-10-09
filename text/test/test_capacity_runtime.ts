@@ -16,8 +16,11 @@ import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 const JA = batteryWordsOf(loadJaLexicons());
 const EN = batteryWordsOf(loadEnLexicons());
 
-const shown = (reading: Reading | undefined): string =>
-  reading === undefined ? "none" : `${reading.low}..${reading.high} ${reading.family} step ${reading.step}${reading.approximate ? " rough" : ""}`;
+const shown = (reading: Reading | undefined): string => {
+  if (reading === undefined) return "none";
+  const rough = reading.approximate ? " rough" : "";
+  return `${reading.low}..${reading.high} ${reading.family} step ${reading.step}${rough}`;
+};
 
 describe("valueOf", () => {
   it("reads a capacity or a consumption in mAh, mA, Wh and W, scaled", () => {
