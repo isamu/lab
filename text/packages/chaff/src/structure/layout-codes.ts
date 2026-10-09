@@ -67,7 +67,7 @@ const MAX_JOINS = 3;
 
 /** The run of code letters at index (LDK, SLDK), with what they say; empty when the run is longer than a code. */
 const lettersAt = (text: string, index: number, words: LayoutWords): LetterGroup[] => {
-  const head = [...text.slice(index, index + MAX_CODE_LETTERS + 1)];
+  const head = Array.from(text.slice(index, index + MAX_CODE_LETTERS + 1));
   const stop = head.findIndex((char) => !words.letters.has(char));
   const length = stop === -1 ? head.length : stop;
   if (length > MAX_CODE_LETTERS) return [];
