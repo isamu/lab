@@ -4,7 +4,7 @@ import { loadLexicons } from "./lexicons.ts";
 import { blankLongRuns } from "./long-runs.ts";
 import { lowercasedAt, properNounChecked, rereadAt, sentenceInitialCommonWord } from "./proper-noun.ts";
 import { isStativeParticiple, stativeVocabulary } from "./stative-participle.ts";
-import { isEmphasisedAdverb } from "./emphasis.ts";
+import { isEmphasisedAdverb, isEmphasisedWord, standsAlone } from "./emphasis.ts";
 import { gerundFeatures } from "./gerund.ts";
 import { winkLexiconWords, winkPosTagger } from "./wink-modules.ts";
 
@@ -234,9 +234,15 @@ export const prepare = (): void => {
 
 export const isReady = (): boolean => state.ready !== undefined;
 
-/** 大文字で強調した副詞（NEVER）は、解析器が名前と付けても副詞。Emph=Yes は、略語ではないと detector に伝える。 */
-const withEmphasis = (token: Token): Token =>
-  isEmphasisedAdverb(token.surface, state.vocabulary) ? { ...token, pos: "ADV", lemma: token.surface.toLowerCase(), features: { Emph: "Yes" } } : token;
+/**
+ * 大文字で強調した副詞（NEVER）は、解析器が名前と付けても副詞。文の中で前置詞や動詞として読めた語（AFTER the departure、
+ * a hurricane DID form）は、解析器の読みのまま。どちらも Emph=Yes で、略語ではないと detector に伝える。
+ */
+const withEmphasis = (token: Token, text: string, tagged: readonly Tagged[], at: number): Token => {
+  if (isEmphasisedAdverb(token.surface, state.vocabulary)) return { ...token, pos: "ADV", lemma: token.surface.toLowerCase(), features: { Emph: "Yes" } };
+  if (!standsAlone(text, token.span) || !isEmphasisedWord(tagged, at, state.vocabulary)) return token;
+  return { ...token, lemma: (token.lemma ?? token.surface).toLowerCase(), features: { ...token.features, Emph: "Yes" } };
+};
 
 /**
  * wink は位置を返さないので、表層を順に照合して復元する。
@@ -257,7 +263,7 @@ const locate = (text: string, tagged: readonly Tagged[]): Token[] => {
       ...(entry.lemma === undefined ? {} : { lemma: entry.lemma }),
       ...featuresOf(tagged, at),
     };
-    tokens.push(withEmphasis(token));
+    tokens.push(withEmphasis(token, text, tagged, at));
     cursor = end;
   });
   return tokens;
