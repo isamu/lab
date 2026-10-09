@@ -130,17 +130,23 @@ const CLOSERS = new Set([")", "）"]);
 
 /** at から to までを囲む一番内側の括弧の中身の範囲（行の頭からの位置）。囲む括弧が無ければ undefined。 */
 export const bracketAround = (text: string, at: number, to: number): { start: number; end: number } | undefined => {
-  const open = [...text.slice(0, at)].reduceRight<{ depth: number; found: number | undefined }>(
-    (scan, char, index) => {
-      if (scan.found !== undefined) return scan;
-      if (CLOSERS.has(char)) return { ...scan, depth: scan.depth + 1 };
-      if (!OPENERS.has(char)) return scan;
-      return scan.depth === 0 ? { ...scan, found: index } : { ...scan, depth: scan.depth - 1 };
-    },
-    { depth: 0, found: undefined },
-  ).found;
+  const open = text
+    .slice(0, at)
+    .split("")
+    .reduceRight<{ depth: number; found: number | undefined }>(
+      (scan, char, index) => {
+        if (scan.found !== undefined) return scan;
+        if (CLOSERS.has(char)) return { ...scan, depth: scan.depth + 1 };
+        if (!OPENERS.has(char)) return scan;
+        return scan.depth === 0 ? { ...scan, found: index } : { ...scan, depth: scan.depth - 1 };
+      },
+      { depth: 0, found: undefined },
+    ).found;
   if (open === undefined) return undefined;
-  const close = [...text.slice(to)].findIndex((char) => CLOSERS.has(char));
+  const close = text
+    .slice(to)
+    .split("")
+    .findIndex((char) => CLOSERS.has(char));
   return close === -1 ? undefined : { start: open + 1, end: to + close };
 };
 
