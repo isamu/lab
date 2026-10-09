@@ -148,6 +148,27 @@ const continuesInHan = (texts: readonly BodyText[], term: string, offset: number
   return body !== undefined && HAN.test(term.at(-1) ?? "") && HAN.test(body.text.charAt(offset - body.start + term.length));
 };
 
+/** 半角の長音・濁点・中黒（ｰ ﾞ ﾟ ･）は Katakana の字ではないが、片仮名の名前の一部。 */
+const KATAKANA = /[\p{Script=Katakana}ーｰﾞﾟ]/u;
+const NAKAGURO = /[・･]/u;
+
+/** 語の外側の隣の字（next）とその向こうの字（beyond）が、片仮名か「・片仮名」か。 */
+const katakanaJoins = (next: string, beyond: string): boolean => KATAKANA.test(next) || (NAKAGURO.test(next) && KATAKANA.test(beyond));
+
+/**
+ * 片仮名の端に片仮名が続く現れ、または「・」で片仮名とつないだ現れは、もっと長い名前の一部
+ * （クリエイティブ・コモンズ・パブリック・ライセンスのパブリック・ライセンス、サブライセンスのライセンス）。
+ */
+const insideKatakanaName = (texts: readonly BodyText[], term: string, offset: number): boolean => {
+  const body = sentenceAt(texts, offset);
+  if (body === undefined) return false;
+  const at = offset - body.start;
+  const end = at + term.length;
+  const joinedBefore = at > 0 && katakanaJoins(body.text.charAt(at - 1), at > 1 ? body.text.charAt(at - 2) : "");
+  const joinedAfter = katakanaJoins(body.text.charAt(end), body.text.charAt(end + 1));
+  return (KATAKANA.test(term.charAt(0)) && joinedBefore) || (KATAKANA.test(term.at(-1) ?? "") && joinedAfter);
+};
+
 /** 長い名前の写しと読むのに、語の前で定義の名前と重ならなければならない字の数（手引き の前の「の」と「成」）。 */
 const MIN_ECHO = 2;
 const OPENING_BRACKET = /[\s（(]/u;
@@ -212,6 +233,7 @@ export const usesBeforeDefinition = (
           !isLabel(sentenceAt(texts, offset), defined.term) &&
           !isTitle(offset) &&
           !continuesInHan(texts, defined.term, offset) &&
+          !insideKatakanaName(texts, defined.term, offset) &&
           !echoesLongName(texts, defined, offset),
       );
       return first !== undefined && first < defining ? [{ term: defined, offset: first }] : [];

@@ -164,6 +164,19 @@ describe("use-before-definition: 定義より前で使っている語", () => {
     ]);
   });
 
+  it("片仮名の語に片仮名か「・片仮名」が続く長い名前は、その語の使用ではない（コモンズ・パブリック・ライセンス）", () => {
+    const defining = "ひばり 共有 パブリック・ライセンス（以下「パブリック・ライセンス」という。）に従う。\n";
+    assert.deepEqual(early(`ひばり・コモンズ・パブリック・ライセンスを配る。${defining}`, ja), []);
+    assert.deepEqual(early(`サクラパブリック・ライセンスを配る。${defining}`, ja), []);
+    assert.deepEqual(early(`パブリック・ライセンス・ガイドを配る。${defining}`, ja), []);
+    const halfWidth = "ひばり ﾊﾟﾌﾞﾘｯｸ･ﾗｲｾﾝｽ（以下「ﾊﾟﾌﾞﾘｯｸ･ﾗｲｾﾝｽ」という。）に従う。\n";
+    assert.deepEqual(early(`ｺﾓﾝｽﾞ･ﾊﾟﾌﾞﾘｯｸ･ﾗｲｾﾝｽを全員に配る。${halfWidth}`, ja), []);
+    assert.deepEqual(early(`ﾊﾟﾌﾞﾘｯｸ･ﾗｲｾﾝｽを全員に配る。${halfWidth}`, ja), ["「ﾊﾟﾌﾞﾘｯｸ･ﾗｲｾﾝｽ」を、1 行目の定義より前で使っています"]);
+    assert.deepEqual(early(`ひばりのパブリック・ライセンスを配る。${defining}`, ja), ["「パブリック・ライセンス」を、1 行目の定義より前で使っています"]);
+    assert.deepEqual(early(`本パブリック・ライセンスを配る。${defining}`, ja), ["「パブリック・ライセンス」を、1 行目の定義より前で使っています"]);
+    assert.deepEqual(early(`パブリック・ライセンスを全員に配る。${defining}`, ja), ["「パブリック・ライセンス」を、1 行目の定義より前で使っています"]);
+  });
+
   it("見出しの行の語は、使った所ではない", () => {
     assert.deepEqual(early("## 買主の義務\n\n株式会社やまと（以下「買主」という。）は、代金を支払う。\n", ja), []);
     assert.deepEqual(early('## Duties of the Seller\n\nHarbour Ltd (the "Seller") ships the goods.\n'), []);
