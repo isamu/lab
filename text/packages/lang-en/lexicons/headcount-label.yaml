@@ -1,0 +1,21 @@
+# The words that make a number the people registered, invited or attending (count-over-capacity), before the number
+# ("Registrations: 45") or after it, with up to three words between ("95 members have registered", "28 children had
+# already booked"). Matched as whole words, case aside.
+id: headcount-label
+language: en
+entries:
+  - { pattern: registrations, position: before }
+  - { pattern: registered, position: before }
+  - { pattern: registrants, position: before }
+  - { pattern: applicants, position: before }
+  - { pattern: attendees, position: before }
+  - { pattern: invitees, position: before }
+  - { pattern: invited, position: before }
+  - { pattern: sign-ups, position: before }
+  - { pattern: registered, position: after }
+  - { pattern: booked, position: after }
+  - { pattern: signed up, position: after }
+  - { pattern: applied, position: after }
+  - { pattern: invited, position: after }
+  - { pattern: attending, position: after }
+  - { pattern: will attend, position: after }

@@ -1,0 +1,12 @@
+# 数に付けて、それが受け入れる人数の上限（定員）だと言う語（count-over-capacity）。before は数の前（定員：90名、先着30名）、
+# after は数の後ろ（30名限定）に書く。
+id: capacity-label
+language: ja
+entries:
+  - { pattern: 定員, position: before }
+  - { pattern: 募集定員, position: before }
+  - { pattern: 募集人数, position: before }
+  - { pattern: 募集人員, position: before }
+  - { pattern: 先着, position: before }
+  - { pattern: 収容人数, position: before }
+  - { pattern: 限定, position: after }
