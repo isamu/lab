@@ -1,0 +1,48 @@
+# Units of area (base: square metre) (unit-mismatch). weight is the factor to the base unit. A square foot is 0.3048 m squared; an acre is 43,560 square feet.
+id: unit-area
+language: en
+entries:
+  - pattern: "m²"
+    weight: 1
+  - pattern: "㎡"
+    weight: 1
+  - pattern: "sq m"
+    weight: 1
+  - pattern: "sqm"
+    weight: 1
+  - pattern: "square meters"
+    weight: 1
+  - pattern: "square metres"
+    weight: 1
+  - pattern: "square meter"
+    weight: 1
+  - pattern: "square metre"
+    weight: 1
+  - pattern: "km²"
+    weight: 1000000
+  - pattern: "sq km"
+    weight: 1000000
+  - pattern: "square kilometers"
+    weight: 1000000
+  - pattern: "square kilometres"
+    weight: 1000000
+  - pattern: "ha"
+    weight: 10000
+  - pattern: "hectares"
+    weight: 10000
+  - pattern: "hectare"
+    weight: 10000
+  - pattern: "ft²"
+    weight: 0.09290304
+  - pattern: "sq ft"
+    weight: 0.09290304
+  - pattern: "sq. ft."
+    weight: 0.09290304
+  - pattern: "square feet"
+    weight: 0.09290304
+  - pattern: "square foot"
+    weight: 0.09290304
+  - pattern: "acres"
+    weight: 4046.8564224
+  - pattern: "acre"
+    weight: 4046.8564224

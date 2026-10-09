@@ -1,0 +1,21 @@
+# 文書の仕事の期間（開講期間）の後に来てよい仕事の語（成績発表、再試験）。締め切りの語があっても、この語のある項目や文の日付は、
+# date-outside-period が期間と比べない。「成績」だけは入れない。「課題レポート（成績の30%）」の締め切りまで黙らせる。
+id: period-after-term
+language: ja
+entries:
+  - pattern: 成績発表
+  - pattern: 成績の発表
+  - pattern: 成績公開
+  - pattern: 成績の公開
+  - pattern: 成績通知
+  - pattern: 成績照会
+  - pattern: 成績に関する問い合わせ
+  - pattern: 成績評価に関する問い合わせ
+  - pattern: 成績提出
+  - pattern: 成績の提出
+  - pattern: 成績入力
+  - pattern: 異議申立
+  - pattern: 異議申し立て
+  - pattern: 再試験
+  - pattern: 追試験
+  - pattern: 単位認定

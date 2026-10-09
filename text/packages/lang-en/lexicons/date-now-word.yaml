@@ -1,0 +1,7 @@
+# Words saying a date has already come. A line with one is not compared in a dated pair (dated-pair-label):
+# "Available immediately (vacant since September 1, 2026)" gives the day it fell vacant, not a move-in date (due-before-issue).
+id: date-now-word
+language: en
+entries:
+  - pattern: immediately
+  - pattern: immediate

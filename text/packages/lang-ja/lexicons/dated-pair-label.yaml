@@ -1,0 +1,15 @@
+# 前後の決まった日付の組。group が組の名前で、position before が先に来るはずの日付の語、after が後に来るはずの日付の語。
+# 行の頭（表なら最初の列）にこの語と年のある日付があり、after の日付が before の日付より前なら指す（due-before-issue）。
+id: dated-pair-label
+language: ja
+entries:
+  - { pattern: "掲載日", group: listing, position: before }
+  - { pattern: "掲載開始日", group: listing, position: before }
+  - { pattern: "情報公開日", group: listing, position: before }
+  - { pattern: "情報登録日", group: listing, position: before }
+  - { pattern: "登録日", group: listing, position: before }
+  - { pattern: "入居可能日", group: listing, position: after }
+  - { pattern: "入居可能時期", group: listing, position: after }
+  - { pattern: "入居時期", group: listing, position: after }
+  - { pattern: "入居予定日", group: listing, position: after }
+  - { pattern: "入居日", group: listing, position: after }

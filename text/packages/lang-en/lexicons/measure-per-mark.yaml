@@ -1,0 +1,8 @@
+# Marks written after a unit that say the amount is per something (300 mg/tablet, 5 mg/mL, 300 mg per tablet). total-mismatch
+# does not add such an amount.
+id: measure-per-mark
+language: en
+entries:
+  - pattern: "/"
+  - pattern: "per"
+  - pattern: "each"

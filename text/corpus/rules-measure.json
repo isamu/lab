@@ -4332,6 +4332,42 @@
         "falseAlarms": 0
       }
     },
+    "interval-count-mismatch": {
+      "groups": {
+        "academic": {
+          "documents": 10,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 23,
+          "fired": 0
+        },
+        "business": {
+          "documents": 80,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 21,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 35,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 13,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 7,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 49,
+          "fired": 0
+        }
+      }
+    },
     "invisible-character": {
       "groups": {
         "academic": {
@@ -4608,6 +4644,42 @@
         "planted": 1,
         "found": 1,
         "falseAlarms": 0
+      }
+    },
+    "layout-code-mismatch": {
+      "groups": {
+        "academic": {
+          "documents": 10,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 23,
+          "fired": 0
+        },
+        "business": {
+          "documents": 80,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 21,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 35,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 13,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 7,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 49,
+          "fired": 0
+        }
       }
     },
     "less-for-fewer": {
@@ -9290,6 +9362,42 @@
         "planted": 12,
         "found": 12,
         "falseAlarms": 0
+      }
+    },
+    "walk-time-distance-mismatch": {
+      "groups": {
+        "academic": {
+          "documents": 10,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 23,
+          "fired": 0
+        },
+        "business": {
+          "documents": 80,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 21,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 35,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 13,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 7,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 49,
+          "fired": 0
+        }
       }
     },
     "warning-without-action": {

@@ -1,0 +1,20 @@
+# Words that make a number of minutes a walking time (walk-time-distance-mismatch). group walk: the word after the minutes
+# ("a 5-minute walk", "5 minutes on foot"). group bound: a word that makes the minutes a limit ("within a 10-minute walk"),
+# never compared; position is the side of the minutes. group range: a word joining two numbers into a range ("8 to 10
+# minutes"), never compared. group filler: a word skipped between "about" or "within" and the number.
+id: walk-word
+language: en
+entries:
+  - { pattern: "walk", position: after, group: walk }
+  - { pattern: "walking", position: after, group: walk }
+  - { pattern: "on foot", position: after, group: walk }
+  - { pattern: "by foot", position: after, group: walk }
+  - { pattern: "within", position: before, group: bound }
+  - { pattern: "under", position: before, group: bound }
+  - { pattern: "less than", position: before, group: bound }
+  - { pattern: "up to", position: before, group: bound }
+  - { pattern: "or less", position: after, group: bound }
+  - { pattern: "to", group: range }
+  - { pattern: "or", group: range }
+  - { pattern: "a", group: filler }
+  - { pattern: "an", group: filler }

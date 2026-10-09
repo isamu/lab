@@ -9,7 +9,7 @@ cloudgov-your-first-deploy  1
 commonpaper-csa  1
 da-agile-review-4  1
 da-ai-advisory-board-1  11
-da-area-data-model  1
+da-area-data-model  3
 da-legal-practice  3
 da-minister-press-conference-2026-09-18  1
 da-recruitment-career-faq  1
@@ -46,6 +46,7 @@ nsf-19-582-reu-solicitation  1
 nstac-microdata-forum  1
 nta-taxanswer-1120  2
 nws-glossary-a  2
+openapi-spec-3-1-0  2
 ppc-guidelines-tsusoku  15
 python-code-quality-list-2016-03  4
 qiita-jnchito-good-sample-code  4

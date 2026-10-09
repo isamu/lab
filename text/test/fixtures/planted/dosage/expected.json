@@ -4,8 +4,8 @@
       "unit-amount": "2/2",
       "age-band-overlap": "1/1",
       "daily-maximum": "0/2",
-      "dose-interval": "0/2",
-      "strengths-total": "0/2",
+      "dose-interval": "2/2",
+      "strengths-total": "2/2",
       "product-name": "0/2",
       "age-band-gap": "1/1"
     },
@@ -13,8 +13,8 @@
       "unit-amount": "2/2",
       "age-band-overlap": "1/1",
       "daily-maximum": "0/2",
-      "dose-interval": "0/2",
-      "strengths-total": "0/2",
+      "dose-interval": "2/2",
+      "strengths-total": "2/2",
       "product-name": "2/2",
       "age-band-gap": "1/1"
     }

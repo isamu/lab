@@ -1,0 +1,14 @@
+# Pairs of dates that must come in order. group names the pair; position before marks the word of the date that comes
+# first, after the word of the date that must not be earlier. A line (or a table's first column) starting with one and a
+# date with its year is compared, and an after date before the before date is reported (due-before-issue).
+id: dated-pair-label
+language: en
+entries:
+  - { pattern: "Listed on", group: listing, position: before }
+  - { pattern: "Listed", group: listing, position: before }
+  - { pattern: "Listing date", group: listing, position: before }
+  - { pattern: "Date listed", group: listing, position: before }
+  - { pattern: "Available from", group: listing, position: after }
+  - { pattern: "Move-in date", group: listing, position: after }
+  - { pattern: "Move-in", group: listing, position: after }
+  - { pattern: "Move in", group: listing, position: after }
