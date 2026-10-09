@@ -1,0 +1,12 @@
+# Units of pressure (base: kilopascal) (unit-mismatch). weight is the factor to the base unit (1 psi is 6.894757 kPa, 1 bar is 100 kPa).
+id: unit-pressure
+language: en
+entries:
+  - pattern: "kPa"
+    weight: 1
+  - pattern: "MPa"
+    weight: 1000
+  - pattern: "psi"
+    weight: 6.894757293168361
+  - pattern: "bar"
+    weight: 100
