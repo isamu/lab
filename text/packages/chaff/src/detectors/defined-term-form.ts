@@ -258,16 +258,49 @@ const isNameField = (line: string, name: string): boolean => {
   return value.startsWith(name) && NEXT_PART.test(rest) && [...rest].length <= SLACK * 2 && !CLOSES_SENTENCE.test(rest.slice(1));
 };
 
+/** A contact field's label: after a bullet or a number (1. 連絡先：), and as long as a label in English runs (Privacy Contact:). */
+const CONTACT_LABEL = /^(?:(?:[-*+]|\d+[.)])\s+)?([^:：。.]{1,40})[:：]\s*/u;
+const LABEL_MARKS = /[*_\s]+/gu;
+/** After the name in a contact field, the next part after a space or a comma (, Tokyo), or the bracket that holds it (お問い合わせ窓口（株式会社みなと）). */
+const NEXT_CONTACT_PART = /^\.?(?:$|[）)]|\s*,?\s+(?!\p{Ll}))/u;
+/** A comma that goes on in lower case or 、 may also start a clause (, which may; 株式会社みなと、平日に受け付ける): the address field's bound. */
+const COMMA_PART = /^\.?\s*[,、，]/u;
+
+const endsWithContactLabel = (label: string, contactLabels: readonly string[]): boolean => {
+  const bare = label.replaceAll(LABEL_MARKS, "").toLowerCase();
+  return contactLabels.some((contact) => contact !== "" && bare.endsWith(contact.toLowerCase()));
+};
+
+/**
+ * A field whose label ends with a contact label (窓口：, Attention:): the value names the party in full however long it is and
+ * wherever the name sits in it, unless the name goes on as a sentence (連絡先：株式会社みなとは、…).
+ */
+const isContactField = (line: string, name: string, contactLabels: readonly string[]): boolean => {
+  const label = CONTACT_LABEL.exec(line);
+  if (label === null || !endsWithContactLabel(label[1] ?? "", contactLabels)) return false;
+  const value = line.slice(label[0].length);
+  const at = value.indexOf(name);
+  if (at === -1) return false;
+  const rest = value.slice(at + name.length);
+  const continues = NEXT_CONTACT_PART.test(rest) || (COMMA_PART.test(rest) && [...rest].length <= SLACK * 2);
+  return continues && !CLOSES_SENTENCE.test(rest.slice(1));
+};
+
 /**
  * A line that holds the short name too (甲 株式会社みなと), little else than the long name (a signature block names both),
  * or a field whose value is the name (Attention: …, 宛先：…): an address gives the name in full.
  */
-const isNameLine = (source: string, offset: number, name: string, term: string): boolean => {
+const isNameLine = (source: string, offset: number, name: string, term: string, contactLabels: readonly string[]): boolean => {
   const start = source.lastIndexOf("\n", offset - 1) + 1;
   const end = source.indexOf("\n", offset);
   const line = source.slice(start, end === -1 ? source.length : end).trim();
   // The short name inside the long one ("Pinecone" in "Pinecone Software Ltd") is not the short name written beside it.
-  return line.replaceAll(name, "").includes(term) || [...line].length <= [...name].length + SLACK || isNameField(line, name);
+  return (
+    line.replaceAll(name, "").includes(term) ||
+    [...line].length <= [...name].length + SLACK ||
+    isNameField(line, name) ||
+    isContactField(line, name, contactLabels)
+  );
 };
 
 /** A name inside a longer word (東京大学 in 東京大学大学院, Acme in Acmeware) is part of another name. */
@@ -289,6 +322,7 @@ export const standsAlone = (source: string, offset: number, name: string, joiner
 export const repeatedNames = (doc: ProseDocument, terms: readonly DefinedTerm[]): RepeatedName[] => {
   const defined = new Set(terms.map((term) => term.term));
   const joiners = (doc.lexicons["enumeration-joiner"] ?? []).map((entry) => entry.pattern);
+  const contactLabels = (doc.lexicons["contact-label"] ?? []).map((entry) => entry.pattern);
   return terms
     .filter((term) => term.inline)
     .flatMap((term) => {
@@ -300,7 +334,7 @@ export const repeatedNames = (doc: ProseDocument, terms: readonly DefinedTerm[])
       return doc.sentences
         .filter((later) => later.span.start > term.span.end)
         .flatMap((later) => [...later.text.matchAll(pattern)].map((match) => later.span.start + match.index))
-        .filter((offset) => standsAlone(doc.source, offset, name, joiners) && !isNameLine(doc.source, offset, name, term.term))
+        .filter((offset) => standsAlone(doc.source, offset, name, joiners) && !isNameLine(doc.source, offset, name, term.term, contactLabels))
         .map((offset) => ({ offset, name, term: term.term, line: term.line }));
     });
 };
