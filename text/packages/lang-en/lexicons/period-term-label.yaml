@@ -1,0 +1,12 @@
+# Words that open a line stating the period the document's work is done in ("Term: October 6, 2026 to February 5, 2027").
+# Read as a period like period-label; when stated at the top of the document or in its overview section, a deadline
+# (period-deadline) in any later section that falls after the period's end is reported by date-outside-period. Trip and
+# conference dates are left out: an expense report may be due after the trip.
+id: period-term-label
+language: en
+entries:
+  - pattern: Course dates
+  - pattern: Class dates
+  - pattern: Term dates
+  - pattern: Semester
+  - pattern: Term
