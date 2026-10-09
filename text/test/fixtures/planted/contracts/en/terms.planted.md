@@ -6,7 +6,7 @@ These Terms of Service (these "Terms") govern your use of the Pinecone Notes app
 
 1.1 You must be at least 16 years old to create an account.
 
-1.2 You are responsible for keeping your password secret and for all activity under your Account.
+1.2 You are responsible for keeping your password secret and for all activity under your Workspace.
 
 ## 2. Subscription Fees
 
