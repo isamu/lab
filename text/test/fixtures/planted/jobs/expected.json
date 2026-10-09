@@ -6,7 +6,7 @@
       "salary-range-reversed": "2/2",
       "annual-pay": "0/1",
       "working-hours": "2/2",
-      "annual-holidays": "0/1",
+      "annual-holidays": "1/1",
       "trial-period": "0/1",
       "company-name": "1/2"
     },
@@ -16,7 +16,7 @@
       "salary-range-reversed": "2/2",
       "annual-pay": "0/1",
       "working-hours": "2/2",
-      "annual-holidays": "0/1",
+      "annual-holidays": "1/1",
       "trial-period": "0/1",
       "company-name": "2/2"
     }

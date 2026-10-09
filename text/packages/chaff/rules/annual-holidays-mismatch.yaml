@@ -1,0 +1,65 @@
+id: annual-holidays-mismatch
+layer: L3
+status: stable
+how_to_find: annual-holidays-mismatch
+# The labels are annual-holidays-label; the weekly phrases and the days a year each gives are weekly-days-off (every-week
+# gives a minimum, not-every-week gives none); the other words are annual-holidays-word, approximate-marker,
+# range-connector and amount-range-word.
+severity: warning
+
+name:
+  ja: 毎週の休みから決まる日数より少ない年間休日
+  en: Annual days off fewer than the weekly days off give
+
+why:
+  ja: 求人の「完全週休2日制」は毎週2日休むという意味なので、一年（52週）で少なくとも104日の休みになります。そこに「年間休日 90日」と書いてあれば、どちらかが間違いです。別の求人の行を写したときや、休日の制度だけを書き直したときに起きます。年間休日の日数を、毎週の休みの語から決まる最低の日数（完全週休2日制と4週8休は104日、完全週休3日制は156日）と比べ、少ないときだけ指します。祝日・夏季休暇・年末年始で多くなるのは普通なので、多い方は見ません。「完全」の付かない「週休2日制」は「月に1回以上、2日休む週がある」という意味で、毎週2日休むとは限らないので比べません。この区別は語彙表（weekly-days-off）に書いてあります。
+  en: '"Two days off every week" in a job posting means at least 104 days off in a year of 52 weeks, so "Annual days off: 90 days" beside it cannot both be right. It happens when a line is copied from another posting, or when the weekly days off are rewritten and the annual count is not. The annual count of days off is compared with the fewest the weekly phrase gives (two days off every week or a five-day work week is 104, three days off every week or a four-day work week is 156) and pointed out only when it is fewer. More is normal (public holidays, summer, the new year) and is not looked at. Only phrases that say every week count; vague ones ("weekends off", "two days off a week") are not compared. The phrases and their minimums are in the weekly-days-off lexicon.'
+
+message:
+  ja: 年間休日（{written}）が、「{weekly}」から決まる最低の{minimum}日より少なくなっています
+  en: 'The annual days off ({written}) are fewer than the {minimum} days a year that "{weekly}" gives'
+
+how_to_fix:
+  ja: 年間休日と休日の制度のどちらが正しいかを確かめて、もう片方を直してください。毎週2日休めない週があるなら「完全」を外して「週休2日制」と書いてください。
+  en: Check which of the annual days off and the weekly days off is right, and correct the other. If some weeks have fewer days off, say so instead of "every week".
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 「完全週休2日制」で「年間休日 90日」のように、毎週の休みから決まる104日より少ない年間休日
+  en: Annual days off fewer than the 104 days that two days off every week give
+example:
+  ja:
+    before: |
+      | 項目 | 内容 |
+      | --- | --- |
+      | 休日 | 完全週休2日制（土曜日・日曜日）、祝日 |
+      | 年間休日 | 90日 |
+    after: |
+      | 項目 | 内容 |
+      | --- | --- |
+      | 休日 | 完全週休2日制（土曜日・日曜日）、祝日 |
+      | 年間休日 | 125日 |
+  en:
+    before: |
+      | Item | Details |
+      | --- | --- |
+      | Days off | Two days off every week (Saturday and Sunday) and public holidays |
+      | Annual days off | 90 days |
+    after: |
+      | Item | Details |
+      | --- | --- |
+      | Days off | Two days off every week (Saturday and Sunday) and public holidays |
+      | Annual days off | 125 days |
+
+not_flagged:
+  ja: 「完全」の付かない週休2日制・週休3日制が文書のどこかにあれば比べません（毎週2日休むとは限らないため）。「完全週休2日制ではありません」のように打ち消したもの、同じ行に「除く」「ただし」「出勤」などの例外の語があるものも比べません。年間休日は「年間休日」「年間休日数」などの見出しの日数だけを読み、年次有給休暇の日数は読みません。「約」「以上」「から」の付いた日数、「100〜120日」のような幅、年間休日の日数が二つ以上あって違う文書（職種ごとに違う求人など）も比べません。休みの多い方は見ません。
+  en: 'Only phrases that say every week count ("two days off every week", "a five-day work week"); "weekends off" and "two days off a week" are not compared. A phrase that is negated in its sentence ("does not offer two days off every week") or followed on its line by an exception ("except", "excluding", "some Saturdays worked") leaves the posting unchecked. Only an annual count of every day off is read ("Annual days off", "days off a year"): "annual holidays" and "annual leave" are paid leave in British usage and are not read. A count with "about", "from", "or more" or "+", a range ("100–120 days"), and a posting with two different annual counts (one per role) are not compared. More days off than the minimum is never pointed out.'
+level_meaning:
+  ja: 年間休日が毎週の休みから決まる最低の日数より少ないとき指摘
+  en: reported when the annual days off are fewer than the weekly days off give

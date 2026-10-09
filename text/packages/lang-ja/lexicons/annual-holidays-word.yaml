@@ -1,0 +1,23 @@
+# annual-holidays-mismatch の語。link は見出しと日数の間に挟んでよい語（年間休日は125日）。day は数の後ろの日の語。
+# negation は毎週の休みを打ち消す語で、after はその語のすぐ後ろ（完全週休2日制ではありません）。exception は毎週の休みと
+# 同じ行の後ろにあれば例外があると言う語（繁忙期を除く、月1回土曜出勤）。どちらかがあれば文書を比べない。
+# open は日数を開いたままにする語（120日から）。
+id: annual-holidays-word
+language: ja
+entries:
+  - { pattern: は, group: link }
+  - { pattern: 日, group: day }
+  - { pattern: 日間, group: day }
+  - { pattern: ではない, group: negation, position: after }
+  - { pattern: ではありません, group: negation, position: after }
+  - { pattern: ではなく, group: negation, position: after }
+  - { pattern: でない, group: negation, position: after }
+  - { pattern: じゃない, group: negation, position: after }
+  - { pattern: 除く, group: exception }
+  - { pattern: 除き, group: exception }
+  - { pattern: ただし, group: exception }
+  - { pattern: 但し, group: exception }
+  - { pattern: 例外, group: exception }
+  - { pattern: 出勤, group: exception }
+  - { pattern: から, group: open, position: after }
+  - { pattern: 超, group: open, position: after }
