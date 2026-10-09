@@ -36,7 +36,7 @@ const isNegative = (source: string, line: Line, amount: Amount): boolean => {
 };
 
 /** 行の最初の文字列（表なら最初の列）から、強調の印と箇条書きの印を除いたもの。 */
-const leadingText = (text: string): string =>
+export const leadingText = (text: string): string =>
   text
     .replace(/^[ \t]*(?:[-*+]|\d{1,3}[.)])?[ \t]*\|?[ \t]*/u, "")
     .replace(/^[*_]+/u, "")
@@ -58,8 +58,11 @@ const centsOf = (source: string, line: Line, amount: Amount): number | undefined
   return Math.round(amount.value * CENTS) * (isNegative(source, line, amount) ? -1 : 1);
 };
 
-const entryOf = (source: string, line: Line, amounts: readonly Amount[], labels: readonly string[]): Entry => ({
-  label: isTotalLabel(source.slice(line.start, line.end), labels),
+/** 行が合計の行か。語彙で決める判定は呼ぶ側が渡す。 */
+export type IsTotalLine = (text: string) => boolean;
+
+const entryOf = (source: string, line: Line, amounts: readonly Amount[], isTotal: IsTotalLine): Entry => ({
+  label: isTotal(source.slice(line.start, line.end)),
   amounts: amounts
     .filter((amount) => amount.offset >= line.start && amount.offset <= line.end)
     .map((amount) => ({ ...amount, column: columnOf(source, line, amount.offset), cents: centsOf(source, line, amount) })),
@@ -181,11 +184,11 @@ const mismatchesIn = (source: string, entries: readonly Entry[]): StructureIssue
     });
   });
 
-export const totalMismatches = (source: string, amounts: readonly Amount[], labels: readonly string[]): StructureIssue[] =>
+export const totalMismatches = (source: string, amounts: readonly Amount[], isTotal: IsTotalLine): StructureIssue[] =>
   runsOf(source).flatMap((run) => {
     const inRun = [...amounts, ...bareNumbersIn(source, run)];
     return mismatchesIn(
       source,
-      run.map((line) => entryOf(source, line, inRun, labels)),
+      run.map((line) => entryOf(source, line, inRun, isTotal)),
     );
   });

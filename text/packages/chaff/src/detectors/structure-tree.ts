@@ -6,6 +6,7 @@ import { weekdayMismatches } from "../structure/weekday.ts";
 import { documentDateOf } from "./document-date.ts";
 import { dateOrderBreaks } from "../structure/date-order.ts";
 import { totalMismatches, type Amount } from "../structure/total.ts";
+import { isTotalLine } from "../structure/total-line.ts";
 import { proseTotalMismatches } from "../structure/prose-total.ts";
 import { countedAmounts, type SummedCounter } from "../structure/counted-amounts.ts";
 import { rangeFrameOf, reversedRanges, type DatedSpan, type RangeWords } from "../structure/date-range.ts";
@@ -187,8 +188,9 @@ const summableAmountsOf = (doc: ProseDocument, tree: NonNullable<ProseDocument["
 /** 合計の行と内訳の行、文の中の合計と内訳。同じ金額は一度だけ言う。 */
 const totalIssues = (doc: ProseDocument, tree: NonNullable<ProseDocument["structure"]>): StructureIssue[] => {
   const amounts = summableAmountsOf(doc, tree);
-  const lines = totalMismatches(doc.source, amounts, patternsOf(doc, "total-label"));
-  const words = {
+  const words = { labels: patternsOf(doc, "total-label"), qualifiers: doc.lexicons["total-label-qualifier"] ?? [] };
+  const lines = totalMismatches(doc.source, amounts, (text) => isTotalLine(text, words));
+  const phrases = {
     totals: patternsOf(doc, "total-phrase"),
     breakdowns: patternsOf(doc, "breakdown-phrase"),
     discounts: patternsOf(doc, "discount-word"),
@@ -198,7 +200,7 @@ const totalIssues = (doc: ProseDocument, tree: NonNullable<ProseDocument["struct
     doc.source,
     doc.sentences.map((sentence) => sentence.span),
     amounts,
-    words,
+    phrases,
   );
   return [...lines, ...prose.filter((issue) => !lines.some((line) => line.offset === issue.offset))];
 };
