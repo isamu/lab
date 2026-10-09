@@ -2,7 +2,7 @@ import type { ProseDocument } from "../plugin.ts";
 import type { MeasureUnit } from "./measures.ts";
 
 /** 量の種類ごとの語彙表。weight が基準の単位への倍率で、同じ単位を二度書けば倍率が二つ（GB の 10^9 と 2^30）。 */
-const MEASURE_DIMENSIONS = ["unit-length", "unit-mass", "unit-time", "unit-volume", "unit-data", "unit-temperature", "unit-pressure"] as const;
+const MEASURE_DIMENSIONS = ["unit-length", "unit-mass", "unit-time", "unit-volume", "unit-data", "unit-temperature", "unit-pressure", "unit-area"] as const;
 
 const unitKey = (pattern: string, before: boolean): string => `${before ? "<" : ">"}${pattern}`;
 
