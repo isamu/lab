@@ -1,9 +1,11 @@
 # Words that make two measured quantities in one sentence a change or a descending order, not a range
 # (quantity-range-reversed): "cooled from 40 °C to 10 °C", "from 100 m down to 10 m", "countdown 10 to 0 s".
-# Matched as whole words, without regard to case.
+# group lead: a word that makes the pair a change only when it stands right before the first quantity
+# ("Builds went from 9 minutes to 2 minutes"). Matched as whole words, without regard to case.
 id: quantity-change-word
 language: en
 entries:
+  - { pattern: from, group: lead }
   - pattern: down
   - pattern: reduce
   - pattern: reduced

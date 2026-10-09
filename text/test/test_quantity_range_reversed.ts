@@ -7,7 +7,7 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import { reversedAmountRanges, type AmountRangeWords, type RangeAmount } from "../packages/chaff/src/structure/amount-range.ts";
-import { quantityRangeEnds } from "../packages/chaff/src/structure/quantity-range.ts";
+import { quantityRangeEnds, unledRanges } from "../packages/chaff/src/structure/quantity-range.ts";
 import { measuredValues, type MeasureUnit } from "../packages/chaff/src/facts/measures.ts";
 
 // 測った量の範囲の上限が下限より小さい（quantity-range-reversed）。
@@ -88,6 +88,8 @@ describe("quantity-range-reversed, English", () => {
     assert.deepEqual(found(doc("The oven is cooled from 200 °C to 50 °C before cleaning.")), []);
     assert.deepEqual(found(doc("The probe moves from 100 m down to 10 m.")), []);
     assert.deepEqual(found(doc("Boxes are stacked in descending order, 50–10 kg.")), []);
+    assert.deepEqual(found(doc("Builds went from 9 minutes to 2 minutes.")), []);
+    assert.deepEqual(found(doc("Builds take 9 minutes to 2 minutes.")), ["9 minutes to 2 minutes"]);
   });
 
   it("two quantities labelled min and max", () => {
@@ -169,5 +171,29 @@ describe("quantityRangeEnds", () => {
   it("reads nothing from nothing", () => {
     assert.deepEqual(quantityRangeEnds("", []), []);
     assert.deepEqual(values("no numbers here"), []);
+  });
+});
+
+describe("unledRanges", () => {
+  const issueAt = (text: string, written: string): { offset: number; values: Record<string, string> } => ({
+    offset: text.indexOf(written),
+    values: { range: written },
+  });
+  const kept = (text: string, written: string, leads: readonly string[]): number => unledRanges(text, [issueAt(text, written)], leads).length;
+
+  it("drops a range with a lead word right before it", () => {
+    assert.equal(kept("went from 9 min to 2 min", "9 min to 2 min", ["from"]), 0);
+    assert.equal(kept("went FROM  9 min to 2 min", "9 min to 2 min", ["from"]), 0);
+  });
+
+  it("keeps a range without one, or with the word inside a longer word or on the line before", () => {
+    assert.equal(kept("takes 9 min to 2 min", "9 min to 2 min", ["from"]), 1);
+    assert.equal(kept("therefrom9 min to 2 min", "9 min to 2 min", ["from"]), 1);
+    assert.equal(kept("from\n9 min to 2 min", "9 min to 2 min", ["from"]), 1);
+    assert.equal(kept("went from 9 min to 2 min", "9 min to 2 min", []), 1);
+  });
+
+  it("returns nothing for nothing", () => {
+    assert.deepEqual(unledRanges("", [], ["from"]), []);
   });
 });
