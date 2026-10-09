@@ -32,6 +32,16 @@ const compareVersions = (left: Version, right: Version): number => {
   return differing === -1 ? comparePrerelease(left.prerelease, right.prerelease) : Math.sign((left.parts[differing] ?? 0) - (right.parts[differing] ?? 0));
 };
 
+/** Whether every label is a version and no step goes against direction (equal versions do not break it). */
+export const versionsAlong = (labels: readonly (string | undefined)[], direction: number): boolean => {
+  const versions = labels.flatMap((label) => {
+    const version = label === undefined ? undefined : parse(label);
+    return version === undefined ? [] : [version];
+  });
+  if (versions.length !== labels.length) return false;
+  return versions.slice(1).every((version, index) => compareVersions(version, versions[index] ?? version) !== -direction);
+};
+
 /** The longest run along direction ending at each version (equal versions do not break it). */
 const longestEndingAt = (versions: readonly Version[], direction: number): number[] =>
   versions.reduce<number[]>((lengths, version, index) => {
