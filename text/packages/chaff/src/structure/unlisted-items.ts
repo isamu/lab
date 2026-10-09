@@ -101,7 +101,7 @@ export const phrasesBefore = (tokens: readonly ItemToken[], marker: number, word
 ];
 
 const isModifier = (token: ItemToken, words: ItemWords): boolean =>
-  SKIPPED_POS.has(token.pos) || isAmount(token, words) || (token.pos === "VERB" && /ed$/u.test(token.surface));
+  SKIPPED_POS.has(token.pos) || isAmount(token, words) || (token.pos === "VERB" && token.surface.endsWith("ed"));
 
 const isAction = (token: ItemToken, reading: Reading, words: ItemWords): boolean =>
   reading.current.length === 0 && reading.segments.length > 0 && isWord(token, words.actions);
