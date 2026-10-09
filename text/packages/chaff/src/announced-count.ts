@@ -14,6 +14,8 @@ export type CountWords = {
   readonly numbers: readonly string[];
   /** 数のすぐ後ろで並べるものを数える語。点、つ、steps。 */
   readonly counters: readonly string[];
+  /** 数える語と、それが何の種類かを言う語までの枠（kinds of、つの種類）。枠の中の of は「two of the following」の of ではない。 */
+  readonly frames: readonly string[];
   /** 数のすぐ前にあると予告でなくなる語（約、第、at least）。 */
   readonly hedgesBefore: readonly string[];
   /** 数か数える語のすぐ後ろにあると予告でなくなる語（以上、目、or more）。 */
@@ -51,16 +53,17 @@ export const alternation = (words: readonly string[]): string =>
     .join("|");
 
 /**
- * 数と、それが数えるもの。数の前が数字・英字・数の字なら数の途中（十三、23、eleven の中）。
+ * 数と、それが数えるもの。数の前が数字・英字・数の字なら数の途中（十三、23、eleven の中）。数字と点のすぐ後ろの数字は、
+ * 条の番号や小数の続き（7.1、3.5）で、それだけでは数ではない。
  * 英語は数と数える語の間に語を二つまで置ける（three key steps）。数える語が無くても、文がコロンで終わる直前の数（the following two:）と、
  * その後ろに語が一つだけある数（the following three documents:）は数に読む。どちらも先を指す語のすぐ後ろでだけ予告になる（pointsAhead）。
  */
 const phrasePattern = (words: CountWords): RegExp => {
   const numberChars = escapeRegExp([...new Set(words.numbers.join(""))].join(""));
   const numbers = words.numbers.length === 0 ? "\\p{Nd}+" : `\\p{Nd}+|${alternation(words.numbers)}`;
-  const counted = `[ \\t\\u00a0]?(?:\\p{Ll}[\\p{Ll}-]*[ \\t]){0,2}(${alternation(words.counters)})(?![A-Za-z])`;
+  const counted = `[ \\t\\u00a0]?(?:\\p{Ll}[\\p{Ll}-]*[ \\t]){0,2}(${alternation([...words.frames, ...words.counters])})(?![A-Za-z])`;
   const uncounted = String.raw`(?:[ \t]\p{Ll}[\p{Ll}-]*)?(?=[ \t]?[:：][ \t]*$)`;
-  return new RegExp(`(?<![\\p{N}A-Za-z${numberChars}])(${numbers})(?:${counted}|${uncounted})`, "giu");
+  return new RegExp(`(?<![\\p{N}A-Za-z${numberChars}])(?<!\\p{Nd}[.．])(${numbers})(?:${counted}|${uncounted})`, "giu");
 };
 
 export const valueOf = (written: string, numbers: readonly string[]): number => {
