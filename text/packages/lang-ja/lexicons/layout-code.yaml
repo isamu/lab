@@ -1,0 +1,18 @@
+# 物件の間取りの記号（2LDK、1K、3SLDK、2LDK+S）を読む字（layout-code-mismatch）。頭の数が、L・D・K と S（納戸）を除いた居室の数。
+# living・dining・kitchen は数の後ろに続く一文字の記号で、間取りがその部分を持つことを言う。storage は居室に数えない部屋（S）。
+# one-room は台所が居室の中にある間取り（1R）で、内訳の台所を間取りと比べない。joiner は記号の後ろに居室に数えない部屋を足す印（2LDK+S）。
+# counter は内訳の数の後ろに付いて部屋の数を言う語（洋室2室）で、そう書いた内訳は部屋の数を比べない。
+# 記号は台所（K）か one-room（R）の字を含むときだけ読む（2L や 3D は間取りではない）。
+id: layout-code
+language: ja
+entries:
+  - { pattern: "L", group: living }
+  - { pattern: "D", group: dining }
+  - { pattern: "K", group: kitchen }
+  - { pattern: "S", group: storage }
+  - { pattern: "R", group: one-room }
+  - { pattern: "+", group: joiner }
+  - { pattern: "＋", group: joiner }
+  - { pattern: "室", group: counter }
+  - { pattern: "部屋", group: counter }
+  - { pattern: "間", group: counter }

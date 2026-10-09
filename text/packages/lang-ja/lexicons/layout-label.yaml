@@ -1,0 +1,15 @@
+# 物件の情報の項目名（layout-code-mismatch）。code は間取りの記号（2LDK）を書く項目、breakdown は部屋の内訳を一行に並べる項目。
+# room-column は部屋ごとの表の最初の列の見出し（| 部屋 | 広さ |）で、その列に並んだ部屋が内訳。表の行の見出し、列の見出し、
+# 「間取り：2LDK」の項目名が、印と空白を除いてこの語と同じときに読む。
+id: layout-label
+language: ja
+entries:
+  - { pattern: "間取り", group: code }
+  - { pattern: "間取", group: code }
+  - { pattern: "間取り詳細", group: breakdown }
+  - { pattern: "間取り内訳", group: breakdown }
+  - { pattern: "間取りの内訳", group: breakdown }
+  - { pattern: "部屋の内訳", group: breakdown }
+  - { pattern: "部屋", group: room-column }
+  - { pattern: "室名", group: room-column }
+  - { pattern: "部屋名", group: room-column }
