@@ -1,0 +1,55 @@
+# Words that make a capitalised run a name, not a term the document defines: of a law or a document (the Federal Trade
+# Commission Act, Acceptable Use Policies, the GitHub Privacy Statement), of a body (the Department of Commerce), of a place
+# (the State of New York), of the parties (the Parties, the Indemnifying Party), and words English capitalises by convention (the Internet). undefined-term leaves every run that
+# holds one of these, in its singular or plural form, as it leaves places (place-region), weekdays and months, company
+# forms and party roles. Matched as written, word by word.
+id: proper-name-word
+language: en
+entries:
+  - pattern: Act
+  - pattern: Regulation
+  - pattern: Directive
+  - pattern: Code
+  - pattern: Statute
+  - pattern: Treaty
+  - pattern: Convention
+  - pattern: Law
+  - pattern: Rule
+  - pattern: Guideline
+  - pattern: Policy
+  - pattern: Agreement
+  - pattern: Contract
+  - pattern: Terms
+  - pattern: Conditions
+  - pattern: Statement
+  - pattern: Addendum
+  - pattern: Amendment
+  - pattern: Notice
+  - pattern: Commission
+  - pattern: Authority
+  - pattern: Agency
+  - pattern: Department
+  - pattern: Office
+  - pattern: Bureau
+  - pattern: Board
+  - pattern: Committee
+  - pattern: Council
+  - pattern: Ministry
+  - pattern: Government
+  - pattern: Court
+  - pattern: Union
+  - pattern: Nations
+  - pattern: Corporation
+  - pattern: Foundation
+  - pattern: Association
+  - pattern: Institute
+  - pattern: University
+  - pattern: List
+  - pattern: State
+  - pattern: City
+  - pattern: County
+  - pattern: Province
+  - pattern: Republic
+  - pattern: Kingdom
+  - pattern: Internet
+  - pattern: Party
