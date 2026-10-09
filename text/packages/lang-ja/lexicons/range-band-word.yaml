@@ -1,0 +1,22 @@
+# 表の列や箇条書きに並べた幅（年齢、体重、金額、点数の区分）の端を言う語（range-band-mismatch）。
+# connector は二つの数の間に置く印（7〜11歳）。一つの数の後ろに置けば上が開いた幅（12歳〜）。position: before の印は、
+# 一つの数の前に置いて上の端を言う（〜6歳）。ハイフンは入れない（「- 5」は箇条書きの印か負の数）。
+# lower-inclusive は下の端を含む語（以上）、lower-exclusive は含まない語（超）、upper-inclusive は上の端を含む語（以下）、
+# upper-exclusive は含まない語（未満）。ほかの語の position は数のどちら側に書くか（書かなければ後ろ）。
+id: range-band-word
+language: ja
+entries:
+  - { pattern: "〜", group: connector, position: before }
+  - { pattern: "~", group: connector, position: before }
+  - { pattern: "-", group: connector }
+  - { pattern: "‐", group: connector }
+  - { pattern: "–", group: connector }
+  - { pattern: "—", group: connector }
+  - { pattern: "以上", group: lower-inclusive }
+  - { pattern: "超", group: lower-exclusive }
+  - { pattern: "超え", group: lower-exclusive }
+  - { pattern: "を超え", group: lower-exclusive }
+  - { pattern: "を超える", group: lower-exclusive }
+  - { pattern: "以下", group: upper-inclusive }
+  - { pattern: "まで", group: upper-inclusive }
+  - { pattern: "未満", group: upper-exclusive }

@@ -1,0 +1,16 @@
+# Column headings that say what bare numbers in a band count ("7 to 11", "15 and over") for range-band-mismatch. Group as
+# in range-band-unit. Read when the heading cell is only this word (brackets aside); a heading with a unit in brackets
+# ("Weight (kg)") is read by the unit.
+id: range-band-heading
+language: en
+entries:
+  - { pattern: "age", group: integer }
+  - { pattern: "ages", group: integer }
+  - { pattern: "age group", group: integer }
+  - { pattern: "people", group: integer }
+  - { pattern: "group size", group: integer }
+  - { pattern: "score", group: integer }
+  - { pattern: "points", group: integer }
+  - { pattern: "weight", group: continuous }
+  - { pattern: "body weight", group: continuous }
+  - { pattern: "height", group: continuous }

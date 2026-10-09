@@ -1,0 +1,35 @@
+# 幅を数える単位（range-band-mismatch）。group integer は間に値の無い数（年齢、人数、点数）で、6〜11歳のあとの12歳〜は続いている。
+# 同じ数で接する7〜12歳と12〜14歳は重なる。group continuous は間に値のある量（重さ、長さ、金額、期間）で、「〜」で同じ数に接する幅
+# （50〜60kg、60〜70kg）は続いていると読み、書いた桁の一つ分の間（59kgと60kg）も続いていると読む。時刻と日付は入れない。
+# 「年」も、暦の年（2020〜2022年）と年数を分けられないので入れない。
+id: range-band-unit
+language: ja
+entries:
+  - { pattern: "歳", group: integer }
+  - { pattern: "才", group: integer }
+  - { pattern: "人", group: integer }
+  - { pattern: "名", group: integer }
+  - { pattern: "点", group: integer }
+  - { pattern: "個", group: integer }
+  - { pattern: "件", group: integer }
+  - { pattern: "枚", group: integer }
+  - { pattern: "台", group: integer }
+  - { pattern: "泊", group: integer }
+  - { pattern: "kg", group: continuous }
+  - { pattern: "g", group: continuous }
+  - { pattern: "mg", group: continuous }
+  - { pattern: "cm", group: continuous }
+  - { pattern: "mm", group: continuous }
+  - { pattern: "m", group: continuous }
+  - { pattern: "km", group: continuous }
+  - { pattern: "円", group: continuous }
+  - { pattern: "万円", group: continuous }
+  - { pattern: "千円", group: continuous }
+  - { pattern: "億円", group: continuous }
+  - { pattern: "%", group: continuous }
+  - { pattern: "℃", group: continuous }
+  - { pattern: "か月", group: continuous }
+  - { pattern: "ヶ月", group: continuous }
+  - { pattern: "カ月", group: continuous }
+  - { pattern: "時間", group: continuous }
+  - { pattern: "分", group: continuous }
