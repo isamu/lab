@@ -126,7 +126,7 @@ const talliesOf = (names: readonly OrderName[]): Tally[] => [
 /** 多いほうが前。同じ数なら先に書いたほうが前。 */
 const byUse = (left: Tally, right: Tally): number => right.count - left.count || left.first.offset - right.first.offset;
 
-const bagOf = (keys: readonly string[]): string => keys.toSorted().join("\u0000");
+const bagOf = (keys: readonly string[]): string => keys.toSorted((left, right) => left.localeCompare(right)).join("\u0000");
 
 /** 同じ語を違う順に並べた別の書き方で、どちらも他方を含まないか。 */
 export const isReordered = (left: OrderName, right: OrderName): boolean =>
