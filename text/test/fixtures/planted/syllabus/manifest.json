@@ -1,0 +1,153 @@
+{
+  "note": "Self-written university documents (a course syllabus with a weekly schedule, and a course guide for a minor program), each in a clean version and a planted one that differs only on the lines below. They run as business/report: no genre is made for syllabi, and academic/paper reads a paper's apparatus (abstract, citations, references), which a syllabus does not have. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: duration-product-mismatch (sessions times length against the stated total hours) and date-outside-period (a deadline after the stated end of the term). yarn planted syllabus scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/syllabus",
+      "language": "ja",
+      "genre": "business/report",
+      "clean": "ja/syllabus.clean.md",
+      "planted": "ja/syllabus.planted.md",
+      "mistakes": [
+        {
+          "kind": "week-numbering",
+          "rule": "numbering-gap",
+          "line": 24,
+          "clean": "| 第6回 |",
+          "planted": "| 第7回 |"
+        },
+        {
+          "kind": "class-hours",
+          "rule": "duration-product-mismatch",
+          "line": 11,
+          "clean": "合計22.5時間",
+          "planted": "合計24時間"
+        },
+        {
+          "kind": "exam-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 37,
+          "clean": "2027年2月2日（火）",
+          "planted": "2027年2月2日（水）"
+        },
+        {
+          "kind": "grading-weights",
+          "rule": "percent-sum-mismatch",
+          "line": 45,
+          "clean": "| 期末試験 | 50% |",
+          "planted": "| 期末試験 | 60% |"
+        },
+        {
+          "kind": "deadline-after-term",
+          "rule": "date-outside-period",
+          "line": 51,
+          "clean": "2027年1月29日（金）までに",
+          "planted": "2027年2月12日（金）までに"
+        },
+        {
+          "kind": "instructor-name",
+          "rule": "name-variant",
+          "line": 57,
+          "clean": "佐藤健一宛て",
+          "planted": "佐藤賢一宛て"
+        }
+      ]
+    },
+    {
+      "id": "ja/guide",
+      "language": "ja",
+      "genre": "business/report",
+      "clean": "ja/guide.clean.md",
+      "planted": "ja/guide.planted.md",
+      "mistakes": [
+        {
+          "kind": "credits-total",
+          "rule": "total-mismatch",
+          "line": 16,
+          "clean": "| 合計 | 16単位 |",
+          "planted": "| 合計 | 18単位 |"
+        },
+        {
+          "kind": "prerequisite-name",
+          "rule": "name-variant",
+          "line": 24,
+          "clean": "まず「統計学基礎」",
+          "planted": "まず「基礎統計学」"
+        }
+      ]
+    },
+    {
+      "id": "en/syllabus",
+      "language": "en",
+      "genre": "business/report",
+      "clean": "en/syllabus.clean.md",
+      "planted": "en/syllabus.planted.md",
+      "mistakes": [
+        {
+          "kind": "week-numbering",
+          "rule": "numbering-gap",
+          "line": 24,
+          "clean": "| Week 6 |",
+          "planted": "| Week 7 |"
+        },
+        {
+          "kind": "class-hours",
+          "rule": "duration-product-mismatch",
+          "line": 11,
+          "clean": "22.5 hours in total",
+          "planted": "24 hours in total"
+        },
+        {
+          "kind": "exam-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 37,
+          "clean": "Tuesday, February 2, 2027",
+          "planted": "Wednesday, February 2, 2027"
+        },
+        {
+          "kind": "grading-weights",
+          "rule": "percent-sum-mismatch",
+          "line": 45,
+          "clean": "| Final examination | 50% |",
+          "planted": "| Final examination | 60% |"
+        },
+        {
+          "kind": "deadline-after-term",
+          "rule": "date-outside-period",
+          "line": 51,
+          "clean": "by Friday, January 29, 2027",
+          "planted": "by Friday, February 12, 2027"
+        },
+        {
+          "kind": "instructor-name",
+          "rule": "name-variant",
+          "line": 57,
+          "clean": "write to Dr. Emily Hartley",
+          "planted": "write to Dr. Emily Hartly"
+        }
+      ]
+    },
+    {
+      "id": "en/guide",
+      "language": "en",
+      "genre": "business/report",
+      "clean": "en/guide.clean.md",
+      "planted": "en/guide.planted.md",
+      "mistakes": [
+        {
+          "kind": "credits-total",
+          "rule": "total-mismatch",
+          "line": 16,
+          "clean": "| Total | 16 |",
+          "planted": "| Total | 18 |"
+        },
+        {
+          "kind": "prerequisite-name",
+          "rule": "name-variant",
+          "line": 24,
+          "clean": "start with Foundations of Statistics",
+          "planted": "start with Statistical Foundations"
+        }
+      ]
+    }
+  ]
+}
