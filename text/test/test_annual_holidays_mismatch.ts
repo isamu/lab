@@ -115,11 +115,24 @@ describe("annual-holidays pieces", () => {
     assert.deepEqual(annualHolidaysMismatches("", words), []);
   });
 
-  it("the smallest minimum of the posting's weekly phrases is the bound", () => {
-    assert.deepEqual(annualHolidaysMismatches("完全週休2日制、4週6休\n年間休日 90日", words), []);
+  it("weekly phrases with different minimums (one per role) leave the posting unchecked; the same minimum twice does not", () => {
+    assert.deepEqual(annualHolidaysMismatches("完全週休2日制、4週6休\n年間休日 70日", words), []);
     assert.deepEqual(
-      annualHolidaysMismatches("完全週休2日制、4週6休\n年間休日 70日", words).map((issue) => issue.values["minimum"]),
-      [78],
+      annualHolidaysMismatches("完全週休2日制、完全週休2日制\n年間休日 70日", words).map((issue) => issue.values["minimum"]),
+      [104],
+    );
+  });
+
+  it("a weekly phrase or a label stands apart from a longer number, and any space may stand between a count and its day", () => {
+    const english: AnnualHolidaysWords = { ...words, weekly: [{ word: "4-day work week", minimum: 156 }] };
+    assert.deepEqual(annualHolidaysMismatches("A 14-day work week rotation.\nWe give 120 days off a year.", english), []);
+    assert.deepEqual(
+      annualHolidaysMismatches("A 4-day work week.\nWe give 120   days off a year.", english).map((issue) => issue.values["days"]),
+      [120],
+    );
+    assert.deepEqual(
+      annualHolidaysMismatches("完全週休2日制\n年間休日 90  日", words).map((issue) => issue.values["days"]),
+      [90],
     );
   });
 });

@@ -5,8 +5,8 @@ import type { StructureIssue } from "./issues.ts";
  * annual-holidays-mismatch: a job posting's annual days off (年間休日 90日) fewer than its weekly days off give over a year
  * (完全週休2日制 is two days off every week, at least 104 a year). Only a lower bound: public holidays, summer and the
  * new year add to it. A weekly phrase that is not every week (週休2日制 is two days off in at least one week a month), a
- * negated one, one with an exception beside it, an approximate or open count, and two different counts leave the posting
- * unchecked. The words come from the lexicons. Pure.
+ * negated one, one with an exception beside it, an approximate or open count, two different counts and two weekly phrases
+ * with different minimums leave the posting unchecked. The words come from the lexicons. Pure.
  */
 
 export type PositionedWord = { readonly word: string; readonly position: "before" | "after" };
@@ -46,10 +46,18 @@ const SENTENCE_SPLIT = /[。！？；;]|[.!?](?=\s)/u;
 const RANGE_START = /[0-9０-９]\s*$/u;
 const COUNT = "(?<![0-9０-９.,，．])([0-9０-９]+)";
 
+const DIGIT = /[0-9０-９]/u;
+
+/** The edge a word needs on one side: a Latin word stands apart from letters, a number from digits (4-day is not in 14-day). */
+const edgeOf = (char: string): string => {
+  if (LATIN.test(char)) return "[A-Za-z]";
+  return DIGIT.test(char) ? "[0-9０-９]" : "";
+};
+
 const wordPattern = (word: string): string => {
-  const edgeStart = LATIN.test(word.charAt(0)) ? "(?<![A-Za-z])" : "";
-  const edgeEnd = LATIN.test(word.charAt(word.length - 1)) ? "(?![A-Za-z])" : "";
-  return `${edgeStart}${escapeRegExp(word)}${edgeEnd}`;
+  const start = edgeOf(word.charAt(0));
+  const end = edgeOf(word.charAt(word.length - 1));
+  return [start === "" ? "" : `(?<!${start})`, escapeRegExp(word), end === "" ? "" : `(?!${end})`].join("");
 };
 
 /** One alternation of the words, longest first so 完全週休2日制 wins over 週休2日制. Undefined when there are none. */
@@ -128,7 +136,7 @@ const gapWords = (words: AnnualHolidaysWords): string[] => [...words.links, ...w
 /** The gap without the start of a range at its end (年間休日 100〜|120日), so the range is read and found not plain. */
 const withoutRangeStart = (gap: string, days: string, words: AnnualHolidaysWords): string => {
   const connectors = alternation(words.connectors);
-  return connectors === undefined ? gap : gap.replace(new RegExp(`[0-9０-９]+\\s?(?:${days})?\\s?(?:${connectors})\\s*$`, "iu"), "");
+  return connectors === undefined ? gap : gap.replace(new RegExp(`[0-9０-９]+\\s*(?:${days})?\\s*(?:${connectors})\\s*$`, "iu"), "");
 };
 
 /**
@@ -139,7 +147,7 @@ const countAfterLabel = (text: string, label: Span, words: AnnualHolidaysWords):
   const days = alternation(words.days);
   if (days === undefined) return undefined;
   const end = statementEnd(text, label.end);
-  const match = new RegExp(`${COUNT}\\s?(?:${days})`, "iu").exec(text.slice(label.end, end));
+  const match = new RegExp(`${COUNT}\\s*(?:${days})`, "iu").exec(text.slice(label.end, end));
   if (match === null || !isPlainGap(withoutRangeStart(text.slice(label.end, label.end + match.index), days, words), gapWords(words))) return undefined;
   const span = { start: label.end + match.index, end: label.end + match.index + match[0].length };
   return { ...span, days: countOf(match[1] ?? ""), clear: !isMarked(text, span, words) };
@@ -149,7 +157,7 @@ const countAfterLabel = (text: string, label: Span, words: AnnualHolidaysWords):
 const countsBeforeLabels = (text: string, words: AnnualHolidaysWords): DayCount[] => {
   const labels = alternation(wordsAt(words.labels, "after"));
   if (labels === undefined) return [];
-  return [...text.matchAll(new RegExp(`${COUNT}\\s?(?:${labels})`, "giu"))].map((match) => {
+  return [...text.matchAll(new RegExp(`${COUNT}\\s*(?:${labels})`, "giu"))].map((match) => {
     const span = { start: match.index, end: match.index + match[0].length };
     return { ...span, days: countOf(match[1] ?? ""), clear: !isMarked(text, span, words) };
   });
@@ -186,10 +194,14 @@ export const weeklyIn = (text: string, words: AnnualHolidaysWords): Weekly[] => 
   });
 };
 
-/** The fewest days off a year every weekly phrase gives together; undefined when there is none or one is not plain. */
-const minimumOf = (weekly: readonly Weekly[]): Weekly | undefined => {
-  if (weekly.length === 0 || weekly.some((entry) => !entry.clear)) return undefined;
-  return weekly.reduce((least, entry) => ((entry.minimum ?? 0) < (least.minimum ?? 0) ? entry : least));
+/**
+ * The weekly phrase whose minimum all the document's weekly phrases agree on; undefined when there is none, one is not
+ * plain, or two give different minimums (完全週休2日制 for one role and 完全週休3日制 for another).
+ */
+const agreedWeekly = (weekly: readonly Weekly[]): Weekly | undefined => {
+  const [first] = weekly;
+  if (first === undefined) return undefined;
+  return weekly.every((entry) => entry.clear && entry.minimum === first.minimum) ? first : undefined;
 };
 
 /** The one count all the document's counts agree on; undefined when there is none, one is not plain, or two differ. */
@@ -203,7 +215,7 @@ const agreedCount = (counts: readonly DayCount[]): DayCount | undefined => {
 export const annualHolidaysMismatches = (text: string, words: AnnualHolidaysWords): StructureIssue[] => {
   const counts = annualCountsIn(text, words);
   const count = agreedCount(counts);
-  const weekly = minimumOf(weeklyIn(text, words));
+  const weekly = agreedWeekly(weeklyIn(text, words));
   if (count === undefined || weekly?.minimum === undefined || count.days >= weekly.minimum) return [];
   const values = { days: count.days, weekly: text.slice(weekly.start, weekly.end), minimum: weekly.minimum };
   return counts.map((each) => ({ offset: each.start, values: { ...values, written: text.slice(each.start, each.end) } }));
