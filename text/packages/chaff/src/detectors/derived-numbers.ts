@@ -6,7 +6,7 @@ import { yearOf, type DurationUnit } from "../derived/date-arithmetic.ts";
 import { durationMismatches, type DatedValue, type Duration } from "../derived/durations.ts";
 import { elapsedMismatches, type Elapsed, type OriginWord, type Year } from "../derived/elapsed.ts";
 import { numberWordCounts } from "../derived/number-word-counts.ts";
-import { hyphenatedCounts } from "../derived/hyphenated-counts.ts";
+import { hyphenatedCounts, withoutArticle } from "../derived/hyphenated-counts.ts";
 import {
   nightsDaysMismatches,
   nightsDaysPairs,
@@ -75,11 +75,11 @@ const datesOf = (tree: StructureNode): DatedValue[] =>
 
 const NEAR = 12;
 
-const textBefore = (doc: ProseDocument, span: Span): string =>
-  doc.source
-    .slice(Math.max(0, span.start - NEAR), span.start)
-    .toLowerCase()
-    .trimEnd();
+type Attributed = Span & { readonly attributive?: boolean };
+
+/** 名詞の前の期間は、冠詞の前まで見る（up to a 3-night stay の up to）。 */
+const textBefore = (doc: ProseDocument, span: Attributed): string =>
+  withoutArticle(doc.source.slice(Math.max(0, span.start - NEAR), span.start).toLowerCase(), span.attributive === true ? patternsOf(doc, "article") : []);
 const textAfter = (doc: ProseDocument, span: Span): string =>
   doc.source
     .slice(span.end, span.end + NEAR)
@@ -87,7 +87,7 @@ const textAfter = (doc: ProseDocument, span: Span): string =>
     .trimStart();
 
 /** 「約3か月」「3か月程度」"about 3 months": 目安の期間は足し算に使わない。 */
-const isApproximate = (doc: ProseDocument, span: Span): boolean =>
+const isApproximate = (doc: ProseDocument, span: Attributed): boolean =>
   positioned(doc, "approximate-marker", "before").some((word) => textBefore(doc, span).endsWith(word)) ||
   positioned(doc, "approximate-marker", "after").some((word) => textAfter(doc, span).startsWith(word));
 

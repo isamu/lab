@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { hyphenatedCounts } from "../packages/chaff/src/derived/hyphenated-counts.ts";
+import { hyphenatedCounts, withoutArticle } from "../packages/chaff/src/derived/hyphenated-counts.ts";
 
 const UNITS = ["day", "days", "month", "months", "night", "nights"];
 
@@ -40,5 +40,24 @@ describe("hyphenatedCounts", () => {
   it("treats the unit list as literal words", () => {
     assert.deepEqual(read("a 3-d.y trial", ["d.y"]), ["3-d.y=3d.y"]);
     assert.deepEqual(read("a 3-day trial", ["d.y"]), []);
+  });
+});
+
+describe("withoutArticle", () => {
+  const ARTICLES = ["a", "an", "the"];
+
+  it("drops the article at the end, and the space before it", () => {
+    assert.equal(withoutArticle("may book up to a ", ARTICLES), "may book up to");
+    assert.equal(withoutArticle("it is about an", ARTICLES), "it is about");
+    assert.equal(withoutArticle("for The ", ARTICLES), "for");
+    assert.equal(withoutArticle("a ", ARTICLES), "");
+  });
+
+  it("keeps a word that only ends in an article's letters, and text with no article", () => {
+    assert.equal(withoutArticle("a pizza ", ARTICLES), "a pizza");
+    assert.equal(withoutArticle("up to ", ARTICLES), "up to");
+    assert.equal(withoutArticle("", ARTICLES), "");
+    assert.equal(withoutArticle("up to a ", []), "up to a");
+    assert.equal(withoutArticle("up to a ", [""]), "up to a");
   });
 });

@@ -103,6 +103,11 @@ describe("duration-mismatch", () => {
     assert.deepEqual(durationEn("Our 24-hour support desk opens April 1, 2026 and closes June 15, 2026."), []);
     assert.deepEqual(durationEn("The 3-month-old program started April 1, 2026 and ends June 15, 2026."), []);
   });
+
+  it("a rough mark before the article of a length before its noun", () => {
+    assert.deepEqual(durationEn("It is about a 3-day course from May 1, 2026 to May 6, 2026."), []);
+    assert.deepEqual(durationEn("It is a 3-day course from May 1, 2026 to May 6, 2026."), ["May 6, 2026→2026-05-03"]);
+  });
 });
 
 const stayFindings = (source: string, adapter: LanguageAdapter, language: string): string[] =>
@@ -169,6 +174,8 @@ describe("duration-mismatch: nights of a stay", () => {
   it("nights before their noun beside a much longer span are the length of an offer", () => {
     assert.deepEqual(stayEn("Our 2-night spa package is available October 1, 2026 to December 20, 2026."), []);
     assert.deepEqual(stayEn("Our 2-night spa package runs October 1, 2026 to October 4, 2026."), ["nights:2-night→3"]);
+    assert.deepEqual(stayEn("Guests may book up to a 3-night stay between Oct 1 and Oct 6."), []);
+    assert.deepEqual(stayEn("Guests may book a 3-night stay between Oct 1 and Oct 6."), ["nights:3-night→5"]);
   });
 
   it("N泊M日 beside two dates is judged by its nights, once", () => {

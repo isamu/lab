@@ -28,3 +28,11 @@ export const hyphenatedCounts = (text: string, units: readonly string[]): Hyphen
       : [{ start: match.index, end: match.index + match[0].length, amount: Number((match[1] ?? "").normalize("NFKC")), unit, attributive: true }];
   });
 };
+
+/** The text before an attributive count without the article its noun takes ("up to a" → "up to"): a rough mark stands before it. Pure. */
+export const withoutArticle = (before: string, articles: readonly string[]): string => {
+  const trimmed = before.trimEnd();
+  const lower = trimmed.toLowerCase();
+  const article = articles.find((word) => word !== "" && (lower === word.toLowerCase() || lower.endsWith(` ${word.toLowerCase()}`)));
+  return article === undefined ? trimmed : trimmed.slice(0, trimmed.length - article.length).trimEnd();
+};
