@@ -1,0 +1,15 @@
+# Words for what may come after an event (a survey, a payment, the slides). With one in the same sentence,
+# deadline-after-event does not compare the date even when a registration word is there.
+id: event-aside
+language: en
+entries:
+  - pattern: survey
+  - pattern: feedback
+  - pattern: questionnaire
+  - pattern: evaluation
+  - pattern: payment
+  - pattern: invoice
+  - pattern: refund
+  - pattern: recording
+  - pattern: slides
+  - pattern: report
