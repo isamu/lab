@@ -1,0 +1,12 @@
+# Endings taken off a word before two names are compared for the same words in another order: "Statistics" and
+# "Statistical" are both "statist", so "Foundations of Statistics" and "Statistical Foundations" hold the same words.
+# The longest ending that leaves four letters or more is taken off, one only.
+id: name-stem-suffix
+language: en
+entries:
+  - pattern: ical
+  - pattern: ics
+  - pattern: ic
+  - pattern: al
+  - pattern: es
+  - pattern: s

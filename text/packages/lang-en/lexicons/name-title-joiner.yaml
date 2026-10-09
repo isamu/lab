@@ -1,0 +1,9 @@
+# Small words inside a Title Case name ("Foundations of Statistics", "Bank of the West"). name-variant reads capitalised
+# words across them as one name when it compares names written with the same words in another order. "and", "to" and
+# "with" are left out: across them stand two names ("Texas and Florida"), not one.
+id: name-title-joiner
+language: en
+entries:
+  - pattern: of
+  - pattern: for
+  - pattern: the

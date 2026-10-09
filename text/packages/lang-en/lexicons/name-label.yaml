@@ -1,0 +1,10 @@
+# Labels a name is written after ("Prerequisite: Foundations of Statistics"). name-variant reads what follows the colon, up
+# to the punctuation, as a name, and compares it with names written with the same words in another order.
+id: name-label
+language: en
+entries:
+  - pattern: Prerequisite
+  - pattern: Prerequisites
+  - pattern: Course
+  - pattern: Course name
+  - pattern: Course title

@@ -8,6 +8,7 @@ import { tableBodyCells } from "../facts/table-facts.ts";
 import { cellNamesIn, cellNameVariants, proseNamesOf } from "../table-names.ts";
 import { placeMentionsIn, placeVariants, type PlaceReader, type PlaceWord } from "../place-names.ts";
 import type { Token } from "../plugin.ts";
+import { labelledSpans, orderNamesOf, quotedSpans, stemOf, titleCaseSpans, wordOrderVariants, type OrderWord } from "../name-word-order.ts";
 
 // 人の名前と読ませる敬称（様、さん）は語彙表 person-suffix、人を指す前置き（担当の）は person-lead、名前のすぐ後ろに来る語
 // （です、まで）は name-particle、字体の違う同じ字（斎・斉・齋）は name-variant-char が組（group）ごとに言う。
@@ -83,6 +84,44 @@ const placeFindings = (doc: ProseDocument, prose: string, reported: readonly Rep
     .filter(({ mention }) => !overlapsAny(reported, mention.offset, mention.surface.length))
     .map(({ mention, usual, kind }) => ({ offset: mention.offset, name: mention.surface, usual, kind }));
 
+/** 名前の中で比べる語の品詞。助詞や冠詞（の、of）は語の順に数えない。 */
+const CONTENT_POS: ReadonlySet<string> = new Set(["NOUN", "PROPN", "ADJ", "NUM", "VERB"]);
+
+/** 欄の後ろの名前を切る所: 内容語でも名前の中の小さな語（of）でもない語の頭。 */
+const orderStopsOf = (doc: ProseDocument): number[] => {
+  const joiners = new Set(patternsOf(doc, "name-title-joiner"));
+  return tokensOf(doc)
+    .filter((token) => !CONTENT_POS.has(token.pos) && !joiners.has(token.surface.toLowerCase()))
+    .map((token) => token.span.start);
+};
+
+const sentenceStartsOf = (doc: ProseDocument): ReadonlySet<number> => new Set(doc.sentences.flatMap((sentence) => sentence.tokens?.[0]?.span.start ?? []));
+
+const orderWordsOf = (doc: ProseDocument): OrderWord[] => {
+  const suffixes = patternsOf(doc, "name-stem-suffix");
+  return tokensOf(doc)
+    .filter((token) => CONTENT_POS.has(token.pos))
+    .map((token) => ({ start: token.span.start, end: token.span.end, key: stemOf(token.surface, suffixes) }));
+};
+
+/**
+ * 語の順を入れ替えて書いた同じ名前（統計学基礎 と 基礎統計学）。名前と読める所は、括弧の中（name-quote）、大文字で始まる語の並び
+ * （name-title-joiner を挟んでよい）、名前を書く欄の後ろ（name-label）。大文字の語の並びどうしは、片方が表の升まるごとに
+ * 書いた名前のときだけ比べる。ほかの見方がすでに指した所と重なるものは除く。
+ */
+const orderFindings = (doc: ProseDocument, prose: string, reported: readonly Reported[]): Reported[] => {
+  const starts = sentenceStartsOf(doc);
+  const spans = [
+    ...quotedSpans(prose, patternsOf(doc, "name-quote")),
+    ...titleCaseSpans(prose, patternsOf(doc, "name-title-joiner"), (offset) => starts.has(offset)),
+    ...labelledSpans(prose, patternsOf(doc, "name-label")),
+  ];
+  const cells = new Set(tableBodyCells(proseAndTablesOf(doc)).map((cell) => cell.text.trim()));
+  return wordOrderVariants(orderNamesOf(doc.source, spans, orderWordsOf(doc), orderStopsOf(doc)), cells)
+    .filter(({ name }) => !overlapsAny(reported, name.offset, name.surface.length))
+    .map(({ name, usual }) => ({ offset: name.offset, name: name.surface, usual, kind: "order" }));
+};
+
 /** 人・製品・会社の名前の現れ。解析器が固有名詞と読む語、敬称の付く名前、前後の語で名前と読める漢字。 */
 const nameMentionsOf = (doc: ProseDocument, prose: string, chars: VariantChars): NameMention[] => {
   const cues: NameCues = { leads: patternsOf(doc, "person-lead"), suffixes: patternsOf(doc, "person-suffix"), particles: patternsOf(doc, "name-particle") };
@@ -117,7 +156,8 @@ export const nameVariant: Detector = (doc): Finding[] => {
   }));
   const namesAndCompanies = [...names, ...companyFindings(doc, prose, names)];
   const withTables = [...namesAndCompanies, ...tableFindings(doc, prose, mentions, namesAndCompanies)];
-  return [...withTables, ...placeFindings(doc, prose, withTables)]
+  const withPlaces = [...withTables, ...placeFindings(doc, prose, withTables)];
+  return [...withPlaces, ...orderFindings(doc, prose, withPlaces)]
     .toSorted((left, right) => left.offset - right.offset)
     .map(({ offset, name, usual, kind }) => ({
       rule: "",

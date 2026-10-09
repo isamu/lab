@@ -1,0 +1,7 @@
+# 名前を囲む括弧（「統計学基礎」）。開きと閉じの二字で一つの組。name-variant は、この中の短い語の並びを名前と読み、
+# 同じ語を違う順に並べた名前（統計学基礎 と 基礎統計学）を比べる。
+id: name-quote
+language: ja
+entries:
+  - pattern: 「」
+  - pattern: 『』
