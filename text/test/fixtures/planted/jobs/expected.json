@@ -4,20 +4,20 @@
       "deadline-before-posting": "2/2",
       "duty-numbering": "2/2",
       "salary-range-reversed": "2/2",
-      "annual-pay": "0/1",
+      "annual-pay": "1/1",
       "working-hours": "2/2",
       "annual-holidays": "0/1",
-      "trial-period": "0/1",
+      "trial-period": "1/1",
       "company-name": "1/2"
     },
     "en": {
       "deadline-before-posting": "2/2",
       "duty-numbering": "2/2",
       "salary-range-reversed": "2/2",
-      "annual-pay": "0/1",
+      "annual-pay": "1/1",
       "working-hours": "2/2",
       "annual-holidays": "0/1",
-      "trial-period": "0/1",
+      "trial-period": "1/1",
       "company-name": "2/2"
     }
   },

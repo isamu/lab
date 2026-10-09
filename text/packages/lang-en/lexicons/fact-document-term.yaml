@@ -1,0 +1,10 @@
+# Names of an item that has one value for the whole document (fact-conflict). A table cell's value is compared with a
+# sentence's value in another section. Names with the same group are the same item. A qualified name ("part-time
+# probation period") is a different name and is not compared.
+id: fact-document-term
+language: en
+entries:
+  - { pattern: probation, group: trial-period }
+  - { pattern: probation period, group: trial-period }
+  - { pattern: probationary period, group: trial-period }
+  - { pattern: trial period, group: trial-period }
