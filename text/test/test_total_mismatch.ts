@@ -100,6 +100,16 @@ describe("total-mismatch", () => {
     assert.deepEqual(found(doc("- 設計 100,000円", "- 実装 200,000円", "- **計**: 999,000円"), ja, "ja"), ["999,000円≠300,000円"]);
   });
 
+  it("a total word with a period, due or grand beside it is a total line; a label with another word is not", () => {
+    const costs = (label: string, total: string): string =>
+      doc("| Item | Amount |", "| --- | --- |", "| Rent | $1,850 |", "| Service charge | $120 |", "| Parking space | $60 |", `| ${label} | ${total} |`);
+    ["Total per month", "Monthly total", "Total due", "Total monthly cost", "Grand total", "Total (incl. tax)"].forEach((label) => {
+      assert.deepEqual(found(costs(label, "$2,180")), ["$2,180≠$2,030"], label);
+      assert.deepEqual(found(costs(label, "$2,030")), [], label);
+    });
+    ["Total area", "Total floor space", "Total tax", "Rent per month"].forEach((label) => assert.deepEqual(found(costs(label, "$2,180")), [], label));
+  });
+
   it("one item above a total is not a sum; a total in running text is not a line of a list", () => {
     assert.deepEqual(found(doc("- Deposit: $100", "- Total: $500")), []);
     assert.deepEqual(found(doc("A costs $100 and B costs $200.", "", "Total: $999")), []);

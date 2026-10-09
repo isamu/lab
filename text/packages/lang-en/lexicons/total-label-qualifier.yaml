@@ -1,0 +1,33 @@
+# Words that may stand beside a total word (total-label) in a total line's label and keep it a total line:
+# "Total per month", "Monthly total", "Total due", "Total monthly cost". position: before or after the total word only;
+# without it, either side. A note in parentheses ("Total (incl. tax)") is always allowed. A label with any other word
+# ("Total area", "Total tax", "A total") is not read as a total line, because its amount need not be the sum of the
+# lines above it.
+id: total-label-qualifier
+language: en
+entries:
+  - { pattern: grand, position: before }
+  - { pattern: overall, position: before }
+  - { pattern: daily }
+  - { pattern: weekly }
+  - { pattern: monthly }
+  - { pattern: quarterly }
+  - { pattern: yearly }
+  - { pattern: annual }
+  - { pattern: per, position: after }
+  - { pattern: a, position: after }
+  - { pattern: each, position: after }
+  - { pattern: every, position: after }
+  - { pattern: day, position: after }
+  - { pattern: week, position: after }
+  - { pattern: month, position: after }
+  - { pattern: quarter, position: after }
+  - { pattern: year, position: after }
+  - { pattern: annually, position: after }
+  - { pattern: due, position: after }
+  - { pattern: payable, position: after }
+  - { pattern: amount, position: after }
+  - { pattern: cost, position: after }
+  - { pattern: costs, position: after }
+  - { pattern: price, position: after }
+  - { pattern: payment, position: after }
