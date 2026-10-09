@@ -1,0 +1,36 @@
+# Times in a step that are not how long the step takes (step-time-sum-mismatch): a moment ("after 10 minutes", "10 minutes
+# later") or a repeat ("every 5 minutes"). before: written before the length; after: after it. group: range marks what joins
+# the two ends of a range ("10 to 15 minutes"); a step with a range is not read.
+id: step-time-not-own
+language: en
+entries:
+  - pattern: after
+    position: before
+  - pattern: every
+    position: before
+  - pattern: within
+    position: before
+  - pattern: the last
+    position: before
+  - pattern: later
+    position: after
+  - pattern: after
+    position: after
+  - pattern: before
+    position: after
+  - pattern: into
+    position: after
+  - pattern: ago
+    position: after
+  - pattern: in advance
+    position: after
+  - pattern: to
+    group: range
+  - pattern: or
+    group: range
+  - pattern: "-"
+    group: range
+  - pattern: –
+    group: range
+  - pattern: —
+    group: range
