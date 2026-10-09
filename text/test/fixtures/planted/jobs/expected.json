@@ -1,7 +1,7 @@
 {
   "recall": {
     "ja": {
-      "deadline-before-posting": "0/2",
+      "deadline-before-posting": "2/2",
       "duty-numbering": "2/2",
       "salary-range-reversed": "2/2",
       "annual-pay": "0/1",
@@ -11,7 +11,7 @@
       "company-name": "0/2"
     },
     "en": {
-      "deadline-before-posting": "0/2",
+      "deadline-before-posting": "2/2",
       "duty-numbering": "2/2",
       "salary-range-reversed": "2/2",
       "annual-pay": "0/1",
