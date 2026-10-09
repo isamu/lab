@@ -11,7 +11,7 @@ import { factWordsOf } from "./fact-consistency.ts";
 import { quoteAt } from "./structure-tree.ts";
 
 /** 量の種類ごとの語彙表。weight が基準の単位への倍率で、同じ単位を二度書けば倍率が二つ（GB の 10^9 と 2^30）。 */
-const DIMENSIONS = ["unit-length", "unit-mass", "unit-time", "unit-volume", "unit-data"] as const;
+const DIMENSIONS = ["unit-length", "unit-mass", "unit-time", "unit-volume", "unit-data", "unit-area"] as const;
 
 const unitsOf = (doc: ProseDocument): MeasureUnit[] =>
   DIMENSIONS.flatMap((dimension) => {
