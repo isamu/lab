@@ -2,6 +2,40 @@
 
 Newest first.
 
+## 0.31.0 — 2026-10-10
+
+chaff now checks rental listings, product specification sheets, dosage leaflets, recipes, event notices and privacy
+policies. Amounts that should add up are checked in grams, millilitres and metres as well as money; a walking time
+against its distance, a floor-plan code against the rooms listed, a deposit in months against the rent, a battery's
+runtime against its capacity, and a dosing interval against the count a day. Measured values are compared
+between a table and the text, with a decimal agreeing within its last written digit.
+
+### Rules
+
+- New: walk-time-distance-mismatch, with a `listing` document profile that holds the 80 m per minute standard (#890).
+- New: layout-code-mismatch, a floor-plan code (2LDK, 3 bedrooms) against the rooms listed (#892).
+- New: rent-multiple-mismatch, a deposit or key money whose amount is not its months of rent (#897).
+- New: capacity-runtime-mismatch, a runtime longer than capacity ÷ consumption (#900).
+- New: quantity-range-reversed, a measured range whose upper end is below its lower end (-10〜-40℃, 5–2 kg) (#902).
+- New: interval-count-mismatch, a minimum interval between doses and a count a day that cannot both hold (#884).
+- New: time-range-reversed, deadline-after-event, count-over-capacity, scaled-quantity-mismatch, contact-variant,
+  step-time-sum-mismatch, date-stamp-order, unlisted-item-used and range-band-mismatch (#876).
+- total-mismatch adds mass, volume and length with unit conversion, and reads a total label with a qualifier
+  ("Total per month", "Monthly total") (#878, #888).
+- unit-mismatch reads areas (㎡, 坪, sq ft), inch as "in" beside a size word, and Japanese values written as
+  「幅は 14 cm です」; fact-conflict reads measured values (#883, #898, #899).
+- due-before-issue reads a move-in date before a listing date, as labelled date pairs from a lexicon (#889).
+- name-variant reads building names, ヶ / ケ / が inside a name, and a model number written two ways (#894, #896, #901).
+- orthographic-variant counts table body cells; date-outside-period leaves after-term work (成績発表, grades released)
+  silent and takes a term's year for a deadline without one (#886, #893).
+- Fewer false findings: a katakana term inside a longer katakana name, contact lines, time lengths with an empty
+  lexicon (#881, #885, #887), and the precision fixes in #876.
+
+### Tests and tools
+
+- Planted sets for rental listings, job postings, events, policies, recipes and dosage (#877, #903, #876).
+- A test that place names in table cells are compared by reading (#891).
+
 ## 0.30.0 — 2026-10-09
 
 Every mistake in the planted sets is now caught, with no finding on their clean documents. New checks cover
