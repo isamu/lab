@@ -1,0 +1,14 @@
+# 文や表の欄で値の種類を言う語と、その種類（group）（return-type-mismatch）。「幅を文字列で返します」は string。
+# コードに書いた型（string[]、int）は rule が自分で読む。
+id: return-type-word
+language: ja
+entries:
+  - { pattern: 文字列, group: string }
+  - { pattern: 数値, group: number }
+  - { pattern: 整数, group: number }
+  - { pattern: 真偽値, group: boolean }
+  - { pattern: 真理値, group: boolean }
+  - { pattern: ブール値, group: boolean }
+  - { pattern: 論理値, group: boolean }
+  - { pattern: 配列, group: array }
+  - { pattern: リスト, group: array }

@@ -1,0 +1,11 @@
+# 「どんなとき」を言う節を閉じる語（return-type-mismatch）。「文字列が空のときに true を返します」の文字列は入力の話
+# なので、これらの語より後（動詞の側）だけを読む。
+id: return-clause
+language: ja
+entries:
+  - pattern: とき
+  - pattern: 時に
+  - pattern: 場合
+  - pattern: ならば
+  - pattern: なら
+  - pattern: 際
