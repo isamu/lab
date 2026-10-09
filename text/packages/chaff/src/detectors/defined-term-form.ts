@@ -238,14 +238,36 @@ const bracketBefore = (source: string, definition: Span): number => {
 
 export type RepeatedName = { readonly offset: number; readonly name: string; readonly term: string; readonly line: number };
 
-/** A line that holds the short name too (甲 株式会社みなと) or little else than the long name: a signature block names both. */
+/** How many characters a line may add to the long name and still be a line that only names the party. */
+const SLACK = 12;
+
+/** A field label on its own line, after a list marker (Attention:, 宛先：): short, and not a sentence. */
+const FIELD_LABEL = /^(?:[-*+]\s+)?[^:：。.]{1,20}[:：]\s*/u;
+/**
+ * What may follow the name in an address field: nothing, a comma and the next part (, Member Support), or a space and a part
+ * that does not go on in lower case (株式会社みなと 総務部). A particle or a verb (は支払う, shall pay) makes the line a sentence.
+ */
+const NEXT_PART = /^\.?(?:$|\s*[,、，]|\s+(?!\p{Ll}))/u;
+const CLOSES_SENTENCE = /[.。!?！？]$/u;
+
+/** A field whose value is the name and a little more, not a sentence (Attention: Hibari Lab Inc., Member Support). */
+const isNameField = (line: string, name: string): boolean => {
+  const label = FIELD_LABEL.exec(line);
+  const value = label === null ? "" : line.slice(label[0].length);
+  const rest = value.slice(name.length);
+  return value.startsWith(name) && NEXT_PART.test(rest) && [...rest].length <= SLACK * 2 && !CLOSES_SENTENCE.test(rest.slice(1));
+};
+
+/**
+ * A line that holds the short name too (甲 株式会社みなと), little else than the long name (a signature block names both),
+ * or a field whose value is the name (Attention: …, 宛先：…): an address gives the name in full.
+ */
 const isNameLine = (source: string, offset: number, name: string, term: string): boolean => {
   const start = source.lastIndexOf("\n", offset - 1) + 1;
   const end = source.indexOf("\n", offset);
   const line = source.slice(start, end === -1 ? source.length : end).trim();
-  const SLACK = 12;
   // The short name inside the long one ("Pinecone" in "Pinecone Software Ltd") is not the short name written beside it.
-  return line.replaceAll(name, "").includes(term) || [...line].length <= [...name].length + SLACK;
+  return line.replaceAll(name, "").includes(term) || [...line].length <= [...name].length + SLACK || isNameField(line, name);
 };
 
 /** A name inside a longer word (東京大学 in 東京大学大学院, Acme in Acmeware) is part of another name. */
