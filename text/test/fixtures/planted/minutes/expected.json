@@ -7,7 +7,7 @@
       "next-meeting-weekday": "2/2",
       "person-name-two-ways": "1/2",
       "salary-range-reversed": "1/1",
-      "required-as-preferred": "0/1",
+      "required-as-preferred": "1/1",
       "working-hours-total": "1/1"
     },
     "en": {
@@ -17,7 +17,7 @@
       "next-meeting-weekday": "2/2",
       "person-name-two-ways": "1/2",
       "salary-range-reversed": "1/1",
-      "required-as-preferred": "0/1",
+      "required-as-preferred": "1/1",
       "working-hours-total": "1/1"
     }
   },

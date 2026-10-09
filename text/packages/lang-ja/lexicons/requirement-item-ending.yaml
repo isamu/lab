@@ -1,0 +1,14 @@
+# 応募の条件の項目の終わりに付くだけで、技能そのものではない語（required-listed-as-preferred）。外してから比べる。
+id: requirement-item-ending
+language: ja
+entries:
+  - pattern: のある方
+  - pattern: がある方
+  - pattern: をお持ちの方
+  - pattern: ができる方
+  - pattern: の方
+  - pattern: 方
+  - pattern: があること
+  - pattern: のあること
+  - pattern: であること
+  - pattern: こと
