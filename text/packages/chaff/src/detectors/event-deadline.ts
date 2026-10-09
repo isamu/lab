@@ -5,6 +5,7 @@ import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { deadlinesAfterEvent, type EventDeadlineWords } from "../structure/deadline-after-event.ts";
 import { proseAndTablesOf } from "../table-text.ts";
 import { datedPoints, quoteAt } from "./structure-tree.ts";
+import { readableDates, withReadableDates } from "./readable-dates.ts";
 
 const patternsOf = (doc: ProseDocument, lexicon: string): string[] => (doc.lexicons[lexicon] ?? []).map((entry) => entry.pattern);
 
@@ -24,6 +25,6 @@ export const eventDeadline: Detector = (doc): Finding[] => {
     line: 0,
     column: 0,
     quote: quoteAt(doc.source, issue.offset),
-    values: { ...issue.values, offset: issue.offset },
+    values: { ...withReadableDates(issue.values, ["deadline", "event"], readableDates(doc)), offset: issue.offset },
   }));
 };

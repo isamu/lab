@@ -5,6 +5,7 @@ import { inDocumentOrder } from "../structure/issues.ts";
 import { stampOrderIssues } from "../structure/stamp-order.ts";
 import { proseAndTablesOf } from "../table-text.ts";
 import { quoteAt } from "./structure-tree.ts";
+import { readableDates, withReadableDates } from "./readable-dates.ts";
 
 export const dateStampOrder: Detector = (doc, options): Finding[] => {
   if (doc.structure === undefined) return [];
@@ -21,7 +22,7 @@ export const dateStampOrder: Detector = (doc, options): Finding[] => {
       line: 0,
       column: 0,
       quote: quoteAt(doc.source, offset),
-      values: { ...dated, offset },
+      values: { ...withReadableDates(dated, ["established", "updated"], readableDates(doc)), offset },
       ...(side === undefined ? {} : { variant: String(side) }),
     };
   });

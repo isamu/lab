@@ -23,6 +23,7 @@ import { clockTimes } from "../compare/clock-time.ts";
 import { secondsOf, type Mark } from "../structure/time-marks.ts";
 import { proseAndTablesOf } from "../table-text.ts";
 import { quoteAt } from "./structure-tree.ts";
+import { readableDates } from "./readable-dates.ts";
 
 /** 期間の単位の語彙表。木の数量の単位がどれかに入れば、その単位の期間。 */
 export const DURATION_LEXICONS: readonly (readonly [string, DurationUnit])[] = [
@@ -211,7 +212,7 @@ export const durationMismatch: Detector = (doc): Finding[] => {
       start: written(doc, mismatch.start),
       duration: written(doc, mismatch.duration),
       end: written(doc, mismatch.end),
-      expected: mismatch.expected,
+      expected: readableDates(doc)(mismatch.expected),
     }),
   );
   const stays = [...stayNightsMismatches(sentencesOf(doc), dates, nights), ...tableNightsMismatches(proseAndTables, dates, stayColumnWords(doc))];
