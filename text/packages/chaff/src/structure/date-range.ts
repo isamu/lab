@@ -107,20 +107,48 @@ const sentenceAround = (source: string, start: DatedSpan, end: DatedSpan): { rea
   return { text: flat(source.slice(paragraphStart + from, end.end + to)), before: flat(head.slice(from)).trimEnd() };
 };
 
-/** 前の語と間の語の組（from … to）。同じ文のどこかに変更の語（moved、postponed）があれば、日付を動かした文で、期間ではない。 */
-const framed = (source: string, start: DatedSpan, end: DatedSpan, joint: string, words: RangeWords): boolean => {
-  const sentence = sentenceAround(source, start, end);
-  const before = withoutTrailingWeekday(sentence.before, words.weekdays ?? []);
-  const frame = words.frames.find((candidate) => candidate.joint === joint && endsWithWord(before, candidate.lead));
-  return frame !== undefined && !words.changes.some((change) => hasWord(sentence.text, change.toLowerCase()));
+/** 同じ文のどこかに変更の語（moved、postponed）があれば、日付を動かした文で、期間ではない。 */
+const isChange = (source: string, start: DatedSpan, end: DatedSpan, words: RangeWords): boolean => {
+  const sentence = sentenceAround(source, start, end).text;
+  return words.changes.some((change) => hasWord(sentence, change.toLowerCase()));
 };
 
-const isRange = (source: string, start: DatedSpan, end: DatedSpan, words: RangeWords): boolean => {
+/** 前の語と間の語の組（from … to）。 */
+const framed = (source: string, start: DatedSpan, end: DatedSpan, joint: string, words: RangeWords): boolean => {
+  const before = withoutTrailingWeekday(sentenceAround(source, start, end).before, words.weekdays ?? []);
+  const frame = words.frames.find((candidate) => candidate.joint === joint && endsWithWord(before, candidate.lead));
+  return frame !== undefined && !isChange(source, start, end, words);
+};
+
+const FULL_DATE = /^\d{4}-\d{2}-\d{2}$/u;
+
+/** 日付の前に曜日の名を添えた（Monday, October 5, 2026）。同じ行の、日付の直前だけを見る。 */
+const weekdayBefore = (source: string, date: DatedSpan, weekdays: readonly string[]): boolean => {
+  const before = source.slice(source.lastIndexOf("\n", date.offset - 1) + 1, date.offset).trimEnd();
+  return before !== "" && withoutTrailingWeekday(before, weekdays) !== before;
+};
+
+/**
+ * 前の語の無い組の間の語だけ（October 5, 2026 to October 30, 2026）。「to」は日付を動かす文にも出るので、
+ * 期間の語で始まる行（Dates: …）か、両方が曜日を添えた年月日のときだけ期間と読む。変更の語のある文は読まない。
+ */
+const bareFramed = (source: string, start: DatedSpan, end: DatedSpan, written: string, words: RangeWords, isLabelled: (offset: number) => boolean): boolean => {
+  const weekdays = words.weekdays ?? [];
+  const joint = withoutTrailingWeekday(written, weekdays);
+  if (!words.frames.some((frame) => frame.joint === joint)) return false;
+  const withWeekdays = FULL_DATE.test(start.value) && FULL_DATE.test(end.value) && joint !== written && weekdayBefore(source, start, weekdays);
+  return (isLabelled(start.offset) || withWeekdays) && !isChange(source, start, end, words);
+};
+
+const isRange = (source: string, start: DatedSpan, end: DatedSpan, words: RangeWords, isLabelled: (offset: number) => boolean): boolean => {
   const written = jointOf(source, start, end);
   if (written === undefined) return false;
   const joint = withoutTrailingWeekday(written, words.weekdays ?? []);
   return (
-    isOneOf(joint, words.connectors) || (isOneOf(joint, words.openers) && closedAfter(source, end, words.closers)) || framed(source, start, end, joint, words)
+    isOneOf(joint, words.connectors) ||
+    (isOneOf(joint, words.openers) && closedAfter(source, end, words.closers)) ||
+    framed(source, start, end, joint, words) ||
+    bareFramed(source, start, end, written, words, isLabelled)
   );
 };
 
@@ -132,11 +160,19 @@ const writtenPeriod = (source: string, start: DatedSpan, end: DatedSpan): string
     .map((part) => part.trim())
     .join(" ");
 
-/** 隣り合う二つの日付のうち、期間をなし、終わりが始まりより前のもの。期間の書き出しを指し、書いたままの期間を見せる。 */
-export const reversedRanges = (source: string, dates: readonly DatedSpan[], words: RangeWords): StructureIssue[] =>
+/**
+ * 隣り合う二つの日付のうち、期間をなし、終わりが始まりより前のもの。期間の書き出しを指し、書いたままの期間を見せる。
+ * isLabelled は、その位置の日付が期間の語で始まる行（Dates: …）の、語より後ろにあるか。
+ */
+export const reversedRanges = (
+  source: string,
+  dates: readonly DatedSpan[],
+  words: RangeWords,
+  isLabelled: (offset: number) => boolean = () => false,
+): StructureIssue[] =>
   dates.slice(1).flatMap((end, index) => {
     const start = dates[index];
     if (start === undefined || !comparable(start.value, end.value) || end.value >= start.value) return [];
-    if (!isRange(source, start, end, words)) return [];
+    if (!isRange(source, start, end, words, isLabelled)) return [];
     return [{ offset: start.offset, values: { start: start.value, end: end.value, period: writtenPeriod(source, start, end) } }];
   });

@@ -9,6 +9,7 @@ import { totalMismatches, type Amount } from "../structure/total.ts";
 import { proseTotalMismatches } from "../structure/prose-total.ts";
 import { countedAmounts, type SummedCounter } from "../structure/counted-amounts.ts";
 import { rangeFrameOf, reversedRanges, type DatedSpan, type RangeWords } from "../structure/date-range.ts";
+import { afterLabel } from "../structure/stated-period.ts";
 import { percentSumMismatches, type ShareWords } from "../structure/percent-sum.ts";
 import { proseShareMismatches } from "../structure/percent-sum-prose.ts";
 import { isQuotedAlone } from "../quoted-span.ts";
@@ -227,11 +228,21 @@ const rangeWordsOf = (doc: ProseDocument): RangeWords => ({
   weekdays: (doc.lexicons["weekday"] ?? []).map((entry) => entry.pattern),
 });
 
+/** その位置が、期間の語（period-label）で始まる行の、語より後ろにあるか。 */
+const labelledAt =
+  (doc: ProseDocument) =>
+  (offset: number): boolean => {
+    const lineStart = doc.source.lastIndexOf("\n", offset - 1) + 1;
+    const lineEnd = doc.source.indexOf("\n", offset);
+    const after = afterLabel(doc.source.slice(lineStart, lineEnd === -1 ? doc.source.length : lineEnd), patternsOf(doc, "period-label"));
+    return after !== undefined && offset >= lineStart + after;
+  };
+
 /** 期間の終わりが始まりより前。範囲の記号と語は言語パッケージの語彙表（range-connector、range-opener、range-closer）から取る。 */
 export const dateRangeReversed: Detector = (doc): Finding[] => {
   if (doc.structure === undefined) return [];
   const dates = datedSpans(doc.structure);
-  return reversedRanges(doc.source, dates, rangeWordsOf(doc))
+  return reversedRanges(doc.source, dates, rangeWordsOf(doc), labelledAt(doc))
     .filter((issue) => {
       const start = dateAt(dates, issue.offset);
       return !quotedDates(doc, dates[start], dates[start + 1]);
