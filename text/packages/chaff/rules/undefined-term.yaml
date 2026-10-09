@@ -3,7 +3,7 @@ layer: L3
 status: stable
 how_to_find: undefined-term
 requires: [structure, pos]
-languages: [ja]
+languages: [ja, en]
 severity: info
 
 name:
@@ -11,8 +11,8 @@ name:
   en: A term written like a defined term but defined nowhere
 
 why:
-  ja: 契約や規約は、「本業務」「本サービス」のように、頭に「本」を付けた語を定義して使います。同じ形の「本成果物」を定義せずに書くと、読み手は、どこかで定義した語なのか、何を指すのかが分かりません。定義が抜けたのか、別の定義した語（本業務）を書き違えたのかのどちらかです。文書が「本」を付けた語を一つ以上定義しているときだけ、その形で書いたのに定義も言い換えの形（本件業務）も無い語を、最初の一か所だけ指します。
-  en: "A Japanese contract defines its terms with the prefix 本 (本業務, 本サービス). A term in the same form that is never defined (本成果物) leaves the reader asking whether it was defined somewhere and what it means: either a definition is missing, or another defined term was miswritten. Only a document that defines at least one term with that prefix is read, and only the first use of each such term with no definition and no other-prefix form (本件業務) is reported."
+  ja: 契約や規約は、「本業務」「本サービス」のように、頭に「本」を付けた語を定義して使います。同じ形の「本成果物」を定義せずに書くと、読み手は、どこかで定義した語なのか、何を指すのかが分かりません。定義が抜けたのか、別の定義した語（本業務）を書き違えたのかのどちらかです。文書が「本」を付けた語を一つ以上定義しているときだけ、その形で書いたのに定義も言い換えの形（本件業務）も無い語を、最初の一か所だけ指します。英語の契約は、定義した語を大文字で始めて書きます（the Services）。"X" means や (the "X") の形の定義が二つ以上ある文書で、文の途中に大文字で始めて書いたのに、どこにも定義が無い語（its Affiliates）も同じく指します。
+  en: "A Japanese contract defines its terms with the prefix 本 (本業務, 本サービス). A term in the same form that is never defined (本成果物) leaves the reader asking whether it was defined somewhere and what it means: either a definition is missing, or another defined term was miswritten. Only a document that defines at least one term with that prefix is read, and only the first use of each such term with no definition and no other-prefix form (本件業務) is reported. An English contract capitalises its defined terms (the Services); in a document with at least two definitions written with a defining word (“X” means, (the “X”)), a capitalised term inside a sentence that is defined nowhere (its Affiliates) is reported the same way."
 
 message:
   ja: 「{term}」は定義した語の形ですが、この文書のどこにも定義がありません
@@ -36,8 +36,8 @@ off_for:
 
 group: consistency
 summary:
-  ja: 「本業務」のように定義した語と同じ形の「本成果物」を、定義しないまま使っている所
-  en: A Japanese term in the defined form (本成果物) that the document never defines
+  ja: 「本業務」のように定義した語と同じ形の「本成果物」や、英語の契約で大文字で始めた語（its Affiliates）を、定義しないまま使っている所
+  en: A term in the defined form (本成果物, its Affiliates) that the document never defines
 example:
   ja:
     config: { genre: legal/contract }
@@ -53,10 +53,24 @@ example:
       第1条　甲は、ウェブサイトの保守の業務（以下「本業務」という。）を乙に委託する。
 
       第2条　乙は、本業務の報告書を甲に提出する。
+  en:
+    config: { genre: legal/contract }
+    before: |
+      # Services Agreement
+
+      This Services Agreement (this "Agreement") is made between Harbour Works Ltd (the "Supplier") and Northwind Retail Inc. (the "Customer").
+
+      1. The Supplier shall provide the hosting services (the "Services") to the Customer and its Affiliates.
+    after: |
+      # Services Agreement
+
+      This Services Agreement (this "Agreement") is made between Harbour Works Ltd (the "Supplier") and Northwind Retail Inc. (the "Customer").
+
+      1. The Supplier shall provide the hosting services (the "Services") to the Customer.
 
 not_flagged:
-  ja: 文書が「本」を付けた語を一つも定義していなければ見ません。定義した語とその言い換え（本件業務、defined-term-form が見ます）、定義した語で始まる語（本サービス上）、この文書やその一部を指す語（本条、本項、本書、本契約、本利用規約、本サイト）、どこかでかぎ括弧に入れた語（定義の書き方を chaff が読めなかったもの）、一語の言葉（本人、本日、本社）は見ません。同じ語は最初の一か所だけ指します。英語の文書は見ません（下の理由）。法令・判決・特許は見ません。契約書・規約のジャンルで見ます。
-  en: "A document that defines no term with the prefix is not read. Defined terms and their other-prefix forms (本件業務, which defined-term-form reads), terms that start with a defined term (本サービス上), the document's names for itself and its parts (本条, 本項, 本書, 本契約, 本利用規約, 本サイト), terms set in quotes anywhere (a definition chaff could not read), and single words (本人, 本日, 本社) are not reported. Each term is reported once, at its first use. English is not read: a capitalised word there cannot be told from the name of a law, an organisation or a policy (the Federal Trade Commission Act, Acceptable Use Policies) without its meaning. Statutes, court decisions and patents are not read; the contract genre runs this rule."
+  ja: 文書が「本」を付けた語を一つも定義していなければ見ません。定義した語とその言い換え（本件業務、defined-term-form が見ます）、定義した語で始まる語（本サービス上）、この文書やその一部を指す語（本条、本項、本書、本契約、本利用規約、本サイト）、どこかでかぎ括弧に入れた語（定義の書き方を chaff が読めなかったもの）、一語の言葉（本人、本日、本社）は見ません。同じ語は最初の一か所だけ指します。英語は、大文字は法令・組織・方針の名前（the Federal Trade Commission Act、Acceptable Use Policies）にも使うので、狭く読みます。"X" means や (the "X") の形の定義が二つ未満の文書は見ません。文の頭や記号の後ろの語、小文字の名詞の前に付けた語（the Premium plan）、名前の一覧（proper-name-word、地名、曜日と月、会社の形、当事者の役割）の語を含むもの、条の参照（Section 4、Schedule A）、見出し・リンク・太字・HTML の要素・表・箇条書きの見出しの中、どこかで引用符か太字に入れた語、定義した語を含むもの（大文字小文字を問いません）、文書のどこかで小文字でも書いた語（your Account と your account。普通の語か画面の名前）は見ません。法令・判決・特許は見ません。契約書・規約のジャンルで見ます。
+  en: "A document that defines no term with the prefix is not read. Defined terms and their other-prefix forms (本件業務, which defined-term-form reads), terms that start with a defined term (本サービス上), the document's names for itself and its parts (本条, 本項, 本書, 本契約, 本利用規約, 本サイト), terms set in quotes anywhere (a definition chaff could not read), and single words (本人, 本日, 本社) are not reported. Each term is reported once, at its first use. English is read narrowly, since capitals also name laws, organisations and policies (the Federal Trade Commission Act, Acceptable Use Policies): a document with fewer than two definitions written with a defining word (“X” means, (the “X”)) is not read; and a word at the start of a sentence or after a mark, a modifier of a lower-case noun (the Premium plan), a run holding a word of the name lists (proper-name-word, places, weekdays and months, company forms, party roles), a reference to a part (Section 4, Schedule A), anything inside a heading, a link, bold, an HTML element, a table or a list item's label, a word set in quotes or bold anywhere, a run holding a defined term in any case, and a word the document also writes in lower case (your Account and your account: an ordinary word or a screen's name) are not reported. Statutes, court decisions and patents are not read; the contract genre runs this rule."
 rewrite:
   depth: light
   ja:

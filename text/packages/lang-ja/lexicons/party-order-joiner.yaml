@@ -1,0 +1,20 @@
+# 契約の当事者の呼び名を並べてつなぐ語（甲及び乙、甲又は乙、甲・乙・丙）。party-order が読む。
+# group: series の語（甲、乙及び丙の「、」）は、同じ並びのあとに組の語（及び・又は）があるときだけ並びをつなぐ。
+# 向きのある言い方（乙から甲へ、甲に対し乙は、甲が乙に）の語は入れない。並べたのではなく、順に意味がある。
+id: party-order-joiner
+language: ja
+entries:
+  - pattern: 及び
+  - pattern: および
+  - pattern: 並びに
+  - pattern: ならびに
+  - pattern: 又は
+  - pattern: または
+  - pattern: 若しくは
+  - pattern: もしくは
+  - pattern: と
+  - pattern: ・
+  - pattern: 、
+    group: series
+  - pattern: ，
+    group: series

@@ -84,6 +84,25 @@ describe("name-variant: 場所の名前の書き分け", () => {
     assert.deepEqual(variants("Lunch is in North Hall. North Hall seats forty. Dinner is in South Hall.\n"), []);
     assert.deepEqual(variants("The Union station is busy. Meet at the Union station at nine.\n"), []);
   });
+
+  it("表の升の中の場所の名前も読む（八重洲中央口 と、日程表の 八重州中央口）", () => {
+    const table = (last: string): string =>
+      `集合場所：東京駅 八重洲中央口 改札前\n\n| 時刻 | 内容 |\n| --- | --- |\n| 06:40 | 東京駅 八重洲中央口 改札前に集合 |\n| 18:15 | 東京駅 ${last}にて解散 |\n`;
+    assert.deepEqual(variants(table("八重州中央口"), ja), ["「八重州中央口」は、ほかの所で何度も書いた「八重洲中央口」と一字違いです"]);
+    assert.deepEqual(variants(table("八重洲中央口"), ja), []);
+    assert.deepEqual(variants(table("東京駅 南口"), ja), []);
+  });
+
+  it("a place name in a table cell is read too (King's Cross and Kings Cross)", () => {
+    const table = (last: string): string =>
+      `Meeting point: King's Cross station\n\n| Time | Plan |\n| --- | --- |\n| 06:40 | Meet at King's Cross station |\n| 17:35 | Group disbands at ${last} station |\n`;
+    assert.deepEqual(variants(table("Kings Cross")), [
+      '"Kings Cross station" is written "King\'s Cross station" elsewhere in the document (case, width or punctuation)',
+    ]);
+    assert.deepEqual(variants(table("King's Cross")), []);
+    assert.deepEqual(variants(table("Euston")), []);
+    assert.deepEqual(variants("Meet at King's Cross station.\n\n| Kings Cross station | Plan |\n| --- | --- |\n| 06:40 | Meet |\n"), []);
+  });
 });
 
 describe("the reading behind place names", () => {

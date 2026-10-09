@@ -1,0 +1,7 @@
+# Quotation marks around a name ("Data Lab"), the opening and the closing mark as one pair. name-variant reads a short run
+# of words inside them as a name, and compares names written with the same words in another order.
+id: name-quote
+language: en
+entries:
+  - pattern: “”
+  - pattern: '""'

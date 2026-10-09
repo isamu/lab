@@ -6,10 +6,10 @@
       "default-two-ways": "2/2",
       "undefined-function-call": "2/2",
       "param-not-in-signature": "1/1",
-      "return-type-two-ways": "0/1",
+      "return-type-two-ways": "1/1",
       "deprecated-in-example": "2/2",
       "install-version": "2/2",
-      "changelog-date-order": "1/2",
+      "changelog-date-order": "2/2",
       "changelog-version-order": "1/1"
     },
     "en": {
@@ -18,10 +18,10 @@
       "default-two-ways": "2/2",
       "undefined-function-call": "2/2",
       "param-not-in-signature": "1/1",
-      "return-type-two-ways": "0/1",
+      "return-type-two-ways": "1/1",
       "deprecated-in-example": "2/2",
       "install-version": "2/2",
-      "changelog-date-order": "1/2",
+      "changelog-date-order": "2/2",
       "changelog-version-order": "1/1"
     }
   },

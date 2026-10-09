@@ -2,7 +2,7 @@
 18f-handbook-projects-in-distress  6
 18f-handbook-travel  4
 18f-handbook-travel-faq  16
-aoml-hurricane-faq  68
+aoml-hurricane-faq  64
 asf-board-minutes-2025-01  153
 automattic-privacy-policy  8
 bls-glossary  5
@@ -42,10 +42,10 @@ noaa-press-flood-mapping  3
 nodejs-tsc-minutes-2026-05-06  5
 nstac-microdata-forum  3
 nttcom-onboarding-week1  3
-nws-glossary-a  33
+nws-glossary-a  10
 ppc-guidelines-tsusoku  3
 rfc3693-geopriv-requirements  19
-rfc9293-tcp  36
+rfc9293-tcp  35
 rfc9457  12
 ruby-3-4-0-released-ja  5
 rust-lang-minutes-2022-11-22  3
@@ -55,5 +55,5 @@ soumu-wp-r06-ai-booms  3
 soumu-wp-r06-misinformation  9
 us-4683202-nucleic-acid-amplification  18
 us-6285999-node-ranking  4
-usajobs-va-it-specialist-customer-support  20
+usajobs-va-it-specialist-customer-support  18
 yamano-akashi-architecture  5

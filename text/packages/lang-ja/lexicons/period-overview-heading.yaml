@@ -1,0 +1,8 @@
+# 文書全体のことを書く節の見出しの語（授業の概要、基本情報）。この節の期間の行（開講期間：…）は文書の期間として、
+# date-outside-period が後ろのどの節の締め切り（period-deadline）とも比べる。
+id: period-overview-heading
+language: ja
+entries:
+  - pattern: 概要
+  - pattern: 基本情報
+  - pattern: 概略

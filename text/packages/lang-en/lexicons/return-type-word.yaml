@@ -1,0 +1,16 @@
+# The words that name a kind of value in a sentence or a cell, and the kind (group) each names (return-type-mismatch):
+# "returns the width as a string" says string. A type in code (string[], int) is read by the rule itself.
+id: return-type-word
+language: en
+entries:
+  - { pattern: string, group: string }
+  - { pattern: strings, group: string }
+  - { pattern: number, group: number }
+  - { pattern: numbers, group: number }
+  - { pattern: integer, group: number }
+  - { pattern: integers, group: number }
+  - { pattern: boolean, group: boolean }
+  - { pattern: booleans, group: boolean }
+  - { pattern: array, group: array }
+  - { pattern: arrays, group: array }
+  - { pattern: list, group: array }

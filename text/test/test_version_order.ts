@@ -6,7 +6,7 @@ import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { prepare } from "../packages/lang-ja/src/pos.ts";
-import { isVersionHistory, leadingVersion, versionOrderBreaks } from "../packages/chaff/src/structure/version-order.ts";
+import { isVersionHistory, leadingVersion, versionOrderBreaks, versionsAlong } from "../packages/chaff/src/structure/version-order.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
 // 変更履歴の版の並び（version-order）と、版の見出しを番号の並びとして読まない numbering-gap。例文は自作。
@@ -76,6 +76,16 @@ describe("version-order", () => {
 });
 
 describe("version-order: the pure parts", () => {
+  it("versionsAlong: every label a version, no step against the direction", () => {
+    assert.equal(versionsAlong(["3.2.0", "3.1.1", "3.1.1", "v3.0.0"], -1), true);
+    assert.equal(versionsAlong(["1.0.0-beta.1", "1.0.0", "1.1.0"], 1), true);
+    assert.equal(versionsAlong(["3.2.0", "3.1.1", "3.3.0"], -1), false);
+    assert.equal(versionsAlong(["1.0.0", "1.1.0"], -1), false);
+    assert.equal(versionsAlong(["1.0.0", undefined, "1.2.0"], 1), false);
+    assert.equal(versionsAlong(["1.0.0", "Unreleased"], 1), false);
+    assert.equal(versionsAlong([], 1), true);
+  });
+
   it("reads a leading version, and nothing else", () => {
     assert.equal(leadingVersion("3.2.0 - 2026-09-14"), "3.2.0");
     assert.equal(leadingVersion("[3.2.0] - 2026-09-14"), "[3.2.0]");

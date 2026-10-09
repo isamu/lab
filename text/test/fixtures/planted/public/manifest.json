@@ -32,7 +32,7 @@
         },
         {
           "kind": "koyobun-formal-noun",
-          "rule": "orthographic-variant",
+          "rule": "kana-function-word",
           "line": 15,
           "clean": "取り消すことができます",
           "planted": "取り消す事ができます"
@@ -53,14 +53,14 @@
         },
         {
           "kind": "koyobun-auxiliary",
-          "rule": "orthographic-variant",
+          "rule": "kana-function-word",
           "line": 23,
           "clean": "処理券を購入してください",
           "planted": "処理券を購入して下さい"
         },
         {
           "kind": "koyobun-auxiliary",
-          "rule": "orthographic-variant",
+          "rule": "kana-function-word",
           "line": 25,
           "clean": "貼っておいてください",
           "planted": "貼って置いてください"

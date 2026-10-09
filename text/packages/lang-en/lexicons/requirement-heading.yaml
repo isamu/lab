@@ -1,0 +1,22 @@
+# Headings and labels of the conditions of a job posting (required-listed-as-preferred). group required is what an applicant
+# must have, preferred what is welcome. A heading is matched by its part before a colon or bracket, a label standing alone
+# on its line ("Required:") by the whole line; case and hyphens are ignored.
+id: requirement-heading
+language: en
+entries:
+  - { pattern: required, group: required }
+  - { pattern: requirements, group: required }
+  - { pattern: required skills, group: required }
+  - { pattern: required qualifications, group: required }
+  - { pattern: required experience, group: required }
+  - { pattern: minimum qualifications, group: required }
+  - { pattern: basic qualifications, group: required }
+  - { pattern: must have, group: required }
+  - { pattern: must haves, group: required }
+  - { pattern: preferred, group: preferred }
+  - { pattern: preferred skills, group: preferred }
+  - { pattern: preferred qualifications, group: preferred }
+  - { pattern: preferred experience, group: preferred }
+  - { pattern: nice to have, group: preferred }
+  - { pattern: nice to haves, group: preferred }
+  - { pattern: bonus points, group: preferred }

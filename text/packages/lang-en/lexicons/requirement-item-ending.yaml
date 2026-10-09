@@ -1,0 +1,6 @@
+# Words that only end an item of a job posting's conditions and are not the skill (required-listed-as-preferred).
+id: requirement-item-ending
+language: en
+entries:
+  - pattern: is a plus
+  - pattern: a plus

@@ -1,0 +1,10 @@
+# Units of a length of experience (required-listed-as-preferred), weight in months. The length is taken out of "3+ years of
+# Python" to compare the skill, and decides whether the preferred item asks for more.
+id: requirement-length-unit
+language: en
+entries:
+  - { pattern: year, weight: 12 }
+  - { pattern: years, weight: 12 }
+  - { pattern: yrs, weight: 12 }
+  - { pattern: month, weight: 1 }
+  - { pattern: months, weight: 1 }

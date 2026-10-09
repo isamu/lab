@@ -1,6 +1,7 @@
 import type { Token } from "./plugin.ts";
 import { escapeRegExp } from "./orthography.ts";
 import { nameCueAt, type NameCue, type NameCues } from "./name-cue.ts";
+import { isNearSurname } from "./surname-near.ts";
 
 // 同じ名前（人・会社・製品）を、文書の中で少しだけ違う形に書いた所。どの形が正しいかは決めず、少ないほうを指す。
 // 三通りで同じ名前と見る。書き方の違いだけ（GitHub と Github、Mac OS と macOS）、読みが同じ（山田太郎 と 山田太朗）、
@@ -19,7 +20,11 @@ export type NameMention = {
   readonly cue?: NameCue;
 };
 
-export type NameVariant = { readonly mention: NameMention; readonly usual: string; readonly kind: "spelling" | "reading" | "near" | "character" };
+export type NameVariant = {
+  readonly mention: NameMention;
+  readonly usual: string;
+  readonly kind: "spelling" | "reading" | "near" | "surname" | "character";
+};
 
 /** 字体の違う同じ字（斎・斉・齋）。字から、その組の代表の字へ。 */
 export type VariantChars = ReadonlyMap<string, string>;
@@ -338,6 +343,20 @@ const isSlipOf = (tally: Tally, other: Tally): boolean => {
 
 const nearVariants = (tallies: readonly Tally[]): NameVariant[] => variantsIn(groupBy(tallies, maskedKeys), "near", isSlipOf);
 
+/**
+ * 名が同じで姓だけが二字ほど違う人の名前（Rachel Whitford と Rachel Whitfield）。一字違い（near）より遠いので、名と姓の二語以上
+ * で、違うのが最後の語のときに限る。相手が二度以上、こちらが一度だけ。名の違う二人（Sara Whitford と Rachel Whitfield）は比べない。
+ */
+const isSurnameSlipOf = (tally: Tally, other: Tally): boolean => {
+  if (tally.count !== 1 || other.count < 2) return false;
+  const [words, others] = [wordsOf(tally.surface), wordsOf(other.surface)];
+  const last = words.length - 1;
+  const sameBefore = words.slice(0, last).every((word, index) => word === others[index]);
+  return last >= 1 && words.length === others.length && sameBefore && isNearSurname(words[last] ?? "", others[last] ?? "");
+};
+
+const surnameVariants = (tallies: readonly Tally[]): NameVariant[] => variantsIn(groupBy(tallies, maskedKeys), "surname", isSurnameSlipOf);
+
 /** 字体の違う字（斎と斉）を組の代表の字に寄せた形。 */
 const characterKey = (tally: Tally, chars: VariantChars): string => [...tally.surface].map((letter) => chars.get(letter) ?? letter).join("");
 
@@ -399,6 +418,7 @@ export const nameVariants = (mentions: readonly NameMention[], chars: VariantCha
       oneWordApart,
     ),
     ...nearVariants(tallies),
+    ...surnameVariants(tallies),
     ...characterVariants(tallies, chars),
     ...personReadingVariants(tallies),
   ];

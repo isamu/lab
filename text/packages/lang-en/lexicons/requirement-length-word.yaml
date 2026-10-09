@@ -1,0 +1,14 @@
+# Words taken out with a length of experience (required-listed-as-preferred): before stands before the number ("at least"),
+# after follows the unit ("or more", "of"). Matched as whole words, without regard to case.
+id: requirement-length-word
+language: en
+entries:
+  - { pattern: at least, group: before }
+  - { pattern: a minimum of, group: before }
+  - { pattern: minimum of, group: before }
+  - { pattern: minimum, group: before }
+  - { pattern: over, group: before }
+  - { pattern: more than, group: before }
+  - { pattern: or more, group: after }
+  - { pattern: plus, group: after }
+  - { pattern: of, group: after }

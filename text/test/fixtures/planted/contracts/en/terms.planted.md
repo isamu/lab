@@ -40,6 +40,6 @@ To the extent permitted by law, Pinecone Software Ltd is not liable for any indi
 
 ## 9. Contact
 
-You can contact us at support@pinecone.example.
+You can contact us at support@pinecone.example. We will answer each message within two (2) business days.
 
 Last updated: Tuesday, June 1, 2026.

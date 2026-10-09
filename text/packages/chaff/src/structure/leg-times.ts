@@ -196,3 +196,18 @@ export const arrivalsBeforeDeparture = (source: string, times: readonly TimeSpan
     .filter((issue, index) => issues.findIndex((other) => other.offset === issue.offset) === index)
     .toSorted((left, right) => left.offset - right.offset);
 };
+
+/** 表の着の列に書いた時刻の位置。見出しに着の列の無い表からは読まない。 */
+const columnArrivals = (inputs: Inputs): number[] =>
+  tablesOf(inputs.source).flatMap((table) => {
+    const arrives = columnOf(inputs.source, table.header, inputs.words.columns, ARRIVAL);
+    if (arrives === -1) return [];
+    return table.rows.flatMap((row) => cellTime(cellsOf(inputs.source, row.start, row.end)[arrives], inputs)?.offset ?? []);
+  });
+
+/** 着と読む時刻の位置。行の中の印（「09:50着」「arrives 9:05 AM」）と、表の着の列から。 */
+export const arrivalOffsets = (source: string, times: readonly TimeSpan[], dates: readonly DateSpan[], words: TimeWords): Set<number> => {
+  const inputs = { source, times, dates, words };
+  const inline = linesOf(source).flatMap((line) => legsInLine(line.start, line.end, inputs).flatMap((leg) => (leg.side === ARRIVAL ? [leg.offset] : [])));
+  return new Set([...inline, ...columnArrivals(inputs)]);
+};

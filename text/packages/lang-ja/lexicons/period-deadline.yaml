@@ -1,0 +1,11 @@
+# 期間の中の仕事の締め切りを示す語（課題レポートは…までに提出、提出期限、締切）。文書の頭か概要の節で書いた期間（開講期間：…）は、
+# 後ろのどの節でも、この語のある項目や文の年のある日付が期間の終わりより後なら、date-outside-period が指す。
+# 支払や振込の期限は期間の後に来てよいので入れない（period-aside が除く）。
+id: period-deadline
+language: ja
+entries:
+  - pattern: 提出期限
+  - pattern: 提出
+  - pattern: 締切
+  - pattern: 締め切り
+  - pattern: 〆切

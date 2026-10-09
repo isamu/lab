@@ -4,7 +4,7 @@ This guide explains how to bring the sales CSV files sent by branch offices into
 
 ## Before you start
 
-The work is done by someone with access to the internal ETL (extract, transform, load) server. Check that the ETL server has at least 20 GB of free space.
+The work is done by someone with access to the internal ETL (extract, transform, load) server. Check that the ETL server has at least 20 GB of free space, and that each branch file has the POS (point of sale) terminal number and SKU (stock keeping unit) columns.
 
 ## Steps
 

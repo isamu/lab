@@ -1,0 +1,9 @@
+# 関数が何を返すかを言う文の動詞（return-type-mismatch）。「measure は数値を返します」。
+# 過去や否定（返していました、返しません）は今の型を言っていないので読まない。
+id: return-verb
+language: ja
+entries:
+  - pattern: 返します
+  - pattern: 返す
+  - pattern: 返却します
+  - pattern: 返却する

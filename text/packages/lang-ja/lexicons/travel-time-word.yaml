@@ -1,0 +1,32 @@
+# 移動の時間を読む語（connection-time-short）。group travel は移動を言う語で、同じ文に書いた長さ（約10分）を移動の時間と読む。
+# group bound は長さを上限として言う語（10分以内）で、その長さは使わない。position は長さのどちら側に書くか。字面どおりに照らす。
+id: travel-time-word
+language: ja
+entries:
+  - { pattern: "移動", group: travel }
+  - { pattern: "乗り換え", group: travel }
+  - { pattern: "乗換え", group: travel }
+  - { pattern: "乗換", group: travel }
+  - { pattern: "乗り継ぎ", group: travel }
+  - { pattern: "乗継ぎ", group: travel }
+  - { pattern: "乗継", group: travel }
+  - { pattern: "徒歩", group: travel }
+  - { pattern: "歩いて", group: travel }
+  - { pattern: "地下鉄", group: travel }
+  - { pattern: "電車", group: travel }
+  - { pattern: "列車", group: travel }
+  - { pattern: "快速", group: travel }
+  - { pattern: "特急", group: travel }
+  - { pattern: "バス", group: travel }
+  - { pattern: "タクシー", group: travel }
+  - { pattern: "シャトル", group: travel }
+  - { pattern: "送迎", group: travel }
+  - { pattern: "車で", group: travel }
+  - { pattern: "向かいます", group: travel }
+  - { pattern: "向かう", group: travel }
+  - { pattern: "向かい", group: travel }
+  - { pattern: "以内", position: after, group: bound }
+  - { pattern: "以下", position: after, group: bound }
+  - { pattern: "未満", position: after, group: bound }
+  - { pattern: "最大", position: before, group: bound }
+  - { pattern: "最長", position: before, group: bound }

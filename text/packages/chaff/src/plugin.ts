@@ -362,7 +362,12 @@ export type ProseDocument = {
   readonly markup?: Markup | undefined;
   /** adapter の綴りの辞書。持たない言語では無い。 */
   readonly dictionary?: (() => ReadonlySet<string>) | undefined;
+  /** 表の本体の升と、升ごとに解析した語（位置は source の上）。本文（prose）は表を覆うので、升の語は sentences に入らない。呼んだときに作る。 */
+  readonly tableCells?: (() => readonly TableCell[]) | undefined;
 };
+
+/** 表の升一つ。text は区切りの | のあいだの字のまま。tokens は升の字を adapter が解析した語で、解析しない adapter では無い。 */
+export type TableCell = Span & { readonly text: string; readonly tokens?: readonly Token[] };
 
 /** 見出し 1 つ。text は属性（`{#id}`）を外した言葉。 */
 export type MarkupHeading = { readonly depth: number; readonly text: string; readonly start: number; readonly end: number };
