@@ -1,0 +1,10 @@
+# 休憩を除いた勤務時間に付ける語（duration-mismatch の勤務時間）。before は長さの前（実働8時間）、after は後ろ（8時間労働）。
+id: working-hours-total
+language: ja
+entries:
+  - { pattern: "実働", position: before }
+  - { pattern: "実働時間", position: before }
+  - { pattern: "実労働", position: before }
+  - { pattern: "実労働時間", position: before }
+  - { pattern: "所定労働時間", position: before }
+  - { pattern: "労働", position: after }

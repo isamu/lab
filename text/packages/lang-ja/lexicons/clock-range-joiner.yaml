@@ -1,0 +1,12 @@
+# 二つの時刻の間に置いて、それだけで時間の範囲を作る語（9:00〜17:30、9時から18時）（duration-mismatch の勤務時間）。
+id: clock-range-joiner
+language: ja
+entries:
+  - pattern: 〜
+  - pattern: ～
+  - pattern: "~"
+  - pattern: "-"
+  - pattern: －
+  - pattern: –
+  - pattern: —
+  - pattern: から

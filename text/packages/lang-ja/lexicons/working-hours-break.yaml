@@ -1,0 +1,9 @@
+# 休憩の長さに付ける語（duration-mismatch の勤務時間）。before は長さの前（休憩1時間）、after は後ろ（1時間休憩）。
+id: working-hours-break
+language: ja
+entries:
+  - { pattern: "休憩", position: before }
+  - { pattern: "休憩時間", position: before }
+  - { pattern: "昼休憩", position: before }
+  - { pattern: "昼休み", position: before }
+  - { pattern: "休憩", position: after }

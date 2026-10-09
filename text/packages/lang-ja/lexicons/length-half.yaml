@@ -1,0 +1,5 @@
+# 時間の単位のすぐ後ろに書いて、半時間を足す語（7時間半）（duration-mismatch、duration-product-mismatch）。
+id: length-half
+language: ja
+entries:
+  - pattern: 半

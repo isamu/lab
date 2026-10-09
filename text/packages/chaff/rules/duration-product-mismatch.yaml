@@ -1,0 +1,73 @@
+id: duration-product-mismatch
+layer: L3
+status: stable
+how_to_find: duration-product-mismatch
+# Counts use session-count-unit (and count-number for words), lengths the hour and minute units of unit-time (and
+# length-half), the total session-total; approximate-marker marks a rough total.
+severity: warning
+
+name:
+  ja: 回数と1回の長さを掛けた時間が、書いた合計と合わない
+  en: A number of sessions times their length that does not make the stated total
+
+why:
+  ja: 「1回90分、全15回、合計24時間」のように、回数と1回の長さと合計を一緒に書くと、読み手は三つのうちどれが正しいのか分かりません（90分×15回は22.5時間）。回数か長さを変えて、合計を直し忘れたときに起きます。一行か、一つの箇条書きの中に、回数・1回の長さ・合計がちょうど一つずつあるときに、回数×長さを合計と比べます。
+  en: 'When a count of sessions, the length of one and the total are written together ("90 minutes per session, 15 sessions, 24 hours in total"), the reader cannot tell which of the three is right (15 sessions of 90 minutes make 22.5 hours). It happens when the count or the length is changed and the total is not. In one line, or one list, holding exactly one count, one length and one total, the count times the length is compared with the total.'
+
+message:
+  ja: "{length}×{count}なら合計は{expected}時間のはずですが、{total}と書かれています"
+  en: "{count} of {length} make {expected} hours, but the total is given as {total}"
+
+how_to_fix:
+  ja: 回数・1回の長さ・合計のどれが正しいかを確かめて、残りを直してください。
+  en: Check which of the count, the length and the total is right and correct the rest.
+
+levels: { normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: facts
+summary:
+  ja: 「90分×15回（計24時間）」のように、回数と1回の長さを掛けても書いた合計にならない所
+  en: A count of sessions times the length of one that does not make the total written beside them
+example:
+  ja:
+    before: |
+      授業時間：1回90分、全15回、合計24時間
+    after: |
+      授業時間：1回90分、全15回、合計22.5時間
+  en:
+    before: |
+      Class hours: 90 minutes per session, 15 sessions, 24 hours in total
+    after: |
+      Class hours: 90 minutes per session, 15 sessions, 22.5 hours in total
+
+not_flagged:
+  ja: 回数・1回の長さ・合計のどれかが欠けている所、どれかが二つ以上ある所、1回の長さが目安（約90分）の所は見ません。合計が目安（約23時間）なら、書いた単位より小さい差は合っているとみなします。
+  en: A line missing the count, the length or the total, one with two of any of them, and a rough length ("about 90 minutes") are left alone. A rough total ("about 23 hours") may differ by less than the unit it is written in.
+rewrite:
+  depth: light
+  ja:
+    direction: 回数・1回の長さ・合計のうち、どれが正しいかを書き手に確かめ、残りを合わせてください。
+    pairs:
+      - before: 90分×15回（計24時間）
+        after: 90分×15回（計22.5時間）
+      - before: 1回90分、全15回、合計24時間
+        after: 1回90分、全16回、合計24時間
+    keep:
+      - 確かめた回数と1回の長さ
+    avoid:
+      - どれが正しいかを推測で決める
+      - 合計を「約」でぼかして合わせる
+  en:
+    direction: Ask the writer which of the count, the length and the total is right, and make the rest agree.
+    pairs:
+      - before: 15 sessions of 90 minutes (24 hours in total)
+        after: 15 sessions of 90 minutes (22.5 hours in total)
+      - before: 90 minutes per session, 15 sessions, 24 hours in total
+        after: 90 minutes per session, 16 sessions, 24 hours in total
+    keep:
+      - the confirmed count and length
+    avoid:
+      - guessing which value is right
+      - blurring the total with "about" to make it fit

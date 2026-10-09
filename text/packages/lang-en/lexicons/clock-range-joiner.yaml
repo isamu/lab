@@ -1,0 +1,12 @@
+# What alone between two clock times makes a range of time ("9:00–17:30", "9 a.m. to 5:30 p.m.") (duration-mismatch, working hours).
+id: clock-range-joiner
+language: en
+entries:
+  - pattern: "-"
+  - pattern: –
+  - pattern: —
+  - pattern: "~"
+  - pattern: to
+  - pattern: until
+  - pattern: till
+  - pattern: through
