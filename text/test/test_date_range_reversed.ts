@@ -121,6 +121,39 @@ describe("date-range-reversed", () => {
     ]);
   });
 
+  it("a bare … to … is a period on a line that starts with a period label", () => {
+    assert.deepEqual(found(doc("Dates: October 12, 2026 to October 10, 2026")), ["2026-10-12>2026-10-10"]);
+    assert.deepEqual(found(doc("- **Trip dates:** 12 October 2026 to 10 October 2026")), ["2026-10-12>2026-10-10"]);
+    assert.deepEqual(found(doc("Dates: October 12, 2026 to October 15, 2026")), []);
+    assert.deepEqual(found(doc("Notes: October 12, 2026 to October 10, 2026")), []);
+    assert.deepEqual(found(doc("We met on October 12, 2026. Dates: October 12, 2026 to October 10, 2026")), []);
+  });
+
+  it("a bare … to … is a period when both dates are full dates with weekdays", () => {
+    const line = "Applications: Monday, October 5, 2026 to Wednesday, September 30, 2026";
+    assert.deepEqual(found(doc(line)), ["2026-10-05>2026-09-30"]);
+    assert.deepEqual(found(doc("The office is open Monday, October 5, 2026 to Wednesday, September 30, 2026.")), ["2026-10-05>2026-09-30"]);
+    assert.deepEqual(found(doc("Applications: Monday, October 5, 2026 to Friday, October 30, 2026")), []);
+  });
+
+  it("a bare … to … without a label or with a weekday on one side only is not a period", () => {
+    assert.deepEqual(found(doc("Applications: October 5, 2026 to September 30, 2026")), []);
+    assert.deepEqual(found(doc("Applications: Monday, October 5, 2026 to September 30, 2026")), []);
+    assert.deepEqual(found(doc("Applications: October 5, 2026 to Wednesday, September 30, 2026")), []);
+    assert.deepEqual(found(doc("Applications: Monday, October 2026 to Wednesday, September 2026")), []);
+  });
+
+  it("a bare … to … in a change sentence stays silent, with a label or weekdays", () => {
+    assert.deepEqual(found(doc("We moved the meeting October 5, 2026 to October 3, 2026.")), []);
+    assert.deepEqual(found(doc("We moved the meeting Monday, October 5, 2026 to Saturday, October 3, 2026.")), []);
+    assert.deepEqual(found(doc("Rescheduled: Monday, October 5, 2026 to Saturday, October 3, 2026")), []);
+    assert.deepEqual(found(doc("The review was postponed Monday, October 5, 2026 to Saturday, October 3, 2026.")), []);
+    assert.deepEqual(found(doc("Dates: changed October 12, 2026 to October 10, 2026")), []);
+    assert.deepEqual(found(doc("The meeting was deferred Monday, October 5, 2026 to Saturday, October 3, 2026.")), []);
+    assert.deepEqual(found(doc("The meeting was put off Monday, October 5, 2026 to Saturday, October 3, 2026.")), []);
+    assert.deepEqual(found(doc("The meeting was pulled forward Monday, October 5, 2026 to Saturday, October 3, 2026.")), []);
+  });
+
   it("times inside a period are read past", () => {
     assert.deepEqual(found(doc("2026年4月2日 10:00〜2026年4月1日 12:00"), ja), ["2026-04-02>2026-04-01"]);
   });
