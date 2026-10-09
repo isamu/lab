@@ -1,0 +1,22 @@
+# 期間あたりの使う回数（1日3回）と、数を上限にする語（product-exceeds-maximum、interval-count-mismatch）。
+# period は期間の語で、weight はその長さ（時間）。数より前に書く（1日3回）。counter は回数の単位。limit は上限の語で、
+# before は数より前の同じ文の中（1日の最大量は4錠）、after は数のすぐ後ろ（1日3回まで）。
+id: use-count-word
+language: ja
+entries:
+  - { pattern: "1日", group: period, weight: 24, position: before }
+  - { pattern: "一日", group: period, weight: 24, position: before }
+  - { pattern: "24時間", group: period, weight: 24, position: before }
+  - { pattern: "1週間", group: period, weight: 168, position: before }
+  - { pattern: "回", group: counter }
+  - { pattern: "最大", group: limit, position: before }
+  - { pattern: "最高", group: limit, position: before }
+  - { pattern: "上限", group: limit, position: before }
+  - { pattern: "限度", group: limit, position: before }
+  - { pattern: "まで", group: limit, position: after }
+  - { pattern: "以内", group: limit, position: after }
+  - { pattern: "以下", group: limit, position: after }
+  - { pattern: "を超え", group: limit, position: after }
+  - { pattern: "を越え", group: limit, position: after }
+  - { pattern: "を限度", group: limit, position: after }
+  - { pattern: "を上限", group: limit, position: after }

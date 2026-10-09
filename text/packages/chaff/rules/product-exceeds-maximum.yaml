@@ -1,0 +1,49 @@
+id: product-exceeds-maximum
+layer: L3
+status: stable
+how_to_find: product-exceeds-maximum
+# The amount of one use is labelled by use-amount-word (1回2錠, 2 tablets at a time) or followed by its count; counts and
+# periods come from use-count-word (period, counter, alone), the maximum from its limit words.
+severity: warning
+
+name:
+  ja: 1回の量と回数を掛けると、書いた上限を超える
+  en: An amount per use times the uses that goes over the stated maximum
+
+why:
+  ja: 「1回2錠を1日3回まで」と「1日の最大量は4錠」を一緒に書くと、書いたとおりに使えば1日6錠になり、上限の4錠を超えます。読み手はどちらに従えばよいか分からず、上限を超えて使うおそれもあります。量か回数か上限のどれかを変えて、残りを直し忘れたときに起きます。一つの段落に、印の付いた1回の量（1回2錠、2 tablets at a time）、期間あたりの回数（1日3回、3 times a day）、同じ期間の上限（1日の最大量は4錠、no more than 4 tablets in 24 hours）がちょうど一つずつあり、量と上限の単位が同じときだけ、1回の量×回数を上限と比べます。料金（1回500円、1日10回、1日の上限3000円）でも同じです。
+  en: 'When "2 tablets at a time, up to 3 times a day" and "the maximum daily dose is 4 tablets" are written together, following the directions gives 6 tablets a day, over the stated maximum of 4. The reader cannot tell which to follow and may go over the limit. It happens when the amount, the count or the maximum is changed and the rest is not. In one paragraph holding exactly one labelled amount of one use ("2 tablets at a time", 1回2錠), one count of uses in a period ("3 times a day") and one maximum for the same period ("no more than 4 tablets in 24 hours"), in the same unit as the amount, the amount times the count is compared with the maximum. The same holds for fees (500 yen per use, 10 uses a day, a daily cap of 3,000 yen).'
+
+message:
+  ja: 1回{amount}を{count}では{expected}{unit}になり、上限の{maximum}を超えます
+  en: "{amount} each, {count}, makes {expected} {unit}, more than the stated maximum of {maximum}"
+
+how_to_fix:
+  ja: 1回の量・回数・上限のどれが正しいかを確かめて、残りを直してください。
+  en: Check which of the amount, the count and the maximum is right and correct the rest.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 「1回2錠を1日3回」なのに「1日の最大量は4錠」のように、1回の量×回数が上限を超える所
+  en: An amount per use times the uses in a period that goes over the maximum stated for that period
+example:
+  ja:
+    before: |
+      1回2錠を1日3回まで服用できます。1日の最大量は4錠です。
+    after: |
+      1回2錠を1日3回まで服用できます。1日の最大量は6錠です。
+  en:
+    before: |
+      Take 2 tablets at a time, up to 3 times a day. The maximum daily dose is 4 tablets.
+    after: |
+      Take 2 tablets at a time, up to 3 times a day. The maximum daily dose is 6 tablets.
+
+not_flagged:
+  ja: 1回の量に印が無い所（2錠を服用）、範囲で書いた量（1回1〜2錠）、回数と上限の期間が違う所（1日3回と1週間の上限）、量と上限の単位が違う所（錠とmg）、段落に量・回数・上限のどれかが二つ以上ある所、表の中は見ません。
+  en: 'An amount with no mark of one use ("take 2 tablets"), a range ("1 to 2 tablets"), a count and a maximum for different periods (a day and a week), an amount and a maximum in different units (tablets and mg), a paragraph with two of any of the three, and tables are left alone.'
