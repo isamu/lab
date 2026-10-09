@@ -1,0 +1,12 @@
+# Units whose zero is not the base unit's zero (unit-mismatch). weight is what this unit reads when the base unit reads 0 (0 °C is 32 °F). A value converts to the base unit as (value − weight) × factor.
+id: unit-zero
+language: en
+entries:
+  - pattern: "°F"
+    weight: 32
+  - pattern: "℉"
+    weight: 32
+  - pattern: "degrees Fahrenheit"
+    weight: 32
+  - pattern: "degrees F"
+    weight: 32

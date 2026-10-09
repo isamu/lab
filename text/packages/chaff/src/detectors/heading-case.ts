@@ -34,11 +34,20 @@ const ACRONYM = /^[A-Z]{2,}s?$/u;
 
 const TITLE_DEPTH = 1;
 
-/** 見出しが Title Case か。判定できなければ undefined。 */
-export const isTitleCase = (heading: string): boolean | undefined => {
-  const words = [...withoutCodeWords(straightApostrophes(heading)).matchAll(WORD)]
+/**
+ * 見出しの頭の番号の札（Section 3. / Day 1: / Part II:）。札の語は流儀によらず大文字で始まり、続く題の語数にも数えない。
+ * 番号は 3 桁までで、後ろに「.」「:」「)」か ダッシュがあるものだけ（Windows 11 Setup も Budget 2026: も札ではない）。
+ */
+const LEADING_LABEL = /^\s*\p{Lu}\p{Ll}+\s+(?:\d{1,3}(?:\.\d{1,3})*|[IVXLC]+)\s*[.:)\-\u2013\u2014]\s+/u;
+
+/**
+ * 見出しが Title Case か。判定できなければ undefined。fixedCase は流儀によらず大文字で書く語（曜日・月の名）で、
+ * どちらの流儀の証拠にもならないので数えない。
+ */
+export const isTitleCase = (heading: string, fixedCase: ReadonlySet<string> = new Set()): boolean | undefined => {
+  const words = [...withoutCodeWords(straightApostrophes(heading.replace(LEADING_LABEL, ""))).matchAll(WORD)]
     .map((match) => match[0])
-    .filter((word) => !MINOR_WORDS.has(word.toLowerCase()) && !ACRONYM.test(word));
+    .filter((word) => !MINOR_WORDS.has(word.toLowerCase()) && !ACRONYM.test(word) && !fixedCase.has(word));
   // 1 語の見出しは、どちらの流儀でも先頭が大文字になる。判定できない。
   if (words.length < 2) return undefined;
   const capitalized = words.filter((word) => word[0] === word[0]?.toUpperCase()).length;

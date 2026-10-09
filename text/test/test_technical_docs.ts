@@ -185,6 +185,25 @@ describe("step-statement-mix: a statement among numbered instructions", () => {
     assert.ok(isStatement(tokens("The list of the users is shown.")));
   });
 
+  it("an adjective not followed by what it describes is an imperative the tagger misread, not a subject", () => {
+    assert.ok(!isStatement(tokens("Bake in the oven preheated to 180°C (40 minutes).")));
+    assert.ok(!isStatement(tokens("Open the vaultr console and sign in.")));
+    assert.ok(isStatement(tokens("Each user gets a key.")));
+    assert.ok(isStatement(tokens("Large files took longer to upload.")));
+  });
+
+  it("reports a statement among recipe steps but not an imperative read as an adjective", () => {
+    const recipe = steps(
+      "Chop the onion finely and soak the breadcrumbs in the milk.",
+      "Press the mixture into the loaf pan and smooth the top.",
+      "Bake in the oven preheated to 180°C (40 minutes).",
+      "Leave the meatloaf in the pan to rest.",
+    );
+    assert.deepEqual(findingsOf(en, "step-statement-mix", recipe), []);
+    const planted = steps("Chop the onion finely.", "Press the mixture into the pan.", "The oven heats to 180°C.", "Leave the meatloaf to rest.");
+    assert.equal(findingsOf(en, "step-statement-mix", planted).length, 1);
+  });
+
   const steps = (...items: string[]): string => doc(items.map((item, index) => `${String(index + 1)}. ${item}`).join("\n"));
 
   it("reports the statement in a procedure of instructions", () => {

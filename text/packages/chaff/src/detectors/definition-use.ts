@@ -22,11 +22,15 @@ const findingAt = (doc: ProseDocument, offset: number, values: Readonly<Record<s
   values: { ...values, offset },
 });
 
-/** 定義したのに、定義の外で一度も使っていない語。 */
+/** Markdown の見出し。文には入らないが、見出しで語を使っても、その語は文書で使われている。 */
+const headingsOf = (doc: ProseDocument): BodyText[] =>
+  (doc.markup?.headings ?? []).map((heading) => ({ start: heading.start, text: doc.source.slice(heading.start, heading.end) }));
+
+/** 定義したのに、定義の外（文と見出し）で一度も使っていない語。 */
 export const unusedDefinition: Detector = (doc): Finding[] =>
   doc.structure === undefined
     ? []
-    : unusedDefinitions(definedTerms(doc.structure), bodyOf(doc), mentionedIn(doc)).map((defined) =>
+    : unusedDefinitions(definedTerms(doc.structure), [...bodyOf(doc), ...headingsOf(doc)], mentionedIn(doc)).map((defined) =>
         findingAt(doc, defined.span.start, { term: defined.term }),
       );
 

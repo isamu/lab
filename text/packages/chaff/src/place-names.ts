@@ -165,14 +165,47 @@ export const placeMentionsIn = (source: string, words: readonly PlaceWord[], rea
 };
 
 const DIGIT = /\p{N}/u;
+const HAN = /^\p{Script=Han}$/u;
 
-/** 漢字・かなの名前の部分が一字だけ違い、その字が、多いほうで固有名詞の語に入る（八重洲 と 八重州）。数字や方角（北口 と 南口）は別の所。 */
-const isCjkSlip = (slip: PlaceMention, usual: PlaceMention): boolean => {
+/**
+ * 名前の字について語彙表が言うこと。directions は方角や位置の字（東、上、新）で、それだけが違う名前は別の所（下北沢 と 上北沢）。
+ * sameReading は読みの同じ字から組の代表へ（洲 と 州）。
+ */
+export type PlaceChars = { readonly directions: ReadonlySet<string>; readonly sameReading: ReadonlyMap<string, string> };
+
+const NO_PLACE_CHARS: PlaceChars = { directions: new Set(), sameReading: new Map() };
+
+type CharDifference = { readonly at: number; readonly slip: string; readonly usual: string };
+
+/** 漢字・かなの名前の部分が、字数が同じで一字だけ違うときの、その字。 */
+const oneCharDifference = (slip: PlaceMention, usual: PlaceMention): CharDifference | undefined => {
   const [slipChars, usualChars] = [[...slip.base], [...usual.base]];
-  if (slipChars.length !== usualChars.length) return false;
+  if (slipChars.length !== usualChars.length) return undefined;
   const differ = usualChars.flatMap((char, index) => (char === slipChars[index] ? [] : [index]));
   const [at] = differ;
-  return differ.length === 1 && at !== undefined && usual.properAt.includes(at) && !DIGIT.test(usualChars[at] ?? "") && !DIGIT.test(slipChars[at] ?? "");
+  return differ.length === 1 && at !== undefined ? { at, slip: slipChars[at] ?? "", usual: usualChars[at] ?? "" } : undefined;
+};
+
+const isDirectionDifference = (difference: CharDifference | undefined, chars: PlaceChars): boolean =>
+  difference !== undefined && (chars.directions.has(difference.slip) || chars.directions.has(difference.usual));
+
+/** 漢字どうしの一字違いは、読みの同じ字の組のときだけ（八重洲 と 八重州）。読みの違う字（戸塚 と 戸山）は別の所のことが多い。 */
+const isReadAlike = (difference: CharDifference, chars: PlaceChars): boolean => {
+  if (!HAN.test(difference.slip) || !HAN.test(difference.usual)) return true;
+  const group = chars.sameReading.get(difference.slip);
+  return group !== undefined && group === chars.sameReading.get(difference.usual);
+};
+
+/** 漢字・かなの名前の部分が一字だけ違い、その字が、多いほうで固有名詞の語に入る（八重洲 と 八重州）。数字は別の所。 */
+const isCjkSlip = (slip: PlaceMention, usual: PlaceMention, chars: PlaceChars): boolean => {
+  const difference = oneCharDifference(slip, usual);
+  return (
+    difference !== undefined &&
+    usual.properAt.includes(difference.at) &&
+    !DIGIT.test(difference.usual) &&
+    !DIGIT.test(difference.slip) &&
+    isReadAlike(difference, chars)
+  );
 };
 
 const latinWords = (base: string): string[] =>
@@ -209,18 +242,17 @@ const isSlipOf = (slip: Counted, usual: Counted): boolean => slip.count === 1 &&
 /**
  * 二つの書き方が、同じ所を二通りに書いたものか。場所の語の組が同じで、名前と語の全体が記号・幅・大小だけ違うか、場所の語の
  * 書き方だけが違う（11th St. と 11th Street）か。名前の部分の読みが同じか、かなで書いた読み（筑紫口 と ちくし口）か、一字違い
- * （八重洲 と 八重州）なのは、
- * 少ないほうが一度だけ、多いほうが二度以上のときに限る。
+ * （八重洲 と 八重州）なのは、少ないほうが一度だけ、多いほうが二度以上のときに限る。違う一字が方角や位置の字なら別の所。
  */
-export const placeRelation = (slip: Counted, usual: Counted): PlaceRelation | undefined => {
+export const placeRelation = (slip: Counted, usual: Counted, chars: PlaceChars = NO_PLACE_CHARS): PlaceRelation | undefined => {
   const [left, right] = [slip.mention, usual.mention];
   if (left.surface === right.surface || left.place !== right.place) return undefined;
   if (nameKey(left.surface) === nameKey(right.surface)) return "spelling";
   if (nameKey(left.base) === nameKey(right.base)) return "place-word";
-  if (!isSlipOf(slip, usual)) return undefined;
+  if (!isSlipOf(slip, usual) || isDirectionDifference(oneCharDifference(left, right), chars)) return undefined;
   if ((left.reading !== undefined && left.reading === right.reading) || isKanaSpellingOf(left, right)) return "reading";
   const latin = LATIN.test(left.base) && LATIN.test(right.base);
-  const slipped = latin ? isLatinSlip(left, right) : isCjkSlip(left, right);
+  const slipped = latin ? isLatinSlip(left, right) : isCjkSlip(left, right, chars);
   return slipped ? "near" : undefined;
 };
 
@@ -237,12 +269,12 @@ const talliesOf = (mentions: readonly PlaceMention[]): Counted[] => {
 const byUsage = (left: Counted, right: Counted): number => right.count - left.count || left.mention.offset - right.mention.offset;
 
 /** 同じ所の、少ないほうの書き方。同じ所と言える相手のうち一番多いものと比べる。書き方ごとに最初の現れを一つ。 */
-export const placeVariants = (mentions: readonly PlaceMention[]): PlaceVariant[] => {
+export const placeVariants = (mentions: readonly PlaceMention[], chars: PlaceChars = NO_PLACE_CHARS): PlaceVariant[] => {
   const tallies = talliesOf(mentions);
   return tallies.flatMap((tally) => {
-    const [usual] = tallies.filter((other) => other !== tally && placeRelation(tally, other) !== undefined).toSorted(byUsage);
+    const [usual] = tallies.filter((other) => other !== tally && placeRelation(tally, other, chars) !== undefined).toSorted(byUsage);
     if (usual === undefined || byUsage(usual, tally) > 0) return [];
-    const kind = placeRelation(tally, usual);
+    const kind = placeRelation(tally, usual, chars);
     return kind === undefined ? [] : [{ mention: tally.mention, usual: usual.mention.surface, kind }];
   });
 };

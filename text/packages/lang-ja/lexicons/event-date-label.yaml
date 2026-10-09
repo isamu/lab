@@ -1,0 +1,9 @@
+# 催しの日を示す語。この語で始まり、年のある日付と時刻を書いた行（日時：2026年11月20日（金）14:00〜）を、deadline-after-event が催しの日と読む。
+id: event-date-label
+language: ja
+entries:
+  - pattern: 日時
+  - pattern: 開催日時
+  - pattern: 開催日
+  - pattern: 実施日時
+  - pattern: 実施日

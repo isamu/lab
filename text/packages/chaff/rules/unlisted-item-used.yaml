@@ -1,0 +1,90 @@
+id: unlisted-item-used
+layer: L3
+status: stable
+how_to_find: unlisted-item-used
+# The list headings are item-list-heading's; the use frames item-use's; item-amount is taken off a thing's name and
+# item-at-hand is never reported; enumeration-joiner joins the things of one step.
+requires: [pos]
+languages: [ja, en]
+severity: warning
+
+name:
+  ja: 一覧に無い材料や道具を手順で使っている
+  en: A step uses something the list of what you need leaves out
+
+why:
+  ja: 「材料」「用意するもの」の一覧を見て揃えた読み手は、手順の途中で一覧に無い物（こしょう、バケツ）が出てくると、そこで手が止まります。一覧に足し忘れたか、手順のほうを書き間違えています。番号を振った手順のうち、物を使う形の名詞だけを読みます。「〜を入れる」「〜を加える」「add」「put」の物と、道具も入る一覧（用意するもの、What you need）がある文書では「〜で磨く」「〜に沈める」「with the …」「in a …」の物です。その物を、文書が手順より前に（一覧、題、前の手順で）書いていれば言いません。名前の最後の語だけ書いてあっても同じです。水・湯・手・空気のように、いつも手元にあって一覧に書かない物も言いません。
+  en: 'A reader who gathered everything on the "Ingredients" or "What you need" list stops halfway when a step calls for something the list does not have (pepper, a bucket). Either the list left it out or the step is wrong. Only a noun a numbered step uses is read: the object of a use verb ("add", "put", "stir in"), and, in a document whose list includes tools ("What you need", "Tools"), the thing after "with the" or "in a". It is not reported when the document has written it before the step (in the list, the title or an earlier step), whole or by its last word, nor when it is always at hand and never listed (water, hands, air).'
+
+message:
+  ja: 「{item}」は、{list}に書いてありません
+  en: '"{item}" is not in {list}'
+
+how_to_fix:
+  ja: 一覧に足すか、手順を一覧にある物で書き直してください。
+  en: Add it to the list, or rewrite the step with what the list has.
+
+# chaff explain と規則の一覧には指摘が無いので、{item} と {list} をこう読ませる。
+placeholders:
+  item:
+    ja: 〇〇
+    en: the item
+  list:
+    ja: 材料の一覧
+    en: the list
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: structure
+summary:
+  ja: 手順で使う材料や道具が、材料・用意するものの一覧に無い所
+  en: A step that uses an ingredient or a tool missing from the document's own list
+example:
+  ja:
+    before: |
+      ## 材料
+
+      - 卵 2個
+      - 塩 少々
+
+      ## 作り方
+
+      1. 卵を割りほぐし、塩、こしょうを加えます。
+    after: |
+      ## 材料
+
+      - 卵 2個
+      - 塩 少々
+      - こしょう 少々
+
+      ## 作り方
+
+      1. 卵を割りほぐし、塩、こしょうを加えます。
+  en:
+    before: |
+      ## Ingredients
+
+      - 2 eggs
+      - A pinch of salt
+
+      ## Method
+
+      1. Beat the eggs and add the salt and pepper.
+    after: |
+      ## Ingredients
+
+      - 2 eggs
+      - A pinch of salt
+      - A pinch of pepper
+
+      ## Method
+
+      1. Beat the eggs and add the salt and pepper.
+
+not_flagged:
+  ja: 一覧の見出しが無い文書、番号の無い手順、物を使う形でない名詞（オーブンで焼く、は道具も入る一覧がある文書だけ）、手順より前に書いた物、いつも手元にある物（水、湯、手、空気、皿）、「使わずに」と打ち消した物は言いません。
+  en: 'A document with no list heading, steps without numbers, a noun not in a use frame ("with the", "in a" only in a document that lists tools), anything written before the step, what is always at hand (water, hands, air, plates), and a use that is denied ("do not add") are not reported.'

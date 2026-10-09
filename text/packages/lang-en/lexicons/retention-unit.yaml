@@ -1,0 +1,5 @@
+# Units of a retention period beyond those in duration-day, duration-week, duration-month and duration-year (fact-conflict).
+# group is the size of the unit (year, month, week, day).
+id: retention-unit
+language: en
+entries: []

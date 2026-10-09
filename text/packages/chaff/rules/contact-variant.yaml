@@ -1,0 +1,76 @@
+id: contact-variant
+layer: L3
+status: stable
+how_to_find: contact-variant
+word_list: address-label
+# The address labels (住所, 本店所在地, Address, head office) and whose address each names come from the language's
+# address-label lexicon; addresses after labels of different offices (a head office and a branch) are never compared.
+languages: [ja, en]
+severity: warning
+
+name:
+  ja: 連絡先の書き違い
+  en: A contact written two ways
+
+why:
+  ja: 問合せ先のメールアドレスや会社の住所は、本文の上と下、問合せ先と管轄の条のように何度も書かれます。一か所だけ「privacy@hibari-lab.example」が「privacy@hibarilab.example」に、「丸の内二丁目4番1号」が「丸の内二丁目1番4号」になっていると、読み手はどちらが正しいか分からず、届かない宛先に送ることもあります。メールアドレスは、ハイフンや点が一つ抜けたもの、どこか一語だけが一、二文字違うものを指します。住所は、住所を言う語（住所、本店所在地）の後ろに書いた、同じ町の住所どうしを比べ、番地の数字が入れ替わったもの、一つだけ違うもの、郵便番号だけが違うものを指します。
+  en: 'An email address or a company''s address is written more than once: at the top and the bottom, under "Contact" and in the governing-law clause. When one place reads privacy@hibarilab.example for privacy@hibari-lab.example, or 2-1-4 Marunouchi for 2-4-1 Marunouchi, the reader cannot tell which is right and may write to one that never arrives. An email address is reported when it is another with a dot or hyphen dropped, or with one word one or two letters off. Addresses written after an address word (Address, head office) on the same street are compared, and one whose block numbers are swapped or one changed, or whose postcode alone differs, is reported.'
+
+message:
+  ja: メールアドレス「{written}」は、「{other}」の書き違いかもしれません
+  en: "The email address {written} may be a slip for {other}"
+
+messages:
+  address:
+    ja: 住所「{written}」は、「{other}」と番地が違います
+    en: "The address {written} has other block numbers than {other}"
+  postcode:
+    ja: 住所「{written}」は、同じ住所「{other}」と郵便番号が違います
+    en: "The address {written} has another postcode than the same address {other}"
+
+how_to_fix:
+  ja: 正しい宛先を確かめて、もう一方を直してください。
+  en: Check which is right and correct the other.
+
+levels: { strict: error, normal: warning, relaxed: warning }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: A story's addresses are made up and need not agree; one may differ on purpose.
+  speech: A transcript writes what was said, slips corrected afterwards included.
+
+group: facts
+summary:
+  ja: 同じ文書で、メールアドレスや住所が一か所だけ違って書かれている所（hibari-lab と hibarilab、4番1号と1番4号）
+  en: One email address or postal address written elsewhere with a slip (hibari-lab and hibarilab, 2-4-1 and 2-1-4)
+example:
+  ja:
+    before: |
+      # お問合せ
+
+      メールアドレス：support@hibari-lab.example
+
+      変更の質問は、suport@hibari-lab.example へ送ってください。
+    after: |
+      # お問合せ
+
+      メールアドレス：support@hibari-lab.example
+
+      変更の質問は、support@hibari-lab.example へ送ってください。
+  en:
+    before: |
+      # Contact
+
+      Email: support@hibari-lab.example
+
+      Questions about a change can be sent to suport@hibari-lab.example.
+    after: |
+      # Contact
+
+      Email: support@hibari-lab.example
+
+      Questions about a change can be sent to support@hibari-lab.example.
+
+not_flagged:
+  ja: 別のメールアドレス（sales@ と support@）、数字だけが違うもの（support1@ と support2@）、5文字より短い語の違い（hr@ と pr@、sale@ と sales@）は指しません。住所は、同じ行で前に「住所」「本店所在地」のような語があるものだけを読みます。持ち主の違う住所（本店と支店）、町の違う住所、同じ名の町でも市や区の違う住所、番地の数の違う住所、二つ以上の番地が違う住所は比べません。都道府県・市・区・郡の無い住所は読みません。
+  en: Two different addresses (sales@ and support@), addresses that differ only in a digit (support1@ and support2@) and a difference in a word shorter than five letters (hr@ and pr@, sale@ and sales@) are not reported. Only a postal address with an address word (Address, head office) before it on its line is read. Addresses of different offices (a head office and a branch), on different streets, on a street of the same name in another town, with a different count of block numbers, or with two numbers changed are not compared.

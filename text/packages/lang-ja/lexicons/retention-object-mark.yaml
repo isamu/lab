@@ -1,0 +1,9 @@
+# 保存の語の前で、何を保存するかの名詞句と語のあいだに書く語（fact-conflict）: 「個人情報を保存」の を、「個人情報の保存期間」の の。
+id: retention-object-mark
+language: ja
+entries:
+  - pattern: を
+  - pattern: は
+  - pattern: が
+  - pattern: も
+  - pattern: の

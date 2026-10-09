@@ -7,6 +7,7 @@ entries:
   - { pattern: telephone, group: phone }
   - { pattern: tel, group: phone }
   - { pattern: call, group: phone }
+  - { pattern: "☎", group: phone }
   - { pattern: fax, group: fax }
   - { pattern: mobile, group: mobile }
   - { pattern: cell, group: mobile }

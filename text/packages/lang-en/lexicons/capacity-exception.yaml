@@ -1,0 +1,28 @@
+# Marks that keep a capacity and a headcount apart (count-over-capacity). Group overflow, in the section of either, makes
+# registrations past the capacity expected (waitlist, ballot). Per-session, on the line of either, makes it a number for
+# one session or one day ("20 per session"). Other-occasion, on the line of a headcount, makes it another event's
+# ("last year 120 people attended"). Negation, in the clause after a headcount, makes it people who did not register
+# ("45 people have not registered"). Matched as written, case aside, English words as whole words.
+id: capacity-exception
+language: en
+entries:
+  - { pattern: waitlist, group: overflow }
+  - { pattern: waiting list, group: overflow }
+  - { pattern: wait list, group: overflow }
+  - { pattern: ballot, group: overflow }
+  - { pattern: lottery, group: overflow }
+  - { pattern: per session, group: per-session }
+  - { pattern: each session, group: per-session }
+  - { pattern: per class, group: per-session }
+  - { pattern: each class, group: per-session }
+  - { pattern: per day, group: per-session }
+  - { pattern: each day, group: per-session }
+  - { pattern: per workshop, group: per-session }
+  - { pattern: per tour, group: per-session }
+  - { pattern: last year, group: other-occasion }
+  - { pattern: previous, group: other-occasion }
+  - { pattern: past, group: other-occasion }
+  - { pattern: in total, group: other-occasion }
+  - { pattern: cumulative, group: other-occasion }
+  - { pattern: not, group: negation }
+  - { pattern: never, group: negation }

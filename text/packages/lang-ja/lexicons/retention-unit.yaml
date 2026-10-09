@@ -1,0 +1,6 @@
+# 保存期間の単位のうち、duration-day / duration-week / duration-month / duration-year に無いもの（fact-conflict）:
+# 「保存期間は3年です」の 年。group は単位の大きさ（year, month, week, day）。
+id: retention-unit
+language: ja
+entries:
+  - { pattern: 年, group: year }

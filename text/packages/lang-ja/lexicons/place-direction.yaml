@@ -1,0 +1,18 @@
+# 場所の名前の中で、方角や位置を言う字（下北沢 と 上北沢、東新宿 と 西新宿、新横浜 と 西横浜）。name-variant は、この字だけが違う
+# 二つの名前を、同じ所を二通りに書いたものとは見ない。名前のどこに立っても別の所。
+id: place-direction
+language: ja
+entries:
+  - { pattern: 東 }
+  - { pattern: 西 }
+  - { pattern: 南 }
+  - { pattern: 北 }
+  - { pattern: 上 }
+  - { pattern: 下 }
+  - { pattern: 中 }
+  - { pattern: 内 }
+  - { pattern: 外 }
+  - { pattern: 前 }
+  - { pattern: 後 }
+  - { pattern: 新 }
+  - { pattern: 旧 }

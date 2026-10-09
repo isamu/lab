@@ -1,0 +1,13 @@
+# 単位を書かない数の幅（7〜11、15以上）が何を数えるかを言う列の見出し（range-band-mismatch）。group は range-band-unit と同じ意味。
+# 見出しの升がこの語だけ（括弧の中を除く）のときに読む。括弧に単位を書いた見出し（体重(kg)）は単位から読む。
+id: range-band-heading
+language: ja
+entries:
+  - { pattern: "年齢", group: integer }
+  - { pattern: "年令", group: integer }
+  - { pattern: "対象年齢", group: integer }
+  - { pattern: "人数", group: integer }
+  - { pattern: "点数", group: integer }
+  - { pattern: "得点", group: integer }
+  - { pattern: "体重", group: continuous }
+  - { pattern: "身長", group: continuous }

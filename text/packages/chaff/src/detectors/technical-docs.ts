@@ -191,6 +191,17 @@ const isInflected = (token: Token): boolean =>
   token.lemma !== undefined && token.lemma !== "" && token.surface.toLowerCase() !== token.lemma && token.features?.["VerbForm"] !== "Part";
 
 const NOMINAL = new Set(["NOUN", "PROPN"]);
+/** What an adjective at the head of a subject goes on to: the noun it describes, or another word describing it. */
+const DESCRIBED = new Set(["NOUN", "PROPN", "ADJ"]);
+
+/**
+ * An adjective opening a subject is followed by what it describes (Each user, Large files). One followed by a preposition
+ * or an article is an imperative the tagger read as an adjective (Bake in the oven, Open the file).
+ */
+export const opensWithMisreadImperative = (tokens: readonly Token[]): boolean => {
+  const [head, next] = tokens.filter((token) => !SKIPPED.has(token.pos));
+  return head?.pos === "ADJ" && !DESCRIBED.has(next?.pos ?? "");
+};
 
 /** A determiner right after a noun opens a clause inside the phrase (a buffer that is big): the verb after it is the clause's, not a subject's. */
 const opensClause = (words: readonly Token[]): boolean => words.some((token, at) => at > 0 && token.pos === "DET" && NOMINAL.has(words[at - 1]?.pos ?? ""));
@@ -204,6 +215,7 @@ export const isStatement = (tokens: readonly Token[]): boolean => {
   const words = tokens.filter((token) => !SKIPPED.has(token.pos));
   const [head, ...rest] = words;
   if (head === undefined || words.length < MIN_STEP_TOKENS || !SUBJECT_HEAD.has(head.pos)) return false;
+  if (opensWithMisreadImperative(words)) return false;
   const verbAt = rest.findIndex((token) => PREDICATE.has(token.pos));
   const verb = rest[verbAt];
   const subject = [head, ...rest.slice(0, verbAt)];

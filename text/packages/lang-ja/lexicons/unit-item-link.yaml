@@ -1,0 +1,5 @@
+# 量と、その量の品物の名前をつなぐ語（unit-mismatch）。名前は量のすぐ前（しょうゆ大さじ1）か、この語を挟んで量の後ろ（30mlのしょうゆ）。
+id: unit-item-link
+language: ja
+entries:
+  - pattern: "の"

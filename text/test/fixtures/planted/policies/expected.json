@@ -1,0 +1,23 @@
+{
+  "recall": {
+    "ja": {
+      "term-before-definition": "2/2",
+      "announced-count": "2/2",
+      "dangling-section-reference": "2/2",
+      "retention-two-ways": "1/1",
+      "vague-deadline": "2/2",
+      "contact-two-ways": "2/2",
+      "stamp-dates-reversed": "2/2"
+    },
+    "en": {
+      "term-before-definition": "2/2",
+      "announced-count": "2/2",
+      "dangling-section-reference": "2/2",
+      "retention-two-ways": "1/1",
+      "vague-deadline": "2/2",
+      "contact-two-ways": "2/2",
+      "stamp-dates-reversed": "2/2"
+    }
+  },
+  "clean": []
+}

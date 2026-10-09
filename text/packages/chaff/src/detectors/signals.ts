@@ -371,7 +371,9 @@ export const concreteEvidence: Detector = (doc, options): Finding[] => {
  * ダッシュの多用。英語では正当な用法が多いが、2026 年時点で最も知られた生成文のシグナルでもある。
  * 日本語の組版ではそもそも扱いが難しい。どちらが正しいかは severity の言語別指定で分ける。spec §12.4。
  */
-const DASH = /[\u2014\u2015\u2013]/gu;
+// An en dash between two digits (45–58, 10:00–10:15) is a range mark, the typographer's correct choice, not a dash that
+// sets off words.
+const DASH = /[\u2014\u2015]|(?<!\p{Nd})\u2013|\u2013(?!\p{Nd})/gu;
 
 export const dashDensity: Detector = (doc, options): Finding[] => {
   const hits = findIn(doc, DASH);
