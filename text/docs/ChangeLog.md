@@ -2,6 +2,36 @@
 
 Newest first.
 
+## 0.30.0 — 2026-10-09
+
+Every mistake in the planted sets is now caught, with no finding on their clean documents. New checks cover
+itineraries, meeting minutes, job postings and syllabi: connection times, required skills listed again as preferred,
+parties listed in the reverse of a contract's order, working hours and sessions × length, and a function's return type
+stated two ways. Names are compared inside tables, place names and reordered names are read, and English contracts
+get the undefined-term check.
+
+### Rules
+
+- New: return-type-mismatch, one function's return type stated two ways on a page (revives #785) (#846).
+- New: connection-time-short, a connection shorter than the travel time the document states (#846).
+- New: required-listed-as-preferred, a skill listed both as required and as preferred (#846).
+- New: party-order (ja), parties listed in the reverse of a contract's usual order (#846).
+- New: duration-product-mismatch, sessions × length against a stated total; duration-mismatch checks working hours
+  against start, end and break (#830).
+- name-variant reads table cells with readings, place names in cells, surnames a few letters apart with the same given
+  name, and names written with their words reordered (#821, #846).
+- date-order breaks a swapped-neighbour tie with the versions or the gap; date-range-reversed reads a bare "X to Y"
+  after a period label or between weekday dates; date-outside-period compares deadlines with the document's term (#846).
+- undefined-term reads English contracts, narrowly (#846).
+- undefined-acronym reads a capitals word used as a preposition or verb as emphasis (AFTER, DID), and every headword of
+  a glossary as defined (#846).
+
+### Tests and tools
+
+- Planted sets for itineraries, meeting minutes and job postings, and syllabi (#812, #815, #826).
+- Majority-decided plants made provable under their rules; 公用文 kana kinds scored against kana-function-word; the
+  English undefined-term plant made provable (#832, #846, #847).
+
 ## 0.29.0 — 2026-10-08
 
 chaff now checks API documents, invoices and quotes, press releases, public notices, itineraries, meeting minutes and
