@@ -94,9 +94,16 @@ type Reported = { readonly offset: number; readonly name: string; readonly usual
 const overlapsAny = (reported: readonly Reported[], offset: number, length: number): boolean =>
   reported.some((other) => other.offset < offset + length && offset < other.offset + other.name.length);
 
+/** 会社の名前の頭のひらがなを切り分ける語は、語彙表 company-name-kana が組（particle、opener、end）ごとに言う。 */
+const kanaStopsOf = (doc: ProseDocument): Parameters<typeof companyMentionsIn>[3] => {
+  const entries = doc.lexicons["company-name-kana"] ?? [];
+  const inGroup = (group: string): string[] => entries.filter((entry) => entry.group === group).map((entry) => entry.pattern);
+  return { particles: inGroup("particle"), openers: inGroup("opener"), ends: inGroup("end") };
+};
+
 /** 会社の名前の書き分け。名前の見方がすでに指した所と重なるものは除く。 */
 const companyFindings = (doc: ProseDocument, prose: string, reported: readonly Reported[]): Reported[] =>
-  companyVariants(companyMentionsIn(prose, companyFormsOf(doc), properOf(doc)))
+  companyVariants(companyMentionsIn(prose, companyFormsOf(doc), properOf(doc), kanaStopsOf(doc)))
     .filter(({ mention }) => !overlapsAny(reported, mention.offset, mention.surface.length))
     .map(({ mention, usual, kind }) => ({ offset: mention.offset, name: mention.surface, usual, kind: kind === "spelling" ? kind : `company-${kind}` }));
 
