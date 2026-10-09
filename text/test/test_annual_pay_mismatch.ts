@@ -6,7 +6,7 @@ import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
-import { factorsOf, isAnnualOf, isPlainGap, labelsIn, monthsIn, roundingOf, type AnnualPayWords } from "../packages/chaff/src/structure/annual-pay.ts";
+import { isAnnualOf, isPlainGap, labelsIn, monthsIn, roundingOf, type AnnualPayWords } from "../packages/chaff/src/structure/annual-pay.ts";
 
 // 月給と賞与から計算した額と合わない年収例（annual-pay-mismatch）。
 
@@ -30,6 +30,8 @@ const words: AnnualPayWords = {
   none: [{ word: "なし", position: "after" }],
   each: ["各"],
   extra: [],
+  times: [],
+  totals: [],
   includes: ["残業"],
   markers: [
     { word: "約", position: "before" },
@@ -42,21 +44,14 @@ const words: AnnualPayWords = {
 
 describe("annual-pay pieces", () => {
   it("isAnnualOf allows less than the rounding unit either way, and compares a range end for end", () => {
-    assert.equal(isAnnualOf({ low: 4200000, high: 4200000 }, 10000, { low: 280000, high: 280000 }, [15]), true);
-    assert.equal(isAnnualOf({ low: 3520000, high: 3520000 }, 10000, { low: 235000, high: 235000 }, [15]), true);
-    assert.equal(isAnnualOf({ low: 3530000, high: 3530000 }, 10000, { low: 235000, high: 235000 }, [15]), true);
-    assert.equal(isAnnualOf({ low: 4210000, high: 4210000 }, 10000, { low: 280000, high: 280000 }, [15]), false);
-    assert.equal(isAnnualOf({ low: 4500000, high: 4500000 }, 10000, { low: 280000, high: 280000 }, [15]), false);
-    assert.equal(isAnnualOf({ low: 3750000, high: 4500000 }, 10000, { low: 250000, high: 300000 }, [15]), true);
-    assert.equal(isAnnualOf({ low: 4000000, high: 4500000 }, 10000, { low: 250000, high: 300000 }, [15]), false);
-    assert.equal(isAnnualOf({ low: 3360000, high: 3360000 }, 10000, { low: 280000, high: 280000 }, []), false);
-  });
-
-  it("factorsOf is twelve plus the bonus, and also twelve alone for an annual salary", () => {
-    assert.deepEqual(factorsOf("example", false, 3), [15]);
-    assert.deepEqual(factorsOf("example", false, 0), [12]);
-    assert.deepEqual(factorsOf("salary", false, 4), [12, 16]);
-    assert.deepEqual(factorsOf("example", true, 2.5), [12, 14.5]);
+    assert.equal(isAnnualOf({ low: 4200000, high: 4200000 }, 10000, { low: 280000, high: 280000 }, 15), true);
+    assert.equal(isAnnualOf({ low: 3520000, high: 3520000 }, 10000, { low: 235000, high: 235000 }, 15), true);
+    assert.equal(isAnnualOf({ low: 3530000, high: 3530000 }, 10000, { low: 235000, high: 235000 }, 15), true);
+    assert.equal(isAnnualOf({ low: 4210000, high: 4210000 }, 10000, { low: 280000, high: 280000 }, 15), false);
+    assert.equal(isAnnualOf({ low: 4500000, high: 4500000 }, 10000, { low: 280000, high: 280000 }, 15), false);
+    assert.equal(isAnnualOf({ low: 3750000, high: 4500000 }, 10000, { low: 250000, high: 300000 }, 15), true);
+    assert.equal(isAnnualOf({ low: 4000000, high: 4500000 }, 10000, { low: 250000, high: 300000 }, 15), false);
+    assert.equal(isAnnualOf({ low: 3360000, high: 3360000 }, 10000, { low: 280000, high: 280000 }, 12), true);
   });
 
   it("roundingOf is one of the last written place with a word of scale, and a thousand for plain digits", () => {
@@ -129,10 +124,20 @@ describe("annual-pay-mismatch, Japanese", () => {
     assert.deepEqual(jaDoc("月給：235,000円", "賞与：3ヶ月分", "年収例：3,525,000円"), []);
   });
 
-  it("an annual salary may hold the bonus or not", () => {
-    assert.deepEqual(jaDoc("月給：30万円", "賞与：4ヶ月分", "年俸：480万円"), []);
-    assert.deepEqual(jaDoc("月給：30万円", "賞与：4ヶ月分", "年俸：360万円"), []);
-    assert.deepEqual(jaDoc("月給：30万円", "賞与：4ヶ月分", "年俸：400万円"), ["400万円 / 30万円 + 4ヶ月"]);
+  it("says nothing for a posting with an annual salary, whose monthly pay may be a 14th or a 16th of it", () => {
+    assert.deepEqual(jaDoc("月給：30万円", "賞与：4ヶ月分", "年俸：400万円"), []);
+    assert.deepEqual(jaDoc("年俸制：420万円（14分割、月給30万円）", "賞与：なし"), []);
+    assert.deepEqual(jaDoc("給与：年俸制", "月給：30万円", "賞与：なし", "想定年収：420万円"), []);
+  });
+
+  it("a bonus paid more than once is read only when its months are called the total", () => {
+    assert.deepEqual(jaDoc("月給：25万円", "賞与：年2回、1ヶ月分", "年収例：350万円"), []);
+    assert.deepEqual(jaDoc("月給：25万円", "賞与：年2回、計1ヶ月分", "年収例：350万円"), ["350万円 / 25万円 + 1ヶ月"]);
+    assert.deepEqual(jaDoc("月給：25万円", "賞与：夏1ヶ月、冬1ヶ月", "年収例：350万円"), []);
+  });
+
+  it("an annual pay that is not an example is not read", () => {
+    assert.deepEqual(jaDoc("月給：25万円", "賞与：3ヶ月分", "社員の平均年収：450万円"), []);
   });
 
   it("both ranges are compared end for end; a range on one side only is not", () => {
@@ -186,15 +191,19 @@ describe("annual-pay-mismatch, English", () => {
   });
 
   it("no bonus before the label is twelve months", () => {
-    assert.deepEqual(enDoc("Monthly salary: $4,000. No bonus.", "Annual pay: $48,000"), []);
-    assert.deepEqual(enDoc("Monthly salary: $4,000. No bonus.", "Annual pay: $50,000"), ["$50,000 / $4,000 + No bonus"]);
+    assert.deepEqual(enDoc("Monthly salary: $4,000. No bonus.", "Expected annual pay: $48,000"), []);
+    assert.deepEqual(enDoc("Monthly salary: $4,000. No bonus.", "Expected annual pay: $50,000"), ["$50,000 / $4,000 + No bonus"]);
+  });
+
+  it("No before a bonus label is no bonus only when nothing else follows it", () => {
+    assert.deepEqual(enDoc("Monthly salary: $4,000", "No bonus cap: target 2 months", "Expected annual pay: $56,000"), []);
   });
 
   it("says nothing for overtime, an open amount, or a bonus per payment", () => {
-    assert.deepEqual(enDoc("Monthly salary: $4,000", "Bonus: 2 months", "Annual pay: $60,000 including overtime"), []);
-    assert.deepEqual(enDoc("Monthly salary: $4,000", "Bonus: 2 months", "Annual pay: from $60,000"), []);
-    assert.deepEqual(enDoc("Monthly salary: $4,000", "Bonus: 2 months", "Annual pay: about $60,000"), []);
-    assert.deepEqual(enDoc("Monthly salary: $4,000", "Bonus: 2 months", "Annual pay: $60,000+"), []);
-    assert.deepEqual(enDoc("Monthly salary: $4,000", "Bonus: one month each, twice a year", "Annual pay: $60,000"), []);
+    assert.deepEqual(enDoc("Monthly salary: $4,000", "Bonus: 2 months", "Expected annual pay: $60,000 including overtime"), []);
+    assert.deepEqual(enDoc("Monthly salary: $4,000", "Bonus: 2 months", "Expected annual pay: from $60,000"), []);
+    assert.deepEqual(enDoc("Monthly salary: $4,000", "Bonus: 2 months", "Expected annual pay: about $60,000"), []);
+    assert.deepEqual(enDoc("Monthly salary: $4,000", "Bonus: 2 months", "Expected annual pay: $60,000+"), []);
+    assert.deepEqual(enDoc("Monthly salary: $4,000", "Bonus: one month each, twice a year", "Expected annual pay: $60,000"), []);
   });
 });

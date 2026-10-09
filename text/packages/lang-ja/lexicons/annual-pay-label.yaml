@@ -1,6 +1,7 @@
-# 求人の給与の見出し（annual-pay-mismatch）。example は年収の例（月給の12か月分と賞与の月数分を足した額と比べる）、salary は
-# 年俸（賞与を含む書き方も含まない書き方もあるので、どちらでもよいとする）、monthly は月給、pay は「月額」「/月」などの語が
-# 一緒にあるときだけ月給として読む見出し、bonus は賞与。
+# 求人の給与の見出し（annual-pay-mismatch）。example は年収の例（月給の12か月分と賞与の月数分を足した額と比べる）。
+# 「平均年収」のような例でない年収を読まないよう、ただの「年収」は入れない。salary は年俸で、これのある文書は比べない（月給が
+# 年俸の12分の1とも14分の1・16分の1ともありうるため）。monthly は月給、pay は「月額」「/月」などの語が一緒にあるときだけ
+# 月給として読む見出し、bonus は賞与。
 id: annual-pay-label
 language: ja
 entries:
@@ -9,7 +10,6 @@ entries:
   - { pattern: 想定年収, group: example }
   - { pattern: 年収モデル, group: example }
   - { pattern: モデル年収, group: example }
-  - { pattern: 年収, group: example }
   - { pattern: 年俸, group: salary }
   - { pattern: 年俸制, group: salary }
   - { pattern: 月給, group: monthly }

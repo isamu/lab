@@ -6,8 +6,8 @@ import type { StructureIssue } from "./issues.ts";
  * (年収例 450万円 with 月給28万円 and 賞与 計3ヶ月分, where 28万 × 15 is 420万). The monthly pay and the bonus are the ones
  * written on the annual line itself (月給28万円の場合), else the one reading the rest of the document gives. Two different
  * readings, a reading that cannot be read plainly (a range of months, 各, 約, 以上, an open range) and an annual line or note
- * that mentions overtime or allowances all leave the figure unchecked. An annual salary (年俸) may hold the bonus or not,
- * so either is accepted. The words come from the lexicons. Pure.
+ * that mentions overtime or allowances all leave the figure unchecked. A posting that mentions an annual salary (年俸) is
+ * not compared: its monthly pay may be the salary divided by 12, 14 or 16. The words come from the lexicons. Pure.
  */
 
 /** One amount of money as read: its currency, its value, and the value of the word of scale written in it (万), if any. */
@@ -36,6 +36,10 @@ export type AnnualPayWords = {
   readonly each: readonly string[];
   /** Words of a bonus paid besides the stated one (別途, additional); such a bonus is not read. */
   readonly extra: readonly string[];
+  /** Words that say a bonus is paid more than once a year (年2回, twice a year); with one, the months must be called a total. */
+  readonly times: readonly string[];
+  /** Words that call a bonus's months the year's total (合計, in total). */
+  readonly totals: readonly string[];
   /** Words that say a pay holds overtime or allowances (残業, 手当, overtime); such a pay is not compared. */
   readonly includes: readonly string[];
   /** Words that make an amount or a count open-ended or approximate (約, 以上, from, or more). */
@@ -241,6 +245,7 @@ const noneSpan = (text: string, label: Label, end: number, none: PositionedWord)
     const before = text.slice(lineStart(text, label.start), label.start).trimEnd();
     const start = before.length - none.word.length;
     const isWord = before.toLowerCase().endsWith(none.word.toLowerCase()) && !WORD_END.test(before.slice(0, start));
+    if (!isPlainGap(text.slice(label.end, end), [])) return undefined;
     return isWord ? { start: lineStart(text, label.start) + start, end: label.end } : undefined;
   }
   const [at] = occurrences(text.slice(label.end, end), [none.word]);
@@ -266,7 +271,8 @@ const bonusAt = (context: Context, label: Label, end: number): BonusReading | Un
   if (first === undefined) return undefined;
   const piece = text.slice(label.end, end);
   const odd = contains(piece, [...words.each, ...words.extra]) || amountsBetween(context.amounts, label.end, end).length > 0;
-  if (odd || counts.some((count) => count.marked || count.count !== first.count)) return UNCLEAR;
+  const perPayment = contains(piece, words.times) && !contains(piece, words.totals);
+  if (odd || perPayment || counts.length > 1 || first.marked) return UNCLEAR;
   return { months: first.count, written: text.slice(first.start, first.end) };
 };
 
@@ -297,19 +303,15 @@ const monthlyReadings = (context: Context, labels: readonly Label[]): (PayReadin
 const bonusReadings = (context: Context, labels: readonly Label[]): (BonusReading | Unclear)[] =>
   labels.flatMap((label) => (label.kind === "bonus" ? (bonusAt(context, label, statementEnd(context.text, label, context.labels, BONUS_STOPS)) ?? []) : []));
 
-/** Whether the annual pay is the monthly pay times one of the factors, end for end, within the annual pay's rounding. */
-export const isAnnualOf = (annual: Ends, unit: number, monthly: Ends, factors: readonly number[]): boolean =>
-  factors.some((factor) => Math.abs(annual.low - monthly.low * factor) < unit && Math.abs(annual.high - monthly.high * factor) < unit);
-
-/** The months of pay a year: twelve and the bonus; an annual salary (年俸) may also leave the bonus out. */
-export const factorsOf = (kind: LabelKind, salarySystem: boolean, bonusMonths: number): number[] =>
-  kind === "salary" || salarySystem ? [MONTHS_A_YEAR, MONTHS_A_YEAR + bonusMonths] : [MONTHS_A_YEAR + bonusMonths];
+/** Whether the annual pay is the monthly pay times the months, end for end, within the annual pay's rounding. */
+export const isAnnualOf = (annual: Ends, unit: number, monthly: Ends, months: number): boolean =>
+  Math.abs(annual.low - monthly.low * months) < unit && Math.abs(annual.high - monthly.high * months) < unit;
 
 const isRange = (ends: Ends): boolean => ends.low !== ends.high;
 
 const inside = (labels: readonly Label[], scope: Scope): Label[] => labels.filter((label) => label.start > scope.label.start && label.start < scope.end);
 
-const mismatchOf = (context: Context, scope: Scope, posting: Posting, salarySystem: boolean): StructureIssue[] => {
+const mismatchOf = (context: Context, scope: Scope, posting: Posting): StructureIssue[] => {
   const annual = payAt(context, scope.label, statementEnd(context.text, scope.label, context.labels, KINDS));
   if (annual === undefined || !isRead(annual)) return [];
   const own = inside(context.labels, scope);
@@ -319,7 +321,7 @@ const mismatchOf = (context: Context, scope: Scope, posting: Posting, salarySyst
   const bonus = ownBonus.length > 0 ? agreed(ownBonus, sameBonus) : posting.bonus;
   if (monthly === undefined || bonus === undefined || monthly.currency !== annual.currency) return [];
   if (isRange(annual.ends) !== isRange(monthly.ends)) return [];
-  if (isAnnualOf(annual.ends, annual.unit, monthly.ends, factorsOf(scope.label.kind, salarySystem, bonus.months))) return [];
+  if (isAnnualOf(annual.ends, annual.unit, monthly.ends, MONTHS_A_YEAR + bonus.months)) return [];
   const values = { annual: annual.written, monthly: monthly.written, bonus: bonus.written, months: MONTHS_A_YEAR + bonus.months };
   return [{ offset: annual.offset, values }];
 };
@@ -328,10 +330,10 @@ const mismatchOf = (context: Context, scope: Scope, posting: Posting, salarySyst
 export const annualPayMismatches = (text: string, amounts: readonly PayAmount[], words: AnnualPayWords): StructureIssue[] => {
   const labels = labelsIn(text, words);
   const scopes = labels.filter((label) => ANNUAL.includes(label.kind)).map((label) => ({ label, end: statementEnd(text, label, labels, ANNUAL) }));
-  if (scopes.length === 0 || scopes.some((scope) => contains(sentenceOf(text, scope), words.includes))) return [];
+  const salary = scopes.some((scope) => scope.label.kind === "salary");
+  if (salary || scopes.length === 0 || scopes.some((scope) => contains(sentenceOf(text, scope), words.includes))) return [];
   const context = { text, labels, amounts, words };
   const outside = labels.filter((label) => !scopes.some((scope) => label.start >= scope.label.start && label.start < scope.end));
   const posting = { monthly: agreed(monthlyReadings(context, outside), samePay), bonus: agreed(bonusReadings(context, outside), sameBonus) };
-  const salarySystem = contains(text, words.labels.salary);
-  return scopes.flatMap((scope) => mismatchOf(context, scope, posting, salarySystem));
+  return scopes.flatMap((scope) => mismatchOf(context, scope, posting));
 };

@@ -1,6 +1,7 @@
 # The words of annual-pay-mismatch. link may stand between a label and its amount ("monthly salary of $4,800"). per-month
 # makes a pay label monthly. none says there is no bonus, after the label ("Bonus: none") or before it ("No bonus"). each
-# makes a bonus count per payment and extra says another bonus is paid besides; neither bonus is read. include says a pay
+# makes a bonus count per payment and extra says another bonus is paid besides; neither bonus is read. times says a bonus
+# is paid more than once a year; then the months are read only when a total word calls them the year's total. include says a pay
 # holds overtime or allowances; on an annual line or a note beside it, the document is not compared. open leaves an
 # amount's range open ("from $70,000", "$70,000+").
 id: annual-pay-word
@@ -22,6 +23,20 @@ entries:
   - { pattern: per occasion, group: each }
   - { pattern: additional, group: extra }
   - { pattern: separately, group: extra }
+  - { pattern: twice, group: times }
+  - { pattern: two times, group: times }
+  - { pattern: three times, group: times }
+  - { pattern: 2 times, group: times }
+  - { pattern: 3 times, group: times }
+  - { pattern: semi-annual, group: times }
+  - { pattern: semiannual, group: times }
+  - { pattern: biannual, group: times }
+  - { pattern: quarterly, group: times }
+  - { pattern: summer, group: times }
+  - { pattern: winter, group: times }
+  - { pattern: in total, group: total }
+  - { pattern: total, group: total }
+  - { pattern: combined, group: total }
   - { pattern: overtime, group: include }
   - { pattern: allowance, group: include }
   - { pattern: allowances, group: include }

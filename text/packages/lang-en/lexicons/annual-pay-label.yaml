@@ -1,5 +1,6 @@
 # The pay labels of a job posting (annual-pay-mismatch). example is an example annual pay, compared with twelve months of
-# the monthly pay plus the bonus months; salary is an annual salary, which may hold the bonus or not, so either is accepted;
+# the monthly pay plus the bonus months; a bare "Annual pay" is left out so an average or a past pay is not read. salary
+# is an annual salary; a document with one is not compared, since its monthly pay may be the salary over 12, 14 or 16.
 # monthly is a monthly pay; pay is read as monthly only with a per-month word beside it ("$4,500 a month"); bonus is a bonus.
 id: annual-pay-label
 language: en
@@ -10,8 +11,6 @@ entries:
   - { pattern: Estimated annual pay, group: example }
   - { pattern: Example annual income, group: example }
   - { pattern: Expected annual income, group: example }
-  - { pattern: Annual pay, group: example }
-  - { pattern: Annual income, group: example }
   - { pattern: Annual salary, group: salary }
   - { pattern: Monthly salary, group: monthly }
   - { pattern: Monthly pay, group: monthly }

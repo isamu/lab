@@ -35,6 +35,8 @@ const wordsOf = (doc: ProseDocument): AnnualPayWords => ({
   none: positionedOf(doc, "annual-pay-word", "none"),
   each: patternsOf(doc, "annual-pay-word", "each"),
   extra: patternsOf(doc, "annual-pay-word", "extra"),
+  times: patternsOf(doc, "annual-pay-word", "times"),
+  totals: patternsOf(doc, "annual-pay-word", "total"),
   includes: patternsOf(doc, "annual-pay-word", "include"),
   markers: [...positionedOf(doc, "approximate-marker"), ...positionedOf(doc, "annual-pay-word", "open")],
   months: patternsOf(doc, "duration-month"),
