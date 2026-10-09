@@ -39,12 +39,12 @@ maff-kyodo-ryori-okaisan-ja  1
 mdn-using-fetch-ja  1
 mext-heatstroke-after-holidays  5
 mhlw-icd-committee-26-minutes  2
-mhlw-norovirus-qa  15
+mhlw-norovirus-qa  16
 moriguchi-satsuki-gakuen-ijime-houshin  3
 neeview-changelog-ja  9
 nsf-19-582-reu-solicitation  1
 nstac-microdata-forum  1
-nta-taxanswer-1120  1
+nta-taxanswer-1120  2
 nws-glossary-a  2
 ppc-guidelines-tsusoku  15
 python-code-quality-list-2016-03  4
@@ -53,7 +53,7 @@ react-ja-thinking  3
 rfc3693-geopriv-requirements  2
 ruby-3-4-0-released-ja  2
 saitama-shokuiku-soboro-oyakodon  4
-soumu-kokumin-cyber-glossary-a  1
+soumu-kokumin-cyber-glossary-a  2
 soumu-wp-r06-misinformation  1
 sre-next-bunsho-kanri  1
 sre-next-teikan  1

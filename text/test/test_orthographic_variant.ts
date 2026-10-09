@@ -4,7 +4,7 @@ import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { oddSpellings } from "../packages/chaff/src/spelling-variants.ts";
-import { dropsOkurigana, kanjiSkeleton, katakanaKey, lemmaReading } from "../packages/chaff/src/kana-spelling.ts";
+import { dropsOkurigana, isKanaForKanji, kanjiKeyAmong, kanjiSkeleton, katakanaKey, lemmaReading } from "../packages/chaff/src/kana-spelling.ts";
 import { furiganaSpans } from "../packages/chaff/src/furigana.ts";
 import { acronymsIn, isCapitalsNotSpelling } from "../packages/chaff/src/capitals-with-small.ts";
 
@@ -97,6 +97,23 @@ describe("orthographic-variant: カタカナ語と英字", () => {
     assert.deepEqual(findingsOf("コンピューターを使う。コンピューターを買う。コンピュータを直す。\n"), []);
   });
 
+  it("分割器の切り方が違うカタカナ語は、続けて書いたカタカナ全体で比べる（タイヤレバー と タイヤーレバー）", () => {
+    assert.deepEqual(findingsOf("タイヤレバーを差し込む。タイヤレバーで外す。タイヤーレバーを使わずにはめる。\n"), [
+      "「タイヤーレバー」と書いています（この文書はふつう「タイヤレバー」と書く語です。3 箇所のうち 1 箇所が違う）",
+    ]);
+  });
+
+  it("続けて書いたカタカナでも、中の語の語末の「ー」は katakana-long-vowel に任せ、一つの場所は一度だけ言う", () => {
+    assert.deepEqual(findingsOf("サーバーリストを見る。サーバーリストを直す。サーバリストを消す。\n"), []);
+    assert.deepEqual(findingsOf("ユーザーインターフェースを直す。ユーザーインターフェースを見る。ユーザーインタフェースを試す。\n"), [
+      "「インタフェース」と書いています（この文書はふつう「インターフェース」と書く語です。3 箇所のうち 1 箇所が違う）",
+    ]);
+  });
+
+  it("続けて書いたカタカナも、短いもの（タイヤ と タイヤー）は別の語と出会うので比べない", () => {
+    assert.deepEqual(findingsOf("タイヤを替える。タイヤを外す。タイヤーを見る。\n"), []);
+  });
+
   it("e-mail と email、GitHub と Github", () => {
     assert.deepEqual(findingsOf("Send it by email. Every email is read. Attach it to the e-mail.\n", en), [
       '"e-mail" here, where the document usually writes "email" (1 of 3)',
@@ -174,6 +191,17 @@ describe("orthographic-variant: 使い方で分ける", () => {
     assert.deepEqual(findingsOf("引越し業者に頼む。引越し業者を選ぶ。引越し業者と話す。引っ越しの日を決める。\n"), [
       "「引っ越し」と書いています（この文書はふつう「引越し」と書く語です。4 箇所のうち 1 箇所が違う）",
     ]);
+  });
+
+  it("漢字の一部をかなで書いた語（かたくり粉）は、漢字の多い書き方（片栗粉）と同じ語として比べる", () => {
+    assert.deepEqual(findingsOf("水で溶いた片栗粉を加える。片栗粉を足す。かたくり粉を少し足す。\n"), [
+      "「かたくり粉」と書いています（この文書はふつう「片栗粉」と書く語です。3 箇所のうち 1 箇所が違う）",
+    ]);
+  });
+
+  it("読みが同じでも漢字の違う語（機関 と 期間）は、かなの混ざる書き方があっても別の語", () => {
+    assert.deepEqual(findingsOf("研究の機関に送る。外部の機関と話す。契約の期間を決める。\n"), []);
+    assert.deepEqual(findingsOf("川の橋を渡る。古い橋を直す。箸で食べる。はしを持つ。\n"), []);
   });
 
   it("それだけの語どうし、複合語の頭どうしのゆれは数える", () => {
@@ -305,6 +333,29 @@ describe("kana-spelling: 読みと字の鍵", () => {
     assert.equal(dropsOkurigana("町", ["町", "まち"]), false);
     assert.equal(dropsOkurigana("町", ["町", "街"]), false);
     assert.equal(dropsOkurigana("", ["", "取扱い"]), false);
+  });
+
+  it("漢字の一部をかなで書いた書き方", () => {
+    assert.equal(isKanaForKanji("かたくり粉", "片栗粉"), true);
+    assert.equal(isKanaForKanji("とり扱い", "取り扱い"), true);
+    assert.equal(isKanaForKanji("取りあつかい", "取り扱い"), true);
+    // 漢字が同じ（送り仮名だけの違い）、漢字だけ、かなだけ、漢字の位置が合わない、漢字の多い側から見る、は当たらない。
+    assert.equal(isKanaForKanji("取扱い", "取り扱い"), false);
+    assert.equal(isKanaForKanji("片栗粉", "片栗粉"), false);
+    assert.equal(isKanaForKanji("かたくりこ", "片栗粉"), false);
+    assert.equal(isKanaForKanji("かたくり粉", "片栗"), false);
+    assert.equal(isKanaForKanji("粉かたくり", "片栗粉"), false);
+    assert.equal(isKanaForKanji("片栗粉", "かたくり粉"), false);
+    assert.equal(isKanaForKanji("", "片栗粉"), false);
+  });
+
+  it("かなの混ざる書き方の漢字の鍵は、当てはまる漢字の書き方が一つのときだけ移す", () => {
+    assert.equal(kanjiKeyAmong("かたくり粉", ["片栗粉", "かたくり粉"]), "片栗粉");
+    assert.equal(kanjiKeyAmong("かたくり粉", ["かたくり粉"]), "粉");
+    assert.equal(kanjiKeyAmong("片栗粉", ["片栗粉", "かたくり粉"]), "片栗粉");
+    assert.equal(kanjiKeyAmong("かたくりこ", ["片栗粉", "かたくりこ"]), "");
+    // 二つの別の漢字の書き方に当てはまるなら、どちらとも決めない。
+    assert.equal(kanjiKeyAmong("き関", ["機関", "期関", "き関"]), "関");
   });
 
   it("カタカナ語の鍵", () => {
