@@ -1,6 +1,6 @@
 # 場所の名前で、読みが同じで取り違えやすい字（八重洲 と 八重州、大阪 と 大坂）。group が同じ字どうしを同じ読みの字と見る（name-variant）。
 # 漢字どうしの一字違いは、この組か、字体の違う同じ字（name-variant-char）のときだけ指す。戸塚 と 戸山 のような読みの違う一字違いは
-# 別の所のことが多い。
+# 別の所のことが多い。漢数字と数字（第二 と 第2、全角の ２）も同じ数を言う字の組で、ほかの数字との違い（第1 と 第2）は別の所。
 id: place-name-char
 language: ja
 entries:
@@ -27,3 +27,30 @@ entries:
   - { pattern: 曾, group: 曽 }
   - { pattern: 桧, group: 桧 }
   - { pattern: 檜, group: 桧 }
+  - { pattern: 一, group: "1" }
+  - { pattern: "1", group: "1" }
+  - { pattern: １, group: "1" }
+  - { pattern: 二, group: "2" }
+  - { pattern: "2", group: "2" }
+  - { pattern: ２, group: "2" }
+  - { pattern: 三, group: "3" }
+  - { pattern: "3", group: "3" }
+  - { pattern: ３, group: "3" }
+  - { pattern: 四, group: "4" }
+  - { pattern: "4", group: "4" }
+  - { pattern: ４, group: "4" }
+  - { pattern: 五, group: "5" }
+  - { pattern: "5", group: "5" }
+  - { pattern: ５, group: "5" }
+  - { pattern: 六, group: "6" }
+  - { pattern: "6", group: "6" }
+  - { pattern: ６, group: "6" }
+  - { pattern: 七, group: "7" }
+  - { pattern: "7", group: "7" }
+  - { pattern: ７, group: "7" }
+  - { pattern: 八, group: "8" }
+  - { pattern: "8", group: "8" }
+  - { pattern: ８, group: "8" }
+  - { pattern: 九, group: "9" }
+  - { pattern: "9", group: "9" }
+  - { pattern: ９, group: "9" }

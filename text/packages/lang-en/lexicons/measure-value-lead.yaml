@@ -1,0 +1,8 @@
+# Words of approximation between a name and its quantity (unit-mismatch). "The weight is about 1.2 kg." is read as the weight, and a difference within half the last written digit agrees. Bounds (up to, at least) do not restate a quantity, so they are not here.
+id: measure-value-lead
+language: en
+entries:
+  - pattern: "about"
+  - pattern: "approximately"
+  - pattern: "around"
+  - pattern: "roughly"

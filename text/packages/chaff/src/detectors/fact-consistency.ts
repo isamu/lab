@@ -12,6 +12,7 @@ import { retentionConflicts, type LengthMark, type RetentionLength, type Retenti
 import type { DurationUnit } from "../derived/date-arithmetic.ts";
 import { DURATION_LEXICONS, quantitiesOf, type Quantity } from "./derived-numbers.ts";
 import { quoteAt } from "./structure-tree.ts";
+import { measuredOf, valuesWith } from "./measured-facts.ts";
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
 
@@ -26,8 +27,9 @@ export const factWordsOf = (doc: ProseDocument): FactWords => ({
 
 const factsByDocument = new WeakMap<ProseDocument, readonly ScopedFact[]>();
 
+/** 単位の語彙表の量（410 g、1.2 kg）も値として読む。木が単位を読まない量は、数だけでは升や文の値にならない。 */
 const readFacts = (doc: ProseDocument, tree: StructureNode): ScopedFact[] => {
-  const values = factValues(tree, doc.source, nameSpans(doc));
+  const values = valuesWith(tree, doc, measuredOf(doc));
   const facts = [...labelledFacts(doc.source, values, factWordsOf(doc)), ...tableFacts(doc.source, values)];
   return scopedFacts(facts, tree, doc.source, patternsOf(doc, "summary-heading"));
 };

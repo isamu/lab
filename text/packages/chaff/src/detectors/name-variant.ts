@@ -1,5 +1,6 @@
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { cuedNamesIn, mentionsIn, nameVariants, suffixedNamesIn, withKnownNeighbours, type NameMention, type VariantChars } from "../name-variants.ts";
+import type { SpellingInput } from "../name-spelling-chars.ts";
 import { nameCueAt, type NameCues } from "../name-cue.ts";
 import { quoteAt } from "./structure-tree.ts";
 import { companyMentionsIn, companyVariants, type CompanyForm, type IsProper } from "../company-names.ts";
@@ -9,6 +10,7 @@ import { cellNamesIn, cellNameVariants, proseNamesOf } from "../table-names.ts";
 import { placeMentionsIn, placeVariants, type PlaceChars, type PlaceReader, type PlaceWord } from "../place-names.ts";
 import type { TableCell, Token } from "../plugin.ts";
 import { proseWithCells } from "../table-cells.ts";
+import { modelCodeFindings } from "./name-variant-model-codes.ts";
 import { labelledSpans, orderNamesOf, quotedSpans, stemOf, titleCaseSpans, wordOrderVariants, type OrderWord } from "../name-word-order.ts";
 
 // 人の名前と読ませる敬称（様、さん）は語彙表 person-suffix、人を指す前置き（担当の）は person-lead、名前のすぐ後ろに来る語
@@ -154,6 +156,16 @@ const nameMentionsOf = (doc: ProseDocument, prose: string, chars: VariantChars):
   return withKnownNeighbours(cued, prose).toSorted((left, right) => left.offset - right.offset);
 };
 
+/** 一語の名前の中で同じ音を書く字（ヶ・ケ・が）は語彙表 name-spelling-char が組（group）ごとに言う。 */
+const spellingCharsOf = (doc: ProseDocument): VariantChars =>
+  new Map((doc.lexicons["name-spelling-char"] ?? []).flatMap((entry): [string, string][] => (entry.group === undefined ? [] : [[entry.pattern, entry.group]])));
+
+/** 名前の中の同じ音の字は、表の升の中の、解析器が固有名詞と読む語（物件名の升の 桜ケ丘）とも比べる。 */
+const spellingInputOf = (doc: ProseDocument): SpellingInput => {
+  const suffixes = patternsOf(doc, "person-suffix");
+  return { chars: spellingCharsOf(doc), alsoWritten: cellsOf(doc).flatMap((cell) => mentionsIn(cell.tokens ?? [], doc.source, suffixes)) };
+};
+
 /** 表の升に書いた名前の書き分け。名前の形をした升を、本文の名前と比べる。ほかの見方がすでに指した所と重なるものは除く。 */
 const tableFindings = (doc: ProseDocument, prose: string, mentions: readonly NameMention[], reported: readonly Reported[]): Reported[] =>
   cellNameVariants(cellNamesIn(cellsOf(doc)), proseNamesOf(mentions, prose))
@@ -165,7 +177,7 @@ export const nameVariant: Detector = (doc): Finding[] => {
   const prose = doc.prose ?? doc.source;
   const chars = variantCharsOf(doc);
   const mentions = nameMentionsOf(doc, prose, chars);
-  const names = nameVariants(mentions, chars).map(({ mention, usual, kind }): Reported => ({
+  const names = nameVariants(mentions, chars, spellingInputOf(doc)).map(({ mention, usual, kind }): Reported => ({
     offset: mention.offset,
     name: mention.surface,
     usual,
@@ -174,7 +186,9 @@ export const nameVariant: Detector = (doc): Finding[] => {
   const namesAndCompanies = [...names, ...companyFindings(doc, prose, names)];
   const withTables = [...namesAndCompanies, ...tableFindings(doc, prose, mentions, namesAndCompanies)];
   const withPlaces = [...withTables, ...placeFindings(doc, prose, withTables, chars)];
-  return [...withPlaces, ...orderFindings(doc, prose, withPlaces)]
+  const withOrder = [...withPlaces, ...orderFindings(doc, prose, withPlaces)];
+  const codes = modelCodeFindings(doc, prose).filter((code) => !overlapsAny(withOrder, code.offset, code.name.length));
+  return [...withOrder, ...codes]
     .toSorted((left, right) => left.offset - right.offset)
     .map(({ offset, name, usual, kind }) => ({
       rule: "",
