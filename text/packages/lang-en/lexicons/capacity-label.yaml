@@ -1,0 +1,10 @@
+# The words that make a number the most people an event takes (count-over-capacity), written before the number
+# ("Capacity: 90 seats", "limited to 30 people"). Group place is a capacity only with a unit of places ("there are 25 places").
+id: capacity-label
+language: en
+entries:
+  - { pattern: capacity, position: before }
+  - { pattern: limited to, position: before }
+  - { pattern: maximum of, position: before }
+  - { pattern: there are, position: before, group: place }
+  - { pattern: there will be, position: before, group: place }
