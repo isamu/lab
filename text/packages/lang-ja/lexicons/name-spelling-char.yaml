@@ -1,0 +1,8 @@
+# 一語の名前の中で、同じ音を二通りに書く字（桜ヶ丘・桜ケ丘・桜が丘、霞ヶ関・霞が関）。group が同じ字どうしを、漢字に挟まれたときだけ
+# 同じ字と見る（name-variant）。字を抜いた形（桜丘）は別の名前のこともあるので寄せない。
+id: name-spelling-char
+language: ja
+entries:
+  - { pattern: ヶ, group: ヶ }
+  - { pattern: ケ, group: ヶ }
+  - { pattern: が, group: ヶ }
