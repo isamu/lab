@@ -60,6 +60,9 @@ describe("meter-usage-mismatch: 指示数の差が使用量と合わない", () 
     const twoMeters =
       "| 区分 | Current reading | Previous reading | Usage |\n| --- | --- | --- | --- |\n| Day | 300 | 100 | 200 |\n| Night | 900 | 500 | 300 |\n";
     assert.deepEqual(findingsOf(twoMeters, en), ["The readings' difference (900 − 500 = 400) is not the usage 300"]);
+    const oneReplaced =
+      "| Meter | Current reading | Previous reading | Usage | Note |\n| --- | --- | --- | --- | --- |\n| Day | 300 | 100 | 150 | |\n| Night | 50 | 900 | 0 | meter replaced |\n";
+    assert.deepEqual(findingsOf(oneReplaced, en), ["The readings' difference (300 − 100 = 200) is not the usage 150"]);
   });
 
   it("見出しの単位を指示数の単位として読み、使用量の単位と食い違えば比べない", () => {
@@ -84,6 +87,7 @@ describe("meter-usage-mismatch: 指示数の差が使用量と合わない", () 
       "The readings' difference (0120 − 9980 = 140) is not the usage 150",
     ]);
     assert.deepEqual(findingsOf(enLines("300", "100", "50", ["The meter was replaced on September 3."]), en), []);
+    assert.deepEqual(findingsOf(enLines("120", "9980", "150", ["No rollover occurred."]), en), []);
   });
 
   it("見出しが違えば別のまとまりとして読み、一つのまとまりに同じ名前が二つあれば比べない", () => {

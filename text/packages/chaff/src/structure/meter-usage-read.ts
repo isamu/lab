@@ -68,7 +68,8 @@ const columnEntries = (row: Line, headings: readonly string[], words: MeterReadW
     return kind === undefined ? [] : [entryOf(kind, cell, headerUnitOf(headings[index] ?? "", words))];
   });
 
-type Placed = { readonly line: number; readonly entries: readonly MeterEntry[]; readonly alone: boolean };
+/** alone: a row of a table with one meter per row, a group by itself; only its own text says what happened to its meter. */
+type Placed = { readonly line: number; readonly entries: readonly MeterEntry[]; readonly alone: boolean; readonly text: string };
 
 const MIN_NAMED_COLUMNS = 2;
 
@@ -77,9 +78,9 @@ const tableEntries = (table: { header: Line; rows: Line[] }, words: MeterReadWor
   const named = headings.filter((heading) => kindOf(heading, words) !== undefined).length;
   if (named >= MIN_NAMED_COLUMNS) {
     const alone = table.rows.length > 1;
-    return table.rows.map((row) => ({ line: row.number, entries: columnEntries(row, headings, words), alone }));
+    return table.rows.map((row) => ({ line: row.number, entries: columnEntries(row, headings, words), alone, text: row.text }));
   }
-  return table.rows.map((row) => ({ line: row.number, entries: rowEntry(row, headings, words), alone: false }));
+  return table.rows.map((row) => ({ line: row.number, entries: rowEntry(row, headings, words), alone: false, text: row.text }));
 };
 
 const lineEntry = (line: Line, words: MeterReadWords): Placed[] => {
@@ -87,7 +88,7 @@ const lineEntry = (line: Line, words: MeterReadWords): Placed[] => {
   const parts = labelAndValue(line.text);
   const kind = parts === undefined ? undefined : kindOf(parts.label, words);
   if (parts === undefined || kind === undefined) return [];
-  return [{ line: line.number, entries: [{ kind, value: parts.value, offset: line.start + parts.at }], alone: false }];
+  return [{ line: line.number, entries: [{ kind, value: parts.value, offset: line.start + parts.at }], alone: false, text: line.text }];
 };
 
 /** Each line's section: how many headings start at or before it. Index 0 is unused (lines count from 1). */
@@ -113,18 +114,26 @@ export const meterGroups = (text: string, headingLines: readonly number[], words
   if (placed.length === 0) return [];
   const sections = sectionsOf(lines, headingLines);
   const sectionOf = (line: number): number => sections[line] ?? 0;
-  const sectionText = (section: number): string =>
-    lines
-      .filter((line) => sectionOf(line.number) === section)
-      .map((line) => line.text)
-      .join("\n");
-  const alone = placed.filter((entry) => entry.alone).map((entry) => ({ entries: entry.entries, text: sectionText(sectionOf(entry.line)) }));
-  const shared = [...new Set(placed.filter((entry) => !entry.alone).map((entry) => sectionOf(entry.line)))].map((section) => ({
-    entries: placed
-      .filter((entry) => !entry.alone && sectionOf(entry.line) === section)
-      .toSorted((left, right) => left.line - right.line)
-      .flatMap((entry) => entry.entries),
-    text: sectionText(section),
+  const sectionLines = groupedBy(lines, (line) => sectionOf(line.number));
+  const alone = placed.filter((entry) => entry.alone).map((entry) => ({ entries: entry.entries, text: entry.text }));
+  const bySection = groupedBy(
+    placed.filter((entry) => !entry.alone).toSorted((left, right) => left.line - right.line),
+    (entry) => sectionOf(entry.line),
+  );
+  const shared = [...bySection].map(([section, entries]) => ({
+    entries: entries.flatMap((entry) => entry.entries),
+    text: (sectionLines.get(section) ?? []).map((line) => line.text).join("\n"),
   }));
   return [...shared, ...alone];
+};
+
+const groupedBy = <T>(items: readonly T[], keyOf: (item: T) => number): Map<number, T[]> => {
+  const groups = new Map<number, T[]>();
+  items.forEach((item) => {
+    const key = keyOf(item);
+    const group = groups.get(key);
+    if (group === undefined) groups.set(key, [item]);
+    else group.push(item);
+  });
+  return groups;
 };
