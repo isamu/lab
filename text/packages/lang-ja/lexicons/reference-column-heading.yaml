@@ -1,5 +1,5 @@
 # 検査結果の表の列見出し（reference-flag-mismatch）。group value は結果の数の列、range は基準値の列、flag は判定の印の列。
-# 見出しの字そのままで照らす（「結果(mg/dL)」は読まない）。三つの列がそれぞれちょうど一つあるときだけ表を読む。
+# 見出しの字そのままで照らし、終わりの括弧の単位は除いて読む（「結果(mg/dL)」は「結果」）。三つの列がそれぞれちょうど一つあるときだけ表を読む。
 id: reference-column-heading
 language: ja
 entries:

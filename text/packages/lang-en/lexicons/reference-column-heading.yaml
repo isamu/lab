@@ -1,6 +1,6 @@
 # The column headings of a lab or checkup results table (reference-flag-mismatch). Group value is the column of the result,
-# range the reference range, flag the flag. Matched as the whole heading ("Result (mg/dL)" is not read). A table is read only
-# when each of the three names exactly one column.
+# range the reference range, flag the flag. Matched as the whole heading, a unit in brackets at its end left out ("Result
+# (mg/dL)" is Result). A table is read only when each of the three names exactly one column.
 id: reference-column-heading
 language: en
 entries:

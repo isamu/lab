@@ -102,6 +102,11 @@ describe("reference-flag-mismatch: en", () => {
     assert.deepEqual(slipsEn(source), ["GGT:outside@5", "HDL:inside@6", "Waist:outside@7", "HDL 2:below@8"]);
   });
 
+  it("a heading with its unit in brackets: Result (mg/dL)", () => {
+    assert.deepEqual(slipsEn(table("Test | Result (mg/dL) | Reference range (mg/dL) | Flag", "HDL | 52 | 40–96 | H")), ["HDL:inside@5"]);
+    assert.deepEqual(slipsJa(table("項目 | 結果（mg/dL） | 基準値 | 判定", "HDL | 52 | 40〜96 | 高")), ["HDL:inside@5"]);
+  });
+
   it("emphasised flags are read: **H**", () => {
     assert.deepEqual(slipsEn(table(EN_HEADER, "HbA1c | 5.2 % | 4.0–5.6 % | **H**")), ["HbA1c:inside@5"]);
   });
@@ -133,6 +138,11 @@ describe("reference-flag-mismatch: silent", () => {
 
   it("the value is not a number", () => {
     assert.deepEqual(slipsEn(table(EN_HEADER, "CRP | <0.3 mg/dL | 0.0–0.3 mg/dL | H", "Urine protein | negative | negative | H")), []);
+  });
+
+  it("a result with a figure or a note after the number, and a range with a second range in brackets", () => {
+    assert.deepEqual(slipsEn(table(EN_HEADER, "A/G ratio | 1.2/1 | 1.0–2.0 | H", "Glucose | 88 (fasting) | 70–99 | H")), []);
+    assert.deepEqual(slipsEn(table(EN_HEADER, "Cholesterol | 88 mg/dL | 30–149 mg/dL (0.34–1.68 mmol/L) | H")), []);
   });
 
   it("an unknown flag: a grade", () => {

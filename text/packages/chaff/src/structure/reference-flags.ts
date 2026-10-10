@@ -39,6 +39,9 @@ export type ReadValue = { readonly number: number; readonly unit: string };
 
 const DIGITS = /^(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?/u;
 const STARTS_NUMERIC = /^[\d.,]/u;
+/** A unit has no figure and no note: 1.2/1, 88 (fasting) and 3.5 x10^4/μL are not a number and its unit. */
+const NOT_A_UNIT = /[\d()[\]]/u;
+const NOTE_OPEN = /[([]/u;
 /** A unit is a whole word when no Latin or Greek letter runs on from it: cm in 90 cm未満, not the l of less. */
 const LETTER = /[\p{Script=Latin}\p{Script=Greek}]/u;
 const SPACES = /\s+/gu;
@@ -51,7 +54,7 @@ export const valueOf = (text: string): ReadValue | undefined => {
   const digits = DIGITS.exec(plain)?.[0];
   if (digits === undefined) return undefined;
   const unit = plain.slice(digits.length).trim();
-  if (STARTS_NUMERIC.test(unit)) return undefined;
+  if (STARTS_NUMERIC.test(unit) || NOT_A_UNIT.test(unit)) return undefined;
   return { number: Number(digits.replaceAll(",", "")), unit };
 };
 
@@ -72,7 +75,17 @@ const withoutUnit = (text: string, unit: string): string => {
  * The reference range of a row, read once the row's unit is taken out: 30〜149 mg/dL, 79 U/L 以下, ≤79, below 102 cm. undefined
  * when anything else is left (another unit, a range for men and one for women, a note), so a row in two units is not read.
  */
-export const rangeOf = (text: string, unit: string, words: ReferenceWords): Band | undefined => parseBand(withoutUnit(normalized(text), unit), words.band);
+export const rangeOf = (text: string, unit: string, words: ReferenceWords): Band | undefined => {
+  const bare = withoutUnit(normalized(text), unit);
+  return NOTE_OPEN.test(bare) ? undefined : parseBand(bare, words.band);
+};
+
+/** A heading without the unit in brackets at its end: Result (mg/dL), 結果（mg/dL）. */
+const headingKeyOf = (heading: string): string => {
+  const key = normalized(heading);
+  const open = key.lastIndexOf("(");
+  return key.endsWith(")") && open > 0 ? key.slice(0, open).trim() : key;
+};
 
 /** A flag compared as written: emphasis marks dropped, unless the flag is only such a mark (*). */
 const flagKeyOf = (text: string): string => {
@@ -113,7 +126,7 @@ const COLUMNS: readonly ReferenceColumn[] = ["value", "range", "flag"];
 
 /** The column of each kind, by its heading; undefined unless each kind names exactly one column. */
 export const columnsOf = (headings: readonly string[], words: ReferenceWords): Columns | undefined => {
-  const kinds = headings.map((heading) => words.headings.find((entry) => normalized(entry.pattern) === normalized(heading))?.column);
+  const kinds = headings.map((heading) => words.headings.find((entry) => headingKeyOf(entry.pattern) === headingKeyOf(heading))?.column);
   const found = COLUMNS.map((column) => kinds.flatMap((kind, index) => (kind === column ? [index] : [])));
   const [value, range, flag] = found.map((indexes) => (indexes.length === 1 ? indexes[0] : undefined));
   return value === undefined || range === undefined || flag === undefined ? undefined : { value, range, flag };
