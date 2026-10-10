@@ -7,7 +7,7 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { prepare } from "../packages/lang-ja/src/pos.ts";
 import { changeRateMismatches, gapLength, type ChangeText } from "../packages/chaff/src/structure/change-rate.ts";
-import type { LanguageAdapter, Token } from "../packages/chaff/src/plugin.ts";
+import type { LanguageAdapter, Span, Token } from "../packages/chaff/src/plugin.ts";
 import { startsOtherSubject } from "../packages/chaff/src/structure/subject-change.ts";
 
 // 一つの文の、もとの値・今の値・増減率の食い違い（change-rate-mismatch）。例文は自作。
@@ -143,6 +143,50 @@ describe("change-rate-mismatch: the two values written together before the rate"
   });
 });
 
+describe("change-rate-mismatch: earnings releases", () => {
+  it("ja: amounts in 百万円 and 億円 are read like 万円", () => {
+    assert.deepEqual(found("売上高は2,640百万円となり、前年同期の2,400百万円から12.0%増加しました。", ja), ["12:10.0"]);
+    assert.deepEqual(found("売上高は2,640百万円となり、前年同期の2,400百万円から10.0%増加しました。", ja), []);
+    assert.deepEqual(found("売上高は24億円から26.4億円へ15.0%増となりました。", ja), ["15:10.0"]);
+    assert.deepEqual(found("売上高は24億円から26.4億円へ10.0%増となりました。", ja), []);
+    assert.deepEqual(found("受注高は1,200千円から1,320千円に12.0%増加した。", ja), ["12:10.0"]);
+    assert.deepEqual(found("売上高は前年の2,400 百万円から10.0%増加し、2,640 百万円となりました。", ja), []);
+    assert.deepEqual(found("売上高は前年の2,400 百万円から12.0%増加し、2,640 百万円となりました。", ja), ["12:10.0"]);
+  });
+
+  it("ja: the value reached written after the rate (「…から12.0%増加し、2,640百万円となりました」)", () => {
+    assert.deepEqual(found("売上高は前年同期の2,400百万円から12.0%増加し、2,640百万円となりました。", ja), ["12:10.0"]);
+    assert.deepEqual(found("売上高は前年同期の2,400百万円から10.0%増加し、2,640百万円となりました。", ja), []);
+    assert.deepEqual(found("売上高は前年同期の2,400万円から12.0%増加し、2,640万円になった。", ja), ["12:10.0"]);
+  });
+
+  it("ja: an amount of another subject after the rate is not the value reached", () => {
+    assert.deepEqual(found("売上高は前年同期の2,400百万円から12.0%増加し、営業利益は300百万円となりました。", ja), []);
+    assert.deepEqual(found("売上高は前年同期の2,400万円から12.0%増加し、営業利益は300万円になりました。", ja), []);
+    assert.deepEqual(found("売上高は前年同期の2,400百万円から12.0%増加し、営業利益と合わせて3,000百万円となった。", ja), []);
+    assert.deepEqual(found("前年の1,000万円から20%増、50万円引き1,150万円になりました。", ja), []);
+  });
+
+  it("en: the rate, then the value reached, then the earlier one (to X from Y)", () => {
+    assert.deepEqual(found("Net sales rose 12.0% to $2,640 million from $2,400 million a year earlier.", en), ["12:10.0"]);
+    assert.deepEqual(found("Net sales rose 10.0% to $2,640 million from $2,400 million a year earlier.", en), []);
+    assert.deepEqual(found("Net sales fell 12.0% to $2,400 million from $2,640 million.", en), ["12:9.1"]);
+    assert.deepEqual(found("Net sales fell 9.1% to $2,400 million from $2,640 million.", en), []);
+    assert.deepEqual(found("Users rose 25% to 1,200 users from 1,000 users.", en), ["25:20"]);
+    assert.deepEqual(found("Net sales rose 12.0% to $2,640 million compared with $2,400 million.", en), ["12:10.0"]);
+    // from Y to X after the rate was read before; it stays read.
+    assert.deepEqual(found("Net sales rose 12.0% from $2,400 million to $2,640 million.", en), ["12:10.0"]);
+  });
+
+  it("en: percentage points are not a rate, and two metrics are not crossed", () => {
+    assert.deepEqual(found("Operating margin rose 1.2 points to 11.4% from 10.2%.", en), []);
+    assert.deepEqual(found("Operating income rose 1.2 points to $300 million from $280 million.", en), []);
+    assert.deepEqual(found("Net sales rose 12.0% to $2,640 million, and operating income rose 5% to $300 million from $280 million.", en), []);
+    assert.deepEqual(found("Net sales rose 12.0% to $2,640 million, while operating income was $300 million from $280 million.", en), []);
+    assert.deepEqual(found("Net sales rose 12.0% to $2,640 million and costs were $2,400 million.", en), []);
+  });
+});
+
 describe("changeRateMismatches", () => {
   const sentence = { start: 0, end: 100 };
   const base: ChangeText = {
@@ -204,6 +248,38 @@ describe("changeRateMismatches", () => {
       [],
     );
     assert.deepEqual(changeRateMismatches({ ...pair, marks: [] }), []);
+  });
+
+  const FAR = 40;
+  // "rose（0-4）12%（5-8）to（9-11）X（12-17）from（18-22）Y（23-28）"
+  const reached: ChangeText = {
+    ...base,
+    figures: [
+      { start: 12, end: 17, value: 2640, unit: "$", step: 1 },
+      { start: 23, end: 28, value: 2400, unit: "$", step: 1 },
+    ],
+    rates: [{ start: 5, end: 8, value: 12, decimals: 0 }],
+    directions: [{ start: 0, end: 4, sign: 1 }],
+    marks: [{ start: 18, end: 22, position: "before" }],
+    targets: [{ start: 9, end: 11, position: "before" }],
+  };
+
+  it("reads the value reached right after the rate, then the earlier one", () => {
+    assert.deepEqual(changeRateMismatches(reached), [{ offset: 5, values: { rate: "12", computed: "10" } }]);
+    assert.deepEqual(changeRateMismatches({ ...reached, rates: [{ start: 5, end: 8, value: 10, decimals: 0 }] }), []);
+    assert.deepEqual(changeRateMismatches({ ...reached, targets: [] }), []);
+    assert.deepEqual(changeRateMismatches({ ...reached, marks: [] }), []);
+    assert.deepEqual(changeRateMismatches({ ...reached, breaks: [{ start: 17, end: 18, beforeRateOnly: true }] }), []);
+    assert.deepEqual(changeRateMismatches({ ...reached, breaks: [{ start: 8, end: 9, beforeRateOnly: true }] }), []);
+    const otherUnit = reached.figures.map((figure, index) => (index === 1 ? { ...figure, unit: "€" } : figure));
+    assert.deepEqual(changeRateMismatches({ ...reached, figures: otherUnit }), []);
+    // The value reached far from the rate is another one's.
+    const later = <T extends Span>(span: T): T => ({ ...span, start: span.start + FAR, end: span.end + FAR });
+    const far = { ...reached, figures: reached.figures.map(later), marks: reached.marks.map(later), targets: reached.targets.map(later) };
+    assert.deepEqual(changeRateMismatches(far), []);
+    assert.deepEqual(changeRateMismatches({ ...far, rates: reached.rates.map(later), directions: reached.directions.map(later) }), [
+      { offset: 5 + FAR, values: { rate: "12", computed: "10" } },
+    ]);
   });
 
   it("takes the value of the earlier year as the earlier one", () => {
