@@ -1,0 +1,25 @@
+{
+  "recall": {
+    "ja": {
+      "age-birth-date": "0/2",
+      "exam-after-report": "0/2",
+      "bmi": "0/1",
+      "range-reversed": "1/2",
+      "unit-vs-range": "0/2",
+      "flag-mismatch": "0/2",
+      "findings-gap": "2/2",
+      "person-name": "0/2"
+    },
+    "en": {
+      "age-birth-date": "0/2",
+      "exam-after-report": "0/2",
+      "bmi": "0/1",
+      "range-reversed": "1/2",
+      "flag-mismatch": "0/2",
+      "unit-vs-range": "0/2",
+      "findings-gap": "2/2",
+      "person-name": "2/2"
+    }
+  },
+  "clean": []
+}

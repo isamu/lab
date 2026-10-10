@@ -21,6 +21,8 @@ export type LineAmountWords = {
   readonly perUnitMarks: readonly UnitWord[];
   /** Column headings that say the unit of their column (Hours, Rate). */
   readonly headerUnits: readonly UnitWord[];
+  /** Measure units written after a number (m³, km²): a quantity cell may end in one even when it holds a digit. */
+  readonly measureUnits: readonly string[];
 };
 
 type Cell = { readonly start: number; readonly text: string };
@@ -40,6 +42,8 @@ const CENTS = 100;
 const ONE_NUMBER = /^([^\d]*?)(\d{1,3}(?:,\d{3})+|\d+)(\.\d+)?([^\d]*)$/u;
 const LEADING_NUMBER = /^(\d{1,3}(?:,\d{3})+|\d+)(\.\d+)?(?![\d,])/u;
 const NEGATIVE = /[-−▲△(（]/u;
+// NFKC turns ³ into 3, so a power (10³) is caught before normalising, while it still reads as a superscript.
+const DIGIT_THEN_SUPERSCRIPT = /\p{Nd}[\u2070\u00B9\u00B2\u00B3\u2074-\u2079]/u;
 
 const cellsOf = (line: Line): Cell[] => {
   const bounds = [-1, ...[...line.text.matchAll(CELL_SEPARATOR)].map((match) => match.index), line.text.length];
@@ -71,11 +75,19 @@ export const cellNumber = (cell: Cell): CellNumber | undefined => {
   };
 };
 
-/** The number a quantity cell starts with ("4", "3人日", "2.5 hours"), undefined when it does not, or holds another ("2 x 3"). */
-export const quantityOf = (cell: Cell): number | undefined => {
+const isMeasureUnit = (word: string, measureUnits: readonly string[]): boolean => measureUnits.some((unit) => plain(unit).toLowerCase() === word.toLowerCase());
+
+/**
+ * The number a quantity cell starts with ("4", "3人日", "2.5 hours", "16m³"), undefined when it does not, or holds another
+ * ("2 x 3", "10³"). A digit after the number is allowed only as part of a measure unit (m³ and ㎥ normalise to m3).
+ */
+export const quantityOf = (cell: Cell, measureUnits: readonly string[]): number | undefined => {
+  if (DIGIT_THEN_SUPERSCRIPT.test(cell.text)) return undefined;
   const text = plain(cell.text);
   const match = LEADING_NUMBER.exec(text);
-  if (match === null || /\d/u.test(text.slice(match[0].length))) return undefined;
+  if (match === null) return undefined;
+  const rest = text.slice(match[0].length).trim();
+  if (/\d/u.test(rest) && !isMeasureUnit(rest, measureUnits)) return undefined;
   return Number(`${(match[1] ?? "").replaceAll(",", "")}${match[2] ?? ""}`);
 };
 
@@ -127,7 +139,7 @@ const rowIssue = (row: Line, table: Table, words: LineAmountWords): StructureIss
   const priceCell = cells[columns.unitPrice];
   const amountCell = cells[columns.amount];
   if (quantityCell === undefined || priceCell === undefined || amountCell === undefined) return [];
-  const quantity = quantityOf(quantityCell);
+  const quantity = quantityOf(quantityCell, words.measureUnits);
   const price = cellNumber(priceCell);
   const amount = cellNumber(amountCell);
   if (quantity === undefined || price === undefined || amount === undefined) return [];

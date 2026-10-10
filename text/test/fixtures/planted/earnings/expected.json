@@ -1,9 +1,9 @@
 {
   "recall": {
     "ja": {
-      "call-before-period-end": "0/2",
+      "call-before-period-end": "2/2",
       "period-label": "2/2",
-      "yoy-change": "1/2",
+      "yoy-change": "2/2",
       "unit-mix": "2/2",
       "operating-margin": "2/2",
       "company-name": "0/2",
@@ -11,9 +11,9 @@
       "forecast-revision": "1/1"
     },
     "en": {
-      "call-before-period-end": "0/2",
+      "call-before-period-end": "2/2",
       "period-label": "2/2",
-      "yoy-change": "1/2",
+      "yoy-change": "2/2",
       "unit-mix": "2/2",
       "operating-margin": "2/2",
       "company-name": "2/2",

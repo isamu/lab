@@ -1,0 +1,8 @@
+# The dated-pair-label words whose line states a period rather than one date ("Reporting period: April 1, 2025 to
+# March 31, 2026"). due-before-issue compares the period's end as the pair's earlier date; a period written without a
+# year is not compared.
+id: dated-span-label
+language: en
+entries:
+  - pattern: Reporting period
+  - pattern: Period covered

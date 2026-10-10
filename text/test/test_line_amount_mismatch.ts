@@ -15,7 +15,8 @@ const findingsOf = (source: string, adapter = ja): readonly string[] => namedRul
 const table = (rows: readonly string[]): string => ["| 品目 | 数量 | 単価 | 金額 |", "| --- | --- | --- | --- |", ...rows].join("\n") + "\n";
 const enTable = (rows: readonly string[]): string => ["| Item | Quantity | Unit price | Amount |", "| --- | --- | --- | --- |", ...rows].join("\n") + "\n";
 
-const NO_UNITS = { units: [], perUnitMarks: [], headerUnits: [] };
+const NO_UNITS = { units: [], perUnitMarks: [], headerUnits: [], measureUnits: [] };
+const VOLUME = ["L", "m³", "㎥"];
 
 const cell = (text: string): { start: number; text: string } => ({ start: 0, text });
 
@@ -77,10 +78,34 @@ describe("line-amount-mismatch: 数量×単価が金額と合わない", () => {
     assert.equal(cellNumber(cell("1,000円〜2,000円")), undefined);
     assert.equal(cellNumber(cell("▲500円")), undefined);
     assert.equal(cellNumber(cell("")), undefined);
-    assert.equal(quantityOf(cell("3人日")), 3);
-    assert.equal(quantityOf(cell(" 2.5 hours")), 2.5);
-    assert.equal(quantityOf(cell("一式")), undefined);
-    assert.equal(quantityOf(cell("2 x 3")), undefined);
+    assert.equal(quantityOf(cell("3人日"), VOLUME), 3);
+    assert.equal(quantityOf(cell(" 2.5 hours"), VOLUME), 2.5);
+    assert.equal(quantityOf(cell("一式"), VOLUME), undefined);
+    assert.equal(quantityOf(cell("2 x 3"), VOLUME), undefined);
+  });
+
+  it("立方メートルの数量は、単位を語彙表から読み、³ を数に足さない（指摘の中では NFKC の字で示す）", () => {
+    ["16m³", "16m3", "16 m³", "16㎥", "16 ㎥", "１６ｍ³"].forEach((text) => assert.equal(quantityOf(cell(text), VOLUME), 16, text));
+    assert.equal(quantityOf(cell("3m"), VOLUME), 3);
+    assert.equal(quantityOf(cell("10³"), VOLUME), undefined);
+    assert.equal(quantityOf(cell("10³ L"), VOLUME), undefined);
+    assert.equal(quantityOf(cell("１０³"), VOLUME), undefined);
+    assert.equal(quantityOf(cell("16m3 x 2"), VOLUME), undefined);
+    assert.equal(quantityOf(cell("16m3"), []), undefined);
+    assert.equal(quantityOf(cell("16m4"), VOLUME), undefined);
+    assert.deepEqual(
+      findingsOf(table(["| 従量料金 | 16m³ | 180円 | 2,800円 |", "| 従量料金 | 16m3 | 180円 | 2,800円 |", "| 従量料金 | 16 ㎥ | 180円 | 2,800円 |"])),
+      [
+        "金額「2,800円」が、数量×単価（16m3 × 180円 = 2,880円）と合いません",
+        "金額「2,800円」が、数量×単価（16m3 × 180円 = 2,880円）と合いません",
+        "金額「2,800円」が、数量×単価（16 m3 × 180円 = 2,880円）と合いません",
+      ],
+    );
+    assert.deepEqual(findingsOf(table(["| 従量料金 | 16m³ | 180円 | 2,880円 |", "| 従量料金 | 16㎥ | 180円 | 2,880円 |"])), []);
+    assert.deepEqual(findingsOf(enTable(["| Water | 16 m³ | $1.80 | $28.00 |"]), en), [
+      "The amount $28.00 is not quantity × unit price (16 m3 × $1.80 = $28.80)",
+    ]);
+    assert.deepEqual(findingsOf(enTable(["| Water | 10³ | $1.80 | $18.00 |"]), en), []);
   });
 
   it("語の無い言語と空の入力", () => {
