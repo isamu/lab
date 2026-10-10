@@ -2,8 +2,8 @@ id: reference-unit-mismatch
 layer: L3
 status: stable
 how_to_find: reference-unit
-# The result, reference range and unit columns are found by the language's reference-unit-column lexicon, and the units
-# are read with reference-unit (a group is one unit: mg/dL and mg/dl, ×10⁴/µL and 万/µL).
+# The result, reference range and unit columns are found by the language's lab-result-column and reference-unit-column
+# lexicons, and the units are read with reference-unit (a group is one unit: mg/dL and mg/dl, ×10⁴/µL and 万/µL).
 languages: [ja, en]
 severity: error
 
@@ -12,8 +12,8 @@ name:
   en: A test result in another unit than its reference range
 
 why:
-  ja: 健康診断や血液検査の結果の表で、結果を「64 mmol/L」、同じ行の基準値を「40〜96 mg/dL」と書くと、数を比べても基準の内か外かは分かりません。単位を写し間違えたか、別の検査機関の値を貼ったときに起きます。見出しが「結果」「基準値」の列（語は言語パッケージの語彙表 reference-unit-column）を行ごとに読み、二つの升の単位（語彙表 reference-unit）を比べます。升に単位が無ければ、列の見出しの括弧の中の単位、次にその行の「単位」の列を使います。基準値の列が二つ（男性・女性）あれば、それぞれと比べます。mg/dL と mg/dl、×10⁴/µL と 万/µL のように、書き方が違っても数を換算せずに比べられる単位は同じ単位と読みます。
-  en: 'When a results table writes a result as "52 mmol/L" and the reference range on the same row as "40–60 mg/dL", the numbers cannot be compared, and the reader cannot tell whether the result is in range. It happens when a unit is copied wrong or a value is pasted from another lab. Each row of a table whose headings name a result and a reference range (the language package''s reference-unit-column lexicon) is read, and the units of the two cells (the reference-unit lexicon) are compared. A cell without a unit takes a unit in brackets in its column heading, then the row''s Unit column. Two reference range columns (men and women) are each compared. Two ways of writing one unit, which compare without converting the number (mg/dL and mg/dl, ×10³/µL and ×10⁹/L), are read as the same unit.'
+  ja: 健康診断や血液検査の結果の表で、結果を「64 mmol/L」、同じ行の基準値を「40〜96 mg/dL」と書くと、数を比べても基準の内か外かは分かりません。単位を写し間違えたか、別の検査機関の値を貼ったときに起きます。見出しが「結果」「基準値」の列（語は言語パッケージの語彙表 lab-result-column と reference-unit-column）を行ごとに読み、二つの升の単位（語彙表 reference-unit）を比べます。升に単位が無ければ、列の見出しの括弧の中の単位、次にその行の「単位」の列を使います。基準値の列が二つ（男性・女性）あれば、それぞれと比べます。mg/dL と mg/dl、×10⁴/µL と 万/µL のように、書き方が違っても数を換算せずに比べられる単位は同じ単位と読みます。
+  en: 'When a results table writes a result as "52 mmol/L" and the reference range on the same row as "40–60 mg/dL", the numbers cannot be compared, and the reader cannot tell whether the result is in range. It happens when a unit is copied wrong or a value is pasted from another lab. Each row of a table whose headings name a result and a reference range (the language package''s lab-result-column and reference-unit-column lexicons) is read, and the units of the two cells (the reference-unit lexicon) are compared. A cell without a unit takes a unit in brackets in its column heading, then the row''s Unit column. Two reference range columns (men and women) are each compared. Two ways of writing one unit, which compare without converting the number (mg/dL and mg/dl, ×10³/µL and ×10⁹/L), are read as the same unit.'
 
 message:
   ja: 「{item}」の結果「{result}」の単位が、基準値「{range}」の単位と違います
