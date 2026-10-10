@@ -3,6 +3,7 @@
 // as a statement among instructions. Pure. Shell languages and prompt marks come from the shell-fence-language and
 // shell-prompt lexicons.
 import { codeFences, codeSpans, type CodeFence } from "./code-fences.ts";
+import { opensAsNounPhrase } from "./nominal-step.ts";
 import { quoteAt } from "./structure-tree.ts";
 import { escapeRegExp } from "../orthography.ts";
 import type { Detector, Finding, ProseDocument, Span, Token } from "../plugin.ts";
@@ -227,8 +228,9 @@ export const isStatement = (tokens: readonly Token[]): boolean => {
 
 type Step = { readonly start: number; readonly kind: "statement" | "instruction" | "other" };
 
-/** A step that opens with its verb: an instruction (Run the installer). */
-export const isInstruction = (tokens: readonly Token[]): boolean => INSTRUCTION_OPENER.has(tokens.find((token) => !SKIPPED.has(token.pos))?.pos ?? "");
+/** A step that opens with its verb: an instruction (Run the installer). An item that names a case (Faults caused by a drop) is not one. */
+export const isInstruction = (tokens: readonly Token[]): boolean =>
+  INSTRUCTION_OPENER.has(tokens.find((token) => !SKIPPED.has(token.pos))?.pos ?? "") && !opensAsNounPhrase(tokens);
 
 const kindOf = (tokens: readonly Token[]): Step["kind"] => {
   if (isStatement(tokens)) return "statement";
