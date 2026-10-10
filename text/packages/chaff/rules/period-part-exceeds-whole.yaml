@@ -1,0 +1,61 @@
+id: period-part-exceeds-whole
+layer: L3
+status: stable
+how_to_find: period-part-exceeds-whole
+# The words that make one period a part of another are period-part-marker; the word that ends a period's name period-part-word;
+# words for a period after the whole period-part-after; words joining the ends of a range period-part-range; the word between a
+# length and the whole's name period-part-inline-joiner; and words stating a length after a name period-part-length-verb.
+severity: warning
+
+name:
+  ja: 全体の期間より長い、その一部の期間
+  en: A part of a period that is longer than the period
+
+why:
+  ja: 「保証期間（12か月）のうち、無料交換期間は18か月」と書くと、読み手は無料交換を13か月目から18か月目まで受けられるのかを問い合わせることになります。期間の長さを片方だけ直したとき、別の製品の文書から一部の期間を写したときに起きます。「のうち」「の中で」「期間内の」の前に書いた期間を全体とし、同じ文のもう一つの期間を部分として、部分が全体より長ければ指します。全体の長さは、その名前の括弧の中か直前（12か月の保証期間）に書いたものを読みます。無ければ同じ節で全体の名前（保証期間）に書いた長さを読みます（表の行も読みます）。節の中に違う長さが並べば一番長いものと比べます。「このうち」は前の文の長さを全体にします。年は月に、週は日に換算して比べます。
+  en: 'When a card says "Within the 12-month warranty period, the free replacement period is 18 months", the reader has to ask whether replacement is free in months 13 to 18. It happens when one of the two lengths is updated and the other is not, or when a part is copied from another product''s terms. The period after "within the", or before "of the", is the whole, and the one other length in the sentence is the part; the part is reported when it is longer. The whole''s length is read where it is named (the 12-month warranty period, the warranty period (12 months)); otherwise from the same section, in a sentence or table row that names the whole ("The warranty period is 1 year", "the warranty runs for 12 months"). When the section gives several lengths, the longest is used. "Within it" takes the length in the sentence before. Years are converted to months and weeks to days.'
+
+message:
+  ja: 「{part}」は、それを含む全体の期間「{whole}」より長くなっています
+  en: '"{part}" is longer than the period it is part of, "{whole}"'
+
+how_to_fix:
+  ja: 部分の期間か全体の期間のどちらかを正しい長さに直してください。全体の後に続く期間（延長保証）なら、「保証期間の終了後」のようにそう分かる書き方にしてください。
+  en: Correct whichever length is wrong. If the period follows the whole (an extended warranty), say so ("after the warranty period ends").
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 「保証期間（12か月）のうち無料交換期間は18か月」のような全体より長い一部の期間
+  en: "A part of a period longer than the whole: 18 months within a 12-month warranty"
+example:
+  ja:
+    before: |
+      # 保証規定
+
+      保証期間（12か月）のうち、無料交換期間はお買い上げ日から18か月です。
+    after: |
+      # 保証規定
+
+      保証期間（12か月）のうち、無料交換期間はお買い上げ日から3か月です。
+  en:
+    before: |
+      # Limited Warranty
+
+      Within the 12-month warranty period, the free replacement period is 18 months.
+    after: |
+      # Limited Warranty
+
+      Within the 12-month warranty period, the free replacement period is 3 months.
+
+not_flagged:
+  ja: 「約」「最長」「以内」「程度」の付いた長さ、「12〜18か月」のような幅は比べません。延長、追加、更新後の語のある文は、全体の後に続く期間のことがあるので読みません（延長保証期間は保証期間の長さとして読みません）。文に部分の長さが二つ以上あるとき、部分の側に「期間」の語が無いとき、全体の長さが同じ節に無いときは読みません。月と日、月と週は、月の日数が決まらないので比べません。
+  en: 'A length with "about", "up to" or "at least", and a range ("12 to 18 months"), is not compared. A sentence with "extended", "extension", "additional", "extra" or "renewal" may describe a period after the whole and is not read, and an "extended warranty period" is not read as the warranty period''s length. A sentence with more than one other length, or whose part is not named as a period, or whose whole has no length in the same section, is not read. Months are not compared with days or weeks, since a month''s days vary.'
+level_meaning:
+  ja: 一部として書いた期間が、全体の期間より長いとき指摘
+  en: reported when a period described as part of another is longer than it

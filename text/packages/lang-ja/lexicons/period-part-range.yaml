@@ -1,0 +1,10 @@
+# 長さの幅をつなぐ語（period-part-exceeds-whole）。「12〜18か月」の 18か月 は幅の端なので比べない。
+id: period-part-range
+language: ja
+entries:
+  - pattern: 〜
+  - pattern: ～
+  - pattern: "~"
+  - pattern: "-"
+  - pattern: –
+  - pattern: から

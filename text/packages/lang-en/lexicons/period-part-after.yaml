@@ -1,0 +1,11 @@
+# Words for a period that follows the whole (period-part-exceeds-whole). An extended or additional warranty is not a part of the
+# standard one, so a sentence with one of these words is not read, and a name after one ("extended warranty period") is not read
+# as the whole's length.
+id: period-part-after
+language: en
+entries:
+  - pattern: extended
+  - pattern: extension
+  - pattern: additional
+  - pattern: extra
+  - pattern: renewal
