@@ -130,7 +130,8 @@ describe("date-without-year: 年の無い日付", () => {
   });
 
   it("年のある日付がみな同じ年でも、年の変わり目をまたぐ日付は言う", () => {
-    const source = "# Plan\n\nWe start on December 1, 2026, and the review is on December 3, 2026.\n\nThe report is due December 10.\n\nWe finish on January 15.\n";
+    const source =
+      "# Plan\n\nWe start on December 1, 2026, and the review is on December 3, 2026.\n\nThe report is due December 10.\n\nWe finish on January 15.\n";
     assert.deepEqual(namedRuleRun("date-without-year", source, en).findings, ['"January 15" has no year, and the dates around it cross the turn of a year']);
   });
 
