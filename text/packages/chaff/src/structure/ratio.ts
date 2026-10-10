@@ -55,10 +55,10 @@ const DIGIT = /\d/u;
 /** The value of a number written with grouping commas and its decimals apart ("1,320" and "5"). */
 const numberOf = (integer: string, decimals: string): number => Number([integer.replaceAll(",", ""), decimals].filter((part) => part !== "").join("."));
 
-type ReadCell = { readonly prefix: string; readonly value: number; readonly decimals: number; readonly suffix: string };
+export type ReadCell = { readonly prefix: string; readonly value: number; readonly decimals: number; readonly suffix: string };
 
 /** A cell holding one number with what is written before and after it ("$2,400 million", "1,320百万円", "7.3%"). */
-const readNumber = (text: string): ReadCell | undefined => {
+export const readNumber = (text: string): ReadCell | undefined => {
   const plain = text.normalize("NFKC").trim();
   const prefix = PREFIX.exec(plain)?.[0] ?? "";
   const number = NUMBER.exec(plain.slice(prefix.length));
@@ -92,9 +92,9 @@ export type TableRow = { readonly label: string; readonly cells: readonly TableC
 /** A note in brackets after a row label (営業利益率（%）, Net sales (millions)): not part of the label. */
 const LABEL_NOTE = /[(（][^()（）]*[)）]$/u;
 
-const labelKey = (label: string): string => keyOf(label.replace(LABEL_NOTE, ""));
+export const labelKey = (label: string): string => keyOf(label.replace(LABEL_NOTE, ""));
 
-const noteOf = (label: string): string => LABEL_NOTE.exec(label.normalize("NFKC").trim())?.[0] ?? "";
+export const noteOf = (label: string): string => LABEL_NOTE.exec(label.normalize("NFKC").trim())?.[0] ?? "";
 
 /** The one row whose label is a term of the name; undefined when no row or more than one row is. */
 const onlyRow = (rows: readonly TableRow[], terms: readonly RatioTerm[], name: string): TableRow | undefined => {
