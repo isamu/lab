@@ -1,6 +1,7 @@
 import type { Span, StructureNode } from "../plugin.ts";
 import { inDocumentOrder } from "../structure/issues.ts";
 import { overlapsAny, spanIndex, type SpanIndex } from "../compare/spans.ts";
+import { basesAgree, type RateBasis } from "./rate-values.ts";
 
 /**
  * 値として読むもの。木の数量と日付（`chaff compare` と同じ読み）と、品詞の読める言語では固有名詞。
@@ -10,6 +11,7 @@ export type ValueKind = "quantity" | "date" | "name";
 
 /**
  * bound: upper なら key は上の端（満70歳まで、20 to 70 の 70）。lower は範囲の下の端（満20歳〜満70歳 の 20）。
+ * basis: 率に書いた基準（period:year、kind:fixed）。両方に書いた同じ種類の基準が違えば、別の量として比べない。
  */
 export type FactValue = Span & {
   readonly kind: ValueKind;
@@ -17,6 +19,7 @@ export type FactValue = Span & {
   readonly unit: string;
   readonly bound?: "upper";
   readonly lower?: string;
+  readonly basis?: RateBasis;
 };
 
 const attr = (node: StructureNode, name: string): string => String(node.attrs[name] ?? "");
@@ -111,7 +114,7 @@ const comparableBounds = (left: FactValue, right: FactValue): boolean =>
 /** 同じ種類の値で、比べられるもの。数量は同じ単位どうし（単位の違いは別の rule が見る）。 */
 export const comparable = (left: FactValue, right: FactValue): boolean => {
   if (left.kind !== right.kind) return false;
-  if (left.kind === "quantity") return left.unit === right.unit && comparableBounds(left, right);
+  if (left.kind === "quantity") return left.unit === right.unit && comparableBounds(left, right) && basesAgree(left.basis, right.basis);
   return left.kind !== "date" || comparableDates(left.key, right.key) !== undefined;
 };
 

@@ -1,0 +1,16 @@
+# 率の期間（fact-conflict）。「貸付利率は年3.6%」の 年、「3.6%/年」の /年。値は変えないので、名前と値のあいだや値の後ろにあっても
+# 率を読む。group が期間の長さで、両方に期間を書いて違う率（月0.5% と 年6%）は比べない。position: before は値の前に書く語。
+id: fact-rate-period
+language: ja
+entries:
+  - { pattern: 年, group: year, position: before }
+  - { pattern: 年率, group: year, position: before }
+  - { pattern: 実質年率, group: year, position: before }
+  - { pattern: 年利, group: year, position: before }
+  - { pattern: 月利, group: month, position: before }
+  - { pattern: 月, group: month, position: before }
+  - { pattern: 月率, group: month, position: before }
+  - { pattern: /年, group: year, position: after }
+  - { pattern: /月, group: month, position: after }
+  - { pattern: 年率, group: year, position: after }
+  - { pattern: 月率, group: month, position: after }

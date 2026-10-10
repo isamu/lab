@@ -1,0 +1,12 @@
+# 率が何に対するものか（fact-conflict）。「商品代金の4.0%」の 商品代金の。値は変えないので、名前と値のあいだにあっても率を読む。
+# 括弧の注記（4.0%（商品代金に対して））は中身を問わず越え、中身がここの語そのものなら対象として読む。
+# group が対象で、両方に書いて違う率（商品代金の と 残高の）は比べない。position: before は値の前に書く語。
+id: fact-rate-base
+language: ja
+entries:
+  - { pattern: 商品代金の, group: price, position: before }
+  - { pattern: 商品代金に対して, group: price }
+  - { pattern: お借入金額の, group: principal, position: before }
+  - { pattern: 借入金額の, group: principal, position: before }
+  - { pattern: 元金の, group: principal, position: before }
+  - { pattern: 残高の, group: balance, position: before }

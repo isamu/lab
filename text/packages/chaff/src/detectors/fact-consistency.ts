@@ -17,8 +17,23 @@ import { durationValues, type DurationWord } from "../facts/duration-values.ts";
 import { overlapsAny, spanIndex } from "../compare/spans.ts";
 import { documentTermConflicts, type TermWord, type TermWords } from "../facts/document-terms.ts";
 import { ageValues, type AgeWord, type AgeWords } from "../facts/age-values.ts";
+import type { RateWord, RateWords } from "../facts/rate-values.ts";
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
+
+/** 率の基準の語彙表。鍵が基準の種類（期間、固定か変動か、何に対する率か）。 */
+const RATE_NOTES = { period: "fact-rate-period", kind: "fact-rate-kind", base: "fact-rate-base" } as const;
+
+const rateWordsOf = (doc: ProseDocument): RateWords => ({
+  units: patternsOf(doc, "percent-unit"),
+  notes: Object.fromEntries(
+    Object.entries(RATE_NOTES).map(([dimension, id]) => [
+      dimension,
+      (doc.lexicons[id] ?? []).map((entry): RateWord => ({ pattern: entry.pattern, group: entry.group, position: entry.position ?? "after" })),
+    ]),
+  ),
+  joiners: patternsOf(doc, "fact-rate-joiner"),
+});
 
 export const factWordsOf = (doc: ProseDocument): FactWords => ({
   separators: patternsOf(doc, "fact-separator"),
@@ -26,6 +41,7 @@ export const factWordsOf = (doc: ProseDocument): FactWords => ({
   determiners: patternsOf(doc, "fact-label-drop"),
   vague: patternsOf(doc, "fact-label-vague"),
   leads: patternsOf(doc, "fact-label-lead"),
+  rates: rateWordsOf(doc),
   attributes: (doc.lexicons["fact-attribute"] ?? []).map((entry): AttributePhrase => ({ pattern: entry.pattern, position: entry.position ?? "before" })),
 });
 
