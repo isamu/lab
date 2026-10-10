@@ -1,0 +1,6 @@
+# 表の上の短い行が、表の金額の単位を言う印（table-unit-mix）。「（単位：百万円）」のように、この語と桁の単位が一つだけあり、
+# 数字の無い短い行を、すぐ下の表の単位と読む。
+id: table-unit-caption
+language: ja
+entries:
+  - pattern: 単位

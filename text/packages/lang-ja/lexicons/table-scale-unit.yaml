@@ -1,0 +1,19 @@
+# 表の升や「（単位：百万円）」の行に書く、金額の桁の単位（table-unit-mix）。weight はその単位が掛ける数。長い語から照らすので、
+# 百万円 を 万円 とは読まない。
+id: table-scale-unit
+language: ja
+entries:
+  - pattern: 千円
+    weight: 1000
+  - pattern: 万円
+    weight: 10000
+  - pattern: 百万円
+    weight: 1000000
+  - pattern: 億円
+    weight: 100000000
+  - pattern: 十億円
+    weight: 1000000000
+  - pattern: 千ドル
+    weight: 1000
+  - pattern: 百万ドル
+    weight: 1000000
