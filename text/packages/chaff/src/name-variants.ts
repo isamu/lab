@@ -3,7 +3,7 @@ import { escapeRegExp } from "./orthography.ts";
 import { nameCueAt, type NameCue, type NameCues } from "./name-cue.ts";
 import { isNearSurname } from "./surname-near.ts";
 import { foldedKeysOf, NO_SPELLING, type SpellingInput } from "./name-spelling-chars.ts";
-import { tokenReadingOf, type CharReadings } from "./name-char-reading.ts";
+import { NO_CHAR_READINGS, readingOfWords } from "./name-char-reading.ts";
 
 // 同じ名前（人・会社・製品）を、文書の中で少しだけ違う形に書いた所。どの形が正しいかは決めず、少ないほうを指す。
 // 三通りで同じ名前と見る。書き方の違いだけ（GitHub と Github、Mac OS と macOS）、読みが同じ（山田太郎 と 山田太朗）、
@@ -90,14 +90,9 @@ const isPerson = (run: readonly Token[], next: Token | undefined, suffixes: read
 /**
  * 文の語から、名前の現れ。surface は source の上の書いたまま（折り返しの空白は一つにまとめる）。
  * 大文字だけの名前（ACME INC、NASA）は外す。契約書の署名欄や略語で、ふつうの書き方の別の形ではない。小文字の英字だけの語も外す。
- * charReadings は解析器が読めない名前の字の読み（name-char-reading.ts）。
+ * charReadings は解析器が読めない名前の字の読み（name-char-reading.ts）。人の名前と読めるものだけに使う。
  */
-export const mentionsIn = (
-  tokens: readonly Token[],
-  source: string,
-  personSuffixes: readonly string[] = [],
-  charReadings: CharReadings = new Map(),
-): NameMention[] =>
+export const mentionsIn = (tokens: readonly Token[], source: string, personSuffixes: readonly string[] = [], charReadings = NO_CHAR_READINGS): NameMention[] =>
   runsOf(tokens).flatMap((run) => {
     const first = run[0];
     const last = run.at(-1);
@@ -106,9 +101,8 @@ export const mentionsIn = (
     const surface = withoutEdgeQuotes(written);
     if (surface === "" || isUpperOnly(surface) || LOWER_LATIN_ONLY.test(surface) || NOT_COMPARED.test(surface)) return [];
     const words = run.filter((token) => !JOINERS.has(token.surface));
-    const readings = words.map((token) => tokenReadingOf(token, charReadings));
-    const reading = readings.every((value) => value !== undefined && value !== "") ? readings.join("") : undefined;
     const person = isPerson(run, tokens[tokens.indexOf(last) + 1], personSuffixes);
+    const reading = readingOfWords(words, person ? charReadings : NO_CHAR_READINGS);
     return [{ surface, offset: first.span.start, reading, words: words.map((token) => token.surface), person }];
   });
 

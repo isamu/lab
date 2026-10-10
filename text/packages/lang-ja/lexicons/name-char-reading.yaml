@@ -1,6 +1,6 @@
 # 人の名前に使う字で、品詞解析の辞書が読みを持たない字（健汰 の 汰）。group がその字の名前での読み（カタカナ）。
 # name-variant は名前の読みを字の読みからつなぎ、読みが同じで一字違いの名前（健太 と 健汰）を比べる。名前での読みが一つに
-# 決まる字だけを置く（颯 は ソウ と ハヤテ、琉 は リュウ と ル があるので置かない）。読めない字のある名前は比べない。
+# 決まる字だけを置く（颯 は ソウ と ハヤテ、瑠 は ル と リュウ、耀 は ヨウ と アキラ があるので置かない）。読めない字のある名前は比べない。
 id: name-char-reading
 language: ja
 entries:
@@ -9,18 +9,10 @@ entries:
   - { pattern: 莉, group: リ }
   - { pattern: 璃, group: リ }
   - { pattern: 茉, group: マ }
-  - { pattern: 瑠, group: ル }
-  - { pattern: 迅, group: ジン }
-  - { pattern: 彗, group: スイ }
   - { pattern: 惺, group: セイ }
   - { pattern: 崚, group: リョウ }
   - { pattern: 竣, group: シュン }
-  - { pattern: 燿, group: ヨウ }
-  - { pattern: 耀, group: ヨウ }
   - { pattern: 瑚, group: コ }
   - { pattern: 琥, group: コ }
   - { pattern: 珀, group: ハク }
-  - { pattern: 絃, group: ゲン }
-  - { pattern: 奎, group: ケイ }
-  - { pattern: 頌, group: ショウ }
   - { pattern: 麟, group: リン }

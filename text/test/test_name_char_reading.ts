@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { tokenReadingOf } from "../packages/chaff/src/name-char-reading.ts";
+import { readingOfWords, tokenReadingOf } from "../packages/chaff/src/name-char-reading.ts";
 
 // 解析器が読めない名前の字の読み（name-char-reading）。例はすべて自作。
 
@@ -26,5 +26,16 @@ describe("tokenReadingOf: 名前の語の読み", () => {
     assert.equal(tokenReadingOf({ surface: "颯汰" }, chars), undefined);
     assert.equal(tokenReadingOf({ surface: "" }, chars), undefined);
     assert.equal(tokenReadingOf({ surface: "汰" }, new Map()), undefined);
+  });
+});
+
+describe("readingOfWords: 語を並べた名前の読み", () => {
+  it("どの語も読めれば、読みをつなぐ", () => {
+    assert.equal(readingOfWords([{ surface: "健", reading: "ケン" }, { surface: "汰" }], chars), "ケンタ");
+  });
+
+  it("読めない語が一つでもあるか、語が無ければ、読まない", () => {
+    assert.equal(readingOfWords([{ surface: "健", reading: "ケン" }, { surface: "颯" }], chars), undefined);
+    assert.equal(readingOfWords([], chars), undefined);
   });
 });

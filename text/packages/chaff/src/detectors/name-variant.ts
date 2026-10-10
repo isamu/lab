@@ -199,7 +199,7 @@ const spellingInputOf = (doc: ProseDocument): SpellingInput => {
 
 /** 表の升に書いた名前の書き分け。名前の形をした升を、本文の名前と比べる。ほかの見方がすでに指した所と重なるものは除く。 */
 const tableFindings = (doc: ProseDocument, prose: string, mentions: readonly NameMention[], reported: readonly Reported[]): Reported[] =>
-  cellNameVariants(cellNamesIn(cellsOf(doc)), proseNamesOf(mentions, prose))
+  cellNameVariants(cellNamesIn(cellsOf(doc), charReadingsOf(doc)), proseNamesOf(mentions, prose))
     .filter(({ name }) => !reported.some((other) => other.offset < name.offset + name.surface.length && name.offset < other.offset + other.name.length))
     .map(({ name, usual, kind }) => ({ offset: name.offset, name: name.surface, usual, kind }));
 
