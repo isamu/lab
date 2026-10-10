@@ -1,0 +1,265 @@
+{
+  "note": "Self-written booking confirmations (宿泊予約確認書・レンタカー予約確認 / hotel and car-rental booking confirmations) for fictional properties, rental companies and guests: a two-night hotel stay and a four-day car rental, each in a clean version and a planted one that differs only on the lines below. They run as business/proposal, the genre the utility bills and itineraries run as: no genre is made for booking confirmations. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: reference-number-variant (a booking or reservation number written elsewhere in the document with a digit slip). Check-out before check-in, drop-off before pick-up (end-before-start) and a cancellation deadline after the start (cancel-after-start) are written as labelled rows of a table, not as one range, and are reported by due-before-issue, which compares a pair of labelled dates. Each plant was also run alone on its clean document, so no plant depends on another. yarn planted bookings scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/hotel",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/hotel.clean.md",
+      "planted": "ja/hotel.planted.md",
+      "mistakes": [
+        {
+          "kind": "stay-length",
+          "rule": "duration-mismatch",
+          "line": 11,
+          "clean": "（2泊）",
+          "planted": "（3泊）"
+        },
+        {
+          "kind": "end-before-start",
+          "rule": "due-before-issue",
+          "line": 18,
+          "clean": "| 2026年11月22日（日）11:00まで |",
+          "planted": "| 2026年11月19日（木）11:00まで |"
+        },
+        {
+          "kind": "total-rate",
+          "rule": "total-mismatch",
+          "line": 30,
+          "clean": "| 64,600円 |",
+          "planted": "| 66,600円 |"
+        },
+        {
+          "kind": "cancel-after-start",
+          "rule": "due-before-issue",
+          "line": 36,
+          "clean": "2026年11月17日（火）23:59まで",
+          "planted": "2026年11月21日（土）23:59まで"
+        },
+        {
+          "kind": "rules-numbering",
+          "rule": "numbering-gap",
+          "line": 46,
+          "clean": "5. 貴重品",
+          "planted": "6. 貴重品"
+        },
+        {
+          "kind": "property-two-ways",
+          "rule": "name-variant",
+          "line": 48,
+          "clean": "ホテルみなせ川 予約係",
+          "planted": "ホテルみなせ河 予約係"
+        },
+        {
+          "kind": "booking-number-two-ways",
+          "rule": "reference-number-variant",
+          "line": 50,
+          "clean": "予約番号 MN-48215 をお伝え",
+          "planted": "予約番号 MN-48251 をお伝え"
+        },
+        {
+          "kind": "guest-two-ways",
+          "rule": "name-variant",
+          "line": 52,
+          "clean": "森下 千尋 様のお越し",
+          "planted": "森下 千裕 様のお越し"
+        }
+      ]
+    },
+    {
+      "id": "ja/car",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/car.clean.md",
+      "planted": "ja/car.planted.md",
+      "mistakes": [
+        {
+          "kind": "stay-length",
+          "rule": "duration-mismatch",
+          "line": 11,
+          "clean": "（4日間）",
+          "planted": "（5日間）"
+        },
+        {
+          "kind": "end-before-start",
+          "rule": "due-before-issue",
+          "line": 18,
+          "clean": "| 2026年12月6日（日）17:00 |",
+          "planted": "| 2026年12月2日（水）17:00 |"
+        },
+        {
+          "kind": "total-rate",
+          "rule": "total-mismatch",
+          "line": 31,
+          "clean": "| 35,750円 |",
+          "planted": "| 36,750円 |"
+        },
+        {
+          "kind": "cancel-after-start",
+          "rule": "due-before-issue",
+          "line": 37,
+          "clean": "2026年12月1日（火）18:00まで",
+          "planted": "2026年12月4日（金）18:00まで"
+        },
+        {
+          "kind": "rules-numbering",
+          "rule": "numbering-gap",
+          "line": 47,
+          "clean": "5. 返却が",
+          "planted": "6. 返却が"
+        },
+        {
+          "kind": "property-two-ways",
+          "rule": "name-variant",
+          "line": 49,
+          "clean": "あおばレンタカー株式会社 仙台駅東口店",
+          "planted": "株式会社あおばレンタカー 仙台駅東口店"
+        },
+        {
+          "kind": "booking-number-two-ways",
+          "rule": "reference-number-variant",
+          "line": 51,
+          "clean": "予約番号 AR-730514 をお伝え",
+          "planted": "予約番号 AR-730541 をお伝え"
+        },
+        {
+          "kind": "guest-two-ways",
+          "rule": "name-variant",
+          "line": 53,
+          "clean": "大西 健吾 様のご利用",
+          "planted": "大西 謙吾 様のご利用"
+        }
+      ]
+    },
+    {
+      "id": "en/hotel",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/hotel.clean.md",
+      "planted": "en/hotel.planted.md",
+      "mistakes": [
+        {
+          "kind": "stay-length",
+          "rule": "duration-mismatch",
+          "line": 11,
+          "clean": "(2 nights)",
+          "planted": "(3 nights)"
+        },
+        {
+          "kind": "end-before-start",
+          "rule": "due-before-issue",
+          "line": 18,
+          "clean": "| Sunday, November 22, 2026, by 11:00 AM |",
+          "planted": "| Thursday, November 19, 2026, by 11:00 AM |"
+        },
+        {
+          "kind": "total-rate",
+          "rule": "total-mismatch",
+          "line": 30,
+          "clean": "| $449.40 |",
+          "planted": "| $494.40 |"
+        },
+        {
+          "kind": "cancel-after-start",
+          "rule": "due-before-issue",
+          "line": 36,
+          "clean": "Tuesday, November 17, 2026, 11:59 PM",
+          "planted": "Saturday, November 21, 2026, 11:59 PM"
+        },
+        {
+          "kind": "rules-numbering",
+          "rule": "numbering-gap",
+          "line": 46,
+          "clean": "5. Leave valuables",
+          "planted": "6. Leave valuables"
+        },
+        {
+          "kind": "property-two-ways",
+          "rule": "name-variant",
+          "line": 48,
+          "clean": "Larkspur Harbour Hotel reservations",
+          "planted": "Larkspur Harbor Hotel reservations"
+        },
+        {
+          "kind": "booking-number-two-ways",
+          "rule": "reference-number-variant",
+          "line": 50,
+          "clean": "booking number, LH-48215.",
+          "planted": "booking number, LH-48251."
+        },
+        {
+          "kind": "guest-two-ways",
+          "rule": "name-variant",
+          "line": 52,
+          "clean": "welcoming Megan Castellano.",
+          "planted": "welcoming Megan Castelano."
+        }
+      ]
+    },
+    {
+      "id": "en/car",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/car.clean.md",
+      "planted": "en/car.planted.md",
+      "mistakes": [
+        {
+          "kind": "stay-length",
+          "rule": "duration-mismatch",
+          "line": 11,
+          "clean": "(4 days)",
+          "planted": "(5 days)"
+        },
+        {
+          "kind": "end-before-start",
+          "rule": "due-before-issue",
+          "line": 18,
+          "clean": "| Sunday, December 6, 2026, 5:00 PM |",
+          "planted": "| Wednesday, December 2, 2026, 5:00 PM |"
+        },
+        {
+          "kind": "total-rate",
+          "rule": "total-mismatch",
+          "line": 31,
+          "clean": "| $264.00 |",
+          "planted": "| $246.00 |"
+        },
+        {
+          "kind": "cancel-after-start",
+          "rule": "due-before-issue",
+          "line": 37,
+          "clean": "Tuesday, December 1, 2026, 6:00 PM",
+          "planted": "Friday, December 4, 2026, 6:00 PM"
+        },
+        {
+          "kind": "rules-numbering",
+          "rule": "numbering-gap",
+          "line": 47,
+          "clean": "5. If you will",
+          "planted": "6. If you will"
+        },
+        {
+          "kind": "property-two-ways",
+          "rule": "name-variant",
+          "line": 49,
+          "clean": "Northfield Car Rental Union Station",
+          "planted": "Northfield Car Rentals Union Station"
+        },
+        {
+          "kind": "booking-number-two-ways",
+          "rule": "reference-number-variant",
+          "line": 51,
+          "clean": "reservation number, NF-730514.",
+          "planted": "reservation number, NF-730541."
+        },
+        {
+          "kind": "guest-two-ways",
+          "rule": "name-variant",
+          "line": 53,
+          "clean": "seeing Tomasz Brennan.",
+          "planted": "seeing Tomas Brennan."
+        }
+      ]
+    }
+  ]
+}

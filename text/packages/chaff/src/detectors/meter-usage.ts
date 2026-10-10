@@ -30,7 +30,13 @@ export const meterUsage: Detector = (doc): Finding[] => {
   const labels = labelsOf(doc);
   if (labels.length === 0) return [];
   const units = unitsOf(doc);
-  const words: MeterWords = { units, rollover: eventsOf(doc, "rollover"), replaced: eventsOf(doc, "replaced") };
+  const words: MeterWords = {
+    units,
+    rollover: eventsOf(doc, "rollover"),
+    rolloverNegationAfter: eventsOf(doc, "rollover-negation-after"),
+    rolloverNegationBefore: eventsOf(doc, "rollover-negation-before"),
+    replaced: eventsOf(doc, "replaced"),
+  };
   const groups = meterGroups(proseAndTablesOf(doc), headingLinesOf(doc), { labels, units });
   return meterUsageMismatches(groups, words).map((issue) => ({
     rule: "meter-usage-mismatch",

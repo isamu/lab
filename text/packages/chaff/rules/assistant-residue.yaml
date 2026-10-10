@@ -34,7 +34,7 @@ sources: [hayashi-aizawa-2026]
 group: ai-tells
 summary:
   ja: 「私の知識は」「お役に立てれば幸いです」のような、チャットの返事を貼ったときに残る言葉
-  en: What a pasted chat reply leaves behind ("As of my last knowledge update", "I hope this helps")
+  en: Words left from a pasted chat reply, such as "I hope this helps"
 example:
   ja:
     before: |

@@ -46,8 +46,8 @@ off_for:
 
 group: consistency
 summary:
-  ja: 契約・規約・規程で、定義した語を定義のあとでかぎ括弧に入れ直したり、大文字で定義した語を小文字で書いたり、「本業務」を「本件業務」と書いたり、「管理責任者」を「文書管理責任者」と長くしたりしている所
-  en: A defined term quoted again after its definition, a capitalised defined term written in lower case, a Japanese term with its other prefix (本件業務 for 本業務), or a term made longer with a word of its definition (Application for App)
+  ja: 契約や規程で、定義した語を、定義のあとで違う形（括弧付き、言い換え、長くした形）で書いた所
+  en: "A defined term later written in another form: quoted, lower case, or lengthened"
 example:
   ja:
     config: { genre: legal/contract }

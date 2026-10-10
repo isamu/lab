@@ -31,7 +31,7 @@ off_for:
 group: facts
 summary:
   ja: 冒頭や概要の節に書いた値（締切、料金など）が、本文の同じ項目の値と違う所
-  en: A value in the opening or the summary (a deadline, a fee) that differs from the same item in the body
+  en: A value in the summary (a deadline, a fee) that differs from the body
 example:
   ja:
     before: |

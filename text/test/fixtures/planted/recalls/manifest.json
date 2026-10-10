@@ -1,0 +1,265 @@
+{
+  "note": "Self-written product recall notices (製品回収・自主回収のお知らせ / voluntary recall notice) for fictional makers and products: a home-appliance recall with a serial-number range and a per-color unit table, and a food voluntary recall with lot numbers and a per-pack-size table, run as business/press-release (a recall notice is a public announcement), each in a clean version and a planted one that differs only on the lines below. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. The exchange or refund deadline before the notice date is named for due-before-issue, which compares dated pairs from the language's vocabulary; the notice date and the request deadline are not among its pairs yet. A rule that does not exist yet is named as the rule that should: serial-range-reversed (a range of serial or lot numbers, a letter prefix and digits with no unit, whose end is below its start). yarn planted recalls scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/heater",
+      "language": "ja",
+      "genre": "business/press-release",
+      "clean": "ja/heater.clean.md",
+      "planted": "ja/heater.planted.md",
+      "mistakes": [
+        {
+          "kind": "serial-range",
+          "rule": "serial-range-reversed",
+          "line": 15,
+          "clean": "製造番号：A1800〜A2400",
+          "planted": "製造番号：A2400〜A1800"
+        },
+        {
+          "kind": "sales-period",
+          "rule": "date-range-reversed",
+          "line": 17,
+          "clean": "2025年10月1日〜2026年2月28日",
+          "planted": "2025年10月1日〜2025年2月28日"
+        },
+        {
+          "kind": "lot-numbering",
+          "rule": "numbering-gap",
+          "line": 23,
+          "clean": "3. グレー",
+          "planted": "4. グレー"
+        },
+        {
+          "kind": "affected-total",
+          "rule": "total-mismatch",
+          "line": 32,
+          "clean": "| 合計 | 2,500台 |",
+          "planted": "| 合計 | 2,700台 |"
+        },
+        {
+          "kind": "model-number",
+          "rule": "name-variant",
+          "line": 38,
+          "clean": "NH-805 をお使いの",
+          "planted": "NH-850 をお使いの"
+        },
+        {
+          "kind": "exchange-deadline",
+          "rule": "due-before-issue",
+          "line": 40,
+          "clean": "無償交換の受付期限：2027年8月31日",
+          "planted": "無償交換の受付期限：2026年8月31日"
+        },
+        {
+          "kind": "contact-phone",
+          "rule": "phone-number-variant",
+          "line": 46,
+          "clean": "回収受付窓口（0120-246-813）",
+          "planted": "回収受付窓口（0120-246-831）"
+        },
+        {
+          "kind": "maker-name",
+          "rule": "name-variant",
+          "line": 50,
+          "clean": "株式会社ゆうなぎ電機 品質保証部",
+          "planted": "株式会社ゆうなぎ電気 品質保証部"
+        }
+      ]
+    },
+    {
+      "id": "ja/bread",
+      "language": "ja",
+      "genre": "business/press-release",
+      "clean": "ja/bread.clean.md",
+      "planted": "ja/bread.planted.md",
+      "mistakes": [
+        {
+          "kind": "serial-range",
+          "rule": "serial-range-reversed",
+          "line": 15,
+          "clean": "ロット番号：K0410〜K0430",
+          "planted": "ロット番号：K0430〜K0410"
+        },
+        {
+          "kind": "sales-period",
+          "rule": "date-range-reversed",
+          "line": 17,
+          "clean": "2026年8月20日〜2026年9月18日",
+          "planted": "2026年8月20日〜2026年7月18日"
+        },
+        {
+          "kind": "lot-numbering",
+          "rule": "numbering-gap",
+          "line": 25,
+          "clean": "3. ロット K0424",
+          "planted": "4. ロット K0424"
+        },
+        {
+          "kind": "affected-total",
+          "rule": "total-mismatch",
+          "line": 34,
+          "clean": "| 合計 | 6,300個 |",
+          "planted": "| 合計 | 6,800個 |"
+        },
+        {
+          "kind": "model-number",
+          "rule": "name-variant",
+          "line": 38,
+          "clean": "KB-120 の商品",
+          "planted": "KB-210 の商品"
+        },
+        {
+          "kind": "exchange-deadline",
+          "rule": "due-before-issue",
+          "line": 40,
+          "clean": "返金の受付期限：2026年12月25日",
+          "planted": "返金の受付期限：2026年8月25日"
+        },
+        {
+          "kind": "contact-phone",
+          "rule": "phone-number-variant",
+          "line": 46,
+          "clean": "お客様窓口（0120-753-951）",
+          "planted": "お客様窓口（0120-753-915）"
+        },
+        {
+          "kind": "maker-name",
+          "rule": "name-variant",
+          "line": 50,
+          "clean": "株式会社こむぎ畑ベーカリー 品質管理室",
+          "planted": "株式会社こむぎばたけベーカリー 品質管理室"
+        }
+      ]
+    },
+    {
+      "id": "en/heater",
+      "language": "en",
+      "genre": "business/press-release",
+      "clean": "en/heater.clean.md",
+      "planted": "en/heater.planted.md",
+      "mistakes": [
+        {
+          "kind": "serial-range",
+          "rule": "serial-range-reversed",
+          "line": 13,
+          "clean": "Serial numbers: B3100 to B3900",
+          "planted": "Serial numbers: B3900 to B3100"
+        },
+        {
+          "kind": "sales-period",
+          "rule": "date-range-reversed",
+          "line": 15,
+          "clean": "October 1, 2025 to February 28, 2026",
+          "planted": "October 1, 2025 to February 28, 2025"
+        },
+        {
+          "kind": "lot-numbering",
+          "rule": "numbering-gap",
+          "line": 21,
+          "clean": "3. Silver",
+          "planted": "4. Silver"
+        },
+        {
+          "kind": "affected-total",
+          "rule": "total-mismatch",
+          "line": 30,
+          "clean": "| Total | 2,800 units |",
+          "planted": "| Total | 3,100 units |"
+        },
+        {
+          "kind": "model-number",
+          "rule": "name-variant",
+          "line": 36,
+          "clean": "If you own an SH-710",
+          "planted": "If you own an SH-701"
+        },
+        {
+          "kind": "exchange-deadline",
+          "rule": "due-before-issue",
+          "line": 38,
+          "clean": "accepted until: August 31, 2027",
+          "planted": "accepted until: August 31, 2026"
+        },
+        {
+          "kind": "contact-phone",
+          "rule": "phone-number-variant",
+          "line": 44,
+          "clean": "Recall Line (1-800-555-0136)",
+          "planted": "Recall Line (1-800-555-0163)"
+        },
+        {
+          "kind": "maker-name",
+          "rule": "name-variant",
+          "line": 48,
+          "clean": "Lumenvale Home Products, Inc., Product Safety",
+          "planted": "Lumenvail Home Products, Inc., Product Safety"
+        }
+      ]
+    },
+    {
+      "id": "en/granola",
+      "language": "en",
+      "genre": "business/press-release",
+      "clean": "en/granola.clean.md",
+      "planted": "en/granola.planted.md",
+      "mistakes": [
+        {
+          "kind": "serial-range",
+          "rule": "serial-range-reversed",
+          "line": 15,
+          "clean": "Lot numbers: L5210 to L5240",
+          "planted": "Lot numbers: L5240 to L5210"
+        },
+        {
+          "kind": "sales-period",
+          "rule": "date-range-reversed",
+          "line": 17,
+          "clean": "August 20, 2026 to September 18, 2026",
+          "planted": "August 20, 2026 to July 18, 2026"
+        },
+        {
+          "kind": "lot-numbering",
+          "rule": "numbering-gap",
+          "line": 25,
+          "clean": "3. Lots L5230",
+          "planted": "4. Lots L5230"
+        },
+        {
+          "kind": "affected-total",
+          "rule": "total-mismatch",
+          "line": 34,
+          "clean": "| Total | 7,700 packs |",
+          "planted": "| Total | 7,900 packs |"
+        },
+        {
+          "kind": "model-number",
+          "rule": "name-variant",
+          "line": 38,
+          "clean": "If you have GB-240 bars",
+          "planted": "If you have GB-204 bars"
+        },
+        {
+          "kind": "exchange-deadline",
+          "rule": "due-before-issue",
+          "line": 40,
+          "clean": "accepted until: December 25, 2026",
+          "planted": "accepted until: August 25, 2026"
+        },
+        {
+          "kind": "contact-phone",
+          "rule": "phone-number-variant",
+          "line": 46,
+          "clean": "Customer Care (1-800-555-0162)",
+          "planted": "Customer Care (1-800-555-0126)"
+        },
+        {
+          "kind": "maker-name",
+          "rule": "name-variant",
+          "line": 50,
+          "clean": "Fernhollow Foods Co., Quality Assurance",
+          "planted": "Fernhallow Foods Co., Quality Assurance"
+        }
+      ]
+    }
+  ]
+}

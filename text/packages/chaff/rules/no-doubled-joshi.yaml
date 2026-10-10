@@ -35,7 +35,7 @@ sources: [yamamoto-cheng-2015]
 group: readability
 summary:
   ja: 「会社の部の課の方針」のように、同じ助詞が区切りなしに続く所
-  en: The same Japanese particle repeated with no break, so the reader cannot tell what attaches to what
+  en: The same Japanese particle repeated, so what attaches to what is unclear
 example:
   ja:
     before: 本社の営業部の第二課の方針を確認しました。

@@ -58,7 +58,7 @@ sources: [femmer-2017, berry-2003, iso-29148]
 group: wording
 summary:
   ja: 仕様書や契約書の要求の文にある「可能な限り」「必要に応じて」「等」「及び／又は」
-  en: '"As far as possible", "if necessary", "etc." or "and/or" in a requirement of a specification or a contract'
+  en: '"As far as possible", "if necessary", "etc." or "and/or" in a requirement'
 example:
   ja:
     before: |

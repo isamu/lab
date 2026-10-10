@@ -30,7 +30,7 @@ off_for:
 group: facts
 summary:
   ja: 旅程で、次の予定までの間が文書に書いた移動の時間より短い所
-  en: An itinerary that leaves less time for a connection than the travel time it states
+  en: An itinerary that leaves less time for a connection than the trip it states
 example:
   ja:
     before: |

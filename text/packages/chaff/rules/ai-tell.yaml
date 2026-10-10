@@ -36,7 +36,7 @@ sources: [kobak-2025, liang-2024, juzek-ward-2025]
 group: ai-tells
 summary:
   ja: 「重要な役割を果たす」「と言えるでしょう」のような、生成された文章にありがちな言い回しが重なった所
-  en: Phrases common in generated text ("delve into", "plays a crucial role") piling up
+  en: Phrases common in generated text ("delve into", "plays a crucial role") piled up
 example:
   ja:
     before: |

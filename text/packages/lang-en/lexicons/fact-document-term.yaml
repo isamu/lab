@@ -17,3 +17,8 @@ entries:
   - { pattern: maximum age, group: age-limit }
   - { pattern: maximum entry age, group: age-limit }
   - { pattern: maximum age at entry, group: age-limit }
+  # The length of a warranty ("the warranty runs for 12 months" names it as the warranty). An extended warranty is
+  # another name.
+  - { pattern: warranty period, group: warranty-period }
+  - { pattern: warranty term, group: warranty-period }
+  - { pattern: warranty, group: warranty-period }

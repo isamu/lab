@@ -33,7 +33,7 @@ off_for:
 group: slips
 summary:
   ja: 英語で、「a apple」「an user」のように、次の語の音に合わない a / an
-  en: '"a" before a vowel sound or "an" before a consonant sound, such as "a apple" or "an user"'
+  en: '"a" or "an" that does not fit the next sound, as in "a apple" or "an user"'
 example:
   en:
     before: |

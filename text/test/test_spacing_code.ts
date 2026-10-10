@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { addressSpans, clockTimeSpans, isInsideSpan } from "../packages/chaff/src/spacing-code.ts";
+import { addressSpans, clockTimeSpans, identifierSpans, isInsideSpan } from "../packages/chaff/src/spacing-code.ts";
 
 // Where a clock time and an address sit in a sentence. Every example is self-written.
 
@@ -27,6 +27,35 @@ describe("addressSpans", () => {
 
   it("does not read a bare @ or a word with a dot as an address", () => {
     for (const text of ["@ の印", "user@", "例 e.g. です", "名前@ドメイン"]) assert.deepEqual(addressSpans(text), [], text);
+  });
+});
+
+describe("identifierSpans", () => {
+  it("finds a booking or model number: letters and a serial joined by hyphens, or capitals and four digits or more", () => {
+    const text = "予約番号 MN-48215 を伝え、型番 SB-210 と KM-SP300、注文 A1234567 で届く。";
+    assert.deepEqual(texts(text, identifierSpans(text)), ["MN-48215", "SB-210", "KM-SP300", "A1234567"]);
+  });
+
+  it("reads a full-width or Japanese hyphen as a hyphen", () => {
+    const text = "型番 KM－SP300 と、予約番号 MN‐48215 を伝える。";
+    assert.deepEqual(texts(text, identifierSpans(text)), ["KM－SP300", "MN‐48215"]);
+  });
+
+  it("does not read a short name, a digit-only code, a word without a digit or part of a longer run as an identifier", () => {
+    for (const text of [
+      "UTF-8 で",
+      "COVID-19 の",
+      "EC2 で",
+      "H30 等",
+      "Office365 を",
+      "ISO 9001 に",
+      "073-489-5909 へ",
+      "Wi-Fi で",
+      "v1.2-345 の",
+      "AB-123.4 の",
+      "",
+    ])
+      assert.deepEqual(identifierSpans(text), [], text);
   });
 });
 

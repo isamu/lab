@@ -45,7 +45,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: structure
 summary:
   ja: 一緒に見たほかのファイルへのリンクで、行き先のファイルか見出しが無いもの
-  en: A link to another of the files checked together whose file or heading is not there
+  en: A link to another of the files checked whose file or heading is not there
 example:
   ja:
     other: |

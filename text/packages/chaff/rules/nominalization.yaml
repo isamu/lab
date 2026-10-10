@@ -42,7 +42,7 @@ sources: [yasashii-nihongo-2020, plain-2011, gov-uk-clear-language, reinhart-202
 group: wording
 summary:
   ja: 「調査を実施した」「確認を行う」のように、動詞を名詞にして別の動詞に運ばせた言い方が、文書の長さに対して多い所
-  en: Verbs hidden in nouns ("make a decision", "conduct an analysis"), many for the document's length
+  en: Verbs hidden in nouns ("make a decision", "conduct an analysis"), used too often
 example:
   ja:
     pad: true

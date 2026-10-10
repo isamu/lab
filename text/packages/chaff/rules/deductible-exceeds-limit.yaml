@@ -2,6 +2,7 @@ id: deductible-exceeds-limit
 layer: L3
 status: stable
 how_to_find: deductible-exceeds-limit
+requires: [quantities]
 # The deductible words are deductible-word, the limit words benefit-limit-word, the bases (1回, a claim, 1品, a single
 # item) and how they nest deductible-basis; rough amounts come from approximate-marker, ranges from range-connector, money
 # from currency-notation and amount-multiplier.

@@ -35,7 +35,7 @@ off_for:
 group: wording
 summary:
   ja: 「恐れ入りますが」「念のため」のようなクッション言葉が多く、用件が埋もれている所
-  en: So many softeners ("sorry to bother", "just wanted to") that the request gets lost
+  en: So many softeners ("sorry to bother", "just wanted to") that the ask gets lost
 example:
   ja:
     pad: true

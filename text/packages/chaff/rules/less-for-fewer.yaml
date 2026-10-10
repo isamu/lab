@@ -33,7 +33,7 @@ off_for:
 group: slips
 summary:
   ja: 英語で、「less errors」のように数えられる名詞の複数に less を付けた所
-  en: '"Less" before a countable plural, as in "less errors", where written English uses "fewer"'
+  en: '"Less" before a countable plural, as in "less errors" for "fewer errors"'
 example:
   en:
     before: The new parser reports less errors on long files.

@@ -28,8 +28,8 @@ use_for: [blog, business, technical, legal, docs, academic, literature, speech]
 
 group: slips
 summary:
-  ja: 「?utm_source=chatgpt.com」の付いたリンクや「oaicite」のように、チャットの答えを貼ったときに残る印
-  en: 'Marks a pasted chat answer leaves behind: links ending in "?utm_source=chatgpt.com", ":contentReference[oaicite:0]"'
+  ja: 「?utm_source=chatgpt.com」の付いたリンクのように、チャットの答えを貼ったときに残る印
+  en: Marks a pasted chat answer leaves behind, such as "?utm_source=chatgpt.com"
 example:
   ja:
     before: |

@@ -32,7 +32,7 @@ off_for:
 group: facts
 summary:
   ja: 「使用温度範囲：-10〜-40℃」のように、測った量の範囲の終わりが始まりより小さい所
-  en: A measured range whose second value is smaller than its first, such as "-10 to -40 °C"
+  en: A measured range that ends lower than it starts, such as "-10 to -40 °C"
 example:
   ja:
     before: |

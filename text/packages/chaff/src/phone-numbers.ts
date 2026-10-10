@@ -34,7 +34,8 @@ const COUNTRY_CODE_START = /^\+/u;
 const LABEL_TO_NUMBER = /^(?:[\s:：.．]|\uFE0F)*$/u;
 const NOT_DIGIT = /\D/gu;
 const LATIN_START = /^[A-Za-z]/u;
-const LETTER = /\p{L}/u;
+/** A Latin label is a whole word among Latin letters only: 「FAX受付」 has no spaces between words. */
+const LETTER = /\p{Script=Latin}/u;
 /** How far before a number its label may end: 「電話でのお問合せは、」, "by phone, call". */
 const MAX_LABEL_GAP = 15;
 const URL = /\b(?:https?:\/\/|www\.)\S+/giu;
@@ -48,20 +49,47 @@ const lastPlace = (before: string, label: string): number => {
 };
 
 type LabelBefore = { readonly group: string; readonly between: string };
+type LabelHit = { readonly group: string; readonly at: number; readonly end: number };
 
-/** The label ending nearest before a number on its line, the longest when two end together (携帯電話 over 電話), and what lies between. */
-export const labelBefore = (text: string, offset: number, labels: readonly LexiconEntry[]): LabelBefore | undefined => {
-  const lineStart = text.lastIndexOf("\n", offset - 1) + 1;
-  const before = text.slice(lineStart, offset).toLowerCase();
-  const nearest = labels
+/** The label ending nearest the end of a line's text, the longest when two end together (携帯電話 over 電話). */
+const nearestLabel = (before: string, labels: readonly LexiconEntry[]): LabelHit | undefined =>
+  labels
     .map((entry) => {
       const at = lastPlace(before, entry.pattern);
       return { group: entry.group ?? entry.pattern, at, end: at + entry.pattern.length };
     })
     .filter((hit) => hit.at >= 0 && before.length - hit.end <= MAX_LABEL_GAP)
     .toSorted((a, b) => b.end - a.end || a.at - b.at)[0];
-  return nearest === undefined ? undefined : { group: nearest.group, between: before.slice(nearest.end) };
+
+/** A desk's name (窓口, Recall Line) says where a number goes, not what it is: FAX受付窓口 and Fax line name fax numbers. */
+const DESK_GROUP = "desk";
+const DESK_DEFAULT_GROUP = "phone";
+const DIGIT = /\d/u;
+
+/** The kind a label right before a desk's name gives its number, with no digits between; a phone number when there is none. */
+const deskKind = (before: string, desk: LabelHit, labels: readonly LexiconEntry[]): string => {
+  const kinds = labels.filter((entry) => entry.group !== DESK_GROUP);
+  const kind = nearestLabel(before.slice(0, desk.at), kinds);
+  return kind === undefined || DIGIT.test(before.slice(kind.end, desk.at)) ? DESK_DEFAULT_GROUP : kind.group;
 };
+
+/** The label ending nearest before a number on its line, the kind of number it gives, and what lies between. */
+export const labelBefore = (text: string, offset: number, labels: readonly LexiconEntry[]): LabelBefore | undefined => {
+  const lineStart = text.lastIndexOf("\n", offset - 1) + 1;
+  const before = text.slice(lineStart, offset).toLowerCase();
+  const nearest = nearestLabel(before, labels);
+  if (nearest === undefined) return undefined;
+  const between = before.slice(nearest.end);
+  if (nearest.group !== DESK_GROUP) return { group: nearest.group, between };
+  return ANY_LETTER.test(between) ? undefined : { group: deskKind(before, nearest, labels), between };
+};
+
+/** A word between a desk's name and the digits says they are something else: Support ticket, 窓口受付番号. */
+const ANY_LETTER = /\p{L}/u;
+const UNCLOSED_OPENING = /^[(（](?!.*[)）])/u;
+
+/** A number as quoted: the bracket the number is put in (窓口（0120-123-456）) is not part of it, an area code's is ((555) 123-4567). */
+const withoutUnclosedBracket = (written: string): string => written.replace(UNCLOSED_OPENING, "");
 
 /** URLs covered with spaces, so neither a path segment (/call/) nor an id in one is read. Offsets stay the same. */
 export const withoutUrls = (text: string): string => text.replaceAll(URL, (url) => " ".repeat(url.length));
@@ -75,7 +103,9 @@ export const labelledPhoneNumbers = (source: string, labels: readonly LexiconEnt
     const label = labelBefore(text, match.index, labels);
     if (label === undefined) return [];
     if (spaced && !COUNTRY_CODE_START.test(match[0]) && !LABEL_TO_NUMBER.test(label.between)) return [];
-    return [{ offset: match.index, written: match[0].trim(), digits, label: label.group }];
+    const matched = match[0].trim();
+    const written = withoutUnclosedBracket(matched);
+    return [{ offset: match.index + matched.length - written.length, written, digits, label: label.group }];
   };
   return [
     ...[...text.matchAll(NUMBER_SHAPE)].flatMap((match) => read(match, false)),

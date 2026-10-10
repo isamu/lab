@@ -5,13 +5,6 @@ import { escapeRegExp } from "../orthography.ts";
 import type { StructureIssue } from "./issues.ts";
 import type { RangeAmount } from "./amount-range.ts";
 
-const LATIN_EDGE = /[A-Za-z]$/u;
-const LATIN_START = /^[A-Za-z]/u;
-
-/** A Latin unit running into a word is part of that word: the t of "40 to" is not a tonne. */
-const standsAlone = (text: string, measured: Measured): boolean =>
-  !(LATIN_EDGE.test(measured.unit) && LATIN_START.test(text.slice(measured.end, measured.end + 1)));
-
 /** 10 and a minus sign right before the number is a power of ten written flat ("10-8 cm" for 10⁻⁸ cm), not a range. */
 const POWER_OF_TEN = /(?<![0-9０-９.,，．])[1１][0０][-−－]$/u;
 
@@ -33,7 +26,7 @@ const rangeEndOf = (text: string, measured: Measured): RangeAmount => ({
 
 /** The measured quantities that can end a range, as range ends. */
 export const quantityRangeEnds = (text: string, measured: readonly Measured[]): RangeAmount[] =>
-  measured.filter((value) => standsAlone(text, value) && !isExponent(text, value)).map((value) => rangeEndOf(text, value));
+  measured.filter((value) => !isExponent(text, value)).map((value) => rangeEndOf(text, value));
 
 const LATIN_WORD = /^[A-Za-z]/u;
 

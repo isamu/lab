@@ -42,7 +42,7 @@ sources: [yasashii-nihongo-2020, koyobun-2022, jtf-style-guide]
 group: consistency
 summary:
   ja: 「です・ます」の中に「だ・である」が混ざった文
-  en: A Japanese sentence whose ending (polite or plain) differs from the rest of the document
+  en: A Japanese sentence whose polite or plain ending differs from the rest
 example:
   ja:
     before: |

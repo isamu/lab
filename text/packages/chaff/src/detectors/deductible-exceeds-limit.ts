@@ -1,9 +1,10 @@
 // deductible-exceeds-limit: the reading half. Takes the words from the lexicons deductible-word, benefit-limit-word,
 // deductible-basis, approximate-marker, range-connector, currency-notation and amount-multiplier, and leaves the deciding to
-// structure/deductible-limit.ts, one sentence at a time.
+// structure/deductible-limit.ts, one sentence at a time, with the structure tree's quantities as the amounts.
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { quoteAt } from "./structure-tree.ts";
 import { sentenceDeductibleOverLimit, type DeductibleWords } from "../structure/deductible-limit.ts";
+import { proseQuantitiesOf } from "../structure/ratio.ts";
 
 const RULE = "deductible-exceeds-limit";
 const NOT = "not";
@@ -42,9 +43,10 @@ const wordsOf = (doc: ProseDocument): DeductibleWords => ({
 export const deductibleExceedsLimit: Detector = (doc): Finding[] => {
   const words = wordsOf(doc);
   if (words.deductibles.length === 0 || words.limits.length === 0) return [];
+  const quantities = proseQuantitiesOf(doc.structure);
   return doc.sentences.flatMap((sentence): Finding[] => {
     const text = doc.source.slice(sentence.span.start, sentence.span.end);
-    const issue = sentenceDeductibleOverLimit(text, sentence.span.start, words);
+    const issue = sentenceDeductibleOverLimit(text, sentence.span.start, quantities, words);
     if (issue === undefined) return [];
     return [
       { rule: RULE, severity: "warning", line: 0, column: 0, quote: quoteAt(doc.source, issue.offset), values: { ...issue.values, offset: issue.offset } },

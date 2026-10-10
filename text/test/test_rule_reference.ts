@@ -10,6 +10,8 @@ import { runAllExamples } from "../scripts/rule-examples.ts";
 
 const rules = loadRules("en");
 const READER_LANGUAGES = ["ja", "en"];
+/** The rule list shows the summary as one line under the rule's name, for a reader who is not an engineer. */
+const SUMMARY_MAX_CHARS: Readonly<Record<string, number>> = { ja: 60, en: 80 };
 
 const languagesOf = (rule: RuleDefinition): readonly string[] => rule.languages ?? READER_LANGUAGES;
 
@@ -36,6 +38,17 @@ describe("rule reference — the plain-language fields of every rule file", () =
       return fields.length === 0 ? [] : [`${rule.id}.yaml lacks ${fields.join(", ")}`];
     });
     assert.deepEqual(lacking, []);
+  });
+
+  it("every summary fits on one line of the rule list", () => {
+    const tooLong = rules.flatMap((rule) =>
+      READER_LANGUAGES.flatMap((language) => {
+        const length = [...(rule.guide?.summary[language] ?? "")].length;
+        const limit = SUMMARY_MAX_CHARS[language] ?? 0;
+        return length > limit ? [`${rule.id}: summary.${language} runs ${String(length)} (limit ${String(limit)})`] : [];
+      }),
+    );
+    assert.deepEqual(tooLong, []);
   });
 
   it("no rule has an example in a language it does not check", () => {

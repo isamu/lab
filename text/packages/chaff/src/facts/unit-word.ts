@@ -3,6 +3,9 @@ const WORD_CHAR = /[\p{L}\p{N}]/u;
 /** 単位のすぐ後ろに、数（空白一つまで）か、ハイフンでつながる語が続く。 */
 const CONTINUED = /^(?:[ \t]?[0-9０-９]|-[\p{L}\p{N}])/u;
 
+const ENDS_LATIN = /\p{Script=Latin}$/u;
+const STARTS_LATIN = /^\p{Script=Latin}/u;
+
 const isLatinWord = (word: string): boolean => LATIN_WORD.test(word);
 
 /** 英字の語が、語として行にあるか（"x" は "box" の中では数えない）。 */
@@ -33,3 +36,6 @@ export const standsAsUnitWord = (pattern: string, needsContext: boolean, after: 
   if (!needsContext || !isLatinWord(pattern)) return true;
   return !WORD_CHAR.test(after.charAt(0)) && !CONTINUED.test(after);
 };
+
+/** 英字で終わる単位の後ろに英字が続けば、単位ではなく語の頭（"20 to" の t、"3 tons" の t、"5 miners" の min、"120 mmHg" の mm）。 */
+export const runsIntoWord = (pattern: string, after: string): boolean => ENDS_LATIN.test(pattern) && STARTS_LATIN.test(after);

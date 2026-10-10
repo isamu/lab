@@ -1,5 +1,5 @@
 import { escapeRegExp } from "../orthography.ts";
-import { keyOf, proseValues, type AmountWords, type Figure } from "./ratio.ts";
+import { keyOf, proseValues, type AmountWords, type ProseFigure, type ProseQuantity } from "./ratio.ts";
 
 /**
  * deductible-exceeds-limit: the deciding half. In one sentence naming one deductible (免責金額, excess) and one limit
@@ -59,7 +59,6 @@ const MAX_GAP = 24;
 const BASIS_REACH = 16;
 /** Marks that end a clause: a basis is not read across them. */
 const CLAUSE_BREAK = /[、,;；，。.]/u;
-const NUMBER_AT = /^\d+(?:,\d{3})*(?:\.\d+)?/u;
 const LATIN = /^[A-Za-z]/u;
 const DIGIT_START = /^\d/u;
 const DIGIT_BEFORE = /[\d.,]$/u;
@@ -103,16 +102,9 @@ const hitsIn = (text: string, words: DeductibleWords): Hit[] => {
 };
 
 /** The written text of an amount: its currency mark before, its number, its unit after (as long as the unit read). */
-type Written = Spot & { readonly figure: Figure };
+type Written = Spot & { readonly figure: ProseFigure };
 
-const writtenOf = (text: string, figure: Figure): Written | undefined => {
-  const [prefix = "", unit = ""] = figure.unit.split("|");
-  const number = NUMBER_AT.exec(text.slice(figure.start));
-  if (number === null) return undefined;
-  const afterNumber = figure.start + number[0].length;
-  const gap = unit === "" ? 0 : text.slice(afterNumber).length - text.slice(afterNumber).trimStart().length;
-  return { start: figure.start - prefix.length, end: afterNumber + (unit === "" ? 0 : gap + unit.length), figure };
-};
+const writtenOf = (figure: ProseFigure): Written => ({ start: figure.writtenStart, end: figure.writtenEnd, figure });
 
 const lower = (text: string): string => text.toLowerCase();
 
@@ -140,21 +132,20 @@ const isRoughOrRange = (text: string, written: Written, words: DeductibleWords):
 const currencyOf = (mark: string, words: DeductibleWords): string => words.currencies.find((entry) => keyOf(entry.pattern) === mark)?.currency ?? mark;
 
 /** The value with its word of magnitude multiplied in, and the currency its marks name ("|万円" 30 is 300000 JPY, "us$|" is USD). */
-const scaled = (figure: Figure, words: DeductibleWords): { value: number; currency: string } => {
-  const [prefix = "", unit = ""] = figure.unit.split("|");
-  const multiplier = words.multipliers.find((entry) => unit.startsWith(keyOf(entry.word)));
-  const bare = multiplier === undefined ? unit : unit.slice(keyOf(multiplier.word).length).trimStart();
-  const marks = [prefix, bare].filter((mark) => mark !== "").map((mark) => currencyOf(mark, words));
+const scaled = (figure: ProseFigure, words: DeductibleWords): { value: number; currency: string } => {
+  const multiplier = words.multipliers.find((entry) => figure.suffix.startsWith(keyOf(entry.word)));
+  const bare = multiplier === undefined ? figure.suffix : figure.suffix.slice(keyOf(multiplier.word).length).trimStart();
+  const marks = [figure.mark, bare].filter((mark) => mark !== "").map((mark) => currencyOf(mark, words));
   return { value: figure.value * (multiplier?.value ?? 1), currency: [...new Set(marks)].join("|") };
 };
 
 /** The only amount of money between a word and the next word (or the end), close to it. */
-const amountAfter = (hit: Hit, hits: readonly Hit[], figures: readonly Figure[], text: string): Written | undefined => {
+const amountAfter = (hit: Hit, hits: readonly Hit[], figures: readonly ProseFigure[], text: string): Written | undefined => {
   const until = Math.min(text.length, ...hits.filter((other) => other.start >= hit.end).map((other) => other.start));
   const between = figures.filter((figure) => figure.start >= hit.end && figure.start < until);
   const only = between.length === 1 ? between[0] : undefined;
   if (only === undefined || only.start - hit.end > MAX_GAP) return undefined;
-  return writtenOf(text, only);
+  return writtenOf(only);
 };
 
 const lastBreakBefore = (text: string, at: number): number => {
@@ -219,7 +210,7 @@ const statedOf = (text: string, written: Written, region: Spot, words: Deductibl
 };
 
 /** Both words with their amounts and bases, in the order written; undefined when either amount is not read. */
-const readPair = (text: string, hits: readonly [Hit, Hit], figures: readonly Figure[], words: DeductibleWords): Read[] | undefined => {
+const readPair = (text: string, hits: readonly [Hit, Hit], figures: readonly ProseFigure[], words: DeductibleWords): Read[] | undefined => {
   const [first, second] = hits.toSorted((left, right) => left.start - right.start);
   if (first === undefined || second === undefined) return undefined;
   const [firstWritten, secondWritten] = [amountAfter(first, hits, figures, text), amountAfter(second, hits, figures, text)];
@@ -235,16 +226,23 @@ const readPair = (text: string, hits: readonly [Hit, Hit], figures: readonly Fig
 };
 
 /**
- * One sentence (text, starting at offset in the document) with exactly one deductible word and one limit word, each with one
- * amount of money right after it, read as stated and compared. Any other shape is not read.
+ * One sentence (text, starting at offset in the document; quantities are the tree's, in document offsets) with exactly one
+ * deductible word and one limit word, each with one amount of money right after it, read as stated and compared. Any other
+ * shape is not read.
  */
-export const sentenceDeductibleOverLimit = (text: string, offset: number, words: DeductibleWords): DeductibleIssue | undefined => {
+export const sentenceDeductibleOverLimit = (
+  text: string,
+  offset: number,
+  quantities: readonly ProseQuantity[],
+  words: DeductibleWords,
+): DeductibleIssue | undefined => {
   const hits = hitsIn(text, words);
   const deductibleHits = hits.filter((hit) => hit.kind === "deductible");
   const limitHits = hits.filter((hit) => hit.kind === "limit");
   const [deductibleHit, limitHit] = [deductibleHits[0], limitHits[0]];
   if (deductibleHits.length !== 1 || limitHits.length !== 1 || deductibleHit === undefined || limitHit === undefined) return undefined;
-  const { figures } = proseValues(text, 0, words.amounts);
+  const local = quantities.map((quantity) => ({ ...quantity, start: quantity.start - offset, end: quantity.end - offset }));
+  const { figures } = proseValues(text, 0, local, words.amounts);
   const pair = readPair(text, [deductibleHit, limitHit], figures, words);
   const deductible = pair?.find((read) => read.hit === deductibleHit);
   const limit = pair?.find((read) => read.hit === limitHit);

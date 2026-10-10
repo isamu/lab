@@ -33,7 +33,7 @@ off_for:
 group: readability
 summary:
   ja: 「つまり」「このように」で始まり、前の段落の語をほとんど繰り返すだけの段落
-  en: A paragraph that opens with "In other words" or "In short" and mostly repeats the paragraph before
+  en: A paragraph opening "In other words" that mostly repeats the one before
 
 example:
   ja:

@@ -41,8 +41,8 @@ off_for:
 
 group: consistency
 summary:
-  ja: 「出来る」と「できる」、「引っ越し」と「引越し」のように、同じ語を一つの文書の中で二通りに書いている所（語の一覧なしで見つけます）
-  en: One word written two ways in one document (e-mail and email, GitHub and Github), found without a word list
+  ja: 「出来る」と「できる」のように、同じ語を一つの文書の中で二通りに書いている所
+  en: One word written two ways in one document, such as e-mail and email
 example:
   ja:
     before: |

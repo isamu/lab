@@ -31,7 +31,7 @@ off_for:
 group: facts
 summary:
   ja: 「月給30万円〜25万円」のように、金額の範囲の終わりが始まりより小さい所
-  en: An amount range whose second amount is smaller than its first, such as "$90,000–$70,000"
+  en: An amount range that ends lower than it starts, such as "$90,000–$70,000"
 example:
   ja:
     before: |
