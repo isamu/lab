@@ -35,7 +35,7 @@ off_for:
 group: wording
 summary:
   ja: ほかの期限を日数で書いた契約で、一部の期限だけを「速やかに」「遅滞なく」と書いた所
-  en: A deadline written as "promptly" or "without undue delay" in a contract that gives its other deadlines in days
+  en: A deadline written as "promptly" where other deadlines are in days
 example:
   ja:
     config: { genre: legal/contract }

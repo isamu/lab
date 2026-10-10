@@ -37,7 +37,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: consistency
 summary:
   ja: 英字や数字を、全角（ＡＢＣ１２３）と半角（ABC123）で混ぜて書いている所
-  en: Letters and digits written both full-width (ＡＢＣ１２３) and half-width (ABC123) in one Japanese document
+  en: Letters and digits both full-width (ＡＢＣ１２３) and half-width (ABC123)
 example:
   ja:
     before: |

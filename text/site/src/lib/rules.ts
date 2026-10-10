@@ -28,6 +28,8 @@ export type Rule = {
   readonly levels: Record<Lang, readonly (readonly [string, string])[]>;
   readonly levelSets: RuleDefinition["level_sets"];
   readonly useFor: readonly string[];
+  /** What the rule needs from the document before it can run (dates, quantities, pos …). */
+  readonly requires: readonly string[];
   /** The plain-language part of the rule file (group, summary, examples), for the reference in the guide. */
   readonly group: RuleGroup | undefined;
   readonly summary: Localized;
@@ -95,6 +97,7 @@ const ruleOf = (ja: RuleDefinition): Rule => {
     levels: { ja: levelsOf(ja), en: levelsOf(en) },
     levelSets: ja.level_sets,
     useFor: ja.use_for,
+    requires: ja.requires,
     group: ja.guide?.group,
     summary: { ja: ja.guide?.summary["ja"] ?? "", en: ja.guide?.summary["en"] ?? "" },
     examples: ja.guide?.examples ?? {},

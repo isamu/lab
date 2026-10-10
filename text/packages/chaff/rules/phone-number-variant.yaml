@@ -34,7 +34,7 @@ off_for:
 group: facts
 summary:
   ja: 同じ文書で、電話番号の隣り合う数字が一か所だけ入れ違っている所（0120-123-456 と 0120-123-465）
-  en: One phone number written elsewhere with two neighbouring digits swapped (0120-123-456 and 0120-123-465)
+  en: A phone number written elsewhere with two digits swapped
 example:
   ja:
     before: |

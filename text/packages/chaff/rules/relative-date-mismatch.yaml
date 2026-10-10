@@ -28,7 +28,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: facts
 summary:
   ja: 「3日後の10月6日」のように、相対で書いた日付が基準の日付から数えた日と合わない所
-  en: A date written with a relative length ("two weeks later, on May 16") that is not that far from its base date
+  en: A date given as "two weeks later, on May 16" that is not that far away
 example:
   ja:
     before: |

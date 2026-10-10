@@ -28,7 +28,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: structure
 summary:
   ja: 第1条の次が第3条、(a) の次が (c) のように、番号が飛んだり重なったりしている所
-  en: A numbered item that skips or repeats a number, such as Article 3 right after Article 1
+  en: A numbered item that skips or repeats a number, such as Article 1 then 3
 example:
   ja:
     before: |

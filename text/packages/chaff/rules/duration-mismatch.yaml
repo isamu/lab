@@ -45,7 +45,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: facts
 summary:
   ja: 「4月1日から3か月間（7月31日まで）」のように、始まりに期間を足しても書いた終わりにならない所
-  en: A start date plus a length of time that does not reach the end date written beside them
+  en: A start date plus a length of time that does not reach the end date given
 example:
   ja:
     before: |

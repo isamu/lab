@@ -61,7 +61,7 @@ sources: [koyobun-2022, jtf-style-guide]
 group: consistency
 summary:
   ja: 日本語と英数字のあいだの空白が、文書の中で付いたり付かなかったりしている所
-  en: Spacing between Japanese and Latin letters or digits that is done both ways in one document
+  en: A space between Japanese and Latin letters in some places and not others
 example:
   ja:
     before: |

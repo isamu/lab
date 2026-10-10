@@ -34,7 +34,7 @@ off_for:
 group: readability
 summary:
   ja: 名詞で終わる文（体言止め）が本文に続き、言いかけのように読める所
-  en: Many Japanese sentences in the body that stop on a noun, which read as unfinished
+  en: Many Japanese sentences that stop on a noun and read as unfinished
 example:
   ja:
     config: { rules: { taigen-dome-in-prose: strict } }

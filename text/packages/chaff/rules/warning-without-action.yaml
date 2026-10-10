@@ -36,7 +36,7 @@ off_for:
 group: wording
 summary:
   ja: 「注意」「警告」で始まる段落で、危険だけを書き、読み手のすること（〜してください、〜しないこと）が無いもの
-  en: A paragraph opening with Warning or Caution that names a risk and no action for the reader
+  en: A Warning that names a risk but not what the reader should do
 example:
   ja:
     config: { genre: docs/manual }

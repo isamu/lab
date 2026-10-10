@@ -31,7 +31,7 @@ off_for:
 group: facts
 summary:
   ja: 人数ごとの列を持つ材料の表で、一行だけ比のとおりに増えていない量
-  en: An ingredients table with a column per number of servings where one row does not scale
+  en: A recipe table with one row that does not scale with the servings
 example:
   ja:
     before: |

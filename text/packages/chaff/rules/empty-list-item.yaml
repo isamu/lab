@@ -32,7 +32,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: structure
 summary:
   ja: 「担当：」のように見出しの語だけで値の無い項目と、記号だけの項目
-  en: A list item holding only a label ("Owner:") where its siblings give values, or an item with nothing in it
+  en: A list item with only a label ("Owner:") and no value, or with nothing in it
 example:
   ja:
     before: |

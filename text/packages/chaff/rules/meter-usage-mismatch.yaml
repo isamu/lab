@@ -32,7 +32,7 @@ off_for:
 group: facts
 summary:
   ja: 検針票で、今回と前回の指示数の差が使用量と合わない所
-  en: A utility bill whose current meter reading minus the previous one is not the usage
+  en: A utility bill whose current minus previous meter reading is not the usage
 example:
   ja:
     before: |

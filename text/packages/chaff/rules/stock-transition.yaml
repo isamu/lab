@@ -38,7 +38,7 @@ off_for:
 group: ai-tells
 summary:
   ja: 「さらに」「加えて」「このように」で始まる文が多く、何がどう繋がるのかを言わずに並べている所
-  en: Too many sentences opening with "Moreover", "Additionally" or "Furthermore", listing without saying how they connect
+  en: Too many sentences opening with "Moreover" or "Additionally"
 example:
   ja:
     pad: true

@@ -34,8 +34,8 @@ off_for:
 
 group: wording
 summary:
-  ja: 「することが可能」「現時点において」（in order to、due to the fact that）のように、一語で言えることを何語もかけて言う所
-  en: Phrases such as "in order to" and "due to the fact that" (することが可能, 現時点において) that take several words to say what one says
+  ja: 「することが可能」「現時点において」のように、一語で言えることに何語もかける所
+  en: Phrases like "in order to" or "due to the fact that" where one word does
 example:
   ja:
     before: |

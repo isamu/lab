@@ -33,7 +33,7 @@ off_for:
 group: consistency
 summary:
   ja: 「株式会社みなと製作所（以下「甲」という。）」のあとで、甲を正式の名前のまま書いている所
-  en: A party or a thing given a short name ("the Supplier") and later written out in full again
+  en: A party given a short name ("the Supplier") and later written out in full
 example:
   ja:
     config: { genre: legal/contract }

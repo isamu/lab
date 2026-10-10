@@ -65,8 +65,8 @@ sources: [jis-z8301-2019, plain-2011]
 
 group: team
 summary:
-  ja: 規格・規程の文末が、チームの選んだ決まり（JIS Z 8301:2019 など）と違う所。options で決めたときだけ見ます
-  en: A provision's verb form that the house rule the team picked does not use ("shall" under the Federal Plain Language Guidelines); checked only when options pick one
+  ja: 規格・規程の文末が、チームの選んだ決まり（JIS Z 8301 など）と違う所（選んだときだけ）
+  en: A requirement's verb ("must", "shall") that the team's house rule does not use
 example:
   ja:
     before: |

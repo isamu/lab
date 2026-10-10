@@ -42,7 +42,7 @@ sources: [jis-z8301-2019]
 group: structure
 summary:
   ja: 図や表、条に番号を付けた文書で、「上記の図」「下の表」「以下の箇条」のように置き場所で指している所
-  en: '"The figure above", "the table below" or "the clause below" in a document that numbers its figures, tables or clauses'
+  en: '"The table below" in a document that numbers its tables and figures'
 example:
   ja:
     before: |

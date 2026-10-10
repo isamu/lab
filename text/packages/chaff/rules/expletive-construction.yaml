@@ -35,7 +35,7 @@ off_for:
 group: readability
 summary:
   ja: 英語で、There is や It is ... that で主語を後ろへ押しやった文が多い所
-  en: Many sentences that open with "There is" or "It is ... that", pushing the subject to the back
+  en: Many sentences that open with "There is" or "It is ... that"
 example:
   en:
     config: { rules: { expletive-construction: strict } }

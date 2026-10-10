@@ -34,7 +34,7 @@ off_for:
 group: consistency
 summary:
   ja: 英語の番号付きの手順で、命令の形の項目の中に、主語で始まる説明の項目が混ざっている所
-  en: A numbered procedure that mixes a statement (The installer asks) into instructions (Run the installer)
+  en: Numbered steps that mix statements (The tool asks) with orders (Run it)
 example:
   en:
     config: { genre: docs/manual }

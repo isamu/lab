@@ -38,7 +38,7 @@ off_for:
 group: wording
 summary:
   ja: 「ご確認ください」「Please send …」のような依頼で、その文にも次の文にも期限と担当が無いもの
-  en: A request ("Please send …") with no deadline and no person or role in it or in the next sentence
+  en: A request ("Please send …") with no deadline and no one named to do it
 example:
   ja:
     before: |

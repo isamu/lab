@@ -31,7 +31,7 @@ off_for:
 group: facts
 summary:
   ja: 「月給28万円、賞与3ヶ月分」で「年収例 450万円」のように、月給の12か月分と賞与を足した額と合わない年収例
-  en: An example annual pay that is not twelve months of the monthly pay plus the bonus months
+  en: An example annual pay that is not 12 months' pay plus the bonus months
 example:
   ja:
     before: |
