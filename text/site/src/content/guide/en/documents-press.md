@@ -98,7 +98,7 @@ $ npx chaffjs release.md --genre business/press-release --compact
 
 release.md   business/press-release · English   genre from --genre
 
-  6:106   error   2026-11-02 is a Monday, not a Tuesday
+  6:106   error   November 2, 2026 is a Monday, not a Tuesday
                   date-weekday-mismatch
   14:30   warning The shares add up to 95%, not 100%
                   percent-sum-mismatch

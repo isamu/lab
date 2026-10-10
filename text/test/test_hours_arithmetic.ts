@@ -102,7 +102,7 @@ describe("duration-mismatch: working hours", () => {
   it("the start-plus-length and nights checks are not changed", () => {
     assert.deepEqual(
       run("duration-mismatch", "# 案内\n\n契約期間は2026年4月1日から3か月間（2026年7月31日まで）です。\n", ja, "ja").map((values) => values["expected"]),
-      ["2026-06-30"],
+      ["2026年6月30日"],
     );
   });
 });

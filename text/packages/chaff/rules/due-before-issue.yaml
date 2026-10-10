@@ -19,15 +19,15 @@ why:
   en: When the payment due date of an invoice or the expiry of a quote is before its issue date, the document is overdue on arrival and the reader has to ask which date is right. It happens when last month's invoice is reused and only one date is changed. The date on a line starting with an issue word (Issued, Invoice date) is compared with the date on a line starting with a due word (Payment due, Valid until), and an earlier due date is pointed out. Minutes are read the same way. An action item due before the meeting it was set in is overdue when it is written down. The dates in the due column, or after "due" in a list item, of an action-items section are compared with the date on the "Date" line near the top. A property listing is read the same way. An "Available from" date before the "Listed" date has passed when the listing goes up. A job posting is read the same way. An "Application deadline" before the "Posted" date has passed when the posting goes up. The pairs of dates that must come in order are listed, pair by pair, in the language's vocabulary.
 
 message:
-  ja: 期限 {due} が、発行日 {issued} より前です
+  ja: 期限（{due}）が、発行日（{issued}）より前です
   en: "The due date {due} is before the issue date {issued}"
 
 messages:
   meeting:
-    ja: 宿題の期限 {due} が、会議の日 {meeting} より前です
+    ja: 宿題の期限（{due}）が、会議の日（{meeting}）より前です
     en: "The action item's due date {due} is before the meeting date {meeting}"
   order:
-    ja: 「{later_label}」の {later} が、「{earlier_label}」の {earlier} より前です
+    ja: 「{later_label}」（{later}）が、「{earlier_label}」（{earlier}）より前です
     en: '"{later_label}" {later} is before "{earlier_label}" {earlier}'
 
 how_to_fix:

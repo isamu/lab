@@ -90,7 +90,7 @@ $ npx chaffjs minutes.md --genre business/meeting-notes --compact
 
 minutes.md   business/meeting-notes · English   genre from --genre
 
-  3:18    error   2026-10-07 is a Wednesday, not a Tuesday
+  3:18    error   October 7, 2026 is a Wednesday, not a Tuesday
                   date-weekday-mismatch
   10:1    info    The first sentence repeats the heading "1. Actions from last week"
                   heading-echo

@@ -97,7 +97,7 @@ $ npx chaffjs release.md --genre business/press-release --compact
 
 release.md   business/press-release · 日本語   ジャンルは --genre から
 
-  6:45    error   「2026-11-02」は月曜日です（火曜日と書いてあります）
+  6:45    error   「2026年11月2日」は月曜日です（火曜日と書いてあります）
                   date-weekday-mismatch
   14:19   warning 内訳の割合の和が 95% で、100% になりません
                   percent-sum-mismatch
