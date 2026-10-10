@@ -3,7 +3,7 @@ layer: L3
 status: stable
 how_to_find: reference-flag-mismatch
 word_list: reference-flag
-extra_word_lists: [reference-column-heading, reference-bound-mark, range-band-word]
+extra_word_lists: [lab-result-column, reference-column-heading, reference-bound-mark, range-band-word]
 severity: warning
 
 name:
