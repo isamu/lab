@@ -8,6 +8,7 @@ import { calendarDateOf, dateOf, shifted, valueOf, type DurationUnit } from "./d
  * （4月1日から3か月間は6月30日まで）か、含めずに数える（7月1日まで）か、初日を数えずに期間が過ぎた日（「到達日から2週間が経過した日
  * （4月16日）」）。どれとも合わないときだけ言う。
  * 文に日付がちょうど二つ、期間がちょうど一つのときだけ読む。それより多い文は、どの日付とどの期間が組なのか決まらない。
+ * 範囲のすぐ後ろの括弧に書いた期間（「9月1日〜9月30日（30日間）」）は範囲そのものの長さで、期間が過ぎた日を終わりに書くことはない。
  */
 export type DatedValue = Span & { readonly value: string };
 
@@ -20,11 +21,20 @@ export type Duration = Span & {
 
 export type DurationMismatch = { readonly start: DatedValue; readonly duration: Duration; readonly end: DatedValue; readonly expected: string };
 
-/** 期間を足した日と、その前の日（終わりを含めて数える）と、次の日（初日を数えずに期間が過ぎた日）。 */
-const expectedEnds = (start: Date, duration: Duration): Date[] => {
+/** 期間を足した日と、その前の日（終わりを含めて数える）と、次の日（初日を数えずに期間が過ぎた日。範囲の長さには無い）。 */
+const expectedEnds = (start: Date, duration: Duration, rangeLength: boolean): Date[] => {
   const exclusive = shifted(start, duration.amount, duration.unit);
-  return [shifted(exclusive, -1, "day"), exclusive, shifted(exclusive, 1, "day")];
+  const ends = [shifted(exclusive, -1, "day"), exclusive];
+  return rangeLength ? ends : [...ends, shifted(exclusive, 1, "day")];
 };
+
+/** 終わりの日のすぐ後ろ（曜日の括弧は飛ばす）で開いた括弧。 */
+const BRACKET_AFTER_END = /^\s*(?:[(（][^()（）\n]{1,4}[)）]\s*)?[(（]\s*$/u;
+const BRACKET_CLOSE = /^\s*[)）]/u;
+
+/** 書いた二つ目の日付のすぐ後ろの括弧に、期間だけを書いた（July 1 – August 31 (62 days)）。 */
+export const isRangeLength = (source: string, end: Span, duration: Span): boolean =>
+  duration.start >= end.end && BRACKET_AFTER_END.test(source.slice(end.end, duration.start)) && BRACKET_CLOSE.test(source.slice(duration.end));
 
 /** 年まで書いた二つの日付は、早いほうを始まりにする（「7月1日まで、4月1日から3か月」）。月日だけなら書いた順（年をまたぐことがある）。 */
 const ordered = (first: DatedValue, second: DatedValue, withYear: boolean): [DatedValue, DatedValue] =>
@@ -47,14 +57,14 @@ const beyondReach = (start: Date, end: DatedValue, duration: Duration, withYear:
   return endDate === undefined || endDate > shifted(start, duration.amount * ATTRIBUTIVE_REACH, duration.unit);
 };
 
-const mismatchOf = (written: readonly [DatedValue, DatedValue], duration: Duration): DurationMismatch | undefined => {
+const mismatchOf = (written: readonly [DatedValue, DatedValue], duration: Duration, source: string): DurationMismatch | undefined => {
   const [firstDate, secondDate] = [calendarDateOf(written[0].value), calendarDateOf(written[1].value)];
   if (firstDate === undefined || secondDate === undefined || (firstDate.year === undefined) !== (secondDate.year === undefined)) return undefined;
   const withYear = firstDate.year !== undefined;
   const [start, end] = ordered(written[0], written[1], withYear);
   const startDate = calendarDateOf(start.value);
   if (startDate === undefined) return undefined;
-  const ends = expectedEnds(dateOf(startDate), duration);
+  const ends = expectedEnds(dateOf(startDate), duration, end === written[1] && isRangeLength(source, end, duration));
   const [inclusive] = ends;
   if (inclusive === undefined || ends.some((candidate) => valueOf(candidate, withYear) === end.value)) return undefined;
   if (beyondReach(dateOf(startDate), end, duration, withYear)) return undefined;
@@ -62,14 +72,19 @@ const mismatchOf = (written: readonly [DatedValue, DatedValue], duration: Durati
 };
 
 /** 一つの文の中の、始まり・期間・終わり。 */
-export const durationMismatches = (sentences: readonly Span[], dates: readonly DatedValue[], durations: readonly Duration[]): DurationMismatch[] => {
+export const durationMismatches = (
+  sentences: readonly Span[],
+  dates: readonly DatedValue[],
+  durations: readonly Duration[],
+  source: string,
+): DurationMismatch[] => {
   const datesIn = bySentence(sentences, dates);
   return [...bySentence(sentences, durations).entries()].flatMap(([index, inDurations]) => {
     const inDates = datesIn.get(index) ?? [];
     const [first, second] = inDates;
     const [duration] = inDurations;
     if (inDates.length !== 2 || inDurations.length !== 1 || first === undefined || second === undefined || duration === undefined) return [];
-    const mismatch = mismatchOf([first, second], duration);
+    const mismatch = mismatchOf([first, second], duration, source);
     return mismatch === undefined ? [] : [mismatch];
   });
 };
