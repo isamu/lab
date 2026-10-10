@@ -380,3 +380,52 @@ describe("due-before-issue (order): 検査結果の報告日、保証書の登�
     assert.deepEqual(genreFindings(contract, "docs/manual"), []);
   });
 });
+
+const recallJa = (noticeLabel: string, notice: string, deadlineLabel: string, deadline: string): string =>
+  `# 電気ポット 自主回収のお知らせ\n\n架空電機株式会社\n\n${noticeLabel}：${notice}\n\n対象の製品を無償で交換いたします。\n\n${deadlineLabel}：${deadline}\n`;
+
+const recallEn = (noticeLabel: string, notice: string, deadlineLabel: string, deadline: string): string =>
+  `# Voluntary Recall: Example Kettle\n\nExample Appliances, Inc.\n\n${noticeLabel}: ${notice}\n\nWe will replace every affected kettle free of charge.\n\n${deadlineLabel}: ${deadline}\n`;
+
+describe("due-before-issue (order): 回収のお知らせの受付期限", () => {
+  it("お知らせ日より前の受付期限を指す", () => {
+    assert.deepEqual(findingsOf(recallJa("お知らせ日", "2026年9月1日", "無償交換の受付期限", "2026年8月31日")), [
+      "「無償交換の受付期限」（2026年8月31日）が、「お知らせ日」（2026年9月1日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(recallJa("お知らせ日", "2026年9月1日", "交換受付期限", "2026年8月1日")), [
+      "「交換受付期限」（2026年8月1日）が、「お知らせ日」（2026年9月1日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(recallEn("Notice date", "September 1, 2026", "Refund requests accepted until", "August 31, 2026"), en), [
+      '"Refund requests accepted until" August 31, 2026 is before "Notice date" September 1, 2026',
+    ]);
+    assert.deepEqual(findingsOf(recallEn("Date of notice", "September 1, 2026", "Exchange deadline", "August 31, 2026"), en), [
+      '"Exchange deadline" August 31, 2026 is before "Date of notice" September 1, 2026',
+    ]);
+  });
+
+  it("お知らせ日の後の受付期限、年の無い日付は言わない", () => {
+    assert.deepEqual(findingsOf(recallJa("お知らせ日", "2026年9月1日", "返金の受付期限", "2027年8月31日")), []);
+    assert.deepEqual(findingsOf(recallJa("お知らせ日", "2026年9月1日", "交換の受付期限", "8月31日")), []);
+    assert.deepEqual(findingsOf(recallEn("Notice date", "September 1, 2026", "Replacement requests accepted until", "August 31, 2027"), en), []);
+    assert.deepEqual(findingsOf(recallEn("Notice date", "September 1, 2026", "Exchange deadline", "August 31"), en), []);
+  });
+
+  it("懸賞の発表日や公表日、受付を終えたお知らせの過ぎた締切は言わない", () => {
+    assert.deepEqual(findingsOf(recallJa("発表日", "2026年12月15日", "受付締切", "2026年11月30日")), []);
+    assert.deepEqual(findingsOf(recallJa("公表日", "2026年12月15日", "受付締切", "2026年11月30日")), []);
+    assert.deepEqual(findingsOf(recallJa("お知らせ日", "2026年9月1日", "お申し込み期限", "2026年8月31日")), []);
+    assert.deepEqual(findingsOf(recallJa("お知らせ日", "2026年9月1日", "受付期限", "2026年8月31日")), []);
+    assert.deepEqual(findingsOf(recallEn("Notice date", "September 1, 2026", "Deadline for requests", "August 31, 2026"), en), []);
+    assert.deepEqual(findingsOf(recallEn("Notice date", "September 1, 2026", "Requests accepted until", "August 31, 2026"), en), []);
+  });
+
+  it("別の組の語どうしは組まない", () => {
+    assert.deepEqual(findingsOf("# お知らせ\n\nお知らせ日：2026年10月1日\n\n応募締切：2026年9月1日\n"), []);
+    assert.deepEqual(findingsOf("# お知らせ\n\n掲載日：2026年10月1日\n\n返金の受付期限：2026年9月1日\n"), []);
+    assert.deepEqual(findingsOf("# お知らせ\n\nお買い上げ日：2026年10月1日\n\n交換受付期限：2026年9月1日\n"), []);
+    assert.deepEqual(findingsOf("# お知らせ\n\nお知らせ日：2026年10月1日\n\n登録期限：2026年9月1日\n"), []);
+    assert.deepEqual(findingsOf("# Notice\n\nNotice date: October 1, 2026\n\nApplication deadline: September 1, 2026\n", en), []);
+    assert.deepEqual(findingsOf("# Notice\n\nPosted: October 1, 2026\n\nExchange deadline: September 1, 2026\n", en), []);
+    assert.deepEqual(findingsOf("# Notice\n\nPurchase date: October 1, 2026\n\nRefund requests accepted until: September 1, 2026\n", en), []);
+  });
+});
