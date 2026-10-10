@@ -1,0 +1,21 @@
+# Words that make a yearless date no date of one year. date-without-year does not report a date they cover: "every year on
+# April 1" is a day that comes round each year, and "for example, a request received on April 1" is a date in an example.
+# A word without a group covers the rest of its sentence (not past a closing bracket), and the list a line ending in it
+# introduces ("for example:"). group: adjacent covers only the date just after it ("each December 31"). group: label
+# covers the dates in the bracket after it ("New Year holidays (December 29 to January 3)").
+id: any-year-marker
+language: en
+entries:
+  - pattern: for example
+  - pattern: for instance
+  - pattern: e.g.
+  - pattern: every year
+  - pattern: each year
+  - pattern: each
+    group: adjacent
+  - pattern: every
+    group: adjacent
+  - pattern: New Year holidays
+    group: label
+  - pattern: year-end holidays
+    group: label
