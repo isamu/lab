@@ -1,7 +1,7 @@
 {
   "recall": {
     "ja": {
-      "return-before-departure": "0/1",
+      "return-before-departure": "1/1",
       "per-diem": "1/1",
       "receipt-outside-period": "1/2",
       "receipt-number-twice": "0/2",
@@ -10,7 +10,7 @@
       "mileage": "0/1"
     },
     "en": {
-      "return-before-departure": "0/1",
+      "return-before-departure": "1/1",
       "per-diem": "1/1",
       "receipt-outside-period": "2/2",
       "receipt-number-twice": "0/2",
