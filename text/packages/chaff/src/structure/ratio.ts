@@ -155,8 +155,8 @@ export type ProseQuantity = { readonly start: number; readonly end: number; read
 
 const PROSE_NUMBER = /(?<![\d.,])(\d{1,3}(?:,\d{3})+|\d+)(?:\.(\d+))?(?![\d,.]\d)/gu;
 const NEGATIVE_BEFORE = /[-−▲△]$/u;
-/** A word of magnitude after the number, outside the quantity ("$198 million"). */
-const WORD_AFTER = /^\s+([A-Za-z]+)/u;
+/** Words after the quantity ("$198 million", "1,320 million yen"). */
+const WORDS_AFTER = /^\s+([A-Za-z]+)(?:\s+([A-Za-z]+))?/u;
 
 /** The currency mark before a number, which may stand one space apart ($5, € 5, US$5), and the text before that mark. */
 const markBefore = (before: string, marks: readonly string[]): { readonly mark: string; readonly rest: string } => {
@@ -167,13 +167,13 @@ const markBefore = (before: string, marks: readonly string[]): { readonly mark: 
 
 /**
  * The unit an amount is compared in, as written: the mark before it (US$ and $ differ), the magnitude and the mark inside the
- * quantity (百万円 of 96百万円), the word of magnitude after it ($198 million), and the tree's currency when it stands after.
+ * quantity (百万円 of 96百万円), and up to two words of magnitude or currency after it ($198 million, 1,320 million yen).
  */
-const figureUnit = (mark: string, quantity: ProseQuantity, inside: string, after: string, words: AmountWords): string => {
-  const word = WORD_AFTER.exec(after)?.[1]?.toLowerCase() ?? "";
-  const multiplier = words.multipliers.some((entry) => entry.toLowerCase() === word) ? word : "";
-  const unitAfter = mark === "" && !inside.includes(quantity.unit) ? quantity.unit : "";
-  return [mark, inside, multiplier, unitAfter].map(keyOf).join("|");
+const figureUnit = (mark: string, inside: string, after: string, words: AmountWords): string => {
+  const units = [...words.multipliers, ...words.after].map((word) => word.toLowerCase());
+  const [first, second] = (WORDS_AFTER.exec(after)?.slice(1) ?? []).map((word) => word?.toLowerCase() ?? "");
+  const named = units.includes(first ?? "") ? [first, ...(units.includes(second ?? "") ? [second] : [])] : [];
+  return [mark, inside, named.join(" ")].map((part) => keyOf(part ?? "")).join("|");
 };
 
 /** What a piece of text holds: amounts of money, percentages, and the other numbers (years, counts), by where they start. */
@@ -192,7 +192,7 @@ const proseNumber = (text: string, offset: number, match: RegExpExecArray, quant
   if (words.percentUnits.includes(quantity.unit)) return [{ rate: { start, value, decimals: decimals.length } }];
   if (![...words.before, ...words.after].includes(quantity.unit)) return [{ other: start }];
   const [end, quantityEnd] = [match.index + match[0].length, quantity.end - offset];
-  const unit = figureUnit(mark, quantity, text.slice(end, quantityEnd), text.slice(quantityEnd), words);
+  const unit = figureUnit(mark, text.slice(end, quantityEnd), text.slice(quantityEnd), words);
   return [{ figure: { start, value, step: DECIMAL_BASE ** -decimals.length, unit } }];
 };
 
