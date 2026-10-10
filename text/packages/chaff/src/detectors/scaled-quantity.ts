@@ -5,7 +5,7 @@ import type { MeasureUnit } from "../facts/measures.ts";
 import { quoteAt } from "./structure-tree.ts";
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 
-const DIMENSIONS = ["unit-mass", "unit-volume"] as const;
+const DIMENSIONS = ["unit-mass", "unit-volume", "unit-area"] as const;
 
 const measuresOf = (doc: ProseDocument): MeasureUnit[] =>
   DIMENSIONS.flatMap((dimension) =>

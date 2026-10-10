@@ -88,6 +88,23 @@ describe("scaled-quantity-mismatch: one row that does not scale", () => {
   });
 });
 
+describe("scaled-quantity-mismatch: units that NFKC spells differently (m², ㎡, ｍ)", () => {
+  it("ja: an area in m² and ㎡ is read and converted, and the one row that does not scale is reported", () => {
+    const source = table("材料 | ×1 | ×2", "床材 | 2 m² | 4 m²", "壁紙 | 3㎡ | 6 ㎡", "断熱材 | ２ｍ² | ４ｍ²", "防水シート | 1 m² | 1 m²");
+    assert.deepEqual(slipsJa(source), ["防水シート:1 m²->2@8"]);
+  });
+
+  it("en: square metres in one table scale cleanly, whichever way they are written", () => {
+    const source = table("Material | 2 batches | 4 batches", "Tile | 2 m² | 4㎡", "Grout | 1 m² | 2 m²", "Membrane | 3 m² | 6 m²", "Paint | 5 m² | 10 m²");
+    assert.deepEqual(slipsEn(source), []);
+  });
+
+  it("ja: a power (10³) and a unit not in the language package are not read", () => {
+    const source = table("材料 | ×1 | ×2", "セメント | 20 kg | 40 kg", "砂 | 60 kg | 120 kg", "水 | 10 L | 20 L", "砂利 | 10³ | 10³", "目地材 | 2 yd² | 2 yd²");
+    assert.deepEqual(slipsJa(source), []);
+  });
+});
+
 describe("scaled-quantity-mismatch: what it does not report", () => {
   it("ja: an amount left to the cook (少々, 適量) stays as it is", () => {
     const source = table(
@@ -211,6 +228,20 @@ describe("scaled-quantity-mismatch: the pure parts", () => {
     assert.equal(amountOf("2 (300 g)", WORDS), undefined);
     assert.equal(amountOf("", WORDS), undefined);
     assert.equal(amountOf("1/0 cup", WORDS), undefined);
+  });
+
+  it("amountOf compares a unit and a cell after NFKC on both sides (m³, ㎥, ｍ)", () => {
+    const cubic = { dimension: "unit-volume", factors: [1000], zero: 0, before: false, context: [] };
+    const words: ScaleWords = { ...WORDS, measures: [...WORDS.measures, { ...cubic, pattern: "m³" }, { ...cubic, pattern: "㎥" }] };
+    const oneCubicMetre = { amount: 1000, written: 1, unit: "=unit-volume" };
+    ["1 ㎥", "1㎥", "1 m³", "1m³", "1m3", "１ｍ³", "１ ㎥"].forEach((cell) => assert.deepEqual(amountOf(cell, words), oneCubicMetre, cell));
+    assert.equal(amountOf("10³", words), undefined);
+    assert.equal(amountOf("１０³", words), undefined);
+    assert.equal(amountOf("10³ g", words), undefined);
+    assert.equal(amountOf("1 m³ x 2", words), undefined);
+    assert.equal(amountOf("1 m4", words), undefined);
+    assert.equal(amountOf("1 ㎥", WORDS), undefined);
+    assert.equal(amountOf("2 yd²", words), undefined);
   });
 
   it("expectedOf answers in the unit the cell is written in", () => {
