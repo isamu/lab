@@ -24,22 +24,22 @@ before(async () => prepare());
 
 describe("relative-date-mismatch: day words against the document's date", () => {
   it("ja: 来週・今週・先週と曜日、明日・明後日・昨日", () => {
-    assert.deepEqual(found(mailJa("次回は来週月曜（10月13日）の14時からです。"), ja), ["来週月曜 10月13日→10-12"]);
+    assert.deepEqual(found(mailJa("次回は来週月曜（10月13日）の14時からです。"), ja), ["来週月曜 10月13日→10月12日"]);
     assert.deepEqual(found(mailJa("次回は来週月曜（10月12日）の14時からです。"), ja), []);
     assert.deepEqual(found(mailJa("次回は来週月曜日の10月12日です。"), ja), []);
     assert.deepEqual(found(mailJa("再来週の火曜ではなく、再来週火曜（10月20日）にします。"), ja), []);
-    assert.deepEqual(found(mailJa("再来週火曜（10月21日）にします。"), ja), ["再来週火曜 10月21日→10-20"]);
+    assert.deepEqual(found(mailJa("再来週火曜（10月21日）にします。"), ja), ["再来週火曜 10月21日→10月20日"]);
     assert.deepEqual(found(mailJa("今週金曜（10月9日）までにお願いします。"), ja), []);
     assert.deepEqual(found(mailJa("先週金曜（10月2日）に届きました。"), ja), []);
-    assert.deepEqual(found(mailJa("明日（10月8日）に伺います。"), ja), ["明日 10月8日→10-07"]);
+    assert.deepEqual(found(mailJa("明日（10月8日）に伺います。"), ja), ["明日 10月8日→10月7日"]);
     assert.deepEqual(found(mailJa("明後日（10月8日）に伺います。"), ja), []);
   });
 
   it("en: next / this / last and a weekday, tomorrow and yesterday", () => {
-    assert.deepEqual(found(mailEn("We meet next Monday (October 13)."), en), ["next Monday October 13→10-12"]);
+    assert.deepEqual(found(mailEn("We meet next Monday (October 13)."), en), ["next Monday October 13→October 12"]);
     assert.deepEqual(found(mailEn("We meet next Monday (October 12)."), en), []);
     assert.deepEqual(found(mailEn("We met last Friday, October 2."), en), []);
-    assert.deepEqual(found(mailEn("We meet tomorrow, October 8."), en), ["tomorrow October 8→10-07"]);
+    assert.deepEqual(found(mailEn("We meet tomorrow, October 8."), en), ["tomorrow October 8→October 7"]);
   });
 
   it("allows every reading of a week: from Monday, from Sunday, the coming one", () => {
@@ -47,7 +47,7 @@ describe("relative-date-mismatch: day words against the document's date", () => 
     const sunday = (target: string): string => `Subject: Meeting\nDate: Sunday, October 11, 2026\n\nWe meet next Monday (${target}).\n`;
     assert.deepEqual(found(sunday("October 12"), en), []);
     assert.deepEqual(found(sunday("October 19"), en), []);
-    assert.deepEqual(found(sunday("October 26"), en), ["next Monday October 26→10-12"]);
+    assert.deepEqual(found(sunday("October 26"), en), ["next Monday October 26→October 12"]);
   });
 
   it("counts only from a date field of the opening, not from an update stamp, a quoted mail or a dated section", () => {
@@ -59,7 +59,7 @@ describe("relative-date-mismatch: day words against the document's date", () => 
     );
     assert.deepEqual(found("Updated: October 20, 2026\n\nPress release: Today, October 6, we announced the program.\n", en, "business/press-release"), []);
     const minutes = "# 定例会 議事録\n\n- 日時: 2026年10月5日（月）10時\n\n## 次回\n\n次回は来週月曜（10月19日）の10時から開く。\n";
-    assert.deepEqual(found(minutes, ja, "business/meeting-notes"), ["来週月曜 10月19日→10-12"]);
+    assert.deepEqual(found(minutes, ja, "business/meeting-notes"), ["来週月曜 10月19日→10月12日"]);
   });
 
   it("reads nothing without a document date, without a date right after, or with the word far from it", () => {

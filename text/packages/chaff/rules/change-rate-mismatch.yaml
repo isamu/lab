@@ -31,7 +31,7 @@ off_for:
 group: facts
 summary:
   ja: 「1,000社から20%増えて1,200社」のように、一つの文や表の一行の二つの値と増減率が合わない所
-  en: A rate of change that the two values in the same sentence or table row do not give
+  en: A rate of change the two values in one sentence or table row do not give
 example:
   ja:
     before: 利用企業は1,300社となり、前年の1,000社から20%増えました。

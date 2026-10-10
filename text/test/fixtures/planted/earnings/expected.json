@@ -2,23 +2,23 @@
   "recall": {
     "ja": {
       "call-before-period-end": "0/2",
-      "period-label": "0/2",
+      "period-label": "2/2",
       "yoy-change": "2/2",
       "unit-mix": "0/2",
-      "operating-margin": "0/2",
+      "operating-margin": "2/2",
       "company-name": "0/2",
       "segment-total": "1/1",
-      "forecast-revision": "0/1"
+      "forecast-revision": "1/1"
     },
     "en": {
       "call-before-period-end": "0/2",
-      "period-label": "0/2",
+      "period-label": "2/2",
       "yoy-change": "2/2",
       "unit-mix": "0/2",
-      "operating-margin": "0/2",
+      "operating-margin": "2/2",
       "company-name": "2/2",
       "segment-total": "1/1",
-      "forecast-revision": "0/1"
+      "forecast-revision": "1/1"
     }
   },
   "clean": []

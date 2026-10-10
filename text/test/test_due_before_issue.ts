@@ -15,9 +15,11 @@ const WORDS: DueWords = { issue: ["発行日"], due: ["お支払期限"], passed
 
 describe("due-before-issue: 期限が発行日より前", () => {
   it("発行日より前の期限を指す", () => {
-    assert.deepEqual(findingsOf("# 請求書\n\n発行日：2026年11月30日\n\nお支払期限：2026年11月25日\n"), ["期限 2026-11-25 が、発行日 2026-11-30 より前です"]);
+    assert.deepEqual(findingsOf("# 請求書\n\n発行日：2026年11月30日\n\nお支払期限：2026年11月25日\n"), [
+      "期限（2026年11月25日）が、発行日（2026年11月30日）より前です",
+    ]);
     assert.deepEqual(findingsOf("# Invoice\n\nIssued: November 30, 2026\n\nPayment due: November 25, 2026\n", en), [
-      "The due date 2026-11-25 is before the issue date 2026-11-30",
+      "The due date November 25, 2026 is before the issue date November 30, 2026",
     ]);
   });
 
@@ -28,10 +30,10 @@ describe("due-before-issue: 期限が発行日より前", () => {
 
   it("表の行と箇条書きも読む", () => {
     assert.deepEqual(findingsOf("| 項目 | 日付 |\n| --- | --- |\n| 発行日 | 2026年11月30日 |\n| 有効期限 | 2026年10月31日 |\n"), [
-      "期限 2026-10-31 が、発行日 2026-11-30 より前です",
+      "期限（2026年10月31日）が、発行日（2026年11月30日）より前です",
     ]);
     assert.deepEqual(findingsOf("- Invoice date: November 30, 2026\n- Due date: November 1, 2026\n", en), [
-      "The due date 2026-11-01 is before the issue date 2026-11-30",
+      "The due date November 1, 2026 is before the issue date November 30, 2026",
     ]);
   });
 

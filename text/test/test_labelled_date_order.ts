@@ -30,8 +30,8 @@ const LABELS: readonly OrderLabel[] = [
 
 describe("due-before-issue (order): 入居可能日や応募締切が掲載日より前", () => {
   it("掲載日より前の入居可能日を指す", () => {
-    assert.deepEqual(findingsOf(listingJa("2026年10月1日", "2025年11月1日")), ["「入居可能日」の 2025-11-01 が、「掲載日」の 2026-10-01 より前です"]);
-    assert.deepEqual(findingsOf(listingEn("October 1, 2026", "August 1, 2026"), en), ['"Available from" 2026-08-01 is before "Listed" 2026-10-01']);
+    assert.deepEqual(findingsOf(listingJa("2026年10月1日", "2025年11月1日")), ["「入居可能日」（2025年11月1日）が、「掲載日」（2026年10月1日）より前です"]);
+    assert.deepEqual(findingsOf(listingEn("October 1, 2026", "August 1, 2026"), en), ['"Available from" August 1, 2026 is before "Listed" October 1, 2026']);
   });
 
   it("情報公開日と掲載日の後の入居可能日は言わない", () => {
@@ -39,7 +39,7 @@ describe("due-before-issue (order): 入居可能日や応募締切が掲載日�
     assert.deepEqual(findingsOf(listingJa("2026年10月1日", "2026年10月1日")), []);
     assert.deepEqual(findingsOf(listingEn("October 1, 2026", "November 1, 2026"), en), []);
     assert.deepEqual(findingsOf("# 物件\n\n情報公開日：2026年10月1日\n\n- 入居時期：2026年9月1日\n"), [
-      "「入居時期」の 2026-09-01 が、「情報公開日」の 2026-10-01 より前です",
+      "「入居時期」（2026年9月1日）が、「情報公開日」（2026年10月1日）より前です",
     ]);
   });
 
@@ -70,16 +70,16 @@ describe("due-before-issue (order): 入居可能日や応募締切が掲載日�
 
   it("求人の応募締切が掲載日より前なら指す", () => {
     assert.deepEqual(findingsOf(postingJa("掲載日", "2026年10月1日", "応募締切", "2026年9月30日")), [
-      "「応募締切」の 2026-09-30 が、「掲載日」の 2026-10-01 より前です",
+      "「応募締切」（2026年9月30日）が、「掲載日」（2026年10月1日）より前です",
     ]);
     assert.deepEqual(findingsOf(postingJa("募集開始日", "2026年10月1日", "応募期限", "2026年9月1日")), [
-      "「応募期限」の 2026-09-01 が、「募集開始日」の 2026-10-01 より前です",
+      "「応募期限」（2026年9月1日）が、「募集開始日」（2026年10月1日）より前です",
     ]);
     assert.deepEqual(findingsOf(postingEn("Posted", "October 1, 2026", "Application deadline", "September 30, 2026"), en), [
-      '"Application deadline" 2026-09-30 is before "Posted" 2026-10-01',
+      '"Application deadline" September 30, 2026 is before "Posted" October 1, 2026',
     ]);
     assert.deepEqual(findingsOf(postingEn("Posted on", "2026-10-01", "Application closing date", "2026-09-15"), en), [
-      '"Application closing date" 2026-09-15 is before "Posted on" 2026-10-01',
+      '"Application closing date" September 15, 2026 is before "Posted on" October 1, 2026',
     ]);
   });
 

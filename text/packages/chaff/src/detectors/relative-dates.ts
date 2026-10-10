@@ -5,6 +5,7 @@ import type { DurationUnit } from "../derived/date-arithmetic.ts";
 import { relativeMismatches, type DatedValue, type Relative } from "../derived/relative-dates.ts";
 import { quoteAt } from "./structure-tree.ts";
 import { dayWordFindings } from "./relative-day-words.ts";
+import { readableDates } from "./readable-dates.ts";
 
 /** 期間の単位の語彙表。relative-year-unit は、向きの語が付くときだけ期間になる単位（「1年前」の年）。 */
 const DURATION_LEXICONS: readonly (readonly [string, DurationUnit])[] = [
@@ -107,7 +108,7 @@ export const relativeDateMismatch: Detector = (doc): Finding[] => {
       base: doc.source.slice(mismatch.base.start, mismatch.base.end),
       relative: doc.source.slice(mismatch.relative.start, mismatch.relative.end),
       target: doc.source.slice(mismatch.target.start, mismatch.target.end),
-      expected: mismatch.expected,
+      expected: readableDates(doc)(mismatch.expected),
       offset: mismatch.target.start,
     },
   }));

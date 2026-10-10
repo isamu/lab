@@ -17,7 +17,7 @@ why:
   en: When the registration deadline or the RSVP date of an invitation is after the event itself, a reader who signs up in time arrives after it is over. It happens when last year's invitation is reused and only one of the dates is changed. The date on a line starting with an event-date word (Date, When) and holding a time of day is read as the event's date, and a date in a sentence with a registration word and a deadline word (register by, Booking deadline) after it is pointed out.
 
 message:
-  ja: 申込の締め切り {deadline} が、催しの日 {event} より後です
+  ja: 申込の締め切り（{deadline}）が、催しの日（{event}）より後です
   en: "The registration deadline {deadline} is after the event on {event}"
 
 how_to_fix:

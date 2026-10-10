@@ -30,12 +30,12 @@ describe("date-order", () => {
   });
 
   it("an oldest-first list with one date going back", () => {
-    assert.deepEqual(found(list("2026-04-01", "2026-05-01", "2026-04-15", "2026-07-01")), ["2026-04-15<2026-05-01"]);
+    assert.deepEqual(found(list("2026-04-01", "2026-05-01", "2026-04-15", "2026-07-01")), ["April 15, 2026<May 1, 2026"]);
   });
 
   it("a newest-first list is a right order; one date going forward in it is not", () => {
     assert.deepEqual(found(list("2026-09-01", "2026-08-01", "2026-07-01")), []);
-    assert.deepEqual(found(list("2026-09-01", "2026-08-01", "2026-08-15", "2026-07-01")), ["2026-08-15<2026-08-01"]);
+    assert.deepEqual(found(list("2026-09-01", "2026-08-01", "2026-08-15", "2026-07-01")), ["August 15, 2026<August 1, 2026"]);
   });
 
   it("without a clear direction (as many steps each way) nothing is said", () => {
@@ -65,7 +65,9 @@ describe("date-order", () => {
   });
 
   it("numbered lists and table rows are sequences too", () => {
-    assert.deepEqual(found(["# Plan", "", "1. 2026-04-01 a", "2. 2026-05-01 b", "3. 2026-04-15 c", "4. 2026-07-01 d"].join("\n")), ["2026-04-15<2026-05-01"]);
+    assert.deepEqual(found(["# Plan", "", "1. 2026-04-01 a", "2. 2026-05-01 b", "3. 2026-04-15 c", "4. 2026-07-01 d"].join("\n")), [
+      "April 15, 2026<May 1, 2026",
+    ]);
     const table = [
       "# Plan",
       "",
@@ -76,7 +78,7 @@ describe("date-order", () => {
       "| c | 2026-04-15 |",
       "| d | 2026-07-01 |",
     ].join("\n");
-    assert.deepEqual(found(table), ["2026-04-15<2026-05-01"]);
+    assert.deepEqual(found(table), ["April 15, 2026<May 1, 2026"]);
   });
 
   it("a nested list: children do not break the parents' order, and each group of children is its own sequence", () => {
@@ -127,14 +129,14 @@ describe("date-order", () => {
 
   it("a table written without leading pipes is a sequence too; a line with a pipe in prose is not a table", () => {
     const table = ["# Plan", "", "Step | Date", "--- | ---", "a | 2026-04-01", "b | 2026-05-01", "c | 2026-04-15", "d | 2026-07-01"].join("\n");
-    assert.deepEqual(found(table), ["2026-04-15<2026-05-01"]);
+    assert.deepEqual(found(table), ["April 15, 2026<May 1, 2026"]);
     const prose = ["# Notes", "", "a | 2026-04-01", "b | 2026-05-01", "c | 2026-04-15", "d | 2026-07-01"].join("\n");
     assert.deepEqual(found(prose), []);
   });
 
   it("a pipeless table's header holding a date is not part of the order", () => {
     const table = ["# Plan", "", "As of 2026-07-01 | Date", "--- | ---", "a | 2026-04-01", "b | 2026-05-01", "c | 2026-04-15", "d | 2026-07-01"].join("\n");
-    assert.deepEqual(found(table), ["2026-04-15<2026-05-01"]);
+    assert.deepEqual(found(table), ["April 15, 2026<May 1, 2026"]);
   });
 
   it("a pipeless table ends at the first line without a pipe; a list after it is its own sequence", () => {
@@ -154,7 +156,7 @@ describe("date-order", () => {
   });
 
   it("a dash line with a pipe after a list item without one does not turn the item into a table header", () => {
-    assert.deepEqual(found(`${list("2026-04-01", "2026-05-01", "2026-04-15", "2026-07-01")}\n--- | ---`), ["2026-04-15<2026-05-01"]);
+    assert.deepEqual(found(`${list("2026-04-01", "2026-05-01", "2026-04-15", "2026-07-01")}\n--- | ---`), ["April 15, 2026<May 1, 2026"]);
   });
 
   it("a date in a table's header row is not part of the order", () => {
@@ -168,7 +170,7 @@ describe("date-order", () => {
       "| c | 2026-04-15 |",
       "| d | 2026-07-01 |",
     ].join("\n");
-    assert.deepEqual(found(table), ["2026-04-15<2026-05-01"]);
+    assert.deepEqual(found(table), ["April 15, 2026<May 1, 2026"]);
   });
 
   it("a list sorted by name, not by date, is not a schedule: most of its dates are off the order", () => {
@@ -189,21 +191,21 @@ describe("date-order", () => {
   });
 
   it("a list with more than half of its dates in order is still read as one; two slips in six are both pointed at", () => {
-    assert.deepEqual(found(list("2026-01-01", "2026-02-01", "2026-03-01", "2026-01-15", "2026-01-20")), ["2026-01-15<2026-03-01"]);
-    assert.deepEqual(found(list("2026-09-01", "2026-08-01", "2026-07-01", "2026-09-15", "2026-06-01")), ["2026-09-15<2026-07-01"]);
+    assert.deepEqual(found(list("2026-01-01", "2026-02-01", "2026-03-01", "2026-01-15", "2026-01-20")), ["January 15, 2026<March 1, 2026"]);
+    assert.deepEqual(found(list("2026-09-01", "2026-08-01", "2026-07-01", "2026-09-15", "2026-06-01")), ["September 15, 2026<July 1, 2026"]);
     assert.deepEqual(found(list("2026-01-01", "2026-02-01", "2026-01-15", "2026-03-01", "2026-04-01", "2026-03-15")), [
-      "2026-01-15<2026-02-01",
-      "2026-03-15<2026-04-01",
+      "January 15, 2026<February 1, 2026",
+      "March 15, 2026<April 1, 2026",
     ]);
   });
 
   it("the sample schedules: the English table's third row, not the newest-first history", () => {
-    assert.deepEqual(found(readFileSync(new URL("fixtures/dates/schedule-en.md", import.meta.url), "utf8")), ["2026-04-15<2026-05-01"]);
+    assert.deepEqual(found(readFileSync(new URL("fixtures/dates/schedule-en.md", import.meta.url), "utf8")), ["April 15, 2026<May 1, 2026"]);
   });
 
   it("the Japanese sample itinerary: the third day goes back a month", () => {
     const source = readFileSync(new URL("fixtures/dates/schedule-ja.md", import.meta.url), "utf8");
-    assert.deepEqual(found(source, ja, "ja"), ["2026-09-03<2026-10-02"]);
+    assert.deepEqual(found(source, ja, "ja"), ["2026年9月3日<2026年10月2日"]);
   });
 });
 
@@ -217,12 +219,12 @@ describe("date-order: a run of sibling headings", () => {
 
   it("a newest-first changelog with one heading dated after the one above it", () => {
     const source = sections("##", "3.2.0 - 2026-09-14", "3.1.0 - 2026-10-02", "3.0.0 - 2026-03-20", "2.4.2 - 2026-01-11");
-    assert.deepEqual(found(source), ["2026-10-02<2026-09-14"]);
+    assert.deepEqual(found(source), ["October 2, 2026<September 14, 2026"]);
   });
 
   it("the date in brackets after the version, and an oldest-first changelog", () => {
     const source = sections("##", "1.0.0 (2026-01-11)", "1.1.0 (2026-03-20)", "1.2.0 (2026-02-02)", "1.3.0 (2026-09-14)");
-    assert.deepEqual(found(source), ["2026-02-02<2026-03-20"]);
+    assert.deepEqual(found(source), ["February 2, 2026<March 20, 2026"]);
   });
 
   it("a changelog in order, either way, is a right order", () => {
@@ -243,7 +245,7 @@ describe("date-order: a run of sibling headings", () => {
       "## 3.0.0 - 2026-03-20",
       "## 2.4.2 - 2026-01-11",
     ].join("\n");
-    assert.deepEqual(found(source), ["2026-10-02<2026-09-14"]);
+    assert.deepEqual(found(source), ["October 2, 2026<September 14, 2026"]);
   });
 
   it("headings under different parents are separate runs", () => {
@@ -284,7 +286,7 @@ describe("date-order: a run of sibling headings", () => {
 
   it("headings written inside list items are reported once, not once per sequence", () => {
     const source = ["# Releases", "", "- ## 3.2.0 - 2026-09-14", "- ## 3.1.0 - 2026-10-02", "- ## 3.0.0 - 2026-03-20", "- ## 2.4.2 - 2026-01-11"].join("\n");
-    assert.deepEqual(found(source), ["2026-10-02<2026-09-14"]);
+    assert.deepEqual(found(source), ["October 2, 2026<September 14, 2026"]);
   });
 
   it("dates in the body under the headings are not the headings' order", () => {
@@ -322,7 +324,7 @@ describe("date-order: a run of sibling headings", () => {
 
   it("Japanese headings, both ways", () => {
     const broken = sections("##", "3.2.0（2026年9月14日）", "3.1.0（2026年10月2日）", "3.0.0（2026年3月20日）", "2.4.2（2026年1月11日）");
-    assert.deepEqual(found(broken, ja, "ja"), ["2026-10-02<2026-09-14"]);
+    assert.deepEqual(found(broken, ja, "ja"), ["2026年10月2日<2026年9月14日"]);
     const right = sections("##", "3.2.0（2026年9月14日）", "3.1.0（2026年6月2日）", "3.0.0（2026年3月20日）", "2.4.2（2026年1月11日）");
     assert.deepEqual(found(right, ja, "ja"), []);
   });
@@ -375,28 +377,28 @@ describe("date-order: the date pointed at is the one out of place, not the one a
 
   Object.entries(shapes).forEach(([shape, write]) => {
     it(`a too-old date in a newest-first ${shape}`, () => {
-      assert.deepEqual(found(write("2026-09-14", "2026-01-05", "2026-06-02", "2026-03-20", "2026-01-11")), ["2026-01-05<2026-09-14"]);
+      assert.deepEqual(found(write("2026-09-14", "2026-01-05", "2026-06-02", "2026-03-20", "2026-01-11")), ["January 5, 2026<September 14, 2026"]);
     });
 
     it(`a too-new date in a newest-first ${shape}`, () => {
-      assert.deepEqual(found(write("2026-09-14", "2026-06-02", "2026-12-01", "2026-03-20", "2026-01-11")), ["2026-12-01<2026-06-02"]);
+      assert.deepEqual(found(write("2026-09-14", "2026-06-02", "2026-12-01", "2026-03-20", "2026-01-11")), ["December 1, 2026<June 2, 2026"]);
     });
 
     it(`a too-new date in an oldest-first ${shape}`, () => {
-      assert.deepEqual(found(write("2026-01-11", "2026-03-20", "2026-12-01", "2026-06-02", "2026-09-14")), ["2026-12-01<2026-03-20"]);
+      assert.deepEqual(found(write("2026-01-11", "2026-03-20", "2026-12-01", "2026-06-02", "2026-09-14")), ["December 1, 2026<March 20, 2026"]);
     });
 
     it(`a too-old date in an oldest-first ${shape}`, () => {
-      assert.deepEqual(found(write("2026-01-11", "2026-03-20", "2026-06-02", "2026-01-01", "2026-09-14")), ["2026-01-01<2026-06-02"]);
+      assert.deepEqual(found(write("2026-01-11", "2026-03-20", "2026-06-02", "2026-01-01", "2026-09-14")), ["January 1, 2026<June 2, 2026"]);
     });
 
     it(`two neighbours swapped in a ${shape}: the one farther from its outer neighbour is pointed at`, () => {
-      assert.deepEqual(found(write("2026-09-14", "2026-05-08", "2026-06-02", "2026-03-20", "2026-01-11")), ["2026-05-08<2026-09-14"]);
-      assert.deepEqual(found(write("2026-09-14", "2026-07-08", "2026-08-02", "2026-03-20", "2026-01-11")), ["2026-08-02<2026-07-08"]);
+      assert.deepEqual(found(write("2026-09-14", "2026-05-08", "2026-06-02", "2026-03-20", "2026-01-11")), ["May 8, 2026<September 14, 2026"]);
+      assert.deepEqual(found(write("2026-09-14", "2026-07-08", "2026-08-02", "2026-03-20", "2026-01-11")), ["August 2, 2026<July 8, 2026"]);
     });
 
     it(`two neighbours swapped in a ${shape} as far from their outer neighbours: the later one, as before`, () => {
-      assert.deepEqual(found(write("2026-08-31", "2026-06-01", "2026-07-01", "2026-04-01", "2026-01-11")), ["2026-07-01<2026-06-01"]);
+      assert.deepEqual(found(write("2026-08-31", "2026-06-01", "2026-07-01", "2026-04-01", "2026-01-11")), ["July 1, 2026<June 1, 2026"]);
     });
 
     it(`a ${shape} in order, or of two dates, says nothing`, () => {
@@ -408,15 +410,15 @@ describe("date-order: the date pointed at is the one out of place, not the one a
   });
 
   it("two steps against the order that blame the same date report it once", () => {
-    assert.deepEqual(found(list("2026-01-01", "2026-02-01", "2026-06-01", "2026-05-01", "2026-03-01", "2026-04-01")), ["2026-05-01<2026-06-01"]);
+    assert.deepEqual(found(list("2026-01-01", "2026-02-01", "2026-06-01", "2026-05-01", "2026-03-01", "2026-04-01")), ["May 1, 2026<June 1, 2026"]);
   });
 
   it("equal dates next to the one out of place stay in order", () => {
-    assert.deepEqual(found(list("2026-01-01", "2026-03-01", "2026-02-01", "2026-02-01", "2026-04-01")), ["2026-03-01<2026-01-01"]);
+    assert.deepEqual(found(list("2026-01-01", "2026-03-01", "2026-02-01", "2026-02-01", "2026-04-01")), ["March 1, 2026<January 1, 2026"]);
   });
 
   it("a first date out of place is pointed at, with the date after it", () => {
-    assert.deepEqual(found(list("2026-01-01", "2026-09-01", "2026-08-01", "2026-07-01")), ["2026-01-01>2026-09-01"]);
+    assert.deepEqual(found(list("2026-01-01", "2026-09-01", "2026-08-01", "2026-07-01")), ["January 1, 2026>September 1, 2026"]);
   });
 });
 
@@ -425,13 +427,13 @@ describe("date-order: a tie broken by the versions on the same lines", () => {
 
   it("versions in order back the positions: the date against more of the others is pointed at", () => {
     const source = releases("1.0.0 (2026-01-10)", "1.1.0 (2026-04-10)", "1.2.0 (2026-01-05)", "1.3.0 (2026-02-10)", "1.4.0 (2026-03-10)");
-    assert.deepEqual(found(source), ["2026-04-10<2026-01-10"]);
+    assert.deepEqual(found(source), ["April 10, 2026<January 10, 2026"]);
   });
 
   it("without versions, or with versions out of order, the same dates keep the later one", () => {
-    assert.deepEqual(found(list("2026-01-10", "2026-04-10", "2026-01-05", "2026-02-10", "2026-03-10")), ["2026-01-05<2026-04-10"]);
+    assert.deepEqual(found(list("2026-01-10", "2026-04-10", "2026-01-05", "2026-02-10", "2026-03-10")), ["January 5, 2026<April 10, 2026"]);
     const source = releases("1.0.0 (2026-01-10)", "1.1.0 (2026-04-10)", "1.2.0 (2026-01-05)", "1.4.0 (2026-02-10)", "1.3.0 (2026-03-10)");
-    assert.deepEqual(found(source), ["2026-01-05<2026-04-10"]);
+    assert.deepEqual(found(source), ["January 5, 2026<April 10, 2026"]);
   });
 
   it("a changelog whose versions are out of order too falls back to the gap (the swapped pair stays inside its neighbours)", () => {
@@ -440,7 +442,7 @@ describe("date-order: a tie broken by the versions on the same lines", () => {
       "",
       ...["3.2.0 - 2026-09-14", "3.1.1 - 2026-05-08", "3.3.0 - 2026-06-02", "3.0.0 - 2026-03-20"].flatMap((title) => [`## ${title}`, "", "- A change.", ""]),
     ].join("\n");
-    assert.deepEqual(found(source), ["2026-05-08<2026-09-14"]);
+    assert.deepEqual(found(source), ["May 8, 2026<September 14, 2026"]);
   });
 });
 
@@ -536,19 +538,19 @@ describe("date-order: a first date out of place", () => {
   Object.entries(shapes).forEach(([shape, write]) => {
     it(`a too-old first date in a newest-first ${shape} is pointed at, before the next date`, () => {
       assert.deepEqual(messages(write("2026-01-05", "2026-09-14", "2026-06-02", "2026-03-20")), [
-        "2026-01-05 breaks the order of the dates after it (before 2026-09-14)",
+        "January 5, 2026 breaks the order of the dates after it (before September 14, 2026)",
       ]);
     });
 
     it(`a too-new first date in an oldest-first ${shape} is pointed at, before the next date`, () => {
       assert.deepEqual(messages(write("2026-12-01", "2026-01-11", "2026-03-20", "2026-06-02")), [
-        "2026-12-01 breaks the order of the dates after it (before 2026-01-11)",
+        "December 1, 2026 breaks the order of the dates after it (before January 11, 2026)",
       ]);
     });
 
     it(`the first two dates swapped in a ${shape} cannot be told apart: the second one is pointed at, as before`, () => {
       assert.deepEqual(messages(write("2026-06-02", "2026-09-14", "2026-03-20", "2026-01-11")), [
-        "2026-09-14 breaks the order of the dates around it (after 2026-06-02)",
+        "September 14, 2026 breaks the order of the dates around it (after June 2, 2026)",
       ]);
     });
 
@@ -560,6 +562,6 @@ describe("date-order: a first date out of place", () => {
 
   it("the Japanese message names the next date", () => {
     const source = ["# 予定", "", "- 2026年1月5日 出発", "- 2026年9月14日 視察", "- 2026年6月2日 会議", "- 2026年3月20日 帰国"].join("\n");
-    assert.deepEqual(messages(source, ja, "ja"), ["「2026-01-05」が、後の日付の並びから外れています（次は「2026-09-14」）"]);
+    assert.deepEqual(messages(source, ja, "ja"), ["「2026年1月5日」が、後の日付の並びから外れています（次は「2026年9月14日」）"]);
   });
 });

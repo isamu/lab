@@ -2449,7 +2449,7 @@
       "groups": {
         "academic": {
           "documents": 10,
-          "fired": 1
+          "fired": 0
         },
         "blog": {
           "documents": 23,
@@ -2457,7 +2457,7 @@
         },
         "business": {
           "documents": 80,
-          "fired": 11
+          "fired": 5
         },
         "docs": {
           "documents": 21,
@@ -6441,6 +6441,42 @@
         "falseAlarms": 0
       }
     },
+    "period-label-conflict": {
+      "groups": {
+        "academic": {
+          "documents": 10,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 23,
+          "fired": 0
+        },
+        "business": {
+          "documents": 80,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 21,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 35,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 13,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 7,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 49,
+          "fired": 0
+        }
+      }
+    },
     "person-consistency": {
       "groups": {
         "academic": {
@@ -6937,6 +6973,42 @@
         "planted": 26,
         "found": 26,
         "falseAlarms": 0
+      }
+    },
+    "ratio-mismatch": {
+      "groups": {
+        "academic": {
+          "documents": 10,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 23,
+          "fired": 0
+        },
+        "business": {
+          "documents": 80,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 21,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 35,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 13,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 7,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 49,
+          "fired": 0
+        }
       }
     },
     "redundant-expression": {
@@ -7444,6 +7516,42 @@
         },
         "technical": {
           "documents": 45,
+          "fired": 0
+        }
+      }
+    },
+    "revision-direction-mismatch": {
+      "groups": {
+        "academic": {
+          "documents": 10,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 23,
+          "fired": 0
+        },
+        "business": {
+          "documents": 80,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 21,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 35,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 13,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 7,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 49,
           "fired": 0
         }
       }

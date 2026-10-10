@@ -1,0 +1,14 @@
+# Names of a ratio that one value divided by another gives (ratio-mismatch). group is "numerator term/denominator term";
+# the words of each term are in ratio-term. A table row labelled with only this word (a unit in brackets aside), or one
+# sentence with this word and a word of each term once, has its ratio compared with the two values.
+id: ratio-label
+language: en
+entries:
+  - { pattern: Operating margin, group: operating-profit/sales }
+  - { pattern: Operating profit margin, group: operating-profit/sales }
+  - { pattern: Operating income margin, group: operating-profit/sales }
+  - { pattern: Gross margin, group: gross-profit/sales }
+  - { pattern: Gross profit margin, group: gross-profit/sales }
+  - { pattern: Net margin, group: net-profit/sales }
+  - { pattern: Net profit margin, group: net-profit/sales }
+  - { pattern: Net income margin, group: net-profit/sales }

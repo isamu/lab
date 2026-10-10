@@ -91,7 +91,7 @@ $ npx chaffjs gijiroku.md --compact
 
 gijiroku.md   business/meeting-notes · 日本語   ジャンルは内容から
 
-  3:6     error   「2026-10-07」は水曜日です（火曜日と書いてあります）
+  3:6     error   「2026年10月7日」は水曜日です（火曜日と書いてあります）
                   date-weekday-mismatch
   4:10    info    日本語と前の数字のあいだを詰めています（この文書はふつう空ける。3 箇所のうち 1 箇所が違う）
                   latin-spacing
