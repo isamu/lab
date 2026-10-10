@@ -119,7 +119,8 @@ export type PairedIssue = StructureIssue & { readonly period: boolean };
 
 /**
  * Every pair of a dated-pair lexicon: the entries of one group with position before label the earlier date, those with
- * position after the later one. The values name both labels, so the message can quote them.
+ * position after the later one. The values name both labels, so the message can quote them. The issue is on whichever
+ * of the two dates is written second: a reader meets the contradiction there (a cancellation deadline below check-in).
  */
 export const pairedDatesOutOfOrder = (
   source: string,
@@ -132,7 +133,7 @@ export const pairedDatesOutOfOrder = (
   groupsOf(labels).flatMap((group) =>
     datesOutOfOrder(source, dates, { earlier: sideOf(labels, group, "before"), later: sideOf(labels, group, "after"), passed, maxLineGap, spans }).map(
       ({ earlier, later }) => ({
-        offset: later.date.offset,
+        offset: Math.max(later.date.offset, earlier.date.offset),
         values: { later: later.date.value, earlier: earlier.date.value, later_label: later.label, earlier_label: earlier.label },
         period: earlier.span,
       }),

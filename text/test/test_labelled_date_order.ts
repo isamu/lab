@@ -380,3 +380,89 @@ describe("due-before-issue (order): 検査結果の報告日、保証書の登�
     assert.deepEqual(genreFindings(contract, "docs/manual"), []);
   });
 });
+
+const hotelJa = (checkIn: string, checkOut: string, cancel: string): string =>
+  `# ご宿泊予約確認書\n\n| 項目 | 内容 |\n| --- | --- |\n| チェックイン | ${checkIn} |\n| チェックアウト | ${checkOut} |\n\n## キャンセルについて\n\n無料キャンセル期限：${cancel}\n`;
+
+const hotelEn = (checkIn: string, checkOut: string, cancel: string): string =>
+  `# Booking Confirmation\n\n| Item | Details |\n| --- | --- |\n| Check-in | ${checkIn} |\n| Check-out | ${checkOut} |\n\n## Cancellation\n\nFree cancellation until: ${cancel}\n`;
+
+const rentalJa = (pickUpLabel: string, pickUp: string, returnLabel: string, returned: string): string =>
+  `# レンタカーご予約確認\n\n${pickUpLabel}：${pickUp}\n\n${returnLabel}：${returned}\n\n車種クラス：コンパクト\n`;
+
+const rentalEn = (pickUpLabel: string, pickUp: string, returnLabel: string, returned: string): string =>
+  `# Car Rental Reservation\n\n${pickUpLabel}: ${pickUp}\n\n${returnLabel}: ${returned}\n\nCar class: Compact\n`;
+
+const ruleLines = (source: string, adapter = ja): number[] =>
+  runRules(buildDocument("a.md", source, adapter), loadRules(adapter.id), {}, false, "business/proposal")
+    .findings.filter((finding) => finding.rule === RULE)
+    .map((finding) => finding.line);
+
+describe("due-before-issue (order): 宿泊とレンタカーの予約、無料キャンセルの期限", () => {
+  it("チェックインより前のチェックアウト、貸出より前の返却を指す（表の行も読む）", () => {
+    assert.deepEqual(findingsOf(hotelJa("2026年11月20日 15:00から", "2026年11月19日 11:00まで", "2026年11月17日")), [
+      "「チェックアウト」（2026年11月19日）が、「チェックイン」（2026年11月20日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(hotelEn("November 20, 2026, from 3:00 PM", "November 19, 2026, by 11:00 AM", "November 17, 2026"), en), [
+      '"Check-out" November 19, 2026 is before "Check-in" November 20, 2026',
+    ]);
+    assert.deepEqual(findingsOf(rentalJa("貸出日", "2026年12月3日", "返却日", "2026年12月2日")), [
+      "「返却日」（2026年12月2日）が、「貸出日」（2026年12月3日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(rentalJa("貸出日時", "2026年12月3日 10:00", "返却日時", "2026年12月2日 17:00")), [
+      "「返却日時」（2026年12月2日）が、「貸出日時」（2026年12月3日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(rentalEn("Pick-up", "December 3, 2026", "Drop-off", "December 2, 2026"), en), [
+      '"Drop-off" December 2, 2026 is before "Pick-up" December 3, 2026',
+    ]);
+    assert.deepEqual(findingsOf(rentalEn("Pick-up date", "December 3, 2026", "Return date", "December 2, 2026"), en), [
+      '"Return date" December 2, 2026 is before "Pick-up date" December 3, 2026',
+    ]);
+  });
+
+  it("順の合った日付、同じ日、年の無い日付、日付の無い行は言わない", () => {
+    assert.deepEqual(findingsOf(hotelJa("2026年11月20日", "2026年11月22日", "2026年11月17日")), []);
+    assert.deepEqual(findingsOf(hotelJa("2026年11月20日", "2026年11月20日", "2026年11月20日")), []);
+    assert.deepEqual(findingsOf(hotelJa("11月20日", "11月19日", "11月21日")), []);
+    assert.deepEqual(findingsOf(hotelJa("15:00から", "11:00まで", "2026年11月21日")), []);
+    assert.deepEqual(findingsOf(hotelEn("November 20, 2026", "November 22, 2026", "November 17, 2026"), en), []);
+    assert.deepEqual(findingsOf(hotelEn("November 20, 2026", "November 20, 2026", "November 20, 2026"), en), []);
+    assert.deepEqual(findingsOf(hotelEn("November 20", "November 19", "November 21"), en), []);
+    assert.deepEqual(findingsOf(rentalJa("貸出", "2026年12月3日", "返却", "2026年12月6日")), []);
+    assert.deepEqual(findingsOf(rentalEn("Pick-up", "December 3, 2026", "Return date", "December 6, 2026"), en), []);
+  });
+
+  it("旅の出発日と書類の返却日、注文の受け取りと返品の期限は組まない", () => {
+    assert.deepEqual(findingsOf(rentalJa("出発日", "2026年12月3日", "返却日", "2026年11月20日")), []);
+    assert.deepEqual(findingsOf(rentalEn("Pick-up", "December 3, 2026", "Return", "December 1, 2026"), en), []);
+  });
+
+  it("チェックインや貸出より後の無料キャンセル期限を、後に書いた期限の行で指す", () => {
+    const hotel = hotelJa("2026年11月20日", "2026年11月22日", "2026年11月21日 23:59まで");
+    assert.deepEqual(findingsOf(hotel), ["「チェックイン」（2026年11月20日）が、「無料キャンセル期限」（2026年11月21日）より前です"]);
+    assert.deepEqual(ruleLines(hotel), [10]);
+    const hotelInEnglish = hotelEn("November 20, 2026", "November 22, 2026", "November 21, 2026, 11:59 PM");
+    assert.deepEqual(findingsOf(hotelInEnglish, en), ['"Check-in" November 20, 2026 is before "Free cancellation until" November 21, 2026']);
+    assert.deepEqual(ruleLines(hotelInEnglish, en), [10]);
+    assert.deepEqual(findingsOf("# 予約\n\n貸出：2026年12月3日\n\nキャンセル無料期限：2026年12月4日\n"), [
+      "「貸出」（2026年12月3日）が、「キャンセル無料期限」（2026年12月4日）より前です",
+    ]);
+    assert.deepEqual(findingsOf("# Reservation\n\nPick-up: December 3, 2026\n\nCancel by: December 4, 2026\n", en), [
+      '"Pick-up" December 3, 2026 is before "Cancel by" December 4, 2026',
+    ]);
+  });
+
+  it("後の語の日付が下にあれば、その行で指す", () => {
+    assert.deepEqual(ruleLines(listingJa("2026年10月1日", "2025年11月1日")), [8]);
+    assert.deepEqual(ruleLines(hotelJa("2026年11月20日", "2026年11月19日", "2026年11月17日")), [6]);
+  });
+
+  it("別の組の語どうしは組まない", () => {
+    assert.deepEqual(findingsOf("# 予約\n\nチェックアウト：2026年11月22日\n\n無料キャンセル期限：2026年11月25日\n"), []);
+    assert.deepEqual(findingsOf("# 予約\n\nチェックイン：2026年11月20日\n\n返却日：2026年11月19日\n"), []);
+    assert.deepEqual(findingsOf("# 予約\n\n貸出日：2026年11月20日\n\nチェックアウト：2026年11月19日\n"), []);
+    assert.deepEqual(findingsOf("# Booking\n\nCheck-out: November 22, 2026\n\nFree cancellation until: November 25, 2026\n", en), []);
+    assert.deepEqual(findingsOf("# Booking\n\nCheck-in: November 20, 2026\n\nDrop-off: November 19, 2026\n", en), []);
+    assert.deepEqual(findingsOf("# Booking\n\nPick-up: November 20, 2026\n\nCheck-out: November 19, 2026\n", en), []);
+  });
+});
