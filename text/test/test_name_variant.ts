@@ -113,6 +113,25 @@ describe("name-variant: 同じ名前の書き分け", () => {
       "「山田太朗」は、ほかの所では同じ読みの「山田太郎」と書いています",
     ]);
   });
+
+  it("解析器が読めない名前の字（汰）は、語彙表の読みで読む", () => {
+    const letter = "患者氏名：中村 健太 様\n\n中村 健太 様の結果をお知らせします。\n\n中村 健汰 様の次回の予約は、受付でお取りください。\n";
+    assert.deepEqual(variants(letter, ja), ["「健汰」は、ほかの所では同じ読みの「健太」と書いています"]);
+    assert.deepEqual(variants("中村健太様の結果です。中村健太様にお送りします。中村健汰様の予約です。\n", ja), [
+      "「中村健汰」は、ほかの所では同じ読みの「中村健太」と書いています",
+    ]);
+  });
+
+  it("読みの違う名、同じ姓の別の人、一度ずつの名は言わない", () => {
+    assert.deepEqual(variants("佐藤 美咲 様\n\n佐藤 美咲 様の結果です。佐藤 美沙 様の予約です。\n", ja), []);
+    assert.deepEqual(variants("中村 健太 様と中村 健太 様の兄、中村 莉子 様の結果です。\n", ja), []);
+    assert.deepEqual(variants("中村 健太 様の結果です。中村 健汰 様の予約です。\n", ja), []);
+  });
+
+  it("表の升の名前も、語彙表の読みで読む", () => {
+    const table = "中村 健太 様の結果です。中村 健太 様にお送りします。\n\n| 氏名 | 区分 |\n| --- | --- |\n| 中村 健汰 | 予約 |\n";
+    assert.deepEqual(variants(table, ja), ["「中村 健汰」は、ほかの所では同じ読みの「中村 健太」と書いています"]);
+  });
 });
 
 describe("the reading behind name-variant", () => {
@@ -226,6 +245,29 @@ describe("the reading behind name-variant", () => {
     assert.deepEqual(personOf(placeThenSuffix, ["様"]), [true]);
     assert.deepEqual(personOf(placeThenSuffix), [false]);
     assert.deepEqual(personOf([token("松本", 0, "PROPN", "Sur")]), [true]);
+  });
+
+  it("解析器が読めない字の読みは、人の名前と読める現れにだけ足す", () => {
+    const readings = new Map([["汰", "タ"]]);
+    const read = (surface: string, reading: string | undefined): Token => ({
+      surface,
+      pos: "PROPN",
+      ...(reading === undefined ? {} : { reading }),
+      span: { start: 0, end: surface.length },
+    });
+    const kenta = (nameType: string): Token[] => [
+      { ...read("健", "ケン"), features: { NameType: "Giv" } },
+      { ...read("汰", undefined), span: { start: 1, end: 2 }, features: { NameType: nameType } },
+    ];
+    const readingOf = (tokens: readonly Token[], suffixes: readonly string[] = []): (string | undefined)[] =>
+      mentionsIn(tokens, "健汰様", suffixes, readings).map((found) => found.reading);
+    assert.deepEqual(readingOf(kenta("Com")), ["ケンタ"]);
+    const notPerson = [read("健", "ケン"), { ...read("汰", undefined), span: { start: 1, end: 2 } }];
+    assert.deepEqual(readingOf(notPerson), [undefined]);
+    assert.deepEqual(
+      mentionsIn(kenta("Com"), "健汰様", []).map((found) => found.reading),
+      [undefined],
+    );
   });
 
   it("字体の違う二つを同じ人と見るのは、どちらも人の名前か、片方に前置きか敬称があり、もう片方が名前の来る場所にあるとき", () => {

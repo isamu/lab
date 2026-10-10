@@ -1,6 +1,7 @@
 import { isNearWord, nameKey, type NameMention } from "./name-variants.ts";
 import type { TableCell, Token } from "./plugin.ts";
 import { withoutEdgeMarks } from "./facts/trim-marks.ts";
+import { NO_CHAR_READINGS, readingOfWords, type CharReadings } from "./name-char-reading.ts";
 
 // 表の升に書いた名前と、本文の名前の書き分け（本文は Sofia Mendes、担当者の表は Sofia Mendez）。表の升は品詞解析を通らないので、
 // 名前の形をした升だけを読み、本文で読めた名前と比べる。比べるのは姓と名のように二語以上の名前で、一語だけが違うときに限る。
@@ -22,20 +23,19 @@ const CJK_NAME = /^[\p{Script=Han}\p{Script=Katakana}ー々]+(?:[ \u3000][\p{Scr
 const SPACE = /[ \u3000]/u;
 const LOWER = /\p{Ll}/u;
 
-/** 範囲の中の語の読みをつないだもの。記号と空白の語は読まない。読めない語があれば無い。 */
-export const readingWithin = (tokens: readonly Token[], start: number, end: number): string | undefined => {
+/** 範囲の中の語の読みをつないだもの。記号と空白の語は読まない。読めない語があれば無い。charReadings は解析器が読めない名前の字の読み。 */
+export const readingWithin = (tokens: readonly Token[], start: number, end: number, charReadings = NO_CHAR_READINGS): string | undefined => {
   const words = tokens.filter((token) => token.span.start >= start && token.span.end <= end && token.pos !== "PUNCT" && token.surface.trim() !== "");
-  const readings = words.map((token) => token.reading);
-  return words.length > 0 && readings.every((reading) => reading !== undefined && reading !== "") ? readings.join("") : undefined;
+  return readingOfWords(words, charReadings);
 };
 
 /** 名前の形をした升。升の字の前後の空白と強調の印は名前の外。 */
-export const cellNamesIn = (cells: readonly TableCell[]): CellName[] =>
+export const cellNamesIn = (cells: readonly TableCell[], charReadings: CharReadings = NO_CHAR_READINGS): CellName[] =>
   cells.flatMap((cell) => {
     const surface = withoutEdgeMarks(cell.text.trim());
     if (!(LATIN_NAME.test(surface) && LOWER.test(surface)) && !CJK_NAME.test(surface)) return [];
     const offset = cell.start + cell.text.indexOf(surface);
-    return [{ surface, offset, words: surface.split(SPACE), reading: readingWithin(cell.tokens ?? [], offset, offset + surface.length) }];
+    return [{ surface, offset, words: surface.split(SPACE), reading: readingWithin(cell.tokens ?? [], offset, offset + surface.length, charReadings) }];
   });
 
 /**
