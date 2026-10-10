@@ -240,14 +240,18 @@ const mismatchesIn = (source: string, entries: readonly Entry[]): StructureIssue
     });
   });
 
+/** 一つの表（見出しの下の行）の合計。名詞の付いた合計の行は、その表の見出しで読む。 */
+const tableMismatches = (source: string, table: readonly Line[], amounts: readonly Amount[], isTotal: IsTotalLine): StructureIssue[] => {
+  const header = table[0] === undefined ? undefined : headerAbove(source, table[0]);
+  const isTotalHere = (text: string): boolean => isTotal(text, header);
+  return mismatchesIn(
+    source,
+    table.map((line) => entryOf(source, line, amounts, isTotalHere)),
+  );
+};
+
 export const totalMismatches = (source: string, amounts: readonly Amount[], isTotal: IsTotalLine): StructureIssue[] =>
   runsOf(source).flatMap((run) => {
     const inRun = [...amounts, ...bareNumbersIn(source, run)];
-    return tablesIn(source, run).flatMap((table) => {
-      const header = table[0] === undefined ? undefined : headerAbove(source, table[0]);
-      return mismatchesIn(
-        source,
-        table.map((line) => entryOf(source, line, inRun, (text) => isTotal(text, header))),
-      );
-    });
+    return tablesIn(source, run).flatMap((table) => tableMismatches(source, table, inRun, isTotal));
   });

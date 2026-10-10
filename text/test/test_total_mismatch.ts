@@ -171,7 +171,7 @@ describe("total-mismatch", () => {
   });
 
   it("a second table written right under the first starts its own rows and its own header", () => {
-    const tables = (firstHeader: string, secondHeader: string): string =>
+    const tables = (firstHeader: string, secondHeader: string, total = "$30"): string =>
       doc(
         `| ${firstHeader} | Amount |`,
         "| --- | --- |",
@@ -180,11 +180,11 @@ describe("total-mismatch", () => {
         "| --- | --- |",
         "| Income tax | $10 |",
         "| Medicare | $20 |",
-        "| Total deductions | $30 |",
+        `| Total deductions | ${total} |`,
       );
     assert.deepEqual(found(tables("Item", "Deduction")), []);
     assert.deepEqual(found(tables("Deduction", "Item")), []);
-    assert.deepEqual(found(tables("Item", "Deduction").replace("$30", "$35")), ["$35≠$30"]);
+    assert.deepEqual(found(tables("Item", "Deduction", "$35")), ["$35≠$30"]);
     assert.deepEqual(
       found(
         doc("| Item | Amount |", "| --- | --- |", "| Parking | $5 |", "| Item | Amount |", "| --- | --- |", "| A | $10 |", "| B | $20 |", "| Total | $30 |"),
