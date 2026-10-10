@@ -2,7 +2,7 @@
   "recall": {
     "ja": {
       "coverage-period": "2/2",
-      "age-limit": "0/2",
+      "age-limit": "2/2",
       "waiting-period": "1/2",
       "benefit-amount": "0/2",
       "deductible-over-limit": "2/2",
