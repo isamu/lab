@@ -31,3 +31,21 @@ entries:
   - { pattern: "決算説明会", group: earnings, position: after }
   - { pattern: "決算説明会開催日", group: earnings, position: after }
   - { pattern: "決算発表日", group: earnings, position: after }
+  # 健診や検査の結果。受診した日、採血した日より後に、結果を報告する。
+  # 「発行日」「作成日」は採血日とだけ組む。受診券や検査の案内は、受診日や検査日より前に発行し作成する。
+  - { pattern: "受診日", group: checkup-report, position: before }
+  - { pattern: "検査日", group: checkup-report, position: before }
+  - { pattern: "採血日", group: checkup-report, position: before }
+  - { pattern: "健診日", group: checkup-report, position: before }
+  - { pattern: "報告日", group: checkup-report, position: after }
+  - { pattern: "採血日", group: checkup-issue, position: before }
+  - { pattern: "発行日", group: checkup-issue, position: after }
+  - { pattern: "作成日", group: checkup-issue, position: after }
+  # 製品の保証書。製品の登録の締切は、買った日より後に来る。
+  - { pattern: "お買い上げ日", group: warranty, position: before }
+  - { pattern: "購入日", group: warranty, position: before }
+  - { pattern: "ご購入日", group: warranty, position: before }
+  - { pattern: "登録の締切", group: warranty, position: after }
+  - { pattern: "登録期限", group: warranty, position: after }
+  - { pattern: "製品登録の締切", group: warranty, position: after }
+  - { pattern: "ご愛用者登録の締切", group: warranty, position: after }

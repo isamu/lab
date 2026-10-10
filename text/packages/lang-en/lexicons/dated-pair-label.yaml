@@ -31,3 +31,19 @@ entries:
   - { pattern: "Results briefing", group: earnings, position: after }
   - { pattern: "Earnings release date", group: earnings, position: after }
   - { pattern: "Results release date", group: earnings, position: after }
+  # A medical or lab report: the results are reported after the examination or the sample. A bare "Issue date" pairs only
+  # with a sample's collection: an admission ticket or a notice is issued before the test or examination date it names.
+  - { pattern: "Examination date", group: checkup-report, position: before }
+  - { pattern: "Test date", group: checkup-report, position: before }
+  - { pattern: "Collection date", group: checkup-report, position: before }
+  - { pattern: "Date collected", group: checkup-report, position: before }
+  - { pattern: "Report date", group: checkup-report, position: after }
+  - { pattern: "Date reported", group: checkup-report, position: after }
+  - { pattern: "Date collected", group: checkup-issue, position: before }
+  - { pattern: "Issue date", group: checkup-issue, position: after }
+  # A product warranty: the registration deadline comes after the purchase.
+  - { pattern: "Purchase date", group: warranty, position: before }
+  - { pattern: "Date of purchase", group: warranty, position: before }
+  - { pattern: "Registration deadline", group: warranty, position: after }
+  - { pattern: "Product registration deadline", group: warranty, position: after }
+  - { pattern: "Register by", group: warranty, position: after }

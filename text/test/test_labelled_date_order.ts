@@ -4,6 +4,9 @@ import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { datesOutOfOrder, pairedDatesOutOfOrder, periodEndOf, type OrderLabel } from "../packages/chaff/src/structure/labelled-date-order.ts";
+import { buildDocument } from "../packages/chaff/src/document.ts";
+import { loadRules } from "../packages/chaff/src/rule-load.ts";
+import { runRules } from "../packages/chaff/src/run.ts";
 
 // 前後の決まった日付の組（due-before-issue の order）。物件の案内の入居可能日と掲載日、求人の応募締切と掲載日。例文はすべて自作。
 
@@ -218,5 +221,100 @@ describe("periodEndOf: 期間を書いた行の終わりの日", () => {
     );
     assert.equal(periodEndOf(lineOf("期間：2025年4月1日〜2026年3月31日"), "対象期間", [], SPANS), undefined);
     assert.equal(periodEndOf(lineOf(""), "対象期間", [], SPANS), undefined);
+  });
+});
+
+const reportJa = (examLabel: string, exam: string, reportLabel: string, report: string): string =>
+  `# 健康診断結果報告書\n\n架空クリニック\n\n${examLabel}：${exam}\n\n${reportLabel}：${report}\n\n## 1 所見\n\n特に異常はありません。\n`;
+
+const reportEn = (examLabel: string, exam: string, reportLabel: string, report: string): string =>
+  `# Checkup Results\n\nExample Clinic\n\n${examLabel}: ${exam}\n\n${reportLabel}: ${report}\n\n## 1 Findings\n\nNo findings.\n`;
+
+const warrantyJa = (bought: string, deadlineLabel: string, deadline: string): string =>
+  `# 保証書 架空電機 電気ケトル\n\nお買い上げ日：${bought}\n\n${deadlineLabel}：${deadline}\n\n保証期間は、お買い上げ日から1年間です。\n`;
+
+const warrantyEn = (boughtLabel: string, bought: string, deadlineLabel: string, deadline: string): string =>
+  `# Warranty: Example Kettle\n\n${boughtLabel}: ${bought}\n\n${deadlineLabel}: ${deadline}\n\nThe warranty runs for 1 year from the purchase date.\n`;
+
+const genreFindings = (source: string, genre: string): string[] =>
+  runRules(buildDocument("a.md", source, ja), loadRules("ja"), {}, false, genre)
+    .findings.filter((finding) => finding.rule === RULE)
+    .map((finding) => finding.rule);
+
+describe("due-before-issue (order): 検査結果の報告日、保証書の登録の締切", () => {
+  it("受診日や採血日より前の報告日、採血日より前の発行日を指す", () => {
+    assert.deepEqual(findingsOf(reportJa("受診日", "2026年10月8日", "報告日", "2026年9月30日")), [
+      "「報告日」（2026年9月30日）が、「受診日」（2026年10月8日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(reportJa("採血日", "2026年9月2日", "発行日", "2026年8月27日")), [
+      "「発行日」（2026年8月27日）が、「採血日」（2026年9月2日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(reportJa("採血日", "2026年9月2日", "作成日", "2026年8月27日")), [
+      "「作成日」（2026年8月27日）が、「採血日」（2026年9月2日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(reportEn("Examination date", "July 15, 2026", "Report date", "June 29, 2026"), en), [
+      '"Report date" June 29, 2026 is before "Examination date" July 15, 2026',
+    ]);
+    assert.deepEqual(findingsOf(reportEn("Collection date", "May 18, 2026", "Date reported", "May 11, 2026"), en), [
+      '"Date reported" May 11, 2026 is before "Collection date" May 18, 2026',
+    ]);
+    assert.deepEqual(findingsOf(reportEn("Date collected", "May 18, 2026", "Issue date", "May 11, 2026"), en), [
+      '"Issue date" May 11, 2026 is before "Date collected" May 18, 2026',
+    ]);
+  });
+
+  it("受診日の後の報告日、年の無い日付は言わない", () => {
+    assert.deepEqual(findingsOf(reportJa("受診日", "2026年9月8日", "報告日", "2026年9月30日")), []);
+    assert.deepEqual(findingsOf(reportJa("健診日", "2026年9月8日", "報告日", "2026年9月8日")), []);
+    assert.deepEqual(findingsOf(reportJa("受診日", "2026年10月8日", "報告日", "9月30日")), []);
+    assert.deepEqual(findingsOf(reportEn("Test date", "June 15, 2026", "Report date", "June 29, 2026"), en), []);
+    assert.deepEqual(findingsOf(reportEn("Examination date", "July 15, 2026", "Report date", "June 29"), en), []);
+  });
+
+  it("受診券や検査の案内の発行日、作成日は、受診日や検査日と組まない", () => {
+    assert.deepEqual(findingsOf(reportJa("受診日", "2026年10月8日", "発行日", "2026年9月1日")), []);
+    assert.deepEqual(findingsOf(reportJa("検査日", "2026年10月8日", "作成日", "2026年9月1日")), []);
+    assert.deepEqual(findingsOf(reportEn("Test date", "October 8, 2026", "Issue date", "September 1, 2026"), en), []);
+    assert.deepEqual(findingsOf(reportEn("Examination date", "October 8, 2026", "Issue date", "September 1, 2026"), en), []);
+  });
+
+  it("お買い上げ日より前の登録の締切を指す", () => {
+    assert.deepEqual(findingsOf(warrantyJa("2026年4月10日", "ご愛用者登録の締切", "2026年3月11日")), [
+      "「ご愛用者登録の締切」（2026年3月11日）が、「お買い上げ日」（2026年4月10日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(warrantyJa("2026年4月10日", "登録期限", "2026年3月11日")), [
+      "「登録期限」（2026年3月11日）が、「お買い上げ日」（2026年4月10日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(warrantyEn("Date of purchase", "July 1, 2026", "Registration deadline", "June 15, 2026"), en), [
+      '"Registration deadline" June 15, 2026 is before "Date of purchase" July 1, 2026',
+    ]);
+    assert.deepEqual(findingsOf(warrantyEn("Purchase date", "July 1, 2026", "Register by", "June 15, 2026"), en), [
+      '"Register by" June 15, 2026 is before "Purchase date" July 1, 2026',
+    ]);
+  });
+
+  it("お買い上げ日の後の締切、年の無い日付、日付の無い締切は言わない", () => {
+    assert.deepEqual(findingsOf(warrantyJa("2026年4月10日", "登録の締切", "2026年5月11日")), []);
+    assert.deepEqual(findingsOf(warrantyJa("2026年4月10日", "登録の締切", "3月11日")), []);
+    assert.deepEqual(findingsOf(warrantyJa("2026年4月10日", "登録の締切", "お早めに")), []);
+    assert.deepEqual(findingsOf(warrantyEn("Purchase date", "July 1, 2026", "Registration deadline", "August 1, 2026"), en), []);
+    assert.deepEqual(findingsOf(warrantyEn("Purchase date", "July 1, 2026", "Registration deadline", "June 15"), en), []);
+  });
+
+  it("別の組の語どうしは組まない", () => {
+    assert.deepEqual(findingsOf("# 物件\n\n登録日：2026年10月1日\n\n登録期限：2026年9月1日\n"), []);
+    assert.deepEqual(findingsOf("# 保証書\n\n購入日：2026年10月1日\n\n報告日：2026年9月1日\n"), []);
+    assert.deepEqual(findingsOf("# 求人\n\n掲載日：2026年10月1日\n\n登録の締切：2026年9月1日\n"), []);
+    assert.deepEqual(findingsOf("# 結果\n\n報告日：2026年10月1日\n\n発行日：2026年9月1日\n"), []);
+    assert.deepEqual(findingsOf("# Notes\n\nPosted: October 1, 2026\n\nRegistration deadline: September 1, 2026\n", en), []);
+    assert.deepEqual(findingsOf("# Notes\n\nPurchase date: October 1, 2026\n\nReport date: September 1, 2026\n", en), []);
+  });
+
+  it("契約と手引きでは動き、法令やよくある質問では止まる", () => {
+    const planted = warrantyJa("2026年4月10日", "登録の締切", "2026年3月11日");
+    assert.deepEqual(genreFindings(planted, "docs/manual"), [RULE]);
+    assert.deepEqual(genreFindings(planted, "legal/contract"), [RULE]);
+    assert.deepEqual(genreFindings(planted, "legal/statute"), []);
+    assert.deepEqual(genreFindings(planted, "docs/faq"), []);
   });
 });
