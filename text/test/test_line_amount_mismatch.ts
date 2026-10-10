@@ -20,6 +20,10 @@ const VOLUME = ["L", "m³", "㎥"];
 
 const cell = (text: string): { start: number; text: string } => ({ start: 0, text });
 
+/** Every string made of one item from each list, in order. */
+const combinations = (lists: readonly (readonly string[])[]): string[] =>
+  lists.reduce<string[]>((heads, list) => heads.flatMap((head) => list.map((item) => `${head}${item}`)), [""]);
+
 describe("line-amount-mismatch: 数量×単価が金額と合わない", () => {
   it("数量×単価と違う金額を指す", () => {
     assert.deepEqual(findingsOf(table(["| 画面開発 | 4画面 | 160,000円 | 600,000円 |"])), [
@@ -112,11 +116,8 @@ describe("line-amount-mismatch: 数量×単価が金額と合わない", () => {
     const superscripts = [..."⁰¹²³⁴⁵⁶⁷⁸⁹"];
     const leadingNumbers = ["1", "10", "１", "１０", "16"];
     const after = ["", " ", " L", "m", "人日"];
-    leadingNumbers.forEach((number) =>
-      superscripts.forEach((superscript) => {
-        after.forEach((rest) => assert.equal(quantityOf(cell(`${number}${superscript}${rest}`), VOLUME), undefined, `${number}${superscript}${rest}`));
-      }),
-    );
+    const powers = combinations([leadingNumbers, superscripts, after]);
+    powers.forEach((power) => assert.equal(quantityOf(cell(power), VOLUME), undefined, power));
     leadingNumbers.forEach((number) => assert.equal(quantityOf(cell(`${number}m³`), VOLUME), Number(number.normalize("NFKC")), `${number}m³`));
   });
 

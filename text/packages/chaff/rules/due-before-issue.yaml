@@ -5,7 +5,10 @@ how_to_find: due-date
 # The issue-date and due-date words come from the language's issue-date-label and due-date-label lexicons; the words of
 # minutes from minutes-title-word, meeting-date-label, action-section-heading, earlier-section-word, action-due-label and item-done-word;
 # the other pairs of dates that must come in order (a listing date and a move-in date, a posting date and an application
-# deadline, an earnings call and the reporting period, an examination and its report, a purchase and its registration deadline, check-in and check-out, a rental's pick-up and # deadline, an earnings call and the reporting period, an examination and its report, a purchase and its registration deadline, a loan contract and its first payment) from dated-pair-label and date-now-word, and the words whose line states # deadline, an earnings call and the reporting period, an examination and its report, a purchase and its registration deadline, a recall notice and its request deadline) from dated-pair-label and date-now-word, and the words whose line states
+# deadline, an earnings call and the reporting period, an examination and its report, a purchase and its registration
+# deadline, a recall notice and its request deadline, a loan contract and its first payment, check-in and check-out, a
+# rental's pick-up and drop-off, a booking's cancellation deadline and its start) from dated-pair-label and date-now-word,
+# and the words whose line states
 # a period, compared by its end, from dated-span-label.
 requires: [dates]
 languages: [ja, en]

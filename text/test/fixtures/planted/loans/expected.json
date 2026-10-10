@@ -1,22 +1,22 @@
 {
   "recall": {
     "ja": {
-      "first-payment-before-contract": "0/2",
-      "installments-total": "0/2",
-      "rate-two-ways": "0/2",
+      "first-payment-before-contract": "2/2",
+      "installments-total": "2/2",
+      "rate-two-ways": "2/2",
       "term-two-ways": "2/2",
       "final-payment-date": "2/2",
-      "balance-not-reduced": "0/2",
+      "balance-not-reduced": "2/2",
       "lender-name": "1/2",
       "condition-numbering": "2/2"
     },
     "en": {
-      "first-payment-before-contract": "0/2",
-      "installments-total": "0/2",
-      "rate-two-ways": "0/2",
+      "first-payment-before-contract": "2/2",
+      "installments-total": "2/2",
+      "rate-two-ways": "2/2",
       "term-two-ways": "2/2",
       "final-payment-date": "2/2",
-      "balance-not-reduced": "0/2",
+      "balance-not-reduced": "2/2",
       "lender-name": "1/2",
       "condition-numbering": "2/2"
     }

@@ -38,7 +38,11 @@ export type TermConflict = FactConflict & { readonly section?: string };
 const homeOf = (fact: ScopedFact, homes: readonly TermHome[]): TermHome | undefined =>
   homes.find((home) => home.start <= fact.value.start && fact.value.start < home.end);
 
-const isSource = (fact: ScopedFact, homes: readonly TermHome[]): boolean => fact.table === true || homeOf(fact, homes) !== undefined;
+/** 表の升があれば表だけが拠り所。項目の名前を見出しにした節の文は、表が値を書いていないときの拠り所。 */
+const sourcesOf = (facts: readonly ScopedFact[], homes: readonly TermHome[]): ScopedFact[] => {
+  const cells = facts.filter((fact) => fact.table === true);
+  return cells.length > 0 ? cells : facts.filter((fact) => homeOf(fact, homes) !== undefined);
+};
 
 /** 拠り所に表の升があれば表、無ければ最初の拠り所の節の見出し。 */
 const sectionOf = (sources: readonly ScopedFact[], homes: readonly TermHome[]): { section?: string } => {
@@ -48,7 +52,7 @@ const sectionOf = (sources: readonly ScopedFact[], homes: readonly TermHome[]): 
 };
 
 const conflictsInClass = (facts: readonly ScopedFact[], homes: readonly TermHome[]): TermConflict[] => {
-  const sources = facts.filter((fact) => isSource(fact, homes));
+  const sources = sourcesOf(facts, homes);
   const [source, ...others] = distinctValues(sources.map((fact) => fact.value));
   if (source === undefined || others.length > 0) return [];
   if (distinctValues(facts.map((fact) => fact.value)).length !== MAX_DISTINCT) return [];

@@ -1,5 +1,5 @@
 {
-  "note": "Self-written booking confirmations (宿泊予約確認書・レンタカー予約確認 / hotel and car-rental booking confirmations) for fictional properties, rental companies and guests: a two-night hotel stay and a four-day car rental, each in a clean version and a planted one that differs only on the lines below. They run as business/proposal, the genre the utility bills and itineraries run as: no genre is made for booking confirmations. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: reference-number-variant (a booking or reservation number written elsewhere in the document with a digit slip). Check-out before check-in and drop-off before pick-up (end-before-start) are written as two labelled rows of a table, not as one range, and are named date-range-reversed, the rule that reports a period ending before it starts. Each plant was also run alone on its clean document, so no plant depends on another. yarn planted bookings scores them; expected.json is the committed score.",
+  "note": "Self-written booking confirmations (宿泊予約確認書・レンタカー予約確認 / hotel and car-rental booking confirmations) for fictional properties, rental companies and guests: a two-night hotel stay and a four-day car rental, each in a clean version and a planted one that differs only on the lines below. They run as business/proposal, the genre the utility bills and itineraries run as: no genre is made for booking confirmations. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: reference-number-variant (a booking or reservation number written elsewhere in the document with a digit slip). Check-out before check-in, drop-off before pick-up (end-before-start) and a cancellation deadline after the start (cancel-after-start) are written as labelled rows of a table, not as one range, and are reported by due-before-issue, which compares a pair of labelled dates. Each plant was also run alone on its clean document, so no plant depends on another. yarn planted bookings scores them; expected.json is the committed score.",
   "documents": [
     {
       "id": "ja/hotel",
@@ -17,7 +17,7 @@
         },
         {
           "kind": "end-before-start",
-          "rule": "date-range-reversed",
+          "rule": "due-before-issue",
           "line": 18,
           "clean": "| 2026年11月22日（日）11:00まで |",
           "planted": "| 2026年11月19日（木）11:00まで |"
@@ -31,7 +31,7 @@
         },
         {
           "kind": "cancel-after-start",
-          "rule": "deadline-after-event",
+          "rule": "due-before-issue",
           "line": 36,
           "clean": "2026年11月17日（火）23:59まで",
           "planted": "2026年11月21日（土）23:59まで"
@@ -82,7 +82,7 @@
         },
         {
           "kind": "end-before-start",
-          "rule": "date-range-reversed",
+          "rule": "due-before-issue",
           "line": 18,
           "clean": "| 2026年12月6日（日）17:00 |",
           "planted": "| 2026年12月2日（水）17:00 |"
@@ -96,7 +96,7 @@
         },
         {
           "kind": "cancel-after-start",
-          "rule": "deadline-after-event",
+          "rule": "due-before-issue",
           "line": 37,
           "clean": "2026年12月1日（火）18:00まで",
           "planted": "2026年12月4日（金）18:00まで"
@@ -147,7 +147,7 @@
         },
         {
           "kind": "end-before-start",
-          "rule": "date-range-reversed",
+          "rule": "due-before-issue",
           "line": 18,
           "clean": "| Sunday, November 22, 2026, by 11:00 AM |",
           "planted": "| Thursday, November 19, 2026, by 11:00 AM |"
@@ -161,7 +161,7 @@
         },
         {
           "kind": "cancel-after-start",
-          "rule": "deadline-after-event",
+          "rule": "due-before-issue",
           "line": 36,
           "clean": "Tuesday, November 17, 2026, 11:59 PM",
           "planted": "Saturday, November 21, 2026, 11:59 PM"
@@ -212,7 +212,7 @@
         },
         {
           "kind": "end-before-start",
-          "rule": "date-range-reversed",
+          "rule": "due-before-issue",
           "line": 18,
           "clean": "| Sunday, December 6, 2026, 5:00 PM |",
           "planted": "| Wednesday, December 2, 2026, 5:00 PM |"
@@ -226,7 +226,7 @@
         },
         {
           "kind": "cancel-after-start",
-          "rule": "deadline-after-event",
+          "rule": "due-before-issue",
           "line": 37,
           "clean": "Tuesday, December 1, 2026, 6:00 PM",
           "planted": "Friday, December 4, 2026, 6:00 PM"
