@@ -380,3 +380,48 @@ describe("due-before-issue (order): 検査結果の報告日、保証書の登�
     assert.deepEqual(genreFindings(contract, "docs/manual"), []);
   });
 });
+
+const loanJa = (contractLabel: string, contract: string, firstLabel: string, first: string): string =>
+  `# 自動車ローン ご返済予定表\n\n## ご契約内容\n\n- ${contractLabel}：${contract}\n- ${firstLabel}：${first}\n- お支払回数：60回\n`;
+
+const loanEn = (contractLabel: string, contract: string, firstLabel: string, first: string): string =>
+  `# Auto Loan Repayment Schedule\n\n## Loan terms\n\n- ${contractLabel}: ${contract}\n- ${firstLabel}: ${first}\n- Number of payments: 48\n`;
+
+describe("due-before-issue (order): ローンの初回お支払日が契約日より前", () => {
+  it("ご契約日やお申込日より前の初回お支払日を指す", () => {
+    assert.deepEqual(findingsOf(loanJa("ご契約日", "2026年10月27日", "初回お支払日", "2026年10月20日")), [
+      "「初回お支払日」（2026年10月20日）が、「ご契約日」（2026年10月27日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(loanJa("契約日", "2026年10月27日", "初回返済日", "2026年10月1日")), [
+      "「初回返済日」（2026年10月1日）が、「契約日」（2026年10月27日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(loanJa("お申込日", "2026年10月10日", "第1回お支払日", "2026年10月1日")), [
+      "「第1回お支払日」（2026年10月1日）が、「お申込日」（2026年10月10日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(loanEn("Contract date", "November 16, 2026", "First payment date", "November 6, 2026"), en), [
+      '"First payment date" November 6, 2026 is before "Contract date" November 16, 2026',
+    ]);
+    assert.deepEqual(findingsOf(loanEn("Agreement date", "October 10, 2026", "First installment due", "October 1, 2026"), en), [
+      '"First installment due" October 1, 2026 is before "Agreement date" October 10, 2026',
+    ]);
+  });
+
+  it("契約日の後の初回お支払日、同じ日、年の無い日付は言わない", () => {
+    assert.deepEqual(findingsOf(loanJa("ご契約日", "2026年10月27日", "初回お支払日", "2026年11月27日")), []);
+    assert.deepEqual(findingsOf(loanJa("ご契約日", "2026年10月27日", "初回お支払日", "2026年10月27日")), []);
+    assert.deepEqual(findingsOf(loanJa("ご契約日", "2026年10月27日", "初回お支払日", "10月20日")), []);
+    assert.deepEqual(findingsOf(loanEn("Contract date", "November 16, 2026", "First payment date", "December 16, 2026"), en), []);
+    assert.deepEqual(findingsOf(loanEn("Contract date", "November 16, 2026", "First payment date", "November 6"), en), []);
+  });
+
+  it("ローンの語と別の組の語は組まない", () => {
+    assert.deepEqual(findingsOf(loanJa("ご契約日", "2026年10月1日", "登録の締切", "2026年9月1日")), []);
+    assert.deepEqual(findingsOf(loanJa("お買い上げ日", "2026年10月1日", "初回お支払日", "2026年9月1日")), []);
+    assert.deepEqual(findingsOf(loanJa("掲載日", "2026年10月1日", "初回返済日", "2026年9月1日")), []);
+    assert.deepEqual(findingsOf(loanJa("契約日", "2026年10月1日", "報告日", "2026年9月1日")), []);
+    assert.deepEqual(findingsOf(loanJa("発行日", "2026年10月1日", "初回お支払日", "2026年9月1日")), []);
+    assert.deepEqual(findingsOf(loanEn("Contract date", "October 1, 2026", "Registration deadline", "September 1, 2026"), en), []);
+    assert.deepEqual(findingsOf(loanEn("Purchase date", "October 1, 2026", "First payment date", "September 1, 2026"), en), []);
+    assert.deepEqual(findingsOf(loanEn("Issued", "October 1, 2026", "First payment date", "September 1, 2026"), en), []);
+  });
+});

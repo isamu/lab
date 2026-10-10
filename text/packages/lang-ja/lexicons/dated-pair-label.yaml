@@ -46,3 +46,14 @@ entries:
   - { pattern: "登録期限", group: warranty, position: after }
   - { pattern: "製品登録の締切", group: warranty, position: after }
   - { pattern: "ご愛用者登録の締切", group: warranty, position: after }
+  # ローンや分割払いの返済予定表。初回のお支払日は、契約した日、申し込んだ日より後に来る。
+  - { pattern: "ご契約日", group: loan, position: before }
+  - { pattern: "契約日", group: loan, position: before }
+  - { pattern: "お申込日", group: loan, position: before }
+  - { pattern: "お申し込み日", group: loan, position: before }
+  - { pattern: "初回お支払日", group: loan, position: after }
+  - { pattern: "初回お支払い日", group: loan, position: after }
+  - { pattern: "初回返済日", group: loan, position: after }
+  - { pattern: "初回ご返済日", group: loan, position: after }
+  - { pattern: "第1回お支払日", group: loan, position: after }
+  - { pattern: "第1回返済日", group: loan, position: after }

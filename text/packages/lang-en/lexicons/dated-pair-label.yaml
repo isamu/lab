@@ -45,3 +45,11 @@ entries:
   - { pattern: "Registration deadline", group: warranty, position: after }
   - { pattern: "Product registration deadline", group: warranty, position: after }
   - { pattern: "Register by", group: warranty, position: after }
+  # A loan or an installment plan: the first payment comes after the contract is signed.
+  - { pattern: "Contract date", group: loan, position: before }
+  - { pattern: "Agreement date", group: loan, position: before }
+  - { pattern: "Date of contract", group: loan, position: before }
+  - { pattern: "First payment date", group: loan, position: after }
+  - { pattern: "First payment due", group: loan, position: after }
+  - { pattern: "First installment due", group: loan, position: after }
+  - { pattern: "First installment date", group: loan, position: after }
