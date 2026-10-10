@@ -8,11 +8,13 @@ Employee: Samuel Ortega
 
 Employment type: Part-time, paid hourly
 
-Pay period: September 16, 2026 – October 15, 2025
+Pay period: September 16, 2026 – October 15, 2026
 
 Pay date: October 5, 2026
 
 ## Hours worked
+
+Timesheet period: September 16, 2026 – October 15, 2025
 
 | Item | Hours |
 | --- | --- |

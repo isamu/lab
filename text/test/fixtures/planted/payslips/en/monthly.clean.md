@@ -14,6 +14,8 @@ Pay date: October 9, 2026
 
 ## Attendance
 
+Timesheet period: September 1, 2026 – September 30, 2026
+
 | Item | Days or hours |
 | --- | --- |
 | Days worked | 21 days |

@@ -14,6 +14,8 @@ Pay date: October 25, 2026
 
 ## Hours worked
 
+Timesheet period: September 16, 2026 – October 15, 2026
+
 | Item | Hours |
 | --- | --- |
 | Days worked | 16 days |
