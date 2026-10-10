@@ -45,3 +45,11 @@ entries:
   - { pattern: "Registration deadline", group: warranty, position: after }
   - { pattern: "Product registration deadline", group: warranty, position: after }
   - { pattern: "Register by", group: warranty, position: after }
+  # A recall or exchange notice: the deadline for replacement or refund requests comes after the notice date. A bare
+  # "Requests accepted until" or "Deadline for requests" is left out: a notice that a window has closed states the
+  # deadline that has passed.
+  - { pattern: "Notice date", group: recall, position: before }
+  - { pattern: "Date of notice", group: recall, position: before }
+  - { pattern: "Replacement requests accepted until", group: recall, position: after }
+  - { pattern: "Refund requests accepted until", group: recall, position: after }
+  - { pattern: "Exchange deadline", group: recall, position: after }

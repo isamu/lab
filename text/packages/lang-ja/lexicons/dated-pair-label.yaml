@@ -46,3 +46,11 @@ entries:
   - { pattern: "登録期限", group: warranty, position: after }
   - { pattern: "製品登録の締切", group: warranty, position: after }
   - { pattern: "ご愛用者登録の締切", group: warranty, position: after }
+  # 製品の回収や交換のお知らせ。交換や返金の受付期限は、お知らせを出した日より後に来る。
+  # 「発表日」「公表日」は入れない。懸賞やコンテストの結果は、応募の受付締切より後に発表し公表する。
+  # 「受付期限」「受付締切」「お申し込み期限」だけも入れない。受付を終えたお知らせは、過ぎた締切を書く。
+  - { pattern: "お知らせ日", group: recall, position: before }
+  - { pattern: "交換受付期限", group: recall, position: after }
+  - { pattern: "交換の受付期限", group: recall, position: after }
+  - { pattern: "無償交換の受付期限", group: recall, position: after }
+  - { pattern: "返金の受付期限", group: recall, position: after }
