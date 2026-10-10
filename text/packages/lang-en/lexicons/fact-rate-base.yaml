@@ -1,0 +1,15 @@
+# What a rate is taken of (fact-conflict): "4.0% of the purchase price". A rate followed by one of these is still read; a rate of
+# anything else ("3.6% of applicants") is part of another measure and is not. The group is the base: two rates that both state
+# one and differ (of the price, of the balance) are not compared.
+id: fact-rate-base
+language: en
+entries:
+  - { pattern: of the purchase price, group: price }
+  - { pattern: of the cash price, group: price }
+  - { pattern: of the price, group: price }
+  - { pattern: of the amount financed, group: principal }
+  - { pattern: of the loan amount, group: principal }
+  - { pattern: of the principal, group: principal }
+  - { pattern: of the amount borrowed, group: principal }
+  - { pattern: of the outstanding balance, group: balance }
+  - { pattern: of the balance, group: balance }
