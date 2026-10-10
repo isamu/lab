@@ -1,0 +1,9 @@
+# 支払う額の上限の語（deductible-exceeds-limit）。金額の前に書く。漢字の長い語の中（自己負担限度額の限度額）は読まない。
+id: benefit-limit-word
+language: ja
+entries:
+  - { pattern: 支払限度額 }
+  - { pattern: 支払い限度額 }
+  - { pattern: 支払限度 }
+  - { pattern: 支払上限額 }
+  - { pattern: 限度額 }
