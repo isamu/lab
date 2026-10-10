@@ -61,6 +61,8 @@ describe("括弧で並べた年でないもの", () => {
     "大正5年（1916年）",
     "令和0年（2018年）",
     "令和6年（2024年",
+    "令和6（2024）年度予算",
+    "2024（令和6）年度予算",
   ];
   cases.forEach((text) => {
     it(JSON.stringify(text), () => assert.deepEqual(yearsOf(text), []));

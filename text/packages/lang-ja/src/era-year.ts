@@ -22,14 +22,17 @@ const GAP = "[ \\u3000]?";
 /** 西暦の年の前に数字が続けば、もっと長い数の一部（12024年）。 */
 const NOT_AFTER_DIGIT = "(?<![0-9０-９〇一二三四五六七八九十])";
 
+/** 括弧の後ろの単位が「年度」なら、暦の年でなく会計の年（令和6（2024）年度）。 */
+const CALENDAR_YEAR_AFTER = "年(?!度)";
+
 const shapes = (eras: string): readonly string[] => {
   const era = `(?<era>${eras})${GAP}(?<n>${ERA_NUMBER})${GAP}`;
   const western = `${NOT_AFTER_DIGIT}(?<w>${WESTERN})`;
   return [
     `${era}年${OPEN}${western}年${CLOSE}`,
-    `${era}${OPEN}${western}${CLOSE}年`,
+    `${era}${OPEN}${western}${CLOSE}${CALENDAR_YEAR_AFTER}`,
     `${western}年${OPEN}${era}年${CLOSE}`,
-    `${western}${OPEN}${era}${CLOSE}年`,
+    `${western}${OPEN}${era}${CLOSE}${CALENDAR_YEAR_AFTER}`,
   ];
 };
 
