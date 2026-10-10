@@ -1,0 +1,10 @@
+# 二つの年齢のあいだに置いて範囲を言う語（fact-conflict）。片方に年齢の印があれば範囲として読む（満20歳〜満70歳、20〜70歳）。
+id: fact-age-joiner
+language: ja
+entries:
+  - pattern: 〜
+  - pattern: ～
+  - pattern: "~"
+  - pattern: から
+  - pattern: –
+  - pattern: －

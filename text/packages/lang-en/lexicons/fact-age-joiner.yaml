@@ -1,0 +1,9 @@
+# Words between two ages that make a range (fact-conflict). Read as a range when one end has an age mark ("aged 20 to
+# 70", "18-65 years old").
+id: fact-age-joiner
+language: en
+entries:
+  - pattern: to
+  - pattern: through
+  - pattern: "-"
+  - pattern: –

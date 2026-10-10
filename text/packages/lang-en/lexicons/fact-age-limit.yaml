@@ -1,0 +1,9 @@
+# Marks of an upper age limit (fact-conflict). An age with one of these on this side is an upper end ("up to the age of
+# 70"), compared with the upper end of a range ("aged 20 to 70").
+id: fact-age-limit
+language: en
+entries:
+  - { pattern: up to, position: before }
+  - { pattern: until, position: before }
+  - { pattern: or under, position: after }
+  - { pattern: or younger, position: after }
