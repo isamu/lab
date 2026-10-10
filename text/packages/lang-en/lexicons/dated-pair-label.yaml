@@ -20,3 +20,14 @@ entries:
   - { pattern: "Application deadline", group: job, position: after }
   - { pattern: "Apply by", group: job, position: after }
   - { pattern: "Application closing date", group: job, position: after }
+  # An earnings release: the earnings call and the release come after the end of the period they report. A reporting
+  # period line states a period and is compared by its end (dated-span-label). A bare "Release date" is left out: a
+  # product or a campaign is announced before its period ends.
+  - { pattern: "Reporting period", group: earnings, position: before }
+  - { pattern: "Period covered", group: earnings, position: before }
+  - { pattern: "Earnings call", group: earnings, position: after }
+  - { pattern: "Earnings conference call", group: earnings, position: after }
+  - { pattern: "Conference call", group: earnings, position: after }
+  - { pattern: "Results briefing", group: earnings, position: after }
+  - { pattern: "Earnings release date", group: earnings, position: after }
+  - { pattern: "Results release date", group: earnings, position: after }

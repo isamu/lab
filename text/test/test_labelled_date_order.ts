@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { datesOutOfOrder, pairedDatesOutOfOrder, type OrderLabel } from "../packages/chaff/src/structure/labelled-date-order.ts";
+import { datesOutOfOrder, pairedDatesOutOfOrder, periodEndOf, type OrderLabel } from "../packages/chaff/src/structure/labelled-date-order.ts";
 
 // 前後の決まった日付の組（due-before-issue の order）。物件の案内の入居可能日と掲載日、求人の応募締切と掲載日。例文はすべて自作。
 
@@ -121,7 +121,100 @@ describe("due-before-issue (order): 入居可能日や応募締切が掲載日�
       { offset: 22, value: "2025-11-01" },
     ];
     assert.deepEqual(pairedDatesOutOfOrder("掲載日：2026年10月1日\n入居可能日：2025年11月1日", dates, LABELS, [], 40), [
-      { offset: 22, values: { later: "2025-11-01", earlier: "2026-10-01", later_label: "入居可能日", earlier_label: "掲載日" } },
+      { offset: 22, values: { later: "2025-11-01", earlier: "2026-10-01", later_label: "入居可能日", earlier_label: "掲載日" }, period: false },
     ]);
+  });
+});
+
+const earningsJa = (period: string, call: string, callLabel = "決算説明会"): string =>
+  `# 2026年3月期 決算短信\n\n架空電子株式会社\n\n対象期間：${period}\n\n${callLabel}：${call}\n\n## 1 当期の業績\n\n売上高は1,320百万円でした。\n`;
+
+const earningsEn = (period: string, call: string, callLabel = "Earnings call"): string =>
+  `# Financial Results for FY2026\n\nExample Instruments Inc.\n\nReporting period: ${period}\n\n${callLabel}: ${call}\n\n## 1 Results\n\nNet sales were $1,320 million.\n`;
+
+describe("due-before-issue (period): 決算説明会が対象期間の終わりより前", () => {
+  it("対象期間の終わりより前の説明会を指す", () => {
+    assert.deepEqual(findingsOf(earningsJa("2025年4月1日〜2026年3月31日", "2026年3月25日（オンライン）")), [
+      "「決算説明会」の 2026-03-25 が、「対象期間」の終わり 2026-03-31 より前です",
+    ]);
+    assert.deepEqual(findingsOf(earningsEn("April 1, 2025 to March 31, 2026", "March 25, 2026 (online)"), en), [
+      '"Earnings call" 2026-03-25 is before the end of the "Reporting period", 2026-03-31',
+    ]);
+  });
+
+  it("終わりにだけ年を書いた期間、始まりにだけ年を書いた期間も、終わりの日で比べる", () => {
+    assert.deepEqual(findingsOf(earningsJa("2026年4月1日〜9月30日（第2四半期累計）", "2026年9月18日")), [
+      "「決算説明会」の 2026-09-18 が、「対象期間」の終わり 2026-09-30 より前です",
+    ]);
+    assert.deepEqual(findingsOf(earningsJa("2025年4月1日〜3月31日", "2026年3月25日")), [
+      "「決算説明会」の 2026-03-25 が、「対象期間」の終わり 2026-03-31 より前です",
+    ]);
+    assert.deepEqual(findingsOf(earningsEn("April 1 – September 30, 2026", "September 18, 2026"), en), [
+      '"Earnings call" 2026-09-18 is before the end of the "Reporting period", 2026-09-30',
+    ]);
+    assert.deepEqual(findingsOf(earningsEn("April 1, 2026 to September 30, 2026", "September 18, 2026", "Conference call"), en), [
+      '"Conference call" 2026-09-18 is before the end of the "Reporting period", 2026-09-30',
+    ]);
+  });
+
+  it("期間の終わり以後の説明会と決算発表は言わない", () => {
+    assert.deepEqual(findingsOf(earningsJa("2025年4月1日〜2026年3月31日", "2026年5月14日")), []);
+    assert.deepEqual(findingsOf(earningsJa("2025年4月1日〜2026年3月31日", "2026年3月31日")), []);
+    assert.deepEqual(findingsOf(earningsJa("2025年4月1日〜2026年3月31日", "2026年5月12日", "決算発表日")), []);
+    assert.deepEqual(findingsOf(earningsEn("April 1, 2025 to March 31, 2026", "May 14, 2026"), en), []);
+    assert.deepEqual(findingsOf(earningsEn("April 1 – September 30, 2026", "November 12, 2026"), en), []);
+  });
+
+  it("年の無い説明会の日、年の無い期間、期間の行の無い文書、前回の説明会は比べない", () => {
+    assert.deepEqual(findingsOf(earningsJa("2025年4月1日〜2026年3月31日", "3月25日")), []);
+    assert.deepEqual(findingsOf(earningsJa("4月1日〜9月30日", "2026年9月18日")), []);
+    assert.deepEqual(findingsOf("# 決算短信\n\n決算説明会：2026年3月25日\n"), []);
+    assert.deepEqual(findingsOf(earningsJa("2025年4月1日〜2026年3月31日", "2026年5月14日\n\n前回説明会：2025年11月12日")), []);
+    assert.deepEqual(findingsOf(earningsEn("April 1, 2025 to March 31, 2026", "March 25"), en), []);
+    assert.deepEqual(findingsOf(earningsEn("April 1 – September 30", "September 18, 2026"), en), []);
+    assert.deepEqual(findingsOf("# Results\n\nEarnings call: March 25, 2026\n", en), []);
+    assert.deepEqual(findingsOf(earningsEn("April 1, 2025 to March 31, 2026", "May 14, 2026\n\nPrevious call: November 12, 2025"), en), []);
+  });
+
+  it("「発表日」と Release date だけでは期間と組まない", () => {
+    assert.deepEqual(findingsOf(earningsJa("2026年3月1日〜2026年3月31日", "2026年3月1日", "発表日")), []);
+    assert.deepEqual(findingsOf(earningsEn("March 1, 2026 to March 31, 2026", "March 1, 2026", "Release date"), en), []);
+  });
+});
+
+describe("periodEndOf: 期間を書いた行の終わりの日", () => {
+  const SPANS = { labels: ["対象期間"], connectors: ["〜"], months: [], weekdays: [] };
+  const lineOf = (text: string) => ({ text, start: 0, number: 1 });
+
+  it("二つの日付の範囲の終わりを、年とともに返す", () => {
+    const text = "対象期間：2025年4月1日〜2026年3月31日";
+    const dates = [
+      { offset: 5, end: 14, value: "2025-04-01" },
+      { offset: 15, end: 25, value: "2026-03-31" },
+    ];
+    assert.deepEqual(periodEndOf(lineOf(text), "対象期間", dates, SPANS), { offset: 0, value: "2026-03-31" });
+  });
+
+  it("範囲でない行、年の無い期間、終わる位置の無い日付、語の無い行は undefined", () => {
+    assert.equal(periodEndOf(lineOf("対象期間：2025年4月1日"), "対象期間", [{ offset: 5, end: 14, value: "2025-04-01" }], SPANS), undefined);
+    const noYear = [
+      { offset: 5, end: 9, value: "04-01" },
+      { offset: 10, end: 15, value: "09-30" },
+    ];
+    assert.equal(periodEndOf(lineOf("対象期間：4月1日〜9月30日"), "対象期間", noYear, SPANS), undefined);
+    assert.equal(
+      periodEndOf(
+        lineOf("対象期間：2025年4月1日〜2026年3月31日"),
+        "対象期間",
+        [
+          { offset: 5, value: "2025-04-01" },
+          { offset: 15, value: "2026-03-31" },
+        ],
+        SPANS,
+      ),
+      undefined,
+    );
+    assert.equal(periodEndOf(lineOf("期間：2025年4月1日〜2026年3月31日"), "対象期間", [], SPANS), undefined);
+    assert.equal(periodEndOf(lineOf(""), "対象期間", [], SPANS), undefined);
   });
 });
