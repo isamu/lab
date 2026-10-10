@@ -263,7 +263,12 @@ describe("ratio-mismatch", () => {
 // The structure tree's quantities do not read every notation below yet (¥1,320 in Japanese, 1,320 yen), so the prose path keeps
 // its own reader; routing it through the tree must first pass this.
 describe("ratio-mismatch reads every currency notation and percent unit in prose", () => {
-  const lexicon = (adapter: LanguageAdapter, id: string): readonly LexiconEntry[] => buildDocument("t.md", "# r\n", adapter).lexicons[id] ?? [];
+  /** The entries of a lexicon; an empty one would leave the cases below with nothing to check. */
+  const lexicon = (adapter: LanguageAdapter, id: string): readonly LexiconEntry[] => {
+    const entries = buildDocument("t.md", "# r\n", adapter).lexicons[id] ?? [];
+    assert.notEqual(entries.length, 0, `${adapter.id}: lexicon ${id}`);
+    return entries;
+  };
   const LATIN_WORD = /^[A-Za-z]/u;
 
   /**
