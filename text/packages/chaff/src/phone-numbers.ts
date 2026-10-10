@@ -50,7 +50,7 @@ const lastPlace = (before: string, label: string): number => {
 type LabelBefore = { readonly group: string; readonly between: string };
 
 /** The label ending nearest before a number on its line, the longest when two end together (携帯電話 over 電話), and what lies between. */
-const labelBefore = (text: string, offset: number, labels: readonly LexiconEntry[]): LabelBefore | undefined => {
+export const labelBefore = (text: string, offset: number, labels: readonly LexiconEntry[]): LabelBefore | undefined => {
   const lineStart = text.lastIndexOf("\n", offset - 1) + 1;
   const before = text.slice(lineStart, offset).toLowerCase();
   const nearest = labels
@@ -64,7 +64,7 @@ const labelBefore = (text: string, offset: number, labels: readonly LexiconEntry
 };
 
 /** URLs covered with spaces, so neither a path segment (/call/) nor an id in one is read. Offsets stay the same. */
-const withoutUrls = (text: string): string => text.replaceAll(URL, (url) => " ".repeat(url.length));
+export const withoutUrls = (text: string): string => text.replaceAll(URL, (url) => " ".repeat(url.length));
 
 /** The phone numbers of a text that have a label shortly before them on their line; unlabelled digits and URLs are not read. */
 export const labelledPhoneNumbers = (source: string, labels: readonly LexiconEntry[]): PhoneNumber[] => {
@@ -83,7 +83,7 @@ export const labelledPhoneNumbers = (source: string, labels: readonly LexiconEnt
   ].toSorted((a, b) => a.offset - b.offset);
 };
 
-/** Whether two digit strings are the same but for one pair of neighbours swapped. */
+/** Whether two strings (digits, or a reference number's letters and digits) are the same but for one pair of neighbours swapped. */
 export const swapsNeighbours = (a: string, b: string): boolean => {
   if (a.length !== b.length || a === b) return false;
   const differ = [...a].flatMap((digit, index) => (digit === b[index] ? [] : [index]));
@@ -91,24 +91,27 @@ export const swapsNeighbours = (a: string, b: string): boolean => {
   return differ.length === 2 && first !== undefined && second === first + 1 && a[first] === b[second] && a[second] === b[first];
 };
 
-const keyOf = (number: PhoneNumber): string => `${number.label}\u0000${number.digits}`;
+/** A labelled writing compared with the others of its label: where it is and the label's group. */
+type LabelledWriting = { readonly offset: number; readonly label: string };
 
 /**
- * Every writing of a number that is another number of the same label with two neighbours swapped: of the two, the one
- * written fewer times, or the one first written later when both are written as often. Each comes with the other number.
+ * Every writing that is another writing of the same label with two neighbouring characters swapped (characters is what is
+ * compared): of the two, the one written fewer times, or the one first written later when both are written as often. Each
+ * comes with the other writing.
  */
-export const phoneVariants = (numbers: readonly PhoneNumber[]): PhoneVariant[] => {
-  const writings = numbers.reduce((byKey, number) => byKey.set(keyOf(number), [...(byKey.get(keyOf(number)) ?? []), number]), new Map<string, PhoneNumber[]>());
-  const timesOf = (number: PhoneNumber): number => writings.get(keyOf(number))?.length ?? 0;
+export const swappedVariants = <T extends LabelledWriting>(writtenAll: readonly T[], characters: (writing: T) => string): { number: T; other: T }[] => {
+  const keyOf = (writing: T): string => `${writing.label}\u0000${characters(writing)}`;
+  const writings = writtenAll.reduce((byKey, writing) => byKey.set(keyOf(writing), [...(byKey.get(keyOf(writing)) ?? []), writing]), new Map<string, T[]>());
+  const timesOf = (writing: T): number => writings.get(keyOf(writing))?.length ?? 0;
   const firsts = [...writings.values()].flatMap((group) => group.slice(0, 1));
-  const minorityOf = (a: PhoneNumber, b: PhoneNumber): PhoneNumber => {
+  const minorityOf = (a: T, b: T): T => {
     if (timesOf(a) !== timesOf(b)) return timesOf(a) < timesOf(b) ? a : b;
     return a.offset > b.offset ? a : b;
   };
   return firsts
     .flatMap((first, index) =>
       firsts.slice(index + 1).flatMap((second) => {
-        if (first.label !== second.label || !swapsNeighbours(first.digits, second.digits)) return [];
+        if (first.label !== second.label || !swapsNeighbours(characters(first), characters(second))) return [];
         const minority = minorityOf(first, second);
         const other = minority === first ? second : first;
         return (writings.get(keyOf(minority)) ?? []).map((number) => ({ number, other }));
@@ -116,3 +119,6 @@ export const phoneVariants = (numbers: readonly PhoneNumber[]): PhoneVariant[] =
     )
     .toSorted((a, b) => a.number.offset - b.number.offset);
 };
+
+/** Every phone number that is another of the same label with two neighbouring digits swapped (swappedVariants). */
+export const phoneVariants = (numbers: readonly PhoneNumber[]): PhoneVariant[] => swappedVariants(numbers, (number) => number.digits);
