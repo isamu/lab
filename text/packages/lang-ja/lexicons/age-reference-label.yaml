@@ -1,0 +1,12 @@
+# 年齢を数える日のラベル（elapsed-years-mismatch）。生年月日から、この日の満年齢を計算して比べる。before は日付の前（受診日：）、after は後ろ（2026年4月1日時点）。group は年齢の時の印（age-time-mark）と組にする。
+id: age-reference-label
+language: ja
+entries:
+  - { pattern: 受診日, group: exam }
+  - { pattern: 健診日, group: exam }
+  - { pattern: 検査日, group: exam }
+  - { pattern: 採血日, group: exam }
+  - { pattern: 報告日, group: report }
+  - { pattern: 基準日, group: base }
+  - { pattern: 時点, position: after, group: base }
+  - { pattern: 現在, position: after, group: base }
