@@ -1,0 +1,27 @@
+# How a results release names its period (Q2, Second Quarter, FY2026, Fiscal Year Ending March 31, 2027). The group is
+# the kind of period; period-label-conflict compares names of one kind only. {n} is a quarter's or a half's number, {y}
+# a year, {e} the year a period ends in, and {_} a few words that are not part of the value (the month and day of a year
+# end). Whether FY2026 starts or ends in 2026 differs by company, so a {y} name and an {e} name are never compared. A
+# form without a number ("second quarter") names the numbered form of the same period in instead_of. Kinds without a
+# year (quarter, half) are read as parts of a year. Case does not matter.
+id: reporting-period-frame
+language: en
+entries:
+  - { pattern: "Q{n}", group: quarter }
+  - { pattern: "{n}Q", group: quarter }
+  - { pattern: "first quarter", group: quarter, instead_of: "Q1" }
+  - { pattern: "second quarter", group: quarter, instead_of: "Q2" }
+  - { pattern: "third quarter", group: quarter, instead_of: "Q3" }
+  - { pattern: "fourth quarter", group: quarter, instead_of: "Q4" }
+  - { pattern: "H{n}", group: half }
+  - { pattern: "{n}H", group: half }
+  - { pattern: "first half", group: half, instead_of: "H1" }
+  - { pattern: "second half", group: half, instead_of: "H2" }
+  - { pattern: "FY{y}", group: fiscal-year }
+  - { pattern: "FY {y}", group: fiscal-year }
+  - { pattern: "fiscal {y}", group: fiscal-year }
+  - { pattern: "fiscal year {y}", group: fiscal-year }
+  - { pattern: "fiscal year ending {_} {e}", group: fiscal-year }
+  - { pattern: "fiscal year ended {_} {e}", group: fiscal-year }
+  - { pattern: "year ending {_} {e}", group: fiscal-year }
+  - { pattern: "year ended {_} {e}", group: fiscal-year }

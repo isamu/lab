@@ -1,0 +1,9 @@
+# Words for a period's results. period-label-conflict reads a document as a results release only when its title has one
+# of these and a period name; a sentence with one is read as about the current period's results.
+id: reporting-results-word
+language: en
+entries:
+  - pattern: results
+  - pattern: earnings
+  - pattern: financial statements
+  - pattern: financial report
