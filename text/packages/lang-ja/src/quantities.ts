@@ -1,8 +1,9 @@
 import type { Mention } from "chaffjs/plugin";
 import { parseJapaneseNumber, toHalfWidth } from "./numbers.ts";
 import { isReady, morphemes, type Morph } from "./pos.ts";
+import { currencyAmounts, type AmountVocabulary } from "./currency-amounts.ts";
 import { glossedYearReader } from "./era-year.ts";
-import { loadCalendarEras } from "./lexicons.ts";
+import { loadCalendarEras, loadLexicons } from "./lexicons.ts";
 import { escapeRegExp } from "./regexp.ts";
 
 // 数量と日付。形態素が使えれば品詞で読み、使えなければ単位の表で読む。
@@ -270,10 +271,25 @@ type Span = { readonly start: number; readonly end: number };
 /** ISO の日付の中の数（「02」）を、数量や年月日の日付として二重に読まない。 */
 const overlaps = (item: Span, spans: readonly Span[]): boolean => spans.some((span) => item.start < span.end && span.start < item.end);
 
+const LEXICONS = loadLexicons();
+const notation = (position: "before" | "after"): string[] =>
+  (LEXICONS["currency-notation"] ?? []).filter((entry) => entry.position === position).map((entry) => entry.pattern);
+
+const AMOUNT_VOCABULARY: AmountVocabulary = {
+  before: notation("before"),
+  after: [...notation("after"), ...(LEXICONS["percent-unit"] ?? []).map((entry) => entry.pattern)],
+  multipliers: (LEXICONS["amount-multiplier"] ?? []).flatMap((entry) => (entry.weight === undefined ? [] : [{ pattern: entry.pattern, weight: entry.weight }])),
+};
+
 export const quantities = (text: string): Mention[] => {
   const iso = isoDates(text);
-  return toDates(counted(text))
-    .rest.filter((item) => !overlaps(item, iso))
+  const { dates: written, rest } = toDates(counted(text));
+  const read = rest.filter((item) => !overlaps(item, iso));
+  // 助数詞として読めない通貨の書き方（¥1,320、1,320米ドル）は、ほかの読みと重ならないものだけ足す。
+  const taken = [...iso, ...written, ...read];
+  const added = currencyAmounts(text, AMOUNT_VOCABULARY).filter((item) => !overlaps(item, taken));
+  return [...read, ...added]
+    .toSorted((left, right) => left.start - right.start)
     .map((item) => ({ start: item.start, end: item.end, attrs: { value: item.value, unit: item.unit } }));
 };
 

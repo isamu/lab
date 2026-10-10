@@ -1,6 +1,7 @@
 // line-amount-mismatch: the reading half. The column names come from the language's lexicons (quantity-column,
-// unit-price-column, line-amount-column), the units from rate-unit and per-unit-mark; the tables are read from the prose with its tables put back, so code is not.
+// unit-price-column, line-amount-column), the units from rate-unit, per-unit-mark and the measure lexicons (unit-volume, …); the tables are read from the prose with its tables put back, so code is not.
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
+import { measureUnitsOf } from "../facts/measure-units.ts";
 import { lineAmountMismatches, type LineAmountWords } from "../structure/line-amount.ts";
 import type { UnitWord } from "../structure/line-amount-unit.ts";
 import { proseAndTablesOf } from "../table-text.ts";
@@ -20,6 +21,7 @@ const wordsOf = (doc: ProseDocument): LineAmountWords => ({
   units: unitWordsOf(doc, "rate-unit"),
   perUnitMarks: unitWordsOf(doc, "per-unit-mark"),
   headerUnits: unitWordsOf(doc, "quantity-column", "unit-price-column"),
+  measureUnits: measureUnitsOf(doc).flatMap((unit) => (unit.before ? [] : [unit.pattern])),
 });
 
 export const lineAmount: Detector = (doc): Finding[] =>

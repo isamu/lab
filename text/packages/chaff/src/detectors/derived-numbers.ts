@@ -209,7 +209,7 @@ export const durationMismatch: Detector = (doc): Finding[] => {
     sentencesOf(doc),
     dates,
     durations.filter((duration) => !overlapsAny(pairedDays, duration)),
-    { source: doc.source, range: rangeWordsOf(doc) },
+    { source: doc.source, joiners: patternsOf(doc, "clock-range-joiner"), weekdays: patternsOf(doc, "weekday"), range: rangeWordsOf(doc) },
   ).map((mismatch) =>
     finding(doc, mismatch.end.start, {
       start: written(doc, mismatch.start),

@@ -7,6 +7,7 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import { numberWordCounts } from "../packages/chaff/src/derived/number-word-counts.ts";
+import { isRangeLength, type RangeText } from "../packages/chaff/src/derived/durations.ts";
 
 // 始まり + 期間 ≠ 終わり（duration-mismatch）と、起点の年から数えた年数（elapsed-years-mismatch）。
 
@@ -130,6 +131,23 @@ describe("duration-mismatch", () => {
     assert.deepEqual(durationEn("The 3-month-old program started April 1, 2026 and ends June 15, 2026."), []);
   });
 
+  it("a length in brackets right after a range counts the range, never the day after it elapses", () => {
+    assert.deepEqual(durationEn("Billing period: July 1, 2026 – August 31, 2026 (60 days)"), ["August 31, 2026→August 29, 2026"]);
+    assert.deepEqual(durationEn("Billing period: July 1, 2026 – August 31, 2026 (62 days)"), []);
+    assert.deepEqual(durationEn("Rental: July 1, 2026 – July 4, 2026 (3 days)"), []);
+    assert.deepEqual(durationJa("検針期間：9月1日〜10月31日（59日間）"), ["10月31日→10月29日"]);
+    assert.deepEqual(durationJa("検針期間：2026年9月1日（火）〜2026年10月31日（土）（59日間）"), ["2026年10月31日→2026年10月29日"]);
+    assert.deepEqual(durationEn("Billing period: July 1, 2026 – September 2, 2026 (Wednesday) (62 days)."), ["September 2, 2026→August 31, 2026"]);
+    assert.deepEqual(durationJa("検針期間：2026年9月1日〜2026年10月31日（61日間）"), []);
+    assert.deepEqual(durationJa("検針期間：2026年9月1日〜2026年10月31日（60日間）"), []);
+  });
+
+  it("a length outside brackets, or after two dates that are not a range, still takes the day after it elapses", () => {
+    assert.deepEqual(durationJa("到達日の4月1日から2週間が経過した日（4月16日）以降となる。"), []);
+    assert.deepEqual(durationEn("The notice of July 1, 2026 takes effect 60 days later, on August 31, 2026."), []);
+    assert.deepEqual(durationEn("The notice of July 1, 2026 takes effect on September 2, 2026 (62 days)."), []);
+  });
+
   it("a rough mark before the article of a length before its noun", () => {
     assert.deepEqual(durationEn("It is about a 3-day course from May 1, 2026 to May 6, 2026."), []);
     assert.deepEqual(durationEn("It is a 3-day course from May 1, 2026 to May 6, 2026."), ["May 6, 2026→May 3, 2026"]);
@@ -146,6 +164,52 @@ const stayFindings = (source: string, adapter: LanguageAdapter, language: string
     });
 const stayJa = (...lines: string[]): string[] => stayFindings(["# 旅程", "", ...lines, ""].join("\n"), ja, "ja");
 const stayEn = (...lines: string[]): string[] => stayFindings(["# Itinerary", "", ...lines, ""].join("\n"), en, "en");
+
+describe("isRangeLength: a length written in brackets right after a range", () => {
+  const words = { joiners: ["〜", "–", "to", "から"], weekdays: ["Wednesday", "火曜日", "水曜日"] };
+  const textOf = (source: string): RangeText => ({ source, ...words });
+  const spanOf = (source: string, part: string, from = 0): { start: number; end: number } => {
+    const start = source.indexOf(part, from);
+    return { start, end: start + part.length };
+  };
+  const check = (source: string, first: string, end: string, length: string): boolean => {
+    const firstSpan = spanOf(source, first);
+    const endSpan = spanOf(source, end, firstSpan.end);
+    return isRangeLength(textOf(source), [firstSpan, endSpan], spanOf(source, length, endSpan.end));
+  };
+
+  it("two dates joined by a range word, the length alone in the bracket right after", () => {
+    assert.equal(check("July 1 – August 31 (62 days)", "July 1", "August 31", "62 days"), true);
+    assert.equal(check("from July 1 TO August 31 ( 62 days )", "July 1", "August 31", "62 days"), true);
+    assert.equal(check("9月1日〜9月30日（30日間）", "9月1日", "9月30日", "30日間"), true);
+    assert.equal(check("9月1日（火）〜9月30日（水）（30日間）", "9月1日", "9月30日", "30日間"), true);
+    assert.equal(check("July 1 (Wed) – August 31 (Wednesday) (62 days)", "July 1", "August 31", "62 days"), true);
+  });
+
+  it("no range word, no bracket, more in the bracket, or another bracket between", () => {
+    assert.equal(check("July 1, effective August 31 (62 days)", "July 1", "August 31", "62 days"), false);
+    assert.equal(check("July 1 and August 31 (62 days)", "July 1", "August 31", "62 days"), false);
+    assert.equal(check("July 1 – August 31, 62 days", "July 1", "August 31", "62 days"), false);
+    assert.equal(check("July 1 – August 31 (total 62 days)", "July 1", "August 31", "62 days"), false);
+    assert.equal(check("July 1 – August 31 (62 days of service)", "July 1", "August 31", "62 days"), false);
+    assert.equal(check("July 1 – August 31 (the second period) (62 days)", "July 1", "August 31", "62 days"), false);
+    assert.equal(check("July 1 – August 31 () (62 days)", "July 1", "August 31", "62 days"), false);
+  });
+
+  it("spans out of order are not a range", () => {
+    const outOfOrder = (source: string, first: number, end: number, length: number): boolean =>
+      isRangeLength(
+        textOf(source),
+        [
+          { start: first, end: first + 1 },
+          { start: end, end: end + 1 },
+        ],
+        { start: length, end: length + 1 },
+      );
+    assert.equal(outOfOrder("(62 days) July 1 – August 31", 10, 19, 1), false);
+    assert.equal(outOfOrder("", 5, 0, 7), false);
+  });
+});
 
 describe("duration-mismatch: nights of a stay", () => {
   before(async () => {

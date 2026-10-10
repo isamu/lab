@@ -1,0 +1,12 @@
+# The signs that bound a reference range on one side (reference-flag-mismatch), read with the words of range-band-word ("or
+# less", "below", "up to"). The groups are range-band-word's: upper-inclusive keeps its end (≤79), upper-exclusive does not
+# (<79), lower-inclusive and lower-exclusive bound below. All are written before the number.
+id: reference-bound-mark
+language: en
+entries:
+  - { pattern: "≤", group: upper-inclusive, position: before }
+  - { pattern: "<=", group: upper-inclusive, position: before }
+  - { pattern: "<", group: upper-exclusive, position: before }
+  - { pattern: "≥", group: lower-inclusive, position: before }
+  - { pattern: ">=", group: lower-inclusive, position: before }
+  - { pattern: ">", group: lower-exclusive, position: before }

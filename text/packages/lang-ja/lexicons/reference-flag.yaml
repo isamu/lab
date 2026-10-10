@@ -1,0 +1,23 @@
+# 検査結果の判定の印（reference-flag-mismatch）。group high は基準より高い、low は低い、normal は基準の範囲内、outside は
+# 範囲の外（高いか低いかは言わない）。基準値と照らして付ける印だけを入れる。A〜E の判定区分や「要再検査」は、健診機関ごとの
+# 判定基準で決まり基準値とは別なので入れない。升の字そのままで照らす。
+id: reference-flag
+language: ja
+entries:
+  - { pattern: 高, group: high }
+  - { pattern: 高値, group: high }
+  - { pattern: H, group: high }
+  - { pattern: ↑, group: high }
+  - { pattern: 低, group: low }
+  - { pattern: 低値, group: low }
+  - { pattern: L, group: low }
+  - { pattern: ↓, group: low }
+  - { pattern: 基準内, group: normal }
+  - { pattern: 基準範囲内, group: normal }
+  - { pattern: 基準値内, group: normal }
+  - { pattern: 範囲内, group: normal }
+  - { pattern: 基準外, group: outside }
+  - { pattern: 基準範囲外, group: outside }
+  - { pattern: 基準値外, group: outside }
+  - { pattern: 範囲外, group: outside }
+  - { pattern: "*", group: outside }
