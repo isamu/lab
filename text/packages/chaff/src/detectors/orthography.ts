@@ -5,6 +5,7 @@ import { minorityReport } from "../spacing-minority.ts";
 import { isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { digitRunAround, endsWithDivisionLabel, isNumberName, sequenceLabelStarts, type NameContext } from "../number-name.ts";
 import { isSpacedLocationPart, type FloorWords } from "../location-part.ts";
+import { isNameSeparator } from "../name-separator.ts";
 import { addressSpans, clockTimeSpans, isInsideSpan } from "../spacing-code.ts";
 
 /** チームが chaff.yaml の prefer に書いた「使わない書き方」。書いていなければ何も言わない。 */
@@ -83,11 +84,13 @@ type SentenceCodes = { readonly calendar: ReadonlySet<number>; readonly clockTim
  * 日付・時刻は前の境目（「は 9月」「午後3時」「令和 3 年」）も数えない。日付はまとめて一つの書き方で、数量の空け方の票にはしない。コロンで書いた時刻（13:30）も同じ。
  * メールアドレス・URL の前後の境目も数えない（spacing-code.ts）。
  * 「本社 5階」のように名前の後ろに空白で区切った階・部屋の番号の前の空白も、所在の組の区切りなので数えない（location-part.ts）。
+ * 「経営企画部 IR担当」のように名前だけを並べた行で、名前と名前を分ける空白も数えない（name-separator.ts）。
  */
 const isCounted = (sentence: Sentence, boundary: Boundary, context: NumberContext, codes: SentenceCodes): boolean => {
   if (followsItemNumber(sentence.text, boundary, context.itemNumbers)) return false;
   if (boundary.kind !== "after-digit" && endsWithDivisionLabel(sentence.text.slice(0, boundary.offset), context.divisions)) return false;
-  if (boundary.kind === "letter") return !besideAddress(codes.addresses, boundary);
+  if (boundary.kind === "letter")
+    return !besideAddress(codes.addresses, boundary) && !isNameSeparator(sentence.text, boundary, sentence.tokens, sentence.span.start);
   if (isInsideSpan(codes.clockTimes, digitBeside(boundary))) return false;
   const run = digitRunAround(sentence.text, digitBeside(boundary));
   if (run === undefined) return true;
