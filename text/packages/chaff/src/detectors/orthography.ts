@@ -5,7 +5,7 @@ import { minorityReport } from "../spacing-minority.ts";
 import { isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { digitRunAround, endsWithDivisionLabel, isNumberName, sequenceLabelStarts, type NameContext } from "../number-name.ts";
 import { isSpacedLocationPart, type FloorWords } from "../location-part.ts";
-import { isNameSeparator } from "../name-separator.ts";
+import { isNameSeparator, type OrganizationWords } from "../name-separator.ts";
 import { addressSpans, clockTimeSpans, isInsideSpan } from "../spacing-code.ts";
 
 /** チームが chaff.yaml の prefer に書いた「使わない書き方」。書いていなければ何も言わない。 */
@@ -38,13 +38,15 @@ const digitBeside = (boundary: Boundary): number => {
 
 /**
  * 文書全体で一度だけ読むもの（number-name.ts の NameContext に加えて）。calendar は日付・時刻の単位、
- * divisions は「第1節」のように「第」と番号の後ろに書く区切りの語、floors は階・部屋の番号を読む語（5階、201号室、地下 1階）。
+ * divisions は「第1節」のように「第」と番号の後ろに書く区切りの語、floors は階・部屋の番号を読む語（5階、201号室、地下 1階）、
+ * organizations は組織の名前を読む語（経営企画部、株式会社）。
  */
 type NumberContext = NameContext & {
   readonly calendar: CalendarUnits;
   readonly divisions: ReadonlySet<string>;
   readonly itemNumbers: ReadonlySet<string>;
   readonly floors: FloorWords;
+  readonly organizations: OrganizationWords;
 };
 
 /** 文頭の項目の番号の後ろと見る境目の位置の上限。番号は短く文の頭にあるので、これより後ろの境目は番号の後ろではない。長い文で文頭からの切り出しを繰り返さない。 */
@@ -90,7 +92,7 @@ const isCounted = (sentence: Sentence, boundary: Boundary, context: NumberContex
   if (followsItemNumber(sentence.text, boundary, context.itemNumbers)) return false;
   if (boundary.kind !== "after-digit" && endsWithDivisionLabel(sentence.text.slice(0, boundary.offset), context.divisions)) return false;
   if (boundary.kind === "letter")
-    return !besideAddress(codes.addresses, boundary) && !isNameSeparator(sentence.text, boundary, sentence.tokens, sentence.span.start);
+    return !besideAddress(codes.addresses, boundary) && !isNameSeparator(sentence.text, boundary, sentence.tokens, sentence.span.start, context.organizations);
   if (isInsideSpan(codes.clockTimes, digitBeside(boundary))) return false;
   const run = digitRunAround(sentence.text, digitBeside(boundary));
   if (run === undefined) return true;
@@ -163,6 +165,7 @@ export const latinSpacing: Detector = (doc, options): Finding[] => {
     divisions: labelsAt(doc, "after"),
     itemNumbers: numberedItems(patternList(doc, "item-number"), doc.prose ?? doc.source),
     floors: { units: patternsOf(doc, "floor-unit"), levels: patternsOf(doc, "floor-level") },
+    organizations: { units: patternsOf(doc, "organization-unit"), forms: patternList(doc, "company-form") },
   };
   const located: Located[] = doc.sentences.flatMap((sentence) => {
     const quoted = quotedSpans(sentence.text);
