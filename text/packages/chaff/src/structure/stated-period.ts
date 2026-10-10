@@ -1,5 +1,7 @@
 import { escapeRegExp } from "../orthography.ts";
 import { withoutTrailingWeekday } from "./date-range.ts";
+import { keyValueCell } from "./key-value-row.ts";
+import { TABLE_ROW } from "./runs.ts";
 
 /**
  * 文書が書いた期間（旅行期間：10月12日〜10月15日、Trip period: Oct 12–15）。期間の語（period-label）で始まる一行だけを読む。
@@ -19,10 +21,7 @@ export type PeriodWords = {
 
 export type Period = { readonly start: string; readonly end: string; readonly written: string };
 
-/**
- * 行の頭の印（見出し、箇条書き、引用）と、語を囲む太字や括弧の開き。表の行は読まない。
- * 「| Conference | May 3–5 |」は催しを並べた表の一行で、文書の期間ではない。
- */
+/** 行の頭の印（見出し、箇条書き、引用）と、語を囲む太字や括弧の開き。表の行は statedPeriod が別に読む。 */
 const LINE_MARKS = /^[ \t]*(?:(?:#{1,6}|[-*+>]|\d{1,3}[.)])[ \t]*)*/u;
 const LABEL_OPEN = /^(?:\*\*|__|【|\[)?/u;
 const LABEL_END = /^(?:\*\*|__|】|\])?(?:[ \t]*[:：][ \t]*|[ \t\u3000]+)/u;
@@ -149,13 +148,26 @@ const datesOf = (line: string, lineStart: number, from: number, dates: readonly 
   return monthRange(line.slice(from), words);
 };
 
+/** 期間を書いた部分の、行の中の始まりと終わり。表の行は、その表（tableOf）を渡したときだけ、二列の表の内容の升を読む。 */
+const valueSpan = (line: string, labels: readonly string[], tableOf: (() => readonly string[]) | undefined): { from: number; to: number } | undefined => {
+  if (TABLE_ROW.test(line)) return tableOf === undefined ? undefined : keyValueCell(line, tableOf, labels);
+  const from = afterLabel(line, labels);
+  return from === undefined ? undefined : { from, to: line.length };
+};
+
 /**
  * 期間の語で始まる一行の期間。行の中の日付が二つで間が範囲の記号なら、その二つ。一つなら、その前か後ろに日だけを書いた片方を読む。
- * 日付の無い行は、月の名と日の範囲を読む。読めなければ undefined。
+ * 日付の無い行は、月の名と日の範囲を読む。読めなければ undefined。tableOf はその行を含む表の行を返し、渡すと二列の表の一行（| 対象期間 | … |）も読む。
  */
-export const statedPeriod = (line: string, lineStart: number, dates: readonly DateMention[], words: PeriodWords): Period | undefined => {
-  const from = afterLabel(line, words.labels);
-  if (from === undefined) return undefined;
-  const found = datesOf(line, lineStart, from, dates, words);
-  return found === undefined ? undefined : { ...found, written: line.slice(from).trim() };
+export const statedPeriod = (
+  line: string,
+  lineStart: number,
+  dates: readonly DateMention[],
+  words: PeriodWords,
+  tableOf?: () => readonly string[],
+): Period | undefined => {
+  const span = valueSpan(line, words.labels, tableOf);
+  if (span === undefined) return undefined;
+  const found = datesOf(line.slice(0, span.to), lineStart, span.from, dates, words);
+  return found === undefined ? undefined : { ...found, written: line.slice(span.from, span.to).trim() };
 };
