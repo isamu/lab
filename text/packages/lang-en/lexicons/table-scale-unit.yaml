@@ -1,0 +1,17 @@
+# Words of scale written in a table's cells or in its caption of unit ("$110 million", "(In millions of US dollars)")
+# (table-unit-mix). weight is the number the word multiplies by. Matched as whole words, so million is not read in millions.
+id: table-scale-unit
+language: en
+entries:
+  - pattern: thousand
+    weight: 1000
+  - pattern: thousands
+    weight: 1000
+  - pattern: million
+    weight: 1000000
+  - pattern: millions
+    weight: 1000000
+  - pattern: billion
+    weight: 1000000000
+  - pattern: billions
+    weight: 1000000000

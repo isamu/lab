@@ -1,0 +1,7 @@
+# Words that make a short line above a table a caption of its unit (table-unit-mix): "(In millions of US dollars)",
+# "(Millions of yen)". A line with one of these words, one word of scale and no figure is read as the unit of the table below.
+id: table-unit-caption
+language: en
+entries:
+  - pattern: in
+  - pattern: of

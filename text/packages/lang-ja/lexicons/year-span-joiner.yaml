@@ -1,0 +1,13 @@
+# 期間の始めと終わりの日付をつなぐ言葉。date-without-year は、終わりの日付の年を語で言う期間（4月1日から翌年3月31日まで）の
+# 始めの日付を指さない。毎年度の区切りのように、どの年にも当てはまる期間だから。
+id: year-span-joiner
+language: ja
+entries:
+  - pattern: から
+  - pattern: 〜
+  - pattern: ～
+  - pattern: "-"
+  - pattern: －
+  - pattern: ‐
+  - pattern: –
+  - pattern: —

@@ -1,0 +1,12 @@
+# Words that join the start and the end of a period. date-without-year does not report the start of a period whose end
+# gives its year in words ("April 1 to March 31 of the following year"): like a fiscal year, it holds for any year.
+id: year-span-joiner
+language: en
+entries:
+  - pattern: to
+  - pattern: through
+  - pattern: until
+  - pattern: till
+  - pattern: "-"
+  - pattern: –
+  - pattern: —

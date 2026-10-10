@@ -1,9 +1,6 @@
 asf-board-minutes-2025-01  11
-da-service-design-guidelines-2  1
-govuk-style-guide-a-to-z  4
 kobayashi-press-hananoa-2026-02  2
 koho-tokyo-2026-06-suigai  1
 nstac-microdata-forum  1
-ppc-guidelines-tsusoku  4
 wikipedia-ja-talk-oden  1
 wikivoyage-belgian-coast-tram  1
