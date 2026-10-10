@@ -1,0 +1,28 @@
+# Headings that say what a column of a prior / current / change table holds (change-rate-mismatch). group: base is the
+# earlier value, current the later one, rate a rate of change (a percentage even without %), change a change that is a rate
+# only when its cells carry %. Rate words are looked at first, so "change vs prior year" is not the earlier value.
+id: change-column
+language: en
+entries:
+  - { pattern: yoy, group: rate }
+  - { pattern: y/y, group: rate }
+  - { pattern: year-on-year, group: rate }
+  - { pattern: year over year, group: rate }
+  - { pattern: "% change", group: rate }
+  - { pattern: change (%), group: rate }
+  - { pattern: change %, group: rate }
+  - { pattern: growth, group: rate }
+  - { pattern: change, group: change }
+  - { pattern: prior year, group: base }
+  - { pattern: previous year, group: base }
+  - { pattern: last year, group: base }
+  - { pattern: prior period, group: base }
+  - { pattern: previous period, group: base }
+  - { pattern: prior quarter, group: base }
+  - { pattern: previous quarter, group: base }
+  - { pattern: a year earlier, group: base }
+  - { pattern: current year, group: current }
+  - { pattern: this year, group: current }
+  - { pattern: current period, group: current }
+  - { pattern: current quarter, group: current }
+  - { pattern: this quarter, group: current }

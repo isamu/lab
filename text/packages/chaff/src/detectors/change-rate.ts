@@ -2,11 +2,15 @@
 // tree's quantities, the numbers counted with a word ("1,200 companies"), the calendar years, and the lexicons change-direction,
 // change-base, change-target, change-break, percent-unit and amount-multiplier.
 import type { Detector, Finding, LexiconEntry, ProseDocument, Span, StructureNode, Token } from "../plugin.ts";
-import { inDocumentOrder } from "../structure/issues.ts";
+import { inDocumentOrder, type StructureIssue } from "../structure/issues.ts";
 import { startsOtherSubject } from "../structure/subject-change.ts";
 import { changeRateMismatches, type BaseMark, type Break, type Direction, type Figure, type Period, type Rate } from "../structure/change-rate.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { quoteAt } from "./structure-tree.ts";
+import { tableRateMismatches, type ChangeTable, type ColumnRole, type ColumnWord } from "../structure/change-rate-table.ts";
+import { cellsOf, tablesOf } from "../facts/table-facts.ts";
+import { linesOf } from "../structure/lines.ts";
+import { proseAndTablesOf } from "../table-text.ts";
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
 
@@ -137,7 +141,23 @@ const marksOf = (doc: ProseDocument, lexicon: string): BaseMark[] =>
     entry.position === undefined ? [] : spansOf(doc.source, entry.pattern).map((span) => ({ ...span, position: entry.position ?? "before" })),
   );
 
-export const changeRate: Detector = (doc): Finding[] => {
+const ROLES: readonly string[] = ["base", "current", "rate", "change"] satisfies readonly ColumnRole[];
+const isRole = (group: string | undefined): group is ColumnRole => group !== undefined && ROLES.includes(group);
+
+/** Lexicon change-column: the heading words that say which column holds the earlier value, the later one and the rate. */
+const columnWordsOf = (doc: ProseDocument): ColumnWord[] =>
+  (doc.lexicons["change-column"] ?? []).flatMap((entry) => (isRole(entry.group) ? [{ pattern: entry.pattern, role: entry.group }] : []));
+
+/** The document's Markdown tables (outside code and quotes): the heading cells and the body rows' cells. */
+const changeTablesOf = (doc: ProseDocument): ChangeTable[] =>
+  tablesOf(linesOf(proseAndTablesOf(doc))).map((table) => ({ header: cellsOf(table.header), rows: table.rows.map(cellsOf) }));
+
+const tableIssues = (doc: ProseDocument): StructureIssue[] => {
+  const words = columnWordsOf(doc);
+  return words.length === 0 ? [] : tableRateMismatches(changeTablesOf(doc), words);
+};
+
+const sentenceIssues = (doc: ProseDocument): StructureIssue[] => {
   if (doc.structure === undefined) return [];
   const nodes = quantityNodes(doc.structure);
   const units = patternsOf(doc, "percent-unit");
@@ -155,7 +175,11 @@ export const changeRate: Detector = (doc): Finding[] => {
     breaks: breaksOf(doc),
     source: doc.source,
   };
-  return changeRateMismatches(text).map((issue) => ({
+  return changeRateMismatches(text);
+};
+
+export const changeRate: Detector = (doc): Finding[] =>
+  [...sentenceIssues(doc), ...tableIssues(doc)].map((issue) => ({
     rule: "change-rate-mismatch",
     severity: "warning",
     line: 0,
@@ -163,4 +187,3 @@ export const changeRate: Detector = (doc): Finding[] => {
     quote: quoteAt(doc.source, issue.offset),
     values: { ...issue.values, offset: issue.offset },
   }));
-};
