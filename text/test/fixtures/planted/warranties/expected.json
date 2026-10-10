@@ -1,0 +1,25 @@
+{
+  "recall": {
+    "ja": {
+      "registration-deadline": "0/2",
+      "warranty-end-date": "1/2",
+      "warranty-length": "1/2",
+      "free-repair-period": "0/2",
+      "model-number": "0/2",
+      "exclusion-numbering": "2/2",
+      "support-phone": "2/2",
+      "maker-name": "1/2"
+    },
+    "en": {
+      "registration-deadline": "0/2",
+      "warranty-end-date": "1/2",
+      "warranty-length": "1/2",
+      "free-repair-period": "0/2",
+      "model-number": "0/2",
+      "exclusion-numbering": "2/2",
+      "support-phone": "2/2",
+      "maker-name": "1/2"
+    }
+  },
+  "clean": []
+}
