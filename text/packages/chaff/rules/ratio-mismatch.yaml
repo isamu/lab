@@ -2,6 +2,7 @@ id: ratio-mismatch
 layer: L3
 status: stable
 how_to_find: ratio-mismatch
+requires: [quantities]
 severity: warning
 
 name:

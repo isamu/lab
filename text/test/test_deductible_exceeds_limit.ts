@@ -8,11 +8,14 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { prepare } from "../packages/lang-ja/src/pos.ts";
 import { basesComparable, deductibleExceeds, sentenceDeductibleOverLimit, type DeductibleWords } from "../packages/chaff/src/structure/deductible-limit.ts";
 import { messageOf } from "../packages/chaff/src/render/text.ts";
-import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
+import { proseQuantitiesOf, type ProseQuantity } from "../packages/chaff/src/structure/ratio.ts";
+import type { LanguageAdapter, LexiconEntry } from "../packages/chaff/src/plugin.ts";
+import { deductibleExceedsLimit } from "../packages/chaff/src/detectors/deductible-exceeds-limit.ts";
 
 // 一つの文の免責金額と支払限度額（deductible-exceeds-limit）。例は自作。
 
 const RULE = "deductible-exceeds-limit";
+const CJK = /[\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}]/u;
 
 const findings = (text: string, adapter: LanguageAdapter) =>
   runRules(buildDocument("t.md", `# 概要\n\n${text}\n`, adapter), loadRules(adapter.id), { [RULE]: "normal" }, false, "business/report").findings.filter(
@@ -97,12 +100,19 @@ describe("sentenceDeductibleOverLimit", () => {
       { pattern: "円", currency: "JPY" },
     ],
   };
-  const read = (text: string) => sentenceDeductibleOverLimit(text, 100, words)?.values;
+  /** The tree's quantities of the text, as if it started at offset 100 in a document. */
+  const quantitiesOf = (text: string): ProseQuantity[] =>
+    proseQuantitiesOf(buildDocument("t.md", text, CJK.test(text) ? ja : en).structure).map((quantity) => ({
+      ...quantity,
+      start: quantity.start + 100,
+      end: quantity.end + 100,
+    }));
+  const read = (text: string) => sentenceDeductibleOverLimit(text, 100, quantitiesOf(text), words)?.values;
 
   it("reads both amounts and their bases in one sentence, and gives where the deductible is written", () => {
     const text = "免責金額は1回5,000円、1回あたりの支払限度額は3,000円です。";
     assert.deepEqual(read(text), { deductibleWord: "免責金額", deductible: "5,000円", limitWord: "支払限度額", limit: "3,000円" });
-    assert.equal(sentenceDeductibleOverLimit(text, 100, words)?.offset, 100 + text.indexOf("5,000"));
+    assert.equal(sentenceDeductibleOverLimit(text, 100, quantitiesOf(text), words)?.offset, 100 + text.indexOf("5,000"));
     assert.equal(read("The excess is $80 a visit, and the most we pay for a visit is $50.")?.["deductible"], "$80");
   });
 
@@ -195,5 +205,47 @@ describe("deductible-exceeds-limit (the rule)", () => {
     assert.deepEqual(message("通院給付金の免責金額は1回5,000円、1回あたりの支払限度額は3,000円です。", ja), [
       "「免責金額」の5,000円が「支払限度額」の3,000円より大きく、この補償は支払われないことになります",
     ]);
+  });
+});
+
+// The amounts come from the structure tree's quantities; these cases run every currency notation through the rule.
+describe("deductible-exceeds-limit reads every currency notation", () => {
+  const LATIN_WORD = /^[A-Za-z]/u;
+  const notations = (adapter: LanguageAdapter): readonly LexiconEntry[] => {
+    const entries = buildDocument("t.md", "# r\n", adapter).lexicons["currency-notation"] ?? [];
+    assert.notEqual(entries.length, 0, `${adapter.id}: lexicon currency-notation`);
+    return entries;
+  };
+  /** An amount in one notation, its mark touching the number or a space apart; a Latin unit after always a space apart. */
+  const amountsOf = (adapter: LanguageAdapter, gap: string): ((value: string) => string)[] =>
+    notations(adapter).map((notation) => {
+      if (notation.position === "before") return (value: string) => `${notation.pattern}${gap}${value}`;
+      const space = adapter.id === "en" || LATIN_WORD.test(notation.pattern) ? " " : gap;
+      return (value: string) => `${value}${space}${notation.pattern}`;
+    });
+  const sentence = (adapter: LanguageAdapter, deductible: string, limit: string): string =>
+    adapter.id === "ja"
+      ? `免責金額は1回${deductible}、1回あたりの支払限度額は${limit}です。`
+      : `The excess is ${deductible} a visit, and the most we pay for a visit is ${limit}.`;
+  const detected = (text: string, adapter: LanguageAdapter): string[] =>
+    deductibleExceedsLimit(buildDocument("t.md", `# 概要\n\n${text}\n`, adapter), { limit: 0 }).map(
+      (finding) => `${String(finding.values["deductible"])}>${String(finding.values["limit"])}`,
+    );
+  const every = (gap: string) => [ja, en].flatMap((adapter) => amountsOf(adapter, gap).map((amount) => ({ adapter, amount })));
+
+  it("reports a deductible over the limit, quoting each amount as written, its mark touching or a space apart", () => {
+    [...every(""), ...every(" ")].forEach(({ adapter, amount }) => {
+      const [larger, smaller] = [amount("5,000"), amount("3,000")];
+      assert.deepEqual(detected(sentence(adapter, larger, smaller), adapter), [`${larger}>${smaller}`], `${adapter.id}: ${larger}`);
+      assert.deepEqual(detected(sentence(adapter, smaller, larger), adapter), [], `${adapter.id}: ${smaller}`);
+    });
+  });
+
+  it("does not read a signed amount", () => {
+    const SIGNS = ["▲", "△", "-", "−"];
+    [...every(""), ...every(" ")].forEach(({ adapter, amount }) => {
+      const signed = SIGNS.flatMap((sign) => [`${sign}${amount("5,000")}`, amount("5,000").replace(/(?=\d)/u, sign)]);
+      signed.forEach((deductible) => assert.deepEqual(detected(sentence(adapter, deductible, amount("3,000")), adapter), [], `${adapter.id}: ${deductible}`));
+    });
   });
 });
