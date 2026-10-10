@@ -15,7 +15,9 @@ import { quoteAt } from "./structure-tree.ts";
 import { measuredOf, valuesWith } from "./measured-facts.ts";
 import { durationValues, type DurationWord } from "../facts/duration-values.ts";
 import { overlapsAny, spanIndex } from "../compare/spans.ts";
-import { documentTermConflicts, type TermWord, type TermWords } from "../facts/document-terms.ts";
+import { documentTermConflicts, termHomes, type TermWord, type TermWords } from "../facts/document-terms.ts";
+import { termValues, type PlacedWord, type TermValueWords } from "../facts/term-values.ts";
+import { inDocumentOrder } from "../structure/issues.ts";
 import { ageValues, type AgeWord, type AgeWords } from "../facts/age-values.ts";
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
@@ -29,10 +31,31 @@ export const factWordsOf = (doc: ProseDocument): FactWords => ({
   attributes: (doc.lexicons["fact-attribute"] ?? []).map((entry): AttributePhrase => ({ pattern: entry.pattern, position: entry.position ?? "before" })),
 });
 
+const placedWordsOf = (doc: ProseDocument, id: string): PlacedWord[] =>
+  (doc.lexicons[id] ?? []).map((entry): PlacedWord => ({ pattern: entry.pattern, position: entry.position ?? "before" }));
+
+const termWordsOf = (doc: ProseDocument): TermWords => ({
+  terms: (doc.lexicons["fact-document-term"] ?? []).map((entry): TermWord => ({ pattern: entry.pattern, group: entry.group ?? entry.pattern })),
+  determiners: patternsOf(doc, "fact-label-drop"),
+});
+
+const termValueWordsOf = (doc: ProseDocument): TermValueWords => ({
+  ...termWordsOf(doc),
+  separators: [...patternsOf(doc, "fact-separator"), ...patternsOf(doc, "fact-term-verb")],
+  selves: placedWordsOf(doc, "fact-term-self"),
+  starts: placedWordsOf(doc, "fact-term-start"),
+  valueEnds: patternsOf(doc, "fact-value-end"),
+});
+
 const factsByDocument = new WeakMap<ProseDocument, readonly ScopedFact[]>();
 
-const durationWordsOf = (doc: ProseDocument): DurationWord[] =>
-  DURATION_LEXICONS.flatMap(([id, unit]) => patternsOf(doc, id).map((pattern): DurationWord => ({ pattern, unit })));
+/** 期間の単位と、年数にもなる単位（「保証期間は1年」の 年。retention-unit の group が大きさ）。 */
+const durationWordsOf = (doc: ProseDocument): DurationWord[] => [
+  ...DURATION_LEXICONS.flatMap(([id, unit]) => patternsOf(doc, id).map((pattern): DurationWord => ({ pattern, unit }))),
+  ...(doc.lexicons["retention-unit"] ?? []).flatMap((entry): DurationWord[] =>
+    isDurationUnit(entry.group) ? [{ pattern: entry.pattern, unit: entry.group }] : [],
+  ),
+];
 
 const ageWordsAt = (doc: ProseDocument, id: string): AgeWord[] =>
   (doc.lexicons[id] ?? []).map((entry): AgeWord => ({ pattern: entry.pattern, position: entry.position ?? "before" }));
@@ -58,8 +81,10 @@ const readFacts = (doc: ProseDocument, tree: StructureNode): ScopedFact[] => {
   );
   const taken = spanIndex([...ages, ...durations]);
   const values = valuesWith(tree, doc, [...measuredOf(doc).filter((value) => !overlapsAny(taken, value)), ...ages, ...durations]);
-  const facts = [...labelledFacts(doc.source, values, factWordsOf(doc)), ...tableFacts(doc.source, values)];
-  return scopedFacts(facts, tree, doc.source, patternsOf(doc, "summary-heading"));
+  const terms = termValues(doc.source, values, termValueWordsOf(doc));
+  const termed = new Set(terms.map((fact) => fact.value.start));
+  const labelled = labelledFacts(doc.source, values, factWordsOf(doc)).filter((fact) => !termed.has(fact.value.start));
+  return scopedFacts([...labelled, ...terms, ...tableFacts(doc.source, values)], tree, doc.source, patternsOf(doc, "summary-heading"));
 };
 
 /** 文書の名前付きの値。二つの rule が読むので、文書ごとに一度だけ読む。 */
@@ -140,14 +165,24 @@ const retentionFindings = (doc: ProseDocument): Finding[] => {
   }));
 };
 
-const termWordsOf = (doc: ProseDocument): TermWords => ({
-  terms: (doc.lexicons["fact-document-term"] ?? []).map((entry): TermWord => ({ pattern: entry.pattern, group: entry.group ?? entry.pattern })),
-  determiners: patternsOf(doc, "fact-label-drop"),
-});
+const SECTION_KINDS: ReadonlySet<string> = new Set(["section", "chapter", "article"]);
 
-/** 文書全体で一つの項目（試用期間）の、表の値と違う別の節の文の値。 */
-const termFindings = (doc: ProseDocument): Finding[] =>
-  documentTermConflicts(factsOf(doc), termWordsOf(doc)).map((conflict) => ({ ...findingOf("fact-conflict", doc)(conflict), variant: "term" }));
+const sectionsOf = (tree: StructureNode | undefined): { heading: string; start: number; end: number }[] =>
+  tree === undefined
+    ? []
+    : inDocumentOrder(tree)
+        .filter((node) => SECTION_KINDS.has(node.kind))
+        .map((node) => ({ heading: String(node.attrs["heading"] ?? ""), start: node.span.start, end: node.span.end }));
+
+/** 文書全体で一つの項目（試用期間）の、拠り所（表の升、項目の名前を見出しにした節）の値と違う別の節の文の値。 */
+const termFindings = (doc: ProseDocument): Finding[] => {
+  const words = termWordsOf(doc);
+  return documentTermConflicts(factsOf(doc), words, termHomes(sectionsOf(doc.structure), words)).map((conflict): Finding => {
+    const finding = findingOf("fact-conflict", doc)(conflict);
+    if (conflict.section === undefined) return { ...finding, variant: "term" };
+    return { ...finding, variant: "term-section", values: { ...finding.values, section: conflict.section } };
+  });
+};
 
 /** 同じ節で、同じ名前に二通りの値（締切：10月5日 と 締切：10月7日）。文書のどこでも、同じものに二通りの保存期間。 */
 export const factConflict: Detector = (doc): Finding[] => [

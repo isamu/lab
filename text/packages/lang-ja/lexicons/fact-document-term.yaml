@@ -13,3 +13,6 @@ entries:
   - { pattern: 契約できる年齢, group: age-limit }
   - { pattern: ご契約いただける年齢, group: age-limit }
   - { pattern: 契約可能年齢, group: age-limit }
+  # 保証の長さ。保証期限（2027年6月30日まで）は終わりの日付で長さとは別の項目なので入れない。延長保証の期間も別の名前。
+  - { pattern: 保証期間, group: warranty-period }
+  - { pattern: 保証の期間, group: warranty-period }
