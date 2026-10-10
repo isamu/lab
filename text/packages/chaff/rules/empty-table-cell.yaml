@@ -58,8 +58,8 @@ example:
       | Oct 28 | Takahashi | Set the briefing date |
 
 not_flagged:
-  ja: 一番左の列は見ません（空欄で「上と同じ」を表す書き方があるため）。同じ列に空欄が二つ以上ある列、本文の行が三つより少ない表、「—」「なし」と書いたセルは指しません。Markdown の表でだけ動きます。
-  en: The first column is not checked, since a blank there often means "same as above". A column with two or more blanks, a table with fewer than three body rows, and a cell holding "—" or "none" are not reported. Markdown tables only.
+  ja: 一番左の列は見ません（空欄で「上と同じ」を表す書き方があるため）。同じ列に空欄が二つ以上ある列、本文の行が三つより少ない表、「—」「なし」と書いたセルは指しません。合計・小計・税の行（「| 合計 | | | 48,400円 |」）の数量や単価の空欄も指しません。金額の列（ほかの行がどれも数字を書いている一番右の列）の空欄は指します。Markdown の表でだけ動きます。
+  en: The first column is not checked, since a blank there often means "same as above". A column with two or more blanks, a table with fewer than three body rows, and a cell holding "—" or "none" are not reported. Nor are the quantity and unit-price blanks of a total, subtotal or tax row ("| Total | | | $612.00 |"); a blank in its amount column (the rightmost column every other row fills with a figure) still is. Markdown tables only.
 rewrite:
   depth: light
   ja:

@@ -5,6 +5,9 @@ import { readMarkdown } from "../markdown-read.ts";
 import { spanOf, type MarkdownNode } from "../markdown-node.ts";
 import { eachPreOrder, foldPostOrder } from "../tree-walk.ts";
 import { quoteAt } from "./structure-tree.ts";
+import { amountColumnOf, isTotalRowGap, type BodyRow } from "../structure/total-row-blank.ts";
+import { isTotalLine } from "../structure/total-line.ts";
+import { isTotalLabel } from "../structure/total.ts";
 
 /** Fewer body rows than this, and one blank is as likely a choice as a gap. */
 const MIN_BODY_ROWS = 3;
@@ -61,25 +64,45 @@ const cellOffset = (cell: MarkdownNode | undefined, row: MarkdownNode | undefine
   return row === undefined ? undefined : spanOf(row)?.end;
 };
 
-/** The one blank body cell of a column whose other body rows are all filled. */
-const columnBlank = (source: string, header: MarkdownNode, body: readonly MarkdownNode[], column: number): Blank[] => {
-  const cells = body.map((row) => row.children?.[column]);
-  const blanks = cells.flatMap((cell, index) => (cell === undefined || !shows(cell) ? [index] : []));
+/** Whether a row is a total, subtotal or tax row, judged from the row's source text. */
+export type IsTotalRow = (rowText: string) => boolean;
+
+const NO_TOTAL_ROWS: IsTotalRow = () => false;
+
+const rowSource = (source: string, row: MarkdownNode): string => {
+  const span = spanOf(row);
+  return span === undefined ? "" : source.slice(span.start, span.end);
+};
+
+const bodyRowOf = (source: string, row: MarkdownNode, isTotalRow: IsTotalRow): BodyRow => ({
+  total: isTotalRow(rowSource(source, row)),
+  cells: (row.children ?? []).map((cell) => (shows(cell) ? sourceOf(source, cell) : undefined)),
+});
+
+/**
+ * The one blank body cell of a column whose other body rows are all filled, unless it is a total row's blank beside its
+ * amount. Such a blank still counts as a second blank, so the rows it shares a column with stay as unreported as before.
+ */
+const columnBlank = (source: string, header: MarkdownNode, body: readonly MarkdownNode[], rows: readonly BodyRow[], column: number): Blank[] => {
+  const blanks = rows.flatMap((row, index) => (row.cells[column] === undefined ? [index] : []));
   const at = blanks[0];
-  if (blanks.length !== 1 || at === undefined) return [];
-  const offset = cellOffset(cells[at], body[at]);
+  const row = at === undefined ? undefined : rows[at];
+  if (blanks.length !== 1 || at === undefined || row === undefined) return [];
+  if (isTotalRowGap(row, column, amountColumnOf(rows, header.children?.length ?? 0))) return [];
+  const offset = cellOffset(body[at]?.children?.[column], body[at]);
   const name = sourceOf(source, header.children?.[column]);
   return offset === undefined || name === "" ? [] : [{ offset, name }];
 };
 
 /** The first column is skipped: a blank there often means "same as above". */
-const tableBlanksOf = (source: string, table: MarkdownNode): Blank[] => {
+const tableBlanksOf = (source: string, table: MarkdownNode, isTotalRow: IsTotalRow): Blank[] => {
   const [header, ...body] = table.children ?? [];
   if (header === undefined || body.length < MIN_BODY_ROWS) return [];
+  const rows = body.map((row) => bodyRowOf(source, row, isTotalRow));
   const columns = header.children?.length ?? 0;
   return Array.from({ length: columns }, (_unused, column) => column)
     .slice(1)
-    .flatMap((column) => columnBlank(source, header, body, column));
+    .flatMap((column) => columnBlank(source, header, body, rows, column));
 };
 
 /** Quoted material is someone else's: email replies the document model found, and every Markdown blockquote. */
@@ -95,8 +118,8 @@ const blocksOutsideQuotes = (source: string, type: string, replies: readonly Spa
 };
 
 /** Blank cells in every table outside quotes. */
-export const tableBlanks = (source: string, replies: readonly Span[] = []): Blank[] =>
-  blocksOutsideQuotes(source, "table", replies).flatMap((table) => tableBlanksOf(source, table));
+export const tableBlanks = (source: string, replies: readonly Span[] = [], isTotalRow: IsTotalRow = NO_TOTAL_ROWS): Blank[] =>
+  blocksOutsideQuotes(source, "table", replies).flatMap((table) => tableBlanksOf(source, table, isTotalRow));
 
 type Item = { readonly node: MarkdownNode; readonly text: string | undefined; readonly empty: boolean };
 
@@ -139,9 +162,9 @@ export const listBlanks = (source: string, replies: readonly Span[] = []): Blank
   blocksOutsideQuotes(source, "list", replies).flatMap((list) => listBlanksOf(source, list));
 
 const findingsOf =
-  (rule: string, blanksOf: (source: string, replies: readonly Span[]) => Blank[]): Detector =>
+  (rule: string, blanksOf: (doc: ProseDocument) => Blank[]): Detector =>
   (doc: ProseDocument): Finding[] =>
-    blanksOf(doc.source, doc.replyQuotes ?? []).map((blank) => ({
+    blanksOf(doc).map((blank) => ({
       rule,
       severity: "warning",
       line: 0,
@@ -151,5 +174,14 @@ const findingsOf =
       values: { name: blank.name, offset: blank.offset },
     }));
 
-export const emptyTableCell: Detector = findingsOf("empty-table-cell", tableBlanks);
-export const emptyListItem: Detector = findingsOf("empty-list-item", listBlanks);
+const patternsOf = (doc: ProseDocument, lexicon: string): string[] => (doc.lexicons[lexicon] ?? []).map((entry) => entry.pattern);
+
+/** A total row starts with a total word (total-label, with total-label-qualifier) or a tax word (tax-label). */
+const totalRowOf = (doc: ProseDocument): IsTotalRow => {
+  const totals = { labels: patternsOf(doc, "total-label"), qualifiers: doc.lexicons["total-label-qualifier"] ?? [] };
+  const taxes = patternsOf(doc, "tax-label");
+  return (rowText) => isTotalLine(rowText, totals) || isTotalLabel(rowText, taxes);
+};
+
+export const emptyTableCell: Detector = findingsOf("empty-table-cell", (doc) => tableBlanks(doc.source, doc.replyQuotes ?? [], totalRowOf(doc)));
+export const emptyListItem: Detector = findingsOf("empty-list-item", (doc) => listBlanks(doc.source, doc.replyQuotes ?? []));
