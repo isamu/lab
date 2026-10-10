@@ -1,0 +1,74 @@
+id: reference-flag-mismatch
+layer: L3
+status: stable
+how_to_find: reference-flag-mismatch
+word_list: reference-flag
+extra_word_lists: [reference-column-heading, reference-bound-mark, range-band-word]
+severity: warning
+
+name:
+  ja: 結果と基準値に合わない判定の印
+  en: A flag that does not match the result and its reference range
+
+why:
+  ja: 検査結果の表で、基準値「30〜149 mg/dL」の中の 88 に「高」、基準値「79 U/L 以下」を超える 88 に「基準内」と付いていると、読み手は印を信じて、見るべき値を見落とすか、問題の無い値を気にします。前の回の表から印を写したまま値だけを書き換えたときや、隣の行の印を貼ったときに起きます。列の見出し（結果、基準値、判定）で結果・基準値・判定の列を見つけ、同じ行の結果を基準値と照らします。「30〜149」のように範囲の印だけで書いた基準値は両端を含むと読みます。基準値は、その値までを基準の範囲として示すものだからです。以上・以下・≦は端を含み、未満・超・<は含みません。
+  en: 'When a results table flags 5.2 "H" against a reference range of 4.0–5.6 %, or 18 "Normal" against 30–100 ng/mL, the reader trusts the flag and either misses the value that needs attention or worries about one that does not. It happens when the flags of last time''s table are kept and only the values are updated, or a row''s flag is pasted from its neighbour. The result, reference range and flag columns are found by their headings, and the result of each row is compared with the range on the same row. A range written with a range mark only ("4.0–5.6") includes both ends, since a reference range names the lowest and the highest value it counts as within it. "Or less", "or more", "≤" and "≥" keep their end; "below", "above", "<" and ">" do not.'
+
+message:
+  ja: 「{item}」の {value} は基準値（{range}）の範囲内なのに、判定が「{flag}」です
+  en: '"{item}" is {value}, within its reference range ({range}), but is flagged "{flag}"'
+messages:
+  outside:
+    ja: 「{item}」の {value} は基準値（{range}）の範囲外なのに、判定が「{flag}」です
+    en: '"{item}" is {value}, outside its reference range ({range}), but is flagged "{flag}"'
+  below:
+    ja: 「{item}」の {value} は基準値（{range}）より低いのに、判定が「{flag}」です
+    en: '"{item}" is {value}, below its reference range ({range}), but is flagged "{flag}"'
+  above:
+    ja: 「{item}」の {value} は基準値（{range}）より高いのに、判定が「{flag}」です
+    en: '"{item}" is {value}, above its reference range ({range}), but is flagged "{flag}"'
+
+how_to_fix:
+  ja: 結果と基準値を確かめて、判定の印か、書き間違えた数を直してください。
+  en: Check the result and the reference range, and correct the flag or the mistyped number.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 検査結果の表で、基準値の範囲内の値に「高」、範囲外の値に「基準内」と付いた行
+  en: A lab result flagged high though within its range, or normal though outside it
+example:
+  ja:
+    before: |
+      | 項目 | 結果 | 基準値 | 判定 |
+      | --- | --- | --- | --- |
+      | 中性脂肪 | 88 mg/dL | 30〜149 mg/dL | 高 |
+      | γ-GTP | 88 U/L | 79 U/L 以下 | 基準内 |
+    after: |
+      | 項目 | 結果 | 基準値 | 判定 |
+      | --- | --- | --- | --- |
+      | 中性脂肪 | 88 mg/dL | 30〜149 mg/dL | 基準内 |
+      | γ-GTP | 88 U/L | 79 U/L 以下 | 高 |
+  en:
+    before: |
+      | Test | Result | Reference range | Flag |
+      | --- | --- | --- | --- |
+      | HbA1c | 5.2 % | 4.0–5.6 % | H |
+      | Vitamin D | 18 ng/mL | 30–100 ng/mL | Normal |
+    after: |
+      | Test | Result | Reference range | Flag |
+      | --- | --- | --- | --- |
+      | HbA1c | 5.2 % | 4.0–5.6 % | Normal |
+      | Vitamin D | 18 ng/mL | 30–100 ng/mL | L |
+
+not_flagged:
+  ja: 結果・基準値・判定の列が見出しでそれぞれ一つに決まる表だけを読みます。結果が一つの数でない行（<0.5、陰性）、基準値の無い行、男女で分けた基準値、結果と基準値の単位が違う行（mmol/L と mg/dL）、端が逆に書かれた基準値、知らない判定の印（A〜E の判定区分、要再検査）の行は言いません。判定区分は健診機関ごとの判定基準で決まり、基準値とは別だからです。
+  en: 'Only tables whose result, reference range and flag columns are each named by exactly one heading are read. A row whose result is not one number ("<0.5", "negative"), a row with no range, a range given separately for men and women, a row whose result and range are in different units (mmol/L against mg/dL), a range written high end first, and a flag chaff does not know (a grade A to E, "repeat test") are not reported: a grade follows the clinic''s own criteria, not the reference range.'
+level_meaning:
+  ja: 判定の印が結果と基準値に合わないとき指摘
+  en: reported when a flag does not match the result and its reference range

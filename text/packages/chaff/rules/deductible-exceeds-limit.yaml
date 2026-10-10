@@ -1,0 +1,53 @@
+id: deductible-exceeds-limit
+layer: L3
+status: stable
+how_to_find: deductible-exceeds-limit
+# The deductible words are deductible-word, the limit words benefit-limit-word, the bases (1回, a claim, 1品, a single
+# item) and how they nest deductible-basis; rough amounts come from approximate-marker, ranges from range-connector, money
+# from currency-notation and amount-multiplier.
+severity: warning
+
+name:
+  ja: 免責金額が支払限度額より大きい
+  en: A deductible larger than the most paid
+
+why:
+  ja: 「免責金額は1回5,000円、1回あたりの支払限度額は3,000円」と書くと、読み手には一度も支払われない補償に見えます。免責金額か限度額の片方だけを直したとき、別の補償の数を写したときに起きます。一つの文に免責金額の語（免責金額、自己負担額）と支払限度額の語（支払限度額、限度額）が一つずつあり、それぞれのすぐ後ろに金額がちょうど一つあるとき、同じ補償の額として比べます。通貨と桁の語（万円）をそろえて比べ、何あたりの額か（1回、1事故、1品、1日）も読みます。同じ基準どうし、限度額に基準が無いとき（補償全体の上限）、1事故の免責金額と1品の限度額は比べます。1品だけの請求でも免責金額を丸ごと引かれ、払われるのは1品の限度額までだからです。基準を書いていない免責金額は1事故あたりと読みます。1日と1回のように入れ子にならない基準どうしは比べません。¥と円のように同じ通貨の別の書き方は同じ通貨として比べます。どの語がどの基準かは、言語パッケージの語彙表 deductible-basis にあります。
+  en: 'When a summary says "The excess is $80 a visit, and the most we pay for a visit is $50", the benefit reads as one that never pays. It happens when the excess or the limit is changed and the other is not, or when a figure is copied from another benefit. One sentence holding one deductible word (excess, deductible) and one limit word (the most we pay, maximum, limit, up to), each with exactly one amount of money right after it, is read as one benefit and the two amounts are compared, in the same currency and scale. What each amount is stated for is read too (a visit, a claim, a single item, a day). The same basis is compared, and so is a limit with no basis (the most paid for the whole benefit). An excess per claim is compared with a limit per item: a claim for one item meets the whole excess and is paid at most one item''s limit. An excess with no basis is read as one per claim. Bases that do not nest, such as a day and a claim, are not compared. One currency written two ways ($ and US$) is one currency. Which words name which basis is in the language package''s lexicon deductible-basis.'
+
+message:
+  ja: 「{deductibleWord}」の{deductible}が「{limitWord}」の{limit}より大きく、この補償は支払われないことになります
+  en: "The {deductibleWord} of {deductible} is more than the most paid, {limit}: this benefit would never pay out"
+
+how_to_fix:
+  ja: 免責金額と支払限度額のどちらが正しいかを確かめて、もう一方を直してください。
+  en: Check which of the deductible and the limit is right and correct the other.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 「免責金額5,000円、限度額3,000円」のように、免責金額が支払う上限を超える所
+  en: A deductible or excess larger than the most paid for the same benefit
+example:
+  ja:
+    before: |
+      通院給付金の免責金額は1回5,000円、1回あたりの支払限度額は3,000円です。
+    after: |
+      通院給付金の免責金額は1回1,000円、1回あたりの支払限度額は3,000円です。
+  en:
+    before: |
+      The outpatient excess is $80 a visit, and the most we pay for a visit is $50.
+    after: |
+      The outpatient excess is $20 a visit, and the most we pay for a visit is $50.
+
+not_flagged:
+  ja: 免責金額と限度額が別の文にある所、表の中、文に免責金額か限度額の語が二つ以上ある所、語のすぐ後ろに金額が無いか二つある所、範囲（1,000〜5,000円）や目安（約5,000円、5,000円程度）の金額、通貨の違う金額、入れ子にならない基準どうし（1日と1回、1年と1回）、二つの基準を書いた所は比べません。免責金額と限度額が同じ額のときも指しません。
+  en: 'A deductible and a limit in different sentences, tables, a sentence with two deductible or two limit words, a word with no amount or two amounts right after it, a range ("$50 - $80") or a rough amount ("about $80"), amounts in different currencies, bases that do not nest (a day and a claim, a year and a claim), and an amount with two bases written around it are left alone. A deductible equal to the limit is not reported.'
+level_meaning:
+  ja: 一つの文の免責金額が、同じ基準の支払限度額より大きいとき指摘
+  en: reported when a deductible in a sentence is larger than the limit on a comparable basis

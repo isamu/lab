@@ -1,0 +1,14 @@
+# 検針票の、指示数の差を変える出来事を書く語（meter-usage-mismatch）。rollover はメーターが最後の桁を越えて一巡したこと
+# （今回が前回より小さくても、前回の桁数の上限を足して読む）。replaced はメーターを取り替えたこと（二つの指示数は別の
+# メーターのものなので比べない）。同じ見出しの下にこの語があるときだけ効く。
+id: meter-event
+language: ja
+entries:
+  - { pattern: 一巡, group: rollover }
+  - { pattern: 桁あふれ, group: rollover }
+  - { pattern: メーター交換, group: replaced }
+  - { pattern: メーター取替, group: replaced }
+  - { pattern: メーターの取替, group: replaced }
+  - { pattern: メーターの交換, group: replaced }
+  - { pattern: 計器交換, group: replaced }
+  - { pattern: 計器取替, group: replaced }

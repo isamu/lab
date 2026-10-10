@@ -87,11 +87,24 @@ const signNear = (rate: Rate, directions: readonly Direction[]): 1 | -1 | undefi
  * The rates of change the two values allow. Each value may be off by half the step it is written to: 12億 is anything from
  * 11.5億 to 12.5億, so 12億 from 10億 is a rise of 9.5% to 31.6%, and only a rate outside that is a mistake.
  */
-const rateRange = (base: Figure, current: Figure): readonly [number, number] | undefined => {
+type Rounded = Pick<Figure, "value" | "step">;
+
+const rateRange = (base: Rounded, current: Rounded): readonly [number, number] | undefined => {
   const [baseLow, baseHigh] = [base.value - base.step * HALF, base.value + base.step * HALF];
   const [currentLow, currentHigh] = [current.value - current.step * HALF, current.value + current.step * HALF];
   if (baseLow <= 0) return undefined;
   return [(currentLow / baseHigh - 1) * PERCENT, (currentHigh / baseLow - 1) * PERCENT];
+};
+
+/**
+ * The rate in percent the two values give, when the written rate (signed, with its decimals) is one their rounding cannot
+ * reach; undefined when it can, or when the earlier value may be zero or below.
+ */
+export const disagreeingRate = (base: Rounded, current: Rounded, written: number, decimals: number): number | undefined => {
+  const range = rateRange(base, current);
+  const slack = HALF * DECIMAL_BASE ** -decimals;
+  if (range === undefined || (written >= range[0] - slack && written <= range[1] + slack)) return undefined;
+  return (current.value / base.value - 1) * PERCENT;
 };
 
 type Pair = { readonly base: Figure; readonly current: Figure };
@@ -232,14 +245,11 @@ const readingIn = (text: ChangeText, sentence: Span): Reading | undefined => {
 const issueIn = (text: ChangeText, sentence: Span): StructureIssue[] => {
   const reading = readingIn(text, sentence);
   const pair = reading === undefined ? undefined : (besideRate(reading) ?? beforeRate(reading) ?? reachedThenBase(reading));
-  const range = pair === undefined ? undefined : rateRange(pair.base, pair.current);
-  if (reading === undefined || pair === undefined || range === undefined) return [];
+  if (reading === undefined || pair === undefined) return [];
   const { rate, sign } = reading;
-  const written = sign * rate.value;
-  const slack = HALF * DECIMAL_BASE ** -rate.decimals;
-  if (written >= range[0] - slack && written <= range[1] + slack) return [];
-  const computed = Math.abs((pair.current.value / pair.base.value - 1) * PERCENT).toFixed(rate.decimals);
-  return [{ offset: rate.start, values: { rate: String(rate.value), computed } }];
+  const computed = disagreeingRate(pair.base, pair.current, sign * rate.value, rate.decimals);
+  if (computed === undefined) return [];
+  return [{ offset: rate.start, values: { rate: String(rate.value), computed: Math.abs(computed).toFixed(rate.decimals) } }];
 };
 
 /**

@@ -1,0 +1,28 @@
+# 前期・当期・増減率の表で、列の見出しが言う役割（change-rate-mismatch）。group: base はもとの値の列、current は今の値の列、
+# rate は増減率の列（升に % が無くても率）、change は増減の列（升に % があるときだけ率）。率の語を先に見るので「前期比」は前期の列にならない。
+id: change-column
+language: ja
+entries:
+  - { pattern: 増減率, group: rate }
+  - { pattern: 前年比, group: rate }
+  - { pattern: 前年同期比, group: rate }
+  - { pattern: 前年同月比, group: rate }
+  - { pattern: 前期比, group: rate }
+  - { pattern: 前年度比, group: rate }
+  - { pattern: 伸び率, group: rate }
+  - { pattern: 増減, group: change }
+  - { pattern: 前期, group: base }
+  - { pattern: 前年度, group: base }
+  - { pattern: 前年同期, group: base }
+  - { pattern: 前年同月, group: base }
+  - { pattern: 前連結会計年度, group: base }
+  - { pattern: 前事業年度, group: base }
+  - { pattern: 前第, group: base }
+  - { pattern: 前年, group: base }
+  - { pattern: 当期, group: current }
+  - { pattern: 今期, group: current }
+  - { pattern: 当年度, group: current }
+  - { pattern: 当連結会計年度, group: current }
+  - { pattern: 当事業年度, group: current }
+  - { pattern: 当第, group: current }
+  - { pattern: 当四半期, group: current }

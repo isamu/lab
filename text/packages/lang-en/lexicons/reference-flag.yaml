@@ -1,0 +1,20 @@
+# The flags of a lab result (reference-flag-mismatch). Group high is above the reference range, low below it, normal within
+# it, outside out of it on either side. Only flags set against the reference range are listed; a grade of a checkup (A to E)
+# follows the clinic's own criteria and is left out. Matched as the whole cell.
+id: reference-flag
+language: en
+entries:
+  - { pattern: H, group: high }
+  - { pattern: High, group: high }
+  - { pattern: ↑, group: high }
+  - { pattern: L, group: low }
+  - { pattern: Low, group: low }
+  - { pattern: ↓, group: low }
+  - { pattern: Normal, group: normal }
+  - { pattern: Within range, group: normal }
+  - { pattern: In range, group: normal }
+  - { pattern: Within normal limits, group: normal }
+  - { pattern: WNL, group: normal }
+  - { pattern: Out of range, group: outside }
+  - { pattern: Abnormal, group: outside }
+  - { pattern: "*", group: outside }

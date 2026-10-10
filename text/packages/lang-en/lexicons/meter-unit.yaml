@@ -1,0 +1,16 @@
+# Units of meter readings and usage, and what each is (group). The three values are not compared when their units differ,
+# and a value with a word after its number that is not here is not read (meter-usage-mismatch). m³ is m3 once normalised.
+id: meter-unit
+language: en
+entries:
+  - { pattern: kWh, group: kwh }
+  - { pattern: m3, group: m3 }
+  - { pattern: cubic meters, group: m3 }
+  - { pattern: cubic metres, group: m3 }
+  - { pattern: ccf, group: ccf }
+  - { pattern: hcf, group: ccf }
+  - { pattern: gallons, group: gallon }
+  - { pattern: gallon, group: gallon }
+  - { pattern: gal, group: gallon }
+  - { pattern: kgal, group: kgal }
+  - { pattern: therms, group: therm }

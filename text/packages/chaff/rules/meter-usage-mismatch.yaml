@@ -1,0 +1,64 @@
+id: meter-usage-mismatch
+layer: L3
+status: stable
+how_to_find: meter-usage
+# The names of the readings come from the language's meter-reading-label lexicon, their units from meter-unit, and a stated
+# rollover or meter replacement from meter-event.
+languages: [ja, en]
+severity: error
+
+name:
+  ja: 指示数の差が使用量と合わない
+  en: The meter readings' difference is not the usage
+
+why:
+  ja: 電気や水道の検針票では、今回の指示数から前回の指示数を引いた値（乗率があればそれを掛けた値）が使用量で、料金はその使用量から計算します。指示数を写し間違えると、使用量と料金のどちらが正しいのか読み手には分かりません。同じ見出しの下に今回指示数・前回指示数・使用量が一つずつあれば、「今回指示数：12,640」の行、行の見出しが名前の表、列の見出しが名前の表のどれに書いてあっても読み、差と使用量を比べます。名前は言語パッケージの語彙表 meter-reading-label にあります。
+  en: 'On an electricity or water bill the usage is the current meter reading minus the previous one (times the multiplier, when there is one), and the charges are worked out from it. When a reading is copied wrong, the reader cannot tell whether the usage or the charges are right. When one section has one current reading, one previous reading and one usage, written as "Current reading: 48,650" lines or in a table with the names as row or column headings, the difference is compared with the usage. The names are in the language package''s meter-reading-label lexicon.'
+
+message:
+  ja: 指示数の差（{current} − {previous}{times} = {expected}）が、使用量「{usage}」と合いません
+  en: "The readings' difference ({current} − {previous}{times} = {expected}) is not the usage {usage}"
+
+how_to_fix:
+  ja: 今回と前回の指示数をメーターの記録と照らし、指示数か使用量のどちらかを直してください。使用量を直したら料金も直します。
+  en: Check both readings against the meter record and correct the readings or the usage. If the usage changes, correct the charges with it.
+
+levels: { normal: error, relaxed: warning }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 検針票で、今回と前回の指示数の差が使用量と合わない所
+  en: A utility bill whose current meter reading minus the previous one is not the usage
+example:
+  ja:
+    before: |
+      | 区分 | 指示数 |
+      | --- | --- |
+      | 今回指示数 | 12,660 |
+      | 前回指示数 | 12,290 |
+
+      ご使用量：350kWh
+    after: |
+      | 区分 | 指示数 |
+      | --- | --- |
+      | 今回指示数 | 12,640 |
+      | 前回指示数 | 12,290 |
+
+      ご使用量：350kWh
+  en:
+    before: |
+      Current reading: 48,650 kWh
+      Previous reading: 47,900 kWh
+      Electricity used: 720 kWh
+    after: |
+      Current reading: 48,620 kWh
+      Previous reading: 47,900 kWh
+      Electricity used: 720 kWh
+
+not_flagged:
+  ja: 使用量は書いた桁までの丸めを認めます。今回・前回・使用量のどれかが無いか二つ以上ある見出しの下（昼と夜の二つのメーター）、単位が食い違う値（kWh と m³）、語彙表 meter-unit に無い語の付いた値、読めない乗率は比べません。今回が前回より小さいときは、同じ見出しの下にメーターが一巡したと書いてあれば前回の桁数の上限を足して比べ、書いていなければ比べません。メーターを取り替えたと書いてあれば比べません。列の見出しが名前の表で本体が二行以上あれば、行ごとに別のメーターとして比べ、一巡や取り替えはその行に書いたものだけを見ます。
+  en: The usage may be rounded to its last digit. A section with no current reading, previous reading or usage, or with two of one (a day and a night meter), values in different units (kWh and m³), a value with a word that is not in the meter-unit lexicon, and a multiplier that cannot be read are not compared. A current reading below the previous one is compared, with the previous reading's next power of ten added, only when the section says the meter rolled over. A section that says the meter was replaced is not compared. A table with the names as column headings and two or more rows is compared row by row, each row a meter of its own, and only what that row says about a rollover or a replacement counts.
