@@ -1,11 +1,21 @@
 # 検針票の、指示数の差を変える出来事を書く語（meter-usage-mismatch）。rollover はメーターが最後の桁を越えて一巡したこと
 # （今回が前回より小さくても、前回の桁数の上限を足して読む）。replaced はメーターを取り替えたこと（二つの指示数は別の
-# メーターのものなので比べない）。同じ見出しの下にこの語があるときだけ効く。
+# メーターのものなので比べない）。同じ見出しの下にこの語があるときだけ効く。rollover-negation-after は、一巡の語の後ろの
+# 同じ節（読点・句点まで）にあれば一巡を打ち消す語（「一巡していません」「一巡なし」「桁あふれはありません」）。
 id: meter-event
 language: ja
 entries:
   - { pattern: 一巡, group: rollover }
   - { pattern: 桁あふれ, group: rollover }
+  - { pattern: ません, group: rollover-negation-after }
+  - { pattern: ない, group: rollover-negation-after }
+  - { pattern: 無い, group: rollover-negation-after }
+  - { pattern: なかった, group: rollover-negation-after }
+  - { pattern: なく, group: rollover-negation-after }
+  - { pattern: なし, group: rollover-negation-after }
+  - { pattern: 無し, group: rollover-negation-after }
+  - { pattern: せず, group: rollover-negation-after }
+  - { pattern: しておらず, group: rollover-negation-after }
   - { pattern: メーター交換, group: replaced }
   - { pattern: メーター取替, group: replaced }
   - { pattern: メーターの取替, group: replaced }
