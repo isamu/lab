@@ -1,0 +1,52 @@
+id: serial-range-reversed
+layer: L3
+status: stable
+how_to_find: serial-range
+# serial-label names the codes on the line; the joints are range-connector, range-opener, range-closer and quantity-range-word;
+# quantity-change-word (its ungrouped words) makes a pair a change.
+severity: warning
+
+name:
+  ja: 製造番号やロットの範囲の終わりが始まりより小さい
+  en: A serial or lot number range that ends below where it starts
+
+why:
+  ja: 「製造番号：A2400〜A1800」「ロット番号：K0430〜K0410」のように、番号の範囲の終わりが始まりより小さいと、読み手は自分の製品が範囲に入るのかを確かめられません。回収のお知らせでは、対象の製品を見落とすか、対象外の製品まで問い合わせが来ることになります。片方の番号だけを書き換えたとき、二つを入れ替えて書いたときに起きます。英字と数字の番号を二つ、範囲の記号（〜、–）か「から … まで」でつないだものを、同じ行の前に「製造番号」「シリアル」「ロット」「バッチ」のある所だけ読みます。英字とハイフンと数字の桁数が両端でそろうときだけ数字を比べます（A2400 と A1800。A2400 と B0100 は別の系列なので比べません）。
+  en: 'When a range of serial or lot numbers ends below where it starts ("Serial numbers: B3900 to B3100", "Lots L5240 through L5210"), the reader cannot tell whether their product is in it. In a recall notice, affected units are missed or unaffected owners call in. It happens when only one of the two numbers is edited, or when they are written the wrong way round. Two letter-and-digit codes joined by a range mark (–, —), "to" or "through" are read only when "serial", "lot", "batch" or "S/N" stands earlier on the line. The numbers are compared only when both codes have the same letters, the same hyphen and the same number of digits (B3900 and B3100; B3900 and C0100 are different series).'
+
+message:
+  ja: 番号の範囲「{range}」の終わりが始まりより小さくなっています
+  en: 'The number range "{range}" ends below where it starts'
+
+how_to_fix:
+  ja: 範囲の二つの番号を確かめて、書き間違えたほうを直すか、小さいほうから書いてください。
+  en: Check both numbers, and correct the wrong one or write the smaller one first.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 「製造番号：A2400〜A1800」のように、番号の範囲の終わりが始まりより小さい所
+  en: 'A serial or lot number range that ends below its start, such as "L5240 to L5210"'
+example:
+  ja:
+    before: |
+      製造番号：A2400〜A1800
+    after: |
+      製造番号：A1800〜A2400
+  en:
+    before: |
+      Serial numbers: B3900 to B3100
+    after: |
+      Serial numbers: B3100 to B3900
+
+not_flagged:
+  ja: 「製造番号」「ロット」などの語の無い行の番号（部品表の品番は並べた順のことがあります）、英字や桁数の違う二つの番号（A2400〜B0100）、読点で並べた番号（A2400、A1800）、数字が二桁以下の番号、「変更」など値を変える語のある文は比べません。
+  en: 'Codes on a line without "serial", "lot", "batch" or "S/N" (part numbers in a parts list may be an order), two codes with different letters or numbers of digits (A2400 to B0100), codes listed with a comma (A2400, A1800), codes with fewer than three digits, and a sentence with a word of change ("changed", "reduced") are not compared.'
+level_meaning:
+  ja: 製造番号やロットの範囲の終わりが始まりより小さいとき指摘
+  en: reported when a serial or lot number range ends below where it starts

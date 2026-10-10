@@ -1,0 +1,9 @@
+# 同じ行の前にあれば、英字と数字の二つの番号（A2400〜A1800）を製造番号やロットの範囲と読む語（serial-range-reversed）。
+# 部品表の品番（A-100〜A-099）は並べた順のことがあるので、この語の無い行は読まない。字面どおりに照らす。
+id: serial-label
+language: ja
+entries:
+  - pattern: 製造番号
+  - pattern: シリアル
+  - pattern: ロット
+  - pattern: バッチ
