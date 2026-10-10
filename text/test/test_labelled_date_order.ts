@@ -152,8 +152,8 @@ describe("due-before-issue (period): 決算説明会が対象期間の終わり�
     assert.deepEqual(findingsOf(earningsEn("April 1 – September 30, 2026", "September 18, 2026"), en), [
       '"Earnings call" 2026-09-18 is before the end of the "Reporting period", 2026-09-30',
     ]);
-    assert.deepEqual(findingsOf(earningsEn("April 1, 2026 to September 30, 2026", "September 18, 2026", "Conference call"), en), [
-      '"Conference call" 2026-09-18 is before the end of the "Reporting period", 2026-09-30',
+    assert.deepEqual(findingsOf(earningsEn("April 1, 2026 to September 30, 2026", "September 18, 2026", "Earnings conference call"), en), [
+      '"Earnings conference call" 2026-09-18 is before the end of the "Reporting period", 2026-09-30',
     ]);
   });
 
@@ -176,9 +176,11 @@ describe("due-before-issue (period): 決算説明会が対象期間の終わり�
     assert.deepEqual(findingsOf(earningsEn("April 1, 2025 to March 31, 2026", "May 14, 2026\n\nPrevious call: November 12, 2025"), en), []);
   });
 
-  it("「発表日」と Release date だけでは期間と組まない", () => {
+  it("「発表日」「説明会開催日」、Release date、Conference call だけでは期間と組まない", () => {
     assert.deepEqual(findingsOf(earningsJa("2026年3月1日〜2026年3月31日", "2026年3月1日", "発表日")), []);
+    assert.deepEqual(findingsOf(earningsJa("2026年4月1日〜2027年3月31日", "2026年5月15日", "説明会開催日")), []);
     assert.deepEqual(findingsOf(earningsEn("March 1, 2026 to March 31, 2026", "March 1, 2026", "Release date"), en), []);
+    assert.deepEqual(findingsOf(earningsEn("May 1, 2026 to May 31, 2026", "May 15, 2026", "Conference call"), en), []);
   });
 });
 

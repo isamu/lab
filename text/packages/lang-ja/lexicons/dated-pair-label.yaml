@@ -24,10 +24,10 @@ entries:
   - { pattern: "募集締切日", group: job, position: after }
   # 決算の資料。決算説明会と決算発表は、報告する期間が終わってから開く。対象期間の行は期間を書くので、その終わりと比べる（dated-span-label）。
   # 「発表日」だけは入れない。キャンペーンの告知のように、期間の終わる前に出す文書の日付でもある。
+  # 「説明会開催日」だけも入れない。補助金の案内の説明会は、対象期間の中に開く。
   - { pattern: "対象期間", group: earnings, position: before }
   - { pattern: "報告対象期間", group: earnings, position: before }
   - { pattern: "会計期間", group: earnings, position: before }
   - { pattern: "決算説明会", group: earnings, position: after }
   - { pattern: "決算説明会開催日", group: earnings, position: after }
-  - { pattern: "説明会開催日", group: earnings, position: after }
   - { pattern: "決算発表日", group: earnings, position: after }
