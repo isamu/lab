@@ -1,0 +1,16 @@
+# Words before "period" or "term" that do not name a period (period-part-exceeds-whole). "the end of the period of 21 days"
+# speaks of a period without naming one, so it is not read as the part.
+id: period-part-unnamed
+language: en
+entries:
+  - pattern: the
+  - pattern: a
+  - pattern: an
+  - pattern: this
+  - pattern: that
+  - pattern: such
+  - pattern: each
+  - pattern: any
+  - pattern: same
+  - pattern: its
+  - pattern: their

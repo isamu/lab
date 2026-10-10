@@ -1,0 +1,6 @@
+# Units of a BMI (bmi-mismatch). A BMI value may have nothing after it, or only one of these.
+id: bmi-unit
+language: en
+entries:
+  - pattern: "kg/m²"
+  - pattern: "kg/m2"

@@ -1,0 +1,13 @@
+# Marks of an age (fact-conflict). A number with one of these on this side is read as an age, and the value runs over
+# the mark ("aged 40", "the age of 70", "30 years old").
+id: fact-age-mark
+language: en
+entries:
+  - { pattern: age, position: before }
+  - { pattern: aged, position: before }
+  - { pattern: ages, position: before }
+  - { pattern: age of, position: before }
+  - { pattern: the age of, position: before }
+  - { pattern: years old, position: after }
+  - { pattern: year old, position: after }
+  - { pattern: years of age, position: after }

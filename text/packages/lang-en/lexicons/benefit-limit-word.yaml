@@ -1,0 +1,16 @@
+# The words for the most paid for a benefit (deductible-exceeds-limit), written before the amount. group not: phrases
+# where one of them qualifies the deductible instead ("maximum excess").
+id: benefit-limit-word
+language: en
+entries:
+  - { pattern: the most we pay }
+  - { pattern: the most we will pay }
+  - { pattern: the most we'll pay }
+  - { pattern: maximum }
+  - { pattern: limit }
+  - { pattern: limited to }
+  - { pattern: up to }
+  - { pattern: maximum excess, group: not }
+  - { pattern: maximum deductible, group: not }
+  - { pattern: excess limit, group: not }
+  - { pattern: deductible limit, group: not }

@@ -4,3 +4,12 @@ id: fact-document-term
 language: ja
 entries:
   - { pattern: 試用期間, group: trial-period }
+  # 加入できる年齢の上限。表の範囲（満20歳〜満70歳）と文の上限（満70歳まで）は、上の端で比べる。
+  - { pattern: 加入できる年齢, group: age-limit }
+  - { pattern: ご加入いただける年齢, group: age-limit }
+  - { pattern: 加入年齢, group: age-limit }
+  - { pattern: 加入可能年齢, group: age-limit }
+  - { pattern: 契約年齢, group: age-limit }
+  - { pattern: 契約できる年齢, group: age-limit }
+  - { pattern: ご契約いただける年齢, group: age-limit }
+  - { pattern: 契約可能年齢, group: age-limit }

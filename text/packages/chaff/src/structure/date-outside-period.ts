@@ -2,6 +2,7 @@ import { escapeRegExp } from "../orthography.ts";
 import type { StructureIssue } from "./issues.ts";
 import { TABLE_ROW } from "./runs.ts";
 import { deadlineVerdict } from "./term-deadline.ts";
+import { tableAround } from "./key-value-row.ts";
 import { statedPeriod, type DateMention, type Period, type PeriodWords } from "./stated-period.ts";
 
 /**
@@ -9,7 +10,7 @@ import { statedPeriod, type DateMention, type Period, type PeriodWords } from ".
  * 地の文の日付は、年の無いもの（2月12日（金）の午前は…）だけを比べる。年のある日付は、過去の回や別の年の出来事を挙げることが多い。
  * 期間の前後に置く予定（前泊、follow-up）、締め切りや予約の日、過去の回を言う語（period-aside）が、その行、文、節の見出しにあれば比べない。
  * 年の無い期間（12月28日〜1月4日）は年をまたいで読む。
- * 文書の仕事の期間（開講期間：…）を文書の頭か概要の節で書いたものは文書全体の期間で、後ろのどの節でも、締め切りの語（period-deadline）のある項目や文の、
+ * 文書の仕事の期間（開講期間：…、二列の表の | 開講期間 | … |）を文書の頭か概要の節で書いたものは文書全体の期間で、後ろのどの節でも、締め切りの語（period-deadline）のある項目や文の、
  * 期間の終わりより後の日付を指す（課題の提出が学期の後）。年の無い日付は、期間が一つの年に収まるときだけその年と読む。成績発表や再試験の語（period-after-term）のある日付は比べない。期間の前の締め切り（申込締切）と、旅行期間のように後に締め切りが来てよい期間は比べない。
  */
 export type HeadingSpan = { readonly start: number; readonly end: number; readonly depth: number };
@@ -82,15 +83,18 @@ const scopeEnd = (line: Span, next: number, headings: readonly HeadingSpan[], le
   return Math.min(closing, next);
 };
 
+/** readTables: 二列の表の一行も読むか。期間の語（Conference、日程）は催しを並べた表の最初の列にも来るので、仕事の期間の語でだけ読む。 */
 const statedPeriods = (
   source: string,
   lines: readonly Span[],
   dates: readonly DateMention[],
   headings: readonly HeadingSpan[],
   words: OutsideWords,
+  readTables: boolean,
 ): Stated[] => {
-  const found = lines.flatMap((line) => {
-    const period = statedPeriod(source.slice(line.start, line.end), line.start, dates, words);
+  const texts = lines.map((line) => source.slice(line.start, line.end));
+  const found = lines.flatMap((line, index) => {
+    const period = statedPeriod(texts[index] ?? "", line.start, dates, words, readTables ? () => tableAround(texts, index) : undefined);
     return period === undefined ? [] : [{ period, line }];
   });
   return found.map(({ period, line }, index) => ({
@@ -166,7 +170,7 @@ const issueOf = (source: string, date: DateMention, period: Stated): StructureIs
 
 /** 期間の行の後ろ、同じ節の日程の日付で、期間の外のもの。 */
 const outsideInSection = (dates: readonly DateMention[], context: Context, words: OutsideWords): StructureIssue[] =>
-  statedPeriods(context.source, context.lines, dates, context.headings, words).flatMap((period) =>
+  statedPeriods(context.source, context.lines, dates, context.headings, words, false).flatMap((period) =>
     dates
       .filter((date) => date.offset > period.scopeStart && date.offset < period.scopeEnd && outsideOne(date, period, context, words.asides))
       .map((date) => issueOf(context.source, date, period)),
@@ -174,7 +178,7 @@ const outsideInSection = (dates: readonly DateMention[], context: Context, words
 
 /** 文書の仕事の期間の行の後ろ、次の仕事の期間の行までの、期間の終わりより後の締め切り。 */
 const lateDeadlines = (dates: readonly DateMention[], context: Context, words: OutsideWords): StructureIssue[] =>
-  statedPeriods(context.source, context.lines, dates, context.headings, { ...words, labels: words.terms })
+  statedPeriods(context.source, context.lines, dates, context.headings, { ...words, labels: words.terms }, true)
     .filter((period) => isDocumentTerm(period, context, words.overviews))
     .flatMap((period) =>
       dates

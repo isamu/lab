@@ -66,8 +66,8 @@ example:
       1. The Customer pays the Supplier within thirty days of each invoice.
 
 not_flagged:
-  ja: 当事者の呼び名を定める前（「売主 有限会社たちばな木工（以下「甲」という。）」の売主）、定めた語そのもの（「開示者」と定義した文書の開示者）、定義した語の一部、長い語の一部（再委託先、委託者側）は見ません。当事者の定義は、呼び名が甲・乙・当社のような語か立場の語であるもの、または括弧のすぐ前に会社の形（株式会社、Ltd）があるものだけを読みます。法務のジャンルで見ます。法令・規程は当事者を定めず、立場の語で人を呼ぶので見ません。
-  en: 'Uses before the parties are named, a role word the document defines itself ("Recipient" means), a role word inside a defined term (Receiving Party) or a longer word, and a lower-case role word (the vendor, an ordinary noun) are not reported. A party is read from a short name in brackets that is a party word (we) or a role word itself, or that follows a company name (Ltd, Inc.). The legal genres run this rule, except statutes, which name people by their role and define no parties.'
+  ja: 当事者の呼び名を定める前（「売主 有限会社たちばな木工（以下「甲」という。）」の売主）、定めた語そのもの（「開示者」と定義した文書の開示者）、定義した語の一部、長い語の一部（再委託先、委託者側）、英語で文の頭に冠詞なしで書いた複数形（Customers who register …。文頭なので大文字になった普通の名詞）は見ません。当事者の定義は、呼び名が甲・乙・当社のような語か立場の語であるもの、または括弧のすぐ前に会社の形（株式会社、Ltd）があるものだけを読みます。法務のジャンルで見ます。法令・規程は当事者を定めず、立場の語で人を呼ぶので見ません。
+  en: 'Uses before the parties are named, a role word the document defines itself ("Recipient" means), a role word inside a defined term (Receiving Party) or a longer word, a lower-case role word (the vendor, an ordinary noun), and a plural with no article at the head of a sentence (Customers who register …, the ordinary noun capitalised by its place) are not reported. A party is read from a short name in brackets that is a party word (we) or a role word itself, or that follows a company name (Ltd, Inc.). The legal genres run this rule, except statutes, which name people by their role and define no parties.'
 rewrite:
   depth: light
   ja:

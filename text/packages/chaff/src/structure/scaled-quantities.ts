@@ -2,6 +2,7 @@ import type { Span } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { cellsOf, tablesOf, type Cell } from "../facts/table-facts.ts";
 import { measuredValues, type MeasureUnit } from "../facts/measures.ts";
+import { hasSuperscriptPower } from "../facts/superscript-power.ts";
 import { withoutEdgeMarks } from "../facts/trim-marks.ts";
 import { linesOf, type Line } from "./lines.ts";
 import type { Mark } from "./time-marks.ts";
@@ -93,19 +94,32 @@ const VULGAR_AFTER_DIGIT = /([0-9０-９])([¼½¾⅐-⅞])/gu;
 
 const normalized = (cellText: string): string => withoutEdgeMarks(cellText.replace(VULGAR_AFTER_DIGIT, "$1 $2").normalize("NFKC").trim());
 
-/** One cell's amount and the unit it is in. undefined when the cell holds no number, or more than one (1と1/2, 2 (300 g)). */
+/** The lexicon's units as NFKC writes them (m² and ㎡ are m2), so they match a cell that has been through NFKC. */
+const nfkcMeasures = (measures: readonly MeasureUnit[]): MeasureUnit[] => measures.map((unit) => ({ ...unit, pattern: unit.pattern.normalize("NFKC") }));
+
+/** The cell's first number with a measure unit after it that ends the cell. A digit inside the unit (the 2 of m2) is not a second number. */
+const measuredAmount = (text: string, numbers: readonly RegExpMatchArray[], measures: readonly MeasureUnit[]): Amount | undefined => {
+  const [first] = numbers;
+  const [measured] = measuredValues(text, measures);
+  const factor = measured?.factors[0];
+  if (first === undefined || measured === undefined || factor === undefined) return undefined;
+  if (measured.start !== first.index || measured.end !== text.length) return undefined;
+  const unitStart = measured.end - measured.unit.length;
+  if (numbers.some((number) => number !== first && (number.index ?? 0) < unitStart)) return undefined;
+  return { amount: measured.amount * factor, written: measured.amount, unit: `=${measured.dimension}` };
+};
+
+/** One cell's amount and the unit it is in. undefined when the cell holds no number, or more than one (1と1/2, 2 (300 g), 10³). */
 export const amountOf = (cellText: string, words: ScaleWords): Amount | undefined => {
+  if (hasSuperscriptPower(cellText)) return undefined;
   const text = normalized(cellText);
   const numbers = [...text.matchAll(AMOUNT)];
+  const measured = measuredAmount(text, numbers, nfkcMeasures(words.measures));
+  if (measured !== undefined) return measured;
   const [only] = numbers;
   if (numbers.length !== 1 || only === undefined) return undefined;
   const written = valueOf(only);
   if (!Number.isFinite(written)) return undefined;
-  const [measured] = measuredValues(text, words.measures);
-  const factor = measured?.factors[0];
-  if (measured !== undefined && factor !== undefined && measured.start === only.index && measured.end === text.length) {
-    return { amount: measured.amount * factor, written: measured.amount, unit: `=${measured.dimension}` };
-  }
   return { amount: written, written, unit: unitKey(text, { start: only.index, end: only.index + only[0].length }, words.unitForms) };
 };
 

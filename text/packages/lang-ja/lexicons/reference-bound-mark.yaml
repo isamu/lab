@@ -1,0 +1,14 @@
+# 基準値の片側だけを言う記号（reference-flag-mismatch）。range-band-word の語（以上、以下、未満、超）に足して読む。
+# group は range-band-word と同じ：upper-inclusive は上の端を含む（≦79）、upper-exclusive は含まない（<79）、
+# lower-inclusive と lower-exclusive は下の端。どれも数の前に書く。
+id: reference-bound-mark
+language: ja
+entries:
+  - { pattern: "≦", group: upper-inclusive, position: before }
+  - { pattern: "≤", group: upper-inclusive, position: before }
+  - { pattern: "<=", group: upper-inclusive, position: before }
+  - { pattern: "<", group: upper-exclusive, position: before }
+  - { pattern: "≧", group: lower-inclusive, position: before }
+  - { pattern: "≥", group: lower-inclusive, position: before }
+  - { pattern: ">=", group: lower-inclusive, position: before }
+  - { pattern: ">", group: lower-exclusive, position: before }

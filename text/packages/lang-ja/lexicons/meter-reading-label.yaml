@@ -1,0 +1,29 @@
+# 検針票の値の名前と、その値が何か（group）。current は今回の指示数、previous は前回の指示数、usage は使用量、multiplier は
+# 計器の乗率（meter-usage-mismatch）。「今回指示数：12,640」の行の名前か、表の行か列の見出しがこの語だけ（後ろの括弧は除く）のとき読む。
+id: meter-reading-label
+language: ja
+entries:
+  - { pattern: 今回指示数, group: current }
+  - { pattern: 今回の指示数, group: current }
+  - { pattern: 今回指針, group: current }
+  - { pattern: 今回検針値, group: current }
+  - { pattern: 当月指示数, group: current }
+  - { pattern: 今月指示数, group: current }
+  - { pattern: 前回指示数, group: previous }
+  - { pattern: 前回の指示数, group: previous }
+  - { pattern: 前回指針, group: previous }
+  - { pattern: 前回検針値, group: previous }
+  - { pattern: 前月指示数, group: previous }
+  - { pattern: 先月指示数, group: previous }
+  - { pattern: ご使用量, group: usage }
+  - { pattern: 使用量, group: usage }
+  - { pattern: 今回使用量, group: usage }
+  - { pattern: 今月のご使用量, group: usage }
+  - { pattern: ご使用電力量, group: usage }
+  - { pattern: 使用電力量, group: usage }
+  - { pattern: ご使用水量, group: usage }
+  - { pattern: 使用水量, group: usage }
+  - { pattern: ご使用ガス量, group: usage }
+  - { pattern: 使用ガス量, group: usage }
+  - { pattern: 乗率, group: multiplier }
+  - { pattern: 計器乗率, group: multiplier }

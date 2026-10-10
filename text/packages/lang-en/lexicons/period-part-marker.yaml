@@ -1,0 +1,11 @@
+# Words that make one period a part of another (period-part-exceeds-whole). position is the side of the whole the word stands
+# on: before means the whole follows ("within the warranty period"). Group anaphor takes the whole from the sentence before
+# ("Within it, ..."); "within that period" is not one, since statutes use it for a condition ("If no resolution is made within
+# that period, ... the end of the period of 21 days"), not for a part. Group adjacent needs the part right before the word ("18 months of the 12-month warranty period"), which
+# also reads "during the first 18 months of the warranty period".
+id: period-part-marker
+language: en
+entries:
+  - { pattern: within the, position: before }
+  - { pattern: of the, position: before, group: adjacent }
+  - { pattern: within it, position: before, group: anaphor }

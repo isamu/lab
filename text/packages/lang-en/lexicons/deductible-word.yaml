@@ -1,0 +1,11 @@
+# The words for a deductible or an excess (deductible-exceeds-limit). group not: phrases holding one of them without
+# naming a deductible.
+id: deductible-word
+language: en
+entries:
+  - { pattern: excess }
+  - { pattern: deductible }
+  - { pattern: in excess of, group: not }
+  - { pattern: excess of loss, group: not }
+  - { pattern: tax deductible, group: not }
+  - { pattern: tax-deductible, group: not }
