@@ -19,16 +19,20 @@ const step = (acc: Reading, char: string): Reading => {
   return { done: acc.done, total: acc.total, current: acc.current * 10 + (DIGIT[char] ?? 0) };
 };
 
+/** 算用数字の後ろの桁の語: 万・億、その前の十・百・千（百万 = 10^6、十億）、千だけ（千円単位の表）。 */
+const ARABIC_SCALED = /^(?<n>\d+(?:\.\d+)?)(?<scale>[十百千]?[万億]|千)$/u;
+
 /**
  * 番号や数を数にする。全角数字は半角に、漢数字は位取りで読む（十二 = 12、二十一 = 21、百五 = 105、一〇 = 10）。
- * 算用数字と万・億の組（「10万」）も読む。小数（「1.5」）も読む。読めないものは undefined。
+ * 算用数字と桁の語の組（「10万」、決算の表の「2,400百万」「1,320千」）も読む。小数（「1.5」）も読む。読めないものは undefined。
  * 番号を読み違えると番地が変わり、参照先が無いという誤りを作ってしまう。
  */
 export const parseJapaneseNumber = (text: string): number | undefined => {
   const half = toHalfWidth(text).replace(/,/gu, "");
   if (/^\d+(?:\.\d+)?$/u.test(half)) return Number(half);
-  const arabicMyriad = /^(?<n>\d+(?:\.\d+)?)(?<unit>[万億])$/u.exec(half)?.groups;
-  if (arabicMyriad?.["n"] !== undefined && arabicMyriad["unit"] !== undefined) return Number(arabicMyriad["n"]) * (MYRIAD[arabicMyriad["unit"]] ?? 1);
+  const arabicScaled = ARABIC_SCALED.exec(half)?.groups;
+  const scale = arabicScaled?.["scale"] === undefined ? undefined : parseJapaneseNumber(arabicScaled["scale"]);
+  if (arabicScaled?.["n"] !== undefined && scale !== undefined) return Number(arabicScaled["n"]) * scale;
   if (!/^[〇一二三四五六七八九十百千万億]+$/u.test(text)) return undefined;
   const { done, total, current } = [...text].reduce(step, { done: 0, total: 0, current: 0 });
   return done + total + current;

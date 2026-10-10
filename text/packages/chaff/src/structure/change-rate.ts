@@ -76,12 +76,6 @@ const isBaseFor = (figure: Figure, rate: Rate, marks: readonly BaseMark[]): bool
   return mark !== undefined && Math.min(distance(figure, rate), distance(mark, rate)) <= BASE_REACH;
 };
 
-/**
- * The later value is written before the rate (「1,200社となり、…20%増えました」"1,200 companies, up 20%") or marked as the
- * value reached (「1,200社に」"to 1,200"). Another amount after the rate is about something else ("…, and revenue was $1,300").
- */
-const isCurrentFor = (figure: Figure, rate: Rate, targets: readonly BaseMark[]): boolean => figure.end <= rate.start || markOf(figure, targets) !== undefined;
-
 /** The one sign the direction words beside the rate agree on. */
 const signNear = (rate: Rate, directions: readonly Direction[]): 1 | -1 | undefined => {
   const signs = new Set(directions.filter((direction) => distance(direction, rate) <= DIRECTION_REACH).map((direction) => direction.sign));
@@ -110,14 +104,46 @@ const brokenBetween = (text: Reading, one: Span, other: Span): boolean => {
   return text.breaks.some((word) => within(gap, word));
 };
 
+/** right follows left closely, with no value, rate or word of another subject or clause between them. */
+const followsClosely = (text: Reading, left: Span, right: Span, reach: number): boolean => {
+  const gap = gapBetween(left, right);
+  if (gap.start > gap.end || gapLength(text.source, gap) > reach) return false;
+  return ![...text.figures, ...text.rates, ...text.breaks].some((span) => within(gap, span));
+};
+
+/**
+ * The later value is written before the rate (「1,200社となり、…20%増えました」"1,200 companies, up 20%") or marked as the
+ * value reached right after the rate or the earlier value (「から20%増加し、1,200社となりました」"from 1,000 to 1,200"), in the
+ * same clause. Another amount after the rate is about something else ("…, and revenue was $1,300", 「…増加し、利益は300万円に」).
+ */
+const isCurrentFor = (text: Reading, figure: Figure, base: Figure): boolean => {
+  if (figure.end <= text.rate.start) return true;
+  const from = text.rate.end < base.end && base.end <= figure.start ? base : text.rate;
+  return markOf(figure, text.targets) !== undefined && followsClosely(text, from, figure, BASE_REACH) && !brokenBetween(text, text.rate, figure);
+};
+
 /** The earlier value marked beside the rate, and the one value in its unit before the rate or marked as reached. */
 const besideRate = (text: Reading): Pair | undefined => {
   const bases = text.figures.filter((figure) => isBaseFor(figure, text.rate, text.marks) && !brokenBetween(text, figure, text.rate));
   const [base] = bases;
   if (bases.length !== 1 || base === undefined) return undefined;
-  const currents = text.figures.filter((figure) => figure !== base && figure.unit === base.unit && isCurrentFor(figure, text.rate, text.targets));
+  const currents = text.figures.filter((figure) => figure !== base && figure.unit === base.unit && isCurrentFor(text, figure, base));
   const [current] = currents;
   return currents.length === 1 && current !== undefined ? { base, current } : undefined;
+};
+
+/**
+ * The value reached right after the rate, and the earlier value right after it ("rose 12% to $2,640 million from $2,400
+ * million"): the earlier value stands too far from the rate to be read beside it.
+ */
+const reachedThenBase = (text: Reading): Pair | undefined => {
+  const pairs = text.figures.flatMap((current, index) => {
+    const base = text.figures[index + 1];
+    if (base?.unit !== current.unit || markOf(current, text.targets) === undefined || markOf(base, text.marks) === undefined) return [];
+    return followsClosely(text, text.rate, current, BASE_REACH) && followsClosely(text, current, base, PAIR_GAP) ? [{ base, current }] : [];
+  });
+  const [pair] = pairs;
+  return pairs.length === 1 ? pair : undefined;
 };
 
 const yearsBeside = (text: Reading, figure: Figure, side: "before" | "after", bound: Span): Period[] =>
@@ -205,7 +231,7 @@ const readingIn = (text: ChangeText, sentence: Span): Reading | undefined => {
 
 const issueIn = (text: ChangeText, sentence: Span): StructureIssue[] => {
   const reading = readingIn(text, sentence);
-  const pair = reading === undefined ? undefined : (besideRate(reading) ?? beforeRate(reading));
+  const pair = reading === undefined ? undefined : (besideRate(reading) ?? beforeRate(reading) ?? reachedThenBase(reading));
   const range = pair === undefined ? undefined : rateRange(pair.base, pair.current);
   if (reading === undefined || pair === undefined || range === undefined) return [];
   const { rate, sign } = reading;
@@ -218,6 +244,7 @@ const issueIn = (text: ChangeText, sentence: Span): StructureIssue[] => {
 
 /**
  * Each sentence with one rate of change and its direction, and the two values it is computed from, that disagree: the
- * earlier value marked beside the rate, or the two values written together right before it.
+ * earlier value marked beside the rate, the two values written together right before it, or the value reached and then
+ * the earlier one right after it.
  */
 export const changeRateMismatches = (text: ChangeText): StructureIssue[] => text.sentences.flatMap((sentence) => issueIn(text, sentence));

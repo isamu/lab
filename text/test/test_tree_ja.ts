@@ -275,8 +275,19 @@ describe("parseJapaneseNumber", () => {
     ["百五", 105],
     ["千二百三十四", 1234],
     ["一〇", 10],
+    // 算用数字と桁の語。決算の表の「百万円」「千円」単位。
+    ["24億", 2_400_000_000],
+    ["2,400百万", 2_400_000_000],
+    ["26.4百万", 26_400_000],
+    ["1,320千", 1_320_000],
+    ["3千万", 30_000_000],
+    ["2十億", 2_000_000_000],
     ["", undefined],
     ["三a", undefined],
+    ["2,400百", undefined],
+    ["12十", undefined],
+    ["3億5千万", undefined],
+    ["2,400百万円", undefined],
   ];
   cases.forEach(([text, expected]) => {
     it(`「${text}」→ ${String(expected)}`, () => assert.equal(parseJapaneseNumber(text), expected));
