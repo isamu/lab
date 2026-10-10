@@ -214,7 +214,7 @@ const lineAmountsOf = (doc: ProseDocument, amounts: readonly Amount[]): Amount[]
 const totalIssues = (doc: ProseDocument, tree: NonNullable<ProseDocument["structure"]>): StructureIssue[] => {
   const amounts = summableAmountsOf(doc, tree);
   const words = { labels: patternsOf(doc, "total-label"), qualifiers: doc.lexicons["total-label-qualifier"] ?? [] };
-  const lines = totalMismatches(doc.source, lineAmountsOf(doc, amounts), (text) => isTotalLine(text, words));
+  const lines = totalMismatches(doc.source, lineAmountsOf(doc, amounts), (text, header) => isTotalLine(text, words, header));
   const phrases = {
     totals: patternsOf(doc, "total-phrase"),
     breakdowns: patternsOf(doc, "breakdown-phrase"),
