@@ -51,5 +51,7 @@ entries:
   - { pattern: "Date of contract", group: loan, position: before }
   - { pattern: "First payment date", group: loan, position: after }
   - { pattern: "First payment due", group: loan, position: after }
+  - { pattern: "First payment due date", group: loan, position: after }
   - { pattern: "First installment due", group: loan, position: after }
+  - { pattern: "First installment due date", group: loan, position: after }
   - { pattern: "First installment date", group: loan, position: after }

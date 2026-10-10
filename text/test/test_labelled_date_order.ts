@@ -388,15 +388,18 @@ const loanEn = (contractLabel: string, contract: string, firstLabel: string, fir
   `# Auto Loan Repayment Schedule\n\n## Loan terms\n\n- ${contractLabel}: ${contract}\n- ${firstLabel}: ${first}\n- Number of payments: 48\n`;
 
 describe("due-before-issue (order): ローンの初回お支払日が契約日より前", () => {
-  it("ご契約日やお申込日より前の初回お支払日を指す", () => {
+  it("ご契約日より前の初回お支払日を指す", () => {
     assert.deepEqual(findingsOf(loanJa("ご契約日", "2026年10月27日", "初回お支払日", "2026年10月20日")), [
       "「初回お支払日」（2026年10月20日）が、「ご契約日」（2026年10月27日）より前です",
     ]);
     assert.deepEqual(findingsOf(loanJa("契約日", "2026年10月27日", "初回返済日", "2026年10月1日")), [
       "「初回返済日」（2026年10月1日）が、「契約日」（2026年10月27日）より前です",
     ]);
-    assert.deepEqual(findingsOf(loanJa("お申込日", "2026年10月10日", "第1回お支払日", "2026年10月1日")), [
-      "「第1回お支払日」（2026年10月1日）が、「お申込日」（2026年10月10日）より前です",
+    assert.deepEqual(findingsOf(loanJa("契約日", "2026年10月10日", "第１回お支払日", "2026年10月1日")), [
+      "「第１回お支払日」（2026年10月1日）が、「契約日」（2026年10月10日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(loanEn("Contract date", "October 10, 2026", "First payment due date", "October 1, 2026"), en), [
+      '"First payment due date" October 1, 2026 is before "Contract date" October 10, 2026',
     ]);
     assert.deepEqual(findingsOf(loanEn("Contract date", "November 16, 2026", "First payment date", "November 6, 2026"), en), [
       '"First payment date" November 6, 2026 is before "Contract date" November 16, 2026',
@@ -420,6 +423,7 @@ describe("due-before-issue (order): ローンの初回お支払日が契約日�
     assert.deepEqual(findingsOf(loanJa("掲載日", "2026年10月1日", "初回返済日", "2026年9月1日")), []);
     assert.deepEqual(findingsOf(loanJa("契約日", "2026年10月1日", "報告日", "2026年9月1日")), []);
     assert.deepEqual(findingsOf(loanJa("発行日", "2026年10月1日", "初回お支払日", "2026年9月1日")), []);
+    assert.deepEqual(findingsOf(loanJa("お申込日", "2026年10月1日", "初回お支払日", "2026年9月1日")), []);
     assert.deepEqual(findingsOf(loanEn("Contract date", "October 1, 2026", "Registration deadline", "September 1, 2026"), en), []);
     assert.deepEqual(findingsOf(loanEn("Purchase date", "October 1, 2026", "First payment date", "September 1, 2026"), en), []);
     assert.deepEqual(findingsOf(loanEn("Issued", "October 1, 2026", "First payment date", "September 1, 2026"), en), []);
