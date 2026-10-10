@@ -155,7 +155,7 @@ const countedByMorphemes = (text: string, morphs: readonly Morph[]): Counted[] =
 };
 
 /** 算用数字は、すぐ後ろか空白 1 つを挟んだ桁の語（1.2万、1.2 万、2,400百万）まで一つの数。形態素の経路と同じ読み方。 */
-const NUMBER_RUN = /[0-9０-９][0-9０-９.,]{0,15}(?:[ \t\u3000]?(?:[十百千]?[万億]|千))?|[〇一二三四五六七八九十百千万億]{1,12}/gu;
+const NUMBER_RUN = /[0-9０-９][0-9０-９.,]{0,15}(?:[ \t\u3000]?[十百千]?[万億千])?|[〇一二三四五六七八九十百千万億]{1,12}/gu;
 
 export const countedByTable = (text: string): Counted[] =>
   [...text.matchAll(NUMBER_RUN)].flatMap((match) => {
