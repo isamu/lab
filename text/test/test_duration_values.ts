@@ -90,9 +90,18 @@ describe("fact-conflict: two durations for one item", () => {
     assert.deepEqual(conflictJa("試用期間：3ヶ月", "", "試用期間は6ヶ月間です。"), ["試用期間:6ヶ月間≠3ヶ月"]);
   });
 
-  it("a length in another unit is not compared (a year and twelve months)", () => {
+  it("a length in years is compared in months (a year is twelve months)", () => {
     assert.deepEqual(conflictEn("Probation period: 1 year", "", "Probation period: 12 months"), []);
     assert.deepEqual(conflictJa("試用期間：1年間", "", "試用期間は12ヶ月です。"), []);
+    assert.deepEqual(conflictJa("試用期間：1年", "", "試用期間は12ヶ月です。"), []);
+    assert.deepEqual(conflictEn("Probation period: 1 year", "", "Probation period: 6 months"), ["Probation period:6 months≠1 year"]);
+    assert.deepEqual(conflictJa("試用期間：1年", "", "試用期間は6か月です。"), ["試用期間:6か月≠1年"]);
+  });
+
+  it("a month and thirty days, or a week and seven days, are not compared", () => {
+    assert.deepEqual(conflictEn("Notice: 1 month", "", "Notice: 30 days"), []);
+    assert.deepEqual(conflictJa("試用期間：1か月", "", "試用期間は30日です。"), []);
+    assert.deepEqual(conflictEn("Notice: 1 week", "", "Notice: 7 days"), []);
   });
 
   it("a time ago and a length followed by a condition are not values; an age is an age, not a length", () => {

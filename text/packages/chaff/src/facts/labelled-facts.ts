@@ -1,5 +1,7 @@
 import type { FactValue } from "./fact-values.ts";
 import { EDGE_MARKS, trimEndOf, withoutEdgeMarks } from "./trim-marks.ts";
+import { qualifiedLabelOf, type QualifierWords } from "./qualified-labels.ts";
+import { isRate, joinsNextClause, rateHead, rateTail, type RateBasis, type RateWords } from "./rate-values.ts";
 
 /**
  * 名前の付いた値（「締切：10月5日」「参加費は3,000円です」"Fee: $300" "The deadline is May 3."）と、
@@ -22,8 +24,12 @@ export type FactWords = {
   /** 名前の前に置かれる決定の前置き（協議の結果、, it was decided that）。読点を含んでも条件ではないので、外してから名前を読む。 */
   readonly leads: readonly string[];
   readonly attributes: readonly AttributePhrase[];
+  /** 率のまわりの、値を変えない語（年、per year、（固定金利））。 */
+  readonly rates?: RateWords;
   /** 区切りと値のあいだに置ける目安の語（約、about）。あれば値を目安として読む。無ければ、区切りのすぐ後ろの値だけ。 */
   readonly valueLeads?: readonly string[];
+  /** 名前に条件を付ける型（（*）、*の、for *）。条件の付いた名前は、名前と条件をそれぞれ一つの名前の長さで測る。 */
+  readonly qualifiers?: QualifierWords;
 };
 
 /** approximate: 値の前に目安の語（約、about）があった。table: 表の升の値。 */
@@ -106,17 +112,23 @@ const containsSeparator = (label: string, words: FactWords): boolean =>
     LATIN_WORD.test(separator) ? wordsOf(label.toLowerCase()).includes(separator.toLowerCase()) : label.includes(separator),
   );
 
+const isShort = (text: string): boolean => text.length <= MAX_LABEL_LENGTH && wordsOf(text).length <= MAX_LABEL_WORDS;
+
+/** 名前の長さ。条件の付いた名前（waiting period for cancellation cover）は、名前と条件がそれぞれ短いこと。 */
+const isShortLabel = (label: string, key: string, words: FactWords): boolean => {
+  const qualified = words.qualifiers === undefined ? undefined : qualifiedLabelOf(key, words.qualifiers);
+  return qualified === undefined ? isShort(label) : isShort(qualified.head) && isShort(qualified.qualifier);
+};
+
 /** 名前として使える書き方か。短く、字を含み、区切りを含まず、指すだけの語（それ、it）でない。 */
 const isLabel = (label: string, key: string, words: FactWords): boolean =>
   label.length > 0 &&
-  label.length <= MAX_LABEL_LENGTH &&
-  wordsOf(label).length <= MAX_LABEL_WORDS &&
+  isShortLabel(label, key, words) &&
   LETTER.test(key) &&
   !CODE_MARK.test(label) &&
   !containsSeparator(label, words) &&
   !words.vague.some((word) => word.toLowerCase() === key);
 
-/** 値の後ろが文の切れ目か。行の終わり、表の升の終わり、語彙表の終わりの語。 */
 /** 値の後ろが文の切れ目か。行の終わり、表の升の終わり、語彙表の終わりの語。半角の数のまわりに空白を置く書き方（「14 cm です」）もある。 */
 const endsAfter = (source: string, value: FactValue, words: FactWords): boolean => {
   const after = source.slice(value.end, lineEndOf(source, value.end)).replace(MARKS_AFTER_VALUE, "").trimStart();
@@ -124,8 +136,25 @@ const endsAfter = (source: string, value: FactValue, words: FactWords): boolean 
   return words.valueEnds.some((end) => after.startsWith(end));
 };
 
-const labelledFact = (source: string, value: FactValue, words: FactWords): Fact | undefined => {
-  const written = trimEndOf(source.slice(lineStartOf(source, value.start), value.start), EDGE_MARKS);
+/** 値の終わりまで読めた値。率は、後ろの値を変えない語を越えた所で終わってもよく、そこに書いた基準を持つ。 */
+const endedValue = (source: string, value: FactValue, words: FactWords): FactValue | undefined => {
+  if (words.rates === undefined || !isRate(value, words.rates)) return endsAfter(source, value, words) ? value : undefined;
+  const tail = rateTail(source, value, words.rates);
+  const ended = endsAfter(source, { ...value, end: tail.end }, words) || joinsNextClause(source, tail.end, words.rates);
+  return ended ? withBasis(value, tail.basis) : undefined;
+};
+
+const withBasis = (value: FactValue, basis: RateBasis): FactValue => (basis.length === 0 ? value : { ...value, basis: [...(value.basis ?? []), ...basis] });
+
+/** 率の前の期間の語（年3.6% の 年）は名前の側に入れない。値の基準になる。 */
+const headOfRate = (written: string, value: FactValue, words: FactWords): { readonly head: string; readonly value: FactValue } => {
+  if (words.rates === undefined || !isRate(value, words.rates)) return { head: written, value };
+  const { head, basis } = rateHead(written, words.rates);
+  return { head, value: withBasis(value, basis) };
+};
+
+const labelledFact = (source: string, read: FactValue, words: FactWords): Fact | undefined => {
+  const { head: written, value } = headOfRate(trimEndOf(source.slice(lineStartOf(source, read.start), read.start), EDGE_MARKS), read, words);
   const head = withoutValueLead(written, words.valueLeads ?? []);
   const approximate = head.length < written.length ? { approximate: true } : {};
   for (const separator of words.separators) {
@@ -159,7 +188,7 @@ export const labelledFacts = (source: string, values: readonly FactValue[], word
   values.flatMap((value) => {
     const attribute = attributeFact(source, value, words);
     if (attribute !== undefined) return [attribute];
-    if (!endsAfter(source, value, words)) return [];
-    const fact = labelledFact(source, value, words);
+    const ended = endedValue(source, value, words);
+    const fact = ended === undefined ? undefined : labelledFact(source, ended, words);
     return fact === undefined ? [] : [fact];
   });

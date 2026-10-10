@@ -77,7 +77,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: consistency
 summary:
   ja: 同じ人・会社・製品の名前を、少しだけ違う形で書いている所（山田太郎 と 山田太朗、GitHub と Github）
-  en: The same person, company or product written in slightly different forms (GitHub and Github, Acme, Inc. and Acme Inc.)
+  en: The same person, company or product name written slightly differently
 example:
   ja:
     before: |

@@ -41,7 +41,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: slips
 summary:
   ja: 部首の字（⼈）、互換漢字、字と分かれた濁点（か＋゛）のような、ふつうの字と同じに見える別の字
-  en: A character that looks like an ordinary one but is another, such as a Kangxi radical (⼈ for 人) or a letter and a separate combining mark
+  en: A character that looks like an ordinary one but is a different one
 example:
   ja:
     before: "申込書は総務課の⼭田さんへ送ってください。\n"

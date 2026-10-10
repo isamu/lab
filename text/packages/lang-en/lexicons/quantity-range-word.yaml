@@ -1,5 +1,5 @@
 # Words that join two measured quantities into a range on their own, beside range-connector's marks
-# (quantity-range-reversed): "-10 to 40 °C". Matched as whole words.
+# (quantity-range-reversed): "-10 to 40 °C"; and two serial codes (serial-range-reversed). Matched as whole words.
 id: quantity-range-word
 language: en
 entries:

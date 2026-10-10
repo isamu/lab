@@ -1,0 +1,13 @@
+# 率の種類（fact-conflict）。「年3.5%の固定で、」の の固定、「3.6%（固定金利）」の 固定金利。値は変えないので、続いても率を読む。
+# group が種類で、両方に種類を書いて違う率（固定 と 変動）は比べない。
+id: fact-rate-kind
+language: ja
+entries:
+  - { pattern: の固定金利, group: fixed }
+  - { pattern: の固定, group: fixed }
+  - { pattern: 固定金利, group: fixed }
+  - { pattern: 固定, group: fixed }
+  - { pattern: の変動金利, group: variable }
+  - { pattern: の変動, group: variable }
+  - { pattern: 変動金利, group: variable }
+  - { pattern: 変動, group: variable }

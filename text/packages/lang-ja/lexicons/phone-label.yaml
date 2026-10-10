@@ -17,3 +17,12 @@ entries:
   - { pattern: ファックス, group: fax }
   - { pattern: 携帯, group: mobile }
   - { pattern: 携帯電話, group: mobile }
+  # 窓口の名前は番号の種類でなく行き先を言うので group は desk。番号は窓口名のすぐ前の語の種類（FAX窓口はファクス）、無ければ電話。
+  # 「受付」だけ、「ライン」だけは入れない（受付番号、オンライン、ガイドラインの後ろの数字を番号と読んでしまう）。
+  - { pattern: 窓口, group: desk }
+  - { pattern: センター, group: desk }
+  - { pattern: ダイヤル, group: desk }
+  - { pattern: ダイヤルイン, group: desk }
+  - { pattern: ホットライン, group: desk }
+  - { pattern: ヘルプライン, group: desk }
+  - { pattern: サポートデスク, group: desk }

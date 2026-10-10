@@ -33,7 +33,7 @@ off_for:
 group: consistency
 summary:
   ja: 英語で、colour と color のように、イギリスとアメリカの綴りが一つの文書の中で混ざっている所
-  en: British and American spellings (colour and color, centre and center) mixed in one document
+  en: British and American spellings (colour and color) mixed in one document
 example:
   en:
     before: |

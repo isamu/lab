@@ -6,7 +6,7 @@ import { isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { digitRunAround, endsWithDivisionLabel, isNumberName, sequenceLabelStarts, type NameContext } from "../number-name.ts";
 import { isSpacedLocationPart, type FloorWords } from "../location-part.ts";
 import { isNameSeparator, type OrganizationWords } from "../name-separator.ts";
-import { addressSpans, clockTimeSpans, isInsideSpan } from "../spacing-code.ts";
+import { addressSpans, clockTimeSpans, identifierSpans, isInsideSpan } from "../spacing-code.ts";
 
 /** チームが chaff.yaml の prefer に書いた「使わない書き方」。書いていなければ何も言わない。 */
 export const preferredTerm: Detector = (doc, options): Finding[] => {
@@ -74,25 +74,30 @@ const followsItemNumber = (text: string, boundary: Boundary, itemNumbers: Readon
 const calendarStarts = (sentence: Sentence, units: CalendarUnits): ReadonlySet<number> =>
   new Set(calendarRuns(sentence.text, sentence.tokens, sentence.span.start, units).map(({ run }) => run.start));
 
-/** 英字の側がメールアドレスか URL の境目。後ろの空白は、アドレスの終わりを示す区切り。 */
-const besideAddress = (addresses: readonly Span[], boundary: Boundary): boolean =>
-  isInsideSpan(addresses, boundary.offset - 1) || isInsideSpan(addresses, boundary.spaced ? boundary.offset + 1 : boundary.offset);
+/** 英数字の側が spans のどれか（メールアドレス・URL・番号）の中にある境目。 */
+const besideSpan = (spans: readonly Span[], boundary: Boundary): boolean =>
+  isInsideSpan(spans, boundary.offset - 1) || isInsideSpan(spans, boundary.spaced ? boundary.offset + 1 : boundary.offset);
 
-/** 文の中で一度だけ探すもの: 日付・時刻の数の頭の位置、コロンで書いた時刻、メールアドレス・URL。 */
-type SentenceCodes = { readonly calendar: ReadonlySet<number>; readonly clockTimes: readonly Span[]; readonly addresses: readonly Span[] };
+/** 文の中で一度だけ探すもの: 日付・時刻の数の頭の位置、コロンで書いた時刻、メールアドレス・URL、予約番号や型番のような番号。 */
+type SentenceCodes = {
+  readonly calendar: ReadonlySet<number>;
+  readonly clockTimes: readonly Span[];
+  readonly addresses: readonly Span[];
+  readonly identifiers: readonly Span[];
+};
 
 /**
  * 番号・識別子として書かれた数（number-name.ts）、日付・時刻の数、「第1節」の後ろの境目、文頭の項目の番号（「一 JIS」）の後ろの境目は、空け方の好みではないので数えない。
  * 日付・時刻は前の境目（「は 9月」「午後3時」「令和 3 年」）も数えない。日付はまとめて一つの書き方で、数量の空け方の票にはしない。コロンで書いた時刻（13:30）も同じ。
- * メールアドレス・URL の前後の境目も数えない（spacing-code.ts）。
+ * メールアドレス・URL の前後の境目も数えない（spacing-code.ts）。「予約番号 MN-48215 を」の番号の前後も、番号を文から区切る空白なので数えない。
  * 「本社 5階」のように名前の後ろに空白で区切った階・部屋の番号の前の空白も、所在の組の区切りなので数えない（location-part.ts）。
  * 「経営企画部 IR担当」のように名前だけを並べた行で、名前と名前を分ける空白も数えない（name-separator.ts）。
  */
 const isCounted = (sentence: Sentence, boundary: Boundary, context: NumberContext, codes: SentenceCodes): boolean => {
-  if (followsItemNumber(sentence.text, boundary, context.itemNumbers)) return false;
+  if (followsItemNumber(sentence.text, boundary, context.itemNumbers) || besideSpan(codes.identifiers, boundary)) return false;
   if (boundary.kind !== "after-digit" && endsWithDivisionLabel(sentence.text.slice(0, boundary.offset), context.divisions)) return false;
   if (boundary.kind === "letter")
-    return !besideAddress(codes.addresses, boundary) && !isNameSeparator(sentence.text, boundary, sentence.tokens, sentence.span.start, context.organizations);
+    return !besideSpan(codes.addresses, boundary) && !isNameSeparator(sentence.text, boundary, sentence.tokens, sentence.span.start, context.organizations);
   if (isInsideSpan(codes.clockTimes, digitBeside(boundary))) return false;
   const run = digitRunAround(sentence.text, digitBeside(boundary));
   if (run === undefined) return true;
@@ -169,7 +174,12 @@ export const latinSpacing: Detector = (doc, options): Finding[] => {
   };
   const located: Located[] = doc.sentences.flatMap((sentence) => {
     const quoted = quotedSpans(sentence.text);
-    const codes = { calendar: calendarStarts(sentence, context.calendar), clockTimes: clockTimeSpans(sentence.text), addresses: addressSpans(sentence.text) };
+    const codes = {
+      calendar: calendarStarts(sentence, context.calendar),
+      clockTimes: clockTimeSpans(sentence.text),
+      addresses: addressSpans(sentence.text),
+      identifiers: identifierSpans(sentence.text),
+    };
     return latinBoundaries(sentence.text, doc.source.slice(sentence.span.start, sentence.span.end))
       .filter((boundary) => !isQuoted(quoted, boundary) && !isInsideLink(doc.links, sentence.span.start + boundary.offset))
       .filter((boundary) => isCounted(sentence, boundary, context, codes))

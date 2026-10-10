@@ -1,0 +1,10 @@
+# Last words of a short line label that says a span follows ("Sales period: October 1, 2025 to February 28, 2026",
+# "Booking window: …"). On such a line date-range-reversed reads a bare "… to …" between two dates as a period. Unlike
+# period-label, the label need not be the document's own period. Japanese needs none: its periods are joined by 〜.
+id: range-label
+language: en
+entries:
+  - pattern: period
+  - pattern: dates
+  - pattern: term
+  - pattern: window

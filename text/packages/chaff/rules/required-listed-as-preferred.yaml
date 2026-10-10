@@ -41,7 +41,7 @@ off_for:
 group: structure
 summary:
   ja: 求人で、必須に挙げた資格や経験を歓迎にも挙げている所
-  en: A skill or qualification in a job posting listed both as required and as preferred
+  en: A job posting that lists one skill both as required and as preferred
 example:
   ja:
     before: |

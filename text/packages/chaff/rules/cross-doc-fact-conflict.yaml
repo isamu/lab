@@ -30,7 +30,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: facts
 summary:
   ja: 同じ項目（料金、版、締切、問い合わせ先）に、ファイルによって違う値を書いた所
-  en: The same item (a fee, a version, a deadline, a contact address) given different values in different files
+  en: The same item (a fee, a deadline, a contact) given different values in two files
 example:
   ja:
     other: |

@@ -28,7 +28,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: slips
 summary:
   ja: 「おもしrおい」「対応sた」のような、日本語の語の中に一字だけ残った英字
-  en: A single Latin letter left inside a Japanese word by the input method, as in おもしrおい
+  en: A stray Latin letter left inside a Japanese word by the input method
 example:
   ja:
     before: |

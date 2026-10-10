@@ -14,6 +14,7 @@ import { productMentionsIn, productVariants, type ProductForm } from "../product
 import type { Span, TableCell, Token } from "../plugin.ts";
 import { proseWithCells } from "../table-cells.ts";
 import { modelCodeFindings } from "./name-variant-model-codes.ts";
+import { fullNameGaps, joinFullNames, spacedOnly } from "../person-full-name.ts";
 import { labelledSpans, orderNamesOf, quotedSpans, stemOf, titleCaseSpans, wordOrderVariants, type OrderWord } from "../name-word-order.ts";
 
 // 人の名前と読ませる敬称（様、さん）は語彙表 person-suffix、人を指す前置き（担当の）は person-lead、名前のすぐ後ろに来る語
@@ -191,7 +192,7 @@ const orderFindings = (doc: ProseDocument, prose: string, reported: readonly Rep
     .map(({ name, usual }) => ({ offset: name.offset, name: name.surface, usual, kind: "order" }));
 };
 
-/** 人・製品・会社の名前の現れ。解析器が固有名詞と読む語、敬称の付く名前、前後の語で名前と読める漢字。 */
+/** 人・製品・会社の名前の現れ。解析器が固有名詞と読む語、敬称の付く名前、前後の語で名前と読める漢字。空白を挟んだ姓と名は一つ。 */
 const nameMentionsOf = (doc: ProseDocument, prose: string, chars: VariantChars): NameMention[] => {
   const cues: NameCues = { leads: patternsOf(doc, "person-lead"), suffixes: patternsOf(doc, "person-suffix"), particles: patternsOf(doc, "name-particle") };
   const charReadings = charReadingsOf(doc);
@@ -201,7 +202,7 @@ const nameMentionsOf = (doc: ProseDocument, prose: string, chars: VariantChars):
     const cue = mention.cue ?? nameCueAt(prose, mention.offset, mention.surface, cues);
     return cue === undefined ? mention : { ...mention, cue };
   });
-  return withKnownNeighbours(cued, prose).toSorted((left, right) => left.offset - right.offset);
+  return withKnownNeighbours(joinFullNames(cued, fullNameGaps(tokensOf(doc))), prose).toSorted((left, right) => left.offset - right.offset);
 };
 
 /** 一語の名前の中で同じ音を書く字（ヶ・ケ・が）は語彙表 name-spelling-char が組（group）ごとに言う。 */
@@ -220,19 +221,19 @@ const tableFindings = (doc: ProseDocument, prose: string, mentions: readonly Nam
     .filter(({ name }) => !reported.some((other) => other.offset < name.offset + name.surface.length && name.offset < other.offset + other.name.length))
     .map(({ name, usual, kind }) => ({ offset: name.offset, name: name.surface, usual, kind }));
 
+/** 日本語の人の名前の、姓と名のあいだの空白だけの違い（田中 裕子 と 田中裕子）は書き分けとして指さない。 */
+const notSpacingOnly = ({ name, usual, kind }: Reported): boolean => kind !== "spelling" || !spacedOnly(name, usual);
+
 /** 同じ名前を、文書の中で少しだけ違う形に書いた所（GitHub と Github、山田太郎 と 山田太朗）。少ないほうを指す。 */
 export const nameVariant: Detector = (doc): Finding[] => {
   const prose = doc.prose ?? doc.source;
   const chars = variantCharsOf(doc);
   const mentions = nameMentionsOf(doc, prose, chars);
-  const names = nameVariants(mentions, chars, spellingInputOf(doc)).map(({ mention, usual, kind }): Reported => ({
-    offset: mention.offset,
-    name: mention.surface,
-    usual,
-    kind,
-  }));
+  const names = nameVariants(mentions, chars, spellingInputOf(doc))
+    .map(({ mention, usual, kind }): Reported => ({ offset: mention.offset, name: mention.surface, usual, kind }))
+    .filter(notSpacingOnly);
   const namesAndCompanies = [...names, ...companyFindings(doc, prose, names)];
-  const withTables = [...namesAndCompanies, ...tableFindings(doc, prose, mentions, namesAndCompanies)];
+  const withTables = [...namesAndCompanies, ...tableFindings(doc, prose, mentions, namesAndCompanies).filter(notSpacingOnly)];
   const withPlaces = [...withTables, ...placeFindings(doc, prose, withTables, chars)];
   const withProducts = [...withPlaces, ...productFindings(doc, prose, withPlaces)];
   const withOrder = [...withProducts, ...orderFindings(doc, prose, withProducts)];

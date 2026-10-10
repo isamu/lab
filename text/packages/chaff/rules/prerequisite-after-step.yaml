@@ -34,7 +34,7 @@ off_for:
 group: structure
 summary:
   ja: 節の番号付きの手順より後にある、「作業を始める前に」「始める前に」で始まる文
-  en: A sentence opening with "Before you begin" after the numbered steps of its section
+  en: '"Before you begin" written after the numbered steps it should come before'
 example:
   ja:
     config: { genre: docs/manual }

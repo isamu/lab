@@ -29,7 +29,7 @@ use_for: [blog, business, technical, docs, academic, legal, literature, speech]
 group: consistency
 summary:
   ja: 同じ欄の見出しを、表によって「担当者」と「担当」のように書き分けている所
-  en: The same column header written two ways across a document's tables, such as Owner and Owners
+  en: The same column header written two ways across tables (Owner and Owners)
 
 example:
   ja:

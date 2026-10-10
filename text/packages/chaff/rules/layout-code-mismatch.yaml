@@ -35,7 +35,7 @@ off_for:
 group: facts
 summary:
   ja: 「間取り 3LDK」と、間取り詳細に挙げた居室の数（洋室二つ）のように、間取りの記号と部屋の内訳が合わない所
-  en: A layout such as "3 bedrooms" or 3LDK that does not match the number of rooms the same listing names
+  en: A room layout such as "3 bedrooms" that does not match the rooms listed
 example:
   ja:
     before: |

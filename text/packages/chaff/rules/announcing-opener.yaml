@@ -35,7 +35,7 @@ off_for:
 group: ai-tells
 summary:
   ja: 「重要なのは、」「ポイントは、」「正直に言うと、」のように、中身の前に予告する文頭が重なっている所
-  en: 'Openers that announce a point before making it ("The key point is", "Here''s the thing", "Honestly,") piling up'
+  en: Openers that announce a point before making it ("The key point is") piled up
 example:
   ja:
     before: |

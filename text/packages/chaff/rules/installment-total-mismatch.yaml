@@ -1,0 +1,58 @@
+id: installment-total-mismatch
+layer: L3
+status: stable
+how_to_find: installment-total-mismatch
+# The amounts are read with currency-notation and amount-multiplier; the labels are installment-label, the words
+# installment-word, rough amounts approximate-marker, counts written as words number-word (digit), and ranges
+# range-connector and amount-range-word.
+severity: warning
+
+name:
+  ja: 回数×毎回の額と合わないお支払総額
+  en: A total of payments that is not the payments added up
+
+why:
+  ja: ローンや分割払いの案内で「お支払回数 60回、毎月のお支払額 32,800円、お支払総額 1,968,000円」と並べて書くと、読み手は掛け算を確かめずに総額を信じます。金利や回数を変えて作り直したときに、毎回の額か総額のどちらかが古いまま残って食い違います。支払回数・毎回のお支払額・お支払総額の見出しにそれぞれ一つの額があるとき、回数×毎回の額をお支払総額と比べます。初回や最終回の額が別に書いてあれば「初回 + 毎回の額 ×（残りの回数）+ 最終回」で比べます。見出しが無くても、一つの文に「32,800円×59回」のような回数と額の組があれば、それを足して比べます。毎回の額は、書いた桁の半分までの丸めが回数分たまることを認めます。
+  en: 'When a loan or installment plan says "48 monthly payments of $537.50; total of payments $25,800", readers trust the total without multiplying. It goes wrong when the plan is redone with another rate or term and the payment or the total is left as it was. When the number of payments, the regular payment and the total of payments are each stated once, the number times the payment is compared with the total; a first or final payment stated apart is added as written (first + payment × the rest + final). Without labels, the payments of one sentence ("47 payments of $550.53 and 1 payment of $550.71") are added up. Each regular payment may be rounded by half its last written digit.'
+
+message:
+  ja: 支払額を足すと {payments} = {sum} で、お支払総額 {total} と合いません
+  en: "The payments add up to {sum} ({payments}), not the total of payments {total}"
+
+how_to_fix:
+  ja: 回数・毎回の額・総額のどれが正しいかを確かめて、ほかを直してください。端数を初回や最終回で調整するなら、その回の額を書いてください。
+  en: Check which of the number of payments, the payment and the total is right, and correct the others. If a first or final payment absorbs the rounding, state its amount.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 「60回、毎月32,800円」とお支払総額が合わない支払いの案内
+  en: A total of payments that is not the number of payments times the payment
+example:
+  ja:
+    before: |
+      - お支払回数：24回
+      - 毎月のお支払額：10,600円
+      - お支払総額：249,600円
+    after: |
+      - お支払回数：24回
+      - 毎月のお支払額：10,400円
+      - お支払総額：249,600円
+  en:
+    before: |
+      - Number of payments: 24
+      - Monthly payment: $106.00
+      - Total of payments: $2,496.00
+    after: |
+      - Number of payments: 24
+      - Monthly payment: $104.00
+      - Total of payments: $2,496.00
+
+not_flagged:
+  ja: 総額の書いていない文書、「約」「程度」の付いた額、「32,800円〜33,000円」のような幅、同じ見出しに違う値が二度ある（いくつかの支払い方を並べた）文書、回数と額の組が文ごとに違う文書、一つの文に「12回×10,000円または24回×6,000円」のように繰り返す支払いが二つある（選べる支払い方を並べた）記載は比べません。ボーナス払い・頭金・残価・据置のある文書と、「端数は初回で調整」のように端数の扱いを書いて初回・最終回の額を書いていない文書も比べません。通貨の違う額は比べません。表の列見出しだけに「回数」「総額」とある表は読みません。
+  en: 'A document with no total of payments, an amount marked "about" or "up to", a range ("$540 to $560"), a label stated twice with different values (plans side by side), sentences of payments that differ from one another, and a sentence with two repeated payments ("12 payments of $100 or 24 payments of $60", a choice) are not compared. Neither is a document with a bonus, balloon, down payment, deposit or deferred payment, nor one that says a payment absorbs the rounding ("the final payment may vary") without stating that payment. Amounts in different currencies are not compared. A table that names the count and the total only in its column headings is not read.'

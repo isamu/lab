@@ -27,7 +27,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: consistency
 summary:
   ja: 「30万円」と「250,000円」のように、同じ桁の金額を「万」と数字だけの二通りで書いている所
-  en: Amounts of one order of magnitude written both with and without a word of scale, such as "$1.5 million" and "$2,500,000"
+  en: Amounts written with and without a scale word ("$1.5 million", "$2,500,000")
 example:
   ja:
     before: |

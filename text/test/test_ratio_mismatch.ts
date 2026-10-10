@@ -13,11 +13,13 @@ import {
   ratioDisagreement,
   sentenceRatioMismatch,
   tableRatioMismatches,
+  type ProseQuantity,
   type RatioSentence,
   type RatioWords,
   type TableRow,
 } from "../packages/chaff/src/structure/ratio.ts";
 import type { LanguageAdapter, LexiconEntry } from "../packages/chaff/src/plugin.ts";
+import { ratioMismatch } from "../packages/chaff/src/detectors/ratio-mismatch.ts";
 
 // 率の行と、その分子・分母の行の割り算（ratio-mismatch）。例は自作。
 
@@ -27,6 +29,12 @@ const found = (text: string, adapter: LanguageAdapter): string[] =>
   runRules(buildDocument("t.md", `# 報告\n\n${text}\n`, adapter), loadRules(adapter.id), { [RULE]: "normal" }, false, "business/report")
     .findings.filter((finding) => finding.rule === RULE)
     .map((finding) => `${String(finding.values["written"])}:${String(finding.values["computed"])}`);
+
+/** The detector alone, without the other rules: the generated cases below run it many times. */
+const detected = (text: string, adapter: LanguageAdapter): string[] =>
+  ratioMismatch(buildDocument("t.md", `# 報告\n\n${text}\n`, adapter), { limit: 0 }).map(
+    (finding) => `${String(finding.values["written"])}:${String(finding.values["computed"])}`,
+  );
 
 const table = (rows: readonly string[]): string => ["| 項目 | 前期 | 当期 |", "| --- | --- | --- |", ...rows].join("\n");
 
@@ -91,24 +99,32 @@ describe("cell readers", () => {
 });
 
 describe("proseValues", () => {
-  const words = { before: ["$", "US$"], after: ["円", "yen"], multipliers: ["million", "万"], percentUnits: ["%", "percent"] };
-  const units = (text: string): string[] => proseValues(text, 0, words).figures.map((figure) => `${String(figure.value)}:${figure.unit}`);
+  const words = { before: ["$", "US$", "€"], after: ["円", "yen"], multipliers: ["million", "万"], percentUnits: ["%", "percent"] };
+  /** The tree's quantity of the text written at its place in the text (the unit is the tree's). */
+  const at = (text: string, written: string, unit: string, offset = 0): ProseQuantity => {
+    const start = offset + text.indexOf(written);
+    return { start, end: start + written.length, unit };
+  };
+  const units = (text: string, quantities: readonly ProseQuantity[]): string[] =>
+    proseValues(text, 0, quantities, words).figures.map((figure) => `${String(figure.value)}:${figure.unit}`);
 
   it("reads each amount of money in the unit written around it, and a percentage as a rate", () => {
-    assert.deepEqual(units("営業利益は96百万円、売上高は1,320百万円で"), ["96:|百万円", "1320:|百万円"]);
-    assert.deepEqual(units("$198 million on sales of US$2,640 million yen"), ["198:$|million", "2640:us$|million yen"]);
-    assert.deepEqual(proseValues("営業利益率は7.3%となり", 10, words).rates, [{ start: 16, value: 7.3, decimals: 1 }]);
-    assert.deepEqual(proseValues("a margin of 7.5 percent.", 0, words).rates, [{ start: 12, value: 7.5, decimals: 1 }]);
-    assert.deepEqual(units("12.5万円"), ["12.5:|万円"]);
+    const ja = "営業利益は96百万円、売上高は1,320百万円で";
+    assert.deepEqual(units(ja, [at(ja, "96百万円", "円"), at(ja, "1,320百万円", "円")]), ["96:|百万円", "1320:|百万円"]);
+    const en = "$198 million on sales of US$2,640 million and 5 yen";
+    assert.deepEqual(units(en, [at(en, "198", "$"), at(en, "2,640", "$"), at(en, "5", "yen")]), ["198:$|million", "2640:us$|million", "5:|yen"]);
+    const rate = "営業利益率は7.3%となり";
+    assert.deepEqual(proseValues(rate, 10, [at(rate, "7.3%", "%", 10)], words).rates, [{ start: 16, value: 7.3, decimals: 1 }]);
+    assert.deepEqual(units("€ 12.5万", [at("€ 12.5万", "12.5万", "€")]), ["12.5:€|万"]);
   });
 
-  it("keeps a number with no currency apart, does not read a signed one, and ends a unit at a particle", () => {
-    assert.deepEqual(units("営業損益は▲50百万円"), []);
-    assert.deepEqual(units("profit of -$5 million"), []);
-    assert.deepEqual(units("96百万円で"), ["96:|百万円"]);
-    assert.deepEqual(units("96 companies in 2026"), []);
-    assert.deepEqual(proseValues("96 companies in 2026", 0, words).others, [0, 16]);
-    assert.deepEqual(proseValues("7.5 percentage", 0, words).rates, []);
+  it("keeps a number the tree reads in no currency apart, and does not read a signed one at all", () => {
+    assert.deepEqual(proseValues("営業損益は▲50百万円", 0, [at("営業損益は▲50百万円", "50百万円", "円")], words), { figures: [], rates: [], others: [] });
+    assert.deepEqual(proseValues("profit of -$5 million or -€ 5", 0, [], words).others, []);
+    assert.deepEqual(proseValues("a margin of -7.5%", 0, [at("a margin of -7.5%", "7.5%", "%")], words).rates, []);
+    const counted = "96 companies in 2026";
+    assert.deepEqual(proseValues(counted, 0, [at(counted, "96", "companies")], words), { figures: [], rates: [], others: [0, 16] });
+    assert.deepEqual(proseValues("7.5 percentage", 0, [], words), { figures: [], rates: [], others: [0] });
   });
 });
 
@@ -240,9 +256,20 @@ describe("ratio-mismatch", () => {
     assert.deepEqual(found("Operating profit was $198 million on net sales of $2,640 million, an operating margin of 8.5%.", en), ["8.5:7.5"]);
     assert.deepEqual(found("Operating profit was $198 million on net sales of $2,640 million, an operating margin of 7.5%.", en), []);
     assert.deepEqual(found("Operating profit was $198 million on net sales of $2,640 thousand, an operating margin of 8.5%.", en), []);
+    assert.deepEqual(found("Operating profit was $198 million yen on net sales of $2,640 million dollars, an operating margin of 8.5%.", en), []);
+    assert.deepEqual(found("Operating profit was US$198 million on net sales of $2,640 million, an operating margin of 8.5%.", en), []);
     assert.deepEqual(found("Operating profit was $198 million on net sales of $2,640 million, an operating margin of 8.5 percent.", en), ["8.5:7.5"]);
     // A year between a name and its amount leaves the amount unknown.
     assert.deepEqual(found("Operating profit in 2026 was $198 million on net sales in 2026 of $2,640 million, an operating margin of 8.5%.", en), []);
+  });
+
+  it("does not read a signed amount as the value of its name", () => {
+    assert.deepEqual(found("営業利益は▲96百万円、売上高は1,320百万円で、営業利益率は8.0%でした。", ja), []);
+    assert.deepEqual(found("営業利益は-96百万円、売上高は1,320百万円で、営業利益率は8.0%でした。", ja), []);
+    assert.deepEqual(found("営業利益は△¥96百万、売上高は¥1,320百万で、営業利益率は8.0%でした。", ja), []);
+    assert.deepEqual(found("Operating profit was -$198 million on net sales of $2,640 million, an operating margin of 8.5%.", en), []);
+    assert.deepEqual(found("Operating profit was $-198 million on net sales of $2,640 million, an operating margin of 8.5%.", en), []);
+    assert.deepEqual(found("Operating profit was $198 million on net sales of $2,640 million, an operating margin of -8.5%.", en), []);
   });
 
   it("does not read a name inside a longer word, or rows whose labels note different units", () => {
@@ -260,8 +287,7 @@ describe("ratio-mismatch", () => {
   });
 });
 
-// The structure tree's quantities do not read every notation below yet (¥1,320 in Japanese, 1,320 yen), so the prose path keeps
-// its own reader; routing it through the tree must first pass this.
+// The prose path reads its amounts from the structure tree's quantities, so these cases check that the tree reads every notation.
 describe("ratio-mismatch reads every currency notation and percent unit in prose", () => {
   /** The entries of a lexicon; an empty one would leave the cases below with nothing to check. */
   const lexicon = (adapter: LanguageAdapter, id: string): readonly LexiconEntry[] => {
@@ -275,14 +301,14 @@ describe("ratio-mismatch reads every currency notation and percent unit in prose
    * An amount as the notation writes it: a mark before the number, or a unit after it; a Latin word, or any word in English, after
    * a space. A Japanese word of magnitude goes only with a Japanese unit (96百万円, not 96百万 JPY).
    */
-  const amountsOf = (adapter: LanguageAdapter, magnitude: string): ((value: string) => string)[] =>
+  const amountsOf = (adapter: LanguageAdapter, magnitude: string, gap: string): ((value: string) => string)[] =>
     lexicon(adapter, "currency-notation").flatMap((notation) => {
       const english = adapter.id === "en";
       const latinAfter = notation.position !== "before" && LATIN_WORD.test(notation.pattern);
       if (!english && latinAfter && magnitude !== "") return [];
       const scaled = (value: string): string => (english && magnitude !== "" ? `${value} ${magnitude}` : `${value}${magnitude}`);
-      if (notation.position === "before") return [(value: string) => `${notation.pattern}${scaled(value)}`];
-      return [(value: string) => `${scaled(value)}${english || latinAfter ? " " : ""}${notation.pattern}`];
+      if (notation.position === "before") return [(value: string) => `${notation.pattern}${gap}${scaled(value)}`];
+      return [(value: string) => `${scaled(value)}${english || latinAfter ? " " : gap}${notation.pattern}`];
     });
 
   const sentence = (adapter: LanguageAdapter, top: string, bottom: string, rate: string): string =>
@@ -295,8 +321,8 @@ describe("ratio-mismatch reads every currency notation and percent unit in prose
     [en, ["", "million"]],
   ];
 
-  const everyAmount = (): { readonly adapter: LanguageAdapter; readonly amount: (value: string) => string }[] =>
-    cases.flatMap(([adapter, magnitudes]) => magnitudes.flatMap((magnitude) => amountsOf(adapter, magnitude).map((amount) => ({ adapter, amount }))));
+  const everyAmount = (gap = ""): { readonly adapter: LanguageAdapter; readonly amount: (value: string) => string }[] =>
+    cases.flatMap(([adapter, magnitudes]) => magnitudes.flatMap((magnitude) => amountsOf(adapter, magnitude, gap).map((amount) => ({ adapter, amount }))));
 
   it("reports a ratio the two amounts cannot give, and not one they can, whatever the notation", () => {
     everyAmount().forEach(({ adapter, amount }) => {
@@ -304,6 +330,32 @@ describe("ratio-mismatch reads every currency notation and percent unit in prose
       const label = `${adapter.id}: ${top} / ${bottom}`;
       assert.deepEqual(found(sentence(adapter, top, bottom, "8.0%"), adapter), ["8.0:7.3"], label);
       assert.deepEqual(found(sentence(adapter, top, bottom, "7.3%"), adapter), [], label);
+    });
+  });
+
+  it("reads an amount a space from its mark as it reads one touching it", () => {
+    everyAmount(" ").forEach(({ adapter, amount }) => {
+      const [top, bottom] = [amount("96"), amount("1,320")];
+      assert.deepEqual(detected(sentence(adapter, top, bottom, "8.0%"), adapter), ["8.0:7.3"], `${adapter.id}: ${top} / ${bottom}`);
+    });
+  });
+
+  it("does not take a signed amount, a range, or a year and an amount as the value of a name", () => {
+    [...everyAmount(), ...everyAmount(" ")].forEach(({ adapter, amount }) => {
+      const bottom = amount("1,320");
+      const tops = [
+        ...["▲", "△", "-", "−"].flatMap((sign) => [`${sign}${amount("96")}`, amount("96").replace(/(?=\d)/u, sign)]),
+        adapter.id === "ja" ? `84〜${amount("96")}` : `84 to ${amount("96")}`,
+        adapter.id === "ja" ? `2026年に${amount("96")}` : `in 2026 ${amount("96")}`,
+      ];
+      tops.forEach((top) => assert.deepEqual(detected(sentence(adapter, top, bottom, "8.0%"), adapter), [], `${adapter.id}: ${top} / ${bottom}`));
+    });
+  });
+
+  it("reads an approximate amount as the amount", () => {
+    everyAmount().forEach(({ adapter, amount }) => {
+      const top = `${adapter.id === "ja" ? "約" : "about "}${amount("96")}`;
+      assert.deepEqual(detected(sentence(adapter, top, amount("1,320"), "8.0%"), adapter), ["8.0:7.3"], `${adapter.id}: ${top}`);
     });
   });
 

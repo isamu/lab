@@ -35,7 +35,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: structure
 summary:
   ja: 本文の「※3」「[^3]」に対応する注が無い所と、本文のどこも指さない注
-  en: A note mark ("[^3]", "※3") with no note, or a note that nothing in the text points to
+  en: A note mark ("[^3]") with no note, or a note nothing points to
 example:
   ja:
     before: |

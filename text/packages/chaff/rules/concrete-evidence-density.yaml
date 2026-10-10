@@ -35,7 +35,7 @@ off_for:
 group: structure
 summary:
   ja: 数字もコードもリンクも無く、読み手が持ち帰れるものの無い節
-  en: A section with no number, no code and no link, so the reader has nothing to take away
+  en: "A section with no number, code or link: nothing for the reader to take away"
 example:
   ja:
     config: { rules: { concrete-evidence-density: strict } }

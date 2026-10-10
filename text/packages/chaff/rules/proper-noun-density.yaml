@@ -40,7 +40,7 @@ off_for:
 group: readability
 summary:
   ja: 製品名・会社名・人名が詰まりすぎて、知らない人には文の形が見えない所
-  en: So many product, company and personal names that a newcomer cannot see the sentence
+  en: So many product, company and personal names that a newcomer gets lost
 example:
   ja:
     config: { rules: { proper-noun-density: strict } }

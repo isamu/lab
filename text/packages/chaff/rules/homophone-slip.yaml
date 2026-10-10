@@ -33,7 +33,7 @@ off_for:
 group: slips
 summary:
   ja: 英語で、「it's own」「their are」のように、次の語から見て取り違えたと決まる同音語
-  en: '"It''s own", "their are" and other homophones the next word shows were typed for another'
+  en: A sound-alike typed for another word, such as "it's own" or "their are"
 example:
   en:
     before: |

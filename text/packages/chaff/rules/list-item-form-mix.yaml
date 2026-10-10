@@ -48,7 +48,7 @@ off_for:
 group: consistency
 summary:
   ja: 一つの箇条書きの中で、名詞で終わる項目と文で終わる項目（英語では動詞で始まる項目と名詞で始まる項目）が混ざっている所
-  en: One list mixing phrases with sentences, or items that open with a verb with items that open with a noun
+  en: One list mixing phrases with sentences, or verb-first items with noun-first ones
 
 example:
   ja:

@@ -228,6 +228,25 @@ describe("total-mismatch", () => {
       assert.deepEqual(found(doc("- Algebra: 4 credits", "- Lab: 6 sessions", "- Total: 18 credits")), []);
     });
 
+    it("packs, boxes and other containers are counted, singular and plural alike", () => {
+      const packs = (total: string): string =>
+        doc("| Pack size | Packs affected |", "| --- | --- |", "| Single bar | 4,200 packs |", "| 6-bar box | 2,400 packs |", `| Total | ${total} packs |`);
+      assert.deepEqual(found(packs("6,800")), ["6,800 packs≠6,600 packs"]);
+      assert.deepEqual(found(packs("6,600")), []);
+      assert.deepEqual(found(doc("- Lid: 1 piece", "- Body: 2 pieces", "- Total: 4 pieces")), ["4 pieces≠3 pieces"]);
+      assert.deepEqual(found(doc("- Morning: 1 tablet", "- Evening: 2 tablets", "- Total: 3 tablets")), []);
+    });
+
+    it("a column mixing packs and boxes is not added", () => {
+      assert.deepEqual(found(doc("| Item | Count |", "| --- | --- |", "| Bars | 40 packs |", "| Gift sets | 12 boxes |", "| Total | 60 packs |")), []);
+    });
+
+    it("can, set and cases are not counted: a verb, an adjective, instances that may overlap", () => {
+      assert.deepEqual(found(doc("- Item 2 can be returned", "- Item 3 can be exchanged", "- Total: 4 cans")), []);
+      assert.deepEqual(found(doc("- Form A: 2 set values", "- Form B: 3 set values", "- Total: 6 sets")), []);
+      assert.deepEqual(found(doc("- Rule A applies in 2 cases", "- Rule B applies in 3 cases", "- Total: 6 cases")), []);
+    });
+
     it("単位 that is not a number of credits is not an amount: a caption, a rate, an ordinal, a longer word", () => {
       const caption = (total: string): string =>
         ["# 予算", "", "単位：千円", "", "| 項目 | 金額 |", "| --- | --- |", "| 人件費 | 1,200 |", "| 外注費 | 300 |", `| 合計 | ${total} |`].join("\n");

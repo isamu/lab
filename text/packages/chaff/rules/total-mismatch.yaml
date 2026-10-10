@@ -31,7 +31,7 @@ sources: [de-marneffe-2008]
 group: facts
 summary:
   ja: 見積もりや請求書、契約書で、合計が内訳に並べた金額の和と合わない所
-  en: A total in a quote, an invoice or a contract that is not the sum of the amounts it is made up of
+  en: A total in a quote, invoice or contract that is not the sum of its items
 example:
   ja:
     before: |

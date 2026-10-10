@@ -47,7 +47,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: slips
 summary:
   ja: ゼロ幅の空白、途中の BOM、ソフトハイフン、文字の向きの指定、制御文字、隠れたタグ文字のような、画面に出ない字
-  en: Characters that do not show on screen, such as a zero-width space, a stray byte order mark, a soft hyphen, a direction mark or hidden tag characters
+  en: Characters that do not show on screen, such as a zero-width space
 example:
   ja:
     before: "申込書は\u200B総務課へ送ってください。\n"

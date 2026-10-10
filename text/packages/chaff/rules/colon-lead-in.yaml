@@ -36,7 +36,7 @@ off_for:
 group: ai-tells
 summary:
   ja: 「以下の通りです：」のように、コロンで終わる文から箇条書きへ渡す形が続き、説明が箇条書きの前置きだけになっている所
-  en: 'Sentences ending in a colon that hand off to a list ("Here''s what you need to know:"), section after section'
+  en: Section after section that opens with a sentence ending in a colon before a list
 example:
   ja:
     pad: true

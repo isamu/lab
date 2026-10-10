@@ -28,7 +28,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: slips
 summary:
   ja: 英文の「word .」「word ,」のように、句読点の前に空白がある所
-  en: A space before a period, comma, semicolon, question mark or exclamation mark, as in "word ."
+  en: A space before a period, comma or other mark, as in "word ."
 example:
   en:
     before: |

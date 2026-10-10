@@ -13,3 +13,13 @@ entries:
   - { pattern: cell, group: mobile }
   - { pattern: cell phone, group: mobile }
   - { pattern: mobile phone, group: mobile }
+  # A desk's name says where a number goes, not what it is, so its group is desk: the number is of the kind the label right
+  # before the desk's name gives (a fax line's number is a fax number), and a phone number when there is none.
+  - { pattern: line, group: desk }
+  - { pattern: hotline, group: desk }
+  - { pattern: helpline, group: desk }
+  - { pattern: desk, group: desk }
+  - { pattern: center, group: desk }
+  - { pattern: centre, group: desk }
+  - { pattern: care, group: desk }
+  - { pattern: support, group: desk }

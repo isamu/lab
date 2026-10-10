@@ -32,7 +32,7 @@ sources: [jis-z8301-2019, femmer-2017]
 group: structure
 summary:
   ja: 「第5条に定める」と書いてあるのに、その第5条が文書に無い所
-  en: A reference such as "as set out in Article 5" to a provision the document does not have
+  en: A reference such as "see Article 5" to an article the document does not have
 example:
   ja:
     before: |

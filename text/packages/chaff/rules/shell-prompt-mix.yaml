@@ -33,7 +33,7 @@ off_for:
 group: consistency
 summary:
   ja: シェルのブロックで、「$」のプロンプトを付けたコマンドと付けないコマンドが混ざっている所
-  en: Shell blocks that write commands with a "$" prompt in some places and without it in others
+  en: Shell commands written with a "$" prompt in some places and without in others
 example:
   ja:
     config: { genre: docs/manual }

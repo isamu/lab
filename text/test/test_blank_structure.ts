@@ -69,6 +69,50 @@ describe("empty-table-cell: 表の空欄", () => {
     assert.deepEqual(namedRuleRun("empty-table-cell", english, en).findings, ['The "Owner" column is blank in this row only']);
   });
 
+  it("合計・小計・税の行は、金額のほかの列を空けてよい", () => {
+    const ja4 = (...rows: string[]): string => ["# 明細", "", "| 内訳 | 数量 | 単価 | 金額 |", "| --- | --- | --- | --- |", ...rows, ""].join("\n");
+    const items = ["| 宿泊料金 | 2泊 | 32,000円 | 64,000円 |", "| 入湯税 | 2泊 | 300円 | 600円 |"];
+    assert.deepEqual(namedRuleRun("empty-table-cell", ja4(...items, "| 合計 | | | 64,600円 |"), ja).findings, []);
+    assert.deepEqual(namedRuleRun("empty-table-cell", ja4(...items, "| **小計** | | | 64,600円 |"), ja).findings, []);
+    assert.deepEqual(namedRuleRun("empty-table-cell", ja4(...items, "| 消費税（10%） | | | 6,460円 |"), ja).findings, []);
+    const en4 = (...rows: string[]): string =>
+      ["# Charges", "", "| Item | Quantity | Unit price | Amount |", "| --- | --- | --- | --- |", ...rows, ""].join("\n");
+    const lines = ["| Base rate | 4 days | $48.00 | $192.00 |", "| Child seat | 1 | $12.00 | $12.00 |"];
+    assert.deepEqual(namedRuleRun("empty-table-cell", en4(...lines, "| Total | | | $204.00 |"), en).findings, []);
+    assert.deepEqual(namedRuleRun("empty-table-cell", en4(...lines, "| Total due | | | $204.00 |"), en).findings, []);
+    assert.deepEqual(namedRuleRun("empty-table-cell", en4(...lines, "| Sales tax (10%) | | | $20.40 |"), en).findings, []);
+  });
+
+  it("合計の行の金額の空欄、内訳の行の空欄、合計の語で始まらない行の空欄は言う", () => {
+    const ja4 = (...rows: string[]): string => ["# 明細", "", "| 内訳 | 数量 | 単価 | 金額 |", "| --- | --- | --- | --- |", ...rows, ""].join("\n");
+    const items = ["| 宿泊料金 | 2泊 | 32,000円 | 64,000円 |", "| 入湯税 | 2泊 | 300円 | 600円 |"];
+    assert.deepEqual(namedRuleRun("empty-table-cell", ja4(...items, "| 合計 | | | |"), ja).findings, ["表の「金額」の列で、この行だけが空欄です"]);
+    assert.deepEqual(
+      namedRuleRun("empty-table-cell", ja4("| 宿泊料金 | 2泊 | | 64,000円 |", "| 入湯税 | 2泊 | 300円 | 600円 |", "| 夕食 | 2回 | 3,000円 | 6,000円 |"), ja)
+        .findings,
+      ["表の「単価」の列で、この行だけが空欄です"],
+    );
+    assert.deepEqual(namedRuleRun("empty-table-cell", ja4(...items, "| 計画外の費用 | | | 1,000円 |"), ja).findings, [
+      "表の「数量」の列で、この行だけが空欄です",
+      "表の「単価」の列で、この行だけが空欄です",
+    ]);
+    const en4 = (...rows: string[]): string =>
+      ["# Charges", "", "| Item | Quantity | Unit price | Amount |", "| --- | --- | --- | --- |", ...rows, ""].join("\n");
+    const lines = ["| Base rate | 4 days | $48.00 | $192.00 |", "| Child seat | 1 | $12.00 | $12.00 |"];
+    assert.deepEqual(namedRuleRun("empty-table-cell", en4(...lines, "| Total | | | |"), en).findings, ['The "Amount" column is blank in this row only']);
+    assert.deepEqual(namedRuleRun("empty-table-cell", en4(...lines, "| Total area | | | $9.00 |"), en).findings, [
+      'The "Quantity" column is blank in this row only',
+      'The "Unit price" column is blank in this row only',
+    ]);
+  });
+
+  it("金額の列が決まらない表では、合計の行の空欄も言う", () => {
+    assert.deepEqual(
+      names(tableBlanks(table("| 10月16日 | 伊藤 | 修正 |", "| 10月21日 | 鈴木 | 配布 |", "| 合計 |  | 二件 |"), [], (row) => row.includes("合計"))),
+      ["担当"],
+    );
+  });
+
   it("Markdown でない文書では動かない", () => {
     const source = table("| 10月16日 | 伊藤 | 修正 |", "| 10月21日 |  | 配布 |", "| 10月28日 | 高橋 | 日程 |");
     assert.deepEqual(namedRuleRun("empty-table-cell", source, ja, "a.txt").findings, []);

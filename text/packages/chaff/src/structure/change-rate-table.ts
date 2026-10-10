@@ -23,10 +23,10 @@ const VALUE_CELL = /^([^\d+\-−▲△()%]*?)(\d{1,3}(?:,\d{3})+|\d+)(?:\.(\d+))
 const NEGATIVE_SIGNS: ReadonlySet<string> = new Set(["-", "−", "▲", "△"]);
 const DECIMAL_BASE = 10;
 
-const plain = (text: string): string => text.normalize("NFKC").replace(/[*_`]/gu, "").trim();
+export const plain = (text: string): string => text.normalize("NFKC").replace(/[*_`]/gu, "").trim();
 
 /** A Latin word stands as a whole word (change is not in "exchange"); anything else as written. */
-const holds = (heading: string, word: string): boolean => {
+export const holds = (heading: string, word: string): boolean => {
   const key = plain(word).toLowerCase();
   if (!LATIN.test(key)) return heading.includes(key);
   return new RegExp(`(?<![a-z0-9])${escapeRegExp(key)}(?![a-z0-9])`, "u").test(heading);

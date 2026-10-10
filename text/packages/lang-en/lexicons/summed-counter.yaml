@@ -15,3 +15,48 @@ entries:
     group: session
   - pattern: session
     group: session
+  - pattern: packs
+    group: pack
+  - pattern: pack
+    group: pack
+  - pattern: cartons
+    group: carton
+  - pattern: carton
+    group: carton
+  - pattern: bottles
+    group: bottle
+  - pattern: bottle
+    group: bottle
+  - pattern: boxes
+    group: box
+  - pattern: box
+    group: box
+  - pattern: bags
+    group: bag
+  - pattern: bag
+    group: bag
+  # Left out: "can" ("3 can be returned"), "set" ("2 set values"), and "cases" (instances that may overlap, not containers).
+  - pattern: cans
+    group: can
+  - pattern: jars
+    group: jar
+  - pattern: jar
+    group: jar
+  - pattern: pieces
+    group: piece
+  - pattern: piece
+    group: piece
+  - pattern: items
+    group: item
+  - pattern: item
+    group: item
+  - pattern: sets
+    group: set
+  - pattern: pairs
+    group: pair
+  - pattern: pair
+    group: pair
+  - pattern: tablets
+    group: tablet
+  - pattern: tablet
+    group: tablet

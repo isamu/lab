@@ -27,7 +27,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: slips
 summary:
   ja: 「https://example.jp/をご覧ください」のように、URL のすぐ後ろに字が続き、リンクがそこまで伸びる所
-  en: A URL followed straight away by a character outside ASCII, which the link swallows
+  en: A URL followed straight away by text that the link swallows
 example:
   ja:
     before: |

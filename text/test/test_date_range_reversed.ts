@@ -7,6 +7,7 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import { rangeFrameOf, withoutTrailingWeekday } from "../packages/chaff/src/structure/date-range.ts";
+import { afterSpanLabel } from "../packages/chaff/src/structure/span-label.ts";
 
 // 期間の終わりが始まりより前（date-range-reversed）。「4月1日〜3月31日」のように、範囲の記号でつないだ二つの日付を比べる。
 
@@ -129,6 +130,16 @@ describe("date-range-reversed", () => {
     assert.deepEqual(found(doc("We met on October 12, 2026. Dates: October 12, 2026 to October 10, 2026")), []);
   });
 
+  it("a bare … to … is a period after a short label that ends in a span word (range-label)", () => {
+    assert.deepEqual(found(doc("Sales period: October 1, 2025 to February 28, 2025")), ["2025-10-01>2025-02-28"]);
+    assert.deepEqual(found(doc("- **Booking window:** 12 October 2026 to 10 October 2026")), ["2026-10-12>2026-10-10"]);
+    assert.deepEqual(found(doc("Sales period: October 1, 2025 to February 28, 2026")), []);
+    assert.deepEqual(found(doc("Sales figures: October 1, 2025 to February 28, 2025")), []);
+    assert.deepEqual(found(doc("The figures for the whole sales period: October 1, 2025 to February 28, 2025")), []);
+    assert.deepEqual(found(doc("Sales period: moved from October 1, 2025 to February 28, 2025")), []);
+    assert.deepEqual(found(doc("Sales period: postponed from October 1, 2025 to February 28, 2025")), []);
+  });
+
   it("a bare … to … is a period when both dates are full dates with weekdays", () => {
     const line = "Applications: Monday, October 5, 2026 to Wednesday, September 30, 2026";
     assert.deepEqual(found(doc(line)), ["2026-10-05>2026-09-30"]);
@@ -187,5 +198,26 @@ describe("withoutTrailingWeekday", () => {
     assert.equal(withoutTrailingWeekday("to nottuesday,", weekdays), "to nottuesday,");
     assert.equal(withoutTrailingWeekday("to tuesday,", []), "to tuesday,");
     assert.equal(withoutTrailingWeekday("", weekdays), "");
+  });
+});
+
+describe("afterSpanLabel", () => {
+  const heads = ["period", "dates"];
+
+  it("finds the text after a short label that ends in a span word", () => {
+    assert.equal(afterSpanLabel("Sales period: October 1", heads), "Sales period:".length);
+    assert.equal(afterSpanLabel("- **Sales Period:** October 1", heads), "- **Sales Period:".length);
+    assert.equal(afterSpanLabel("Dates: October 1", heads), "Dates:".length);
+    assert.equal(afterSpanLabel("Key trip dates：October 1", heads), "Key trip dates：".length);
+  });
+
+  it("gives undefined for a label that does not end in a span word, a sentence, or no colon", () => {
+    assert.equal(afterSpanLabel("Sales figures: October 1", heads), undefined);
+    assert.equal(afterSpanLabel("Superperiod: October 1", heads), undefined);
+    assert.equal(afterSpanLabel("The figures for the whole sales period: October 1", heads), undefined);
+    assert.equal(afterSpanLabel("Sales period October 1", heads), undefined);
+    assert.equal(afterSpanLabel("Sales period: October 1", []), undefined);
+    assert.equal(afterSpanLabel("", heads), undefined);
+    assert.equal(afterSpanLabel(": October 1", heads), undefined);
   });
 });

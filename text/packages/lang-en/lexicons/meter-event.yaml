@@ -2,11 +2,19 @@
 # last figure and started again (a current reading below the previous one is read with the previous reading's next power
 # of ten added). replaced: the meter was replaced (the two readings are of different meters and are not compared). Only
 # words under the same heading count (in a table with one meter per row, only that row's). Only phrases that state the
-# event: the bare noun "rollover" is also in "No rollover occurred".
+# event: the bare noun "rollover" is also in "No rollover occurred". rollover-negation-before: a word before a rollover
+# phrase, in its clause (up to a comma or a full stop), that denies it ("has not rolled over"); matched as a whole word, with at most one word between it and the phrase.
 id: meter-event
 language: en
 entries:
   - { pattern: rolled over, group: rollover }
+  - { pattern: not, group: rollover-negation-before }
+  - { pattern: never, group: rollover-negation-before }
+  - { pattern: "hasn't", group: rollover-negation-before }
+  - { pattern: "haven't", group: rollover-negation-before }
+  - { pattern: "hadn't", group: rollover-negation-before }
+  - { pattern: "didn't", group: rollover-negation-before }
+  - { pattern: "wasn't", group: rollover-negation-before }
   - { pattern: meter replaced, group: replaced }
   - { pattern: meter was replaced, group: replaced }
   - { pattern: meter exchange, group: replaced }

@@ -50,7 +50,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: consistency
 summary:
   ja: 記号なしの見出しの中に「準備：」「確認。」のように記号で終わる見出しが混ざっている所（またはその逆）
-  en: A heading ending with a colon or a full stop among headings that end bare, or the other way round
+  en: Headings that end with a colon or full stop mixed with headings that do not
 example:
   ja:
     before: |
