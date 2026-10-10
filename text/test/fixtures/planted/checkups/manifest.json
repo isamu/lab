@@ -1,0 +1,251 @@
+{
+  "note": "Self-written health checkup result reports (健康診断結果報告書 / 血液検査結果のお知らせ, an annual physical and a laboratory result report) for made-up people and clinics: an annual checkup summary with body measurements and a blood-test table, and a blood-test report, each in a clean version and a planted one that differs only on the lines below. They run as business/report: no genre is made for medical result reports. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: reference-flag-mismatch (a result flagged H / L / 高 / 低 although it is inside its reference range on the same row, or flagged normal although outside), reference-unit-mismatch (a result in another unit than its reference range on the same row, mg/dL against mmol/L) and bmi-mismatch (a BMI that is not the stated weight divided by the square of the stated height). An examination date after the report date is named for due-before-issue, which reads ordered pairs of dates from the language's vocabulary, and an age that does not match the birth date and the examination date for elapsed-years-mismatch. yarn planted checkups scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/annual",
+      "language": "ja",
+      "genre": "business/report",
+      "clean": "ja/annual.clean.md",
+      "planted": "ja/annual.planted.md",
+      "mistakes": [
+        {
+          "kind": "age-birth-date",
+          "rule": "elapsed-years-mismatch",
+          "line": 5,
+          "clean": "受診時 48歳",
+          "planted": "受診時 46歳"
+        },
+        {
+          "kind": "exam-after-report",
+          "rule": "due-before-issue",
+          "line": 7,
+          "clean": "受診日：2026年9月8日",
+          "planted": "受診日：2026年10月8日"
+        },
+        {
+          "kind": "bmi",
+          "rule": "bmi-mismatch",
+          "line": 21,
+          "clean": "| BMI | 22.0 |",
+          "planted": "| BMI | 24.0 |"
+        },
+        {
+          "kind": "range-reversed",
+          "rule": "quantity-range-reversed",
+          "line": 28,
+          "clean": "70〜109 mg/dL",
+          "planted": "109〜70 mg/dL"
+        },
+        {
+          "kind": "unit-vs-range",
+          "rule": "reference-unit-mismatch",
+          "line": 31,
+          "clean": "| 64 mg/dL |",
+          "planted": "| 64 mmol/L |"
+        },
+        {
+          "kind": "flag-mismatch",
+          "rule": "reference-flag-mismatch",
+          "line": 32,
+          "clean": "| 30〜149 mg/dL | 基準内 |",
+          "planted": "| 30〜149 mg/dL | 高 |"
+        },
+        {
+          "kind": "findings-gap",
+          "rule": "numbering-gap",
+          "line": 38,
+          "clean": "3. 来年",
+          "planted": "4. 来年"
+        },
+        {
+          "kind": "person-name",
+          "rule": "name-variant",
+          "line": 42,
+          "clean": "佐藤 美咲 様",
+          "planted": "佐藤 美沙 様"
+        }
+      ]
+    },
+    {
+      "id": "ja/blood",
+      "language": "ja",
+      "genre": "business/report",
+      "clean": "ja/blood.clean.md",
+      "planted": "ja/blood.planted.md",
+      "mistakes": [
+        {
+          "kind": "age-birth-date",
+          "rule": "elapsed-years-mismatch",
+          "line": 5,
+          "clean": "（35歳）",
+          "planted": "（38歳）"
+        },
+        {
+          "kind": "exam-after-report",
+          "rule": "due-before-issue",
+          "line": 7,
+          "clean": "採血日：2026年8月20日",
+          "planted": "採血日：2026年9月2日"
+        },
+        {
+          "kind": "range-reversed",
+          "rule": "quantity-range-reversed",
+          "line": 20,
+          "clean": "5〜45 U/L",
+          "planted": "45〜5 U/L"
+        },
+        {
+          "kind": "flag-mismatch",
+          "rule": "reference-flag-mismatch",
+          "line": 21,
+          "clean": "| 79 U/L 以下 | 高 |",
+          "planted": "| 79 U/L 以下 | 基準内 |"
+        },
+        {
+          "kind": "unit-vs-range",
+          "rule": "reference-unit-mismatch",
+          "line": 24,
+          "clean": "| 104 mg/dL |",
+          "planted": "| 104 mmol/L |"
+        },
+        {
+          "kind": "findings-gap",
+          "rule": "numbering-gap",
+          "line": 30,
+          "clean": "3. 三か月後",
+          "planted": "5. 三か月後"
+        },
+        {
+          "kind": "person-name",
+          "rule": "name-variant",
+          "line": 32,
+          "clean": "中村 健太 様",
+          "planted": "中村 健汰 様"
+        }
+      ]
+    },
+    {
+      "id": "en/annual",
+      "language": "en",
+      "genre": "business/report",
+      "clean": "en/annual.clean.md",
+      "planted": "en/annual.planted.md",
+      "mistakes": [
+        {
+          "kind": "age-birth-date",
+          "rule": "elapsed-years-mismatch",
+          "line": 5,
+          "clean": "(age 57)",
+          "planted": "(age 59)"
+        },
+        {
+          "kind": "exam-after-report",
+          "rule": "due-before-issue",
+          "line": 7,
+          "clean": "Examination date: June 15, 2026",
+          "planted": "Examination date: July 15, 2026"
+        },
+        {
+          "kind": "bmi",
+          "rule": "bmi-mismatch",
+          "line": 21,
+          "clean": "| BMI | 23.4 |",
+          "planted": "| BMI | 21.4 |"
+        },
+        {
+          "kind": "range-reversed",
+          "rule": "quantity-range-reversed",
+          "line": 28,
+          "clean": "70–99 mg/dL",
+          "planted": "99–70 mg/dL"
+        },
+        {
+          "kind": "flag-mismatch",
+          "rule": "reference-flag-mismatch",
+          "line": 29,
+          "clean": "| 4.0–5.6 % | Normal |",
+          "planted": "| 4.0–5.6 % | H |"
+        },
+        {
+          "kind": "unit-vs-range",
+          "rule": "reference-unit-mismatch",
+          "line": 31,
+          "clean": "| 52 mg/dL |",
+          "planted": "| 52 mmol/L |"
+        },
+        {
+          "kind": "findings-gap",
+          "rule": "numbering-gap",
+          "line": 38,
+          "clean": "3. Book",
+          "planted": "4. Book"
+        },
+        {
+          "kind": "person-name",
+          "rule": "name-variant",
+          "line": 42,
+          "clean": "Daniel Brooks",
+          "planted": "Daniel Brookes"
+        }
+      ]
+    },
+    {
+      "id": "en/blood",
+      "language": "en",
+      "genre": "business/report",
+      "clean": "en/blood.clean.md",
+      "planted": "en/blood.planted.md",
+      "mistakes": [
+        {
+          "kind": "age-birth-date",
+          "rule": "elapsed-years-mismatch",
+          "line": 5,
+          "clean": "(age 40)",
+          "planted": "(age 43)"
+        },
+        {
+          "kind": "exam-after-report",
+          "rule": "due-before-issue",
+          "line": 7,
+          "clean": "Collection date: May 4, 2026",
+          "planted": "Collection date: May 18, 2026"
+        },
+        {
+          "kind": "range-reversed",
+          "rule": "quantity-range-reversed",
+          "line": 20,
+          "clean": "3.5–5.1 mmol/L",
+          "planted": "5.1–3.5 mmol/L"
+        },
+        {
+          "kind": "unit-vs-range",
+          "rule": "reference-unit-mismatch",
+          "line": 21,
+          "clean": "| 0.82 mg/dL |",
+          "planted": "| 0.82 mmol/L |"
+        },
+        {
+          "kind": "flag-mismatch",
+          "rule": "reference-flag-mismatch",
+          "line": 22,
+          "clean": "| 30–100 ng/mL | L |",
+          "planted": "| 30–100 ng/mL | Normal |"
+        },
+        {
+          "kind": "findings-gap",
+          "rule": "numbering-gap",
+          "line": 29,
+          "clean": "3. We",
+          "planted": "5. We"
+        },
+        {
+          "kind": "person-name",
+          "rule": "name-variant",
+          "line": 31,
+          "clean": "Emily Carter",
+          "planted": "Emily Cartor"
+        }
+      ]
+    }
+  ]
+}
