@@ -1,5 +1,6 @@
 import type { FactValue } from "./fact-values.ts";
 import { EDGE_MARKS, trimEndOf, withoutEdgeMarks } from "./trim-marks.ts";
+import { qualifiedLabelOf, type QualifierWords } from "./qualified-labels.ts";
 
 /**
  * 名前の付いた値（「締切：10月5日」「参加費は3,000円です」"Fee: $300" "The deadline is May 3."）と、
@@ -24,6 +25,8 @@ export type FactWords = {
   readonly attributes: readonly AttributePhrase[];
   /** 区切りと値のあいだに置ける目安の語（約、about）。あれば値を目安として読む。無ければ、区切りのすぐ後ろの値だけ。 */
   readonly valueLeads?: readonly string[];
+  /** 名前に条件を付ける型（（*）、*の、for *）。条件の付いた名前は、名前と条件をそれぞれ一つの名前の長さで測る。 */
+  readonly qualifiers?: QualifierWords;
 };
 
 /** approximate: 値の前に目安の語（約、about）があった。table: 表の升の値。 */
@@ -106,11 +109,18 @@ const containsSeparator = (label: string, words: FactWords): boolean =>
     LATIN_WORD.test(separator) ? wordsOf(label.toLowerCase()).includes(separator.toLowerCase()) : label.includes(separator),
   );
 
+const isShort = (text: string): boolean => text.length <= MAX_LABEL_LENGTH && wordsOf(text).length <= MAX_LABEL_WORDS;
+
+/** 名前の長さ。条件の付いた名前（waiting period for cancellation cover）は、名前と条件がそれぞれ短いこと。 */
+const isShortLabel = (label: string, key: string, words: FactWords): boolean => {
+  const qualified = words.qualifiers === undefined ? undefined : qualifiedLabelOf(key, words.qualifiers);
+  return qualified === undefined ? isShort(label) : isShort(qualified.head) && isShort(qualified.qualifier);
+};
+
 /** 名前として使える書き方か。短く、字を含み、区切りを含まず、指すだけの語（それ、it）でない。 */
 const isLabel = (label: string, key: string, words: FactWords): boolean =>
   label.length > 0 &&
-  label.length <= MAX_LABEL_LENGTH &&
-  wordsOf(label).length <= MAX_LABEL_WORDS &&
+  isShortLabel(label, key, words) &&
   LETTER.test(key) &&
   !CODE_MARK.test(label) &&
   !containsSeparator(label, words) &&
