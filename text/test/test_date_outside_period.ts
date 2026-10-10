@@ -427,3 +427,77 @@ describe("date-outside-period: a deadline after the document's term", () => {
     assert.deepEqual(foundEn(en), []);
   });
 });
+
+// 項目と内容の二列の表に書いた仕事の期間（| 開講期間 | … |）。催しの期間の語（Conference、研修期間）の表の行は、催しを並べた表でもあるので読まない。
+const syllabusTable = (title: string, head: string, rows: readonly string[], section: string, deadline: string): string =>
+  lines(title, "", head, "| --- | --- |", ...rows, "", section, "", deadline);
+
+describe("date-outside-period: a term written in a two-column table", () => {
+  it("a deadline after the end of a term in a key-value table row is reported", () => {
+    const ja = syllabusTable(
+      "# シラバス「統計学入門」",
+      "| 項目 | 内容 |",
+      ["| 開講期間 | 2026年4月10日〜2026年7月31日 |", "| 単位数 | 2 |"],
+      "## 課題",
+      "期末レポートの提出期限は2026年8月20日です。",
+    );
+    assert.deepEqual(foundJa(ja), ["2026年8月20日"]);
+    const en = syllabusTable(
+      "# Syllabus: Statistics",
+      "| Item | Detail |",
+      ["| **Term** | April 8 – July 28, 2026 |", "| Credits | 2 |"],
+      "## Assignment",
+      "The final report is due on August 20, 2026.",
+    );
+    assert.deepEqual(foundEn(en), ["August 20, 2026"]);
+  });
+
+  it("a later row of the same table with a deadline after the term is reported", () => {
+    const ja = syllabusTable(
+      "# シラバス",
+      "| 項目 | 内容 |",
+      ["| 開講期間 | 2026年4月10日〜2026年7月31日 |", "| レポート提出期限 | 2026年8月20日 |"],
+      "## 評価",
+      "試験で評価します。",
+    );
+    assert.deepEqual(foundJa(ja), ["2026年8月20日"]);
+  });
+
+  it("silent for a deadline inside the term, a table listing several terms, and a three-column row", () => {
+    const inside = syllabusTable(
+      "# シラバス",
+      "| 項目 | 内容 |",
+      ["| 開講期間 | 2026年4月10日〜2026年7月31日 |"],
+      "## 課題",
+      "期末レポートの提出期限は2026年7月24日です。",
+    );
+    assert.deepEqual(foundJa(inside), []);
+    const listed = syllabusTable(
+      "# Calendar",
+      "| Part | Dates |",
+      ["| Term | April 8 – July 28, 2026 |", "| Report due | August 20, 2026 |", "| Term | September 1 – December 18, 2026 |"],
+      "## Assignment",
+      "The final report is due on August 20, 2026.",
+    );
+    assert.deepEqual(foundEn(listed), []);
+    const wide = lines(
+      "# シラバス",
+      "",
+      "| 項目 | 内容 | 備考 |",
+      "| --- | --- | --- |",
+      "| 開講期間 | 2026年4月10日〜2026年7月31日 | 前期 |",
+      "",
+      "## 課題",
+      "",
+      "期末レポートの提出期限は2026年8月20日です。",
+    );
+    assert.deepEqual(foundJa(wide), []);
+  });
+
+  it("silent for an event period word in a table row: a table of events is not the document's period", () => {
+    const en = lines("# Spring Programme", "", "| Event | Dates |", "| --- | --- |", "| Conference | May 3–5 |", "| Workshop | May 7 |", "", "- Dinner: May 9");
+    assert.deepEqual(foundEn(en), []);
+    const ja = lines("# 研修のご案内", "", "| 項目 | 内容 |", "| --- | --- |", "| 研修期間 | 10月12日〜10月15日 |", "", "- 懇親会：10月20日");
+    assert.deepEqual(foundJa(ja), []);
+  });
+});

@@ -1,0 +1,8 @@
+# Labels of a date of birth (elapsed-years-mismatch). The full date after the label is paired with the age on the same line ("(age 57)").
+id: birth-date-label
+language: en
+entries:
+  - pattern: date of birth
+  - pattern: birth date
+  - pattern: dob
+  - pattern: born

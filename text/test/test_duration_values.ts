@@ -95,9 +95,9 @@ describe("fact-conflict: two durations for one item", () => {
     assert.deepEqual(conflictJa("試用期間：1年間", "", "試用期間は12ヶ月です。"), []);
   });
 
-  it("a time ago, an age, and a length followed by a condition are not values", () => {
+  it("a time ago and a length followed by a condition are not values; an age is an age, not a length", () => {
     assert.deepEqual(conflictEn("Last review: 3 months ago.", "", "Last review: 6 months ago."), []);
-    assert.deepEqual(conflictEn("Applicant: 30 years old.", "", "Applicant: 31 years old."), []);
+    assert.deepEqual(conflictEn("Applicant: 30 years old.", "", "Applicant: 31 years old."), ["Applicant:31 years old≠30 years old"]);
     assert.deepEqual(conflictEn("Notice: 30 days before the move.", "", "Notice: 14 days before the end."), []);
   });
 

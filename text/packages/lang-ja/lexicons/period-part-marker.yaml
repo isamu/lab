@@ -1,0 +1,9 @@
+# 期間の一部をつなぐ印（period-part-exceeds-whole）。position は全体から見た印の側: after は全体の名前の後ろ（保証期間のうち）。
+# group anaphor は前の文の期間を全体にする（このうち）。「のうちの」「期間内の」は のうち と 内の で読む。
+id: period-part-marker
+language: ja
+entries:
+  - { pattern: のうち, position: after }
+  - { pattern: の中で, position: after }
+  - { pattern: 内の, position: after }
+  - { pattern: このうち, position: after, group: anaphor }

@@ -11,7 +11,8 @@ import { escapeRegExp } from "./regexp.ts";
 /** 元号と元年の西暦の年は語彙表 calendar-era が言う。 */
 const ERAS = loadCalendarEras();
 
-type Counted = { readonly start: number; readonly end: number; readonly value: number; readonly unit: string };
+/** glossYear: 括弧で言い換えた年（令和6年（2024年））の、括弧の中の年を西暦にしたもの。 */
+type Counted = { readonly start: number; readonly end: number; readonly value: number; readonly unit: string; readonly glossYear?: number };
 
 const PERCENT = new Set(["%", "％"]);
 /** 形態素が無いときの単位の表。長いものから当てる。形態素があれば、助数詞はすべて読める。 */
@@ -189,7 +190,7 @@ const GLOSSED_YEARS = glossedYearReader(ERAS);
 const withGlossedYears = (text: string, found: readonly Counted[]): Counted[] => {
   const glossed = GLOSSED_YEARS(text);
   if (glossed.length === 0) return [...found];
-  const years = glossed.map((item): Counted => ({ start: item.start, end: item.end, value: item.year, unit: "年" }));
+  const years = glossed.map((item): Counted => ({ start: item.start, end: item.end, value: item.year, unit: "年", glossYear: item.glossYear }));
   const outside = found.filter((item) => !years.some((year) => item.start < year.end && year.start < item.end));
   return [...outside, ...years].toSorted((left, right) => left.start - right.start);
 };
@@ -212,10 +213,12 @@ type DateMatch = { readonly date: Mention; readonly used: number };
 const follows = (left: Counted | undefined, right: Counted | undefined, unit: string): right is Counted =>
   left !== undefined && right?.unit === unit && right.start === left.end;
 
-const dateOf = (parts: readonly Counted[], value: string): DateMatch => ({
-  date: { start: parts[0]?.start ?? 0, end: parts.at(-1)?.end ?? 0, attrs: { value } },
-  used: parts.length,
-});
+/** 括弧で言い換えた年で始まる日付は、括弧の中の年も持つ（attrs.glossYear）。外の年と違えば、どちらかの書き違い。 */
+const dateOf = (parts: readonly Counted[], value: string): DateMatch => {
+  const glossYear = parts[0]?.glossYear;
+  const attrs = glossYear === undefined ? { value } : { value, glossYear };
+  return { date: { start: parts[0]?.start ?? 0, end: parts.at(-1)?.end ?? 0, attrs }, used: parts.length };
+};
 
 /** 「2024年4月1日」「2024年4月」。 */
 const yearMonth = (year: Counted | undefined, month: Counted | undefined, day: Counted | undefined): DateMatch | undefined => {

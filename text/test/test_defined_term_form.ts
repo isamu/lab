@@ -2,6 +2,7 @@ import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { innerLowered, lowerCaseUses, nameBefore, quotedUses } from "../packages/chaff/src/detectors/defined-term-form.ts";
 import { extendedAfter, extendedBefore } from "../packages/chaff/src/detectors/term-extension.ts";
+import { isSignatureLine, opensClosingBlock } from "../packages/chaff/src/detectors/name-field.ts";
 import { prefixGroupsOf, prefixVariants, variantUses } from "../packages/chaff/src/structure/term-prefix.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { profileFor } from "../packages/chaff/src/profile/for-file.ts";
@@ -389,6 +390,36 @@ describe("defined-name-repeated: a long name used again after its short name", (
     assert.deepEqual(valuesOf(ja, "defined-name-repeated", `${JA_PARTIES}\n注記：株式会社みなと製作所は、毎月末日までに代金を全額支払う\n`, "term"), [
       "name 甲",
     ]);
+  });
+
+  it("does not report a closing signature with no label, but does report the name opening a sentence or continuing a line", () => {
+    const head = ["# Terms", "", 'These terms govern the App provided by Hibari Lab Inc. ("Hibari Lab", "we" or "us").', ""];
+    const en_ = (...lines: string[]): string[] => valuesOf(en, "defined-name-repeated", [...head, ...lines, ""].join("\n"), "term");
+    assert.deepEqual(en_("These terms apply in Japan.", "", "Hibari Lab Inc., Customer Support"), []);
+    assert.deepEqual(en_("Hibari Lab Inc. may change the App at any time."), ["name Hibari Lab"]);
+    assert.deepEqual(en_("Questions about the App are answered by", "Hibari Lab Inc., Customer Support"), ["name Hibari Lab"]);
+    assert.deepEqual(en_("These terms apply in Japan.", "", "Hibari Lab Inc., as Supplier, shall pay"), ["name Hibari Lab"]);
+    assert.deepEqual(en_("Hibari Lab Inc., Customer Support", "", "These terms apply in Japan."), ["name Hibari Lab"]);
+    assert.deepEqual(en_("These terms apply in Japan.", "", "Hibari Lab Inc., Customer Support", "Tel. 03-5555-0100"), []);
+    const ja_ = (...lines: string[]): string[] => valuesOf(ja, "defined-name-repeated", `${JA_PARTIES}\n${lines.join("\n")}\n`, "term");
+    assert.deepEqual(ja_("第1条　乙は、甲の予約を行う。", "", "株式会社みなと製作所 総務部 契約管理課"), []);
+    assert.deepEqual(ja_("株式会社みなと製作所は、毎月末日までに代金を支払う。"), ["name 甲"]);
+    assert.deepEqual(ja_("第1条　乙は、甲の予約を行う。", "", "株式会社みなと製作所、毎月末日までに代金を支払う"), ["name 甲"]);
+  });
+
+  it("isSignatureLine and opensClosingBlock: the name and an address's parts, in the last block", () => {
+    assert.ok(isSignatureLine("Hibari Lab Inc., Customer Support", "Hibari Lab Inc"));
+    assert.ok(isSignatureLine("株式会社みなと 総務部", "株式会社みなと"));
+    assert.ok(!isSignatureLine("Hibari Lab Inc., as Supplier", "Hibari Lab Inc"));
+    assert.ok(!isSignatureLine("株式会社みなと、甲として", "株式会社みなと"));
+    assert.ok(!isSignatureLine("Support: Hibari Lab Inc", "Hibari Lab Inc"));
+    assert.ok(!isSignatureLine("Hibari Lab Inc., Customer Support, Member Services Department, Tokyo", "Hibari Lab Inc"));
+    const source = "Text.\n\nName, Part\nTel. 1\n";
+    assert.ok(opensClosingBlock(source, 7, 17));
+    assert.ok(opensClosingBlock("Name, Part", 0, 10));
+    assert.ok(!opensClosingBlock("Text.\nName, Part", 6, 16));
+    assert.ok(!opensClosingBlock("Name, Part\n\nMore text.", 0, 10));
+    assert.ok(opensClosingBlock("Text.\r\n\r\nName, Part\r\n", 9, 19));
   });
 
   it("reads a long name followed by a joining word (及び) as standing alone, but not one inside a longer word", () => {
