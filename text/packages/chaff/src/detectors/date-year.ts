@@ -1,5 +1,5 @@
-// A date written without its year where the document's other dates carry one, or where the year cannot be read off
-// because the document's dates cross the turn of a year. Pure; reads the date nodes of the structure tree.
+// A date written without its year where the reader cannot tell which year it is: the document's dated dates span more
+// than one year, or its dates cross the turn of a year. Pure; reads the date nodes of the structure tree.
 import type { Detector, Finding, LexiconEntry, ProseDocument, StructureNode } from "../plugin.ts";
 import { inDocumentOrder } from "../structure/issues.ts";
 import { quoteAt } from "./structure-tree.ts";
@@ -7,7 +7,10 @@ import { quoteAt } from "./structure-tree.ts";
 /** A date as the tree reads it: "2026-10-14" with its year, "10-14" without. */
 export type DatePoint = { readonly offset: number; readonly end: number; readonly value: string };
 
-export type YearGap = { readonly point: DatePoint; readonly kind: "minority" | "boundary"; readonly dated: number };
+/** The first and the last year of the document's dated dates. */
+export type YearSpan = { readonly from: number; readonly to: number };
+
+export type YearGap = { readonly point: DatePoint; readonly kind: "years" | "boundary"; readonly span: YearSpan | undefined };
 
 /**
  * The words beside a date that give its year in words (その年の, 同年, 毎年; "of each year"): the date has a year, or means
@@ -29,6 +32,14 @@ const YEAR_WORD_REACH = 6;
 /** The months at the end and the start of a year: a date in one, written beside a dated one in the other, could be either year. */
 const YEAR_END = new Set([11, 12]);
 const YEAR_START = new Set([1, 2]);
+
+const yearOf = (value: string): number => Number(value.slice(0, 4));
+
+const spanOf = (dated: readonly DatePoint[]): YearSpan | undefined => {
+  if (dated.length === 0) return undefined;
+  const years = dated.map((point) => yearOf(point.value));
+  return { from: Math.min(...years), to: Math.max(...years) };
+};
 
 const monthOf = (pattern: RegExp, value: string): number | undefined => {
   const month = pattern.exec(value)?.[1];
@@ -93,20 +104,22 @@ const yearGiven = (point: DatePoint, anchors: readonly DatePoint[], source: stri
 };
 
 /**
- * The yearless dates to report. Where most dates carry a year (at least two, and more than the yearless ones), every yearless
- * one is the odd one out. Otherwise writing the year once is the document's style, and only a date across the turn of a
- * year is reported. A date whose year the text gives in words or earlier on its line is never reported, nor counted.
+ * The yearless dates whose year the reader cannot tell. Where most dates carry a year (at least two, and more than the
+ * yearless ones) and those years differ, every yearless one is reported: in a one-year document the year is plain. Where
+ * the year is written once and the rest are month and day, that is the document's style, and only a date across the turn
+ * of a year is reported. A date whose year the text gives in words or earlier on its line is never reported, nor counted.
  */
 export const yearGaps = (points: readonly DatePoint[], source = "", yearWords: readonly YearWord[] = []): YearGap[] => {
   const dated = points.filter((point) => FULL.test(point.value));
   const anchors = [...dated, ...points.filter((point) => hasYearWord(point, source, yearWords))];
   const yearless = points.filter((point) => MONTH_DAY.test(point.value) && !yearGiven(point, anchors, source, yearWords));
-  const minority = dated.length >= 2 && yearless.length < dated.length;
+  const span = spanOf(dated);
+  const unclear = dated.length >= 2 && yearless.length < dated.length && span !== undefined && span.to > span.from;
   const datedSides = new Set(dated.flatMap((point) => sideOf(monthOf(FULL, point.value)) ?? []));
   const previousOf = new Map(points.map((point, index) => [point, points[index - 1]]));
   return yearless.flatMap((point): YearGap[] => {
-    if (minority) return [{ point, kind: "minority", dated: dated.length }];
-    return crossesYear(point, previousOf.get(point), datedSides) ? [{ point, kind: "boundary", dated: dated.length }] : [];
+    if (unclear) return [{ point, kind: "years", span }];
+    return crossesYear(point, previousOf.get(point), datedSides) ? [{ point, kind: "boundary", span }] : [];
   });
 };
 
@@ -126,5 +139,9 @@ export const dateWithoutYear: Detector = (doc: ProseDocument): Finding[] =>
         column: 0,
         quote: quoteAt(doc.source, gap.point.offset),
         ...(gap.kind === "boundary" ? { variant: "boundary" } : {}),
-        values: { date: doc.source.slice(gap.point.offset, gap.point.end), count: gap.dated, offset: gap.point.offset },
+        values: {
+          date: doc.source.slice(gap.point.offset, gap.point.end),
+          ...(gap.span === undefined ? {} : { from: gap.span.from, to: gap.span.to }),
+          offset: gap.point.offset,
+        },
       }));
