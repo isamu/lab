@@ -1,0 +1,23 @@
+# The column headings of a lab or checkup results table. Group result is the column of the result, range the reference range,
+# flag the flag, unit the unit. reference-flag-mismatch and reference-unit-mismatch both find their columns by these words; a
+# word only one of them reads is in that rule's own lexicon (reference-column-heading, reference-unit-column). A unit or note
+# in brackets ("Result (mg/dL)") is left out of the heading.
+id: lab-result-column
+language: en
+entries:
+  - { pattern: Result, group: result }
+  - { pattern: Results, group: result }
+  - { pattern: Your result, group: result }
+  - { pattern: Reference range, group: range }
+  - { pattern: Reference ranges, group: range }
+  - { pattern: Reference interval, group: range }
+  - { pattern: Reference value, group: range }
+  - { pattern: Ref. range, group: range }
+  - { pattern: Ref range, group: range }
+  - { pattern: Normal range, group: range }
+  - { pattern: Flag, group: flag }
+  - { pattern: Flags, group: flag }
+  - { pattern: Abnormal flag, group: flag }
+  - { pattern: H/L, group: flag }
+  - { pattern: Unit, group: unit }
+  - { pattern: Units, group: unit }
