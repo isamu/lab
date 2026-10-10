@@ -1,0 +1,9 @@
+# 1回に使う量の印（product-exceeds-maximum）。数のすぐ前に書く（1回2錠、1回500円）。
+id: use-amount-word
+language: ja
+entries:
+  - { pattern: "1回", position: before }
+  - { pattern: "一回", position: before }
+  - { pattern: "1回あたり", position: before }
+  - { pattern: "1回につき", position: before }
+  - { pattern: "1回量", position: before }

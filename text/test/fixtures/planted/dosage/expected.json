@@ -3,16 +3,16 @@
     "ja": {
       "unit-amount": "2/2",
       "age-band-overlap": "1/1",
-      "daily-maximum": "0/2",
+      "daily-maximum": "2/2",
       "dose-interval": "2/2",
       "strengths-total": "2/2",
-      "product-name": "0/2",
+      "product-name": "1/2",
       "age-band-gap": "1/1"
     },
     "en": {
       "unit-amount": "2/2",
       "age-band-overlap": "1/1",
-      "daily-maximum": "0/2",
+      "daily-maximum": "2/2",
       "dose-interval": "2/2",
       "strengths-total": "2/2",
       "product-name": "2/2",

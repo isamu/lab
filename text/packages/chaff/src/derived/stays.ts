@@ -1,7 +1,7 @@
 import type { Span } from "../plugin.ts";
 import { bySentence } from "./sentence-buckets.ts";
 import { calendarDateOf, dateOf, shifted } from "./date-arithmetic.ts";
-import type { DatedValue } from "./durations.ts";
+import { ATTRIBUTIVE_REACH, type DatedValue } from "./durations.ts";
 import { cellsOf, tablesOf, type Cell } from "../facts/table-facts.ts";
 import { linesOf } from "../structure/lines.ts";
 import { withoutEdgeMarks } from "../facts/trim-marks.ts";
@@ -11,7 +11,11 @@ import { withoutEdgeMarks } from "../facts/trim-marks.ts";
  * 一つの文に日付がちょうど二つと泊数がちょうど一つあるときと、チェックイン・チェックアウト・泊数の列がそろった表の行で比べる。
  * 「2泊3日」のように泊数と日数を並べたものは、日数が泊数より一つ多いかを見る。Pure.
  */
-export type Count = Span & { readonly amount: number };
+export type Count = Span & {
+  readonly amount: number;
+  /** 名詞の前に書いた泊数（a 2-night package）。売り物の長さのことが多く、二つの日付の間の泊数とは限らない。 */
+  readonly attributive?: boolean;
+};
 
 export type NightsMismatch = { readonly start: DatedValue; readonly end: DatedValue; readonly nights: Span; readonly expected: number };
 
@@ -52,6 +56,7 @@ const nightsBetween = (first: DatedValue, second: DatedValue): Between | undefin
 const mismatchOf = (first: DatedValue, second: DatedValue, nights: Count): NightsMismatch | undefined => {
   const between = nightsBetween(first, second);
   if (between === undefined || between.nights <= 0 || between.nights === nights.amount) return undefined;
+  if (nights.attributive === true && between.nights > nights.amount * ATTRIBUTIVE_REACH) return undefined;
   return { start: between.start, end: between.end, nights, expected: between.nights };
 };
 

@@ -1,0 +1,11 @@
+# The words that make an amount the amount of one use (product-exceeds-maximum), written right after it ("2 tablets at
+# a time", "500 yen per use").
+id: use-amount-word
+language: en
+entries:
+  - { pattern: "at a time", position: after }
+  - { pattern: "per dose", position: after }
+  - { pattern: "a dose", position: after }
+  - { pattern: "each time", position: after }
+  - { pattern: "per use", position: after }
+  - { pattern: "per serving", position: after }
