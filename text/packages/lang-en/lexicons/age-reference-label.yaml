@@ -1,0 +1,11 @@
+# Labels of the date an age is counted on (elapsed-years-mismatch): the exact age on this date is computed from the date of birth. before: the label is written before the date. group pairs the label with the age-time-mark that names it.
+id: age-reference-label
+language: en
+entries:
+  - { pattern: examination date, group: exam }
+  - { pattern: date of examination, group: exam }
+  - { pattern: exam date, group: exam }
+  - { pattern: date of exam, group: exam }
+  - { pattern: collection date, group: exam }
+  - { pattern: report date, group: report }
+  - { pattern: as of, group: base }

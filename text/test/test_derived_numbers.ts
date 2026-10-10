@@ -283,6 +283,77 @@ describe("elapsed-years-mismatch", () => {
   });
 });
 
+const labelledAge = (adapter: LanguageAdapter, language: string, ...lines: string[]): string[] =>
+  run("elapsed-years-mismatch", ["# Report", "", ...lines.flatMap((line) => [line, ""])].join("\n"), adapter, language).map(
+    (values) => `${String(values["written"])}/${String(values["expected"])}`,
+  );
+const ageJa = (...lines: string[]): string[] => labelledAge(ja, "ja", ...lines);
+const ageEn = (...lines: string[]): string[] => labelledAge(en, "en", ...lines);
+
+describe("elapsed-years-mismatch: an age beside a labelled date of birth", () => {
+  it("is compared with the exact age on the labelled examination date", () => {
+    assert.deepEqual(ageJa("生年月日：1978年4月12日（受診時 46歳）", "受診日：2026年10月8日"), ["46歳/48"]);
+    assert.deepEqual(ageJa("生年月日：1978年4月12日（受診時 48歳）", "受診日：2026年10月8日"), []);
+    assert.deepEqual(ageEn("Date of birth: March 2, 1969 (age 59)", "Examination date: July 15, 2026"), ["59/57"]);
+    assert.deepEqual(ageEn("Date of birth: March 2, 1969 (age 57)", "Examination date: July 15, 2026"), []);
+  });
+
+  it("counts one less until the birthday, and the full age on the birthday", () => {
+    assert.deepEqual(ageJa("生年月日：1978年4月12日（48歳）", "検査日：2026年4月11日"), ["48歳/47"]);
+    assert.deepEqual(ageJa("生年月日：1978年4月12日（47歳）", "検査日：2026年4月11日"), []);
+    assert.deepEqual(ageJa("生年月日：1978年4月12日（47歳）", "検査日：2026年4月12日"), ["47歳/48"]);
+    assert.deepEqual(ageEn("DOB: April 12, 1978 (aged 48)", "Report date: April 12, 2026"), []);
+  });
+
+  it("reads 満N歳, N years old, and a label after the date", () => {
+    assert.deepEqual(ageJa("誕生日：1990年11月3日（満30歳）", "2026年8月20日時点の結果です。"), ["30歳/35"]);
+    assert.deepEqual(ageEn("Born: July 21, 1985, 43 years old", "As of May 4, 2026"), ["43 years old/40"]);
+  });
+
+  it("prefers the date the bracket names, and otherwise needs every labelled date to give one age", () => {
+    assert.deepEqual(ageJa("生年月日：1978年4月12日（受診時 47歳）", "受診日：2026年4月1日", "報告日：2026年4月30日"), []);
+    assert.deepEqual(ageJa("生年月日：1978年4月12日（受診時 48歳）", "受診日：2026年4月1日", "報告日：2026年4月30日"), ["48歳/47"]);
+    assert.deepEqual(ageJa("生年月日：1978年4月12日（47歳）", "受診日：2026年4月1日", "報告日：2026年4月30日"), []);
+    assert.deepEqual(ageJa("生年月日：1978年4月12日（38歳）", "採血日：2026年9月2日", "報告日：2026年9月20日"), ["38歳/48"]);
+  });
+
+  it("is silent when the date to count to is missing or not one date", () => {
+    assert.deepEqual(ageJa("生年月日：1978年4月12日（38歳）"), []);
+    assert.deepEqual(ageJa("生年月日：1978年4月12日（38歳）", "作成：2026年9月2日"), []);
+    assert.deepEqual(ageJa("生年月日：1978年4月12日（受診時 38歳）", "受診日：2026年9月2日", "受診日：2025年9月2日"), []);
+    assert.deepEqual(ageEn("Date of birth: March 2, 1969 (age 30)", "Examination date: July 15, 2026", "Examination date: July 16, 2026"), []);
+  });
+
+  it("is silent on an approximate age, a date of birth with no year, and a label inside a longer word", () => {
+    assert.deepEqual(ageJa("生年月日：1978年4月12日（約38歳）", "受診日：2026年9月2日"), []);
+    assert.deepEqual(ageJa("生年月日：1978年4月12日（38歳前後）", "受診日：2026年9月2日"), []);
+    assert.deepEqual(ageJa("誕生日：4月12日（38歳）", "受診日：2026年9月2日"), []);
+    assert.deepEqual(ageEn("Date of birth: March 2, 1969 (about age 30)", "Examination date: July 15, 2026"), []);
+    assert.deepEqual(ageJa("生年月日：1978年4月12日（38歳）", "前回受診日：2026年9月2日"), []);
+  });
+
+  it("is silent on a label that is not the head of its field, two dates in one field, a range, and a mark away from the age", () => {
+    assert.deepEqual(ageEn("Date of birth: March 2, 1969 (age 59)", "Previous examination date: July 15, 2026"), []);
+    assert.deepEqual(ageEn("Date of birth: March 2, 1969 (age 57)", "Examination date: March 1, 2026 and March 3, 2026"), []);
+    assert.deepEqual(ageEn("Date of birth: March 2, 1969 (age 59-60)", "Examination date: July 15, 2026"), []);
+    assert.deepEqual(ageJa("生年月日：1978年4月12日（40〜41歳）", "受診日：2026年9月2日"), []);
+    const lines = ["Date of birth: March 2, 1969 (age 57); status at report: final", "Examination date: July 15, 2026", "Report date: March 3, 2027"];
+    assert.deepEqual(ageEn(...lines), []);
+    assert.deepEqual(ageEn("Date of birth: March 2, 1969 (age 57 at report)", "Examination date: July 15, 2026", "Report date: March 3, 2027"), ["57/58"]);
+  });
+
+  it("reads labels in a table row and both dates on one line", () => {
+    assert.deepEqual(ageJa("| 生年月日 | 1978年4月12日（46歳） |", "| 受診日 | 2026年9月8日 |"), ["46歳/48"]);
+    assert.deepEqual(ageJa("生年月日：1978年4月12日（46歳）　受診日：2026年9月8日"), ["46歳/48"]);
+  });
+
+  it("is not reported again by the check against the document's own date", () => {
+    const lines = ["April 1, 2026", "Born: March 2, 1969 (age 50)", "Examination date: July 15, 2026"];
+    assert.deepEqual(ageEn(...lines), ["50/57"]);
+    assert.deepEqual(ageEn("April 1, 2028", "Born: March 2, 1969 (age 57)", "Examination date: July 15, 2026"), []);
+  });
+});
+
 describe("numberWordCounts: a count written as a word before its unit", () => {
   const WORDS = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"];
   const UNITS = ["year", "years"];

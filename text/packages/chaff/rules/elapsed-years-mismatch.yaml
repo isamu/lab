@@ -10,12 +10,17 @@ name:
   en: A count of years that does not match its starting year
 
 why:
-  ja: 「2015年創業」と書いた文書の「創業5年」や、「1980年生まれ（30歳）」は、どちらかが古いままです。去年の文書を写して日付だけ直したときによく起きます。文書の日付（日付だけの段落や「更新日：」の段落）の年から起点の年を引き、書いた年数と比べます。誕生日の前後や「10年目」の数え方があるので、一年までの違いは指しません。英語の文書で語で書いた年数（ten years since its founding）も読みます。
-  en: 'A document that says "founded in 2015" and "5 years since its founding", or "born in 1980 (aged 30)", has kept one figure from an older version. It happens when last year''s document is copied and only the date is changed. The starting year is taken from the document''s own date (a paragraph holding only a date, or "Updated:") and compared with the count of years. A difference of one year is not pointed out, because of birthdays and of counting the tenth year as 10. A count written as a word ("ten years since its founding") is read as well.'
+  ja: 「2015年創業」と書いた文書の「創業5年」や、「1980年生まれ（30歳）」は、どちらかが古いままです。去年の文書を写して日付だけ直したときによく起きます。文書の日付（日付だけの段落や「更新日：」の段落）の年から起点の年を引き、書いた年数と比べます。誕生日の前後や「10年目」の数え方があるので、一年までの違いは指しません。英語の文書で語で書いた年数（ten years since its founding）も読みます。「生年月日：1978年4月12日（受診時 48歳）」のように生年月日のラベルの横に書いた年齢は、受診日・報告日などラベルの付いた日の満年齢を計算して比べます（誕生日の前日までは一つ少なく数えます）。「受診時」と書いてあれば受診日で数えます。
+  en: 'A document that says "founded in 2015" and "5 years since its founding", or "born in 1980 (aged 30)", has kept one figure from an older version. It happens when last year''s document is copied and only the date is changed. The starting year is taken from the document''s own date (a paragraph holding only a date, or "Updated:") and compared with the count of years. A difference of one year is not pointed out, because of birthdays and of counting the tenth year as 10. A count written as a word ("ten years since its founding") is read as well. An age written beside a labelled date of birth ("Date of birth: March 2, 1969 (age 57)") is compared exactly with the age on a labelled date such as "Examination date" or "Report date", one less before the birthday; "at examination" picks the examination date.'
 
 message:
   ja: "{origin}から{reference}年までは{expected}年ですが、「{written}」と書かれています"
   en: 'From {origin} to {reference} is {expected} years, but the text says "{written}"'
+
+messages:
+  birth-date:
+    ja: "{birth}生まれは{reference}に満{expected}歳ですが、「{written}」と書かれています"
+    en: 'Someone born on {birth} is {expected} on {reference}, but the text says "{written}"'
 
 how_to_fix:
   ja: 年数と起点の年のどちらが正しいかを確かめて、もう一方を直してください。毎年変わる年数は、起点の年だけを書く手もあります。
@@ -29,8 +34,8 @@ off_for:
 
 group: facts
 summary:
-  ja: 「2015年創業」と「創業5年」、「1980年生まれ」と「30歳」のように、文書の日付から計算した年数と合わない所
-  en: A count of years ("10 years since its founding", "aged 30") that does not match its starting year and the document's date
+  ja: 「2015年創業」と「創業5年」のように、起点の年や生年月日から計算した年数・年齢と合わない所
+  en: A count of years or an age that does not match its starting year or birth date
 example:
   ja:
     before: |
@@ -52,8 +57,8 @@ example:
       Jane Doe (born in 1980, aged 46) leads the team.
 
 not_flagged:
-  ja: 文書に日付（日付だけの段落か「更新日：」の段落）が無ければ、比べる年が無いので見ません。一年までの違い、起点の語に直接付いていない年数（「創業後3年で上場」）、生まれた年と年齢が一つの文に一つずつでないものも見ません。
-  en: A document with no date of its own (a paragraph holding only a date, or "Updated:") has no year to count to and is not checked. A difference of one year, a count not attached to the origin word ("listed 3 years after its founding"), and a sentence without exactly one year of birth and one age are left alone.
+  ja: 文書に日付（日付だけの段落か「更新日：」の段落）が無ければ、比べる年が無いので見ません。一年までの違い、起点の語に直接付いていない年数（「創業後3年で上場」）、生まれた年と年齢が一つの文に一つずつでないものも見ません。生年月日の横の年齢は、数える日（受診日、報告日、時点など）が無いか一つに決まらないとき（受診日が二つ）、年齢が目安（約48歳）のとき、生年月日に年が無いときは見ません。
+  en: A document with no date of its own (a paragraph holding only a date, or "Updated:") has no year to count to and is not checked. A difference of one year, a count not attached to the origin word ("listed 3 years after its founding"), and a sentence without exactly one year of birth and one age are left alone. An age beside a date of birth is left alone when the date to count to (Examination date, Report date, As of) is missing or not one date (two examination dates), when the age is approximate, or when the date of birth has no year.
 rewrite:
   depth: light
   ja:

@@ -1,0 +1,9 @@
+# 年齢がいつの年齢かを書く印（elapsed-years-mismatch）。「（受診時 48歳）」なら、同じ group のラベルの日（受診日）で数える。
+id: age-time-mark
+language: ja
+entries:
+  - { pattern: 受診時, group: exam }
+  - { pattern: 健診時, group: exam }
+  - { pattern: 検査時, group: exam }
+  - { pattern: 採血時, group: exam }
+  - { pattern: 報告時, group: report }

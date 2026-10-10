@@ -1,0 +1,8 @@
+# Marks saying when an age applies (elapsed-years-mismatch): "(age 57 at examination)" is counted on the date labelled with the same group (Examination date).
+id: age-time-mark
+language: en
+entries:
+  - { pattern: at examination, group: exam }
+  - { pattern: at exam, group: exam }
+  - { pattern: at collection, group: exam }
+  - { pattern: at report, group: report }

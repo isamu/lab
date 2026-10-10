@@ -1,0 +1,6 @@
+# 生年月日のラベル（elapsed-years-mismatch）。このラベルの付いた年月日と、同じ行の年齢（48歳、受診時 48歳）を組にする。
+id: birth-date-label
+language: ja
+entries:
+  - pattern: 生年月日
+  - pattern: 誕生日
