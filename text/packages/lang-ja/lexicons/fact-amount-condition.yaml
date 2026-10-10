@@ -1,0 +1,15 @@
+# 文の金額に条件を付ける語（fact-conflict）。表の行の見出しを主語にした文に、これがあれば（集中治療室に入院した場合は）、
+# 文の金額はその場合の値で、行の金額と食い違うとは言えないので比べない。
+id: fact-amount-condition
+language: ja
+entries:
+  - pattern: 場合
+  - pattern: とき
+  - pattern: 時は
+  - pattern: 際
+  - pattern: ただし
+  - pattern: 除き
+  - pattern: 除く
+  - pattern: 以外
+  - pattern: のみ
+  - pattern: に限り

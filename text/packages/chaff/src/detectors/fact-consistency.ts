@@ -18,6 +18,7 @@ import { overlapsAny, spanIndex } from "../compare/spans.ts";
 import { documentTermConflicts, type TermWord, type TermWords } from "../facts/document-terms.ts";
 import { ageValues, type AgeWord, type AgeWords } from "../facts/age-values.ts";
 import { qualifiedKeyOf, qualifiedKeys, type QualifierWords } from "../facts/qualified-labels.ts";
+import { rowSentenceFindings } from "./row-sentence-amounts.ts";
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
 
@@ -174,6 +175,7 @@ const termFindings = (doc: ProseDocument): Finding[] =>
 export const factConflict: Detector = (doc): Finding[] => [
   ...scopeConflicts(factsOf(doc)).map(findingOf("fact-conflict", doc)),
   ...termFindings(doc),
+  ...rowSentenceFindings(doc, factsOf(doc)),
   ...retentionFindings(doc),
 ];
 

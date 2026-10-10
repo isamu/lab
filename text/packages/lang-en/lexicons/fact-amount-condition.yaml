@@ -1,0 +1,15 @@
+# Words that put a condition on a sentence's amount (fact-conflict). A sentence whose subject is a table row's heading
+# and that holds one ("Hospital cash is paid at $150 a day if you are in intensive care") gives the amount for that case,
+# which does not contradict the row, so it is not compared.
+id: fact-amount-condition
+language: en
+entries:
+  - pattern: if
+  - pattern: when
+  - pattern: while
+  - pattern: unless
+  - pattern: except
+  - pattern: only
+  - pattern: other than
+  - pattern: excluding
+  - pattern: provided
