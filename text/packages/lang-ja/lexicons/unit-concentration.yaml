@@ -1,0 +1,71 @@
+# 濃度と、血球などの数の単位（検査値の mg/dL、mmol/L、U/L、×10⁴/µL）。group が単位の組で、比べるのは同じ組の単位どうしだけ。
+# mg/dL と mmol/L の換算は物質で違うので、組をまたぐ倍率は持たない。weight は組の基準の単位への倍率。
+id: unit-concentration
+language: ja
+entries:
+  # 質量濃度（基準は mg/L）
+  - { pattern: "g/L", group: mass, weight: 1000 }
+  - { pattern: "g/dL", group: mass, weight: 10000 }
+  - { pattern: "g/dl", group: mass, weight: 10000 }
+  - { pattern: "mg/L", group: mass, weight: 1 }
+  - { pattern: "mg/l", group: mass, weight: 1 }
+  - { pattern: "mg/dL", group: mass, weight: 10 }
+  - { pattern: "mg/dl", group: mass, weight: 10 }
+  - { pattern: "mg/100mL", group: mass, weight: 10 }
+  - { pattern: "mg/mL", group: mass, weight: 1000 }
+  - { pattern: "µg/L", group: mass, weight: 0.001 }
+  - { pattern: "μg/L", group: mass, weight: 0.001 }
+  - { pattern: "µg/dL", group: mass, weight: 0.01 }
+  - { pattern: "μg/dL", group: mass, weight: 0.01 }
+  - { pattern: "µg/mL", group: mass, weight: 1 }
+  - { pattern: "μg/mL", group: mass, weight: 1 }
+  - { pattern: "ng/mL", group: mass, weight: 0.001 }
+  - { pattern: "ng/dL", group: mass, weight: 0.00001 }
+  - { pattern: "pg/mL", group: mass, weight: 0.000001 }
+  # 物質量の濃度（基準は µmol/L）
+  - { pattern: "mol/L", group: molar, weight: 1000000 }
+  - { pattern: "mmol/L", group: molar, weight: 1000 }
+  - { pattern: "mmol/l", group: molar, weight: 1000 }
+  - { pattern: "µmol/L", group: molar, weight: 1 }
+  - { pattern: "μmol/L", group: molar, weight: 1 }
+  - { pattern: "nmol/L", group: molar, weight: 0.001 }
+  - { pattern: "pmol/L", group: molar, weight: 0.000001 }
+  # 当量の濃度（基準は mEq/L）
+  - { pattern: "mEq/L", group: equivalent, weight: 1 }
+  - { pattern: "mEq/l", group: equivalent, weight: 1 }
+  # 酵素の活性（基準は U/L）
+  - { pattern: "U/L", group: enzyme, weight: 1 }
+  - { pattern: "U/l", group: enzyme, weight: 1 }
+  - { pattern: "U/mL", group: enzyme, weight: 1000 }
+  - { pattern: "mU/mL", group: enzyme, weight: 1 }
+  - { pattern: "mU/L", group: enzyme, weight: 0.001 }
+  - { pattern: "µU/mL", group: enzyme, weight: 0.001 }
+  - { pattern: "μU/mL", group: enzyme, weight: 0.001 }
+  # 国際単位（基準は IU/L）
+  - { pattern: "IU/L", group: international, weight: 1 }
+  - { pattern: "IU/l", group: international, weight: 1 }
+  - { pattern: "IU/mL", group: international, weight: 1000 }
+  - { pattern: "mIU/mL", group: international, weight: 1 }
+  - { pattern: "mIU/L", group: international, weight: 0.001 }
+  - { pattern: "µIU/mL", group: international, weight: 0.001 }
+  - { pattern: "μIU/mL", group: international, weight: 0.001 }
+  # 血球などの数（基準は 1 µL あたりの個数。1 mm³ は 1 µL、10⁹/L は 10³/µL）
+  - { pattern: "/µL", group: count, weight: 1 }
+  - { pattern: "/μL", group: count, weight: 1 }
+  - { pattern: "/mm³", group: count, weight: 1 }
+  - { pattern: "×10³/µL", group: count, weight: 1000 }
+  - { pattern: "×10³/μL", group: count, weight: 1000 }
+  - { pattern: "×10^3/µL", group: count, weight: 1000 }
+  - { pattern: "×10⁴/µL", group: count, weight: 10000 }
+  - { pattern: "×10⁴/μL", group: count, weight: 10000 }
+  - { pattern: "×10^4/µL", group: count, weight: 10000 }
+  - { pattern: "万/µL", group: count, weight: 10000 }
+  - { pattern: "万/μL", group: count, weight: 10000 }
+  - { pattern: "万/mm³", group: count, weight: 10000 }
+  - { pattern: "×10⁶/µL", group: count, weight: 1000000 }
+  - { pattern: "×10⁶/μL", group: count, weight: 1000000 }
+  - { pattern: "×10^6/µL", group: count, weight: 1000000 }
+  - { pattern: "×10⁹/L", group: count, weight: 1000 }
+  - { pattern: "×10^9/L", group: count, weight: 1000 }
+  - { pattern: "×10¹²/L", group: count, weight: 1000000 }
+  - { pattern: "×10^12/L", group: count, weight: 1000000 }

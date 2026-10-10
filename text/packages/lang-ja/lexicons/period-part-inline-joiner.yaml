@@ -1,0 +1,5 @@
+# 長さと全体の名前の間に置く語（period-part-exceeds-whole）。「12か月の保証期間のうち」の 12か月 は全体の長さ。
+id: period-part-inline-joiner
+language: ja
+entries:
+  - pattern: の

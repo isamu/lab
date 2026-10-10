@@ -4,6 +4,7 @@ import type { SpellingInput } from "../name-spelling-chars.ts";
 import { nameCueAt, type NameCues } from "../name-cue.ts";
 import { quoteAt } from "./structure-tree.ts";
 import { companyMentionsIn, companyVariants, type CompanyForm, type IsProper } from "../company-names.ts";
+import { kanaSpelledCompanies, type ReadWord } from "../company-kana-spelling.ts";
 import { proseAndTablesOf } from "../table-text.ts";
 import { tableBodyCells } from "../facts/table-facts.ts";
 import { cellNamesIn, cellNameVariants, proseNamesOf } from "../table-names.ts";
@@ -102,11 +103,27 @@ const kanaStopsOf = (doc: ProseDocument): Parameters<typeof companyMentionsIn>[3
   return { particles: inGroup("particle"), openers: inGroup("opener"), ends: inGroup("end") };
 };
 
-/** 会社の名前の書き分け。名前の見方がすでに指した所と重なるものは除く。 */
-const companyFindings = (doc: ProseDocument, prose: string, reported: readonly Reported[]): Reported[] =>
-  companyVariants(companyMentionsIn(prose, companyFormsOf(doc), properOf(doc), kanaStopsOf(doc)))
-    .filter(({ mention }) => !overlapsAny(reported, mention.offset, mention.surface.length))
-    .map(({ mention, usual, kind }) => ({ offset: mention.offset, name: mention.surface, usual, kind: kind === "spelling" ? kind : `company-${kind}` }));
+const readWordsOf = (doc: ProseDocument): ReadWord[] =>
+  tokensOf(doc).map((token) => ({ start: token.span.start, end: token.span.end, surface: token.surface, reading: token.reading }));
+
+/**
+ * 会社の名前の書き分けと、名前の漢字一字をその読みのかなで書いた所（みどり野 と みどりの）。名前の見方がすでに指した所と重なる
+ * ものは除く。
+ */
+const companyFindings = (doc: ProseDocument, prose: string, reported: readonly Reported[]): Reported[] => {
+  const stops = kanaStopsOf(doc);
+  const mentions = companyMentionsIn(prose, companyFormsOf(doc), properOf(doc), stops);
+  const variants = companyVariants(mentions).map(({ mention, usual, kind }) => ({
+    offset: mention.offset,
+    name: mention.surface,
+    usual,
+    kind: kind === "spelling" ? kind : `company-${kind}`,
+  }));
+  const kana = kanaSpelledCompanies(prose, mentions, readWordsOf(doc), stops.particles)
+    .map(({ surface, offset, usual }) => ({ offset, name: surface, usual, kind: "company-kana" }))
+    .filter((found) => !overlapsAny(variants, found.offset, found.name.length));
+  return [...variants, ...kana].filter(({ offset, name }) => !overlapsAny(reported, offset, name.length));
+};
 
 /** 場所の名前の書き分け。表の本体の升の中の名前も読む（見出しの行は読まない）。人や会社の名前の見方がすでに指した所と重なるものは除く。 */
 const placeFindings = (doc: ProseDocument, prose: string, reported: readonly Reported[], chars: VariantChars): Reported[] =>
