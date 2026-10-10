@@ -1,0 +1,17 @@
+# Labels of the columns (or rows) of a forecast revision table (revision-direction-mismatch). group is previous (before
+# the revision) or revised (after it). A label holding the words matches; one holding words of both groups is not used.
+id: revision-column
+language: en
+entries:
+  - { pattern: previous forecast, group: previous }
+  - { pattern: prior forecast, group: previous }
+  - { pattern: original forecast, group: previous }
+  - { pattern: previous estimate, group: previous }
+  - { pattern: previously announced, group: previous }
+  - { pattern: before revision, group: previous }
+  - { pattern: revised forecast, group: revised }
+  - { pattern: revised estimate, group: revised }
+  - { pattern: new forecast, group: revised }
+  - { pattern: current forecast, group: revised }
+  - { pattern: after revision, group: revised }
+  - { pattern: revised, group: revised }
