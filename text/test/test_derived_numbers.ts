@@ -7,7 +7,7 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import { numberWordCounts } from "../packages/chaff/src/derived/number-word-counts.ts";
-import { isRangeLength } from "../packages/chaff/src/derived/durations.ts";
+import { isRangeLength, type RangeText } from "../packages/chaff/src/derived/durations.ts";
 
 // 始まり + 期間 ≠ 終わり（duration-mismatch）と、起点の年から数えた年数（elapsed-years-mismatch）。
 
@@ -145,6 +145,7 @@ const stayEn = (...lines: string[]): string[] => stayFindings(["# Itinerary", ""
 
 describe("isRangeLength: a length written in brackets right after a range", () => {
   const words = { joiners: ["〜", "–", "to", "から"], weekdays: ["Wednesday", "火曜日", "水曜日"] };
+  const textOf = (source: string): RangeText => ({ source, ...words });
   const spanOf = (source: string, part: string, from = 0): { start: number; end: number } => {
     const start = source.indexOf(part, from);
     return { start, end: start + part.length };
@@ -152,7 +153,7 @@ describe("isRangeLength: a length written in brackets right after a range", () =
   const check = (source: string, first: string, end: string, length: string): boolean => {
     const firstSpan = spanOf(source, first);
     const endSpan = spanOf(source, end, firstSpan.end);
-    return isRangeLength(source, [firstSpan, endSpan], spanOf(source, length, endSpan.end), words);
+    return isRangeLength(textOf(source), [firstSpan, endSpan], spanOf(source, length, endSpan.end));
   };
 
   it("two dates joined by a range word, the length alone in the bracket right after", () => {
@@ -174,30 +175,17 @@ describe("isRangeLength: a length written in brackets right after a range", () =
   });
 
   it("spans out of order are not a range", () => {
-    assert.equal(
+    const outOfOrder = (source: string, first: number, end: number, length: number): boolean =>
       isRangeLength(
-        "(62 days) July 1 – August 31",
+        textOf(source),
         [
-          { start: 10, end: 16 },
-          { start: 19, end: 28 },
+          { start: first, end: first + 1 },
+          { start: end, end: end + 1 },
         ],
-        { start: 1, end: 8 },
-        words,
-      ),
-      false,
-    );
-    assert.equal(
-      isRangeLength(
-        "",
-        [
-          { start: 5, end: 6 },
-          { start: 0, end: 1 },
-        ],
-        { start: 7, end: 8 },
-        words,
-      ),
-      false,
-    );
+        { start: length, end: length + 1 },
+      );
+    assert.equal(outOfOrder("(62 days) July 1 – August 31", 10, 19, 1), false);
+    assert.equal(outOfOrder("", 5, 0, 7), false);
   });
 });
 

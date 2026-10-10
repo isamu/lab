@@ -28,8 +28,8 @@ const expectedEnds = (start: Date, duration: Duration, rangeLength: boolean): Da
   return rangeLength ? ends : [...ends, shifted(exclusive, 1, "day")];
 };
 
-/** 範囲の間の語（〜、–、to）と、日付の後ろの括弧に添える曜日（（火）、(Wed)）。 */
-export type RangeWords = { readonly joiners: readonly string[]; readonly weekdays: readonly string[] };
+/** 文書と、範囲の間の語（〜、–、to）と、日付の後ろの括弧に添える曜日（（火）、(Wed)）。 */
+export type RangeText = { readonly source: string; readonly joiners: readonly string[]; readonly weekdays: readonly string[] };
 
 const LEADING_BRACKET = /^\s*[(（]([^()（）\n]+)[)）]/u;
 const OPEN_BRACKET = /^\s*[(（]\s*$/u;
@@ -38,12 +38,14 @@ const CLOSE_BRACKET = /^\s*[)）]/u;
 /** 先頭の曜日の括弧（（火）、(Wednesday)）を除いた残り。曜日の名の頭だけを書いたものも曜日。 */
 const withoutWeekday = (text: string, weekdays: readonly string[]): string => {
   const inside = LEADING_BRACKET.exec(text);
-  const word = inside?.[1]?.trim().toLowerCase() ?? "";
-  return word !== "" && weekdays.some((weekday) => weekday.toLowerCase().startsWith(word)) ? text.slice(inside?.[0].length) : text;
+  if (inside === null) return text;
+  const word = (inside[1] ?? "").trim().toLowerCase();
+  return word !== "" && weekdays.some((weekday) => weekday.toLowerCase().startsWith(word)) ? text.slice(inside[0].length) : text;
 };
 
 /** 範囲（9月1日〜9月30日、July 1 – August 31）の終わりのすぐ後ろの括弧に、期間だけを書いた（（30日間）、(30 days)）。 */
-export const isRangeLength = (source: string, range: readonly [Span, Span], duration: Span, words: RangeWords): boolean => {
+export const isRangeLength = (text: RangeText, range: readonly [Span, Span], duration: Span): boolean => {
+  const { source, ...words } = text;
   const [first, end] = range;
   if (first.end > end.start || end.end > duration.start) return false;
   const joint = withoutWeekday(source.slice(first.end, end.start), words.weekdays).trim().toLowerCase();
@@ -94,8 +96,7 @@ export const durationMismatches = (
   sentences: readonly Span[],
   dates: readonly DatedValue[],
   durations: readonly Duration[],
-  source: string,
-  words: RangeWords,
+  text: RangeText,
 ): DurationMismatch[] => {
   const datesIn = bySentence(sentences, dates);
   return [...bySentence(sentences, durations).entries()].flatMap(([index, inDurations]) => {
@@ -103,7 +104,7 @@ export const durationMismatches = (
     const [first, second] = inDates;
     const [duration] = inDurations;
     if (inDates.length !== 2 || inDurations.length !== 1 || first === undefined || second === undefined || duration === undefined) return [];
-    const mismatch = mismatchOf([first, second], duration, isRangeLength(source, [first, second], duration, words));
+    const mismatch = mismatchOf([first, second], duration, isRangeLength(text, [first, second], duration));
     return mismatch === undefined ? [] : [mismatch];
   });
 };
