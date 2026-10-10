@@ -6,7 +6,10 @@ const MONTHS_IN_YEAR = 12;
 
 const wordsOf = (doc: ProseDocument): DateWords => {
   const monthWords = (doc.lexicons["month-name"] ?? []).map((entry) => entry.pattern);
-  const written = doc.structure === undefined ? [] : inDocumentOrder(doc.structure).flatMap((node) => (node.kind === "date" ? [doc.source.slice(node.span.start, node.span.end)] : []));
+  const written =
+    doc.structure === undefined
+      ? []
+      : inDocumentOrder(doc.structure).flatMap((node) => (node.kind === "date" ? [doc.source.slice(node.span.start, node.span.end)] : []));
   return { language: doc.language, months: monthWords.slice(0, MONTHS_IN_YEAR), order: dayOrderOf(written, monthWords) };
 };
 

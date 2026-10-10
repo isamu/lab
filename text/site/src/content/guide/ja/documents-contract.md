@@ -106,7 +106,7 @@ keiyaku.md   blog/tech · 日本語   ジャンルは既定から
                   dangling-reference
   25:1    error   「第3条」の次が「第5条」です（4 番目のはず）
                   numbering-gap
-  27:36   error   「2026-12-05」は土曜日です（月曜日と書いてあります）
+  27:36   error   「2026年12月5日」は土曜日です（月曜日と書いてあります）
                   date-weekday-mismatch
   31:9    warning 「本業務」は 7 行目でも定義されています
                   duplicate-definition
@@ -130,7 +130,7 @@ keiyaku.md   legal/contract · 日本語   ジャンルは --genre から
                   dangling-reference
   25:1    error   「第3条」の次が「第5条」です（4 番目のはず）
                   numbering-gap
-  27:36   error   「2026-12-05」は土曜日です（月曜日と書いてあります）
+  27:36   error   「2026年12月5日」は土曜日です（月曜日と書いてあります）
                   date-weekday-mismatch
   31:9    warning 「本業務」は 7 行目でも定義されています
                   duplicate-definition
@@ -250,7 +250,7 @@ kyodaku.md   legal/contract · 日本語   ジャンルは --genre から
                   defined-term-form
   16:16   info    「速やかに」では期限が決まりません。何日以内かを数で書くと、守ったかどうかを決められます
                   vague-deadline
-  20:21   warning 2027年4月1日から12か月なら、終わりは2028-03-31ごろのはずですが、2029年3月31日と書かれています
+  20:21   warning 2027年4月1日から12か月なら、終わりは2028年3月31日ごろのはずですが、2029年3月31日と書かれています
                   duration-mismatch
   24:11   info    第2条に「通知」と添えていますが、第2条の見出しは「料金」です
                   reference-title-mismatch

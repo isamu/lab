@@ -78,7 +78,7 @@ email.md   blog/tech · English   genre from the default
                   max-sentence-length
   7:58    warning This sentence stacks 2 hedges ("might, perhaps")
                   excessive-hedging
-  13:11   error   2026-10-10 is a Saturday, not a Friday
+  13:11   error   October 10, 2026 is a Saturday, not a Friday
                   date-weekday-mismatch
   15:91   warning "[Your Name]" was never filled in
                   unfilled-placeholder
@@ -108,7 +108,7 @@ email.md   business/email · English   genre from --genre
                   excessive-hedging
   9:1     info    "sorry to bother" and other softeners: 26 per 1000 words (limit 5)
                   cushion-phrase-density
-  13:11   error   2026-10-10 is a Saturday, not a Friday
+  13:11   error   October 10, 2026 is a Saturday, not a Friday
                   date-weekday-mismatch
   15:1    warning An attachment is mentioned, but no attachment line or file name is shown
                   attachment-not-attached

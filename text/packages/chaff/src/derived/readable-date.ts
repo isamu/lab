@@ -33,7 +33,7 @@ const inRange = (parts: DateParts): boolean =>
 const japanese = ({ year, month, day }: DateParts): string =>
   [year === undefined ? "" : `${year}年`, `${String(month)}月`, day === undefined ? "" : `${String(day)}日`].join("");
 
-const english = ({ year, month, day }: DateParts, name: string, order: DayOrder): string => {
+const english = ({ year, day }: DateParts, name: string, order: DayOrder): string => {
   if (day === undefined) return `${name} ${year ?? ""}`.trim();
   if (order === "day-first") return [String(day), name, ...(year === undefined ? [] : [year])].join(" ");
   return year === undefined ? `${name} ${String(day)}` : `${name} ${String(day)}, ${year}`;

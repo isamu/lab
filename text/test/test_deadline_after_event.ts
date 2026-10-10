@@ -16,22 +16,22 @@ const EN_EVENT = "# Invitation\n\nDate: Friday, November 20, 2026, 2:00 PM to 5:
 
 describe("deadline-after-event: 申込締切が催しの日より後", () => {
   it("催しの日より後の申込締切を指す", () => {
-    assert.deepEqual(findingsOf(`${JA_EVENT}申込締切：2026年11月27日（金）\n`), ["申込の締め切り 2026-11-27 が、催しの日 2026-11-20 より後です"]);
+    assert.deepEqual(findingsOf(`${JA_EVENT}申込締切：2026年11月27日（金）\n`), ["申込の締め切り（2026年11月27日）が、催しの日（2026年11月20日）より後です"]);
     assert.deepEqual(
       findingsOf(`${JA_EVENT}2026年11月27日（金）までに、同封の申込書をお送りください。11月6日現在、95名の方にお申し込みいただいております。\n`),
-      ["申込の締め切り 2026-11-27 が、催しの日 2026-11-20 より後です"],
+      ["申込の締め切り（2026年11月27日）が、催しの日（2026年11月20日）より後です"],
     );
     assert.deepEqual(findingsOf(`${EN_EVENT}Please register by Friday, November 27, 2026, by returning the enclosed form.\n`, en), [
-      "The registration deadline 2026-11-27 is after the event on 2026-11-20",
+      "The registration deadline November 27, 2026 is after the event on November 20, 2026",
     ]);
     assert.deepEqual(findingsOf("# Fair\n\nWhen: Saturday 28 November 2026, 10:00 to 15:00\n\nBooking deadline: Saturday 5 December 2026\n", en), [
-      "The registration deadline 2026-12-05 is after the event on 2026-11-28",
+      "The registration deadline 5 December 2026 is after the event on 28 November 2026",
     ]);
   });
 
   it("複数形の申込の語も読む", () => {
     assert.deepEqual(findingsOf(`${EN_EVENT}Registrations close Friday, November 27, 2026.\n`, en), [
-      "The registration deadline 2026-11-27 is after the event on 2026-11-20",
+      "The registration deadline November 27, 2026 is after the event on November 20, 2026",
     ]);
   });
 

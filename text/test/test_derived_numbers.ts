@@ -38,28 +38,32 @@ describe("duration-mismatch", () => {
   });
 
   it("a start plus months that does not reach the end (ja)", () => {
-    assert.deepEqual(durationJa("期間は4月1日から3か月間（7月31日まで）です。"), ["7月31日→06-30"]);
+    assert.deepEqual(durationJa("期間は4月1日から3か月間（7月31日まで）です。"), ["7月31日→6月30日"]);
     assert.deepEqual(durationJa("期間は4月1日から3か月間（6月30日まで）です。"), []);
     assert.deepEqual(durationJa("期間は4月1日から3か月間（7月1日まで）です。"), []);
     assert.deepEqual(durationJa("到達日の4月1日から2週間が経過した日（4月16日）以降となる。"), []);
-    assert.deepEqual(durationJa("到達日の4月1日から2週間が経過した日（4月17日）以降となる。"), ["4月17日→04-14"]);
+    assert.deepEqual(durationJa("到達日の4月1日から2週間が経過した日（4月17日）以降となる。"), ["4月17日→4月14日"]);
   });
 
   it("days and weeks, with years written (ja)", () => {
-    assert.deepEqual(durationJa("2026年5月1日から10日間（2026年5月15日まで）。"), ["2026年5月15日→2026-05-10"]);
+    assert.deepEqual(durationJa("2026年5月1日から10日間（2026年5月15日まで）。"), ["2026年5月15日→2026年5月10日"]);
     assert.deepEqual(durationJa("2026年5月1日から10日間（2026年5月10日まで）。"), []);
     assert.deepEqual(durationJa("2026年5月1日から2週間（2026年5月14日まで）。"), []);
   });
 
   it("a start plus a length that does not reach the end (en)", () => {
-    assert.deepEqual(durationEn("The trial runs for 3 months from April 1, 2026 (until July 31, 2026)."), ["July 31, 2026→2026-06-30"]);
+    assert.deepEqual(durationEn("The trial runs for 3 months from April 1, 2026 (until July 31, 2026)."), ["July 31, 2026→June 30, 2026"]);
     assert.deepEqual(durationEn("The trial runs for 3 months from April 1, 2026 (until June 30, 2026)."), []);
     assert.deepEqual(durationEn("The trial lasts 10 days, from May 1, 2026 to May 10, 2026."), []);
   });
 
+  it("the computed end is written day first in a document that writes its dates day first (en)", () => {
+    assert.deepEqual(durationEn("The trial runs for 3 months from 1 April 2026 (until 31 July 2026)."), ["31 July 2026→30 June 2026"]);
+  });
+
   it("a length written in words with the figure in brackets (en)", () => {
     const source = "This Agreement starts on April 1, 2026 and continues for six (6) months, until March 31, 2027.";
-    assert.deepEqual(durationEn(source), ["March 31, 2027→2026-09-30"]);
+    assert.deepEqual(durationEn(source), ["March 31, 2027→September 30, 2026"]);
     assert.deepEqual(
       run("duration-mismatch", `# Notice\n\n${source}\n`, en, "en").map((values) => values["duration"]),
       ["six (6) months"],
@@ -82,7 +86,7 @@ describe("duration-mismatch", () => {
 
   it("the earlier of two dates with years is the start, whichever is written first", () => {
     assert.deepEqual(durationEn("The trial runs until July 1, 2026, for 3 months from April 1, 2026."), []);
-    assert.deepEqual(durationEn("The trial runs until July 31, 2026, for 3 months from April 1, 2026."), ["July 31, 2026→2026-06-30"]);
+    assert.deepEqual(durationEn("The trial runs until July 31, 2026, for 3 months from April 1, 2026."), ["July 31, 2026→June 30, 2026"]);
   });
 
   it("a date with a year and one without are not paired", () => {

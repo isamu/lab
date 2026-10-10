@@ -228,7 +228,7 @@ answer.md   blog/tech · 日本語   ジャンルは既定から
 
   7:8     error   合計「150,000円」が、内訳の金額の和（160,000円）と合いません
                   total-mismatch
-  9:5     error   「2026-10-06」は火曜日です（月曜日と書いてあります）
+  9:5     error   「2026年10月6日」は火曜日です（月曜日と書いてあります）
                   date-weekday-mismatch
 
 {counts}
