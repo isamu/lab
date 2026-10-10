@@ -242,24 +242,18 @@ const genreFindings = (source: string, genre: string): string[] =>
     .map((finding) => finding.rule);
 
 describe("due-before-issue (order): 検査結果の報告日、保証書の登録の締切", () => {
-  it("受診日や採血日より前の報告日、採血日より前の発行日を指す", () => {
+  it("受診日や採血日より前の報告日を指す", () => {
     assert.deepEqual(findingsOf(reportJa("受診日", "2026年10月8日", "報告日", "2026年9月30日")), [
       "「報告日」（2026年9月30日）が、「受診日」（2026年10月8日）より前です",
     ]);
-    assert.deepEqual(findingsOf(reportJa("採血日", "2026年9月2日", "発行日", "2026年8月27日")), [
-      "「発行日」（2026年8月27日）が、「採血日」（2026年9月2日）より前です",
-    ]);
-    assert.deepEqual(findingsOf(reportJa("採血日", "2026年9月2日", "作成日", "2026年8月27日")), [
-      "「作成日」（2026年8月27日）が、「採血日」（2026年9月2日）より前です",
+    assert.deepEqual(findingsOf(reportJa("採血日", "2026年9月2日", "報告日", "2026年8月27日")), [
+      "「報告日」（2026年8月27日）が、「採血日」（2026年9月2日）より前です",
     ]);
     assert.deepEqual(findingsOf(reportEn("Examination date", "July 15, 2026", "Report date", "June 29, 2026"), en), [
       '"Report date" June 29, 2026 is before "Examination date" July 15, 2026',
     ]);
     assert.deepEqual(findingsOf(reportEn("Collection date", "May 18, 2026", "Date reported", "May 11, 2026"), en), [
       '"Date reported" May 11, 2026 is before "Collection date" May 18, 2026',
-    ]);
-    assert.deepEqual(findingsOf(reportEn("Date collected", "May 18, 2026", "Issue date", "May 11, 2026"), en), [
-      '"Issue date" May 11, 2026 is before "Date collected" May 18, 2026',
     ]);
   });
 
@@ -271,9 +265,11 @@ describe("due-before-issue (order): 検査結果の報告日、保証書の登�
     assert.deepEqual(findingsOf(reportEn("Examination date", "July 15, 2026", "Report date", "June 29"), en), []);
   });
 
-  it("受診券や検査の案内の発行日、作成日は、受診日や検査日と組まない", () => {
+  it("受診券や検査の依頼書の発行日、作成日は、受診日や採血日と組まない", () => {
     assert.deepEqual(findingsOf(reportJa("受診日", "2026年10月8日", "発行日", "2026年9月1日")), []);
     assert.deepEqual(findingsOf(reportJa("検査日", "2026年10月8日", "作成日", "2026年9月1日")), []);
+    assert.deepEqual(findingsOf(reportJa("採血日", "2026年10月8日", "発行日", "2026年9月1日")), []);
+    assert.deepEqual(findingsOf(reportEn("Date collected", "October 8, 2026", "Issue date", "September 1, 2026"), en), []);
     assert.deepEqual(findingsOf(reportEn("Test date", "October 8, 2026", "Issue date", "September 1, 2026"), en), []);
     assert.deepEqual(findingsOf(reportEn("Examination date", "October 8, 2026", "Issue date", "September 1, 2026"), en), []);
   });
@@ -299,6 +295,7 @@ describe("due-before-issue (order): 検査結果の報告日、保証書の登�
     assert.deepEqual(findingsOf(warrantyJa("2026年4月10日", "登録の締切", "お早めに")), []);
     assert.deepEqual(findingsOf(warrantyEn("Purchase date", "July 1, 2026", "Registration deadline", "August 1, 2026"), en), []);
     assert.deepEqual(findingsOf(warrantyEn("Purchase date", "July 1, 2026", "Registration deadline", "June 15"), en), []);
+    assert.deepEqual(findingsOf("# Warranty\n\nPurchase date: July 1, 2026\n\nRegister by June 15, 2026 to extend the warranty.\n", en), []);
   });
 
   it("別の組の語どうしは組まない", () => {
@@ -316,5 +313,8 @@ describe("due-before-issue (order): 検査結果の報告日、保証書の登�
     assert.deepEqual(genreFindings(planted, "legal/contract"), [RULE]);
     assert.deepEqual(genreFindings(planted, "legal/statute"), []);
     assert.deepEqual(genreFindings(planted, "docs/faq"), []);
+    const contract = "# 保守契約書\n\n発行日：2026年4月1日\n\n有効期限：2027年3月31日\n\nお買い上げ日：2026年4月10日\n\n登録の締切：2026年5月11日\n";
+    assert.deepEqual(genreFindings(contract, "legal/contract"), []);
+    assert.deepEqual(genreFindings(contract, "docs/manual"), []);
   });
 });
