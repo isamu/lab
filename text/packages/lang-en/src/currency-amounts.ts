@@ -2,6 +2,8 @@
 // JPY 1,320) or after it (1,320 yen, 1,320 million dollars, 1,320 USD). The tree's quantity is the number alone; a word of
 // magnitude stays outside it, as it does for "$12 million".
 
+import { startsWithUnit } from "./unit-case.ts";
+
 export type CurrencyMarks = {
   readonly before: readonly string[];
   readonly after: readonly string[];
@@ -44,6 +46,6 @@ export const currencyAfter = (text: string, start: number, end: number, marks: C
   const from = end + scaled + (isGap(text[end + scaled]) ? 1 : 0);
   if (text[start - 1] === ":" || (from > end && scaled === 0 && YEAR.test(text.slice(start, end)))) return undefined;
   return marks.after
-    .filter((mark) => text.startsWith(mark, from) && standsAlone(mark, "", text.charAt(from + mark.length)))
+    .filter((mark) => startsWithUnit(text, from, mark) && standsAlone(mark, "", text.charAt(from + mark.length)))
     .toSorted((left, right) => right.length - left.length)[0];
 };
