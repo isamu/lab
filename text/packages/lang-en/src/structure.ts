@@ -7,6 +7,7 @@ import { parseRoman } from "./roman.ts";
 import { dates } from "./dates.ts";
 import { definitionScopeDepth, definitions, opensDefinitionScope } from "./definitions.ts";
 import { CHAPTER_DEPTH, PART_DEPTH } from "./depth.ts";
+import { currencyAfter, currencyBefore, type CurrencyMarks } from "./currency-amounts.ts";
 import { continuesAddress, continuesOpen, depthFor, INSERTED, ordinalOf, styleOf } from "./item-style.ts";
 
 // Contracts, specifications and statutes in English. core nests what this reads; it does not know
@@ -246,11 +247,18 @@ const UNITS = [
   "hour",
   "minutes",
   "minute",
-  "percent",
   "times",
-  "%",
+  ...(LEXICONS["percent-unit"] ?? []).map((entry) => entry.pattern),
 ];
-const CURRENCIES = ["USD", "EUR", "$", "€", "£"];
+
+const notation = (position: "before" | "after"): string[] =>
+  (LEXICONS["currency-notation"] ?? []).filter((entry) => entry.position === position).map((entry) => entry.pattern);
+
+const CURRENCY_MARKS: CurrencyMarks = {
+  before: notation("before"),
+  after: notation("after"),
+  multipliers: (LEXICONS["amount-multiplier"] ?? []).map((entry) => entry.pattern),
+};
 
 /** "30." の終わりの点は文の終わり。数の一部にしない。 */
 const withoutTrailingPunctuation = (run: string): string => {
@@ -266,12 +274,6 @@ const unitAfter = (text: string, from: number): string | undefined => {
   const gap = isGap(text[from]) ? 1 : 0;
   const unit = UNITS.find((candidate) => text.startsWith(candidate, from + gap) && !isWordChar(text[from + gap + candidate.length]));
   return unit;
-};
-
-/** The currency just before the number, allowing one space. Looks back a few characters, never at the whole line. */
-const currencyBefore = (text: string, at: number): string | undefined => {
-  const end = isGap(text[at - 1]) ? at - 1 : at;
-  return CURRENCIES.find((currency) => text.startsWith(currency, end - currency.length));
 };
 
 /** A count of days or months is written "six (6)" or "one thousand (1,000)": never "zero (0)", never "two million (2,000,000)". */
@@ -302,8 +304,12 @@ const quantities = (text: string): Mention[] =>
     const digits = withoutTrailingPunctuation(match[0]);
     const value = Number(digits.replace(/,/gu, ""));
     const end = match.index + digits.length;
-    const unit = unitAfter(text, end) ?? unitAfterBracket(text, match.index, end) ?? currencyBefore(text, match.index);
-    return unit === undefined || Number.isNaN(value) || isWordChar(text[match.index - 1]) ? [] : [{ start: match.index, end, attrs: { value, unit } }];
+    const before = currencyBefore(text, match.index, CURRENCY_MARKS);
+    // A number glued to a letter is part of a word ("A4", "v2"), unless that letter ends a currency code ("USD96").
+    const unit = isWordChar(text[match.index - 1])
+      ? before
+      : (unitAfter(text, end) ?? unitAfterBracket(text, match.index, end) ?? before ?? currencyAfter(text, match.index, end, CURRENCY_MARKS));
+    return unit === undefined || Number.isNaN(value) ? [] : [{ start: match.index, end, attrs: { value, unit } }];
   });
 
 const MEASURE_UNITS = (LEXICONS["measure-unit"] ?? []).map((entry) => entry.pattern);

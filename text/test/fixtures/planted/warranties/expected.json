@@ -1,7 +1,7 @@
 {
   "recall": {
     "ja": {
-      "registration-deadline": "0/2",
+      "registration-deadline": "2/2",
       "warranty-end-date": "1/2",
       "warranty-length": "1/2",
       "free-repair-period": "0/2",
@@ -11,7 +11,7 @@
       "maker-name": "1/2"
     },
     "en": {
-      "registration-deadline": "0/2",
+      "registration-deadline": "2/2",
       "warranty-end-date": "1/2",
       "warranty-length": "1/2",
       "free-repair-period": "0/2",

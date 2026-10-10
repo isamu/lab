@@ -1,0 +1,26 @@
+# What a deductible or a limit is stated for (deductible-exceeds-limit). group names the basis; amounts on the same basis
+# are compared. weight orders the bases that nest: a claim holds one item or more, so an excess per claim is compared with
+# a limit per item. A basis with no weight (a day, a year) is compared only with itself.
+id: deductible-basis
+language: en
+entries:
+  - { pattern: a claim, group: claim, weight: 2 }
+  - { pattern: per claim, group: claim, weight: 2 }
+  - { pattern: each claim, group: claim, weight: 2 }
+  - { pattern: a visit, group: claim, weight: 2 }
+  - { pattern: per visit, group: claim, weight: 2 }
+  - { pattern: each visit, group: claim, weight: 2 }
+  - { pattern: an incident, group: claim, weight: 2 }
+  - { pattern: per incident, group: claim, weight: 2 }
+  - { pattern: each incident, group: claim, weight: 2 }
+  - { pattern: an item, group: item, weight: 1 }
+  - { pattern: a single item, group: item, weight: 1 }
+  - { pattern: per item, group: item, weight: 1 }
+  - { pattern: each item, group: item, weight: 1 }
+  - { pattern: per article, group: item, weight: 1 }
+  - { pattern: a day, group: day }
+  - { pattern: per day, group: day }
+  - { pattern: each day, group: day }
+  - { pattern: a year, group: year }
+  - { pattern: per year, group: year }
+  - { pattern: each year, group: year }

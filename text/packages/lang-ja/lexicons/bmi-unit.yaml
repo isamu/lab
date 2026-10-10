@@ -1,0 +1,7 @@
+# BMI の単位（bmi-mismatch）。BMI の値の後ろには、何も無いか、この単位だけを置ける。
+id: bmi-unit
+language: ja
+entries:
+  - pattern: "kg/m²"
+  - pattern: "kg/m2"
+  - pattern: "kg/㎡"

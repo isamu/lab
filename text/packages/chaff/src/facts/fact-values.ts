@@ -8,7 +8,16 @@ import { overlapsAny, spanIndex, type SpanIndex } from "../compare/spans.ts";
  */
 export type ValueKind = "quantity" | "date" | "name";
 
-export type FactValue = Span & { readonly kind: ValueKind; readonly key: string; readonly unit: string };
+/**
+ * bound: upper なら key は上の端（満70歳まで、20 to 70 の 70）。lower は範囲の下の端（満20歳〜満70歳 の 20）。
+ */
+export type FactValue = Span & {
+  readonly kind: ValueKind;
+  readonly key: string;
+  readonly unit: string;
+  readonly bound?: "upper";
+  readonly lower?: string;
+};
 
 const attr = (node: StructureNode, name: string): string => String(node.attrs[name] ?? "");
 
@@ -95,16 +104,20 @@ const comparableDates = (left: string, right: string): [string, string] | undefi
   return pair === undefined ? undefined : [pair[1], pair[0]];
 };
 
+/** 範囲は、上の端を言う値（上限か範囲）とだけ比べる。範囲の中のどれかの数（一人の年齢）とは比べない。 */
+const comparableBounds = (left: FactValue, right: FactValue): boolean =>
+  (left.lower === undefined || right.bound === "upper") && (right.lower === undefined || left.bound === "upper");
+
 /** 同じ種類の値で、比べられるもの。数量は同じ単位どうし（単位の違いは別の rule が見る）。 */
 export const comparable = (left: FactValue, right: FactValue): boolean => {
   if (left.kind !== right.kind) return false;
-  if (left.kind === "quantity") return left.unit === right.unit;
+  if (left.kind === "quantity") return left.unit === right.unit && comparableBounds(left, right);
   return left.kind !== "date" || comparableDates(left.key, right.key) !== undefined;
 };
 
-/** 比べられる二つの値が同じか。月日だけの日付は、年まで書いた日付の月日と同じなら同じ。 */
+/** 比べられる二つの値が同じか。範囲どうしは下の端も比べる。月日だけの日付は、年まで書いた日付の月日と同じなら同じ。 */
 export const sameValue = (left: FactValue, right: FactValue): boolean => {
-  if (left.kind !== "date") return left.key === right.key;
+  if (left.kind !== "date") return left.key === right.key && (left.lower === undefined || right.lower === undefined || left.lower === right.lower);
   const pair = comparableDates(left.key, right.key);
   return pair !== undefined && pair[0] === pair[1];
 };
