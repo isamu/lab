@@ -1,0 +1,265 @@
+{
+  "note": "Self-written product warranties (保証書・保証規定 / limited warranty) for fictional makers and products: a home-appliance warranty card with repair terms (run as docs/manual, a card printed in the owner's manual) and a gadget limited-warranty page with numbered articles (run as legal/contract), each in a clean version and a planted one that differs only on the lines below. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. The warranty length stated two ways is named for fact-conflict: in the card it is the same unit as the table's value (1年 and 2年), in the limited-warranty page another unit in another section (24か月 against 1年 and 12か月). A registration deadline before the purchase date is named for due-before-issue, which compares the date on a deadline line with the date on an earlier-date line; the purchase date and the registration deadline are not among its pairs yet. A rule that does not exist yet is named as the rule that should: period-part-exceeds-whole (a period said to be part of another, the free-repair period within the warranty period, given as longer than it). yarn planted warranties scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/appliance",
+      "language": "ja",
+      "genre": "docs/manual",
+      "clean": "ja/appliance.clean.md",
+      "planted": "ja/appliance.planted.md",
+      "mistakes": [
+        {
+          "kind": "registration-deadline",
+          "rule": "due-before-issue",
+          "line": 18,
+          "clean": "ご愛用者登録の締切：2026年5月11日",
+          "planted": "ご愛用者登録の締切：2026年3月11日"
+        },
+        {
+          "kind": "warranty-end-date",
+          "rule": "duration-mismatch",
+          "line": 20,
+          "clean": "（2027年4月9日まで）",
+          "planted": "（2027年5月9日まで）"
+        },
+        {
+          "kind": "warranty-length",
+          "rule": "fact-conflict",
+          "line": 22,
+          "clean": "本体の保証期間は1年です。",
+          "planted": "本体の保証期間は2年です。"
+        },
+        {
+          "kind": "free-repair-period",
+          "rule": "period-part-exceeds-whole",
+          "line": 24,
+          "clean": "お買い上げ日から6か月です",
+          "planted": "お買い上げ日から18か月です"
+        },
+        {
+          "kind": "model-number",
+          "rule": "name-variant",
+          "line": 28,
+          "clean": "型番 KR-M230 の本体",
+          "planted": "型番 KR-M320 の本体"
+        },
+        {
+          "kind": "exclusion-numbering",
+          "rule": "numbering-gap",
+          "line": 36,
+          "clean": "5. 本書の提示",
+          "planted": "6. 本書の提示"
+        },
+        {
+          "kind": "support-phone",
+          "rule": "phone-number-variant",
+          "line": 46,
+          "clean": "（TEL 0120-345-678）で承ります",
+          "planted": "（TEL 0120-345-687）で承ります"
+        },
+        {
+          "kind": "maker-name",
+          "rule": "name-variant",
+          "line": 48,
+          "clean": "株式会社こもれび電機 お客様相談室",
+          "planted": "株式会社こもれび電器 お客様相談室"
+        }
+      ]
+    },
+    {
+      "id": "ja/earbuds",
+      "language": "ja",
+      "genre": "legal/contract",
+      "clean": "ja/earbuds.clean.md",
+      "planted": "ja/earbuds.planted.md",
+      "mistakes": [
+        {
+          "kind": "warranty-length",
+          "rule": "fact-conflict",
+          "line": 9,
+          "clean": "お買い上げ日から1年です。",
+          "planted": "お買い上げ日から24か月です。"
+        },
+        {
+          "kind": "warranty-end-date",
+          "rule": "duration-mismatch",
+          "line": 13,
+          "clean": "（2027年6月30日まで）",
+          "planted": "（2027年7月31日まで）"
+        },
+        {
+          "kind": "free-repair-period",
+          "rule": "period-part-exceeds-whole",
+          "line": 15,
+          "clean": "お買い上げ日から3か月です",
+          "planted": "お買い上げ日から18か月です"
+        },
+        {
+          "kind": "registration-deadline",
+          "rule": "due-before-issue",
+          "line": 23,
+          "clean": "製品登録の締切：2026年7月31日",
+          "planted": "製品登録の締切：2026年6月15日"
+        },
+        {
+          "kind": "model-number",
+          "rule": "name-variant",
+          "line": 29,
+          "clean": "(1) 本製品の型番 SB-210",
+          "planted": "(1) 本製品の型番 SB-201"
+        },
+        {
+          "kind": "exclusion-numbering",
+          "rule": "numbering-gap",
+          "line": 33,
+          "clean": "(5) 本製品の付属品以外",
+          "planted": "(6) 本製品の付属品以外"
+        },
+        {
+          "kind": "support-phone",
+          "rule": "phone-number-variant",
+          "line": 39,
+          "clean": "（電話 03-6789-1234）までお願いします",
+          "planted": "（電話 03-6789-1243）までお願いします"
+        },
+        {
+          "kind": "maker-name",
+          "rule": "name-variant",
+          "line": 45,
+          "clean": "株式会社そらいろサウンド カスタマーサポート部",
+          "planted": "株式会社そらいろサウンズ カスタマーサポート部"
+        }
+      ]
+    },
+    {
+      "id": "en/appliance",
+      "language": "en",
+      "genre": "docs/manual",
+      "clean": "en/appliance.clean.md",
+      "planted": "en/appliance.planted.md",
+      "mistakes": [
+        {
+          "kind": "registration-deadline",
+          "rule": "due-before-issue",
+          "line": 18,
+          "clean": "Product registration deadline: May 11, 2026",
+          "planted": "Product registration deadline: March 11, 2026"
+        },
+        {
+          "kind": "warranty-end-date",
+          "rule": "duration-mismatch",
+          "line": 20,
+          "clean": "(until April 9, 2027)",
+          "planted": "(until May 9, 2027)"
+        },
+        {
+          "kind": "warranty-length",
+          "rule": "fact-conflict",
+          "line": 22,
+          "clean": "The warranty period is 1 year.",
+          "planted": "The warranty period is 2 years."
+        },
+        {
+          "kind": "free-repair-period",
+          "rule": "period-part-exceeds-whole",
+          "line": 24,
+          "clean": "is 6 months from the purchase date",
+          "planted": "is 18 months from the purchase date"
+        },
+        {
+          "kind": "model-number",
+          "rule": "name-variant",
+          "line": 28,
+          "clean": "If the MW-4120S fails",
+          "planted": "If the MW-4210S fails"
+        },
+        {
+          "kind": "exclusion-numbering",
+          "rule": "numbering-gap",
+          "line": 36,
+          "clean": "5. Any repair requested",
+          "planted": "6. Any repair requested"
+        },
+        {
+          "kind": "support-phone",
+          "rule": "phone-number-variant",
+          "line": 46,
+          "clean": "(Tel. 1-800-555-0147)",
+          "planted": "(Tel. 1-800-555-0174)"
+        },
+        {
+          "kind": "maker-name",
+          "rule": "name-variant",
+          "line": 48,
+          "clean": "Brightmoor Home Appliances, Inc., Customer Care",
+          "planted": "Brightmore Home Appliances, Inc., Customer Care"
+        }
+      ]
+    },
+    {
+      "id": "en/tracker",
+      "language": "en",
+      "genre": "legal/contract",
+      "clean": "en/tracker.clean.md",
+      "planted": "en/tracker.planted.md",
+      "mistakes": [
+        {
+          "kind": "warranty-length",
+          "rule": "fact-conflict",
+          "line": 9,
+          "clean": "is 1 year from the date of purchase",
+          "planted": "is 24 months from the date of purchase"
+        },
+        {
+          "kind": "warranty-end-date",
+          "rule": "duration-mismatch",
+          "line": 13,
+          "clean": "(until June 30, 2027)",
+          "planted": "(until July 31, 2027)"
+        },
+        {
+          "kind": "free-repair-period",
+          "rule": "period-part-exceeds-whole",
+          "line": 15,
+          "clean": "is 3 months from the date of purchase",
+          "planted": "is 18 months from the date of purchase"
+        },
+        {
+          "kind": "registration-deadline",
+          "rule": "due-before-issue",
+          "line": 23,
+          "clean": "Registration deadline: July 31, 2026",
+          "planted": "Registration deadline: June 15, 2026"
+        },
+        {
+          "kind": "model-number",
+          "rule": "name-variant",
+          "line": 29,
+          "clean": "(a) The model number FT-38",
+          "planted": "(a) The model number FT-83"
+        },
+        {
+          "kind": "exclusion-numbering",
+          "rule": "numbering-gap",
+          "line": 33,
+          "clean": "(e) Faults caused by a charger",
+          "planted": "(f) Faults caused by a charger"
+        },
+        {
+          "kind": "support-phone",
+          "rule": "phone-number-variant",
+          "line": 39,
+          "clean": "call the Support Center (phone 1-888-555-0193)",
+          "planted": "call the Support Center (phone 1-888-555-0139)"
+        },
+        {
+          "kind": "maker-name",
+          "rule": "name-variant",
+          "line": 45,
+          "clean": "Kestrelwick Devices Ltd., Customer Support",
+          "planted": "Kestrelwick Device Ltd., Customer Support"
+        }
+      ]
+    }
+  ]
+}
