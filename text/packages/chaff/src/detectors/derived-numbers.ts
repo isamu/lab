@@ -6,6 +6,7 @@ import { yearOf, type DurationUnit } from "../derived/date-arithmetic.ts";
 import { durationMismatches, type DatedValue, type Duration } from "../derived/durations.ts";
 import { elapsedMismatches, type Elapsed, type OriginWord, type Year } from "../derived/elapsed.ts";
 import { numberWordCounts } from "../derived/number-word-counts.ts";
+import { hyphenatedCounts, withoutArticle } from "../derived/hyphenated-counts.ts";
 import {
   nightsDaysMismatches,
   nightsDaysPairs,
@@ -33,9 +34,9 @@ export const DURATION_LEXICONS: readonly (readonly [string, DurationUnit])[] = [
   ["duration-year", "year"],
 ];
 
-export type Quantity = Span & { readonly amount: number; readonly unit: string };
+export type Quantity = Span & { readonly amount: number; readonly unit: string; readonly attributive?: true };
 
-const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
+const patternsOf = (doc: ProseDocument, ...ids: string[]): string[] => ids.flatMap((id) => (doc.lexicons[id] ?? []).map((entry) => entry.pattern));
 
 const positioned = (doc: ProseDocument, id: string, position: "before" | "after"): string[] =>
   (doc.lexicons[id] ?? []).filter((entry) => (entry.position ?? "before") === position).map((entry) => entry.pattern.toLowerCase());
@@ -75,11 +76,11 @@ const datesOf = (tree: StructureNode): DatedValue[] =>
 
 const NEAR = 12;
 
-const textBefore = (doc: ProseDocument, span: Span): string =>
-  doc.source
-    .slice(Math.max(0, span.start - NEAR), span.start)
-    .toLowerCase()
-    .trimEnd();
+type Attributed = Span & { readonly attributive?: boolean };
+
+/** 名詞の前の期間は、冠詞の前まで見る（up to a 3-night stay の up to）。 */
+const textBefore = (doc: ProseDocument, span: Attributed): string =>
+  withoutArticle(doc.source.slice(Math.max(0, span.start - NEAR), span.start).toLowerCase(), span.attributive === true ? patternsOf(doc, "article") : []);
 const textAfter = (doc: ProseDocument, span: Span): string =>
   doc.source
     .slice(span.end, span.end + NEAR)
@@ -87,19 +88,19 @@ const textAfter = (doc: ProseDocument, span: Span): string =>
     .trimStart();
 
 /** 「約3か月」「3か月程度」"about 3 months": 目安の期間は足し算に使わない。 */
-const isApproximate = (doc: ProseDocument, span: Span): boolean =>
+const isApproximate = (doc: ProseDocument, span: Attributed): boolean =>
   positioned(doc, "approximate-marker", "before").some((word) => textBefore(doc, span).endsWith(word)) ||
   positioned(doc, "approximate-marker", "after").some((word) => textAfter(doc, span).startsWith(word));
 
-const durationsOf = (doc: ProseDocument, quantities: readonly Quantity[]): Duration[] =>
-  quantities.flatMap((quantity) => {
+/** 木の数量（3 months）と、名詞の前に書いた期間（a 3-month trial）。 */
+const durationsOf = (doc: ProseDocument, quantities: readonly Quantity[], text: string): Duration[] =>
+  [...quantities, ...hyphenatedCounts(text, patternsOf(doc, ...DURATION_LEXICONS.map(([id]) => id)))].flatMap((quantity) => {
     const unit = DURATION_LEXICONS.find(([id]) => patternsOf(doc, id).some((pattern) => pattern.normalize("NFKC") === quantity.unit))?.[1];
-    return unit === undefined || isApproximate(doc, quantity) ? [] : [{ start: quantity.start, end: quantity.end, amount: quantity.amount, unit }];
+    return unit === undefined || isApproximate(doc, quantity) ? [] : [{ ...quantity, unit }];
   });
 
 const sentencesOf = (doc: ProseDocument): Span[] => doc.sentences.map((sentence) => sentence.span);
 
-/** 泊数（3泊、3 nights、three nights）。text は地の文と表（リンク先や code は読まない）。目安の泊数（最大3泊）は除く。 */
 /** 数と単位（3泊、15 sessions、three nights）。 */
 const unitCountsOf = (doc: ProseDocument, text: string, units: readonly string[]): Count[] => {
   const numerals = numeralCounts(text, units);
@@ -108,8 +109,9 @@ const unitCountsOf = (doc: ProseDocument, text: string, units: readonly string[]
   return [...numerals, ...worded].toSorted((left, right) => left.start - right.start);
 };
 
-const nightsOf = (doc: ProseDocument, text: string): Count[] =>
-  unitCountsOf(doc, text, patternsOf(doc, "stay-night")).filter((count) => !isApproximate(doc, count));
+/** 泊数（3泊、3 nights、three nights、名詞の前の a 3-night stay）。text は地の文と表（リンク先や code は読まない）。目安の泊数（最大3泊）は除く。 */
+const nightsOf = (doc: ProseDocument, text: string, units = patternsOf(doc, "stay-night")): Count[] =>
+  [...unitCountsOf(doc, text, units), ...hyphenatedCounts(text, units)].filter((count) => !isApproximate(doc, count));
 
 const finding = (doc: ProseDocument, offset: number, values: Record<string, string | number>, variant?: string): Finding => ({
   rule: "duration-mismatch",
@@ -192,8 +194,8 @@ const workingHoursOf = (doc: ProseDocument, text: string): Finding[] => {
 export const durationMismatch: Detector = (doc): Finding[] => {
   if (doc.structure === undefined) return [];
   const dates = datesOf(doc.structure);
-  const durations = durationsOf(doc, quantitiesOf(doc.structure, doc.source));
   const proseAndTables = proseAndTablesOf(doc);
+  const durations = durationsOf(doc, quantitiesOf(doc.structure, doc.source), proseAndTables);
   const nights = nightsOf(doc, proseAndTables);
   const pairs = nightsDaysPairs(
     doc.source,
