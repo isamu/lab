@@ -1,6 +1,7 @@
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { quoteAround } from "./quote-around.ts";
+import { yearDisagreements } from "./gloss-year.ts";
 
 // 暦に無い日付（2月30日、4月31日、2023-02-29）。月の長さとうるう年は暦で決まるので、書き損じは機械で言える。
 // 月の名前は語彙表 month-name（初めの十二が一月から順に）、年月日の単位は date-time-unit（大きい順の初めの三つ）、元号は calendar-era が言う。
@@ -127,9 +128,24 @@ export const calendarWordsOf = (doc: ProseDocument): CalendarWords => ({
   eras: patternsOf(doc, "calendar-era"),
 });
 
-export const impossibleDate: Detector = (doc): Finding[] => {
-  const text = doc.prose ?? doc.source;
-  return impossibleDates(text, calendarWordsOf(doc)).map((found) => ({
+/** 二つの暦で書いた年の、括弧の外と中が違うもの。二つの年は言語パッケージが日付の木に読んでおく。木は表と引用も読むので、本文に見える日付だけ。 */
+const yearsFindings = (doc: ProseDocument, text: string): Finding[] =>
+  doc.structure === undefined
+    ? []
+    : yearDisagreements(doc.structure)
+        .filter((found) => text.slice(found.offset, found.end) === doc.source.slice(found.offset, found.end))
+        .map((found) => ({
+          rule: "",
+          severity: "warning",
+          line: 0,
+          column: 0,
+          quote: quoteAround(text, found.offset, found.end),
+          values: { written: doc.source.slice(found.offset, found.end), year: found.year, glossYear: found.glossYear, offset: found.offset },
+          variant: "years",
+        }));
+
+const calendarFindings = (text: string, doc: ProseDocument): Finding[] =>
+  impossibleDates(text, calendarWordsOf(doc)).map((found) => ({
     rule: "",
     severity: "warning",
     line: 0,
@@ -138,4 +154,10 @@ export const impossibleDate: Detector = (doc): Finding[] => {
     values: { written: found.written, month: found.month, days: found.days, offset: found.offset },
     variant: found.reason,
   }));
+
+export const impossibleDate: Detector = (doc): Finding[] => {
+  const text = doc.prose ?? doc.source;
+  return [...calendarFindings(text, doc), ...yearsFindings(doc, text)].toSorted(
+    (left, right) => Number(left.values["offset"]) - Number(right.values["offset"]),
+  );
 };

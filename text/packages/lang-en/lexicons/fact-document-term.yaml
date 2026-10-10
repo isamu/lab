@@ -8,3 +8,12 @@ entries:
   - { pattern: probation period, group: trial-period }
   - { pattern: probationary period, group: trial-period }
   - { pattern: trial period, group: trial-period }
+  # The age up to which one can join. A range in a table ("aged 20 to 70") and a limit in a sentence ("up to the age of
+  # 70") are compared by their upper ends.
+  - { pattern: age at entry, group: age-limit }
+  - { pattern: entry age, group: age-limit }
+  - { pattern: eligible age, group: age-limit }
+  - { pattern: age limit, group: age-limit }
+  - { pattern: maximum age, group: age-limit }
+  - { pattern: maximum entry age, group: age-limit }
+  - { pattern: maximum age at entry, group: age-limit }

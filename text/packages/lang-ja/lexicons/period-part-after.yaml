@@ -1,0 +1,8 @@
+# 全体の期間の後に来る期間の語（period-part-exceeds-whole）。延長保証や追加の期間は全体の一部ではないので、この語のある文は読まない。
+# 全体の名前の前にあれば（延長保証期間）、その名前は全体の長さとして読まない。
+id: period-part-after
+language: ja
+entries:
+  - pattern: 延長
+  - pattern: 追加
+  - pattern: 更新後

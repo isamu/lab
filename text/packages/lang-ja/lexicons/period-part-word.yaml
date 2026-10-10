@@ -1,0 +1,5 @@
+# 期間の名前の終わりの語（period-part-exceeds-whole）。全体の名前（保証期間）はこの語で終わり、部分の文にもこの語がある（無料交換期間）。
+id: period-part-word
+language: ja
+entries:
+  - pattern: 期間

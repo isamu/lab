@@ -3,7 +3,7 @@ layer: L3
 status: stable
 how_to_find: quantity-range
 # The quantities are read with the unit lexicons (unit-length, unit-mass, unit-time, unit-volume, unit-data, unit-temperature,
-# unit-pressure, with unit-context); the joints are range-connector, range-opener, range-closer and quantity-range-word;
+# unit-pressure, unit-concentration, with unit-context); the joints are range-connector, range-opener, range-closer and quantity-range-word;
 # quantity-change-word and quantity-bound-label come next.
 severity: warning
 

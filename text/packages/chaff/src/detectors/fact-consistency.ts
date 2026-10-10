@@ -16,6 +16,7 @@ import { measuredOf, valuesWith } from "./measured-facts.ts";
 import { durationValues, type DurationWord } from "../facts/duration-values.ts";
 import { overlapsAny, spanIndex } from "../compare/spans.ts";
 import { documentTermConflicts, type TermWord, type TermWords } from "../facts/document-terms.ts";
+import { ageValues, type AgeWord, type AgeWords } from "../facts/age-values.ts";
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
 
@@ -33,14 +34,30 @@ const factsByDocument = new WeakMap<ProseDocument, readonly ScopedFact[]>();
 const durationWordsOf = (doc: ProseDocument): DurationWord[] =>
   DURATION_LEXICONS.flatMap(([id, unit]) => patternsOf(doc, id).map((pattern): DurationWord => ({ pattern, unit })));
 
+const ageWordsAt = (doc: ProseDocument, id: string): AgeWord[] =>
+  (doc.lexicons[id] ?? []).map((entry): AgeWord => ({ pattern: entry.pattern, position: entry.position ?? "before" }));
+
+const ageWordsOf = (doc: ProseDocument): AgeWords => ({
+  marks: ageWordsAt(doc, "fact-age-mark"),
+  limits: ageWordsAt(doc, "fact-age-limit"),
+  joiners: patternsOf(doc, "fact-age-joiner"),
+});
+
 /**
- * 単位の語彙表の量（410 g、1.2 kg）と期間（3 months）も値として読む。木が単位を読まない量は、数だけでは升や文の値にならない。
- * 期間と重なる量は読まない（3 months の 3 m）。
+ * 単位の語彙表の量（410 g、1.2 kg）と期間（3 months）と年齢（満70歳まで、aged 20 to 70）も値として読む。木が単位を読まない量は、
+ * 数だけでは升や文の値にならない。年齢と重なる期間（30 years old の 30 years）と、期間と重なる量（3 months の 3 m）は読まない。
  */
 const readFacts = (doc: ProseDocument, tree: StructureNode): ScopedFact[] => {
-  const durations = durationValues(doc.source, factValues(tree, doc.source, nameSpans(doc)), durationWordsOf(doc));
-  const taken = spanIndex(durations);
-  const values = valuesWith(tree, doc, [...measuredOf(doc).filter((value) => !overlapsAny(taken, value)), ...durations]);
+  const tagged = factValues(tree, doc.source, nameSpans(doc));
+  const ages = ageValues(doc.source, tagged, ageWordsOf(doc));
+  const aged = spanIndex(ages);
+  const durations = durationValues(
+    doc.source,
+    tagged.filter((value) => !overlapsAny(aged, value)),
+    durationWordsOf(doc),
+  );
+  const taken = spanIndex([...ages, ...durations]);
+  const values = valuesWith(tree, doc, [...measuredOf(doc).filter((value) => !overlapsAny(taken, value)), ...ages, ...durations]);
   const facts = [...labelledFacts(doc.source, values, factWordsOf(doc)), ...tableFacts(doc.source, values)];
   return scopedFacts(facts, tree, doc.source, patternsOf(doc, "summary-heading"));
 };

@@ -1,9 +1,11 @@
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { cuedNamesIn, mentionsIn, nameVariants, suffixedNamesIn, withKnownNeighbours, type NameMention, type VariantChars } from "../name-variants.ts";
 import type { SpellingInput } from "../name-spelling-chars.ts";
+import type { CharReadings } from "../name-char-reading.ts";
 import { nameCueAt, type NameCues } from "../name-cue.ts";
 import { quoteAt } from "./structure-tree.ts";
 import { companyMentionsIn, companyVariants, type CompanyForm, type IsProper } from "../company-names.ts";
+import { kanaSpelledCompanies, type ReadWord } from "../company-kana-spelling.ts";
 import { proseAndTablesOf } from "../table-text.ts";
 import { tableBodyCells } from "../facts/table-facts.ts";
 import { cellNamesIn, cellNameVariants, proseNamesOf } from "../table-names.ts";
@@ -19,6 +21,10 @@ import { labelledSpans, orderNamesOf, quotedSpans, stemOf, titleCaseSpans, wordO
 
 const variantCharsOf = (doc: ProseDocument): VariantChars =>
   new Map((doc.lexicons["name-variant-char"] ?? []).flatMap((entry): [string, string][] => (entry.group === undefined ? [] : [[entry.pattern, entry.group]])));
+
+/** 解析器が読めない名前の字（汰）の読みは、語彙表 name-char-reading が組（group）に言う。 */
+const charReadingsOf = (doc: ProseDocument): CharReadings =>
+  new Map((doc.lexicons["name-char-reading"] ?? []).flatMap((entry): [string, string][] => (entry.group === undefined ? [] : [[entry.pattern, entry.group]])));
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
 
@@ -102,11 +108,27 @@ const kanaStopsOf = (doc: ProseDocument): Parameters<typeof companyMentionsIn>[3
   return { particles: inGroup("particle"), openers: inGroup("opener"), ends: inGroup("end") };
 };
 
-/** 会社の名前の書き分け。名前の見方がすでに指した所と重なるものは除く。 */
-const companyFindings = (doc: ProseDocument, prose: string, reported: readonly Reported[]): Reported[] =>
-  companyVariants(companyMentionsIn(prose, companyFormsOf(doc), properOf(doc), kanaStopsOf(doc)))
-    .filter(({ mention }) => !overlapsAny(reported, mention.offset, mention.surface.length))
-    .map(({ mention, usual, kind }) => ({ offset: mention.offset, name: mention.surface, usual, kind: kind === "spelling" ? kind : `company-${kind}` }));
+const readWordsOf = (doc: ProseDocument): ReadWord[] =>
+  tokensOf(doc).map((token) => ({ start: token.span.start, end: token.span.end, surface: token.surface, reading: token.reading }));
+
+/**
+ * 会社の名前の書き分けと、名前の漢字一字をその読みのかなで書いた所（みどり野 と みどりの）。名前の見方がすでに指した所と重なる
+ * ものは除く。
+ */
+const companyFindings = (doc: ProseDocument, prose: string, reported: readonly Reported[]): Reported[] => {
+  const stops = kanaStopsOf(doc);
+  const mentions = companyMentionsIn(prose, companyFormsOf(doc), properOf(doc), stops);
+  const variants = companyVariants(mentions).map(({ mention, usual, kind }) => ({
+    offset: mention.offset,
+    name: mention.surface,
+    usual,
+    kind: kind === "spelling" ? kind : `company-${kind}`,
+  }));
+  const kana = kanaSpelledCompanies(prose, mentions, readWordsOf(doc), stops.particles)
+    .map(({ surface, offset, usual }) => ({ offset, name: surface, usual, kind: "company-kana" }))
+    .filter((found) => !overlapsAny(variants, found.offset, found.name.length));
+  return [...variants, ...kana].filter(({ offset, name }) => !overlapsAny(reported, offset, name.length));
+};
 
 /** 場所の名前の書き分け。表の本体の升の中の名前も読む（見出しの行は読まない）。人や会社の名前の見方がすでに指した所と重なるものは除く。 */
 const placeFindings = (doc: ProseDocument, prose: string, reported: readonly Reported[], chars: VariantChars): Reported[] =>
@@ -172,7 +194,8 @@ const orderFindings = (doc: ProseDocument, prose: string, reported: readonly Rep
 /** 人・製品・会社の名前の現れ。解析器が固有名詞と読む語、敬称の付く名前、前後の語で名前と読める漢字。 */
 const nameMentionsOf = (doc: ProseDocument, prose: string, chars: VariantChars): NameMention[] => {
   const cues: NameCues = { leads: patternsOf(doc, "person-lead"), suffixes: patternsOf(doc, "person-suffix"), particles: patternsOf(doc, "name-particle") };
-  const tagged = doc.sentences.flatMap((sentence) => mentionsIn(sentence.tokens ?? [], doc.source, cues.suffixes));
+  const charReadings = charReadingsOf(doc);
+  const tagged = doc.sentences.flatMap((sentence) => mentionsIn(sentence.tokens ?? [], doc.source, cues.suffixes, charReadings));
   const taggedOrSuffixed = [...tagged, ...suffixedNamesIn(prose, cues.suffixes, chars, tagged)];
   const cued = [...taggedOrSuffixed, ...cuedNamesIn(prose, cues, chars, taggedOrSuffixed)].map((mention): NameMention => {
     const cue = mention.cue ?? nameCueAt(prose, mention.offset, mention.surface, cues);
@@ -193,7 +216,7 @@ const spellingInputOf = (doc: ProseDocument): SpellingInput => {
 
 /** 表の升に書いた名前の書き分け。名前の形をした升を、本文の名前と比べる。ほかの見方がすでに指した所と重なるものは除く。 */
 const tableFindings = (doc: ProseDocument, prose: string, mentions: readonly NameMention[], reported: readonly Reported[]): Reported[] =>
-  cellNameVariants(cellNamesIn(cellsOf(doc)), proseNamesOf(mentions, prose))
+  cellNameVariants(cellNamesIn(cellsOf(doc), charReadingsOf(doc)), proseNamesOf(mentions, prose))
     .filter(({ name }) => !reported.some((other) => other.offset < name.offset + name.surface.length && name.offset < other.offset + other.name.length))
     .map(({ name, usual, kind }) => ({ offset: name.offset, name: name.surface, usual, kind }));
 

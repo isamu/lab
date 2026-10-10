@@ -328,11 +328,10 @@ const referenceYear = (doc: ProseDocument, tree: StructureNode): number | undefi
   return date === undefined ? undefined : yearOf(date);
 };
 
-/** 起点の年から数えた年数が、文書の日付と合わない。 */
-export const elapsedYearsMismatch: Detector = (doc): Finding[] => {
-  const tree = doc.structure;
-  const reference = tree === undefined ? undefined : referenceYear(doc, tree);
-  if (tree === undefined || reference === undefined) return [];
+/** 起点の年から数えた年数が、文書の日付の年と合わない。 */
+export const documentYearFindings = (doc: ProseDocument, tree: StructureNode): Finding[] => {
+  const reference = referenceYear(doc, tree);
+  if (reference === undefined) return [];
   const quantities = quantitiesOf(tree, doc.source);
   const quantityAges = quantities.filter((quantity) => isAge(doc, quantity));
   const taken = spanIndex(quantityAges);

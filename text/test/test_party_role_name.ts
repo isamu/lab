@@ -41,6 +41,16 @@ describe("party-role-name", () => {
     assert.deepEqual(rolesIn(en, en_("1. The Supplier sells Vendorware licences.")), []);
   });
 
+  it("does not read a bare plural at a sentence's head as a role word, but does read the singular and the plural after an article", () => {
+    const warranty = ["# Limited Warranty", "", 'Kestrel Devices Ltd. ("we") warrants the product for one year.', ""];
+    const in_ = (line: string): string[] => rolesIn(en, [...warranty, line, ""].join("\n"));
+    assert.deepEqual(in_("Customers who register the product receive an offer."), []);
+    assert.deepEqual(in_("1. Buyers may return the product within 30 days."), []);
+    assert.deepEqual(in_("Customer must register the product."), ["Customer (we)"]);
+    assert.deepEqual(in_("The Customers must register the product."), ["Customer (we)"]);
+    assert.deepEqual(in_("Vendors' terms do not apply."), ["Vendor (we)"]);
+  });
+
   it("does not report a role word before or in the sentence that names the parties", () => {
     const sale = [
       "# 売買契約書",
