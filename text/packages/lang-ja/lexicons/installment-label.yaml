@@ -1,0 +1,41 @@
+# 分割払い・ローンの支払い内容の見出し（installment-total-mismatch）。count は支払回数、each は毎回のお支払額、first と
+# last は別の額で書く初回と最終回、total はお支払総額。初回 + 毎回の額 × 残りの回数 + 最終回 がお支払総額になるかを比べる。
+id: installment-label
+language: ja
+entries:
+  - { pattern: お支払回数, group: count }
+  - { pattern: お支払い回数, group: count }
+  - { pattern: 支払回数, group: count }
+  - { pattern: 支払い回数, group: count }
+  - { pattern: ご返済回数, group: count }
+  - { pattern: 返済回数, group: count }
+  - { pattern: 分割回数, group: count }
+  - { pattern: 毎月のお支払額, group: each }
+  - { pattern: 毎月のお支払い額, group: each }
+  - { pattern: 毎月のお支払金額, group: each }
+  - { pattern: 月々のお支払額, group: each }
+  - { pattern: 月々のお支払い額, group: each }
+  - { pattern: 月々のお支払金額, group: each }
+  - { pattern: 毎回のお支払額, group: each }
+  - { pattern: 毎月のご返済額, group: each }
+  - { pattern: 毎月の返済額, group: each }
+  - { pattern: 月々のご返済額, group: each }
+  - { pattern: 月々の返済額, group: each }
+  - { pattern: 1回あたりのお支払額, group: each }
+  - { pattern: 2回目以降, group: each }
+  - { pattern: 2回目以降のお支払額, group: each }
+  - { pattern: 初回, group: first }
+  - { pattern: 初回お支払額, group: first }
+  - { pattern: 初回のお支払額, group: first }
+  - { pattern: 初回お支払金額, group: first }
+  - { pattern: 初回のお支払金額, group: first }
+  - { pattern: 最終回, group: last }
+  - { pattern: 最終回お支払額, group: last }
+  - { pattern: 最終回のお支払額, group: last }
+  - { pattern: お支払総額, group: total }
+  - { pattern: お支払い総額, group: total }
+  - { pattern: 支払総額, group: total }
+  - { pattern: 支払い総額, group: total }
+  - { pattern: ご返済総額, group: total }
+  - { pattern: 返済総額, group: total }
+  - { pattern: 総支払額, group: total }

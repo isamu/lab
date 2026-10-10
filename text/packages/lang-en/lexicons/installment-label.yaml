@@ -1,0 +1,33 @@
+# The labels of a loan or installment plan (installment-total-mismatch). count is the number of payments, each the amount
+# of a regular payment, first and last a first or final payment of another amount, total the total of payments. The
+# first payment plus each regular payment times the rest plus the final payment is compared with the total.
+id: installment-label
+language: en
+entries:
+  - { pattern: Number of payments, group: count }
+  - { pattern: Number of installments, group: count }
+  - { pattern: Number of instalments, group: count }
+  - { pattern: No. of payments, group: count }
+  - { pattern: Monthly payment, group: each }
+  - { pattern: Monthly payment amount, group: each }
+  - { pattern: Monthly repayment, group: each }
+  - { pattern: Monthly installment, group: each }
+  - { pattern: Monthly instalment, group: each }
+  - { pattern: Amount of each payment, group: each }
+  - { pattern: Each payment, group: each }
+  - { pattern: Regular payment, group: each }
+  - { pattern: Installment amount, group: each }
+  - { pattern: First payment, group: first }
+  - { pattern: First payment amount, group: first }
+  - { pattern: First installment, group: first }
+  - { pattern: Initial payment, group: first }
+  - { pattern: Final payment, group: last }
+  - { pattern: Final payment amount, group: last }
+  - { pattern: Final installment, group: last }
+  - { pattern: Last payment, group: last }
+  - { pattern: Total of payments, group: total }
+  - { pattern: Total payments, group: total }
+  - { pattern: Total amount of payments, group: total }
+  - { pattern: Total amount payable, group: total }
+  - { pattern: Total amount repayable, group: total }
+  - { pattern: Total repayable, group: total }
