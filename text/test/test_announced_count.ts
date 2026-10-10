@@ -207,4 +207,39 @@ describe("announced-count-mismatch", () => {
   it("the number nearest the colon is still compared", () => {
     assert.deepEqual(found(doc("改善したのは 3 つの画面です:", "- A", "- B"), ja), ["3 つ/2"]);
   });
+
+  it("a clause or section number at the start of a line is not a count", () => {
+    const lead = "Send questions about this Policy by email to our privacy team:";
+    ["7.1", "1.", "(2)", "2)", "Article 7", "Section 3"].forEach((label) => {
+      assert.deepEqual(found(doc(`${label} ${lead}`, "- Team: Privacy Office", "- Email: privacy@example.com")), [], label);
+    });
+    assert.deepEqual(found(doc("第3条 質問は次の宛先に送ってください：", "- 窓口", "- メール"), ja), []);
+    assert.deepEqual(found(doc("7.1 質問は次の宛先に送ってください：", "- 窓口", "- メール"), ja), []);
+    assert.deepEqual(found(doc("The new version 2.3 items:", "- A", "- B")), []);
+  });
+
+  it("a count after a clause number is still compared", () => {
+    assert.deepEqual(found(doc("7.1 Check the following three items:", "- ID", "- Bank account")), ["three items/2"]);
+    assert.deepEqual(found(doc("Article 7 Check the following three items:", "- ID", "- Bank account")), ["three items/2"]);
+    assert.deepEqual(found(doc("第3条 次の3点を確認してください。", "- 書類", "- 口座"), ja), ["3点/2"]);
+    assert.deepEqual(found(doc("7.1 次の3点を確認してください。", "- 書類", "- 口座"), ja), ["3点/2"]);
+  });
+
+  it("N kinds, types, categories or sorts of a thing announce N items", () => {
+    const items = ["- breaking the law;", "- copying a diary;", "- overloading the servers; or", "- commercial use."];
+    ["kinds", "types", "categories", "sorts"].forEach((frame) => {
+      const lead = `You must not engage in the following three ${frame} of conduct:`;
+      assert.deepEqual(found(doc(lead, ...items)), [`three ${frame} of/4`], frame);
+      assert.deepEqual(found(doc(lead, ...items.slice(1))), [], frame);
+    });
+    assert.deepEqual(found(doc("ユーザーは、以下の3つの種類の行為をしてはなりません。", "- 甲", "- 乙", "- 丙", "- 丁"), ja), ["3つの種類/4"]);
+    assert.deepEqual(found(doc("ユーザーは、次の3種類の行為をしてはなりません。", "- 甲", "- 乙", "- 丙", "- 丁"), ja), ["3種類/4"]);
+    assert.deepEqual(found(doc("ユーザーは、以下の3つの種類の行為をしてはなりません。", "- 甲", "- 乙", "- 丙"), ja), []);
+  });
+
+  it("an of that picks from the list still hedges the count", () => {
+    assert.deepEqual(found(doc("Choose two of the following kinds:", "- A", "- B", "- C")), []);
+    assert.deepEqual(found(doc("We use two of the following kinds of cookies:", "- A", "- B", "- C")), []);
+    assert.deepEqual(found(doc("以下の3種類のうち1つを選んでください。", "- A", "- B"), ja), []);
+  });
 });

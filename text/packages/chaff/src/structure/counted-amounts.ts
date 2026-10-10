@@ -7,10 +7,10 @@ import type { Amount } from "./total.ts";
 export type SummedCounter = { readonly pattern: string; readonly unit: string };
 
 /** 前に英字や数や小数点が続く数（v2、A4、1.2.3 の 2）は読まない。日本語は数の前に空白を置かないので、仮名や漢字の後ろはよい。 */
-const NUMBER = /(?<![\p{Script=Latin}\p{N}.,．，])[0-9０-９]+(?:[,，][0-9０-９]{3})*(?:[.．][0-9０-９]+)?/gu;
+export const NUMBER = /(?<![\p{Script=Latin}\p{N}.,．，])[0-9０-９]+(?:[,，][0-9０-９]{3})*(?:[.．][0-9０-９]+)?/gu;
 
 /** 助数詞に文字や数、つなぎの - _ が詰めて続くもの（3単位目、4コマ漫画、3 unit-priced）は、別の語の一部。 */
-const CONTINUES_WORD = /^[\p{L}\p{N}_-]/u;
+export const CONTINUES_WORD = /^[\p{L}\p{N}_-]/u;
 
 /** 序数の印（第3回）。 */
 const ORDINAL_MARK = "第";
@@ -18,7 +18,7 @@ const ORDINAL_MARK = "第";
 /** 助数詞を探す長さ。どの助数詞よりも長い。 */
 const LOOKAHEAD = 32;
 
-const valueOf = (written: string): number => Number(written.normalize("NFKC").replace(/,/gu, ""));
+export const valueOf = (written: string): number => Number(written.normalize("NFKC").replace(/,/gu, ""));
 
 /** 数のすぐ後ろ（空白一つまで）の助数詞。長い語から試す。大文字小文字は区別しない（4 Credits）。 */
 const counterAfter = (source: string, end: number, counters: readonly SummedCounter[]): { unit: string; end: number } | undefined => {
@@ -28,7 +28,8 @@ const counterAfter = (source: string, end: number, counters: readonly SummedCoun
   return counter === undefined ? undefined : { unit: counter.unit, end: end + gap + counter.pattern.length };
 };
 
-const overlapsAny = (start: number, end: number, amounts: readonly Amount[]): boolean => amounts.some((amount) => start < amount.end && amount.offset < end);
+export const overlapsAny = (start: number, end: number, amounts: readonly Amount[]): boolean =>
+  amounts.some((amount) => start < amount.end && amount.offset < end);
 
 /** 文書の中の、足してよい助数詞の付いた数。木がすでに数量として読んだもの（known）とは重ねない。 */
 export const countedAmounts = (source: string, counters: readonly SummedCounter[], known: readonly Amount[]): Amount[] => {

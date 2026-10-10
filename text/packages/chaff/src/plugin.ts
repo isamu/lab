@@ -277,6 +277,8 @@ export type DocumentProfile = {
   readonly unnumbered?: { readonly indent: string; readonly inside: string; readonly depth: number } | undefined;
   /** 定義した語を括弧に入れて、語そのものを指す（「株主」とあるのは、"controller" has the same meaning）。定義し直しでも、括弧の付け忘れでもない。 */
   readonly quoteMentionsTerm?: boolean | undefined;
+  /** 文書に速さが無いときの、徒歩の分数を出す速さ（m/分）と、端数を切り上げるか。不動産の広告は 80m で1分、切り上げ。 */
+  readonly walkRate?: { readonly metresPerMinute: number; readonly roundUp: boolean } | undefined;
 };
 
 /**

@@ -10,8 +10,8 @@ name:
   en: A long name used again after its short name was defined
 
 why:
-  ja: 「株式会社みなと製作所（以下「甲」という。）」と定めたら、そのあとは「甲」と書くのが決まりです。途中で「株式会社みなと製作所」と書き戻すと、読み手は甲と同じ会社なのか、別の立場の同じ会社なのかを確かめることになります。文の途中で括弧に入れて短い呼び名を定めた所の、括弧のすぐ前の名前（名詞と固有名詞の並び）を正式の名前とし、定義より後でその名前が出てくる所を指します。署名欄のように、呼び名と並べて書いた行や名前だけの行は見ません。
-  en: 'Once a contract says "Harbour Works Ltd (the "Supplier")", it refers to the Supplier as "the Supplier". Writing "Harbour Works Ltd" again later makes the reader check whether it is the same party in the same role. chaff takes the name right before an inline definition''s bracket (a run of nouns and names) as the long name, and points at each later use of it. Lines that give the short name too, or little more than the name (a signature block), are not read.'
+  ja: 「株式会社みなと製作所（以下「甲」という。）」と定めたら、そのあとは「甲」と書くのが決まりです。途中で「株式会社みなと製作所」と書き戻すと、読み手は甲と同じ会社なのか、別の立場の同じ会社なのかを確かめることになります。文の途中で括弧に入れて短い呼び名を定めた所の、括弧のすぐ前の名前（名詞と固有名詞の並び）を正式の名前とし、定義より後でその名前が出てくる所を指します。署名欄のように、呼び名と並べて書いた行や名前だけの行、「宛先：株式会社みなと製作所 総務部」のように名前を値に書いた項目の行は見ません。札が連絡先の語（窓口、お問い合わせ先、連絡先、担当）で終わる項目は、値が長くても、名前が値の途中にあっても、名前のあとが文として続かなければ見ません。
+  en: 'Once a contract says "Harbour Works Ltd (the "Supplier")", it refers to the Supplier as "the Supplier". Writing "Harbour Works Ltd" again later makes the reader check whether it is the same party in the same role. chaff takes the name right before an inline definition''s bracket (a run of nouns and names) as the long name, and points at each later use of it. Lines that give the short name too, little more than the name (a signature block), or a field whose value is the name (Attention: Harbour Works Ltd, Legal Department) are not read. A field whose label is a contact label (Contact:, Attention:) is not read however long its value or wherever the name sits in it, unless the name goes on as a sentence.'
 
 message:
   ja: 「{name}」は {line} 行目で「{term}」と呼ぶと定めた名前です

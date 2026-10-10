@@ -1,0 +1,31 @@
+{
+  "recall": {
+    "ja": {
+      "servings-scale": "1/1",
+      "step-gap": "1/1",
+      "total-time-steps": "1/1",
+      "ingredient-not-listed": "1/1",
+      "oven-two-units": "1/1",
+      "amount-two-units": "1/1",
+      "name-two-ways": "2/2",
+      "step-repeat": "1/1",
+      "total-time-table": "1/1",
+      "tool-not-listed": "1/1",
+      "pressure-two-units": "1/1"
+    },
+    "en": {
+      "servings-scale": "1/1",
+      "step-gap": "1/1",
+      "total-time-steps": "1/1",
+      "ingredient-not-listed": "1/1",
+      "oven-two-units": "1/1",
+      "amount-two-units": "1/1",
+      "name-two-ways": "2/2",
+      "step-repeat": "1/1",
+      "total-time-table": "1/1",
+      "tool-not-listed": "1/1",
+      "pressure-two-units": "1/1"
+    }
+  },
+  "clean": []
+}

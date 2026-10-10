@@ -123,9 +123,12 @@ export const conjunctionRun: Detector = (doc, options): Finding[] => {
     });
 };
 
-const headingsOf = (sections: readonly Section[]): { readonly section: Section; readonly title: boolean }[] =>
+/** Weekday and month names, capitalised in either style (the list leaves out May, March and August, also ordinary words). */
+const FIXED_CASE_LISTS = ["calendar-name"] as const;
+
+const headingsOf = (sections: readonly Section[], fixedCase: ReadonlySet<string>): { readonly section: Section; readonly title: boolean }[] =>
   sections.flatMap((section) => {
-    const title = isTitleCase(section.heading);
+    const title = isTitleCase(section.heading, fixedCase);
     return title === undefined ? [] : [{ section, title }];
   });
 
@@ -134,10 +137,14 @@ const headingsOf = (sections: readonly Section[]): { readonly section: Section; 
  * 見るのは文書の中で揃っているかだけで、少数派のほうを指摘する。題名は指摘しない（minorityCase）。
  */
 export const titleCaseMix: Detector = (doc, options): Finding[] => {
+  const fixedCase = new Set(FIXED_CASE_LISTS.flatMap((id) => (doc.lexicons[id] ?? []).map((entry) => entry.pattern)));
   const pageTitle = pageTitleOf(doc.sections);
-  const judged = headingsOf(doc.sections.filter((section) => section !== pageTitle));
+  const judged = headingsOf(
+    doc.sections.filter((section) => section !== pageTitle),
+    fixedCase,
+  );
   const titleCase = judged.filter((entry) => entry.title).length;
-  const pageTitleCase = pageTitle === undefined ? undefined : isTitleCase(pageTitle.heading);
+  const pageTitleCase = pageTitle === undefined ? undefined : isTitleCase(pageTitle.heading, fixedCase);
   const minorityIsTitle = minorityCase({ titleCase, sentenceCase: judged.length - titleCase }, pageTitleCase);
   const few = minorityIsTitle === undefined ? [] : judged.filter((entry) => entry.title === minorityIsTitle);
   if (few.length > options.limit) return [];

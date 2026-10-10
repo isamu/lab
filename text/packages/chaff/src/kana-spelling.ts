@@ -22,6 +22,31 @@ export const kanjiSkeleton = (text: string): string => [...text.matchAll(KANJI)]
 export const dropsOkurigana = (spelling: string, spellings: readonly string[]): boolean =>
   spelling !== "" && kanjiSkeleton(spelling) === spelling && spellings.some((other) => other !== spelling && kanjiSkeleton(other) === spelling);
 
+const KANJI_OR_KANA_RUN = /[\p{Script=Han}々]|[^\p{Script=Han}々]+/gu;
+
+/**
+ * Whether a spelling writes in kana part of the word another spells with more kanji (かたくり粉 beside 片栗粉, とり扱い beside
+ * 取り扱い): every kanji it keeps stands where the other has it, each kana run stands for something there, and the other keeps
+ * more kanji. Only the letters are compared; the caller has already matched the readings.
+ */
+export const isKanaForKanji = (partial: string, full: string): boolean => {
+  const kept = kanjiSkeleton(partial);
+  if (kept === "" || kept === partial || [...kanjiSkeleton(full)].length <= [...kept].length) return false;
+  const pattern = [...partial.matchAll(KANJI_OR_KANA_RUN)].map(([part]) => (kanjiSkeleton(part) === part ? part : ".+")).join("");
+  return new RegExp(`^${pattern}$`, "u").test(full);
+};
+
+/**
+ * The kanji a spelling is keyed by among spellings of one reading: its own, or, when it writes part of the word in kana
+ * (かたくり粉), the kanji of the spelling with more kanji it stands for (片栗粉). When it could stand for two (two words of one
+ * reading), its own.
+ */
+export const kanjiKeyAmong = (spelling: string, spellings: readonly string[]): string => {
+  const fuller = new Set(spellings.filter((other) => isKanaForKanji(spelling, other)).map(kanjiSkeleton));
+  const [only] = fuller;
+  return fuller.size === 1 && only !== undefined ? only : kanjiSkeleton(spelling);
+};
+
 /** The length, in UTF-16 units, of the start both strings share, compared character by character (𠮟 is one character, two units). */
 const sharedPrefixLength = (left: string, right: string): number => {
   const [leftChars, rightChars] = [[...left], [...right]];

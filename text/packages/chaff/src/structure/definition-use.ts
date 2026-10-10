@@ -148,6 +148,58 @@ const continuesInHan = (texts: readonly BodyText[], term: string, offset: number
   return body !== undefined && HAN.test(term.at(-1) ?? "") && HAN.test(body.text.charAt(offset - body.start + term.length));
 };
 
+/** 半角の長音・濁点・中黒（ｰ ﾞ ﾟ ･）は Katakana の字ではないが、片仮名の名前の一部。 */
+const KATAKANA = /[\p{Script=Katakana}ーｰﾞﾟ]/u;
+const NAKAGURO = /[・･]/u;
+
+/** 語の外側の隣の字（next）とその向こうの字（beyond）が、片仮名か「・片仮名」か。 */
+const katakanaJoins = (next: string, beyond: string): boolean => KATAKANA.test(next) || (NAKAGURO.test(next) && KATAKANA.test(beyond));
+
+/**
+ * 片仮名の端に片仮名が続く現れ、または「・」で片仮名とつないだ現れは、もっと長い名前の一部
+ * （クリエイティブ・コモンズ・パブリック・ライセンスのパブリック・ライセンス、サブライセンスのライセンス）。
+ */
+const insideKatakanaName = (texts: readonly BodyText[], term: string, offset: number): boolean => {
+  const body = sentenceAt(texts, offset);
+  if (body === undefined) return false;
+  const at = offset - body.start;
+  const end = at + term.length;
+  const joinedBefore = at > 0 && katakanaJoins(body.text.charAt(at - 1), at > 1 ? body.text.charAt(at - 2) : "");
+  const joinedAfter = katakanaJoins(body.text.charAt(end), body.text.charAt(end + 1));
+  return (KATAKANA.test(term.charAt(0)) && joinedBefore) || (KATAKANA.test(term.at(-1) ?? "") && joinedAfter);
+};
+
+/** 長い名前の写しと読むのに、語の前で定義の名前と重ならなければならない字の数（手引き の前の「の」と「成」）。 */
+const MIN_ECHO = 2;
+const OPENING_BRACKET = /[\s（(]/u;
+
+/** 定義の括弧を開けた字（（、空白）を後ろから外した、括弧の前の名前。 */
+const nameBefore = (text: string): string => {
+  let end = text.length;
+  while (end > 0 && OPENING_BRACKET.test(text.charAt(end - 1))) end -= 1;
+  return text.slice(0, end);
+};
+
+/** 二つの文字列が後ろから何字重なるか。 */
+const sharedTail = (left: string, right: string): number => {
+  let shared = 0;
+  while (shared < left.length && shared < right.length && left.at(-1 - shared) === right.at(-1 - shared)) shared += 1;
+  return shared;
+};
+
+/**
+ * 定義の括弧の前に書いた長い名前（…ガイドライン作成の手引き（以下、「手引き」という。））を、定義より前でそのまま書いた所。
+ * 名前が語で終わり、語の前の字も名前と同じなら、それは長い名前で、定義した短い名前の使用ではない。
+ */
+const echoesLongName = (texts: readonly BodyText[], defined: DefinedTerm, offset: number): boolean => {
+  const defining = sentenceAt(texts, defined.span.start);
+  const using = sentenceAt(texts, offset);
+  if (defining === undefined || using === undefined) return false;
+  const name = nameBefore(defining.text.slice(0, defined.span.start - defining.start));
+  const written = using.text.slice(0, offset - using.start + defined.term.length);
+  return name.endsWith(defined.term) && sharedTail(name, written) >= defined.term.length + MIN_ECHO;
+};
+
 const CAPITAL_OR_NON_LATIN = /\p{Lu}|[^\p{Script=Latin}\p{N}\s\p{P}]/u;
 
 /**
@@ -159,7 +211,7 @@ const isDistinctive = (term: string): boolean => CAPITAL_OR_NON_LATIN.test(term)
 /**
  * 文の途中で括弧に入れて定義した語（(the "Seller")、以下「甲」という）を、その定義の文より前で使っている所。最初の一つだけ。
  * 定義の文の中の現れ（株式会社GovTech東京（以下「GovTech東京」という。））は、定義する名前そのものなので数えない。札の文も、
- * isTitle が言う題・見出しの行も、漢字で終わる語にさらに漢字が続く長い語の一部も数えない。
+ * isTitle が言う題・見出しの行も、漢字で終わる語にさらに漢字が続く長い語の一部も、定義の括弧の前の長い名前を写した所も数えない。
  * 定義の条（"Seller" means、「甲」とは）は条の並びの頭にも終わりにも置く書き方があるので、前で使っても言わない。
  * 定義の語の無い括弧の引用（("The key point is")）は例の引用と同じ形なので、その語を引用符で挙げただけの現れ
  * （Its sentences open with "The key point is"）は使用ではない。定義の語のある定義（(the "Seller")、以下「買主」という）は、
@@ -177,7 +229,12 @@ export const usesBeforeDefinition = (
       const defining = sentenceAt(texts, defined.span.start)?.start ?? defined.span.start;
       const uses = usesOf(defined.term, texts, spans, "exact", defined.bare === true ? mentioned : NEVER_MENTIONED);
       const first = uses.find(
-        (offset) => !isLabel(sentenceAt(texts, offset), defined.term) && !isTitle(offset) && !continuesInHan(texts, defined.term, offset),
+        (offset) =>
+          !isLabel(sentenceAt(texts, offset), defined.term) &&
+          !isTitle(offset) &&
+          !continuesInHan(texts, defined.term, offset) &&
+          !insideKatakanaName(texts, defined.term, offset) &&
+          !echoesLongName(texts, defined, offset),
       );
       return first !== undefined && first < defining ? [{ term: defined, offset: first }] : [];
     });

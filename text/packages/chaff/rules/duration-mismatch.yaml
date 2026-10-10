@@ -25,8 +25,14 @@ messages:
     ja: "{nights}なら日数は{expected}日のはずですが、{days}と書かれています"
     en: "{nights} makes {expected} days, but {days} is written"
   working-hours:
-    ja: "{start}から{end}まで、休憩{break}を除くと{expected}時間のはずですが、{total}と書かれています"
-    en: "{start} to {end} less a break of {break} makes {expected} hours, but {total} is written"
+    ja: "{start}から{end}まで、休憩{break}を除くと{hours}時間{minutes}分のはずですが、{total}と書かれています"
+    en: "{start} to {end} less the break ({break}) makes {hours} {hours|hour|hours} {minutes} {minutes|minute|minutes}, but {total} is written"
+  working-hours-hours:
+    ja: "{start}から{end}まで、休憩{break}を除くと{hours}時間のはずですが、{total}と書かれています"
+    en: "{start} to {end} less the break ({break}) makes {hours} {hours|hour|hours}, but {total} is written"
+  working-hours-minutes:
+    ja: "{start}から{end}まで、休憩{break}を除くと{minutes}分のはずですが、{total}と書かれています"
+    en: "{start} to {end} less the break ({break}) makes {minutes} {minutes|minute|minutes}, but {total} is written"
 
 how_to_fix:
   ja: 期間と終わりの日付のどちらが正しいかを確かめて、もう一方を直してください。

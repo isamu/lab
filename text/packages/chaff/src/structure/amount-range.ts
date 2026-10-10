@@ -1,11 +1,11 @@
-// amount-range-reversed: a range of amounts whose upper end is below its lower end (月給30万円〜25万円, $90,000–$70,000,
-// 下限30万円・上限25万円). The amounts come read (currency, value, the word of scale they carry); the words that join a range,
-// change a price, and label a bound come from the lexicons. Pure.
+// amount-range-reversed and quantity-range-reversed: a range whose upper end is below its lower end (月給30万円〜25万円,
+// $90,000–$70,000, 下限30万円・上限25万円, 5–2 kg, -10〜-40℃). The ends come read (currency or unit, value, the word of scale
+// they carry); the words that join a range, change a value, and label a bound come from the lexicons. Pure.
 import { escapeRegExp } from "../orthography.ts";
 import { amountValue, type ScaleWord } from "./amount-scale.ts";
 import type { StructureIssue } from "./issues.ts";
 
-/** One amount written with its currency. scale is the value of the word of scale written in it (万, million), if any. */
+/** One amount written with its currency (or a quantity with its unit, in currency). scale is the value of the word of scale written in it (万, million), if any. */
 export type RangeAmount = {
   readonly offset: number;
   readonly end: number;
@@ -27,7 +27,7 @@ export type AmountRangeWords = {
   readonly lowers: readonly string[];
   readonly uppers: readonly string[];
   readonly links: readonly string[];
-  /** The words of scale (万, million, k) and the digits of a number (the currency reader's pattern). */
+  /** The words of scale (万, million, k) and the digits of a number (the reader's pattern; a quantity's may open with a minus sign). */
   readonly scales: readonly ScaleWord[];
   readonly number: string;
 };
@@ -94,10 +94,19 @@ const alternation = (patterns: readonly string[]): string => patterns.toSorted((
 
 const scalePart = (words: AmountRangeWords): string => {
   const scales = alternation(words.scales.map((scale) => escapeRegExp(scale.word)));
-  return scales === "" ? "" : `(?:\\s?(${scales}))?`;
+  // With no words of scale the group still stands, never matching, so the joint keeps its group number.
+  return scales === "" ? "((?!))?" : `(?:\\s?(${scales}))?`;
 };
 
 const jointPart = (words: AmountRangeWords): string => `(\\s?(?:${alternation([...words.connectors, ...words.openers].map(wordPattern))})\\s?)`;
+
+const MINUS = /^[-−－]/u;
+
+/** The value of a bare number, negative when it opens with a minus sign (-10〜-40℃). */
+const signedValue = (digits: string): number | undefined => {
+  const value = amountValue(digits.replace(MINUS, ""), []);
+  return value === undefined || !MINUS.test(digits) ? value : -value;
+};
 
 /** A bare number (no currency) and its word of scale, if any. */
 const bareReading = (
@@ -106,7 +115,7 @@ const bareReading = (
   scaleWord: string | undefined,
   words: AmountRangeWords,
 ): Reading | undefined => {
-  const value = amountValue(digits, []);
+  const value = signedValue(digits);
   if (value === undefined) return undefined;
   const scale = scaleOf(scaleWord, words);
   return { ...span, value: scale === undefined ? value : value * scale, scale };

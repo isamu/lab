@@ -1,0 +1,22 @@
+# What a capacity and a headcount count (count-over-capacity). Only numbers of the same group are compared: head is
+# people, place is seats or places and counts as people ("spaces" and "spots" are left out: they are parking as often as places), party is groups or families and is not compared with people.
+id: headcount-unit
+language: en
+entries:
+  - { pattern: people, group: head }
+  - { pattern: persons, group: head }
+  - { pattern: participants, group: head }
+  - { pattern: attendees, group: head }
+  - { pattern: guests, group: head }
+  - { pattern: members, group: head }
+  - { pattern: children, group: head }
+  - { pattern: adults, group: head }
+  - { pattern: students, group: head }
+  - { pattern: delegates, group: head }
+  - { pattern: visitors, group: head }
+  - { pattern: seats, group: place }
+  - { pattern: places, group: place }
+  - { pattern: groups, group: party }
+  - { pattern: families, group: party }
+  - { pattern: teams, group: party }
+  - { pattern: households, group: party }

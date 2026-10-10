@@ -1,0 +1,20 @@
+id: listing
+
+name:
+  ja: 不動産の物件広告
+  en: Property listing
+
+why:
+  ja: 日本の不動産の広告は、徒歩の分数を道路距離80mを1分として出し、1分未満の端数を1分に切り上げると決められています（不動産の表示に関する公正競争規約施行規則）。物件広告では、速さを書いていなくても、この速さで徒歩の分数と距離を比べます。ほかの文書の徒歩の分数は、速さを書いたときだけ比べます。
+  en: Japanese property advertising computes walking times at 80 m of road per minute, a part minute rounded up (the real-estate fair-competition code). In a Japanese listing, walking times are compared with their distances at that rate even when it is not written. There is no such standard for English listings, so this profile has no English part.
+
+# 設定（chaff.yaml の profile / by_path）が無いときに、内容から選ぶ。物件概要の項目（交通、賃料、敷金、間取り…）の行が
+# min_lines 行以上あれば物件広告として読む。表の行（| 賃料 | …）も、「賃料：…」の行も数える。
+detect:
+  ja:
+    line: "^[ \\t]*\\|?[ \\t]*(?:交通|賃料|家賃|管理費|共益費|敷金|礼金|保証金|間取り|専有面積|入居可能日|築年月)[ \\t]*[|｜:：]"
+    min_lines: 3
+
+ja:
+  # 文書に速さを書いていないときの、徒歩の分数の速さ。1分に歩く m と、端数を切り上げるか（walk-time-distance-mismatch）。
+  walk_rate: { metres_per_minute: 80, round_up: true }

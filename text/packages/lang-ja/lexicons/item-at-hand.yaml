@@ -1,0 +1,17 @@
+# いつも手元にあって、一覧に書かないもの（unlisted-item-used）。手順で使っても言わない。
+# 物の名前がこの語で終わるとき（強火、氷水）も同じ。
+id: item-at-hand
+language: ja
+entries:
+  - pattern: 水
+  - pattern: 湯
+  - pattern: 熱湯
+  - pattern: 氷
+  - pattern: 手
+  - pattern: 指
+  - pattern: 手のひら
+  - pattern: 指先
+  - pattern: 空気
+  - pattern: 火
+  - pattern: 皿
+  - pattern: 器

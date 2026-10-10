@@ -1,0 +1,30 @@
+# 分量の語（unlisted-item-used）。手順の「塩少々を加える」「しょうゆ大さじ1と水を入れる」で、物の名前から外す。
+# 数字を含む語は、ここに無くても外す。書いた形で照らす。
+id: item-amount
+language: ja
+entries:
+  - pattern: 少々
+  - pattern: 適量
+  - pattern: 適宜
+  - pattern: 少し
+  - pattern: 少量
+  - pattern: ひとつまみ
+  - pattern: 一つまみ
+  - pattern: 大さじ
+  - pattern: 小さじ
+  - pattern: カップ
+  - pattern: 分量
+  - pattern: 全量
+  - pattern: 半量
+  - pattern: 残り
+  - pattern: 各
+  - pattern: 個
+  - pattern: 本
+  - pattern: 枚
+  - pattern: 片
+  - pattern: 合
+  - pattern: g
+  - pattern: kg
+  - pattern: ml
+  - pattern: mL
+  - pattern: cc

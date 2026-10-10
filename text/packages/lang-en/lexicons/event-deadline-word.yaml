@@ -1,0 +1,11 @@
+# Words that mark a deadline ("register by …", "Booking deadline: …", "Registration closes …"). With a registration word
+# (event-registration-word) in the same sentence, deadline-after-event reads the date.
+id: event-deadline-word
+language: en
+entries:
+  - pattern: by
+  - pattern: deadline
+  - pattern: closes
+  - pattern: close
+  - pattern: until
+  - pattern: no later than

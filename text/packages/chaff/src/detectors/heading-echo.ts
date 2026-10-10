@@ -65,6 +65,22 @@ const pointsElsewhere = (doc: ProseDocument, section: Section): boolean => {
   return first !== undefined && (holdsLink(doc.source, first.span, doc.links) || namesLocation(doc.source.slice(first.span.start, first.span.end)));
 };
 
+/** A figure, with its thousands separators (1,320,000), compared without them. */
+const FIGURE = /\p{Nd}+(?:[,，]\p{Nd}{3})*/gu;
+/** Note marks are not figures: [^1], ※1, <sup>1</sup>. */
+const NOTE_MARK = /\[\^[^\]]*\]|※\p{Nd}+|<sup>[^<]*<\/sup>/gu;
+
+const figuresOf = (text: string): string[] => (text.replace(NOTE_MARK, "").match(FIGURE) ?? []).map((figure) => figure.replace(/[,，]/gu, ""));
+
+/**
+ * 最初の文が、見出しに無い数（金額・番号・日付）を述べている。見出しが約束した中身そのもので（## 見積金額 → 見積金額は1,320,000円です。
+ * Invoice → Invoice number: INV-2026-0318）、語が重なっても読者は何かを受け取る。
+ */
+export const statesFigure = (heading: string, sentence: string): boolean => {
+  const inHeading = new Set(figuresOf(heading));
+  return figuresOf(sentence).some((figure) => !inHeading.has(figure));
+};
+
 /** 見出しとの重なりを測る文。用語集や表記の手引きは見出しの語の別の書き方を引用する（Not “datacentre”）ので、それは数えない。 */
 const echoedText = (section: Section): string => withoutQuotedVariants(section.firstSentence?.text ?? "", measuredHeading(section));
 
@@ -72,7 +88,7 @@ export const headingEcho: Detector = (doc, options): Finding[] => {
   const leadIns = (doc.lexicons["lead-in"] ?? []).map((entry) => entry.pattern);
   return doc.sections
     .filter((section) => section.heading.length > 0 && section.firstSentence !== undefined && addsLittle(section, doc.lengthUnit))
-    .filter((section) => !leadsIn(doc, section, leadIns) && !pointsElsewhere(doc, section))
+    .filter((section) => !leadsIn(doc, section, leadIns) && !pointsElsewhere(doc, section) && !statesFigure(section.heading, section.firstSentence?.text ?? ""))
     .map((section) => ({ section, overlap: Math.round(containment(trigrams(measuredHeading(section)), trigrams(echoedText(section))) * 100) }))
     .filter(({ overlap }) => overlap >= options.limit)
     .map(({ section, overlap }) => ({

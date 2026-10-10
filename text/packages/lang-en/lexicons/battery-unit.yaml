@@ -1,0 +1,18 @@
+# Units of a battery capacity and of what is drawn from it (capacity-runtime-mismatch). group is the kind of quantity: a charge is
+# divided only by a current and an energy only by a power. Dividing mAh by W needs a voltage, and whether that is the nominal or
+# the operating one cannot be told, so it is not done. weight is the factor to mAh, mA, Wh or W.
+id: battery-unit
+language: en
+entries:
+  - { pattern: "mAh", group: charge, weight: 1 }
+  - { pattern: "Ah", group: charge, weight: 1000 }
+  - { pattern: "µA", group: current, weight: 0.001 }
+  - { pattern: "μA", group: current, weight: 0.001 }
+  - { pattern: "mA", group: current, weight: 1 }
+  - { pattern: "A", group: current, weight: 1000 }
+  - { pattern: "mWh", group: energy, weight: 0.001 }
+  - { pattern: "kWh", group: energy, weight: 1000 }
+  - { pattern: "Wh", group: energy, weight: 1 }
+  - { pattern: "mW", group: power, weight: 0.001 }
+  - { pattern: "kW", group: power, weight: 1000 }
+  - { pattern: "W", group: power, weight: 1 }

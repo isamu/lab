@@ -1,0 +1,28 @@
+# The words of annual-holidays-mismatch. link may stand between a label and its count ("Annual days off are 125 days").
+# day is the word of a day after a count. negation negates a weekly phrase earlier in its sentence ("does not offer two
+# days off every week"). exception, after a weekly phrase on its line, makes an exception to it ("except in peak season",
+# "some Saturdays worked"). With either, the posting is not compared. open leaves a count open ("from 120 days", "120+ days").
+id: annual-holidays-word
+language: en
+entries:
+  - { pattern: is, group: link }
+  - { pattern: are, group: link }
+  - { pattern: of, group: link }
+  - { pattern: day, group: day }
+  - { pattern: days, group: day }
+  - { pattern: not, group: negation, position: before }
+  - { pattern: never, group: negation, position: before }
+  - { pattern: no, group: negation, position: before }
+  - { pattern: without, group: negation, position: before }
+  - { pattern: "doesn't", group: negation, position: before }
+  - { pattern: "don't", group: negation, position: before }
+  - { pattern: "isn't", group: negation, position: before }
+  - { pattern: except, group: exception }
+  - { pattern: excluding, group: exception }
+  - { pattern: other than, group: exception }
+  - { pattern: apart from, group: exception }
+  - { pattern: worked, group: exception }
+  - { pattern: on duty, group: exception }
+  - { pattern: from, group: open, position: before }
+  - { pattern: "+", group: open, position: after }
+  - { pattern: or more, group: open, position: after }

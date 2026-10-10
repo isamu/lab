@@ -1,0 +1,7 @@
+# Words a group of retention-verb needs right before (before) or after (after) the length for it to be a retention period
+# (fact-conflict): "keep logs for 90 days", "delete them 3 years after closing". A group with no words here needs none.
+id: retention-length-mark
+language: en
+entries:
+  - { pattern: for, group: keep, position: before }
+  - { pattern: after, group: delete, position: after }

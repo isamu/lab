@@ -1,0 +1,55 @@
+id: count-over-capacity
+layer: L3
+status: stable
+how_to_find: count-over-capacity
+severity: warning
+
+name:
+  ja: 定員より多い申込の人数
+  en: More registered than the stated capacity
+
+why:
+  ja: 「定員：90名」と書いた案内に「95名の方にお申し込みいただいております」とあると、定員と人数のどちらかを書き間違えています。読み手は申し込んでよいのか、当日入れるのかを問い合わせることになります。定員の語（定員、先着）と人数の語（申込、招待者、お申し込み）を付けた人の数だけを比べ、語の無い数は読みません。比べるのは文書に定員が一つだけ書いてあるときです。
+  en: 'When an invitation says "Capacity: 90 seats" and later "95 members have registered", one of the two numbers is wrong, and readers have to ask whether they can still register or will get in on the day. Only numbers of people that carry a word of capacity ("capacity", "limited to") or of registration ("have registered", "invited") are compared, and only when the document states one capacity.'
+
+message:
+  ja: 定員「{capacity}」より、人数「{count}」のほうが多いです
+  en: "The capacity ({capacity}) is smaller than the number stated later ({count})"
+
+how_to_fix:
+  ja: 定員と人数を確かめて、書き間違えたほうを直してください。定員を超えた申込をキャンセル待ちや抽選にするなら、そう書いてください。
+  en: Check the capacity and the number, and correct the wrong one. If places past the capacity go to a waiting list or a ballot, say so.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 「定員90名」の案内に、それより多い申込の人数が書いてある所
+  en: A stated capacity smaller than the number registered
+example:
+  ja:
+    before: |
+      定員：90名（先着順）
+
+      11月6日現在、95名の方にお申し込みいただいております。
+    after: |
+      定員：120名（先着順）
+
+      11月6日現在、95名の方にお申し込みいただいております。
+  en:
+    before: |
+      Capacity: 90 seats, first come, first served
+
+      As of November 6, 95 members have registered.
+    after: |
+      Capacity: 120 seats, first come, first served
+
+      As of November 6, 95 members have registered.
+
+not_flagged:
+  ja: キャンセル待ちや抽選の語のある文書、一回あたりの定員（各回定員20名）、昨年や前回の人数、数える物の違う数（30組と45名、申込45件）、定員が二つ以上ある文書、語の付いていない数は比べません。
+  en: 'A document that mentions a waiting list or a ballot, a capacity per session ("20 per session"), last year''s or a previous event''s numbers, numbers of different things (30 groups and 45 people), a document stating more than one capacity, and numbers without a word of capacity or registration are not compared.'

@@ -7,7 +7,8 @@ import { scheduleDays, timeOrderBreaks } from "../structure/time-order.ts";
 import { arrivalOffsets, arrivalsBeforeDeparture } from "../structure/leg-times.ts";
 import { shortConnections, type TravelLength, type TravelWords } from "../structure/connection-times.ts";
 import { timeLengths } from "../derived/time-lengths.ts";
-import { quoteAt } from "./structure-tree.ts";
+import { reversedTimeRanges } from "../structure/time-range.ts";
+import { quoteAt, rangeWordsOf } from "./structure-tree.ts";
 
 // 一日の予定の時刻の順番（time-order）、発より前の着（arrival-before-departure）、移動の時間より短い乗り継ぎ（connection-time-short）。時刻は compare/clock-time.ts が読み、
 // 発着・翌日・時間帯の語は言語パッケージの語彙表（leg-mark、leg-column、day-shift-mark、time-zone、local-time-mark）から取る。
@@ -49,6 +50,9 @@ const detectorOf =
 
 export const timeOrder: Detector = detectorOf("time-order", timeOrderBreaks);
 export const arrivalBeforeDeparture: Detector = detectorOf("arrival-before-departure", arrivalsBeforeDeparture);
+export const timeRangeReversed: Detector = detectorOf("time-range-reversed", (source, times, _dates, words, doc) =>
+  reversedTimeRanges(source, times, rangeWordsOf(doc), words),
+);
 
 const SECONDS_PER_HOUR = 3600;
 const SECONDS_PER_MINUTE = 60;

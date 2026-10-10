@@ -279,3 +279,58 @@ describe("title-case-consistency と vs", () => {
     assert.deepEqual(quotesFor(source), ["Development Environment vs MulmoChat"]);
   });
 });
+
+describe("isTitleCase と番号の札・曜日と月の名", () => {
+  it("頭の番号の札（Section 3. / Day 1: / Part II:）は語に数えない", () => {
+    assert.equal(isTitleCase("Section 1. Purpose"), undefined);
+    assert.equal(isTitleCase("Section 3. Keeping records"), false);
+    assert.equal(isTitleCase("Part II: Retention Periods"), true);
+    assert.equal(isTitleCase("Day 1: Arrival"), undefined);
+  });
+
+  it("番号の後ろに区切りの無い名前（Windows 11 Setup）は札ではない", () => {
+    assert.equal(isTitleCase("Windows 11 Setup"), true);
+    assert.equal(isTitleCase("Windows 11 setup"), false);
+    assert.equal(isTitleCase("Budget 2026: cuts"), false);
+  });
+
+  it("invalid: May は月の名でもふつうの語でもあるので、証拠から外さない", () => {
+    const source = ["## Release Notes\n\nText.", "## Deployment Guide\n\nText.", "## Support Contacts\n\nText.", "## May updates\n\nText."].join("\n\n");
+    assert.deepEqual(quotesFor(source), ["May updates"]);
+  });
+
+  it("曜日・月の名は、渡されればどちらの流儀の証拠にもしない", () => {
+    const fixed = new Set(["Saturday", "November"]);
+    assert.equal(isTitleCase("Saturday 21 November 2026", fixed), undefined);
+    assert.equal(isTitleCase("Saturday 21 November 2026"), true);
+    assert.equal(isTitleCase("Plans for November", fixed), undefined);
+    assert.equal(isTitleCase("Our Plans for November", fixed), true);
+  });
+});
+
+describe("title-case-consistency と番号の札・曜日と月の名", () => {
+  it("valid: 一語の題の Section 見出しは Title Case と数えない", () => {
+    const source = [
+      "# Records Management Regulation",
+      "## Section 1. Purpose\n\nText.",
+      "## Section 2. Definitions\n\nText.",
+      "## Section 3. Keeping records\n\nText.",
+      "## Section 4. Retention periods\n\nText.",
+    ].join("\n\n");
+    assert.deepEqual(quotesFor(source), []);
+  });
+
+  it("valid: 日付の見出しは、曜日と月の名だけでは Title Case と数えない", () => {
+    const source = ["# Staff Outing Schedule", "## Day 1: Saturday 21 November 2026\n\nText.", "## Accommodation\n\nText.", "## Cost per person\n\nText."].join(
+      "\n\n",
+    );
+    assert.deepEqual(quotesFor(source), []);
+  });
+
+  it("invalid: 札を外しても流儀が違う見出しは指摘する", () => {
+    const source = ["## Section 1. Keeping records\n\nText.", "## Section 2. Retention periods\n\nText.", "## Section 3. Destruction Of Records\n\nText."].join(
+      "\n\n",
+    );
+    assert.deepEqual(quotesFor(source), ["Section 3. Destruction Of Records"]);
+  });
+});

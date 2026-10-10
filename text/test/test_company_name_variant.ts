@@ -3,13 +3,17 @@ import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
+import { readFileSync } from "node:fs";
+import { parse } from "yaml";
 import {
   companyMentionsIn,
   companyRelation,
   companyVariants,
+  kanaHeadOf,
   type CompanyForm,
   type CompanyMention,
   type IsProper,
+  type KanaStops,
 } from "../packages/chaff/src/company-names.ts";
 
 // 会社の名前の書き分け（name-variant）。例文はすべて自作。
@@ -30,8 +34,16 @@ const FORMS: readonly CompanyForm[] = [
 const anyProper = (): boolean => true;
 const noProper = (): boolean => false;
 
+type LexiconEntry = { readonly pattern: string; readonly group: string };
+const isLexicon = (value: unknown): value is { entries: LexiconEntry[] } =>
+  typeof value === "object" && value !== null && "entries" in value && Array.isArray(value.entries);
+const kanaLexicon: unknown = parse(readFileSync(new URL("../packages/lang-ja/lexicons/company-name-kana.yaml", import.meta.url), "utf8"));
+const kanaEntries = isLexicon(kanaLexicon) ? kanaLexicon.entries : [];
+const inGroup = (group: string): string[] => kanaEntries.filter((entry) => entry.group === group).map((entry) => entry.pattern);
+const STOPS: KanaStops = { particles: inGroup("particle"), openers: inGroup("opener"), ends: inGroup("end") };
+
 const mentionsOf = (source: string, isProper: IsProper = anyProper): string[] =>
-  companyMentionsIn(source, FORMS, isProper).map((found) => `${found.base}|${found.form}|${found.position}@${String(found.offset)}`);
+  companyMentionsIn(source, FORMS, isProper, STOPS).map((found) => `${found.base}|${found.form}|${found.position}@${String(found.offset)}`);
 
 const company = (surface: string, base: string, form: string, position: "before" | "after", offset = 0): CompanyMention => ({
   surface,
@@ -107,6 +119,77 @@ describe("name-variant: 会社の名前の書き分け", () => {
     assert.deepEqual(mentionsOf("Minato Trading Co., Ltd. sells"), ["Minato Trading|co-ltd|after@0"]);
     assert.deepEqual(mentionsOf("Acme, Inc. sells"), ["Acme|inc|after@0"]);
     assert.deepEqual(mentionsOf("Aoba Systems Inc.\nAoba Systems Ltd. The end"), ["Aoba Systems|inc|after@0", "Aoba Systems|ltd|after@18"]);
+  });
+
+  it("ひらがなで始まる会社名を、形の語を反対側に置いた所（株式会社こもれび珈琲 と こもれび珈琲株式会社）", () => {
+    assert.deepEqual(
+      variants(
+        "# 求人\n\n株式会社こもれび珈琲\n\n株式会社こもれび珈琲は、駅前の店です。\n\nお店の電話か、こもれび珈琲株式会社の採用ページから応募してください。\n",
+        ja,
+      ),
+      ["「こもれび珈琲株式会社」は、ほかの所では会社の種類を名前の反対側に置いて「株式会社こもれび珈琲」と書いています"],
+    );
+    assert.deepEqual(variants("# 求人\n\n株式会社みなと精機\n\n株式会社みなと精機は横浜の会社です。当社はみなと精機株式会社の子会社です。\n", ja), [
+      "「みなと精機株式会社」は、ほかの所では会社の種類を名前の反対側に置いて「株式会社みなと精機」と書いています",
+    ]);
+  });
+
+  it("ひらがなの名前の頭は漢字の一字違いを指さない（株式会社みなと精機 と 株式会社みなと精器）", () => {
+    assert.deepEqual(variants("# 求人\n\n株式会社みなと精機\n\n株式会社みなと精機は横浜の会社です。書類は株式会社みなと精器 総務部まで。\n", ja), []);
+  });
+
+  it("会社の名前の頭のひらがな: 名前と読む所", () => {
+    assert.deepEqual(mentionsOf("株式会社こもれび珈琲の採用ページ"), ["こもれび珈琲|株式会社|before@0"]);
+    assert.deepEqual(mentionsOf("、こもれび珈琲株式会社の採用ページ"), ["こもれび珈琲|株式会社|after@1"]);
+    assert.deepEqual(mentionsOf("こもれび珈琲株式会社"), ["こもれび珈琲|株式会社|after@0"]);
+    assert.deepEqual(mentionsOf("当社はみなと精機株式会社の子会社"), ["みなと精機|株式会社|after@3"]);
+    assert.deepEqual(mentionsOf("弊社とみなと精機株式会社は"), ["みなと精機|株式会社|after@3"]);
+    assert.deepEqual(mentionsOf("株式会社みなと精機は"), ["みなと精機|株式会社|before@0"]);
+    assert.deepEqual(mentionsOf("株式会社 みなと精機"), ["みなと精機|株式会社|before@0"]);
+  });
+
+  it("会社の名前の頭のひらがな: 助詞や動詞は名前に入れない", () => {
+    assert.deepEqual(mentionsOf("弊社と株式会社アオバは"), ["アオバ|株式会社|before@3"]);
+    assert.deepEqual(mentionsOf("当社は株式会社アオバの子会社"), ["アオバ|株式会社|before@3"]);
+    assert.deepEqual(mentionsOf("また株式会社アオバが"), ["アオバ|株式会社|before@2"]);
+    assert.deepEqual(mentionsOf("当社はアオバ株式会社の子会社"), ["アオバ|株式会社|after@3"]);
+    assert.deepEqual(mentionsOf("本契約においてアオバ株式会社は"), ["アオバ|株式会社|after@7"]);
+    assert.deepEqual(mentionsOf("契約を締結したアオバ株式会社"), ["アオバ|株式会社|after@7"]);
+    assert.deepEqual(mentionsOf("取引先にあるアオバ株式会社"), ["アオバ|株式会社|after@6"]);
+    assert.deepEqual(mentionsOf("、することでアオバ株式会社"), ["アオバ|株式会社|after@6"]);
+    assert.deepEqual(mentionsOf("また、なおアオバ株式会社"), ["アオバ|株式会社|after@5"]);
+    assert.deepEqual(mentionsOf("株式会社の代表者"), []);
+    assert.deepEqual(mentionsOf("株式会社と契約する"), []);
+    assert.deepEqual(mentionsOf("株式会社としての地位"), []);
+    assert.deepEqual(mentionsOf("株式会社こもれびは"), []);
+    assert.deepEqual(mentionsOf("当該株式会社において清算人は", noProper), []);
+    assert.deepEqual(mentionsOf("株式会社ほか1社"), []);
+    assert.deepEqual(mentionsOf("（以下「取引等」という。）により当該株式会社の株式", noProper), []);
+    assert.deepEqual(mentionsOf("第3条によりアオバ株式会社"), ["アオバ|株式会社|after@6"]);
+    assert.deepEqual(mentionsOf("報酬等のうち当該株式会社の", noProper), []);
+    assert.deepEqual(mentionsOf("置かなければならない清算株式会社をいう", noProper), []);
+    assert.deepEqual(mentionsOf("公開会社でない清算株式会社における", noProper), []);
+  });
+
+  it("名前の頭と読むひらがな（kanaHeadOf）", () => {
+    assert.equal(kanaHeadOf("こもれび", "boundary", STOPS), "こもれび");
+    assert.equal(kanaHeadOf("はなまる", "boundary", STOPS), undefined);
+    assert.equal(kanaHeadOf("はこもれび", "word", STOPS), "こもれび");
+    assert.equal(kanaHeadOf("にはこもれび", "word", STOPS), "こもれび");
+    assert.equal(kanaHeadOf("とみなと", "word", STOPS), "みなと");
+    assert.equal(kanaHeadOf("こもれび", "word", STOPS), undefined);
+    assert.equal(kanaHeadOf("した", "word", STOPS), undefined);
+    assert.equal(kanaHeadOf("において", "word", STOPS), undefined);
+    assert.equal(kanaHeadOf("にある", "word", STOPS), undefined);
+    assert.equal(kanaHeadOf("みなと", "form", STOPS), "みなと");
+    assert.equal(kanaHeadOf("と", "form", STOPS), undefined);
+    assert.equal(kanaHeadOf("の", "form", STOPS), undefined);
+    assert.equal(kanaHeadOf("また", "boundary", STOPS), undefined);
+    assert.equal(kanaHeadOf("いずれも", "boundary", STOPS), undefined);
+    assert.equal(kanaHeadOf("み", "boundary", STOPS), undefined);
+    assert.equal(kanaHeadOf("", "boundary", STOPS), undefined);
+    assert.equal(kanaHeadOf("こもれび", "word", { particles: [], openers: [], ends: [] }), undefined);
+    assert.equal(kanaHeadOf("こもれび", "boundary", { particles: [], openers: [], ends: [] }), undefined);
   });
 
   it("会社の名前と読まないもの: 法令の項目の印、漢字だけのふつうの語、語の一部の形の語", () => {

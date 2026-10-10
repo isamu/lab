@@ -1,0 +1,42 @@
+# 電池の容量・消費電流・使える時間を言う項目名（capacity-runtime-mismatch）。項目名がこの語を含めば、その組の値として読む。
+# group capacity は容量、consumption は消費電流・消費電力、runtime は使える時間。standby は待機中の値を言う語で、待機の消費電流は
+# 待受時間とだけ、ふだんの消費電流は使用時間とだけ組む。peak は最大の値を言う語で、項目名の括弧の外に書くか、括弧の中や列の
+# 見出しがこの語だけのとき、その消費電流を使わない（最大の消費電流で割った時間は、使える時間の下限にしかならない）。
+# 括弧の中の条件（音量50%）は、消費電流と使える時間を同じ条件どうしで組むのに使う。
+# group bound は値を片側からだけ決める語（10時間以上、500 mA以下）。そう書いた値は比べない。
+# 括弧の中や列の見出しが standby・peak の語だけ（待機時、最大）のときも、その値を待機・最大と読む。group state はその語のあとに付いてよい語。
+id: battery-label
+language: ja
+entries:
+  - { pattern: "容量", group: capacity }
+  - { pattern: "消費電流", group: consumption }
+  - { pattern: "消費電力", group: consumption }
+  - { pattern: "動作電流", group: consumption }
+  - { pattern: "平均電流", group: consumption }
+  - { pattern: "待機電流", group: consumption }
+  - { pattern: "使用時間", group: runtime }
+  - { pattern: "再生時間", group: runtime }
+  - { pattern: "通話時間", group: runtime }
+  - { pattern: "駆動時間", group: runtime }
+  - { pattern: "稼働時間", group: runtime }
+  - { pattern: "動作時間", group: runtime }
+  - { pattern: "待受時間", group: runtime }
+  - { pattern: "待ち受け時間", group: runtime }
+  - { pattern: "待機時間", group: runtime }
+  - { pattern: "持続時間", group: runtime }
+  - { pattern: "待機", group: standby }
+  - { pattern: "待受", group: standby }
+  - { pattern: "待ち受け", group: standby }
+  - { pattern: "スタンバイ", group: standby }
+  - { pattern: "スリープ", group: standby }
+  - { pattern: "最大", group: peak }
+  - { pattern: "ピーク", group: peak }
+  - { pattern: "突入", group: peak }
+  - { pattern: "以上", group: bound, position: after }
+  - { pattern: "以下", group: bound, position: after }
+  - { pattern: "以内", group: bound, position: after }
+  - { pattern: "未満", group: bound, position: after }
+  - { pattern: "超", group: bound, position: after }
+  - { pattern: "時", group: state }
+  - { pattern: "中", group: state }
+  - { pattern: "モード", group: state }

@@ -1,0 +1,13 @@
+# 測った量の下限と上限を言う語（quantity-range-reversed）：「最低 40℃・最高 10℃」。group の lower は下限、upper は上限、
+# link は語と量のあいだに入ってよい語（下限は5 kg）。字面どおりに照らす。
+id: quantity-bound-label
+language: ja
+entries:
+  - { pattern: 下限, group: lower }
+  - { pattern: 最低, group: lower }
+  - { pattern: 最小, group: lower }
+  - { pattern: 上限, group: upper }
+  - { pattern: 最高, group: upper }
+  - { pattern: 最大, group: upper }
+  - { pattern: は, group: link }
+  - { pattern: が, group: link }

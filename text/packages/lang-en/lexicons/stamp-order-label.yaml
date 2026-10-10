@@ -1,0 +1,25 @@
+# The words of a document's stamp lines, a date and one of these alone on a line (Established: April 1, 2023; Last updated:
+# September 1, 2026). group says whether the date is when the document was first set (established) or last changed (updated);
+# date-stamp-order reports an established date later than an update. Effective is left out: a policy is often updated ahead of
+# the day it takes effect (Last updated: April 23, Effective date: April 27), so an effective date after the update is normal.
+id: stamp-order-label
+language: en
+entries:
+  - { pattern: Established, group: established }
+  - { pattern: Established on, group: established }
+  - { pattern: Adopted, group: established }
+  - { pattern: Adopted on, group: established }
+  - { pattern: Created, group: established }
+  - { pattern: Created on, group: established }
+  - { pattern: First published, group: established }
+  - { pattern: First issued, group: established }
+  - { pattern: Last updated, group: updated }
+  - { pattern: Last updated on, group: updated }
+  - { pattern: Updated, group: updated }
+  - { pattern: Updated on, group: updated }
+  - { pattern: Last revised, group: updated }
+  - { pattern: Revised, group: updated }
+  - { pattern: Revised on, group: updated }
+  - { pattern: Last modified, group: updated }
+  - { pattern: Last amended, group: updated }
+  - { pattern: Amended, group: updated }

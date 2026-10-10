@@ -1,0 +1,15 @@
+# What is always at hand and never listed (unlisted-item-used): a step that uses it is not reported. A name that ends
+# in one ("tap water") is the same. Matched in any case, also by the lemma.
+id: item-at-hand
+language: en
+entries:
+  - pattern: water
+  - pattern: ice
+  - pattern: hand
+  - pattern: hands
+  - pattern: finger
+  - pattern: fingers
+  - pattern: air
+  - pattern: heat
+  - pattern: plate
+  - pattern: plates

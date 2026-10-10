@@ -1,0 +1,18 @@
+# 電池の容量と消費の単位（capacity-runtime-mismatch）。group は量の種類で、charge（電荷）は current（電流）でだけ、energy（電力量）は
+# power（電力）でだけ割る。mAh を W で割るには電圧が要り、電圧が公称か動作時かを決められないので割らない。weight は mAh・mA・Wh・W
+# への倍率。
+id: battery-unit
+language: ja
+entries:
+  - { pattern: "mAh", group: charge, weight: 1 }
+  - { pattern: "Ah", group: charge, weight: 1000 }
+  - { pattern: "µA", group: current, weight: 0.001 }
+  - { pattern: "μA", group: current, weight: 0.001 }
+  - { pattern: "mA", group: current, weight: 1 }
+  - { pattern: "A", group: current, weight: 1000 }
+  - { pattern: "mWh", group: energy, weight: 0.001 }
+  - { pattern: "kWh", group: energy, weight: 1000 }
+  - { pattern: "Wh", group: energy, weight: 1 }
+  - { pattern: "mW", group: power, weight: 0.001 }
+  - { pattern: "kW", group: power, weight: 1000 }
+  - { pattern: "W", group: power, weight: 1 }

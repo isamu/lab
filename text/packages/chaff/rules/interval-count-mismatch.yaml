@@ -1,0 +1,54 @@
+id: interval-count-mismatch
+layer: L3
+status: stable
+how_to_find: interval-count-mismatch
+# The interval is a length (unit-time) marked as a minimum and named an interval by use-interval-word; the count and its
+# limit come from use-count-word; the table column headings from use-interval-word (column).
+severity: warning
+
+name:
+  ja: 使う間隔の下限と回数の上限が両立しない、または表の回数と合わない
+  en: A minimum interval and a maximum count of uses that cannot both hold, or a count that differs from the table
+
+why:
+  ja: 「8時間以上あけ、1日4回まで」と書くと、4回を8時間ずつあけるには最初から最後まで24時間かかり、4回目は次の日になります。どちらかの数を書き間違えています。n回を少なくともh時間ずつあけて使うと、1回目からn回目までに(n−1)×h時間かかります。これが期間の長さ（1日なら24時間）以上なら、その期間にn回は使えません。一つの段落に、下限の間隔（4時間以上あけ、at least 4 hours between doses）と、上限のある期間あたりの回数（1日6回を超えて、no more than 6 doses a day）がちょうど一つずつあるときに計算します。両立するときは、同じ見出しの下の表に期間あたりの回数の列（1日の服用回数）があれば、その列のいちばん大きい回数と上限の回数を比べ、違えば知らせます。表が「1日3回」なのに上限が「1日6回」だと、読み手はどちらに従うか決められません。
+  en: 'Written "leave at least 8 hours between doses, no more than 4 doses a day", four doses 8 hours apart take 24 hours from the first to the last, so the fourth falls on the next day: one of the numbers is wrong. n uses at least h hours apart take (n − 1) × h hours from the first to the last; when that is the length of the period (24 hours for a day) or more, n uses do not fit in it. This is worked out in a paragraph holding exactly one minimum interval ("at least 4 hours between doses") and exactly one count of uses in a period with a limit ("no more than 6 doses a day"). When the two can hold, a table under the same heading with a column of uses in a period ("Times a day") is read too, and its largest count is compared with the limit; a table of 3 times a day beside a limit of 6 leaves the reader unable to tell which to follow.'
+
+message:
+  ja: 「{count}」を{interval}以上ずつあけて使うと、最初から最後まで{needed}時間かかり、{hours}時間に収まりません
+  en: "{count} at least {interval} apart take {needed} hours from the first to the last, which does not fit in {hours} hours"
+
+messages:
+  table:
+    ja: 表の「{column}」はいちばん多くて{table}回ですが、ここでは「{count}」と書かれています
+    en: 'The table gives at most {table} under "{column}", but "{count}" is written here'
+
+how_to_fix:
+  ja: 間隔・回数・表のどれが正しいかを確かめて、残りを直してください。
+  en: Check which of the interval, the count and the table is right and correct the rest.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 「8時間以上あけ、1日4回まで」のように、間隔の下限と回数の上限が両立しない所と、上限の回数が表の回数と違う所
+  en: A minimum interval and a maximum count that cannot both hold, and a maximum count that differs from the table's
+example:
+  ja:
+    before: |
+      与える間隔は8時間以上あけ、1日4回を超えて与えないでください。
+    after: |
+      与える間隔は8時間以上あけ、1日2回を超えて与えないでください。
+  en:
+    before: |
+      Leave at least 8 hours between feedings, and do not give more than 4 feedings a day.
+    after: |
+      Leave at least 8 hours between feedings, and do not give more than 2 feedings a day.
+
+not_flagged:
+  ja: 間隔に「以上」のような下限の印が無い所、間隔の語（間隔、あけ）が同じ文に無い所、回数に上限の語（まで、を超えて）が無い所、段落に間隔か回数が二つ以上ある所、ちょうど収まる所（4時間以上あけて1日6回）は言いません。表とは、同じ見出しの下に回数の列が一つだけあり、期間が同じときだけ比べます。
+  en: 'A length with no mark of a minimum ("at least"), no interval word ("between", "apart") in its sentence, a count with no limit word ("no more than", "up to"), a paragraph with two intervals or two counts, and a count that just fits (at least 4 hours apart, 6 a day) are not reported. A table is compared only when exactly one count column for the same period stands under the same heading.'

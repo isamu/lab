@@ -1,0 +1,49 @@
+# Counts of uses in a period ("3 times a day") and the words that make a number a limit (product-exceeds-maximum,
+# interval-count-mismatch). Group period is a period, weight its length in hours, written after the count. counter is
+# what a count of uses is written in. alone is a number word that counts without a counter ("twice a day"), weight its
+# value. limit makes a number a maximum: before, anywhere earlier in the same sentence ("the maximum daily dose is 4
+# tablets"); after, right behind it ("4 tablets or less"). limit-negated is a limit only with a negation earlier in the
+# sentence ("do not take more than"; "you may need more than" is not one).
+id: use-count-word
+language: en
+entries:
+  - { pattern: "a day", group: period, weight: 24, position: after }
+  - { pattern: "per day", group: period, weight: 24, position: after }
+  - { pattern: "each day", group: period, weight: 24, position: after }
+  - { pattern: "every day", group: period, weight: 24, position: after }
+  - { pattern: "daily", group: period, weight: 24, position: after }
+  - { pattern: "in 24 hours", group: period, weight: 24, position: after }
+  - { pattern: "in any 24 hours", group: period, weight: 24, position: after }
+  - { pattern: "per 24 hours", group: period, weight: 24, position: after }
+  - { pattern: "in a 24-hour period", group: period, weight: 24, position: after }
+  - { pattern: "in any 24-hour period", group: period, weight: 24, position: after }
+  - { pattern: "a week", group: period, weight: 168, position: after }
+  - { pattern: "per week", group: period, weight: 168, position: after }
+  - { pattern: "weekly", group: period, weight: 168, position: after }
+  - { pattern: "times", group: counter }
+  - { pattern: "doses", group: counter }
+  - { pattern: "uses", group: counter }
+  - { pattern: "servings", group: counter }
+  - { pattern: "feedings", group: counter }
+  - { pattern: "applications", group: counter }
+  - { pattern: "once", group: alone, weight: 1 }
+  - { pattern: "twice", group: alone, weight: 2 }
+  - { pattern: "thrice", group: alone, weight: 3 }
+  - { pattern: "maximum", group: limit, position: before }
+  - { pattern: "max", group: limit, position: before }
+  - { pattern: "no more than", group: limit, position: before }
+  - { pattern: "not more than", group: limit, position: before }
+  - { pattern: "more than", group: limit-negated, position: before }
+  - { pattern: "up to", group: limit, position: before }
+  - { pattern: "at most", group: limit, position: before }
+  - { pattern: "exceed", group: limit, position: before }
+  - { pattern: "limit", group: limit, position: before }
+  - { pattern: "or less", group: limit, position: after }
+  - { pattern: "or fewer", group: limit, position: after }
+  - { pattern: "at most", group: limit, position: after }
+  - { pattern: "not", group: negation }
+  - { pattern: "never", group: negation }
+  - { pattern: "don't", group: negation }
+  - { pattern: "do not", group: negation }
+  - { pattern: "must not", group: negation }
+  - { pattern: "should not", group: negation }

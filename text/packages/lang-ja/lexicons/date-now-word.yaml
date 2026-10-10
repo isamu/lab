@@ -1,0 +1,8 @@
+# 日付がもう来ていることを言う語。この語のある行の日付は、前後の決まった日付の組（dated-pair-label）で比べない。
+# 「即入居可（2026年9月1日から空室）」の日付は空いた日で、入居の日ではない（due-before-issue）。
+id: date-now-word
+language: ja
+entries:
+  - pattern: 即入居
+  - pattern: 即日
+  - pattern: 即時
