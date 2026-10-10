@@ -2,6 +2,7 @@ id: reference-unit-mismatch
 layer: L3
 status: stable
 how_to_find: reference-unit
+extra_word_lists: [lab-result-column]
 # The result, reference range and unit columns are found by the language's lab-result-column and reference-unit-column
 # lexicons, and the units are read with reference-unit (a group is one unit: mg/dL and mg/dl, ×10⁴/µL and 万/µL).
 languages: [ja, en]
