@@ -1,5 +1,6 @@
 # Words that say which way a forecast was revised (revision-direction-mismatch). group is the direction: rise or fall.
-# Matched as whole words in the section that holds a table of the previous and the revised forecast.
+# Matched as whole words in the section that holds a table of the previous and the revised forecast. rise-verb and
+# fall-verb are read only with a word of the group forecast in their sentence ("raised funds" revises nothing).
 id: revision-direction
 language: en
 entries:
@@ -8,13 +9,21 @@ entries:
   - { pattern: revise upward, group: rise }
   - { pattern: revised up, group: rise }
   - { pattern: upward revision, group: rise }
-  - { pattern: raised, group: rise }
-  - { pattern: raising, group: rise }
+  - { pattern: raised, group: rise-verb }
+  - { pattern: raising, group: rise-verb }
   - { pattern: revised downward, group: fall }
   - { pattern: revising downward, group: fall }
   - { pattern: revise downward, group: fall }
   - { pattern: revised down, group: fall }
   - { pattern: downward revision, group: fall }
-  - { pattern: lowered, group: fall }
-  - { pattern: lowering, group: fall }
-  - { pattern: cut, group: fall }
+  - { pattern: lowered, group: fall-verb }
+  - { pattern: lowering, group: fall-verb }
+  - { pattern: cut, group: fall-verb }
+  - { pattern: forecast, group: forecast }
+  - { pattern: forecasts, group: forecast }
+  - { pattern: guidance, group: forecast }
+  - { pattern: outlook, group: forecast }
+  - { pattern: projection, group: forecast }
+  - { pattern: projections, group: forecast }
+  - { pattern: estimate, group: forecast }
+  - { pattern: estimates, group: forecast }

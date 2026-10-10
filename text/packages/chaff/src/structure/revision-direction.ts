@@ -12,6 +12,11 @@ export type RevisionWords = {
   /** Words that say the forecast was revised upward (上方修正, revised upward) and downward (下方修正, lowered). */
   readonly rises: readonly string[];
   readonly falls: readonly string[];
+  /** Verbs that say so only with a word of forecast in their sentence ("raised the forecast", not "raised funds"). */
+  readonly risesWithObject: readonly string[];
+  readonly fallsWithObject: readonly string[];
+  /** Words of forecast (予想, forecast, guidance). */
+  readonly objects: readonly string[];
   /** Labels of the previous forecast's column or row (前回発表予想, Previous forecast) and of the revised one's. */
   readonly previous: readonly string[];
   readonly revised: readonly string[];
@@ -29,6 +34,7 @@ type Table = { readonly header: Line; readonly rows: readonly Line[] };
 /** One item of a revision table: its label, and its previous and revised cells. */
 export type RevisionItem = { readonly label: string; readonly previous: Cell; readonly revised: Cell };
 type Hit = Span & { readonly sign: 1 | -1 };
+type Signed = { readonly word: string; readonly sign: 1 | -1; readonly needsObject: boolean };
 
 const LATIN = /^[A-Za-z]/u;
 const LETTER = /\p{L}/u;
@@ -121,17 +127,21 @@ const tableSpan = (table: Table): Span => {
 
 const within = (outer: Span, inner: Span): boolean => inner.start >= outer.start && inner.end <= outer.end;
 
-/** The words of revision in the section, outside its tables. */
+const signedWords = (words: RevisionWords): Signed[] => [
+  ...words.rises.map((word) => ({ word, sign: RISE, needsObject: false })),
+  ...words.falls.map((word) => ({ word, sign: FALL, needsObject: false })),
+  ...words.risesWithObject.map((word) => ({ word, sign: RISE, needsObject: true })),
+  ...words.fallsWithObject.map((word) => ({ word, sign: FALL, needsObject: true })),
+];
+
+/** The words of revision in the section, outside its tables; a verb that needs a word of forecast, with one in its sentence. */
 const hitsIn = (input: RevisionText, section: Span, tables: readonly Span[], words: RevisionWords): Hit[] => {
-  const signed: { readonly word: string; readonly sign: 1 | -1 }[] = [
-    ...words.rises.map((word) => ({ word, sign: RISE })),
-    ...words.falls.map((word) => ({ word, sign: FALL })),
-  ];
   const text = input.text.slice(section.start, section.end);
-  return signed.flatMap(({ word, sign }) =>
+  return signedWords(words).flatMap(({ word, sign, needsObject }) =>
     spansOf(text, word)
       .map((span) => ({ start: span.start + section.start, end: span.end + section.start, sign }))
-      .filter((hit) => !tables.some((table) => within(table, hit))),
+      .filter((hit) => !tables.some((table) => within(table, hit)))
+      .filter((hit) => !needsObject || mentions(unitTextOf(input, hit), words.objects)),
   );
 };
 
@@ -139,18 +149,26 @@ const hitsIn = (input: RevisionText, section: Span, tables: readonly Span[], wor
 const outermost = (hits: readonly Hit[]): Hit[] =>
   hits.filter((hit) => !hits.some((other) => other !== hit && within(other, hit) && other.end - other.start > hit.end - hit.start));
 
-/** The sentence or heading a word stands in, else its line. */
-const unitOf = (input: RevisionText, hit: Hit): Span => {
+/** The text of the sentence or heading a word stands in, else of its line. */
+const unitTextOf = (input: RevisionText, hit: Span): string => {
   const unit = input.units.find((span) => within(span, hit));
-  if (unit !== undefined) return unit;
+  if (unit !== undefined) return input.text.slice(unit.start, unit.end);
   const line = linesOf(input.text).find((candidate) => candidate.start <= hit.start && hit.start <= candidate.start + candidate.text.length);
-  return line === undefined ? hit : { start: line.start, end: line.start + line.text.length };
+  return line?.text ?? input.text.slice(hit.start, hit.end);
+};
+
+const OPENING_BRACKET = /[（(]/u;
+
+/** A label as a sentence names it: as written, or without the brackets it ends with ("Operating profit (loss)", 「売上高（百万円）」). */
+export const namesItem = (sentence: string, label: string): boolean => {
+  const core = (label.split(OPENING_BRACKET)[0] ?? "").trim();
+  return [label, core].some((name) => LETTER.test(name) && spansOf(sentence, name).length > 0);
 };
 
 /** The items the sentences of the words name; with none named, the first item, the headline figure. */
 const checkedItems = (input: RevisionText, hits: readonly Hit[], items: readonly RevisionItem[]): RevisionItem[] => {
-  const units = hits.map((hit) => unitOf(input, hit)).map((unit) => input.text.slice(unit.start, unit.end));
-  const named = items.filter((item) => units.some((unit) => spansOf(unit, item.label).length > 0));
+  const units = hits.map((hit) => unitTextOf(input, hit));
+  const named = items.filter((item) => units.some((unit) => namesItem(unit, item.label)));
   if (named.length > 0) return named;
   return items.slice(0, 1);
 };

@@ -8,7 +8,14 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import { linesOf } from "../packages/chaff/src/structure/lines.ts";
 import { tablesOf } from "../packages/chaff/src/facts/table-facts.ts";
-import { amountOf, moveOf, revisionDirectionMismatches, revisionItems, type RevisionWords } from "../packages/chaff/src/structure/revision-direction.ts";
+import {
+  amountOf,
+  moveOf,
+  namesItem,
+  revisionDirectionMismatches,
+  revisionItems,
+  type RevisionWords,
+} from "../packages/chaff/src/structure/revision-direction.ts";
 
 // A forecast revision said to go one way while its table goes the other (revision-direction-mismatch).
 
@@ -32,7 +39,10 @@ const enDoc = (...blocks: string[]): string[] =>
 
 const words: RevisionWords = {
   rises: ["上方修正", "revised upward"],
-  falls: ["下方修正", "lowered"],
+  falls: ["下方修正"],
+  risesWithObject: [],
+  fallsWithObject: ["lowered"],
+  objects: ["forecast"],
   previous: ["前回予想", "previous forecast"],
   revised: ["今回予想", "revised forecast"],
 };
@@ -51,6 +61,15 @@ describe("revision-direction pieces", () => {
     assert.deepEqual(amountOf("5,400百万円"), { value: 5400, unit: "|百万円" });
     assert.deepEqual(amountOf("１２.５"), { value: 12.5, unit: "|" });
     ["―", "-", "未定", "", "TBD", "5,200〜5,400", "5,200 / 5,400", "(120)"].forEach((cell) => assert.equal(amountOf(cell), undefined, cell));
+  });
+
+  it("namesItem finds a label as written or without its brackets, and not a part of another word", () => {
+    assert.equal(namesItem("営業利益を上方修正", "営業利益（百万円）"), true);
+    assert.equal(namesItem("raised the operating profit forecast", "Operating profit (loss)"), true);
+    assert.equal(namesItem("raised the net sales forecast", "Net sales"), true);
+    assert.equal(namesItem("raised the forecast", "Net sales"), false);
+    assert.equal(namesItem("raised the net salesforce forecast", "Net sales"), false);
+    assert.equal(namesItem("raised the forecast", "(A)"), false);
   });
 
   it("moveOf says which way the item moved, and nothing when it cannot", () => {
@@ -117,6 +136,11 @@ describe("revision-direction-mismatch (ja)", () => {
     assert.deepEqual(jaDoc("営業利益を上方修正します。", jaTable("| 売上高 | 5,200 | 5,000 |", "| 営業利益 | 380 | 410 |")), []);
   });
 
+  it("reads 引き上げ only beside a word of forecast", () => {
+    assert.deepEqual(jaDoc("価格を引き上げました。", jaTable("| 売上高 | 5,200 | 5,000 |")), []);
+    assert.deepEqual(jaDoc("通期の予想を引き上げます。", jaTable("| 売上高 | 5,200 | 5,000 |")), ["引き上げ 売上高 5,200>5,000"]);
+  });
+
   it("reads a word in the heading", () => {
     const doc = found(["# 決算短信", "", "## 業績予想の上方修正", "", jaTable("| 売上高 | 5,200 | 5,000 |")].join("\n"), ja);
     assert.deepEqual(doc, ["上方修正 売上高 5,200>5,000"]);
@@ -163,6 +187,17 @@ describe("revision-direction-mismatch (en)", () => {
     ]);
   });
 
+  it("reads a verb only beside a word of forecast", () => {
+    assert.deepEqual(enDoc("We raised funds in April.", enTable("| Net sales | 5,200 | 5,000 |")), []);
+    assert.deepEqual(enDoc("We raised the forecast.", enTable("| Net sales | 5,200 | 5,000 |")), ["raised Net sales 5,200>5,000"]);
+  });
+
+  it("names an item without what its label adds in brackets", () => {
+    assert.deepEqual(enDoc("We raised our operating profit forecast.", enTable("| Net sales | 5,200 | 5,400 |", "| Operating profit (loss) | 380 | 350 |")), [
+      "raised Operating profit (loss) 380>350",
+    ]);
+  });
+
   it("checks the items the sentence names", () => {
     assert.deepEqual(enDoc("We raised our operating profit forecast.", enTable("| Net sales | 5,200 | 5,400 |", "| Operating profit | 380 | 350 |")), [
       "raised Operating profit 380>350",
@@ -171,7 +206,7 @@ describe("revision-direction-mismatch (en)", () => {
 
   it("is silent when the table agrees, the words disagree, or the cells are not numbers", () => {
     assert.deepEqual(enDoc("We revised upward the forecast.", enTable("| Net sales | 5,200 | 5,400 |")), []);
-    assert.deepEqual(enDoc("We lowered net sales and raised operating profit.", enTable("| Net sales | 5,200 | 5,400 |")), []);
+    assert.deepEqual(enDoc("We lowered the net sales forecast and raised the operating profit forecast.", enTable("| Net sales | 5,200 | 5,400 |")), []);
     assert.deepEqual(enDoc("We revised upward the forecast.", enTable("| Net sales | TBD | 5,000 |")), []);
     assert.deepEqual(enDoc("We revised the forecast.", enTable("| Net sales | 5,200 | 5,000 |")), []);
   });

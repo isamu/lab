@@ -1,5 +1,6 @@
 // revision-direction-mismatch: a forecast said to be revised one way whose revision table moves the other way
-// (structure/revision-direction.ts). The words are revision-direction (rise, fall) and the labels of the previous and
+// (structure/revision-direction.ts). The words are revision-direction (rise, fall; the verbs rise-verb and fall-verb, read
+// only with a word of its group forecast in their sentence) and the labels of the previous and
 // revised forecasts revision-column (previous, revised); the sections start at the headings, whose words the prose masks
 // and this puts back.
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
@@ -14,6 +15,9 @@ const patternsOf = (doc: ProseDocument, lexicon: string, group: string): string[
 const wordsOf = (doc: ProseDocument): RevisionWords => ({
   rises: patternsOf(doc, "revision-direction", "rise"),
   falls: patternsOf(doc, "revision-direction", "fall"),
+  risesWithObject: patternsOf(doc, "revision-direction", "rise-verb"),
+  fallsWithObject: patternsOf(doc, "revision-direction", "fall-verb"),
+  objects: patternsOf(doc, "revision-direction", "forecast"),
   previous: patternsOf(doc, "revision-column", "previous"),
   revised: patternsOf(doc, "revision-column", "revised"),
 });
