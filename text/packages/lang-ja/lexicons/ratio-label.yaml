@@ -1,0 +1,15 @@
+# 割り算で決まる率の名前（ratio-mismatch）。group は「分子の語の組/分母の語の組」で、組の語は ratio-term にある。
+# 表の行の見出しがこの語だけ（単位の括弧は除く）か、一つの文にこの語と二つの組の語が一度ずつあるとき、率を二つの値と比べる。
+id: ratio-label
+language: ja
+entries:
+  - { pattern: 営業利益率, group: operating-profit/sales }
+  - { pattern: 売上高営業利益率, group: operating-profit/sales }
+  - { pattern: 経常利益率, group: ordinary-profit/sales }
+  - { pattern: 売上高経常利益率, group: ordinary-profit/sales }
+  - { pattern: 売上総利益率, group: gross-profit/sales }
+  - { pattern: 売上高総利益率, group: gross-profit/sales }
+  - { pattern: 粗利益率, group: gross-profit/sales }
+  - { pattern: 粗利率, group: gross-profit/sales }
+  - { pattern: 当期純利益率, group: net-profit/sales }
+  - { pattern: 売上高当期純利益率, group: net-profit/sales }

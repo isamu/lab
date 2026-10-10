@@ -1,0 +1,18 @@
+# Names of the values a ratio divides (ratio-mismatch). group is the term a ratio-label names. In a table, a row whose
+# label is only this word (a unit in brackets aside) is read.
+id: ratio-term
+language: en
+entries:
+  - { pattern: Net sales, group: sales }
+  - { pattern: Sales, group: sales }
+  - { pattern: Revenue, group: sales }
+  - { pattern: Revenues, group: sales }
+  - { pattern: Net revenue, group: sales }
+  - { pattern: Net revenues, group: sales }
+  - { pattern: Total revenue, group: sales }
+  - { pattern: Total revenues, group: sales }
+  - { pattern: Operating profit, group: operating-profit }
+  - { pattern: Operating income, group: operating-profit }
+  - { pattern: Gross profit, group: gross-profit }
+  - { pattern: Net profit, group: net-profit }
+  - { pattern: Net income, group: net-profit }

@@ -1,0 +1,13 @@
+# 率の分子と分母になる値の名前（ratio-mismatch）。group は ratio-label が名指す組。表では行の見出しがこの語だけのとき、その行を読む。
+id: ratio-term
+language: ja
+entries:
+  - { pattern: 売上高, group: sales }
+  - { pattern: 売上収益, group: sales }
+  - { pattern: 営業収益, group: sales }
+  - { pattern: 営業利益, group: operating-profit }
+  - { pattern: 経常利益, group: ordinary-profit }
+  - { pattern: 売上総利益, group: gross-profit }
+  - { pattern: 粗利益, group: gross-profit }
+  - { pattern: 粗利, group: gross-profit }
+  - { pattern: 当期純利益, group: net-profit }
