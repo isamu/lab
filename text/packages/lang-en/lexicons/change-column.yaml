@@ -11,7 +11,7 @@ entries:
   - { pattern: "% change", group: rate }
   - { pattern: change (%), group: rate }
   - { pattern: change %, group: rate }
-  - { pattern: growth, group: rate }
+  - { pattern: growth, group: change }
   - { pattern: change, group: change }
   - { pattern: prior year, group: base }
   - { pattern: previous year, group: base }

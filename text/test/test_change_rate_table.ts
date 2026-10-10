@@ -28,6 +28,7 @@ const WORDS: readonly ColumnWord[] = [
   { pattern: "Change (%)", role: "rate" },
   { pattern: "増減", role: "change" },
   { pattern: "Change", role: "change" },
+  { pattern: "Growth", role: "change" },
   { pattern: "前期", role: "base" },
   { pattern: "前年同期", role: "base" },
   { pattern: "Prior year", role: "base" },
@@ -61,6 +62,17 @@ describe("change-rate-mismatch in a table: the pure reading", () => {
   it("dates two columns by their years when no heading word names them, the earlier year as the base", () => {
     assert.deepEqual(columnsOf(["Item", "FY2026", "FY2025", "YoY"], WORDS), { base: 2, current: 1, rate: 3, percentOnly: false });
     assert.deepEqual(columnsOf(["項目", "2025年3月期", "2026年3月期", "増減率"], WORDS), { base: 1, current: 2, rate: 3, percentOnly: false });
+  });
+
+  it("keeps the period columns when their headings name the same unit, a year apart", () => {
+    assert.deepEqual(columnsOf(["項目", "前期（2025年3月期）", "当期（2026年3月期）", "増減率"], WORDS), { base: 1, current: 2, rate: 3, percentOnly: false });
+    assert.deepEqual(columnsOf(["Item", "FY2025 ($ million)", "FY2026 ($ million)", "YoY"], WORDS), { base: 1, current: 2, rate: 3, percentOnly: false });
+  });
+
+  it("finds no columns when the two period headings name different units", () => {
+    assert.equal(columnsOf(["Item", "FY2025 (thousand yen)", "FY2026 (million yen)", "YoY"], WORDS), undefined);
+    assert.equal(columnsOf(["項目", "前期（千円）", "当期（百万円）", "増減率"], WORDS), undefined);
+    assert.equal(columnsOf(["項目", "前期（千円）", "当期", "増減率"], WORDS), undefined);
   });
 
   it("finds no columns when a role is missing or not single", () => {
@@ -149,6 +161,14 @@ describe("change-rate-mismatch in a table: the pure reading", () => {
         ["Item", "Prior year", "Current year", "Change"],
         ["Net sales", "1,200", "1,320", "+12.0"],
         ["Net sales", "1,200", "1,320", "(5.0)%"],
+        ["Net sales", "1,200", "1,320", "(5.0%)"],
+      ]),
+      [],
+    );
+    assert.deepEqual(
+      issues([
+        ["Item", "Prior year", "Current year", "Growth"],
+        ["Net sales", "200", "250", "50"],
       ]),
       [],
     );

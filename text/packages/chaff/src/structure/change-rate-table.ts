@@ -53,6 +53,14 @@ const datedColumns = (headings: readonly string[], roles: readonly (ColumnRole |
   return first.year < second.year ? { base: first.index, current: second.index } : { base: second.index, current: first.index };
 };
 
+/** What a heading writes in brackets, less its numbers: 「（百万円）」, "(thousand yen)"; 「（2025年3月期）」 keeps only 「年月期」. */
+const BRACKETED = /[(（]([^)）]*)[)）]/gu;
+const bracketedOf = (heading: string): string =>
+  [...plain(heading).matchAll(BRACKETED)].map((match) => (match[1] ?? "").replace(/[\d.,]/gu, "").trim()).join("|");
+
+/** The two period columns do not name different units in their headings ("FY2025 (thousand yen)", "FY2026 (million yen)"). */
+const sameHeadingUnits = (base: string | undefined, current: string | undefined): boolean => bracketedOf(base ?? "") === bracketedOf(current ?? "");
+
 /** The one column of each role. A rate column is one headed by a rate word, else the one change column whose cells carry %. */
 export const columnsOf = (headings: readonly string[], words: readonly ColumnWord[]): Columns | undefined => {
   const roles = headings.map((heading) => roleOf(heading, words));
@@ -62,7 +70,7 @@ export const columnsOf = (headings: readonly string[], words: readonly ColumnWor
   const rate = rateColumn ?? changeColumn;
   const [base, current] = [onlyIndex(indexesOf("base")), onlyIndex(indexesOf("current"))];
   const periods = base !== undefined && current !== undefined ? { base, current } : datedColumns(headings, roles);
-  if (rate === undefined || periods === undefined) return undefined;
+  if (rate === undefined || periods === undefined || !sameHeadingUnits(headings[periods.base], headings[periods.current])) return undefined;
   return { ...periods, rate, percentOnly: rateColumn === undefined && !PERCENT_MARK.test(plain(headings[rate] ?? "")) };
 };
 
