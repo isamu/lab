@@ -118,7 +118,9 @@ const readFacts = (doc: ProseDocument, tree: StructureNode): ScopedFact[] => {
   const values = valuesWith(tree, doc, [...measuredOf(doc).filter((value) => !overlapsAny(taken, value)), ...ages, ...durations]);
   const terms = termValues(doc.source, values, termValueWordsOf(doc));
   const termed = new Set(terms.map((fact) => fact.value.start));
-  const labelled = labelledFacts(doc.source, values, { ...factWordsOf(doc), qualifiers: qualifierWordsOf(doc) }).filter((fact) => !termed.has(fact.value.start));
+  const labelled = labelledFacts(doc.source, values, { ...factWordsOf(doc), qualifiers: qualifierWordsOf(doc) }).filter(
+    (fact) => !termed.has(fact.value.start),
+  );
   const facts = withQualifiedKeys(doc, [...labelled, ...terms, ...tableFacts(doc.source, values)]);
   return scopedFacts(facts, tree, doc.source, patternsOf(doc, "summary-heading"));
 };
