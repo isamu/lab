@@ -1,0 +1,23 @@
+# 検査結果の表の列見出し（reference-flag-mismatch）。group value は結果の数の列、range は基準値の列、flag は判定の印の列。
+# 見出しの字そのままで照らす（「結果(mg/dL)」は読まない）。三つの列がそれぞれちょうど一つあるときだけ表を読む。
+id: reference-column-heading
+language: ja
+entries:
+  - { pattern: 結果, group: value }
+  - { pattern: 結果値, group: value }
+  - { pattern: 検査結果, group: value }
+  - { pattern: 測定値, group: value }
+  - { pattern: 検査値, group: value }
+  - { pattern: 今回値, group: value }
+  - { pattern: 今回, group: value }
+  - { pattern: 基準値, group: range }
+  - { pattern: 基準範囲, group: range }
+  - { pattern: 基準値範囲, group: range }
+  - { pattern: 参考基準値, group: range }
+  - { pattern: 参考基準範囲, group: range }
+  - { pattern: 正常値, group: range }
+  - { pattern: 正常範囲, group: range }
+  - { pattern: 判定, group: flag }
+  - { pattern: フラグ, group: flag }
+  - { pattern: 異常フラグ, group: flag }
+  - { pattern: H/L, group: flag }
