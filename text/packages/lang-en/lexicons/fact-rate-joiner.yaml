@@ -1,0 +1,16 @@
+# What may follow a rate once its value is said (fact-conflict): "The fee rate is 4.0% and does not change." The rate ends
+# there. Only these: "4% and up", "4% and 5%", "3.6% and rising" say something else about the value and are not read.
+id: fact-rate-joiner
+language: en
+entries:
+  - pattern: and does not
+  - pattern: and doesn't
+  - pattern: and will not
+  - pattern: and won't
+  - pattern: and cannot
+  - pattern: and can't
+  - pattern: and never
+  - pattern: and stays
+  - pattern: and remains
+  - pattern: and is fixed
+  - pattern: and applies

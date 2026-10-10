@@ -31,7 +31,7 @@ off_for:
 group: facts
 summary:
   ja: 「1回2錠を1日3回」なのに「1日の最大量は4錠」のように、1回の量×回数が上限を超える所
-  en: An amount per use times the uses in a period that goes over the maximum stated for that period
+  en: An amount per use times the uses per period that is over that period's maximum
 example:
   ja:
     before: |

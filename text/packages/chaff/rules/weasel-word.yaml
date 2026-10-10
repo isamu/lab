@@ -33,8 +33,8 @@ off_for:
 
 group: wording
 summary:
-  ja: 「〜と言われています」「ある研究によると」（many experts say, studies show）のように、主張を名前の無い誰かに預ける言い回し
-  en: Phrases such as "many experts say" and "studies show" (と言われています, ある研究によると) that credit a claim to no one in particular
+  ja: 「〜と言われています」「ある研究によると」のように、主張を名前の無い誰かに預ける言い方
+  en: Phrases like "many experts say" or "studies show" that credit no one
 example:
   ja:
     before: |

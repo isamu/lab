@@ -33,8 +33,8 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 
 group: structure
 summary:
-  ja: 年の無い日付のうち、どの年か読み手に決まらないもの（文書の日付が二つ以上の年にわたるときと、年の変わり目をまたいで並ぶとき）
-  en: A date without a year whose year the reader cannot determine, because the document's dates span more than one year or cross the turn of a year
+  ja: 文書の日付が二つ以上の年にわたるときや年の変わり目をまたぐときの、年の無い日付
+  en: A date with no year where the document's dates span years or cross a new year
 example:
   ja:
     before: |

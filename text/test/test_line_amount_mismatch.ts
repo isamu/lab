@@ -20,6 +20,10 @@ const VOLUME = ["L", "m³", "㎥"];
 
 const cell = (text: string): { start: number; text: string } => ({ start: 0, text });
 
+/** Every string made of one item from each list, in order. */
+const combinations = (lists: readonly (readonly string[])[]): string[] =>
+  lists.reduce<string[]>((heads, list) => heads.flatMap((head) => list.map((item) => `${head}${item}`)), [""]);
+
 describe("line-amount-mismatch: 数量×単価が金額と合わない", () => {
   it("数量×単価と違う金額を指す", () => {
     assert.deepEqual(findingsOf(table(["| 画面開発 | 4画面 | 160,000円 | 600,000円 |"])), [
@@ -106,6 +110,15 @@ describe("line-amount-mismatch: 数量×単価が金額と合わない", () => {
       "The amount $28.00 is not quantity × unit price (16 m3 × $1.80 = $28.80)",
     ]);
     assert.deepEqual(findingsOf(enTable(["| Water | 10³ | $1.80 | $18.00 |"]), en), []);
+  });
+
+  it("数字の直後の上付き数字（累乗）はどの組み合わせでも数量として読まず、文字の後の上付き（m³）は読む", () => {
+    const superscripts = [..."⁰¹²³⁴⁵⁶⁷⁸⁹"];
+    const leadingNumbers = ["1", "10", "１", "１０", "16"];
+    const after = ["", " ", " L", "m", "人日"];
+    const powers = combinations([leadingNumbers, superscripts, after]);
+    powers.forEach((power) => assert.equal(quantityOf(cell(power), VOLUME), undefined, power));
+    leadingNumbers.forEach((number) => assert.equal(quantityOf(cell(`${number}m³`), VOLUME), Number(number.normalize("NFKC")), `${number}m³`));
   });
 
   it("語の無い言語と空の入力", () => {

@@ -45,3 +45,50 @@ entries:
   - { pattern: "Registration deadline", group: warranty, position: after }
   - { pattern: "Product registration deadline", group: warranty, position: after }
   - { pattern: "Register by", group: warranty, position: after }
+  # A recall or exchange notice: the deadline for replacement or refund requests comes after the notice date. A bare
+  # "Requests accepted until" or "Deadline for requests" is left out: a notice that a window has closed states the
+  # deadline that has passed.
+  - { pattern: "Notice date", group: recall, position: before }
+  - { pattern: "Date of notice", group: recall, position: before }
+  - { pattern: "Replacement requests accepted until", group: recall, position: after }
+  - { pattern: "Refund requests accepted until", group: recall, position: after }
+  - { pattern: "Exchange deadline", group: recall, position: after }
+  # A loan or an installment plan: the first payment comes after the contract is signed.
+  - { pattern: "Contract date", group: loan, position: before }
+  - { pattern: "Agreement date", group: loan, position: before }
+  - { pattern: "Date of contract", group: loan, position: before }
+  - { pattern: "First payment date", group: loan, position: after }
+  - { pattern: "First payment due", group: loan, position: after }
+  - { pattern: "First payment due date", group: loan, position: after }
+  - { pattern: "First installment due", group: loan, position: after }
+  - { pattern: "First installment due date", group: loan, position: after }
+  - { pattern: "First installment date", group: loan, position: after }
+  # A hotel booking: check-out does not come before check-in. A same-day check-out (a day use) is not reported.
+  - { pattern: "Check-in", group: stay, position: before }
+  - { pattern: "Check-in date", group: stay, position: before }
+  - { pattern: "Check-out", group: stay, position: after }
+  - { pattern: "Check-out date", group: stay, position: after }
+  # A rental: the return does not come before the pick-up. A bare "Return" is left out: an order's return window or a
+  # return policy row is not the rental's drop-off.
+  - { pattern: "Pick-up", group: rental, position: before }
+  - { pattern: "Pick-up date", group: rental, position: before }
+  - { pattern: "Drop-off", group: rental, position: after }
+  - { pattern: "Drop-off date", group: rental, position: after }
+  - { pattern: "Return date", group: rental, position: after }
+  # Free cancellation ends before the stay or the rental starts. Check-in and Pick-up are in stay and rental too; each
+  # group is compared on its own.
+  - { pattern: "Free cancellation until", group: cancel, position: before }
+  - { pattern: "Cancel by", group: cancel, position: before }
+  - { pattern: "Check-in", group: cancel, position: after }
+  - { pattern: "Check-in date", group: cancel, position: after }
+  - { pattern: "Pick-up", group: cancel, position: after }
+  - { pattern: "Pick-up date", group: cancel, position: after }
+  # A payslip: the pay date comes after the end of the pay period. The pay period line states a period and is compared
+  # by its end (dated-span-label).
+  - { pattern: "Pay period", group: payroll, position: before }
+  - { pattern: "Pay date", group: payroll, position: after }
+  # A trip or an expense report: the return does not come before the departure. A same-day return (a day trip) is not
+  # reported. "Return date" is left out: a guide's return date for forms or a passport comes before the departure.
+  - { pattern: "Departure", group: trip, position: before }
+  - { pattern: "Departure date", group: trip, position: before }
+  - { pattern: "Return", group: trip, position: after }

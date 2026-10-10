@@ -31,8 +31,8 @@ off_for:
 
 group: wording
 summary:
-  ja: 「より最適な」「とても完璧」（very unique、more unanimous）のように、程度の無い語に付けた程度
-  en: A degree given to an adjective that has none, such as "very unique" or "more unanimous" (より最適な, とても完璧)
+  ja: 「より最適な」「とても完璧」のように、程度の無い語に付けた程度
+  en: A degree given to a word that has none, such as "very unique"
 example:
   ja:
     before: |

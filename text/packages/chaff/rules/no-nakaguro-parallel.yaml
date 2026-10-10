@@ -32,7 +32,7 @@ off_for:
 group: readability
 summary:
   ja: 一つの文に「・」で並べた語が多すぎて、どれとどれが組なのか分からない所
-  en: So many items joined by middle dots (・) in one Japanese sentence that the groups blur
+  en: So many items joined by middle dots (・) in one sentence that groups blur
 example:
   ja:
     before: 対象は営業・企画・総務・経理・人事・法務の各部と、東京・大阪・名古屋の各拠点です。

@@ -1,0 +1,12 @@
+# Words naming the product the document is about, attached to a one-value item (fact-document-term, fact-conflict):
+# "the warranty period for the product" is the warranty period. "The warranty period for batteries" names another
+# item and is not here.
+id: fact-term-self
+language: en
+entries:
+  - pattern: for the product
+    position: after
+  - pattern: for this product
+    position: after
+  - pattern: of the product
+    position: after

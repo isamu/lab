@@ -1,0 +1,61 @@
+id: period-multiple-mismatch
+layer: L3
+status: stable
+how_to_find: period-multiple-mismatch
+# The amounts are read with currency-notation and amount-multiplier; the base labels are period-multiple-label, the words
+# period-multiple-word, counts written as words number-word (digit), and a range of counts range-connector.
+severity: warning
+
+name:
+  ja: 月払の何か月分と合わない額
+  en: An amount that is not the stated number of payments
+
+why:
+  ja: 保険や料金の案内で「年払（月払の12か月分）29,800円」のように、ある額を別の額の何か月分・何倍と書くと、読み手は計算せずにそのまま信じます。月払の額を書き直したのに年払の額が残ると、食い違います。「月払の12か月分」「月額の2倍」のように、もとの額の見出しと数が並んで書いてあり、その横に金額が一つだけあるとき、その金額を、前に書いた「月払 2,400円」のような額のその数倍と比べます。年払は一度に払うぶん月払の12倍より安いことが多いので、「月払の何か月分」と書いていない年払は比べません。「9.8万円」は書いた桁までの丸めを認めます。
+  en: 'When a premium table says "Annually (12 monthly payments) $298", readers trust the figure without working it out. It goes wrong when the monthly premium is changed and the annual line is not. When a count is stated as a number of a base ("12 monthly payments", "12 times the monthly premium") with one amount beside it, the amount is compared with that many of the base stated before it ("Monthly: $24"). An annual premium is often cheaper than twelve monthly ones, so an annual amount that does not say it is twelve monthly payments is never compared.'
+
+message:
+  ja: 「{multiple}」とある {amount} が、{label} {base} の{count}倍と合いません
+  en: "{amount} is not {count} × the {label} amount ({base}), though it says {multiple}"
+
+how_to_fix:
+  ja: もとの額・数・金額のどれが正しいかを確かめて、ほかを直してください。割引や税を含めた額なら、そう書いてください。
+  en: Check which of the base amount, the count and the amount is right, and correct the others. If the amount has a discount or tax in it, say so.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 「月払の12か月分」とあるのに、月払の12倍と合わない金額
+  en: An amount said to be 12 monthly payments that is not 12 times the monthly one
+example:
+  ja:
+    before: |
+      | 払込方法 | 保険料 |
+      | --- | --- |
+      | 月払 | 2,400円 |
+      | 年払（月払の12か月分） | 29,800円 |
+    after: |
+      | 払込方法 | 保険料 |
+      | --- | --- |
+      | 月払 | 2,400円 |
+      | 年払（月払の12か月分） | 28,800円 |
+  en:
+    before: |
+      | How you pay | Premium |
+      | --- | --- |
+      | Monthly | $24 |
+      | Annually (12 monthly payments) | $298 |
+    after: |
+      | How you pay | Premium |
+      | --- | --- |
+      | Monthly | $24 |
+      | Annually (12 monthly payments) | $288 |
+
+not_flagged:
+  ja: 「年払 28,000円」のように何か月分と書いていない額、「11〜12か月分」のような数の幅、一つの文や行に金額が二つ以上ある記載、割引・税込・約・各などの語がある記載、もとの額の見出しに金額が二つある記載は比べません。もとの額より前にある記載は、文書のもとの額が一つのときだけ比べます。通貨の違う額は比べません。表の列見出しだけに「月払」とある表は読みません。
+  en: 'An annual amount that does not say it is a number of payments ("Annually $280"), a range of counts ("11 to 12 payments"), a sentence or row with two amounts, a statement with a discount, tax, "about" or "each", and a base label with two amounts are not compared. A multiple before any base is compared only when the document states one base. Amounts in different currencies are not compared. A table that names the monthly amount only in its column heading is not read.'

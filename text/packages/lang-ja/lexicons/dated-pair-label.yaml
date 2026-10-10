@@ -46,3 +46,54 @@ entries:
   - { pattern: "登録期限", group: warranty, position: after }
   - { pattern: "製品登録の締切", group: warranty, position: after }
   - { pattern: "ご愛用者登録の締切", group: warranty, position: after }
+  # 製品の回収や交換のお知らせ。交換や返金の受付期限は、お知らせを出した日より後に来る。
+  # 「発表日」「公表日」は入れない。懸賞やコンテストの結果は、応募の受付締切より後に発表し公表する。
+  # 「受付期限」「受付締切」「お申し込み期限」だけも入れない。受付を終えたお知らせは、過ぎた締切を書く。
+  - { pattern: "お知らせ日", group: recall, position: before }
+  - { pattern: "交換受付期限", group: recall, position: after }
+  - { pattern: "交換の受付期限", group: recall, position: after }
+  - { pattern: "無償交換の受付期限", group: recall, position: after }
+  - { pattern: "返金の受付期限", group: recall, position: after }
+  # ローンや分割払いの返済予定表。初回のお支払日は、契約した日より後に来る。
+  # 「お申込日」は入れない。変更や借り換えの申込書では、今の返済予定より後に申し込む。
+  - { pattern: "ご契約日", group: loan, position: before }
+  - { pattern: "契約日", group: loan, position: before }
+  - { pattern: "初回お支払日", group: loan, position: after }
+  - { pattern: "初回お支払い日", group: loan, position: after }
+  - { pattern: "初回返済日", group: loan, position: after }
+  - { pattern: "初回ご返済日", group: loan, position: after }
+  - { pattern: "第1回お支払日", group: loan, position: after }
+  - { pattern: "第１回お支払日", group: loan, position: after }
+  - { pattern: "第1回返済日", group: loan, position: after }
+  - { pattern: "第１回返済日", group: loan, position: after }
+  # 宿泊の予約。チェックアウトはチェックインの日より前に来ない。同じ日（日帰り）は指さない。
+  - { pattern: "チェックイン", group: stay, position: before }
+  - { pattern: "チェックイン日", group: stay, position: before }
+  - { pattern: "チェックアウト", group: stay, position: after }
+  - { pattern: "チェックアウト日", group: stay, position: after }
+  # レンタカーなどの貸出。返却は貸出より前に来ない。「出発日」は入れない。旅の案内では、旅券や書類の返却日が出発日より前に来る。
+  - { pattern: "貸出", group: rental, position: before }
+  - { pattern: "貸出日", group: rental, position: before }
+  - { pattern: "貸出日時", group: rental, position: before }
+  - { pattern: "返却", group: rental, position: after }
+  - { pattern: "返却日", group: rental, position: after }
+  - { pattern: "返却日時", group: rental, position: after }
+  - { pattern: "返却予定日", group: rental, position: after }
+  # 無料でキャンセルできる期限は、泊まる日や借りる日より前に来る。チェックインと貸出は stay と rental にもあるが、組ごとに比べる。
+  - { pattern: "無料キャンセル期限", group: cancel, position: before }
+  - { pattern: "キャンセル無料期限", group: cancel, position: before }
+  - { pattern: "チェックイン", group: cancel, position: after }
+  - { pattern: "チェックイン日", group: cancel, position: after }
+  - { pattern: "貸出", group: cancel, position: after }
+  - { pattern: "貸出日", group: cancel, position: after }
+  - { pattern: "貸出日時", group: cancel, position: after }
+  # 給与明細。支給日は、支給の対象になる期間が終わってから来る。期間の行は期間を書くので、その終わりと比べる（dated-span-label）。
+  - { pattern: "支給対象期間", group: payroll, position: before }
+  - { pattern: "計算期間", group: payroll, position: before }
+  - { pattern: "対象期間", group: payroll, position: before }
+  - { pattern: "支給日", group: payroll, position: after }
+  # 出張の精算書や旅程。帰着は出発より前に来ない。同じ日（日帰り）は指さない。返却日とは組まない。旅券や書類の返却日は出発日より前に来る。
+  - { pattern: "出発", group: trip, position: before }
+  - { pattern: "出発日", group: trip, position: before }
+  - { pattern: "帰着", group: trip, position: after }
+  - { pattern: "帰着日", group: trip, position: after }

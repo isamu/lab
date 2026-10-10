@@ -1,0 +1,265 @@
+{
+  "note": "Self-written payslips (給与明細書 / payslip) for made-up employers and employees: a monthly salaried payslip with overtime and a part-time hourly one, each in a clean version and a planted one that differs only on the lines below. They run as business/proposal, the genre the utility bills and invoices run as: no genre is made for payslips. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: net-amount-mismatch (a net amount that is not the gross amount minus the total of deductions written beside it), reference-number-variant (an employee or account number written elsewhere in the document with two neighbouring digits swapped) and cumulative-below-current (a year-to-date figure lower than the same item's figure for this period). A pay date before the end of its pay period is named for due-before-issue, which compares a pair of labelled dates and reads a period by its last day. The reversed period is planted on the timesheet period line (勤怠集計期間 / Timesheet period), not on the pay period line, so it does not move the period end the pay date is compared with. Each plant was also run alone on its clean document, so no plant depends on another. yarn planted payslips scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/monthly",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/monthly.clean.md",
+      "planted": "ja/monthly.planted.md",
+      "mistakes": [
+        {
+          "kind": "pay-date-before-period-end",
+          "rule": "due-before-issue",
+          "line": 13,
+          "clean": "支給日：2026年10月9日",
+          "planted": "支給日：2026年9月9日"
+        },
+        {
+          "kind": "period-reversed",
+          "rule": "date-range-reversed",
+          "line": 17,
+          "clean": "〜2026年9月30日",
+          "planted": "〜2025年9月30日"
+        },
+        {
+          "kind": "overtime-line",
+          "rule": "line-amount-mismatch",
+          "line": 30,
+          "clean": "| 2,100円 |",
+          "planted": "| 2,150円 |"
+        },
+        {
+          "kind": "deductions-total",
+          "rule": "total-mismatch",
+          "line": 44,
+          "clean": "| 70,913円 |",
+          "planted": "| 71,913円 |"
+        },
+        {
+          "kind": "net-pay",
+          "rule": "net-amount-mismatch",
+          "line": 50,
+          "clean": "| 256,287円 |",
+          "planted": "| 265,287円 |"
+        },
+        {
+          "kind": "year-to-date-below-month",
+          "rule": "cumulative-below-current",
+          "line": 57,
+          "clean": "| 68,900円 |",
+          "planted": "| 6,890円 |"
+        },
+        {
+          "kind": "employee-name",
+          "rule": "name-variant",
+          "line": 60,
+          "clean": "藤井 健太 様名義",
+          "planted": "藤井 建太 様名義"
+        },
+        {
+          "kind": "employee-number",
+          "rule": "reference-number-variant",
+          "line": 64,
+          "clean": "社員番号204817",
+          "planted": "社員番号204871"
+        }
+      ]
+    },
+    {
+      "id": "ja/hourly",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/hourly.clean.md",
+      "planted": "ja/hourly.planted.md",
+      "mistakes": [
+        {
+          "kind": "pay-date-before-period-end",
+          "rule": "due-before-issue",
+          "line": 13,
+          "clean": "支給日：2026年10月25日",
+          "planted": "支給日：2026年10月5日"
+        },
+        {
+          "kind": "period-reversed",
+          "rule": "date-range-reversed",
+          "line": 17,
+          "clean": "〜2026年10月15日",
+          "planted": "〜2025年10月15日"
+        },
+        {
+          "kind": "overtime-line",
+          "rule": "line-amount-mismatch",
+          "line": 31,
+          "clean": "| 1,438円 |",
+          "planted": "| 1,483円 |"
+        },
+        {
+          "kind": "deductions-total",
+          "rule": "total-mismatch",
+          "line": 43,
+          "clean": "| 3,074円 |",
+          "planted": "| 3,047円 |"
+        },
+        {
+          "kind": "net-pay",
+          "rule": "net-amount-mismatch",
+          "line": 49,
+          "clean": "差引支給額：114,306円",
+          "planted": "差引支給額：114,036円"
+        },
+        {
+          "kind": "year-to-date-below-month",
+          "rule": "cumulative-below-current",
+          "line": 56,
+          "clean": "| 16,420円 |",
+          "planted": "| 1,642円 |"
+        },
+        {
+          "kind": "employee-name",
+          "rule": "name-variant",
+          "line": 59,
+          "clean": "松本 あかり 様名義",
+          "planted": "松元 あかり 様名義"
+        },
+        {
+          "kind": "employee-number",
+          "rule": "reference-number-variant",
+          "line": 63,
+          "clean": "従業員番号P-30562",
+          "planted": "従業員番号P-35062"
+        }
+      ]
+    },
+    {
+      "id": "en/monthly",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/monthly.clean.md",
+      "planted": "en/monthly.planted.md",
+      "mistakes": [
+        {
+          "kind": "pay-date-before-period-end",
+          "rule": "due-before-issue",
+          "line": 13,
+          "clean": "Pay date: October 9, 2026",
+          "planted": "Pay date: September 9, 2026"
+        },
+        {
+          "kind": "period-reversed",
+          "rule": "date-range-reversed",
+          "line": 17,
+          "clean": "– September 30, 2026",
+          "planted": "– September 30, 2025"
+        },
+        {
+          "kind": "overtime-line",
+          "rule": "line-amount-mismatch",
+          "line": 30,
+          "clean": "| $45.00 |",
+          "planted": "| $54.00 |"
+        },
+        {
+          "kind": "deductions-total",
+          "rule": "total-mismatch",
+          "line": 43,
+          "clean": "| $1,558.99 |",
+          "planted": "| $1,585.99 |"
+        },
+        {
+          "kind": "net-pay",
+          "rule": "net-amount-mismatch",
+          "line": 49,
+          "clean": "| $4,301.01 |",
+          "planted": "| $4,310.01 |"
+        },
+        {
+          "kind": "year-to-date-below-month",
+          "rule": "cumulative-below-current",
+          "line": 56,
+          "clean": "| $6,240.00 |",
+          "planted": "| $624.00 |"
+        },
+        {
+          "kind": "employee-name",
+          "rule": "name-variant",
+          "line": 59,
+          "clean": "of Grace Whitfield on",
+          "planted": "of Grace Whitfeld on"
+        },
+        {
+          "kind": "employee-number",
+          "rule": "reference-number-variant",
+          "line": 63,
+          "clean": "number 4071-5528",
+          "planted": "number 4071-5582"
+        }
+      ]
+    },
+    {
+      "id": "en/hourly",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/hourly.clean.md",
+      "planted": "en/hourly.planted.md",
+      "mistakes": [
+        {
+          "kind": "pay-date-before-period-end",
+          "rule": "due-before-issue",
+          "line": 13,
+          "clean": "Pay date: October 25, 2026",
+          "planted": "Pay date: October 5, 2026"
+        },
+        {
+          "kind": "period-reversed",
+          "rule": "date-range-reversed",
+          "line": 17,
+          "clean": "– October 15, 2026",
+          "planted": "– October 15, 2025"
+        },
+        {
+          "kind": "overtime-line",
+          "rule": "line-amount-mismatch",
+          "line": 31,
+          "clean": "| $25.50 |",
+          "planted": "| $25.00 |"
+        },
+        {
+          "kind": "deductions-total",
+          "rule": "total-mismatch",
+          "line": 43,
+          "clean": "| $264.59 |",
+          "planted": "| $246.59 |"
+        },
+        {
+          "kind": "net-pay",
+          "rule": "net-amount-mismatch",
+          "line": 49,
+          "clean": "Net pay: $1,396.41",
+          "planted": "Net pay: $1,369.41"
+        },
+        {
+          "kind": "year-to-date-below-month",
+          "rule": "cumulative-below-current",
+          "line": 56,
+          "clean": "| $858.00 |",
+          "planted": "| $85.80 |"
+        },
+        {
+          "kind": "employee-name",
+          "rule": "name-variant",
+          "line": 59,
+          "clean": "of Samuel Ortega on",
+          "planted": "of Samuel Ortego on"
+        },
+        {
+          "kind": "employee-number",
+          "rule": "reference-number-variant",
+          "line": 63,
+          "clean": "ID PT-80213",
+          "planted": "ID PT-82013"
+        }
+      ]
+    }
+  ]
+}

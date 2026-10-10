@@ -49,7 +49,7 @@ off_for:
 group: ai-tells
 summary:
   ja: 生成された文章の特徴がいくつも一つの文書にそろっている所（生成だと決めつけはしません）
-  en: Several signals of generated text together in one document (a place to reread, not a verdict)
+  en: Many signs of generated text in one document (a place to reread, not a verdict)
 example:
   ja:
     config: { genre: blog/tech, rules: { ai-generated-composite: strict } }

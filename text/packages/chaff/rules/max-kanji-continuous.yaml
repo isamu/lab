@@ -42,7 +42,7 @@ sources: [shibasaki-tamaoka-2010, lee-2016]
 group: readability
 summary:
   ja: 「新規顧客獲得施策検討会議」のように、漢字だけが長く続く所
-  en: A long run of kanji with no kana between them, which Japanese readers have to take apart
+  en: A long run of kanji with no kana between them, hard for readers to take apart
 example:
   ja:
     before: 来週、新規顧客獲得施策検討会議を開きます。

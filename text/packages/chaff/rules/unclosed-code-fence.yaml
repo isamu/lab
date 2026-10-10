@@ -33,7 +33,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: structure
 summary:
   ja: 「```」で始めたまま閉じていないコードブロック（後ろがすべてコードになる）
-  en: A code block opened with "```" and never closed (everything after it shows as code)
+  en: A code block opened with "```" and never closed
 example:
   ja:
     before: |

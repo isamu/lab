@@ -34,7 +34,7 @@ off_for:
 group: consistency
 summary:
   ja: 当事者を「甲」「乙」と定めたあとで、「委託者」「受託者」のような立場の語で書いている所
-  en: A party given a short name ("the Supplier") and later called by a role word (the Vendor)
+  en: A party given a short name ("the Supplier") and later called something else
 example:
   ja:
     config: { genre: legal/contract }

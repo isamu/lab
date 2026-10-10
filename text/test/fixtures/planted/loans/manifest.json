@@ -1,0 +1,265 @@
+{
+  "note": "Self-written loan repayment and installment statements (ローン返済予定表・分割払いのご案内 / auto loan repayment schedule, installment plan notice) for made-up lenders and borrowers: a car loan schedule with an amortization table and a shop installment plan with a fixed fee, each in a clean version and a planted one that differs only on the lines below. They run as business/proposal, the genre the invoices of the business set run as: no genre is made for loan statements. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: installment-total-mismatch (a number of payments times the monthly payment that is not the stated total of payments) and running-balance-mismatch (a repayment table row whose balance does not fall from the row above by the principal, or the payment, of that row). yarn planted loans scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/car-loan",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/car-loan.clean.md",
+      "planted": "ja/car-loan.planted.md",
+      "mistakes": [
+        {
+          "kind": "first-payment-before-contract",
+          "rule": "due-before-issue",
+          "line": 12,
+          "clean": "初回お支払日：2026年11月27日",
+          "planted": "初回お支払日：2026年10月20日"
+        },
+        {
+          "kind": "installments-total",
+          "rule": "installment-total-mismatch",
+          "line": 17,
+          "clean": "毎月のお支払額：32,826円",
+          "planted": "毎月のお支払額：32,862円"
+        },
+        {
+          "kind": "rate-two-ways",
+          "rule": "fact-conflict",
+          "line": 22,
+          "clean": "貸付利率は年3.6%",
+          "planted": "貸付利率は年3.5%"
+        },
+        {
+          "kind": "term-two-ways",
+          "rule": "fact-conflict",
+          "line": 24,
+          "clean": "返済期間は60か月",
+          "planted": "返済期間は48か月"
+        },
+        {
+          "kind": "final-payment-date",
+          "rule": "duration-mismatch",
+          "line": 28,
+          "clean": "2031年10月27日",
+          "planted": "2031年11月27日"
+        },
+        {
+          "kind": "balance-not-reduced",
+          "rule": "running-balance-mismatch",
+          "line": 37,
+          "clean": "1,689,801円",
+          "planted": "1,698,801円"
+        },
+        {
+          "kind": "lender-name",
+          "rule": "name-variant",
+          "line": 39,
+          "clean": "ひかりオートクレジット株式会社",
+          "planted": "ひかりオートクレジト株式会社"
+        },
+        {
+          "kind": "condition-numbering",
+          "rule": "numbering-gap",
+          "line": 47,
+          "clean": "5. お車",
+          "planted": "6. お車"
+        }
+      ]
+    },
+    {
+      "id": "ja/installment",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/installment.clean.md",
+      "planted": "ja/installment.planted.md",
+      "mistakes": [
+        {
+          "kind": "first-payment-before-contract",
+          "rule": "due-before-issue",
+          "line": 14,
+          "clean": "初回お支払日：2026年11月10日",
+          "planted": "初回お支払日：2026年10月1日"
+        },
+        {
+          "kind": "installments-total",
+          "rule": "installment-total-mismatch",
+          "line": 19,
+          "clean": "毎月のお支払額：10,400円",
+          "planted": "毎月のお支払額：10,600円"
+        },
+        {
+          "kind": "rate-two-ways",
+          "rule": "fact-conflict",
+          "line": 23,
+          "clean": "分割手数料率は4.0%",
+          "planted": "分割手数料率は4.5%"
+        },
+        {
+          "kind": "term-two-ways",
+          "rule": "fact-conflict",
+          "line": 25,
+          "clean": "お支払期間は24か月",
+          "planted": "お支払期間は20か月"
+        },
+        {
+          "kind": "final-payment-date",
+          "rule": "duration-mismatch",
+          "line": 29,
+          "clean": "2028年10月10日",
+          "planted": "2028年12月10日"
+        },
+        {
+          "kind": "balance-not-reduced",
+          "rule": "running-balance-mismatch",
+          "line": 38,
+          "clean": "208,000円",
+          "planted": "210,000円"
+        },
+        {
+          "kind": "lender-name",
+          "rule": "name-variant",
+          "line": 46,
+          "clean": "もりかわ家具店から",
+          "planted": "もりかわ家具から"
+        },
+        {
+          "kind": "condition-numbering",
+          "rule": "numbering-gap",
+          "line": 47,
+          "clean": "4. ご住所",
+          "planted": "5. ご住所"
+        }
+      ]
+    },
+    {
+      "id": "en/car-loan",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/car-loan.clean.md",
+      "planted": "en/car-loan.planted.md",
+      "mistakes": [
+        {
+          "kind": "first-payment-before-contract",
+          "rule": "due-before-issue",
+          "line": 12,
+          "clean": "First payment date: December 16, 2026",
+          "planted": "First payment date: November 6, 2026"
+        },
+        {
+          "kind": "installments-total",
+          "rule": "installment-total-mismatch",
+          "line": 17,
+          "clean": "Monthly payment: $550.53",
+          "planted": "Monthly payment: $555.03"
+        },
+        {
+          "kind": "rate-two-ways",
+          "rule": "fact-conflict",
+          "line": 22,
+          "clean": "The interest rate is 4.8%",
+          "planted": "The interest rate is 4.9%"
+        },
+        {
+          "kind": "term-two-ways",
+          "rule": "fact-conflict",
+          "line": 24,
+          "clean": "The term is 48 months",
+          "planted": "The term is 36 months"
+        },
+        {
+          "kind": "final-payment-date",
+          "rule": "duration-mismatch",
+          "line": 28,
+          "clean": "November 16, 2030",
+          "planted": "December 16, 2030"
+        },
+        {
+          "kind": "balance-not-reduced",
+          "rule": "running-balance-mismatch",
+          "line": 37,
+          "clean": "$22,170.94",
+          "planted": "$22,710.94"
+        },
+        {
+          "kind": "lender-name",
+          "rule": "name-variant",
+          "line": 39,
+          "clean": "BlueRiver Credit Union",
+          "planted": "Blueriver Credit Union"
+        },
+        {
+          "kind": "condition-numbering",
+          "rule": "numbering-gap",
+          "line": 47,
+          "clean": "5. BlueRiver",
+          "planted": "6. BlueRiver"
+        }
+      ]
+    },
+    {
+      "id": "en/installment",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/installment.clean.md",
+      "planted": "en/installment.planted.md",
+      "mistakes": [
+        {
+          "kind": "first-payment-before-contract",
+          "rule": "due-before-issue",
+          "line": 14,
+          "clean": "First payment date: November 10, 2026",
+          "planted": "First payment date: October 1, 2026"
+        },
+        {
+          "kind": "installments-total",
+          "rule": "installment-total-mismatch",
+          "line": 19,
+          "clean": "Monthly payment: $104.00",
+          "planted": "Monthly payment: $106.00"
+        },
+        {
+          "kind": "rate-two-ways",
+          "rule": "fact-conflict",
+          "line": 23,
+          "clean": "The fee rate is 4.0%",
+          "planted": "The fee rate is 4.5%"
+        },
+        {
+          "kind": "term-two-ways",
+          "rule": "fact-conflict",
+          "line": 25,
+          "clean": "The payment period is 24 months",
+          "planted": "The payment period is 20 months"
+        },
+        {
+          "kind": "final-payment-date",
+          "rule": "duration-mismatch",
+          "line": 29,
+          "clean": "October 10, 2028",
+          "planted": "December 10, 2028"
+        },
+        {
+          "kind": "balance-not-reduced",
+          "rule": "running-balance-mismatch",
+          "line": 38,
+          "clean": "$2,080.00",
+          "planted": "$2,008.00"
+        },
+        {
+          "kind": "lender-name",
+          "rule": "name-variant",
+          "line": 46,
+          "clean": "Oakfield Home Furnishings will",
+          "planted": "Oakfield Home Furnishing will"
+        },
+        {
+          "kind": "condition-numbering",
+          "rule": "numbering-gap",
+          "line": 47,
+          "clean": "4. Please",
+          "planted": "5. Please"
+        }
+      ]
+    }
+  ]
+}

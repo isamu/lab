@@ -27,7 +27,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: structure
 summary:
   ja: 同じ列や同じ見出しの語のほかの値には単位があるのに、数だけを書いた値
-  en: A bare number where the other values of the same column or label all carry one unit
+  en: A bare number where the other values in its column all have a unit
 example:
   ja:
     before: |

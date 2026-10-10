@@ -67,7 +67,6 @@ const ja = {
   paddedNote:
     "文書全体の割合を見るルールなので、この例の後ろに指摘のない普通の文章（日本語で 500 字、英語で 200 語ほど）を足して試しています。",
   ruleDetails: "詳しく",
-  whatItFinds: "見つけるもの",
   exampleHeading: "例",
   beforeLabel: "指摘される文",
   afterLabel: "直した文",
@@ -85,12 +84,17 @@ const ja = {
   genreOptIn: "chaff.yaml の style（か rules）で動かすジャンル",
   genreOff: "このルールを止めるジャンル",
   genreUnsuited: "このルールが向かず、見ないジャンル",
-  silenceHeading: "黙らせる・変える",
+  silenceHeading: "止める・ゆるめる",
   silenceSpot: "この一か所だけ黙らせる（文書に書く）",
   silenceTeam: "チームでゆるめる（理由は chaff.yaml にコメントで残ります）",
   silenceOff: "チームで止める（chaff.yaml）",
   turnOn: "試験中のこのルールを動かす（chaff.yaml）",
   technical: "技術的な情報",
+  requires: "文書から読み取るもの",
+  rulesIntro:
+    "chaff が文書の中で見つけるものを、何に役立つかで分けて並べています。名前を押すと、指摘される文と直した文、指摘しないもの、止め方が読めます。",
+  teaserMessage: "指摘の例",
+  teaserExcerpt: "AI に読ませる文の例",
   referenceLink: "例と実際の出力つきの一覧（リファレンス）",
   playground: "試す",
   playgroundIntro:
@@ -176,7 +180,6 @@ const en: Record<UiKey, string> = {
   paddedNote:
     "The rule measures the whole document, so this example was tried with an ordinary passage (about 200 words) after it that gives chaff nothing to report.",
   ruleDetails: "Details",
-  whatItFinds: "What it finds",
   exampleHeading: "Example",
   beforeLabel: "Flagged",
   afterLabel: "Fixed",
@@ -194,12 +197,17 @@ const en: Record<UiKey, string> = {
   genreOptIn: "Runs with a style (or a level) in chaff.yaml, in",
   genreOff: "Turned off by the genre in",
   genreUnsuited: "Not suited to, and not run in",
-  silenceHeading: "Silencing it or changing it",
+  silenceHeading: "Turning it off or relaxing it",
   silenceSpot: "Silence this one spot (in the document)",
   silenceTeam: "Relax it for the team (the reason is kept as a comment in chaff.yaml)",
   silenceOff: "Turn it off for the team (chaff.yaml)",
   turnOn: "Turn this experimental rule on (chaff.yaml)",
   technical: "Technical details",
+  requires: "Reads from the document",
+  rulesIntro:
+    "What chaff finds in a document, grouped by what it helps with. Open a rule to see a text it flags and the same text fixed, what it leaves alone, and how to turn it off.",
+  teaserMessage: "For example",
+  teaserExcerpt: "Text an AI reads, for example",
   referenceLink: "The list with examples and real output (Reference)",
   playground: "Try it",
   playgroundIntro:

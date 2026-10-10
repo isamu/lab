@@ -1,0 +1,9 @@
+# Verbs that state the length of a one-value item (fact-document-term) in a sentence: "The warranty runs for 12 months".
+# Read only when the subject is a fact-document-term name (fact-conflict).
+id: fact-term-verb
+language: en
+entries:
+  - pattern: runs for
+  - pattern: lasts
+  - pattern: lasts for
+  - pattern: is valid for

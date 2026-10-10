@@ -85,6 +85,28 @@ describe("duration-mismatch", () => {
     assert.deepEqual(durationJa("4月1日から3か月間と2週間（7月31日まで）。"), []);
   });
 
+  it("three dates in a sentence: the date marked as the start and the date marked as the end are read", () => {
+    const ja13 = "お買い上げ日が2026年7月1日の場合、保証期間は2026年7月1日から12か月（2027年7月31日まで）です。";
+    assert.deepEqual(durationJa(ja13), ["2027年7月31日→2027年6月30日"]);
+    assert.deepEqual(durationJa("お買い上げ日が2026年7月1日の場合、保証期間は2026年7月1日から12か月（2027年6月30日まで）です。"), []);
+    assert.deepEqual(durationJa("購入日が2026年7月1日の場合、2026年7月1日からの12か月（2027年7月31日まで）が保証期間です。"), ["2027年7月31日→2027年6月30日"]);
+    assert.deepEqual(durationJa("ご購入日が2026年7月1日なら、保証期間は2026年7月1日から12か月（2027年8月31日）です。"), ["2027年8月31日→2027年6月30日"]);
+    const en13 = "If you bought the product on July 1, 2026, the warranty runs for 12 months from July 1, 2026 (until July 31, 2027).";
+    assert.deepEqual(durationEn(en13), ["July 31, 2027→June 30, 2027"]);
+    assert.deepEqual(durationEn("If you bought the product on July 1, 2026, your warranty runs from July 1, 2026 for 12 months (until June 30, 2027)."), []);
+    assert.deepEqual(durationEn("Bought on July 1, 2026, it is covered for 12 months from Wednesday, July 1, 2026 to June 30, 2027."), []);
+  });
+
+  it("three dates without one marked start and one marked end are not judged", () => {
+    assert.deepEqual(durationJa("2026年7月1日に購入し、保証期間は12か月、2026年8月1日に登録し、2027年9月30日に満了します。"), []);
+    assert.deepEqual(durationJa("2026年4月1日から3か月間、2026年6月1日から2026年9月30日までは休みです。"), []);
+    assert.deepEqual(durationEn("Bought on July 1, 2026 and registered on August 1, 2026, it is covered for 12 months until September 30, 2027."), []);
+    assert.deepEqual(durationEn("It runs for 3 months from April 1, 2026 to May 1, 2026 and from June 1, 2026 to July 31, 2026."), []);
+    assert.deepEqual(durationEn("After the January 5, 2026 notice, the 3-month trial was moved from April 1, 2026 to May 1, 2026."), []);
+    assert.deepEqual(durationEn("Bought on July 1, 2026, it is covered from July 1, 2026 for 12 months (August 15, 2026 recall excluded)."), []);
+    assert.deepEqual(durationEn("Bought on July 1, 2026, it is covered for 12 months from July 1, 2026 until June 30, 2026."), []);
+  });
+
   it("the earlier of two dates with years is the start, whichever is written first", () => {
     assert.deepEqual(durationEn("The trial runs until July 1, 2026, for 3 months from April 1, 2026."), []);
     assert.deepEqual(durationEn("The trial runs until July 31, 2026, for 3 months from April 1, 2026."), ["July 31, 2026→June 30, 2026"]);

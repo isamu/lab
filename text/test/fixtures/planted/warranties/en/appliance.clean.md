@@ -21,7 +21,7 @@ The warranty runs for 1 year from the purchase date, April 10, 2026 (until April
 
 The warranty period is 1 year.
 
-Within it, the free repair period, when both parts and labor are free, is 6 months from the purchase date.
+Within the 12-month warranty period, the free repair period, when both parts and labor are free, is 6 months from the purchase date.
 
 ## 2 Repair terms
 

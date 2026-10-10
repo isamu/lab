@@ -380,3 +380,255 @@ describe("due-before-issue (order): 検査結果の報告日、保証書の登�
     assert.deepEqual(genreFindings(contract, "docs/manual"), []);
   });
 });
+
+const recallJa = (noticeLabel: string, notice: string, deadlineLabel: string, deadline: string): string =>
+  `# 電気ポット 自主回収のお知らせ\n\n架空電機株式会社\n\n${noticeLabel}：${notice}\n\n対象の製品を無償で交換いたします。\n\n${deadlineLabel}：${deadline}\n`;
+
+const recallEn = (noticeLabel: string, notice: string, deadlineLabel: string, deadline: string): string =>
+  `# Voluntary Recall: Example Kettle\n\nExample Appliances, Inc.\n\n${noticeLabel}: ${notice}\n\nWe will replace every affected kettle free of charge.\n\n${deadlineLabel}: ${deadline}\n`;
+
+describe("due-before-issue (order): 回収のお知らせの受付期限", () => {
+  it("お知らせ日より前の受付期限を指す", () => {
+    assert.deepEqual(findingsOf(recallJa("お知らせ日", "2026年9月1日", "無償交換の受付期限", "2026年8月31日")), [
+      "「無償交換の受付期限」（2026年8月31日）が、「お知らせ日」（2026年9月1日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(recallJa("お知らせ日", "2026年9月1日", "交換受付期限", "2026年8月1日")), [
+      "「交換受付期限」（2026年8月1日）が、「お知らせ日」（2026年9月1日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(recallEn("Notice date", "September 1, 2026", "Refund requests accepted until", "August 31, 2026"), en), [
+      '"Refund requests accepted until" August 31, 2026 is before "Notice date" September 1, 2026',
+    ]);
+    assert.deepEqual(findingsOf(recallEn("Date of notice", "September 1, 2026", "Exchange deadline", "August 31, 2026"), en), [
+      '"Exchange deadline" August 31, 2026 is before "Date of notice" September 1, 2026',
+    ]);
+  });
+
+  it("お知らせ日の後の受付期限、年の無い日付は言わない", () => {
+    assert.deepEqual(findingsOf(recallJa("お知らせ日", "2026年9月1日", "返金の受付期限", "2027年8月31日")), []);
+    assert.deepEqual(findingsOf(recallJa("お知らせ日", "2026年9月1日", "交換の受付期限", "8月31日")), []);
+    assert.deepEqual(findingsOf(recallEn("Notice date", "September 1, 2026", "Replacement requests accepted until", "August 31, 2027"), en), []);
+    assert.deepEqual(findingsOf(recallEn("Notice date", "September 1, 2026", "Exchange deadline", "August 31"), en), []);
+  });
+
+  it("懸賞の発表日や公表日、受付を終えたお知らせの過ぎた締切は言わない", () => {
+    assert.deepEqual(findingsOf(recallJa("発表日", "2026年12月15日", "受付締切", "2026年11月30日")), []);
+    assert.deepEqual(findingsOf(recallJa("公表日", "2026年12月15日", "受付締切", "2026年11月30日")), []);
+    assert.deepEqual(findingsOf(recallJa("お知らせ日", "2026年9月1日", "お申し込み期限", "2026年8月31日")), []);
+    assert.deepEqual(findingsOf(recallJa("お知らせ日", "2026年9月1日", "受付期限", "2026年8月31日")), []);
+    assert.deepEqual(findingsOf(recallEn("Notice date", "September 1, 2026", "Deadline for requests", "August 31, 2026"), en), []);
+    assert.deepEqual(findingsOf(recallEn("Notice date", "September 1, 2026", "Requests accepted until", "August 31, 2026"), en), []);
+  });
+
+  it("別の組の語どうしは組まない", () => {
+    assert.deepEqual(findingsOf("# お知らせ\n\nお知らせ日：2026年10月1日\n\n応募締切：2026年9月1日\n"), []);
+    assert.deepEqual(findingsOf("# お知らせ\n\n掲載日：2026年10月1日\n\n返金の受付期限：2026年9月1日\n"), []);
+    assert.deepEqual(findingsOf("# お知らせ\n\nお買い上げ日：2026年10月1日\n\n交換受付期限：2026年9月1日\n"), []);
+    assert.deepEqual(findingsOf("# お知らせ\n\nお知らせ日：2026年10月1日\n\n登録期限：2026年9月1日\n"), []);
+    assert.deepEqual(findingsOf("# Notice\n\nNotice date: October 1, 2026\n\nApplication deadline: September 1, 2026\n", en), []);
+    assert.deepEqual(findingsOf("# Notice\n\nPosted: October 1, 2026\n\nExchange deadline: September 1, 2026\n", en), []);
+    assert.deepEqual(findingsOf("# Notice\n\nPurchase date: October 1, 2026\n\nRefund requests accepted until: September 1, 2026\n", en), []);
+  });
+});
+
+const loanJa = (contractLabel: string, contract: string, firstLabel: string, first: string): string =>
+  `# 自動車ローン ご返済予定表\n\n## ご契約内容\n\n- ${contractLabel}：${contract}\n- ${firstLabel}：${first}\n- お支払回数：60回\n`;
+
+const loanEn = (contractLabel: string, contract: string, firstLabel: string, first: string): string =>
+  `# Auto Loan Repayment Schedule\n\n## Loan terms\n\n- ${contractLabel}: ${contract}\n- ${firstLabel}: ${first}\n- Number of payments: 48\n`;
+
+describe("due-before-issue (order): ローンの初回お支払日が契約日より前", () => {
+  it("ご契約日より前の初回お支払日を指す", () => {
+    assert.deepEqual(findingsOf(loanJa("ご契約日", "2026年10月27日", "初回お支払日", "2026年10月20日")), [
+      "「初回お支払日」（2026年10月20日）が、「ご契約日」（2026年10月27日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(loanJa("契約日", "2026年10月27日", "初回返済日", "2026年10月1日")), [
+      "「初回返済日」（2026年10月1日）が、「契約日」（2026年10月27日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(loanJa("契約日", "2026年10月10日", "第１回お支払日", "2026年10月1日")), [
+      "「第１回お支払日」（2026年10月1日）が、「契約日」（2026年10月10日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(loanEn("Contract date", "October 10, 2026", "First payment due date", "October 1, 2026"), en), [
+      '"First payment due date" October 1, 2026 is before "Contract date" October 10, 2026',
+    ]);
+    assert.deepEqual(findingsOf(loanEn("Contract date", "November 16, 2026", "First payment date", "November 6, 2026"), en), [
+      '"First payment date" November 6, 2026 is before "Contract date" November 16, 2026',
+    ]);
+    assert.deepEqual(findingsOf(loanEn("Agreement date", "October 10, 2026", "First installment due", "October 1, 2026"), en), [
+      '"First installment due" October 1, 2026 is before "Agreement date" October 10, 2026',
+    ]);
+  });
+
+  it("契約日の後の初回お支払日、同じ日、年の無い日付は言わない", () => {
+    assert.deepEqual(findingsOf(loanJa("ご契約日", "2026年10月27日", "初回お支払日", "2026年11月27日")), []);
+    assert.deepEqual(findingsOf(loanJa("ご契約日", "2026年10月27日", "初回お支払日", "2026年10月27日")), []);
+    assert.deepEqual(findingsOf(loanJa("ご契約日", "2026年10月27日", "初回お支払日", "10月20日")), []);
+    assert.deepEqual(findingsOf(loanEn("Contract date", "November 16, 2026", "First payment date", "December 16, 2026"), en), []);
+    assert.deepEqual(findingsOf(loanEn("Contract date", "November 16, 2026", "First payment date", "November 6"), en), []);
+  });
+
+  it("ローンの語と別の組の語は組まない", () => {
+    assert.deepEqual(findingsOf(loanJa("ご契約日", "2026年10月1日", "登録の締切", "2026年9月1日")), []);
+    assert.deepEqual(findingsOf(loanJa("お買い上げ日", "2026年10月1日", "初回お支払日", "2026年9月1日")), []);
+    assert.deepEqual(findingsOf(loanJa("掲載日", "2026年10月1日", "初回返済日", "2026年9月1日")), []);
+    assert.deepEqual(findingsOf(loanJa("契約日", "2026年10月1日", "報告日", "2026年9月1日")), []);
+    assert.deepEqual(findingsOf(loanJa("発行日", "2026年10月1日", "初回お支払日", "2026年9月1日")), []);
+    assert.deepEqual(findingsOf(loanJa("お申込日", "2026年10月1日", "初回お支払日", "2026年9月1日")), []);
+    assert.deepEqual(findingsOf(loanEn("Contract date", "October 1, 2026", "Registration deadline", "September 1, 2026"), en), []);
+    assert.deepEqual(findingsOf(loanEn("Purchase date", "October 1, 2026", "First payment date", "September 1, 2026"), en), []);
+    assert.deepEqual(findingsOf(loanEn("Issued", "October 1, 2026", "First payment date", "September 1, 2026"), en), []);
+  });
+});
+
+const hotelJa = (checkIn: string, checkOut: string, cancel: string): string =>
+  `# ご宿泊予約確認書\n\n| 項目 | 内容 |\n| --- | --- |\n| チェックイン | ${checkIn} |\n| チェックアウト | ${checkOut} |\n\n## キャンセルについて\n\n無料キャンセル期限：${cancel}\n`;
+
+const hotelEn = (checkIn: string, checkOut: string, cancel: string): string =>
+  `# Booking Confirmation\n\n| Item | Details |\n| --- | --- |\n| Check-in | ${checkIn} |\n| Check-out | ${checkOut} |\n\n## Cancellation\n\nFree cancellation until: ${cancel}\n`;
+
+const rentalJa = (pickUpLabel: string, pickUp: string, returnLabel: string, returned: string): string =>
+  `# レンタカーご予約確認\n\n${pickUpLabel}：${pickUp}\n\n${returnLabel}：${returned}\n\n車種クラス：コンパクト\n`;
+
+const rentalEn = (pickUpLabel: string, pickUp: string, returnLabel: string, returned: string): string =>
+  `# Car Rental Reservation\n\n${pickUpLabel}: ${pickUp}\n\n${returnLabel}: ${returned}\n\nCar class: Compact\n`;
+
+const ruleLines = (source: string, adapter = ja): number[] =>
+  runRules(buildDocument("a.md", source, adapter), loadRules(adapter.id), {}, false, "business/proposal")
+    .findings.filter((finding) => finding.rule === RULE)
+    .map((finding) => finding.line);
+
+describe("due-before-issue (order): 宿泊とレンタカーの予約、無料キャンセルの期限", () => {
+  it("チェックインより前のチェックアウト、貸出より前の返却を指す（表の行も読む）", () => {
+    assert.deepEqual(findingsOf(hotelJa("2026年11月20日 15:00から", "2026年11月19日 11:00まで", "2026年11月17日")), [
+      "「チェックアウト」（2026年11月19日）が、「チェックイン」（2026年11月20日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(hotelEn("November 20, 2026, from 3:00 PM", "November 19, 2026, by 11:00 AM", "November 17, 2026"), en), [
+      '"Check-out" November 19, 2026 is before "Check-in" November 20, 2026',
+    ]);
+    assert.deepEqual(findingsOf(rentalJa("貸出日", "2026年12月3日", "返却日", "2026年12月2日")), [
+      "「返却日」（2026年12月2日）が、「貸出日」（2026年12月3日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(rentalJa("貸出日時", "2026年12月3日 10:00", "返却日時", "2026年12月2日 17:00")), [
+      "「返却日時」（2026年12月2日）が、「貸出日時」（2026年12月3日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(rentalEn("Pick-up", "December 3, 2026", "Drop-off", "December 2, 2026"), en), [
+      '"Drop-off" December 2, 2026 is before "Pick-up" December 3, 2026',
+    ]);
+    assert.deepEqual(findingsOf(rentalEn("Pick-up date", "December 3, 2026", "Return date", "December 2, 2026"), en), [
+      '"Return date" December 2, 2026 is before "Pick-up date" December 3, 2026',
+    ]);
+  });
+
+  it("順の合った日付、同じ日、年の無い日付、日付の無い行は言わない", () => {
+    assert.deepEqual(findingsOf(hotelJa("2026年11月20日", "2026年11月22日", "2026年11月17日")), []);
+    assert.deepEqual(findingsOf(hotelJa("2026年11月20日", "2026年11月20日", "2026年11月20日")), []);
+    assert.deepEqual(findingsOf(hotelJa("11月20日", "11月19日", "11月21日")), []);
+    assert.deepEqual(findingsOf(hotelJa("15:00から", "11:00まで", "2026年11月21日")), []);
+    assert.deepEqual(findingsOf(hotelEn("November 20, 2026", "November 22, 2026", "November 17, 2026"), en), []);
+    assert.deepEqual(findingsOf(hotelEn("November 20, 2026", "November 20, 2026", "November 20, 2026"), en), []);
+    assert.deepEqual(findingsOf(hotelEn("November 20", "November 19", "November 21"), en), []);
+    assert.deepEqual(findingsOf(rentalJa("貸出", "2026年12月3日", "返却", "2026年12月6日")), []);
+    assert.deepEqual(findingsOf(rentalEn("Pick-up", "December 3, 2026", "Return date", "December 6, 2026"), en), []);
+  });
+
+  it("旅の出発日と書類の返却日、注文の受け取りと返品の期限は組まない", () => {
+    assert.deepEqual(findingsOf(rentalJa("出発日", "2026年12月3日", "返却日", "2026年11月20日")), []);
+    assert.deepEqual(findingsOf(rentalEn("Pick-up", "December 3, 2026", "Return", "December 1, 2026"), en), []);
+  });
+
+  it("チェックインや貸出より後の無料キャンセル期限を、後に書いた期限の行で指す", () => {
+    const hotel = hotelJa("2026年11月20日", "2026年11月22日", "2026年11月21日 23:59まで");
+    assert.deepEqual(findingsOf(hotel), ["「チェックイン」（2026年11月20日）が、「無料キャンセル期限」（2026年11月21日）より前です"]);
+    assert.deepEqual(ruleLines(hotel), [10]);
+    const hotelInEnglish = hotelEn("November 20, 2026", "November 22, 2026", "November 21, 2026, 11:59 PM");
+    assert.deepEqual(findingsOf(hotelInEnglish, en), ['"Check-in" November 20, 2026 is before "Free cancellation until" November 21, 2026']);
+    assert.deepEqual(ruleLines(hotelInEnglish, en), [10]);
+    assert.deepEqual(findingsOf("# 予約\n\n貸出：2026年12月3日\n\nキャンセル無料期限：2026年12月4日\n"), [
+      "「貸出」（2026年12月3日）が、「キャンセル無料期限」（2026年12月4日）より前です",
+    ]);
+    assert.deepEqual(findingsOf("# Reservation\n\nPick-up: December 3, 2026\n\nCancel by: December 4, 2026\n", en), [
+      '"Pick-up" December 3, 2026 is before "Cancel by" December 4, 2026',
+    ]);
+  });
+
+  it("後の語の日付が下にあれば、その行で指す", () => {
+    assert.deepEqual(ruleLines(listingJa("2026年10月1日", "2025年11月1日")), [8]);
+    assert.deepEqual(ruleLines(hotelJa("2026年11月20日", "2026年11月19日", "2026年11月17日")), [6]);
+  });
+
+  it("別の組の語どうしは組まない", () => {
+    assert.deepEqual(findingsOf("# 予約\n\nチェックアウト：2026年11月22日\n\n無料キャンセル期限：2026年11月25日\n"), []);
+    assert.deepEqual(findingsOf("# 予約\n\nチェックイン：2026年11月20日\n\n返却日：2026年11月19日\n"), []);
+    assert.deepEqual(findingsOf("# 予約\n\n貸出日：2026年11月20日\n\nチェックアウト：2026年11月19日\n"), []);
+    assert.deepEqual(findingsOf("# Booking\n\nCheck-out: November 22, 2026\n\nFree cancellation until: November 25, 2026\n", en), []);
+    assert.deepEqual(findingsOf("# Booking\n\nCheck-in: November 20, 2026\n\nDrop-off: November 19, 2026\n", en), []);
+    assert.deepEqual(findingsOf("# Booking\n\nPick-up: November 20, 2026\n\nCheck-out: November 19, 2026\n", en), []);
+  });
+});
+
+const payslipJa = (periodLabel: string, period: string, payDate: string): string =>
+  `# 給与明細書（架空商事株式会社）\n\n氏名：架空 太郎 様\n\n${periodLabel}：${period}\n\n支給日：${payDate}\n\n## 支給\n\n| 項目 | 金額 |\n| --- | --- |\n| 基本給 | 250,000円 |\n`;
+
+const payslipEn = (period: string, payDate: string): string =>
+  `# Payslip, Example Trading Ltd.\n\nEmployee: Alex Example\n\nPay period: ${period}\n\nPay date: ${payDate}\n\n## Earnings\n\n| Item | Amount |\n| --- | --- |\n| Base salary | $4,000.00 |\n`;
+
+const tripJa = (departLabel: string, depart: string, returnLabel: string, returned: string): string =>
+  `# 出張旅費精算書\n\n## 行程\n\n| 区分 | 日時 | 区間 |\n| --- | --- | --- |\n| ${departLabel} | ${depart} | 本社→架空駅 |\n| ${returnLabel} | ${returned} | 架空駅→本社 |\n`;
+
+const tripEn = (departLabel: string, depart: string, returned: string): string =>
+  `# Travel Expense Report\n\n## Travel\n\n| Leg | Date and time | Route |\n| --- | --- | --- |\n| ${departLabel} | ${depart} | Office to Example City |\n| Return | ${returned} | Example City to Office |\n`;
+
+describe("due-before-issue (period, order): 給与明細の支給日、出張の帰着", () => {
+  it("支給の対象期間が終わる前の支給日を指す", () => {
+    assert.deepEqual(findingsOf(payslipJa("支給対象期間", "2026年9月1日〜2026年9月30日", "2026年9月25日")), [
+      "「支給日」の 2026年9月25日 が、「支給対象期間」の終わり 2026年9月30日 より前です",
+    ]);
+    assert.deepEqual(findingsOf(payslipJa("計算期間", "2026年9月16日〜2026年10月15日", "2026年10月5日")), [
+      "「支給日」の 2026年10月5日 が、「計算期間」の終わり 2026年10月15日 より前です",
+    ]);
+    assert.deepEqual(findingsOf(payslipJa("対象期間", "2026年9月1日〜2026年9月30日", "2026年9月25日")), [
+      "「支給日」の 2026年9月25日 が、「対象期間」の終わり 2026年9月30日 より前です",
+    ]);
+    assert.deepEqual(findingsOf(payslipEn("September 1, 2026 – September 30, 2026", "September 25, 2026"), en), [
+      '"Pay date" September 25, 2026 is before the end of the "Pay period", September 30, 2026',
+    ]);
+  });
+
+  it("期間の終わりより後や同じ日の支給日、年の無い日付は言わない", () => {
+    assert.deepEqual(findingsOf(payslipJa("支給対象期間", "2026年9月1日〜2026年9月30日", "2026年10月9日")), []);
+    assert.deepEqual(findingsOf(payslipJa("計算期間", "2026年9月16日〜2026年10月15日", "2026年10月25日")), []);
+    assert.deepEqual(findingsOf(payslipJa("支給対象期間", "2026年9月1日〜2026年9月30日", "2026年9月30日")), []);
+    assert.deepEqual(findingsOf(payslipJa("支給対象期間", "9月1日〜9月30日", "9月25日")), []);
+    assert.deepEqual(findingsOf(payslipEn("September 1, 2026 – September 30, 2026", "October 9, 2026"), en), []);
+    assert.deepEqual(findingsOf(payslipEn("September 1 – September 30", "September 25"), en), []);
+  });
+
+  it("出発より前の帰着を指す（表の行も読む）", () => {
+    assert.deepEqual(findingsOf(tripJa("出発", "2026年9月14日 8:10", "帰着", "2026年9月12日 19:40")), [
+      "「帰着」（2026年9月12日）が、「出発」（2026年9月14日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(tripJa("出発日", "2026年9月14日", "帰着日", "2026年9月12日")), [
+      "「帰着日」（2026年9月12日）が、「出発日」（2026年9月14日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(tripEn("Departure", "September 14, 2026, 8:10 AM", "September 12, 2026, 7:40 PM"), en), [
+      '"Return" September 12, 2026 is before "Departure" September 14, 2026',
+    ]);
+    assert.deepEqual(findingsOf(tripEn("Departure date", "September 14, 2026", "September 12, 2026"), en), [
+      '"Return" September 12, 2026 is before "Departure date" September 14, 2026',
+    ]);
+  });
+
+  it("出発の後や同じ日（日帰り）の帰着、年の無い日付は言わない", () => {
+    assert.deepEqual(findingsOf(tripJa("出発", "2026年9月14日 8:10", "帰着", "2026年9月16日 19:40")), []);
+    assert.deepEqual(findingsOf(tripJa("出発", "2026年9月14日 8:10", "帰着", "2026年9月14日 21:00")), []);
+    assert.deepEqual(findingsOf(tripJa("出発", "9月14日", "帰着", "9月12日")), []);
+    assert.deepEqual(findingsOf(tripEn("Departure", "September 14, 2026, 8:10 AM", "September 16, 2026, 7:40 PM"), en), []);
+    assert.deepEqual(findingsOf(tripEn("Departure", "September 14, 2026, 8:10 AM", "September 14, 2026, 9:00 PM"), en), []);
+    assert.deepEqual(findingsOf(tripEn("Departure", "September 14", "September 12"), en), []);
+  });
+
+  it("書類の返却日と出発日、帰着と支給日のように、別の組の語どうしは組まない", () => {
+    assert.deepEqual(findingsOf("# 旅行のご案内\n\n出発日：2026年12月3日\n\n返却日：2026年11月20日\n"), []);
+    assert.deepEqual(findingsOf("# Tour Guide\n\nDeparture date: December 3, 2026\n\nReturn date: November 20, 2026\n", en), []);
+    assert.deepEqual(findingsOf("# 精算\n\n帰着：2026年9月16日\n\n支給日：2026年9月10日\n"), []);
+  });
+});

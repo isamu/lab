@@ -37,7 +37,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: consistency
 summary:
   ja: 読点の「、」と「，」、句点の「。」と「．」が、一つの文書の中で混ざっている所
-  en: Japanese commas written both 、 and ，, or periods written both 。 and ．, in one document
+  en: Japanese commas or periods written two ways (、 and ，, 。 and ．)
 example:
   ja:
     before: |

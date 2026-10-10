@@ -1,0 +1,81 @@
+# Units written for results and reference ranges in a lab results table, and what each is (group). Units of one group
+# are one unit and compare without converting (mg/dL and mg/100mL, ×10⁴/µL and 万/µL, ×10³/µL and ×10⁹/L, µIU/mL and
+# mIU/L, mEq/L and mmol/L as for the monovalent ions). reference-unit-mismatch reports a result whose group is not its reference range's. Text is matched after NFKC
+# and lower-casing, so mg/dl, full-width letters, and μ against µ need no entries of their own.
+id: reference-unit
+language: en
+entries:
+  - { pattern: "mg/dL", group: mg/dl }
+  - { pattern: "mg/100mL", group: mg/dl }
+  - { pattern: "g/dL", group: g/dl }
+  - { pattern: "g/L", group: g/l }
+  - { pattern: "mg/L", group: mg/l }
+  - { pattern: "µg/dL", group: ug/dl }
+  - { pattern: "ug/dL", group: ug/dl }
+  - { pattern: "mcg/dL", group: ug/dl }
+  - { pattern: "µg/L", group: ug/l }
+  - { pattern: "ug/L", group: ug/l }
+  - { pattern: "µg/mL", group: ug/ml }
+  - { pattern: "ug/mL", group: ug/ml }
+  - { pattern: "ng/mL", group: ng/ml }
+  - { pattern: "ng/dL", group: ng/dl }
+  - { pattern: "pg/mL", group: pg/ml }
+  - { pattern: "mmol/L", group: mmol/l }
+  - { pattern: "µmol/L", group: umol/l }
+  - { pattern: "umol/L", group: umol/l }
+  - { pattern: "nmol/L", group: nmol/l }
+  - { pattern: "pmol/L", group: pmol/l }
+  - { pattern: "mmol/mol", group: mmol/mol }
+  - { pattern: "mEq/L", group: mmol/l }
+  - { pattern: "U/L", group: u/l }
+  - { pattern: "IU/L", group: u/l }
+  - { pattern: "U/mL", group: u/ml }
+  - { pattern: "mU/L", group: mu/l }
+  - { pattern: "mIU/L", group: mu/l }
+  - { pattern: "µU/mL", group: mu/l }
+  - { pattern: "µIU/mL", group: mu/l }
+  - { pattern: "uU/mL", group: mu/l }
+  - { pattern: "uIU/mL", group: mu/l }
+  - { pattern: "mL/min/1.73m²", group: ml/min/1.73m2 }
+  - { pattern: "mL/分/1.73m²", group: ml/min/1.73m2 }
+  - { pattern: "mm/h", group: mm/h }
+  - { pattern: "mm/hr", group: mm/h }
+  - { pattern: "mOsm/kg", group: mosm/kg }
+  - { pattern: "%", group: percent }
+  - { pattern: "fL", group: fl }
+  - { pattern: "pg", group: pg }
+  - { pattern: "×10⁴/µL", group: 10^4/ul }
+  - { pattern: "×10^4/µL", group: 10^4/ul }
+  - { pattern: "x10^4/uL", group: 10^4/ul }
+  - { pattern: "万/µL", group: 10^4/ul }
+  - { pattern: "万/uL", group: 10^4/ul }
+  - { pattern: "万/mm³", group: 10^4/ul }
+  - { pattern: "×10³/µL", group: 10^3/ul }
+  - { pattern: "×10^3/µL", group: 10^3/ul }
+  - { pattern: "x10^3/uL", group: 10^3/ul }
+  - { pattern: "10³/µL", group: 10^3/ul }
+  - { pattern: "10^3/µL", group: 10^3/ul }
+  - { pattern: "10^3/uL", group: 10^3/ul }
+  - { pattern: "K/µL", group: 10^3/ul }
+  - { pattern: "K/uL", group: 10^3/ul }
+  - { pattern: "×10⁹/L", group: 10^3/ul }
+  - { pattern: "×10^9/L", group: 10^3/ul }
+  - { pattern: "x10^9/L", group: 10^3/ul }
+  - { pattern: "10⁹/L", group: 10^3/ul }
+  - { pattern: "10^9/L", group: 10^3/ul }
+  - { pattern: "千/µL", group: 10^3/ul }
+  - { pattern: "×10⁶/µL", group: 10^6/ul }
+  - { pattern: "×10^6/µL", group: 10^6/ul }
+  - { pattern: "x10^6/uL", group: 10^6/ul }
+  - { pattern: "10^6/µL", group: 10^6/ul }
+  - { pattern: "10^6/uL", group: 10^6/ul }
+  - { pattern: "M/µL", group: 10^6/ul }
+  - { pattern: "M/uL", group: 10^6/ul }
+  - { pattern: "×10¹²/L", group: 10^6/ul }
+  - { pattern: "×10^12/L", group: 10^6/ul }
+  - { pattern: "x10^12/L", group: 10^6/ul }
+  - { pattern: "10¹²/L", group: 10^6/ul }
+  - { pattern: "10^12/L", group: 10^6/ul }
+  - { pattern: "/µL", group: /ul }
+  - { pattern: "/uL", group: /ul }
+  - { pattern: "/mm³", group: /ul }

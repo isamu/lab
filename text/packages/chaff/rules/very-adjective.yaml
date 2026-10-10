@@ -34,7 +34,7 @@ off_for:
 group: wording
 summary:
   ja: 「とても便利」「非常に危険」（very important）のような強め + 形容詞が、文書の長さのわりに多い所
-  en: '"Very" + adjective, such as "very important" (とても便利), dense for the document''s length'
+  en: '"Very" + adjective, such as "very important", used too often'
 example:
   ja:
     pad: true

@@ -39,7 +39,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: structure
 summary:
   ja: 行き先が空のリンク、文書に無い見出しを指すリンク、定義の無い参照の形のリンク
-  en: A link with no destination, a link to a heading the page does not have, or a reference-style link with no definition
+  en: "A link that goes nowhere: no address, a missing heading, or no definition"
 example:
   ja:
     before: |

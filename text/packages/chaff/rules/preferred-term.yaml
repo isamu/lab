@@ -35,8 +35,8 @@ sources: [plain-2011, kyodo-2022]
 
 group: team
 summary:
-  ja: チームで決めた表記と違う書き方（「サーバー」と決めたのに「サーバ」と書いた、など）。chaff.yaml の prefer に書いた組だけを見ます
-  en: A spelling the team has chosen not to use ("e-mail" where the team writes "email"), from prefer in chaff.yaml
+  ja: チームで決めた表記と違う書き方（「サーバー」と決めたのに「サーバ」）。chaff.yaml の prefer で決めます
+  en: A spelling the team chose not to use ("e-mail" for "email"), from chaff.yaml
 example:
   ja:
     config: { prefer: { サーバ: サーバー } }

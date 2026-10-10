@@ -31,7 +31,7 @@ use_for: [blog, business, legal, docs, academic, literature, speech]
 group: wording
 summary:
   ja: 「アジェンダ」「エビデンス」のようなカタカナ語が、人の書いた技術記事より多い文書
-  en: A Japanese document with more katakana loanwords per 1000 characters than human-written technical articles
+  en: A Japanese document with more katakana loanwords than human-written articles
 example:
   ja:
     before: |

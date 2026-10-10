@@ -1,0 +1,14 @@
+# The period of a rate (fact-conflict): "4.8% per year", "4.8% APR". It does not change the value, so a rate followed by it
+# is still read. The group is the period: two rates that both state a period and differ (0.5% a month, 6% a year) are not compared.
+id: fact-rate-period
+language: en
+entries:
+  - { pattern: per year, group: year }
+  - { pattern: a year, group: year }
+  - { pattern: per annum, group: year }
+  - { pattern: p.a., group: year }
+  - { pattern: annually, group: year }
+  - { pattern: APR, group: year }
+  - { pattern: per month, group: month }
+  - { pattern: a month, group: month }
+  - { pattern: monthly, group: month }
