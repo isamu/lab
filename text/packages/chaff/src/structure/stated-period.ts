@@ -26,7 +26,7 @@ const LINE_MARKS = /^[ \t]*(?:(?:#{1,6}|[-*+>]|\d{1,3}[.)])[ \t]*)*/u;
 const LABEL_OPEN = /^(?:\*\*|__|【|\[)?/u;
 const LABEL_END = /^(?:\*\*|__|】|\])?(?:[ \t]*[:：][ \t]*|[ \t\u3000]+)/u;
 
-const leadOf = (line: string): number => {
+export const leadOf = (line: string): number => {
   const marks = LINE_MARKS.exec(line)?.[0].length ?? 0;
   return marks + (LABEL_OPEN.exec(line.slice(marks))?.[0].length ?? 0);
 };
