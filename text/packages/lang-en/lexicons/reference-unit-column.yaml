@@ -1,0 +1,20 @@
+# Column headings of a lab or checkup results table (reference-unit-mismatch): result is the result column, range the
+# reference range, unit the unit column. A bracketed part of a heading ("Result (mg/dL)", "Reference range (adult)") is
+# left out, and the rest must be the whole heading.
+id: reference-unit-column
+language: en
+entries:
+  - { pattern: Result, group: result }
+  - { pattern: Results, group: result }
+  - { pattern: Your result, group: result }
+  - { pattern: Measured value, group: result }
+  - { pattern: Test result, group: result }
+  - { pattern: Reference range, group: range }
+  - { pattern: Reference ranges, group: range }
+  - { pattern: Reference interval, group: range }
+  - { pattern: Reference value, group: range }
+  - { pattern: Ref. range, group: range }
+  - { pattern: Ref range, group: range }
+  - { pattern: Normal range, group: range }
+  - { pattern: Unit, group: unit }
+  - { pattern: Units, group: unit }

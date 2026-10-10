@@ -1,0 +1,61 @@
+id: reference-unit-mismatch
+layer: L3
+status: stable
+how_to_find: reference-unit
+# The result, reference range and unit columns are found by the language's reference-unit-column lexicon, and the units
+# are read with reference-unit (a group is one unit: mg/dL and mg/dl, ×10⁴/µL and 万/µL).
+languages: [ja, en]
+severity: error
+
+name:
+  ja: 検査結果の単位が基準値の単位と違う
+  en: A test result in another unit than its reference range
+
+why:
+  ja: 健康診断や血液検査の結果の表で、結果を「64 mmol/L」、同じ行の基準値を「40〜96 mg/dL」と書くと、数を比べても基準の内か外かは分かりません。単位を写し間違えたか、別の検査機関の値を貼ったときに起きます。見出しが「結果」「基準値」の列（語は言語パッケージの語彙表 reference-unit-column）を行ごとに読み、二つの升の単位（語彙表 reference-unit）を比べます。升に単位が無ければ、列の見出しの括弧の中の単位、次にその行の「単位」の列を使います。基準値の列が二つ（男性・女性）あれば、それぞれと比べます。mg/dL と mg/dl、×10⁴/µL と 万/µL のように、書き方が違っても数を換算せずに比べられる単位は同じ単位と読みます。
+  en: 'When a results table writes a result as "52 mmol/L" and the reference range on the same row as "40–60 mg/dL", the numbers cannot be compared, and the reader cannot tell whether the result is in range. It happens when a unit is copied wrong or a value is pasted from another lab. Each row of a table whose headings name a result and a reference range (the language package''s reference-unit-column lexicon) is read, and the units of the two cells (the reference-unit lexicon) are compared. A cell without a unit takes a unit in brackets in its column heading, then the row''s Unit column. Two reference range columns (men and women) are each compared. Two ways of writing one unit, which compare without converting the number (mg/dL and mg/dl, ×10³/µL and ×10⁹/L), are read as the same unit.'
+
+message:
+  ja: 「{item}」の結果「{result}」の単位が、基準値「{range}」の単位と違います
+  en: 'The result "{result}" for "{item}" is in another unit than its reference range "{range}"'
+
+how_to_fix:
+  ja: 検査機関の報告と照らして、結果か基準値の単位を直すか、同じ単位に換算して書いてください。
+  en: Check the lab's report and correct the unit of the result or of the range, or convert one so both use the same unit.
+
+levels: { normal: error, relaxed: warning }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 検査結果の表で、結果と基準値の単位が違う行
+  en: A results table row whose result and reference range are in different units
+example:
+  ja:
+    before: |
+      | 項目 | 結果 | 基準値 |
+      | --- | --- | --- |
+      | HDLコレステロール | 64 mmol/L | 40〜96 mg/dL |
+    after: |
+      | 項目 | 結果 | 基準値 |
+      | --- | --- | --- |
+      | HDLコレステロール | 64 mg/dL | 40〜96 mg/dL |
+  en:
+    before: |
+      | Test | Result | Reference range |
+      | --- | --- | --- |
+      | Creatinine | 0.82 mmol/L | 0.57–1.11 mg/dL |
+    after: |
+      | Test | Result | Reference range |
+      | --- | --- | --- |
+      | Creatinine | 0.82 mg/dL | 0.57–1.11 mg/dL |
+
+not_flagged:
+  ja: 結果か基準値のどちらかに単位が無く、行の単位の列にも列の見出しにも無いとき、語彙表 reference-unit に無い単位、数の無い升（陰性、—）は比べません。結果か基準値の升に換算した値を並べて書き（「5.5 mmol/L（99 mg/dL）」）、どれか一つの単位が合えば言いません。見出しが「結果」と「基準値」の列を持たない表は読みません。
+  en: 'A row where the result or the range has no unit, in its cell, in its column heading or in the row''s Unit column, a unit that is not in the reference-unit lexicon, and a cell without a number ("Negative", "—") are not compared. A cell that also gives a converted value ("5.5 mmol/L (99 mg/dL)") is fine when any of its units matches. A table without a result column and a reference range column is not read.'
+level_meaning:
+  ja: 検査結果と基準値の単位が違うとき指摘
+  en: reported when a result and its reference range are in different units
