@@ -6,3 +6,5 @@ entries:
   - pattern: 対象期間
   - pattern: 報告対象期間
   - pattern: 会計期間
+  - pattern: 支給対象期間
+  - pattern: 計算期間
