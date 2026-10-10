@@ -67,6 +67,32 @@ describe("isTotalLine", () => {
     assert.equal(isTotalLine("| Due total due | $1 |", words(undefined)), true);
   });
 
+  it("reads a total word with a noun as a total line when the table's header names that noun", () => {
+    assert.equal(isTotalLine("| Total deductions | $1,585.99 |", en, "| Deduction | Amount |"), true);
+    assert.equal(isTotalLine("| Deductions total | $1,585.99 |", en, "| Deductions | Amount |"), true);
+    assert.equal(isTotalLine("| Total monthly deductions | $1,585.99 |", en, "| Deduction | Amount |"), true);
+    assert.equal(isTotalLine("| Expenses subtotal | $90 |", en, "| Expense | Amount |"), true);
+    assert.equal(isTotalLine("| Subtotal deductions | $1 |", en, "| Deduction | Amount |"), true);
+    assert.equal(isTotalLine("| 控除合計 | 70,913円 |", ja, "| 控除項目 | 金額 |"), true);
+    assert.equal(isTotalLine("| 交通費小計 | 3,000円 |", ja, "| 交通費 | 金額 |"), true);
+    assert.equal(isTotalLine("| 控除計 | 70,913円 |", ja, "| 控除 | 金額 |"), true);
+  });
+
+  it("does not read a noun the header does not name, a noun too short to be named, or one with no header", () => {
+    assert.equal(isTotalLine("| Total deductions | $1,585.99 |", en), false);
+    assert.equal(isTotalLine("| Total deductions | $1,585.99 |", en, "| Item | Amount |"), false);
+    assert.equal(isTotalLine("| Total tax | $30 |", en, "| Taxable item | Amount |"), false);
+    assert.equal(isTotalLine("| Total tax | $30 |", en, "| Tax deduction | Amount |"), false);
+    assert.equal(isTotalLine("| Total tax deductions | $30 |", en, "| Tax deduction | Amount |"), true);
+    assert.equal(isTotalLine("| Total area | 52.8 m² |", en, "| Room | Area |"), false);
+    assert.equal(isTotalLine("| Totals deductions | $1 |", en, "| Deduction | Amount |"), false);
+    assert.equal(isTotalLine("| 控除合計 | 70,913円 |", ja, "| 項目 | 金額 |"), false);
+    assert.equal(isTotalLine("| 控除合計 | 70,913円 |", ja, "| 社会保険料控除 | 金額 |"), false);
+    assert.equal(isTotalLine("| 設計 | 300,000円 |", ja, "| 設計工程 | 金額 |"), false);
+    assert.equal(isTotalLine("| 合計額 | 300,000円 |", ja, "| 項目 | 金額 |"), false);
+    assert.equal(isTotalLine("- 控除合計：3,074円", ja), false);
+  });
+
   it("does not read anything with an empty or missing vocabulary", () => {
     assert.equal(isTotalLine("| Total per month | $2,080 |", { labels: en.labels, qualifiers: [] }), false);
     assert.equal(isTotalLine("| Total per month | $2,080 |", { labels: [], qualifiers: en.qualifiers }), false);
