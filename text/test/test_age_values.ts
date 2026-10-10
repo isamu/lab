@@ -141,6 +141,9 @@ describe("fact-conflict: an age limit written two ways", () => {
       ["The maximum age:up to the age of 75≠aged 20 to 70"],
     );
     assert.deepEqual(conflictEn("## Who can apply", "", ...TABLE_EN, "| Maximum age | 70 |", "", "The maximum age is 75."), ["The maximum age:75≠70"]);
+    assert.deepEqual(conflictEn("## Who can apply", "", ...TABLE_EN, "| Entry age | ages 18–65 |", "", "The maximum age is up to the age of 70."), [
+      "The maximum age:up to the age of 70≠ages 18–65",
+    ]);
   });
 
   it("the same upper end, written as a range and as a limit, agrees", () => {
