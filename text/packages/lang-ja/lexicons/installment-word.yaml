@@ -1,0 +1,21 @@
+# installment-total-mismatch の語。unit は回数の後ろの語（59回）。link は見出しと値の間に挟んでよい語（お支払総額は）。
+# per は回数と1回の額をつなぐ印（32,800円×59回）。rounding は端数をどこかの回で調整すると言う語で、初回・最終回の額が
+# 書いていなければ比べない。skip はボーナス払いや頭金など、回数×毎回の額の外の支払いを言う語で、これのある文書は比べない。
+id: installment-word
+language: ja
+entries:
+  - { pattern: 回, group: unit }
+  - { pattern: は, group: link }
+  - { pattern: の, group: link }
+  - { pattern: が, group: link }
+  - { pattern: ×, group: per }
+  - { pattern: ✕, group: per }
+  - { pattern: ＊, group: per }
+  - { pattern: 端数, group: rounding }
+  - { pattern: 調整, group: rounding }
+  - { pattern: ボーナス, group: skip }
+  - { pattern: 賞与, group: skip }
+  - { pattern: 頭金, group: skip }
+  - { pattern: 残価, group: skip }
+  - { pattern: 据置, group: skip }
+  - { pattern: 据え置き, group: skip }
