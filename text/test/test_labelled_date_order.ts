@@ -187,6 +187,68 @@ describe("due-before-issue (period): 決算説明会が対象期間の終わり�
   });
 });
 
+const earningsTableJa = (rows: readonly string[]): string =>
+  ["# 2026年度 第2四半期 決算説明資料", "", "| 項目 | 内容 |", "| --- | --- |", ...rows, "", "## 1 当期の業績", "", "売上高は1,320百万円でした。", ""].join(
+    "\n",
+  );
+
+const earningsTableEn = (rows: readonly string[]): string =>
+  ["# Interim Results for FY2026", "", "| Item | Detail |", "| --- | --- |", ...rows, "", "## 1 Results", "", "Net sales were $1,320 million.", ""].join("\n");
+
+describe("due-before-issue (period): 項目と内容の二列の表に書いた対象期間", () => {
+  it("表の一行に書いた対象期間の終わりより前の説明会を指す", () => {
+    assert.deepEqual(findingsOf(earningsTableJa(["| 対象期間 | 2026年4月1日〜2026年9月30日 |", "| 決算説明会 | 2026年9月15日 |"])), [
+      "「決算説明会」の 2026年9月15日 が、「対象期間」の終わり 2026年9月30日 より前です",
+    ]);
+    assert.deepEqual(findingsOf(earningsTableEn(["| **Reporting period** | April 1 – September 30, 2026 |", "| Earnings call | September 15, 2026 |"]), en), [
+      '"Earnings call" September 15, 2026 is before the end of the "Reporting period", September 30, 2026',
+    ]);
+  });
+
+  it("期間の終わり以後の説明会、対象期間を何行も並べた表、三列の表は言わない", () => {
+    assert.deepEqual(findingsOf(earningsTableJa(["| 対象期間 | 2026年4月1日〜2026年9月30日 |", "| 決算説明会 | 2026年11月12日 |"])), []);
+    assert.deepEqual(
+      findingsOf(
+        earningsTableJa(["| 対象期間 | 2026年4月1日〜2026年9月30日 |", "| 対象期間 | 2025年4月1日〜2025年9月30日 |", "| 決算説明会 | 2026年9月15日 |"]),
+      ),
+      [],
+    );
+    assert.deepEqual(findingsOf(earningsTableJa(["| 対象期間 | 2026年4月1日〜2026年9月30日 | 第2四半期 |", "| 決算説明会 | 2026年9月15日 | |"])), []);
+    assert.deepEqual(findingsOf(earningsTableEn(["| Reporting period | April 1 – September 30, 2026 |", "| Earnings call | November 12, 2026 |"]), en), []);
+    assert.deepEqual(
+      findingsOf(
+        earningsTableEn([
+          "| Reporting period | April 1 – September 30, 2026 |",
+          "| Reporting period | April 1 – June 30, 2026 |",
+          "| Earnings call | September 15, 2026 |",
+        ]),
+        en,
+      ),
+      [],
+    );
+  });
+
+  it("二つの期間の語（Reporting period と Period covered、対象期間と会計期間）を項目に書いた表も、期間の一覧として言わない", () => {
+    assert.deepEqual(
+      findingsOf(
+        earningsTableEn([
+          "| Reporting period | April 1 – September 30, 2026 |",
+          "| Period covered | April 1 – June 30, 2026 |",
+          "| Earnings call | September 15, 2026 |",
+        ]),
+        en,
+      ),
+      [],
+    );
+    assert.deepEqual(
+      findingsOf(
+        earningsTableJa(["| 対象期間 | 2026年4月1日〜2026年9月30日 |", "| 会計期間 | 2026年4月1日〜2027年3月31日 |", "| 決算説明会 | 2026年9月15日 |"]),
+      ),
+      [],
+    );
+  });
+});
+
 describe("periodEndOf: 期間を書いた行の終わりの日", () => {
   const SPANS = { labels: ["対象期間"], connectors: ["〜"], months: [], weekdays: [] };
   const lineOf = (text: string) => ({ text, start: 0, number: 1 });
