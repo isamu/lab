@@ -2,6 +2,7 @@ id: impossible-date
 layer: L3
 status: stable
 how_to_find: impossible-date
+requires: [dates]
 severity: error
 
 name:
