@@ -1,0 +1,21 @@
+# 差し引きで決まる金額の名前（net-amount-mismatch）。group は gross（差し引く前の額）、deduction（差し引く額の合計）、net（差し引いた後の額）。
+# 同じ表か同じ節に三つの組の語が一つずつあり、それぞれに金額があるとき、net が gross − deduction と合うかを比べる。表の見出しや項目がこの語だけ（単位の括弧は除く）のときに読む。
+id: net-amount-label
+language: ja
+entries:
+  - { pattern: 総支給額, group: gross }
+  - { pattern: 総支給金額, group: gross }
+  - { pattern: 支給総額, group: gross }
+  - { pattern: 支給合計, group: gross }
+  - { pattern: 支給額合計, group: gross }
+  - { pattern: 控除合計, group: deduction }
+  - { pattern: 控除額合計, group: deduction }
+  - { pattern: 控除合計額, group: deduction }
+  - { pattern: 控除総額, group: deduction }
+  - { pattern: 控除計, group: deduction }
+  - { pattern: 差引支給額, group: net }
+  - { pattern: 差引支給金額, group: net }
+  - { pattern: 差引支給合計, group: net }
+  - { pattern: 差引支払額, group: net }
+  - { pattern: 手取り額, group: net }
+  - { pattern: 手取額, group: net }

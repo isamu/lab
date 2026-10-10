@@ -1,0 +1,57 @@
+id: net-amount-mismatch
+layer: L3
+status: stable
+how_to_find: net-amount-mismatch
+# The three names are lexicon net-amount-label (groups gross, deduction, net); words of magnitude are amount-multiplier.
+severity: warning
+
+name:
+  ja: 差引額が、総額から控除合計を引いた額と合わない
+  en: A net amount that is not the gross amount minus the deductions
+
+why:
+  ja: 給与明細の「差引支給額」は、総支給額から控除合計を引いた額です。受け取る人は差引額を見て、引き算し直しません。控除を直したのに差引額を直さなかったとき、前の月の明細から写したとき、数字を打ち間違えたときに食い違います。同じ表か同じ節に、差し引く前の額（総支給額）、控除の合計（控除合計）、差し引いた後の額（差引支給額）の名前が一つずつあり、それぞれに金額があれば、差引額を引き算と比べます。表では、見出しの行に三つの名前が並ぶ表は行ごとに、一列目に三つの名前が並ぶ表は列ごとに比べます。表の外では、節（見出しから次の見出しまで）の「総支給額：117,380円」のような名前と金額だけの行を読みます。どの語が三つのどれかは、言語パッケージの語彙表 net-amount-label にあります。通貨の印が付いた金額は一円（一セント）まで合わなければ言います。千円や百万円の単位の金額、印の無い数は丸めてあるかもしれないので、最後の桁の一つ分までのずれは言いません。
+  en: >-
+    The "Net pay" of a payslip is the gross pay minus the total deductions. The person paid reads the net and does not subtract again. It goes wrong when a deduction is corrected and the net is not, when the net is copied from last month's payslip, or when a digit is mistyped. When one table or one section names the amount before deductions (Gross pay), the total deductions (Total deductions) and the amount after them (Net pay) once each, each with an amount, the net is compared with the subtraction. A table whose header row has the three names is compared row by row, and one whose first column has them column by column. Outside tables, the lines of a section (from one heading to the next) that are only a name and an amount ("Gross pay: $1,661.00") are read. Which words name the three is in the language package's lexicon net-amount-label. Amounts with a currency mark must agree to the cent. Amounts in thousands or millions, and numbers without a mark, may be rounded, so a difference of one step of their last digit is not reported.
+
+message:
+  ja: 「{written}」は、総額から控除合計を引くと {expected} です
+  en: '"{written}" is written, but the gross amount minus the deductions is {expected}'
+
+how_to_fix:
+  ja: 総額、控除合計、差引額のどれが正しいかを確かめて、ほかを直してください。
+  en: Check which of the gross amount, the deductions and the net is right, and correct the others.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 差引支給額が、総支給額 − 控除合計 と合わない所
+  en: A net pay that is not the gross pay minus the total deductions
+example:
+  ja:
+    before: |
+      - 総支給額：117,380円
+      - 控除合計：3,074円
+      - 差引支給額：114,036円
+    after: |
+      - 総支給額：117,380円
+      - 控除合計：3,074円
+      - 差引支給額：114,306円
+  en:
+    before: |
+      - Gross pay: $1,661.00
+      - Total deductions: $264.59
+      - Net pay: $1,369.41
+    after: |
+      - Gross pay: $1,661.00
+      - Total deductions: $264.59
+      - Net pay: $1,396.41
+
+not_flagged:
+  ja: 三つの名前のどれかが無い表や節、同じ名前に違う金額が二つある表の列や節、名前が別々の表や節にあるもの（支給の表の総支給額と控除の表の控除合計）、三つの単位が違うもの（円とドル、千円と円）、数でない金額（—、▲、括弧の付いた値）は比べません。文の中の金額（「差引支給額は114,306円です」）は読みません。語彙表に無い名前（振込額、現金支給額）は読みません。総額より控除が大きいときも言いません。
+  en: 'A table or section without one of the three names, a table column or section with two different amounts under one name, names spread over separate tables or sections (the gross in the earnings table and the total in the deductions table), amounts in different units (yen and dollars, thousands and units), and a value that is not a plain number (—, a negative or bracketed value) are not compared. An amount inside a sentence ("Net pay is $1,396.41") is not read. A name not in the lexicon (Amount deposited, Cash paid) is not read. Deductions larger than the gross amount are not reported either.'
