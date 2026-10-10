@@ -110,12 +110,12 @@ describe("proseValues", () => {
 
   it("reads each amount of money in the unit written around it, and a percentage as a rate", () => {
     const ja = "営業利益は96百万円、売上高は1,320百万円で";
-    assert.deepEqual(units(ja, [at(ja, "96百万円", "円"), at(ja, "1,320百万円", "円")]), ["96:|百万円|", "1320:|百万円|"]);
+    assert.deepEqual(units(ja, [at(ja, "96百万円", "円"), at(ja, "1,320百万円", "円")]), ["96:|百万円", "1320:|百万円"]);
     const en = "$198 million on sales of US$2,640 million and 5 yen";
-    assert.deepEqual(units(en, [at(en, "198", "$"), at(en, "2,640", "$"), at(en, "5", "yen")]), ["198:$||million", "2640:us$||million", "5:||yen"]);
+    assert.deepEqual(units(en, [at(en, "198", "$"), at(en, "2,640", "$"), at(en, "5", "yen")]), ["198:$|million", "2640:us$|million", "5:|yen"]);
     const rate = "営業利益率は7.3%となり";
     assert.deepEqual(proseValues(rate, 10, [at(rate, "7.3%", "%", 10)], words).rates, [{ start: 16, value: 7.3, decimals: 1 }]);
-    assert.deepEqual(units("€ 12.5万", [at("€ 12.5万", "12.5万", "€")]), ["12.5:€|万|"]);
+    assert.deepEqual(units("€ 12.5万", [at("€ 12.5万", "12.5万", "€")]), ["12.5:€|万"]);
   });
 
   it("keeps a number the tree reads in no currency apart, and does not read a signed one at all", () => {

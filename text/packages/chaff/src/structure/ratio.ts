@@ -3,6 +3,8 @@
  * and the denominator it names (営業利益 ÷ 売上高), in a results table or in one sentence. Which ratio names which two rows is
  * data (lexicons ratio-label and ratio-term); nothing here knows a word of accounting. Pure.
  */
+import type { StructureNode } from "../plugin.ts";
+import { inDocumentOrder } from "./issues.ts";
 
 /** An amount as written: its value in the unit it is written in, the step of its last written digit, and that unit. */
 export type Figure = { readonly start: number; readonly value: number; readonly step: number; readonly unit: string };
@@ -153,6 +155,14 @@ export type AmountWords = {
 /** A quantity the structure tree read: where it stands in the document and the unit it names (円, $, %, 社). */
 export type ProseQuantity = { readonly start: number; readonly end: number; readonly unit: string };
 
+/** The tree's quantities, in document order. */
+export const proseQuantitiesOf = (tree: StructureNode | undefined): ProseQuantity[] =>
+  tree === undefined
+    ? []
+    : inDocumentOrder(tree).flatMap((node) =>
+        node.kind === "quantity" ? [{ start: node.span.start, end: node.span.end, unit: String(node.attrs["unit"] ?? "") }] : [],
+      );
+
 const PROSE_NUMBER = /(?<![\d.,])(\d{1,3}(?:,\d{3})+|\d+)(?:\.(\d+))?(?![\d,.]\d)/gu;
 const NEGATIVE_BEFORE = /[-−▲△]$/u;
 /** Words after the quantity ("$198 million", "1,320 million yen"). */
@@ -166,40 +176,57 @@ const markBefore = (before: string, marks: readonly string[]): { readonly mark: 
 };
 
 /**
- * The unit an amount is compared in, as written: the mark before it (US$ and $ differ), the magnitude and the mark inside the
- * quantity (百万円 of 96百万円), and up to two words of magnitude or currency after it ($198 million, 1,320 million yen).
+ * An amount of money as written in prose. The mark is the currency written before the number ($, US$); the suffix is what is
+ * written after it: the magnitude and the mark inside the quantity (百万円 of 96百万円), or up to two words of magnitude or
+ * currency (million, million yen). Both are compared as written (NFKC, lower case), so US$ and $ differ, and so do 百万円 and
+ * 億円. writtenStart and writtenEnd are where the whole amount, its marks and words included, stands.
  */
-const figureUnit = (mark: string, inside: string, after: string, words: AmountWords): string => {
+export type ProseFigure = Figure & { readonly mark: string; readonly suffix: string; readonly writtenStart: number; readonly writtenEnd: number };
+
+/** Up to two words of magnitude or currency after the quantity, and where they end. */
+const wordsAfter = (after: string, words: AmountWords): { readonly named: string; readonly length: number } => {
   const units = [...words.multipliers, ...words.after].map((word) => word.toLowerCase());
-  const [first, second] = (WORDS_AFTER.exec(after)?.slice(1) ?? []).map((word) => word?.toLowerCase() ?? "");
-  const named = units.includes(first ?? "") ? [first, ...(units.includes(second ?? "") ? [second] : [])] : [];
-  return [mark, inside, named.join(" ")].map((part) => keyOf(part ?? "")).join("|");
+  const found = WORDS_AFTER.exec(after);
+  const [first = "", second = ""] = [found?.[1] ?? "", found?.[2] ?? ""];
+  if (found === null || !units.includes(first.toLowerCase())) return { named: "", length: 0 };
+  if (!units.includes(second.toLowerCase())) return { named: first, length: after.indexOf(first) + first.length };
+  return { named: `${first} ${second}`, length: found[0].length };
 };
 
 /** What a piece of text holds: amounts of money, percentages, and the other numbers (years, counts), by where they start. */
-export type ProseValues = { readonly figures: readonly Figure[]; readonly rates: readonly WrittenRate[]; readonly others: readonly number[] };
+export type ProseValues = { readonly figures: readonly ProseFigure[]; readonly rates: readonly WrittenRate[]; readonly others: readonly number[] };
 
-type ProseNumber = { readonly figure: Figure } | { readonly rate: WrittenRate } | { readonly other: number };
+type ProseNumber = { readonly figure: ProseFigure } | { readonly rate: WrittenRate } | { readonly other: number };
+
+type NumberRead = { readonly start: number; readonly value: number; readonly decimals: number };
+
+const figureOf = (text: string, offset: number, match: RegExpExecArray, quantity: ProseQuantity, words: AmountWords): ProseFigure => {
+  const { mark, rest } = markBefore(text.slice(0, match.index), words.before);
+  const [end, quantityEnd] = [match.index + match[0].length, quantity.end - offset];
+  const after = wordsAfter(text.slice(quantityEnd), words);
+  const [mine, suffix] = [keyOf(mark), keyOf(`${text.slice(end, quantityEnd)} ${after.named}`)];
+  const decimals = match[2] ?? "";
+  const written = { writtenStart: offset + (mark === "" ? match.index : rest.length), writtenEnd: offset + quantityEnd + after.length };
+  const value = numberOf(match[1] ?? "", decimals);
+  return { start: offset + match.index, value, step: DECIMAL_BASE ** -decimals.length, unit: `${mine}|${suffix}`, mark: mine, suffix, ...written };
+};
 
 const proseNumber = (text: string, offset: number, match: RegExpExecArray, quantities: readonly ProseQuantity[], words: AmountWords): ProseNumber[] => {
-  const { mark, rest } = markBefore(text.slice(0, match.index), words.before);
-  if (NEGATIVE_BEFORE.test(rest)) return [];
-  const start = offset + match.index;
+  if (NEGATIVE_BEFORE.test(markBefore(text.slice(0, match.index), words.before).rest)) return [];
   const decimals = match[2] ?? "";
-  const value = numberOf(match[1] ?? "", decimals);
-  const quantity = quantities.find((entry) => entry.start === start);
-  if (quantity === undefined) return [{ other: start }];
-  if (words.percentUnits.includes(quantity.unit)) return [{ rate: { start, value, decimals: decimals.length } }];
-  if (![...words.before, ...words.after].includes(quantity.unit)) return [{ other: start }];
-  const [end, quantityEnd] = [match.index + match[0].length, quantity.end - offset];
-  const unit = figureUnit(mark, text.slice(end, quantityEnd), text.slice(quantityEnd), words);
-  return [{ figure: { start, value, step: DECIMAL_BASE ** -decimals.length, unit } }];
+  const read: NumberRead = { start: offset + match.index, value: numberOf(match[1] ?? "", decimals), decimals: decimals.length };
+  const quantity = quantities.find((entry) => entry.start === read.start);
+  if (quantity === undefined) return [{ other: read.start }];
+  if (words.percentUnits.includes(quantity.unit)) return [{ rate: read }];
+  if (![...words.before, ...words.after].includes(quantity.unit)) return [{ other: read.start }];
+  return [{ figure: figureOf(text, offset, match, quantity, words) }];
 };
 
 /**
- * The numbers of a piece of text, read with the tree's quantities (offset is where the text starts in the document). A quantity
- * in a currency is an amount of money and one in a percent unit a percentage; any other number (a count, a year, the first of
- * a range) is kept only by where it starts. Signed numbers (-5, ▲5, -$5) are not read at all.
+ * The numbers of a piece of text, read with the tree's quantities (offset is where the text starts in the document, and the
+ * quantities are in the same coordinates). A quantity in a currency is an amount of money and one in a percent unit a
+ * percentage; any other number (a count, a year, the first of a range) is kept only by where it starts. Signed numbers (-5,
+ * ▲5, -$5) are not read at all.
  */
 export const proseValues = (text: string, offset: number, quantities: readonly ProseQuantity[], words: AmountWords): ProseValues => {
   const numbers = [...text.matchAll(PROSE_NUMBER)].flatMap((match) => proseNumber(text, offset, match, quantities, words));
@@ -214,7 +241,11 @@ export const proseValues = (text: string, offset: number, quantities: readonly P
 export type LabelHit = { readonly start: number; readonly end: number } & ({ readonly label: RatioLabel } | { readonly term: string });
 
 /** What one sentence holds: where it ends, the words found in it, and its numbers. */
-export type RatioSentence = ProseValues & { readonly end: number; readonly hits: readonly LabelHit[] };
+export type RatioSentence = Omit<ProseValues, "figures"> & {
+  readonly figures: readonly Figure[];
+  readonly end: number;
+  readonly hits: readonly LabelHit[];
+};
 
 /** How far after its word a value may start (「営業利益は」, "net sales of", "an operating margin of"). */
 const MAX_GAP = 16;

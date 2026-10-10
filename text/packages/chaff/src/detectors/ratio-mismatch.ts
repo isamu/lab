@@ -8,13 +8,12 @@ import { withoutEdgeMarks } from "../facts/trim-marks.ts";
 import { proseAndTablesOf } from "../table-text.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { quoteAt } from "./structure-tree.ts";
-import { inDocumentOrder } from "../structure/issues.ts";
 import {
   proseValues,
   sentenceRatioMismatch,
   tableRatioMismatches,
   type AmountWords,
-  type ProseQuantity,
+  proseQuantitiesOf,
   type LabelHit,
   type RatioIssue,
   type RatioWords,
@@ -84,13 +83,6 @@ const hitsIn = (text: string, offset: number, words: RatioWords): LabelHit[] => 
   return longestHits([...labels, ...terms]);
 };
 
-const quantitiesOf = (doc: ProseDocument): ProseQuantity[] =>
-  doc.structure === undefined
-    ? []
-    : inDocumentOrder(doc.structure).flatMap((node) =>
-        node.kind === "quantity" ? [{ start: node.span.start, end: node.span.end, unit: String(node.attrs["unit"] ?? "") }] : [],
-      );
-
 const proseIssues = (doc: ProseDocument, words: RatioWords): RatioIssue[] => {
   const named = doc.sentences.flatMap((sentence) => {
     const text = doc.source.slice(sentence.span.start, sentence.span.end);
@@ -99,7 +91,7 @@ const proseIssues = (doc: ProseDocument, words: RatioWords): RatioIssue[] => {
   });
   if (named.length === 0) return [];
   const amountWords = amountWordsOf(doc, words.percentUnits);
-  const quantities = quantitiesOf(doc);
+  const quantities = proseQuantitiesOf(doc.structure);
   return named.flatMap(({ span, text, hits }) => {
     const issue = sentenceRatioMismatch({ hits, end: span.end, ...proseValues(text, span.start, quantities, amountWords) });
     return issue === undefined ? [] : [issue];
