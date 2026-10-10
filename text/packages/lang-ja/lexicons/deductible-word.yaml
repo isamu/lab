@@ -1,0 +1,8 @@
+# 免責金額・自己負担額の語（deductible-exceeds-limit）。group: not は、語を含むが免責金額を言わない言い回し。
+id: deductible-word
+language: ja
+entries:
+  - { pattern: 免責金額 }
+  - { pattern: 免責額 }
+  - { pattern: 自己負担額 }
+  - { pattern: 自己負担限度額, group: not }
