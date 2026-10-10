@@ -1,0 +1,237 @@
+{
+  "note": "Self-written earnings summaries (決算短信 / quarterly results releases) for fictional companies: a full-year summary with a results table and a second-quarter release with segments and a revised forecast, each in a clean version and a planted one that differs only on the lines below. They run as business/report: no genre is made for earnings releases. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: report-before-period-end (an earnings call dated before the end of the period it reports), period-label-conflict (the period the title names, such as 第2四半期 or FY2026, given as another period of the same kind for the same results), table-unit-mix (one row of a table in another scale of unit than the rest, 千円 among 百万円, or a row a thousand times its neighbours under a stated unit), ratio-mismatch (a margin row that is not the profit row divided by the sales row of the same column) and revision-direction-mismatch (a forecast said to be revised upward whose revised figure is below the previous one). A year-on-year rate in a table row is named for change-rate-mismatch, which reads rates in sentences. yarn planted earnings scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/annual",
+      "language": "ja",
+      "genre": "business/report",
+      "clean": "ja/annual.clean.md",
+      "planted": "ja/annual.planted.md",
+      "mistakes": [
+        {
+          "kind": "call-before-period-end",
+          "rule": "report-before-period-end",
+          "line": 9,
+          "clean": "決算説明会：2026年5月14日",
+          "planted": "決算説明会：2026年3月25日"
+        },
+        {
+          "kind": "period-label",
+          "rule": "period-label-conflict",
+          "line": 13,
+          "clean": "当期（2026年3月期）",
+          "planted": "当期（2025年3月期）"
+        },
+        {
+          "kind": "yoy-change",
+          "rule": "change-rate-mismatch",
+          "line": 19,
+          "clean": "| 1,320 | 10.0% |",
+          "planted": "| 1,320 | 12.0% |"
+        },
+        {
+          "kind": "unit-mix",
+          "rule": "table-unit-mix",
+          "line": 22,
+          "clean": "| 52 | 60 |",
+          "planted": "| 52,000 | 60,000 |"
+        },
+        {
+          "kind": "operating-margin",
+          "rule": "ratio-mismatch",
+          "line": 23,
+          "clean": "| 7.0% | 7.3% |",
+          "planted": "| 7.0% | 8.0% |"
+        },
+        {
+          "kind": "company-name",
+          "rule": "name-variant",
+          "line": 39,
+          "clean": "株式会社あおば電子 経営企画部",
+          "planted": "株式会社あおば電気 経営企画部"
+        }
+      ]
+    },
+    {
+      "id": "ja/quarterly",
+      "language": "ja",
+      "genre": "business/report",
+      "clean": "ja/quarterly.clean.md",
+      "planted": "ja/quarterly.planted.md",
+      "mistakes": [
+        {
+          "kind": "call-before-period-end",
+          "rule": "report-before-period-end",
+          "line": 9,
+          "clean": "決算説明会：2026年11月12日",
+          "planted": "決算説明会：2026年9月18日"
+        },
+        {
+          "kind": "yoy-change",
+          "rule": "change-rate-mismatch",
+          "line": 13,
+          "clean": "から10.0%増加しました",
+          "planted": "から12.0%増加しました"
+        },
+        {
+          "kind": "period-label",
+          "rule": "period-label-conflict",
+          "line": 15,
+          "clean": "| 当第2四半期累計 |",
+          "planted": "| 当第3四半期累計 |"
+        },
+        {
+          "kind": "operating-margin",
+          "rule": "ratio-mismatch",
+          "line": 19,
+          "clean": "| 7.0% | 7.5% |",
+          "planted": "| 7.0% | 8.5% |"
+        },
+        {
+          "kind": "unit-mix",
+          "rule": "table-unit-mix",
+          "line": 20,
+          "clean": "| 110百万円 | 130百万円 |",
+          "planted": "| 110,000千円 | 130,000千円 |"
+        },
+        {
+          "kind": "segment-total",
+          "rule": "total-mismatch",
+          "line": 31,
+          "clean": "| 合計 | 2,400 | 2,640 |",
+          "planted": "| 合計 | 2,400 | 2,680 |"
+        },
+        {
+          "kind": "forecast-revision",
+          "rule": "revision-direction-mismatch",
+          "line": 41,
+          "clean": "| 売上高 | 5,200 | 5,400 |",
+          "planted": "| 売上高 | 5,200 | 5,000 |"
+        },
+        {
+          "kind": "company-name",
+          "rule": "name-variant",
+          "line": 46,
+          "clean": "しおさい食品株式会社 広報IR室",
+          "planted": "しおざい食品株式会社 広報IR室"
+        }
+      ]
+    },
+    {
+      "id": "en/annual",
+      "language": "en",
+      "genre": "business/report",
+      "clean": "en/annual.clean.md",
+      "planted": "en/annual.planted.md",
+      "mistakes": [
+        {
+          "kind": "call-before-period-end",
+          "rule": "report-before-period-end",
+          "line": 9,
+          "clean": "Earnings call: May 14, 2026",
+          "planted": "Earnings call: March 25, 2026"
+        },
+        {
+          "kind": "period-label",
+          "rule": "period-label-conflict",
+          "line": 13,
+          "clean": "results for FY2026 are",
+          "planted": "results for FY2025 are"
+        },
+        {
+          "kind": "yoy-change",
+          "rule": "change-rate-mismatch",
+          "line": 19,
+          "clean": "| 1,320 | +10.0% |",
+          "planted": "| 1,320 | +12.0% |"
+        },
+        {
+          "kind": "unit-mix",
+          "rule": "table-unit-mix",
+          "line": 22,
+          "clean": "| 52 | 60 |",
+          "planted": "| 52,000 | 60,000 |"
+        },
+        {
+          "kind": "operating-margin",
+          "rule": "ratio-mismatch",
+          "line": 23,
+          "clean": "| 7.0% | 7.3% |",
+          "planted": "| 7.0% | 8.0% |"
+        },
+        {
+          "kind": "company-name",
+          "rule": "name-variant",
+          "line": 39,
+          "clean": "Investor Relations, Bluefield Instruments Inc.",
+          "planted": "Investor Relations, Bluefield Instrument Inc."
+        }
+      ]
+    },
+    {
+      "id": "en/quarterly",
+      "language": "en",
+      "genre": "business/report",
+      "clean": "en/quarterly.clean.md",
+      "planted": "en/quarterly.planted.md",
+      "mistakes": [
+        {
+          "kind": "call-before-period-end",
+          "rule": "report-before-period-end",
+          "line": 9,
+          "clean": "Earnings call: November 12, 2026",
+          "planted": "Earnings call: September 18, 2026"
+        },
+        {
+          "kind": "yoy-change",
+          "rule": "change-rate-mismatch",
+          "line": 13,
+          "clean": "rose 10.0% to",
+          "planted": "rose 12.0% to"
+        },
+        {
+          "kind": "period-label",
+          "rule": "period-label-conflict",
+          "line": 15,
+          "clean": "| Q2 FY2027 (six months) |",
+          "planted": "| Q3 FY2027 (six months) |"
+        },
+        {
+          "kind": "operating-margin",
+          "rule": "ratio-mismatch",
+          "line": 19,
+          "clean": "| 7.0% | 7.5% |",
+          "planted": "| 7.0% | 8.5% |"
+        },
+        {
+          "kind": "unit-mix",
+          "rule": "table-unit-mix",
+          "line": 20,
+          "clean": "| $110 million | $130 million |",
+          "planted": "| $110,000 thousand | $130,000 thousand |"
+        },
+        {
+          "kind": "segment-total",
+          "rule": "total-mismatch",
+          "line": 31,
+          "clean": "| Total | 2,400 | 2,640 |",
+          "planted": "| Total | 2,400 | 2,680 |"
+        },
+        {
+          "kind": "forecast-revision",
+          "rule": "revision-direction-mismatch",
+          "line": 41,
+          "clean": "| Net sales | 5,200 | 5,400 |",
+          "planted": "| Net sales | 5,200 | 5,000 |"
+        },
+        {
+          "kind": "company-name",
+          "rule": "name-variant",
+          "line": 46,
+          "clean": "Investor Relations, Seabright Foods Co., Ltd.",
+          "planted": "Investor Relations, Seabright Food Co., Ltd."
+        }
+      ]
+    }
+  ]
+}

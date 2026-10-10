@@ -6,6 +6,7 @@ import { yearOf, type DurationUnit } from "../derived/date-arithmetic.ts";
 import { durationMismatches, type DatedValue, type Duration } from "../derived/durations.ts";
 import { elapsedMismatches, type Elapsed, type OriginWord, type Year } from "../derived/elapsed.ts";
 import { numberWordCounts } from "../derived/number-word-counts.ts";
+import { hyphenatedCounts, withoutArticle } from "../derived/hyphenated-counts.ts";
 import {
   nightsDaysMismatches,
   nightsDaysPairs,
@@ -19,6 +20,7 @@ import { numeralCounts } from "../derived/unit-counts.ts";
 import { timeLengths, type LengthWords, type TimeLength } from "../derived/time-lengths.ts";
 import { workingHoursMismatches, type WorkingHoursMismatch } from "../derived/working-hours.ts";
 import { sessionHoursMismatches } from "../derived/session-hours.ts";
+import { computedLength, type ComputedLength } from "../derived/hours-and-minutes.ts";
 import { clockTimes } from "../compare/clock-time.ts";
 import { secondsOf, type Mark } from "../structure/time-marks.ts";
 import { proseAndTablesOf } from "../table-text.ts";
@@ -32,9 +34,9 @@ export const DURATION_LEXICONS: readonly (readonly [string, DurationUnit])[] = [
   ["duration-year", "year"],
 ];
 
-export type Quantity = Span & { readonly amount: number; readonly unit: string };
+export type Quantity = Span & { readonly amount: number; readonly unit: string; readonly attributive?: true };
 
-const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
+const patternsOf = (doc: ProseDocument, ...ids: string[]): string[] => ids.flatMap((id) => (doc.lexicons[id] ?? []).map((entry) => entry.pattern));
 
 const positioned = (doc: ProseDocument, id: string, position: "before" | "after"): string[] =>
   (doc.lexicons[id] ?? []).filter((entry) => (entry.position ?? "before") === position).map((entry) => entry.pattern.toLowerCase());
@@ -74,11 +76,11 @@ const datesOf = (tree: StructureNode): DatedValue[] =>
 
 const NEAR = 12;
 
-const textBefore = (doc: ProseDocument, span: Span): string =>
-  doc.source
-    .slice(Math.max(0, span.start - NEAR), span.start)
-    .toLowerCase()
-    .trimEnd();
+type Attributed = Span & { readonly attributive?: boolean };
+
+/** 名詞の前の期間は、冠詞の前まで見る（up to a 3-night stay の up to）。 */
+const textBefore = (doc: ProseDocument, span: Attributed): string =>
+  withoutArticle(doc.source.slice(Math.max(0, span.start - NEAR), span.start).toLowerCase(), span.attributive === true ? patternsOf(doc, "article") : []);
 const textAfter = (doc: ProseDocument, span: Span): string =>
   doc.source
     .slice(span.end, span.end + NEAR)
@@ -86,19 +88,19 @@ const textAfter = (doc: ProseDocument, span: Span): string =>
     .trimStart();
 
 /** 「約3か月」「3か月程度」"about 3 months": 目安の期間は足し算に使わない。 */
-const isApproximate = (doc: ProseDocument, span: Span): boolean =>
+const isApproximate = (doc: ProseDocument, span: Attributed): boolean =>
   positioned(doc, "approximate-marker", "before").some((word) => textBefore(doc, span).endsWith(word)) ||
   positioned(doc, "approximate-marker", "after").some((word) => textAfter(doc, span).startsWith(word));
 
-const durationsOf = (doc: ProseDocument, quantities: readonly Quantity[]): Duration[] =>
-  quantities.flatMap((quantity) => {
+/** 木の数量（3 months）と、名詞の前に書いた期間（a 3-month trial）。 */
+const durationsOf = (doc: ProseDocument, quantities: readonly Quantity[], text: string): Duration[] =>
+  [...quantities, ...hyphenatedCounts(text, patternsOf(doc, ...DURATION_LEXICONS.map(([id]) => id)))].flatMap((quantity) => {
     const unit = DURATION_LEXICONS.find(([id]) => patternsOf(doc, id).some((pattern) => pattern.normalize("NFKC") === quantity.unit))?.[1];
-    return unit === undefined || isApproximate(doc, quantity) ? [] : [{ start: quantity.start, end: quantity.end, amount: quantity.amount, unit }];
+    return unit === undefined || isApproximate(doc, quantity) ? [] : [{ ...quantity, unit }];
   });
 
 const sentencesOf = (doc: ProseDocument): Span[] => doc.sentences.map((sentence) => sentence.span);
 
-/** 泊数（3泊、3 nights、three nights）。text は地の文と表（リンク先や code は読まない）。目安の泊数（最大3泊）は除く。 */
 /** 数と単位（3泊、15 sessions、three nights）。 */
 const unitCountsOf = (doc: ProseDocument, text: string, units: readonly string[]): Count[] => {
   const numerals = numeralCounts(text, units);
@@ -107,8 +109,9 @@ const unitCountsOf = (doc: ProseDocument, text: string, units: readonly string[]
   return [...numerals, ...worded].toSorted((left, right) => left.start - right.start);
 };
 
-const nightsOf = (doc: ProseDocument, text: string): Count[] =>
-  unitCountsOf(doc, text, patternsOf(doc, "stay-night")).filter((count) => !isApproximate(doc, count));
+/** 泊数（3泊、3 nights、three nights、名詞の前の a 3-night stay）。text は地の文と表（リンク先や code は読まない）。目安の泊数（最大3泊）は除く。 */
+const nightsOf = (doc: ProseDocument, text: string, units = patternsOf(doc, "stay-night")): Count[] =>
+  [...unitCountsOf(doc, text, units), ...hyphenatedCounts(text, units)].filter((count) => !isApproximate(doc, count));
 
 const finding = (doc: ProseDocument, offset: number, values: Record<string, string | number>, variant?: string): Finding => ({
   rule: "duration-mismatch",
@@ -156,24 +159,21 @@ const lengthWords = (doc: ProseDocument): LengthWords => ({
 
 const lengthsOf = (doc: ProseDocument, text: string): TimeLength[] => timeLengths(text, lengthWords(doc));
 
-const MINUTES_PER_HOUR = 60;
-const HOUR_DECIMALS = 100;
+/** The variant suffix for each way of writing the computed length: 4時間15分 takes none, 7時間 "-hours", 45分 "-minutes". */
+const SHAPE_SUFFIX: Readonly<Record<ComputedLength["shape"], string>> = { "hours-minutes": "", hours: "-hours", minutes: "-minutes" };
 
-const hoursOf = (minutes: number): number => Math.round((minutes / MINUTES_PER_HOUR) * HOUR_DECIMALS) / HOUR_DECIMALS;
-
-const workingHoursFinding = (doc: ProseDocument, mismatch: WorkingHoursMismatch): Finding =>
-  finding(
-    doc,
-    mismatch.total.start,
-    {
-      start: written(doc, mismatch.start),
-      end: written(doc, mismatch.end),
-      break: written(doc, mismatch.break),
-      total: written(doc, mismatch.total),
-      expected: hoursOf(mismatch.expected),
-    },
-    "working-hours",
-  );
+const workingHoursFinding = (doc: ProseDocument, mismatch: WorkingHoursMismatch): Finding[] => {
+  const length = computedLength(mismatch.expected, mismatch.total.minutes);
+  if (length === undefined) return [];
+  const values = {
+    start: written(doc, mismatch.start),
+    end: written(doc, mismatch.end),
+    break: written(doc, mismatch.break),
+    total: written(doc, mismatch.total),
+    ...length.values,
+  };
+  return [finding(doc, mismatch.total.start, values, `working-hours${SHAPE_SUFFIX[length.shape]}`)];
+};
 
 /** 始業から終業まで、休憩を除いた時間が、書いた実働と合わない。 */
 const workingHoursOf = (doc: ProseDocument, text: string): Finding[] => {
@@ -185,15 +185,17 @@ const workingHoursOf = (doc: ProseDocument, text: string): Finding[] => {
     totals: marksOf(doc, "working-hours-total"),
     approximate: marksOf(doc, "approximate-marker"),
   };
-  return workingHoursMismatches(text, doc.source, sentencesOf(doc), times, lengthsOf(doc, text), words).map((mismatch) => workingHoursFinding(doc, mismatch));
+  return workingHoursMismatches(text, doc.source, sentencesOf(doc), times, lengthsOf(doc, text), words).flatMap((mismatch) =>
+    workingHoursFinding(doc, mismatch),
+  );
 };
 
 /** 始まり + 期間 ≠ 終わり。泊数が二つの日付の差と合わない。「2泊3日」の日数が泊数より一つ多くない。 */
 export const durationMismatch: Detector = (doc): Finding[] => {
   if (doc.structure === undefined) return [];
   const dates = datesOf(doc.structure);
-  const durations = durationsOf(doc, quantitiesOf(doc.structure, doc.source));
   const proseAndTables = proseAndTablesOf(doc);
+  const durations = durationsOf(doc, quantitiesOf(doc.structure, doc.source), proseAndTables);
   const nights = nightsOf(doc, proseAndTables);
   const pairs = nightsDaysPairs(
     doc.source,
@@ -233,20 +235,27 @@ export const durationProductMismatch: Detector = (doc): Finding[] => {
   const text = proseAndTablesOf(doc);
   const counts = unitCountsOf(doc, text, patternsOf(doc, "session-count-unit")).filter((count) => !isOrdinal(doc, text, count));
   const words = { totals: marksOf(doc, "session-total"), approximate: marksOf(doc, "approximate-marker") };
-  return sessionHoursMismatches(text, doc.source, sentencesOf(doc), counts, lengthsOf(doc, text), words).map((mismatch) => ({
-    rule: "duration-product-mismatch",
-    severity: "warning",
-    line: 0,
-    column: 0,
-    quote: quoteAt(doc.source, mismatch.total.start),
-    values: {
-      count: written(doc, mismatch.count),
-      length: written(doc, mismatch.length),
-      total: written(doc, mismatch.total),
-      expected: hoursOf(mismatch.expected),
-      offset: mismatch.total.start,
-    },
-  }));
+  return sessionHoursMismatches(text, doc.source, sentencesOf(doc), counts, lengthsOf(doc, text), words).flatMap((mismatch): Finding[] => {
+    const length = computedLength(mismatch.expected, mismatch.total.minutes);
+    if (length === undefined) return [];
+    return [
+      {
+        rule: "duration-product-mismatch",
+        severity: "warning",
+        line: 0,
+        column: 0,
+        quote: quoteAt(doc.source, mismatch.total.start),
+        ...(length.shape === "hours-minutes" ? {} : { variant: length.shape }),
+        values: {
+          count: written(doc, mismatch.count),
+          length: written(doc, mismatch.length),
+          total: written(doc, mismatch.total),
+          ...length.values,
+          offset: mismatch.total.start,
+        },
+      },
+    ];
+  });
 };
 
 /** 四桁の年。木が日付と読まなかった英語の年（founded in 2015、born 1980）もここで読む。 */

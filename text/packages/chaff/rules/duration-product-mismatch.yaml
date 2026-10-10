@@ -15,8 +15,16 @@ why:
   en: 'When a count of sessions, the length of one and the total are written together ("90 minutes per session, 15 sessions, 24 hours in total"), the reader cannot tell which of the three is right (15 sessions of 90 minutes make 22.5 hours). It happens when the count or the length is changed and the total is not. In one line, or one list, holding exactly one count, one length and one total, the count times the length is compared with the total.'
 
 message:
-  ja: "{length}×{count}なら合計は{expected}時間のはずですが、{total}と書かれています"
-  en: "{count} of {length} make {expected} hours, but the total is given as {total}"
+  ja: "{length}×{count}なら合計は{hours}時間{minutes}分のはずですが、{total}と書かれています"
+  en: "{count} of {length} make {hours} {hours|hour|hours} {minutes} {minutes|minute|minutes}, but the total is given as {total}"
+
+messages:
+  hours:
+    ja: "{length}×{count}なら合計は{hours}時間のはずですが、{total}と書かれています"
+    en: "{count} of {length} make {hours} {hours|hour|hours}, but the total is given as {total}"
+  minutes:
+    ja: "{length}×{count}なら合計は{minutes}分のはずですが、{total}と書かれています"
+    en: "{count} of {length} make {minutes} {minutes|minute|minutes}, but the total is given as {total}"
 
 how_to_fix:
   ja: 回数・1回の長さ・合計のどれが正しいかを確かめて、残りを直してください。
