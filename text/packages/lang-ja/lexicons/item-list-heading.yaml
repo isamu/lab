@@ -1,0 +1,20 @@
+# 用意するものを並べた見出し（unlisted-item-used）。group ingredient は材料、tool は道具も入る一覧。
+# 見出しの括弧・コロンより前の語が、どれかと同じときだけ（「材料（2～3人分）」は材料）。
+# tool の一覧がある文書だけ、手順の「〜で」「〜に入れる」の物も一覧と照らす。
+id: item-list-heading
+language: ja
+entries:
+  - { pattern: 材料, group: ingredient }
+  - { pattern: 主な材料, group: ingredient }
+  - { pattern: 材料と分量, group: ingredient }
+  - { pattern: 食材, group: ingredient }
+  - { pattern: 用意するもの, group: tool }
+  - { pattern: 用意する物, group: tool }
+  - { pattern: 準備するもの, group: tool }
+  - { pattern: 準備する物, group: tool }
+  - { pattern: 必要なもの, group: tool }
+  - { pattern: 必要な物, group: tool }
+  - { pattern: 道具, group: tool }
+  - { pattern: 必要な道具, group: tool }
+  - { pattern: 使う道具, group: tool }
+  - { pattern: 用具, group: tool }

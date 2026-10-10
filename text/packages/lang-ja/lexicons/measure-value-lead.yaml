@@ -1,0 +1,8 @@
+# 名前と量のあいだに置ける目安の語（unit-mismatch）。「重さは約1.2kgです」は 重さ の量として読み、書いた桁の半分までの差は合うとみなす。上限や下限（最大、以上）は量の言い直しではないので入れない。
+id: measure-value-lead
+language: ja
+entries:
+  - pattern: "約"
+  - pattern: "およそ"
+  - pattern: "概ね"
+  - pattern: "おおむね"

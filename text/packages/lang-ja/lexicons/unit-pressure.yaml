@@ -1,0 +1,12 @@
+# 圧力（基準はキロパスカル）の単位（unit-mismatch）。weight は基準の単位への倍率（1 psi は 6.894757 kPa、1 bar は 100 kPa）。
+id: unit-pressure
+language: ja
+entries:
+  - pattern: "kPa"
+    weight: 1
+  - pattern: "MPa"
+    weight: 1000
+  - pattern: "psi"
+    weight: 6.894757293168361
+  - pattern: "bar"
+    weight: 100

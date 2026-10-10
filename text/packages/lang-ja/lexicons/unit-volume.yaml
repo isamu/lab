@@ -14,3 +14,17 @@ entries:
     weight: 1
   - pattern: "ミリリットル"
     weight: 0.001
+  - pattern: "cc"
+    weight: 0.001
+  # 計量スプーンとカップは数の前に書く（大さじ1）。日本の計量カップは 200 mL。
+  - pattern: "大さじ"
+    weight: 0.015
+    position: before
+  - pattern: "小さじ"
+    weight: 0.005
+    position: before
+  - pattern: "カップ"
+    weight: 0.2
+    position: before
+  - pattern: "カップ"
+    weight: 0.2

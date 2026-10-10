@@ -1,0 +1,18 @@
+# 使う間隔の下限と、表の回数の列（interval-count-mismatch）。minimum は長さを下限にする語で、長さのすぐ後ろに書く
+# （4時間以上）。cue は下限の長さを使う間隔にする語で、同じ文の中に書く（間隔、あけ）。column は期間あたりの回数の列の見出しで、
+# weight はその期間の長さ（時間）。
+id: use-interval-word
+language: ja
+entries:
+  - { pattern: "以上", group: minimum, position: after }
+  - { pattern: "間隔", group: cue }
+  - { pattern: "あけ", group: cue }
+  - { pattern: "空け", group: cue }
+  - { pattern: "開け", group: cue }
+  - { pattern: "おい", group: cue }
+  - { pattern: "置い", group: cue }
+  - { pattern: "1日の服用回数", group: column, weight: 24 }
+  - { pattern: "1日の使用回数", group: column, weight: 24 }
+  - { pattern: "1日の回数", group: column, weight: 24 }
+  - { pattern: "1日回数", group: column, weight: 24 }
+  - { pattern: "服用回数", group: column, weight: 24 }

@@ -1,0 +1,17 @@
+# Labels a model number is written after ("Model number: KM-SP300"). name-variant reads the code of capitals and digits
+# that follows (a colon or a space between) as the document's model, and reports the same code written elsewhere with
+# only hyphens, spaces, case or width changed.
+id: model-code-label
+language: en
+entries:
+  - pattern: Model
+  - pattern: Model No.
+  - pattern: Model No
+  - pattern: Model number
+  - pattern: Part No.
+  - pattern: Part No
+  - pattern: Part number
+  - pattern: Product number
+  - pattern: Product code
+  - pattern: Catalog number
+  - pattern: Catalogue number

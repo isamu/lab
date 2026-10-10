@@ -1,0 +1,223 @@
+{
+  "note": "Self-written rental listings for fictional properties at invented addresses (an apartment and an office floor), each in a clean version and a planted one that differs only on the lines below. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: walk-time-distance-mismatch (walking minutes against the stated distance, at the rate the listing itself states: 80 m of road per minute, a part minute rounded up, the Japanese real-estate advertising standard), layout-code-mismatch (a layout code such as 2LDK or \"2 bedrooms\" against the rooms listed) and rent-multiple-mismatch (a deposit given both in months of rent and as an amount that is not that many months of the stated rent). unit-mismatch is named for an area in two units (㎡ and 坪, m² and sq ft; 1 坪 = 3.30579 ㎡, 1 m² = 10.7639 sq ft), and due-before-issue for an available-from date before the listing date. There is no listing genre; the documents run under business/press-release (public notices, whose guide asks that dates, prices, figures and names agree throughout). yarn planted listings scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/apartment",
+      "language": "ja",
+      "genre": "business/press-release",
+      "clean": "ja/apartment.clean.md",
+      "planted": "ja/apartment.planted.md",
+      "mistakes": [
+        {
+          "kind": "area-two-units",
+          "rule": "unit-mismatch",
+          "line": 16,
+          "clean": "52.80㎡（約15.97坪）",
+          "planted": "52.80㎡（約17.97坪）"
+        },
+        {
+          "kind": "monthly-total",
+          "rule": "total-mismatch",
+          "line": 31,
+          "clean": "| 合計（月額） | 104,500円 |",
+          "planted": "| 合計（月額） | 105,500円 |"
+        },
+        {
+          "kind": "walk-distance",
+          "rule": "walk-time-distance-mismatch",
+          "line": 13,
+          "clean": "駅 徒歩15分（約1.2km）",
+          "planted": "駅 徒歩5分（約1.2km）"
+        },
+        {
+          "kind": "move-in-before-listing",
+          "rule": "due-before-issue",
+          "line": 20,
+          "clean": "| 入居可能日 | 2026年11月1日 |",
+          "planted": "| 入居可能日 | 2025年11月1日 |"
+        },
+        {
+          "kind": "layout-code-rooms",
+          "rule": "layout-code-mismatch",
+          "line": 14,
+          "clean": "| 間取り | 2LDK |",
+          "planted": "| 間取り | 3LDK |"
+        },
+        {
+          "kind": "building-name",
+          "rule": "name-variant",
+          "line": 11,
+          "clean": "| 物件名 | メゾン桜ヶ丘 203号室 |",
+          "planted": "| 物件名 | メゾン桜ケ丘 203号室 |"
+        },
+        {
+          "kind": "deposit-months-yen",
+          "rule": "rent-multiple-mismatch",
+          "line": 37,
+          "clean": "| 敷金 | 1か月（98,000円） |",
+          "planted": "| 敷金 | 2か月（98,000円） |"
+        }
+      ]
+    },
+    {
+      "id": "ja/office",
+      "language": "ja",
+      "genre": "business/press-release",
+      "clean": "ja/office.clean.md",
+      "planted": "ja/office.planted.md",
+      "mistakes": [
+        {
+          "kind": "area-two-units",
+          "rule": "unit-mismatch",
+          "line": 14,
+          "clean": "165.29㎡（50.00坪）",
+          "planted": "165.29㎡（55.00坪）"
+        },
+        {
+          "kind": "monthly-total",
+          "rule": "total-mismatch",
+          "line": 29,
+          "clean": "| 合計（月額） | 1,270,000円（税別） |",
+          "planted": "| 合計（月額） | 1,250,000円（税別） |"
+        },
+        {
+          "kind": "walk-distance",
+          "rule": "walk-time-distance-mismatch",
+          "line": 13,
+          "clean": "駅 徒歩3分（約200m）",
+          "planted": "駅 徒歩3分（約600m）"
+        },
+        {
+          "kind": "move-in-before-listing",
+          "rule": "due-before-issue",
+          "line": 17,
+          "clean": "| 入居可能日 | 2026年12月1日 |",
+          "planted": "| 入居可能日 | 2026年9月1日 |"
+        },
+        {
+          "kind": "building-name",
+          "rule": "name-variant",
+          "line": 49,
+          "clean": "第二青葉ビルの1階には",
+          "planted": "第2青葉ビルの1階には"
+        },
+        {
+          "kind": "deposit-months-yen",
+          "rule": "rent-multiple-mismatch",
+          "line": 35,
+          "clean": "賃料の10か月分（10,000,000円）",
+          "planted": "賃料の10か月分（12,000,000円）"
+        }
+      ]
+    },
+    {
+      "id": "en/apartment",
+      "language": "en",
+      "genre": "business/press-release",
+      "clean": "en/apartment.clean.md",
+      "planted": "en/apartment.planted.md",
+      "mistakes": [
+        {
+          "kind": "area-two-units",
+          "rule": "unit-mismatch",
+          "line": 16,
+          "clean": "68 m² (732 sq ft)",
+          "planted": "68 m² (832 sq ft)"
+        },
+        {
+          "kind": "monthly-total",
+          "rule": "total-mismatch",
+          "line": 30,
+          "clean": "| Total per month | $2,030 |",
+          "planted": "| Total per month | $2,080 |"
+        },
+        {
+          "kind": "walk-distance",
+          "rule": "walk-time-distance-mismatch",
+          "line": 13,
+          "clean": "a 15-minute walk (1.2 km)",
+          "planted": "a 5-minute walk (1.2 km)"
+        },
+        {
+          "kind": "move-in-before-listing",
+          "rule": "due-before-issue",
+          "line": 19,
+          "clean": "| Available from | November 1, 2026 |",
+          "planted": "| Available from | November 1, 2025 |"
+        },
+        {
+          "kind": "layout-code-rooms",
+          "rule": "layout-code-mismatch",
+          "line": 14,
+          "clean": "| Layout | 2 bedrooms, 1 bathroom |",
+          "planted": "| Layout | 3 bedrooms, 1 bathroom |"
+        },
+        {
+          "kind": "building-name",
+          "rule": "name-variant",
+          "line": 50,
+          "clean": "a viewing of Hollybrook Residences",
+          "planted": "a viewing of Hollybrooke Residences"
+        },
+        {
+          "kind": "deposit-months-yen",
+          "rule": "rent-multiple-mismatch",
+          "line": 36,
+          "clean": "| Security deposit | 1 month's rent ($1,850) |",
+          "planted": "| Security deposit | 2 months' rent ($1,850) |"
+        }
+      ]
+    },
+    {
+      "id": "en/office",
+      "language": "en",
+      "genre": "business/press-release",
+      "clean": "en/office.clean.md",
+      "planted": "en/office.planted.md",
+      "mistakes": [
+        {
+          "kind": "area-two-units",
+          "rule": "unit-mismatch",
+          "line": 14,
+          "clean": "4,306 sq ft (400 m²)",
+          "planted": "4,306 sq ft (460 m²)"
+        },
+        {
+          "kind": "monthly-total",
+          "rule": "total-mismatch",
+          "line": 29,
+          "clean": "| Total per month | $26,000 |",
+          "planted": "| Total per month | $26,500 |"
+        },
+        {
+          "kind": "walk-distance",
+          "rule": "walk-time-distance-mismatch",
+          "line": 13,
+          "clean": "a 3-minute walk (200 m)",
+          "planted": "a 3-minute walk (600 m)"
+        },
+        {
+          "kind": "move-in-before-listing",
+          "rule": "due-before-issue",
+          "line": 17,
+          "clean": "| Available from | December 1, 2026 |",
+          "planted": "| Available from | August 1, 2026 |"
+        },
+        {
+          "kind": "building-name",
+          "rule": "name-variant",
+          "line": 48,
+          "clean": "Westgate House has a café",
+          "planted": "West Gate House has a café"
+        },
+        {
+          "kind": "deposit-months-yen",
+          "rule": "rent-multiple-mismatch",
+          "line": 35,
+          "clean": "Six months' rent ($129,000)",
+          "planted": "Six months' rent ($145,000)"
+        }
+      ]
+    }
+  ]
+}

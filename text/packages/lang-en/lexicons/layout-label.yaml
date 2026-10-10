@@ -1,0 +1,14 @@
+# The field names of a property listing for layout-code-mismatch. Group code is the field that gives the layout ("Layout: 2
+# bedrooms"), breakdown the field that lists the rooms on one line ("Rooms: Bedroom 1, Bedroom 2, Living room"), and
+# room-column the first column heading of a table of rooms ("| Room | Size |"). A table row heading, a column heading or the
+# name before a colon is read when, without marks and spaces at its ends, it is one of these (in any case).
+id: layout-label
+language: en
+entries:
+  - { pattern: "layout", group: code }
+  - { pattern: "floor plan", group: code }
+  - { pattern: "unit type", group: code }
+  - { pattern: "rooms", group: breakdown }
+  - { pattern: "room breakdown", group: breakdown }
+  - { pattern: "room sizes", group: breakdown }
+  - { pattern: "room", group: room-column }

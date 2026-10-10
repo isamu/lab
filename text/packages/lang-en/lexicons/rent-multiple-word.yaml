@@ -1,0 +1,44 @@
+# The words of rent-multiple-mismatch. month follows a count ("2 months"). link may stand between a label or a months
+# count and its amount ("Rent is $1,600", "2 months' rent, equal to $3,200"). skip says the amount is not the plain
+# multiple (a deposit with tax added), and a statement holding one is not compared. period says an amount is not per month
+# (per week, per year, per sq ft); a rent on a line with one is not read as the monthly rent.
+id: rent-multiple-word
+language: en
+entries:
+  - { pattern: month, group: month }
+  - { pattern: months, group: month }
+  - { pattern: is, group: link }
+  - { pattern: was, group: link }
+  - { pattern: of, group: link }
+  - { pattern: at, group: link }
+  - { pattern: equal to, group: link }
+  - { pattern: equivalent to, group: link }
+  - { pattern: monthly, group: link }
+  - { pattern: per month, group: link }
+  - { pattern: per week, group: period }
+  - { pattern: a week, group: period }
+  - { pattern: weekly, group: period }
+  - { pattern: pw, group: period }
+  - { pattern: p.w., group: period }
+  - { pattern: /week, group: period }
+  - { pattern: /wk, group: period }
+  - { pattern: per year, group: period }
+  - { pattern: a year, group: period }
+  - { pattern: annual, group: period }
+  - { pattern: annually, group: period }
+  - { pattern: per annum, group: period }
+  - { pattern: p.a., group: period }
+  - { pattern: /year, group: period }
+  - { pattern: /yr, group: period }
+  - { pattern: per night, group: period }
+  - { pattern: nightly, group: period }
+  - { pattern: per day, group: period }
+  - { pattern: daily, group: period }
+  - { pattern: per square foot, group: period }
+  - { pattern: per sq ft, group: period }
+  - { pattern: /sq ft, group: period }
+  - { pattern: tax included, group: skip }
+  - { pattern: including tax, group: skip }
+  - { pattern: incl. tax, group: skip }
+  - { pattern: plus tax, group: skip }
+  - { pattern: VAT, group: skip }

@@ -1,6 +1,6 @@
 # Words right before (before) or right after (after) a number that make it something other than the count of the list
 # below: an estimate (about three, three or more), a rank (the first three), how many to pick (choose two), a range, or a
-# length of time (the following two weeks:).
+# length of time (the following two weeks:), or the number of an article or section ("Section 7 Send questions to:").
 id: count-hedge
 language: en
 entries:
@@ -47,6 +47,16 @@ entries:
   - pattern: to
     position: before
   - pattern: "-"
+    position: before
+  - pattern: article
+    position: before
+  - pattern: section
+    position: before
+  - pattern: clause
+    position: before
+  - pattern: chapter
+    position: before
+  - pattern: paragraph
     position: before
   - pattern: "–"
     position: before

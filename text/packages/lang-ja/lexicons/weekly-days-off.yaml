@@ -1,0 +1,35 @@
+# 毎週の休みを言う語と、それが一年に必ず生む休日の数（annual-holidays-mismatch）。weight は52週ぶんの最低の日数で、
+# 年間休日がこれより少なければ食い違い。group every-week は毎週その日数を休む語（完全週休2日制は毎週2日で 52 × 2 = 104日、
+# 4週8休は4週ごとに8日で 52 ÷ 4 × 8 = 104日）。group not-every-week は毎週ではない語で、weight を持たない。「完全」の
+# 付かない週休2日制は「月に1回以上、2日休む週がある」という意味で、毎週2日休むとは限らない。これがある文書は比べない。
+id: weekly-days-off
+language: ja
+entries:
+  - { pattern: 完全週休2日制, group: every-week, weight: 104 }
+  - { pattern: 完全週休2日, group: every-week, weight: 104 }
+  - { pattern: 完全週休２日制, group: every-week, weight: 104 }
+  - { pattern: 完全週休２日, group: every-week, weight: 104 }
+  - { pattern: 完全週休二日制, group: every-week, weight: 104 }
+  - { pattern: 完全週休二日, group: every-week, weight: 104 }
+  - { pattern: 完全週休3日制, group: every-week, weight: 156 }
+  - { pattern: 完全週休3日, group: every-week, weight: 156 }
+  - { pattern: 完全週休３日制, group: every-week, weight: 156 }
+  - { pattern: 完全週休３日, group: every-week, weight: 156 }
+  - { pattern: 完全週休三日制, group: every-week, weight: 156 }
+  - { pattern: 完全週休三日, group: every-week, weight: 156 }
+  - { pattern: 4週8休, group: every-week, weight: 104 }
+  - { pattern: ４週８休, group: every-week, weight: 104 }
+  - { pattern: 4週6休, group: every-week, weight: 78 }
+  - { pattern: ４週６休, group: every-week, weight: 78 }
+  - { pattern: 週休2日制, group: not-every-week }
+  - { pattern: 週休2日, group: not-every-week }
+  - { pattern: 週休２日制, group: not-every-week }
+  - { pattern: 週休２日, group: not-every-week }
+  - { pattern: 週休二日制, group: not-every-week }
+  - { pattern: 週休二日, group: not-every-week }
+  - { pattern: 週休3日制, group: not-every-week }
+  - { pattern: 週休3日, group: not-every-week }
+  - { pattern: 週休３日制, group: not-every-week }
+  - { pattern: 週休３日, group: not-every-week }
+  - { pattern: 週休三日制, group: not-every-week }
+  - { pattern: 週休三日, group: not-every-week }

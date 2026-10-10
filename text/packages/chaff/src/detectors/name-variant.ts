@@ -1,15 +1,17 @@
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { cuedNamesIn, mentionsIn, nameVariants, suffixedNamesIn, withKnownNeighbours, type NameMention, type VariantChars } from "../name-variants.ts";
+import type { SpellingInput } from "../name-spelling-chars.ts";
 import { nameCueAt, type NameCues } from "../name-cue.ts";
 import { quoteAt } from "./structure-tree.ts";
 import { companyMentionsIn, companyVariants, type CompanyForm, type IsProper } from "../company-names.ts";
 import { proseAndTablesOf } from "../table-text.ts";
 import { tableBodyCells } from "../facts/table-facts.ts";
 import { cellNamesIn, cellNameVariants, proseNamesOf } from "../table-names.ts";
-import { placeMentionsIn, placeVariants, type PlaceReader, type PlaceWord } from "../place-names.ts";
+import { placeMentionsIn, placeVariants, type PlaceChars, type PlaceReader, type PlaceWord } from "../place-names.ts";
 import { productMentionsIn, productVariants, type ProductForm } from "../product-names.ts";
 import type { Span, TableCell, Token } from "../plugin.ts";
 import { proseWithCells } from "../table-cells.ts";
+import { modelCodeFindings } from "./name-variant-model-codes.ts";
 import { labelledSpans, orderNamesOf, quotedSpans, stemOf, titleCaseSpans, wordOrderVariants, type OrderWord } from "../name-word-order.ts";
 
 // 人の名前と読ませる敬称（様、さん）は語彙表 person-suffix、人を指す前置き（担当の）は person-lead、名前のすぐ後ろに来る語
@@ -33,6 +35,18 @@ const properOf = (doc: ProseDocument): IsProper => {
 /** 場所の名前の終わりに立つ語（口、駅、Street、St.）は語彙表 place-word が、同じ語の別の書き方の組（group）とともに言う。 */
 const placeWordsOf = (doc: ProseDocument): PlaceWord[] =>
   (doc.lexicons["place-word"] ?? []).map((entry) => ({ pattern: entry.pattern, group: entry.group ?? entry.pattern }));
+
+/**
+ * 場所の名前の字。方角や位置の字（東、上、新）は語彙表 place-direction、読みの同じ字（洲 と 州）は place-name-char と、字体の違う
+ * 同じ字の name-variant-char が組（group）ごとに言う。
+ */
+const placeCharsOf = (doc: ProseDocument, chars: VariantChars): PlaceChars => ({
+  directions: new Set(patternsOf(doc, "place-direction")),
+  sameReading: new Map([
+    ...chars,
+    ...(doc.lexicons["place-name-char"] ?? []).flatMap((entry): [string, string][] => (entry.group === undefined ? [] : [[entry.pattern, entry.group]])),
+  ]),
+});
 
 /** 名前の頭に立たない語の品詞（The、at、and）。 */
 const FUNCTION_POS: ReadonlySet<string> = new Set(["DET", "ADP", "PRON", "CCONJ", "SCONJ", "AUX", "PART"]);
@@ -81,15 +95,22 @@ type Reported = { readonly offset: number; readonly name: string; readonly usual
 const overlapsAny = (reported: readonly Reported[], offset: number, length: number): boolean =>
   reported.some((other) => other.offset < offset + length && offset < other.offset + other.name.length);
 
+/** 会社の名前の頭のひらがなを切り分ける語は、語彙表 company-name-kana が組（particle、opener、end）ごとに言う。 */
+const kanaStopsOf = (doc: ProseDocument): Parameters<typeof companyMentionsIn>[3] => {
+  const entries = doc.lexicons["company-name-kana"] ?? [];
+  const inGroup = (group: string): string[] => entries.filter((entry) => entry.group === group).map((entry) => entry.pattern);
+  return { particles: inGroup("particle"), openers: inGroup("opener"), ends: inGroup("end") };
+};
+
 /** 会社の名前の書き分け。名前の見方がすでに指した所と重なるものは除く。 */
 const companyFindings = (doc: ProseDocument, prose: string, reported: readonly Reported[]): Reported[] =>
-  companyVariants(companyMentionsIn(prose, companyFormsOf(doc), properOf(doc)))
+  companyVariants(companyMentionsIn(prose, companyFormsOf(doc), properOf(doc), kanaStopsOf(doc)))
     .filter(({ mention }) => !overlapsAny(reported, mention.offset, mention.surface.length))
     .map(({ mention, usual, kind }) => ({ offset: mention.offset, name: mention.surface, usual, kind: kind === "spelling" ? kind : `company-${kind}` }));
 
 /** 場所の名前の書き分け。表の本体の升の中の名前も読む（見出しの行は読まない）。人や会社の名前の見方がすでに指した所と重なるものは除く。 */
-const placeFindings = (doc: ProseDocument, prose: string, reported: readonly Reported[]): Reported[] =>
-  placeVariants(placeMentionsIn(proseWithCells(prose, cellsOf(doc)), placeWordsOf(doc), placeReaderOf(doc)))
+const placeFindings = (doc: ProseDocument, prose: string, reported: readonly Reported[], chars: VariantChars): Reported[] =>
+  placeVariants(placeMentionsIn(proseWithCells(prose, cellsOf(doc)), placeWordsOf(doc), placeReaderOf(doc)), placeCharsOf(doc, chars))
     .filter(({ mention }) => !overlapsAny(reported, mention.offset, mention.surface.length))
     .map(({ mention, usual, kind }) => ({ offset: mention.offset, name: mention.surface, usual, kind }));
 
@@ -160,6 +181,16 @@ const nameMentionsOf = (doc: ProseDocument, prose: string, chars: VariantChars):
   return withKnownNeighbours(cued, prose).toSorted((left, right) => left.offset - right.offset);
 };
 
+/** 一語の名前の中で同じ音を書く字（ヶ・ケ・が）は語彙表 name-spelling-char が組（group）ごとに言う。 */
+const spellingCharsOf = (doc: ProseDocument): VariantChars =>
+  new Map((doc.lexicons["name-spelling-char"] ?? []).flatMap((entry): [string, string][] => (entry.group === undefined ? [] : [[entry.pattern, entry.group]])));
+
+/** 名前の中の同じ音の字は、表の升の中の、解析器が固有名詞と読む語（物件名の升の 桜ケ丘）とも比べる。 */
+const spellingInputOf = (doc: ProseDocument): SpellingInput => {
+  const suffixes = patternsOf(doc, "person-suffix");
+  return { chars: spellingCharsOf(doc), alsoWritten: cellsOf(doc).flatMap((cell) => mentionsIn(cell.tokens ?? [], doc.source, suffixes)) };
+};
+
 /** 表の升に書いた名前の書き分け。名前の形をした升を、本文の名前と比べる。ほかの見方がすでに指した所と重なるものは除く。 */
 const tableFindings = (doc: ProseDocument, prose: string, mentions: readonly NameMention[], reported: readonly Reported[]): Reported[] =>
   cellNameVariants(cellNamesIn(cellsOf(doc)), proseNamesOf(mentions, prose))
@@ -171,7 +202,7 @@ export const nameVariant: Detector = (doc): Finding[] => {
   const prose = doc.prose ?? doc.source;
   const chars = variantCharsOf(doc);
   const mentions = nameMentionsOf(doc, prose, chars);
-  const names = nameVariants(mentions, chars).map(({ mention, usual, kind }): Reported => ({
+  const names = nameVariants(mentions, chars, spellingInputOf(doc)).map(({ mention, usual, kind }): Reported => ({
     offset: mention.offset,
     name: mention.surface,
     usual,
@@ -179,9 +210,11 @@ export const nameVariant: Detector = (doc): Finding[] => {
   }));
   const namesAndCompanies = [...names, ...companyFindings(doc, prose, names)];
   const withTables = [...namesAndCompanies, ...tableFindings(doc, prose, mentions, namesAndCompanies)];
-  const withPlaces = [...withTables, ...placeFindings(doc, prose, withTables)];
+  const withPlaces = [...withTables, ...placeFindings(doc, prose, withTables, chars)];
   const withProducts = [...withPlaces, ...productFindings(doc, prose, withPlaces)];
-  return [...withProducts, ...orderFindings(doc, prose, withProducts)]
+  const withOrder = [...withProducts, ...orderFindings(doc, prose, withProducts)];
+  const codes = modelCodeFindings(doc, prose).filter((code) => !overlapsAny(withOrder, code.offset, code.name.length));
+  return [...withOrder, ...codes]
     .toSorted((left, right) => left.offset - right.offset)
     .map(({ offset, name, usual, kind }) => ({
       rule: "",

@@ -8,7 +8,14 @@ import { partsAt, scopedFacts, type ScopedFact } from "../facts/fact-scope.ts";
 import { conditionPairConflicts, type ChangeSentence, type ChangeWords, type ConditionWord, type PairConflict, type WordAt } from "../facts/condition-pairs.ts";
 import { scopeConflicts, summaryConflicts, type FactConflict } from "../facts/fact-conflicts.ts";
 import { eventDateConflicts, type EventDateConflict, type EventWord } from "../facts/event-dates.ts";
+import { retentionConflicts, type LengthMark, type RetentionLength, type RetentionVerb, type RetentionWords } from "../facts/retention-periods.ts";
+import type { DurationUnit } from "../derived/date-arithmetic.ts";
+import { DURATION_LEXICONS, quantitiesOf, type Quantity } from "./derived-numbers.ts";
 import { quoteAt } from "./structure-tree.ts";
+import { measuredOf, valuesWith } from "./measured-facts.ts";
+import { durationValues, type DurationWord } from "../facts/duration-values.ts";
+import { overlapsAny, spanIndex } from "../compare/spans.ts";
+import { documentTermConflicts, type TermWord, type TermWords } from "../facts/document-terms.ts";
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
 
@@ -23,8 +30,17 @@ export const factWordsOf = (doc: ProseDocument): FactWords => ({
 
 const factsByDocument = new WeakMap<ProseDocument, readonly ScopedFact[]>();
 
+const durationWordsOf = (doc: ProseDocument): DurationWord[] =>
+  DURATION_LEXICONS.flatMap(([id, unit]) => patternsOf(doc, id).map((pattern): DurationWord => ({ pattern, unit })));
+
+/**
+ * 単位の語彙表の量（410 g、1.2 kg）と期間（3 months）も値として読む。木が単位を読まない量は、数だけでは升や文の値にならない。
+ * 期間と重なる量は読まない（3 months の 3 m）。
+ */
 const readFacts = (doc: ProseDocument, tree: StructureNode): ScopedFact[] => {
-  const values = factValues(tree, doc.source, nameSpans(doc));
+  const durations = durationValues(doc.source, factValues(tree, doc.source, nameSpans(doc)), durationWordsOf(doc));
+  const taken = spanIndex(durations);
+  const values = valuesWith(tree, doc, [...measuredOf(doc).filter((value) => !overlapsAny(taken, value)), ...durations]);
   const facts = [...labelledFacts(doc.source, values, factWordsOf(doc)), ...tableFacts(doc.source, values)];
   return scopedFacts(facts, tree, doc.source, patternsOf(doc, "summary-heading"));
 };
@@ -51,8 +67,77 @@ const findingOf =
     values: { label: conflict.fact.label, value: shown(doc, conflict.fact.value), other: shown(doc, conflict.other), offset: conflict.fact.value.start },
   });
 
-/** 同じ節で、同じ名前に二通りの値（締切：10月5日 と 締切：10月7日）。 */
-export const factConflict: Detector = (doc): Finding[] => scopeConflicts(factsOf(doc)).map(findingOf("fact-conflict", doc));
+const UNITS: readonly DurationUnit[] = ["day", "week", "month", "year"];
+
+const isDurationUnit = (group: string | undefined): group is DurationUnit => UNITS.some((unit) => unit === group);
+
+const retentionUnitOf = (doc: ProseDocument, unit: string): DurationUnit | undefined => {
+  const listed = DURATION_LEXICONS.find(([id]) => patternsOf(doc, id).some((pattern) => pattern.normalize("NFKC") === unit))?.[1];
+  const extra = (doc.lexicons["retention-unit"] ?? []).find((entry) => entry.pattern.normalize("NFKC") === unit)?.group;
+  return listed ?? (isDurationUnit(extra) ? extra : undefined);
+};
+
+/** 単位の語彙表に、書いた単位より長い形（か月 に対する か月間）があれば、そこまで。木の数量は か月 で終わる。 */
+const endWithLongerUnit = (doc: ProseDocument, quantity: Quantity): number => {
+  const unitStart = quantity.end - quantity.unit.length;
+  const longer = DURATION_LEXICONS.flatMap(([id]) => patternsOf(doc, id))
+    .filter((pattern) => pattern.length > quantity.unit.length && pattern.startsWith(quantity.unit) && doc.source.startsWith(pattern, unitStart))
+    .reduce((longest, pattern) => Math.max(longest, pattern.length), quantity.unit.length);
+  return unitStart + longer;
+};
+
+const retentionLengthsOf = (doc: ProseDocument, tree: StructureNode): RetentionLength[] =>
+  quantitiesOf(tree, doc.source).flatMap((quantity) => {
+    const unit = retentionUnitOf(doc, quantity.unit);
+    return unit === undefined ? [] : [{ start: quantity.start, end: endWithLongerUnit(doc, quantity), amount: quantity.amount, unit }];
+  });
+
+const retentionVerbsOf = (doc: ProseDocument): RetentionVerb[] =>
+  (doc.lexicons["retention-verb"] ?? []).map((entry) => ({ pattern: entry.pattern, group: entry.group ?? "", position: entry.position ?? "before" }));
+
+const lengthMarksOf = (doc: ProseDocument): LengthMark[] =>
+  (doc.lexicons["retention-length-mark"] ?? []).map((entry) => ({ pattern: entry.pattern, group: entry.group ?? "", position: entry.position ?? "before" }));
+
+const retentionWordsOf = (doc: ProseDocument): RetentionWords => ({
+  verbs: retentionVerbsOf(doc),
+  marks: lengthMarksOf(doc),
+  modifiers: patternsOf(doc, "retention-length-modifier"),
+  bounds: [...wordsAt(doc, "approximate-marker"), ...wordsAt(doc, "retention-bound")],
+  joiners: patternsOf(doc, "fact-name-joiner"),
+  objectMarks: patternsOf(doc, "retention-object-mark"),
+});
+
+/** 文書のどこかで、同じものの保存期間が二通り（1年間保存 と 3年間を経過したら削除）。 */
+const retentionFindings = (doc: ProseDocument): Finding[] => {
+  const tree = doc.structure;
+  if (tree === undefined) return [];
+  const sentences = doc.sentences.map((sentence) => ({ ...sentence.span, tokens: sentence.tokens ?? [] }));
+  return retentionConflicts(doc.source, sentences, retentionLengthsOf(doc, tree), retentionWordsOf(doc)).map(({ object, value, other }): Finding => ({
+    rule: "fact-conflict",
+    severity: "warning",
+    line: 0,
+    column: 0,
+    quote: quoteAt(doc.source, value.start),
+    variant: "retention",
+    values: { label: object, value: doc.source.slice(value.start, value.end), other: doc.source.slice(other.start, other.end), offset: value.start },
+  }));
+};
+
+const termWordsOf = (doc: ProseDocument): TermWords => ({
+  terms: (doc.lexicons["fact-document-term"] ?? []).map((entry): TermWord => ({ pattern: entry.pattern, group: entry.group ?? entry.pattern })),
+  determiners: patternsOf(doc, "fact-label-drop"),
+});
+
+/** 文書全体で一つの項目（試用期間）の、表の値と違う別の節の文の値。 */
+const termFindings = (doc: ProseDocument): Finding[] =>
+  documentTermConflicts(factsOf(doc), termWordsOf(doc)).map((conflict) => ({ ...findingOf("fact-conflict", doc)(conflict), variant: "term" }));
+
+/** 同じ節で、同じ名前に二通りの値（締切：10月5日 と 締切：10月7日）。文書のどこでも、同じものに二通りの保存期間。 */
+export const factConflict: Detector = (doc): Finding[] => [
+  ...scopeConflicts(factsOf(doc)).map(findingOf("fact-conflict", doc)),
+  ...termFindings(doc),
+  ...retentionFindings(doc),
+];
 
 const countedPhrasesOf = (doc: ProseDocument): CountedPhrase[] =>
   doc.sentences.flatMap((sentence) => {

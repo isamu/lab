@@ -1,0 +1,31 @@
+# 数に付けて、申し込んだ・招かれた・参加する人の数だと言う語（count-over-capacity）。before は数の前（申込45名、招待者40名）、
+# after は数の後ろ（95名の方にお申し込み、28名が登録）に書く。
+id: headcount-label
+language: ja
+entries:
+  - { pattern: 申込, position: before }
+  - { pattern: 申込者, position: before }
+  - { pattern: 申込者数, position: before }
+  - { pattern: 申込数, position: before }
+  - { pattern: 申し込み, position: before }
+  - { pattern: 応募者, position: before }
+  - { pattern: 応募者数, position: before }
+  - { pattern: 登録者, position: before }
+  - { pattern: 登録者数, position: before }
+  - { pattern: 参加者, position: before }
+  - { pattern: 参加者数, position: before }
+  - { pattern: 参加予定者, position: before }
+  - { pattern: 出席者, position: before }
+  - { pattern: 出席予定者, position: before }
+  - { pattern: 招待者, position: before }
+  - { pattern: 招待者数, position: before }
+  - { pattern: 受講者, position: before }
+  - { pattern: 受講予定者, position: before }
+  - { pattern: 申し込み, position: after }
+  - { pattern: 申込み, position: after }
+  - { pattern: 申込, position: after }
+  - { pattern: 応募, position: after }
+  - { pattern: 登録, position: after }
+  - { pattern: 参加予定, position: after }
+  - { pattern: 出席予定, position: after }
+  - { pattern: 招待, position: after }

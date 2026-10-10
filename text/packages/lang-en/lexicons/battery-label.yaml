@@ -1,0 +1,50 @@
+# Item names that say a battery's capacity, its consumption and how long it lasts (capacity-runtime-mismatch). An item name
+# holding one of these words is read as a value of that group. group capacity is the capacity, consumption a current or power
+# drawn, runtime how long the device runs. standby marks a value while idle: a standby consumption pairs only with a standby
+# time, an ordinary one only with a use time. peak marks a maximum: written outside the brackets of the item name, or as the
+# whole of its bracket or of the column heading, that consumption is not used (the runtime at the maximum draw is only a lower
+# bound). A condition in brackets ("(50% volume)") pairs a consumption with the runtime under the same condition.
+# group bound marks a value bounded from one side ("at least 10 hours", "under 500 mA"); such a value is not compared.
+# A bracket or a column heading that is only a standby or peak word ("(idle)", "Max.") marks the value too; group state is a word
+# that may follow it ("idle mode").
+id: battery-label
+language: en
+entries:
+  - { pattern: "capacity", group: capacity }
+  - { pattern: "current draw", group: consumption }
+  - { pattern: "current consumption", group: consumption }
+  - { pattern: "power consumption", group: consumption }
+  - { pattern: "power draw", group: consumption }
+  - { pattern: "operating current", group: consumption }
+  - { pattern: "average current", group: consumption }
+  - { pattern: "supply current", group: consumption }
+  - { pattern: "standby current", group: consumption }
+  - { pattern: "battery life", group: runtime }
+  - { pattern: "runtime", group: runtime }
+  - { pattern: "run time", group: runtime }
+  - { pattern: "playback time", group: runtime }
+  - { pattern: "play time", group: runtime }
+  - { pattern: "operating time", group: runtime }
+  - { pattern: "usage time", group: runtime }
+  - { pattern: "use time", group: runtime }
+  - { pattern: "talk time", group: runtime }
+  - { pattern: "standby time", group: runtime }
+  - { pattern: "standby", group: standby }
+  - { pattern: "idle", group: standby }
+  - { pattern: "sleep", group: standby }
+  - { pattern: "max", group: peak }
+  - { pattern: "maximum", group: peak }
+  - { pattern: "peak", group: peak }
+  - { pattern: "inrush", group: peak }
+  - { pattern: "up to", group: peak }
+  - { pattern: "at least", group: bound, position: before }
+  - { pattern: "at most", group: bound, position: before }
+  - { pattern: "more than", group: bound, position: before }
+  - { pattern: "less than", group: bound, position: before }
+  - { pattern: "over", group: bound, position: before }
+  - { pattern: "under", group: bound, position: before }
+  - { pattern: "within", group: bound, position: before }
+  - { pattern: "or more", group: bound, position: after }
+  - { pattern: "or less", group: bound, position: after }
+  - { pattern: "mode", group: state }
+  - { pattern: "state", group: state }

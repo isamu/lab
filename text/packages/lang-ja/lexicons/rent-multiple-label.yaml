@@ -1,0 +1,13 @@
+# 賃料の何か月分で書く契約時の費用の見出し（rent-multiple-mismatch）。「敷金 1か月（85,000円）」のように月数と金額を
+# 並べて書いたとき、金額が賃料のその月数分かを比べる。
+id: rent-multiple-label
+language: ja
+entries:
+  - pattern: 敷金
+  - pattern: 礼金
+  - pattern: 保証金
+  - pattern: 償却
+  - pattern: 敷引
+  - pattern: 敷引き
+  - pattern: 権利金
+  - pattern: 更新料

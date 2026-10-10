@@ -1,0 +1,9 @@
+# A counted noun and the "of" that says what it is a kind of ("the following three kinds of conduct:"). The "of" here
+# names what the list holds, so it is not the "of" that picks from a list ("two of the following").
+id: count-frame
+language: en
+entries:
+  - pattern: kinds of
+  - pattern: types of
+  - pattern: categories of
+  - pattern: sorts of

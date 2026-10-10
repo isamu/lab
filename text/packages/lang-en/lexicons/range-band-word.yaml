@@ -1,0 +1,49 @@
+# The words that bound a band of a table column or a list (ages, weights, amounts, scores) for range-band-mismatch. Group
+# connector stands between two numbers ("7 to 11", "between 6 and 11"); after a number alone it leaves the band open above.
+# A connector with position before may also stand before a number alone to close a band above; a hyphen may not ("- 5" is
+# a bullet or a minus), so none here does. lower-inclusive and lower-exclusive bound a band below ("12 and over", "over 12"), upper-inclusive and
+# upper-exclusive above ("6 and under", "under 7"). position says on which side of the number the word is written (after
+# when left out). Group lead is a word a band may open with that says nothing about its ends ("ages 6-11").
+id: range-band-word
+language: en
+entries:
+  - { pattern: "to", group: connector }
+  - { pattern: "-", group: connector }
+  - { pattern: "‐", group: connector }
+  - { pattern: "–", group: connector }
+  - { pattern: "—", group: connector }
+  - { pattern: "through", group: connector }
+  - { pattern: "and", group: connector }
+  - { pattern: "between", group: lead }
+  - { pattern: "from", group: lead }
+  - { pattern: "ages", group: lead }
+  - { pattern: "age", group: lead }
+  - { pattern: "aged", group: lead }
+  - { pattern: "and over", group: lower-inclusive }
+  - { pattern: "or over", group: lower-inclusive }
+  - { pattern: "and older", group: lower-inclusive }
+  - { pattern: "or older", group: lower-inclusive }
+  - { pattern: "and above", group: lower-inclusive }
+  - { pattern: "or above", group: lower-inclusive }
+  - { pattern: "or more", group: lower-inclusive }
+  - { pattern: "and up", group: lower-inclusive }
+  - { pattern: "+", group: lower-inclusive }
+  - { pattern: "at least", group: lower-inclusive, position: before }
+  - { pattern: "from", group: lower-inclusive, position: before }
+  - { pattern: "over", group: lower-exclusive, position: before }
+  - { pattern: "above", group: lower-exclusive, position: before }
+  - { pattern: "more than", group: lower-exclusive, position: before }
+  - { pattern: "older than", group: lower-exclusive, position: before }
+  - { pattern: "and under", group: upper-inclusive }
+  - { pattern: "or under", group: upper-inclusive }
+  - { pattern: "and younger", group: upper-inclusive }
+  - { pattern: "or younger", group: upper-inclusive }
+  - { pattern: "and below", group: upper-inclusive }
+  - { pattern: "or below", group: upper-inclusive }
+  - { pattern: "or less", group: upper-inclusive }
+  - { pattern: "up to", group: upper-inclusive, position: before }
+  - { pattern: "at most", group: upper-inclusive, position: before }
+  - { pattern: "under", group: upper-exclusive, position: before }
+  - { pattern: "below", group: upper-exclusive, position: before }
+  - { pattern: "less than", group: upper-exclusive, position: before }
+  - { pattern: "younger than", group: upper-exclusive, position: before }

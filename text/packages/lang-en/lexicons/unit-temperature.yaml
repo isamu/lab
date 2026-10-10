@@ -1,0 +1,20 @@
+# Units of temperature (base: degree Celsius) (unit-mismatch). weight is the factor to the base unit; the offset of a scale's zero is in unit-zero. "degrees" alone is not a unit: it is also an angle, and an oven at "350 degrees" may be Fahrenheit or Celsius.
+id: unit-temperature
+language: en
+entries:
+  - pattern: "°C"
+    weight: 1
+  - pattern: "℃"
+    weight: 1
+  - pattern: "degrees Celsius"
+    weight: 1
+  - pattern: "degrees C"
+    weight: 1
+  - pattern: "°F"
+    weight: 0.5555555555555556
+  - pattern: "℉"
+    weight: 0.5555555555555556
+  - pattern: "degrees Fahrenheit"
+    weight: 0.5555555555555556
+  - pattern: "degrees F"
+    weight: 0.5555555555555556

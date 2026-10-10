@@ -1,0 +1,23 @@
+# 文書に書いた徒歩の速さを読む語（walk-time-distance-mismatch）。速さを書いていない文書の速さは、文書の種類（profiles/listing.yaml）が決める。
+# group per は長さを速さにする語（80mを1分、分速80m）。position は長さのどちら側か、weight はその時間の秒。
+# group round-up は、速さを書いた行にあれば端数を切り上げると言う語。group not-round-up は、切り上げではないと言う語で、
+# 切り上げの語より先に効く（切り上げません）。どちらも無ければ、端数はどちらに丸めてもよい。
+id: walk-rate
+language: ja
+entries:
+  - { pattern: "を1分", position: after, group: per, weight: 60 }
+  - { pattern: "につき1分", position: after, group: per, weight: 60 }
+  - { pattern: "で1分", position: after, group: per, weight: 60 }
+  - { pattern: "/分", position: after, group: per, weight: 60 }
+  - { pattern: "毎分", position: after, group: per, weight: 60 }
+  - { pattern: "/h", position: after, group: per, weight: 3600 }
+  - { pattern: "/時", position: after, group: per, weight: 3600 }
+  - { pattern: "分速", position: before, group: per, weight: 60 }
+  - { pattern: "時速", position: before, group: per, weight: 3600 }
+  - { pattern: "切り上げ", group: round-up }
+  - { pattern: "切上げ", group: round-up }
+  - { pattern: "切り上げません", group: not-round-up }
+  - { pattern: "切り上げない", group: not-round-up }
+  - { pattern: "切り上げず", group: not-round-up }
+  - { pattern: "切り捨て", group: not-round-up }
+  - { pattern: "四捨五入", group: not-round-up }

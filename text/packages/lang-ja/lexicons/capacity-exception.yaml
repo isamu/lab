@@ -1,0 +1,30 @@
+# 定員と人数を比べない印（count-over-capacity）。group overflow は定員か人数と同じ節にあれば、定員を超える申込が書いたとおりのこと
+# （キャンセル待ち、抽選）。per-session は同じ行にあれば一回・一日あたりの数（各回定員20名）。other-occasion は人数と同じ行に
+# あれば別の時の人数（昨年は120名が参加）。negation は人数の後ろの句にあれば申し込んでいない人の数（45名が登録していません）。
+id: capacity-exception
+language: ja
+entries:
+  - { pattern: キャンセル待ち, group: overflow }
+  - { pattern: 補欠, group: overflow }
+  - { pattern: 抽選, group: overflow }
+  - { pattern: 各回, group: per-session }
+  - { pattern: 1回あたり, group: per-session }
+  - { pattern: 1回につき, group: per-session }
+  - { pattern: 各日, group: per-session }
+  - { pattern: 1日あたり, group: per-session }
+  - { pattern: 各クラス, group: per-session }
+  - { pattern: 各コース, group: per-session }
+  - { pattern: 各部, group: per-session }
+  - { pattern: 各教室, group: per-session }
+  - { pattern: 昨年, group: other-occasion }
+  - { pattern: 前年, group: other-occasion }
+  - { pattern: 前回, group: other-occasion }
+  - { pattern: 例年, group: other-occasion }
+  - { pattern: 過去, group: other-occasion }
+  - { pattern: 累計, group: other-occasion }
+  - { pattern: 延べ, group: other-occasion }
+  - { pattern: のべ, group: other-occasion }
+  - { pattern: していない, group: negation }
+  - { pattern: していません, group: negation }
+  - { pattern: されていない, group: negation }
+  - { pattern: されていません, group: negation }

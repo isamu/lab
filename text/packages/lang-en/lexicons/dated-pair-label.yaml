@@ -1,0 +1,22 @@
+# Pairs of dates that must come in order. group names the pair; position before marks the word of the date that comes
+# first, after the word of the date that must not be earlier. A line (or a table's first column) starting with one and a
+# date with its year is compared, and an after date before the before date is reported (due-before-issue).
+id: dated-pair-label
+language: en
+entries:
+  - { pattern: "Listed on", group: listing, position: before }
+  - { pattern: "Listed", group: listing, position: before }
+  - { pattern: "Listing date", group: listing, position: before }
+  - { pattern: "Date listed", group: listing, position: before }
+  - { pattern: "Available from", group: listing, position: after }
+  - { pattern: "Move-in date", group: listing, position: after }
+  - { pattern: "Move-in", group: listing, position: after }
+  - { pattern: "Move in", group: listing, position: after }
+  # A bare "Posted" heads blog and release-note dates too, so it pairs only with an application deadline, never with
+  # "Available". A bare "Closing date" is left out: a sale or a reporting period closes too.
+  - { pattern: "Posted on", group: job, position: before }
+  - { pattern: "Posted", group: job, position: before }
+  - { pattern: "Date posted", group: job, position: before }
+  - { pattern: "Application deadline", group: job, position: after }
+  - { pattern: "Apply by", group: job, position: after }
+  - { pattern: "Application closing date", group: job, position: after }

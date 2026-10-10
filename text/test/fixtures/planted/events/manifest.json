@@ -1,0 +1,265 @@
+{
+  "note": "Self-written event documents (an invitation to a seminar and an announcement of a community event, in each language), each in a clean version and a planted one that differs only on the lines below. The invitations run as business/email, since each is a letter (拝啓, Dear Members); the announcements as business/press-release, the genre for public notices. There is no event genre. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: deadline-after-event (a registration or RSVP deadline after the date of the event it is for), time-range-reversed (a session whose end time is before its start) and count-over-capacity (a stated capacity smaller than the number already registered). yarn planted events scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/seminar",
+      "language": "ja",
+      "genre": "business/email",
+      "clean": "ja/seminar.clean.md",
+      "planted": "ja/seminar.planted.md",
+      "mistakes": [
+        {
+          "kind": "event-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 13,
+          "clean": "日時：2026年11月20日（金）",
+          "planted": "日時：2026年11月20日（木）"
+        },
+        {
+          "kind": "deadline-after-event",
+          "rule": "deadline-after-event",
+          "line": 46,
+          "clean": "2026年11月13日（金）までに",
+          "planted": "2026年11月27日（金）までに"
+        },
+        {
+          "kind": "fee-total",
+          "rule": "total-mismatch",
+          "line": 40,
+          "clean": "| 合計 | 8,500円 |",
+          "planted": "| 合計 | 9,500円 |"
+        },
+        {
+          "kind": "venue-two-ways",
+          "rule": "name-variant",
+          "line": 50,
+          "clean": "当日は、丸の内ビジネスセンター 1階",
+          "planted": "当日は、丸の内ビジネス・センター 1階"
+        },
+        {
+          "kind": "session-end-before-start",
+          "rule": "time-range-reversed",
+          "line": 29,
+          "clean": "| 15:15〜16:15 | 事例紹介",
+          "planted": "| 15:15〜14:15 | 事例紹介"
+        },
+        {
+          "kind": "capacity-below-count",
+          "rule": "count-over-capacity",
+          "line": 17,
+          "clean": "定員：120名（先着順）",
+          "planted": "定員：90名（先着順）"
+        },
+        {
+          "kind": "programme-time-order",
+          "rule": "time-order",
+          "line": 30,
+          "clean": "| 16:15〜16:55 | パネル",
+          "planted": "| 14:15〜14:55 | パネル"
+        },
+        {
+          "kind": "phone-swapped",
+          "rule": "phone-number-variant",
+          "line": 54,
+          "clean": "担当：中村（電話 03-6555-0142）",
+          "planted": "担当：中村（電話 03-6555-0124）"
+        }
+      ]
+    },
+    {
+      "id": "ja/festival",
+      "language": "ja",
+      "genre": "business/press-release",
+      "clean": "ja/festival.clean.md",
+      "planted": "ja/festival.planted.md",
+      "mistakes": [
+        {
+          "kind": "event-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 11,
+          "clean": "日時：2026年11月28日（土）",
+          "planted": "日時：2026年11月28日（日）"
+        },
+        {
+          "kind": "deadline-after-event",
+          "rule": "deadline-after-event",
+          "line": 33,
+          "clean": "申込締切：2026年11月21日（土）",
+          "planted": "申込締切：2026年12月5日（土）"
+        },
+        {
+          "kind": "fee-total",
+          "rule": "total-mismatch",
+          "line": 42,
+          "clean": "| 合計 | 1,400円 |",
+          "planted": "| 合計 | 1,500円 |"
+        },
+        {
+          "kind": "venue-two-ways",
+          "rule": "name-variant",
+          "line": 44,
+          "clean": "当日あおば台地区センターの受付",
+          "planted": "当日あおば台地域センターの受付"
+        },
+        {
+          "kind": "session-end-before-start",
+          "rule": "time-range-reversed",
+          "line": 25,
+          "clean": "| 12:30〜13:30 | 子ども工作教室",
+          "planted": "| 12:30〜11:30 | 子ども工作教室"
+        },
+        {
+          "kind": "capacity-below-count",
+          "rule": "count-over-capacity",
+          "line": 31,
+          "clean": "定員は30名です",
+          "planted": "定員は25名です"
+        },
+        {
+          "kind": "programme-time-order",
+          "rule": "time-order",
+          "line": 26,
+          "clean": "| 13:30〜14:30 | 地元バンド",
+          "planted": "| 11:30〜12:30 | 地元バンド"
+        },
+        {
+          "kind": "phone-swapped",
+          "rule": "phone-number-variant",
+          "line": 52,
+          "clean": "事務局（電話：045-555-0186）まで",
+          "planted": "事務局（電話：045-555-0168）まで"
+        }
+      ]
+    },
+    {
+      "id": "en/seminar",
+      "language": "en",
+      "genre": "business/email",
+      "clean": "en/seminar.clean.md",
+      "planted": "en/seminar.planted.md",
+      "mistakes": [
+        {
+          "kind": "event-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 9,
+          "clean": "Date: Friday, November 20, 2026",
+          "planted": "Date: Thursday, November 20, 2026"
+        },
+        {
+          "kind": "deadline-after-event",
+          "rule": "deadline-after-event",
+          "line": 42,
+          "clean": "register by Friday, November 13, 2026",
+          "planted": "register by Friday, November 27, 2026"
+        },
+        {
+          "kind": "fee-total",
+          "rule": "total-mismatch",
+          "line": 36,
+          "clean": "| Total | $100 |",
+          "planted": "| Total | $110 |"
+        },
+        {
+          "kind": "venue-two-ways",
+          "rule": "name-variant",
+          "line": 46,
+          "clean": "reception desk of Harbor Point Conference Center",
+          "planted": "reception desk of Harbour Point Conference Center"
+        },
+        {
+          "kind": "session-end-before-start",
+          "rule": "time-range-reversed",
+          "line": 25,
+          "clean": "| 15:15–16:15 | Case study",
+          "planted": "| 15:15–14:15 | Case study"
+        },
+        {
+          "kind": "capacity-below-count",
+          "rule": "count-over-capacity",
+          "line": 13,
+          "clean": "Capacity: 120 seats",
+          "planted": "Capacity: 90 seats"
+        },
+        {
+          "kind": "programme-time-order",
+          "rule": "time-order",
+          "line": 26,
+          "clean": "| 16:15–16:55 | Panel",
+          "planted": "| 14:15–14:55 | Panel"
+        },
+        {
+          "kind": "phone-swapped",
+          "rule": "phone-number-variant",
+          "line": 54,
+          "clean": "Tel: (617) 555-0142",
+          "planted": "Tel: (617) 555-0124"
+        }
+      ]
+    },
+    {
+      "id": "en/festival",
+      "language": "en",
+      "genre": "business/press-release",
+      "clean": "en/festival.clean.md",
+      "planted": "en/festival.planted.md",
+      "mistakes": [
+        {
+          "kind": "event-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 11,
+          "clean": "When: Saturday 28 November 2026",
+          "planted": "When: Sunday 28 November 2026"
+        },
+        {
+          "kind": "deadline-after-event",
+          "rule": "deadline-after-event",
+          "line": 33,
+          "clean": "Booking deadline: Saturday 21 November 2026",
+          "planted": "Booking deadline: Saturday 5 December 2026"
+        },
+        {
+          "kind": "fee-total",
+          "rule": "total-mismatch",
+          "line": 42,
+          "clean": "| Total | £11 |",
+          "planted": "| Total | £12 |"
+        },
+        {
+          "kind": "venue-two-ways",
+          "rule": "name-variant",
+          "line": 44,
+          "clean": "reception desk of Elm Park Community Hall",
+          "planted": "reception desk of Elm Park Community Centre"
+        },
+        {
+          "kind": "session-end-before-start",
+          "rule": "time-range-reversed",
+          "line": 25,
+          "clean": "| 12:30–13:30 | Children's",
+          "planted": "| 12:30–11:30 | Children's"
+        },
+        {
+          "kind": "capacity-below-count",
+          "rule": "count-over-capacity",
+          "line": 31,
+          "clean": "there are 30 places",
+          "planted": "there are 25 places"
+        },
+        {
+          "kind": "programme-time-order",
+          "rule": "time-order",
+          "line": 26,
+          "clean": "| 13:30–14:30 | Local bands",
+          "planted": "| 11:30–12:30 | Local bands"
+        },
+        {
+          "kind": "phone-swapped",
+          "rule": "phone-number-variant",
+          "line": 52,
+          "clean": "call the office on Tel: 020 7946 0186",
+          "planted": "call the office on Tel: 020 7946 0168"
+        }
+      ]
+    }
+  ]
+}

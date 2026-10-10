@@ -1,0 +1,14 @@
+# 連絡先の項目の札（「窓口：」「宛先：」）。札がこの語で終わる項目の行は、値に名前を正式に書く所で、defined-name-repeated は
+# 名前のあとが文として続かなければ（「は、」「が」でなければ）見ない。値の長さも、名前が値の頭にあるかも問わない。
+id: contact-label
+language: ja
+entries:
+  - pattern: 窓口
+  - pattern: 宛先
+  - pattern: 送付先
+  - pattern: 問い合わせ先
+  - pattern: 問合せ先
+  - pattern: 連絡先
+  - pattern: 担当
+  - pattern: 担当者
+  - pattern: 担当部署

@@ -1,0 +1,13 @@
+# The words of a layout code in a property listing ("2 bedrooms", "2-bed", "2BR") for layout-code-mismatch. Group counted is
+# the room the number before it counts, written after the number with a space, a hyphen or nothing between. The Japanese
+# lexicon's letter groups (living, dining, kitchen, storage, one-room, joiner) read codes such as 2LDK; English codes have none.
+id: layout-code
+language: en
+entries:
+  - { pattern: "bedrooms", group: counted }
+  - { pattern: "bedroom", group: counted }
+  - { pattern: "beds", group: counted }
+  - { pattern: "bed", group: counted }
+  - { pattern: "BR", group: counted }
+  - { pattern: "bdrm", group: counted }
+  - { pattern: "bd", group: counted }

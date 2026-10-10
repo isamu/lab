@@ -1,13 +1,17 @@
 // due-before-issue: the reading half. The issue-date and due-date words come from the language's lexicons
 // (issue-date-label, due-date-label, deadline-passed-word), and so do the words of minutes (minutes-title-word, meeting-date-label,
-// action-section-heading, earlier-section-word, action-due-label, item-done-word); the dates are the structure tree's, and the
-// lines are read with code masked.
+// action-section-heading, earlier-section-word, action-due-label, item-done-word) and the other pairs of dates that must come in
+// order (dated-pair-label, date-now-word); the dates are the structure tree's, and the lines are read with code masked.
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { actionDueBeforeMeeting, type ActionWords } from "../structure/action-due.ts";
+import { pairedDatesOutOfOrder } from "../structure/labelled-date-order.ts";
 import { dueBeforeIssue, type DueWords } from "../structure/due-date.ts";
 import type { StructureIssue } from "../structure/issues.ts";
 import { proseAndTablesOf } from "../table-text.ts";
 import { datedPoints, quoteAt } from "./structure-tree.ts";
+
+/** A record's facts table can sit well below its header date (a listing date above the table holding the move-in date). */
+const MAX_RECORD_LINE_GAP = 40;
 
 const patternsOf = (doc: ProseDocument, lexicon: string): string[] => (doc.lexicons[lexicon] ?? []).map((entry) => entry.pattern);
 
@@ -26,6 +30,8 @@ const actionWordsOf = (doc: ProseDocument): ActionWords => ({
   minutes: patternsOf(doc, "minutes-title-word"),
 });
 
+const orderAsidesOf = (doc: ProseDocument): string[] => [...patternsOf(doc, "deadline-passed-word"), ...patternsOf(doc, "date-now-word")];
+
 const findingOf = (doc: ProseDocument, issue: StructureIssue, variant?: string): Finding => ({
   rule: "due-before-issue",
   severity: "error",
@@ -40,8 +46,10 @@ export const dueDate: Detector = (doc): Finding[] => {
   if (doc.structure === undefined) return [];
   const text = proseAndTablesOf(doc);
   const dates = datedPoints(doc.structure);
+  const pairs = doc.lexicons["dated-pair-label"] ?? [];
   return [
     ...dueBeforeIssue(text, dates, wordsOf(doc)).map((issue) => findingOf(doc, issue)),
+    ...pairedDatesOutOfOrder(text, dates, pairs, orderAsidesOf(doc), MAX_RECORD_LINE_GAP).map((issue) => findingOf(doc, issue, "order")),
     ...actionDueBeforeMeeting(text, dates, doc.markup?.headings ?? [], actionWordsOf(doc)).map((issue) => findingOf(doc, issue, "meeting")),
   ];
 };

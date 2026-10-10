@@ -1,0 +1,21 @@
+# The minimum interval between uses and the count column of a table (interval-count-mismatch). minimum makes a length
+# a lower bound, written right before it ("at least 4 hours"). cue makes that length an interval between uses, in the
+# same sentence ("between", "apart"). column is the heading of a table column of uses in a period, weight the period's
+# length in hours.
+id: use-interval-word
+language: en
+entries:
+  - { pattern: "at least", group: minimum, position: before }
+  - { pattern: "no less than", group: minimum, position: before }
+  - { pattern: "not less than", group: minimum, position: before }
+  - { pattern: "a minimum of", group: minimum, position: before }
+  - { pattern: "between", group: cue }
+  - { pattern: "apart", group: cue }
+  - { pattern: "interval", group: cue }
+  - { pattern: "gap", group: cue }
+  - { pattern: "Times a day", group: column, weight: 24 }
+  - { pattern: "Times per day", group: column, weight: 24 }
+  - { pattern: "Doses a day", group: column, weight: 24 }
+  - { pattern: "Doses per day", group: column, weight: 24 }
+  - { pattern: "Uses a day", group: column, weight: 24 }
+  - { pattern: "Uses per day", group: column, weight: 24 }

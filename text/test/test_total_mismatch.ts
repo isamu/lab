@@ -100,6 +100,16 @@ describe("total-mismatch", () => {
     assert.deepEqual(found(doc("- 設計 100,000円", "- 実装 200,000円", "- **計**: 999,000円"), ja, "ja"), ["999,000円≠300,000円"]);
   });
 
+  it("a total word with a period, due or grand beside it is a total line; a label with another word is not", () => {
+    const costs = (label: string, total: string): string =>
+      doc("| Item | Amount |", "| --- | --- |", "| Rent | $1,850 |", "| Service charge | $120 |", "| Parking space | $60 |", `| ${label} | ${total} |`);
+    ["Total per month", "Monthly total", "Total due", "Total monthly cost", "Grand total", "Total (incl. tax)"].forEach((label) => {
+      assert.deepEqual(found(costs(label, "$2,180")), ["$2,180≠$2,030"], label);
+      assert.deepEqual(found(costs(label, "$2,030")), [], label);
+    });
+    ["Total area", "Total floor space", "Total tax", "Rent per month"].forEach((label) => assert.deepEqual(found(costs(label, "$2,180")), [], label));
+  });
+
   it("one item above a total is not a sum; a total in running text is not a line of a list", () => {
     assert.deepEqual(found(doc("- Deposit: $100", "- Total: $500")), []);
     assert.deepEqual(found(doc("A costs $100 and B costs $200.", "", "Total: $999")), []);
@@ -227,6 +237,69 @@ describe("total-mismatch", () => {
       assert.deepEqual(found(doc("- 履修: 第2単位", "- 演習: 第3単位", "- 合計: 9単位"), ja, "ja"), []);
       assert.deepEqual(found(doc("- A: 4コマ漫画", "- B: 6コマ漫画", "- 合計: 18コマ"), ja, "ja"), []);
       assert.deepEqual(found(doc("- 3 unit-priced line items", "- 4 unit-priced add-ons", "- Total: 8 units shipped")), []);
+    });
+  });
+
+  describe("measured amounts: mass, volume and length", () => {
+    const strengths = (total: string, rows: readonly string[] = ["300mg", "60mg", "75mg"]): string =>
+      doc("| 成分 | 3錠中の量 |", "| --- | --- |", ...rows.map((row, index) => `| 成分${String(index + 1)} | ${row} |`), `| 合計 | ${total} |`);
+
+    it("a strengths table whose total is not the sum is reported, in the way the total is written", () => {
+      assert.deepEqual(found(strengths("445mg"), ja, "ja"), ["445mg≠435mg"]);
+      assert.deepEqual(found(doc("| Ingredient | Amount |", "| --- | --- |", "| A | 200 mg |", "| B | 100 mg |", "| C | 50 mg |", "| Total | 380 mg |")), [
+        "380 mg≠350 mg",
+      ]);
+      assert.deepEqual(found(doc("- Water: 1.5 L", "- Milk: 250 mL", "- Total: 2 L")), ["2 L≠1.75 L"]);
+      assert.deepEqual(found(doc("- 区間A: 1.2 km", "- 区間B: 800 m", "- 合計: 2.5 km"), ja, "ja"), ["2.5 km≠2.0 km"]);
+      assert.deepEqual(found(strengths("1.2g", ["1,000mg", "234mg"]), ja, "ja"), ["1.2g≠1.234g"]);
+    });
+
+    it("a total that adds up is silent, across units of one kind", () => {
+      assert.deepEqual(found(strengths("435mg"), ja, "ja"), []);
+      assert.deepEqual(found(strengths("1g", ["500mg", "0.5g"]), ja, "ja"), []);
+      assert.deepEqual(found(doc("- Water: 1.5 L", "- Milk: 250 mL", "- Total: 1.75 L")), []);
+      assert.deepEqual(found(doc("- Water: 1.5 L", "- Milk: 250 mL", "- Total: 1,750 mL")), []);
+    });
+
+    it("a column mixing kinds of measure, or a measure and money, is not added", () => {
+      assert.deepEqual(found(strengths("500mg", ["300mg", "60mL", "75mg"]), ja, "ja"), []);
+      assert.deepEqual(found(doc("- Flour: 200 g", "- Milk: 300 mL", "- Total: 900 g")), []);
+      assert.deepEqual(found(doc("- Flour: 200 g", "- Fee: $3", "- Total: 900 g")), []);
+    });
+
+    it("a per-unit, rough or ranged amount stops the sum of its column", () => {
+      assert.deepEqual(found(strengths("500mg", ["300mg/錠", "60mg/錠", "75mg/錠"]), ja, "ja"), []);
+      assert.deepEqual(found(strengths("500mg", ["300mg", "約60mg", "75mg"]), ja, "ja"), []);
+      assert.deepEqual(found(strengths("500mg", ["300mg", "60mg程度", "75mg"]), ja, "ja"), []);
+      assert.deepEqual(found(strengths("500mg", ["300mg", "50〜60mg", "75mg"]), ja, "ja"), []);
+      assert.deepEqual(found(strengths("約500mg"), ja, "ja"), []);
+      assert.deepEqual(found(doc("- A: 5 mg per mL", "- B: 10 mg per mL", "- Total: 20 mg per mL")), []);
+      assert.deepEqual(found(doc("- A: about 200 mg", "- B: 100 mg", "- Total: 400 mg")), []);
+      assert.deepEqual(found(doc("| A | 5 mg (per tablet) |", "| B | 10 mg (per tablet) |", "| Total | 20 mg (per tablet) |")), []);
+      assert.deepEqual(found(doc("- Flour: $3 / 200 g", "- Sugar: $2 / 100 g", "- Total: 900 g")), []);
+      assert.deepEqual(found(doc("- 醤油: 大さじ1", "- 酒: 15mL", "- みりん: 30mL", "- 合計: 60mL"), ja, "ja"), []);
+    });
+
+    it("units whose factors do not divide evenly add up without a rounding difference", () => {
+      assert.deepEqual(found(doc("| Item | Amount |", "| --- | --- |", "| A | 8 oz |", "| B | 8 oz |", "| Total | 1 lb |")), []);
+      assert.deepEqual(found(doc("| Item | Amount |", "| --- | --- |", "| A | 8 oz |", "| B | 9 oz |", "| Total | 1 lb |")), ["1 lb≠1.063 lb"]);
+    });
+
+    it("a nutrition label's 'Total Fat' and 'Total Carbohydrate' rows are names, not total rows", () => {
+      const label = doc(
+        "| Nutrient | Amount |",
+        "| --- | --- |",
+        "| Total Fat | 8 g |",
+        "| Saturated Fat | 1 g |",
+        "| Sodium | 160 mg |",
+        "| Total Carbohydrate | 37 g |",
+        "| Dietary Fiber | 4 g |",
+      );
+      assert.deepEqual(found(label), []);
+    });
+
+    it("a measure in a sentence is not compared: only table and list totals add measures", () => {
+      assert.deepEqual(found(doc("The tablet contains 300 mg of A and 60 mg of B, for a total of 500 mg."), en), []);
     });
   });
 
