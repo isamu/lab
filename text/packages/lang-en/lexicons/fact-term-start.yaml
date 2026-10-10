@@ -1,0 +1,7 @@
+# The mark of the phrase a length counts from (fact-conflict), for a one-value item (fact-document-term):
+# "24 months from the date of purchase". The phrase follows the length.
+id: fact-term-start
+language: en
+entries:
+  - pattern: from
+    position: after

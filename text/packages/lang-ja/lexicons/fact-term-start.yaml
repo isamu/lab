@@ -1,0 +1,7 @@
+# 文書全体で一つの値を持つ項目（fact-document-term）の、起算の句の印（fact-conflict）。「お買い上げ日から24か月」の から。
+# 句は長さの前に置く。
+id: fact-term-start
+language: ja
+entries:
+  - pattern: から
+    position: before
