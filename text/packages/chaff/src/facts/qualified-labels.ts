@@ -94,13 +94,20 @@ const isPremodifier = (qualifier: string, words: QualifierWords): boolean => {
   return LATIN_WORD.test(qualifier) && wordsOf(qualifier).every((word) => !determiners.includes(word) && !joiners.includes(word));
 };
 
+/** 前に置いた書き方が、二つの名前と条件（claim limit (baggage) と limit (baggage claim)）に読めるものは、どちらにもしない。 */
+const unambiguous = (pairs: readonly [string, string][]): Map<string, string> => {
+  const targets = new Map<string, Set<string>>();
+  pairs.forEach(([surface, key]) => targets.set(surface, (targets.get(surface) ?? new Set<string>()).add(key)));
+  return new Map(pairs.filter(([surface]) => targets.get(surface)?.size === 1));
+};
+
 /**
  * 文書の名前の key を一つの書き方に。条件を前に置いた名前（"cancellation cover waiting period"）は、同じ文書に同じ名前と条件の
  * 型の書き方があるときだけ、それと同じ key にする。
  */
 export const qualifiedKeys = (keys: readonly string[], words: QualifierWords): string[] => {
   const labels = keys.map((key) => qualifiedLabelOf(key, words));
-  const premodified = new Map(
+  const premodified = unambiguous(
     labels.flatMap((label): [string, string][] =>
       label === undefined || !isPremodifier(label.qualifier, words) ? [] : [[`${label.qualifier} ${label.head}`, keyOfLabel(label)]],
     ),

@@ -12,7 +12,7 @@ import { qualifiedKeyOf, qualifiedKeys, qualifiedLabelOf, type QualifierWords } 
 // "waiting period for cancellation cover"。条件の違う名前と、条件の無い名前は別の名前。
 
 const JA: QualifierWords = { templates: ["（*）", "*の"], determiners: ["本体の", "製品の"] };
-const EN: QualifierWords = { templates: ["(*)", "for *", "of *"], determiners: ["the", "a", "an", "our", "your"] };
+const EN: QualifierWords = { templates: ["(*)", "for *"], determiners: ["the", "a", "an", "our", "your"] };
 
 const label = (key: string, words: QualifierWords): string => {
   const found = qualifiedLabelOf(key, words);
@@ -31,7 +31,7 @@ describe("qualifiedLabelOf: a name and its qualifier", () => {
     assert.equal(label("waiting period for cancellation cover", EN), "waiting period|cancellation cover");
     assert.equal(label("waiting period for the cancellation cover", EN), "waiting period|cancellation cover");
     assert.equal(label("the waiting period (cancellation cover)", EN), "waiting period|cancellation cover");
-    assert.equal(label("number of errors", EN), "number|errors");
+    assert.equal(label("terms of service", EN), "-");
   });
 
   it("several joiners: ja keeps the last の's tail as the name, en the first for's head", () => {
@@ -82,6 +82,14 @@ describe("qualifiedKeyOf and qualifiedKeys: one key per name and qualifier", () 
     assert.equal(keys[1], keys[0]);
     assert.equal(keys[2], "waiting period");
     assert.deepEqual(qualifiedKeys(["cancellation cover waiting period"], EN), ["cancellation cover waiting period"]);
+  });
+
+  it("a qualifier written before the name that two qualified names could give joins neither", () => {
+    assert.deepEqual(qualifiedKeys(["claim limit (baggage)", "limit (baggage claim)", "baggage claim limit"], EN), [
+      "claim limit (baggage)",
+      "limit (baggage claim)",
+      "baggage claim limit",
+    ]);
   });
 
   it("a qualifier with an article or a joiner in it is not read before the name", () => {
