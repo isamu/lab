@@ -21,6 +21,7 @@ const facts = [
   [t(lang, "severity"), term(lang, rule.severity[lang])],
   [t(lang, "languages"), rule.languages.length === 2 ? t(lang, "allLanguages") : rule.languages.join(", ")],
   [t(lang, "usedFor"), rule.useFor.join(", ")],
+  ...(rule.requires.length > 0 ? [[t(lang, "requires"), rule.requires.join(", ")]] : []),
 ];
 const RUNS_WHEN: Record<RunsWhen, UiKey> = {
   default: "runsDefault",
@@ -63,6 +64,7 @@ const silencing: [UiKey, string][] = [
 const sources = sourceLinks(rule.sources, lang);
 const box = "mt-1 whitespace-pre-wrap rounded bg-zinc-100 p-3 font-mono text-sm leading-relaxed dark:bg-zinc-900";
 const heading = "mt-10 text-xl font-semibold";
+const subheading = "mt-8 text-base font-semibold text-zinc-900 dark:text-zinc-100";
 ---
 
 <Base lang={lang} title={rule.name[lang]} path={`rules/${rule.id}`} description={rule.summary[lang]}>
@@ -77,12 +79,7 @@ const heading = "mt-10 text-xl font-semibold";
     <Badge tone={runsWhen === "default" || runsWhen === "info" ? "neutral" : "warn"}>{t(lang, RUNS_WHEN[runsWhen])}</Badge>
     <Badge tone="neutral">{rule.languages.map((language) => t(lang, LANGUAGE[language] ?? "allLanguages")).join(" / ")}</Badge>
   </p>
-
-  <h2 class={heading}>{t(lang, "whatItFinds")}</h2>
-  <p class="mt-2 leading-relaxed">{rule.summary[lang]}</p>
-
-  <h2 class={heading}>{t(lang, "why")}</h2>
-  <p class="mt-2 leading-relaxed">{rule.why[lang]}</p>
+  <p class="mt-4 text-lg leading-relaxed">{rule.summary[lang]}</p>
 
   <h2 class={heading}>{t(lang, "exampleHeading")}</h2>
   <div class="mt-3 grid gap-3 md:grid-cols-2">
@@ -121,74 +118,14 @@ const heading = "mt-10 text-xl font-semibold";
   )}
   {example.pad === true && <p class="mt-2 text-xs text-zinc-500">{t(lang, "paddedNote")}</p>}
 
-  <h2 class={heading}>{t(lang, "notFlagged")}</h2>
-  <p class="mt-2 leading-relaxed">{rule.notFlagged[lang]}</p>
-
   <h2 class={heading}>{t(lang, "howToFix")}</h2>
   <p class="mt-2 leading-relaxed">{rule.howToFix[lang]}</p>
-  {rule.rewriteDepth !== undefined && (
-    <p class="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-      {t(lang, "rewriteDepth")}: <span class="font-mono">{rule.rewriteDepth.depth}</span> — {rule.rewriteDepth.meaning[lang]}
-    </p>
-  )}
 
-  {sources.length > 0 && (
-    <>
-      <h2 class={heading}>{t(lang, "sources")}</h2>
-      <ul class="mt-2 list-disc pl-5">
-        {sources.map((source) => (
-          <li>
-            <a href={source.url} class="text-blue-700 underline dark:text-blue-400">
-              {source.label}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </>
-  )}
+  <h2 class={heading}>{t(lang, "why")}</h2>
+  <p class="mt-2 leading-relaxed">{rule.why[lang]}</p>
 
-  <h2 class={heading}>{t(lang, "levelsPlain")}</h2>
-  <p class="mt-2 text-sm">{t(lang, "levelsIntro")}</p>
-  {sameEverywhere ? (
-    <p class="mt-2 text-sm">{t(lang, "levelsSame")}</p>
-  ) : (
-    <table class="mt-2 text-sm">
-      <tbody>
-        {levelRows.map(([level, text]) => (
-          <tr>
-            <th class="py-1 pr-6 text-left font-mono font-normal text-zinc-500">{level}</th>
-            <td class="py-1">{text}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  )}
-  {rule.layer === "L4" && <p class="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{t(lang, "levelsSeverity")}</p>}
-  {rule.levelSets === "severity" && <p class="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{t(lang, "levelsSetSeverity")}</p>}
-  {rule.ownNumbers.length > 0 && (
-    <p class="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-      {t(lang, "ownNumbers")} <span class="font-mono">{rule.ownNumbers.join(", ")}</span>
-    </p>
-  )}
-
-  <h2 class={heading}>{t(lang, "byGenre")}</h2>
-  <dl class="mt-2 text-sm">
-    {genreLists
-      .filter(([, entries]) => entries.length > 0)
-      .map(([key, entries]) => (
-        <>
-          <dt class="mt-3 text-zinc-500">{t(lang, key)}</dt>
-          <dd class="mt-1 font-mono leading-relaxed">
-            {entries.map((entry) => (key === "genreOn" ? onText(entry) : entry.genre)).join(", ")}
-          </dd>
-        </>
-      ))}
-  </dl>
-  <p class="mt-2 text-sm">
-    <a href={href(`${lang}/genres`)} class="text-blue-700 underline dark:text-blue-400">
-      {t(lang, "genres")}
-    </a>
-  </p>
+  <h2 class={heading}>{t(lang, "notFlagged")}</h2>
+  <p class="mt-2 leading-relaxed">{rule.notFlagged[lang]}</p>
 
   <h2 class={heading}>{t(lang, "silenceHeading")}</h2>
   {silencing.map(([key, code]) => (
@@ -198,15 +135,9 @@ const heading = "mt-10 text-xl font-semibold";
     </>
   ))}
 
-  <h2 class={heading}>{t(lang, "message")}</h2>
-  <p class="mt-2 rounded bg-zinc-100 p-3 font-mono text-sm dark:bg-zinc-900">{rule.message[lang]}</p>
-  {rule.otherMessages.map((message) => (
-    <p class="mt-2 rounded bg-zinc-100 p-3 font-mono text-sm dark:bg-zinc-900">{message[lang]}</p>
-  ))}
-
-  <details class="mt-10 text-sm">
-    <summary class="cursor-pointer text-zinc-500">{t(lang, "technical")}</summary>
-    <dl class="mt-3 grid grid-cols-[max-content_1fr] gap-x-6 gap-y-2">
+  <details class="mt-12 rounded border border-zinc-200 p-4 text-sm dark:border-zinc-800">
+    <summary class="cursor-pointer font-semibold text-zinc-600 dark:text-zinc-400">{t(lang, "technical")}</summary>
+    <dl class="mt-4 grid grid-cols-[max-content_1fr] gap-x-6 gap-y-2">
       {facts.map(([label, value]) => (
         <>
           <dt class="text-zinc-500">{label}</dt>
@@ -214,6 +145,75 @@ const heading = "mt-10 text-xl font-semibold";
         </>
       ))}
     </dl>
+
+    <h3 class={subheading}>{t(lang, "levelsPlain")}</h3>
+    <p class="mt-2">{t(lang, "levelsIntro")}</p>
+    {sameEverywhere ? (
+      <p class="mt-2">{t(lang, "levelsSame")}</p>
+    ) : (
+      <table class="mt-2">
+        <tbody>
+          {levelRows.map(([level, text]) => (
+            <tr>
+              <th class="py-1 pr-6 text-left font-mono font-normal text-zinc-500">{level}</th>
+              <td class="py-1">{text}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )}
+    {rule.layer === "L4" && <p class="mt-2 text-zinc-600 dark:text-zinc-400">{t(lang, "levelsSeverity")}</p>}
+    {rule.levelSets === "severity" && <p class="mt-2 text-zinc-600 dark:text-zinc-400">{t(lang, "levelsSetSeverity")}</p>}
+    {rule.ownNumbers.length > 0 && (
+      <p class="mt-2 text-zinc-600 dark:text-zinc-400">
+        {t(lang, "ownNumbers")} <span class="font-mono">{rule.ownNumbers.join(", ")}</span>
+      </p>
+    )}
+
+    <h3 class={subheading}>{t(lang, "byGenre")}</h3>
+    <dl class="mt-2">
+      {genreLists
+        .filter(([, entries]) => entries.length > 0)
+        .map(([key, entries]) => (
+          <>
+            <dt class="mt-3 text-zinc-500">{t(lang, key)}</dt>
+            <dd class="mt-1 font-mono leading-relaxed">
+              {entries.map((entry) => (key === "genreOn" ? onText(entry) : entry.genre)).join(", ")}
+            </dd>
+          </>
+        ))}
+    </dl>
+    <p class="mt-2">
+      <a href={href(`${lang}/genres`)} class="text-blue-700 underline dark:text-blue-400">
+        {t(lang, "genres")}
+      </a>
+    </p>
+
+    <h3 class={subheading}>{t(lang, "message")}</h3>
+    <p class="mt-2 rounded bg-zinc-100 p-3 font-mono dark:bg-zinc-900">{rule.message[lang]}</p>
+    {rule.otherMessages.map((message) => (
+      <p class="mt-2 rounded bg-zinc-100 p-3 font-mono dark:bg-zinc-900">{message[lang]}</p>
+    ))}
+    {rule.rewriteDepth !== undefined && (
+      <p class="mt-2 text-zinc-600 dark:text-zinc-400">
+        {t(lang, "rewriteDepth")}: <span class="font-mono">{rule.rewriteDepth.depth}</span> — {rule.rewriteDepth.meaning[lang]}
+      </p>
+    )}
+
+    {sources.length > 0 && (
+      <>
+        <h3 class={subheading}>{t(lang, "sources")}</h3>
+        <ul class="mt-2 list-disc pl-5">
+          {sources.map((source) => (
+            <li>
+              <a href={source.url} class="text-blue-700 underline dark:text-blue-400">
+                {source.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </>
+    )}
   </details>
 
   <p class="mt-10 text-xs text-zinc-500">
