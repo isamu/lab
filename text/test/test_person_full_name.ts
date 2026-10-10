@@ -10,8 +10,6 @@ import type { Token } from "../packages/chaff/src/plugin.ts";
 
 const variants = (source: string): readonly string[] => namedRuleRun("name-variant", source, ja, "a.md").findings;
 
-const SPACE = "\u3000";
-
 const token = (surface: string, start: number, pos = "PROPN", nameType?: string): Token => ({
   surface,
   span: { start, end: start + surface.length },
@@ -58,7 +56,7 @@ describe("name-variant: 空白を挟んだ姓と名", () => {
 
   it("姓と名のあいだの空白だけの違いは言わない（田中 裕子 と 田中裕子）", () => {
     assert.deepEqual(variants("田中 裕子が説明した。田中 裕子が答えた。田中裕子が述べた。\n"), []);
-    assert.deepEqual(variants(`田中 裕子が説明した。田中 裕子が答えた。\n\n| 担当 | 日付 |\n| --- | --- |\n| 田中${SPACE}裕子 | 4月1日 |\n`), []);
+    assert.deepEqual(variants(`田中 裕子が説明した。田中 裕子が答えた。\n\n| 担当 | 日付 |\n| --- | --- |\n| 田中裕子 | 4月1日 |\n`), []);
   });
 
   it("表の升の名前も、名前まるごとで比べる", () => {
@@ -139,6 +137,7 @@ describe("person-full-name: 姓と名を一つの現れにする", () => {
     assert.equal(spacedOnly("田中 裕子", "田中 祐子"), false);
     assert.equal(spacedOnly("田中 裕子", "田中・裕子"), false);
     assert.equal(spacedOnly("Mac OS", "MacOS"), false);
+    assert.equal(spacedOnly("田中 裕子", "田中\u3000裕子"), false);
     assert.equal(spacedOnly("", ""), false);
   });
 });

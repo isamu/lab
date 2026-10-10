@@ -52,11 +52,12 @@ export const joinFullNames = (mentions: readonly NameMention[], gaps: readonly S
 };
 
 const LATIN = /\p{Script=Latin}/u;
+const SPACE = /\s/u;
 const withoutSpaces = (surface: string): string => surface.replaceAll(/\s/gu, "");
 
 /**
- * 日本語の名前の、姓と名のあいだの空白だけが違う二つ（田中 裕子 と 田中裕子）。書き方の揺れとしては指さない。英字の名前の空白
- * （Mac OS と MacOS）は名前の書き方の違いなので、ここには入れない。
+ * 日本語の名前の、姓と名のあいだに空白を置くかどうかだけが違う二つ（田中 裕子 と 田中裕子）。書き方の揺れとしては指さない。空白の
+ * 幅の違い（半角と全角）と、英字の名前の空白（Mac OS と MacOS）は書き方の違いなので、ここには入れない。
  */
 export const spacedOnly = (left: string, right: string): boolean =>
-  left !== right && !LATIN.test(left) && !LATIN.test(right) && withoutSpaces(left) === withoutSpaces(right);
+  !LATIN.test(left) && !LATIN.test(right) && SPACE.test(left) !== SPACE.test(right) && withoutSpaces(left) === withoutSpaces(right);
