@@ -1,0 +1,16 @@
+# 文書そのものの番号（予約番号・受付番号）の前に置く語。group は何の番号かで、違う group の番号どうしは比べない。
+# reference-number-variant は、語のすぐ後ろ（間は空白と「：」「、」や開き括弧だけ）にある英数字の並びをその group の番号とする。
+# 「予約番号は」のように語と番号の間に入る語も、ここに書く。
+id: reference-label
+language: ja
+entries:
+  - { pattern: 予約番号, group: booking }
+  - { pattern: 予約番号は, group: booking }
+  - { pattern: 予約確認番号, group: confirmation }
+  - { pattern: 予約確認番号は, group: confirmation }
+  - { pattern: 受付番号, group: receipt }
+  - { pattern: 受付番号は, group: receipt }
+  - { pattern: お問い合わせ番号, group: inquiry }
+  - { pattern: お問い合わせ番号は, group: inquiry }
+  - { pattern: お問合せ番号, group: inquiry }
+  - { pattern: お問合せ番号は, group: inquiry }

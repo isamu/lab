@@ -1,0 +1,68 @@
+id: reference-number-variant
+layer: L3
+status: stable
+how_to_find: reference-number-variant
+word_list: reference-label
+# The labels (予約番号, Booking number) and what each labels come from the language's reference-label lexicon; numbers after
+# labels of different kinds (a booking number and a confirmation number) are never compared.
+languages: [ja, en]
+severity: warning
+
+name:
+  ja: 予約番号などの文字の入れ違い
+  en: Booking or reference number with two characters swapped
+
+why:
+  ja: 予約確認書や受付の控えでは、予約番号や受付番号が冒頭と、キャンセルや問合せの案内とに何度も書かれます。一か所だけ「MN-48215」が「MN-48251」になっていると、読み手はどちらを伝えればよいか分からず、違う番号を伝えると予約が見つかりません。隣り合う二つの文字の入れ違いは、打ち間違いで最も多い形です。「予約番号」「受付番号」のような同じ種類の語のすぐ後ろに書いた番号どうしを比べ、隣り合う二つの文字だけが入れ違った番号を指します。
+  en: "A confirmation or a receipt writes its booking number more than once: at the top, and again where it says how to cancel or whom to call. When one place reads MN-48251 for MN-48215, the reader cannot tell which to quote, and the wrong one finds no booking. Two neighbouring characters swapped is the commonest slip in typing a number. chaff compares the numbers written right after labels of the same kind (Booking number, Confirmation number) and reports one that is another with two neighbouring characters swapped."
+
+message:
+  ja: 番号「{written}」は、「{other}」の隣り合う文字が入れ違っています
+  en: "The number {written} is {other} with two neighbouring characters swapped"
+
+how_to_fix:
+  ja: 正しい番号を確かめて、もう一方を直してください。
+  en: Check which number is right and correct the other.
+
+levels: { strict: error, normal: warning, relaxed: warning }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: A story's booking numbers are made up and need not agree; one may differ on purpose.
+  speech: A transcript writes what was said, numbers misspoken and corrected included.
+
+group: facts
+summary:
+  ja: 同じ文書で、予約番号などの隣り合う文字が入れ違っている所（MN-48215 と MN-48251）
+  en: A booking number written once with two neighbours swapped (MN-48215, MN-48251)
+example:
+  ja:
+    before: |
+      # ご予約の確認
+
+      予約番号：MN-48215
+
+      ご連絡の際は、予約番号 MN-48251 をお伝えください。
+    after: |
+      # ご予約の確認
+
+      予約番号：MN-48215
+
+      ご連絡の際は、予約番号 MN-48215 をお伝えください。
+  en:
+    before: |
+      # Your booking
+
+      Booking number: MN-48215
+
+      When you call, please give your booking number, MN-48251.
+    after: |
+      # Your booking
+
+      Booking number: MN-48215
+
+      When you call, please give your booking number, MN-48215.
+
+not_flagged:
+  ja: 「予約番号」「受付番号」「予約確認番号」「お問い合わせ番号」のような語のすぐ後ろ（間は空白と「：」「、」や開き括弧だけ）にある、数字を4つ以上含む英数字の並びだけを番号と見ます。語の無い番号、種類の違う番号（注文番号と予約番号、予約番号と受付番号）、一文字だけ違う番号、離れた文字の入れ違い、二か所以上入れ違った番号は指しません。
+  en: "Only letters and digits right after a label (booking number, reservation number, confirmation number, reference number), with nothing but spaces, a colon, a comma or an opening bracket between, are read, and only when they hold four digits or more. Unlabelled codes, numbers of different kinds (an order number and a booking number), numbers that differ in one character, swaps of characters that are not neighbours and numbers with more than one swap are not reported."
