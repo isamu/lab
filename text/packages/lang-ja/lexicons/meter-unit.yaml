@@ -1,0 +1,10 @@
+# 検針票の指示数と使用量の単位と、それが何か（group）。三つの値の単位が食い違えば比べない。ここに無い語が数の後ろにあれば、
+# その値は読まない（meter-usage-mismatch）。m³ と ㎥ は字を正規化すると m3 になる。
+id: meter-unit
+language: ja
+entries:
+  - { pattern: kWh, group: kwh }
+  - { pattern: キロワット時, group: kwh }
+  - { pattern: m3, group: m3 }
+  - { pattern: 立方メートル, group: m3 }
+  - { pattern: 立米, group: m3 }

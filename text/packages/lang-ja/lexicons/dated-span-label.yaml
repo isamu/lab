@@ -1,0 +1,8 @@
+# dated-pair-label の語のうち、行に一つの日ではなく期間を書く語（対象期間：2025年4月1日〜2026年3月31日）。
+# due-before-issue は、この語の行の期間の終わりを、組の先に来る日付として比べる。期間に年が書いてなければ比べない。
+id: dated-span-label
+language: ja
+entries:
+  - pattern: 対象期間
+  - pattern: 報告対象期間
+  - pattern: 会計期間

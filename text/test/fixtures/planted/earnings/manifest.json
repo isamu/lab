@@ -1,5 +1,5 @@
 {
-  "note": "Self-written earnings summaries (決算短信 / quarterly results releases) for fictional companies: a full-year summary with a results table and a second-quarter release with segments and a revised forecast, each in a clean version and a planted one that differs only on the lines below. They run as business/report: no genre is made for earnings releases. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: report-before-period-end (an earnings call dated before the end of the period it reports), period-label-conflict (the period the title names, such as 第2四半期 or FY2026, given as another period of the same kind for the same results), table-unit-mix (one row of a table in another scale of unit than the rest, 千円 among 百万円, or a row a thousand times its neighbours under a stated unit), ratio-mismatch (a margin row that is not the profit row divided by the sales row of the same column) and revision-direction-mismatch (a forecast said to be revised upward whose revised figure is below the previous one). A year-on-year rate in a table row is named for change-rate-mismatch, which reads rates in sentences. yarn planted earnings scores them; expected.json is the committed score.",
+  "note": "Self-written earnings summaries (決算短信 / quarterly results releases) for fictional companies: a full-year summary with a results table and a second-quarter release with segments and a revised forecast, each in a clean version and a planted one that differs only on the lines below. They run as business/report: no genre is made for earnings releases. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. An earnings call dated before the end of the period it reports is named for due-before-issue, which compares labelled dates. A rule that does not exist yet is named as the rule that should: period-label-conflict (the period the title names, such as 第2四半期 or FY2026, given as another period of the same kind for the same results), table-unit-mix (one row of a table in another scale of unit than the rest, 千円 among 百万円, or a row a thousand times its neighbours under a stated unit), ratio-mismatch (a margin row that is not the profit row divided by the sales row of the same column) and revision-direction-mismatch (a forecast said to be revised upward whose revised figure is below the previous one). A year-on-year rate in a table row is named for change-rate-mismatch, which reads rates in sentences. yarn planted earnings scores them; expected.json is the committed score.",
   "documents": [
     {
       "id": "ja/annual",
@@ -10,7 +10,7 @@
       "mistakes": [
         {
           "kind": "call-before-period-end",
-          "rule": "report-before-period-end",
+          "rule": "due-before-issue",
           "line": 9,
           "clean": "決算説明会：2026年5月14日",
           "planted": "決算説明会：2026年3月25日"
@@ -61,7 +61,7 @@
       "mistakes": [
         {
           "kind": "call-before-period-end",
-          "rule": "report-before-period-end",
+          "rule": "due-before-issue",
           "line": 9,
           "clean": "決算説明会：2026年11月12日",
           "planted": "決算説明会：2026年9月18日"
@@ -126,7 +126,7 @@
       "mistakes": [
         {
           "kind": "call-before-period-end",
-          "rule": "report-before-period-end",
+          "rule": "due-before-issue",
           "line": 9,
           "clean": "Earnings call: May 14, 2026",
           "planted": "Earnings call: March 25, 2026"
@@ -177,7 +177,7 @@
       "mistakes": [
         {
           "kind": "call-before-period-end",
-          "rule": "report-before-period-end",
+          "rule": "due-before-issue",
           "line": 9,
           "clean": "Earnings call: November 12, 2026",
           "planted": "Earnings call: September 18, 2026"

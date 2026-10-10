@@ -1,0 +1,20 @@
+# 免責金額と支払限度額が何あたりの額か（deductible-exceeds-limit）。group は基準の名前で、同じ名前どうしは比べる。
+# weight は入れ子になる基準の大きさ：1事故（1回）は1品を一つ以上含むので、1事故の免責金額は1品の限度額と比べる。
+# weight の無い基準（1日、1年）は同じ基準とだけ比べる。
+id: deductible-basis
+language: ja
+entries:
+  - { pattern: 1回, group: claim, weight: 2 }
+  - { pattern: 1事故, group: claim, weight: 2 }
+  - { pattern: 1件, group: claim, weight: 2 }
+  - { pattern: 1請求, group: claim, weight: 2 }
+  - { pattern: 1品, group: item, weight: 1 }
+  - { pattern: 1個, group: item, weight: 1 }
+  - { pattern: 1点, group: item, weight: 1 }
+  - { pattern: 1日あたり, group: day }
+  - { pattern: 1日につき, group: day }
+  - { pattern: 日額, group: day }
+  - { pattern: 1年あたり, group: year }
+  - { pattern: 1年につき, group: year }
+  - { pattern: 1年間, group: year }
+  - { pattern: 年間, group: year }

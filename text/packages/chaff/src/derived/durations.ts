@@ -8,6 +8,7 @@ import { calendarDateOf, dateOf, shifted, valueOf, type DurationUnit } from "./d
  * （4月1日から3か月間は6月30日まで）か、含めずに数える（7月1日まで）か、初日を数えずに期間が過ぎた日（「到達日から2週間が経過した日
  * （4月16日）」）。どれとも合わないときだけ言う。
  * 文に日付がちょうど二つ、期間がちょうど一つのときだけ読む。それより多い文は、どの日付とどの期間が組なのか決まらない。
+ * 範囲のすぐ後ろの括弧に書いた期間（「9月1日〜9月30日（30日間）」）は範囲そのものの長さで、期間が過ぎた日を終わりに書くことはない。
  */
 export type DatedValue = Span & { readonly value: string };
 
@@ -20,10 +21,39 @@ export type Duration = Span & {
 
 export type DurationMismatch = { readonly start: DatedValue; readonly duration: Duration; readonly end: DatedValue; readonly expected: string };
 
-/** 期間を足した日と、その前の日（終わりを含めて数える）と、次の日（初日を数えずに期間が過ぎた日）。 */
-const expectedEnds = (start: Date, duration: Duration): Date[] => {
+/** 期間を足した日と、その前の日（終わりを含めて数える）と、次の日（初日を数えずに期間が過ぎた日。範囲の長さには無い）。 */
+const expectedEnds = (start: Date, duration: Duration, rangeLength: boolean): Date[] => {
   const exclusive = shifted(start, duration.amount, duration.unit);
-  return [shifted(exclusive, -1, "day"), exclusive, shifted(exclusive, 1, "day")];
+  const ends = [shifted(exclusive, -1, "day"), exclusive];
+  return rangeLength ? ends : [...ends, shifted(exclusive, 1, "day")];
+};
+
+/** 文書と、範囲の間の語（〜、–、to）と、日付の後ろの括弧に添える曜日（（火）、(Wed)）。 */
+export type RangeText = { readonly source: string; readonly joiners: readonly string[]; readonly weekdays: readonly string[] };
+
+const LEADING_BRACKET = /^\s*[(（]([^()（）\n]+)[)）]/u;
+const OPEN_BRACKET = /^\s*[(（]\s*$/u;
+const CLOSE_BRACKET = /^\s*[)）]/u;
+
+/** 先頭の曜日の括弧（（火）、(Wednesday)）を除いた残り。曜日の名の頭だけを書いたものも曜日。 */
+const withoutWeekday = (text: string, weekdays: readonly string[]): string => {
+  const inside = LEADING_BRACKET.exec(text);
+  if (inside === null) return text;
+  const word = (inside[1] ?? "").trim().toLowerCase();
+  return word !== "" && weekdays.some((weekday) => weekday.toLowerCase().startsWith(word)) ? text.slice(inside[0].length) : text;
+};
+
+/** 範囲（9月1日〜9月30日、July 1 – August 31）の終わりのすぐ後ろの括弧に、期間だけを書いた（（30日間）、(30 days)）。 */
+export const isRangeLength = (text: RangeText, range: readonly [Span, Span], duration: Span): boolean => {
+  const { source, ...words } = text;
+  const [first, end] = range;
+  if (first.end > end.start || end.end > duration.start) return false;
+  const joint = withoutWeekday(source.slice(first.end, end.start), words.weekdays).trim().toLowerCase();
+  return (
+    words.joiners.some((joiner) => joiner.toLowerCase() === joint) &&
+    OPEN_BRACKET.test(withoutWeekday(source.slice(end.end, duration.start), words.weekdays)) &&
+    CLOSE_BRACKET.test(source.slice(duration.end))
+  );
 };
 
 /** 年まで書いた二つの日付は、早いほうを始まりにする（「7月1日まで、4月1日から3か月」）。月日だけなら書いた順（年をまたぐことがある）。 */
@@ -47,14 +77,14 @@ const beyondReach = (start: Date, end: DatedValue, duration: Duration, withYear:
   return endDate === undefined || endDate > shifted(start, duration.amount * ATTRIBUTIVE_REACH, duration.unit);
 };
 
-const mismatchOf = (written: readonly [DatedValue, DatedValue], duration: Duration): DurationMismatch | undefined => {
+const mismatchOf = (written: readonly [DatedValue, DatedValue], duration: Duration, rangeLength: boolean): DurationMismatch | undefined => {
   const [firstDate, secondDate] = [calendarDateOf(written[0].value), calendarDateOf(written[1].value)];
   if (firstDate === undefined || secondDate === undefined || (firstDate.year === undefined) !== (secondDate.year === undefined)) return undefined;
   const withYear = firstDate.year !== undefined;
   const [start, end] = ordered(written[0], written[1], withYear);
   const startDate = calendarDateOf(start.value);
   if (startDate === undefined) return undefined;
-  const ends = expectedEnds(dateOf(startDate), duration);
+  const ends = expectedEnds(dateOf(startDate), duration, rangeLength);
   const [inclusive] = ends;
   if (inclusive === undefined || ends.some((candidate) => valueOf(candidate, withYear) === end.value)) return undefined;
   if (beyondReach(dateOf(startDate), end, duration, withYear)) return undefined;
@@ -62,14 +92,19 @@ const mismatchOf = (written: readonly [DatedValue, DatedValue], duration: Durati
 };
 
 /** 一つの文の中の、始まり・期間・終わり。 */
-export const durationMismatches = (sentences: readonly Span[], dates: readonly DatedValue[], durations: readonly Duration[]): DurationMismatch[] => {
+export const durationMismatches = (
+  sentences: readonly Span[],
+  dates: readonly DatedValue[],
+  durations: readonly Duration[],
+  text: RangeText,
+): DurationMismatch[] => {
   const datesIn = bySentence(sentences, dates);
   return [...bySentence(sentences, durations).entries()].flatMap(([index, inDurations]) => {
     const inDates = datesIn.get(index) ?? [];
     const [first, second] = inDates;
     const [duration] = inDurations;
     if (inDates.length !== 2 || inDurations.length !== 1 || first === undefined || second === undefined || duration === undefined) return [];
-    const mismatch = mismatchOf([first, second], duration);
+    const mismatch = mismatchOf([first, second], duration, isRangeLength(text, [first, second], duration));
     return mismatch === undefined ? [] : [mismatch];
   });
 };
