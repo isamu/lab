@@ -1,0 +1,14 @@
+# Words that point at the current period ("this quarter", "the quarter under review"). A sentence with one of these or
+# a results word is read as about the current period. A quarter or half before the document's period (Q1 inside a
+# six-month report) is read only with one of these.
+id: reporting-current
+language: en
+entries:
+  - pattern: this quarter
+  - pattern: this fiscal year
+  - pattern: this year
+  - pattern: current period
+  - pattern: current quarter
+  - pattern: current fiscal year
+  - pattern: current year
+  - pattern: under review

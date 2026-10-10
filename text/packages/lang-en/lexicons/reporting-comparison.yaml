@@ -1,0 +1,21 @@
+# Words for a period that is compared with. A period name in a sentence, a table heading cell or a section with one of
+# these may differ from the document's period ("compared with Q2 FY2025", "prior year").
+id: reporting-comparison
+language: en
+entries:
+  - pattern: prior
+  - pattern: previous
+  - pattern: preceding
+  - pattern: last year
+  - pattern: year earlier
+  - pattern: year ago
+  - pattern: year-ago
+  - pattern: year-on-year
+  - pattern: compared with
+  - pattern: compared to
+  - pattern: versus
+  - pattern: vs
+  - pattern: against
+  - pattern: same period
+  - pattern: same quarter
+  - pattern: restated
