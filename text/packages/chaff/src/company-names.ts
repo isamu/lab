@@ -182,22 +182,29 @@ const MIN_SLIP_LENGTH = 7;
 const spliced = (chars: readonly string[], at: number, count: number): string => chars.toSpliced(at, count).join("");
 const firstDifference = (left: readonly string[], right: readonly string[]): number => left.findIndex((char, index) => char !== right[index]);
 
+/** 一字違いの、違う字（changed）と、それが立つ名前の字（chars）の何字目か（at）。 */
+type Change = { readonly changed: readonly string[]; readonly chars: readonly string[]; readonly at: number };
+
 /** 一字の抜けなら、その字。 */
-const droppedChars = (longer: readonly string[], shorter: readonly string[]): string[] | undefined => {
+const droppedChars = (longer: readonly string[], shorter: readonly string[]): Change | undefined => {
   if (longer.length !== shorter.length + 1) return undefined;
   const at = firstDifference(longer, shorter);
-  return spliced(longer, at, 1) === shorter.join("") ? [longer[at] ?? ""] : undefined;
+  return spliced(longer, at, 1) === shorter.join("") ? { changed: [longer[at] ?? ""], chars: longer, at } : undefined;
 };
 
 /** 一字の置き換えか、隣どうしの入れ替えなら、その字。 */
-const replacedChars = (left: readonly string[], right: readonly string[]): string[] | undefined => {
+const replacedChars = (left: readonly string[], right: readonly string[]): Change | undefined => {
   const at = firstDifference(left, right);
-  const changed = [left[at] ?? "", right[at] ?? ""];
+  const change = { changed: [left[at] ?? "", right[at] ?? ""], chars: left, at };
   if (left.length !== right.length || at < 0) return undefined;
-  if (spliced(left, at, 1) === spliced(right, at, 1)) return changed;
+  if (spliced(left, at, 1) === spliced(right, at, 1)) return change;
   const swapped = left[at] === right[at + 1] && left[at + 1] === right[at] && spliced(left, at, 2) === spliced(right, at, 2);
-  return swapped ? changed : undefined;
+  return swapped ? change : undefined;
 };
+
+/** 名前の部分の一字違い（置き換え・抜け・隣どうしの入れ替え）。 */
+const changeBetween = (leftChars: readonly string[], rightChars: readonly string[]): Change | undefined =>
+  replacedChars(leftChars, rightChars) ?? droppedChars(leftChars, rightChars) ?? droppedChars(rightChars, leftChars);
 
 /**
  * 名前の部分が一字違いか（置き換え・抜け・隣どうしの入れ替え）。違う字が漢字なら見ない。漢字の一字違い（日本電気 と 日本電機）
@@ -206,8 +213,32 @@ const replacedChars = (left: readonly string[], right: readonly string[]): strin
 const isSlip = (left: string, right: string): boolean => {
   const [leftChars, rightChars] = [[...left], [...right]];
   if (Math.min(leftChars.length, rightChars.length) < MIN_SLIP_LENGTH) return false;
-  const changed = replacedChars(leftChars, rightChars) ?? droppedChars(leftChars, rightChars) ?? droppedChars(rightChars, leftChars);
-  return changed !== undefined && changed.every((char) => NOT_HAN_LETTER.test(char));
+  const change = changeBetween(leftChars, rightChars);
+  return change !== undefined && change.changed.every((char) => NOT_HAN_LETTER.test(char));
+};
+
+const HAN = /\p{Script=Han}/u;
+const KANA = /^[\p{Script=Hiragana}\p{Script=Katakana}ー]$/u;
+/** 漢字を含む短い名前で、一字違いを見るかなの語の字数。三字のかなの語（サンワ と サンヨ）は別の会社のことがある。 */
+const MIN_KANA_WORD_LENGTH = 4;
+
+/** at の字を含む、かなの続きの字数。 */
+const kanaRunLength = (chars: readonly string[], at: number): number => {
+  const isKanaAt = (index: number): boolean => KANA.test(chars[index] ?? "");
+  if (!isKanaAt(at)) return 0;
+  const start = chars.findLastIndex((_char, index) => index < at && !isKanaAt(index)) + 1;
+  const end = chars.findIndex((_char, index) => index > at && !isKanaAt(index));
+  return (end < 0 ? chars.length : end) - start;
+};
+
+/**
+ * 漢字を含む名前の、四字以上のかなの語の中の、かな一字違い（コモレビ電機 と コモレピ電機）。漢字の部分が同じなので、七字に
+ * 満たない名前でも見る。漢字の一字違い（日本電気 と 日本電機）は見ない。
+ */
+export const isKanaWordSlip = (left: string, right: string): boolean => {
+  if (!HAN.test(left) || !HAN.test(right)) return false;
+  const change = changeBetween([...left], [...right]);
+  return change !== undefined && change.changed.every((char) => KANA.test(char)) && kanaRunLength(change.chars, change.at) >= MIN_KANA_WORD_LENGTH;
 };
 
 /** 名前の部分が同じ二つ。同じ形の短い書き方と長い書き方（株式会社 と (株)、Inc と Incorporated）は書き分けと見ない。 */
@@ -243,12 +274,20 @@ const talliesOf = (mentions: readonly CompanyMention[]): Tally[] => {
 /** 多いほうが先。同数なら先に書いたほう。 */
 const byUsage = (left: Tally, right: Tally): number => right.count - left.count || left.first.offset - right.first.offset;
 
+/** 短い名前のかなの一字違いは、別の会社のこともあるので、相手が二度以上、こちらが一度だけのときに限る。 */
+const relationBetween = (tally: Tally, other: Tally): CompanyRelation | undefined => {
+  const relation = companyRelation(tally.first, other.first);
+  if (relation !== undefined || tally.count !== 1 || other.count < 2) return relation;
+  const [left, right] = [tally.first, other.first];
+  return left.form === right.form && left.position === right.position && isKanaWordSlip(nameKey(left.base), nameKey(right.base)) ? "near" : undefined;
+};
+
 /** 同じ会社の、少ないほうの書き方。同じ会社と言える相手のうち一番多いものと比べる。書き方ごとに最初の現れを一つ。 */
 export const companyVariants = (mentions: readonly CompanyMention[]): CompanyVariant[] => {
   const tallies = talliesOf(mentions);
   return tallies.flatMap((tally) => {
-    const [usual] = tallies.filter((other) => other === tally || companyRelation(tally.first, other.first) !== undefined).toSorted(byUsage);
-    const kind = usual === undefined || usual === tally ? undefined : companyRelation(tally.first, usual.first);
+    const [usual] = tallies.filter((other) => other === tally || relationBetween(tally, other) !== undefined).toSorted(byUsage);
+    const kind = usual === undefined || usual === tally ? undefined : relationBetween(tally, usual);
     return usual === undefined || kind === undefined ? [] : [{ mention: tally.first, usual: usual.first.surface, kind }];
   });
 };
