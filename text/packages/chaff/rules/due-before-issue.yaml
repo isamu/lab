@@ -46,8 +46,8 @@ off_for:
 
 group: facts
 summary:
-  ja: 請求書や見積書で、支払期限や有効期限が発行日より前の所。議事録で、宿題の期限が会議の日より前の所。物件の案内で、入居可能日が掲載日より前の所。求人で、応募締切が掲載日より前の所
-  en: A payment due date or an expiry before the issue date of an invoice or a quote, an action item in minutes due before the meeting, a move-in date before the listing date, or an application deadline before the posting date
+  ja: 請求書の支払期限や求人の応募締切のように、期限が発行日や掲載日より前になっている所
+  en: A due date or deadline that comes before the date the document was issued
 example:
   ja:
     before: |

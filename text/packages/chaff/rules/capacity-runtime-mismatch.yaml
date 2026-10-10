@@ -29,7 +29,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: facts
 summary:
   ja: 「5000 mAh、500 mA、連続使用時間15時間」のように、容量を消費電流で割った時間より長い使用時間
-  en: A runtime longer than the capacity divided by the consumption, such as 5000 mAh at 500 mA stated as 15 hours
+  en: A runtime longer than the battery capacity divided by the power it uses
 example:
   ja:
     before: |

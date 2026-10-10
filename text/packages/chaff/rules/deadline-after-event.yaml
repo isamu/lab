@@ -37,7 +37,7 @@ off_for:
 group: facts
 summary:
   ja: 案内状やお知らせで、申込や出欠の返信の締め切りが催しの日より後の所
-  en: A registration or RSVP deadline after the date of the event it is for, in an invitation or an announcement
+  en: A sign-up or RSVP deadline that falls after the event itself
 example:
   ja:
     before: |

@@ -28,8 +28,8 @@ use_for: [blog, business, technical, legal, docs, academic, literature, speech]
 
 group: slips
 summary:
-  ja: "「【会社名】」「[Your Name]」「TODO: …」のように、雛形の空欄や後で埋めるつもりの値が埋まらないまま残っている所"
-  en: 'A template blank or a to-do value left unfilled, such as "[Your Name]", "[Insert Date]" or "TODO: …"'
+  ja: 「【会社名】」「TODO」のように、雛形の空欄が埋まらないまま残っている所
+  en: 'A template blank left unfilled, such as "[Your Name]" or "TODO: …"'
 example:
   ja:
     before: |

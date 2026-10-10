@@ -32,7 +32,7 @@ off_for:
 group: wording
 summary:
   ja: 「伺ってください」「拝見してください」「申される」のように、謙譲語を読み手や第三者の動作に使った所
-  en: A Japanese humble verb used for the reader's or a third party's action (伺ってください, 申される)
+  en: A Japanese humble verb used for what the reader or others do (伺ってください)
 example:
   ja:
     before: 資料は受付で拝見してください。

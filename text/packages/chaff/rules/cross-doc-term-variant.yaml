@@ -41,7 +41,7 @@ off_for:
 group: consistency
 summary:
   ja: 同じ語を、ファイルによって違う書き方で書いている所（サーバ／サーバー、e-mail／email）
-  en: The same word spelled one way in some files and another way in the rest (サーバ / サーバー, e-mail / email)
+  en: The same word spelled one way in some files and another way in others
 example:
   ja:
     other: |

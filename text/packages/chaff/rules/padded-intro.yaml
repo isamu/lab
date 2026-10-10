@@ -40,7 +40,7 @@ off_for:
 group: wording
 summary:
   ja: 「近年、〜が注目されています」のように、どの文書にも当てはまる書き出し
-  en: An opening such as "In recent years, X has gained attention" that fits any document
+  en: An opening such as "In recent years, X has gained attention" that says nothing
 example:
   ja:
     before: 近年、生成 AI が注目を集めています。今回、社内の問い合わせ対応に試しました。

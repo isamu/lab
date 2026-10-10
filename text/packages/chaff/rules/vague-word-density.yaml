@@ -36,8 +36,8 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 
 group: wording
 summary:
-  ja: 「適宜」「適切に」「必要に応じて」のように、どこまで・いつまでを読み手に決めさせる語が、文書の長さに対して多い所
-  en: Vague words ("as appropriate", "as needed", "in a timely manner"), many for the document's length
+  ja: 「適宜」「必要に応じて」のように、どこまでを読み手に決めさせる語が多い所
+  en: Too many vague words ("as appropriate", "as needed") for the length
 example:
   ja:
     pad: true

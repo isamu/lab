@@ -31,7 +31,7 @@ off_for:
 group: wording
 summary:
   ja: 「より良い」「さらに高速」のように、比べる相手が書かれていない比較
-  en: A comparative such as "is faster" or "is more efficient" with no "than" or other baseline nearby
+  en: A comparison such as "is faster" that never says faster than what
 
 example:
   ja:

@@ -49,7 +49,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: structure
 summary:
   ja: 「1. 概要」「2. 手順」「まとめ」や「1.」「2.」「3）」のように、兄弟の見出しで番号の付け方が混ざっている所
-  en: Sibling headings numbered in mixed ways, such as "1. Overview", "2. Steps", "Summary"
+  en: 'Sibling headings numbered in mixed ways: "1. Overview", "2. Steps", "Summary"'
 example:
   ja:
     before: |

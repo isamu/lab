@@ -50,7 +50,7 @@ off_for:
 group: consistency
 summary:
   ja: 3件と三件、1,000 と 1000、10% と 10％ のように、一つの文書で数の書き方が混ざっている所
-  en: One document writing numbers two ways, such as 1,000 and 1000, 10% and 10 percent, or three files and 3 files
+  en: Numbers written two ways in one document, such as 1,000 and 1000
 
 example:
   ja:

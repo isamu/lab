@@ -34,7 +34,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: structure
 summary:
   ja: ほかの日付には年があるのに年の無い日付と、年の変わり目をまたいで並ぶ年の無い日付
-  en: A date without a year where the document's other dates carry one, or where the dates cross the turn of a year
+  en: A date with no year where other dates have one, or where the year changes
 example:
   ja:
     before: |

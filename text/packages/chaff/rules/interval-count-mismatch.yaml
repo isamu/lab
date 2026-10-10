@@ -36,7 +36,7 @@ off_for:
 group: facts
 summary:
   ja: 「8時間以上あけ、1日4回まで」のように、間隔の下限と回数の上限が両立しない所と、上限の回数が表の回数と違う所
-  en: A minimum interval and a maximum count that cannot both hold, and a maximum count that differs from the table's
+  en: A minimum gap and a maximum number of doses per day that cannot both hold
 example:
   ja:
     before: |

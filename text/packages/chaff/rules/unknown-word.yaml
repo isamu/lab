@@ -37,7 +37,7 @@ off_for:
 
 group: slips
 summary:
-  en: An English word that is not in the dictionary and is one letter away from one that is, such as "attched"
+  en: An English word not in the dictionary but one letter from one ("attched")
   ja: 辞書に無く、一字違いの辞書の語がある英語の語（attched）
 example:
   en:

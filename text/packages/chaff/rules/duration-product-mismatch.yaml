@@ -37,7 +37,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: facts
 summary:
   ja: 「90分×15回（計24時間）」のように、回数と1回の長さを掛けても書いた合計にならない所
-  en: A count of sessions times the length of one that does not make the total written beside them
+  en: Sessions times the length of each that does not make the total given
 example:
   ja:
     before: |

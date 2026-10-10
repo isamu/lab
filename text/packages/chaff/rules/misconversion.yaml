@@ -38,7 +38,7 @@ use_for: [blog, business, technical, legal, docs, academic, literature, speech]
 group: slips
 summary:
   ja: 「以外と簡単」「始めて会う」「不可決」のような、仮名漢字変換の取り違え
-  en: A Japanese homophone picked by the input method in the wrong place, such as 以外と簡単 for 意外と簡単
+  en: A wrong Japanese sound-alike picked by the input method (以外と for 意外と)
 example:
   ja:
     before: 設定は以外と簡単でした。

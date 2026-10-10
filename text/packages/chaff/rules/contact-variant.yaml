@@ -41,8 +41,8 @@ off_for:
 
 group: facts
 summary:
-  ja: 同じ文書で、メールアドレスや住所が一か所だけ違って書かれている所（hibari-lab と hibarilab、4番1号と1番4号）
-  en: One email address or postal address written elsewhere with a slip (hibari-lab and hibarilab, 2-4-1 and 2-1-4)
+  ja: 同じメールアドレスや住所が、一か所だけ違って書かれている所（hibari-lab と hibarilab）
+  en: An email or postal address written differently in one place
 example:
   ja:
     before: |

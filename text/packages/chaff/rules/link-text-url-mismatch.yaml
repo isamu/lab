@@ -27,7 +27,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 
 group: slips
 summary:
-  ja: 「[https://a.example](https://b.example)」のように、言葉に見える URL と行き先のサイトが違うリンク
+  ja: 見えている URL と、実際の行き先のサイトが違うリンク
   en: A link whose text is a URL on one site and whose target is on another
 example:
   ja:

@@ -28,7 +28,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: facts
 summary:
   ja: 「第5条（秘密保持）」のように参照に添えた名前が、その条や章の見出しと違う所
-  en: A name given with a reference ("Section 5 (Confidentiality)") that differs from that section's heading
+  en: A reference's title ("Section 5 (Privacy)") that differs from the heading
 example:
   ja:
     before: |

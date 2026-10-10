@@ -38,7 +38,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: facts
 summary:
   ja: 「2月30日」「4月31日」「2023年2月29日」のように、暦に無い日付
-  en: A date the calendar does not have, such as "February 30", "April 31" or "2023-02-29"
+  en: A date the calendar does not have, such as "February 30" or "April 31"
 example:
   ja:
     before: 申込みの締切は 4月31日 です。

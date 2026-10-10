@@ -40,7 +40,7 @@ sources: [zhang-2024]
 group: ai-tells
 summary:
   ja: 「- **速さ**：〜」のように、太字の札とコロンで始まる項目が並び、説明が札の続きだけになっている所
-  en: 'List items that open with a bold label and a colon ("- **Speed**: ..."), one after another'
+  en: List items, one after another, that open with a bold label and a colon
 example:
   ja:
     config: { genre: blog/tech }

@@ -31,8 +31,8 @@ off_for:
 
 group: wording
 summary:
-  ja: 英語で、「Having reviewed the code, it is ready.」のように、分詞の句の後ろの主語が形だけの it や there の文
-  en: 'A participle phrase followed by an empty "it" or "there", as in "Having reviewed the code, it is ready."'
+  ja: 英語で、「Having reviewed the code, it is ready.」のように、分詞の句の主語が無い文
+  en: 'An opening phrase with no subject: "Having reviewed it, it is ready."'
 
 example:
   en:

@@ -39,7 +39,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: consistency
 summary:
   ja: 「2026-10-02」と「2026年10月2日」のように、一つの文書で日付を二通りに書いている所
-  en: Dates written two ways in one document, such as "2026-10-02" and "October 2, 2026"
+  en: Dates written two ways in one document, as "2026-10-02" and "October 2, 2026"
 example:
   ja:
     before: |

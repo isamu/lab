@@ -28,7 +28,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: structure
 summary:
   ja: 見出しのすぐ後ろに同じ深さか浅い見出しが来て、何も書かれていない節
-  en: A heading with nothing under it before the next heading of the same or a higher level
+  en: A heading with nothing under it before the next heading
 example:
   ja:
     before: |

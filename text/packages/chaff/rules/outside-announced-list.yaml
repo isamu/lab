@@ -39,7 +39,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: consistency
 summary:
   ja: 「対応 OS は Windows と macOS」と挙げたあとで、一覧に無い「Linux」に対応すると書いている所
-  en: A later sentence naming a platform or language that the list given earlier does not have
+  en: A platform or language named later that the list given earlier left out
 example:
   ja:
     before: |

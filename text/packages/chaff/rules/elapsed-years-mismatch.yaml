@@ -30,7 +30,7 @@ off_for:
 group: facts
 summary:
   ja: 「2015年創業」と「創業5年」、「1980年生まれ」と「30歳」のように、文書の日付から計算した年数と合わない所
-  en: A count of years ("10 years since its founding", "aged 30") that does not match its starting year and the document's date
+  en: A count of years ("aged 30") that does not match its start year
 example:
   ja:
     before: |

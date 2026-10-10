@@ -29,7 +29,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: facts
 summary:
   ja: 「三（4）か月」「金参拾万円（30,000円）」のように、文字で書いた数と後ろの括弧の数字が違う所
-  en: A number written in words followed by a figure in brackets that says another number, such as "six (7) months"
+  en: A number in words with a different figure in brackets, as "six (7) months"
 example:
   ja:
     config: { genre: legal/contract }
