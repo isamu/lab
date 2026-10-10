@@ -150,68 +150,64 @@ export type AmountWords = {
   readonly percentUnits: readonly string[];
 };
 
+/** A quantity the structure tree read: where it stands in the document and the unit it names (円, $, %, 社). */
+export type ProseQuantity = { readonly start: number; readonly end: number; readonly unit: string };
+
 const PROSE_NUMBER = /(?<![\d.,])(\d{1,3}(?:,\d{3})+|\d+)(?:\.(\d+))?(?![\d,.]\d)/gu;
-/** Words after a number ("million", "million yen"). */
-const LATIN_WORDS = /^\s+([A-Za-z]+)(?:\s+([A-Za-z]+))?/u;
-/** A unit written in kanji or katakana right after a number (百万円, 億円, ドル). A particle in hiragana ends it. */
-const CJK_UNIT = /^[\p{sc=Han}\p{sc=Katakana}ー]+/u;
 const NEGATIVE_BEFORE = /[-−▲△]$/u;
-const LATIN = /^[A-Za-z]/u;
-const LETTER = /^\p{L}/u;
+/** A word of magnitude after the number, outside the quantity ("$198 million"). */
+const WORD_AFTER = /^\s+([A-Za-z]+)/u;
 
-const lowered = (words: readonly string[]): string[] => words.map((word) => word.toLowerCase());
-
-/** The unit after a number: a word of magnitude and a currency word, or a run of kanji and katakana. */
-const unitAfter = (after: string, words: AmountWords): string => {
-  const latin = LATIN_WORDS.exec(after);
-  const [first, second] = [latin?.[1]?.toLowerCase() ?? "", latin?.[2]?.toLowerCase() ?? ""];
-  const units = lowered([...words.multipliers, ...words.after]);
-  if (units.includes(first)) return units.includes(second) ? `${first} ${second}` : first;
-  return CJK_UNIT.exec(after)?.[0] ?? "";
+/** The currency mark before a number, which may stand one space apart ($5, € 5, US$5), and the text before that mark. */
+const markBefore = (before: string, marks: readonly string[]): { readonly mark: string; readonly rest: string } => {
+  const gapped = before.endsWith(" ") ? before.slice(0, -1) : before;
+  const mark = marks.filter((entry) => gapped.endsWith(entry)).toSorted((left, right) => right.length - left.length)[0];
+  return mark === undefined ? { mark: "", rest: before } : { mark, rest: gapped.slice(0, gapped.length - mark.length) };
 };
 
-/** The longest currency mark the text before a number ends with ($, US$, ¥). */
-const markBefore = (before: string, marks: readonly string[]): string =>
-  marks.filter((mark) => before.endsWith(mark)).toSorted((left, right) => right.length - left.length)[0] ?? "";
-
-/** A percent unit right after the number: a sign as written (7.3%), a word as a whole word (7.3 percent). */
-const isPercentAfter = (after: string, units: readonly string[]): boolean => {
-  const rest = after.trimStart().toLowerCase();
-  return units.some((unit) => {
-    const lower = unit.toLowerCase();
-    if (!LATIN.test(unit)) return after.startsWith(unit) || (after.startsWith(" ") && rest.startsWith(lower));
-    return rest.startsWith(lower) && !LETTER.test(rest.slice(lower.length));
-  });
+/**
+ * The unit an amount is compared in, as written: the mark before it (US$ and $ differ), the magnitude and the mark inside the
+ * quantity (百万円 of 96百万円), the word of magnitude after it ($198 million), and the tree's currency when it stands after.
+ */
+const figureUnit = (mark: string, quantity: ProseQuantity, inside: string, after: string, words: AmountWords): string => {
+  const word = WORD_AFTER.exec(after)?.[1]?.toLowerCase() ?? "";
+  const multiplier = words.multipliers.some((entry) => entry.toLowerCase() === word) ? word : "";
+  const unitAfter = mark === "" && !inside.includes(quantity.unit) ? quantity.unit : "";
+  return [mark, inside, multiplier, unitAfter].map(keyOf).join("|");
 };
 
 /** What a piece of text holds: amounts of money, percentages, and the other numbers (years, counts), by where they start. */
 export type ProseValues = { readonly figures: readonly Figure[]; readonly rates: readonly WrittenRate[]; readonly others: readonly number[] };
 
+type ProseNumber = { readonly figure: Figure } | { readonly rate: WrittenRate } | { readonly other: number };
+
+const proseNumber = (text: string, offset: number, match: RegExpExecArray, quantities: readonly ProseQuantity[], words: AmountWords): ProseNumber[] => {
+  const { mark, rest } = markBefore(text.slice(0, match.index), words.before);
+  if (NEGATIVE_BEFORE.test(rest)) return [];
+  const start = offset + match.index;
+  const decimals = match[2] ?? "";
+  const value = numberOf(match[1] ?? "", decimals);
+  const quantity = quantities.find((entry) => entry.start === start);
+  if (quantity === undefined) return [{ other: start }];
+  if (words.percentUnits.includes(quantity.unit)) return [{ rate: { start, value, decimals: decimals.length } }];
+  if (![...words.before, ...words.after].includes(quantity.unit)) return [{ other: start }];
+  const [end, quantityEnd] = [match.index + match[0].length, quantity.end - offset];
+  const unit = figureUnit(mark, quantity, text.slice(end, quantityEnd), text.slice(quantityEnd), words);
+  return [{ figure: { start, value, step: DECIMAL_BASE ** -decimals.length, unit } }];
+};
+
 /**
- * The numbers of a piece of text. An amount of money has a currency mark before it ($, US$) or ends its unit with one (円,
- * yen), and is kept in the unit written around it ("$198 million" is 198 in $|million, 「96百万円」 is 96 in |百万円).
- * Signed numbers (-5, ▲5) are not read at all.
+ * The numbers of a piece of text, read with the tree's quantities (offset is where the text starts in the document). A quantity
+ * in a currency is an amount of money and one in a percent unit a percentage; any other number (a count, a year, the first of
+ * a range) is kept only by where it starts. Signed numbers (-5, ▲5, -$5) are not read at all.
  */
-export const proseValues = (text: string, offset: number, words: AmountWords): ProseValues => {
-  const figures: Figure[] = [];
-  const rates: WrittenRate[] = [];
-  const others: number[] = [];
-  const currencyAfter = lowered(words.after);
-  [...text.matchAll(PROSE_NUMBER)].forEach((match) => {
-    const before = text.slice(0, match.index);
-    const prefix = markBefore(before, words.before);
-    if (NEGATIVE_BEFORE.test(before.slice(0, before.length - prefix.length))) return;
-    const decimals = match[2] ?? "";
-    const value = numberOf(match[1] ?? "", decimals);
-    const after = text.slice(match.index + match[0].length);
-    const start = offset + match.index;
-    const unit = keyOf(unitAfter(after, words));
-    if (isPercentAfter(after, words.percentUnits)) rates.push({ start, value, decimals: decimals.length });
-    else if (prefix !== "" || currencyAfter.some((mark) => unit.endsWith(mark))) {
-      figures.push({ start, value, step: DECIMAL_BASE ** -decimals.length, unit: `${keyOf(prefix)}|${unit}` });
-    } else others.push(start);
-  });
-  return { figures, rates, others };
+export const proseValues = (text: string, offset: number, quantities: readonly ProseQuantity[], words: AmountWords): ProseValues => {
+  const numbers = [...text.matchAll(PROSE_NUMBER)].flatMap((match) => proseNumber(text, offset, match, quantities, words));
+  return {
+    figures: numbers.flatMap((number) => ("figure" in number ? [number.figure] : [])),
+    rates: numbers.flatMap((number) => ("rate" in number ? [number.rate] : [])),
+    others: numbers.flatMap((number) => ("other" in number ? [number.other] : [])),
+  };
 };
 
 /** A word of the lexicons found in a sentence. */

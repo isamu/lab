@@ -1,5 +1,5 @@
 // ratio-mismatch: the reading half. Reads the tables (each row's label and cells) and the sentences (the words of lexicons
-// ratio-label and ratio-term, and the amounts written with currency-notation and amount-multiplier) and leaves the deciding
+// ratio-label and ratio-term, and the structure tree's quantities in a currency or a percent unit) and leaves the deciding
 // to structure/ratio.ts.
 import type { Detector, Finding, ProseDocument, Span } from "../plugin.ts";
 import { linesOf } from "../structure/lines.ts";
@@ -8,11 +8,13 @@ import { withoutEdgeMarks } from "../facts/trim-marks.ts";
 import { proseAndTablesOf } from "../table-text.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { quoteAt } from "./structure-tree.ts";
+import { inDocumentOrder } from "../structure/issues.ts";
 import {
   proseValues,
   sentenceRatioMismatch,
   tableRatioMismatches,
   type AmountWords,
+  type ProseQuantity,
   type LabelHit,
   type RatioIssue,
   type RatioWords,
@@ -82,13 +84,24 @@ const hitsIn = (text: string, offset: number, words: RatioWords): LabelHit[] => 
   return longestHits([...labels, ...terms]);
 };
 
+const quantitiesOf = (doc: ProseDocument): ProseQuantity[] =>
+  doc.structure === undefined
+    ? []
+    : inDocumentOrder(doc.structure).flatMap((node) =>
+        node.kind === "quantity" ? [{ start: node.span.start, end: node.span.end, unit: String(node.attrs["unit"] ?? "") }] : [],
+      );
+
 const proseIssues = (doc: ProseDocument, words: RatioWords): RatioIssue[] => {
-  const amountWords = amountWordsOf(doc, words.percentUnits);
-  return doc.sentences.flatMap((sentence) => {
+  const named = doc.sentences.flatMap((sentence) => {
     const text = doc.source.slice(sentence.span.start, sentence.span.end);
     const hits = hitsIn(text, sentence.span.start, words);
-    if (!hits.some((hit) => "label" in hit)) return [];
-    const issue = sentenceRatioMismatch({ hits, end: sentence.span.end, ...proseValues(text, sentence.span.start, amountWords) });
+    return hits.some((hit) => "label" in hit) ? [{ span: sentence.span, text, hits }] : [];
+  });
+  if (named.length === 0) return [];
+  const amountWords = amountWordsOf(doc, words.percentUnits);
+  const quantities = quantitiesOf(doc);
+  return named.flatMap(({ span, text, hits }) => {
+    const issue = sentenceRatioMismatch({ hits, end: span.end, ...proseValues(text, span.start, quantities, amountWords) });
     return issue === undefined ? [] : [issue];
   });
 };
