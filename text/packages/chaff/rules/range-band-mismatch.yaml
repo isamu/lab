@@ -35,7 +35,7 @@ off_for:
 group: facts
 summary:
   ja: 表の列や箇条書きの「7〜12歳」「12〜14歳」のように、隣り合う区分の幅が重なるか、間が空いた所
-  en: Neighbouring bands of a table column or a list that overlap or leave a gap, such as "7 to 12" then "12 to 14"
+  en: Neighbouring bands that overlap or leave a gap, such as "7 to 12", "12 to 14"
 example:
   ja:
     before: |

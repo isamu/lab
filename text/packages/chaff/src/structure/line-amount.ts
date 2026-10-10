@@ -3,6 +3,7 @@ import { linesOf, type Line } from "./lines.ts";
 import { CELL_SEPARATOR } from "./bare-numbers.ts";
 import { TABLE_RULE } from "./runs.ts";
 import { roundedMatches } from "./tax.ts";
+import { hasSuperscriptPower } from "../facts/superscript-power.ts";
 import { perUnitPrice, quantityUnit, unitsAgree, type UnitWord } from "./line-amount-unit.ts";
 
 /**
@@ -42,8 +43,6 @@ const CENTS = 100;
 const ONE_NUMBER = /^([^\d]*?)(\d{1,3}(?:,\d{3})+|\d+)(\.\d+)?([^\d]*)$/u;
 const LEADING_NUMBER = /^(\d{1,3}(?:,\d{3})+|\d+)(\.\d+)?(?![\d,])/u;
 const NEGATIVE = /[-−▲△(（]/u;
-// NFKC turns ³ into 3, so a power (10³) is caught before normalising, while it still reads as a superscript.
-const DIGIT_THEN_SUPERSCRIPT = /\p{Nd}[\u2070\u00B9\u00B2\u00B3\u2074-\u2079]/u;
 
 const cellsOf = (line: Line): Cell[] => {
   const bounds = [-1, ...[...line.text.matchAll(CELL_SEPARATOR)].map((match) => match.index), line.text.length];
@@ -82,7 +81,7 @@ const isMeasureUnit = (word: string, measureUnits: readonly string[]): boolean =
  * ("2 x 3", "10³"). A digit after the number is allowed only as part of a measure unit (m³ and ㎥ normalise to m3).
  */
 export const quantityOf = (cell: Cell, measureUnits: readonly string[]): number | undefined => {
-  if (DIGIT_THEN_SUPERSCRIPT.test(cell.text)) return undefined;
+  if (hasSuperscriptPower(cell.text)) return undefined;
   const text = plain(cell.text);
   const match = LEADING_NUMBER.exec(text);
   if (match === null) return undefined;

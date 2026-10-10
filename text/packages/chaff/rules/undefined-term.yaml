@@ -36,8 +36,8 @@ off_for:
 
 group: consistency
 summary:
-  ja: 「本業務」のように定義した語と同じ形の「本成果物」や、英語の契約で大文字で始めた語（its Affiliates）を、定義しないまま使っている所
-  en: A term in the defined form (本成果物, its Affiliates) that the document never defines
+  ja: 「本業務」のように定義した語と同じ形なのに、定義しないまま使っている語（本成果物）
+  en: A term written like a defined one (its Affiliates) that is never defined
 example:
   ja:
     config: { genre: legal/contract }

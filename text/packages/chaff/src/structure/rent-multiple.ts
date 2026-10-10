@@ -1,5 +1,5 @@
-import { escapeRegExp } from "../orthography.ts";
 import type { StructureIssue } from "./issues.ts";
+import { alternation, intervalOf, isMultiple, isPlainGap, nearestStated, occurrences, type Interval, type StatedAmount } from "./stated-multiple.ts";
 
 /**
  * rent-multiple-mismatch: a deposit, key money or guarantee given both as a number of months of rent and as an amount that
@@ -10,15 +10,6 @@ import type { StructureIssue } from "./issues.ts";
  * fee, since listings do both and seldom say which. A months count without an amount, an amount without a months count, a
  * range of months, and two different pairs in one statement are not compared. The words come from the lexicons. Pure.
  */
-
-/** One amount of money as read: its currency, its value, and the value of the word of scale written in it (万), if any. */
-export type RentAmount = {
-  readonly offset: number;
-  readonly end: number;
-  readonly currency: string;
-  readonly value: number;
-  readonly scale: number | undefined;
-};
 
 export type RentMultipleWords = {
   /** Labels of the monthly rent (賃料, Rent). */
@@ -41,70 +32,21 @@ export type RentMultipleWords = {
   readonly numberWords: readonly { readonly word: string; readonly value: number }[];
 };
 
-/** An amount read as the interval its written digits allow (9.8万円 is anything from 97,500 to 98,500). */
-export type Interval = { readonly low: number; readonly high: number };
-
 /** A rent or fee as stated. range is undefined when the label has amounts that are not one monthly amount (a change, per week). */
 type Stated = { readonly offset: number; readonly currency: string; readonly range: Interval | undefined; readonly written: string };
 
 type Months = { readonly start: number; readonly end: number; readonly count: number };
 
-/** Rounding to the currency's unit (a yen, a dollar) is allowed on top of the written precision. */
-const UNIT_SLACK = 1;
-
-const LATIN = /[A-Za-z]/u;
-const SEPARATORS = /[\s|｜:：=＝、，,・/／'’()（）[\]［］-]/gu;
-const PARENTHETICAL_WITHOUT_DIGITS = /[（(][^()（）0-9０-９]*[)）]/gu;
-/** The possessive after a months count (2 months' rent, 1 month's rent). */
-const POSSESSIVE = /['’]s?(?![A-Za-z])/gu;
 const RANGE_START = /[0-9０-９A-Za-z一二三四五六七八九十]\s*$/u;
 const SENTENCE_END = /[。！？；;]|[.!?](?=\s|$)/u;
 const DIGITS = "[0-9０-９]+(?:[.．][0-9０-９]+)?";
-
-const wordPattern = (word: string): string => {
-  const edgeStart = LATIN.test(word.charAt(0)) ? "(?<![A-Za-z])" : "";
-  const edgeEnd = LATIN.test(word.charAt(word.length - 1)) ? "(?![A-Za-z])" : "";
-  return `${edgeStart}${escapeRegExp(word)}${edgeEnd}`;
-};
-
-/** One alternation of the words, longest first so 月額賃料 wins over 賃料. Undefined when there are none. */
-const alternation = (words: readonly string[]): string | undefined =>
-  words.length === 0
-    ? undefined
-    : words
-        .toSorted((left, right) => right.length - left.length)
-        .map(wordPattern)
-        .join("|");
-
-const occurrences = (text: string, words: readonly string[]): { readonly start: number; readonly end: number }[] => {
-  const pattern = alternation(words);
-  if (pattern === undefined) return [];
-  return [...text.matchAll(new RegExp(pattern, "giu"))].map((match) => ({ start: match.index, end: match.index + match[0].length }));
-};
-
-const withoutWords = (text: string, words: readonly string[]): string => {
-  const pattern = alternation(words);
-  return pattern === undefined ? text : text.replace(new RegExp(pattern, "giu"), "");
-};
-
-/** Whether only separators, bracketed words and link words stand in the gap (「 | 」, " (monthly): ", "の", "'s rent ("). */
-export const isPlainGap = (gap: string, words: readonly string[]): boolean =>
-  withoutWords(gap.replace(PARENTHETICAL_WITHOUT_DIGITS, "").replace(POSSESSIVE, ""), words).replace(SEPARATORS, "") === "";
-
-const decimalsOf = (written: string): number => /[.．]([0-9０-９]+)/u.exec(written)?.[1]?.length ?? 0;
-
-/** The interval an amount's digits allow: a word of scale (9.8万) leaves half its last digit either way; plain digits are exact. */
-export const intervalOf = (amount: RentAmount, written: string): Interval => {
-  const half = amount.scale === undefined ? 0 : (amount.scale * 10 ** -decimalsOf(written)) / 2;
-  return { low: amount.value - half, high: amount.value + half };
-};
 
 const lineBounds = (text: string, offset: number): { readonly start: number; readonly end: number } => {
   const end = text.indexOf("\n", offset);
   return { start: text.lastIndexOf("\n", offset - 1) + 1, end: end === -1 ? text.length : end };
 };
 
-const amountsBetween = (amounts: readonly RentAmount[], start: number, end: number): RentAmount[] =>
+const amountsBetween = (amounts: readonly StatedAmount[], start: number, end: number): StatedAmount[] =>
   amounts.filter((amount) => amount.offset >= start && amount.end <= end);
 
 /** A label preceded by a months count (2 months' rent, First month's rent) names a multiple, not the rent. */
@@ -114,7 +56,7 @@ const followsMonths = (before: string, words: RentMultipleWords): boolean => {
 };
 
 /** The second end of a range that starts with this amount (85,000円〜90,000円), if one follows. */
-const rangeEnd = (text: string, first: RentAmount, next: RentAmount | undefined, words: RentMultipleWords): RentAmount | undefined => {
+const rangeEnd = (text: string, first: StatedAmount, next: StatedAmount | undefined, words: RentMultipleWords): StatedAmount | undefined => {
   if (next === undefined || next.currency !== first.currency || next.value < first.value) return undefined;
   const joint = text.slice(first.end, next.offset).trim();
   return words.connectors.some((connector) => connector.toLowerCase() === joint.toLowerCase()) ? next : undefined;
@@ -133,7 +75,7 @@ const labelledEnd = (text: string, from: number, lineEnd: number, words: RentMul
 const statedAt = (
   text: string,
   label: { readonly start: number; readonly end: number },
-  amounts: readonly RentAmount[],
+  amounts: readonly StatedAmount[],
   words: RentMultipleWords,
 ): Stated[] => {
   const line = lineBounds(text, label.start);
@@ -149,7 +91,7 @@ const statedAt = (
 };
 
 /** Each label of the kind followed on its line by an amount (賃料 | 98,000円, Rent: $1,600 to $1,700), in document order. */
-const statedAmounts = (text: string, labels: readonly string[], amounts: readonly RentAmount[], words: RentMultipleWords): Stated[] =>
+const statedAmounts = (text: string, labels: readonly string[], amounts: readonly StatedAmount[], words: RentMultipleWords): Stated[] =>
   occurrences(text, labels).flatMap((label) => statedAt(text, label, amounts, words));
 
 const numberWordValue = (word: string, words: RentMultipleWords): number | undefined =>
@@ -177,13 +119,13 @@ const endsRange = (text: string, months: Months, words: RentMultipleWords): bool
   return words.connectors.some((connector) => before.endsWith(connector) && RANGE_START.test(before.slice(0, -connector.length)));
 };
 
-type Pair = { readonly months: Months; readonly amount: RentAmount };
+type Pair = { readonly months: Months; readonly amount: StatedAmount };
 
-const gapBetween = (text: string, months: Months, amount: RentAmount): string =>
+const gapBetween = (text: string, months: Months, amount: StatedAmount): string =>
   amount.offset >= months.end ? text.slice(months.end, amount.offset) : text.slice(amount.end, months.start);
 
 /** A months count and an amount standing together, either way round (1か月（98,000円）, $3,200 (2 months' rent)). */
-const pairsIn = (text: string, months: readonly Months[], amounts: readonly RentAmount[], words: RentMultipleWords): Pair[] => {
+const pairsIn = (text: string, months: readonly Months[], amounts: readonly StatedAmount[], words: RentMultipleWords): Pair[] => {
   const between = [...words.links, ...words.rents];
   return months.flatMap((count) =>
     amounts
@@ -206,7 +148,7 @@ const statementAt = (
   text: string,
   label: { readonly start: number; readonly end: number },
   next: number | undefined,
-  amounts: readonly RentAmount[],
+  amounts: readonly StatedAmount[],
   words: RentMultipleWords,
 ): Statement[] => {
   const end = statementEnd(text, label.end, next);
@@ -221,17 +163,9 @@ const statementAt = (
 };
 
 /** Every label of a multiple with one months count and one amount (敷金 | 2か月（98,000円）). */
-const multipleStatements = (text: string, amounts: readonly RentAmount[], words: RentMultipleWords): Statement[] => {
+const multipleStatements = (text: string, amounts: readonly StatedAmount[], words: RentMultipleWords): Statement[] => {
   const labels = occurrences(text, words.multiples);
   return labels.flatMap((label, index) => statementAt(text, label, labels[index + 1]?.start, amounts, words));
-};
-
-/** The rent a statement at this offset is of: the nearest before it, or, before any, the one rent the document states. */
-export const rentFor = <T extends Stated>(rents: readonly T[], offset: number): T | undefined => {
-  const before = rents.filter((rent) => rent.offset < offset).at(-1);
-  if (before !== undefined) return before;
-  const [first] = rents;
-  return rents.every((rent) => rent.range !== undefined && rent.range.low === first?.range?.low && rent.range.high === first.range.high) ? first : undefined;
 };
 
 /** The fees of the listing a rent belongs to: those after it and before the next rent; for the first rent, else those before it. */
@@ -252,12 +186,8 @@ export const monthlyBases = (rent: Interval, fees: readonly Interval[]): Interva
   return [rent, ...withEach, ...withAll];
 };
 
-/** Whether the amount is the count of months of one of the bases, within the written precision and a unit's rounding. */
-export const isMultiple = (count: number, amount: Interval, bases: readonly Interval[]): boolean =>
-  bases.some((base) => count * base.low - UNIT_SLACK <= amount.high && amount.low <= count * base.high + UNIT_SLACK);
-
 const mismatchOf = (text: string, statement: Statement, rents: readonly Stated[], fees: readonly Stated[]): StructureIssue[] => {
-  const rent = rentFor(rents, statement.label);
+  const rent = nearestStated(rents, statement.label);
   const { months, amount } = statement.pair;
   if (rent?.range === undefined || rent.currency !== amount.currency) return [];
   const feeRanges = feesFor(rent, rents, fees).map((fee) => fee.range);
@@ -269,7 +199,7 @@ const mismatchOf = (text: string, statement: Statement, rents: readonly Stated[]
 };
 
 /** Every multiple of rent whose amount is not that many months of the listing's rent (or of the rent and its fee). */
-export const rentMultipleMismatches = (text: string, amounts: readonly RentAmount[], words: RentMultipleWords): StructureIssue[] => {
+export const rentMultipleMismatches = (text: string, amounts: readonly StatedAmount[], words: RentMultipleWords): StructureIssue[] => {
   const rents = statedAmounts(text, words.rents, amounts, words);
   if (rents.length === 0) return [];
   const fees = statedAmounts(text, words.fees, amounts, words);

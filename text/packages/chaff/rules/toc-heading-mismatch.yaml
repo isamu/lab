@@ -28,7 +28,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: structure
 summary:
   ja: 目次（「目次」「Contents」の見出しの下の箇条書き）の項目のうち、文書のどの見出しとも合わないもの
-  en: An entry of the table of contents (the list under a "Contents" heading) that matches no heading of the document
+  en: A table of contents entry that matches no heading of the document
 example:
   ja:
     before: |

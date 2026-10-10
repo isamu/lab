@@ -27,8 +27,8 @@ use_for: [business, blog, technical, legal, docs, academic, literature, speech]
 
 group: team
 summary:
-  ja: チームが必須と決めた見出し（「リスク」「費用」など）が無い文書。chaff.yaml の required_sections に書いた見出しだけを見ます
-  en: A heading the team requires (such as "Risks" or "Cost") missing from the document, from required_sections in chaff.yaml
+  ja: チームが必須と決めた見出し（「リスク」「費用」など）が無い文書。chaff.yaml で決めます
+  en: A heading the team requires (such as "Risks") missing, set in chaff.yaml
 example:
   ja:
     config: { required_sections: [リスク] }

@@ -43,7 +43,7 @@ off_for:
 group: structure
 summary:
   ja: 「すべての〜は…しなければならない」と言い切った決まりに、別の条や段落で「ただし…を除く」と例外を書いた所
-  en: 'A rule stated without exception ("must always") that another article or paragraph makes an exception to ("except")'
+  en: A rule said to have no exception ("must always") that another part excepts
 example:
   ja:
     before: |

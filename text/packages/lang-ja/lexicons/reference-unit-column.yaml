@@ -1,0 +1,20 @@
+# 検査結果の表の列の見出し（reference-unit-mismatch）。group が result は結果の列、range は基準値の列、unit は単位の列。
+# 見出しの括弧の中（「結果（mg/dL）」の単位、「基準値（男性）」）は除いて、見出し全体と当てる。
+id: reference-unit-column
+language: ja
+entries:
+  - { pattern: 結果, group: result }
+  - { pattern: 検査結果, group: result }
+  - { pattern: 今回結果, group: result }
+  - { pattern: 今回, group: result }
+  - { pattern: 測定値, group: result }
+  - { pattern: 検査値, group: result }
+  - { pattern: 結果値, group: result }
+  - { pattern: 基準値, group: range }
+  - { pattern: 基準範囲, group: range }
+  - { pattern: 基準値範囲, group: range }
+  - { pattern: 参考基準値, group: range }
+  - { pattern: 参考値, group: range }
+  - { pattern: 正常値, group: range }
+  - { pattern: 正常範囲, group: range }
+  - { pattern: 単位, group: unit }

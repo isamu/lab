@@ -1,0 +1,13 @@
+# Words that, earlier on the line, make two letter-and-digit codes a range of serial or lot numbers (serial-range-reversed):
+# "Serial numbers: B3900 to B3100". A line without one is not read: part numbers in a parts list (A-100 to A-099) may be an
+# order, not a range. Matched as whole words, without regard to case.
+id: serial-label
+language: en
+entries:
+  - pattern: serial
+  - pattern: serials
+  - pattern: S/N
+  - pattern: lot
+  - pattern: lots
+  - pattern: batch
+  - pattern: batches

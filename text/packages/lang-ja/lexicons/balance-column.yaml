@@ -1,0 +1,43 @@
+# 残高の列のある表（返済予定表、入出金の明細、在庫表）で、列の見出しが言う役割（running-balance-mismatch）。
+# group: balance は残高、principal は元金、payment は支払額、interest は利息、in は入ってきた額、out は出ていった額、
+# sequence は行の番号、date は日付の列（「お支払日」は支払額ではない）。date、sequence、balance の順に先に見るので、
+# 「お支払後の残高」は残高、「残元金」は元金ではなく残高の列になる。
+id: balance-column
+language: ja
+entries:
+  - { pattern: 日付, group: date }
+  - { pattern: 月日, group: date }
+  - { pattern: 支払日, group: date }
+  - { pattern: 返済日, group: date }
+  - { pattern: 引落日, group: date }
+  - { pattern: 振替日, group: date }
+  - { pattern: 取引日, group: date }
+  - { pattern: 回, group: sequence }
+  - { pattern: 番号, group: sequence }
+  - { pattern: 残高, group: balance }
+  - { pattern: 残元金, group: balance }
+  - { pattern: 残債, group: balance }
+  - { pattern: 在庫, group: balance }
+  - { pattern: 利息, group: interest }
+  - { pattern: 利子, group: interest }
+  - { pattern: 手数料, group: interest }
+  - { pattern: 元金, group: principal }
+  - { pattern: 元本, group: principal }
+  - { pattern: 入金, group: in }
+  - { pattern: 預入, group: in }
+  - { pattern: 預け入れ, group: in }
+  - { pattern: お預入れ, group: in }
+  - { pattern: 入庫, group: in }
+  - { pattern: 受入, group: in }
+  - { pattern: 入出金, group: in }
+  - { pattern: 入出金, group: out }
+  - { pattern: 出金, group: out }
+  - { pattern: 払出, group: out }
+  - { pattern: 引出, group: out }
+  - { pattern: 引き出し, group: out }
+  - { pattern: お引出し, group: out }
+  - { pattern: 出庫, group: out }
+  - { pattern: 支払額, group: payment }
+  - { pattern: 支払金額, group: payment }
+  - { pattern: 返済額, group: payment }
+  - { pattern: 返済金額, group: payment }

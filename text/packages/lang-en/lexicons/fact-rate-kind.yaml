@@ -1,0 +1,9 @@
+# The kind of a rate (fact-conflict): "4.8% (fixed)", "3.9% variable". It does not change the value, so a rate followed by it is
+# still read. The group is the kind: two rates that both state one and differ (fixed and variable) are not compared.
+id: fact-rate-kind
+language: en
+entries:
+  - { pattern: fixed, group: fixed }
+  - { pattern: fixed rate, group: fixed }
+  - { pattern: variable, group: variable }
+  - { pattern: variable rate, group: variable }

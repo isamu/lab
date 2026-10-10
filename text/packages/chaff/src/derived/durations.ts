@@ -1,13 +1,15 @@
 import type { Span } from "../plugin.ts";
 import { bySentence } from "./sentence-buckets.ts";
 import { calendarDateOf, dateOf, shifted, valueOf, type DurationUnit } from "./date-arithmetic.ts";
+import { markedPair, type MarkText } from "./marked-dates.ts";
 
 /**
  * 始まりと期間と終わりを一つの文に書いたもの（「4月1日から3か月間（6月30日まで）」"for 3 months from April 1, 2026 (until
  * June 30, 2026)"）。始まりに期間を足した日が終わりと合わなければ言う。期間の数え方は三通りある。終わりの日を含めて数える
  * （4月1日から3か月間は6月30日まで）か、含めずに数える（7月1日まで）か、初日を数えずに期間が過ぎた日（「到達日から2週間が経過した日
  * （4月16日）」）。どれとも合わないときだけ言う。
- * 文に日付がちょうど二つ、期間がちょうど一つのときだけ読む。それより多い文は、どの日付とどの期間が組なのか決まらない。
+ * 文に期間がちょうど一つのときだけ読む。日付が三つ以上なら、始まりと終わりを語で印した組（「7月1日から」「（7月31日まで）」）だけを
+ * 読む。印が無ければ、どの日付とどの期間が組なのか決まらない。
  * 範囲のすぐ後ろの括弧に書いた期間（「9月1日〜9月30日（30日間）」）は範囲そのものの長さで、期間が過ぎた日を終わりに書くことはない。
  */
 export type DatedValue = Span & { readonly value: string };
@@ -91,20 +93,31 @@ const mismatchOf = (written: readonly [DatedValue, DatedValue], duration: Durati
   return { start, duration, end, expected: valueOf(inclusive, withYear) };
 };
 
+/** 年まで書いた組で、印した終わりが始まりより前なら、期間の向きが逆（date-range-reversed が言う）。 */
+const reversed = ([start, end]: readonly [DatedValue, DatedValue]): boolean =>
+  calendarDateOf(start.value)?.year !== undefined && calendarDateOf(end.value)?.year !== undefined && end.value < start.value;
+
+const pairOf = (sentence: Span, inDates: readonly DatedValue[], duration: Duration, text: MarkText): readonly [DatedValue, DatedValue] | undefined => {
+  const [first, second] = inDates;
+  if (inDates.length === 2 && first !== undefined && second !== undefined) return [first, second];
+  const marked = inDates.length > 2 ? markedPair(text, sentence, inDates, duration) : undefined;
+  return marked === undefined || reversed(marked) ? undefined : marked;
+};
+
 /** 一つの文の中の、始まり・期間・終わり。 */
 export const durationMismatches = (
   sentences: readonly Span[],
   dates: readonly DatedValue[],
   durations: readonly Duration[],
-  text: RangeText,
+  text: RangeText & MarkText,
 ): DurationMismatch[] => {
   const datesIn = bySentence(sentences, dates);
   return [...bySentence(sentences, durations).entries()].flatMap(([index, inDurations]) => {
-    const inDates = datesIn.get(index) ?? [];
-    const [first, second] = inDates;
     const [duration] = inDurations;
-    if (inDates.length !== 2 || inDurations.length !== 1 || first === undefined || second === undefined || duration === undefined) return [];
-    const mismatch = mismatchOf([first, second], duration, isRangeLength(text, [first, second], duration));
+    const sentence = sentences[index];
+    if (inDurations.length !== 1 || duration === undefined || sentence === undefined) return [];
+    const pair = pairOf(sentence, datesIn.get(index) ?? [], duration, text);
+    const mismatch = pair === undefined ? undefined : mismatchOf(pair, duration, isRangeLength(text, pair, duration));
     return mismatch === undefined ? [] : [mismatch];
   });
 };

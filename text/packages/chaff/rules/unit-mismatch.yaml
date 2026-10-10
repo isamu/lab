@@ -37,7 +37,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: facts
 summary:
   ja: 同じ項目の量を、違う単位で書いて換算すると合わない所（距離：5 km と 3000 m）
-  en: 'The same item given in two units that do not convert ("Distance: 5 km" and "3000 m")'
+  en: The same item in two units that do not convert ("5 km" and "3000 m")
 example:
   ja:
     before: |

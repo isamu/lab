@@ -41,7 +41,7 @@ off_for:
 group: consistency
 summary:
   ja: 「私たち」と「弊社」、「私」と「筆者」のように、一つの文書が自分や読み手を二通りに呼んでいる所
-  en: 'One document naming itself two ways (私たち and 弊社) or its reader two ways ("you" and "one")'
+  en: One document calling itself or its reader two ways ("you" and "one")
 example:
   ja:
     before: |

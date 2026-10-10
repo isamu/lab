@@ -27,7 +27,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: facts
 summary:
   ja: 「回答者の120%」のように、集まりの一部の割合なのに 100% を超える百分率
-  en: A percentage that is a share of a group but passes 100%, such as "120% of respondents"
+  en: A share of a group over 100%, such as "120% of respondents"
 example:
   ja:
     before: 調査では、回答者の120%が満足と答えました。

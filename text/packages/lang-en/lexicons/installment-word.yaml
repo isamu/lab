@@ -1,0 +1,45 @@
+# The words of installment-total-mismatch. unit follows a count ("48 payments"); qualifier may stand between them ("48
+# monthly payments"). link may stand between a label and its value ("Total of payments is"). per joins a count of payments
+# to the amount of each ("of $537.50", "x $537.50"). rounding says some payment absorbs a remainder; without a first or
+# final payment stated, the plan is not compared. skip names a payment outside the count times the regular amount (a
+# balloon, a down payment), and a document with one is not compared.
+id: installment-word
+language: en
+entries:
+  - { pattern: payment, group: unit }
+  - { pattern: payments, group: unit }
+  - { pattern: installment, group: unit }
+  - { pattern: installments, group: unit }
+  - { pattern: instalment, group: unit }
+  - { pattern: instalments, group: unit }
+  - { pattern: monthly, group: qualifier }
+  - { pattern: weekly, group: qualifier }
+  - { pattern: biweekly, group: qualifier }
+  - { pattern: semimonthly, group: qualifier }
+  - { pattern: equal, group: qualifier }
+  - { pattern: regular, group: qualifier }
+  - { pattern: consecutive, group: qualifier }
+  - { pattern: scheduled, group: qualifier }
+  - { pattern: remaining, group: qualifier }
+  - { pattern: final, group: qualifier }
+  - { pattern: first, group: qualifier }
+  - { pattern: is, group: link }
+  - { pattern: are, group: link }
+  - { pattern: will be, group: link }
+  - { pattern: of, group: per }
+  - { pattern: at, group: per }
+  - { pattern: x, group: per }
+  - { pattern: ×, group: per }
+  - { pattern: rounding, group: rounding }
+  - { pattern: rounded, group: rounding }
+  - { pattern: adjusted, group: rounding }
+  - { pattern: adjustment, group: rounding }
+  - { pattern: may vary, group: rounding }
+  - { pattern: may differ, group: rounding }
+  - { pattern: bonus, group: skip }
+  - { pattern: balloon, group: skip }
+  - { pattern: down payment, group: skip }
+  - { pattern: deposit, group: skip }
+  - { pattern: residual, group: skip }
+  - { pattern: deferred, group: skip }
+  - { pattern: trade-in, group: skip }

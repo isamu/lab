@@ -30,7 +30,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: readability
 summary:
   ja: 「これは」「その」「この」のような指示語で始まる文が、同じ段落の中で続く所
-  en: Sentences in a row, within one paragraph, that open with a word pointing back (This, That, It; これ, その)
+  en: Sentences in a row that open with a word pointing back (This, That, It)
 example:
   ja:
     before: |

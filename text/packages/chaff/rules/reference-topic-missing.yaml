@@ -28,7 +28,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: facts
 summary:
   ja: 「第2章で述べた料金体系」のように参照先の話題を書いたのに、その章に話題の語が無い所
-  en: A reference that names a topic ("see Section 2 for pricing") its target never mentions
+  en: A reference that names a topic ("see Section 2 for pricing") never found there
 example:
   ja:
     before: |

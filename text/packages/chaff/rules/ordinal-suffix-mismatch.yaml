@@ -27,7 +27,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: wording
 summary:
   ja: 「3th」「22th」「11st」のように、英語の序数の字が数と合わない所
-  en: An English ordinal whose ending does not go with its number, such as "3th", "22th" or "11st"
+  en: An ordinal whose ending does not fit its number, such as "3th" or "11st"
 example:
   ja:
     before: 今年で 3th イベントになります。

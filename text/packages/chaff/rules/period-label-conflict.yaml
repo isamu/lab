@@ -32,7 +32,7 @@ off_for:
 group: facts
 summary:
   ja: 「第2四半期決算短信」の表の見出しの「当第3四半期」のように、題の決算期間と同じ種類の別の期間
-  en: A period of the same kind as the title's but different, such as Q3 in the table of a second-quarter release
+  en: A period of the title's kind but another one, such as Q3 in a Q2 release
 example:
   ja:
     before: |

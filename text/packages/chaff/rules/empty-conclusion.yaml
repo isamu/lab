@@ -41,7 +41,7 @@ use_for: [blog, business/report, business/proposal]
 group: wording
 summary:
   ja: 本文をなぞるだけで、読み手に何も残さない結び（AI に読ませる検査）
-  en: A conclusion that only restates the body and leaves the reader nothing (checked by an AI)
+  en: A conclusion that only repeats the body and leaves nothing (read by an AI)
 example:
   ja:
     before: |

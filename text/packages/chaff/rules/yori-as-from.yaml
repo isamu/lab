@@ -35,7 +35,7 @@ sources: [koyobun-2022]
 group: wording
 summary:
   ja: 「4月1日より開始」のように、起点を「から」でなく「より」で書いた所
-  en: より written for a starting point (4月1日より開始) where Japanese official style writes から
+  en: より written for a starting point (4月1日より) where official style writes から
 example:
   ja:
     before: |

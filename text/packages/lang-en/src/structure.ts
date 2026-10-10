@@ -8,6 +8,7 @@ import { dates } from "./dates.ts";
 import { definitionScopeDepth, definitions, opensDefinitionScope } from "./definitions.ts";
 import { CHAPTER_DEPTH, PART_DEPTH } from "./depth.ts";
 import { currencyAfter, currencyBefore, type CurrencyMarks } from "./currency-amounts.ts";
+import { isUnitWord, startsWithUnit } from "./unit-case.ts";
 import { continuesAddress, continuesOpen, depthFor, INSERTED, ordinalOf, styleOf } from "./item-style.ts";
 
 // Contracts, specifications and statutes in English. core nests what this reads; it does not know
@@ -230,6 +231,7 @@ const obligations = (text: string): Mention[] => {
 
 /** Find the number first, then look at what is right before (a currency) and right after (a unit). */
 const NUMBER_RUN = /\d[\d,.]{0,15}/gu;
+const PERCENT_UNITS = (LEXICONS["percent-unit"] ?? []).map((entry) => entry.pattern);
 const UNITS = [
   "business days",
   "business day",
@@ -248,7 +250,7 @@ const UNITS = [
   "minutes",
   "minute",
   "times",
-  ...(LEXICONS["percent-unit"] ?? []).map((entry) => entry.pattern),
+  ...PERCENT_UNITS,
 ];
 
 const notation = (position: "before" | "after"): string[] =>
@@ -270,10 +272,17 @@ const withoutTrailingPunctuation = (run: string): string => {
 /** One space or tab may sit between a number and its unit or currency. */
 const isGap = (char: string | undefined): boolean => char === " " || char === "\t";
 
-const unitAfter = (text: string, from: number): string | undefined => {
+type UnitMatch = (text: string, at: number, unit: string) => boolean;
+
+const asWritten: UnitMatch = (text, at, unit) => text.startsWith(unit, at);
+
+/** A lexicon unit word is read in any case ("8.5 Percent"). The period words above stay as written until they move to a lexicon. */
+const LEXICON_WORDS: ReadonlySet<string> = new Set(PERCENT_UNITS.filter(isUnitWord));
+const lexiconWordsInAnyCase: UnitMatch = (text, at, unit) => (LEXICON_WORDS.has(unit) ? startsWithUnit(text, at, unit) : asWritten(text, at, unit));
+
+const unitAfter = (text: string, from: number, matches: UnitMatch = asWritten): string | undefined => {
   const gap = isGap(text[from]) ? 1 : 0;
-  const unit = UNITS.find((candidate) => text.startsWith(candidate, from + gap) && !isWordChar(text[from + gap + candidate.length]));
-  return unit;
+  return UNITS.find((candidate) => matches(text, from + gap, candidate) && !isWordChar(text[from + gap + candidate.length]));
 };
 
 /** A count of days or months is written "six (6)" or "one thousand (1,000)": never "zero (0)", never "two million (2,000,000)". */
@@ -297,7 +306,7 @@ const followsNumberWord = (text: string, start: number): boolean => {
 
 /** "six (6) months": a figure in brackets after a number in words, with the unit after the bracket. */
 const unitAfterBracket = (text: string, start: number, end: number): string | undefined =>
-  text[end] === ")" && followsNumberWord(text, start) ? unitAfter(text, end + 1) : undefined;
+  text[end] === ")" && followsNumberWord(text, start) ? unitAfter(text, end + 1, lexiconWordsInAnyCase) : undefined;
 
 const quantities = (text: string): Mention[] =>
   [...text.matchAll(NUMBER_RUN)].flatMap((match) => {
@@ -308,7 +317,10 @@ const quantities = (text: string): Mention[] =>
     // A number glued to a letter is part of a word ("A4", "v2"), unless that letter ends a currency code ("USD96").
     const unit = isWordChar(text[match.index - 1])
       ? before
-      : (unitAfter(text, end) ?? unitAfterBracket(text, match.index, end) ?? before ?? currencyAfter(text, match.index, end, CURRENCY_MARKS));
+      : (unitAfter(text, end, lexiconWordsInAnyCase) ??
+        unitAfterBracket(text, match.index, end) ??
+        before ??
+        currencyAfter(text, match.index, end, CURRENCY_MARKS));
     return unit === undefined || Number.isNaN(value) ? [] : [{ start: match.index, end, attrs: { value, unit } }];
   });
 

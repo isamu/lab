@@ -2,6 +2,7 @@ id: ratio-mismatch
 layer: L3
 status: stable
 how_to_find: ratio-mismatch
+requires: [quantities]
 severity: warning
 
 name:
@@ -29,7 +30,7 @@ off_for:
 group: facts
 summary:
   ja: 表や文の「営業利益率」が、営業利益 ÷ 売上高 と合わない所
-  en: A margin in a table or a sentence that its profit divided by its sales does not give
+  en: A margin in a table or sentence that is not its profit divided by its sales
 example:
   ja:
     before: |

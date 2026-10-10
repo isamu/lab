@@ -11,6 +11,7 @@ import {
 } from "../../../packages/chaff/src/rule-guide.ts";
 import { otherLang, type Lang } from "./i18n";
 import { rules, type Rule } from "./rules";
+import { teaserOf, type RuleTeaser } from "./ruleTeaser";
 
 // astro build runs in text/site; `yarn examples` writes this file first.
 const OUTCOMES_FILE = resolve(process.cwd(), "src", "generated", "rule-examples.json");
@@ -26,6 +27,8 @@ export type CatalogEntry = {
   readonly example: RuleExample;
   /** What chaff said about the rule on the example; empty for chaff test, which the build does not run. */
   readonly output: readonly ExampleFinding[];
+  /** The one example line the rule list shows. */
+  readonly teaser: RuleTeaser;
 };
 
 export type CatalogGroup = { readonly group: RuleGroup; readonly entries: readonly CatalogEntry[] };
@@ -79,7 +82,8 @@ export const entryOf = (rule: Rule, lang: Lang): CatalogEntry => {
   const exampleLang = exampleLangOf(rule, lang);
   const example = rule.examples[exampleLang];
   if (example === undefined) throw new Error(`${rule.id}: no example in its rule file`);
-  return { rule, runsWhen: runsWhenOf(rule, lang), exampleLang, example, output: outputOf(rule, exampleLang) };
+  const output = outputOf(rule, exampleLang);
+  return { rule, runsWhen: runsWhenOf(rule, lang), exampleLang, example, output, teaser: teaserOf(output, example) };
 };
 
 /** Every rule, once, in its group. A rule missing from the groups stops the build rather than drop off the page. */

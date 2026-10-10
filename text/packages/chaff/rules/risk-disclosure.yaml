@@ -43,7 +43,7 @@ use_for: [business]
 group: structure
 summary:
   ja: よい面だけを書き、リスクや弱みに触れていない提案（AI に読ませる検査）
-  en: A proposal that gives only the upside and never mentions a risk (checked by an AI)
+  en: A proposal that gives only the upside and no risk (read by an AI)
 example:
   ja:
     before: |

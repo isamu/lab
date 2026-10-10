@@ -40,8 +40,8 @@ sources: [koyobun-2022]
 
 group: wording
 summary:
-  ja: 公用文でかなで書く補助動詞・形式名詞（〜て下さい、〜て置く、〜する事）を漢字で書いた所。style が koyobun のときだけ
-  en: A Japanese helper verb or formal noun written in kanji where official style writes kana (〜て下さい, 〜て置く, 〜する事); only with the koyobun style
+  ja: 公用文でかなで書く語（〜て下さい、〜する事）を漢字で書いた所（style が koyobun のとき）
+  en: Kanji where Japanese official style writes kana (〜て下さい); koyobun style only
 example:
   ja:
     config: { style: koyobun }

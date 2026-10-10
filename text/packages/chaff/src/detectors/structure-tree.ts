@@ -13,6 +13,7 @@ import { measuredAmounts, type MeasureMarks, type SummedMeasure } from "../struc
 import { measureUnitsOf } from "../facts/measure-units.ts";
 import { rangeFrameOf, reversedRanges, type DatedSpan, type RangeWords } from "../structure/date-range.ts";
 import { afterLabel } from "../structure/stated-period.ts";
+import { afterSpanLabel } from "../structure/span-label.ts";
 import { percentSumMismatches, type ShareWords } from "../structure/percent-sum.ts";
 import { proseShareMismatches } from "../structure/percent-sum-prose.ts";
 import { isQuotedAlone } from "../quoted-span.ts";
@@ -254,13 +255,14 @@ export const rangeWordsOf = (doc: ProseDocument): RangeWords => ({
   weekdays: (doc.lexicons["weekday"] ?? []).map((entry) => entry.pattern),
 });
 
-/** その位置が、期間の語（period-label）で始まる行の、語より後ろにあるか。 */
+/** その位置が、期間の語（period-label）で始まる行か、期間を名指す語（range-label）で終わる見出しの行の、語より後ろにあるか。 */
 const labelledAt =
   (doc: ProseDocument) =>
   (offset: number): boolean => {
     const lineStart = doc.source.lastIndexOf("\n", offset - 1) + 1;
     const lineEnd = doc.source.indexOf("\n", offset);
-    const after = afterLabel(doc.source.slice(lineStart, lineEnd === -1 ? doc.source.length : lineEnd), patternsOf(doc, "period-label"));
+    const line = doc.source.slice(lineStart, lineEnd === -1 ? doc.source.length : lineEnd);
+    const after = afterLabel(line, patternsOf(doc, "period-label")) ?? afterSpanLabel(line, patternsOf(doc, "range-label"));
     return after !== undefined && offset >= lineStart + after;
   };
 

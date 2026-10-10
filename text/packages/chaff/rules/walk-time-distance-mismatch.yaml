@@ -29,7 +29,7 @@ off_for:
 group: facts
 summary:
   ja: 「徒歩3分（約600m）」のように、徒歩の分数が書いた距離と合わない所
-  en: A walking time that does not match the distance beside it, at the rate the document states
+  en: A walking time that does not match the distance beside it
 example:
   ja:
     before: |

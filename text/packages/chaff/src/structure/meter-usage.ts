@@ -1,10 +1,11 @@
+import { escapeRegExp } from "../orthography.ts";
 import type { StructureIssue } from "./issues.ts";
 
 /**
  * 検針票で、今回の指示数 − 前回の指示数（乗率があれば × 乗率）が、書いた使用量と合わない所。読む側（meter-usage-read.ts）が
  * 一つのまとまり（見出しから見出しまで、または表の一行）ごとに、語彙表 meter-reading-label の名前の付いた値を集めて渡す。
  * 今回・前回・使用量が一つずつそろい、どれも単位が読めて食い違わないときだけ比べる。今回が前回より小さいのは、メーターが
- * 一巡したと書いてあるときだけ、前回の桁数の上限を足して読む。乗率が書いてあって読めないとき、メーターを取り替えたと書いて
+ * 一巡したと書いてあるとき（同じ節で打ち消していないとき）だけ、前回の桁数の上限を足して読む。乗率が書いてあって読めないとき、メーターを取り替えたと書いて
  * あるときは比べない。使用量は書いた桁までの丸め（切り捨て・四捨五入・切り上げ）を認める。Pure.
  */
 export type MeterKind = "current" | "previous" | "usage" | "multiplier";
@@ -29,6 +30,10 @@ export type MeterWords = {
   readonly units: readonly MeterUnitWord[];
   /** Words saying the meter went past its last figure (meter-event, group rollover). */
   readonly rollover: readonly string[];
+  /** Words after a rollover word, in its clause, that deny it (「一巡していません」): meter-event, group rollover-negation-after. */
+  readonly rolloverNegationAfter: readonly string[];
+  /** Words before a rollover word, in its clause, that deny it ("has not rolled over"): group rollover-negation-before. */
+  readonly rolloverNegationBefore: readonly string[];
   /** Words saying the meter was replaced (meter-event, group replaced): the two readings are of different meters. */
   readonly replaced: readonly string[];
 };
@@ -93,9 +98,59 @@ const rescaled = (scaled: bigint, from: number, to: number): bigint => scaled * 
 
 const ofKind = (entries: readonly MeterEntry[], kind: MeterKind): MeterEntry[] => entries.filter((entry) => entry.kind === kind);
 
+const folded = (text: string): string => text.normalize("NFKC").toLowerCase().replaceAll("\u2019", "'");
+
 const mentions = (text: string, phrases: readonly string[]): boolean => {
-  const lowered = text.normalize("NFKC").toLowerCase();
-  return phrases.some((phrase) => lowered.includes(phrase.normalize("NFKC").toLowerCase()));
+  const lowered = folded(text);
+  return phrases.some((phrase) => lowered.includes(folded(phrase)));
+};
+
+/** A negation across one of these is about something else: 「一巡しましたが、交換はしていません」. */
+const CLAUSE_END = /[、。,.;:!?\n]/u;
+const LATIN_LETTER = /\p{Script=Latin}/u;
+
+const startsOf = (text: string, phrase: string): number[] =>
+  phrase === "" ? [] : [...text.matchAll(new RegExp(escapeRegExp(phrase), "gu"))].map((match) => match.index);
+
+/** A Latin edge of the phrase must not run on into a letter: "not" is not in "notice", "never" not in "whenever". */
+const isWordAt = (text: string, phrase: string, start: number): boolean => {
+  const joins = (edge: string, neighbour: string): boolean => LATIN_LETTER.test(edge) && LATIN_LETTER.test(neighbour);
+  return !joins(phrase.at(0) ?? "", text[start - 1] ?? "") && !joins(phrase.at(-1) ?? "", text[start + phrase.length] ?? "");
+};
+
+/** "has not yet rolled over"; in "was not replaced and rolled over" the "not" is about something else. */
+const MAX_WORDS_AFTER_NEGATION = 1;
+
+type Reach = (text: string, end: number) => boolean;
+
+const anywhere: Reach = () => true;
+
+const nextToEnd: Reach = (text, end) =>
+  text
+    .slice(end)
+    .split(/\s+/u)
+    .filter((word) => word !== "").length <= MAX_WORDS_AFTER_NEGATION;
+
+const hasWord = (text: string, phrases: readonly string[], reaches: Reach): boolean =>
+  phrases.some((phrase) => {
+    const wanted = folded(phrase);
+    return startsOf(text, wanted).some((start) => isWordAt(text, wanted, start) && reaches(text, start + wanted.length));
+  });
+
+/** The rollover word at start is denied by a negation in its own clause: after it, or (in English) just before it. */
+const isDenied = (text: string, start: number, length: number, words: MeterWords): boolean => {
+  const before = text.slice(0, start).split(CLAUSE_END).at(-1) ?? "";
+  const after = text.slice(start + length).split(CLAUSE_END)[0] ?? "";
+  return hasWord(after, words.rolloverNegationAfter, anywhere) || hasWord(before, words.rolloverNegationBefore, nextToEnd);
+};
+
+/** Some rollover word is written and not denied in its clause. */
+export const statesRollover = (text: string, words: MeterWords): boolean => {
+  const lowered = folded(text);
+  return words.rollover.some((phrase) => {
+    const wanted = folded(phrase);
+    return startsOf(lowered, wanted).some((start) => !isDenied(lowered, start, wanted.length, words));
+  });
 };
 
 /** The units of the three agree: each is unstated or the same one. */
@@ -105,7 +160,7 @@ const unitsAgree = (readings: readonly Reading[]): boolean => new Set(readings.m
 const difference = (current: Reading, previous: Reading, scale: number, group: MeterGroup, words: MeterWords): bigint | undefined => {
   const plain = rescaled(current.scaled, current.decimals, scale) - rescaled(previous.scaled, previous.decimals, scale);
   if (plain >= 0n) return plain;
-  if (!mentions(group.text, words.rollover)) return undefined;
+  if (!statesRollover(group.text, words)) return undefined;
   return plain + rescaled(TEN ** BigInt(previous.digits), 0, scale);
 };
 

@@ -43,7 +43,7 @@ off_for:
 group: structure
 summary:
   ja: 図2を図1より先に参照する、図を載せた節より後で初めて参照する、一度も参照しない図や表
-  en: A figure or table referred to before a lower-numbered one, first referred to only after its section, or never referred to
+  en: A figure or table referred to out of order, too late, or never
 example:
   ja:
     config: { genre: academic/paper }

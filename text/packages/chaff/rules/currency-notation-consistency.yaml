@@ -27,8 +27,8 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 
 group: consistency
 summary:
-  ja: 「1,000円」と「¥1,000」、「$20」と「USD 20」のように、一つの文書で同じ通貨の金額を二通りに書いている所
-  en: One currency written two ways in one document, such as "$20" and "USD 20", or "1,000円" and "¥1,000"
+  ja: 「1,000円」と「¥1,000」のように、一つの文書で同じ通貨の金額を二通りに書いた所
+  en: One currency written two ways in one document, such as "$20" and "USD 20"
 example:
   ja:
     before: |

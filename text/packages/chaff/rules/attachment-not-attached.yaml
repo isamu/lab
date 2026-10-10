@@ -33,7 +33,7 @@ off_for:
 group: facts
 summary:
   ja: 本文が「添付します」と書いているのに、添付の欄もファイル名も無いメール
-  en: An email that says something is attached but shows no attachment line or file name
+  en: An email that says something is attached but shows no attachment
 example:
   ja:
     config: { genre: business/email }

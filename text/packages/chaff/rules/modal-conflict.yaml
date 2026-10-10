@@ -39,7 +39,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: structure
 summary:
   ja: 同じ主語の同じ行為を、ある文では義務や許可に、別の文では禁止にしている所
-  en: The same act by the same party required or allowed in one sentence and forbidden in another
+  en: The same act required or allowed in one sentence and forbidden in another
 example:
   ja:
     before: |

@@ -33,7 +33,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: readability
 summary:
   ja: 「会議は」のように主題を出してから、文の終わりの述語まで長く待たせる文
-  en: A Japanese sentence that names its topic (〜は) early and makes the reader wait long for its predicate
+  en: A Japanese sentence that makes the reader wait long for its verb
 example:
   ja:
     before: |

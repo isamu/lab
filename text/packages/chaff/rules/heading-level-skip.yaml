@@ -28,7 +28,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: structure
 summary:
   ja: 「##」の次に「####」が来るように、見出しの深さが一段以上飛んでいる所
-  en: A heading two or more levels deeper than the one before it, as "####" right after "##"
+  en: A heading that skips a level, such as "####" right after "##"
 example:
   ja:
     before: |

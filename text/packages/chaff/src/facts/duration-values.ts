@@ -1,10 +1,11 @@
 import type { DurationUnit } from "../derived/date-arithmetic.ts";
 import type { FactValue } from "./fact-values.ts";
+import { scaledDuration } from "./duration-scale.ts";
 
 /**
  * 期間の値（3 months、3ヶ月間）。木の数量は、英語では数だけ（3 の後ろの months は単位として持つ）、日本語では か月 までで 間 を含まない。
  * 値を期間の単位の語の終わりまで延ばし、単位を期間の大きさ（month）に揃える（3ヶ月 と 6か月、1 month と 6 months を比べる）。
- * 年と月のように大きさの違う期間は、換算せずに別の単位のまま。後ろに語が続く期間（3 months ago、30 years old）は、名前付きの値の
+ * 年は月に直して比べる（1年 と 12か月）。月と日のように長さの決まらない組は、別の単位のまま。後ろに語が続く期間（3 months ago、30 years old）は、名前付きの値の
  * 終わり（fact-value-end）で落ちる。
  */
 export type DurationWord = { readonly pattern: string; readonly unit: DurationUnit };
@@ -35,7 +36,7 @@ const durationOf = (source: string, value: FactValue, words: readonly DurationWo
   if (value.kind !== "quantity" || !words.some((word) => folded(word.pattern) === folded(value.unit))) return [];
   const at = unitStartOf(source, value);
   const word = at === undefined ? undefined : longestAt(source, at, words);
-  return at === undefined || word === undefined ? [] : [{ ...value, end: at + word.pattern.length, unit: word.unit }];
+  return at === undefined || word === undefined ? [] : [{ ...value, end: at + word.pattern.length, ...scaledDuration(value.key, word.unit) }];
 };
 
 /** 期間の単位の付いた数量だけを、単位の語まで含む期間の値にして返す。 */

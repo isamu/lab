@@ -1,0 +1,12 @@
+# 別の額の「何か月分」「何倍」と書かれる、もとの期間の額の見出し（period-multiple-mismatch）。「月払 2,400円」と書いた
+# 見出しであり、「年払（月払の12か月分）」の中で何の何か月分かを言う語でもある。
+id: period-multiple-label
+language: ja
+entries:
+  - pattern: 月払
+  - pattern: 月払い
+  - pattern: 月払保険料
+  - pattern: 月払い保険料
+  - pattern: 月額
+  - pattern: 月額保険料
+  - pattern: 月額料金

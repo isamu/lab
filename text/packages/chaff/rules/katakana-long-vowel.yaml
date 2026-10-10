@@ -82,8 +82,8 @@ sources: [koyobun-2022, gairaigo-1991, jis-z8301-2019, jtf-style-guide]
 
 group: consistency
 summary:
-  ja: カタカナ語の語末の「ー」を、同じ語で付けたり省いたりしている所（コンピューターとコンピュータ）。options で省く・付けるを決めることもできます
-  en: A katakana word written both with and without its final ー in one document (コンピューター and コンピュータ); options can set which way
+  ja: カタカナ語の語末の「ー」を、同じ語で付けたり省いたりしている所（コンピューター、コンピュータ）
+  en: A katakana word written both with and without its final ー (コンピューター, コンピュータ)
 example:
   ja:
     before: |

@@ -1,0 +1,9 @@
+# 文書が説明している製品自身を指す、文書全体で一つの値を持つ項目（fact-document-term）の前置き（fact-conflict）。
+# 「本製品の保証期間」は 保証期間 と同じ項目。「電池の保証期間」は別の項目なので入れない。
+id: fact-term-self
+language: ja
+entries:
+  - pattern: 本製品の
+    position: before
+  - pattern: 当製品の
+    position: before

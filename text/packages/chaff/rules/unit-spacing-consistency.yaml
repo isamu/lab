@@ -28,7 +28,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 group: consistency
 summary:
   ja: 「5 GB」と「5GB」のように、一つの文書で数と単位記号の間を空けたり詰めたりしている所
-  en: A number and a unit symbol spaced in some places and not in others, such as "5 GB" and "5GB"
+  en: A number and its unit spaced in some places and not others (5 GB, 5GB)
 example:
   ja:
     before: |

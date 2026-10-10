@@ -1,0 +1,30 @@
+# period-multiple-mismatch の語。times は数の後ろで、その数がもとの額の何倍かを言う語（12か月分、2倍）。link は、もとの額の
+# 見出しと数の間（月払の12か月分）や、見出しと金額の間（月払は2,400円）に挟んでよい語。skip は、金額が何倍そのものでは
+# ないと言う語（割引、税込、約、各）で、これのある記載は比べない。年払は一度に払うぶん安いことが多いので、「月払の何か月分」と
+# 書いていない年払は比べない。
+id: period-multiple-word
+language: ja
+entries:
+  - { pattern: か月分, group: times }
+  - { pattern: ヶ月分, group: times }
+  - { pattern: カ月分, group: times }
+  - { pattern: ヵ月分, group: times }
+  - { pattern: ケ月分, group: times }
+  - { pattern: 箇月分, group: times }
+  - { pattern: 回分, group: times }
+  - { pattern: 倍, group: times }
+  - { pattern: の, group: link }
+  - { pattern: は, group: link }
+  - { pattern: 割引, group: skip }
+  - { pattern: 割安, group: skip }
+  - { pattern: 税込, group: skip }
+  - { pattern: 税込み, group: skip }
+  - { pattern: 税抜, group: skip }
+  - { pattern: 税抜き, group: skip }
+  - { pattern: 約, group: skip }
+  - { pattern: およそ, group: skip }
+  - { pattern: 程度, group: skip }
+  - { pattern: 各, group: skip }
+  - { pattern: ずつ, group: skip }
+  - { pattern: 以上, group: skip }
+  - { pattern: 未満, group: skip }

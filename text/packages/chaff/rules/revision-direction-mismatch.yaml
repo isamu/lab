@@ -32,7 +32,7 @@ off_for:
 group: facts
 summary:
   ja: 「上方修正」と書いたのに、表の今回の予想が前回より小さい所
-  en: A forecast said to be revised upward whose revised figure is lower (or the other way)
+  en: A forecast said to be revised up whose new figure is lower, or the reverse
 example:
   ja:
     before: |

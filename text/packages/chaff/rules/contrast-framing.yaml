@@ -38,8 +38,8 @@ off_for:
 
 group: ai-tells
 summary:
-  ja: 「単なる X ではなく Y」「X だけでなく Y も」のような対比の枠が重なり、誰も言っていない X を打ち消し続けている所
-  en: 'Contrast frames piling up ("It''s not X, it''s Y", "not just X, but Y"), knocking down an X nobody said'
+  ja: 「単なる X ではなく Y」のような対比が重なり、誰も言っていない X を打ち消し続ける所
+  en: Contrasts piled up ("It's not X, it's Y"), knocking down an X nobody said
 example:
   ja:
     pad: true

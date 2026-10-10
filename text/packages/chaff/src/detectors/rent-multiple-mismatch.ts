@@ -3,7 +3,8 @@
 // the labels are rent-label and rent-multiple-label, the words rent-multiple-word, the counts number-word (digit), and a
 // range of rent is joined by range-connector or amount-range-word.
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
-import { rentMultipleMismatches, type RentAmount, type RentMultipleWords } from "../structure/rent-multiple.ts";
+import { rentMultipleMismatches, type RentMultipleWords } from "../structure/rent-multiple.ts";
+import type { StatedAmount } from "../structure/stated-multiple.ts";
 import { scaledAmountOf, scaleWordsOf } from "./amount-scale.ts";
 import { amountsIn, formsOf } from "./currency-notation.ts";
 import { proseAndTablesOf } from "../table-text.ts";
@@ -29,7 +30,7 @@ const wordsOf = (doc: ProseDocument): RentMultipleWords => ({
   numberWords: numberWordsOf(doc),
 });
 
-const amountsOf = (text: string, doc: ProseDocument): RentAmount[] => {
+const amountsOf = (text: string, doc: ProseDocument): StatedAmount[] => {
   const scales = scaleWordsOf(doc);
   return amountsIn(
     text,

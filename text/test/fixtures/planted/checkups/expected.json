@@ -2,21 +2,21 @@
   "recall": {
     "ja": {
       "age-birth-date": "2/2",
-      "exam-after-report": "0/2",
+      "exam-after-report": "1/2",
       "bmi": "1/1",
       "range-reversed": "2/2",
-      "unit-vs-range": "0/2",
+      "unit-vs-range": "2/2",
       "flag-mismatch": "2/2",
       "findings-gap": "2/2",
       "person-name": "1/2"
     },
     "en": {
       "age-birth-date": "2/2",
-      "exam-after-report": "0/2",
+      "exam-after-report": "2/2",
       "bmi": "1/1",
       "range-reversed": "2/2",
       "flag-mismatch": "2/2",
-      "unit-vs-range": "0/2",
+      "unit-vs-range": "2/2",
       "findings-gap": "2/2",
       "person-name": "2/2"
     }

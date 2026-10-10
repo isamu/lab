@@ -1,4 +1,5 @@
 import { parseJapaneseNumber, toHalfWidth } from "./numbers.ts";
+import { startsWithUnit } from "./unit-case.ts";
 
 // 通貨の書き方（語彙 currency-notation）と百分率の単位（percent-unit）で読む金額と率。助数詞として読めない書き方
 // （¥1,320、US$1,320、1,320米ドル、1,320ユーロ、1,320兆円、1,320 JPY、8.0 %）を、語彙だけを頼りに読む。
@@ -50,7 +51,7 @@ type Scale = { readonly length: number; readonly weight: number };
 
 const multiplierAt = (text: string, multipliers: readonly Multiplier[]): Multiplier | undefined =>
   multipliers
-    .filter((entry) => text.startsWith(entry.pattern) && !(LATIN.test(entry.pattern) && WORD_CHAR.test(text.charAt(entry.pattern.length))))
+    .filter((entry) => startsWithUnit(text, 0, entry.pattern) && !(LATIN.test(entry.pattern) && WORD_CHAR.test(text.charAt(entry.pattern.length))))
     .toSorted((left, right) => right.pattern.length - left.pattern.length)[0];
 
 /** 数の直後の桁（「千」「百万」「兆」「 million」）。無ければ 1 倍。 */
@@ -67,7 +68,7 @@ const scaleAt = (rest: string, multipliers: readonly Multiplier[]): Scale => {
 const markAfter = (rest: string, marks: readonly string[]): { readonly mark: string; readonly gap: number } | undefined => {
   const gap = leadingGap(rest);
   const mark = marks
-    .filter((entry) => rest.startsWith(entry, gap) && !(LATIN.test(entry) && WORD_CHAR.test(rest.charAt(gap + entry.length))))
+    .filter((entry) => startsWithUnit(rest, gap, entry) && !(LATIN.test(entry) && WORD_CHAR.test(rest.charAt(gap + entry.length))))
     .toSorted((left, right) => right.length - left.length)[0];
   return mark === undefined ? undefined : { mark, gap };
 };
