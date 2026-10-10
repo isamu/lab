@@ -39,7 +39,7 @@ off_for:
 group: facts
 summary:
   ja: 「（単位：百万円）」の表の中の千円の升や、ほかの行の千倍に書いた一行
-  en: A cell in thousands in a table "in millions", or one row a thousand times the others under a stated unit
+  en: A cell in thousands in a table in millions, or a row a thousand times the others
 example:
   ja:
     before: |

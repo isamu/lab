@@ -1,0 +1,15 @@
+# 業績予想の修正の表で、前回の予想と今回の予想の列（または行）の見出し（revision-direction-mismatch）。
+# group は previous（修正の前）と revised（修正の後）。見出しがこの語を含めば当たる。両方を含む見出しは使わない。
+id: revision-column
+language: ja
+entries:
+  - { pattern: 前回発表予想, group: previous }
+  - { pattern: 前回公表予想, group: previous }
+  - { pattern: 前回予想, group: previous }
+  - { pattern: 修正前, group: previous }
+  - { pattern: 期初予想, group: previous }
+  - { pattern: 当初予想, group: previous }
+  - { pattern: 今回修正予想, group: revised }
+  - { pattern: 今回発表予想, group: revised }
+  - { pattern: 今回予想, group: revised }
+  - { pattern: 修正後, group: revised }

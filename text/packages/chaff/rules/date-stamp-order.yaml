@@ -18,12 +18,12 @@ why:
   en: 'The "Established: April 1, 2023" and "Last updated: September 1, 2026" lines of a policy or terms say when the document was first set and when it was last changed. An established date after an update means the document was changed before it existed, and the reader cannot tell which date is right or how old the current version is. It happens when the dates of the previous version are rewritten and one is missed. Lines holding only a date and an established or updated word are read, and when the established date is later than an update both lines are reported: nothing tells which of the two is wrong.'
 
 message:
-  ja: 制定の日付 {established} が、改定の日付 {updated} より後です
+  ja: 制定の日付（{established}）が、改定の日付（{updated}）より後です
   en: "The established date {established} is after the update {updated}"
 
 messages:
   updated:
-    ja: 改定の日付 {updated} が、制定の日付 {established} より前です
+    ja: 改定の日付（{updated}）が、制定の日付（{established}）より前です
     en: "The update {updated} is before the established date {established}"
 
 how_to_fix:

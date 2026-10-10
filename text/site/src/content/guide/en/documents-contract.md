@@ -106,7 +106,7 @@ contract.md   blog/tech · English   genre from the default
                   dangling-reference
   25:1    error   "Article 5" follows "Article 3" (expected number 4)
                   numbering-gap
-  27:124  error   2026-12-05 is a Saturday, not a Monday
+  27:124  error   December 5, 2026 is a Saturday, not a Monday
                   date-weekday-mismatch
   31:20   warning "Services" is also defined on line 7
                   duplicate-definition
@@ -132,7 +132,7 @@ contract.md   legal/contract · English   genre from --genre
                   dangling-reference
   25:1    error   "Article 5" follows "Article 3" (expected number 4)
                   numbering-gap
-  27:124  error   2026-12-05 is a Saturday, not a Monday
+  27:124  error   December 5, 2026 is a Saturday, not a Monday
                   date-weekday-mismatch
   31:20   warning "Services" is also defined on line 7
                   duplicate-definition
@@ -251,7 +251,7 @@ licence.md   legal/contract · English   genre from --genre
                   defined-name-repeated
   16:34   info    "promptly" sets no deadline; a number of days makes it one that can be met or missed
                   vague-deadline
-  20:58   warning April 1, 2027 plus 12 months ends around 2028-03-31, but the end is given as March 31, 2029
+  20:58   warning April 1, 2027 plus 12 months ends around March 31, 2028, but the end is given as March 31, 2029
                   duration-mismatch
   24:90   info    Article 2 is called "Notices" here, but its heading is "(Fees)"
                   reference-title-mismatch
