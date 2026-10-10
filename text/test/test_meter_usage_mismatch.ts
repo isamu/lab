@@ -3,7 +3,14 @@ import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { meterUsageMismatches, multiplierOf, readingOf, type MeterEntry, type MeterWords } from "../packages/chaff/src/structure/meter-usage.ts";
+import {
+  meterUsageMismatches,
+  multiplierOf,
+  readingOf,
+  statesRollover,
+  type MeterEntry,
+  type MeterWords,
+} from "../packages/chaff/src/structure/meter-usage.ts";
 import { meterGroups, type MeterReadWords } from "../packages/chaff/src/structure/meter-usage-read.ts";
 
 // 指示数の差が使用量と合わない（meter-usage-mismatch）。例文はすべて自作。
@@ -26,7 +33,9 @@ const WORDS: MeterWords = {
     { pattern: "m3", unit: "m3" },
     { pattern: "ccf", unit: "ccf" },
   ],
-  rollover: ["rolled over"],
+  rollover: ["rolled over", "一巡"],
+  rolloverNegationAfter: ["ません", "なし"],
+  rolloverNegationBefore: ["not", "hasn't"],
   replaced: ["meter replaced"],
 };
 
@@ -90,6 +99,22 @@ describe("meter-usage-mismatch: 指示数の差が使用量と合わない", () 
     assert.deepEqual(findingsOf(enLines("120", "9980", "150", ["No rollover occurred."]), en), []);
   });
 
+  it("一巡を同じ節で打ち消していれば、一巡したとは読まない。別の事の打ち消しは一巡を消さない", () => {
+    const jaRolled = (note: string): string => ["## 検針結果", "", "今回指示数：0120", "", "前回指示数：9980", "", "ご使用量：150", "", note, ""].join("\n");
+    const mismatch = "指示数の差（0120 − 9980 = 140）が、使用量「150」と合いません";
+    assert.deepEqual(findingsOf(jaRolled("メーターが一巡しました。")), [mismatch]);
+    assert.deepEqual(findingsOf(jaRolled("一巡しましたが、交換はしていません。")), [mismatch]);
+    ["一巡していません。", "一巡なし", "メーターの一巡はありません。", "桁あふれはありません。", "一巡はしておらず、"].forEach((note) =>
+      assert.deepEqual(findingsOf(jaRolled(note)), [], note),
+    );
+    const rolled = "The readings' difference (0120 − 9980 = 140) is not the usage 150";
+    assert.deepEqual(findingsOf(enLines("0120", "9980", "150", ["The meter rolled over, but it was not replaced."]), en), [rolled]);
+    assert.deepEqual(findingsOf(enLines("0120", "9980", "150", ["Notice: the meter rolled over."]), en), [rolled]);
+    ["The meter has not rolled over.", "The meter hasn’t rolled over.", "The meter never rolled over.", "The meter did not roll over."].forEach((note) =>
+      assert.deepEqual(findingsOf(enLines("0120", "9980", "150", [note]), en), [], note),
+    );
+  });
+
   it("見出しが違えば別のまとまりとして読み、一つのまとまりに同じ名前が二つあれば比べない", () => {
     const split = "## 今月\n\n今回指示数：300\n\n前回指示数：100\n\n## お知らせ\n\nご使用量：150\n";
     assert.deepEqual(findingsOf(split), []);
@@ -122,6 +147,24 @@ describe("meter-usage-mismatch: 判定（Pure）", () => {
     assert.deepEqual(decide([entry("current", "300 / 400"), entry("previous", "100"), entry("usage", "100")]), []);
     assert.deepEqual(decide([entry("current", "100"), entry("previous", "300"), entry("usage", "100")]), []);
     assert.deepEqual(decide([entry("current", "300", "kwh"), entry("previous", "100"), entry("usage", "100 m3")]), []);
+  });
+
+  it("statesRollover: 打ち消しのない一巡の語があるときだけ真", () => {
+    assert.equal(statesRollover("一巡しました", WORDS), true);
+    assert.equal(statesRollover("一巡しましたが、交換はしていません", WORDS), true);
+    assert.equal(statesRollover("一巡していません。その後一巡しました", WORDS), true);
+    assert.equal(statesRollover("一巡していません", WORDS), false);
+    assert.equal(statesRollover("一巡なし", WORDS), false);
+    assert.equal(statesRollover("It has NOT rolled over", WORDS), false);
+    assert.equal(statesRollover("It hasn’t rolled over", WORDS), false);
+    assert.equal(statesRollover("Nothing changed and it rolled over", WORDS), true);
+    assert.equal(statesRollover("It was not read; it rolled over", WORDS), true);
+    assert.equal(statesRollover("It was not replaced and rolled over", WORDS), true);
+    assert.equal(statesRollover("It has not yet rolled over", WORDS), false);
+    assert.equal(statesRollover("rolled over", WORDS), true);
+    assert.equal(statesRollover("", WORDS), false);
+    assert.equal(statesRollover("一巡", { ...WORDS, rolloverNegationAfter: [""], rolloverNegationBefore: [] }), true);
+    assert.equal(statesRollover("一巡", { ...WORDS, rollover: [""] }), false);
   });
 
   it("readingOf と multiplierOf の読み", () => {
