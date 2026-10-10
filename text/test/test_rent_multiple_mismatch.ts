@@ -6,16 +6,8 @@ import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
-import {
-  feesFor,
-  intervalOf,
-  isMultiple,
-  isPlainGap,
-  monthlyBases,
-  monthsIn,
-  rentFor,
-  type RentMultipleWords,
-} from "../packages/chaff/src/structure/rent-multiple.ts";
+import { feesFor, monthlyBases, monthsIn, type RentMultipleWords } from "../packages/chaff/src/structure/rent-multiple.ts";
+import { intervalOf, isMultiple, isPlainGap, nearestStated } from "../packages/chaff/src/structure/stated-multiple.ts";
 
 // 賃料の月数分と合わない敷金・礼金（rent-multiple-mismatch）。
 
@@ -81,13 +73,13 @@ describe("rent-multiple pieces", () => {
     );
   });
 
-  it("rentFor takes the nearest rent before, and before any rent only the document's one rent", () => {
+  it("nearestStated takes the nearest rent before, and before any rent only the document's one rent", () => {
     const rents = [stated(10, 85000), stated(100, 90000)];
-    assert.equal(rentFor(rents, 50)?.offset, 10);
-    assert.equal(rentFor(rents, 150)?.offset, 100);
-    assert.equal(rentFor(rents, 5), undefined);
-    assert.equal(rentFor([stated(10, 85000), stated(100, 85000)], 5)?.offset, 10);
-    assert.equal(rentFor([], 5), undefined);
+    assert.equal(nearestStated(rents, 50)?.offset, 10);
+    assert.equal(nearestStated(rents, 150)?.offset, 100);
+    assert.equal(nearestStated(rents, 5), undefined);
+    assert.equal(nearestStated([stated(10, 85000), stated(100, 85000)], 5)?.offset, 10);
+    assert.equal(nearestStated([], 5), undefined);
   });
 
   it("feesFor takes the fees after the rent and before the next one, and fees before a rent only for the first", () => {

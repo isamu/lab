@@ -1,0 +1,16 @@
+# The labels of a period's amount that another amount may be stated as a number of (period-multiple-mismatch): the label
+# of "Monthly: $24", and the words of "Annually (12 monthly payments)" that say what the count is of.
+id: period-multiple-label
+language: en
+entries:
+  - pattern: Monthly
+  - pattern: Monthly premium
+  - pattern: Monthly premiums
+  - pattern: Monthly payment
+  - pattern: Monthly payments
+  - pattern: Monthly instalment
+  - pattern: Monthly instalments
+  - pattern: Monthly installment
+  - pattern: Monthly installments
+  - pattern: Monthly fee
+  - pattern: Monthly fees

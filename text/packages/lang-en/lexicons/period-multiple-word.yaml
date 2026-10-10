@@ -1,0 +1,28 @@
+# The words of period-multiple-mismatch. times follows a count and makes it a multiple of the base ("12 times the monthly
+# premium"); a count followed straight by a base word ("12 monthly payments") needs none. link may stand between a base and
+# its count ("the") or between a base label and its amount ("Monthly premium is $24"). skip says the amount is not the
+# plain multiple (a discount, tax, an amount each), and a statement holding one is not compared. An annual premium is often
+# cheaper than twelve monthly ones, so one that does not say it is twelve monthly payments is never compared.
+id: period-multiple-word
+language: en
+entries:
+  - { pattern: times, group: times }
+  - { pattern: the, group: link }
+  - { pattern: your, group: link }
+  - { pattern: is, group: link }
+  - { pattern: of, group: link }
+  - { pattern: at, group: link }
+  - { pattern: discount, group: skip }
+  - { pattern: discounted, group: skip }
+  - { pattern: less, group: skip }
+  - { pattern: save, group: skip }
+  - { pattern: saving, group: skip }
+  - { pattern: tax, group: skip }
+  - { pattern: VAT, group: skip }
+  - { pattern: each, group: skip }
+  - { pattern: about, group: skip }
+  - { pattern: approximately, group: skip }
+  - { pattern: around, group: skip }
+  - { pattern: roughly, group: skip }
+  - { pattern: up to, group: skip }
+  - { pattern: or more, group: skip }
