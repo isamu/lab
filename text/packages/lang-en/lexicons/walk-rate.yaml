@@ -1,0 +1,23 @@
+# Walking speed (walk-time-distance-mismatch). English has no default speed: minutes are compared with a distance only when
+# the document states its own rate. group per: the words that make a length a speed ("80 m per minute", "5 km/h"); position is
+# the side of the length, weight the seconds of that time. group round-up: words on the rate's line saying part minutes are
+# rounded up; without one, rounding either way is accepted. group not-round-up: words that say it is not rounded up
+# ("not rounded up", "to the nearest minute"), which win over a round-up word.
+id: walk-rate
+language: en
+entries:
+  - { pattern: "per minute", position: after, group: per, weight: 60 }
+  - { pattern: "a minute", position: after, group: per, weight: 60 }
+  - { pattern: "/min", position: after, group: per, weight: 60 }
+  - { pattern: "/minute", position: after, group: per, weight: 60 }
+  - { pattern: "per hour", position: after, group: per, weight: 3600 }
+  - { pattern: "an hour", position: after, group: per, weight: 3600 }
+  - { pattern: "/h", position: after, group: per, weight: 3600 }
+  - { pattern: "/hr", position: after, group: per, weight: 3600 }
+  - { pattern: "rounded up", group: round-up }
+  - { pattern: "round up", group: round-up }
+  - { pattern: "rounding up", group: round-up }
+  - { pattern: "not rounded up", group: not-round-up }
+  - { pattern: "not round up", group: not-round-up }
+  - { pattern: "rounded down", group: not-round-up }
+  - { pattern: "to the nearest", group: not-round-up }

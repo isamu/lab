@@ -3,7 +3,15 @@ import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { placeMentionsIn, placeRelation, placeVariants, type PlaceMention, type PlaceReader, type PlaceWord } from "../packages/chaff/src/place-names.ts";
+import {
+  placeMentionsIn,
+  placeRelation,
+  placeVariants,
+  type PlaceChars,
+  type PlaceMention,
+  type PlaceReader,
+  type PlaceWord,
+} from "../packages/chaff/src/place-names.ts";
 
 // 場所の名前の書き分け（name-variant の場所の名前）。例文はすべて自作。
 
@@ -60,6 +68,18 @@ describe("name-variant: 場所の名前の書き分け", () => {
     ]);
   });
 
+  it("方角や位置の字だけが違う駅は、名前のどこにあっても別の所（下北沢駅 と 上北沢駅、東新宿駅 と 西新宿駅）", () => {
+    const stations = (other: string): string => `下北沢駅で乗り換えます。下北沢駅の南口を出て、帰りは${other}から乗ります。\n`;
+    assert.deepEqual(variants(stations("上北沢駅"), ja), []);
+    assert.deepEqual(variants(stations("東北沢駅"), ja), []);
+    assert.deepEqual(variants("東新宿駅で降ります。東新宿駅の近くに泊まり、翌朝は西新宿駅から乗ります。\n", ja), []);
+    assert.deepEqual(variants("東府中駅で降ります。東府中駅から歩き、帰りは北府中駅から乗ります。\n", ja), []);
+  });
+
+  it("読みの違う漢字の一字違いは別の所（戸山公園 と 戸塚公園）", () => {
+    assert.deepEqual(variants("戸山公園で集合します。戸山公園を歩き、午後は戸塚公園に移ります。\n", ja), []);
+  });
+
   it("方角の違う出口や、一度ずつの書き方は言わない", () => {
     assert.deepEqual(variants("東京駅の北口で集合します。北口から歩き、帰りは南口で解散します。\n", ja), []);
     assert.deepEqual(variants("東京駅北口で集合します。東京駅北口から歩き、帰りは東京駅南口で解散します。\n", ja), []);
@@ -91,6 +111,37 @@ describe("name-variant: 場所の名前の書き分け", () => {
     assert.deepEqual(variants(table("八重州中央口"), ja), ["「八重州中央口」は、ほかの所で何度も書いた「八重洲中央口」と一字違いです"]);
     assert.deepEqual(variants(table("八重洲中央口"), ja), []);
     assert.deepEqual(variants(table("東京駅 南口"), ja), []);
+  });
+
+  it("表の升の中の名前も読みで比べる（日程表だけに書いた 筑紫口 と ちくし口）", () => {
+    const rows = (last: string): string =>
+      `| 時刻 | 内容 |\n| --- | --- |\n| 10:00 | 博多駅 筑紫口で合流 |\n| 12:00 | 博多駅 筑紫口から近い |\n| 18:00 | 博多駅 ${last}で会う |\n`;
+    assert.deepEqual(variants(rows("ちくし口"), ja), ["「ちくし口」は、ほかの所では同じ読みの「筑紫口」と書いています"]);
+    assert.deepEqual(variants(rows("筑紫口"), ja), []);
+    assert.deepEqual(variants(rows("博多口"), ja), []);
+  });
+
+  it("建物の名前も場所の名前（第二青葉ビル と 第2青葉ビル）。違う数や違う名前の建物は別の所", () => {
+    const building = (last: string): string => `第二青葉ビルは駅前にあります。第二青葉ビルの5階を貸します。${last}の1階には売店があります。\n`;
+    assert.deepEqual(variants(building("第2青葉ビル"), ja), ["「第2青葉ビル」は、ほかの所では同じ読みの「第二青葉ビル」と書いています"]);
+    assert.deepEqual(variants(building("第２青葉ビル"), ja), ["「第２青葉ビル」は、ほかの所では同じ読みの「第二青葉ビル」と書いています"]);
+    assert.deepEqual(variants(building("第二青葉ビル"), ja), []);
+    assert.deepEqual(variants(building("第3青葉ビル"), ja), []);
+    assert.deepEqual(variants(building("第三青葉ビル"), ja), []);
+    assert.deepEqual(variants(building("第二若葉ビル"), ja), []);
+    assert.deepEqual(variants("第1青葉ビルは駅前にあります。第1青葉ビルの5階を貸します。第2青葉ビルの1階には売店があります。\n", ja), []);
+  });
+
+  it("a building's name is a place name too: a space inside it is the same name, another name is another building", () => {
+    const building = (last: string): string =>
+      `Westgate House faces the station. The 5th floor of Westgate House is to let. ${last} has a café on the ground floor.\n`;
+    assert.deepEqual(variants(building("West Gate House")), [
+      '"West Gate House" is written "Westgate House" elsewhere in the document (case, width or punctuation)',
+    ]);
+    assert.deepEqual(variants(building("Westgate House")), []);
+    assert.deepEqual(variants(building("West Hall")), []);
+    assert.deepEqual(variants(building("Eastgate House")), []);
+    assert.deepEqual(variants("Lunch is in Westgate Hall. Westgate Hall seats forty. Dinner is in West Hall.\n"), []);
   });
 
   it("a place name in a table cell is read too (King's Cross and Kings Cross)", () => {
@@ -148,9 +199,17 @@ describe("the reading behind place names", () => {
     assert.equal(placeRelation(once(place("11th", " St.", { place: "street" })), once(place("11th", " Street", { place: "street" }))), "place-word");
     const yaesu = place("八重洲中央", "口", { properAt: [0, 1, 2] });
     const slip = place("八重州中央", "口");
-    assert.equal(placeRelation(once(slip), twice(yaesu)), "near");
-    assert.equal(placeRelation(once(slip), once(yaesu)), undefined);
-    assert.equal(placeRelation(twice(slip), twice(yaesu)), undefined);
+    const chars: PlaceChars = {
+      directions: new Set(),
+      sameReading: new Map([
+        ["洲", "州"],
+        ["州", "州"],
+      ]),
+    };
+    assert.equal(placeRelation(once(slip), twice(yaesu), chars), "near");
+    assert.equal(placeRelation(once(slip), twice(yaesu)), undefined);
+    assert.equal(placeRelation(once(slip), once(yaesu), chars), undefined);
+    assert.equal(placeRelation(twice(slip), twice(yaesu), chars), undefined);
     const tsukushi = place("筑紫", "口", { reading: "ツクシ" });
     assert.equal(placeRelation(once(place("ちくし", "口")), twice(tsukushi)), "reading");
     assert.equal(placeRelation(once(place("ちかし", "口")), twice(place("筑紫", "口", { reading: "ツクシ" }))), undefined);
@@ -163,6 +222,46 @@ describe("the reading behind place names", () => {
     assert.equal(placeRelation(once(place("2nd", " Street")), twice(place("1st", " Street"))), undefined);
     assert.equal(placeRelation(once(place("Unoin", " Street")), twice(place("Union", " Street"))), "near");
     assert.equal(placeRelation(once(place("South", " Hall")), twice(place("North", " Hall"))), undefined);
+  });
+
+  it("placeRelation: a direction or position letter anywhere in the name makes another place; kanji for kanji needs the same reading", () => {
+    const chars: PlaceChars = {
+      directions: new Set(["上", "下", "東", "中"]),
+      sameReading: new Map([
+        ["洲", "州"],
+        ["州", "州"],
+      ]),
+    };
+    const shimokitazawa = place("下北沢", "駅", { properAt: [0, 1, 2] });
+    assert.equal(placeRelation(once(place("上北沢", "駅")), twice(shimokitazawa), chars), undefined);
+    assert.equal(placeRelation(once(place("下東沢", "駅")), twice(shimokitazawa), chars), undefined);
+    assert.equal(placeRelation(once(place("仲町", "駅", { reading: "ナカマチ" })), twice(place("中町", "駅", { reading: "ナカマチ" })), chars), undefined);
+    assert.equal(placeRelation(once(place("戸塚", "公園")), twice(place("戸山", "公園", { properAt: [0, 1] })), chars), undefined);
+    assert.equal(placeRelation(once(place("八重州中央", "口")), twice(place("八重洲中央", "口", { properAt: [0, 1, 2] })), chars), "near");
+    assert.equal(placeRelation(once(place("ヨドバシ", "口")), twice(place("ヨドバツ", "口", { properAt: [0, 1, 2, 3] })), chars), "near");
+    assert.equal(placeRelation(once(place("駒澤", "駅", { reading: "コマザワ" })), twice(place("駒沢", "駅", { reading: "コマザワ" })), chars), "reading");
+    assert.equal(placeRelation(once(place("King's Cross", " station")), once(place("Kings Cross", " station")), chars), "spelling");
+  });
+
+  it("placeRelation: a numeral and a digit for the same number are one name; another number is another place", () => {
+    const chars: PlaceChars = {
+      directions: new Set(),
+      sameReading: new Map([
+        ["二", "2"],
+        ["2", "2"],
+        ["２", "2"],
+        ["三", "3"],
+        ["3", "3"],
+      ]),
+    };
+    const aoba = place("第二青葉", "ビル");
+    assert.equal(placeRelation(once(place("第2青葉", "ビル")), twice(aoba), chars), "reading");
+    assert.equal(placeRelation(once(place("第２青葉", "ビル")), twice(aoba), chars), "reading");
+    assert.equal(placeRelation(once(place("第2青葉", "ビル")), twice(aoba)), undefined);
+    assert.equal(placeRelation(once(place("第2青葉", "ビル")), once(aoba), chars), undefined);
+    assert.equal(placeRelation(once(place("第3青葉", "ビル")), twice(aoba), chars), undefined);
+    assert.equal(placeRelation(once(place("第三青葉", "ビル")), twice(aoba), chars), undefined);
+    assert.equal(placeRelation(once(place("第3青葉", "ビル")), twice(place("第2青葉", "ビル")), chars), undefined);
   });
 
   it("placeVariants reports the less used form once, against the most used related form", () => {

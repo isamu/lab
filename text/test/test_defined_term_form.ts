@@ -80,6 +80,10 @@ describe("defined-term-form: a defined term in another form", () => {
     const defining = ["# Terms", "", '"Customer" means the party named as "Customer" on the Cover Page.', "", "The Customer pays.", ""].join("\n");
     assert.deepEqual(valuesOf(en, "defined-term-form", defining, "term"), []);
     assert.deepEqual(quotedUses("「甲」とは、甲をいう。", "甲", [1], 0), []);
+    assert.deepEqual(quotedUses("x（以下「甲」といいます。）", "甲", [5], 0), []);
+    assert.deepEqual(quotedUses("x（以下「甲」といい、", "甲", [5], 0), []);
+    assert.deepEqual(quotedUses("x「甲」と書きます。", "甲", [2], 0), [2]);
+    assert.deepEqual(quotedUses("x「甲」といいかけた。", "甲", [2], 0), [2]);
     assert.deepEqual(quotedUses('x "Fee" has the meaning in 1.', "Fee", [3], 0), []);
     const inDefinition = [
       "# Terms",
@@ -348,9 +352,43 @@ describe("defined-name-repeated: a long name used again after its short name", (
     assert.deepEqual(valuesOf(en, "defined-name-repeated", oneWord, "term"), []);
   });
 
+  it("does not report a contact field however long its value, but does report a sentence after a contact label", () => {
+    const ja_ = (line: string): string[] => valuesOf(ja, "defined-name-repeated", `${JA_PARTIES}\n${line}\n`, "term");
+    assert.deepEqual(ja_("- お問い合わせ先：株式会社みなと製作所 個人情報保護管理者（privacy@example.com）"), []);
+    assert.deepEqual(ja_("- 連絡先：株式会社みなと製作所 総務部 個人情報担当 平日10時から17時まで"), []);
+    assert.deepEqual(ja_("- 宛先：〒100-0001 東京都千代田区一丁目1番1号 株式会社みなと製作所 総務部"), []);
+    assert.deepEqual(ja_("- 窓口：個人情報お問い合わせ窓口（株式会社みなと製作所）"), []);
+    assert.deepEqual(ja_("**担当**：株式会社みなと製作所 総務部 法務課 契約管理チーム 第二グループ"), []);
+    assert.deepEqual(ja_("- 連絡先：株式会社みなと製作所は、平日10時から17時まで問い合わせを受け付ける"), ["name 甲"]);
+    assert.deepEqual(ja_("- 窓口：株式会社みなと製作所 総務部が、平日10時から17時まで問い合わせを受け付ける。"), ["name 甲"]);
+    assert.deepEqual(ja_("- 備考：〒100-0001 東京都千代田区一丁目1番1号 株式会社みなと製作所 総務部"), ["name 甲"]);
+    assert.deepEqual(ja_("1. 連絡先：株式会社みなと製作所 総務部 個人情報担当 平日10時から17時まで"), []);
+    assert.deepEqual(ja_("- 連絡先：株式会社みなと製作所、平日10時から17時まで個人情報に関する問い合わせを受け付ける"), ["name 甲"]);
+    const head = ["# Terms", "", 'These terms govern the App provided by Hibari Lab Inc. ("Hibari Lab", "we" or "us").', ""];
+    const en_ = (line: string): string[] => valuesOf(en, "defined-name-repeated", [...head, line, ""].join("\n"), "term");
+    assert.deepEqual(en_("- Contact: Privacy Office, Hibari Lab Inc., 2-4-1 Marunouchi, Chiyoda-ku, Tokyo (privacy@example.com)"), []);
+    assert.deepEqual(en_("- Contact: Hibari Lab Inc. may change the App at any time without notice."), ["name Hibari Lab"]);
+    assert.deepEqual(en_("- Personal Information Contact: Hibari Lab Inc., Privacy Office"), []);
+    assert.deepEqual(en_("- Contact: Hibari Lab Inc., which may change the App at any time without notice"), ["name Hibari Lab"]);
+  });
+
   it("does not report a signature line, a line giving the short name, or the name inside a longer word", () => {
     const signed = `${JA_PARTIES}\n第1条\u3000乙は、甲の予約を行う。\n\n甲\u3000東京都千代田区一丁目 株式会社みなと製作所\n\n株式会社みなと製作所\n\n第2条\u3000株式会社みなと製作所大阪支店は対象外とする。\n`;
     assert.deepEqual(valuesOf(ja, "defined-name-repeated", signed, "term"), []);
+  });
+
+  it("does not report a field that addresses the party by its full name, but does report a sentence after a label", () => {
+    const head = ["# Terms", "", 'These terms govern the App provided by Hibari Lab Inc. ("Hibari Lab", "we" or "us").', ""];
+    const addressed = [...head, "Send notices by post to:", "", "- Address: 2-4-1 Marunouchi, Tokyo", "- Attention: Hibari Lab Inc., Member Support", ""];
+    assert.deepEqual(valuesOf(en, "defined-name-repeated", addressed.join("\n"), "term"), []);
+    const japanese = `${JA_PARTIES}\n- 宛先：株式会社みなと製作所 総務部\n`;
+    assert.deepEqual(valuesOf(ja, "defined-name-repeated", japanese, "term"), []);
+    const sentence = [...head, "Note: Hibari Lab Inc. may change the App at any time without notice.", ""];
+    assert.deepEqual(valuesOf(en, "defined-name-repeated", sentence.join("\n"), "term"), ["name Hibari Lab"]);
+    assert.deepEqual(valuesOf(en, "defined-name-repeated", [...head, "Note: Hibari Lab Inc. shall pay", ""].join("\n"), "term"), ["name Hibari Lab"]);
+    assert.deepEqual(valuesOf(ja, "defined-name-repeated", `${JA_PARTIES}\n注記：株式会社みなと製作所は、毎月末日までに代金を全額支払う\n`, "term"), [
+      "name 甲",
+    ]);
   });
 
   it("reads a long name followed by a joining word (及び) as standing alone, but not one inside a longer word", () => {

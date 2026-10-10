@@ -1,0 +1,11 @@
+# 保存期間を言う語（fact-conflict）。keep は期間のあいだ持っておく語、delete は期間が過ぎた後に消す語（3年間を経過した…を削除）。
+# position: before は、何を保存するか（個人情報を保存）が語の前にあること。
+id: retention-verb
+language: ja
+entries:
+  - { pattern: 保存, group: keep, position: before }
+  - { pattern: 保管, group: keep, position: before }
+  - { pattern: 保持, group: keep, position: before }
+  - { pattern: 削除, group: delete, position: before }
+  - { pattern: 消去, group: delete, position: before }
+  - { pattern: 廃棄, group: delete, position: before }

@@ -1,0 +1,61 @@
+id: rent-multiple-mismatch
+layer: L3
+status: stable
+how_to_find: rent-multiple-mismatch
+# The amounts are read with currency-notation and amount-multiplier; the labels are rent-label and rent-multiple-label, the
+# words rent-multiple-word, counts written as words number-word (digit), and a range of rent range-connector.
+severity: warning
+
+name:
+  ja: 賃料の月数分と合わない敷金・礼金
+  en: A deposit that is not the stated months of rent
+
+why:
+  ja: 物件の案内で「敷金 1か月（85,000円）」のように月数と金額を並べて書くと、読み手は金額を確かめずに用意します。賃料を書き直したときや、別の部屋の行を写したときに、月数か金額のどちらかが残って食い違います。敷金・礼金・保証金・償却などの見出しの後に月数と金額が一つずつ並んでいるとき、その金額を、前に書いた賃料のその月数分と比べます。一つのページに物件がいくつもあれば、それぞれ直前の賃料と比べます。管理費・共益費が書いてあれば、賃料だけの月数分と、賃料に管理費を足した額の月数分のどちらでもよいとします（どちらで計算するかを書かない案内が多いため）。賃料が「85,000円〜90,000円」のように幅で書いてあれば、その幅に入る額を認めます。「9.8万円」は書いた桁までの丸めを認めます。
+  en: 'When a listing says "Deposit: 2 months ($3,200)", readers prepare the amount without working it out. It goes wrong when the rent is changed and the deposit line is not, or a line is copied from another unit. When a deposit, key money or guarantee states one number of months and one amount, the amount is compared with that many months of the rent stated before it; with several listings on one page, each deposit is compared with the rent just before it. When a service charge or maintenance fee is stated, the months may be of the rent alone or of the rent and the fee, since listings use both and seldom say which. A rent given as a range ("$1,600 to $1,700") accepts any amount in that range of months.'
+
+message:
+  ja: 「{months}」と書いた額 {amount} が、賃料 {rent} のその月数分と合いません
+  en: "{amount} is not {months} of the rent ({rent})"
+
+how_to_fix:
+  ja: 賃料・月数・金額のどれが正しいかを確かめて、ほかを直してください。賃料に管理費を足した額や税込みの額で計算するなら、そう書いてください。
+  en: Check which of the rent, the months and the amount is right, and correct the others. If the months are of the rent with a fee or with tax, say so.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 「敷金 2か月（98,000円）」のように、賃料のその月数分と合わない金額
+  en: A deposit amount that is not the stated months of rent
+example:
+  ja:
+    before: |
+      | 項目 | 金額 |
+      | --- | --- |
+      | 賃料 | 98,000円 |
+      | 敷金 | 2か月（98,000円） |
+    after: |
+      | 項目 | 金額 |
+      | --- | --- |
+      | 賃料 | 98,000円 |
+      | 敷金 | 1か月（98,000円） |
+  en:
+    before: |
+      | Item | Amount |
+      | --- | --- |
+      | Rent | $1,600 |
+      | Deposit | 2 months ($3,000) |
+    after: |
+      | Item | Amount |
+      | --- | --- |
+      | Rent | $1,600 |
+      | Deposit | 2 months ($3,200) |
+
+not_flagged:
+  ja: 月数だけ（敷金 1か月）・金額だけ（敷金 85,000円）・「なし」の記載、「1〜2か月」のような月数の幅、一つの見出しに月数と金額の組が二つ以上ある記載、税込みの記載、賃料の書いていない文書、賃料や管理費の行に金額が二つある（「6,000円から5,000円に改定」）か年額・週額・坪単価の語がある文書は比べません。賃料より前に敷金があるときは、文書の賃料が一つのときだけ比べます。通貨の違う額は比べません。表の列見出しだけに「賃料」「敷金」とある表（行に見出しの無い表）は読みません。
+  en: 'A deposit given only in months ("1 month") or only as an amount, "none", a range of months ("1 to 2 months"), a statement with two different pairs of months and amount, an amount with tax, a document with no rent, and a rent or fee line holding two amounts ("$1,600, rising to $1,700") or another period ("per week", "per sq ft per year") are not compared. A deposit before any rent is compared only when the document states one rent. Amounts in different currencies are not compared. A table that names rent and deposit only in its column headings is not read.'

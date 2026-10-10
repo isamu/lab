@@ -1,0 +1,68 @@
+id: layout-code-mismatch
+layer: L3
+status: stable
+how_to_find: layout-code-mismatch
+# The code is read with layout-code (the letters of 2LDK, the words of "2 bedrooms"), the rooms with layout-room, and the
+# fields that hold them with layout-label.
+severity: warning
+
+name:
+  ja: 部屋の内訳と合わない間取り
+  en: A layout that does not match the rooms listed
+
+why:
+  ja: 物件の「間取り 3LDK」の頭の数は、L・D・K と納戸（S）を除いた居室の数です。同じ物件の間取り詳細が「LDK 11.5帖、洋室 6帖、洋室 5帖」なら居室は二つで、3LDK か内訳のどちらかが間違っています。別の部屋の情報を写したときや、間取りの記号だけを書き換えたときに起きます。内訳に LDK を挙げたのに間取りが 2DK のように、記号に無い L・D・K を内訳が挙げるときも言います。
+  en: 'In a property listing, "3 bedrooms" and a room list of "Bedroom 1, Bedroom 2" cannot both be right, and a Japanese layout code such as 3LDK counts its rooms besides the living room, dining area, kitchen and any storage room (S). It happens when the details of another unit are copied, or when only the code is edited. A Japanese code is also checked for an L, D or K part the room list names and the code lacks (an LDK listed under a 2DK).'
+
+message:
+  ja: 間取り「{code}」の居室は{stated}室ですが、内訳に挙げた居室は{listed}室です
+  en: 'The layout "{code}" has {stated} rooms, but the room list names {listed}'
+messages:
+  part:
+    ja: 内訳の「{part}」に当たる部分が、間取り「{code}」にありません
+    en: 'The room list names "{part}", which the layout "{code}" does not have'
+
+how_to_fix:
+  ja: 間取りの記号と部屋の内訳を物件の図面と見比べて、間違っているほうを直してください。
+  en: Compare the layout and the room list with the floor plan, and correct the wrong one.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 「間取り 3LDK」と、間取り詳細に挙げた居室の数（洋室二つ）のように、間取りの記号と部屋の内訳が合わない所
+  en: A layout such as "3 bedrooms" or 3LDK that does not match the number of rooms the same listing names
+example:
+  ja:
+    before: |
+      | 項目 | 内容 |
+      | --- | --- |
+      | 間取り | 3LDK |
+      | 間取り詳細 | LDK 11.5帖、洋室 6帖、洋室 5帖 |
+    after: |
+      | 項目 | 内容 |
+      | --- | --- |
+      | 間取り | 2LDK |
+      | 間取り詳細 | LDK 11.5帖、洋室 6帖、洋室 5帖 |
+  en:
+    before: |
+      | Item | Details |
+      | --- | --- |
+      | Layout | 3 bedrooms, 1 bathroom |
+      | Rooms | Living room, Bedroom 1, Bedroom 2, Bathroom |
+    after: |
+      | Item | Details |
+      | --- | --- |
+      | Layout | 2 bedrooms, 1 bathroom |
+      | Rooms | Living room, Bedroom 1, Bedroom 2, Bathroom |
+
+not_flagged:
+  ja: 間取りの記号は「間取り」の項目（表の行、表の列、「間取り：」の行）だけを、部屋の内訳は「間取り詳細」の項目、部屋ごとの表、記号の後ろの括弧（2LDK（洋室6帖・洋室5帖・LDK12帖））だけを読みます。内訳の無い物件は言いません。納戸・S・サービスルームは居室に数えず、書斎のように物件で数え方の違う部屋が内訳にあれば数を比べません。一つの節に物件が複数あるときは、記号と内訳の数が同じときだけ順に組にします。内訳が居室を一つも挙げないときと、1R の台所は比べません。
+  en: 'Only the layout field (a table row, a table column, or a "Layout:" line) is read for the code, and only the rooms field, a table of rooms, or a bracket after the code for the room list. A listing without a room list is not reported. A den, a study and a box room are not counted as bedrooms, and a list that names a room some listings count and others do not (an office, a nursery) is not compared. With several listings in one section, codes and room lists are paired in order only when there are as many of each. A room list that names no bedroom is not compared.'
+level_meaning:
+  ja: 間取りの記号と部屋の内訳の居室の数が合わないとき指摘
+  en: reported when a layout and the room list of the same listing disagree

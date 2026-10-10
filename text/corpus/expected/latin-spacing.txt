@@ -25,7 +25,7 @@ mhlw-norovirus-qa  1
 neeview-changelog-ja  4
 nta-kids-mijika-na-zeikin  1
 nttcom-onboarding-week1  1
-ppc-guidelines-tsusoku  3
+ppc-guidelines-tsusoku  2
 ruby-3-4-0-released-ja  20
 soumu-kokumin-cyber-phishing  7
 soumu-wp-r06-ai-rules-japan  1
@@ -33,7 +33,6 @@ textlint-preset-ja-technical-writing-readme  4
 tokyoapp-service-terms  1
 utelecon-account-leave  1
 wikipedia-ja-idobata-template-collapse  1
-wikipedia-ja-talk-oden  4
 wikivoyage-ja-shikoku-henro  1
 wikivoyage-ja-shimoda  3
 yamano-akashi-api  1

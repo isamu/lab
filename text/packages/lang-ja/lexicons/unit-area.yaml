@@ -1,0 +1,23 @@
+# 面積（基準は平方メートル）の単位（unit-mismatch）。weight は基準の単位への倍率。坪は 400/121 ㎡（6 尺四方、1 尺は 10/33 m）。
+# 畳（帖）は入れない。大きさが地方や建物で違い（約 1.45〜1.82 ㎡）、不動産の広告の規約が決めるのは 1.62 ㎡ という下限だけで、換算の値ではない。
+id: unit-area
+language: ja
+entries:
+  - pattern: "㎡"
+    weight: 1
+  - pattern: "m²"
+    weight: 1
+  - pattern: "平方メートル"
+    weight: 1
+  - pattern: "平米"
+    weight: 1
+  - pattern: "㎢"
+    weight: 1000000
+  - pattern: "km²"
+    weight: 1000000
+  - pattern: "平方キロメートル"
+    weight: 1000000
+  - pattern: "ヘクタール"
+    weight: 10000
+  - pattern: "坪"
+    weight: 3.3057851239669422

@@ -1,0 +1,11 @@
+# Words before a converted value in brackets (unit-mismatch): the "about" in "300 kPa (about 44 psi)".
+id: unit-equivalent-hedge
+language: en
+entries:
+  - pattern: "about"
+  - pattern: "approx."
+  - pattern: "approximately"
+  - pattern: "around"
+  - pattern: "roughly"
+  - pattern: "~"
+  - pattern: "≈"

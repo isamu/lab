@@ -1,0 +1,10 @@
+# 求人の年間休日の見出し（annual-holidays-mismatch）。before は数の前に書く見出し（年間休日：125日）。
+# 年間休日は一年に休む日の合計で、年次有給休暇（有給）とは別のもの。有給の日数を読まないよう、有給・休暇の語は入れない。
+id: annual-holidays-label
+language: ja
+entries:
+  - { pattern: 年間休日, position: before }
+  - { pattern: 年間休日数, position: before }
+  - { pattern: 年間休日日数, position: before }
+  - { pattern: 年間休日総数, position: before }
+  - { pattern: 年間の休日, position: before }

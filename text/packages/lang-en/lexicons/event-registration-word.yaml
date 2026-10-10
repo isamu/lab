@@ -1,0 +1,18 @@
+# Words that mark signing up for an event. A sentence holding one, a deadline word (event-deadline-word) and a date after
+# the event is reported by deadline-after-event. Not "book" alone ("the book is out by …") nor "reply" alone (a reply to a survey).
+id: event-registration-word
+language: en
+entries:
+  - pattern: register
+  - pattern: registration
+  - pattern: registrations
+  - pattern: RSVP
+  - pattern: RSVPs
+  - pattern: booking
+  - pattern: bookings
+  - pattern: book by
+  - pattern: sign up
+  - pattern: enrol
+  - pattern: enroll
+  - pattern: enrolment
+  - pattern: enrollment

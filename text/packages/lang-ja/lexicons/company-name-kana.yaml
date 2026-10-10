@@ -1,0 +1,91 @@
+# 会社の名前の頭のひらがな（こもれび珈琲株式会社、株式会社みなと精機）を、前後の語から切り分ける語。name-variant が読む。
+# group が使い方を決める。字面どおりに、長いものから照らす。
+#   particle: 前の語に続けて書く助詞や語（当社は、弊社と、本契約における）。漢字やかなのすぐ後ろのひらがなは、この語で始まるときだけ、
+#             この語の後ろを名前の頭と読む。形の語のすぐ後ろ（株式会社と、株式会社の）のひらがなが、この語で始まれば名前と読まない
+#   opener:   句読点や行の頭に立つ語（また、なお）。名前の頭がこの語で始まれば名前と読まない
+#   end:      名前の頭の終わりに来ない字（の、る、て）。助詞や動詞の終わりで、名前の頭がこの字で終われば名前と読まない
+id: company-name-kana
+language: ja
+entries:
+  - { pattern: における, group: particle }
+  - { pattern: において, group: particle }
+  - { pattern: についての, group: particle }
+  - { pattern: について, group: particle }
+  - { pattern: によって, group: particle }
+  - { pattern: による, group: particle }
+  - { pattern: により, group: particle }
+  - { pattern: としての, group: particle }
+  - { pattern: として, group: particle }
+  - { pattern: であって, group: particle }
+  - { pattern: である, group: particle }
+  - { pattern: といった, group: particle }
+  - { pattern: という, group: particle }
+  - { pattern: にある, group: particle }
+  - { pattern: がある, group: particle }
+  - { pattern: および, group: particle }
+  - { pattern: ならびに, group: particle }
+  - { pattern: または, group: particle }
+  - { pattern: もしくは, group: particle }
+  - { pattern: ないし, group: particle }
+  - { pattern: かつ, group: particle }
+  - { pattern: などの, group: particle }
+  - { pattern: など, group: particle }
+  - { pattern: からの, group: particle }
+  - { pattern: までの, group: particle }
+  - { pattern: よりの, group: particle }
+  - { pattern: から, group: particle }
+  - { pattern: まで, group: particle }
+  - { pattern: より, group: particle }
+  - { pattern: には, group: particle }
+  - { pattern: とは, group: particle }
+  - { pattern: では, group: particle }
+  - { pattern: との, group: particle }
+  - { pattern: への, group: particle }
+  - { pattern: での, group: particle }
+  - { pattern: にも, group: particle }
+  - { pattern: とも, group: particle }
+  - { pattern: でも, group: particle }
+  - { pattern: は, group: particle }
+  - { pattern: が, group: particle }
+  - { pattern: を, group: particle }
+  - { pattern: に, group: particle }
+  - { pattern: と, group: particle }
+  - { pattern: の, group: particle }
+  - { pattern: で, group: particle }
+  - { pattern: へ, group: particle }
+  - { pattern: も, group: particle }
+  - { pattern: や, group: particle }
+  - { pattern: ほかの, group: particle }
+  - { pattern: ほか, group: particle }
+  - { pattern: また, group: opener }
+  - { pattern: なお, group: opener }
+  - { pattern: および, group: opener }
+  - { pattern: ならびに, group: opener }
+  - { pattern: または, group: opener }
+  - { pattern: もしくは, group: opener }
+  - { pattern: あるいは, group: opener }
+  - { pattern: かつ, group: opener }
+  - { pattern: さらに, group: opener }
+  - { pattern: ただし, group: opener }
+  - { pattern: そして, group: opener }
+  - { pattern: しかし, group: opener }
+  - { pattern: すなわち, group: opener }
+  - { pattern: つまり, group: opener }
+  - { pattern: そのほか, group: opener }
+  - { pattern: いずれも, group: opener }
+  - { pattern: ともに, group: opener }
+  - { pattern: うち, group: opener }
+  - { pattern: の, group: end }
+  - { pattern: を, group: end }
+  - { pattern: が, group: end }
+  - { pattern: は, group: end }
+  - { pattern: に, group: end }
+  - { pattern: へ, group: end }
+  - { pattern: で, group: end }
+  - { pattern: も, group: end }
+  - { pattern: て, group: end }
+  - { pattern: た, group: end }
+  - { pattern: だ, group: end }
+  - { pattern: な, group: end }
+  - { pattern: る, group: end }
+  - { pattern: い, group: end }

@@ -1,0 +1,25 @@
+# Words of work that may fall after the period the document's work is done in ("Term"): grades released, grade appeals,
+# resits. A dated item or sentence holding one is not compared with the term by date-outside-period, even when it says
+# "deadline" or "submit". "grade" alone is left out: "the report (30% of the grade) is due on …" must still be compared.
+id: period-after-term
+language: en
+entries:
+  - pattern: grades released
+  - pattern: grades are released
+  - pattern: grades will be released
+  - pattern: grades published
+  - pattern: grades are published
+  - pattern: grades posted
+  - pattern: grades are posted
+  - pattern: grades due
+  - pattern: grades are due
+  - pattern: grade submission
+  - pattern: grade appeal
+  - pattern: grade appeals
+  - pattern: resit
+  - pattern: resits
+  - pattern: re-sit
+  - pattern: re-examination
+  - pattern: make-up exam
+  - pattern: makeup exam
+  - pattern: supplementary exam

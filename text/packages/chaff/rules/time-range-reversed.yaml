@@ -1,0 +1,48 @@
+id: time-range-reversed
+layer: L3
+status: stable
+how_to_find: time-range-reversed
+requires: [dates]
+severity: warning
+
+name:
+  ja: 時刻の範囲の終わりが始まりより前
+  en: A time range that ends before it starts
+
+why:
+  ja: 「15:15〜14:15」のように、時刻の範囲の終わりが始まりより前だと、読み手はいつ終わるのかを問い合わせることになり、次の予定の時刻も信じられなくなります。時刻を一つだけ直したときや、前の行から書き写したときに起きます。二つの時刻の間が範囲の記号（〜、–）だけのとき、「から」でつなぎ「まで」で閉じるとき、「from … to」のときを範囲として比べます。片方にだけ午前・午後を書いた範囲は、もう片方も同じと読みます。
+  en: 'When a time range such as "15:15–14:15" ends before it starts, the reader has to ask when it really ends, and the times after it are in doubt too. It happens when only one of the two times is changed, or when a line is copied from the one before. Two times are read as a range when only a range mark (–, —) or a word such as "until" stands between them, or when they are written "from … to …". When only one side carries a.m. or p.m., the other is read the same way ("2:00–1:30 pm" is 2 pm to 1:30 pm).'
+
+message:
+  ja: 時刻の範囲「{range}」の終わりが始まりより前です
+  en: 'The time range "{range}" ends before it starts'
+
+how_to_fix:
+  ja: 始まりと終わりの時刻を確かめて、書き間違えたほうを直してください。夜をまたぐ範囲なら、終わりに「翌」を付けてください。
+  en: Check both times and correct the wrong one. If the range runs past midnight, mark the end as the next day.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 「15:15〜14:15」のように、時刻の範囲の終わりが始まりより前の所
+  en: A time range whose end comes before its start
+example:
+  ja:
+    before: |
+      | 15:15〜14:15 | 事例紹介 |
+    after: |
+      | 15:15〜16:15 | 事例紹介 |
+  en:
+    before: |
+      The workshop runs from 2:00 to 1:30 pm.
+    after: |
+      The workshop runs from 2:00 to 3:30 pm.
+
+not_flagged:
+  ja: 終わりに翌日の印のある範囲（22:00〜翌6:00）、三時間以上戻る範囲（夜をまたぐ 22:00〜6:00、十二時間制の 9:00〜5:00）、「から」だけで「まで」の無いもの（14時から13時に変更）、時刻の印の無い数（2〜1、1時間〜30分）は比べません。片方だけに午前・午後を書いた範囲は、正午をまたぐ書き方（8:00〜午後6:00）があるので、一時間未満の戻りだけを言います。
+  en: 'A range whose end is marked as the next day ("22:00–6:00 +1"), a range that goes back three hours or more (overnight, as 22:00–6:00, or a 12-hour clock, as 9:00–5:00), "from … to …" in a sentence that changes a time ("moved from 3:00 to 2:00"), and numbers without a time mark are not compared. Where only one side carries a.m. or p.m., a range may cross noon ("8:00–6:00 pm"), so only a step back of less than an hour is reported.'

@@ -1,0 +1,67 @@
+id: deadline-after-event
+layer: L3
+status: stable
+how_to_find: event-deadline
+# The event-date words come from the language's event-date-label lexicon, the registration and deadline words from
+# event-registration-word and event-deadline-word, and what may come after an event from event-aside.
+requires: [dates]
+languages: [ja, en]
+severity: error
+
+name:
+  ja: 申込締切が催しの日より後
+  en: A registration deadline after the event
+
+why:
+  ja: 案内状の「申込締切」や「出欠のご返信は…までに」が催しの当日より後だと、締め切りに間に合わせて申し込んでも、そのときには催しが終わっています。前の回の案内を使い回して、催しの日か締め切りの片方だけを直したときに起きます。「日時」「開催日」で始まり時刻のある行の日付を催しの日と読み、申込の語と締め切りの語のある文の日付がそれより後なら指します。
+  en: When the registration deadline or the RSVP date of an invitation is after the event itself, a reader who signs up in time arrives after it is over. It happens when last year's invitation is reused and only one of the dates is changed. The date on a line starting with an event-date word (Date, When) and holding a time of day is read as the event's date, and a date in a sentence with a registration word and a deadline word (register by, Booking deadline) after it is pointed out.
+
+message:
+  ja: 申込の締め切り {deadline} が、催しの日 {event} より後です
+  en: "The registration deadline {deadline} is after the event on {event}"
+
+how_to_fix:
+  ja: 催しの日と締め切りのどちらが正しいかを確かめて、片方を直してください。
+  en: Check which is right, the event date or the deadline, and correct the other.
+
+levels: { normal: error, relaxed: warning }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  legal: "An invitation or an announcement sets an event and a registration deadline; in other genres a date is something reported on, not this document's own."
+  docs: "An invitation or an announcement sets an event and a registration deadline; in other genres a date is something reported on, not this document's own."
+  academic: "An invitation or an announcement sets an event and a registration deadline; in other genres a date is something reported on, not this document's own."
+  literature: "An invitation or an announcement sets an event and a registration deadline; in other genres a date is something reported on, not this document's own."
+  speech: "An invitation or an announcement sets an event and a registration deadline; in other genres a date is something reported on, not this document's own."
+
+group: facts
+summary:
+  ja: 案内状やお知らせで、申込や出欠の返信の締め切りが催しの日より後の所
+  en: A registration or RSVP deadline after the date of the event it is for, in an invitation or an announcement
+example:
+  ja:
+    before: |
+      日時：2026年11月20日（金）14:00〜17:00
+
+      申込締切：2026年11月27日（金）
+    after: |
+      日時：2026年11月20日（金）14:00〜17:00
+
+      申込締切：2026年11月13日（金）
+  en:
+    before: |
+      # Invitation
+
+      Date: Friday, November 20, 2026, 2:00 PM
+
+      Please register by Friday, November 27, 2026.
+    after: |
+      # Invitation
+
+      Date: Friday, November 20, 2026, 2:00 PM
+
+      Please register by Friday, November 13, 2026.
+
+not_flagged:
+  ja: 時刻の無い「日時」の行、年の無い日付、日付が二つある文は比べません。催しの日の行が複数あれば、いちばん後の催しの日と比べます。申込の語（申込、出欠、予約）と締め切りの語（まで、締切、期限）の両方がある文だけを読むので、アンケートの回答期限や資料の公開日は比べず、申込の語があってもアンケート、支払、資料などの語が同じ文にあれば比べません。法令・規約、手引き、論文、文学、スピーチのジャンルでは止めています。
+  en: A Date line without a time of day, a date without its year, and a sentence with two dates are not compared. With several event-date lines, the latest event is used. Only a sentence with both a registration word (register, RSVP, booking) and a deadline word (by, deadline, closes) is read, so a survey deadline or the date the slides go up is not compared, and a sentence that also names a survey, a payment or the slides is left alone. It is off in the legal, docs, academic, literature and speech genres.

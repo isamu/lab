@@ -1,6 +1,6 @@
-import type { Detector, Finding, ProseDocument, Sentence, Token } from "../plugin.ts";
+import type { Detector, Finding, ProseDocument, Sentence, TableCell, Token } from "../plugin.ts";
 import { groupBy, oddSpellings, type KeyedWord, type OddSpelling } from "../spelling-variants.ts";
-import { dropsOkurigana, kanjiSkeleton, katakanaKey, lemmaReading } from "../kana-spelling.ts";
+import { dropsOkurigana, kanjiKeyAmong, katakanaKey, lemmaReading } from "../kana-spelling.ts";
 import { isKatakanaWord, stemOf } from "../long-vowel.ts";
 import { QUOTATION_MARKS, isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
@@ -12,7 +12,14 @@ import { isPartOfAddress } from "./address-word.ts";
  * A word found in the document: where it is, which sentence it is in, its key and spelling, how it is written when that differs, and
  * whether it is written onto the noun after it (取扱事業者).
  */
-type Placed = KeyedWord & { readonly sentence: Sentence; readonly offset: number; readonly shown?: string; readonly compoundHead?: boolean };
+type Placed = KeyedWord & {
+  readonly sentence: Sentence;
+  readonly offset: number;
+  readonly shown?: string;
+  readonly compoundHead?: boolean;
+  /** Where a run of words ends (タイヤレバー). */
+  readonly end?: number;
+};
 
 type IsOpen = (start: number, end: number) => boolean;
 
@@ -141,11 +148,12 @@ const readingWords = (sentence: Sentence, isOpen: IsOpen, skips: Skips): Placed[
  */
 const byKanji = (words: readonly Placed[]): Placed[] =>
   [...groupBy(words, (word) => word.key).values()].flatMap((group) => {
-    const skeletons = [...new Set(group.map((word) => kanjiSkeleton(word.spelling)).filter((skeleton) => skeleton !== ""))];
     const spellings = [...new Set(group.map((word) => word.spelling))];
+    const skeletonOf = (spelling: string): string => kanjiKeyAmong(spelling, spellings);
+    const skeletons = [...new Set(spellings.map(skeletonOf).filter((skeleton) => skeleton !== ""))];
     const apart = spellings.some((spelling) => dropsOkurigana(spelling, spellings)) ? "|compound" : "";
     return group.flatMap((word): Placed[] => {
-      const own = kanjiSkeleton(word.spelling);
+      const own = skeletonOf(word.spelling);
       if (own === "" && skeletons.length > 1) return [];
       const use = word.compoundHead === true ? apart : "";
       return [{ ...word, key: `${word.key}|${own === "" ? (skeletons[0] ?? "") : own}${use}` }];
@@ -160,6 +168,44 @@ const katakanaWords = (sentence: Sentence, isOpen: IsOpen): Placed[] =>
     const key = katakanaKey(token.surface);
     return [...key].length < MIN_KATAKANA_KEY ? [] : [{ key: `kana|${key}`, spelling: stemOf(token.surface), sentence, offset: token.span.start }];
   });
+
+const isKatakanaNoun = (token: Token): boolean => token.pos === "NOUN" && isKatakanaWord(token.surface);
+
+/** Katakana nouns written onto each other (タイヤ and レバー in タイヤレバー), each run whole: one place may be cut into words another is not. */
+const katakanaRuns = (tokens: readonly Token[]): Token[][] =>
+  tokens.reduce<Token[][]>((runs, token, at) => {
+    if (!isKatakanaNoun(token)) return runs;
+    const last = runs.at(-1);
+    if (last !== undefined && isTouching(tokens[at - 1], token) && last.at(-1) === tokens[at - 1]) last.push(token);
+    else runs.push([token]);
+    return runs;
+  }, []);
+
+/**
+ * Katakana runs keyed like one katakana word, spelled as their words' stems joined: タイヤーレバー (one unknown word) meets
+ * タイヤレバー read as タイヤ and レバー, while the final ー of a word inside the run (サーバーリスト and サーバリスト) stays katakana-long-vowel's.
+ */
+const katakanaRunWords = (sentence: Sentence, isOpen: IsOpen): Placed[] =>
+  katakanaRuns(sentence.tokens ?? []).flatMap((run): Placed[] => {
+    const [first, last] = [run[0], run.at(-1)];
+    if (first === undefined || last === undefined) return [];
+    const [start, end] = [first.span.start - sentence.span.start, last.span.end - sentence.span.start];
+    const key = katakanaKey(run.map((token) => token.surface).join(""));
+    if ([...key].length < MIN_KATAKANA_KEY || !isOpen(start, end)) return [];
+    return [
+      {
+        key: `kana|${key}`,
+        spelling: run.map((token) => stemOf(token.surface)).join(""),
+        shown: run.map((token) => token.surface).join(""),
+        sentence,
+        offset: first.span.start,
+        end: last.span.end,
+      },
+    ];
+  });
+
+/** Whether a run holds a place another key already points at: the word inside it is said, not the run around it. */
+const coversOffset = (run: Placed, offset: number): boolean => offset >= run.offset && offset < (run.end ?? run.offset + 1);
 
 const LATIN_WORD = /[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*/gu;
 const LOWER = /\p{Ll}/u;
@@ -204,6 +250,23 @@ const findingOf = (words: readonly Placed[], odd: OddSpelling<Placed>): Finding 
   values: { written: odd.word.shown ?? odd.word.spelling, other: shownUsual(words, odd), count: odd.count, of: odd.of, offset: odd.word.offset },
 });
 
+/** A cell that is one Latin word in lower case (openapi, contentType): a field name or a value, spelled by the data and not by the writer. */
+const DATA_KEY_CELL = /^\p{Ll}[A-Za-z0-9]*$/u;
+
+type Place = { readonly sentence: Sentence; readonly isOpen: IsOpen; readonly readsLatin: boolean };
+
+/** A link's brackets and where it goes (`[`, `](#contentType)`, `][ref]`). The prose hides them outside tables; a cell keeps the Markdown as written. */
+const LINK_CHROME = /\]\([^)]*\)|\]\[[^\]]*\]|\[/gu;
+
+const withoutLinkChrome = (text: string): string => text.replaceAll(LINK_CHROME, (chrome) => " ".repeat(chrome.length));
+
+/** A body cell of a table read as a sentence of its own: the prose covers tables, so a cell's words (片栗粉 in a list of ingredients) are not in the sentences. Header rows stay out. */
+const cellPlace = (cell: TableCell, names: readonly string[]): Place => {
+  const text = withoutLinkChrome(cell.text);
+  const sentence: Sentence = { span: { start: cell.start, end: cell.end }, text, tokens: cell.tokens ?? [] };
+  return { sentence, isOpen: isOpenIn(sentence, names), readsLatin: !DATA_KEY_CELL.test(text.trim()) };
+};
+
 /**
  * One word written two ways in one document (出来る and できる, 引っ越し and 引越し, ウィンドウ and ウインドウ, e-mail and email),
  * found without a list of words: the document's own words are grouped by reading or by an evened-out spelling, and the way the
@@ -211,12 +274,18 @@ const findingOf = (words: readonly Placed[], odd: OddSpelling<Placed>): Finding 
  */
 export const orthographicVariant: Detector = (doc, options): Finding[] => {
   const skips: Skips = { skip: new Set([...patternsOf(doc, DISTINCT), ...patternsOf(doc, FUKUSHI)]), idioms: new Set(patternsOf(doc, IDIOM)) };
-  const placed = doc.sentences.map((sentence) => ({ sentence, isOpen: isOpenIn(sentence, doc.names ?? []) }));
+  const names = doc.names ?? [];
+  const placed: Place[] = [
+    ...doc.sentences.map((sentence) => ({ sentence, isOpen: isOpenIn(sentence, names), readsLatin: true })),
+    ...(doc.tableCells?.() ?? []).map((cell) => cellPlace(cell, names)),
+  ];
   const reading = byKanji(placed.flatMap(({ sentence, isOpen }) => readingWords(sentence, isOpen, skips)));
   const katakana = placed.flatMap(({ sentence, isOpen }) => katakanaWords(sentence, isOpen));
-  const latin = placed.flatMap(({ sentence, isOpen }) => latinWords(sentence, isOpen, skips.skip));
+  const runs = placed.flatMap(({ sentence, isOpen }) => katakanaRunWords(sentence, isOpen));
+  const latin = placed.flatMap(({ sentence, isOpen, readsLatin }) => (readsLatin ? latinWords(sentence, isOpen, skips.skip) : []));
   const odd = [reading, katakana, latin].flatMap((words) => oddSpellings(words, options.limit));
-  const all = [...reading, ...katakana, ...latin];
+  const oddRuns = oddSpellings(runs, options.limit).filter(({ word }) => !odd.some((other) => coversOffset(word, other.word.offset)));
+  const all = [...reading, ...katakana, ...runs, ...latin];
   // A word can be odd by its reading and by its katakana key at once; one place is said once.
-  return [...new Map(odd.map((entry) => [entry.word.offset, entry])).values()].map((entry) => findingOf(all, entry));
+  return [...new Map([...odd, ...oddRuns].map((entry) => [entry.word.offset, entry])).values()].map((entry) => findingOf(all, entry));
 };

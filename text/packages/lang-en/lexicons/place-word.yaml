@@ -1,4 +1,4 @@
-# Words that end a place name (Union Station, 11th Street, Colorado Convention Center). name-variant reads a name ending in one
+# Words that end a place name (Union Station, 11th Street, Colorado Convention Center), a building's name among them (Westgate House). name-variant reads a name ending in one
 # of them as a place and reports one place written two ways (11th Street and 11th St., King's Cross and Kings Cross).
 # group: one word written short or long, or spelt two ways (Street and St., Center and Centre). Matched as written, so each
 # capitalisation the word takes after a name is listed.
@@ -27,3 +27,9 @@ entries:
   - { pattern: Bridge, group: bridge }
   - { pattern: Plaza, group: plaza }
   - { pattern: Tower, group: tower }
+  - { pattern: House, group: house }
+  - { pattern: Building, group: building }
+  - { pattern: Residences, group: residences }
+  - { pattern: Residence, group: residence }
+  - { pattern: Apartments, group: apartments }
+  - { pattern: Court, group: court }

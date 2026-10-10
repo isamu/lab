@@ -1,0 +1,19 @@
+# The labels of a job posting's annual days off (annual-holidays-mismatch): every day off in a year. before is a label
+# the count follows ("Annual days off: 125 days"); after follows the count and holds the word of a day ("125 days off a
+# year"). "Annual holidays", "annual leave" and "holiday entitlement" are left out: in British usage they are paid leave
+# (25 days a year), not every day off, and two days off every week does not bound them.
+id: annual-holidays-label
+language: en
+entries:
+  - { pattern: Annual days off, position: before }
+  - { pattern: Days off per year, position: before }
+  - { pattern: Days off a year, position: before }
+  - { pattern: Days off each year, position: before }
+  - { pattern: Total days off, position: before }
+  - { pattern: Total days off per year, position: before }
+  - { pattern: Total days off a year, position: before }
+  - { pattern: days off a year, position: after }
+  - { pattern: days off per year, position: after }
+  - { pattern: days off each year, position: after }
+  - { pattern: days off annually, position: after }
+  - { pattern: days off in a year, position: after }

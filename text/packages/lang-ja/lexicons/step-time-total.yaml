@@ -1,0 +1,9 @@
+# 手順全体にかかる時間を言う見出し（step-time-sum-mismatch）。この語のすぐ後ろ（空白・コロンまで）の時間を、番号付きの手順の時間の和と比べる。
+id: step-time-total
+language: ja
+entries:
+  - pattern: 所要時間
+  - pattern: 合計時間
+  - pattern: 合計
+  - pattern: トータル
+  - pattern: 全体の時間

@@ -1,0 +1,63 @@
+# 手順が物を使う形（unlisted-item-used）。助詞は名詞の後ろ（position: after）に立ち、すぐ後ろの動詞が
+# その組の動詞（object-verb なら「を」の後ろ、place-verb なら「に」の後ろ、instrument-verb なら「で」の後ろ）のときだけ読む。
+# 動詞は原形で照らす。negation は動詞のすぐ後ろに来て使わないことを言う語（使わずに）。
+# 「に」「で」の物は、道具も入る一覧（item-list-heading の tool）がある文書だけで照らす。
+id: item-use
+language: ja
+entries:
+  - { pattern: を, group: object, position: after }
+  - { pattern: に, group: place, position: after }
+  - { pattern: で, group: instrument, position: after }
+  - { pattern: 入れる, group: object-verb }
+  - { pattern: 加える, group: object-verb }
+  - { pattern: 加え入れる, group: object-verb }
+  - { pattern: 足す, group: object-verb }
+  - { pattern: 使う, group: object-verb }
+  - { pattern: 用いる, group: object-verb }
+  - { pattern: 混ぜる, group: object-verb }
+  - { pattern: 振る, group: object-verb }
+  - { pattern: ふる, group: object-verb }
+  - { pattern: 塗る, group: object-verb }
+  - { pattern: 貼る, group: object-verb }
+  - { pattern: のせる, group: object-verb }
+  - { pattern: 乗せる, group: object-verb }
+  - { pattern: 載せる, group: object-verb }
+  - { pattern: 添える, group: object-verb }
+  - { pattern: 散らす, group: object-verb }
+  - { pattern: 注ぐ, group: object-verb }
+  - { pattern: まぶす, group: object-verb }
+  - { pattern: 絡める, group: object-verb }
+  - { pattern: 入れる, group: place-verb }
+  - { pattern: 沈める, group: place-verb }
+  - { pattern: 移す, group: place-verb }
+  - { pattern: 注ぐ, group: place-verb }
+  - { pattern: 浸す, group: place-verb }
+  - { pattern: 浸ける, group: place-verb }
+  - { pattern: 漬ける, group: place-verb }
+  - { pattern: 磨く, group: instrument-verb }
+  - { pattern: 削る, group: instrument-verb }
+  - { pattern: 切る, group: instrument-verb }
+  - { pattern: 刻む, group: instrument-verb }
+  - { pattern: 締める, group: instrument-verb }
+  - { pattern: 緩める, group: instrument-verb }
+  - { pattern: 留める, group: instrument-verb }
+  - { pattern: 拭く, group: instrument-verb }
+  - { pattern: 測る, group: instrument-verb }
+  - { pattern: 量る, group: instrument-verb }
+  - { pattern: 計る, group: instrument-verb }
+  - { pattern: 混ぜる, group: instrument-verb }
+  - { pattern: 塗る, group: instrument-verb }
+  - { pattern: 洗う, group: instrument-verb }
+  - { pattern: 叩く, group: instrument-verb }
+  - { pattern: 挟む, group: instrument-verb }
+  - { pattern: 回す, group: instrument-verb }
+  - { pattern: 焼く, group: instrument-verb }
+  - { pattern: 炒める, group: instrument-verb }
+  - { pattern: 煮る, group: instrument-verb }
+  - { pattern: 茹でる, group: instrument-verb }
+  - { pattern: ゆでる, group: instrument-verb }
+  - { pattern: 炊く, group: instrument-verb }
+  - { pattern: 蒸す, group: instrument-verb }
+  - { pattern: ず, group: negation }
+  - { pattern: ない, group: negation }
+  - { pattern: ぬ, group: negation }

@@ -1,0 +1,21 @@
+# Headings of a list of what a task needs (unlisted-item-used). group ingredient lists what goes in, tool what is used
+# as well. A heading is matched by its words before a bracket or a colon ("Ingredients (for 4)"), in any case. Only a
+# document with a tool list has its steps' "with a …" and "in a …" checked against it.
+id: item-list-heading
+language: en
+entries:
+  - { pattern: ingredients, group: ingredient }
+  - { pattern: what you need, group: tool }
+  - { pattern: what you'll need, group: tool }
+  - { pattern: what you will need, group: tool }
+  - { pattern: you will need, group: tool }
+  - { pattern: you'll need, group: tool }
+  - { pattern: things you need, group: tool }
+  - { pattern: tools, group: tool }
+  - { pattern: tools needed, group: tool }
+  - { pattern: tools required, group: tool }
+  - { pattern: equipment, group: tool }
+  - { pattern: equipment needed, group: tool }
+  - { pattern: materials, group: tool }
+  - { pattern: materials needed, group: tool }
+  - { pattern: supplies, group: tool }

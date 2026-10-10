@@ -1,0 +1,23 @@
+# Phrases of weekly days off and the fewest days off a year each gives (annual-holidays-mismatch). weight is the least
+# over 52 weeks; an annual count below it is a contradiction. group every-week names days off in every week, as strict as
+# Japanese 完全週休2日制: "two days off every week" and "a five-day work week" are 52 × 2 = 104. Vague phrases ("weekends
+# off", "two days off a week") are not listed, and a posting with only those is not compared.
+id: weekly-days-off
+language: en
+entries:
+  - { pattern: two days off every week, group: every-week, weight: 104 }
+  - { pattern: 2 days off every week, group: every-week, weight: 104 }
+  - { pattern: two days off each week, group: every-week, weight: 104 }
+  - { pattern: 2 days off each week, group: every-week, weight: 104 }
+  - { pattern: five-day work week, group: every-week, weight: 104 }
+  - { pattern: 5-day work week, group: every-week, weight: 104 }
+  - { pattern: five-day workweek, group: every-week, weight: 104 }
+  - { pattern: 5-day workweek, group: every-week, weight: 104 }
+  - { pattern: three days off every week, group: every-week, weight: 156 }
+  - { pattern: 3 days off every week, group: every-week, weight: 156 }
+  - { pattern: three days off each week, group: every-week, weight: 156 }
+  - { pattern: 3 days off each week, group: every-week, weight: 156 }
+  - { pattern: four-day work week, group: every-week, weight: 156 }
+  - { pattern: 4-day work week, group: every-week, weight: 156 }
+  - { pattern: four-day workweek, group: every-week, weight: 156 }
+  - { pattern: 4-day workweek, group: every-week, weight: 156 }

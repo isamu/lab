@@ -1,0 +1,23 @@
+# 間取りの内訳（間取り詳細：LDK 12帖、洋室 6帖、洋室 5帖）に挙げる部屋の名前（layout-code-mismatch）。room は間取りの数に数える居室、
+# storage は数えない部屋（納戸、サービスルーム）。living・dining・kitchen は間取りの記号の L・D・K に当たる部屋。
+# unclear は居室に数えるかどうかが物件で違う部屋で、内訳に一つでもあれば数を比べない。LDK・DK・K のような記号は layout-code の字で読む。
+id: layout-room
+language: ja
+entries:
+  - { pattern: "洋室", group: room }
+  - { pattern: "和室", group: room }
+  - { pattern: "居室", group: room }
+  - { pattern: "寝室", group: room }
+  - { pattern: "個室", group: room }
+  - { pattern: "子供部屋", group: room }
+  - { pattern: "子ども部屋", group: room }
+  - { pattern: "納戸", group: storage }
+  - { pattern: "サービスルーム", group: storage }
+  - { pattern: "DEN", group: storage }
+  - { pattern: "書斎", group: unclear }
+  - { pattern: "リビング", group: living }
+  - { pattern: "居間", group: living }
+  - { pattern: "ダイニング", group: dining }
+  - { pattern: "食堂", group: dining }
+  - { pattern: "キッチン", group: kitchen }
+  - { pattern: "台所", group: kitchen }

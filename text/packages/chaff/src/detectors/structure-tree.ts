@@ -6,8 +6,11 @@ import { weekdayMismatches } from "../structure/weekday.ts";
 import { documentDateOf } from "./document-date.ts";
 import { dateOrderBreaks } from "../structure/date-order.ts";
 import { totalMismatches, type Amount } from "../structure/total.ts";
+import { isTotalLine } from "../structure/total-line.ts";
 import { proseTotalMismatches } from "../structure/prose-total.ts";
 import { countedAmounts, type SummedCounter } from "../structure/counted-amounts.ts";
+import { measuredAmounts, type MeasureMarks, type SummedMeasure } from "../structure/measured-amounts.ts";
+import { measureUnitsOf } from "../facts/measure-units.ts";
 import { rangeFrameOf, reversedRanges, type DatedSpan, type RangeWords } from "../structure/date-range.ts";
 import { afterLabel } from "../structure/stated-period.ts";
 import { percentSumMismatches, type ShareWords } from "../structure/percent-sum.ts";
@@ -184,11 +187,33 @@ const summableAmountsOf = (doc: ProseDocument, tree: NonNullable<ProseDocument["
   return [...known, ...countedAmounts(doc.source, summedCountersOf(doc), known)].toSorted((left, right) => left.offset - right.offset);
 };
 
-/** 合計の行と内訳の行、文の中の合計と内訳。同じ金額は一度だけ言う。 */
+/** 合計の行で足す量の種類。換算の倍率は語彙表の weight。 */
+const SUMMED_DIMENSIONS = ["unit-mass", "unit-volume", "unit-length"] as const;
+
+/** 足す単位。零点のずれた単位（°F）は足せないので除く。 */
+const summedMeasuresOf = (doc: ProseDocument): SummedMeasure[] =>
+  measureUnitsOf(doc).filter((unit) => unit.zero === 0 && SUMMED_DIMENSIONS.some((dimension) => dimension === unit.dimension));
+
+const positionedOf = (doc: ProseDocument, lexicon: string, position: "before" | "after"): string[] =>
+  (doc.lexicons[lexicon] ?? []).filter((entry) => (entry.position ?? "before") === position).map((entry) => entry.pattern);
+
+const measureMarksOf = (doc: ProseDocument): MeasureMarks => ({
+  roughBefore: positionedOf(doc, "approximate-marker", "before"),
+  roughAfter: positionedOf(doc, "approximate-marker", "after"),
+  connectors: patternsOf(doc, "range-connector"),
+  perMarks: patternsOf(doc, "measure-per-mark"),
+});
+
+/** 表と箇条書きの合計で足す数量。金額と助数詞の数に、単位の付いた量（300 mg、0.5 g）を加える。 */
+const lineAmountsOf = (doc: ProseDocument, amounts: readonly Amount[]): Amount[] =>
+  [...amounts, ...measuredAmounts(doc.source, summedMeasuresOf(doc), measureMarksOf(doc), amounts)].toSorted((left, right) => left.offset - right.offset);
+
+/** 合計の行と内訳の行、文の中の合計と内訳。同じ金額は一度だけ言う。単位の付いた量は、表と箇条書きの合計だけで足す。 */
 const totalIssues = (doc: ProseDocument, tree: NonNullable<ProseDocument["structure"]>): StructureIssue[] => {
   const amounts = summableAmountsOf(doc, tree);
-  const lines = totalMismatches(doc.source, amounts, patternsOf(doc, "total-label"));
-  const words = {
+  const words = { labels: patternsOf(doc, "total-label"), qualifiers: doc.lexicons["total-label-qualifier"] ?? [] };
+  const lines = totalMismatches(doc.source, lineAmountsOf(doc, amounts), (text) => isTotalLine(text, words));
+  const phrases = {
     totals: patternsOf(doc, "total-phrase"),
     breakdowns: patternsOf(doc, "breakdown-phrase"),
     discounts: patternsOf(doc, "discount-word"),
@@ -198,7 +223,7 @@ const totalIssues = (doc: ProseDocument, tree: NonNullable<ProseDocument["struct
     doc.source,
     doc.sentences.map((sentence) => sentence.span),
     amounts,
-    words,
+    phrases,
   );
   return [...lines, ...prose.filter((issue) => !lines.some((line) => line.offset === issue.offset))];
 };
@@ -219,7 +244,7 @@ export const totalMismatch: Detector = (doc): Finding[] =>
         values: { ...issue.values, offset: issue.offset },
       }));
 
-const rangeWordsOf = (doc: ProseDocument): RangeWords => ({
+export const rangeWordsOf = (doc: ProseDocument): RangeWords => ({
   connectors: (doc.lexicons["range-connector"] ?? []).map((entry) => entry.pattern),
   openers: (doc.lexicons["range-opener"] ?? []).map((entry) => entry.pattern),
   closers: (doc.lexicons["range-closer"] ?? []).map((entry) => entry.pattern),

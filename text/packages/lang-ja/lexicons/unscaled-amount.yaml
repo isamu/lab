@@ -1,0 +1,11 @@
+# 人数に合わせて増やさなくてよい、作る人に任せた量（scaled-quantity-mismatch）。升がこの語を含む行は、増え方を比べない。
+id: unscaled-amount
+language: ja
+entries:
+  - pattern: "少々"
+  - pattern: "適量"
+  - pattern: "適宜"
+  - pattern: "少量"
+  - pattern: "ひとつまみ"
+  - pattern: "お好み"
+  - pattern: "好みで"

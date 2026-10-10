@@ -1,0 +1,209 @@
+{
+  "note": "Self-written recipes and how-to guides (a meatloaf recipe with a 4- and an 8-serving column, and a guide to patching a bicycle inner tube), each in a clean version and a planted one that differs only on the lines below. There is no recipe genre; they run as docs/manual, the genre for step-by-step instructions. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: scaled-quantity-mismatch (one row of a servings table that does not scale with the others), step-time-sum-mismatch (a stated total time that is not the sum of the times given in the steps) and unlisted-item-used (a step that uses an ingredient or a tool the list of what is needed does not have). unit-mismatch is named for a temperature, a pressure and a spoon measure, which it does not convert today. yarn planted recipes scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/recipe",
+      "language": "ja",
+      "genre": "docs/manual",
+      "clean": "ja/recipe.clean.md",
+      "planted": "ja/recipe.planted.md",
+      "mistakes": [
+        {
+          "kind": "servings-scale",
+          "rule": "scaled-quantity-mismatch",
+          "line": 19,
+          "clean": "| ケチャップ | 大さじ4 | 大さじ8 |",
+          "planted": "| ケチャップ | 大さじ4 | 大さじ4 |"
+        },
+        {
+          "kind": "step-gap",
+          "rule": "numbering-gap",
+          "line": 33,
+          "clean": "7. 水で溶いた",
+          "planted": "8. 水で溶いた"
+        },
+        {
+          "kind": "total-time-steps",
+          "rule": "step-time-sum-mismatch",
+          "line": 6,
+          "clean": "所要時間：80分",
+          "planted": "所要時間：60分"
+        },
+        {
+          "kind": "ingredient-not-listed",
+          "rule": "unlisted-item-used",
+          "line": 28,
+          "clean": "卵、塩を入れ",
+          "planted": "卵、塩、こしょうを入れ"
+        },
+        {
+          "kind": "oven-two-units",
+          "rule": "unit-mismatch",
+          "line": 7,
+          "clean": "180℃（350°F）",
+          "planted": "180℃（400°F）"
+        },
+        {
+          "kind": "amount-two-units",
+          "rule": "unit-mismatch",
+          "line": 32,
+          "clean": "しょうゆ大さじ1と水",
+          "planted": "しょうゆ30mlと水"
+        },
+        {
+          "kind": "name-two-ways",
+          "rule": "orthographic-variant",
+          "line": 35,
+          "clean": "片栗粉を小さじ1ずつ",
+          "planted": "かたくり粉を小さじ1ずつ"
+        }
+      ]
+    },
+    {
+      "id": "ja/howto",
+      "language": "ja",
+      "genre": "docs/manual",
+      "clean": "ja/howto.clean.md",
+      "planted": "ja/howto.planted.md",
+      "mistakes": [
+        {
+          "kind": "step-repeat",
+          "rule": "numbering-gap",
+          "line": 25,
+          "clean": "5. ゴムのりが乾いたら",
+          "planted": "4. ゴムのりが乾いたら"
+        },
+        {
+          "kind": "total-time-table",
+          "rule": "total-mismatch",
+          "line": 17,
+          "clean": "- 合計：45分",
+          "planted": "- 合計：40分"
+        },
+        {
+          "kind": "tool-not-listed",
+          "rule": "unlisted-item-used",
+          "line": 23,
+          "clean": "少し空気を入れて、空気の漏れる所を探します。",
+          "planted": "少し空気を入れて水を張ったバケツに沈め、泡の出る所を探します。"
+        },
+        {
+          "kind": "pressure-two-units",
+          "rule": "unit-mismatch",
+          "line": 29,
+          "clean": "（約44psi）",
+          "planted": "（約60psi）"
+        },
+        {
+          "kind": "name-two-ways",
+          "rule": "orthographic-variant",
+          "line": 26,
+          "clean": "タイヤレバーを使わずに",
+          "planted": "タイヤーレバーを使わずに"
+        }
+      ]
+    },
+    {
+      "id": "en/recipe",
+      "language": "en",
+      "genre": "docs/manual",
+      "clean": "en/recipe.clean.md",
+      "planted": "en/recipe.planted.md",
+      "mistakes": [
+        {
+          "kind": "servings-scale",
+          "rule": "scaled-quantity-mismatch",
+          "line": 19,
+          "clean": "| Ketchup | 4 tablespoons | 8 tablespoons |",
+          "planted": "| Ketchup | 4 tablespoons | 4 tablespoons |"
+        },
+        {
+          "kind": "step-gap",
+          "rule": "numbering-gap",
+          "line": 33,
+          "clean": "7. Stir in",
+          "planted": "8. Stir in"
+        },
+        {
+          "kind": "total-time-steps",
+          "rule": "step-time-sum-mismatch",
+          "line": 6,
+          "clean": "Total time: 80 minutes",
+          "planted": "Total time: 60 minutes"
+        },
+        {
+          "kind": "ingredient-not-listed",
+          "rule": "unlisted-item-used",
+          "line": 28,
+          "clean": "egg and salt in a bowl",
+          "planted": "egg, salt and pepper in a bowl"
+        },
+        {
+          "kind": "oven-two-units",
+          "rule": "unit-mismatch",
+          "line": 7,
+          "clean": "180°C (350°F)",
+          "planted": "180°C (400°F)"
+        },
+        {
+          "kind": "amount-two-units",
+          "rule": "unit-mismatch",
+          "line": 32,
+          "clean": "1 tablespoon of soy sauce",
+          "planted": "30 ml of soy sauce"
+        },
+        {
+          "kind": "name-two-ways",
+          "rule": "orthographic-variant",
+          "line": 35,
+          "clean": "Wash the non-stick pan",
+          "planted": "Wash the nonstick pan"
+        }
+      ]
+    },
+    {
+      "id": "en/howto",
+      "language": "en",
+      "genre": "docs/manual",
+      "clean": "en/howto.clean.md",
+      "planted": "en/howto.planted.md",
+      "mistakes": [
+        {
+          "kind": "step-repeat",
+          "rule": "numbering-gap",
+          "line": 26,
+          "clean": "5. When the cement",
+          "planted": "4. When the cement"
+        },
+        {
+          "kind": "total-time-table",
+          "rule": "total-mismatch",
+          "line": 18,
+          "clean": "- Total: 45 minutes",
+          "planted": "- Total: 40 minutes"
+        },
+        {
+          "kind": "tool-not-listed",
+          "rule": "unlisted-item-used",
+          "line": 24,
+          "clean": "pump in a little air and find where the air escapes.",
+          "planted": "pump in a little air and hold it under water in a bucket to find where the bubbles come out."
+        },
+        {
+          "kind": "pressure-two-units",
+          "rule": "unit-mismatch",
+          "line": 30,
+          "clean": "(about 44 psi)",
+          "planted": "(about 60 psi)"
+        },
+        {
+          "kind": "name-two-ways",
+          "rule": "orthographic-variant",
+          "line": 28,
+          "clean": "tighten the wheel nuts with the multi-tool.",
+          "planted": "tighten the wheel nuts with the multitool."
+        }
+      ]
+    }
+  ]
+}

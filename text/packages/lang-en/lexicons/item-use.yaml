@@ -1,0 +1,74 @@
+# How a step uses a thing (unlisted-item-used). A word with position: before stands before the noun: an object verb
+# (group object) at the start of a clause ("add the salt", "and stir in the rice"), or a preposition with its article
+# (group place, instrument: "in a bucket", "with the multi-tool"), read only in a document that lists tools.
+# A word of several parts is matched word by word, in any case. negation stands before a verb and denies the use.
+# partitive starts the thing again ("30 ml of soy sauce"). action is a verb the tagger may read as a noun: a list of
+# things ends at one ("add the salt and stir").
+id: item-use
+language: en
+entries:
+  - { pattern: add, group: object, position: before }
+  - { pattern: put, group: object, position: before }
+  - { pattern: sprinkle, group: object, position: before }
+  - { pattern: spread, group: object, position: before }
+  - { pattern: insert, group: object, position: before }
+  - { pattern: stir in, group: object, position: before }
+  - { pattern: mix in, group: object, position: before }
+  - { pattern: fold in, group: object, position: before }
+  - { pattern: pour in, group: object, position: before }
+  - { pattern: in a, group: place, position: before }
+  - { pattern: in an, group: place, position: before }
+  - { pattern: into a, group: place, position: before }
+  - { pattern: into an, group: place, position: before }
+  - { pattern: with a, group: instrument, position: before }
+  - { pattern: with an, group: instrument, position: before }
+  - { pattern: with the, group: instrument, position: before }
+  - { pattern: not, group: negation }
+  - { pattern: "n't", group: negation }
+  - { pattern: never, group: negation }
+  - { pattern: of, group: partitive }
+  - { pattern: stir, group: action }
+  - { pattern: knead, group: action }
+  - { pattern: mix, group: action }
+  - { pattern: cook, group: action }
+  - { pattern: bake, group: action }
+  - { pattern: boil, group: action }
+  - { pattern: simmer, group: action }
+  - { pattern: serve, group: action }
+  - { pattern: heat, group: action }
+  - { pattern: cover, group: action }
+  - { pattern: chill, group: action }
+  - { pattern: cool, group: action }
+  - { pattern: let, group: action }
+  - { pattern: leave, group: action }
+  - { pattern: set, group: action }
+  - { pattern: remove, group: action }
+  - { pattern: reduce, group: action }
+  - { pattern: season, group: action }
+  - { pattern: whisk, group: action }
+  - { pattern: beat, group: action }
+  - { pattern: fry, group: action }
+  - { pattern: roast, group: action }
+  - { pattern: toss, group: action }
+  - { pattern: drain, group: action }
+  - { pattern: rinse, group: action }
+  - { pattern: repeat, group: action }
+  - { pattern: wait, group: action }
+  - { pattern: check, group: action }
+  - { pattern: turn, group: action }
+  - { pattern: press, group: action }
+  - { pattern: tighten, group: action }
+  - { pattern: loosen, group: action }
+  - { pattern: pump, group: action }
+  - { pattern: slice, group: action }
+  - { pattern: chop, group: action }
+  - { pattern: cut, group: action }
+  - { pattern: fold, group: action }
+  - { pattern: pour, group: action }
+  - { pattern: transfer, group: action }
+  - { pattern: bring, group: action }
+  - { pattern: top, group: action }
+  - { pattern: garnish, group: action }
+  - { pattern: lift, group: action }
+  - { pattern: pull, group: action }
+  - { pattern: push, group: action }

@@ -42,3 +42,6 @@ entries:
     weight: 0.3048
   - pattern: "inch"
     weight: 0.0254
+  # Only on a line about a size, as a whole word no number follows (unit-context).
+  - pattern: "in"
+    weight: 0.0254

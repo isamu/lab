@@ -1,0 +1,7 @@
+# 換算した量を括弧に添えるときの前置き（unit-mismatch）。「300kPa（約44psi）」の 約。
+id: unit-equivalent-hedge
+language: ja
+entries:
+  - pattern: "約"
+  - pattern: "およそ"
+  - pattern: "ほぼ"
