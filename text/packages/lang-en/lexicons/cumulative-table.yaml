@@ -1,0 +1,35 @@
+# Headings and row labels of a table with a this-period column and a cumulative one (cumulative-below-current): a payslip,
+# a monthly sales report, a budget report. group: current is this period's column, cumulative the running total's, and prior
+# a column up to an earlier period ("Prior YTD" does not hold this period, so it is not compared). prior, level, cumulative and
+# current are looked at in that order, so "Prior YTD" is prior and "Current YTD" is cumulative.
+# level is a word for a figure not summed over periods (an average, a rate, a balance): a row it labels is not compared,
+# and a column it heads ("Current balance") is neither column.
+id: cumulative-table
+language: en
+entries:
+  - { pattern: this month, group: current }
+  - { pattern: this period, group: current }
+  - { pattern: this pay period, group: current }
+  - { pattern: this quarter, group: current }
+  - { pattern: current, group: current }
+  - { pattern: year to date, group: cumulative }
+  - { pattern: year-to-date, group: cumulative }
+  - { pattern: ytd, group: cumulative }
+  - { pattern: to date, group: cumulative }
+  - { pattern: cumulative, group: cumulative }
+  - { pattern: running total, group: cumulative }
+  - { pattern: prior, group: prior }
+  - { pattern: previous, group: prior }
+  - { pattern: last month, group: prior }
+  - { pattern: last year, group: prior }
+  - { pattern: last period, group: prior }
+  - { pattern: brought forward, group: prior }
+  - { pattern: average, group: level }
+  - { pattern: rate, group: level }
+  - { pattern: ratio, group: level }
+  - { pattern: margin, group: level }
+  - { pattern: balance, group: level }
+  - { pattern: price, group: level }
+  - { pattern: per, group: level }
+  - { pattern: headcount, group: level }
+  - { pattern: remaining, group: level }
