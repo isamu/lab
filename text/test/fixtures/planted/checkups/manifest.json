@@ -1,5 +1,5 @@
 {
-  "note": "Self-written health checkup result reports (健康診断結果報告書 / 血液検査結果のお知らせ, an annual physical and a laboratory result report) for made-up people and clinics: an annual checkup summary with body measurements and a blood-test table, and a blood-test report, each in a clean version and a planted one that differs only on the lines below. They run as business/report: no genre is made for medical result reports. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: reference-flag-mismatch (a result flagged H / L / 高 / 低 although it is inside its reference range on the same row, or flagged normal although outside), reference-unit-mismatch (a result in another unit than its reference range on the same row, mg/dL against mmol/L) and bmi-mismatch (a BMI that is not the stated weight divided by the square of the stated height). An examination date after the report date is named for due-before-issue, which reads ordered pairs of dates from the language's vocabulary, and an age that does not match the birth date and the examination date for elapsed-years-mismatch. yarn planted checkups scores them; expected.json is the committed score.",
+  "note": "Self-written health checkup result reports (健康診断結果報告書 / 血液検査結果のお知らせ, an annual physical and a laboratory result report) for made-up people and clinics: an annual checkup summary with body measurements and a blood-test table, and a blood-test report, each in a clean version and a planted one that differs only on the lines below. They run as business/report: no genre is made for medical result reports. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: reference-flag-mismatch (a result flagged H / L / 高 / 低 although it is inside its reference range on the same row, or flagged normal although outside), reference-unit-mismatch (a result in another unit than its reference range on the same row, mg/dL against mmol/L) and bmi-mismatch (a BMI that is not the stated weight divided by the square of the stated height). An examination date after the report date is named for due-before-issue, which reads ordered pairs of dates from the language's vocabulary, and an age that does not match the birth date and the examination date for elapsed-years-mismatch. The examination date moves on line 7, but that plant is scored on the report-date line (line 9), which does not itself change: a pair of dates out of order is reported on its later label's line, as in every other set with a date pair. yarn planted checkups scores them; expected.json is the committed score.",
   "documents": [
     {
       "id": "ja/annual",
@@ -18,9 +18,9 @@
         {
           "kind": "exam-after-report",
           "rule": "due-before-issue",
-          "line": 7,
-          "clean": "受診日：2026年9月8日",
-          "planted": "受診日：2026年10月8日"
+          "line": 9,
+          "clean": "報告日：2026年9月30日",
+          "planted": "報告日：2026年9月30日"
         },
         {
           "kind": "bmi",
@@ -83,9 +83,9 @@
         {
           "kind": "exam-after-report",
           "rule": "due-before-issue",
-          "line": 7,
-          "clean": "採血日：2026年8月20日",
-          "planted": "採血日：2026年9月2日"
+          "line": 9,
+          "clean": "発行日：2026年8月27日",
+          "planted": "発行日：2026年8月27日"
         },
         {
           "kind": "range-reversed",
@@ -141,9 +141,9 @@
         {
           "kind": "exam-after-report",
           "rule": "due-before-issue",
-          "line": 7,
-          "clean": "Examination date: June 15, 2026",
-          "planted": "Examination date: July 15, 2026"
+          "line": 9,
+          "clean": "Report date: June 29, 2026",
+          "planted": "Report date: June 29, 2026"
         },
         {
           "kind": "bmi",
@@ -206,9 +206,9 @@
         {
           "kind": "exam-after-report",
           "rule": "due-before-issue",
-          "line": 7,
-          "clean": "Collection date: May 4, 2026",
-          "planted": "Collection date: May 18, 2026"
+          "line": 9,
+          "clean": "Report date: May 11, 2026",
+          "planted": "Report date: May 11, 2026"
         },
         {
           "kind": "range-reversed",
