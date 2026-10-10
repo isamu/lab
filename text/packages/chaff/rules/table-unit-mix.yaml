@@ -1,0 +1,82 @@
+id: table-unit-mix
+layer: L3
+status: stable
+how_to_find: table-unit-mix
+word_list: table-scale-unit
+extra_word_lists: [table-unit-caption, total-label]
+severity: warning
+
+name:
+  ja: 表の中で金額の桁の単位が混ざっている
+  en: A table that mixes scales of amount
+
+why:
+  ja: 「（単位：百万円）」の表に一行だけ千円で書いた数（52,000）や「110,000千円」があると、読み手はその行を千倍に読み違えます。別の資料から行を写したときや、百万円を千円に直したまま単位を書かなかったときに起きます。表のすぐ上に「単位」と桁の単位（百万円、千円）を書いた短い行があればそれを表の単位と読み、無ければ升の多くに付いた桁の単位を表の単位と読みます。表の単位と違う桁の単位で書いた升（一行に一つ）と、表の単位の下で、一行だけほかの行の千倍に書いた行を指します。
+  en: When a table "(In millions of US dollars)" has one row in thousands (52,000 among 1,200 and 84) or one cell written "$110,000 thousand", the reader takes that row as a thousand times what it is. It happens when a row is copied from another statement, or when millions are turned into thousands and the unit is not changed. A short line right above the table with "in" or "of" and one word of scale (millions, thousands) is read as the table's unit; without one, the word of scale most cells carry is. A cell written in another scale than the table's is pointed out (once per row), and so is a row, under a stated unit, entered a thousand times as large as the others.
+
+message:
+  ja: 「{item}」の「{written}」が、表の単位（{unit}）と違う桁の単位で書かれています
+  en: '"{item}" is written "{written}", in another scale than the table''s ({unit})'
+
+messages:
+  unit:
+    ja: 「{item}」の「{written}」が、表の単位（{unit}）と違う桁の単位で書かれています
+    en: '"{item}" is written "{written}", in another scale than the table''s ({unit})'
+  row:
+    ja: 「{item}」の「{written}」が、ほかの行の千倍ほどあります（{unit}の表なら {reading} ではないか）
+    en: '"{item}" is "{written}", about a thousand times the other rows (in {unit}, {reading}?)'
+
+how_to_fix:
+  ja: その行の数を表の単位に直すか、行の単位が本当に違うなら、行の名前に単位を書いてください（「従業員数（人）」）。
+  en: Write the row in the table's unit, or, if the row really is in another unit, put its unit in the row's label ("Employees (persons)").
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 「（単位：百万円）」の表の中の千円の升や、ほかの行の千倍に書いた一行
+  en: A cell in thousands in a table "in millions", or one row a thousand times the others under a stated unit
+example:
+  ja:
+    before: |
+      （単位：百万円）
+
+      | 項目 | 前期 | 当期 |
+      | --- | --- | --- |
+      | 売上高 | 1,200 | 1,320 |
+      | 営業利益 | 84 | 96 |
+      | 経常利益 | 80 | 92 |
+      | 当期純利益 | 52,000 | 60,000 |
+    after: |
+      （単位：百万円）
+
+      | 項目 | 前期 | 当期 |
+      | --- | --- | --- |
+      | 売上高 | 1,200 | 1,320 |
+      | 営業利益 | 84 | 96 |
+      | 経常利益 | 80 | 92 |
+      | 当期純利益 | 52 | 60 |
+  en:
+    before: |
+      | Item | Prior year | Current year |
+      | --- | --- | --- |
+      | Net sales | $2,400 million | $2,640 million |
+      | Operating profit | $168 million | $198 million |
+      | Net profit | $110,000 thousand | $130,000 thousand |
+    after: |
+      | Item | Prior year | Current year |
+      | --- | --- | --- |
+      | Net sales | $2,400 million | $2,640 million |
+      | Operating profit | $168 million | $198 million |
+      | Net profit | $110 million | $130 million |
+
+not_flagged:
+  ja: 単位を言う行の無い表で、大きい金額だけ大きい単位で書いた升（「12億円」と「300百万円」）と、表の単位に満たない小さい金額を小さい単位で書いた升（百万円の表の「500千円」）は言いません。千倍の行は、表のすぐ上に単位を書いた表でだけ探し、行の数がどの列でもちょうど千の倍数で、ほかのどの行よりも十倍以上大きく、千で割るとほかの行の中に収まるときだけ指します。総資産のように本当に大きい行は、どの列でもちょうど千の倍数になることがまずないので言いません。合計の行、名前に括弧で単位を書いた行（従業員数（人））、比べる列が二つ未満か比べる行が二つ未満の表、千倍に見える行が二行以上ある表も言いません。
+  en: In a table with no caption of unit, a large amount written with a larger word ("$2.4 billion" among "$130 million") and a small amount in a smaller word than the table's ("$500 thousand" in a table in millions) are not reported. A row a thousand times the others is looked for only under a caption of unit, and is reported only when its figure in every column is whole thousands, at least ten times every other row, and falls among them once divided by a thousand. A genuinely large row, such as total assets, is almost never whole thousands in every column and is left alone, as are a total row, a row whose label gives its own unit in brackets ("Employees (persons)"), tables with fewer than two columns or two other rows to compare, and tables where more than one row stands out.
+level_meaning:
+  ja: 表の中で桁の単位が混ざっているとき指摘
+  en: reported when a table mixes scales of amount
