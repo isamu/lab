@@ -24,7 +24,7 @@ import { computedLength, type ComputedLength } from "../derived/hours-and-minute
 import { clockTimes } from "../compare/clock-time.ts";
 import { secondsOf, type Mark } from "../structure/time-marks.ts";
 import { proseAndTablesOf } from "../table-text.ts";
-import { quoteAt } from "./structure-tree.ts";
+import { quoteAt, rangeWordsOf } from "./structure-tree.ts";
 import { readableDates } from "./readable-dates.ts";
 
 /** 期間の単位の語彙表。木の数量の単位がどれかに入れば、その単位の期間。 */
@@ -209,7 +209,7 @@ export const durationMismatch: Detector = (doc): Finding[] => {
     sentencesOf(doc),
     dates,
     durations.filter((duration) => !overlapsAny(pairedDays, duration)),
-    { source: doc.source, joiners: patternsOf(doc, "clock-range-joiner"), weekdays: patternsOf(doc, "weekday") },
+    { source: doc.source, joiners: patternsOf(doc, "clock-range-joiner"), weekdays: patternsOf(doc, "weekday"), range: rangeWordsOf(doc) },
   ).map((mismatch) =>
     finding(doc, mismatch.end.start, {
       start: written(doc, mismatch.start),
