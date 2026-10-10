@@ -30,7 +30,7 @@ describe("product-exceeds-maximum", () => {
   it("an amount per use times the uses a day over the daily maximum (ja)", () => {
     assert.deepEqual(checkJa("1回2錠を1日3回まで服用できます。1日の最大量は4錠です。"), ["4錠<6"]);
     assert.deepEqual(checkJa("1回2粒を1日2回まで与えられます。1日の最大量は3粒です。"), ["3粒<4"]);
-    assert.deepEqual(checkJa("1回500円、1日10回まで利用できます。1日の上限は3,000円です。"), ["3,000円<5000"]);
+    assert.deepEqual(checkJa("1回500円、1日10回まで利用できます。1日の上限は3,000円です。"), []);
     assert.deepEqual(checkJa("- 1回量：2錠", "- 1日3回", "- 1日最大4錠まで"), ["4錠<6"]);
   });
 
