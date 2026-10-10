@@ -1,0 +1,153 @@
+{
+  "note": "Self-written product specification sheets about fictional products (the Kumobi SoundPod S3 portable speaker and the Orvane GM-40 gear motor; every brand, model number and phone number is invented): per language, a consumer device spec sheet and an industrial component datasheet, each in a clean version and a planted one that differs only on the lines below. They run as technical/spec: no genre is made for spec sheets, and technical/spec is the genre whose guide asks that each unit and value be stated once and used the same way throughout, which is what a spec sheet gets wrong. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: capacity-runtime-mismatch (battery capacity divided by current draw against the stated runtime) and quantity-range-reversed (a range of a measured quantity, such as a temperature, whose end is below its start). yarn planted specs scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/speaker",
+      "language": "ja",
+      "genre": "technical/spec",
+      "clean": "ja/speaker.clean.md",
+      "planted": "ja/speaker.planted.md",
+      "mistakes": [
+        {
+          "kind": "dimension-units",
+          "rule": "unit-mismatch",
+          "line": 18,
+          "clean": "幅は 4.7 インチ",
+          "planted": "幅は 5.5 インチ"
+        },
+        {
+          "kind": "table-vs-text",
+          "rule": "fact-conflict",
+          "line": 20,
+          "clean": "質量は 410 g",
+          "planted": "質量は 450 g"
+        },
+        {
+          "kind": "battery-runtime",
+          "rule": "capacity-runtime-mismatch",
+          "line": 28,
+          "clean": "| 10時間 |",
+          "planted": "| 15時間 |"
+        },
+        {
+          "kind": "firmware-version-order",
+          "rule": "version-order",
+          "line": 48,
+          "clean": "| 1.2.0 |",
+          "planted": "| 2.1.0 |"
+        },
+        {
+          "kind": "model-number",
+          "rule": "name-variant",
+          "line": 54,
+          "clean": "型番 KM-SP300 と",
+          "planted": "型番 KM-SP-300 と"
+        }
+      ]
+    },
+    {
+      "id": "ja/motor",
+      "language": "ja",
+      "genre": "technical/spec",
+      "clean": "ja/motor.clean.md",
+      "planted": "ja/motor.planted.md",
+      "mistakes": [
+        {
+          "kind": "parts-weight-total",
+          "rule": "total-mismatch",
+          "line": 26,
+          "clean": "| 合計 | 2.30 kg |",
+          "planted": "| 合計 | 2.50 kg |"
+        },
+        {
+          "kind": "temperature-range-reversed",
+          "rule": "quantity-range-reversed",
+          "line": 30,
+          "clean": "-10〜40℃",
+          "planted": "-10〜-40℃"
+        },
+        {
+          "kind": "revision-date-order",
+          "rule": "date-order",
+          "line": 41,
+          "clean": "| 2026年3月18日 |",
+          "planted": "| 2024年3月18日 |"
+        }
+      ]
+    },
+    {
+      "id": "en/speaker",
+      "language": "en",
+      "genre": "technical/spec",
+      "clean": "en/speaker.clean.md",
+      "planted": "en/speaker.planted.md",
+      "mistakes": [
+        {
+          "kind": "dimension-units",
+          "rule": "unit-mismatch",
+          "line": 18,
+          "clean": "width is 4.7 in",
+          "planted": "width is 5.5 in"
+        },
+        {
+          "kind": "table-vs-text",
+          "rule": "fact-conflict",
+          "line": 20,
+          "clean": "weight is 410 g",
+          "planted": "weight is 450 g"
+        },
+        {
+          "kind": "battery-runtime",
+          "rule": "capacity-runtime-mismatch",
+          "line": 28,
+          "clean": "| 10 hours |",
+          "planted": "| 15 hours |"
+        },
+        {
+          "kind": "firmware-version-order",
+          "rule": "version-order",
+          "line": 48,
+          "clean": "| 1.2.0 |",
+          "planted": "| 2.1.0 |"
+        },
+        {
+          "kind": "model-number",
+          "rule": "name-variant",
+          "line": 54,
+          "clean": "model number KM-SP300 and",
+          "planted": "model number KM-SP-300 and"
+        }
+      ]
+    },
+    {
+      "id": "en/motor",
+      "language": "en",
+      "genre": "technical/spec",
+      "clean": "en/motor.clean.md",
+      "planted": "en/motor.planted.md",
+      "mistakes": [
+        {
+          "kind": "parts-weight-total",
+          "rule": "total-mismatch",
+          "line": 26,
+          "clean": "| Total | 2.30 kg |",
+          "planted": "| Total | 2.50 kg |"
+        },
+        {
+          "kind": "temperature-range-reversed",
+          "rule": "quantity-range-reversed",
+          "line": 30,
+          "clean": "-10 to 40 °C",
+          "planted": "-10 to -40 °C"
+        },
+        {
+          "kind": "revision-date-order",
+          "rule": "date-order",
+          "line": 41,
+          "clean": "| March 18, 2026 |",
+          "planted": "| March 18, 2024 |"
+        }
+      ]
+    }
+  ]
+}

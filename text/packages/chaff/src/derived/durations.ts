@@ -11,7 +11,12 @@ import { calendarDateOf, dateOf, shifted, valueOf, type DurationUnit } from "./d
  */
 export type DatedValue = Span & { readonly value: string };
 
-export type Duration = Span & { readonly amount: number; readonly unit: DurationUnit };
+export type Duration = Span & {
+  readonly amount: number;
+  readonly unit: DurationUnit;
+  /** 名詞の前に書いた期間（a 7-day returns window）。決まりの長さのことが多く、二つの日付の間の長さとは限らない。 */
+  readonly attributive?: boolean;
+};
 
 export type DurationMismatch = { readonly start: DatedValue; readonly duration: Duration; readonly end: DatedValue; readonly expected: string };
 
@@ -25,6 +30,23 @@ const expectedEnds = (start: Date, duration: Duration): Date[] => {
 const ordered = (first: DatedValue, second: DatedValue, withYear: boolean): [DatedValue, DatedValue] =>
   withYear && second.value < first.value ? [second, first] : [first, second];
 
+/** 名詞の前の期間は、日付の間がその二倍までのときだけ組にする。75日の間に書いた 7-day の窓は別の長さ。 */
+export const ATTRIBUTIVE_REACH = 2;
+
+/** 書いた終わりの日。年の無い月日で始まりより前なら、翌年。 */
+const endDateOf = (start: Date, end: DatedValue, withYear: boolean): Date | undefined => {
+  const written = calendarDateOf(end.value);
+  if (written === undefined) return undefined;
+  const date = dateOf(written);
+  return withYear || date >= start ? date : shifted(date, 1, "year");
+};
+
+const beyondReach = (start: Date, end: DatedValue, duration: Duration, withYear: boolean): boolean => {
+  if (duration.attributive !== true) return false;
+  const endDate = endDateOf(start, end, withYear);
+  return endDate === undefined || endDate > shifted(start, duration.amount * ATTRIBUTIVE_REACH, duration.unit);
+};
+
 const mismatchOf = (written: readonly [DatedValue, DatedValue], duration: Duration): DurationMismatch | undefined => {
   const [firstDate, secondDate] = [calendarDateOf(written[0].value), calendarDateOf(written[1].value)];
   if (firstDate === undefined || secondDate === undefined || (firstDate.year === undefined) !== (secondDate.year === undefined)) return undefined;
@@ -35,6 +57,7 @@ const mismatchOf = (written: readonly [DatedValue, DatedValue], duration: Durati
   const ends = expectedEnds(dateOf(startDate), duration);
   const [inclusive] = ends;
   if (inclusive === undefined || ends.some((candidate) => valueOf(candidate, withYear) === end.value)) return undefined;
+  if (beyondReach(dateOf(startDate), end, duration, withYear)) return undefined;
   return { start, duration, end, expected: valueOf(inclusive, withYear) };
 };
 
