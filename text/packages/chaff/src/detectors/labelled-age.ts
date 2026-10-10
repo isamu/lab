@@ -1,7 +1,8 @@
 // An age beside a labelled date of birth, compared with the exact age on a labelled reference date (elapsed-years-mismatch).
-import type { Finding, LexiconEntry, ProseDocument, Span, StructureNode } from "../plugin.ts";
+import type { Detector, Finding, LexiconEntry, ProseDocument, Span, StructureNode } from "../plugin.ts";
 import { inDocumentOrder } from "../structure/issues.ts";
 import { quoteAt } from "./structure-tree.ts";
+import { documentYearFindings } from "./derived-numbers.ts";
 import { calendarDateOf } from "../derived/date-arithmetic.ts";
 import {
   ageMismatches,
@@ -93,14 +94,14 @@ const recordsOf = (doc: ProseDocument, tree: StructureNode): { births: LabelledB
 };
 
 /** Where the ages whose reference date was decided start: the year-only check stays silent on them. */
-export const decidedAgeStarts = (doc: ProseDocument, tree: StructureNode): ReadonlySet<number> => {
+const decidedAgeStarts = (doc: ProseDocument, tree: StructureNode): ReadonlySet<number> => {
   const { births, references } = recordsOf(doc, tree);
   return new Set(ageVerdicts(births, references).map((verdict) => verdict.birth.age.start));
 };
 
 const written = (doc: ProseDocument, span: Span): string => doc.source.slice(span.start, span.end);
 
-export const labelledAgeFindings = (doc: ProseDocument, tree: StructureNode): Finding[] => {
+const labelledAgeFindings = (doc: ProseDocument, tree: StructureNode): Finding[] => {
   const { births, references } = recordsOf(doc, tree);
   return ageMismatches(births, references).map(({ birth, reference, expected }) => ({
     rule: "elapsed-years-mismatch",
@@ -111,4 +112,13 @@ export const labelledAgeFindings = (doc: ProseDocument, tree: StructureNode): Fi
     variant: "birth-date",
     values: { written: written(doc, birth.age), birth: written(doc, birth), reference: written(doc, reference), expected, offset: birth.age.start },
   }));
+};
+
+/** 起点の年から数えた年数が文書の日付と合わない。生年月日の横の年齢が、受診日などの満年齢と合わない。 */
+export const elapsedYearsMismatch: Detector = (doc) => {
+  const tree = doc.structure;
+  if (tree === undefined) return [];
+  const decided = decidedAgeStarts(doc, tree);
+  const byDocumentYear = documentYearFindings(doc, tree).filter((finding) => !decided.has(Number(finding.values?.["offset"])));
+  return [...labelledAgeFindings(doc, tree), ...byDocumentYear];
 };
