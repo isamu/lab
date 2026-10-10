@@ -4,7 +4,7 @@ import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { cellNumber, lineAmountMismatches, quantityOf } from "../packages/chaff/src/structure/line-amount.ts";
-import { perUnitPrice, quantityUnit, unitsAgree } from "../packages/chaff/src/structure/line-amount-unit.ts";
+import { perUnitPrice, priceHeadingUnit, quantityUnit, unitsAgree } from "../packages/chaff/src/structure/line-amount-unit.ts";
 
 // 数量×単価が金額と合わない（line-amount-mismatch）。例文はすべて自作。
 
@@ -153,6 +153,61 @@ describe("line-amount-mismatch: 数量×単価が金額と合わない", () => {
     ]);
   });
 
+  it("時間の列の横の、何あたりか言わない Rate は時間あたりと読む。数量の見出しが単位を言わなければ読まない", () => {
+    const hourly = (rows: readonly string[]): string => ["| Earning | Hours | Rate | Amount |", "| --- | --- | --- | --- |", ...rows].join("\n") + "\n";
+    assert.deepEqual(findingsOf(hourly(["| Regular pay | 88 | $17.00 | $1,496.00 |", "| Overtime pay | 6 | $25.00 | $153.00 |"]), en), [
+      "The amount $153.00 is not quantity × unit price (6 × $25.00 = $150.00)",
+    ]);
+    assert.deepEqual(findingsOf(hourly(["| Overtime pay | 6 hours | $25.00 | $153.00 |"]), en), [
+      "The amount $153.00 is not quantity × unit price (6 hours × $25.00 = $150.00)",
+    ]);
+    assert.deepEqual(findingsOf(hourly(["| Regular pay | 88 | $17.00 | $1,496.00 |", "| Training | 2 days | $100 | $1,600 |"]), en), []);
+    assert.deepEqual(findingsOf(hourly(["| Overtime pay | 6 | $25.00/day | $153.00 |"]), en), []);
+    assert.deepEqual(findingsOf("| Item | Quantity | Rate | Amount |\n| --- | --- | --- | --- |\n| Engineer | 2 days | $100 | $1,600 |\n", en), []);
+    assert.deepEqual(findingsOf("| Item | Units | Rate | Amount |\n| --- | --- | --- | --- |\n| Engineer | 2 days | $100 | $1,600 |\n", en), []);
+  });
+
+  it("時間・時給の列を読む", () => {
+    const pay = (price: string, rows: readonly string[]): string =>
+      [`| 支給項目 | 時間 | ${price} | 金額 |`, "| --- | --- | --- | --- |", ...rows].join("\n") + "\n";
+    assert.deepEqual(findingsOf(pay("単価", ["| 基本給 | 88時間 | 1,150円 | 101,200円 |", "| 時間外手当 | 6時間 | 1,483円 | 8,628円 |"])), [
+      "金額「8,628円」が、数量×単価（6時間 × 1,483円 = 8,898円）と合いません",
+    ]);
+    assert.deepEqual(findingsOf(pay("時給", ["| 時間外手当 | 6 | 1,483円 | 8,628円 |"])), [
+      "金額「8,628円」が、数量×単価（6 × 1,483円 = 8,898円）と合いません",
+    ]);
+    assert.deepEqual(findingsOf(pay("時給", ["| 交通費 | 16日 | 400円 | 6,000円 |"])), []);
+    assert.deepEqual(findingsOf(pay("単価", ["| 時間外手当 | 6時間 | 1,483円 | 8,898円 |", "| 交通費 | 16日 | 400円 | 6,400円 |"])), []);
+  });
+
+  it("走行距離と距離あたりの単価を読む", () => {
+    assert.deepEqual(
+      findingsOf("| 区間 | 走行距離 | 単価 | 金額 |\n| --- | --- | --- | --- |\n| 本社〜倉庫 | 48km | 15円 | 720円 |\n| 本社〜工場 | 62km | 15円 | 960円 |\n"),
+      ["金額「960円」が、数量×単価（62km × 15円 = 930円）と合いません"],
+    );
+    assert.deepEqual(
+      findingsOf(
+        "| 区間 | 走行距離 | 単価（円/km） | 金額 |\n| --- | --- | --- | --- |\n| 本社〜工場 | 62km | 15円 | 960円 |\n| 本社〜駅 | 3時間 | 15円 | 60円 |\n",
+      ),
+      ["金額「960円」が、数量×単価（62km × 15円 = 930円）と合いません"],
+    );
+    assert.deepEqual(findingsOf(table(["| 走行 | 62km | 15円/km | 960円 |", "| 走行 | 2日 | 15円/km | 50円 |"])), [
+      "金額「960円」が、数量×単価（62km × 15円/km = 930円）と合いません",
+    ]);
+    const miles = (price: string, rows: readonly string[]): string =>
+      [`| Trip | Miles | ${price} | Amount |`, "| --- | --- | --- | --- |", ...rows].join("\n") + "\n";
+    assert.deepEqual(findingsOf(miles("Rate per mile", ["| Office to warehouse | 32 | $0.70 | $22.40 |", "| Office to plant | 46 | $0.70 | $32.90 |"]), en), [
+      "The amount $32.90 is not quantity × unit price (46 × $0.70 = $32.20)",
+    ]);
+    assert.deepEqual(findingsOf(miles("Rate", ["| Office to plant | 46 miles | $0.70 | $32.90 |"]), en), [
+      "The amount $32.90 is not quantity × unit price (46 miles × $0.70 = $32.20)",
+    ]);
+    assert.deepEqual(findingsOf(miles("Rate per mile", ["| Office to plant | 2 days | $0.70 | $3.00 |"]), en), []);
+    assert.deepEqual(findingsOf(enTable(["| Mileage | 46 miles | $0.70/mile | $32.90 |", "| Mileage | 2 hours | $0.70 per mile | $3.00 |"]), en), [
+      "The amount $32.90 is not quantity × unit price (46 miles × $0.70/mile = $32.20)",
+    ]);
+  });
+
   it("単位を読む", () => {
     const marks = [
       { pattern: "/h", unit: "hour" },
@@ -178,5 +233,14 @@ describe("line-amount-mismatch: 数量×単価が金額と合わない", () => {
     assert.equal(unitsAgree("day", "hour"), false);
     assert.equal(unitsAgree(undefined, "hour"), false);
     assert.equal(unitsAgree("hour", "unstated"), false);
+    const rateUnits = ["hour", "day", "mile"];
+    assert.equal(priceHeadingUnit("unstated", "hour", rateUnits), "hour");
+    assert.equal(priceHeadingUnit("unstated", "mile", rateUnits), "mile");
+    assert.equal(priceHeadingUnit("unstated", undefined, rateUnits), "unstated");
+    assert.equal(priceHeadingUnit("unstated", "unstated", rateUnits), "unstated");
+    assert.equal(priceHeadingUnit("unstated", "hour", []), "unstated");
+    assert.equal(priceHeadingUnit("day", "hour", rateUnits), "day");
+    assert.equal(priceHeadingUnit(undefined, "hour", rateUnits), undefined);
+    assert.equal(priceHeadingUnit(undefined, undefined, []), undefined);
   });
 });

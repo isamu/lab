@@ -17,3 +17,4 @@ entries:
   - { pattern: 月, group: month }
   - { pattern: 年, group: year }
   - { pattern: 年間, group: year }
+  - { pattern: km, group: km }

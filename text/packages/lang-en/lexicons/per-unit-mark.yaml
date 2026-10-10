@@ -23,3 +23,9 @@ entries:
   - { pattern: /yr, group: year }
   - { pattern: per year, group: year }
   - { pattern: a year, group: year }
+  - { pattern: /mile, group: mile }
+  - { pattern: /mi, group: mile }
+  - { pattern: per mile, group: mile }
+  - { pattern: a mile, group: mile }
+  - { pattern: /km, group: km }
+  - { pattern: per km, group: km }
