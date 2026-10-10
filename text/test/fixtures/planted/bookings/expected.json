@@ -7,7 +7,7 @@
       "cancel-after-start": "2/2",
       "rules-numbering": "2/2",
       "property-two-ways": "1/2",
-      "booking-number-two-ways": "0/2",
+      "booking-number-two-ways": "2/2",
       "guest-two-ways": "1/2"
     },
     "en": {
@@ -17,7 +17,7 @@
       "cancel-after-start": "2/2",
       "rules-numbering": "2/2",
       "property-two-ways": "1/2",
-      "booking-number-two-ways": "0/2",
+      "booking-number-two-ways": "2/2",
       "guest-two-ways": "0/2"
     }
   },
