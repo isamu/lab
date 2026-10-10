@@ -15,12 +15,17 @@ const wordAfter = (tokens: readonly Token[], last: Token): Token | undefined => 
   return next !== undefined && INLINE_BLANK.test(next.surface) ? tokens[at + 1] : next;
 };
 
+/** 語の後ろに敬称（様、さん、氏）が付くか。行の中の空きを挟んでもよい。 */
+export const isFollowedBySuffix = (token: Token, tokens: readonly Token[], suffixes: readonly string[]): boolean => {
+  const next = wordAfter(tokens, token);
+  return next !== undefined && suffixes.includes(next.surface);
+};
+
 /**
- * 人の名前か。解析器が人名と読む語を含むか、後ろに敬称（様、さん、氏）が付く。解析器は名を地名と読むことがある（千尋 を Geo）
- * ので、敬称は空白を挟んでも見る。
+ * 人の名前か。解析器が人名と読む語を含むか、後ろに敬称が付く。解析器は名を地名と読むことがある（千尋 を Geo）ので、敬称は空白を
+ * 挟んでも見る。
  */
 export const isPersonRun = (run: readonly Token[], tokens: readonly Token[], suffixes: readonly string[]): boolean => {
   const last = run.at(-1);
-  const next = last === undefined ? undefined : wordAfter(tokens, last);
-  return run.some((token) => PERSON_TYPES.has(token.features?.["NameType"] ?? "")) || (next !== undefined && suffixes.includes(next.surface));
+  return run.some((token) => PERSON_TYPES.has(token.features?.["NameType"] ?? "")) || (last !== undefined && isFollowedBySuffix(last, tokens, suffixes));
 };

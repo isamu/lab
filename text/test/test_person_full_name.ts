@@ -86,6 +86,25 @@ describe("person-full-name: 姓と名を一つの現れにする", () => {
     assert.deepEqual(fullNameGaps([]), []);
   });
 
+  it("fullNameGaps: 解析器が地名と読む名（千尋 を Geo）も、後ろに敬称があれば名", () => {
+    const geoGiven = (after: readonly Token[]): Token[] => [
+      token("森下", 0, "PROPN", "Sur"),
+      token(" ", 2, "PUNCT"),
+      token("千尋", 3, "PROPN", "Geo"),
+      ...after,
+    ];
+    const honorific = [token(" ", 5, "PUNCT"), token("様", 6, "NOUN")];
+    assert.deepEqual(fullNameGaps(geoGiven(honorific), ["様"]), [{ start: 2, end: 3 }]);
+    assert.deepEqual(fullNameGaps(geoGiven([token("様", 5, "NOUN")]), ["様"]), [{ start: 2, end: 3 }]);
+    assert.deepEqual(fullNameGaps(geoGiven(honorific)), []);
+    assert.deepEqual(fullNameGaps(geoGiven([token("へ", 5, "ADP")]), ["様"]), []);
+    assert.deepEqual(fullNameGaps(geoGiven([token("\n", 5, "PUNCT"), token("様", 6, "NOUN")]), ["様"]), []);
+    const twoSurnames = [token("田中", 0, "PROPN", "Sur"), token(" ", 2, "PUNCT"), token("鈴木", 3, "PROPN", "Sur"), ...honorific];
+    assert.deepEqual(fullNameGaps(twoSurnames, ["様"]), []);
+    const notProper = [token("森下", 0, "PROPN", "Sur"), token(" ", 2, "PUNCT"), token("千尋", 3, "NOUN"), ...honorific];
+    assert.deepEqual(fullNameGaps(notProper, ["様"]), []);
+  });
+
   it("joinFullNames: 空白をちょうど挟む姓と名を合わせ、読みと語をつなぐ", () => {
     const joined = joinFullNames([mention("裕子", 3, "ユウコ"), mention("田中", 0, "タナカ")], [{ start: 2, end: 3 }]);
     assert.deepEqual(joined, [{ surface: "田中 裕子", offset: 0, reading: "タナカユウコ", words: ["田中", "裕子"], person: true }]);

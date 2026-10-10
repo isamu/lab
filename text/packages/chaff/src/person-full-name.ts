@@ -1,6 +1,7 @@
 import type { NameCue } from "./name-cue.ts";
 import type { NameMention } from "./name-variants.ts";
 import type { Span, Token } from "./plugin.ts";
+import { isFollowedBySuffix } from "./name-person.ts";
 
 // 空白（半角か全角）を挟んで書いた姓と名（田中 裕子）。解析器は空白で名前を切るので、名だけ（裕子）が名前の現れになり、別の人の
 // 名（鈴木 祐子 の 祐子）と比べてしまう。姓と名を一つの現れにして、名前まるごとで比べる。
@@ -10,10 +11,16 @@ const NAME_SPACE = /^[ \u3000]$/u;
 
 const nameTypeOf = (token: Token | undefined): string | undefined => (token?.pos === "PROPN" ? token.features?.["NameType"] : undefined);
 
-/** 姓と名を分ける空白の語。前の語を解析器が姓（Sur）、後ろの語を名（Giv）と読む、空白一つ。 */
-export const fullNameGaps = (tokens: readonly Token[]): Span[] =>
+/** 姓の後ろの名。解析器が名（Giv）と読む語か、名を地名と読んでも（千尋 を Geo）後ろに敬称が付く、姓でない固有名詞。 */
+const isGivenName = (token: Token | undefined, tokens: readonly Token[], suffixes: readonly string[]): boolean => {
+  const type = nameTypeOf(token);
+  return type === "Giv" || (token?.pos === "PROPN" && type !== "Sur" && isFollowedBySuffix(token, tokens, suffixes));
+};
+
+/** 姓と名を分ける空白の語。前の語を解析器が姓（Sur）と読み、後ろの語が名の、空白一つ。suffixes は敬称（様、さん）。 */
+export const fullNameGaps = (tokens: readonly Token[], suffixes: readonly string[] = []): Span[] =>
   tokens.flatMap((token, index) =>
-    NAME_SPACE.test(token.surface) && nameTypeOf(tokens[index - 1]) === "Sur" && nameTypeOf(tokens[index + 1]) === "Giv" ? [token.span] : [],
+    NAME_SPACE.test(token.surface) && nameTypeOf(tokens[index - 1]) === "Sur" && isGivenName(tokens[index + 1], tokens, suffixes) ? [token.span] : [],
   );
 
 const CUE_STRENGTH: readonly (NameCue | undefined)[] = [undefined, "bare", "slot", "person"];

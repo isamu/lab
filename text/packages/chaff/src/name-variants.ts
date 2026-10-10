@@ -387,16 +387,10 @@ const oneCharApart = (left: string, right: string): boolean => {
  */
 const isPersonSlipOf = (tally: Tally, other: Tally): boolean => tally.count === 1 && other.count >= 2 && oneCharApart(tally.surface, other.surface);
 
-/** 表の升に書いた人の名前（ご代表者の升の 森下 千尋 様）を、本文の同じ書き方の数に足す。升にだけある書き方は足さない（指さない）。 */
-const withCellUses = (tallies: readonly Tally[], cellMentions: readonly NameMention[]): Tally[] => {
-  const persons = cellMentions.filter((mention) => mention.person === true).map((mention) => mention.surface);
-  return tallies.map((tally) => ({ ...tally, count: tally.count + persons.filter((surface) => surface === tally.surface).length }));
-};
-
-const personReadingVariants = (tallies: readonly Tally[], cellMentions: readonly NameMention[]): NameVariant[] =>
+const personReadingVariants = (tallies: readonly Tally[]): NameVariant[] =>
   variantsIn(
     groupBy(
-      withCellUses(tallies, cellMentions).filter((tally) => tally.person),
+      tallies.filter((tally) => tally.person),
       (tally) => (tally.first.reading === undefined ? [] : [tally.first.reading]),
     ),
     "reading",
@@ -426,7 +420,7 @@ export const nameVariants = (mentions: readonly NameMention[], chars: VariantCha
     ...nearVariants(tallies),
     ...surnameVariants(tallies),
     ...characterVariants(tallies, chars),
-    ...personReadingVariants(tallies, spelling.alsoWritten),
+    ...personReadingVariants(tallies),
   ];
   const reported = new Set<string>();
   return found

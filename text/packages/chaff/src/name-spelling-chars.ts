@@ -8,7 +8,7 @@ import type { NameMention } from "./name-variants.ts";
 export type SpellingChars = ReadonlyMap<string, string>;
 
 /**
- * 名前の中の同じ音の字を比べる材料。chars はその字の組。alsoWritten は、この比べ方にだけ加える名前の現れ（表の升の名前）。升の名前をほかの見方に加えると、表の識別子（contentType）を本文の名前（Content-Type）と比べてしまう。人の名前の読みの見方だけは、升の人の名前を本文の同じ書き方の数に足す。
+ * 名前の中の同じ音の字を比べる材料。chars はその字の組。alsoWritten は、この比べ方にだけ加える名前の現れ（表の升の名前）。升の名前をほかの見方に加えると、表の識別子（contentType）を本文の名前（Content-Type）と比べてしまう。
  */
 export type SpellingInput = { readonly chars: SpellingChars; readonly alsoWritten: readonly NameMention[] };
 
