@@ -1,0 +1,27 @@
+# Headings that say what a column of a running-balance table holds (running-balance-mismatch): a repayment schedule, an
+# account statement, a stock card. group: balance is the running balance, principal and payment what a loan row takes off,
+# interest the part of a payment that is not principal, in and out what came in and went out, sequence the row number, and
+# date a date column ("Payment date" is not a payment). date, sequence and balance are looked at first, so "Balance after
+# payment" is the balance and "Outstanding principal" is not the principal.
+id: balance-column
+language: en
+entries:
+  - { pattern: date, group: date }
+  - { pattern: no., group: sequence }
+  - { pattern: "#", group: sequence }
+  - { pattern: balance, group: balance }
+  - { pattern: outstanding, group: balance }
+  - { pattern: on hand, group: balance }
+  - { pattern: interest, group: interest }
+  - { pattern: fee, group: interest }
+  - { pattern: principal, group: principal }
+  - { pattern: deposit, group: in }
+  - { pattern: deposits, group: in }
+  - { pattern: received, group: in }
+  - { pattern: withdrawal, group: out }
+  - { pattern: withdrawals, group: out }
+  - { pattern: issued, group: out }
+  - { pattern: payment, group: payment }
+  - { pattern: repayment, group: payment }
+  - { pattern: installment, group: payment }
+  - { pattern: amount paid, group: payment }
