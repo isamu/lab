@@ -1,0 +1,26 @@
+# Names of the values on a meter reading and what each is (group): current is this reading, previous the last one, usage
+# the amount used, multiplier the meter's multiplier (meter-usage-mismatch). Read when a "Label: value" line's label, or a
+# table's row or column heading, is only this word (a trailing bracket aside).
+id: meter-reading-label
+language: en
+entries:
+  - { pattern: Current reading, group: current }
+  - { pattern: Current meter reading, group: current }
+  - { pattern: Present reading, group: current }
+  - { pattern: Present meter reading, group: current }
+  - { pattern: This reading, group: current }
+  - { pattern: Previous reading, group: previous }
+  - { pattern: Previous meter reading, group: previous }
+  - { pattern: Prior reading, group: previous }
+  - { pattern: Prior meter reading, group: previous }
+  - { pattern: Last reading, group: previous }
+  - { pattern: Electricity used, group: usage }
+  - { pattern: Energy used, group: usage }
+  - { pattern: Water used, group: usage }
+  - { pattern: Gas used, group: usage }
+  - { pattern: kWh used, group: usage }
+  - { pattern: Usage, group: usage }
+  - { pattern: Total usage, group: usage }
+  - { pattern: Units used, group: usage }
+  - { pattern: Multiplier, group: multiplier }
+  - { pattern: Meter multiplier, group: multiplier }
