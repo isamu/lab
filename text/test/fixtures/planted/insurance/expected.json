@@ -1,0 +1,27 @@
+{
+  "recall": {
+    "ja": {
+      "coverage-period": "2/2",
+      "age-limit": "0/2",
+      "waiting-period": "1/2",
+      "benefit-amount": "0/2",
+      "deductible-over-limit": "0/2",
+      "premium-annual": "0/1",
+      "exclusion-numbering": "2/2",
+      "insurer-name": "1/2",
+      "premium-total": "1/1"
+    },
+    "en": {
+      "coverage-period": "2/2",
+      "age-limit": "0/2",
+      "waiting-period": "1/2",
+      "benefit-amount": "0/2",
+      "deductible-over-limit": "0/2",
+      "premium-annual": "0/1",
+      "exclusion-numbering": "2/2",
+      "insurer-name": "2/2",
+      "premium-total": "1/1"
+    }
+  },
+  "clean": []
+}
