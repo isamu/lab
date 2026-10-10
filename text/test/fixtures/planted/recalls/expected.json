@@ -1,0 +1,25 @@
+{
+  "recall": {
+    "ja": {
+      "serial-range": "0/2",
+      "sales-period": "2/2",
+      "lot-numbering": "2/2",
+      "affected-total": "2/2",
+      "model-number": "0/2",
+      "exchange-deadline": "0/2",
+      "contact-phone": "0/2",
+      "maker-name": "0/2"
+    },
+    "en": {
+      "serial-range": "0/2",
+      "sales-period": "0/2",
+      "lot-numbering": "2/2",
+      "affected-total": "1/2",
+      "model-number": "0/2",
+      "exchange-deadline": "0/2",
+      "contact-phone": "0/2",
+      "maker-name": "1/2"
+    }
+  },
+  "clean": []
+}
