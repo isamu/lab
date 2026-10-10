@@ -7,14 +7,7 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { prepare } from "../packages/lang-ja/src/pos.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
-import {
-  columnsOf,
-  rateIn,
-  tableRateMismatches,
-  valueIn,
-  type ChangeTable,
-  type ColumnWord,
-} from "../packages/chaff/src/structure/change-rate-table.ts";
+import { columnsOf, rateIn, tableRateMismatches, valueIn, type ChangeTable, type ColumnWord } from "../packages/chaff/src/structure/change-rate-table.ts";
 
 // 表の行の、前期・当期・増減率の食い違い（change-rate-mismatch）。例の表は自作。
 
@@ -210,7 +203,9 @@ describe("change-rate-mismatch in a table: through the rule", () => {
   });
 
   it("does not read a table inside a code block", () => {
-    const text = ["# 決算", "", "```", "| 項目 | 前期 | 当期 | 増減率 |", "| --- | --- | --- | --- |", "| 売上高 | 1,200 | 1,320 | 12.0% |", "```", ""].join("\n");
+    const text = ["# 決算", "", "```", "| 項目 | 前期 | 当期 | 増減率 |", "| --- | --- | --- | --- |", "| 売上高 | 1,200 | 1,320 | 12.0% |", "```", ""].join(
+      "\n",
+    );
     assert.deepEqual(found(text, ja), []);
   });
 });

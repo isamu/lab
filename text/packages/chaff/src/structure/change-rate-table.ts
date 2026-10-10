@@ -54,9 +54,13 @@ const datedColumns = (headings: readonly string[], roles: readonly (ColumnRole |
 };
 
 /** What a heading writes in brackets, less its numbers: 「（百万円）」, "(thousand yen)"; 「（2025年3月期）」 keeps only 「年月期」. */
-const BRACKETED = /[(（]([^)）]*)[)）]/gu;
+const BRACKET = /[()（）]/u;
 const bracketedOf = (heading: string): string =>
-  [...plain(heading).matchAll(BRACKETED)].map((match) => (match[1] ?? "").replace(/[\d.,]/gu, "").trim()).join("|");
+  plain(heading)
+    .split(BRACKET)
+    .filter((_, index) => index % 2 === 1)
+    .map((inside) => inside.replace(/[\d.,]/gu, "").trim())
+    .join("|");
 
 /** The two period columns do not name different units in their headings ("FY2025 (thousand yen)", "FY2026 (million yen)"). */
 const sameHeadingUnits = (base: string | undefined, current: string | undefined): boolean => bracketedOf(base ?? "") === bracketedOf(current ?? "");
@@ -74,6 +78,8 @@ export const columnsOf = (headings: readonly string[], words: readonly ColumnWor
   return { ...periods, rate, percentOnly: rateColumn === undefined && !PERCENT_MARK.test(plain(headings[rate] ?? "")) };
 };
 
+const numberText = (whole: string, fraction: string): string => [whole, fraction].filter((part) => part !== "").join(".");
+
 type WrittenRate = { readonly sign: string; readonly value: number; readonly decimals: number; readonly digits: string };
 
 /** The signed rate a cell writes, undefined when it is not one (1.2pt, (5.0)%, —) or lacks the % its column needs. */
@@ -81,8 +87,8 @@ export const rateIn = (text: string, percentOnly: boolean): WrittenRate | undefi
   const match = RATE_CELL.exec(plain(text));
   if (match === null || (percentOnly && match[4] === undefined)) return undefined;
   const [, sign = "", whole = "", fraction = ""] = match;
-  const magnitude = Number(`${whole.replaceAll(",", "")}${fraction === "" ? "" : `.${fraction}`}`);
-  const digits = `${whole}${fraction === "" ? "" : `.${fraction}`}`;
+  const magnitude = Number(numberText(whole.replaceAll(",", ""), fraction));
+  const digits = numberText(whole, fraction);
   return { sign, value: NEGATIVE_SIGNS.has(sign) ? -magnitude : magnitude, decimals: fraction.length, digits };
 };
 
@@ -93,14 +99,15 @@ export const valueIn = (text: string): WrittenValue | undefined => {
   const match = VALUE_CELL.exec(plain(text));
   if (match === null) return undefined;
   const [, before = "", whole = "", fraction = "", after = ""] = match;
-  const value = Number(`${whole.replaceAll(",", "")}${fraction === "" ? "" : `.${fraction}`}`);
+  const value = Number(numberText(whole.replaceAll(",", ""), fraction));
   return { value, step: DECIMAL_BASE ** -fraction.length, marks: `${before.trim()}|${after.trim()}` };
 };
 
 /** The computed rate written the way the cell writes its sign: 「△5.3」 beside 「△5.0」, "+10.0" beside "+12.0". */
 const shownRate = (computed: number, written: WrittenRate): string => {
   const magnitude = Math.abs(computed).toFixed(written.decimals);
-  if (computed < 0) return `${NEGATIVE_SIGNS.has(written.sign) ? written.sign : "-"}${magnitude}`;
+  const negative = NEGATIVE_SIGNS.has(written.sign) ? written.sign : "-";
+  if (computed < 0) return `${negative}${magnitude}`;
   return `${written.sign === "+" ? "+" : ""}${magnitude}`;
 };
 
