@@ -1,8 +1,14 @@
 import type { Mention } from "chaffjs/plugin";
 import { parseJapaneseNumber, toHalfWidth } from "./numbers.ts";
 import { isReady, morphemes, type Morph } from "./pos.ts";
+import { glossedYearReader } from "./era-year.ts";
+import { loadCalendarEras } from "./lexicons.ts";
+import { escapeRegExp } from "./regexp.ts";
 
 // 数量と日付。形態素が使えれば品詞で読み、使えなければ単位の表で読む。
+
+/** 元号と元年の西暦の年は語彙表 calendar-era が言う。 */
+const ERAS = loadCalendarEras();
 
 type Counted = { readonly start: number; readonly end: number; readonly value: number; readonly unit: string };
 
@@ -173,24 +179,26 @@ const last: { text: string | undefined; ready: boolean; found: readonly Counted[
 /** これより小さい「年」は期間（3年）で、暦の年ではない。 */
 const YEAR_FLOOR = 1000;
 
-/** 「2026年（令和8年）9月4日」: 西暦の年のすぐ後ろの括弧に書いた元号の年は、同じ年の言い換えで、数量でも別の日付でもない。 */
-const ERA_GLOSS = /^[（(](?:令和|平成|昭和|大正|明治)(?:[0-9〇一二三四五六七八九十]{1,3}|元)年[）)]/u;
+/**
+ * 元号の年と西暦の年を括弧で並べた年（令和6年（2024年）、2024年（令和8年）、令和6（2024）年）は、一つの暦の年。
+ * 括弧の外に書いた年を読み、中の年は数量でも別の日付でもない。年の後ろに月が続けば、一つの日付として読める。
+ */
+const GLOSSED_YEARS = glossedYearReader(ERAS);
 
-/** 括弧の言い換えを西暦の年に含め、括弧の中の年を落とす。年の後ろに月が続けば、一つの日付として読める。 */
-const withEraGlosses = (text: string, found: readonly Counted[]): Counted[] =>
-  found.reduce<Counted[]>((kept, item) => {
-    const previous = kept.at(-1);
-    if (previous !== undefined && item.end <= previous.end) return kept;
-    const gloss = item.unit === "年" && item.value >= YEAR_FLOOR ? ERA_GLOSS.exec(text.slice(item.end)) : null;
-    return [...kept, gloss === null ? item : { ...item, end: item.end + gloss[0].length }];
-  }, []);
+const withGlossedYears = (text: string, found: readonly Counted[]): Counted[] => {
+  const glossed = GLOSSED_YEARS(text);
+  if (glossed.length === 0) return [...found];
+  const years = glossed.map((item): Counted => ({ start: item.start, end: item.end, value: item.year, unit: "年" }));
+  const outside = found.filter((item) => !years.some((year) => item.start < year.end && year.start < item.end));
+  return [...outside, ...years].toSorted((left, right) => left.start - right.start);
+};
 
 const counted = (text: string): readonly Counted[] => {
   if (last.text === text && last.ready === isReady()) return last.found;
   // IPADIC は全角の「４月」を一語の名詞と読む。全角数字は 1 文字ずつ半角にしてから読むので、位置は変わらない。
   const half = toHalfWidth(text);
   const morphs = morphemes(half);
-  const found = withEraGlosses(half, morphs === undefined ? countedByTable(text) : countedByMorphemes(half, morphs));
+  const found = withGlossedYears(half, morphs === undefined ? countedByTable(text) : countedByMorphemes(half, morphs));
   Object.assign(last, { text, ready: isReady(), found });
   return found;
 };
@@ -280,19 +288,22 @@ const weekdayAfter = (text: string, end: number): number | undefined => {
 };
 
 /** 元号の最初の年の前年（令和1年 = 2019 年）。元号で書いた日付を西暦の日付にする。 */
-const ERA_BASE: Readonly<Record<string, number>> = { 令和: 2018, 平成: 1988, 昭和: 1925, 大正: 1911, 明治: 1867 };
-const ERA_BEFORE = /(?<era>令和|平成|昭和|大正|明治)$/u;
+const ERA_BASE: ReadonlyMap<string, number> = new Map(ERAS.map((era) => [era.name, era.firstYear - 1]));
+const ERA_NAMES = ERAS.map((era) => escapeRegExp(era.name)).join("|");
+const LONGEST_ERA = Math.max(0, ...ERAS.map((era) => era.name.length));
+const ERA_BEFORE = new RegExp(`(?<era>${ERA_NAMES})$`, "u");
 /** 月の付いた日付の年を直す。年だけ（「昭和二十二年法律」）は 1000 に届かないので、はじめから日付でなく期間の数量。 */
 const ERA_DATE = /^(?<year>\d{1,2})-(?<rest>.+)$/u;
 
 /** 「令和元年10月1日」: 元年は数として読めないので、年の無い 10-01 になっている。その前の「元号 + 元年」を 1 年として足す。 */
-const FIRST_YEAR_BEFORE = /(?<era>令和|平成|昭和|大正|明治)元年$/u;
+const FIRST_YEAR = "元年";
+const FIRST_YEAR_BEFORE = new RegExp(`(?<era>${ERA_NAMES})${FIRST_YEAR}$`, "u");
 const MONTH_DAY = /^\d{2}-\d{2}$/u;
 
 const inFirstEraYear = (text: string, date: Mention): Mention | undefined => {
   if (!MONTH_DAY.test(String(date.attrs["value"]))) return undefined;
-  const found = FIRST_YEAR_BEFORE.exec(text.slice(Math.max(0, date.start - 4), date.start));
-  const base = found?.groups?.["era"] === undefined ? undefined : ERA_BASE[found.groups["era"]];
+  const found = FIRST_YEAR_BEFORE.exec(text.slice(Math.max(0, date.start - LONGEST_ERA - FIRST_YEAR.length), date.start));
+  const base = found?.groups?.["era"] === undefined ? undefined : ERA_BASE.get(found.groups["era"]);
   if (found === null || base === undefined) return undefined;
   return { ...date, start: date.start - found[0].length, attrs: { ...date.attrs, value: `${String(base + 1)}-${String(date.attrs["value"])}` } };
 };
@@ -301,8 +312,8 @@ const inWesternYear = (text: string, date: Mention): Mention => {
   const first = inFirstEraYear(text, date);
   if (first !== undefined) return first;
   const parts = ERA_DATE.exec(String(date.attrs["value"]))?.groups;
-  const era = ERA_BEFORE.exec(text.slice(Math.max(0, date.start - 2), date.start))?.groups?.["era"];
-  const base = era === undefined ? undefined : ERA_BASE[era];
+  const era = ERA_BEFORE.exec(text.slice(Math.max(0, date.start - LONGEST_ERA), date.start))?.groups?.["era"];
+  const base = era === undefined ? undefined : ERA_BASE.get(era);
   if (parts === undefined || era === undefined || base === undefined) return date;
   const value = `${String(base + Number(parts["year"]))}-${parts["rest"] ?? ""}`;
   return { ...date, start: date.start - era.length, attrs: { ...date.attrs, value } };

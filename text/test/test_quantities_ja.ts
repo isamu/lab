@@ -174,7 +174,24 @@ describe("日付（年・月・日をまとめる）", () => {
     assert.deepEqual(dateOf("2026年（令和8年）"), ["2026"]);
   });
 
+  it("元号の年の後ろに括弧で書いた西暦の年も、同じ年の言い換え", () => {
+    assert.deepEqual(dateOf("令和6年（2024年）12月17日"), ["2024-12-17"]);
+    assert.deepEqual(dateOf("令和6（2024）年12月17日"), ["2024-12-17"]);
+    assert.deepEqual(dateOf("令和６年（２０２４年）１２月１７日"), ["2024-12-17"]);
+    assert.deepEqual(dateOf("令和元年（2019年）5月1日"), ["2019-05-01"]);
+    assert.deepEqual(dateOf("平成31年(2019年)4月30日"), ["2019-04-30"]);
+    assert.deepEqual(quantityOf("令和6年（2024年）12月17日"), []);
+    assert.deepEqual(dateOf("令和6年（2024年）"), ["2024"]);
+  });
+
+  it("元号の年と括弧の西暦の年が違えば、括弧の外の年を読む", () => {
+    assert.deepEqual(dateOf("令和6年（2023年）12月17日"), ["2024-12-17"]);
+    assert.deepEqual(dateOf("2023年（令和6年）12月17日"), ["2023-12-17"]);
+  });
+
   it("元号の言い換えでない括弧は、年と月をつながない", () => {
+    assert.deepEqual(dateOf("令和6年（予定）12月17日"), ["12-17"]);
+    assert.deepEqual(dateOf("令和6年（第2024号）12月17日"), ["12-17"]);
     assert.deepEqual(dateOf("2026年（予定）9月4日"), ["2026", "09-04"]);
     assert.deepEqual(quantityOf("3年（令和8年）"), [
       [3, "年"],

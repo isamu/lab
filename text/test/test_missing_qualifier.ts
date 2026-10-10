@@ -103,6 +103,16 @@ describe("date-without-year: 年の無い日付", () => {
     ]);
   });
 
+  it("元号の年の後ろの括弧に西暦の年を書いた日付は、年がある", () => {
+    const minutes = (written: string): string => `# 議事概要\n\n2025年2月21日\n\n日時：${written}（火）10時から\n\n2024年12月24日（火）に個別に聞き取った。\n`;
+    ["令和6年（2024年）12月17日", "令和6（2024）年12月17日", "2024年（令和6年）12月17日", "令和６年（２０２４年）１２月１７日"].forEach((written) => {
+      assert.deepEqual(namedRuleRun("date-without-year", minutes(written), ja).findings, [], written);
+    });
+    assert.deepEqual(namedRuleRun("date-without-year", minutes("令和6年（予定）12月17日"), ja).findings, [
+      "「12月17日」には年がありません。この文書の日付は 2024年から2025年にわたるので、どの年か決まりません",
+    ]);
+  });
+
   it("英語の文書でも言う", () => {
     const source = "# Schedule\n\n- October 15, 2025: last briefing\n- October 21, 2026: applications close\n- October 28: results sent\n";
     assert.deepEqual(namedRuleRun("date-without-year", source, en).findings, [
