@@ -94,11 +94,11 @@ describe("duration-mismatch", () => {
   });
 
   it("a length written before its noun (a 3-month trial)", () => {
-    assert.deepEqual(durationEn("The 3-month trial starts April 1, 2026 and ends June 15, 2026."), ["June 15, 2026→2026-06-30"]);
+    assert.deepEqual(durationEn("The 3-month trial starts April 1, 2026 and ends June 15, 2026."), ["June 15, 2026→June 30, 2026"]);
     assert.deepEqual(durationEn("The 3-month trial starts April 1, 2026 and ends June 30, 2026."), []);
-    assert.deepEqual(durationEn("A 10-day course runs from May 1, 2026 to May 15, 2026."), ["May 15, 2026→2026-05-10"]);
+    assert.deepEqual(durationEn("A 10-day course runs from May 1, 2026 to May 15, 2026."), ["May 15, 2026→May 10, 2026"]);
     assert.deepEqual(durationEn("A 2-week course runs from May 1, 2026 to May 14, 2026."), []);
-    assert.deepEqual(durationJa("2026年4月1日から3ヶ月間の試行は2026年6月15日に終わる。"), ["2026年6月15日→2026-06-30"]);
+    assert.deepEqual(durationJa("2026年4月1日から3ヶ月間の試行は2026年6月15日に終わる。"), ["2026年6月15日→2026年6月30日"]);
   });
 
   it("a length before its noun beside dates far more than twice as far apart is another length", () => {
@@ -110,7 +110,7 @@ describe("duration-mismatch", () => {
 
   it("a rough mark before the article of a length before its noun", () => {
     assert.deepEqual(durationEn("It is about a 3-day course from May 1, 2026 to May 6, 2026."), []);
-    assert.deepEqual(durationEn("It is a 3-day course from May 1, 2026 to May 6, 2026."), ["May 6, 2026→2026-05-03"]);
+    assert.deepEqual(durationEn("It is a 3-day course from May 1, 2026 to May 6, 2026."), ["May 6, 2026→May 3, 2026"]);
   });
 });
 
