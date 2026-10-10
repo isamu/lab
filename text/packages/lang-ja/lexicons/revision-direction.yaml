@@ -1,0 +1,17 @@
+# 業績予想を修正した向きを言う語（revision-direction-mismatch）。group は向き: rise は上へ、fall は下へ。
+# 前回の予想と今回の予想を並べた表と同じ節に書いたものを読む。
+id: revision-direction
+language: ja
+entries:
+  - { pattern: 上方修正, group: rise }
+  - { pattern: 上方に修正, group: rise }
+  - { pattern: 上方へ修正, group: rise }
+  - { pattern: 増額修正, group: rise }
+  - { pattern: 引き上げ, group: rise }
+  - { pattern: 引上げ, group: rise }
+  - { pattern: 下方修正, group: fall }
+  - { pattern: 下方に修正, group: fall }
+  - { pattern: 下方へ修正, group: fall }
+  - { pattern: 減額修正, group: fall }
+  - { pattern: 引き下げ, group: fall }
+  - { pattern: 引下げ, group: fall }

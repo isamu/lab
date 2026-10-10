@@ -1,0 +1,65 @@
+id: revision-direction-mismatch
+layer: L3
+status: stable
+how_to_find: revision-direction
+# The words of revision are revision-direction (rise, fall); the labels of the previous and the revised forecast are
+# revision-column (previous, revised).
+severity: warning
+
+name:
+  ja: 修正の向きと表の数字が逆
+  en: A forecast revision that moves the other way
+
+why:
+  ja: 業績予想の修正で「上方修正します」と書いた下の表で、今回の予想が前回の予想より小さいと、読み手は文と表のどちらを信じればよいか分かりません。去年の発表文を写して数字だけ差し替えたときや、表の列を入れ違えたときに起きます。前回の予想の列（前回発表予想・前回予想）と今回の予想の列（今回修正予想・今回予想）を持つ表、またはその二つを行に持つ表と、同じ節（見出しから次の見出しまで）に書いた修正の向きの語（上方修正・増額修正・下方修正・減額修正）を比べます。向きの語の文が項目（売上高・営業利益）を名指していればその項目を、名指していなければ表の最初の項目を見ます。
+  en: 'When a release says the forecast is "revised upward" and the table below it shows a revised figure lower than the previous one, readers cannot tell whether to believe the sentence or the table. It happens when last year''s release is copied and only the figures are replaced, or when the columns are swapped. A table with a column of the previous forecast (Previous forecast) and one of the revised forecast (Revised forecast), or a row of each, is compared with the word of revision in the same section, from a heading to the next (revised upward, raised, revised downward, lowered). When the sentence of the word names items (net sales, operating profit) those items are checked; when it names none, the first item of the table is.'
+
+message:
+  ja: 「{word}」と書いていますが、「{item}」は前回の {previous} から今回の {revised} へ逆に動いています
+  en: '"{word}" is written, but {item} goes the other way, from {previous} to {revised}'
+
+how_to_fix:
+  ja: 修正の向きの語と、表の前回・今回の数字のどちらが正しいかを確かめて、ほかを直してください。項目によって向きが違うなら、項目ごとに書いてください（「売上高を下方修正し、営業利益を上方修正します」）。
+  en: Check whether the word of revision or the previous and revised figures are right, and correct the other. If the items move different ways, say so item by item ("we lower net sales and raise operating profit").
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 「上方修正」と書いたのに、表の今回の予想が前回より小さい所
+  en: A forecast said to be revised upward whose revised figure is lower (or the other way)
+example:
+  ja:
+    before: |
+      通期の業績予想を上方修正します。
+
+      | 項目 | 前回予想 | 今回予想 |
+      | --- | --- | --- |
+      | 売上高 | 5,200 | 5,000 |
+    after: |
+      通期の業績予想を下方修正します。
+
+      | 項目 | 前回予想 | 今回予想 |
+      | --- | --- | --- |
+      | 売上高 | 5,200 | 5,000 |
+  en:
+    before: |
+      We are revising upward the full-year forecast.
+
+      | Item | Previous forecast | Revised forecast |
+      | --- | --- | --- |
+      | Net sales | 5,200 | 5,000 |
+    after: |
+      We are revising downward the full-year forecast.
+
+      | Item | Previous forecast | Revised forecast |
+      | --- | --- | --- |
+      | Net sales | 5,200 | 5,000 |
+
+not_flagged:
+  ja: 節の中に上へと下への向きの語が両方ある節、向きの語の無い節、前回と今回の列（行）が一つずつ無い表は比べません。名指した項目が上と下の両方に動いているとき（向きの語がどの項目のことか決まらない）、升が数でない（「―」「未定」）とき、前回と今回で単位が違うとき、値が変わっていないときは言いません。項目を名指さない文では、表の最初の項目だけを見ます（二つ目からの項目が逆に動いていても言いません）。
+  en: 'A section with words of both directions, a section with no word of revision, and a table without exactly one previous and one revised column (or row) are not compared. Named items that moved both ways (the word cannot be tied to one of them), a cell that is not a number ("-", "TBD"), cells in different units and an unchanged figure are not reported. A sentence that names no item is checked against the first item of the table only; later items that move the other way are not reported.'
