@@ -34,7 +34,7 @@ off_for:
 group: consistency
 summary:
   ja: 太字や［］の画面の札で、大文字・小文字や空白、「を」「の」だけが違う二通りの書き方
-  en: A screen label written two ways that differ only in case or spacing
+  en: A screen label written two ways that differ only in case, spacing or a particle
 example:
   ja:
     config: { genre: docs/manual }

@@ -35,7 +35,7 @@ off_for:
 group: wording
 summary:
   ja: ほかの義務に期限を書いた契約で、支払う・引き渡す・返還する・通知する義務に期限を書いていない所
-  en: A duty to pay, deliver or notify with no deadline, where other duties have one
+  en: A duty to pay, deliver, return or notify with no deadline, where others have one
 example:
   ja:
     config: { genre: legal/contract }
