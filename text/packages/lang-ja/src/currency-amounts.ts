@@ -20,6 +20,8 @@ const DIGITS = /[0-9０-９][0-9０-９,，.．]{0,15}/gu;
 const GAP = /^[ \t\u3000]?/u;
 const LATIN = /[A-Za-z]/u;
 const WORD_CHAR = /[A-Za-z0-9０-９]/u;
+/** 数の前のこの字は、数を別のものの続きにする。英字や数字（v1.2）と、時刻や比の後ろ半分（10:30 の 30）。 */
+const CONTINUES_BEFORE = /[A-Za-z0-9０-９:：]/u;
 /** 桁の語の前に書く位（「1,320百万ユーロ」の百）。 */
 const PLACE = /^[十百千]/u;
 /** 数だけを書いた西暦の年（2026）。後ろに空白と通貨が来ても、年のこと（「2020 USD ベース」）がある。 */
@@ -75,7 +77,7 @@ const amountAt = (text: string, match: RegExpExecArray, vocabulary: AmountVocabu
   const value = parseJapaneseNumber(number);
   const end = match.index + number.length;
   const before = markBefore(text, match.index, vocabulary.before);
-  if (value === undefined || (before === undefined && WORD_CHAR.test(text.charAt(match.index - 1)))) return undefined;
+  if (value === undefined || (before === undefined && CONTINUES_BEFORE.test(text.charAt(match.index - 1)))) return undefined;
   const scale = scaleAt(text.slice(end), vocabulary.multipliers);
   if (before !== undefined) return { start: match.index, end: end + scale.length, value: value * scale.weight, unit: before };
   const after = markAfter(text.slice(end + scale.length), vocabulary.after);

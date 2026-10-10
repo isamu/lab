@@ -35,11 +35,14 @@ const multiplierLength = (rest: string, multipliers: readonly string[]): number 
   return multipliers.includes(word.toLowerCase()) ? word.length + 1 : 0;
 };
 
-/** The mark after the number: "1,320 yen", "1,320 million dollars", "1,320USD". A year before it ("2020 dollars") is not an amount. */
-export const currencyAfter = (text: string, end: number, digits: string, marks: CurrencyMarks): string | undefined => {
+/**
+ * The mark after the number: "1,320 yen", "1,320 million dollars", "1,320USD". A year before it ("2020 dollars") is not an
+ * amount, nor is the second half of a time or a ratio (the 30 of "10:30").
+ */
+export const currencyAfter = (text: string, start: number, end: number, marks: CurrencyMarks): string | undefined => {
   const scaled = multiplierLength(text.slice(end), marks.multipliers);
   const from = end + scaled + (isGap(text[end + scaled]) ? 1 : 0);
-  if (from > end && scaled === 0 && YEAR.test(digits)) return undefined;
+  if (text[start - 1] === ":" || (from > end && scaled === 0 && YEAR.test(text.slice(start, end)))) return undefined;
   return marks.after
     .filter((mark) => text.startsWith(mark, from) && standsAlone(mark, "", text.charAt(from + mark.length)))
     .toSorted((left, right) => right.length - left.length)[0];

@@ -308,7 +308,7 @@ const quantities = (text: string): Mention[] =>
     // A number glued to a letter is part of a word ("A4", "v2"), unless that letter ends a currency code ("USD96").
     const unit = isWordChar(text[match.index - 1])
       ? before
-      : (unitAfter(text, end) ?? unitAfterBracket(text, match.index, end) ?? before ?? currencyAfter(text, end, digits, CURRENCY_MARKS));
+      : (unitAfter(text, end) ?? unitAfterBracket(text, match.index, end) ?? before ?? currencyAfter(text, match.index, end, CURRENCY_MARKS));
     return unit === undefined || Number.isNaN(value) ? [] : [{ start: match.index, end, attrs: { value, unit } }];
   });
 

@@ -72,6 +72,12 @@ describe("currencyAmounts (ja): every currency-notation and percent-unit entry",
     assert.deepEqual(jaRead("$2026"), [["2026", 2026, "$"]]);
   });
 
+  it("does not read the second half of a time or a ratio, unless a mark stands before it", () => {
+    assert.deepEqual(jaRead("開始は10:30 USD基準。"), []);
+    assert.deepEqual(jaRead("比は1：3ユーロ"), []);
+    assert.deepEqual(jaRead("費用:¥30"), [["30", 30, "¥"]]);
+  });
+
   it("does not read a Latin mark inside a longer word, or a number inside a word", () => {
     assert.deepEqual(jaRead("XUSD 5"), []);
     assert.deepEqual(jaRead("5 USDT"), []);
@@ -91,7 +97,7 @@ describe("currencyAmounts (ja): every currency-notation and percent-unit entry",
 });
 
 describe("currencyBefore / currencyAfter (en): every currency-notation entry", () => {
-  const after = (text: string, digits: string): string | undefined => currencyAfter(text, text.indexOf(digits) + digits.length, digits, EN_MARKS);
+  const after = (text: string, digits: string): string | undefined => currencyAfter(text, text.indexOf(digits), text.indexOf(digits) + digits.length, EN_MARKS);
 
   it("reads each mark before the number, with and without one space; US$ keeps the unit $", () => {
     EN_MARKS.before.forEach((mark) => {
@@ -112,6 +118,11 @@ describe("currencyBefore / currencyAfter (en): every currency-notation entry", (
     assert.equal(after("in 2020 dollars", "2020"), undefined);
     assert.equal(after("in 2,020 dollars", "2,020"), "dollars");
     assert.equal(after("2020 million dollars", "2020"), "dollars");
+  });
+
+  it("does not read the second half of a time as an amount", () => {
+    assert.equal(after("The call is at 10:30 dollars later.", "30"), undefined);
+    assert.equal(after("The call costs 30 dollars.", "30"), "dollars");
   });
 
   it("does not read a mark inside a longer word, or a word of magnitude with no mark", () => {
