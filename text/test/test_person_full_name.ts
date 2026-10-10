@@ -10,6 +10,8 @@ import type { Token } from "../packages/chaff/src/plugin.ts";
 
 const variants = (source: string): readonly string[] => namedRuleRun("name-variant", source, ja, "a.md").findings;
 
+const SPACE = "\u3000";
+
 const token = (surface: string, start: number, pos = "PROPN", nameType?: string): Token => ({
   surface,
   span: { start, end: start + surface.length },
@@ -56,6 +58,11 @@ describe("name-variant: 空白を挟んだ姓と名", () => {
 
   it("姓と名のあいだの空白だけの違いは言わない（田中 裕子 と 田中裕子）", () => {
     assert.deepEqual(variants("田中 裕子が説明した。田中 裕子が答えた。田中裕子が述べた。\n"), []);
+    assert.deepEqual(variants(`田中 裕子が説明した。田中 裕子が答えた。\n\n| 担当 | 日付 |\n| --- | --- |\n| 田中${SPACE}裕子 | 4月1日 |\n`), []);
+  });
+
+  it("表の升の名前も、名前まるごとで比べる", () => {
+    assert.deepEqual(variants("中村 裕子が説明した。中村 裕子が答えた。\n\n| 担当 | 日付 |\n| --- | --- |\n| 中村 祐子 | 4月1日 |\n").length, 1);
   });
 
   it("名だけで書いた名は、名だけで書いた名と比べる", () => {

@@ -198,16 +198,19 @@ const tableFindings = (doc: ProseDocument, prose: string, mentions: readonly Nam
     .filter(({ name }) => !reported.some((other) => other.offset < name.offset + name.surface.length && name.offset < other.offset + other.name.length))
     .map(({ name, usual, kind }) => ({ offset: name.offset, name: name.surface, usual, kind }));
 
+/** 日本語の人の名前の、姓と名のあいだの空白だけの違い（田中 裕子 と 田中裕子）は書き分けとして指さない。 */
+const notSpacingOnly = ({ name, usual, kind }: Reported): boolean => kind !== "spelling" || !spacedOnly(name, usual);
+
 /** 同じ名前を、文書の中で少しだけ違う形に書いた所（GitHub と Github、山田太郎 と 山田太朗）。少ないほうを指す。 */
 export const nameVariant: Detector = (doc): Finding[] => {
   const prose = doc.prose ?? doc.source;
   const chars = variantCharsOf(doc);
   const mentions = nameMentionsOf(doc, prose, chars);
   const names = nameVariants(mentions, chars, spellingInputOf(doc))
-    .filter(({ mention, usual, kind }) => kind !== "spelling" || !spacedOnly(mention.surface, usual))
-    .map(({ mention, usual, kind }): Reported => ({ offset: mention.offset, name: mention.surface, usual, kind }));
+    .map(({ mention, usual, kind }): Reported => ({ offset: mention.offset, name: mention.surface, usual, kind }))
+    .filter(notSpacingOnly);
   const namesAndCompanies = [...names, ...companyFindings(doc, prose, names)];
-  const withTables = [...namesAndCompanies, ...tableFindings(doc, prose, mentions, namesAndCompanies)];
+  const withTables = [...namesAndCompanies, ...tableFindings(doc, prose, mentions, namesAndCompanies).filter(notSpacingOnly)];
   const withPlaces = [...withTables, ...placeFindings(doc, prose, withTables, chars)];
   const withProducts = [...withPlaces, ...productFindings(doc, prose, withPlaces)];
   const withOrder = [...withProducts, ...orderFindings(doc, prose, withProducts)];
