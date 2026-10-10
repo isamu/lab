@@ -1,8 +1,13 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { lineHasContext, standsAsUnitWord } from "../packages/chaff/src/facts/unit-word.ts";
+import { lineHasContext, runsIntoWord, standsAsUnitWord } from "../packages/chaff/src/facts/unit-word.ts";
 import { approximateTolerance } from "../packages/chaff/src/facts/approximate-tolerance.ts";
-import type { Measured } from "../packages/chaff/src/facts/measures.ts";
+import { measuredValues, type Measured } from "../packages/chaff/src/facts/measures.ts";
+import { measureUnitsOf } from "../packages/chaff/src/facts/measure-units.ts";
+import { buildDocument } from "../packages/chaff/src/document.ts";
+import { adapter as en } from "../packages/lang-en/src/index.ts";
+import { adapter as ja } from "../packages/lang-ja/src/index.ts";
+import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
 // 文脈の要る英字の単位（"in"）を単位として読むかと、目安の量（約1.2kg）の合うとみなす差。
 
@@ -49,6 +54,64 @@ describe("standsAsUnitWord", () => {
     assert.equal(standsAsUnitWord("m", false, "iners"), true);
     assert.equal(standsAsUnitWord("度", true, "で10分"), true);
     assert.equal(standsAsUnitWord("度", true, "10分"), true);
+  });
+});
+
+describe("runsIntoWord", () => {
+  it("a unit ending in a Latin letter, followed by a Latin letter, is the start of a word", () => {
+    assert.equal(runsIntoWord("t", "o 70"), true);
+    assert.equal(runsIntoWord("t", "ons"), true);
+    assert.equal(runsIntoWord("mm", "Hg"), true);
+    assert.equal(runsIntoWord("g/dL", "s"), true);
+    assert.equal(runsIntoWord("m", "é"), true);
+  });
+
+  it("stands as a unit before a space, punctuation, a digit, a non-Latin letter or the end", () => {
+    assert.equal(runsIntoWord("t", ""), false);
+    assert.equal(runsIntoWord("m", " long"), false);
+    assert.equal(runsIntoWord("in", ". display"), false);
+    assert.equal(runsIntoWord("g", "/dL"), false);
+    assert.equal(runsIntoWord("m", "2"), false);
+    assert.equal(runsIntoWord("ha", "を"), false);
+    assert.equal(runsIntoWord("m", "-wide"), false);
+  });
+
+  it("a unit that does not end in a Latin letter is not judged", () => {
+    assert.equal(runsIntoWord("℃", "elsius"), false);
+    assert.equal(runsIntoWord("m³", "s"), false);
+    assert.equal(runsIntoWord("sq. ft.", "x"), false);
+    assert.equal(runsIntoWord("", "abc"), false);
+  });
+});
+
+describe("measuredValues: a Latin unit ends at a word boundary", () => {
+  const read = (text: string, adapter: LanguageAdapter = en): string[] =>
+    measuredValues(text, measureUnitsOf(buildDocument("t.md", text, adapter))).map((value) => text.slice(value.start, value.end));
+
+  it("does not read the first letter of the next word as a unit", () => {
+    assert.deepEqual(read("Between 20 to 70 people."), []);
+    assert.deepEqual(read("It weighs 3 tons."), []);
+    assert.deepEqual(read("5 miners"), []);
+    assert.deepEqual(read("120 mmHg"), []);
+    assert.deepEqual(read("100mA"), []);
+    assert.deepEqual(read("約560haを一般に", ja), []);
+  });
+
+  it("does not fall back to a shorter unit when the longest one runs into a word", () => {
+    assert.deepEqual(read("2 g/dLs"), []);
+    assert.deepEqual(read("3 kgs"), []);
+  });
+
+  it("reads a unit followed by a space, punctuation or the end", () => {
+    assert.deepEqual(read("5 m long"), ["5 m"]);
+    assert.deepEqual(read("5 mm"), ["5 mm"]);
+    assert.deepEqual(read("5 meters"), ["5 meters"]);
+    assert.deepEqual(read("10 to 20 kg"), ["20 kg"]);
+    assert.deepEqual(read("40 to 10 t"), ["10 t"]);
+    assert.deepEqual(read("2 g/dL."), ["2 g/dL"]);
+    assert.deepEqual(read("4 in. display"), ["4 in"]);
+    assert.deepEqual(read("3 kg, 5 min)"), ["3 kg", "5 min"]);
+    assert.deepEqual(read("重さは5kgです。", ja), ["5kg"]);
   });
 });
 

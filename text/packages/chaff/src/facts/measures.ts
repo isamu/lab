@@ -1,5 +1,5 @@
 import type { FactValue } from "./fact-values.ts";
-import { lineHasContext, standsAsUnitWord } from "./unit-word.ts";
+import { lineHasContext, runsIntoWord, standsAsUnitWord } from "./unit-word.ts";
 
 /**
  * 単位の付いた量（5 km、3000 m、1.5時間、2 GB、180℃、大さじ1）。単位は言語パッケージの語彙表から取り、量の種類（長さ、重さ…）と、基準の単位への
@@ -60,18 +60,18 @@ const GAPS = new Set([" ", "-"]);
 type Found = { readonly unit: MeasureUnit; readonly start: number; readonly end: number };
 
 /**
- * 数のすぐ後ろ（空白かハイフン一つまで）の単位。長い単位から試す（「5分間」を 分 で切らない、min を m にしない）。
- * 単位の後ろに語が続く（5 miners）ものは、名前付きの値の終わり（fact-value-end）で落ちるので、ここでは見ない。
+ * 数のすぐ後ろ（空白かハイフン一つまで）の単位。長い単位から試す（「5分間」を 分 で切らない、min を m にしない）。一番長く書かれた単位が
+ * 語に続いていれば、短い単位にも読み替えない（"5 g/dLs" を 5 g にしない）。
  */
 const unitAfter = (source: string, start: number, end: number, units: readonly MeasureUnit[]): Found | undefined => {
   const gap = GAPS.has(source.charAt(end)) ? 1 : 0;
   const rest = source.slice(end + gap, end + gap + MAX_UNIT_LENGTH);
-  const unit = units.find(
-    (candidate) =>
-      !candidate.before &&
-      rest.startsWith(candidate.pattern) &&
-      standsAsUnitWord(candidate.pattern, candidate.context.length > 0, source.slice(end + gap + candidate.pattern.length)) &&
-      inContext(candidate, source, end),
+  const afterUnit = (candidate: MeasureUnit): string => source.slice(end + gap + candidate.pattern.length);
+  const written = units.filter((candidate) => !candidate.before && rest.startsWith(candidate.pattern));
+  const [longest] = written;
+  if (longest === undefined || runsIntoWord(longest.pattern, afterUnit(longest))) return undefined;
+  const unit = written.find(
+    (candidate) => standsAsUnitWord(candidate.pattern, candidate.context.length > 0, afterUnit(candidate)) && inContext(candidate, source, end),
   );
   return unit === undefined ? undefined : { unit, start, end: end + gap + unit.pattern.length };
 };
