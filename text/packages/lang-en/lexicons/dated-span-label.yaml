@@ -6,3 +6,4 @@ language: en
 entries:
   - pattern: Reporting period
   - pattern: Period covered
+  - pattern: Pay period

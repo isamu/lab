@@ -1,18 +1,17 @@
 // reference-flag-mismatch: a row of a lab or checkup results table whose flag (H, L, 高, 低, 基準内, Normal) says the opposite of
 // where its value stands against the reference range on the same row. The column headings, the flags and the bound marks come
-// from the lexicons (reference-column-heading, reference-flag, range-band-word, reference-bound-mark). Pure.
+// from the lexicons (lab-result-column with reference-column-heading, reference-flag, range-band-word, reference-bound-mark). Pure.
 import { cellsOf, tablesOf, type Cell } from "../facts/table-facts.ts";
 import { withoutEdgeMarks } from "../facts/trim-marks.ts";
+import { labColumnsOf, type LabColumnWord } from "./lab-columns.ts";
 import { linesOf, type Line } from "./lines.ts";
 import { parseBand, type Band, type BandWords, type Bound } from "./range-bands.ts";
 
 /** What a flag says: above the range, below it, inside it, or outside it on either side (基準外, *). */
 export type FlagMeaning = "high" | "low" | "normal" | "outside";
 
-export type ReferenceColumn = "value" | "range" | "flag";
-
 export type ReferenceWords = {
-  readonly headings: readonly { readonly pattern: string; readonly column: ReferenceColumn }[];
+  readonly headings: readonly LabColumnWord[];
   readonly flags: readonly { readonly pattern: string; readonly meaning: FlagMeaning }[];
   /** How a range is read: range-band-word with the reference marks (≤, >), and no units (the row's own unit is taken out first). */
   readonly band: BandWords;
@@ -120,21 +119,21 @@ export const slipKindOf = (flag: FlagMeaning, position: Position): FlagSlipKind 
   return flag === "low" && position === "above" ? "above" : undefined;
 };
 
-type Columns = Readonly<Record<ReferenceColumn, number>>;
+type Columns = { readonly result: number; readonly range: number; readonly flag: number };
 
-const COLUMNS: readonly ReferenceColumn[] = ["value", "range", "flag"];
+const COLUMNS = ["result", "range", "flag"] as const;
 
 /** The column of each kind, by its heading; undefined unless each kind names exactly one column. */
 export const columnsOf = (headings: readonly string[], words: ReferenceWords): Columns | undefined => {
-  const kinds = headings.map((heading) => words.headings.find((entry) => headingKeyOf(entry.pattern) === headingKeyOf(heading))?.column);
+  const kinds = labColumnsOf(headings, words.headings, headingKeyOf);
   const found = COLUMNS.map((column) => kinds.flatMap((kind, index) => (kind === column ? [index] : [])));
-  const [value, range, flag] = found.map((indexes) => (indexes.length === 1 ? indexes[0] : undefined));
-  return value === undefined || range === undefined || flag === undefined ? undefined : { value, range, flag };
+  const [result, range, flag] = found.map((indexes) => (indexes.length === 1 ? indexes[0] : undefined));
+  return result === undefined || range === undefined || flag === undefined ? undefined : { result, range, flag };
 };
 
 const rowSlip = (row: Line, columns: Columns, words: ReferenceWords): FlagSlip[] => {
   const cells = cellsOf(row);
-  const [valueCell, rangeCell, flagCell] = [cells[columns.value], cells[columns.range], cells[columns.flag]];
+  const [valueCell, rangeCell, flagCell] = [cells[columns.result], cells[columns.range], cells[columns.flag]];
   if (valueCell === undefined || rangeCell === undefined || flagCell === undefined) return [];
   const flag = flagOf(flagCell.text, words);
   const value = valueOf(valueCell.text);

@@ -1,0 +1,23 @@
+# 検査結果の表の列見出し。group が result は結果の列、range は基準値の列、flag は判定の印の列、unit は単位の列。
+# reference-flag-mismatch と reference-unit-mismatch の両方がこの語で列を見つける。片方の規則だけが読む語は、その規則の語彙表
+# （reference-column-heading、reference-unit-column）にある。見出しの括弧の中の単位や注（「結果(mg/dL)」）は除いて当てる。
+id: lab-result-column
+language: ja
+entries:
+  - { pattern: 結果, group: result }
+  - { pattern: 結果値, group: result }
+  - { pattern: 検査結果, group: result }
+  - { pattern: 測定値, group: result }
+  - { pattern: 検査値, group: result }
+  - { pattern: 今回, group: result }
+  - { pattern: 基準値, group: range }
+  - { pattern: 基準範囲, group: range }
+  - { pattern: 基準値範囲, group: range }
+  - { pattern: 参考基準値, group: range }
+  - { pattern: 正常値, group: range }
+  - { pattern: 正常範囲, group: range }
+  - { pattern: 判定, group: flag }
+  - { pattern: フラグ, group: flag }
+  - { pattern: 異常フラグ, group: flag }
+  - { pattern: H/L, group: flag }
+  - { pattern: 単位, group: unit }

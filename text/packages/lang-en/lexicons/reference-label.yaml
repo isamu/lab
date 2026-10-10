@@ -1,0 +1,14 @@
+# Words put before a document's own number (a booking or confirmation number). group is what the number is; numbers of
+# different groups are never compared. reference-number-variant reads the letters and digits right after a label (only
+# spaces, a colon, a comma or an opening bracket between) as a number of its group. Words that come between a label and its number ("is") go here too.
+id: reference-label
+language: en
+entries:
+  - { pattern: booking number, group: booking }
+  - { pattern: booking number is, group: booking }
+  - { pattern: reservation number, group: booking }
+  - { pattern: reservation number is, group: booking }
+  - { pattern: confirmation number, group: confirmation }
+  - { pattern: confirmation number is, group: confirmation }
+  - { pattern: reference number, group: reference }
+  - { pattern: reference number is, group: reference }
