@@ -7,6 +7,7 @@ import { prefixGroupsOf, prefixVariants, variantUses } from "../structure/term-p
 import { quoteAt } from "./structure-tree.ts";
 import { isPartOfAddress } from "./address-word.ts";
 import { exactOffsets, extendedAfter, extendedBefore } from "./term-extension.ts";
+import { CLOSES_SENTENCE, isNameField, isSignatureLine, opensClosingBlock, SLACK } from "./name-field.ts";
 import type { Detector, Finding, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 
 const bodyOf = (doc: ProseDocument): BodyText[] => doc.sentences.map((sentence) => ({ start: sentence.span.start, text: sentence.text }));
@@ -238,26 +239,6 @@ const bracketBefore = (source: string, definition: Span): number => {
 
 export type RepeatedName = { readonly offset: number; readonly name: string; readonly term: string; readonly line: number };
 
-/** How many characters a line may add to the long name and still be a line that only names the party. */
-const SLACK = 12;
-
-/** A field label on its own line, after a list marker (Attention:, 宛先：): short, and not a sentence. */
-const FIELD_LABEL = /^(?:[-*+]\s+)?[^:：。.]{1,20}[:：]\s*/u;
-/**
- * What may follow the name in an address field: nothing, a comma and the next part (, Member Support), or a space and a part
- * that does not go on in lower case (株式会社みなと 総務部). A particle or a verb (は支払う, shall pay) makes the line a sentence.
- */
-const NEXT_PART = /^\.?(?:$|\s*[,、，]|\s+(?!\p{Ll}))/u;
-const CLOSES_SENTENCE = /[.。!?！？]$/u;
-
-/** A field whose value is the name and a little more, not a sentence (Attention: Hibari Lab Inc., Member Support). */
-const isNameField = (line: string, name: string): boolean => {
-  const label = FIELD_LABEL.exec(line);
-  const value = label === null ? "" : line.slice(label[0].length);
-  const rest = value.slice(name.length);
-  return value.startsWith(name) && NEXT_PART.test(rest) && [...rest].length <= SLACK * 2 && !CLOSES_SENTENCE.test(rest.slice(1));
-};
-
 /** A contact field's label: after a bullet or a number (1. 連絡先：), and as long as a label in English runs (Privacy Contact:). */
 const CONTACT_LABEL = /^(?:(?:[-*+]|\d+[.)])\s+)?([^:：。.]{1,40})[:：]\s*/u;
 const LABEL_MARKS = /[*_\s]+/gu;
@@ -288,17 +269,19 @@ const isContactField = (line: string, name: string, contactLabels: readonly stri
 
 /**
  * A line that holds the short name too (甲 株式会社みなと), little else than the long name (a signature block names both),
- * or a field whose value is the name (Attention: …, 宛先：…): an address gives the name in full.
+ * or a field whose value is the name (Attention: …, 宛先：…), or a signature opening the closing block: an address gives the name in full.
  */
 const isNameLine = (source: string, offset: number, name: string, term: string, contactLabels: readonly string[]): boolean => {
   const start = source.lastIndexOf("\n", offset - 1) + 1;
-  const end = source.indexOf("\n", offset);
-  const line = source.slice(start, end === -1 ? source.length : end).trim();
+  const newline = source.indexOf("\n", offset);
+  const end = newline === -1 ? source.length : newline;
+  const line = source.slice(start, end).trim();
   // The short name inside the long one ("Pinecone" in "Pinecone Software Ltd") is not the short name written beside it.
   return (
     line.replaceAll(name, "").includes(term) ||
     [...line].length <= [...name].length + SLACK ||
     isNameField(line, name) ||
+    (isSignatureLine(line, name) && opensClosingBlock(source, start, end)) ||
     isContactField(line, name, contactLabels)
   );
 };
