@@ -118,6 +118,7 @@ describe("period-multiple-mismatch (ja)", () => {
 describe("period-multiple-mismatch (en)", () => {
   it("reports an annual premium that is not twelve monthly payments", () => {
     assert.deepEqual(enDoc(enTable("Monthly: $24", "Annually (12 monthly payments): $298")), ["12 monthly payments $298 / $24"]);
+    assert.deepEqual(enDoc(enTable("Monthly: $24", "Annually (equal to 12 monthly payments): $298")), ["12 monthly payments $298 / $24"]);
     assert.deepEqual(enDoc("Your monthly premium is $24.", "The annual premium is $298 (twelve monthly payments)."), ["twelve monthly payments $298 / $24"]);
     assert.deepEqual(enDoc("Monthly premium: $24.", "Pay $298 a year, 12 times the monthly premium."), []);
     assert.deepEqual(enDoc("Monthly premium: $24.", "Annual premium: $298 (12 times the monthly premium)."), ["12 times the monthly premium $298 / $24"]);
@@ -133,5 +134,6 @@ describe("period-multiple-mismatch (en)", () => {
     assert.deepEqual(enDoc(enTable("Monthly: $24"), "You can pay in 12 monthly payments of $25."), []);
     assert.deepEqual(enDoc(enTable("Monthly: $24", "Annually (12 monthly payments, save 3%): $279")), []);
     assert.deepEqual(enDoc(enTable("Monthly: $24", "Annually (11 to 12 monthly payments): $298")), []);
+    assert.deepEqual(enDoc(enTable("Monthly: $24", "Annually (eleven to twelve monthly payments): $298")), []);
   });
 });

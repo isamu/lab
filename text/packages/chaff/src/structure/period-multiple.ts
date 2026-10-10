@@ -37,7 +37,7 @@ type Count = Span & { readonly count: number; readonly timed: boolean };
 const DIGITS = "[0-9０-９]+(?:[.．][0-9０-９]+)?";
 /** A count right after one of these is the tail of a larger number (十二, 二百), not a count of its own. */
 const KANJI_NUMERALS = "〇零一二三四五六七八九十百千万";
-const RANGE_START = /[0-9０-９A-Za-z一二三四五六七八九十]\s*$/u;
+const RANGE_START_DIGIT = /[0-9０-９一二三四五六七八九十]\s*$/u;
 const SENTENCE_END = /[。！？；;]|[.!?](?=\s|$)/gu;
 /** Between a phrase and its amount only marks may stand: brackets, a cell's bar, a colon (（月払の12か月分） | 29,800円). */
 const MARKS_ONLY = /^[\s|｜:：=＝、，,()（）[\]［］]*$/u;
@@ -84,9 +84,12 @@ const isLinkGap = (gap: string, words: PeriodMultipleWords): boolean => {
   return (pattern === undefined ? gap : gap.replace(new RegExp(pattern, "giu"), "")).trim() === "";
 };
 
+/** Whether a count closes a range: a connector right before it with a number before that (11〜12, eleven to twelve; not "equal to 12"). */
 const endsRange = (text: string, count: Count, words: PeriodMultipleWords): boolean => {
   const before = text.slice(Math.max(0, count.start - RANGE_REACH), count.start).trimEnd();
-  return words.connectors.some((connector) => before.endsWith(connector) && RANGE_START.test(before.slice(0, -connector.length)));
+  const endsNumber = (head: string): boolean =>
+    RANGE_START_DIGIT.test(head) || countsIn(head.trimEnd(), words).some((found) => found.end === head.trimEnd().length);
+  return words.connectors.some((connector) => before.toLowerCase().endsWith(connector.toLowerCase()) && endsNumber(before.slice(0, -connector.length)));
 };
 
 /** The base word a count is a multiple of: before it with a word of a multiple (月払の12か月分), or after it (12 monthly payments). */
