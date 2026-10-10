@@ -245,6 +245,15 @@ describe("ratio-mismatch", () => {
     assert.deepEqual(found("Operating profit in 2026 was $198 million on net sales in 2026 of $2,640 million, an operating margin of 8.5%.", en), []);
   });
 
+  it("does not read a signed amount as the value of its name", () => {
+    assert.deepEqual(found("営業利益は▲96百万円、売上高は1,320百万円で、営業利益率は8.0%でした。", ja), []);
+    assert.deepEqual(found("営業利益は-96百万円、売上高は1,320百万円で、営業利益率は8.0%でした。", ja), []);
+    assert.deepEqual(found("営業利益は△¥96百万、売上高は¥1,320百万で、営業利益率は8.0%でした。", ja), []);
+    assert.deepEqual(found("Operating profit was -$198 million on net sales of $2,640 million, an operating margin of 8.5%.", en), []);
+    assert.deepEqual(found("Operating profit was $-198 million on net sales of $2,640 million, an operating margin of 8.5%.", en), []);
+    assert.deepEqual(found("Operating profit was $198 million on net sales of $2,640 million, an operating margin of -8.5%.", en), []);
+  });
+
   it("does not read a name inside a longer word, or rows whose labels note different units", () => {
     assert.deepEqual(found("営業利益は96百万円、売上高は1,320百万円で、調整後営業利益率は8.0%でした。", ja), []);
     assert.deepEqual(found("営業利益は前期の84百万円から96百万円に、売上高は1,320百万円で、営業利益率は8.0%でした。", ja), []);
