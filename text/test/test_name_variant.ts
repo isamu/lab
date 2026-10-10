@@ -113,6 +113,20 @@ describe("name-variant: 同じ名前の書き分け", () => {
       "「山田太朗」は、ほかの所では同じ読みの「山田太郎」と書いています",
     ]);
   });
+
+  it("解析器が読めない名前の字（汰）は、語彙表の読みで読む", () => {
+    const letter = "患者氏名：中村 健太 様\n\n中村 健太 様の結果をお知らせします。\n\n中村 健汰 様の次回の予約は、受付でお取りください。\n";
+    assert.deepEqual(variants(letter, ja), ["「健汰」は、ほかの所では同じ読みの「健太」と書いています"]);
+    assert.deepEqual(variants("中村健太様の結果です。中村健太様にお送りします。中村健汰様の予約です。\n", ja), [
+      "「中村健汰」は、ほかの所では同じ読みの「中村健太」と書いています",
+    ]);
+  });
+
+  it("読みの違う名、同じ姓の別の人、一度ずつの名は言わない", () => {
+    assert.deepEqual(variants("佐藤 美咲 様\n\n佐藤 美咲 様の結果です。佐藤 美沙 様の予約です。\n", ja), []);
+    assert.deepEqual(variants("中村 健太 様と中村 健太 様の兄、中村 莉子 様の結果です。\n", ja), []);
+    assert.deepEqual(variants("中村 健太 様の結果です。中村 健汰 様の予約です。\n", ja), []);
+  });
 });
 
 describe("the reading behind name-variant", () => {
