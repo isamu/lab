@@ -1,0 +1,63 @@
+id: ratio-mismatch
+layer: L3
+status: stable
+how_to_find: ratio-mismatch
+severity: warning
+
+name:
+  ja: 利益率が二つの値の割り算と合わない
+  en: A margin the two values it divides do not give
+
+why:
+  ja: 決算の表の「営業利益率 7.3%」は、同じ列の営業利益を売上高で割った値です。読み手は率を割り算し直さずに信じます。金額だけを直したとき、率を前の期の表から写したときに食い違います。表で、行の見出しが率の名前（営業利益率、経常利益率、売上総利益率）だけの行があり、同じ表にその分子の行（営業利益）と分母の行（売上高）が一つずつあれば、列ごとに分子を分母で割って比べます。一つの文に率の名前と分子・分母の名前が一度ずつあり、それぞれのすぐ後ろに値があるとき（「営業利益は96百万円、売上高は1,320百万円で、営業利益率は7.3%」）も比べます。どの率がどの二つの値の割り算かは、言語パッケージの語彙表 ratio-label と ratio-term にあります。率は書いた桁の半分までの丸めを認めます（7.3% は 7.25% から 7.35% のどれか）。金額は書いた最後の桁の一つ分までのずれを認めます。決算の表は百万円未満を切り捨てることが多く、率は切り捨てる前の金額から計算するので、半分では足りません。
+  en: The "Operating margin 7.5%" of a results table is the operating profit divided by the net sales in the same column. Readers trust it without dividing again. It goes wrong when an amount is corrected and the margin is not, or when the margin is copied from last period's table. In a table, a row labelled with only the name of a ratio (Operating margin, Gross margin, Net margin) is compared, column by column, with its numerator divided by its denominator, when the same table has one row of each (Operating profit, Net sales). One sentence that names the ratio, the numerator and the denominator once each, with a value right after each name ("Operating profit was $198 million on net sales of $2,640 million, an operating margin of 7.5%"), is compared too. Which ratio divides which two values is in the language package's lexicons ratio-label and ratio-term. The ratio may be rounded to half its last digit (7.3% is anything from 7.25% to 7.35%). Each amount may be off by one whole step of its last digit, not half, because results tables often round amounts down and the margin is worked out from the amounts before rounding.
+
+message:
+  ja: 「{ratio}」の「{written}%」は、分子と分母の値からは {computed}% です
+  en: '{ratio} "{written}%" is written, but its two values give {computed}%'
+
+how_to_fix:
+  ja: 率と二つの値のどれが正しいかを確かめて、ほかを直してください。
+  en: Check which of the ratio and the two values is right, and correct the others.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 表や文の「営業利益率」が、営業利益 ÷ 売上高 と合わない所
+  en: A margin in a table or a sentence that its profit divided by its sales does not give
+example:
+  ja:
+    before: |
+      | 項目 | 前期 | 当期 |
+      | --- | --- | --- |
+      | 売上高 | 1,200 | 1,320 |
+      | 営業利益 | 84 | 96 |
+      | 営業利益率 | 7.0% | 8.0% |
+    after: |
+      | 項目 | 前期 | 当期 |
+      | --- | --- | --- |
+      | 売上高 | 1,200 | 1,320 |
+      | 営業利益 | 84 | 96 |
+      | 営業利益率 | 7.0% | 7.3% |
+  en:
+    before: |
+      | Item | FY2025 | FY2026 |
+      | --- | --- | --- |
+      | Net sales | 1,200 | 1,320 |
+      | Operating profit | 84 | 96 |
+      | Operating margin | 7.0% | 8.0% |
+    after: |
+      | Item | FY2025 | FY2026 |
+      | --- | --- | --- |
+      | Net sales | 1,200 | 1,320 |
+      | Operating profit | 84 | 96 |
+      | Operating margin | 7.0% | 7.3% |
+
+not_flagged:
+  ja: 分子か分母の行が無い表、同じ名前の行が二つある表、三つの行の升の数が違う表（列がそろっているか分からない）、数でない升（—、▲、括弧の付いた値）、二つの値の単位が違う列（百万円と千円）は比べません。文では、率か分子か分母の名前が二度出る文、名前のすぐ後ろに値が無い文は比べません。語彙表に無い率（利用率、自己資本比率）は読みません。丸めで届く範囲の率は言いません。
+  en: "A table without the numerator or the denominator row, with two rows of the same name, or whose three rows have different numbers of cells (its columns may not line up), a cell that is not a plain number (—, a negative or bracketed value), and a column whose two values are in different units ($ million and $ thousand) are not compared. A sentence that names the ratio or a term twice, or has no value right after a name, is not compared. A ratio not in the lexicons (utilisation, equity ratio) is not read. A ratio the rounding of the values can reach is not reported."
