@@ -3,16 +3,16 @@ import { linesOf, type Line } from "./lines.ts";
 import { cellsOf, tablesOf, type Cell } from "../facts/table-facts.ts";
 import { withoutEdgeMarks } from "../facts/trim-marks.ts";
 import { escapeRegExp } from "../orthography.ts";
+import { labColumnsOf, type LabColumn, type LabColumnWord } from "./lab-columns.ts";
 
 /**
  * 検査結果の表で、結果の単位と基準値の単位が違う行（64 mmol/L と 40〜96 mg/dL）。結果・基準値・単位の列は見出しの語
- * （reference-unit-column）で見つけ、単位は語彙表 reference-unit で読む。group が同じ単位（mg/dL と mg/dl、×10⁴/µL と
- * 万/µL）は同じ単位。升に単位が無ければ、列の見出しの単位、次にその行の単位の列を使う。どちらかの単位が読めなければ比べない。Pure.
+ * （lab-result-column と reference-unit-column）で見つけ、単位は語彙表 reference-unit で読む。group が同じ単位
+ * （mg/dL と mg/dl、×10⁴/µL と 万/µL）は同じ単位。升に単位が無ければ、列の見出しの単位、次にその行の単位の列を使う。どちらかの単位が読めなければ比べない。Pure.
  */
 export type UnitWord = { readonly pattern: string; readonly unit: string };
-export type ColumnRole = "result" | "range" | "unit";
-export type ColumnWord = { readonly pattern: string; readonly role: ColumnRole };
-export type ReferenceUnitWords = { readonly units: readonly UnitWord[]; readonly columns: readonly ColumnWord[] };
+type ColumnRole = Exclude<LabColumn, "flag">;
+export type ReferenceUnitWords = { readonly units: readonly UnitWord[]; readonly columns: readonly LabColumnWord[] };
 
 type UnitsIn = (text: string) => ReadonlySet<string>;
 type Column = { readonly index: number; readonly role: ColumnRole; readonly units: ReadonlySet<string> };
@@ -52,16 +52,18 @@ const headingKey = (text: string): string => {
   return (bracket === -1 ? folded : folded.slice(0, bracket)).replace(SPACES, " ").trim();
 };
 
-const roleOf = (heading: string, columns: readonly ColumnWord[]): ColumnRole | undefined => {
-  const key = headingKey(heading);
-  return columns.find((word) => headingKey(word.pattern) === key)?.role;
-};
-
-const columnsOf = (header: Line, words: ReferenceUnitWords, unitsIn: UnitsIn): Column[] =>
-  cellsOf(header).flatMap((cell, index) => {
-    const role = roleOf(cell.text, words.columns);
-    return role === undefined ? [] : [{ index, role, units: unitsIn(cell.text) }];
+const columnsOf = (header: Line, words: ReferenceUnitWords, unitsIn: UnitsIn): Column[] => {
+  const cells = cellsOf(header);
+  const kinds = labColumnsOf(
+    cells.map((cell) => cell.text),
+    words.columns,
+    headingKey,
+  );
+  return cells.flatMap((cell, index) => {
+    const role = kinds[index];
+    return role === undefined || role === "flag" ? [] : [{ index, role, units: unitsIn(cell.text) }];
   });
+};
 
 /** A cell's units: its own, else its column heading's, else the row's unit column. None when the cell holds no number. */
 const unitsOfCell = (cell: Cell | undefined, fallbacks: readonly ReadonlySet<string>[], unitsIn: UnitsIn): ReadonlySet<string> => {
