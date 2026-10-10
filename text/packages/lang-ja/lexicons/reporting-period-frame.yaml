@@ -1,0 +1,19 @@
+# 決算の期間の名前の書き方（第2四半期、2027年3月期）。group が期間の種類で、period-label-conflict は同じ種類の名前どうしを比べる。
+# {n} は四半期・半期の番号、{y} は年、{e} は期間の終わる年、{m} は月。番号を書かない書き方（上半期）は、同じ期間を番号で書いた形を instead_of に置く。
+# 年を持たない種類（四半期、半期）は一年の中の一部として読む。2027年3月期（終わる年）と 2026年度（始まる年）のように値の形が違う書き方どうしは比べない。
+# 「上期」「下期」は「計上期間」の中にも現れるので入れない。英字は大文字小文字を問わない。
+id: reporting-period-frame
+language: ja
+entries:
+  - { pattern: "第{n}四半期", group: quarter }
+  - { pattern: "{n}Q", group: quarter }
+  - { pattern: "Q{n}", group: quarter }
+  - { pattern: "上半期", group: half, instead_of: "H1" }
+  - { pattern: "中間期", group: half, instead_of: "H1" }
+  - { pattern: "下半期", group: half, instead_of: "H2" }
+  - { pattern: "H{n}", group: half }
+  - { pattern: "{n}H", group: half }
+  - { pattern: "{e}年{m}月期", group: fiscal-year }
+  - { pattern: "{y}年度", group: fiscal-year }
+  - { pattern: "FY{y}", group: fiscal-year }
+  - { pattern: "FY {y}", group: fiscal-year }

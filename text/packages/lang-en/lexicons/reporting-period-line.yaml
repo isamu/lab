@@ -1,0 +1,11 @@
+# Words that open the line in a results release's head that states the period it reports ("Reporting period: April 1,
+# 2026 to September 30, 2026 (Q2, six months)"). period-label-conflict takes a kind of period the title does not name
+# from this line.
+id: reporting-period-line
+language: en
+entries:
+  - pattern: Reporting period
+  - pattern: Period covered
+  - pattern: Fiscal period
+  - pattern: Accounting period
+  - pattern: Period

@@ -1,0 +1,15 @@
+# 今の期間を指す語（当期、当第2四半期）。文がこの語か業績の語を持てば、今の期間を言う文と読む。
+# 文書の期間より前の四半期や半期（第2四半期累計の中の第1四半期）は、この語があるときだけ読む。
+id: reporting-current
+language: ja
+entries:
+  - pattern: 当期
+  - pattern: 当第
+  - pattern: 当中間
+  - pattern: 当四半期
+  - pattern: 当連結
+  - pattern: 当事業年度
+  - pattern: 当会計年度
+  - pattern: 当年度
+  - pattern: 今期
+  - pattern: 今四半期

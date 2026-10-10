@@ -1,0 +1,23 @@
+# 比べる相手の期間を言う語。この語のある文、表の見出しの升、節の中の期間の名前は、文書の期間と違ってよい（前年同期、前期比）。
+id: reporting-comparison
+language: ja
+entries:
+  - pattern: 前年同期
+  - pattern: 前年同四半期
+  - pattern: 前年同期間
+  - pattern: 前期
+  - pattern: 前年
+  - pattern: 前年度
+  - pattern: 前第
+  - pattern: 前連結
+  - pattern: 前事業年度
+  - pattern: 前会計年度
+  - pattern: 前四半期
+  - pattern: 前中間期
+  - pattern: 前回
+  - pattern: 昨年
+  - pattern: 昨年度
+  - pattern: 比べ
+  - pattern: 比較
+  - pattern: 対比
+  - pattern: 過去

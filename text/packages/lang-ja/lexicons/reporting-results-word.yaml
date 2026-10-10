@@ -1,0 +1,10 @@
+# 決算の業績を言う語。題がこの語と期間の名前を持つ文書だけを、period-label-conflict が決算の文書として読む。
+# 文がこの語を持てば、今の期間の業績を言う文と読む。「実績」は事業の報告や統計の題にも出るので入れない。
+id: reporting-results-word
+language: ja
+entries:
+  - pattern: 決算
+  - pattern: 業績
+  - pattern: 経営成績
+  - pattern: 四半期報告
+  - pattern: 有価証券報告書

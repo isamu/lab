@@ -2,7 +2,7 @@
   "recall": {
     "ja": {
       "call-before-period-end": "2/2",
-      "period-label": "0/2",
+      "period-label": "2/2",
       "yoy-change": "1/2",
       "unit-mix": "0/2",
       "operating-margin": "2/2",
@@ -12,7 +12,7 @@
     },
     "en": {
       "call-before-period-end": "2/2",
-      "period-label": "0/2",
+      "period-label": "2/2",
       "yoy-change": "1/2",
       "unit-mix": "0/2",
       "operating-margin": "2/2",
