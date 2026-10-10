@@ -8,7 +8,8 @@ import { proseAndTablesOf } from "../table-text.ts";
 import { tableBodyCells } from "../facts/table-facts.ts";
 import { cellNamesIn, cellNameVariants, proseNamesOf } from "../table-names.ts";
 import { placeMentionsIn, placeVariants, type PlaceChars, type PlaceReader, type PlaceWord } from "../place-names.ts";
-import type { TableCell, Token } from "../plugin.ts";
+import { productMentionsIn, productVariants, type ProductForm } from "../product-names.ts";
+import type { Span, TableCell, Token } from "../plugin.ts";
 import { proseWithCells } from "../table-cells.ts";
 import { modelCodeFindings } from "./name-variant-model-codes.ts";
 import { labelledSpans, orderNamesOf, quotedSpans, stemOf, titleCaseSpans, wordOrderVariants, type OrderWord } from "../name-word-order.ts";
@@ -113,6 +114,23 @@ const placeFindings = (doc: ProseDocument, prose: string, reported: readonly Rep
     .filter(({ mention }) => !overlapsAny(reported, mention.offset, mention.surface.length))
     .map(({ mention, usual, kind }) => ({ offset: mention.offset, name: mention.surface, usual, kind }));
 
+/** 製品の形の語（錠、カプセル、クリーム）は語彙表 product-form が、同じ形の別の書き方の組（group）とともに言う。 */
+const productFormsOf = (doc: ProseDocument): ProductForm[] =>
+  (doc.lexicons["product-form"] ?? []).map((entry) => ({ pattern: entry.pattern, group: entry.group ?? entry.pattern }));
+
+/** 見出しの文字の範囲。本文（prose）は見出しを覆う。 */
+const headingTextsOf = (doc: ProseDocument): (Span & { readonly text: string })[] =>
+  (doc.markup?.headings ?? []).flatMap((heading) => {
+    const start = doc.source.indexOf(heading.text, heading.start);
+    return start < 0 || start + heading.text.length > heading.end ? [] : [{ start, end: start + heading.text.length, text: heading.text }];
+  });
+
+/** 製品の名前の書き損じ。題や見出し（ミナモール錠 添付文書）と表の本体の升の中の名前も読む。ほかの見方がすでに指した所と重なるものは除く。 */
+const productFindings = (doc: ProseDocument, prose: string, reported: readonly Reported[]): Reported[] =>
+  productVariants(productMentionsIn(proseWithCells(prose, [...cellsOf(doc), ...headingTextsOf(doc)]), productFormsOf(doc)))
+    .filter(({ mention }) => !overlapsAny(reported, mention.offset, mention.surface.length))
+    .map(({ mention, usual, kind }) => ({ offset: mention.offset, name: mention.surface, usual, kind }));
+
 /** 名前の中で比べる語の品詞。助詞や冠詞（の、of）は語の順に数えない。 */
 const CONTENT_POS: ReadonlySet<string> = new Set(["NOUN", "PROPN", "ADJ", "NUM", "VERB"]);
 
@@ -193,7 +211,8 @@ export const nameVariant: Detector = (doc): Finding[] => {
   const namesAndCompanies = [...names, ...companyFindings(doc, prose, names)];
   const withTables = [...namesAndCompanies, ...tableFindings(doc, prose, mentions, namesAndCompanies)];
   const withPlaces = [...withTables, ...placeFindings(doc, prose, withTables, chars)];
-  const withOrder = [...withPlaces, ...orderFindings(doc, prose, withPlaces)];
+  const withProducts = [...withPlaces, ...productFindings(doc, prose, withPlaces)];
+  const withOrder = [...withProducts, ...orderFindings(doc, prose, withProducts)];
   const codes = modelCodeFindings(doc, prose).filter((code) => !overlapsAny(withOrder, code.offset, code.name.length));
   return [...withOrder, ...codes]
     .toSorted((left, right) => left.offset - right.offset)

@@ -1,0 +1,23 @@
+# 製品の形を言う語（ミナモール錠、ハルカゼクリーム）。name-variant は、この語のすぐ前の 4 字以上のカタカナを製品の名前と読み、
+# 同じ製品を一字違いや長音の有る無しで書いた所（ミナモール錠 と ミナモル錠）を指す。group が同じ語は同じ形の別の書き方。
+id: product-form
+language: ja
+entries:
+  - { pattern: 錠 }
+  - { pattern: 錠剤, group: 錠 }
+  - { pattern: 粒 }
+  - { pattern: 顆粒 }
+  - { pattern: 細粒 }
+  - { pattern: 散 }
+  - { pattern: 液 }
+  - { pattern: 点眼液 }
+  - { pattern: シロップ }
+  - { pattern: カプセル }
+  - { pattern: 軟膏 }
+  - { pattern: クリーム }
+  - { pattern: ゲル }
+  - { pattern: ローション }
+  - { pattern: スプレー }
+  - { pattern: 貼付剤 }
+  - { pattern: テープ }
+  - { pattern: パップ }
