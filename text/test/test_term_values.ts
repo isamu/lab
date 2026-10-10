@@ -114,6 +114,12 @@ describe("termValues: a length stated for the item named as the subject", () => 
     assert.deepEqual(read(ja2, [date(ja2, "2026年7月1日", "2026-07-01"), date(ja2, "2026年8月1日", "2026-08-01"), months(ja2, "24か月", 24)]), []);
     const en1 = "If you register the product, the warranty runs for 24 months.";
     assert.deepEqual(read(en1, [months(en1, "24 months", 24)]), []);
+    const en3 = "The warranty period for the product is 24 months (if registered).";
+    assert.deepEqual(read(en3, [months(en3, "24 months", 24)]), []);
+    const en4 = "The warranty period for the product is 24 months from the date of purchase, if you register the product.";
+    assert.deepEqual(read(en4, [months(en4, "24 months", 24)]), []);
+    const ja3 = "保証期間は、お買い上げ日から24か月（製品登録をされた場合）です。";
+    assert.deepEqual(read(ja3, [months(ja3, "24か月", 24)]), []);
     const en2 = "If you bought it before July 1, 2026, the warranty runs for 6 months from the date of purchase.";
     assert.deepEqual(read(en2, [date(en2, "July 1, 2026", "2026-07-01"), months(en2, "6 months", 6)]), []);
   });

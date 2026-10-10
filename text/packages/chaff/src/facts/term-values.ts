@@ -142,18 +142,25 @@ const startAfterValue = (source: string, at: number, values: readonly FactValue[
   return end - at > MAX_START_PHRASE + mark.length ? { start: at, end: at } : { start: at, end: at + trimmed };
 };
 
-/** 括弧の中の補い（（2027年7月31日まで））の後ろ。括弧が無ければそのまま。 */
-const afterParenthesis = (source: string, at: number): number => {
+/**
+ * 括弧の中の終わりの日付（（2027年7月31日まで）、(until July 31, 2027)）の後ろ。日付の無い括弧（(if registered)）は条件なので、
+ * 飛ばさずに文の終わりでないとする。括弧が無ければそのまま。
+ */
+const afterEndDate = (source: string, at: number, values: readonly FactValue[]): number => {
   const gap = source.charAt(at) === " " ? 1 : 0;
   const open = OPEN_BRACKETS.indexOf(source.charAt(at + gap));
   if (open === -1) return at;
   const close = source.indexOf(CLOSE_BRACKETS[open] ?? ")", at + gap + 1);
-  return close === -1 || close > lineEndOf(source, at) ? at : close + 1;
+  if (close === -1 || close > lineEndOf(source, at)) return at;
+  const inside = valuesIn(values, { start: at + gap, end: close });
+  return inside.length > 0 && inside.every((value) => value.kind === "date") ? close + 1 : at;
 };
 
+/** 値の後ろが文の終わりか。読点の後ろは条件が続くことがある（, if you register）ので、終わりとしない。 */
 const endsSentence = (source: string, at: number, words: TermValueWords): boolean => {
   const after = source.slice(at, lineEndOf(source, at)).trimStart();
-  return after === "" || after.startsWith("|") || words.valueEnds.some((end) => after.startsWith(end));
+  const ends = words.valueEnds.filter((end) => !CLAUSE_COMMA.test(end));
+  return after === "" || after.startsWith("|") || ends.some((end) => after.startsWith(end));
 };
 
 /** 条件の句が、起算の日付と同じ日付だけを書いた例か。 */
@@ -170,7 +177,7 @@ const subjectFact = (source: string, value: FactValue, values: readonly FactValu
   const before = startBeforeValue(source, { start: subject.restStart, end: value.start }, values, words);
   if (before === undefined) return undefined;
   const after = startAfterValue(source, value.end, values, words);
-  if (!endsSentence(source, afterParenthesis(source, after.end), words)) return undefined;
+  if (!endsSentence(source, afterEndDate(source, after.end, values), words)) return undefined;
   if (subject.lead !== undefined && !isWorkedExample(subject.lead, [before, after], values)) return undefined;
   return { label: subject.label, key: subject.key, value };
 };
