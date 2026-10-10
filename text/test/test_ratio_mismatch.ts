@@ -17,7 +17,7 @@ import {
   type RatioWords,
   type TableRow,
 } from "../packages/chaff/src/structure/ratio.ts";
-import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
+import type { LanguageAdapter, LexiconEntry } from "../packages/chaff/src/plugin.ts";
 
 // 率の行と、その分子・分母の行の割り算（ratio-mismatch）。例は自作。
 
@@ -257,5 +257,63 @@ describe("ratio-mismatch", () => {
     ];
     assert.deepEqual(found(noted.join("\n"), en), []);
     assert.deepEqual(found(noted.map((line) => line.replace("thousand", "million")).join("\n"), en), ["8.0:7.3"]);
+  });
+});
+
+// The structure tree's quantities do not read every notation below yet (¥1,320 in Japanese, 1,320 yen), so the prose path keeps
+// its own reader; routing it through the tree must first pass this.
+describe("ratio-mismatch reads every currency notation and percent unit in prose", () => {
+  /** The entries of a lexicon; an empty one would leave the cases below with nothing to check. */
+  const lexicon = (adapter: LanguageAdapter, id: string): readonly LexiconEntry[] => {
+    const entries = buildDocument("t.md", "# r\n", adapter).lexicons[id] ?? [];
+    assert.notEqual(entries.length, 0, `${adapter.id}: lexicon ${id}`);
+    return entries;
+  };
+  const LATIN_WORD = /^[A-Za-z]/u;
+
+  /**
+   * An amount as the notation writes it: a mark before the number, or a unit after it; a Latin word, or any word in English, after
+   * a space. A Japanese word of magnitude goes only with a Japanese unit (96百万円, not 96百万 JPY).
+   */
+  const amountsOf = (adapter: LanguageAdapter, magnitude: string): ((value: string) => string)[] =>
+    lexicon(adapter, "currency-notation").flatMap((notation) => {
+      const english = adapter.id === "en";
+      const latinAfter = notation.position !== "before" && LATIN_WORD.test(notation.pattern);
+      if (!english && latinAfter && magnitude !== "") return [];
+      const scaled = (value: string): string => (english && magnitude !== "" ? `${value} ${magnitude}` : `${value}${magnitude}`);
+      if (notation.position === "before") return [(value: string) => `${notation.pattern}${scaled(value)}`];
+      return [(value: string) => `${scaled(value)}${english || latinAfter ? " " : ""}${notation.pattern}`];
+    });
+
+  const sentence = (adapter: LanguageAdapter, top: string, bottom: string, rate: string): string =>
+    adapter.id === "ja"
+      ? `営業利益は${top}、売上高は${bottom}で、営業利益率は${rate}となりました。`
+      : `Operating income was ${top} and net sales were ${bottom}, an operating margin of ${rate}.`;
+
+  const cases: readonly (readonly [LanguageAdapter, readonly string[]])[] = [
+    [ja, ["", "百万", "千"]],
+    [en, ["", "million"]],
+  ];
+
+  const everyAmount = (): { readonly adapter: LanguageAdapter; readonly amount: (value: string) => string }[] =>
+    cases.flatMap(([adapter, magnitudes]) => magnitudes.flatMap((magnitude) => amountsOf(adapter, magnitude).map((amount) => ({ adapter, amount }))));
+
+  it("reports a ratio the two amounts cannot give, and not one they can, whatever the notation", () => {
+    everyAmount().forEach(({ adapter, amount }) => {
+      const [top, bottom] = [amount("96"), amount("1,320")];
+      const label = `${adapter.id}: ${top} / ${bottom}`;
+      assert.deepEqual(found(sentence(adapter, top, bottom, "8.0%"), adapter), ["8.0:7.3"], label);
+      assert.deepEqual(found(sentence(adapter, top, bottom, "7.3%"), adapter), [], label);
+    });
+  });
+
+  it("reads the ratio in every percent unit", () => {
+    cases.forEach(([adapter]) =>
+      lexicon(adapter, "percent-unit").forEach((unit) => {
+        const rate = LATIN_WORD.test(unit.pattern) ? `8.0 ${unit.pattern}` : `8.0${unit.pattern}`;
+        const [top, bottom] = adapter.id === "ja" ? ["96百万円", "1,320百万円"] : ["$96 million", "$1,320 million"];
+        assert.deepEqual(found(sentence(adapter, top, bottom, rate), adapter), ["8.0:7.3"], `${adapter.id}: ${rate}`);
+      }),
+    );
   });
 });

@@ -1,0 +1,25 @@
+# 組織の中の部署・拠点・役目の名前を閉じる語（経営企画部、IT推進課、東京本社、IR担当）。名前だけを空白で並べた行（署名・連絡先）で、
+# 空白の両側の語がこの語か会社の形（company-form）で閉じていれば、その空白は名前と名前の区切りで、英字の前後の空け方ではない。
+# 語として照らす（名前の最後の語がこの語と同じ）。「全部」「細部」は一つの語なので「部」に当たらない。
+id: organization-unit
+language: ja
+entries:
+  - pattern: "部"
+  - pattern: "課"
+  - pattern: "室"
+  - pattern: "係"
+  - pattern: "班"
+  - pattern: "局"
+  - pattern: "所"
+  - pattern: "部門"
+  - pattern: "本部"
+  - pattern: "本社"
+  - pattern: "支社"
+  - pattern: "支店"
+  - pattern: "工場"
+  - pattern: "研究所"
+  - pattern: "センター"
+  - pattern: "窓口"
+  - pattern: "グループ"
+  - pattern: "チーム"
+  - pattern: "担当"

@@ -1,0 +1,265 @@
+{
+  "note": "Self-written insurance product summaries (契約概要 / 重要事項説明書, policy summary / key facts document) for made-up insurers: a medical insurance summary and a travel insurance key facts sheet, each in a clean version and a planted one that differs only on the lines below. They run as business/report: no genre is made for insurance documents. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: deductible-exceeds-limit (a deductible or excess larger than the most paid for the same benefit) and period-multiple-mismatch (an annual premium said to be twelve monthly payments that is not the monthly premium times twelve). The age limit, the waiting period and a benefit amount are each stated once in a table and once in a sentence, and are named for fact-conflict. yarn planted insurance scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/medical",
+      "language": "ja",
+      "genre": "business/report",
+      "clean": "ja/medical.clean.md",
+      "planted": "ja/medical.planted.md",
+      "mistakes": [
+        {
+          "kind": "coverage-period",
+          "rule": "date-range-reversed",
+          "line": 15,
+          "clean": "2026年10月1日〜2027年9月30日",
+          "planted": "2026年10月1日〜2026年9月30日"
+        },
+        {
+          "kind": "age-limit",
+          "rule": "fact-conflict",
+          "line": 19,
+          "clean": "ご契約いただける年齢は、満70歳までです。",
+          "planted": "ご契約いただける年齢は、満75歳までです。"
+        },
+        {
+          "kind": "waiting-period",
+          "rule": "fact-conflict",
+          "line": 21,
+          "clean": "待機期間は30日です。",
+          "planted": "待機期間は90日です。"
+        },
+        {
+          "kind": "benefit-amount",
+          "rule": "fact-conflict",
+          "line": 31,
+          "clean": "入院1日につき5,000円",
+          "planted": "入院1日につき10,000円"
+        },
+        {
+          "kind": "deductible-over-limit",
+          "rule": "deductible-exceeds-limit",
+          "line": 33,
+          "clean": "免責金額は1回1,000円",
+          "planted": "免責金額は1回5,000円"
+        },
+        {
+          "kind": "premium-annual",
+          "rule": "period-multiple-mismatch",
+          "line": 40,
+          "clean": "| 28,800円 |",
+          "planted": "| 29,800円 |"
+        },
+        {
+          "kind": "exclusion-numbering",
+          "rule": "numbering-gap",
+          "line": 49,
+          "clean": "4. 美容を目的とする手術",
+          "planted": "5. 美容を目的とする手術"
+        },
+        {
+          "kind": "insurer-name",
+          "rule": "name-variant",
+          "line": 53,
+          "clean": "みどり野生命保険株式会社 お客さまサービスセンター",
+          "planted": "みどりの生命保険株式会社 お客さまサービスセンター"
+        }
+      ]
+    },
+    {
+      "id": "ja/travel",
+      "language": "ja",
+      "genre": "business/report",
+      "clean": "ja/travel.clean.md",
+      "planted": "ja/travel.planted.md",
+      "mistakes": [
+        {
+          "kind": "coverage-period",
+          "rule": "date-range-reversed",
+          "line": 15,
+          "clean": "2026年12月20日〜2027年1月5日",
+          "planted": "2026年12月20日〜2026年1月5日"
+        },
+        {
+          "kind": "age-limit",
+          "rule": "fact-conflict",
+          "line": 19,
+          "clean": "加入できる年齢は、満70歳までです。",
+          "planted": "加入できる年齢は、満75歳までです。"
+        },
+        {
+          "kind": "waiting-period",
+          "rule": "fact-conflict",
+          "line": 21,
+          "clean": "待機期間は7日です。",
+          "planted": "待機期間は14日です。"
+        },
+        {
+          "kind": "benefit-amount",
+          "rule": "fact-conflict",
+          "line": 31,
+          "clean": "治療・救援費用は、3,000万円を限度に",
+          "planted": "治療・救援費用は、5,000万円を限度に"
+        },
+        {
+          "kind": "deductible-over-limit",
+          "rule": "deductible-exceeds-limit",
+          "line": 33,
+          "clean": "免責金額は1事故3,000円",
+          "planted": "免責金額は1事故300,000円"
+        },
+        {
+          "kind": "premium-total",
+          "rule": "total-mismatch",
+          "line": 42,
+          "clean": "| 合計 | 6,000円 |",
+          "planted": "| 合計 | 6,500円 |"
+        },
+        {
+          "kind": "exclusion-numbering",
+          "rule": "numbering-gap",
+          "line": 51,
+          "clean": "4. 置き忘れや紛失",
+          "planted": "5. 置き忘れや紛失"
+        },
+        {
+          "kind": "insurer-name",
+          "rule": "name-variant",
+          "line": 55,
+          "clean": "そよかぜ損害保険株式会社 海外旅行保険デスク",
+          "planted": "そよかせ損害保険株式会社 海外旅行保険デスク"
+        }
+      ]
+    },
+    {
+      "id": "en/medical",
+      "language": "en",
+      "genre": "business/report",
+      "clean": "en/medical.clean.md",
+      "planted": "en/medical.planted.md",
+      "mistakes": [
+        {
+          "kind": "coverage-period",
+          "rule": "date-range-reversed",
+          "line": 15,
+          "clean": "1 October 2026 – 30 September 2027",
+          "planted": "1 October 2026 – 30 September 2026"
+        },
+        {
+          "kind": "age-limit",
+          "rule": "fact-conflict",
+          "line": 19,
+          "clean": "up to the age of 70.",
+          "planted": "up to the age of 75."
+        },
+        {
+          "kind": "waiting-period",
+          "rule": "fact-conflict",
+          "line": 21,
+          "clean": "The waiting period is 30 days.",
+          "planted": "The waiting period is 90 days."
+        },
+        {
+          "kind": "benefit-amount",
+          "rule": "fact-conflict",
+          "line": 31,
+          "clean": "paid at $100 for each day",
+          "planted": "paid at $150 for each day"
+        },
+        {
+          "kind": "deductible-over-limit",
+          "rule": "deductible-exceeds-limit",
+          "line": 33,
+          "clean": "excess is $20 a visit",
+          "planted": "excess is $80 a visit"
+        },
+        {
+          "kind": "premium-annual",
+          "rule": "period-multiple-mismatch",
+          "line": 40,
+          "clean": "| $288 |",
+          "planted": "| $298 |"
+        },
+        {
+          "kind": "exclusion-numbering",
+          "rule": "numbering-gap",
+          "line": 49,
+          "clean": "4. Cosmetic surgery",
+          "planted": "5. Cosmetic surgery"
+        },
+        {
+          "kind": "insurer-name",
+          "rule": "name-variant",
+          "line": 53,
+          "clean": "Larkspur Mutual Life Insurance Company, Customer Service",
+          "planted": "Larkspur Mutal Life Insurance Company, Customer Service"
+        }
+      ]
+    },
+    {
+      "id": "en/travel",
+      "language": "en",
+      "genre": "business/report",
+      "clean": "en/travel.clean.md",
+      "planted": "en/travel.planted.md",
+      "mistakes": [
+        {
+          "kind": "coverage-period",
+          "rule": "date-range-reversed",
+          "line": 15,
+          "clean": "20 December 2026 – 5 January 2027",
+          "planted": "20 December 2026 – 5 January 2026"
+        },
+        {
+          "kind": "age-limit",
+          "rule": "fact-conflict",
+          "line": 19,
+          "clean": "up to the age of 70.",
+          "planted": "up to the age of 75."
+        },
+        {
+          "kind": "waiting-period",
+          "rule": "fact-conflict",
+          "line": 21,
+          "clean": "cancellation cover is 7 days.",
+          "planted": "cancellation cover is 14 days."
+        },
+        {
+          "kind": "benefit-amount",
+          "rule": "fact-conflict",
+          "line": 31,
+          "clean": "covered up to $2,000,000.",
+          "planted": "covered up to $5,000,000."
+        },
+        {
+          "kind": "deductible-over-limit",
+          "rule": "deductible-exceeds-limit",
+          "line": 33,
+          "clean": "excess is $50 a claim",
+          "planted": "excess is $750 a claim"
+        },
+        {
+          "kind": "premium-total",
+          "rule": "total-mismatch",
+          "line": 42,
+          "clean": "| Total | $60 |",
+          "planted": "| Total | $65 |"
+        },
+        {
+          "kind": "exclusion-numbering",
+          "rule": "numbering-gap",
+          "line": 51,
+          "clean": "4. Belongings left",
+          "planted": "5. Belongings left"
+        },
+        {
+          "kind": "insurer-name",
+          "rule": "name-variant",
+          "line": 55,
+          "clean": "Northwind Assurance Ltd, Travel Claims Desk",
+          "planted": "Nortwind Assurance Ltd, Travel Claims Desk"
+        }
+      ]
+    }
+  ]
+}
