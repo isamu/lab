@@ -1,0 +1,63 @@
+id: bmi-mismatch
+layer: L3
+status: stable
+how_to_find: bmi-mismatch
+severity: warning
+
+name:
+  ja: BMI が身長と体重から出る値と合わない
+  en: A BMI the height and weight beside it do not give
+
+why:
+  ja: 健診の結果の「BMI 22.0」は、同じ人の体重（kg）を身長（m）の二乗で割った値です。読み手は割り算し直さずに信じます。体重だけを直したとき、BMI を去年の結果や別の人の欄から写したときに食い違います。一つの節（見出しから次の見出しまで）を一人の結果として読み、その節に身長・体重・BMI の行が一つずつ、同じ表に（または三つとも「身長：160.0 cm」のような「名前：値」の行に）あれば、列ごとに比べます。身長は cm や m、体重は kg で、単位を値の後ろか行の見出しの括弧に書いたものを読みます。語彙表の単位（ft、in、lb）も換算して読みます。どの語が身長・体重・BMI かは、言語パッケージの語彙表 bmi-term にあります。書いた数はどれも、最後の桁の半分までの丸めを認めます（22.0 は 21.95 から 22.05、160.0 cm は 159.95 cm から 160.05 cm）。身長と体重の丸めの範囲で出る BMI のいちばん小さい値（いちばん軽い体重 ÷ いちばん高い身長²）からいちばん大きい値までに、BMI の丸めの範囲が少しでも重なれば言いません。
+  en: The "BMI 22.0" of a checkup result is the weight in kilograms of the same person divided by the square of their height in metres. Readers trust it without working it out again. It goes wrong when the weight is corrected and the BMI is not, or when the BMI is copied from last year's result or another person's. One section (a heading to the next) is read as one person's results. When it has one height, one weight and one BMI row, in one table (or all three as lines of a name, a colon and a value, such as "Height" then "178 cm"), they are compared column by column. A height in cm or m and a weight in kg are read, with the unit after the value or in brackets in the row label; the other units of the lexicons (ft, in, lb) are converted too. Which words name a height, a weight and a BMI is in the language package's lexicon bmi-term. Every written number may be rounded to half its last digit (22.0 is anything from 21.95 to 22.05, 178 cm from 177.5 to 178.5 cm). A BMI is not reported when its rounding overlaps the range the height and weight can give, from the lightest weight over the tallest height squared to the heaviest weight over the shortest.
+
+message:
+  ja: 「BMI {written}」は、身長と体重からは {computed} です
+  en: "BMI {written} is written, but the height and weight give {computed}"
+
+how_to_fix:
+  ja: 身長・体重・BMI のどれが正しいかを確かめて、ほかを直してください。
+  en: Check which of the height, the weight and the BMI is right, and correct the others.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 健診の BMI が、体重 ÷ 身長² と合わない所
+  en: A BMI in a checkup that the weight divided by the height squared does not give
+example:
+  ja:
+    before: |
+      | 項目 | 結果 |
+      | --- | --- |
+      | 身長 | 160.0 cm |
+      | 体重 | 56.3 kg |
+      | BMI | 24.0 |
+    after: |
+      | 項目 | 結果 |
+      | --- | --- |
+      | 身長 | 160.0 cm |
+      | 体重 | 56.3 kg |
+      | BMI | 22.0 |
+  en:
+    before: |
+      | Item | Result |
+      | --- | --- |
+      | Height | 178 cm |
+      | Weight | 74.0 kg |
+      | BMI | 21.4 |
+    after: |
+      | Item | Result |
+      | --- | --- |
+      | Height | 178 cm |
+      | Weight | 74.0 kg |
+      | BMI | 23.4 |
+
+not_flagged:
+  ja: 身長・体重・BMI のどれかが無い節、二つある節（二人分、前と後）、三つが別々の表にある節、三つの行の升の数が違う表は比べません。範囲（160〜165 cm）、目安（約60 kg）、二つの数（5 ft 10 in）、単位の無い身長や体重、語彙表に無い単位の升、見出しの括弧に単位でないもの（体重（前年）、BMI（パーセンタイル））がある行は読みません。丸めで届く範囲の BMI は言いません。
+  en: "A section without a height, a weight or a BMI, with two of one (two people, a before and an after), with the three in different tables, or whose three rows have different numbers of cells is not compared. A range (160–165 cm), a rough figure (about 60 kg), two numbers (5 ft 10 in), a height or weight with no unit, a unit not in the lexicons, and a row whose label notes something other than a unit in brackets (Weight (last year), BMI (percentile)) are not read. A BMI the rounding of the values can reach is not reported."

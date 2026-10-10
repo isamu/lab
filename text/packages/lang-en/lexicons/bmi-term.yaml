@@ -1,0 +1,12 @@
+# Names of a height, a weight and a BMI (bmi-mismatch). group is height, weight or bmi. A table row label or the name of a
+# "name: value" line is read when it is only this word (a unit in brackets aside). When one section has one of each, the
+# BMI is compared with the weight divided by the square of the height.
+id: bmi-term
+language: en
+entries:
+  - { pattern: Height, group: height }
+  - { pattern: Weight, group: weight }
+  - { pattern: Body weight, group: weight }
+  - { pattern: BMI, group: bmi }
+  - { pattern: Body mass index, group: bmi }
+  - { pattern: Body-mass index, group: bmi }

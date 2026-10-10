@@ -3,7 +3,7 @@
     "ja": {
       "age-birth-date": "0/2",
       "exam-after-report": "0/2",
-      "bmi": "0/1",
+      "bmi": "1/1",
       "range-reversed": "1/2",
       "unit-vs-range": "0/2",
       "flag-mismatch": "2/2",
@@ -13,7 +13,7 @@
     "en": {
       "age-birth-date": "0/2",
       "exam-after-report": "0/2",
-      "bmi": "0/1",
+      "bmi": "1/1",
       "range-reversed": "1/2",
       "flag-mismatch": "2/2",
       "unit-vs-range": "0/2",
