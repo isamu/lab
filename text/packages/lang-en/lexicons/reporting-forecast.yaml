@@ -1,0 +1,25 @@
+# Words for a later period's outlook. A period name in a sentence, a table heading cell or a section with one of these
+# may differ from the document's period ("full-year forecast", "Outlook", "next fiscal year").
+id: reporting-forecast
+language: en
+entries:
+  - pattern: forecast
+  - pattern: forecasts
+  - pattern: outlook
+  - pattern: guidance
+  - pattern: expect
+  - pattern: expects
+  - pattern: expected
+  - pattern: projected
+  - pattern: projection
+  - pattern: plan
+  - pattern: plans
+  - pattern: target
+  - pattern: targets
+  - pattern: will
+  - pattern: next fiscal
+  - pattern: next year
+  - pattern: next quarter
+  - pattern: upcoming
+  - pattern: estimate
+  - pattern: estimated

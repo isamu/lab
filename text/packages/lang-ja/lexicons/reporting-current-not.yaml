@@ -1,0 +1,10 @@
+# 今の期間の語（reporting-current）を含むが、期間を指さない語。「2025年3月期の当期純利益」の「当期」は利益の名前の一部で、
+# その期間が今の期間だとは言わない。period-label-conflict はこの語を除いてから今の期間の語を探す。
+id: reporting-current-not
+language: ja
+entries:
+  - pattern: 当期純利益
+  - pattern: 当期純損失
+  - pattern: 当期利益
+  - pattern: 当期損失
+  - pattern: 当期首

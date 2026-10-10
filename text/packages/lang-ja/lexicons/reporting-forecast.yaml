@@ -1,0 +1,18 @@
+# 先の期間の見込みを言う語。この語のある文、表の見出しの升、節の中の期間の名前は、文書の期間と違ってよい（通期予想、次期の見通し）。
+id: reporting-forecast
+language: ja
+entries:
+  - pattern: 予想
+  - pattern: 予測
+  - pattern: 見通し
+  - pattern: 見込
+  - pattern: 計画
+  - pattern: 目標
+  - pattern: 予定
+  - pattern: 次期
+  - pattern: 翌期
+  - pattern: 来期
+  - pattern: 次年度
+  - pattern: 来年度
+  - pattern: 翌年度
+  - pattern: ガイダンス
