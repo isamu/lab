@@ -6,7 +6,7 @@
       "waiting-period": "1/2",
       "benefit-amount": "0/2",
       "deductible-over-limit": "0/2",
-      "premium-annual": "0/1",
+      "premium-annual": "1/1",
       "exclusion-numbering": "2/2",
       "insurer-name": "1/2",
       "premium-total": "1/1"
@@ -17,7 +17,7 @@
       "waiting-period": "1/2",
       "benefit-amount": "0/2",
       "deductible-over-limit": "0/2",
-      "premium-annual": "0/1",
+      "premium-annual": "1/1",
       "exclusion-numbering": "2/2",
       "insurer-name": "2/2",
       "premium-total": "1/1"
