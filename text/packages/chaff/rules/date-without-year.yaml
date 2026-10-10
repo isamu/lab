@@ -12,12 +12,12 @@ name:
   en: Date without a year
 
 why:
-  ja: 文書のほかの日付には年があるのに、一つだけ年が無い日付は、読み手がどの年かを推し量ることになります。年をまたぐ日付が並ぶ文書（12月と1月）では、年の無い日付がどちらの年か決まりません。
-  en: When the document's other dates carry a year, a date without one leaves the reader to guess it. When the dates cross the turn of a year (December and January), a yearless date could be either year.
+  ja: 文書の日付が二つ以上の年にわたるとき（2025年の日付と2026年の日付）、年の無い日付はどの年のことか読み手には決まりません。年をまたぐ日付が並ぶ文書（12月と1月）でも、年の無い日付がどちらの年か決まりません。日付がみな同じ年なら、年が無くても読み手には分かります。
+  en: When the document's dates span more than one year (some in 2025, some in 2026), a date without a year leaves the reader unable to tell which year it means. The same holds where the dates cross the turn of a year (December and January). When every dated date is in one year, the reader can tell the year without it.
 
 message:
-  ja: 「{date}」には年がありません（この文書のほかの日付 {count} 個には年があります）
-  en: '"{date}" has no year (the document''s other {count} dates do)'
+  ja: 「{date}」には年がありません。この文書の日付は {from}年から{to}年にわたるので、どの年か決まりません
+  en: '"{date}" has no year, and the document''s dates run from {from} to {to}, so the year is unclear'
 messages:
   boundary:
     ja: 「{date}」には年がありません。年の変わり目をまたぐ日付が並んでいるので、どちらの年か決まりません
@@ -33,39 +33,39 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 
 group: structure
 summary:
-  ja: ほかの日付には年があるのに年の無い日付と、年の変わり目をまたいで並ぶ年の無い日付
-  en: A date without a year where the document's other dates carry one, or where the dates cross the turn of a year
+  ja: 年の無い日付のうち、どの年か読み手に決まらないもの（文書の日付が二つ以上の年にわたるときと、年の変わり目をまたいで並ぶとき）
+  en: A date without a year whose year the reader cannot determine, because the document's dates span more than one year or cross the turn of a year
 example:
   ja:
     before: |
       # 日程
 
+      - 2025年10月15日（水）：前回の説明会
       - 2026年10月14日（水）：説明会
-      - 2026年10月21日（水）：申込の締め切り
       - 10月28日（水）：結果の連絡
     after: |
       # 日程
 
+      - 2025年10月15日（水）：前回の説明会
       - 2026年10月14日（水）：説明会
-      - 2026年10月21日（水）：申込の締め切り
       - 2026年10月28日（水）：結果の連絡
   en:
     before: |
       # Schedule
 
+      - October 15, 2025: last year's briefing
       - October 14, 2026: briefing
-      - October 21, 2026: applications close
       - October 28: results sent
     after: |
       # Schedule
 
+      - October 15, 2025: last year's briefing
       - October 14, 2026: briefing
-      - October 21, 2026: applications close
       - October 28, 2026: results sent
 
 not_flagged:
-  ja: 年を一度だけ書いて、あとの日付は月と日だけで書く文書（年の無い日付のほうが多い文書）は、書き方の選び方として指しません。ただしその場合も、年をまたぐ日付は指します。月だけ・年だけの日付は見ません。
-  en: A document that writes the year once and the rest as month and day (more yearless dates than dated ones) is a style, and not reported, except for a date across the turn of a year. Month-only and year-only dates are not checked.
+  ja: 年のある日付がみな同じ年の文書では、年の無い日付を指しません（どの年か読み手に分かるため）。年を一度だけ書いて、あとの日付は月と日だけで書く文書（年の無い日付のほうが多い文書）も、書き方の選び方として指しません。ただしどちらの場合も、年をまたぐ日付は指します。年のある日付が一つも無い文書、月だけ・年だけの日付は見ません。
+  en: A document whose dated dates are all in one year is not reported, since the reader can tell the year. A document that writes the year once and the rest as month and day (more yearless dates than dated ones) is a style, and not reported either. In both, a date across the turn of a year is still reported. A document with no dated date, and month-only and year-only dates, are not checked.
 rewrite:
   depth: light
   ja:

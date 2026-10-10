@@ -17,6 +17,7 @@ import { percentSumMismatches, type ShareWords } from "../structure/percent-sum.
 import { proseShareMismatches } from "../structure/percent-sum-prose.ts";
 import { isQuotedAlone } from "../quoted-span.ts";
 import { ordinalRunGaps } from "./ordinal-run-gaps.ts";
+import { readableDates, withReadableDates } from "./readable-dates.ts";
 
 const QUOTE_LENGTH = 80;
 
@@ -144,7 +145,7 @@ export const dateWeekdayMismatch: Detector = (doc): Finding[] => {
       column: 0,
       quote: quoteAt(doc.source, issue.offset),
       values: {
-        date: String(issue.values["date"]),
+        date: readableDates(doc)(String(issue.values["date"])),
         written: dayName(doc, issue.values["written"]),
         actual: dayName(doc, issue.values["actual"]),
         offset: issue.offset,
@@ -166,7 +167,7 @@ export const dateOrder: Detector = (doc): Finding[] =>
         line: 0,
         column: 0,
         quote: quoteAt(doc.source, issue.offset),
-        values: { ...issue.values, offset: issue.offset },
+        values: { ...withReadableDates(issue.values, ["date", "previous", "next"], readableDates(doc)), offset: issue.offset },
         ...("next" in issue.values ? { variant: "first" } : {}),
       }));
 

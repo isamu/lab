@@ -11,6 +11,7 @@ import { inDocumentOrder, type StructureIssue } from "../structure/issues.ts";
 import { proseAndTablesOf } from "../table-text.ts";
 import { periodWordsOf } from "./range-words.ts";
 import { quoteAt } from "./structure-tree.ts";
+import { readableDates, withReadableDates } from "./readable-dates.ts";
 
 /** A record's facts table can sit well below its header date (a listing date above the table holding the move-in date). */
 const MAX_RECORD_LINE_GAP = 40;
@@ -43,7 +44,7 @@ const findingOf = (doc: ProseDocument, issue: StructureIssue, variant?: string):
   line: 0,
   column: 0,
   quote: quoteAt(doc.source, issue.offset),
-  values: { ...issue.values, offset: issue.offset },
+  values: { ...withReadableDates(issue.values, ["due", "issued", "meeting", "later", "earlier"], readableDates(doc)), offset: issue.offset },
   ...(variant === undefined ? {} : { variant }),
 });
 

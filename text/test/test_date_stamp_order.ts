@@ -73,8 +73,8 @@ describe("date-stamp-order", () => {
       .findings.filter((finding) => finding.rule === RULE)
       .map((finding) => messageOf(rule, finding, "en"));
     assert.deepEqual(messages, [
-      "The established date 2027-04-01 is after the update 2026-07-01",
-      "The update 2026-07-01 is before the established date 2027-04-01",
+      "The established date April 1, 2027 is after the update July 1, 2026",
+      "The update July 1, 2026 is before the established date April 1, 2027",
     ]);
   });
 

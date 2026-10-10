@@ -6,6 +6,7 @@ import type { DatedValue } from "../derived/relative-dates.ts";
 import { relativeDayMismatch, type DayWord } from "../derived/relative-weekdays.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { quoteAt } from "./structure-tree.ts";
+import { readableDates } from "./readable-dates.ts";
 
 const FULL = /^\d{4}-\d{2}-\d{2}$/u;
 const LATIN = /^[A-Za-z]/u;
@@ -117,7 +118,7 @@ export const dayWordFindings = (doc: ProseDocument, dates: readonly DatedValue[]
             base: doc.source.slice(base.start, base.end),
             relative: doc.source.slice(word.start, word.end),
             target: doc.source.slice(target.start, target.end),
-            expected,
+            expected: readableDates(doc)(expected),
             offset: target.start,
           },
         },
