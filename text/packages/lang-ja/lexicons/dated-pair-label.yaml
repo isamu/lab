@@ -66,3 +66,24 @@ entries:
   - { pattern: "第１回お支払日", group: loan, position: after }
   - { pattern: "第1回返済日", group: loan, position: after }
   - { pattern: "第１回返済日", group: loan, position: after }
+  # 宿泊の予約。チェックアウトはチェックインの日より前に来ない。同じ日（日帰り）は指さない。
+  - { pattern: "チェックイン", group: stay, position: before }
+  - { pattern: "チェックイン日", group: stay, position: before }
+  - { pattern: "チェックアウト", group: stay, position: after }
+  - { pattern: "チェックアウト日", group: stay, position: after }
+  # レンタカーなどの貸出。返却は貸出より前に来ない。「出発日」は入れない。旅の案内では、旅券や書類の返却日が出発日より前に来る。
+  - { pattern: "貸出", group: rental, position: before }
+  - { pattern: "貸出日", group: rental, position: before }
+  - { pattern: "貸出日時", group: rental, position: before }
+  - { pattern: "返却", group: rental, position: after }
+  - { pattern: "返却日", group: rental, position: after }
+  - { pattern: "返却日時", group: rental, position: after }
+  - { pattern: "返却予定日", group: rental, position: after }
+  # 無料でキャンセルできる期限は、泊まる日や借りる日より前に来る。チェックインと貸出は stay と rental にもあるが、組ごとに比べる。
+  - { pattern: "無料キャンセル期限", group: cancel, position: before }
+  - { pattern: "キャンセル無料期限", group: cancel, position: before }
+  - { pattern: "チェックイン", group: cancel, position: after }
+  - { pattern: "チェックイン日", group: cancel, position: after }
+  - { pattern: "貸出", group: cancel, position: after }
+  - { pattern: "貸出日", group: cancel, position: after }
+  - { pattern: "貸出日時", group: cancel, position: after }
