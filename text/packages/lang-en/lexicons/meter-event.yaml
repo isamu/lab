@@ -1,0 +1,14 @@
+# Words for what changes the difference of two meter readings (meter-usage-mismatch). rollover: the meter went past its
+# last figure and started again (a current reading below the previous one is read with the previous reading's next power
+# of ten added). replaced: the meter was replaced (the two readings are of different meters and are not compared). Only
+# words under the same heading count (in a table with one meter per row, only that row's). Only phrases that state the
+# event: the bare noun "rollover" is also in "No rollover occurred".
+id: meter-event
+language: en
+entries:
+  - { pattern: rolled over, group: rollover }
+  - { pattern: meter replaced, group: replaced }
+  - { pattern: meter was replaced, group: replaced }
+  - { pattern: meter exchange, group: replaced }
+  - { pattern: meter change, group: replaced }
+  - { pattern: new meter, group: replaced }

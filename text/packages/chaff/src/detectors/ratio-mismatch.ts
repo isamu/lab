@@ -2,7 +2,7 @@
 // ratio-label and ratio-term, and the structure tree's quantities in a currency or a percent unit) and leaves the deciding
 // to structure/ratio.ts.
 import type { Detector, Finding, ProseDocument, Span } from "../plugin.ts";
-import { linesOf } from "../structure/lines.ts";
+import { linesOf, type Line } from "../structure/lines.ts";
 import { cellsOf, tablesOf } from "../facts/table-facts.ts";
 import { withoutEdgeMarks } from "../facts/trim-marks.ts";
 import { proseAndTablesOf } from "../table-text.ts";
@@ -47,18 +47,18 @@ const amountWordsOf = (doc: ProseDocument, percentUnits: readonly string[]): Amo
   percentUnits,
 });
 
-const tableRowsOf = (source: string): TableRow[][] =>
-  tablesOf(linesOf(source)).map((table) =>
-    table.rows.flatMap((row) => {
-      const [first, ...rest] = cellsOf(row);
-      if (first === undefined) return [];
-      const cells = rest.map((cell) => {
-        const text = withoutEdgeMarks(cell.text);
-        return { start: cell.start + Math.max(0, cell.text.indexOf(text)), text };
-      });
-      return [{ label: withoutEdgeMarks(first.text), cells }];
-    }),
-  );
+/** A table line read as its label (the first cell) and the cells after it, each without its edge marks. */
+export const tableRowOf = (row: Line): TableRow[] => {
+  const [first, ...rest] = cellsOf(row);
+  if (first === undefined) return [];
+  const cells = rest.map((cell) => {
+    const text = withoutEdgeMarks(cell.text);
+    return { start: cell.start + Math.max(0, cell.text.indexOf(text)), text };
+  });
+  return [{ label: withoutEdgeMarks(first.text), cells }];
+};
+
+const tableRowsOf = (source: string): TableRow[][] => tablesOf(linesOf(source)).map((table) => table.rows.flatMap(tableRowOf));
 
 /** A kanji or katakana next to a word written in them makes it part of a longer word (営業利益率 in 調整後営業利益率). */
 const CJK_LETTER = /[\p{sc=Han}\p{sc=Katakana}ー]/u;
