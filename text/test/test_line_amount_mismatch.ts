@@ -108,6 +108,18 @@ describe("line-amount-mismatch: 数量×単価が金額と合わない", () => {
     assert.deepEqual(findingsOf(enTable(["| Water | 10³ | $1.80 | $18.00 |"]), en), []);
   });
 
+  it("数字の直後の上付き数字（累乗）はどの組み合わせでも数量として読まず、文字の後の上付き（m³）は読む", () => {
+    const superscripts = [..."⁰¹²³⁴⁵⁶⁷⁸⁹"];
+    const leadingNumbers = ["1", "10", "１", "１０", "16"];
+    const after = ["", " ", " L", "m", "人日"];
+    leadingNumbers.forEach((number) =>
+      superscripts.forEach((superscript) => {
+        after.forEach((rest) => assert.equal(quantityOf(cell(`${number}${superscript}${rest}`), VOLUME), undefined, `${number}${superscript}${rest}`));
+      }),
+    );
+    leadingNumbers.forEach((number) => assert.equal(quantityOf(cell(`${number}m³`), VOLUME), Number(number.normalize("NFKC")), `${number}m³`));
+  });
+
   it("語の無い言語と空の入力", () => {
     assert.deepEqual(lineAmountMismatches(table(["| 開発 | 4 | 150,000円 | 650,000円 |"]), { quantity: [], unitPrice: [], amount: [], ...NO_UNITS }), []);
     assert.deepEqual(lineAmountMismatches("", { quantity: ["数量"], unitPrice: ["単価"], amount: ["金額"], ...NO_UNITS }), []);
