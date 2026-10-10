@@ -189,6 +189,15 @@ describe("日付（年・月・日をまとめる）", () => {
     assert.deepEqual(dateOf("2023年（令和6年）12月17日"), ["2023-12-17"]);
   });
 
+  it("括弧で言い換えた年で始まる日付は、括弧の中の年を glossYear に持つ", () => {
+    const glossOf = (text: string): Attr[] => dates(text).map((mention) => mention.attrs["glossYear"]);
+    assert.deepEqual(glossOf("令和6年（2023年）12月17日"), [2023]);
+    assert.deepEqual(glossOf("2024年（令和5年）"), [2023]);
+    assert.deepEqual(glossOf("令和6（2024）年12月17日"), [2024]);
+    assert.deepEqual(glossOf("2024年12月17日、令和6年12月17日、12月17日"), [undefined, undefined, undefined]);
+    assert.deepEqual(glossOf("令和6年度（2023年度）"), []);
+  });
+
   it("元号の言い換えでない括弧は、年と月をつながない", () => {
     assert.deepEqual(dateOf("令和6年（予定）12月17日"), ["12-17"]);
     assert.deepEqual(dateOf("令和6年（第2024号）12月17日"), ["12-17"]);

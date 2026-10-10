@@ -5,6 +5,8 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { impossibleDates, type CalendarWords } from "../packages/chaff/src/detectors/impossible-date.ts";
 import { loadLexicons as loadJaLexicons } from "../packages/lang-ja/src/lexicons.ts";
+import { yearDisagreements } from "../packages/chaff/src/detectors/gloss-year.ts";
+import type { StructureNode } from "../packages/chaff/src/plugin.ts";
 
 // 暦に無い日付（impossible-date）。例文はすべて自作。
 
@@ -74,6 +76,85 @@ describe("impossible-date: 暦に無い日付", () => {
   it("空の文字列と語の無い言語", () => {
     assert.deepEqual(impossibleDates("", WORDS), []);
     assert.deepEqual(impossibleDates("2月30日 April 31", { months: [], units: [], eras: [] }), []);
+  });
+});
+
+describe("impossible-date: 和暦と括弧の西暦が違う年（years）", () => {
+  it("括弧の外と中が違う年を言う", () => {
+    assert.deepEqual(findingsOf("説明会は令和6年（2023年）12月17日に開きます。\n"), [
+      "「令和6年（2023年）12月17日」は和暦と西暦が違う年を指しています（括弧の外は2024年、中は2023年）",
+    ]);
+    assert.deepEqual(findingsOf("2024年（令和5年）に制定しました。\n"), [
+      "「2024年（令和5年）」は和暦と西暦が違う年を指しています（括弧の外は2024年、中は2023年）",
+    ]);
+    assert.deepEqual(findingsOf("令和元年（2018年）5月1日に改元。\n"), [
+      "「令和元年（2018年）5月1日」は和暦と西暦が違う年を指しています（括弧の外は2019年、中は2018年）",
+    ]);
+  });
+
+  it("同じ年の言い換えは言わない", () => {
+    assert.deepEqual(findingsOf("令和6年（2024年）12月17日、2019年（令和元年）5月1日、令和6（2024）年4月1日、平成31年(2019年)4月30日。\n"), []);
+  });
+
+  it("年度と、語彙表に無い元号は読まない", () => {
+    assert.deepEqual(findingsOf("令和6年度（2023年度）の予算。令和6（2023）年度の決算。\n"), []);
+    assert.deepEqual(findingsOf("天平6年（2023年）の記録。\n"), []);
+  });
+
+  it("英語の文書は括弧の年を読まないので何も言わない", () => {
+    assert.deepEqual(findingsOf("It was signed in 2024 (2023).\n", en), []);
+  });
+
+  it("コード・引用・表の中は、ほかの日付と同じく読まない", () => {
+    assert.deepEqual(findingsOf("例：\n\n```\n令和6年（2023年）12月17日\n```\n"), []);
+    assert.deepEqual(findingsOf("> 令和6年（2023年）12月17日に開きます。\n"), []);
+    assert.deepEqual(findingsOf("| 日付 | 内容 |\n| --- | --- |\n| 令和6年（2023年）12月17日 | 説明会 |\n"), []);
+  });
+});
+
+const dateNode = (start: number, attrs: StructureNode["attrs"], kind: StructureNode["kind"] = "date"): StructureNode => ({
+  kind,
+  address: "",
+  span: { start, end: start + 1 },
+  line: 1,
+  attrs,
+  children: [],
+});
+
+describe("yearDisagreements（純粋）", () => {
+  const tree = (...children: StructureNode[]): StructureNode => ({ ...dateNode(0, {}, "doc"), children });
+
+  it("value の年と glossYear が違う日付だけを、文書の順に返す", () => {
+    const found = yearDisagreements(
+      tree(
+        dateNode(5, { value: "2024-12-17", glossYear: 2023 }),
+        dateNode(9, { value: "2024", glossYear: 2024 }),
+        dateNode(12, { value: "2019", glossYear: 2018 }),
+      ),
+    );
+    assert.deepEqual(
+      found.map((date) => [date.offset, date.year, date.glossYear]),
+      [
+        [5, 2024, 2023],
+        [12, 2019, 2018],
+      ],
+    );
+  });
+
+  it("glossYear が無い・数でない、年の無い value、日付でない節は読まない", () => {
+    assert.deepEqual(
+      yearDisagreements(
+        tree(
+          dateNode(1, { value: "2024-12-17" }),
+          dateNode(2, { value: "2024", glossYear: "2023" }),
+          dateNode(3, { value: "12-17", glossYear: 2023 }),
+          dateNode(4, { glossYear: 2023 }),
+          dateNode(5, { value: "2024", glossYear: 2023 }, "definition"),
+        ),
+      ),
+      [],
+    );
+    assert.deepEqual(yearDisagreements(tree()), []);
   });
 });
 
