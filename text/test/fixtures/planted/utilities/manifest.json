@@ -1,0 +1,265 @@
+{
+  "note": "Self-written utility bills (電気・水道の検針票とご請求明細 / electricity and water statements) for fictional utilities and customers: an electricity bill with a tiered energy rate and a two-month water and sewer bill, each in a clean version and a planted one that differs only on the lines below. They run as business/proposal, the genre the invoices of the business set run as: no genre is made for utility bills. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: meter-usage-mismatch (a meter reading whose difference from the previous reading is not the usage stated under it). yarn planted utilities scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/electricity",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/electricity.clean.md",
+      "planted": "ja/electricity.planted.md",
+      "mistakes": [
+        {
+          "kind": "due-before-issue",
+          "rule": "due-before-issue",
+          "line": 5,
+          "clean": "お支払期限：2026年10月26日",
+          "planted": "お支払期限：2026年9月26日"
+        },
+        {
+          "kind": "name-two-ways",
+          "rule": "name-variant",
+          "line": 7,
+          "clean": "川辺 春香 様",
+          "planted": "川辺 春花 様"
+        },
+        {
+          "kind": "period-days",
+          "rule": "duration-mismatch",
+          "line": 13,
+          "clean": "（30日間）",
+          "planted": "（31日間）"
+        },
+        {
+          "kind": "period-reversed",
+          "rule": "date-range-reversed",
+          "line": 15,
+          "clean": "〜2026年9月30日",
+          "planted": "〜2025年9月30日"
+        },
+        {
+          "kind": "meter-reading",
+          "rule": "meter-usage-mismatch",
+          "line": 23,
+          "clean": "| 12,640 |",
+          "planted": "| 12,660 |"
+        },
+        {
+          "kind": "rate-line-amount",
+          "rule": "line-amount-mismatch",
+          "line": 34,
+          "clean": "| 36円 |",
+          "planted": "| 38円 |"
+        },
+        {
+          "kind": "tax-amount",
+          "rule": "tax-mismatch",
+          "line": 37,
+          "clean": "| 1,308円 |",
+          "planted": "| 1,380円 |"
+        },
+        {
+          "kind": "total-items",
+          "rule": "total-mismatch",
+          "line": 38,
+          "clean": "| 14,388円 |",
+          "planted": "| 14,838円 |"
+        }
+      ]
+    },
+    {
+      "id": "ja/water",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/water.clean.md",
+      "planted": "ja/water.planted.md",
+      "mistakes": [
+        {
+          "kind": "due-before-issue",
+          "rule": "due-before-issue",
+          "line": 5,
+          "clean": "お支払期限：2026年10月20日",
+          "planted": "お支払期限：2026年9月20日"
+        },
+        {
+          "kind": "period-days",
+          "rule": "duration-mismatch",
+          "line": 13,
+          "clean": "（62日間）",
+          "planted": "（64日間）"
+        },
+        {
+          "kind": "period-reversed",
+          "rule": "date-range-reversed",
+          "line": 15,
+          "clean": "〜2026年9月24日",
+          "planted": "〜2025年9月24日"
+        },
+        {
+          "kind": "name-two-ways",
+          "rule": "name-variant",
+          "line": 17,
+          "clean": "さくら台市水道局",
+          "planted": "さくら台町水道局"
+        },
+        {
+          "kind": "meter-reading",
+          "rule": "meter-usage-mismatch",
+          "line": 23,
+          "clean": "| 1,284 |",
+          "planted": "| 1,286 |"
+        },
+        {
+          "kind": "rate-line-amount",
+          "rule": "line-amount-mismatch",
+          "line": 34,
+          "clean": "| 150円 |",
+          "planted": "| 160円 |"
+        },
+        {
+          "kind": "tax-amount",
+          "rule": "tax-mismatch",
+          "line": 38,
+          "clean": "| 1,076円 |",
+          "planted": "| 1,067円 |"
+        },
+        {
+          "kind": "total-items",
+          "rule": "total-mismatch",
+          "line": 39,
+          "clean": "| 11,836円 |",
+          "planted": "| 11,863円 |"
+        }
+      ]
+    },
+    {
+      "id": "en/electricity",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/electricity.clean.md",
+      "planted": "en/electricity.planted.md",
+      "mistakes": [
+        {
+          "kind": "due-before-issue",
+          "rule": "due-before-issue",
+          "line": 5,
+          "clean": "Payment due: October 26, 2026",
+          "planted": "Payment due: September 26, 2026"
+        },
+        {
+          "kind": "name-two-ways",
+          "rule": "name-variant",
+          "line": 7,
+          "clean": "Laura Whitcombe",
+          "planted": "Laura Whitcomb"
+        },
+        {
+          "kind": "period-days",
+          "rule": "duration-mismatch",
+          "line": 13,
+          "clean": "(30 days)",
+          "planted": "(31 days)"
+        },
+        {
+          "kind": "period-reversed",
+          "rule": "date-range-reversed",
+          "line": 15,
+          "clean": "– September 30, 2026",
+          "planted": "– September 30, 2025"
+        },
+        {
+          "kind": "meter-reading",
+          "rule": "meter-usage-mismatch",
+          "line": 23,
+          "clean": "| 48,620 |",
+          "planted": "| 48,650 |"
+        },
+        {
+          "kind": "rate-line-amount",
+          "rule": "line-amount-mismatch",
+          "line": 34,
+          "clean": "| $0.15 |",
+          "planted": "| $0.16 |"
+        },
+        {
+          "kind": "tax-amount",
+          "rule": "tax-mismatch",
+          "line": 37,
+          "clean": "| $9.36 |",
+          "planted": "| $9.63 |"
+        },
+        {
+          "kind": "total-items",
+          "rule": "total-mismatch",
+          "line": 38,
+          "clean": "| $126.36 |",
+          "planted": "| $162.36 |"
+        }
+      ]
+    },
+    {
+      "id": "en/water",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/water.clean.md",
+      "planted": "en/water.planted.md",
+      "mistakes": [
+        {
+          "kind": "due-before-issue",
+          "rule": "due-before-issue",
+          "line": 5,
+          "clean": "Payment due: October 20, 2026",
+          "planted": "Payment due: September 20, 2026"
+        },
+        {
+          "kind": "period-days",
+          "rule": "duration-mismatch",
+          "line": 13,
+          "clean": "(62 days)",
+          "planted": "(60 days)"
+        },
+        {
+          "kind": "period-reversed",
+          "rule": "date-range-reversed",
+          "line": 15,
+          "clean": "– August 31, 2026",
+          "planted": "– August 31, 2025"
+        },
+        {
+          "kind": "name-two-ways",
+          "rule": "name-variant",
+          "line": 17,
+          "clean": "Elmbrook Water Utility",
+          "planted": "Elmbrook Water Utilities"
+        },
+        {
+          "kind": "meter-reading",
+          "rule": "meter-usage-mismatch",
+          "line": 23,
+          "clean": "| 2,346 |",
+          "planted": "| 2,348 |"
+        },
+        {
+          "kind": "rate-line-amount",
+          "rule": "line-amount-mismatch",
+          "line": 34,
+          "clean": "| $4.25 |",
+          "planted": "| $4.50 |"
+        },
+        {
+          "kind": "tax-amount",
+          "rule": "tax-mismatch",
+          "line": 37,
+          "clean": "| $9.45 |",
+          "planted": "| $9.54 |"
+        },
+        {
+          "kind": "total-items",
+          "rule": "total-mismatch",
+          "line": 38,
+          "clean": "| $198.45 |",
+          "planted": "| $199.45 |"
+        }
+      ]
+    }
+  ]
+}
