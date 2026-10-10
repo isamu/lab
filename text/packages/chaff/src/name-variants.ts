@@ -4,6 +4,7 @@ import { nameCueAt, type NameCue, type NameCues } from "./name-cue.ts";
 import { isNearSurname } from "./surname-near.ts";
 import { foldedKeysOf, NO_SPELLING, type SpellingInput } from "./name-spelling-chars.ts";
 import { NO_CHAR_READINGS, readingOfWords } from "./name-char-reading.ts";
+import { isPersonRun } from "./name-person.ts";
 
 // 同じ名前（人・会社・製品）を、文書の中で少しだけ違う形に書いた所。どの形が正しいかは決めず、少ないほうを指す。
 // 三通りで同じ名前と見る。書き方の違いだけ（GitHub と Github、Mac OS と macOS）、読みが同じ（山田太郎 と 山田太朗）、
@@ -80,13 +81,6 @@ const withoutEdgeQuotes = (text: string): string => {
  */
 const NOT_COMPARED = /@|(?:^|\s)\p{L}(?:\s|$)/u;
 
-/** 人名と読む解析器の印（UD の NameType: 姓 Sur、名 Giv、どちらとも言えない人名 Prs）。 */
-const PERSON_TYPES: ReadonlySet<string> = new Set(["Sur", "Giv", "Prs"]);
-
-/** 人の名前か。解析器が人名と読む語を含むか、すぐ後ろに敬称（様、さん、氏）が付く。 */
-const isPerson = (run: readonly Token[], next: Token | undefined, suffixes: readonly string[]): boolean =>
-  run.some((token) => PERSON_TYPES.has(token.features?.["NameType"] ?? "")) || (next !== undefined && suffixes.includes(next.surface));
-
 /**
  * 文の語から、名前の現れ。surface は source の上の書いたまま（折り返しの空白は一つにまとめる）。
  * 大文字だけの名前（ACME INC、NASA）は外す。契約書の署名欄や略語で、ふつうの書き方の別の形ではない。小文字の英字だけの語も外す。
@@ -101,7 +95,7 @@ export const mentionsIn = (tokens: readonly Token[], source: string, personSuffi
     const surface = withoutEdgeQuotes(written);
     if (surface === "" || isUpperOnly(surface) || LOWER_LATIN_ONLY.test(surface) || NOT_COMPARED.test(surface)) return [];
     const words = run.filter((token) => !JOINERS.has(token.surface));
-    const person = isPerson(run, tokens[tokens.indexOf(last) + 1], personSuffixes);
+    const person = isPersonRun(run, tokens, personSuffixes);
     const reading = readingOfWords(words, person ? charReadings : NO_CHAR_READINGS);
     return [{ surface, offset: first.span.start, reading, words: words.map((token) => token.surface), person }];
   });
@@ -393,10 +387,16 @@ const oneCharApart = (left: string, right: string): boolean => {
  */
 const isPersonSlipOf = (tally: Tally, other: Tally): boolean => tally.count === 1 && other.count >= 2 && oneCharApart(tally.surface, other.surface);
 
-const personReadingVariants = (tallies: readonly Tally[]): NameVariant[] =>
+/** 表の升に書いた人の名前（ご代表者の升の 森下 千尋 様）を、本文の同じ書き方の数に足す。升にだけある書き方は足さない（指さない）。 */
+const withCellUses = (tallies: readonly Tally[], cellMentions: readonly NameMention[]): Tally[] => {
+  const persons = cellMentions.filter((mention) => mention.person === true).map((mention) => mention.surface);
+  return tallies.map((tally) => ({ ...tally, count: tally.count + persons.filter((surface) => surface === tally.surface).length }));
+};
+
+const personReadingVariants = (tallies: readonly Tally[], cellMentions: readonly NameMention[]): NameVariant[] =>
   variantsIn(
     groupBy(
-      tallies.filter((tally) => tally.person),
+      withCellUses(tallies, cellMentions).filter((tally) => tally.person),
       (tally) => (tally.first.reading === undefined ? [] : [tally.first.reading]),
     ),
     "reading",
@@ -426,7 +426,7 @@ export const nameVariants = (mentions: readonly NameMention[], chars: VariantCha
     ...nearVariants(tallies),
     ...surnameVariants(tallies),
     ...characterVariants(tallies, chars),
-    ...personReadingVariants(tallies),
+    ...personReadingVariants(tallies, spelling.alsoWritten),
   ];
   const reported = new Set<string>();
   return found

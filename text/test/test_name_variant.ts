@@ -132,6 +132,25 @@ describe("name-variant: 同じ名前の書き分け", () => {
     const table = "中村 健太 様の結果です。中村 健太 様にお送りします。\n\n| 氏名 | 区分 |\n| --- | --- |\n| 中村 健汰 | 予約 |\n";
     assert.deepEqual(variants(table, ja), ["「中村 健汰」は、ほかの所では同じ読みの「中村 健太」と書いています"]);
   });
+
+  it("空白を挟んだ敬称も人の名前の印にする（解析器が地名と読む 千尋）", () => {
+    const letter = "ご宿泊者：森下 千尋 様\n\n森下 千尋 様のご予約です。\n\n森下 千裕 様のお越しをお待ちしております。\n";
+    assert.deepEqual(variants(letter, ja), ["「千裕」は、ほかの所では同じ読みの「千尋」と書いています"]);
+    const fullWidth = "ご宿泊者：森下　千尋　様\n\n森下　千尋　様のご予約です。\n\n森下　千裕　様のお越しです。\n";
+    assert.deepEqual(variants(fullWidth, ja), ["「千裕」は、ほかの所では同じ読みの「千尋」と書いています"]);
+  });
+
+  it("表の升に書いた人の名前も、本文の同じ書き方の数に数える", () => {
+    const table = "ご宿泊者：森下 千尋 様\n\n| 項目 | 内容 |\n| --- | --- |\n| ご代表者 | 森下 千尋 様 |\n\n森下 千裕 様のお越しをお待ちしております。\n";
+    assert.deepEqual(variants(table, ja), ["「千裕」は、ほかの所では同じ読みの「千尋」と書いています"]);
+  });
+
+  it("読みの違う名（千尋 と 千里）、表にも無く一度ずつの名、升にだけある書き方は言わない", () => {
+    assert.deepEqual(variants("ご宿泊者：森下 千尋 様\n\n森下 千尋 様のご予約です。\n\n森下 千里 様のお越しです。\n", ja), []);
+    assert.deepEqual(variants("ご宿泊者：森下 千尋 様\n\n森下 千裕 様のお越しです。\n", ja), []);
+    const onlyInCells = "森下 千尋 様のご予約です。\n\n| 項目 | 内容 |\n| --- | --- |\n| ご代表者 | 森下 千裕 様 |\n| ご同伴者 | 森下 千裕 様 |\n";
+    assert.deepEqual(variants(onlyInCells, ja), []);
+  });
 });
 
 describe("the reading behind name-variant", () => {
@@ -245,6 +264,14 @@ describe("the reading behind name-variant", () => {
     assert.deepEqual(personOf(placeThenSuffix, ["様"]), [true]);
     assert.deepEqual(personOf(placeThenSuffix), [false]);
     assert.deepEqual(personOf([token("松本", 0, "PROPN", "Sur")]), [true]);
+    const spaced = (blank: string): (boolean | undefined)[] =>
+      mentionsIn([token("千尋", 0, "PROPN", "Geo"), token(blank, 2, "PUNCT"), token("様", 2 + blank.length, "NOUN")], `千尋${blank}様`, ["様"]).map(
+        (found) => found.person,
+      );
+    assert.deepEqual(spaced(" "), [true]);
+    assert.deepEqual(spaced("　"), [true]);
+    assert.deepEqual(spaced("\n"), [false]);
+    assert.deepEqual(spaced("、"), [false]);
   });
 
   it("解析器が読めない字の読みは、人の名前と読める現れにだけ足す", () => {
