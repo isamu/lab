@@ -1,10 +1,16 @@
 # 元号。すぐ後ろ（空白 1 つまで）の数に日付の単位が続けば暦の年で（令和8年、令和 3 年、平成30年度）、年数という長さではない。
 # 字面どおりに照らす（「令和」は「令」「和」の二語に分かれることがある）。
+# first_year は元年の西暦の年。元号で書いた日付を西暦の日付にし、括弧で並べた西暦の年（令和6年（2024年））と照らす。
 id: calendar-era
 language: ja
 entries:
   - pattern: 令和
+    first_year: 2019
   - pattern: 平成
+    first_year: 1989
   - pattern: 昭和
+    first_year: 1926
   - pattern: 大正
+    first_year: 1912
   - pattern: 明治
+    first_year: 1868

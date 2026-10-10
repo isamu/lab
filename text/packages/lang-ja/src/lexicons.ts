@@ -1,6 +1,7 @@
 import { parse } from "yaml";
 import type { Lexicon, LexiconEntry } from "chaffjs/plugin";
 import { PACKAGE_DIR, joinPath, readDir, readText } from "./package-files.ts";
+import type { Era } from "./era-year.ts";
 
 const DIR = joinPath(PACKAGE_DIR, "lexicons");
 
@@ -38,3 +39,14 @@ export const loadLexicons = (dir: string = DIR): Record<string, Lexicon> =>
         return [[raw["id"], raw["entries"].map(toEntry).filter((entry) => entry !== undefined)]];
       }),
   );
+
+const CALENDAR_ERA = "calendar-era.yaml";
+
+const toEra = (raw: unknown): Era[] =>
+  isRecord(raw) && typeof raw["pattern"] === "string" && typeof raw["first_year"] === "number" ? [{ name: raw["pattern"], firstYear: raw["first_year"] }] : [];
+
+/** 語彙表 calendar-era の元号と、その元年の西暦の年。first_year の無い元号は西暦にできないので入れない。 */
+export const loadCalendarEras = (dir: string = DIR): Era[] => {
+  const raw: unknown = parse(readText(joinPath(dir, CALENDAR_ERA)));
+  return isRecord(raw) && Array.isArray(raw["entries"]) ? raw["entries"].flatMap(toEra) : [];
+};
