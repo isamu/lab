@@ -2,6 +2,7 @@ id: period-part-exceeds-whole
 layer: L3
 status: stable
 how_to_find: period-part-exceeds-whole
+requires: [dates, quantities]
 # The words that make one period a part of another are period-part-marker; the word that ends a period's name period-part-word;
 # words for a period after the whole period-part-after; words joining the ends of a range period-part-range; the word between a
 # length and the whole's name period-part-inline-joiner; and words stating a length after a name period-part-length-verb.
