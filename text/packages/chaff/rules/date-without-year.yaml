@@ -64,8 +64,8 @@ example:
       - October 28, 2026: results sent
 
 not_flagged:
-  ja: 年のある日付がみな同じ年の文書では、年の無い日付を指しません（どの年か読み手に分かるため）。年を一度だけ書いて、あとの日付は月と日だけで書く文書（年の無い日付のほうが多い文書）も、書き方の選び方として指しません。ただしどちらの場合も、年をまたぐ日付は指します。年のある日付が一つも無い文書、月だけ・年だけの日付は見ません。
-  en: A document whose dated dates are all in one year is not reported, since the reader can tell the year. A document that writes the year once and the rest as month and day (more yearless dates than dated ones) is a style, and not reported either. In both, a date across the turn of a year is still reported. A document with no dated date, and month-only and year-only dates, are not checked.
+  ja: 年のある日付がみな同じ年の文書では、年の無い日付を指しません（どの年か読み手に分かるため）。年を一度だけ書いて、あとの日付は月と日だけで書く文書（年の無い日付のほうが多い文書）も、書き方の選び方として指しません。ただしどちらの場合も、年をまたぐ日付は指します。どの年のものでもない日付も指しません。毎年の日（毎年4月1日、年末年始閉庁日（12月29日～1月3日）、4月1日から翌年3月31日まで）と、例の日付（例えば…4月1日に届いた場合、例：のあとの日付）です。年のある日付が一つも無い文書、月だけ・年だけの日付は見ません。
+  en: A document whose dated dates are all in one year is not reported, since the reader can tell the year. A document that writes the year once and the rest as month and day (more yearless dates than dated ones) is a style, and not reported either. In both, a date across the turn of a year is still reported. Nor is a date of no one year, such as a day that comes round every year ("every year on April 1", "each December 31", "April 1 to March 31 of the following year") and a date in a worked example ("for example, a request received on April 1", the dates after "e.g."). A document with no dated date, and month-only and year-only dates, are not checked.
 rewrite:
   depth: light
   ja:
