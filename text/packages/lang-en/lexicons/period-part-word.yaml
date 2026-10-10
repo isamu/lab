@@ -1,0 +1,7 @@
+# The word that ends the name of a period (period-part-exceeds-whole): the whole's name ends in it ("warranty period"), and the
+# sentence with the part names its period with it too ("the free replacement period").
+id: period-part-word
+language: en
+entries:
+  - pattern: period
+  - pattern: term

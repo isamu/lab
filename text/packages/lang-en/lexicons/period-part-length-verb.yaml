@@ -1,0 +1,9 @@
+# Words between a period's name without "period" and its length (period-part-exceeds-whole): "the warranty runs for 12 months"
+# states the length of the warranty period.
+id: period-part-length-verb
+language: en
+entries:
+  - pattern: runs for
+  - pattern: lasts for
+  - pattern: lasts
+  - pattern: is valid for
