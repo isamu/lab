@@ -7,6 +7,7 @@ import { nameSpans, touchesAny } from "../team-names.ts";
 import { furiganaSpans } from "../furigana.ts";
 import { acronymsIn, isCapitalsNotSpelling } from "../capitals-with-small.ts";
 import { isPartOfAddress } from "./address-word.ts";
+import { wholeWordRuns, type WholeWordRun } from "../whole-word-runs.ts";
 
 /**
  * A word found in the document: where it is, which sentence it is in, its key and spelling, how it is written when that differs, and
@@ -37,6 +38,8 @@ const DISTINCT = "orthographic-variant-distinct";
 const FUKUSHI = "hiragana-fukushi";
 /** Lexicon: idioms written as noun, particle and verb (気をつける). The verb there is compared apart from the verb on its own. */
 const IDIOM = "orthographic-variant-idiom";
+/** Lexicon: words the tokenizer cuts in one spelling and not the other (お客様, お客 and さま). Each is read whole, keyed by its group. */
+const WHOLE_WORD = "orthographic-variant-whole-word";
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
 
@@ -116,7 +119,7 @@ const isCutFromKatakana = ({ token, previous }: InContext): boolean =>
 const isCopulaReadAsVerb = ({ token, previous }: InContext): boolean =>
   token.pos === "VERB" && token.surface === "で" && previous !== undefined && previous.pos !== "ADP";
 
-type Skips = { readonly skip: ReadonlySet<string>; readonly idioms: ReadonlySet<string> };
+type Skips = { readonly skip: ReadonlySet<string>; readonly idioms: ReadonlySet<string>; readonly wholeWords: ReadonlyMap<string, string> };
 
 const readingKeyOf = (word: InContext, { skip, idioms }: Skips): string | undefined => {
   const { token } = word;
@@ -127,17 +130,40 @@ const readingKeyOf = (word: InContext, { skip, idioms }: Skips): string | undefi
   return `${token.pos}|${useOf(word, idioms)}|${reading}`;
 };
 
+/**
+ * A listed word keyed by its group, so its spellings meet however the tokenizer cut each one. Not by reading: お父様 is read
+ * オ + トウサマ and お父さま オ + チチ + サマ.
+ */
+const wholeWordOf = (
+  sentence: Sentence,
+  tokens: readonly Token[],
+  { first, last, word }: WholeWordRun,
+  isOpen: IsOpen,
+  groups: ReadonlyMap<string, string>,
+): Placed[] => {
+  const [head, tail] = [tokens[first], tokens[last]];
+  if (head === undefined || tail === undefined || !isOpen(head.span.start - sentence.span.start, tail.span.end - sentence.span.start)) return [];
+  return [{ key: `whole|${groups.get(word) ?? word}`, spelling: word, sentence, offset: head.span.start }];
+};
+
 /** Japanese words keyed by part of speech, use and the reading of the dictionary form, spelled as the dictionary form. */
 const readingWords = (sentence: Sentence, isOpen: IsOpen, skips: Skips): Placed[] => {
   const tokens = sentence.tokens ?? [];
-  return tokens.flatMap((token, at): Placed[] => {
-    const key = readingKeyOf({ token, previous: tokens[at - 1], before: tokens[at - 2] }, skips);
-    const local = token.span.start - sentence.span.start;
-    if (key === undefined || token.lemma === undefined || !isOpen(local, local + token.surface.length)) return [];
-    const next = tokens[at + 1];
-    const compoundHead = token.pos === "NOUN" && next?.pos === "NOUN" && isTouching(token, next);
-    return [{ key, spelling: token.lemma, sentence, offset: token.span.start, compoundHead }];
-  });
+  const runs = wholeWordRuns(tokens, skips.wholeWords);
+  const inRun = new Set(runs.flatMap(({ first, last }) => Array.from({ length: last - first + 1 }, (_, extra) => first + extra)));
+  const whole = runs.flatMap((run) => wholeWordOf(sentence, tokens, run, isOpen, skips.wholeWords));
+  return [
+    ...whole,
+    ...tokens.flatMap((token, at): Placed[] => {
+      if (inRun.has(at)) return [];
+      const key = readingKeyOf({ token, previous: tokens[at - 1], before: tokens[at - 2] }, skips);
+      const local = token.span.start - sentence.span.start;
+      if (key === undefined || token.lemma === undefined || !isOpen(local, local + token.surface.length)) return [];
+      const next = tokens[at + 1];
+      const compoundHead = token.pos === "NOUN" && next?.pos === "NOUN" && isTouching(token, next);
+      return [{ key, spelling: token.lemma, sentence, offset: token.span.start, compoundHead }];
+    }),
+  ];
 };
 
 /**
@@ -273,7 +299,11 @@ const cellPlace = (cell: TableCell, names: readonly string[]): Place => {
  * document writes less is pointed at. No way is called right; limit is the largest share, in percent, the minority may have.
  */
 export const orthographicVariant: Detector = (doc, options): Finding[] => {
-  const skips: Skips = { skip: new Set([...patternsOf(doc, DISTINCT), ...patternsOf(doc, FUKUSHI)]), idioms: new Set(patternsOf(doc, IDIOM)) };
+  const skips: Skips = {
+    skip: new Set([...patternsOf(doc, DISTINCT), ...patternsOf(doc, FUKUSHI)]),
+    idioms: new Set(patternsOf(doc, IDIOM)),
+    wholeWords: new Map((doc.lexicons[WHOLE_WORD] ?? []).map((entry) => [entry.pattern, entry.group ?? entry.pattern])),
+  };
   const names = doc.names ?? [];
   const placed: Place[] = [
     ...doc.sentences.map((sentence) => ({ sentence, isOpen: isOpenIn(sentence, names), readsLatin: true })),
