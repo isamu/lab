@@ -87,3 +87,13 @@ entries:
   - { pattern: "貸出", group: cancel, position: after }
   - { pattern: "貸出日", group: cancel, position: after }
   - { pattern: "貸出日時", group: cancel, position: after }
+  # 給与明細。支給日は、支給の対象になる期間が終わってから来る。期間の行は期間を書くので、その終わりと比べる（dated-span-label）。
+  - { pattern: "支給対象期間", group: payroll, position: before }
+  - { pattern: "計算期間", group: payroll, position: before }
+  - { pattern: "対象期間", group: payroll, position: before }
+  - { pattern: "支給日", group: payroll, position: after }
+  # 出張の精算書や旅程。帰着は出発より前に来ない。同じ日（日帰り）は指さない。返却日とは組まない。旅券や書類の返却日は出発日より前に来る。
+  - { pattern: "出発", group: trip, position: before }
+  - { pattern: "出発日", group: trip, position: before }
+  - { pattern: "帰着", group: trip, position: after }
+  - { pattern: "帰着日", group: trip, position: after }

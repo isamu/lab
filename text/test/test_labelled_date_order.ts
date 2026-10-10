@@ -564,3 +564,71 @@ describe("due-before-issue (order): 宿泊とレンタカーの予約、無料�
     assert.deepEqual(findingsOf("# Booking\n\nPick-up: November 20, 2026\n\nCheck-out: November 19, 2026\n", en), []);
   });
 });
+
+const payslipJa = (periodLabel: string, period: string, payDate: string): string =>
+  `# 給与明細書（架空商事株式会社）\n\n氏名：架空 太郎 様\n\n${periodLabel}：${period}\n\n支給日：${payDate}\n\n## 支給\n\n| 項目 | 金額 |\n| --- | --- |\n| 基本給 | 250,000円 |\n`;
+
+const payslipEn = (period: string, payDate: string): string =>
+  `# Payslip, Example Trading Ltd.\n\nEmployee: Alex Example\n\nPay period: ${period}\n\nPay date: ${payDate}\n\n## Earnings\n\n| Item | Amount |\n| --- | --- |\n| Base salary | $4,000.00 |\n`;
+
+const tripJa = (departLabel: string, depart: string, returnLabel: string, returned: string): string =>
+  `# 出張旅費精算書\n\n## 行程\n\n| 区分 | 日時 | 区間 |\n| --- | --- | --- |\n| ${departLabel} | ${depart} | 本社→架空駅 |\n| ${returnLabel} | ${returned} | 架空駅→本社 |\n`;
+
+const tripEn = (departLabel: string, depart: string, returned: string): string =>
+  `# Travel Expense Report\n\n## Travel\n\n| Leg | Date and time | Route |\n| --- | --- | --- |\n| ${departLabel} | ${depart} | Office to Example City |\n| Return | ${returned} | Example City to Office |\n`;
+
+describe("due-before-issue (period, order): 給与明細の支給日、出張の帰着", () => {
+  it("支給の対象期間が終わる前の支給日を指す", () => {
+    assert.deepEqual(findingsOf(payslipJa("支給対象期間", "2026年9月1日〜2026年9月30日", "2026年9月25日")), [
+      "「支給日」の 2026年9月25日 が、「支給対象期間」の終わり 2026年9月30日 より前です",
+    ]);
+    assert.deepEqual(findingsOf(payslipJa("計算期間", "2026年9月16日〜2026年10月15日", "2026年10月5日")), [
+      "「支給日」の 2026年10月5日 が、「計算期間」の終わり 2026年10月15日 より前です",
+    ]);
+    assert.deepEqual(findingsOf(payslipJa("対象期間", "2026年9月1日〜2026年9月30日", "2026年9月25日")), [
+      "「支給日」の 2026年9月25日 が、「対象期間」の終わり 2026年9月30日 より前です",
+    ]);
+    assert.deepEqual(findingsOf(payslipEn("September 1, 2026 – September 30, 2026", "September 25, 2026"), en), [
+      '"Pay date" September 25, 2026 is before the end of the "Pay period", September 30, 2026',
+    ]);
+  });
+
+  it("期間の終わりより後や同じ日の支給日、年の無い日付は言わない", () => {
+    assert.deepEqual(findingsOf(payslipJa("支給対象期間", "2026年9月1日〜2026年9月30日", "2026年10月9日")), []);
+    assert.deepEqual(findingsOf(payslipJa("計算期間", "2026年9月16日〜2026年10月15日", "2026年10月25日")), []);
+    assert.deepEqual(findingsOf(payslipJa("支給対象期間", "2026年9月1日〜2026年9月30日", "2026年9月30日")), []);
+    assert.deepEqual(findingsOf(payslipJa("支給対象期間", "9月1日〜9月30日", "9月25日")), []);
+    assert.deepEqual(findingsOf(payslipEn("September 1, 2026 – September 30, 2026", "October 9, 2026"), en), []);
+    assert.deepEqual(findingsOf(payslipEn("September 1 – September 30", "September 25"), en), []);
+  });
+
+  it("出発より前の帰着を指す（表の行も読む）", () => {
+    assert.deepEqual(findingsOf(tripJa("出発", "2026年9月14日 8:10", "帰着", "2026年9月12日 19:40")), [
+      "「帰着」（2026年9月12日）が、「出発」（2026年9月14日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(tripJa("出発日", "2026年9月14日", "帰着日", "2026年9月12日")), [
+      "「帰着日」（2026年9月12日）が、「出発日」（2026年9月14日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(tripEn("Departure", "September 14, 2026, 8:10 AM", "September 12, 2026, 7:40 PM"), en), [
+      '"Return" September 12, 2026 is before "Departure" September 14, 2026',
+    ]);
+    assert.deepEqual(findingsOf(tripEn("Departure date", "September 14, 2026", "September 12, 2026"), en), [
+      '"Return" September 12, 2026 is before "Departure date" September 14, 2026',
+    ]);
+  });
+
+  it("出発の後や同じ日（日帰り）の帰着、年の無い日付は言わない", () => {
+    assert.deepEqual(findingsOf(tripJa("出発", "2026年9月14日 8:10", "帰着", "2026年9月16日 19:40")), []);
+    assert.deepEqual(findingsOf(tripJa("出発", "2026年9月14日 8:10", "帰着", "2026年9月14日 21:00")), []);
+    assert.deepEqual(findingsOf(tripJa("出発", "9月14日", "帰着", "9月12日")), []);
+    assert.deepEqual(findingsOf(tripEn("Departure", "September 14, 2026, 8:10 AM", "September 16, 2026, 7:40 PM"), en), []);
+    assert.deepEqual(findingsOf(tripEn("Departure", "September 14, 2026, 8:10 AM", "September 14, 2026, 9:00 PM"), en), []);
+    assert.deepEqual(findingsOf(tripEn("Departure", "September 14", "September 12"), en), []);
+  });
+
+  it("書類の返却日と出発日、帰着と支給日のように、別の組の語どうしは組まない", () => {
+    assert.deepEqual(findingsOf("# 旅行のご案内\n\n出発日：2026年12月3日\n\n返却日：2026年11月20日\n"), []);
+    assert.deepEqual(findingsOf("# Tour Guide\n\nDeparture date: December 3, 2026\n\nReturn date: November 20, 2026\n", en), []);
+    assert.deepEqual(findingsOf("# 精算\n\n帰着：2026年9月16日\n\n支給日：2026年9月10日\n"), []);
+  });
+});
