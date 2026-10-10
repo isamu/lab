@@ -49,6 +49,13 @@ const labelRunAtEnd = (text: string): string => {
   return text.slice(start);
 };
 
+/** text の頭の、漢字と片仮名の続き（「無料修理期間は」の 無料修理期間）。 */
+const labelRunAtStart = (text: string): string => {
+  let end = 0;
+  while (end < text.length && JA_LABEL_CHAR.test(text.charAt(end))) end += 1;
+  return text.slice(0, end);
+};
+
 /** text の終わりの語（"the free replacement " の replacement）。 */
 const wordAtEnd = (text: string): string => {
   const trimmed = text.trimEnd();
@@ -180,7 +187,17 @@ export type PeriodPartInput = {
   readonly words: PeriodPartWords;
 };
 
-const sectionOf = (starts: readonly number[], at: number): number => starts.filter((start) => start <= at).length;
+/** 昇順の節の始まりのうち、at 以前のものの数（二分探索）。大きな文書で節を引くたびに見出しを全部回らないため。 */
+const sectionOf = (starts: readonly number[], at: number): number => {
+  let low = 0;
+  let high = starts.length;
+  while (low < high) {
+    const middle = (low + high) >> 1;
+    if ((starts[middle] ?? Number.POSITIVE_INFINITY) <= at) low = middle + 1;
+    else high = middle;
+  }
+  return low;
+};
 
 /** 年は月に、週は日に揃える。月と日の間は月の日数が決まらないので比べない。 */
 const scaleOf = (length: PeriodLength): { readonly family: string; readonly amount: number } => {
@@ -260,27 +277,50 @@ const wholeOf = (input: PeriodPartInput, unit: Span, found: MarkerAt): Whole | u
     ? wholeBefore(input.source, unit, found.start, input.lengths, input.words)
     : wholeAfter(input.source, unit, found.end, input.lengths, input.words);
 
-/** 名前の付いた期間（無料交換期間、the free replacement period）。the period of 21 days のような名前の無い期間は部分と読まない。 */
-const namesPeriod = (text: string, words: PeriodPartWords): boolean =>
+/**
+ * 全体と別の名前の付いた期間（無料交換期間、the free replacement period）。the period of 21 days のような名前の無い期間と、全体の名前を
+ * もう一度書いたもの（submit the warranty period claim form）は部分と読まない。
+ */
+const namesPeriod = (text: string, words: PeriodPartWords, wholeLabel: string): boolean =>
   words.periodWords.some((word) =>
     occurrences(lower(text), lower(word)).some((at) => {
+      const upTo = text.slice(0, at + word.length);
       if (LATIN.test(word)) {
         const before = wordAtEnd(text.slice(0, at));
-        return before !== "" && !LETTER.test(text.charAt(at - 1)) && !words.unnamed.some((unnamed) => lower(unnamed) === lower(before));
+        const named = before !== "" && !LETTER.test(text.charAt(at - 1)) && !words.unnamed.some((unnamed) => lower(unnamed) === lower(before));
+        return named && (wholeLabel === "" || !lower(upTo).endsWith(lower(wholeLabel)));
       }
-      return JA_LABEL_CHAR.test(text.charAt(at - 1));
+      return JA_LABEL_CHAR.test(text.charAt(at - 1)) && labelRunAtEnd(upTo) !== wholeLabel;
     }),
   );
 
 /** 部分の長さ: 全体の句の外に長さがちょうど一つ。adjacent の印では印のすぐ前、他は全体の外に期間の語があること。 */
-const partOf = (input: PeriodPartInput, unit: Span, phrase: Span, found: MarkerAt): PeriodLength | undefined => {
+const partOf = (input: PeriodPartInput, unit: Span, whole: Whole, found: MarkerAt): PeriodLength | undefined => {
+  const { phrase } = whole;
   const { source, words } = input;
   const outside = lengthsIn(input.lengths, unit).filter((length) => length.end <= phrase.start || length.start >= phrase.end);
   const [part] = outside;
   if (outside.length !== 1 || part === undefined || isRough(source, part, input.lengths, words)) return undefined;
   if (found.marker.group === ADJACENT) return source.slice(part.end, found.start).trim() === "" ? part : undefined;
   const rest = source.slice(unit.start, phrase.start) + source.slice(phrase.end, unit.end);
-  return namesPeriod(rest, words) ? part : undefined;
+  return namesPeriod(rest, words, whole.label) ? part : undefined;
+};
+
+const CLAUSE_COMMAS = ["、", "，", ","];
+
+/**
+ * 全体の句が節を開く（保証期間のうち、… / Within the warranty period, …）。前に置く印は文の頭で句の後ろに読点、後ろに置く印は
+ * すぐ後ろが読点か期間の名前（保証期間内の無料修理期間）。Claims arising within the 12-month warranty period are subject to a
+ * limitation period of 18 months の句は請求を修飾していて、制限期間はその一部ではない。
+ */
+const opensClause = (input: PeriodPartInput, unit: Span, phrase: Span, found: MarkerAt): boolean => {
+  const { source, words } = input;
+  if (found.marker.position === "before") {
+    const followedByComma = CLAUSE_COMMAS.some((comma) => source.slice(phrase.end).trimStart().startsWith(comma));
+    return source.slice(unit.start, found.start).trim() === "" && followedByComma;
+  }
+  const after = source.slice(found.end, unit.end);
+  return CLAUSE_COMMAS.some((comma) => after.startsWith(comma)) || endsWithPeriodWord(labelRunAtStart(after), words);
 };
 
 const issuesAt = (input: PeriodPartInput, index: number, found: MarkerAt): PeriodPartIssue[] => {
@@ -288,8 +328,8 @@ const issuesAt = (input: PeriodPartInput, index: number, found: MarkerAt): Perio
   if (unit === undefined) return [];
   const anaphor = found.marker.group === ANAPHOR;
   const whole = anaphor ? { phrase: { start: found.start, end: found.end }, label: "", inline: undefined } : wholeOf(input, unit, found);
-  if (whole === undefined) return [];
-  const part = partOf(input, unit, whole.phrase, found);
+  if (whole === undefined || (found.marker.group !== ADJACENT && !opensClause(input, unit, whole.phrase, found))) return [];
+  const part = partOf(input, unit, whole, found);
   if (part === undefined) return [];
   const inlineWholes = whole.inline === undefined || isRough(input.source, whole.inline, input.lengths, input.words) ? [] : [whole.inline];
   const named = whole.inline === undefined ? wholeInSection(input, unit, whole.label) : inlineWholes;

@@ -76,6 +76,8 @@ describe("period-part-exceeds-whole (ja)", () => {
     assert.deepEqual(inJa("保証期間（12か月）のうち、無料修理期間は18か月、部品の交換は6か月です。"), []);
     assert.deepEqual(inJa("保証期間（2か月）のうち、無料交換期間は30日です。"), []);
     assert.deepEqual(inJa("期間（12か月）のうち、無料交換期間は18か月です。"), []);
+    assert.deepEqual(inJa("保証期間（12か月）のうちに起きた故障の修理請求期間は18か月です。"), []);
+    assert.deepEqual(inJa("保証期間（12か月）のうち、保証期間の証明書は18か月保管してください。"), []);
   });
 });
 
@@ -129,6 +131,9 @@ describe("period-part-exceeds-whole (en)", () => {
   it("needs the part to be a named period", () => {
     assert.deepEqual(inEn("Returns must be made within the 30-day return period; refunds take 60 days."), []);
     assert.deepEqual(inEn("If, within the 40-day period, no resolution is made, the code comes into force at the end of the period of 60 days."), []);
+    assert.deepEqual(inEn("Claims arising within the 12-month warranty period are subject to a limitation period of 18 months."), []);
+    assert.deepEqual(inEn("Within the 12-month warranty period, submit the warranty period claim form within 18 months."), []);
+    assert.deepEqual(inEn("Repairs are made within the 12-month warranty period, and the claim period is 18 months."), []);
   });
 });
 
