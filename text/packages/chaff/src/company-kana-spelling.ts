@@ -63,7 +63,7 @@ const HIRAGANA_AFTER = /^\p{Script=Hiragana}+/u;
 const PARTICLE_LOOKBACK = 10;
 
 const hiraganaBefore = (source: string, at: number): string => {
-  const chars = [...source.slice(Math.max(0, at - PARTICLE_LOOKBACK), at)];
+  const chars = Array.from(source.slice(Math.max(0, at - PARTICLE_LOOKBACK), at));
   return chars.slice(chars.findLastIndex((char) => !HIRAGANA.test(char)) + 1).join("");
 };
 
