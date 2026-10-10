@@ -2,7 +2,7 @@ import type { Detector, Finding, ProseDocument, StructureNode } from "../plugin.
 import { countedFacts, countedPhraseAt, type CountedPhrase } from "../facts/counted-facts.ts";
 import { nameSpans } from "../compare/proper-nouns.ts";
 import { factValues, type FactValue } from "../facts/fact-values.ts";
-import { labelledFacts, type AttributePhrase, type FactWords } from "../facts/labelled-facts.ts";
+import { labelledFacts, type AttributePhrase, type Fact, type FactWords } from "../facts/labelled-facts.ts";
 import { tableFacts } from "../facts/table-facts.ts";
 import { partsAt, scopedFacts, type ScopedFact } from "../facts/fact-scope.ts";
 import { conditionPairConflicts, type ChangeSentence, type ChangeWords, type ConditionWord, type PairConflict, type WordAt } from "../facts/condition-pairs.ts";
@@ -17,6 +17,7 @@ import { durationValues, type DurationWord } from "../facts/duration-values.ts";
 import { overlapsAny, spanIndex } from "../compare/spans.ts";
 import { documentTermConflicts, type TermWord, type TermWords } from "../facts/document-terms.ts";
 import { ageValues, type AgeWord, type AgeWords } from "../facts/age-values.ts";
+import { qualifiedKeyOf, qualifiedKeys, type QualifierWords } from "../facts/qualified-labels.ts";
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
 
@@ -43,6 +44,20 @@ const ageWordsOf = (doc: ProseDocument): AgeWords => ({
   joiners: patternsOf(doc, "fact-age-joiner"),
 });
 
+const qualifierWordsOf = (doc: ProseDocument): QualifierWords => ({
+  templates: patternsOf(doc, "fact-label-qualifier"),
+  determiners: patternsOf(doc, "fact-label-drop"),
+});
+
+/** 条件の付いた名前（待機期間（旅行キャンセル費用）、旅行キャンセル費用の待機期間）を一つの key に。 */
+const withQualifiedKeys = (doc: ProseDocument, facts: readonly Fact[]): Fact[] => {
+  const keys = qualifiedKeys(
+    facts.map((fact) => fact.key),
+    qualifierWordsOf(doc),
+  );
+  return facts.map((fact, index) => ({ ...fact, key: keys[index] ?? fact.key }));
+};
+
 /**
  * 単位の語彙表の量（410 g、1.2 kg）と期間（3 months）と年齢（満70歳まで、aged 20 to 70）も値として読む。木が単位を読まない量は、
  * 数だけでは升や文の値にならない。年齢と重なる期間（30 years old の 30 years）と、期間と重なる量（3 months の 3 m）は読まない。
@@ -58,7 +73,10 @@ const readFacts = (doc: ProseDocument, tree: StructureNode): ScopedFact[] => {
   );
   const taken = spanIndex([...ages, ...durations]);
   const values = valuesWith(tree, doc, [...measuredOf(doc).filter((value) => !overlapsAny(taken, value)), ...ages, ...durations]);
-  const facts = [...labelledFacts(doc.source, values, factWordsOf(doc)), ...tableFacts(doc.source, values)];
+  const facts = withQualifiedKeys(doc, [
+    ...labelledFacts(doc.source, values, { ...factWordsOf(doc), qualifiers: qualifierWordsOf(doc) }),
+    ...tableFacts(doc.source, values),
+  ]);
   return scopedFacts(facts, tree, doc.source, patternsOf(doc, "summary-heading"));
 };
 
@@ -141,7 +159,10 @@ const retentionFindings = (doc: ProseDocument): Finding[] => {
 };
 
 const termWordsOf = (doc: ProseDocument): TermWords => ({
-  terms: (doc.lexicons["fact-document-term"] ?? []).map((entry): TermWord => ({ pattern: entry.pattern, group: entry.group ?? entry.pattern })),
+  terms: (doc.lexicons["fact-document-term"] ?? []).map((entry): TermWord => ({
+    pattern: qualifiedKeyOf(entry.pattern.normalize("NFKC").toLowerCase(), qualifierWordsOf(doc)),
+    group: entry.group ?? entry.pattern,
+  })),
   determiners: patternsOf(doc, "fact-label-drop"),
 });
 

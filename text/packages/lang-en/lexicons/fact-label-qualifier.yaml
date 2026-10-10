@@ -1,0 +1,10 @@
+# Ways of putting a qualifier on a name (fact-conflict, summary-fact-mismatch); * is the qualifier. A table's "Waiting
+# period (cancellation cover)" and a sentence's "The waiting period for cancellation cover" are one item: the same name
+# with the same qualifier. "The cancellation cover waiting period" is that item too when the document also writes one of
+# these forms. Different qualifiers, and a name with no qualifier, stay different items. Tried from the top. "of" is not
+# here: "terms of service" is not "service terms", and "number of errors" names what is counted, not a condition.
+id: fact-label-qualifier
+language: en
+entries:
+  - pattern: "(*)"
+  - pattern: "for *"
