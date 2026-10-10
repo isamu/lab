@@ -10,6 +10,10 @@ entries:
     weight: 0.001
   - pattern: "ml"
     weight: 0.001
+  - pattern: "m³"
+    weight: 1000
+  - pattern: "㎥"
+    weight: 1000
   - pattern: "liters"
     weight: 1
   - pattern: "litres"
