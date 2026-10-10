@@ -1,0 +1,9 @@
+# Words that join the ends of a range of lengths (period-part-exceeds-whole). "12 to 18 months" is not compared.
+id: period-part-range
+language: en
+entries:
+  - pattern: to
+  - pattern: or
+  - pattern: "-"
+  - pattern: –
+  - pattern: through

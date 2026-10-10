@@ -1,6 +1,8 @@
 import type { DatedPoint } from "./due-date.ts";
 import type { StructureIssue } from "./issues.ts";
 import { linesOf, type Line } from "./lines.ts";
+import { tableAround } from "./key-value-row.ts";
+import { TABLE_ROW } from "./runs.ts";
 import { statedPeriod, type DateMention, type PeriodWords } from "./stated-period.ts";
 import { isTotalLabel } from "./total.ts";
 
@@ -46,10 +48,19 @@ const mentionsOf = (dates: readonly OrderDate[]): DateMention[] => dates.flatMap
 
 /**
  * The end of the period a span word's line states (対象期間：2026年4月1日〜9月30日 ends 2026-09-30), with its year.
- * A period without a year, or a line that states no period, gives undefined.
+ * A period without a year, or a line that states no period, gives undefined. tableOf gives the table the line is a row of
+ * (| 対象期間 | 2026年4月1日〜9月30日 |), read when the row is the table's only row labelled with any span word: a table with
+ * both Reporting period and Period covered rows lists periods. A row's label cell is the span word itself, so all of them are passed.
  */
-export const periodEndOf = (line: Line, label: string, dates: readonly OrderDate[], spans: PeriodWords): DatedPoint | undefined => {
-  const period = statedPeriod(line.text, line.start, mentionsOf(dates), { ...spans, labels: [label] });
+export const periodEndOf = (
+  line: Line,
+  label: string,
+  dates: readonly OrderDate[],
+  spans: PeriodWords,
+  tableOf: () => readonly string[] = () => [],
+): DatedPoint | undefined => {
+  const labels = TABLE_ROW.test(line.text) ? spans.labels : [label];
+  const period = statedPeriod(line.text, line.start, mentionsOf(dates), { ...spans, labels }, tableOf);
   return period === undefined || !FULL_DATE.test(period.end) ? undefined : { offset: line.start, value: period.end };
 };
 
@@ -59,22 +70,31 @@ const oneDateOf = (line: Line, dates: readonly OrderDate[]): DatedPoint | undefi
   return onLine.length === 1 ? onLine[0] : undefined;
 };
 
-const dateOf = (line: Line, label: string, dates: readonly OrderDate[], spans: PeriodWords | undefined): Pick<Read, "date" | "span"> | undefined => {
+const dateOf = (
+  line: Line,
+  label: string,
+  dates: readonly OrderDate[],
+  spans: PeriodWords | undefined,
+  tableOf: () => readonly string[],
+): Pick<Read, "date" | "span"> | undefined => {
   if (spans === undefined || !spans.labels.includes(label)) {
     const date = oneDateOf(line, dates);
     return date === undefined ? undefined : { date, span: false };
   }
-  const end = periodEndOf(line, label, dates, spans);
+  const end = periodEndOf(line, label, dates, spans, tableOf);
   return end === undefined ? undefined : { date: end, span: true };
 };
 
-const labelledDates = (source: string, dates: readonly OrderDate[], words: DateOrderWords): Read[] =>
-  linesOf(source).flatMap((line) => {
+const labelledDates = (source: string, dates: readonly OrderDate[], words: DateOrderWords): Read[] => {
+  const lines = linesOf(source);
+  const texts = lines.map((line) => line.text);
+  return lines.flatMap((line, index) => {
     const passed = words.passed.some((word) => line.text.toLowerCase().includes(word.toLowerCase()));
     const kind = passed ? undefined : kindOf(line.text, words);
-    const dated = kind === undefined ? undefined : dateOf(line, kind.label, dates, words.spans);
+    const dated = kind === undefined ? undefined : dateOf(line, kind.label, dates, words.spans, () => tableAround(texts, index));
     return kind === undefined || dated === undefined ? [] : [{ ...kind, ...dated, line: line.number }];
   });
+};
 
 export const datesOutOfOrder = (source: string, dates: readonly OrderDate[], words: DateOrderWords): OutOfOrder[] => {
   if (words.earlier.length === 0 || words.later.length === 0) return [];

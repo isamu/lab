@@ -54,8 +54,8 @@ example:
       4. Restart the computer when it finishes.
 
 not_flagged:
-  ja: "番号の無い箇条書き、三つに満たない手順、指示が半分に満たない番号付きの箇条書き（用語と説明の一覧など）、短い項目（「Setup」）、動詞の前に札や前置きのある項目（「Guests: …」「On the left bar, select …」）、主語で始まる項目が {limit} 個を超えるか指示より多い手順は見ません。項目の最初の行の最初の文だけを見ます。"
-  en: 'Bulleted lists, procedures of fewer than three steps, numbered lists where instructions are half or fewer (a list of terms, say), short items ("Setup"), items with a label or an opening phrase before the verb ("Guests: …", "On the left bar, select …"), and procedures where statements are more than {limit} or not fewer than the instructions are not reported. Only the first sentence on each item''s own line is read.'
+  ja: "番号の無い箇条書き、三つに満たない手順、指示が半分に満たない番号付きの箇条書き（用語と説明の一覧、「Faults caused by a drop」のように場合を並べた保証の対象外の一覧など）、短い項目（「Setup」）、動詞の前に札や前置きのある項目（「Guests: …」「On the left bar, select …」）、主語で始まる項目が {limit} 個を超えるか指示より多い手順は見ません。項目の最初の行の最初の文だけを見ます。"
+  en: 'Bulleted lists, procedures of fewer than three steps, numbered lists where instructions are half or fewer (a list of terms, or of cases such as a warranty''s exclusions: "Faults caused by a drop"), short items ("Setup"), items with a label or an opening phrase before the verb ("Guests: …", "On the left bar, select …"), and procedures where statements are more than {limit} or not fewer than the instructions are not reported. Only the first sentence on each item''s own line is read.'
 level_meaning:
   ja: 説明の項目が {limit} 個以下で、指示の項目より少ないとき指摘
   en: reported when {limit} or fewer steps are statements and they are fewer than the instructions

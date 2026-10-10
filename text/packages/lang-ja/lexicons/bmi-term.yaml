@@ -1,0 +1,10 @@
+# 身長・体重・BMI の名前（bmi-mismatch）。group は height / weight / bmi。表の行の見出しか「名前：値」の行の名前がこの語だけ
+# （単位の括弧は除く）のとき読む。一つの節に三つが一つずつあれば、BMI を 体重 ÷ 身長² と比べる。
+id: bmi-term
+language: ja
+entries:
+  - { pattern: 身長, group: height }
+  - { pattern: 体重, group: weight }
+  - { pattern: BMI, group: bmi }
+  - { pattern: 体格指数, group: bmi }
+  - { pattern: ボディマス指数, group: bmi }

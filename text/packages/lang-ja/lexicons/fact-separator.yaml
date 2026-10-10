@@ -6,3 +6,5 @@ entries:
   - pattern: "："
   - pattern: ":"
   - pattern: は
+  # 区切りの後ろに読点を打つ書き方（「加入できる年齢は、満70歳までです」）。
+  - pattern: "は、"
