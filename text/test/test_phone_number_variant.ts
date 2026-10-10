@@ -68,6 +68,32 @@ describe("phone-number-variant", () => {
     assert.deepEqual(found(en1("Phone support is described above; document numbers are 1234-5678-90 and 1234-5678-09."), en), []);
   });
 
+  it("ja: 窓口の名前の後ろの番号も、電話の番号と比べる", () => {
+    assert.deepEqual(found(doc("お客様窓口：0120-753-951（受付 9:00〜18:00）", "", "返金は、お客様窓口（0120-753-915）でご案内します。"), ja), [5]);
+    assert.deepEqual(found(doc("回収受付窓口：0120-246-813", "", "発送状況も、回収受付窓口（0120-246-831）でお答えします。"), ja), [5]);
+    assert.deepEqual(found(doc("電話：0120-123-456", "", "サポートセンター：0120-123-465"), ja), [5]);
+    assert.deepEqual(found(doc("フリーダイヤル 0120-123-456", "", "電話 0120-123-465"), ja), [5]);
+  });
+
+  it("ja: 違う窓口の別の番号、FAX の窓口、受付番号は指さない", () => {
+    assert.deepEqual(found(doc("回収受付窓口：0120-246-813", "", "お客様窓口：0120-753-951"), ja), []);
+    assert.deepEqual(found(doc("お客様窓口：0120-753-951", "", "お客様窓口：0120-753-951"), ja), []);
+    assert.deepEqual(found(doc("電話：03-1234-5678", "", "FAX受付窓口：03-1234-5687"), ja), []);
+    assert.deepEqual(found(doc("受付番号 1234-5678-90", "", "受付番号 1234-5678-09"), ja), []);
+    assert.deepEqual(found(doc("窓口受付番号 1234-5678-90", "", "窓口受付番号 1234-5678-09"), ja), []);
+  });
+
+  it("en: a number after a desk's name (Recall Line, Customer Care) is compared with phone numbers", () => {
+    const en1 = (...lines: string[]): string => ["# Notice", "", ...lines, ""].join("\n");
+    assert.deepEqual(found(en1("Recall Line: 1-800-555-0136", "", "To check, call the Recall Line (1-800-555-0163)."), en), [5]);
+    assert.deepEqual(found(en1("Customer Care: 1-800-555-0162", "", "For a refund, call Customer Care (1-800-555-0126)."), en), [5]);
+    assert.deepEqual(found(en1("Phone: 045-123-4567", "", "Help Desk: 045-123-4576"), en), [5]);
+    assert.deepEqual(found(en1("Recall Line: 1-800-555-0136", "", "Customer Care: 1-800-555-0162"), en), []);
+    assert.deepEqual(found(en1("Phone: 045-123-4567", "", "Fax line: 045-123-4576"), en), []);
+    assert.deepEqual(found(en1("Online 1234-5678-90", "", "Online 1234-5678-09"), en), []);
+    assert.deepEqual(found(en1("Support ticket: 1234-5678-90", "", "Support ticket: 1234-5678-09"), en), []);
+  });
+
   it("does not run in literature", () => {
     assert.deepEqual(found(doc("電話：0120-123-456", "", "電話：0120-123-465"), ja, "literature/fiction"), []);
   });
@@ -123,6 +149,29 @@ describe("phone numbers", () => {
     assert.deepEqual(digitsOf("電話：03 1234 5678"), []);
     assert.deepEqual(digitsOf("Tel: 2026 10 09 020 7946 0186"), []);
     assert.deepEqual(digitsOf("Tel: 020 7946 0186 2026"), []);
+  });
+
+  it("gives a number after a desk's name the kind of the label right before the name, else phone", () => {
+    const withDesks = [...labels, { pattern: "窓口", group: "desk" }];
+    const kinds = (text: string): string[] => labelledPhoneNumbers(text, withDesks).map((number) => number.label);
+    assert.deepEqual(kinds("お客様窓口：03-1234-5678"), ["phone"]);
+    assert.deepEqual(kinds("FAX窓口：03-1234-5678"), ["fax"]);
+    assert.deepEqual(kinds("電話窓口：03-1234-5678"), ["phone"]);
+    assert.deepEqual(kinds("FAX 03-1111-2222 窓口 03-1234-5678"), ["fax", "phone"]);
+    assert.deepEqual(kinds("窓口の案内 2026-10-05"), []);
+    assert.deepEqual(kinds("窓口番号 03-1234-5678"), []);
+    assert.deepEqual(labelledPhoneNumbers("窓口", [{ pattern: "窓口", group: "desk" }]), []);
+  });
+
+  it("quotes a number without the bracket it is put in, with an area code's", () => {
+    const written = (text: string): string[] => labelledPhoneNumbers(text, labels).map((number) => number.written);
+    assert.deepEqual(written("電話（0120-753-951）"), ["0120-753-951"]);
+    assert.deepEqual(
+      labelledPhoneNumbers("電話（0120-753-951）", labels).map((number) => number.offset),
+      [3],
+    );
+    assert.deepEqual(written("電話 (03) 1234-5678"), ["(03) 1234-5678"]);
+    assert.deepEqual(written("電話（03）1234-5678"), ["（03）1234-5678"]);
   });
 
   it("reads nothing from empty text or without labels", () => {

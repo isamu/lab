@@ -64,5 +64,5 @@ example:
       Contact, phone: 0120-123-456
 
 not_flagged:
-  ja: 番号と同じ行で、前に「電話」「TEL」「お問合せ」のような語がある番号だけを読みます。語の無い数字の並び、種類の違う番号（電話とFAX）、数字が一つだけ違う番号（代表と直通、本店と支店の番号はよくそうなります）、離れた数字の入れ違いは指しません。数字が9桁から13桁で、ハイフンか括弧で区切ったものだけを番号と見ます。
-  en: "Only numbers with a label (phone, tel, call) before them on their line are read. Unlabelled runs of digits, numbers of different kinds (a phone and a fax number), numbers that differ in one digit (a main line and a direct line often do) and swaps of digits that are not neighbours are not reported. A number is 9 to 13 digits, grouped by hyphens or brackets."
+  ja: 番号と同じ行で、前に「電話」「TEL」「お問合せ」のような語か、「お客様窓口」「サポートセンター」のような窓口の名前がある番号だけを読みます（「FAX窓口」の番号はFAXの番号）。「受付番号」の後ろの数字、語の無い数字の並び、種類の違う番号（電話とFAX）、数字が一つだけ違う番号（代表と直通、本店と支店の番号はよくそうなります）、離れた数字の入れ違いは指しません。数字が9桁から13桁で、ハイフンか括弧で区切ったものだけを番号と見ます。
+  en: "Only numbers with a label (phone, tel, call) or a desk's name (Recall Line, Customer Care, Help Desk) before them on their line are read; a fax line's number is a fax number. Unlabelled runs of digits, numbers of different kinds (a phone and a fax number), numbers that differ in one digit (a main line and a direct line often do) and swaps of digits that are not neighbours are not reported. A number is 9 to 13 digits, grouped by hyphens or brackets."
