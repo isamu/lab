@@ -59,7 +59,7 @@ The direction is tracked in isamu/lab#130.
 ## How to work here (methods that proved themselves)
 
 - **Planted sets per genre** (`test/fixtures/planted/`, `yarn planted`): a clean and a planted version, recall
-  recorded per kind, CI fails on a drop. This found real gaps (contracts). Extend a set before fixing a miss.
+  recorded per kind, CI fails only on a regression (a drop, a new clean finding, a manifest edit) and prints a rise. This found real gaps (contracts). Extend a set before fixing a miss.
 - **Place rules by measurement** on the pinned human corpus (`yarn rules:measure --apply`), not by hand. Retune a
   limit rather than turn a core rule off.
 - **A rule touches only its own files**: its YAML (with `off_for`), its registry file, its own expectations and
