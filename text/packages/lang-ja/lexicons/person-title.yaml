@@ -1,0 +1,22 @@
+# 人の名前のすぐ後ろに付ける肩書き（高瀬 誠部長）。空白を挟んだ姓と名の後ろに付けば、その名前を人の名前と読む（name-variant）。
+# 字面どおりに照らす。名前の後ろに付けて、ほかの語の頭になりにくい肩書きだけを置く（長、員 のような一字は置かない）。
+id: person-title
+language: ja
+entries:
+  - pattern: 部長
+  - pattern: 課長
+  - pattern: 係長
+  - pattern: 次長
+  - pattern: 室長
+  - pattern: 所長
+  - pattern: 支店長
+  - pattern: 社長
+  - pattern: 副社長
+  - pattern: 専務
+  - pattern: 常務
+  - pattern: 主任
+  - pattern: 教授
+  - pattern: 准教授
+  - pattern: 先生
+  - pattern: 校長
+  - pattern: 院長

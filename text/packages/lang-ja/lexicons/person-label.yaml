@@ -1,0 +1,17 @@
+# 人の名前を書く欄の語（氏名：藤井 健太、承認者：営業部長 高瀬 誠）。この語と「：」の行の終わりの、空白を挟んだ姓と名を人の
+# 名前と読む（name-variant）。欄の語は「：」の前の語の終わりで照らす（患者氏名 は 氏名 で）。
+id: person-label
+language: ja
+entries:
+  - pattern: 氏名
+  - pattern: 名前
+  - pattern: 申請者
+  - pattern: 承認者
+  - pattern: 承認
+  - pattern: 確認者
+  - pattern: 署名
+  - pattern: 担当者
+  - pattern: 作成者
+  - pattern: 受取人
+  - pattern: 代表者
+  - pattern: 宿泊者
