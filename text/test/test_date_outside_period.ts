@@ -268,6 +268,50 @@ const syllabusEn = (term: string, deadline: string, overview = "## 1 Course over
 const TERM_JA = "開講期間：2026年10月6日（火）から2027年2月5日（金）まで";
 const TERM_EN = "Term: Tuesday, October 6, 2026 to Friday, February 5, 2027";
 
+describe("date-outside-period: the period of a claim, a bill and a rental", () => {
+  const receipts = (label: string, date: string): string =>
+    lines(
+      "# 経費精算書",
+      "",
+      `${label}：2026年9月1日〜2026年9月30日`,
+      "",
+      "| 日付 | 内容 | 金額 |",
+      "| --- | --- | --- |",
+      "| 2026年9月3日 | 電車代 | 640円 |",
+      `| ${date} | 書籍代 | 2,860円 |`,
+    );
+
+  it("a receipt dated outside the period a claim, a bill or a tally states is reported", () => {
+    ["対象期間", "精算期間", "請求期間", "利用期間", "ご利用期間", "使用期間", "集計期間"].forEach((label) => {
+      assert.deepEqual(foundJa(receipts(label, "2026年8月24日")), ["2026年8月24日"], label);
+    });
+    const claim = (label: string): string =>
+      lines(
+        "# Expense claim",
+        "",
+        `${label}: September 1, 2026 – September 30, 2026`,
+        "",
+        "| Date | Item | Amount |",
+        "| --- | --- | --- |",
+        "| August 24, 2026 | Book | $49.25 |",
+      );
+    ["Claim period", "Expense period", "Billing period", "Statement period", "Usage period", "Rental period"].forEach((label) => {
+      assert.deepEqual(foundEn(claim(label)), ["August 24, 2026"], label);
+    });
+  });
+
+  it("silent for receipts inside the period, and for a due date after a bill's period", () => {
+    assert.deepEqual(foundJa(receipts("対象期間", "2026年9月30日")), []);
+    assert.deepEqual(foundJa(lines("# ご請求明細", "", "請求期間：2026年9月1日〜2026年9月30日", "", "- お支払期限：2026年10月26日")), []);
+    assert.deepEqual(foundEn(lines("# Statement", "", "Billing period: September 1, 2026 – September 30, 2026", "", "- Payment due: October 26, 2026")), []);
+  });
+
+  it("a pay period is not one of them: the pay date comes after it", () => {
+    assert.deepEqual(foundJa(lines("# 給与明細", "", "支給対象期間：2026年9月1日〜2026年9月30日", "", "- 支給日：2026年10月23日")), []);
+    assert.deepEqual(foundEn(lines("# Payslip", "", "Pay period: September 1, 2026 – September 30, 2026", "", "- Pay date: October 23, 2026")), []);
+  });
+});
+
 describe("date-outside-period: a deadline after the document's term", () => {
   it("a submission deadline in a later section after the term's end is reported, in a sentence and in a list item", () => {
     assert.deepEqual(foundJa(syllabusJa(TERM_JA, "課題レポートは、2027年2月12日（金）までに学習支援システムで提出してください。")), ["2027年2月12日"]);
