@@ -90,12 +90,17 @@ const before = (word: LabelWord): boolean => (word.position ?? "before") === "be
 /** ラベルの前に書いてよいもの: 行の頭、表の区切り、強調や箇条書きの印、括弧や読点。「前回受診日」「Previous examination date」は別の日。 */
 const FIELD_START = /(?:^|[|*＊#>\-・•(（)）、,;；。.])$/u;
 
-/** 日付の前（同じ行の、日付までの文字）の終わりに、区切り（：、|、**）を除いて書いたラベル。ラベルは欄の頭から書いたものだけ。 */
-export const labelBefore = (lineBefore: string, labels: readonly LabelWord[]): LabelWord | undefined => {
+/** text の終わりに書いた年齢（「(age 23」の後ろの as of は、その年齢を数える日の印）。 */
+const endsWithAge = (text: string, words: AgeWords | undefined): boolean => words !== undefined && agesIn(text, words).some((age) => age.end === text.length);
+
+/** 日付の前（同じ行の、日付までの文字）の終わりに、区切り（：、|、**）を除いて書いたラベル。ラベルは欄の頭から、または words の年齢のすぐ後ろに書いたものだけ。 */
+export const labelBefore = (lineBefore: string, labels: readonly LabelWord[], words?: AgeWords): LabelWord | undefined => {
   const head = withoutTrailingSeparators(lineBefore).toLowerCase();
   return labels.filter(before).find((label) => {
     const pattern = label.pattern.toLowerCase();
-    return head.endsWith(pattern) && FIELD_START.test(head.slice(0, head.length - pattern.length).trimEnd());
+    if (!head.endsWith(pattern)) return false;
+    const lead = head.slice(0, head.length - pattern.length).trimEnd();
+    return FIELD_START.test(lead) || endsWithAge(lead, words);
   });
 };
 
