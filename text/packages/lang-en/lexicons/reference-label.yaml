@@ -17,3 +17,14 @@ entries:
   - { pattern: employee id, group: employee }
   - { pattern: employee id is, group: employee }
   - { pattern: employee no., group: employee }
+  - { pattern: student number, group: student }
+  - { pattern: student number is, group: student }
+  - { pattern: student id, group: student }
+  - { pattern: student id is, group: student }
+  - { pattern: student no., group: student }
+  - { pattern: po number, group: order }
+  - { pattern: po number is, group: order }
+  - { pattern: purchase order number, group: order }
+  - { pattern: purchase order number is, group: order }
+  - { pattern: order number, group: order }
+  - { pattern: order number is, group: order }
