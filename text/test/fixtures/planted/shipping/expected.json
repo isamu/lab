@@ -1,0 +1,29 @@
+{
+  "recall": {
+    "ja": {
+      "arrival-before-shipment": "0/1",
+      "net-over-gross": "0/1",
+      "carton-weight-total": "1/1",
+      "carton-count": "0/1",
+      "invoice-number": "0/2",
+      "consignee-name": "0/2",
+      "shipment-before-invoice": "0/1",
+      "line-total": "1/1",
+      "invoice-total": "1/1",
+      "currency-mix": "0/1"
+    },
+    "en": {
+      "arrival-before-shipment": "0/1",
+      "net-over-gross": "0/1",
+      "carton-weight-total": "1/1",
+      "carton-count": "0/1",
+      "invoice-number": "0/2",
+      "consignee-name": "2/2",
+      "shipment-before-invoice": "0/1",
+      "line-total": "1/1",
+      "invoice-total": "1/1",
+      "currency-mix": "0/1"
+    }
+  },
+  "clean": []
+}
