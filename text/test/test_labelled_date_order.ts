@@ -862,3 +862,93 @@ describe("due-before-issue (order): 給与所得と源泉徴収税額の明細�
     assert.deepEqual(findingsOf(taxStatementEn(["Tax year: January 1, 2026 – December 31, 2026"], "Pay date", "December 25, 2026"), en), []);
   });
 });
+
+const labelledDoc = (title: string, lines: readonly string[]): string => [`# ${title}`, "", ...lines.flatMap((line) => [line, ""])].join("\n");
+
+describe("due-before-issue (order): 船積みの書類の到着日", () => {
+  it("船積日より前の到着日や到着予定日を、後に書いた行で指す", () => {
+    const packing = labelledDoc("梱包明細書", ["インボイス番号：INV-0001", "船積日：2026年10月9日", "到着予定日：2026年10月2日"]);
+    assert.deepEqual(findingsOf(packing), ["「到着予定日」（2026年10月2日）が、「船積日」（2026年10月9日）より前です"]);
+    assert.deepEqual(ruleLines(packing), [7]);
+    assert.deepEqual(findingsOf(labelledDoc("到着のご案内", ["船積日：2026年10月9日", "到着日：2026年10月8日"])), [
+      "「到着日」（2026年10月8日）が、「船積日」（2026年10月9日）より前です",
+    ]);
+    const shippedLate = labelledDoc("インボイス", ["船積日：2026年10月21日", "到着予定日：2026年10月19日"]);
+    assert.deepEqual(findingsOf(shippedLate), ["「到着予定日」（2026年10月19日）が、「船積日」（2026年10月21日）より前です"]);
+    assert.deepEqual(ruleLines(shippedLate), [5]);
+    const packingEn = labelledDoc("Packing List", ["Invoice No.: EX-0001", "On-board date: October 9, 2026", "Estimated arrival: October 7, 2026"]);
+    assert.deepEqual(findingsOf(packingEn, en), ['"Estimated arrival" October 7, 2026 is before "On-board date" October 9, 2026']);
+    assert.deepEqual(ruleLines(packingEn, en), [7]);
+    assert.deepEqual(findingsOf(labelledDoc("Shipping Notice", ["Shipment date: October 9, 2026", "Arrival date: October 1, 2026"]), en), [
+      '"Arrival date" October 1, 2026 is before "Shipment date" October 9, 2026',
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("Shipping Notice", ["Shipment date: October 9, 2026", "ETA: October 3, 2026"]), en), [
+      '"ETA" October 3, 2026 is before "Shipment date" October 9, 2026',
+    ]);
+  });
+
+  it("船積日の後や同じ日の到着、年の無い日付は言わない", () => {
+    assert.deepEqual(findingsOf(labelledDoc("梱包明細書", ["船積日：2026年10月9日", "到着予定日：2026年10月19日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("梱包明細書", ["船積日：2026年10月9日", "到着日：2026年10月9日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("梱包明細書", ["船積日：10月9日", "到着予定日：10月2日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Packing List", ["On-board date: October 9, 2026", "Estimated arrival: October 27, 2026"]), en), []);
+    assert.deepEqual(findingsOf(labelledDoc("Packing List", ["On-board date: October 9", "ETA: October 2"]), en), []);
+  });
+
+  it("請求日と船積日は組まない。インボイスの日付は船積みの前にも後にも来る", () => {
+    assert.deepEqual(findingsOf(labelledDoc("インボイス", ["請求日：2026年10月5日", "船積日：2026年10月1日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("インボイス", ["請求日：2026年10月20日", "船積日：2026年10月9日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Commercial Invoice", ["Invoice date: October 5, 2026", "On-board date: October 1, 2026"]), en), []);
+    assert.deepEqual(findingsOf(labelledDoc("Commercial Invoice", ["Invoice date: October 20, 2026", "Shipment date: October 9, 2026"]), en), []);
+  });
+
+  it("予定の日は後の側にだけ読む。船積予定日や Estimated shipment は船積日と読まない", () => {
+    assert.deepEqual(findingsOf(labelledDoc("出荷のご案内", ["船積予定日：2026年10月20日", "到着日：2026年10月15日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Shipping Notice", ["Estimated shipment: October 20, 2026", "Arrival date: October 15, 2026"]), en), []);
+  });
+});
+
+describe("due-before-issue (order): 診療明細書の発行日、入院と退院", () => {
+  it("診療日より前の発行日を、発行日の行で指す", () => {
+    const bill = labelledDoc("診療明細書", ["患者番号：0001", "診療日：2026年9月26日", "発行日：2026年9月16日"]);
+    assert.deepEqual(findingsOf(bill), ["「発行日」（2026年9月16日）が、「診療日」（2026年9月26日）より前です"]);
+    assert.deepEqual(ruleLines(bill), [7]);
+    const billEn = labelledDoc("Itemized Bill", ["Patient number: 0001", "Date of visit: September 26, 2026", "Date issued: September 16, 2026"]);
+    assert.deepEqual(findingsOf(billEn, en), ['"Date issued" September 16, 2026 is before "Date of visit" September 26, 2026']);
+    assert.deepEqual(ruleLines(billEn, en), [7]);
+  });
+
+  it("入院日より前の退院日を、退院日の行で指す", () => {
+    const stay = labelledDoc("診療明細書（入院）", ["入院日：2026年9月7日", "退院日：2026年8月11日", "発行日：2026年9月11日"]);
+    assert.deepEqual(findingsOf(stay), ["「退院日」（2026年8月11日）が、「入院日」（2026年9月7日）より前です"]);
+    assert.deepEqual(ruleLines(stay), [5]);
+    const stayEn = labelledDoc("Itemized Bill", ["Date of admission: September 7, 2026", "Date of discharge: August 11, 2026"]);
+    assert.deepEqual(findingsOf(stayEn, en), ['"Date of discharge" August 11, 2026 is before "Date of admission" September 7, 2026']);
+  });
+
+  it("順の合った日付、同じ日、年の無い日付は言わない", () => {
+    assert.deepEqual(findingsOf(labelledDoc("診療明細書", ["診療日：2026年9月16日", "発行日：2026年9月16日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("診療明細書", ["診療日：2026年9月16日", "発行日：2026年9月30日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("診療明細書", ["診療日：9月26日", "発行日：9月16日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("入院証明書", ["入院日：2026年9月7日", "退院日：2026年9月7日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("入院証明書", ["入院日：2026年9月7日", "退院日：2026年9月11日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Itemized Bill", ["Date of visit: September 16, 2026", "Date issued: September 16, 2026"]), en), []);
+    assert.deepEqual(findingsOf(labelledDoc("Itemized Bill", ["Date of admission: September 7", "Date of discharge: August 11"]), en), []);
+  });
+
+  it("受診券の受診日、前払いの請求書、入院の案内の発行日とは組まない", () => {
+    assert.deepEqual(findingsOf(labelledDoc("受診券", ["受診日：2026年10月8日", "発行日：2026年9月1日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("請求書", ["対象期間：2026年10月1日〜2026年10月31日", "発行日：2026年10月1日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Invoice", ["Period covered: October 1, 2026 – October 31, 2026", "Date issued: October 1, 2026"]), en), []);
+    assert.deepEqual(findingsOf(labelledDoc("入院のご案内", ["入院日：2026年9月7日", "発行日：2026年9月1日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Admission Letter", ["Date of admission: September 7, 2026", "Date issued: September 1, 2026"]), en), []);
+  });
+
+  it("別の組の語どうしは比べない（船積日と発行日、診療日と到着日、入学の Date of admission と退院）", () => {
+    assert.deepEqual(findingsOf(labelledDoc("インボイス", ["船積日：2026年10月9日", "発行日：2026年10月1日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("ご案内", ["診療日：2026年10月9日", "到着日：2026年10月1日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Notice", ["On-board date: October 9, 2026", "Date issued: October 1, 2026"]), en), []);
+    const transcript = transcriptEn("Date of admission", "April 1, 2022", "Date of graduation", "March 20, 2026", "Date of issue", "September 30, 2026");
+    assert.deepEqual(findingsOf(transcript, en), []);
+  });
+});

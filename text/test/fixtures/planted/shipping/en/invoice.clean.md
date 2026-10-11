@@ -14,6 +14,8 @@ Port of loading: Yokohama
 
 Port of discharge: Vancouver
 
+Estimated arrival: October 27, 2026
+
 Payment terms: bank transfer within 30 days of the on-board date
 
 ## Goods

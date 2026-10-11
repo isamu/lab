@@ -8,11 +8,13 @@ Exporter: Kestrel Instruments Co., Ltd., Export Sales
 
 Consignee: Marlow Bay Imports Ltd., Purchasing
 
-On-board date: October 1, 2026
+On-board date: October 29, 2026
 
 Port of loading: Yokohama
 
 Port of discharge: Vancouver
+
+Estimated arrival: October 27, 2026
 
 Payment terms: bank transfer within 30 days of the on-board date
 
