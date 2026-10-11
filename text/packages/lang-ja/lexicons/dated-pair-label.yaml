@@ -107,3 +107,17 @@ entries:
   - { pattern: "納品日", group: order, position: after }
   - { pattern: "納品予定日", group: order, position: after }
   - { pattern: "納入日", group: order, position: after }
+  # 成績証明書や卒業・修了の証明書。卒業と修了は入学より後に来て、証明書は卒業や修了より後に発行する。三つの順は二つの組でたどる。
+  # 入学の日は卒業や修了の日とだけ組み、発行日とは組まない。発行日と組むのは、入学より後に来るはずの卒業や修了の日。
+  - { pattern: "入学年月日", group: transcript, position: before }
+  - { pattern: "入学日", group: transcript, position: before }
+  - { pattern: "卒業年月日", group: transcript, position: after }
+  - { pattern: "卒業日", group: transcript, position: after }
+  - { pattern: "修了年月日", group: transcript, position: after }
+  - { pattern: "修了日", group: transcript, position: after }
+  - { pattern: "卒業年月日", group: transcript-issue, position: before }
+  - { pattern: "卒業日", group: transcript-issue, position: before }
+  - { pattern: "修了年月日", group: transcript-issue, position: before }
+  - { pattern: "修了日", group: transcript-issue, position: before }
+  - { pattern: "発行日", group: transcript-issue, position: after }
+  - { pattern: "証明日", group: transcript-issue, position: after }

@@ -674,3 +674,113 @@ describe("due-before-issue (order): 発注書と納品書の納期", () => {
     assert.deepEqual(findingsOf("# ご案内\n\n契約日：2026年9月14日\n\n納期：2026年9月8日\n"), []);
   });
 });
+
+const transcriptJa = (enrolLabel: string, enrolled: string, endLabel: string, ended: string, issueLabel: string, issued: string): string =>
+  `# 成績証明書\n\n架空学園大学 文学部\n\n氏名：架空 花子\n\n${enrolLabel}：${enrolled}\n\n${endLabel}：${ended}\n\n| 科目 | 単位数 |\n| --- | --- |\n| 文学概論 | 2 |\n\n${issueLabel}：${issued}\n`;
+
+const transcriptEn = (enrolLabel: string, enrolled: string, endLabel: string, ended: string, issueLabel: string, issued: string): string =>
+  `# Academic Transcript\n\nExample College, Faculty of Letters\n\nName: Alex Example\n\n${enrolLabel}: ${enrolled}\n\n${endLabel}: ${ended}\n\n| Course | Credits |\n| --- | --- |\n| Introduction to Literature | 2 |\n\n${issueLabel}: ${issued}\n`;
+
+describe("due-before-issue (order): 成績証明書の入学、卒業・修了、発行の日", () => {
+  it("入学より前の卒業や修了を、後に書いた卒業の行で指す", () => {
+    const ja1 = transcriptJa("入学年月日", "2026年4月1日", "卒業年月日", "2026年3月20日", "発行日", "2026年9月30日");
+    assert.deepEqual(findingsOf(ja1), ["「卒業年月日」（2026年3月20日）が、「入学年月日」（2026年4月1日）より前です"]);
+    assert.deepEqual(ruleLines(ja1), [9]);
+    assert.deepEqual(findingsOf(transcriptJa("入学日", "2025年4月1日", "修了日", "2025年3月1日", "証明日", "2025年9月1日")), [
+      "「修了日」（2025年3月1日）が、「入学日」（2025年4月1日）より前です",
+    ]);
+    const en1 = transcriptEn("Date of enrolment", "April 1, 2026", "Date of graduation", "March 20, 2026", "Date of issue", "September 30, 2026");
+    assert.deepEqual(findingsOf(en1, en), ['"Date of graduation" March 20, 2026 is before "Date of enrolment" April 1, 2026']);
+    assert.deepEqual(ruleLines(en1, en), [9]);
+    assert.deepEqual(
+      findingsOf(transcriptEn("Date of admission", "April 1, 2025", "Date of completion", "March 1, 2025", "Issue date", "September 1, 2025"), en),
+      ['"Date of completion" March 1, 2025 is before "Date of admission" April 1, 2025'],
+    );
+  });
+
+  it("卒業や修了より前の発行日や証明日を、発行日の行で指す", () => {
+    const ja2 = transcriptJa("入学年月日", "2022年4月1日", "卒業年月日", "2026年3月20日", "発行日", "2026年3月10日");
+    assert.deepEqual(findingsOf(ja2), ["「発行日」（2026年3月10日）が、「卒業年月日」（2026年3月20日）より前です"]);
+    assert.deepEqual(ruleLines(ja2), [15]);
+    assert.deepEqual(findingsOf(transcriptJa("入学日", "2024年4月1日", "修了年月日", "2026年3月15日", "証明日", "2026年2月10日")), [
+      "「証明日」（2026年2月10日）が、「修了年月日」（2026年3月15日）より前です",
+    ]);
+    const en2 = transcriptEn("Enrolment date", "April 1, 2022", "Graduation date", "March 20, 2026", "Issue date", "March 10, 2026");
+    assert.deepEqual(findingsOf(en2, en), ['"Issue date" March 10, 2026 is before "Graduation date" March 20, 2026']);
+    assert.deepEqual(ruleLines(en2, en), [15]);
+  });
+
+  it("順の合った日付、同じ日、年の無い日付は言わない", () => {
+    assert.deepEqual(findingsOf(transcriptJa("入学年月日", "2022年4月1日", "卒業年月日", "2026年3月20日", "発行日", "2026年9月30日")), []);
+    assert.deepEqual(findingsOf(transcriptJa("入学年月日", "2022年4月1日", "卒業年月日", "2026年3月20日", "発行日", "2026年3月20日")), []);
+    assert.deepEqual(findingsOf(transcriptJa("入学年月日", "4月1日", "卒業年月日", "3月20日", "発行日", "3月10日")), []);
+    assert.deepEqual(
+      findingsOf(transcriptEn("Date of enrolment", "April 1, 2022", "Date of graduation", "March 20, 2026", "Date of issue", "September 30, 2026"), en),
+      [],
+    );
+    assert.deepEqual(
+      findingsOf(transcriptEn("Date of enrolment", "April 1, 2022", "Date of graduation", "March 20, 2026", "Date of issue", "March 20, 2026"), en),
+      [],
+    );
+    assert.deepEqual(findingsOf(transcriptEn("Date of enrolment", "April 1", "Date of graduation", "March 20", "Date of issue", "March 10"), en), []);
+  });
+
+  it("入学の日と発行日は組まない（在学証明書の発行は卒業の前）", () => {
+    assert.deepEqual(findingsOf("# 在学証明書\n\n入学年月日：2026年4月1日\n\n発行日：2026年3月25日\n"), []);
+    assert.deepEqual(findingsOf("# Certificate of Enrolment\n\nDate of enrolment: April 1, 2026\n\nDate of issue: March 25, 2026\n", en), []);
+  });
+
+  it("請求書の発行日と支払期限は、これまでどおり比べる", () => {
+    assert.deepEqual(findingsOf("# 請求書\n\n発行日：2026年11月30日\n\nお支払期限：2026年11月25日\n"), [
+      "期限（2026年11月25日）が、発行日（2026年11月30日）より前です",
+    ]);
+    assert.deepEqual(findingsOf("# 請求書\n\n発行日：2026年11月30日\n\nお支払期限：2026年12月25日\n"), []);
+  });
+
+  it("学歴の表のように先の日付が何行もあれば、いちばん近い先の日付と比べる", () => {
+    const historyJa = (rows: readonly (readonly [string, string])[]): string => {
+      const tableRows = rows.map(([label, date]) => `| ${label} | ${date} |`);
+      return ["# 学歴", "", "| 項目 | 日付 |", "| --- | --- |", ...tableRows, ""].join("\n");
+    };
+    const newestFirst = historyJa([
+      ["入学年月日", "2022年4月1日"],
+      ["卒業年月日", "2026年3月20日"],
+      ["入学年月日", "2019年4月1日"],
+      ["卒業年月日", "2022年3月1日"],
+    ]);
+    assert.deepEqual(findingsOf(newestFirst), []);
+    const ownRecordWrong = historyJa([
+      ["入学年月日", "2022年4月1日"],
+      ["卒業年月日", "2021年3月20日"],
+      ["入学年月日", "2019年4月1日"],
+      ["卒業年月日", "2022年3月1日"],
+    ]);
+    assert.deepEqual(findingsOf(ownRecordWrong), ["「卒業年月日」（2021年3月20日）が、「入学年月日」（2022年4月1日）より前です"]);
+    const historyEn =
+      "# Education\n\nDate of enrolment: April 1, 2022\n\nDate of graduation: March 20, 2026\n\nDate of enrolment: April 1, 2019\n\nDate of graduation: March 1, 2022\n";
+    assert.deepEqual(findingsOf(historyEn, en), []);
+  });
+
+  it("卒業や修了の日が何行もあっても、一度だけ書いた発行日は最初の卒業の日と比べる", () => {
+    assert.deepEqual(findingsOf("# 卒業証明書\n\n卒業年月日：2026年3月20日\n\n卒業年月日：2022年3月1日\n\n発行日：2026年3月10日\n"), [
+      "「発行日」（2026年3月10日）が、「卒業年月日」（2026年3月20日）より前です",
+    ]);
+    assert.deepEqual(
+      findingsOf("# Certificate\n\nDate of graduation: March 20, 2026\n\nDate of graduation: March 1, 2022\n\nDate of issue: March 10, 2026\n", en),
+      ['"Date of issue" March 10, 2026 is before "Date of graduation" March 20, 2026'],
+    );
+  });
+
+  it("nearest earlier: 後の日付が一つなら最初の先の日付と、何行もあれば近い方（同じ距離なら上）と比べる", () => {
+    const words = { earlier: ["入学日"], later: ["卒業日"], passed: [], maxLineGap: 40 };
+    const at = (lineStart: number, value: string): { offset: number; value: string } => ({ offset: lineStart + 4, value });
+    const one = "入学日：2026年4月1日\n入学日：2025年4月1日\n卒業日：2026年3月1日";
+    const oneDates = [at(0, "2026-04-01"), at(16, "2025-04-01"), at(32, "2026-03-01")];
+    assert.equal(datesOutOfOrder(one, oneDates, words).length, 1);
+    const twoLaters = `${one}\n卒業日：2027年3月1日`;
+    assert.deepEqual(datesOutOfOrder(twoLaters, [...oneDates, at(48, "2027-03-01")], words), []);
+    const tie = "入学日：2026年4月1日\n卒業日：2026年3月1日\n入学日：2025年4月1日\n卒業日：2027年3月1日";
+    const tieDates = [at(0, "2026-04-01"), at(16, "2026-03-01"), at(32, "2025-04-01"), at(48, "2027-03-01")];
+    assert.equal(datesOutOfOrder(tie, tieDates, words).length, 1);
+  });
+});

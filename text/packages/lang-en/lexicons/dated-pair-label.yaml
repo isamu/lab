@@ -104,3 +104,17 @@ entries:
   - { pattern: "Requested delivery date", group: order, position: after }
   - { pattern: "Delivered on", group: order, position: after }
   - { pattern: "Date delivered", group: order, position: after }
+  # An academic transcript or a certificate of graduation or completion: graduation and completion come after enrolment,
+  # and the certificate is issued after them. The three are read as two pairs: enrolment with graduation or completion,
+  # and graduation or completion with the issue date. The enrolment date is not paired with the issue date.
+  - { pattern: "Date of enrolment", group: transcript, position: before }
+  - { pattern: "Enrolment date", group: transcript, position: before }
+  - { pattern: "Date of admission", group: transcript, position: before }
+  - { pattern: "Date of graduation", group: transcript, position: after }
+  - { pattern: "Graduation date", group: transcript, position: after }
+  - { pattern: "Date of completion", group: transcript, position: after }
+  - { pattern: "Date of graduation", group: transcript-issue, position: before }
+  - { pattern: "Graduation date", group: transcript-issue, position: before }
+  - { pattern: "Date of completion", group: transcript-issue, position: before }
+  - { pattern: "Date of issue", group: transcript-issue, position: after }
+  - { pattern: "Issue date", group: transcript-issue, position: after }
