@@ -1,0 +1,80 @@
+id: gpa-mismatch
+layer: L3
+status: stable
+how_to_find: gpa-mismatch
+word_list: gpa-label
+extra_word_lists: [transcript-column, grade-point]
+# The course table's columns are found by transcript-column, each grade's points by the document's own grading key or by
+# grade-point (one scale per group, weight is the points), and the written GPA by gpa-label.
+languages: [ja, en]
+severity: warning
+
+name:
+  ja: GPA が科目の評価と単位数から出る値と合わない
+  en: A grade-point average the course rows do not give
+
+why:
+  ja: 成績証明書の「GPA：3.00」は、科目ごとの評価の点（GP）に単位数を掛けた和を、単位数の和で割った値です。読み手は計算し直さずに信じます。一つの科目の評価だけを直したとき、別の学期や別の人の値を写したときに食い違います。どの列が科目・単位数・評価かは、列の見出しの語（科目、単位、評価、成績）だけで決めます。評価の点は、評価の語（評価、成績）のある行に「S（4）、A（3）」のような対応が書いてあればそれを使い、無ければ言語パッケージの語彙表 grade-point の尺度（秀・優・良・可・不可、S〜D、A〜F）を使います。文書の評価がすべて入る尺度が複数あって点が違うとき（S も D も無い A・B・C だけの表）は決まらないので比べません。認定・合・履修中のような点の無い評価の科目は、両方の和から外します。書いた GPA は、その桁までの四捨五入か切り捨てで届く差なら言いません。
+  en: 'The "GPA: 3.00" of a transcript is the sum of each course''s grade points times its credits, divided by the sum of the credits. Readers trust it without working it out again. It goes wrong when one course''s grade is corrected and the average is not, or when the average is copied from another term or another student. Which column is the course, the credits and the grade is decided by the heading words alone (Course, Credits, Grade). A grade''s points come from the document''s own grading key, a line naming grades with "A (4), B (3)", when it writes one, and otherwise from a scale of the language package''s grade-point lexicon (A to F, S to D, plus and minus grades). When the document''s grades fit several scales that give them different points (only A, B and C, with no S and no D), nothing is compared. A course with a grade that carries no points (Pass, W, In progress) is left out of both sums. A difference that rounding or cutting off to the written decimals can reach is not reported.'
+
+message:
+  ja: GPA「{gpa}」は、科目の評価と単位数からは {computed} です
+  en: 'The GPA "{gpa}" is written, but the course grades and credits give {computed}'
+
+how_to_fix:
+  ja: 科目の評価と単位数、GPA のどれが正しいかを確かめて、ほかを直してください。
+  en: Check which of the course grades, their credits and the GPA is right, and correct the others.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: GPA が、科目の評価と単位数から計算した値と合わない所
+  en: A grade-point average that is not what the course grades and credits give
+example:
+  ja:
+    before: |
+      | 科目 | 単位数 | 評価 |
+      | --- | --- | --- |
+      | 経済学入門 | 2 | S |
+      | 統計学 | 2 | A |
+      | ミクロ経済学 | 4 | B |
+
+      GPA：3.20
+    after: |
+      | 科目 | 単位数 | 評価 |
+      | --- | --- | --- |
+      | 経済学入門 | 2 | S |
+      | 統計学 | 2 | A |
+      | ミクロ経済学 | 4 | B |
+
+      GPA：2.75
+  en:
+    before: |
+      | Course | Credits | Grade |
+      | --- | --- | --- |
+      | Food Safety | 4 | B |
+      | Nutrition | 2 | C |
+      | Pastry Practicum | 6 | A |
+
+      Grades are A (4), B (3), C (2) and D (1).
+
+      GPA: 3.52
+    after: |
+      | Course | Credits | Grade |
+      | --- | --- | --- |
+      | Food Safety | 4 | B |
+      | Nutrition | 2 | C |
+      | Pastry Practicum | 6 | A |
+
+      Grades are A (4), B (3), C (2) and D (1).
+
+      GPA: 3.33
+
+not_flagged:
+  ja: GPA の見出しの行が無い文書、科目・単位数・評価の列のそろった表が無い文書は比べません。評価が尺度に無い科目、単位数が数でない科目が一つでもあれば比べません。文書の評価がすべて入る尺度で点が一つに決まらないとき、文書に書いた評価と点の対応が同じ評価に二つの点を付けるとき、使った評価の一部にしか点を付けず、その点が尺度の点と違うときも比べません。「前期GPA」のように一部の期間の GPA を書いた文書、見出しの違う GPA を書いた文書、値の違う GPA を二つ書いた文書は、どの科目の平均か分からないので比べません。合計の行は科目として数えません。四捨五入か切り捨てで届く差は言いません。
+  en: 'A document with no GPA line, or with no table that has course, credits and grade columns, is not compared; nor is one with a course whose grade is on no scale or whose credits are not a number. Nothing is compared when the grades fit scales that give them different points, when the document''s grading key gives one grade two different points, or when it gives points to only some of the grades used and those differ from the scale''s. A document that writes the GPA of one period ("Term GPA"), a GPA under another label, or two different GPAs is not compared, since it cannot be told which courses the average is of. A total row is not counted as a course. A difference that rounding or cutting off can reach is not reported.'
