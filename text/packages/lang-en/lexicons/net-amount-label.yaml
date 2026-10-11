@@ -1,0 +1,22 @@
+# Names of the amounts a subtraction links (net-amount-mismatch). group is gross (the amount before deductions), deduction
+# (the total taken off) or net (what is left). When one table or one section has one word of each group, each with an
+# amount, the net is compared with gross minus deduction. A table heading or a label that is only this word (a unit in
+# brackets aside) is read.
+id: net-amount-label
+language: en
+entries:
+  - { pattern: Gross pay, group: gross }
+  - { pattern: Gross earnings, group: gross }
+  - { pattern: Gross salary, group: gross }
+  - { pattern: Gross wages, group: gross }
+  - { pattern: Gross amount, group: gross }
+  - { pattern: Total earnings, group: gross }
+  - { pattern: Total deductions, group: deduction }
+  - { pattern: Total deduction, group: deduction }
+  - { pattern: Deductions total, group: deduction }
+  - { pattern: Net pay, group: net }
+  - { pattern: Net salary, group: net }
+  - { pattern: Net wages, group: net }
+  - { pattern: Net earnings, group: net }
+  - { pattern: Net amount, group: net }
+  - { pattern: Take-home pay, group: net }

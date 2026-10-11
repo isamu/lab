@@ -202,7 +202,7 @@ const nameMentionsOf = (doc: ProseDocument, prose: string, chars: VariantChars):
     const cue = mention.cue ?? nameCueAt(prose, mention.offset, mention.surface, cues);
     return cue === undefined ? mention : { ...mention, cue };
   });
-  return withKnownNeighbours(joinFullNames(cued, fullNameGaps(tokensOf(doc))), prose).toSorted((left, right) => left.offset - right.offset);
+  return withKnownNeighbours(joinFullNames(cued, fullNameGaps(tokensOf(doc), cues.suffixes)), prose).toSorted((left, right) => left.offset - right.offset);
 };
 
 /** 一語の名前の中で同じ音を書く字（ヶ・ケ・が）は語彙表 name-spelling-char が組（group）ごとに言う。 */
