@@ -132,6 +132,20 @@ describe("name-variant: 同じ名前の書き分け", () => {
     const table = "中村 健太 様の結果です。中村 健太 様にお送りします。\n\n| 氏名 | 区分 |\n| --- | --- |\n| 中村 健汰 | 予約 |\n";
     assert.deepEqual(variants(table, ja), ["「中村 健汰」は、ほかの所では同じ読みの「中村 健太」と書いています"]);
   });
+
+  it("解析器が地名と読む名（千尋）も、空白を挟んだ敬称があれば姓と合わせて人の名前と読む", () => {
+    const usual = "「森下 千裕」は、ほかの所では同じ読みの「森下 千尋」と書いています";
+    const table = "ご宿泊者：森下 千尋 様\n\n| 項目 | 内容 |\n| --- | --- |\n| ご代表者 | 森下 千尋 様 |\n\n森下 千裕 様のお越しをお待ちしております。\n";
+    assert.deepEqual(variants(table, ja), [usual]);
+    const wide = (text: string): string => text.replaceAll(" ", "　");
+    assert.deepEqual(variants(wide("ご宿泊者：森下 千尋 様\n\n森下 千裕 様のお越しです。\n"), ja), [usual]);
+  });
+
+  it("読みの違う名（千尋 と 千里）、姓の違う二人、姓の無い一度ずつの名は言わない", () => {
+    assert.deepEqual(variants("ご宿泊者：森下 千尋 様\n\n森下 千尋 様のご予約です。\n\n森下 千里 様のお越しです。\n", ja), []);
+    assert.deepEqual(variants("ご宿泊者：森下 千尋 様\n\n森下 千尋 様のご予約です。\n\n大西 千裕 様のお越しです。\n", ja), []);
+    assert.deepEqual(variants("千尋 様のご予約です。千裕 様のお越しです。\n", ja), []);
+  });
 });
 
 describe("the reading behind name-variant", () => {
@@ -245,6 +259,14 @@ describe("the reading behind name-variant", () => {
     assert.deepEqual(personOf(placeThenSuffix, ["様"]), [true]);
     assert.deepEqual(personOf(placeThenSuffix), [false]);
     assert.deepEqual(personOf([token("松本", 0, "PROPN", "Sur")]), [true]);
+    const spaced = (blank: string): (boolean | undefined)[] =>
+      mentionsIn([token("千尋", 0, "PROPN", "Geo"), token(blank, 2, "PUNCT"), token("様", 2 + blank.length, "NOUN")], `千尋${blank}様`, ["様"]).map(
+        (found) => found.person,
+      );
+    assert.deepEqual(spaced(" "), [true]);
+    assert.deepEqual(spaced("　"), [true]);
+    assert.deepEqual(spaced("\n"), [false]);
+    assert.deepEqual(spaced("、"), [false]);
   });
 
   it("解析器が読めない字の読みは、人の名前と読める現れにだけ足す", () => {
