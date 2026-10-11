@@ -1,4 +1,4 @@
-# Headings that say what a column of an order quantity table holds (delivered-over-ordered, backorder-mismatch): the
+# Headings that say what a column of an order quantity table holds (delivered-over-ordered, backorder-mismatch, line-amount-mismatch): the
 # backorder section of a delivery note, a list of open orders. group: ordered is the quantity ordered, delivered the quantity
 # delivered or shipped, backordered what is still to come. backordered is looked at first, so "Back ordered" is what is left,
 # not what was ordered. A Latin word stands as a whole word: "ordered" is not in "Backordered". A heading that names both

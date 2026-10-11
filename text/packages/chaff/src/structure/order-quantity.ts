@@ -15,7 +15,7 @@ const ROLE_ORDER: readonly QuantityRole[] = ["backordered", "delivered", "ordere
 /** A heading that names both ordered and delivered ("Ordered / Delivered") says neither: it is no column to read. */
 const BOTH = "both";
 
-const roleOf = (heading: string, words: readonly QuantityWord[]): QuantityRole | typeof BOTH | undefined => {
+export const roleOf = (heading: string, words: readonly QuantityWord[]): QuantityRole | typeof BOTH | undefined => {
   const key = plain(heading).toLowerCase();
   const named = ROLE_ORDER.filter((role) => words.some((word) => word.role === role && holds(key, word.pattern)));
   if (!named.includes("backordered") && named.includes("delivered") && named.includes("ordered")) return BOTH;
