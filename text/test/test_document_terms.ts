@@ -174,6 +174,27 @@ describe("fact-conflict: a whole-document item across sections", () => {
     assert.deepEqual(ja2(...TERMS_JA, "## 契約社員", "", "契約社員の試用期間は1ヶ月です。"), []);
   });
 
+  it("the number of dependants in a table and in a sentence of another section (ja, en)", () => {
+    const tableJa = ["## 扶養親族", "", "| 区分 | 人数 |", "| --- | --- |", "| 一般の扶養親族 | 1人 |", "| 扶養親族の数 | 2人 |", "", "## 控除"];
+    assert.deepEqual(ja2(...tableJa, "", "扶養親族の数は3人です。"), ["扶養親族の数:3人≠2人"]);
+    assert.deepEqual(ja2(...tableJa, "", "扶養人数は3人です。"), ["扶養人数:3人≠2人"]);
+    assert.deepEqual(ja2(...tableJa, "", "扶養親族の数は2人です。"), []);
+    assert.deepEqual(ja2(...tableJa, "", "一般の扶養親族は2人です。"), []);
+    const tableEn = [
+      "## Dependants",
+      "",
+      "| Dependant | Count |",
+      "| --- | --- |",
+      "| Other dependants | 1 |",
+      "| Number of dependants | 2 |",
+      "",
+      "## Deductions",
+    ];
+    assert.deepEqual(en2(...tableEn, "", "The number of dependants is 3, as you declared."), ["The number of dependants:3≠2"]);
+    assert.deepEqual(en2(...tableEn, "", "The number of dependants is 2, as you declared."), []);
+    assert.deepEqual(en2(...tableEn, "", "Other dependants: 2"), []);
+  });
+
   it("an item not in the lexicon is still compared only within a section", () => {
     assert.deepEqual(ja2("## 条件", "", "| 項目 | 内容 |", "| --- | --- |", "| 研修期間 | 3ヶ月 |", "", "## その他", "", "研修期間は6ヶ月です。"), []);
   });

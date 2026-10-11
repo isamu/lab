@@ -22,3 +22,7 @@ entries:
   - { pattern: warranty period, group: warranty-period }
   - { pattern: warranty term, group: warranty-period }
   - { pattern: warranty, group: warranty-period }
+  # The number of dependants a tax calculation uses: one value per person in a withholding statement. A count by kind
+  # ("Children under 17") is another name.
+  - { pattern: number of dependants, group: dependants-count }
+  - { pattern: number of dependents, group: dependants-count }
