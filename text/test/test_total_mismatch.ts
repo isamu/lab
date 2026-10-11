@@ -110,6 +110,56 @@ describe("total-mismatch", () => {
     ["Total area", "Total floor space", "Total tax", "Rent per month"].forEach((label) => assert.deepEqual(found(costs(label, "$2,180")), [], label));
   });
 
+  it("a total naming the span it covers is a total line: 年間合計, 年計, Total for the year, Year total", () => {
+    const withheld = (label: string, total: string): string =>
+      doc(
+        "| 支払月 | 源泉徴収税額 |",
+        "| --- | --- |",
+        "| 1月 | 6,320円 |",
+        "| 2月 | 6,320円 |",
+        "| 7月 | 6,580円 |",
+        "| 夏季賞与 | 8,200円 |",
+        `| ${label} | ${total} |`,
+      );
+    ["年間合計", "年計", "通年合計", "年度合計"].forEach((label) => {
+      assert.deepEqual(found(withheld(label, "28,420円"), ja, "ja"), ["28,420円≠27,420円"], label);
+      assert.deepEqual(found(withheld(label, "27,420円"), ja, "ja"), [], label);
+    });
+    const english = (label: string, total: string): string =>
+      doc(
+        "| Month paid | Income tax withheld |",
+        "| --- | --- |",
+        "| January | $610.00 |",
+        "| February | $610.00 |",
+        "| July | $625.00 |",
+        `| ${label} | ${total} |`,
+      );
+    ["Total for the year", "Year total", "Annual total", "Full-year total"].forEach((label) => {
+      assert.deepEqual(found(english(label, "$1,945.00")), ["$1,945.00≠$1,845.00"], label);
+      assert.deepEqual(found(english(label, "$1,845.00")), [], label);
+    });
+  });
+
+  it("a prior span's total is not this table's total, and a span total that scales the items to the span is not compared", () => {
+    const withheld = (label: string): string =>
+      doc("| 支払月 | 源泉徴収税額 |", "| --- | --- |", "| 1月 | 6,320円 |", "| 2月 | 6,320円 |", `| ${label} | 75,000円 |`);
+    ["前年合計", "昨年合計", "前年度合計"].forEach((label) => assert.deepEqual(found(withheld(label), ja, "ja"), [], label));
+    const english = (label: string): string =>
+      doc("| Month paid | Tax |", "| --- | --- |", "| January | $610.00 |", "| February | $610.00 |", `| ${label} | $7,000.00 |`);
+    ["Prior-year total", "Total for the prior year", "Year-to-date total"].forEach((label) => assert.deepEqual(found(english(label)), [], label));
+    const monthly = (label: string, total: string): string =>
+      doc("| 項目 | 月額 |", "| --- | --- |", "| 家賃 | 80,000円 |", "| 管理費 | 5,000円 |", `| ${label} | ${total} |`);
+    assert.deepEqual(found(monthly("年間合計", "1,020,000円"), ja, "ja"), []);
+    assert.deepEqual(found(monthly("年間合計", "1,030,000円"), ja, "ja"), ["1,030,000円≠85,000円"]);
+    assert.deepEqual(found(monthly("合計", "1,020,000円"), ja, "ja"), ["1,020,000円≠85,000円"]);
+    const rent = (label: string): string => doc("| Item | Monthly |", "| --- | --- |", "| Rent | $800 |", "| Fees | $50 |", `| ${label} | $10,200 |`);
+    ["Annual total", "Total for the year", "Total per year"].forEach((label) => assert.deepEqual(found(rent(label)), [], label));
+    assert.deepEqual(found(rent("Total")), ["$10,200≠$850"]);
+    assert.deepEqual(found(doc("| Budget item | Amount |", "| --- | --- |", "| Software | $500 |", "| Support | $250 |", "| Annual total | $1,500 |")), [
+      "$1,500≠$750",
+    ]);
+  });
+
   it("a total with a noun is read when the table's header names the noun: 控除合計 under 控除項目, Total deductions under Deduction", () => {
     const deductions = (total: string): string =>
       doc(

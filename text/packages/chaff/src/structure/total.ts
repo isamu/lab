@@ -32,7 +32,8 @@ const OPEN_PAREN_BEFORE = /[(（][ \t]?(?:[$€£¥￥][ \t]?)?$/u;
 type Cell = { readonly column: number; readonly unit: string };
 /** cents が undefined の金額は、符号が決まらない。 */
 type Placed = Amount & Cell & { readonly cents: number | undefined };
-type Entry = { readonly label: boolean; readonly amounts: readonly Placed[] };
+/** spanTotal: 合計が足す期間の語を付けた合計の行（年間合計、Total for the year）。 */
+type Entry = { readonly label: boolean; readonly spanTotal: boolean; readonly amounts: readonly Placed[] };
 
 export const columnOf = (source: string, line: Line, offset: number): number => source.slice(line.start, offset).split(CELL_SEPARATOR).length - 1;
 
@@ -92,8 +93,14 @@ const tablesIn = (source: string, run: readonly Line[]): Line[][] =>
     return tables;
   }, []);
 
-const entryOf = (source: string, line: Line, amounts: readonly Amount[], isTotal: (text: string) => boolean): Entry => ({
-  label: isTotal(source.slice(line.start, line.end)),
+/** 行が、合計が足す期間の語を付けた合計の行か（年間合計、Total for the year）。 */
+export type IsSpanTotal = (text: string) => boolean;
+
+type LineKinds = { readonly isTotal: (text: string) => boolean; readonly isSpanTotal: IsSpanTotal };
+
+const entryOf = (source: string, line: Line, amounts: readonly Amount[], kinds: LineKinds): Entry => ({
+  label: kinds.isTotal(source.slice(line.start, line.end)),
+  spanTotal: kinds.isSpanTotal(source.slice(line.start, line.end)),
   amounts: amounts
     .filter((amount) => amount.offset >= line.start && amount.offset <= line.end)
     .map((amount) => ({ ...amount, column: columnOf(source, line, amount.offset), cents: centsOf(source, line, amount) })),
@@ -227,6 +234,13 @@ const measuredMismatch = (source: string, total: Placed, scale: number, sums: re
   return [{ offset: total.offset, values: { written: number, sum: `${sum}${unitAfterNumber(number, total.unit)}` } }];
 };
 
+/** 一年の中の期間の数（四半期、月、週）。期間の合計が和のちょうどこの倍なら、内訳を一年に直した額と読む。二倍は書き誤りでも起きるので入れない。 */
+const SPAN_MULTIPLES: readonly number[] = [4, 12, 52];
+
+/** 書いた合計が、どれかの足し方の和を一年に直した額か（月額の内訳に年間合計）。 */
+const isSpanMultiple = (writtenCents: number, sums: readonly number[]): boolean =>
+  sums.some((sum) => SPAN_MULTIPLES.some((multiple) => sum !== 0 && writtenCents === sum * multiple));
+
 const mismatchesIn = (source: string, entries: readonly Entry[]): StructureIssue[] =>
   entries.flatMap((entry, index) => {
     if (!entry.label) return [];
@@ -234,6 +248,7 @@ const mismatchesIn = (source: string, entries: readonly Entry[]): StructureIssue
       const writtenCents = valueIn(entry, total);
       const above = windowAbove(entries.slice(0, index), total);
       if (typeof writtenCents !== "number" || above === undefined || !enoughRows(above) || !readsAsSum(total, writtenCents, above)) return [];
+      if (entry.spanTotal && isSpanMultiple(writtenCents, candidateSums(above))) return [];
       if (total.scale !== undefined) return measuredMismatch(source, total, total.scale, candidateSums(above), reportedSum(above));
       if (candidateSums(above).includes(writtenCents)) return [];
       return [{ offset: total.offset, values: shownAmounts(source, total, reportedSum(above)) }];
@@ -241,17 +256,23 @@ const mismatchesIn = (source: string, entries: readonly Entry[]): StructureIssue
   });
 
 /** 一つの表（見出しの下の行）の合計。名詞の付いた合計の行は、その表の見出しで読む。 */
-const tableMismatches = (source: string, table: readonly Line[], amounts: readonly Amount[], isTotal: IsTotalLine): StructureIssue[] => {
+const tableMismatches = (
+  source: string,
+  table: readonly Line[],
+  amounts: readonly Amount[],
+  isTotal: IsTotalLine,
+  isSpanTotal: IsSpanTotal,
+): StructureIssue[] => {
   const header = table[0] === undefined ? undefined : headerAbove(source, table[0]);
-  const isTotalHere = (text: string): boolean => isTotal(text, header);
+  const kinds = { isTotal: (text: string): boolean => isTotal(text, header), isSpanTotal };
   return mismatchesIn(
     source,
-    table.map((line) => entryOf(source, line, amounts, isTotalHere)),
+    table.map((line) => entryOf(source, line, amounts, kinds)),
   );
 };
 
-export const totalMismatches = (source: string, amounts: readonly Amount[], isTotal: IsTotalLine): StructureIssue[] =>
+export const totalMismatches = (source: string, amounts: readonly Amount[], isTotal: IsTotalLine, isSpanTotal: IsSpanTotal = () => false): StructureIssue[] =>
   runsOf(source).flatMap((run) => {
     const inRun = [...amounts, ...bareNumbersIn(source, run)];
-    return tablesIn(source, run).flatMap((table) => tableMismatches(source, table, inRun, isTotal));
+    return tablesIn(source, run).flatMap((table) => tableMismatches(source, table, inRun, isTotal, isSpanTotal));
   });

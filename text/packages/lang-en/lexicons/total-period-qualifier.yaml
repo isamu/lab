@@ -1,0 +1,17 @@
+# Words naming the span a total covers. Cut off a total line's label, what remains is read as the total word:
+# "Total for the year", "Year total", "Annual total" read as "Total". position: before or after the total word only.
+# A label naming another span ("Prior-year total", "Total for the prior year") is not cut, as it is not this table's total.
+# A total read this way that is the items scaled to a year (exactly 4, 12 or 52 times their sum, as monthly items under
+# an annual total) is not compared.
+id: total-period-qualifier
+language: en
+entries:
+  - { pattern: annual, position: before }
+  - { pattern: yearly, position: before }
+  - { pattern: year, position: before }
+  - { pattern: full-year, position: before }
+  - { pattern: full year, position: before }
+  - { pattern: for the year, position: after }
+  - { pattern: for the full year, position: after }
+  - { pattern: per year, position: after }
+  - { pattern: annually, position: after }

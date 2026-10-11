@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { isTotalLine, type TotalLineWords } from "../packages/chaff/src/structure/total-line.ts";
+import { isPeriodTotalLine, isTotalLine, type TotalLineWords } from "../packages/chaff/src/structure/total-line.ts";
 import { loadLexicons as loadEnglish } from "../packages/lang-en/src/lexicons.ts";
 import { loadLexicons as loadJapanese } from "../packages/lang-ja/src/lexicons.ts";
 
@@ -15,6 +15,7 @@ const wordsIn = (lexicons: ReturnType<typeof loadEnglish>): TotalLineWords => ({
   qualifiers: lexicons["total-label-qualifier"] ?? [],
   nounQualifiers: lexicons["total-noun-qualifier"] ?? [],
   unsummedNouns: patterns(lexicons, "total-noun-unsummed"),
+  periodQualifiers: lexicons["total-period-qualifier"] ?? [],
 });
 const en = wordsIn(english);
 const ja = wordsIn(japanese);
@@ -128,6 +129,57 @@ describe("isTotalLine", () => {
     assert.equal(isTotalLine("| 面積合計 | 52.8㎡ |", { ...ja, unsummedNouns: [] }, "| 部屋 | 面積 |"), true);
     assert.equal(isTotalLine("| 修得単位合計 | 29 |", { ...ja, nounQualifiers: [] }, "| 科目 | 単位数 |"), false);
     assert.equal(isTotalLine("| Total credits earned | 29 |", { ...en, nounQualifiers: undefined }, "| Course | Credits |"), false);
+  });
+
+  it("reads a total with the span it covers cut off: 年間合計 as 合計, Total for the year as Total", () => {
+    [
+      "| 年間合計 | 98,300円 |",
+      "| 年計 | 98,300円 |",
+      "| 通年合計 | 98,300円 |",
+      "| 年度合計 | 98,300円 |",
+      "- 年間合計：98,300円",
+      "| **年間合計** | 98,300円 |",
+    ].forEach((line) => {
+      assert.equal(isTotalLine(line, ja), true, line);
+      assert.equal(isPeriodTotalLine(line, ja), true, line);
+    });
+    [
+      "| Total for the year | $7,980.00 |",
+      "| Year total | $7,980.00 |",
+      "| Annual total | $7,980.00 |",
+      "| Full-year total | $7,980.00 |",
+      "- Total for the full year: $7,980.00",
+      "| Subtotal per year | $7,980.00 |",
+    ].forEach((line) => {
+      assert.equal(isTotalLine(line, en), true, line);
+      assert.equal(isPeriodTotalLine(line, en), true, line);
+    });
+  });
+
+  it("does not read a prior span, a span word inside another word, or a span word with no total word after it", () => {
+    [
+      "| 前年合計 | 98,300円 |",
+      "| 昨年合計 | 98,300円 |",
+      "| 前年度合計 | 98,300円 |",
+      "| 年金合計 | 98,300円 |",
+      "| 年間計画 | 12件 |",
+      "| 年間 | 98,300円 |",
+      "| 年額 | 98,300円 |",
+    ].forEach((line) => assert.equal(isTotalLine(line, ja), false, line));
+    [
+      "| Prior-year total | $7,980.00 |",
+      "| Prior year total | $7,980.00 |",
+      "| Total for the prior year | $7,980.00 |",
+      "| Year-to-date total | $7,980.00 |",
+      "| Total for the year to date | $7,980.00 |",
+      "| Yearend total | $7,980.00 |",
+      "| Year | 2025 |",
+      "| For the year | $7,980.00 |",
+    ].forEach((line) => assert.equal(isTotalLine(line, en), false, line));
+    assert.equal(isPeriodTotalLine("| 合計 | 98,300円 |", ja), false);
+    assert.equal(isPeriodTotalLine("| Total | $7,980.00 |", en), false);
+    assert.equal(isPeriodTotalLine("| 年間合計 | 98,300円 |", { ...ja, periodQualifiers: undefined }), false);
+    assert.equal(isPeriodTotalLine("| 年間合計 | 98,300円 |", { ...ja, periodQualifiers: [{ pattern: "" }] }), false);
   });
 
   it("does not read anything with an empty or missing vocabulary", () => {
