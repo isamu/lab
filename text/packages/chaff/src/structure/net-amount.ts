@@ -1,11 +1,12 @@
 /**
- * net-amount-mismatch: the deciding half. A net amount (差引支給額, Net pay) against the gross amount (総支給額, Gross pay)
- * minus the total of deductions (控除合計, Total deductions) written in the same table or the same section. Which words name
- * the three is data (lexicon net-amount-label, grouped gross / deduction / net); nothing here knows a word of payroll. Pure.
+ * net-amount-mismatch: the deciding half. A net amount (差引支給額, Net pay) or a taxable amount (課税対象額, Taxable income)
+ * against the gross amount (総支給額, Gross pay) minus the total of deductions (控除合計, Total deductions) written in the same
+ * table or the same section. Which words name them is data (lexicon net-amount-label, grouped gross / deduction / net /
+ * taxable); nothing here knows a word of payroll or tax. Pure.
  */
 import { keyOf, labelKey, noteOf, readNumber } from "./ratio.ts";
 
-export const NET_ROLES = ["gross", "deduction", "net"] as const;
+export const NET_ROLES = ["gross", "deduction", "net", "taxable"] as const;
 export type NetRole = (typeof NET_ROLES)[number];
 
 export type NetWords = {
@@ -57,6 +58,14 @@ const onlyAmount = (amounts: readonly LabelledAmount[], role: NetRole): Labelled
   return mine.every((amount) => amount.value === first.value && amount.unit === first.unit) ? (mine.at(-1) ?? first) : undefined;
 };
 
+/**
+ * The amount gross minus deductions is compared with: the net, or the taxable amount when the scope names no net. A scope
+ * that names both is a payslip whose deductions are what is paid out, not what tax is figured on, so its taxable amount
+ * is not compared.
+ */
+const resultOf = (amounts: readonly LabelledAmount[]): LabelledAmount | undefined =>
+  onlyAmount(amounts, amounts.some((amount) => amount.role === "net") ? "net" : "taxable");
+
 /** A mark of currency and no word of magnitude: the amount is exact. Anything else may be rounded to its last digit. */
 const isExact = (amount: NetAmount, words: NetWords): boolean =>
   amount.prefix + amount.suffix !== "" && !words.magnitudes.some((word) => `${amount.prefix} ${amount.suffix}`.includes(keyOf(word)));
@@ -89,11 +98,11 @@ const shown = (value: number, like: NetAmount, decimals: number): string => {
 };
 
 /**
- * One scope (a table column, a table row, a section's labelled lines): gross, deductions and net each found, each with one
- * value, all in one unit. The net is reported when it is not gross minus deductions beyond rounding.
+ * One scope (a table column, a table row, a section's labelled lines): gross, deductions and net (or taxable) each found,
+ * each with one value, all in one unit. The net is reported when it is not gross minus deductions beyond rounding.
  */
 export const netMismatch = (amounts: readonly LabelledAmount[], words: NetWords): NetIssue | undefined => {
-  const [gross, deduction, net] = NET_ROLES.map((role) => onlyAmount(amounts, role));
+  const [gross, deduction, net] = [onlyAmount(amounts, "gross"), onlyAmount(amounts, "deduction"), resultOf(amounts)];
   if (gross === undefined || deduction === undefined || net === undefined) return undefined;
   if (gross.unit !== deduction.unit || gross.unit !== net.unit) return undefined;
   const expected = gross.value - deduction.value;
