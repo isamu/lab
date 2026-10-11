@@ -1,0 +1,26 @@
+# 発注・納品の数量の表（納品書の分納の欄、発注残の一覧）で、列の見出しが言う役割（delivered-over-ordered、backorder-mismatch）。
+# group: ordered は発注した数、delivered は納めた数、backordered はまだ納めていない残りの数。backordered を先に見るので、
+# 「発注残」「未納品数」「未出荷数」は発注や納品の数ではなく残りの数になる。発注と納品の両方を言う見出しの列は読まない。
+# group: qualifier は数のあとに書かれると、その数をちょうどの数でなくする語（10以上、50程度）。その升は比べない。
+id: order-quantity-column
+language: ja
+entries:
+  - { pattern: 発注数, group: ordered }
+  - { pattern: 注文数, group: ordered }
+  - { pattern: 受注数, group: ordered }
+  - { pattern: 納品数, group: delivered }
+  - { pattern: 納入数, group: delivered }
+  - { pattern: 出荷数, group: delivered }
+  - { pattern: 残数, group: backordered }
+  - { pattern: 未納, group: backordered }
+  - { pattern: 未出荷, group: backordered }
+  - { pattern: 発注残, group: backordered }
+  - { pattern: 注文残, group: backordered }
+  - { pattern: 受注残, group: backordered }
+  - { pattern: 以上, group: qualifier }
+  - { pattern: 以下, group: qualifier }
+  - { pattern: 未満, group: qualifier }
+  - { pattern: 超, group: qualifier }
+  - { pattern: 程度, group: qualifier }
+  - { pattern: 前後, group: qualifier }
+  - { pattern: 予定, group: qualifier }
