@@ -63,8 +63,7 @@ const onlyAmount = (amounts: readonly LabelledAmount[], role: NetRole): Labelled
  * that names both is a payslip whose deductions are what is paid out, not what tax is figured on, so its taxable amount
  * is not compared.
  */
-const resultOf = (amounts: readonly LabelledAmount[]): LabelledAmount | undefined =>
-  onlyAmount(amounts, amounts.some((amount) => amount.role === "net") ? "net" : "taxable");
+const resultOf = (amounts: readonly LabelledAmount[], netNamed: boolean): LabelledAmount | undefined => onlyAmount(amounts, netNamed ? "net" : "taxable");
 
 /** A mark of currency and no word of magnitude: the amount is exact. Anything else may be rounded to its last digit. */
 const isExact = (amount: NetAmount, words: NetWords): boolean =>
@@ -100,9 +99,14 @@ const shown = (value: number, like: NetAmount, decimals: number): string => {
 /**
  * One scope (a table column, a table row, a section's labelled lines): gross, deductions and net (or taxable) each found,
  * each with one value, all in one unit. The net is reported when it is not gross minus deductions beyond rounding.
+ * netNamed is whether the scope has a net label, even one whose value is not a plain amount (a net written as —).
  */
-export const netMismatch = (amounts: readonly LabelledAmount[], words: NetWords): NetIssue | undefined => {
-  const [gross, deduction, net] = [onlyAmount(amounts, "gross"), onlyAmount(amounts, "deduction"), resultOf(amounts)];
+export const netMismatch = (
+  amounts: readonly LabelledAmount[],
+  words: NetWords,
+  netNamed = amounts.some((amount) => amount.role === "net"),
+): NetIssue | undefined => {
+  const [gross, deduction, net] = [onlyAmount(amounts, "gross"), onlyAmount(amounts, "deduction"), resultOf(amounts, netNamed)];
   if (gross === undefined || deduction === undefined || net === undefined) return undefined;
   if (gross.unit !== deduction.unit || gross.unit !== net.unit) return undefined;
   const expected = gross.value - deduction.value;
@@ -114,6 +118,9 @@ export const netMismatch = (amounts: readonly LabelledAmount[], words: NetWords)
 
 /** A table line read as its cells, each without its edge marks, by where it starts. */
 export type NetCell = { readonly start: number; readonly text: string };
+
+const namesNet = (labels: readonly NetCell[], words: NetWords): boolean => labels.some((label) => roleOf(label.text, words) === "net");
+const labelCellsOf = (lines: readonly LabelledLine[]): NetCell[] => lines.map((line) => ({ start: 0, text: line.label }));
 
 const labelledCells = (labels: readonly NetCell[], values: readonly NetCell[], words: NetWords): LabelledAmount[] =>
   labels.flatMap((label, column) => {
@@ -127,7 +134,7 @@ const labelledCells = (labels: readonly NetCell[], values: readonly NetCell[], w
 const byColumns = (header: readonly NetCell[], rows: readonly (readonly NetCell[])[], words: NetWords): NetIssue[] =>
   rows.flatMap((row) => {
     if (row.length !== header.length) return [];
-    const issue = netMismatch(labelledCells(header, row, words), words);
+    const issue = netMismatch(labelledCells(header, row, words), words, namesNet(header, words));
     return issue === undefined ? [] : [issue];
   });
 
@@ -138,7 +145,14 @@ const byRows = (rows: readonly (readonly NetCell[])[], words: NetWords): NetIssu
   if (labelled.length === 0 || labelled.some((row) => row.length !== width)) return [];
   return Array.from({ length: width - 1 }, (_, index) => index + 1).flatMap((column) => {
     const amounts = labelled.flatMap((row) => labelledCells([row[0] ?? { start: 0, text: "" }], [row[column] ?? { start: 0, text: "" }], words));
-    const issue = netMismatch(amounts, words);
+    const issue = netMismatch(
+      amounts,
+      words,
+      namesNet(
+        labelled.flatMap((row) => row.slice(0, 1)),
+        words,
+      ),
+    );
     return issue === undefined ? [] : [issue];
   });
 };
@@ -157,4 +171,5 @@ export const sectionNetMismatch = (lines: readonly LabelledLine[], words: NetWor
   netMismatch(
     lines.flatMap((line) => labelledCells([{ start: 0, text: line.label }], [line.value], words)),
     words,
+    namesNet(labelCellsOf(lines), words),
   );

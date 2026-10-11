@@ -268,6 +268,19 @@ describe("net-amount-mismatch in documents", () => {
     assert.deepEqual(detected(payslip, ja), []);
     const wrongNet = ["- Gross pay: $1,661.00", "- Taxable income: $1,500.00", "- Total deductions: $264.59", "- Net pay: $1,369.41"].join("\n");
     assert.deepEqual(detected(wrongNet, en), ["$1,369.41:$1,396.41"]);
+    const blankNet = ["| 総支給額 | 課税対象額 | 控除合計 | 差引支給額 |", "| --- | --- | --- | --- |", "| 327,200円 | 280,000円 | 70,913円 | — |"].join("\n");
+    assert.deepEqual(detected(blankNet, ja), []);
+    const blankNetRows = [
+      "| Item | Amount |",
+      "| --- | --- |",
+      "| Gross pay | $1,661.00 |",
+      "| Taxable income | $1,500.00 |",
+      "| Total deductions | $264.59 |",
+      "| Net pay | — |",
+    ].join("\n");
+    assert.deepEqual(detected(blankNetRows, en), []);
+    const blankNetLines = ["- Gross pay: $1,661.00", "- Taxable income: $1,500.00", "- Total deductions: $264.59", "- Net pay: —"].join("\n");
+    assert.deepEqual(detected(blankNetLines, en), []);
   });
 
   it("allows one step of rounding in a table without currency marks", () => {
