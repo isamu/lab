@@ -784,3 +784,81 @@ describe("due-before-issue (order): 成績証明書の入学、卒業・修了�
     assert.equal(datesOutOfOrder(tie, tieDates, words).length, 1);
   });
 });
+
+const taxStatementJa = (head: readonly string[], issueLabel: string, issued: string): string =>
+  [
+    "# 令和8年分 給与所得と源泉徴収税額の明細書",
+    "",
+    "架空商事株式会社",
+    "",
+    ...head.flatMap((line) => [line, ""]),
+    `${issueLabel}：${issued}`,
+    "",
+    "| 項目 | 金額 |",
+    "| --- | --- |",
+    "| 支払金額 | 3,600,000円 |",
+    "",
+  ].join("\n");
+
+const taxStatementEn = (head: readonly string[], issueLabel: string, issued: string): string =>
+  [
+    "# Earnings and Tax Withholding Statement",
+    "",
+    "Example Trading Ltd.",
+    "",
+    ...head.flatMap((line) => [line, ""]),
+    `${issueLabel}: ${issued}`,
+    "",
+    "| Item | Amount |",
+    "| --- | --- |",
+    "| Gross pay | $48,000.00 |",
+    "",
+  ].join("\n");
+
+describe("due-before-issue (order): 給与所得と源泉徴収税額の明細書の交付日", () => {
+  it("対象期間が終わる前の交付日を、期間の終わりと比べて指す", () => {
+    const fullYear = taxStatementJa(["対象期間：2026年1月1日〜2026年12月31日"], "交付日", "2026年12月20日");
+    assert.deepEqual(findingsOf(fullYear), ["「交付日」の 2026年12月20日 が、「対象期間」の終わり 2026年12月31日 より前です"]);
+    assert.deepEqual(ruleLines(fullYear), [7]);
+    const taxYear = taxStatementEn(["Tax year: January 1, 2026 – December 31, 2026"], "Issue date", "December 22, 2026");
+    assert.deepEqual(findingsOf(taxYear, en), ['"Issue date" December 22, 2026 is before the end of the "Tax year", December 31, 2026']);
+    assert.deepEqual(ruleLines(taxYear, en), [7]);
+  });
+
+  it("退職日より前の交付日や Date of issue を指す。期間の行もあれば一度だけ指す", () => {
+    const leaver = taxStatementJa(["退職日：2026年8月31日", "対象期間：2026年1月1日〜2026年8月31日"], "交付日", "2026年8月18日");
+    assert.deepEqual(findingsOf(leaver), ["「交付日」（2026年8月18日）が、「退職日」（2026年8月31日）より前です"]);
+    assert.deepEqual(ruleLines(leaver), [9]);
+    assert.deepEqual(findingsOf(taxStatementEn(["Leaving date: August 31, 2026"], "Issue date", "August 18, 2026"), en), [
+      '"Issue date" August 18, 2026 is before "Leaving date" August 31, 2026',
+    ]);
+    assert.deepEqual(findingsOf(taxStatementEn(["Date of leaving: August 31, 2026"], "Date of issue", "August 18, 2026"), en), [
+      '"Date of issue" August 18, 2026 is before "Date of leaving" August 31, 2026',
+    ]);
+  });
+
+  it("期間の終わりや退職日より後、同じ日、年の無い日付は言わない", () => {
+    assert.deepEqual(findingsOf(taxStatementJa(["対象期間：2026年1月1日〜2026年12月31日"], "交付日", "2027年1月20日")), []);
+    assert.deepEqual(findingsOf(taxStatementJa(["退職日：2026年8月31日"], "交付日", "2026年8月31日")), []);
+    assert.deepEqual(findingsOf(taxStatementJa(["退職日：8月31日"], "交付日", "8月18日")), []);
+    assert.deepEqual(findingsOf(taxStatementEn(["Tax year: January 1, 2026 – December 31, 2026"], "Issue date", "January 25, 2027"), en), []);
+    assert.deepEqual(findingsOf(taxStatementEn(["Leaving date: August 31, 2026"], "Issue date", "September 18, 2026"), en), []);
+    assert.deepEqual(findingsOf(taxStatementEn(["Tax year: 2026"], "Issue date", "December 22, 2026"), en), []);
+  });
+
+  it("前払いの請求書の発行日や Period covered、退職の案内の発行日とは組まない", () => {
+    assert.deepEqual(findingsOf("# 請求書\n\n発行日：2026年10月1日\n\n対象期間：2026年10月1日〜2026年10月31日\n\nお支払期限：2026年10月31日\n"), []);
+    assert.deepEqual(
+      findingsOf("# Invoice\n\nIssue date: October 1, 2026\n\nPeriod covered: October 1, 2026 – October 31, 2026\n\nPayment due: October 31, 2026\n", en),
+      [],
+    );
+    assert.deepEqual(findingsOf("# 退職の手続きのご案内\n\n発行日：2026年8月1日\n\n退職日：2026年8月31日\n"), []);
+  });
+
+  it("別の組の語どうしは比べない（交付日と支給対象期間、退職日と支給日、Leaving date と Pay date）", () => {
+    assert.deepEqual(findingsOf(taxStatementJa(["支給対象期間：2026年9月1日〜2026年9月30日"], "交付日", "2026年9月20日")), []);
+    assert.deepEqual(findingsOf(taxStatementJa(["退職日：2026年8月31日"], "支給日", "2026年8月25日")), []);
+    assert.deepEqual(findingsOf(taxStatementEn(["Leaving date: August 31, 2026"], "Pay date", "August 25, 2026"), en), []);
+    assert.deepEqual(findingsOf(taxStatementEn(["Tax year: January 1, 2026 – December 31, 2026"], "Pay date", "December 25, 2026"), en), []);
+  });
+});

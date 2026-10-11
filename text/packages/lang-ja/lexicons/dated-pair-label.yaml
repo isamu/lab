@@ -121,3 +121,9 @@ entries:
   - { pattern: "修了日", group: transcript-issue, position: before }
   - { pattern: "発行日", group: transcript-issue, position: after }
   - { pattern: "証明日", group: transcript-issue, position: after }
+  # 年間の給与所得と源泉徴収税額の明細書。対象期間が終わってから（退職した人には退職日より後に）交付する。
+  # 対象期間は earnings と payroll にもあるが、組ごとに比べる。「発行日」は入れない。前払いの請求書は対象期間の初めに発行し、
+  # 退職の手続きの案内は退職日より前に発行する。
+  - { pattern: "対象期間", group: tax-statement, position: before }
+  - { pattern: "退職日", group: tax-statement, position: before }
+  - { pattern: "交付日", group: tax-statement, position: after }
