@@ -98,6 +98,48 @@ describe("reference-number-variant", () => {
     assert.deepEqual(found(docEn(...roster), en), []);
   });
 
+  it("ja: 学籍番号・学生番号の、隣り合う文字の入れ違いを指す", () => {
+    assert.deepEqual(found(docJa("学籍番号：23K4106", "", "学籍番号23K4160の証明書は、教務課で発行します。"), ja), [5]);
+    assert.deepEqual(found(docJa("学生番号：5108327", "", "学生番号は5180327です。"), ja), [5]);
+  });
+
+  it("ja: 学籍番号と社員番号は比べず、別の学生の番号は指さない", () => {
+    assert.deepEqual(found(docJa("学籍番号：23K4106", "", "社員番号：23K4160"), ja), []);
+    assert.deepEqual(found(docJa("学籍番号：23K4106", "", "指導学生（学籍番号：23K5521）"), ja), []);
+  });
+
+  it("ja: 発注番号・注文番号の、隣り合う文字の入れ違いを指す", () => {
+    assert.deepEqual(found(docJa("発注番号：PO-317520", "", "請求書には発注番号PO-315720をお書きください。"), ja), [5]);
+    assert.deepEqual(found(docJa("ご注文番号：88140392", "", "注文番号は88140329です。"), ja), [5]);
+  });
+
+  it("ja: 入れ違い一つより多く違う発注番号や、種類の違う番号とは比べない", () => {
+    assert.deepEqual(found(docJa("発注番号：PO-317520", "", "前回の発注番号：PO-371250"), ja), []);
+    assert.deepEqual(found(docJa("発注番号：PO-317520", "", "受付番号：PO-315720"), ja), []);
+  });
+
+  it("en: a student number or student ID with two neighbouring characters swapped", () => {
+    assert.deepEqual(found(docEn("Student number: 23K4106", "", "Transcripts for student number 23K4160 are issued by the registry."), en), [5]);
+    assert.deepEqual(found(docEn("Student ID: 5108327", "", "Student ID: 5180327"), en), [5]);
+    assert.deepEqual(found(docEn("Student No. 5108327", "", "Student No. 5180327"), en), [5]);
+  });
+
+  it("en: a student number is never compared with an employee number, nor with another student's", () => {
+    assert.deepEqual(found(docEn("Student number: 23K4106", "", "Employee number: 23K4160"), en), []);
+    assert.deepEqual(found(docEn("Student number: 23K4106", "", "Supervised student, student number 23K5521."), en), []);
+  });
+
+  it("en: a PO or order number with two neighbouring characters swapped", () => {
+    assert.deepEqual(found(docEn("PO number: 317520", "", "Please quote PO number 315720 on every invoice."), en), [5]);
+    assert.deepEqual(found(docEn("Purchase order number: PO-88140392", "", "Order number: PO-88140329"), en), [5]);
+  });
+
+  it("en: two order numbers that differ by more than one swap, or an order and a booking number, are not reported", () => {
+    assert.deepEqual(found(docEn("PO number: 317520", "", "Previous PO number: 371250"), en), []);
+    assert.deepEqual(found(docEn("Order number: 88140392", "", "Order number: 81840329"), en), []);
+    assert.deepEqual(found(docEn("PO number: 317520", "", "Booking number: 315720"), en), []);
+  });
+
   it("reads no number in code or a URL", () => {
     assert.deepEqual(found(docEn("```text", "Booking number: LH-48215", "Booking number: LH-48251", "```"), en), []);
     assert.deepEqual(found(docEn("Booking number: https://example.com/LH-48215", "", "Booking number: https://example.com/LH-48251"), en), []);

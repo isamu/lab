@@ -18,3 +18,11 @@ entries:
   - { pattern: 社員番号は, group: employee }
   - { pattern: 従業員番号, group: employee }
   - { pattern: 従業員番号は, group: employee }
+  - { pattern: 学籍番号, group: student }
+  - { pattern: 学籍番号は, group: student }
+  - { pattern: 学生番号, group: student }
+  - { pattern: 学生番号は, group: student }
+  - { pattern: 発注番号, group: order }
+  - { pattern: 発注番号は, group: order }
+  - { pattern: 注文番号, group: order }
+  - { pattern: 注文番号は, group: order }
