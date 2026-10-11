@@ -1,0 +1,209 @@
+{
+  "note": "Self-written purchase orders and delivery notes (発注書・納品書 / purchase order, delivery note) for a made-up buyer and supplier: a purchase order, and a delivery note that refers to it by its order number and delivers part of it, with the rest backordered. Each is in a clean version and a planted one that differs only on the lines below. They run as business/proposal, the genre the invoices of the business set run as: no genre is made for orders. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: delivered-over-ordered (a delivered quantity larger than the ordered quantity on the same row) and backorder-mismatch (a backordered quantity that is not the ordered quantity minus the delivered one on the same row). A delivery date before the order date is named for due-before-issue, which compares a pair of labelled dates. The line-total plants change the unit price, not the amount, so the total the grand-total plant is compared with does not move; the delivered-over-ordered plant changes the ordered quantity of a row that the backorder plant does not touch. Each plant was also run alone on its clean document, so no plant depends on another. yarn planted orders scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/purchase-order",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/purchase-order.clean.md",
+      "planted": "ja/purchase-order.planted.md",
+      "mistakes": [
+        {
+          "kind": "delivery-before-order",
+          "rule": "due-before-issue",
+          "line": 13,
+          "clean": "納期：2026年9月28日",
+          "planted": "納期：2026年9月8日"
+        },
+        {
+          "kind": "line-total",
+          "rule": "line-amount-mismatch",
+          "line": 22,
+          "clean": "120本 | 110円",
+          "planted": "120本 | 115円"
+        },
+        {
+          "kind": "grand-total",
+          "rule": "total-mismatch",
+          "line": 25,
+          "clean": "46,700円",
+          "planted": "47,600円"
+        },
+        {
+          "kind": "order-number",
+          "rule": "reference-number-variant",
+          "line": 33,
+          "clean": "発注番号PO-260815を",
+          "planted": "発注番号PO-260851を"
+        },
+        {
+          "kind": "buyer-name",
+          "rule": "name-variant",
+          "line": 35,
+          "clean": "株式会社青葉ロジテック 購買部 西村",
+          "planted": "株式会社青葉ロジティック 購買部 西村"
+        }
+      ]
+    },
+    {
+      "id": "ja/delivery-note",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/delivery-note.clean.md",
+      "planted": "ja/delivery-note.planted.md",
+      "mistakes": [
+        {
+          "kind": "delivery-before-order",
+          "rule": "due-before-issue",
+          "line": 9,
+          "clean": "納品日：2026年9月25日",
+          "planted": "納品日：2026年9月5日"
+        },
+        {
+          "kind": "line-total",
+          "rule": "line-amount-mismatch",
+          "line": 26,
+          "clean": "30箱 | 160円",
+          "planted": "30箱 | 180円"
+        },
+        {
+          "kind": "grand-total",
+          "rule": "total-mismatch",
+          "line": 27,
+          "clean": "41,300円",
+          "planted": "43,100円"
+        },
+        {
+          "kind": "delivered-over-ordered",
+          "rule": "delivered-over-ordered",
+          "line": 35,
+          "clean": "| 300枚 | 300枚 | 0枚 |",
+          "planted": "| 250枚 | 300枚 | 0枚 |"
+        },
+        {
+          "kind": "backorder",
+          "rule": "backorder-mismatch",
+          "line": 36,
+          "clean": "| 50箱 | 30箱 | 20箱 |",
+          "planted": "| 50箱 | 30箱 | 25箱 |"
+        },
+        {
+          "kind": "order-number",
+          "rule": "reference-number-variant",
+          "line": 40,
+          "clean": "発注番号PO-260815のご注文",
+          "planted": "発注番号PO-260185のご注文"
+        },
+        {
+          "kind": "buyer-name",
+          "rule": "name-variant",
+          "line": 42,
+          "clean": "株式会社青葉ロジテック 購買部から",
+          "planted": "株式会社青葉ロジテク 購買部から"
+        }
+      ]
+    },
+    {
+      "id": "en/purchase-order",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/purchase-order.clean.md",
+      "planted": "en/purchase-order.planted.md",
+      "mistakes": [
+        {
+          "kind": "delivery-before-order",
+          "rule": "due-before-issue",
+          "line": 13,
+          "clean": "Delivery date: September 28, 2026",
+          "planted": "Delivery date: September 8, 2026"
+        },
+        {
+          "kind": "line-total",
+          "rule": "line-amount-mismatch",
+          "line": 22,
+          "clean": "10 boxes | $8.40",
+          "planted": "10 boxes | $8.80"
+        },
+        {
+          "kind": "grand-total",
+          "rule": "total-mismatch",
+          "line": 25,
+          "clean": "$474.00",
+          "planted": "$447.00"
+        },
+        {
+          "kind": "order-number",
+          "rule": "reference-number-variant",
+          "line": 33,
+          "clean": "PO number 418273 on",
+          "planted": "PO number 418723 on"
+        },
+        {
+          "kind": "buyer-name",
+          "rule": "name-variant",
+          "line": 35,
+          "clean": "Fernhill Logistics Ltd., attention",
+          "planted": "Fernhil Logistics Ltd., attention"
+        }
+      ]
+    },
+    {
+      "id": "en/delivery-note",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/delivery-note.clean.md",
+      "planted": "en/delivery-note.planted.md",
+      "mistakes": [
+        {
+          "kind": "delivery-before-order",
+          "rule": "due-before-issue",
+          "line": 9,
+          "clean": "Delivery date: September 25, 2026",
+          "planted": "Delivery date: September 5, 2026"
+        },
+        {
+          "kind": "line-total",
+          "rule": "line-amount-mismatch",
+          "line": 26,
+          "clean": "30 boxes | $1.60",
+          "planted": "30 boxes | $1.80"
+        },
+        {
+          "kind": "grand-total",
+          "rule": "total-mismatch",
+          "line": 27,
+          "clean": "$425.20",
+          "planted": "$452.20"
+        },
+        {
+          "kind": "delivered-over-ordered",
+          "rule": "delivered-over-ordered",
+          "line": 35,
+          "clean": "| 300 folders | 300 folders | 0 folders |",
+          "planted": "| 250 folders | 300 folders | 0 folders |"
+        },
+        {
+          "kind": "backorder",
+          "rule": "backorder-mismatch",
+          "line": 36,
+          "clean": "| 50 boxes | 30 boxes | 20 boxes |",
+          "planted": "| 50 boxes | 30 boxes | 25 boxes |"
+        },
+        {
+          "kind": "order-number",
+          "rule": "reference-number-variant",
+          "line": 40,
+          "clean": "part of PO number 418273",
+          "planted": "part of PO number 412873"
+        },
+        {
+          "kind": "buyer-name",
+          "rule": "name-variant",
+          "line": 42,
+          "clean": "from Fernhill Logistics Ltd. to",
+          "planted": "from Fernhill Logistic Ltd. to"
+        }
+      ]
+    }
+  ]
+}
