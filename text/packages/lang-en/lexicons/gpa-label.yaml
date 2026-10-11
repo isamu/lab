@@ -1,0 +1,19 @@
+# The label of a line that writes a grade-point average (gpa-mismatch). Only a label whose words outside brackets are one
+# group: gpa entry as a whole is read as the written GPA ("GPA: 3.00", "Grade point average (GPA): 3.25"). group: part
+# words say the average is of one period: a document with any label holding a GPA word and one of these ("Term GPA") is
+# not compared, since its course table may not be the whole record.
+id: gpa-label
+language: en
+entries:
+  - { pattern: GPA, group: gpa }
+  - { pattern: cumulative GPA, group: gpa }
+  - { pattern: overall GPA, group: gpa }
+  - { pattern: grade point average, group: gpa }
+  - { pattern: grade-point average, group: gpa }
+  - { pattern: cumulative grade point average, group: gpa }
+  - { pattern: overall grade point average, group: gpa }
+  - { pattern: term, group: part }
+  - { pattern: semester, group: part }
+  - { pattern: quarter, group: part }
+  - { pattern: year, group: part }
+  - { pattern: annual, group: part }

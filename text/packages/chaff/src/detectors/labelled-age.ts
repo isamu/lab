@@ -45,29 +45,58 @@ const lineEndOf = (source: string, at: number): number => {
 
 const isFullDate = (value: string): boolean => calendarDateOf(value)?.year !== undefined;
 
-/** The age after a labelled date of birth, up to the next date on the line or its end: one age, or none. */
-const birthOf = (doc: ProseDocument, date: DateNode, dates: readonly DateNode[]): LabelledBirth[] => {
+/** A clause or bracket ends here: past a reference date, the age is read only up to the first of these. */
+const CLAUSE_END = /[)）\]］】。;；]/u;
+
+const blanked = (text: string, from: number, spans: readonly Span[]): string =>
+  spans.reduce((written, span) => [written.slice(0, span.start - from), " ".repeat(span.end - span.start), written.slice(span.end - from)].join(""), text);
+
+type AgeRegion = { readonly text: string; readonly passed: readonly LabelledReference[] };
+
+const referenceAt = (references: readonly LabelledReference[], date: DateNode): LabelledReference | undefined =>
+  references.find((reference) => reference.start === date.start);
+
+/** The reference dates right after a date of birth on its line, before the first date that is not one. */
+const passedReferences = (later: readonly DateNode[], references: readonly LabelledReference[]): LabelledReference[] => {
+  const stop = later.findIndex((date) => referenceAt(references, date) === undefined);
+  return later.slice(0, stop === -1 ? later.length : stop).flatMap((date) => referenceAt(references, date) ?? []);
+};
+
+/** Where the age beside a date of birth is written: up to the next date that is not a reference date, or the line end.
+ * Past a reference date ("（2026年9月30日現在、23歳）"), only to the end of its bracket or clause; its digits are blanked. */
+const ageRegionOf = (doc: ProseDocument, date: DateNode, dates: readonly DateNode[], references: readonly LabelledReference[]): AgeRegion => {
+  const lineEnd = lineEndOf(doc.source, date.end);
+  const later = dates.filter((other) => other.start >= date.end && other.start < lineEnd);
+  const passed = passedReferences(later, references);
+  const last = passed.at(-1);
+  const open = later[passed.length]?.start ?? lineEnd;
+  const clauseEnd = last === undefined ? -1 : doc.source.slice(last.end, open).search(CLAUSE_END);
+  const end = last === undefined || clauseEnd === -1 ? open : last.end + clauseEnd;
+  return { text: blanked(doc.source.slice(date.end, end), date.end, passed), passed };
+};
+
+/** The age after a labelled date of birth, in its region (ageRegionOf): one age, or none. */
+const birthOf = (doc: ProseDocument, date: DateNode, dates: readonly DateNode[], references: readonly LabelledReference[]): LabelledBirth[] => {
   if (
     !isFullDate(date.value) ||
     labelBefore(doc.source.slice(lineStartOf(doc.source, date.start), date.start), entriesOf(doc, "birth-date-label")) === undefined
   )
     return [];
-  const lineEnd = lineEndOf(doc.source, date.end);
-  const regionEnd = Math.min(lineEnd, ...dates.filter((other) => other.start >= date.end).map((other) => other.start));
-  const region = doc.source.slice(date.end, regionEnd);
+  const { text: region, passed } = ageRegionOf(doc, date, dates, references);
   const ages = agesIn(region, ageWords(doc));
   const [age] = ages;
   if (ages.length !== 1 || age === undefined) return [];
   const lead = region.slice(0, age.start).toLowerCase();
   const tail = region.slice(age.end).trimStart().toLowerCase();
   const mark = entriesOf(doc, "age-time-mark").find((entry) => lead.includes(entry.pattern.toLowerCase()) || tail.startsWith(entry.pattern.toLowerCase()));
-  return [{ start: date.start, end: date.end, birth: date.value, age: { ...age, start: date.end + age.start, end: date.end + age.end }, group: mark?.group }];
+  const group = mark?.group ?? (passed.length === 1 ? passed[0]?.group : undefined);
+  return [{ start: date.start, end: date.end, birth: date.value, age: { ...age, start: date.end + age.start, end: date.end + age.end }, group }];
 };
 
 const ownLabel = (doc: ProseDocument, date: DateNode): LabelWord | undefined => {
   const labels = entriesOf(doc, "age-reference-label");
   return (
-    labelBefore(doc.source.slice(lineStartOf(doc.source, date.start), date.start), labels) ??
+    labelBefore(doc.source.slice(lineStartOf(doc.source, date.start), date.start), labels, ageWords(doc)) ??
     labelAfter(doc.source.slice(date.end, lineEndOf(doc.source, date.end)), labels)
   );
 };
@@ -90,7 +119,8 @@ const referencesOf = (doc: ProseDocument, dates: readonly DateNode[]): LabelledR
 
 const recordsOf = (doc: ProseDocument, tree: StructureNode): { births: LabelledBirth[]; references: LabelledReference[] } => {
   const dates = datesOf(tree);
-  return { births: dates.flatMap((date) => birthOf(doc, date, dates)), references: referencesOf(doc, dates) };
+  const references = referencesOf(doc, dates);
+  return { births: dates.flatMap((date) => birthOf(doc, date, dates, references)), references };
 };
 
 /** Where the ages whose reference date was decided start: the year-only check stays silent on them. */

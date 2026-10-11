@@ -92,3 +92,15 @@ entries:
   - { pattern: "Departure", group: trip, position: before }
   - { pattern: "Departure date", group: trip, position: before }
   - { pattern: "Return", group: trip, position: after }
+  # A purchase order or a delivery note: the delivery does not come before the order. A purchase order's delivery date is
+  # the one requested, and it comes after the order too. A bare "Due date" is left out: it is an invoice's payment due
+  # date as well (due-date-label).
+  - { pattern: "Order date", group: order, position: before }
+  - { pattern: "Date of order", group: order, position: before }
+  - { pattern: "Date ordered", group: order, position: before }
+  - { pattern: "PO date", group: order, position: before }
+  - { pattern: "Purchase order date", group: order, position: before }
+  - { pattern: "Delivery date", group: order, position: after }
+  - { pattern: "Requested delivery date", group: order, position: after }
+  - { pattern: "Delivered on", group: order, position: after }
+  - { pattern: "Date delivered", group: order, position: after }
