@@ -15,6 +15,7 @@ const toEntry = (raw: unknown): LexiconEntry | undefined => {
   const instead = raw["instead_of"];
   const rewrite = raw["rewrite"];
   const group = raw["group"];
+  const firstYear = raw["first_year"];
   return {
     pattern: raw["pattern"],
     weight: typeof weight === "number" ? weight : undefined,
@@ -22,6 +23,7 @@ const toEntry = (raw: unknown): LexiconEntry | undefined => {
     position: POSITIONS.find((position) => position === raw["position"]),
     rewrite: typeof rewrite === "string" ? rewrite : undefined,
     ...(typeof group === "string" ? { group } : {}),
+    ...(typeof firstYear === "number" ? { first_year: firstYear } : {}),
   };
 };
 

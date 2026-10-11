@@ -7,6 +7,7 @@ import { afterLabel } from "./stated-period.ts";
 // 純関数: 文書の字、文と見出しの範囲、語彙表の語を受け取る。
 // 文書の期間は、題（最初の字のある行）が業績の語（決算、業績、Financial Results）と一緒に書いた期間の名前。
 // 題に無い種類は、頭の「対象期間：」「Reporting period:」の一行から補う。題に同じ種類の違う期間が二つあれば、その種類は比べない。
+// 書き方そのものが文書の年を言う名前（令和8年分、Tax Year 2026）は、業績の語が無い題からも読み、本文のどの文の中でも比べる。
 
 export type ReportingWords = {
   readonly frames: readonly CompiledFrame[];
@@ -22,6 +23,8 @@ export type ReportingWords = {
   readonly currents: readonly string[];
   /** 今の期間の語を含むが期間を指さない語（当期純利益）。 */
   readonly notCurrents: readonly string[];
+  /** 期間の名前の書き方を含むが名前ではない語（分担金の「年分担」）。 */
+  readonly notNames: readonly string[];
 };
 
 export type Span = { readonly start: number; readonly end: number };
@@ -52,6 +55,16 @@ export const hasWord = (text: string, words: readonly string[]): boolean => word
 const withoutWords = (text: string, words: readonly string[]): string =>
   words.filter((word) => word !== "").reduce((rest, word) => rest.replace(new RegExp(wordRegex(word).source, "giu"), " "), text);
 
+const occurrencesOf = (text: string, word: string): Span[] =>
+  word === "" ? [] : [...text.matchAll(new RegExp(escapeRegExp(word), "gu"))].map((match) => ({ start: match.index, end: match.index + word.length }));
+
+/** 名前の終わりが、名前ではない語の途中に落ちるか（令和8年分担金の「令和8年分」）。 */
+const endsInsideNotName = (text: string, label: PeriodLabel, notNames: readonly string[]): boolean =>
+  notNames.some((word) => occurrencesOf(text, word).some((span) => span.start < label.end && label.end < span.end));
+
+const labelsIn = (text: string, words: ReportingWords): PeriodLabel[] =>
+  periodLabelsIn(text, words.frames).filter((label) => !endsInsideNotName(text, label, words.notNames));
+
 const sameLabel = (left: PeriodLabel, right: PeriodLabel): boolean => left.kind === right.kind && left.shape === right.shape && left.value === right.value;
 const sameSlot = (left: PeriodLabel, right: PeriodLabel): boolean => left.kind === right.kind && left.shape === right.shape;
 
@@ -62,11 +75,13 @@ const oneEach = (labels: readonly PeriodLabel[]): PeriodLabel[] =>
       labels.every((other) => !sameSlot(other, label) || sameLabel(other, label)) && labels.findIndex((other) => sameLabel(other, label)) === index,
   );
 
-/** 文書の期間。題が業績の語を持たなければ無い。題に無い種類と形だけを、期間の行から補う。 */
+/** 文書の期間。題が業績の語を持たなければ、書き方そのものが年を言う名前だけ。題に無い種類と形だけを、期間の行から補う。 */
 export const statedPeriodOf = (title: string, periodLine: string, words: ReportingWords): PeriodLabel[] => {
-  if (!hasWord(title, words.results)) return [];
-  const fromTitle = oneEach(periodLabelsIn(title, words.frames));
-  const fromLine = oneEach(periodLabelsIn(periodLine, words.frames)).filter((label) => !fromTitle.some((other) => sameSlot(other, label)));
+  const results = hasWord(title, words.results);
+  const readable = (text: string): PeriodLabel[] => oneEach(labelsIn(text, words).filter((label) => results || label.titleAlone));
+  const fromTitle = readable(title);
+  if (fromTitle.length === 0 && !results) return [];
+  const fromLine = readable(periodLine).filter((label) => !fromTitle.some((other) => sameSlot(other, label)));
   return [...fromTitle, ...fromLine];
 };
 
@@ -77,21 +92,21 @@ export const conflictingStated = (label: PeriodLabel, stated: readonly PeriodLab
 };
 
 /**
- * 今の業績を言う所の名前か。年の中の一部（四半期、半期）で文書の期間より前のものは、累計の中の一部や比べる相手のことが多いので、
+ * 今の業績を言う所の名前か。書き方そのものが年を言う名前（2025年分）は、どこに書いても文書の年を言う。年の中の一部（四半期、半期）で文書の期間より前のものは、累計の中の一部や比べる相手のことが多いので、
  * 今の期間を指す語（当第1四半期）があるときだけ。ほかは、表の見出しの升ならそれだけで、文なら今の期間か業績の語があるとき。
  */
 export const refersToCurrent = (label: PeriodLabel, stated: PeriodLabel, unit: Pick<Unit, "text" | "headerCell">, words: ReportingWords): boolean => {
   const current = hasWord(withoutWords(unit.text, words.notCurrents), words.currents);
   if (label.withinYear && label.order < stated.order) return current;
-  return unit.headerCell || current || hasWord(unit.text, words.results);
+  return label.titleAlone || unit.headerCell || current || hasWord(unit.text, words.results);
 };
 
 const isAside = (text: string, words: ReportingWords): boolean => hasWord(text, words.comparisons) || hasWord(text, words.forecasts);
 
 const issuesIn = (unit: Unit, stated: readonly PeriodLabel[], words: ReportingWords): PeriodConflict[] => {
   if (isAside(unit.text, words) || isAside(unit.section, words)) return [];
-  const named = periodLabelsIn(unit.context, words.frames);
-  return periodLabelsIn(unit.text, words.frames).flatMap((label) => {
+  const named = labelsIn(unit.context, words);
+  return labelsIn(unit.text, words).flatMap((label) => {
     const statedLabel = conflictingStated(label, stated);
     if (statedLabel === undefined || named.some((other) => sameLabel(other, statedLabel))) return [];
     if (!refersToCurrent(label, statedLabel, unit, words)) return [];

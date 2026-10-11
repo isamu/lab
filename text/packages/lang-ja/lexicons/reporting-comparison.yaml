@@ -1,4 +1,4 @@
-# 比べる相手の期間を言う語。この語のある文、表の見出しの升、節の中の期間の名前は、文書の期間と違ってよい（前年同期、前期比）。
+# 比べる相手の期間を言う語。この語のある文、表の見出しの升、節の中の期間の名前は、文書の期間と違ってよい（前年同期、前期比、令和7年分以前からの繰越）。
 id: reporting-comparison
 language: ja
 entries:
@@ -21,3 +21,6 @@ entries:
   - pattern: 比較
   - pattern: 対比
   - pattern: 過去
+  - pattern: 以前
+  - pattern: 繰越
+  - pattern: 繰り越

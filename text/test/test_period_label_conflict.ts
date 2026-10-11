@@ -45,6 +45,7 @@ const WORDS: ReportingWords = {
   forecasts: ["予想", "次期", "outlook", "expect"],
   currents: ["当期", "当第", "this quarter"],
   notCurrents: ["当期純利益"],
+  notNames: [],
 };
 
 const labels = (text: string): string[] => periodLabelsIn(text, FRAMES).map((label) => `${label.kind}:${label.value}`);
@@ -263,5 +264,84 @@ describe("period-label-conflict: English releases", () => {
       ),
       [],
     );
+  });
+});
+
+describe("period-label-conflict: reading a year a name marks", () => {
+  const ERAS = [
+    { name: "令和", firstYear: 2019 },
+    { name: "平成", firstYear: 1989 },
+  ];
+  const YEAR_FRAMES = compileFrames([{ pattern: "{y}年分", kind: "tax-year", titleAlone: true }], ERAS);
+  const years = (text: string): string[] => periodLabelsIn(text, YEAR_FRAMES).map((label) => `${label.value}:${String(label.titleAlone)}`);
+
+  it("reads an era year as the Western year, the first year as 1", () => {
+    assert.deepEqual(years("令和8年分"), ["y2026:true"]);
+    assert.deepEqual(years("2026年分"), ["y2026:true"]);
+    assert.deepEqual(years("令和元年分と平成31年分"), ["y2019:true", "y2019:true"]);
+    assert.deepEqual(years("令和 ８ 年分"), ["y2026:true"]);
+  });
+
+  it("does not read a length of years, an unknown era or a year without the marker", () => {
+    assert.deepEqual(years("3年分の記録"), []);
+    assert.deepEqual(years("12026年分"), []);
+    assert.deepEqual(years("天平8年分"), []);
+    assert.deepEqual(years("2026年度"), []);
+    assert.deepEqual(periodLabelsIn("令和8年分", compileFrames([{ pattern: "{y}年分", kind: "tax-year" }])), []);
+  });
+
+  it("a title without a results word gives only the names that mark a year by themselves", () => {
+    const frames = compileFrames(
+      [
+        { pattern: "FY{y}", kind: "fiscal-year" },
+        { pattern: "{y}年分", kind: "tax-year", titleAlone: true },
+      ],
+      ERAS,
+    );
+    const words = { ...WORDS, frames };
+    assert.deepEqual(
+      statedPeriodOf("令和8年分 源泉徴収票 FY2026", "", words).map((label) => label.written),
+      ["令和8年分"],
+    );
+    assert.deepEqual(statedPeriodOf("源泉徴収票", "対象：2026年分", words), []);
+  });
+});
+
+describe("period-label-conflict: a tax year a title names", () => {
+  const ja = ["# 令和8年分 給与所得の年間明細書", "", "対象期間：2026年1月1日〜2026年12月31日", ""];
+  const en = ["# Annual Pay and Tax Statement, Tax Year 2026", "", "Period covered: January 1, 2026 – December 31, 2026", ""];
+
+  it("reports another year with the same marker anywhere in the body", () => {
+    assert.deepEqual(foundJa(...ja, "2025年分の源泉徴収税額は、12月の給与で精算しました。"), ["2025年分/令和8年分"]);
+    assert.deepEqual(foundJa("# 2026年分 給与の明細", "", "令和7年分の給与は次のとおりです。"), ["令和7年分/2026年分"]);
+    assert.deepEqual(foundEn(...en, "Keep this statement with your records for tax year 2025."), ["tax year 2025/Tax Year 2026"]);
+    assert.deepEqual(foundEn("# Pay Statement, 2026 Tax Year", "", "These are your earnings for the 2025 tax year."), ["2025 tax year/2026 Tax Year"]);
+  });
+
+  it("an era year and the same Western year are one year", () => {
+    assert.deepEqual(foundJa(...ja, "2026年分の源泉徴収税額は、12月の給与で精算しました。"), []);
+    assert.deepEqual(foundJa("# 2026年分 給与の明細", "", "令和8年分の給与は次のとおりです。"), []);
+  });
+
+  it("stays silent on the previous year as a comparison, a year without the marker and a prior-year column", () => {
+    assert.deepEqual(foundJa(...ja, "前年分（2025年分）との比較は別紙のとおりです。"), []);
+    assert.deepEqual(foundJa(...ja, "2025年の源泉徴収税額は別紙のとおりです。"), []);
+    assert.deepEqual(foundJa(...ja, "| 項目 | 前年（2025年分） | 2026年分 |", "| --- | --- | --- |", "| 総支給額 | 1 | 2 |"), []);
+    assert.deepEqual(foundEn(...en, "Withholding rose compared with 2025."), []);
+    assert.deepEqual(foundEn(...en, "Your pay compared with tax year 2025 is on the next page."), []);
+    assert.deepEqual(foundEn(...en, "| Item | Prior year (tax year 2025) | This year |", "| --- | --- | --- |", "| Gross pay | 1 | 2 |"), []);
+  });
+
+  it("stays silent on a carryforward from earlier years, a marker inside another word and a plain annual report", () => {
+    assert.deepEqual(foundJa(...ja, "令和7年分以前から繰り越された損失額を記入します。"), []);
+    assert.deepEqual(foundEn(...en, "You may carry forward losses from tax year 2025 or earlier."), []);
+    assert.deepEqual(foundJa("# 令和8年分担金条例", "", "令和7年分担金の徴収方法を定めます。"), []);
+    assert.deepEqual(foundJa("# 令和8年分所得税の確定申告の手引き", "", "2025年分所得税の申告は別の手引きです。"), ["2025年分/令和8年分"]);
+    assert.deepEqual(foundEn("# Annual Report for the Year 2026", "", "Financial statements for the year 2025 are included."), []);
+  });
+
+  it("stays silent when the title names no year with the marker", () => {
+    assert.deepEqual(foundJa("# 給与所得の年間明細書", "", "2025年分の源泉徴収税額は次のとおりです。"), []);
+    assert.deepEqual(foundEn("# Annual Pay Statement 2026", "", "Keep this statement for tax year 2025."), []);
   });
 });
