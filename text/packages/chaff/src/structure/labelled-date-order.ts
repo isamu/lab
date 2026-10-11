@@ -96,13 +96,33 @@ const labelledDates = (source: string, dates: readonly OrderDate[], words: DateO
   });
 };
 
+/** The earlier date written closest to a later one; of two as close, the one above. */
+const nearestEarlier = (earliers: readonly Read[], later: Read): Read | undefined =>
+  earliers.reduce<Read | undefined>((nearest, entry) => {
+    if (nearest === undefined) return entry;
+    const distance = Math.abs(entry.line - later.line);
+    const nearestDistance = Math.abs(nearest.line - later.line);
+    return distance < nearestDistance || (distance === nearestDistance && entry.line < nearest.line) ? entry : nearest;
+  }, undefined);
+
+/**
+ * A later date before the first earlier date. When both sides are written more than once (a history listing one record
+ * per row, newest first), the later date must also be before the earlier date written closest to it: that is its own
+ * record's. A later date written once (an issue date below the records) belongs to the whole document and keeps the first.
+ */
 export const datesOutOfOrder = (source: string, dates: readonly OrderDate[], words: DateOrderWords): OutOfOrder[] => {
   if (words.earlier.length === 0 || words.later.length === 0) return [];
   const labelled = labelledDates(source, dates, words);
-  const earlier = labelled.find((entry) => entry.kind === "earlier");
+  const earliers = labelled.filter((entry) => entry.kind === "earlier");
+  const earlier = earliers[0];
   if (earlier === undefined) return [];
+  const records = labelled.filter((entry) => entry.kind === "later").length > 1;
+  const beforeOwnRecord = (later: Read): boolean => !records || later.date.value < (nearestEarlier(earliers, later) ?? earlier).date.value;
   return labelled
-    .filter((entry) => entry.kind === "later" && entry.date.value < earlier.date.value && Math.abs(entry.line - earlier.line) < words.maxLineGap)
+    .filter(
+      (entry) =>
+        entry.kind === "later" && entry.date.value < earlier.date.value && Math.abs(entry.line - earlier.line) < words.maxLineGap && beforeOwnRecord(entry),
+    )
     .map((later) => ({ earlier, later }));
 };
 
