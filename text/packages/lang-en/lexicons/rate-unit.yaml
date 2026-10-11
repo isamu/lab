@@ -16,3 +16,7 @@ entries:
   - { pattern: months, group: month }
   - { pattern: year, group: year }
   - { pattern: years, group: year }
+  - { pattern: mile, group: mile }
+  - { pattern: miles, group: mile }
+  - { pattern: mi, group: mile }
+  - { pattern: km, group: km }

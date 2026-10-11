@@ -7,3 +7,4 @@ entries:
   - pattern: Qty.
   - pattern: Units
   - { pattern: Hours, group: hour }
+  - { pattern: Miles, group: mile }

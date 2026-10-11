@@ -4,13 +4,14 @@ import { CELL_SEPARATOR } from "./bare-numbers.ts";
 import { TABLE_RULE } from "./runs.ts";
 import { roundedMatches } from "./tax.ts";
 import { hasSuperscriptPower } from "../facts/superscript-power.ts";
-import { perUnitPrice, quantityUnit, unitsAgree, type UnitWord } from "./line-amount-unit.ts";
+import { perUnitPrice, priceHeadingUnit, quantityUnit, unitsAgree, type UnitWord } from "./line-amount-unit.ts";
 
 /**
  * 明細の表で、数量 × 単価が金額と合わない行。見出しの行から数量・単価・金額の列を語（quantity-column、unit-price-column、
  * line-amount-column）で見つけ、本体の行ごとに数量の升の頭の数と単価の升の数を掛け、金額の升の数と比べる。
  * 単価と金額は、数の前後に書いた印（$、円、万円）が同じときだけ比べる。端数は切り捨て・四捨五入・切り上げのどれでもよい。
- * 単価が何かあたり（$100/hour、月額、Rate の列）なら、数量がその単位か単位の無い数のときだけ比べる。Pure.
+ * 単価が何かあたり（$100/hour、月額、Rate の列）なら、数量がその単位か単位の無い数のときだけ比べる。何あたりか言わない
+ * Rate の列は、数量の見出しが単位を言えば（Hours、Miles）その単位あたりと読む。Pure.
  */
 export type LineAmountWords = {
   readonly quantity: readonly string[];
@@ -94,7 +95,7 @@ export const quantityOf = (cell: Cell, measureUnits: readonly string[]): number 
 const quantityWord = (cell: Cell): string => plain(cell.text).replace(LEADING_NUMBER, "").trim();
 
 const columnNamed = (header: readonly Cell[], names: readonly string[]): number => {
-  const wanted = names.map((name) => name.toLowerCase());
+  const wanted = names.map((name) => plain(name).toLowerCase());
   return header.findIndex((cell) => wanted.includes(plain(cell.text).toLowerCase()));
 };
 
@@ -104,12 +105,18 @@ type Columns = { readonly quantity: number; readonly unitPrice: number; readonly
 type Table = { readonly columns: Columns; readonly quantityUnit: string | undefined; readonly priceUnit: string | undefined };
 
 const headerUnit = (cell: Cell | undefined, words: LineAmountWords): string | undefined =>
-  cell === undefined ? undefined : words.headerUnits.find((word) => word.pattern.toLowerCase() === plain(cell.text).toLowerCase())?.unit;
+  cell === undefined ? undefined : words.headerUnits.find((word) => plain(word.pattern).toLowerCase() === plain(cell.text).toLowerCase())?.unit;
 
 const tableOf = (header: readonly Cell[], words: LineAmountWords): Table | undefined => {
   const columns = { quantity: columnNamed(header, words.quantity), unitPrice: columnNamed(header, words.unitPrice), amount: columnNamed(header, words.amount) };
   if (Object.values(columns).some((index) => index < 0) || new Set(Object.values(columns)).size < 3) return undefined;
-  return { columns, quantityUnit: headerUnit(header[columns.quantity], words), priceUnit: headerUnit(header[columns.unitPrice], words) };
+  const quantityHeadingUnit = headerUnit(header[columns.quantity], words);
+  const rateUnits = words.units.map((word) => word.unit);
+  return {
+    columns,
+    quantityUnit: quantityHeadingUnit,
+    priceUnit: priceHeadingUnit(headerUnit(header[columns.unitPrice], words), quantityHeadingUnit, rateUnits),
+  };
 };
 
 /** The unit the quantity cell counts: its own word, else its heading's ("Hours"). */
