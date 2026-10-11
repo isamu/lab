@@ -55,13 +55,24 @@ const nodeValue = (node: StructureNode, source: string): FactValue[] => {
  * 単位の無い数は、単位の無い数とだけ比べる。後ろのコンマは、空白と語が続くとき（2, as declared）だけ数の終わり。数が続けば
  * 並べた数（2, 3 or 4）、一語の後ろに数が続けば別の値（3, or 4）で、空白が無ければ桁の区切りの書き損じかもしれない。
  */
-const BARE_NUMBER =
-  /(?<![\p{L}\p{N}.,:/-])[0-9０-９]+(?:[,，][0-9０-９]{3})*(?:[.．][0-9０-９]+)?(?![\p{L}\p{N}%:/-]|[,，](?!\s+\p{L})|[,，]\s+\p{L}+\s+[0-9０-９]|[.．][0-9０-９])/gu;
+const BARE_NUMBER = /(?<![\p{L}\p{N}.,:/-])[0-9０-９]+(?:[,，][0-9０-９]{3})*(?:[.．][0-9０-９]+)?(?![\p{L}\p{N}%:/-]|[.．][0-9０-９])/gu;
+const COMMA = /^[,，]$/u;
+const CLAUSE_AFTER_COMMA = /[,，]\s+\p{L}/uy;
+const VALUE_AFTER_COMMA_WORD = /[,，]\s+\p{L}+\s+[0-9０-９]/uy;
+
+const matchesAt = (pattern: RegExp, source: string, offset: number): boolean => {
+  pattern.lastIndex = offset;
+  return pattern.test(source);
+};
+
+/** 数の後ろのコンマが、文の続き（, as declared）の頭か。コンマが無ければ終わり。 */
+const endsBeforeComma = (source: string, end: number): boolean =>
+  !COMMA.test(source.charAt(end)) || (matchesAt(CLAUSE_AFTER_COMMA, source, end) && !matchesAt(VALUE_AFTER_COMMA_WORD, source, end));
 
 const bareValues = (source: string, taken: SpanIndex): FactValue[] =>
   [...source.matchAll(BARE_NUMBER)].flatMap((match): FactValue[] => {
     const span = { start: match.index, end: match.index + match[0].length };
-    if (overlapsAny(taken, span)) return [];
+    if (!endsBeforeComma(source, span.end) || overlapsAny(taken, span)) return [];
     const key = String(Number(match[0].normalize("NFKC").replace(/,/gu, "")));
     return [{ ...span, kind: "quantity", key, unit: "" }];
   });
