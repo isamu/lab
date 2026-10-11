@@ -7,7 +7,7 @@
       "receipt-number-twice": "0/2",
       "items-total": "2/2",
       "name-two-ways": "0/2",
-      "mileage": "0/1"
+      "mileage": "1/1"
     },
     "en": {
       "return-before-departure": "1/1",
@@ -16,7 +16,7 @@
       "receipt-number-twice": "0/2",
       "items-total": "2/2",
       "name-two-ways": "2/2",
-      "mileage": "0/1"
+      "mileage": "1/1"
     }
   },
   "clean": []
