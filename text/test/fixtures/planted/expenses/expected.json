@@ -3,7 +3,7 @@
     "ja": {
       "return-before-departure": "1/1",
       "per-diem": "1/1",
-      "receipt-outside-period": "1/2",
+      "receipt-outside-period": "2/2",
       "receipt-number-twice": "0/2",
       "items-total": "2/2",
       "name-two-ways": "0/2",
