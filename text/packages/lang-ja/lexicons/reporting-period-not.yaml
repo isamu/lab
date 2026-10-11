@@ -1,0 +1,23 @@
+# 期間の名前の書き方（reporting-year-frame の「{y}年分」）を含むが、期間の名前ではない語。「令和8年分担金条例」の「年分」は
+# 「分担金」の一部。period-label-conflict は、この語にまたがる名前を読まない。「2025年分所得税」のように漢字が続く名前もあるので、
+# 漢字が続くこと一般では止めず、ここに挙げた語だけを除く。
+id: reporting-period-not
+language: ja
+entries:
+  - pattern: 年分担
+  - pattern: 年分配
+  - pattern: 年分析
+  - pattern: 年分類
+  - pattern: 年分割
+  - pattern: 年分野
+  - pattern: 年分離
+  - pattern: 年分布
+  - pattern: 年分散
+  - pattern: 年分岐
+  - pattern: 年分譲
+  - pattern: 年分娩
+  - pattern: 年分解
+  - pattern: 年分母
+  - pattern: 年分子
+  - pattern: 年分校
+  - pattern: 年分科

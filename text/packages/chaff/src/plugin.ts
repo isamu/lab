@@ -66,6 +66,8 @@ export type LexiconEntry = {
   readonly rewrite?: string | undefined;
   /** 語の組の名前。同じ組の語どうしだけを比べる rule が使う（対応する OS を言う語と、対応する言語を言う語を分ける）。 */
   readonly group?: string | undefined;
+  /** 元号の元年の西暦の年（令和は 2019）。元号で書いた年を西暦の年にする rule が使う。 */
+  readonly first_year?: number | undefined;
   /** pattern を adapter が語に分けたもの。品詞が読めるときだけ core が入れる。語彙表を書く側は書かない。 */
   readonly tokens?: readonly Token[] | undefined;
 };

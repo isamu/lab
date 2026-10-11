@@ -1,0 +1,10 @@
+# Names that say by themselves which year a document covers (Tax Year 2026, the 2026 tax year). The group is the kind
+# of year. period-label-conflict reads such a name in a title even without a results word, and reports a year of the
+# same kind that differs in the body (tax year 2025). A year without the marker ("compared with 2025", "in 2025") or
+# with another one is not compared. "For the year 2026" is left out: annual reports use it for any year, often a prior one.
+# {y} is a year. Case does not matter.
+id: reporting-year-frame
+language: en
+entries:
+  - { pattern: "tax year {y}", group: tax-year }
+  - { pattern: "{y} tax year", group: tax-year }
