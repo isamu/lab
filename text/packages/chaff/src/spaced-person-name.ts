@@ -16,6 +16,9 @@ const LOOKBACK = 12;
 const NAME_SPACE = /[\u0020\u3000]/gu;
 const HAN = /^\p{Script=Han}$/u;
 const LEADING_HAN = /^\p{Script=Han}+/u;
+/** 文字列の頭と終わりの一字（𠮷 は UTF-16 の二つで一字）。 */
+const FIRST_LETTER = /^./u;
+const LAST_LETTER = /.$/u;
 const ONE_SPACE = /^[\u0020\u3000]/u;
 /** 欄の語と名前のあいだに置かない記号。文の中の「：」の後ろは欄ではない。 */
 const NOT_IN_FIELD = /[。、，,：:]/u;
@@ -70,7 +73,8 @@ const surnameBefore = (source: string, space: number, cues: SpacedNameCues): str
 export const spacedPersonNamesIn = (source: string, cues: SpacedNameCues): SpacedName[] =>
   [...source.matchAll(NAME_SPACE)].flatMap((match) => {
     const space = match.index;
-    if (!isHan([...source.slice(Math.max(0, space - 2), space)].at(-1)) || !isHan([...source.slice(space + 1, space + 3)][0])) return [];
+    if (!isHan(LAST_LETTER.exec(source.slice(Math.max(0, space - 2), space))?.[0]) || !isHan(FIRST_LETTER.exec(source.slice(space + 1, space + 3))?.[0]))
+      return [];
     const surname = surnameBefore(source, space, cues);
     if (surname === undefined) return [];
     const surnameStart = space - surname.length;
