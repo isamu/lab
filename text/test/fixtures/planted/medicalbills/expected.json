@@ -1,0 +1,25 @@
+{
+  "recall": {
+    "ja": {
+      "visit-after-issue": "0/1",
+      "points-times-rate": "0/2",
+      "items-total": "2/2",
+      "patient-share": "0/2",
+      "patient-name": "2/2",
+      "patient-number": "0/2",
+      "discharge-before-admission": "0/1",
+      "days-in-hospital": "0/1"
+    },
+    "en": {
+      "visit-after-issue": "0/1",
+      "points-times-rate": "0/2",
+      "items-total": "2/2",
+      "patient-share": "0/2",
+      "patient-name": "2/2",
+      "patient-number": "0/2",
+      "discharge-before-admission": "0/1",
+      "days-in-hospital": "0/1"
+    }
+  },
+  "clean": []
+}
