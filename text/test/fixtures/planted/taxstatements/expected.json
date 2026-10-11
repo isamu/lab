@@ -1,7 +1,7 @@
 {
   "recall": {
     "ja": {
-      "issue-before-period-end": "0/2",
+      "issue-before-period-end": "2/2",
       "taxable-amount": "2/2",
       "dependants": "1/2",
       "withheld-total": "2/2",
@@ -10,7 +10,7 @@
       "employee-number": "2/2"
     },
     "en": {
-      "issue-before-period-end": "0/2",
+      "issue-before-period-end": "1/2",
       "taxable-amount": "2/2",
       "dependants": "1/2",
       "withheld-total": "2/2",
