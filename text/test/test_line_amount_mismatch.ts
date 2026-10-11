@@ -15,7 +15,7 @@ const findingsOf = (source: string, adapter = ja): readonly string[] => namedRul
 const table = (rows: readonly string[]): string => ["| 品目 | 数量 | 単価 | 金額 |", "| --- | --- | --- | --- |", ...rows].join("\n") + "\n";
 const enTable = (rows: readonly string[]): string => ["| Item | Quantity | Unit price | Amount |", "| --- | --- | --- | --- |", ...rows].join("\n") + "\n";
 
-const NO_UNITS = { units: [], perUnitMarks: [], headerUnits: [], measureUnits: [] };
+const NO_UNITS = { units: [], perUnitMarks: [], headerUnits: [], measureUnits: [], orderRoles: [] };
 const VOLUME = ["L", "m³", "㎥"];
 
 const cell = (text: string): { start: number; text: string } => ({ start: 0, text });
@@ -125,6 +125,10 @@ describe("line-amount-mismatch: 数量×単価が金額と合わない", () => {
     assert.deepEqual(lineAmountMismatches(table(["| 開発 | 4 | 150,000円 | 650,000円 |"]), { quantity: [], unitPrice: [], amount: [], ...NO_UNITS }), []);
     assert.deepEqual(lineAmountMismatches("", { quantity: ["数量"], unitPrice: ["単価"], amount: ["金額"], ...NO_UNITS }), []);
     assert.deepEqual(findingsOf(""), []);
+    const delivered = "| 品名 | 納品数量 | 単価 | 金額 |\n| --- | --- | --- | --- |\n| 封筒 | 6 | 500円 | 3,500円 |\n";
+    const words = { quantity: ["数量"], unitPrice: ["単価"], amount: ["金額"], ...NO_UNITS };
+    assert.deepEqual(lineAmountMismatches(delivered, words), []);
+    assert.equal(lineAmountMismatches(delivered, { ...words, orderRoles: [{ pattern: "納品数", role: "delivered" }] }).length, 1);
   });
 
   it("単価が何かあたりで、数量が別の単位なら比べない", () => {
@@ -206,6 +210,56 @@ describe("line-amount-mismatch: 数量×単価が金額と合わない", () => {
     assert.deepEqual(findingsOf(enTable(["| Mileage | 46 miles | $0.70/mile | $32.90 |", "| Mileage | 2 hours | $0.70 per mile | $3.00 |"]), en), [
       "The amount $32.90 is not quantity × unit price (46 miles × $0.70/mile = $32.20)",
     ]);
+  });
+
+  it("発注・納品・残の数量の列がある一つの表（納品書）で、どの数量を掛けても金額にならない行を指す", () => {
+    const note = (rows: readonly string[]): string =>
+      ["| 品名 | 発注数量 | 納品数量 | 残数 | 単価 | 金額 |", "| --- | --- | --- | --- | --- | --- |", ...rows].join("\n") + "\n";
+    assert.deepEqual(findingsOf(note(["| コピー用紙 | 10箱 | 6箱 | 4箱 | 2,500円 | 16,000円 |", "| ボールペン | 20本 | 20本 | 0本 | 120円 | 2,400円 |"])), [
+      "金額「16,000円」が、数量×単価（6箱 × 2,500円 = 15,000円）と合いません",
+    ]);
+    assert.deepEqual(findingsOf(note(["| コピー用紙 | 10箱 | 6箱 | 4箱 | 2,500円 | 15,000円 |", "| 封筒 | 10箱 | 6箱 | 4箱 | 500円 | 5,000円 |"])), []);
+    assert.deepEqual(findingsOf(note(["| コピー用紙 | 10箱 | | | 2,500円 | 16,000円 |"])), [
+      "金額「16,000円」が、数量×単価（10箱 × 2,500円 = 25,000円）と合いません",
+    ]);
+    const enNote = (rows: readonly string[]): string =>
+      ["| Item | Qty ordered | Qty delivered | Qty backordered | Unit price | Amount |", "| --- | --- | --- | --- | --- | --- |", ...rows].join("\n") + "\n";
+    assert.deepEqual(findingsOf(enNote(["| Copy paper | 10 | 6 | 4 | $25.00 | $160.00 |", "| Pens | 20 | 20 | 0 | $1.20 | $24.00 |"]), en), [
+      "The amount $160.00 is not quantity × unit price (6 × $25.00 = $150.00)",
+    ]);
+    assert.deepEqual(findingsOf(enNote(["| Copy paper | 10 | 6 | 4 | $25.00 | $250.00 |"]), en), []);
+    assert.deepEqual(
+      findingsOf("| Item | Ordered | Shipped | Unit price | Amount |\n| --- | --- | --- | --- | --- |\n| Pens | 20 | 18 | $1.20 | $25.00 |\n", en),
+      ["The amount $25.00 is not quantity × unit price (18 × $1.20 = $21.60)"],
+    );
+  });
+
+  it("複合の見出し一つでも数量の列と読む", () => {
+    assert.deepEqual(findingsOf("| 品名 | 納品数量 | 単価 | 金額 |\n| --- | --- | --- | --- |\n| 封筒 | 6箱 | 500円 | 3,500円 |\n"), [
+      "金額「3,500円」が、数量×単価（6箱 × 500円 = 3,000円）と合いません",
+    ]);
+    assert.deepEqual(findingsOf("| 品名 | 出荷数量 | 単価 | 金額 |\n| --- | --- | --- | --- |\n| 封筒 | 6箱 | 500円 | 3,000円 |\n"), []);
+    assert.deepEqual(findingsOf("| Item | Quantity shipped | Unit price | Amount |\n| --- | --- | --- | --- |\n| Pens | 18 | $1.20 | $25.00 |\n", en), [
+      "The amount $25.00 is not quantity × unit price (18 × $1.20 = $21.60)",
+    ]);
+  });
+
+  it("選べない数量の列が二つある表と、日付かもしれない役割の列一つは読まない", () => {
+    assert.deepEqual(
+      findingsOf("| 品名 | 前回納品数 | 今回納品数 | 単価 | 金額 |\n| --- | --- | --- | --- | --- |\n| 封筒 | 2箱 | 4箱 | 500円 | 9,000円 |\n"),
+      [],
+    );
+    assert.deepEqual(findingsOf("| 品名 | 数量 | 個数 | 単価 | 金額 |\n| --- | --- | --- | --- | --- |\n| 封筒 | 2 | 4 | 500円 | 9,000円 |\n"), []);
+    assert.deepEqual(findingsOf("| Item | Delivered | Unit price | Amount |\n| --- | --- | --- | --- |\n| Pens | 3 Oct | $1.20 | $25.00 |\n", en), []);
+    assert.deepEqual(findingsOf("| Item | Ordered / Delivered | Unit price | Amount |\n| --- | --- | --- | --- |\n| Pens | 20 | $1.20 | $25.00 |\n", en), []);
+    assert.deepEqual(
+      findingsOf("| 品名 | 発注数量 | 納品数量 | 単価 | 値引 | 金額 |\n| --- | --- | --- | --- | --- | --- |\n| 封筒 | 10 | 6 | 500円 | 300円 | 2,700円 |\n"),
+      [],
+    );
+    assert.deepEqual(
+      findingsOf("| 品名 | 発注数量 | 納品数量 | 単価 | 金額 |\n| --- | --- | --- | --- | --- |\n| 封筒 | 10 | 6 x 2 | 500円 | 9,000円 |\n"),
+      [],
+    );
   });
 
   it("単位を読む", () => {

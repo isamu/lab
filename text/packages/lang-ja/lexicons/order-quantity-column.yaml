@@ -1,4 +1,4 @@
-# 発注・納品の数量の表（納品書の分納の欄、発注残の一覧）で、列の見出しが言う役割（delivered-over-ordered、backorder-mismatch）。
+# 発注・納品の数量の表（納品書の分納の欄、発注残の一覧）で、列の見出しが言う役割（delivered-over-ordered、backorder-mismatch、line-amount-mismatch）。
 # group: ordered は発注した数、delivered は納めた数、backordered はまだ納めていない残りの数。backordered を先に見るので、
 # 「発注残」「未納品数」「未出荷数」は発注や納品の数ではなく残りの数になる。発注と納品の両方を言う見出しの列は読まない。
 # group: qualifier は数のあとに書かれると、その数をちょうどの数でなくする語（10以上、50程度）。その升は比べない。

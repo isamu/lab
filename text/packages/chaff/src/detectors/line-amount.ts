@@ -2,6 +2,7 @@
 // unit-price-column, line-amount-column), the units from rate-unit, per-unit-mark and the measure lexicons (unit-volume, …); the tables are read from the prose with its tables put back, so code is not.
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { measureUnitsOf } from "../facts/measure-units.ts";
+import { quantityWordsOf } from "./order-quantity.ts";
 import { lineAmountMismatches, type LineAmountWords } from "../structure/line-amount.ts";
 import type { UnitWord } from "../structure/line-amount-unit.ts";
 import { proseAndTablesOf } from "../table-text.ts";
@@ -22,6 +23,7 @@ const wordsOf = (doc: ProseDocument): LineAmountWords => ({
   perUnitMarks: unitWordsOf(doc, "per-unit-mark"),
   headerUnits: unitWordsOf(doc, "quantity-column", "unit-price-column"),
   measureUnits: measureUnitsOf(doc).flatMap((unit) => (unit.before ? [] : [unit.pattern])),
+  orderRoles: quantityWordsOf(doc).columns,
 });
 
 export const lineAmount: Detector = (doc): Finding[] =>

@@ -16,7 +16,7 @@ const isRole = (group: string | undefined): group is QuantityRole => group !== u
  * Lexicon order-quantity-column: the heading words that say which column holds the ordered, delivered and backordered
  * count, and (group qualifier) the words after a number that make it no exact count.
  */
-const quantityWordsOf = (doc: ProseDocument): QuantityWords => {
+export const quantityWordsOf = (doc: ProseDocument): QuantityWords => {
   const entries = doc.lexicons["order-quantity-column"] ?? [];
   return {
     columns: entries.flatMap((entry) => (isRole(entry.group) ? [{ pattern: entry.pattern, role: entry.group }] : [])),
