@@ -67,7 +67,7 @@ yarn corpus:fetch    # corpus/manifest.json の文書を取ってくる（再配
 yarn corpus          # corpus にかけて corpus/expected/ と比べる（--verbose で指摘も出す、--update で書き換える）
 yarn corpus:health   # URL の文書をすべて取り直し、取れない・上流と違う・結果が変わった、を報告する（週次の CI と同じ）
 yarn bench           # 誤りを植えた見本で見逃しを数え、test/fixtures/bench/expected/ と比べる（--verbose、--update は corpus と同じ）
-yarn planted         # 誤りを仕込んだ文書の組（test/fixtures/planted/<組>/）で種類ごとに見つけた数を数え、組の expected.json と比べる（--update で書き換える）
+yarn planted         # 誤りを仕込んだ文書の組（test/fixtures/planted/<組>/）で種類ごとに見つけた数を数え、組の expected.json と比べる。落ちるのは悪くなったときだけで、良くなった所は出すだけ（--update で書き換える）
 yarn bench:ai        # AI っぽさのルールを、人・生成文・書き直しの見本と corpus にかけ、当たりと誤報を数える
 yarn rules:measure   # ルールごとに、各ジャンルの人の文書の何割で指摘するかと bench の成績を表にする
 yarn example         # examples/ の実文書にかける（1 行形式。yarn example:friendly で既定の出力）
@@ -125,7 +125,7 @@ and on [the English site](https://isamu.github.io/lab/en/). **Try chaff in your 
   language adapters, `corpus/` the real documents, `test/` the tests, `site/` the guide site.
 - **Commands:** `yarn format`, `yarn lint`, `yarn typecheck`, `yarn build` and `yarn test`. To share a machine, run
   `CHAFF_TEST_JOBS=4 yarn test`; `--part 2/5` runs one part. `yarn corpus`, `yarn bench` and `yarn planted` compare the results on
-  real documents, on seeded mistakes and on the planted sets of whole documents with what is committed (`--update` to accept a change). `yarn rules:measure`
+  real documents, on seeded mistakes and on the planted sets of whole documents with what is committed (`--update` to accept a change; `yarn planted` fails only on a regression and prints an improvement). `yarn rules:measure`
   measures each rule on the human documents pinned in `corpus/rules-measure-documents.json` (`--apply` sets its status
   and the genres it is off for); it stops when a pinned one has not been fetched (`yarn corpus:fetch`). `yarn screens:update`
   rewrites the guide's screens to what chaff prints now.
