@@ -1,0 +1,195 @@
+{
+  "note": "Self-written expense reports (出張旅費精算書・経費精算書 / travel expense report, monthly expense claim) for made-up companies and employees: a three-day business trip with per diem, lodging and receipts, and a monthly claim with receipts and personal-car mileage, each in a clean version and a planted one that differs only on the lines below. They run as business/proposal, the genre the invoices of the business set run as: no genre is made for expense reports. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: reference-number-repeated (the same receipt number listed on two rows of one table). A return before the departure is written as the labelled departure and return rows of a travel table, not as one range, and is named for due-before-issue, which compares a pair of labelled dates. Each plant was also run alone on its clean document, so no plant depends on another. yarn planted expenses scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/trip",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/trip.clean.md",
+      "planted": "ja/trip.planted.md",
+      "mistakes": [
+        {
+          "kind": "return-before-departure",
+          "rule": "due-before-issue",
+          "line": 22,
+          "clean": "| 2026年9月16日 19:40 |",
+          "planted": "| 2026年9月12日 19:40 |"
+        },
+        {
+          "kind": "per-diem",
+          "rule": "line-amount-mismatch",
+          "line": 28,
+          "clean": "| 7,500円 |",
+          "planted": "| 7,000円 |"
+        },
+        {
+          "kind": "receipt-outside-period",
+          "rule": "date-outside-period",
+          "line": 39,
+          "clean": "| 2026年9月16日 | T-0384",
+          "planted": "| 2026年9月19日 | T-0384"
+        },
+        {
+          "kind": "receipt-number-twice",
+          "rule": "reference-number-repeated",
+          "line": 40,
+          "clean": "| T-0385 |",
+          "planted": "| T-0384 |"
+        },
+        {
+          "kind": "items-total",
+          "rule": "total-mismatch",
+          "line": 41,
+          "clean": "| 32,140円 |",
+          "planted": "| 32,410円 |"
+        },
+        {
+          "kind": "name-two-ways",
+          "rule": "name-variant",
+          "line": 53,
+          "clean": "佐伯 拓海",
+          "planted": "佐伯 拓実"
+        }
+      ]
+    },
+    {
+      "id": "ja/monthly",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/monthly.clean.md",
+      "planted": "ja/monthly.planted.md",
+      "mistakes": [
+        {
+          "kind": "receipt-number-twice",
+          "rule": "reference-number-repeated",
+          "line": 19,
+          "clean": "| R-2043 |",
+          "planted": "| R-2042 |"
+        },
+        {
+          "kind": "receipt-outside-period",
+          "rule": "date-outside-period",
+          "line": 20,
+          "clean": "| 2026年9月24日 |",
+          "planted": "| 2026年8月24日 |"
+        },
+        {
+          "kind": "mileage",
+          "rule": "line-amount-mismatch",
+          "line": 28,
+          "clean": "| 930円 |",
+          "planted": "| 960円 |"
+        },
+        {
+          "kind": "items-total",
+          "rule": "total-mismatch",
+          "line": 37,
+          "clean": "| 8,650円 |",
+          "planted": "| 8,560円 |"
+        },
+        {
+          "kind": "name-two-ways",
+          "rule": "name-variant",
+          "line": 41,
+          "clean": "高瀬 誠",
+          "planted": "髙瀬 誠"
+        }
+      ]
+    },
+    {
+      "id": "en/trip",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/trip.clean.md",
+      "planted": "en/trip.planted.md",
+      "mistakes": [
+        {
+          "kind": "return-before-departure",
+          "rule": "due-before-issue",
+          "line": 22,
+          "clean": "| September 16, 2026, 7:40 PM |",
+          "planted": "| September 12, 2026, 7:40 PM |"
+        },
+        {
+          "kind": "per-diem",
+          "rule": "line-amount-mismatch",
+          "line": 28,
+          "clean": "| $195.00 |",
+          "planted": "| $185.00 |"
+        },
+        {
+          "kind": "receipt-outside-period",
+          "rule": "date-outside-period",
+          "line": 39,
+          "clean": "| September 16, 2026 | T-0384",
+          "planted": "| September 19, 2026 | T-0384"
+        },
+        {
+          "kind": "receipt-number-twice",
+          "rule": "reference-number-repeated",
+          "line": 40,
+          "clean": "| T-0385 |",
+          "planted": "| T-0384 |"
+        },
+        {
+          "kind": "items-total",
+          "rule": "total-mismatch",
+          "line": 41,
+          "clean": "| $735.00 |",
+          "planted": "| $753.00 |"
+        },
+        {
+          "kind": "name-two-ways",
+          "rule": "name-variant",
+          "line": 53,
+          "clean": "Daniel Hartwell",
+          "planted": "Daniel Hartwel"
+        }
+      ]
+    },
+    {
+      "id": "en/monthly",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/monthly.clean.md",
+      "planted": "en/monthly.planted.md",
+      "mistakes": [
+        {
+          "kind": "receipt-number-twice",
+          "rule": "reference-number-repeated",
+          "line": 19,
+          "clean": "| R-2043 |",
+          "planted": "| R-2042 |"
+        },
+        {
+          "kind": "receipt-outside-period",
+          "rule": "date-outside-period",
+          "line": 20,
+          "clean": "| September 24, 2026 |",
+          "planted": "| August 24, 2026 |"
+        },
+        {
+          "kind": "mileage",
+          "rule": "line-amount-mismatch",
+          "line": 28,
+          "clean": "| $32.20 |",
+          "planted": "| $32.90 |"
+        },
+        {
+          "kind": "items-total",
+          "rule": "total-mismatch",
+          "line": 37,
+          "clean": "| $183.60 |",
+          "planted": "| $186.30 |"
+        },
+        {
+          "kind": "name-two-ways",
+          "rule": "name-variant",
+          "line": 41,
+          "clean": "Thomas Achterberg",
+          "planted": "Thomas Achterburg"
+        }
+      ]
+    }
+  ]
+}
