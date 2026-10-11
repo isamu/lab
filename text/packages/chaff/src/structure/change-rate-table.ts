@@ -63,7 +63,7 @@ const bracketedOf = (heading: string): string =>
     .join("|");
 
 /** The two period columns do not name different units in their headings ("FY2025 (thousand yen)", "FY2026 (million yen)"). */
-const sameHeadingUnits = (base: string | undefined, current: string | undefined): boolean => bracketedOf(base ?? "") === bracketedOf(current ?? "");
+export const sameHeadingUnits = (base: string | undefined, current: string | undefined): boolean => bracketedOf(base ?? "") === bracketedOf(current ?? "");
 
 /** The one column of each role. A rate column is one headed by a rate word, else the one change column whose cells carry %. */
 export const columnsOf = (headings: readonly string[], words: readonly ColumnWord[]): Columns | undefined => {

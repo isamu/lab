@@ -1,0 +1,59 @@
+id: cumulative-below-current
+layer: L3
+status: stable
+how_to_find: cumulative-below-current
+severity: warning
+
+name:
+  ja: 累計が当月の値より小さい
+  en: A cumulative figure lower than this period's
+
+why:
+  ja: 給与明細の「年初からの累計」、売上の月報の「累計」、予算の執行表の「累計実績」は、当月（今回、当期）の値を含んだ合計です。含んでいる部分より合計が小さいことはありません。累計の桁を一つ落としたとき、行を一つずらして写したとき、前の月の表の累計を直し忘れたときに起きます。どの列が当月でどの列が累計かは、列の見出しの語（当月、今回、当期、累計、年初来、This month、This period、Current、Year to date、YTD、Cumulative）だけで決めます。列の並びでは決めません。「前月までの累計」「前月累計」「Prior YTD」のように前の期間までを言う列は、当月を含まないので累計の列としては読みません。同じ単位で書いた0以上の数だけを比べ、書いた数の最後の桁の半分までの丸めを認めます。
+  en: 'The "year to date" of a payslip, the "cumulative" of a monthly sales report and the "YTD actual" of a budget report are totals that include this period''s figure. A total cannot be smaller than a part it includes. It goes wrong when a digit of the cumulative figure is dropped, when a row is copied one line off, or when last month''s table is reused and its cumulative figures are not updated. Which column is this period and which the cumulative one is decided by the heading words alone (This month, This period, Current, Year to date, YTD, Cumulative), never by where a column stands. A column up to an earlier period ("Prior YTD", "Brought forward") does not hold this period and is not read as the cumulative one. Only figures of zero or more written in the same unit are compared, and each may be rounded to half its last digit.'
+
+message:
+  ja: 累計「{cumulative}」が、当月の「{current}」より小さくなっています
+  en: 'The cumulative figure "{cumulative}" is lower than this period''s "{current}"'
+
+how_to_fix:
+  ja: 累計の値と当月の値のどちらが正しいかを確かめて、もう一方を直してください。
+  en: Check whether the cumulative figure or this period's figure is right, and correct the other.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 給与明細や月報で、累計が当月の値より小さい所
+  en: A year-to-date figure lower than the same row's figure for this period
+example:
+  ja:
+    before: |
+      | 項目 | 当月 | 年初からの累計 |
+      | --- | --- | --- |
+      | 総支給額 | 327,200円 | 2,912,400円 |
+      | 所得税 | 7,750円 | 6,890円 |
+    after: |
+      | 項目 | 当月 | 年初からの累計 |
+      | --- | --- | --- |
+      | 総支給額 | 327,200円 | 2,912,400円 |
+      | 所得税 | 7,750円 | 68,900円 |
+  en:
+    before: |
+      | Item | This period | Year to date |
+      | --- | --- | --- |
+      | Gross pay | $1,661.00 | $14,820.00 |
+      | Federal income tax | $96.00 | $85.80 |
+    after: |
+      | Item | This period | Year to date |
+      | --- | --- | --- |
+      | Gross pay | $1,661.00 | $14,820.00 |
+      | Federal income tax | $96.00 | $858.00 |
+
+not_flagged:
+  ja: 当月の列か累計の列が無い表、どちらかが二つ以上ある表（「当月予算」と「当月実績」が並ぶ表）、見出しの括弧の単位（千円、百万円）が違う表は比べません。前の期間までを言う列（前月累計、前回までの累計）と、残高や平均を言う列（現在の残高）は、当月の列とも累計の列とも読みません。升が空、「-」「—」、マイナス（▲1,000、-1,000、(1,000)）の行は比べません。返金や年末調整で累計が当月より小さくなることがあるためです。単位の書き方が違う行、平均・単価・率・残高・在庫のように期間ごとに足し上げない値の行も比べません。累計と当月が同じ値（最初の月）は正しいので言いません。丸めで届く差も言いません。
+  en: "A table without a this-period column or a cumulative one, with two of either (This month budget and This month actual side by side), or whose two headings name different units in brackets (thousands, millions) is not compared. A column up to an earlier period (Prior YTD, Brought forward) or of a level (Current balance) is read as neither. A row with a blank cell, a dash or a negative figure (-1,000, (1,000)) is skipped, since a refund can make a year-to-date figure fall below this period's; so is a row written in different units, and a row of a figure that is not summed over periods (an average, a rate, a price, a balance). A cumulative figure equal to this period's (the first period) is right and is not reported, and neither is a difference the rounding can reach."
