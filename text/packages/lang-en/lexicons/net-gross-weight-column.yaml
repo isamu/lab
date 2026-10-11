@@ -1,0 +1,23 @@
+# Headings that say what a column of a weight table holds (net-over-gross): a packing list, the weights of a shipment.
+# group: net is the weight of the goods alone, gross the weight with the packing. A Latin word stands as a whole word. A
+# heading that names both net and gross is not read. group: qualifier is a word that, after a number, makes it no exact
+# weight ("100 kg or more", "50 kg approx."); such a cell is not compared.
+id: net-gross-weight-column
+language: en
+entries:
+  - { pattern: net weight, group: net }
+  - { pattern: net wt, group: net }
+  - { pattern: n.w., group: net }
+  - { pattern: n/w, group: net }
+  - { pattern: gross weight, group: gross }
+  - { pattern: gross wt, group: gross }
+  - { pattern: g.w., group: gross }
+  - { pattern: g/w, group: gross }
+  - { pattern: or more, group: qualifier }
+  - { pattern: or less, group: qualifier }
+  - { pattern: approx, group: qualifier }
+  - { pattern: approx., group: qualifier }
+  - { pattern: est, group: qualifier }
+  - { pattern: est., group: qualifier }
+  - { pattern: max, group: qualifier }
+  - { pattern: min, group: qualifier }

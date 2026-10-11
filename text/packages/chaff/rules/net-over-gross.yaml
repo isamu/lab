@@ -1,0 +1,57 @@
+id: net-over-gross
+layer: L3
+status: stable
+how_to_find: net-over-gross
+# The net and gross columns are found by the language's net-gross-weight-column lexicon; g, kg and t are converted by unit-mass.
+extra_word_lists: [net-gross-weight-column, unit-mass]
+severity: warning
+
+name:
+  ja: 正味重量が総重量より重い
+  en: A net weight larger than the gross weight
+
+why:
+  ja: 梱包明細書（パッキングリスト）の正味重量は品物だけの重さで、総重量は箱や梱包材を含めた重さです。同じ行で正味重量が総重量を上回ることはありません。正味重量を写し間違えたとき、別の箱の行と取り違えたとき、総重量だけを直したときに起きます。どの列が正味重量で、どの列が総重量かは、列の見出しの語（正味重量、純重量、N.W.、総重量、グロス重量、G.W.）だけで決めます。列の並びでは決めません。比べるのは、どちらの升も書いた数（96.0kg）である行で、合計の行も比べます。g・kg・t は語彙表の単位で換算して比べ、語彙表に無い単位は同じ単位どうしだけを比べます。
+  en: "On a packing list, the net weight is the goods alone and the gross weight includes the cartons and packing, so the net weight of a row cannot exceed its gross weight. It does when the net weight is copied wrong, when a row is mixed up with another carton, or when only the gross weight is corrected. Which column is net and which is gross is decided by the heading words alone (Net weight, N.W., Gross weight, G.W.), never by where a column stands. Only rows where both cells are written numbers (96.0 kg) are compared, the totals row too. Grams, kilograms, tonnes and pounds are converted by the units word list; other units are compared only with the same unit."
+
+message:
+  ja: 正味重量「{net}」が、同じ行の総重量「{gross}」より重くなっています
+  en: 'The net weight "{net}" is larger than the gross weight "{gross}" on the same row'
+
+how_to_fix:
+  ja: 正味重量と総重量のどちらが正しいかを確かめて、もう一方を直してください。
+  en: Check which of the net and gross weights is right and correct the other.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 表の同じ行で、正味重量が総重量より重い所
+  en: A row of a packing list whose net weight is larger than its gross weight
+example:
+  ja:
+    before: |
+      | 箱番号 | 品名 | 正味重量 | 総重量 |
+      | --- | --- | --- | --- |
+      | No.1 | 軸受けハウジング | 106.0kg | 104.0kg |
+    after: |
+      | 箱番号 | 品名 | 正味重量 | 総重量 |
+      | --- | --- | --- | --- |
+      | No.1 | 軸受けハウジング | 96.0kg | 104.0kg |
+  en:
+    before: |
+      | Carton | Description | Net weight | Gross weight |
+      | --- | --- | --- | --- |
+      | No. 1 | Control unit | 68.0 kg | 65.0 kg |
+    after: |
+      | Carton | Description | Net weight | Gross weight |
+      | --- | --- | --- | --- |
+      | No. 1 | Control unit | 58.0 kg | 65.0 kg |
+
+not_flagged:
+  ja: 正味重量の列か総重量の列が無い表、どちらかの列が二つ以上ある表、正味と総重量の両方を言う見出しの列がある表は比べません。二つの見出しが正味と総重量のほかに違うことを言う表（1個あたりの正味重量と1箱あたりの総重量）も比べません。升が空、「-」、「未定」、符号やかっこ付き、「約」「以上」「程度」の付いた行、二つの升の単位を換算できない行も比べません。正味重量が総重量と同じか軽い行は言いません。
+  en: "A table with no net or no gross column, or with two of either, is not compared. Neither is a table with a heading that names both net and gross, or whose two headings say something different besides net and gross (net weight per piece beside gross weight per carton). A row whose cell is blank, a dash, TBD, signed, bracketed, approximate or a bound (100 kg or more), or whose two units cannot be converted to each other, is skipped. A net weight equal to or less than the gross weight is not reported."
