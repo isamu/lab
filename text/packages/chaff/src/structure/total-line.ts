@@ -15,6 +15,8 @@ export type TotalLineWords = {
   readonly qualifiers: readonly TotalQualifier[];
   readonly nounQualifiers?: readonly TotalQualifier[] | undefined;
   readonly unsummedNouns?: readonly string[] | undefined;
+  /** 合計が足す期間の語（total-period-qualifier。年間合計の年間、Total for the year の for the year）。見出しの頭か尻から除いて読む。 */
+  readonly periodQualifiers?: readonly TotalQualifier[] | undefined;
 };
 
 /** 見出しの終わり。区切り（: |）があればそこまで、無ければ金額の始まりまで。 */
@@ -153,16 +155,46 @@ const isNamedTotal = (text: string, words: TotalLineWords, header: string): bool
   return words.labels.some((total) => splitsAround(label, total.toLowerCase()).some((split) => namesTotal(nounsOf(split, words))));
 };
 
+/** 合計の語だけか、合計の語に添える語だけを前後に置いた見出しか。 */
+const isPlainTotal = (text: string, words: TotalLineWords): boolean => {
+  if (isTotalLabel(text, words.labels)) return true;
+  if (words.qualifiers.length === 0) return false;
+  const label = labelWords(text);
+  return words.labels.some((total) => isQualifiedLabel(label, wordsOf(total), words.qualifiers));
+};
+
+/** 期間の語の端の英数字（inner）が、その外の字（outer）へ続くか。空白でない字（year-to-date の -）なら続くとみなす。 */
+const continuesWord = (inner: string | undefined, outer: string | undefined): boolean =>
+  WORD_CHAR.test(inner ?? "") && outer !== undefined && !SPACES.test(outer);
+
+/** 見出しの頭（before）か尻（after）から期間の語を除いた残り。語の途中（yearly の year、year-to-date の year）では切らない。 */
+const withoutPeriod = (label: string, qualifier: TotalQualifier): string | undefined => {
+  const pattern = qualifier.pattern.toLowerCase();
+  if (pattern.length === 0) return undefined;
+  if (qualifier.position !== "after" && label.startsWith(pattern) && !continuesWord(pattern.at(-1), label[pattern.length]))
+    return label.slice(pattern.length).trim();
+  if (qualifier.position !== "before" && label.endsWith(pattern) && !continuesWord(pattern[0], label[label.length - pattern.length - 1]))
+    return label.slice(0, label.length - pattern.length).trim();
+  return undefined;
+};
+
+/**
+ * 合計が足す期間の語（年間、for the year）を見出しの頭か尻から除くと合計の行になるか（年間合計、年計、Total for the year、Year total）。
+ * 前の年の合計（前年合計、Prior-year total）は、期間の語が頭にも尻にも無いので読まない。
+ */
+export const isPeriodTotalLine = (text: string, words: TotalLineWords): boolean => {
+  const label = labelWords(text).join(" ");
+  return (words.periodQualifiers ?? []).some((qualifier) => {
+    const rest = withoutPeriod(label, qualifier);
+    return rest !== undefined && rest.length > 0 && isPlainTotal(rest, words);
+  });
+};
+
 /**
  * 合計の行か。合計の語で始まる行（Total、合計（月額））に加えて、合計の語に添える語だけを前後に置いた見出し
  * （Total per month、Monthly total、Total due）も合計の行と読む。添える語でない語（Total area）が入れば読まない。
+ * 合計が足す期間の語を付けた見出し（年間合計、Total for the year）も合計の行と読む。
  * 表の見出しの行（header）を渡せば、その見出しが名指す名詞を付けた見出し（控除項目の表の控除合計、単位数の列の修得単位合計）も合計の行と読む。
  */
-export const isTotalLine = (text: string, words: TotalLineWords, header?: string): boolean => {
-  if (isTotalLabel(text, words.labels)) return true;
-  if (words.qualifiers.length > 0) {
-    const label = labelWords(text);
-    if (words.labels.some((total) => isQualifiedLabel(label, wordsOf(total), words.qualifiers))) return true;
-  }
-  return header !== undefined && isNamedTotal(text, words, header);
-};
+export const isTotalLine = (text: string, words: TotalLineWords, header?: string): boolean =>
+  isPlainTotal(text, words) || isPeriodTotalLine(text, words) || (header !== undefined && isNamedTotal(text, words, header));

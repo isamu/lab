@@ -1,0 +1,237 @@
+{
+  "note": "Self-written annual earnings and tax withholding statements (給与所得と源泉徴収税額の明細書 / earnings and tax withholding statement) for made-up employers and employees, in a plain layout of their own rather than any official form: one for an employee paid for the whole year and one for an employee who left in the middle of it, each in a clean version and a planted one that differs only on the lines below. They run as business/proposal, the genre the payslips run as: no genre is made for tax statements. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. An issue date before the end of the period the statement covers (the end of the year, or the leaving date) is named for due-before-issue, which compares a pair of labelled dates and reads a period by its last day. A taxable amount that is not the gross pay minus the total of deductions is named for net-amount-mismatch, which compares a gross, a deduction total and a net amount. The tax year written as another year in the body than the one the title names (令和8年分 and 2025年分, Tax Year 2026 and tax year 2025) is named for period-label-conflict, which compares the period a title names with the periods given later. The number of dependants in a sentence that differs from the table is named for fact-conflict. Each plant was also run alone on its clean document, so no plant depends on another, and no plant changes a value another plant is compared with. yarn planted taxstatements scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/fullyear",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/fullyear.clean.md",
+      "planted": "ja/fullyear.planted.md",
+      "mistakes": [
+        {
+          "kind": "issue-before-period-end",
+          "rule": "due-before-issue",
+          "line": 7,
+          "clean": "交付日：2027年1月20日",
+          "planted": "交付日：2026年12月20日"
+        },
+        {
+          "kind": "taxable-amount",
+          "rule": "net-amount-mismatch",
+          "line": 39,
+          "clean": "| 1,876,000円 |",
+          "planted": "| 1,786,000円 |"
+        },
+        {
+          "kind": "dependants",
+          "rule": "fact-conflict",
+          "line": 49,
+          "clean": "扶養親族の数は2人",
+          "planted": "扶養親族の数は3人"
+        },
+        {
+          "kind": "withheld-total",
+          "rule": "total-mismatch",
+          "line": 69,
+          "clean": "| 93,800円 |",
+          "planted": "| 98,300円 |"
+        },
+        {
+          "kind": "tax-year",
+          "rule": "period-label-conflict",
+          "line": 71,
+          "clean": "2026年分の源泉徴収税額",
+          "planted": "2025年分の源泉徴収税額"
+        },
+        {
+          "kind": "employee-name",
+          "rule": "name-variant",
+          "line": 73,
+          "clean": "岡田 美咲 様の",
+          "planted": "岡田 実咲 様の"
+        },
+        {
+          "kind": "employee-number",
+          "rule": "reference-number-variant",
+          "line": 75,
+          "clean": "社員番号318264",
+          "planted": "社員番号318246"
+        }
+      ]
+    },
+    {
+      "id": "ja/leaver",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/leaver.clean.md",
+      "planted": "ja/leaver.planted.md",
+      "mistakes": [
+        {
+          "kind": "issue-before-period-end",
+          "rule": "due-before-issue",
+          "line": 9,
+          "clean": "交付日：2026年9月18日",
+          "planted": "交付日：2026年8月18日"
+        },
+        {
+          "kind": "dependants",
+          "rule": "fact-conflict",
+          "line": 45,
+          "clean": "扶養親族の数を1人",
+          "planted": "扶養親族の数を2人"
+        },
+        {
+          "kind": "taxable-amount",
+          "rule": "net-amount-mismatch",
+          "line": 53,
+          "clean": "課税対象額：572,000円",
+          "planted": "課税対象額：527,000円"
+        },
+        {
+          "kind": "withheld-total",
+          "rule": "total-mismatch",
+          "line": 68,
+          "clean": "| 53,220円 |",
+          "planted": "| 52,320円 |"
+        },
+        {
+          "kind": "tax-year",
+          "rule": "period-label-conflict",
+          "line": 70,
+          "clean": "2026年分の給与",
+          "planted": "2025年分の給与"
+        },
+        {
+          "kind": "employee-name",
+          "rule": "name-variant",
+          "line": 72,
+          "clean": "村上 大輔 様は",
+          "planted": "村上 大介 様は"
+        },
+        {
+          "kind": "employee-number",
+          "rule": "reference-number-variant",
+          "line": 74,
+          "clean": "社員番号407182",
+          "planted": "社員番号407128"
+        }
+      ]
+    },
+    {
+      "id": "en/fullyear",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/fullyear.clean.md",
+      "planted": "en/fullyear.planted.md",
+      "mistakes": [
+        {
+          "kind": "issue-before-period-end",
+          "rule": "due-before-issue",
+          "line": 7,
+          "clean": "Issue date: January 22, 2027",
+          "planted": "Issue date: December 22, 2026"
+        },
+        {
+          "kind": "taxable-amount",
+          "rule": "net-amount-mismatch",
+          "line": 39,
+          "clean": "| $56,960.00 |",
+          "planted": "| $56,690.00 |"
+        },
+        {
+          "kind": "dependants",
+          "rule": "fact-conflict",
+          "line": 49,
+          "clean": "dependants is 2,",
+          "planted": "dependants is 3,"
+        },
+        {
+          "kind": "withheld-total",
+          "rule": "total-mismatch",
+          "line": 68,
+          "clean": "| $7,890.00 |",
+          "planted": "| $7,980.00 |"
+        },
+        {
+          "kind": "tax-year",
+          "rule": "period-label-conflict",
+          "line": 70,
+          "clean": "tax year 2026.",
+          "planted": "tax year 2025."
+        },
+        {
+          "kind": "employee-name",
+          "rule": "name-variant",
+          "line": 72,
+          "clean": "Daniel Okafor can",
+          "planted": "Daniel Okafur can"
+        },
+        {
+          "kind": "employee-number",
+          "rule": "reference-number-variant",
+          "line": 74,
+          "clean": "employee number 5263-0817",
+          "planted": "employee number 5263-0871"
+        }
+      ]
+    },
+    {
+      "id": "en/leaver",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/leaver.clean.md",
+      "planted": "en/leaver.planted.md",
+      "mistakes": [
+        {
+          "kind": "issue-before-period-end",
+          "rule": "due-before-issue",
+          "line": 9,
+          "clean": "Issue date: September 18, 2026",
+          "planted": "Issue date: August 18, 2026"
+        },
+        {
+          "kind": "dependants",
+          "rule": "fact-conflict",
+          "line": 45,
+          "clean": "allowance is 1.",
+          "planted": "allowance is 2."
+        },
+        {
+          "kind": "taxable-amount",
+          "rule": "net-amount-mismatch",
+          "line": 53,
+          "clean": "Taxable income: $19,780.00",
+          "planted": "Taxable income: $19,870.00"
+        },
+        {
+          "kind": "withheld-total",
+          "rule": "total-mismatch",
+          "line": 68,
+          "clean": "| $2,390.00 |",
+          "planted": "| $2,930.00 |"
+        },
+        {
+          "kind": "tax-year",
+          "rule": "period-label-conflict",
+          "line": 70,
+          "clean": "tax year 2026 up",
+          "planted": "tax year 2025 up"
+        },
+        {
+          "kind": "employee-name",
+          "rule": "name-variant",
+          "line": 72,
+          "clean": "Priya Raman should",
+          "planted": "Priya Rahman should"
+        },
+        {
+          "kind": "employee-number",
+          "rule": "reference-number-variant",
+          "line": 74,
+          "clean": "employee ID BF-30946",
+          "planted": "employee ID BF-30964"
+        }
+      ]
+    }
+  ]
+}

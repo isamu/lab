@@ -2,14 +2,16 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import {
   cleanFindingLines,
-  expectationChanges,
+  compareToExpected,
   expectationOf,
   formatRecall,
+  isCaught,
   misalignedPlants,
   parseExpectation,
   parseManifest,
   pickSets,
   recallByKind,
+  setsWithoutManifest,
   type PlantedDocument,
 } from "../scripts/planted-score.ts";
 
@@ -61,6 +63,16 @@ describe("parseManifest", () => {
     assert.throws(() => parseManifest({ documents: [fractional] }), /has no line/u);
   });
 
+  it("pairedLine は省けて、書いたなら別の行の番号でなければ止まる", () => {
+    assert.equal(parseManifest({ documents: [documents[0]] })[0]?.mistakes[0]?.pairedLine, undefined);
+    const paired = { ...documents[0], mistakes: [{ ...mistake("order", "due-before-issue", 11), pairedLine: 13 }] };
+    assert.equal(parseManifest({ documents: [paired] })[0]?.mistakes[0]?.pairedLine, 13);
+    [0, 2.5, "13", null, 11].forEach((pairedLine) => {
+      const bad = { ...documents[0], mistakes: [{ ...mistake("order", "due-before-issue", 11), pairedLine }] };
+      assert.throws(() => parseManifest({ documents: [bad] }), /ja\/one mistakes\[0\] has a pairedLine that is not another line/u);
+    });
+  });
+
   it("style は省けて、書いたなら名前でなければ止まる", () => {
     assert.equal(parseManifest({ documents: [documents[0]] })[0]?.style, undefined);
     assert.equal(parseManifest({ documents: [{ ...documents[0], style: "koyobun" }] })[0]?.style, "koyobun");
@@ -87,6 +99,39 @@ describe("misalignedPlants", () => {
     assert.deepEqual(misalignedPlants(document, ["保守費60,000円", "x"], ["x", "保守費50,000円"]), ['ja/two:2 total: clean line has no "60,000"']);
     assert.deepEqual(misalignedPlants(document, ["x", "保守費60,000円"], ["x"]), ['ja/two:2 total: planted line has no "50,000"']);
   });
+
+  it("組の相手の行は、どちらの版にもなければ言う", () => {
+    const paired: PlantedDocument = {
+      ...document,
+      mistakes: [{ kind: "total", rule: "total-mismatch", line: 2, pairedLine: 3, clean: "60,000", planted: "50,000" }],
+    };
+    assert.deepEqual(misalignedPlants(paired, ["x", "保守費60,000円", "y"], ["x", "保守費50,000円", "y"]), []);
+    assert.deepEqual(misalignedPlants(paired, ["x", "保守費60,000円", "y"], ["x", "保守費50,000円"]), [
+      "ja/two:2 total: paired line 3 is past the end of the document",
+    ]);
+  });
+});
+
+describe("isCaught", () => {
+  const paired = { kind: "enrolment-after-graduation", rule: "due-before-issue", line: 11, pairedLine: 13, clean: "a", planted: "b" };
+  const unpaired = mistake("enrolment-after-graduation", "due-before-issue", 11);
+
+  it("狙いの rule の指摘が、植えた行か組の相手の行にあれば見つけた", () => {
+    assert.equal(isCaught(paired, [{ rule: "due-before-issue", line: 11 }]), true);
+    assert.equal(isCaught(paired, [{ rule: "due-before-issue", line: 13 }]), true);
+  });
+
+  it("ほかの行の指摘、組の相手の行でもほかの rule の指摘は見逃し", () => {
+    assert.equal(isCaught(paired, [{ rule: "due-before-issue", line: 12 }]), false);
+    assert.equal(isCaught(paired, [{ rule: "date-range-reversed", line: 13 }]), false);
+    assert.equal(isCaught(paired, [{ rule: "date-range-reversed", line: 11 }]), false);
+    assert.equal(isCaught(paired, []), false);
+  });
+
+  it("組の相手を書かない誤りは、植えた行だけを見る", () => {
+    assert.equal(isCaught(unpaired, [{ rule: "due-before-issue", line: 13 }]), false);
+    assert.equal(isCaught(unpaired, [{ rule: "due-before-issue", line: 11 }]), true);
+  });
 });
 
 describe("recallByKind", () => {
@@ -106,6 +151,21 @@ describe("recallByKind", () => {
       { language: "ja", kind: "dangling", rule: "dangling-reference", found: 0, total: 1, missed: ["ja/one:5"] },
       { language: "en", kind: "total", rule: "total-mismatch", found: 0, total: 1, missed: ["en/one:2"] },
     ]);
+  });
+
+  it("組の相手の行に書いた指摘も、その誤りを見つけたと数える", () => {
+    const paired: PlantedDocument[] = [
+      {
+        id: "en/one",
+        language: "en",
+        genre: "legal/contract",
+        clean: "c",
+        planted: "p",
+        mistakes: [{ ...mistake("total", "total-mismatch", 2), pairedLine: 4 }],
+      },
+    ];
+    assert.deepEqual(recallByKind(paired, new Map([["en/one", [{ rule: "total-mismatch", line: 4 }]]]))[0]?.found, 1);
+    assert.deepEqual(recallByKind(paired, new Map([["en/one", [{ rule: "total-mismatch", line: 5 }]]]))[0]?.missed, ["en/one:2"]);
   });
 
   it("指摘の無い文書は、すべて見逃し", () => {
@@ -133,53 +193,99 @@ describe("cleanFindingLines", () => {
   });
 });
 
-describe("expectationChanges", () => {
+describe("compareToExpected", () => {
   const recalls = recallByKind(documents, new Map([["ja/one", [{ rule: "total-mismatch", line: 3 }]]]));
   const expected = expectationOf(recalls, ["ja/one.clean.md:4 total-mismatch"]);
+  const same = { regressions: [], improvements: [] };
+  const withRecall = (language: string, kind: string, score: string) => ({
+    ...expected,
+    recall: { ...expected.recall, [language]: { ...expected.recall[language], [kind]: score } },
+  });
 
   it("記録した形のまま読み戻せて、同じなら違いは無い", () => {
     assert.deepEqual(expected.recall, { ja: { total: "1/2", dangling: "0/1" }, en: { total: "0/1" } });
     const roundTrip = parseExpectation(JSON.parse(JSON.stringify(expected)));
-    assert.deepEqual(expectationChanges(roundTrip, expected), []);
+    assert.deepEqual(compareToExpected(roundTrip, expected), same);
   });
 
-  it("見つけた数が減れば dropped、増えれば changed、きれいな版の指摘の増減も言う", () => {
-    const worse = expectationOf(recallByKind(documents, new Map()), ["ja/one.clean.md:4 total-mismatch", "ja/two.clean.md:1 total-mismatch"]);
-    assert.deepEqual(expectationChanges(expected, worse), [
-      "  recall dropped: ja total 1/2 -> 0/2",
-      "  clean document gained: ja/two.clean.md:1 total-mismatch",
-    ]);
-    const better = expectationOf(
-      recallByKind(
-        documents,
-        new Map([
-          ["ja/one", [{ rule: "total-mismatch", line: 3 }]],
-          ["ja/two", [{ rule: "total-mismatch", line: 7 }]],
-        ]),
-      ),
-      [],
-    );
-    assert.deepEqual(expectationChanges(expected, better), [
-      "  recall changed: ja total 1/2 -> 2/2",
-      "  clean document lost: ja/one.clean.md:4 total-mismatch",
-    ]);
-  });
-
-  it("記録に無い種類・無くなった種類も違いとして言う", () => {
-    assert.deepEqual(expectationChanges({ recall: {}, clean: [] }, { recall: { en: { total: "0/1" } }, clean: [] }), [
-      "  recall changed: en total (none) -> 0/1",
-    ]);
-    assert.deepEqual(expectationChanges({ recall: { en: { total: "0/1" } }, clean: [] }, { recall: {}, clean: [] }), [
-      "  recall changed: en total 0/1 -> (none)",
-    ]);
-  });
-
-  it("読めない記録は空として扱う", () => {
-    assert.deepEqual(parseExpectation(null), { recall: {}, clean: [] });
-    assert.deepEqual(parseExpectation({ recall: { ja: { total: 3, dangling: "0/1" } }, clean: ["a", 1] }), {
-      recall: { ja: { dangling: "0/1" } },
-      clean: ["a"],
+  it("見つけた数が減れば落とす", () => {
+    assert.deepEqual(compareToExpected(expected, withRecall("ja", "total", "0/2")), {
+      regressions: ["  recall dropped: ja total 1/2 -> 0/2"],
+      improvements: [],
     });
+  });
+
+  it("きれいな版に記録に無い指摘が増えれば落とす", () => {
+    const gained = { ...expected, clean: [...expected.clean, "ja/two.clean.md:1 total-mismatch"] };
+    assert.deepEqual(compareToExpected(expected, gained), { regressions: ["  clean document gained: ja/two.clean.md:1 total-mismatch"], improvements: [] });
+  });
+
+  it("記録にある種類・言語が無くなれば落とす", () => {
+    const withoutEnglish = { ja: expected.recall["ja"] ?? {} };
+    assert.deepEqual(compareToExpected(expected, { ...expected, recall: withoutEnglish }), {
+      regressions: ["  kind no longer scored: en total 0/1 -> (none)"],
+      improvements: [],
+    });
+    const withoutDangling = { ...expected, recall: { ...expected.recall, ja: { total: "1/2" } } };
+    assert.deepEqual(compareToExpected(expected, withoutDangling).regressions, ["  kind no longer scored: ja dangling 0/1 -> (none)"]);
+  });
+
+  it("植えた数が変われば、上がっても落とす（manifest の変更は記録して受け入れる）", () => {
+    assert.deepEqual(compareToExpected(expected, withRecall("ja", "total", "3/3")), {
+      regressions: ["  planted count changed: ja total 1/2 -> 3/3"],
+      improvements: [],
+    });
+    assert.deepEqual(compareToExpected(expected, withRecall("en", "new-kind", "1/1")).regressions, ["  kind not in expected.json: en new-kind (none) -> 1/1"]);
+  });
+
+  it("見つけた数が増えたのは通して、良くなったと言う", () => {
+    assert.deepEqual(compareToExpected(expected, withRecall("ja", "total", "2/2")), { regressions: [], improvements: ["  recall rose: ja total 1/2 -> 2/2"] });
+  });
+
+  it("記録したきれいな版の指摘が消えたのは通して、良くなったと言う", () => {
+    assert.deepEqual(compareToExpected(expected, { ...expected, clean: [] }), {
+      regressions: [],
+      improvements: ["  clean document lost: ja/one.clean.md:4 total-mismatch"],
+    });
+  });
+
+  it("良くなった所と悪くなった所が混ざれば、両方を分けて言う", () => {
+    const mixed = { recall: { ja: { total: "2/2", dangling: "0/1" }, en: { total: "0/1" } }, clean: ["ja/two.clean.md:1 total-mismatch"] };
+    assert.deepEqual(compareToExpected(expected, mixed), {
+      regressions: ["  clean document gained: ja/two.clean.md:1 total-mismatch"],
+      improvements: ["  recall rose: ja total 1/2 -> 2/2", "  clean document lost: ja/one.clean.md:4 total-mismatch"],
+    });
+  });
+
+  it("読めない数え方は落とす", () => {
+    assert.deepEqual(compareToExpected(withRecall("ja", "total", "?"), expected).regressions, ["  unreadable score: ja total ? -> 1/2"]);
+  });
+});
+
+describe("parseExpectation", () => {
+  it("記録を読む", () => {
+    assert.deepEqual(parseExpectation({ recall: { ja: { total: "1/2" } }, clean: ["a"] }), { recall: { ja: { total: "1/2" } }, clean: ["a"] });
+    assert.deepEqual(parseExpectation({ recall: {}, clean: [] }), { recall: {}, clean: [] });
+  });
+
+  it("形の悪い記録は、どこが悪いかを言って止まる", () => {
+    assert.throws(() => parseExpectation(null, "x/expected.json"), /x\/expected.json is not an object with recall and clean/u);
+    assert.throws(() => parseExpectation([], "x"), /x is not an object/u);
+    assert.throws(() => parseExpectation({ clean: [] }), /expected.json has no recall object/u);
+    assert.throws(() => parseExpectation({ recall: { ja: "1/2" }, clean: [] }), /recall.ja is not an object of kinds/u);
+    assert.throws(() => parseExpectation({ recall: { ja: { total: 3 } }, clean: [] }), /recall.ja.total is 3, not "found\/total"/u);
+    assert.throws(() => parseExpectation({ recall: { ja: { total: "3/2" } }, clean: [] }), /recall.ja.total is "3\/2"/u);
+    assert.throws(() => parseExpectation({ recall: { ja: { total: "" } }, clean: [] }), /recall.ja.total is ""/u);
+    assert.throws(() => parseExpectation({ recall: {} }), /has no clean list/u);
+    assert.throws(() => parseExpectation({ recall: {}, clean: ["a", 1] }), /has no clean list/u);
+  });
+});
+
+describe("setsWithoutManifest", () => {
+  it("記録だけ残って manifest の無い組を名前順に", () => {
+    assert.deepEqual(setsWithoutManifest(["tech", "email", "contracts"], ["contracts"]), ["email", "tech"]);
+    assert.deepEqual(setsWithoutManifest(["contracts"], ["contracts", "tech"]), []);
+    assert.deepEqual(setsWithoutManifest([], []), []);
   });
 });
 

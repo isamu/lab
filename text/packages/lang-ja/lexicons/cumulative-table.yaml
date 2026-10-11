@@ -1,0 +1,35 @@
+# 当月の列と累計の列のある表（給与明細、売上の月報、予算の執行表）で、列の見出しと行の名前が言う役割（cumulative-below-current）。
+# group: current はこの期間の列、cumulative は累計の列、prior は前の期間までの列（「前月までの累計」は当月を含まないので比べない）。
+# prior、level、cumulative、current の順に先に見るので、「前月累計」は前の期間、「当月累計」は累計の列になる。
+# level は期間ごとに足し上げない値（平均、単価、率、残高）を言う語。行の名前にあればその行を、見出しにあればその列を比べない。
+id: cumulative-table
+language: ja
+entries:
+  - { pattern: 当月, group: current }
+  - { pattern: 今月, group: current }
+  - { pattern: 本月, group: current }
+  - { pattern: 単月, group: current }
+  - { pattern: 当期, group: current }
+  - { pattern: 今期, group: current }
+  - { pattern: 今回, group: current }
+  - { pattern: 当四半期, group: current }
+  - { pattern: 当第, group: current }
+  - { pattern: 累計, group: cumulative }
+  - { pattern: 累積, group: cumulative }
+  - { pattern: 年初来, group: cumulative }
+  - { pattern: 前月, group: prior }
+  - { pattern: 先月, group: prior }
+  - { pattern: 前期, group: prior }
+  - { pattern: 前年, group: prior }
+  - { pattern: 昨年, group: prior }
+  - { pattern: 前回, group: prior }
+  - { pattern: 繰越, group: prior }
+  - { pattern: 平均, group: level }
+  - { pattern: 単価, group: level }
+  - { pattern: 率, group: level }
+  - { pattern: 残高, group: level }
+  - { pattern: 残日数, group: level }
+  - { pattern: 残数, group: level }
+  - { pattern: 在庫, group: level }
+  - { pattern: 人数, group: level }
+  - { pattern: 時給, group: level }

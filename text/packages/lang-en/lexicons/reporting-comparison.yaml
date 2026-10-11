@@ -1,5 +1,6 @@
 # Words for a period that is compared with. A period name in a sentence, a table heading cell or a section with one of
-# these may differ from the document's period ("compared with Q2 FY2025", "prior year").
+# these may differ from the document's period ("compared with Q2 FY2025", "prior year", "carried
+# forward from tax year 2025 or earlier").
 id: reporting-comparison
 language: en
 entries:
@@ -19,3 +20,10 @@ entries:
   - pattern: same period
   - pattern: same quarter
   - pattern: restated
+  - pattern: or earlier
+  - pattern: or later
+  - pattern: earlier years
+  - pattern: carryforward
+  - pattern: carry forward
+  - pattern: carried forward
+  - pattern: carryover

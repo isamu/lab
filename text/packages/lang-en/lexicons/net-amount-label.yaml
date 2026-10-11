@@ -1,7 +1,10 @@
 # Names of the amounts a subtraction links (net-amount-mismatch). group is gross (the amount before deductions), deduction
-# (the total taken off) or net (what is left). When one table or one section has one word of each group, each with an
-# amount, the net is compared with gross minus deduction. A table heading or a label that is only this word (a unit in
-# brackets aside) is read.
+# (the total taken off), net (what is left) or taxable (the amount tax is figured on, which a tax statement writes as gross
+# minus deduction). When one table or one section has one word each of gross, deduction and net, each with an amount, the
+# net is compared with gross minus deduction; with no net, the taxable amount is (where a net is also named, the
+# deductions are what is paid out, not what tax is figured on, so the taxable amount is not compared). A table heading or
+# a label that is only this word (a unit in brackets aside) is read. Taxable wages and Taxable pay are left out: on a
+# payslip they sit beside a Total deductions that includes the tax itself.
 id: net-amount-label
 language: en
 entries:
@@ -11,6 +14,7 @@ entries:
   - { pattern: Gross wages, group: gross }
   - { pattern: Gross amount, group: gross }
   - { pattern: Total earnings, group: gross }
+  - { pattern: Total earnings for the year, group: gross }
   - { pattern: Total deductions, group: deduction }
   - { pattern: Total deduction, group: deduction }
   - { pattern: Deductions total, group: deduction }
@@ -20,3 +24,5 @@ entries:
   - { pattern: Net earnings, group: net }
   - { pattern: Net amount, group: net }
   - { pattern: Take-home pay, group: net }
+  - { pattern: Taxable income, group: taxable }
+  - { pattern: Taxable amount, group: taxable }

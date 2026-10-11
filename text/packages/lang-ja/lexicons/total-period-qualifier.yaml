@@ -1,0 +1,10 @@
+# 合計の語の前に続けて書いても合計の行のままの、合計が足す期間の語。「年間合計」「年計」「通年合計」は「合計」「計」と読む。
+# 前の年の合計（前年合計、昨年合計）は別の期間の量なので、ここには入れない。見出しの頭にあるときだけ除く。
+# この語で読んだ合計が内訳の和を一年に直した額（ちょうど4倍・12倍・52倍。月額の内訳に年間合計）なら比べない。
+id: total-period-qualifier
+language: ja
+entries:
+  - { pattern: 年間, position: before }
+  - { pattern: 通年, position: before }
+  - { pattern: 年度, position: before }
+  - { pattern: 年, position: before }

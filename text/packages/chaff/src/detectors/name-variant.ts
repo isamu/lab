@@ -1,7 +1,7 @@
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { cuedNamesIn, mentionsIn, nameVariants, suffixedNamesIn, withKnownNeighbours, type NameMention, type VariantChars } from "../name-variants.ts";
 import type { SpellingInput } from "../name-spelling-chars.ts";
-import type { CharReadings } from "../name-char-reading.ts";
+import { readingOfWords, type CharReadings } from "../name-char-reading.ts";
 import { nameCueAt, type NameCues } from "../name-cue.ts";
 import { quoteAt } from "./structure-tree.ts";
 import { companyMentionsIn, companyVariants, type CompanyForm, type IsProper } from "../company-names.ts";
@@ -15,6 +15,7 @@ import type { Span, TableCell, Token } from "../plugin.ts";
 import { proseWithCells } from "../table-cells.ts";
 import { modelCodeFindings } from "./name-variant-model-codes.ts";
 import { fullNameGaps, joinFullNames, spacedOnly } from "../person-full-name.ts";
+import { spacedPersonNamesIn } from "../spaced-person-name.ts";
 import { labelledSpans, orderNamesOf, quotedSpans, stemOf, titleCaseSpans, wordOrderVariants, type OrderWord } from "../name-word-order.ts";
 
 // 人の名前と読ませる敬称（様、さん）は語彙表 person-suffix、人を指す前置き（担当の）は person-lead、名前のすぐ後ろに来る語
@@ -192,6 +193,37 @@ const orderFindings = (doc: ProseDocument, prose: string, reported: readonly Rep
     .map(({ name, usual }) => ({ offset: name.offset, name: name.surface, usual, kind: "order" }));
 };
 
+const BLANK = /^\s*$/u;
+
+/** 範囲をちょうど覆う、空白でない語。範囲の端が語の途中なら無い。 */
+const wordsCovering = (tokens: readonly Token[], startAt: ReadonlyMap<number, number>, span: Span): Token[] | undefined => {
+  const first = startAt.get(span.start);
+  if (first === undefined) return undefined;
+  const window = tokens.slice(first, first + MAX_PLACE_TOKENS);
+  const covering = window.slice(0, window.findIndex((token) => token.span.end >= span.end) + 1);
+  return covering.at(-1)?.span.end === span.end ? covering.filter((token) => !BLANK.test(token.surface)) : undefined;
+};
+
+/**
+ * 空白を挟んだ姓と名で、敬称か肩書きが付くか、人を書く欄にあるもの（高瀬 誠部長、氏名：森川 大輔）。語は解析器の切り方のまま、
+ * 読みは語の読みをつなぐ。解析器の語の切れ目と姓・名の端が合わないものは読まない。
+ */
+const spacedNameMentionsOf = (doc: ProseDocument, prose: string, charReadings: CharReadings): NameMention[] => {
+  const cues = { suffixes: patternsOf(doc, "person-suffix"), titles: patternsOf(doc, "person-title"), labels: patternsOf(doc, "person-label") };
+  const tokens = tokensOf(doc);
+  const startAt = new Map(tokens.map((token, index) => [token.span.start, index]));
+  return spacedPersonNamesIn(prose, cues).flatMap(({ surname, given }): NameMention[] => {
+    const surnameWords = wordsCovering(tokens, startAt, surname);
+    const givenWords = wordsCovering(tokens, startAt, given);
+    if (surnameWords === undefined || givenWords === undefined) return [];
+    const words = [...surnameWords, ...givenWords];
+    const surface = `${prose.slice(surname.start, surname.end)} ${prose.slice(given.start, given.end)}`;
+    return [
+      { surface, offset: surname.start, reading: readingOfWords(words, charReadings), words: words.map((word) => word.surface), person: true, cue: "person" },
+    ];
+  });
+};
+
 /** 人・製品・会社の名前の現れ。解析器が固有名詞と読む語、敬称の付く名前、前後の語で名前と読める漢字。空白を挟んだ姓と名は一つ。 */
 const nameMentionsOf = (doc: ProseDocument, prose: string, chars: VariantChars): NameMention[] => {
   const cues: NameCues = { leads: patternsOf(doc, "person-lead"), suffixes: patternsOf(doc, "person-suffix"), particles: patternsOf(doc, "name-particle") };
@@ -202,7 +234,12 @@ const nameMentionsOf = (doc: ProseDocument, prose: string, chars: VariantChars):
     const cue = mention.cue ?? nameCueAt(prose, mention.offset, mention.surface, cues);
     return cue === undefined ? mention : { ...mention, cue };
   });
-  return withKnownNeighbours(joinFullNames(cued, fullNameGaps(tokensOf(doc), cues.suffixes)), prose).toSorted((left, right) => left.offset - right.offset);
+  const joined = joinFullNames(cued, fullNameGaps(tokensOf(doc), cues.suffixes));
+  const spaced = spacedNameMentionsOf(doc, prose, charReadings);
+  const outside = joined.filter(
+    (mention) => !spaced.some((name) => name.offset < mention.offset + mention.surface.length && mention.offset < name.offset + name.surface.length),
+  );
+  return withKnownNeighbours([...outside, ...spaced], prose).toSorted((left, right) => left.offset - right.offset);
 };
 
 /** 一語の名前の中で同じ音を書く字（ヶ・ケ・が）は語彙表 name-spelling-char が組（group）ごとに言う。 */

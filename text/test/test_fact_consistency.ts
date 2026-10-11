@@ -90,6 +90,17 @@ describe("fact-conflict", () => {
     assert.deepEqual(conflictEn("For adults, the fee is $30.", "", "For children, the fee is $10."), []);
   });
 
+  it("a number with no unit ends at a comma followed by a clause, not at one followed by a number (en)", () => {
+    const table = (prose: string): string[] => conflictEn("| Item | Count |", "| --- | --- |", "| Seats | 2 |", "", prose);
+    assert.deepEqual(table("Seats: 3, as agreed."), ["Seats:3≠2"]);
+    assert.deepEqual(table("Seats: 2, as agreed."), []);
+    assert.deepEqual(table("Seats: 2, 3 or 4."), []);
+    assert.deepEqual(table("Seats: 3, 4 or 5."), []);
+    assert.deepEqual(table("Seats: 3, or 4 on request."), []);
+    assert.deepEqual(table("Seats: 2,500."), ["Seats:2,500≠2"]);
+    assert.deepEqual(table("Seats: 3,as agreed."), []);
+  });
+
   it("three or more values for one label are a list, not a slip", () => {
     assert.deepEqual(conflictEn("- Seats: 30", "- Seats: 40", "- Seats: 50"), []);
   });

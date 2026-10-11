@@ -7,7 +7,7 @@ import { cellsOf, tablesOf } from "../facts/table-facts.ts";
 import { withoutEdgeMarks } from "../facts/trim-marks.ts";
 import { proseAndTablesOf } from "../table-text.ts";
 import { quoteAt } from "./structure-tree.ts";
-import { NET_ROLES, sectionNetMismatch, tableNetMismatches, type LabelledLine, type NetCell, type NetIssue, type NetWords } from "../structure/net-amount.ts";
+import { sectionNetMismatch, tableNetMismatches, type LabelledLine, type NetCell, type NetIssue, type NetWords } from "../structure/net-amount.ts";
 
 const RULE = "net-amount-mismatch";
 const HEADING = /^#{1,6}[ \t]/u;
@@ -24,6 +24,7 @@ const wordsOf = (doc: ProseDocument): NetWords => ({
     gross: patternsOf(doc, "net-amount-label", "gross"),
     deduction: patternsOf(doc, "net-amount-label", "deduction"),
     net: patternsOf(doc, "net-amount-label", "net"),
+    taxable: patternsOf(doc, "net-amount-label", "taxable"),
   },
   magnitudes: patternsOf(doc, "amount-multiplier"),
   percentUnits: patternsOf(doc, "percent-unit"),
@@ -67,7 +68,7 @@ const sectionIssues = (lines: readonly Line[], source: string, words: NetWords):
 
 export const netAmountMismatch: Detector = (doc): Finding[] => {
   const words = wordsOf(doc);
-  if (NET_ROLES.some((role) => words.labels[role].length === 0)) return [];
+  if (words.labels.gross.length === 0 || words.labels.deduction.length === 0) return [];
   const lines = linesOf(proseAndTablesOf(doc));
   return [...tableIssues(lines, words), ...sectionIssues(lines, doc.source, words)]
     .toSorted((left, right) => left.offset - right.offset)

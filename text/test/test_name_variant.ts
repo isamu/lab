@@ -15,6 +15,7 @@ import {
   type NameMention,
 } from "../packages/chaff/src/name-variants.ts";
 import type { Token } from "../packages/chaff/src/plugin.ts";
+import { spacedPersonNamesIn } from "../packages/chaff/src/spaced-person-name.ts";
 
 // 同じ名前の書き分け（name-variant）。例文はすべて自作。
 
@@ -145,6 +146,53 @@ describe("name-variant: 同じ名前の書き分け", () => {
     assert.deepEqual(variants("ご宿泊者：森下 千尋 様\n\n森下 千尋 様のご予約です。\n\n森下 千里 様のお越しです。\n", ja), []);
     assert.deepEqual(variants("ご宿泊者：森下 千尋 様\n\n森下 千尋 様のご予約です。\n\n大西 千裕 様のお越しです。\n", ja), []);
     assert.deepEqual(variants("千尋 様のご予約です。千裕 様のお越しです。\n", ja), []);
+  });
+  it("人を書く欄（氏名：）の名前も、その名前の現れに数える。正しく書いた所を指さない", () => {
+    const certificate = "氏名：小野 大輔\n\n小野 大介 さんは、本校の課程を修了しました。\n\n証明書の追加は、小野 大輔 さんご本人がお申し込みください。\n";
+    assert.deepEqual(variants(certificate, ja), ["「小野 大介」は、ほかの所では同じ読みの「小野 大輔」と書いています"]);
+  });
+
+  it("役割の欄（承認者：、承認：）と肩書き（部長）の付く、空白を挟んだ姓と名を人の名前と読む", () => {
+    const claim = "承認者：経理部長 高瀬 誠\n\n交通費は、高瀬 誠部長の承認の後に支給します。\n\n承認：髙瀬 誠（2026年4月1日）\n";
+    assert.deepEqual(variants(claim, ja), ["「髙瀬 誠」は、ほかの所では字体の違う同じ字で「高瀬 誠」と書いています"]);
+  });
+
+  it("解析器が名を二語に切り（未 咲）、姓を所によって別に読んでも（サイキ、サエキ）、名前まるごとの読みで比べる", () => {
+    const certificate = "氏名：佐伯 美咲\n\n佐伯 未咲 さんの成績を証明します。\n\nお問い合わせの際は、佐伯 美咲 さんご本人の同意書を添えてください。\n";
+    assert.deepEqual(variants(certificate, ja), ["「佐伯 未咲」は、ほかの所では同じ読みの「佐伯 美咲」と書いています"]);
+  });
+
+  it("欄に書いた、読みの違う別の人の名前は言わない", () => {
+    assert.deepEqual(variants("申請者：佐伯 拓海\n\n承認者：佐伯 拓也\n\n佐伯 拓海 さんの申請を承認します。\n", ja), []);
+    assert.deepEqual(variants("承認者：経理部長 高瀬 誠\n\n高瀬 誠部長が承認します。\n", ja), []);
+  });
+});
+
+describe("spacedPersonNamesIn: 空白を挟んだ姓と名", () => {
+  const cues = { suffixes: ["様", "さん"], titles: ["部長"], labels: ["氏名", "承認者", "承認"] };
+  const names = (source: string): string[] =>
+    spacedPersonNamesIn(source, cues).map(({ surname, given }) => `${source.slice(surname.start, surname.end)}|${source.slice(given.start, given.end)}`);
+
+  it("敬称か肩書きが付くか、人を書く欄の行の終わりにある", () => {
+    assert.deepEqual(names("藤井 健太 様の口座"), ["藤井|健太"]);
+    assert.deepEqual(names("藤井 健太様名義"), ["藤井|健太"]);
+    assert.deepEqual(names("高瀬 誠部長の承認"), ["高瀬|誠"]);
+    assert.deepEqual(names("承認者：経理部長 高瀬 誠"), ["高瀬|誠"]);
+    assert.deepEqual(names("- 氏名：森川 大輔\n"), ["森川|大輔"]);
+    assert.deepEqual(names("承認：髙瀬 誠（2026年4月1日）"), ["髙瀬|誠"]);
+    assert.deepEqual(names("𠮷田 一郎 様"), ["𠮷田|一郎"]);
+    assert.deepEqual(names("承認：佐藤 太郎（代理）と田中 一郎"), ["田中|一郎"]);
+  });
+
+  it("欄でない行、行の途中、長い漢字の連なり、肩書きの後ろは名前と読まない", () => {
+    assert.deepEqual(names("期間：令和 六年"), []);
+    assert.deepEqual(names("承認者：高瀬 誠、田中 一郎"), []);
+    assert.deepEqual(names("氏名：高瀬 誠 の欄"), []);
+    assert.deepEqual(names("株式会社高瀬 誠様"), []);
+    assert.deepEqual(names("部長 高瀬様"), []);
+    assert.deepEqual(names("第1条 目的"), []);
+    assert.deepEqual(names("高瀬 誠部品"), []);
+    assert.deepEqual(names(""), []);
   });
 });
 

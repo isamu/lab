@@ -5,6 +5,9 @@ how_to_find: period-label-conflict
 # Period names and their kinds are reporting-period-frame; the title's results words reporting-results-word; the period
 # line's words reporting-period-line; the words that excuse a name reporting-comparison and reporting-forecast; the words
 # for the current period reporting-current, and phrases that hold one without naming a period reporting-current-not.
+# Years a name marks by itself (令和8年分, Tax Year 2026) are reporting-year-frame, read without a results word; era
+# years become Western years by calendar-era's first_year; words that hold a name's form without being one (分担金) are
+# reporting-period-not.
 severity: warning
 
 name:
@@ -12,8 +15,8 @@ name:
   en: A period other than the one the title reports
 
 why:
-  ja: 「2027年3月期 第2四半期決算短信」の表の見出しが「当第3四半期累計」だと、読み手はどちらの期間の数字なのかを問い合わせることになります。前の期の文書を写して直し忘れたとき、四半期ごとに使い回す表の見出しを直し忘れたときに起きます。題（最初の行）が「決算」「業績」の語と一緒に書いた期間（第2四半期、2027年3月期、上半期、FY2026）を文書の期間とし、題に無い種類は頭の「対象期間：」の一行から補います。その後ろの今の業績を言う所、つまり表の見出しの升と、「当期」「当第」「業績」のある文と見出しに、同じ種類の別の期間があれば指します。前年同期、前期、前年同四半期、予想、見通し、次期のような比べる相手や先の期間の語がその升、文、節の見出しにあれば比べません。文書の期間と一緒に書いた期間（| 2025年3月期 | 2026年3月期 |）も比べる相手として読みます。
-  en: 'When a release titled "Second Quarter Results" heads its table "Q3 FY2027", the reader has to ask which period the figures are for. It happens when last period''s release is copied and one label is not updated, or when a table reused every quarter keeps its old heading. The period the title (the first line) names together with a results word ("Results", "Earnings") is the document''s period: a quarter, a half or a fiscal year (Q2, first half, FY2026, fiscal year ending March 31, 2027). A kind the title does not name is taken from a "Reporting period:" line at the top. After that, a period of the same kind that differs is reported where the text speaks of the current results: in a table heading cell, and in a sentence or heading with "results" or "this quarter". A cell, sentence or section heading with a word for a comparison or a later period ("prior year", "a year earlier", "compared with", "forecast", "outlook") is not compared, and neither is a period written next to the document''s own (| FY2025 | FY2026 |).'
+  ja: 「2027年3月期 第2四半期決算短信」の表の見出しが「当第3四半期累計」だと、読み手はどちらの期間の数字なのかを問い合わせることになります。前の期の文書を写して直し忘れたとき、四半期ごとに使い回す表の見出しを直し忘れたときに起きます。題（最初の行）が「決算」「業績」の語と一緒に書いた期間（第2四半期、2027年3月期、上半期、FY2026）を文書の期間とし、題に無い種類は頭の「対象期間：」の一行から補います。その後ろの今の業績を言う所、つまり表の見出しの升と、「当期」「当第」「業績」のある文と見出しに、同じ種類の別の期間があれば指します。前年同期、前期、前年同四半期、予想、見通し、次期のような比べる相手や先の期間の語がその升、文、節の見出しにあれば比べません。文書の期間と一緒に書いた期間（| 2025年3月期 | 2026年3月期 |）も比べる相手として読みます。源泉徴収の明細書のように、題が「令和8年分」「2026年分」と年を言う文書は、決算の文書でなくても読み、本文のどこかに「2025年分」と別の年分があれば指します。元号の年は西暦にして比べるので、令和8年分と2026年分は同じ年です。
+  en: 'When a release titled "Second Quarter Results" heads its table "Q3 FY2027", the reader has to ask which period the figures are for. It happens when last period''s release is copied and one label is not updated, or when a table reused every quarter keeps its old heading. The period the title (the first line) names together with a results word ("Results", "Earnings") is the document''s period: a quarter, a half or a fiscal year (Q2, first half, FY2026, fiscal year ending March 31, 2027). A kind the title does not name is taken from a "Reporting period:" line at the top. After that, a period of the same kind that differs is reported where the text speaks of the current results: in a table heading cell, and in a sentence or heading with "results" or "this quarter". A cell, sentence or section heading with a word for a comparison or a later period ("prior year", "a year earlier", "compared with", "forecast", "outlook") is not compared, and neither is a period written next to the document''s own (| FY2025 | FY2026 |). A document whose title names its year with a marker ("Tax Year 2026", "the 2026 tax year"), such as an annual tax statement, is read even when it is not a results release, and a year with the same marker that differs anywhere in the body ("tax year 2025") is reported.'
 
 message:
   ja: 「{label}」は、題の期間「{stated}」と違います
@@ -31,8 +34,8 @@ off_for:
 
 group: facts
 summary:
-  ja: 「第2四半期決算短信」の表の見出しの「当第3四半期」のように、題の決算期間と同じ種類の別の期間
-  en: A period of the title's kind but another one, such as Q3 in a Q2 release
+  ja: 第2四半期決算の表の「当第3四半期」、令和8年分の明細の「2025年分」のような、題と同じ種類の別の期間
+  en: "Not the title's period: Q3 in a Q2 release, tax year 2025 in a 2026 statement"
 example:
   ja:
     before: |
@@ -58,8 +61,8 @@ example:
       Consolidated results for FY2026 are shown below.
 
 not_flagged:
-  ja: 題に「決算」「業績」などの語と期間の名前が無い文書は読みません。前年同期、前期、前年同四半期、前回、比べ、予想、見通し、計画、次期のある升、文、節の中の期間、文書の期間と並べて書いた期間は比べません。第2四半期累計の文書の「第1四半期」のように文書の期間より前の四半期や半期は、累計の中の一部のことがあるので、「当第1四半期」のように今の期間の語が付くときだけ指します。2027年3月期と2026年度のように書き方の形が違う期間どうしは比べません。
-  en: 'A document whose title has no results word and period name is not read. A period in a cell, sentence or section with a word for a comparison or a later period ("prior", "previous", "a year earlier", "compared with", "forecast", "outlook", "expect", "next year"), and one written next to the document''s own period, are not compared. A quarter or half before the document''s (Q1 in a six-month release) may be a part of the period and is reported only with a word for the current period ("this quarter"). A fiscal year named by its end date and one named by its start (2027年3月期 and 2026年度) are not compared with each other.'
+  ja: 題に「決算」「業績」などの語と期間の名前が無い文書は読みません。前年同期、前期、前年同四半期、前回、比べ、予想、見通し、計画、次期のある升、文、節の中の期間、文書の期間と並べて書いた期間は比べません。第2四半期累計の文書の「第1四半期」のように文書の期間より前の四半期や半期は、累計の中の一部のことがあるので、「当第1四半期」のように今の期間の語が付くときだけ指します。2027年3月期と2026年度のように書き方の形が違う期間どうしは比べません。年分の文書では、「2025年」「2025年度」のように「年分」の付かない年、前年、比較、以前、繰越のある文、升、節の中の年、「分担金」のように「年分」が別の語の一部のときは比べません。
+  en: 'A document whose title has no results word and period name is not read. A period in a cell, sentence or section with a word for a comparison or a later period ("prior", "previous", "a year earlier", "compared with", "forecast", "outlook", "expect", "next year"), and one written next to the document''s own period, are not compared. A quarter or half before the document''s (Q1 in a six-month release) may be a part of the period and is reported only with a word for the current period ("this quarter"). A fiscal year named by its end date and one named by its start (2027年3月期 and 2026年度) are not compared with each other. In a document whose title names a tax year, a year without the same marker ("compared with 2025", "in 2025"), and one in a sentence, cell or section with a comparison word ("prior year", "last year", "or earlier", "carried forward"), are not compared. "For the year 2026" is not read as a tax year: annual reports use it for any year.'
 level_meaning:
   ja: 題の決算期間と同じ種類の別の期間を、今の業績を言う所に書いたとき指摘
   en: reported when a period of the title's kind but another value names the current results
