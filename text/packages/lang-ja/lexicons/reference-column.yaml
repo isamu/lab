@@ -1,0 +1,16 @@
+# 明細の表で、行ごとに一枚の領収書・請求書・伝票の番号を書く列の見出し（reference-number-repeated）。見出しがこの語と
+# そのまま同じ列だけを読む（全角と半角、大文字と小文字、空白は区別しない）。同じ番号が行をまたいで正しく繰り返す列
+# （科目のコード、口座番号、日付）は載せない。
+id: reference-column
+language: ja
+entries:
+  - pattern: 領収書番号
+  - pattern: 領収書No.
+  - pattern: 領収書No
+  - pattern: 領収証番号
+  - pattern: 領収証No.
+  - pattern: レシート番号
+  - pattern: 伝票番号
+  - pattern: 伝票No.
+  - pattern: 請求書番号
+  - pattern: 請求書No.
