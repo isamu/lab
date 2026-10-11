@@ -1,0 +1,63 @@
+id: reference-number-repeated
+layer: L3
+status: stable
+how_to_find: reference-number-repeated
+severity: warning
+
+name:
+  ja: 明細の表で、同じ領収書・請求書の番号が二つの行にある
+  en: The same receipt or invoice number on two rows of an itemised table
+
+why:
+  ja: 経費精算書や請求の明細では、一つの行が一枚の領収書や請求書で、その番号は表の中で一度しか出てきません。同じ番号が二つの行にあれば、同じ領収書を二度請求しているか、行を写して番号を直し忘れたかのどちらかです。どちらも、読み手は番号を一つずつ照らし合わせないかぎり気づきません。列は見出しの語（領収書番号、伝票番号、請求書番号、Receipt no.、Invoice no.、Ref.）だけで決めます。番号は数字を一つ以上含む升だけを読み、空の升、「-」、「なし」、「N/A」は番号として数えません。全角と半角、大文字と小文字、空白は同じ番号として比べます。
+  en: In an expense claim or an invoice's line items, each row is one receipt or invoice, and its number appears once in the table. The same number on two rows means either the same receipt is claimed twice or a row was copied and its number not changed. Neither is seen unless the reader checks the numbers one by one. The column is decided by its heading words alone (Receipt no., Invoice no., Voucher no., Ref.). Only cells holding at least one digit are read as numbers; a blank cell, a dash, "none" or "N/A" is not. Case, full-width and half-width forms and spaces are ignored when comparing.
+
+message:
+  ja: 「{heading}」の「{number}」は、{firstLine} 行目の行にもあります
+  en: '"{number}" in the column "{heading}" is already on line {firstLine}'
+
+how_to_fix:
+  ja: 二つの行が別の領収書なら正しい番号に直し、同じ領収書なら一方の行を消してください。
+  en: If the two rows are different receipts, correct the number; if they are the same receipt, remove one of the rows.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 明細の表で、同じ領収書や請求書の番号が二つの行にある所
+  en: The same receipt or invoice number written on two rows of one itemised table
+example:
+  ja:
+    before: |
+      | 日付 | 領収書番号 | 内容 | 金額 |
+      | --- | --- | --- | --- |
+      | 2026年4月6日 | K-118 | 電車代 | 480円 |
+      | 2026年4月8日 | K-119 | 文具代 | 1,210円 |
+      | 2026年4月9日 | K-119 | タクシー代 | 2,350円 |
+    after: |
+      | 日付 | 領収書番号 | 内容 | 金額 |
+      | --- | --- | --- | --- |
+      | 2026年4月6日 | K-118 | 電車代 | 480円 |
+      | 2026年4月8日 | K-119 | 文具代 | 1,210円 |
+      | 2026年4月9日 | K-120 | タクシー代 | 2,350円 |
+  en:
+    before: |
+      | Date | Receipt no. | Description | Amount |
+      | --- | --- | --- | --- |
+      | April 6, 2026 | K-118 | Train fare | $12.40 |
+      | April 8, 2026 | K-119 | Stationery | $21.10 |
+      | April 9, 2026 | K-119 | Taxi | $35.50 |
+    after: |
+      | Date | Receipt no. | Description | Amount |
+      | --- | --- | --- | --- |
+      | April 6, 2026 | K-118 | Train fare | $12.40 |
+      | April 8, 2026 | K-119 | Stationery | $21.10 |
+      | April 9, 2026 | K-120 | Taxi | $35.50 |
+
+not_flagged:
+  ja: 見出しが領収書・伝票・請求書の番号の語でない列（科目のコード、口座番号、日付、「番号」だけの列）は読みません。番号の列が二つ以上ある表も読みません。数字を含まない升（空、「-」、「なし」、「N/A」）は比べません。二つ以上の番号が繰り返す表や、一つの番号が三つ以上の行にある表は、一枚の伝票の行をまとめて書いた表（請求書とその入金、一枚の領収書の内訳）なので比べません。表が違えば同じ番号でもかまいません。
+  en: 'A column whose heading is not a receipt, voucher or invoice number word (a category code, an account number, a date, a bare "No.") is not read, nor is a table with two such columns. A cell with no digit (blank, a dash, "none", "N/A") is not compared. A table where two or more numbers repeat, or one number is on three rows or more, groups the rows of one slip (an invoice and its payment, the parts of one receipt) and is not compared. The same number in two different tables is fine.'
