@@ -1,0 +1,33 @@
+# Headings that say what a column of an order quantity table holds (delivered-over-ordered, backorder-mismatch): the
+# backorder section of a delivery note, a list of open orders. group: ordered is the quantity ordered, delivered the quantity
+# delivered or shipped, backordered what is still to come. backordered is looked at first, so "Back ordered" is what is left,
+# not what was ordered. A Latin word stands as a whole word: "ordered" is not in "Backordered". A heading that names both
+# ordered and delivered ("Ordered / Delivered") is not read. group: qualifier is a word that, after a number, makes it no
+# exact count ("10 or more", "50 approx."); such a cell is not compared.
+id: order-quantity-column
+language: en
+entries:
+  - { pattern: ordered, group: ordered }
+  - { pattern: order qty, group: ordered }
+  - { pattern: order quantity, group: ordered }
+  - { pattern: delivered, group: delivered }
+  - { pattern: shipped, group: delivered }
+  - { pattern: ship qty, group: delivered }
+  - { pattern: ship quantity, group: delivered }
+  - { pattern: backordered, group: backordered }
+  - { pattern: back ordered, group: backordered }
+  - { pattern: back-ordered, group: backordered }
+  - { pattern: backorder, group: backordered }
+  - { pattern: back order, group: backordered }
+  - { pattern: remaining, group: backordered }
+  - { pattern: outstanding, group: backordered }
+  - { pattern: undelivered, group: backordered }
+  - { pattern: or more, group: qualifier }
+  - { pattern: or less, group: qualifier }
+  - { pattern: or fewer, group: qualifier }
+  - { pattern: approx, group: qualifier }
+  - { pattern: approx., group: qualifier }
+  - { pattern: est, group: qualifier }
+  - { pattern: est., group: qualifier }
+  - { pattern: max, group: qualifier }
+  - { pattern: min, group: qualifier }

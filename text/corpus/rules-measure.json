@@ -833,6 +833,42 @@
         "falseAlarms": 0
       }
     },
+    "backorder-mismatch": {
+      "groups": {
+        "academic": {
+          "documents": 10,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 23,
+          "fired": 0
+        },
+        "business": {
+          "documents": 80,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 21,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 35,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 13,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 7,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 49,
+          "fired": 0
+        }
+      }
+    },
     "baito-keigo": {
       "groups": {
         "academic": {
@@ -2674,6 +2710,42 @@
         }
       }
     },
+    "delivered-over-ordered": {
+      "groups": {
+        "academic": {
+          "documents": 10,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 23,
+          "fired": 0
+        },
+        "business": {
+          "documents": 80,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 21,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 35,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 13,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 7,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 49,
+          "fired": 0
+        }
+      }
+    },
     "demonstrative-opener-run": {
       "groups": {
         "academic": {
@@ -3830,6 +3902,42 @@
         "planted": 5,
         "found": 5,
         "falseAlarms": 0
+      }
+    },
+    "gpa-mismatch": {
+      "groups": {
+        "academic": {
+          "documents": 10,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 23,
+          "fired": 0
+        },
+        "business": {
+          "documents": 80,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 21,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 35,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 13,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 7,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 49,
+          "fired": 0
+        }
       }
     },
     "hankaku-kana": {

@@ -1,0 +1,9 @@
+# Nouns of a quantity whose total need not be the sum of the rows listed above it: in a table of rooms, "Total area"
+# may include a hall or a closet no row lists. A total with one of these nouns ("Total area", "Total floor space") is
+# not read as a total line, even when the table's header names the noun ("| Room | Area |").
+id: total-noun-unsummed
+language: en
+entries:
+  - pattern: area
+  - pattern: space
+  - pattern: footage

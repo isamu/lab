@@ -1,0 +1,35 @@
+# 成績の評語と、それが表すグレードポイント（gpa-mismatch）。group は尺度の名前、weight はその評語の点。
+# 文書の評語がすべて入る尺度のどれでも点が同じときだけ、この表の点で GPA を計算し直す（A は S の尺度では 3、
+# A から F の尺度では 4 なので、S も D も無い文書は決まらず、比べない）。文書に「S（4）、A（3）」のような
+# 評語と点の対応があれば、それを先に使う。group: none は点の無い評語（認定、合、履修中）で、両方の和から外す。
+id: grade-point
+language: ja
+entries:
+  - { pattern: 秀, group: shu-yu, weight: 4 }
+  - { pattern: 優, group: shu-yu, weight: 3 }
+  - { pattern: 良, group: shu-yu, weight: 2 }
+  - { pattern: 可, group: shu-yu, weight: 1 }
+  - { pattern: 不可, group: shu-yu, weight: 0 }
+  - { pattern: 優, group: yu-ka, weight: 4 }
+  - { pattern: 良, group: yu-ka, weight: 3 }
+  - { pattern: 可, group: yu-ka, weight: 2 }
+  - { pattern: 不可, group: yu-ka, weight: 0 }
+  - { pattern: S, group: s-d, weight: 4 }
+  - { pattern: A, group: s-d, weight: 3 }
+  - { pattern: B, group: s-d, weight: 2 }
+  - { pattern: C, group: s-d, weight: 1 }
+  - { pattern: D, group: s-d, weight: 0 }
+  - { pattern: F, group: s-d, weight: 0 }
+  - { pattern: A, group: a-f, weight: 4 }
+  - { pattern: B, group: a-f, weight: 3 }
+  - { pattern: C, group: a-f, weight: 2 }
+  - { pattern: D, group: a-f, weight: 1 }
+  - { pattern: F, group: a-f, weight: 0 }
+  - { pattern: 認定, group: none }
+  - { pattern: 認, group: none }
+  - { pattern: 合, group: none }
+  - { pattern: 合格, group: none }
+  - { pattern: 履修中, group: none }
+  - { pattern: P, group: none }
+  - { pattern: W, group: none }
+  - { pattern: N, group: none }
