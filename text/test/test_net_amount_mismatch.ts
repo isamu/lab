@@ -25,7 +25,12 @@ const detected = (text: string, adapter: LanguageAdapter): string[] =>
   );
 
 const WORDS: NetWords = {
-  labels: { gross: ["総支給額", "Gross pay"], deduction: ["控除合計", "Total deductions"], net: ["差引支給額", "Net pay"] },
+  labels: {
+    gross: ["総支給額", "Gross pay"],
+    deduction: ["控除合計", "Total deductions"],
+    net: ["差引支給額", "Net pay"],
+    taxable: ["課税対象額", "Taxable income"],
+  },
   magnitudes: ["千", "万", "million"],
   percentUnits: ["%"],
 };
@@ -46,6 +51,8 @@ describe("roleOf", () => {
     assert.equal(roleOf("総支給額（円）", WORDS), "gross");
     assert.equal(roleOf("net pay", WORDS), "net");
     assert.equal(roleOf("Net pay (USD)", WORDS), "net");
+    assert.equal(roleOf("課税対象額", WORDS), "taxable");
+    assert.equal(roleOf("Taxable income", WORDS), "taxable");
   });
 
   it("names none for a longer label or another word", () => {
@@ -131,6 +138,35 @@ describe("netMismatch", () => {
     assert.equal(netMismatch([], WORDS), undefined);
   });
 
+  it("compares the taxable amount when the scope names no net", () => {
+    const taxed = (taxable: string): LabelledAmount[] => [
+      ...labelled("gross", "5,760,000円", 0),
+      ...labelled("deduction", "3,884,000円", 20),
+      ...labelled("taxable", taxable, 40),
+    ];
+    assert.equal(netMismatch(taxed("1,876,000円"), WORDS), undefined);
+    assert.deepEqual(netMismatch(taxed("1,786,000円"), WORDS)?.values, { written: "1,786,000円", expected: "1,876,000円" });
+  });
+
+  it("compares only the net when the scope names both a net and a taxable amount", () => {
+    const both = (net: string, taxable: string): LabelledAmount[] => [...scope("327,200円", "70,913円", net), ...labelled("taxable", taxable, 60)];
+    assert.equal(netMismatch(both("256,287円", "280,000円"), WORDS), undefined);
+    assert.deepEqual(netMismatch(both("265,287円", "256,287円"), WORDS)?.values, { written: "265,287円", expected: "256,287円" });
+    assert.equal(
+      netMismatch(
+        [
+          ...labelled("gross", "100円"),
+          ...labelled("deduction", "10円"),
+          ...labelled("net", "90円"),
+          ...labelled("net", "80円"),
+          ...labelled("taxable", "50円"),
+        ],
+        WORDS,
+      ),
+      undefined,
+    );
+  });
+
   it("reads a role written twice with the same value as one", () => {
     assert.deepEqual(netMismatch([...scope("100円", "10円", "80円"), ...labelled("gross", "100円")], WORDS)?.values, { written: "80円", expected: "90円" });
   });
@@ -212,6 +248,39 @@ describe("net-amount-mismatch in documents", () => {
       "| Net pay | $180.00 |",
     ].join("\n");
     assert.deepEqual(detected(shortRow, en), []);
+  });
+
+  it("reports a taxable amount that is not the gross minus the deductions", () => {
+    const table = (taxable: string): string =>
+      ["| 給与等の総額 | 控除額の合計 | 課税所得 |", "| --- | --- | --- |", `| 2,930,000円 | 2,358,000円 | ${taxable} |`].join("\n");
+    assert.deepEqual(found(table("527,000円"), ja), ["527,000円:572,000円"]);
+    assert.deepEqual(found(table("572,000円"), ja), []);
+    const lines = (taxable: string): string =>
+      ["Total earnings for the year: $40,500.00", "", "Total deductions: $20,720.00", "", `Taxable income: ${taxable}`].join("\n");
+    assert.deepEqual(found(lines("$19,870.00"), en), ["$19,870.00:$19,780.00"]);
+    assert.deepEqual(found(lines("$19,780.00"), en), []);
+  });
+
+  it("does not compare a payslip's taxable amount with its deductions paid out", () => {
+    const payslip = ["| 総支給額 | 課税対象額 | 控除合計 | 差引支給額 |", "| --- | --- | --- | --- |", "| 327,200円 | 280,000円 | 70,913円 | 256,287円 |"].join(
+      "\n",
+    );
+    assert.deepEqual(detected(payslip, ja), []);
+    const wrongNet = ["- Gross pay: $1,661.00", "- Taxable income: $1,500.00", "- Total deductions: $264.59", "- Net pay: $1,369.41"].join("\n");
+    assert.deepEqual(detected(wrongNet, en), ["$1,369.41:$1,396.41"]);
+    const blankNet = ["| 総支給額 | 課税対象額 | 控除合計 | 差引支給額 |", "| --- | --- | --- | --- |", "| 327,200円 | 280,000円 | 70,913円 | — |"].join("\n");
+    assert.deepEqual(detected(blankNet, ja), []);
+    const blankNetRows = [
+      "| Item | Amount |",
+      "| --- | --- |",
+      "| Gross pay | $1,661.00 |",
+      "| Taxable income | $1,500.00 |",
+      "| Total deductions | $264.59 |",
+      "| Net pay | — |",
+    ].join("\n");
+    assert.deepEqual(detected(blankNetRows, en), []);
+    const blankNetLines = ["- Gross pay: $1,661.00", "- Taxable income: $1,500.00", "- Total deductions: $264.59", "- Net pay: —"].join("\n");
+    assert.deepEqual(detected(blankNetLines, en), []);
   });
 
   it("allows one step of rounding in a table without currency marks", () => {
