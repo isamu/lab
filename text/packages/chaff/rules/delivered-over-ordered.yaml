@@ -1,0 +1,57 @@
+id: delivered-over-ordered
+layer: L3
+status: stable
+how_to_find: delivered-over-ordered
+# The ordered and delivered columns are found by the language's order-quantity-column lexicon.
+extra_word_lists: [order-quantity-column]
+severity: warning
+
+name:
+  ja: 納品数量が発注数量より多い
+  en: A delivered quantity larger than the ordered quantity
+
+why:
+  ja: 納品書の分納の欄や発注残の一覧では、同じ行の納品数量は発注数量を超えないはずです。読み手はこの表で、何が届き何が残っているかを確かめます。発注数量を写し間違えたとき、別の品目の行と取り違えたとき、納品数量だけを直したときに、納品数量が発注数量を上回ります。どの列が発注数量で、どの列が納品数量かは、列の見出しの語（発注数量、注文数、納品数量、出荷数、Ordered、Delivered、Shipped）だけで決めます。列の並びでは決めません。比べるのは、どちらの升も同じ単位の書いた整数（40冊、300 folders）である行だけです。
+  en: "In the backorder section of a delivery note or a list of open orders, the delivered quantity of a row should not exceed the ordered quantity of the same row. Readers use the table to see what arrived and what is still to come. The delivered quantity exceeds the ordered one when the ordered quantity is copied wrong, when a row is mixed up with another item, or when only the delivered quantity is corrected. Which column is ordered and which is delivered is decided by the heading words alone (Ordered, Qty ordered, Delivered, Shipped), never by where a column stands. Only rows where both cells are written whole numbers in the same unit (40 reams, 300 folders) are compared."
+
+message:
+  ja: 納品数量「{delivered}」が、同じ行の発注数量「{ordered}」より多くなっています
+  en: 'The delivered quantity "{delivered}" is larger than the ordered quantity "{ordered}" on the same row'
+
+how_to_fix:
+  ja: 発注数量と納品数量のどちらが正しいかを確かめて、もう一方を直してください。多く納めたのが本当なら、そのことを表の外に書いてください。
+  en: Check which of the ordered and delivered quantities is right and correct the other. If more really was delivered, say so outside the table.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 表の同じ行で、納品数量が発注数量より多い所
+  en: A row of an order table that delivers more than was ordered
+example:
+  ja:
+    before: |
+      | 品名 | 発注数量 | 納品数量 | 残数 |
+      | --- | --- | --- | --- |
+      | クリアファイル | 250枚 | 300枚 | 0枚 |
+    after: |
+      | 品名 | 発注数量 | 納品数量 | 残数 |
+      | --- | --- | --- | --- |
+      | クリアファイル | 300枚 | 300枚 | 0枚 |
+  en:
+    before: |
+      | Item | Ordered | Delivered | Backordered |
+      | --- | --- | --- | --- |
+      | Clear folders | 250 folders | 300 folders | 0 folders |
+    after: |
+      | Item | Ordered | Delivered | Backordered |
+      | --- | --- | --- | --- |
+      | Clear folders | 300 folders | 300 folders | 0 folders |
+
+not_flagged:
+  ja: 発注数量の列か納品数量の列が無い表、どちらかの列が二つ以上ある表（前回と今回の納品数量）は比べません。発注と納品の両方を言う見出しの列がある表も比べません。升が空、「-」、「未定」、小数、符号やかっこ付き、「以上」「程度」の付いた行、二つの升の単位が違う行も比べません。納品数量が発注数量と同じか少ない行は言いません。
+  en: "A table with no ordered or no delivered column, or with two of either (delivered previously and now), is not compared. Neither is a table with a heading that names both ordered and delivered. A row whose cell is blank, a dash, TBD, a decimal, signed, bracketed or a bound (10 or more), or whose two cells are in different units, is skipped. A delivered quantity equal to or less than the ordered one is not reported."
