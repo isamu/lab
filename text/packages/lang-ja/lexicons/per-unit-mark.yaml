@@ -22,3 +22,4 @@ entries:
   - { pattern: /年, group: year }
   - { pattern: 年あたり, group: year }
   - { pattern: 年額, group: year }
+  - { pattern: /km, group: km }

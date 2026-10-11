@@ -6,3 +6,5 @@ entries:
   - pattern: 個数
   - pattern: 数
   - pattern: 工数
+  - { pattern: 時間, group: hour }
+  - pattern: 走行距離

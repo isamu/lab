@@ -5,3 +5,5 @@ entries:
   - pattern: 単価
   - pattern: 単価（税抜）
   - pattern: 単価（円）
+  - { pattern: 時給, group: hour }
+  - { pattern: 単価（円/km）, group: km }
