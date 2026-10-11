@@ -64,5 +64,5 @@ example:
       When you call, please give your booking number, MN-48215.
 
 not_flagged:
-  ja: 「予約番号」「受付番号」「予約確認番号」「お問い合わせ番号」のような語のすぐ後ろ（間は空白と「：」「、」や開き括弧だけ）にある、数字を4つ以上含む英数字の並びだけを番号と見ます。語の無い番号、種類の違う番号（注文番号と予約番号、予約番号と受付番号）、一文字だけ違う番号、離れた文字の入れ違い、二か所以上入れ違った番号は指しません。
-  en: "Only letters and digits right after a label (booking number, reservation number, confirmation number, reference number), with nothing but spaces, a colon, a comma or an opening bracket between, are read, and only when they hold four digits or more. Unlabelled codes, numbers of different kinds (an order number and a booking number), numbers that differ in one character, swaps of characters that are not neighbours and numbers with more than one swap are not reported."
+  ja: 「予約番号」「受付番号」「予約確認番号」「お問い合わせ番号」「社員番号」のような語のすぐ後ろ（間は空白と「：」「、」や開き括弧だけ）にある、数字を4つ以上含む英数字の並びだけを番号と見ます。語の無い番号、種類の違う番号（注文番号と予約番号、予約番号と受付番号）、一文字だけ違う番号、離れた文字の入れ違い、二か所以上入れ違った番号は指しません。
+  en: "Only letters and digits right after a label (booking number, reservation number, confirmation number, reference number, employee number), with nothing but spaces, a colon, a comma or an opening bracket between, are read, and only when they hold four digits or more. Unlabelled codes, numbers of different kinds (an order number and a booking number), numbers that differ in one character, swaps of characters that are not neighbours and numbers with more than one swap are not reported."
