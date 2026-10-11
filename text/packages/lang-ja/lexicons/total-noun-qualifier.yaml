@@ -1,0 +1,8 @@
+# 合計に付けた名詞（単位、控除）の前に置いても、数える物を変えない語。「修得単位合計」の「修得」。
+# 名詞と続けて書くので、語の頭にこの語があれば除いてから、表の見出し（単位数）と比べる。
+id: total-noun-qualifier
+language: ja
+entries:
+  - { pattern: 修得, position: before }
+  - { pattern: 取得, position: before }
+  - { pattern: 履修, position: before }
