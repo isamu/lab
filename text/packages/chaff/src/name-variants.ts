@@ -213,7 +213,11 @@ export const nameKey = (surface: string): string =>
  */
 export type NameEvidence = { readonly person: boolean; readonly named: boolean; readonly nameLike: boolean };
 
-type Tally = NameEvidence & { readonly surface: string; readonly first: NameMention; readonly count: number };
+/** readings は書き方の現れの読みのすべて。解析器は同じ字を所によって別に読む（佐伯 を サエキ と サイキ）。 */
+type Tally = NameEvidence & { readonly surface: string; readonly first: NameMention; readonly count: number; readonly readings: readonly string[] };
+
+const readingsWith = (readings: readonly string[], reading: string | undefined): readonly string[] =>
+  reading === undefined || readings.includes(reading) ? readings : [...readings, reading];
 
 const evidenceOf = (mention: NameMention): NameEvidence => ({
   person: mention.person === true,
@@ -230,10 +234,11 @@ const talliesOf = (mentions: readonly NameMention[]): Tally[] => {
     tallies.set(
       mention.surface,
       tally === undefined
-        ? { surface: mention.surface, first: mention, count: 1, ...evidence }
+        ? { surface: mention.surface, first: mention, count: 1, readings: readingsWith([], mention.reading), ...evidence }
         : {
             ...tally,
             count: tally.count + 1,
+            readings: readingsWith(tally.readings, mention.reading),
             person: tally.person || evidence.person,
             named: tally.named || evidence.named,
             nameLike: tally.nameLike || evidence.nameLike,
@@ -391,7 +396,7 @@ const personReadingVariants = (tallies: readonly Tally[]): NameVariant[] =>
   variantsIn(
     groupBy(
       tallies.filter((tally) => tally.person),
-      (tally) => (tally.first.reading === undefined ? [] : [tally.first.reading]),
+      (tally) => tally.readings,
     ),
     "reading",
     isPersonSlipOf,
@@ -413,7 +418,7 @@ export const nameVariants = (mentions: readonly NameMention[], chars: VariantCha
       "kana",
     ),
     ...variantsIn(
-      groupBy(tallies, (tally) => (tally.first.reading === undefined ? [] : [tally.first.reading])),
+      groupBy(tallies, (tally) => tally.readings),
       "reading",
       oneWordApart,
     ),
