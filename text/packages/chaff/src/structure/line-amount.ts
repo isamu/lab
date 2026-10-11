@@ -128,15 +128,16 @@ const namesQuantity = (cell: Cell, words: LineAmountWords): boolean => words.qua
 
 /**
  * The quantity columns: each heading named as a quantity (数量), and each naming an ordered, delivered or backordered
- * count (発注数量, Qty delivered). A role word alone ("Delivered") may head a date, so it is read only beside another role
- * column. Two columns of one kind leave no way to choose, so such a table is not read.
+ * count (発注数量, Qty delivered). A role word alone ("Ordered", "Delivered") may head a date, so it is read only in a
+ * table with a backordered column, which is always a count. Two columns of one kind leave no way to choose, so such a
+ * table is not read.
  */
 const quantityColumnsOf = (header: readonly Cell[], words: LineAmountWords): Omit<QuantityColumn, "priceUnit">[] | undefined => {
   const kinds = header.map((cell) => kindOf(cell, words));
-  const roleColumns = kinds.filter((kind) => kind !== undefined && kind !== "quantity").length;
+  const countsRemainder = kinds.includes("backordered");
   const columns = header.flatMap((cell, index) => {
     const kind = kinds[index];
-    if (kind === undefined || (kind !== "quantity" && roleColumns < 2 && !namesQuantity(cell, words))) return [];
+    if (kind === undefined || (kind !== "quantity" && !countsRemainder && !namesQuantity(cell, words))) return [];
     return [{ index, kind, unit: headerUnit(cell, words) }];
   });
   return columns.length === 0 || new Set(columns.map((column) => column.kind)).size < columns.length ? undefined : columns;

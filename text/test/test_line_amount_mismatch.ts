@@ -229,7 +229,10 @@ describe("line-amount-mismatch: 数量×単価が金額と合わない", () => {
     ]);
     assert.deepEqual(findingsOf(enNote(["| Copy paper | 10 | 6 | 4 | $25.00 | $250.00 |"]), en), []);
     assert.deepEqual(
-      findingsOf("| Item | Ordered | Shipped | Unit price | Amount |\n| --- | --- | --- | --- | --- |\n| Pens | 20 | 18 | $1.20 | $25.00 |\n", en),
+      findingsOf(
+        "| Item | Ordered | Shipped | Backordered | Unit price | Amount |\n| --- | --- | --- | --- | --- | --- |\n| Pens | 20 | 18 | 2 | $1.20 | $25.00 |\n",
+        en,
+      ),
       ["The amount $25.00 is not quantity × unit price (18 × $1.20 = $21.60)"],
     );
   });
@@ -251,6 +254,10 @@ describe("line-amount-mismatch: 数量×単価が金額と合わない", () => {
     );
     assert.deepEqual(findingsOf("| 品名 | 数量 | 個数 | 単価 | 金額 |\n| --- | --- | --- | --- | --- |\n| 封筒 | 2 | 4 | 500円 | 9,000円 |\n"), []);
     assert.deepEqual(findingsOf("| Item | Delivered | Unit price | Amount |\n| --- | --- | --- | --- |\n| Pens | 3 Oct | $1.20 | $25.00 |\n", en), []);
+    assert.deepEqual(
+      findingsOf("| Item | Ordered | Delivered | Unit price | Amount |\n| --- | --- | --- | --- | --- |\n| Service call | 1 | 3 | $10 | $25 |\n", en),
+      [],
+    );
     assert.deepEqual(findingsOf("| Item | Ordered / Delivered | Unit price | Amount |\n| --- | --- | --- | --- |\n| Pens | 20 | $1.20 | $25.00 |\n", en), []);
     assert.deepEqual(
       findingsOf("| 品名 | 発注数量 | 納品数量 | 単価 | 値引 | 金額 |\n| --- | --- | --- | --- | --- | --- |\n| 封筒 | 10 | 6 | 500円 | 300円 | 2,700円 |\n"),
