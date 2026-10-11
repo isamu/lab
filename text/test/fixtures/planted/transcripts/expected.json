@@ -1,0 +1,25 @@
+{
+  "recall": {
+    "ja": {
+      "age-two-ways": "1/2",
+      "enrolment-after-graduation": "0/1",
+      "credits-total": "0/2",
+      "gpa": "0/2",
+      "student-name": "0/2",
+      "issue-before-graduation": "0/2",
+      "student-number": "0/2",
+      "enrolment-period-reversed": "1/1"
+    },
+    "en": {
+      "age-two-ways": "1/2",
+      "enrolment-after-graduation": "0/1",
+      "credits-total": "0/2",
+      "gpa": "0/2",
+      "student-name": "2/2",
+      "issue-before-graduation": "0/2",
+      "student-number": "0/2",
+      "enrolment-period-reversed": "1/1"
+    }
+  },
+  "clean": []
+}
