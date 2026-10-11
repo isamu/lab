@@ -1,0 +1,17 @@
+# 成績の表で、列の見出しが言う役割（gpa-mismatch）。group: course は科目、credits は単位数、grade は評価（評語）、
+# points はグレードポイントの列（評価の列と取り違えないよう先に見る）。grade か points の語のある行だけを、評価と点の
+# 対応（「S（4）」）として読む。total は合計の行の最初の升に書く語で、その行は科目として数えない。
+id: transcript-column
+language: ja
+entries:
+  - { pattern: GP, group: points }
+  - { pattern: グレードポイント, group: points }
+  - { pattern: 評価, group: grade }
+  - { pattern: 成績, group: grade }
+  - { pattern: 評語, group: grade }
+  - { pattern: 単位, group: credits }
+  - { pattern: 科目, group: course }
+  - { pattern: 授業, group: course }
+  - { pattern: 合計, group: total }
+  - { pattern: 小計, group: total }
+  - { pattern: 総計, group: total }

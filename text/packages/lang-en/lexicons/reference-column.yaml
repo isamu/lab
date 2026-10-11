@@ -1,0 +1,18 @@
+# Headings of the column of an itemised table that gives each row's own receipt, invoice or slip number
+# (reference-number-repeated). Only a column whose heading is one of these words as a whole is read (case, width and spaces
+# aside). Columns whose values rightly repeat from row to row (category codes, account numbers, dates) are not listed.
+id: reference-column
+language: en
+entries:
+  - pattern: Receipt no.
+  - pattern: Receipt no
+  - pattern: Receipt number
+  - pattern: "Receipt #"
+  - pattern: Invoice no.
+  - pattern: Invoice no
+  - pattern: Invoice number
+  - pattern: "Invoice #"
+  - pattern: Voucher no.
+  - pattern: Voucher number
+  - pattern: Ref.
+  - pattern: Ref. no.

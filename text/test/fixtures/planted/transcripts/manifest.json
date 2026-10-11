@@ -1,0 +1,237 @@
+{
+  "note": "Self-written academic transcripts (成績証明書・修了証明書 / academic transcript, certificate of completion) for made-up schools and students: a university transcript and a vocational-school certificate of completion with grades, each in a clean version and a planted one that differs only on the lines below. They run as business/report, the genre the checkup reports run as: no genre is made for transcripts. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: gpa-mismatch (a grade-point average that is not the sum of each course's grade points times its credits, divided by the credits of the course rows). The credit total and the grade-point average are both read from the course rows, so the planted credit total does not move the average the GPA plant is compared with. An enrolment date after the graduation date is planted two ways: on a labelled enrolment date line, named for due-before-issue, which compares a pair of labelled dates (enrolment-after-graduation), and on the start of a period of enrolment written as a range (enrolment-period-reversed), named for date-range-reversed. An issue date before the graduation or completion date is named for due-before-issue too; the graduation and completion dates are never planted, so the two date plants do not depend on each other. A student number with two neighbouring characters swapped is named for reference-number-variant, and an age that the date of birth does not give on the date written beside it for elapsed-years-mismatch; the age is counted on the date in its own parentheses, not on the issue date. Each plant was also run alone on its clean document, so no plant depends on another. yarn planted transcripts scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/university",
+      "language": "ja",
+      "genre": "business/report",
+      "clean": "ja/university.clean.md",
+      "planted": "ja/university.planted.md",
+      "mistakes": [
+        {
+          "kind": "age-two-ways",
+          "rule": "elapsed-years-mismatch",
+          "line": 9,
+          "clean": "現在、23歳",
+          "planted": "現在、25歳"
+        },
+        {
+          "kind": "enrolment-after-graduation",
+          "rule": "due-before-issue",
+          "line": 11,
+          "clean": "入学年月日：2022年4月1日",
+          "planted": "入学年月日：2026年4月1日"
+        },
+        {
+          "kind": "credits-total",
+          "rule": "total-mismatch",
+          "line": 29,
+          "clean": "| 修得単位合計 | 27 |",
+          "planted": "| 修得単位合計 | 29 |"
+        },
+        {
+          "kind": "gpa",
+          "rule": "gpa-mismatch",
+          "line": 33,
+          "clean": "GPA：3.00",
+          "planted": "GPA：3.20"
+        },
+        {
+          "kind": "student-name",
+          "rule": "name-variant",
+          "line": 39,
+          "clean": "佐伯 美咲 さんの学業成績",
+          "planted": "佐伯 未咲 さんの学業成績"
+        },
+        {
+          "kind": "issue-before-graduation",
+          "rule": "due-before-issue",
+          "line": 41,
+          "clean": "発行日：2026年9月30日",
+          "planted": "発行日：2026年3月10日"
+        },
+        {
+          "kind": "student-number",
+          "rule": "reference-number-variant",
+          "line": 45,
+          "clean": "学籍番号21L3058",
+          "planted": "学籍番号21L3085"
+        }
+      ]
+    },
+    {
+      "id": "ja/vocational",
+      "language": "ja",
+      "genre": "business/report",
+      "clean": "ja/vocational.clean.md",
+      "planted": "ja/vocational.planted.md",
+      "mistakes": [
+        {
+          "kind": "age-two-ways",
+          "rule": "elapsed-years-mismatch",
+          "line": 9,
+          "clean": "（20歳、",
+          "planted": "（22歳、"
+        },
+        {
+          "kind": "enrolment-period-reversed",
+          "rule": "date-range-reversed",
+          "line": 11,
+          "clean": "在籍期間：2024年4月1日〜",
+          "planted": "在籍期間：2026年4月1日〜"
+        },
+        {
+          "kind": "credits-total",
+          "rule": "total-mismatch",
+          "line": 25,
+          "clean": "| 修得単位合計 | 32 |",
+          "planted": "| 修得単位合計 | 30 |"
+        },
+        {
+          "kind": "gpa",
+          "rule": "gpa-mismatch",
+          "line": 29,
+          "clean": "評価平均（GPA）：3.25",
+          "planted": "評価平均（GPA）：3.52"
+        },
+        {
+          "kind": "student-name",
+          "rule": "name-variant",
+          "line": 35,
+          "clean": "森川 大輔 さんは",
+          "planted": "森川 大介 さんは"
+        },
+        {
+          "kind": "issue-before-graduation",
+          "rule": "due-before-issue",
+          "line": 37,
+          "clean": "発行日：2026年4月10日",
+          "planted": "発行日：2026年2月10日"
+        },
+        {
+          "kind": "student-number",
+          "rule": "reference-number-variant",
+          "line": 41,
+          "clean": "学生番号2407315",
+          "planted": "学生番号2470315"
+        }
+      ]
+    },
+    {
+      "id": "en/university",
+      "language": "en",
+      "genre": "business/report",
+      "clean": "en/university.clean.md",
+      "planted": "en/university.planted.md",
+      "mistakes": [
+        {
+          "kind": "age-two-ways",
+          "rule": "elapsed-years-mismatch",
+          "line": 9,
+          "clean": "(age 23 as of",
+          "planted": "(age 25 as of"
+        },
+        {
+          "kind": "enrolment-after-graduation",
+          "rule": "due-before-issue",
+          "line": 11,
+          "clean": "Date of enrolment: April 1, 2022",
+          "planted": "Date of enrolment: April 1, 2026"
+        },
+        {
+          "kind": "credits-total",
+          "rule": "total-mismatch",
+          "line": 29,
+          "clean": "| Total credits earned | 27 |",
+          "planted": "| Total credits earned | 29 |"
+        },
+        {
+          "kind": "gpa",
+          "rule": "gpa-mismatch",
+          "line": 33,
+          "clean": "Grade point average: 3.00",
+          "planted": "Grade point average: 3.20"
+        },
+        {
+          "kind": "student-name",
+          "rule": "name-variant",
+          "line": 39,
+          "clean": "record of Olivia Bennett.",
+          "planted": "record of Olivia Bennet."
+        },
+        {
+          "kind": "issue-before-graduation",
+          "rule": "due-before-issue",
+          "line": 41,
+          "clean": "Date of issue: September 30, 2026",
+          "planted": "Date of issue: March 10, 2026"
+        },
+        {
+          "kind": "student-number",
+          "rule": "reference-number-variant",
+          "line": 45,
+          "clean": "student number 21L3058",
+          "planted": "student number 21L3085"
+        }
+      ]
+    },
+    {
+      "id": "en/vocational",
+      "language": "en",
+      "genre": "business/report",
+      "clean": "en/vocational.clean.md",
+      "planted": "en/vocational.planted.md",
+      "mistakes": [
+        {
+          "kind": "age-two-ways",
+          "rule": "elapsed-years-mismatch",
+          "line": 9,
+          "clean": "(age 20, as of",
+          "planted": "(age 22, as of"
+        },
+        {
+          "kind": "enrolment-period-reversed",
+          "rule": "date-range-reversed",
+          "line": 11,
+          "clean": "Period of enrolment: April 1, 2024 –",
+          "planted": "Period of enrolment: April 1, 2026 –"
+        },
+        {
+          "kind": "credits-total",
+          "rule": "total-mismatch",
+          "line": 25,
+          "clean": "| Total credits earned | 32 |",
+          "planted": "| Total credits earned | 30 |"
+        },
+        {
+          "kind": "gpa",
+          "rule": "gpa-mismatch",
+          "line": 29,
+          "clean": "Grade point average (GPA): 3.25",
+          "planted": "Grade point average (GPA): 3.52"
+        },
+        {
+          "kind": "student-name",
+          "rule": "name-variant",
+          "line": 35,
+          "clean": "certify that Daniel Morgan has",
+          "planted": "certify that Daniel Morgen has"
+        },
+        {
+          "kind": "issue-before-graduation",
+          "rule": "due-before-issue",
+          "line": 37,
+          "clean": "Date of issue: April 10, 2026",
+          "planted": "Date of issue: February 10, 2026"
+        },
+        {
+          "kind": "student-number",
+          "rule": "reference-number-variant",
+          "line": 41,
+          "clean": "student number 2407315",
+          "planted": "student number 2470315"
+        }
+      ]
+    }
+  ]
+}

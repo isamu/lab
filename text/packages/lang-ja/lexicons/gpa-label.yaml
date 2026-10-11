@@ -1,0 +1,18 @@
+# 成績の平均（GPA）を書く行の見出し（gpa-mismatch）。「GPA：3.00」「評価平均（GPA）：3.25」のように、括弧の外が
+# group: gpa の語そのものである見出しだけを、書いた GPA として読む。group: part は一部の期間の GPA を言う語で、
+# GPA の語とこの語を一緒に持つ見出し（「前期GPA」）が一つでもある文書は、科目の表が全期間か分からないので比べない。
+id: gpa-label
+language: ja
+entries:
+  - { pattern: GPA, group: gpa }
+  - { pattern: 累積GPA, group: gpa }
+  - { pattern: 通算GPA, group: gpa }
+  - { pattern: 平均評点, group: gpa }
+  - { pattern: 評価平均, group: gpa }
+  - { pattern: 成績平均, group: gpa }
+  - { pattern: 学期, group: part }
+  - { pattern: 前期, group: part }
+  - { pattern: 後期, group: part }
+  - { pattern: 年次, group: part }
+  - { pattern: 年度, group: part }
+  - { pattern: 学年, group: part }

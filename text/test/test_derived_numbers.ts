@@ -433,6 +433,34 @@ describe("elapsed-years-mismatch: an age beside a labelled date of birth", () =>
     assert.deepEqual(ageJa("生年月日：1978年4月12日（46歳）　受診日：2026年9月8日"), ["46歳/48"]);
   });
 
+  it("reads the age and its marked date in either order inside one bracket", () => {
+    assert.deepEqual(ageJa("生年月日：2003年4月2日（2026年9月30日現在、20歳）"), ["20歳/23"]);
+    assert.deepEqual(ageJa("生年月日：2003年4月2日（2026年9月30日現在、23歳）"), []);
+    assert.deepEqual(ageJa("生年月日：2003年4月2日（20歳、2026年9月30日現在）"), ["20歳/23"]);
+    assert.deepEqual(ageJa("生年月日：2003年4月2日（2026年9月30日時点で20歳）"), ["20歳/23"]);
+    assert.deepEqual(ageEn("Date of birth: April 2, 2003 (age 20 as of September 30, 2026)"), ["20/23"]);
+    assert.deepEqual(ageEn("Date of birth: April 2, 2003 (age 23 as of September 30, 2026)"), []);
+    assert.deepEqual(ageEn("Date of birth: April 2, 2003 (as of September 30, 2026, age 20)"), ["20/23"]);
+  });
+
+  it("counts the age on the marked date in its own bracket rather than on a labelled date elsewhere", () => {
+    assert.deepEqual(ageJa("生年月日：2003年4月2日（2026年9月30日現在、20歳）", "受診日：2026年1月5日"), ["20歳/23"]);
+  });
+
+  it("does not read an age past an unmarked date, or outside the marked date's bracket", () => {
+    assert.deepEqual(ageJa("生年月日：2003年4月2日　発行日：2026年9月30日（20歳）"), []);
+    assert.deepEqual(ageJa("生年月日：2003年4月2日（20歳）　発行日：2026年9月30日"), []);
+    assert.deepEqual(ageJa("生年月日：2003年4月2日（2026年9月30日現在）、勤続3年、20歳"), []);
+    assert.deepEqual(ageEn("Date of birth: April 2, 2003 (age 20), issued September 30, 2026"), []);
+    assert.deepEqual(ageEn("Date of birth: April 2, 2003, age 20 on September 30, 2026"), []);
+    assert.deepEqual(ageEn("Event on May 1, 2024 (age 20 as of September 30, 2026)"), []);
+  });
+
+  it("reads the age for the date of birth nearest before it, not for an earlier one on the line", () => {
+    assert.deepEqual(ageJa("生年月日：2003年4月2日、生年月日：2001年1月1日（2026年9月30日現在、23歳）"), ["23歳/25"]);
+    assert.deepEqual(ageJa("生年月日：2003年4月2日、生年月日：2001年1月1日（2026年9月30日現在、25歳）"), []);
+  });
+
   it("is not reported again by the check against the document's own date", () => {
     const lines = ["April 1, 2026", "Born: March 2, 1969 (age 50)", "Examination date: July 15, 2026"];
     assert.deepEqual(ageEn(...lines), ["50/57"]);

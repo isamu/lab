@@ -73,6 +73,31 @@ describe("reference-number-variant", () => {
     assert.deepEqual(found(docEn("Rebooking numbers: LH-48215", "", "Rebooking numbers: LH-48251"), en), []);
   });
 
+  it("ja: 社員番号・従業員番号の、隣り合う数字の入れ違いを指す", () => {
+    assert.deepEqual(found(docJa("社員番号：204817", "", "社員番号204871の源泉徴収票は、1月に交付します。"), ja), [5]);
+    assert.deepEqual(found(docJa("従業員番号：P-30562", "", "従業員番号はP-35062です。"), ja), [5]);
+  });
+
+  it("ja: 社員番号と予約番号は比べず、上長の番号や表に並んだ二人の番号は指さない", () => {
+    assert.deepEqual(found(docJa("社員番号：204817", "", "予約番号：204871"), ja), []);
+    assert.deepEqual(found(docJa("社員番号：204817", "", "承認者（社員番号：118305）"), ja), []);
+    const roster = ["| 社員番号 | 氏名 |", "| --- | --- |", "| 204817 | 藤井 健太 |", "| 204871 | 佐藤 花子 |"];
+    assert.deepEqual(found(docJa(...roster), ja), []);
+  });
+
+  it("en: an employee number or employee ID with two neighbouring digits swapped", () => {
+    assert.deepEqual(found(docEn("Employee number: 4071-5528", "", "The tax statement for employee number 4071-5582 is issued in January."), en), [5]);
+    assert.deepEqual(found(docEn("Employee ID: PT-80213", "", "The statement for employee ID PT-82013 is issued in January."), en), [5]);
+    assert.deepEqual(found(docEn("Employee No. 30562", "", "Employee No. 35062"), en), [5]);
+  });
+
+  it("en: an employee number is never compared with a booking number, nor with a manager's", () => {
+    assert.deepEqual(found(docEn("Employee number: 4071-5528", "", "Booking number: 4071-5582"), en), []);
+    assert.deepEqual(found(docEn("Employee number: 4071-5528", "", "Approved by the manager, employee number 3390-1174."), en), []);
+    const roster = ["| Employee ID | Name |", "| --- | --- |", "| PT-80213 | Samuel Ortega |", "| PT-82013 | Ana Lima |"];
+    assert.deepEqual(found(docEn(...roster), en), []);
+  });
+
   it("reads no number in code or a URL", () => {
     assert.deepEqual(found(docEn("```text", "Booking number: LH-48215", "Booking number: LH-48251", "```"), en), []);
     assert.deepEqual(found(docEn("Booking number: https://example.com/LH-48215", "", "Booking number: https://example.com/LH-48251"), en), []);
