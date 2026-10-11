@@ -158,7 +158,7 @@ const mentionOf = (source: string, base: Span, form: Span, group: string): Compa
 };
 
 /** カタカナか英字の名前の字。英字の語の間の空白一つも名前の内。 */
-const FOREIGN_BEFORE = /[\p{Script=Katakana}\p{Script=Latin}\p{N}ー・&＆'’.\- ]+$/u;
+const FOREIGN_CHAR = /[\p{Script=Katakana}\p{Script=Latin}\p{N}ー・&＆'’.\- ]/u;
 /** 形の語のすぐ前の字。カタカナ・長音の印・英字のときだけ、形の語と読む（会社、本社、神社の 社 は読まない）。 */
 const FOREIGN_END = /(?:[\p{Script=Katakana}ー\p{Script=Latin}]|\p{Script=Latin}\.)$/u;
 /** 名前の頭に立たない字（空白、記号、数字だけの頭はそのまま残す）。 */
@@ -166,13 +166,19 @@ const FOREIGN_LEAD = /^[\s・&＆'’.-]+/u;
 /** カタカナの語に一字の記号を付けた仮の名前（ベンダーA、メーカーB）。名前ではないので、A と B を一字違いと見ない。 */
 const PLACEHOLDER = /[\p{Script=Katakana}ー]\s?[\p{Lu}\p{N}]$/u;
 
+/** text の終わりに続く、カタカナか英字の名前の字の始まり。 */
+const foreignRunStart = (text: string): number => {
+  let start = text.length;
+  while (start > 0 && FOREIGN_CHAR.test(text.charAt(start - 1))) start -= 1;
+  return start;
+};
+
 /** カタカナか英字の名前のすぐ後ろの形の語（サウスベイ・インポート社、Marlow Bay社）。形の語で始まる漢字の語（社員、社長）は外す。 */
 const foreignMentionAt = (source: string, form: CompanyForm, at: number, words: readonly string[]): CompanyMention | undefined => {
   const before = source.slice(0, at);
   if (!FOREIGN_END.test(before) || words.some((word) => source.startsWith(word, at))) return undefined;
-  const run = FOREIGN_BEFORE.exec(before);
-  if (run === null) return undefined;
-  const start = run.index + (FOREIGN_LEAD.exec(run[0])?.[0].length ?? 0);
+  const run = before.slice(foreignRunStart(before));
+  const start = at - run.length + (FOREIGN_LEAD.exec(run)?.[0].length ?? 0);
   const base = { start, end: at };
   if (!isNameBase(source, base, () => false) || PLACEHOLDER.test(source.slice(start, at))) return undefined;
   return { ...mentionOf(source, base, { start: at, end: at + form.pattern.length }, form.group), foreign: true };
