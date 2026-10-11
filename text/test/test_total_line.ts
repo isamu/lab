@@ -10,8 +10,14 @@ const english = loadEnglish();
 const japanese = loadJapanese();
 const patterns = (lexicons: ReturnType<typeof loadEnglish>, id: string): string[] => (lexicons[id] ?? []).map((entry) => entry.pattern);
 
-const en: TotalLineWords = { labels: patterns(english, "total-label"), qualifiers: english["total-label-qualifier"] ?? [] };
-const ja: TotalLineWords = { labels: patterns(japanese, "total-label"), qualifiers: japanese["total-label-qualifier"] ?? [] };
+const wordsIn = (lexicons: ReturnType<typeof loadEnglish>): TotalLineWords => ({
+  labels: patterns(lexicons, "total-label"),
+  qualifiers: lexicons["total-label-qualifier"] ?? [],
+  nounQualifiers: lexicons["total-noun-qualifier"] ?? [],
+  unsummedNouns: patterns(lexicons, "total-noun-unsummed"),
+});
+const en = wordsIn(english);
+const ja = wordsIn(japanese);
 
 describe("isTotalLine", () => {
   it("reads a total word with a period, a due or a grand around it as a total line", () => {
@@ -91,6 +97,37 @@ describe("isTotalLine", () => {
     assert.equal(isTotalLine("| 設計 | 300,000円 |", ja, "| 設計工程 | 金額 |"), false);
     assert.equal(isTotalLine("| 合計額 | 300,000円 |", ja, "| 項目 | 金額 |"), false);
     assert.equal(isTotalLine("- 控除合計：3,074円", ja), false);
+  });
+
+  it("reads a total with a noun when the header of the column it holds its number in names the noun", () => {
+    assert.equal(isTotalLine("| Total credits earned | 29 | — |", en, "| Course | Credits | Grade |"), true);
+    assert.equal(isTotalLine("| Total earned credits | 29 | — |", en, "| Course | Credits | Grade |"), true);
+    assert.equal(isTotalLine("| Total credits | 29 | — |", en, "| Course | Credit | Grade |"), true);
+    assert.equal(isTotalLine("| Total hours | 12 | 340 |", en, "| Module | Hours | Hours |"), true);
+    assert.equal(isTotalLine("| 修得単位合計 | 29 | — |", ja, "| 科目 | 単位数 | 評価 |"), true);
+    assert.equal(isTotalLine("| 単位合計 | 29 | — |", ja, "| 科目 | 単位 | 評価 |"), true);
+    assert.equal(isTotalLine("| Total credits earned | **29** |", en, "| Course | Credits |"), true);
+    assert.equal(isTotalLine("| Total credits earned | -2 |", en, "| Course | Credits |"), true);
+    assert.equal(isTotalLine("| 控除合計 | ▲3,000円 |", ja, "| 日付 | 控除 |"), true);
+    assert.equal(isTotalLine("| Total deductions | -$30 |", en, "| Date | Deduction |"), true);
+    assert.equal(isTotalLine("| 交通費合計 | — | 3,000円 |", ja, "| 日付 | 宿泊費 | 交通費 |"), true);
+  });
+
+  it("does not read a noun a summed column does not name, a column the row holds no number in, or one of two named differently", () => {
+    assert.equal(isTotalLine("| Total credits earned | — | 29 |", en, "| Course | Credits | Grade |"), false);
+    assert.equal(isTotalLine("| Total credits earned | 29 | 87 |", en, "| Course | Credits | Grade points |"), false);
+    assert.equal(isTotalLine("| Total tax | $90 |", en, "| Item | Amount |"), false);
+    assert.equal(isTotalLine("| Total tax | $90 |", en, "| Item | Tax deduction |"), false);
+    assert.equal(isTotalLine("| Total grade points | 29 |", en, "| Course | Grade |"), false);
+    assert.equal(isTotalLine("| Total creditsearned | 29 |", en, "| Course | Credits |"), false);
+    assert.equal(isTotalLine("| 修得単位合計 | 29 |", ja, "| 科目 | 評価 |"), false);
+    assert.equal(isTotalLine("| 単位合計 | 29 |", ja, "| 科目 | 修得単位数 |"), false);
+    assert.equal(isTotalLine("| 修得単位合計 | 29 |", ja), false);
+    assert.equal(isTotalLine("| Total floor area | 52.8 m² |", en, "| Room | Floor area |"), false);
+    assert.equal(isTotalLine("| 面積合計 | 52.8㎡ |", ja, "| 部屋 | 面積 |"), false);
+    assert.equal(isTotalLine("| 面積合計 | 52.8㎡ |", { ...ja, unsummedNouns: [] }, "| 部屋 | 面積 |"), true);
+    assert.equal(isTotalLine("| 修得単位合計 | 29 |", { ...ja, nounQualifiers: [] }, "| 科目 | 単位数 |"), false);
+    assert.equal(isTotalLine("| Total credits earned | 29 |", { ...en, nounQualifiers: undefined }, "| Course | Credits |"), false);
   });
 
   it("does not read anything with an empty or missing vocabulary", () => {

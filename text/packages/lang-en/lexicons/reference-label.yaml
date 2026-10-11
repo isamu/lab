@@ -12,3 +12,8 @@ entries:
   - { pattern: confirmation number is, group: confirmation }
   - { pattern: reference number, group: reference }
   - { pattern: reference number is, group: reference }
+  - { pattern: employee number, group: employee }
+  - { pattern: employee number is, group: employee }
+  - { pattern: employee id, group: employee }
+  - { pattern: employee id is, group: employee }
+  - { pattern: employee no., group: employee }

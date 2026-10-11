@@ -102,6 +102,16 @@ describe("labelBefore / labelAfter: the label of a date", () => {
     assert.equal(labelBefore("Patient: X; Examination date: ", labels)?.pattern, "examination date");
   });
 
+  it("reads a label right after an age only when the age words are given", () => {
+    const asOf = [{ pattern: "as of", group: "base" }];
+    assert.equal(labelBefore("(age 23 as of ", asOf, EN_WORDS)?.pattern, "as of");
+    assert.equal(labelBefore("(aged 23 years old as of ", asOf, EN_WORDS)?.pattern, "as of");
+    assert.equal(labelBefore("(age 23 as of ", asOf), undefined);
+    assert.equal(labelBefore("(page 23 as of ", asOf, EN_WORDS), undefined);
+    assert.equal(labelBefore("(23 as of ", asOf, EN_WORDS), undefined);
+    assert.equal(labelBefore("(age 23, valid as of ", asOf, EN_WORDS), undefined);
+  });
+
   it("reads a label after the date", () => {
     assert.equal(labelAfter("時点の結果", labels)?.pattern, "時点");
     assert.equal(labelAfter(" 時点", labels)?.pattern, "時点");

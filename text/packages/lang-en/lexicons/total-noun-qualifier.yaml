@@ -1,0 +1,10 @@
+# Words that may stand beside the noun of a total ("credits" in "Total credits earned") without changing what it
+# counts. They are set aside before the noun is compared with the table's header ("Credits"). position: before or
+# after the noun only; without it, either side.
+id: total-noun-qualifier
+language: en
+entries:
+  - { pattern: earned }
+  - { pattern: completed }
+  - { pattern: taken }
+  - { pattern: obtained }

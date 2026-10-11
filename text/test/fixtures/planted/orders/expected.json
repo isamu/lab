@@ -1,0 +1,23 @@
+{
+  "recall": {
+    "ja": {
+      "delivery-before-order": "0/2",
+      "line-total": "2/2",
+      "grand-total": "2/2",
+      "order-number": "0/2",
+      "buyer-name": "2/2",
+      "delivered-over-ordered": "0/1",
+      "backorder": "0/1"
+    },
+    "en": {
+      "delivery-before-order": "0/2",
+      "line-total": "2/2",
+      "grand-total": "2/2",
+      "order-number": "0/2",
+      "buyer-name": "2/2",
+      "delivered-over-ordered": "0/1",
+      "backorder": "0/1"
+    }
+  },
+  "clean": []
+}
