@@ -13,18 +13,17 @@ export type SpacedName = { readonly surname: Span; readonly given: Span };
 const MAX_PART = 3;
 /** 姓の前を読む範囲（UTF-16 の単位）。姓より長い漢字の連なりを、長いまま見るため。 */
 const LOOKBACK = 12;
-const NAME_SPACE = /[ 　]/gu;
+const NAME_SPACE = /[\u0020\u3000]/gu;
 const HAN = /^\p{Script=Han}$/u;
-const TRAILING_HAN = /\p{Script=Han}+$/u;
 const LEADING_HAN = /^\p{Script=Han}+/u;
-const ONE_SPACE = /^[ 　]/u;
+const ONE_SPACE = /^[\u0020\u3000]/u;
 /** 欄の語と名前のあいだに置かない記号。文の中の「：」の後ろは欄ではない。 */
 const NOT_IN_FIELD = /[。、，,：:]/u;
 const FIELD_COLON = /[：:]/u;
 /** 欄の行の頭の、Markdown の印（箇条書き、引用、見出し）。 */
 const LINE_MARKS = /^[\s>*#+-]*/u;
 /** 欄の名前の後ろ: 行の終わり。日付などの括弧一つで行が終わってもよい（髙瀬 誠（2026年4月1日））。 */
-const FIELD_END = /^[ 　]*(?:[（(][^（()）\n]*[）)][ 　]*)?(?:\r?\n|$)/u;
+const FIELD_END = /^[\u0020\u3000]*(?:[（(][^（()）\n]*[）)][\u0020\u3000]*)?(?:\r?\n|$)/u;
 
 const isHan = (letter: string | undefined): boolean => letter !== undefined && HAN.test(letter);
 
@@ -61,8 +60,9 @@ const givenAt = (source: string, start: number, cues: SpacedNameCues, inField: b
 /** 空白の前の漢字の連なり。字数が姓の形で、肩書きや敬称で終わらない（部長 高瀬様 の 部長 は姓でない）。 */
 const surnameBefore = (source: string, space: number, cues: SpacedNameCues): string | undefined => {
   const window = source.slice(Math.max(0, space - LOOKBACK), space);
-  const run = TRAILING_HAN.exec(window)?.[0];
-  if (run === undefined || [...run].length > MAX_PART) return undefined;
+  const letters = [...window];
+  const run = letters.slice(letters.findLastIndex((letter) => !isHan(letter)) + 1).join("");
+  if (run === "" || [...run].length > MAX_PART) return undefined;
   return [...cues.titles, ...cues.suffixes].some((word) => run.endsWith(word)) ? undefined : run;
 };
 
