@@ -343,6 +343,7 @@ yarn corpus   run on the collected real documents and compare with corpus/expect
 `yarn planted` runs the planted sets in `test/fixtures/planted/<set>/` (contracts, email, reports, technical).
 Each is a set of self-written documents of one genre, each in a clean version and a version with mistakes planted.
 The set's `manifest.json` lists every planted mistake: its kind, its line and the rule expected to report it.
+A mistake that breaks a pair of lines (an enrolment date after the graduation date) may name the pair's other line as `pairedLine`. A rule that compares a pair of dates reports the one written second, so a finding of the named rule on either of those two lines counts as a catch.
 
 The run prints how many mistakes of each kind were reported on their line, and the findings the clean versions get. It fails when either differs from the set's `expected.json`.
 When a new rule finds a kind of mistake a set plants, add the mistake to the manifest (a kind no rule finds yet already names the rule that should), then run `yarn planted --update` and read the change to `expected.json`.

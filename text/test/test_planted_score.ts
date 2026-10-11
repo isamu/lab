@@ -5,6 +5,7 @@ import {
   expectationChanges,
   expectationOf,
   formatRecall,
+  isCaught,
   misalignedPlants,
   parseExpectation,
   parseManifest,
@@ -61,6 +62,16 @@ describe("parseManifest", () => {
     assert.throws(() => parseManifest({ documents: [fractional] }), /has no line/u);
   });
 
+  it("pairedLine は省けて、書いたなら別の行の番号でなければ止まる", () => {
+    assert.equal(parseManifest({ documents: [documents[0]] })[0]?.mistakes[0]?.pairedLine, undefined);
+    const paired = { ...documents[0], mistakes: [{ ...mistake("order", "due-before-issue", 11), pairedLine: 13 }] };
+    assert.equal(parseManifest({ documents: [paired] })[0]?.mistakes[0]?.pairedLine, 13);
+    [0, 2.5, "13", null, 11].forEach((pairedLine) => {
+      const bad = { ...documents[0], mistakes: [{ ...mistake("order", "due-before-issue", 11), pairedLine }] };
+      assert.throws(() => parseManifest({ documents: [bad] }), /ja\/one mistakes\[0\] has a pairedLine that is not another line/u);
+    });
+  });
+
   it("style は省けて、書いたなら名前でなければ止まる", () => {
     assert.equal(parseManifest({ documents: [documents[0]] })[0]?.style, undefined);
     assert.equal(parseManifest({ documents: [{ ...documents[0], style: "koyobun" }] })[0]?.style, "koyobun");
@@ -87,6 +98,39 @@ describe("misalignedPlants", () => {
     assert.deepEqual(misalignedPlants(document, ["保守費60,000円", "x"], ["x", "保守費50,000円"]), ['ja/two:2 total: clean line has no "60,000"']);
     assert.deepEqual(misalignedPlants(document, ["x", "保守費60,000円"], ["x"]), ['ja/two:2 total: planted line has no "50,000"']);
   });
+
+  it("組の相手の行は、どちらの版にもなければ言う", () => {
+    const paired: PlantedDocument = {
+      ...document,
+      mistakes: [{ kind: "total", rule: "total-mismatch", line: 2, pairedLine: 3, clean: "60,000", planted: "50,000" }],
+    };
+    assert.deepEqual(misalignedPlants(paired, ["x", "保守費60,000円", "y"], ["x", "保守費50,000円", "y"]), []);
+    assert.deepEqual(misalignedPlants(paired, ["x", "保守費60,000円", "y"], ["x", "保守費50,000円"]), [
+      "ja/two:2 total: paired line 3 is past the end of the document",
+    ]);
+  });
+});
+
+describe("isCaught", () => {
+  const paired = { kind: "enrolment-after-graduation", rule: "due-before-issue", line: 11, pairedLine: 13, clean: "a", planted: "b" };
+  const unpaired = mistake("enrolment-after-graduation", "due-before-issue", 11);
+
+  it("狙いの rule の指摘が、植えた行か組の相手の行にあれば見つけた", () => {
+    assert.equal(isCaught(paired, [{ rule: "due-before-issue", line: 11 }]), true);
+    assert.equal(isCaught(paired, [{ rule: "due-before-issue", line: 13 }]), true);
+  });
+
+  it("ほかの行の指摘、組の相手の行でもほかの rule の指摘は見逃し", () => {
+    assert.equal(isCaught(paired, [{ rule: "due-before-issue", line: 12 }]), false);
+    assert.equal(isCaught(paired, [{ rule: "date-range-reversed", line: 13 }]), false);
+    assert.equal(isCaught(paired, [{ rule: "date-range-reversed", line: 11 }]), false);
+    assert.equal(isCaught(paired, []), false);
+  });
+
+  it("組の相手を書かない誤りは、植えた行だけを見る", () => {
+    assert.equal(isCaught(unpaired, [{ rule: "due-before-issue", line: 13 }]), false);
+    assert.equal(isCaught(unpaired, [{ rule: "due-before-issue", line: 11 }]), true);
+  });
 });
 
 describe("recallByKind", () => {
@@ -106,6 +150,21 @@ describe("recallByKind", () => {
       { language: "ja", kind: "dangling", rule: "dangling-reference", found: 0, total: 1, missed: ["ja/one:5"] },
       { language: "en", kind: "total", rule: "total-mismatch", found: 0, total: 1, missed: ["en/one:2"] },
     ]);
+  });
+
+  it("組の相手の行に書いた指摘も、その誤りを見つけたと数える", () => {
+    const paired: PlantedDocument[] = [
+      {
+        id: "en/one",
+        language: "en",
+        genre: "legal/contract",
+        clean: "c",
+        planted: "p",
+        mistakes: [{ ...mistake("total", "total-mismatch", 2), pairedLine: 4 }],
+      },
+    ];
+    assert.deepEqual(recallByKind(paired, new Map([["en/one", [{ rule: "total-mismatch", line: 4 }]]]))[0]?.found, 1);
+    assert.deepEqual(recallByKind(paired, new Map([["en/one", [{ rule: "total-mismatch", line: 5 }]]]))[0]?.missed, ["en/one:2"]);
   });
 
   it("指摘の無い文書は、すべて見逃し", () => {

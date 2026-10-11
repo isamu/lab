@@ -1,6 +1,7 @@
 // `yarn planted [set...]`: the planted sets (test/fixtures/planted/<set>/), every set when none is named. Each document of
 // a set has a clean version and a planted one, and the set's manifest.json lists every planted mistake with its kind, line
-// and the rule expected to report it. Every document is run as `chaff --genre <genre>` would run it (the genre's levels, no
+// and the rule expected to report it (and, for a mistake that breaks a pair of lines, the pair's other line as pairedLine,
+// where the rule's finding counts too). Every document is run as `chaff --genre <genre>` would run it (the genre's levels, no
 // other experimental rule), under a chaff.yaml naming the document's style when the manifest gives one, and the script prints how many planted mistakes of each kind were reported on their line, per
 // language, and the findings the clean versions get from those rules. The score is compared with the set's expected.json,
 // and the run fails when it differs: a recall that dropped or rose, or a clean document that gained or lost a finding.
