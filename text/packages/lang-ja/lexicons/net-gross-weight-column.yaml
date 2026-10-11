@@ -1,0 +1,20 @@
+# 重さの表（梱包明細書、パッキングリスト）で、列の見出しが言う役割（net-over-gross）。group: net は品物だけの重さ（正味）、
+# gross は梱包を含めた重さ（総重量）。正味と総重量の両方を言う見出しの列は読まない。
+# group: qualifier は数のあとに書かれると、その数をちょうどの重さでなくする語（100kg以上、50kg程度）。その升は比べない。
+id: net-gross-weight-column
+language: ja
+entries:
+  - { pattern: 正味重量, group: net }
+  - { pattern: 純重量, group: net }
+  - { pattern: ネット重量, group: net }
+  - { pattern: N.W., group: net }
+  - { pattern: 総重量, group: gross }
+  - { pattern: グロス重量, group: gross }
+  - { pattern: G.W., group: gross }
+  - { pattern: 以上, group: qualifier }
+  - { pattern: 以下, group: qualifier }
+  - { pattern: 未満, group: qualifier }
+  - { pattern: 超, group: qualifier }
+  - { pattern: 程度, group: qualifier }
+  - { pattern: 前後, group: qualifier }
+  - { pattern: 予定, group: qualifier }

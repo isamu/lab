@@ -58,9 +58,9 @@ const pluralsOf = (unit: string): string[] => [
 ];
 
 /** One unit, written singular or plural: "box" and "boxes", "copy" and "copies". */
-const sameUnit = (left: string, right: string): boolean => left === right || pluralsOf(left).includes(right) || pluralsOf(right).includes(left);
+export const sameUnit = (left: string, right: string): boolean => left === right || pluralsOf(left).includes(right) || pluralsOf(right).includes(left);
 
-const offsetOf = (cell: TableCell): number => cell.start + (cell.text.length - cell.text.trimStart().length);
+export const offsetOf = (cell: TableCell): number => cell.start + (cell.text.length - cell.text.trimStart().length);
 
 /** The counts of a row's columns, when every one is a count in one unit; undefined when any cell says something else. */
 const countsOf = (row: readonly TableCell[], indexes: readonly number[], qualifiers: readonly string[]): Count[] | undefined => {
@@ -71,7 +71,7 @@ const countsOf = (row: readonly TableCell[], indexes: readonly number[], qualifi
   return read;
 };
 
-const bodyRows = (table: ChangeTable): (readonly TableCell[])[] => table.rows.filter((row) => row.length === table.header.length);
+export const bodyRows = (table: ChangeTable): (readonly TableCell[])[] => table.rows.filter((row) => row.length === table.header.length);
 
 const columnsOfTable = (table: ChangeTable, words: QuantityWords): QuantityColumns | undefined =>
   quantityColumnsOf(
