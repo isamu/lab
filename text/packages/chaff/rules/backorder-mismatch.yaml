@@ -1,0 +1,57 @@
+id: backorder-mismatch
+layer: L3
+status: stable
+how_to_find: backorder-mismatch
+# The ordered, delivered and backordered columns are found by the language's order-quantity-column lexicon.
+extra_word_lists: [order-quantity-column]
+severity: warning
+
+name:
+  ja: 残数が発注数量から納品数量を引いた数と合わない
+  en: A backordered quantity that is not the ordered less the delivered
+
+why:
+  ja: 納品書の分納の欄や発注残の一覧では、残数（未納数、発注残）は同じ行の発注数量から納品数量を引いた数です。読み手は残りがいくつ届くかをこの数で知り、引き算し直しません。納品数量だけを直したとき、別の行の残数を写したとき、桁を打ち間違えたときに食い違います。どの列が発注数量、納品数量、残数かは、列の見出しの語（発注数量、納品数量、残数、未納数、Ordered、Delivered、Backordered、Remaining）だけで決めます。列の並びでは決めません。比べるのは、三つの升がどれも同じ単位の書いた整数である行だけです。
+  en: "In the backorder section of a delivery note or a list of open orders, the backordered (remaining, outstanding) quantity of a row is the ordered quantity less the delivered quantity of the same row. Readers learn from it how much is still to come and do not do the subtraction again. It goes wrong when only the delivered quantity is corrected, when the remainder of another row is copied, or when a digit is mistyped. Which column is ordered, delivered and backordered is decided by the heading words alone (Ordered, Delivered, Shipped, Backordered, Remaining, Outstanding), never by where a column stands. Only rows where all three cells are written whole numbers in the same unit are compared."
+
+message:
+  ja: 残数「{backordered}」は、同じ行の発注数量と納品数量からは {computed} です
+  en: 'The backordered quantity "{backordered}" is written, but the ordered and delivered quantities on the row give {computed}'
+
+how_to_fix:
+  ja: 発注数量、納品数量、残数のどれが正しいかを確かめて、ほかを直してください。
+  en: Check which of the ordered, delivered and backordered quantities is right, and correct the others.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 表の同じ行で、残数が発注数量から納品数量を引いた数と違う所
+  en: A backordered quantity that is not the ordered less the delivered on its row
+example:
+  ja:
+    before: |
+      | 品名 | 発注数量 | 納品数量 | 残数 |
+      | --- | --- | --- | --- |
+      | ホッチキス針 | 50箱 | 30箱 | 25箱 |
+    after: |
+      | 品名 | 発注数量 | 納品数量 | 残数 |
+      | --- | --- | --- | --- |
+      | ホッチキス針 | 50箱 | 30箱 | 20箱 |
+  en:
+    before: |
+      | Item | Ordered | Delivered | Backordered |
+      | --- | --- | --- | --- |
+      | Staples (box) | 50 boxes | 30 boxes | 25 boxes |
+    after: |
+      | Item | Ordered | Delivered | Backordered |
+      | --- | --- | --- | --- |
+      | Staples (box) | 50 boxes | 30 boxes | 20 boxes |
+
+not_flagged:
+  ja: 発注数量、納品数量、残数の列のどれかが無い表、どれかの列が二つ以上ある表（前回と今回の納品数量は、片方だけでは残りを決めない）は比べません。発注と納品の両方を言う見出しの列がある表も比べません。升が空、「-」、「未定」、小数、符号やかっこ付き、「以上」「程度」の付いた行、三つの升の単位が違う行も比べません。ほかの列にも同じ単位の数がある行（期首在庫）は、残数がそれも数えているかもしれないので比べません。納品数量が発注数量より多い行は、残数を比べず delivered-over-ordered に任せます。
+  en: "A table missing the ordered, delivered or backordered column, or with two of any of them (delivered previously and now: neither alone says what is left), is not compared. Neither is a table with a heading that names both ordered and delivered. A row whose cell is blank, a dash, TBD, a decimal, signed, bracketed or a bound (10 or more), or whose three cells are in different units, is skipped. A row with another count in the same unit (opening stock) is skipped: the remainder may count it too. A row that delivered more than was ordered is left to delivered-over-ordered and its remainder is not compared."
