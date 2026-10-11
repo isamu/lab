@@ -1,5 +1,5 @@
 import type { StructureIssue } from "./issues.ts";
-import { runsOf, type Line } from "./runs.ts";
+import { runsOf, TABLE_RULE, type Line } from "./runs.ts";
 import { bareNumbersIn, CELL_SEPARATOR, NO_UNIT } from "./bare-numbers.ts";
 
 /**
@@ -65,10 +65,34 @@ const centsOf = (source: string, line: Line, amount: Amount): number | undefined
   return Math.round(amount.value * CENTS) * (isNegative(source, line, amount) ? -1 : 1);
 };
 
-/** 行が合計の行か。語彙で決める判定は呼ぶ側が渡す。 */
-export type IsTotalLine = (text: string) => boolean;
+/** 行が合計の行か。語彙で決める判定は呼ぶ側が渡す。header は表の見出しの行（無ければ undefined）。 */
+export type IsTotalLine = (text: string, header: string | undefined) => boolean;
 
-const entryOf = (source: string, line: Line, amounts: readonly Amount[], isTotal: IsTotalLine): Entry => ({
+/** source の中で start から始まる行のすぐ前の行。 */
+const lineBefore = (source: string, start: number): { readonly start: number; readonly text: string } | undefined => {
+  if (start === 0) return undefined;
+  const begin = source.lastIndexOf("\n", start - 2) + 1;
+  return { start: begin, text: source.slice(begin, start - 1) };
+};
+
+/** 表の行のすぐ上が区切りの行（| --- |）なら、そのすぐ上の見出しの行。続けて書いた次の表の見出しも、ここで行ごとに拾う。 */
+const headerAbove = (source: string, line: Line): string | undefined => {
+  const rule = lineBefore(source, line.start);
+  if (line.kind !== "table" || rule === undefined || !TABLE_RULE.test(rule.text)) return undefined;
+  const header = lineBefore(source, rule.start);
+  return header?.text.includes("|") === true ? header.text : undefined;
+};
+
+/** 一つの並びに続けて書いた表を、見出しごとに分ける。下の表の合計に、上の表の行を足さないため。 */
+const tablesIn = (source: string, run: readonly Line[]): Line[][] =>
+  run.reduce<Line[][]>((tables, line, index) => {
+    const current = tables.at(-1);
+    if (current === undefined || (index > 0 && headerAbove(source, line) !== undefined)) tables.push([line]);
+    else current.push(line);
+    return tables;
+  }, []);
+
+const entryOf = (source: string, line: Line, amounts: readonly Amount[], isTotal: (text: string) => boolean): Entry => ({
   label: isTotal(source.slice(line.start, line.end)),
   amounts: amounts
     .filter((amount) => amount.offset >= line.start && amount.offset <= line.end)
@@ -216,11 +240,18 @@ const mismatchesIn = (source: string, entries: readonly Entry[]): StructureIssue
     });
   });
 
+/** 一つの表（見出しの下の行）の合計。名詞の付いた合計の行は、その表の見出しで読む。 */
+const tableMismatches = (source: string, table: readonly Line[], amounts: readonly Amount[], isTotal: IsTotalLine): StructureIssue[] => {
+  const header = table[0] === undefined ? undefined : headerAbove(source, table[0]);
+  const isTotalHere = (text: string): boolean => isTotal(text, header);
+  return mismatchesIn(
+    source,
+    table.map((line) => entryOf(source, line, amounts, isTotalHere)),
+  );
+};
+
 export const totalMismatches = (source: string, amounts: readonly Amount[], isTotal: IsTotalLine): StructureIssue[] =>
   runsOf(source).flatMap((run) => {
     const inRun = [...amounts, ...bareNumbersIn(source, run)];
-    return mismatchesIn(
-      source,
-      run.map((line) => entryOf(source, line, inRun, isTotal)),
-    );
+    return tablesIn(source, run).flatMap((table) => tableMismatches(source, table, inRun, isTotal));
   });

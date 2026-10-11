@@ -1,24 +1,10 @@
-# The column headings of a lab or checkup results table (reference-flag-mismatch). Group value is the column of the result,
-# range the reference range, flag the flag. Matched as the whole heading, a unit in brackets at its end left out ("Result
-# (mg/dL)" is Result). A table is read only when each of the three names exactly one column.
+# The column headings of a lab results table that only reference-flag-mismatch reads; the words both rules read are in
+# lab-result-column. Matched as the whole heading, a unit in brackets at its end left out ("Result (mg/dL)" is Result). A
+# table is read only when the result, range and flag columns are each named exactly once.
 id: reference-column-heading
 language: en
 entries:
-  - { pattern: Result, group: value }
-  - { pattern: Results, group: value }
-  - { pattern: Value, group: value }
-  - { pattern: Your result, group: value }
-  - { pattern: Your value, group: value }
-  - { pattern: Reference range, group: range }
-  - { pattern: Reference ranges, group: range }
-  - { pattern: Reference interval, group: range }
-  - { pattern: Reference value, group: range }
+  - { pattern: Value, group: result }
+  - { pattern: Your value, group: result }
   - { pattern: Reference, group: range }
-  - { pattern: Ref. range, group: range }
-  - { pattern: Ref range, group: range }
-  - { pattern: Normal range, group: range }
   - { pattern: Normal values, group: range }
-  - { pattern: Flag, group: flag }
-  - { pattern: Flags, group: flag }
-  - { pattern: Abnormal flag, group: flag }
-  - { pattern: H/L, group: flag }

@@ -30,10 +30,10 @@ const WORDS: ReferenceUnitWords = {
     { pattern: "%", unit: "percent" },
   ],
   columns: [
-    { pattern: "結果", role: "result" },
-    { pattern: "前回", role: "result" },
-    { pattern: "基準値", role: "range" },
-    { pattern: "単位", role: "unit" },
+    { pattern: "結果", column: "result" },
+    { pattern: "前回", column: "result" },
+    { pattern: "基準値", column: "range" },
+    { pattern: "単位", column: "unit" },
   ],
 };
 
