@@ -213,7 +213,12 @@ const lineAmountsOf = (doc: ProseDocument, amounts: readonly Amount[]): Amount[]
 /** 合計の行と内訳の行、文の中の合計と内訳。同じ金額は一度だけ言う。単位の付いた量は、表と箇条書きの合計だけで足す。 */
 const totalIssues = (doc: ProseDocument, tree: NonNullable<ProseDocument["structure"]>): StructureIssue[] => {
   const amounts = summableAmountsOf(doc, tree);
-  const words = { labels: patternsOf(doc, "total-label"), qualifiers: doc.lexicons["total-label-qualifier"] ?? [] };
+  const words = {
+    labels: patternsOf(doc, "total-label"),
+    qualifiers: doc.lexicons["total-label-qualifier"] ?? [],
+    nounQualifiers: doc.lexicons["total-noun-qualifier"] ?? [],
+    unsummedNouns: patternsOf(doc, "total-noun-unsummed"),
+  };
   const lines = totalMismatches(doc.source, lineAmountsOf(doc, amounts), (text, header) => isTotalLine(text, words, header));
   const phrases = {
     totals: patternsOf(doc, "total-phrase"),
