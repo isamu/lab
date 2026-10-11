@@ -2,11 +2,17 @@
 // of planted mistakes, scoring the findings on the planted and clean documents per kind of mistake, and comparing the
 // score with the set's committed one (only a regression fails; an improvement is reported until it is recorded).
 
-/** One planted mistake: the line it is on (1-based), the text the clean document has there and what the planted one has instead. */
+/**
+ * One planted mistake: the line it is on (1-based), the text the clean document has there and what the planted one has
+ * instead. A mistake that breaks a pair of lines (an enrolment date after the graduation date) may name the pair's other
+ * line as pairedLine: a rule that compares the two reports on whichever is written second, so its finding on either line
+ * counts as a catch.
+ */
 export type PlantedMistake = {
   readonly kind: string;
   readonly rule: string;
   readonly line: number;
+  readonly pairedLine?: number;
   readonly clean: string;
   readonly planted: string;
 };
@@ -64,14 +70,25 @@ const stringField = (entry: Record<string, unknown>, field: string, where: strin
 const styleOf = (entry: Record<string, unknown>, where: string): Pick<PlantedDocument, "style"> =>
   entry["style"] === undefined ? {} : { style: stringField(entry, "style", where) };
 
+const isLineNumber = (value: unknown): value is number => typeof value === "number" && Number.isInteger(value) && value >= 1;
+
+/** A paired line is optional; one that is written must be another line of the document. */
+const pairedLineOf = (value: Record<string, unknown>, line: number, where: string): Pick<PlantedMistake, "pairedLine"> => {
+  const { pairedLine } = value;
+  if (pairedLine === undefined) return {};
+  if (!isLineNumber(pairedLine) || pairedLine === line) throw new Error(`planted manifest: ${where} has a pairedLine that is not another line`);
+  return { pairedLine };
+};
+
 const mistakeOf = (value: unknown, where: string): PlantedMistake => {
   if (!isRecord(value)) throw new Error(`planted manifest: ${where} is not an object`);
   const { line } = value;
-  if (typeof line !== "number" || !Number.isInteger(line) || line < 1) throw new Error(`planted manifest: ${where} has no line`);
+  if (!isLineNumber(line)) throw new Error(`planted manifest: ${where} has no line`);
   return {
     kind: stringField(value, "kind", where),
     rule: stringField(value, "rule", where),
     line,
+    ...pairedLineOf(value, line, where),
     clean: stringField(value, "clean", where),
     planted: stringField(value, "planted", where),
   };
@@ -99,6 +116,11 @@ export const parseManifest = (value: unknown): PlantedDocument[] => {
   return value.documents.map(documentOf);
 };
 
+const pairedLineProblems = (mistake: PlantedMistake, cleanLines: readonly string[], plantedLines: readonly string[]): string[] =>
+  mistake.pairedLine === undefined || mistake.pairedLine <= Math.min(cleanLines.length, plantedLines.length)
+    ? []
+    : [`paired line ${String(mistake.pairedLine)} is past the end of the document`];
+
 /**
  * Each planted mistake whose line does not hold its text: the clean line must have `clean` and the planted line
  * `planted`. A line that moved when one of the documents was edited would score a finding against the wrong line.
@@ -110,13 +132,18 @@ export const misalignedPlants = (document: PlantedDocument, cleanLines: readonly
     const problems = [
       ...(cleanLine.includes(mistake.clean) ? [] : [`clean line has no "${mistake.clean}"`]),
       ...(plantedLine.includes(mistake.planted) ? [] : [`planted line has no "${mistake.planted}"`]),
+      ...pairedLineProblems(mistake, cleanLines, plantedLines),
     ];
     return problems.map((problem) => `${document.id}:${String(mistake.line)} ${mistake.kind}: ${problem}`);
   });
 
 const keyOf = (language: string, kind: string): string => `${language}\u0000${kind}`;
 
-/** Per language and kind, in the order the manifest first names them: which planted mistakes their rule reported on their line. */
+/** Whether the mistake's rule reported it: on its line, or on the line it is paired with. No other rule and no other line counts. */
+export const isCaught = (mistake: PlantedMistake, findings: readonly LineFinding[]): boolean =>
+  findings.some((finding) => finding.rule === mistake.rule && (finding.line === mistake.line || finding.line === mistake.pairedLine));
+
+/** Per language and kind, in the order the manifest first names them: which planted mistakes their rule reported on their line (or its paired line). */
 export const recallByKind = (documents: readonly PlantedDocument[], plantedFindings: ReadonlyMap<string, readonly LineFinding[]>): KindRecall[] => {
   const byKind = new Map<string, KindRecall>();
   documents.forEach((document) => {
@@ -124,7 +151,7 @@ export const recallByKind = (documents: readonly PlantedDocument[], plantedFindi
     document.mistakes.forEach((mistake) => {
       const key = keyOf(document.language, mistake.kind);
       const previous = byKind.get(key) ?? { language: document.language, kind: mistake.kind, rule: mistake.rule, found: 0, total: 0, missed: [] };
-      const found = findings.some((finding) => finding.rule === mistake.rule && finding.line === mistake.line);
+      const found = isCaught(mistake, findings);
       byKind.set(key, {
         ...previous,
         found: previous.found + (found ? 1 : 0),

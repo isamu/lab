@@ -1,5 +1,5 @@
 {
-  "note": "Self-written academic transcripts (成績証明書・修了証明書 / academic transcript, certificate of completion) for made-up schools and students: a university transcript and a vocational-school certificate of completion with grades, each in a clean version and a planted one that differs only on the lines below. They run as business/report, the genre the checkup reports run as: no genre is made for transcripts. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: gpa-mismatch (a grade-point average that is not the sum of each course's grade points times its credits, divided by the credits of the course rows). The credit total and the grade-point average are both read from the course rows, so the planted credit total does not move the average the GPA plant is compared with. An enrolment date after the graduation date is planted two ways: on a labelled enrolment date line, named for due-before-issue, which compares a pair of labelled dates (enrolment-after-graduation), and on the start of a period of enrolment written as a range (enrolment-period-reversed), named for date-range-reversed. An issue date before the graduation or completion date is named for due-before-issue too; the graduation and completion dates are never planted, so the two date plants do not depend on each other. A student number with two neighbouring characters swapped is named for reference-number-variant, and an age that the date of birth does not give on the date written beside it for elapsed-years-mismatch; the age is counted on the date in its own parentheses, not on the issue date. Each plant was also run alone on its clean document, so no plant depends on another. yarn planted transcripts scores them; expected.json is the committed score.",
+  "note": "Self-written academic transcripts (成績証明書・修了証明書 / academic transcript, certificate of completion) for made-up schools and students: a university transcript and a vocational-school certificate of completion with grades, each in a clean version and a planted one that differs only on the lines below. They run as business/report, the genre the checkup reports run as: no genre is made for transcripts. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: gpa-mismatch (a grade-point average that is not the sum of each course's grade points times its credits, divided by the credits of the course rows). The credit total and the grade-point average are both read from the course rows, so the planted credit total does not move the average the GPA plant is compared with. An enrolment date after the graduation date is planted two ways: on a labelled enrolment date line, named for due-before-issue, which compares a pair of labelled dates and reports the one written second (enrolment-after-graduation, so it names the graduation line as its pairedLine, where that finding counts too), and on the start of a period of enrolment written as a range (enrolment-period-reversed), named for date-range-reversed. An issue date before the graduation or completion date is named for due-before-issue too; the graduation and completion dates are never planted, so the two date plants do not depend on each other. A student number with two neighbouring characters swapped is named for reference-number-variant, and an age that the date of birth does not give on the date written beside it for elapsed-years-mismatch; the age is counted on the date in its own parentheses, not on the issue date. Each plant was also run alone on its clean document, so no plant depends on another. yarn planted transcripts scores them; expected.json is the committed score.",
   "documents": [
     {
       "id": "ja/university",
@@ -19,6 +19,7 @@
           "kind": "enrolment-after-graduation",
           "rule": "due-before-issue",
           "line": 11,
+          "pairedLine": 13,
           "clean": "入学年月日：2022年4月1日",
           "planted": "入学年月日：2026年4月1日"
         },
@@ -135,6 +136,7 @@
           "kind": "enrolment-after-graduation",
           "rule": "due-before-issue",
           "line": 11,
+          "pairedLine": 13,
           "clean": "Date of enrolment: April 1, 2022",
           "planted": "Date of enrolment: April 1, 2026"
         },
