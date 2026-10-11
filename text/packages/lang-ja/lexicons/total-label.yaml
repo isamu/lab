@@ -1,9 +1,10 @@
 # 合計の行を示す語。行の最初（表なら最初の列）にこの語があれば、その行の金額を上の金額の和と比べる。
 id: total-label
 language: ja
+# group subtotal: 表の一部の合計で、文書の合計ではない（fact-conflict は文書全体で一つの項目の値として読まない）。
 entries:
   - pattern: 合計
-  - pattern: 小計
+  - { pattern: 小計, group: subtotal }
   - pattern: 総計
   - pattern: 総額
   - pattern: 計

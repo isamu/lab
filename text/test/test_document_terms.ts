@@ -195,6 +195,54 @@ describe("fact-conflict: a whole-document item across sections", () => {
     assert.deepEqual(en2(...tableEn, "", "Other dependants: 2"), []);
   });
 
+  it("the days in hospital in a table and in a sentence (ja, en)", () => {
+    const tableJa = ["## 入院の概要", "", "| 項目 | 内容 |", "| --- | --- |", "| 病棟 | 西3階 |", "| 入院日数 | 5日 |", ""];
+    assert.deepEqual(ja2(...tableJa, "今回の入院日数は、6日です。"), ["今回の入院日数:6日≠5日"]);
+    assert.deepEqual(ja2(...tableJa, "## 診療明細", "", "入院日数は6日です。"), ["入院日数:6日≠5日"]);
+    assert.deepEqual(ja2(...tableJa, "今回の入院日数は、5日です。"), []);
+    assert.deepEqual(ja2(...tableJa, "前回の入院日数は、6日です。"), []);
+    const tableEn = ["## Stay", "", "| Item | Detail |", "| --- | --- |", "| Ward | West 3 |", "| Days in hospital | 5 days |", ""];
+    assert.deepEqual(en2(...tableEn, "This stay was 6 days in hospital."), ["days in hospital:6 days≠5 days"]);
+    assert.deepEqual(en2(...tableEn, "## Charges", "", "The length of stay was 6 days."), ["The length of stay:6 days≠5 days"]);
+    assert.deepEqual(en2(...tableEn, "This stay was 5 days in hospital."), []);
+    assert.deepEqual(en2(...tableEn, "Cover starts after 3 days in hospital."), []);
+    assert.deepEqual(en2(...tableEn, "The previous stay was 6 days in hospital."), []);
+  });
+
+  it("the carton count in a table's total row, under a column named for it (ja, en)", () => {
+    const tableJa = [
+      "## 梱包",
+      "",
+      "| 品名 | 箱数 | 総重量 |",
+      "| --- | --- | --- |",
+      "| 軸受け | 2箱 | 80kg |",
+      "| ボルト | 3箱 | 40kg |",
+      "| 合計 | 5箱 | 120kg |",
+      "",
+    ];
+    assert.deepEqual(ja2(...tableJa, "## 荷印", "", "箱数は6箱です。"), ["箱数:6箱≠5箱"]);
+    assert.deepEqual(ja2(...tableJa, "## 荷印", "", "箱数は5箱です。"), []);
+    assert.deepEqual(ja2(...tableJa, "## 荷印", "", "ボルト 箱数は2箱です。"), []);
+    const otherColumn = ["## 梱包", "", "| 品名 | 数量 | 総重量 |", "| --- | --- | --- |", "| 軸受け | 2箱 | 80kg |", "| 合計 | 5箱 | 120kg |", ""];
+    assert.deepEqual(ja2(...otherColumn, "## 荷印", "", "箱数は6箱です。"), []);
+    const subtotal = ["## 梱包", "", "| 品名 | 箱数 |", "| --- | --- |", "| 軸受け | 2箱 |", "| ボルト | 3箱 |", "| 小計 | 5箱 |", ""];
+    assert.deepEqual(ja2(...subtotal, "## 二便目", "", "箱数は6箱です。"), []);
+    const rowNotTotal = ["## 梱包", "", "| 品名 | 箱数 | 総重量 |", "| --- | --- | --- |", "| 軸受け | 5箱 | 80kg |", ""];
+    assert.deepEqual(ja2(...rowNotTotal, "## 荷印", "", "箱数は6箱です。"), []);
+    const tableEn = [
+      "## Packages",
+      "",
+      "| Description | Number of cartons | Gross weight |",
+      "| --- | --- | --- |",
+      "| Sensors | 2 | 80 kg |",
+      "| Brackets | 2 | 40 kg |",
+      "| Total | 4 | 120 kg |",
+      "",
+    ];
+    assert.deepEqual(en2(...tableEn, "## Marks", "", "Number of cartons: 5"), ["Number of cartons:5≠4"]);
+    assert.deepEqual(en2(...tableEn, "## Marks", "", "Number of cartons: 4"), []);
+  });
+
   it("an item not in the lexicon is still compared only within a section", () => {
     assert.deepEqual(ja2("## 条件", "", "| 項目 | 内容 |", "| --- | --- |", "| 研修期間 | 3ヶ月 |", "", "## その他", "", "研修期間は6ヶ月です。"), []);
   });

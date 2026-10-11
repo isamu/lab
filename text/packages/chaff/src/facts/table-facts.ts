@@ -49,25 +49,40 @@ const cellValue = (cell: Cell, values: readonly FactValue[], source: string): Fa
 
 const keyOf = (label: string): string => label.normalize("NFKC").toLowerCase().replace(/\s+/gu, " ");
 
-const rowFacts = (row: Line, headings: readonly string[], values: readonly FactValue[], source: string): Fact[] => {
+/**
+ * 合計の行の見分け方と、文書全体で一つの値を持つ項目の名前。合計の行（| 合計 | 5箱 |）の、列の見出しがその項目の名前（箱数）の升は、
+ * 列の見出しだけを名前にする: 列の合計が文書の値。ほかの行の升は、行の名前が付いた別の名前のまま。
+ */
+export type TotalColumns = { readonly labels: readonly string[]; readonly isTerm: (heading: string) => boolean };
+
+const isTotalRow = (rowLabel: string, totals: TotalColumns | undefined): boolean =>
+  totals !== undefined && totals.labels.some((label) => keyOf(label) === keyOf(rowLabel));
+
+const cellLabel = (rowLabel: string, column: string, headings: readonly string[], total: boolean, totals: TotalColumns | undefined): string => {
+  if (total && totals?.isTerm(column) === true) return column;
+  return headings.length > TWO_COLUMNS ? `${rowLabel} ${column}` : rowLabel;
+};
+
+const rowFacts = (row: Line, headings: readonly string[], values: readonly FactValue[], source: string, totals?: TotalColumns): Fact[] => {
   const [first, ...rest] = cellsOf(row);
   if (first === undefined) return [];
   const rowLabel = plain(first.text);
   if (!LETTER.test(rowLabel) || values.some((value) => inside(first, value))) return [];
+  const total = isTotalRow(rowLabel, totals);
   return rest.flatMap((cell, index) => {
     const value = cellValue(cell, values, source);
     const column = headings[index + 1] ?? "";
     if (value === undefined || (headings.length > TWO_COLUMNS && column === "")) return [];
-    const label = headings.length > TWO_COLUMNS ? `${rowLabel} ${column}` : rowLabel;
+    const label = cellLabel(rowLabel, column, headings, total, totals);
     return [{ label, key: keyOf(label), value, table: true }];
   });
 };
 
 /** 文書の表すべての升の値。 */
-export const tableFacts = (source: string, values: readonly FactValue[]): Fact[] =>
+export const tableFacts = (source: string, values: readonly FactValue[], totals?: TotalColumns): Fact[] =>
   tablesOf(linesOf(source)).flatMap((table) => {
     const headings = cellsOf(table.header).map((cell) => plain(cell.text));
-    return table.rows.flatMap((row) => rowFacts(row, headings, values, source));
+    return table.rows.flatMap((row) => rowFacts(row, headings, values, source, totals));
   });
 
 /** 文書の表すべての、本体の行の升（見出しの行を除く）。text は書いたまま。 */

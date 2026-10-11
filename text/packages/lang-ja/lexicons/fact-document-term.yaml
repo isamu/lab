@@ -19,3 +19,9 @@ entries:
   # 税の計算に使う扶養親族の人数。源泉徴収の明細では一人に一通り。区分ごとの人数（一般の扶養親族）は別の名前。
   - { pattern: 扶養親族の数, group: dependants-count }
   - { pattern: 扶養人数, group: dependants-count }
+  # 一回の出荷の箱の数。梱包明細では一通り。品目ごとの箱の数は、行の名前が付くので別の名前。
+  - { pattern: 箱数, group: carton-count }
+  - { pattern: 個口数, group: carton-count }
+  - { pattern: 梱包数, group: carton-count }
+  # 一回の入院の日数。診療明細では一通り。
+  - { pattern: 入院日数, group: days-in-hospital }

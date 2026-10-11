@@ -26,3 +26,11 @@ entries:
   # ("Children under 17") is another name.
   - { pattern: number of dependants, group: dependants-count }
   - { pattern: number of dependents, group: dependants-count }
+  # The number of cartons in one shipment: one value in a packing list. A count per item carries the item's name and is
+  # another name.
+  - { pattern: number of cartons, group: carton-count }
+  - { pattern: total cartons, group: carton-count }
+  - { pattern: number of packages, group: carton-count }
+  # The length of one hospital stay: one value in an itemized bill.
+  - { pattern: days in hospital, group: days-in-hospital }
+  - { pattern: length of stay, group: days-in-hospital }
