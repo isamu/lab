@@ -1,11 +1,21 @@
 import { isTotalLabel, leadingText } from "./total.ts";
+import { CELL_SEPARATOR } from "./bare-numbers.ts";
 import { outsideBrackets } from "./connection-times.ts";
 
 /** 合計の語に添える語。position が before なら合計の語の前だけ、after なら後ろだけ、無ければどちらにも置ける。 */
 export type TotalQualifier = { readonly pattern: string; readonly position?: "before" | "after" | undefined };
 
-/** labels: 合計の語（total-label）。qualifiers: 合計の語の前後に置いても合計の行のままの語（total-label-qualifier）。 */
-export type TotalLineWords = { readonly labels: readonly string[]; readonly qualifiers: readonly TotalQualifier[] };
+/**
+ * labels: 合計の語（total-label）。qualifiers: 合計の語の前後に置いても合計の行のままの語（total-label-qualifier）。
+ * nounQualifiers: 合計に付けた名詞の前後に置いても、数える物を変えない語（total-noun-qualifier。修得単位の修得、credits earned の earned）。
+ * unsummedNouns: 上の行の和とは限らない量の名詞（total-noun-unsummed。部屋を並べた表の Total area は、廊下も含みうる）。
+ */
+export type TotalLineWords = {
+  readonly labels: readonly string[];
+  readonly qualifiers: readonly TotalQualifier[];
+  readonly nounQualifiers?: readonly TotalQualifier[] | undefined;
+  readonly unsummedNouns?: readonly string[] | undefined;
+};
 
 /** 見出しの終わり。区切り（: |）があればそこまで、無ければ金額の始まりまで。 */
 const SEPARATOR = /[:：|]/u;
@@ -70,37 +80,83 @@ const namesEachOther = (nouns: readonly string[], headerWords: readonly string[]
   nouns.every((noun) => headerWords.some((word) => sameWord(noun, word))) &&
   headerWords.every((word) => nouns.some((noun) => sameWord(noun, word)));
 
+/** 二つの字が続けて一つの英数字の語になるか。 */
+const joinsWord = (left: string | undefined, right: string | undefined): boolean => WORD_CHAR.test(left ?? "") && WORD_CHAR.test(right ?? "");
+
 const boundedAt = (text: string, total: string, index: number): boolean =>
-  !(WORD_CHAR.test(total[0] ?? "") && WORD_CHAR.test(text[index - 1] ?? "")) &&
-  !(WORD_CHAR.test(total.at(-1) ?? "") && WORD_CHAR.test(text[index + total.length] ?? ""));
+  !joinsWord(text[index - 1], total[0]) && !joinsWord(total.at(-1), text[index + total.length]);
+
+/** 名詞に添える語を、語の頭（修得単位の修得）と尻から除く。英数字の語の途中（earnedincome）では切らない。 */
+const withoutNounQualifiers = (word: string, before: ReadonlySet<string>, after: ReadonlySet<string>): string => {
+  const prefix = [...before].find((qualifier) => qualifier.length > 0 && word.startsWith(qualifier) && !joinsWord(qualifier.at(-1), word[qualifier.length]));
+  const rest = prefix === undefined ? word : word.slice(prefix.length);
+  const suffix = [...after].find(
+    (qualifier) => qualifier.length > 0 && rest.endsWith(qualifier) && !joinsWord(rest[rest.length - qualifier.length - 1], qualifier[0]),
+  );
+  return suffix === undefined ? rest : rest.slice(0, rest.length - suffix.length);
+};
+
+/** 数を書いた升。強調の印と負の印（-、▲）と通貨の記号は、数の前に置ける。 */
+const NUMBER_CELL = /^[*_]*[-−▲△]?[ \t]?[$€£¥￥]?[ \t]?[-−]?\p{N}/u;
+
+/** 表の行の升。行頭の区切り（|）の前は升にしない。 */
+const cellsOf = (row: string): string[] => row.trim().replace(/^\|/u, "").split(CELL_SEPARATOR);
+
+/** 合計の行が数を書いた列の見出し。最初の列（合計の語を書いた列）は除く。 */
+const summedColumnHeaders = (row: string, header: string): string[] => {
+  const headers = cellsOf(header);
+  return cellsOf(row)
+    .map((cell, column) => ({ cell: cell.trim(), column }))
+    .filter(({ cell, column }) => column > 0 && NUMBER_CELL.test(cell))
+    .map(({ column }) => headers[column] ?? "");
+};
+
+type Split = { readonly before: readonly string[]; readonly after: readonly string[] };
 
 /** 見出しの中の合計の語の位置ごとに、その前と後ろの語。日本語の「控除合計」は、合計の語の前の「控除」を一語にする。 */
-const splitsAround = (text: string, total: string): { before: string[]; after: string[] }[] =>
+const splitsAround = (text: string, total: string): Split[] =>
   Array.from({ length: text.length }, (_, index) => index)
     .filter((index) => total.length > 0 && text.startsWith(total, index) && boundedAt(text, total, index))
     .map((index) => ({ before: wordsOf(text.slice(0, index)), after: wordsOf(text.slice(index + total.length)) }));
 
 /**
- * 合計の語に、添える語のほかに名詞（控除、deductions）を付けた見出しが、表の見出しの升（控除項目、Deduction）が名指す
- * 項目の合計か。名詞が表の見出しに無ければ、別の種類の量（Total tax、Total area）かもしれないので読まない。
+ * 合計の語に、添える語のほかに名詞（控除、deductions）を付けた見出しが、表の見出しが名指す項目の合計か。名指すのは、最初の列の
+ * 見出し（控除項目の表の控除合計）か、合計の行が数を書いたどの列の見出し（単位数の列の修得単位合計）でもよい。名詞が見出しに
+ * 無ければ、別の種類の量（Total tax、Total area）かもしれないので読まない。
+ */
+/** 合計の語の前後の語から、合計の語に添える語を除き、残った名詞から名詞に添える語（修得、earned）を除く。 */
+const nounsOf = (split: Split, words: TotalLineWords): string[] => {
+  const before = allowedOn("before", words.qualifiers);
+  const after = allowedOn("after", words.qualifiers);
+  const nounBefore = allowedOn("before", words.nounQualifiers ?? []);
+  const nounAfter = allowedOn("after", words.nounQualifiers ?? []);
+  return [...split.before.filter((word) => !before.has(word)), ...split.after.filter((word) => !after.has(word))]
+    .map((word) => withoutNounQualifiers(word, nounBefore, nounAfter))
+    .filter((word) => word.length > 0);
+};
+
+const isUnsummed = (nouns: readonly string[], unsummedNouns: readonly string[]): boolean =>
+  nouns.some((noun) => unsummedNouns.some((word) => sameWord(noun, word.toLowerCase())));
+
+/**
+ * 合計の語に、添える語のほかに名詞（控除、deductions）を付けた見出しが、表の見出しが名指す項目の合計か。名指すのは、最初の列の
+ * 見出し（控除項目の表の控除合計）か、合計の行が数を書いたどの列の見出し（単位数の列の修得単位合計）でもよい。名詞が見出しに
+ * 無ければ、別の種類の量（Total tax、Total area）かもしれないので読まない。
  */
 const isNamedTotal = (text: string, words: TotalLineWords, header: string): boolean => {
   const label = labelWords(text).join(" ");
-  const headerWords = labelWords(header);
-  const before = allowedOn("before", words.qualifiers);
-  const after = allowedOn("after", words.qualifiers);
-  return words.labels.some((total) =>
-    splitsAround(label, total.toLowerCase()).some((split) => {
-      const nouns = [...split.before.filter((word) => !before.has(word)), ...split.after.filter((word) => !after.has(word))];
-      return namesEachOther(nouns, headerWords);
-    }),
-  );
+  const firstColumn = labelWords(header);
+  const columns = summedColumnHeaders(text, header).map(labelWords);
+  const namesTotal = (nouns: readonly string[]): boolean =>
+    !isUnsummed(nouns, words.unsummedNouns ?? []) &&
+    (namesEachOther(nouns, firstColumn) || (columns.length > 0 && columns.every((headerWords) => namesEachOther(nouns, headerWords))));
+  return words.labels.some((total) => splitsAround(label, total.toLowerCase()).some((split) => namesTotal(nounsOf(split, words))));
 };
 
 /**
  * 合計の行か。合計の語で始まる行（Total、合計（月額））に加えて、合計の語に添える語だけを前後に置いた見出し
  * （Total per month、Monthly total、Total due）も合計の行と読む。添える語でない語（Total area）が入れば読まない。
- * 表の見出しの行（header）を渡せば、その最初の升が名指す名詞を付けた見出し（控除項目の表の控除合計）も合計の行と読む。
+ * 表の見出しの行（header）を渡せば、その見出しが名指す名詞を付けた見出し（控除項目の表の控除合計、単位数の列の修得単位合計）も合計の行と読む。
  */
 export const isTotalLine = (text: string, words: TotalLineWords, header?: string): boolean => {
   if (isTotalLabel(text, words.labels)) return true;

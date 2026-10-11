@@ -170,6 +170,40 @@ describe("total-mismatch", () => {
     assert.deepEqual(found(table("293,000円", "25,150円"), ja, "ja"), []);
   });
 
+  it("a total with a noun is read when the header of the column it sums names the noun: 修得単位合計 under 単位数, Total credits earned under Credits", () => {
+    const japanese = (total: string): string =>
+      doc(
+        "| 科目 | 単位数 | 評価 |",
+        "| --- | --- | --- |",
+        "| 基礎演習 | 2 | A |",
+        "| 外国語 | 4 | B |",
+        "| 卒業研究 | 8 | A |",
+        `| 修得単位合計 | ${total} | — |`,
+      );
+    assert.deepEqual(found(japanese("16"), ja, "ja"), ["16≠14"]);
+    assert.deepEqual(found(japanese("14"), ja, "ja"), []);
+    const english = (total: string): string =>
+      doc(
+        "| Course | Credits | Grade |",
+        "| --- | --- | --- |",
+        "| Seminar | 2 | A |",
+        "| Language | 4 | B |",
+        "| Thesis | 8 | A |",
+        `| Total credits earned | ${total} | — |`,
+      );
+    assert.deepEqual(found(english("12")), ["12≠14"]);
+    assert.deepEqual(found(english("14")), []);
+  });
+
+  it("a total whose noun names no summed column, or a quantity that need not add up, is not read", () => {
+    const hours = doc("| Course | Credits | Hours |", "| --- | --- | --- |", "| Seminar | 2 | 30 |", "| Thesis | 8 | 90 |", "| Total credits | — | 150 |");
+    assert.deepEqual(found(hours), []);
+    const rooms = doc("| 部屋 | 面積 |", "| --- | --- |", "| 洋室 | 12.5㎡ |", "| 台所 | 8.0㎡ |", "| 面積合計 | 52.8㎡ |");
+    assert.deepEqual(found(rooms, ja, "ja"), []);
+    const english = doc("| Room | Area |", "| --- | --- |", "| Bedroom | 12.5 m² |", "| Kitchen | 8.0 m² |", "| Total area | 52.8 m² |");
+    assert.deepEqual(found(english), []);
+  });
+
   it("a second table written right under the first starts its own rows and its own header", () => {
     const tables = (firstHeader: string, secondHeader: string, total = "$30"): string =>
       doc(

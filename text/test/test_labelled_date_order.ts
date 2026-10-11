@@ -632,3 +632,45 @@ describe("due-before-issue (period, order): 給与明細の支給日、出張の
     assert.deepEqual(findingsOf("# 精算\n\n帰着：2026年9月16日\n\n支給日：2026年9月10日\n"), []);
   });
 });
+
+const orderJa = (orderLabel: string, ordered: string, deliveryLabel: string, delivered: string): string =>
+  `# 注文書\n\n発注番号：PO-0001\n\n${orderLabel}：${ordered}\n\n発注先：架空工業株式会社 御中\n\n${deliveryLabel}：${delivered}\n\n| 品名 | 数量 |\n| --- | --- |\n| 架空部品A | 10 |\n`;
+
+const orderEn = (orderLabel: string, ordered: string, deliveryLabel: string, delivered: string): string =>
+  `# Purchase Order\n\nPO number: PO-0001\n\n${orderLabel}: ${ordered}\n\nSupplier: Example Parts Ltd.\n\n${deliveryLabel}: ${delivered}\n\n| Item | Qty |\n| --- | --- |\n| Example part A | 10 |\n`;
+
+describe("due-before-issue (order): 発注書と納品書の納期", () => {
+  it("発注日より前の納期や納品日を指す", () => {
+    assert.deepEqual(findingsOf(orderJa("発注日", "2026年9月14日", "納期", "2026年9月8日")), [
+      "「納期」（2026年9月8日）が、「発注日」（2026年9月14日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(orderJa("注文日", "2026年9月14日", "納品日", "2026年9月5日")), [
+      "「納品日」（2026年9月5日）が、「注文日」（2026年9月14日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(orderJa("受注日", "2026年9月14日", "納入日", "2026年9月1日")), [
+      "「納入日」（2026年9月1日）が、「受注日」（2026年9月14日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(orderEn("Order date", "September 14, 2026", "Delivery date", "September 8, 2026"), en), [
+      '"Delivery date" September 8, 2026 is before "Order date" September 14, 2026',
+    ]);
+    assert.deepEqual(findingsOf(orderEn("PO date", "September 14, 2026", "Delivered on", "September 5, 2026"), en), [
+      '"Delivered on" September 5, 2026 is before "PO date" September 14, 2026',
+    ]);
+  });
+
+  it("発注日の後や同じ日の納期、年の無い日付は言わない", () => {
+    assert.deepEqual(findingsOf(orderJa("発注日", "2026年9月14日", "納期", "2026年9月28日")), []);
+    assert.deepEqual(findingsOf(orderJa("発注日", "2026年9月14日", "納品日", "2026年9月14日")), []);
+    assert.deepEqual(findingsOf(orderJa("発注日", "9月14日", "納期", "9月8日")), []);
+    assert.deepEqual(findingsOf(orderEn("Order date", "September 14, 2026", "Delivery date", "September 28, 2026"), en), []);
+    assert.deepEqual(findingsOf(orderEn("Order date", "September 14", "Delivery date", "September 8"), en), []);
+  });
+
+  it("納期限や支払いの Due date は納期と読まず、別の組の語どうしは組まない", () => {
+    assert.deepEqual(findingsOf(orderJa("発注日", "2026年9月14日", "納期限", "2026年9月8日")), []);
+    assert.deepEqual(findingsOf(orderEn("Order date", "September 14, 2026", "Due date", "September 8, 2026"), en), []);
+    assert.deepEqual(findingsOf("# 請求書\n\n納品日：2026年9月25日\n\n発行日：2026年9月30日\n"), []);
+    assert.deepEqual(findingsOf("# Invoice\n\nDelivery date: September 25, 2026\n\nInvoice date: September 30, 2026\n", en), []);
+    assert.deepEqual(findingsOf("# ご案内\n\n契約日：2026年9月14日\n\n納期：2026年9月8日\n"), []);
+  });
+});
