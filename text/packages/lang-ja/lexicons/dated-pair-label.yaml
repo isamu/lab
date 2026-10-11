@@ -97,3 +97,13 @@ entries:
   - { pattern: "出発日", group: trip, position: before }
   - { pattern: "帰着", group: trip, position: after }
   - { pattern: "帰着日", group: trip, position: after }
+  # 発注書や納品書。納期と納品日は、発注した日より前に来ない。発注書の納期は希望する納品の日で、これも発注より後に来る。
+  - { pattern: "発注日", group: order, position: before }
+  - { pattern: "注文日", group: order, position: before }
+  - { pattern: "ご注文日", group: order, position: before }
+  - { pattern: "受注日", group: order, position: before }
+  - { pattern: "納期", group: order, position: after }
+  - { pattern: "希望納期", group: order, position: after }
+  - { pattern: "納品日", group: order, position: after }
+  - { pattern: "納品予定日", group: order, position: after }
+  - { pattern: "納入日", group: order, position: after }
