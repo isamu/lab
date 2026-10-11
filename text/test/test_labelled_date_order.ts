@@ -738,8 +738,10 @@ describe("due-before-issue (order): 成績証明書の入学、卒業・修了�
   });
 
   it("学歴の表のように先の日付が何行もあれば、いちばん近い先の日付と比べる", () => {
-    const historyJa = (rows: readonly (readonly [string, string])[]): string =>
-      `# 学歴\n\n| 項目 | 日付 |\n| --- | --- |\n${rows.map(([label, date]) => `| ${label} | ${date} |`).join("\n")}\n`;
+    const historyJa = (rows: readonly (readonly [string, string])[]): string => {
+      const tableRows = rows.map(([label, date]) => `| ${label} | ${date} |`);
+      return ["# 学歴", "", "| 項目 | 日付 |", "| --- | --- |", ...tableRows, ""].join("\n");
+    };
     const newestFirst = historyJa([
       ["入学年月日", "2022年4月1日"],
       ["卒業年月日", "2026年3月20日"],
