@@ -1,0 +1,23 @@
+# What a column of a transcript's course table holds, by its heading words (gpa-mismatch). group: course is the course,
+# credits the credits, grade the grade word, points a grade-points column (looked at first, so "Grade points" is not the
+# grade). Only a line holding a grade or points word is read as a grading key ("A (4)"). total is a word in the first
+# cell of a total row, which is not counted as a course.
+id: transcript-column
+language: en
+entries:
+  - { pattern: grade points, group: points }
+  - { pattern: grade point, group: points }
+  - { pattern: GP, group: points }
+  - { pattern: quality points, group: points }
+  - { pattern: grade, group: grade }
+  - { pattern: grades, group: grade }
+  - { pattern: grading, group: grade }
+  - { pattern: credits, group: credits }
+  - { pattern: credit, group: credits }
+  - { pattern: credit hours, group: credits }
+  - { pattern: units, group: credits }
+  - { pattern: course, group: course }
+  - { pattern: subject, group: course }
+  - { pattern: module, group: course }
+  - { pattern: total, group: total }
+  - { pattern: subtotal, group: total }
