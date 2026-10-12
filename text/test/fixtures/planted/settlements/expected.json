@@ -3,7 +3,7 @@
     "ja": {
       "settlement-before-contract": "0/2",
       "address-two-ways": "2/2",
-      "balance-due": "0/2",
+      "balance-due": "2/2",
       "tax-proration": "0/2",
       "brokerage-fee": "0/2",
       "party-name": "2/2",
@@ -12,7 +12,7 @@
     "en": {
       "settlement-before-contract": "0/2",
       "address-two-ways": "2/2",
-      "balance-due": "0/2",
+      "balance-due": "2/2",
       "tax-proration": "2/2",
       "brokerage-fee": "0/2",
       "party-name": "2/2",
