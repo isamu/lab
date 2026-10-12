@@ -148,6 +148,34 @@ describe("reference-number-variant", () => {
   it("does not run in literature", () => {
     assert.deepEqual(found(docJa("予約番号：MN-48215", "", "予約番号：MN-48251"), ja, "literature/fiction"), []);
   });
+
+  it("ja: 請求書番号・インボイス番号と、患者番号・診察券番号の入れ違いを指す", () => {
+    assert.deepEqual(found(docJa("インボイス番号：INV-58204", "", "お振込の際は、インボイス番号INV-58024をお書き添えください。"), ja), [5]);
+    assert.deepEqual(found(docJa("請求書番号：Q-31842", "", "請求書No. Q-31824"), ja), [5]);
+    assert.deepEqual(found(docJa("患者番号：4172093", "", "患者番号4172903の検査結果は、次回お伝えします。"), ja), [5]);
+    assert.deepEqual(found(docJa("診察券番号：0038-1265", "", "患者ID：0038-1256"), ja), [5]);
+  });
+
+  it("ja: 請求書番号と注文番号、患者番号と請求書番号は比べず、入れ違いより多く違う別の患者の番号は指さない", () => {
+    assert.deepEqual(found(docJa("請求書番号：Q-31842", "", "注文番号：Q-31824"), ja), []);
+    assert.deepEqual(found(docJa("注文番号：Q-31842", "", "インボイス番号：Q-31824"), ja), []);
+    assert.deepEqual(found(docJa("患者番号：4172093", "", "請求書番号：4172903"), ja), []);
+    assert.deepEqual(found(docJa("患者番号：4172093（母）", "", "患者番号：4127390（子）"), ja), []);
+  });
+
+  it("en: an invoice number or a patient number with two neighbouring characters swapped", () => {
+    assert.deepEqual(found(docEn("Invoice No.: KI-40731", "", "Please quote invoice number KI-47031 with your payment."), en), [5]);
+    assert.deepEqual(found(docEn("Invoice #KI-40731", "", "Invoice number: KI-40713"), en), [5]);
+    assert.deepEqual(found(docEn("Patient number: 7724-3168", "", "Results for patient number 7724-3186 follow."), en), [5]);
+    assert.deepEqual(found(docEn("Patient ID: 0038-1265", "", "Patient No. 0038-1256"), en), [5]);
+  });
+
+  it("en: an invoice number is never compared with an order number, and two patients' numbers that differ by more than a swap are not reported", () => {
+    assert.deepEqual(found(docEn("Invoice number: KI-40731", "", "Order number: KI-47031"), en), []);
+    assert.deepEqual(found(docEn("PO number: KI-40731", "", "Invoice No. KI-47031"), en), []);
+    assert.deepEqual(found(docEn("Patient number: 7724-3168", "", "Invoice number: 7724-3186"), en), []);
+    assert.deepEqual(found(docEn("Patient number: 7724-3168 (mother)", "", "Patient number: 7742-1368 (child)"), en), []);
+  });
 });
 
 describe("reference numbers", () => {
