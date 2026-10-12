@@ -16,6 +16,7 @@ const wordsIn = (lexicons: ReturnType<typeof loadEnglish>): TotalLineWords => ({
   nounQualifiers: lexicons["total-noun-qualifier"] ?? [],
   unsummedNouns: patterns(lexicons, "total-noun-unsummed"),
   periodQualifiers: lexicons["total-period-qualifier"] ?? [],
+  periodLabels: (lexicons["total-label"] ?? []).filter((entry) => entry.group === "period").map((entry) => entry.pattern),
   listedNouns: patterns(lexicons, "total-noun-listed"),
   amountNames: patterns(lexicons, "net-amount-label"),
 });
@@ -141,6 +142,8 @@ describe("isTotalLine", () => {
       "| 年度合計 | 98,300円 |",
       "- 年間合計：98,300円",
       "| **年間合計** | 98,300円 |",
+      "| 年額 | 98,300円 |",
+      "- 年額：98,300円",
     ].forEach((line) => {
       assert.equal(isTotalLine(line, ja), true, line);
       assert.equal(isPeriodTotalLine(line, ja), true, line);
@@ -166,7 +169,7 @@ describe("isTotalLine", () => {
       "| 年金合計 | 98,300円 |",
       "| 年間計画 | 12件 |",
       "| 年間 | 98,300円 |",
-      "| 年額 | 98,300円 |",
+      "| 年額保険料 | 98,300円 |",
     ].forEach((line) => assert.equal(isTotalLine(line, ja), false, line));
     [
       "| Prior-year total | $7,980.00 |",
@@ -181,6 +184,7 @@ describe("isTotalLine", () => {
     assert.equal(isPeriodTotalLine("| 合計 | 98,300円 |", ja), false);
     assert.equal(isPeriodTotalLine("| Total | $7,980.00 |", en), false);
     assert.equal(isPeriodTotalLine("| 年間合計 | 98,300円 |", { ...ja, periodQualifiers: undefined }), false);
+    assert.equal(isPeriodTotalLine("| 年額 | 98,300円 |", { ...ja, periodLabels: undefined }), false);
     assert.equal(isPeriodTotalLine("| 年間合計 | 98,300円 |", { ...ja, periodQualifiers: [{ pattern: "" }] }), false);
   });
 

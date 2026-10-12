@@ -17,6 +17,8 @@ export type TotalLineWords = {
   readonly unsummedNouns?: readonly string[] | undefined;
   /** 合計が足す期間の語（total-period-qualifier。年間合計の年間、Total for the year の for the year）。見出しの頭か尻から除いて読む。 */
   readonly periodQualifiers?: readonly TotalQualifier[] | undefined;
+  /** それだけで一年の合計を言う合計の語（total-label の group period。年額）。期間の語を付けた合計と同じに読む。 */
+  readonly periodLabels?: readonly string[] | undefined;
   /** 見出しが名指さなくても上の行の和と読める合計の名詞（total-noun-listed。差引合計の差引、Total deductions の deductions）。 */
   readonly listedNouns?: readonly string[] | undefined;
   /** 差し引きで決まる金額の名前（net-amount-label。総支給額、Gross pay）。表の行がこの名前なら、表は一つの和の内訳ではない。 */
@@ -187,6 +189,7 @@ const withoutPeriod = (label: string, qualifier: TotalQualifier): string | undef
  * 前の年の合計（前年合計、Prior-year total）は、期間の語が頭にも尻にも無いので読まない。
  */
 export const isPeriodTotalLine = (text: string, words: TotalLineWords): boolean => {
+  if (isTotalLabel(text, words.periodLabels ?? [])) return true;
   const label = labelWords(text).join(" ");
   return (words.periodQualifiers ?? []).some((qualifier) => {
     const rest = withoutPeriod(label, qualifier);

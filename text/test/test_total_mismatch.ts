@@ -160,6 +160,20 @@ describe("total-mismatch", () => {
     ]);
   });
 
+  it("年額 closes a table as the year's total, and a 年額 that is the monthly items times twelve is not compared", () => {
+    const installments = (second: string): string =>
+      doc("| 回 | 金額 |", "| --- | --- |", "| 前期分 | 820,000円 |", `| 後期分 | ${second} |`, "| 年額 | 1,390,000円 |");
+    assert.deepEqual(found(installments("580,000円"), ja, "ja"), ["1,390,000円≠1,400,000円"]);
+    assert.deepEqual(found(installments("570,000円"), ja, "ja"), []);
+    const monthly = (total: string): string => doc("| 項目 | 月額 |", "| --- | --- |", "| 家賃 | 80,000円 |", "| 管理費 | 5,000円 |", `| 年額 | ${total} |`);
+    assert.deepEqual(found(monthly("1,020,000円"), ja, "ja"), []);
+    assert.deepEqual(found(monthly("1,030,000円"), ja, "ja"), ["1,030,000円≠85,000円"]);
+    assert.deepEqual(
+      found(doc("| 項目 | 金額 |", "| --- | --- |", "| 年額保険料 | 36,000円 |", "| 事務手数料 | 1,000円 |", "| 月額 | 3,000円 |"), ja, "ja"),
+      [],
+    );
+  });
+
   it("a total with a noun is read when the table's header names the noun: 控除合計 under 控除項目, Total deductions under Deduction", () => {
     const deductions = (total: string): string =>
       doc(

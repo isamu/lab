@@ -2,9 +2,11 @@
 id: total-label
 language: ja
 # group subtotal: 表の一部の合計で、文書の合計ではない（fact-conflict は文書全体で一つの項目の値として読まない）。
+# group period: それだけで一年の合計を言う語。年間合計と同じく、内訳を一年に直した額（月額の内訳の12倍）なら比べない。
 entries:
   - pattern: 合計
   - { pattern: 小計, group: subtotal }
   - pattern: 総計
   - pattern: 総額
   - pattern: 計
+  - { pattern: 年額, group: period }
