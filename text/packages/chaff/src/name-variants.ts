@@ -5,6 +5,7 @@ import { isNearSurname } from "./surname-near.ts";
 import { foldedKeysOf, NO_SPELLING, type SpellingInput } from "./name-spelling-chars.ts";
 import { NO_CHAR_READINGS, readingOfWords } from "./name-char-reading.ts";
 import { isPersonRun } from "./name-person.ts";
+import { heavierFirst, outweighs, type NameWeight } from "./name-weight.ts";
 
 // 同じ名前（人・会社・製品）を、文書の中で少しだけ違う形に書いた所。どの形が正しいかは決めず、少ないほうを指す。
 // 三通りで同じ名前と見る。書き方の違いだけ（GitHub と Github、Mac OS と macOS）、読みが同じ（山田太郎 と 山田太朗）、
@@ -13,7 +14,8 @@ import { isPersonRun } from "./name-person.ts";
 /**
  * words は名前の語（記号を除く）。読みが同じ二つの名前が、どの語で違うかを見るため。person は人の名前と読めるもの（解析器が
  * 人名と読むか、敬称が付く）。cue は前後の語から見た名前らしさ（name-cue.ts）。ordinary は、ふつうの語でもある一語の名前で、
- * 文書がその形をどこでも名前に使わないもの（name-ordinary-word.ts）。
+ * 文書がその形をどこでも名前に使わないもの（name-ordinary-word.ts）。labelled は、人を書く欄（氏名：、Contractor:）に書いた名前
+ * （person-field.ts）。
  */
 export type NameMention = {
   readonly surface: string;
@@ -23,12 +25,13 @@ export type NameMention = {
   readonly person?: boolean;
   readonly cue?: NameCue;
   readonly ordinary?: boolean;
+  readonly labelled?: boolean;
 };
 
 export type NameVariant = {
   readonly mention: NameMention;
   readonly usual: string;
-  readonly kind: "spelling" | "kana" | "reading" | "near" | "surname" | "character";
+  readonly kind: "spelling" | "kana" | "reading" | "near" | "surname" | "character" | "field";
 };
 
 /** 字体の違う同じ字（斎・斉・齋）。字から、その組の代表の字へ。 */
@@ -102,61 +105,6 @@ export const mentionsIn = (tokens: readonly Token[], source: string, personSuffi
     return [{ surface, offset: first.span.start, reading, words: words.map((token) => token.surface), person }];
   });
 
-/** 隣の語を探す範囲（UTF-16 の単位）。 */
-const NEIGHBOUR_LOOKBACK = 40;
-/** 隣の語の外側の記号（(Rachel、Floyd.）。名前の側の記号（Rachel, Whitford の ,）は語を切るので残す。 */
-const MARK = /\p{P}/u;
-const withoutLeadingMarks = (word: string): string => {
-  const chars = [...word];
-  const start = chars.findIndex((char) => !MARK.test(char));
-  return start < 0 ? "" : chars.slice(start).join("");
-};
-const withoutTrailingMarks = (word: string): string => {
-  const chars = [...word];
-  return chars.slice(0, chars.findLastIndex((char) => !MARK.test(char)) + 1).join("");
-};
-
-const wordBeforeAt = (source: string, offset: number): string | undefined => {
-  if (source.charAt(offset - 1) !== " ") return undefined;
-  const from = Math.max(0, offset - 1 - NEIGHBOUR_LOOKBACK);
-  const parts = source.slice(from, offset - 1).split(/\s/u);
-  const word = withoutLeadingMarks(parts.at(-1) ?? "");
-  return word === "" || (from > 0 && parts.length === 1) ? undefined : word;
-};
-
-const wordAfterAt = (source: string, end: number): string | undefined => {
-  if (source.charAt(end) !== " ") return undefined;
-  const word = withoutTrailingMarks(source.slice(end + 1, end + 1 + NEIGHBOUR_LOOKBACK).split(/\s/u)[0] ?? "");
-  return word === "" ? undefined : word;
-};
-
-/**
- * 解析器が名前の一語を名前と読まなかった所（to Rachel Whitford の Rachel を動詞と読む）。空白一つで隣の語と合わせた形を、ほかの所で
- * 名前と読めていれば、その形の現れと見る。隣の語がほかの名前の現れに入るなら合わせない。
- */
-export const withKnownNeighbours = (mentions: readonly NameMention[], source: string): NameMention[] => {
-  const known = new Set(mentions.filter((mention) => mention.words.length >= 2).map((mention) => mention.surface));
-  const taken = (start: number, end: number): boolean => mentions.some((mention) => mention.offset < end && start < mention.offset + mention.surface.length);
-  return mentions.map((mention) => {
-    const end = mention.offset + mention.surface.length;
-    const before = wordBeforeAt(source, mention.offset);
-    const after = wordAfterAt(source, end);
-    if (before !== undefined && known.has(`${before} ${mention.surface}`) && !taken(mention.offset - 1 - before.length, mention.offset - 1)) {
-      return {
-        ...mention,
-        surface: `${before} ${mention.surface}`,
-        offset: mention.offset - 1 - before.length,
-        reading: undefined,
-        words: [before, ...mention.words],
-      };
-    }
-    if (after !== undefined && known.has(`${mention.surface} ${after}`) && !taken(end + 1, end + 1 + after.length)) {
-      return { ...mention, surface: `${mention.surface} ${after}`, reading: undefined, words: [...mention.words, after] };
-    }
-    return mention;
-  });
-};
-
 /** 敬称の前の名前の字数（髙橋、髙橋太郎）。長い漢字の連なり（株式会社髙橋）は名前だけを切り出せない。 */
 const MAX_SUFFIXED_NAME = 4;
 const MIN_SUFFIXED_NAME = 2;
@@ -216,7 +164,7 @@ export const nameKey = (surface: string): string =>
 export type NameEvidence = { readonly person: boolean; readonly named: boolean; readonly nameLike: boolean };
 
 /** readings は書き方の現れの読みのすべて。解析器は同じ字を所によって別に読む（佐伯 を サエキ と サイキ）。 */
-type Tally = NameEvidence & { readonly surface: string; readonly first: NameMention; readonly count: number; readonly readings: readonly string[] };
+type Tally = NameEvidence & NameWeight & { readonly surface: string; readonly first: NameMention; readonly readings: readonly string[] };
 
 const readingsWith = (readings: readonly string[], reading: string | undefined): readonly string[] =>
   reading === undefined || readings.includes(reading) ? readings : [...readings, reading];
@@ -236,7 +184,7 @@ const talliesOf = (mentions: readonly NameMention[]): Tally[] => {
     tallies.set(
       mention.surface,
       tally === undefined
-        ? { surface: mention.surface, first: mention, count: 1, readings: readingsWith([], mention.reading), ...evidence }
+        ? { surface: mention.surface, first: mention, count: 1, readings: readingsWith([], mention.reading), labelled: mention.labelled === true, ...evidence }
         : {
             ...tally,
             count: tally.count + 1,
@@ -244,15 +192,16 @@ const talliesOf = (mentions: readonly NameMention[]): Tally[] => {
             person: tally.person || evidence.person,
             named: tally.named || evidence.named,
             nameLike: tally.nameLike || evidence.nameLike,
+            labelled: tally.labelled || mention.labelled === true,
           },
     );
   });
   return [...tallies.values()];
 };
 
-/** 多いほう。同数なら先に書いたほう。 */
+/** 重いほう（name-weight.ts）。同じ重さなら先に書いたほう。 */
 const usualOf = (group: readonly Tally[]): Tally | undefined =>
-  group.toSorted((left, right) => right.count - left.count || left.first.offset - right.first.offset)[0];
+  group.toSorted((left, right) => heavierFirst(left, right) || left.first.offset - right.first.offset)[0];
 
 const groupBy = (tallies: readonly Tally[], keysOf: (tally: Tally) => readonly string[]): Tally[][] => {
   const groups = new Map<string, Tally[]>();
@@ -268,13 +217,17 @@ const groupBy = (tallies: readonly Tally[], keysOf: (tally: Tally) => readonly s
 
 /**
  * 組の中で、それぞれの書き方を、同じ名前と言える相手（alike）のうち多いほうと比べる。組全体で一番多いものとだけ比べると、
- * 同じ読みの別の名前（山田太郎 と 矢間田多労）が多ければ、本当の書き分け（山田太朗）が隠れる。
+ * 同じ読みの別の名前（山田太郎 と 矢間田多労）が多ければ、本当の書き分け（山田太朗）が隠れる。alike が数を問う見方では、
+ * 一度だけ書いた相手を選んだのは人を書く欄に書いたからなので、field と言う。
  */
-const variantsIn = (groups: readonly Tally[][], kind: NameVariant["kind"], alike: (tally: Tally, other: Tally) => boolean = () => true): NameVariant[] =>
+type Alike = (tally: Tally, other: Tally) => boolean;
+
+const variantsIn = (groups: readonly Tally[][], kind: NameVariant["kind"], alike: Alike = () => true, counted = false): NameVariant[] =>
   groups.flatMap((group) =>
     group.flatMap((tally) => {
       const usual = usualOf([tally, ...group.filter((other) => other !== tally && alike(tally, other))]);
-      return usual === undefined || usual === tally ? [] : [{ mention: tally.first, usual: usual.surface, kind }];
+      if (usual === undefined || usual === tally) return [];
+      return [{ mention: tally.first, usual: usual.surface, kind: counted && usual.count === 1 ? "field" : kind }];
     }),
   );
 
@@ -337,28 +290,28 @@ const differingWords = (left: Tally, right: Tally): readonly [string, string] | 
   return leftWords.length === rightWords.length && leftWord !== undefined && rightWord !== undefined ? [leftWord, rightWord] : undefined;
 };
 
-/** 一語だけが一字違いで、相手が二度以上、こちらが一度だけ。どちらもふつうの語（Green と Greek）なら、別の二つの語。 */
+/** 一語だけが一字違いで、相手のほうが重い（outweighs）。どちらもふつうの語（Green と Greek）なら、別の二つの語。 */
 const isSlipOf = (tally: Tally, other: Tally): boolean => {
-  if (tally.count !== 1 || other.count < 2 || (tally.first.ordinary === true && other.first.ordinary === true)) return false;
+  if (!outweighs(other, tally) || (tally.first.ordinary === true && other.first.ordinary === true)) return false;
   const words = differingWords(tally, other);
   return words !== undefined && isNearWord(...words);
 };
 
-const nearVariants = (tallies: readonly Tally[]): NameVariant[] => variantsIn(groupBy(tallies, maskedKeys), "near", isSlipOf);
+const nearVariants = (tallies: readonly Tally[]): NameVariant[] => variantsIn(groupBy(tallies, maskedKeys), "near", isSlipOf, true);
 
 /**
  * 名が同じで姓だけが二字ほど違う人の名前（Rachel Whitford と Rachel Whitfield）。一字違い（near）より遠いので、名と姓の二語以上
- * で、違うのが最後の語のときに限る。相手が二度以上、こちらが一度だけ。名の違う二人（Sara Whitford と Rachel Whitfield）は比べない。
+ * で、違うのが最後の語のときに限る。相手のほうが重い（outweighs）。名の違う二人（Sara Whitford と Rachel Whitfield）は比べない。
  */
 const isSurnameSlipOf = (tally: Tally, other: Tally): boolean => {
-  if (tally.count !== 1 || other.count < 2) return false;
+  if (!outweighs(other, tally)) return false;
   const [words, others] = [wordsOf(tally.surface), wordsOf(other.surface)];
   const last = words.length - 1;
   const sameBefore = words.slice(0, last).every((word, index) => word === others[index]);
   return last >= 1 && words.length === others.length && sameBefore && isNearSurname(words[last] ?? "", others[last] ?? "");
 };
 
-const surnameVariants = (tallies: readonly Tally[]): NameVariant[] => variantsIn(groupBy(tallies, maskedKeys), "surname", isSurnameSlipOf);
+const surnameVariants = (tallies: readonly Tally[]): NameVariant[] => variantsIn(groupBy(tallies, maskedKeys), "surname", isSurnameSlipOf, true);
 
 /** 字体の違う字（斎と斉）を組の代表の字に寄せた形。 */
 const characterKey = (tally: Tally, chars: VariantChars): string => [...tally.surface].map((letter) => chars.get(letter) ?? letter).join("");
@@ -389,10 +342,10 @@ const oneCharApart = (left: string, right: string): boolean => {
 };
 
 /**
- * 読みが同じ人の名前が、一字だけ違う（松本 と 松元）。読みの同じ別の姓（伊藤 と 伊東）もあるので、多いほうが二度以上、
- * 少ないほうが一度だけのときに限る。
+ * 読みが同じ人の名前が、一字だけ違う（松本 と 松元）。読みの同じ別の姓（伊藤 と 伊東）もあるので、相手のほうが重い（outweighs）
+ * ときに限る。
  */
-const isPersonSlipOf = (tally: Tally, other: Tally): boolean => tally.count === 1 && other.count >= 2 && oneCharApart(tally.surface, other.surface);
+const isPersonSlipOf = (tally: Tally, other: Tally): boolean => outweighs(other, tally) && oneCharApart(tally.surface, other.surface);
 
 const personReadingVariants = (tallies: readonly Tally[]): NameVariant[] =>
   variantsIn(
@@ -402,6 +355,7 @@ const personReadingVariants = (tallies: readonly Tally[]): NameVariant[] =>
     ),
     "reading",
     isPersonSlipOf,
+    true,
   );
 
 /**

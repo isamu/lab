@@ -1,5 +1,6 @@
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
-import { cuedNamesIn, mentionsIn, nameVariants, suffixedNamesIn, withKnownNeighbours, type NameMention, type VariantChars } from "../name-variants.ts";
+import { cuedNamesIn, mentionsIn, nameVariants, suffixedNamesIn, type NameMention, type VariantChars } from "../name-variants.ts";
+import { withKnownNeighbours } from "../name-neighbours.ts";
 import type { SpellingInput } from "../name-spelling-chars.ts";
 import { readingOfWords, type CharReadings } from "../name-char-reading.ts";
 import { nameCueAt, type NameCues } from "../name-cue.ts";
@@ -17,6 +18,7 @@ import { modelCodeFindings } from "./name-variant-model-codes.ts";
 import { fullNameGaps, joinFullNames, spacedOnly } from "../person-full-name.ts";
 import { spacedPersonNamesIn } from "../spaced-person-name.ts";
 import { isOrdinaryToken, withOrdinaryWords } from "../name-ordinary-word.ts";
+import { isInPersonField } from "../person-field.ts";
 import { labelledSpans, orderNamesOf, quotedSpans, stemOf, titleCaseSpans, wordOrderVariants, type OrderWord } from "../name-word-order.ts";
 
 // 人の名前と読ませる敬称（様、さん）は語彙表 person-suffix、人を指す前置き（担当の）は person-lead、名前のすぐ後ろに来る語
@@ -286,11 +288,20 @@ const ordinaryNamesOf = (doc: ProseDocument, mentions: readonly NameMention[]): 
   );
 };
 
+/** 人を書く欄（語彙表 person-label）に書いた名前に印を付ける。一度ずつ書いた二つの形のうち、欄の形を正しい形と見る。 */
+const labelledNamesOf = (doc: ProseDocument, mentions: readonly NameMention[]): NameMention[] => {
+  const labels = patternsOf(doc, "person-label");
+  const suffixes = patternsOf(doc, "person-suffix");
+  return mentions.map((mention) =>
+    isInPersonField(doc.source, mention.offset, mention.surface.length, labels, suffixes) ? { ...mention, labelled: true } : mention,
+  );
+};
+
 /** 同じ名前を、文書の中で少しだけ違う形に書いた所（GitHub と Github、山田太郎 と 山田太朗）。少ないほうを指す。 */
 export const nameVariant: Detector = (doc): Finding[] => {
   const prose = doc.prose ?? doc.source;
   const chars = variantCharsOf(doc);
-  const mentions = ordinaryNamesOf(doc, nameMentionsOf(doc, prose, chars));
+  const mentions = labelledNamesOf(doc, ordinaryNamesOf(doc, nameMentionsOf(doc, prose, chars)));
   const names = nameVariants(mentions, chars, spellingInputOf(doc))
     .map(({ mention, usual, kind }): Reported => ({ offset: mention.offset, name: mention.surface, usual, kind }))
     .filter(notSpacingOnly);

@@ -1,7 +1,9 @@
 # Labels a person's name is written after, at the start of a line ("Customer: Ellen Marsh", "Signed by: Tom Green"). name-variant
 # reads the last of the one to three capitalised words after the colon as a surname the document uses for a person, so a
-# surname that is also an ordinary word (Marsh, Green) is still compared. The label is matched whole, ignoring case
-# ("Company name" is not "Name"). Only labels a person's name follows belong here, not "Location" or "Company".
+# surname that is also an ordinary word (Marsh, Green) is still compared. When a name is written once in such a field and once
+# elsewhere with a slip (Contractor: Priya Raman, then "by Priya Rahman"), name-variant takes the field's spelling as the right
+# one. The label is matched whole, ignoring case ("Company name" is not "Name"). Only labels a person's name follows belong
+# here, not "Location" or "Company".
 id: person-label
 language: en
 entries:
@@ -17,6 +19,7 @@ entries:
   - pattern: Guest
   - pattern: Student
   - pattern: Employee
+  - pattern: Contractor
   - pattern: Approver
   - pattern: Signed by
   - pattern: Prepared by
