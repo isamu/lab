@@ -14,6 +14,7 @@ import {
   type NameEvidence,
   type NameMention,
 } from "../packages/chaff/src/name-variants.ts";
+import { isTitledIn, withOrdinaryWords } from "../packages/chaff/src/name-ordinary-word.ts";
 import type { Token } from "../packages/chaff/src/plugin.ts";
 import { spacedPersonNamesIn } from "../packages/chaff/src/spaced-person-name.ts";
 
@@ -247,6 +248,56 @@ describe("the reading behind name-variant", () => {
     assert.deepEqual(nameVariants([mention("Walker", 0), mention("Waller", 10)]), []);
     assert.deepEqual(nameVariants([mention("Walker", 0), mention("Walker", 5), mention("Waller", 10), mention("Waller", 15)]), []);
     assert.equal(nameVariants([mention("Walker", 0), mention("Walker", 5), mention("Waller", 10)]).length, 1);
+  });
+
+  it("two ordinary words one letter apart (Course and Curse) are two words, not one name written two ways", () => {
+    const ordinary = (surface: string, offset: number): NameMention => ({ ...mention(surface, offset), ordinary: true });
+    assert.deepEqual(nameVariants([ordinary("Course", 0), ordinary("Course", 10), ordinary("Curse", 20)]), []);
+    assert.equal(nameVariants([ordinary("Marsh", 0), ordinary("Marsh", 10), mention("Marhs", 20)]).length, 1);
+    assert.equal(nameVariants([mention("Okafor", 0), mention("Okafor", 10), ordinary("Okafur", 20)]).length, 1);
+    assert.equal(nameVariants([ordinary("Marsh", 0), mention("Marsh", 10), ordinary("March", 20)]).length, 1);
+  });
+
+  it("isTitledIn: a word the document writes after a title is used as a person's name", () => {
+    const titles = ["Mr.", "Ms.", "Dr", "Senator"];
+    assert.equal(isTitledIn("Then Mr. Marsh signed.", titles, "Marsh"), true);
+    assert.equal(isTitledIn("Ask Senator\nMarsh.", titles, "Marsh"), true);
+    assert.equal(isTitledIn("Dr Marsh left.", titles, "Marsh"), true);
+    assert.equal(isTitledIn("The marsh flooded. Mr. Marshall came.", titles, "Marsh"), false);
+    assert.equal(isTitledIn("Mr. Green left. Marsh stayed.", titles, "Marsh"), false);
+    assert.equal(isTitledIn("DMr. Marsh", ["Mr."], "Marsh"), false);
+    assert.equal(isTitledIn("Mr. Marsh", [], "Marsh"), false);
+    assert.equal(isTitledIn("", titles, "Marsh"), false);
+  });
+
+  it("withOrdinaryWords marks one-word names on an ordinary word that no title precedes", () => {
+    const source = "Green won. Mr. Marsh paid. Marsh left. Helen Green came.";
+    const mentions = [mention("Green", 0), mention("Marsh", 15), mention("Marsh", 27), mention("Helen Green", 39), mention("Okafor", 60)];
+    const starts = new Set([0, 15, 27, 39, 60]);
+    const marked = withOrdinaryWords(mentions, starts, source, ["Mr."]).map((found) => found.ordinary === true);
+    assert.deepEqual(marked, [true, false, false, false, true]);
+    assert.deepEqual(
+      withOrdinaryWords(mentions, new Set(), source, ["Mr."]).map((found) => found.ordinary === true),
+      [false, false, false, false, false],
+    );
+    assert.deepEqual(withOrdinaryWords([], starts, source, ["Mr."]), []);
+  });
+
+  it("capitalised ordinary words one letter apart are not reported; a name on an ordinary word still is", () => {
+    assert.deepEqual(variants("The menu was in Greek. The sign was in Greek. The door was painted Green.\n"), []);
+    assert.deepEqual(variants("Then Marsh pays. Then Marsh leaves. Later March files it.\n"), []);
+    assert.deepEqual(variants("Ask Marsh first. Then Marsh signs. Later Marhs files it.\n"), [
+      '"Marhs" is one letter away from "Marsh", which the document uses more than once',
+    ]);
+    assert.deepEqual(variants("Mr. Marsh signs the lease. Then Marsh pays. Then Marsh leaves. Later March files it.\n"), [
+      '"March" is one letter away from "Marsh", which the document uses more than once',
+    ]);
+    assert.deepEqual(variants("| Tenant |\n| --- |\n| Mr. Marsh |\n\nThen Marsh pays. Then Marsh leaves. Later March files it.\n"), [
+      '"March" is one letter away from "Marsh", which the document uses more than once',
+    ]);
+    assert.deepEqual(variants("Kenji Okafor sent it. Okafor called. Okafor paid. Okafur left.\n"), [
+      '"Okafur" is one letter away from "Okafor", which the document uses more than once',
+    ]);
   });
 
   it("a more frequent unrelated name in the same group does not hide the pair", () => {

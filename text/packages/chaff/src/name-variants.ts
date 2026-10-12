@@ -12,7 +12,8 @@ import { isPersonRun } from "./name-person.ts";
 
 /**
  * words は名前の語（記号を除く）。読みが同じ二つの名前が、どの語で違うかを見るため。person は人の名前と読めるもの（解析器が
- * 人名と読むか、敬称が付く）。cue は前後の語から見た名前らしさ（name-cue.ts）。
+ * 人名と読むか、敬称が付く）。cue は前後の語から見た名前らしさ（name-cue.ts）。ordinary は、ふつうの語でもある一語の名前で、
+ * 文書が敬称の後ろに書かないもの（name-ordinary-word.ts）。
  */
 export type NameMention = {
   readonly surface: string;
@@ -21,6 +22,7 @@ export type NameMention = {
   readonly words: readonly string[];
   readonly person?: boolean;
   readonly cue?: NameCue;
+  readonly ordinary?: boolean;
 };
 
 export type NameVariant = {
@@ -213,8 +215,17 @@ export const nameKey = (surface: string): string =>
  */
 export type NameEvidence = { readonly person: boolean; readonly named: boolean; readonly nameLike: boolean };
 
-/** readings は書き方の現れの読みのすべて。解析器は同じ字を所によって別に読む（佐伯 を サエキ と サイキ）。 */
-type Tally = NameEvidence & { readonly surface: string; readonly first: NameMention; readonly count: number; readonly readings: readonly string[] };
+/**
+ * readings は書き方の現れの読みのすべて。解析器は同じ字を所によって別に読む（佐伯 を サエキ と サイキ）。ordinary は、現れの
+ * すべてがふつうの語でもある一語の名前か。
+ */
+type Tally = NameEvidence & {
+  readonly surface: string;
+  readonly first: NameMention;
+  readonly count: number;
+  readonly readings: readonly string[];
+  readonly ordinary: boolean;
+};
 
 const readingsWith = (readings: readonly string[], reading: string | undefined): readonly string[] =>
   reading === undefined || readings.includes(reading) ? readings : [...readings, reading];
@@ -234,11 +245,12 @@ const talliesOf = (mentions: readonly NameMention[]): Tally[] => {
     tallies.set(
       mention.surface,
       tally === undefined
-        ? { surface: mention.surface, first: mention, count: 1, readings: readingsWith([], mention.reading), ...evidence }
+        ? { surface: mention.surface, first: mention, count: 1, readings: readingsWith([], mention.reading), ordinary: mention.ordinary === true, ...evidence }
         : {
             ...tally,
             count: tally.count + 1,
             readings: readingsWith(tally.readings, mention.reading),
+            ordinary: tally.ordinary && mention.ordinary === true,
             person: tally.person || evidence.person,
             named: tally.named || evidence.named,
             nameLike: tally.nameLike || evidence.nameLike,
@@ -335,9 +347,9 @@ const differingWords = (left: Tally, right: Tally): readonly [string, string] | 
   return leftWords.length === rightWords.length && leftWord !== undefined && rightWord !== undefined ? [leftWord, rightWord] : undefined;
 };
 
-/** 一語だけが一字違いで、相手が二度以上、こちらが一度だけ。 */
+/** 一語だけが一字違いで、相手が二度以上、こちらが一度だけ。どちらもふつうの語（Green と Greek）なら、別の二つの語。 */
 const isSlipOf = (tally: Tally, other: Tally): boolean => {
-  if (tally.count !== 1 || other.count < 2) return false;
+  if (tally.count !== 1 || other.count < 2 || (tally.ordinary && other.ordinary)) return false;
   const words = differingWords(tally, other);
   return words !== undefined && isNearWord(...words);
 };
