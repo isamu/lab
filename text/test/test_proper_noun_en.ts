@@ -1,6 +1,13 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
-import { capitalisedGuessedVerbsAsNames, lowercasedAt, properNounChecked, rereadAt, sentenceInitialCommonWord } from "../packages/lang-en/src/proper-noun.ts";
+import {
+  capitalisedGuessedVerbsAsNames,
+  isOrdinaryWord,
+  lowercasedAt,
+  properNounChecked,
+  rereadAt,
+  sentenceInitialCommonWord,
+} from "../packages/lang-en/src/proper-noun.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
@@ -201,6 +208,44 @@ describe("英語の文書で、to の後ろの名は固有名詞", () => {
     assert.equal(tagOf("We spoke to Sarah Lee.", "Sarah"), "PROPN");
     assert.equal(tagOf("Learn how to Change a tire.", "Change"), "VERB");
     assert.equal(tagOf("We need to Detach the cable.", "Detach"), "VERB");
+  });
+});
+
+describe("isOrdinaryWord", () => {
+  const VOCABULARY: Readonly<Record<string, readonly string[]>> = { course: ["NN", "RB"], mature: ["JJ", "NNP"], may: ["MD", "NNP"] };
+  const tagsOf = (word: string): readonly string[] | undefined => VOCABULARY[word];
+  // WordNet の語義の分類: 0 は adj.all、1 は adj.pert、10 は noun.communication、15 は noun.location、17 は noun.object、18 は noun.person。
+  const SENSES: Readonly<Record<string, readonly number[]>> = { greek: [10, 18, 1], mature: [0], marsh: [17, 18], helen: [18], paris: [15, 18] };
+  const sensesOf = (word: string): readonly number[] => SENSES[word] ?? [];
+  const ordinary = (surface: string): boolean => isOrdinaryWord(surface, tagsOf, sensesOf);
+
+  it("語彙が普通の語として知る語（Course）と、WordNet が人や場所でない語義を知る語（Greek、Mature、Marsh）はふつうの語", () => {
+    ["Course", "Greek", "Mature", "Marsh"].forEach((surface) => assert.equal(ordinary(surface), true, surface));
+  });
+
+  it("人や場所の語義しか無い語（Helen、Paris）、どちらにも無い語（Okafor）、固有名詞にもなる語彙の語（May）は名前の語", () => {
+    ["Helen", "Paris", "Okafor", "May"].forEach((surface) => assert.equal(ordinary(surface), false, surface));
+  });
+
+  it("頭だけ大文字でない語（course、COURSE、McCourse）と、空の語は見ない", () => {
+    ["course", "COURSE", "McCourse", "", "C"].forEach((surface) => assert.equal(ordinary(surface), false, surface));
+  });
+});
+
+describe("英語の文書で、名前と読んだふつうの語には OrdinaryWord=Yes", () => {
+  before(async () => {
+    await en.prepare?.({ pos: true });
+  });
+
+  const featureOf = (source: string, word: string): string | undefined =>
+    buildDocument("t.md", source, en)
+      .sentences.flatMap((sentence) => sentence.tokens ?? [])
+      .find((token) => token.surface === word && token.pos === "PROPN")?.features?.["OrdinaryWord"];
+
+  it("Greek はふつうの語、Okafor と Helen は名前の語", () => {
+    assert.equal(featureOf("The menu was printed in Greek for the guests.", "Greek"), "Yes");
+    assert.equal(featureOf("Kenji Okafor sent the file.", "Okafor"), undefined);
+    assert.equal(featureOf("The keys were handed to Helen Marsh.", "Helen"), undefined);
   });
 });
 

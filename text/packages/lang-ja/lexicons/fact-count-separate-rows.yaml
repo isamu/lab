@@ -1,0 +1,6 @@
+# 表の行が別々のものを数える group（fact-conflict）。この group だけ、合計の行が数を書いていないとき、行の数を足して表の全体の数にする。
+# チケットは一枚が一つの行（席種）にだけ載る。人は入れない: 同じ人が参加の行と交流会の行の両方に載るので、足すと多くなる。
+id: fact-count-separate-rows
+language: ja
+entries:
+  - pattern: tickets

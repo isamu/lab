@@ -88,3 +88,22 @@ export const capitalisedGuessedVerbsAsNames = (
     at > first && GUESSED_VERB_TAG.has(entry.pos) && CAPITALISED.test(entry.value) && isUnknownNonVerb(entry.value.toLowerCase());
   return tagged.map((entry, at) => (isGuessedName(entry, at) ? { ...entry, pos: "NNP" } : entry));
 };
+
+/** WordNet の語義の分類のうち、名前の載る所。15 noun.location（Paris）と 18 noun.person（Helen）。 */
+const NOUN_LOCATION = 15;
+const NOUN_PERSON = 18;
+const NAME_SENSES: ReadonlySet<number> = new Set([NOUN_LOCATION, NOUN_PERSON]);
+
+/**
+ * 頭だけ大文字の語が、小文字で書けばふつうの語か。解析器の語彙が普通の語として知るか（course）、WordNet が人や場所でない語義を
+ * 知る（green、Greek の言語）。人や場所の語義しか無い語（Helen、Smith）と、どちらにも無い語（Okafor）は名前の語。
+ */
+export const isOrdinaryWord = (
+  surface: string,
+  tagsOf: (word: string) => readonly string[] | undefined,
+  sensesOf: (word: string) => readonly number[],
+): boolean => {
+  if (!CAPITALISED.test(surface)) return false;
+  const word = surface.toLowerCase();
+  return isCommonWord(tagsOf(word)) || sensesOf(word).some((sense) => !NAME_SENSES.has(sense));
+};

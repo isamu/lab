@@ -1,0 +1,7 @@
+# Groups whose table rows count separate things (fact-conflict). Only for these is the sum of the rows taken as the
+# table's whole when the total row gives no count. A ticket sits on one row (one seat type). People are not here: the
+# same guest is on the admission row and on the dinner row, so the sum would be too large.
+id: fact-count-separate-rows
+language: en
+entries:
+  - pattern: tickets

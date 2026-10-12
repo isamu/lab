@@ -1,0 +1,7 @@
+# 数のすぐ後ろの、数えるものの語（fact-conflict）。group が fact-count-column の列と同じときだけ、文の数をその列と比べる。
+id: fact-count-counter
+language: ja
+entries:
+  - { pattern: 枚, group: tickets }
+  - { pattern: 名, group: people }
+  - { pattern: 人, group: people }

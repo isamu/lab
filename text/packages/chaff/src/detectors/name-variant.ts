@@ -16,6 +16,7 @@ import { proseWithCells } from "../table-cells.ts";
 import { modelCodeFindings } from "./name-variant-model-codes.ts";
 import { fullNameGaps, joinFullNames, spacedOnly } from "../person-full-name.ts";
 import { spacedPersonNamesIn } from "../spaced-person-name.ts";
+import { isOrdinaryToken, withOrdinaryWords } from "../name-ordinary-word.ts";
 import { labelledSpans, orderNamesOf, quotedSpans, stemOf, titleCaseSpans, wordOrderVariants, type OrderWord } from "../name-word-order.ts";
 
 // 人の名前と読ませる敬称（様、さん）は語彙表 person-suffix、人を指す前置き（担当の）は person-lead、名前のすぐ後ろに来る語
@@ -270,11 +271,17 @@ const tableFindings = (doc: ProseDocument, prose: string, mentions: readonly Nam
 /** 日本語の人の名前の、姓と名のあいだの空白だけの違い（田中 裕子 と 田中裕子）は書き分けとして指さない。 */
 const notSpacingOnly = ({ name, usual, kind }: Reported): boolean => kind !== "spelling" || !spacedOnly(name, usual);
 
+/** ふつうの語でもある一語の名前に印を付ける。敬称（Mr.）や肩書き（Senator）の後ろに書いた語は、表や見出しの中でも人の名前に使っている。 */
+const ordinaryNamesOf = (doc: ProseDocument, mentions: readonly NameMention[]): NameMention[] => {
+  const ordinaryStarts = new Set(tokensOf(doc).flatMap((token) => (isOrdinaryToken(token) ? [token.span.start] : [])));
+  return withOrdinaryWords(mentions, ordinaryStarts, doc.source, [...patternsOf(doc, "honorific"), ...patternsOf(doc, "name-title")]);
+};
+
 /** 同じ名前を、文書の中で少しだけ違う形に書いた所（GitHub と Github、山田太郎 と 山田太朗）。少ないほうを指す。 */
 export const nameVariant: Detector = (doc): Finding[] => {
   const prose = doc.prose ?? doc.source;
   const chars = variantCharsOf(doc);
-  const mentions = nameMentionsOf(doc, prose, chars);
+  const mentions = ordinaryNamesOf(doc, nameMentionsOf(doc, prose, chars));
   const names = nameVariants(mentions, chars, spellingInputOf(doc))
     .map(({ mention, usual, kind }): Reported => ({ offset: mention.offset, name: mention.surface, usual, kind }))
     .filter(notSpacingOnly);

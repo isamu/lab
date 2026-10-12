@@ -71,3 +71,19 @@ entries:
   - { pattern: registration no, group: registration }
   - { pattern: application number, group: application }
   - { pattern: application number is, group: application }
+  # A vehicle's plate. A bare "Registration" is not one: an attendee's registration is written so too.
+  - { pattern: registration plate, group: vehicle }
+  - { pattern: registration plate is, group: vehicle }
+  - { pattern: number plate, group: vehicle }
+  - { pattern: number plate is, group: vehicle }
+  - { pattern: plate number, group: vehicle }
+  - { pattern: plate number is, group: vehicle }
+  - { pattern: licence plate, group: vehicle }
+  - { pattern: licence plate is, group: vehicle }
+  - { pattern: licence plate number, group: vehicle }
+  - { pattern: license plate, group: vehicle }
+  - { pattern: license plate is, group: vehicle }
+  - { pattern: license plate number, group: vehicle }
+  - { pattern: vehicle registration, group: vehicle }
+  - { pattern: vehicle registration number, group: vehicle }
+  - { pattern: vehicle registration number is, group: vehicle }

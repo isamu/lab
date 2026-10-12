@@ -2,7 +2,7 @@ import type { Token } from "chaffjs/plugin";
 import { straightApostrophes } from "./apostrophe.ts";
 import { loadLexicons } from "./lexicons.ts";
 import { blankLongRuns } from "./long-runs.ts";
-import { capitalisedGuessedVerbsAsNames, lowercasedAt, properNounChecked, rereadAt, sentenceInitialCommonWord } from "./proper-noun.ts";
+import { capitalisedGuessedVerbsAsNames, isOrdinaryWord, lowercasedAt, properNounChecked, rereadAt, sentenceInitialCommonWord } from "./proper-noun.ts";
 import { isStativeParticiple, stativeVocabulary } from "./stative-participle.ts";
 import { isEmphasisedAdverb, isEmphasisedWord, standsAlone } from "./emphasis.ts";
 import { gerundFeatures } from "./gerund.ts";
@@ -260,6 +260,12 @@ const withEmphasis = (token: Token, text: string, tagged: readonly Tagged[], at:
   return { ...token, lemma: (token.lemma ?? token.surface).toLowerCase(), features: { ...token.features, Emph: "Yes" } };
 };
 
+/** 名前と読んだ語が、小文字で書けばふつうの語（Green、Course）なら OrdinaryWord=Yes。名前の書き分けが、別の二つの語を比べないため。 */
+const withOrdinaryWord = (token: Token): Token =>
+  token.pos === "PROPN" && isOrdinaryWord(token.surface, state.vocabulary, state.senses)
+    ? { ...token, features: { ...token.features, OrdinaryWord: "Yes" } }
+    : token;
+
 /**
  * wink は位置を返さないので、表層を順に照合して復元する。
  * 見つからないものは飛ばし、カーソルは進めない。位置の当てずっぽうを下流に流さない。
@@ -279,7 +285,7 @@ const locate = (text: string, tagged: readonly Tagged[]): Token[] => {
       ...(entry.lemma === undefined ? {} : { lemma: entry.lemma }),
       ...featuresOf(tagged, at),
     };
-    tokens.push(withEmphasis(token, text, tagged, at));
+    tokens.push(withOrdinaryWord(withEmphasis(token, text, tagged, at)));
     cursor = end;
   });
   return tokens;

@@ -1,0 +1,8 @@
+# 表の、ものの数を数える列の見出し（fact-conflict）。group が数えるもの。文が「合計4枚」のように全体として書いた数を、この列の
+# 全体の数（合計の行、無ければ行の和）と比べる。数える語は fact-count-counter の同じ group。
+id: fact-count-column
+language: ja
+entries:
+  - { pattern: 枚数, group: tickets }
+  - { pattern: 人数, group: people }
+  - { pattern: 参加人数, group: people }
