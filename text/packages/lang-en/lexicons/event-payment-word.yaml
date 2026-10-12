@@ -1,0 +1,7 @@
+# Words that mark a payment. In a ticket order (event-ticket-word), deadline-after-event reads the date of a sentence
+# holding one and a deadline word.
+id: event-payment-word
+language: en
+entries:
+  - pattern: payment
+  - pattern: pay
