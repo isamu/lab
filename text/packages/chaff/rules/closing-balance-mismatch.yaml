@@ -1,0 +1,63 @@
+id: closing-balance-mismatch
+layer: L3
+status: stable
+how_to_find: closing-balance-mismatch
+# The names are lexicon closing-balance-label (groups opening, inflow, outflow, closing); words of magnitude are
+# amount-multiplier. Tables and label lines are read as net-amount-mismatch reads them.
+extra_word_lists: [closing-balance-label]
+severity: warning
+
+name:
+  ja: 期末の残高が、期首の残高に入金を足し出金を引いた額と合わない
+  en: A closing balance that is not the opening balance plus deposits less withdrawals
+
+why:
+  ja: 預金の取引明細のまとめでは、当月末残高は、前月末残高にお預入れ合計を足し、お引出し合計を引いた額です。読む人は残高を見て、足し引きし直しません。取引を直したのに残高を直さなかったとき、前の月の明細から写したとき、数字を打ち間違えたときに食い違います。同じ表か同じ節に、初めの残高（前月末残高）、入金の合計（お預入れ合計）、出金の合計（お引出し合計）、終わりの残高（当月末残高）の名前が一つずつあり、それぞれに金額があれば、終わりの残高を足し引きと比べます。表では、見出しの行に四つの名前が並ぶ表は行ごとに、一列目に四つの名前が並ぶ表は列ごとに比べます。表の外では、節（見出しから次の見出しまで）の「前月末残高：412,350円」のような名前と金額だけの行を読みます。どの語が四つのどれかは、言語パッケージの語彙表 closing-balance-label にあります。通貨の印が付いた金額は一円（一セント）まで合わなければ言います。千円の単位の金額や印の無い数は丸めてあるかもしれないので、最後の桁の二つ分までのずれは言いません。
+  en: >-
+    On a statement summary the closing balance is the opening balance plus the total deposits less the total withdrawals. The reader takes the closing balance as given and does not add it up again. It goes wrong when a transaction is corrected and the balance is not, when the balance is copied from last month's statement, or when a digit is mistyped. When one table or one section names the balance at the start (Opening balance), the total paid in (Total deposits), the total paid out (Total withdrawals) and the balance at the end (Closing balance) once each, each with an amount, the closing balance is compared with the sum. A table whose header row has the four names is compared row by row, and one whose first column has them column by column. Outside tables, the lines of a section (from one heading to the next) that are only a name and an amount ("Opening balance: $2,418.36") are read. Which words name the four is in the language package's lexicon closing-balance-label. Amounts with a currency mark must agree to the cent. Amounts in thousands, and numbers without a mark, may be rounded, so a difference of up to two steps of their last digit is not reported.
+
+message:
+  ja: 「{written}」は、初めの残高に入金を足し出金を引くと {expected} です
+  en: '"{written}" is written, but the opening balance plus deposits less withdrawals is {expected}'
+
+how_to_fix:
+  ja: 初めの残高、入金と出金の合計、終わりの残高のどれが正しいかを確かめて、ほかを直してください。
+  en: Check which of the opening balance, the two totals and the closing balance is right, and correct the others.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 当月末残高が、前月末残高 ＋ 入金合計 − 出金合計 と合わない所
+  en: A closing balance that is not the opening balance plus deposits less withdrawals
+example:
+  ja:
+    before: |
+      - 前月末残高：412,350円
+      - お預入れ合計：285,400円
+      - お引出し合計：245,530円
+      - 当月末残高：425,220円
+    after: |
+      - 前月末残高：412,350円
+      - お預入れ合計：285,400円
+      - お引出し合計：245,530円
+      - 当月末残高：452,220円
+  en:
+    before: |
+      - Opening balance: $2,418.36
+      - Total deposits: $2,941.80
+      - Total withdrawals: $3,203.60
+      - Closing balance: $2,165.56
+    after: |
+      - Opening balance: $2,418.36
+      - Total deposits: $2,941.80
+      - Total withdrawals: $3,203.60
+      - Closing balance: $2,156.56
+
+not_flagged:
+  ja: 四つの名前のどれかが無い表や節、同じ名前が二度ある表の列や節、名前が別々の表や節にあるもの、四つの単位が違うもの（円とドル、千円と円）、数でない金額（—、▲、マイナスや括弧の付いた値）は比べません。日付・お預入れ・お引出し・残高の列が並ぶ取引の表は、行ごとの残高を running-balance-mismatch が見るので、ここでは読みません。文の中の金額（「当月末残高は452,220円です」）や、語彙表に無い名前（前回ご請求額、ご利用残高）は読みません。足し引きがマイナスになるときも言いません。
+  en: 'A table or section without one of the four names, a table column or section that names one of them twice, names spread over separate tables or sections, amounts in different units (yen and dollars, thousands and units), and a value that is not a plain number (—, a negative or bracketed value) are not compared. A transaction table with Date, Deposit, Withdrawal and Balance columns is left to running-balance-mismatch, which checks it row by row. An amount inside a sentence ("The closing balance is $2,156.56") is not read, nor is a name not in the lexicon (Previous balance, New balance, Credits and Debits, which on a card statement move the other way). A sum below zero is not reported either.'

@@ -42,7 +42,7 @@ export const roleOf = (label: string, words: NetWords): NetRole | undefined =>
   NET_ROLES.find((role) => words.labels[role].some((pattern) => keyOf(pattern) === labelKey(label)));
 
 /** One plain number with its marks ("256,287円", "$4,301.01"); a percentage, a signed or a bracketed value is not an amount. */
-export const amountOf = (text: string, start: number, labelNote: string, words: NetWords): NetAmount | undefined => {
+export const amountOf = (text: string, start: number, labelNote: string, words: Pick<NetWords, "percentUnits">): NetAmount | undefined => {
   const cell = readNumber(text);
   if (cell === undefined || words.percentUnits.some((unit) => keyOf(unit) === keyOf(cell.suffix))) return undefined;
   const [prefix, suffix] = [keyOf(cell.prefix), keyOf(cell.suffix)];
@@ -66,7 +66,7 @@ const onlyAmount = (amounts: readonly LabelledAmount[], role: NetRole): Labelled
 const resultOf = (amounts: readonly LabelledAmount[], netNamed: boolean): LabelledAmount | undefined => onlyAmount(amounts, netNamed ? "net" : "taxable");
 
 /** A mark of currency and no word of magnitude: the amount is exact. Anything else may be rounded to its last digit. */
-const isExact = (amount: NetAmount, words: NetWords): boolean =>
+export const isExact = (amount: NetAmount, words: Pick<NetWords, "magnitudes">): boolean =>
   amount.prefix + amount.suffix !== "" && !words.magnitudes.some((word) => `${amount.prefix} ${amount.suffix}`.includes(keyOf(word)));
 
 /**
@@ -88,7 +88,7 @@ const FULL_WIDTH_OFFSET = 0xfee0;
 const toFullWidth = (number: string): string => [...number].map((char) => String.fromCodePoint((char.codePointAt(0) ?? 0) + FULL_WIDTH_OFFSET)).join("");
 
 /** The expected net, written the way the net is: the marks around its number, its digits, its decimals, its grouping. */
-const shown = (value: number, like: NetAmount, decimals: number): string => {
+export const shown = (value: number, like: NetAmount, decimals: number): string => {
   const ascii = value.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals, useGrouping: like.grouped });
   const number = FULL_WIDTH_DIGIT.test(like.written) ? toFullWidth(ascii) : ascii;
   const digits = [...like.written].flatMap((char, index) => (DIGIT.test(char) ? [index] : []));
