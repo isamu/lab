@@ -1,0 +1,8 @@
+# Verbs that give an amount of something as "<subject> used 14.2 GB of data" (fact-conflict). The noun after "of" and the
+# verb name the item, "data used", as a table row "Data used" does. Only verbs whose past participle is the same word, so
+# "noun verb" is a name; only before a quantity with a unit, so "You used $5 of credit" is not read.
+id: fact-quantity-verb
+language: en
+entries:
+  - pattern: used
+  - pattern: consumed

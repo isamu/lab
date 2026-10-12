@@ -1,0 +1,9 @@
+# Subjects of a fact-quantity-verb that are the reader or the writer of the document (fact-conflict): "You used 14.2 GB of
+# data" is the document's own "Data used". Any other subject ("The primary line used 16.3 GB of data") qualifies the
+# item, and is compared only with that row of a table.
+id: fact-quantity-self
+language: en
+entries:
+  - pattern: you
+  - pattern: we
+  - pattern: I

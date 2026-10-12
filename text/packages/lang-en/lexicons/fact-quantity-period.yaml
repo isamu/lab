@@ -1,0 +1,7 @@
+# Words naming the document's own period, allowed after "<subject> used 14.2 GB of data" (fact-conflict): "You used 14.2 GB
+# of data this month" is the bill's data used. "last month" names another period and is not here, so the value is not read.
+id: fact-quantity-period
+language: en
+entries:
+  - pattern: this month
+  - pattern: this billing period
