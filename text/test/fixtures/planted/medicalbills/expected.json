@@ -2,7 +2,7 @@
   "recall": {
     "ja": {
       "visit-after-issue": "0/1",
-      "points-times-rate": "0/2",
+      "points-times-rate": "2/2",
       "items-total": "2/2",
       "patient-share": "0/2",
       "patient-name": "2/2",
@@ -12,7 +12,7 @@
     },
     "en": {
       "visit-after-issue": "0/1",
-      "points-times-rate": "0/2",
+      "points-times-rate": "2/2",
       "items-total": "2/2",
       "patient-share": "0/2",
       "patient-name": "2/2",
