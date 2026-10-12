@@ -219,6 +219,7 @@ const totalIssues = (doc: ProseDocument, tree: NonNullable<ProseDocument["struct
     nounQualifiers: doc.lexicons["total-noun-qualifier"] ?? [],
     unsummedNouns: patternsOf(doc, "total-noun-unsummed"),
     periodQualifiers: doc.lexicons["total-period-qualifier"] ?? [],
+    periodLabels: (doc.lexicons["total-label"] ?? []).filter((entry) => entry.group === "period").map((entry) => entry.pattern),
     listedNouns: patternsOf(doc, "total-noun-listed"),
     amountNames: patternsOf(doc, "net-amount-label"),
   };
