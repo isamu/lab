@@ -1,0 +1,22 @@
+# Headings that say what a column of a budget-versus-actual table holds (variance-mismatch). group: budget is the budgeted
+# amount, actual the amount spent or received, variance the difference of the two, rate a percentage or ratio (not read as
+# a variance). Looked at in the order rate, variance, budget, actual, so "Variance %" is a rate and "Over (under) budget" a
+# variance. A word is matched as a whole word.
+id: variance-column
+language: en
+entries:
+  - { pattern: "%", group: rate }
+  - { pattern: percent, group: rate }
+  - { pattern: rate, group: rate }
+  - { pattern: ratio, group: rate }
+  - { pattern: variance, group: variance }
+  - { pattern: difference, group: variance }
+  - { pattern: over (under), group: variance }
+  - { pattern: under (over), group: variance }
+  - { pattern: over/(under), group: variance }
+  - { pattern: (over)/under, group: variance }
+  - { pattern: over/under, group: variance }
+  - { pattern: budget, group: budget }
+  - { pattern: budgeted, group: budget }
+  - { pattern: actual, group: actual }
+  - { pattern: actuals, group: actual }
