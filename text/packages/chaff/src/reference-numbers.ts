@@ -20,17 +20,34 @@ const SEPARATOR = /[-‐−－]/gu;
 /** Only spaces and a colon, comma or opening bracket between the label and its number (「予約番号：」, "booking number, "); not a sentence's end. */
 const LABEL_TO_NUMBER = /^[\s:：,，、#＃(（「『[［]{0,4}$/u;
 
-export const charactersOf = (written: string): string => written.normalize("NFKC").replaceAll(SEPARATOR, "").toUpperCase();
+export const charactersOf = (written: string): string => written.normalize("NFKC").replaceAll(SEPARATOR, "").replaceAll(" ", "").toUpperCase();
+
+/** A first group a number in groups may open with: capitals and digits only (HM, 5520), not a word (No, Member). */
+const OPENING_GROUP = /^[0-9A-Z０-９Ａ-Ｚ]+$/u;
+/** One space, then four or more capitals and digits holding a digit, not run on into a word (8137 の; not 100 copies, 080, 2名, 2nd). */
+const FOLLOWING_GROUP = /^ (?=[0-9A-Z０-９Ａ-Ｚ]*[0-9０-９])[0-9A-Z０-９Ａ-Ｚ]{4,}(?![\p{L}\p{N}\-‐−－](?<!\p{Script=Hiragana}))/u;
+
+/** The groups after a number's first, written one space apart on its line (HM 5520 8137); none when the first is not a group. Reading stops once past the longest number, so a run-on is still too long. */
+export const followingGroups = (text: string, end: number, first: string): string => {
+  if (!OPENING_GROUP.test(first)) return "";
+  const read = (at: number, sofar: string): string => {
+    const tooLong = charactersOf(first + sofar).length > MAX_CHARACTERS;
+    const group = tooLong ? undefined : FOLLOWING_GROUP.exec(text.slice(at, at + MAX_CHARACTERS + 1))?.[0];
+    return group === undefined ? sofar : read(at + group.length, sofar + group);
+  };
+  return read(end, "");
+};
 
 /** The reference numbers of a text written right after a label on their line; unlabelled codes and URLs are not read. */
 export const labelledReferenceNumbers = (source: string, labels: readonly LexiconEntry[]): ReferenceNumber[] => {
   const text = withoutUrls(source);
   return [...text.matchAll(REFERENCE_SHAPE)].flatMap((match) => {
-    const characters = charactersOf(match[0]);
+    const written = match[0] + followingGroups(text, match.index + match[0].length, match[0]);
+    const characters = charactersOf(written);
     if ((characters.match(DIGIT)?.length ?? 0) < MIN_DIGITS || characters.length > MAX_CHARACTERS) return [];
     const label = labelBefore(text, match.index, labels);
     if (label === undefined || !LABEL_TO_NUMBER.test(label.between)) return [];
-    return [{ offset: match.index, written: match[0], characters, label: label.group }];
+    return [{ offset: match.index, written, characters, label: label.group }];
   });
 };
 

@@ -138,3 +138,14 @@ entries:
   - { pattern: vehicle registration, group: vehicle }
   - { pattern: vehicle registration number, group: vehicle }
   - { pattern: vehicle registration number is, group: vehicle }
+  # A member's number. A customer number is the shop's number for a customer and may differ from a member number.
+  - { pattern: member number, group: member }
+  - { pattern: member number is, group: member }
+  - { pattern: membership number, group: member }
+  - { pattern: membership number is, group: member }
+  - { pattern: member id, group: member }
+  - { pattern: member id is, group: member }
+  - { pattern: member no., group: member }
+  - { pattern: member no, group: member }
+  - { pattern: customer number, group: customer }
+  - { pattern: customer number is, group: customer }

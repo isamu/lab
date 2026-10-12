@@ -6,7 +6,7 @@ import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { messageOf } from "../packages/chaff/src/render/text.ts";
-import { labelledReferenceNumbers, referenceVariants } from "../packages/chaff/src/reference-numbers.ts";
+import { followingGroups, labelledReferenceNumbers, referenceVariants } from "../packages/chaff/src/reference-numbers.ts";
 import { labelledPlates, plateVariants } from "../packages/chaff/src/vehicle-plates.ts";
 import { tableCodes, tableLabelledCodes, unlabelledVariants } from "../packages/chaff/src/unlabelled-references.ts";
 import { PatternTimeout } from "../packages/chaff/src/custom/pattern-timeout.ts";
@@ -253,6 +253,33 @@ describe("reference-number-variant", () => {
     assert.deepEqual(found(docEn("Contract number: TA-260417", "", "Parent contract number: TA-260147"), en), []);
   });
 
+  it("ja: 会員番号・会員ID と、空白で区切って書いた会員番号の入れ違いを指す", () => {
+    assert.deepEqual(found(docJa("会員番号：MD-30418-72", "", "お問い合わせの際は、会員番号（MD-30481-72）をお知らせください。"), ja), [5]);
+    assert.deepEqual(found(docJa("会員ID：KT20573", "", "会員IDはKT20753です。"), ja), [5]);
+    assert.deepEqual(found(docJa("会員番号：HM 5520 8137", "", "お問い合わせの際は、会員番号 HM 5520 8173 をお知らせください。"), ja), [5]);
+    assert.deepEqual(found(docJa("会員番号：5520 8137", "", "会員番号 5520 8173 の方は窓口へ。"), ja), [5]);
+  });
+
+  it("ja: 会員番号とお客様番号は比べず、空白の後ろの語や回数は番号に含めない", () => {
+    assert.deepEqual(found(docJa("会員番号：HM-55208", "", "お客様番号：HM-55280"), ja), []);
+    assert.deepEqual(found(docJa("会員番号：HM 5520 8137", "", "会員番号 HM 5520 8137 の方"), ja), []);
+    assert.deepEqual(found(docJa("会員番号 1234 様", "", "会員番号 1243 様"), ja), [5]);
+    assert.deepEqual(found(docJa("会員番号 4821 2名様", "", "会員番号 4821 3名様"), ja), []);
+  });
+
+  it("en: a member or membership number, and one written in spaced groups, with two neighbours swapped", () => {
+    assert.deepEqual(found(docEn("Member number: MD-30418-72", "", "Please give your member number (MD-30481-72)."), en), [5]);
+    assert.deepEqual(found(docEn("Membership number: HM 5520 8137", "", "Please give your member number HM 5520 8173."), en), [5]);
+    assert.deepEqual(found(docEn("Member ID: 5520 8137", "", "Member number 5520 8173 expires in May."), en), [5]);
+    assert.deepEqual(found(docEn("Member No 48215", "", "Member No. 48251"), en), [5]);
+  });
+
+  it("en: a member number is not compared with a customer number, and a word after the groups is not read", () => {
+    assert.deepEqual(found(docEn("Member number: HM-55208", "", "Customer number: HM-55280"), en), []);
+    assert.deepEqual(found(docEn("Member number: 5520 8137", "", "Member number 5520 8137 expires in May."), en), []);
+    assert.deepEqual(found(docEn("Member number 4821 2nd copy", "", "Member number 4821 3rd copy"), en), []);
+  });
+
   it("en: two writings of one former or parent contract's number with neighbours swapped are reported", () => {
     assert.deepEqual(found(docEn("Former contract number: TA-250417", "", "Former contract number TA-250471 has ended."), en), [5]);
     assert.deepEqual(found(docEn("Parent agreement number: TA-190417", "", "Parent agreement number: TA-190471"), en), [5]);
@@ -342,6 +369,36 @@ describe("reference numbers", () => {
     assert.deepEqual(labelledReferenceNumbers("予約番号を確認のうえMN-48215", labels), []);
     assert.deepEqual(labelledReferenceNumbers("MN-48215", []), []);
     assert.deepEqual(labelledReferenceNumbers("予約番号をお持ちください。48215席あります。", labels), []);
+  });
+
+  it("reads a number in groups one space apart as one, up to the line's end or a word that is not a code", () => {
+    const read = (text: string): string[] => labelledReferenceNumbers(text, labels).map(({ written }) => written);
+    assert.deepEqual(read("予約番号 HM 5520 8137 の方"), ["HM 5520 8137"]);
+    assert.deepEqual(read("予約番号 HM 5520 8137をお知らせ"), ["HM 5520 8137"]);
+    assert.deepEqual(read("予約番号 5520 8137\n4410 様"), ["5520 8137"]);
+    assert.deepEqual(read("予約番号 1234 様"), ["1234"]);
+    assert.deepEqual(read("予約番号 4821 2名"), ["4821"]);
+    assert.deepEqual(read("予約番号 4821 2026年"), ["4821"]);
+    assert.deepEqual(read("予約番号 4821 ABC"), ["4821"]);
+    assert.deepEqual(read("予約番号 4821 2nd"), ["4821"]);
+    assert.deepEqual(read("予約番号 4821 100 copies"), ["4821"]);
+    assert.deepEqual(read("予約番号 4821 080 1234 5678"), ["4821"]);
+    assert.deepEqual(read("予約番号 4821  5520"), ["4821"]);
+    assert.deepEqual(read("予約番号 MN-4821 5520"), ["MN-4821"]);
+    assert.deepEqual(read("予約番号 Mn 4821 5520"), []);
+    assert.deepEqual(read("予約番号 HM 12"), []);
+    assert.deepEqual(read("予約番号 ＨＭ ５５２０ ８１３７"), ["ＨＭ ５５２０ ８１３７"]);
+  });
+
+  it("reads a number in groups as its characters without the spaces, and never past the longest number", () => {
+    assert.deepEqual(labelledReferenceNumbers("予約番号 HM 5520 8137", labels)[0]?.characters, "HM55208137");
+    assert.deepEqual(labelledReferenceNumbers(`予約番号 ${Array.from({ length: 8 }, () => "1234").join(" ")}`, labels), []);
+    assert.equal(followingGroups("HM 5520 8137", 2, "HM"), " 5520 8137");
+    assert.equal(followingGroups("No 5520 8137", 2, "No"), "");
+    assert.equal(followingGroups("HM", 2, "HM"), "");
+    const runOn = `HM${" 1234".repeat(20000)}`;
+    assert.ok(followingGroups(runOn, 2, "HM").length < runOn.length);
+    assert.deepEqual(labelledReferenceNumbers(`予約番号 ${runOn}`, labels), []);
   });
 
   it("pairs the later of two equal writings with the earlier, and nothing for no numbers", () => {
