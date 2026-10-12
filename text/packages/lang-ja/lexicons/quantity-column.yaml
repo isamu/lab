@@ -17,3 +17,6 @@ entries:
   # 賃料の明細の月数（月額 × 月数 = 年額）。
   - { pattern: 月数, group: month }
   - { pattern: ヶ月, group: month }
+  # 授業料の明細の単位数（1単位あたりの授業料と掛けて金額になる）。見出しの「単位」だけは「単位：円」の単位でもあるので数量と読まない。
+  - { pattern: 単位数, group: credit }
+  - { pattern: 履修単位数, group: credit }

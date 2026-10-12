@@ -14,3 +14,7 @@ entries:
   - { pattern: Rate per mile, group: mile }
   - { pattern: Monthly, group: month }
   - { pattern: Monthly rent, group: month }
+  # The tuition per credit of a tuition invoice (times the credits gives the amount).
+  - { pattern: Tuition per credit, group: credit }
+  - { pattern: Fee per credit, group: credit }
+  - { pattern: Per credit, group: credit }

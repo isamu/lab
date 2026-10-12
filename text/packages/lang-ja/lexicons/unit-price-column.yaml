@@ -12,3 +12,6 @@ entries:
   - { pattern: 単価（円/km）, group: km }
   - { pattern: 月額, group: month }
   - { pattern: 月額賃料, group: month }
+  # 授業料の明細の1単位あたりの授業料（単位数と掛けて金額になる）。
+  - { pattern: 1単位あたりの授業料, group: credit }
+  - { pattern: 単位あたり, group: credit }

@@ -15,3 +15,6 @@ entries:
   - { pattern: Miles, group: mile }
   # The months of a rent statement (monthly × months = annual).
   - { pattern: Months, group: month }
+  # The credits of a tuition invoice (times the tuition per credit gives the amount).
+  - { pattern: Credits, group: credit }
+  - { pattern: Credit hours, group: credit }
