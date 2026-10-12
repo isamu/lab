@@ -4,7 +4,7 @@
       "claim-before-incident": "0/2",
       "treatment-period-reversed": "1/1",
       "hospital-days": "1/1",
-      "days-times-daily-benefit": "0/1",
+      "days-times-daily-benefit": "1/1",
       "claimant-name": "2/2",
       "policy-number": "2/2",
       "covered-minus-deductible": "0/1"
@@ -13,7 +13,7 @@
       "claim-before-incident": "0/2",
       "treatment-period-reversed": "1/1",
       "hospital-days": "1/1",
-      "days-times-daily-benefit": "0/1",
+      "days-times-daily-benefit": "1/1",
       "claimant-name": "2/2",
       "policy-number": "2/2",
       "covered-minus-deductible": "0/1"
