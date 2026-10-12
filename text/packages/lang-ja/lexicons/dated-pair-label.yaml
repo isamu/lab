@@ -161,3 +161,12 @@ entries:
   - { pattern: "次回点検日", group: vehicle-service, position: after }
   - { pattern: "次回点検予定日", group: vehicle-service, position: after }
   - { pattern: "次回車検", group: vehicle-service, position: after }
+  # 工事やリフォームの見積書、契約書、工程表。完工、竣工と引渡しは着工より後に来る。予定の日（着工予定日、完工予定日）も同じ順で比べる。
+  - { pattern: "着工日", group: construction, position: before }
+  - { pattern: "工事開始日", group: construction, position: before }
+  - { pattern: "着工予定日", group: construction, position: before }
+  - { pattern: "完工日", group: construction, position: after }
+  - { pattern: "完工予定日", group: construction, position: after }
+  - { pattern: "竣工日", group: construction, position: after }
+  - { pattern: "竣工予定日", group: construction, position: after }
+  - { pattern: "引渡日", group: construction, position: after }

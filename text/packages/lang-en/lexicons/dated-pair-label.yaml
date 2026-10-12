@@ -157,3 +157,14 @@ entries:
   - { pattern: "Next inspection", group: vehicle-service, position: after }
   - { pattern: "Next inspection due", group: vehicle-service, position: after }
   - { pattern: "Next service due", group: vehicle-service, position: after }
+  # A construction or renovation quote, contract or schedule: the work is completed and handed over after it starts. A bare
+  # "Start date" pairs only with a completion date (construction-start): it heads a new hire's first day too, and a
+  # handover to or from them can come before it. "Date of completion" stays in transcript.
+  - { pattern: "Work start", group: construction, position: before }
+  - { pattern: "Construction start", group: construction, position: before }
+  - { pattern: "Completion date", group: construction, position: after }
+  - { pattern: "Expected completion", group: construction, position: after }
+  - { pattern: "Handover date", group: construction, position: after }
+  - { pattern: "Start date", group: construction-start, position: before }
+  - { pattern: "Completion date", group: construction-start, position: after }
+  - { pattern: "Expected completion", group: construction-start, position: after }
