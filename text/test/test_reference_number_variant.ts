@@ -253,6 +253,42 @@ describe("reference-number-variant", () => {
     assert.deepEqual(found(docEn("Booking number: RF-62417", "", "Registration number: RF-62147"), en), []);
     assert.deepEqual(found(docEn("Registration number: RF-62417", "", "Registration number: RF-61724"), en), []);
   });
+
+  it("ja: 口座番号・口座No. と、証券番号・保険証券番号の、隣り合う数字の入れ違いを指す", () => {
+    assert.deepEqual(found(docJa("口座番号：4816203", "", "お振込みには、口座番号 4812603 をお伝えください。"), ja), [5]);
+    assert.deepEqual(found(docJa("口座No.：4816203", "", "口座番号は4816230です。"), ja), [5]);
+    assert.deepEqual(found(docJa("証券番号：57-3029184", "", "証券番号57-3092184のご契約は、引き続き有効です。"), ja), [5]);
+    assert.deepEqual(found(docJa("保険証券番号：57-3029184", "", "証券番号 57-3029148"), ja), [5]);
+  });
+
+  it("ja: 振込先・振込元の口座番号は口座自身の番号と比べず、口座番号と証券番号・契約番号も比べない", () => {
+    assert.deepEqual(found(docJa("口座番号：4816203", "", "| 9月5日 | 振込 振込先口座番号 4812603 | 30,000円 |"), ja), []);
+    assert.deepEqual(found(docJa("口座番号：4816203", "", "振込先の口座番号は4812603です。"), ja), []);
+    assert.deepEqual(found(docJa("口座番号：4816203", "", "振込元口座番号：4812603"), ja), []);
+    assert.deepEqual(found(docJa("口座番号：57-3029184", "", "証券番号：57-3092184"), ja), []);
+    assert.deepEqual(found(docJa("契約番号：57-3029184", "", "証券番号：57-3092184"), ja), []);
+    assert.deepEqual(found(docJa("契約者番号：57-3029184", "", "契約者番号：57-3092184"), ja), []);
+  });
+
+  it("ja: 振込先口座番号どうしの入れ違いは指す", () => {
+    assert.deepEqual(found(docJa("振込先口座番号：4816203", "", "振込先口座番号は4812603です。"), ja), [5]);
+  });
+
+  it("en: an account number or a policy number with two neighbouring digits swapped", () => {
+    assert.deepEqual(found(docEn("Account number: 60418273", "", "Give the payer the account number 60412873."), en), [5]);
+    assert.deepEqual(found(docEn("Account No. 60418273", "", "Your account number is 60418237."), en), [5]);
+    assert.deepEqual(found(docEn("Policy number: HL-4820-1937", "", "The cover under policy number HL-4820-1973 continues."), en), [5]);
+    assert.deepEqual(found(docEn("Insurance policy number: HL-4820-1937", "", "Policy No. HL-4802-1937"), en), [5]);
+  });
+
+  it("en: a payee's or payer's account is not compared with the account's own, nor an account number with a policy or contract number", () => {
+    assert.deepEqual(found(docEn("Account number: 60418273", "", "| Sep 5 | Transfer, payee account number 60412873 | $300.00 |"), en), []);
+    assert.deepEqual(found(docEn("Account number: 60418273", "", "Beneficiary's account number: 60412873"), en), []);
+    assert.deepEqual(found(docEn("Account number: 60418273", "", "Sender account number: 60412873"), en), []);
+    assert.deepEqual(found(docEn("Account number: HL-4820-1937", "", "Policy number: HL-4820-1973"), en), []);
+    assert.deepEqual(found(docEn("Contract number: HL-4820-1937", "", "Policy number: HL-4820-1973"), en), []);
+    assert.deepEqual(found(docEn("Policyholder number: HL-4820-1937", "", "Policyholder number: HL-4820-1973"), en), []);
+  });
 });
 
 describe("reference numbers", () => {

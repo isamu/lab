@@ -22,6 +22,37 @@ entries:
   - { pattern: student id, group: student }
   - { pattern: student id is, group: student }
   - { pattern: student no., group: student }
+  # A bank account's number. A transfer's other account is labelled longer (payee account number), and the longer label
+  # wins, so it is never compared with the account's own.
+  - { pattern: account number, group: account }
+  - { pattern: account number is, group: account }
+  - { pattern: account no., group: account }
+  - { pattern: account no, group: account }
+  - { pattern: "account #", group: account }
+  - { pattern: payee account number, group: payee-account }
+  - { pattern: payee account number is, group: payee-account }
+  - { pattern: payee's account number, group: payee-account }
+  - { pattern: payee's account number is, group: payee-account }
+  - { pattern: beneficiary account number, group: payee-account }
+  - { pattern: beneficiary account number is, group: payee-account }
+  - { pattern: beneficiary's account number, group: payee-account }
+  - { pattern: beneficiary's account number is, group: payee-account }
+  - { pattern: recipient account number, group: payee-account }
+  - { pattern: recipient account number is, group: payee-account }
+  - { pattern: payer account number, group: payer-account }
+  - { pattern: payer account number is, group: payer-account }
+  - { pattern: payer's account number, group: payer-account }
+  - { pattern: payer's account number is, group: payer-account }
+  - { pattern: sender account number, group: payer-account }
+  - { pattern: sender account number is, group: payer-account }
+  # An insurance policy's number. A policyholder's own number may cover several policies, so it is not one.
+  - { pattern: policy number, group: policy }
+  - { pattern: policy number is, group: policy }
+  - { pattern: policy no., group: policy }
+  - { pattern: policy no, group: policy }
+  - { pattern: "policy #", group: policy }
+  - { pattern: insurance policy number, group: policy }
+  - { pattern: insurance policy number is, group: policy }
   - { pattern: po number, group: order }
   - { pattern: po number is, group: order }
   - { pattern: purchase order number, group: order }
