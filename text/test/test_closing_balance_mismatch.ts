@@ -170,3 +170,53 @@ describe("closing-balance-mismatch: tables", () => {
     assert.deepEqual(found(table.join("\n"), ja), []);
   });
 });
+
+describe("closing-balance-mismatch: points statements", () => {
+  const JA = ["- 前月末の残高：2,140ポイント", "- 今月の獲得ポイント：860ポイント", "- 今月の利用ポイント：1,500ポイント"];
+  const EN = ["- Previous balance: 2,140 points", "- Points earned: 860 points", "- Points used: 1,500 points"];
+
+  it("reports a wrong balance of points, and passes a right one", () => {
+    assert.deepEqual(found(lines([...JA, "- 今月末の残高：1,050ポイント"]), ja), ["1,050ポイント:1,500ポイント"]);
+    assert.deepEqual(found(lines([...JA, "- 今月末の残高：1,500ポイント"]), ja), []);
+    assert.deepEqual(found(lines([...EN, "- New balance: 1,050 points"]), en), ["1,050 points:1,500 points"]);
+    assert.deepEqual(found(lines([...EN, "- New balance: 1,500 points"]), en), []);
+  });
+
+  it("reads a two-column table of points", () => {
+    const table = ["| Item | Points |", "| --- | --- |", "| Previous balance | 9,200 |", "| Points earned | 1,300 |", "| Points used | 5,000 |"];
+    assert.deepEqual(found([...table, "| New balance | 5,050 |"].join("\n"), en), ["5,050:5,500"]);
+    assert.deepEqual(found([...table, "| New balance | 5,500 |"].join("\n"), en), []);
+  });
+
+  it("never compares points with yen or dollars", () => {
+    assert.deepEqual(found(lines([...JA.slice(0, 2), "- 今月の利用ポイント：1,500円", "- 今月末の残高：1,050ポイント"]), ja), []);
+    assert.deepEqual(found(lines(["- Previous balance: $2,140.00", ...EN.slice(1), "- New balance: $1,050.00"]), en), []);
+    assert.deepEqual(found(lines(["- 前月末の残高：2,140pt", ...JA.slice(1), "- 今月末の残高：1,050pt"]), ja), []);
+  });
+
+  it("leaves a card statement's previous and new balance alone when no points flow is named", () => {
+    assert.deepEqual(found(lines(["Previous balance: $500.00", "Payments: $100.00", "Purchases: $50.00", "New balance: $450.00"]), en), []);
+  });
+});
+
+describe("closing-balance-mismatch: a treasurer's carry-over", () => {
+  const JA = ["| 区分 | 金額 |", "| --- | --- |", "| 前年度繰越金 | 21,300円 |", "| 本年度の収入 | 64,000円 |", "| 本年度の支出 | 58,750円 |"];
+  const EN = [
+    "| Item | Amount |",
+    "| --- | --- |",
+    "| Balance brought forward | $410.20 |",
+    "| Add: income for the year | $980.00 |",
+    "| Less: expenditure for the year | $1,015.50 |",
+  ];
+
+  it("reads a carry-over table", () => {
+    assert.deepEqual(found([...JA, "| 次年度繰越金 | 25,650円 |"].join("\n"), ja), ["25,650円:26,550円"]);
+    assert.deepEqual(found([...JA, "| 次年度繰越金 | 26,550円 |"].join("\n"), ja), []);
+    assert.deepEqual(found([...EN, "| Balance carried forward | $347.40 |"].join("\n"), en), ["$347.40:$374.70"]);
+    assert.deepEqual(found([...EN, "| Balance carried forward | $374.70 |"].join("\n"), en), []);
+  });
+
+  it("does not read the carry-over sentence, which names no opening amount", () => {
+    assert.deepEqual(found("次年度繰越金は、収入合計120,000円から支出合計95,000円を差し引いた52,000円です。", ja), []);
+  });
+});
