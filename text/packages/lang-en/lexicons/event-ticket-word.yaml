@@ -1,0 +1,8 @@
+# Words that mark a ticket order. With one in the first heading (the title), deadline-after-event also reads a payment
+# deadline (event-payment-word): a seat is not held unless paid for before the show. Not with a bill word (event-bill-word).
+# Not "seat": a seat map or a seat allocation is not an order.
+id: event-ticket-word
+language: en
+entries:
+  - pattern: ticket
+  - pattern: tickets

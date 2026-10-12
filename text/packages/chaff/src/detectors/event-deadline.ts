@@ -1,5 +1,6 @@
 // deadline-after-event: the reading half. The event-date, registration, deadline and follow-up words come from the language's
-// lexicons (event-date-label, event-registration-word, event-deadline-word, event-aside); the dates are the structure tree's,
+// lexicons (event-date-label, event-registration-word, event-deadline-word, event-aside,
+// event-ticket-word, event-payment-word, event-bill-word); the dates are the structure tree's,
 // and the lines are read with code masked.
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { deadlinesAfterEvent, type EventDeadlineWords } from "../structure/deadline-after-event.ts";
@@ -14,12 +15,15 @@ const wordsOf = (doc: ProseDocument): EventDeadlineWords => ({
   registrations: patternsOf(doc, "event-registration-word"),
   deadlines: patternsOf(doc, "event-deadline-word"),
   asides: patternsOf(doc, "event-aside"),
+  tickets: patternsOf(doc, "event-ticket-word"),
+  payments: patternsOf(doc, "event-payment-word"),
+  bills: patternsOf(doc, "event-bill-word"),
 });
 
 export const eventDeadline: Detector = (doc): Finding[] => {
   if (doc.structure === undefined) return [];
   const sentences = doc.sentences.map((sentence) => sentence.span);
-  return deadlinesAfterEvent(proseAndTablesOf(doc), datedPoints(doc.structure), sentences, wordsOf(doc)).map((issue) => ({
+  return deadlinesAfterEvent(proseAndTablesOf(doc), datedPoints(doc.structure), sentences, wordsOf(doc), doc.markup?.headings[0]?.text).map((issue) => ({
     rule: "deadline-after-event",
     severity: "error",
     line: 0,

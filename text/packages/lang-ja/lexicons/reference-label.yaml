@@ -49,3 +49,18 @@ entries:
   - { pattern: 原契約番号は, group: original-contract }
   - { pattern: 基本契約番号, group: master-contract }
   - { pattern: 基本契約番号は, group: master-contract }
+  - { pattern: 旧契約番号, group: former-contract }
+  - { pattern: 旧契約番号は, group: former-contract }
+  - { pattern: 変更契約番号, group: amended-contract }
+  - { pattern: 変更契約番号は, group: amended-contract }
+  - { pattern: 親契約番号, group: parent-contract }
+  - { pattern: 親契約番号は, group: parent-contract }
+  # 参加登録・受講の番号。申込番号は一つの申込みに付く番号で、一人ずつの登録番号とは別の物になり得るので別の group にする。
+  - { pattern: 登録番号, group: registration }
+  - { pattern: 登録番号は, group: registration }
+  - { pattern: 受講番号, group: registration }
+  - { pattern: 受講番号は, group: registration }
+  - { pattern: 申込番号, group: application }
+  - { pattern: 申込番号は, group: application }
+  - { pattern: 申込み番号, group: application }
+  - { pattern: 申込み番号は, group: application }

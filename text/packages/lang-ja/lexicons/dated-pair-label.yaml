@@ -152,3 +152,12 @@ entries:
   - { pattern: "退去日", group: tenancy-notice, position: after }
   - { pattern: "退去予定日", group: tenancy-notice, position: after }
   - { pattern: "明渡日", group: tenancy-notice, position: after }
+  # 車の整備記録や点検の記録。次の点検や車検は、整備した日より後に来る。「点検日」は今回の点検の日で、前に来る側にだけ置く。
+  # 「前回点検日」は入れない。前の点検は今回の整備より前に来る。
+  - { pattern: "整備日", group: vehicle-service, position: before }
+  - { pattern: "入庫日", group: vehicle-service, position: before }
+  - { pattern: "点検日", group: vehicle-service, position: before }
+  - { pattern: "作業日", group: vehicle-service, position: before }
+  - { pattern: "次回点検日", group: vehicle-service, position: after }
+  - { pattern: "次回点検予定日", group: vehicle-service, position: after }
+  - { pattern: "次回車検", group: vehicle-service, position: after }

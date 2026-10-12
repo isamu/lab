@@ -1003,3 +1003,53 @@ describe("due-before-issue (order): 賃貸借の入居、解約の通知と退�
     assert.deepEqual(findingsOf(labelledDoc("Listing", ["Listed: October 1, 2026", "Move-out date: September 30, 2026"]), en), []);
   });
 });
+
+describe("due-before-issue (order): 車の整備と次の点検", () => {
+  it("整備日より前の次回点検日を、次回点検日の行で指す", () => {
+    const record = labelledDoc("整備記録簿", ["整備日：2026年9月26日", "次回点検日：2025年9月26日"]);
+    assert.deepEqual(findingsOf(record), ["「次回点検日」（2025年9月26日）が、「整備日」（2026年9月26日）より前です"]);
+    assert.deepEqual(ruleLines(record), [5]);
+    const recordEn = labelledDoc("Car Service Record", ["Service date: September 26, 2026", "Next inspection due: September 26, 2025"]);
+    assert.deepEqual(findingsOf(recordEn, en), ['"Next inspection due" September 26, 2025 is before "Service date" September 26, 2026']);
+    assert.deepEqual(ruleLines(recordEn, en), [5]);
+  });
+
+  it("入庫日、点検日、作業日と、次回点検予定日、次回車検、Next inspection、Next service due も組む", () => {
+    assert.deepEqual(findingsOf(labelledDoc("点検記録", ["点検日：2026年9月26日", "次回車検：2026年3月1日"])), [
+      "「次回車検」（2026年3月1日）が、「点検日」（2026年9月26日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("作業報告", ["入庫日：2026年9月26日", "次回点検予定日：2026年9月1日"])), [
+      "「次回点検予定日」（2026年9月1日）が、「入庫日」（2026年9月26日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("作業報告", ["作業日：2026年9月26日", "次回点検日：2026年9月1日"])), [
+      "「次回点検日」（2026年9月1日）が、「作業日」（2026年9月26日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("Inspection Report", ["Date of service: September 26, 2026", "Next inspection: March 1, 2026"]), en), [
+      '"Next inspection" March 1, 2026 is before "Date of service" September 26, 2026',
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("Service Record", ["Service date: September 26, 2026", "Next service due: March 1, 2026"]), en), [
+      '"Next service due" March 1, 2026 is before "Service date" September 26, 2026',
+    ]);
+  });
+
+  it("順の合った日付、同じ日、年の無い日付は言わない", () => {
+    assert.deepEqual(findingsOf(labelledDoc("整備記録簿", ["整備日：2026年9月26日", "次回点検日：2027年9月26日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("整備記録簿", ["整備日：2026年9月26日", "次回点検日：2026年9月26日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("整備記録簿", ["整備日：9月26日", "次回点検日：3月26日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Car Service Record", ["Service date: September 26, 2026", "Next inspection due: September 26, 2027"]), en), []);
+    assert.deepEqual(findingsOf(labelledDoc("Car Service Record", ["Service date: September 26", "Next inspection due: March 26"]), en), []);
+  });
+
+  it("前回の点検の日は後に来る側に読まない。前の点検は今回の整備より前に来る", () => {
+    assert.deepEqual(findingsOf(labelledDoc("整備記録簿", ["整備日：2026年9月26日", "前回点検日：2025年9月26日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("整備記録簿", ["前回点検日：2025年9月26日", "整備日：2026年9月26日", "次回点検日：2027年9月26日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Car Service Record", ["Service date: September 26, 2026", "Last inspection date: September 26, 2025"]), en), []);
+  });
+
+  it("別の組の語どうしは比べない（健診の検査日と次回点検日、点検日と報告日、Test date と Next inspection due）", () => {
+    assert.deepEqual(findingsOf(labelledDoc("検査結果", ["検査日：2026年9月26日", "次回点検日：2026年9月1日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("点検報告", ["点検日：2026年9月26日", "報告日：2026年9月1日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Report", ["Test date: September 26, 2026", "Next inspection due: September 1, 2026"]), en), []);
+    assert.deepEqual(findingsOf(labelledDoc("Report", ["Service date: September 26, 2026", "Report date: September 1, 2026"]), en), []);
+  });
+});
