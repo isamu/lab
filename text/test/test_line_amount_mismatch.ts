@@ -5,6 +5,7 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { cellNumber, lineAmountMismatches, quantityOf } from "../packages/chaff/src/structure/line-amount.ts";
 import { perUnitPrice, priceHeadingUnit, quantityUnit, unitsAgree } from "../packages/chaff/src/structure/line-amount-unit.ts";
+import { countOf, factorsOf, labelProductOf } from "../packages/chaff/src/structure/line-amount-label.ts";
 
 // 数量×単価が金額と合わない（line-amount-mismatch）。例文はすべて自作。
 
@@ -402,5 +403,78 @@ describe("line-amount-mismatch: 数量×単価が金額と合わない", () => {
     assert.equal(priceHeadingUnit("day", "hour", rateUnits), "day");
     assert.equal(priceHeadingUnit(undefined, "hour", rateUnits), undefined);
     assert.equal(priceHeadingUnit(undefined, undefined, []), undefined);
+  });
+});
+
+describe("line-amount-mismatch: 項目の升の括弧に書いた 単価×人数", () => {
+  const income = (rows: readonly string[]): string => ["| 項目 | 金額 |", "| --- | --- |", ...rows].join("\n") + "\n";
+  const enIncome = (rows: readonly string[]): string => ["| Item | Amount |", "| --- | --- |", ...rows].join("\n") + "\n";
+
+  it("単価×人数と違う金額を指す。人数×単価の順でも読む", () => {
+    assert.deepEqual(findingsOf(income(["| 会費（3,000円×26名） | 72,000円 |"])), ["金額「72,000円」が、数量×単価（26名 × 3,000円 = 78,000円）と合いません"]);
+    assert.deepEqual(findingsOf(income(["| 協賛金(12社×5,000円) | 50,000円 |"])), ["金額「50,000円」が、数量×単価（12社 × 5,000円 = 60,000円）と合いません"]);
+    assert.deepEqual(findingsOf(enIncome(["| Membership dues (26 members × $40) | $960.00 |"]), en), [
+      "The amount $960.00 is not quantity × unit price (26 members × $40 = $1040.00)",
+    ]);
+    assert.deepEqual(findingsOf(enIncome(["| Raffle (120 tickets x $2.50) | $250 |"]), en), [
+      "The amount $250 is not quantity × unit price (120 tickets × $2.50 = $300)",
+    ]);
+  });
+
+  it("合えば言わない", () => {
+    assert.deepEqual(findingsOf(income(["| 会費（3,000円×24名） | 72,000円 |", "| 協賛金（5,000円×12社） | 60,000円 |"])), []);
+    assert.deepEqual(findingsOf(enIncome(["| Membership dues (24 members × $40) | $960.00 |", "| Raffle (120 tickets x $2.50) | $300 |"]), en), []);
+  });
+
+  it("掛け算が一つの金額と数える語の数でなければ読まない", () => {
+    const skipped = [
+      "| 会費（3,000円×24名×2回） | 72,000円 |",
+      "| 手数料（72,000円×5%） | 3,000円 |",
+      "| 床面積（12m×4m） | 72,000円 |",
+      "| 会費（3,000×24名） | 72,000円 |",
+      "| 会費（3,000円×24） | 72,000円 |",
+      "| 会費（3,000円×24日） | 72,000円 |",
+      "| 会費（月額3,000円×24名） | 72,000円 |",
+      "| 会費（3,000円×24名）（2,000円×3名） | 72,000円 |",
+      "| 会費 3,000円×24名 | 72,000円 |",
+    ];
+    skipped.forEach((row) => assert.deepEqual(findingsOf(income([row])), [], row));
+    assert.deepEqual(
+      findingsOf(enIncome(["| Dues (24 membersx$40) | $960.00 |", "| Box (24 boxes × $40) | $960.00 |", "| Dues (24¹ members × $40) | $960.00 |"]), en),
+      [],
+    );
+  });
+
+  it("行にほかの数があるか、金額の書き方が単価と違えば読まない", () => {
+    const budget = ["| 項目 | 予算 | 決算 |", "| --- | --- | --- |", "| 会費（3,000円×26名） | 78,000円 | 72,000円 |"].join("\n") + "\n";
+    assert.deepEqual(findingsOf(budget), []);
+    assert.deepEqual(findingsOf(income(["| 会費（3,000円×26名） | 7.2万円 |", "| 会費（3,000円×26名） | ¥72,000 |", "| 会費（3,000円×26名） | 未定 |"])), []);
+    assert.deepEqual(findingsOf(income(["| 会費（3,000円×26名） | ▲72,000円 |"])), []);
+  });
+
+  it("読み方の部品", () => {
+    const times = ["×", "x"];
+    assert.deepEqual(factorsOf("3,000円×24名", times), ["3,000円", "24名"]);
+    assert.deepEqual(factorsOf("24 members x $40", times), ["24 members", "$40"]);
+    assert.equal(factorsOf("24 membersx$40", times), undefined);
+    assert.equal(factorsOf("3,000円×24名×2回", times), undefined);
+    assert.equal(factorsOf("72,000円×5%", times), undefined);
+    assert.equal(factorsOf("3,000円と24名", times), undefined);
+    assert.equal(factorsOf("3,000円×24名", []), undefined);
+    assert.equal(factorsOf("", times), undefined);
+    assert.equal(countOf("24名", ["名"]), 24);
+    assert.equal(countOf("1,200 Members", ["members"]), 1200);
+    assert.equal(countOf("24", ["名"]), undefined);
+    assert.equal(countOf("24日", ["名"]), undefined);
+    assert.equal(countOf("2.5名", ["名"]), undefined);
+    assert.equal(countOf("約24名", ["名"]), undefined);
+    assert.equal(countOf("", ["名"]), undefined);
+    const words = { times, counts: ["名"], isMoney: (text: string): boolean => text.endsWith("円") };
+    assert.equal(labelProductOf("会費（3,000円×24名）", words)?.count, 24);
+    assert.equal(labelProductOf("会費（3,000円×24名）", words)?.price.value, 3000);
+    assert.equal(labelProductOf("会費", words), undefined);
+    assert.equal(labelProductOf("会費（3,000円×24¹名）", words), undefined);
+    assert.equal(labelProductOf("会費（24名×24名）", words), undefined);
+    assert.equal(labelProductOf("会費（3,000円×3,000円）", words), undefined);
   });
 });
