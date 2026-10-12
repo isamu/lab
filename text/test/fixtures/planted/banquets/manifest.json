@@ -1,0 +1,247 @@
+{
+  "note": "Self-written hotel event quotes (宴会・会議室の見積書 / banquet and meeting room quote) for made-up hotels and made-up clients, with fictional amounts: a banquet quote (a year-end dinner priced per guest, with the banquet room by the hour) and a meeting room quote (a day of training, with the room by the hour and lunch and coffee per attendee), each in a clean version and a planted one that differs only on the lines below. They run as business/proposal, the genre the quotes of the business and renovation sets run as: no genre is made for event quotes. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line; a mistake that breaks a pair of lines names the pair's other line as pairedLine. The quote's table puts the service charge and the tax after the subtotal, the tax being charged on the subtotal and the service charge together, as hotels write it. A per-guest price times the number of guests, and the room's hours times the hourly rate, not equal to the line amount are named for line-amount-mismatch; the plant changes the price or the hours, not the amount, so the items still add up to the subtotal. The service charge plant changes the rate in the row's label, not its amount, so the total still adds up, and is named for tax-mismatch, the rule that compares a rate row with the subtotal above it. A quote that stays valid after the event it prices could be accepted once the event is over, so the validity date after the event date is named for due-before-issue, which compares pairs of labelled dates on their own lines; the plant changes the validity date, and the event date line is the pairedLine. (An event date after the validity date is not a mistake: a quote is accepted well before the event.) The banquet's closing time before its opening time is written as two labelled lines and named for time-order, the rule that compares two labelled times of one day; the plant changes the closing time, and the opening line is the pairedLine. The meeting room's hours written as one range that ends before it starts are named for time-range-reversed; the en plant is the slip of am for pm on the end. The guaranteed count in the notes that contradicts the number of guests stated at the top is named for fact-conflict, with the stated number as the pairedLine. The organiser's or contact's name written once with one character changed is named for name-variant (each name is written three times, so one form is the usual one). Each plant was also run alone on its clean document, so no plant depends on another. yarn planted banquets scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/banquet",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/banquet.clean.md",
+      "planted": "ja/banquet.planted.md",
+      "mistakes": [
+        {
+          "kind": "validity-after-event",
+          "rule": "due-before-issue",
+          "line": 15,
+          "pairedLine": 17,
+          "clean": "有効期限：2026年11月20日",
+          "planted": "有効期限：2026年12月20日"
+        },
+        {
+          "kind": "closing-before-opening",
+          "rule": "time-order",
+          "line": 21,
+          "pairedLine": 19,
+          "clean": "閉宴時刻：20:30",
+          "planted": "閉宴時刻：18:00"
+        },
+        {
+          "kind": "per-person-line",
+          "rule": "line-amount-mismatch",
+          "line": 31,
+          "clean": "| 40名 | 8,000円 |",
+          "planted": "| 40名 | 8,500円 |"
+        },
+        {
+          "kind": "room-hours-line",
+          "rule": "line-amount-mismatch",
+          "line": 33,
+          "clean": "| 4時間 | 25,000円 |",
+          "planted": "| 5時間 | 25,000円 |"
+        },
+        {
+          "kind": "service-charge-rate",
+          "rule": "tax-mismatch",
+          "line": 36,
+          "clean": "サービス料（10%） | | | 55,500円",
+          "planted": "サービス料（15%） | | | 55,500円"
+        },
+        {
+          "kind": "guaranteed-count",
+          "rule": "fact-conflict",
+          "line": 44,
+          "pairedLine": 25,
+          "clean": "保証人数は40名です",
+          "planted": "保証人数は45名です"
+        },
+        {
+          "kind": "organiser-name",
+          "rule": "name-variant",
+          "line": 50,
+          "clean": "山本 健太 様にご確認",
+          "planted": "山本 健大 様にご確認"
+        }
+      ]
+    },
+    {
+      "id": "ja/meeting-room",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/meeting-room.clean.md",
+      "planted": "ja/meeting-room.planted.md",
+      "mistakes": [
+        {
+          "kind": "validity-after-event",
+          "rule": "due-before-issue",
+          "line": 15,
+          "pairedLine": 17,
+          "clean": "有効期限：2026年10月9日",
+          "planted": "有効期限：2026年10月30日"
+        },
+        {
+          "kind": "hours-reversed",
+          "rule": "time-range-reversed",
+          "line": 19,
+          "clean": "ご利用時間：9:00〜17:00",
+          "planted": "ご利用時間：19:00〜17:00"
+        },
+        {
+          "kind": "room-hours-line",
+          "rule": "line-amount-mismatch",
+          "line": 29,
+          "clean": "| 8時間 | 12,000円 |",
+          "planted": "| 8時間 | 13,000円 |"
+        },
+        {
+          "kind": "per-person-line",
+          "rule": "line-amount-mismatch",
+          "line": 30,
+          "clean": "| 30名 | 1,800円 |",
+          "planted": "| 30名 | 2,000円 |"
+        },
+        {
+          "kind": "service-charge-rate",
+          "rule": "tax-mismatch",
+          "line": 34,
+          "clean": "サービス料（10%） | | | 18,500円",
+          "planted": "サービス料（15%） | | | 18,500円"
+        },
+        {
+          "kind": "guaranteed-count",
+          "rule": "fact-conflict",
+          "line": 42,
+          "pairedLine": 23,
+          "clean": "保証人数は30名です",
+          "planted": "保証人数は25名です"
+        },
+        {
+          "kind": "organiser-name",
+          "rule": "name-variant",
+          "line": 48,
+          "clean": "佐々木 由美 様にご確認",
+          "planted": "佐々木 由実 様にご確認"
+        }
+      ]
+    },
+    {
+      "id": "en/banquet",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/banquet.clean.md",
+      "planted": "en/banquet.planted.md",
+      "mistakes": [
+        {
+          "kind": "validity-after-event",
+          "rule": "due-before-issue",
+          "line": 15,
+          "pairedLine": 17,
+          "clean": "Valid until: November 20, 2026",
+          "planted": "Valid until: December 20, 2026"
+        },
+        {
+          "kind": "closing-before-opening",
+          "rule": "time-order",
+          "line": 21,
+          "pairedLine": 19,
+          "clean": "End time: 8:30 pm",
+          "planted": "End time: 6:00 pm"
+        },
+        {
+          "kind": "per-person-line",
+          "rule": "line-amount-mismatch",
+          "line": 31,
+          "clean": "| 40 guests | $65.00 |",
+          "planted": "| 40 guests | $70.00 |"
+        },
+        {
+          "kind": "room-hours-line",
+          "rule": "line-amount-mismatch",
+          "line": 33,
+          "clean": "| 4 hours | $250.00 |",
+          "planted": "| 5 hours | $250.00 |"
+        },
+        {
+          "kind": "service-charge-rate",
+          "rule": "tax-mismatch",
+          "line": 36,
+          "clean": "Service charge (20%) | | | $974.00",
+          "planted": "Service charge (25%) | | | $974.00"
+        },
+        {
+          "kind": "guaranteed-count",
+          "rule": "fact-conflict",
+          "line": 44,
+          "pairedLine": 25,
+          "clean": "guaranteed guest count is 40.",
+          "planted": "guaranteed guest count is 45."
+        },
+        {
+          "kind": "organiser-name",
+          "rule": "name-variant",
+          "line": 50,
+          "clean": "once Kevin Hartley has",
+          "planted": "once Kevin Hartly has"
+        }
+      ]
+    },
+    {
+      "id": "en/meeting-room",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/meeting-room.clean.md",
+      "planted": "en/meeting-room.planted.md",
+      "mistakes": [
+        {
+          "kind": "validity-after-event",
+          "rule": "due-before-issue",
+          "line": 15,
+          "pairedLine": 17,
+          "clean": "Valid until: October 9, 2026",
+          "planted": "Valid until: October 30, 2026"
+        },
+        {
+          "kind": "hours-reversed",
+          "rule": "time-range-reversed",
+          "line": 19,
+          "clean": "Hours: 9:00 am–5:00 pm",
+          "planted": "Hours: 9:00 am–5:00 am"
+        },
+        {
+          "kind": "room-hours-line",
+          "rule": "line-amount-mismatch",
+          "line": 29,
+          "clean": "| 8 hours | $120.00 |",
+          "planted": "| 8 hours | $130.00 |"
+        },
+        {
+          "kind": "per-person-line",
+          "rule": "line-amount-mismatch",
+          "line": 30,
+          "clean": "| 30 attendees | $18.00 |",
+          "planted": "| 30 attendees | $20.00 |"
+        },
+        {
+          "kind": "service-charge-rate",
+          "rule": "tax-mismatch",
+          "line": 34,
+          "clean": "Service charge (20%) | | | $370.00",
+          "planted": "Service charge (25%) | | | $370.00"
+        },
+        {
+          "kind": "guaranteed-count",
+          "rule": "fact-conflict",
+          "line": 42,
+          "pairedLine": 23,
+          "clean": "coffee breaks is 30.",
+          "planted": "coffee breaks is 25."
+        },
+        {
+          "kind": "organiser-name",
+          "rule": "name-variant",
+          "line": 48,
+          "clean": "once Megan Caldwell has",
+          "planted": "once Megan Cauldwell has"
+        }
+      ]
+    }
+  ]
+}
