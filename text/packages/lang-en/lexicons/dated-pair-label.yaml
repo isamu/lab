@@ -157,3 +157,17 @@ entries:
   - { pattern: "Next inspection", group: vehicle-service, position: after }
   - { pattern: "Next inspection due", group: vehicle-service, position: after }
   - { pattern: "Next service due", group: vehicle-service, position: after }
+  # A property sale's settlement statement: settlement, closing, completion and possession come after the contract.
+  # Contract date and Date of contract are in loan too; each group is compared on its own.
+  - { pattern: "Contract date", group: sale, position: before }
+  - { pattern: "Date of contract", group: sale, position: before }
+  - { pattern: "Settlement date", group: sale, position: after }
+  - { pattern: "Closing date", group: sale, position: after }
+  - { pattern: "Completion date", group: sale, position: after }
+  - { pattern: "Possession date", group: sale, position: after }
+  # A banquet or meeting room quote is accepted before the event, so it is not valid past the event date. The event's
+  # words make the pair: an invoice's or a coupon's validity sits beside no event date.
+  - { pattern: "Valid until", group: quote-validity, position: before }
+  - { pattern: "Quote valid until", group: quote-validity, position: before }
+  - { pattern: "Event date", group: quote-validity, position: after }
+  - { pattern: "Date of event", group: quote-validity, position: after }
