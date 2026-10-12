@@ -1,0 +1,209 @@
+{
+  "note": "Self-written loyalty points and membership statements (ポイントご利用明細・会員ご利用明細 / points statement, membership statement) for a made-up shop rewards club and a made-up hotel rewards programme: a monthly points statement with an earning table and a tier table, and a quarterly hotel membership statement with stays, a status list and a balance table, each in a clean version and a planted one that differs only on the lines below. They run as business/proposal, the genre the statements of the loans and utilities sets run as: no genre is made for points statements. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: tier-threshold-mismatch (a tier stated for a member whose stated points or nights fall outside that tier's band in the document's own tier table or list). yarn planted points scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/points",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/points.clean.md",
+      "planted": "ja/points.planted.md",
+      "mistakes": [
+        {
+          "kind": "membership-period-reversed",
+          "rule": "date-range-reversed",
+          "line": 15,
+          "clean": "2026年4月1日〜2027年3月31日",
+          "planted": "2026年4月1日〜2026年3月31日"
+        },
+        {
+          "kind": "tier-threshold",
+          "rule": "tier-threshold-mismatch",
+          "line": 17,
+          "clean": "52,400ポイント",
+          "planted": "42,400ポイント"
+        },
+        {
+          "kind": "balance-carried",
+          "rule": "running-balance-mismatch",
+          "line": 24,
+          "clean": "今月末の残高：3,056ポイント",
+          "planted": "今月末の残高：3,506ポイント"
+        },
+        {
+          "kind": "expiry-before-earning",
+          "rule": "due-before-issue",
+          "line": 30,
+          "clean": "384ポイント | 2027年9月30日",
+          "planted": "384ポイント | 2025年9月30日"
+        },
+        {
+          "kind": "points-earned",
+          "rule": "line-amount-mismatch",
+          "line": 31,
+          "clean": "552ポイント",
+          "planted": "525ポイント"
+        },
+        {
+          "kind": "member-number",
+          "rule": "reference-number-variant",
+          "line": 49,
+          "clean": "（MD-30418-72）",
+          "planted": "（MD-30481-72）"
+        }
+      ]
+    },
+    {
+      "id": "ja/membership",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/membership.clean.md",
+      "planted": "ja/membership.planted.md",
+      "mistakes": [
+        {
+          "kind": "membership-period-reversed",
+          "rule": "date-range-reversed",
+          "line": 15,
+          "clean": "2026年7月1日から2027年6月30日まで",
+          "planted": "2026年7月1日から2026年6月30日まで"
+        },
+        {
+          "kind": "tier-threshold",
+          "rule": "tier-threshold-mismatch",
+          "line": 17,
+          "clean": "前年度のご宿泊数：34泊",
+          "planted": "前年度のご宿泊数：24泊"
+        },
+        {
+          "kind": "expiry-before-earning",
+          "rule": "due-before-issue",
+          "line": 32,
+          "clean": "2,160ポイント | 2028年7月31日",
+          "planted": "2,160ポイント | 2025年7月31日"
+        },
+        {
+          "kind": "points-earned",
+          "rule": "line-amount-mismatch",
+          "line": 33,
+          "clean": "28,000円 | 2,800ポイント",
+          "planted": "28,000円 | 2,080ポイント"
+        },
+        {
+          "kind": "balance-carried",
+          "rule": "running-balance-mismatch",
+          "line": 42,
+          "clean": "| 13,410 |",
+          "planted": "| 14,310 |"
+        },
+        {
+          "kind": "member-number",
+          "rule": "reference-number-variant",
+          "line": 50,
+          "clean": "会員番号 HM 5520 8137 を",
+          "planted": "会員番号 HM 5520 8173 を"
+        }
+      ]
+    },
+    {
+      "id": "en/points",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/points.clean.md",
+      "planted": "en/points.planted.md",
+      "mistakes": [
+        {
+          "kind": "membership-period-reversed",
+          "rule": "date-range-reversed",
+          "line": 15,
+          "clean": "April 1, 2026 – March 31, 2027",
+          "planted": "April 1, 2026 – March 31, 2026"
+        },
+        {
+          "kind": "tier-threshold",
+          "rule": "tier-threshold-mismatch",
+          "line": 17,
+          "clean": "52,400 points",
+          "planted": "42,400 points"
+        },
+        {
+          "kind": "balance-carried",
+          "rule": "running-balance-mismatch",
+          "line": 24,
+          "clean": "this month: 3,056 points",
+          "planted": "this month: 3,506 points"
+        },
+        {
+          "kind": "expiry-before-earning",
+          "rule": "due-before-issue",
+          "line": 30,
+          "clean": "384 points | September 30, 2027",
+          "planted": "384 points | September 30, 2025"
+        },
+        {
+          "kind": "points-earned",
+          "rule": "line-amount-mismatch",
+          "line": 31,
+          "clean": "552 points",
+          "planted": "525 points"
+        },
+        {
+          "kind": "member-number",
+          "rule": "reference-number-variant",
+          "line": 49,
+          "clean": "(MD-30418-72)",
+          "planted": "(MD-30481-72)"
+        }
+      ]
+    },
+    {
+      "id": "en/membership",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/membership.clean.md",
+      "planted": "en/membership.planted.md",
+      "mistakes": [
+        {
+          "kind": "membership-period-reversed",
+          "rule": "date-range-reversed",
+          "line": 15,
+          "clean": "July 1, 2026 to June 30, 2027",
+          "planted": "July 1, 2026 to June 30, 2026"
+        },
+        {
+          "kind": "tier-threshold",
+          "rule": "tier-threshold-mismatch",
+          "line": 17,
+          "clean": "last year: 34 nights",
+          "planted": "last year: 24 nights"
+        },
+        {
+          "kind": "expiry-before-earning",
+          "rule": "due-before-issue",
+          "line": 32,
+          "clean": "2,160 points | July 31, 2028",
+          "planted": "2,160 points | July 31, 2025"
+        },
+        {
+          "kind": "points-earned",
+          "rule": "line-amount-mismatch",
+          "line": 33,
+          "clean": "$280.00 | 2,800 points",
+          "planted": "$280.00 | 2,080 points"
+        },
+        {
+          "kind": "balance-carried",
+          "rule": "running-balance-mismatch",
+          "line": 42,
+          "clean": "| 13,410 |",
+          "planted": "| 14,310 |"
+        },
+        {
+          "kind": "member-number",
+          "rule": "reference-number-variant",
+          "line": 50,
+          "clean": "number HM 5520 8137.",
+          "planted": "number HM 5520 8173."
+        }
+      ]
+    }
+  ]
+}
