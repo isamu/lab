@@ -33,6 +33,18 @@ entries:
   - { pattern: invoice no., group: invoice }
   - { pattern: invoice no, group: invoice }
   - { pattern: "invoice #", group: invoice }
+  # A quote's number. A quote, an order and an invoice are different documents, so their numbers are never compared.
+  # A bare "quote" is not a label: "please quote your PO number" uses it as a verb.
+  - { pattern: quote number, group: quote }
+  - { pattern: quote number is, group: quote }
+  - { pattern: quote no., group: quote }
+  - { pattern: quote no, group: quote }
+  - { pattern: quotation number, group: quote }
+  - { pattern: quotation number is, group: quote }
+  - { pattern: estimate number, group: quote }
+  - { pattern: estimate number is, group: quote }
+  - { pattern: estimate no., group: quote }
+  - { pattern: estimate no, group: quote }
   - { pattern: patient number, group: patient }
   - { pattern: patient number is, group: patient }
   - { pattern: patient id, group: patient }
