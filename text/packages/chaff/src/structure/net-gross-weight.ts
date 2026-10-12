@@ -22,7 +22,7 @@ const COMPARE_DECIMALS = 6;
 const wordsHeld = (key: string, words: readonly WeightWord[], role: WeightRole): WeightWord[] =>
   words.filter((word) => word.role === role && holds(key, word.pattern));
 
-const withoutWord = (key: string, word: string): string => {
+export const withoutWord = (key: string, word: string): string => {
   const written = plain(word).toLowerCase();
   if (!LATIN.test(written)) return key.replaceAll(written, "");
   return key.replace(new RegExp(`(?<![a-z0-9])${escapeRegExp(written)}(?![a-z0-9])`, "gu"), "");

@@ -1,0 +1,28 @@
+# Words that tell the tax-excluded price column of a price list from the tax-included one (tax-mismatch). group: excluded
+# is the price before tax, included the price with tax. Two columns whose headings are the same once these words and a
+# rate (8%) are taken out ("Pack price (excl. tax)", "Pack price (incl. 8% tax)") are compared row by row as one item's
+# price before and with tax. group: rate is a word that, in a sentence outside a table, makes the rate right before or
+# after it the tax rate ("8% sales tax"). A Latin word stands as a whole word.
+id: tax-price-column
+language: en
+entries:
+  - { pattern: excl. tax, group: excluded }
+  - { pattern: excluding tax, group: excluded }
+  - { pattern: ex. tax, group: excluded }
+  - { pattern: tax excl., group: excluded }
+  - { pattern: tax excluded, group: excluded }
+  - { pattern: before tax, group: excluded }
+  - { pattern: pre-tax, group: excluded }
+  - { pattern: incl. tax, group: included }
+  - { pattern: including tax, group: included }
+  - { pattern: inc. tax, group: included }
+  - { pattern: tax incl., group: included }
+  - { pattern: tax included, group: included }
+  - { pattern: tax inclusive, group: included }
+  - { pattern: after tax, group: included }
+  - { pattern: with tax, group: included }
+  - { pattern: sales tax, group: rate }
+  - { pattern: tax rate, group: rate }
+  - { pattern: tax, group: rate }
+  - { pattern: VAT, group: rate }
+  - { pattern: GST, group: rate }
