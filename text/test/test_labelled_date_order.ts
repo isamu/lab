@@ -1053,3 +1053,46 @@ describe("due-before-issue (order): 車の整備と次の点検", () => {
     assert.deepEqual(findingsOf(labelledDoc("Report", ["Service date: September 26, 2026", "Report date: September 1, 2026"]), en), []);
   });
 });
+
+describe("due-before-issue (period): 会計報告書の監査日と会計年度の終わり", () => {
+  it("会計年度が終わる前の監査日を、会計年度の終わりと比べて指す", () => {
+    assert.deepEqual(findingsOf(labelledDoc("会計報告書", ["会計年度：2025年4月1日〜2026年3月31日", "監査日：2026年3月20日"])), [
+      "「監査日」の 2026年3月20日 が、「会計年度」の終わり 2026年3月31日 より前です",
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("事業報告", ["事業年度：2025年4月1日〜2026年3月31日", "会計監査日：2026年2月10日"])), [
+      "「会計監査日」の 2026年2月10日 が、「事業年度」の終わり 2026年3月31日 より前です",
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("Treasurer's Report", ["Fiscal year: April 1, 2025 – March 31, 2026", "Date audited: March 20, 2026"]), en), [
+      '"Date audited" March 20, 2026 is before the end of the "Fiscal year", March 31, 2026',
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("Treasurer's Report", ["Financial year: April 1, 2025 – March 31, 2026", "Audited: February 10, 2026"]), en), [
+      '"Audited" February 10, 2026 is before the end of the "Financial year", March 31, 2026',
+    ]);
+  });
+
+  it("年度が終わった後や同じ日の監査、年の無い期間、期間の無い年度は言わない", () => {
+    assert.deepEqual(findingsOf(labelledDoc("会計報告書", ["会計年度：2025年4月1日〜2026年3月31日", "監査日：2026年4月20日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("会計報告書", ["会計年度：2025年4月1日〜2026年3月31日", "監査実施日：2026年3月31日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("会計報告書", ["会計年度：4月1日〜3月31日", "監査日：2026年3月20日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("会計報告書", ["会計年度：2025年度", "監査日：2025年3月20日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Treasurer's Report", ["Fiscal year: April 1, 2025 – March 31, 2026", "Audit date: April 20, 2026"]), en), []);
+    assert.deepEqual(findingsOf(labelledDoc("Treasurer's Report", ["Financial year: 2025–26", "Date of audit: March 20, 2025"]), en), []);
+  });
+
+  it("承認の日と報告の日は年度の終わりと比べない。予算は年度の前に承認し、中間の報告は年度の途中に出す", () => {
+    assert.deepEqual(findingsOf(labelledDoc("予算書", ["会計年度：2026年4月1日〜2027年3月31日", "承認日：2026年3月20日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("予算書", ["会計年度：2026年4月1日〜2027年3月31日", "総会承認日：2026年3月20日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("中間会計報告", ["会計年度：2025年4月1日〜2026年3月31日", "報告日：2025年10月15日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Budget", ["Fiscal year: July 1, 2026 – June 30, 2027", "Approved: June 15, 2026"]), en), []);
+    assert.deepEqual(findingsOf(labelledDoc("Interim Report", ["Financial year: April 1, 2025 – March 31, 2026", "Report date: October 15, 2025"]), en), []);
+  });
+
+  it("行の頭に語の無い監査や承認の日（署名の行、文の中の総会）は比べない", () => {
+    assert.deepEqual(findingsOf(labelledDoc("会計報告書", ["会計年度：2025年4月1日〜2026年3月31日", "2026年3月12日　会計監査 架空 一郎"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("会計報告書", ["会計年度：2025年4月1日〜2026年3月31日", "本報告は2026年3月26日の定期総会で承認されました。"])), []);
+    assert.deepEqual(
+      findingsOf(labelledDoc("Treasurer's Report", ["Fiscal year: April 1, 2025 – March 31, 2026", "Jane Example, Honorary Auditor, March 12, 2026"]), en),
+      [],
+    );
+  });
+});
