@@ -1004,6 +1004,65 @@ describe("due-before-issue (order): 賃貸借の入居、解約の通知と退�
   });
 });
 
+describe("due-before-issue (order): 保険金の請求日と事故の日", () => {
+  it("事故日より前の請求日を、請求日の行で指す", () => {
+    const claim = labelledDoc("保険金請求書", ["事故日：2026年8月14日", "請求日：2026年8月5日"]);
+    assert.deepEqual(findingsOf(claim), ["「請求日」（2026年8月5日）が、「事故日」（2026年8月14日）より前です"]);
+    assert.deepEqual(ruleLines(claim), [5]);
+    const claimEn = labelledDoc("Claim Form", ["Date of incident: August 14, 2026", "Date of claim: August 5, 2026"]);
+    assert.deepEqual(findingsOf(claimEn, en), ['"Date of claim" August 5, 2026 is before "Date of incident" August 14, 2026']);
+    assert.deepEqual(ruleLines(claimEn, en), [5]);
+  });
+
+  it("事故発生日、発生日、受傷日、発病日と、請求書作成日、申請日、Date of loss、Date of injury、Claim date も組む", () => {
+    assert.deepEqual(findingsOf(labelledDoc("保険金請求書", ["事故発生日：2026年8月14日", "請求書作成日：2026年8月1日"])), [
+      "「請求書作成日」（2026年8月1日）が、「事故発生日」（2026年8月14日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("保険金請求書", ["発生日：2026年8月14日", "請求日：2026年8月1日"])), [
+      "「請求日」（2026年8月1日）が、「発生日」（2026年8月14日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("給付金請求書", ["受傷日：2026年8月14日", "申請日：2026年8月1日"])), [
+      "「申請日」（2026年8月1日）が、「受傷日」（2026年8月14日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("給付金請求書", ["発病日：2026年8月14日", "請求日：2026年8月1日"])), [
+      "「請求日」（2026年8月1日）が、「発病日」（2026年8月14日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("Claim Form", ["Date of loss: August 14, 2026", "Claim date: August 1, 2026"]), en), [
+      '"Claim date" August 1, 2026 is before "Date of loss" August 14, 2026',
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("Claim Form", ["Date of injury: August 14, 2026", "Date of claim: August 1, 2026"]), en), [
+      '"Date of claim" August 1, 2026 is before "Date of injury" August 14, 2026',
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("Claim Form", ["Incident date: August 14, 2026", "Claim date: August 1, 2026"]), en), [
+      '"Claim date" August 1, 2026 is before "Incident date" August 14, 2026',
+    ]);
+  });
+
+  it("順の合った日付、同じ日、年の無い日付は言わない", () => {
+    assert.deepEqual(findingsOf(labelledDoc("保険金請求書", ["事故日：2026年8月14日", "請求日：2026年9月5日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("保険金請求書", ["事故日：2026年8月14日", "請求日：2026年8月14日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("保険金請求書", ["事故日：8月14日", "請求日：8月5日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Claim Form", ["Date of incident: August 14, 2026", "Date of claim: September 5, 2026"]), en), []);
+    assert.deepEqual(findingsOf(labelledDoc("Claim Form", ["Date of incident: August 14, 2026", "Date of claim: August 14, 2026"]), en), []);
+    assert.deepEqual(findingsOf(labelledDoc("Claim Form", ["Date of incident: August 14", "Date of claim: August 5"]), en), []);
+  });
+
+  it("請求日は請求書の発行日のままで、期限とも比べる", () => {
+    assert.deepEqual(findingsOf(labelledDoc("請求書", ["請求日：2026年11月30日", "お支払期限：2026年11月25日"])), [
+      "期限（2026年11月25日）が、発行日（2026年11月30日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("請求書", ["請求日：2026年11月30日", "お支払期限：2026年12月25日"])), []);
+  });
+
+  it("別の組の語どうしは比べない（事故日と発行日、船積日と請求日、問い合わせの発生日と解決日）", () => {
+    assert.deepEqual(findingsOf(labelledDoc("保険金支払明細書", ["事故日：2026年8月14日", "発行日：2026年8月5日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("インボイス", ["船積日：2026年10月9日", "請求日：2026年10月1日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("障害報告", ["発生日：2026年10月9日", "解決日：2026年10月1日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Settlement", ["Date of incident: August 14, 2026", "Date issued: August 5, 2026"]), en), []);
+    assert.deepEqual(findingsOf(labelledDoc("Order", ["Order date: August 14, 2026", "Claim date: August 5, 2026"]), en), []);
+  });
+});
+
 describe("due-before-issue (order): 有効の始まりと終わり", () => {
   it("適用開始日より前の適用終了日を、終了日の行で指す", () => {
     const list = labelledDoc("卸価格表", ["適用開始日：2026年11月1日", "適用終了日：2026年4月30日"]);

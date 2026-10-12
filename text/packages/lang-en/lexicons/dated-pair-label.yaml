@@ -132,6 +132,13 @@ entries:
   - { pattern: "Date of completion", group: transcript-issue, position: before }
   - { pattern: "Date of issue", group: transcript-issue, position: after }
   - { pattern: "Issue date", group: transcript-issue, position: after }
+  # An insurance or benefit claim: the claim does not come before the incident, the loss, the injury it claims for.
+  - { pattern: "Date of incident", group: incident, position: before }
+  - { pattern: "Date of loss", group: incident, position: before }
+  - { pattern: "Incident date", group: incident, position: before }
+  - { pattern: "Date of injury", group: incident, position: before }
+  - { pattern: "Date of claim", group: incident, position: after }
+  - { pattern: "Claim date", group: incident, position: after }
   # An annual earnings and tax withholding statement is issued once the tax year has ended or, for a leaver, after the
   # leaving date. "Period covered" is left out: an invoice billed in advance is issued at the start of the period it covers.
   - { pattern: "Tax year", group: tax-statement, position: before }
