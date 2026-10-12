@@ -2,7 +2,7 @@
   "recall": {
     "ja": {
       "validity-before-issue": "2/2",
-      "work-end-before-start": "0/2",
+      "work-end-before-start": "2/2",
       "floor-area-two-ways": "2/2",
       "area-line-amount": "1/1",
       "items-total": "2/2",
@@ -12,7 +12,7 @@
     },
     "en": {
       "validity-before-issue": "2/2",
-      "work-end-before-start": "0/2",
+      "work-end-before-start": "2/2",
       "floor-area-two-ways": "2/2",
       "area-line-amount": "1/1",
       "items-total": "2/2",
