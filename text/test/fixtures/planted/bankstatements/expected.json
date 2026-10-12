@@ -9,7 +9,7 @@
       "fee-two-ways": "2/2",
       "account-number": "0/2",
       "holder-name": "1/2",
-      "period-dates-reversed": "0/1"
+      "period-dates-reversed": "1/1"
     },
     "en": {
       "period-range-reversed": "1/1",
@@ -20,7 +20,7 @@
       "fee-two-ways": "2/2",
       "account-number": "0/2",
       "holder-name": "2/2",
-      "period-dates-reversed": "0/1"
+      "period-dates-reversed": "1/1"
     }
   },
   "clean": []
