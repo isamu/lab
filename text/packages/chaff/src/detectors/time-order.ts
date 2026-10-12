@@ -8,7 +8,7 @@ import { arrivalOffsets, arrivalsBeforeDeparture } from "../structure/leg-times.
 import { shortConnections, type TravelLength, type TravelWords } from "../structure/connection-times.ts";
 import { timeLengths } from "../derived/time-lengths.ts";
 import { reversedTimeRanges } from "../structure/time-range.ts";
-import { reversedShiftRows, showsOvernightWork } from "../structure/shift-times.ts";
+import { cellMinutes, reversedShiftRows, showsOvernightWork } from "../structure/shift-times.ts";
 import { pairedTimesOutOfOrder } from "../structure/labelled-time-order.ts";
 import { quoteAt, rangeWordsOf } from "./structure-tree.ts";
 
@@ -72,7 +72,6 @@ export const timeOrder: Detector = (doc, options) => [...timeOrderInList(doc, op
 export const arrivalBeforeDeparture: Detector = detectorOf("arrival-before-departure", arrivalsBeforeDeparture);
 const SECONDS_PER_HOUR = 3600;
 const SECONDS_PER_MINUTE = 60;
-const MINUTES_PER_HOUR = 60;
 
 const patternsOf = (doc: ProseDocument, lexicon: string, weight?: number): string[] =>
   (doc.lexicons[lexicon] ?? []).filter((entry) => weight === undefined || entry.weight === weight).map((entry) => entry.pattern);
@@ -86,18 +85,8 @@ const lengthsIn = (doc: ProseDocument, text: string): TravelLength[] =>
     numberWords: patternsOf(doc, "count-number"),
   });
 
-const CLOCK_LENGTH = /^(\d{1,2}):([0-5]\d)$/u;
-const BARE_HOURS = /^\d{1,2}(?:\.\d{1,2})?$/u;
-
 /** 升に書いた長さを分で。単位付き（8.0時間、9時間30分、8 hours）、時と分（1:00）、単位の無い時間（8.00）。 */
-const cellLength = (doc: ProseDocument, text: string): number | undefined => {
-  const lengths = lengthsIn(doc, text);
-  const only = lengths.length === 1 ? lengths[0] : undefined;
-  if (only !== undefined) return only.start === 0 && only.end === text.length ? only.minutes : undefined;
-  const clock = CLOCK_LENGTH.exec(text);
-  if (clock !== null) return Number(clock[1]) * MINUTES_PER_HOUR + Number(clock[2]);
-  return BARE_HOURS.test(text) ? Number(text) * MINUTES_PER_HOUR : undefined;
-};
+const cellLength = (doc: ProseDocument, text: string): number | undefined => cellMinutes(text, lengthsIn(doc, text), true);
 
 /** 範囲に書いた時刻と、勤務表の始まりと終わりの列（語彙表 shift-column）。同じ時刻を両方から読んでも一度だけ言う。 */
 export const timeRangeReversed: Detector = detectorOf("time-range-reversed", (source, times, _dates, words, doc) => {

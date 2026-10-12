@@ -26,7 +26,7 @@ export type WorkingHoursMismatch = {
   readonly expected: number;
 };
 
-type ClockRange = Span & { readonly from: Span; readonly to: Span; readonly minutes: number | undefined };
+export type ClockRange = Span & { readonly from: TimeSpan; readonly to: TimeSpan; readonly minutes: number | undefined };
 
 const SECONDS_PER_MINUTE = 60;
 
