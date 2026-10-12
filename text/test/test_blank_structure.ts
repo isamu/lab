@@ -11,6 +11,40 @@ const table = (...rows: string[]): string => ["| 期限 | 担当 | 内容 |", "|
 
 const names = (blanks: readonly { readonly name: string }[]): string[] => blanks.map((blank) => blank.name);
 
+const titledTable =
+  (title: string, ...head: string[]) =>
+  (...rows: string[]): string =>
+    [`# ${title}`, "", ...head, ...rows, ""].join("\n");
+
+const shifts = titledTable(
+  "勤務",
+  "| 日付 | 始業 | 終業 | 実働 |",
+  "| --- | --- | --- | --- |",
+  "| 9月1日 | 9:00 | 18:00 | 8.0時間 |",
+  "| 9月2日 | 9:00 | 17:00 | 7.0時間 |",
+);
+const pay = titledTable(
+  "給与",
+  "| 区分 | 時間 | 時給 | 金額 |",
+  "| --- | --- | --- | --- |",
+  "| 所定内 | 80時間 | 1,200円 | 96,000円 |",
+  "| 時間外 | 4時間 | 1,500円 | 6,000円 |",
+);
+const week = titledTable(
+  "Hours",
+  "| Date | Start | End | Hours |",
+  "| --- | --- | --- | --- |",
+  "| Mon | 8:00 AM | 5:00 PM | 8.00 |",
+  "| Tue | 8:00 AM | 4:00 PM | 7.00 |",
+);
+const wages = titledTable(
+  "Pay",
+  "| Type | Hours | Rate | Amount |",
+  "| --- | --- | --- | --- |",
+  "| Regular | 76.00 | $22.00 | $1,672.00 |",
+  "| Overtime | 2.50 | $33.00 | $82.50 |",
+);
+
 describe("empty-table-cell: 表の空欄", () => {
   it("ほかの行がすべて埋めている列の、一つだけの空欄を言う", () => {
     const source = table("| 10月16日 | 伊藤 | 修正 |", "| 10月21日 |  | 配布 |", "| 10月28日 | 高橋 | 日程 |");
@@ -107,102 +141,28 @@ describe("empty-table-cell: 表の空欄", () => {
   });
 
   it("期間の合計（週計、Week total）と差し引きの金額の名前（総支給額、Gross pay）の行も、ほかの列を空けてよい", () => {
-    const shifts = (...rows: string[]): string =>
-      [
-        "# 勤務",
-        "",
-        "| 日付 | 始業 | 終業 | 実働 |",
-        "| --- | --- | --- | --- |",
-        "| 9月1日 | 9:00 | 18:00 | 8.0時間 |",
-        "| 9月2日 | 9:00 | 17:00 | 7.0時間 |",
-        ...rows,
-        "",
-      ].join("\n");
     ["週計", "月計"].forEach((label) => assert.deepEqual(namedRuleRun("empty-table-cell", shifts(`| ${label} | | | 15.0時間 |`), ja).findings, [], label));
-    const pay = (...rows: string[]): string =>
-      [
-        "# 給与",
-        "",
-        "| 区分 | 時間 | 時給 | 金額 |",
-        "| --- | --- | --- | --- |",
-        "| 所定内 | 80時間 | 1,200円 | 96,000円 |",
-        "| 時間外 | 4時間 | 1,500円 | 6,000円 |",
-        ...rows,
-        "",
-      ].join("\n");
     assert.deepEqual(namedRuleRun("empty-table-cell", pay("| 総支給額 | | | 102,000円 |"), ja).findings, []);
-    const week = (...rows: string[]): string =>
-      [
-        "# Hours",
-        "",
-        "| Date | Start | End | Hours |",
-        "| --- | --- | --- | --- |",
-        "| Mon | 8:00 AM | 5:00 PM | 8.00 |",
-        "| Tue | 8:00 AM | 4:00 PM | 7.00 |",
-        ...rows,
-        "",
-      ].join("\n");
     ["Week total", "Day total", "Month total"].forEach((label) =>
       assert.deepEqual(namedRuleRun("empty-table-cell", week(`| ${label} | | | 15.00 |`), en).findings, [], label),
     );
-    const wages = (...rows: string[]): string =>
-      [
-        "# Pay",
-        "",
-        "| Type | Hours | Rate | Amount |",
-        "| --- | --- | --- | --- |",
-        "| Regular | 76.00 | $22.00 | $1,672.00 |",
-        "| Overtime | 2.50 | $33.00 | $82.50 |",
-        ...rows,
-        "",
-      ].join("\n");
     ["Gross pay", "Net pay"].forEach((label) =>
       assert.deepEqual(namedRuleRun("empty-table-cell", wages(`| ${label} | | | $1,754.50 |`), en).findings, [], label),
     );
   });
 
   it("期間の合計の行でも金額の空欄は言い、期間の語でも合計の語でもない行の空欄は言う", () => {
-    const week = (...rows: string[]): string =>
-      [
-        "# Hours",
-        "",
-        "| Date | Start | End | Hours |",
-        "| --- | --- | --- | --- |",
-        "| Mon | 8:00 AM | 5:00 PM | 8.00 |",
-        "| Tue | 8:00 AM | 4:00 PM | 7.00 |",
-        ...rows,
-        "",
-      ].join("\n");
     assert.deepEqual(namedRuleRun("empty-table-cell", week("| Week total | | | |"), en).findings, ['The "Hours" column is blank in this row only']);
     assert.deepEqual(namedRuleRun("empty-table-cell", week("| Wed | | 5:00 PM | 8.00 |"), en).findings, ['The "Start" column is blank in this row only']);
     assert.deepEqual(namedRuleRun("empty-table-cell", week("| Prior-week total | | | 40.00 |"), en).findings, [
       'The "Start" column is blank in this row only',
       'The "End" column is blank in this row only',
     ]);
-    const wages = (...rows: string[]): string =>
-      [
-        "# Pay",
-        "",
-        "| Type | Hours | Rate | Amount |",
-        "| --- | --- | --- | --- |",
-        "| Regular | 76.00 | $22.00 | $1,672.00 |",
-        "| Overtime | 2.50 | $33.00 | $82.50 |",
-        ...rows,
-        "",
-      ].join("\n");
     assert.deepEqual(namedRuleRun("empty-table-cell", wages("| Gross pay adjustment | | | $10.00 |"), en).findings, [
       'The "Hours" column is blank in this row only',
       'The "Rate" column is blank in this row only',
     ]);
-    const shifts = [
-      "# 勤務",
-      "",
-      "| 日付 | 始業 | 終業 | 実働 |",
-      "| --- | --- | --- | --- |",
-      "| 9月1日 | 9:00 | 18:00 | 8.0時間 |",
-      "| 9月2日 | 9:00 | 17:00 | 7.0時間 |",
-    ];
-    assert.deepEqual(namedRuleRun("empty-table-cell", [...shifts, "| 前週計 | | | 40.0時間 |", ""].join("\n"), ja).findings, [
+    assert.deepEqual(namedRuleRun("empty-table-cell", shifts("| 前週計 | | | 40.0時間 |"), ja).findings, [
       "表の「始業」の列で、この行だけが空欄です",
       "表の「終業」の列で、この行だけが空欄です",
     ]);
