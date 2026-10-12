@@ -7,7 +7,7 @@
       "running-balance": "2/2",
       "interest-rate": "0/2",
       "fee-two-ways": "2/2",
-      "account-number": "0/2",
+      "account-number": "2/2",
       "holder-name": "1/2",
       "period-dates-reversed": "1/1"
     },
@@ -18,7 +18,7 @@
       "running-balance": "2/2",
       "interest-rate": "0/2",
       "fee-two-ways": "2/2",
-      "account-number": "0/2",
+      "account-number": "2/2",
       "holder-name": "2/2",
       "period-dates-reversed": "1/1"
     }
