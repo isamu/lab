@@ -179,6 +179,31 @@ describe("reference-number-variant", () => {
     assert.deepEqual(found(docEn("Patient number: 7724-3168 (mother)", "", "Patient number: 7742-1368 (child)"), en), []);
   });
 
+  it("ja: 見積番号・お見積番号・見積書番号・見積No. の、隣り合う文字の入れ違いを指す", () => {
+    assert.deepEqual(found(docJa("見積番号：MT-582046", "", "見積番号MT-580246の内容に変更がある場合は、改めてお見積りします。"), ja), [5]);
+    assert.deepEqual(found(docJa("お見積番号：MT-582046", "", "見積書番号はMT-582064です。"), ja), [5]);
+    assert.deepEqual(found(docJa("見積No. MT-582046", "", "お見積番号 MT-528046"), ja), [5]);
+  });
+
+  it("ja: 見積番号は注文番号・請求書番号と比べない", () => {
+    assert.deepEqual(found(docJa("見積番号：MT-582046", "", "注文番号：MT-580246"), ja), []);
+    assert.deepEqual(found(docJa("見積番号：MT-582046", "", "請求書番号：MT-580246"), ja), []);
+    assert.deepEqual(found(docJa("発注番号：MT-582046", "", "見積No. MT-580246"), ja), []);
+  });
+
+  it("en: a quote or estimate number with two neighbouring characters swapped", () => {
+    assert.deepEqual(found(docEn("Quote number: RQ-731852", "", "Any change to quote number RQ-731582 is quoted again."), en), [5]);
+    assert.deepEqual(found(docEn("Quotation number: RQ-731852", "", "Quote No. RQ-738152"), en), [5]);
+    assert.deepEqual(found(docEn("Estimate No.: RQ-731852", "", "The estimate number is RQ-713852."), en), [5]);
+    assert.deepEqual(found(docEn("Estimate number: RQ-731852", "", "Quote no RQ-731825"), en), [5]);
+  });
+
+  it("en: a quote number is never compared with an order or invoice number, and a bare quote is not a label", () => {
+    assert.deepEqual(found(docEn("Quote number: RQ-731852", "", "Order number: RQ-731582"), en), []);
+    assert.deepEqual(found(docEn("Invoice number: RQ-731852", "", "Estimate No. RQ-731582"), en), []);
+    assert.deepEqual(found(docEn("Quote number: RQ-731852", "", "Any change to quote RQ-731582 is quoted again."), en), []);
+  });
+
   it("ja: 契約番号・賃貸借契約番号・契約No. の、隣り合う文字の入れ違いを指す", () => {
     assert.deepEqual(found(docJa("契約番号：KR-260417", "", "契約番号KR-260471の更新は、4月1日です。"), ja), [5]);
     assert.deepEqual(found(docJa("賃貸借契約番号：KR-260417", "", "契約番号はKR-206417です。"), ja), [5]);
