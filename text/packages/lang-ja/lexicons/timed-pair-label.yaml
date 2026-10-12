@@ -1,0 +1,46 @@
+# 同じ日の前後の決まった時刻の組。group が組の名前で、position before が先に来るはずの時刻の語、after が後に来るはずの時刻の語。
+# 行の頭（表なら最初の列）にこの語と時刻が一つあり、同じ日の after の時刻が before の時刻より前なら指す（time-order の pair）。
+# 「受付」だけは入れない。「受付：17:00まで」のように受付の終わりを書く行がある。「チェックイン開始」も入れない。宿のチェックインは翌朝の出発より遅い時刻になる。
+id: timed-pair-label
+language: ja
+entries:
+  # 公演や催し。開場してから開演する。
+  - { pattern: "開場", group: doors, position: before }
+  - { pattern: "開場時間", group: doors, position: before }
+  - { pattern: "開場時刻", group: doors, position: before }
+  - { pattern: "開演", group: doors, position: after }
+  - { pattern: "開演時間", group: doors, position: after }
+  - { pattern: "開演時刻", group: doors, position: after }
+  - { pattern: "開会", group: doors, position: after }
+  - { pattern: "開始", group: doors, position: after }
+  - { pattern: "開始時間", group: doors, position: after }
+  - { pattern: "開始時刻", group: doors, position: after }
+  # 受付を始めてから会を始める。
+  - { pattern: "受付開始", group: reception, position: before }
+  - { pattern: "受付開始時間", group: reception, position: before }
+  - { pattern: "受付開始時刻", group: reception, position: before }
+  - { pattern: "開演", group: reception, position: after }
+  - { pattern: "開会", group: reception, position: after }
+  - { pattern: "開始", group: reception, position: after }
+  - { pattern: "開始時間", group: reception, position: after }
+  - { pattern: "開始時刻", group: reception, position: after }
+  # 旅行やツアー。集合してから、搭乗を始めてから出発する。
+  - { pattern: "集合", group: departure, position: before }
+  - { pattern: "集合時間", group: departure, position: before }
+  - { pattern: "集合時刻", group: departure, position: before }
+  - { pattern: "搭乗開始", group: departure, position: before }
+  - { pattern: "搭乗開始時刻", group: departure, position: before }
+  - { pattern: "出発", group: departure, position: after }
+  - { pattern: "出発時間", group: departure, position: after }
+  - { pattern: "出発時刻", group: departure, position: after }
+  # 始めてから終わる。
+  - { pattern: "開演", group: span, position: before }
+  - { pattern: "開会", group: span, position: before }
+  - { pattern: "開始", group: span, position: before }
+  - { pattern: "開始時刻", group: span, position: before }
+  - { pattern: "終演", group: span, position: after }
+  - { pattern: "終演予定", group: span, position: after }
+  - { pattern: "閉会", group: span, position: after }
+  - { pattern: "終了", group: span, position: after }
+  - { pattern: "終了予定", group: span, position: after }
+  - { pattern: "終了時刻", group: span, position: after }

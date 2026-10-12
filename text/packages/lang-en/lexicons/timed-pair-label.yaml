@@ -1,0 +1,54 @@
+# Pairs of times of one day that must come in order. group names the pair; position before is the word of the time that
+# comes first, after the word of the time that comes second. A line (or a table's first column) starting with one of these
+# words and holding one time is read, and an after time earlier than the before time on the same day is reported (time-order, pair).
+# "Registration" and "Check-in" alone are left out: a line can give when registration closes, and a hotel's check-in time
+# comes after the next morning's departure time.
+id: timed-pair-label
+language: en
+entries:
+  # A show or an event: the doors open, then it starts.
+  - { pattern: "Doors open", group: doors, position: before }
+  - { pattern: "Doors opening", group: doors, position: before }
+  - { pattern: "Doors", group: doors, position: before }
+  - { pattern: "Start", group: doors, position: after }
+  - { pattern: "Starts", group: doors, position: after }
+  - { pattern: "Start time", group: doors, position: after }
+  - { pattern: "Show starts", group: doors, position: after }
+  - { pattern: "Concert starts", group: doors, position: after }
+  - { pattern: "Performance starts", group: doors, position: after }
+  - { pattern: "Event starts", group: doors, position: after }
+  - { pattern: "Showtime", group: doors, position: after }
+  - { pattern: "Show time", group: doors, position: after }
+  - { pattern: "Curtain up", group: doors, position: after }
+  # Registration opens, then the event starts.
+  - { pattern: "Registration opens", group: registration, position: before }
+  - { pattern: "Registration begins", group: registration, position: before }
+  - { pattern: "Check-in opens", group: registration, position: before }
+  - { pattern: "Check-in begins", group: registration, position: before }
+  - { pattern: "Start", group: registration, position: after }
+  - { pattern: "Starts", group: registration, position: after }
+  - { pattern: "Start time", group: registration, position: after }
+  - { pattern: "Event starts", group: registration, position: after }
+  - { pattern: "Programme starts", group: registration, position: after }
+  - { pattern: "Program starts", group: registration, position: after }
+  # A trip: the group meets, or boarding begins, then it departs.
+  - { pattern: "Meet", group: departure, position: before }
+  - { pattern: "Meeting time", group: departure, position: before }
+  - { pattern: "Boarding", group: departure, position: before }
+  - { pattern: "Boarding begins", group: departure, position: before }
+  - { pattern: "Boarding starts", group: departure, position: before }
+  - { pattern: "Departure", group: departure, position: after }
+  - { pattern: "Departure time", group: departure, position: after }
+  - { pattern: "Departs", group: departure, position: after }
+  # Something starts, then it ends.
+  - { pattern: "Start", group: span, position: before }
+  - { pattern: "Starts", group: span, position: before }
+  - { pattern: "Start time", group: span, position: before }
+  - { pattern: "Show starts", group: span, position: before }
+  - { pattern: "Concert starts", group: span, position: before }
+  - { pattern: "End", group: span, position: after }
+  - { pattern: "Ends", group: span, position: after }
+  - { pattern: "End time", group: span, position: after }
+  - { pattern: "Finish", group: span, position: after }
+  - { pattern: "Finishes", group: span, position: after }
+  - { pattern: "Expected finish", group: span, position: after }
