@@ -69,20 +69,28 @@ describe("deadline-after-event: 申込締切が催しの日より後", () => {
     assert.deepEqual(findingsOf("# 例\n\n```\n日時：2026年11月20日（金）14:00〜\n申込締切：2026年11月27日（金）\n```\n"), []);
   });
 
-  it("チケットの注文では、公演の後の支払期限を指す", () => {
+  it("チケットの注文では、公演の後の支払期限を支払の期限として指す", () => {
     const jaOrder = "# チケットご注文のご確認\n\n日時：2026年12月12日（土）18:30開演\n\n";
     const enOrder = "# Your Ticket Order\n\nDate: Saturday, December 12, 2026, 18:30\n\n";
-    assert.deepEqual(findingsOf(`${jaOrder}お支払い期限：2026年12月15日（火）\n`), [
-      "申込の締め切り（2026年12月15日）が、催しの日（2026年12月12日）より後です",
-    ]);
+    assert.deepEqual(findingsOf(`${jaOrder}お支払い期限：2026年12月15日（火）\n`), ["支払の期限（2026年12月15日）が、催しの日（2026年12月12日）より後です"]);
     assert.deepEqual(findingsOf(`${jaOrder}2026年12月15日までに代金をお振り込みください。\n`), [
-      "申込の締め切り（2026年12月15日）が、催しの日（2026年12月12日）より後です",
+      "支払の期限（2026年12月15日）が、催しの日（2026年12月12日）より後です",
     ]);
     assert.deepEqual(findingsOf(`${enOrder}Payment due by: Tuesday, December 15, 2026\n`, en), [
-      "The registration deadline December 15, 2026 is after the event on December 12, 2026",
+      "The payment deadline December 15, 2026 is after the event on December 12, 2026",
     ]);
     assert.deepEqual(findingsOf("# Tickets for the winter gala\n\nDate: Saturday, December 12, 2026, 18:30\n\nPlease pay by December 15, 2026.\n", en), [
+      "The payment deadline December 15, 2026 is after the event on December 12, 2026",
+    ]);
+    assert.deepEqual(findingsOf(`${jaOrder}申込締切：2026年12月15日（火）\n`), ["申込の締め切り（2026年12月15日）が、催しの日（2026年12月12日）より後です"]);
+    assert.deepEqual(findingsOf(`${enOrder}Please register by December 15, 2026.\n`, en), [
       "The registration deadline December 15, 2026 is after the event on December 12, 2026",
+    ]);
+    assert.deepEqual(findingsOf(`${enOrder}Please register and pay by December 15, 2026.\n`, en), [
+      "The payment deadline December 15, 2026 is after the event on December 12, 2026",
+    ]);
+    assert.deepEqual(findingsOf(`${jaOrder}2026年12月15日までにお申し込みとご入金をお願いします。\n`), [
+      "支払の期限（2026年12月15日）が、催しの日（2026年12月12日）より後です",
     ]);
   });
 

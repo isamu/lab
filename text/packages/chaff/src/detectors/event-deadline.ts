@@ -29,6 +29,7 @@ export const eventDeadline: Detector = (doc): Finding[] => {
     line: 0,
     column: 0,
     quote: quoteAt(doc.source, issue.offset),
+    ...(issue.kind === "payment" ? { variant: "payment" } : {}),
     values: { ...withReadableDates(issue.values, ["deadline", "event"], readableDates(doc)), offset: issue.offset },
   }));
 };
