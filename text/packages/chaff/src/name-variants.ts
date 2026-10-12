@@ -5,6 +5,7 @@ import { isNearSurname } from "./surname-near.ts";
 import { foldedKeysOf, NO_SPELLING, type SpellingInput } from "./name-spelling-chars.ts";
 import { NO_CHAR_READINGS, readingOfWords } from "./name-char-reading.ts";
 import { isPersonRun } from "./name-person.ts";
+import { isLookalikeApart, lookalikeKeysOf, NO_LOOKALIKES, type LookalikeChars } from "./name-lookalike-chars.ts";
 
 // 同じ名前（人・会社・製品）を、文書の中で少しだけ違う形に書いた所。どの形が正しいかは決めず、少ないほうを指す。
 // 三通りで同じ名前と見る。書き方の違いだけ（GitHub と Github、Mac OS と macOS）、読みが同じ（山田太郎 と 山田太朗）、
@@ -28,7 +29,7 @@ export type NameMention = {
 export type NameVariant = {
   readonly mention: NameMention;
   readonly usual: string;
-  readonly kind: "spelling" | "kana" | "reading" | "near" | "surname" | "character";
+  readonly kind: "spelling" | "kana" | "reading" | "near" | "surname" | "character" | "lookalike";
 };
 
 /** 字体の違う同じ字（斎・斉・齋）。字から、その組の代表の字へ。 */
@@ -405,10 +406,36 @@ const personReadingVariants = (tallies: readonly Tally[]): NameVariant[] =>
   );
 
 /**
- * 同じ名前の、少ないほうの書き方。書き方ごとに最初の現れを一つ。同じ現れを二つの見方が言えば、先の見方だけ。chars は字体の
- * 違う同じ字の組（語彙表 name-variant-char）。
+ * 姓と名のそろった人の名前が、形の似た別の字一字だけで違う（山本 健太 と 山本 健大）。兄弟（健太 と 健大）もありうるので、
+ * 多いほうが二度以上、少ないほうが一度だけのときに限る。
  */
-export const nameVariants = (mentions: readonly NameMention[], chars: VariantChars = new Map(), spelling: SpellingInput = NO_SPELLING): NameVariant[] => {
+const isFullName = (tally: Tally): boolean => tally.first.words.length >= 2;
+
+const isLookalikeSlipOf =
+  (lookalikes: LookalikeChars) =>
+  (tally: Tally, other: Tally): boolean =>
+    tally.count === 1 && other.count >= 2 && isFullName(tally) && isFullName(other) && isLookalikeApart(tally.surface, other.surface, lookalikes);
+
+const lookalikeVariants = (tallies: readonly Tally[], lookalikes: LookalikeChars): NameVariant[] =>
+  variantsIn(
+    groupBy(
+      tallies.filter((tally) => tally.person),
+      (tally) => lookalikeKeysOf(tally.surface, lookalikes),
+    ),
+    "lookalike",
+    isLookalikeSlipOf(lookalikes),
+  );
+
+/**
+ * 同じ名前の、少ないほうの書き方。書き方ごとに最初の現れを一つ。同じ現れを二つの見方が言えば、先の見方だけ。chars は字体の
+ * 違う同じ字の組（語彙表 name-variant-char）、lookalikes は形の似た別の字の組（name-lookalike-char）。
+ */
+export const nameVariants = (
+  mentions: readonly NameMention[],
+  chars: VariantChars = new Map(),
+  spelling: SpellingInput = NO_SPELLING,
+  lookalikes: LookalikeChars = NO_LOOKALIKES,
+): NameVariant[] => {
   const tallies = talliesOf(mentions);
   const found = [
     ...variantsIn(
@@ -428,6 +455,7 @@ export const nameVariants = (mentions: readonly NameMention[], chars: VariantCha
     ...surnameVariants(tallies),
     ...characterVariants(tallies, chars),
     ...personReadingVariants(tallies),
+    ...lookalikeVariants(tallies, lookalikes),
   ];
   const reported = new Set<string>();
   return found
