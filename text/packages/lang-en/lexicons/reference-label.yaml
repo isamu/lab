@@ -28,3 +28,13 @@ entries:
   - { pattern: purchase order number is, group: order }
   - { pattern: order number, group: order }
   - { pattern: order number is, group: order }
+  - { pattern: invoice number, group: invoice }
+  - { pattern: invoice number is, group: invoice }
+  - { pattern: invoice no., group: invoice }
+  - { pattern: invoice no, group: invoice }
+  - { pattern: "invoice #", group: invoice }
+  - { pattern: patient number, group: patient }
+  - { pattern: patient number is, group: patient }
+  - { pattern: patient id, group: patient }
+  - { pattern: patient id is, group: patient }
+  - { pattern: patient no., group: patient }

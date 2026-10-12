@@ -193,6 +193,37 @@ const bracketFact = (source: string, value: FactValue, words: TermValueWords): F
   return key === undefined ? undefined : { label, key, value };
 };
 
+const NUMBER_HEAD = /^[\d.,]+[ \t]*/u;
+
+/** 区切りの前の主語（This stay was の This stay）。文の頭が区切りで終わらなければ無い。 */
+const subjectBeforeSeparator = (clause: string, words: TermValueWords): string | undefined => {
+  const separator = words.separators.find((written) => separatorsIn(clause, written).some((index) => index + written.length === clause.length));
+  return separator === undefined ? undefined : clause.slice(0, clause.length - separator.length).trim();
+};
+
+/** 冠詞と一語だけの主語（This stay、The stay）。Previous stay、The previous stay は別のものを指すことがあるので読まない。 */
+const isBareSubject = (subject: string, words: TermValueWords): boolean => {
+  const [determiner, noun, ...rest] = folded(subject).split(" ");
+  const latin = words.determiners.map(folded).filter((word) => LATIN_WORD.test(word));
+  return noun !== undefined && rest.length === 0 && latin.includes(determiner ?? "");
+};
+
+/**
+ * 単位の語から項目の名前を書いた値（This stay was 6 days in hospital.）。名前が値の単位から始まり、その後ろで文が終わり、値の前が
+ * 冠詞と一語の主語と区切りだけのときだけ。条件の句（after 3 days in hospital）や読点の前の句の値は読まない。
+ */
+const unitNamedFact = (source: string, value: FactValue, words: TermValueWords): Fact | undefined => {
+  const unitStart = value.start + (NUMBER_HEAD.exec(source.slice(value.start, value.end))?.[0].length ?? 0);
+  const clause = source.slice(clauseStartOf(source, value.start), value.start).trimEnd();
+  const subject = CLAUSE_COMMA.test(clause) ? undefined : subjectBeforeSeparator(clause, words);
+  if (unitStart >= value.end || subject === undefined || !isBareSubject(subject, words)) return undefined;
+  const term = words.terms.find((word) => {
+    const end = unitStart + word.pattern.length;
+    return end > value.end && folded(source.slice(unitStart, end)) === folded(word.pattern) && endsSentence(source, end, words);
+  });
+  return term === undefined ? undefined : { label: source.slice(unitStart, unitStart + term.pattern.length), key: folded(term.pattern), value };
+};
+
 const DURATION_UNITS = new Set(["day", "week", "month", "year"]);
 
 /** 語彙表の項目を主語にした文の、期間の値。values は文書の中の順の値（日付を含む）。 */
@@ -200,6 +231,6 @@ export const termValues = (source: string, values: readonly FactValue[], words: 
   values
     .filter((value) => value.kind === "quantity" && DURATION_UNITS.has(value.unit))
     .flatMap((value) => {
-      const fact = bracketFact(source, value, words) ?? subjectFact(source, value, values, words);
+      const fact = bracketFact(source, value, words) ?? subjectFact(source, value, values, words) ?? unitNamedFact(source, value, words);
       return fact === undefined ? [] : [fact];
     });

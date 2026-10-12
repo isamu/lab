@@ -1,9 +1,11 @@
 # Words that mark a total line. A line (or a table's first column) starting with one is compared with the amounts above it.
 id: total-label
 language: en
+# group subtotal: the total of one part of a table, not of the document (fact-conflict does not read it as a
+# document-wide item's value).
 entries:
   - pattern: Total
-  - pattern: Subtotal
-  - pattern: Sub-total
+  - { pattern: Subtotal, group: subtotal }
+  - { pattern: Sub-total, group: subtotal }
   - pattern: Grand total
   - pattern: Sum

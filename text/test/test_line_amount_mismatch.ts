@@ -212,6 +212,31 @@ describe("line-amount-mismatch: 数量×単価が金額と合わない", () => {
     ]);
   });
 
+  it("診療明細の点数と1点の単価、Units と Rate per unit を読む", () => {
+    const bill = (price: string, rows: readonly string[]): string =>
+      [`| 項目 | 点数 | ${price} | 金額 |`, "| --- | --- | --- | --- |", ...rows].join("\n") + "\n";
+    ["1点の単価", "点数単価", "単価（円/点）"].forEach((price) => {
+      assert.deepEqual(findingsOf(bill(price, ["| 初診料 | 291点 | 10円 | 2,910円 |", "| 画像診断 | 225点 | 10円 | 2,550円 |"])), [
+        "金額「2,550円」が、数量×単価（225点 × 10円 = 2,250円）と合いません",
+      ]);
+      assert.deepEqual(findingsOf(bill(price, ["| 初診料 | 291点 | 10円 | 2,910円 |", "| 画像診断 | 255点 | 10円 | 2,550円 |"])), []);
+    });
+    const enBill = (price: string, rows: readonly string[]): string =>
+      [`| Item | Units | ${price} | Amount |`, "| --- | --- | --- | --- |", ...rows].join("\n") + "\n";
+    ["Rate per unit", "Price per unit"].forEach((price) => {
+      assert.deepEqual(
+        findingsOf(enBill(price, ["| Room and board | 5 days | $1,200.00 | $6,000.00 |", "| Laboratory tests | 6 tests | $85.00 | $570.00 |"]), en),
+        ["The amount $570.00 is not quantity × unit price (6 tests × $85.00 = $510.00)"],
+      );
+      assert.deepEqual(findingsOf(enBill(price, ["| Laboratory tests | 6 tests | $85.00 | $510.00 |"]), en), []);
+    });
+  });
+
+  it("点数の列でも、単価と金額の列の無い表（試験の成績）は読まない", () => {
+    assert.deepEqual(findingsOf("| 科目 | 点数 |\n| --- | --- |\n| 国語 | 78点 |\n| 数学 | 85点 |\n"), []);
+    assert.deepEqual(findingsOf("| 科目 | 点数 | 満点 | 順位 |\n| --- | --- | --- | --- |\n| 国語 | 78点 | 100点 | 3 |\n"), []);
+  });
+
   it("発注・納品・残の数量の列がある一つの表（納品書）で、どの数量を掛けても金額にならない行を指す", () => {
     const note = (rows: readonly string[]): string =>
       ["| 品名 | 発注数量 | 納品数量 | 残数 | 単価 | 金額 |", "| --- | --- | --- | --- | --- | --- |", ...rows].join("\n") + "\n";

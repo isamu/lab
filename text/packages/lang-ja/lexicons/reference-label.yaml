@@ -26,3 +26,15 @@ entries:
   - { pattern: 発注番号は, group: order }
   - { pattern: 注文番号, group: order }
   - { pattern: 注文番号は, group: order }
+  - { pattern: インボイス番号, group: invoice }
+  - { pattern: インボイス番号は, group: invoice }
+  - { pattern: 請求書番号, group: invoice }
+  - { pattern: 請求書番号は, group: invoice }
+  - { pattern: 請求書No., group: invoice }
+  - { pattern: 請求書No, group: invoice }
+  - { pattern: 患者番号, group: patient }
+  - { pattern: 患者番号は, group: patient }
+  - { pattern: 患者ID, group: patient }
+  - { pattern: 患者IDは, group: patient }
+  - { pattern: 診察券番号, group: patient }
+  - { pattern: 診察券番号は, group: patient }

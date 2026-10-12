@@ -144,6 +144,38 @@ describe("termValues: a length stated for the item named as the subject", () => 
   });
 });
 
+const STAY_WORDS: TermValueWords = {
+  ...WORDS,
+  separators: ["is", "was"],
+  determiners: ["the", "this", "今回の"],
+  terms: [{ pattern: "days in hospital", group: "stay" }],
+};
+
+const days = (source: string, written: string, amount: number): FactValue => ({ ...at(source, written), kind: "quantity", key: String(amount), unit: "day" });
+
+const readStay = (source: string, written: string, amount: number): string[] =>
+  termValues(source, [days(source, written, amount)], STAY_WORDS).map((fact) => `${fact.key}=${source.slice(fact.value.start, fact.value.end)}`);
+
+describe("termValues: a value whose unit word starts the item's name", () => {
+  it("a sentence ending with the name, after a subject and a separator", () => {
+    assert.deepEqual(readStay("This stay was 6 days in hospital.", "6 days", 6), ["days in hospital=6 days"]);
+    assert.deepEqual(readStay("- The stay is 6 Days in Hospital", "6 Days", 6), ["days in hospital=6 Days"]);
+  });
+
+  it("not read in a condition, before more words, or without the whole name", () => {
+    assert.deepEqual(readStay("Cover starts after 3 days in hospital.", "3 days", 3), []);
+    assert.deepEqual(readStay("Previous stay was 6 days in hospital.", "6 days", 6), []);
+    assert.deepEqual(readStay("The previous stay was 6 days in hospital.", "6 days", 6), []);
+    assert.deepEqual(readStay("This was 6 days in hospital.", "6 days", 6), []);
+    assert.deepEqual(readStay("If surgery is needed, the stay is 8 days in hospital.", "8 days", 8), []);
+    assert.deepEqual(readStay("This stay was 6 days in hospital before surgery.", "6 days", 6), []);
+    assert.deepEqual(readStay("This stay was 6 days in hospitals.", "6 days", 6), []);
+    assert.deepEqual(readStay("This stay was 6 days in hospital, then 2 at home.", "6 days", 6), []);
+    assert.deepEqual(readStay("This stay was 6 days.", "6 days", 6), []);
+    assert.deepEqual(readStay("This stay was 6 days in", "6 days", 6), []);
+  });
+});
+
 describe("termHomes: a section whose heading is the item's name", () => {
   const words = { terms: WORDS.terms, determiners: ["the"] };
 

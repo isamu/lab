@@ -6,5 +6,7 @@ entries:
   - pattern: 個数
   - pattern: 数
   - pattern: 工数
+  # 診療明細書の点数（1点の単価と掛けて金額になる）。
+  - pattern: 点数
   - { pattern: 時間, group: hour }
   - pattern: 走行距離
