@@ -220,6 +220,73 @@ describe("total-mismatch", () => {
     assert.deepEqual(found(table("293,000円", "25,150円"), ja, "ja"), []);
   });
 
+  it("a listed total closing a table under 項目 / Item is read: the deductions of a deposit settlement", () => {
+    const japanese = (total: string): string =>
+      doc("| 項目 | 金額 |", "| --- | --- |", "| 室内清掃 | 30,000円 |", "| 網戸の張り替え | 12,000円 |", "| 鍵の交換 | 15,000円 |", `| 差引合計 | ${total} |`);
+    assert.deepEqual(found(japanese("75,000円"), ja, "ja"), ["75,000円≠57,000円"]);
+    assert.deepEqual(found(japanese("57,000円"), ja, "ja"), []);
+    const english = (total: string): string =>
+      doc(
+        "| Item | Amount |",
+        "| --- | --- |",
+        "| Cleaning | $200.00 |",
+        "| Carpet repair | $150.00 |",
+        "| Key replacement | $60.00 |",
+        `| Total deductions | ${total} |`,
+      );
+    assert.deepEqual(found(english("$401.00")), ["$401.00≠$410.00"]);
+    assert.deepEqual(found(english("$410.00")), []);
+  });
+
+  it("a listed total under the deductions of a two-block payslip with no earnings total stays silent when it sums its own block", () => {
+    const payslip = (label: string, total: string): string =>
+      doc(
+        "| 項目 | 金額 |",
+        "| --- | --- |",
+        "| 基本給 | 280,000円 |",
+        "| 通勤手当 | 12,000円 |",
+        "| 健康保険料 | 16,400円 |",
+        "| 所得税 | 7,750円 |",
+        `| ${label} | ${total} |`,
+      );
+    assert.deepEqual(found(payslip("控除合計", "24,150円"), ja, "ja"), []);
+    assert.deepEqual(found(payslip("控除合計", "7,750円"), ja, "ja"), []);
+    assert.deepEqual(found(payslip("差引合計", "267,850円"), ja, "ja"), []);
+    const english = doc(
+      "| Item | Amount |",
+      "| --- | --- |",
+      "| Salary | $4,000 |",
+      "| Income tax | $700 |",
+      "| Medicare | $85 |",
+      "| Total deductions | $785 |",
+    );
+    assert.deepEqual(found(english), []);
+  });
+
+  it("a listed total is not read under a total-like row, above another row, beside a second amount column, outside a table, or with an unlisted noun", () => {
+    const rows = ["| 室内清掃 | 30,000円 |", "| 鍵の交換 | 15,000円 |"];
+    const table = (...lines: string[]): string => doc("| 項目 | 金額 |", "| --- | --- |", ...lines);
+    assert.deepEqual(found(table("| 基本給 | 280,000円 |", "| 支給合計 | 280,000円 |", ...rows, "| 控除合計 | 99,000円 |"), ja, "ja"), []);
+    assert.deepEqual(found(table("| 総支給額 | 280,000円 |", ...rows, "| 控除合計 | 99,000円 |"), ja, "ja"), []);
+    assert.deepEqual(found(table(...rows, "| 差引合計 | 99,000円 |", "| 備考 | 1,000円 |"), ja, "ja"), []);
+    assert.deepEqual(found(table(...rows, "| 差引支給合計 | 99,000円 |"), ja, "ja"), []);
+    assert.deepEqual(found(table(...rows, "| 消費税合計 | 4,500円 |"), ja, "ja"), []);
+    const twoColumns = doc(
+      "| 項目 | 今回 | 前回 |",
+      "| --- | --- | --- |",
+      "| 室内清掃 | 30,000円 | 28,000円 |",
+      "| 鍵の交換 | 15,000円 | 15,000円 |",
+      "| 差引合計 | 99,000円 | 43,000円 |",
+    );
+    assert.deepEqual(found(twoColumns, ja, "ja"), []);
+    assert.deepEqual(found(doc("- 室内清掃：30,000円", "- 鍵の交換：15,000円", "- 差引合計：99,000円"), ja, "ja"), []);
+    assert.deepEqual(found(doc("| Item | Amount |", "| --- | --- |", "| Hosting | $600 |", "| Support | $300 |", "| Total tax | $90 |")), []);
+    assert.deepEqual(
+      found(doc("| Item | Amount |", "| --- | --- |", "| Salary | $4,000 |", "| Gross pay | $4,000 |", "| Income tax | $700 |", "| Total deductions | $900 |")),
+      [],
+    );
+  });
+
   it("a total with a noun is read when the header of the column it sums names the noun: 修得単位合計 under 単位数, Total credits earned under Credits", () => {
     const japanese = (total: string): string =>
       doc(

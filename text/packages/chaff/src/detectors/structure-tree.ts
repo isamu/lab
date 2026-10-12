@@ -6,7 +6,7 @@ import { weekdayMismatches } from "../structure/weekday.ts";
 import { documentDateOf } from "./document-date.ts";
 import { dateOrderBreaks } from "../structure/date-order.ts";
 import { totalMismatches, type Amount } from "../structure/total.ts";
-import { isPeriodTotalLine, isTotalLine } from "../structure/total-line.ts";
+import { isListedTotal, isPeriodTotalLine, isTotalLikeLine, isTotalLine } from "../structure/total-line.ts";
 import { proseTotalMismatches } from "../structure/prose-total.ts";
 import { countedAmounts, type SummedCounter } from "../structure/counted-amounts.ts";
 import { measuredAmounts, type MeasureMarks, type SummedMeasure } from "../structure/measured-amounts.ts";
@@ -219,12 +219,15 @@ const totalIssues = (doc: ProseDocument, tree: NonNullable<ProseDocument["struct
     nounQualifiers: doc.lexicons["total-noun-qualifier"] ?? [],
     unsummedNouns: patternsOf(doc, "total-noun-unsummed"),
     periodQualifiers: doc.lexicons["total-period-qualifier"] ?? [],
+    listedNouns: patternsOf(doc, "total-noun-listed"),
+    amountNames: patternsOf(doc, "net-amount-label"),
   };
   const lines = totalMismatches(
     doc.source,
     lineAmountsOf(doc, amounts),
     (text, header) => isTotalLine(text, words, header),
     (text) => isPeriodTotalLine(text, words),
+    { isListed: (text) => isListedTotal(text, words), isTotalLike: (text, header) => isTotalLikeLine(text, words, header) },
   );
   const phrases = {
     totals: patternsOf(doc, "total-phrase"),

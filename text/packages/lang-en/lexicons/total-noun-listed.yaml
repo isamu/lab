@@ -1,0 +1,9 @@
+# Nouns of a total that is the sum of the rows listed above it even when the table's header names nothing ("Item"): the
+# deductions of "Total deductions". Read only on a table's last row, with no total row and no gross or net amount
+# (Gross pay) above it and one column of amounts (total-mismatch). Compared as a whole word, each form listed; a noun of
+# an amount that need not be the sum of the rows (tax, area) does not belong here.
+id: total-noun-listed
+language: en
+entries:
+  - pattern: deduction
+  - pattern: deductions

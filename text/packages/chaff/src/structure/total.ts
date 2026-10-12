@@ -32,8 +32,11 @@ const OPEN_PAREN_BEFORE = /[(（][ \t]?(?:[$€£¥￥][ \t]?)?$/u;
 type Cell = { readonly column: number; readonly unit: string };
 /** cents が undefined の金額は、符号が決まらない。 */
 type Placed = Amount & Cell & { readonly cents: number | undefined };
-/** spanTotal: 合計が足す期間の語を付けた合計の行（年間合計、Total for the year）。 */
-type Entry = { readonly label: boolean; readonly spanTotal: boolean; readonly amounts: readonly Placed[] };
+/**
+ * spanTotal: 合計が足す期間の語を付けた合計の行（年間合計、Total for the year）。
+ * closing: 見出しが名指さない名詞を付けた、表を締める合計の行（項目の表の差引合計）。上の行の一部の和とも比べる。
+ */
+type Entry = { readonly label: boolean; readonly spanTotal: boolean; readonly closing?: boolean; readonly amounts: readonly Placed[] };
 
 export const columnOf = (source: string, line: Line, offset: number): number => source.slice(line.start, offset).split(CELL_SEPARATOR).length - 1;
 
@@ -155,6 +158,16 @@ const candidateSums = (above: RowsAbove): number[] => {
   return [sumOf(above.parts), sumOf(above.sinceLast), ...(last === undefined ? [] : [last + sumOf(above.sinceLast)])];
 };
 
+/**
+ * 表を締める合計の行の、ほかの足し方: 下から続けた項目の和（支給の行の下に控除の行を並べた表の控除合計）と、
+ * その上の項目の和からそれを引いた額（同じ表の差し引いた後の額）。
+ */
+const blockSums = (parts: readonly number[]): number[] =>
+  parts.flatMap((_, start) => {
+    const below = sumOf(parts.slice(start));
+    return start === 0 ? [below] : [below, sumOf(parts.slice(0, start)) - below];
+  });
+
 /** 項目が無く小計だけが並ぶ表は、小計の和。 */
 const reportedSum = (above: RowsAbove): number => (above.parts.length === 0 ? sumOf(above.totals) : (above.totals.at(-1) ?? 0) + sumOf(above.sinceLast));
 
@@ -248,12 +261,47 @@ const mismatchesIn = (source: string, entries: readonly Entry[]): StructureIssue
       const writtenCents = valueIn(entry, total);
       const above = windowAbove(entries.slice(0, index), total);
       if (typeof writtenCents !== "number" || above === undefined || !enoughRows(above) || !readsAsSum(total, writtenCents, above)) return [];
-      if (entry.spanTotal && isSpanMultiple(writtenCents, candidateSums(above))) return [];
-      if (total.scale !== undefined) return measuredMismatch(source, total, total.scale, candidateSums(above), reportedSum(above));
-      if (candidateSums(above).includes(writtenCents)) return [];
+      const sums = entry.closing === true ? [...candidateSums(above), ...blockSums(above.parts)] : candidateSums(above);
+      if (entry.spanTotal && isSpanMultiple(writtenCents, sums)) return [];
+      if (total.scale !== undefined) return measuredMismatch(source, total, total.scale, sums, reportedSum(above));
+      if (sums.includes(writtenCents)) return [];
       return [{ offset: total.offset, values: shownAmounts(source, total, reportedSum(above)) }];
     });
   });
+
+/**
+ * 表を締める合計の行を読む語彙。isListed: 見出しが名指さなくても上の行の和と読める合計か（差引合計、Total deductions）。
+ * isTotalLike: 合計のような行か（合計の行、支給合計、総支給額）。header は表の見出しの行。
+ */
+export type ClosingTotal = {
+  readonly isListed: (text: string) => boolean;
+  readonly isTotalLike: (text: string, header: string) => boolean;
+};
+
+/** 表の行の金額が、見出しの列（最初の升）のほかに一つの列だけにあり、どの行にも一つまでか。 */
+const oneAmountColumn = (source: string, table: readonly Line[], entries: readonly Entry[]): boolean => {
+  const valuesOf = (line: Line, entry: Entry): Placed[] => {
+    const labelColumn = source.slice(line.start, line.end).trimStart().startsWith("|") ? 1 : 0;
+    return entry.amounts.filter((amount) => amount.column > labelColumn);
+  };
+  const rows = table.map((line, index) => {
+    const entry = entries[index];
+    return entry === undefined ? [] : valuesOf(line, entry);
+  });
+  return rows.every((values) => values.length <= 1) && new Set(rows.flat().map((amount) => amount.column)).size === 1;
+};
+
+/**
+ * 表の最後の行が、表を締める合計の行か。見出しのある表で、最後の行が isListed の合計で、上に合計のような行が一つも無く、
+ * 金額の列が一つのときだけ。上に支給の合計や総支給額があれば、合計が表のどこからどこまでの和か決まらないので読まない。
+ */
+const closesTable = (source: string, table: readonly Line[], entries: readonly Entry[], header: string | undefined, closing: ClosingTotal): boolean => {
+  const texts = table.map((line) => source.slice(line.start, line.end));
+  const last = entries.at(-1);
+  const lastText = texts.at(-1);
+  if (header === undefined || last === undefined || lastText === undefined || last.label || !closing.isListed(lastText)) return false;
+  return !texts.slice(0, -1).some((text) => closing.isTotalLike(text, header)) && oneAmountColumn(source, table, entries);
+};
 
 /** 一つの表（見出しの下の行）の合計。名詞の付いた合計の行は、その表の見出しで読む。 */
 const tableMismatches = (
@@ -262,17 +310,26 @@ const tableMismatches = (
   amounts: readonly Amount[],
   isTotal: IsTotalLine,
   isSpanTotal: IsSpanTotal,
+  closing: ClosingTotal | undefined,
 ): StructureIssue[] => {
   const header = table[0] === undefined ? undefined : headerAbove(source, table[0]);
   const kinds = { isTotal: (text: string): boolean => isTotal(text, header), isSpanTotal };
+  const entries = table.map((line) => entryOf(source, line, amounts, kinds));
+  if (closing === undefined || !closesTable(source, table, entries, header, closing)) return mismatchesIn(source, entries);
   return mismatchesIn(
     source,
-    table.map((line) => entryOf(source, line, amounts, kinds)),
+    entries.map((entry, index) => (index === entries.length - 1 ? { ...entry, label: true, closing: true } : entry)),
   );
 };
 
-export const totalMismatches = (source: string, amounts: readonly Amount[], isTotal: IsTotalLine, isSpanTotal: IsSpanTotal = () => false): StructureIssue[] =>
+export const totalMismatches = (
+  source: string,
+  amounts: readonly Amount[],
+  isTotal: IsTotalLine,
+  isSpanTotal: IsSpanTotal = () => false,
+  closing?: ClosingTotal,
+): StructureIssue[] =>
   runsOf(source).flatMap((run) => {
     const inRun = [...amounts, ...bareNumbersIn(source, run)];
-    return tablesIn(source, run).flatMap((table) => tableMismatches(source, table, inRun, isTotal, isSpanTotal));
+    return tablesIn(source, run).flatMap((table) => tableMismatches(source, table, inRun, isTotal, isSpanTotal, closing));
   });
