@@ -1,3 +1,4 @@
+import type { Span } from "../plugin.ts";
 import type { StructureIssue } from "./issues.ts";
 import { linesOf } from "./lines.ts";
 import { cellsOf, tablesOf, type Cell } from "../facts/table-facts.ts";
@@ -31,7 +32,7 @@ export type ShiftInputs = {
   readonly columns: readonly Mark[];
   /** 文書に夜をまたぐ勤務の印があるか。 */
   readonly overnight: boolean;
-  /** 升に書いた長さ（8.0時間、1:00、8.00）を分で。読めなければ undefined。 */
+  /** 升に書いた長さ（8.0時間、1:00、8.00）を分で。読めなければ undefined。cellMinutes で読む。 */
   readonly lengthOf: (text: string) => number | undefined;
 };
 
@@ -43,11 +44,29 @@ const columnName = (heading: string): string => {
   return (note === -1 ? heading : heading.slice(0, note)).trim().toLowerCase();
 };
 
-const columnOf = (header: readonly Cell[], columns: readonly Mark[], side: ShiftSide): number =>
+/** 見出しに括弧書きがあるか（「休憩（分）」「Hours (decimal)」）。単位を書き添えた列の、単位の無い数は時間と読まない。 */
+export const hasHeadingNote = (heading: string): boolean => NOTE_OPENER.test(heading);
+
+const CLOCK_LENGTH = /^(\d{1,2}):([0-5]\d)$/u;
+const BARE_HOURS = /^\d{1,2}(?:\.\d{1,2})?$/u;
+
+/**
+ * 升に書いた長さを分で。単位付き（8.0時間、9時間30分、8 hours）、時と分（1:00）、bareHours なら単位の無い時間（8.00）も。
+ * lengths はその升の文字列から読んだ時間の長さ。
+ */
+export const cellMinutes = (text: string, lengths: readonly (Span & { readonly minutes: number })[], bareHours: boolean): number | undefined => {
+  const only = lengths.length === 1 ? lengths[0] : undefined;
+  if (only !== undefined) return only.start === 0 && only.end === text.length ? only.minutes : undefined;
+  const clock = CLOCK_LENGTH.exec(text);
+  if (clock !== null) return Number(clock[1]) * MINUTES_PER_HOUR + Number(clock[2]);
+  return bareHours && BARE_HOURS.test(text) ? Number(text) * MINUTES_PER_HOUR : undefined;
+};
+
+export const columnOf = (header: readonly Cell[], columns: readonly Mark[], side: ShiftSide): number =>
   header.findIndex((cell) => columns.some((mark) => mark.group === side && mark.pattern.toLowerCase() === columnName(cell.text)));
 
 /** 升に時刻だけを書いたときの、その時刻。 */
-const onlyTime = (cell: Cell | undefined, times: readonly TimeSpan[], source: string): TimeSpan | undefined => {
+export const onlyTime = (cell: Cell | undefined, times: readonly TimeSpan[], source: string): TimeSpan | undefined => {
   if (cell === undefined) return undefined;
   const within = times.filter((time) => time.start >= cell.start && time.end <= cell.end);
   const only = within.length === 1 ? within[0] : undefined;
