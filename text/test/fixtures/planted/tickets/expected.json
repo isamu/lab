@@ -6,7 +6,7 @@
       "deadline-after-event": "1/2",
       "doors-after-start": "1/2",
       "attendee-name": "1/2",
-      "reference-swapped": "1/2",
+      "reference-swapped": "2/2",
       "ticket-count-two-ways": "0/2",
       "event-weekday": "2/2"
     },
@@ -16,7 +16,7 @@
       "deadline-after-event": "1/2",
       "doors-after-start": "1/2",
       "attendee-name": "2/2",
-      "reference-swapped": "1/2",
+      "reference-swapped": "2/2",
       "ticket-count-two-ways": "0/2",
       "event-weekday": "2/2"
     }
