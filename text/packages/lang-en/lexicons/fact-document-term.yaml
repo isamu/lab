@@ -34,3 +34,6 @@ entries:
   # The length of one hospital stay: one value in an itemized bill.
   - { pattern: days in hospital, group: days-in-hospital }
   - { pattern: length of stay, group: days-in-hospital }
+  # The size of one let property: one value in a tenancy statement. Areas that differ by room give the table two values
+  # and are not compared. "Area" alone is not here: a site area and a floor area would become one item.
+  - { pattern: floor area, group: floor-area }

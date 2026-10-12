@@ -243,6 +243,27 @@ describe("fact-conflict: a whole-document item across sections", () => {
     assert.deepEqual(en2(...tableEn, "## Marks", "", "Number of cartons: 4"), []);
   });
 
+  it("the floor area in a table and in a sentence of a later section, in an area unit (ja, en)", () => {
+    const tableJa = ["## 物件の概要", "", "| 項目 | 内容 |", "| --- | --- |", "| 間取り | 1K |", "| 専有面積 | 30.2㎡ |", "", "## 賃料"];
+    assert.deepEqual(ja2(...tableJa, "", "専有面積は30.0㎡です。"), ["専有面積:30.0㎡≠30.2㎡"]);
+    assert.deepEqual(ja2(...tableJa, "", "床面積は30.0㎡です。"), ["床面積:30.0㎡≠30.2㎡"]);
+    assert.deepEqual(ja2(...tableJa, "", "専有面積は30.2㎡です。"), []);
+    assert.deepEqual(ja2(...tableJa, "", "バルコニー面積は5.0㎡です。"), []);
+    const roomsJa = ["## 101号室", "", "| 項目 | 内容 |", "| --- | --- |", "| 専有面積 | 25.0㎡ |", "", "## 102号室", "", "| 項目 | 内容 |", "| --- | --- |"];
+    assert.deepEqual(ja2(...roomsJa, "| 専有面積 | 30.0㎡ |", "", "## 備考", "", "専有面積は30.0㎡です。"), []);
+    const tableEn = ["## Property", "", "| Item | Detail |", "| --- | --- |", "| Layout | One bedroom |", "| Floor area | 30.2 m² |", "", "## Rent"];
+    assert.deepEqual(en2(...tableEn, "", "The floor area is 30.0 m²."), ["The floor area:30.0 m²≠30.2 m²"]);
+    assert.deepEqual(en2(...tableEn, "", "The floor area is 30.2 m²."), []);
+    assert.deepEqual(en2(...tableEn, "", "The service area is 30.0 m²."), []);
+  });
+
+  it("an area named only 面積 / Area stays per section: a site area and a unit's area are different items", () => {
+    const siteJa = ["## 敷地", "", "| 項目 | 内容 |", "| --- | --- |", "| 面積 | 500.0㎡ |", "", "## 店舗区画"];
+    assert.deepEqual(ja2(...siteJa, "", "面積は50.0㎡です。"), []);
+    const siteEn = ["## Site", "", "| Item | Detail |", "| --- | --- |", "| Area | 500 sq m |", "", "## Unit 3"];
+    assert.deepEqual(en2(...siteEn, "", "The area is 50 sq m."), []);
+  });
+
   it("an item not in the lexicon is still compared only within a section", () => {
     assert.deepEqual(ja2("## 条件", "", "| 項目 | 内容 |", "| --- | --- |", "| 研修期間 | 3ヶ月 |", "", "## その他", "", "研修期間は6ヶ月です。"), []);
   });

@@ -3,7 +3,7 @@
     "ja": {
       "move-out-before-move-in": "0/1",
       "notice-after-move-out": "0/1",
-      "floor-area": "1/2",
+      "floor-area": "2/2",
       "deductions-total": "0/1",
       "refund": "0/1",
       "tenant-name": "2/2",
@@ -14,7 +14,7 @@
     "en": {
       "move-out-before-move-in": "0/1",
       "notice-after-move-out": "0/1",
-      "floor-area": "1/2",
+      "floor-area": "2/2",
       "deductions-total": "0/1",
       "refund": "0/1",
       "tenant-name": "1/2",
