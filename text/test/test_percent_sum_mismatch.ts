@@ -140,6 +140,46 @@ describe("percent-sum-mismatch", () => {
     assert.deepEqual(found(withJaTotal, ja), []);
   });
 
+  it("a column headed by a rate applied to each row is not added, even under a heading that names a breakdown", () => {
+    const earned = (header: string): string =>
+      doc(
+        "## 獲得の内訳",
+        "",
+        `| ご利用日 | ご利用金額 | ${header} |`,
+        "| --- | --- | --- |",
+        "| 9月6日 | 12,800円 | 3% |",
+        "| 9月14日 | 18,400円 | 3% |",
+        "| 9月27日 | 10,000円 | 3% |",
+      );
+    ["還元率", "割引率", "税率", "手数料率", "稼働率", "合格率", "利率", "金利"].forEach((header) => assert.deepEqual(found(earned(header), ja), [], header));
+    const orders = (header: string): string =>
+      doc(
+        "## Breakdown of orders",
+        "",
+        `| Order | Amount | ${header} |`,
+        "| --- | --- | --- |",
+        "| A | $100 | 10% |",
+        "| B | $200 | 10% |",
+        "| C | $300 | 5% |",
+      );
+    ["Discount", "Interest rate", "Tax rate", "Return rate", "Completion rate", "Margin"].forEach((header) =>
+      assert.deepEqual(found(orders(header)), [], header),
+    );
+  });
+
+  it("a share column under the same heading is still added", () => {
+    const earned = (header: string): string => doc("## 獲得の内訳", "", `| 区分 | ${header} |`, "| --- | --- |", "| 買い物 | 60% |", "| キャンペーン | 30% |");
+    ["割合", "構成比", "比率", "シェア", "占有率", "今月"].forEach((header) => assert.deepEqual(found(earned(header), ja), ["90%"], header));
+    const orders = (header: string): string =>
+      doc("## Breakdown of orders", "", `| Channel | ${header} |`, "| --- | --- |", "| Web | 60% |", "| Store | 30% |");
+    ["Share", "Percentage", "Share of revenue", "This month"].forEach((header) => assert.deepEqual(found(orders(header)), ["90%"], header));
+  });
+
+  it("a word for a rate on a row does not hide a breakdown: only the header cell is read", () => {
+    assert.deepEqual(found(doc("## 費用の内訳", "", "| 費目 | 割合 |", "| --- | --- |", "| 割引 | 60% |", "| 送料 | 30% |"), ja), ["90%"]);
+    assert.deepEqual(found(doc("Cost breakdown", "", "| Item | Percentage |", "| --- | --- |", "| Discounts | 60% |", "| Shipping | 30% |")), ["90%"]);
+  });
+
   it("a single share is not a breakdown", () => {
     assert.deepEqual(found(doc("Market share:", "", "- Ours: 40%")), []);
   });

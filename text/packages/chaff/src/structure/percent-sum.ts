@@ -16,6 +16,8 @@ export type ShareWords = {
   readonly columnLabels?: readonly string[];
   /** 行ごとの率を名指す語（前年比、達成率、growth）。表の上の文にあれば、columnLabels の列は足さない。 */
   readonly rates?: readonly string[];
+  /** 列の見出しの升にだけ効く、行ごとの率の語（還元率、Discount）。見出しでは rates の語も同じに読む。 */
+  readonly headerRates?: readonly string[];
   /** 足しても 100% にならない集計（複数回答）。 */
   readonly exceptions: readonly string[];
   /** 全体の残りを名指す語（その他、other）。一つの文の百分率のすぐ前にあれば、その文は内訳。 */
@@ -112,6 +114,7 @@ type Named = { readonly header: readonly string[]; readonly above: string; reado
 const namesShares = (named: Named, column: number, percentColumns: number, words: ShareWords): boolean => {
   const header = named.header[column] ?? "";
   if (named.header.length > 0 && includesAny(header, words.labels)) return true;
+  if (mentionsAny(header, [...(words.rates ?? []), ...(words.headerRates ?? [])])) return false;
   if (isShareColumn(header, words.columnLabels ?? []) && !mentionsAny(`${named.above} ${named.rows}`, words.rates ?? [])) return true;
   return (named.header.length === 0 || percentColumns === 1) && includesAny(named.above, words.labels);
 };
