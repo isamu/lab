@@ -1,0 +1,22 @@
+# 全体の印が付いても、表の全体の数ではない数の語（fact-conflict）。before は文のその数より前のどこか（お一人様合計4枚まで、うち合計2枚）と、
+# 表の行の名前の頭（うち学生）。after は数えるものの語のすぐ後ろ（合計4枚まで、3枚目）。
+id: fact-count-not-whole
+language: ja
+entries:
+  - { pattern: うち, position: before }
+  - { pattern: 内訳, position: before }
+  - { pattern: 各, position: before }
+  - { pattern: 一人, position: before }
+  - { pattern: 1人, position: before }
+  - { pattern: お一人様, position: before }
+  - { pattern: あたり, position: before }
+  - { pattern: 当たり, position: before }
+  - { pattern: 最大, position: before }
+  - { pattern: 上限, position: before }
+  - { pattern: まで, position: after }
+  - { pattern: 以内, position: after }
+  - { pattern: 以上, position: after }
+  - { pattern: 以下, position: after }
+  - { pattern: 未満, position: after }
+  - { pattern: 目, position: after }
+  - { pattern: ずつ, position: after }

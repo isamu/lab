@@ -1,0 +1,9 @@
+# 数が全体の数であることを言う語（fact-conflict）。before は数のすぐ前（合計4枚）。印の無い数（うち2枚は）は一部のことがあるので読まない。
+# 計 だけは入れない。会計2名 のように語の一部になる。
+id: fact-count-whole
+language: ja
+entries:
+  - { pattern: 合計, position: before }
+  - { pattern: 合計で, position: before }
+  - { pattern: 総計, position: before }
+  - { pattern: 全部で, position: before }

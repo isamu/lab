@@ -1,0 +1,8 @@
+# Words in a table row's name for a row that counts the same things again (fact-conflict). "Ticketing fee | 3 tickets"
+# restates the tickets ordered, so it is not added when the rows are summed into the whole.
+id: fact-count-restating
+language: en
+entries:
+  - pattern: fee
+  - pattern: charge
+  - pattern: discount

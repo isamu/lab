@@ -1,0 +1,19 @@
+# Words that make a count not the table's whole even with a whole mark (fact-conflict). before: anywhere earlier in the
+# sentence ("up to a total of 4 tickets"), or at the start of a table row's name ("of which students"). after: right after
+# the counting word ("4 tickets in total or fewer").
+id: fact-count-not-whole
+language: en
+entries:
+  - { pattern: of which, position: before }
+  - { pattern: each, position: before }
+  - { pattern: per, position: before }
+  - { pattern: up to, position: before }
+  - { pattern: at most, position: before }
+  - { pattern: no more than, position: before }
+  - { pattern: maximum, position: before }
+  - { pattern: limit, position: before }
+  - { pattern: per, position: after }
+  - { pattern: each, position: after }
+  - { pattern: or more, position: after }
+  - { pattern: or fewer, position: after }
+  - { pattern: or less, position: after }

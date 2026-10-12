@@ -1,0 +1,11 @@
+# Words right after a number that say what it counts (fact-conflict). A sentence's count is compared only with a
+# fact-count-column column of the same group.
+id: fact-count-counter
+language: en
+entries:
+  - { pattern: tickets, group: tickets }
+  - { pattern: ticket, group: tickets }
+  - { pattern: attendees, group: people }
+  - { pattern: attendee, group: people }
+  - { pattern: people, group: people }
+  - { pattern: persons, group: people }

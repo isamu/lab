@@ -22,6 +22,7 @@ import { ageValues, type AgeWord, type AgeWords } from "../facts/age-values.ts";
 import { qualifiedKeyOf, qualifiedKeys, type QualifierWords } from "../facts/qualified-labels.ts";
 import { rowSentenceFindings } from "./row-sentence-amounts.ts";
 import type { RateWord, RateWords } from "../facts/rate-values.ts";
+import { wholeCountFindings } from "./whole-count-findings.ts";
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
 
@@ -234,6 +235,7 @@ export const factConflict: Detector = (doc): Finding[] => [
   ...termFindings(doc),
   ...rowSentenceFindings(doc, factsOf(doc)),
   ...retentionFindings(doc),
+  ...wholeCountFindings(doc),
 ];
 
 const countedPhrasesOf = (doc: ProseDocument): CountedPhrase[] =>

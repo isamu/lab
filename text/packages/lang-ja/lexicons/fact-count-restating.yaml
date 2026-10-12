@@ -1,0 +1,9 @@
+# 同じものを数え直す表の行の名前の語（fact-conflict）。発券手数料 3枚 は注文したチケットの数を書き直したもので、別のチケットではない。
+# 行を足して全体の数にするとき、この行は足さない。
+id: fact-count-restating
+language: ja
+entries:
+  - pattern: 手数料
+  - pattern: 利用料
+  - pattern: 割引
+  - pattern: 値引
