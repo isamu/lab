@@ -17,7 +17,7 @@
         },
         {
           "kind": "period-reversed",
-          "rule": "date-range-reversed",
+          "rule": "due-before-issue",
           "line": 15,
           "pairedLine": 13,
           "clean": "ご利用終了日：2026年9月30日",
@@ -84,7 +84,7 @@
         },
         {
           "kind": "period-reversed",
-          "rule": "date-range-reversed",
+          "rule": "due-before-issue",
           "line": 15,
           "pairedLine": 13,
           "clean": "ご利用終了日：2026年9月30日",
@@ -151,7 +151,7 @@
         },
         {
           "kind": "period-reversed",
-          "rule": "date-range-reversed",
+          "rule": "due-before-issue",
           "line": 15,
           "pairedLine": 13,
           "clean": "Service end date: September 30, 2026",
@@ -218,7 +218,7 @@
         },
         {
           "kind": "period-reversed",
-          "rule": "date-range-reversed",
+          "rule": "due-before-issue",
           "line": 15,
           "pairedLine": 13,
           "clean": "Service end date: September 30, 2026",

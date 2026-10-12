@@ -168,3 +168,11 @@ entries:
   - { pattern: "Start date", group: construction-start, position: before }
   - { pattern: "Completion date", group: construction-start, position: after }
   - { pattern: "Expected completion", group: construction-start, position: after }
+  # A phone, utility or service contract's term: the service does not end before it starts. A same-day end (one day of
+  # service) is not reported. A bare "Start date" and "End date" are left out: a project plan or a timesheet uses them too.
+  - { pattern: "Service start date", group: service-period, position: before }
+  - { pattern: "Start of service", group: service-period, position: before }
+  - { pattern: "Contract start date", group: service-period, position: before }
+  - { pattern: "Service end date", group: service-period, position: after }
+  - { pattern: "End of service", group: service-period, position: after }
+  - { pattern: "Contract end date", group: service-period, position: after }

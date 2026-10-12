@@ -170,3 +170,13 @@ entries:
   - { pattern: "竣工日", group: construction, position: after }
   - { pattern: "竣工予定日", group: construction, position: after }
   - { pattern: "引渡日", group: construction, position: after }
+  # 携帯電話や通信、サービスの契約の利用期間。終了日は開始日より前に来ない。同じ日（一日だけの利用）は指さない。
+  # 「開始日」「終了日」だけは入れない。工程表や作業の記録も使う。
+  - { pattern: "ご利用開始日", group: service-period, position: before }
+  - { pattern: "利用開始日", group: service-period, position: before }
+  - { pattern: "契約開始日", group: service-period, position: before }
+  - { pattern: "サービス開始日", group: service-period, position: before }
+  - { pattern: "ご利用終了日", group: service-period, position: after }
+  - { pattern: "利用終了日", group: service-period, position: after }
+  - { pattern: "契約終了日", group: service-period, position: after }
+  - { pattern: "サービス終了日", group: service-period, position: after }
