@@ -104,7 +104,7 @@ const partsOf = (lines: readonly BodyLine[]): BodyLine[][] => {
 export type FrameSlip = { readonly variant: "greeting" | "closing"; readonly offset: number };
 
 /** The brackets and quotes that may close a line after its sentence's end mark (…ます。」, …trip.”). */
-const CLOSERS = new Set([...")）」』］]\"'”’"]);
+const CLOSERS = new Set(")）」』］]\"'”’");
 
 /** Whether a line ends a sentence: one of the marks at its end, past any closing bracket or quote. */
 export const endsSentence = (line: string, marks: readonly string[]): boolean => {
