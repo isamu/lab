@@ -1,6 +1,7 @@
-// tax-mismatch: the reading half. The words of a tax row, a total row and an included tax come from the language's
-// lexicons (tax-label, total-label, tax-included-word); the amounts are the structure tree's. The tax-excluded and
-// tax-included price columns of a price list come from the lexicon tax-price-column and the document's Markdown tables.
+// tax-mismatch: the reading half. The words of a tax row, a total row, an included tax and a service charge come from the
+// language's lexicons (tax-label, total-label, tax-included-word, service-charge-label); the amounts are the structure tree's.
+// The tax-excluded and tax-included price columns of a price list come from the lexicon tax-price-column and the document's
+// Markdown tables.
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { taxMismatches, type TaxWords } from "../structure/tax.ts";
 import { taxIncludedPriceMismatches, type TaxPriceRole, type TaxPriceText, type TaxPriceWord } from "../structure/tax-price.ts";
@@ -21,6 +22,7 @@ const wordsOf = (doc: ProseDocument): TaxWords => ({
   labels: patternsOf(doc, "tax-label"),
   totals: patternsOf(doc, "total-label"),
   included: patternsOf(doc, "tax-included-word"),
+  charges: patternsOf(doc, "service-charge-label"),
 });
 
 const priceWordsOf = (doc: ProseDocument): TaxPriceWord[] =>
