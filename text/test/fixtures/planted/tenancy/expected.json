@@ -1,0 +1,27 @@
+{
+  "recall": {
+    "ja": {
+      "move-out-before-move-in": "0/1",
+      "notice-after-move-out": "0/1",
+      "floor-area": "1/2",
+      "deductions-total": "0/1",
+      "refund": "0/1",
+      "tenant-name": "2/2",
+      "contract-number": "0/2",
+      "contract-end-before-start": "1/1",
+      "rent-times-months": "0/1"
+    },
+    "en": {
+      "move-out-before-move-in": "0/1",
+      "notice-after-move-out": "0/1",
+      "floor-area": "1/2",
+      "deductions-total": "0/1",
+      "refund": "0/1",
+      "tenant-name": "1/2",
+      "contract-number": "0/2",
+      "contract-end-before-start": "1/1",
+      "rent-times-months": "0/1"
+    }
+  },
+  "clean": []
+}
