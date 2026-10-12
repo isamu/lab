@@ -1,0 +1,35 @@
+# Words that check a volume-tier price list's discount against its list price and tier price (discount-rate-mismatch).
+# group: rate heads the discount column, price the column of the price after the discount, list the list price (a sentence
+# outside the table, "The list price is $0.080", a row "| List price | $0.080 |", or a column). A heading holding a group:
+# not word is not a discount column even with a rate word in it (tax, markup). group: per is a mark the word right after
+# which is the unit of a price ("per envelope", "/box"); a list price and a tier price in different units are not compared.
+# A Latin word stands as a whole word.
+id: discount-rate-label
+language: en
+entries:
+  - { pattern: discount, group: rate }
+  - { pattern: discount rate, group: rate }
+  - { pattern: unit price, group: price }
+  - { pattern: price per, group: price }
+  - { pattern: price each, group: price }
+  - { pattern: tier price, group: price }
+  - { pattern: discounted price, group: price }
+  - { pattern: price after discount, group: price }
+  - { pattern: sale price, group: price }
+  - { pattern: net price, group: price }
+  - { pattern: your price, group: price }
+  - { pattern: list price, group: list }
+  - { pattern: regular price, group: list }
+  - { pattern: standard price, group: list }
+  - { pattern: retail price, group: list }
+  - { pattern: MSRP, group: list }
+  - { pattern: tax, group: not }
+  - { pattern: VAT, group: not }
+  - { pattern: GST, group: not }
+  - { pattern: markup, group: not }
+  - { pattern: mark-up, group: not }
+  - { pattern: margin, group: not }
+  - { pattern: surcharge, group: not }
+  - { pattern: commission, group: not }
+  - { pattern: per, group: per }
+  - { pattern: /, group: per }

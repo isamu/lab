@@ -1,0 +1,66 @@
+id: discount-rate-mismatch
+layer: L3
+status: stable
+how_to_find: discount-rate
+# The discount, price and list-price words, the words that make a rate no discount, and the unit marks come from the
+# language's discount-rate-label lexicon; the amounts in a sentence are currency-notation's.
+extra_word_lists: [discount-rate-label, currency-notation]
+severity: warning
+
+name:
+  ja: 割引率が定価と単価から出る率と合わない
+  en: A discount that the list price and the tier price do not give
+
+why:
+  ja: 数量別の価格表で、定価が1枚8.0円、1,000枚以上の単価が7.2円なら、割引率は10%です。表の割引率がこれと合わないと、読む人は単価と割引率のどちらが正しいかを確かめられません。単価を直して割引率を直し忘れたとき、別の段の率を写したときに起きます。見出しが割引率と単価を言う列の、同じ行の二つの升を、定価と比べます。定価は、表の定価の列、表の外の文（定価は1枚8.0円です）、または「| 定価 | 8.0円 |」の行から読み、文書に一つだけのときに使います。割引率＝1−単価÷定価で、書いた率の桁で丸めて比べます。
+  en: 'On a volume price list, with a list price of $0.080 per envelope and a tier price of $0.072, the discount is 10%. When the discount column says something else, the reader cannot tell whether the price or the discount is right. It happens when a price is corrected and its discount is not, or when another tier''s rate is copied. The two cells of one row, in the columns whose headings name the discount and the price, are compared with the list price: a list-price column of the table, else the one list price the document states, in a sentence ("The list price is $0.080 per envelope") or a row (| List price | $0.080 |). The discount is 1 − tier price ÷ list price, rounded to the digits the rate is written to.'
+
+message:
+  ja: 割引率「{written}」が、定価「{list}」と単価「{price}」から出る率（{expected}）と合いません
+  en: "The discount {written} is not what the list price {list} and the price {price} give ({expected})"
+
+how_to_fix:
+  ja: 定価と単価を確かめて、割引率を計算し直してください。
+  en: Check the list price and the tier price, and work the discount out again.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 価格表で、割引率が定価と単価から出る率と合わない所
+  en: A discount on a price list that the list price and the tier price do not give
+example:
+  ja:
+    before: |
+      定価は1枚8.0円です。
+
+      | ご注文数 | 1枚の単価 | 割引率 |
+      | --- | --- | --- |
+      | 1,000枚以上 | 7.2円 | 15% |
+    after: |
+      定価は1枚8.0円です。
+
+      | ご注文数 | 1枚の単価 | 割引率 |
+      | --- | --- | --- |
+      | 1,000枚以上 | 7.2円 | 10% |
+  en:
+    before: |
+      The list price is $0.080 per envelope.
+
+      | Order quantity | Price per envelope | Discount |
+      | --- | --- | --- |
+      | 1,000 or more | $0.072 | 15% |
+    after: |
+      The list price is $0.080 per envelope.
+
+      | Order quantity | Price per envelope | Discount |
+      | --- | --- | --- |
+      | 1,000 or more | $0.072 | 10% |
+
+not_flagged:
+  ja: 書いた率の桁での切り捨て・四捨五入・切り上げは合っていると読み、単価の桁で丸めて合うものも合っていると読みます。定価が文書に無いもの、違う定価が二つ以上あるもの、定価と単価の単位が違うもの（円とドル、1箱と1枚）、単価が定価と同じか高いもの（請求書の割引前の単価）は比べません。見出しに税率・掛け率・上乗せなどの語がある列は割引率と読みません。割引率の列や単価の列が二つ以上ある表は読みません。
+  en: "Rounding down, to the nearest or up, to the digits the rate is written to, is read as right, and so is a tier price that the rate gives once rounded to the price's digits. Nothing is compared with no list price in the document, with two different list prices, with the list price and the tier price in different units ($ and €, per box and per envelope), or with a price not below the list price (an invoice's price before its discount). A column whose heading names tax, markup or margin is not read as a discount. A table with two discount or two price columns is not read."
