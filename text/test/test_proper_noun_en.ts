@@ -1,6 +1,6 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
-import { lowercasedAt, properNounChecked, rereadAt, sentenceInitialCommonWord } from "../packages/lang-en/src/proper-noun.ts";
+import { capitalisedGuessedVerbsAsNames, lowercasedAt, properNounChecked, rereadAt, sentenceInitialCommonWord } from "../packages/lang-en/src/proper-noun.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
@@ -145,6 +145,62 @@ describe("rereadAt", () => {
   it("位置が文の外（-1 や長さ以上）なら元のまま", () => {
     assert.deepEqual(rereadAt(original, -1, [{ value: "containers", pos: "NNS" }]), original);
     assert.deepEqual(rereadAt(original, 5, [{ value: "containers", pos: "NNS" }]), original);
+  });
+});
+
+describe("capitalisedGuessedVerbsAsNames", () => {
+  const VOCABULARY: Readonly<Record<string, readonly string[]>> = { change: ["VB", "NN"], to: ["TO"], returned: ["VBD"] };
+  const tagsOf = (word: string): readonly string[] | undefined => VOCABULARY[word];
+  // WordNet の語義の分類: 18 は noun.person、10 は noun.communication、30 は verb.change、35 は verb.contact。
+  const SENSES: Readonly<Record<string, readonly number[]>> = { helen: [18], sarah: [18], greek: [10, 18], detach: [35], endeavor: [4, 30] };
+  const sensesOf = (word: string): readonly number[] => SENSES[word] ?? [];
+  const words = (...pairs: readonly (readonly [string, string])[]): { value: string; pos: string }[] => pairs.map(([value, pos]) => ({ value, pos }));
+  const reread = (tagged: readonly { value: string; pos: string }[]): readonly { value: string; pos: string }[] =>
+    capitalisedGuessedVerbsAsNames(tagged, tagsOf, sensesOf);
+
+  it("文の途中で頭だけ大文字の、語彙に無く WordNet に動詞の語義も無い語を原形の動詞と当てたものは固有名詞（returned to Helen）", () => {
+    assert.deepEqual(
+      reread(words(["returned", "VBD"], ["to", "TO"], ["Helen", "VB"], ["Marsh", "NNP"])),
+      words(["returned", "VBD"], ["to", "TO"], ["Helen", "NNP"], ["Marsh", "NNP"]),
+    );
+    assert.deepEqual(reread(words(["we", "PRP"], ["Sarah", "VBP"])), words(["we", "PRP"], ["Sarah", "NNP"]));
+    assert.deepEqual(reread(words(["write", "VB"], ["Greek", "VB"])), words(["write", "VB"], ["Greek", "NNP"]));
+  });
+
+  it("WordNet が動詞として知る語（to Detach、to Endeavor）は動詞のまま", () => {
+    [words(["to", "TO"], ["Detach", "VB"]), words(["to", "TO"], ["Endeavor", "VB"])].forEach((tagged) => assert.deepEqual(reread(tagged), tagged));
+  });
+
+  it("語彙に載っている語（How to Change）、文頭の語、小文字や全部大文字の語、動詞でない語は解析器の読みのまま", () => {
+    const kept = [
+      words(["How", "WRB"], ["to", "TO"], ["Change", "VB"]),
+      words(["Helen", "VB"], ["it", "PRP"]),
+      words(["(", "("], ["Helen", "VB"]),
+      words(["to", "TO"], ["helen", "VB"]),
+      words(["to", "TO"], ["HELEN", "VB"]),
+      words(["to", "TO"], ["Helen", "NN"]),
+      words(["to", "TO"], ["Helen", "VBD"]),
+      [],
+    ];
+    kept.forEach((tagged) => assert.deepEqual(reread(tagged), tagged));
+  });
+});
+
+describe("英語の文書で、to の後ろの名は固有名詞", () => {
+  before(async () => {
+    await en.prepare?.({ pos: true });
+  });
+
+  const tagOf = (source: string, word: string): string | undefined =>
+    buildDocument("t.md", source, en)
+      .sentences.flatMap((sentence) => sentence.tokens ?? [])
+      .find((token) => token.surface === word)?.pos;
+
+  it("returned to Helen の Helen は名前、how to Change の Change は動詞のまま", () => {
+    assert.equal(tagOf("The parts were returned to Helen Marsh.", "Helen"), "PROPN");
+    assert.equal(tagOf("We spoke to Sarah Lee.", "Sarah"), "PROPN");
+    assert.equal(tagOf("Learn how to Change a tire.", "Change"), "VERB");
+    assert.equal(tagOf("We need to Detach the cable.", "Detach"), "VERB");
   });
 });
 

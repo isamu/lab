@@ -2,11 +2,11 @@ import type { Token } from "chaffjs/plugin";
 import { straightApostrophes } from "./apostrophe.ts";
 import { loadLexicons } from "./lexicons.ts";
 import { blankLongRuns } from "./long-runs.ts";
-import { lowercasedAt, properNounChecked, rereadAt, sentenceInitialCommonWord } from "./proper-noun.ts";
+import { capitalisedGuessedVerbsAsNames, lowercasedAt, properNounChecked, rereadAt, sentenceInitialCommonWord } from "./proper-noun.ts";
 import { isStativeParticiple, stativeVocabulary } from "./stative-participle.ts";
 import { isEmphasisedAdverb, isEmphasisedWord, standsAlone } from "./emphasis.ts";
 import { gerundFeatures } from "./gerund.ts";
-import { winkLexiconWords, winkPosTagger } from "./wink-modules.ts";
+import { winkLexiconWords, winkPosTagger, winkWordNet } from "./wink-modules.ts";
 
 /** wink は CommonJS で、辞書を同期に持つ。初期化は 130 ms ほど。 */
 type Tagged = { readonly value: string; readonly pos: string; readonly lemma?: string };
@@ -224,12 +224,28 @@ const buildVocabulary = (): Vocabulary => {
   };
 };
 
-const state: { ready: Tagger | undefined; vocabulary: Vocabulary } = { ready: undefined, vocabulary: () => undefined };
+/** WordNet の語の語義の分類（lexicographer file の番号）。WordNet に無い語は空。 */
+type Senses = (word: string) => readonly number[];
+
+const isSenseList = (value: unknown): value is readonly number[] => Array.isArray(value) && value.every((sense) => typeof sense === "number");
+
+const buildSenses = (): Senses => {
+  const { words, senses } = winkWordNet();
+  if (!isRecord(words) || !Array.isArray(senses)) throw new Error("wink-lexicon の WordNet が object と配列ではありません");
+  return (word) => {
+    const index = Object.hasOwn(words, word) ? words[word] : undefined;
+    const found: unknown = typeof index === "number" ? senses[index] : undefined;
+    return isSenseList(found) ? found : [];
+  };
+};
+
+const state: { ready: Tagger | undefined; vocabulary: Vocabulary; senses: Senses } = { ready: undefined, vocabulary: () => undefined, senses: () => [] };
 
 export const prepare = (): void => {
   if (state.ready !== undefined) return;
   state.ready = build();
   state.vocabulary = buildVocabulary();
+  state.senses = buildSenses();
 };
 
 export const isReady = (): boolean => state.ready !== undefined;
@@ -286,5 +302,5 @@ export const tokenize = (text: string): Token[] | undefined => {
   if (tagger === undefined) return undefined;
   // 語は解析させた字（don't）で返す。語彙表の語と同じ字で比べられる。span は本文を指したまま。
   const words = straightApostrophes(blankLongRuns(text, RUN_LIMIT));
-  return locate(words, withSentenceInitialCase(tagger, words, tagged(tagger, words)));
+  return locate(words, capitalisedGuessedVerbsAsNames(withSentenceInitialCase(tagger, words, tagged(tagger, words)), state.vocabulary, state.senses));
 };

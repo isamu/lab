@@ -62,3 +62,29 @@ export const rereadAt = (entries: readonly TaggedWord[], at: number, again: read
   const word: TaggedWord = { value: entry.value, pos: reread.pos, ...(reread.lemma === undefined ? {} : { lemma: reread.lemma }) };
   return entries.map((original, index) => (index === at ? word : original));
 };
+
+/** 解析器が、語彙に無い語の品詞を決めかねて前後から当てる原形の動詞。 */
+const GUESSED_VERB_TAG = new Set(["VB", "VBP"]);
+
+/** WordNet の動詞の語義の分類（lexicographer file）の番号。29 verb.body から 43 verb.weather まで。 */
+const FIRST_VERB_SENSE = 29;
+const LAST_VERB_SENSE = 43;
+
+const hasVerbSense = (senses: readonly number[]): boolean => senses.some((sense) => sense >= FIRST_VERB_SENSE && sense <= LAST_VERB_SENSE);
+
+/**
+ * 文の途中で頭だけ大文字の語を、解析器が語彙に無いまま原形の動詞と当てたもので、WordNet も動詞として知らないものは、名前として読み直す。
+ * wink は WordNet にだけ名詞としてある語（Helen、Sarah）を前の to に合わせて動詞にするが（returned to Helen Marsh）、動詞の語義の無い語は動詞でない。
+ * 語彙に載っている語（how to Change の Change）、WordNet が動詞と知る語（to Detach）、文頭の語は解析器の読みのまま。
+ */
+export const capitalisedGuessedVerbsAsNames = (
+  tagged: readonly TaggedWord[],
+  tagsOf: (word: string) => readonly string[] | undefined,
+  sensesOf: (word: string) => readonly number[],
+): readonly TaggedWord[] => {
+  const first = tagged.findIndex((entry) => LETTER.test(entry.value));
+  const isUnknownNonVerb = (word: string): boolean => tagsOf(word) === undefined && !hasVerbSense(sensesOf(word));
+  const isGuessedName = (entry: TaggedWord, at: number): boolean =>
+    at > first && GUESSED_VERB_TAG.has(entry.pos) && CAPITALISED.test(entry.value) && isUnknownNonVerb(entry.value.toLowerCase());
+  return tagged.map((entry, at) => (isGuessedName(entry, at) ? { ...entry, pos: "NNP" } : entry));
+};
