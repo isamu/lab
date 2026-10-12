@@ -54,6 +54,28 @@ describe("fact-conflict", () => {
     assert.deepEqual(wide, ["Adults Fee:$35≠$30"]);
   });
 
+  it("a row heading that starts with a counted number (1箱の重さ) is a label, and the number stays in it", () => {
+    const row = (heading: string, value: string, prose: string): string[] =>
+      conflictJa("| 項目 | 値 |", "| --- | --- |", `| ${heading} | ${value} |`, "", prose);
+    assert.deepEqual(row("1箱の重さ", "5.8kg", "1箱の重さは8.5kgで、送料はこの重さで計算します。"), ["1箱の重さ:8.5kg≠5.8kg"]);
+    assert.deepEqual(row("1箱の重さ", "5.8kg", "1箱の重さは5.8kgで、送料はこの重さで計算します。"), []);
+    assert.deepEqual(row("**1人あたり料金**", "3,000円", "1人あたり料金は3,500円です。"), ["1人あたり料金:3,500円≠3,000円"]);
+    assert.deepEqual(row("1枚あたりの価格", "120円", "1枚あたりの価格は150円です。"), ["1枚あたりの価格:150円≠120円"]);
+    assert.deepEqual(row("1箱の重さ", "5.8kg", "2箱の重さは11.6kgです。"), []);
+    assert.deepEqual(conflictJa("| 項目 | 値 |", "| --- | --- |", "| 1箱の重さ | 5.8kg |", "| 2箱の重さ | 11.6kg |"), []);
+    assert.deepEqual(row("2号機の出力", "30kW", "1号機の出力は50kWです。"), []);
+  });
+
+  it("a row heading that starts with a year, a month, a date or a bare count is still not a label", () => {
+    const row = (heading: string, value: string, prose: string): string[] =>
+      conflictJa("| 項目 | 値 |", "| --- | --- |", `| ${heading} | ${value} |`, "", prose);
+    assert.deepEqual(row("2026年の売上", "300万円", "2026年の売上は500万円です。"), []);
+    assert.deepEqual(row("3月の売上", "300万円", "3月の売上は500万円です。"), []);
+    assert.deepEqual(row("10月5日の会場", "本館", "10月5日の会場は別館です。"), []);
+    assert.deepEqual(row("1箱", "5.8kg", "1箱は8.5kgです。"), []);
+    assert.deepEqual(row("1箱の重さ（2026年10月1日）", "5.8kg", "1箱の重さ（2026年10月1日）は8.5kgです。"), []);
+  });
+
   it("an entity's attribute: headquartered in, に本社を置く", () => {
     assert.deepEqual(conflictEn("Acme is headquartered in Austin.", "", "The firm, headquartered in Dallas, grew."), ["headquartered in:Dallas≠Austin"]);
     assert.deepEqual(conflictEn("Acme is headquartered in Austin.", "", "Acme, headquartered in Austin, grew."), []);
