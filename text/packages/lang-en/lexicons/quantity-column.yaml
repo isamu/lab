@@ -6,6 +6,11 @@ entries:
   - pattern: Qty
   - pattern: Qty.
   - pattern: Units
+  # The head count or ticket count of a registration or ticket order (a price per person, per ticket, per seat).
+  - pattern: Tickets
+  - pattern: Attendees
+  - pattern: Seats
+  - pattern: Persons
   - { pattern: Hours, group: hour }
   - { pattern: Miles, group: mile }
   # The months of a rent statement (monthly × months = annual).

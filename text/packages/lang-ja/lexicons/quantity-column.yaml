@@ -6,6 +6,10 @@ entries:
   - pattern: 個数
   - pattern: 数
   - pattern: 工数
+  # 申込やチケットの明細の人数と枚数（1名・1枚の単価と掛けて金額になる）。
+  - pattern: 人数
+  - pattern: 参加人数
+  - pattern: 枚数
   # 診療明細書の点数（1点の単価と掛けて金額になる）。
   - pattern: 点数
   - { pattern: 時間, group: hour }
