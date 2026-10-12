@@ -58,8 +58,28 @@ describe("time-order (pair): a labelled time that must come first comes later", 
     assert.deepEqual(findingsOf(concertEn("Start: 23:30", "End: 0:15 (next day)"), en), []);
   });
 
-  it("a next-day mark counts a day on, and a previous-day mark is not read", () => {
-    assert.deepEqual(findingsOf(concertJa("開場：翌0:30", "開演：23:30")).length, 1);
+  it("a date written on the later line, after its time, is that time's day", () => {
+    assert.deepEqual(findingsOf(concertEn("Doors open: 18:00", "Starts: 13:00 (December 13)"), en), []);
+    assert.deepEqual(findingsOf(concertJa("開場：18:00", "開演：13:00（2026年12月13日）")), []);
+    assert.deepEqual(findingsOf(concertJa("開場：18:45（2026年12月12日）", "開演：18:30")).length, 1);
+  });
+
+  it("each start is compared with its own doors in a programme of two shows", () => {
+    assert.deepEqual(findingsOf(concertEn("Doors open: 18:30", "Starts: 19:00", "Doors open: 21:00", "Starts: 20:30"), en), [
+      "Doors open at 21:00 is later than Starts at 20:30, which should come after it",
+    ]);
+    assert.deepEqual(findingsOf(concertJa("開場：13:30", "開演：14:00", "開場：17:30", "開演：18:00")), []);
+  });
+
+  it("two lines with different time-zone marks are not compared; the same mark is", () => {
+    assert.deepEqual(findingsOf(concertEn("Doors open: 20:00 JST", "Starts: 18:30 UTC"), en), []);
+    assert.deepEqual(findingsOf(concertEn("Doors open: 20:00 JST", "Starts: 18:30"), en), []);
+    assert.deepEqual(findingsOf(concertEn("Doors open: 20:00 JST", "Starts: 18:30 JST"), en).length, 1);
+    assert.deepEqual(findingsOf(concertJa("開場：18:45（現地時間）", "開演：18:30（現地時間）")), []);
+  });
+
+  it("a next-day mark counts a day on and is quoted, and a previous-day mark is not read", () => {
+    assert.deepEqual(findingsOf(concertJa("開場：翌0:30", "開演：23:30")), ["「開場」の「翌0:30」が、後に来るはずの「開演」の「23:30」より遅くなっています"]);
     assert.deepEqual(findingsOf(concertJa("開場：18:45", "開演：18:30（前日）")), []);
   });
 

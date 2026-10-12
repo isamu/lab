@@ -59,16 +59,31 @@ const nearestEarlier = (earliers: readonly Read[], later: Read): Read | undefine
     return distance < nearestDistance || (distance === nearestDistance && entry.line < nearest.line) ? entry : nearest;
   }, undefined);
 
+/** How a later point finds the earlier point it is compared with, and which pairs the caller can compare at all. */
+export type PairReading = {
+  /**
+   * first: the first earlier point of the document, and, when the later side is written more than once, the nearest one
+   * too (an issue date heads the whole document). nearest: only the earlier point written closest (each show of a
+   * programme has its own doors and start).
+   */
+  readonly anchor?: "first" | "nearest" | undefined;
+  /** Drops a pair the caller cannot compare (two times of different days). */
+  readonly related?: ((pair: PointPair) => boolean) | undefined;
+};
+
+/** Each later point before the earlier point written closest to it. */
+const nearestOutOfOrder = (labelled: readonly Read[], earliers: readonly Read[], maxLineGap: number): PointPair[] =>
+  labelled.flatMap((later) => {
+    const earlier = later.kind === "later" ? nearestEarlier(earliers, later) : undefined;
+    return earlier !== undefined && later.point.value < earlier.point.value && Math.abs(later.line - earlier.line) < maxLineGap ? [{ earlier, later }] : [];
+  });
+
 /**
  * A later point before the first earlier point. When both sides are written more than once (a history listing one record
  * per row, newest first), the later point must also be before the earlier point written closest to it: that is its own
  * record's. A later point written once (an issue date below the records) belongs to the whole document and keeps the first.
- * related drops a pair the caller cannot compare (two times of different days).
  */
-export const pointsOutOfOrder = (source: string, words: PairWords, pointOf: PointOf, related: (pair: PointPair) => boolean = () => true): PointPair[] => {
-  if (words.earlier.length === 0 || words.later.length === 0) return [];
-  const labelled = labelledPoints(source, words, pointOf);
-  const earliers = labelled.filter((entry) => entry.kind === "earlier");
+const firstOutOfOrder = (labelled: readonly Read[], earliers: readonly Read[], maxLineGap: number): PointPair[] => {
   const earlier = earliers[0];
   if (earlier === undefined) return [];
   const records = labelled.filter((entry) => entry.kind === "later").length > 1;
@@ -76,10 +91,18 @@ export const pointsOutOfOrder = (source: string, words: PairWords, pointOf: Poin
   return labelled
     .filter(
       (entry) =>
-        entry.kind === "later" && entry.point.value < earlier.point.value && Math.abs(entry.line - earlier.line) < words.maxLineGap && beforeOwnRecord(entry),
+        entry.kind === "later" && entry.point.value < earlier.point.value && Math.abs(entry.line - earlier.line) < maxLineGap && beforeOwnRecord(entry),
     )
-    .map((later) => ({ earlier, later }))
-    .filter(related);
+    .map((later) => ({ earlier, later }));
+};
+
+/** The labelled pairs out of order, each with the earlier point it is compared with. */
+export const pointsOutOfOrder = (source: string, words: PairWords, pointOf: PointOf, reading: PairReading = {}): PointPair[] => {
+  if (words.earlier.length === 0 || words.later.length === 0) return [];
+  const labelled = labelledPoints(source, words, pointOf);
+  const earliers = labelled.filter((entry) => entry.kind === "earlier");
+  const pairs = reading.anchor === "nearest" ? nearestOutOfOrder(labelled, earliers, words.maxLineGap) : firstOutOfOrder(labelled, earliers, words.maxLineGap);
+  return reading.related === undefined ? pairs : pairs.filter(reading.related);
 };
 
 /** A lexicon entry naming its pair (group) and its side: before for the earlier point, after for the later one. */
