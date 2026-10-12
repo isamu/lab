@@ -1,0 +1,23 @@
+# Names of the amounts a statement's balance links (closing-balance-mismatch). group is opening (the balance at the start
+# of the period), inflow (the total paid in), outflow (the total paid out) or closing (the balance at the end). When one
+# table or one section has one word each of the four, each with an amount, the closing balance is compared with opening
+# + inflow - outflow. A table heading, row label or line label that is only this word (a unit in brackets aside) is read.
+# Previous balance and New balance are left out: a card statement uses them for an amount owed, which credits reduce.
+# Credits and Debits alone are left out for the same reason: on a card or loan statement credits lower the balance.
+# Deposit and Withdrawal alone are the columns of a transaction table, which running-balance-mismatch reads row by row.
+id: closing-balance-label
+language: en
+entries:
+  - { pattern: Opening balance, group: opening }
+  - { pattern: Beginning balance, group: opening }
+  - { pattern: Starting balance, group: opening }
+  - { pattern: Balance brought forward, group: opening }
+  - { pattern: Total deposits, group: inflow }
+  - { pattern: Deposits and credits, group: inflow }
+  - { pattern: Deposits and other credits, group: inflow }
+  - { pattern: Total withdrawals, group: outflow }
+  - { pattern: Withdrawals and debits, group: outflow }
+  - { pattern: Withdrawals and other debits, group: outflow }
+  - { pattern: Closing balance, group: closing }
+  - { pattern: Ending balance, group: closing }
+  - { pattern: Balance carried forward, group: closing }

@@ -16,7 +16,7 @@ const LIST_MARKER = /^[ \t]*(?:[-*+]|\d{1,3}[.)])?[ \t]*/u;
 const COLON = /[:：]/u;
 const MAX_LABEL = 40;
 
-const patternsOf = (doc: ProseDocument, id: string, group?: string): string[] =>
+export const patternsOf = (doc: ProseDocument, id: string, group?: string): string[] =>
   (doc.lexicons[id] ?? []).filter((entry) => group === undefined || entry.group === group).map((entry) => entry.pattern);
 
 const wordsOf = (doc: ProseDocument): NetWords => ({
@@ -30,7 +30,7 @@ const wordsOf = (doc: ProseDocument): NetWords => ({
   percentUnits: patternsOf(doc, "percent-unit"),
 });
 
-const plainCellsOf = (line: Line): NetCell[] =>
+export const plainCellsOf = (line: Line): NetCell[] =>
   cellsOf(line).map((cell) => {
     const text = withoutEdgeMarks(cell.text);
     return { start: cell.start + Math.max(0, cell.text.indexOf(text)), text };
@@ -39,7 +39,7 @@ const plainCellsOf = (line: Line): NetCell[] =>
 const tableIssues = (lines: readonly Line[], words: NetWords): NetIssue[] =>
   tablesOf(lines).flatMap((table) => tableNetMismatches(plainCellsOf(table.header), table.rows.map(plainCellsOf), words));
 
-const labelledLineOf = (line: Line): LabelledLine[] => {
+export const labelledLineOf = (line: Line): LabelledLine[] => {
   const colon = COLON.exec(line.text)?.index;
   if (colon === undefined) return [];
   const label = withoutEdgeMarks(line.text.slice(LIST_MARKER.exec(line.text)?.[0].length ?? 0, colon));
@@ -50,7 +50,7 @@ const labelledLineOf = (line: Line): LabelledLine[] => {
 };
 
 /** The lines of the text between headings (the headings are read in the source: the prose text blanks them). */
-const sectionsOf = (lines: readonly Line[], sourceLines: readonly Line[]): Line[][] =>
+export const sectionsOf = (lines: readonly Line[], sourceLines: readonly Line[]): Line[][] =>
   lines.reduce<Line[][]>(
     (sections, line, index) => {
       if (HEADING.test(sourceLines[index]?.text ?? "")) return [...sections, []];
