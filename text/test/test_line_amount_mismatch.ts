@@ -331,6 +331,43 @@ describe("line-amount-mismatch: 数量×単価が金額と合わない", () => {
     ]);
   });
 
+  it("申込とチケットの明細の人数・枚数の列を数量と読む", () => {
+    const order = (heading: string, row: string): string => [heading, "| --- | --- | --- | --- |", row].join("\n") + "\n";
+    assert.deepEqual(findingsOf(order("| 席種 | 枚数 | 単価 | 金額 |", "| S席 | 2枚 | 8,200円 | 15,600円 |")), [
+      "金額「15,600円」が、数量×単価（2枚 × 8,200円 = 16,400円）と合いません",
+    ]);
+    assert.deepEqual(findingsOf(order("| 区分 | 人数 | 単価 | 金額 |", "| 一般参加 | 2名 | 6,500円 | 12,000円 |")), [
+      "金額「12,000円」が、数量×単価（2名 × 6,500円 = 13,000円）と合いません",
+    ]);
+    assert.deepEqual(findingsOf(order("| コース | 参加人数 | 単価 | 金額 |", "| 見学会 | 3名 | 1,500円 | 4,000円 |")), [
+      "金額「4,000円」が、数量×単価（3名 × 1,500円 = 4,500円）と合いません",
+    ]);
+    const enOrder = (quantity: string, row: string): string => order(`| Item | ${quantity} | Unit price | Amount |`, row);
+    assert.deepEqual(findingsOf(enOrder("Tickets", "| Stalls | 2 tickets | $72.00 | $136.00 |"), en), [
+      "The amount $136.00 is not quantity × unit price (2 tickets × $72.00 = $144.00)",
+    ]);
+    assert.deepEqual(findingsOf(enOrder("Attendees", "| Admission | 2 people | $125.00 | $240.00 |"), en), [
+      "The amount $240.00 is not quantity × unit price (2 people × $125.00 = $250.00)",
+    ]);
+    assert.deepEqual(findingsOf(enOrder("Seats", "| Licence | 5 | $12.00 | $50.00 |"), en), [
+      "The amount $50.00 is not quantity × unit price (5 × $12.00 = $60.00)",
+    ]);
+    assert.deepEqual(findingsOf(enOrder("Persons", "| Tour | 4 | $30.00 | $100.00 |"), en), [
+      "The amount $100.00 is not quantity × unit price (4 × $30.00 = $120.00)",
+    ]);
+    assert.deepEqual(findingsOf(order("| 席種 | 枚数 | 単価 | 金額 |", "| S席 | 2枚 | 8,200円 | 16,400円 |")), []);
+    assert.deepEqual(findingsOf(enOrder("Tickets", "| Stalls | 2 tickets | $72.00 | $144.00 |"), en), []);
+  });
+
+  it("人数の列でも、単価と金額の列の無い表、ほかの数の列（泊数）のある行、数量の列と並ぶ表、年額の表は比べない", () => {
+    assert.deepEqual(findingsOf("| クラス | 人数 | 予算 |\n| --- | --- | --- |\n| 1組 | 32名 | 50,000円 |\n"), []);
+    assert.deepEqual(findingsOf("| クラス | 人数 | 一人あたり | 予算 |\n| --- | --- | --- | --- |\n| 1組 | 32名 | 1,500円 | 50,000円 |\n"), []);
+    assert.deepEqual(findingsOf("| 部屋 | 人数 | 泊数 | 単価 | 金額 |\n| --- | --- | --- | --- | --- |\n| 和室 | 2名 | 2泊 | 12,000円 | 48,000円 |\n"), []);
+    assert.deepEqual(findingsOf("| 品目 | 数量 | 人数 | 単価 | 金額 |\n| --- | --- | --- | --- | --- |\n| 研修 | 2回 | 10名 | 5,000円 | 100,000円 |\n"), []);
+    assert.deepEqual(findingsOf("| Plan | Seats | Monthly | Annual |\n| --- | --- | --- | --- |\n| Team | 5 | £10.00 | £600.00 |\n", en), []);
+    assert.deepEqual(findingsOf("| Room | Guests | Rate | Amount |\n| --- | --- | --- | --- |\n| Double | 2 | $150.00 | $450.00 |\n", en), []);
+  });
+
   it("単位を読む", () => {
     const marks = [
       { pattern: "/h", unit: "hour" },

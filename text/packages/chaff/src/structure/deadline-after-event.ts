@@ -8,13 +8,17 @@ import { isTotalLabel } from "./total.ts";
  * 催しの後の申込締切。催しの日の語で始まり時刻のある一行（日時：2026年11月20日（金）14:00〜）が催しの日を書き、
  * 申込の語（申込、RSVP）と締め切りの語（までに、by）のある文か行の、年のある日付がどの催しの日よりも後なら指す。
  * 時刻を求めるのは、手紙の頭の「Date: …」を催しの日と読まないため。催しの後に来てよいもの（アンケート、支払）の語が同じ文にあれば比べない。
- * 文か行に日付が二つ以上あれば、どれが締め切りか分からないので比べない。Pure.
+ * 文か行に日付が二つ以上あれば、どれが締め切りか分からないので比べない。
+ * チケットの注文（題名にチケットの語があり、請求書の語が無い文書）では、支払の期限も締め切りと読む。請求書なら支払は催しの後でよい。Pure.
  */
 export type EventDeadlineWords = {
   readonly events: readonly string[];
   readonly registrations: readonly string[];
   readonly deadlines: readonly string[];
   readonly asides: readonly string[];
+  readonly tickets: readonly string[];
+  readonly payments: readonly string[];
+  readonly bills: readonly string[];
 };
 
 type Span = { readonly start: number; readonly end: number };
@@ -47,21 +51,56 @@ const unitOf = (offset: number, line: Line, sentences: readonly Span[]): Span =>
 export const isRegistrationDeadline = (text: string, words: EventDeadlineWords): boolean =>
   mentions(text, words.registrations) && mentions(text, words.deadlines) && !mentions(text, words.asides);
 
-type Reading = { readonly source: string; readonly lines: readonly Line[]; readonly dates: readonly DatedPoint[]; readonly sentences: readonly Span[] };
+/** チケットの注文の支払期限を書いた文か: 支払の語と締め切りの語があり、支払の語のほかに催しの後に来てよいものの語が無い。 */
+export const isTicketPaymentDeadline = (text: string, words: EventDeadlineWords): boolean =>
+  mentions(text, words.payments) &&
+  mentions(text, words.deadlines) &&
+  !mentions(
+    text,
+    words.asides.filter((aside) => !words.payments.some((payment) => payment.toLowerCase() === aside.toLowerCase())),
+  );
 
-const lateDeadlines = (reading: Reading, words: EventDeadlineWords, event: string): StructureIssue[] =>
+/** チケットの注文か: 題名（最初の見出し）にチケットの語があり、文書のどこにも請求書の語が無い。 */
+export const isTicketOrder = (title: string | undefined, source: string, words: EventDeadlineWords): boolean =>
+  title !== undefined && mentions(title, words.tickets) && !mentions(title, words.bills) && !mentions(source, words.bills);
+
+type Reading = {
+  readonly title: string | undefined;
+  readonly source: string;
+  readonly lines: readonly Line[];
+  readonly dates: readonly DatedPoint[];
+  readonly sentences: readonly Span[];
+};
+
+type IsDeadline = (text: string) => boolean;
+
+const deadlineReaderOf = (reading: Reading, words: EventDeadlineWords): IsDeadline => {
+  if (!isTicketOrder(reading.title, reading.source, words)) return (text) => isRegistrationDeadline(text, words);
+  return (text) => isRegistrationDeadline(text, words) || isTicketPaymentDeadline(text, words);
+};
+
+const lateDeadlines = (reading: Reading, isDeadline: IsDeadline, event: string): StructureIssue[] =>
   reading.dates.flatMap((date) => {
     if (!FULL_DATE.test(date.value) || date.value <= event) return [];
     const line = reading.lines[(lineNumberAt(reading.lines, date.offset) ?? 0) - 1];
     if (line === undefined) return [];
     const unit = unitOf(date.offset, line, reading.sentences);
-    if (datesIn(reading.dates, unit).length > 1 || !isRegistrationDeadline(reading.source.slice(unit.start, unit.end), words)) return [];
+    if (datesIn(reading.dates, unit).length > 1 || !isDeadline(reading.source.slice(unit.start, unit.end))) return [];
     return [{ offset: date.offset, values: { deadline: date.value, event } }];
   });
 
-export const deadlinesAfterEvent = (source: string, dates: readonly DatedPoint[], sentences: readonly Span[], words: EventDeadlineWords): StructureIssue[] => {
+/** title は文書の最初の見出しの言葉（無ければ undefined）。 */
+export const deadlinesAfterEvent = (
+  source: string,
+  dates: readonly DatedPoint[],
+  sentences: readonly Span[],
+  words: EventDeadlineWords,
+  title?: string,
+): StructureIssue[] => {
   if (words.events.length === 0 || words.registrations.length === 0 || words.deadlines.length === 0) return [];
   const lines = linesOf(source);
   const event = latestOf(lines.flatMap((line) => eventDayOf(line, dates, words) ?? []));
-  return event === undefined ? [] : lateDeadlines({ source, lines, dates, sentences }, words, event);
+  if (event === undefined) return [];
+  const reading = { title, source, lines, dates, sentences };
+  return lateDeadlines(reading, deadlineReaderOf(reading, words), event);
 };

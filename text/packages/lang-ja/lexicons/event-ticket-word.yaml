@@ -1,0 +1,8 @@
+# チケットの注文を示す語。最初の見出し（題名）にこの語があれば、deadline-after-event は支払の期限（event-payment-word）も締め切りと読む。
+# 公演の前に払わなければ席は取れないので、支払の期限が公演の後なら誤り。請求書の語（event-bill-word）があれば読まない。
+# 「座席」は入れない。座席表や座席の割り当ては注文ではない。
+id: event-ticket-word
+language: ja
+entries:
+  - pattern: チケット
+  - pattern: 入場券

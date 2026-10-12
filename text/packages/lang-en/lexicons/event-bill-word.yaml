@@ -1,0 +1,9 @@
+# Words that mark an invoice. With one anywhere in the document, deadline-after-event does not read a payment deadline
+# even under a ticket title: an invoice is paid after the service.
+# Not "bill": a name (Bill) or "split the bill" would turn the reading off for a real ticket order.
+id: event-bill-word
+language: en
+entries:
+  - pattern: invoice
+  - pattern: invoices
+  - pattern: invoiced

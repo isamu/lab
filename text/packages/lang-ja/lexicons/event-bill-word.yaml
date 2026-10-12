@@ -1,0 +1,5 @@
+# 請求書を示す語。文書にあれば、題名にチケットの語があっても deadline-after-event は支払の期限を読まない。請求書は使った後に払うもの。
+id: event-bill-word
+language: ja
+entries:
+  - pattern: 請求
