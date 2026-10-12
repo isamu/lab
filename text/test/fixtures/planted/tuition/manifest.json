@@ -1,0 +1,219 @@
+{
+  "note": "Self-written tuition and school fee notices (学費納入通知書・授業料明細書 / statement of tuition and fees, tuition invoice) for a made-up college and made-up students, with fictional amounts: a first-year notice of the year's fees paid in two installments, and an invoice for a non-degree student charged by the credit, each in a clean version and a planted one that differs only on the lines below. They run as business/proposal, the genre the payslips, medical bills and quotes run as: no genre is made for school fee notices. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line; a mistake that breaks a pair of lines names the pair's other line as pairedLine. A payment due date before the issue date is named for due-before-issue, which compares the issue-date and due-date lines; the plant changes the due date. A term written as one range whose end is before its start is named for date-range-reversed. The enrolment fee, tuition and facility fee not adding up to the total is planted on a fee row, so the total row is the pairedLine and no other table moves. The installments not adding up to the year's amount is planted on the second installment's row of the installments table, and the row that holds the year's amount (年額, Total for the year) is the pairedLine. A fee per credit times the credits not equal to the line amount is named for line-amount-mismatch, and the plant changes the credits, not the amount, so the courses still add up to the subtotal. The amount due not being the charges less the scholarship or grant is named for net-amount-mismatch, which compares a gross amount, a deduction and a net amount written as labelled lines of one section. The student number written once with two neighbouring characters swapped is named for reference-number-variant. Each plant was also run alone on its clean document, so no plant depends on another. yarn planted tuition scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/annual",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/annual.clean.md",
+      "planted": "ja/annual.planted.md",
+      "mistakes": [
+        {
+          "kind": "due-before-issue",
+          "rule": "due-before-issue",
+          "line": 13,
+          "pairedLine": 11,
+          "clean": "納入期限：2026年3月31日",
+          "planted": "納入期限：2026年3月3日"
+        },
+        {
+          "kind": "term-end-before-start",
+          "rule": "date-range-reversed",
+          "line": 20,
+          "clean": "2026年9月24日〜2027年1月29日",
+          "planted": "2026年9月24日〜2026年1月29日"
+        },
+        {
+          "kind": "fees-total",
+          "rule": "total-mismatch",
+          "line": 26,
+          "pairedLine": 29,
+          "clean": "| 入学金 | 250,000円 |",
+          "planted": "| 入学金 | 280,000円 |"
+        },
+        {
+          "kind": "installments-annual",
+          "rule": "total-mismatch",
+          "line": 36,
+          "pairedLine": 37,
+          "clean": "| 後期分 | 2026年9月30日 | 570,000円 |",
+          "planted": "| 後期分 | 2026年9月30日 | 580,000円 |"
+        },
+        {
+          "kind": "waiver-amount-due",
+          "rule": "net-amount-mismatch",
+          "line": 45,
+          "clean": "前期分の納入額：580,000円",
+          "planted": "前期分の納入額：560,000円"
+        },
+        {
+          "kind": "student-number",
+          "rule": "reference-number-variant",
+          "line": 49,
+          "clean": "学籍番号26B4172の",
+          "planted": "学籍番号26B4712の"
+        }
+      ]
+    },
+    {
+      "id": "ja/credits",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/credits.clean.md",
+      "planted": "ja/credits.planted.md",
+      "mistakes": [
+        {
+          "kind": "due-before-issue",
+          "rule": "due-before-issue",
+          "line": 11,
+          "pairedLine": 9,
+          "clean": "納入期限：2026年9月25日",
+          "planted": "納入期限：2026年8月25日"
+        },
+        {
+          "kind": "term-end-before-start",
+          "rule": "date-range-reversed",
+          "line": 13,
+          "clean": "履修期間：2026年9月24日〜2027年1月29日",
+          "planted": "履修期間：2026年9月24日〜2026年1月29日"
+        },
+        {
+          "kind": "credit-fee-line",
+          "rule": "line-amount-mismatch",
+          "line": 20,
+          "clean": "| 会計学基礎 | 2単位 |",
+          "planted": "| 会計学基礎 | 3単位 |"
+        },
+        {
+          "kind": "fees-total",
+          "rule": "total-mismatch",
+          "line": 31,
+          "pairedLine": 32,
+          "clean": "| 施設設備費 | 12,000円 |",
+          "planted": "| 施設設備費 | 15,000円 |"
+        },
+        {
+          "kind": "waiver-amount-due",
+          "rule": "net-amount-mismatch",
+          "line": 40,
+          "clean": "- 納入額：125,000円",
+          "planted": "- 納入額：152,000円"
+        },
+        {
+          "kind": "student-number",
+          "rule": "reference-number-variant",
+          "line": 42,
+          "clean": "学籍番号K26-0583の",
+          "planted": "学籍番号K26-0538の"
+        }
+      ]
+    },
+    {
+      "id": "en/annual",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/annual.clean.md",
+      "planted": "en/annual.planted.md",
+      "mistakes": [
+        {
+          "kind": "due-before-issue",
+          "rule": "due-before-issue",
+          "line": 13,
+          "pairedLine": 11,
+          "clean": "Payment due: July 31, 2026",
+          "planted": "Payment due: June 1, 2026"
+        },
+        {
+          "kind": "term-end-before-start",
+          "rule": "date-range-reversed",
+          "line": 20,
+          "clean": "January 19, 2027 – May 14, 2027",
+          "planted": "January 19, 2027 – May 14, 2026"
+        },
+        {
+          "kind": "fees-total",
+          "rule": "total-mismatch",
+          "line": 28,
+          "pairedLine": 29,
+          "clean": "| Facility fee | $1,800.00 |",
+          "planted": "| Facility fee | $1,600.00 |"
+        },
+        {
+          "kind": "installments-annual",
+          "rule": "total-mismatch",
+          "line": 36,
+          "pairedLine": 37,
+          "clean": "| December 15, 2026 | $8,100.00 |",
+          "planted": "| December 15, 2026 | $8,300.00 |"
+        },
+        {
+          "kind": "waiver-amount-due",
+          "rule": "net-amount-mismatch",
+          "line": 45,
+          "clean": "Amount due for the fall: $5,000.00",
+          "planted": "Amount due for the fall: $5,600.00"
+        },
+        {
+          "kind": "student-number",
+          "rule": "reference-number-variant",
+          "line": 49,
+          "clean": "student ID S2604172 is",
+          "planted": "student ID S2604712 is"
+        }
+      ]
+    },
+    {
+      "id": "en/credits",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/credits.clean.md",
+      "planted": "en/credits.planted.md",
+      "mistakes": [
+        {
+          "kind": "due-before-issue",
+          "rule": "due-before-issue",
+          "line": 11,
+          "pairedLine": 9,
+          "clean": "Payment due: August 28, 2026",
+          "planted": "Payment due: July 28, 2026"
+        },
+        {
+          "kind": "term-end-before-start",
+          "rule": "date-range-reversed",
+          "line": 13,
+          "clean": "Term: August 31, 2026 – December 18, 2026",
+          "planted": "Term: August 31, 2026 – December 18, 2025"
+        },
+        {
+          "kind": "credit-fee-line",
+          "rule": "line-amount-mismatch",
+          "line": 20,
+          "clean": "| Financial Accounting | 3 credits |",
+          "planted": "| Financial Accounting | 4 credits |"
+        },
+        {
+          "kind": "fees-total",
+          "rule": "total-mismatch",
+          "line": 30,
+          "pairedLine": 31,
+          "clean": "| Technology fee | $60.00 |",
+          "planted": "| Technology fee | $90.00 |"
+        },
+        {
+          "kind": "waiver-amount-due",
+          "rule": "net-amount-mismatch",
+          "line": 39,
+          "clean": "- Amount due: $1,975.00",
+          "planted": "- Amount due: $1,795.00"
+        },
+        {
+          "kind": "student-number",
+          "rule": "reference-number-variant",
+          "line": 41,
+          "clean": "student ID N2605831 are",
+          "planted": "student ID N2605381 are"
+        }
+      ]
+    }
+  ]
+}
