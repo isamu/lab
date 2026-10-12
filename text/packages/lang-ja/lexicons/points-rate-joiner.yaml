@@ -1,0 +1,9 @@
+# 文の中で、ポイントの数とそれが何円あたりかをつなぐ語（100円ごとに10ポイント）。還元率の列の無いポイントの表に、その節の文が言う
+# 率を使う（line-amount-mismatch）。
+id: points-rate-joiner
+language: ja
+entries:
+  - pattern: ごとに
+  - pattern: につき
+  - pattern: あたり
+  - pattern: 当たり

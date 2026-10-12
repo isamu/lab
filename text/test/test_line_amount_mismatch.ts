@@ -6,6 +6,7 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { cellNumber, lineAmountMismatches, quantityOf } from "../packages/chaff/src/structure/line-amount.ts";
 import { perUnitPrice, priceHeadingUnit, quantityUnit, unitsAgree } from "../packages/chaff/src/structure/line-amount-unit.ts";
 import { countOf, factorsOf, labelProductOf } from "../packages/chaff/src/structure/line-amount-label.ts";
+import { pointsMatch, rateIn } from "../packages/chaff/src/structure/line-amount-rate.ts";
 
 // 数量×単価が金額と合わない（line-amount-mismatch）。例文はすべて自作。
 
@@ -672,5 +673,103 @@ describe("line-amount-mismatch: 項目の升の括弧に書いた 単価×人数
     assert.equal(labelProductOf("会費（3,000円×24¹名）", words), undefined);
     assert.equal(labelProductOf("会費（24名×24名）", words), undefined);
     assert.equal(labelProductOf("会費（3,000円×3,000円）", words), undefined);
+  });
+});
+
+describe("line-amount-mismatch: 利用金額 × 還元率が獲得ポイントと合わない", () => {
+  const points = (rows: readonly string[]): string =>
+    ["## 獲得の内訳", "", "| ご利用日 | ご利用金額 | 還元率 | 獲得ポイント |", "| --- | --- | --- | --- |", ...rows].join("\n") + "\n";
+  const enPoints = (rows: readonly string[]): string =>
+    ["## Points earned", "", "| Date | Amount spent | Points per $1 | Points earned |", "| --- | --- | --- | --- |", ...rows].join("\n") + "\n";
+  const stated = (sentence: string, rows: readonly string[]): string =>
+    ["## ポイントの獲得", "", sentence, "", "| 日付 | ご宿泊料金 | 獲得ポイント |", "| --- | --- | --- |", ...rows].join("\n") + "\n";
+  const enStated = (sentence: string, rows: readonly string[]): string =>
+    ["## Stays", "", sentence, "", "| Date | Room rate | Points earned |", "| --- | --- | --- |", ...rows].join("\n") + "\n";
+
+  it("還元率の列から獲得ポイントを確かめ、合わない行を指す", () => {
+    assert.deepEqual(findingsOf(points(["| 5月2日 | 23,500円 | 2% | 470ポイント |", "| 5月9日 | 23,500円 | 2% | 407ポイント |"])), [
+      "金額「407ポイント」が、数量×単価（23,500円 × 2% = 470ポイント）と合いません",
+    ]);
+    assert.deepEqual(findingsOf(enPoints(["| May 2 | $235.00 | 2 | 470 points |", "| May 9 | $235.00 | 2 | 407 points |"]), en), [
+      "The amount 407 points is not quantity × unit price ($235.00 × 2 = 470 points)",
+    ]);
+  });
+
+  it("切り捨て・四捨五入・切り上げと、何円ごとの切り捨てを合っていると読み、どれからも外れれば指す", () => {
+    // 23,450 × 3% = 703.5 (703 or 704); counted per 100 yen, 234 × 3 = 702.
+    const rounded = ["703", "704", "702"].map((earned) => `| 5月2日 | 23,450円 | 3% | ${earned}ポイント |`);
+    assert.deepEqual(findingsOf(points(rounded)), []);
+    assert.deepEqual(findingsOf(points(["| 5月2日 | 23,450円 | 3% | 700ポイント |"])), [
+      "金額「700ポイント」が、数量×単価（23,450円 × 3% = 703ポイント）と合いません",
+    ]);
+    assert.deepEqual(findingsOf(enPoints(["| May 2 | $46.75 | 3 | 140 points |", "| May 3 | $46.75 | 3 | 138 points |"]), en), []);
+    assert.equal(findingsOf(enPoints(["| May 2 | $46.75 | 3 | 137 points |"]), en).length, 1);
+  });
+
+  it("表の前の同じ節の文が言う率（100円ごとに5ポイント）を使う", () => {
+    const sentence = "ゴールド会員は、ご宿泊料金100円ごとに5ポイントを獲得します。";
+    assert.deepEqual(findingsOf(stated(sentence, ["| 6月1日 | 18,200円 | 910ポイント |", "| 6月8日 | 18,200円 | 190ポイント |"])), [
+      "金額「190ポイント」が、数量×単価（18,200円 × 5ポイント/100円 = 910ポイント）と合いません",
+    ]);
+    const enSentence = "Gold members earn 5 points for every $1 of the room rate.";
+    assert.deepEqual(findingsOf(enStated(enSentence, ["| June 1 | $182.00 | 910 points |", "| June 8 | $182.00 | 190 points |"]), en), [
+      "The amount 190 points is not quantity × unit price ($182.00 × 5 points/$1 = 910 points)",
+    ]);
+  });
+
+  it("率が読めない、二つある、別の節にあるときは比べない", () => {
+    const rows = ["| 6月8日 | 18,200円 | 190ポイント |"];
+    assert.deepEqual(findingsOf(stated("ご宿泊ごとにポイントを獲得します。", rows)), []);
+    assert.deepEqual(findingsOf(stated("通常は100円ごとに1ポイント、ゴールド会員は100円ごとに5ポイントです。", rows)), []);
+    const elsewhere = ["## ご案内", "", "100円ごとに5ポイントを獲得します。", "", stated("ご宿泊の記録です。", rows)].join("\n");
+    assert.deepEqual(findingsOf(elsewhere), []);
+    assert.deepEqual(findingsOf(enStated("Members earn points on every stay.", ["| June 8 | $182.00 | 190 points |"]), en), []);
+    const unrelated = "For every $1 spent, you get one raffle entry. Gold members also receive 10 points.";
+    assert.deepEqual(findingsOf(enStated(unrelated, ["| June 8 | $182.00 | 10 points |"]), en), []);
+    assert.deepEqual(findingsOf(enStated("Members earn 5 points for every $1.50 of the room rate.", ["| June 8 | $182.00 | 190 points |"]), en), []);
+  });
+
+  it("文が言う率は、同じ通貨で書いた利用金額の行にだけ使う", () => {
+    const rows = ["| June 1 | $100.00 | 500 points |", "| June 2 | €100.00 | 400 points |", "| June 3 | $100.00 | 400 points |"];
+    assert.deepEqual(findingsOf(enStated("Gold members earn 5 points for every $1.", rows), en), [
+      "The amount 400 points is not quantity × unit price ($100.00 × 5 points/$1 = 500 points)",
+    ]);
+  });
+
+  it("ポイントで書いた率の升は、ボーナスの升と取り違えない", () => {
+    assert.deepEqual(findingsOf(enPoints(["| May 2 | $100.00 | 3 points | 200 points |"]), en), [
+      "The amount 200 points is not quantity × unit price ($100.00 × 3 points = 300 points)",
+    ]);
+  });
+
+  it("% の無い還元率、ポイントでない単位の獲得、ボーナスの列のある行、利用金額の無い表は比べない", () => {
+    assert.deepEqual(findingsOf(points(["| 5月2日 | 23,500円 | 2 | 407ポイント |"])), []);
+    assert.deepEqual(findingsOf(points(["| 5月2日 | 23,500円 | 2% | $4.07 |"])), []);
+    const bonus = [
+      "| ご利用日 | ご利用金額 | 還元率 | ボーナス | 獲得ポイント |",
+      "| --- | --- | --- | --- | --- |",
+      "| 5月2日 | 23,500円 | 2% | 100ポイント | 570ポイント |",
+    ];
+    assert.deepEqual(findingsOf(bonus.join("\n") + "\n"), []);
+    const tier = ["| 会員ランク | 年間獲得ポイント | 還元率 |", "| --- | --- | --- |", "| ゴールド | 50,000ポイント以上 | 3% |"];
+    assert.deepEqual(findingsOf(tier.join("\n") + "\n"), []);
+  });
+
+  it("利用金額と同じ単位で書いた還元も比べる", () => {
+    const cashback = ["| ご利用金額 | 還元率 | 獲得ポイント |", "| --- | --- | --- |", "| 10,000円 | 1% | 100円 |", "| 10,000円 | 1% | 10円 |"];
+    assert.deepEqual(findingsOf(cashback.join("\n") + "\n"), ["金額「10円」が、数量×単価（10,000円 × 1% = 100円）と合いません"]);
+  });
+
+  it("pointsMatch と rateIn は丸め方と率の書き方の境で分かれる", () => {
+    const words = { columns: [], units: ["points"], joiners: [] };
+    assert.deepEqual(rateIn("3%", undefined, words), { value: 3, per: 100, written: "3%" });
+    assert.deepEqual(rateIn("3", 1, words), { value: 3, per: 1, written: "3" });
+    assert.deepEqual(rateIn("3 points", 1, words), { value: 3, per: 1, written: "3 points" });
+    [rateIn("3", undefined, words), rateIn("0%", undefined, words), rateIn("$3", 1, words), rateIn("", 1, words), rateIn("-3%", 1, words)].forEach((rate) =>
+      assert.equal(rate, undefined),
+    );
+    const threePercent = { value: 3, per: 100, written: "3%" };
+    [702, 703, 704].forEach((written) => assert.equal(pointsMatch(written, 23450, threePercent), true));
+    [701, 705, 0].forEach((written) => assert.equal(pointsMatch(written, 23450, threePercent), false));
   });
 });
