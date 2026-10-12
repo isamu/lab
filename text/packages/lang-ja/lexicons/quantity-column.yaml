@@ -21,3 +21,6 @@ entries:
   - { pattern: 日数, group: day }
   - { pattern: 入院日数, group: day }
   - { pattern: 通院日数, group: day }
+  # 授業料の明細の単位数（1単位あたりの授業料と掛けて金額になる）。見出しの「単位」だけは「単位：円」の単位でもあるので数量と読まない。
+  - { pattern: 単位数, group: credit }
+  - { pattern: 履修単位数, group: credit }

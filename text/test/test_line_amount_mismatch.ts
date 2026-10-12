@@ -476,6 +476,40 @@ describe("line-amount-mismatch: 数量×単価が金額と合わない", () => {
     assert.deepEqual(findingsOf(rows("| Item | Pack of | Unit price | Pack price | Amount |", ["| Pen | 10 | $1.20 | $13.00 | $1.00 |"]), en), []);
   });
 
+  it("授業料の明細の単位数と1単位あたりの授業料を読む", () => {
+    const credits = (heads: string, rows: readonly string[]): string => [heads, "| --- | --- | --- | --- |", ...rows].join("\n") + "\n";
+    assert.deepEqual(
+      findingsOf(
+        credits("| 科目 | 単位数 | 1単位あたりの授業料 | 金額 |", ["| 統計学 | 2単位 | 15,000円 | 30,000円 |", "| 会計学 | 3単位 | 15,000円 | 30,000円 |"]),
+      ),
+      ["金額「30,000円」が、数量×単価（3単位 × 15,000円 = 45,000円）と合いません"],
+    );
+    assert.equal(findingsOf(credits("| 科目 | 履修単位数 | 単位あたり | 金額 |", ["| 英語 | 2 | 12,000円 | 36,000円 |"])).length, 1);
+    assert.deepEqual(findingsOf(credits("| 科目 | 履修単位数 | 単位あたり | 金額 |", ["| 英語 | 3 | 12,000円 | 36,000円 |"])), []);
+    assert.deepEqual(findingsOf(credits("| Course | Credits | Tuition per credit | Amount |", ["| Statistics | 4 credits | $320.00 | $960.00 |"]), en), [
+      "The amount $960.00 is not quantity × unit price (4 credits × $320.00 = $1280.00)",
+    ]);
+    assert.equal(findingsOf(credits("| Course | Credit hours | Fee per credit | Amount |", ["| Writing | 3 credit hours | $300 | $600 |"]), en).length, 1);
+    assert.equal(findingsOf(credits("| Course | Credits | Per credit | Amount |", ["| Writing | 1 credit | $300 | $600 |"]), en).length, 1);
+    assert.deepEqual(
+      findingsOf(credits("| Course | Credits | Per credit | Amount |", ["| Writing | 1 credit | $300 | $300 |", "| Lab | 2 | $300 | $600 |"]), en),
+      [],
+    );
+  });
+
+  it("単位あたりの授業料と時間・時給を掛けず、単位数だけの成績表と「単位」「単位：円」の見出しは読まない", () => {
+    const four = (heads: string, row: string): string => [heads, "| --- | --- | --- | --- |", row].join("\n") + "\n";
+    assert.deepEqual(findingsOf(four("| 科目 | 時間 | 1単位あたりの授業料 | 金額 |", "| 実習 | 2 | 15,000円 | 45,000円 |")), []);
+    assert.deepEqual(findingsOf(four("| 科目 | 単位数 | 1単位あたりの授業料 | 金額 |", "| 実習 | 2時間 | 15,000円 | 45,000円 |")), []);
+    assert.deepEqual(findingsOf(four("| 科目 | 単位数 | 時給 | 金額 |", "| 実習 | 2 | 1,500円 | 4,500円 |")), []);
+    assert.deepEqual(findingsOf(four("| Course | Hours | Tuition per credit | Amount |", "| Lab | 2 | $300 | $900 |"), en), []);
+    assert.deepEqual(findingsOf(four("| Course | Credits | Hourly rate | Amount |", "| Lab | 2 credits | $30 | $90 |"), en), []);
+    assert.deepEqual(findingsOf(four("| 科目 | 単位数 | 評価 | GP |", "| 統計学 | 2 | A | 3 |")), []);
+    assert.deepEqual(findingsOf(four("| Course | Credits | Grade | Grade points |", "| Statistics | 3 | A | 4 |"), en), []);
+    assert.deepEqual(findingsOf(four("| 品目 | 単位 | 単価 | 金額 |", "| 統計学 | 2単位 | 15,000円 | 40,000円 |")), []);
+    assert.deepEqual(findingsOf(four("| 品目 | 単位：円 | 単価 | 金額 |", "| ボルト | 10 | 50円 | 600円 |")), []);
+  });
+
   it("単位を読む", () => {
     const marks = [
       { pattern: "/h", unit: "hour" },

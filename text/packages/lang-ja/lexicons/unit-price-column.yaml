@@ -15,3 +15,6 @@ entries:
   - { pattern: 日額, group: day }
   - { pattern: 日額給付金, group: day }
   - { pattern: 1日あたり, group: day }
+  # 授業料の明細の1単位あたりの授業料（単位数と掛けて金額になる）。
+  - { pattern: 1単位あたりの授業料, group: credit }
+  - { pattern: 単位あたり, group: credit }

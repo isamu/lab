@@ -18,3 +18,6 @@ entries:
   # The days of a benefit statement (daily benefit × days = benefit).
   - { pattern: Days, group: day }
   - { pattern: Days in hospital, group: day }
+  # The credits of a tuition invoice (times the tuition per credit gives the amount).
+  - { pattern: Credits, group: credit }
+  - { pattern: Credit hours, group: credit }
