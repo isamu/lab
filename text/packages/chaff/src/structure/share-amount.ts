@@ -17,7 +17,7 @@ export type ShareWords = { readonly labels: readonly ShareWord[]; readonly round
 export type ShareText = { readonly tables: readonly ChangeTable[]; readonly lines: readonly Line[]; readonly headings: readonly number[] };
 
 export type ShareRate = { readonly value: number; readonly written: string };
-type Money = { readonly value: number; readonly decimals: number; readonly marks: string; readonly offset: number; readonly text: string };
+export type Money = { readonly value: number; readonly decimals: number; readonly marks: string; readonly offset: number; readonly text: string };
 
 const ROLE_ORDER: readonly ShareRole[] = ["paid", "share", "base"];
 const PERCENT_RATE = /^(\d{1,2}(?:\.\d{1,2})?)\s*%$/u;
@@ -82,7 +82,7 @@ export const shareMatches = (written: number, base: number, rate: number, step: 
 };
 
 /** The expected amount written the way the amount is: its unit, its grouping, its decimals, rounded to its step. */
-const shownLike = (money: Money, exact: number, step: number | undefined): string => {
+export const shownLike = (money: Money, exact: number, step: number | undefined): string => {
   const rounded = step === undefined ? exact : Math.round(exact / step) * step;
   const number = rounded.toLocaleString("en-US", {
     minimumFractionDigits: money.decimals,

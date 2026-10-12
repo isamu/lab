@@ -1,0 +1,50 @@
+id: interest-mismatch
+layer: L3
+status: stable
+how_to_find: interest
+# The interest, balance, rate, after-tax and period words come from the language's interest-label lexicon. The arithmetic
+# (balance × rate, rounded down, to nearest or up) is tax-mismatch's.
+extra_word_lists: [interest-label]
+severity: warning
+
+name:
+  ja: 利息が残高に利率を掛けた額と合わない
+  en: An interest amount that is not the stated balance times the stated rate
+
+why:
+  ja: 預金の明細に「対象残高400,000円 × 利率0.10% ＝ 400円」と利息の計算を書いたなら、読み手は残高と利率から利息を確かめられます。利率を打ち間違えたとき、残高だけを直したとき、別の月の額を写したときに、書いた利息と計算が合わなくなります。一つの行に、残高の語（残高、元本）の後の金額、×、利率の語（利率、年利）の後の率、＝、利息の額と書いた行を読み、利息の語（利息、利子）がある行だけを比べます。利率は書いたとおりの率で掛けます。年利のように期間を書いた利率は、利息の期間（年間）も同じと書いた行だけで比べ、日割りや月割りには直しません。
+  en: 'When a deposit statement writes the interest out as "average balance $3,600.00 × rate 0.05% = $1.80", a reader can check the interest from the balance and the rate. It goes wrong when the rate is mistyped, when only the balance is corrected, or when another month''s amount is copied. A line is read when it writes an amount after a balance word (balance, principal), ×, a percentage after a rate word (rate, APR), =, and the interest, and names the interest (interest). The rate is used as written. A rate marked for a period (APR, annual) is used only on a line that names the same period for the interest (for the year): it is never converted to a month or a day.'
+
+message:
+  ja: 利息「{written}」が、残高「{base}」に利率{rate}を掛けた額（{expected}）と合いません
+  en: "The interest {written} is not the balance {base} at {rate} ({expected})"
+
+how_to_fix:
+  ja: 残高と利率を確かめて、利息を計算し直してください。
+  en: Check the balance and the rate, and work the interest out again.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 預金の明細で、利息が残高に利率を掛けた額と合わない所
+  en: Interest on a statement that is not the stated balance times the stated rate
+example:
+  ja:
+    before: |
+      お利息の計算：対象残高400,000円 × 利率0.01% ＝ 400円
+    after: |
+      お利息の計算：対象残高400,000円 × 利率0.10% ＝ 400円
+  en:
+    before: |
+      Interest for the month: average balance $3,600.00 × rate 0.50% = $1.80
+    after: |
+      Interest for the month: average balance $3,600.00 × rate 0.05% = $1.80
+
+not_flagged:
+  ja: 端数は切り捨て・四捨五入・切り上げのどれでも、円の位でも合っていると読みます。×と＝が一つずつでない行（日数を掛ける行など）、利率が読めないもの、残高と利息の単位が違うもの、税引後・手取りの利息の行は比べません。年利など期間を書いた利率で、利息の期間を書いていない行や違う期間の行も比べません。表の中の数や、文の中に別々に書いた残高と利率は読みません。
+  en: "Rounding down, to the nearest or up, to the cent or (for an amount written without cents) to the unit, is read as right. Nothing is compared on a line without exactly one × and one = (one that also multiplies by days), with no rate to read, with the balance and the interest in different units, or that names interest after tax (after tax, net interest). A rate marked for a period (APR) is not compared on a line that names no period, or another one, for the interest. Figures in a table, and a balance and a rate written apart in sentences, are not read."
