@@ -8,3 +8,11 @@ entries:
   - pattern: 総計
   - pattern: 総額
   - pattern: 計
+  # 週計・日計・月計は表の一部を締める合計なので subtotal。total-period-qualifier に置くと、内訳のちょうど4倍・12倍・52倍を
+  # 年に直した額として比べなくなるので、語として置く。
+  - { pattern: 週計, group: subtotal }
+  - { pattern: 週合計, group: subtotal }
+  - { pattern: 日計, group: subtotal }
+  - { pattern: 日合計, group: subtotal }
+  - { pattern: 月計, group: subtotal }
+  - { pattern: 月合計, group: subtotal }

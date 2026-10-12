@@ -218,10 +218,12 @@ export const isListedTotal = (text: string, words: TotalLineWords): boolean => {
   return nounSplitsOf(text, words).some((nouns) => nouns.length > 0 && nouns.every((noun) => listed.has(noun)));
 };
 
-/** 合計のような行か。合計の行、見出しのどこかに合計の語がある行（支給合計、Total earnings）、差し引きの名前の行（総支給額、Gross pay）。 */
-export const isTotalLikeLine = (text: string, words: TotalLineWords, header?: string): boolean => {
+/** 見出しが差し引きで決まる金額の名前（総支給額、Gross pay）そのものか。 */
+export const isAmountNameLine = (text: string, words: TotalLineWords): boolean => {
   const label = labelWords(text).join(" ");
-  return (
-    isTotalLine(text, words, header) || nounSplitsOf(text, words).length > 0 || (words.amountNames ?? []).some((name) => wordsOf(name).join(" ") === label)
-  );
+  return (words.amountNames ?? []).some((name) => wordsOf(name).join(" ") === label);
 };
+
+/** 合計のような行か。合計の行、見出しのどこかに合計の語がある行（支給合計、Total earnings）、差し引きの名前の行（総支給額、Gross pay）。 */
+export const isTotalLikeLine = (text: string, words: TotalLineWords, header?: string): boolean =>
+  isTotalLine(text, words, header) || nounSplitsOf(text, words).length > 0 || isAmountNameLine(text, words);

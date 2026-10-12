@@ -48,6 +48,30 @@ describe("heading-numbering-mix: 兄弟の見出しの番号の付け方", () =>
     ]);
   });
 
+  it("期間や催しを名指す番号（Week 1、Day 2、第1回、第1週）は番号と読まない", () => {
+    assert.deepEqual(mixed(["## Week 1", "## Week 2", "## Pay summary"], en), []);
+    assert.deepEqual(mixed(["## Day 1: Arrival", "## Day 2: Lakes", "## Day 3: Return", "## Packing list"], en), []);
+    assert.deepEqual(mixed(["## Phase 1 Discovery", "## Phase 2 Build", "## Risks"], en), []);
+    assert.deepEqual(mixed(["## 第1回 打ち合わせ", "## 第2回 打ち合わせ", "## 今後の予定"]), []);
+    assert.deepEqual(mixed(["## 第1週", "## 第2週", "## 賃金の見込み"]), []);
+    assert.deepEqual(mixed(["## 1日目 京都", "## 2日目 奈良", "## 持ち物"]), []);
+  });
+
+  it("区切りの名前の番号（Chapter、Part、Step、第1章）は番号と読み、期間の名前の隣の番号付きの見出しは言う", () => {
+    assert.deepEqual(mixed(["## Part 1 Basics", "## Part 2 Practice", "## Summary"], en), [
+      'The heading "Summary" has no number, while 2 of its siblings do ("Part 1 Basics")',
+    ]);
+    assert.deepEqual(mixed(["## Step 1 Install", "## Step 2 Configure", "## Troubleshooting"], en), [
+      'The heading "Troubleshooting" has no number, while 2 of its siblings do ("Step 1 Install")',
+    ]);
+    assert.deepEqual(mixed(["## 第1章 背景", "## 第2章 方針", "## まとめ"]), [
+      "見出し「まとめ」だけ番号がありません（兄弟の見出しは「第1章 背景」など 2 個が番号付き）",
+    ]);
+    assert.deepEqual(mixed(["## Week 1", "## Week 2", "## 3. Pay summary"], en), [
+      'The heading "3. Pay summary" is numbered, while 2 of its siblings are not ("Week 1")',
+    ]);
+  });
+
   it("番号でない頭の数（2026年、3つ）は番号と読まない", () => {
     assert.deepEqual(mixed(["## 2026年の計画", "## 3つの理由", "## まとめ"]), []);
   });
