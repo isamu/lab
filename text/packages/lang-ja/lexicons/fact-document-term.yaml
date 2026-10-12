@@ -25,3 +25,8 @@ entries:
   - { pattern: 梱包数, group: carton-count }
   # 一回の入院の日数。診療明細では一通り。
   - { pattern: 入院日数, group: days-in-hospital }
+  # 一つの部屋の広さ。賃貸の明細や物件の概要では一通り。部屋ごとに違う面積は、表の値が二通りになるので比べない。
+  # 面積だけの名前は入れない。敷地面積と床面積が一つの項目になる。
+  - { pattern: 専有面積, group: floor-area }
+  - { pattern: 床面積, group: floor-area }
+  - { pattern: 契約面積, group: floor-area }
