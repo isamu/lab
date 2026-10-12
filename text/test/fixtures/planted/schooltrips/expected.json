@@ -1,0 +1,23 @@
+{
+  "recall": {
+    "ja": {
+      "per-student-total": "1/2",
+      "installments-not-fee": "0/2",
+      "return-before-departure": "1/2",
+      "payment-after-departure": "0/2",
+      "announced-count": "2/2",
+      "meeting-after-departure": "2/2",
+      "teacher-two-ways": "2/2"
+    },
+    "en": {
+      "per-student-total": "0/2",
+      "installments-not-fee": "0/2",
+      "return-before-departure": "1/2",
+      "payment-after-departure": "0/2",
+      "announced-count": "2/2",
+      "meeting-after-departure": "2/2",
+      "teacher-two-ways": "1/2"
+    }
+  },
+  "clean": []
+}
