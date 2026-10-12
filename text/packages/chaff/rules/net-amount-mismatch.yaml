@@ -2,7 +2,7 @@ id: net-amount-mismatch
 layer: L3
 status: stable
 how_to_find: net-amount-mismatch
-# The names are lexicon net-amount-label (groups gross, deduction, net, taxable); words of magnitude are amount-multiplier.
+# The names are lexicon net-amount-label (groups gross, deduction, net, taxable); terms cut off a name are net-amount-period; words of magnitude are amount-multiplier.
 severity: warning
 
 name:

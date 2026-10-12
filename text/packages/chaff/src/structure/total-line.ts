@@ -172,7 +172,7 @@ const continuesWord = (inner: string | undefined, outer: string | undefined): bo
   WORD_CHAR.test(inner ?? "") && outer !== undefined && !SPACES.test(outer);
 
 /** 見出しの頭（before）か尻（after）から期間の語を除いた残り。語の途中（yearly の year、year-to-date の year）では切らない。 */
-const withoutPeriod = (label: string, qualifier: TotalQualifier): string | undefined => {
+export const withoutPeriod = (label: string, qualifier: TotalQualifier): string | undefined => {
   const pattern = qualifier.pattern.toLowerCase();
   if (pattern.length === 0) return undefined;
   if (qualifier.position !== "after" && label.startsWith(pattern) && !continuesWord(pattern.at(-1), label[pattern.length]))

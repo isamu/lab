@@ -33,3 +33,11 @@ entries:
   - { pattern: Balance refunded, group: net }
   - { pattern: Taxable income, group: taxable }
   - { pattern: Taxable amount, group: taxable }
+  # A tuition statement: the charges less a scholarship, grant or fee waiver taken off them is the amount due. Amount due
+  # is read only beside a gross and a deduction named here, so an invoice's subtotal, tax and amount due are not compared.
+  # Charges alone is read only with a term on it (Fall charges): see net-amount-period.
+  - { pattern: Total charges, group: gross }
+  - { pattern: Scholarship applied, group: deduction }
+  - { pattern: Grant applied, group: deduction }
+  - { pattern: Fee waiver, group: deduction }
+  - { pattern: Amount due, group: net }

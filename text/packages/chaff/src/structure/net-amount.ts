@@ -5,12 +5,20 @@
  * taxable); nothing here knows a word of payroll or tax. Pure.
  */
 import { keyOf, labelKey, noteOf, readNumber } from "./ratio.ts";
+import { withoutPeriod, type TotalQualifier } from "./total-line.ts";
 
 export const NET_ROLES = ["gross", "deduction", "net", "taxable"] as const;
 export type NetRole = (typeof NET_ROLES)[number];
 
+/** A period word; group names its term, so "Fall" and "for the fall" are one term. */
+export type NetPeriod = TotalQualifier & { readonly group?: string | undefined };
+
 export type NetWords = {
   readonly labels: Readonly<Record<NetRole, readonly string[]>>;
+  /** Words of the term an amount is for (net-amount-period: 前期分の, Fall, for the fall), cut off a label before it is read. */
+  readonly periods: readonly NetPeriod[];
+  /** Names read only with a period on them (Charges, as Fall charges): alone, the word is too common to name a role. */
+  readonly periodLabels?: Readonly<Partial<Record<NetRole, readonly string[]>>> | undefined;
   /** Words of magnitude (千, million): an amount written in them is rounded. */
   readonly magnitudes: readonly string[];
   readonly percentUnits: readonly string[];
@@ -30,16 +38,33 @@ export type NetAmount = {
   readonly grouped: boolean;
 };
 
-export type LabelledAmount = NetAmount & { readonly role: NetRole };
+export type LabelledAmount = NetAmount & { readonly role: NetRole; readonly period?: string | undefined };
 
 export type NetIssue = { readonly offset: number; readonly values: Readonly<Record<string, string>> };
 
 const DECIMAL_BASE = 10;
 const HALF = 0.5;
 
-/** The role a label names: the label alone, its note in brackets aside; undefined when it is not one of the words. */
-export const roleOf = (label: string, words: NetWords): NetRole | undefined =>
-  NET_ROLES.find((role) => words.labels[role].some((pattern) => keyOf(pattern) === labelKey(label)));
+const roleOfKey = (key: string, words: NetWords, afterPeriod = false): NetRole | undefined =>
+  NET_ROLES.find((role) => [...words.labels[role], ...(afterPeriod ? (words.periodLabels?.[role] ?? []) : [])].some((pattern) => keyOf(pattern) === key));
+
+/** A label read: the role it names and, when a period was cut off it, which term that period is. */
+export type LabelRead = { readonly role: NetRole; readonly period?: string };
+
+const withPeriodCut = (key: string, period: NetPeriod, words: NetWords): LabelRead[] => {
+  const rest = withoutPeriod(key, { ...period, pattern: keyOf(period.pattern) });
+  const role = rest === undefined || rest === "" ? undefined : roleOfKey(rest, words, true);
+  return role === undefined ? [] : [{ role, period: period.group ?? keyOf(period.pattern) }];
+};
+
+/** The role a label names: the word alone or with a period on its side (前期分の納入額), its note in brackets aside. */
+export const readLabel = (label: string, words: NetWords): LabelRead | undefined => {
+  const key = labelKey(label);
+  const role = roleOfKey(key, words);
+  return role === undefined ? words.periods.flatMap((period) => withPeriodCut(key, period, words))[0] : { role };
+};
+
+export const roleOf = (label: string, words: NetWords): NetRole | undefined => readLabel(label, words)?.role;
 
 /** One plain number with its marks ("256,287円", "$4,301.01"); a percentage, a signed or a bracketed value is not an amount. */
 export const amountOf = (text: string, start: number, labelNote: string, words: NetWords): NetAmount | undefined => {
@@ -108,6 +133,7 @@ export const netMismatch = (
 ): NetIssue | undefined => {
   const [gross, deduction, net] = [onlyAmount(amounts, "gross"), onlyAmount(amounts, "deduction"), resultOf(amounts, netNamed)];
   if (gross === undefined || deduction === undefined || net === undefined) return undefined;
+  if (new Set([gross, deduction, net].flatMap((amount) => amount.period ?? [])).size > 1) return undefined;
   if (gross.unit !== deduction.unit || gross.unit !== net.unit) return undefined;
   const expected = gross.value - deduction.value;
   if (!Number.isSafeInteger(Math.round(gross.value * DECIMAL_BASE ** gross.decimals))) return undefined;
@@ -124,10 +150,10 @@ const labelCellsOf = (lines: readonly LabelledLine[]): NetCell[] => lines.map((l
 
 const labelledCells = (labels: readonly NetCell[], values: readonly NetCell[], words: NetWords): LabelledAmount[] =>
   labels.flatMap((label, column) => {
-    const role = roleOf(label.text, words);
+    const read = readLabel(label.text, words);
     const value = values[column];
-    const amount = role === undefined || value === undefined ? undefined : amountOf(value.text, value.start, noteOf(label.text), words);
-    return role === undefined || amount === undefined ? [] : [{ ...amount, role }];
+    const amount = read === undefined || value === undefined ? undefined : amountOf(value.text, value.start, noteOf(label.text), words);
+    return read === undefined || amount === undefined ? [] : [{ ...amount, ...read }];
   });
 
 /** A table whose header names the three columns: each body row of the same width is one scope. */

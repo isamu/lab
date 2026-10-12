@@ -26,6 +26,8 @@ const wordsOf = (doc: ProseDocument): NetWords => ({
     net: patternsOf(doc, "net-amount-label", "net"),
     taxable: patternsOf(doc, "net-amount-label", "taxable"),
   },
+  periods: (doc.lexicons["net-amount-period"] ?? []).filter((entry) => entry.position !== undefined),
+  periodLabels: { gross: patternsOf(doc, "net-amount-period", "gross") },
   magnitudes: patternsOf(doc, "amount-multiplier"),
   percentUnits: patternsOf(doc, "percent-unit"),
 });
