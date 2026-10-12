@@ -1,0 +1,9 @@
+# 行の名前の頭の数えた数（fact-label-counter）と、名前の残りをつなぐ語（「1箱の重さ」の の、「1人あたり料金」の あたり）（fact-conflict）。
+id: fact-label-count-link
+language: ja
+entries:
+  - pattern: の
+  - pattern: あたりの
+  - pattern: 当たりの
+  - pattern: あたり
+  - pattern: 当たり

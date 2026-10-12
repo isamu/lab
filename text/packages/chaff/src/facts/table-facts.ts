@@ -5,11 +5,12 @@ import { CELL_SEPARATOR } from "../structure/bare-numbers.ts";
 import type { FactValue } from "./fact-values.ts";
 import type { Fact } from "./labelled-facts.ts";
 import { withoutEdgeMarks } from "./trim-marks.ts";
+import { isCountLabelHead, type CountLabelWords } from "./count-labels.ts";
 
 /**
  * 表の升の値。名前は行の見出し（最初の列）で、列が三つ以上なら列の見出しも付ける（「大人 料金」）。
  * 升に値だけを書いたときだけ読む。「3,000円（税込）」のように条件を書いた升は読まない。
- * 行の見出しが値を含むか字を含まない表（日付の列から始まる日程表）は、行に名前が無いので読まない。
+ * 行の見出しが値を含むか字を含まない表（日付の列から始まる日程表）は、行に名前が無いので読まない。頭の数えた数（「1箱の重さ」の 1箱）は名前の一部。
  */
 export type Cell = Span & { readonly text: string };
 
@@ -63,11 +64,19 @@ const cellLabel = (rowLabel: string, column: string, headings: readonly string[]
   return headings.length > TWO_COLUMNS ? `${rowLabel} ${column}` : rowLabel;
 };
 
-const rowFacts = (row: Line, headings: readonly string[], values: readonly FactValue[], source: string, totals?: TotalColumns): Fact[] => {
+const rowFacts = (
+  row: Line,
+  headings: readonly string[],
+  values: readonly FactValue[],
+  source: string,
+  totals?: TotalColumns,
+  counts?: CountLabelWords,
+): Fact[] => {
   const [first, ...rest] = cellsOf(row);
   if (first === undefined) return [];
   const rowLabel = plain(first.text);
-  if (!LETTER.test(rowLabel) || values.some((value) => inside(first, value))) return [];
+  const isCountHead = (value: FactValue): boolean => counts !== undefined && isCountLabelHead(source, first, value, counts);
+  if (!LETTER.test(rowLabel) || values.some((value) => inside(first, value) && !isCountHead(value))) return [];
   const total = isTotalRow(rowLabel, totals);
   return rest.flatMap((cell, index) => {
     const value = cellValue(cell, values, source);
@@ -79,10 +88,10 @@ const rowFacts = (row: Line, headings: readonly string[], values: readonly FactV
 };
 
 /** 文書の表すべての升の値。 */
-export const tableFacts = (source: string, values: readonly FactValue[], totals?: TotalColumns): Fact[] =>
+export const tableFacts = (source: string, values: readonly FactValue[], totals?: TotalColumns, counts?: CountLabelWords): Fact[] =>
   tablesOf(linesOf(source)).flatMap((table) => {
     const headings = cellsOf(table.header).map((cell) => plain(cell.text));
-    return table.rows.flatMap((row) => rowFacts(row, headings, values, source, totals));
+    return table.rows.flatMap((row) => rowFacts(row, headings, values, source, totals, counts));
   });
 
 /** 文書の表すべての、本体の行の升（見出しの行を除く）。text は書いたまま。 */

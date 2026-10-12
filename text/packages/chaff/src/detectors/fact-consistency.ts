@@ -4,6 +4,7 @@ import { nameSpans } from "../compare/proper-nouns.ts";
 import { factValues, type FactValue } from "../facts/fact-values.ts";
 import { labelledFacts, type AttributePhrase, type Fact, type FactWords } from "../facts/labelled-facts.ts";
 import { tableFacts, type TotalColumns } from "../facts/table-facts.ts";
+import type { CountLabelWords } from "../facts/count-labels.ts";
 import { partsAt, scopedFacts, type ScopedFact } from "../facts/fact-scope.ts";
 import { conditionPairConflicts, type ChangeSentence, type ChangeWords, type ConditionWord, type PairConflict, type WordAt } from "../facts/condition-pairs.ts";
 import { scopeConflicts, summaryConflicts, type FactConflict } from "../facts/fact-conflicts.ts";
@@ -75,6 +76,11 @@ const totalColumnsOf = (doc: ProseDocument): TotalColumns => {
   return { labels, isTerm: (heading) => isTermName(heading, words) };
 };
 
+const countLabelWordsOf = (doc: ProseDocument): CountLabelWords => ({
+  counters: patternsOf(doc, "fact-label-counter"),
+  links: patternsOf(doc, "fact-label-count-link"),
+});
+
 const factsByDocument = new WeakMap<ProseDocument, readonly ScopedFact[]>();
 
 /** 期間の単位と、年数にもなる単位（「保証期間は1年」の 年。retention-unit の group が大きさ）。 */
@@ -128,7 +134,7 @@ const readFacts = (doc: ProseDocument, tree: StructureNode): ScopedFact[] => {
   const labelled = labelledFacts(doc.source, values, { ...factWordsOf(doc), qualifiers: qualifierWordsOf(doc) }).filter(
     (fact) => !termed.has(fact.value.start),
   );
-  const facts = withQualifiedKeys(doc, [...labelled, ...terms, ...tableFacts(doc.source, values, totalColumnsOf(doc))]);
+  const facts = withQualifiedKeys(doc, [...labelled, ...terms, ...tableFacts(doc.source, values, totalColumnsOf(doc), countLabelWordsOf(doc))]);
   return scopedFacts(facts, tree, doc.source, patternsOf(doc, "summary-heading"));
 };
 
