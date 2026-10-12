@@ -15,3 +15,11 @@ entries:
   - { pattern: 日額, group: day }
   - { pattern: 日額給付金, group: day }
   - { pattern: 1日あたり, group: day }
+  # 不動産の精算書の日割り（日割額 × 日数 = 精算金）。
+  - { pattern: 日割額, group: day }
+  - { pattern: 日割り額, group: day }
+  # 土地の面積あたりの単価。坪は㎡と別の単位なので、別の group にする。
+  - { pattern: ㎡単価, group: sqm }
+  - { pattern: 平米単価, group: sqm }
+  - { pattern: 単価（円/㎡）, group: sqm }
+  - { pattern: 坪単価, group: tsubo }

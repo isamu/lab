@@ -21,3 +21,7 @@ entries:
   - { pattern: 日数, group: day }
   - { pattern: 入院日数, group: day }
   - { pattern: 通院日数, group: day }
+  # 土地の明細の面積（㎡単価 × 面積 = 価格）。何の単位かは升の単位（rate-unit）が言う。面積は日額や時給とは掛けない。
+  - { pattern: 面積, group: area }
+  - { pattern: 土地面積, group: area }
+  - { pattern: 敷地面積, group: area }

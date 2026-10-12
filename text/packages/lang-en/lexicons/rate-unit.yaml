@@ -20,3 +20,13 @@ entries:
   - { pattern: miles, group: mile }
   - { pattern: mi, group: mile }
   - { pattern: km, group: km }
+  # Area units. A square foot and a square metre are different units: a price per square foot is not multiplied by m².
+  - { pattern: sq ft, group: sqft }
+  - { pattern: sq. ft., group: sqft }
+  - { pattern: sqft, group: sqft }
+  - { pattern: ft², group: sqft }
+  - { pattern: square feet, group: sqft }
+  - { pattern: m², group: sqm }
+  - { pattern: sq m, group: sqm }
+  - { pattern: square metres, group: sqm }
+  - { pattern: square meters, group: sqm }
