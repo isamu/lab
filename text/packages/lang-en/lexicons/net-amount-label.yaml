@@ -5,6 +5,8 @@
 # deductions are what is paid out, not what tax is figured on, so the taxable amount is not compared). A table heading or
 # a label that is only this word (a unit in brackets aside) is read. Taxable wages and Taxable pay are left out: on a
 # payslip they sit beside a Total deductions that includes the tax itself.
+# A deposit settlement (Deposit held, Total deductions, Refund) takes the same shape; a lease that names the deposit
+# only in a heading or a sentence has no three amounts and is not compared.
 id: net-amount-label
 language: en
 entries:
@@ -15,6 +17,8 @@ entries:
   - { pattern: Gross amount, group: gross }
   - { pattern: Total earnings, group: gross }
   - { pattern: Total earnings for the year, group: gross }
+  - { pattern: Deposit held, group: gross }
+  - { pattern: Security deposit, group: gross }
   - { pattern: Total deductions, group: deduction }
   - { pattern: Total deduction, group: deduction }
   - { pattern: Deductions total, group: deduction }
@@ -24,5 +28,8 @@ entries:
   - { pattern: Net earnings, group: net }
   - { pattern: Net amount, group: net }
   - { pattern: Take-home pay, group: net }
+  - { pattern: Refund, group: net }
+  - { pattern: Amount refunded, group: net }
+  - { pattern: Balance refunded, group: net }
   - { pattern: Taxable income, group: taxable }
   - { pattern: Taxable amount, group: taxable }

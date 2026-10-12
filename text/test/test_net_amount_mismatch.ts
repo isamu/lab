@@ -283,6 +283,53 @@ describe("net-amount-mismatch in documents", () => {
     assert.deepEqual(detected(blankNetLines, en), []);
   });
 
+  it("reports a deposit settlement whose refund is not the deposit minus the deductions", () => {
+    const table = (refund: string): string => ["| 預り敷金 | 差引合計 | 返金額 |", "| --- | --- | --- |", `| 150,000円 | 61,600円 | ${refund} |`].join("\n");
+    assert.deepEqual(found(table("84,800円"), ja), ["84,800円:88,400円"]);
+    assert.deepEqual(found(table("88,400円"), ja), []);
+    const lines = (refund: string): string => ["- 敷金：150,000円", "- 原状回復費用合計：61,600円", `- ご返金額：${refund}`].join("\n");
+    assert.deepEqual(found(lines("84,800円"), ja), ["84,800円:88,400円"]);
+    assert.deepEqual(found(lines("88,400円"), ja), []);
+    const rows = (refund: string): string =>
+      ["| Item | Amount |", "| --- | --- |", "| Security deposit | £1,600.00 |", "| Total deductions | £375.00 |", `| Amount refunded | ${refund} |`].join(
+        "\n",
+      );
+    assert.deepEqual(found(rows("£1,252.00"), en), ["£1,252.00:£1,225.00"]);
+    assert.deepEqual(found(rows("£1,225.00"), en), []);
+    const header = (refund: string): string =>
+      ["| Deposit held | Total deductions | Refund |", "| --- | --- | --- |", `| £1,600.00 | £375.00 | ${refund} |`].join("\n");
+    assert.deepEqual(found(header("£1,252.00"), en), ["£1,252.00:£1,225.00"]);
+    assert.deepEqual(found(header("£1,225.00"), en), []);
+  });
+
+  it("does not read a lease that names the deposit and its return in prose or as a heading", () => {
+    const lease = [
+      "## 敷金",
+      "",
+      "敷金は家賃の2か月分とし、144,000円とする。退去時に原状回復費用を差し引いて返還する。返還額は精算後に通知する。",
+      "",
+      "| 項目 | 金額 |",
+      "| --- | --- |",
+      "| 敷金 | 144,000円 |",
+      "| 月額賃料 | 72,000円 |",
+      "| 礼金 | 72,000円 |",
+    ].join("\n");
+    assert.deepEqual(found(lease, ja), []);
+    const terms = ["- 敷金：144,000円", "- 差引合計：精算時に確定", "- 返還額：敷金から差引合計を引いた額"].join("\n");
+    assert.deepEqual(found(terms, ja), []);
+    const englishLease = [
+      "## Security deposit",
+      "",
+      "The security deposit is £1,600.00. The refund is the deposit less any deductions, paid within 30 days.",
+      "",
+      "| Item | Amount |",
+      "| --- | --- |",
+      "| Security deposit | £1,600.00 |",
+      "| Monthly rent | £800.00 |",
+    ].join("\n");
+    assert.deepEqual(found(englishLease, en), []);
+  });
+
   it("allows one step of rounding in a table without currency marks", () => {
     const rounded = (net: string): string =>
       ["| Item | FY2025 |", "| --- | --- |", "| Gross amount | 1,200 |", "| Total deductions | 301 |", `| Net amount | ${net} |`].join("\n");
