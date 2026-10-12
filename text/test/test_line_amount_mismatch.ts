@@ -436,6 +436,8 @@ describe("line-amount-mismatch: 数量×単価が金額と合わない", () => {
     assert.deepEqual(findingsOf(rows("| 品番 | 規格 | 数量 | 単価 | 金額 |", ["| NB-1 | A5 | 4冊 | 180円 | 700円 |"])), []);
     assert.deepEqual(findingsOf(rows("| 品目 | 数量 | 単価 | 単価（税込） | 金額 |", ["| 設計 | 4 | 1,000円 | 1,100円 | 3,500円 |"])), []);
     assert.deepEqual(findingsOf(rows("| Item | Qty | Unit price | Tax rate (incl.) | Amount |", ["| Pen | 4 | $1.00 | 8% | $3.50 |"]), en), []);
+    assert.deepEqual(findingsOf(rows("| 品目 | 数量 | 単価 | 金額 | 金額のうち値引き |", ["| 設計 | 4 | 1,000円 | 3,500円 | 500円 |"])), []);
+    assert.deepEqual(findingsOf(rows("| Item | Pack of | Unit price | Pack price | Amount |", ["| Pen | 10 | $1.20 | $13.00 | $1.00 |"]), en), []);
   });
 
   it("単位を読む", () => {

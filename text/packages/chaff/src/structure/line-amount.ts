@@ -160,15 +160,22 @@ const quantityColumnsOf = (header: readonly Cell[], words: LineAmountWords): Omi
 
 const headingHolds = (cell: Cell, names: readonly string[]): boolean => names.some((name) => holds(plain(cell.text).toLowerCase(), name));
 
+/** A heading without its bracketed note: "1箱の価格（税込・10%）" and "Pack price (excl. tax)" are "1箱の価格" and "pack price". */
+const headingBase = (cell: Cell): string =>
+  plain(cell.text)
+    .replace(/\([^()]*\)/gu, "")
+    .trim()
+    .toLowerCase();
+
 /**
  * The columns whose numbers say nothing about the amount: an item's name (A5), and the amount again with tax — a heading
- * that says tax is included and names what the amount heading names (1箱の価格（税込） beside 1箱の価格（税抜）).
+ * that says tax is included and is the amount heading but for its bracketed note (1箱の価格（税込） beside 1箱の価格（税抜）).
+ * "金額のうち値引き" is no such heading, so its numbers still keep the row from being compared.
  */
 const ignoredColumnsOf = (header: readonly Cell[], amount: number, words: LineAmountWords): number[] => {
   const amountCell = header[amount];
-  const amountNames = [...words.amount, ...words.packPrice].filter((name) => amountCell !== undefined && headingHolds(amountCell, [name]));
   return header.flatMap((cell, index) => {
-    const restated = index !== amount && headingHolds(cell, words.taxIncluded) && headingHolds(cell, amountNames);
+    const restated = amountCell !== undefined && index !== amount && headingHolds(cell, words.taxIncluded) && headingBase(cell) === headingBase(amountCell);
     return restated || columnNamed([cell], words.itemName) === 0 ? [index] : [];
   });
 };
@@ -189,11 +196,14 @@ const tableOf = (header: readonly Cell[], words: LineAmountWords): Table | undef
 /**
  * A catalog's pack: count per pack × unit price = pack price. The count is no order quantity, so it is read only beside
  * a pack price heading; an order's quantity and amount columns beside them (数量 × 1箱の価格 = 金額) do not change the pack price.
+ * An amount column without an order quantity is not known to be an order's, so its numbers still keep the row out.
  */
 const packTableOf = (header: readonly Cell[], words: LineAmountWords): Table | undefined => {
   const [count, unitPrice, amount] = [columnNamed(header, words.packCount), columnNamed(header, words.unitPrice), columnNamed(header, words.packPrice)];
   if (!distinct([count, unitPrice, amount])) return undefined;
-  const order = header.flatMap((cell, index) => (kindOf(cell, words) !== undefined || columnNamed([cell], words.amount) === 0 ? [index] : []));
+  const quantities = header.flatMap((cell, index) => (kindOf(cell, words) === undefined ? [] : [index]));
+  const lineAmount = columnNamed(header, words.amount);
+  const order = quantities.length > 0 && lineAmount >= 0 ? [...quantities, lineAmount] : quantities;
   const priceUnit = headerUnit(header[unitPrice], words);
   const quantity: QuantityColumn = { index: count, kind: "quantity", unit: undefined, priceUnit };
   return { quantities: [quantity], unitPrice, amount, amountCounts: undefined, ignored: [...order, ...ignoredColumnsOf(header, amount, words)] };
