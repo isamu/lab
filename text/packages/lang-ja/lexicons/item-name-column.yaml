@@ -1,0 +1,9 @@
+# 明細や価格表で、品物の名前の列の見出し。名前に書いた数（A5、0.5mm）は値引きや税率ではないので、この列に数があっても
+# 数量 × 単価を比べる（line-amount-mismatch）。
+id: item-name-column
+language: ja
+entries:
+  - pattern: 品名
+  - pattern: 品目
+  - pattern: 商品名
+  - pattern: 製品名

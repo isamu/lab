@@ -1,0 +1,12 @@
+# 商品カタログや価格表で、1箱（1パック、1ケース）の価格の列の見出し。入数の列（pack-count-column）と単価の列と並ぶ表で、
+# 入数 × 単価と比べる（line-amount-mismatch）。
+id: pack-price-column
+language: ja
+entries:
+  - pattern: 1箱の価格
+  - pattern: 1箱の価格（税抜）
+  - pattern: 1箱あたりの価格
+  - pattern: 1ケースの価格
+  - pattern: 1ケースの価格（税抜）
+  - pattern: 箱単価
+  - pattern: ケース単価

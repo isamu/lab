@@ -1,0 +1,12 @@
+# Headings of the price of one pack (box, case) in a catalog or price list. Beside a count per pack column
+# (pack-count-column) and a unit price column, it is compared with count per pack × unit price (line-amount-mismatch).
+id: pack-price-column
+language: en
+entries:
+  - pattern: Pack price
+  - pattern: Pack price (excl. tax)
+  - pattern: Price per pack
+  - pattern: Box price
+  - pattern: Box price (excl. tax)
+  - pattern: Price per box
+  - pattern: Case price

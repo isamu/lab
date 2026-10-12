@@ -3,6 +3,7 @@ id: unit-price-column
 language: en
 entries:
   - pattern: Unit price
+  - pattern: Unit price (excl. tax)
   - pattern: Unit cost
   - pattern: Price
   - pattern: Rate per unit
