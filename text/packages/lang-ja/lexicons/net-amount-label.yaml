@@ -35,3 +35,14 @@ entries:
   - { pattern: 課税対象額, group: taxable }
   - { pattern: 課税所得, group: taxable }
   - { pattern: 課税所得金額, group: taxable }
+  # 不動産の売買代金の精算書：売買代金 − 手付金 − 融資金 = 残代金。deduction-part は差し引く額の一つ一つで、足して比べる
+  # （同じ所に deduction の合計があれば、合計だけを使う）。
+  # 中間金・内金も売買代金から差し引く額なので入れる（無いと、中間金を払った精算の残代金を合わないと読み違える）。
+  - { pattern: 売買代金, group: gross }
+  - { pattern: 手付金, group: deduction-part }
+  - { pattern: 中間金, group: deduction-part }
+  - { pattern: 内金, group: deduction-part }
+  - { pattern: 融資金, group: deduction-part }
+  - { pattern: 融資実行額, group: deduction-part }
+  - { pattern: 残代金, group: net }
+  - { pattern: 残金, group: net }

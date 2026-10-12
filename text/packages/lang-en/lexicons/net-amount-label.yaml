@@ -33,3 +33,17 @@ entries:
   - { pattern: Balance refunded, group: net }
   - { pattern: Taxable income, group: taxable }
   - { pattern: Taxable amount, group: taxable }
+  # A property settlement statement: Purchase price (Sale price) − Earnest money deposit − Loan proceeds = Balance due.
+  # A deduction-part is one of the deductions, and the parts are added up (a deduction total in the same place is used
+  # instead). The balance is often named with when it is paid (at settlement, at closing).
+  - { pattern: Purchase price, group: gross }
+  - { pattern: Sale price, group: gross }
+  - { pattern: Earnest money deposit, group: deduction-part }
+  - { pattern: Loan proceeds, group: deduction-part }
+  - { pattern: Balance due, group: net }
+  - { pattern: Balance due from buyer, group: net }
+  - { pattern: Balance due to seller, group: net }
+  - { pattern: Balance due from buyer at settlement, group: net }
+  - { pattern: Balance due to seller at settlement, group: net }
+  - { pattern: Balance due from buyer at closing, group: net }
+  - { pattern: Balance due to seller at closing, group: net }

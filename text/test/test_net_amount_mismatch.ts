@@ -28,6 +28,7 @@ const WORDS: NetWords = {
   labels: {
     gross: ["総支給額", "Gross pay"],
     deduction: ["控除合計", "Total deductions"],
+    "deduction-part": ["手付金", "融資金", "Loan proceeds"],
     net: ["差引支給額", "Net pay"],
     taxable: ["課税対象額", "Taxable income"],
   },
@@ -335,5 +336,101 @@ describe("net-amount-mismatch in documents", () => {
       ["| Item | FY2025 |", "| --- | --- |", "| Gross amount | 1,200 |", "| Total deductions | 301 |", `| Net amount | ${net} |`].join("\n");
     assert.deepEqual(detected(rounded("900"), en), []);
     assert.deepEqual(detected(rounded("896"), en), ["896:899"]);
+  });
+});
+
+describe("net-amount-mismatch with several deductions (a property settlement)", () => {
+  const part = (role: NetRole, text: string, label: string, start = 0): LabelledAmount[] => labelled(role, text, start).map((amount) => ({ ...amount, label }));
+
+  it("adds up the parts of the deductions, one value per label", () => {
+    const settled = (net: string): LabelledAmount[] => [
+      ...part("gross", "48,000,000円", "売買代金"),
+      ...part("deduction-part", "2,400,000円", "手付金", 20),
+      ...part("deduction-part", "38,000,000円", "融資金", 40),
+      ...part("net", net, "残代金", 60),
+    ];
+    assert.equal(netMismatch(settled("7,600,000円"), WORDS), undefined);
+    assert.deepEqual(netMismatch(settled("6,700,000円"), WORDS)?.values, { written: "6,700,000円", expected: "7,600,000円" });
+    const one = [...part("gross", "30,000,000円", "売買代金"), ...part("deduction-part", "3,000,000円", "手付金"), ...part("net", "27,000,000円", "残代金")];
+    assert.equal(netMismatch(one, WORDS), undefined);
+  });
+
+  it("adds parts that happen to be the sum of each other, and repeats of one part once", () => {
+    const parts = (net: string): LabelledAmount[] => [
+      ...part("gross", "100円", "売買代金"),
+      ...part("deduction-part", "10円", "手付金"),
+      ...part("deduction-part", "20円", "中間金"),
+      ...part("deduction-part", "30円", "融資金"),
+      ...part("deduction-part", "30円", "融資金"),
+      ...part("net", net, "残代金"),
+    ];
+    assert.equal(netMismatch(parts("40円"), WORDS), undefined);
+    assert.deepEqual(netMismatch(parts("70円"), WORDS)?.values, { written: "70円", expected: "40円" });
+  });
+
+  it("takes only the total when a total is written beside its parts", () => {
+    const withTotal = (net: string): LabelledAmount[] => [
+      ...part("gross", "100,000円", "敷金"),
+      ...part("deduction-part", "30,000円", "手付金"),
+      ...part("deduction", "40,000円", "控除合計"),
+      ...part("deduction", "40,000円", "差引合計"),
+      ...part("net", net, "返金額"),
+    ];
+    assert.equal(netMismatch(withTotal("60,000円"), WORDS), undefined);
+    assert.deepEqual(netMismatch(withTotal("20,000円"), WORDS)?.values, { written: "20,000円", expected: "60,000円" });
+  });
+
+  it("is silent when one part has two values, the parts differ in unit, or there is no deduction", () => {
+    const twice = [
+      ...part("gross", "100円", "a"),
+      ...part("deduction-part", "10円", "b"),
+      ...part("deduction-part", "20円", "b"),
+      ...part("deduction-part", "5円", "c"),
+      ...part("net", "1円", "d"),
+    ];
+    assert.equal(netMismatch(twice, WORDS), undefined);
+    const units = [...part("gross", "100円", "a"), ...part("deduction-part", "10円", "b"), ...part("deduction-part", "$5", "c"), ...part("net", "1円", "d")];
+    assert.equal(netMismatch(units, WORDS), undefined);
+    assert.equal(netMismatch([...part("gross", "100円", "a"), ...part("net", "1円", "d")], WORDS), undefined);
+  });
+
+  it("keeps a note naming a magnitude or a currency as the unit, and drops one that describes a marked amount", () => {
+    const plain = amountOf("48,000,000円", 0, "", WORDS)?.unit;
+    assert.equal(amountOf("2,400,000円", 0, "（契約時にお支払い済み）", WORDS)?.unit, plain);
+    assert.equal(amountOf("2,400,000円", 0, "（契約時100万円支払済）", WORDS)?.unit, plain);
+    assert.notEqual(amountOf("$12", 0, "($ million)", WORDS)?.unit, amountOf("$12", 0, "", WORDS)?.unit);
+    assert.notEqual(amountOf("$12", 0, "(USD)", WORDS)?.unit, amountOf("$12", 0, "(CAD)", WORDS)?.unit);
+    assert.notEqual(amountOf("1,200", 0, "（千円）", WORDS)?.unit, amountOf("1,200", 0, "", WORDS)?.unit);
+  });
+
+  const jaTable = (net: string): string =>
+    [
+      "| 項目 | 金額 |",
+      "| --- | --- |",
+      "| 売買代金 | 30,000,000円 |",
+      "| 手付金（契約時にお支払い済み） | 1,500,000円 |",
+      "| 融資金（住宅ローン） | 25,000,000円 |",
+      `| 残代金（決済日にお支払い） | ${net} |`,
+    ].join("\n");
+  const enTable = (net: string): string =>
+    [
+      "| Item | Amount |",
+      "| --- | --- |",
+      "| Sale price | $250,000.00 |",
+      "| Earnest money deposit (received at contract) | $5,000.00 |",
+      "| Loan proceeds (from the buyer's lender) | $200,000.00 |",
+      `| Balance due to seller at settlement | ${net} |`,
+    ].join("\n");
+
+  it("reports a settlement table whose balance is not the price minus the deductions", () => {
+    assert.deepEqual(found(jaTable("3,050,000円"), ja), ["3,050,000円:3,500,000円"]);
+    assert.deepEqual(found(enTable("$54,000.00"), en), ["$54,000.00:$45,000.00"]);
+  });
+
+  it("is silent on a settlement that adds up, an interim payment included", () => {
+    assert.deepEqual(found(jaTable("3,500,000円"), ja), []);
+    assert.deepEqual(found(enTable("$45,000.00"), en), []);
+    const lines = ["- 売買代金：50,000,000円", "- 手付金：5,000,000円", "- 中間金：10,000,000円", "- 残代金：35,000,000円"].join("\n");
+    assert.deepEqual(found(lines, ja), []);
   });
 });
