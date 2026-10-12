@@ -32,6 +32,13 @@ entries:
   - { pattern: 返金額, group: net }
   - { pattern: ご返金額, group: net }
   - { pattern: 返還額, group: net }
+  # 自動車保険などの保険金の精算（損害額 − 免責金額 = お支払額）。自己負担額は医療費の窓口負担にも使うので入れない。
+  - { pattern: 損害額, group: gross }
+  - { pattern: 損害認定額, group: gross }
+  - { pattern: 免責金額, group: deduction }
+  - { pattern: お支払額, group: net }
+  - { pattern: 支払保険金, group: net }
+  - { pattern: お支払保険金, group: net }
   - { pattern: 課税対象額, group: taxable }
   - { pattern: 課税所得, group: taxable }
   - { pattern: 課税所得金額, group: taxable }
