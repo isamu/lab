@@ -1053,3 +1053,50 @@ describe("due-before-issue (order): 車の整備と次の点検", () => {
     assert.deepEqual(findingsOf(labelledDoc("Report", ["Service date: September 26, 2026", "Report date: September 1, 2026"]), en), []);
   });
 });
+
+describe("due-before-issue (order): サービスの利用期間", () => {
+  it("利用開始日より前の利用終了日を、終了日の行で指す", () => {
+    const bill = labelledDoc("ご利用料金のお知らせ", ["ご利用開始日：2026年9月1日", "ご利用終了日：2025年9月30日"]);
+    assert.deepEqual(findingsOf(bill), ["「ご利用終了日」（2025年9月30日）が、「ご利用開始日」（2026年9月1日）より前です"]);
+    assert.deepEqual(ruleLines(bill), [5]);
+    const billEn = labelledDoc("Monthly Statement", ["Service start date: September 1, 2026", "Service end date: September 30, 2025"]);
+    assert.deepEqual(findingsOf(billEn, en), ['"Service end date" September 30, 2025 is before "Service start date" September 1, 2026']);
+    assert.deepEqual(ruleLines(billEn, en), [5]);
+  });
+
+  it("利用開始日、契約開始日、サービス開始日と、それぞれの終了日、Start of service と Contract start date も組む", () => {
+    assert.deepEqual(findingsOf(labelledDoc("利用明細", ["利用開始日：2026年4月1日", "利用終了日：2026年3月31日"])), [
+      "「利用終了日」（2026年3月31日）が、「利用開始日」（2026年4月1日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("保守契約書", ["契約開始日：2026年4月1日", "契約終了日：2025年3月31日"])), [
+      "「契約終了日」（2025年3月31日）が、「契約開始日」（2026年4月1日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("ご案内", ["サービス開始日：2026年4月1日", "サービス終了日：2026年1月31日"])), [
+      "「サービス終了日」（2026年1月31日）が、「サービス開始日」（2026年4月1日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("Statement", ["Start of service: April 1, 2026", "End of service: January 31, 2026"]), en), [
+      '"End of service" January 31, 2026 is before "Start of service" April 1, 2026',
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("Maintenance Agreement", ["Contract start date: April 1, 2026", "Contract end date: March 31, 2025"]), en), [
+      '"Contract end date" March 31, 2025 is before "Contract start date" April 1, 2026',
+    ]);
+  });
+
+  it("順の合った日付、同じ日、年の無い日付は言わない", () => {
+    assert.deepEqual(findingsOf(labelledDoc("保守契約書", ["契約開始日：2026年4月1日", "契約終了日：2027年3月31日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("利用明細", ["ご利用開始日：2026年9月1日", "ご利用終了日：2026年9月1日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("利用明細", ["ご利用開始日：9月1日", "ご利用終了日：8月31日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Monthly Statement", ["Service start date: September 1, 2026", "Service end date: September 30, 2026"]), en), []);
+    assert.deepEqual(findingsOf(labelledDoc("Monthly Statement", ["Service start date: September 1", "Service end date: August 31"]), en), []);
+  });
+
+  it("開始日や終了日だけの語は組まない。工程表や作業の記録も使う", () => {
+    assert.deepEqual(findingsOf(labelledDoc("工程表", ["開始日：2026年9月1日", "終了日：2026年8月31日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Timesheet", ["Start date: September 1, 2026", "End date: August 31, 2026"]), en), []);
+  });
+
+  it("別の組の語どうしは比べない（契約日と契約終了日、整備の Service date と Service end date）", () => {
+    assert.deepEqual(findingsOf(labelledDoc("ご案内", ["契約日：2026年9月1日", "契約終了日：2026年8月31日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Record", ["Service date: September 26, 2026", "Service end date: September 1, 2026"]), en), []);
+  });
+});
