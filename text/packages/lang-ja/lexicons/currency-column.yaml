@@ -1,0 +1,13 @@
+# 表の列の見出しで、その表が通貨を書き分ける・換算する表だと分かる語（currency-column-mix）。通貨の列や為替レートの列がある表は、
+# 一つの列に違う通貨の金額があっても書き手が分かって並べたものなので言わない。字面どおりに照らす。
+id: currency-column
+language: ja
+entries:
+  - pattern: 通貨
+  - pattern: 為替
+  - pattern: レート
+  - pattern: 換算
+  - pattern: 外貨
+  - pattern: Currency
+  - pattern: exchange rate
+  - pattern: FX

@@ -1,0 +1,70 @@
+id: currency-column-mix
+layer: L3
+status: stable
+how_to_find: currency-column-mix
+# Which currency an amount is in is the language's currency-notation (¥ and 円 are one currency); currency-column names the
+# heading words of a column of currencies or exchange rates.
+word_list: currency-column
+extra_word_lists: [currency-notation, amount-multiplier]
+severity: warning
+
+name:
+  ja: 表の一つの列に、違う通貨の金額が一つだけある
+  en: One amount in another currency in a column of amounts
+
+why:
+  ja: 円の金額が並ぶ列に一つだけ「USD 45」があると、読み手はその行だけ通貨が違うことに気づかずに足したり比べたりします。別の見積書や外国の請求書から行を写したとき、換算するのを忘れたときに起きます。表の列ごとに、金額の通貨（¥ と 円 は同じ通貨と読みます）を数え、二つ以上の升が同じ通貨で、ほかの通貨の升がちょうど一つのとき、その升を指します。
+  en: When one cell of a column of dollar amounts reads "¥12,500", the reader adds or compares it with the others without noticing it is in another currency. It happens when a row is copied from another quotation or a foreign invoice, or when an amount is not converted. For each column of a table, the currencies of its amounts are counted (¥ and yen are one currency); when at least two cells are in one currency and exactly one cell is in another, that cell is pointed out.
+
+message:
+  ja: 「{item}」の「{written}」だけが、ほかの升（「{usual}」など）と違う通貨で書かれています
+  en: '"{item}" is written "{written}", in another currency than the rest of its column ("{usual}")'
+
+how_to_fix:
+  ja: 列のほかの金額と同じ通貨に換算して書くか、本当に違う通貨で払うなら、行の名前か列の見出しに通貨を書いてください（「海上保険料（USD）」）。
+  en: Convert the amount to the column's currency, or, if it really is paid in another currency, name the currency in the row's label or the column's heading ("Marine insurance (JPY)").
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 円の金額が並ぶ列に一つだけある「USD 45」のような、違う通貨の升
+  en: A lone amount in another currency in a column, such as ¥12,500 among dollars
+example:
+  ja:
+    before: |
+      | 費目 | 金額 |
+      | --- | --- |
+      | 海上運賃 | 48,000円 |
+      | 海上保険料 | USD 45 |
+      | 書類作成費 | 3,000円 |
+    after: |
+      | 費目 | 金額 |
+      | --- | --- |
+      | 海上運賃 | 48,000円 |
+      | 海上保険料 | 6,500円 |
+      | 書類作成費 | 3,000円 |
+  en:
+    before: |
+      | Charge | Amount |
+      | --- | --- |
+      | Ocean freight | $640.00 |
+      | Marine insurance | ¥12,500 |
+      | Documentation fee | $40.00 |
+    after: |
+      | Charge | Amount |
+      | --- | --- |
+      | Ocean freight | $640.00 |
+      | Marine insurance | $85.00 |
+      | Documentation fee | $40.00 |
+
+not_flagged:
+  ja: 通貨の列や為替レートの列（通貨、為替、レート、換算、外貨）がある表、見出しに二つの通貨を書いた列（金額（円/USD））、一つの升に二つの通貨を書いた升（¥12,500（USD 85））がある列は言いません。同じ通貨の升が二つ未満の列、ほかの通貨の升が二つ以上ある列、三つ以上の通貨が並ぶ列、行の名前の括弧にその通貨を書いた行（送金手数料（USD））、通貨の付かない数だけの列も言いません。¥ が円か人民元かは見分けません。
+  en: A table with a column of currencies or of exchange rates (Currency, Exchange rate, FX, converted, equivalent), a column whose heading names two currencies ("Amount (JPY/USD)"), and a column with a cell that gives two currencies ("¥12,500 (USD 85)") are not reported. Neither is a column with fewer than two cells in one currency, with two or more cells in another, or with three currencies or more, a row whose label names that currency in brackets ("Transfer fee (JPY)"), or a column of bare figures with no currency. Whether ¥ is yen or yuan is not told apart.
+level_meaning:
+  ja: 表の一つの列に違う通貨の金額が一つだけあるとき指摘
+  en: reported when one amount of a column is in another currency

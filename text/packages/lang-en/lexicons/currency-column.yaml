@@ -1,0 +1,13 @@
+# Heading words of a column that make a table one that names or converts currencies (currency-column-mix). A table with a
+# column of currencies or of exchange rates holds amounts in several currencies on purpose, so a column of it is not reported.
+# Latin words are matched as whole words.
+id: currency-column
+language: en
+entries:
+  - pattern: currency
+  - pattern: currencies
+  - pattern: exchange rate
+  - pattern: FX
+  - pattern: converted
+  - pattern: conversion
+  - pattern: equivalent
