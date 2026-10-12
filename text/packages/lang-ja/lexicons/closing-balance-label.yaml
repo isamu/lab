@@ -2,6 +2,7 @@
 # inflow（入ってきた額の合計）、outflow（出ていった額の合計）、closing（期間の終わりの残高）。
 # 同じ表か同じ節に四つの名前が一つずつあり、それぞれに金額があるとき、closing が opening + inflow − outflow と合うかを比べる。
 # 表の見出しや項目、名前と金額だけの行の名前がこの語だけ（単位の括弧は除く）のときに読む。
+# ポイントの明細（獲得・利用）と会計報告の繰越金（収入・支出）も同じ足し引き。単位が違う金額（ポイントと円）は比べない。
 # 「お預入れ」「入金」だけの語は取引の表の列の見出しなので入れない（running-balance-mismatch が行ごとに読む）。
 id: closing-balance-label
 language: ja
@@ -13,21 +14,35 @@ entries:
   - { pattern: 期首残高, group: opening }
   - { pattern: 前期繰越, group: opening }
   - { pattern: 前期繰越残高, group: opening }
+  - { pattern: 前月末の残高, group: opening }
+  - { pattern: 前回の残高, group: opening }
+  - { pattern: 前年度繰越金, group: opening }
   - { pattern: 入金合計, group: inflow }
   - { pattern: ご入金合計, group: inflow }
   - { pattern: 入金額合計, group: inflow }
   - { pattern: お預入れ合計, group: inflow }
   - { pattern: お預け入れ合計, group: inflow }
   - { pattern: 預入合計, group: inflow }
+  - { pattern: 今月の獲得ポイント, group: inflow }
+  - { pattern: 今回の獲得ポイント, group: inflow }
+  - { pattern: 今回の獲得, group: inflow }
+  - { pattern: 本年度の収入, group: inflow }
   - { pattern: 出金合計, group: outflow }
   - { pattern: ご出金合計, group: outflow }
   - { pattern: 出金額合計, group: outflow }
   - { pattern: お引出し合計, group: outflow }
   - { pattern: お引き出し合計, group: outflow }
   - { pattern: 払出合計, group: outflow }
+  - { pattern: 今月の利用ポイント, group: outflow }
+  - { pattern: 今回の利用ポイント, group: outflow }
+  - { pattern: 今回の利用, group: outflow }
+  - { pattern: 本年度の支出, group: outflow }
   - { pattern: 当月末残高, group: closing }
   - { pattern: 当月残高, group: closing }
   - { pattern: 今回残高, group: closing }
   - { pattern: 期末残高, group: closing }
   - { pattern: 次月繰越, group: closing }
   - { pattern: 次期繰越, group: closing }
+  - { pattern: 今月末の残高, group: closing }
+  - { pattern: 今回の残高, group: closing }
+  - { pattern: 次年度繰越金, group: closing }
