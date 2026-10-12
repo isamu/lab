@@ -76,3 +76,12 @@ entries:
   - { pattern: 車両ナンバーは, group: vehicle }
   - { pattern: ナンバープレート, group: vehicle }
   - { pattern: ナンバープレートは, group: vehicle }
+  # 会員の番号。お客様番号は店が客に付ける番号で、会員番号と別の番号になり得るので別の group にする。
+  - { pattern: 会員番号, group: member }
+  - { pattern: 会員番号は, group: member }
+  - { pattern: 会員No., group: member }
+  - { pattern: 会員No, group: member }
+  - { pattern: 会員ID, group: member }
+  - { pattern: 会員IDは, group: member }
+  - { pattern: お客様番号, group: customer }
+  - { pattern: お客様番号は, group: customer }
