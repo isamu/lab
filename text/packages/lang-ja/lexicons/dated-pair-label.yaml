@@ -127,3 +127,15 @@ entries:
   - { pattern: "対象期間", group: tax-statement, position: before }
   - { pattern: "退職日", group: tax-statement, position: before }
   - { pattern: "交付日", group: tax-statement, position: after }
+  # 船積みの書類（梱包明細書、インボイス）。到着は船積みより前に来ない。予定の日（到着予定日）は後に来る側にだけ置く。
+  # 「請求日」とは組まない。インボイスの請求日は、船積みの前にも後にも来る。
+  - { pattern: "船積日", group: shipping, position: before }
+  - { pattern: "到着日", group: shipping, position: after }
+  - { pattern: "到着予定日", group: shipping, position: after }
+  # 診療明細書や領収書は、診療日より前に発行しない。発行日は transcript-issue にもあるが、組ごとに比べる。
+  # 「受診日」は入れない。受診券は受診日より前に発行する（checkup-report が「発行日」を入れないのと同じ理由）。
+  - { pattern: "診療日", group: medical-visit, position: before }
+  - { pattern: "発行日", group: medical-visit, position: after }
+  # 入院の明細や証明書。退院は入院より前に来ない。同じ日（日帰り）は指さない。
+  - { pattern: "入院日", group: hospital-stay, position: before }
+  - { pattern: "退院日", group: hospital-stay, position: after }

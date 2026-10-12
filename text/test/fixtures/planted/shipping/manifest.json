@@ -1,5 +1,5 @@
 {
-  "note": "Self-written packing lists and commercial invoices (梱包明細書・インボイス / packing list, commercial invoice) for a made-up exporter and consignee: a packing list with the net and gross weight of each carton, and the commercial invoice for the same shipment with a second table of other charges. They are plain documents written for this set, not an official customs form. Each is in a clean version and a planted one that differs only on the lines below. They run as business/proposal, the genre the invoices of the business set run as: no genre is made for shipping documents. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: net-over-gross (a net weight larger than the gross weight on the same row) and currency-column-mix (an amount in another currency among the amounts of one column; table-unit-mix compares scales such as thousands and millions, not currencies). A shipment date before the invoice date and an arrival date before the shipment date are named for due-before-issue, which compares a pair of labelled dates and reports the one written second; the planted date is the second in both, so no pairedLine is needed. The number of cartons stated two ways (the table's total row against a sentence in the next section) is named for fact-conflict. The carton-weight plant changes the gross total, and the net-over-gross plant changes the net weight of one carton, not its gross weight, so the gross weights the total is compared with do not move. The line-total plant changes the unit price, not the amount, so the amounts the invoice total is compared with do not move; the currency plant is in the table of other charges, which has no total. Each plant was also run alone on its clean document, so no plant depends on another. yarn planted shipping scores them; expected.json is the committed score.",
+  "note": "Self-written packing lists and commercial invoices (梱包明細書・インボイス / packing list, commercial invoice) for a made-up exporter and consignee: a packing list with the net and gross weight of each carton, and the commercial invoice for the same shipment with a second table of other charges. They are plain documents written for this set, not an official customs form. Each is in a clean version and a planted one that differs only on the lines below. They run as business/proposal, the genre the invoices of the business set run as: no genre is made for shipping documents. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: net-over-gross (a net weight larger than the gross weight on the same row) and currency-column-mix (an amount in another currency among the amounts of one column; table-unit-mix compares scales such as thousands and millions, not currencies). An arrival date before the shipment date (on the packing list) and a shipment date after the estimated arrival (on the invoice) are named for due-before-issue, which compares a pair of labelled dates and reports the one written second. On the packing list the planted arrival date is the second; on the invoice the planted shipment date is the first, so the estimated arrival below it is named as pairedLine. The invoice date is not paired with the shipment date: an invoice may be dated before or after shipment, so a shipment date before the invoice date is not a mistake a reader of the document alone can prove. The number of cartons stated two ways (the table's total row against a sentence in the next section) is named for fact-conflict. The carton-weight plant changes the gross total, and the net-over-gross plant changes the net weight of one carton, not its gross weight, so the gross weights the total is compared with do not move. The line-total plant changes the unit price, not the amount, so the amounts the invoice total is compared with do not move; the currency plant is in the table of other charges, which has no total. Each plant was also run alone on its clean document, so no plant depends on another. yarn planted shipping scores them; expected.json is the committed score.",
   "documents": [
     {
       "id": "ja/packing-list",
@@ -60,44 +60,45 @@
       "planted": "ja/invoice.planted.md",
       "mistakes": [
         {
-          "kind": "shipment-before-invoice",
+          "kind": "shipment-after-arrival",
           "rule": "due-before-issue",
           "line": 11,
+          "pairedLine": 17,
           "clean": "船積日：2026年10月9日",
-          "planted": "船積日：2026年10月1日"
+          "planted": "船積日：2026年10月21日"
         },
         {
           "kind": "line-total",
           "rule": "line-amount-mismatch",
-          "line": 24,
+          "line": 26,
           "clean": "60個 | 2,400円",
           "planted": "60個 | 2,500円"
         },
         {
           "kind": "invoice-total",
           "rule": "total-mismatch",
-          "line": 26,
+          "line": 28,
           "clean": "345,000円",
           "planted": "354,000円"
         },
         {
           "kind": "currency-mix",
           "rule": "currency-column-mix",
-          "line": 35,
+          "line": 37,
           "clean": "| 海上保険料 | 6,500円 |",
           "planted": "| 海上保険料 | USD 45 |"
         },
         {
           "kind": "invoice-number",
           "rule": "reference-number-variant",
-          "line": 40,
+          "line": 42,
           "clean": "インボイス番号INV-58204をお書き添え",
           "planted": "インボイス番号INV-58024をお書き添え"
         },
         {
           "kind": "consignee-name",
           "rule": "name-variant",
-          "line": 42,
+          "line": 44,
           "clean": "本インボイスの品は、サウスベイ・インポート社",
           "planted": "本インボイスの品は、サウスベイ・インポーツ社"
         }
@@ -162,44 +163,45 @@
       "planted": "en/invoice.planted.md",
       "mistakes": [
         {
-          "kind": "shipment-before-invoice",
+          "kind": "shipment-after-arrival",
           "rule": "due-before-issue",
           "line": 11,
+          "pairedLine": 17,
           "clean": "On-board date: October 9, 2026",
-          "planted": "On-board date: October 1, 2026"
+          "planted": "On-board date: October 29, 2026"
         },
         {
           "kind": "line-total",
           "rule": "line-amount-mismatch",
-          "line": 24,
+          "line": 26,
           "clean": "10 pcs | $310.00",
           "planted": "10 pcs | $320.00"
         },
         {
           "kind": "invoice-total",
           "rule": "total-mismatch",
-          "line": 26,
+          "line": 28,
           "clean": "$7,220.00",
           "planted": "$7,202.00"
         },
         {
           "kind": "currency-mix",
           "rule": "currency-column-mix",
-          "line": 35,
+          "line": 37,
           "clean": "| Marine insurance | $85.00 |",
           "planted": "| Marine insurance | ¥12,500 |"
         },
         {
           "kind": "invoice-number",
           "rule": "reference-number-variant",
-          "line": 40,
+          "line": 42,
           "clean": "invoice number KI-40731 with",
           "planted": "invoice number KI-47031 with"
         },
         {
           "kind": "consignee-name",
           "rule": "name-variant",
-          "line": 42,
+          "line": 44,
           "clean": "shipped to Marlow Bay Imports Ltd.",
           "planted": "shipped to Marlow Bay Import Ltd."
         }

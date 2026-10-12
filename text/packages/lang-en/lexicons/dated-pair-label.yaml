@@ -125,3 +125,17 @@ entries:
   - { pattern: "Date of leaving", group: tax-statement, position: before }
   - { pattern: "Issue date", group: tax-statement, position: after }
   - { pattern: "Date of issue", group: tax-statement, position: after }
+  # A packing list or a commercial invoice: the goods do not arrive before they are shipped. An estimated date (Estimated
+  # arrival, ETA) is only ever the later side. The invoice date is left out: an invoice is dated before or after shipment.
+  - { pattern: "On-board date", group: shipping, position: before }
+  - { pattern: "Shipment date", group: shipping, position: before }
+  - { pattern: "Arrival date", group: shipping, position: after }
+  - { pattern: "Estimated arrival", group: shipping, position: after }
+  - { pattern: "ETA", group: shipping, position: after }
+  # An itemized medical bill or receipt is not issued before the visit it bills.
+  - { pattern: "Date of visit", group: medical-visit, position: before }
+  - { pattern: "Date issued", group: medical-visit, position: after }
+  # A hospital stay: the discharge does not come before the admission. A same-day discharge is not reported. "Date of
+  # admission" is in transcript too (a school's); each group is compared on its own.
+  - { pattern: "Date of admission", group: hospital-stay, position: before }
+  - { pattern: "Date of discharge", group: hospital-stay, position: after }
