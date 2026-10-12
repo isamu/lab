@@ -10,6 +10,8 @@ import { isListedTotal, isPeriodTotalLine, isTotalLikeLine, isTotalLine } from "
 import { proseTotalMismatches } from "../structure/prose-total.ts";
 import { countedAmounts, type SummedCounter } from "../structure/counted-amounts.ts";
 import { measuredAmounts, type MeasureMarks, type SummedMeasure } from "../structure/measured-amounts.ts";
+import { withCompoundHours } from "../structure/compound-hours.ts";
+import { timeLengths } from "../derived/time-lengths.ts";
 import { measureUnitsOf } from "../facts/measure-units.ts";
 import { rangeFrameOf, reversedRanges, type DatedSpan, type RangeWords } from "../structure/date-range.ts";
 import { afterLabel } from "../structure/stated-period.ts";
@@ -206,9 +208,30 @@ const measureMarksOf = (doc: ProseDocument): MeasureMarks => ({
   perMarks: patternsOf(doc, "measure-per-mark"),
 });
 
-/** 表と箇条書きの合計で足す数量。金額と助数詞の数に、単位の付いた量（300 mg、0.5 g）を加える。 */
+const SECONDS_PER_HOUR = 3600;
+const SECONDS_PER_MINUTE = 60;
+
+const timeUnitsOf = (doc: ProseDocument, seconds: number): string[] =>
+  (doc.lexicons["unit-time"] ?? []).filter((entry) => entry.weight === seconds).map((entry) => entry.pattern);
+
+/** 時間と分を続けて書いた長さ（9時間30分）を一つの量にする。単位は unit-time、半（7時間半）は length-half から取る。 */
+const compoundHoursOf = (doc: ProseDocument, amounts: readonly Amount[]): Amount[] => {
+  const hourUnits = timeUnitsOf(doc, SECONDS_PER_HOUR);
+  const lengths = timeLengths(doc.source, {
+    hourUnits,
+    minuteUnits: timeUnitsOf(doc, SECONDS_PER_MINUTE),
+    halves: patternsOf(doc, "length-half"),
+    numberWords: [],
+  });
+  return withCompoundHours(amounts, lengths, hourUnits);
+};
+
+/** 表と箇条書きの合計で足す数量。金額と助数詞の数に、単位の付いた量（300 mg、0.5 g）を加え、時間と分の長さを一つにする。 */
 const lineAmountsOf = (doc: ProseDocument, amounts: readonly Amount[]): Amount[] =>
-  [...amounts, ...measuredAmounts(doc.source, summedMeasuresOf(doc), measureMarksOf(doc), amounts)].toSorted((left, right) => left.offset - right.offset);
+  compoundHoursOf(
+    doc,
+    [...amounts, ...measuredAmounts(doc.source, summedMeasuresOf(doc), measureMarksOf(doc), amounts)].toSorted((left, right) => left.offset - right.offset),
+  );
 
 /** 合計の行と内訳の行、文の中の合計と内訳。同じ金額は一度だけ言う。単位の付いた量は、表と箇条書きの合計だけで足す。 */
 const totalIssues = (doc: ProseDocument, tree: NonNullable<ProseDocument["structure"]>): StructureIssue[] => {
