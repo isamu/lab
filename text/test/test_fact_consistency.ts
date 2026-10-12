@@ -115,6 +115,9 @@ describe("fact-conflict", () => {
     assert.deepEqual(conflictEn("The invoice showed $300.", "", "The invoice showed $350."), []);
     assert.deepEqual(conflictEn("Each pupil read 3 chapters.", "", "Each pupil read 4 chapters."), []);
     assert.deepEqual(conflictEn("The range is 300 km when fully charged.", "", "The range is 250 km."), []);
+    assert.deepEqual(conflictEn("The chart showed 5 kg.", "", "The chart showed 6 kg."), []);
+    assert.deepEqual(conflictEn("The fuel gauge showed 40 L before refuelling.", "", "The fuel gauge showed 10 L."), []);
+    assert.deepEqual(conflictEn("The fuel gauge showed 40 L.", "", "The fuel gauge showed 10 L."), ["The fuel gauge:10 L≠40 L"]);
   });
 
   it("入庫時の is the same reading as the table's; 出庫時の and 前回点検時の are other readings (ja)", () => {

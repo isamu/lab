@@ -30,11 +30,11 @@ export type FactWords = {
   readonly valueLeads?: readonly string[];
   /** 名前に条件を付ける型（（*）、*の、for *）。条件の付いた名前は、名前と条件をそれぞれ一つの名前の長さで測る。 */
   readonly qualifiers?: QualifierWords;
-  /** 計器の読みを言う動詞（read, shows）と、読みのあとに置ける時の節の頭（when, after）。単位の量の値だけに使う。 */
+  /** 計器の読みを言う動詞（read, shows）、計器の名前（odometer, meter）、読みのあとに置ける時の節の頭（when）。 */
   readonly readings?: ReadingWords;
 };
 
-export type ReadingWords = { readonly verbs: readonly string[]; readonly clauses: readonly string[] };
+export type ReadingWords = { readonly verbs: readonly string[]; readonly gauges: readonly string[]; readonly clauses: readonly string[] };
 
 /** approximate: 値の前に目安の語（約、about）があった。table: 表の升の値。 */
 export type Fact = { readonly label: string; readonly key: string; readonly value: FactValue; readonly approximate?: boolean; readonly table?: boolean };
@@ -196,12 +196,19 @@ const startsClause = (source: string, end: number, clauses: readonly string[]): 
   return /^\s/u.test(after) && clauses.some((clause) => after.trimStart().startsWith(`${clause.toLowerCase()} `));
 };
 
+/** 名前の最後の語が計器か（odometer、fuel gauge）。"The chart showed 5 kg" の chart は計器ではない。 */
+const namesGauge = (key: string, gauges: readonly string[]): boolean => {
+  const last = wordsOf(key).at(-1);
+  return last !== undefined && gauges.some((gauge) => gauge.toLowerCase() === last);
+};
+
 /** 計器が示した量（"The odometer read 45,210 km."）。読む動詞を区切りにし、値の後ろの時の節も値の終わりにする。 */
 const readingFact = (source: string, value: FactValue, words: FactWords): Fact | undefined => {
   const readings = words.readings;
   if (readings === undefined || !isMeasured(value)) return undefined;
   if (!endsAfter(source, value, words) && !startsClause(source, value.end, readings.clauses)) return undefined;
-  return labelledFact(source, value, { ...words, separators: readings.verbs });
+  const fact = labelledFact(source, value, { ...words, separators: readings.verbs });
+  return fact !== undefined && namesGauge(fact.key, readings.gauges) ? fact : undefined;
 };
 
 /** 文に書いた名前付きの値。値ごとに、属性の言い回しか、区切りの前の名前を探す。 */

@@ -1,5 +1,6 @@
 # Words that start a clause after a gauge's reading (fact-conflict): "The odometer read 45,210 km when the car came in."
 # The clause says when the reading was taken, so the reading still ends at its unit. Used only after a fact-reading-verb.
+# Not before / after: "40 L before refuelling" and "10 L after refuelling" are two readings, not one.
 id: fact-reading-clause
 language: en
 entries:
@@ -7,5 +8,3 @@ entries:
   - pattern: while
   - pattern: as
   - pattern: because
-  - pattern: before
-  - pattern: after
