@@ -1,0 +1,23 @@
+# The headings of a timesheet's columns (time-range-reversed). A column whose heading, without a note in brackets after it,
+# is one of these is read as the start, end, hours worked or break column. Only a table with both a start and an end
+# column is read. Matched case aside.
+id: shift-column
+language: en
+entries:
+  - { pattern: "Start", group: start }
+  - { pattern: "Start time", group: start }
+  - { pattern: "Time in", group: start }
+  - { pattern: "Clock in", group: start }
+  - { pattern: "Clock-in", group: start }
+  - { pattern: "End", group: end }
+  - { pattern: "End time", group: end }
+  - { pattern: "Time out", group: end }
+  - { pattern: "Clock out", group: end }
+  - { pattern: "Clock-out", group: end }
+  - { pattern: "Hours", group: hours }
+  - { pattern: "Hours worked", group: hours }
+  - { pattern: "Total hours", group: hours }
+  - { pattern: "Worked", group: hours }
+  - { pattern: "Break", group: break }
+  - { pattern: "Lunch", group: break }
+  - { pattern: "Meal break", group: break }

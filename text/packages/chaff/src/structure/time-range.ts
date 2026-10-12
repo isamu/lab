@@ -9,6 +9,7 @@ import { dayShiftOf, type TimeSpan, type TimeWords } from "./time-marks.ts";
  * 夜をまたぐ範囲（22:00〜6:00 の夜勤、18:00〜9:00）か十二時間制の読み違い（9:00–5:00）と見て言わない。打ち間違いは一、二時間の戻り。
  * 片方にだけ午前・午後（a.m.、p.m.）を書いた範囲は、書いていない側も同じと読む（2:00–1:30 pm は 14:00 から 13:30）。
  * ただし正午をまたぐ書き方（8:00–6:00 pm）があるので、そのときは一時間未満の戻りだけを言う。
+ * 両方に同じ午前・午後を書いた範囲（9:00 AM – 5:30 AM）は、戻りの幅を問わず言う。夜をまたぐなら午後から午前になるので、同じ側のまま戻るのは書き間違い。
  */
 
 const SECONDS_PER_HOUR = 3600;
@@ -35,20 +36,25 @@ const borrowed = (bare: number, written: number): number => {
   return bare;
 };
 
-type Reading = { readonly from: number; readonly to: number; readonly borrowed: boolean };
+/** sameHalf は、両方に午前・午後を書き、どちらも同じ側のもの（9:00 AM – 5:30 AM）。 */
+type Reading = { readonly from: number; readonly to: number; readonly borrowed: boolean; readonly sameHalf?: boolean };
+
+const isAfternoon = (seconds: number): boolean => seconds >= NOON_SECONDS;
 
 /** 範囲の二つの時刻を秒で。片方にだけ午前・午後があれば、もう片方もそれで読む。 */
 export const rangeReading = (source: string, start: TimeSpan, end: TimeSpan): Reading => {
   const [startMarked, endMarked] = [hasMeridiem(source, start), hasMeridiem(source, end)];
   if (endMarked && !startMarked && isTwelveHour(start)) return { from: borrowed(start.seconds, end.seconds), to: end.seconds, borrowed: true };
   if (startMarked && !endMarked && isTwelveHour(end)) return { from: start.seconds, to: borrowed(end.seconds, start.seconds), borrowed: true };
-  return { from: start.seconds, to: end.seconds, borrowed: false };
+  const sameHalf = startMarked && endMarked && isAfternoon(start.seconds) === isAfternoon(end.seconds);
+  return { from: start.seconds, to: end.seconds, borrowed: false, ...(sameHalf ? { sameHalf } : {}) };
 };
 
 /** 終わりが始まりより前で、その戻りが打ち間違いの幅に収まるか。 */
 export const isReversed = (reading: Reading): boolean => {
   const back = reading.from - reading.to;
-  return back > 0 && back < (reading.borrowed ? BORROWED_SLIP_SECONDS : SLIP_SECONDS);
+  if (back <= 0) return false;
+  return reading.sameHalf === true || back < (reading.borrowed ? BORROWED_SLIP_SECONDS : SLIP_SECONDS);
 };
 
 const asDated = (time: TimeSpan): { offset: number; end: number; value: string } => ({ offset: time.start, end: time.end, value: "" });
