@@ -1,0 +1,8 @@
+# The marks that end a sentence. A letter's header lines (the date, the address, the sender, a title) end with none of
+# them, and the greeting is looked for past them.
+id: email-sentence-end
+language: en
+entries:
+  - pattern: "."
+  - pattern: "!"
+  - pattern: "?"

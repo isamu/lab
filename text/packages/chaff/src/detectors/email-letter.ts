@@ -1,6 +1,6 @@
 // A work email or letter's own parts: a greeting and a closing, a subject line, and an attachment the text mentions.
 // Pure. The words (お世話になっております, Dear, Best regards, 件名, attached) come from the language's email-greeting,
-// email-closing, email-subject-field, attachment-mention, attachment-not-mention and attachment-line lexicons. The
+// email-closing, email-sentence-end, email-subject-field, attachment-mention, attachment-not-mention and attachment-line lexicons. The
 // header and the signature are masked in doc.prose; a quoted reply is someone else's words and is left out.
 import { escapeRegExp } from "../orthography.ts";
 import { quoteAt } from "./structure-tree.ts";
@@ -8,6 +8,8 @@ import type { Detector, Finding, ProseDocument, Span } from "../plugin.ts";
 
 /** A greeting comes before the body: past the subject, the addressee (株式会社… / 総務部 山田様) and the writer's name. */
 const GREETING_LINES = 5;
+/** A letter's header before the greeting: the date, the sender's and the addressee's names and addresses, a title. */
+const HEADER_LINES = 12;
 /** A closing comes at the end, before the writer's name, title, company, address and contact lines, or an acceptance block. */
 const CLOSING_LINES = 10;
 
@@ -101,12 +103,37 @@ const partsOf = (lines: readonly BodyLine[]): BodyLine[][] => {
 
 export type FrameSlip = { readonly variant: "greeting" | "closing"; readonly offset: number };
 
-/** A missing greeting (none in the first lines) and a missing closing (none in the last lines of any part). */
-export const frameSlips = (lines: readonly BodyLine[], greetings: readonly string[], closings: readonly string[]): FrameSlip[] => {
+/** The brackets and quotes that may close a line after its sentence's end mark (…ます。」, …trip.”). */
+const CLOSERS = new Set([...")）」』］]\"'”’"]);
+
+/** Whether a line ends a sentence: one of the marks at its end, past any closing bracket or quote. */
+export const endsSentence = (line: string, marks: readonly string[]): boolean => {
+  const chars = [...line.trimEnd()];
+  const body = chars.slice(0, chars.findLastIndex((char) => !CLOSERS.has(char)) + 1).join("");
+  return body !== "" && marks.some((mark) => body.endsWith(mark));
+};
+
+/**
+ * How many of the first lines the greeting may be in. A letter's header (the date, the addressee 保護者各位 or the
+ * address block, the sender, a title) is lines that end no sentence, and the greeting is the line after it at the latest.
+ * Without a sentence in the first lines there is no header to tell apart, and the first lines are read.
+ */
+export const greetingLineCount = (lines: readonly BodyLine[], sentenceEnds: readonly string[]): number => {
+  const firstSentence = lines.slice(0, HEADER_LINES).findIndex((line) => endsSentence(line.text, sentenceEnds));
+  return Math.max(GREETING_LINES, firstSentence + 1);
+};
+
+/** A missing greeting (none in the first lines, or past the letter's header) and a missing closing (none in the last lines of any part). */
+export const frameSlips = (
+  lines: readonly BodyLine[],
+  greetings: readonly string[],
+  closings: readonly string[],
+  sentenceEnds: readonly string[],
+): FrameSlip[] => {
   const first = lines[0];
   const last = lines.at(-1);
   if (first === undefined || last === undefined) return [];
-  const greeted = lines.slice(0, GREETING_LINES).some((line) => lineHas(line.text, greetings));
+  const greeted = lines.slice(0, greetingLineCount(lines, sentenceEnds)).some((line) => lineHas(line.text, greetings));
   const closed = partsOf(lines).some((part) => part.slice(-CLOSING_LINES).some((line) => lineHas(line.text, closings)));
   return [
     ...(greeted ? [] : [{ variant: "greeting" as const, offset: first.start }]),
@@ -115,17 +142,20 @@ export const frameSlips = (lines: readonly BodyLine[], greetings: readonly strin
 };
 
 export const emailFrame: Detector = (doc): Finding[] =>
-  frameSlips(bodyLines(doc.source, doc.prose ?? doc.source, doc.replyQuotes ?? []), patternsOf(doc, "email-greeting"), patternsOf(doc, "email-closing")).map(
-    (slip) => ({
-      rule: "email-greeting-closing",
-      severity: "info",
-      line: 0,
-      column: 0,
-      quote: quoteAt(doc.source, slip.offset),
-      values: { offset: slip.offset },
-      variant: slip.variant,
-    }),
-  );
+  frameSlips(
+    bodyLines(doc.source, doc.prose ?? doc.source, doc.replyQuotes ?? []),
+    patternsOf(doc, "email-greeting"),
+    patternsOf(doc, "email-closing"),
+    patternsOf(doc, "email-sentence-end"),
+  ).map((slip) => ({
+    rule: "email-greeting-closing",
+    severity: "info",
+    line: 0,
+    column: 0,
+    quote: quoteAt(doc.source, slip.offset),
+    values: { offset: slip.offset },
+    variant: slip.variant,
+  }));
 
 export type SubjectLine = { readonly start: number; readonly subject: string };
 
