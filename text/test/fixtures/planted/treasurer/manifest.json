@@ -1,0 +1,167 @@
+{
+  "note": "Self-written treasurer's reports (会計報告書・収支決算報告書 / treasurer's report, income and expenditure statement) for made-up clubs and residents' associations: a hobby club's report with income, expenditure, a carry-over table and the auditor's statement, and a residents' association's statement with budget, actual and variance columns, a carry-over sentence and the audit and approval dates, each in a clean version and a planted one that differs only on the lines below. They run as business/report: no genre is made for treasurer's reports. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: variance-mismatch (a budget-versus-actual difference column, 増減 or Variance, that is not the actual less the budget; △ and brackets mark a negative). A carry-over (brought forward plus income less expenditure) is named for net-amount-mismatch, which compares an amount with a subtraction of named amounts. A membership fee written as a unit price times a head count inside the item cell is named for line-amount-mismatch. An audit or approval dated before the end of the financial year it reports is named for due-before-issue, which compares labelled dates and the end of a labelled period. Each plant was also run alone on its clean document, so no plant depends on another. yarn planted treasurer scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/club",
+      "language": "ja",
+      "genre": "business/report",
+      "clean": "ja/club.clean.md",
+      "planted": "ja/club.planted.md",
+      "mistakes": [
+        {
+          "kind": "fiscal-year-reversed",
+          "rule": "date-range-reversed",
+          "line": 5,
+          "clean": "〜2026年3月31日",
+          "planted": "〜2025年3月31日"
+        },
+        {
+          "kind": "membership-fee",
+          "rule": "line-amount-mismatch",
+          "line": 15,
+          "clean": "3,000円×24名",
+          "planted": "3,000円×26名"
+        },
+        {
+          "kind": "income-total",
+          "rule": "total-mismatch",
+          "line": 18,
+          "clean": "| 96,500円 |",
+          "planted": "| 96,050円 |"
+        },
+        {
+          "kind": "carry-over",
+          "rule": "net-amount-mismatch",
+          "line": 38,
+          "clean": "| 47,630円 |",
+          "planted": "| 47,360円 |"
+        },
+        {
+          "kind": "audit-before-year-end",
+          "rule": "due-before-issue",
+          "line": 46,
+          "clean": "2026年4月12日",
+          "planted": "2026年3月12日"
+        }
+      ]
+    },
+    {
+      "id": "ja/association",
+      "language": "ja",
+      "genre": "business/report",
+      "clean": "ja/association.clean.md",
+      "planted": "ja/association.planted.md",
+      "mistakes": [
+        {
+          "kind": "budget-variance",
+          "rule": "variance-mismatch",
+          "line": 27,
+          "clean": "| 6,900円 |",
+          "planted": "| 6,090円 |"
+        },
+        {
+          "kind": "expenditure-total",
+          "rule": "total-mismatch",
+          "line": 30,
+          "clean": "| 506,470円 |",
+          "planted": "| 506,740円 |"
+        },
+        {
+          "kind": "carry-over",
+          "rule": "net-amount-mismatch",
+          "line": 36,
+          "clean": "305,830円です",
+          "planted": "305,380円です"
+        },
+        {
+          "kind": "audit-before-year-end",
+          "rule": "due-before-issue",
+          "line": 42,
+          "clean": "2026年4月26日の定期総会",
+          "planted": "2026年3月26日の定期総会"
+        }
+      ]
+    },
+    {
+      "id": "en/club",
+      "language": "en",
+      "genre": "business/report",
+      "clean": "en/club.clean.md",
+      "planted": "en/club.planted.md",
+      "mistakes": [
+        {
+          "kind": "fiscal-year-reversed",
+          "rule": "date-range-reversed",
+          "line": 5,
+          "clean": "– March 31, 2026",
+          "planted": "– March 31, 2025"
+        },
+        {
+          "kind": "membership-fee",
+          "rule": "line-amount-mismatch",
+          "line": 15,
+          "clean": "24 members × $40",
+          "planted": "26 members × $40"
+        },
+        {
+          "kind": "income-total",
+          "rule": "total-mismatch",
+          "line": 18,
+          "clean": "| $1,352.50 |",
+          "planted": "| $1,325.50 |"
+        },
+        {
+          "kind": "carry-over",
+          "rule": "net-amount-mismatch",
+          "line": 38,
+          "clean": "| $753.80 |",
+          "planted": "| $735.80 |"
+        },
+        {
+          "kind": "audit-before-year-end",
+          "rule": "due-before-issue",
+          "line": 46,
+          "clean": "April 12, 2026",
+          "planted": "March 12, 2026"
+        }
+      ]
+    },
+    {
+      "id": "en/association",
+      "language": "en",
+      "genre": "business/report",
+      "clean": "en/association.clean.md",
+      "planted": "en/association.planted.md",
+      "mistakes": [
+        {
+          "kind": "budget-variance",
+          "rule": "variance-mismatch",
+          "line": 26,
+          "clean": "| $34.50 |",
+          "planted": "| $43.50 |"
+        },
+        {
+          "kind": "expenditure-total",
+          "rule": "total-mismatch",
+          "line": 28,
+          "clean": "| $2,532.35 |",
+          "planted": "| $2,523.35 |"
+        },
+        {
+          "kind": "carry-over",
+          "rule": "net-amount-mismatch",
+          "line": 34,
+          "clean": "is $1,510.15:",
+          "planted": "is $1,501.15:"
+        },
+        {
+          "kind": "audit-before-year-end",
+          "rule": "due-before-issue",
+          "line": 40,
+          "clean": "meeting on April 26, 2026",
+          "planted": "meeting on March 26, 2026"
+        }
+      ]
+    }
+  ]
+}
