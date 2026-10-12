@@ -31,5 +31,14 @@ entries:
   - { pattern: Refund, group: net }
   - { pattern: Amount refunded, group: net }
   - { pattern: Balance refunded, group: net }
+  # An insurance claim settlement (Covered amount, Excess, Amount paid). Deductible is left out: a health plan's
+  # statement puts it beside a coinsurance column, so the amount paid is not the covered amount less the deductible alone.
+  - { pattern: Covered amount, group: gross }
+  - { pattern: Assessed loss, group: gross }
+  - { pattern: Amount of loss, group: gross }
+  - { pattern: Excess, group: deduction }
+  - { pattern: Amount paid, group: net }
+  - { pattern: Settlement amount, group: net }
+  - { pattern: Claim payment, group: net }
   - { pattern: Taxable income, group: taxable }
   - { pattern: Taxable amount, group: taxable }

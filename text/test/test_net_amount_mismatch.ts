@@ -336,4 +336,38 @@ describe("net-amount-mismatch in documents", () => {
     assert.deepEqual(detected(rounded("900"), en), []);
     assert.deepEqual(detected(rounded("896"), en), ["896:899"]);
   });
+
+  it("reports a claim settlement whose amount paid is not the loss less the excess", () => {
+    const table = (paid: string): string => ["| 損害額 | 免責金額 | お支払額 |", "| --- | --- | --- |", `| 310,000円 | 30,000円 | ${paid} |`].join("\n");
+    assert.deepEqual(found(table("290,000円"), ja), ["290,000円:280,000円"]);
+    assert.deepEqual(found(table("280,000円"), ja), []);
+    const lines = (paid: string): string => ["- 損害認定額：96,000円", "- 免責金額：10,000円", `- 支払保険金：${paid}`].join("\n");
+    assert.deepEqual(found(lines("88,000円"), ja), ["88,000円:86,000円"]);
+    assert.deepEqual(found(lines("86,000円"), ja), []);
+    const header = (paid: string): string =>
+      ["| Covered amount | Excess | Amount paid |", "| --- | --- | --- |", `| $2,650.00 | $250.00 | ${paid} |`].join("\n");
+    assert.deepEqual(found(header("$2,450.00"), en), ["$2,450.00:$2,400.00"]);
+    assert.deepEqual(found(header("$2,400.00"), en), []);
+    const rows = (paid: string): string =>
+      ["| Item | Amount |", "| --- | --- |", "| Assessed loss | £1,180.00 |", "| Excess | £150.00 |", `| Settlement amount | ${paid} |`].join("\n");
+    assert.deepEqual(found(rows("£1,300.00"), en), ["£1,300.00:£1,030.00"]);
+    assert.deepEqual(found(rows("£1,030.00"), en), []);
+  });
+
+  it("does not read an amount paid that sits beside no loss and excess", () => {
+    const bill = ["| Total charges | Patient share | Amount paid |", "| --- | --- | --- |", "| $480.00 | 20% | $96.00 |"].join("\n");
+    assert.deepEqual(found(bill, en), []);
+    const plan = [
+      "| Billed | Covered amount | Deductible | Coinsurance | Amount paid |",
+      "| --- | --- | --- | --- | --- |",
+      "| $900.00 | $700.00 | $200.00 | $100.00 | $400.00 |",
+    ].join("\n");
+    assert.deepEqual(found(plan, en), []);
+    const receipt = ["| Total | Amount paid | Balance due |", "| --- | --- | --- |", "| $1,200.00 | $500.00 | $700.00 |"].join("\n");
+    assert.deepEqual(found(receipt, en), []);
+    const schedule = ["| 回 | お支払日 | お支払額 |", "| --- | --- | --- |", "| 1 | 2026年5月27日 | 10,400円 |"].join("\n");
+    assert.deepEqual(found(schedule, ja), []);
+    const clinic = ["| 医療費 | 自己負担額 | お支払額 |", "| --- | --- | --- |", "| 12,000円 | 3,600円 | 3,600円 |"].join("\n");
+    assert.deepEqual(found(clinic, ja), []);
+  });
 });
