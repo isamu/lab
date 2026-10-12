@@ -12,3 +12,6 @@ entries:
   - { pattern: 単価（円/km）, group: km }
   - { pattern: 月額, group: month }
   - { pattern: 月額賃料, group: month }
+  - { pattern: 日額, group: day }
+  - { pattern: 日額給付金, group: day }
+  - { pattern: 1日あたり, group: day }

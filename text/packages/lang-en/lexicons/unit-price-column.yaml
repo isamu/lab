@@ -14,3 +14,6 @@ entries:
   - { pattern: Rate per mile, group: mile }
   - { pattern: Monthly, group: month }
   - { pattern: Monthly rent, group: month }
+  - { pattern: Daily benefit, group: day }
+  - { pattern: Per day, group: day }
+  - { pattern: Daily rate, group: day }

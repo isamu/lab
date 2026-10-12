@@ -17,3 +17,7 @@ entries:
   # 賃料の明細の月数（月額 × 月数 = 年額）。
   - { pattern: 月数, group: month }
   - { pattern: ヶ月, group: month }
+  # 給付金の明細の日数（日額 × 日数 = 給付金）。
+  - { pattern: 日数, group: day }
+  - { pattern: 入院日数, group: day }
+  - { pattern: 通院日数, group: day }
