@@ -8,6 +8,7 @@ import type { OrderLabel } from "../packages/chaff/src/structure/labelled-order.
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
+import { columnDatesOutOfOrder } from "../packages/chaff/src/structure/column-date-order.ts";
 
 // 前後の決まった日付の組（due-before-issue の order）。物件の案内の入居可能日と掲載日、求人の応募締切と掲載日。例文はすべて自作。
 
@@ -1360,5 +1361,158 @@ describe("due-before-issue (period): 会計報告書の監査日と会計年度�
       findingsOf(labelledDoc("Treasurer's Report", ["Fiscal year: April 1, 2025 – March 31, 2026", "Jane Example, Honorary Auditor, March 12, 2026"]), en),
       [],
     );
+  });
+});
+
+const datedTable = (header: readonly string[], rows: readonly (readonly string[])[]): string =>
+  [`| ${header.join(" | ")} |`, `|${header.map(() => " --- |").join("")}`, ...rows.map((row) => `| ${row.join(" | ")} |`)].join("\n");
+
+const tablesDoc = (title: string, ...blocks: readonly string[]): string => [`# ${title}`, "", ...blocks.flatMap((block) => [block, ""])].join("\n");
+
+describe("due-before-issue (order): 表の一行の、二つの日付の列", () => {
+  it("ご利用日や Date の列より前の有効期限を、その行で指す", () => {
+    const statementJa = tablesDoc(
+      "ポイント明細",
+      datedTable(
+        ["ご利用日", "獲得ポイント", "有効期限"],
+        [
+          ["2026年9月6日", "384ポイント", "2025年9月30日"],
+          ["2026年9月14日", "525ポイント", "2027年9月30日"],
+        ],
+      ),
+    );
+    assert.deepEqual(findingsOf(statementJa), ["「有効期限」（2025年9月30日）が、「ご利用日」（2026年9月6日）より前です"]);
+    assert.deepEqual(ruleLines(statementJa), [5]);
+    const statementEn = tablesDoc(
+      "Points Statement",
+      datedTable(
+        ["Date", "Points earned", "Expires"],
+        [
+          ["September 6, 2026", "384 points", "September 30, 2027"],
+          ["September 14, 2026", "525 points", "September 30, 2025"],
+        ],
+      ),
+    );
+    assert.deepEqual(findingsOf(statementEn, en), ['"Expires" September 30, 2025 is before "Date" September 14, 2026']);
+    assert.deepEqual(ruleLines(statementEn, en), [6]);
+  });
+
+  it("ご宿泊日、獲得日、ポイント有効期限、Stay date、Earned、Expiry、Expiration date の列も組む", () => {
+    const row = (earned: string, expires: string): string[][] => [[earned, "100", expires]];
+    assert.equal(findingsOf(tablesDoc("明細", datedTable(["ご宿泊日", "ポイント", "ポイント有効期限"], row("2026年7月18日", "2025年7月31日")))).length, 1);
+    assert.equal(findingsOf(tablesDoc("明細", datedTable(["獲得日", "ポイント", "有効期限"], row("2026年7月18日", "2026年7月1日")))).length, 1);
+    assert.equal(findingsOf(tablesDoc("Statement", datedTable(["Stay date", "Points", "Expiry"], row("July 18, 2026", "July 31, 2025"))), en).length, 1);
+    assert.equal(findingsOf(tablesDoc("Statement", datedTable(["Earned", "Points", "Expiration date"], row("July 18, 2026", "July 1, 2026"))), en).length, 1);
+  });
+
+  it("前後の決まった日付の組の語も、列の見出しとして読む", () => {
+    const record = tablesDoc(
+      "Service History",
+      datedTable(["Service date", "Work", "Next inspection due"], [["September 26, 2026", "Oil change", "March 26, 2026"]]),
+    );
+    assert.deepEqual(findingsOf(record, en), ['"Next inspection due" March 26, 2026 is before "Service date" September 26, 2026']);
+  });
+
+  it("順の合った日付、同じ日、年の無い日付、書いていない日付は言わない", () => {
+    const rows = [
+      ["2026年9月6日", "384ポイント", "2027年9月30日"],
+      ["2026年9月30日", "100ポイント", "2026年9月30日"],
+      ["9月14日", "525ポイント", "8月31日"],
+      ["2026年9月27日", "300ポイント", "—"],
+      ["—", "50ポイント", "2025年9月30日"],
+    ];
+    assert.deepEqual(findingsOf(tablesDoc("ポイント明細", datedTable(["ご利用日", "獲得ポイント", "有効期限"], rows))), []);
+    const rowsEn = [
+      ["September 6, 2026", "384 points", "September 30, 2027"],
+      ["September 14", "525 points", "August 31"],
+      ["September 27, 2026", "300 points", "n/a"],
+    ];
+    assert.deepEqual(findingsOf(tablesDoc("Points Statement", datedTable(["Date", "Points earned", "Expires"], rowsEn)), en), []);
+  });
+
+  it("別の行、別の表の列どうしは比べず、行の頭の Date と Expires も組まない", () => {
+    const twoRows = tablesDoc(
+      "Points Statement",
+      datedTable(
+        ["Date", "Points earned", "Expires"],
+        [
+          ["September 6, 2026", "384 points", "September 30, 2027"],
+          ["October 1, 2027", "525 points", "October 31, 2028"],
+        ],
+      ),
+    );
+    assert.deepEqual(findingsOf(twoRows, en), []);
+    const twoTables = tablesDoc(
+      "Account",
+      datedTable(["Date", "Activity"], [["September 6, 2026", "Purchase"]]),
+      datedTable(["Card", "Expires"], [["Gift card", "September 30, 2025"]]),
+    );
+    assert.deepEqual(findingsOf(twoTables, en), []);
+    assert.deepEqual(findingsOf(tablesDoc("Notice", "Date: October 1, 2026", "Expires: September 30, 2026"), en), []);
+    const twoTablesJa = tablesDoc(
+      "ご案内",
+      datedTable(["ご利用日", "内容"], [["2026年9月6日", "購入"]]),
+      datedTable(["券", "有効期限"], [["商品券", "2025年9月30日"]]),
+    );
+    assert.deepEqual(findingsOf(twoTablesJa), []);
+  });
+
+  it("どちらかの側の列が二つある表と、過ぎた語のある行は読まない", () => {
+    const twoEarlier = tablesDoc(
+      "Statement",
+      datedTable(["Date", "Earned", "Points", "Expires"], [["September 6, 2026", "September 7, 2026", "100", "September 30, 2025"]]),
+    );
+    assert.deepEqual(findingsOf(twoEarlier, en), []);
+    const expired = tablesDoc("ポイント明細", datedTable(["ご利用日", "状態", "有効期限"], [["2026年9月6日", "期限切れ", "2025年9月30日"]]));
+    assert.deepEqual(findingsOf(expired), []);
+  });
+
+  it("ポイントの列の無い表の Date と Expiration date、有効期限は組まない（保険の請求の記録、券の一覧）", () => {
+    const claims = tablesDoc("Claims Log", datedTable(["Date", "Policy", "Expiration date"], [["October 2, 2026", "Home cover", "September 30, 2026"]]));
+    assert.deepEqual(findingsOf(claims, en), []);
+    const tickets = tablesDoc("利用の記録", datedTable(["ご利用日", "券の種類", "有効期限"], [["2026年10月2日", "回数券", "2026年9月30日"]]));
+    assert.deepEqual(findingsOf(tickets), []);
+  });
+
+  it("columnDatesOutOfOrder: 文脈の語は見出しのほかの列に含まれるときだけ読み、升をはみ出す日付は読まない", () => {
+    const source = "| Date | Points | Expires |\n| --- | --- | --- |\n| A | 1 | B |\n";
+    const start = source.indexOf("| A");
+    const dates = [
+      { offset: start + 2, value: "2026-09-10" },
+      { offset: start + 10, value: "2026-09-05" },
+    ];
+    const labels: readonly OrderLabel[] = [
+      { pattern: "Date", group: "points", position: "before" },
+      { pattern: "Expires", group: "points", position: "after" },
+      { pattern: "Point", group: "points" },
+    ];
+    assert.equal(columnDatesOutOfOrder(source, dates, labels, []).length, 1);
+    assert.deepEqual(columnDatesOutOfOrder(source.replace("Points", "Policy"), dates, labels, []), []);
+    const straddling = [
+      { offset: start + 2, value: "2026-09-10", end: start + 9 },
+      { offset: start + 10, value: "2026-09-05" },
+    ];
+    assert.deepEqual(columnDatesOutOfOrder(source, straddling, labels, []), []);
+  });
+
+  it("columnDatesOutOfOrder: 行ごとに、後の列の日付が先の列の日付より前の行だけ", () => {
+    const source = "| Date | Expires |\n| --- | --- |\n| A | B |\n| C | D |\n";
+    const rowStart = (row: number): number => source.split("\n").slice(0, row).join("\n").length + 1;
+    const dates = [
+      { offset: rowStart(2) + 2, value: "2026-09-01" },
+      { offset: rowStart(2) + 6, value: "2027-09-01" },
+      { offset: rowStart(3) + 2, value: "2026-09-10" },
+      { offset: rowStart(3) + 6, value: "2026-09-05" },
+    ];
+    const labels: readonly OrderLabel[] = [
+      { pattern: "Date", group: "points", position: "before" },
+      { pattern: "Expires", group: "points", position: "after" },
+    ];
+    assert.deepEqual(columnDatesOutOfOrder(source, dates, labels, []), [
+      { offset: rowStart(3) + 6, values: { later: "2026-09-05", earlier: "2026-09-10", later_label: "Expires", earlier_label: "Date" }, period: false },
+    ]);
+    assert.deepEqual(columnDatesOutOfOrder(source, dates.slice(0, 2), labels, []), []);
+    assert.deepEqual(columnDatesOutOfOrder(source, dates, [], []), []);
+    assert.deepEqual(columnDatesOutOfOrder("Date: A\nExpires: B\n", [], labels, []), []);
   });
 });
