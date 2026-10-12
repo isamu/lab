@@ -15,6 +15,8 @@ export type TaxWords = {
   readonly totals: readonly string[];
   /** 税の行が内税だと分かる語（うち、included）。 */
   readonly included: readonly string[];
+  /** 率で掛かる料金の行の頭の語（サービス料、Service charge）。税はその料金を足した額に掛かってもよい。 */
+  readonly charges: readonly string[];
 };
 
 const RATE = /(\d{1,2}(?:\.\d{1,2})?)[ \t]?[%％]/u;
@@ -22,6 +24,8 @@ const PERCENT = new Set(["%", "％"]);
 /** A sign or an opening bracket right before an amount (-$200, ▲500, (1,200)): the amount may be negative. */
 const SIGNED = /[-−▲△(（][ \t]?(?:[$€£¥￥][ \t]?)?$/u;
 const CENTS = 100;
+/** More charge rows than this in a row give too many ways to tax them, so there is no base. */
+const MAX_CHARGES = 4;
 const MAX_RATE = 100;
 
 type Row = { readonly line: Line; readonly text: string; readonly amounts: readonly Amount[] };
@@ -41,6 +45,8 @@ const rateOf = (text: string): number | undefined => {
 const isTaxRow = (row: Row, words: TaxWords): boolean =>
   isTotalLabel(row.text, words.labels) && !words.included.some((word) => row.text.toLowerCase().includes(word.toLowerCase()));
 
+const isChargeRow = (row: Row, words: TaxWords): boolean => isTotalLabel(row.text, words.charges) && rateOf(row.text) !== undefined;
+
 /** The list marker at the start of a line (- $500) is not a sign. */
 const isSigned = (source: string, row: Row, amount: Amount): boolean => {
   const before = source.slice(row.line.start, amount.offset);
@@ -58,21 +64,40 @@ const amountAt = (source: string, row: Row, column: number, unit: string): Amoun
   return matching.length === 1 && only !== undefined && !isSigned(source, row, only) ? only : undefined;
 };
 
+const sumOf = (values: readonly number[]): number => values.reduce((sum, value) => sum + value, 0);
+
+/** The amounts of the rows in the column and unit of the tax, undefined when a row has none (or more than one). */
+const valuesAt = (source: string, rows: readonly Row[], column: number, unit: string): number[] | undefined => {
+  const amounts = rows.map((row) => amountAt(source, row, column, unit));
+  return amounts.some((amount) => amount === undefined) ? undefined : amounts.flatMap((amount) => (amount === undefined ? [] : [amount.value]));
+};
+
 /**
- * The base the tax is on: the last total row above, or the sum of the item rows above when there is no total row. A row
- * with an amount between the total and the tax (a discount, shipping) may or may not be taxed, so there is no base.
+ * The base with each set of the charges above it added, the full sum last: a tax may be on the subtotal alone or with some
+ * charges (hotels tax the service charge; a gratuity may be untaxed).
  */
-const baseOf = (source: string, above: readonly Row[], tax: Amount, column: number, words: TaxWords): Amount | undefined => {
-  const lastTotalIndex = above.findLastIndex((row) => isTotalLabel(row.text, words.totals));
-  const lastTotal = above[lastTotalIndex];
+const withCharges = (base: number, charges: readonly number[]): number[] =>
+  charges.length > MAX_CHARGES ? [] : charges.reduce<number[]>((sums, charge) => [...sums, ...sums.map((sum) => sum + charge)], [0]).map((sum) => base + sum);
+
+/**
+ * The bases the rate may be on: the last total row above, or the sum of the item rows above when there is no total row,
+ * each with and without the rate charge rows (a service charge) right above the row. Any other row with an amount between
+ * the total and the row (a discount, shipping) may or may not be taxed, so there is no base.
+ */
+const basesOf = (source: string, above: readonly Row[], tax: Amount, column: number, words: TaxWords): number[] => {
+  const chargeStart = above.findLastIndex((row) => !isChargeRow(row, words)) + 1;
+  const charges = valuesAt(source, above.slice(chargeStart), column, tax.unit);
+  if (charges === undefined) return [];
+  const before = above.slice(0, chargeStart);
+  const lastTotalIndex = before.findLastIndex((row) => isTotalLabel(row.text, words.totals));
+  const lastTotal = before[lastTotalIndex];
   if (lastTotal !== undefined) {
-    const between = above.slice(lastTotalIndex + 1);
-    return between.some((row) => row.amounts.length > 0) ? undefined : amountAt(source, lastTotal, column, tax.unit);
+    const total = amountAt(source, lastTotal, column, tax.unit);
+    const between = before.slice(lastTotalIndex + 1);
+    return total === undefined || between.some((row) => row.amounts.length > 0) ? [] : withCharges(total.value, charges);
   }
-  const items = above.map((row) => amountAt(source, row, column, tax.unit));
-  if (items.length === 0 || items.some((item) => item === undefined)) return undefined;
-  const values = items.flatMap((item) => (item === undefined ? [] : [item.value]));
-  return { offset: tax.offset, end: tax.end, unit: tax.unit, value: values.reduce((sum, value) => sum + value, 0) };
+  const items = valuesAt(source, before, column, tax.unit);
+  return items === undefined || items.length === 0 ? [] : withCharges(sumOf(items), charges);
 };
 
 /**
@@ -94,21 +119,31 @@ const issueOf = (source: string, rows: readonly Row[], index: number, rate: numb
   const tax = row?.amounts.length === 1 ? row.amounts[0] : undefined;
   if (row === undefined || tax === undefined || isSigned(source, row, tax)) return [];
   const column = columnOf(source, row.line, tax.offset);
-  const base = baseOf(source, rows.slice(0, index), tax, column, words);
-  if (base === undefined || taxMatches(Math.round(tax.value * CENTS), base.value, rate)) return [];
-  const expectedCents = Math.round(base.value * rate);
+  const bases = basesOf(source, rows.slice(0, index), tax, column, words);
+  const base = bases.at(-1);
+  if (base === undefined || bases.some((candidate) => taxMatches(Math.round(tax.value * CENTS), candidate, rate))) return [];
+  const expectedCents = Math.round(base * rate);
   const shown = shownTotal(source, tax, expectedCents);
   return [{ offset: tax.offset, values: { written: shown.written ?? "", expected: shown.sum ?? "", rate: `${String(rate)}%` } }];
 };
 
-const runIssues = (source: string, rows: readonly Row[], words: TaxWords): StructureIssue[] => {
-  const taxRows = rows.flatMap((row, index) => {
-    const rate = isTaxRow(row, words) ? rateOf(row.text) : undefined;
+type RateRow = { readonly index: number; readonly rate: number };
+
+const rateRowsOf = (rows: readonly Row[], isRateRow: (row: Row) => boolean): RateRow[] =>
+  rows.flatMap((row, index) => {
+    const rate = isRateRow(row) ? rateOf(row.text) : undefined;
     return rate === undefined ? [] : [{ index, rate }];
   });
-  if (new Set(taxRows.map((row) => row.rate)).size > 1) return [];
-  return taxRows.flatMap(({ index, rate }) => issueOf(source, rows, index, rate, words));
+
+/** Tax rows of different rates split the base (a reduced rate), so none is compared; a charge row is not a tax row. */
+const runIssues = (source: string, rows: readonly Row[], words: TaxWords): StructureIssue[] => {
+  const taxRows = rateRowsOf(rows, (row) => isTaxRow(row, words) && !isChargeRow(row, words));
+  const firstTax = taxRows[0]?.index ?? rows.length;
+  // A charge below a tax row (a suggested gratuity under the total) is often on the amount before tax, so it is not read.
+  const chargeRows = rateRowsOf(rows, (row) => isChargeRow(row, words)).filter((row) => row.index < firstTax);
+  const comparable = new Set(taxRows.map((row) => row.rate)).size > 1 ? chargeRows : [...taxRows, ...chargeRows];
+  return comparable.flatMap(({ index, rate }) => issueOf(source, rows, index, rate, words));
 };
 
 export const taxMismatches = (source: string, amounts: readonly Amount[], words: TaxWords): StructureIssue[] =>
-  words.labels.length === 0 ? [] : runsOf(source).flatMap((run) => runIssues(source, rowsOf(source, run, amounts), words));
+  words.labels.length + words.charges.length === 0 ? [] : runsOf(source).flatMap((run) => runIssues(source, rowsOf(source, run, amounts), words));

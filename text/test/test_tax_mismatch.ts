@@ -102,9 +102,65 @@ describe("tax-mismatch: 税額が小計に税率を掛けた額と合わない",
   });
 
   it("語の無い言語と空の入力", () => {
-    const none: TaxWords = { labels: [], totals: [], included: [] };
+    const none: TaxWords = { labels: [], totals: [], included: [], charges: [] };
     assert.deepEqual(taxMismatches(table([...ITEMS, "| 消費税（10%） | 1円 |"]), [], none), []);
     assert.deepEqual(taxMismatches("", [], { ...none, labels: ["消費税"] }), []);
     assert.deepEqual(findingsOf(""), []);
+  });
+});
+
+describe("tax-mismatch: サービス料の行と、その下の税の行", () => {
+  const BANQUET = ["| 料理 | 400,000円 |", "| 会場 | 100,000円 |", "| 小計 | 500,000円 |"];
+  const EN_BANQUET = ["| Dinner | $4,000.00 |", "| Room | $1,000.00 |", "| Subtotal | $5,000.00 |"];
+
+  it("サービス料の率と合わない金額を指す", () => {
+    assert.deepEqual(findingsOf(table([...BANQUET, "| サービス料（15%） | 50,000円 |", "| 消費税（10%） | 55,000円 |"])), [
+      "税額「50,000円」が、上の金額の15%（75,000円）と合いません",
+    ]);
+    assert.deepEqual(findingsOf(table([...BANQUET, "| 奉仕料（10%） | 55,000円 |"])), ["税額「55,000円」が、上の金額の10%（50,000円）と合いません"]);
+    assert.deepEqual(findingsOf(enTable([...EN_BANQUET, "| Service charge (18%) | $1,000.00 |", "| Sales tax (8%) | $480.00 |"]), en), [
+      "The tax $1,000.00 is not 18% of the amount above it ($900.00)",
+    ]);
+    assert.deepEqual(findingsOf("- Dinner: $1,000\n- Gratuity (20%): $150\n", en), ["The tax $150 is not 20% of the amount above it ($200)"]);
+  });
+
+  it("税は小計にサービス料を足した額に掛けても、小計だけに掛けてもよい", () => {
+    assert.deepEqual(findingsOf(table([...BANQUET, "| サービス料（10%） | 50,000円 |", "| 消費税（10%） | 55,000円 |", "| 合計 | 605,000円 |"])), []);
+    assert.deepEqual(findingsOf(table([...BANQUET, "| サービス料（10%） | 50,000円 |", "| 消費税（10%） | 50,000円 |"])), []);
+    assert.deepEqual(findingsOf(enTable([...EN_BANQUET, "| Service charge (20%) | $1,000.00 |", "| Sales tax (8%) | $480.00 |"]), en), []);
+    assert.deepEqual(findingsOf(enTable([...EN_BANQUET, "| Service charge (20%) | $1,000.00 |", "| Sales tax (8%) | $400.00 |"]), en), []);
+    assert.deepEqual(findingsOf("- Dinner: $1,000\n- Gratuity (20%): $200\n- Tax (10%): $120\n", en), []);
+    assert.deepEqual(
+      findingsOf(
+        enTable([
+          "| Food | $100.00 |",
+          "| Subtotal | $100.00 |",
+          "| Service charge (10%) | $10.00 |",
+          "| Gratuity (20%) | $20.00 |",
+          "| Sales tax (10%) | $11.00 |",
+        ]),
+        en,
+      ),
+      [],
+    );
+  });
+
+  it("サービス料の下の税が、どちらの額の率とも合わなければ指す", () => {
+    assert.deepEqual(findingsOf(table([...BANQUET, "| サービス料（10%） | 50,000円 |", "| 消費税（10%） | 60,000円 |"])), [
+      "税額「60,000円」が、上の金額の10%（55,000円）と合いません",
+    ]);
+    assert.deepEqual(findingsOf(enTable([...EN_BANQUET, "| Service charge (20%) | $1,000.00 |", "| Sales tax (8%) | $500.00 |"]), en), [
+      "The tax $500.00 is not 8% of the amount above it ($480.00)",
+    ]);
+  });
+
+  it("率の無いサービス料、税の下のチップ、サービス料と税の間の別の金額、軽減税率の並びは比べない", () => {
+    assert.deepEqual(findingsOf(table([...BANQUET, "| サービス料 | 50,000円 |", "| 消費税（10%） | 1,000円 |"])), []);
+    assert.deepEqual(
+      findingsOf(enTable(["| Subtotal | $100.00 |", "| Sales tax (8%) | $8.00 |", "| Total | $108.00 |", "| Gratuity (20%) | $20.00 |"]), en),
+      [],
+    );
+    assert.deepEqual(findingsOf(table([...BANQUET, "| サービス料（10%） | 50,000円 |", "| 送料 | 2,000円 |", "| 消費税（10%） | 1,000円 |"])), []);
+    assert.deepEqual(findingsOf(table([...BANQUET, "| サービス料（10%） | 50,000円 |", "| 消費税（8%） | 1,000円 |", "| 消費税（10%） | 2,000円 |"])), []);
   });
 });

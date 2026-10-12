@@ -13,8 +13,8 @@ name:
   en: A tax that is not its rate of the subtotal
 
 why:
-  ja: 見積書や請求書の「消費税（10%）」の金額が、小計の10%と合わないと、読み手は税の計算を確かめ直し、合計も信じられなくなります。合計の額に税率を掛けてしまったときや、小計を直して税を直し忘れたときに起きます。表か箇条書きで、税の語（消費税・税額）で始まり率を書いた行の金額を、上の小計の行の金額（小計の行が無ければ上の項目の和）に率を掛けた額と比べます。
-  en: When the "Sales tax (10%)" of a quote or an invoice is not 10% of the subtotal, the reader has to work the tax out again and can no longer trust the total. It happens when the rate is applied to the total instead of the subtotal, or when the subtotal is changed and the tax is not. In a list or a table, the amount of a line starting with a tax word (Tax, Sales tax, VAT) and giving a rate is compared with that rate of the subtotal line above it (or, with no subtotal line, of the sum of the items above).
+  ja: 見積書や請求書の「消費税（10%）」の金額が、小計の10%と合わないと、読み手は税の計算を確かめ直し、合計も信じられなくなります。合計の額に税率を掛けてしまったときや、小計を直して税を直し忘れたときに起きます。表か箇条書きで、税の語（消費税・税額）で始まり率を書いた行の金額を、上の小計の行の金額（小計の行が無ければ上の項目の和）に率を掛けた額と比べます。サービス料（10%）の行も同じように比べ、その下の税は小計にサービス料を足した額に掛けたものとしても読みます。
+  en: When the "Sales tax (10%)" of a quote or an invoice is not 10% of the subtotal, the reader has to work the tax out again and can no longer trust the total. It happens when the rate is applied to the total instead of the subtotal, or when the subtotal is changed and the tax is not. In a list or a table, the amount of a line starting with a tax word (Tax, Sales tax, VAT) and giving a rate is compared with that rate of the subtotal line above it (or, with no subtotal line, of the sum of the items above). A service charge line giving a rate is compared the same way, and a tax below it may be on the subtotal with the service charge added.
 
 message:
   ja: 税額「{written}」が、上の金額の{rate}（{expected}）と合いません

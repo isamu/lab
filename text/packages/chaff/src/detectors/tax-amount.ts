@@ -1,5 +1,5 @@
-// tax-mismatch: the reading half. The words of a tax row, a total row and an included tax come from the language's
-// lexicons (tax-label, total-label, tax-included-word); the amounts are the structure tree's.
+// tax-mismatch: the reading half. The words of a tax row, a total row, an included tax and a service charge come from the
+// language's lexicons (tax-label, total-label, tax-included-word, service-charge-label); the amounts are the structure tree's.
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { taxMismatches, type TaxWords } from "../structure/tax.ts";
 import { amountsOf, quoteAt } from "./structure-tree.ts";
@@ -10,6 +10,7 @@ const wordsOf = (doc: ProseDocument): TaxWords => ({
   labels: patternsOf(doc, "tax-label"),
   totals: patternsOf(doc, "total-label"),
   included: patternsOf(doc, "tax-included-word"),
+  charges: patternsOf(doc, "service-charge-label"),
 });
 
 export const taxAmount: Detector = (doc): Finding[] =>
