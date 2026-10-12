@@ -66,6 +66,21 @@ entries:
   - { pattern: "第１回お支払日", group: loan, position: after }
   - { pattern: "第1回返済日", group: loan, position: after }
   - { pattern: "第１回返済日", group: loan, position: after }
+  # 価格表やクーポン、許可証や保険の証書。有効の終わりは、始まりより前に来ない。「有効期限」は due-date-label にもあり、
+  # そちらでは発行日と比べる。組ごとに比べる。
+  - { pattern: "適用開始日", group: validity, position: before }
+  - { pattern: "有効開始日", group: validity, position: before }
+  - { pattern: "発効日", group: validity, position: before }
+  - { pattern: "適用終了日", group: validity, position: after }
+  - { pattern: "有効終了日", group: validity, position: after }
+  - { pattern: "有効期限", group: validity, position: after }
+  # 期間を二つの行に分けて書く取引明細や利用明細。期間の終わりは、始まりより前に来ない。
+  - { pattern: "照会開始日", group: statement-period, position: before }
+  - { pattern: "対象期間開始日", group: statement-period, position: before }
+  - { pattern: "期間開始日", group: statement-period, position: before }
+  - { pattern: "照会終了日", group: statement-period, position: after }
+  - { pattern: "対象期間終了日", group: statement-period, position: after }
+  - { pattern: "期間終了日", group: statement-period, position: after }
   # 宿泊の予約。チェックアウトはチェックインの日より前に来ない。同じ日（日帰り）は指さない。
   - { pattern: "チェックイン", group: stay, position: before }
   - { pattern: "チェックイン日", group: stay, position: before }

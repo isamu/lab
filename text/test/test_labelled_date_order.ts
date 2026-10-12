@@ -1004,6 +1004,92 @@ describe("due-before-issue (order): 賃貸借の入居、解約の通知と退�
   });
 });
 
+describe("due-before-issue (order): 有効の始まりと終わり", () => {
+  it("適用開始日より前の適用終了日を、終了日の行で指す", () => {
+    const list = labelledDoc("卸価格表", ["適用開始日：2026年11月1日", "適用終了日：2026年4月30日"]);
+    assert.deepEqual(findingsOf(list), ["「適用終了日」（2026年4月30日）が、「適用開始日」（2026年11月1日）より前です"]);
+    assert.deepEqual(ruleLines(list), [5]);
+    const listEn = labelledDoc("Wholesale Price List", ["Valid from: November 1, 2026", "Valid until: April 30, 2026"]);
+    assert.deepEqual(findingsOf(listEn, en), ['"Valid until" April 30, 2026 is before "Valid from" November 1, 2026']);
+    assert.deepEqual(ruleLines(listEn, en), [5]);
+  });
+
+  it("有効開始日、発効日と、有効終了日、有効期限、Effective date、Effective from と Valid to、Expiry date、Expires も組む", () => {
+    assert.deepEqual(findingsOf(labelledDoc("クーポン", ["有効開始日：2026年10月1日", "有効終了日：2026年9月30日"])), [
+      "「有効終了日」（2026年9月30日）が、「有効開始日」（2026年10月1日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("許可証", ["発効日：2026年10月1日", "有効期限：2026年3月31日"])), [
+      "「有効期限」（2026年3月31日）が、「発効日」（2026年10月1日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("Policy", ["Effective date: October 1, 2026", "Expiry date: March 31, 2026"]), en), [
+      '"Expiry date" March 31, 2026 is before "Effective date" October 1, 2026',
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("Permit", ["Effective from: October 1, 2026", "Valid to: March 31, 2026"]), en), [
+      '"Valid to" March 31, 2026 is before "Effective from" October 1, 2026',
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("Coupon", ["Valid from: October 1, 2026", "Expires: September 30, 2026"]), en), [
+      '"Expires" September 30, 2026 is before "Valid from" October 1, 2026',
+    ]);
+  });
+
+  it("順の合った日付、同じ日、年の無い日付は言わない", () => {
+    assert.deepEqual(findingsOf(labelledDoc("卸価格表", ["適用開始日：2026年11月1日", "適用終了日：2027年4月30日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("卸価格表", ["適用開始日：2026年11月1日", "適用終了日：2026年11月1日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("卸価格表", ["適用開始日：11月1日", "適用終了日：4月30日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Price List", ["Valid from: November 1, 2026", "Valid until: April 30, 2027"]), en), []);
+    assert.deepEqual(findingsOf(labelledDoc("Price List", ["Valid from: November 1", "Valid until: April 30"]), en), []);
+  });
+
+  it("見積書の発行日と有効期限は、これまでどおり発行日と比べる。有効の組と二重には言わない", () => {
+    assert.equal(findingsOf(labelledDoc("御見積書", ["発行日：2026年10月1日", "有効期限：2026年9月30日"])).length, 1);
+    assert.equal(findingsOf(labelledDoc("Quote", ["Issued: October 1, 2026", "Valid until: September 30, 2026"]), en).length, 1);
+    assert.deepEqual(findingsOf(labelledDoc("御見積書", ["発行日：2026年10月1日", "有効期限：2026年10月31日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Quote", ["Issued: October 1, 2026", "Valid until: October 31, 2026"]), en), []);
+  });
+
+  it("行の頭に無い語や、日付の続かない Expires は読まない", () => {
+    assert.deepEqual(findingsOf(labelledDoc("Account", ["Valid from: October 1, 2026", "Your password expires on September 30, 2026."]), en), []);
+    assert.deepEqual(findingsOf(labelledDoc("Account", ["Valid from: October 1, 2026", "Expires after 90 days of inactivity."]), en), []);
+    assert.deepEqual(findingsOf(labelledDoc("ご案内", ["適用開始日：2026年10月1日", "ポイントの有効期限は2026年9月30日です。"])), []);
+  });
+});
+
+describe("due-before-issue (order): 二つの行に分けて書いた明細の期間", () => {
+  it("照会開始日より前の照会終了日を、終了日の行で指す", () => {
+    const statement = labelledDoc("入出金明細", ["照会開始日：2026年9月1日", "照会終了日：2026年8月31日"]);
+    assert.deepEqual(findingsOf(statement), ["「照会終了日」（2026年8月31日）が、「照会開始日」（2026年9月1日）より前です"]);
+    assert.deepEqual(ruleLines(statement), [5]);
+    const statementEn = labelledDoc("Checking Statement", ["Period start: September 1, 2026", "Period end: August 31, 2026"]);
+    assert.deepEqual(findingsOf(statementEn, en), ['"Period end" August 31, 2026 is before "Period start" September 1, 2026']);
+    assert.deepEqual(ruleLines(statementEn, en), [5]);
+  });
+
+  it("対象期間開始日、期間開始日、Statement period start と、それぞれの終了日も組む", () => {
+    assert.deepEqual(findingsOf(labelledDoc("利用明細", ["対象期間開始日：2026年9月1日", "対象期間終了日：2026年8月31日"])), [
+      "「対象期間終了日」（2026年8月31日）が、「対象期間開始日」（2026年9月1日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("利用明細", ["期間開始日：2026年9月1日", "期間終了日：2026年8月31日"])), [
+      "「期間終了日」（2026年8月31日）が、「期間開始日」（2026年9月1日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("Card Statement", ["Statement period start: September 1, 2026", "Statement period end: August 31, 2026"]), en), [
+      '"Statement period end" August 31, 2026 is before "Statement period start" September 1, 2026',
+    ]);
+  });
+
+  it("順の合った期間や同じ日は言わない", () => {
+    assert.deepEqual(findingsOf(labelledDoc("入出金明細", ["照会開始日：2026年9月1日", "照会終了日：2026年9月30日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("入出金明細", ["照会開始日：2026年9月1日", "照会終了日：2026年9月1日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Checking Statement", ["Period start: September 1, 2026", "Period end: September 30, 2026"]), en), []);
+  });
+
+  it("別の組の語どうしは比べない（適用開始日と期間終了日、Valid from と Period end、対象期間と対象期間終了日）", () => {
+    assert.deepEqual(findingsOf(labelledDoc("ご案内", ["適用開始日：2026年10月1日", "期間終了日：2026年9月30日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Notice", ["Valid from: October 1, 2026", "Period end: September 30, 2026"]), en), []);
+    assert.deepEqual(findingsOf(labelledDoc("Notice", ["Period start: October 1, 2026", "Valid until: September 30, 2026"]), en), []);
+    assert.deepEqual(findingsOf(labelledDoc("明細", ["対象期間開始日：2026年9月1日", "交付日：2026年8月31日"])), []);
+  });
+});
+
 describe("due-before-issue (order): 車の整備と次の点検", () => {
   it("整備日より前の次回点検日を、次回点検日の行で指す", () => {
     const record = labelledDoc("整備記録簿", ["整備日：2026年9月26日", "次回点検日：2025年9月26日"]);
