@@ -82,6 +82,17 @@ describe("runsIntoWord", () => {
     assert.equal(runsIntoWord("sq. ft.", "x"), false);
     assert.equal(runsIntoWord("", "abc"), false);
   });
+
+  it("a unit ending in a digit runs into a following letter or digit, not into a space or punctuation", () => {
+    assert.equal(runsIntoWord("m2", "3 rows"), true);
+    assert.equal(runsIntoWord("m2", "x"), true);
+    assert.equal(runsIntoWord("m2", "s"), true);
+    assert.equal(runsIntoWord("m2", ""), false);
+    assert.equal(runsIntoWord("m2", " flat"), false);
+    assert.equal(runsIntoWord("m2", "."), false);
+    assert.equal(runsIntoWord("m2", "の"), false);
+    assert.equal(runsIntoWord("m2", "）"), false);
+  });
 });
 
 describe("measuredValues: a Latin unit ends at a word boundary", () => {

@@ -4,11 +4,19 @@ language: en
 entries:
   - pattern: "m²"
     weight: 1
+  - pattern: "m2"
+    weight: 1
+  - pattern: "m^2"
+    weight: 1
   - pattern: "㎡"
     weight: 1
   - pattern: "sq m"
     weight: 1
   - pattern: "sqm"
+    weight: 1
+  - pattern: "sq.m."
+    weight: 1
+  - pattern: "sq. m."
     weight: 1
   - pattern: "square meters"
     weight: 1
@@ -19,6 +27,8 @@ entries:
   - pattern: "square metre"
     weight: 1
   - pattern: "km²"
+    weight: 1000000
+  - pattern: "km2"
     weight: 1000000
   - pattern: "sq km"
     weight: 1000000

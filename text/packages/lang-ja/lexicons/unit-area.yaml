@@ -7,6 +7,10 @@ entries:
     weight: 1
   - pattern: "m²"
     weight: 1
+  - pattern: "m2"
+    weight: 1
+  - pattern: "m^2"
+    weight: 1
   - pattern: "平方メートル"
     weight: 1
   - pattern: "平米"
@@ -14,6 +18,8 @@ entries:
   - pattern: "㎢"
     weight: 1000000
   - pattern: "km²"
+    weight: 1000000
+  - pattern: "km2"
     weight: 1000000
   - pattern: "平方キロメートル"
     weight: 1000000

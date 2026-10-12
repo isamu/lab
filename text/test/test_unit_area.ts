@@ -5,6 +5,8 @@ import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
+import { measuredValues } from "../packages/chaff/src/facts/measures.ts";
+import { measureUnitsOf } from "../packages/chaff/src/facts/measure-units.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
 // 面積の単位（unit-area）を unit-mismatch が換算して比べる。
@@ -13,6 +15,11 @@ const found = (lines: readonly string[], adapter: LanguageAdapter, language: str
   runRules(buildDocument("t.md", ["# T", "", ...lines].join("\n"), adapter), loadRules(language), { "unit-mismatch": "normal" }, false, "business/report")
     .findings.filter((finding) => finding.rule === "unit-mismatch")
     .map((finding) => `${String(finding.values["label"])}:${String(finding.values["value"])}≠${String(finding.values["other"])}`);
+
+const read = (text: string, adapter: LanguageAdapter): string[] =>
+  measuredValues(text, measureUnitsOf(buildDocument("t.md", text, adapter)))
+    .filter((value) => value.dimension === "unit-area")
+    .map((value) => text.slice(value.start, value.end));
 
 const foundJa = (...lines: string[]): string[] => found(lines, ja, "ja");
 const foundEn = (...lines: string[]): string[] => found(lines, en, "en");
@@ -59,6 +66,31 @@ describe("unit-mismatch: area", () => {
   it("a rounded tsubo agrees within the rounding written", () => {
     assert.deepEqual(foundJa("延床面積は100㎡（30坪）です。"), []);
     assert.deepEqual(foundJa("延床面積は100㎡（33坪）です。"), [":33坪≠100㎡"]);
+  });
+
+  it("the plain-text spellings m2, m^2, km2 and sq.m. are one unit with m²", () => {
+    assert.deepEqual(foundEn("Floor area: 68 m2", "", "Floor area: 732 sq ft"), []);
+    assert.deepEqual(foundEn("Floor area: 68 m2", "", "Floor area: 832 sq ft"), ["Floor area:832 sq ft≠68 m2"]);
+    assert.deepEqual(foundEn("Floor area: 68m2", "", "Floor area: 832 sq ft"), ["Floor area:832 sq ft≠68m2"]);
+    assert.deepEqual(foundEn("Floor area: 68 m^2", "", "Floor area: 832 sq ft"), ["Floor area:832 sq ft≠68 m^2"]);
+    assert.deepEqual(foundEn("Floor area: 68 sq.m.", "", "Floor area: 832 sq ft"), ["Floor area:832 sq ft≠68 sq.m."]);
+    assert.deepEqual(foundEn("Floor area: 68 sq. m.", "", "Floor area: 732 sq ft"), []);
+    assert.deepEqual(foundEn("The site is 2 km2.", "", "The site is 200 hectares."), []);
+    assert.deepEqual(foundEn("The site is 2 km2.", "", "The site is 20 hectares."), ["The site:20 hectares≠2 km2"]);
+    assert.deepEqual(foundJa("専有面積：52.80m2", "", "専有面積：15.97坪"), []);
+    assert.deepEqual(foundJa("専有面積：52.80m2", "", "専有面積：17.97坪"), ["専有面積:17.97坪≠52.80m2"]);
+    assert.deepEqual(foundJa("延床面積は100m2（33坪）です。"), [":33坪≠100m2"]);
+  });
+
+  it("m2 is not an area when it is not right after a number, is upper case, or runs on", () => {
+    assert.deepEqual(read("The M2 chip and PM2.5 levels.", en), []);
+    assert.deepEqual(read("Print it on A4 m2 paper; set x = m2 + 1.", en), []);
+    assert.deepEqual(read("A 42 M2 tank.", en), []);
+    assert.deepEqual(read("Add 3 m23 rows and 5 m2x.", en), []);
+    assert.deepEqual(read("Floor area: 68 m2.", en), ["68 m2"]);
+    assert.deepEqual(read("Floor area: 68m2, 9 sq.m.", en), ["68m2", "9 sq.m."]);
+    assert.deepEqual(read("専有面積は52.80m2の住戸。", ja), ["52.80m2"]);
+    assert.deepEqual(read("PM2.5の濃度とM2チップ。", ja), []);
   });
 
   it("畳 is not read as an area, and an area is not compared with a length", () => {
