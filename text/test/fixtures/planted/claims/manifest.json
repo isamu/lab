@@ -1,0 +1,187 @@
+{
+  "note": "Self-written insurance claim forms and settlement statements (保険金請求書・保険金支払明細 / insurance claim form, settlement statement) for made-up insurers and made-up claimants, with fictional amounts and fictional policy numbers: a hospital benefit claim and a car damage claim settlement, each in a clean version and a planted one that differs only on the lines below. The insurance set covers product summaries; this set covers claims and payouts. They run as business/proposal, the genre the medical bills and payslips run as: no genre is made for insurance claims. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line; a mistake that breaks a pair of lines names the pair's other line as pairedLine. The days in hospital times the daily benefit is named for line-amount-mismatch, and the plant changes the daily benefit, not the amount, so the benefits still add up to the total; the daily benefit is written nowhere else. The covered amount minus the deductible is named for net-amount-mismatch, and the plant changes the amount paid, which no sentence repeats. A claim date before the date of the incident and a discharge date before the admission date are named for due-before-issue, which compares a pair of labelled dates on their own lines. The days in hospital stated in the table and again in a sentence of the same section is named for fact-conflict. The policy number written with two neighbouring digits swapped is named for reference-number-variant, and the claimant's name written two ways for name-variant. Each plant was also run alone on its clean document, so no plant depends on another. yarn planted claims scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/hospital",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/hospital.clean.md",
+      "planted": "ja/hospital.planted.md",
+      "mistakes": [
+        {
+          "kind": "claim-before-incident",
+          "rule": "due-before-issue",
+          "line": 15,
+          "pairedLine": 9,
+          "clean": "請求日：2026年8月20日",
+          "planted": "請求日：2026年7月20日"
+        },
+        {
+          "kind": "treatment-period-reversed",
+          "rule": "due-before-issue",
+          "line": 13,
+          "pairedLine": 11,
+          "clean": "退院日：2026年8月6日",
+          "planted": "退院日：2026年7月6日"
+        },
+        {
+          "kind": "hospital-days",
+          "rule": "fact-conflict",
+          "line": 25,
+          "clean": "入院日数は、9日です。",
+          "planted": "入院日数は、10日です。"
+        },
+        {
+          "kind": "days-times-daily-benefit",
+          "rule": "line-amount-mismatch",
+          "line": 31,
+          "clean": "| 10,000円 |",
+          "planted": "| 11,000円 |"
+        },
+        {
+          "kind": "claimant-name",
+          "rule": "name-variant",
+          "line": 39,
+          "clean": "村上 千尋 様には",
+          "planted": "村上 千広 様には"
+        },
+        {
+          "kind": "policy-number",
+          "rule": "reference-number-variant",
+          "line": 41,
+          "clean": "証券番号48-2071935",
+          "planted": "証券番号48-2017935"
+        }
+      ]
+    },
+    {
+      "id": "ja/vehicle",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/vehicle.clean.md",
+      "planted": "ja/vehicle.planted.md",
+      "mistakes": [
+        {
+          "kind": "claim-before-incident",
+          "rule": "due-before-issue",
+          "line": 11,
+          "pairedLine": 9,
+          "clean": "請求日：2026年8月25日",
+          "planted": "請求日：2026年8月5日"
+        },
+        {
+          "kind": "covered-minus-deductible",
+          "rule": "net-amount-mismatch",
+          "line": 36,
+          "clean": "| 370,000円 |",
+          "planted": "| 380,000円 |"
+        },
+        {
+          "kind": "claimant-name",
+          "rule": "name-variant",
+          "line": 40,
+          "clean": "西田 健吾 様の次の",
+          "planted": "西田 健悟 様の次の"
+        },
+        {
+          "kind": "policy-number",
+          "rule": "reference-number-variant",
+          "line": 42,
+          "clean": "証券番号AT-5308264",
+          "planted": "証券番号AT-5302864"
+        }
+      ]
+    },
+    {
+      "id": "en/hospital",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/hospital.clean.md",
+      "planted": "en/hospital.planted.md",
+      "mistakes": [
+        {
+          "kind": "claim-before-incident",
+          "rule": "due-before-issue",
+          "line": 15,
+          "pairedLine": 9,
+          "clean": "Date of claim: August 20, 2026",
+          "planted": "Date of claim: July 20, 2026"
+        },
+        {
+          "kind": "treatment-period-reversed",
+          "rule": "due-before-issue",
+          "line": 13,
+          "pairedLine": 11,
+          "clean": "Date of discharge: August 6, 2026",
+          "planted": "Date of discharge: July 6, 2026"
+        },
+        {
+          "kind": "hospital-days",
+          "rule": "fact-conflict",
+          "line": 25,
+          "clean": "This stay was 9 days in hospital.",
+          "planted": "This stay was 10 days in hospital."
+        },
+        {
+          "kind": "days-times-daily-benefit",
+          "rule": "line-amount-mismatch",
+          "line": 31,
+          "clean": "| $150.00 |",
+          "planted": "| $160.00 |"
+        },
+        {
+          "kind": "claimant-name",
+          "rule": "name-variant",
+          "line": 39,
+          "clean": "sent to Rebecca Thornton.",
+          "planted": "sent to Rebecca Thorntan."
+        },
+        {
+          "kind": "policy-number",
+          "rule": "reference-number-variant",
+          "line": 41,
+          "clean": "policy number HL-4820-1937",
+          "planted": "policy number HL-4820-1973"
+        }
+      ]
+    },
+    {
+      "id": "en/vehicle",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/vehicle.clean.md",
+      "planted": "en/vehicle.planted.md",
+      "mistakes": [
+        {
+          "kind": "claim-before-incident",
+          "rule": "due-before-issue",
+          "line": 11,
+          "pairedLine": 9,
+          "clean": "Date of claim: August 25, 2026",
+          "planted": "Date of claim: August 5, 2026"
+        },
+        {
+          "kind": "covered-minus-deductible",
+          "rule": "net-amount-mismatch",
+          "line": 36,
+          "clean": "| $3,700.00 |",
+          "planted": "| $3,800.00 |"
+        },
+        {
+          "kind": "claimant-name",
+          "rule": "name-variant",
+          "line": 40,
+          "clean": "Gareth Pemberton's policy",
+          "planted": "Gareth Pembleton's policy"
+        },
+        {
+          "kind": "policy-number",
+          "rule": "reference-number-variant",
+          "line": 42,
+          "clean": "policy number MV-7351-2846",
+          "planted": "policy number MV-7351-2486"
+        }
+      ]
+    }
+  ]
+}
