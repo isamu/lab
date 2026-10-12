@@ -8,7 +8,16 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { prepare } from "../packages/lang-ja/src/pos.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import { netAmountMismatch } from "../packages/chaff/src/detectors/net-amount-mismatch.ts";
-import { allowedGap, amountOf, netMismatch, roleOf, type LabelledAmount, type NetRole, type NetWords } from "../packages/chaff/src/structure/net-amount.ts";
+import {
+  allowedGap,
+  amountOf,
+  netMismatch,
+  readLabel,
+  roleOf,
+  type LabelledAmount,
+  type NetRole,
+  type NetWords,
+} from "../packages/chaff/src/structure/net-amount.ts";
 
 // 総額 − 控除合計 と差引額（net-amount-mismatch）。例は自作。
 
@@ -31,6 +40,13 @@ const WORDS: NetWords = {
     net: ["差引支給額", "Net pay"],
     taxable: ["課税対象額", "Taxable income"],
   },
+  periods: [
+    { pattern: "前期分の", position: "before", group: "前期" },
+    { pattern: "後期分の", position: "before", group: "後期" },
+    { pattern: "fall", position: "before", group: "fall" },
+    { pattern: "for the fall", position: "after", group: "fall" },
+  ],
+  periodLabels: { gross: ["Charges"] },
   magnitudes: ["千", "万", "million"],
   percentUnits: ["%"],
 };
@@ -60,6 +76,32 @@ describe("roleOf", () => {
     assert.equal(roleOf("Net pay to date", WORDS), undefined);
     assert.equal(roleOf("", WORDS), undefined);
     assert.equal(roleOf("所得税", WORDS), undefined);
+  });
+
+  it("names the role of a word with a period on its side (前期分の, Fall, for the fall)", () => {
+    assert.equal(roleOf("前期分の差引支給額", WORDS), "net");
+    assert.equal(roleOf("前期分の総支給額（円）", WORDS), "gross");
+    assert.equal(roleOf("Fall gross pay", WORDS), "gross");
+    assert.equal(roleOf("Net pay for the fall", WORDS), "net");
+    assert.equal(roleOf("Fall charges", WORDS), "gross");
+    assert.deepEqual(readLabel("前期分の差引支給額", WORDS), { role: "net", period: "前期" });
+    assert.deepEqual(readLabel("Net pay for the fall", WORDS), { role: "net", period: "fall" });
+    assert.deepEqual(readLabel("Net pay", WORDS), { role: "net" });
+  });
+
+  it("reads a name kept for periods only when a period is on it", () => {
+    assert.equal(roleOf("Charges", WORDS), undefined);
+    assert.equal(roleOf("Charges for the fall", WORDS), "gross");
+  });
+
+  it("names none for a period alone, on the wrong side, inside a word, or one not listed", () => {
+    assert.equal(roleOf("前期分の", WORDS), undefined);
+    assert.equal(roleOf("Fall", WORDS), undefined);
+    assert.equal(roleOf("差引支給額前期分の", WORDS), undefined);
+    assert.equal(roleOf("For the fall net pay", WORDS), undefined);
+    assert.equal(roleOf("Fallgross pay", WORDS), undefined);
+    assert.equal(roleOf("前年の差引支給額", WORDS), undefined);
+    assert.equal(roleOf("Net pay for the year", WORDS), undefined);
   });
 });
 
@@ -335,6 +377,54 @@ describe("net-amount-mismatch in documents", () => {
       ["| Item | FY2025 |", "| --- | --- |", "| Gross amount | 1,200 |", "| Total deductions | 301 |", `| Net amount | ${net} |`].join("\n");
     assert.deepEqual(detected(rounded("900"), en), []);
     assert.deepEqual(detected(rounded("896"), en), ["896:899"]);
+  });
+
+  it("reports a tuition notice whose amount due is not the charges less the waiver or scholarship", () => {
+    const waiver = (due: string): string => ["- 前期分の学費：820,000円", "- 減免額：240,000円", `- 前期分の納入額：${due}`].join("\n");
+    assert.deepEqual(found(waiver("560,000円"), ja), ["560,000円:580,000円"]);
+    assert.deepEqual(found(waiver("580,000円"), ja), []);
+    const scholarship = (due: string): string => ["- 学費合計：145,000円", "- 奨学金充当額：20,000円", `- 納付額：${due}`].join("\n");
+    assert.deepEqual(found(scholarship("152,000円"), ja), ["152,000円:125,000円"]);
+    assert.deepEqual(found(scholarship("125,000円"), ja), []);
+    const fall = (due: string): string => ["- Fall charges: $8,600.00", "- Scholarship applied: $3,600.00", `- Amount due for the fall: ${due}`].join("\n");
+    assert.deepEqual(found(fall("$5,600.00"), en), ["$5,600.00:$5,000.00"]);
+    assert.deepEqual(found(fall("$5,000.00"), en), []);
+    const grant = (due: string): string =>
+      ["| Item | Amount |", "| --- | --- |", "| Total charges | $2,375.00 |", "| Grant applied | $400.00 |", `| Amount due | ${due} |`].join("\n");
+    assert.deepEqual(found(grant("$1,795.00"), en), ["$1,795.00:$1,975.00"]);
+    assert.deepEqual(found(grant("$1,975.00"), en), []);
+    const feeWaiver = (due: string): string =>
+      ["| Total charges | Fee waiver | Amount due |", "| --- | --- | --- |", `| $1,200.00 | $150.00 | ${due} |`].join("\n");
+    assert.deepEqual(found(feeWaiver("$1,005.00"), en), ["$1,005.00:$1,050.00"]);
+  });
+
+  it("does not read an invoice or a notice that names no deduction taken off the charges", () => {
+    const invoice = ["- 小計：100,000円", "- 消費税：10,000円", "- ご請求額：110,000円"].join("\n");
+    assert.deepEqual(detected(invoice, ja), []);
+    const paidApart = ["- 学費：800,000円", "- 奨学金：600,000円", "- 納入額：800,000円"].join("\n");
+    assert.deepEqual(detected(paidApart, ja), []);
+    const statement = ["- Previous balance: $120.00", "- Total charges: $80.00", "- Payments received: $120.00", "- Amount due: $80.00"].join("\n");
+    assert.deepEqual(detected(statement, en), []);
+    const twoTerms = ["- 前期分の学費：820,000円", "- 後期分の学費：570,000円", "- 減免額：240,000円", "- 前期分の納入額：580,000円"].join("\n");
+    assert.deepEqual(detected(twoTerms, ja), []);
+    const otherTerm = ["- 前期分の学費：820,000円", "- 後期分の減免額：240,000円", "- 前期分の納入額：820,000円"].join("\n");
+    assert.deepEqual(detected(otherTerm, ja), []);
+    const springGrant = ["- Fall charges: $8,600.00", "- Spring scholarship applied: $3,600.00", "- Amount due for the fall: $8,600.00"].join("\n");
+    assert.deepEqual(detected(springGrant, en), []);
+    const plainCharges = ["- Charges: $8,600.00", "- Scholarship applied: $3,600.00", "- Amount due: $8,600.00"].join("\n");
+    assert.deepEqual(detected(plainCharges, en), []);
+  });
+
+  it("keeps a plain Charges row from closing-total reading as a gross amount", () => {
+    const settlement = ["| Item | Amount |", "| --- | --- |", "| Charges | $80.00 |", "| Cleaning | $120.00 |", "| Total deductions | $250.00 |"].join("\n");
+    const totals = runRules(
+      buildDocument("t.md", `# 明細\n\n${settlement}\n`, en),
+      loadRules(en.id),
+      { "total-mismatch": "normal" },
+      false,
+      "business/proposal",
+    ).findings.filter((finding) => finding.rule === "total-mismatch");
+    assert.equal(totals.length, 1);
   });
 
   it("reports a claim settlement whose amount paid is not the loss less the excess", () => {

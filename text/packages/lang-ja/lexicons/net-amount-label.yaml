@@ -42,3 +42,10 @@ entries:
   - { pattern: 課税対象額, group: taxable }
   - { pattern: 課税所得, group: taxable }
   - { pattern: 課税所得金額, group: taxable }
+  # 学費の通知書: 学費から減免額や奨学金の充当額を差し引いた納入額。「奨学金」だけの行は、学費から引くのか別に給付するのかを言わないので入れない。
+  - { pattern: 学費, group: gross }
+  - { pattern: 学費合計, group: gross }
+  - { pattern: 減免額, group: deduction }
+  - { pattern: 奨学金充当額, group: deduction }
+  - { pattern: 納入額, group: net }
+  - { pattern: 納付額, group: net }
