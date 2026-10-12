@@ -1,0 +1,10 @@
+# Headings of the column naming the goods in an itemised table or a price list. A number in a name (A5, 0.5 mm) is no
+# discount or tax rate, so a row with one there is still compared (line-amount-mismatch).
+id: item-name-column
+language: en
+entries:
+  - pattern: Description
+  - pattern: Item
+  - pattern: Item name
+  - pattern: Product
+  - pattern: Product name

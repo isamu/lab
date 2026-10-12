@@ -15,7 +15,17 @@ const findingsOf = (source: string, adapter = ja): readonly string[] => namedRul
 const table = (rows: readonly string[]): string => ["| 品目 | 数量 | 単価 | 金額 |", "| --- | --- | --- | --- |", ...rows].join("\n") + "\n";
 const enTable = (rows: readonly string[]): string => ["| Item | Quantity | Unit price | Amount |", "| --- | --- | --- | --- |", ...rows].join("\n") + "\n";
 
-const NO_UNITS = { units: [], perUnitMarks: [], headerUnits: [], measureUnits: [], orderRoles: [] };
+const NO_UNITS = {
+  units: [],
+  perUnitMarks: [],
+  headerUnits: [],
+  measureUnits: [],
+  orderRoles: [],
+  packCount: [],
+  packPrice: [],
+  itemName: [],
+  taxIncluded: [],
+};
 const VOLUME = ["L", "m³", "㎥"];
 
 const cell = (text: string): { start: number; text: string } => ({ start: 0, text });
@@ -366,6 +376,68 @@ describe("line-amount-mismatch: 数量×単価が金額と合わない", () => {
     assert.deepEqual(findingsOf("| 品目 | 数量 | 人数 | 単価 | 金額 |\n| --- | --- | --- | --- | --- |\n| 研修 | 2回 | 10名 | 5,000円 | 100,000円 |\n"), []);
     assert.deepEqual(findingsOf("| Plan | Seats | Monthly | Annual |\n| --- | --- | --- | --- |\n| Team | 5 | £10.00 | £600.00 |\n", en), []);
     assert.deepEqual(findingsOf("| Room | Guests | Rate | Amount |\n| --- | --- | --- | --- |\n| Double | 2 | $150.00 | $450.00 |\n", en), []);
+  });
+
+  const rows = (heading: string, body: readonly string[]): string => {
+    const width = heading.split("|").length - 2;
+    return [heading, `|${" --- |".repeat(width)}`, ...body].join("\n") + "\n";
+  };
+  const JA_PACK = "| 品番 | 品名 | 入数 | 単価（税抜） | 1箱の価格（税抜） | 1箱の価格（税込・10%） |";
+  const EN_PACK = "| Item code | Description | Pack of | Unit price (excl. tax) | Pack price (excl. tax) | Pack price (incl. 8% tax) |";
+
+  it("カタログの入数 × 単価が1箱の価格と合わない行を指す（品名の数と税込の価格の列があっても）", () => {
+    assert.deepEqual(findingsOf(rows(JA_PACK, ["| NB-1 | 方眼ノート A5 | 5冊 | 190円 | 900円 | 990円 |"])), [
+      "金額「900円」が、数量×単価（5冊 × 190円 = 950円）と合いません",
+    ]);
+    assert.deepEqual(findingsOf(rows(EN_PACK, ["| NB-1 | Grid notebook, A5 | 5 notebooks | $1.90 | $9.00 | $9.72 |"]), en), [
+      "The amount $9.00 is not quantity × unit price (5 notebooks × $1.90 = $9.50)",
+    ]);
+    assert.deepEqual(findingsOf(rows("| Product | Units per box | Unit price | Box price |", ["| Clip | 20 | $0.35 | $7.50 |"]), en), [
+      "The amount $7.50 is not quantity × unit price (20 × $0.35 = $7.00)",
+    ]);
+    assert.deepEqual(
+      findingsOf(rows(JA_PACK, ["| NB-1 | 方眼ノート A5 | 5冊 | 180円 | 900円 | 990円 |", "| CL-2 | クリップ | 20個 | 35円 | 700円 | 770円 |"])),
+      [],
+    );
+    assert.deepEqual(findingsOf(rows(EN_PACK, ["| NB-1 | Grid notebook, A5 | 5 notebooks | $1.80 | $9.00 | $9.72 |"]), en), []);
+  });
+
+  it("入数は注文の数量ではない。1箱の価格の列が無ければ読まず、注文の数量と金額の列は1箱の価格を変えない", () => {
+    const order = "| 品名 | 入数 | 単価 | 数量 | 金額 |";
+    assert.deepEqual(findingsOf(rows(order, ["| ボールペン | 10本 | 120円 | 3箱 | 3,600円 |", "| ボールペン | 10本 | 1,200円 | 3箱 | 3,600円 |"])), []);
+    assert.deepEqual(findingsOf(rows("| 品名 | 入数 | 単価 | 金額 |", ["| ボールペン | 10本 | 120円 | 1,000円 |"])), []);
+    const both = "| 品名 | 入数 | 単価 | 1箱の価格 | 数量 | 金額 |";
+    assert.deepEqual(findingsOf(rows(both, ["| ボールペン | 10本 | 120円 | 1,200円 | 3箱 | 3,600円 |"])), []);
+    assert.deepEqual(findingsOf(rows(both, ["| ボールペン | 10本 | 120円 | 1,300円 | 3箱 | 3,900円 |"])), [
+      "金額「1,300円」が、数量×単価（10本 × 120円 = 1,200円）と合いません",
+    ]);
+    const enBoth = "| Item | Pack of | Unit price | Pack price | Qty | Amount |";
+    // The order's amount is quantity × pack price, which the unit price does not give: that row is not compared.
+    assert.deepEqual(findingsOf(rows(enBoth, ["| Pen | 10 | $1.20 | $12.00 | 3 | $36.00 |", "| Pen | 10 | $1.20 | $12.00 | 3 | $40.00 |"]), en), []);
+  });
+
+  it("入数の列の無い価格表（注文数ごとの1箱の価格）は読まない", () => {
+    const tier = "| ご注文数 | 1枚の単価（税抜） | 1箱の価格（税抜） | 1箱の価格（税込・10%） |";
+    assert.deepEqual(findingsOf(rows(tier, ["| 100箱以上 | 6.4円 | 6,600円 | 7,260円 |"])), []);
+    const enTier = "| Order quantity | Price per envelope (excl. tax) | Box price (excl. tax) | Box price (incl. 8% tax) |";
+    assert.deepEqual(findingsOf(rows(enTier, ["| 100 boxes or more | $0.064 | $66.00 | $71.28 |"]), en), []);
+  });
+
+  it("品名の列と、金額を税込で言い直す列の数では行を外さない。ほかの列の数では外す", () => {
+    assert.deepEqual(findingsOf(rows("| 品番 | 品名 | 数量 | 単価 | 金額 |", ["| NB-1 | 方眼ノート A5 | 4冊 | 180円 | 700円 |"])), [
+      "金額「700円」が、数量×単価（4冊 × 180円 = 720円）と合いません",
+    ]);
+    assert.deepEqual(findingsOf(rows("| 品目 | 数量 | 単価 | 金額（税抜） | 金額（税込） |", ["| 設計 | 4 | 1,000円 | 3,500円 | 3,850円 |"])), [
+      "金額「3,500円」が、数量×単価（4 × 1,000円 = 4,000円）と合いません",
+    ]);
+    assert.deepEqual(findingsOf(rows("| Item | Qty | Unit price | Amount | Amount (incl. tax) |", ["| Pen | 4 | $1.00 | $3.50 | $3.78 |"]), en), [
+      "The amount $3.50 is not quantity × unit price (4 × $1.00 = $4.00)",
+    ]);
+    assert.deepEqual(findingsOf(rows("| 品番 | 規格 | 数量 | 単価 | 金額 |", ["| NB-1 | A5 | 4冊 | 180円 | 700円 |"])), []);
+    assert.deepEqual(findingsOf(rows("| 品目 | 数量 | 単価 | 単価（税込） | 金額 |", ["| 設計 | 4 | 1,000円 | 1,100円 | 3,500円 |"])), []);
+    assert.deepEqual(findingsOf(rows("| Item | Qty | Unit price | Tax rate (incl.) | Amount |", ["| Pen | 4 | $1.00 | 8% | $3.50 |"]), en), []);
+    assert.deepEqual(findingsOf(rows("| 品目 | 数量 | 単価 | 金額 | 金額のうち値引き |", ["| 設計 | 4 | 1,000円 | 3,500円 | 500円 |"])), []);
+    assert.deepEqual(findingsOf(rows("| Item | Pack of | Unit price | Pack price | Amount |", ["| Pen | 10 | $1.20 | $13.00 | $1.00 |"]), en), []);
   });
 
   it("単位を読む", () => {

@@ -1,5 +1,5 @@
 // line-amount-mismatch: the reading half. The column names come from the language's lexicons (quantity-column,
-// unit-price-column, line-amount-column), the units from rate-unit, per-unit-mark and the measure lexicons (unit-volume, …); the tables are read from the prose with its tables put back, so code is not.
+// unit-price-column, line-amount-column; pack-count-column and pack-price-column for a catalog's packs), the units from rate-unit, per-unit-mark and the measure lexicons (unit-volume, …); the tables are read from the prose with its tables put back, so code is not.
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { measureUnitsOf } from "../facts/measure-units.ts";
 import { quantityWordsOf } from "./order-quantity.ts";
@@ -24,6 +24,10 @@ const wordsOf = (doc: ProseDocument): LineAmountWords => ({
   headerUnits: unitWordsOf(doc, "quantity-column", "unit-price-column", "line-amount-column"),
   measureUnits: measureUnitsOf(doc).flatMap((unit) => (unit.before ? [] : [unit.pattern])),
   orderRoles: quantityWordsOf(doc).columns,
+  packCount: patternsOf(doc, "pack-count-column"),
+  packPrice: patternsOf(doc, "pack-price-column"),
+  itemName: patternsOf(doc, "item-name-column"),
+  taxIncluded: patternsOf(doc, "tax-included-word"),
 });
 
 export const lineAmount: Detector = (doc): Finding[] =>
