@@ -21,7 +21,7 @@ const wordsOf = (doc: ProseDocument): LineAmountWords => ({
   amount: patternsOf(doc, "line-amount-column"),
   units: unitWordsOf(doc, "rate-unit"),
   perUnitMarks: unitWordsOf(doc, "per-unit-mark"),
-  headerUnits: unitWordsOf(doc, "quantity-column", "unit-price-column"),
+  headerUnits: unitWordsOf(doc, "quantity-column", "unit-price-column", "line-amount-column"),
   measureUnits: measureUnitsOf(doc).flatMap((unit) => (unit.before ? [] : [unit.pattern])),
   orderRoles: quantityWordsOf(doc).columns,
 });

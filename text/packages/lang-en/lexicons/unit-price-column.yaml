@@ -12,3 +12,5 @@ entries:
   - { pattern: Hourly rate, group: hour }
   - { pattern: Rate per hour, group: hour }
   - { pattern: Rate per mile, group: mile }
+  - { pattern: Monthly, group: month }
+  - { pattern: Monthly rent, group: month }

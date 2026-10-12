@@ -10,3 +10,6 @@ entries:
   - pattern: 点数
   - { pattern: 時間, group: hour }
   - pattern: 走行距離
+  # 賃料の明細の月数（月額 × 月数 = 年額）。
+  - { pattern: 月数, group: month }
+  - { pattern: ヶ月, group: month }
