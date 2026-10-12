@@ -1,0 +1,20 @@
+# 医療費の明細や領収書で、患者が払う額を、書いた負担の割合（3割、30%）と合計から確かめる語（share-amount-mismatch）。
+# group: base は割合を掛ける合計、share は負担の語（升や値が率なら負担の割合、金額なら払う額）、paid は払う額だけを言う語で、同じ行に
+# 負担の割合の升があるときだけ払う額と読む。group: rounding は、その単位の金額を丸めてよい刻み（weight）。窓口の負担は10円の位で丸める。
+id: share-amount-label
+language: ja
+entries:
+  - { pattern: 合計, group: base }
+  - { pattern: 総額, group: base }
+  - { pattern: 医療費, group: base }
+  - { pattern: 負担割合, group: share }
+  - { pattern: 負担率, group: share }
+  - { pattern: 自己負担, group: share }
+  - { pattern: 窓口負担, group: share }
+  - { pattern: 一部負担金, group: share }
+  - { pattern: 負担額, group: share }
+  - { pattern: 請求額, group: paid }
+  - { pattern: 領収額, group: paid }
+  - { pattern: お支払額, group: paid }
+  - { pattern: 円, group: rounding, weight: 10 }
+  - { pattern: ¥, group: rounding, weight: 10 }
