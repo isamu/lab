@@ -1,0 +1,58 @@
+id: share-amount-mismatch
+layer: L3
+status: stable
+how_to_find: share-amount
+# The total, share and payment words, and the step a unit may be rounded to, come from the language's share-amount-label
+# lexicon. The arithmetic (rate × total, rounded down, to nearest or up) is tax-mismatch's.
+extra_word_lists: [share-amount-label]
+severity: warning
+
+name:
+  ja: 負担額が合計に負担の割合を掛けた額と合わない
+  en: An amount paid that is not the stated share of the total
+
+why:
+  ja: 医療費の明細書や領収書で、負担割合が3割、合計が10,000円なら、払う額は3,000円です。負担額がこれと合わないと、患者は払いすぎか払い足りないかを確かめられません。合計を直して負担額を直し忘れたとき、別の患者の額を写したとき、割合を取り違えたときに起きます。表なら、見出しが合計・負担割合・負担額を言う列の、同じ行の三つの升で比べます。負担割合の列が無ければ、負担額の見出しの括弧（自己負担額（3割））か、文書に一つだけ書いた「負担割合：3割」の割合を使います。表でなければ、同じ節の「合計：」の行と、その下の「自己負担額：」の行で比べます。3割は30%と読みます。
+  en: 'On a medical bill or receipt, a 30% patient share of a $600.00 total is $180.00. When the amount paid is not that, the patient cannot tell whether they paid too much or too little. It happens when the total is corrected and the share is not, when another patient''s amount is copied, or when the share is mixed up. In a table, the three cells of one row are compared, in the columns whose headings name the total, the share and the amount paid. With no share column, the rate in brackets in the amount''s heading (Your share (30%)) or the one share the document states on a line of its own (Patient share: 30%) is used. Outside a table, a "Total:" line is compared with a "Your share:" line below it in the same section.'
+
+message:
+  ja: 負担額「{written}」が、合計「{base}」の{rate}（{expected}）と合いません
+  en: "The amount {written} is not {rate} of the total {base} ({expected})"
+
+how_to_fix:
+  ja: 合計と負担の割合を確かめて、負担額を計算し直してください。
+  en: Check the total and the share, and work the amount out again.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 医療費の明細で、負担額が合計の3割（30%）などと合わない所
+  en: An amount paid on a medical bill that is not the stated share (30%) of the total
+example:
+  ja:
+    before: |
+      | 合計 | 負担割合 | 負担額 |
+      | --- | --- | --- |
+      | 10,000円 | 3割 | 3,300円 |
+    after: |
+      | 合計 | 負担割合 | 負担額 |
+      | --- | --- | --- |
+      | 10,000円 | 3割 | 3,000円 |
+  en:
+    before: |
+      | Total charges | Patient share | Amount paid |
+      | --- | --- | --- |
+      | $600.00 | 30% | $108.00 |
+    after: |
+      | Total charges | Patient share | Amount paid |
+      | --- | --- | --- |
+      | $600.00 | 30% | $180.00 |
+
+not_flagged:
+  ja: 端数は切り捨て・四捨五入・切り上げのどれでも、円の位でも合っていると読み、円の金額は10円の位に丸めた額も合っていると読みます。合計の列や行が無いもの、払う額の列や行が二つ以上あるもの、割合が読めないもの（文書に違う割合が二つあるもの）、合計と負担額の単位が違うもの（点と円）は比べません。「請求額」「お支払額」の列は、同じ行に負担割合の升があるときだけ比べます。表でない行は、合計の行が負担額の行より下にあれば比べません。文の中に書いた額は読みません。
+  en: 'Rounding down, to the nearest or up, to the cent or to the unit, is read as right, and an amount in yen may also be rounded to 10 yen. Nothing is compared with no total column or line, with two amount columns or lines, with no share to read (or two different shares stated in the document), or with the total and the amount in different units. An "Amount paid" or "Amount due" column is compared only beside a share cell on the same row. Outside a table, a total line below the amount line is not compared. An amount written in a sentence is not read.'

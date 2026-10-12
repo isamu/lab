@@ -1,0 +1,20 @@
+# Words that check what a patient pays against the stated share (30%) of the total on a medical bill or receipt
+# (share-amount-mismatch). group: base is the total the share is of; share is a word of the patient's share (a rate when
+# its cell or value is a rate, the amount paid when it is money); paid names only the amount paid, and is read as the share
+# only beside a share rate on the same row. A Latin word stands as a whole word. group: rounding is the step (weight) an
+# amount in that unit may be rounded to: a Japanese patient's share is rounded to 10 yen.
+id: share-amount-label
+language: en
+entries:
+  - { pattern: total charges, group: base }
+  - { pattern: total billed, group: base }
+  - { pattern: total, group: base }
+  - { pattern: patient share, group: share }
+  - { pattern: your share, group: share }
+  - { pattern: coinsurance, group: share }
+  - { pattern: co-insurance, group: share }
+  - { pattern: patient responsibility, group: share }
+  - { pattern: amount paid, group: paid }
+  - { pattern: amount due, group: paid }
+  - { pattern: you pay, group: paid }
+  - { pattern: ¥, group: rounding, weight: 10 }
