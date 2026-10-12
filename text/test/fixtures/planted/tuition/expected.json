@@ -7,7 +7,7 @@
       "installments-annual": "0/1",
       "waiver-amount-due": "0/2",
       "student-number": "2/2",
-      "credit-fee-line": "0/1"
+      "credit-fee-line": "1/1"
     },
     "en": {
       "due-before-issue": "2/2",
@@ -16,7 +16,7 @@
       "installments-annual": "1/1",
       "waiver-amount-due": "0/2",
       "student-number": "2/2",
-      "credit-fee-line": "0/1"
+      "credit-fee-line": "1/1"
     }
   },
   "clean": []
