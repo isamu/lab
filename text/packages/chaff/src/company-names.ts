@@ -5,7 +5,16 @@ import { escapeRegExp } from "./orthography.ts";
 // 会社の形の語（株式会社、Inc）は語彙表 company-form が言う。group が同じ語は同じ形（Inc と Incorporated、株式会社 と (株)）、
 // position は名前のどちら側に立つか（無ければどちらにも立つ）。名前の部分は、形の語のすぐ隣の、名前に使う字の連なり。
 
-export type CompanyForm = { readonly pattern: string; readonly group: string; readonly position?: "before" | "after" | undefined };
+/**
+ * foreign は、カタカナか英字の名前のすぐ後ろにだけ立つ形の語（サウスベイ・インポート社 の 社）。漢字の語の中（会社、本社）では形の語でない。
+ * words はこの語で始まる語（社員、社長）で、そこでは形の語と読まない。
+ */
+export type CompanyForm = {
+  readonly pattern: string;
+  readonly group: string;
+  readonly position?: "before" | "after" | undefined;
+  readonly foreign?: { readonly words: readonly string[] } | undefined;
+};
 
 /** surface は形の語も含めた書いたまま。base は名前の部分、form は形の組、position は形の語が名前のどちら側にあるか。 */
 export type CompanyMention = {
@@ -14,6 +23,8 @@ export type CompanyMention = {
   readonly base: string;
   readonly form: string;
   readonly position: "before" | "after";
+  /** カタカナか英字の名前のすぐ後ろにだけ立つ形の語（社）で書いたもの。 */
+  readonly foreign?: boolean | undefined;
 };
 
 /** 二つの書き方の違い。spelling は記号・幅・大小だけ、form は会社の形、position は形の語の側、near は名前の一字違い。 */
@@ -146,11 +157,39 @@ const mentionOf = (source: string, base: Span, form: Span, group: string): Compa
   return { surface: source.slice(start, end), offset: start, base: source.slice(base.start, base.end), form: group, position };
 };
 
+/** カタカナか英字の名前の字。英字の語の間の空白一つも名前の内。 */
+const FOREIGN_CHAR = /[\p{Script=Katakana}\p{Script=Latin}\p{N}ー・&＆'’.\- ]/u;
+/** 形の語のすぐ前の字。カタカナ・長音の印・英字のときだけ、形の語と読む（会社、本社、神社の 社 は読まない）。 */
+const FOREIGN_END = /(?:[\p{Script=Katakana}ー\p{Script=Latin}]|\p{Script=Latin}\.)$/u;
+/** 名前の頭に立たない字（空白、記号、数字だけの頭はそのまま残す）。 */
+const FOREIGN_LEAD = /^[\s・&＆'’.-]+/u;
+/** カタカナの語に一字の記号を付けた仮の名前（ベンダーA、メーカーB）。名前ではないので、A と B を一字違いと見ない。 */
+const PLACEHOLDER = /[\p{Script=Katakana}ー]\s?[\p{Lu}\p{N}]$/u;
+
+/** text の終わりに続く、カタカナか英字の名前の字の始まり。 */
+const foreignRunStart = (text: string): number => {
+  let start = text.length;
+  while (start > 0 && FOREIGN_CHAR.test(text.charAt(start - 1))) start -= 1;
+  return start;
+};
+
+/** カタカナか英字の名前のすぐ後ろの形の語（サウスベイ・インポート社、Marlow Bay社）。形の語で始まる漢字の語（社員、社長）は外す。 */
+const foreignMentionAt = (source: string, form: CompanyForm, at: number, words: readonly string[]): CompanyMention | undefined => {
+  const before = source.slice(0, at);
+  if (!FOREIGN_END.test(before) || words.some((word) => source.startsWith(word, at))) return undefined;
+  const run = before.slice(foreignRunStart(before));
+  const start = at - run.length + (FOREIGN_LEAD.exec(run)?.[0].length ?? 0);
+  const base = { start, end: at };
+  if (!isNameBase(source, base, () => false) || PLACEHOLDER.test(source.slice(start, at))) return undefined;
+  return { ...mentionOf(source, base, { start: at, end: at + form.pattern.length }, form.group), foreign: true };
+};
+
 const baseBefore = (source: string, at: number, latin: boolean, isProper: IsProper, stops: KanaStops): Span | undefined =>
   latin ? latinBaseBefore(source, at, isProper) : cjkBaseBefore(source, at, stops);
 
 /** 形の語の一つの現れから、会社の名前の現れ。名前が前にあればそれを、無ければ後ろを取る。 */
 const mentionAt = (source: string, form: CompanyForm, at: number, isProper: IsProper, stops: KanaStops): CompanyMention | undefined => {
+  if (form.foreign !== undefined) return foreignMentionAt(source, form, at, form.foreign.words);
   const formSpan = { start: at, end: at + form.pattern.length };
   const latin = LATIN.test(form.pattern);
   if (latin && CONTINUED.test(source.slice(formSpan.end))) return undefined;
@@ -241,9 +280,12 @@ export const isKanaWordSlip = (left: string, right: string): boolean => {
   return change !== undefined && change.changed.every((char) => KANA.test(char)) && kanaRunLength(change.chars, change.at) >= MIN_KANA_WORD_LENGTH;
 };
 
-/** 名前の部分が同じ二つ。同じ形の短い書き方と長い書き方（株式会社 と (株)、Inc と Incorporated）は書き分けと見ない。 */
+/**
+ * 名前の部分が同じ二つ。同じ形の短い書き方と長い書き方（株式会社 と (株)、Inc と Incorporated）は書き分けと見ない。社で呼ぶ書き方
+ * （アップル社 と アップル株式会社）は正式の名前を略した呼び方なので、ほかの形の語と比べない。
+ */
 const sameNameRelation = (left: CompanyMention, right: CompanyMention): CompanyRelation | undefined => {
-  if (left.form !== right.form) return "form";
+  if (left.form !== right.form) return left.foreign === true || right.foreign === true ? undefined : "form";
   if (left.position !== right.position) return "position";
   return nameKey(left.surface) === nameKey(right.surface) ? "spelling" : undefined;
 };

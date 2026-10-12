@@ -1,0 +1,45 @@
+# カタカナか英字の会社の名前のすぐ後ろにだけ立つ形の語（サウスベイ・インポート社、Marlow Bay社）。name-variant が読む。
+# group が使い方を決める。
+#   form: 形の語。すぐ前の字がカタカナ・長音の印・英字のときだけ形の語と読む。漢字の語の中（会社、本社、神社、弊社）では読まない。
+#         社で呼ぶ書き方は正式の名前を略したものなので、株式会社 など company-form の形の語と書き分けとは見ない
+#   word: form の語で始まる漢字の語（グループ社長 の 社長）。そこでは form を形の語と読まない
+id: company-form-foreign
+language: ja
+entries:
+  - { pattern: 社, group: form }
+  - { pattern: 社員, group: word }
+  - { pattern: 社長, group: word }
+  - { pattern: 社内, group: word }
+  - { pattern: 社外, group: word }
+  - { pattern: 社会, group: word }
+  - { pattern: 社名, group: word }
+  - { pattern: 社債, group: word }
+  - { pattern: 社屋, group: word }
+  - { pattern: 社是, group: word }
+  - { pattern: 社訓, group: word }
+  - { pattern: 社歴, group: word }
+  - { pattern: 社団, group: word }
+  - { pattern: 社宅, group: word }
+  - { pattern: 社用, group: word }
+  - { pattern: 社章, group: word }
+  - { pattern: 社旗, group: word }
+  - { pattern: 社交, group: word }
+  - { pattern: 社説, group: word }
+  - { pattern: 社殿, group: word }
+  - { pattern: 社寺, group: word }
+  - { pattern: 社食, group: word }
+  - { pattern: 社有, group: word }
+  - { pattern: 社風, group: word }
+  - { pattern: 社則, group: word }
+  - { pattern: 社運, group: word }
+  - { pattern: 社務, group: word }
+  - { pattern: 社主, group: word }
+  - { pattern: 社葬, group: word }
+  - { pattern: 社報, group: word }
+  - { pattern: 社告, group: word }
+  - { pattern: 社業, group: word }
+  - { pattern: 社費, group: word }
+  - { pattern: 社友, group: word }
+  - { pattern: 社印, group: word }
+  - { pattern: 社判, group: word }
+  - { pattern: 社労士, group: word }
