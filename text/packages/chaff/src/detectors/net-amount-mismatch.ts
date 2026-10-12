@@ -23,6 +23,7 @@ const wordsOf = (doc: ProseDocument): NetWords => ({
   labels: {
     gross: patternsOf(doc, "net-amount-label", "gross"),
     deduction: patternsOf(doc, "net-amount-label", "deduction"),
+    "deduction-part": patternsOf(doc, "net-amount-label", "deduction-part"),
     net: patternsOf(doc, "net-amount-label", "net"),
     taxable: patternsOf(doc, "net-amount-label", "taxable"),
   },
@@ -70,7 +71,7 @@ const sectionIssues = (lines: readonly Line[], source: string, words: NetWords):
 
 export const netAmountMismatch: Detector = (doc): Finding[] => {
   const words = wordsOf(doc);
-  if (words.labels.gross.length === 0 || words.labels.deduction.length === 0) return [];
+  if (words.labels.gross.length === 0 || words.labels.deduction.length + words.labels["deduction-part"].length === 0) return [];
   const lines = linesOf(proseAndTablesOf(doc));
   return [...tableIssues(lines, words), ...sectionIssues(lines, doc.source, words)]
     .toSorted((left, right) => left.offset - right.offset)

@@ -1,13 +1,13 @@
 /**
  * net-amount-mismatch: the deciding half. A net amount (差引支給額, Net pay) or a taxable amount (課税対象額, Taxable income)
  * against the gross amount (総支給額, Gross pay) minus the total of deductions (控除合計, Total deductions) written in the same
- * table or the same section. Which words name them is data (lexicon net-amount-label, grouped gross / deduction / net /
- * taxable); nothing here knows a word of payroll or tax. Pure.
+ * table or the same section, or minus the parts of the deductions added up (手付金, 融資金). Which words name them is data
+ * (lexicon net-amount-label, grouped gross / deduction / deduction-part / net / taxable); nothing here knows a word of payroll or tax. Pure.
  */
 import { keyOf, labelKey, noteOf, readNumber } from "./ratio.ts";
 import { withoutPeriod, type TotalQualifier } from "./total-line.ts";
 
-export const NET_ROLES = ["gross", "deduction", "net", "taxable"] as const;
+export const NET_ROLES = ["gross", "deduction", "deduction-part", "net", "taxable"] as const;
 export type NetRole = (typeof NET_ROLES)[number];
 
 /** A period word; group names its term, so "Fall" and "for the fall" are one term. */
@@ -38,7 +38,8 @@ export type NetAmount = {
   readonly grouped: boolean;
 };
 
-export type LabelledAmount = NetAmount & { readonly role: NetRole; readonly period?: string | undefined };
+/** label is the role's word, its note aside: amounts of one label are one value, and parts of different labels add up. */
+export type LabelledAmount = NetAmount & { readonly role: NetRole; readonly period?: string | undefined; readonly label?: string };
 
 export type NetIssue = { readonly offset: number; readonly values: Readonly<Record<string, string>> };
 
@@ -66,12 +67,29 @@ export const readLabel = (label: string, words: NetWords): LabelRead | undefined
 
 export const roleOf = (label: string, words: NetWords): NetRole | undefined => readLabel(label, words)?.role;
 
+/** A note that may name a unit: no digit in it (手付金（契約時100万円支払済） describes), and a magnitude or a currency code. */
+const CURRENCY_CODE = /^[(（]\s*[A-Z]{3}\s*[)）]$/u;
+const DIGIT_IN_NOTE = /\d/u;
+
+/**
+ * The part of a label's note that is a unit. An amount without marks takes its unit from the note (総支給額（千円）). An
+ * amount with its own mark keeps only a note naming a magnitude or a currency (Gross pay ($ million), Net pay (USD)); any
+ * other note says what the amount is (手付金（契約時にお支払い済み）, Loan proceeds (from the buyer's lender)) and is not its unit.
+ */
+const unitNote = (marks: string, labelNote: string, words: Pick<NetWords, "magnitudes">): string => {
+  const note = keyOf(labelNote);
+  if (marks === "") return note;
+  const raw = labelNote.normalize("NFKC").trim();
+  const namesUnit = CURRENCY_CODE.test(raw) || words.magnitudes.some((word) => note.includes(keyOf(word)));
+  return namesUnit && !DIGIT_IN_NOTE.test(raw) ? note : "";
+};
+
 /** One plain number with its marks ("256,287円", "$4,301.01"); a percentage, a signed or a bracketed value is not an amount. */
-export const amountOf = (text: string, start: number, labelNote: string, words: Pick<NetWords, "percentUnits">): NetAmount | undefined => {
+export const amountOf = (text: string, start: number, labelNote: string, words: Pick<NetWords, "percentUnits" | "magnitudes">): NetAmount | undefined => {
   const cell = readNumber(text);
   if (cell === undefined || words.percentUnits.some((unit) => keyOf(unit) === keyOf(cell.suffix))) return undefined;
   const [prefix, suffix] = [keyOf(cell.prefix), keyOf(cell.suffix)];
-  const unit = `${prefix}|${suffix}|${keyOf(labelNote)}`;
+  const unit = `${prefix}|${suffix}|${unitNote(prefix + suffix, labelNote, words)}`;
   return { start, value: cell.value, decimals: cell.decimals, prefix, suffix, unit, written: text.trim(), grouped: text.normalize("NFKC").includes(",") };
 };
 
@@ -82,6 +100,30 @@ const onlyAmount = (amounts: readonly LabelledAmount[], role: NetRole): Labelled
   if (first === undefined) return undefined;
   return mine.every((amount) => amount.value === first.value && amount.unit === first.unit) ? (mine.at(-1) ?? first) : undefined;
 };
+
+/** The parts of the deductions added up: one value per label (手付金 and 融資金), all in one unit; undefined otherwise. */
+const partsTotal = (amounts: readonly LabelledAmount[]): LabelledAmount | undefined => {
+  const parts = amounts.filter((amount) => amount.role === "deduction-part");
+  const labels = [...new Set(parts.map((amount) => amount.label ?? ""))];
+  const perLabel = labels.map((label) =>
+    onlyAmount(
+      parts.filter((amount) => (amount.label ?? "") === label),
+      "deduction-part",
+    ),
+  );
+  const values = perLabel.filter((amount): amount is LabelledAmount => amount !== undefined);
+  const [first] = values;
+  if (first === undefined || values.length !== perLabel.length || values.some((value) => value.unit !== first.unit)) return undefined;
+  const value = values.reduce((total, part) => total + part.value, 0);
+  return { ...first, value, decimals: Math.max(...values.map((part) => part.decimals)) };
+};
+
+/**
+ * What is taken off the gross: the total of deductions when the scope names one (控除合計), so parts written beside it are
+ * not counted twice; otherwise the parts added up (売買代金 − 手付金 − 融資金 = 残代金).
+ */
+const deductionOf = (amounts: readonly LabelledAmount[]): LabelledAmount | undefined =>
+  amounts.some((amount) => amount.role === "deduction") ? onlyAmount(amounts, "deduction") : partsTotal(amounts);
 
 /**
  * The amount gross minus deductions is compared with: the net, or the taxable amount when the scope names no net. A scope
@@ -131,7 +173,7 @@ export const netMismatch = (
   words: NetWords,
   netNamed = amounts.some((amount) => amount.role === "net"),
 ): NetIssue | undefined => {
-  const [gross, deduction, net] = [onlyAmount(amounts, "gross"), onlyAmount(amounts, "deduction"), resultOf(amounts, netNamed)];
+  const [gross, deduction, net] = [onlyAmount(amounts, "gross"), deductionOf(amounts), resultOf(amounts, netNamed)];
   if (gross === undefined || deduction === undefined || net === undefined) return undefined;
   if (new Set([gross, deduction, net].flatMap((amount) => amount.period ?? [])).size > 1) return undefined;
   if (gross.unit !== deduction.unit || gross.unit !== net.unit) return undefined;
@@ -153,7 +195,7 @@ const labelledCells = (labels: readonly NetCell[], values: readonly NetCell[], w
     const read = readLabel(label.text, words);
     const value = values[column];
     const amount = read === undefined || value === undefined ? undefined : amountOf(value.text, value.start, noteOf(label.text), words);
-    return read === undefined || amount === undefined ? [] : [{ ...amount, ...read }];
+    return read === undefined || amount === undefined ? [] : [{ ...amount, ...read, label: labelKey(label.text) }];
   });
 
 /** A table whose header names the three columns: each body row of the same width is one scope. */
