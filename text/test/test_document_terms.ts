@@ -8,6 +8,7 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import { documentTermConflicts, type TermWord, type TermWords } from "../packages/chaff/src/facts/document-terms.ts";
 import type { ScopedFact } from "../packages/chaff/src/facts/fact-scope.ts";
+import { wholeCountConflicts, type CountWords } from "../packages/chaff/src/facts/whole-counts.ts";
 
 // 文書全体で一つの値を持つ項目（試用期間）の、表の値と別の節の文の値。
 
@@ -266,5 +267,119 @@ describe("fact-conflict: a whole-document item across sections", () => {
 
   it("an item not in the lexicon is still compared only within a section", () => {
     assert.deepEqual(ja2("## 条件", "", "| 項目 | 内容 |", "| --- | --- |", "| 研修期間 | 3ヶ月 |", "", "## その他", "", "研修期間は6ヶ月です。"), []);
+  });
+});
+
+const COUNT_WORDS: CountWords = {
+  columns: [
+    { pattern: "枚数", group: "tickets" },
+    { pattern: "人数", group: "people" },
+    { pattern: "Tickets", group: "tickets" },
+  ],
+  counters: [
+    { pattern: "枚", group: "tickets" },
+    { pattern: "名", group: "people" },
+    { pattern: "tickets", group: "tickets" },
+    { pattern: "ticket", group: "tickets" },
+  ],
+  separateRows: ["tickets"],
+  wholeMarks: [
+    { pattern: "合計", position: "before" },
+    { pattern: "in total", position: "after" },
+    { pattern: "a total of", position: "before" },
+  ],
+  notWhole: [
+    { pattern: "うち", position: "before" },
+    { pattern: "up to", position: "before" },
+    { pattern: "per", position: "before" },
+    { pattern: "まで", position: "after" },
+    { pattern: "目", position: "after" },
+  ],
+  restating: ["手数料", "fee"],
+  totalLabels: ["合計", "Total"],
+};
+
+const wholeCounts = (rows: readonly string[], sentence: string, heading = "| 席種 | 枚数 | 金額 |"): string[] => {
+  const source = [heading, "| --- | --- | --- |", ...rows, "", sentence].join("\n");
+  const start = source.length - sentence.length;
+  return wholeCountConflicts(source, [{ start, end: source.length, text: sentence }], COUNT_WORDS).map(
+    ({ start: at, end, table }) => `${source.slice(at, end)}≠${String(table.count)}${table.sum ? "(sum)" : ""}`,
+  );
+};
+
+const SEATS = ["| S席 | 2枚 | 15,600円 |", "| A席 | 1枚 | 5,500円 |", "| 発券手数料 | 3枚 | 660円 |"];
+
+describe("wholeCountConflicts: a count stated as the whole against the table's column", () => {
+  it("the rows add up when the total row gives no count; a fee row restates the tickets and is not added", () => {
+    assert.deepEqual(wholeCounts([...SEATS, "| 合計 | | 21,760円 |"], "ご注文のチケットは、合計4枚です。"), ["4枚≠3(sum)"]);
+    assert.deepEqual(wholeCounts([...SEATS, "| 合計 | | 21,760円 |"], "ご注文のチケットは、合計3枚です。"), []);
+    assert.deepEqual(wholeCounts(SEATS, "ご注文のチケットは、合計４枚です。"), ["４枚≠3(sum)"]);
+  });
+
+  it("a count in the total row is the table's whole", () => {
+    assert.deepEqual(wholeCounts(["| S席 | 2枚 | 15,600円 |", "| 合計 | 2枚 | 15,600円 |"], "チケットは合計3枚です。"), ["3枚≠2"]);
+    assert.deepEqual(wholeCounts(["| 一般 | 2名 | 12,000円 |", "| 合計 | 2名 | 12,000円 |"], "参加者は合計3名です。", "| 区分 | 人数 | 金額 |"), ["3名≠2"]);
+  });
+
+  it("English: a total of N tickets / N tickets in total", () => {
+    const rows = ["| Stalls | 2 tickets | $136.00 |", "| Balcony | 1 ticket | $45.00 |", "| Ticketing fee | 3 tickets | $7.50 |"];
+    const heading = "| Seat | Tickets | Amount |";
+    assert.deepEqual(wholeCounts(rows, "Your order is for 4 tickets in total.", heading), ["4 tickets≠3(sum)"]);
+    assert.deepEqual(wholeCounts(rows, "You bought a total of 4 tickets.", heading), ["4 tickets≠3(sum)"]);
+    assert.deepEqual(wholeCounts(rows, "Your order is for 3 tickets in total.", heading), []);
+    assert.deepEqual(wholeCounts(rows, "2 of the tickets are in the stalls.", heading), []);
+    assert.deepEqual(wholeCounts(rows, "You may buy up to a total of 4 tickets.", heading), []);
+    assert.deepEqual(wholeCounts(rows, "Stalls are 2 tickets in total.", heading), []);
+    assert.deepEqual(wholeCounts(rows, "Your order is for 14 tickets in total.", heading), ["14 tickets≠3(sum)"]);
+  });
+
+  it("a part, a limit, an ordinal, or a sentence that names a row is not the whole", () => {
+    assert.deepEqual(wholeCounts(SEATS, "うち2枚は車椅子席です。"), []);
+    assert.deepEqual(wholeCounts(SEATS, "4枚のチケットをお送りします。"), []);
+    assert.deepEqual(wholeCounts(SEATS, "お申し込みは合計4枚までです。"), []);
+    assert.deepEqual(wholeCounts(SEATS, "合計4枚目からは手数料がかかります。"), []);
+    assert.deepEqual(wholeCounts(SEATS, "S席は合計1枚です。"), []);
+  });
+
+  it("people are not summed: the same guest is on the admission row and the dinner row", () => {
+    const rows = ["| 一般参加 | 2名 | 12,000円 |", "| 交流会 | 2名 | 7,000円 |", "| 合計 | | 19,000円 |"];
+    assert.deepEqual(wholeCounts(rows, "ご登録は合計2名です。", "| 区分 | 人数 | 金額 |"), []);
+    assert.deepEqual(wholeCounts(rows, "ご登録は合計3名です。", "| 区分 | 人数 | 金額 |"), []);
+  });
+
+  it("a row that cannot be read, a part row, or a total row with something else in the column leaves the table unread", () => {
+    assert.deepEqual(wholeCounts(["| S席 | 2枚 | 15,600円 |", "| A席 | 1枚（大人） | 5,500円 |"], "合計4枚です。"), []);
+    assert.deepEqual(wholeCounts(["| S席 | 2枚 | 15,600円 |", "| うち学生 | 1枚 | 0円 |"], "合計4枚です。"), []);
+    assert.deepEqual(wholeCounts(["| S席 | 2枚 | 15,600円 |", "| 合計 | 未定 | 15,600円 |"], "合計4枚です。"), []);
+  });
+
+  it("two tables that count the same thing are not compared", () => {
+    const table = ["| 席種 | 枚数 | 金額 |", "| --- | --- | --- |", "| S席 | 2枚 | 15,600円 |"];
+    const sentence = "合計4枚です。";
+    const source = [...table, "", ...table, "", sentence].join("\n");
+    assert.deepEqual(wholeCountConflicts(source, [{ start: source.length - sentence.length, end: source.length, text: sentence }], COUNT_WORDS), []);
+  });
+});
+
+describe("fact-conflict: a whole count against the table (document)", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+    await en.prepare?.({ pos: true });
+  });
+
+  it("ja: the seat rows add up to the tickets ordered", () => {
+    const order = ["## ご注文内容", "", "| 席種 | 枚数 | 単価 | 金額 |", "| --- | --- | --- | --- |", "| S席 | 2枚 | 7,800円 | 15,600円 |"];
+    const rest = ["| A席 | 1枚 | 5,500円 | 5,500円 |", "| 発券手数料 | 3枚 | 220円 | 660円 |", "| 合計 | | | 21,760円 |", ""];
+    assert.deepEqual(ja2(...order, ...rest, "ご注文のチケットは、合計4枚です。"), ["枚数:4枚≠3枚"]);
+    assert.deepEqual(ja2(...order, ...rest, "ご注文のチケットは、合計3枚です。"), []);
+    assert.deepEqual(ja2(...order, ...rest, "うち2枚は車椅子席です。"), []);
+  });
+
+  it("en: the seat rows add up to the tickets ordered", () => {
+    const order = ["## Your order", "", "| Seat | Tickets | Unit price | Amount |", "| --- | --- | --- | --- |", "| Stalls | 2 tickets | $68.00 | $136.00 |"];
+    const rest = ["| Balcony | 1 ticket | $45.00 | $45.00 |", "| Ticketing fee | 3 tickets | $2.50 | $7.50 |", "| Total | | | $188.50 |", ""];
+    assert.deepEqual(en2(...order, ...rest, "Your order is for 4 tickets in total."), ["Tickets:4 tickets≠3 tickets"]);
+    assert.deepEqual(en2(...order, ...rest, "Your order is for 3 tickets in total."), []);
+    assert.deepEqual(en2(...order, ...rest, "2 of the tickets are in the stalls."), []);
   });
 });

@@ -1,0 +1,10 @@
+# Table column headings that count things (fact-conflict). The group is what they count. A count a sentence states as the
+# whole ("4 tickets in total") is compared with this column's whole: the total row, or the sum of the rows when the total
+# row gives none. The counting words are fact-count-counter's entries of the same group.
+id: fact-count-column
+language: en
+entries:
+  - { pattern: tickets, group: tickets }
+  - { pattern: number of tickets, group: tickets }
+  - { pattern: attendees, group: people }
+  - { pattern: number of attendees, group: people }

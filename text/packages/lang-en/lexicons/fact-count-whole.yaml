@@ -1,0 +1,11 @@
+# Words that say a count is the whole count (fact-conflict). before: right before the number ("a total of 4 tickets");
+# after: right after the counting word ("4 tickets in total"). A count without one ("2 of the tickets") may be a part and
+# is not read.
+id: fact-count-whole
+language: en
+entries:
+  - { pattern: a total of, position: before }
+  - { pattern: in total, position: after }
+  - { pattern: altogether, position: after }
+  - { pattern: all told, position: after }
+  - { pattern: in all, position: after }
