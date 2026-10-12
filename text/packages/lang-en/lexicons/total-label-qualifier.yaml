@@ -31,3 +31,10 @@ entries:
   - { pattern: costs, position: after }
   - { pattern: price, position: after }
   - { pattern: payment, position: after }
+  # What a section of an account adds up: "Total income", "Total expenditure", "Total receipts".
+  - { pattern: income, position: after }
+  - { pattern: expenditure, position: after }
+  - { pattern: expenses, position: after }
+  - { pattern: receipts, position: after }
+  - { pattern: payments, position: after }
+  - { pattern: revenue, position: after }
