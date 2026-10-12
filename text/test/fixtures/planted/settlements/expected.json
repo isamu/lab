@@ -2,7 +2,7 @@
   "recall": {
     "ja": {
       "settlement-before-contract": "0/2",
-      "address-two-ways": "0/2",
+      "address-two-ways": "2/2",
       "balance-due": "0/2",
       "tax-proration": "0/2",
       "brokerage-fee": "0/2",
@@ -11,7 +11,7 @@
     },
     "en": {
       "settlement-before-contract": "0/2",
-      "address-two-ways": "0/2",
+      "address-two-ways": "2/2",
       "balance-due": "0/2",
       "tax-proration": "2/2",
       "brokerage-fee": "0/2",
