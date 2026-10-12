@@ -1,0 +1,239 @@
+{
+  "note": "Self-written vehicle service estimates and service records (整備見積書・整備記録簿 / car service estimate and service record) for a made-up garage and made-up customers, with fictional amounts and fictional registration numbers (a region name no registry uses in ja, a made-up format in en): an estimate and a record of a 12-month inspection, each in a clean version and a planted one that differs only on the lines below. They run as business/proposal, the genre the quotes and invoices of the business set run as: no genre is made for vehicle service. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line; a mistake that breaks a pair of lines names the pair's other line as pairedLine. A part's quantity times its unit price and the labour hours times the hourly rate are named for line-amount-mismatch, and those plants change the quantity or the hours, not the amount, so the items still add up to the subtotal. The total is planted on the total row, which no other plant reads. The tax plant changes the rate in the tax row's label (10% to 8%), not the tax amount, so the total still adds up. The odometer reading given in the vehicle table and again in a sentence of the same section is named for fact-conflict. A next inspection date before the service date is named for due-before-issue, which compares a pair of labelled dates on their own lines. The registration number written once with one character changed is named for reference-number-variant, and the customer's name written once with one character changed (two neighbouring letters swapped in the English record) for name-variant; each name is written three times, so one form is the usual one. Each plant was also run alone on its clean document, so no plant depends on another. yarn planted vehicleservice scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/estimate",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/estimate.clean.md",
+      "planted": "ja/estimate.planted.md",
+      "mistakes": [
+        {
+          "kind": "parts-line-amount",
+          "rule": "line-amount-mismatch",
+          "line": 20,
+          "clean": "| 2本 | 1,600円 |",
+          "planted": "| 3本 | 1,600円 |"
+        },
+        {
+          "kind": "labour-line-amount",
+          "rule": "line-amount-mismatch",
+          "line": 22,
+          "clean": "| 1.5時間 | 8,000円 |",
+          "planted": "| 2.5時間 | 8,000円 |"
+        },
+        {
+          "kind": "items-total",
+          "rule": "total-mismatch",
+          "line": 25,
+          "clean": "| 38,830円 |",
+          "planted": "| 38,380円 |"
+        },
+        {
+          "kind": "tax-rate",
+          "rule": "tax-mismatch",
+          "line": 24,
+          "clean": "消費税（10%） | | | 3,530円",
+          "planted": "消費税（8%） | | | 3,530円"
+        },
+        {
+          "kind": "customer-name",
+          "rule": "name-variant",
+          "line": 29,
+          "clean": "高野 健太 様のご承認",
+          "planted": "高野 健汰 様のご承認"
+        },
+        {
+          "kind": "registration-number",
+          "rule": "reference-number-variant",
+          "line": 31,
+          "clean": "登録番号ひばり野 330 ね 48-15",
+          "planted": "登録番号ひばり野 330 ね 48-75"
+        }
+      ]
+    },
+    {
+      "id": "ja/record",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/record.clean.md",
+      "planted": "ja/record.planted.md",
+      "mistakes": [
+        {
+          "kind": "next-inspection-before-service",
+          "rule": "due-before-issue",
+          "line": 13,
+          "pairedLine": 11,
+          "clean": "次回点検日：2027年9月26日",
+          "planted": "次回点検日：2025年9月26日"
+        },
+        {
+          "kind": "odometer-two-ways",
+          "rule": "fact-conflict",
+          "line": 22,
+          "clean": "走行距離は、45,120kmです。",
+          "planted": "走行距離は、45,210kmです。"
+        },
+        {
+          "kind": "parts-line-amount",
+          "rule": "line-amount-mismatch",
+          "line": 29,
+          "clean": "| 2L | 900円 |",
+          "planted": "| 3L | 900円 |"
+        },
+        {
+          "kind": "labour-line-amount",
+          "rule": "line-amount-mismatch",
+          "line": 31,
+          "clean": "| 2時間 | 8,000円 |",
+          "planted": "| 2.5時間 | 8,000円 |"
+        },
+        {
+          "kind": "items-total",
+          "rule": "total-mismatch",
+          "line": 35,
+          "clean": "| 46,420円 |",
+          "planted": "| 46,240円 |"
+        },
+        {
+          "kind": "tax-rate",
+          "rule": "tax-mismatch",
+          "line": 34,
+          "clean": "消費税（10%） | | | 4,220円",
+          "planted": "消費税（8%） | | | 4,220円"
+        },
+        {
+          "kind": "customer-name",
+          "rule": "name-variant",
+          "line": 39,
+          "clean": "森田 由紀子 様のご希望",
+          "planted": "森田 由希子 様のご希望"
+        },
+        {
+          "kind": "registration-number",
+          "rule": "reference-number-variant",
+          "line": 41,
+          "clean": "登録番号ひばり野 500 み 72-06",
+          "planted": "登録番号ひばり野 500 み 72-08"
+        }
+      ]
+    },
+    {
+      "id": "en/estimate",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/estimate.clean.md",
+      "planted": "en/estimate.planted.md",
+      "mistakes": [
+        {
+          "kind": "parts-line-amount",
+          "rule": "line-amount-mismatch",
+          "line": 20,
+          "clean": "| 2 blades | $18.00 |",
+          "planted": "| 3 blades | $18.00 |"
+        },
+        {
+          "kind": "labour-line-amount",
+          "rule": "line-amount-mismatch",
+          "line": 22,
+          "clean": "| 1.5 hours | $120.00 |",
+          "planted": "| 2.5 hours | $120.00 |"
+        },
+        {
+          "kind": "items-total",
+          "rule": "total-mismatch",
+          "line": 25,
+          "clean": "| $457.60 |",
+          "planted": "| $475.60 |"
+        },
+        {
+          "kind": "tax-rate",
+          "rule": "tax-mismatch",
+          "line": 24,
+          "clean": "Sales tax (10%) | | | $41.60",
+          "planted": "Sales tax (8%) | | | $41.60"
+        },
+        {
+          "kind": "customer-name",
+          "rule": "name-variant",
+          "line": 29,
+          "clean": "Thomas Brennan approves",
+          "planted": "Thomas Brannan approves"
+        },
+        {
+          "kind": "registration-number",
+          "rule": "reference-number-variant",
+          "line": 31,
+          "clean": "registration QZ-48-15-XJ",
+          "planted": "registration QZ-48-75-XJ"
+        }
+      ]
+    },
+    {
+      "id": "en/record",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/record.clean.md",
+      "planted": "en/record.planted.md",
+      "mistakes": [
+        {
+          "kind": "next-inspection-before-service",
+          "rule": "due-before-issue",
+          "line": 13,
+          "pairedLine": 11,
+          "clean": "Next inspection due: September 26, 2027",
+          "planted": "Next inspection due: September 26, 2025"
+        },
+        {
+          "kind": "odometer-two-ways",
+          "rule": "fact-conflict",
+          "line": 22,
+          "clean": "read 45,120 km when",
+          "planted": "read 45,210 km when"
+        },
+        {
+          "kind": "parts-line-amount",
+          "rule": "line-amount-mismatch",
+          "line": 29,
+          "clean": "| 2 gallons | $14.00 |",
+          "planted": "| 3 gallons | $14.00 |"
+        },
+        {
+          "kind": "labour-line-amount",
+          "rule": "line-amount-mismatch",
+          "line": 31,
+          "clean": "| 2 hours | $120.00 |",
+          "planted": "| 2.5 hours | $120.00 |"
+        },
+        {
+          "kind": "items-total",
+          "rule": "total-mismatch",
+          "line": 35,
+          "clean": "| $561.00 |",
+          "planted": "| $516.00 |"
+        },
+        {
+          "kind": "tax-rate",
+          "rule": "tax-mismatch",
+          "line": 34,
+          "clean": "Sales tax (10%) | | | $51.00",
+          "planted": "Sales tax (8%) | | | $51.00"
+        },
+        {
+          "kind": "customer-name",
+          "rule": "name-variant",
+          "line": 39,
+          "clean": "returned to Helen Marsh",
+          "planted": "returned to Helen Marhs"
+        },
+        {
+          "kind": "registration-number",
+          "rule": "reference-number-variant",
+          "line": 41,
+          "clean": "registration QZ-72-06-MV",
+          "planted": "registration QZ-72-08-MV"
+        }
+      ]
+    }
+  ]
+}
