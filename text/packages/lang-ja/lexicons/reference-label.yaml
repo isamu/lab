@@ -22,6 +22,26 @@ entries:
   - { pattern: 学籍番号は, group: student }
   - { pattern: 学生番号, group: student }
   - { pattern: 学生番号は, group: student }
+  # 口座の番号。明細の振込の行に書く相手の口座は長い方の語（振込先口座番号）が勝つので、口座自身の「口座番号」とは比べない。
+  - { pattern: 口座番号, group: account }
+  - { pattern: 口座番号は, group: account }
+  - { pattern: 口座No., group: account }
+  - { pattern: 口座No, group: account }
+  - { pattern: 振込先口座番号, group: payee-account }
+  - { pattern: 振込先口座番号は, group: payee-account }
+  - { pattern: 振込先の口座番号, group: payee-account }
+  - { pattern: 振込先の口座番号は, group: payee-account }
+  - { pattern: 振込元口座番号, group: payer-account }
+  - { pattern: 振込元口座番号は, group: payer-account }
+  - { pattern: 振込元の口座番号, group: payer-account }
+  - { pattern: 振込元の口座番号は, group: payer-account }
+  # 保険証券の番号。契約者番号は契約者その人の番号で、証券ごとの番号とは別の物になり得るので入れない。
+  - { pattern: 証券番号, group: policy }
+  - { pattern: 証券番号は, group: policy }
+  - { pattern: 保険証券番号, group: policy }
+  - { pattern: 保険証券番号は, group: policy }
+  - { pattern: 証券No., group: policy }
+  - { pattern: 証券No, group: policy }
   - { pattern: 発注番号, group: order }
   - { pattern: 発注番号は, group: order }
   - { pattern: 注文番号, group: order }
