@@ -1,0 +1,20 @@
+# ポイントの明細の表で、利用金額（base）・還元率（rate）・獲得ポイント（earned）の列の見出し。利用金額 × 還元率を獲得ポイントと
+# 比べる（line-amount-mismatch）。還元率の升は 3% と書けばその百分率で、% の無い数は見出しの weight（何円あたりか）があるときだけ読む。
+id: points-earned-column
+language: ja
+entries:
+  - { pattern: ご利用金額, group: base }
+  - { pattern: 利用金額, group: base }
+  - { pattern: お買上金額, group: base }
+  - { pattern: お買い上げ金額, group: base }
+  - { pattern: ご購入金額, group: base }
+  - { pattern: 購入金額, group: base }
+  - { pattern: ご宿泊料金, group: base }
+  - { pattern: 宿泊料金, group: base }
+  - { pattern: 還元率, group: rate }
+  - { pattern: ポイント還元率, group: rate }
+  - { pattern: 付与率, group: rate }
+  - { pattern: ポイント付与率, group: rate }
+  - { pattern: 獲得ポイント, group: earned }
+  - { pattern: 付与ポイント, group: earned }
+  - { pattern: 獲得マイル, group: earned }

@@ -7,6 +7,8 @@ import { lineAmountMismatches, type LineAmountWords } from "../structure/line-am
 import type { UnitWord } from "../structure/line-amount-unit.ts";
 import { proseAndTablesOf } from "../table-text.ts";
 import { quoteAt } from "./structure-tree.ts";
+import { pointsMismatches, type PointsRole, type PointsWords } from "../structure/line-amount-rate.ts";
+import { linesOf } from "../structure/lines.ts";
 
 const patternsOf = (doc: ProseDocument, lexicon: string): string[] => (doc.lexicons[lexicon] ?? []).map((entry) => entry.pattern);
 
@@ -26,8 +28,32 @@ const wordsOf = (doc: ProseDocument): LineAmountWords => ({
   orderRoles: quantityWordsOf(doc).columns,
 });
 
+const POINTS_ROLES: readonly string[] = ["base", "rate", "earned"] satisfies readonly PointsRole[];
+const isPointsRole = (group: string | undefined): group is PointsRole => group !== undefined && POINTS_ROLES.includes(group);
+const HEADING = /^#{1,6}[ \t]/u;
+
+/** Lexicons points-earned-column (group base, rate or earned; a rate's weight is what a bare rate is per), points-unit, points-rate-joiner. */
+const pointsWordsOf = (doc: ProseDocument): PointsWords => ({
+  columns: (doc.lexicons["points-earned-column"] ?? []).flatMap((entry) =>
+    isPointsRole(entry.group) ? [{ pattern: entry.pattern, role: entry.group, per: entry.weight }] : [],
+  ),
+  units: patternsOf(doc, "points-unit"),
+  joiners: patternsOf(doc, "points-rate-joiner"),
+});
+
+/** Where each heading of the source starts: the prose blanks headings, and a stated rate is read only in its table's section. */
+const headingStarts = (doc: ProseDocument): number[] =>
+  linesOf(doc.source)
+    .filter((line) => HEADING.test(line.text))
+    .map((line) => line.start);
+
+const issuesOf = (doc: ProseDocument): ReturnType<typeof lineAmountMismatches> => {
+  const text = proseAndTablesOf(doc);
+  return [...lineAmountMismatches(text, wordsOf(doc)), ...pointsMismatches(text, headingStarts(doc), pointsWordsOf(doc))];
+};
+
 export const lineAmount: Detector = (doc): Finding[] =>
-  lineAmountMismatches(proseAndTablesOf(doc), wordsOf(doc)).map((issue) => ({
+  issuesOf(doc).map((issue) => ({
     rule: "line-amount-mismatch",
     severity: "error",
     line: 0,

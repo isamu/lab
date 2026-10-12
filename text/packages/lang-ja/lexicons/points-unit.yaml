@@ -1,0 +1,7 @@
+# ポイントの数に添える単位。獲得ポイントの升がこう書かれていれば、円の利用金額に還元率を掛けた数と比べてよい（line-amount-mismatch）。
+id: points-unit
+language: ja
+entries:
+  - pattern: ポイント
+  - pattern: pt
+  - pattern: マイル

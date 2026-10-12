@@ -1,0 +1,8 @@
+# Words joining a number of points to the money it is earned per in a sentence (10 points for every $1). A points table
+# with no rate column uses the rate its section states (line-amount-mismatch).
+id: points-rate-joiner
+language: en
+entries:
+  - pattern: for every
+  - pattern: for each
+  - pattern: per
