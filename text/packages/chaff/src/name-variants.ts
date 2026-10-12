@@ -12,7 +12,8 @@ import { isPersonRun } from "./name-person.ts";
 
 /**
  * words は名前の語（記号を除く）。読みが同じ二つの名前が、どの語で違うかを見るため。person は人の名前と読めるもの（解析器が
- * 人名と読むか、敬称が付く）。cue は前後の語から見た名前らしさ（name-cue.ts）。
+ * 人名と読むか、敬称が付く）。cue は前後の語から見た名前らしさ（name-cue.ts）。ordinary は、ふつうの語でもある一語の名前で、
+ * 文書がその形をどこでも名前に使わないもの（name-ordinary-word.ts）。
  */
 export type NameMention = {
   readonly surface: string;
@@ -21,6 +22,7 @@ export type NameMention = {
   readonly words: readonly string[];
   readonly person?: boolean;
   readonly cue?: NameCue;
+  readonly ordinary?: boolean;
 };
 
 export type NameVariant = {
@@ -335,9 +337,9 @@ const differingWords = (left: Tally, right: Tally): readonly [string, string] | 
   return leftWords.length === rightWords.length && leftWord !== undefined && rightWord !== undefined ? [leftWord, rightWord] : undefined;
 };
 
-/** 一語だけが一字違いで、相手が二度以上、こちらが一度だけ。 */
+/** 一語だけが一字違いで、相手が二度以上、こちらが一度だけ。どちらもふつうの語（Green と Greek）なら、別の二つの語。 */
 const isSlipOf = (tally: Tally, other: Tally): boolean => {
-  if (tally.count !== 1 || other.count < 2) return false;
+  if (tally.count !== 1 || other.count < 2 || (tally.first.ordinary === true && other.first.ordinary === true)) return false;
   const words = differingWords(tally, other);
   return words !== undefined && isNearWord(...words);
 };
