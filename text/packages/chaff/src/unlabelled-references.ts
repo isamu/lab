@@ -55,15 +55,13 @@ export const tableLabelledCodes = (text: string, labels: readonly LexiconEntry[]
     });
   });
 
+/** The letters and digits of every code a cell holds. */
+const codesInCell = (cell: Cell): string[] =>
+  [...cell.text.matchAll(REFERENCE_SHAPE)].filter((match) => isCode(match[0])).map((match) => charactersOf(match[0]));
+
 /** Every code written anywhere in a table, its heading row too, labelled or not: a code a table lists is an item of its own, never a slip. */
 export const tableCodes = (text: string): Set<string> =>
-  new Set(
-    tablesOf(linesOf(text)).flatMap((table) =>
-      [table.header, ...table.rows].flatMap((row) =>
-        cellsOf(row).flatMap((cell) => [...cell.text.matchAll(REFERENCE_SHAPE)].filter((match) => isCode(match[0])).map((match) => charactersOf(match[0]))),
-      ),
-    ),
-  );
+  new Set(tablesOf(linesOf(text)).flatMap((table) => [table.header, ...table.rows].flatMap((row) => cellsOf(row).flatMap(codesInCell))));
 
 /**
  * Every code of the prose written with no label that is one labelled code with two neighbours swapped. Only when exactly
