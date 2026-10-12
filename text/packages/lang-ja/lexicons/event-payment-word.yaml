@@ -1,0 +1,8 @@
+# 支払を示す語。チケットの注文（event-ticket-word）では、この語と締め切りの語のある文の日付を deadline-after-event が読む。
+id: event-payment-word
+language: ja
+entries:
+  - pattern: 支払
+  - pattern: 振込
+  - pattern: 振り込
+  - pattern: 入金
