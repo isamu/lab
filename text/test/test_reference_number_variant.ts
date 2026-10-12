@@ -201,6 +201,56 @@ describe("reference-number-variant", () => {
     assert.deepEqual(found(docEn("Contract number: TA-260417", "", "Contract number: TA-264701"), en), []);
     assert.deepEqual(found(docEn("Contract number: TA-260417", "", "Invoice number: TA-260471"), en), []);
   });
+
+  it("ja: 旧契約番号・変更契約番号・親契約番号は文書自身の契約番号と比べない", () => {
+    assert.deepEqual(found(docJa("契約番号：KR-260417", "", "旧契約番号：KR-260471"), ja), []);
+    assert.deepEqual(found(docJa("契約番号：KR-260417", "旧契約番号：KR-260471"), ja), []);
+    assert.deepEqual(found(docJa("契約番号：KR-260417", "", "変更契約番号はKR-206417です。"), ja), []);
+    assert.deepEqual(found(docJa("契約番号：KR-260417", "", "親契約番号 KR-260147"), ja), []);
+  });
+
+  it("ja: 旧契約番号どうし、変更契約番号どうしの入れ違いは指す", () => {
+    assert.deepEqual(found(docJa("旧契約番号：KR-250417", "", "旧契約番号KR-250471の契約は終了します。"), ja), [5]);
+    assert.deepEqual(found(docJa("変更契約番号：KR-260417", "", "変更契約番号はKR-206417です。"), ja), [5]);
+    assert.deepEqual(found(docJa("親契約番号：KR-190417", "", "親契約番号 KR-190471"), ja), [5]);
+  });
+
+  it("en: a former, amended or parent contract's number is not compared with the document's own", () => {
+    assert.deepEqual(found(docEn("Contract number: TA-260417", "", "Former contract number: TA-260471"), en), []);
+    assert.deepEqual(found(docEn("Contract number: TA-260417", "", "Amended contract number: TA-206417"), en), []);
+    assert.deepEqual(found(docEn("Contract number: TA-260417", "", "Amendment number: TA-260471"), en), []);
+    assert.deepEqual(found(docEn("Agreement number: TA-260417", "", "Parent agreement number: TA-260471"), en), []);
+    assert.deepEqual(found(docEn("Contract number: TA-260417", "", "Parent contract number: TA-260147"), en), []);
+  });
+
+  it("en: two writings of one former or parent contract's number with neighbours swapped are reported", () => {
+    assert.deepEqual(found(docEn("Former contract number: TA-250417", "", "Former contract number TA-250471 has ended."), en), [5]);
+    assert.deepEqual(found(docEn("Parent agreement number: TA-190417", "", "Parent agreement number: TA-190471"), en), [5]);
+  });
+
+  it("ja: 登録番号・受講番号、申込番号の、隣り合う文字の入れ違いを指す", () => {
+    assert.deepEqual(found(docJa("登録番号：RF-62417", "", "お問い合わせの際は、登録番号RF-62147をお知らせください。"), ja), [5]);
+    assert.deepEqual(found(docJa("受講番号：RF-62417", "", "受講番号はRF-64217です。"), ja), [5]);
+    assert.deepEqual(found(docJa("申込番号：AP-30518", "", "申込番号 AP-30581"), ja), [5]);
+  });
+
+  it("ja: 申込番号と登録番号、登録番号と受付番号は比べず、別の人の登録番号は指さない", () => {
+    assert.deepEqual(found(docJa("申込番号：RF-62417", "", "登録番号：RF-62147"), ja), []);
+    assert.deepEqual(found(docJa("受付番号：RF-62417", "", "登録番号：RF-62147"), ja), []);
+    assert.deepEqual(found(docJa("登録番号：RF-62417", "", "登録番号：RF-61724"), ja), []);
+  });
+
+  it("en: a registration or application number with two neighbouring characters swapped", () => {
+    assert.deepEqual(found(docEn("Registration number: RF-62417", "", "Please quote registration number RF-62147 in any inquiry."), en), [5]);
+    assert.deepEqual(found(docEn("Registration No. RF-62417", "", "Registration number: RF-64217"), en), [5]);
+    assert.deepEqual(found(docEn("Application number: AP-30518", "", "Your application number is AP-30581."), en), [5]);
+  });
+
+  it("en: an application number is not compared with a registration number, nor a registration number with a booking number", () => {
+    assert.deepEqual(found(docEn("Application number: RF-62417", "", "Registration number: RF-62147"), en), []);
+    assert.deepEqual(found(docEn("Booking number: RF-62417", "", "Registration number: RF-62147"), en), []);
+    assert.deepEqual(found(docEn("Registration number: RF-62417", "", "Registration number: RF-61724"), en), []);
+  });
 });
 
 describe("reference numbers", () => {

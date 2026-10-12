@@ -54,3 +54,20 @@ entries:
   - { pattern: master agreement number is, group: master-contract }
   - { pattern: master contract number, group: master-contract }
   - { pattern: master contract number is, group: master-contract }
+  - { pattern: former contract number, group: former-contract }
+  - { pattern: former contract number is, group: former-contract }
+  - { pattern: amended contract number, group: amended-contract }
+  - { pattern: amended contract number is, group: amended-contract }
+  - { pattern: amendment number, group: amended-contract }
+  - { pattern: amendment number is, group: amended-contract }
+  - { pattern: parent contract number, group: parent-contract }
+  - { pattern: parent contract number is, group: parent-contract }
+  - { pattern: parent agreement number, group: parent-contract }
+  - { pattern: parent agreement number is, group: parent-contract }
+  # An attendee's registration. An application number may be one application's, apart from each attendee's registration number.
+  - { pattern: registration number, group: registration }
+  - { pattern: registration number is, group: registration }
+  - { pattern: registration no., group: registration }
+  - { pattern: registration no, group: registration }
+  - { pattern: application number, group: application }
+  - { pattern: application number is, group: application }
