@@ -41,6 +41,25 @@ describe("time-order (pair): a labelled time that must come first comes later", 
     assert.deepEqual(findingsOf("# Talk\n\n- Start: 3:00 PM\n- End: 2:30 PM\n", en).length, 1);
   });
 
+  it("a banquet that closes before it opens, and reception that closes before it opens (ja)", () => {
+    const banquetJa = (...lines: string[]): string =>
+      ["# 宴会のお見積り", "", "開催日：2026年12月4日（金）", "", ...lines.flatMap((line) => [line, ""])].join("\n");
+    assert.deepEqual(findingsOf(banquetJa("開宴時刻：18:30", "閉宴時刻：18:00")), [
+      "「開宴時刻」の「18:30」が、後に来るはずの「閉宴時刻」の「18:00」より遅くなっています",
+    ]);
+    assert.deepEqual(findingsOf(banquetJa("開宴：18:30", "お開き：17:30")).length, 1);
+    assert.deepEqual(findingsOf(banquetJa("受付開始：18:00", "開宴：17:45")).length, 1);
+    assert.deepEqual(findingsOf(banquetJa("受付開始：13:00", "受付終了：12:30")).length, 1);
+    assert.deepEqual(findingsOf(concertJa("開演時刻：19:00", "終演時刻：18:30")).length, 1);
+  });
+
+  it("a banquet in order, and doors set after the end with no start between, say nothing (ja)", () => {
+    assert.deepEqual(findingsOf(concertJa("受付開始：17:30", "開宴時刻：18:30", "閉宴時刻：20:30")), []);
+    assert.deepEqual(findingsOf(concertJa("開宴：18:30", "お開き：20:30")), []);
+    assert.deepEqual(findingsOf(concertJa("受付開始：13:00", "受付終了：13:30", "開演：14:00", "終演時間：16:00")), []);
+    assert.deepEqual(findingsOf(concertJa("終演：16:00", "開場：17:30")), []);
+  });
+
   it("times in order, equal times, and times inside a sentence say nothing", () => {
     assert.deepEqual(findingsOf(concertJa("開場：17:30", "開演：18:30", "終演予定：20:30")), []);
     assert.deepEqual(findingsOf(concertJa("開場：18:30", "開演：18:30")), []);
