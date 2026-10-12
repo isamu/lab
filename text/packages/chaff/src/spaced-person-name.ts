@@ -1,8 +1,10 @@
 import type { Span } from "./plugin.ts";
+import { isInPersonField as isFieldValue } from "./person-field.ts";
 
 // 空白を挟んで書いた姓と名（高瀬 誠、佐伯 未咲）を、解析器の品詞に頼らず、前後の語で人の名前と読む。解析器は姓を地名やふつうの
 // 名詞と読み、名を二語に切ることがあるので、姓と名を一つの名前にできない。後ろに敬称か肩書き（様、部長）が付くか、人を書く欄
-// （氏名：、承認者：）の行の終わりにあれば、人の名前と読む。
+// （氏名：、承認者：）の行の終わりにあれば、人の名前と読む。欄に書いた名と同じ名を空白の後ろに書いたもの（受託者：西村 亮 の
+// 文書の 西邑 亮が）も、人の名前と読む。
 
 /** suffixes は敬称（様、さん）、titles は名前のすぐ後ろの肩書き（部長）、labels は人を書く欄の語（氏名、承認者）。語彙表から。 */
 export type SpacedNameCues = { readonly suffixes: readonly string[]; readonly titles: readonly string[]; readonly labels: readonly string[] };
@@ -51,12 +53,14 @@ const givenBeforeSuffix = (run: string, after: string, words: readonly string[])
     });
 };
 
-const givenAt = (source: string, start: number, cues: SpacedNameCues, inField: boolean): string | undefined => {
+/** fieldGivens は、文書が人を書く欄に書いた名（亮）。その名と同じ漢字の連なりは、敬称が無くても名と読む。 */
+const givenAt = (source: string, start: number, cues: SpacedNameCues, inField: boolean, fieldGivens: ReadonlySet<string>): string | undefined => {
   const run = LEADING_HAN.exec(source.slice(start, start + LOOKBACK))?.[0];
   if (run === undefined) return undefined;
   const after = source.slice(start + run.length, start + run.length + LOOKBACK);
   const suffixed = givenBeforeSuffix(run, after, [...cues.suffixes, ...cues.titles]);
   if (suffixed !== undefined) return suffixed;
+  if (fieldGivens.has(run)) return run;
   return inField && [...run].length <= MAX_PART && FIELD_END.test(after) ? run : undefined;
 };
 
@@ -69,8 +73,7 @@ const surnameBefore = (source: string, space: number, cues: SpacedNameCues): str
   return [...cues.titles, ...cues.suffixes].some((word) => run.endsWith(word)) ? undefined : run;
 };
 
-/** 空白を挟んだ姓と名で、後ろに敬称か肩書きが付くか、人を書く欄の行の終わりにあるもの。 */
-export const spacedPersonNamesIn = (source: string, cues: SpacedNameCues): SpacedName[] =>
+const namesIn = (source: string, cues: SpacedNameCues, fieldGivens: ReadonlySet<string>): SpacedName[] =>
   [...source.matchAll(NAME_SPACE)].flatMap((match) => {
     const space = match.index;
     if (!isHan(LAST_LETTER.exec(source.slice(Math.max(0, space - 2), space))?.[0]) || !isHan(FIRST_LETTER.exec(source.slice(space + 1, space + 3))?.[0]))
@@ -78,6 +81,17 @@ export const spacedPersonNamesIn = (source: string, cues: SpacedNameCues): Space
     const surname = surnameBefore(source, space, cues);
     if (surname === undefined) return [];
     const surnameStart = space - surname.length;
-    const given = givenAt(source, space + 1, cues, isInPersonField(source, surnameStart, cues.labels));
+    const given = givenAt(source, space + 1, cues, isInPersonField(source, surnameStart, cues.labels), fieldGivens);
     return given === undefined ? [] : [{ surname: { start: surnameStart, end: space }, given: { start: space + 1, end: space + 1 + given.length } }];
   });
+
+/**
+ * 空白を挟んだ姓と名で、後ろに敬称か肩書きが付くか、人を書く欄の行の終わりにあるもの。欄に書いた名と同じ名を書いたもの
+ * （受託者：西村 亮 と 西邑 亮が）も。
+ */
+export const spacedPersonNamesIn = (source: string, cues: SpacedNameCues): SpacedName[] => {
+  const fields = namesIn(source, cues, new Set()).filter(({ surname, given }) =>
+    isFieldValue(source, surname.start, given.end - surname.start, cues.labels, cues.suffixes),
+  );
+  return namesIn(source, cues, new Set(fields.map(({ given }) => source.slice(given.start, given.end))));
+};

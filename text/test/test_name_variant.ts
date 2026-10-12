@@ -17,6 +17,8 @@ import {
 import { isTitledIn, withOrdinaryWords } from "../packages/chaff/src/name-ordinary-word.ts";
 import type { Token } from "../packages/chaff/src/plugin.ts";
 import { spacedPersonNamesIn } from "../packages/chaff/src/spaced-person-name.ts";
+import { isInPersonField } from "../packages/chaff/src/person-field.ts";
+import { heavierFirst, outweighs, type NameWeight } from "../packages/chaff/src/name-weight.ts";
 
 // 同じ名前の書き分け（name-variant）。例文はすべて自作。
 
@@ -182,10 +184,35 @@ describe("name-variant: 同じ名前の書き分け", () => {
     assert.deepEqual(variants("申請者：佐伯 拓海\n\n承認者：佐伯 拓也\n\n佐伯 拓海 さんの申請を承認します。\n", ja), []);
     assert.deepEqual(variants("承認者：経理部長 高瀬 誠\n\n高瀬 誠部長が承認します。\n", ja), []);
   });
+
+  it("一度ずつ書いた名前は、人を書く欄の形を正しい形と見る（氏名：山下 美咲 と 本文の 山下 未咲）", () => {
+    assert.deepEqual(variants("# 勤務表\n\n氏名：山下 美咲\n\nこの勤務表は、山下 未咲 さんの打刻記録をもとに作成しました。\n", ja), [
+      "「山下 未咲」は、人の名前を書く欄（氏名：など）では「山下 美咲」と書いています",
+    ]);
+    assert.deepEqual(variants("# 作業報告書\n\n受託者：西村 亮\n\n本報告書の作業は、すべて西邑 亮が担当しました。\n", ja), [
+      "「西邑 亮」は、ほかの所では同じ読みの「西村 亮」と書いています",
+    ]);
+    assert.deepEqual(variants("# Work report\n\nContractor: Priya Raman\n\nAll work in this report was performed by Priya Rahman.\n"), [
+      '"Priya Rahman" is written "Priya Raman" in the field that names the person (Name:, Employee: and the like)',
+    ]);
+    assert.deepEqual(variants("All work in this report was performed by Priya Rahman.\n\nSigned by: Priya Raman\n"), [
+      '"Priya Rahman" is written "Priya Raman" in the field that names the person (Name:, Employee: and the like)',
+    ]);
+  });
+
+  it("両方が欄にあるか、どちらも欄に無いか、字の遠い二人なら、一度ずつの名前は比べない", () => {
+    assert.deepEqual(variants("氏名：山下 美咲\n\n確認者：山下 未咲\n", ja), []);
+    assert.deepEqual(variants("山下 美咲 さんが申請し、山下 未咲 さんが確認しました。\n", ja), []);
+    assert.deepEqual(variants("氏名：山下 美咲\n\n山下 千咲 さんが確認しました。\n", ja), []);
+    assert.deepEqual(variants("Contractor: Priya Raman\n\nSigned by: Priya Rahman\n"), []);
+    assert.deepEqual(variants("Priya Raman wrote it. Priya Rahman approved it.\n"), []);
+    assert.deepEqual(variants("Employee: Daniel Reyes\n\nThe records of Daniel Reys were used.\n"), []);
+    assert.deepEqual(variants("Contractor: Priya Raman\n\nThe work was checked by Priya Ramirez.\n"), []);
+  });
 });
 
 describe("spacedPersonNamesIn: 空白を挟んだ姓と名", () => {
-  const cues = { suffixes: ["様", "さん"], titles: ["部長"], labels: ["氏名", "承認者", "承認"] };
+  const cues = { suffixes: ["様", "さん"], titles: ["部長"], labels: ["氏名", "承認者", "承認", "受託者"] };
   const names = (source: string): string[] =>
     spacedPersonNamesIn(source, cues).map(({ surname, given }) => `${source.slice(surname.start, surname.end)}|${source.slice(given.start, given.end)}`);
 
@@ -209,6 +236,77 @@ describe("spacedPersonNamesIn: 空白を挟んだ姓と名", () => {
     assert.deepEqual(names("第1条 目的"), []);
     assert.deepEqual(names("高瀬 誠部品"), []);
     assert.deepEqual(names(""), []);
+  });
+
+  it("欄に書いた名と同じ名を空白の後ろに書いたものは、敬称が無くても名前と読む", () => {
+    assert.deepEqual(names("受託者：西村 亮\n\n作業は、すべて西邑 亮が担当しました。"), ["西村|亮", "西邑|亮"]);
+    assert.deepEqual(names("氏名：森川 大輔\n\n森川 大輔の記録"), ["森川|大輔", "森川|大輔"]);
+  });
+
+  it("欄に無い名や、欄の無い文書の、敬称の無い空白は名前と読まない", () => {
+    assert.deepEqual(names("作業は、すべて西邑 亮が担当しました。"), []);
+    assert.deepEqual(names("受託者：西村 亮\n\n東京 大阪が会場です。"), ["西村|亮"]);
+    assert.deepEqual(names("受託者：西村 亮\n\n西邑 亮介が担当しました。"), ["西村|亮"]);
+  });
+});
+
+describe("name-weight: どちらの書き方を正しい形と見るか", () => {
+  const weight = (count: number, labelled = false): NameWeight => ({ count, labelled });
+
+  it("outweighs: 相手が二度以上か、どちらも一度だけで相手だけが欄にある", () => {
+    assert.equal(outweighs(weight(2), weight(1)), true);
+    assert.equal(outweighs(weight(2), weight(1, true)), true);
+    assert.equal(outweighs(weight(1, true), weight(1)), true);
+  });
+
+  it("outweighs: 一度ずつで両方が欄にあるか、どちらも無いか、こちらが欄にあるか、こちらが二度以上なら重くない", () => {
+    assert.equal(outweighs(weight(1, true), weight(1, true)), false);
+    assert.equal(outweighs(weight(1), weight(1)), false);
+    assert.equal(outweighs(weight(1), weight(1, true)), false);
+    assert.equal(outweighs(weight(3, true), weight(2)), false);
+    assert.equal(outweighs(weight(0, true), weight(1)), false);
+  });
+
+  it("heavierFirst: 数の多いほう、同数なら欄に書いたほうが先", () => {
+    assert.ok(heavierFirst(weight(2), weight(1, true)) < 0);
+    assert.ok(heavierFirst(weight(1, true), weight(1)) < 0);
+    assert.ok(heavierFirst(weight(1), weight(1, true)) > 0);
+    assert.equal(heavierFirst(weight(1), weight(1)), 0);
+    assert.equal(heavierFirst(weight(1, true), weight(1, true)), 0);
+  });
+});
+
+describe("isInPersonField: 人を書く欄の名前", () => {
+  const labels = ["氏名", "受託者", "Name", "Employee", "Contractor", "Signed by"];
+  const inField = (source: string, name: string): boolean => isInPersonField(source, source.indexOf(name), name.length, labels);
+
+  it("欄の語と「：」の後ろにあり、名前で行が終わる", () => {
+    assert.equal(inField("氏名：山下 美咲\n", "山下 美咲"), true);
+    assert.equal(inField("患者氏名：山下 美咲", "山下 美咲"), true);
+    assert.equal(inField("受託者：西村 亮（2026年10月1日）\n", "西村 亮"), true);
+    assert.equal(inField("Contractor: Priya Raman\n", "Priya Raman"), true);
+    assert.equal(inField("- **Employee:** Daniel Reyes\n", "Daniel Reyes"), true);
+    assert.equal(inField("**Contractor**: Priya Raman (2026-10-01)\r\n", "Priya Raman"), true);
+    assert.equal(inField("Name: **Priya Raman**\n", "Priya Raman"), true);
+    assert.equal(inField("signed by: Ellen Marsh", "Ellen Marsh"), true);
+    assert.equal(inField("Intro.\nName: Ellen Marsh\n", "Ellen Marsh"), true);
+    assert.equal(isInPersonField("氏名：中村 健太 様\n", 3, 5, labels, ["様"]), true);
+  });
+
+  it("欄でない語、文の中の「：」、名前の後ろに続く文、語の途中で照らした欄の語は欄でない", () => {
+    assert.equal(inField("Company name: Ellen Marsh\n", "Ellen Marsh"), false);
+    assert.equal(inField("Location: Ellen Marsh\n", "Ellen Marsh"), false);
+    assert.equal(inField("Note: the report, by Ellen Marsh\n", "Ellen Marsh"), false);
+    assert.equal(inField("Contractor: Priya Raman did the work.\n", "Priya Raman"), false);
+    assert.equal(inField("この勤務表は、山下 美咲 さんの記録です。\n", "山下 美咲"), false);
+    assert.equal(inField("備考：氏名は山下 美咲\n", "山下 美咲"), false);
+    assert.equal(inField("Priya Raman\n", "Priya Raman"), false);
+    assert.equal(inField("Contractor: Priya Raman, and Priya Rahman will review.\n", "Priya Raman"), false);
+    assert.equal(inField("氏名：森下 千尋 様\n", "千尋 様"), false);
+    assert.equal(inField("Name: Dr. Ellen Marsh\n", "Ellen Marsh"), false);
+    assert.equal(isInPersonField("氏名：中村 健太 様\n", 3, 5, labels), false);
+    assert.equal(isInPersonField("Name: Ellen Marsh", 6, 11, []), false);
+    assert.equal(isInPersonField("", 0, 0, labels), false);
   });
 });
 
