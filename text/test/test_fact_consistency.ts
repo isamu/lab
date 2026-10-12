@@ -163,6 +163,45 @@ describe("fact-conflict", () => {
     assert.deepEqual(conflictEn("It is $300.", "", "It is $350."), []);
     assert.deepEqual(conflictJa("それは3,000円です。", "", "それは3,500円です。"), []);
   });
+
+  it("今月の and 当月の are the bill's own month; 先月の is another month (ja)", () => {
+    const table = (prose: string): string[] => conflictJa("| 項目 | 内容 |", "| --- | --- |", "| データ利用量 | 7.5GB |", "", prose);
+    assert.deepEqual(table("今月のデータ利用量は5.7GBで、上限を超えていません。"), ["今月のデータ利用量:5.7GB≠7.5GB"]);
+    assert.deepEqual(table("当月のデータ利用量は5.7GBです。"), ["当月のデータ利用量:5.7GB≠7.5GB"]);
+    assert.deepEqual(table("今月のデータ利用量は7.5GBです。"), []);
+    assert.deepEqual(table("先月のデータ利用量は5.7GBです。"), []);
+  });
+
+  it("a cell named by its row and its column is the sentence's qualified name, and only that row's (ja)", () => {
+    const lines = ["| 回線 | 番号 | データ利用量 |", "| --- | --- | --- |", "| 親回線 | 1001 | 6.2GB |", "| 子回線 | 1002 | 3.1GB |", ""];
+    assert.deepEqual(conflictJa(...lines, "親回線のデータ利用量は2.6GBでした。"), ["親回線のデータ利用量:2.6GB≠6.2GB"]);
+    assert.deepEqual(conflictJa(...lines, "親回線のデータ利用量は3.1GBでした。"), ["親回線のデータ利用量:3.1GB≠6.2GB"]);
+    assert.deepEqual(conflictJa(...lines, "子回線のデータ利用量は3.1GBでした。"), []);
+    assert.deepEqual(conflictJa(...lines, "孫回線のデータ利用量は2.6GBでした。"), []);
+  });
+
+  it("a cell whose row is the name and whose column the qualifier is read the other way round (ja)", () => {
+    const lines = ["| 項目 | 前期 | 当期 |", "| --- | --- | --- |", "| 出荷量 | 410t | 450t |", ""];
+    assert.deepEqual(conflictJa(...lines, "当期の出荷量は540tです。"), ["当期の出荷量:540t≠450t"]);
+    assert.deepEqual(conflictJa(...lines, "当期の出荷量は450tです。"), []);
+  });
+
+  it("<subject> used <quantity> of <noun> names the item noun + verb, qualified by a subject that is not you (en)", () => {
+    const table = (prose: string): string[] => conflictEn("| Item | Detail |", "| --- | --- |", "| Data used | 7.5 GB |", "", prose);
+    assert.deepEqual(table("You used 5.7 GB of data this month, under your limit."), ["data used:5.7 GB≠7.5 GB"]);
+    assert.deepEqual(table("You used 7.5 GB of data this month."), []);
+    assert.deepEqual(table("You used 5.7 GB of data last month."), []);
+    assert.deepEqual(table("You used 5.7 GB of data on the trip."), []);
+    assert.deepEqual(table("The guest line used 5.7 GB of data."), []);
+    const lines = ["| Line | Number | Data used |", "| --- | --- | --- |", "| Main line | 1001 | 6.2 GB |", "| Kids line | 1002 | 3.1 GB |", ""];
+    assert.deepEqual(conflictEn(...lines, "The main line used 2.6 GB of data."), ["data used (main line):2.6 GB≠6.2 GB"]);
+    assert.deepEqual(conflictEn(...lines, "The kids line used 3.1 GB of data."), []);
+  });
+
+  it("a verb before money, or a verb not in the list, is not read (en)", () => {
+    assert.deepEqual(conflictEn("| Item | Detail |", "| --- | --- |", "| Credit used | $14 |", "", "You used $41 of credit."), []);
+    assert.deepEqual(conflictEn("| Item | Detail |", "| --- | --- |", "| Data bought | 7.5 GB |", "", "You bought 5.7 GB of data."), []);
+  });
 });
 
 describe("fact-conflict: one thing's retention period stated two ways", () => {

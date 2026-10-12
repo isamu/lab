@@ -81,6 +81,13 @@ export const qualifiedLabelOf = (key: string, words: QualifierWords): QualifiedL
 
 const keyOfLabel = ({ head, qualifier }: QualifiedLabel): string => `${head} (${qualifier})`;
 
+/** 名前と条件を別々に持つ値（表の列の見出しと行の見出し）の key。どちらかに字が無ければ undefined。 */
+export const keyOfParts = (head: string, qualifier: string, words: QualifierWords): string | undefined => {
+  const spaced = (text: string): string => folded(text).replace(/\s+/gu, " ").trim();
+  const label = labelOf(spaced(head), spaced(qualifier), words);
+  return label === undefined ? undefined : keyOfLabel(label);
+};
+
 /** 条件の付いた名前は「名前 (条件)」に。条件の無い名前は書いたまま。 */
 export const qualifiedKeyOf = (key: string, words: QualifierWords): string => {
   const label = qualifiedLabelOf(key, words);

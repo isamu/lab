@@ -63,7 +63,10 @@ const cellLabel = (rowLabel: string, column: string, headings: readonly string[]
   return headings.length > TWO_COLUMNS ? `${rowLabel} ${column}` : rowLabel;
 };
 
-const rowFacts = (row: Line, headings: readonly string[], values: readonly FactValue[], source: string, totals?: TotalColumns): Fact[] => {
+/** 列が三つ以上の表の升は、行の見出し（row）と列の見出し（column）の二つで名前になる。 */
+export type TableFact = Fact & { readonly cell?: { readonly row: string; readonly column: string } };
+
+const rowFacts = (row: Line, headings: readonly string[], values: readonly FactValue[], source: string, totals?: TotalColumns): TableFact[] => {
   const [first, ...rest] = cellsOf(row);
   if (first === undefined) return [];
   const rowLabel = plain(first.text);
@@ -74,12 +77,13 @@ const rowFacts = (row: Line, headings: readonly string[], values: readonly FactV
     const column = headings[index + 1] ?? "";
     if (value === undefined || (headings.length > TWO_COLUMNS && column === "")) return [];
     const label = cellLabel(rowLabel, column, headings, total, totals);
-    return [{ label, key: keyOf(label), value, table: true }];
+    const parts = label === column || headings.length <= TWO_COLUMNS ? {} : { cell: { row: rowLabel, column } };
+    return [{ label, key: keyOf(label), value, table: true, ...parts }];
   });
 };
 
 /** 文書の表すべての升の値。 */
-export const tableFacts = (source: string, values: readonly FactValue[], totals?: TotalColumns): Fact[] =>
+export const tableFacts = (source: string, values: readonly FactValue[], totals?: TotalColumns): TableFact[] =>
   tablesOf(linesOf(source)).flatMap((table) => {
     const headings = cellsOf(table.header).map((cell) => plain(cell.text));
     return table.rows.flatMap((row) => rowFacts(row, headings, values, source, totals));

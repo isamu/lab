@@ -48,7 +48,7 @@ const lineEndOf = (source: string, offset: number): number => {
 };
 
 /** 値の前の、文の頭からの位置。 */
-const clauseStartOf = (source: string, offset: number): number => {
+export const clauseStartOf = (source: string, offset: number): number => {
   const lineStart = lineStartOf(source, offset);
   const breaks = [...source.slice(lineStart, offset).matchAll(SENTENCE_BREAK)];
   const last = breaks.at(-1);

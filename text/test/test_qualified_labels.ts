@@ -6,7 +6,10 @@ import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
-import { qualifiedKeyOf, qualifiedKeys, qualifiedLabelOf, type QualifierWords } from "../packages/chaff/src/facts/qualified-labels.ts";
+import { keyOfParts, qualifiedKeyOf, qualifiedKeys, qualifiedLabelOf, type QualifierWords } from "../packages/chaff/src/facts/qualified-labels.ts";
+import { withCellKeys } from "../packages/chaff/src/facts/cell-keys.ts";
+import type { TableFact } from "../packages/chaff/src/facts/table-facts.ts";
+import type { FactValue } from "../packages/chaff/src/facts/fact-values.ts";
 
 // 条件の付いた名前: 「待機期間（旅行キャンセル費用）」=「旅行キャンセル費用の待機期間」、"waiting period (cancellation cover)" =
 // "waiting period for cancellation cover"。条件の違う名前と、条件の無い名前は別の名前。
@@ -163,5 +166,47 @@ describe("fact-conflict: a table's qualified name and a sentence's", () => {
   it("a name with no qualifier is not the qualified item, even when it is the only other name", () => {
     assert.deepEqual(conflictJa(...TABLE_JA, "| 待機期間（疾病） | 30日 |", "", "待機期間は14日です。"), []);
     assert.deepEqual(conflictEn(...TABLE_EN, "| Waiting period (illness) | 30 days |", "", "The waiting period is 14 days."), []);
+  });
+});
+
+describe("withCellKeys: a cell named by its row and its column", () => {
+  const value: FactValue = { start: 0, end: 1, kind: "quantity", key: "1", unit: "" };
+  type Scoped = TableFact & { readonly scope: string };
+  const cell = (row: string, column: string, scope = "s1"): Scoped => ({
+    label: `${row} ${column}`,
+    key: `${row} ${column}`,
+    value,
+    table: true,
+    cell: { row, column },
+    scope,
+  });
+  const sentence = (key: string, scope = "s1"): Scoped => ({ label: key, key, value, scope });
+  const keys = (facts: readonly Scoped[]): string[] => withCellKeys(facts, JA).map((fact) => fact.key);
+
+  it("takes the qualified key a sentence wrote, in either reading", () => {
+    assert.deepEqual(keys([cell("親回線", "データ利用量"), sentence("データ利用量 (親回線)")]), ["データ利用量 (親回線)", "データ利用量 (親回線)"]);
+    assert.deepEqual(keys([cell("出荷量", "当期"), sentence("出荷量 (当期)")]), ["出荷量 (当期)", "出荷量 (当期)"]);
+  });
+
+  it("keeps the written key when no sentence, or both readings, or only another cell has it", () => {
+    assert.deepEqual(keys([cell("親回線", "データ利用量")]), ["親回線 データ利用量"]);
+    assert.deepEqual(keys([cell("甲", "乙"), sentence("甲 (乙)"), sentence("乙 (甲)")]), ["甲 乙", "甲 (乙)", "乙 (甲)"]);
+    assert.deepEqual(keys([cell("親回線", "データ利用量"), { ...sentence("データ利用量 (親回線)"), table: true }]), [
+      "親回線 データ利用量",
+      "データ利用量 (親回線)",
+    ]);
+    assert.deepEqual(keys([sentence("データ利用量 (親回線)")]), ["データ利用量 (親回線)"]);
+  });
+
+  it("reads only the sentences of the cell's own scope", () => {
+    assert.deepEqual(keys([cell("親回線", "データ利用量"), sentence("データ利用量 (親回線)", "s2")]), ["親回線 データ利用量", "データ利用量 (親回線)"]);
+    const both = [cell("甲", "乙"), sentence("甲 (乙)"), sentence("乙 (甲)", "s2")];
+    assert.deepEqual(keys(both), ["甲 (乙)", "甲 (乙)", "乙 (甲)"]);
+  });
+
+  it("keyOfParts folds both parts and needs a letter in each", () => {
+    assert.equal(keyOfParts("Data  Used", "The Main line", EN), "data used (main line)");
+    assert.equal(keyOfParts("データ利用量", "123", JA), undefined);
+    assert.equal(keyOfParts("", "親回線", JA), undefined);
   });
 });
