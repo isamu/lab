@@ -14,7 +14,7 @@ export const isTitledIn = (source: string, titles: readonly string[], word: stri
 
 /**
  * 一語の名前の現れのうち、その語がふつうの語でもあり（ordinaryStarts は、そういう語の頭の位置）、文書のどこでも敬称や肩書きの
- * 後ろに書かないものに ordinary を付ける。
+ * 後ろに書かないものに ordinary を付ける。同じ形の現れが一つでもそうでなければ、その形のどの現れにも付けない。
  */
 export const withOrdinaryWords = (
   mentions: readonly NameMention[],
@@ -22,11 +22,12 @@ export const withOrdinaryWords = (
   source: string,
   titles: readonly string[],
 ): NameMention[] => {
-  const titled = new Map<string, boolean>();
-  const isTitled = (word: string): boolean => titled.get(word) ?? titled.set(word, isTitledIn(source, titles, word)).get(word) === true;
-  return mentions.map((mention) => {
+  const isOrdinary = (mention: NameMention): boolean => {
     const [word] = mention.words;
-    const ordinary = mention.words.length === 1 && word !== undefined && ordinaryStarts.has(mention.offset) && !isTitled(word);
-    return ordinary ? { ...mention, ordinary } : mention;
-  });
+    return mention.words.length === 1 && word !== undefined && ordinaryStarts.has(mention.offset);
+  };
+  const named = new Set(mentions.filter((mention) => !isOrdinary(mention)).map((mention) => mention.surface));
+  const ordinarySurfaces = new Set(mentions.filter((mention) => !named.has(mention.surface) && isOrdinary(mention)).map((mention) => mention.surface));
+  const unTitled = new Set([...ordinarySurfaces].filter((surface) => !isTitledIn(source, titles, surface)));
+  return mentions.map((mention) => (unTitled.has(mention.surface) ? { ...mention, ordinary: true } : mention));
 };

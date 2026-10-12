@@ -255,7 +255,7 @@ describe("the reading behind name-variant", () => {
     assert.deepEqual(nameVariants([ordinary("Course", 0), ordinary("Course", 10), ordinary("Curse", 20)]), []);
     assert.equal(nameVariants([ordinary("Marsh", 0), ordinary("Marsh", 10), mention("Marhs", 20)]).length, 1);
     assert.equal(nameVariants([mention("Okafor", 0), mention("Okafor", 10), ordinary("Okafur", 20)]).length, 1);
-    assert.equal(nameVariants([ordinary("Marsh", 0), mention("Marsh", 10), ordinary("March", 20)]).length, 1);
+    assert.equal(nameVariants([mention("Marsh", 0), ordinary("Marsh", 10), ordinary("March", 20)]).length, 1);
   });
 
   it("isTitledIn: a word the document writes after a title is used as a person's name", () => {
@@ -281,6 +281,11 @@ describe("the reading behind name-variant", () => {
       [false, false, false, false, false],
     );
     assert.deepEqual(withOrdinaryWords([], starts, source, ["Mr."]), []);
+    const mixed = withOrdinaryWords([mention("Marsh", 0), mention("Marsh", 20)], new Set([0]), "Marsh signed. Later, Marsh paid.", []);
+    assert.deepEqual(
+      mixed.map((found) => found.ordinary === true),
+      [false, false],
+    );
   });
 
   it("capitalised ordinary words one letter apart are not reported; a name on an ordinary word still is", () => {
