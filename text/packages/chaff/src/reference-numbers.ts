@@ -11,16 +11,16 @@ export type ReferenceNumber = { readonly offset: number; readonly written: strin
 export type ReferenceVariant = { readonly number: ReferenceNumber; readonly other: ReferenceNumber };
 
 /** Letters and digits, half or full width, joined by hyphens (MN-48215, AR730514, ＭＮ－４８２１５). */
-const REFERENCE_SHAPE = /(?<![A-Za-z0-9Ａ-Ｚａ-ｚ０-９\-‐−－])[A-Za-z0-9Ａ-Ｚａ-ｚ０-９]+(?:[-‐−－][A-Za-z0-9Ａ-Ｚａ-ｚ０-９]+)*/gu;
+export const REFERENCE_SHAPE = /(?<![A-Za-z0-9Ａ-Ｚａ-ｚ０-９\-‐−－])[A-Za-z0-9Ａ-Ｚａ-ｚ０-９]+(?:[-‐−－][A-Za-z0-9Ａ-Ｚａ-ｚ０-９]+)*/gu;
 /** Digits enough that a swap is a slip in one number, not two short codes (A-12, B-21). */
-const MIN_DIGITS = 4;
-const MAX_CHARACTERS = 24;
+export const MIN_DIGITS = 4;
+export const MAX_CHARACTERS = 24;
 const DIGIT = /\d/gu;
 const SEPARATOR = /[-‐−－]/gu;
 /** Only spaces and a colon, comma or opening bracket between the label and its number (「予約番号：」, "booking number, "); not a sentence's end. */
 const LABEL_TO_NUMBER = /^[\s:：,，、#＃(（「『[［]{0,4}$/u;
 
-const charactersOf = (written: string): string => written.normalize("NFKC").replaceAll(SEPARATOR, "").toUpperCase();
+export const charactersOf = (written: string): string => written.normalize("NFKC").replaceAll(SEPARATOR, "").toUpperCase();
 
 /** The reference numbers of a text written right after a label on their line; unlabelled codes and URLs are not read. */
 export const labelledReferenceNumbers = (source: string, labels: readonly LexiconEntry[]): ReferenceNumber[] => {
