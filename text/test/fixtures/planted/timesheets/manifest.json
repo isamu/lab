@@ -113,7 +113,7 @@
           "rule": "total-mismatch",
           "line": 29,
           "clean": "| 77時間 |",
-          "planted": "| 78時間 |"
+          "planted": "| 80時間 |"
         },
         {
           "kind": "hours-times-rate",

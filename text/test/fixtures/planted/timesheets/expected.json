@@ -16,12 +16,12 @@
       "end-before-start": "0/2",
       "day-hours": "0/2",
       "break-longer-than-shift": "0/2",
-      "hours-total": "1/2",
+      "hours-total": "2/2",
       "hours-times-rate": "2/2",
       "overtime-line": "2/2",
       "worker-name": "0/2",
       "worker-id": "2/2"
     }
   },
-  "clean": ["ja/workreport.clean.md:29 total-mismatch"]
+  "clean": []
 }
