@@ -3,6 +3,7 @@
 # 同じ表か同じ節に gross・deduction・net の語が一つずつあり、それぞれに金額があるとき、net が gross − deduction と合うかを比べる。net が無ければ taxable を比べる
 # （net もある節の deduction は支払いから引く額で、税の計算の控除ではないので、taxable は比べない）。表の見出しや項目がこの語だけ（単位の括弧は除く）のときに読む。
 # 支払金額は請求書では値引き後に払う額にも読めるので、gross に入れない。
+# 敷金精算書の 敷金・差引合計・返金額 も同じ形。敷金が見出しや文中（敷金は家賃の2か月分）に出るだけでは、三つの値がそろわないので比べない。
 id: net-amount-label
 language: ja
 entries:
@@ -12,18 +13,25 @@ entries:
   - { pattern: 支給合計, group: gross }
   - { pattern: 支給額合計, group: gross }
   - { pattern: 給与等の総額, group: gross }
+  - { pattern: 預り敷金, group: gross }
+  - { pattern: 敷金, group: gross }
   - { pattern: 控除合計, group: deduction }
   - { pattern: 控除額合計, group: deduction }
   - { pattern: 控除合計額, group: deduction }
   - { pattern: 控除総額, group: deduction }
   - { pattern: 控除計, group: deduction }
   - { pattern: 控除額の合計, group: deduction }
+  - { pattern: 差引合計, group: deduction }
+  - { pattern: 原状回復費用合計, group: deduction }
   - { pattern: 差引支給額, group: net }
   - { pattern: 差引支給金額, group: net }
   - { pattern: 差引支給合計, group: net }
   - { pattern: 差引支払額, group: net }
   - { pattern: 手取り額, group: net }
   - { pattern: 手取額, group: net }
+  - { pattern: 返金額, group: net }
+  - { pattern: ご返金額, group: net }
+  - { pattern: 返還額, group: net }
   - { pattern: 課税対象額, group: taxable }
   - { pattern: 課税所得, group: taxable }
   - { pattern: 課税所得金額, group: taxable }
