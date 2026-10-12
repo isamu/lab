@@ -1,0 +1,41 @@
+# 列の見出しの升にあれば、その列を行ごとにかけた率と読み、表の上の文や見出しが内訳を名指していても足さない語。share-column-rate の語も見出しでは同じに読む。
+# 表の上の文や行には効かせない（行の名前に「割引」があっても内訳の表でありうる）。
+id: share-column-rate-header
+language: ja
+entries:
+  - pattern: 還元率
+  - pattern: 割引率
+  - pattern: 値引率
+  - pattern: 値引き率
+  - pattern: 割引
+  - pattern: 値引き
+  - pattern: 割増率
+  - pattern: 税率
+  - pattern: 料率
+  - pattern: 掛け率
+  - pattern: 掛率
+  - pattern: 利益率
+  - pattern: 粗利率
+  - pattern: 原価率
+  - pattern: 稼働率
+  - pattern: 使用率
+  - pattern: 進捗率
+  - pattern: 完了率
+  - pattern: 消化率
+  - pattern: 充足率
+  - pattern: 正答率
+  - pattern: 出席率
+  - pattern: 回答率
+  - pattern: 投票率
+  - pattern: 回収率
+  - pattern: 成約率
+  - pattern: 解約率
+  - pattern: 離職率
+  - pattern: 返品率
+  - pattern: 普及率
+  - pattern: 負担率
+  - pattern: 上昇率
+  - pattern: 下落率
+  - pattern: 増減率
+  - pattern: 変化率
+  - pattern: 歩留まり

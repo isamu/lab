@@ -6,7 +6,7 @@ import { quoteAt } from "./structure-tree.ts";
 
 const patternsOf = (doc: ProseDocument, lexicon: string): string[] => (doc.lexicons[lexicon] ?? []).map((entry) => entry.pattern);
 
-/** 期間の語、期間の外に置く語、文書の仕事の期間の語、締め切りの語、期間の後に来てよい仕事の語、概要の節の見出しの語、範囲の記号（range-connector、range-opener、range-frame の間の語）、月と曜日の名は語彙表から取る。 */
+/** 期間の語、期間の外に置く語、文書の仕事の期間の語、締め切りの語、期間の後に来てよい仕事の語、日付を締め切りにする語、概要の節の見出しの語、範囲の記号（range-connector、range-opener、range-frame の間の語）、月と曜日の名は語彙表から取る。 */
 const wordsOf = (doc: ProseDocument): OutsideWords => ({
   ...periodWordsOf(doc, patternsOf(doc, "period-label")),
   terms: patternsOf(doc, "period-term-label"),
@@ -14,6 +14,7 @@ const wordsOf = (doc: ProseDocument): OutsideWords => ({
   deadlines: patternsOf(doc, "period-deadline"),
   overviews: patternsOf(doc, "period-overview-heading"),
   afterTerm: patternsOf(doc, "period-after-term"),
+  deadlineMarks: doc.lexicons["date-deadline-mark"] ?? [],
 });
 
 /** 書いた期間（旅行期間：…）の外の日付を持つ、その後ろの日程の項目、表の行、見出し。 */

@@ -17,12 +17,10 @@ import {
   type StayColumnWords,
 } from "../derived/stays.ts";
 import { numeralCounts } from "../derived/unit-counts.ts";
-import { timeLengths, type LengthWords, type TimeLength } from "../derived/time-lengths.ts";
-import { workingHoursMismatches, type WorkingHoursMismatch } from "../derived/working-hours.ts";
 import { sessionHoursMismatches } from "../derived/session-hours.ts";
-import { computedLength, type ComputedLength } from "../derived/hours-and-minutes.ts";
-import { clockTimes } from "../compare/clock-time.ts";
-import { secondsOf, type Mark } from "../structure/time-marks.ts";
+import { computedLength } from "../derived/hours-and-minutes.ts";
+import { lengthsOf, workingHoursFindings } from "./working-hours-findings.ts";
+import type { Mark } from "../structure/time-marks.ts";
 import { proseAndTablesOf } from "../table-text.ts";
 import { quoteAt, rangeWordsOf } from "./structure-tree.ts";
 import { readableDates } from "./readable-dates.ts";
@@ -144,53 +142,6 @@ const stayColumnWords = (doc: ProseDocument): StayColumnWords => ({
 const marksOf = (doc: ProseDocument, id: string): Mark[] =>
   (doc.lexicons[id] ?? []).map((entry) => ({ pattern: entry.pattern, position: entry.position, group: entry.group }));
 
-const SECONDS_PER_HOUR = 3600;
-const SECONDS_PER_MINUTE = 60;
-
-/** The hour and minute units of unit-time, told apart by their weight in seconds. */
-const unitsWeighing = (doc: ProseDocument, seconds: number): string[] =>
-  (doc.lexicons["unit-time"] ?? []).filter((entry) => entry.weight === seconds).map((entry) => entry.pattern);
-
-const lengthWords = (doc: ProseDocument): LengthWords => ({
-  hourUnits: unitsWeighing(doc, SECONDS_PER_HOUR),
-  minuteUnits: unitsWeighing(doc, SECONDS_PER_MINUTE),
-  halves: patternsOf(doc, "length-half"),
-  numberWords: patternsOf(doc, "count-number"),
-});
-
-const lengthsOf = (doc: ProseDocument, text: string): TimeLength[] => timeLengths(text, lengthWords(doc));
-
-/** The variant suffix for each way of writing the computed length: 4時間15分 takes none, 7時間 "-hours", 45分 "-minutes". */
-const SHAPE_SUFFIX: Readonly<Record<ComputedLength["shape"], string>> = { "hours-minutes": "", hours: "-hours", minutes: "-minutes" };
-
-const workingHoursFinding = (doc: ProseDocument, mismatch: WorkingHoursMismatch): Finding[] => {
-  const length = computedLength(mismatch.expected, mismatch.total.minutes);
-  if (length === undefined) return [];
-  const values = {
-    start: written(doc, mismatch.start),
-    end: written(doc, mismatch.end),
-    break: written(doc, mismatch.break),
-    total: written(doc, mismatch.total),
-    ...length.values,
-  };
-  return [finding(doc, mismatch.total.start, values, `working-hours${SHAPE_SUFFIX[length.shape]}`)];
-};
-
-/** 始業から終業まで、休憩を除いた時間が、書いた実働と合わない。 */
-const workingHoursOf = (doc: ProseDocument, text: string): Finding[] => {
-  const times = clockTimes(text).map((time) => ({ start: time.start, end: time.end, seconds: secondsOf(time.key) }));
-  const words = {
-    joiners: patternsOf(doc, "clock-range-joiner"),
-    dayShifts: marksOf(doc, "day-shift-mark"),
-    breaks: marksOf(doc, "working-hours-break"),
-    totals: marksOf(doc, "working-hours-total"),
-    approximate: marksOf(doc, "approximate-marker"),
-  };
-  return workingHoursMismatches(text, doc.source, sentencesOf(doc), times, lengthsOf(doc, text), words).flatMap((mismatch) =>
-    workingHoursFinding(doc, mismatch),
-  );
-};
-
 /** 始まり + 期間 ≠ 終わり。泊数が二つの日付の差と合わない。「2泊3日」の日数が泊数より一つ多くない。 */
 export const durationMismatch: Detector = (doc): Finding[] => {
   if (doc.structure === undefined) return [];
@@ -222,7 +173,7 @@ export const durationMismatch: Detector = (doc): Finding[] => {
   const nightsDays = nightsDaysMismatches(pairs).map((mismatch) =>
     finding(doc, mismatch.days.start, { nights: written(doc, mismatch.nights), days: written(doc, mismatch.days), expected: mismatch.expected }, "nights-days"),
   );
-  return [...lengths, ...stays.map((mismatch) => nightsFinding(doc, mismatch)), ...nightsDays, ...workingHoursOf(doc, proseAndTables)];
+  return [...lengths, ...stays.map((mismatch) => nightsFinding(doc, mismatch)), ...nightsDays, ...workingHoursFindings(doc, proseAndTables, finding)];
 };
 
 /** 番号の書き方（ordinal-frame）の頭の語のすぐ後ろの数。「第15回」は15番目の回で、15回ではない。 */

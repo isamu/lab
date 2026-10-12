@@ -1,0 +1,19 @@
+# Words naming the term an amount is for, which leave a net-amount-label name as it is (net-amount-mismatch): "Fall
+# charges" reads as Charges, "Amount due for the fall" as Amount due. position: before or after the name only; group names
+# the term, so "Fall" and "for the fall" are one term. Names cut from two different terms in one table or section (Fall
+# charges, Spring scholarship applied) are not compared. A span not listed (last month's, for the prior year) is not cut.
+# An entry with no position is a name read only with a term on it: Charges alone is too common a row to be a gross.
+id: net-amount-period
+language: en
+entries:
+  - { pattern: fall, position: before, group: fall }
+  - { pattern: for the fall, position: after, group: fall }
+  - { pattern: autumn, position: before, group: fall }
+  - { pattern: for the autumn, position: after, group: fall }
+  - { pattern: spring, position: before, group: spring }
+  - { pattern: for the spring, position: after, group: spring }
+  - { pattern: summer, position: before, group: summer }
+  - { pattern: for the summer, position: after, group: summer }
+  - { pattern: winter, position: before, group: winter }
+  - { pattern: for the winter, position: after, group: winter }
+  - { pattern: Charges, group: gross }

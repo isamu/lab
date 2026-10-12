@@ -1,10 +1,12 @@
 // due-before-issue: the reading half. The issue-date and due-date words come from the language's lexicons
 // (issue-date-label, due-date-label, deadline-passed-word), and so do the words of minutes (minutes-title-word, meeting-date-label,
 // action-section-heading, earlier-section-word, action-due-label, item-done-word) and the other pairs of dates that must come in
-// order (dated-pair-label, date-now-word, and dated-span-label for the words whose line states a period, read up to its end);
+// order (dated-pair-label, date-now-word, and dated-span-label for the words whose line states a period, read up to its end;
+// a table whose header names both columns of a pair, from dated-pair-label and the header-only dated-column-label);
 // the dates are the structure tree's, and the lines are read with code masked.
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { actionDueBeforeMeeting, type ActionWords } from "../structure/action-due.ts";
+import { columnDatesOutOfOrder } from "../structure/column-date-order.ts";
 import { pairedDatesOutOfOrder, type OrderDate } from "../structure/labelled-date-order.ts";
 import { dueBeforeIssue, type DueWords } from "../structure/due-date.ts";
 import { inDocumentOrder, type StructureIssue } from "../structure/issues.ts";
@@ -58,6 +60,9 @@ export const dueDate: Detector = (doc): Finding[] => {
     ...dueBeforeIssue(text, dates, wordsOf(doc)).map((issue) => findingOf(doc, issue)),
     ...pairedDatesOutOfOrder(text, dates, pairs, orderAsidesOf(doc), MAX_RECORD_LINE_GAP, spans).map((issue) =>
       findingOf(doc, issue, issue.period ? "period" : "order"),
+    ),
+    ...columnDatesOutOfOrder(text, dates, [...pairs, ...(doc.lexicons["dated-column-label"] ?? [])], orderAsidesOf(doc)).map((issue) =>
+      findingOf(doc, issue, "order"),
     ),
     ...actionDueBeforeMeeting(text, dates, doc.markup?.headings ?? [], actionWordsOf(doc)).map((issue) => findingOf(doc, issue, "meeting")),
   ];

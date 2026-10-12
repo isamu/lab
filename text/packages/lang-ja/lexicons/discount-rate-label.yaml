@@ -1,0 +1,30 @@
+# 数量別の価格表で、割引率が定価と単価から出る率と合うかを見る語（discount-rate-mismatch）。group: rate は割引率の列の見出し、
+# price は割り引いた後の単価の列の見出し、list は定価（表の外の文「定価は1枚8.0円」、行「| 定価 | 8.0円 |」、または列）。
+# group: not を含む見出しは、率の語があっても割引率と読まない（税率、掛け率、上乗せ）。group: per は、すぐ後の語が単価の単位を言う印
+# （1枚、/枚）。定価と単価の単位が違えば比べない。
+id: discount-rate-label
+language: ja
+entries:
+  - { pattern: 割引率, group: rate }
+  - { pattern: 値引率, group: rate }
+  - { pattern: 値引き率, group: rate }
+  - { pattern: 割引, group: rate }
+  - { pattern: 値引, group: rate }
+  - { pattern: 単価, group: price }
+  - { pattern: 割引後, group: price }
+  - { pattern: 販売価格, group: price }
+  - { pattern: 卸価格, group: price }
+  - { pattern: 卸値, group: price }
+  - { pattern: 定価, group: list }
+  - { pattern: 標準価格, group: list }
+  - { pattern: 通常価格, group: list }
+  - { pattern: 希望小売価格, group: list }
+  - { pattern: 税率, group: not }
+  - { pattern: 消費税, group: not }
+  - { pattern: 掛け率, group: not }
+  - { pattern: 掛率, group: not }
+  - { pattern: 上乗せ, group: not }
+  - { pattern: 利益率, group: not }
+  - { pattern: 手数料, group: not }
+  - { pattern: "1", group: per }
+  - { pattern: /, group: per }

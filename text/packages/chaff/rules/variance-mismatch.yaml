@@ -1,0 +1,67 @@
+id: variance-mismatch
+layer: L3
+status: stable
+how_to_find: variance-mismatch
+# The column headings are lexicon variance-column (groups budget, actual, variance, rate); words of magnitude are amount-multiplier.
+severity: warning
+
+name:
+  ja: 予算と決算の差が、増減の列と合わない
+  en: A variance that is not the difference of the budget and the actual
+
+why:
+  ja: 予算額・決算額・増減を並べた表では、読み手は増減の列だけを見て、予算をどれだけ超えたか、どれだけ残ったかを判断します。決算額を直したのに増減を直し忘れたとき、桁を写し間違えたときに、増減だけが食い違います。見出しの語で予算の列（予算額、予算）、決算の列（決算額、実績）、増減の列（増減、差異、差額、予算比）が一つずつ分かる表では、行ごとに決算額から予算額を引いた額と、書いた増減を比べます。△・▲・−・- の付いた額と括弧に入れた額は負の数と読みます。増減を「予算額から決算額を引いた額」で書く表もあるので、どちらの向きかは表のほかの行（どの行も向きを言わない表では文書のほかの表）が多く従うほうに決め、決まらなければ言いません。
+  en: In a table of budget, actual and variance, readers look at the variance column alone to see how far over or under budget each line went. When an actual figure is corrected and its variance is not, or a digit is copied wrong, the variance alone is off. When the headings name one budget column (Budget), one actual column (Actual) and one variance column (Variance, Difference, Over (under)), each row's actual less its budget is compared with the variance written. An amount marked -, −, ▲ or △, or written in brackets, is negative. Some tables write the variance the other way, as the budget less the actual, so the direction is the one most of the table's other rows follow (or, when no row of the table tells, the document's other tables); when the rows split evenly, nothing is said.
+
+message:
+  ja: 「{item}」の増減は「{written}」ですが、予算と決算の差からは「{expected}」です
+  en: '"{item}" shows a variance of "{written}", but its budget and actual give "{expected}"'
+
+how_to_fix:
+  ja: 予算額・決算額・増減のどれが正しいかを確かめて、ほかを直してください。
+  en: Check which of the budget, the actual and the variance is right, and correct the others.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 予算額と決算額の差が、書いた増減と合わない行
+  en: A table row whose variance is not the difference of its budget and actual
+example:
+  ja:
+    before: |
+      | 項目 | 予算額 | 決算額 | 増減 |
+      | --- | --- | --- | --- |
+      | 会費 | 510,000円 | 504,000円 | △6,000円 |
+      | 防災用品の購入費 | 80,000円 | 86,900円 | 6,090円 |
+      | 会議・事務費 | 40,000円 | 35,280円 | △4,720円 |
+    after: |
+      | 項目 | 予算額 | 決算額 | 増減 |
+      | --- | --- | --- | --- |
+      | 会費 | 510,000円 | 504,000円 | △6,000円 |
+      | 防災用品の購入費 | 80,000円 | 86,900円 | 6,900円 |
+      | 会議・事務費 | 40,000円 | 35,280円 | △4,720円 |
+  en:
+    before: |
+      | Item | Budget | Actual | Variance |
+      | --- | --- | --- | --- |
+      | Street lighting | $480.00 | $469.20 | ($10.80) |
+      | Emergency supplies | $400.00 | $434.50 | $43.50 |
+      | Seniors' lunch | $600.00 | $590.00 | ($10.00) |
+    after: |
+      | Item | Budget | Actual | Variance |
+      | --- | --- | --- | --- |
+      | Street lighting | $480.00 | $469.20 | ($10.80) |
+      | Emergency supplies | $400.00 | $434.50 | $34.50 |
+      | Seniors' lunch | $600.00 | $590.00 | ($10.00) |
+
+not_flagged:
+  ja: 見出しから予算・決算・増減の列が一つずつ決まらない表（当初予算と補正予算が並ぶ表など）、率の列（増減率、執行率、% を書いた列）、升が金額でない行（—、98.8%）、予算額と決算額の単位の書き方が違う行は比べません。増減の向きが、表の行で同じ数ずつに分かれる表は言いません。もう一方の向きに従う行が二つ以上ある表では、それらを書き手が選んだ向きと読み、向きの違いだけでは言いません。千円・百万円や単位の無い数は丸めた額と読み、一桁の差は言いません。
+  en: "A table whose headings do not name one budget, one actual and one variance column (an original and a revised budget side by side), a column of rates (Variance %, Rate, Ratio), a row whose cells are not amounts (—, 98.8%), and a row whose budget and actual are written in different units are not compared. A table whose rows split evenly between the two directions is not reported, and when two or more rows follow the other direction, the difference in direction alone is not reported. Amounts in thousands or millions, and bare numbers, are read as rounded, so a difference of one in the last digit is not reported."
+level_meaning:
+  ja: 予算と決算の差が増減の列と合わない行を指摘
+  en: reported when a row's variance is not its actual less its budget (or the reverse, as the table's rows do)

@@ -1,0 +1,33 @@
+# Words that check an interest calculation written on one line of a deposit statement ("average balance $3,600.00 × rate
+# 0.05% = $1.80", interest-mismatch). group: interest names the interest; base the balance the rate is on; rate the rate;
+# net interest after tax, whose line is not compared. rate-year and rate-month say what period a rate is for;
+# interest-year and interest-month what period the interest is for. A rate marked for a period is compared only on a line
+# that names the same period for the interest: it is never converted by a day count. A Latin word stands as a whole word.
+id: interest-label
+language: en
+entries:
+  - { pattern: interest, group: interest }
+  - { pattern: balance, group: base }
+  - { pattern: principal, group: base }
+  - { pattern: rate, group: rate }
+  - { pattern: apr, group: rate }
+  - { pattern: apy, group: rate }
+  - { pattern: after tax, group: net }
+  - { pattern: after-tax, group: net }
+  - { pattern: net interest, group: net }
+  - { pattern: net of tax, group: net }
+  - { pattern: apr, group: rate-year }
+  - { pattern: apy, group: rate-year }
+  - { pattern: annual, group: rate-year }
+  - { pattern: per annum, group: rate-year }
+  - { pattern: p.a., group: rate-year }
+  - { pattern: a year, group: rate-year }
+  - { pattern: per year, group: rate-year }
+  - { pattern: monthly, group: rate-month }
+  - { pattern: a month, group: rate-month }
+  - { pattern: per month, group: rate-month }
+  - { pattern: for the year, group: interest-year }
+  - { pattern: annual, group: interest-year }
+  - { pattern: yearly, group: interest-year }
+  - { pattern: for the month, group: interest-month }
+  - { pattern: monthly, group: interest-month }

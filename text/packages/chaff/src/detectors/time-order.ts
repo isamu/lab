@@ -8,6 +8,7 @@ import { arrivalOffsets, arrivalsBeforeDeparture } from "../structure/leg-times.
 import { shortConnections, type TravelLength, type TravelWords } from "../structure/connection-times.ts";
 import { timeLengths } from "../derived/time-lengths.ts";
 import { reversedTimeRanges } from "../structure/time-range.ts";
+import { cellMinutes, reversedShiftRows, showsOvernightWork } from "../structure/shift-times.ts";
 import { pairedTimesOutOfOrder } from "../structure/labelled-time-order.ts";
 import { quoteAt, rangeWordsOf } from "./structure-tree.ts";
 
@@ -35,8 +36,12 @@ const timesOf = (text: string): TimeSpan[] => clockTimes(text).map((time) => ({ 
 
 type Finder = (source: string, times: readonly TimeSpan[], dates: readonly DateSpan[], words: TimeWords, doc: ProseDocument) => StructureIssue[];
 
-/** 先頭の時刻を次の時刻と比べたもの（first）。それ以外は variant のまま。 */
-const variantOf = (issue: StructureIssue, variant: string | undefined): string | undefined => variant ?? ("next" in issue.values ? "first" : undefined);
+/** 先頭の時刻を次の時刻と比べたもの（first）、勤務表の始まりと終わりの列（columns）。それ以外は variant のまま。 */
+const variantOf = (issue: StructureIssue, variant: string | undefined): string | undefined => {
+  if (variant !== undefined) return variant;
+  if ("next" in issue.values) return "first";
+  return "end_label" in issue.values ? "columns" : undefined;
+};
 
 /** 表と箇条書きを行のまま読むので、原文を渡す（doc.prose は表を覆う）。 */
 const detectorOf =
@@ -65,10 +70,6 @@ const timeOrderInPair: Detector = detectorOf(
 
 export const timeOrder: Detector = (doc, options) => [...timeOrderInList(doc, options), ...timeOrderInPair(doc, options)];
 export const arrivalBeforeDeparture: Detector = detectorOf("arrival-before-departure", arrivalsBeforeDeparture);
-export const timeRangeReversed: Detector = detectorOf("time-range-reversed", (source, times, _dates, words, doc) =>
-  reversedTimeRanges(source, times, rangeWordsOf(doc), words),
-);
-
 const SECONDS_PER_HOUR = 3600;
 const SECONDS_PER_MINUTE = 60;
 
@@ -76,13 +77,31 @@ const patternsOf = (doc: ProseDocument, lexicon: string, weight?: number): strin
   (doc.lexicons[lexicon] ?? []).filter((entry) => weight === undefined || entry.weight === weight).map((entry) => entry.pattern);
 
 /** 時間と分の長さ（約10分、about 40 minutes）。単位は unit-time の重さ（秒）で時間と分に分ける。 */
-const travelLengthsOf = (doc: ProseDocument): TravelLength[] =>
-  timeLengths(doc.source, {
+const lengthsIn = (doc: ProseDocument, text: string): TravelLength[] =>
+  timeLengths(text, {
     hourUnits: patternsOf(doc, "unit-time", SECONDS_PER_HOUR),
     minuteUnits: patternsOf(doc, "unit-time", SECONDS_PER_MINUTE),
     halves: patternsOf(doc, "length-half"),
     numberWords: patternsOf(doc, "count-number"),
   });
+
+/** 升に書いた長さを分で。単位付き（8.0時間、9時間30分、8 hours）、時と分（1:00）、単位の無い時間（8.00）。 */
+const cellLength = (doc: ProseDocument, text: string): number | undefined => cellMinutes(text, lengthsIn(doc, text), true);
+
+/** 範囲に書いた時刻と、勤務表の始まりと終わりの列（語彙表 shift-column）。同じ時刻を両方から読んでも一度だけ言う。 */
+export const timeRangeReversed: Detector = detectorOf("time-range-reversed", (source, times, _dates, words, doc) => {
+  const inline = reversedTimeRanges(source, times, rangeWordsOf(doc), words);
+  const rows = reversedShiftRows({
+    source,
+    times,
+    columns: marksOf(doc, "shift-column"),
+    overnight: showsOvernightWork(source, times, marksOf(doc, "overnight-work-mark"), words),
+    lengthOf: (text) => cellLength(doc, text),
+  }).filter((row) => !inline.some((issue) => issue.offset <= row.offset && row.offset < issue.offset + String(issue.values["range"]).length));
+  return [...inline, ...rows].toSorted((left, right) => left.offset - right.offset);
+});
+
+const travelLengthsOf = (doc: ProseDocument): TravelLength[] => lengthsIn(doc, doc.source);
 
 const travelWordsOf = (doc: ProseDocument): TravelWords => {
   const marks = marksOf(doc, "travel-time-word");

@@ -20,6 +20,11 @@ message:
   ja: 申込の締め切り（{deadline}）が、催しの日（{event}）より後です
   en: "The registration deadline {deadline} is after the event on {event}"
 
+messages:
+  payment:
+    ja: 支払の期限（{deadline}）が、催しの日（{event}）より後です
+    en: "The payment deadline {deadline} is after the event on {event}"
+
 how_to_fix:
   ja: 催しの日と締め切りのどちらが正しいかを確かめて、片方を直してください。
   en: Check which is right, the event date or the deadline, and correct the other.

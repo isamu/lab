@@ -63,6 +63,20 @@ entries:
   - { pattern: "First installment due", group: loan, position: after }
   - { pattern: "First installment due date", group: loan, position: after }
   - { pattern: "First installment date", group: loan, position: after }
+  # A price list, a coupon, a licence or a policy: the end of the validity does not come before its start. "Valid until"
+  # and "Expires" are in due-date-label too, where they are compared with the issue date; each pair is compared on its own.
+  - { pattern: "Valid from", group: validity, position: before }
+  - { pattern: "Effective date", group: validity, position: before }
+  - { pattern: "Effective from", group: validity, position: before }
+  - { pattern: "Valid until", group: validity, position: after }
+  - { pattern: "Valid to", group: validity, position: after }
+  - { pattern: "Expiry date", group: validity, position: after }
+  - { pattern: "Expires", group: validity, position: after }
+  # A bank or card statement whose period is written as two lines: the period does not end before it starts.
+  - { pattern: "Period start", group: statement-period, position: before }
+  - { pattern: "Statement period start", group: statement-period, position: before }
+  - { pattern: "Period end", group: statement-period, position: after }
+  - { pattern: "Statement period end", group: statement-period, position: after }
   # A hotel booking: check-out does not come before check-in. A same-day check-out (a day use) is not reported.
   - { pattern: "Check-in", group: stay, position: before }
   - { pattern: "Check-in date", group: stay, position: before }
@@ -118,6 +132,13 @@ entries:
   - { pattern: "Date of completion", group: transcript-issue, position: before }
   - { pattern: "Date of issue", group: transcript-issue, position: after }
   - { pattern: "Issue date", group: transcript-issue, position: after }
+  # An insurance or benefit claim: the claim does not come before the incident, the loss, the injury it claims for.
+  - { pattern: "Date of incident", group: incident, position: before }
+  - { pattern: "Date of loss", group: incident, position: before }
+  - { pattern: "Incident date", group: incident, position: before }
+  - { pattern: "Date of injury", group: incident, position: before }
+  - { pattern: "Date of claim", group: incident, position: after }
+  - { pattern: "Claim date", group: incident, position: after }
   # An annual earnings and tax withholding statement is issued once the tax year has ended or, for a leaver, after the
   # leaving date. "Period covered" is left out: an invoice billed in advance is issued at the start of the period it covers.
   - { pattern: "Tax year", group: tax-statement, position: before }
@@ -157,3 +178,31 @@ entries:
   - { pattern: "Next inspection", group: vehicle-service, position: after }
   - { pattern: "Next inspection due", group: vehicle-service, position: after }
   - { pattern: "Next service due", group: vehicle-service, position: after }
+  # A construction or renovation quote, contract or schedule: the work is completed and handed over after it starts. A bare
+  # "Start date" pairs only with a completion date (construction-start): it heads a new hire's first day too, and a
+  # handover to or from them can come before it. "Date of completion" stays in transcript.
+  - { pattern: "Work start", group: construction, position: before }
+  - { pattern: "Construction start", group: construction, position: before }
+  - { pattern: "Completion date", group: construction, position: after }
+  - { pattern: "Expected completion", group: construction, position: after }
+  - { pattern: "Handover date", group: construction, position: after }
+  - { pattern: "Start date", group: construction-start, position: before }
+  - { pattern: "Completion date", group: construction-start, position: after }
+  - { pattern: "Expected completion", group: construction-start, position: after }
+  # A phone, utility or service contract's term: the service does not end before it starts. A same-day end (one day of
+  # service) is not reported. A bare "Start date" and "End date" are left out: a project plan or a timesheet uses them too.
+  - { pattern: "Service start date", group: service-period, position: before }
+  - { pattern: "Start of service", group: service-period, position: before }
+  - { pattern: "Contract start date", group: service-period, position: before }
+  - { pattern: "Service end date", group: service-period, position: after }
+  - { pattern: "End of service", group: service-period, position: after }
+  - { pattern: "Contract end date", group: service-period, position: after }
+  # A treasurer's report or an income and expenditure statement: the accounts are audited once the financial year has
+  # ended. The year is a period, compared by its last day. Approval and report dates are left out: a budget is approved
+  # before its year begins, and an interim report is dated inside the year.
+  - { pattern: "Fiscal year", group: fiscal-audit, position: before }
+  - { pattern: "Financial year", group: fiscal-audit, position: before }
+  - { pattern: "Audited", group: fiscal-audit, position: after }
+  - { pattern: "Date audited", group: fiscal-audit, position: after }
+  - { pattern: "Audit date", group: fiscal-audit, position: after }
+  - { pattern: "Date of audit", group: fiscal-audit, position: after }

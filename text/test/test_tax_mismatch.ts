@@ -4,6 +4,7 @@ import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { taxMatches, taxMismatches, type TaxWords } from "../packages/chaff/src/structure/tax.ts";
+import { statedTaxRates, taxIncludedPriceMismatches, taxPricePairsOf, type TaxPriceWord } from "../packages/chaff/src/structure/tax-price.ts";
 
 // 税額が小計に税率を掛けた額と合わない（tax-mismatch）。例文はすべて自作。
 
@@ -106,5 +107,131 @@ describe("tax-mismatch: 税額が小計に税率を掛けた額と合わない",
     assert.deepEqual(taxMismatches(table([...ITEMS, "| 消費税（10%） | 1円 |"]), [], none), []);
     assert.deepEqual(taxMismatches("", [], { ...none, labels: ["消費税"] }), []);
     assert.deepEqual(findingsOf(""), []);
+  });
+});
+
+const priceTable = (headings: readonly string[], rows: readonly (readonly string[])[]): string =>
+  [headings, headings.map(() => "---"), ...rows].map((cells) => `| ${cells.join(" | ")} |`).join("\n") + "\n";
+
+const JA_HEADINGS = ["品名", "1箱の価格（税抜）", "1箱の価格（税込・10%）"];
+const EN_HEADINGS = ["Item", "Pack price (excl. tax)", "Pack price (incl. 8% tax)"];
+
+describe("tax-mismatch: 価格表の税込の価格が、税抜の価格に率を足した額と合わない", () => {
+  it("税込の列の見出しの率で、行ごとに比べて違う行を指す", () => {
+    assert.deepEqual(
+      findingsOf(
+        priceTable(JA_HEADINGS, [
+          ["封筒", "1,200円", "1,320円"],
+          ["便箋", "1,100円", "1,188円"],
+        ]),
+      ),
+      ["税込の価格「1,188円」が、税抜の価格「1,100円」に10%の税を足した額（1,210円）と合いません"],
+    );
+    assert.deepEqual(
+      findingsOf(
+        priceTable(EN_HEADINGS, [
+          ["Envelope", "$12.00", "$12.96"],
+          ["Notepad", "$11.00", "$11.66"],
+        ]),
+        en,
+      ),
+      ["The price with tax $11.66 is not the price before tax $11.00 plus 8% tax ($11.88)"],
+    );
+  });
+
+  it("合っていれば言わない。端数は切り捨て・四捨五入・切り上げのどれでもよい", () => {
+    assert.deepEqual(
+      findingsOf(
+        priceTable(JA_HEADINGS, [
+          ["封筒", "1,200円", "1,320円"],
+          ["鉛筆", "95円", "104円"],
+          ["消しゴム", "95円", "105円"],
+        ]),
+      ),
+      [],
+    );
+    assert.deepEqual(
+      findingsOf(
+        priceTable(EN_HEADINGS, [
+          ["Clip", "$0.35", "$0.37"],
+          ["Clip", "$0.35", "$0.38"],
+        ]),
+        en,
+      ),
+      [],
+    );
+    assert.deepEqual(findingsOf(priceTable(["品名", "税抜価格", "税込価格（10%）"], [["封筒", "500円", "550円"]])), []);
+    assert.deepEqual(findingsOf(priceTable(["Item", "Price (excl. tax)", "Price (incl. 10% tax)"], [["Tag", "$0.335", "$0.36"]]), en), []);
+  });
+
+  it("見出しに率が無ければ、文書が税の語の隣に書いた率で比べる", () => {
+    const ja = priceTable(["品名", "価格（税抜）", "価格（税込）"], [["封筒", "1,000円", "1,080円"]]);
+    assert.deepEqual(findingsOf(`税込の価格は、税抜の価格に消費税10%を加えた額です。\n\n${ja}`), [
+      "税込の価格「1,080円」が、税抜の価格「1,000円」に10%の税を足した額（1,100円）と合いません",
+    ]);
+    assert.deepEqual(findingsOf(`消費税率は10%です。\n\n${ja.replace("1,080円", "1,100円")}`), []);
+    const enTablePrices = priceTable(["Item", "Price (before tax)", "Price (after tax)"], [["Pen", "$10.00", "$10.50"]]);
+    assert.deepEqual(findingsOf(`Prices after tax include 8% sales tax.\n\n${enTablePrices}`, en), [
+      "The price with tax $10.50 is not the price before tax $10.00 plus 8% tax ($10.80)",
+    ]);
+  });
+
+  it("率がどこにも無い表、二つの率を書いた文書は比べない", () => {
+    const ja = priceTable(["品名", "価格（税抜）", "価格（税込）"], [["封筒", "1,000円", "1,080円"]]);
+    assert.deepEqual(findingsOf(ja), []);
+    assert.deepEqual(findingsOf(`食品は軽減税率8%、そのほかは消費税10%です。\n\n${ja}`), []);
+    assert.deepEqual(findingsOf(`割引は10%です。\n\n${ja}`), []);
+    assert.deepEqual(findingsOf(`食品は軽減税率8%です。\n\n${priceTable(JA_HEADINGS, [["パン", "1,000円", "1,080円"]])}`), []);
+  });
+
+  it("見出しが税抜・税込の語と率のほかでも違う列、組の決まらない列、単位の違う升は比べない", () => {
+    assert.deepEqual(findingsOf(priceTable(["品名", "単価（税抜）", "1箱の価格（税込・10%）"], [["封筒", "120円", "1,320円"]])), []);
+    assert.deepEqual(findingsOf(priceTable(["品名", "価格（税抜）", "価格（税抜）", "価格（税込・10%）"], [["封筒", "100円", "200円", "330円"]])), []);
+    assert.deepEqual(findingsOf(priceTable(JA_HEADINGS, [["封筒", "$12.00", "1,320円"]])), []);
+    assert.deepEqual(findingsOf(priceTable(["Item", "Price $ (excl. tax)", "Price € (incl. 10% tax)"], [["Pen", "10", "12"]]), en), []);
+    assert.deepEqual(
+      findingsOf(
+        priceTable(JA_HEADINGS, [
+          ["封筒", "-", "1,320円"],
+          ["便箋", "1,100円", "要見積"],
+        ]),
+      ),
+      [],
+    );
+    assert.deepEqual(findingsOf(priceTable(["Item", "Price (incl. tax / excl. tax)", "Price (incl. 8% tax)"], [["Pen", "$10.00", "$9.00"]]), en), []);
+  });
+
+  it("価格表の読み方を語と見出しで確かめる", () => {
+    const words: TaxPriceWord[] = [
+      { pattern: "税抜", role: "excluded" },
+      { pattern: "税込", role: "included" },
+      { pattern: "税込み", role: "included" },
+      { pattern: "消費税", role: "rate" },
+    ];
+    assert.deepEqual(taxPricePairsOf(["品名", "税抜", "税込み（8%）"], words), [{ excluded: 1, included: 2, rate: 8 }]);
+    assert.deepEqual(taxPricePairsOf(["税込（10%）", "税抜"], words), [{ excluded: 1, included: 0, rate: 10 }]);
+    assert.deepEqual(taxPricePairsOf(["税込", "税込", "税抜"], words), []);
+    assert.deepEqual(taxPricePairsOf(["価格", "金額"], words), []);
+    assert.deepEqual(statedTaxRates(["消費税10%を加えます。", "消費税（10%）", "消費税率は10%です。"], [...words, { pattern: "税率", role: "rate" }]), [10]);
+    assert.deepEqual(
+      statedTaxRates(
+        ["A sales tax of 8% applies.", "VAT: 20%", "8% tax", "8% taxable"],
+        [
+          { pattern: "tax", role: "rate" },
+          { pattern: "VAT", role: "rate" },
+        ],
+      ),
+      [8, 20],
+    );
+    assert.deepEqual(statedTaxRates(["割引10%", "10%引き", ""], words), []);
+    assert.deepEqual(taxIncludedPriceMismatches({ tables: [], lines: [] }, words), []);
+    assert.deepEqual(taxIncludedPriceMismatches({ tables: [], lines: ["消費税10%"] }, []), []);
+  });
+
+  it("価格表の読みは、税の行の読みを変えない", () => {
+    assert.deepEqual(findingsOf(table([...ITEMS, "| 小計 | 800,000円 |", "| 消費税（10%） | 88,000円 |"])), [
+      "税額「88,000円」が、上の金額の10%（80,000円）と合いません",
+    ]);
+    assert.deepEqual(findingsOf(table([...ITEMS, "| 合計（税込） | 880,000円 |", "| うち消費税（10%） | 80,000円 |"])), []);
   });
 });

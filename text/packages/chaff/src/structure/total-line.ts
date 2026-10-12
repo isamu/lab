@@ -17,6 +17,8 @@ export type TotalLineWords = {
   readonly unsummedNouns?: readonly string[] | undefined;
   /** 合計が足す期間の語（total-period-qualifier。年間合計の年間、Total for the year の for the year）。見出しの頭か尻から除いて読む。 */
   readonly periodQualifiers?: readonly TotalQualifier[] | undefined;
+  /** それだけで一年の合計を言う合計の語（total-label の group period。年額）。期間の語を付けた合計と同じに読む。 */
+  readonly periodLabels?: readonly string[] | undefined;
   /** 見出しが名指さなくても上の行の和と読める合計の名詞（total-noun-listed。差引合計の差引、Total deductions の deductions）。 */
   readonly listedNouns?: readonly string[] | undefined;
   /** 差し引きで決まる金額の名前（net-amount-label。総支給額、Gross pay）。表の行がこの名前なら、表は一つの和の内訳ではない。 */
@@ -172,7 +174,7 @@ const continuesWord = (inner: string | undefined, outer: string | undefined): bo
   WORD_CHAR.test(inner ?? "") && outer !== undefined && !SPACES.test(outer);
 
 /** 見出しの頭（before）か尻（after）から期間の語を除いた残り。語の途中（yearly の year、year-to-date の year）では切らない。 */
-const withoutPeriod = (label: string, qualifier: TotalQualifier): string | undefined => {
+export const withoutPeriod = (label: string, qualifier: TotalQualifier): string | undefined => {
   const pattern = qualifier.pattern.toLowerCase();
   if (pattern.length === 0) return undefined;
   if (qualifier.position !== "after" && label.startsWith(pattern) && !continuesWord(pattern.at(-1), label[pattern.length]))
@@ -187,6 +189,7 @@ const withoutPeriod = (label: string, qualifier: TotalQualifier): string | undef
  * 前の年の合計（前年合計、Prior-year total）は、期間の語が頭にも尻にも無いので読まない。
  */
 export const isPeriodTotalLine = (text: string, words: TotalLineWords): boolean => {
+  if (isTotalLabel(text, words.periodLabels ?? [])) return true;
   const label = labelWords(text).join(" ");
   return (words.periodQualifiers ?? []).some((qualifier) => {
     const rest = withoutPeriod(label, qualifier);
@@ -218,10 +221,12 @@ export const isListedTotal = (text: string, words: TotalLineWords): boolean => {
   return nounSplitsOf(text, words).some((nouns) => nouns.length > 0 && nouns.every((noun) => listed.has(noun)));
 };
 
-/** 合計のような行か。合計の行、見出しのどこかに合計の語がある行（支給合計、Total earnings）、差し引きの名前の行（総支給額、Gross pay）。 */
-export const isTotalLikeLine = (text: string, words: TotalLineWords, header?: string): boolean => {
+/** 見出しが差し引きで決まる金額の名前（総支給額、Gross pay）そのものか。 */
+export const isAmountNameLine = (text: string, words: TotalLineWords): boolean => {
   const label = labelWords(text).join(" ");
-  return (
-    isTotalLine(text, words, header) || nounSplitsOf(text, words).length > 0 || (words.amountNames ?? []).some((name) => wordsOf(name).join(" ") === label)
-  );
+  return (words.amountNames ?? []).some((name) => wordsOf(name).join(" ") === label);
 };
+
+/** 合計のような行か。合計の行、見出しのどこかに合計の語がある行（支給合計、Total earnings）、差し引きの名前の行（総支給額、Gross pay）。 */
+export const isTotalLikeLine = (text: string, words: TotalLineWords, header?: string): boolean =>
+  isTotalLine(text, words, header) || nounSplitsOf(text, words).length > 0 || isAmountNameLine(text, words);

@@ -10,3 +10,7 @@ entries:
   - pattern: お振込期限
   - pattern: 振込期限
   - pattern: 有効期限
+  - pattern: 納入期限
+  - pattern: 納入期日
+  - pattern: 納付期限
+  - pattern: 納付期日

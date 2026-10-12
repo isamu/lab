@@ -3,7 +3,8 @@ layer: L3
 status: stable
 how_to_find: tax-amount
 # The words of a tax row and of an included tax come from the language's tax-label and tax-included-word lexicons; the
-# subtotal row is found with total-label, the lexicon total-mismatch reads.
+# subtotal row is found with total-label, the lexicon total-mismatch reads. The price columns of a price list come from
+# tax-price-column.
 requires: [quantities]
 languages: [ja, en]
 severity: error
@@ -13,12 +14,17 @@ name:
   en: A tax that is not its rate of the subtotal
 
 why:
-  ja: 見積書や請求書の「消費税（10%）」の金額が、小計の10%と合わないと、読み手は税の計算を確かめ直し、合計も信じられなくなります。合計の額に税率を掛けてしまったときや、小計を直して税を直し忘れたときに起きます。表か箇条書きで、税の語（消費税・税額）で始まり率を書いた行の金額を、上の小計の行の金額（小計の行が無ければ上の項目の和）に率を掛けた額と比べます。
-  en: When the "Sales tax (10%)" of a quote or an invoice is not 10% of the subtotal, the reader has to work the tax out again and can no longer trust the total. It happens when the rate is applied to the total instead of the subtotal, or when the subtotal is changed and the tax is not. In a list or a table, the amount of a line starting with a tax word (Tax, Sales tax, VAT) and giving a rate is compared with that rate of the subtotal line above it (or, with no subtotal line, of the sum of the items above).
+  ja: 見積書や請求書の「消費税（10%）」の金額が、小計の10%と合わないと、読み手は税の計算を確かめ直し、合計も信じられなくなります。合計の額に税率を掛けてしまったときや、小計を直して税を直し忘れたときに起きます。表か箇条書きで、税の語（消費税・税額）で始まり率を書いた行の金額を、上の小計の行の金額（小計の行が無ければ上の項目の和）に率を掛けた額と比べます。価格表で税抜と税込の価格を並べた表（「1箱の価格（税抜）」と「1箱の価格（税込・10%）」）では、行ごとに、税込の価格を税抜の価格に率を足した額と比べます。率は税込の列の見出しの率、無ければ文書が「消費税10%」のように書いた率です。
+  en: When the "Sales tax (10%)" of a quote or an invoice is not 10% of the subtotal, the reader has to work the tax out again and can no longer trust the total. It happens when the rate is applied to the total instead of the subtotal, or when the subtotal is changed and the tax is not. In a list or a table, the amount of a line starting with a tax word (Tax, Sales tax, VAT) and giving a rate is compared with that rate of the subtotal line above it (or, with no subtotal line, of the sum of the items above). In a price list with a price before tax and a price with tax ("Pack price (excl. tax)", "Pack price (incl. 8% tax)"), each row's price with tax is compared with the price before tax plus the rate. The rate is the one in the heading of the price with tax, else the one the document gives ("8% sales tax").
 
 message:
   ja: 税額「{written}」が、上の金額の{rate}（{expected}）と合いません
   en: "The tax {written} is not {rate} of the amount above it ({expected})"
+
+messages:
+  price:
+    ja: 税込の価格「{written}」が、税抜の価格「{base}」に{rate}の税を足した額（{expected}）と合いません
+    en: "The price with tax {written} is not the price before tax {base} plus {rate} tax ({expected})"
 
 how_to_fix:
   ja: 小計と税率を確かめて、税額を計算し直してください。合計も一緒に直します。
@@ -32,8 +38,8 @@ off_for:
 
 group: facts
 summary:
-  ja: 見積書や請求書で、「消費税（10%）」の金額が小計の10%と合わない所
-  en: A tax line in a quote or an invoice whose amount is not its rate of the subtotal
+  ja: 請求書の消費税や価格表の税込価格が、税率で計算した額と合わない所
+  en: A tax line, or a price list's price with tax, that does not match the tax rate
 example:
   ja:
     before: |
@@ -67,5 +73,5 @@ example:
       | Sales tax (10%) | $800 |
 
 not_flagged:
-  ja: 端数は切り捨て・四捨五入・切り上げのどれでも合っていると読みます。率を書いていない税の行、合計に含まれる税（「うち消費税」「内税」）の行、率の違う税の行が並ぶ表（軽減税率の8%と10%）、小計と税の行の間に金額の行（値引き・送料）がある表は比べません。文の中に書いた税は読みません。
-  en: Rounding down, to the nearest or up are all read as right. A tax line with no rate, a line for tax included in the total ("tax included"), a table with tax lines of different rates, and a table with an amount line (a discount, shipping) between the subtotal and the tax are not compared. A tax written in a sentence is not read.
+  ja: 端数は切り捨て・四捨五入・切り上げのどれでも合っていると読みます。率を書いていない税の行、合計に含まれる税（「うち消費税」「内税」）の行、率の違う税の行が並ぶ表（軽減税率の8%と10%）、小計と税の行の間に金額の行（値引き・送料）がある表は比べません。文の中に書いた税は読みません。価格表では、見出しが税抜・税込の語と率のほかでも違う二つの列（「単価（税抜）」と「1箱の価格（税込）」）、率が見出しにも文書にも無い表、使う率と違う率も書いた文書（軽減税率の8%と10%）は比べません。
+  en: Rounding down, to the nearest or up are all read as right. A tax line with no rate, a line for tax included in the total ("tax included"), a table with tax lines of different rates, and a table with an amount line (a discount, shipping) between the subtotal and the tax are not compared. A tax written in a sentence is not read. In a price list, two columns whose headings differ in more than the before-tax and with-tax words and the rate ("Unit price (excl. tax)" beside "Pack price (incl. tax)"), a table with no rate in its heading or in the document, and a document that also gives another rate (a reduced rate beside the standard one) are not compared.

@@ -3,6 +3,7 @@ id: unit-price-column
 language: en
 entries:
   - pattern: Unit price
+  - pattern: Unit price (excl. tax)
   - pattern: Unit cost
   - pattern: Price
   - pattern: Rate per unit
@@ -14,3 +15,10 @@ entries:
   - { pattern: Rate per mile, group: mile }
   - { pattern: Monthly, group: month }
   - { pattern: Monthly rent, group: month }
+  - { pattern: Daily benefit, group: day }
+  - { pattern: Per day, group: day }
+  - { pattern: Daily rate, group: day }
+  # The tuition per credit of a tuition invoice (times the credits gives the amount).
+  - { pattern: Tuition per credit, group: credit }
+  - { pattern: Fee per credit, group: credit }
+  - { pattern: Per credit, group: credit }

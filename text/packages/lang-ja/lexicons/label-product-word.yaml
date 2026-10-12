@@ -1,0 +1,21 @@
+# 明細の項目の升に括弧で書いた掛け算（会費（3,000円×24名））を読む語（line-amount-mismatch）。times は掛ける印、count は
+# 金額に掛ける数を数える語。count の語で数えた数と金額の二つを掛けたものだけを、その行の金額と比べる。
+id: label-product-word
+language: ja
+entries:
+  - { pattern: "×", group: times }
+  - { pattern: "✕", group: times }
+  - { pattern: 名, group: count }
+  - { pattern: 人, group: count }
+  - { pattern: 世帯, group: count }
+  - { pattern: 戸, group: count }
+  - { pattern: 口, group: count }
+  - { pattern: 個, group: count }
+  - { pattern: 回, group: count }
+  - { pattern: 部, group: count }
+  - { pattern: 冊, group: count }
+  - { pattern: 枚, group: count }
+  - { pattern: 台, group: count }
+  - { pattern: 件, group: count }
+  - { pattern: 社, group: count }
+  - { pattern: 団体, group: count }

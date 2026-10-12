@@ -2,6 +2,7 @@ import { escapeRegExp } from "../orthography.ts";
 import type { StructureIssue } from "./issues.ts";
 import { TABLE_ROW } from "./runs.ts";
 import { deadlineVerdict } from "./term-deadline.ts";
+import { isDeadlineDate, type DeadlineMark } from "./date-deadline-mark.ts";
 import { tableAround } from "./key-value-row.ts";
 import { statedPeriod, type DateMention, type Period, type PeriodWords } from "./stated-period.ts";
 
@@ -9,6 +10,7 @@ import { statedPeriod, type DateMention, type Period, type PeriodWords } from ".
  * 書いた期間の外の日付。期間の語で始まる一行（旅行期間：…）が期間を書き、その後ろ、同じ節の中の箇条書きの項目、表の行、見出しの日付を比べる。
  * 地の文の日付は、年の無いもの（2月12日（金）の午前は…）だけを比べる。年のある日付は、過去の回や別の年の出来事を挙げることが多い。
  * 期間の前後に置く予定（前泊、follow-up）、締め切りや予約の日、過去の回を言う語（period-aside）が、その行、文、節の見出しにあれば比べない。
+ * 地の文で締め切りの語が付いた日付（9月18日までにお知らせください、by September 18）も、期間の後の返事の期限なので比べない。項目の日付は日程なので、付いていても比べる。
  * 年の無い期間（12月28日〜1月4日）は年をまたいで読む。
  * 文書の仕事の期間（開講期間：…、二列の表の | 開講期間 | … |）を文書の頭か概要の節で書いたものは文書全体の期間で、後ろのどの節でも、締め切りの語（period-deadline）のある項目や文の、
  * 期間の終わりより後の日付を指す（課題の提出が学期の後）。年の無い日付は、期間が一つの年に収まるときだけその年と読む。成績発表や再試験の語（period-after-term）のある日付は比べない。期間の前の締め切り（申込締切）と、旅行期間のように後に締め切りが来てよい期間は比べない。
@@ -24,6 +26,8 @@ export type OutsideWords = PeriodWords & {
   readonly overviews: readonly string[];
   /** 期間の後に来てよい仕事の語（成績発表、再試験）。この語のある締め切りは期間と比べない。 */
   readonly afterTerm: readonly string[];
+  /** 日付を締め切りにする語（までに、by）。地の文でこの語の付いた日付は期間の中の予定ではないので、期間と比べない。 */
+  readonly deadlineMarks: readonly DeadlineMark[];
 };
 
 const LIST_ITEM = /^[ \t]{0,12}(?:[-*+]|\d{1,3}[.)])[ \t]/u;
@@ -118,13 +122,13 @@ const surroundings = (date: DateMention, line: Span, item: boolean, context: Con
   return [context.source.slice(unit.start, unit.end), heading === undefined ? "" : context.source.slice(heading.start, heading.end)];
 };
 
-const outsideOne = (date: DateMention, period: Stated, context: Context, asides: readonly string[]): boolean => {
+const outsideOne = (date: DateMention, period: Stated, context: Context, words: OutsideWords): boolean => {
   if (!DAY_VALUE.test(date.value) || insidePeriod(date.value, period)) return false;
   const line = containing(context.lines, date.offset);
   if (line === undefined) return false;
   const item = isItem(context.source.slice(line.start, line.end), line, context.headings);
-  if (!item && hasYear(date.value)) return false;
-  return !surroundings(date, line, item, context).some((text) => mentions(text, asides));
+  if (!item && (hasYear(date.value) || isDeadlineDate(context.source, date, words.deadlineMarks))) return false;
+  return !surroundings(date, line, item, context).some((text) => mentions(text, words.asides));
 };
 
 const boundaryPattern = (word: string): RegExp => {
@@ -172,7 +176,7 @@ const issueOf = (source: string, date: DateMention, period: Stated): StructureIs
 const outsideInSection = (dates: readonly DateMention[], context: Context, words: OutsideWords): StructureIssue[] =>
   statedPeriods(context.source, context.lines, dates, context.headings, words, false).flatMap((period) =>
     dates
-      .filter((date) => date.offset > period.scopeStart && date.offset < period.scopeEnd && outsideOne(date, period, context, words.asides))
+      .filter((date) => date.offset > period.scopeStart && date.offset < period.scopeEnd && outsideOne(date, period, context, words))
       .map((date) => issueOf(context.source, date, period)),
   );
 

@@ -54,6 +54,28 @@ describe("fact-conflict", () => {
     assert.deepEqual(wide, ["Adults Fee:$35≠$30"]);
   });
 
+  it("a row heading that starts with a counted number (1箱の重さ) is a label, and the number stays in it", () => {
+    const row = (heading: string, value: string, prose: string): string[] =>
+      conflictJa("| 項目 | 値 |", "| --- | --- |", `| ${heading} | ${value} |`, "", prose);
+    assert.deepEqual(row("1箱の重さ", "5.8kg", "1箱の重さは8.5kgで、送料はこの重さで計算します。"), ["1箱の重さ:8.5kg≠5.8kg"]);
+    assert.deepEqual(row("1箱の重さ", "5.8kg", "1箱の重さは5.8kgで、送料はこの重さで計算します。"), []);
+    assert.deepEqual(row("**1人あたり料金**", "3,000円", "1人あたり料金は3,500円です。"), ["1人あたり料金:3,500円≠3,000円"]);
+    assert.deepEqual(row("1枚あたりの価格", "120円", "1枚あたりの価格は150円です。"), ["1枚あたりの価格:150円≠120円"]);
+    assert.deepEqual(row("1箱の重さ", "5.8kg", "2箱の重さは11.6kgです。"), []);
+    assert.deepEqual(conflictJa("| 項目 | 値 |", "| --- | --- |", "| 1箱の重さ | 5.8kg |", "| 2箱の重さ | 11.6kg |"), []);
+    assert.deepEqual(row("2号機の出力", "30kW", "1号機の出力は50kWです。"), []);
+  });
+
+  it("a row heading that starts with a year, a month, a date or a bare count is still not a label", () => {
+    const row = (heading: string, value: string, prose: string): string[] =>
+      conflictJa("| 項目 | 値 |", "| --- | --- |", `| ${heading} | ${value} |`, "", prose);
+    assert.deepEqual(row("2026年の売上", "300万円", "2026年の売上は500万円です。"), []);
+    assert.deepEqual(row("3月の売上", "300万円", "3月の売上は500万円です。"), []);
+    assert.deepEqual(row("10月5日の会場", "本館", "10月5日の会場は別館です。"), []);
+    assert.deepEqual(row("1箱", "5.8kg", "1箱は8.5kgです。"), []);
+    assert.deepEqual(row("1箱の重さ（2026年10月1日）", "5.8kg", "1箱の重さ（2026年10月1日）は8.5kgです。"), []);
+  });
+
   it("an entity's attribute: headquartered in, に本社を置く", () => {
     assert.deepEqual(conflictEn("Acme is headquartered in Austin.", "", "The firm, headquartered in Dallas, grew."), ["headquartered in:Dallas≠Austin"]);
     assert.deepEqual(conflictEn("Acme is headquartered in Austin.", "", "Acme, headquartered in Austin, grew."), []);
@@ -101,6 +123,33 @@ describe("fact-conflict", () => {
     assert.deepEqual(table("Seats: 3,as agreed."), []);
   });
 
+  it("a gauge's reading (read, shows) before a measured quantity, with a time clause after it (en)", () => {
+    const table = (prose: string): string[] => conflictEn("| Item | Detail |", "| --- | --- |", "| Odometer | 12,300 km |", "", prose);
+    assert.deepEqual(table("The odometer read 12,800 km when the van came in."), ["The odometer:12,800 km≠12,300 km"]);
+    assert.deepEqual(table("The odometer read 12,300 km when the van came in."), []);
+    assert.deepEqual(table("The odometer shows 12,800 km."), ["The odometer:12,800 km≠12,300 km"]);
+    assert.deepEqual(table("The odometer read 12,800 km on the way back."), []);
+    assert.deepEqual(table("The odometer read 12,800 kmwhen the van came in."), []);
+  });
+
+  it("a reading verb before money, a share or a plain count, and a time clause after is, are not read (en)", () => {
+    assert.deepEqual(conflictEn("The poll showed 40%.", "", "The poll showed 45%."), []);
+    assert.deepEqual(conflictEn("The invoice showed $300.", "", "The invoice showed $350."), []);
+    assert.deepEqual(conflictEn("Each pupil read 3 chapters.", "", "Each pupil read 4 chapters."), []);
+    assert.deepEqual(conflictEn("The range is 300 km when fully charged.", "", "The range is 250 km."), []);
+    assert.deepEqual(conflictEn("The chart showed 5 kg.", "", "The chart showed 6 kg."), []);
+    assert.deepEqual(conflictEn("The fuel gauge showed 40 L before refuelling.", "", "The fuel gauge showed 10 L."), []);
+    assert.deepEqual(conflictEn("The fuel gauge showed 40 L.", "", "The fuel gauge showed 10 L."), ["The fuel gauge:10 L≠40 L"]);
+  });
+
+  it("入庫時の is the same reading as the table's; 出庫時の and 前回点検時の are other readings (ja)", () => {
+    const table = (prose: string): string[] => conflictJa("| 項目 | 内容 |", "| --- | --- |", "| 走行距離 | 12,300km |", "", prose);
+    assert.deepEqual(table("入庫時の走行距離は、12,800kmです。"), ["入庫時の走行距離:12,800km≠12,300km"]);
+    assert.deepEqual(table("入庫時の走行距離は、12,300kmです。"), []);
+    assert.deepEqual(table("出庫時の走行距離は、12,310kmです。"), []);
+    assert.deepEqual(table("前回点検時の走行距離は、2,300kmです。"), []);
+  });
+
   it("three or more values for one label are a list, not a slip", () => {
     assert.deepEqual(conflictEn("- Seats: 30", "- Seats: 40", "- Seats: 50"), []);
   });
@@ -135,6 +184,45 @@ describe("fact-conflict", () => {
   it("a pronoun is not a label", () => {
     assert.deepEqual(conflictEn("It is $300.", "", "It is $350."), []);
     assert.deepEqual(conflictJa("それは3,000円です。", "", "それは3,500円です。"), []);
+  });
+
+  it("今月の and 当月の are the bill's own month; 先月の is another month (ja)", () => {
+    const table = (prose: string): string[] => conflictJa("| 項目 | 内容 |", "| --- | --- |", "| データ利用量 | 7.5GB |", "", prose);
+    assert.deepEqual(table("今月のデータ利用量は5.7GBで、上限を超えていません。"), ["今月のデータ利用量:5.7GB≠7.5GB"]);
+    assert.deepEqual(table("当月のデータ利用量は5.7GBです。"), ["当月のデータ利用量:5.7GB≠7.5GB"]);
+    assert.deepEqual(table("今月のデータ利用量は7.5GBです。"), []);
+    assert.deepEqual(table("先月のデータ利用量は5.7GBです。"), []);
+  });
+
+  it("a cell named by its row and its column is the sentence's qualified name, and only that row's (ja)", () => {
+    const lines = ["| 回線 | 番号 | データ利用量 |", "| --- | --- | --- |", "| 親回線 | 1001 | 6.2GB |", "| 子回線 | 1002 | 3.1GB |", ""];
+    assert.deepEqual(conflictJa(...lines, "親回線のデータ利用量は2.6GBでした。"), ["親回線のデータ利用量:2.6GB≠6.2GB"]);
+    assert.deepEqual(conflictJa(...lines, "親回線のデータ利用量は3.1GBでした。"), ["親回線のデータ利用量:3.1GB≠6.2GB"]);
+    assert.deepEqual(conflictJa(...lines, "子回線のデータ利用量は3.1GBでした。"), []);
+    assert.deepEqual(conflictJa(...lines, "孫回線のデータ利用量は2.6GBでした。"), []);
+  });
+
+  it("a cell whose row is the name and whose column the qualifier is read the other way round (ja)", () => {
+    const lines = ["| 項目 | 前期 | 当期 |", "| --- | --- | --- |", "| 出荷量 | 410t | 450t |", ""];
+    assert.deepEqual(conflictJa(...lines, "当期の出荷量は540tです。"), ["当期の出荷量:540t≠450t"]);
+    assert.deepEqual(conflictJa(...lines, "当期の出荷量は450tです。"), []);
+  });
+
+  it("<subject> used <quantity> of <noun> names the item noun + verb, qualified by a subject that is not you (en)", () => {
+    const table = (prose: string): string[] => conflictEn("| Item | Detail |", "| --- | --- |", "| Data used | 7.5 GB |", "", prose);
+    assert.deepEqual(table("You used 5.7 GB of data this month, under your limit."), ["data used:5.7 GB≠7.5 GB"]);
+    assert.deepEqual(table("You used 7.5 GB of data this month."), []);
+    assert.deepEqual(table("You used 5.7 GB of data last month."), []);
+    assert.deepEqual(table("You used 5.7 GB of data on the trip."), []);
+    assert.deepEqual(table("The guest line used 5.7 GB of data."), []);
+    const lines = ["| Line | Number | Data used |", "| --- | --- | --- |", "| Main line | 1001 | 6.2 GB |", "| Kids line | 1002 | 3.1 GB |", ""];
+    assert.deepEqual(conflictEn(...lines, "The main line used 2.6 GB of data."), ["data used (main line):2.6 GB≠6.2 GB"]);
+    assert.deepEqual(conflictEn(...lines, "The kids line used 3.1 GB of data."), []);
+  });
+
+  it("a verb before money, or a verb not in the list, is not read (en)", () => {
+    assert.deepEqual(conflictEn("| Item | Detail |", "| --- | --- |", "| Credit used | $14 |", "", "You used $41 of credit."), []);
+    assert.deepEqual(conflictEn("| Item | Detail |", "| --- | --- |", "| Data bought | 7.5 GB |", "", "You bought 5.7 GB of data."), []);
   });
 });
 

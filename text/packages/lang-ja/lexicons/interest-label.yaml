@@ -1,0 +1,28 @@
+# 預金の明細で、一行に書いた利息の計算（対象残高400,000円 × 利率0.10% ＝ 400円）を確かめる語（interest-mismatch）。
+# group: interest は利息の語、base は利率を掛ける残高、rate は利率、net は税引き後の利息で、その行は比べない。
+# rate-year・rate-month は利率がどの期間の率かを言う語、interest-year・interest-month は利息がどの期間の分かを言う語。
+# 期間を書いた利率は、利息の期間が同じと書いた行でだけ比べる（日割りに直さない）。
+id: interest-label
+language: ja
+entries:
+  - { pattern: 利息, group: interest }
+  - { pattern: 利子, group: interest }
+  - { pattern: 残高, group: base }
+  - { pattern: 元本, group: base }
+  - { pattern: 元金, group: base }
+  - { pattern: 利率, group: rate }
+  - { pattern: 金利, group: rate }
+  - { pattern: 年利, group: rate }
+  - { pattern: 年率, group: rate }
+  - { pattern: 月利, group: rate }
+  - { pattern: 税引後, group: net }
+  - { pattern: 税引き後, group: net }
+  - { pattern: 手取り, group: net }
+  - { pattern: 年, group: rate-year }
+  - { pattern: 月, group: rate-month }
+  - { pattern: 年間, group: interest-year }
+  - { pattern: 1年分, group: interest-year }
+  - { pattern: 当月, group: interest-month }
+  - { pattern: 今月, group: interest-month }
+  - { pattern: 1か月, group: interest-month }
+  - { pattern: 1ヶ月, group: interest-month }

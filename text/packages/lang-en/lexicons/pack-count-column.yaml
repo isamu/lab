@@ -1,0 +1,13 @@
+# Headings of the column of how many pieces one pack (box, case) holds in a catalog or price list. Beside a unit price
+# and a pack price column (pack-price-column), count per pack × unit price is compared with the pack price
+# (line-amount-mismatch). It is no order quantity, so it is not read as a quantity column.
+id: pack-count-column
+language: en
+entries:
+  - pattern: Pack of
+  - pattern: Units per pack
+  - pattern: Count per pack
+  - pattern: Qty per pack
+  - pattern: Units per box
+  - pattern: Count per box
+  - pattern: Qty per box

@@ -22,6 +22,37 @@ entries:
   - { pattern: student id, group: student }
   - { pattern: student id is, group: student }
   - { pattern: student no., group: student }
+  # A bank account's number. A transfer's other account is labelled longer (payee account number), and the longer label
+  # wins, so it is never compared with the account's own.
+  - { pattern: account number, group: account }
+  - { pattern: account number is, group: account }
+  - { pattern: account no., group: account }
+  - { pattern: account no, group: account }
+  - { pattern: "account #", group: account }
+  - { pattern: payee account number, group: payee-account }
+  - { pattern: payee account number is, group: payee-account }
+  - { pattern: payee's account number, group: payee-account }
+  - { pattern: payee's account number is, group: payee-account }
+  - { pattern: beneficiary account number, group: payee-account }
+  - { pattern: beneficiary account number is, group: payee-account }
+  - { pattern: beneficiary's account number, group: payee-account }
+  - { pattern: beneficiary's account number is, group: payee-account }
+  - { pattern: recipient account number, group: payee-account }
+  - { pattern: recipient account number is, group: payee-account }
+  - { pattern: payer account number, group: payer-account }
+  - { pattern: payer account number is, group: payer-account }
+  - { pattern: payer's account number, group: payer-account }
+  - { pattern: payer's account number is, group: payer-account }
+  - { pattern: sender account number, group: payer-account }
+  - { pattern: sender account number is, group: payer-account }
+  # An insurance policy's number. A policyholder's own number may cover several policies, so it is not one.
+  - { pattern: policy number, group: policy }
+  - { pattern: policy number is, group: policy }
+  - { pattern: policy no., group: policy }
+  - { pattern: policy no, group: policy }
+  - { pattern: "policy #", group: policy }
+  - { pattern: insurance policy number, group: policy }
+  - { pattern: insurance policy number is, group: policy }
   - { pattern: po number, group: order }
   - { pattern: po number is, group: order }
   - { pattern: purchase order number, group: order }
@@ -33,6 +64,18 @@ entries:
   - { pattern: invoice no., group: invoice }
   - { pattern: invoice no, group: invoice }
   - { pattern: "invoice #", group: invoice }
+  # A quote's number. A quote, an order and an invoice are different documents, so their numbers are never compared.
+  # A bare "quote" is not a label: "please quote your PO number" uses it as a verb.
+  - { pattern: quote number, group: quote }
+  - { pattern: quote number is, group: quote }
+  - { pattern: quote no., group: quote }
+  - { pattern: quote no, group: quote }
+  - { pattern: quotation number, group: quote }
+  - { pattern: quotation number is, group: quote }
+  - { pattern: estimate number, group: quote }
+  - { pattern: estimate number is, group: quote }
+  - { pattern: estimate no., group: quote }
+  - { pattern: estimate no, group: quote }
   - { pattern: patient number, group: patient }
   - { pattern: patient number is, group: patient }
   - { pattern: patient id, group: patient }
@@ -71,6 +114,14 @@ entries:
   - { pattern: registration no, group: registration }
   - { pattern: application number, group: application }
   - { pattern: application number is, group: application }
+  # An item's code. A table's codes are items of their own; only a code with no label is compared with them.
+  - { pattern: item code, group: item }
+  - { pattern: item code is, group: item }
+  - { pattern: item no., group: item }
+  - { pattern: item no, group: item }
+  - { pattern: sku, group: item }
+  - { pattern: product code, group: item }
+  - { pattern: product code is, group: item }
   # A vehicle's plate. A bare "Registration" is not one: an attendee's registration is written so too.
   - { pattern: registration plate, group: vehicle }
   - { pattern: registration plate is, group: vehicle }
@@ -87,3 +138,14 @@ entries:
   - { pattern: vehicle registration, group: vehicle }
   - { pattern: vehicle registration number, group: vehicle }
   - { pattern: vehicle registration number is, group: vehicle }
+  # A member's number. A customer number is the shop's number for a customer and may differ from a member number.
+  - { pattern: member number, group: member }
+  - { pattern: member number is, group: member }
+  - { pattern: membership number, group: member }
+  - { pattern: membership number is, group: member }
+  - { pattern: member id, group: member }
+  - { pattern: member id is, group: member }
+  - { pattern: member no., group: member }
+  - { pattern: member no, group: member }
+  - { pattern: customer number, group: customer }
+  - { pattern: customer number is, group: customer }

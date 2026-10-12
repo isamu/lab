@@ -2,9 +2,19 @@
 id: total-label
 language: ja
 # group subtotal: 表の一部の合計で、文書の合計ではない（fact-conflict は文書全体で一つの項目の値として読まない）。
+# group period: それだけで一年の合計を言う語。年間合計と同じく、内訳を一年に直した額（月額の内訳の12倍）なら比べない。
 entries:
   - pattern: 合計
   - { pattern: 小計, group: subtotal }
   - pattern: 総計
   - pattern: 総額
   - pattern: 計
+  - { pattern: 年額, group: period }
+  # 週計・日計・月計は表の一部を締める合計なので subtotal。total-period-qualifier に置くと、内訳のちょうど4倍・12倍・52倍を
+  # 年に直した額として比べなくなるので、語として置く。
+  - { pattern: 週計, group: subtotal }
+  - { pattern: 週合計, group: subtotal }
+  - { pattern: 日計, group: subtotal }
+  - { pattern: 日合計, group: subtotal }
+  - { pattern: 月計, group: subtotal }
+  - { pattern: 月合計, group: subtotal }

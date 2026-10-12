@@ -1,0 +1,23 @@
+{
+  "recall": {
+    "ja": {
+      "due-before-issue": "2/2",
+      "term-end-before-start": "2/2",
+      "fees-total": "2/2",
+      "installments-annual": "1/1",
+      "waiver-amount-due": "2/2",
+      "student-number": "2/2",
+      "credit-fee-line": "1/1"
+    },
+    "en": {
+      "due-before-issue": "2/2",
+      "term-end-before-start": "2/2",
+      "fees-total": "2/2",
+      "installments-annual": "1/1",
+      "waiver-amount-due": "2/2",
+      "student-number": "2/2",
+      "credit-fee-line": "1/1"
+    }
+  },
+  "clean": []
+}

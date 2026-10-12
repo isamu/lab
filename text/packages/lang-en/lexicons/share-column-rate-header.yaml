@@ -1,0 +1,21 @@
+# Words that, in a column's own header cell, name a rate applied to each row: the column is not added even when the
+# sentence or heading above names a breakdown. The share-column-rate words count here too. Not used on the text above
+# a table or on its rows, where they can name a part ("Discounts" can be a row of a cost breakdown).
+id: share-column-rate-header
+language: en
+entries:
+  - pattern: discount
+  - pattern: discounts
+  - pattern: markup
+  - pattern: margin
+  - pattern: commission
+  - pattern: cashback
+  - pattern: rebate
+  - pattern: apr
+  - pattern: apy
+  - pattern: churn
+  - pattern: utilization
+  - pattern: utilisation
+  - pattern: occupancy
+  - pattern: uptime
+  - pattern: accuracy

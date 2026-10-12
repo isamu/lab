@@ -20,3 +20,8 @@ entries:
   - { pattern: miles, group: mile }
   - { pattern: mi, group: mile }
   - { pattern: km, group: km }
+  # Course credits (3 credits): a tuition per credit is multiplied only by a count of credits.
+  - { pattern: credit, group: credit }
+  - { pattern: credits, group: credit }
+  - { pattern: credit hour, group: credit }
+  - { pattern: credit hours, group: credit }

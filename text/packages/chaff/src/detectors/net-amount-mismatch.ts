@@ -16,21 +16,24 @@ const LIST_MARKER = /^[ \t]*(?:[-*+]|\d{1,3}[.)])?[ \t]*/u;
 const COLON = /[:：]/u;
 const MAX_LABEL = 40;
 
-const patternsOf = (doc: ProseDocument, id: string, group?: string): string[] =>
+export const patternsOf = (doc: ProseDocument, id: string, group?: string): string[] =>
   (doc.lexicons[id] ?? []).filter((entry) => group === undefined || entry.group === group).map((entry) => entry.pattern);
 
 const wordsOf = (doc: ProseDocument): NetWords => ({
   labels: {
     gross: patternsOf(doc, "net-amount-label", "gross"),
     deduction: patternsOf(doc, "net-amount-label", "deduction"),
+    "deduction-part": patternsOf(doc, "net-amount-label", "deduction-part"),
     net: patternsOf(doc, "net-amount-label", "net"),
     taxable: patternsOf(doc, "net-amount-label", "taxable"),
   },
+  periods: (doc.lexicons["net-amount-period"] ?? []).filter((entry) => entry.position !== undefined),
+  periodLabels: { gross: patternsOf(doc, "net-amount-period", "gross") },
   magnitudes: patternsOf(doc, "amount-multiplier"),
   percentUnits: patternsOf(doc, "percent-unit"),
 });
 
-const plainCellsOf = (line: Line): NetCell[] =>
+export const plainCellsOf = (line: Line): NetCell[] =>
   cellsOf(line).map((cell) => {
     const text = withoutEdgeMarks(cell.text);
     return { start: cell.start + Math.max(0, cell.text.indexOf(text)), text };
@@ -39,7 +42,7 @@ const plainCellsOf = (line: Line): NetCell[] =>
 const tableIssues = (lines: readonly Line[], words: NetWords): NetIssue[] =>
   tablesOf(lines).flatMap((table) => tableNetMismatches(plainCellsOf(table.header), table.rows.map(plainCellsOf), words));
 
-const labelledLineOf = (line: Line): LabelledLine[] => {
+export const labelledLineOf = (line: Line): LabelledLine[] => {
   const colon = COLON.exec(line.text)?.index;
   if (colon === undefined) return [];
   const label = withoutEdgeMarks(line.text.slice(LIST_MARKER.exec(line.text)?.[0].length ?? 0, colon));
@@ -50,7 +53,7 @@ const labelledLineOf = (line: Line): LabelledLine[] => {
 };
 
 /** The lines of the text between headings (the headings are read in the source: the prose text blanks them). */
-const sectionsOf = (lines: readonly Line[], sourceLines: readonly Line[]): Line[][] =>
+export const sectionsOf = (lines: readonly Line[], sourceLines: readonly Line[]): Line[][] =>
   lines.reduce<Line[][]>(
     (sections, line, index) => {
       if (HEADING.test(sourceLines[index]?.text ?? "")) return [...sections, []];
@@ -68,7 +71,7 @@ const sectionIssues = (lines: readonly Line[], source: string, words: NetWords):
 
 export const netAmountMismatch: Detector = (doc): Finding[] => {
   const words = wordsOf(doc);
-  if (words.labels.gross.length === 0 || words.labels.deduction.length === 0) return [];
+  if (words.labels.gross.length === 0 || words.labels.deduction.length + words.labels["deduction-part"].length === 0) return [];
   const lines = linesOf(proseAndTablesOf(doc));
   return [...tableIssues(lines, words), ...sectionIssues(lines, doc.source, words)]
     .toSorted((left, right) => left.offset - right.offset)

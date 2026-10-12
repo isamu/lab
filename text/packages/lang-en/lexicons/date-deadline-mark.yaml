@@ -1,0 +1,11 @@
+# Words that make a date a deadline ("by September 18", "no later than Sept 18"); position says on which side of the date
+# the word stands. A date with one is a reply-by or a deadline for something after the period, not a dated item inside
+# it, so date-outside-period does not compare it in running text. "until" is not here: "stay until October 17" ends a
+# stay inside the period; nor is "before" alone: "Before May 7, arrive in Osaka" is a plan, not a reply-by date.
+id: date-deadline-mark
+language: en
+entries:
+  - { pattern: by, position: before }
+  - { pattern: no later than, position: before }
+  - { pattern: not later than, position: before }
+  - { pattern: on or before, position: before }

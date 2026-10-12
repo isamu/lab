@@ -66,6 +66,21 @@ entries:
   - { pattern: "第１回お支払日", group: loan, position: after }
   - { pattern: "第1回返済日", group: loan, position: after }
   - { pattern: "第１回返済日", group: loan, position: after }
+  # 価格表やクーポン、許可証や保険の証書。有効の終わりは、始まりより前に来ない。「有効期限」は due-date-label にもあり、
+  # そちらでは発行日と比べる。組ごとに比べる。
+  - { pattern: "適用開始日", group: validity, position: before }
+  - { pattern: "有効開始日", group: validity, position: before }
+  - { pattern: "発効日", group: validity, position: before }
+  - { pattern: "適用終了日", group: validity, position: after }
+  - { pattern: "有効終了日", group: validity, position: after }
+  - { pattern: "有効期限", group: validity, position: after }
+  # 期間を二つの行に分けて書く取引明細や利用明細。期間の終わりは、始まりより前に来ない。
+  - { pattern: "照会開始日", group: statement-period, position: before }
+  - { pattern: "対象期間開始日", group: statement-period, position: before }
+  - { pattern: "期間開始日", group: statement-period, position: before }
+  - { pattern: "照会終了日", group: statement-period, position: after }
+  - { pattern: "対象期間終了日", group: statement-period, position: after }
+  - { pattern: "期間終了日", group: statement-period, position: after }
   # 宿泊の予約。チェックアウトはチェックインの日より前に来ない。同じ日（日帰り）は指さない。
   - { pattern: "チェックイン", group: stay, position: before }
   - { pattern: "チェックイン日", group: stay, position: before }
@@ -121,6 +136,15 @@ entries:
   - { pattern: "修了日", group: transcript-issue, position: before }
   - { pattern: "発行日", group: transcript-issue, position: after }
   - { pattern: "証明日", group: transcript-issue, position: after }
+  # 保険金や給付金の請求書。請求は事故や発病より前に来ない。請求日は請求書の発行日の語（issue-date-label）でもあるが、組ごとに比べる。
+  - { pattern: "事故日", group: incident, position: before }
+  - { pattern: "事故発生日", group: incident, position: before }
+  - { pattern: "発生日", group: incident, position: before }
+  - { pattern: "受傷日", group: incident, position: before }
+  - { pattern: "発病日", group: incident, position: before }
+  - { pattern: "請求日", group: incident, position: after }
+  - { pattern: "請求書作成日", group: incident, position: after }
+  - { pattern: "申請日", group: incident, position: after }
   # 年間の給与所得と源泉徴収税額の明細書。対象期間が終わってから（退職した人には退職日より後に）交付する。
   # 対象期間は earnings と payroll にもあるが、組ごとに比べる。「発行日」は入れない。前払いの請求書は対象期間の初めに発行し、
   # 退職の手続きの案内は退職日より前に発行する。
@@ -161,3 +185,29 @@ entries:
   - { pattern: "次回点検日", group: vehicle-service, position: after }
   - { pattern: "次回点検予定日", group: vehicle-service, position: after }
   - { pattern: "次回車検", group: vehicle-service, position: after }
+  # 工事やリフォームの見積書、契約書、工程表。完工、竣工と引渡しは着工より後に来る。予定の日（着工予定日、完工予定日）も同じ順で比べる。
+  - { pattern: "着工日", group: construction, position: before }
+  - { pattern: "工事開始日", group: construction, position: before }
+  - { pattern: "着工予定日", group: construction, position: before }
+  - { pattern: "完工日", group: construction, position: after }
+  - { pattern: "完工予定日", group: construction, position: after }
+  - { pattern: "竣工日", group: construction, position: after }
+  - { pattern: "竣工予定日", group: construction, position: after }
+  - { pattern: "引渡日", group: construction, position: after }
+  # 携帯電話や通信、サービスの契約の利用期間。終了日は開始日より前に来ない。同じ日（一日だけの利用）は指さない。
+  # 「開始日」「終了日」だけは入れない。工程表や作業の記録も使う。
+  - { pattern: "ご利用開始日", group: service-period, position: before }
+  - { pattern: "利用開始日", group: service-period, position: before }
+  - { pattern: "契約開始日", group: service-period, position: before }
+  - { pattern: "サービス開始日", group: service-period, position: before }
+  - { pattern: "ご利用終了日", group: service-period, position: after }
+  - { pattern: "利用終了日", group: service-period, position: after }
+  - { pattern: "契約終了日", group: service-period, position: after }
+  - { pattern: "サービス終了日", group: service-period, position: after }
+  # 会計報告書や収支決算報告書。会計の監査は、その会計年度が終わってから受ける。会計年度は期間を書く語で、終わりの日と比べる。
+  # 「承認日」「総会承認日」「報告日」は入れない。予算書は年度が始まる前に承認し、中間の報告は年度の途中に出す。
+  - { pattern: "会計年度", group: fiscal-audit, position: before }
+  - { pattern: "事業年度", group: fiscal-audit, position: before }
+  - { pattern: "監査日", group: fiscal-audit, position: after }
+  - { pattern: "会計監査日", group: fiscal-audit, position: after }
+  - { pattern: "監査実施日", group: fiscal-audit, position: after }

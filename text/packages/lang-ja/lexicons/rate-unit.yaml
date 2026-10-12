@@ -18,3 +18,5 @@ entries:
   - { pattern: 年, group: year }
   - { pattern: 年間, group: year }
   - { pattern: km, group: km }
+  # 授業の単位（2単位）。1単位あたりの授業料は単位の数とだけ掛ける。
+  - { pattern: 単位, group: credit }
