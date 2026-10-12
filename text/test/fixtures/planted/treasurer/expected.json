@@ -2,7 +2,7 @@
   "recall": {
     "ja": {
       "fiscal-year-reversed": "1/1",
-      "membership-fee": "0/1",
+      "membership-fee": "1/1",
       "income-total": "1/1",
       "carry-over": "1/2",
       "audit-before-year-end": "0/2",
@@ -11,7 +11,7 @@
     },
     "en": {
       "fiscal-year-reversed": "1/1",
-      "membership-fee": "0/1",
+      "membership-fee": "1/1",
       "income-total": "1/1",
       "carry-over": "1/2",
       "audit-before-year-end": "0/2",
