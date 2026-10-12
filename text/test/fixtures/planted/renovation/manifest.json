@@ -1,0 +1,259 @@
+{
+  "note": "Self-written renovation quotes (リフォーム見積書 / renovation quote) for a made-up contractor and made-up clients, with fictional amounts: a flooring and wallpaper quote priced by area and a kitchen and bathroom quote priced by item, each in a clean version and a planted one that differs only on the lines below. They run as business/proposal, the genre the quotes of the business set run as: no genre is made for renovation quotes. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line; a mistake that breaks a pair of lines names the pair's other line as pairedLine. An area times the rate per area not equal to the line amount is named for line-amount-mismatch, and the plant changes the area, not the amount, so the items still add up to the subtotal. The items not adding up to the subtotal is planted on a lump-sum row that has no quantity or unit price, so no line amount is broken, and names the subtotal row as pairedLine. The tax plant changes the rate in the tax row's label, not the tax amount, so the total still adds up. A quote validity date before the quote date is named for due-before-issue, which compares the issue-date and due-date lines; the plant changes the validity date, the line written second. A completion date before the start date is written as two labelled lines and named for due-before-issue, the rule that compares pairs of labelled dates on their own lines; the plant changes the completion date, and the start line is the pairedLine. A room's floor area given in the table and again in a sentence of the same section is named for fact-conflict, and the area plant is on a different row (the wallpaper area) from the floor area the sentence restates. The client's name written once with one character changed is named for name-variant (each name is written three times, so one form is the usual one), and the quote number with two neighbouring digits swapped for reference-number-variant. Each plant was also run alone on its clean document, so no plant depends on another. yarn planted renovation scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/floor-wallpaper",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/floor-wallpaper.clean.md",
+      "planted": "ja/floor-wallpaper.planted.md",
+      "mistakes": [
+        {
+          "kind": "validity-before-issue",
+          "rule": "due-before-issue",
+          "line": 13,
+          "clean": "有効期限：2026年10月10日",
+          "planted": "有効期限：2026年8月10日"
+        },
+        {
+          "kind": "work-end-before-start",
+          "rule": "due-before-issue",
+          "line": 17,
+          "pairedLine": 15,
+          "clean": "完工予定日：2026年10月23日",
+          "planted": "完工予定日：2026年10月13日"
+        },
+        {
+          "kind": "floor-area-two-ways",
+          "rule": "fact-conflict",
+          "line": 26,
+          "clean": "12.4㎡で",
+          "planted": "12.8㎡で"
+        },
+        {
+          "kind": "area-line-amount",
+          "rule": "line-amount-mismatch",
+          "line": 34,
+          "clean": "| 34.0㎡ | 1,500円 |",
+          "planted": "| 36.0㎡ | 1,500円 |"
+        },
+        {
+          "kind": "items-total",
+          "rule": "total-mismatch",
+          "line": 36,
+          "pairedLine": 37,
+          "clean": "| 一式 | | 18,000円 |",
+          "planted": "| 一式 | | 16,000円 |"
+        },
+        {
+          "kind": "tax-rate",
+          "rule": "tax-mismatch",
+          "line": 38,
+          "clean": "消費税（10%） | | | 22,840円",
+          "planted": "消費税（8%） | | | 22,840円"
+        },
+        {
+          "kind": "client-name",
+          "rule": "name-variant",
+          "line": 43,
+          "clean": "藤井 恵美 様のご承認",
+          "planted": "藤井 恵実 様のご承認"
+        },
+        {
+          "kind": "quote-number",
+          "rule": "reference-number-variant",
+          "line": 45,
+          "clean": "RF-731852の",
+          "planted": "RF-731582の"
+        }
+      ]
+    },
+    {
+      "id": "ja/kitchen-bath",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/kitchen-bath.clean.md",
+      "planted": "ja/kitchen-bath.planted.md",
+      "mistakes": [
+        {
+          "kind": "validity-before-issue",
+          "rule": "due-before-issue",
+          "line": 13,
+          "clean": "有効期限：2026年9月30日",
+          "planted": "有効期限：2026年7月31日"
+        },
+        {
+          "kind": "work-end-before-start",
+          "rule": "due-before-issue",
+          "line": 17,
+          "pairedLine": 15,
+          "clean": "完工予定日：2026年10月16日",
+          "planted": "完工予定日：2026年9月16日"
+        },
+        {
+          "kind": "floor-area-two-ways",
+          "rule": "fact-conflict",
+          "line": 26,
+          "clean": "8.2㎡で",
+          "planted": "8.6㎡で"
+        },
+        {
+          "kind": "items-total",
+          "rule": "total-mismatch",
+          "line": 37,
+          "pairedLine": 38,
+          "clean": "| 一式 | | 98,000円 |",
+          "planted": "| 一式 | | 89,000円 |"
+        },
+        {
+          "kind": "tax-rate",
+          "rule": "tax-mismatch",
+          "line": 39,
+          "clean": "消費税（10%） | | | 187,100円",
+          "planted": "消費税（8%） | | | 187,100円"
+        },
+        {
+          "kind": "client-name",
+          "rule": "name-variant",
+          "line": 44,
+          "clean": "石原 達也 様のご承認",
+          "planted": "石原 達哉 様のご承認"
+        },
+        {
+          "kind": "quote-number",
+          "rule": "reference-number-variant",
+          "line": 46,
+          "clean": "RF-604937の",
+          "planted": "RF-609437の"
+        }
+      ]
+    },
+    {
+      "id": "en/floor-wallpaper",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/floor-wallpaper.clean.md",
+      "planted": "en/floor-wallpaper.planted.md",
+      "mistakes": [
+        {
+          "kind": "validity-before-issue",
+          "rule": "due-before-issue",
+          "line": 13,
+          "clean": "Valid until: October 10, 2026",
+          "planted": "Valid until: August 10, 2026"
+        },
+        {
+          "kind": "work-end-before-start",
+          "rule": "due-before-issue",
+          "line": 17,
+          "pairedLine": 15,
+          "clean": "Completion date: October 23, 2026",
+          "planted": "Completion date: October 13, 2026"
+        },
+        {
+          "kind": "floor-area-two-ways",
+          "rule": "fact-conflict",
+          "line": 26,
+          "clean": "is 134 sq ft,",
+          "planted": "is 143 sq ft,"
+        },
+        {
+          "kind": "area-line-amount",
+          "rule": "line-amount-mismatch",
+          "line": 34,
+          "clean": "| 366 sq ft | $1.50 |",
+          "planted": "| 386 sq ft | $1.50 |"
+        },
+        {
+          "kind": "items-total",
+          "rule": "total-mismatch",
+          "line": 36,
+          "pairedLine": 37,
+          "clean": "| Lump sum | | $180.00 |",
+          "planted": "| Lump sum | | $160.00 |"
+        },
+        {
+          "kind": "tax-rate",
+          "rule": "tax-mismatch",
+          "line": 38,
+          "clean": "Sales tax (8%) | | | $192.64",
+          "planted": "Sales tax (6%) | | | $192.64"
+        },
+        {
+          "kind": "client-name",
+          "rule": "name-variant",
+          "line": 43,
+          "clean": "once Laura Pennington approves",
+          "planted": "once Laura Penington approves"
+        },
+        {
+          "kind": "quote-number",
+          "rule": "reference-number-variant",
+          "line": 45,
+          "clean": "quote RQ-731852 is",
+          "planted": "quote RQ-731582 is"
+        }
+      ]
+    },
+    {
+      "id": "en/kitchen-bath",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/kitchen-bath.clean.md",
+      "planted": "en/kitchen-bath.planted.md",
+      "mistakes": [
+        {
+          "kind": "validity-before-issue",
+          "rule": "due-before-issue",
+          "line": 13,
+          "clean": "Valid until: September 30, 2026",
+          "planted": "Valid until: July 31, 2026"
+        },
+        {
+          "kind": "work-end-before-start",
+          "rule": "due-before-issue",
+          "line": 17,
+          "pairedLine": 15,
+          "clean": "Completion date: October 16, 2026",
+          "planted": "Completion date: September 16, 2026"
+        },
+        {
+          "kind": "floor-area-two-ways",
+          "rule": "fact-conflict",
+          "line": 26,
+          "clean": "is 88 sq ft,",
+          "planted": "is 83 sq ft,"
+        },
+        {
+          "kind": "items-total",
+          "rule": "total-mismatch",
+          "line": 37,
+          "pairedLine": 38,
+          "clean": "| Lump sum | | $1,950.00 |",
+          "planted": "| Lump sum | | $1,590.00 |"
+        },
+        {
+          "kind": "tax-rate",
+          "rule": "tax-mismatch",
+          "line": 39,
+          "clean": "Sales tax (8%) | | | $2,516.80",
+          "planted": "Sales tax (6%) | | | $2,516.80"
+        },
+        {
+          "kind": "client-name",
+          "rule": "name-variant",
+          "line": 44,
+          "clean": "once Daniel Whitcombe approves",
+          "planted": "once Daniel Witcombe approves"
+        },
+        {
+          "kind": "quote-number",
+          "rule": "reference-number-variant",
+          "line": 46,
+          "clean": "quote RQ-604937 is",
+          "planted": "quote RQ-609437 is"
+        }
+      ]
+    }
+  ]
+}
