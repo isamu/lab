@@ -1085,6 +1085,31 @@ describe("due-before-issue (order): 工事の着工と完工、引渡し", () =>
     ]);
     assert.deepEqual(findingsOf(labelledDoc("Renovation Quote", ["Start date: October 1, 2026", "Expected completion: September 1, 2026"]), en), [
       '"Expected completion" September 1, 2026 is before "Start date" October 1, 2026',
+    ]);
+  });
+
+  it("順の合った日付、同じ日、年の無い日付は言わない", () => {
+    assert.deepEqual(findingsOf(labelledDoc("リフォーム見積書", ["着工日：2026年10月19日", "完工予定日：2026年10月23日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("リフォーム見積書", ["着工日：2026年10月19日", "完工予定日：2026年10月19日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("リフォーム見積書", ["着工日：10月19日", "完工予定日：10月13日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Renovation Quote", ["Start date: October 19, 2026", "Completion date: October 23, 2026"]), en), []);
+    assert.deepEqual(findingsOf(labelledDoc("Renovation Quote", ["Start date: October 19, 2026", "Completion date: October 19, 2026"]), en), []);
+    assert.deepEqual(findingsOf(labelledDoc("Renovation Quote", ["Start date: October 19", "Completion date: October 13"]), en), []);
+  });
+
+  it("Start date だけは Handover date と組まない。新しく入る人の初日より前に引き継ぐことがある", () => {
+    assert.deepEqual(findingsOf(labelledDoc("Handover Notes", ["Start date: November 2, 2026", "Handover date: October 30, 2026"]), en), []);
+  });
+
+  it("別の組の語どうしは比べない（成績証明書の Date of completion、入居日と引渡日、契約日と完工日）", () => {
+    assert.deepEqual(findingsOf(labelledDoc("Certificate", ["Start date: October 1, 2026", "Date of completion: September 1, 2026"]), en), []);
+    assert.deepEqual(findingsOf(labelledDoc("Certificate", ["Date of enrolment: April 1, 2026", "Completion date: March 1, 2026"]), en), []);
+    assert.deepEqual(findingsOf(labelledDoc("精算書", ["入居日：2026年10月1日", "引渡日：2026年9月1日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("契約書", ["契約日：2026年10月1日", "完工日：2026年9月1日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Contract", ["Contract date: October 1, 2026", "Completion date: September 1, 2026"]), en), []);
+  });
+});
+
 describe("due-before-issue (order): サービスの利用期間", () => {
   it("利用開始日より前の利用終了日を、終了日の行で指す", () => {
     const bill = labelledDoc("ご利用料金のお知らせ", ["ご利用開始日：2026年9月1日", "ご利用終了日：2025年9月30日"]);
