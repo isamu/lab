@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { isPeriodTotalLine, isTotalLine, type TotalLineWords } from "../packages/chaff/src/structure/total-line.ts";
+import { isListedTotal, isPeriodTotalLine, isTotalLikeLine, isTotalLine, type TotalLineWords } from "../packages/chaff/src/structure/total-line.ts";
 import { loadLexicons as loadEnglish } from "../packages/lang-en/src/lexicons.ts";
 import { loadLexicons as loadJapanese } from "../packages/lang-ja/src/lexicons.ts";
 
@@ -16,6 +16,8 @@ const wordsIn = (lexicons: ReturnType<typeof loadEnglish>): TotalLineWords => ({
   nounQualifiers: lexicons["total-noun-qualifier"] ?? [],
   unsummedNouns: patterns(lexicons, "total-noun-unsummed"),
   periodQualifiers: lexicons["total-period-qualifier"] ?? [],
+  listedNouns: patterns(lexicons, "total-noun-listed"),
+  amountNames: patterns(lexicons, "net-amount-label"),
 });
 const en = wordsIn(english);
 const ja = wordsIn(japanese);
@@ -188,5 +190,50 @@ describe("isTotalLine", () => {
     assert.equal(isTotalLine("", en), false);
     assert.equal(isTotalLine("| | $2,080 |", en), false);
     assert.equal(isTotalLine("per month due", en), false);
+  });
+
+  it("reads a total whose only noun is a listed one, with no header to name it: 差引合計, 控除合計, Total deductions", () => {
+    ["| 差引合計 | 72,000円 |", "| 控除合計 | 24,150円 |", "| 控除計 | 24,150円 |", "- 差引合計：72,000円"].forEach((line) =>
+      assert.equal(isListedTotal(line, ja), true, line),
+    );
+    ["| Total deductions | $410.00 |", "| Deductions total | $410.00 |", "| Total deduction | $410.00 |", "| **Total deductions** | $410.00 |"].forEach(
+      (line) => assert.equal(isListedTotal(line, en), true, line),
+    );
+  });
+
+  it("does not read a plain total, an unlisted noun, a net amount, or a listed noun with another noun beside it", () => {
+    [
+      "| 合計 | 72,000円 |",
+      "| 差引支給合計 | 250,000円 |",
+      "| 差引額合計 | 250,000円 |",
+      "| 消費税合計 | 9,000円 |",
+      "| 支給合計 | 292,000円 |",
+      "| 差引 | 72,000円 |",
+      "",
+    ].forEach((line) => assert.equal(isListedTotal(line, ja), false, line));
+    [
+      "| Total | $410 |",
+      "| Total tax | $90 |",
+      "| Total area | 40 m² |",
+      "| Total tax deductions | $30 |",
+      "| Deductions | $410 |",
+      "| Totaldeductions | $1 |",
+    ].forEach((line) => assert.equal(isListedTotal(line, en), false, line));
+    assert.equal(isListedTotal("| Total deductions | $410 |", { labels: en.labels, qualifiers: en.qualifiers }), false);
+  });
+
+  it("reads a row as total-like when it is a total, holds a total word anywhere, or is a gross or net amount", () => {
+    ["| 合計 | 1円 |", "| 支給合計 | 1円 |", "| 総支給額 | 1円 |", "| 差引支給額 | 1円 |", "| 控除合計 | 1円 |"].forEach((line) =>
+      assert.equal(isTotalLikeLine(line, ja, "| 項目 | 金額 |"), true, line),
+    );
+    ["| Gross pay | $1 |", "| Net pay | $1 |", "| Total earnings | $1 |", "| Subtotal | $1 |"].forEach((line) =>
+      assert.equal(isTotalLikeLine(line, en, "| Item | Amount |"), true, line),
+    );
+    ["| 基本給 | 1円 |", "| ハウスクリーニング | 1円 |", "| 総支給額の内訳 | 1円 |"].forEach((line) =>
+      assert.equal(isTotalLikeLine(line, ja, "| 項目 | 金額 |"), false, line),
+    );
+    ["| Cleaning | $1 |", "| Gross | $1 |", "| Net pay adjustment | $1 |"].forEach((line) =>
+      assert.equal(isTotalLikeLine(line, en, "| Item | Amount |"), false, line),
+    );
   });
 });

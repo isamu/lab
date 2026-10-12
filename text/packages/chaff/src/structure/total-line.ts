@@ -17,6 +17,10 @@ export type TotalLineWords = {
   readonly unsummedNouns?: readonly string[] | undefined;
   /** 合計が足す期間の語（total-period-qualifier。年間合計の年間、Total for the year の for the year）。見出しの頭か尻から除いて読む。 */
   readonly periodQualifiers?: readonly TotalQualifier[] | undefined;
+  /** 見出しが名指さなくても上の行の和と読める合計の名詞（total-noun-listed。差引合計の差引、Total deductions の deductions）。 */
+  readonly listedNouns?: readonly string[] | undefined;
+  /** 差し引きで決まる金額の名前（net-amount-label。総支給額、Gross pay）。表の行がこの名前なら、表は一つの和の内訳ではない。 */
+  readonly amountNames?: readonly string[] | undefined;
 };
 
 /** 見出しの終わり。区切り（: |）があればそこまで、無ければ金額の始まりまで。 */
@@ -198,3 +202,26 @@ export const isPeriodTotalLine = (text: string, words: TotalLineWords): boolean 
  */
 export const isTotalLine = (text: string, words: TotalLineWords, header?: string): boolean =>
   isPlainTotal(text, words) || isPeriodTotalLine(text, words) || (header !== undefined && isNamedTotal(text, words, header));
+
+/** 見出しの合計の語の位置ごとに、合計の語に添える語を除いた名詞。 */
+const nounSplitsOf = (text: string, words: TotalLineWords): string[][] => {
+  const label = labelWords(text).join(" ");
+  return words.labels.flatMap((total) => splitsAround(label, total.toLowerCase()).map((split) => nounsOf(split, words)));
+};
+
+/**
+ * 合計の語に、見出しが名指さなくても上の行の和と読める名詞（total-noun-listed）だけを付けた見出しか（差引合計、Total deductions）。
+ * 名詞は一語のまま比べる（差引支給合計の差引支給は読まない）。
+ */
+export const isListedTotal = (text: string, words: TotalLineWords): boolean => {
+  const listed = new Set((words.listedNouns ?? []).map((noun) => noun.toLowerCase()));
+  return nounSplitsOf(text, words).some((nouns) => nouns.length > 0 && nouns.every((noun) => listed.has(noun)));
+};
+
+/** 合計のような行か。合計の行、見出しのどこかに合計の語がある行（支給合計、Total earnings）、差し引きの名前の行（総支給額、Gross pay）。 */
+export const isTotalLikeLine = (text: string, words: TotalLineWords, header?: string): boolean => {
+  const label = labelWords(text).join(" ");
+  return (
+    isTotalLine(text, words, header) || nounSplitsOf(text, words).length > 0 || (words.amountNames ?? []).some((name) => wordsOf(name).join(" ") === label)
+  );
+};
