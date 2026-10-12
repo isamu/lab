@@ -150,3 +150,10 @@ entries:
   - { pattern: "Date of notice", group: tenancy-notice, position: before }
   - { pattern: "Move-out date", group: tenancy-notice, position: after }
   - { pattern: "Planned move-out date", group: tenancy-notice, position: after }
+  # A car's service record or inspection report: the next inspection or service comes after the service date. "Last
+  # inspection date" is left out: the last inspection comes before this service.
+  - { pattern: "Service date", group: vehicle-service, position: before }
+  - { pattern: "Date of service", group: vehicle-service, position: before }
+  - { pattern: "Next inspection", group: vehicle-service, position: after }
+  - { pattern: "Next inspection due", group: vehicle-service, position: after }
+  - { pattern: "Next service due", group: vehicle-service, position: after }
