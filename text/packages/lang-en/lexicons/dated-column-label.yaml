@@ -1,0 +1,17 @@
+# Column words read only in a table's header, for dates that must come in order. group and position as in dated-pair-label.
+# A table whose header has a column of each side of a pair (these words or dated-pair-label's) is read row by row, and a
+# row's after-column date before its before-column date is pointed out (due-before-issue). Not read at the head of a line:
+# a bare "Date" is paired only within one row of one table.
+id: dated-column-label
+language: en
+entries:
+  # A points statement: points expire after the day they were earned (the purchase, the stay).
+  - { pattern: "Date", group: points, position: before }
+  - { pattern: "Stay date", group: points, position: before }
+  - { pattern: "Earned", group: points, position: before }
+  - { pattern: "Expires", group: points, position: after }
+  - { pattern: "Expiry", group: points, position: after }
+  - { pattern: "Expiration date", group: points, position: after }
+  # Words saying the table is about points: read only when another header column contains one. A table with only a
+  # Date and an Expiration date column may be a claims log or a ticket list.
+  - { pattern: "Point", group: points }

@@ -1,0 +1,14 @@
+# 表の見出しにだけ読む、前後の決まった日付の列の語。group と position は dated-pair-label と同じ。
+# 見出しに組の両方の列（この語か dated-pair-label の語）がある表は、行ごとに、after の列の日付が before の列の日付より前なら指す（due-before-issue）。
+# 行の頭の語としては読まない。別の表の列どうし、別の行どうしは比べない。
+id: dated-column-label
+language: ja
+entries:
+  # ポイントの明細。ポイントの有効期限は、ポイントを得た日（利用した日、泊まった日）より後に来る。
+  - { pattern: "ご利用日", group: points, position: before }
+  - { pattern: "ご宿泊日", group: points, position: before }
+  - { pattern: "獲得日", group: points, position: before }
+  - { pattern: "有効期限", group: points, position: after }
+  - { pattern: "ポイント有効期限", group: points, position: after }
+  # 表がポイントのものであることを言う語。見出しのほかの列が、この語を含むときだけ読む（「Date」と「有効期限」だけの表は、保険や券の表でもある）。
+  - { pattern: "ポイント", group: points }
