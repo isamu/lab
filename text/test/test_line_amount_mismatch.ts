@@ -548,6 +548,60 @@ describe("line-amount-mismatch: 数量×単価が金額と合わない", () => {
   });
 });
 
+describe("line-amount-mismatch: 不動産の精算書（日割りと土地の面積）", () => {
+  const statement = (heading: string, rows: readonly string[]): string => [heading, "| --- | --- | --- | --- |", ...rows].join("\n") + "\n";
+
+  it("固定資産税の日割り（日数 × 日割額）を読む", () => {
+    assert.deepEqual(findingsOf(statement("| 項目 | 日数 | 日割額 | 金額 |", ["| 固定資産税（10月1日〜12月31日） | 92日 | 300円 | 29,600円 |"])), [
+      "金額「29,600円」が、数量×単価（92日 × 300円 = 27,600円）と合いません",
+    ]);
+    assert.deepEqual(findingsOf(statement("| 項目 | 日数 | 日割り額 | 金額 |", ["| 都市計画税 | 15日 | 120円 | 1,800円 |"])), []);
+    assert.deepEqual(
+      findingsOf(statement("| Item | Days | Daily amount | Amount |", ["| County taxes (Oct 1 to Dec 31) | 92 days | $12.00 | $1,140.00 |"]), en),
+      ["The amount $1,140.00 is not quantity × unit price (92 days × $12.00 = $1,104.00)"],
+    );
+    assert.deepEqual(findingsOf(statement("| Item | Days | Per day | Amount |", ["| HOA dues | 15 days | $4.00 | $60.00 |"]), en), []);
+  });
+
+  it("土地の面積 × 面積あたりの単価を読む（㎡、坪、sq ft、m²）", () => {
+    assert.deepEqual(findingsOf(statement("| 項目 | 面積 | ㎡単価 | 金額 |", ["| 土地（実測） | 120.50㎡ | 200,000円 | 21,400,000円 |"])), [
+      "金額「21,400,000円」が、数量×単価（120.50m2 × 200,000円 = 24,100,000円）と合いません",
+    ]);
+    assert.deepEqual(findingsOf(statement("| 項目 | 土地面積 | 坪単価 | 金額 |", ["| 宅地 | 40坪 | 900,000円 | 32,000,000円 |"])), [
+      "金額「32,000,000円」が、数量×単価（40坪 × 900,000円 = 36,000,000円）と合いません",
+    ]);
+    assert.deepEqual(findingsOf(statement("| 項目 | 敷地面積 | 平米単価 | 金額 |", ["| 敷地 | 80平米 | 150,000円 | 12,000,000円 |"])), []);
+    assert.deepEqual(findingsOf(statement("| Item | Area | Price per sq ft | Amount |", ["| Lot | 5,400 sq ft | $30.00 | $126,000.00 |"]), en), [
+      "The amount $126,000.00 is not quantity × unit price (5,400 sq ft × $30.00 = $162,000.00)",
+    ]);
+    assert.deepEqual(
+      findingsOf(statement("| Item | Lot area | Price per square foot | Amount |", ["| Lot | 2,000 square feet | $25.00 | $50,000.00 |"]), en),
+      [],
+    );
+    assert.deepEqual(findingsOf(statement("| Item | Land area | Price per m² | Amount |", ["| Plot | 300 m² | $400.00 | $102,000.00 |"]), en), [
+      "The amount $102,000.00 is not quantity × unit price (300 m2 × $400.00 = $120,000.00)",
+    ]);
+  });
+
+  it("面積を日あたり・時間あたりの単価や別の面積の単位の単価とは掛けない", () => {
+    assert.deepEqual(findingsOf(statement("| 項目 | 面積 | 日割額 | 金額 |", ["| 土地 | 100㎡ | 300円 | 1,000円 |"])), []);
+    assert.deepEqual(findingsOf(statement("| 項目 | 面積 | 時給 | 金額 |", ["| 清掃 | 100 | 1,200円 | 3,000円 |"])), []);
+    assert.deepEqual(findingsOf(statement("| 項目 | 面積 | 坪単価 | 金額 |", ["| 土地 | 100㎡ | 900,000円 | 30,000,000円 |"])), []);
+    assert.deepEqual(findingsOf(statement("| 項目 | 面積 | ㎡単価 | 金額 |", ["| 土地 | 30坪 | 300,000円 | 30,000,000円 |"])), []);
+    assert.deepEqual(findingsOf(statement("| Item | Area | Per day | Amount |", ["| Storage | 120 sq ft | $2.00 | $60.00 |"]), en), []);
+    assert.deepEqual(findingsOf(statement("| Item | Area | Hourly rate | Amount |", ["| Cleaning | 800 | $40.00 | $120.00 |"]), en), []);
+    assert.deepEqual(findingsOf(statement("| Item | Area | Price per sq ft | Amount |", ["| Lot | 500 m² | $30.00 | $45,000.00 |"]), en), []);
+    assert.deepEqual(findingsOf(statement("| Item | Days | Price per sq ft | Amount |", ["| Rental | 5 days | $30.00 | $100.00 |"]), en), []);
+  });
+
+  it("地域名の Area の列は数量と読まない", () => {
+    assert.deepEqual(
+      findingsOf(statement("| Item | Area | Price | Amount |", ["| Delivery | North | $40.00 | $90.00 |", "| Delivery | Zone 3 | $40.00 | $90.00 |"]), en),
+      [],
+    );
+  });
+});
+
 describe("line-amount-mismatch: 項目の升の括弧に書いた 単価×人数", () => {
   const income = (rows: readonly string[]): string => ["| 項目 | 金額 |", "| --- | --- |", ...rows].join("\n") + "\n";
   const enIncome = (rows: readonly string[]): string => ["| Item | Amount |", "| --- | --- |", ...rows].join("\n") + "\n";

@@ -22,3 +22,11 @@ entries:
   - { pattern: Tuition per credit, group: credit }
   - { pattern: Fee per credit, group: credit }
   - { pattern: Per credit, group: credit }
+  # The daily amount of a property tax proration (daily amount × days = proration).
+  - { pattern: Daily amount, group: day }
+  # A price per area. A square foot and a square metre are different units, so each is its own group.
+  - { pattern: Price per sq ft, group: sqft }
+  - { pattern: Price per square foot, group: sqft }
+  - { pattern: Price per m², group: sqm }
+  - { pattern: Price per square metre, group: sqm }
+  - { pattern: Price per square meter, group: sqm }

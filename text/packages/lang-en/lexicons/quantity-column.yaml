@@ -21,3 +21,8 @@ entries:
   # The credits of a tuition invoice (times the tuition per credit gives the amount).
   - { pattern: Credits, group: credit }
   - { pattern: Credit hours, group: credit }
+  # The area of a land price (price per square foot × area = price). The cell's unit (rate-unit) says which area unit;
+  # an area is never multiplied by a price per day or per hour.
+  - { pattern: Area, group: area }
+  - { pattern: Lot area, group: area }
+  - { pattern: Land area, group: area }
