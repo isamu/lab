@@ -142,6 +142,47 @@ describe("total-mismatch", () => {
     ["Total area", "Total floor space", "Total tax", "Rent per month"].forEach((label) => assert.deepEqual(found(costs(label, "$2,180")), [], label));
   });
 
+  it("a total naming what a section of an account adds up is a total line: Total income, Total expenditure", () => {
+    const section = (label: string, total: string): string =>
+      doc("| Item | Amount |", "| --- | --- |", "| Hall hire | $300.00 |", "| Raffle | $125.50 |", "| Donations | $80.00 |", `| ${label} | ${total} |`);
+    ["Total income", "Total expenditure", "Total expenses", "Total receipts", "Total payments", "Total revenue"].forEach((label) => {
+      assert.deepEqual(found(section(label, "$550.50")), ["$550.50≠$505.50"], label);
+      assert.deepEqual(found(section(label, "$505.50")), [], label);
+    });
+    ["Total taxable income", "Total income tax", "Income total"].forEach((label) => assert.deepEqual(found(section(label, "$550.50")), [], label));
+  });
+
+  it("an income section and an expense section in one table: each total adds only its own section", () => {
+    const account = (expenses: string): string =>
+      doc(
+        "| Item | Amount |",
+        "| --- | --- |",
+        "| Sales | $4,000 |",
+        "| Interest | $50 |",
+        "| Total income | $4,050 |",
+        "| Rent | $1,200 |",
+        "| Wages | $2,000 |",
+        `| Total expenses | ${expenses} |`,
+      );
+    assert.deepEqual(found(account("$3,200")), []);
+    assert.deepEqual(
+      found(account("$3,300")).map((finding) => finding.split("≠")[0]),
+      ["$3,300"],
+    );
+  });
+
+  it("a summary of section totals between two balances is not a sum of the rows above it", () => {
+    const summary = doc(
+      "| Item | Amount |",
+      "| --- | --- |",
+      "| Balance brought forward | $612.30 |",
+      "| Total income | $1,352.50 |",
+      "| Total expenditure | $1,211.00 |",
+      "| Balance carried forward | $753.80 |",
+    );
+    assert.deepEqual(found(summary), []);
+  });
+
   it("a total naming the span it covers is a total line: 年間合計, 年計, Total for the year, Year total", () => {
     const withheld = (label: string, total: string): string =>
       doc(
