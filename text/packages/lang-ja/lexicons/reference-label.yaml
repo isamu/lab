@@ -64,3 +64,15 @@ entries:
   - { pattern: 申込番号は, group: application }
   - { pattern: 申込み番号, group: application }
   - { pattern: 申込み番号は, group: application }
+  # 自動車のナンバー。ナンバーの形（vehicle-plate）に合う並びは、語が「登録番号」だけでも自動車のナンバーとして読む。
+  # 「ナンバー」だけの語は「マイナンバー」「ルームナンバー」の終わりにもなるので入れない。
+  - { pattern: 自動車登録番号, group: vehicle }
+  - { pattern: 自動車登録番号は, group: vehicle }
+  - { pattern: 車両登録番号, group: vehicle }
+  - { pattern: 車両登録番号は, group: vehicle }
+  - { pattern: 車両番号, group: vehicle }
+  - { pattern: 車両番号は, group: vehicle }
+  - { pattern: 車両ナンバー, group: vehicle }
+  - { pattern: 車両ナンバーは, group: vehicle }
+  - { pattern: ナンバープレート, group: vehicle }
+  - { pattern: ナンバープレートは, group: vehicle }

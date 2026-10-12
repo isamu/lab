@@ -7,6 +7,8 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { messageOf } from "../packages/chaff/src/render/text.ts";
 import { labelledReferenceNumbers, referenceVariants } from "../packages/chaff/src/reference-numbers.ts";
+import { labelledPlates, plateVariants } from "../packages/chaff/src/vehicle-plates.ts";
+import { PatternTimeout } from "../packages/chaff/src/custom/pattern-timeout.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
 // 同じ予約番号などの、隣り合う文字の入れ違い（reference-number-variant）。番号と例文は自作。
@@ -285,5 +287,85 @@ describe("reference numbers", () => {
       [["MN-48251", "MN-48215"]],
     );
     assert.deepEqual(referenceVariants([]), []);
+  });
+});
+
+describe("reference-number-variant: vehicle plates", () => {
+  const docCar = (...lines: string[]): string => ["# 整備記録簿", "", ...lines, ""].join("\n");
+  const docVehicle = (...lines: string[]): string => ["# Service record", "", ...lines, ""].join("\n");
+
+  it("ja: 文書の車のナンバーを、一連番号の一文字だけ違えて書いた所を指す", () => {
+    const source = docCar("登録番号：ひばり野 330 ね 48-15", "", "登録番号ひばり野 330 ね 48-75 のお車は、午前9時までにご入庫ください。");
+    assert.deepEqual(found(source, ja), [5]);
+    assert.deepEqual(messages(source, ja), [
+      "ナンバー「ひばり野 330 ね 48-75」は、この文書の車のナンバー「ひばり野 330 ね 48-15」と一連番号の一文字だけが違います",
+    ]);
+    assert.deepEqual(found(docCar("自動車登録番号：かえで台 500 み 72-06", "", "自動車登録番号 かえで台 500 み 72-08 の記録は2年間保管します。"), ja), [5]);
+    assert.deepEqual(found(docCar("車両番号：かえで台 500 み ・・12", "", "車両番号かえで台 500 み ・・13 の車検は来月です。"), ja), [5]);
+  });
+
+  it("ja: ナンバーの隣り合う文字の入れ違いも指す", () => {
+    assert.deepEqual(found(docCar("登録番号：ひばり野 330 ね 48-15", "", "登録番号 ひばり野 330 ね 48-51"), ja), [5]);
+  });
+
+  it("ja: 二台の車、地名・分類番号・かなの違い、二文字違い、三つ目のナンバー、見出し行の無い文書は一文字違いとして指さない", () => {
+    assert.deepEqual(found(docCar("登録番号：ひばり野 330 ね 48-15", "", "登録番号：ひばり野 330 ね 48-75"), ja), []);
+    assert.deepEqual(found(docCar("登録番号ひばり野 330 ね 48-15 のお車", "", "登録番号ひばり野 330 ね 48-75 のお車"), ja), []);
+    assert.deepEqual(found(docCar("登録番号：ひばり野 330 ね 48-15", "", "登録番号 かえで台 330 ね 48-75"), ja), []);
+    assert.deepEqual(found(docCar("登録番号：ひばり野 330 ね 48-15", "", "登録番号 ひばり野 300 ね 48-75"), ja), []);
+    assert.deepEqual(found(docCar("登録番号：ひばり野 330 ね 48-15", "", "登録番号 ひばり野 330 み 48-15"), ja), []);
+    assert.deepEqual(found(docCar("登録番号：ひばり野 330 ね 48-15", "", "登録番号 ひばり野 330 ね 47-75"), ja), []);
+    assert.deepEqual(found(docCar("登録番号：ひばり野 330 ね 48-15", "", "登録番号 ひばり野 330 ね 48-75", "", "代車 登録番号 ひばり野 330 ね 48-16"), ja), []);
+    assert.deepEqual(found(docCar("登録番号：ひばり野 330 ね 48-15", "", "代車の登録番号ひばり野 330 ね 48-75 のお車をお貸しします。"), ja), []);
+    assert.deepEqual(found(docCar("登録番号：ひばり野 330 ね 48-15", "", "作業中は、代車として登録番号ひばり野 330 ね 48-75 のお車をお貸しします。"), ja), []);
+  });
+
+  it("ja: ナンバーの形でない登録番号や車両番号は、一文字違いでも指さない", () => {
+    assert.deepEqual(found(docJa("登録番号：RF-62417", "", "登録番号 RF-62418"), ja), []);
+    assert.deepEqual(found(docJa("車両番号：RF-62417", "", "車両番号 RF-62418"), ja), []);
+    assert.deepEqual(found(docJa("車両番号：RF-62417", "", "登録番号：RF-62147"), ja), []);
+  });
+
+  it("en: a plate number with two neighbouring characters swapped, never one character changed nor compared with a registration number", () => {
+    assert.deepEqual(found(docVehicle("Number plate: KX-48215", "", "The car with number plate KX-48251 is ready."), en), [5]);
+    assert.deepEqual(found(docVehicle("Licence plate: KX-48215", "", "Licence plate KX-48275"), en), []);
+    assert.deepEqual(found(docVehicle("Registration number: KX-48215", "", "Number plate: KX-48251"), en), []);
+  });
+});
+
+describe("vehicle plates", () => {
+  const labels = [{ pattern: "登録番号", group: "registration" }];
+  const shape = { pattern: String.raw`(?<region>[\p{Script=Han}ぁ-ゖ]{1,5}) ?(?<class>\d{1,3}) ?(?<kana>[ぁ-ゖ]) ?(?<serial>\d{1,2}-\d{2})`, group: "vehicle" };
+
+  it("reads a plate right after a label in the shape's group, its serial apart, and whether its line is a field", () => {
+    const plates = labelledPlates("登録番号：ひばり野 330 ね 48-15\n登録番号ひばり野 330 ね 48-75 のお車", labels, [shape]);
+    assert.deepEqual(
+      plates.map(({ written, characters, label, serial, opensSentence, onField }) => ({ written, characters, label, serial, opensSentence, onField })),
+      [
+        { written: "ひばり野 330 ね 48-15", characters: "ひばり野330ね4815", label: "vehicle", serial: "4815", opensSentence: true, onField: true },
+        { written: "ひばり野 330 ね 48-75", characters: "ひばり野330ね4875", label: "vehicle", serial: "4875", opensSentence: true, onField: false },
+      ],
+    );
+    assert.deepEqual(
+      plateVariants(plates).map(({ number, other }) => [number.written, other.written]),
+      [["ひばり野 330 ね 48-75", "ひばり野 330 ね 48-15"]],
+    );
+  });
+
+  it("reads nothing from empty text, no shapes, a shape that is not an expression or has no serial, a plate run on into digits, or no label", () => {
+    assert.deepEqual(labelledPlates("", labels, [shape]), []);
+    assert.deepEqual(labelledPlates("登録番号：ひばり野 330 ね 48-15", labels, []), []);
+    assert.deepEqual(labelledPlates("登録番号：ひばり野 330 ね 48-15", labels, [{ pattern: "(", group: "vehicle" }]), []);
+    assert.deepEqual(labelledPlates("登録番号：ひばり野 330 ね 48-15", labels, [{ pattern: String.raw`(?<region>\S+) \d+`, group: "vehicle" }]), []);
+    assert.deepEqual(labelledPlates("登録番号：ひばり野 330 ね 48-159", labels, [shape]), []);
+    assert.deepEqual(labelledPlates("ひばり野 330 ね 48-15", labels, [shape]), []);
+    assert.deepEqual(plateVariants([]), []);
+  });
+
+  it("reads a word before the label as not opening the sentence, and stops a shape that runs away", () => {
+    const [plate] = labelledPlates("お預かりした車（登録番号ひばり野 330 ね 48-15）", labels, [shape]);
+    assert.equal(plate?.opensSentence, false);
+    assert.equal(labelledPlates("点検は済みました。登録番号ひばり野 330 ね 48-15 のお車", labels, [shape])[0]?.opensSentence, true);
+    assert.throws(() => labelledPlates(`登録番号 ${"a".repeat(40)}!`, labels, [{ pattern: "(?<serial>(a+)+)$", group: "vehicle" }]), PatternTimeout);
   });
 });
