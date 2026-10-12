@@ -71,6 +71,14 @@ entries:
   - { pattern: registration no, group: registration }
   - { pattern: application number, group: application }
   - { pattern: application number is, group: application }
+  # An item's code. A table's codes are items of their own; only a code with no label is compared with them.
+  - { pattern: item code, group: item }
+  - { pattern: item code is, group: item }
+  - { pattern: item no., group: item }
+  - { pattern: item no, group: item }
+  - { pattern: sku, group: item }
+  - { pattern: product code, group: item }
+  - { pattern: product code is, group: item }
   # A vehicle's plate. A bare "Registration" is not one: an attendee's registration is written so too.
   - { pattern: registration plate, group: vehicle }
   - { pattern: registration plate is, group: vehicle }

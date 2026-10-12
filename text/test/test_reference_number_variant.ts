@@ -8,6 +8,7 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { messageOf } from "../packages/chaff/src/render/text.ts";
 import { labelledReferenceNumbers, referenceVariants } from "../packages/chaff/src/reference-numbers.ts";
 import { labelledPlates, plateVariants } from "../packages/chaff/src/vehicle-plates.ts";
+import { tableCodes, tableLabelledCodes, unlabelledVariants } from "../packages/chaff/src/unlabelled-references.ts";
 import { PatternTimeout } from "../packages/chaff/src/custom/pattern-timeout.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
@@ -367,5 +368,90 @@ describe("vehicle plates", () => {
     assert.equal(plate?.opensSentence, false);
     assert.equal(labelledPlates("点検は済みました。登録番号ひばり野 330 ね 48-15 のお車", labels, [shape])[0]?.opensSentence, true);
     assert.throws(() => labelledPlates(`登録番号 ${"a".repeat(40)}!`, labels, [{ pattern: "(?<serial>(a+)+)$", group: "vehicle" }]), PatternTimeout);
+  });
+});
+
+describe("reference-number-variant: an item code labelled once and written with no label", () => {
+  const catalogJa = (...lines: string[]): string => ["# 文具カタログ", "", ...lines, ""].join("\n");
+  const catalogEn = (...lines: string[]): string => ["# Stationery catalog", "", ...lines, ""].join("\n");
+  const specJa = ["| 項目 | 内容 |", "| --- | --- |", "| 品番 | GP-0512 |", "| 全長 | 142mm |"];
+  const specEn = ["| Item | Detail |", "| --- | --- |", "| Item code | GP-0512 |", "| Length | 142 mm |"];
+  const listJa = (...codes: string[]): string[] => ["| 品番 | 品名 |", "| --- | --- |", ...codes.map((code) => `| ${code} | ボールペン |`)];
+  const listEn = (...codes: string[]): string[] => ["| Item code | Description |", "| --- | --- |", ...codes.map((code) => `| ${code} | Gel pen |`)];
+
+  it("ja: 表や語の後ろの品番と、語の無い品番の隣り合う文字の入れ違いを指す", () => {
+    assert.deepEqual(found(catalogJa(...specJa, "", "GP-0521の替芯は13ページに載せています。"), ja), [8]);
+    assert.deepEqual(found(catalogJa(...listJa("GP-0512", "NB-5830"), "", "GP-0521の替芯は13ページに載せています。"), ja), [8]);
+    assert.deepEqual(found(catalogJa("品番：GP-0512", "", "GP-0521の替芯は13ページに載せています。"), ja), [5]);
+    assert.deepEqual(found(catalogJa("商品コード：GP-0512", "", "替芯はGP-0521用です。"), ja), [5]);
+    assert.deepEqual(messages(catalogJa("品番：GP-0512", "", "GP-0521の替芯"), ja), ["番号「GP-0521」は、「GP-0512」の隣り合う文字が入れ違っています"]);
+  });
+
+  it("ja: 表に並ぶ別の商品、語の後ろにある品番、二つの品番のどちらとも読める品番、記号の無い番号は指さない", () => {
+    assert.deepEqual(found(catalogJa(...listJa("AB-1234", "AB-1243"), "", "AB-1243の替芯は13ページです。"), ja), []);
+    assert.deepEqual(found(catalogJa(...listJa("AB-1234"), "", "品番：AB-1243", "", "AB-1243の替芯は13ページです。"), ja), []);
+    assert.deepEqual(found(catalogJa(...listJa("AB-1234", "AB-1342"), "", "AB-1324の替芯は13ページです。"), ja), []);
+    assert.deepEqual(found(catalogJa("予約番号：48215", "", "48251をお伝えください。"), ja), []);
+    assert.deepEqual(found(catalogJa("品番：GP-0512", "", "GP0521の替芯"), ja), []);
+    assert.deepEqual(found(catalogJa("GP-0512のボールペン", "", "GP-0521の替芯"), ja), []);
+    assert.deepEqual(found(catalogJa(...specJa, "", "GP-0512の替芯は13ページに載せています。"), ja), []);
+    assert.deepEqual(found(catalogJa("品番：AB-1234", "", "品番：AB-1243"), ja), []);
+  });
+
+  it("en: a code with no label that is a labelled code with two neighbours swapped", () => {
+    assert.deepEqual(found(catalogEn(...specEn, "", "Refills for GP-0521 are on page 13."), en), [8]);
+    assert.deepEqual(found(catalogEn(...listEn("GP-0512", "NB-5830"), "", "Refills for GP-0521 are on page 13."), en), [8]);
+    assert.deepEqual(found(catalogEn("SKU: GP-0512", "", "Refills for GP-0521 are on page 13."), en), [5]);
+    assert.deepEqual(found(catalogEn("Product code: GP-0512", "", "Refills for GP-0521 are on page 13."), en), [5]);
+  });
+
+  it("en: not two items a table lists, a labelled code, a code two labelled codes swap to, nor a plain number", () => {
+    assert.deepEqual(found(catalogEn(...listEn("AB-1234", "AB-1243"), "", "Refills for AB-1243 are on page 13."), en), []);
+    assert.deepEqual(found(catalogEn(...listEn("AB-1234", "AB-1342"), "", "Refills for AB-1324 are on page 13."), en), []);
+    assert.deepEqual(found(catalogEn("Booking number: 48215", "", "Please quote 48251."), en), []);
+    assert.deepEqual(found(catalogEn("GP-0512 gel pen", "", "Refills for GP-0521"), en), []);
+    assert.deepEqual(found(catalogEn("Item code: AB-1234", "", "Item code: AB-1243"), en), []);
+    assert.deepEqual(
+      found(catalogEn("Item code: AB-1234", "", "| AB-1243 | Name |", "| --- | --- |", "| refill | pen |", "", "Use the AB-1243 refill."), en),
+      [],
+    );
+  });
+
+  it("reads codes a table labels by row and by column, and every code a table lists", () => {
+    const labels = [{ pattern: "品番", group: "item" }];
+    const text = [
+      "| 品番 | GP-0512 |",
+      "| --- | --- |",
+      "| 品番 | NB-5830 |",
+      "",
+      "| 品番 | 品名 |",
+      "| --- | --- |",
+      "| CL-2804 | クリップ |",
+      "| 2026-118 | 封筒 |",
+      "",
+    ].join("\n");
+    assert.deepEqual(
+      tableLabelledCodes(text, labels).map(({ written, characters, label }) => [written, characters, label]),
+      [
+        ["NB-5830", "NB5830", "item"],
+        ["CL-2804", "CL2804", "item"],
+      ],
+    );
+    assert.deepEqual([...tableCodes(text)], ["GP0512", "NB5830", "CL2804"]);
+    assert.deepEqual(tableLabelledCodes("", labels), []);
+    assert.deepEqual(tableLabelledCodes(text, []), []);
+  });
+
+  it("matches an unlabelled code only to exactly one labelled code it is not itself", () => {
+    const anchor = { offset: 0, written: "GP-0512", characters: "GP0512", label: "item" };
+    assert.deepEqual(
+      unlabelledVariants("GP-0512 x GP-0521", [anchor], new Set()).map(({ number, other }) => [number.written, number.offset, other.written]),
+      [["GP-0521", 10, "GP-0512"]],
+    );
+    assert.deepEqual(unlabelledVariants("GP-0521", [anchor], new Set(["GP0521"])), []);
+    assert.deepEqual(unlabelledVariants("GP-0521", [], new Set()), []);
+    assert.deepEqual(unlabelledVariants("", [anchor], new Set()), []);
+    assert.deepEqual(unlabelledVariants("https://example.com/GP-0521", [anchor], new Set()), []);
+    assert.deepEqual(unlabelledVariants("12-0521", [{ ...anchor, written: "12-0512", characters: "120512" }], new Set()), []);
   });
 });

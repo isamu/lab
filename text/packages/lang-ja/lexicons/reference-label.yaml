@@ -64,6 +64,13 @@ entries:
   - { pattern: 申込番号は, group: application }
   - { pattern: 申込み番号, group: application }
   - { pattern: 申込み番号は, group: application }
+  # 商品の品番。表に並べた品番はそれぞれ別の商品なので、語の無い品番だけを、表や語の後ろの品番と比べる。
+  - { pattern: 品番, group: item }
+  - { pattern: 品番は, group: item }
+  - { pattern: 商品コード, group: item }
+  - { pattern: 商品コードは, group: item }
+  - { pattern: 品目コード, group: item }
+  - { pattern: 品目コードは, group: item }
   # 自動車のナンバー。ナンバーの形（vehicle-plate）に合う並びは、語が「登録番号」だけでも自動車のナンバーとして読む。
   # 「ナンバー」だけの語は「マイナンバー」「ルームナンバー」の終わりにもなるので入れない。
   - { pattern: 自動車登録番号, group: vehicle }
