@@ -2,7 +2,7 @@
   "recall": {
     "ja": {
       "membership-period-reversed": "2/2",
-      "tier-threshold": "0/2",
+      "tier-threshold": "2/2",
       "balance-carried": "1/2",
       "expiry-before-earning": "0/2",
       "points-earned": "0/2",
@@ -10,7 +10,7 @@
     },
     "en": {
       "membership-period-reversed": "2/2",
-      "tier-threshold": "0/2",
+      "tier-threshold": "2/2",
       "balance-carried": "1/2",
       "expiry-before-earning": "0/2",
       "points-earned": "0/2",
