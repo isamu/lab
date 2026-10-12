@@ -1,0 +1,17 @@
+# 予算と決算を並べた表で、列の見出しが言う役割（variance-mismatch）。group: budget は予算の列、actual は決算・実績の列、
+# variance は二つの差の列、rate は率の列（差の列としては読まない）。rate、variance、budget、actual の順に見るので、
+# 「増減率」は率の列、「予算比」は差の列になる。字面どおりに照らす。
+id: variance-column
+language: ja
+entries:
+  - { pattern: 率, group: rate }
+  - { pattern: "%", group: rate }
+  - { pattern: 増減, group: variance }
+  - { pattern: 差異, group: variance }
+  - { pattern: 差額, group: variance }
+  - { pattern: 予算比, group: variance }
+  - { pattern: 過不足, group: variance }
+  - { pattern: 予算, group: budget }
+  - { pattern: 決算, group: actual }
+  - { pattern: 実績, group: actual }
+  - { pattern: 執行額, group: actual }
