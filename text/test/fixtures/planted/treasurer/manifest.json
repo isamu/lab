@@ -31,7 +31,7 @@
         },
         {
           "kind": "carry-over",
-          "rule": "net-amount-mismatch",
+          "rule": "closing-balance-mismatch",
           "line": 38,
           "clean": "| 47,630円 |",
           "planted": "| 47,360円 |"
@@ -68,7 +68,7 @@
         },
         {
           "kind": "carry-over",
-          "rule": "net-amount-mismatch",
+          "rule": "closing-balance-mismatch",
           "line": 36,
           "clean": "305,830円です",
           "planted": "305,380円です"
@@ -112,7 +112,7 @@
         },
         {
           "kind": "carry-over",
-          "rule": "net-amount-mismatch",
+          "rule": "closing-balance-mismatch",
           "line": 38,
           "clean": "| $753.80 |",
           "planted": "| $735.80 |"
@@ -149,7 +149,7 @@
         },
         {
           "kind": "carry-over",
-          "rule": "net-amount-mismatch",
+          "rule": "closing-balance-mismatch",
           "line": 34,
           "clean": "is $1,510.15:",
           "planted": "is $1,501.15:"

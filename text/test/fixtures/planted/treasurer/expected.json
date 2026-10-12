@@ -4,7 +4,7 @@
       "fiscal-year-reversed": "1/1",
       "membership-fee": "0/1",
       "income-total": "1/1",
-      "carry-over": "0/2",
+      "carry-over": "1/2",
       "audit-before-year-end": "0/2",
       "budget-variance": "0/1",
       "expenditure-total": "1/1"
@@ -13,7 +13,7 @@
       "fiscal-year-reversed": "1/1",
       "membership-fee": "0/1",
       "income-total": "0/1",
-      "carry-over": "0/2",
+      "carry-over": "1/2",
       "audit-before-year-end": "0/2",
       "budget-variance": "0/1",
       "expenditure-total": "0/1"

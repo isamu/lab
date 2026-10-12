@@ -24,7 +24,7 @@
         },
         {
           "kind": "balance-carried",
-          "rule": "running-balance-mismatch",
+          "rule": "closing-balance-mismatch",
           "line": 24,
           "clean": "今月末の残高：3,056ポイント",
           "planted": "今月末の残高：3,506ポイント"
@@ -89,7 +89,7 @@
         },
         {
           "kind": "balance-carried",
-          "rule": "running-balance-mismatch",
+          "rule": "closing-balance-mismatch",
           "line": 42,
           "clean": "| 13,410 |",
           "planted": "| 14,310 |"
@@ -126,7 +126,7 @@
         },
         {
           "kind": "balance-carried",
-          "rule": "running-balance-mismatch",
+          "rule": "closing-balance-mismatch",
           "line": 24,
           "clean": "this month: 3,056 points",
           "planted": "this month: 3,506 points"
@@ -191,7 +191,7 @@
         },
         {
           "kind": "balance-carried",
-          "rule": "running-balance-mismatch",
+          "rule": "closing-balance-mismatch",
           "line": 42,
           "clean": "| 13,410 |",
           "planted": "| 14,310 |"
