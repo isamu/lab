@@ -341,6 +341,42 @@ describe("line-amount-mismatch: 数量×単価が金額と合わない", () => {
     ]);
   });
 
+  it("給付金の明細の日額 × 日数 = 金額を読む", () => {
+    const benefit = (heading: string, rows: readonly string[]): string => [heading, "| --- | --- | --- | --- |", ...rows].join("\n") + "\n";
+    assert.deepEqual(
+      findingsOf(benefit("| 給付金 | 日数 | 日額 | 金額 |", ["| 入院給付金 | 8日 | 10,000円 | 70,000円 |", "| 通院給付金 | 3日 | 2,000円 | 6,000円 |"])),
+      ["金額「70,000円」が、数量×単価（8日 × 10,000円 = 80,000円）と合いません"],
+    );
+    assert.deepEqual(findingsOf(benefit("| 給付金 | 入院日数 | 日額給付金 | 金額 |", ["| 入院 | 5 | 6,000円 | 36,000円 |"])), [
+      "金額「36,000円」が、数量×単価（5 × 6,000円 = 30,000円）と合いません",
+    ]);
+    assert.deepEqual(findingsOf(benefit("| 給付金 | 通院日数 | 1日あたり | 金額 |", ["| 通院 | 2日 | 4,000円 | 9,000円 |"])), [
+      "金額「9,000円」が、数量×単価（2日 × 4,000円 = 8,000円）と合いません",
+    ]);
+    assert.deepEqual(findingsOf(benefit("| Benefit | Days | Daily benefit | Amount |", ["| Hospital cash | 8 days | $120.00 | $900.00 |"]), en), [
+      "The amount $900.00 is not quantity × unit price (8 days × $120.00 = $960.00)",
+    ]);
+    assert.deepEqual(findingsOf(benefit("| Benefit | Days in hospital | Per day | Amount |", ["| Hospital cash | 3 | $80.00 | $250.00 |"]), en), [
+      "The amount $250.00 is not quantity × unit price (3 × $80.00 = $240.00)",
+    ]);
+    assert.deepEqual(findingsOf(benefit("| Item | Days | Daily rate | Amount |", ["| Van hire | 2 days | $65.00 | $120.00 |"]), en), [
+      "The amount $120.00 is not quantity × unit price (2 days × $65.00 = $130.00)",
+    ]);
+    assert.deepEqual(findingsOf(benefit("| 給付金 | 日数 | 日額 | 金額 |", ["| 入院給付金 | 8日 | 10,000円 | 80,000円 |", "| 合計 | | | 80,000円 |"])), []);
+    assert.deepEqual(findingsOf(benefit("| Benefit | Days | Daily benefit | Amount |", ["| Hospital cash | 8 days | $120.00 | $960.00 |"]), en), []);
+  });
+
+  it("価格の無い日数の表、日あたりでない単価、日でない数量、数量と日数の両方を持つ表は比べない", () => {
+    assert.deepEqual(findingsOf("| 手続き | 日数 | 期限 |\n| --- | --- | --- |\n| 解約の通知 | 30日 | 2026年10月31日 |\n"), []);
+    assert.deepEqual(findingsOf("| Step | Days | Fee |\n| --- | --- | --- |\n| Notice | 30 | $100 |\n", en), []);
+    assert.deepEqual(findingsOf("| 作業 | 日数 | 時給 | 金額 |\n| --- | --- | --- | --- |\n| 保守 | 2日 | 1,000円 | 5,000円 |\n"), []);
+    assert.deepEqual(findingsOf("| 項目 | 日数 | 月額 | 金額 |\n| --- | --- | --- | --- |\n| 駐車場 | 10日 | 8,000円 | 5,000円 |\n"), []);
+    assert.deepEqual(findingsOf("| Item | Days | Hourly rate | Amount |\n| --- | --- | --- | --- |\n| Support | 2 | $100 | $500 |\n", en), []);
+    assert.deepEqual(findingsOf("| Item | Days | Monthly | Amount |\n| --- | --- | --- | --- |\n| Parking | 10 | $300 | $150 |\n", en), []);
+    assert.deepEqual(findingsOf("| 給付金 | 日数 | 日額 | 金額 |\n| --- | --- | --- | --- |\n| 付添 | 6時間 | 5,000円 | 10,000円 |\n"), []);
+    assert.deepEqual(findingsOf("| 品目 | 数量 | 日数 | 単価 | 金額 |\n| --- | --- | --- | --- | --- |\n| 足場 | 2 | 5日 | 1,000円 | 10,000円 |\n"), []);
+  });
+
   it("申込とチケットの明細の人数・枚数の列を数量と読む", () => {
     const order = (heading: string, row: string): string => [heading, "| --- | --- | --- | --- |", row].join("\n") + "\n";
     assert.deepEqual(findingsOf(order("| 席種 | 枚数 | 単価 | 金額 |", "| S席 | 2枚 | 8,200円 | 15,600円 |")), [

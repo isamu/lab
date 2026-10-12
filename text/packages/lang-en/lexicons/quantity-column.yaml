@@ -15,3 +15,6 @@ entries:
   - { pattern: Miles, group: mile }
   # The months of a rent statement (monthly × months = annual).
   - { pattern: Months, group: month }
+  # The days of a benefit statement (daily benefit × days = benefit).
+  - { pattern: Days, group: day }
+  - { pattern: Days in hospital, group: day }
