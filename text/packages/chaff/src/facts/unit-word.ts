@@ -37,7 +37,7 @@ export const standsAsUnitWord = (pattern: string, needsContext: boolean, after: 
   return !WORD_CHAR.test(after.charAt(0)) && !CONTINUED.test(after);
 };
 
-const ENDS_DIGIT = /[0-9]$/u;
+const ENDS_DIGIT = /\d$/u;
 const STARTS_WORD = /^[\p{Script=Latin}\p{N}]/u;
 
 /**
