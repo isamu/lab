@@ -172,6 +172,24 @@ describe("total-mismatch", () => {
     });
   });
 
+  it("a week, month, quarter or day total is a total line too: 週計, 月計, Week total, Month total", () => {
+    const shifts = (label: string, total: string): string =>
+      doc("| 日付 | 実働 |", "| --- | --- |", "| 9月1日 | 8.0時間 |", "| 9月2日 | 9.5時間 |", "| 9月3日 | 7.0時間 |", `| ${label} | ${total} |`);
+    ["週計", "週合計", "月計", "月合計", "日計"].forEach((label) => {
+      assert.deepEqual(found(shifts(label, "25.5時間"), ja, "ja"), ["25.5時間≠24.50時間"], label);
+      assert.deepEqual(found(shifts(label, "24.5時間"), ja, "ja"), [], label);
+    });
+    const english = (label: string, total: string): string =>
+      doc("| Date | Hours |", "| --- | --- |", "| Mon, Sep 14 | 8.00 |", "| Tue, Sep 15 | 9.50 |", "| Wed, Sep 16 | 7.00 |", `| ${label} | ${total} |`);
+    ["Week total", "Month total", "Quarter total", "Day total"].forEach((label) => {
+      assert.deepEqual(found(english(label, "25.50")), ["25.50≠24.50"], label);
+      assert.deepEqual(found(english(label, "24.50")), [], label);
+    });
+    ["Prior-week total", "Last week total", "Week of Sep 7 total"].forEach((label) => assert.deepEqual(found(english(label, "25.50")), [], label));
+    assert.deepEqual(found(english("Week total", "98.00")), ["98.00≠24.50"]);
+    assert.deepEqual(found(shifts("週計", "98.0時間"), ja, "ja"), ["98.0時間≠24.50時間"]);
+  });
+
   it("a total naming a shorter span is a total line too: Week total, Weekly total, Month total", () => {
     const week = (label: string, total: string): string =>
       doc("| Date | Hours |", "| --- | --- |", "| Mon | 8.00 |", "| Tue | 9.50 |", "| Wed | 8.50 |", `| ${label} | ${total} |`);

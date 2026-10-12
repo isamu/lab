@@ -1,6 +1,7 @@
 # 見出しで番号を持つ語。heading-numbering-mix が番号の書き方を読む。position は語が番号のどちら側に立つか。
 # after は番号の後ろ（第1章、2節）で、頭の「第」は有っても無くてもよい。before は番号の前（ステップ1、Chapter 2）。
 # 日本語の文書も英語の区切りの名前（Chapter 1）を見出しに使うので、英語の語も置く。
+# 期間や催しを名指す語（第1週、1日目、第3回、Week 1）は置かない。「第1回」「第2回」の隣の「今後の予定」は、番号の抜けた回ではない。
 id: heading-number-label
 language: ja
 entries:
@@ -11,8 +12,6 @@ entries:
   - pattern: 部
     position: after
   - pattern: 編
-    position: after
-  - pattern: 回
     position: after
   - pattern: ステップ
     position: before
