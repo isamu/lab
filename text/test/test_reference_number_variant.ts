@@ -202,7 +202,9 @@ describe("reference-number-variant", () => {
   it("en: a quote number is never compared with an order or invoice number, and a bare quote is not a label", () => {
     assert.deepEqual(found(docEn("Quote number: RQ-731852", "", "Order number: RQ-731582"), en), []);
     assert.deepEqual(found(docEn("Invoice number: RQ-731852", "", "Estimate No. RQ-731582"), en), []);
-    assert.deepEqual(found(docEn("Quote number: RQ-731852", "", "Any change to quote RQ-731582 is quoted again."), en), []);
+    // A bare "quote" labels nothing; the code after it is still an unlabelled swap of the labelled quote number.
+    assert.deepEqual(found(docEn("Quote number: RQ-731852", "", "Any change to quote RQ-731582 is quoted again."), en), [5]);
+    assert.deepEqual(found(docEn("Order number: PO-55120", "", "Please quote 731582 when you call."), en), []);
   });
 
   it("ja: 契約番号・賃貸借契約番号・契約No. の、隣り合う文字の入れ違いを指す", () => {
