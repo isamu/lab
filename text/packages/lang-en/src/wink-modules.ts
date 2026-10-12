@@ -9,3 +9,9 @@ export const winkPosTagger = (): unknown => require("wink-pos-tagger");
 
 /** The vocabulary the tagger reads (word → Penn Treebank tags): the one wink-pos-tagger loads from its own dependency. */
 export const winkLexiconWords = (): unknown => createRequire(require.resolve("wink-pos-tagger"))("wink-lexicon/src/lexicon.js");
+
+/** WordNet's words (word → index) and each index's senses (lexicographer file numbers): the two the tagger reads for words its vocabulary lacks. */
+export const winkWordNet = (): { readonly words: unknown; readonly senses: unknown } => {
+  const fromTagger = createRequire(require.resolve("wink-pos-tagger"));
+  return { words: fromTagger("wink-lexicon/src/wn-words.js"), senses: fromTagger("wink-lexicon/src/wn-word-senses.js") };
+};

@@ -105,6 +105,21 @@ describe("name-variant: 同じ名前の書き分け", () => {
     assert.deepEqual(variants("高い山と髙い山。高橋さんは来ます。\n", ja), []);
   });
 
+  it("a given name after to (returned to Helen) is read as a name, not as a verb", () => {
+    assert.deepEqual(variants("Customer: Helen Marsh\n\nThe keys were handed to Helen Marsh. The parts were returned to Helen Marhs.\n"), [
+      '"Helen Marhs" is one letter away from "Helen Marsh", which the document uses more than once',
+    ]);
+    assert.deepEqual(variants("The car belongs to Sarah Brennan. Sarah Brennan paid. The receipt went to Sarah Brenann.\n"), [
+      '"Sarah Brenann" is one letter away from "Sarah Brennan", which the document uses more than once',
+    ]);
+  });
+
+  it("a street, a road or an office after to is not compared with a person's name", () => {
+    assert.deepEqual(variants("The shop moved to Helen Street. Helen Marsh runs it. Helen Marsh opens it daily.\n"), []);
+    assert.deepEqual(variants("Turn left to Marsh Road. Helen Marsh lives on Marsh Road. Send forms to Main Office. Helen Marsh works at Main Office.\n"), []);
+    assert.deepEqual(variants("Questions go to Helen Marsh. Helen Marsh answers them. Rent is paid to Helen Mars Ltd.\n"), []);
+  });
+
   it("名前を一つの書き方でだけ書いた文書は言わない", () => {
     assert.deepEqual(variants("斎藤様\n\n斎藤様と松本様に、よろしくお伝えください。\n", ja), []);
   });
