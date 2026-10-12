@@ -1,0 +1,243 @@
+{
+  "note": "Self-written school trip notices to parents (a three-day school trip and a two-day outdoor school, in each language), each in a clean version and a planted one that differs only on the lines below. The school trip letters run as business/email, since each is a letter (拝啓, Dear Parents and Carers); the outdoor school notices as business/press-release, the genre for public notices. There is no school genre. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line (or on its pairedLine). The cost per student times the number of students is a sentence in the school trip letters (line-amount-mismatch reads only tables, so it is named as the rule that should) and table rows in the outdoor school notices. The installments are a table or a list, with the trip fee stated apart and no total row; installment-total-mismatch is named as the rule that should add them up against the fee. The return date is a labelled line after the departure line in the letters (due-before-issue compares labelled pairs) and the end of one range in the notices (date-range-reversed). The payment deadline is a date in the payment table or list, after the trip's departure; deadline-after-event is named as the rule that should read the departure date as the event and a payment deadline as a deadline. The meeting time is a labelled line before the departure line, or a row of the day's schedule (time-order). yarn planted schooltrips scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/school-trip",
+      "language": "ja",
+      "genre": "business/email",
+      "clean": "ja/school-trip.clean.md",
+      "planted": "ja/school-trip.planted.md",
+      "mistakes": [
+        {
+          "kind": "per-student-total",
+          "rule": "line-amount-mismatch",
+          "line": 37,
+          "clean": "総額は7,688,000円",
+          "planted": "総額は7,868,000円"
+        },
+        {
+          "kind": "installments-not-fee",
+          "rule": "installment-total-mismatch",
+          "line": 43,
+          "clean": "| 第1回 | 32,000円",
+          "planted": "| 第1回 | 30,000円"
+        },
+        {
+          "kind": "return-before-departure",
+          "rule": "due-before-issue",
+          "line": 23,
+          "pairedLine": 21,
+          "clean": "帰着日：2026年6月19日（金）",
+          "planted": "帰着日：2026年6月15日（月）"
+        },
+        {
+          "kind": "payment-after-departure",
+          "rule": "deadline-after-event",
+          "line": 44,
+          "clean": "| 2026年6月5日（金）",
+          "planted": "| 2026年6月26日（金）"
+        },
+        {
+          "kind": "announced-count",
+          "rule": "announced-count-mismatch",
+          "line": 50,
+          "clean": "次の7点",
+          "planted": "次の6点"
+        },
+        {
+          "kind": "meeting-after-departure",
+          "rule": "time-order",
+          "line": 25,
+          "pairedLine": 27,
+          "clean": "集合時刻：7:30",
+          "planted": "集合時刻：8:15"
+        },
+        {
+          "kind": "teacher-two-ways",
+          "rule": "name-variant",
+          "line": 31,
+          "clean": "引率責任者：山田健一",
+          "planted": "引率責任者：山田健市"
+        }
+      ]
+    },
+    {
+      "id": "ja/outdoor-school",
+      "language": "ja",
+      "genre": "business/press-release",
+      "clean": "ja/outdoor-school.clean.md",
+      "planted": "ja/outdoor-school.planted.md",
+      "mistakes": [
+        {
+          "kind": "per-student-total",
+          "rule": "line-amount-mismatch",
+          "line": 40,
+          "clean": "| 129,000円 |",
+          "planted": "| 139,000円 |"
+        },
+        {
+          "kind": "installments-not-fee",
+          "rule": "installment-total-mismatch",
+          "line": 45,
+          "clean": "第1回：7,000円",
+          "planted": "第1回：8,000円"
+        },
+        {
+          "kind": "return-before-departure",
+          "rule": "date-range-reversed",
+          "line": 11,
+          "clean": "〜7月10日（金）",
+          "planted": "〜7月8日（水）"
+        },
+        {
+          "kind": "payment-after-departure",
+          "rule": "deadline-after-event",
+          "line": 46,
+          "clean": "2026年6月30日（火）",
+          "planted": "2026年7月17日（金）"
+        },
+        {
+          "kind": "announced-count",
+          "rule": "announced-count-mismatch",
+          "line": 50,
+          "clean": "次の4点",
+          "planted": "次の5点"
+        },
+        {
+          "kind": "meeting-after-departure",
+          "rule": "time-order",
+          "line": 23,
+          "pairedLine": 24,
+          "clean": "| 7:45 | 校庭に集合",
+          "planted": "| 8:25 | 校庭に集合"
+        },
+        {
+          "kind": "teacher-two-ways",
+          "rule": "name-variant",
+          "line": 17,
+          "clean": "引率責任者：斎藤直樹",
+          "planted": "引率責任者：斉藤直樹"
+        }
+      ]
+    },
+    {
+      "id": "en/school-trip",
+      "language": "en",
+      "genre": "business/email",
+      "clean": "en/school-trip.clean.md",
+      "planted": "en/school-trip.planted.md",
+      "mistakes": [
+        {
+          "kind": "per-student-total",
+          "rule": "line-amount-mismatch",
+          "line": 27,
+          "clean": "total cost of the trip is £37,200",
+          "planted": "total cost of the trip is £38,200"
+        },
+        {
+          "kind": "installments-not-fee",
+          "rule": "installment-total-mismatch",
+          "line": 33,
+          "clean": "| 1st payment | £150",
+          "planted": "| 1st payment | £170"
+        },
+        {
+          "kind": "return-before-departure",
+          "rule": "due-before-issue",
+          "line": 13,
+          "pairedLine": 11,
+          "clean": "Return: Friday 19 June 2026",
+          "planted": "Return: Monday 15 June 2026"
+        },
+        {
+          "kind": "payment-after-departure",
+          "rule": "deadline-after-event",
+          "line": 34,
+          "clean": "Friday 5 June 2026",
+          "planted": "Friday 26 June 2026"
+        },
+        {
+          "kind": "announced-count",
+          "rule": "announced-count-mismatch",
+          "line": 40,
+          "clean": "following seven items",
+          "planted": "following six items"
+        },
+        {
+          "kind": "meeting-after-departure",
+          "rule": "time-order",
+          "line": 15,
+          "pairedLine": 17,
+          "clean": "Meeting time: 7:30 am",
+          "planted": "Meeting time: 8:15 am"
+        },
+        {
+          "kind": "teacher-two-ways",
+          "rule": "name-variant",
+          "line": 21,
+          "clean": "Trip leader: Mr Daniel Whitfield",
+          "planted": "Trip leader: Mr Daniel Whitefield"
+        }
+      ]
+    },
+    {
+      "id": "en/outdoor-school",
+      "language": "en",
+      "genre": "business/press-release",
+      "clean": "en/outdoor-school.clean.md",
+      "planted": "en/outdoor-school.planted.md",
+      "mistakes": [
+        {
+          "kind": "per-student-total",
+          "rule": "line-amount-mismatch",
+          "line": 40,
+          "clean": "| $1,290 |",
+          "planted": "| $1,390 |"
+        },
+        {
+          "kind": "installments-not-fee",
+          "rule": "installment-total-mismatch",
+          "line": 45,
+          "clean": "First payment: $70",
+          "planted": "First payment: $80"
+        },
+        {
+          "kind": "return-before-departure",
+          "rule": "date-range-reversed",
+          "line": 11,
+          "clean": "– Friday, July 10, 2026",
+          "planted": "– Wednesday, July 8, 2026"
+        },
+        {
+          "kind": "payment-after-departure",
+          "rule": "deadline-after-event",
+          "line": 46,
+          "clean": "Tuesday, June 30, 2026",
+          "planted": "Friday, July 17, 2026"
+        },
+        {
+          "kind": "announced-count",
+          "rule": "announced-count-mismatch",
+          "line": 50,
+          "clean": "following four items",
+          "planted": "following five items"
+        },
+        {
+          "kind": "meeting-after-departure",
+          "rule": "time-order",
+          "line": 23,
+          "pairedLine": 24,
+          "clean": "| 7:45 AM | Meet",
+          "planted": "| 8:25 AM | Meet"
+        },
+        {
+          "kind": "teacher-two-ways",
+          "rule": "name-variant",
+          "line": 17,
+          "clean": "Trip leader: Ms. Rebecca Lindqvist",
+          "planted": "Trip leader: Ms. Rebecca Lindquist"
+        }
+      ]
+    }
+  ]
+}
