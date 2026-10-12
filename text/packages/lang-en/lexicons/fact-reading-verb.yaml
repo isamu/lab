@@ -1,0 +1,9 @@
+# Verbs that give a gauge's reading (fact-conflict): "The odometer read 45,210 km." Read only before a quantity with a
+# measure unit (km, kg, kWh), so "He read 3 chapters" and "The survey showed 40%" are not values.
+id: fact-reading-verb
+language: en
+entries:
+  - pattern: read
+  - pattern: reads
+  - pattern: showed
+  - pattern: shows

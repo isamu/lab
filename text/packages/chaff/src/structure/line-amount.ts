@@ -14,7 +14,7 @@ import { perUnitPrice, priceHeadingUnit, quantityUnit, unitsAgree, type UnitWord
  * 単価と金額は、数の前後に書いた印（$、円、万円）が同じときだけ比べる。端数は切り捨て・四捨五入・切り上げのどれでもよい。
  * 単価が何かあたり（$100/hour、月額、Rate の列）なら、数量がその単位か単位の無い数のときだけ比べる。何あたりか言わない
  * Rate の列は、数量の見出しが単位を言えば（Hours、Miles）その単位あたりと読む。発注・納品・残の数量の列（order-quantity-column）
- * が並ぶ納品書では、どれか一つの数量で金額になれば合っていると読む。Pure.
+ * が並ぶ納品書では、どれか一つの数量で金額になれば合っていると読む。商品カタログでは入数 × 単価を1箱の価格と比べる。Pure.
  */
 export type LineAmountWords = {
   readonly quantity: readonly string[];
@@ -30,12 +30,19 @@ export type LineAmountWords = {
   readonly measureUnits: readonly string[];
   /** Heading words of a delivery note's ordered, delivered and backordered counts (order-quantity-column). */
   readonly orderRoles: readonly QuantityWord[];
+  /** Headings of a catalog's count per pack (入数, Pack of) and of its pack price (1箱の価格, Pack price). */
+  readonly packCount: readonly string[];
+  readonly packPrice: readonly string[];
+  /** Headings of the column naming the goods (品名, Description): a number in a name is no discount. */
+  readonly itemName: readonly string[];
+  /** Words saying an amount includes tax (税込, incl.): such a column restates the amount and does not change it. */
+  readonly taxIncluded: readonly string[];
 };
 
-type Cell = { readonly start: number; readonly text: string };
+export type Cell = { readonly start: number; readonly text: string };
 
 /** A number with what is written before and after it in one cell: "$1,500.00" is $ 1500 "", "15万円" is "" 15 万円. */
-type CellNumber = {
+export type CellNumber = {
   readonly before: string;
   readonly value: number;
   readonly after: string;
@@ -50,7 +57,7 @@ const ONE_NUMBER = /^([^\d]*?)(\d{1,3}(?:,\d{3})+|\d+)(\.\d+)?([^\d]*)$/u;
 const LEADING_NUMBER = /^(\d{1,3}(?:,\d{3})+|\d+)(\.\d+)?(?![\d,])/u;
 const NEGATIVE = /[-−▲△(（]/u;
 
-const cellsOf = (line: Line): Cell[] => {
+export const cellsOf = (line: Line): Cell[] => {
   const bounds = [-1, ...[...line.text.matchAll(CELL_SEPARATOR)].map((match) => match.index), line.text.length];
   const cells = bounds.slice(1).map((end, index) => {
     const from = (bounds[index] ?? 0) + 1;
@@ -60,7 +67,7 @@ const cellsOf = (line: Line): Cell[] => {
   return cells.slice(trimmed.startsWith("|") ? 1 : 0, trimmed.endsWith("|") ? cells.length - 1 : cells.length);
 };
 
-const plain = (text: string): string => text.normalize("NFKC").replace(/[*_`]/gu, "").trim();
+export const plain = (text: string): string => text.normalize("NFKC").replace(/[*_`]/gu, "").trim();
 
 /** The one number of a price cell with its marks, undefined when the cell holds none, more, or a negative one. */
 export const cellNumber = (cell: Cell): CellNumber | undefined => {
@@ -116,6 +123,8 @@ type Table = {
   readonly amount: number;
   /** The unit an amount heading says its quantity must count (年額 is months × a monthly price), undefined when it says none. */
   readonly amountCounts: string | undefined;
+  /** Columns whose numbers do not change the amount (an item's name, the amount restated with tax, an order beside a pack price). */
+  readonly ignored: readonly number[];
 };
 
 /** The column a mismatch is shown against: a delivery note bills what was delivered, then a plain quantity, then what was ordered. */
@@ -149,15 +158,55 @@ const quantityColumnsOf = (header: readonly Cell[], words: LineAmountWords): Omi
   return columns.length === 0 || new Set(columns.map((column) => column.kind)).size < columns.length ? undefined : columns;
 };
 
+const headingHolds = (cell: Cell, names: readonly string[]): boolean => names.some((name) => holds(plain(cell.text).toLowerCase(), name));
+
+/** A heading without its bracketed note: "1箱の価格（税込・10%）" and "Pack price (excl. tax)" are "1箱の価格" and "pack price". */
+const headingBase = (cell: Cell): string =>
+  plain(cell.text)
+    .replace(/\([^()]*\)/gu, "")
+    .trim()
+    .toLowerCase();
+
+/**
+ * The columns whose numbers say nothing about the amount: an item's name (A5), and the amount again with tax — a heading
+ * that says tax is included and is the amount heading but for its bracketed note (1箱の価格（税込） beside 1箱の価格（税抜）).
+ * "金額のうち値引き" is no such heading, so its numbers still keep the row from being compared.
+ */
+const ignoredColumnsOf = (header: readonly Cell[], amount: number, words: LineAmountWords): number[] => {
+  const amountCell = header[amount];
+  return header.flatMap((cell, index) => {
+    const restated = amountCell !== undefined && index !== amount && headingHolds(cell, words.taxIncluded) && headingBase(cell) === headingBase(amountCell);
+    return restated || columnNamed([cell], words.itemName) === 0 ? [index] : [];
+  });
+};
+
+const distinct = (indexes: readonly number[]): boolean => indexes.every((index) => index >= 0) && new Set(indexes).size === indexes.length;
+
 const tableOf = (header: readonly Cell[], words: LineAmountWords): Table | undefined => {
   const quantities = quantityColumnsOf(header, words);
   const [unitPrice, amount] = [columnNamed(header, words.unitPrice), columnNamed(header, words.amount)];
-  if (quantities === undefined || unitPrice < 0 || amount < 0 || unitPrice === amount) return undefined;
+  if (quantities === undefined || !distinct([unitPrice, amount])) return undefined;
   if (quantities.some((column) => column.index === unitPrice || column.index === amount)) return undefined;
   const priceUnit = headerUnit(header[unitPrice], words);
   const rateUnits = words.units.map((word) => word.unit);
   const columns = quantities.map((column) => ({ ...column, priceUnit: priceHeadingUnit(priceUnit, column.unit, rateUnits) }));
-  return { quantities: columns, unitPrice, amount, amountCounts: headerUnit(header[amount], words) };
+  return { quantities: columns, unitPrice, amount, amountCounts: headerUnit(header[amount], words), ignored: ignoredColumnsOf(header, amount, words) };
+};
+
+/**
+ * A catalog's pack: count per pack × unit price = pack price. The count is no order quantity, so it is read only beside
+ * a pack price heading; an order's quantity and amount columns beside them (数量 × 1箱の価格 = 金額) do not change the pack price.
+ * An amount column without an order quantity is not known to be an order's, so its numbers still keep the row out.
+ */
+const packTableOf = (header: readonly Cell[], words: LineAmountWords): Table | undefined => {
+  const [count, unitPrice, amount] = [columnNamed(header, words.packCount), columnNamed(header, words.unitPrice), columnNamed(header, words.packPrice)];
+  if (!distinct([count, unitPrice, amount])) return undefined;
+  const quantities = header.flatMap((cell, index) => (kindOf(cell, words) === undefined ? [] : [index]));
+  const lineAmount = columnNamed(header, words.amount);
+  const order = quantities.length > 0 && lineAmount >= 0 ? [...quantities, lineAmount] : quantities;
+  const priceUnit = headerUnit(header[unitPrice], words);
+  const quantity: QuantityColumn = { index: count, kind: "quantity", unit: undefined, priceUnit };
+  return { quantities: [quantity], unitPrice, amount, amountCounts: undefined, ignored: [...order, ...ignoredColumnsOf(header, amount, words)] };
 };
 
 /** The unit the quantity cell counts: its own word, else its heading's ("Hours"). */
@@ -167,7 +216,7 @@ const rowQuantityUnit = (cell: Cell, column: QuantityColumn, words: LineAmountWo
 };
 
 /** quantity × price, written the way the amount cell writes its number (grouping, decimals, marks). */
-const shownExpected = (amount: CellNumber, exactCents: number): string => {
+export const shownExpected = (amount: CellNumber, exactCents: number): string => {
   const exact = exactCents / CENTS;
   const decimals = Number.isInteger(Math.round(exact * CENTS) / CENTS) && amount.decimals === 0 ? 0 : Math.max(amount.decimals, 2);
   const number = exact.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals, useGrouping: amount.grouped });
@@ -190,7 +239,7 @@ const hasDigit = (cell: Cell): boolean => /\d/u.test(plain(cell.text));
 
 /** Another cell than the item name with a number in it (a discount, a tax rate): the amount may not be quantity × price alone. */
 const hasOtherNumber = (cells: readonly Cell[], table: Table): boolean =>
-  cells.some((cell, index) => index > 0 && !usedColumns(table).includes(index) && hasDigit(cell));
+  cells.some((cell, index) => index > 0 && !usedColumns(table).includes(index) && !table.ignored.includes(index) && hasDigit(cell));
 
 type Reading = { readonly column: QuantityColumn; readonly cell: Cell; readonly quantity: number };
 
@@ -244,7 +293,7 @@ const rowIssue = (row: Line, table: Table, words: LineAmountWords): StructureIss
 };
 
 /** Each table: its header row and its body rows. */
-const tablesOf = (lines: readonly Line[]): { header: Line; rows: Line[] }[] =>
+export const tablesOf = (lines: readonly Line[]): { header: Line; rows: Line[] }[] =>
   lines.flatMap((line, index) => {
     const header = lines[index - 1];
     if (!TABLE_RULE.test(line.text) || header === undefined || !header.text.includes("|")) return [];
@@ -255,6 +304,6 @@ const tablesOf = (lines: readonly Line[]): { header: Line; rows: Line[] }[] =>
 
 export const lineAmountMismatches = (source: string, words: LineAmountWords): StructureIssue[] =>
   tablesOf(linesOf(source)).flatMap(({ header, rows }) => {
-    const table = tableOf(cellsOf(header), words);
-    return table === undefined ? [] : rows.flatMap((row) => rowIssue(row, table, words));
+    const readings = [tableOf(cellsOf(header), words), packTableOf(cellsOf(header), words)];
+    return readings.flatMap((table) => (table === undefined ? [] : rows.flatMap((row) => rowIssue(row, table, words))));
   });

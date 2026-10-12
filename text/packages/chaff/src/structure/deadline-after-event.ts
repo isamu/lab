@@ -72,21 +72,31 @@ type Reading = {
   readonly sentences: readonly Span[];
 };
 
-type IsDeadline = (text: string) => boolean;
+/** 締め切りとして読んだ道。payment はチケットの注文の支払期限で、知らせの言い方を変える。 */
+export type DeadlineKind = "registration" | "payment";
 
-const deadlineReaderOf = (reading: Reading, words: EventDeadlineWords): IsDeadline => {
-  if (!isTicketOrder(reading.title, reading.source, words)) return (text) => isRegistrationDeadline(text, words);
-  return (text) => isRegistrationDeadline(text, words) || isTicketPaymentDeadline(text, words);
+export type DeadlineIssue = StructureIssue & { readonly kind: DeadlineKind };
+
+type ReadDeadline = (text: string) => DeadlineKind | undefined;
+
+const deadlineReaderOf = (reading: Reading, words: EventDeadlineWords): ReadDeadline => {
+  const ticketOrder = isTicketOrder(reading.title, reading.source, words);
+  return (text) => {
+    if (ticketOrder && isTicketPaymentDeadline(text, words)) return "payment";
+    return isRegistrationDeadline(text, words) ? "registration" : undefined;
+  };
 };
 
-const lateDeadlines = (reading: Reading, isDeadline: IsDeadline, event: string): StructureIssue[] =>
+const lateDeadlines = (reading: Reading, readDeadline: ReadDeadline, event: string): DeadlineIssue[] =>
   reading.dates.flatMap((date) => {
     if (!FULL_DATE.test(date.value) || date.value <= event) return [];
     const line = reading.lines[(lineNumberAt(reading.lines, date.offset) ?? 0) - 1];
     if (line === undefined) return [];
     const unit = unitOf(date.offset, line, reading.sentences);
-    if (datesIn(reading.dates, unit).length > 1 || !isDeadline(reading.source.slice(unit.start, unit.end))) return [];
-    return [{ offset: date.offset, values: { deadline: date.value, event } }];
+    if (datesIn(reading.dates, unit).length > 1) return [];
+    const kind = readDeadline(reading.source.slice(unit.start, unit.end));
+    if (kind === undefined) return [];
+    return [{ offset: date.offset, kind, values: { deadline: date.value, event } }];
   });
 
 /** title は文書の最初の見出しの言葉（無ければ undefined）。 */
@@ -96,7 +106,7 @@ export const deadlinesAfterEvent = (
   sentences: readonly Span[],
   words: EventDeadlineWords,
   title?: string,
-): StructureIssue[] => {
+): DeadlineIssue[] => {
   if (words.events.length === 0 || words.registrations.length === 0 || words.deadlines.length === 0) return [];
   const lines = linesOf(source);
   const event = latestOf(lines.flatMap((line) => eventDayOf(line, dates, words) ?? []));

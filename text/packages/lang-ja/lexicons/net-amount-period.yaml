@@ -1,0 +1,14 @@
+# 差し引きの名前（net-amount-label）の前に置いても、同じ名前のままの期間の語（net-amount-mismatch）。「前期分の学費」は学費、
+# 「前期分の納入額」は納入額と読む。position: before は名前の前に置く語。group はどの期かで、前期分の と 前期の は同じ期。
+# 一つの表か節で、違う期の語を除いた名前（前期分の学費と後期分の減免額）は比べない。語彙表に無い期間（前年の、前月の）は除かない。
+id: net-amount-period
+language: ja
+entries:
+  - { pattern: 前期分の, position: before, group: 前期 }
+  - { pattern: 前期の, position: before, group: 前期 }
+  - { pattern: 後期分の, position: before, group: 後期 }
+  - { pattern: 後期の, position: before, group: 後期 }
+  - { pattern: 春学期分の, position: before, group: 春学期 }
+  - { pattern: 春学期の, position: before, group: 春学期 }
+  - { pattern: 秋学期分の, position: before, group: 秋学期 }
+  - { pattern: 秋学期の, position: before, group: 秋学期 }

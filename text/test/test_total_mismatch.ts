@@ -16,6 +16,14 @@ const found = (source: string, adapter: LanguageAdapter = en, language = "en"): 
     .map((finding) => `${String(finding.values["written"])}≠${String(finding.values["sum"])}`);
 
 const doc = (...lines: string[]): string => ["# Quote", "", ...lines].join("\n");
+/** 日ごとの稼働の表。最後の升が合計の行。 */
+const worked = (...cells: string[]): string =>
+  doc(
+    "| 日付 | 稼働 |",
+    "| --- | --- |",
+    ...cells.slice(0, -1).map((cell, index) => `| ${String(index + 1)}日 | ${cell} |`),
+    `| 合計 | ${cells.at(-1) ?? ""} |`,
+  );
 const fixture = (name: string): string => readFileSync(new URL(`fixtures/totals/${name}`, import.meta.url), "utf8");
 
 describe("total-mismatch", () => {
@@ -80,6 +88,30 @@ describe("total-mismatch", () => {
     assert.deepEqual(found(table), ["13≠12"]);
   });
 
+  it("hours and minutes written together are one length: 9時間30分 is 9.5 hours, 7 hours 30 minutes is 7.5", () => {
+    assert.deepEqual(found(worked("8時間", "9時間30分", "7時間30分", "25時間"), ja, "ja"), []);
+    assert.deepEqual(found(worked("8時間", "9時間30分", "7時間30分", "24時間"), ja, "ja"), ["24時間≠25時間"]);
+    assert.deepEqual(found(worked("8時間", "9時間30分", "7時間", "24時間30分"), ja, "ja"), []);
+    assert.deepEqual(found(worked("8時間", "7時間半", "15時間30分"), ja, "ja"), []);
+    assert.deepEqual(found(worked("8時間", "7時間半", "16時間"), ja, "ja"), ["16時間≠15.50時間"]);
+    assert.deepEqual(found(worked("90分", "30分", "120分"), ja, "ja"), []);
+    assert.deepEqual(found(worked("90分", "30分", "130分"), ja, "ja"), ["130分≠120分"]);
+    const english = (total: string): string =>
+      doc("| Day | Hours |", "| --- | --- |", "| Mon | 8 hours |", "| Tue | 7 hours 30 minutes |", "| Wed | 9 hours 15 minutes |", `| Total | ${total} |`);
+    assert.deepEqual(found(english("24.75 hours")), []);
+    assert.deepEqual(found(english("24 hours")), ["24≠24.75"]);
+  });
+
+  it("a column of lengths chaff cannot read exactly is not added: 75 minutes past the hour, 20 minutes, 9 h", () => {
+    assert.deepEqual(found(worked("8時間", "9時間75分", "99時間"), ja, "ja"), []);
+    assert.deepEqual(found(worked("8時間", "9時間20分", "8時間40分", "99時間"), ja, "ja"), []);
+    assert.deepEqual(found(worked("8時間", "90分", "99時間"), ja, "ja"), []);
+    const english = (total: string): string =>
+      doc("| Day | Hours |", "| --- | --- |", "| Mon | 8 hours |", "| Tue | 9 h |", "| Wed | 7 hours |", `| Total | ${total} |`);
+    assert.deepEqual(found(english("24 hours")), []);
+    assert.deepEqual(found(english("99 hours")), []);
+  });
+
   it("two columns in one unit, a unit price and an amount: the total's own column is added", () => {
     const table = doc("| Item | Unit price | Amount |", "| --- | --- | --- |", "| A | $100 | $200 |", "| B | $50 | $150 |", "| Total | | $400 |");
     assert.deepEqual(found(table), ["$400≠$350"]);
@@ -108,6 +140,47 @@ describe("total-mismatch", () => {
       assert.deepEqual(found(costs(label, "$2,030")), [], label);
     });
     ["Total area", "Total floor space", "Total tax", "Rent per month"].forEach((label) => assert.deepEqual(found(costs(label, "$2,180")), [], label));
+  });
+
+  it("a total naming what a section of an account adds up is a total line: Total income, Total expenditure", () => {
+    const section = (label: string, total: string): string =>
+      doc("| Item | Amount |", "| --- | --- |", "| Hall hire | $300.00 |", "| Raffle | $125.50 |", "| Donations | $80.00 |", `| ${label} | ${total} |`);
+    ["Total income", "Total expenditure", "Total expenses", "Total receipts", "Total payments", "Total revenue"].forEach((label) => {
+      assert.deepEqual(found(section(label, "$550.50")), ["$550.50≠$505.50"], label);
+      assert.deepEqual(found(section(label, "$505.50")), [], label);
+    });
+    ["Total taxable income", "Total income tax", "Income total"].forEach((label) => assert.deepEqual(found(section(label, "$550.50")), [], label));
+  });
+
+  it("an income section and an expense section in one table: each total adds only its own section", () => {
+    const account = (expenses: string): string =>
+      doc(
+        "| Item | Amount |",
+        "| --- | --- |",
+        "| Sales | $4,000 |",
+        "| Interest | $50 |",
+        "| Total income | $4,050 |",
+        "| Rent | $1,200 |",
+        "| Wages | $2,000 |",
+        `| Total expenses | ${expenses} |`,
+      );
+    assert.deepEqual(found(account("$3,200")), []);
+    assert.deepEqual(
+      found(account("$3,300")).map((finding) => finding.split("≠")[0]),
+      ["$3,300"],
+    );
+  });
+
+  it("a summary of section totals between two balances is not a sum of the rows above it", () => {
+    const summary = doc(
+      "| Item | Amount |",
+      "| --- | --- |",
+      "| Balance brought forward | $612.30 |",
+      "| Total income | $1,352.50 |",
+      "| Total expenditure | $1,211.00 |",
+      "| Balance carried forward | $753.80 |",
+    );
+    assert.deepEqual(found(summary), []);
   });
 
   it("a total naming the span it covers is a total line: 年間合計, 年計, Total for the year, Year total", () => {
@@ -140,6 +213,36 @@ describe("total-mismatch", () => {
     });
   });
 
+  it("a week, month, quarter or day total is a total line too: 週計, 月計, Week total, Month total", () => {
+    const shifts = (label: string, total: string): string =>
+      doc("| 日付 | 実働 |", "| --- | --- |", "| 9月1日 | 8.0時間 |", "| 9月2日 | 9.5時間 |", "| 9月3日 | 7.0時間 |", `| ${label} | ${total} |`);
+    ["週計", "週合計", "月計", "月合計", "日計"].forEach((label) => {
+      assert.deepEqual(found(shifts(label, "25.5時間"), ja, "ja"), ["25.5時間≠24.50時間"], label);
+      assert.deepEqual(found(shifts(label, "24.5時間"), ja, "ja"), [], label);
+    });
+    const english = (label: string, total: string): string =>
+      doc("| Date | Hours |", "| --- | --- |", "| Mon, Sep 14 | 8.00 |", "| Tue, Sep 15 | 9.50 |", "| Wed, Sep 16 | 7.00 |", `| ${label} | ${total} |`);
+    ["Week total", "Month total", "Quarter total", "Day total"].forEach((label) => {
+      assert.deepEqual(found(english(label, "25.50")), ["25.50≠24.50"], label);
+      assert.deepEqual(found(english(label, "24.50")), [], label);
+    });
+    ["Prior-week total", "Last week total", "Week of Sep 7 total"].forEach((label) => assert.deepEqual(found(english(label, "25.50")), [], label));
+    assert.deepEqual(found(english("Week total", "98.00")), ["98.00≠24.50"]);
+    assert.deepEqual(found(shifts("週計", "98.0時間"), ja, "ja"), ["98.0時間≠24.50時間"]);
+  });
+
+  it("a total naming a shorter span is a total line too: Week total, Weekly total, Month total", () => {
+    const week = (label: string, total: string): string =>
+      doc("| Date | Hours |", "| --- | --- |", "| Mon | 8.00 |", "| Tue | 9.50 |", "| Wed | 8.50 |", `| ${label} | ${total} |`);
+    ["Week total", "Weekly total", "Month total", "Quarter total", "Day total"].forEach((label) => {
+      assert.deepEqual(found(week(label, "28.00")), ["28.00≠26.00"], label);
+      assert.deepEqual(found(week(label, "26.00")), [], label);
+    });
+    ["Prior-week total", "Week-to-date total", "Week ending"].forEach((label) => assert.deepEqual(found(week(label, "28.00")), [], label));
+    const scaled = doc("| Date | Hours |", "| --- | --- |", "| Mon | 2 |", "| Tue | 3 |", "| Wed | 5 |", "| Week total | 40 |");
+    assert.deepEqual(found(scaled), ["40≠10"]);
+  });
+
   it("a prior span's total is not this table's total, and a span total that scales the items to the span is not compared", () => {
     const withheld = (label: string): string =>
       doc("| 支払月 | 源泉徴収税額 |", "| --- | --- |", "| 1月 | 6,320円 |", "| 2月 | 6,320円 |", `| ${label} | 75,000円 |`);
@@ -158,6 +261,20 @@ describe("total-mismatch", () => {
     assert.deepEqual(found(doc("| Budget item | Amount |", "| --- | --- |", "| Software | $500 |", "| Support | $250 |", "| Annual total | $1,500 |")), [
       "$1,500≠$750",
     ]);
+  });
+
+  it("年額 closes a table as the year's total, and a 年額 that is the monthly items times twelve is not compared", () => {
+    const installments = (second: string): string =>
+      doc("| 回 | 金額 |", "| --- | --- |", "| 前期分 | 820,000円 |", `| 後期分 | ${second} |`, "| 年額 | 1,390,000円 |");
+    assert.deepEqual(found(installments("580,000円"), ja, "ja"), ["1,390,000円≠1,400,000円"]);
+    assert.deepEqual(found(installments("570,000円"), ja, "ja"), []);
+    const monthly = (total: string): string => doc("| 項目 | 月額 |", "| --- | --- |", "| 家賃 | 80,000円 |", "| 管理費 | 5,000円 |", `| 年額 | ${total} |`);
+    assert.deepEqual(found(monthly("1,020,000円"), ja, "ja"), []);
+    assert.deepEqual(found(monthly("1,030,000円"), ja, "ja"), ["1,030,000円≠85,000円"]);
+    assert.deepEqual(
+      found(doc("| 項目 | 金額 |", "| --- | --- |", "| 年額保険料 | 36,000円 |", "| 事務手数料 | 1,000円 |", "| 月額 | 3,000円 |"), ja, "ja"),
+      [],
+    );
   });
 
   it("a total with a noun is read when the table's header names the noun: 控除合計 under 控除項目, Total deductions under Deduction", () => {

@@ -1,0 +1,25 @@
+# 表の行の名前の頭に書く、数えた数の数える語（「1箱の重さ」の 箱、「1人あたりの料金」の 人）（fact-conflict）。
+# この語で数えた数は名前の一部で、数ごとに別の項目（1箱 と 2箱）。年・月・日・時間は入れない（「1日の」は日付とも読め、「2026年の売上」は数えた数ではない）。
+id: fact-label-counter
+language: ja
+entries:
+  - pattern: 箱
+  - pattern: ケース
+  - pattern: 袋
+  - pattern: 缶
+  - pattern: 本
+  - pattern: 個
+  - pattern: 枚
+  - pattern: 台
+  - pattern: 冊
+  - pattern: 部
+  - pattern: 組
+  - pattern: セット
+  - pattern: パック
+  - pattern: 人
+  - pattern: 名
+  - pattern: 件
+  - pattern: 回
+  - pattern: 泊
+  - pattern: 室
+  - pattern: 食

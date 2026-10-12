@@ -7,18 +7,18 @@
       "tax-rate": "2/2",
       "customer-name": "2/2",
       "registration-number": "2/2",
-      "next-inspection-before-service": "0/1",
-      "odometer-two-ways": "0/1"
+      "next-inspection-before-service": "1/1",
+      "odometer-two-ways": "1/1"
     },
     "en": {
       "parts-line-amount": "2/2",
       "labour-line-amount": "2/2",
       "items-total": "2/2",
       "tax-rate": "2/2",
-      "customer-name": "1/2",
+      "customer-name": "2/2",
       "registration-number": "0/2",
-      "next-inspection-before-service": "0/1",
-      "odometer-two-ways": "0/1"
+      "next-inspection-before-service": "1/1",
+      "odometer-two-ways": "1/1"
     }
   },
   "clean": []

@@ -1,0 +1,9 @@
+# The units a tier's threshold is counted in (tier-threshold-mismatch). A tier's band and the member's value are compared only
+# in one unit. Group as in range-band-unit (integer has no value between two numbers, continuous does); position before is a
+# unit written before the number ($5). A plural is the same unit as its singular.
+id: tier-unit
+language: en
+entries:
+  - { pattern: points, group: integer }
+  - { pattern: nights, group: integer }
+  - { pattern: $, group: continuous, position: before }

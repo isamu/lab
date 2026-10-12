@@ -1,0 +1,14 @@
+# 価格表で、税抜の価格の列と税込の価格の列を見分ける語（tax-mismatch）。group: excluded は税抜、included は税込。
+# この語と率（10%）を除くと同じ見出しになる二つの列（「1箱の価格（税抜）」と「1箱の価格（税込・10%）」）を、同じ品物の
+# 税抜と税込の価格として行ごとに比べる。group: rate は、表の外の文でこの語のすぐ前かすぐ後の率を税率と読む語（消費税10%）。
+id: tax-price-column
+language: ja
+entries:
+  - { pattern: 税抜き, group: excluded }
+  - { pattern: 税抜, group: excluded }
+  - { pattern: 税別, group: excluded }
+  - { pattern: 本体価格, group: excluded }
+  - { pattern: 税込み, group: included }
+  - { pattern: 税込, group: included }
+  - { pattern: 消費税, group: rate }
+  - { pattern: 税率, group: rate }

@@ -6,8 +6,9 @@ import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { messageOf } from "../packages/chaff/src/render/text.ts";
-import { labelledReferenceNumbers, referenceVariants } from "../packages/chaff/src/reference-numbers.ts";
+import { followingGroups, labelledReferenceNumbers, referenceVariants } from "../packages/chaff/src/reference-numbers.ts";
 import { labelledPlates, plateVariants } from "../packages/chaff/src/vehicle-plates.ts";
+import { tableCodes, tableLabelledCodes, unlabelledVariants } from "../packages/chaff/src/unlabelled-references.ts";
 import { PatternTimeout } from "../packages/chaff/src/custom/pattern-timeout.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
@@ -179,6 +180,33 @@ describe("reference-number-variant", () => {
     assert.deepEqual(found(docEn("Patient number: 7724-3168 (mother)", "", "Patient number: 7742-1368 (child)"), en), []);
   });
 
+  it("ja: 見積番号・お見積番号・見積書番号・見積No. の、隣り合う文字の入れ違いを指す", () => {
+    assert.deepEqual(found(docJa("見積番号：MT-582046", "", "見積番号MT-580246の内容に変更がある場合は、改めてお見積りします。"), ja), [5]);
+    assert.deepEqual(found(docJa("お見積番号：MT-582046", "", "見積書番号はMT-582064です。"), ja), [5]);
+    assert.deepEqual(found(docJa("見積No. MT-582046", "", "お見積番号 MT-528046"), ja), [5]);
+  });
+
+  it("ja: 見積番号は注文番号・請求書番号と比べない", () => {
+    assert.deepEqual(found(docJa("見積番号：MT-582046", "", "注文番号：MT-580246"), ja), []);
+    assert.deepEqual(found(docJa("見積番号：MT-582046", "", "請求書番号：MT-580246"), ja), []);
+    assert.deepEqual(found(docJa("発注番号：MT-582046", "", "見積No. MT-580246"), ja), []);
+  });
+
+  it("en: a quote or estimate number with two neighbouring characters swapped", () => {
+    assert.deepEqual(found(docEn("Quote number: RQ-731852", "", "Any change to quote number RQ-731582 is quoted again."), en), [5]);
+    assert.deepEqual(found(docEn("Quotation number: RQ-731852", "", "Quote No. RQ-738152"), en), [5]);
+    assert.deepEqual(found(docEn("Estimate No.: RQ-731852", "", "The estimate number is RQ-713852."), en), [5]);
+    assert.deepEqual(found(docEn("Estimate number: RQ-731852", "", "Quote no RQ-731825"), en), [5]);
+  });
+
+  it("en: a quote number is never compared with an order or invoice number, and a bare quote is not a label", () => {
+    assert.deepEqual(found(docEn("Quote number: RQ-731852", "", "Order number: RQ-731582"), en), []);
+    assert.deepEqual(found(docEn("Invoice number: RQ-731852", "", "Estimate No. RQ-731582"), en), []);
+    // A bare "quote" labels nothing; the code after it is still an unlabelled swap of the labelled quote number.
+    assert.deepEqual(found(docEn("Quote number: RQ-731852", "", "Any change to quote RQ-731582 is quoted again."), en), [5]);
+    assert.deepEqual(found(docEn("Order number: PO-55120", "", "Please quote 731582 when you call."), en), []);
+  });
+
   it("ja: 契約番号・賃貸借契約番号・契約No. の、隣り合う文字の入れ違いを指す", () => {
     assert.deepEqual(found(docJa("契約番号：KR-260417", "", "契約番号KR-260471の更新は、4月1日です。"), ja), [5]);
     assert.deepEqual(found(docJa("賃貸借契約番号：KR-260417", "", "契約番号はKR-206417です。"), ja), [5]);
@@ -225,6 +253,33 @@ describe("reference-number-variant", () => {
     assert.deepEqual(found(docEn("Contract number: TA-260417", "", "Parent contract number: TA-260147"), en), []);
   });
 
+  it("ja: 会員番号・会員ID と、空白で区切って書いた会員番号の入れ違いを指す", () => {
+    assert.deepEqual(found(docJa("会員番号：MD-30418-72", "", "お問い合わせの際は、会員番号（MD-30481-72）をお知らせください。"), ja), [5]);
+    assert.deepEqual(found(docJa("会員ID：KT20573", "", "会員IDはKT20753です。"), ja), [5]);
+    assert.deepEqual(found(docJa("会員番号：HM 5520 8137", "", "お問い合わせの際は、会員番号 HM 5520 8173 をお知らせください。"), ja), [5]);
+    assert.deepEqual(found(docJa("会員番号：5520 8137", "", "会員番号 5520 8173 の方は窓口へ。"), ja), [5]);
+  });
+
+  it("ja: 会員番号とお客様番号は比べず、空白の後ろの語や回数は番号に含めない", () => {
+    assert.deepEqual(found(docJa("会員番号：HM-55208", "", "お客様番号：HM-55280"), ja), []);
+    assert.deepEqual(found(docJa("会員番号：HM 5520 8137", "", "会員番号 HM 5520 8137 の方"), ja), []);
+    assert.deepEqual(found(docJa("会員番号 1234 様", "", "会員番号 1243 様"), ja), [5]);
+    assert.deepEqual(found(docJa("会員番号 4821 2名様", "", "会員番号 4821 3名様"), ja), []);
+  });
+
+  it("en: a member or membership number, and one written in spaced groups, with two neighbours swapped", () => {
+    assert.deepEqual(found(docEn("Member number: MD-30418-72", "", "Please give your member number (MD-30481-72)."), en), [5]);
+    assert.deepEqual(found(docEn("Membership number: HM 5520 8137", "", "Please give your member number HM 5520 8173."), en), [5]);
+    assert.deepEqual(found(docEn("Member ID: 5520 8137", "", "Member number 5520 8173 expires in May."), en), [5]);
+    assert.deepEqual(found(docEn("Member No 48215", "", "Member No. 48251"), en), [5]);
+  });
+
+  it("en: a member number is not compared with a customer number, and a word after the groups is not read", () => {
+    assert.deepEqual(found(docEn("Member number: HM-55208", "", "Customer number: HM-55280"), en), []);
+    assert.deepEqual(found(docEn("Member number: 5520 8137", "", "Member number 5520 8137 expires in May."), en), []);
+    assert.deepEqual(found(docEn("Member number 4821 2nd copy", "", "Member number 4821 3rd copy"), en), []);
+  });
+
   it("en: two writings of one former or parent contract's number with neighbours swapped are reported", () => {
     assert.deepEqual(found(docEn("Former contract number: TA-250417", "", "Former contract number TA-250471 has ended."), en), [5]);
     assert.deepEqual(found(docEn("Parent agreement number: TA-190417", "", "Parent agreement number: TA-190471"), en), [5]);
@@ -253,6 +308,42 @@ describe("reference-number-variant", () => {
     assert.deepEqual(found(docEn("Booking number: RF-62417", "", "Registration number: RF-62147"), en), []);
     assert.deepEqual(found(docEn("Registration number: RF-62417", "", "Registration number: RF-61724"), en), []);
   });
+
+  it("ja: 口座番号・口座No. と、証券番号・保険証券番号の、隣り合う数字の入れ違いを指す", () => {
+    assert.deepEqual(found(docJa("口座番号：4816203", "", "お振込みには、口座番号 4812603 をお伝えください。"), ja), [5]);
+    assert.deepEqual(found(docJa("口座No.：4816203", "", "口座番号は4816230です。"), ja), [5]);
+    assert.deepEqual(found(docJa("証券番号：57-3029184", "", "証券番号57-3092184のご契約は、引き続き有効です。"), ja), [5]);
+    assert.deepEqual(found(docJa("保険証券番号：57-3029184", "", "証券番号 57-3029148"), ja), [5]);
+  });
+
+  it("ja: 振込先・振込元の口座番号は口座自身の番号と比べず、口座番号と証券番号・契約番号も比べない", () => {
+    assert.deepEqual(found(docJa("口座番号：4816203", "", "| 9月5日 | 振込 振込先口座番号 4812603 | 30,000円 |"), ja), []);
+    assert.deepEqual(found(docJa("口座番号：4816203", "", "振込先の口座番号は4812603です。"), ja), []);
+    assert.deepEqual(found(docJa("口座番号：4816203", "", "振込元口座番号：4812603"), ja), []);
+    assert.deepEqual(found(docJa("口座番号：57-3029184", "", "証券番号：57-3092184"), ja), []);
+    assert.deepEqual(found(docJa("契約番号：57-3029184", "", "証券番号：57-3092184"), ja), []);
+    assert.deepEqual(found(docJa("契約者番号：57-3029184", "", "契約者番号：57-3092184"), ja), []);
+  });
+
+  it("ja: 振込先口座番号どうしの入れ違いは指す", () => {
+    assert.deepEqual(found(docJa("振込先口座番号：4816203", "", "振込先口座番号は4812603です。"), ja), [5]);
+  });
+
+  it("en: an account number or a policy number with two neighbouring digits swapped", () => {
+    assert.deepEqual(found(docEn("Account number: 60418273", "", "Give the payer the account number 60412873."), en), [5]);
+    assert.deepEqual(found(docEn("Account No. 60418273", "", "Your account number is 60418237."), en), [5]);
+    assert.deepEqual(found(docEn("Policy number: HL-4820-1937", "", "The cover under policy number HL-4820-1973 continues."), en), [5]);
+    assert.deepEqual(found(docEn("Insurance policy number: HL-4820-1937", "", "Policy No. HL-4802-1937"), en), [5]);
+  });
+
+  it("en: a payee's or payer's account is not compared with the account's own, nor an account number with a policy or contract number", () => {
+    assert.deepEqual(found(docEn("Account number: 60418273", "", "| Sep 5 | Transfer, payee account number 60412873 | $300.00 |"), en), []);
+    assert.deepEqual(found(docEn("Account number: 60418273", "", "Beneficiary's account number: 60412873"), en), []);
+    assert.deepEqual(found(docEn("Account number: 60418273", "", "Sender account number: 60412873"), en), []);
+    assert.deepEqual(found(docEn("Account number: HL-4820-1937", "", "Policy number: HL-4820-1973"), en), []);
+    assert.deepEqual(found(docEn("Contract number: HL-4820-1937", "", "Policy number: HL-4820-1973"), en), []);
+    assert.deepEqual(found(docEn("Policyholder number: HL-4820-1937", "", "Policyholder number: HL-4820-1973"), en), []);
+  });
 });
 
 describe("reference numbers", () => {
@@ -278,6 +369,36 @@ describe("reference numbers", () => {
     assert.deepEqual(labelledReferenceNumbers("予約番号を確認のうえMN-48215", labels), []);
     assert.deepEqual(labelledReferenceNumbers("MN-48215", []), []);
     assert.deepEqual(labelledReferenceNumbers("予約番号をお持ちください。48215席あります。", labels), []);
+  });
+
+  it("reads a number in groups one space apart as one, up to the line's end or a word that is not a code", () => {
+    const read = (text: string): string[] => labelledReferenceNumbers(text, labels).map(({ written }) => written);
+    assert.deepEqual(read("予約番号 HM 5520 8137 の方"), ["HM 5520 8137"]);
+    assert.deepEqual(read("予約番号 HM 5520 8137をお知らせ"), ["HM 5520 8137"]);
+    assert.deepEqual(read("予約番号 5520 8137\n4410 様"), ["5520 8137"]);
+    assert.deepEqual(read("予約番号 1234 様"), ["1234"]);
+    assert.deepEqual(read("予約番号 4821 2名"), ["4821"]);
+    assert.deepEqual(read("予約番号 4821 2026年"), ["4821"]);
+    assert.deepEqual(read("予約番号 4821 ABC"), ["4821"]);
+    assert.deepEqual(read("予約番号 4821 2nd"), ["4821"]);
+    assert.deepEqual(read("予約番号 4821 100 copies"), ["4821"]);
+    assert.deepEqual(read("予約番号 4821 080 1234 5678"), ["4821"]);
+    assert.deepEqual(read("予約番号 4821  5520"), ["4821"]);
+    assert.deepEqual(read("予約番号 MN-4821 5520"), ["MN-4821"]);
+    assert.deepEqual(read("予約番号 Mn 4821 5520"), []);
+    assert.deepEqual(read("予約番号 HM 12"), []);
+    assert.deepEqual(read("予約番号 ＨＭ ５５２０ ８１３７"), ["ＨＭ ５５２０ ８１３７"]);
+  });
+
+  it("reads a number in groups as its characters without the spaces, and never past the longest number", () => {
+    assert.deepEqual(labelledReferenceNumbers("予約番号 HM 5520 8137", labels)[0]?.characters, "HM55208137");
+    assert.deepEqual(labelledReferenceNumbers(`予約番号 ${Array.from({ length: 8 }, () => "1234").join(" ")}`, labels), []);
+    assert.equal(followingGroups("HM 5520 8137", 2, "HM"), " 5520 8137");
+    assert.equal(followingGroups("No 5520 8137", 2, "No"), "");
+    assert.equal(followingGroups("HM", 2, "HM"), "");
+    const runOn = `HM${" 1234".repeat(20000)}`;
+    assert.ok(followingGroups(runOn, 2, "HM").length < runOn.length);
+    assert.deepEqual(labelledReferenceNumbers(`予約番号 ${runOn}`, labels), []);
   });
 
   it("pairs the later of two equal writings with the earlier, and nothing for no numbers", () => {
@@ -367,5 +488,90 @@ describe("vehicle plates", () => {
     assert.equal(plate?.opensSentence, false);
     assert.equal(labelledPlates("点検は済みました。登録番号ひばり野 330 ね 48-15 のお車", labels, [shape])[0]?.opensSentence, true);
     assert.throws(() => labelledPlates(`登録番号 ${"a".repeat(40)}!`, labels, [{ pattern: "(?<serial>(a+)+)$", group: "vehicle" }]), PatternTimeout);
+  });
+});
+
+describe("reference-number-variant: an item code labelled once and written with no label", () => {
+  const catalogJa = (...lines: string[]): string => ["# 文具カタログ", "", ...lines, ""].join("\n");
+  const catalogEn = (...lines: string[]): string => ["# Stationery catalog", "", ...lines, ""].join("\n");
+  const specJa = ["| 項目 | 内容 |", "| --- | --- |", "| 品番 | GP-0512 |", "| 全長 | 142mm |"];
+  const specEn = ["| Item | Detail |", "| --- | --- |", "| Item code | GP-0512 |", "| Length | 142 mm |"];
+  const listJa = (...codes: string[]): string[] => ["| 品番 | 品名 |", "| --- | --- |", ...codes.map((code) => `| ${code} | ボールペン |`)];
+  const listEn = (...codes: string[]): string[] => ["| Item code | Description |", "| --- | --- |", ...codes.map((code) => `| ${code} | Gel pen |`)];
+
+  it("ja: 表や語の後ろの品番と、語の無い品番の隣り合う文字の入れ違いを指す", () => {
+    assert.deepEqual(found(catalogJa(...specJa, "", "GP-0521の替芯は13ページに載せています。"), ja), [8]);
+    assert.deepEqual(found(catalogJa(...listJa("GP-0512", "NB-5830"), "", "GP-0521の替芯は13ページに載せています。"), ja), [8]);
+    assert.deepEqual(found(catalogJa("品番：GP-0512", "", "GP-0521の替芯は13ページに載せています。"), ja), [5]);
+    assert.deepEqual(found(catalogJa("商品コード：GP-0512", "", "替芯はGP-0521用です。"), ja), [5]);
+    assert.deepEqual(messages(catalogJa("品番：GP-0512", "", "GP-0521の替芯"), ja), ["番号「GP-0521」は、「GP-0512」の隣り合う文字が入れ違っています"]);
+  });
+
+  it("ja: 表に並ぶ別の商品、語の後ろにある品番、二つの品番のどちらとも読める品番、記号の無い番号は指さない", () => {
+    assert.deepEqual(found(catalogJa(...listJa("AB-1234", "AB-1243"), "", "AB-1243の替芯は13ページです。"), ja), []);
+    assert.deepEqual(found(catalogJa(...listJa("AB-1234"), "", "品番：AB-1243", "", "AB-1243の替芯は13ページです。"), ja), []);
+    assert.deepEqual(found(catalogJa(...listJa("AB-1234", "AB-1342"), "", "AB-1324の替芯は13ページです。"), ja), []);
+    assert.deepEqual(found(catalogJa("予約番号：48215", "", "48251をお伝えください。"), ja), []);
+    assert.deepEqual(found(catalogJa("品番：GP-0512", "", "GP0521の替芯"), ja), []);
+    assert.deepEqual(found(catalogJa("GP-0512のボールペン", "", "GP-0521の替芯"), ja), []);
+    assert.deepEqual(found(catalogJa(...specJa, "", "GP-0512の替芯は13ページに載せています。"), ja), []);
+    assert.deepEqual(found(catalogJa("品番：AB-1234", "", "品番：AB-1243"), ja), []);
+  });
+
+  it("en: a code with no label that is a labelled code with two neighbours swapped", () => {
+    assert.deepEqual(found(catalogEn(...specEn, "", "Refills for GP-0521 are on page 13."), en), [8]);
+    assert.deepEqual(found(catalogEn(...listEn("GP-0512", "NB-5830"), "", "Refills for GP-0521 are on page 13."), en), [8]);
+    assert.deepEqual(found(catalogEn("SKU: GP-0512", "", "Refills for GP-0521 are on page 13."), en), [5]);
+    assert.deepEqual(found(catalogEn("Product code: GP-0512", "", "Refills for GP-0521 are on page 13."), en), [5]);
+  });
+
+  it("en: not two items a table lists, a labelled code, a code two labelled codes swap to, nor a plain number", () => {
+    assert.deepEqual(found(catalogEn(...listEn("AB-1234", "AB-1243"), "", "Refills for AB-1243 are on page 13."), en), []);
+    assert.deepEqual(found(catalogEn(...listEn("AB-1234", "AB-1342"), "", "Refills for AB-1324 are on page 13."), en), []);
+    assert.deepEqual(found(catalogEn("Booking number: 48215", "", "Please quote 48251."), en), []);
+    assert.deepEqual(found(catalogEn("GP-0512 gel pen", "", "Refills for GP-0521"), en), []);
+    assert.deepEqual(found(catalogEn("Item code: AB-1234", "", "Item code: AB-1243"), en), []);
+    assert.deepEqual(
+      found(catalogEn("Item code: AB-1234", "", "| AB-1243 | Name |", "| --- | --- |", "| refill | pen |", "", "Use the AB-1243 refill."), en),
+      [],
+    );
+  });
+
+  it("reads codes a table labels by row and by column, and every code a table lists", () => {
+    const labels = [{ pattern: "品番", group: "item" }];
+    const text = [
+      "| 品番 | GP-0512 |",
+      "| --- | --- |",
+      "| 品番 | NB-5830 |",
+      "",
+      "| 品番 | 品名 |",
+      "| --- | --- |",
+      "| CL-2804 | クリップ |",
+      "| 2026-118 | 封筒 |",
+      "",
+    ].join("\n");
+    assert.deepEqual(
+      tableLabelledCodes(text, labels).map(({ written, characters, label }) => [written, characters, label]),
+      [
+        ["NB-5830", "NB5830", "item"],
+        ["CL-2804", "CL2804", "item"],
+      ],
+    );
+    assert.deepEqual([...tableCodes(text)], ["GP0512", "NB5830", "CL2804"]);
+    assert.deepEqual(tableLabelledCodes("", labels), []);
+    assert.deepEqual(tableLabelledCodes(text, []), []);
+  });
+
+  it("matches an unlabelled code only to exactly one labelled code it is not itself", () => {
+    const anchor = { offset: 0, written: "GP-0512", characters: "GP0512", label: "item" };
+    assert.deepEqual(
+      unlabelledVariants("GP-0512 x GP-0521", [anchor], new Set()).map(({ number, other }) => [number.written, number.offset, other.written]),
+      [["GP-0521", 10, "GP-0512"]],
+    );
+    assert.deepEqual(unlabelledVariants("GP-0521", [anchor], new Set(["GP0521"])), []);
+    assert.deepEqual(unlabelledVariants("GP-0521", [], new Set()), []);
+    assert.deepEqual(unlabelledVariants("", [anchor], new Set()), []);
+    assert.deepEqual(unlabelledVariants("https://example.com/GP-0521", [anchor], new Set()), []);
+    assert.deepEqual(unlabelledVariants("12-0521", [{ ...anchor, written: "12-0512", characters: "120512" }], new Set()), []);
   });
 });

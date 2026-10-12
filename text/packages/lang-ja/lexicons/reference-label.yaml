@@ -22,6 +22,26 @@ entries:
   - { pattern: 学籍番号は, group: student }
   - { pattern: 学生番号, group: student }
   - { pattern: 学生番号は, group: student }
+  # 口座の番号。明細の振込の行に書く相手の口座は長い方の語（振込先口座番号）が勝つので、口座自身の「口座番号」とは比べない。
+  - { pattern: 口座番号, group: account }
+  - { pattern: 口座番号は, group: account }
+  - { pattern: 口座No., group: account }
+  - { pattern: 口座No, group: account }
+  - { pattern: 振込先口座番号, group: payee-account }
+  - { pattern: 振込先口座番号は, group: payee-account }
+  - { pattern: 振込先の口座番号, group: payee-account }
+  - { pattern: 振込先の口座番号は, group: payee-account }
+  - { pattern: 振込元口座番号, group: payer-account }
+  - { pattern: 振込元口座番号は, group: payer-account }
+  - { pattern: 振込元の口座番号, group: payer-account }
+  - { pattern: 振込元の口座番号は, group: payer-account }
+  # 保険証券の番号。契約者番号は契約者その人の番号で、証券ごとの番号とは別の物になり得るので入れない。
+  - { pattern: 証券番号, group: policy }
+  - { pattern: 証券番号は, group: policy }
+  - { pattern: 保険証券番号, group: policy }
+  - { pattern: 保険証券番号は, group: policy }
+  - { pattern: 証券No., group: policy }
+  - { pattern: 証券No, group: policy }
   - { pattern: 発注番号, group: order }
   - { pattern: 発注番号は, group: order }
   - { pattern: 注文番号, group: order }
@@ -32,6 +52,15 @@ entries:
   - { pattern: 請求書番号は, group: invoice }
   - { pattern: 請求書No., group: invoice }
   - { pattern: 請求書No, group: invoice }
+  # 見積書の番号。見積・注文・請求は別の書類の番号なので、互いに比べない。
+  - { pattern: 見積番号, group: quote }
+  - { pattern: 見積番号は, group: quote }
+  - { pattern: お見積番号, group: quote }
+  - { pattern: お見積番号は, group: quote }
+  - { pattern: 見積書番号, group: quote }
+  - { pattern: 見積書番号は, group: quote }
+  - { pattern: 見積No., group: quote }
+  - { pattern: 見積No, group: quote }
   - { pattern: 患者番号, group: patient }
   - { pattern: 患者番号は, group: patient }
   - { pattern: 患者ID, group: patient }
@@ -64,6 +93,13 @@ entries:
   - { pattern: 申込番号は, group: application }
   - { pattern: 申込み番号, group: application }
   - { pattern: 申込み番号は, group: application }
+  # 商品の品番。表に並べた品番はそれぞれ別の商品なので、語の無い品番だけを、表や語の後ろの品番と比べる。
+  - { pattern: 品番, group: item }
+  - { pattern: 品番は, group: item }
+  - { pattern: 商品コード, group: item }
+  - { pattern: 商品コードは, group: item }
+  - { pattern: 品目コード, group: item }
+  - { pattern: 品目コードは, group: item }
   # 自動車のナンバー。ナンバーの形（vehicle-plate）に合う並びは、語が「登録番号」だけでも自動車のナンバーとして読む。
   # 「ナンバー」だけの語は「マイナンバー」「ルームナンバー」の終わりにもなるので入れない。
   - { pattern: 自動車登録番号, group: vehicle }
@@ -76,3 +112,12 @@ entries:
   - { pattern: 車両ナンバーは, group: vehicle }
   - { pattern: ナンバープレート, group: vehicle }
   - { pattern: ナンバープレートは, group: vehicle }
+  # 会員の番号。お客様番号は店が客に付ける番号で、会員番号と別の番号になり得るので別の group にする。
+  - { pattern: 会員番号, group: member }
+  - { pattern: 会員番号は, group: member }
+  - { pattern: 会員No., group: member }
+  - { pattern: 会員No, group: member }
+  - { pattern: 会員ID, group: member }
+  - { pattern: 会員IDは, group: member }
+  - { pattern: お客様番号, group: customer }
+  - { pattern: お客様番号は, group: customer }

@@ -1,0 +1,25 @@
+# 会員のランク（ステータス）を確かめる語（tier-threshold-mismatch）。
+# group label は会員のランクを言う行の見出し。「会員ランク：ゴールド」のように、行の「：」の前がこの語だけのとき、後ろをランクの名前と読む。
+# 名前は、文書がランクの表か箇条書きに書いた名前と同じ字のときだけ比べる。
+# group other は、見出しにあれば、その行の値をランクを決める値でなく別の数（残高、次のランクまでに要る数）と読む語。会員の値に数えない。
+id: tier-label
+language: ja
+entries:
+  - { pattern: ランク, group: label }
+  - { pattern: 会員ランク, group: label }
+  - { pattern: 現在のランク, group: label }
+  - { pattern: 現在の会員ランク, group: label }
+  - { pattern: お客様のランク, group: label }
+  - { pattern: ステータス, group: label }
+  - { pattern: 会員ステータス, group: label }
+  - { pattern: 現在のステータス, group: label }
+  - { pattern: 会員区分, group: label }
+  - { pattern: 残高, group: other }
+  - { pattern: 残り, group: other }
+  - { pattern: 利用ポイント, group: other }
+  - { pattern: 失効, group: other }
+  - { pattern: 必要, group: other }
+  - { pattern: あと, group: other }
+  - { pattern: 次の, group: other }
+  - { pattern: 不足, group: other }
+  - { pattern: 目標, group: other }

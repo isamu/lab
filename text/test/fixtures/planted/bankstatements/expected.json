@@ -1,0 +1,27 @@
+{
+  "recall": {
+    "ja": {
+      "period-range-reversed": "1/1",
+      "closing-balance": "2/2",
+      "transaction-date-order": "2/2",
+      "running-balance": "2/2",
+      "interest-rate": "2/2",
+      "fee-two-ways": "2/2",
+      "account-number": "2/2",
+      "holder-name": "1/2",
+      "period-dates-reversed": "1/1"
+    },
+    "en": {
+      "period-range-reversed": "1/1",
+      "closing-balance": "2/2",
+      "transaction-date-order": "2/2",
+      "running-balance": "2/2",
+      "interest-rate": "2/2",
+      "fee-two-ways": "2/2",
+      "account-number": "2/2",
+      "holder-name": "2/2",
+      "period-dates-reversed": "1/1"
+    }
+  },
+  "clean": []
+}

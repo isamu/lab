@@ -1,0 +1,227 @@
+{
+  "note": "Self-written product catalogs and wholesale price lists (商品カタログ・卸価格表 / product catalog, wholesale price list) for made-up suppliers, with invented item codes and prices: per language, a stationery catalog page that prices items by the pack and a volume-tier price list for one envelope, each in a clean version and a planted one that differs only on the lines below. They are about prices, packs and tiers; the specs set covers product spec sheets. They run as business/proposal, the genre the quotes of the business set run as: no genre is made for price lists. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line; a mistake that breaks a pair of lines names the pair's other line as pairedLine. A pack price that is not the unit price times the count per pack is named for line-amount-mismatch: on the catalog the plant changes a unit price, not the pack price, so the tax-included price of that row still matches; on the tier list it changes a pack price and its tax-included price together, so only the pack price is wrong. A tax-included price that is not the tax-excluded price at the rate the column heading states is named for tax-mismatch, and is planted on a row the pack-price plant does not touch. A rule that does not exist yet is named as the rule that should: discount-rate-mismatch (a tier's discount percentage that the tier price and the list price do not give; ratio-mismatch reads margins and change-rate-mismatch changes between periods). A valid-from date after the valid-until date is written as two labelled lines and named for due-before-issue, the rule that compares pairs of labelled dates; on the catalog the plant changes the valid-from date and on the tier list the valid-until date, each with the other line as pairedLine. A size or weight given in the item table and again in a sentence of the same section is named for fact-conflict. An item code written once with two neighbouring characters swapped is named for reference-number-variant, and the supplier's company name written once with one character changed for name-variant (each name is written three times, so one form is the usual one). Each plant was also run alone on its clean document, so no plant depends on another. yarn planted pricelists scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/catalog",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/catalog.clean.md",
+      "planted": "ja/catalog.planted.md",
+      "mistakes": [
+        {
+          "kind": "valid-from-after-until",
+          "rule": "due-before-issue",
+          "line": 5,
+          "pairedLine": 7,
+          "clean": "適用開始日：2026年10月1日",
+          "planted": "適用開始日：2027年10月1日"
+        },
+        {
+          "kind": "size-two-ways",
+          "rule": "fact-conflict",
+          "line": 20,
+          "clean": "全長は142mmで",
+          "planted": "全長は124mmで"
+        },
+        {
+          "kind": "pack-price",
+          "rule": "line-amount-mismatch",
+          "line": 28,
+          "clean": "| 5冊 | 180円 |",
+          "planted": "| 5冊 | 190円 |"
+        },
+        {
+          "kind": "tax-included-price",
+          "rule": "tax-mismatch",
+          "line": 30,
+          "clean": "| 1,100円 | 1,210円 |",
+          "planted": "| 1,100円 | 1,188円 |"
+        },
+        {
+          "kind": "item-code",
+          "rule": "reference-number-variant",
+          "line": 34,
+          "clean": "GP-0512の替芯",
+          "planted": "GP-0521の替芯"
+        },
+        {
+          "kind": "supplier-name",
+          "rule": "name-variant",
+          "line": 38,
+          "clean": "株式会社みずなら文具は、",
+          "planted": "株式会社みづなら文具は、"
+        }
+      ]
+    },
+    {
+      "id": "ja/tier-pricelist",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/tier-pricelist.clean.md",
+      "planted": "ja/tier-pricelist.planted.md",
+      "mistakes": [
+        {
+          "kind": "valid-from-after-until",
+          "rule": "due-before-issue",
+          "line": 9,
+          "pairedLine": 7,
+          "clean": "適用終了日：2027年4月30日",
+          "planted": "適用終了日：2026年4月30日"
+        },
+        {
+          "kind": "size-two-ways",
+          "rule": "fact-conflict",
+          "line": 21,
+          "clean": "1箱の重さは5.8kgで",
+          "planted": "1箱の重さは8.5kgで"
+        },
+        {
+          "kind": "tax-included-price",
+          "rule": "tax-mismatch",
+          "line": 29,
+          "clean": "| 8,000円 | 8,800円 |",
+          "planted": "| 8,000円 | 8,640円 |"
+        },
+        {
+          "kind": "tier-discount",
+          "rule": "discount-rate-mismatch",
+          "line": 31,
+          "clean": "| 6.8円 | 15% |",
+          "planted": "| 6.8円 | 12% |"
+        },
+        {
+          "kind": "pack-price",
+          "rule": "line-amount-mismatch",
+          "line": 32,
+          "clean": "| 6,400円 | 7,040円 |",
+          "planted": "| 6,600円 | 7,260円 |"
+        },
+        {
+          "kind": "item-code",
+          "rule": "reference-number-variant",
+          "line": 36,
+          "clean": "EN-7342のほかの色",
+          "planted": "EN-7432のほかの色"
+        },
+        {
+          "kind": "supplier-name",
+          "rule": "name-variant",
+          "line": 38,
+          "clean": "株式会社ひいらぎ紙工は、",
+          "planted": "株式会社ひいらぎ紙興は、"
+        }
+      ]
+    },
+    {
+      "id": "en/catalog",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/catalog.clean.md",
+      "planted": "en/catalog.planted.md",
+      "mistakes": [
+        {
+          "kind": "valid-from-after-until",
+          "rule": "due-before-issue",
+          "line": 5,
+          "pairedLine": 7,
+          "clean": "Valid from: October 1, 2026",
+          "planted": "Valid from: October 1, 2027"
+        },
+        {
+          "kind": "size-two-ways",
+          "rule": "fact-conflict",
+          "line": 20,
+          "clean": "length is 142 mm,",
+          "planted": "length is 124 mm,"
+        },
+        {
+          "kind": "pack-price",
+          "rule": "line-amount-mismatch",
+          "line": 28,
+          "clean": "| 5 notebooks | $1.80 |",
+          "planted": "| 5 notebooks | $1.90 |"
+        },
+        {
+          "kind": "tax-included-price",
+          "rule": "tax-mismatch",
+          "line": 30,
+          "clean": "| $11.00 | $11.88 |",
+          "planted": "| $11.00 | $11.66 |"
+        },
+        {
+          "kind": "item-code",
+          "rule": "reference-number-variant",
+          "line": 34,
+          "clean": "Refills for GP-0512",
+          "planted": "Refills for GP-0521"
+        },
+        {
+          "kind": "supplier-name",
+          "rule": "name-variant",
+          "line": 38,
+          "clean": "Marbleway Office Supply Co. ships",
+          "planted": "Marblway Office Supply Co. ships"
+        }
+      ]
+    },
+    {
+      "id": "en/tier-pricelist",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/tier-pricelist.clean.md",
+      "planted": "en/tier-pricelist.planted.md",
+      "mistakes": [
+        {
+          "kind": "valid-from-after-until",
+          "rule": "due-before-issue",
+          "line": 9,
+          "pairedLine": 7,
+          "clean": "Valid until: April 30, 2027",
+          "planted": "Valid until: April 30, 2026"
+        },
+        {
+          "kind": "size-two-ways",
+          "rule": "fact-conflict",
+          "line": 21,
+          "clean": "box weight is 12.8 lb,",
+          "planted": "box weight is 18.2 lb,"
+        },
+        {
+          "kind": "tax-included-price",
+          "rule": "tax-mismatch",
+          "line": 29,
+          "clean": "| $80.00 | $86.40 |",
+          "planted": "| $80.00 | $84.80 |"
+        },
+        {
+          "kind": "tier-discount",
+          "rule": "discount-rate-mismatch",
+          "line": 31,
+          "clean": "| $0.068 | 15% |",
+          "planted": "| $0.068 | 12% |"
+        },
+        {
+          "kind": "pack-price",
+          "rule": "line-amount-mismatch",
+          "line": 32,
+          "clean": "| $64.00 | $69.12 |",
+          "planted": "| $66.00 | $71.28 |"
+        },
+        {
+          "kind": "item-code",
+          "rule": "reference-number-variant",
+          "line": 36,
+          "clean": "colors of EN-7342",
+          "planted": "colors of EN-7432"
+        },
+        {
+          "kind": "supplier-name",
+          "rule": "name-variant",
+          "line": 38,
+          "clean": "Thornfield Paper Works invoices",
+          "planted": "Thornfeild Paper Works invoices"
+        }
+      ]
+    }
+  ]
+}

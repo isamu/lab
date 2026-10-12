@@ -4,6 +4,9 @@ import { nameSpans } from "../compare/proper-nouns.ts";
 import { factValues, type FactValue } from "../facts/fact-values.ts";
 import { labelledFacts, type AttributePhrase, type Fact, type FactWords } from "../facts/labelled-facts.ts";
 import { tableFacts, type TotalColumns } from "../facts/table-facts.ts";
+import { withCellKeys } from "../facts/cell-keys.ts";
+import { verbQuantityFacts, type VerbQuantityWords } from "../facts/verb-quantity-facts.ts";
+import { countLabelWordsOf } from "../facts/count-labels.ts";
 import { partsAt, scopedFacts, type ScopedFact } from "../facts/fact-scope.ts";
 import { conditionPairConflicts, type ChangeSentence, type ChangeWords, type ConditionWord, type PairConflict, type WordAt } from "../facts/condition-pairs.ts";
 import { scopeConflicts, summaryConflicts, type FactConflict } from "../facts/fact-conflicts.ts";
@@ -47,6 +50,7 @@ export const factWordsOf = (doc: ProseDocument): FactWords => ({
   vague: patternsOf(doc, "fact-label-vague"),
   leads: patternsOf(doc, "fact-label-lead"),
   rates: rateWordsOf(doc),
+  readings: { verbs: patternsOf(doc, "fact-reading-verb"), gauges: patternsOf(doc, "fact-reading-gauge"), clauses: patternsOf(doc, "fact-reading-clause") },
   attributes: (doc.lexicons["fact-attribute"] ?? []).map((entry): AttributePhrase => ({ pattern: entry.pattern, position: entry.position ?? "before" })),
 });
 
@@ -99,8 +103,16 @@ const qualifierWordsOf = (doc: ProseDocument): QualifierWords => ({
   determiners: patternsOf(doc, "fact-label-drop"),
 });
 
+const verbQuantityWordsOf = (doc: ProseDocument): VerbQuantityWords => ({
+  verbs: patternsOf(doc, "fact-quantity-verb"),
+  selves: patternsOf(doc, "fact-quantity-self"),
+  periods: patternsOf(doc, "fact-quantity-period"),
+  valueEnds: patternsOf(doc, "fact-value-end"),
+  qualifiers: qualifierWordsOf(doc),
+});
+
 /** 条件の付いた名前（待機期間（旅行キャンセル費用）、旅行キャンセル費用の待機期間）を一つの key に。 */
-const withQualifiedKeys = (doc: ProseDocument, facts: readonly Fact[]): Fact[] => {
+const withQualifiedKeys = <T extends Fact>(doc: ProseDocument, facts: readonly T[]): T[] => {
   const keys = qualifiedKeys(
     facts.map((fact) => fact.key),
     qualifierWordsOf(doc),
@@ -128,8 +140,11 @@ const readFacts = (doc: ProseDocument, tree: StructureNode): ScopedFact[] => {
   const labelled = labelledFacts(doc.source, values, { ...factWordsOf(doc), qualifiers: qualifierWordsOf(doc) }).filter(
     (fact) => !termed.has(fact.value.start),
   );
-  const facts = withQualifiedKeys(doc, [...labelled, ...terms, ...tableFacts(doc.source, values, totalColumnsOf(doc))]);
-  return scopedFacts(facts, tree, doc.source, patternsOf(doc, "summary-heading"));
+  const read = new Set([...termed, ...labelled.map((fact) => fact.value.start)]);
+  const verbs = verbQuantityFacts(doc.source, values, verbQuantityWordsOf(doc)).filter((fact) => !read.has(fact.value.start));
+  const tabled = tableFacts(doc.source, values, totalColumnsOf(doc), countLabelWordsOf(doc.lexicons));
+  const facts = withQualifiedKeys(doc, [...labelled, ...terms, ...verbs, ...tabled]);
+  return withCellKeys(scopedFacts(facts, tree, doc.source, patternsOf(doc, "summary-heading")), qualifierWordsOf(doc));
 };
 
 /** 文書の名前付きの値。二つの rule が読むので、文書ごとに一度だけ読む。 */

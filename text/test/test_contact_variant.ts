@@ -7,6 +7,7 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { editDistance, emailVariants, isEmailSlip } from "../packages/chaff/src/contacts/emails.ts";
 import { addressVariants, isBlockSlip, labelledAddresses } from "../packages/chaff/src/contacts/addresses.ts";
+import { proseWithLabelledRows } from "../packages/chaff/src/contacts/table-rows.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
 // 同じ連絡先（メールアドレス・住所）の書き違い（contact-variant）。宛先と例文は自作。
@@ -67,6 +68,45 @@ describe("contact-variant", () => {
     assert.deepEqual(found(enDoc("- Office: 365 Plan", "", "- Office: 356 Plan"), en), []);
     assert.deepEqual(found(enDoc("- Address: 120 Main Street, Springfield, IL 62701", "", "- Address: 120 Main Street, Shelbyville, IL 62565"), en), []);
     assert.deepEqual(found(enDoc("- Sales: sales@hibari-lab.example", "", "- Campaign: sale@hibari-lab.example"), en), []);
+  });
+
+  it("ja: 住所の語を名前にした二列の表の行を、その語の行と同じに読む", () => {
+    const table = (name: string, address: string): string[] => ["| 項目 | 内容 |", "| --- | --- |", `| ${name} | ${address} |`, "| 種類 | 土地付き建物 |"];
+    const header = "物件所在地：東京都三鷹市下連雀四丁目12番5号";
+    assert.deepEqual(found(jaDoc(header, "", ...table("所在地", "東京都三鷹市下連雀四丁目12番3号")), ja), [7]);
+    assert.deepEqual(found(jaDoc(header, "", ...table("**物件所在地**", "東京都三鷹市下連雀四丁目5番12号")), ja), [7]);
+    assert.deepEqual(found(jaDoc(...table("本店", "東京都千代田区丸の内二丁目4番1号"), "", "- 住所：東京都千代田区丸の内二丁目1番4号"), ja), [8]);
+  });
+
+  it("ja: 語の無い行、同じ住所、本店と支店、三列の表、コードの中の表は読まない", () => {
+    const header = "物件所在地：東京都三鷹市下連雀四丁目12番5号";
+    const row = (name: string, address: string): string[] => ["| 項目 | 内容 |", "| --- | --- |", `| ${name} | ${address} |`];
+    assert.deepEqual(found(jaDoc(header, "", ...row("備考", "東京都三鷹市下連雀四丁目12番3号")), ja), []);
+    assert.deepEqual(found(jaDoc(header, "", ...row("所在地", "東京都三鷹市下連雀四丁目12番5号")), ja), []);
+    assert.deepEqual(found(jaDoc("本社：東京都千代田区丸の内二丁目4番1号", "", ...row("大阪支店", "東京都千代田区丸の内二丁目7番1号")), ja), []);
+    const wide = ["| 名称 | 所在地 | 電話 |", "| --- | --- | --- |", "| 一号店 | 東京都三鷹市下連雀四丁目12番3号 | 0422-00-0000 |"];
+    assert.deepEqual(found(jaDoc(header, "", ...wide), ja), []);
+    assert.deepEqual(found(jaDoc(header, "", "```text", ...row("所在地", "東京都三鷹市下連雀四丁目12番3号"), "```"), ja), []);
+  });
+
+  it("en: a two-column row named by an address label is read as that label's line", () => {
+    const table = (name: string, address: string): string[] => ["| Item | Detail |", "| --- | --- |", `| ${name} | ${address} |`];
+    const header = "Property address: 418 Maple Ridge Drive, Columbus, Ohio 43215";
+    assert.deepEqual(found(enDoc(header, "", ...table("Address", "481 Maple Ridge Drive, Columbus, Ohio 43215")), en), [7]);
+    assert.deepEqual(found(enDoc(header, "", ...table("Seller's address", "419 Maple Ridge Drive, Columbus, Ohio 43215")), en), [7]);
+  });
+
+  it("en: an unlabelled row, the same address, a branch row, a wider table and a word ending in a label stay silent", () => {
+    const table = (name: string, address: string): string[] => ["| Item | Detail |", "| --- | --- |", `| ${name} | ${address} |`];
+    const header = "Property address: 418 Maple Ridge Drive, Columbus, Ohio 43215";
+    assert.deepEqual(found(enDoc(header, "", ...table("Parcel", "481 Maple Ridge Drive, Columbus, Ohio 43215")), en), []);
+    assert.deepEqual(found(enDoc(header, "", ...table("Address", "418 Maple Ridge Drive, Columbus, Ohio 43215")), en), []);
+    assert.deepEqual(found(enDoc("Head office: 2-4-1 Marunouchi, Chiyoda-ku", "", ...table("Branch", "2-7-1 Marunouchi, Chiyoda-ku")), en), []);
+    const wide = ["| Store | Address | Phone |", "| --- | --- | --- |", "| North | 481 Maple Ridge Drive, Columbus, Ohio 43215 | 555-0100 |"];
+    assert.deepEqual(found(enDoc(header, "", ...wide), en), []);
+    assert.deepEqual(found(enDoc(header, "", ...table("Subaddress", "481 Maple Ridge Drive, Columbus, Ohio 43215")), en), []);
+    const email = "Email address: support@hibari-lab.example";
+    assert.deepEqual(found(enDoc(email, "", ...table("Email address", "suport@hibari-lab.example")), en), []);
   });
 
   it("reports the writing that differs from the one written more often, and nothing in code", () => {
@@ -131,6 +171,21 @@ describe("contacts", () => {
     assert.deepEqual(labelledAddresses("第3条第2項の1-2", labels), []);
     assert.deepEqual(labelledAddresses("", labels), []);
     assert.deepEqual(labelledAddresses("住所：東京都千代田区丸の内二丁目4番1号", []), []);
+  });
+
+  it("proseWithLabelledRows writes a labelled two-column row back at its offsets, and nothing else", () => {
+    const tables = "| Item | Detail |\n| --- | --- |\n| Address | 1-2 Elm |\n| Note | 3-4 Elm |";
+    const masked = tables.replaceAll(/[^\n]/gu, " ");
+    const read = proseWithLabelledRows(masked, tables, labels);
+    assert.equal(read.length, tables.length);
+    assert.deepEqual(
+      read.split("\n").map((line) => line.trim()),
+      ["", "", "Address  1-2 Elm", ""],
+    );
+    assert.equal(proseWithLabelledRows(masked, tables.replace("| Item | Detail |", "| Item | Detail | More |"), labels), masked);
+    assert.equal(proseWithLabelledRows(masked, tables.replace("Address", "Webaddress"), labels), masked);
+    assert.equal(proseWithLabelledRows("", "", labels), "");
+    assert.equal(proseWithLabelledRows(masked, tables, []), masked);
   });
 
   it("addressVariants compares a head office with an unnamed address, not with a branch", () => {

@@ -1,5 +1,7 @@
 # Words that carry a number in a heading (Chapter 2, Step 3). Read by heading-numbering-mix to tell numbering styles
 # apart. position is the side of the number the word stands on; English puts them all before.
+# A word whose number names a period or an event (Week 1, Day 2, Phase 3, Session 4, Round 5) is not listed: "Week 1"
+# and "Week 2" beside "Pay summary" are names, and the summary is not a week that lost its number.
 id: heading-number-label
 language: en
 entries:
@@ -13,8 +15,6 @@ entries:
     position: before
   - pattern: Appendix
     position: before
-  - pattern: Phase
-    position: before
   - pattern: Lesson
     position: before
   - pattern: Module
@@ -22,8 +22,4 @@ entries:
   - pattern: Unit
     position: before
   - pattern: Stage
-    position: before
-  - pattern: Day
-    position: before
-  - pattern: Week
     position: before

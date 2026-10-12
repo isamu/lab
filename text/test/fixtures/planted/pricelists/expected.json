@@ -1,0 +1,23 @@
+{
+  "recall": {
+    "ja": {
+      "valid-from-after-until": "2/2",
+      "size-two-ways": "2/2",
+      "pack-price": "1/2",
+      "tax-included-price": "2/2",
+      "item-code": "2/2",
+      "supplier-name": "1/2",
+      "tier-discount": "1/1"
+    },
+    "en": {
+      "valid-from-after-until": "2/2",
+      "size-two-ways": "2/2",
+      "pack-price": "1/2",
+      "tax-included-price": "2/2",
+      "item-code": "2/2",
+      "supplier-name": "2/2",
+      "tier-discount": "1/1"
+    }
+  },
+  "clean": []
+}

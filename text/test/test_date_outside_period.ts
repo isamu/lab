@@ -8,6 +8,7 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import { messageOf } from "../packages/chaff/src/render/text.ts";
 import { insidePeriod, mentions } from "../packages/chaff/src/structure/date-outside-period.ts";
+import { isDeadlineDate, type DeadlineMark } from "../packages/chaff/src/structure/date-deadline-mark.ts";
 import { afterLabel, statedPeriod, type PeriodWords } from "../packages/chaff/src/structure/stated-period.ts";
 
 // 書いた期間の外の日付（date-outside-period）。期間の語で始まる一行が期間を書き、その後ろの日程の日付を比べる。
@@ -543,5 +544,62 @@ describe("date-outside-period: a term written in a two-column table", () => {
     assert.deepEqual(foundEn(en), []);
     const ja = lines("# 研修のご案内", "", "| 項目 | 内容 |", "| --- | --- |", "| 研修期間 | 10月12日〜10月15日 |", "", "- 懇親会：10月20日");
     assert.deepEqual(foundJa(ja), []);
+  });
+});
+
+describe("date-outside-period: a date the deadline words make a reply-by date", () => {
+  const MARKS: DeadlineMark[] = [
+    { pattern: "までに", position: "after" },
+    { pattern: "by", position: "before" },
+    { pattern: "no later than", position: "before" },
+    { pattern: "まで" },
+  ];
+  const at = (source: string, date: string): { offset: number; end: number } => ({ offset: source.indexOf(date), end: source.indexOf(date) + date.length });
+  const marked = (source: string, date: string): boolean => isDeadlineDate(source, at(source, date), MARKS);
+
+  it("a word on its side of the date, past a weekday or a time", () => {
+    assert.equal(marked("9月18日までにお知らせください。", "9月18日"), true);
+    assert.equal(marked("9月18日（金）までにお知らせください。", "9月18日"), true);
+    assert.equal(marked("9月18日（金）17時までに", "9月18日"), true);
+    assert.equal(marked("Please reply by Sept 18.", "Sept 18"), true);
+    assert.equal(marked("Reply BY Sept 18.", "Sept 18"), true);
+    assert.equal(marked("Return it no later than Sept 18.", "Sept 18"), true);
+  });
+
+  it("not a word on the other side, a word only inside another, a mark with no side, or no mark", () => {
+    assert.equal(marked("までに9月18日", "9月18日"), false);
+    assert.equal(marked("Sept 18 by train", "Sept 18"), false);
+    assert.equal(marked("Visit Abby Sept 18", "Sept 18"), false);
+    assert.equal(marked("9月18日まで滞在", "9月18日"), false);
+    assert.equal(marked("9月18日に帰着", "9月18日"), false);
+    assert.equal(marked("9月18日\nまでに", "9月18日"), false);
+    assert.equal(marked("Reply by\nSept 18", "Sept 18"), false);
+    assert.equal(isDeadlineDate("9月18日までに", at("9月18日までに", "9月18日"), []), false);
+    assert.equal(isDeadlineDate("", { offset: 0, end: 0 }, MARKS), false);
+    assert.equal(isDeadlineDate("9月18日までに", at("9月18日までに", "9月18日"), [{ pattern: "", position: "after" }]), false);
+  });
+
+  it("a reply-by date after a timesheet's period is not reported; an entry dated outside it still is", () => {
+    const head = ["# 勤務表", "", "対象期間：2026年9月1日〜2026年9月15日", "", "| 日付 | 実働 |", "| --- | --- |", "| 9月1日 | 8.0時間 |"];
+    assert.deepEqual(foundJa(lines(...head, "", "内容に誤りがあれば、9月18日までに店長へお知らせください。")), []);
+    assert.deepEqual(foundJa(lines(...head, "", "書類は9月18日（金）必着で送ってください。")), []);
+    assert.deepEqual(foundJa(lines(...head, "| 9月16日 | 8.0時間 |", "", "内容に誤りがあれば、9月18日までに店長へお知らせください。")), ["9月16日"]);
+    assert.deepEqual(foundJa(lines(...head, "", "9月18日に店長と面談します。")), ["9月18日"]);
+    assert.deepEqual(foundJa(lines(...head, "", "9月18日まで勤務します。")), ["9月18日"]);
+  });
+
+  it("an item of the schedule is still compared, with a deadline word or without", () => {
+    assert.deepEqual(foundJa(lines("# 旅程", "", "旅行期間：10月12日〜10月15日", "", "- 10月12日 出発", "- 10月17日までに京都へ移動")), ["10月17日"]);
+    assert.deepEqual(foundEn(lines("# Plan", "", "Trip dates: Oct 12–15", "", "- Oct 12: fly out", "- By Oct 17: arrive in Kyoto")), ["Oct 17"]);
+  });
+
+  it("English: by and no later than mark a reply-by date; until, before and a bare date do not", () => {
+    const head = ["# Timesheet", "", "Period: Sept 1–15", "", "| Date | Hours |", "| --- | --- |", "| Sept 1 | 8.0 |"];
+    assert.deepEqual(foundEn(lines(...head, "", "Please report any correction to your supervisor by Sept 18.")), []);
+    assert.deepEqual(foundEn(lines(...head, "", "Return the form no later than Sept 18.")), []);
+    assert.deepEqual(foundEn(lines(...head, "| Sept 16 | 8.0 |", "", "Report corrections by Sept 18.")), ["Sept 16"]);
+    assert.deepEqual(foundEn(lines(...head, "", "The extra shift on Sept 18 is paid separately.")), ["Sept 18"]);
+    assert.deepEqual(foundEn(lines(...head, "", "Covering shifts until Sept 18.")), ["Sept 18"]);
+    assert.deepEqual(foundEn(lines(...head, "", "Before Sept 18, cover the morning shifts.")), ["Sept 18"]);
   });
 });

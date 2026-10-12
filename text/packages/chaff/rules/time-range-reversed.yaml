@@ -10,12 +10,17 @@ name:
   en: A time range that ends before it starts
 
 why:
-  ja: 「15:15〜14:15」のように、時刻の範囲の終わりが始まりより前だと、読み手はいつ終わるのかを問い合わせることになり、次の予定の時刻も信じられなくなります。時刻を一つだけ直したときや、前の行から書き写したときに起きます。二つの時刻の間が範囲の記号（〜、–）だけのとき、「から」でつなぎ「まで」で閉じるとき、「from … to」のときを範囲として比べます。片方にだけ午前・午後を書いた範囲は、もう片方も同じと読みます。
-  en: 'When a time range such as "15:15–14:15" ends before it starts, the reader has to ask when it really ends, and the times after it are in doubt too. It happens when only one of the two times is changed, or when a line is copied from the one before. Two times are read as a range when only a range mark (–, —) or a word such as "until" stands between them, or when they are written "from … to …". When only one side carries a.m. or p.m., the other is read the same way ("2:00–1:30 pm" is 2 pm to 1:30 pm).'
+  ja: 「15:15〜14:15」のように、時刻の範囲の終わりが始まりより前だと、読み手はいつ終わるのかを問い合わせることになり、次の予定の時刻も信じられなくなります。時刻を一つだけ直したときや、前の行から書き写したときに起きます。二つの時刻の間が範囲の記号（〜、–）だけのとき、「から」でつなぎ「まで」で閉じるとき、「from … to」のときを範囲として比べます。片方にだけ午前・午後を書いた範囲は、もう片方も同じと読みます。勤務表のように始まりと終わりを別の列（始業と終業、出勤と退勤、開始と終了）に書いた表も、行ごとに比べます。
+  en: 'When a time range such as "15:15–14:15" ends before it starts, the reader has to ask when it really ends, and the times after it are in doubt too. It happens when only one of the two times is changed, or when a line is copied from the one before. Two times are read as a range when only a range mark (–, —) or a word such as "until" stands between them, or when they are written "from … to …". When only one side carries a.m. or p.m., the other is read the same way ("2:00–1:30 pm" is 2 pm to 1:30 pm). A table with the start and the end in separate columns, such as a timesheet (Time in and Time out, Start and End), is compared row by row.'
 
 message:
   ja: 時刻の範囲「{range}」の終わりが始まりより前です
   en: 'The time range "{range}" ends before it starts'
+
+messages:
+  columns:
+    ja: 「{end_label}」の「{end}」が「{start_label}」の「{start}」より前です
+    en: '{end_label} "{end}" is before {start_label} "{start}"'
 
 how_to_fix:
   ja: 始まりと終わりの時刻を確かめて、書き間違えたほうを直してください。夜をまたぐ範囲なら、終わりに「翌」を付けてください。
@@ -44,5 +49,5 @@ example:
       The workshop runs from 2:00 to 3:30 pm.
 
 not_flagged:
-  ja: 終わりに翌日の印のある範囲（22:00〜翌6:00）、三時間以上戻る範囲（夜をまたぐ 22:00〜6:00、十二時間制の 9:00〜5:00）、「から」だけで「まで」の無いもの（14時から13時に変更）、時刻の印の無い数（2〜1、1時間〜30分）は比べません。片方だけに午前・午後を書いた範囲は、正午をまたぐ書き方（8:00〜午後6:00）があるので、一時間未満の戻りだけを言います。
-  en: 'A range whose end is marked as the next day ("22:00–6:00 +1"), a range that goes back three hours or more (overnight, as 22:00–6:00, or a 12-hour clock, as 9:00–5:00), "from … to …" in a sentence that changes a time ("moved from 3:00 to 2:00"), and numbers without a time mark are not compared. Where only one side carries a.m. or p.m., a range may cross noon ("8:00–6:00 pm"), so only a step back of less than an hour is reported.'
+  ja: 終わりに翌日の印のある範囲（22:00〜翌6:00）、三時間以上戻る範囲（夜をまたぐ 22:00〜6:00、十二時間制の 9:00〜5:00）、「から」だけで「まで」の無いもの（14時から13時に変更）、時刻の印の無い数（2〜1、1時間〜30分）は比べません。片方だけに午前・午後を書いた範囲は、正午をまたぐ書き方（8:00〜午後6:00）があるので、一時間未満の戻りだけを言います。両方に同じ午前・午後を書いた範囲（午前9時〜午前5時）は、戻りの幅を問わず言います。勤務表の行は、文書に夜勤の印（夜勤、深夜、翌6:00、25:00）があれば比べず、実働の列が夜をまたいだ長さと合う行（22:00、6:00、休憩1:00、実働7.0時間）も言いません。
+  en: 'A range whose end is marked as the next day ("22:00–6:00 +1"), a range that goes back three hours or more (overnight, as 22:00–6:00, or a 12-hour clock, as 9:00–5:00), "from … to …" in a sentence that changes a time ("moved from 3:00 to 2:00"), and numbers without a time mark are not compared. Where only one side carries a.m. or p.m., a range may cross noon ("8:00–6:00 pm"), so only a step back of less than an hour is reported. A range with the same a.m. or p.m. on both sides (9:00 AM – 5:30 AM) is reported however far it goes back. A timesheet row is not compared when the document shows night work (night shift, overnight, 6:00 +1, 25:00), nor when its hours fit a shift past midnight (22:00, 6:00, a 0:30 break, 7.50 hours).'

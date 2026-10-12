@@ -31,5 +31,36 @@ entries:
   - { pattern: Refund, group: net }
   - { pattern: Amount refunded, group: net }
   - { pattern: Balance refunded, group: net }
+  # An insurance claim settlement (Covered amount, Excess, Amount paid). Deductible is left out: a health plan's
+  # statement puts it beside a coinsurance column, so the amount paid is not the covered amount less the deductible alone.
+  - { pattern: Covered amount, group: gross }
+  - { pattern: Assessed loss, group: gross }
+  - { pattern: Amount of loss, group: gross }
+  - { pattern: Excess, group: deduction }
+  - { pattern: Amount paid, group: net }
+  - { pattern: Settlement amount, group: net }
+  - { pattern: Claim payment, group: net }
   - { pattern: Taxable income, group: taxable }
   - { pattern: Taxable amount, group: taxable }
+  # A tuition statement: the charges less a scholarship, grant or fee waiver taken off them is the amount due. Amount due
+  # is read only beside a gross and a deduction named here, so an invoice's subtotal, tax and amount due are not compared.
+  # Charges alone is read only with a term on it (Fall charges): see net-amount-period.
+  - { pattern: Total charges, group: gross }
+  - { pattern: Scholarship applied, group: deduction }
+  - { pattern: Grant applied, group: deduction }
+  - { pattern: Fee waiver, group: deduction }
+  - { pattern: Amount due, group: net }
+  # A property settlement statement: Purchase price (Sale price) − Earnest money deposit − Loan proceeds = Balance due.
+  # A deduction-part is one of the deductions, and the parts are added up (a deduction total in the same place is used
+  # instead). The balance is often named with when it is paid (at settlement, at closing).
+  - { pattern: Purchase price, group: gross }
+  - { pattern: Sale price, group: gross }
+  - { pattern: Earnest money deposit, group: deduction-part }
+  - { pattern: Loan proceeds, group: deduction-part }
+  - { pattern: Balance due, group: net }
+  - { pattern: Balance due from buyer, group: net }
+  - { pattern: Balance due to seller, group: net }
+  - { pattern: Balance due from buyer at settlement, group: net }
+  - { pattern: Balance due to seller at settlement, group: net }
+  - { pattern: Balance due from buyer at closing, group: net }
+  - { pattern: Balance due to seller at closing, group: net }

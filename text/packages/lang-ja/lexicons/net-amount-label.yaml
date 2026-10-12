@@ -32,6 +32,31 @@ entries:
   - { pattern: 返金額, group: net }
   - { pattern: ご返金額, group: net }
   - { pattern: 返還額, group: net }
+  # 自動車保険などの保険金の精算（損害額 − 免責金額 = お支払額）。自己負担額は医療費の窓口負担にも使うので入れない。
+  - { pattern: 損害額, group: gross }
+  - { pattern: 損害認定額, group: gross }
+  - { pattern: 免責金額, group: deduction }
+  - { pattern: お支払額, group: net }
+  - { pattern: 支払保険金, group: net }
+  - { pattern: お支払保険金, group: net }
   - { pattern: 課税対象額, group: taxable }
   - { pattern: 課税所得, group: taxable }
   - { pattern: 課税所得金額, group: taxable }
+  # 学費の通知書: 学費から減免額や奨学金の充当額を差し引いた納入額。「奨学金」だけの行は、学費から引くのか別に給付するのかを言わないので入れない。
+  - { pattern: 学費, group: gross }
+  - { pattern: 学費合計, group: gross }
+  - { pattern: 減免額, group: deduction }
+  - { pattern: 奨学金充当額, group: deduction }
+  - { pattern: 納入額, group: net }
+  - { pattern: 納付額, group: net }
+  # 不動産の売買代金の精算書：売買代金 − 手付金 − 融資金 = 残代金。deduction-part は差し引く額の一つ一つで、足して比べる
+  # （同じ所に deduction の合計があれば、合計だけを使う）。
+  # 中間金・内金も売買代金から差し引く額なので入れる（無いと、中間金を払った精算の残代金を合わないと読み違える）。
+  - { pattern: 売買代金, group: gross }
+  - { pattern: 手付金, group: deduction-part }
+  - { pattern: 中間金, group: deduction-part }
+  - { pattern: 内金, group: deduction-part }
+  - { pattern: 融資金, group: deduction-part }
+  - { pattern: 融資実行額, group: deduction-part }
+  - { pattern: 残代金, group: net }
+  - { pattern: 残金, group: net }

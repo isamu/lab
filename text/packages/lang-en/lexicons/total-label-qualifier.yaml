@@ -1,5 +1,5 @@
 # Words that may stand beside a total word (total-label) in a total line's label and keep it a total line:
-# "Total per month", "Monthly total", "Total due", "Total monthly cost". position: before or after the total word only;
+# "Total per month", "Monthly total", "Week total", "Total due", "Total monthly cost". position: before or after the total word only;
 # without it, either side. A note in parentheses ("Total (incl. tax)") is always allowed. A label with any other word
 # ("Total area", "Total tax", "A total") is not read as a total line, because its amount need not be the sum of the
 # lines above it.
@@ -18,10 +18,10 @@ entries:
   - { pattern: a, position: after }
   - { pattern: each, position: after }
   - { pattern: every, position: after }
-  - { pattern: day, position: after }
-  - { pattern: week, position: after }
-  - { pattern: month, position: after }
-  - { pattern: quarter, position: after }
+  - { pattern: day }
+  - { pattern: week }
+  - { pattern: month }
+  - { pattern: quarter }
   - { pattern: year, position: after }
   - { pattern: annually, position: after }
   - { pattern: due, position: after }
@@ -31,3 +31,10 @@ entries:
   - { pattern: costs, position: after }
   - { pattern: price, position: after }
   - { pattern: payment, position: after }
+  # What a section of an account adds up: "Total income", "Total expenditure", "Total receipts".
+  - { pattern: income, position: after }
+  - { pattern: expenditure, position: after }
+  - { pattern: expenses, position: after }
+  - { pattern: receipts, position: after }
+  - { pattern: payments, position: after }
+  - { pattern: revenue, position: after }

@@ -1,0 +1,267 @@
+{
+  "note": "Self-written deposit account statements (普通預金の取引明細・法人の入出金明細 / personal checking statement, business checking statement) for made-up banks and account holders: a personal account's month and a small business account's month, each with a summary, a transaction table with a running balance, an interest line and a fee table, in a clean version and a planted one that differs only on the lines below. The account numbers are made up. They run as business/proposal, the genre the invoices of the business set run as: no genre is made for bank statements. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line; a statement period written as two labelled lines names the start line as pairedLine. A rule that does not exist yet is named as the rule that should: closing-balance-mismatch (an opening balance plus the total deposits less the total withdrawals that is not the stated closing balance) and interest-mismatch (an interest amount that is not the stated balance times the stated rate). The period written as two labelled lines is named for due-before-issue, whose date pairs do not yet list a statement period's start and end. yarn planted bankstatements scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/personal",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/personal.clean.md",
+      "planted": "ja/personal.planted.md",
+      "mistakes": [
+        {
+          "kind": "period-range-reversed",
+          "rule": "date-range-reversed",
+          "line": 5,
+          "clean": "2026年8月31日",
+          "planted": "2025年8月31日"
+        },
+        {
+          "kind": "closing-balance",
+          "rule": "closing-balance-mismatch",
+          "line": 25,
+          "clean": "452,220円",
+          "planted": "425,220円"
+        },
+        {
+          "kind": "transaction-date-order",
+          "rule": "date-order",
+          "line": 34,
+          "clean": "2026年8月18日",
+          "planted": "2026年8月2日"
+        },
+        {
+          "kind": "running-balance",
+          "rule": "running-balance-mismatch",
+          "line": 36,
+          "clean": "567,330円",
+          "planted": "576,330円"
+        },
+        {
+          "kind": "interest-rate",
+          "rule": "interest-mismatch",
+          "line": 43,
+          "clean": "利率0.10%",
+          "planted": "利率0.01%"
+        },
+        {
+          "kind": "fee-two-ways",
+          "rule": "fact-conflict",
+          "line": 54,
+          "clean": "330円",
+          "planted": "440円"
+        },
+        {
+          "kind": "account-number",
+          "rule": "reference-number-variant",
+          "line": 58,
+          "clean": "7203518",
+          "planted": "7203158"
+        },
+        {
+          "kind": "holder-name",
+          "rule": "name-variant",
+          "line": 60,
+          "clean": "佐伯 美咲",
+          "planted": "佐伯 実咲"
+        }
+      ]
+    },
+    {
+      "id": "ja/business",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/business.clean.md",
+      "planted": "ja/business.planted.md",
+      "mistakes": [
+        {
+          "kind": "period-dates-reversed",
+          "rule": "due-before-issue",
+          "line": 7,
+          "pairedLine": 5,
+          "clean": "2026年9月30日",
+          "planted": "2026年8月31日"
+        },
+        {
+          "kind": "closing-balance",
+          "rule": "closing-balance-mismatch",
+          "line": 27,
+          "clean": "847,730円",
+          "planted": "874,730円"
+        },
+        {
+          "kind": "transaction-date-order",
+          "rule": "date-order",
+          "line": 39,
+          "clean": "2026年9月22日",
+          "planted": "2026年9月2日"
+        },
+        {
+          "kind": "running-balance",
+          "rule": "running-balance-mismatch",
+          "line": 38,
+          "clean": "1,651,695円",
+          "planted": "1,615,695円"
+        },
+        {
+          "kind": "interest-rate",
+          "rule": "interest-mismatch",
+          "line": 46,
+          "clean": "利率0.10%",
+          "planted": "利率0.01%"
+        },
+        {
+          "kind": "fee-two-ways",
+          "rule": "fact-conflict",
+          "line": 55,
+          "clean": "165円",
+          "planted": "220円"
+        },
+        {
+          "kind": "account-number",
+          "rule": "reference-number-variant",
+          "line": 59,
+          "clean": "3056172",
+          "planted": "3051672"
+        },
+        {
+          "kind": "holder-name",
+          "rule": "name-variant",
+          "line": 61,
+          "clean": "合同会社やまびこ工房",
+          "planted": "合同会社やまびこ工坊"
+        }
+      ]
+    },
+    {
+      "id": "en/personal",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/personal.clean.md",
+      "planted": "en/personal.planted.md",
+      "mistakes": [
+        {
+          "kind": "period-range-reversed",
+          "rule": "date-range-reversed",
+          "line": 5,
+          "clean": "August 31, 2026",
+          "planted": "August 31, 2025"
+        },
+        {
+          "kind": "closing-balance",
+          "rule": "closing-balance-mismatch",
+          "line": 25,
+          "clean": "$2,156.56",
+          "planted": "$2,165.56"
+        },
+        {
+          "kind": "transaction-date-order",
+          "rule": "date-order",
+          "line": 34,
+          "clean": "August 14, 2026",
+          "planted": "August 2, 2026"
+        },
+        {
+          "kind": "running-balance",
+          "rule": "running-balance-mismatch",
+          "line": 36,
+          "clean": "$3,423.74",
+          "planted": "$3,432.74"
+        },
+        {
+          "kind": "interest-rate",
+          "rule": "interest-mismatch",
+          "line": 43,
+          "clean": "rate 0.05%",
+          "planted": "rate 0.50%"
+        },
+        {
+          "kind": "fee-two-ways",
+          "rule": "fact-conflict",
+          "line": 54,
+          "clean": "$25.00",
+          "planted": "$35.00"
+        },
+        {
+          "kind": "account-number",
+          "rule": "reference-number-variant",
+          "line": 58,
+          "clean": "60418273",
+          "planted": "60412873"
+        },
+        {
+          "kind": "holder-name",
+          "rule": "name-variant",
+          "line": 60,
+          "clean": "Owen Lindqvist",
+          "planted": "Owen Lindquist"
+        }
+      ]
+    },
+    {
+      "id": "en/business",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/business.clean.md",
+      "planted": "en/business.planted.md",
+      "mistakes": [
+        {
+          "kind": "period-dates-reversed",
+          "rule": "due-before-issue",
+          "line": 7,
+          "pairedLine": 5,
+          "clean": "September 30, 2026",
+          "planted": "August 31, 2026"
+        },
+        {
+          "kind": "closing-balance",
+          "rule": "closing-balance-mismatch",
+          "line": 27,
+          "clean": "$11,148.50",
+          "planted": "$11,184.50"
+        },
+        {
+          "kind": "transaction-date-order",
+          "rule": "date-order",
+          "line": 39,
+          "clean": "September 22, 2026",
+          "planted": "September 2, 2026"
+        },
+        {
+          "kind": "running-balance",
+          "rule": "running-balance-mismatch",
+          "line": 38,
+          "clean": "$23,187.60",
+          "planted": "$23,817.60"
+        },
+        {
+          "kind": "interest-rate",
+          "rule": "interest-mismatch",
+          "line": 46,
+          "clean": "rate 0.10%",
+          "planted": "rate 0.01%"
+        },
+        {
+          "kind": "fee-two-ways",
+          "rule": "fact-conflict",
+          "line": 55,
+          "clean": "$1.50",
+          "planted": "$2.50"
+        },
+        {
+          "kind": "account-number",
+          "rule": "reference-number-variant",
+          "line": 59,
+          "clean": "20573461",
+          "planted": "20574361"
+        },
+        {
+          "kind": "holder-name",
+          "rule": "name-variant",
+          "line": 61,
+          "clean": "Harborview Print Works LLC",
+          "planted": "Harborveiw Print Works LLC"
+        }
+      ]
+    }
+  ]
+}

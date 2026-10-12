@@ -1,0 +1,23 @@
+{
+  "recall": {
+    "ja": {
+      "claim-before-incident": "2/2",
+      "treatment-period-reversed": "1/1",
+      "hospital-days": "1/1",
+      "days-times-daily-benefit": "1/1",
+      "claimant-name": "2/2",
+      "policy-number": "2/2",
+      "covered-minus-deductible": "1/1"
+    },
+    "en": {
+      "claim-before-incident": "2/2",
+      "treatment-period-reversed": "1/1",
+      "hospital-days": "1/1",
+      "days-times-daily-benefit": "1/1",
+      "claimant-name": "2/2",
+      "policy-number": "2/2",
+      "covered-minus-deductible": "1/1"
+    }
+  },
+  "clean": []
+}

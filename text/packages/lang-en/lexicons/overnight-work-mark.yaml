@@ -1,0 +1,13 @@
+# Words saying a document has work past midnight (time-range-reversed, timesheets). With one of them anywhere, a row whose
+# end is before its start is read as a night shift and not reported. A time marked as the next day ("6:00 +1") and a time
+# past 24:00 (25:00) are read from how they are written, not from this list. Matched case aside.
+id: overnight-work-mark
+language: en
+entries:
+  - { pattern: "night shift" }
+  - { pattern: "night shifts" }
+  - { pattern: "overnight" }
+  - { pattern: "graveyard" }
+  - { pattern: "next day" }
+  - { pattern: "following day" }
+  - { pattern: "past midnight" }

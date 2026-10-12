@@ -1,0 +1,273 @@
+{
+  "note": "Self-written mobile phone bills (携帯電話のご利用料金明細 / mobile phone bill) for a made-up carrier and made-up customers, with fictional amounts and phone numbers from ranges no subscriber is given (090-0000 and 080-0000 in ja, 555-01xx in en): a single-line personal plan and a two-line family plan, each in a clean version and a planted one that differs only on the lines below. Electricity, gas and water bills are the utilities set; this one holds what a phone bill adds: a plan, extra data billed per GB, add-ons, a discount row and the subscriber's phone number. They run as business/proposal, the genre the invoices of the business set run as: no genre is made for phone bills. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line; a mistake that breaks a pair of lines names the pair's other line as pairedLine. The extra data's GB times the rate per GB is named for line-amount-mismatch, and that plant changes the GB, not the amount, so the items still add up to the subtotal. The discount row's amount is planted so that the plan, the add-ons and the calls less the discount are not the subtotal, named for total-mismatch with the subtotal row as pairedLine; the subtotal itself is not changed, so the tax still matches it. The tax plant changes the rate in the tax row's label, not the tax amount, so the total still adds up. A service end date before the service start date, each on its own labelled line, is named for date-range-reversed with the start line as pairedLine. A payment due date before the issue date is named for due-before-issue. The subscriber's phone number written once with two neighbouring digits swapped is named for phone-number-variant. The account holder's name written once with one character changed (in ja, a kanji of the same reading, as a conversion slip gives) is named for name-variant; each name is written three times, so one form is the usual one. The data used given in the usage table and again in a sentence under it, written once with two digits exchanged (12.4GB and 14.2GB), is named for fact-conflict. Each plant was also run alone on its clean document, so no plant depends on another. yarn planted phonebills scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/personal",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/personal.clean.md",
+      "planted": "ja/personal.planted.md",
+      "mistakes": [
+        {
+          "kind": "due-before-issue",
+          "rule": "due-before-issue",
+          "line": 7,
+          "clean": "お支払期限：2026年10月26日",
+          "planted": "お支払期限：2026年9月26日"
+        },
+        {
+          "kind": "period-reversed",
+          "rule": "due-before-issue",
+          "line": 15,
+          "pairedLine": 13,
+          "clean": "ご利用終了日：2026年9月30日",
+          "planted": "ご利用終了日：2025年9月30日"
+        },
+        {
+          "kind": "data-used-two-ways",
+          "rule": "fact-conflict",
+          "line": 25,
+          "clean": "データ利用量は12.4GB",
+          "planted": "データ利用量は14.2GB"
+        },
+        {
+          "kind": "extra-data-line-amount",
+          "rule": "line-amount-mismatch",
+          "line": 32,
+          "clean": "| 3GB |",
+          "planted": "| 2GB |"
+        },
+        {
+          "kind": "discount-total",
+          "rule": "total-mismatch",
+          "line": 35,
+          "pairedLine": 36,
+          "clean": "| −500円 |",
+          "planted": "| −700円 |"
+        },
+        {
+          "kind": "tax-rate",
+          "rule": "tax-mismatch",
+          "line": 37,
+          "clean": "消費税（10%）",
+          "planted": "消費税（8%）"
+        },
+        {
+          "kind": "holder-name",
+          "rule": "name-variant",
+          "line": 40,
+          "clean": "青木 美咲 様名義",
+          "planted": "青木 美崎 様名義"
+        },
+        {
+          "kind": "phone-swapped",
+          "rule": "phone-number-variant",
+          "line": 42,
+          "clean": "090-0000-1234",
+          "planted": "090-0000-1243"
+        }
+      ]
+    },
+    {
+      "id": "ja/family",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/family.clean.md",
+      "planted": "ja/family.planted.md",
+      "mistakes": [
+        {
+          "kind": "due-before-issue",
+          "rule": "due-before-issue",
+          "line": 7,
+          "clean": "お支払期限：2026年10月27日",
+          "planted": "お支払期限：2026年9月27日"
+        },
+        {
+          "kind": "period-reversed",
+          "rule": "due-before-issue",
+          "line": 15,
+          "pairedLine": 13,
+          "clean": "ご利用終了日：2026年9月30日",
+          "planted": "ご利用終了日：2025年9月30日"
+        },
+        {
+          "kind": "data-used-two-ways",
+          "rule": "fact-conflict",
+          "line": 24,
+          "clean": "データ利用量は13.6GB",
+          "planted": "データ利用量は16.3GB"
+        },
+        {
+          "kind": "extra-data-line-amount",
+          "rule": "line-amount-mismatch",
+          "line": 31,
+          "clean": "| 3GB |",
+          "planted": "| 2GB |"
+        },
+        {
+          "kind": "discount-total",
+          "rule": "total-mismatch",
+          "line": 34,
+          "pairedLine": 35,
+          "clean": "| −1,100円 |",
+          "planted": "| −1,000円 |"
+        },
+        {
+          "kind": "tax-rate",
+          "rule": "tax-mismatch",
+          "line": 36,
+          "clean": "消費税（10%）",
+          "planted": "消費税（8%）"
+        },
+        {
+          "kind": "holder-name",
+          "rule": "name-variant",
+          "line": 39,
+          "clean": "村井 健太郎 様名義",
+          "planted": "村井 建太郎 様名義"
+        },
+        {
+          "kind": "phone-swapped",
+          "rule": "phone-number-variant",
+          "line": 41,
+          "clean": "080-0000-5678",
+          "planted": "080-0000-5687"
+        }
+      ]
+    },
+    {
+      "id": "en/personal",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/personal.clean.md",
+      "planted": "en/personal.planted.md",
+      "mistakes": [
+        {
+          "kind": "due-before-issue",
+          "rule": "due-before-issue",
+          "line": 7,
+          "clean": "Payment due: October 26, 2026",
+          "planted": "Payment due: September 26, 2026"
+        },
+        {
+          "kind": "period-reversed",
+          "rule": "due-before-issue",
+          "line": 15,
+          "pairedLine": 13,
+          "clean": "Service end date: September 30, 2026",
+          "planted": "Service end date: September 30, 2025"
+        },
+        {
+          "kind": "data-used-two-ways",
+          "rule": "fact-conflict",
+          "line": 25,
+          "clean": "You used 12.4 GB",
+          "planted": "You used 14.2 GB"
+        },
+        {
+          "kind": "extra-data-line-amount",
+          "rule": "line-amount-mismatch",
+          "line": 32,
+          "clean": "| 3 GB |",
+          "planted": "| 2 GB |"
+        },
+        {
+          "kind": "discount-total",
+          "rule": "total-mismatch",
+          "line": 35,
+          "pairedLine": 36,
+          "clean": "| −$5.00 |",
+          "planted": "| −$7.00 |"
+        },
+        {
+          "kind": "tax-rate",
+          "rule": "tax-mismatch",
+          "line": 37,
+          "clean": "Sales tax (8%)",
+          "planted": "Sales tax (6%)"
+        },
+        {
+          "kind": "holder-name",
+          "rule": "name-variant",
+          "line": 40,
+          "clean": "credit card of Megan Calloway",
+          "planted": "credit card of Megan Callaway"
+        },
+        {
+          "kind": "phone-swapped",
+          "rule": "phone-number-variant",
+          "line": 42,
+          "clean": "(312) 555-0147",
+          "planted": "(312) 555-0174"
+        }
+      ]
+    },
+    {
+      "id": "en/family",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/family.clean.md",
+      "planted": "en/family.planted.md",
+      "mistakes": [
+        {
+          "kind": "due-before-issue",
+          "rule": "due-before-issue",
+          "line": 7,
+          "clean": "Payment due: October 27, 2026",
+          "planted": "Payment due: September 27, 2026"
+        },
+        {
+          "kind": "period-reversed",
+          "rule": "due-before-issue",
+          "line": 15,
+          "pairedLine": 13,
+          "clean": "Service end date: September 30, 2026",
+          "planted": "Service end date: September 30, 2025"
+        },
+        {
+          "kind": "data-used-two-ways",
+          "rule": "fact-conflict",
+          "line": 24,
+          "clean": "used 13.6 GB",
+          "planted": "used 16.3 GB"
+        },
+        {
+          "kind": "extra-data-line-amount",
+          "rule": "line-amount-mismatch",
+          "line": 31,
+          "clean": "| 3 GB |",
+          "planted": "| 2 GB |"
+        },
+        {
+          "kind": "discount-total",
+          "rule": "total-mismatch",
+          "line": 34,
+          "pairedLine": 35,
+          "clean": "| −$10.00 |",
+          "planted": "| −$12.00 |"
+        },
+        {
+          "kind": "tax-rate",
+          "rule": "tax-mismatch",
+          "line": 36,
+          "clean": "Sales tax (8%)",
+          "planted": "Sales tax (6%)"
+        },
+        {
+          "kind": "holder-name",
+          "rule": "name-variant",
+          "line": 39,
+          "clean": "account of Gregory Ashford",
+          "planted": "account of Gregory Ashfort"
+        },
+        {
+          "kind": "phone-swapped",
+          "rule": "phone-number-variant",
+          "line": 41,
+          "clean": "(312) 555-0163",
+          "planted": "(312) 555-0136"
+        }
+      ]
+    }
+  ]
+}

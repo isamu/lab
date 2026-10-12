@@ -1,0 +1,13 @@
+# Instruments whose reading a fact-reading-verb gives (fact-conflict): "The odometer read 45,210 km." The last word of the
+# name must be one of these, so "The chart showed 5 kg" and "The report shows 40 L" are not read.
+id: fact-reading-gauge
+language: en
+entries:
+  - pattern: odometer
+  - pattern: speedometer
+  - pattern: tachometer
+  - pattern: meter
+  - pattern: gauge
+  - pattern: scale
+  - pattern: thermometer
+  - pattern: barometer

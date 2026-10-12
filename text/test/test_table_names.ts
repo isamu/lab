@@ -13,7 +13,8 @@ import {
   type ProseName,
 } from "../packages/chaff/src/table-names.ts";
 import type { Token } from "../packages/chaff/src/plugin.ts";
-import { withKnownNeighbours, type NameMention } from "../packages/chaff/src/name-variants.ts";
+import type { NameMention } from "../packages/chaff/src/name-variants.ts";
+import { withKnownNeighbours } from "../packages/chaff/src/name-neighbours.ts";
 import { isNearSurname } from "../packages/chaff/src/surname-near.ts";
 
 // 表の升の名前と、解析器が名前の一語を読み落とした所（name-variant）。例文はすべて自作。

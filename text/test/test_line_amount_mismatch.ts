@@ -5,6 +5,7 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { cellNumber, lineAmountMismatches, quantityOf } from "../packages/chaff/src/structure/line-amount.ts";
 import { perUnitPrice, priceHeadingUnit, quantityUnit, unitsAgree } from "../packages/chaff/src/structure/line-amount-unit.ts";
+import { countOf, factorsOf, labelProductOf } from "../packages/chaff/src/structure/line-amount-label.ts";
 
 // 数量×単価が金額と合わない（line-amount-mismatch）。例文はすべて自作。
 
@@ -15,7 +16,17 @@ const findingsOf = (source: string, adapter = ja): readonly string[] => namedRul
 const table = (rows: readonly string[]): string => ["| 品目 | 数量 | 単価 | 金額 |", "| --- | --- | --- | --- |", ...rows].join("\n") + "\n";
 const enTable = (rows: readonly string[]): string => ["| Item | Quantity | Unit price | Amount |", "| --- | --- | --- | --- |", ...rows].join("\n") + "\n";
 
-const NO_UNITS = { units: [], perUnitMarks: [], headerUnits: [], measureUnits: [], orderRoles: [] };
+const NO_UNITS = {
+  units: [],
+  perUnitMarks: [],
+  headerUnits: [],
+  measureUnits: [],
+  orderRoles: [],
+  packCount: [],
+  packPrice: [],
+  itemName: [],
+  taxIncluded: [],
+};
 const VOLUME = ["L", "m³", "㎥"];
 
 const cell = (text: string): { start: number; text: string } => ({ start: 0, text });
@@ -331,6 +342,42 @@ describe("line-amount-mismatch: 数量×単価が金額と合わない", () => {
     ]);
   });
 
+  it("給付金の明細の日額 × 日数 = 金額を読む", () => {
+    const benefit = (heading: string, rows: readonly string[]): string => [heading, "| --- | --- | --- | --- |", ...rows].join("\n") + "\n";
+    assert.deepEqual(
+      findingsOf(benefit("| 給付金 | 日数 | 日額 | 金額 |", ["| 入院給付金 | 8日 | 10,000円 | 70,000円 |", "| 通院給付金 | 3日 | 2,000円 | 6,000円 |"])),
+      ["金額「70,000円」が、数量×単価（8日 × 10,000円 = 80,000円）と合いません"],
+    );
+    assert.deepEqual(findingsOf(benefit("| 給付金 | 入院日数 | 日額給付金 | 金額 |", ["| 入院 | 5 | 6,000円 | 36,000円 |"])), [
+      "金額「36,000円」が、数量×単価（5 × 6,000円 = 30,000円）と合いません",
+    ]);
+    assert.deepEqual(findingsOf(benefit("| 給付金 | 通院日数 | 1日あたり | 金額 |", ["| 通院 | 2日 | 4,000円 | 9,000円 |"])), [
+      "金額「9,000円」が、数量×単価（2日 × 4,000円 = 8,000円）と合いません",
+    ]);
+    assert.deepEqual(findingsOf(benefit("| Benefit | Days | Daily benefit | Amount |", ["| Hospital cash | 8 days | $120.00 | $900.00 |"]), en), [
+      "The amount $900.00 is not quantity × unit price (8 days × $120.00 = $960.00)",
+    ]);
+    assert.deepEqual(findingsOf(benefit("| Benefit | Days in hospital | Per day | Amount |", ["| Hospital cash | 3 | $80.00 | $250.00 |"]), en), [
+      "The amount $250.00 is not quantity × unit price (3 × $80.00 = $240.00)",
+    ]);
+    assert.deepEqual(findingsOf(benefit("| Item | Days | Daily rate | Amount |", ["| Van hire | 2 days | $65.00 | $120.00 |"]), en), [
+      "The amount $120.00 is not quantity × unit price (2 days × $65.00 = $130.00)",
+    ]);
+    assert.deepEqual(findingsOf(benefit("| 給付金 | 日数 | 日額 | 金額 |", ["| 入院給付金 | 8日 | 10,000円 | 80,000円 |", "| 合計 | | | 80,000円 |"])), []);
+    assert.deepEqual(findingsOf(benefit("| Benefit | Days | Daily benefit | Amount |", ["| Hospital cash | 8 days | $120.00 | $960.00 |"]), en), []);
+  });
+
+  it("価格の無い日数の表、日あたりでない単価、日でない数量、数量と日数の両方を持つ表は比べない", () => {
+    assert.deepEqual(findingsOf("| 手続き | 日数 | 期限 |\n| --- | --- | --- |\n| 解約の通知 | 30日 | 2026年10月31日 |\n"), []);
+    assert.deepEqual(findingsOf("| Step | Days | Fee |\n| --- | --- | --- |\n| Notice | 30 | $100 |\n", en), []);
+    assert.deepEqual(findingsOf("| 作業 | 日数 | 時給 | 金額 |\n| --- | --- | --- | --- |\n| 保守 | 2日 | 1,000円 | 5,000円 |\n"), []);
+    assert.deepEqual(findingsOf("| 項目 | 日数 | 月額 | 金額 |\n| --- | --- | --- | --- |\n| 駐車場 | 10日 | 8,000円 | 5,000円 |\n"), []);
+    assert.deepEqual(findingsOf("| Item | Days | Hourly rate | Amount |\n| --- | --- | --- | --- |\n| Support | 2 | $100 | $500 |\n", en), []);
+    assert.deepEqual(findingsOf("| Item | Days | Monthly | Amount |\n| --- | --- | --- | --- |\n| Parking | 10 | $300 | $150 |\n", en), []);
+    assert.deepEqual(findingsOf("| 給付金 | 日数 | 日額 | 金額 |\n| --- | --- | --- | --- |\n| 付添 | 6時間 | 5,000円 | 10,000円 |\n"), []);
+    assert.deepEqual(findingsOf("| 品目 | 数量 | 日数 | 単価 | 金額 |\n| --- | --- | --- | --- | --- |\n| 足場 | 2 | 5日 | 1,000円 | 10,000円 |\n"), []);
+  });
+
   it("申込とチケットの明細の人数・枚数の列を数量と読む", () => {
     const order = (heading: string, row: string): string => [heading, "| --- | --- | --- | --- |", row].join("\n") + "\n";
     assert.deepEqual(findingsOf(order("| 席種 | 枚数 | 単価 | 金額 |", "| S席 | 2枚 | 8,200円 | 15,600円 |")), [
@@ -368,6 +415,102 @@ describe("line-amount-mismatch: 数量×単価が金額と合わない", () => {
     assert.deepEqual(findingsOf("| Room | Guests | Rate | Amount |\n| --- | --- | --- | --- |\n| Double | 2 | $150.00 | $450.00 |\n", en), []);
   });
 
+  const rows = (heading: string, body: readonly string[]): string => {
+    const width = heading.split("|").length - 2;
+    return [heading, `|${" --- |".repeat(width)}`, ...body].join("\n") + "\n";
+  };
+  const JA_PACK = "| 品番 | 品名 | 入数 | 単価（税抜） | 1箱の価格（税抜） | 1箱の価格（税込・10%） |";
+  const EN_PACK = "| Item code | Description | Pack of | Unit price (excl. tax) | Pack price (excl. tax) | Pack price (incl. 8% tax) |";
+
+  it("カタログの入数 × 単価が1箱の価格と合わない行を指す（品名の数と税込の価格の列があっても）", () => {
+    assert.deepEqual(findingsOf(rows(JA_PACK, ["| NB-1 | 方眼ノート A5 | 5冊 | 190円 | 900円 | 990円 |"])), [
+      "金額「900円」が、数量×単価（5冊 × 190円 = 950円）と合いません",
+    ]);
+    assert.deepEqual(findingsOf(rows(EN_PACK, ["| NB-1 | Grid notebook, A5 | 5 notebooks | $1.90 | $9.00 | $9.72 |"]), en), [
+      "The amount $9.00 is not quantity × unit price (5 notebooks × $1.90 = $9.50)",
+    ]);
+    assert.deepEqual(findingsOf(rows("| Product | Units per box | Unit price | Box price |", ["| Clip | 20 | $0.35 | $7.50 |"]), en), [
+      "The amount $7.50 is not quantity × unit price (20 × $0.35 = $7.00)",
+    ]);
+    assert.deepEqual(
+      findingsOf(rows(JA_PACK, ["| NB-1 | 方眼ノート A5 | 5冊 | 180円 | 900円 | 990円 |", "| CL-2 | クリップ | 20個 | 35円 | 700円 | 770円 |"])),
+      [],
+    );
+    assert.deepEqual(findingsOf(rows(EN_PACK, ["| NB-1 | Grid notebook, A5 | 5 notebooks | $1.80 | $9.00 | $9.72 |"]), en), []);
+  });
+
+  it("入数は注文の数量ではない。1箱の価格の列が無ければ読まず、注文の数量と金額の列は1箱の価格を変えない", () => {
+    const order = "| 品名 | 入数 | 単価 | 数量 | 金額 |";
+    assert.deepEqual(findingsOf(rows(order, ["| ボールペン | 10本 | 120円 | 3箱 | 3,600円 |", "| ボールペン | 10本 | 1,200円 | 3箱 | 3,600円 |"])), []);
+    assert.deepEqual(findingsOf(rows("| 品名 | 入数 | 単価 | 金額 |", ["| ボールペン | 10本 | 120円 | 1,000円 |"])), []);
+    const both = "| 品名 | 入数 | 単価 | 1箱の価格 | 数量 | 金額 |";
+    assert.deepEqual(findingsOf(rows(both, ["| ボールペン | 10本 | 120円 | 1,200円 | 3箱 | 3,600円 |"])), []);
+    assert.deepEqual(findingsOf(rows(both, ["| ボールペン | 10本 | 120円 | 1,300円 | 3箱 | 3,900円 |"])), [
+      "金額「1,300円」が、数量×単価（10本 × 120円 = 1,200円）と合いません",
+    ]);
+    const enBoth = "| Item | Pack of | Unit price | Pack price | Qty | Amount |";
+    // The order's amount is quantity × pack price, which the unit price does not give: that row is not compared.
+    assert.deepEqual(findingsOf(rows(enBoth, ["| Pen | 10 | $1.20 | $12.00 | 3 | $36.00 |", "| Pen | 10 | $1.20 | $12.00 | 3 | $40.00 |"]), en), []);
+  });
+
+  it("入数の列の無い価格表（注文数ごとの1箱の価格）は読まない", () => {
+    const tier = "| ご注文数 | 1枚の単価（税抜） | 1箱の価格（税抜） | 1箱の価格（税込・10%） |";
+    assert.deepEqual(findingsOf(rows(tier, ["| 100箱以上 | 6.4円 | 6,600円 | 7,260円 |"])), []);
+    const enTier = "| Order quantity | Price per envelope (excl. tax) | Box price (excl. tax) | Box price (incl. 8% tax) |";
+    assert.deepEqual(findingsOf(rows(enTier, ["| 100 boxes or more | $0.064 | $66.00 | $71.28 |"]), en), []);
+  });
+
+  it("品名の列と、金額を税込で言い直す列の数では行を外さない。ほかの列の数では外す", () => {
+    assert.deepEqual(findingsOf(rows("| 品番 | 品名 | 数量 | 単価 | 金額 |", ["| NB-1 | 方眼ノート A5 | 4冊 | 180円 | 700円 |"])), [
+      "金額「700円」が、数量×単価（4冊 × 180円 = 720円）と合いません",
+    ]);
+    assert.deepEqual(findingsOf(rows("| 品目 | 数量 | 単価 | 金額（税抜） | 金額（税込） |", ["| 設計 | 4 | 1,000円 | 3,500円 | 3,850円 |"])), [
+      "金額「3,500円」が、数量×単価（4 × 1,000円 = 4,000円）と合いません",
+    ]);
+    assert.deepEqual(findingsOf(rows("| Item | Qty | Unit price | Amount | Amount (incl. tax) |", ["| Pen | 4 | $1.00 | $3.50 | $3.78 |"]), en), [
+      "The amount $3.50 is not quantity × unit price (4 × $1.00 = $4.00)",
+    ]);
+    assert.deepEqual(findingsOf(rows("| 品番 | 規格 | 数量 | 単価 | 金額 |", ["| NB-1 | A5 | 4冊 | 180円 | 700円 |"])), []);
+    assert.deepEqual(findingsOf(rows("| 品目 | 数量 | 単価 | 単価（税込） | 金額 |", ["| 設計 | 4 | 1,000円 | 1,100円 | 3,500円 |"])), []);
+    assert.deepEqual(findingsOf(rows("| Item | Qty | Unit price | Tax rate (incl.) | Amount |", ["| Pen | 4 | $1.00 | 8% | $3.50 |"]), en), []);
+    assert.deepEqual(findingsOf(rows("| 品目 | 数量 | 単価 | 金額 | 金額のうち値引き |", ["| 設計 | 4 | 1,000円 | 3,500円 | 500円 |"])), []);
+    assert.deepEqual(findingsOf(rows("| Item | Pack of | Unit price | Pack price | Amount |", ["| Pen | 10 | $1.20 | $13.00 | $1.00 |"]), en), []);
+  });
+
+  it("授業料の明細の単位数と1単位あたりの授業料を読む", () => {
+    const credits = (heads: string, rows: readonly string[]): string => [heads, "| --- | --- | --- | --- |", ...rows].join("\n") + "\n";
+    assert.deepEqual(
+      findingsOf(
+        credits("| 科目 | 単位数 | 1単位あたりの授業料 | 金額 |", ["| 統計学 | 2単位 | 15,000円 | 30,000円 |", "| 会計学 | 3単位 | 15,000円 | 30,000円 |"]),
+      ),
+      ["金額「30,000円」が、数量×単価（3単位 × 15,000円 = 45,000円）と合いません"],
+    );
+    assert.equal(findingsOf(credits("| 科目 | 履修単位数 | 単位あたり | 金額 |", ["| 英語 | 2 | 12,000円 | 36,000円 |"])).length, 1);
+    assert.deepEqual(findingsOf(credits("| 科目 | 履修単位数 | 単位あたり | 金額 |", ["| 英語 | 3 | 12,000円 | 36,000円 |"])), []);
+    assert.deepEqual(findingsOf(credits("| Course | Credits | Tuition per credit | Amount |", ["| Statistics | 4 credits | $320.00 | $960.00 |"]), en), [
+      "The amount $960.00 is not quantity × unit price (4 credits × $320.00 = $1280.00)",
+    ]);
+    assert.equal(findingsOf(credits("| Course | Credit hours | Fee per credit | Amount |", ["| Writing | 3 credit hours | $300 | $600 |"]), en).length, 1);
+    assert.equal(findingsOf(credits("| Course | Credits | Per credit | Amount |", ["| Writing | 1 credit | $300 | $600 |"]), en).length, 1);
+    assert.deepEqual(
+      findingsOf(credits("| Course | Credits | Per credit | Amount |", ["| Writing | 1 credit | $300 | $300 |", "| Lab | 2 | $300 | $600 |"]), en),
+      [],
+    );
+  });
+
+  it("単位あたりの授業料と時間・時給を掛けず、単位数だけの成績表と「単位」「単位：円」の見出しは読まない", () => {
+    const four = (heads: string, row: string): string => [heads, "| --- | --- | --- | --- |", row].join("\n") + "\n";
+    assert.deepEqual(findingsOf(four("| 科目 | 時間 | 1単位あたりの授業料 | 金額 |", "| 実習 | 2 | 15,000円 | 45,000円 |")), []);
+    assert.deepEqual(findingsOf(four("| 科目 | 単位数 | 1単位あたりの授業料 | 金額 |", "| 実習 | 2時間 | 15,000円 | 45,000円 |")), []);
+    assert.deepEqual(findingsOf(four("| 科目 | 単位数 | 時給 | 金額 |", "| 実習 | 2 | 1,500円 | 4,500円 |")), []);
+    assert.deepEqual(findingsOf(four("| Course | Hours | Tuition per credit | Amount |", "| Lab | 2 | $300 | $900 |"), en), []);
+    assert.deepEqual(findingsOf(four("| Course | Credits | Hourly rate | Amount |", "| Lab | 2 credits | $30 | $90 |"), en), []);
+    assert.deepEqual(findingsOf(four("| 科目 | 単位数 | 評価 | GP |", "| 統計学 | 2 | A | 3 |")), []);
+    assert.deepEqual(findingsOf(four("| Course | Credits | Grade | Grade points |", "| Statistics | 3 | A | 4 |"), en), []);
+    assert.deepEqual(findingsOf(four("| 品目 | 単位 | 単価 | 金額 |", "| 統計学 | 2単位 | 15,000円 | 40,000円 |")), []);
+    assert.deepEqual(findingsOf(four("| 品目 | 単位：円 | 単価 | 金額 |", "| ボルト | 10 | 50円 | 600円 |")), []);
+  });
+
   it("単位を読む", () => {
     const marks = [
       { pattern: "/h", unit: "hour" },
@@ -402,5 +545,78 @@ describe("line-amount-mismatch: 数量×単価が金額と合わない", () => {
     assert.equal(priceHeadingUnit("day", "hour", rateUnits), "day");
     assert.equal(priceHeadingUnit(undefined, "hour", rateUnits), undefined);
     assert.equal(priceHeadingUnit(undefined, undefined, []), undefined);
+  });
+});
+
+describe("line-amount-mismatch: 項目の升の括弧に書いた 単価×人数", () => {
+  const income = (rows: readonly string[]): string => ["| 項目 | 金額 |", "| --- | --- |", ...rows].join("\n") + "\n";
+  const enIncome = (rows: readonly string[]): string => ["| Item | Amount |", "| --- | --- |", ...rows].join("\n") + "\n";
+
+  it("単価×人数と違う金額を指す。人数×単価の順でも読む", () => {
+    assert.deepEqual(findingsOf(income(["| 会費（3,000円×26名） | 72,000円 |"])), ["金額「72,000円」が、数量×単価（26名 × 3,000円 = 78,000円）と合いません"]);
+    assert.deepEqual(findingsOf(income(["| 協賛金(12社×5,000円) | 50,000円 |"])), ["金額「50,000円」が、数量×単価（12社 × 5,000円 = 60,000円）と合いません"]);
+    assert.deepEqual(findingsOf(enIncome(["| Membership dues (26 members × $40) | $960.00 |"]), en), [
+      "The amount $960.00 is not quantity × unit price (26 members × $40 = $1040.00)",
+    ]);
+    assert.deepEqual(findingsOf(enIncome(["| Raffle (120 tickets x $2.50) | $250 |"]), en), [
+      "The amount $250 is not quantity × unit price (120 tickets × $2.50 = $300)",
+    ]);
+  });
+
+  it("合えば言わない", () => {
+    assert.deepEqual(findingsOf(income(["| 会費（3,000円×24名） | 72,000円 |", "| 協賛金（5,000円×12社） | 60,000円 |"])), []);
+    assert.deepEqual(findingsOf(enIncome(["| Membership dues (24 members × $40) | $960.00 |", "| Raffle (120 tickets x $2.50) | $300 |"]), en), []);
+  });
+
+  it("掛け算が一つの金額と数える語の数でなければ読まない", () => {
+    const skipped = [
+      "| 会費（3,000円×24名×2回） | 72,000円 |",
+      "| 手数料（72,000円×5%） | 3,000円 |",
+      "| 床面積（12m×4m） | 72,000円 |",
+      "| 会費（3,000×24名） | 72,000円 |",
+      "| 会費（3,000円×24） | 72,000円 |",
+      "| 会費（3,000円×24日） | 72,000円 |",
+      "| 会費（月額3,000円×24名） | 72,000円 |",
+      "| 会費（3,000円×24名）（2,000円×3名） | 72,000円 |",
+      "| 会費 3,000円×24名 | 72,000円 |",
+    ];
+    skipped.forEach((row) => assert.deepEqual(findingsOf(income([row])), [], row));
+    assert.deepEqual(
+      findingsOf(enIncome(["| Dues (24 membersx$40) | $960.00 |", "| Box (24 boxes × $40) | $960.00 |", "| Dues (24¹ members × $40) | $960.00 |"]), en),
+      [],
+    );
+  });
+
+  it("行にほかの数があるか、金額の書き方が単価と違えば読まない", () => {
+    const budget = ["| 項目 | 予算 | 決算 |", "| --- | --- | --- |", "| 会費（3,000円×26名） | 78,000円 | 72,000円 |"].join("\n") + "\n";
+    assert.deepEqual(findingsOf(budget), []);
+    assert.deepEqual(findingsOf(income(["| 会費（3,000円×26名） | 7.2万円 |", "| 会費（3,000円×26名） | ¥72,000 |", "| 会費（3,000円×26名） | 未定 |"])), []);
+    assert.deepEqual(findingsOf(income(["| 会費（3,000円×26名） | ▲72,000円 |"])), []);
+  });
+
+  it("読み方の部品", () => {
+    const times = ["×", "x"];
+    assert.deepEqual(factorsOf("3,000円×24名", times), ["3,000円", "24名"]);
+    assert.deepEqual(factorsOf("24 members x $40", times), ["24 members", "$40"]);
+    assert.equal(factorsOf("24 membersx$40", times), undefined);
+    assert.equal(factorsOf("3,000円×24名×2回", times), undefined);
+    assert.equal(factorsOf("72,000円×5%", times), undefined);
+    assert.equal(factorsOf("3,000円と24名", times), undefined);
+    assert.equal(factorsOf("3,000円×24名", []), undefined);
+    assert.equal(factorsOf("", times), undefined);
+    assert.equal(countOf("24名", ["名"]), 24);
+    assert.equal(countOf("1,200 Members", ["members"]), 1200);
+    assert.equal(countOf("24", ["名"]), undefined);
+    assert.equal(countOf("24日", ["名"]), undefined);
+    assert.equal(countOf("2.5名", ["名"]), undefined);
+    assert.equal(countOf("約24名", ["名"]), undefined);
+    assert.equal(countOf("", ["名"]), undefined);
+    const words = { times, counts: ["名"], isMoney: (text: string): boolean => text.endsWith("円") };
+    assert.equal(labelProductOf("会費（3,000円×24名）", words)?.count, 24);
+    assert.equal(labelProductOf("会費（3,000円×24名）", words)?.price.value, 3000);
+    assert.equal(labelProductOf("会費", words), undefined);
+    assert.equal(labelProductOf("会費（3,000円×24¹名）", words), undefined);
+    assert.equal(labelProductOf("会費（24名×24名）", words), undefined);
+    assert.equal(labelProductOf("会費（3,000円×3,000円）", words), undefined);
   });
 });

@@ -1,0 +1,36 @@
+# Words for a product written in brackets in an item cell ("Membership dues (24 members × $40)", line-amount-mismatch).
+# times are the marks that multiply (a mark in letters, x, only between spaces); count are the words a count multiplied
+# by a price counts. Only a count in one of these words times one amount of money is compared with the row's amount.
+id: label-product-word
+language: en
+entries:
+  - { pattern: "×", group: times }
+  - { pattern: "✕", group: times }
+  - { pattern: x, group: times }
+  - { pattern: member, group: count }
+  - { pattern: members, group: count }
+  - { pattern: person, group: count }
+  - { pattern: persons, group: count }
+  - { pattern: people, group: count }
+  - { pattern: household, group: count }
+  - { pattern: households, group: count }
+  - { pattern: family, group: count }
+  - { pattern: families, group: count }
+  - { pattern: unit, group: count }
+  - { pattern: units, group: count }
+  - { pattern: participant, group: count }
+  - { pattern: participants, group: count }
+  - { pattern: attendee, group: count }
+  - { pattern: attendees, group: count }
+  - { pattern: copy, group: count }
+  - { pattern: copies, group: count }
+  - { pattern: item, group: count }
+  - { pattern: items, group: count }
+  - { pattern: piece, group: count }
+  - { pattern: pieces, group: count }
+  - { pattern: ticket, group: count }
+  - { pattern: tickets, group: count }
+  - { pattern: session, group: count }
+  - { pattern: sessions, group: count }
+  - { pattern: team, group: count }
+  - { pattern: teams, group: count }

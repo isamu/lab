@@ -1,0 +1,10 @@
+# 日付を締め切りにする語（9月18日までにお知らせください）。position は語が日付のどちら側に立つか。この語の付いた日付は、
+# 期間の中の予定ではなく、期間の後に来てよい返事や手続きの期限なので、地の文では date-outside-period は期間と比べない。
+# 「まで」だけは入れない: 「10月17日まで滞在」は期間の中の予定の終わりで、期間の外なら指す。
+id: date-deadline-mark
+language: ja
+entries:
+  - { pattern: までに, position: after }
+  - { pattern: 迄に, position: after }
+  - { pattern: 以内に, position: after }
+  - { pattern: 必着, position: after }

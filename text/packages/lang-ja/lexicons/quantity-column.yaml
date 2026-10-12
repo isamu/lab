@@ -17,3 +17,10 @@ entries:
   # 賃料の明細の月数（月額 × 月数 = 年額）。
   - { pattern: 月数, group: month }
   - { pattern: ヶ月, group: month }
+  # 給付金の明細の日数（日額 × 日数 = 給付金）。
+  - { pattern: 日数, group: day }
+  - { pattern: 入院日数, group: day }
+  - { pattern: 通院日数, group: day }
+  # 授業料の明細の単位数（1単位あたりの授業料と掛けて金額になる）。見出しの「単位」だけは「単位：円」の単位でもあるので数量と読まない。
+  - { pattern: 単位数, group: credit }
+  - { pattern: 履修単位数, group: credit }
