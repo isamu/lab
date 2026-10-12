@@ -1,7 +1,7 @@
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { cuedNamesIn, mentionsIn, nameVariants, suffixedNamesIn, withKnownNeighbours, type NameMention, type VariantChars } from "../name-variants.ts";
 import type { SpellingInput } from "../name-spelling-chars.ts";
-import type { LookalikeChars } from "../name-lookalike-chars.ts";
+import { lookalikeSlipsIn, type LookalikeChars } from "../name-lookalike-chars.ts";
 import { readingOfWords, type CharReadings } from "../name-char-reading.ts";
 import { nameCueAt, type NameCues } from "../name-cue.ts";
 import { quoteAt } from "./structure-tree.ts";
@@ -289,9 +289,16 @@ export const nameVariant: Detector = (doc): Finding[] => {
   const prose = doc.prose ?? doc.source;
   const chars = variantCharsOf(doc);
   const mentions = ordinaryNamesOf(doc, nameMentionsOf(doc, prose, chars));
-  const names = nameVariants(mentions, chars, spellingInputOf(doc), lookalikeCharsOf(doc))
+  const variants = nameVariants(mentions, chars, spellingInputOf(doc))
     .map(({ mention, usual, kind }): Reported => ({ offset: mention.offset, name: mention.surface, usual, kind }))
     .filter(notSpacingOnly);
+  const lookalikes = lookalikeSlipsIn(mentions, lookalikeCharsOf(doc)).map(({ mention, usual }) => ({
+    offset: mention.offset,
+    name: mention.surface,
+    usual,
+    kind: "lookalike",
+  }));
+  const names = [...variants, ...lookalikes.filter((found) => !overlapsAny(variants, found.offset, found.name.length))];
   const namesAndCompanies = [...names, ...companyFindings(doc, prose, names)];
   const withTables = [...namesAndCompanies, ...tableFindings(doc, prose, mentions, namesAndCompanies).filter(notSpacingOnly)];
   const withPlaces = [...withTables, ...placeFindings(doc, prose, withTables, chars)];
