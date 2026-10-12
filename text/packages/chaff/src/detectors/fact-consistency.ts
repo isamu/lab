@@ -3,7 +3,7 @@ import { countedFacts, countedPhraseAt, type CountedPhrase } from "../facts/coun
 import { nameSpans } from "../compare/proper-nouns.ts";
 import { factValues, type FactValue } from "../facts/fact-values.ts";
 import { labelledFacts, type AttributePhrase, type Fact, type FactWords } from "../facts/labelled-facts.ts";
-import { tableFacts } from "../facts/table-facts.ts";
+import { tableFacts, type TotalColumns } from "../facts/table-facts.ts";
 import { partsAt, scopedFacts, type ScopedFact } from "../facts/fact-scope.ts";
 import { conditionPairConflicts, type ChangeSentence, type ChangeWords, type ConditionWord, type PairConflict, type WordAt } from "../facts/condition-pairs.ts";
 import { scopeConflicts, summaryConflicts, type FactConflict } from "../facts/fact-conflicts.ts";
@@ -15,7 +15,7 @@ import { quoteAt } from "./structure-tree.ts";
 import { measuredOf, valuesWith } from "./measured-facts.ts";
 import { durationValues, type DurationWord } from "../facts/duration-values.ts";
 import { overlapsAny, spanIndex } from "../compare/spans.ts";
-import { documentTermConflicts, termHomes, type TermWord, type TermWords } from "../facts/document-terms.ts";
+import { documentTermConflicts, isTermName, termHomes, type TermWord, type TermWords } from "../facts/document-terms.ts";
 import { termValues, type PlacedWord, type TermValueWords } from "../facts/term-values.ts";
 import { inDocumentOrder } from "../structure/issues.ts";
 import { ageValues, type AgeWord, type AgeWords } from "../facts/age-values.ts";
@@ -67,6 +67,12 @@ const termValueWordsOf = (doc: ProseDocument): TermValueWords => ({
   starts: placedWordsOf(doc, "fact-term-start"),
   valueEnds: patternsOf(doc, "fact-value-end"),
 });
+
+const totalColumnsOf = (doc: ProseDocument): TotalColumns => {
+  const words = termWordsOf(doc);
+  const labels = (doc.lexicons["total-label"] ?? []).filter((entry) => entry.group !== "subtotal").map((entry) => entry.pattern);
+  return { labels, isTerm: (heading) => isTermName(heading, words) };
+};
 
 const factsByDocument = new WeakMap<ProseDocument, readonly ScopedFact[]>();
 
@@ -121,7 +127,7 @@ const readFacts = (doc: ProseDocument, tree: StructureNode): ScopedFact[] => {
   const labelled = labelledFacts(doc.source, values, { ...factWordsOf(doc), qualifiers: qualifierWordsOf(doc) }).filter(
     (fact) => !termed.has(fact.value.start),
   );
-  const facts = withQualifiedKeys(doc, [...labelled, ...terms, ...tableFacts(doc.source, values)]);
+  const facts = withQualifiedKeys(doc, [...labelled, ...terms, ...tableFacts(doc.source, values, totalColumnsOf(doc))]);
   return scopedFacts(facts, tree, doc.source, patternsOf(doc, "summary-heading"));
 };
 

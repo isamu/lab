@@ -75,6 +75,9 @@ const groupOfKey = (written: string, words: TermWords): string | undefined => {
 
 const groupOf = (fact: ScopedFact, words: TermWords): string | undefined => groupOfKey(fact.key, words);
 
+/** 書いた名前（表の列の見出し）が語彙表の項目の名前か。 */
+export const isTermName = (written: string, words: TermWords): boolean => groupOfKey(folded(written).replace(/\s+/gu, " ").trim(), words) !== undefined;
+
 export type TermSection = { readonly heading: string; readonly start: number; readonly end: number };
 
 /** 見出しが語彙表の項目の名前そのものの節（第2条（保証期間）、2. Warranty period）。 */

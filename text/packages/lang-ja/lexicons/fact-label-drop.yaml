@@ -4,3 +4,5 @@ language: ja
 entries:
   - pattern: "本体の"
   - pattern: "製品の"
+  # 英語の this に当たる。「今回の入院日数」は、文書が説明している入院の 入院日数。「前回の」は別のものを指すので入れない。
+  - pattern: "今回の"
