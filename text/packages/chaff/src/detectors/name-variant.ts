@@ -2,6 +2,7 @@ import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { cuedNamesIn, mentionsIn, nameVariants, suffixedNamesIn, type NameMention, type VariantChars } from "../name-variants.ts";
 import { withKnownNeighbours } from "../name-neighbours.ts";
 import type { SpellingInput } from "../name-spelling-chars.ts";
+import { lookalikeSlipsIn, type LookalikeChars } from "../name-lookalike-chars.ts";
 import { readingOfWords, type CharReadings } from "../name-char-reading.ts";
 import { nameCueAt, type NameCues } from "../name-cue.ts";
 import { quoteAt } from "./structure-tree.ts";
@@ -254,6 +255,12 @@ const nameMentionsOf = (doc: ProseDocument, prose: string, chars: VariantChars):
   return withKnownNeighbours([...outside, ...spaced], prose).toSorted((left, right) => left.offset - right.offset);
 };
 
+/** 人の名前で形の似た別の字（太 と 大）は語彙表 name-lookalike-char が組（group）ごとに言う。 */
+const lookalikeCharsOf = (doc: ProseDocument): LookalikeChars =>
+  new Map(
+    (doc.lexicons["name-lookalike-char"] ?? []).flatMap((entry): [string, string][] => (entry.group === undefined ? [] : [[entry.pattern, entry.group]])),
+  );
+
 /** 一語の名前の中で同じ音を書く字（ヶ・ケ・が）は語彙表 name-spelling-char が組（group）ごとに言う。 */
 const spellingCharsOf = (doc: ProseDocument): VariantChars =>
   new Map((doc.lexicons["name-spelling-char"] ?? []).flatMap((entry): [string, string][] => (entry.group === undefined ? [] : [[entry.pattern, entry.group]])));
@@ -302,9 +309,16 @@ export const nameVariant: Detector = (doc): Finding[] => {
   const prose = doc.prose ?? doc.source;
   const chars = variantCharsOf(doc);
   const mentions = labelledNamesOf(doc, ordinaryNamesOf(doc, nameMentionsOf(doc, prose, chars)));
-  const names = nameVariants(mentions, chars, spellingInputOf(doc))
+  const variants = nameVariants(mentions, chars, spellingInputOf(doc))
     .map(({ mention, usual, kind }): Reported => ({ offset: mention.offset, name: mention.surface, usual, kind }))
     .filter(notSpacingOnly);
+  const lookalikes = lookalikeSlipsIn(mentions, lookalikeCharsOf(doc)).map(({ mention, usual }) => ({
+    offset: mention.offset,
+    name: mention.surface,
+    usual,
+    kind: "lookalike",
+  }));
+  const names = [...variants, ...lookalikes.filter((found) => !overlapsAny(variants, found.offset, found.name.length))];
   const namesAndCompanies = [...names, ...companyFindings(doc, prose, names)];
   const withTables = [...namesAndCompanies, ...tableFindings(doc, prose, mentions, namesAndCompanies).filter(notSpacingOnly)];
   const withPlaces = [...withTables, ...placeFindings(doc, prose, withTables, chars)];

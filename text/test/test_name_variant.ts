@@ -19,6 +19,7 @@ import type { Token } from "../packages/chaff/src/plugin.ts";
 import { spacedPersonNamesIn } from "../packages/chaff/src/spaced-person-name.ts";
 import { isInPersonField } from "../packages/chaff/src/person-field.ts";
 import { heavierFirst, outweighs, type NameWeight } from "../packages/chaff/src/name-weight.ts";
+import { isLookalikeApart, lookalikeSlipsIn } from "../packages/chaff/src/name-lookalike-chars.ts";
 
 // 同じ名前の書き分け（name-variant）。例文はすべて自作。
 
@@ -628,5 +629,75 @@ describe("name-variant: カタカナか英字の名前に付く 社", () => {
       variants("サウスベイ・インポート株式会社（以下「サウスベイ・インポート社」）と契約します。\nサウスベイ・インポート社が支払います。\n", ja),
       [],
     );
+  });
+});
+
+describe("name-variant: 形の似た別の字で書いた人の名前（健太 と 健大）", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+  });
+
+  const lookalikes = new Map([
+    ["太", "太"],
+    ["大", "太"],
+    ["未", "未"],
+    ["末", "未"],
+  ]);
+  const doc = (names: readonly string[]): string => names.map((name) => `ご担当：${name} 様\n\n${name} 様にご確認ください。\n`).join("\n");
+
+  it("isLookalikeApart: 同じ位置の一字だけが、同じ組の字で違う", () => {
+    assert.equal(isLookalikeApart("山本 健太", "山本 健大", lookalikes), true);
+    assert.equal(isLookalikeApart("末松 一郎", "未松 一郎", lookalikes), true);
+  });
+
+  it("isLookalikeApart: 組に無い字、二字の違い、字数の違い、同じ形は違うと見ない", () => {
+    assert.equal(isLookalikeApart("山本 健太", "山本 健一", lookalikes), false);
+    assert.equal(isLookalikeApart("山本 健太", "山田 健大", lookalikes), false);
+    assert.equal(isLookalikeApart("山本 健太", "山本 健太郎", lookalikes), false);
+    assert.equal(isLookalikeApart("山本 健太", "山本 健太", lookalikes), false);
+    assert.equal(isLookalikeApart("太未", "大末", lookalikes), false);
+    assert.equal(isLookalikeApart("", "", lookalikes), false);
+    assert.equal(isLookalikeApart("山本 健太", "山本 健大", new Map()), false);
+  });
+
+  const person = (surface: string, offset: number, words = surface.split(" ")): NameMention => ({ ...mention(surface, offset), words, person: true });
+  const slips = (mentions: readonly NameMention[]): string[] => lookalikeSlipsIn(mentions, lookalikes).map((slip) => `${slip.mention.surface}→${slip.usual}`);
+
+  it("lookalikeSlipsIn: 一度だけの名前を、二度以上書いた形の似た名前と比べる", () => {
+    assert.deepEqual(slips([person("山本 健太", 0), person("山本 健太", 10), person("山本 健大", 20)]), ["山本 健大→山本 健太"]);
+    assert.deepEqual(slips([person("山本 健大", 0), person("山本 健太", 10), person("山本 健太", 20)]), ["山本 健大→山本 健太"]);
+  });
+
+  it("lookalikeSlipsIn: 両方二度以上、両方一度、人でない名前、一語の名前、空は比べない", () => {
+    assert.deepEqual(slips([person("山本 健太", 0), person("山本 健太", 5), person("山本 健大", 10), person("山本 健大", 15)]), []);
+    assert.deepEqual(slips([person("山本 健太", 0), person("山本 健大", 10)]), []);
+    assert.deepEqual(slips([mention("山本 健太", 0), mention("山本 健太", 10), mention("山本 健大", 20)]), []);
+    assert.deepEqual(slips([person("健太", 0, ["健太"]), person("健太", 10, ["健太"]), person("健大", 20, ["健大"])]), []);
+    assert.deepEqual(slips([]), []);
+    assert.deepEqual(lookalikeSlipsIn([person("山本 健太", 0), person("山本 健太", 10), person("山本 健大", 20)], new Map()), []);
+  });
+
+  it("姓と名のそろった名前の一字が形の似た字。多いほうが二度以上、少ないほうが一度だけ", () => {
+    const source = "ご担当：山本 健太 様\n\n変更は山本 健太 様からお知らせください。\n\n内容は山本 健大 様にご確認いただきます。\n";
+    assert.deepEqual(variants(source, ja), ["「山本 健大」は、ほかの所で何度も書いた「山本 健太」と、形の似た字一字だけが違います"]);
+  });
+
+  it("どちらも二度以上書いた名前は別の二人（兄弟の 健太 と 健大）", () => {
+    assert.deepEqual(variants(doc(["山本 健太", "山本 健大"]), ja), []);
+  });
+
+  it("多いほうが一度だけなら、どちらが正しいとも言えない", () => {
+    const source = "ご担当：山本 健太 様\n\n内容は山本 健大 様にご確認いただきます。\n";
+    assert.deepEqual(variants(source, ja), []);
+  });
+
+  it("組に無い字の一字違い、姓も違う名前は指さない", () => {
+    const once = (name: string): string => `\n内容は${name} 様にご確認いただきます。\n`;
+    assert.deepEqual(variants(doc(["山本 健太"]) + once("山本 健一"), ja), []);
+    assert.deepEqual(variants(doc(["山本 健太"]) + once("山田 健大"), ja), []);
+  });
+
+  it("名だけの名前は比べない", () => {
+    assert.deepEqual(variants("健太さんに渡します。健太さんが受け取ります。健大さんにも伝えます。\n", ja), []);
   });
 });

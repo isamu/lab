@@ -1,0 +1,26 @@
+# 人の名前で、形が似ていて書き写すときに取り違えやすい別の字（健太 と 健大、未来 と 末来）。group が同じ字どうしを取り違えやすい
+# 組と見る（name-variant）。読みが違うので読みでは比べられない。別の人の名前のこともある（兄弟の 健太 と 健大）ので、姓と名の
+# そろった名前で、一字だけがこの組で違い、多いほうが二度以上、少ないほうが一度だけのときに限る。字体の違う同じ字（斎 と 斉）は
+# name-variant-char が言う。どちらの字も名前に多い組（由 と 田、由井 と 田井）は置かない。
+id: name-lookalike-char
+language: ja
+entries:
+  - { pattern: 太, group: 太 }
+  - { pattern: 大, group: 太 }
+  - { pattern: 未, group: 未 }
+  - { pattern: 末, group: 未 }
+  - { pattern: 土, group: 土 }
+  - { pattern: 士, group: 土 }
+  - { pattern: 己, group: 己 }
+  - { pattern: 已, group: 己 }
+  - { pattern: 巳, group: 己 }
+  - { pattern: 藤, group: 藤 }
+  - { pattern: 籐, group: 藤 }
+  - { pattern: 祐, group: 祐 }
+  - { pattern: 裕, group: 祐 }
+  - { pattern: 崇, group: 崇 }
+  - { pattern: 祟, group: 崇 }
+  - { pattern: 綱, group: 綱 }
+  - { pattern: 網, group: 綱 }
+  - { pattern: 徹, group: 徹 }
+  - { pattern: 撤, group: 徹 }
