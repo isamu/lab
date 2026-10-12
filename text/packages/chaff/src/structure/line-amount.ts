@@ -24,7 +24,7 @@ export type LineAmountWords = {
   readonly units: readonly UnitWord[];
   /** Marks saying a price is per a unit (per-unit-mark). */
   readonly perUnitMarks: readonly UnitWord[];
-  /** Column headings that say the unit of their column (Hours, Rate). */
+  /** Column headings that say the unit of their column (Hours, Rate, 年額). */
   readonly headerUnits: readonly UnitWord[];
   /** Measure units written after a number (m³, km²): a quantity cell may end in one even when it holds a digit. */
   readonly measureUnits: readonly string[];
@@ -110,7 +110,13 @@ type QuantityKind = "quantity" | QuantityRole;
 /** A quantity column, the unit its heading says (Hours), and the unit the price is per beside it (undefined when none is said). */
 type QuantityColumn = { readonly index: number; readonly kind: QuantityKind; readonly unit: string | undefined; readonly priceUnit: string | undefined };
 
-type Table = { readonly quantities: readonly QuantityColumn[]; readonly unitPrice: number; readonly amount: number };
+type Table = {
+  readonly quantities: readonly QuantityColumn[];
+  readonly unitPrice: number;
+  readonly amount: number;
+  /** The unit an amount heading says its quantity must count (年額 is months × a monthly price), undefined when it says none. */
+  readonly amountCounts: string | undefined;
+};
 
 /** The column a mismatch is shown against: a delivery note bills what was delivered, then a plain quantity, then what was ordered. */
 const SHOWN_FIRST: readonly QuantityKind[] = ["delivered", "quantity", "ordered", "backordered"];
@@ -150,7 +156,8 @@ const tableOf = (header: readonly Cell[], words: LineAmountWords): Table | undef
   if (quantities.some((column) => column.index === unitPrice || column.index === amount)) return undefined;
   const priceUnit = headerUnit(header[unitPrice], words);
   const rateUnits = words.units.map((word) => word.unit);
-  return { quantities: quantities.map((column) => ({ ...column, priceUnit: priceHeadingUnit(priceUnit, column.unit, rateUnits) })), unitPrice, amount };
+  const columns = quantities.map((column) => ({ ...column, priceUnit: priceHeadingUnit(priceUnit, column.unit, rateUnits) }));
+  return { quantities: columns, unitPrice, amount, amountCounts: headerUnit(header[amount], words) };
 };
 
 /** The unit the quantity cell counts: its own word, else its heading's ("Hours"). */
@@ -165,6 +172,16 @@ const shownExpected = (amount: CellNumber, exactCents: number): string => {
   const decimals = Number.isInteger(Math.round(exact * CENTS) / CENTS) && amount.decimals === 0 ? 0 : Math.max(amount.decimals, 2);
   const number = exact.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals, useGrouping: amount.grouped });
   return `${amount.before}${number}${amount.after}`;
+};
+
+/**
+ * Whether the row's quantity can turn its price into the amount. A price per a unit goes with a quantity in that unit
+ * or a bare number; an amount heading that says what its quantity counts (年額: months) takes only a quantity in that
+ * unit, so 5 seats or 2 hours beside a monthly or hourly price is not compared with a year's amount.
+ */
+const quantityFits = (reading: Reading, table: Table, perUnit: string | undefined, words: LineAmountWords): boolean => {
+  const unit = rowQuantityUnit(reading.cell, reading.column, words);
+  return unitsAgree(unit, perUnit ?? reading.column.priceUnit) && (table.amountCounts === undefined || unit === table.amountCounts);
 };
 
 const usedColumns = (table: Table): number[] => [...table.quantities.map((column) => column.index), table.unitPrice, table.amount];
@@ -217,7 +234,7 @@ const rowIssue = (row: Line, table: Table, words: LineAmountWords): StructureIss
   const priced = readings === undefined ? undefined : pricedOf(cells, table, words);
   if (readings === undefined || priced === undefined) return [];
   const { price, amount, perUnit } = priced;
-  if (!readings.every(({ cell, column }) => unitsAgree(rowQuantityUnit(cell, column, words), perUnit ?? column.priceUnit))) return [];
+  if (!readings.every((reading) => quantityFits(reading, table, perUnit, words))) return [];
   const centsOf = (reading: Reading): number => reading.quantity * price.value * CENTS;
   if (readings.some((reading) => roundedMatches(Math.round(amount.value * CENTS), centsOf(reading), amount.decimals === 0))) return [];
   const shown = shownFirst(readings);

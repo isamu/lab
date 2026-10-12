@@ -6,3 +6,7 @@ entries:
   - pattern: Line total
   - pattern: Total
   - pattern: Extended
+  # A year's amount. The group is the unit its quantity counts: an annual amount is monthly × months, so only a row
+  # whose quantity is in months is compared.
+  - { pattern: Annual, group: month }
+  - { pattern: Annual total, group: month }

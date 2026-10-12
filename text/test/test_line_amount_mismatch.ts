@@ -294,6 +294,43 @@ describe("line-amount-mismatch: 数量×単価が金額と合わない", () => {
     );
   });
 
+  it("賃料の明細の月額 × 月数 = 年額を読む", () => {
+    const rent = (heading: string, rows: readonly string[]): string => [heading, "| --- | --- | --- | --- |", ...rows].join("\n") + "\n";
+    assert.deepEqual(
+      findingsOf(rent("| 項目 | 月額 | 月数 | 年額 |", ["| 賃料 | 75,000円 | 12か月 | 890,000円 |", "| 共益費 | 3,000円 | 12か月 | 36,000円 |"])),
+      ["金額「890,000円」が、数量×単価（12か月 × 75,000円 = 900,000円）と合いません"],
+    );
+    assert.deepEqual(findingsOf(rent("| 項目 | 月額賃料 | ヶ月 | 年間 |", ["| 倉庫 | 40,000円 | 6 | 250,000円 |"])), [
+      "金額「250,000円」が、数量×単価（6 × 40,000円 = 240,000円）と合いません",
+    ]);
+    assert.deepEqual(findingsOf(rent("| Item | Monthly | Months | Annual |", ["| Rent | £750.00 | 12 months | £8,900.00 |"]), en), [
+      "The amount £8,900.00 is not quantity × unit price (12 months × £750.00 = £9,000.00)",
+    ]);
+    assert.deepEqual(findingsOf(rent("| Item | Monthly rent | Months | Annual total |", ["| Garage | £60.00 | 10 | £550.00 |"]), en), [
+      "The amount £550.00 is not quantity × unit price (10 × £60.00 = £600.00)",
+    ]);
+    assert.deepEqual(findingsOf(rent("| 項目 | 月額 | 月数 | 年額 |", ["| 賃料 | 75,000円 | 12か月 | 900,000円 |", "| 合計 | | | 900,000円 |"])), []);
+    assert.deepEqual(findingsOf(rent("| Item | Monthly | Months | Annual |", ["| Rent | £750.00 | 12 months | £9,000.00 |"]), en), []);
+  });
+
+  it("月数の無い月額と年額の表、前年の列、単位を言わない数量と年額の表、別の単位の数量は比べない", () => {
+    assert.deepEqual(findingsOf("| 項目 | 月額 | 年額 |\n| --- | --- | --- |\n| 賃料 | 75,000円 | 890,000円 |\n"), []);
+    assert.deepEqual(findingsOf("| Item | Monthly | Annual |\n| --- | --- | --- |\n| Rent | £750.00 | £8,900.00 |\n", en), []);
+    assert.deepEqual(findingsOf("| 項目 | 月額 | 月数 | 前年 |\n| --- | --- | --- | --- |\n| 賃料 | 75,000円 | 12か月 | 880,000円 |\n"), []);
+    assert.deepEqual(
+      findingsOf("| 項目 | 月額 | 月数 | 前年 | 年額 |\n| --- | --- | --- | --- | --- |\n| 賃料 | 75,000円 | 12か月 | 880,000円 | 900,000円 |\n"),
+      [],
+    );
+    assert.deepEqual(findingsOf("| 品目 | 数量 | 月額 | 年額 |\n| --- | --- | --- | --- |\n| 利用料 | 5 | 1,000円 | 60,000円 |\n"), []);
+    assert.deepEqual(findingsOf("| Item | Units | Monthly | Annual |\n| --- | --- | --- | --- |\n| Seats | 5 | £10.00 | £600.00 |\n", en), []);
+    assert.deepEqual(findingsOf("| 項目 | 月額 | 月数 | 年額 |\n| --- | --- | --- | --- |\n| 駐車場 | 8,000円 | 52週 | 102,000円 |\n"), []);
+    assert.deepEqual(findingsOf("| 項目 | 時間 | 時給 | 年額 |\n| --- | --- | --- | --- |\n| 保守 | 2時間 | 1,000円 | 2,500円 |\n"), []);
+    assert.deepEqual(findingsOf("| Item | Hours | Hourly rate | Annual |\n| --- | --- | --- | --- |\n| Support | 2 hours | $100 | $250 |\n", en), []);
+    assert.deepEqual(findingsOf("| プラン | 数量 | 月額 | 金額 |\n| --- | --- | --- | --- |\n| 利用料 | 3 | 1,000円 | 3,500円 |\n"), [
+      "金額「3,500円」が、数量×単価（3 × 1,000円 = 3,000円）と合いません",
+    ]);
+  });
+
   it("単位を読む", () => {
     const marks = [
       { pattern: "/h", unit: "hour" },

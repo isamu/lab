@@ -10,3 +10,5 @@ entries:
   - pattern: 単価（円/点）
   - { pattern: 時給, group: hour }
   - { pattern: 単価（円/km）, group: km }
+  - { pattern: 月額, group: month }
+  - { pattern: 月額賃料, group: month }
