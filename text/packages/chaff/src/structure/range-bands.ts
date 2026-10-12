@@ -59,7 +59,7 @@ export const normalizeBandText = (text: string): string => splitNote(plainOf(tex
 const normalizeWord = (word: string): string => word.normalize("NFKC").toLowerCase();
 
 /** A unit compared across bands: years and year, kg and kgs are the same unit. */
-const unitKey = (unit: string): string => (unit.length > 2 && unit.endsWith("s") ? unit.slice(0, -1) : unit);
+export const unitKey = (unit: string): string => (unit.length > 2 && unit.endsWith("s") ? unit.slice(0, -1) : unit);
 
 type Cursor = { readonly text: string; readonly at: number };
 

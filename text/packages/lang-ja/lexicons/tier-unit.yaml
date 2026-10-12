@@ -1,0 +1,9 @@
+# 会員ランクの基準を数える単位（tier-threshold-mismatch）。基準の幅と会員の値が同じ単位のときだけ比べる。group は range-band-unit と
+# 同じ意味（integer は間に値の無い数、continuous は間に値のある量）。
+id: tier-unit
+language: ja
+entries:
+  - { pattern: ポイント, group: integer }
+  - { pattern: 泊, group: integer }
+  - { pattern: 回, group: integer }
+  - { pattern: 円, group: continuous }
