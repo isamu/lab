@@ -1,0 +1,265 @@
+{
+  "note": "Self-written registration confirmations and ticket orders for made-up events, venues and attendees: a confirmation of registration for a conference, and a confirmation of a concert ticket order, in each language. The events set holds flyers and programmes; this set holds what the attendee gets back after signing up or buying. Each is in a clean version and a planted one that differs only on the lines below. They run as business/email, since each is the confirmation email an attendee receives. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. The conference's deadline is a deadline for changing the registration, the concert's a payment deadline; both are named for deadline-after-event. The doors-open time later than the start time is named for time-order: the conference gives it as a row of its programme table, the concert as a labelled list item (Doors open: 17:30). The number of tickets or attendees given two ways (a table row and a sentence) is named for fact-conflict. The line-total plants change the unit price, not the amount, so the total the grand-total plant is compared with does not move, and the count plants change the sentence, not the table row the line-total plant multiplies. Each plant was also run alone on its clean document, so no plant depends on another. yarn planted tickets scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/registration",
+      "language": "ja",
+      "genre": "business/email",
+      "clean": "ja/registration.clean.md",
+      "planted": "ja/registration.planted.md",
+      "mistakes": [
+        {
+          "kind": "ticket-line-amount",
+          "rule": "line-amount-mismatch",
+          "line": 33,
+          "clean": "2名 | 6,000円",
+          "planted": "2名 | 6,500円"
+        },
+        {
+          "kind": "fees-total",
+          "rule": "total-mismatch",
+          "line": 36,
+          "clean": "| 合計 | | | 19,500円 |",
+          "planted": "| 合計 | | | 18,500円 |"
+        },
+        {
+          "kind": "deadline-after-event",
+          "rule": "deadline-after-event",
+          "line": 44,
+          "clean": "2026年11月6日（金）までに",
+          "planted": "2026年11月20日（金）までに"
+        },
+        {
+          "kind": "doors-after-start",
+          "rule": "time-order",
+          "line": 21,
+          "clean": "| 9:15 | 受付開始 |",
+          "planted": "| 10:15 | 受付開始 |"
+        },
+        {
+          "kind": "attendee-name",
+          "rule": "name-variant",
+          "line": 48,
+          "clean": "受付で山本 美咲 様",
+          "planted": "受付で山元 美咲 様"
+        },
+        {
+          "kind": "reference-swapped",
+          "rule": "reference-number-variant",
+          "line": 50,
+          "clean": "登録番号RF-62417を",
+          "planted": "登録番号RF-62147を"
+        },
+        {
+          "kind": "ticket-count-two-ways",
+          "rule": "fact-conflict",
+          "line": 38,
+          "clean": "含めて2名分です",
+          "planted": "含めて3名分です"
+        },
+        {
+          "kind": "event-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 11,
+          "clean": "日時：2026年11月14日（土）",
+          "planted": "日時：2026年11月14日（金）"
+        }
+      ]
+    },
+    {
+      "id": "ja/ticket-order",
+      "language": "ja",
+      "genre": "business/email",
+      "clean": "ja/ticket-order.clean.md",
+      "planted": "ja/ticket-order.planted.md",
+      "mistakes": [
+        {
+          "kind": "ticket-line-amount",
+          "rule": "line-amount-mismatch",
+          "line": 23,
+          "clean": "2枚 | 7,800円",
+          "planted": "2枚 | 8,200円"
+        },
+        {
+          "kind": "fees-total",
+          "rule": "total-mismatch",
+          "line": 27,
+          "clean": "| 合計 | | | 22,090円 |",
+          "planted": "| 合計 | | | 22,900円 |"
+        },
+        {
+          "kind": "deadline-after-event",
+          "rule": "deadline-after-event",
+          "line": 35,
+          "clean": "お支払い期限：2026年12月4日（金）",
+          "planted": "お支払い期限：2026年12月15日（火）"
+        },
+        {
+          "kind": "doors-after-start",
+          "rule": "time-order",
+          "line": 15,
+          "clean": "- 開場：17:30",
+          "planted": "- 開場：18:45"
+        },
+        {
+          "kind": "attendee-name",
+          "rule": "name-variant",
+          "line": 41,
+          "clean": "発券の際は、佐藤 健太 様",
+          "planted": "発券の際は、佐藤 建太 様"
+        },
+        {
+          "kind": "reference-swapped",
+          "rule": "reference-number-variant",
+          "line": 43,
+          "clean": "注文番号TK-805936を",
+          "planted": "注文番号TK-809536を"
+        },
+        {
+          "kind": "ticket-count-two-ways",
+          "rule": "fact-conflict",
+          "line": 29,
+          "clean": "合計3枚です",
+          "planted": "合計4枚です"
+        },
+        {
+          "kind": "event-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 11,
+          "clean": "日時：2026年12月12日（土）",
+          "planted": "日時：2026年12月12日（金）"
+        }
+      ]
+    },
+    {
+      "id": "en/registration",
+      "language": "en",
+      "genre": "business/email",
+      "clean": "en/registration.clean.md",
+      "planted": "en/registration.planted.md",
+      "mistakes": [
+        {
+          "kind": "ticket-line-amount",
+          "rule": "line-amount-mismatch",
+          "line": 33,
+          "clean": "2 people | $120.00",
+          "planted": "2 people | $125.00"
+        },
+        {
+          "kind": "fees-total",
+          "rule": "total-mismatch",
+          "line": 36,
+          "clean": "| Total | | | $335.00 |",
+          "planted": "| Total | | | $353.00 |"
+        },
+        {
+          "kind": "deadline-after-event",
+          "rule": "deadline-after-event",
+          "line": 44,
+          "clean": "by Friday, November 6, 2026",
+          "planted": "by Friday, November 20, 2026"
+        },
+        {
+          "kind": "doors-after-start",
+          "rule": "time-order",
+          "line": 21,
+          "clean": "| 9:15 | Registration opens |",
+          "planted": "| 10:15 | Registration opens |"
+        },
+        {
+          "kind": "attendee-name",
+          "rule": "name-variant",
+          "line": 48,
+          "clean": "give the name Megan Holloway",
+          "planted": "give the name Megan Halloway"
+        },
+        {
+          "kind": "reference-swapped",
+          "rule": "reference-number-variant",
+          "line": 50,
+          "clean": "registration number RF-62417 in",
+          "planted": "registration number RF-62147 in"
+        },
+        {
+          "kind": "ticket-count-two-ways",
+          "rule": "fact-conflict",
+          "line": 38,
+          "clean": "covers 2 attendees",
+          "planted": "covers 3 attendees"
+        },
+        {
+          "kind": "event-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 11,
+          "clean": "Date: Saturday, November 14, 2026",
+          "planted": "Date: Friday, November 14, 2026"
+        }
+      ]
+    },
+    {
+      "id": "en/ticket-order",
+      "language": "en",
+      "genre": "business/email",
+      "clean": "en/ticket-order.clean.md",
+      "planted": "en/ticket-order.planted.md",
+      "mistakes": [
+        {
+          "kind": "ticket-line-amount",
+          "rule": "line-amount-mismatch",
+          "line": 23,
+          "clean": "2 tickets | $68.00",
+          "planted": "2 tickets | $72.00"
+        },
+        {
+          "kind": "fees-total",
+          "rule": "total-mismatch",
+          "line": 27,
+          "clean": "| Total | | | $191.50 |",
+          "planted": "| Total | | | $195.10 |"
+        },
+        {
+          "kind": "deadline-after-event",
+          "rule": "deadline-after-event",
+          "line": 35,
+          "clean": "Payment due by: Friday, December 4, 2026",
+          "planted": "Payment due by: Tuesday, December 15, 2026"
+        },
+        {
+          "kind": "doors-after-start",
+          "rule": "time-order",
+          "line": 15,
+          "clean": "- Doors open: 17:30",
+          "planted": "- Doors open: 18:45"
+        },
+        {
+          "kind": "attendee-name",
+          "rule": "name-variant",
+          "line": 41,
+          "clean": "give the name Daniel Brooks",
+          "planted": "give the name Daniel Brookes"
+        },
+        {
+          "kind": "reference-swapped",
+          "rule": "reference-number-variant",
+          "line": 43,
+          "clean": "order number TK-805936 in",
+          "planted": "order number TK-809536 in"
+        },
+        {
+          "kind": "ticket-count-two-ways",
+          "rule": "fact-conflict",
+          "line": 29,
+          "clean": "for 3 tickets in total",
+          "planted": "for 4 tickets in total"
+        },
+        {
+          "kind": "event-weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 11,
+          "clean": "Date: Saturday, December 12, 2026",
+          "planted": "Date: Friday, December 12, 2026"
+        }
+      ]
+    }
+  ]
+}
