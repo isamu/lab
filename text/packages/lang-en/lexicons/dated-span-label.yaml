@@ -8,3 +8,5 @@ entries:
   - pattern: Period covered
   - pattern: Pay period
   - pattern: Tax year
+  - pattern: Fiscal year
+  - pattern: Financial year

@@ -8,3 +8,5 @@ entries:
   - pattern: 会計期間
   - pattern: 支給対象期間
   - pattern: 計算期間
+  - pattern: 会計年度
+  - pattern: 事業年度

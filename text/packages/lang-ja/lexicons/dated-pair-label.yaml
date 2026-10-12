@@ -204,3 +204,10 @@ entries:
   - { pattern: "利用終了日", group: service-period, position: after }
   - { pattern: "契約終了日", group: service-period, position: after }
   - { pattern: "サービス終了日", group: service-period, position: after }
+  # 会計報告書や収支決算報告書。会計の監査は、その会計年度が終わってから受ける。会計年度は期間を書く語で、終わりの日と比べる。
+  # 「承認日」「総会承認日」「報告日」は入れない。予算書は年度が始まる前に承認し、中間の報告は年度の途中に出す。
+  - { pattern: "会計年度", group: fiscal-audit, position: before }
+  - { pattern: "事業年度", group: fiscal-audit, position: before }
+  - { pattern: "監査日", group: fiscal-audit, position: after }
+  - { pattern: "会計監査日", group: fiscal-audit, position: after }
+  - { pattern: "監査実施日", group: fiscal-audit, position: after }

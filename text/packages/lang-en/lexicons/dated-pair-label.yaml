@@ -197,3 +197,12 @@ entries:
   - { pattern: "Service end date", group: service-period, position: after }
   - { pattern: "End of service", group: service-period, position: after }
   - { pattern: "Contract end date", group: service-period, position: after }
+  # A treasurer's report or an income and expenditure statement: the accounts are audited once the financial year has
+  # ended. The year is a period, compared by its last day. Approval and report dates are left out: a budget is approved
+  # before its year begins, and an interim report is dated inside the year.
+  - { pattern: "Fiscal year", group: fiscal-audit, position: before }
+  - { pattern: "Financial year", group: fiscal-audit, position: before }
+  - { pattern: "Audited", group: fiscal-audit, position: after }
+  - { pattern: "Date audited", group: fiscal-audit, position: after }
+  - { pattern: "Audit date", group: fiscal-audit, position: after }
+  - { pattern: "Date of audit", group: fiscal-audit, position: after }
