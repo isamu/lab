@@ -176,6 +176,31 @@ describe("reference-number-variant", () => {
     assert.deepEqual(found(docEn("Patient number: 7724-3168", "", "Invoice number: 7724-3186"), en), []);
     assert.deepEqual(found(docEn("Patient number: 7724-3168 (mother)", "", "Patient number: 7742-1368 (child)"), en), []);
   });
+
+  it("ja: 契約番号・賃貸借契約番号・契約No. の、隣り合う文字の入れ違いを指す", () => {
+    assert.deepEqual(found(docJa("契約番号：KR-260417", "", "契約番号KR-260471の更新は、4月1日です。"), ja), [5]);
+    assert.deepEqual(found(docJa("賃貸借契約番号：KR-260417", "", "契約番号はKR-206417です。"), ja), [5]);
+    assert.deepEqual(found(docJa("契約No. KR-260417", "", "契約番号 KR-260471"), ja), [5]);
+  });
+
+  it("ja: 原契約番号・基本契約番号は文書自身の契約番号と比べず、別の契約の番号も指さない", () => {
+    assert.deepEqual(found(docJa("契約番号：KR-260417", "", "原契約番号：KR-260471"), ja), []);
+    assert.deepEqual(found(docJa("契約番号：KR-260417", "", "基本契約番号はKR-206417です。"), ja), []);
+    assert.deepEqual(found(docJa("契約番号：KR-260417", "", "契約番号：KR-264701"), ja), []);
+    assert.deepEqual(found(docJa("契約番号：KR-260417", "", "注文番号：KR-260471"), ja), []);
+  });
+
+  it("en: a contract or agreement number with two neighbouring characters swapped", () => {
+    assert.deepEqual(found(docEn("Tenancy agreement number: TA-260417", "", "Agreement number TA-260471 is due for renewal."), en), [5]);
+    assert.deepEqual(found(docEn("Contract number: TA-260417", "", "Please quote contract No. TA-206417."), en), [5]);
+  });
+
+  it("en: an original or master agreement's number is not compared with the document's own, nor is another contract's", () => {
+    assert.deepEqual(found(docEn("Contract number: TA-260417", "", "Original contract number: TA-260471"), en), []);
+    assert.deepEqual(found(docEn("Agreement number: TA-260417", "", "Master agreement number: TA-206417"), en), []);
+    assert.deepEqual(found(docEn("Contract number: TA-260417", "", "Contract number: TA-264701"), en), []);
+    assert.deepEqual(found(docEn("Contract number: TA-260417", "", "Invoice number: TA-260471"), en), []);
+  });
 });
 
 describe("reference numbers", () => {

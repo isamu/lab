@@ -38,3 +38,19 @@ entries:
   - { pattern: patient id, group: patient }
   - { pattern: patient id is, group: patient }
   - { pattern: patient no., group: patient }
+  - { pattern: contract number, group: contract }
+  - { pattern: contract number is, group: contract }
+  - { pattern: contract no., group: contract }
+  - { pattern: agreement number, group: contract }
+  - { pattern: agreement number is, group: contract }
+  - { pattern: tenancy agreement number, group: contract }
+  - { pattern: tenancy agreement number is, group: contract }
+  # Labels of another contract's number. The longer label wins, so these are never compared with the document's own.
+  - { pattern: original contract number, group: original-contract }
+  - { pattern: original contract number is, group: original-contract }
+  - { pattern: original agreement number, group: original-contract }
+  - { pattern: original agreement number is, group: original-contract }
+  - { pattern: master agreement number, group: master-contract }
+  - { pattern: master agreement number is, group: master-contract }
+  - { pattern: master contract number, group: master-contract }
+  - { pattern: master contract number is, group: master-contract }

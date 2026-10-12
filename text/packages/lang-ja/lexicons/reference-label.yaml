@@ -38,3 +38,14 @@ entries:
   - { pattern: 患者IDは, group: patient }
   - { pattern: 診察券番号, group: patient }
   - { pattern: 診察券番号は, group: patient }
+  - { pattern: 契約番号, group: contract }
+  - { pattern: 契約番号は, group: contract }
+  - { pattern: 契約No., group: contract }
+  - { pattern: 契約No, group: contract }
+  - { pattern: 賃貸借契約番号, group: contract }
+  - { pattern: 賃貸借契約番号は, group: contract }
+  # 別の契約の番号を引く語。長い方の語が勝つので、文書自身の「契約番号」とは比べない。
+  - { pattern: 原契約番号, group: original-contract }
+  - { pattern: 原契約番号は, group: original-contract }
+  - { pattern: 基本契約番号, group: master-contract }
+  - { pattern: 基本契約番号は, group: master-contract }
