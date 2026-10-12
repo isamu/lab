@@ -1,0 +1,23 @@
+# Labels a person's name is written after, at the start of a line ("Customer: Ellen Marsh", "Signed by: Tom Green"). name-variant
+# reads the last of the one to three capitalised words after the colon as a surname the document uses for a person, so a
+# surname that is also an ordinary word (Marsh, Green) is still compared. The label is matched whole, ignoring case
+# ("Company name" is not "Name"). Only labels a person's name follows belong here, not "Location" or "Company".
+id: person-label
+language: en
+entries:
+  - pattern: Name
+  - pattern: Full name
+  - pattern: Customer
+  - pattern: Client
+  - pattern: Patient
+  - pattern: Patient name
+  - pattern: Applicant
+  - pattern: Tenant
+  - pattern: Attendee
+  - pattern: Guest
+  - pattern: Student
+  - pattern: Employee
+  - pattern: Approver
+  - pattern: Signed by
+  - pattern: Prepared by
+  - pattern: Contact person

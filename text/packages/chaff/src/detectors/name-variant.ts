@@ -271,10 +271,19 @@ const tableFindings = (doc: ProseDocument, prose: string, mentions: readonly Nam
 /** 日本語の人の名前の、姓と名のあいだの空白だけの違い（田中 裕子 と 田中裕子）は書き分けとして指さない。 */
 const notSpacingOnly = ({ name, usual, kind }: Reported): boolean => kind !== "spelling" || !spacedOnly(name, usual);
 
-/** ふつうの語でもある一語の名前に印を付ける。敬称（Mr.）や肩書き（Senator）の後ろに書いた語は、表や見出しの中でも人の名前に使っている。 */
+/**
+ * ふつうの語でもある一語の名前に印を付ける。敬称（Mr.）や肩書き（Senator）の後ろに書いた語は、表や見出しの中でも人の名前に使っている。
+ * 人を書く欄（Customer:、語彙表 person-label）の後ろの名前の姓も同じ。
+ */
 const ordinaryNamesOf = (doc: ProseDocument, mentions: readonly NameMention[]): NameMention[] => {
   const ordinaryStarts = new Set(tokensOf(doc).flatMap((token) => (isOrdinaryToken(token) ? [token.span.start] : [])));
-  return withOrdinaryWords(mentions, ordinaryStarts, doc.source, [...patternsOf(doc, "honorific"), ...patternsOf(doc, "name-title")]);
+  return withOrdinaryWords(
+    mentions,
+    ordinaryStarts,
+    doc.source,
+    [...patternsOf(doc, "honorific"), ...patternsOf(doc, "name-title")],
+    patternsOf(doc, "person-label"),
+  );
 };
 
 /** 同じ名前を、文書の中で少しだけ違う形に書いた所（GitHub と Github、山田太郎 と 山田太朗）。少ないほうを指す。 */

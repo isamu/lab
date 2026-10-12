@@ -14,7 +14,7 @@ import {
   type NameEvidence,
   type NameMention,
 } from "../packages/chaff/src/name-variants.ts";
-import { isTitledIn, withOrdinaryWords } from "../packages/chaff/src/name-ordinary-word.ts";
+import { isLabelledIn, isTitledIn, withOrdinaryWords } from "../packages/chaff/src/name-ordinary-word.ts";
 import type { Token } from "../packages/chaff/src/plugin.ts";
 import { spacedPersonNamesIn } from "../packages/chaff/src/spaced-person-name.ts";
 
@@ -270,6 +270,26 @@ describe("the reading behind name-variant", () => {
     assert.equal(isTitledIn("", titles, "Marsh"), false);
   });
 
+  it("isLabelledIn: a word the document writes as the surname after a person label is used as a person's name", () => {
+    const labels = ["Name", "Customer", "Client", "Patient name", "Signed by"];
+    assert.equal(isLabelledIn("Customer: Ellen Marsh\n", labels, "Marsh"), true);
+    assert.equal(isLabelledIn("Intro.\nclient: Marsh", labels, "Marsh"), true);
+    assert.equal(isLabelledIn("- **Patient name:** Tom Green\n", labels, "Green"), true);
+    assert.equal(isLabelledIn("Signed by: Ellen J. Marsh, Director\n", labels, "Marsh"), true);
+    assert.equal(isLabelledIn("Client: Marsh.\n", labels, "Marsh"), true);
+    assert.equal(isLabelledIn("Customer：Ellen Marsh (2026-10-01)\r\n", labels, "Marsh"), true);
+    assert.equal(isLabelledIn("Customer: Ellen Marsh\n", labels, "Ellen"), false);
+    assert.equal(isLabelledIn("Name: Green Valley Farm\n", labels, "Green"), false);
+    assert.equal(isLabelledIn("Company name: Ellen Marsh\n", labels, "Marsh"), false);
+    assert.equal(isLabelledIn("Location: Marsh\n", labels, "Marsh"), false);
+    assert.equal(isLabelledIn("The customer: Marsh\n", labels, "Marsh"), false);
+    assert.equal(isLabelledIn("Customer: the Marsh account\n", labels, "Marsh"), false);
+    assert.equal(isLabelledIn("Customer: Ellen Marsh pays the rent on time.\n", labels, "Marsh"), false);
+    assert.equal(isLabelledIn("Customer: Ellen Marshall\n", labels, "Marsh"), false);
+    assert.equal(isLabelledIn("Customer: Ellen Marsh\n", [], "Marsh"), false);
+    assert.equal(isLabelledIn("", labels, "Marsh"), false);
+  });
+
   it("withOrdinaryWords marks one-word names on an ordinary word that no title precedes", () => {
     const source = "Green won. Mr. Marsh paid. Marsh left. Helen Green came.";
     const mentions = [mention("Green", 0), mention("Marsh", 15), mention("Marsh", 27), mention("Helen Green", 39), mention("Okafor", 60)];
@@ -300,6 +320,19 @@ describe("the reading behind name-variant", () => {
     assert.deepEqual(variants("| Tenant |\n| --- |\n| Mr. Marsh |\n\nThen Marsh pays. Then Marsh leaves. Later March files it.\n"), [
       '"March" is one letter away from "Marsh", which the document uses more than once',
     ]);
+    assert.deepEqual(variants("Customer: Ellen Marsh\n\nThen Marsh pays. Then Marsh leaves. Later March files it.\n"), [
+      '"March" is one letter away from "Marsh", which the document uses more than once',
+    ]);
+    assert.deepEqual(variants("- **Client:** Marsh\n\nThen Marsh pays. Then Marsh leaves. Later March files it.\n"), [
+      '"March" is one letter away from "Marsh", which the document uses more than once',
+    ]);
+    assert.deepEqual(variants("Ellen Marsh\n\nThen Marsh pays. Then Marsh leaves. Later March files it.\n"), []);
+    assert.deepEqual(variants("Location: Marsh\n\nThen Marsh pays. Then Marsh leaves. Later March files it.\n"), []);
+    assert.deepEqual(variants("Name: Green Valley Farm\n\nThe menu was in Greek. The sign was in Greek. The door was painted Green.\n"), []);
+    assert.deepEqual(
+      variants("Name: Green Valley Farm\n\nName: Greek Valley Farm\n\nThe door was painted Green. The menu was in Greek. The sign was in Greek.\n"),
+      [],
+    );
     assert.deepEqual(variants("Kenji Okafor sent it. Okafor called. Okafor paid. Okafur left.\n"), [
       '"Okafur" is one letter away from "Okafor", which the document uses more than once',
     ]);
