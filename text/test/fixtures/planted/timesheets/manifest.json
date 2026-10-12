@@ -1,0 +1,293 @@
+{
+  "note": "Self-written timesheets and contractor work reports (勤務表・作業報告書 / timesheet, work report) for made-up employers, clients and workers: an hourly employee's timesheet with separate start, end and break columns and a pay estimate, and a contractor's work report with the time range in one cell and a bill at an hourly rate, each in a clean version and a planted one that differs only on the lines below. They run as business/proposal, the genre the payslips run as: no genre is made for timesheets. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. Two rules are named for what they do not do yet: time-range-reversed for an end before its start written in separate start and end columns, and duration-mismatch for a day's hours that are not its end less its start and break, and for a break longer than the shift, in a table whose columns are named by their header (始業・終業・休憩・実働 / Start, End, Break, Hours) rather than by words in each cell. The worker's name appears twice in each document, once in the header and once in a sentence, so a variant has no majority to be measured against. Each plant was also run alone on its clean document, so no plant depends on another. yarn planted timesheets scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/timesheet",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/timesheet.clean.md",
+      "planted": "ja/timesheet.planted.md",
+      "mistakes": [
+        {
+          "kind": "period-reversed",
+          "rule": "date-range-reversed",
+          "line": 11,
+          "clean": "〜2026年9月15日",
+          "planted": "〜2025年9月15日"
+        },
+        {
+          "kind": "day-hours",
+          "rule": "duration-mismatch",
+          "line": 22,
+          "clean": "| 7.0時間 |",
+          "planted": "| 7.5時間 |"
+        },
+        {
+          "kind": "break-longer-than-shift",
+          "rule": "duration-mismatch",
+          "line": 24,
+          "clean": "| 0:30 |",
+          "planted": "| 5:30 |"
+        },
+        {
+          "kind": "end-before-start",
+          "rule": "time-range-reversed",
+          "line": 25,
+          "clean": "| 18:00 |",
+          "planted": "| 8:00 |"
+        },
+        {
+          "kind": "hours-total",
+          "rule": "total-mismatch",
+          "line": 30,
+          "clean": "| 87.0時間 |",
+          "planted": "| 86.0時間 |"
+        },
+        {
+          "kind": "hours-times-rate",
+          "rule": "line-amount-mismatch",
+          "line": 41,
+          "clean": "| 99,600円 |",
+          "planted": "| 96,900円 |"
+        },
+        {
+          "kind": "overtime-line",
+          "rule": "line-amount-mismatch",
+          "line": 42,
+          "clean": "| 6,000円 |",
+          "planted": "| 5,000円 |"
+        },
+        {
+          "kind": "worker-name",
+          "rule": "name-variant",
+          "line": 47,
+          "clean": "山下 美咲 さんの",
+          "planted": "山下 未咲 さんの"
+        },
+        {
+          "kind": "worker-id",
+          "rule": "reference-number-variant",
+          "line": 51,
+          "clean": "社員番号A-21457",
+          "planted": "社員番号A-21547"
+        }
+      ]
+    },
+    {
+      "id": "ja/workreport",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/workreport.clean.md",
+      "planted": "ja/workreport.planted.md",
+      "mistakes": [
+        {
+          "kind": "period-reversed",
+          "rule": "date-range-reversed",
+          "line": 11,
+          "clean": "〜2026年10月16日",
+          "planted": "〜2025年10月16日"
+        },
+        {
+          "kind": "end-before-start",
+          "rule": "time-range-reversed",
+          "line": 22,
+          "clean": "9:30〜18:30",
+          "planted": "9:30〜8:30"
+        },
+        {
+          "kind": "day-hours",
+          "rule": "duration-mismatch",
+          "line": 23,
+          "clean": "| 7時間 |",
+          "planted": "| 8時間 |"
+        },
+        {
+          "kind": "break-longer-than-shift",
+          "rule": "duration-mismatch",
+          "line": 28,
+          "clean": "| 1時間 |",
+          "planted": "| 9時間 |"
+        },
+        {
+          "kind": "hours-total",
+          "rule": "total-mismatch",
+          "line": 29,
+          "clean": "| 77時間 |",
+          "planted": "| 78時間 |"
+        },
+        {
+          "kind": "hours-times-rate",
+          "rule": "line-amount-mismatch",
+          "line": 37,
+          "clean": "| 365,000円 |",
+          "planted": "| 356,000円 |"
+        },
+        {
+          "kind": "overtime-line",
+          "rule": "line-amount-mismatch",
+          "line": 38,
+          "clean": "| 25,000円 |",
+          "planted": "| 25,500円 |"
+        },
+        {
+          "kind": "worker-name",
+          "rule": "name-variant",
+          "line": 47,
+          "clean": "すべて西村 亮が",
+          "planted": "すべて西邑 亮が"
+        },
+        {
+          "kind": "worker-id",
+          "rule": "reference-number-variant",
+          "line": 51,
+          "clean": "契約番号KT-58304",
+          "planted": "契約番号KT-58340"
+        }
+      ]
+    },
+    {
+      "id": "en/timesheet",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/timesheet.clean.md",
+      "planted": "en/timesheet.planted.md",
+      "mistakes": [
+        {
+          "kind": "period-reversed",
+          "rule": "date-range-reversed",
+          "line": 11,
+          "clean": "– September 27, 2026",
+          "planted": "– September 27, 2025"
+        },
+        {
+          "kind": "end-before-start",
+          "rule": "time-range-reversed",
+          "line": 22,
+          "clean": "| 5:00 PM |",
+          "planted": "| 5:00 AM |"
+        },
+        {
+          "kind": "day-hours",
+          "rule": "duration-mismatch",
+          "line": 23,
+          "clean": "| 9.00 |",
+          "planted": "| 8.50 |"
+        },
+        {
+          "kind": "break-longer-than-shift",
+          "rule": "duration-mismatch",
+          "line": 32,
+          "clean": "| 0:30 |",
+          "planted": "| 5:30 |"
+        },
+        {
+          "kind": "hours-total",
+          "rule": "total-mismatch",
+          "line": 35,
+          "clean": "| 36.00 |",
+          "planted": "| 38.00 |"
+        },
+        {
+          "kind": "hours-times-rate",
+          "rule": "line-amount-mismatch",
+          "line": 43,
+          "clean": "| $1,672.00 |",
+          "planted": "| $1,627.00 |"
+        },
+        {
+          "kind": "overtime-line",
+          "rule": "line-amount-mismatch",
+          "line": 44,
+          "clean": "| $82.50 |",
+          "planted": "| $55.00 |"
+        },
+        {
+          "kind": "worker-name",
+          "rule": "name-variant",
+          "line": 47,
+          "clean": "of Daniel Reyes.",
+          "planted": "of Daniel Reys."
+        },
+        {
+          "kind": "worker-id",
+          "rule": "reference-number-variant",
+          "line": 51,
+          "clean": "ID GC-36120",
+          "planted": "ID GC-31620"
+        }
+      ]
+    },
+    {
+      "id": "en/workreport",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/workreport.clean.md",
+      "planted": "en/workreport.planted.md",
+      "mistakes": [
+        {
+          "kind": "period-reversed",
+          "rule": "date-range-reversed",
+          "line": 11,
+          "clean": "– October 16, 2026",
+          "planted": "– October 16, 2025"
+        },
+        {
+          "kind": "end-before-start",
+          "rule": "time-range-reversed",
+          "line": 22,
+          "clean": "– 5:30 PM",
+          "planted": "– 5:30 AM"
+        },
+        {
+          "kind": "day-hours",
+          "rule": "duration-mismatch",
+          "line": 23,
+          "clean": "| 6.00 |",
+          "planted": "| 6.50 |"
+        },
+        {
+          "kind": "break-longer-than-shift",
+          "rule": "duration-mismatch",
+          "line": 28,
+          "clean": "| 0:30 |",
+          "planted": "| 5:30 |"
+        },
+        {
+          "kind": "hours-total",
+          "rule": "total-mismatch",
+          "line": 29,
+          "clean": "| 71.50 |",
+          "planted": "| 70.50 |"
+        },
+        {
+          "kind": "hours-times-rate",
+          "rule": "line-amount-mismatch",
+          "line": 39,
+          "clean": "| $6,507.50 |",
+          "planted": "| $6,570.50 |"
+        },
+        {
+          "kind": "overtime-line",
+          "rule": "line-amount-mismatch",
+          "line": 40,
+          "clean": "| $427.50 |",
+          "planted": "| $285.00 |"
+        },
+        {
+          "kind": "worker-name",
+          "rule": "name-variant",
+          "line": 45,
+          "clean": "by Priya Raman.",
+          "planted": "by Priya Rahman."
+        },
+        {
+          "kind": "worker-id",
+          "rule": "reference-number-variant",
+          "line": 49,
+          "clean": "number CW-74019",
+          "planted": "number CW-74109"
+        }
+      ]
+    }
+  ]
+}
