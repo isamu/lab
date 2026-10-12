@@ -376,3 +376,55 @@ describe("the reading behind name-variant", () => {
     assert.equal(nameVariants([mention("山田太郎", 0, "ヤマダタロウ", ["山田", "太郎"]), mention("山田太朗", 9, "ヤマダタロウ", ["山田", "太朗"])]).length, 1);
   });
 });
+
+describe("name-variant: カタカナか英字の名前に付く 社", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+  });
+
+  it("one katakana company written two ways with 社", () => {
+    assert.deepEqual(
+      variants(
+        "荷受人は、サウスベイ・インポート社の購買課です。\n請求書はサウスベイ・インポート社へ送ります。\n品物はサウスベイ・インポーツ社に届けます。\n",
+        ja,
+      ),
+      ["「サウスベイ・インポーツ社」は、ほかの所で書いた会社名「サウスベイ・インポート社」と一字違いです"],
+    );
+  });
+
+  it("one Latin company written two ways with 社", () => {
+    assert.deepEqual(variants("発注先はNorthwind Traders社です。\n見積はNorthwind Traders社から届きます。\n納品はNorthwind Trader社が行います。\n", ja), [
+      "「Northwind Trader社」は、ほかの所で書いた会社名「Northwind Traders社」と一字違いです",
+    ]);
+  });
+
+  it("a well-known company named once is not reported", () => {
+    assert.deepEqual(variants("アップル社の製品を使っています。\n", ja), []);
+  });
+
+  it("社 inside a kanji word is not a company form", () => {
+    assert.deepEqual(variants("当社と貴社と御社は、本社と支社で会社の商社と神社の話をします。弊社も同社も各社も他社も自社も同じです。\n", ja), []);
+  });
+
+  it("a word that begins with 社 after a katakana name is not a company form", () => {
+    assert.deepEqual(variants("サウスベイ・インポート社の担当です。\nサウスベイ・インポーツ社員が来ます。\nサウスベイ・インポート社に送ります。\n", ja), []);
+  });
+
+  it("placeholder companies with a letter label are not one name", () => {
+    assert.deepEqual(variants("クラウドベンダーA社とクラウドベンダーB社を比べました。\nクラウドベンダーA社は価格が低いです。\n", ja), []);
+  });
+
+  it("a Latin name ending in a period before 社", () => {
+    assert.deepEqual(
+      variants("取引先はBlue Harbor Trading Co.社です。\n請求はBlue Harbor Trading Co.社へ送ります。\n納品はBlue Harbor Tradin Co.社が行います。\n", ja),
+      ["「Blue Harbor Tradin Co.社」は、ほかの所で書いた会社名「Blue Harbor Trading Co.社」と一字違いです"],
+    );
+  });
+
+  it("社 is not compared with 株式会社 for the same name", () => {
+    assert.deepEqual(
+      variants("サウスベイ・インポート株式会社（以下「サウスベイ・インポート社」）と契約します。\nサウスベイ・インポート社が支払います。\n", ja),
+      [],
+    );
+  });
+});

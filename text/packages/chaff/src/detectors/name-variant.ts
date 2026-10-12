@@ -34,6 +34,15 @@ const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[i
 const companyFormsOf = (doc: ProseDocument): CompanyForm[] =>
   (doc.lexicons["company-form"] ?? []).map((entry) => ({ pattern: entry.pattern, group: entry.group ?? entry.pattern, position: entry.position }));
 
+/** カタカナか英字の名前のすぐ後ろにだけ立つ形の語（社）と、その語で始まる漢字の語（社員）は、語彙表 company-form-foreign が言う。 */
+const foreignFormsOf = (doc: ProseDocument): CompanyForm[] => {
+  const entries = doc.lexicons["company-form-foreign"] ?? [];
+  const words = entries.filter((entry) => entry.group === "word").map((entry) => entry.pattern);
+  return entries
+    .filter((entry) => entry.group === "form")
+    .map((entry) => ({ pattern: entry.pattern, group: entry.pattern, position: "after", foreign: { words } }));
+};
+
 /** source の上の範囲に、品詞解析が固有名詞と読んだ語が掛かるか。 */
 const properOf = (doc: ProseDocument): IsProper => {
   const spans = doc.sentences.flatMap((sentence) => (sentence.tokens ?? []).filter((token) => token.pos === "PROPN").map((token) => token.span));
@@ -119,7 +128,7 @@ const readWordsOf = (doc: ProseDocument): ReadWord[] =>
  */
 const companyFindings = (doc: ProseDocument, prose: string, reported: readonly Reported[]): Reported[] => {
   const stops = kanaStopsOf(doc);
-  const mentions = companyMentionsIn(prose, companyFormsOf(doc), properOf(doc), stops);
+  const mentions = companyMentionsIn(prose, [...companyFormsOf(doc), ...foreignFormsOf(doc)], properOf(doc), stops);
   const variants = companyVariants(mentions).map(({ mention, usual, kind }) => ({
     offset: mention.offset,
     name: mention.surface,
