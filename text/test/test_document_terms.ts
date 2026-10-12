@@ -294,9 +294,11 @@ const COUNT_WORDS: CountWords = {
     { pattern: "per", position: "before" },
     { pattern: "まで", position: "after" },
     { pattern: "目", position: "after" },
+    { pattern: "or fewer", position: "after" },
   ],
   restating: ["手数料", "fee"],
   totalLabels: ["合計", "Total"],
+  subtotalLabels: ["小計", "Subtotal"],
 };
 
 const wholeCounts = (rows: readonly string[], sentence: string, heading = "| 席種 | 枚数 | 金額 |"): string[] => {
@@ -351,6 +353,25 @@ describe("wholeCountConflicts: a count stated as the whole against the table's c
     assert.deepEqual(wholeCounts(["| S席 | 2枚 | 15,600円 |", "| A席 | 1枚（大人） | 5,500円 |"], "合計4枚です。"), []);
     assert.deepEqual(wholeCounts(["| S席 | 2枚 | 15,600円 |", "| うち学生 | 1枚 | 0円 |"], "合計4枚です。"), []);
     assert.deepEqual(wholeCounts(["| S席 | 2枚 | 15,600円 |", "| 合計 | 未定 | 15,600円 |"], "合計4枚です。"), []);
+  });
+
+  it("two total rows, a subtotal, or a total row with a qualified name leave the whole undecided", () => {
+    const heading = "| Seat | Tickets | Amount |";
+    const twoTotals = ["| Matinee | 2 tickets | $90 |", "| Total | 2 tickets | $90 |", "| Evening | 1 ticket | $45 |", "| Total | 3 tickets | $135 |"];
+    assert.deepEqual(wholeCounts(twoTotals, "Your order is for 3 tickets in total.", heading), []);
+    const subtotal = [
+      "| Matinee stalls | 2 tickets | $90 |",
+      "| Matinee balcony | 1 ticket | $45 |",
+      "| Subtotal | 3 tickets | $135 |",
+      "| Evening stalls | 1 ticket | $45 |",
+    ];
+    assert.deepEqual(wholeCounts([...subtotal, "| Total | | $180 |"], "Your order is for 4 tickets in total.", heading), []);
+    assert.deepEqual(wholeCounts(["| S席 | 2枚 | 15,600円 |", "| A席 | 1枚 | 5,500円 |", "| 合計（税込） | 3枚 | 21,100円 |"], "チケットは合計3枚です。"), []);
+  });
+
+  it("a limit after the whole mark is not the whole", () => {
+    const rows = ["| Stalls | 2 tickets | $136.00 |", "| Balcony | 1 ticket | $45.00 |"];
+    assert.deepEqual(wholeCounts(rows, "You may buy 4 tickets in total or fewer.", "| Seat | Tickets | Amount |"), []);
   });
 
   it("two tables that count the same thing are not compared", () => {

@@ -29,6 +29,8 @@ export type CountWords = {
   readonly restating: readonly string[];
   /** 合計の行の最初の升の語（小計は入れない）。 */
   readonly totalLabels: readonly string[];
+  /** 表の一部の合計の行の語（小計）。この行や、合計の語で始まる別の名前の行（合計（税込））がある表は、全体の数がどれか決まらない。 */
+  readonly subtotalLabels: readonly string[];
 };
 
 export type CountSentence = Span & { readonly text: string };
@@ -60,6 +62,8 @@ const countersOf = (group: string, words: CountWords): string[] => words.counter
 type Row = { readonly label: string; readonly cell: string };
 
 const isTotal = (label: string, words: CountWords): boolean => words.totalLabels.some((word) => folded(word) === label);
+const looksTotal = (label: string, words: CountWords): boolean =>
+  [...words.totalLabels, ...words.subtotalLabels].some((word) => label.startsWith(folded(word)));
 const restates = (label: string, words: CountWords): boolean => words.restating.some((word) => label.includes(folded(word)));
 const startsPartial = (label: string, words: CountWords): boolean =>
   words.notWhole.some((word) => word.position === "before" && label.startsWith(folded(word.pattern)));
@@ -74,7 +78,8 @@ const rowSum = (rows: readonly Row[], counters: readonly string[], words: CountW
 
 const columnCount = (group: string, heading: string, rows: readonly Row[], words: CountWords): TableCount | undefined => {
   const counters = countersOf(group, words);
-  const total = rows.find((row) => isTotal(row.label, words));
+  const [total, ...moreTotals] = rows.filter((row) => isTotal(row.label, words));
+  if (moreTotals.length > 0 || rows.some((row) => !isTotal(row.label, words) && looksTotal(row.label, words))) return undefined;
   const written = total === undefined ? undefined : cellCount(total.cell, counters);
   const labels = rows.map((row) => row.label).filter((label) => label !== "" && !isTotal(label, words));
   if (written !== undefined) return { group, heading, count: written, sum: false, rows: labels };
@@ -115,9 +120,9 @@ const hasWord = (text: string, word: string): boolean => {
   return at !== -1 && (bounded(text, at, at + word.length) || hasWord(text.slice(at + 1), word));
 };
 
-const notWhole = (text: string, start: number, end: number, words: CountWords): boolean => {
-  const before = text.slice(0, start);
-  const after = text.slice(end).trimStart();
+const notWhole = (text: string, counted: Counted, words: CountWords): boolean => {
+  const before = text.slice(0, counted.start);
+  const after = text.slice(counted.after).trimStart();
   return words.notWhole.some((word) => {
     const pattern = folded(word.pattern);
     return word.position === "before" ? hasWord(before, pattern) : after.startsWith(pattern) && bounded(after, 0, pattern.length);
@@ -131,11 +136,15 @@ const wholePattern = (mark: MarkWord, counter: string): RegExp => {
   return new RegExp(mark.position === "before" ? `${word} ?${counted}` : `${counted} ${word}`, "gdu");
 };
 
-const matchesOf = (text: string, mark: MarkWord, counter: CountWord): Span[] =>
+/** 数と数えるものの語の位置。after: 全体の印も含めた、読んだ所の終わり（4 tickets in total の後ろ）。 */
+type Counted = Span & { readonly after: number };
+
+const matchesOf = (text: string, mark: MarkWord, counter: CountWord): Counted[] =>
   [...text.matchAll(wholePattern({ ...mark, pattern: folded(mark.pattern) }, folded(counter.pattern)))].flatMap((match) => {
     const [start, end] = match.indices?.groups?.["counted"] ?? [0, 0];
-    if (!bounded(text, match.index, match.index + match[0].length) || /[0-9.]/u.test(text.charAt(start - 1))) return [];
-    return [{ start, end }];
+    const after = match.index + match[0].length;
+    if (!bounded(text, match.index, after) || /[0-9.]/u.test(text.charAt(start - 1))) return [];
+    return [{ start, end, after }];
   });
 
 const foundIn = (sentence: CountSentence, words: CountWords): Found[] => {
@@ -143,8 +152,9 @@ const foundIn = (sentence: CountSentence, words: CountWords): Found[] => {
   if (text.length !== sentence.text.length) return [];
   return words.counters.flatMap((counter) =>
     words.wholeMarks.flatMap((mark) =>
-      matchesOf(text, mark, counter).flatMap(({ start, end }): Found[] => {
-        if (notWhole(text, start, end, words)) return [];
+      matchesOf(text, mark, counter).flatMap((counted): Found[] => {
+        if (notWhole(text, counted, words)) return [];
+        const { start, end } = counted;
         const written = sentence.text.slice(start, end);
         const counterAt = end - counter.pattern.length;
         return [{ start: sentence.start + start, end: sentence.start + end, written: written.slice(0, counterAt - start).trim(), group: counter.group }];

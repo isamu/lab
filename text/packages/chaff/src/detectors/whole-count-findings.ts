@@ -18,6 +18,7 @@ const countWordsOf = (doc: ProseDocument): CountWords => ({
   notWhole: markWordsAt(doc, "fact-count-not-whole"),
   restating: patternsOf(doc, "fact-count-restating"),
   totalLabels: (doc.lexicons["total-label"] ?? []).filter((entry) => entry.group !== "subtotal").map((entry) => entry.pattern),
+  subtotalLabels: (doc.lexicons["total-label"] ?? []).filter((entry) => entry.group === "subtotal").map((entry) => entry.pattern),
 });
 
 const wholeCountFinding =
