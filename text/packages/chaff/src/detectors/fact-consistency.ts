@@ -6,7 +6,7 @@ import { labelledFacts, type AttributePhrase, type Fact, type FactWords } from "
 import { tableFacts, type TotalColumns } from "../facts/table-facts.ts";
 import { withCellKeys } from "../facts/cell-keys.ts";
 import { verbQuantityFacts, type VerbQuantityWords } from "../facts/verb-quantity-facts.ts";
-import type { CountLabelWords } from "../facts/count-labels.ts";
+import { countLabelWordsOf } from "../facts/count-labels.ts";
 import { partsAt, scopedFacts, type ScopedFact } from "../facts/fact-scope.ts";
 import { conditionPairConflicts, type ChangeSentence, type ChangeWords, type ConditionWord, type PairConflict, type WordAt } from "../facts/condition-pairs.ts";
 import { scopeConflicts, summaryConflicts, type FactConflict } from "../facts/fact-conflicts.ts";
@@ -79,11 +79,6 @@ const totalColumnsOf = (doc: ProseDocument): TotalColumns => {
   return { labels, isTerm: (heading) => isTermName(heading, words) };
 };
 
-const countLabelWordsOf = (doc: ProseDocument): CountLabelWords => ({
-  counters: patternsOf(doc, "fact-label-counter"),
-  links: patternsOf(doc, "fact-label-count-link"),
-});
-
 const factsByDocument = new WeakMap<ProseDocument, readonly ScopedFact[]>();
 
 /** 期間の単位と、年数にもなる単位（「保証期間は1年」の 年。retention-unit の group が大きさ）。 */
@@ -147,7 +142,8 @@ const readFacts = (doc: ProseDocument, tree: StructureNode): ScopedFact[] => {
   );
   const read = new Set([...termed, ...labelled.map((fact) => fact.value.start)]);
   const verbs = verbQuantityFacts(doc.source, values, verbQuantityWordsOf(doc)).filter((fact) => !read.has(fact.value.start));
-  const facts = withQualifiedKeys(doc, [...labelled, ...terms, ...verbs, ...tableFacts(doc.source, values, totalColumnsOf(doc), countLabelWordsOf(doc))]);
+  const tabled = tableFacts(doc.source, values, totalColumnsOf(doc), countLabelWordsOf(doc.lexicons));
+  const facts = withQualifiedKeys(doc, [...labelled, ...terms, ...verbs, ...tabled]);
   return withCellKeys(scopedFacts(facts, tree, doc.source, patternsOf(doc, "summary-heading")), qualifierWordsOf(doc));
 };
 

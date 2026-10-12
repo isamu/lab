@@ -1,4 +1,4 @@
-import type { Span } from "../plugin.ts";
+import type { Lexicon, Span } from "../plugin.ts";
 import type { FactValue } from "./fact-values.ts";
 import { withoutEdgeMarks } from "./trim-marks.ts";
 
@@ -7,6 +7,12 @@ import { withoutEdgeMarks } from "./trim-marks.ts";
  * 年や月や日付で始まる名前（「2026年の売上」）は、数えた数ではないので読まない。数える語と続きの語は言語パッケージの語彙表から取る。
  */
 export type CountLabelWords = { readonly counters: readonly string[]; readonly links: readonly string[] };
+
+/** 二つの lexicon（fact-label-counter、fact-label-count-link）の語。 */
+export const countLabelWordsOf = (lexicons: Readonly<Record<string, Lexicon>>): CountLabelWords => ({
+  counters: (lexicons["fact-label-counter"] ?? []).map((entry) => entry.pattern),
+  links: (lexicons["fact-label-count-link"] ?? []).map((entry) => entry.pattern),
+});
 
 const LETTER = /\p{L}/u;
 
