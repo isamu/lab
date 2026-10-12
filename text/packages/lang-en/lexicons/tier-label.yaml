@@ -1,0 +1,31 @@
+# Words that check a member's tier (tier-threshold-mismatch).
+# Group label: the keys of a line that states a member's tier. In "Your tier: Gold", the key before the colon must be only
+# this word, and the value is read as the tier's name. It is compared only when the document's tier table or list has a tier
+# written the very same way.
+# Group other: a word that, in a key, makes the line's value some other figure than the one the tier is earned by (a balance,
+# what is needed for the next tier). Such a value is not counted as the member's.
+id: tier-label
+language: en
+entries:
+  - { pattern: tier, group: label }
+  - { pattern: your tier, group: label }
+  - { pattern: current tier, group: label }
+  - { pattern: member tier, group: label }
+  - { pattern: membership tier, group: label }
+  - { pattern: status, group: label }
+  - { pattern: your status, group: label }
+  - { pattern: member status, group: label }
+  - { pattern: membership status, group: label }
+  - { pattern: status level, group: label }
+  - { pattern: membership level, group: label }
+  - { pattern: balance, group: other }
+  - { pattern: remaining, group: other }
+  - { pattern: used, group: other }
+  - { pattern: redeemed, group: other }
+  - { pattern: expiring, group: other }
+  - { pattern: expired, group: other }
+  - { pattern: needed, group: other }
+  - { pattern: required, group: other }
+  - { pattern: next, group: other }
+  - { pattern: to go, group: other }
+  - { pattern: goal, group: other }

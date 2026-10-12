@@ -1,0 +1,73 @@
+id: tier-threshold-mismatch
+layer: L3
+status: stable
+how_to_find: tier-threshold
+# The keys that state a member's tier come from tier-label, the units a threshold is counted in from tier-unit, and the words
+# that bound a band from range-band-word (range-band-mismatch's reading).
+extra_word_lists: [tier-label, tier-unit, range-band-word]
+severity: warning
+
+name:
+  ja: 会員の値が、書いたランクの基準に当たらない
+  en: A member's tier that their own points or nights do not reach
+
+why:
+  ja: ポイントや宿泊の明細で、ランクの表が「ゴールド：50,000ポイント以上」なのに、「会員ランク：ゴールド」の会員の「年間獲得ポイント：42,400ポイント」では、ランクと値のどちらが正しいか読み手は決められません。値を書き換えてランクを直し忘れたとき、別の会員の値を写したときに起きます。文書のランクの表（一つ目の列がランクの名前、別の列が基準）か箇条書き（「ゴールド：前年度のご宿泊数が20泊以上」）の基準と、同じ節に書いた会員のランクと値を比べます。下の端だけを書いたランク（20泊以上）は、一つ上のランクが始まる手前までと読みます。
+  en: 'On a points or hotel statement, when the tier table says "Gold: 50,000 points or more" and a member stated as "Tier: Gold" has "Points earned last year: 42,400 points", the reader cannot tell whether the tier or the points are right. It happens when the value is updated and the tier is not, or when another member''s value is copied. The bands of the document''s tier table (the tier''s name in the first column, its threshold in another) or tier list ("Gold: 20 nights or more stayed last year") are compared with the tier and the value stated in one section. A tier written with its lower end only (20 nights or more) is read as running up to where the next tier starts.'
+
+message:
+  ja: ランク「{tier}」の基準は「{band}」ですが、「{value}」は「{actual}」の基準に当たります
+  en: 'The tier "{tier}" needs "{band}", but "{value}" falls in "{actual}"'
+
+how_to_fix:
+  ja: 会員の値とランクの基準を確かめて、ランクか値の書き間違えたほうを直してください。
+  en: Check the member's value against the tier thresholds, and correct the tier or the value, whichever is wrong.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 会員の値（ポイントや泊数）が、書いたランクの基準に当たらない所
+  en: A stated tier whose member's points or nights fall outside that tier's band
+example:
+  ja:
+    before: |
+      - 会員ランク：ゴールド
+      - 年間獲得ポイント：42,400ポイント
+
+      | ランク | 年間獲得ポイント |
+      | --- | --- |
+      | シルバー | 10,000ポイント以上50,000ポイント未満 |
+      | ゴールド | 50,000ポイント以上 |
+    after: |
+      - 会員ランク：シルバー
+      - 年間獲得ポイント：42,400ポイント
+
+      | ランク | 年間獲得ポイント |
+      | --- | --- |
+      | シルバー | 10,000ポイント以上50,000ポイント未満 |
+      | ゴールド | 50,000ポイント以上 |
+  en:
+    before: |
+      - Status: Platinum
+      - Nights stayed last year: 24 nights
+
+      - Gold: 20 nights or more stayed last year
+      - Platinum: 30 nights or more stayed last year
+    after: |
+      - Status: Gold
+      - Nights stayed last year: 24 nights
+
+      - Gold: 20 nights or more stayed last year
+      - Platinum: 30 nights or more stayed last year
+
+not_flagged:
+  ja: ランクの名前が表や箇条書きの名前と同じ字で、基準と会員の値が同じ単位（ポイント、泊、回、円）のときだけ比べます。残高や次のランクまでに要る数の行は会員の値に数えません。同じ節に、その単位の会員の値が二つ以上あるもの、基準の幅が重なるもの、基準が二つの単位にまたがるものは比べません。値が下の端だけを書いた基準を上に超えたもの（20泊以上のランクで35泊）と、値がどのランクの基準にも当たらないものは言いません。文の中に書いたランクや値は読みません。
+  en: "Only a tier named exactly as in the table or list, with the thresholds and the member's value in one unit (points, nights, $), is compared. A balance, or what the next tier needs, is not counted as the member's value. Nothing is compared when the section states two or more member values in that unit, when two bands overlap, or when the thresholds are in different units. A value above a tier written with its lower end only (35 nights for a tier of 20 nights or more), and a value that falls in no tier, are not reported. A tier or a value written in a sentence is not read."
+level_meaning:
+  ja: 会員の値が、書いたランクの基準に当たらないとき指摘
+  en: reported when a member's value falls outside the stated tier's band
