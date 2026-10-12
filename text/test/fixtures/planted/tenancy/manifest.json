@@ -1,0 +1,213 @@
+{
+  "note": "Self-written tenancy documents (敷金精算書・年間賃料支払明細書 / deposit settlement statement, annual rent statement) for made-up letting agents, properties and tenants, with fictional amounts and no official form layout: a deposit settlement on move-out and an annual statement of rent paid, each in a clean version and a planted one that differs only on the lines below. They run as business/proposal, the genre the payslips and medical bills run as: no genre is made for tenancy documents. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line; a mistake that breaks a pair of lines names the pair's other line as pairedLine. A move-out date before the move-in date and a notice date after the move-out date are named for due-before-issue, which compares pairs of labelled dates on their own lines and reports the one written second; both plants change the earlier-written date (move-in, notice), not the move-out date the two are compared with, so the finding is on the move-out line, the pairedLine. A contract term whose end is before its start is written as one range and named for date-range-reversed. The deduction items not adding up is planted on the deduction table's total row, not in the refund table, so it does not move the deductions the refund is compared with; the refund that is not the deposit minus the deductions is named for net-amount-mismatch. Monthly rent times months not equal to the annual amount is named for line-amount-mismatch, and the plant changes the monthly amount, not the annual one, so the rows still add up to the total. The floor area stated in the table and again in a sentence is named for fact-conflict: in the settlement the sentence is in the table's section, in the annual statement it is in a later section. The tenant's name written two ways is named for name-variant and the contract number with two neighbouring digits swapped for reference-number-variant. Each plant was also run alone on its clean document, so no plant depends on another. yarn planted tenancy scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/deposit-settlement",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/deposit-settlement.clean.md",
+      "planted": "ja/deposit-settlement.planted.md",
+      "mistakes": [
+        {
+          "kind": "move-out-before-move-in",
+          "rule": "due-before-issue",
+          "line": 11,
+          "pairedLine": 15,
+          "clean": "入居日：2022年4月1日",
+          "planted": "入居日：2027年4月1日"
+        },
+        {
+          "kind": "notice-after-move-out",
+          "rule": "due-before-issue",
+          "line": 13,
+          "pairedLine": 15,
+          "clean": "解約通知日：2026年7月31日",
+          "planted": "解約通知日：2026年9月1日"
+        },
+        {
+          "kind": "floor-area",
+          "rule": "fact-conflict",
+          "line": 27,
+          "clean": "25.5㎡で",
+          "planted": "25.0㎡で"
+        },
+        {
+          "kind": "deductions-total",
+          "rule": "total-mismatch",
+          "line": 36,
+          "clean": "| 79,200円 |",
+          "planted": "| 72,900円 |"
+        },
+        {
+          "kind": "refund",
+          "rule": "net-amount-mismatch",
+          "line": 42,
+          "clean": "| 64,800円 |",
+          "planted": "| 68,400円 |"
+        },
+        {
+          "kind": "tenant-name",
+          "rule": "name-variant",
+          "line": 44,
+          "clean": "中村 美咲 様名義",
+          "planted": "仲村 美咲 様名義"
+        },
+        {
+          "kind": "contract-number",
+          "rule": "reference-number-variant",
+          "line": 48,
+          "clean": "TR-583164の",
+          "planted": "TR-583614の"
+        }
+      ]
+    },
+    {
+      "id": "ja/annual-rent",
+      "language": "ja",
+      "genre": "business/proposal",
+      "clean": "ja/annual-rent.clean.md",
+      "planted": "ja/annual-rent.planted.md",
+      "mistakes": [
+        {
+          "kind": "contract-end-before-start",
+          "rule": "date-range-reversed",
+          "line": 11,
+          "clean": "〜2026年3月31日",
+          "planted": "〜2023年3月31日"
+        },
+        {
+          "kind": "rent-times-months",
+          "rule": "line-amount-mismatch",
+          "line": 28,
+          "clean": "| 86,000円 |",
+          "planted": "| 85,000円 |"
+        },
+        {
+          "kind": "floor-area",
+          "rule": "fact-conflict",
+          "line": 35,
+          "clean": "42.3㎡で",
+          "planted": "42.0㎡で"
+        },
+        {
+          "kind": "tenant-name",
+          "rule": "name-variant",
+          "line": 37,
+          "clean": "小川 直樹 様の確定",
+          "planted": "小川 直紀 様の確定"
+        },
+        {
+          "kind": "contract-number",
+          "rule": "reference-number-variant",
+          "line": 39,
+          "clean": "TR-470925の",
+          "planted": "TR-470952の"
+        }
+      ]
+    },
+    {
+      "id": "en/deposit-settlement",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/deposit-settlement.clean.md",
+      "planted": "en/deposit-settlement.planted.md",
+      "mistakes": [
+        {
+          "kind": "move-out-before-move-in",
+          "rule": "due-before-issue",
+          "line": 11,
+          "pairedLine": 15,
+          "clean": "Move-in date: April 1, 2022",
+          "planted": "Move-in date: April 1, 2027"
+        },
+        {
+          "kind": "notice-after-move-out",
+          "rule": "due-before-issue",
+          "line": 13,
+          "pairedLine": 15,
+          "clean": "Notice date: July 31, 2026",
+          "planted": "Notice date: September 1, 2026"
+        },
+        {
+          "kind": "floor-area",
+          "rule": "fact-conflict",
+          "line": 27,
+          "clean": "25.5 m²,",
+          "planted": "25.0 m²,"
+        },
+        {
+          "kind": "deductions-total",
+          "rule": "total-mismatch",
+          "line": 36,
+          "clean": "| £490.00 |",
+          "planted": "| £409.00 |"
+        },
+        {
+          "kind": "refund",
+          "rule": "net-amount-mismatch",
+          "line": 42,
+          "clean": "| £1,410.00 |",
+          "planted": "| £1,140.00 |"
+        },
+        {
+          "kind": "tenant-name",
+          "rule": "name-variant",
+          "line": 44,
+          "clean": "name of Rachel Whitmore",
+          "planted": "name of Rachel Whitmor"
+        },
+        {
+          "kind": "contract-number",
+          "rule": "reference-number-variant",
+          "line": 48,
+          "clean": "number TA-583164 is",
+          "planted": "number TA-583614 is"
+        }
+      ]
+    },
+    {
+      "id": "en/annual-rent",
+      "language": "en",
+      "genre": "business/proposal",
+      "clean": "en/annual-rent.clean.md",
+      "planted": "en/annual-rent.planted.md",
+      "mistakes": [
+        {
+          "kind": "contract-end-before-start",
+          "rule": "date-range-reversed",
+          "line": 11,
+          "clean": "to March 31, 2026",
+          "planted": "to March 31, 2023"
+        },
+        {
+          "kind": "rent-times-months",
+          "rule": "line-amount-mismatch",
+          "line": 28,
+          "clean": "| £860.00 |",
+          "planted": "| £850.00 |"
+        },
+        {
+          "kind": "floor-area",
+          "rule": "fact-conflict",
+          "line": 35,
+          "clean": "42.3 m²,",
+          "planted": "42.0 m²,"
+        },
+        {
+          "kind": "tenant-name",
+          "rule": "name-variant",
+          "line": 37,
+          "clean": "by Daniel Okafor as",
+          "planted": "by Daniel Okafur as"
+        },
+        {
+          "kind": "contract-number",
+          "rule": "reference-number-variant",
+          "line": 39,
+          "clean": "number TA-470925 is",
+          "planted": "number TA-470952 is"
+        }
+      ]
+    }
+  ]
+}
