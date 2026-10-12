@@ -952,3 +952,53 @@ describe("due-before-issue (order): 診療明細書の発行日、入院と退�
     assert.deepEqual(findingsOf(transcript, en), []);
   });
 });
+
+describe("due-before-issue (order): 賃貸借の入居、解約の通知と退去", () => {
+  it("入居日より前の退去日を、退去日の行で指す", () => {
+    const settlement = labelledDoc("敷金精算書", ["入居日：2026年4月1日", "退去日：2025年8月31日"]);
+    assert.deepEqual(findingsOf(settlement), ["「退去日」（2025年8月31日）が、「入居日」（2026年4月1日）より前です"]);
+    assert.deepEqual(ruleLines(settlement), [5]);
+    const settlementEn = labelledDoc("Deposit Settlement", ["Move-in date: April 1, 2026", "Move-out date: August 31, 2025"]);
+    assert.deepEqual(findingsOf(settlementEn, en), ['"Move-out date" August 31, 2025 is before "Move-in date" April 1, 2026']);
+    assert.deepEqual(ruleLines(settlementEn, en), [5]);
+    assert.deepEqual(findingsOf(labelledDoc("明渡しの確認書", ["入居開始日：2026年4月1日", "明渡日：2026年3月31日"])), [
+      "「明渡日」（2026年3月31日）が、「入居開始日」（2026年4月1日）より前です",
+    ]);
+  });
+
+  it("退去より後の解約の通知を、退去日の行で指す。入居日を先に書いても通知日と比べる", () => {
+    const settlement = labelledDoc("敷金精算書", ["入居日：2022年4月1日", "解約通知日：2026年9月1日", "退去日：2026年8月31日"]);
+    assert.deepEqual(findingsOf(settlement), ["「退去日」（2026年8月31日）が、「解約通知日」（2026年9月1日）より前です"]);
+    assert.deepEqual(ruleLines(settlement), [7]);
+    const settlementEn = labelledDoc("Deposit Settlement", ["Move-in date: April 1, 2022", "Notice date: September 1, 2026", "Move-out date: August 31, 2026"]);
+    assert.deepEqual(findingsOf(settlementEn, en), ['"Move-out date" August 31, 2026 is before "Notice date" September 1, 2026']);
+    assert.deepEqual(ruleLines(settlementEn, en), [7]);
+    assert.deepEqual(findingsOf(labelledDoc("解約届", ["解約予告日：2026年9月10日", "退去予定日：2026年9月1日"])), [
+      "「退去予定日」（2026年9月1日）が、「解約予告日」（2026年9月10日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("Notice to End Tenancy", ["Date of notice: September 10, 2026", "Planned move-out date: September 1, 2026"]), en), [
+      '"Planned move-out date" September 1, 2026 is before "Date of notice" September 10, 2026',
+    ]);
+  });
+
+  it("順の合った日付、同じ日、年の無い日付は言わない", () => {
+    assert.deepEqual(findingsOf(labelledDoc("敷金精算書", ["入居日：2022年4月1日", "解約通知日：2026年7月31日", "退去日：2026年8月31日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("解約届", ["解約通知日：2026年8月31日", "退去日：2026年8月31日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("敷金精算書", ["入居日：4月1日", "退去日：3月31日"])), []);
+    const inOrderEn = labelledDoc("Deposit Settlement", ["Move-in date: April 1, 2022", "Notice date: July 31, 2026", "Move-out date: August 31, 2026"]);
+    assert.deepEqual(findingsOf(inOrderEn, en), []);
+    assert.deepEqual(findingsOf(labelledDoc("Deposit Settlement", ["Notice date: August 31", "Move-out date: August 1"]), en), []);
+  });
+
+  it("予定の入居日は先の側に読まない。前の借主の退去日より後に入居する", () => {
+    assert.deepEqual(findingsOf(labelledDoc("空室のご案内", ["入居予定日：2026年10月1日", "退去日：2026年9月30日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Vacancy Notice", ["Planned move-in date: October 1, 2026", "Move-out date: September 30, 2026"]), en), []);
+  });
+
+  it("別の組の語どうしは比べない（解約通知日と入居日、掲載日と退去日、回収の Exchange deadline と退去日）", () => {
+    assert.deepEqual(findingsOf(labelledDoc("ご案内", ["解約通知日：2026年9月1日", "入居日：2026年8月1日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("物件", ["掲載日：2026年10月1日", "退去日：2026年9月30日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Notice", ["Exchange deadline: September 30, 2026", "Move-out date: August 31, 2026"]), en), []);
+    assert.deepEqual(findingsOf(labelledDoc("Listing", ["Listed: October 1, 2026", "Move-out date: September 30, 2026"]), en), []);
+  });
+});

@@ -139,3 +139,16 @@ entries:
   # 入院の明細や証明書。退院は入院より前に来ない。同じ日（日帰り）は指さない。
   - { pattern: "入院日", group: hospital-stay, position: before }
   - { pattern: "退院日", group: hospital-stay, position: after }
+  # 賃貸借の精算書や解約の書類。退去は入居より前に来ず、解約の通知は退去より前にする。入居日は listing にもあるが、組ごとに比べる。
+  # 入居と解約の通知は二つの組に分ける。一つの組だと、一度だけ書いた退去日は最初の入居日とだけ比べ、通知日を見ない。
+  # 予定の日（退去予定日）は後に来る側にだけ置く。入居予定日は入れない。予定の入居日は、前の借主の退去日より後に来る。
+  - { pattern: "入居日", group: tenancy, position: before }
+  - { pattern: "入居開始日", group: tenancy, position: before }
+  - { pattern: "退去日", group: tenancy, position: after }
+  - { pattern: "退去予定日", group: tenancy, position: after }
+  - { pattern: "明渡日", group: tenancy, position: after }
+  - { pattern: "解約通知日", group: tenancy-notice, position: before }
+  - { pattern: "解約予告日", group: tenancy-notice, position: before }
+  - { pattern: "退去日", group: tenancy-notice, position: after }
+  - { pattern: "退去予定日", group: tenancy-notice, position: after }
+  - { pattern: "明渡日", group: tenancy-notice, position: after }

@@ -1,8 +1,8 @@
 {
   "recall": {
     "ja": {
-      "move-out-before-move-in": "0/1",
-      "notice-after-move-out": "0/1",
+      "move-out-before-move-in": "1/1",
+      "notice-after-move-out": "1/1",
       "floor-area": "2/2",
       "deductions-total": "0/1",
       "refund": "0/1",
@@ -12,8 +12,8 @@
       "rent-times-months": "1/1"
     },
     "en": {
-      "move-out-before-move-in": "0/1",
-      "notice-after-move-out": "0/1",
+      "move-out-before-move-in": "1/1",
+      "notice-after-move-out": "1/1",
       "floor-area": "2/2",
       "deductions-total": "0/1",
       "refund": "0/1",

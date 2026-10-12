@@ -139,3 +139,14 @@ entries:
   # admission" is in transcript too (a school's); each group is compared on its own.
   - { pattern: "Date of admission", group: hospital-stay, position: before }
   - { pattern: "Date of discharge", group: hospital-stay, position: after }
+  # A tenancy's deposit settlement or termination papers: the move-out does not come before the move-in, and notice is
+  # given before the move-out. "Move-in date" is in listing and "Notice date" in recall too; each group is compared on its
+  # own. Move-in and notice are two groups: in one, a move-out date written once is compared with the first move-in only.
+  # A planned date (Planned move-out date) is only ever the later side; a planned move-in date is left out.
+  - { pattern: "Move-in date", group: tenancy, position: before }
+  - { pattern: "Move-out date", group: tenancy, position: after }
+  - { pattern: "Planned move-out date", group: tenancy, position: after }
+  - { pattern: "Notice date", group: tenancy-notice, position: before }
+  - { pattern: "Date of notice", group: tenancy-notice, position: before }
+  - { pattern: "Move-out date", group: tenancy-notice, position: after }
+  - { pattern: "Planned move-out date", group: tenancy-notice, position: after }
