@@ -25,7 +25,7 @@ type LabelProduct = { readonly price: CellNumber; readonly count: number; readon
 
 const CENTS = 100;
 const BRACKETED = /\(([^()]*)\)/gu;
-const COUNT = /^(\d{1,3}(?:,\d{3})+|\d+)\s*(\S.*)$/u;
+const COUNT = /^(?:\d{1,3}(?:,\d{3})+|\d+)(?![\d,.])/u;
 const LATIN = /[A-Za-z]/u;
 
 const timesPattern = (marks: readonly string[]): RegExp | undefined =>
@@ -45,10 +45,10 @@ export const factorsOf = (content: string, marks: readonly string[]): [string, s
 
 /** A whole count in a counting word ("24名", "24 members"), undefined for anything else. */
 export const countOf = (factor: string, counts: readonly string[]): number | undefined => {
-  const match = COUNT.exec(factor);
-  const word = match?.[2]?.trim().toLowerCase();
-  if (match === null || word === undefined || !counts.some((count) => count.toLowerCase() === word)) return undefined;
-  return Number((match[1] ?? "").replaceAll(",", ""));
+  const number = COUNT.exec(factor)?.[0];
+  const word = number === undefined ? "" : factor.slice(number.length).trim().toLowerCase();
+  if (number === undefined || !counts.some((count) => count.toLowerCase() === word)) return undefined;
+  return Number(number.replaceAll(",", ""));
 };
 
 const priceOf = (factor: string, words: LabelProductWords): CellNumber | undefined =>
