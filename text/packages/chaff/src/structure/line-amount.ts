@@ -39,10 +39,10 @@ export type LineAmountWords = {
   readonly taxIncluded: readonly string[];
 };
 
-type Cell = { readonly start: number; readonly text: string };
+export type Cell = { readonly start: number; readonly text: string };
 
 /** A number with what is written before and after it in one cell: "$1,500.00" is $ 1500 "", "15万円" is "" 15 万円. */
-type CellNumber = {
+export type CellNumber = {
   readonly before: string;
   readonly value: number;
   readonly after: string;
@@ -57,7 +57,7 @@ const ONE_NUMBER = /^([^\d]*?)(\d{1,3}(?:,\d{3})+|\d+)(\.\d+)?([^\d]*)$/u;
 const LEADING_NUMBER = /^(\d{1,3}(?:,\d{3})+|\d+)(\.\d+)?(?![\d,])/u;
 const NEGATIVE = /[-−▲△(（]/u;
 
-const cellsOf = (line: Line): Cell[] => {
+export const cellsOf = (line: Line): Cell[] => {
   const bounds = [-1, ...[...line.text.matchAll(CELL_SEPARATOR)].map((match) => match.index), line.text.length];
   const cells = bounds.slice(1).map((end, index) => {
     const from = (bounds[index] ?? 0) + 1;
@@ -67,7 +67,7 @@ const cellsOf = (line: Line): Cell[] => {
   return cells.slice(trimmed.startsWith("|") ? 1 : 0, trimmed.endsWith("|") ? cells.length - 1 : cells.length);
 };
 
-const plain = (text: string): string => text.normalize("NFKC").replace(/[*_`]/gu, "").trim();
+export const plain = (text: string): string => text.normalize("NFKC").replace(/[*_`]/gu, "").trim();
 
 /** The one number of a price cell with its marks, undefined when the cell holds none, more, or a negative one. */
 export const cellNumber = (cell: Cell): CellNumber | undefined => {
@@ -216,7 +216,7 @@ const rowQuantityUnit = (cell: Cell, column: QuantityColumn, words: LineAmountWo
 };
 
 /** quantity × price, written the way the amount cell writes its number (grouping, decimals, marks). */
-const shownExpected = (amount: CellNumber, exactCents: number): string => {
+export const shownExpected = (amount: CellNumber, exactCents: number): string => {
   const exact = exactCents / CENTS;
   const decimals = Number.isInteger(Math.round(exact * CENTS) / CENTS) && amount.decimals === 0 ? 0 : Math.max(amount.decimals, 2);
   const number = exact.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals, useGrouping: amount.grouped });
@@ -293,7 +293,7 @@ const rowIssue = (row: Line, table: Table, words: LineAmountWords): StructureIss
 };
 
 /** Each table: its header row and its body rows. */
-const tablesOf = (lines: readonly Line[]): { header: Line; rows: Line[] }[] =>
+export const tablesOf = (lines: readonly Line[]): { header: Line; rows: Line[] }[] =>
   lines.flatMap((line, index) => {
     const header = lines[index - 1];
     if (!TABLE_RULE.test(line.text) || header === undefined || !header.text.includes("|")) return [];
