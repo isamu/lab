@@ -1,0 +1,13 @@
+# 文書に夜をまたぐ勤務があると言う語（time-range-reversed の勤務表）。一つでもあれば、終わりが始まりより前の行を夜勤と見て言わない。
+# 翌日の印を付けた時刻（翌6:00）と 24 時を超える時刻（25:00）は、語彙表ではなく書き方で読む。字面どおりに照らす。
+id: overnight-work-mark
+language: ja
+entries:
+  - { pattern: "夜勤" }
+  - { pattern: "深夜" }
+  - { pattern: "宿直" }
+  - { pattern: "当直" }
+  - { pattern: "翌日" }
+  - { pattern: "翌朝" }
+  - { pattern: "日をまたぐ" }
+  - { pattern: "日付をまたぐ" }

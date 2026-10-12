@@ -1,0 +1,25 @@
+# 勤務表の列の見出し（time-range-reversed）。見出しの升の名前（後ろの括弧書きを除く）がこの語と同じ列を、始まり（start）、
+# 終わり（end）、実働（hours）、休憩（break）の列と読む。始まりと終わりの列が両方ある表だけを読む。字面どおりに照らす。
+id: shift-column
+language: ja
+entries:
+  - { pattern: "始業", group: start }
+  - { pattern: "始業時刻", group: start }
+  - { pattern: "出勤", group: start }
+  - { pattern: "出勤時刻", group: start }
+  - { pattern: "開始", group: start }
+  - { pattern: "開始時刻", group: start }
+  - { pattern: "終業", group: end }
+  - { pattern: "終業時刻", group: end }
+  - { pattern: "退勤", group: end }
+  - { pattern: "退勤時刻", group: end }
+  - { pattern: "終了", group: end }
+  - { pattern: "終了時刻", group: end }
+  - { pattern: "実働", group: hours }
+  - { pattern: "実働時間", group: hours }
+  - { pattern: "労働時間", group: hours }
+  - { pattern: "勤務時間", group: hours }
+  - { pattern: "稼働", group: hours }
+  - { pattern: "稼働時間", group: hours }
+  - { pattern: "休憩", group: break }
+  - { pattern: "休憩時間", group: break }

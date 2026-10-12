@@ -7,6 +7,7 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import { isReversed, rangeReading } from "../packages/chaff/src/structure/time-range.ts";
+import { showsOvernightWork } from "../packages/chaff/src/structure/shift-times.ts";
 import type { TimeSpan } from "../packages/chaff/src/structure/time-marks.ts";
 
 // 時刻の範囲の終わりが始まりより前（time-range-reversed）。
@@ -15,6 +16,8 @@ const findings = (source: string, adapter: LanguageAdapter, language: string): s
   runRules(buildDocument("t.md", source, adapter), loadRules(language), { "time-range-reversed": "normal" }, false, "business/report")
     .findings.filter((finding) => finding.rule === "time-range-reversed")
     .map((finding) => String(finding.values["range"]));
+
+const table = (rows: readonly string[]): string => rows.join("\n");
 
 const reversedJa = (source: string): string[] => findings(source, ja, "ja");
 const reversedEn = (source: string): string[] => findings(source, en, "en");
@@ -64,6 +67,20 @@ describe("rangeReading and isReversed", () => {
     assert.equal(isReversed({ from: 22 * HOUR, to: 6 * HOUR, borrowed: false }), false);
     assert.equal(isReversed({ from: 12 * HOUR, to: 9 * HOUR, borrowed: false }), false);
     assert.equal(isReversed({ from: 12 * HOUR, to: 9 * HOUR + MINUTE, borrowed: false }), true);
+  });
+
+  it("a range with the same a.m. or p.m. on both sides is reversed however far it goes back", () => {
+    const text = "9:00 AM – 5:30 AM";
+    const reading = rangeReading(text, spanAt(text, "9:00 AM", 9 * HOUR), spanAt(text, "5:30 AM", 5 * HOUR + 30 * MINUTE));
+    assert.equal(reading.sameHalf, true);
+    assert.equal(isReversed(reading), true);
+  });
+
+  it("a range from p.m. to a.m. is not the same half and may run past midnight", () => {
+    const text = "10:00 PM – 6:00 AM";
+    const reading = rangeReading(text, spanAt(text, "10:00 PM", 22 * HOUR), spanAt(text, "6:00 AM", 6 * HOUR));
+    assert.equal(reading.sameHalf, undefined);
+    assert.equal(isReversed(reading), false);
   });
 
   it("with a borrowed meridiem only a step back of less than an hour is reversed (8:00–6:00 pm crosses noon)", () => {
@@ -130,11 +147,102 @@ describe("time-range-reversed: English", () => {
     assert.deepEqual(reversedEn("Night shift: 22:00–6:00."), []);
   });
 
+  it("reports a range whose end has the same a.m. or p.m. as its start and comes earlier (an a.m./p.m. slip)", () => {
+    assert.deepEqual(reversedEn("Work ran 9:00 AM – 5:30 AM on Thursday."), ["9:00 AM – 5:30 AM"]);
+    assert.deepEqual(reversedEn("Work ran 6:00 PM – 5:30 PM on Friday."), ["6:00 PM – 5:30 PM"]);
+  });
+
+  it("does not report a range from p.m. to a.m., which may run past midnight", () => {
+    assert.deepEqual(reversedEn("Work ran 10:00 PM – 6:00 AM on Friday."), []);
+  });
+
   it("does not report a time that was moved", () => {
     assert.deepEqual(reversedEn("The talk was moved from 3:00 pm to 2:30 pm."), []);
   });
 
   it('does not read "to" alone as a range', () => {
     assert.deepEqual(reversedEn("Arrive at 3:00 pm to 2:30 pm slots."), []);
+  });
+});
+
+describe("time-range-reversed: a timesheet with start and end columns", () => {
+  const HEADER_JA = ["| 日付 | 始業 | 終業 | 休憩 | 実働 |", "| --- | --- | --- | --- | --- |"];
+  const HEADER_EN = ["| Date | Time in | Time out | Break | Hours |", "| --- | --- | --- | --- | --- |"];
+
+  it("reports a row whose end is before its start and whose hours do not fit a night shift (ja)", () => {
+    const sheet = table([...HEADER_JA, "| 9月1日 | 9:00 | 18:00 | 1:00 | 8.0時間 |", "| 9月2日 | 9:00 | 8:00 | 1:00 | 8.0時間 |"]);
+    assert.deepEqual(reversedJa(sheet), ["9:00 | 8:00"]);
+  });
+
+  it("reports a row whose end has the same a.m. as its start (en)", () => {
+    const sheet = table([...HEADER_EN, "| Mon | 8:00 AM | 5:00 PM | 1:00 | 8.00 |", "| Tue | 8:00 AM | 5:00 AM | 1:00 | 8.00 |"]);
+    assert.deepEqual(reversedEn(sheet), ["8:00 AM | 5:00 AM"]);
+  });
+
+  it("reports a 24-hour row whose hours do not fit a night shift (en)", () => {
+    const sheet = table([...HEADER_EN, "| Mon | 9:00 | 17:30 | 0:30 | 8.00 |", "| Tue | 9:00 | 7:30 | 0:30 | 8.00 |"]);
+    assert.deepEqual(reversedEn(sheet), ["9:00 | 7:30"]);
+  });
+
+  it("does not report a night shift row whose hours fit the time past midnight", () => {
+    assert.deepEqual(reversedJa(table([...HEADER_JA, "| 9月1日 | 22:00 | 6:00 | 1:00 | 7.0時間 |"])), []);
+    assert.deepEqual(reversedEn(table([...HEADER_EN, "| Mon | 22:00 | 6:00 | 0:30 | 7.50 |"])), []);
+    assert.deepEqual(reversedEn(table([...HEADER_EN, "| Mon | 10:00 PM | 6:00 AM | 0:30 | 7.50 |"])), []);
+  });
+
+  it("does not report a row written on a 12-hour clock without a.m. or p.m.", () => {
+    assert.deepEqual(reversedJa(table([...HEADER_JA, "| 9月1日 | 9:00 | 5:00 | 1:00 | 7.0時間 |"])), []);
+  });
+
+  it("does not report an earlier end in a document that has night work", () => {
+    const sheet = table([...HEADER_JA, "| 9月1日 | 9:00 | 8:00 | 1:00 | 8.0時間 |"]);
+    assert.deepEqual(reversedJa(`夜勤の手当は別に計算します。\n\n${sheet}`), []);
+    const sheetEn = table([...HEADER_EN, "| Mon | 9:00 | 7:30 | 0:30 | 8.00 |"]);
+    assert.deepEqual(reversedEn(`Night shift premium is paid separately.\n\n${sheetEn}`), []);
+  });
+
+  it("without an hours column, reports only a step back of a few hours", () => {
+    const header = ["| 日付 | 出勤 | 退勤 |", "| --- | --- | --- |"];
+    assert.deepEqual(reversedJa(table([...header, "| 9月1日 | 9:00 | 8:00 |"])), ["9:00 | 8:00"]);
+    assert.deepEqual(reversedJa(table([...header, "| 9月1日 | 22:00 | 6:00 |"])), []);
+    assert.deepEqual(reversedJa(table([...header, "| 9月1日 | 9:00 | 5:00 |"])), []);
+  });
+
+  it("with a break it cannot read, reports only a step back of a few hours", () => {
+    assert.deepEqual(reversedEn(table([...HEADER_EN, "| Mon | 9:00 | 8:00 | - | 8.00 |"])), ["9:00 | 8:00"]);
+    assert.deepEqual(reversedEn(table([...HEADER_EN, "| Mon | 9:00 | 5:00 | - | 8.00 |"])), []);
+  });
+
+  it("does not read a table without both a start and an end column", () => {
+    assert.deepEqual(reversedEn(table(["| Date | Time in | Note |", "| --- | --- | --- |", "| Mon | 9:00 | 8:00 |"])), []);
+    assert.deepEqual(reversedEn(table(["| Item | In | Out | Hours |", "| --- | --- | --- | --- |", "| Pump | 9:00 | 8:00 | 8.0 |"])), []);
+  });
+
+  it("does not read a cell with more than a time in it", () => {
+    assert.deepEqual(reversedJa(table([...HEADER_JA, "| 9月1日 | 22:00 | 翌6:00 | 1:00 | 7.0時間 |"])), []);
+  });
+});
+
+describe("showsOvernightWork", () => {
+  const words = { legs: [], columns: [], dayShifts: [{ pattern: "翌", position: "before" as const, group: "next" }], zones: [] };
+  const marks = [{ pattern: "night shift" }];
+
+  it("reads a word for night work, case aside", () => {
+    assert.equal(showsOvernightWork("Night shift premium applies.", [], marks, words), true);
+  });
+
+  it("reads a time past 24:00", () => {
+    assert.equal(showsOvernightWork("勤務 17:00〜25:00", [], marks, words), true);
+  });
+
+  it("reads a time marked as the next day", () => {
+    const text = "終業 翌6:00";
+    assert.equal(showsOvernightWork(text, [spanAt(text, "6:00", 6 * HOUR)], marks, words), true);
+  });
+
+  it("finds nothing in a day-time document", () => {
+    const text = "始業 9:00、終業 18:00。翌月25日に支払います。";
+    assert.equal(showsOvernightWork(text, [spanAt(text, "9:00", 9 * HOUR), spanAt(text, "18:00", 18 * HOUR)], marks, words), false);
+    assert.equal(showsOvernightWork("", [], [], words), false);
   });
 });
