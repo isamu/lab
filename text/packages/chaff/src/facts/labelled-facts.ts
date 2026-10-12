@@ -30,7 +30,11 @@ export type FactWords = {
   readonly valueLeads?: readonly string[];
   /** 名前に条件を付ける型（（*）、*の、for *）。条件の付いた名前は、名前と条件をそれぞれ一つの名前の長さで測る。 */
   readonly qualifiers?: QualifierWords;
+  /** 計器の読みを言う動詞（read, shows）と、読みのあとに置ける時の節の頭（when, after）。単位の量の値だけに使う。 */
+  readonly readings?: ReadingWords;
 };
+
+export type ReadingWords = { readonly verbs: readonly string[]; readonly clauses: readonly string[] };
 
 /** approximate: 値の前に目安の語（約、about）があった。table: 表の升の値。 */
 export type Fact = { readonly label: string; readonly key: string; readonly value: FactValue; readonly approximate?: boolean; readonly table?: boolean };
@@ -183,12 +187,29 @@ const attributeFact = (source: string, value: FactValue, words: FactWords): Fact
   return { label: found.pattern, key: keyOf(found.pattern, words), value };
 };
 
+/** 単位の語彙表の量か（"45,210 km"）。金額、率、ただの数は、読む動詞のあとでも読まない（"He read 3 chapters"）。 */
+const isMeasured = (value: FactValue): boolean => "dimension" in value;
+
+/** 値の後ろが、空白と時の節の頭の語と空白か（"45,210 km when the car came in"）。 */
+const startsClause = (source: string, end: number, clauses: readonly string[]): boolean => {
+  const after = source.slice(end, lineEndOf(source, end)).toLowerCase();
+  return /^\s/u.test(after) && clauses.some((clause) => after.trimStart().startsWith(`${clause.toLowerCase()} `));
+};
+
+/** 計器が示した量（"The odometer read 45,210 km."）。読む動詞を区切りにし、値の後ろの時の節も値の終わりにする。 */
+const readingFact = (source: string, value: FactValue, words: FactWords): Fact | undefined => {
+  const readings = words.readings;
+  if (readings === undefined || !isMeasured(value)) return undefined;
+  if (!endsAfter(source, value, words) && !startsClause(source, value.end, readings.clauses)) return undefined;
+  return labelledFact(source, value, { ...words, separators: readings.verbs });
+};
+
 /** 文に書いた名前付きの値。値ごとに、属性の言い回しか、区切りの前の名前を探す。 */
 export const labelledFacts = (source: string, values: readonly FactValue[], words: FactWords): Fact[] =>
   values.flatMap((value) => {
     const attribute = attributeFact(source, value, words);
     if (attribute !== undefined) return [attribute];
     const ended = endedValue(source, value, words);
-    const fact = ended === undefined ? undefined : labelledFact(source, ended, words);
+    const fact = (ended === undefined ? undefined : labelledFact(source, ended, words)) ?? readingFact(source, value, words);
     return fact === undefined ? [] : [fact];
   });

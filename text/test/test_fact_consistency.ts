@@ -101,6 +101,30 @@ describe("fact-conflict", () => {
     assert.deepEqual(table("Seats: 3,as agreed."), []);
   });
 
+  it("a gauge's reading (read, shows) before a measured quantity, with a time clause after it (en)", () => {
+    const table = (prose: string): string[] => conflictEn("| Item | Detail |", "| --- | --- |", "| Odometer | 12,300 km |", "", prose);
+    assert.deepEqual(table("The odometer read 12,800 km when the van came in."), ["The odometer:12,800 km≠12,300 km"]);
+    assert.deepEqual(table("The odometer read 12,300 km when the van came in."), []);
+    assert.deepEqual(table("The odometer shows 12,800 km."), ["The odometer:12,800 km≠12,300 km"]);
+    assert.deepEqual(table("The odometer read 12,800 km on the way back."), []);
+    assert.deepEqual(table("The odometer read 12,800 kmwhen the van came in."), []);
+  });
+
+  it("a reading verb before money, a share or a plain count, and a time clause after is, are not read (en)", () => {
+    assert.deepEqual(conflictEn("The poll showed 40%.", "", "The poll showed 45%."), []);
+    assert.deepEqual(conflictEn("The invoice showed $300.", "", "The invoice showed $350."), []);
+    assert.deepEqual(conflictEn("Each pupil read 3 chapters.", "", "Each pupil read 4 chapters."), []);
+    assert.deepEqual(conflictEn("The range is 300 km when fully charged.", "", "The range is 250 km."), []);
+  });
+
+  it("入庫時の is the same reading as the table's; 出庫時の and 前回点検時の are other readings (ja)", () => {
+    const table = (prose: string): string[] => conflictJa("| 項目 | 内容 |", "| --- | --- |", "| 走行距離 | 12,300km |", "", prose);
+    assert.deepEqual(table("入庫時の走行距離は、12,800kmです。"), ["入庫時の走行距離:12,800km≠12,300km"]);
+    assert.deepEqual(table("入庫時の走行距離は、12,300kmです。"), []);
+    assert.deepEqual(table("出庫時の走行距離は、12,310kmです。"), []);
+    assert.deepEqual(table("前回点検時の走行距離は、2,300kmです。"), []);
+  });
+
   it("three or more values for one label are a list, not a slip", () => {
     assert.deepEqual(conflictEn("- Seats: 30", "- Seats: 40", "- Seats: 50"), []);
   });
