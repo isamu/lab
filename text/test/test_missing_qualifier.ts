@@ -224,3 +224,27 @@ describe("number-without-unit: 単位の無い数", () => {
     assert.deepEqual(namedRuleRun("number-without-unit", source, ja).findings, []);
   });
 });
+
+describe("number-without-unit: a piece count in a quantity column of hired periods", () => {
+  const rentalEn = (count: string): string =>
+    `# Booking\n\n| Item | Quantity | Amount |\n| --- | --- | --- |\n| Car | 4 days | $192.00 |\n| Insurance | 4 days | $60.00 |\n| Child seat | ${count} | $12.00 |\n`;
+  const rentalJa = (count: string): string =>
+    `# 予約\n\n| 品目 | 数量 | 金額 |\n| --- | --- | --- |\n| 客室 | 2泊 | 24,000円 |\n| 朝食 | 2泊 | 3,000円 |\n| 駐車券 | ${count} | 1,000円 |\n`;
+
+  it("valid: a bare whole number beside hired days or nights is the count of pieces", () => {
+    assert.deepEqual(namedRuleRun("number-without-unit", rentalEn("1"), en).findings, []);
+    assert.deepEqual(namedRuleRun("number-without-unit", rentalJa("1"), ja).findings, []);
+    assert.deepEqual(namedRuleRun("number-without-unit", rentalJa("１"), ja).findings, []);
+  });
+
+  it("invalid: a bare number that is no whole count, or a column that is not a quantity", () => {
+    assert.deepEqual(namedRuleRun("number-without-unit", rentalEn("1.5"), en).findings, ['"1.5" has no unit (the other "Quantity" values carry "days")']);
+    const period = "# Booking\n\n| Item | Period |\n| --- | --- |\n| Car | 4 days |\n| Insurance | 4 days |\n| Child seat | 1 |\n";
+    assert.deepEqual(namedRuleRun("number-without-unit", period, en).findings, ['"1" has no unit (the other "Period" values carry "days")']);
+  });
+
+  it("invalid: a quantity column whose other values carry a unit of measure, not a period", () => {
+    const weights = "# 注文\n\n| 品目 | 数量 |\n| --- | --- |\n| 小麦粉 | 2kg |\n| 砂糖 | 1kg |\n| バター | 5 |\n";
+    assert.deepEqual(namedRuleRun("number-without-unit", weights, ja).findings, ["「5」に単位がありません（「数量」のほかの値には「kg」が付いています）"]);
+  });
+});

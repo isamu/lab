@@ -1,6 +1,7 @@
 // The shape of a document's top: whether the lead says anything the title does not, and whether a title or heading
 // runs too long to scan. Pure; both read only the sections, paragraphs and tokens chaff has already built.
 import { newContentMorphemes } from "./content-morphemes.ts";
+import { formValueTokens, isFormBlock } from "./form-line.ts";
 import { trigrams } from "./heading-overlap.ts";
 import { findingAt, writtenHeadings } from "./markup-finding.ts";
 import type { Detector, Finding, LengthUnit, MarkupHeading, Paragraph, ProseDocument, Section } from "../plugin.ts";
@@ -38,6 +39,13 @@ const leadOf = (doc: ProseDocument): Lead | undefined => {
   const lead = title === undefined ? undefined : leadParagraphOf(doc, title);
   if (title === undefined || lead === undefined || title.headingTokens === undefined) return undefined;
   const leadTokens = lead.sentences.flatMap((sentence) => sentence.tokens ?? []);
+  // A form or a letter opens with fields or a letterhead, not a lead (Invoice number: INV-2026-0318). A line that only copies the title is still one.
+  const leadSource = doc.source.slice(lead.span.start, lead.span.end);
+  if (
+    isFormBlock(leadSource, lead.span.start, leadTokens) &&
+    newContentMorphemes(title.headingTokens, formValueTokens(leadSource, lead.span.start, leadTokens)) > 0
+  )
+    return undefined;
   const leadText = lead.sentences.map((sentence) => sentence.text).join(" ");
   return { title, lead, fresh: newContentMorphemes(title.headingTokens, leadTokens), echo: echoPercent(title.heading, leadText) };
 };

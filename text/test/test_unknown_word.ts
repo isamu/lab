@@ -4,7 +4,7 @@ import { namedRuleRun } from "./rule-run.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { editsOf, isKnownWord, isSplitWord, suggestionFor, wordsToCheck, type Speller } from "../packages/chaff/src/spelling.ts";
-import { unknownWord } from "../packages/chaff/src/detectors/unknown-word.ts";
+import { codeWordsOf, unknownWord } from "../packages/chaff/src/detectors/unknown-word.ts";
 import { buildDocument, type TeamRules } from "../packages/chaff/src/document.ts";
 
 // 辞書に無い語（unknown-word）。例文はすべて自作。
@@ -61,6 +61,33 @@ describe("unknown-word: a word not in the dictionary, one letter from one that i
 
   it("does not run on Japanese", () => {
     assert.deepEqual(namedRuleRun("unknown-word", "We will attched it.\n", ja).findings, []);
+  });
+});
+
+describe("unknown-word: a name the document also writes in code", () => {
+  before(async () => {
+    await en.prepare?.({ pos: true });
+  });
+
+  it("valid: a tool named in prose and written in an inline span or a code block", () => {
+    assert.deepEqual(unknown("Clean the files with tidyq before the upload.\n\nRun `tidyq check` first."), []);
+    assert.deepEqual(unknown("Clean the files with tidyq before the upload.\n\n```\n$ tidyq fix data.csv\n```"), []);
+    assert.deepEqual(unknown("Clean the files with tidyq before the upload.\n\n~~~\ntidyq fix data.csv\n~~~"), []);
+  });
+
+  it("invalid: the word nowhere in code, or only a different word in code", () => {
+    assert.deepEqual(unknown("Clean the files with tidyq before the upload."), ['"tidyq" is not in the dictionary; did you mean "tidy"?']);
+    assert.deepEqual(unknown("Clean the files with tidyq before the upload.\n\nRun `tidy check` first."), [
+      '"tidyq" is not in the dictionary; did you mean "tidy"?',
+    ]);
+  });
+
+  it("codeWordsOf reads the letters of every code span and block, lower-cased", () => {
+    assert.deepEqual(
+      [...codeWordsOf("Run `Tidyq --fix` now.\n\n```\nwrap_kit 2\n```\n")].toSorted((left, right) => left.localeCompare(right)),
+      ["fix", "kit", "tidyq", "wrap"],
+    );
+    assert.deepEqual([...codeWordsOf("No code here.")], []);
   });
 });
 
