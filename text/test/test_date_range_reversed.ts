@@ -8,6 +8,7 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import { rangeFrameOf, withoutTrailingWeekday } from "../packages/chaff/src/structure/date-range.ts";
 import { afterSpanLabel } from "../packages/chaff/src/structure/span-label.ts";
+import { occurrences, type StartEndWord } from "../packages/chaff/src/structure/start-end-range.ts";
 import { reversedReading, YEAR_END_CROSSING_DAYS } from "../packages/chaff/src/structure/range-years.ts";
 
 // 期間の終わりが始まりより前（date-range-reversed）。「4月1日〜3月31日」のように、範囲の記号でつないだ二つの日付を比べる。
@@ -283,5 +284,69 @@ describe("afterSpanLabel", () => {
     assert.equal(afterSpanLabel("Sales period: October 1", []), undefined);
     assert.equal(afterSpanLabel("", heads), undefined);
     assert.equal(afterSpanLabel(": October 1", heads), undefined);
+  });
+});
+
+describe("date-range-reversed — a start word and an end word in one sentence", () => {
+  const inContract = (source: string, adapter: LanguageAdapter = en): string[] =>
+    runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), {}, false, "legal/contract")
+      .findings.filter((finding) => finding.rule === RULE)
+      .map((finding) => `${String(finding.values["start"])}>${String(finding.values["end"])}`);
+
+  it("starts on … and ends on … that ends before it starts is reported, in a contract and a report", () => {
+    const reversed = "The term starts on 1 April 2026 and ends on 31 March 2026.";
+    assert.deepEqual(inContract(doc(reversed)), ["2026-04-01>2026-03-31"]);
+    assert.deepEqual(found(doc(reversed)), ["2026-04-01>2026-03-31"]);
+    assert.deepEqual(inContract(doc("The licence commences on 1 May 2026 and shall expire on 30 April 2026.")), ["2026-05-01>2026-04-30"]);
+    assert.deepEqual(inContract(doc("This lease begins on June 1, 2026, and terminates on May 31, 2026.")), ["2026-06-01>2026-05-31"]);
+    assert.deepEqual(inContract(doc("A period commencing on 1 April 2026 and ending on 31 March 2026 applies.")), ["2026-04-01>2026-03-31"]);
+  });
+
+  it("a start and an end in order are silent", () => {
+    assert.deepEqual(inContract(doc("The term starts on 1 April 2026 and ends on 31 March 2027.")), []);
+    assert.deepEqual(inContract(doc("This lease begins on June 1, 2026, and terminates on May 31, 2027.")), []);
+  });
+
+  it("two start words or two end words in the sentence leave the pair unread", () => {
+    assert.deepEqual(inContract(doc("Phase 1 starts on 1 May 2026 and ends on 30 April 2026, and phase 2 starts on 1 June 2026.")), []);
+    assert.deepEqual(inContract(doc("The term starts on 1 April 2026 and ends on 31 March 2026 unless it ends on an earlier date.")), []);
+  });
+
+  it("an end word of another subject, other words between the dates, or a date in another sentence is not a pair", () => {
+    assert.deepEqual(inContract(doc("Phase 2 starts on 1 June 2026 and phase 1 ends on 31 May 2026.")), []);
+    assert.deepEqual(inContract(doc("The term starts on 1 April 2026 or later and ends on 31 March 2026.")), []);
+    assert.deepEqual(inContract(doc("The term starts on 1 April 2026. The trial ends on 31 March 2026.")), []);
+    assert.deepEqual(inContract(doc("The term was signed on 1 April 2026 and ends on 31 March 2026.")), []);
+    assert.deepEqual(inContract(doc("Payment depends on 1 April 2026 and ends on 31 March 2026.")), []);
+  });
+
+  it("Japanese: から開始し…に終了 and 開始日は…、終了日は… in one sentence", () => {
+    assert.deepEqual(inContract(doc("本契約は、2026年4月1日から開始し、2026年3月31日に終了する。"), ja), ["2026-04-01>2026-03-31"]);
+    assert.deepEqual(inContract(doc("契約期間の開始日は2026年4月1日、終了日は2026年3月31日とする。"), ja), ["2026-04-01>2026-03-31"]);
+    assert.deepEqual(inContract(doc("本契約は、2026年4月1日から開始し、2027年3月31日に終了する。"), ja), []);
+    assert.deepEqual(inContract(doc("本契約は、2026年4月1日から開始する。2026年3月31日に終了した旧契約は失効する。"), ja), []);
+    assert.deepEqual(inContract(doc("開始日は2026年4月1日、終了日は2026年3月31日とし、更新後の開始日は別に定める。"), ja), []);
+  });
+
+  it("Japanese: an end word that modifies a noun (に終了した旧契約) is not the period's end; one that ends the predicate is", () => {
+    assert.deepEqual(inContract(doc("本契約の開始日は2026年4月1日、2026年3月31日に終了した旧契約を引き継ぐ。"), ja), []);
+    assert.deepEqual(inContract(doc("本契約は2026年4月1日から開始し、2026年3月31日に終了した旧契約を引き継ぐ。"), ja), []);
+    assert.deepEqual(inContract(doc("本契約は2026年4月1日から開始し、2026年3月31日に終了し、以後は更新しない。"), ja), ["2026-04-01>2026-03-31"]);
+    assert.deepEqual(inContract(doc("本契約は2026年4月1日から開始し、2026年3月31日をもって終了するものとする。"), ja), ["2026-04-01>2026-03-31"]);
+  });
+});
+
+describe("occurrences", () => {
+  const starts: StartEndWord[] = [
+    { word: "starts", position: "before" },
+    { word: "starts on", position: "before" },
+  ];
+
+  it("counts overlapping matches once, whole words only", () => {
+    assert.equal(occurrences("the term starts on 1 april", starts), 1);
+    assert.equal(occurrences("it starts on 1 may and phase 2 starts on 1 june", starts), 2);
+    assert.equal(occurrences("the kickstarts on 1 may", starts), 0);
+    assert.equal(occurrences("", starts), 0);
+    assert.equal(occurrences("the term starts on 1 april", []), 0);
   });
 });

@@ -14,6 +14,7 @@ import { withCompoundHours } from "../structure/compound-hours.ts";
 import { timeLengths } from "../derived/time-lengths.ts";
 import { measureUnitsOf } from "../facts/measure-units.ts";
 import { rangeFrameOf, reversedRanges, type DatedSpan, type RangeWords } from "../structure/date-range.ts";
+import { isStartEndRange, type StartEndWord, type StartEndWords } from "../structure/start-end-range.ts";
 import { afterLabel } from "../structure/stated-period.ts";
 import { afterSpanLabel } from "../structure/span-label.ts";
 import { percentSumMismatches, type ShareWords } from "../structure/percent-sum.ts";
@@ -310,11 +311,29 @@ const labelledAt =
     return after !== undefined && offset >= lineStart + after;
   };
 
-/** 期間の終わりが始まりより前。範囲の記号と語は言語パッケージの語彙表（range-connector、range-opener、range-closer）から取る。 */
+const startEndOf = (doc: ProseDocument, group: "start" | "end"): StartEndWord[] =>
+  (doc.lexicons["range-start-end"] ?? [])
+    .filter((entry) => entry.group === group)
+    .map((entry) => ({ word: entry.pattern.toLowerCase(), position: entry.position === "after" ? "after" : "before" }));
+
+const startEndGroup = (doc: ProseDocument, group: string): string[] =>
+  (doc.lexicons["range-start-end"] ?? []).filter((entry) => entry.group === group).map((entry) => entry.pattern.toLowerCase());
+
+/** 始まりの語と終わりの語（starts on … and ends on、から開始し、…に終了）。語彙表 range-start-end の group で分ける。 */
+const startEndWordsOf = (doc: ProseDocument): StartEndWords => ({
+  starts: startEndOf(doc, "start"),
+  ends: startEndOf(doc, "end"),
+  joints: startEndGroup(doc, "joint"),
+  tails: startEndGroup(doc, "tail"),
+  weekdays: (doc.lexicons["weekday"] ?? []).map((entry) => entry.pattern),
+});
+
+/** 期間の終わりが始まりより前。範囲の記号と語は言語パッケージの語彙表（range-connector、range-opener、range-closer、range-start-end）から取る。 */
 export const dateRangeReversed: Detector = (doc): Finding[] => {
   if (doc.structure === undefined) return [];
   const dates = datedSpans(doc.structure);
-  return reversedRanges(doc.source, dates, rangeWordsOf(doc), labelledAt(doc))
+  const startEnd = startEndWordsOf(doc);
+  return reversedRanges(doc.source, dates, rangeWordsOf(doc), labelledAt(doc), (start, end) => isStartEndRange(doc.source, start, end, startEnd))
     .filter((issue) => {
       const start = dateAt(dates, issue.offset);
       return !quotedDates(doc, dates[start], dates[start + 1]);
