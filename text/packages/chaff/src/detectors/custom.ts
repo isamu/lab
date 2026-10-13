@@ -3,6 +3,7 @@ import { occurrencesOutside } from "../orthography.ts";
 import { tokenRuns } from "../custom/token-pattern.ts";
 import { joinedView, type JoinedView } from "../joined-view.ts";
 import { boundedMatches } from "../custom/bounded-match.ts";
+import { NO_REWRITE } from "../custom/no-rewrite.ts";
 
 // The detectors behind a team's custom_rules. Each reports every place it finds, at the rule's level; the spec comes from
 // the rule (DetectorOptions.custom). Positions are the document's, like every other finding.
@@ -17,6 +18,9 @@ const findingOf = (hit: Hit): Finding => ({
   quote: hit.sentence.text.trim(),
   values: { matched: hit.matched, preferred: hit.preferred, offset: hit.sentence.span.start + hit.offset },
 });
+
+/** A words finding: with no spelling to use (a word-list entry without rewrite), its rule's message for that. */
+const wordsFindingOf = (hit: Hit): Finding => ({ ...findingOf(hit), ...(hit.preferred === "" ? { variant: NO_REWRITE } : {}) });
 
 /**
  * The sentence with the line breaks that fall inside a word taken out (「関\nする」 reads 「関する」), so words and patterns
@@ -58,7 +62,7 @@ export const customWords: Detector = (doc, options): Finding[] => {
   return doc.sentences.flatMap((sentence) => {
     const view = readAsWritten(sentence);
     return pairs.flatMap((pair) =>
-      occurrencesOutside(view.text, pair.avoid, pair.use).map((start) => findingOf(hitAt(sentence, view, start, start + pair.avoid.length, pair.use))),
+      occurrencesOutside(view.text, pair.avoid, pair.use).map((start) => wordsFindingOf(hitAt(sentence, view, start, start + pair.avoid.length, pair.use))),
     );
   });
 };
