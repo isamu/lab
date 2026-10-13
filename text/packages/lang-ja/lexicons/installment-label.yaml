@@ -39,3 +39,11 @@ entries:
   - { pattern: ご返済総額, group: total }
   - { pattern: 返済総額, group: total }
   - { pattern: 総支払額, group: total }
+  # numbered は表の行や箇条書きの頭に置く分納の見出しで、{n} が何回目か（第1回、第2回）。final はその後に来る最後の回、
+  # deposit は分納の一つとして並べる申込金。これらの額を足して、同じ節に書いた費用（旅行代金は1人あたり62,000円）と比べる。
+  - { pattern: "第{n}回", group: numbered }
+  - { pattern: "{n}回目", group: numbered }
+  - { pattern: 最終回, group: final }
+  - { pattern: 申込金, group: deposit }
+  - { pattern: 申し込み金, group: deposit }
+  - { pattern: 予約金, group: deposit }
