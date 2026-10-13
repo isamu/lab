@@ -42,7 +42,26 @@ export const kanjiReadingOf = (
 const baseStartOf = (mention: CompanyMention): number =>
   mention.position === "after" ? mention.offset : mention.offset + mention.surface.length - mention.base.length;
 
-/** 会社の名前の、漢字一字をその読みのひらがなかカタカナで書いた形（みどりの生命保険株式会社、みどりノ生命保険株式会社）。 */
+/** 濁る頭の音（カ行、サ行、タ行、ハ行）。 */
+const VOICEABLE = /^[カキクケコサシスセソタチツテトハヒフヘホ]/u;
+const VOICED_MARK = "゙";
+
+/** 名前の中ほどの字の読みは、頭の音を濁らせて書くことがある（こむぎ畑 ハタケ を こむぎばたけ）。頭の音が濁らない読みには無い。 */
+export const voicedReadingOf = (reading: string): string | undefined => {
+  const first = VOICEABLE.exec(reading)?.[0];
+  return first === undefined ? undefined : `${(first + VOICED_MARK).normalize("NFC")}${reading.slice(first.length)}`;
+};
+
+/** 名前の字の読みの、かなの書き方。名前の頭でない字は、頭の音を濁らせた読みも。 */
+const readingsAt = (reading: string, inside: boolean): string[] => {
+  const voiced = inside ? voicedReadingOf(reading) : undefined;
+  return voiced === undefined ? [reading] : [reading, voiced];
+};
+
+/**
+ * 会社の名前の、漢字一字をその読みのひらがなかカタカナで書いた形（みどりの生命保険株式会社、みどりノ生命保険株式会社）。
+ * 名前の頭でない字は、頭の音を濁らせた読みでも（こむぎばたけベーカリー）。
+ */
 export const kanaSpellingsOf = (mention: CompanyMention, words: readonly ReadWord[]): string[] => {
   const baseStart = baseStartOf(mention);
   const baseEnd = baseStart + mention.base.length;
@@ -53,7 +72,8 @@ export const kanaSpellingsOf = (mention: CompanyMention, words: readonly ReadWor
       if (read === undefined) return [];
       const at = word.start - mention.offset + read.index;
       const [before, after] = [mention.surface.slice(0, at), mention.surface.slice(at + read.kanji.length)];
-      return [toHiragana(read.reading), read.reading].map((kana) => `${before}${kana}${after}`);
+      const inside = word.start + read.index > baseStart;
+      return readingsAt(read.reading, inside).flatMap((reading) => [toHiragana(reading), reading].map((kana) => `${before}${kana}${after}`));
     });
 };
 

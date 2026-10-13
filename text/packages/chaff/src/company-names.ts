@@ -82,6 +82,18 @@ const SPACES: ReadonlySet<string> = new Set([" ", "\u3000"]);
  */
 export type KanaStops = { readonly particles: readonly string[]; readonly openers: readonly string[]; readonly ends: readonly string[] };
 
+/**
+ * 品詞解析が形容詞・動詞・助動詞と読んだ語の終わり（source の上の位置）。い で終わるひらがな（ながい、しおさい）は、ここで終わる
+ * なら名前の頭と読まない（ながい食品 の ながい）。名前の頭の い（しおさい の さい）は名詞と読まれる。
+ */
+export type PredicateEnds = ReadonlySet<number>;
+
+const NO_PREDICATE_ENDS: PredicateEnds = new Set();
+const PREDICATE_TAIL = "い";
+
+/** い で終わる名前の頭が、品詞解析の形容詞・動詞・助動詞の終わりか（ながい食品 の ながい）。 */
+const isPredicateHead = (head: string, end: number, predicateEnds: PredicateEnds): boolean => head.endsWith(PREDICATE_TAIL) && predicateEnds.has(end);
+
 /** ひらがなの前に何があるか。word は語や閉じ括弧（当社はこもれび、）により）、form は会社の形の語（株式会社こもれび）、boundary は句読点や行の頭。 */
 export type KanaLead = "word" | "form" | "boundary";
 
@@ -117,26 +129,27 @@ const kanaRunStart = (source: string, end: number): number => {
 };
 
 /** 名前の前に続くひらがなのうち、名前の頭と読む所を足した始まり。 */
-const withKanaHead = (source: string, start: number, stops: KanaStops): number => {
+const withKanaHead = (source: string, start: number, stops: KanaStops, predicateEnds: PredicateEnds): number => {
   const kanaStart = kanaRunStart(source, start);
   if (kanaStart === start) return start;
   const lead = GLUED.test(source.charAt(kanaStart - 1)) ? "word" : "boundary";
-  return start - (kanaHeadOf(source.slice(kanaStart, start), lead, stops)?.length ?? 0);
+  const head = kanaHeadOf(source.slice(kanaStart, start), lead, stops);
+  return head === undefined || isPredicateHead(head, start, predicateEnds) ? start : start - head.length;
 };
 
 /** 漢字・かなの名前: 形の語の隣の、名前に使う字の続き。形の語との間の空白一つは名前の外。 */
-const cjkBaseBefore = (source: string, end: number, stops: KanaStops): Span | undefined => {
+const cjkBaseBefore = (source: string, end: number, stops: KanaStops, predicateEnds: PredicateEnds): Span | undefined => {
   const stop = SPACES.has(source.charAt(end - 1)) ? end - 1 : end;
   const match = CJK_BEFORE.exec(source.slice(0, stop));
-  return match === null ? undefined : { start: withKanaHead(source, match.index, stops), end: stop };
+  return match === null ? undefined : { start: withKanaHead(source, match.index, stops, predicateEnds), end: stop };
 };
 
 /** 形の語の後ろの名前。ひらがなで始まる名前（株式会社こもれび珈琲）は、ひらがなの後ろに名前に使う字が続くときだけ。 */
-const cjkBaseAfter = (source: string, start: number, stops: KanaStops): Span | undefined => {
+const cjkBaseAfter = (source: string, start: number, stops: KanaStops, predicateEnds: PredicateEnds): Span | undefined => {
   const from = SPACES.has(source.charAt(start)) ? start + 1 : start;
   const kana = KANA_AFTER.exec(source.slice(from))?.[0] ?? "";
   const head = kana === "" ? "" : kanaHeadOf(kana, "form", stops);
-  if (head === undefined) return undefined;
+  if (head === undefined || isPredicateHead(head, from + head.length, predicateEnds)) return undefined;
   const match = CJK_AFTER.exec(source.slice(from + head.length));
   return match === null ? undefined : { start: from, end: from + head.length + match[0].length };
 };
@@ -184,23 +197,36 @@ const foreignMentionAt = (source: string, form: CompanyForm, at: number, words: 
   return { ...mentionOf(source, base, { start: at, end: at + form.pattern.length }, form.group), foreign: true };
 };
 
-const baseBefore = (source: string, at: number, latin: boolean, isProper: IsProper, stops: KanaStops): Span | undefined =>
-  latin ? latinBaseBefore(source, at, isProper) : cjkBaseBefore(source, at, stops);
+const baseBefore = (source: string, at: number, latin: boolean, isProper: IsProper, stops: KanaStops, predicateEnds: PredicateEnds): Span | undefined =>
+  latin ? latinBaseBefore(source, at, isProper) : cjkBaseBefore(source, at, stops, predicateEnds);
 
 /** 形の語の一つの現れから、会社の名前の現れ。名前が前にあればそれを、無ければ後ろを取る。 */
-const mentionAt = (source: string, form: CompanyForm, at: number, isProper: IsProper, stops: KanaStops): CompanyMention | undefined => {
+const mentionAt = (
+  source: string,
+  form: CompanyForm,
+  at: number,
+  isProper: IsProper,
+  stops: KanaStops,
+  predicateEnds: PredicateEnds,
+): CompanyMention | undefined => {
   if (form.foreign !== undefined) return foreignMentionAt(source, form, at, form.foreign.words);
   const formSpan = { start: at, end: at + form.pattern.length };
   const latin = LATIN.test(form.pattern);
   if (latin && CONTINUED.test(source.slice(formSpan.end))) return undefined;
-  const before = form.position === "before" ? undefined : baseBefore(source, at, latin, isProper, stops);
+  const before = form.position === "before" ? undefined : baseBefore(source, at, latin, isProper, stops, predicateEnds);
   if (before !== undefined && isNameBase(source, before, isProper)) return mentionOf(source, before, formSpan, form.group);
-  const after = form.position === "after" || latin ? undefined : cjkBaseAfter(source, formSpan.end, stops);
+  const after = form.position === "after" || latin ? undefined : cjkBaseAfter(source, formSpan.end, stops, predicateEnds);
   return after !== undefined && isNameBase(source, after, isProper) ? mentionOf(source, after, formSpan, form.group) : undefined;
 };
 
 /** 文書の中の会社の名前の現れ。長い形の語（Co., Ltd）を先に取り、その中の短い語（Ltd）は数えない。 */
-export const companyMentionsIn = (source: string, forms: readonly CompanyForm[], isProper: IsProper, stops: KanaStops): CompanyMention[] => {
+export const companyMentionsIn = (
+  source: string,
+  forms: readonly CompanyForm[],
+  isProper: IsProper,
+  stops: KanaStops,
+  predicateEnds: PredicateEnds = NO_PREDICATE_ENDS,
+): CompanyMention[] => {
   const taken: Span[] = [];
   return forms
     .toSorted((left, right) => right.pattern.length - left.pattern.length)
@@ -209,7 +235,7 @@ export const companyMentionsIn = (source: string, forms: readonly CompanyForm[],
         const end = at + form.pattern.length;
         if (!standsAsWord(source, form.pattern, at) || taken.some((span) => span.start < end && at < span.end)) return [];
         taken.push({ start: at, end });
-        const mention = mentionAt(source, form, at, isProper, stops);
+        const mention = mentionAt(source, form, at, isProper, stops, predicateEnds);
         return mention === undefined ? [] : [mention];
       }),
     )
