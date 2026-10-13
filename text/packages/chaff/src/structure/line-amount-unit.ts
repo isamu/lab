@@ -37,9 +37,15 @@ export const unitsAgree = (quantity: string | undefined, pricePer: string | unde
 /**
  * The unit a price heading is per. A heading that names no unit a quantity counts (Rate, whose period is unstated) is per
  * the quantity heading's unit when that is one a price can be per (Hours, Miles); otherwise it stays as it is, so a bare
- * Rate beside a plain Quantity column is still not multiplied by "2 days".
+ * Rate beside a plain Quantity column is still not multiplied by "2 days". A unit only a quantity heading counts (a
+ * head count: Per student beside Students) is stated too, so Per student beside Days stays per a person.
  */
-export const priceHeadingUnit = (priceUnit: string | undefined, quantityHeadingUnit: string | undefined, rateUnits: readonly string[]): string | undefined => {
-  if (priceUnit === undefined || rateUnits.includes(priceUnit)) return priceUnit;
+export const priceHeadingUnit = (
+  priceUnit: string | undefined,
+  quantityHeadingUnit: string | undefined,
+  rateUnits: readonly string[],
+  headingUnits: readonly string[],
+): string | undefined => {
+  if (priceUnit === undefined || rateUnits.includes(priceUnit) || headingUnits.includes(priceUnit)) return priceUnit;
   return quantityHeadingUnit !== undefined && rateUnits.includes(quantityHeadingUnit) ? quantityHeadingUnit : priceUnit;
 };
