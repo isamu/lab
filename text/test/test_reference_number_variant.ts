@@ -9,6 +9,7 @@ import { messageOf } from "../packages/chaff/src/render/text.ts";
 import { followingGroups, labelledReferenceNumbers, referenceVariants } from "../packages/chaff/src/reference-numbers.ts";
 import { labelledPlates, plateVariants } from "../packages/chaff/src/vehicle-plates.ts";
 import { tableCodes, tableLabelledCodes, unlabelledVariants } from "../packages/chaff/src/unlabelled-references.ts";
+import { isSubjectCode, subjectCodeVariants } from "../packages/chaff/src/subject-codes.ts";
 import { PatternTimeout } from "../packages/chaff/src/custom/pattern-timeout.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
@@ -573,5 +574,79 @@ describe("reference-number-variant: an item code labelled once and written with 
     assert.deepEqual(unlabelledVariants("", [anchor], new Set()), []);
     assert.deepEqual(unlabelledVariants("https://example.com/GP-0521", [anchor], new Set()), []);
     assert.deepEqual(unlabelledVariants("12-0521", [{ ...anchor, written: "12-0512", characters: "120512" }], new Set()), []);
+  });
+});
+
+describe("reference-number-variant: the one model a product document is about", () => {
+  const notice = (title: string, ...lines: string[]): string => [`# ${title}`, "", ...lines, ""].join("\n");
+  const specJa = (code: string): string[] => ["| 項目 | 内容 |", "| --- | --- |", "| 品名 | 電子レンジ |", `| 型番 | ${code} |`];
+  const specEn = (code: string): string[] => ["| Item | Details |", "| --- | --- |", "| Product | Microwave oven |", `| Model | ${code} |`];
+
+  it("ja: 題名や型番の行・表の型番と、一度だけ書いた隣り合う文字の入れ違いを指す", () => {
+    assert.deepEqual(found(notice("ストーブ回収のお知らせ", "型番：NH-805", "", "NH-850 をお使いの方は使用をやめてください。"), ja), [5]);
+    assert.deepEqual(found(notice("イヤホン SB-210 保証規定", "本製品の型番 SB-201 が読めないときは保証しません。"), ja), [3]);
+    assert.deepEqual(found(notice("電子レンジ 保証書", ...specJa("KR-M230"), "", "型番 KR-M320 の本体が故障したときは修理します。"), ja), [8]);
+    assert.deepEqual(found(notice("パン回収のお知らせ", "商品コード：KB-120", "", "KB-210 の商品はお送りください。"), ja), [5]);
+    assert.deepEqual(messages(notice("ストーブ回収のお知らせ", "型番：NH-805", "", "NH-850 をお使いの方へ"), ja), [
+      "番号「NH-850」は、「NH-805」の隣り合う文字が入れ違っています",
+    ]);
+  });
+
+  it("ja: 二つの型番を名指す文書、表に並ぶ型番、二度書いた型番、同じ行の並び、英字一つの番号、別の種類の語の番号は指さない", () => {
+    assert.deepEqual(found(notice("回収のお知らせ", "型番：NH-805", "", "型番：NH-850", "", "NH-850 をお使いの方へ"), ja), []);
+    assert.deepEqual(found(notice("NH-805 回収のお知らせ", "型番：NH-900", "", "NH-850 をお使いの方へ"), ja), []);
+    assert.deepEqual(found(notice("NH-805 回収のお知らせ", "| 対象 |", "| --- |", "| NH-850 |", "", "NH-850 をお使いの方へ"), ja), []);
+    assert.deepEqual(found(notice("NH-805 回収のお知らせ", "", "NH-850 をお使いの方へ。NH-850 は交換します。"), ja), []);
+    assert.deepEqual(found(notice("NH-805 回収のお知らせ", "", "対象は NH-805 と NH-850 です。"), ja), []);
+    assert.deepEqual(found(notice("申請書 A-12 の書き方", "", "A-21 は別の様式です。"), ja), []);
+    assert.deepEqual(found(notice("NH-805 回収のお知らせ", "", "予約番号 NH-850 をお伝えください。"), ja), []);
+    assert.deepEqual(found(notice("ストーブ回収のお知らせ", "型番：NH-805", "", "NH-805 をお使いの方へ"), ja), []);
+  });
+
+  it("en: a model written once with two neighbours swapped from the title's, a field's or a table's", () => {
+    assert.deepEqual(found(notice("Recall: SH-710 Space Heater", "Model: SH-710", "", "If you own an SH-701, stop using it."), en), [5]);
+    assert.deepEqual(found(notice("Limited Warranty: Tracker FT-38", "(a) The model number FT-83 cannot be read."), en), [3]);
+    assert.deepEqual(found(notice("Warranty Card", ...specEn("MW-4120S"), "", "If the MW-4210S fails, we repair it."), en), [8]);
+    assert.deepEqual(found(notice("Granola Recall", "Item code: GB-240", "", "If you have GB-204 bars, do not eat them."), en), [5]);
+  });
+
+  it("en: not two models a document names, a table's own models, nor a code on the model's line", () => {
+    assert.deepEqual(
+      found(notice("Catalog", "| Model | Price |", "| --- | --- |", "| AB-1234 | $20 |", "| AB-1243 | $25 |", "", "The AB-1243 is new."), en),
+      [],
+    );
+    assert.deepEqual(found(notice("Recall", "Model: AB-3412", "", "Model: AB-3142", "", "The AB-3142 is affected."), en), []);
+    assert.deepEqual(found(notice("Recall: SH-710 and SH-701", "", "Owners of the SH-701 should call us."), en), []);
+    assert.deepEqual(found(notice("Recall: SH-710", "", "The SH-710 replaces the SH-701."), en), []);
+    assert.deepEqual(found(notice("Form A-12", "", "Form A-21 is another form."), en), []);
+  });
+
+  it("reads a short code only with two letters, a hyphen and two digits", () => {
+    assert.equal(isSubjectCode("FT-38"), true);
+    assert.equal(isSubjectCode("KR-M230"), true);
+    assert.equal(isSubjectCode("A-12"), false);
+    assert.equal(isSubjectCode("A-12B"), false);
+    assert.equal(isSubjectCode("１２-AB34"), false);
+    assert.equal(isSubjectCode("FT-3"), false);
+    assert.equal(isSubjectCode("FT38"), false);
+    assert.equal(isSubjectCode(""), false);
+  });
+
+  it("matches a writing to the document's code only when exactly one code is named", () => {
+    const base = { labels: [{ pattern: "型番", group: "model" }], listed: new Set(["model"]), tabled: [], known: new Set<string>() };
+    const variants = (prose: string, title?: string): string[] =>
+      subjectCodeVariants({ ...base, prose, title: title === undefined ? undefined : { start: 0, text: title } }).map(
+        ({ number, other }) => `${number.written}<${other.written}`,
+      );
+    assert.deepEqual(variants("\n\n型番：NH-805\n\nNH-850 の方へ"), ["NH-850<NH-805"]);
+    assert.deepEqual(variants("# NH-805\n\nNH-850 の方へ", "# NH-805"), ["NH-850<NH-805"]);
+    assert.deepEqual(variants("NH-850 の方へ"), []);
+    assert.deepEqual(variants(""), []);
+    assert.deepEqual(variants("# NH-805 / NH-900\n\nNH-850 の方へ", "# NH-805 / NH-900"), []);
+    assert.deepEqual(variants("# NH-805\n\nhttps://example.com/NH-850", "# NH-805"), []);
+    assert.deepEqual(
+      subjectCodeVariants({ ...base, prose: "# NH-805\n\nNH-850 の方へ", title: { start: 0, text: "# NH-805" }, known: new Set(["NH850"]) }),
+      [],
+    );
   });
 });

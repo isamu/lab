@@ -38,7 +38,7 @@
         },
         {
           "kind": "model-number",
-          "rule": "name-variant",
+          "rule": "reference-number-variant",
           "line": 28,
           "clean": "型番 KR-M230 の本体",
           "planted": "型番 KR-M320 の本体"
@@ -103,7 +103,7 @@
         },
         {
           "kind": "model-number",
-          "rule": "name-variant",
+          "rule": "reference-number-variant",
           "line": 29,
           "clean": "(1) 本製品の型番 SB-210",
           "planted": "(1) 本製品の型番 SB-201"
@@ -168,7 +168,7 @@
         },
         {
           "kind": "model-number",
-          "rule": "name-variant",
+          "rule": "reference-number-variant",
           "line": 28,
           "clean": "If the MW-4120S fails",
           "planted": "If the MW-4210S fails"
@@ -233,7 +233,7 @@
         },
         {
           "kind": "model-number",
-          "rule": "name-variant",
+          "rule": "reference-number-variant",
           "line": 29,
           "clean": "(a) The model number FT-38",
           "planted": "(a) The model number FT-83"
