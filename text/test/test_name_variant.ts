@@ -937,6 +937,6 @@ describe("name-variant: 名の中での字の読みで読み直した名（健�
   it("読みの違う名（健太 と 健二）、一字の名、姓は読み直さない", () => {
     assert.deepEqual(variants("森 健太 様にお送りします。\n\n森 健太 様の結果です。\n\n森 健二 様の予約です。\n", ja), []);
     assert.deepEqual(variants("山本 太 様にお送りします。\n\n山本 太 様の結果です。\n\n山本 汰 様の予約です。\n", ja), []);
-    assert.deepEqual(variants("拓 健一 様にお送りします。\n\n拓 健一 様の結果です。\n\n卓 健一 様の予約です。\n", ja), []);
+    assert.deepEqual(variants("建実 健一 様にお送りします。\n\n建実 健一 様の結果です。\n\n健実 健一 様の予約です。\n", ja), []);
   });
 });
