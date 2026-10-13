@@ -2,6 +2,123 @@
 
 Newest first.
 
+## 0.32.0 — 2026-10-13
+
+chaff now checks the paperwork of money and everyday life: payslips, expense reports, bank and loan statements, tax
+statements, insurance policies and claims, utility and phone bills, medical bills and checkup reports, warranty cards
+and recall notices, orders and delivery notes, shipping papers, tenancy and property settlements, tuition and school
+trip notices, transcripts, timesheets, points statements, treasurers' reports, bookings, tickets, banquet and
+renovation quotes, price lists and earnings reports. A net amount is checked against its gross and deductions, a
+balance against the rows that lead to it, interest against balance and rate, a ratio, a BMI or a grade-point average
+against the figures beside it, and a meter's readings against its usage. Booking, member, contract and other reference
+numbers written two ways are caught, and many more pairs of dates are read for their order.
+
+### Rules
+
+- New: annual-pay-mismatch, an example annual pay that is not twelve months' pay plus the bonus (#909).
+- New: annual-holidays-mismatch, annual days off fewer than the weekly days off give (#912).
+- New: ratio-mismatch, a margin its numerator divided by its denominator does not give (#919).
+- New: revision-direction-mismatch, a forecast said to be revised upward whose table goes down (#921).
+- New: table-unit-mix, a results table that mixes scales of amount (#922).
+- New: period-label-conflict, a period other than the one the title reports, including a tax year (#923, #1017).
+- New: meter-usage-mismatch, a utility bill whose readings' difference is not the usage (#936, #962).
+- New: deductible-exceeds-limit, a deductible larger than the most paid (#939).
+- New: period-multiple-mismatch, an amount said to be N monthly payments that is not N times the monthly one (#940).
+- New: reference-flag-mismatch and reference-unit-mismatch, a lab result flagged against its reference range, or
+  given in another unit than the range (#943, #944).
+- New: bmi-mismatch, a BMI the height and weight beside it do not give (#945).
+- New: period-part-exceeds-whole, a part of a period longer than the period (#951).
+- New: serial-range-reversed, a serial or lot number range that ends below its start (#968).
+- New: running-balance-mismatch, a running balance the row above and this row do not give (#978).
+- New: installment-total-mismatch, payments × count that is not the total of payments (#979).
+- New: product-exceeds-maximum, an amount per use times the uses over the stated maximum (#882).
+- New: reference-number-variant, a booking number with two characters swapped (#987); it reads employee, student,
+  order, invoice, patient, contract, registration, quote, account, policy and member numbers, vehicle plates, item
+  codes, and numbers written in spaced groups (#997, #1007, #1024, #1035, #1042, #1051, #1056, #1069, #1072, #1089).
+- New: reference-number-repeated, the same receipt or invoice number on two rows of one itemised table (#996).
+- New: net-amount-mismatch, a net amount that is not the gross minus the deductions (#992); it reads taxable amounts,
+  deposit settlements, insurance claim settlements, tuition notices and the parts of a deduction (#1014, #1033,
+  #1076, #1086, #1104).
+- New: cumulative-below-current, a cumulative figure lower than this period's (#993).
+- New: delivered-over-ordered and backorder-mismatch, one row of an order quantity table (#1003).
+- New: gpa-mismatch, a grade-point average the course rows do not give (#1005).
+- New: net-over-gross, a net weight larger than the gross weight on one row (#1023).
+- New: share-amount-mismatch, an amount paid that is not the stated share of the total (#1030).
+- New: currency-column-mix, one amount in another currency in a column of amounts (#1031).
+- New: closing-balance-mismatch, a closing balance that is not opening + deposits − withdrawals; it reads points
+  statements and a treasurer's carry-over (#1071, #1090).
+- New: interest-mismatch, interest that is not the stated balance times the stated rate (#1073).
+- New: discount-rate-mismatch, a tier discount the list price and the tier price do not give (#1077).
+- New: variance-mismatch, a budget-versus-actual variance that is not the difference (#1093).
+- New: tier-threshold-mismatch, a stated tier whose member's points or nights fall outside its band (#1100).
+- due-before-issue reads many more labelled date pairs: an application deadline and its posting, an earnings call and
+  the period end, checkup reports, warranty registration, recall requests, a loan's first payment, bookings, pay
+  dates, trip returns, deliveries and orders, transcripts, tax statements, shipment and arrival, a medical visit and
+  its bill, admission and discharge, a tenancy's move-in, notice and move-out, a car's service and next inspection,
+  construction start and handover, a service, validity or statement period, an insurance claim and its incident,
+  納入期限 and 納付期限, an audit before the financial year ends, two date columns in one table row, and a sale's
+  settlement or a quote's validity (#905, #925, #946, #965, #977, #982, #990, #1001, #1009, #1022, #1027, #1041,
+  #1048, #1055, #1063, #1070, #1075, #1084, #1094, #1102, #1110).
+- deadline-after-event reads a ticket order's payment deadline and a trip's departure (#1044, #1050, #1120).
+- line-amount-mismatch reads m³ quantities, hourly and mileage tables, delivery note columns, a medical bill's points,
+  monthly rent × months, tickets and head counts, pack prices, daily benefits, tuition credits, a price × count in
+  brackets, settlement prorations and land price per area, points earned, and a cost per head (#935, #995, #1020,
+  #1025, #1036, #1043, #1065, #1074, #1083, #1096, #1107, #1112, #1116).
+- total-mismatch reads container counts, a total named by its column or its span (控除合計, Total credits earned,
+  年間合計, 年額), a listed total closing a table, 9時間30分 as hours, and Total income / expenditure / receipts (#967,
+  #991, #1002, #1015, #1034, #1084, #1087, #1095).
+- tax-mismatch reads tax-excluded and tax-included price columns and a service charge row (#1068, #1108).
+- change-rate-mismatch reads 百万円 amounts, "rose X% to A from B" and prior / current / rate table rows (#917, #924).
+- duration-mismatch reads lengths written before their noun, the marked start and end among three dates, and
+  timesheet rows; time-range-reversed reads timesheet columns and a.m./p.m. slips; time-order compares labelled pairs
+  of times and banquet times in Japanese (#915, #956, #1097, #1092, #1046, #1105).
+- fact-conflict reads lengths of time, ages, rates with words around them, warranty lengths, floor areas, days in
+  hospital, counts against a table's count column, odometer readings and data used, and compares a table row with a
+  sentence naming it (#908, #910, #942, #963, #972, #973, #980, #1016, #1029, #1037, #1047, #1058, #1066, #1078).
+- name-variant reads katakana product names, company names with a hiragana head, a kana slip or 社, name kanji with no
+  known reading, spaced Japanese full names, a lookalike kanji, a surname after a person label, a given name after
+  "to", a person field's spelling as the usual one, and a signature or address block one line at a time (#880, #907,
+  #948, #953, #960, #988, #1006, #1028, #1049, #1059, #1099, #1106, #1118).
+- contact-variant reads an address in a two-column table row; phone-number-variant reads numbers after a desk's name
+  (#1103, #969).
+- elapsed-years-mismatch checks an age against a labelled birth date and its as-of date in either order;
+  impossible-date reports an era year and a bracketed Western year that disagree (#947, #1004, #941, #928).
+- date-outside-period reads claim, billing and rental periods; date-range-reversed reads a bare "to" after a span label
+  and a range with the year on one end only; a stated period is read from a key-value table row (#998, #966, #1117,
+  #955).
+- Units: clinical concentration units, m2 / km2 / sq.m., a Latin unit only at a word boundary, every currency notation
+  and a lexicon unit word in any case in the structure tree, and m² after NFKC in scaled-quantity-mismatch (#957,
+  #1039, #975, #934, #964, #950).
+- Messages write computed dates and durations readably (#913, #916).
+- Fewer false findings: dates whose year the reader can tell, recurring days and example dates (date-without-year);
+  spaces between names and beside booking numbers (latin-spacing); お客さま; a day count in brackets after a range;
+  numbered cases; a bare plural at a sentence's head; a closing signature line; blanks on total rows; Week 1 as a
+  heading number; a per-row rate column in percent-sum-mismatch; a reply-by date in running text; two ordinary words
+  one letter apart; open offers to take questions; a greeting past a letter's header; Grade 5 students (#920, #929,
+  #926, #983, #937, #938, #949, #952, #954, #981, #1091, #1085, #1088, #1053, #1113, #1114, #1115).
+
+### Docs
+
+- A plain rule reference for non-engineers: short summaries, example first, details collapsed (#918).
+- The skill brought up to date with the CLI (#1119).
+- The README reads English first, and English output carries no Japanese (#1122).
+
+### Tests and tools
+
+- Planted sets for specification sheets, earnings reports, insurance, utilities, checkups, warranties, recalls, loans,
+  bookings, payslips, expenses, orders, transcripts, tax statements, medical bills, shipping, tenancy, tickets, vehicle
+  service, renovation, phone bills, price lists, bank statements, claims, tuition, timesheets, points, treasurers'
+  reports, settlements, banquets and school trips (#879, #914, #930, #931, #932, #933, #958, #974, #976, #985, #986,
+  #999, #1000, #1013, #1019, #1021, #1032, #1038, #1045, #1054, #1057, #1060, #1061, #1062, #1079, #1080, #1081,
+  #1082, #1098, #1101, #1109).
+- A planted mistake may name the line it pairs with; `yarn planted` fails only on a regression and prints an
+  improvement (#1010, #1012).
+- Planted scores recorded and corrected (#961, #970, #994, #1008, #1011, #1018, #1026, #1040, #1052); a test that
+  ratio-mismatch reads every currency notation in prose (#927).
+- Internal: ratio-mismatch and deductible-exceeds-limit read prose amounts from the structure tree; lab-table rules
+  share one heading reader; line-amount-mismatch uses the shared superscript reader (#959, #971, #989).
+- Landed through #911, #984, #1064 and #1111.
+
 ## 0.31.0 — 2026-10-10
 
 chaff now checks rental listings, product specification sheets, dosage leaflets, recipes, event notices and privacy
