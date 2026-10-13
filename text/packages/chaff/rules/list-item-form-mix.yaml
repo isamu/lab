@@ -82,7 +82,7 @@ example:
 
 not_flagged:
   ja: 項目が三つに満たない箇条書き、少ないほうが三分の一を超える箇条書き（使い分けと見る）、一語だけの項目、「札：説明」の形の項目、コードやリンクを含む項目、読点や「;」で終わって一つの文を分けて並べた箇条書き、引用の中の箇条書きは見ません。項目の最後の括弧書き（「健康診断書（3か月以内のもの）」）は外して形を見ます。法務・文学・話し言葉・議事録のジャンルでは見ません。
-  en: 'Lists of fewer than three items, lists where the less common form is more than a third (used on purpose), one-word items, "Label: value" items, items holding code or a link, lists whose items end in a comma, a semicolon or "and" (one sentence split into items), and quoted lists are not checked. A capitalised name (Cover Letter) and a word that is also a verb (Design) are not judged by their first word. Legal, literary, speech and meeting-notes genres do not run this rule.'
+  en: 'Lists of fewer than three items, lists where the less common form is more than a third (used on purpose), one-word items, "Label: value" items, items holding code or a link, lists whose items end in a comma, a semicolon or "and" (one sentence split into items), and quoted lists are not checked. A capitalised name (Cover Letter), a word that is also a verb (Design documents), an adjective before a preposition (Free of charge, Clean up) and an -ing word before a noun (Washing machine) are not judged by their first word; a word followed by "the", "a" or "your" (Open the app) opens with a verb. Legal, literary, speech and meeting-notes genres do not run this rule.'
 level_meaning:
   ja: 少ないほうの形が、箇条書きの項目の {limit}% 以下のとき指摘
   en: reported when the less common form is {limit}% of the list's items or less

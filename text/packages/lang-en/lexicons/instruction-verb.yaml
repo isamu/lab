@@ -1,0 +1,10 @@
+# Verbs that open an instruction (Click Save, Scroll down) but that the tagger's dictionary knows only as nouns or not
+# at all. list-item-form-mix reads a list item opening with one as opening with a verb. A word the tagger already reads
+# as a verb (select, tap) needs no entry. Matched in lower case.
+id: instruction-verb
+language: en
+entries:
+  - pattern: click
+  - pattern: scroll
+  - pattern: swipe
+  - pattern: toggle

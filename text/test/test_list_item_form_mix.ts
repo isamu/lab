@@ -70,7 +70,8 @@ describe("formOf: how an item ends and opens (English)", () => {
     ["Smaller downloads", "noun"],
     ["Fast startup", undefined],
     ["Cover Letter", undefined],
-    ["Design the courseware", undefined],
+    ["Design the courseware", "verb"],
+    ["Design documents", undefined],
   ];
   heads.forEach(([item, form]) => {
     it(`head: ${item} → ${String(form)}`, () => assert.equal(formOfItem(en, "head", item), form));
@@ -142,4 +143,71 @@ describe("list-item-form-mix: the minority form in one list", () => {
     assert.deepEqual(flagged(ja, source, "business/meeting-notes"), []);
     assert.deepEqual(flagged(ja, source, "legal/contract"), []);
   });
+});
+
+describe("list-item-form-mix: an imperative or a compound noun the tagger misreads at the start of an item (en)", () => {
+  const heads: readonly (readonly [string, string | undefined])[] = [
+    ["Open the console and sign in.", "verb"],
+    ["Press the power button", "verb"],
+    ["Toggle the switch", "verb"],
+    ["Click Save and wait", "verb"],
+    ["Click fraud detection", "noun"],
+    ["Clean up after closing", undefined],
+    ["Bake in the oven for 40 minutes.", undefined],
+    ["Free of charge", undefined],
+    ["Washing machine space inside the unit", undefined],
+    ["Running the tests", "verb"],
+    ["The configuration of the server", "noun"],
+    ["Separate bathroom and toilet", "noun"],
+  ];
+  heads.forEach(([item, form]) => {
+    it(`head: ${item} → ${String(form)}`, () => {
+      const doc = buildDocument("t.md", `- ${item}\n`, en);
+      const span = doc.lists[0]?.itemSpans[0];
+      assert.ok(span !== undefined);
+      assert.equal(formOf("head", itemSentences(doc, span), "en", new Set(["click"])), form);
+    });
+  });
+
+  it("does not report a list of steps whose last one opens with a misread imperative", () =>
+    assert.deepEqual(
+      flagged(en, list("Greet guests and take their orders", "Serve coffee and pastries", "Take payments at the register", "Clean up after closing")),
+      [],
+    ));
+
+  it("does not report a list of steps opened by Open, Select and Click", () =>
+    assert.deepEqual(
+      flagged(
+        en,
+        list("Open the console and sign in.", "Select the backup on the Backups screen.", "Click Verify and wait until it is done.", "Click Restore and wait."),
+      ),
+      [],
+    ));
+
+  it("does not report a compound noun among noun phrases", () =>
+    assert.deepEqual(
+      flagged(en, list("Separate bathroom and toilet", "Fitted kitchen with a hob", "Washing machine space inside the unit", "Two air conditioners")),
+      [],
+    ));
+
+  it("still reports a noun phrase among imperatives", () =>
+    assert.deepEqual(
+      flagged(en, list("Install the app on your phone", "Open the app and sign in", "Click Settings and choose a plan", "The configuration of the server")),
+      ["head-noun:The configuration of the server"],
+    ));
+
+  it("still reports an imperative among noun phrases", () =>
+    assert.deepEqual(
+      flagged(
+        en,
+        list(
+          "Separate bathroom and toilet",
+          "Fitted kitchen with a hob",
+          "Two air conditioners",
+          "Entry phone and parcel lockers",
+          "Open the window every morning",
+        ),
+      ),
+      ["head-verb:Open the window every morning"],
+    ));
 });
