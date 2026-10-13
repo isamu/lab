@@ -39,6 +39,18 @@ entries:
   - { pattern: "Date collected", group: checkup-report, position: before }
   - { pattern: "Report date", group: checkup-report, position: after }
   - { pattern: "Date reported", group: checkup-report, position: after }
+  # A results report's issue date comes after the examination or the sample too. It is read only when the title or a
+  # field's label names the results, to keep it apart from an admission ticket or a lab order.
+  - { pattern: "Examination date", group: checkup-result-issue, position: before }
+  - { pattern: "Test date", group: checkup-result-issue, position: before }
+  - { pattern: "Collection date", group: checkup-result-issue, position: before }
+  - { pattern: "Date collected", group: checkup-result-issue, position: before }
+  - { pattern: "Issue date", group: checkup-result-issue, position: after }
+  - { pattern: "Date of issue", group: checkup-result-issue, position: after }
+  - { pattern: "Test results", group: checkup-result-issue }
+  - { pattern: "Laboratory results", group: checkup-result-issue }
+  - { pattern: "Lab results", group: checkup-result-issue }
+  - { pattern: "Results report", group: checkup-result-issue }
   # A product warranty: the registration deadline comes after the purchase.
   - { pattern: "Purchase date", group: warranty, position: before }
   - { pattern: "Date of purchase", group: warranty, position: before }
@@ -140,12 +152,19 @@ entries:
   - { pattern: "Date of claim", group: incident, position: after }
   - { pattern: "Claim date", group: incident, position: after }
   # An annual earnings and tax withholding statement is issued once the tax year has ended or, for a leaver, after the
-  # leaving date. "Period covered" is left out: an invoice billed in advance is issued at the start of the period it covers.
+  # leaving date. "Period covered" is left out of this group (tax-statement-period below).
   - { pattern: "Tax year", group: tax-statement, position: before }
   - { pattern: "Leaving date", group: tax-statement, position: before }
   - { pattern: "Date of leaving", group: tax-statement, position: before }
   - { pattern: "Issue date", group: tax-statement, position: after }
   - { pattern: "Date of issue", group: tax-statement, position: after }
+  # The period covered is compared with the issue date only on a statement whose title or a field's label names the tax
+  # withholding statement: an invoice billed in advance is issued at the start of the period it covers.
+  - { pattern: "Period covered", group: tax-statement-period, position: before }
+  - { pattern: "Issue date", group: tax-statement-period, position: after }
+  - { pattern: "Date of issue", group: tax-statement-period, position: after }
+  - { pattern: "Withholding statement", group: tax-statement-period }
+  - { pattern: "Tax statement", group: tax-statement-period }
   # A packing list or a commercial invoice: the goods do not arrive before they are shipped. An estimated date (Estimated
   # arrival, ETA) is only ever the later side. The invoice date is left out: an invoice is dated before or after shipment.
   - { pattern: "On-board date", group: shipping, position: before }
@@ -215,10 +234,13 @@ entries:
   - { pattern: "Closing date", group: sale, position: after }
   - { pattern: "Possession date", group: sale, position: after }
   # A banquet or meeting room quote is accepted before the event, so it is not valid past the event date. The event's
-  # words make the pair: an invoice's or a coupon's validity sits beside no event date. A table is read only when a
-  # header column names the quote.
+  # words make the pair: an invoice's or a coupon's validity sits beside no event date. Quote and Quotation name the
+  # document: a table is read only when a header column names the quote, and lines only when the title does or a field's
+  # label is Quote number.
   - { pattern: "Valid until", group: quote-validity, position: before }
   - { pattern: "Quote valid until", group: quote-validity, position: before }
   - { pattern: "Event date", group: quote-validity, position: after }
   - { pattern: "Date of event", group: quote-validity, position: after }
   - { pattern: "Quote", group: quote-validity }
+  - { pattern: "Quotation", group: quote-validity }
+  - { pattern: "Quote number", group: quote-validity }

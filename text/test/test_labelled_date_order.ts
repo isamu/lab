@@ -9,6 +9,7 @@ import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { columnDatesOutOfOrder } from "../packages/chaff/src/structure/column-date-order.ts";
+import { namesDocumentKind } from "../packages/chaff/src/structure/document-context.ts";
 
 // 前後の決まった日付の組（due-before-issue の order）。物件の案内の入居可能日と掲載日、求人の応募締切と掲載日。例文はすべて自作。
 
@@ -330,12 +331,11 @@ describe("due-before-issue (order): 検査結果の報告日、保証書の登�
   });
 
   it("受診券や検査の依頼書の発行日、作成日は、受診日や採血日と組まない", () => {
-    assert.deepEqual(findingsOf(reportJa("受診日", "2026年10月8日", "発行日", "2026年9月1日")), []);
+    assert.deepEqual(findingsOf(labelledDoc("健康診断受診券", ["受診日：2026年10月8日", "発行日：2026年9月1日"])), []);
     assert.deepEqual(findingsOf(reportJa("検査日", "2026年10月8日", "作成日", "2026年9月1日")), []);
-    assert.deepEqual(findingsOf(reportJa("採血日", "2026年10月8日", "発行日", "2026年9月1日")), []);
-    assert.deepEqual(findingsOf(reportEn("Date collected", "October 8, 2026", "Issue date", "September 1, 2026"), en), []);
-    assert.deepEqual(findingsOf(reportEn("Test date", "October 8, 2026", "Issue date", "September 1, 2026"), en), []);
-    assert.deepEqual(findingsOf(reportEn("Examination date", "October 8, 2026", "Issue date", "September 1, 2026"), en), []);
+    assert.deepEqual(findingsOf(labelledDoc("検査依頼書", ["採血日：2026年10月8日", "発行日：2026年9月1日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Lab Order", ["Date collected: October 8, 2026", "Issue date: September 1, 2026"]), en), []);
+    assert.deepEqual(findingsOf(labelledDoc("Admission Ticket", ["Test date: October 8, 2026", "Issue date: September 1, 2026"]), en), []);
   });
 
   it("お買い上げ日より前の登録の締切を指す", () => {
@@ -1640,7 +1640,7 @@ describe("due-before-issue (order): 不動産の売買の決済と、宴会の�
     assert.deepEqual(findingsOf(labelledDoc("Banquet Quote", ["Valid until: November 20, 2026", "Event date: December 4, 2026"]), en), []);
   });
 
-  it("ご利用日は有効期限と組まない。ポイントの明細やクーポンでは、ご利用日の後に有効期限が来る", () => {
+  it("見積書でない文書のご利用日は有効期限と組まない。ポイントの明細やクーポンでは、ご利用日の後に有効期限が来る", () => {
     assert.deepEqual(findingsOf(labelledDoc("ご利用明細", ["ご利用日：2026年9月6日", "有効期限：2027年9月30日"])), []);
     assert.deepEqual(findingsOf(labelledDoc("ご利用明細", ["有効期限：2027年9月30日", "ご利用日：2026年9月6日"])), []);
   });
@@ -1660,5 +1660,124 @@ describe("due-before-issue (order): 不動産の売買の決済と、宴会の�
     assert.deepEqual(findingsOf(labelledDoc("クーポン", ["有効期限：2026年12月31日", "発行日：2026年11月30日"])), []);
     assert.deepEqual(findingsOf(labelledDoc("Renovation Quote", ["Valid until: October 10, 2026", "Completion date: September 23, 2026"]), en), []);
     assert.deepEqual(findingsOf(labelledDoc("Banquet Quote", ["Contract date: July 18, 2026", "Event date: July 1, 2026"]), en), []);
+  });
+});
+
+describe("due-before-issue (order): 題か欄の名前で文書の種類が分かるときだけ読む組", () => {
+  it("題か欄の名前に語があれば、その文書の種類と読む。本文の文の中の語は数えない", () => {
+    assert.equal(namesDocumentKind("# 会議室ご利用御見積書\n\nご利用日：2026年10月22日\n", ["見積"]), true);
+    assert.equal(namesDocumentKind("# ご案内\n\n見積番号：MR-0733\n", ["見積", "見積番号"]), true);
+    assert.equal(namesDocumentKind("# ご案内\n\n| 見積番号 | MR-0733 |\n", ["見積番号"]), true);
+    assert.equal(namesDocumentKind("Meeting Room QUOTE\n\nEvent date: October 22, 2026\n", ["Quote"]), true);
+    assert.equal(namesDocumentKind("# Notice\n\n- **Quote number:** Q-1\n", ["Quote number"]), true);
+    assert.equal(namesDocumentKind("---\ntitle: x\n---\n\n# Banquet Quote\n", ["Quote"]), true);
+    assert.equal(namesDocumentKind("**会議室御見積書**\n\n## ご利用内容\n", ["見積"]), true);
+    assert.equal(namesDocumentKind("# ポイントご利用明細\n\nお見積りのご依頼は窓口へ。\n", ["見積"]), false);
+    assert.equal(namesDocumentKind("# ご案内\n\n見積は後日お送りします\n", ["見積"]), false);
+    assert.equal(namesDocumentKind("# Invoice\n\nWithholding tax: $100\n", ["Withholding statement"]), false);
+    assert.equal(namesDocumentKind("# Laboratory Test Order\n\nTest results delivery: portal\n", ["Test results"]), false);
+    assert.equal(namesDocumentKind("| Coupon | Quote |\n| --- | --- |\n\n# Coupon\n", ["Quote"]), false);
+    assert.equal(namesDocumentKind("", ["見積"]), false);
+    assert.equal(namesDocumentKind("# 見積書\n", []), false);
+  });
+
+  it("見積書のご利用日より後の有効期限を、後に書いた行で指す", () => {
+    const quote = labelledDoc("会議室ご利用御見積書", ["有効期限：2026年10月30日", "ご利用日：2026年10月22日"]);
+    assert.deepEqual(findingsOf(quote), ["「ご利用日」（2026年10月22日）が、「有効期限」（2026年10月30日）より前です"]);
+    assert.deepEqual(ruleLines(quote), [5]);
+    const byField = labelledDoc("会議室のご利用", ["見積番号：MR-0733", "有効期限：2026年10月30日", "ご利用日：2026年10月22日"]);
+    assert.deepEqual(findingsOf(byField), ["「ご利用日」（2026年10月22日）が、「有効期限」（2026年10月30日）より前です"]);
+  });
+
+  it("見積書でも、ご利用日より前か同じ日の有効期限は言わない", () => {
+    assert.deepEqual(findingsOf(labelledDoc("会議室ご利用御見積書", ["有効期限：2026年10月9日", "ご利用日：2026年10月22日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("会議室ご利用御見積書", ["有効期限：2026年10月22日", "ご利用日：2026年10月22日"])), []);
+  });
+
+  it("ポイントの明細、クーポン、請求書では、ご利用日の後の有効期限を言わない", () => {
+    assert.deepEqual(findingsOf(labelledDoc("ポイントご利用明細", ["ご利用日：2026年9月6日", "有効期限：2027年9月30日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("ポイントご利用明細", ["有効期限：2027年9月30日", "ご利用日：2026年9月6日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("ご優待クーポン", ["有効期限：2026年12月31日", "ご利用日：2026年11月3日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("ご請求書", ["請求番号：INV-0001", "有効期限：2026年12月31日", "ご利用日：2026年11月3日"])), []);
+    const mentioned = labelledDoc("ポイントご利用明細", ["お見積りのご依頼は窓口へどうぞ。", "有効期限：2027年9月30日", "ご利用日：2026年9月6日"]);
+    assert.deepEqual(findingsOf(mentioned), []);
+  });
+
+  it("見積と分からない文書の有効期限と開催日も読まない。題に Quotation とあれば読む", () => {
+    assert.deepEqual(findingsOf(labelledDoc("催しのご案内", ["有効期限：2026年12月20日", "開催日：2026年12月4日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Event Notice", ["Valid until: December 20, 2026", "Event date: December 4, 2026"]), en), []);
+    assert.deepEqual(findingsOf(labelledDoc("Banquet Quotation", ["Valid until: December 20, 2026", "Event date: December 4, 2026"]), en), [
+      '"Event date" December 4, 2026 is before "Valid until" December 20, 2026',
+    ]);
+  });
+
+  it("結果の報告の発行日が採血日や受診日より前なら、発行日の行で指す", () => {
+    const report = labelledDoc("血液検査結果のお知らせ", ["採血日：2026年9月2日", "発行日：2026年8月27日"]);
+    assert.deepEqual(findingsOf(report), ["「発行日」（2026年8月27日）が、「採血日」（2026年9月2日）より前です"]);
+    assert.deepEqual(ruleLines(report), [5]);
+    assert.deepEqual(findingsOf(labelledDoc("健康診断結果報告書", ["受診日：2026年6月10日", "発行日：2026年6月1日"])), [
+      "「発行日」（2026年6月1日）が、「受診日」（2026年6月10日）より前です",
+    ]);
+    const reportEn = labelledDoc("Laboratory Results", ["Collection date: May 18, 2026", "Issue date: May 11, 2026"]);
+    assert.deepEqual(findingsOf(reportEn, en), ['"Issue date" May 11, 2026 is before "Collection date" May 18, 2026']);
+  });
+
+  it("受診券や検査の依頼書の発行日は、受診日や採血日より前でも言わない。結果の報告でも順の合った発行日は言わない", () => {
+    assert.deepEqual(findingsOf(labelledDoc("健康診断受診券", ["受診日：2026年6月10日", "発行日：2026年5月20日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("検査のご案内", ["結果のお届け：郵送", "採血日：2026年9月2日", "発行日：2026年8月27日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Laboratory Test Order", ["Collection date: May 18, 2026", "Issue date: May 11, 2026"]), en), []);
+    assert.deepEqual(findingsOf(labelledDoc("血液検査結果のお知らせ", ["採血日：2026年9月2日", "発行日：2026年9月9日"])), []);
+  });
+
+  it("源泉徴収の明細の発行日が対象期間（Period covered）の終わりより前なら指す", () => {
+    const title = "Annual Earnings and Tax Withholding Statement";
+    const early = labelledDoc(title, ["Period covered: January 1, 2026 – December 31, 2026", "Issue date: December 22, 2026"]);
+    assert.deepEqual(ruleLines(early, en), [5]);
+    assert.equal(findingsOf(early, en).length, 1);
+    const inOrder = labelledDoc(title, ["Period covered: January 1, 2026 – December 31, 2026", "Issue date: January 20, 2027"]);
+    assert.deepEqual(findingsOf(inOrder, en), []);
+  });
+
+  it("前払いの請求書は対象期間の初めに発行するので、Period covered と Issue date を比べない", () => {
+    const invoice = labelledDoc("Invoice", ["Invoice number: INV-0042", "Period covered: January 1, 2026 – December 31, 2026", "Issue date: January 2, 2026"]);
+    assert.deepEqual(findingsOf(invoice, en), []);
+  });
+
+  it("二つの組が同じ日付どうしで同じ行を指すときは一つにまとめ、別の日付と比べたものは両方残す", () => {
+    const leaver = labelledDoc("Earnings and Tax Withholding Statement for a Leaver", [
+      "Leaving date: August 31, 2026",
+      "Period covered: January 1, 2026 – August 31, 2026",
+      "Issue date: August 18, 2026",
+    ]);
+    assert.equal(findingsOf(leaver, en).length, 1);
+    const labels: readonly OrderLabel[] = [
+      { pattern: "入居日", group: "tenancy", position: "before" },
+      { pattern: "退去日", group: "tenancy", position: "after" },
+      { pattern: "解約通知日", group: "tenancy-notice", position: "before" },
+      { pattern: "退去日", group: "tenancy-notice", position: "after" },
+    ];
+    const source = "入居日：2026-04-01\n解約通知日：2026-08-01\n退去日：2026-03-01\n";
+    const dates = [
+      { offset: 4, end: 14, value: "2026-04-01" },
+      { offset: 21, end: 31, value: "2026-08-01" },
+      { offset: 36, end: 46, value: "2026-03-01" },
+    ];
+    assert.equal(pairedDatesOutOfOrder(source, dates, labels, [], 40).length, 2);
+  });
+
+  it("文書の種類を言う語のない組は、これまでどおり題を見ずに読む", () => {
+    const labels: readonly OrderLabel[] = [
+      { pattern: "有効期限", group: "quote-validity", position: "before" },
+      { pattern: "ご利用日", group: "quote-validity", position: "after" },
+    ];
+    const source = "有効期限：2026-10-30\nご利用日：2026-10-22\n";
+    const dates = [
+      { offset: 5, end: 15, value: "2026-10-30" },
+      { offset: 21, end: 31, value: "2026-10-22" },
+    ];
+    assert.equal(pairedDatesOutOfOrder(source, dates, labels, [], 40).length, 1);
+    const gated = [...labels, { pattern: "見積", group: "quote-validity" }];
+    assert.equal(pairedDatesOutOfOrder(source, dates, gated, [], 40).length, 0);
+    assert.equal(pairedDatesOutOfOrder(source, dates, gated, [], 40, { whole: `# 見積書\n${source}` }).length, 1);
   });
 });
