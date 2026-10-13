@@ -181,6 +181,43 @@ describe("empty-table-cell: 表の空欄", () => {
   });
 });
 
+describe("empty-table-cell: 合計の語を二つ目より後の升に書いた合計の行", () => {
+  const expenses = titledTable(
+    "経費",
+    "| 番号 | 日付 | 項目 | 金額 |",
+    "| --- | --- | --- | --- |",
+    "| 1 | 4月1日 | 交通費 | 3,000円 |",
+    "| 2 | 4月2日 | 宿泊費 | 8,000円 |",
+    "| 3 | 4月3日 | 食事代 | 1,000円 |",
+  );
+  const claims = titledTable(
+    "Claims",
+    "| No. | Date | Item | Amount |",
+    "| --- | --- | --- | --- |",
+    "| 1 | April 1 | Travel | $300 |",
+    "| 2 | April 2 | Hotel | $800 |",
+    "| 3 | April 3 | Meals | $100 |",
+  );
+
+  it("前の升がどれも空なら、最初の空でない升の合計の語・税の語で合計の行と読み、前の空欄を言わない", () => {
+    ["| | | 合計 | 12,000円 |", "| | | 小計 | 12,000円 |", "| | | 消費税 | 1,200円 |", "| | 合計 | | 12,000円 |"].forEach((row) =>
+      assert.deepEqual(namedRuleRun("empty-table-cell", expenses(row), ja).findings, [], row),
+    );
+    ["| | | Total | $1,200 |", "| | | Subtotal | $1,200 |", "| | | Sales tax | $96 |", "| | Total | | $1,200 |"].forEach((row) =>
+      assert.deepEqual(namedRuleRun("empty-table-cell", claims(row), en).findings, [], row),
+    );
+  });
+
+  it("合計の語の無い行、合計の語の前に埋まった升がある行、金額を空けた合計の行の空欄は言う", () => {
+    assert.deepEqual(namedRuleRun("empty-table-cell", expenses("| 4 | | 雑費 | 500円 |"), ja).findings, ["表の「日付」の列で、この行だけが空欄です"]);
+    assert.deepEqual(namedRuleRun("empty-table-cell", expenses("| 4 | | 合計 | 12,000円 |"), ja).findings, ["表の「日付」の列で、この行だけが空欄です"]);
+    assert.deepEqual(namedRuleRun("empty-table-cell", expenses("| | | 合計 | |"), ja).findings, ["表の「金額」の列で、この行だけが空欄です"]);
+    assert.deepEqual(namedRuleRun("empty-table-cell", claims("| 4 | | Parking | $50 |"), en).findings, ['The "Date" column is blank in this row only']);
+    assert.deepEqual(namedRuleRun("empty-table-cell", claims("| 4 | | Total | $1,200 |"), en).findings, ['The "Date" column is blank in this row only']);
+    assert.deepEqual(namedRuleRun("empty-table-cell", claims("| | | Total | |"), en).findings, ['The "Amount" column is blank in this row only']);
+  });
+});
+
 describe("empty-list-item: 中身の無い箇条書きの項目", () => {
   it("ほかの項目に値がある箇条書きの、見出しの語だけの項目を言う", () => {
     assert.deepEqual(names(listBlanks("- 日時：10月14日\n- 場所：第2会議室\n- 担当：\n")), ["担当"]);

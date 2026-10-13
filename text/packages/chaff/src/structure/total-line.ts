@@ -1,4 +1,4 @@
-import { isTotalLabel, leadingText } from "./total.ts";
+import { isTotalLabel, leadingText, withoutLeadingBlankCells } from "./total.ts";
 import { CELL_SEPARATOR } from "./bare-numbers.ts";
 import { outsideBrackets } from "./connection-times.ts";
 
@@ -45,7 +45,13 @@ const labelText = (lead: string): string => {
 };
 
 /** 行頭の見出しを語に分ける。括弧の注記（(incl. tax)）と強調の印は除く。 */
-const labelWords = (text: string): string[] => wordsOf(outsideBrackets(labelText(leadingText(text))).replace(EMPHASIS, ""));
+const leadingLabelWords = (text: string): string[] => wordsOf(outsideBrackets(labelText(leadingText(text))).replace(EMPHASIS, ""));
+
+/** 行の見出しの語。表の行は、前の升がどれも空なら、最初の空でない升の見出しを読む。 */
+const labelWords = (text: string): string[] => leadingLabelWords(withoutLeadingBlankCells(text));
+
+/** 見出しの語で始まる行か。表の行は、前の升がどれも空なら、最初の空でない升に書いた見出しも読む（| | 合計 | 12,000円 |）。 */
+const startsWithLabel = (text: string, labels: readonly string[]): boolean => isTotalLabel(withoutLeadingBlankCells(text), labels);
 
 const startsAt = (words: readonly string[], label: readonly string[], index: number): boolean => label.every((word, offset) => words[index + offset] === word);
 
@@ -153,8 +159,8 @@ const isUnsummed = (nouns: readonly string[], unsummedNouns: readonly string[]):
  */
 const isNamedTotal = (text: string, words: TotalLineWords, header: string): boolean => {
   const label = labelWords(text).join(" ");
-  const firstColumn = labelWords(header);
-  const columns = summedColumnHeaders(text, header).map(labelWords);
+  const firstColumn = leadingLabelWords(header);
+  const columns = summedColumnHeaders(text, header).map(leadingLabelWords);
   const namesTotal = (nouns: readonly string[]): boolean =>
     !isUnsummed(nouns, words.unsummedNouns ?? []) &&
     (namesEachOther(nouns, firstColumn) || (columns.length > 0 && columns.every((headerWords) => namesEachOther(nouns, headerWords))));
@@ -163,7 +169,7 @@ const isNamedTotal = (text: string, words: TotalLineWords, header: string): bool
 
 /** 合計の語だけか、合計の語に添える語だけを前後に置いた見出しか。 */
 const isPlainTotal = (text: string, words: TotalLineWords): boolean => {
-  if (isTotalLabel(text, words.labels)) return true;
+  if (startsWithLabel(text, words.labels)) return true;
   if (words.qualifiers.length === 0) return false;
   const label = labelWords(text);
   return words.labels.some((total) => isQualifiedLabel(label, wordsOf(total), words.qualifiers));
@@ -189,7 +195,7 @@ export const withoutPeriod = (label: string, qualifier: TotalQualifier): string 
  * 前の年の合計（前年合計、Prior-year total）は、期間の語が頭にも尻にも無いので読まない。
  */
 export const isPeriodTotalLine = (text: string, words: TotalLineWords): boolean => {
-  if (isTotalLabel(text, words.periodLabels ?? [])) return true;
+  if (startsWithLabel(text, words.periodLabels ?? [])) return true;
   const label = labelWords(text).join(" ");
   return (words.periodQualifiers ?? []).some((qualifier) => {
     const rest = withoutPeriod(label, qualifier);

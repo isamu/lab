@@ -7,7 +7,7 @@ import { eachPreOrder, foldPostOrder } from "../tree-walk.ts";
 import { quoteAt } from "./structure-tree.ts";
 import { amountColumnOf, isTotalRowGap, type BodyRow } from "../structure/total-row-blank.ts";
 import { isAmountNameLine, isTotalLine } from "../structure/total-line.ts";
-import { isTotalLabel } from "../structure/total.ts";
+import { isTotalLabel, withoutLeadingBlankCells } from "../structure/total.ts";
 
 /** Fewer body rows than this, and one blank is as likely a choice as a gap. */
 const MIN_BODY_ROWS = 3;
@@ -178,7 +178,8 @@ const patternsOf = (doc: ProseDocument, lexicon: string): string[] => (doc.lexic
 
 /**
  * A total row starts with a total word (total-label, with total-label-qualifier or total-period-qualifier: Week total),
- * a tax word (tax-label), or is named by a computed amount (net-amount-label: Gross pay, Net pay).
+ * a tax word (tax-label), or is named by a computed amount (net-amount-label: Gross pay, Net pay). The word may sit in the
+ * first cell that is not blank (| | Total | $1,200 |): the cells before it are left blank on purpose.
  */
 const totalRowOf = (doc: ProseDocument): IsTotalRow => {
   const totals = {
@@ -188,7 +189,7 @@ const totalRowOf = (doc: ProseDocument): IsTotalRow => {
     amountNames: patternsOf(doc, "net-amount-label"),
   };
   const taxes = patternsOf(doc, "tax-label");
-  return (rowText) => isTotalLine(rowText, totals) || isAmountNameLine(rowText, totals) || isTotalLabel(rowText, taxes);
+  return (rowText) => isTotalLine(rowText, totals) || isAmountNameLine(rowText, totals) || isTotalLabel(withoutLeadingBlankCells(rowText), taxes);
 };
 
 export const emptyTableCell: Detector = findingsOf("empty-table-cell", (doc) => tableBlanks(doc.source, doc.replyQuotes ?? [], totalRowOf(doc)));

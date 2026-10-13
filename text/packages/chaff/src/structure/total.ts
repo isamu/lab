@@ -53,6 +53,12 @@ export const leadingText = (text: string): string =>
     .replace(/^[*_]+/u, "")
     .trimStart();
 
+/** 表の行の頭に並ぶ空の升（| | 合計 |）。最初の区切りは残す。 */
+const LEADING_BLANK_CELLS = /^([ \t]*\|)(?:[ \t]*\|)+/u;
+
+/** 表の行から頭の空の升を除いたもの。合計の語を最初の空でない升に書いた行を、最初の升に書いた行と同じに読むため。 */
+export const withoutLeadingBlankCells = (row: string): string => row.replace(LEADING_BLANK_CELLS, "$1");
+
 /**
  * 合計の語のすぐ後ろ。行や列の終わり、区切り（: |）、括弧の注記（合計（税込））、金額。
  * 「計画」や「Total conversion: 25%」のように語が続くものは合計の行ではない。
