@@ -1,5 +1,6 @@
 # 仕事のメールや手紙の書き出しの挨拶。本文の最初の数行のどれかに、この語のどれかがあれば挨拶があるとみなす。
 # 英語の語（Dear など）は行の頭にあるときだけ数える。
+# 申し込みや注文の確認メールは「このたびは…ありがとうございます」と礼で書き出す。礼も挨拶として数える。
 id: email-greeting
 language: ja
 entries:
@@ -23,5 +24,9 @@ entries:
   - pattern: 平素より
   - pattern: 平素は
   - pattern: いつもありがとうございます
+  - pattern: このたびは
+  - pattern: この度は
+  - pattern: ありがとうございます
+  - pattern: ありがとうございました
   - pattern: Dear
   - pattern: Hello
