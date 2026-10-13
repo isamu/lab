@@ -24,6 +24,8 @@ import { isLookalikeApart, lookalikeSlipsIn } from "../packages/chaff/src/name-l
 import { voicedReadingOf } from "../packages/chaff/src/company-kana-spelling.ts";
 import { givenNameReadingOf } from "../packages/chaff/src/name-char-reading.ts";
 import { companyMentionsIn } from "../packages/chaff/src/company-names.ts";
+import { isEndLetterApart, isEndWordSlip, type WordUse } from "../packages/chaff/src/name-end-letter.ts";
+import { isEndingApart, isNameEndingSlip, isPluralOf } from "../packages/chaff/src/company-name-ending.ts";
 
 // 同じ名前の書き分け（name-variant）。例文はすべて自作。
 
@@ -211,7 +213,7 @@ describe("name-variant: 同じ名前の書き分け", () => {
     assert.deepEqual(variants("氏名：山下 美咲\n\n山下 千咲 さんが確認しました。\n", ja), []);
     assert.deepEqual(variants("Contractor: Priya Raman\n\nSigned by: Priya Rahman\n"), []);
     assert.deepEqual(variants("Priya Raman wrote it. Priya Rahman approved it.\n"), []);
-    assert.deepEqual(variants("Employee: Daniel Reyes\n\nThe records of Daniel Reys were used.\n"), []);
+    assert.deepEqual(variants("Employee: Daniel Reyes\n\nThe records of Daniel Reyna were used.\n"), []);
     assert.deepEqual(variants("Contractor: Priya Raman\n\nThe work was checked by Priya Ramirez.\n"), []);
   });
 });
@@ -938,5 +940,167 @@ describe("name-variant: 名の中での字の読みで読み直した名（健�
     assert.deepEqual(variants("森 健太 様にお送りします。\n\n森 健太 様の結果です。\n\n森 健二 様の予約です。\n", ja), []);
     assert.deepEqual(variants("山本 太 様にお送りします。\n\n山本 太 様の結果です。\n\n山本 汰 様の予約です。\n", ja), []);
     assert.deepEqual(variants("建実 健一 様にお送りします。\n\n建実 健一 様の結果です。\n\n健実 健一 様の予約です。\n", ja), []);
+  });
+});
+
+describe("name-variant (en): 名前の語の終わりの一字、四字の姓、会社名の語の終わり", () => {
+  before(async () => {
+    await en.prepare?.({ pos: true });
+  });
+
+  it("isEndLetterApart: 終わりの一字の抜けか足し", () => {
+    assert.equal(isEndLetterApart("whitmore", "whitmor"), true);
+    assert.equal(isEndLetterApart("whitcomb", "whitcombe"), true);
+    assert.equal(isEndLetterApart("hollybrook", "hollybrooke"), true);
+    assert.equal(isEndLetterApart("reed", "reedy"), true);
+  });
+
+  it("isEndLetterApart: 複数の s、母音の後ろの n、三字の語、同じ語、中の違い、二字の違い、英字でない語は違うと見ない", () => {
+    assert.equal(isEndLetterApart("rental", "rentals"), false);
+    assert.equal(isEndLetterApart("korea", "korean"), false);
+    assert.equal(isEndLetterApart("ann", "anne"), false);
+    assert.equal(isEndLetterApart("whitmore", "whitmore"), false);
+    assert.equal(isEndLetterApart("reyes", "reys"), false);
+    assert.equal(isEndLetterApart("whitmore", "whitmorely"), false);
+    assert.equal(isEndLetterApart("whit-more", "whit-mor"), false);
+    assert.equal(isEndLetterApart("", "a"), false);
+  });
+
+  it("isEndWordSlip: 最後の語の終わりの一字か四字以上の一字違い、最後でない語は八字以上でふつうの語で終わる名前", () => {
+    const use: WordUse = { ordinary: new Set(["residences"]), common: new Set(["hurricane"]) };
+    const apart = (left: string, right: string): boolean => left !== right && left.length === right.length;
+    assert.equal(isEndWordSlip(["rachel", "whitmor"], 1, "whitmore", use, apart), true);
+    assert.equal(
+      isEndWordSlip(["daniel", "reys"], 1, "reyes", use, () => true),
+      true,
+    );
+    assert.equal(isEndWordSlip(["hollybrooke", "residences"], 0, "hollybrook", use, apart), true);
+  });
+
+  it("isEndWordSlip: 普通名詞として書く語の後ろ、三字の語、八字に満たない最後でない語、名前で終わる名前は書き損じと見ない", () => {
+    const use: WordUse = { ordinary: new Set(["residences"]), common: new Set(["hurricane"]) };
+    assert.equal(
+      isEndWordSlip(["hurricane", "hanna"], 1, "hannah", use, () => true),
+      false,
+    );
+    assert.equal(
+      isEndWordSlip(["daniel", "rey"], 1, "rez", use, () => true),
+      false,
+    );
+    assert.equal(
+      isEndWordSlip(["daniel", "reys"], 1, "reyes", use, () => false),
+      false,
+    );
+    assert.equal(
+      isEndWordSlip(["tomas", "brennan"], 0, "tomasz", use, () => true),
+      false,
+    );
+    assert.equal(
+      isEndWordSlip(["christiane", "holloway"], 0, "christian", use, () => true),
+      false,
+    );
+    assert.equal(
+      isEndWordSlip([], 0, "", use, () => true),
+      false,
+    );
+  });
+
+  it("名が同じ名前の姓の、終わりの一字の抜けと足し", () => {
+    assert.deepEqual(variants("Tenant: Rachel Whitmore\n\nThe refund goes to Rachel Whitmor. We thank Rachel Whitmore.\n"), [
+      '"Rachel Whitmor" is one letter away from "Rachel Whitmore", which the document uses more than once',
+    ]);
+    assert.deepEqual(variants("Account holder: Laura Whitcomb\n\nThe bill goes to Laura Whitcombe. Laura Whitcombe used less power.\n"), [
+      '"Laura Whitcomb" is one letter away from "Laura Whitcombe", which the document uses more than once',
+    ]);
+  });
+
+  it("四字の姓の一字違いは、欄に書いた形か二度書いた形と比べる", () => {
+    assert.deepEqual(variants("Employee: Daniel Reyes\n\nThis sheet was prepared from the records of Daniel Reys.\n"), [
+      '"Daniel Reys" is written "Daniel Reyes" in the field that names the person (Name:, Employee: and the like)',
+    ]);
+  });
+
+  it("八字以上の語なら、最後でない語の終わりの一字も比べる", () => {
+    assert.deepEqual(variants("Hollybrook Residences has a garden. Hollybrook Residences is quiet. Call about Hollybrooke Residences today.\n"), [
+      '"Hollybrooke Residences" is one letter away from "Hollybrook Residences", which the document uses more than once',
+    ]);
+  });
+
+  it("別の姓（Reyes と Reyna）、名の違い（Eric と Erica）、どちらも二度以上、ふつうの語、小文字や普通名詞でも書く語の後ろの名前、複数の s は指さない", () => {
+    assert.deepEqual(variants("Employee: Daniel Reyes\n\nThe records of Daniel Reyna were checked.\n"), []);
+    assert.deepEqual(variants("Eric Holloway signed. Eric Holloway paid. Erica Holloway was not there.\n"), []);
+    assert.deepEqual(variants("Driver: Tomasz Brennan\n\nTomasz Brennan picks up the car. We look forward to seeing Tomas Brennan.\n"), []);
+    assert.deepEqual(variants("Rachel Whitmore signed. Rachel Whitmore paid. Rachel Whitmor signed. Rachel Whitmor paid.\n"), []);
+    assert.deepEqual(variants("Anna Green signed. Anna Green paid. Anna Greene was not there.\n"), []);
+    assert.deepEqual(variants("Christian Holloway signed. Christian Holloway paid. Christiane Holloway was not there.\n"), []);
+    assert.deepEqual(
+      variants(
+        "The hurricane season is long. A film shows a fictional Hurricane Hannah. A book waits out Hurricane Hannah. A novel tells of Hurricane Hanna.\n",
+      ),
+      [],
+    );
+    assert.deepEqual(variants("Hurricane Hannah hit the coast. A film shows Hurricane Hannah. A novel tells of Hurricane Hanna.\n"), []);
+    assert.deepEqual(variants("Lena Marsh met Bram Kessler. Lena Marsh met Bram Kessler again. Then Bram Kesslers left.\n"), []);
+  });
+
+  it("isEndingApart: 八字以上の語の、終わりの二字までの違い", () => {
+    assert.equal(isEndingApart("brightmoor", "brightmore"), true);
+    assert.equal(isEndingApart("lumenvale", "lumenvail"), true);
+    assert.equal(isEndingApart("brightmoor", "brightman"), false);
+    assert.equal(isEndingApart("alpine", "alpina"), false);
+    assert.equal(isEndingApart("brightmoor", "brightmoor"), false);
+    assert.equal(isEndingApart("lumenvale", "lumen-vail"), false);
+  });
+
+  it("isPluralOf: s、es、y を ies にした複数の形", () => {
+    assert.equal(isPluralOf("tool", "tools"), true);
+    assert.equal(isPluralOf("box", "boxes"), true);
+    assert.equal(isPluralOf("utility", "utilities"), true);
+    assert.equal(isPluralOf("tools", "tool"), false);
+    assert.equal(isPluralOf("tool", "toolss"), false);
+    assert.equal(isPluralOf("utility", "utilitys"), true);
+    assert.equal(isPluralOf("", "s"), false);
+  });
+
+  it("isNameEndingSlip: 一語だけが違い、その違いが語の終わりか、最後の語の単数と複数", () => {
+    assert.equal(isNameEndingSlip("Brightmoor Home Appliances", "Brightmore Home Appliances"), true);
+    assert.equal(isNameEndingSlip("Elmbrook Water Utility", "Elmbrook Water Utilities"), true);
+    assert.equal(isNameEndingSlip("Acme Tool", "Acme Tools"), true);
+    assert.equal(isNameEndingSlip("Elmbrook Utility Water", "Elmbrook Utilities Water"), false);
+    assert.equal(isNameEndingSlip("Brightmoor Home Appliances", "Brightmore House Appliances"), false);
+    assert.equal(isNameEndingSlip("Brightmoor Home", "Brightmoor Home Appliances"), false);
+    assert.equal(isNameEndingSlip("Brightmoor", "Brightmoor"), false);
+    assert.equal(isNameEndingSlip("", ""), false);
+  });
+
+  it("会社名の長い語の終わりの二字の違いと、最後の語の単数と複数を指す", () => {
+    const appliance =
+      "Brightmoor Home Appliances, Inc. makes ovens.\n\nBrightmoor Home Appliances, Inc. repairs them.\n\nBrightmore Home Appliances, Inc., Customer Care\n";
+    assert.deepEqual(variants(appliance), [
+      '"Brightmore Home Appliances, Inc" differs only at the end of a word from the company name "Brightmoor Home Appliances, Inc", which the document uses more than once',
+    ]);
+    const water =
+      "Elmbrook Water Utility, Inc. sends this bill.\n\nElmbrook Water Utility, Inc. reads the meter.\n\nElmbrook Water Utilities, Inc., Billing Office\n";
+    assert.deepEqual(variants(water), [
+      '"Elmbrook Water Utilities, Inc" differs only at the end of a word from the company name "Elmbrook Water Utility, Inc", which the document uses more than once',
+    ]);
+  });
+
+  it("会社名は、どちらも二度以上、どちらも一度、形の違うもの、語の頭の違うものは指さない", () => {
+    assert.deepEqual(
+      variants(
+        "Brightmoor Home Appliances, Inc. makes ovens. Brightmoor Home Appliances, Inc. repairs them.\n\nBrightmore Home Appliances, Inc. sells them. Brightmore Home Appliances, Inc. ships them.\n",
+      ),
+      [],
+    );
+    assert.deepEqual(variants("Brightmoor Home Appliances, Inc. makes ovens.\n\nBrightmore Home Appliances, Inc. sells them.\n"), []);
+    assert.deepEqual(
+      variants("Brightmoor Home Appliances, Inc. makes ovens. Brightmoor Home Appliances, Inc. repairs them.\n\nBrightmore Home Appliances Ltd. sells them.\n"),
+      [],
+    );
+    assert.deepEqual(
+      variants("Brightmoor Home Appliances, Inc. makes ovens. Brightmoor Home Appliances, Inc. repairs them.\n\nBrightman Home Appliances, Inc. sells them.\n"),
+      [],
+    );
   });
 });
