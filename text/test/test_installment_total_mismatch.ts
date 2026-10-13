@@ -16,6 +16,7 @@ import {
   type InstallmentWords,
   type Part,
 } from "../packages/chaff/src/structure/installment-total.ts";
+import { isWholeSeries, sectionsOf } from "../packages/chaff/src/structure/installment-fee.ts";
 
 // 回数×毎回の額と合わないお支払総額（installment-total-mismatch）。
 
@@ -183,5 +184,135 @@ describe("installment-total-mismatch (en)", () => {
       enDoc("- First payment date: December 16, 2026", "- Number of payments: 48", "- Monthly payment: $550.53", "- Total of payments: $26,425.44"),
       [],
     );
+  });
+});
+
+// 分納の並びと同じ節の費用（修学旅行・林間学校の積立金）。文はすべて自作。
+const jaTrip = (...lines: string[]): string[] => found(["# 修学旅行のお知らせ", "", "## 旅行代金", "", ...lines].join("\n"), ja);
+const enTrip = (...lines: string[]): string[] => found(["# Year 9 Trip", "", "## Cost", "", ...lines].join("\n"), en);
+const JA_FEE = "旅行代金は、1人あたり62,000円です。";
+const JA_TABLE = ["積立金として次の2回に分けて納めていただきます。", "", "| 回 | 金額 | 納入期限 |", "| --- | --- | --- |"];
+const EN_FEE = "The trip costs £300 per student.";
+
+describe("installment-total-mismatch, numbered instalments against the fee", () => {
+  it("flags instalments in a table or a list that do not make the fee (ja)", () => {
+    assert.deepEqual(jaTrip(JA_FEE, "", ...JA_TABLE, "| 第1回 | 30,000円 | 2026年5月15日 |", "| 第2回 | 30,000円 | 2026年6月5日 |"), [
+      "30,000円 + 30,000円 = 60,000円 / 62,000円",
+    ]);
+    assert.deepEqual(jaTrip("費用は、児童1人あたり13,000円です。学年積立金から引き落とします。", "", "- 第1回：8,000円", "- 第2回：6,000円"), [
+      "8,000円 + 6,000円 = 14,000円 / 13,000円",
+    ]);
+  });
+
+  it("flags instalments numbered in words, with a final one (en)", () => {
+    assert.deepEqual(
+      enTrip(
+        EN_FEE,
+        "",
+        "The cost is paid in two instalments:",
+        "",
+        "| Instalment | Amount |",
+        "| --- | --- |",
+        "| 1st payment | £170 |",
+        "| 2nd payment | £150 |",
+      ),
+      ["£170 + £150 = £320 / £300"],
+    );
+    assert.deepEqual(
+      enTrip("The camp costs $130 per student. It is paid in three payments:", "", "- First payment: $50", "- Second payment: $40", "- Final payment: $50"),
+      ["$50 + $40 + $50 = $140 / $130"],
+    );
+  });
+
+  it("is silent when the instalments make the fee", () => {
+    assert.deepEqual(jaTrip(JA_FEE, "", ...JA_TABLE, "| 第1回 | 32,000円 | 2026年5月15日 |", "| 第2回 | 30,000円 | 2026年6月5日 |"), []);
+    assert.deepEqual(enTrip(EN_FEE, "", "Payments:", "", "- 1st payment: £150", "- 2nd payment: £150"), []);
+    assert.deepEqual(enTrip("The camp costs $130 per student, paid in payments:", "", "- First payment: $70", "- Final payment: $60"), []);
+  });
+
+  it("counts a deposit listed as one of the instalments", () => {
+    assert.deepEqual(enTrip(EN_FEE, "", "Payments:", "", "- Deposit: £50", "- 1st payment: £125", "- 2nd payment: £125"), []);
+    assert.deepEqual(enTrip(EN_FEE, "", "Payments:", "", "- Deposit: £50", "- 1st payment: £150", "- 2nd payment: £150"), ["£50 + £150 + £150 = £350 / £300"]);
+  });
+
+  it("does not compare when a deposit is named outside the series", () => {
+    assert.deepEqual(enTrip(EN_FEE, "A deposit of £50 was paid in March.", "", "Payments:", "", "- 1st payment: £150", "- 2nd payment: £100"), []);
+    assert.deepEqual(
+      jaTrip(JA_FEE, "申込金10,000円は別にお納めください。", "", ...JA_TABLE, "| 第1回 | 30,000円 | 5月15日 |", "| 第2回 | 22,000円 | 6月5日 |"),
+      [],
+    );
+  });
+
+  it("does not compare a series with a gap, a repeat or an unread amount", () => {
+    assert.deepEqual(jaTrip(JA_FEE, "", ...JA_TABLE, "| 第1回 | 30,000円 | 5月15日 |", "| 第3回 | 30,000円 | 6月5日 |"), []);
+    assert.deepEqual(jaTrip(JA_FEE, "", ...JA_TABLE, "| 第1回 | 30,000円 | 5月15日 |", "| 第1回 | 30,000円 | 6月5日 |"), []);
+    assert.deepEqual(jaTrip(JA_FEE, "", ...JA_TABLE, "| 第1回 | 30,000円 | 5月15日 |", "| 第2回 | 未定 | 6月5日 |"), []);
+    assert.deepEqual(jaTrip(JA_FEE, "", ...JA_TABLE, "| 第1回 | 30,000円 | 2,000円 |", "| 第2回 | 30,000円 | 2,000円 |"), []);
+    assert.deepEqual(enTrip(EN_FEE, "", "Payments:", "", "- 1st payment: about £150", "- 2nd payment: £100"), []);
+    assert.deepEqual(jaTrip(JA_FEE, "", ...JA_TABLE, "| 第1回 | 30,000円程度 | 5月15日 |", "| 第2回 | 30,000円 | 6月5日 |"), []);
+  });
+
+  it("does not compare when the section states two fees, none, or a fee in another currency", () => {
+    assert.deepEqual(enTrip(EN_FEE, "The fee is £280 for siblings.", "", "Payments:", "", "- 1st payment: £150", "- 2nd payment: £100"), []);
+    assert.deepEqual(enTrip("Payments:", "", "- 1st payment: £150", "- 2nd payment: £100"), []);
+    assert.deepEqual(enTrip("The trip costs $300 per student.", "", "Payments:", "", "- 1st payment: £150", "- 2nd payment: £100"), []);
+  });
+
+  it("does not compare a fee charged at each payment, which is not split", () => {
+    assert.deepEqual(enTrip("The club fee is $50 per child.", "", "Payments:", "", "- Payment 1: $50", "- Payment 2: $50", "- Payment 3: $50"), []);
+    assert.deepEqual(jaTrip("参加費は、1人あたり5,000円です。分納は次のとおりです。", "", "- 第1回：5,000円", "- 第2回：4,000円"), []);
+  });
+
+  it("compares a fee only with the instalments of its own section", () => {
+    const lines = [
+      "# Year 9 Trip",
+      "",
+      "## Overview",
+      "",
+      EN_FEE,
+      "It is paid in instalments.",
+      "",
+      "## Payments",
+      "",
+      "Instalments:",
+      "",
+      "- 1st payment: £150",
+      "- 2nd payment: £100",
+    ];
+    assert.deepEqual(found(lines.join("\n"), en), []);
+  });
+
+  it("does not read numbered items without a word of paying, or numbers that do not open an item", () => {
+    assert.deepEqual(jaTrip("参加費は、1人あたり3,000円です。", "", "- 第1回：1,000円の教材", "- 第2回：1,000円の教材"), []);
+    assert.deepEqual(enTrip(EN_FEE, "Your 1st payment of £150 and 2nd payment of £100 are taken online."), []);
+    assert.deepEqual(jaTrip(JA_FEE, "積立金は次のとおりです。", "", "- 説明会の第1回：30,000円", "- 説明会の第2回：30,000円"), []);
+  });
+});
+
+describe("installment-fee pieces", () => {
+  const amount = { offset: 0, end: 1, currency: "GBP", value: 1, scale: undefined };
+  const item = (number: number | undefined, read = true) => ({ line: { start: 0, end: 1 }, number, amount: read ? amount : undefined });
+
+  it("takes a series numbered from 1 without gaps, a final one last, deposits anywhere", () => {
+    assert.equal(isWholeSeries([item(1), item(2)]), true);
+    assert.equal(isWholeSeries([item(undefined), item(1), item(2), item(Number.POSITIVE_INFINITY)]), true);
+    assert.equal(isWholeSeries([item(1), item(3)]), false);
+    assert.equal(isWholeSeries([item(2), item(3)]), false);
+    assert.equal(isWholeSeries([item(1), item(1)]), false);
+    assert.equal(isWholeSeries([item(Number.POSITIVE_INFINITY), item(1)]), false);
+    assert.equal(isWholeSeries([item(1)]), false);
+    assert.equal(isWholeSeries([]), false);
+    assert.equal(isWholeSeries([item(undefined), item(undefined)]), false);
+    assert.equal(isWholeSeries([item(1), item(2, false)]), false);
+  });
+
+  it("cuts the text at its headings", () => {
+    assert.deepEqual(sectionsOf("abcdef", []), [{ start: 0, end: 6 }]);
+    assert.deepEqual(sectionsOf("abcdef", [4, 2]), [
+      { start: 0, end: 2 },
+      { start: 2, end: 4 },
+      { start: 4, end: 6 },
+    ]);
+    assert.deepEqual(sectionsOf("abcdef", [0, 9]), [{ start: 0, end: 6 }]);
   });
 });

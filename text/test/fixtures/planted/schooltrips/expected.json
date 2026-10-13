@@ -2,7 +2,7 @@
   "recall": {
     "ja": {
       "per-student-total": "1/2",
-      "installments-not-fee": "0/2",
+      "installments-not-fee": "2/2",
       "return-before-departure": "2/2",
       "payment-after-departure": "2/2",
       "announced-count": "2/2",
@@ -11,7 +11,7 @@
     },
     "en": {
       "per-student-total": "1/2",
-      "installments-not-fee": "0/2",
+      "installments-not-fee": "2/2",
       "return-before-departure": "2/2",
       "payment-after-departure": "2/2",
       "announced-count": "2/2",
