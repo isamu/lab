@@ -1,0 +1,9 @@
+# 合計の語の金額のすぐ後ろに書いて、そこから合計の内訳のすべてが続くことを言う記号（「総額12,000円：設計5,000円、開発6,000円」）。
+# total-mismatch が、その後ろから文の終わりまでの金額の和と合計を比べる。「内訳は」は breakdown-phrase。
+id: total-breakdown-lead
+language: ja
+entries:
+  - pattern: ：
+  - pattern: ":"
+  - pattern: —
+  - pattern: ――

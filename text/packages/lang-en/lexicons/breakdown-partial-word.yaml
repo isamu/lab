@@ -1,0 +1,14 @@
+# Words that, between a total and the amounts after it, show the amounts may not be every item of the total: only some of
+# them ("including $5,000 for design"), alternatives ("$5,000 or $6,000") or limits ("up to $5,000").
+# total-mismatch does not compare such a breakdown.
+id: breakdown-partial-word
+language: en
+entries:
+  - pattern: including
+  - pattern: includes
+  - pattern: such as
+  - pattern: among them
+  - pattern: at least
+  - pattern: " or "
+  - pattern: either
+  - pattern: up to
