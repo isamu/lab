@@ -48,6 +48,7 @@ npx chaffjs genres                               list the genres and what each i
 | Speeches written to be read aloud | `speech/address` |
 | Records of what was said (press conferences, debates) | `speech/transcript` |
 
+Payslips, bills, statements and other paperwork have no genre of their own: use `business/report`, or `business/proposal` for a quote ([Payslips, bills and statements](./documents-paperwork)).
 What each genre leaves out, and what it adds, is on the [Genres](../../genres/) page.
 
 With the genre set, the report opens with the genre's guide: what a good document of that kind does, as questions to check the draft against.
