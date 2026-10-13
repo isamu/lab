@@ -1,0 +1,6 @@
+# 期日を示す語。旅行の知らせ（event-trip-word）で、支払の語（event-payment-word）と同じ文にあれば、deadline-after-event が支払の期限と読む（お支払期日）。
+# 申込やチケットの注文の締め切りの語にはしない。
+id: event-due-word
+language: ja
+entries:
+  - pattern: 期日
