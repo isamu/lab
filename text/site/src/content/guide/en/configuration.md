@@ -112,7 +112,7 @@ How the language is chosen, documents that mix both, and which rules run in whic
 Some documents are written to fixed conventions, statutes for one.
 A Japanese statute writes its addresses in kanji numerals (第二十二条第二項), and counting that as a long run of kanji would be wrong.
 Knowledge like that lives in settings files bundled with chaff (`profiles/*.yaml`), and applies only to the documents it is chosen for.
-Bundled today are Japanese statutes (`statute`), Japanese property listings (`listing`) and Japanese property sale settlement statements (`property-sale`).
+The one bundled today is Japanese statutes (`statute`).
 
 Leave it out and the genre chooses it (`legal/statute` reads with `statute`).
 With no such genre, it is chosen from the content: three or more lines that start with an article, like `第一条　`, make a statute.
