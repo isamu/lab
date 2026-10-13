@@ -40,6 +40,7 @@ const optionsFor = (input: CrossInput, rule: RuleDefinition): DetectorOptions =>
   lexicon: rule.word_list === undefined ? undefined : input.doc.lexicons[rule.word_list],
   where: rule.where,
   ...(rule.options === undefined ? {} : { settings: optionValues(settleOptions(rule.id, rule.options, input.context.optionLayers ?? [])) }),
+  genre: input.context.genre,
 });
 
 /** What one rule did to the documents taking part (by path): its findings, or why it did not run after all. */

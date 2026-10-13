@@ -15,7 +15,7 @@ da-minister-press-conference-2026-09-18  1
 da-recruitment-career-faq  1
 da-service-design-guidelines-2  11
 denkiyagi-ryohi-kitei  1
-denkiyagi-shugyo-kisoku  15
+denkiyagi-shugyo-kisoku  14
 entaku-rb-4  3
 entaku-rb-5  1
 env-nikko-national-park-story  1
@@ -28,7 +28,7 @@ herp-da-data-product-manager  3
 ietf-draft-httpapi-ratelimit-headers-10  5
 jma-faq-typhoon  1
 jma-yougo-kaze  1
-jp-2011-056072-seiu-kenyo-gasa  7
+jp-2011-056072-seiu-kenyo-gasa  6
 jstage-jniph-74-1-2-rehabilitation  2
 jstage-jniph-74-2-119-wbgt  1
 kantei-221-shisei-hoshin  8
@@ -47,7 +47,7 @@ nstac-microdata-forum  1
 nta-taxanswer-1120  2
 nws-glossary-a  2
 openapi-spec-3-1-0  2
-ppc-guidelines-tsusoku  15
+ppc-guidelines-tsusoku  13
 python-code-quality-list-2016-03  4
 qiita-jnchito-good-sample-code  4
 react-ja-thinking  3
@@ -57,7 +57,6 @@ saitama-shokuiku-soboro-oyakodon  4
 soumu-kokumin-cyber-glossary-a  2
 soumu-wp-r06-misinformation  1
 sre-next-bunsho-kanri  1
-sre-next-teikan  1
 tcu-rishu-toroku-2026-kouki  2
 tokyoapp-service-terms  3
 us-4683202-nucleic-acid-amplification  5
