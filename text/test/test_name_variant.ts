@@ -692,7 +692,8 @@ describe("isLineBlock and tokensByLine: short lines read one at a time", () => {
   });
 
   it("long lines, a line ending a sentence, a blank line or a long list are not", () => {
-    assert.equal(isLineBlock("Please send the signed form back to the school office\nby Friday"), false);
+    assert.equal(isLineBlock("Please send the signed form to Mr Owen\nPrestwick before Friday"), false);
+    assert.equal(isLineBlock("Send it to Mr Owen\nby Friday"), false);
     assert.equal(isLineBlock("Trip leader:\nMr Owen Prestwick"), false);
     assert.equal(isLineBlock("Mr Owen Prestwick\n\nHead of Year 8"), false);
     assert.equal(isLineBlock(Array.from({ length: 12 }, (_unused, index) => `Town ${String(index)}, ST`).join("\n")), false);
