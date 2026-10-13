@@ -2,6 +2,7 @@ import { sameValue, type FactValue } from "./fact-values.ts";
 import type { Fact } from "./labelled-facts.ts";
 import type { TermWord } from "./document-terms.ts";
 import { withoutEdgeMarks } from "./trim-marks.ts";
+import { qualifiedKeyOf, type QualifierWords } from "./qualified-labels.ts";
 
 /**
  * 文書全体で一つの値を持つ項目（保証期間、warranty period）を主語にした文の期間。名前付きの値の読み（labelled-facts）は、区切りの
@@ -24,6 +25,14 @@ export type TermValueWords = {
   /** 起算の句の印（から は値の前の句の終わり、from は値の後ろの句の頭）。 */
   readonly starts: readonly PlacedWord[];
   readonly valueEnds: readonly string[];
+  /** 名前のすぐ後ろで、その値を何に使ったかを言う分詞（used、applied）。後ろの句ごと落としても同じ項目。 */
+  readonly restating?: readonly string[];
+  /** 名前と値を囲む型（を*として）。* が値。型の値は、期間でなくても読む。 */
+  readonly frames?: readonly string[];
+  /** 文の値に条件を付ける語（場合、if）。型の前の句にあれば読まない。 */
+  readonly conditions?: readonly string[];
+  /** 名前に条件を付ける型（*の、for *）。 */
+  readonly qualifiers?: QualifierWords;
 };
 
 const folded = (text: string): string => text.normalize("NFKC").toLowerCase().replace(/\s+/gu, " ").trim();
@@ -73,11 +82,34 @@ const withoutSelf = (key: string, words: TermValueWords): string => {
   return (self.position === "before" ? key.slice(length) : key.slice(0, key.length - length)).trim();
 };
 
-/** 名前が語彙表の項目なら、その語の形。 */
-export const termKeyOf = (label: string, words: TermValueWords): string | undefined => {
-  const key = withoutSelf(withoutDeterminer(folded(withoutEdgeMarks(label)), words), words);
-  return words.terms.map((word) => folded(word.pattern)).find((pattern) => pattern === key);
+/** 語彙表の項目の形。語彙表の語は条件の付いた名前の形（扶養親族の数 は 数 (扶養親族)）なので、名前もその形にして比べる。 */
+const termOf = (key: string, words: TermValueWords): string | undefined => {
+  const qualified = words.qualifiers === undefined ? key : qualifiedKeyOf(key, words.qualifiers);
+  return words.terms.map((word) => folded(word.pattern)).find((pattern) => pattern === key || pattern === qualified);
 };
+
+/** 何に使ったかを言う分詞から後ろを落とした名前（number of dependants used for the allowance の number of dependants）。 */
+const withoutRestating = (key: string, words: TermValueWords): string | undefined =>
+  (words.restating ?? [])
+    .flatMap((word) => {
+      const mark = ` ${folded(word)}`;
+      const at = key.indexOf(mark);
+      const next = key.charAt(at + mark.length);
+      return at > 0 && (next === "" || next === " ") ? [key.slice(0, at)] : [];
+    })
+    .find((head) => termOf(head, words) !== undefined);
+
+/** 名前が語彙表の項目なら、その語の形。restated: 何に使ったかを言う句を落として、項目になった。 */
+const termKeyWith = (label: string, words: TermValueWords): { readonly key: string; readonly restated: boolean } | undefined => {
+  const key = withoutSelf(withoutDeterminer(folded(withoutEdgeMarks(label)), words), words);
+  const term = termOf(key, words);
+  if (term !== undefined) return { key: term, restated: false };
+  const restated = withoutRestating(key, words);
+  return restated === undefined ? undefined : { key: restated, restated: true };
+};
+
+/** 名前が語彙表の項目なら、その語の形。 */
+export const termKeyOf = (label: string, words: TermValueWords): string | undefined => termKeyWith(label, words)?.key;
 
 type Span = { readonly start: number; readonly end: number };
 
@@ -91,7 +123,7 @@ const separatorsIn = (text: string, separator: string): number[] =>
     .map((match) => match.index)
     .filter((index) => !isLatin(separator) || (text.charAt(index - 1) === " " && [" ", ""].includes(text.charAt(index + separator.length))));
 
-type Subject = { readonly key: string; readonly label: string; readonly lead: Span | undefined; readonly restStart: number };
+type Subject = { readonly key: string; readonly label: string; readonly lead: Span | undefined; readonly restStart: number; readonly restated: boolean };
 
 /** 文の頭から区切りまでの主語。読点の前は条件の句。 */
 const subjectOf = (source: string, from: number, to: number, words: TermValueWords): Subject | undefined => {
@@ -101,9 +133,10 @@ const subjectOf = (source: string, from: number, to: number, words: TermValueWor
       const head = clause.slice(0, index);
       const comma = [...head.matchAll(CLAUSE_COMMAS)].at(-1)?.index;
       const label = withoutEdgeMarks(comma === undefined ? head : head.slice(comma + 1));
-      const key = termKeyOf(label, words);
-      if (key === undefined) continue;
-      return { key, label, lead: comma === undefined ? undefined : { start: from, end: from + comma }, restStart: from + index + separator.length };
+      const term = termKeyWith(label, words);
+      if (term === undefined) continue;
+      const lead = comma === undefined ? undefined : { start: from, end: from + comma };
+      return { ...term, label, lead, restStart: from + index + separator.length };
     }
   }
   return undefined;
@@ -170,10 +203,10 @@ const isWorkedExample = (lead: Span, starts: readonly Span[], values: readonly F
   return starts.some((span) => valuesIn(values, span).some((value) => value.kind === "date" && sameValue(date, value)));
 };
 
-/** 主語と区切りの後ろの期間（保証期間は、お買い上げ日から24か月です）。 */
-const subjectFact = (source: string, value: FactValue, values: readonly FactValue[], words: TermValueWords): Fact | undefined => {
+/** 主語と区切りの後ろの期間（保証期間は、お買い上げ日から24か月です）。restatedOnly: 何に使ったかを言う句の付いた主語だけ。 */
+const subjectFact = (source: string, value: FactValue, values: readonly FactValue[], words: TermValueWords, restatedOnly = false): Fact | undefined => {
   const subject = subjectOf(source, clauseStartOf(source, value.start), value.start, words);
-  if (subject === undefined) return undefined;
+  if (subject === undefined || (restatedOnly && !subject.restated)) return undefined;
   const before = startBeforeValue(source, { start: subject.restStart, end: value.start }, values, words);
   if (before === undefined) return undefined;
   const after = startAfterValue(source, value.end, values, words);
@@ -226,11 +259,59 @@ const unitNamedFact = (source: string, value: FactValue, words: TermValueWords):
 
 const DURATION_UNITS = new Set(["day", "week", "month", "year"]);
 
-/** 語彙表の項目を主語にした文の、期間の値。values は文書の中の順の値（日付を含む）。 */
+/** 型の前と後ろの字（を*として の を と として）。 */
+const frameParts = (frame: string): readonly [string, string] | undefined => {
+  const at = frame.indexOf("*");
+  return at <= 0 || at === frame.length - 1 ? undefined : [frame.slice(0, at), frame.slice(at + 1)];
+};
+
+/** 型の前の句（扶養控除は、）が、値も条件の語も含まないか。条件の句（登録された場合、）の後ろの値は、その場合の値。 */
+const isPlainLead = (source: string, lead: Span, values: readonly FactValue[], words: TermValueWords): boolean => {
+  const written = folded(source.slice(lead.start, lead.end));
+  return valuesIn(values, lead).length === 0 && !(words.conditions ?? []).some((word) => written.includes(folded(word)));
+};
+
+/** 型の名前（扶養親族の数を2人として の 扶養親族の数）。名前は読点の後ろから。 */
+const framedFact = (
+  source: string,
+  value: FactValue,
+  values: readonly FactValue[],
+  words: TermValueWords,
+  [open, close]: readonly [string, string],
+): Fact | undefined => {
+  const from = clauseStartOf(source, value.start);
+  const labelEnd = value.start - open.length;
+  if (labelEnd <= from || source.slice(labelEnd, value.start) !== open || !source.startsWith(close, value.end)) return undefined;
+  const head = source.slice(from, labelEnd);
+  const comma = [...head.matchAll(CLAUSE_COMMAS)].at(-1)?.index ?? -1;
+  const label = withoutEdgeMarks(head.slice(comma + 1));
+  const key = termKeyOf(label, words);
+  if (key === undefined || !isPlainLead(source, { start: from, end: from + Math.max(comma, 0) }, values, words)) return undefined;
+  return { label, key, value };
+};
+
+/** 名前と値を囲む型の値（扶養控除は、扶養親族の数を2人として計算しています）。 */
+const frameFact = (source: string, value: FactValue, values: readonly FactValue[], words: TermValueWords): Fact | undefined =>
+  (words.frames ?? [])
+    .flatMap((frame) => {
+      const parts = frameParts(frame);
+      const fact = parts === undefined ? undefined : framedFact(source, value, values, words, parts);
+      return fact === undefined ? [] : [fact];
+    })
+    .at(0);
+
+const durationFact = (source: string, value: FactValue, values: readonly FactValue[], words: TermValueWords): Fact | undefined =>
+  bracketFact(source, value, words) ?? subjectFact(source, value, values, words) ?? unitNamedFact(source, value, words);
+
+/**
+ * 語彙表の項目を主語にした文の、期間の値。期間でない数は、何に使ったかを言う句の付いた主語（the number of dependants used for the
+ * allowance is 2）か、名前と値を囲む型（扶養親族の数を2人として）のときだけ。values は文書の中の順の値（日付を含む）。
+ */
 export const termValues = (source: string, values: readonly FactValue[], words: TermValueWords): Fact[] =>
   values
-    .filter((value) => value.kind === "quantity" && DURATION_UNITS.has(value.unit))
+    .filter((value) => value.kind === "quantity")
     .flatMap((value) => {
-      const fact = bracketFact(source, value, words) ?? subjectFact(source, value, values, words) ?? unitNamedFact(source, value, words);
+      const read = DURATION_UNITS.has(value.unit) ? durationFact(source, value, values, words) : subjectFact(source, value, values, words, true);
+      const fact = read ?? frameFact(source, value, values, words);
       return fact === undefined ? [] : [fact];
     });

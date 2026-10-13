@@ -65,14 +65,36 @@ const endsWithMark = (source: string, value: FactValue, marks: readonly string[]
 const mayBeAge = (source: string, value: FactValue, after: readonly string[]): boolean =>
   value.kind === "quantity" && (value.unit === "" || endsWithMark(source, value, after) || after.some((mark) => folded(mark).startsWith(folded(value.unit))));
 
-/** 年齢の印まで延ばした値。印が無ければ marked は false（範囲の片方なら年齢として読む）。 */
+const TABLE_ROW = /^[ \t]*\|/u;
+const NOT_LETTER = /[^\p{L}\p{N}]+/u;
+
+const lettersOf = (text: string): string[] =>
+  folded(text)
+    .split(NOT_LETTER)
+    .filter((word) => word !== "");
+
+/** 語の並びの中に、印の語の並びがそのまま続いてあるか（満期 の 満 は印ではない）。 */
+const hasWords = (words: readonly string[], mark: readonly string[]): boolean =>
+  mark.length > 0 && words.some((_, index) => mark.every((word, offset) => words[index + offset] === word));
+
+/** 表の行の見出しの升（最初の升）に年齢の印の語があり、数がその後ろの升にある（| Age at entry | 20 to 70 |）。 */
+const underAgeHeading = (source: string, value: FactValue, words: AgeWords): boolean => {
+  const line = source.slice(source.lastIndexOf("\n", value.start - 1) + 1, value.start);
+  if (value.unit !== "" || !TABLE_ROW.test(line)) return false;
+  const [heading, ...before] = line.trim().slice(1).split("|");
+  if (heading === undefined || before.length === 0) return false;
+  const headingWords = lettersOf(heading);
+  return words.marks.some((mark) => hasWords(headingWords, lettersOf(mark.pattern)));
+};
+
+/** 年齢の印まで延ばした値。印が無ければ marked は false（範囲の片方なら年齢として読む）。年齢を見出しにした表の行の数は、印が無くても年齢。 */
 const markedAge = (source: string, value: FactValue, words: AgeWords): Marked => {
   const after = at(words.marks, "after");
   const inside = endsWithMark(source, value, after);
   const end = inside ? value.end : wordAfter(source, value.end, after);
   const start = wordBefore(source, value.start, at(words.marks, "before"));
   const age: FactValue = { ...value, start: start ?? value.start, end: end ?? value.end, unit: "" };
-  return { age, marked: inside || start !== undefined || end !== undefined };
+  return { age, marked: inside || start !== undefined || end !== undefined || underAgeHeading(source, value, words) };
 };
 
 /** 上限の印まで延ばした値。印があれば上の端。 */

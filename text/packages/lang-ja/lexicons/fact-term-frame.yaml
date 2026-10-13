@@ -1,0 +1,7 @@
+# 文書全体で一つの値を持つ項目（fact-document-term）の名前と値を囲む型（fact-conflict）。* が値。
+# 「扶養控除は、扶養親族の数を2人として計算しています」の 2人 は、扶養親族の数 の値。型の前の句に値か条件の語
+# （fact-amount-condition の 場合、とき）があれば、その場合の値なので読まない。
+id: fact-term-frame
+language: ja
+entries:
+  - pattern: を*として
