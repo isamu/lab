@@ -1,4 +1,5 @@
 import type { FactValue } from "./fact-values.ts";
+import { columnUnitAt, columnUnits, UNIT_PRICE, type HeadingUnitWords } from "./column-units.ts";
 
 /**
  * 値が何あたりか（1kmあたり15円、毎月5,000円、$0.45 per mile、日額5,000円）。単位が量（時間、日、月、km、mile。語彙表 rate-unit）の
@@ -20,6 +21,8 @@ export type PerUnitWords = {
   readonly units: readonly PerUnitMark[];
   /** 百分率の単位（%）。率の期間（年4.8%）は率の基準（rate-values）が見て、期間を書かない率とも比べるので、ここでは読まない。 */
   readonly percentUnits: readonly string[];
+  /** 単価の列の見出し（単価、Unit price、時給）。その列の升は、見出しの単位あたりの値（column-units.ts）。 */
+  readonly priceHeadings: readonly { readonly pattern: string; readonly group?: string }[];
 };
 
 const PLACEHOLDER = "*";
@@ -78,10 +81,25 @@ export const perUnitOf = (source: string, value: FactValue, words: PerUnitWords)
   return markOf(before, after, words.marks) ?? templateOf(before, after, words);
 };
 
-/** 数量の値に、何あたりかを付ける。 */
-export const withPerUnits = <T extends FactValue>(source: string, values: readonly T[], words: PerUnitWords): T[] =>
-  values.map((value) => {
-    const percent = words.percentUnits.some((unit) => folded(unit) === folded(value.unit));
-    const per = value.kind === "quantity" && !percent ? perUnitOf(source, value, words) : undefined;
-    return per === undefined ? value : { ...value, per };
+/** 列の見出しを読む語: 単価の列の語と、見出しに書く何あたりの句（決まった印と、型に単位の語を入れた句）。 */
+const headingWordsOf = (words: PerUnitWords): HeadingUnitWords => ({
+  headings: words.priceHeadings.map((heading) => ({ pattern: heading.pattern, group: heading.group ?? UNIT_PRICE })),
+  phrases: [...words.marks, ...words.templates.flatMap((template) => phrasesOf(template, words.units).map(({ text, group }) => ({ pattern: text, group })))],
+});
+
+/** 値の書き方と表の列から読む、何あたりか（per）と、表の升ならその列の見出しの単位（column）。 */
+const unitsOf = (source: string, value: FactValue, words: PerUnitWords, column: string | undefined): Pick<FactValue, "per" | "column"> => {
+  const percent = words.percentUnits.some((unit) => folded(unit) === folded(value.unit));
+  if (value.kind !== "quantity" || percent) return {};
+  const per = perUnitOf(source, value, words);
+  return { ...(per === undefined ? {} : { per }), ...(column === undefined ? {} : { column }) };
+};
+
+/** 数量の値に、何あたりか（1kmあたり15円 の km）と、表の升ならその列の見出しの単位（単価の列）を付ける。 */
+export const withPerUnits = <T extends FactValue>(source: string, values: readonly T[], words: PerUnitWords): T[] => {
+  const columns = columnUnits(source, headingWordsOf(words));
+  return values.map((value) => {
+    const units = unitsOf(source, value, words, columnUnitAt(columns, value));
+    return units.per === undefined && units.column === undefined ? value : { ...value, ...units };
   });
+};
