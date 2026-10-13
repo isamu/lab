@@ -1,0 +1,25 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "lab",
+  "description": "Claude Code marketplace for chaff, a prose linter for English and Japanese",
+  "owner": {
+    "name": "isamu",
+    "email": "isamu@to-kyo.to"
+  },
+  "plugins": [
+    {
+      "name": "chaff",
+      "description": "Check writing with chaff (npx chaffjs): find long sentences, padding, mixed styles, broken clause references, and totals and dates that disagree. English and Japanese. It never rewrites the text.",
+      "version": "0.32.0",
+      "author": {
+        "name": "isamu"
+      },
+      "source": "./",
+      "category": "productivity",
+      "keywords": ["linter", "prose", "writing", "japanese", "english", "ai-generated-text"],
+      "homepage": "https://isamu.github.io/lab/en/",
+      "repository": "https://github.com/isamu/lab",
+      "license": "MIT"
+    }
+  ]
+}
