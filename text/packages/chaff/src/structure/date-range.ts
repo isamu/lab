@@ -1,12 +1,13 @@
 import { escapeRegExp } from "../orthography.ts";
 import type { StructureIssue } from "./issues.ts";
+import { reversedReading } from "./range-years.ts";
 
 /**
  * 期間の終わりが始まりより前。二つの日付の間が範囲の記号（〜、–、through）だけか、開きの語（から）で終わりの日付に閉じの語（まで）が続くときを期間と読む。
- * 比べるのは、両方が年月日か、両方が年月のときだけ。年の無い期間（12月28日〜1月4日）は年をまたぐかもしれない。
+ * 比べるのは、両方が年月日か、両方が年月か、年を片方にだけ書いた年月日（range-years.ts）。年の無い期間（12月28日〜1月4日）は年をまたぐかもしれない。
  * 言語の知識（範囲の記号と語）は語彙表から受け取る。
  */
-export type DatedSpan = { readonly offset: number; readonly end: number; readonly value: string };
+export type DatedSpan = { readonly offset: number; readonly end: number; readonly value: string; readonly weekday?: number | undefined };
 
 export type RangeWords = {
   /** それだけで期間を作る記号と語。 */
@@ -50,10 +51,6 @@ export const rangeFrameOf = (pattern: string): RangeFrame | undefined => {
   const [lead, joint, ...rest] = pattern.split("…").map((part) => part.trim().toLowerCase());
   return lead === undefined || joint === undefined || lead === "" || joint === "" || rest.length > 0 ? undefined : { lead, joint };
 };
-
-const COMPARABLE = [/^\d{4}-\d{2}-\d{2}$/u, /^\d{4}-\d{2}$/u];
-
-const comparable = (start: string, end: string): boolean => COMPARABLE.some((pattern) => pattern.test(start) && pattern.test(end));
 
 /** 日付に添えた曜日（（水））と時刻（10:00）は、期間のつなぎ目ではないので読み飛ばす。 */
 const ASIDES = /[（(][^（()）\n]{1,6}[）)]|\d{1,2}[:：]\d{2}/gu;
@@ -172,7 +169,7 @@ export const reversedRanges = (
 ): StructureIssue[] =>
   dates.slice(1).flatMap((end, index) => {
     const start = dates[index];
-    if (start === undefined || !comparable(start.value, end.value) || end.value >= start.value) return [];
-    if (!isRange(source, start, end, words, isLabelled)) return [];
-    return [{ offset: start.offset, values: { start: start.value, end: end.value, period: writtenPeriod(source, start, end) } }];
+    const reading = start === undefined ? undefined : reversedReading(start, end);
+    if (start === undefined || reading === undefined || !isRange(source, start, end, words, isLabelled)) return [];
+    return [{ offset: start.offset, values: { start: reading.start, end: reading.end, period: writtenPeriod(source, start, end) } }];
   });
