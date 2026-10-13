@@ -273,6 +273,7 @@ prefer:
 ```
 
 When `preferred-term` finds the left-hand spelling, it asks for the right-hand one.
+When the left-hand spelling is a verb in its dictionary form (`utilize: use`), its other forms ("utilizing") are found too.
 With nothing under `prefer`, it says nothing.
 
 ## Deciding the team's jargon and required headings
@@ -300,7 +301,7 @@ required_sections: # headings this kind of document must have
 
 | Setting | How it matches |
 | --- | --- |
-| `jargon` | As written, capital letters included; a single word also finds its other forms (`leverage` finds "leveraged") |
+| `jargon` | As written, capital letters included, also inside a longer word (`leverage` finds "leveraged"); a verb in its dictionary form also finds its other forms (`utilize` finds "utilizing") |
 | `required_sections` | Part of a heading: `Risks` is met by "Risks and mitigations" too |
 
 `required_sections` is an `error` by default.
