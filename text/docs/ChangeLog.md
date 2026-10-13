@@ -2,6 +2,37 @@
 
 Newest first.
 
+## 0.33.0 — 2026-10-13
+
+A fee or amount whose label states its formula ("3% of the sale price plus 60,000 yen, tax included") is now checked
+against that formula, and numbered instalments against the one fee they split. Fewer false findings in letters,
+contracts and technical writing: a greeting after a letter's date and address block, a Japanese email that opens with
+このたびは, 時 and とき used for different meanings in legal drafting, and a file name after an article. The site's home
+page now shows real output, what chaff does and does not do, and how it compares; the guide explains numbers and dates
+that disagree and the paperwork chaff now reads.
+
+### Rules
+
+- New: formula-amount-mismatch, an amount that is not what its label's formula gives (#1131).
+- installment-total-mismatch reads numbered instalments (第1回 / 1st payment) against the fee stated in the section
+  (#1127).
+- date-range-reversed reads a start and an end in one sentence ("starts on … and ends on …") (#1126).
+- Fewer false findings: email-greeting-closing takes このたびは / この度は as a greeting (#1130); orthographic-variant
+  does not compare 時 / とき and 物 / もの in legal genres (#1132); agreement-slip skips a file name or path after an
+  article (#1123).
+
+### Docs
+
+- The site's home page made ready for a first-time reader, with real output, meta tags, a sitemap and robots.txt
+  (#1129).
+- Guide pages on numbers and dates that disagree, and on money and everyday paperwork (#1133).
+- `--compact` help, fix-plan's note on experimental rules and the bundled profiles match the code (#1121).
+- npm and the README point at the landing page (#1135).
+
+### Tests and tools
+
+- Landed through #1125 and #1134.
+
 ## 0.32.0 — 2026-10-13
 
 chaff now checks the paperwork of money and everyday life: payslips, expense reports, bank and loan statements, tax
