@@ -48,6 +48,25 @@ describe("request-without-deadline: 期限も担当も無い依頼", () => {
     assert.deepEqual(findingsOf("Please note that the office is closed.", en), []);
   });
 
+  it("読み手の質問や意見を受け付ける申し出は言わない（条件の語が無くても）", () => {
+    ["ご質問はメールでお送りください。", "ご不明点はご連絡ください。", "お気軽にご連絡ください。", "お問い合わせはメールでご連絡ください。"].forEach((source) =>
+      assert.deepEqual(findingsOf(source), [], source),
+    );
+    ["Please send any questions to me.", "Please reply with any questions.", "Please contact us with questions.", "Please send your questions to me."].forEach(
+      (source) => assert.deepEqual(findingsOf(source, en), [], source),
+    );
+  });
+
+  it("読み手の質問を受け付けるのでない依頼は、申し出と読まずに言う", () => {
+    assert.deepEqual(findingsOf("署名した同意書をお送りください。"), [MESSAGE_JA]);
+    assert.deepEqual(findingsOf("質問票に記入してください。"), [MESSAGE_JA]);
+    assert.deepEqual(findingsOf("Please send the signed form.", en), [MESSAGE_EN]);
+    assert.deepEqual(findingsOf("未対応のお問い合わせに返信してください。"), [MESSAGE_JA]);
+    assert.deepEqual(findingsOf("お客様のご質問に回答してください。"), [MESSAGE_JA]);
+    assert.deepEqual(findingsOf("Please review the comments on the draft.", en), [MESSAGE_EN]);
+    assert.deepEqual(findingsOf("Please send any feedback from the beta users.", en), [MESSAGE_EN]);
+  });
+
   it("読む場所の案内と、依頼から離れた所にある動作の語は依頼と読まない", () => {
     assert.deepEqual(findingsOf("各項目の詳細は資料の本文をご確認ください。"), []);
     assert.deepEqual(findingsOf("For details, please check the project page.", en), []);

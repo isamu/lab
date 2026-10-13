@@ -60,8 +60,8 @@ example:
       I have no other questions.
 
 not_flagged:
-  ja: 確認・返信・提出のように、済んだかどうかが後で分かる動作を頼む文だけを見ます。「ご了承ください」のような心構えの依頼と、「ご不明な点があれば、ご連絡ください」のような条件付きの申し出は見ません。期限か担当が、その文か次の文にあれば指しません。ビジネスの文書でだけ動きます。
-  en: Only requests for an action whose completion can be checked (review, reply, send) are read. Courtesy requests and conditional offers ("If you have questions, let me know") are not. A deadline or owner in the same or the next sentence is enough. Business documents only.
+  ja: 確認・返信・提出のように、済んだかどうかが後で分かる動作を頼む文だけを見ます。「ご了承ください」のような心構えの依頼と、「ご不明な点があれば、ご連絡ください」のような条件付きの申し出と、「ご質問はメールでお送りください」のような質問を受け付ける申し出は見ません。期限か担当が、その文か次の文にあれば指しません。ビジネスの文書でだけ動きます。
+  en: Only requests for an action whose completion can be checked (review, reply, send) are read. Courtesy requests, conditional offers ("If you have questions, let me know") and open offers ("Please send any questions to me") are not. A deadline or owner in the same or the next sentence is enough. Business documents only.
 rewrite:
   depth: light
   ja:

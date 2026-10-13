@@ -1,0 +1,15 @@
+# 読み手の質問を受け付ける申し出（「ご質問はメールでお送りください」）。期限の要る仕事の依頼ではない。
+# 「お問い合わせに返信してください」「ご質問に回答してください」は仕事なので、語は「は」や受け付ける動詞と組にして持つ。
+id: request-offer
+language: ja
+entries:
+  - pattern: ご不明
+  - pattern: お気軽に
+  - pattern: ご質問は
+  - pattern: ご質問等は
+  - pattern: ご質問などは
+  - pattern: ご質問をお送り
+  - pattern: ご質問をお寄せ
+  - pattern: お問い合わせは
+  - pattern: お問合せは
+  - pattern: ご意見は
