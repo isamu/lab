@@ -87,6 +87,16 @@ describe("formula-amount-mismatch in Japanese", () => {
     assert.equal(findingsOf(jaBill("| 手数料（売買代金の3%＋60,000円、税込み） | 1,650,000円 |", stated), ja).length, 1);
   });
 
+  it("reads a fixed part written with a word of scale as exact: ＋6万円 is 60,000円", () => {
+    assert.deepEqual(findingsOf(jaStatement("| 仲介手数料（売買代金の3%＋6万円、消費税込み） | 1,650,000円 |"), ja), []);
+    assert.equal(findingsOf(jaStatement("| 仲介手数料（売買代金の3%＋6万円、消費税込み） | 1,644,500円 |"), ja).length, 1);
+  });
+
+  it("adds no tax when the label says the tax is left out", () => {
+    assert.deepEqual(findingsOf(jaStatement("| 仲介手数料（売買代金の3%＋60,000円、消費税別） | 1,500,000円 |"), ja), []);
+    assert.deepEqual(findingsOf(jaStatement("| 仲介手数料（売買代金の3%＋60,000円、消費税は含まない） | 1,500,000円 |"), ja), []);
+  });
+
   it("does not compare a tax-included fee with no rate anywhere and no profile", () => {
     assert.deepEqual(findingsOf(jaBill("| 手数料（売買代金の3%＋60,000円、消費税込み） | 1,000,000円 |"), ja), []);
     assert.deepEqual(findingsOf(jaStatement("| 仲介手数料（売買代金の3%＋60,000円、消費税込み） | 1,000,000円 |"), ja, "none"), []);
@@ -139,6 +149,17 @@ describe("formula-amount-mismatch in English", () => {
     assert.deepEqual(findingsOf(enStatement("| Fee (3% of the sale price, incl. tax) | $1.00 |"), en), []);
   });
 
+  it("adds no tax when the label says tax is not included, and reads a name holding the word tax", () => {
+    const stated = ["Sales tax rate: 8%", ""];
+    assert.deepEqual(findingsOf(enStatement("| Fee (3% of the sale price, tax not included) | $9,720.00 |", stated), en), []);
+    const basis = lines("| Item | Amount |", "| --- | --- |", "| Tax basis | $100,000.00 |", "| Fee (5% of tax basis) | $4,000.00 |");
+    assert.equal(findingsOf(basis, en).length, 1);
+  });
+
+  it("does not accept a dollar off an amount written to the cent", () => {
+    assert.equal(findingsOf(enStatement("| Commission (5% of the sale price) | $16,199.00 |"), en).length, 1);
+  });
+
   it("does not compare amounts in different currencies or a sentence", () => {
     assert.deepEqual(findingsOf(enStatement("| Fee (3% of the sale price) | €1.00 |"), en), []);
     assert.deepEqual(findingsOf(enStatement("The fee is 3% of the sale price: about $1.00 in total."), en), []);
@@ -148,10 +169,18 @@ describe("formula-amount-mismatch in English", () => {
 describe("formulaMatches", () => {
   it("accepts the exact amount and a unit's rounding either side, and rejects more", () => {
     assert.equal(formulaMatches(1650000, { low: 1500000, high: 1500000 }, 10), true);
-    assert.equal(formulaMatches(1650001, { low: 1500000, high: 1500000 }, 10), true);
-    assert.equal(formulaMatches(1650002, { low: 1500000, high: 1500000 }, 10), false);
+    assert.equal(formulaMatches(1650001, { low: 1500000, high: 1500000 }, 10), false);
+    assert.equal(formulaMatches(1649999, { low: 1500000, high: 1500000 }, 10), false);
+    assert.equal(formulaMatches(16199, { low: 16200, high: 16200 }, 0), false);
+    assert.equal(formulaMatches(16200.5, { low: 16200.5, high: 16200.5 }, 0), true);
+    assert.equal(formulaMatches(16201, { low: 16200.5, high: 16200.5 }, 0), true);
     assert.equal(formulaMatches(1584000, { low: 1500000, high: 1500000 }, 10), false);
     assert.equal(formulaMatches(0, { low: 0, high: 0 }, 0), true);
+  });
+
+  it("accepts any amount a base written with a word of scale allows, and nothing outside it", () => {
+    assert.equal(formulaMatches(1452000, { low: 1437000, high: 1443000 }, 0), false);
+    assert.equal(formulaMatches(1440500, { low: 1437000, high: 1443000 }, 0), true);
   });
 
   it("accepts the tax worked out on the amount rounded before tax", () => {
@@ -175,6 +204,8 @@ describe("the tax_rate of a profile", () => {
     assert.equal(profile?.languages["en"], undefined);
     assert.equal(profileFor(EMPTY, "t.md", jaStatement("| 仲介手数料 | 1円 |"), "ja", GENRE)?.id, "property-sale");
     assert.equal(profileFor(EMPTY, "t.md", jaBill("| 手数料 | 1円 |"), "ja", GENRE), undefined);
+    const priceTable = lines("# 請求内訳", "", "| 売買代金 | 48,000,000円 |", "| 手付金 | 2,400,000円 |", "| 残代金 | 45,600,000円 |");
+    assert.equal(profileFor(EMPTY, "t.md", priceTable, "ja", GENRE), undefined);
     const listing = lines("| 賃料 | 98,000円 |", "| 管理費 | 5,000円 |", "| 敷金 | 1か月 |", "| 間取り | 1LDK |");
     assert.equal(profileFor(EMPTY, "t.md", listing, "ja", GENRE)?.id, "listing");
   });

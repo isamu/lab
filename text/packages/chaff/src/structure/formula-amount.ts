@@ -27,6 +27,8 @@ export type FormulaWords = {
   /** The names of a tax (消費税, VAT) and the words that say it is included (込み, included): 消費税8%込み, VAT included. */
   readonly taxNames: readonly string[];
   readonly includedWords: readonly string[];
+  /** Words that say a tax is left out although a word of inclusion stands in them (not included, 含まない). */
+  readonly notIncluded: readonly string[];
 };
 
 export type FormulaText = {
@@ -94,13 +96,14 @@ const nameBefore = (label: string, rateStart: number, words: FormulaWords): Name
   return isName(name) ? { start: upTo.length - raw.trimStart().length, end: rateStart, name } : undefined;
 };
 
-/** 3% of the sale price: the name runs on from the word to a bracket, a comma, a plus word or a tax word. */
+/** 3% of the sale price: the name runs on from the word to a bracket, a comma, a plus word or a tax phrase (incl. tax). */
 const nameAfter = (label: string, rateEnd: number, words: FormulaWords): Named | undefined => {
   const joiner = alternation(words.rateName);
   const word = joiner === undefined ? null : new RegExp(`^\\s*(?:${joiner})\\s+`, "iu").exec(label.slice(rateEnd));
   if (word === null) return undefined;
   const from = rateEnd + word[0].length;
-  const stops = [`[${escapeRegExp(NAME_EDGE)}]`, alternation([...words.plus, ...words.tax.map((each) => each.pattern)]) ?? "(?!)"];
+  const taxPhrases = words.tax.filter((each) => each.role !== "rate").map((each) => each.pattern);
+  const stops = [`[${escapeRegExp(NAME_EDGE)}]`, alternation([...words.plus, ...taxPhrases]) ?? "(?!)"];
   const stop = new RegExp(stops.join("|"), "iu").exec(label.slice(from));
   const name = label.slice(from, stop === null ? label.length : from + stop.index).trim();
   return isName(name) ? { start: from, end: from + name.length, name } : undefined;
@@ -135,12 +138,16 @@ const fixedOf = (text: string, row: Row, formula: Formula, amounts: readonly Sta
   return inLabel.length === parts.length ? parts : undefined;
 };
 
-/** A word of a price with tax (税込み, incl. tax), or a tax's name with a word of inclusion (消費税8%込み, VAT included). */
+/**
+ * A word of a price with tax (税込み, incl. tax), or a tax's name with a word of inclusion (消費税8%込み, VAT included); not
+ * when the label also says the tax is left out (税別, excl. tax, tax not included).
+ */
 const isTaxIncluded = (label: string, words: FormulaWords): boolean => {
   const lower = label.normalize("NFKC").toLowerCase();
   const holds = (word: string): boolean => lower.includes(word.normalize("NFKC").toLowerCase());
-  const priceWithTax = words.tax.some((word) => word.role === "included" && holds(word.pattern));
-  return priceWithTax || (words.taxNames.some(holds) && words.includedWords.some(holds));
+  const roleHeld = (role: TaxPriceWord["role"]): boolean => words.tax.some((word) => word.role === role && holds(word.pattern));
+  if (roleHeld("excluded") || words.notIncluded.some(holds)) return false;
+  return roleHeld("included") || (words.taxNames.some(holds) && words.includedWords.some(holds));
 };
 
 /** 0 without a tax-included word; else the label's one rate, the document's one rate, or the profile's. Undefined when unknown. */
@@ -165,13 +172,11 @@ const baseOf = (text: string, lines: readonly Line[], row: Row, name: string, am
   return found.every((amount) => amount.value === first?.value && amount.scale === first.scale) ? first : undefined;
 };
 
-const plus = (left: Interval, right: Interval): Interval => ({ low: left.low + right.low, high: left.high + right.high });
-
-/** Before tax: rate × base + fixed, as the interval the written digits allow. */
+/** Before tax: rate × base + fixed. The base is the interval its written digits allow; a formula's fixed part is exact (＋6万円 is 60,000). */
 const beforeTax = (text: string, terms: Terms): Interval => {
   const base = intervalOf(terms.base, text.slice(terms.base.offset, terms.base.end));
-  const part = { low: (base.low * terms.formula.rate) / HUNDRED, high: (base.high * terms.formula.rate) / HUNDRED };
-  return terms.fixed === undefined ? part : plus(part, intervalOf(terms.fixed, text.slice(terms.fixed.offset, terms.fixed.end)));
+  const fixed = terms.fixed?.value ?? 0;
+  return { low: (base.low * terms.formula.rate) / HUNDRED + fixed, high: (base.high * terms.formula.rate) / HUNDRED + fixed };
 };
 
 const ROUNDINGS: readonly ((value: number) => number)[] = [(value) => value, Math.floor, Math.round, Math.ceil];
@@ -179,7 +184,8 @@ const ROUNDINGS: readonly ((value: number) => number)[] = [(value) => value, Mat
 /** Whether the written amount is the formula's, rounded down, to nearest or up, before tax or after it, to the unit or the cent. */
 export const formulaMatches = (written: number, before: Interval, tax: number): boolean => {
   const withTax = (value: number): number => (value * (HUNDRED + tax)) / HUNDRED;
-  if (written >= withTax(before.low) - 1 && written <= withTax(before.high) + 1) return true;
+  // A base written with a word of scale (4,800万円) is a range; any amount in it, rounded to the unit, is right.
+  if (before.low < before.high && written >= Math.floor(withTax(before.low)) && written <= Math.ceil(withTax(before.high))) return true;
   const candidates = [before.low, before.high].flatMap((value) => ROUNDINGS.map((round) => withTax(round(value))));
   return candidates.some((candidate) => roundedMatches(Math.round(written * CENTS), candidate * CENTS));
 };

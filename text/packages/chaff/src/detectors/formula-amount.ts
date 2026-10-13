@@ -1,5 +1,5 @@
 // formula-amount-mismatch: the reading half. The words of a formula come from the lexicon formula-amount-word (name-rate,
-// rate-name, plus) and percent-unit; the tax words are tax-price-column's, as tax-mismatch reads them, with tax-label and
+// rate-name, plus, not-included) and percent-unit; the tax words are tax-price-column's, as tax-mismatch reads them, with tax-label and
 // tax-included-word for a tax named as included (消費税8%込み). The amounts are
 // currency-notation's, read with amount-multiplier's words of scale. The profile may give the tax rate a document leaves out.
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
@@ -28,6 +28,7 @@ const wordsOf = (doc: ProseDocument): FormulaWords => ({
   tax: taxWordsOf(doc),
   taxNames: patternsOf(doc, "tax-label"),
   includedWords: patternsOf(doc, "tax-included-word"),
+  notIncluded: patternsOf(doc, "formula-amount-word", "not-included"),
 });
 
 const amountsOf = (text: string, doc: ProseDocument): StatedAmount[] => {

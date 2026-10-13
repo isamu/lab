@@ -1,6 +1,6 @@
 # The words of formula-amount-mismatch. rate-name stands between a rate and the amount it is of ("5% of the sale price");
 # name-rate between the amount and its rate ("sale price × 5%"). plus comes before a fixed amount added to the rate's part
-# ("plus $500").
+# ("plus $500"). not-included says a tax is left out although a word of inclusion stands in it ("tax not included").
 id: formula-amount-word
 language: en
 entries:
@@ -9,3 +9,5 @@ entries:
   - { pattern: ×, group: name-rate }
   - { pattern: plus, group: plus }
   - { pattern: "+", group: plus }
+  - { pattern: not included, group: not-included }
+  - { pattern: not incl., group: not-included }
