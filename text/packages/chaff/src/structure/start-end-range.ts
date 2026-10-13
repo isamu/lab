@@ -1,4 +1,5 @@
 import { escapeRegExp } from "../orthography.ts";
+import type { Lexicon } from "../plugin.ts";
 import { bare, withoutTrailingWeekday, type DatedSpan } from "./date-range.ts";
 
 /**
@@ -101,3 +102,19 @@ export const isStartEndRange = (source: string, start: DatedSpan, end: DatedSpan
   if ((startBefore ?? startAfter) === undefined || (endBefore ?? endAfter) === undefined) return false;
   return joinedBetween(between, words, startAfter, endBefore);
 };
+
+const wordsIn = (entries: Lexicon, group: "start" | "end"): StartEndWord[] =>
+  entries
+    .filter((entry) => entry.group === group)
+    .map((entry) => ({ word: entry.pattern.toLowerCase(), position: entry.position === "after" ? "after" : "before" }));
+
+const patternsIn = (entries: Lexicon, group: string): string[] => entries.filter((entry) => entry.group === group).map((entry) => entry.pattern.toLowerCase());
+
+/** 語彙表 range-start-end の行を、group（start、end、joint、tail）で分ける。 */
+export const startEndWordsOf = (entries: Lexicon, weekdays: readonly string[]): StartEndWords => ({
+  starts: wordsIn(entries, "start"),
+  ends: wordsIn(entries, "end"),
+  joints: patternsIn(entries, "joint"),
+  tails: patternsIn(entries, "tail"),
+  weekdays,
+});
