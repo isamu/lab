@@ -100,6 +100,9 @@ entries:
   - { pattern: 商品コードは, group: item }
   - { pattern: 品目コード, group: item }
   - { pattern: 品目コードは, group: item }
+  # 製品の型番。品番と同じく、表や語の後ろに並べた型番はそれぞれ別の製品として比べない。
+  - { pattern: 型番, group: model }
+  - { pattern: 型番は, group: model }
   # 自動車のナンバー。ナンバーの形（vehicle-plate）に合う並びは、語が「登録番号」だけでも自動車のナンバーとして読む。
   # 「ナンバー」だけの語は「マイナンバー」「ルームナンバー」の終わりにもなるので入れない。
   - { pattern: 自動車登録番号, group: vehicle }

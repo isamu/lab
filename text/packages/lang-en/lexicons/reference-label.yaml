@@ -122,6 +122,13 @@ entries:
   - { pattern: sku, group: item }
   - { pattern: product code, group: item }
   - { pattern: product code is, group: item }
+  # A product's model. Like item codes, two labelled or tabled models are two products and are never compared.
+  - { pattern: model, group: model }
+  - { pattern: model is, group: model }
+  - { pattern: model number, group: model }
+  - { pattern: model number is, group: model }
+  - { pattern: model no., group: model }
+  - { pattern: model no, group: model }
   # A vehicle's plate. A bare "Registration" is not one: an attendee's registration is written so too.
   - { pattern: registration plate, group: vehicle }
   - { pattern: registration plate is, group: vehicle }

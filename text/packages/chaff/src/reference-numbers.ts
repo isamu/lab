@@ -18,7 +18,7 @@ export const MAX_CHARACTERS = 24;
 const DIGIT = /\d/gu;
 const SEPARATOR = /[-‐−－]/gu;
 /** Only spaces and a colon, comma or opening bracket between the label and its number (「予約番号：」, "booking number, "); not a sentence's end. */
-const LABEL_TO_NUMBER = /^[\s:：,，、#＃(（「『[［]{0,4}$/u;
+export const LABEL_TO_NUMBER = /^[\s:：,，、#＃(（「『[［]{0,4}$/u;
 
 export const charactersOf = (written: string): string => written.normalize("NFKC").replaceAll(SEPARATOR, "").replaceAll(" ", "").toUpperCase();
 

@@ -8,16 +8,22 @@ import { withoutEdgeMarks } from "./facts/trim-marks.ts";
 import { charactersOf, MAX_CHARACTERS, MIN_DIGITS, REFERENCE_SHAPE, type ReferenceNumber, type ReferenceVariant } from "./reference-numbers.ts";
 
 const SEPARATOR = /[-‐−－]/u;
+
+type CodeShape = (written: string) => boolean;
 const LATIN_LETTER = /[A-Z]/u;
 const DIGIT = /\d/gu;
 
-/** A code: letters, a hyphen and four digits or more (GP-0512). A plain number (48215, 2026-118) is never one. */
-const isCode = (written: string): boolean => {
-  const characters = charactersOf(written);
-  return (
-    SEPARATOR.test(written) && LATIN_LETTER.test(characters) && (characters.match(DIGIT)?.length ?? 0) >= MIN_DIGITS && characters.length <= MAX_CHARACTERS
-  );
-};
+/** A code: letters, a hyphen and the given digits or more (GP-0512). A plain number (48215, 2026-118) is never one. */
+export const isCodeWith =
+  (minDigits: number) =>
+  (written: string): boolean => {
+    const characters = charactersOf(written);
+    return (
+      SEPARATOR.test(written) && LATIN_LETTER.test(characters) && (characters.match(DIGIT)?.length ?? 0) >= minDigits && characters.length <= MAX_CHARACTERS
+    );
+  };
+
+const isCode = isCodeWith(MIN_DIGITS);
 
 const keyOf = (text: string): string => withoutEdgeMarks(text).normalize("NFKC").toLowerCase();
 
@@ -29,10 +35,10 @@ const labelOfCell = (cell: Cell | undefined, labels: readonly LexiconEntry[]): s
 };
 
 /** A cell holding one code and nothing else, as a reference number of the group. */
-const codeOfCell = (cell: Cell | undefined, group: string): ReferenceNumber[] => {
+const codeOfCell = (cell: Cell | undefined, group: string, isCodeShape: CodeShape): ReferenceNumber[] => {
   if (cell === undefined) return [];
   const written = withoutEdgeMarks(cell.text);
-  if (!isCode(written) || [...written.matchAll(REFERENCE_SHAPE)].length !== 1) return [];
+  if (!isCodeShape(written) || [...written.matchAll(REFERENCE_SHAPE)].length !== 1) return [];
   return [{ offset: cell.start + cell.text.indexOf(written), written, characters: charactersOf(written), label: group }];
 };
 
@@ -40,28 +46,30 @@ const codeOfCell = (cell: Cell | undefined, group: string): ReferenceNumber[] =>
  * The codes a table labels: in a row whose first cell is a label (| 品番 | GP-0512 |), and in a column whose heading is
  * one (| 品番 | 品名 | over | GP-0512 | …). Pass the text with its tables (proseAndTablesOf).
  */
-export const tableLabelledCodes = (text: string, labels: readonly LexiconEntry[]): ReferenceNumber[] =>
+export const tableLabelledCodes = (text: string, labels: readonly LexiconEntry[], isCodeShape: CodeShape = isCode): ReferenceNumber[] =>
   tablesOf(linesOf(text)).flatMap((table) => {
     const headings = cellsOf(table.header).map((cell) => labelOfCell(cell, labels));
     return table.rows.flatMap((row) => {
       const cells = cellsOf(row);
       const rowGroup = labelOfCell(cells[0], labels);
-      const byRow = rowGroup === undefined ? [] : codeOfCell(cells[1], rowGroup);
+      const byRow = rowGroup === undefined ? [] : codeOfCell(cells[1], rowGroup, isCodeShape);
       const byColumn = cells.flatMap((cell, index) => {
         const group = headings[index];
-        return group === undefined ? [] : codeOfCell(cell, group);
+        return group === undefined ? [] : codeOfCell(cell, group, isCodeShape);
       });
       return [...byRow, ...byColumn];
     });
   });
 
 /** The letters and digits of every code a cell holds. */
-const codesInCell = (cell: Cell): string[] =>
-  [...cell.text.matchAll(REFERENCE_SHAPE)].filter((match) => isCode(match[0])).map((match) => charactersOf(match[0]));
+const codesInCell = (cell: Cell, isCodeShape: CodeShape): string[] =>
+  [...cell.text.matchAll(REFERENCE_SHAPE)].filter((match) => isCodeShape(match[0])).map((match) => charactersOf(match[0]));
 
 /** Every code written anywhere in a table, its heading row too, labelled or not: a code a table lists is an item of its own, never a slip. */
-export const tableCodes = (text: string): Set<string> =>
-  new Set(tablesOf(linesOf(text)).flatMap((table) => [table.header, ...table.rows].flatMap((row) => cellsOf(row).flatMap(codesInCell))));
+export const tableCodes = (text: string, isCodeShape: CodeShape = isCode): Set<string> =>
+  new Set(
+    tablesOf(linesOf(text)).flatMap((table) => [table.header, ...table.rows].flatMap((row) => cellsOf(row).flatMap((cell) => codesInCell(cell, isCodeShape)))),
+  );
 
 /**
  * Every code of the prose written with no label that is one labelled code with two neighbours swapped. Only when exactly
