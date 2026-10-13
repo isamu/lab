@@ -1,0 +1,19 @@
+# A quantity column that counts whatever its row hires or buys: "4 days" for the car, then "1" for one child seat
+# (number-without-unit). group: column is the column's heading; group: period is a unit of a hired period. In a column
+# whose other values carry a period unit, a bare whole number is a count of pieces, not a value that lost its unit.
+id: piece-count-column
+language: en
+entries:
+  - { pattern: Quantity, group: column }
+  - { pattern: Qty, group: column }
+  - { pattern: Qty., group: column }
+  - { pattern: day, group: period }
+  - { pattern: days, group: period }
+  - { pattern: night, group: period }
+  - { pattern: nights, group: period }
+  - { pattern: week, group: period }
+  - { pattern: weeks, group: period }
+  - { pattern: month, group: period }
+  - { pattern: months, group: period }
+  - { pattern: hour, group: period }
+  - { pattern: hours, group: period }

@@ -51,3 +51,27 @@ describe("heading-echo and a first sentence that states a figure", () => {
     assert.equal(echoes("## Changes in version 2\n\nThis section covers the changes in version 2.\n", en), 1);
   });
 });
+
+describe("heading-echo and the top of a form: a letterhead or a field line", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+    await en.prepare?.({ pos: true });
+  });
+
+  it("valid: a name alone, or a field and its value, under the heading", () => {
+    assert.equal(echoes("# Renovation Quote\n\nLarchmere Home Renovations\n\nQuote number: RQ-1\n", en), 0);
+    assert.equal(echoes("## Customer contact\n\nCustomer contact: Laura Pennington\n", en), 0);
+    assert.equal(echoes("## 担当者の連絡先\n\n担当者の連絡先：山田\n", ja), 0);
+  });
+
+  it("invalid: a sentence that restates the heading, also behind a label", () => {
+    assert.equal(echoes("## Renovation quote\n\nThis section gives the renovation quote.\n", en), 1);
+    assert.equal(echoes("## Customer contact\n\nNote: this is the customer contact.\n", en), 1);
+    assert.equal(echoes("## 担当者の連絡先\n\n担当者の連絡先について説明します。\n", ja), 1);
+  });
+
+  it("invalid: a name line or a field that only copies the heading", () => {
+    assert.equal(echoes("### 環境情報学研究科\n\n環境情報学研究科\n\n本文です。\n", ja), 1);
+    assert.equal(echoes("### 環境情報学研究科\n\n詳細：環境情報学研究科\n", ja), 1);
+  });
+});

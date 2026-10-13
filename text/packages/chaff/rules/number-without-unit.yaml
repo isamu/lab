@@ -65,8 +65,8 @@ example:
       | Taxi | $100 |
 
 not_flagged:
-  ja: ほかの値に二つ以上、同じ一つの単位が付いているときだけ指します。単位の無い値のほうが多い列、単位が混ざる列（分と時間）、数でない値（未定）は見ません。表の見出しの単位（「金額（円）」）は読みません。
-  en: Reported only when at least two other values carry one and the same unit. A column where bare numbers are the majority, one that mixes units (minutes and hours), and values that are not numbers (TBD) are not checked. A unit written in the header ("Amount ($)") is not read.
+  ja: ほかの値に二つ以上、同じ一つの単位が付いているときだけ指します。単位の無い値のほうが多い列、単位が混ざる列（分と時間）、数でない値（未定）は見ません。表の見出しの単位（「金額（円）」）は読みません。数量の列で、ほかの値が借りる期間（4日、2泊）のとき、単位の無い整数（チャイルドシート 1）は個数なので指しません。
+  en: Reported only when at least two other values carry one and the same unit. A column where bare numbers are the majority, one that mixes units (minutes and hours), and values that are not numbers (TBD) are not checked. A unit written in the header ("Amount ($)") is not read. In a Quantity column whose other values are a hired period (4 days, 2 nights), a bare whole number (Child seat | 1) is a count of pieces and is not reported.
 rewrite:
   depth: light
   ja:

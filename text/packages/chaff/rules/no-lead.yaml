@@ -57,8 +57,8 @@ example:
       From next month every store counts its stock on one screen, and a stocktake takes half a day.
 
 not_flagged:
-  ja: 題の文字の並びの半分以上を繰り返していない段落（日付、書き手の名前、別の話題で始まるリード）は言いません。題のすぐ下が箇条書き・表・画像なら、リードが無いものとして見ません。題（最初の # 見出し）だけを見ます。法務・文学・話し言葉のジャンルでは見ません。
-  en: A paragraph that repeats less than half of the title's character sequence (a date, a byline, a lead on another point) is not reported. When a list, a table or an image comes right under the title, there is no lead to check. Only the title (the first top-level heading) is checked. Legal, literary and speech genres do not run this rule.
+  ja: 題の文字の並びの半分以上を繰り返していない段落（日付、書き手の名前、別の話題で始まるリード）は言いません。題のすぐ下が箇条書き・表・画像なら、リードが無いものとして見ません。題（最初の # 見出し）だけを見ます。法務・文学・話し言葉のジャンルでは見ません。題のすぐ下が項目と値の行（請求番号：INV-1）や名前だけの行（レターヘッド）なら、書式の頭で、リードではないので見ません。
+  en: A paragraph that repeats less than half of the title's character sequence (a date, a byline, a lead on another point) is not reported. When a list, a table or an image comes right under the title, there is no lead to check. Only the title (the first top-level heading) is checked. Legal, literary and speech genres do not run this rule. When the lines right under the title are fields (an invoice number and its value) or a name alone (a letterhead), the document is a form and has no lead to check.
 level_meaning:
   ja: 題に無い内容語が {limit} 個より少ないとき指摘
   en: reported when the lead adds fewer than {limit} content words the title does not have
