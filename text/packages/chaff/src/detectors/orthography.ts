@@ -1,4 +1,5 @@
-import type { Detector, Finding, ProseDocument, Sentence, Span } from "../plugin.ts";
+import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span } from "../plugin.ts";
+import { conjugatedStartsOutside } from "./conjugated-entry.ts";
 import { calendarRuns, calendarUnitsOf, type CalendarUnits } from "../calendar-number.ts";
 import { escapeRegExp, latinBoundaries, occurrencesOutside, type Boundary, type SpacingKind } from "../orthography.ts";
 import { minorityReport, withoutSideOnTie } from "../spacing-minority.ts";
@@ -8,11 +9,18 @@ import { isSpacedLocationPart, type FloorWords } from "../location-part.ts";
 import { isFieldSeparator, isNameSeparator, type OrganizationWords } from "../name-separator.ts";
 import { addressSpans, clockTimeSpans, identifierSpans, isInsideSpan } from "../spacing-code.ts";
 
+/** 書いた形の出現に、動詞の活用した形（行う → 行います）を足したもの。同じ位置は一度だけ。 */
+const avoidedStarts = (sentence: Sentence, entry: LexiconEntry, use: string): number[] => {
+  const written = occurrencesOutside(sentence.text, entry.pattern, use);
+  const conjugated = conjugatedStartsOutside(sentence, entry, use).filter((at) => !written.includes(at));
+  return [...written, ...conjugated].toSorted((left, right) => left - right);
+};
+
 /** チームが chaff.yaml の prefer に書いた「使わない書き方」。書いていなければ何も言わない。 */
 export const preferredTerm: Detector = (doc, options): Finding[] => {
-  const pairs = (options.lexicon ?? []).flatMap((entry) => (entry.instead_of === undefined ? [] : [{ avoid: entry.pattern, use: entry.instead_of }]));
+  const pairs = (options.lexicon ?? []).flatMap((entry) => (entry.instead_of === undefined ? [] : [{ entry, avoid: entry.pattern, use: entry.instead_of }]));
   const hits = doc.sentences.flatMap((sentence) =>
-    pairs.flatMap((pair) => occurrencesOutside(sentence.text, pair.avoid, pair.use).map((at) => ({ sentence, at, pair }))),
+    pairs.flatMap((pair) => avoidedStarts(sentence, pair.entry, pair.use).map((at) => ({ sentence, at, pair }))),
   );
   if (hits.length === 0 || hits.length < options.limit) return [];
   return hits.map((hit) => ({

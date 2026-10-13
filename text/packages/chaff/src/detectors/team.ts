@@ -2,7 +2,8 @@ import { proseText } from "../measure.ts";
 import { joinWords } from "./word-list.ts";
 import { wordsOf } from "./structure.ts";
 import { nameSpans } from "../team-names.ts";
-import type { Detector, Finding, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
+import { conjugatedSpans } from "./conjugated-entry.ts";
+import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 
 /**
  * チームの言葉。社内でしか通じない語を、チームが chaff.yaml に自分で並べる。
@@ -12,19 +13,24 @@ import type { Detector, Finding, ProseDocument, Sentence, Span, Token } from "..
  */
 /**
  * 表層でも原形でも当てる。利用者は辞書形で書く（「握る」）が、本文は活用している（「握った」）。
+ * 複合動詞（「巻き取る」）は語に割れるので、語の並びで原形に照らす（「巻き取ります」）。
  * 品詞解析があれば原形で当たり、無くても表層で当たる。要求はしない。
  */
-const matches = (sentence: Sentence, word: string): boolean => {
+const matches = (sentence: Sentence, entry: LexiconEntry): boolean => {
   // 大文字小文字は区別しない。英語の文頭の「Circle back」も「circle back」として当てる。
-  const wanted = word.toLowerCase();
-  return sentence.text.toLowerCase().includes(wanted) || (sentence.tokens ?? []).some((token) => token.lemma?.toLowerCase() === wanted);
+  const wanted = entry.pattern.toLowerCase();
+  return (
+    sentence.text.toLowerCase().includes(wanted) ||
+    (sentence.tokens ?? []).some((token) => token.lemma?.toLowerCase() === wanted) ||
+    conjugatedSpans(sentence, entry).length > 0
+  );
 };
 
 export const internalJargon: Detector = (doc, options): Finding[] => {
-  const words = (options.lexicon ?? []).map((entry) => entry.pattern);
-  if (words.length === 0) return [];
+  const entries = options.lexicon ?? [];
+  if (entries.length === 0) return [];
   const hits = doc.sentences.flatMap((sentence) => {
-    const matched = words.find((word) => matches(sentence, word));
+    const matched = entries.find((entry) => matches(sentence, entry))?.pattern;
     return matched === undefined ? [] : [{ sentence, matched }];
   });
   if (hits.length < options.limit) return [];

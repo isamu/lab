@@ -18,8 +18,8 @@ message:
   en: '"{matched}" may only be understood inside your team ({count} such {count|word|words})'
 
 how_to_fix:
-  ja: 初出のところで普通の言葉に言い換えるか、括弧で説明を添えてください。jargon には辞書形（握る）でも語幹（巻き取）でも書けますが、複合動詞は語幹のほうが確実です。
-  en: Use ordinary words, or explain it in brackets at first use. Entries can be dictionary forms or stems; for compound verbs a stem is safer.
+  ja: 初出のところで普通の言葉に言い換えるか、括弧で説明を添えてください。jargon に辞書形（握る・巻き取る）で書いた動詞は、活用した形（握った・巻き取ります）にも当たります。語幹（巻き取）でも書けます。
+  en: Use ordinary words, or explain it in brackets at first use. A verb entered in its dictionary form also finds its other forms; a stem works too.
 
 # チームが並べた語なので、1 つでも指摘する。並べた時点で「使わない」と決めている。
 levels: { strict: 1, normal: 1, relaxed: 3 }
