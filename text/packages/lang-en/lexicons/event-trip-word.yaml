@@ -1,0 +1,13 @@
+# Words that mark a notice of a trip. With one in the first heading (the title) and no bill word (event-bill-word) in the
+# document, deadline-after-event reads the trip's start (event-start-label) as the event and a payment deadline
+# (event-payment-deadline-word) as a deadline: a trip is paid for before it leaves.
+id: event-trip-word
+language: en
+entries:
+  - pattern: trip
+  - pattern: trips
+  - pattern: camp
+  - pattern: residential
+  - pattern: excursion
+  - pattern: outing
+  - pattern: tour

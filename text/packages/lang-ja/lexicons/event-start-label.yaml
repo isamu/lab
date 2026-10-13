@@ -1,0 +1,9 @@
+# 旅行の始まりの日を示す語。旅行の知らせ（event-trip-word）で、この語で始まり年のある日付を書いた行（出発日：2026年10月14日、
+# 期間：2026年10月14日〜16日）の最初の日付を、deadline-after-event が時刻が無くても催しの日と読む。旅行の知らせでない文書の「期間」（請求の期間）は読まない。
+id: event-start-label
+language: ja
+entries:
+  - pattern: 出発日
+  - pattern: 出発
+  - pattern: 期間
+  - pattern: 旅行期間

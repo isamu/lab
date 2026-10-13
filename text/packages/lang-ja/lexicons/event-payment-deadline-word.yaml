@@ -1,0 +1,18 @@
+# 代金を納める期限を示す語。旅行の知らせ（event-trip-word）で、この語のある文か、この語を列の見出しにした表の升の日付が出発の日より後なら、
+# deadline-after-event が指す。請求書の支払期限は読まない（請求書は使った後に払うもの）。
+id: event-payment-deadline-word
+language: ja
+entries:
+  - pattern: 納入期限
+  - pattern: 納付期限
+  - pattern: 振込期限
+  - pattern: 振込み期限
+  - pattern: 振り込み期限
+  - pattern: 支払期限
+  - pattern: 支払い期限
+  - pattern: お支払期限
+  - pattern: お支払い期限
+  - pattern: 入金期限
+  - pattern: 引き落とし日
+  - pattern: 引落日
+  - pattern: 引落し日

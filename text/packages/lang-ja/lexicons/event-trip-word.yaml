@@ -1,0 +1,12 @@
+# 旅行や宿泊行事の知らせを示す語。最初の見出し（題名）にこの語があり請求書の語（event-bill-word）が無ければ、deadline-after-event は
+# 出発の日（event-start-label）を催しの日と読み、代金の納入期限（event-payment-deadline-word）を締め切りと読む。旅行の代金は出発の前に納めるもの。
+id: event-trip-word
+language: ja
+entries:
+  - pattern: 旅行
+  - pattern: 林間学校
+  - pattern: 臨海学校
+  - pattern: 遠足
+  - pattern: 合宿
+  - pattern: 校外学習
+  - pattern: ツアー
