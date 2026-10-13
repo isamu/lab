@@ -789,3 +789,61 @@ describe("total-mismatch: a bracketed note after the total word", () => {
     assert.deepEqual(found(jaTable(...jaRows, "| 合計 | 1,300,000円 |"), ja, "ja"), ["1,300,000円≠1,200,000円"]);
   });
 });
+
+describe("total-mismatch: a total stated before its breakdown", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+  });
+
+  const enCost = (rest: string): string => doc(`The project costs a total of $12,000${rest}`);
+  const jaCost = (rest: string): string => doc(`費用は総額12,000円${rest}`);
+
+  it("compares a total with the items after a colon, a dash or of which", () => {
+    assert.deepEqual(found(enCost(": $5,000 for design and $6,000 for development.")), ["$12,000≠$11,000"]);
+    assert.deepEqual(found(enCost(" — $5,000 for design and $6,000 for development.")), ["$12,000≠$11,000"]);
+    assert.deepEqual(found(enCost(", of which $5,000 is for design and $6,000 for development.")), ["$12,000≠$11,000"]);
+    assert.deepEqual(found(jaCost("：設計5,000円、開発6,000円です。"), ja, "ja"), ["12,000円≠11,000円"]);
+  });
+
+  it("says nothing when the items add up to the total", () => {
+    assert.deepEqual(found(enCost(": $5,000 for design and $7,000 for development.")), []);
+    assert.deepEqual(found(enCost(", of which $5,000 is for design and $7,000 for development.")), []);
+    assert.deepEqual(found(jaCost("：設計5,000円、開発7,000円です。"), ja, "ja"), []);
+  });
+
+  it("reads a breakdown in the next sentence when it opens with a breakdown phrase", () => {
+    assert.deepEqual(found(enCost(". This consists of $5,000 for design and $6,000 for development.")), ["$12,000≠$11,000"]);
+    assert.deepEqual(found(enCost(". This consists of $5,000 for design and $7,000 for development.")), []);
+    assert.deepEqual(found(doc("費用は合計12,000円です。内訳は設計5,000円、開発6,000円です。"), ja, "ja"), ["12,000円≠11,000円"]);
+    assert.deepEqual(found(doc("費用は合計12,000円です。内訳は設計5,000円、開発7,000円です。"), ja, "ja"), []);
+  });
+
+  it("does not read a next sentence without a breakdown phrase, after a blank line, or with an amount before the phrase", () => {
+    assert.deepEqual(found(enCost(". Design takes $5,000 and development $6,000.")), []);
+    assert.deepEqual(found(doc("The project costs a total of $12,000.", "", "This consists of $5,000 for design and $6,000 for development.")), []);
+    assert.deepEqual(found(enCost(". A $300 deposit consists of $100 and $150.")), ["$300≠$250"]);
+    assert.deepEqual(found(enCost(". The optional maintenance plan consists of a $5,000 setup fee and a $6,000 annual license.")), []);
+    assert.deepEqual(found(doc("費用は合計12,000円です。保守の内訳は設計5,000円、開発6,000円です。"), ja, "ja"), []);
+    assert.deepEqual(found(doc("費用は合計12,000円です。その内訳は設計5,000円、開発6,000円です。"), ja, "ja"), ["12,000円≠11,000円"]);
+  });
+
+  it("does not add up alternatives or limits", () => {
+    assert.deepEqual(found(enCost(": applicants may request $5,000 or $6,000 depending on the track.")), []);
+    assert.deepEqual(found(enCost(": up to $5,000 for design and $6,000 for development.")), []);
+    assert.deepEqual(found(jaCost("：設計5,000円または開発6,000円のどちらかです。"), ja, "ja"), []);
+  });
+
+  it("does not read one part, a part introduced by including or うち, another unit, or a percentage", () => {
+    assert.deepEqual(found(enCost(", of which $3,000 is tax.")), []);
+    assert.deepEqual(found(enCost(", including $5,000 for design and $6,000 for development.")), []);
+    assert.deepEqual(found(enCost(": including $5,000 for design and $6,000 for development.")), []);
+    assert.deepEqual(found(jaCost("：うち設計5,000円、開発6,000円です。"), ja, "ja"), []);
+    assert.deepEqual(found(enCost(": $5,000 for design and ¥600,000 for development.")), []);
+    assert.deepEqual(found(enCost(": 40% ($5,000) for design and 50% ($6,000) for development.")), []);
+    assert.deepEqual(found(jaCost("：設計40%（5,000円）、開発50%（6,000円）です。"), ja, "ja"), []);
+  });
+
+  it("stops the breakdown at a closing dash", () => {
+    assert.deepEqual(found(enCost(" — $5,000 for design and $7,000 for development — plus a $500 fee and a $300 fee.")), []);
+  });
+});
