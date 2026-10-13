@@ -21,6 +21,8 @@ import { isLineBlock, tokensByLine } from "../packages/chaff/src/name-line-block
 import { isInPersonField } from "../packages/chaff/src/person-field.ts";
 import { heavierFirst, outweighs, type NameWeight } from "../packages/chaff/src/name-weight.ts";
 import { isLookalikeApart, lookalikeSlipsIn } from "../packages/chaff/src/name-lookalike-chars.ts";
+import { voicedReadingOf } from "../packages/chaff/src/company-kana-spelling.ts";
+import { companyMentionsIn } from "../packages/chaff/src/company-names.ts";
 
 // 同じ名前の書き分け（name-variant）。例文はすべて自作。
 
@@ -779,5 +781,86 @@ describe("name-variant: 形の似た別の字で書いた人の名前（健太 �
 
   it("名だけの名前は比べない", () => {
     assert.deepEqual(variants("健太さんに渡します。健太さんが受け取ります。健大さんにも伝えます。\n", ja), []);
+  });
+});
+
+describe("name-variant (ja): 解析器が姓と読まない姓、い で終わるかなの社名、濁らせて書いた社名の字", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+  });
+
+  const cues = { suffixes: ["様", "さん"], titles: ["部長"], labels: ["氏名"] };
+  const names = (source: string): string[] =>
+    spacedPersonNamesIn(source, cues).map(({ surname, given }) => `${source.slice(surname.start, surname.end)}|${source.slice(given.start, given.end)}`);
+
+  it("かなで書いた名は、敬称か肩書きが付くか、人を書く欄の行の終わりにあれば、姓とつないで読む", () => {
+    assert.deepEqual(names("松本 あかり 様名義"), ["松本|あかり"]);
+    assert.deepEqual(names("松本 あかり様"), ["松本|あかり"]);
+    assert.deepEqual(names("広瀬 エミリー 部長"), ["広瀬|エミリー"]);
+    assert.deepEqual(names("- 氏名：松本 あかり\n"), ["松本|あかり"]);
+  });
+
+  it("かなの連なりの中の敬称、一字のかな、欄でない行の終わりは名と読まない", () => {
+    assert.deepEqual(names("営業部 みなさま"), []);
+    assert.deepEqual(names("松本 あかりさん"), []);
+    assert.deepEqual(names("総務課 ご担当 様"), []);
+    assert.deepEqual(names("横浜市中区 さくら町"), []);
+    assert.deepEqual(names("会場：中区 さくら\n"), []);
+    assert.deepEqual(names("松本 あかりの本"), []);
+  });
+
+  it("解析器が地名と読む姓とかなの名（松本 あかり 様）の書き損じを指す", () => {
+    const source = "氏名：松本 あかり 様\n\n支給額は松元 あかり 様名義の口座へ振り込みます。\n\n松本 あかり 様の次の契約更新日は3月31日です。\n";
+    assert.deepEqual(variants(source, ja), ["「松元 あかり」は、ほかの所では同じ読みの「松本 あかり」と書いています"]);
+  });
+
+  it("名の違う二人は指さない", () => {
+    assert.deepEqual(variants("松本 あかり 様と松本 ひかり 様が出席します。松本 あかり 様が司会です。\n", ja), []);
+    assert.deepEqual(variants("松本 あかり 様と松元 ひかり 様が出席します。松本 あかり 様が司会です。\n", ja), []);
+  });
+
+  it("い で終わるかなの頭の社名（しおさい食品株式会社）の、かな一字の違いを指す", () => {
+    const source = "しおさい食品株式会社\n\nしおさい食品株式会社の売上高は増えました。\n\nしおざい食品株式会社 広報室\n";
+    assert.deepEqual(variants(source, ja), ["「しおざい食品株式会社」は、ほかの所で書いた会社名「しおさい食品株式会社」と一字違いです"]);
+  });
+
+  it("打ち消しや形容詞の終わり（でない、おいしい）は社名の頭に入れない", () => {
+    assert.deepEqual(variants("公開会社でない清算株式会社は、清算株式会社と同じく届け出ます。清算株式会社の義務です。\n", ja), []);
+    assert.deepEqual(variants("あおば食品株式会社は、おいしい食品株式会社の商品とは違います。あおば食品株式会社の商品です。\n", ja), []);
+  });
+
+  it("品詞解析が形容詞や動詞と読む い の終わり（ながい食品）は社名の頭に入れない", () => {
+    const stops = { particles: ["は"], openers: [], ends: ["ない"] };
+    const forms = [{ pattern: "株式会社", group: "kk" }];
+    const bases = (source: string, predicateEnds: ReadonlySet<number>): string[] =>
+      companyMentionsIn(source, forms, () => true, stops, predicateEnds).map((found) => found.base);
+    assert.deepEqual(bases("ながい食品株式会社", new Set([3])), ["食品"]);
+    assert.deepEqual(bases("株式会社ながい食品", new Set([7])), []);
+    assert.deepEqual(bases("しおさい食品株式会社", new Set([2])), ["しおさい食品"]);
+    assert.deepEqual(bases("ながい食品株式会社", new Set()), ["ながい食品"]);
+    assert.deepEqual(bases("でない食品株式会社", new Set()), ["食品"]);
+  });
+
+  it("名前の中ほどの字を、頭の音を濁らせたかなで書いた社名（こむぎ畑 と こむぎばたけ）を指す", () => {
+    const source = "株式会社こむぎ畑ベーカリー\n\n株式会社こむぎ畑ベーカリーが製造したパンです。\n\n株式会社こむぎばたけベーカリー 品質管理室\n";
+    assert.deepEqual(variants(source, ja), [
+      "「株式会社こむぎばたけベーカリー」は、ほかの所では「株式会社こむぎ畑ベーカリー」と書いています（名前の漢字一字を、その読みのかなで書いた違い）",
+    ]);
+  });
+
+  it("名前の頭の字は濁らせない。一字違いの別の社名も指さない", () => {
+    const head = "株式会社畑ベーカリー\n\n株式会社畑ベーカリーが製造しました。\n\n株式会社ばたけベーカリー 品質管理室\n";
+    assert.deepEqual(variants(head, ja), []);
+    const other = "株式会社こむぎ畑ベーカリー\n\n株式会社こむぎ畑ベーカリーが製造しました。\n\n株式会社こむぎばたベーカリー 品質管理室\n";
+    assert.deepEqual(variants(other, ja), []);
+  });
+
+  it("voicedReadingOf: 頭の音が濁る読みだけ", () => {
+    assert.equal(voicedReadingOf("ハタケ"), "バタケ");
+    assert.equal(voicedReadingOf("カワ"), "ガワ");
+    assert.equal(voicedReadingOf("ツカ"), "ヅカ");
+    assert.equal(voicedReadingOf("ノ"), undefined);
+    assert.equal(voicedReadingOf("ガワ"), undefined);
+    assert.equal(voicedReadingOf(""), undefined);
   });
 });

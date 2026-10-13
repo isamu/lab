@@ -6,7 +6,7 @@ import { lookalikeSlipsIn, type LookalikeChars } from "../name-lookalike-chars.t
 import { readingOfWords, type CharReadings } from "../name-char-reading.ts";
 import { nameCueAt, type NameCues } from "../name-cue.ts";
 import { quoteAt } from "./structure-tree.ts";
-import { companyMentionsIn, companyVariants, type CompanyForm, type IsProper } from "../company-names.ts";
+import { companyMentionsIn, companyVariants, type CompanyForm, type IsProper, type PredicateEnds } from "../company-names.ts";
 import { kanaSpelledCompanies, type ReadWord } from "../company-kana-spelling.ts";
 import { proseAndTablesOf } from "../table-text.ts";
 import { tableBodyCells } from "../facts/table-facts.ts";
@@ -124,6 +124,11 @@ const kanaStopsOf = (doc: ProseDocument): Parameters<typeof companyMentionsIn>[3
   return { particles: inGroup("particle"), openers: inGroup("opener"), ends: inGroup("end") };
 };
 
+/** 品詞解析が形容詞・動詞・助動詞と読んだ語の終わり。い で終わるひらがな（ながい食品）を会社の名前の頭に入れないため。 */
+const PREDICATE_POS: ReadonlySet<string> = new Set(["ADJ", "VERB", "AUX"]);
+const predicateEndsOf = (doc: ProseDocument): PredicateEnds =>
+  new Set(tokensOf(doc).flatMap((token) => (PREDICATE_POS.has(token.pos) ? [token.span.end] : [])));
+
 const readWordsOf = (doc: ProseDocument): ReadWord[] =>
   tokensOf(doc).map((token) => ({ start: token.span.start, end: token.span.end, surface: token.surface, reading: token.reading }));
 
@@ -133,7 +138,7 @@ const readWordsOf = (doc: ProseDocument): ReadWord[] =>
  */
 const companyFindings = (doc: ProseDocument, prose: string, reported: readonly Reported[]): Reported[] => {
   const stops = kanaStopsOf(doc);
-  const mentions = companyMentionsIn(prose, [...companyFormsOf(doc), ...foreignFormsOf(doc)], properOf(doc), stops);
+  const mentions = companyMentionsIn(prose, [...companyFormsOf(doc), ...foreignFormsOf(doc)], properOf(doc), stops, predicateEndsOf(doc));
   const variants = companyVariants(mentions).map(({ mention, usual, kind }) => ({
     offset: mention.offset,
     name: mention.surface,
