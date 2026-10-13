@@ -10,7 +10,7 @@ Department: Quality Assurance
 
 Pay period: September 1, 2026 – September 30, 2026
 
-Pay date: September 9, 2026
+Pay date: October 9, 2025
 
 ## Attendance
 
