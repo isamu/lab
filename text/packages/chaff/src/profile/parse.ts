@@ -61,6 +61,12 @@ const walkRateOf = (value: unknown): DocumentProfile["walkRate"] => {
   return { metresPerMinute, roundUp: value["round_up"] === true };
 };
 
+const WHOLE_PERCENT = 100;
+
+/** 0 より大きく 100 未満の数でなければ読まない。 */
+const taxRateOf = (value: unknown): number | undefined =>
+  typeof value === "number" && Number.isFinite(value) && value > 0 && value < WHOLE_PERCENT ? value : undefined;
+
 /** 単位が一つも無ければ読まない。何を指すのか決められない。 */
 const relativeOf = (value: unknown): RelativeVocabulary | undefined => {
   if (!isRecord(value)) return undefined;
@@ -97,6 +103,7 @@ const languagesOf = (id: string, raw: Record<string, unknown>): Record<string, D
         const relative = relativeOf(section["relative"]);
         const unnumbered = unnumberedOf(section["unnumbered"]);
         const walkRate = walkRateOf(section["walk_rate"]);
+        const taxRate = taxRateOf(section["tax_rate"]);
         return [
           language,
           {
@@ -109,6 +116,7 @@ const languagesOf = (id: string, raw: Record<string, unknown>): Record<string, D
             unnumbered,
             ...(section["quote_mentions_term"] === true ? { quoteMentionsTerm: true } : {}),
             ...(walkRate === undefined ? {} : { walkRate }),
+            ...(taxRate === undefined ? {} : { taxRate }),
           },
         ];
       }),

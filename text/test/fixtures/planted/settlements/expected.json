@@ -5,7 +5,7 @@
       "address-two-ways": "2/2",
       "balance-due": "2/2",
       "tax-proration": "2/2",
-      "brokerage-fee": "0/2",
+      "brokerage-fee": "2/2",
       "party-name": "2/2",
       "land-price-area": "1/1"
     },
@@ -14,7 +14,7 @@
       "address-two-ways": "2/2",
       "balance-due": "2/2",
       "tax-proration": "2/2",
-      "brokerage-fee": "0/2",
+      "brokerage-fee": "2/2",
       "party-name": "2/2",
       "land-price-area": "1/1"
     }
