@@ -34,7 +34,7 @@ const CAPITALS_SERIAL = new RegExp(`(?<![A-Za-z0-9.${HYPHEN_CHARS}])[A-Z]+\\d{4,
  * such as 「表3の12-15行」「表30の12-34行」, not a plate. The spaces inside a plate are its layout, and the one before it ends the place name.
  */
 const PLATE = new RegExp(
-  `(?<![\\d${HYPHEN_CHARS}])\\d{2,3}[ 　]?\\p{Script=Hiragana}[ 　]?(?:\\d{1,2}[${HYPHEN_CHARS}]\\d{2}|[・･]{1,3}\\d{1,3})(?![\\d${HYPHEN_CHARS}\\p{Script=Han}\\p{Script=Katakana}])`,
+  `(?<![\\d${HYPHEN_CHARS}])\\d{2,3}[ \\u3000]?\\p{Script=Hiragana}[ \\u3000]?(?:\\d{1,2}[${HYPHEN_CHARS}]\\d{2}|[・･]{1,3}\\d{1,3})(?![\\d${HYPHEN_CHARS}\\p{Script=Han}\\p{Script=Katakana}])`,
   "gu",
 );
 const HAS_LETTER = /[A-Za-z]/u;

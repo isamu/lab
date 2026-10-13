@@ -35,7 +35,7 @@ const isOrganizationName = (word: string, wordTokens: readonly Token[], words: O
   words.units.has(wordTokens.at(-1)?.surface ?? "") || words.forms.some((form) => word.length > form.length && (word.startsWith(form) || word.endsWith(form)));
 
 /** 行の頭の項目名とコロン（所属：、振込先：）。項目名は空白も数字も含まない短い語。 */
-const FIELD_LABEL = /^[ \t]*(?:[-*+][ \t]+)?[^\s：:。\d]{1,12}[：:][ \t　]*/u;
+const FIELD_LABEL = /^[ \t]*(?:[-*+][ \t]+)?[^\s：:。\d]{1,12}[：:][ \t\u3000]*/u;
 
 /** 文の終わり。値を文で書いた行（会場：本社 5階で行います。）の空白は、文の中の空け方として数える。 */
 const SENTENCE_END = /[。！？]/u;
