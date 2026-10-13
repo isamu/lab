@@ -58,6 +58,7 @@ Some things are left out on purpose.
 - chaff never rewrites the text. Fixing is the writer's job.
 - It does not check that a figure is true. Whether the hotel cost £190.00 is for the receipt to say.
 - It knows no tax rates, pay rules or prices. It compares what the document writes with what the same document writes elsewhere.
+  The one exception is a Japanese property sale settlement statement: there a brokerage fee written as "consumption tax included" with no rate is checked at 10% ([`formula-amount-mismatch`](../../rules/formula-amount-mismatch/), the `property-sale` profile in [Choosing the kind of document](./configuration#choosing-the-kind-of-document)).
 - Figures inside sentences are read less than figures in tables and labelled lines ([What chaff does not read](./numbers-and-dates#what-chaff-does-not-read)).
 
 ## Try it
