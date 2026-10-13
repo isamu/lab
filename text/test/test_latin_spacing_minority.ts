@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { latinSpacing } from "./rule-run.ts";
-import { minorityReport } from "../packages/chaff/src/spacing-minority.ts";
+import { minorityReport, withoutSideOnTie } from "../packages/chaff/src/spacing-minority.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
@@ -137,5 +137,62 @@ describe("latin-spacing は書き方が二通りの文書を 1 件で言う", ()
     const source = "# 試し\n\nAPIを呼ぶ。JSONを返す。IDを保存する。URLを開く。CSVを読む。PDFを作る。HTMLを書く。XMLを読む。CSSを直す。SQL を流す。\n";
     assert.equal(messages(source).length, 1);
     assert.match(messages(source)[0] ?? "", /空けています/u);
+  });
+});
+
+describe("latin-spacing は番号の中や項目の値を区切る空白を数えず、同数なら言わない", () => {
+  it("桁の区切りの無い 6 桁以上の番号の前後は数えない（口座番号）", () => {
+    assert.deepEqual(spacing("# 試し\n\n振込手数料は1件につき330円です。お振込みには、口座番号 7203518 をお伝えください。\n"), []);
+  });
+
+  it("助数詞の続く大きな数は数量で、これまでどおり数える", () => {
+    assert.deepEqual(spacing("# 試し\n\n振込手数料は1件につき330円です。残高は 1250000円です。\n"), ["後ろの数字:空けています"]);
+  });
+
+  it("ナンバープレートの中と前後の空白は数えない", () => {
+    assert.deepEqual(spacing("# 試し\n\n登録番号ひばり野 330 ね 48-15 のお車は、当社で2年間保管します。走行距離は45,120kmです。\n"), []);
+  });
+
+  it("項目名とコロンの後ろに値の組を並べた行で、組と組のあいだの空白は数えない", () => {
+    assert.deepEqual(spacing("# 試し\n\n振込手数料は1件につき330円です。\n\n振込先：みなと銀行 本店営業部 普通 1234567\n"), []);
+    assert.deepEqual(spacing("# 試し\n\n- 所属：経済学部 経済学科 1年\n- 学費：820,000円\n\n学籍番号26B4172の通知書です。\n"), []);
+    assert.deepEqual(spacing("# 試し\n\n専有面積は25.5㎡です。広さは2部屋で9畳です。\n\n物件：メゾンかえで 203号室\n"), []);
+  });
+
+  it("量の前置き（約）や、値を文で書いた行の空白は、これまでどおり数える", () => {
+    assert.deepEqual(spacing("# 試し\n\n期間：約 3 か月\n\n契約は2年で、更新は1回までです。\n"), ["後ろの数字:空けています", "前の数字:空けています"]);
+    assert.deepEqual(spacing("# 試し\n\n会場：本社は 5階で行います。\n\n定員は30名、参加費は500円です。\n"), ["後ろの数字:空けています"]);
+    assert.deepEqual(spacing("# 試し\n\n参加者100人、来場者200人を見込みます。\n\n目標：参加者 100人を想定\n"), ["後ろの数字:空けています"]);
+  });
+
+  it("表の升目の空白は数えない", () => {
+    assert.deepEqual(spacing("# 試し\n\n| 口座 | 場所 |\n| --- | --- |\n| 普通 1234567 | 本社 5階 |\n\n手数料は330円、定員は30名です。\n"), []);
+  });
+
+  it("1 対 1 の同数には少ないほうが無いので言わず、1 対 2 なら言う", () => {
+    assert.deepEqual(spacing("# 試し\n\n専有面積は25.5㎡です。洋室は 8畳です。\n"), []);
+    assert.deepEqual(spacing("# 試し\n\n専有面積は25.5㎡です。洋室は 8畳、和室は6畳です。\n"), ["後ろの数字:空けています"]);
+  });
+
+  it("2 対 2 以上の同数は、どちらの側にも立たず、書き方が二通りあることを 1 件で言う", () => {
+    assert.deepEqual(spacing("# 試し\n\n専有面積は25.5㎡、洋室は8畳です。和室は 6畳、納戸は 2畳です。\n"), ["後ろの数字:undefined"]);
+  });
+
+  it("withoutSideOnTie: 同数でなければそのまま、1 対 1 は無し、2 対 2 からは二通りの 1 件", () => {
+    assert.equal(withoutSideOnTie(minorityReport(boundaries(1, 1), 1), boundaries(1, 1)), undefined);
+    assert.deepEqual(withoutSideOnTie(minorityReport(boundaries(2, 2), 1), boundaries(2, 2)), {
+      mode: "mixed",
+      first: { spaced: true },
+      odd: 2,
+      spaced: 2,
+      touching: 2,
+    });
+    assert.deepEqual(withoutSideOnTie(minorityReport(boundaries(1, 2), 1), boundaries(1, 2)), minorityReport(boundaries(1, 2), 1));
+    assert.deepEqual(withoutSideOnTie(minorityReport(boundaries(6, 6), 1), boundaries(6, 6)), minorityReport(boundaries(6, 6), 1));
+    assert.equal(withoutSideOnTie(undefined, []), undefined);
+  });
+
+  it("文の中で空け方が混ざっていれば、これまでどおり言う", () => {
+    assert.deepEqual(spacing("# 試し\n\niPhone 15を買い、Pixel 8 を返し、Galaxy 9を売ります。\n"), ["英字:空けています"]);
   });
 });

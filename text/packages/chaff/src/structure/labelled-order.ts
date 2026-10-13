@@ -108,8 +108,8 @@ export const pointsOutOfOrder = (source: string, words: PairWords, pointOf: Poin
 /** A lexicon entry naming its pair (group) and its side: before for the earlier point, after for the later one. */
 export type OrderLabel = { readonly pattern: string; readonly group?: string | undefined; readonly position?: "before" | "after" | undefined };
 
-/** One pair of a lexicon: the words of its group that label the earlier point, and those that label the later one. */
-export type LabelPair = { readonly earlier: string[]; readonly later: string[] };
+/** One pair of a lexicon: its group, the words of the group that label the earlier point, and those that label the later one. */
+export type LabelPair = { readonly group: string; readonly earlier: string[]; readonly later: string[] };
 
 const sideOf = (labels: readonly OrderLabel[], group: string, position: "before" | "after"): string[] =>
   labels.filter((label) => label.group === group && label.position === position).map((label) => label.pattern);
@@ -117,6 +117,7 @@ const sideOf = (labels: readonly OrderLabel[], group: string, position: "before"
 /** Every pair a lexicon names, in the order its groups first appear. */
 export const labelPairsOf = (labels: readonly OrderLabel[]): LabelPair[] =>
   [...new Set(labels.flatMap((label) => (label.group === undefined ? [] : [label.group])))].map((group) => ({
+    group,
     earlier: sideOf(labels, group, "before"),
     later: sideOf(labels, group, "after"),
   }));

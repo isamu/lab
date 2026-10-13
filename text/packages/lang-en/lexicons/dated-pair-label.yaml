@@ -97,8 +97,8 @@ entries:
   - { pattern: "Check-in date", group: cancel, position: after }
   - { pattern: "Pick-up", group: cancel, position: after }
   - { pattern: "Pick-up date", group: cancel, position: after }
-  # A payslip: the pay date comes after the end of the pay period. The pay period line states a period and is compared
-  # by its end (dated-span-label).
+  # A payslip: the pay date does not come before the pay period starts. Pay can come in the middle of the period (on the
+  # 25th for the whole month), so the pay period line is compared by its start (dated-span-label).
   - { pattern: "Pay period", group: payroll, position: before }
   - { pattern: "Pay date", group: payroll, position: after }
   # A trip or an expense report: the return does not come before the departure. A same-day return (a day trip) is not

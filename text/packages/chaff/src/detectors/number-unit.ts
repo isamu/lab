@@ -135,12 +135,38 @@ export const unitGaps = (values: readonly Measured[]): UnitGap[] => {
 const unitsOf = (doc: ProseDocument): Set<string> =>
   new Set(UNIT_LEXICONS.flatMap((name) => (doc.lexicons[name] ?? []).flatMap((entry) => [entry.pattern, entry.pattern.toLowerCase()])));
 
-export const numberWithoutUnit: Detector = (doc: ProseDocument): Finding[] =>
-  unitGaps(measuredValues(doc.source, doc.prose ?? doc.source, unitsOf(doc))).map((gap) => ({
-    rule: "number-without-unit",
-    severity: "warning",
-    line: 0,
-    column: 0,
-    quote: quoteAt(doc.source, gap.value.offset),
-    values: { value: gap.value.written, name: gap.value.name, unit: gap.unit, offset: gap.value.offset },
-  }));
+/** Lexicon piece-count-column: the headings of a column that counts whatever its row is, and the units of a hired period. */
+export type PieceCount = { readonly columns: ReadonlySet<string>; readonly periods: ReadonlySet<string> };
+
+const WHOLE_NUMBER = /^\d[\d,]*$/u;
+const TABLE_KIND = /^table \d+: /u;
+
+/**
+ * A bare whole number in a quantity column whose other rows count a hired period (4 days, 2 nights): the count of a
+ * piece the row hires or buys (Child seat | 1), which has no unit to lose.
+ */
+export const isPieceCount = (gap: UnitGap, count: PieceCount): boolean =>
+  TABLE_KIND.test(gap.value.kind) &&
+  count.columns.has(gap.value.name.toLowerCase()) &&
+  count.periods.has(gap.unit.toLowerCase()) &&
+  WHOLE_NUMBER.test(gap.value.written.normalize("NFKC"));
+
+const pieceCountOf = (doc: ProseDocument): PieceCount => {
+  const entries = doc.lexicons["piece-count-column"] ?? [];
+  const patterns = (group: string): Set<string> => new Set(entries.filter((entry) => entry.group === group).map((entry) => entry.pattern.toLowerCase()));
+  return { columns: patterns("column"), periods: patterns("period") };
+};
+
+export const numberWithoutUnit: Detector = (doc: ProseDocument): Finding[] => {
+  const count = pieceCountOf(doc);
+  return unitGaps(measuredValues(doc.source, doc.prose ?? doc.source, unitsOf(doc)))
+    .filter((gap) => !isPieceCount(gap, count))
+    .map((gap) => ({
+      rule: "number-without-unit",
+      severity: "warning",
+      line: 0,
+      column: 0,
+      quote: quoteAt(doc.source, gap.value.offset),
+      values: { value: gap.value.written, name: gap.value.name, unit: gap.unit, offset: gap.value.offset },
+    }));
+};

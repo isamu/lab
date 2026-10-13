@@ -1,7 +1,7 @@
 import type { StructureIssue } from "./issues.ts";
 import { linesOf, type Line } from "./lines.ts";
 import { CELL_SEPARATOR } from "./bare-numbers.ts";
-import { TABLE_RULE } from "./runs.ts";
+import { tablesOf } from "../facts/table-facts.ts";
 import { roundedMatches } from "./tax.ts";
 import { holds } from "./change-rate-table.ts";
 import { roleOf, type QuantityRole, type QuantityWord } from "./order-quantity.ts";
@@ -296,16 +296,6 @@ const rowIssue = (row: Line, table: Table, words: LineAmountWords): StructureIss
   const values = { written: amount.written, quantity: plain(shown.cell.text), price: price.written, expected: shownExpected(amount, centsOf(shown)) };
   return [{ offset: amount.offset, values }];
 };
-
-/** Each table: its header row and its body rows. */
-export const tablesOf = (lines: readonly Line[]): { header: Line; rows: Line[] }[] =>
-  lines.flatMap((line, index) => {
-    const header = lines[index - 1];
-    if (!TABLE_RULE.test(line.text) || header === undefined || !header.text.includes("|")) return [];
-    const after = lines.slice(index + 1);
-    const end = after.findIndex((row) => !row.text.includes("|"));
-    return [{ header, rows: end === -1 ? after : after.slice(0, end) }];
-  });
 
 export const lineAmountMismatches = (source: string, words: LineAmountWords): StructureIssue[] =>
   tablesOf(linesOf(source)).flatMap(({ header, rows }) => {

@@ -717,4 +717,75 @@ describe("total-mismatch", () => {
       assert.deepEqual(found(doc("- A: $1,200", "- B: $300", "- Total: $1,600")), ["$1,600≠$1,500"]);
     });
   });
+  describe("a total row whose label is in the first cell that is not blank", () => {
+    const jaExpenses = (...last: string[]): string =>
+      doc(
+        "| 日付 | 項目 | 金額 |",
+        "| --- | --- | --- |",
+        "| 4月1日 | 交通費 | 3,000円 |",
+        "| 4月2日 | 宿泊費 | 8,000円 |",
+        "| 4月3日 | 食事代 | 1,000円 |",
+        ...last,
+      );
+    const enExpenses = (...last: string[]): string =>
+      doc(
+        "| Date | Item | Amount |",
+        "| --- | --- | --- |",
+        "| April 1 | Travel | $300 |",
+        "| April 2 | Hotel | $800 |",
+        "| April 3 | Meals | $100 |",
+        ...last,
+      );
+
+    it("is compared with the rows above when every cell before the label is blank", () => {
+      assert.deepEqual(found(jaExpenses("| | 合計 | 13,000円 |"), ja, "ja"), ["13,000円≠12,000円"]);
+      assert.deepEqual(found(jaExpenses("| | 合計 | 12,000円 |"), ja, "ja"), []);
+      assert.deepEqual(found(enExpenses("| | Total | $1,300 |")), ["$1,300≠$1,200"]);
+      assert.deepEqual(found(enExpenses("| | Total | $1,200 |")), []);
+    });
+
+    it("a subtotal in the second cell starts the window of the total below it", () => {
+      assert.deepEqual(found(jaExpenses("| | 小計 | 12,000円 |", "| | 消費税 | 1,200円 |", "| | 合計 | 13,200円 |"), ja, "ja"), []);
+      assert.deepEqual(found(jaExpenses("| | 小計 | 12,000円 |", "| | 消費税 | 1,200円 |", "| | 合計 | 14,200円 |"), ja, "ja"), ["14,200円≠13,200円"]);
+      assert.deepEqual(found(enExpenses("| | Subtotal | $1,200 |", "| | Tax | $96 |", "| | Total | $1,296 |")), []);
+      assert.deepEqual(found(enExpenses("| | Subtotal | $1,200 |", "| | Tax | $96 |", "| | Total | $1,396 |")), ["$1,396≠$1,296"]);
+    });
+
+    it("a closing total named by a noun is read as it is in the first cell: the sum of the rows right above it", () => {
+      const pay = (closing: string): string =>
+        doc("| Earnings | Deductions | Amount |", "| --- | --- | ---: |", "| Salary | | 1,000 |", "| | Tax | 100 |", "| | Fee | 50 |", closing);
+      assert.deepEqual(found(pay("| | Total deductions | 150 |")), []);
+      assert.deepEqual(found(pay("| Total deductions | | 150 |")), []);
+    });
+
+    it("is not read as a total row when a cell before the label is filled, or the label is not a total word", () => {
+      assert.deepEqual(found(jaExpenses("| 4月4日 | 合計 | 13,000円 |"), ja, "ja"), []);
+      assert.deepEqual(found(jaExpenses("| | 雑費 | 13,000円 |"), ja, "ja"), []);
+      assert.deepEqual(found(enExpenses("| April 4 | Total | $1,300 |")), []);
+      assert.deepEqual(found(enExpenses("| | Parking | $1,300 |")), []);
+    });
+  });
+});
+
+describe("total-mismatch: a bracketed note after the total word", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+  });
+
+  const enTable = (...rows: string[]): string => doc("| Item | Amount |", "| --- | --- |", ...rows);
+  const jaTable = (...rows: string[]): string => doc("| 品目 | 金額 |", "| --- | --- |", ...rows);
+
+  it("still reads a total whose note ends the label", () => {
+    assert.deepEqual(found(enTable("| Design | $3,000 |", "| Build | $5,000 |", "| Total (incl. tax) | $9,000 |")), ["$9,000≠$8,000"]);
+    assert.deepEqual(found(jaTable("| 設計 | 300,000円 |", "| 実装 | 500,000円 |", "| 合計（税込） | 900,000円 |"), ja, "ja"), ["900,000円≠800,000円"]);
+  });
+
+  it("reads a row whose note is followed by more words as an item, not as a total", () => {
+    const enRows = ["| Design | $3,000 |", "| Build | $5,000 |", "| Total (phase 1) design | $4,000 |"];
+    assert.deepEqual(found(enTable(...enRows, "| Total | $12,000 |")), []);
+    assert.deepEqual(found(enTable(...enRows, "| Total | $13,000 |")), ["$13,000≠$12,000"]);
+    const jaRows = ["| 設計 | 300,000円 |", "| 実装 | 500,000円 |", "| 合計（第1期）設計 | 400,000円 |"];
+    assert.deepEqual(found(jaTable(...jaRows, "| 合計 | 1,200,000円 |"), ja, "ja"), []);
+    assert.deepEqual(found(jaTable(...jaRows, "| 合計 | 1,300,000円 |"), ja, "ja"), ["1,300,000円≠1,200,000円"]);
+  });
 });

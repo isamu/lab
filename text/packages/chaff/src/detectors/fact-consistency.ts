@@ -26,6 +26,7 @@ import { qualifiedKeyOf, qualifiedKeys, type QualifierWords } from "../facts/qua
 import { rowSentenceFindings } from "./row-sentence-amounts.ts";
 import type { RateWord, RateWords } from "../facts/rate-values.ts";
 import { wholeCountFindings } from "./whole-count-findings.ts";
+import { perUnitsOf, perUnitValues } from "./per-unit-words.ts";
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
 
@@ -123,6 +124,7 @@ const withQualifiedKeys = <T extends Fact>(doc: ProseDocument, facts: readonly T
 /**
  * 単位の語彙表の量（410 g、1.2 kg）と期間（3 months）と年齢（満70歳まで、aged 20 to 70）も値として読む。木が単位を読まない量は、
  * 数だけでは升や文の値にならない。年齢と重なる期間（30 years old の 30 years）と、期間と重なる量（3 months の 3 m）は読まない。
+ * 数量には何あたりか（1kmあたり15円）を付ける。何あたりの値は、それを掛けた金額とは比べない。
  */
 const readFacts = (doc: ProseDocument, tree: StructureNode): ScopedFact[] => {
   const tagged = factValues(tree, doc.source, nameSpans(doc));
@@ -134,7 +136,7 @@ const readFacts = (doc: ProseDocument, tree: StructureNode): ScopedFact[] => {
     durationWordsOf(doc),
   );
   const taken = spanIndex([...ages, ...durations]);
-  const values = valuesWith(tree, doc, [...measuredOf(doc).filter((value) => !overlapsAny(taken, value)), ...ages, ...durations]);
+  const values = perUnitsOf(doc, valuesWith(tree, doc, [...measuredOf(doc).filter((value) => !overlapsAny(taken, value)), ...ages, ...durations]));
   const terms = termValues(doc.source, values, termValueWordsOf(doc));
   const termed = new Set(terms.map((fact) => fact.value.start));
   const labelled = labelledFacts(doc.source, values, { ...factWordsOf(doc), qualifiers: qualifierWordsOf(doc) }).filter(
@@ -263,8 +265,7 @@ const countedPhrasesOf = (doc: ProseDocument): CountedPhrase[] =>
 const countedFactsOf = (doc: ProseDocument): ScopedFact[] => {
   const tree = doc.structure;
   if (tree === undefined) return [];
-  const values = factValues(tree, doc.source, nameSpans(doc));
-  return scopedFacts(countedFacts(doc.source, values, countedPhrasesOf(doc)), tree, doc.source, patternsOf(doc, "summary-heading"));
+  return scopedFacts(countedFacts(doc.source, perUnitValues(doc, tree), countedPhrasesOf(doc)), tree, doc.source, patternsOf(doc, "summary-heading"));
 };
 
 const wordsAt = (doc: ProseDocument, id: string): WordAt[] =>
@@ -319,8 +320,7 @@ const pairFinding =
 const conditionPairFindings = (doc: ProseDocument): Finding[] => {
   const tree = doc.structure;
   if (tree === undefined) return [];
-  const values = factValues(tree, doc.source, nameSpans(doc));
-  return conditionPairConflicts(doc.source, changeSentencesOf(doc, tree), values, changeWordsOf(doc)).map(pairFinding(doc));
+  return conditionPairConflicts(doc.source, changeSentencesOf(doc, tree), perUnitValues(doc, tree), changeWordsOf(doc)).map(pairFinding(doc));
 };
 
 const eventWordsOf = (doc: ProseDocument): EventWord[] =>

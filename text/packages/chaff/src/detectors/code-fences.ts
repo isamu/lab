@@ -3,6 +3,7 @@
 import { parse } from "../markdown-read.ts";
 import { spanOf } from "../markdown-node.ts";
 import { eachPreOrder } from "../tree-walk.ts";
+import { maskSpans } from "../mask.ts";
 
 export type CodeFence = {
   /** Where the opening fence line starts. */
@@ -77,6 +78,15 @@ export const codeFences = (source: string): readonly CodeFence[] => {
   lastRead.source = source;
   lastRead.fences = fences;
   return fences;
+};
+
+/**
+ * The source with every fenced code block blanked, offsets and line breaks kept. A list or a sentence in a code block is an
+ * example, not the document's own: a rule that reads values from the source line by line reads this instead.
+ */
+export const withoutCodeBlocks = (source: string): string => {
+  const fences = codeFences(source);
+  return fences.length === 0 ? source : maskSpans(source, fences);
 };
 
 /** Inline code spans in a stretch of text: a run of backticks closed by a run of the same length. */

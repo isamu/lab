@@ -218,6 +218,32 @@ describe("use-before-definition: 定義より前で使っている語", () => {
   });
 });
 
+describe("use-before-definition: the name another definition gives", () => {
+  it("valid: a later-defined term inside the name written right before another term's bracket", () => {
+    const later = '1.1 The Supplier provides hosting (the "Services").\n';
+    assert.deepEqual(early(`This Services Agreement (this "Agreement") is made by Harbour Ltd (the "Supplier").\n\n${later}`), []);
+    assert.deepEqual(early(`The Harbour Services Group (the "Supplier") signs this.\n\n${later}`), []);
+    assert.deepEqual(
+      early("甲と乙は、本サービス利用契約（以下「本契約」という。）を締結する。\n\n乙は、予約の仕組み（以下「本サービス」という。）を提供する。\n", ja),
+      [],
+    );
+  });
+
+  it("invalid: the term used in a sentence of its own, or outside the name before the bracket", () => {
+    const later = '1.1 The Supplier provides hosting (the "Services").\n';
+    assert.deepEqual(early(`The Services start in May. This agreement (the "Agreement") is made by Harbour Ltd.\n\n${later}`), [
+      '"Services" is used here, before it is defined on line 3',
+    ]);
+    assert.deepEqual(early(`The Services start under this agreement (the "Agreement").\n\n${later}`), [
+      '"Services" is used here, before it is defined on line 3',
+    ]);
+    assert.deepEqual(
+      early("本サービスは無料である。この契約（以下「本契約」という。）を締結する。\n\n乙は、予約の仕組み（以下「本サービス」という。）を提供する。\n", ja),
+      ["「本サービス」を、3 行目の定義より前で使っています"],
+    );
+  });
+});
+
 describe("the reading behind both rules", () => {
   const texts = [
     { start: 0, text: "The Seller ships." },

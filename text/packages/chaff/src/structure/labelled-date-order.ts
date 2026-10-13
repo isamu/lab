@@ -10,11 +10,13 @@ import { statedPeriod, type DateMention, type PeriodWords } from "./stated-perio
  * earlier-date word and one starting with a later-date word, each with one full date on it. A later date before the
  * first earlier date, and written near it, is out of order. A line with a passed word (期限切れ, overdue) reports on a
  * date rather than setting one and is not read. A span word (対象期間, Reporting period) labels a period, and the
- * period's end is its date. Pure.
+ * period's end is its date, or its start for a span word in fromStart. Pure.
  */
 export type DateOrderWords = PairWords & {
   /** The words whose line states a period rather than one date (labels), with the range signs and names to read it. */
   readonly spans?: PeriodWords | undefined;
+  /** The span words whose period's start is the date: the later date may fall anywhere in the period (a pay date in its pay period). */
+  readonly fromStart?: readonly string[] | undefined;
 };
 
 /** A date from the tree; end is where its text ends, needed only to read a period. */
@@ -30,12 +32,14 @@ const FULL_DATE = /^\d{4}-\d{2}-\d{2}$/u;
 const mentionsOf = (dates: readonly OrderDate[]): DateMention[] => dates.flatMap((date) => (date.end === undefined ? [] : [{ ...date, end: date.end }]));
 
 /**
- * The end of the period a span word's line states (対象期間：2026年4月1日〜9月30日 ends 2026-09-30), with its year.
- * A period without a year, or a line that states no period, gives undefined. tableOf gives the table the line is a row of
- * (| 対象期間 | 2026年4月1日〜9月30日 |), read when the row is the table's only row labelled with any span word: a table with
- * both Reporting period and Period covered rows lists periods. A row's label cell is the span word itself, so all of them are passed.
+ * The start or the end of the period a span word's line states (対象期間：2026年4月1日〜9月30日 starts 2026-04-01 and
+ * ends 2026-09-30), with its year. A period without a year, or a line that states no period, gives undefined. tableOf gives
+ * the table the line is a row of (| 対象期間 | 2026年4月1日〜9月30日 |), read when the row is the table's only row labelled
+ * with any span word: a table with both Reporting period and Period covered rows lists periods. A row's label cell is the
+ * span word itself, so all of them are passed.
  */
-export const periodEndOf = (
+const periodBoundOf = (
+  bound: "start" | "end",
   line: Line,
   label: string,
   dates: readonly OrderDate[],
@@ -44,8 +48,26 @@ export const periodEndOf = (
 ): DatedPoint | undefined => {
   const labels = TABLE_ROW.test(line.text) ? spans.labels : [label];
   const period = statedPeriod(line.text, line.start, mentionsOf(dates), { ...spans, labels }, tableOf);
-  return period === undefined || !FULL_DATE.test(period.end) ? undefined : { offset: line.start, value: period.end };
+  return period === undefined || !FULL_DATE.test(period[bound]) ? undefined : { offset: line.start, value: period[bound] };
 };
+
+/** The end of the period a span word's line states. */
+export const periodEndOf = (
+  line: Line,
+  label: string,
+  dates: readonly OrderDate[],
+  spans: PeriodWords,
+  tableOf?: () => readonly string[],
+): DatedPoint | undefined => periodBoundOf("end", line, label, dates, spans, tableOf);
+
+/** The start of the period a span word's line states. */
+export const periodStartOf = (
+  line: Line,
+  label: string,
+  dates: readonly OrderDate[],
+  spans: PeriodWords,
+  tableOf?: () => readonly string[],
+): DatedPoint | undefined => periodBoundOf("start", line, label, dates, spans, tableOf);
 
 const oneDateOf = (line: Line, dates: readonly OrderDate[]): DatedPoint | undefined => {
   const end = line.start + line.text.length;
@@ -54,14 +76,14 @@ const oneDateOf = (line: Line, dates: readonly OrderDate[]): DatedPoint | undefi
 };
 
 const dateOf =
-  (dates: readonly OrderDate[], spans: PeriodWords | undefined): PointOf =>
+  (dates: readonly OrderDate[], spans: PeriodWords | undefined, fromStart: readonly string[]): PointOf =>
   (line, label, tableOf) => {
     if (spans === undefined || !spans.labels.includes(label)) {
       const date = oneDateOf(line, dates);
       return date === undefined ? undefined : { point: date, span: false };
     }
-    const end = periodEndOf(line, label, dates, spans, tableOf);
-    return end === undefined ? undefined : { point: end, span: true };
+    const bound = fromStart.includes(label) ? periodStartOf(line, label, dates, spans, tableOf) : periodEndOf(line, label, dates, spans, tableOf);
+    return bound === undefined ? undefined : { point: bound, span: true };
   };
 
 /**
@@ -70,18 +92,29 @@ const dateOf =
  * record's. A later date written once (an issue date below the records) belongs to the whole document and keeps the first.
  */
 export const datesOutOfOrder = (source: string, dates: readonly OrderDate[], words: DateOrderWords): OutOfOrder[] =>
-  pointsOutOfOrder(source, words, dateOf(dates, words.spans)).map(({ earlier, later }) => ({
+  pointsOutOfOrder(source, words, dateOf(dates, words.spans, words.fromStart ?? [])).map(({ earlier, later }) => ({
     earlier: { label: earlier.label, date: earlier.point, line: earlier.line, span: earlier.span },
     later: { label: later.label, date: later.point, line: later.line, span: later.span },
   }));
 
-/** An out-of-order pair; period is set when the earlier date is the end of a stated period. */
-export type PairedIssue = StructureIssue & { readonly period: boolean };
+/** An out-of-order pair; period is set when the earlier date is a stated period's end, or its start when fromStart is set. */
+export type PairedIssue = StructureIssue & { readonly period: boolean; readonly fromStart?: boolean | undefined };
+
+/** The span words with the range signs and names to read them, and the dated-span lexicon's entries they come from. */
+export type PairSpans = PeriodWords & { readonly entries: readonly OrderLabel[] };
+
+/**
+ * The span words a dated-span lexicon reads by the period's start in one group: its entries naming that group with
+ * position before. An entry without a group is read by the period's end in every group.
+ */
+export const spanStartsOf = (spanLabels: readonly OrderLabel[], group: string): string[] =>
+  spanLabels.filter((label) => label.group === group && label.position === "before").map((label) => label.pattern);
 
 /**
  * Every pair of a dated-pair lexicon: the entries of one group with position before label the earlier date, those with
  * position after the later one. The values name both labels, so the message can quote them. The issue is on whichever
  * of the two dates is written second: a reader meets the contradiction there (a cancellation deadline below check-in).
+ * spans.entries are the dated-span lexicon's entries, for the span words a group reads by the period's start.
  */
 export const pairedDatesOutOfOrder = (
   source: string,
@@ -89,12 +122,14 @@ export const pairedDatesOutOfOrder = (
   labels: readonly OrderLabel[],
   passed: readonly string[],
   maxLineGap: number,
-  spans?: PeriodWords,
+  spans?: PairSpans,
 ): PairedIssue[] =>
-  labelPairsOf(labels).flatMap((pair) =>
-    datesOutOfOrder(source, dates, { ...pair, passed, maxLineGap, spans }).map(({ earlier, later }) => ({
+  labelPairsOf(labels).flatMap((pair) => {
+    const fromStart = spanStartsOf(spans?.entries ?? [], pair.group);
+    return datesOutOfOrder(source, dates, { ...pair, passed, maxLineGap, spans, fromStart }).map(({ earlier, later }) => ({
       offset: Math.max(later.date.offset, earlier.date.offset),
       values: { later: later.date.value, earlier: earlier.date.value, later_label: later.label, earlier_label: earlier.label },
       period: earlier.span,
-    })),
-  );
+      ...(earlier.span && fromStart.includes(earlier.label) ? { fromStart: true } : {}),
+    }));
+  });

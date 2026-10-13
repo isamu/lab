@@ -1,6 +1,6 @@
 import type { StructureIssue } from "./issues.ts";
 import { runsOf, type Line } from "./runs.ts";
-import { columnOf, isTotalLabel, shownTotal, type Amount } from "./total.ts";
+import { columnOf, isTotalLabel, shownTotal, withoutLeadingBlankCells, type Amount } from "./total.ts";
 
 /**
  * 税の行と、その上の金額に率を掛けた額。表か箇条書きの並びで、税の語（消費税・Sales tax）で始まり率（10%）を書いた行の
@@ -42,8 +42,11 @@ const rateOf = (text: string): number | undefined => {
   return Number.isFinite(rate) && rate > 0 && rate < MAX_RATE ? rate : undefined;
 };
 
+/** A tax or total row may leave its first cells blank and put its word in the first cell that is not (| | 小計 | 12,000円 |). */
+const startsWithLabel = (row: Row, labels: readonly string[]): boolean => isTotalLabel(withoutLeadingBlankCells(row.text), labels);
+
 const isTaxRow = (row: Row, words: TaxWords): boolean =>
-  isTotalLabel(row.text, words.labels) && !words.included.some((word) => row.text.toLowerCase().includes(word.toLowerCase()));
+  startsWithLabel(row, words.labels) && !words.included.some((word) => row.text.toLowerCase().includes(word.toLowerCase()));
 
 const isChargeRow = (row: Row, words: TaxWords): boolean => isTotalLabel(row.text, words.charges) && rateOf(row.text) !== undefined;
 
@@ -89,7 +92,7 @@ const basesOf = (source: string, above: readonly Row[], tax: Amount, column: num
   const charges = valuesAt(source, above.slice(chargeStart), column, tax.unit);
   if (charges === undefined) return [];
   const before = above.slice(0, chargeStart);
-  const lastTotalIndex = before.findLastIndex((row) => isTotalLabel(row.text, words.totals));
+  const lastTotalIndex = before.findLastIndex((row) => startsWithLabel(row, words.totals));
   const lastTotal = before[lastTotalIndex];
   if (lastTotal !== undefined) {
     const total = amountAt(source, lastTotal, column, tax.unit);

@@ -1,12 +1,14 @@
 # The dated-pair-label words whose line states a period rather than one date ("Reporting period: April 1, 2025 to
 # March 31, 2026"). due-before-issue compares the period's end as the pair's earlier date; a period written without a
-# year is not compared.
+# year is not compared. An entry with a group and position before is compared by the period's start, in that group only:
+# pay can come in the middle of its pay period (on the 25th for the whole month), so only a pay date before the period
+# starts is reported.
 id: dated-span-label
 language: en
 entries:
   - pattern: Reporting period
   - pattern: Period covered
-  - pattern: Pay period
   - pattern: Tax year
   - pattern: Fiscal year
   - pattern: Financial year
+  - { pattern: Pay period, group: payroll, position: before }

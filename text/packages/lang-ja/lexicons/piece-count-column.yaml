@@ -1,0 +1,17 @@
+# 行ごとに借りるもの・買うものを数える数量の列（車は「4日」、チャイルドシートは「1」）（number-without-unit）。
+# group: column は列の見出し、group: period は借りる期間の単位。ほかの値が期間の単位を持つ列では、単位の無い整数は
+# 個数で、単位を落とした値ではない。
+id: piece-count-column
+language: ja
+entries:
+  - { pattern: 数量, group: column }
+  - { pattern: 個数, group: column }
+  - { pattern: 日, group: period }
+  - { pattern: 日間, group: period }
+  - { pattern: 泊, group: period }
+  - { pattern: 週, group: period }
+  - { pattern: 週間, group: period }
+  - { pattern: か月, group: period }
+  - { pattern: ヶ月, group: period }
+  - { pattern: カ月, group: period }
+  - { pattern: 時間, group: period }

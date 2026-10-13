@@ -200,6 +200,27 @@ const echoesLongName = (texts: readonly BodyText[], defined: DefinedTerm, offset
   return name.endsWith(defined.term) && sharedTail(name, written) >= defined.term.length + MIN_ECHO;
 };
 
+/** What may follow a word inside a name up to a definition's bracket: capitalised words (Services Agreement), or kanji and katakana (本サービス利用契約). */
+const NAME_RUN = /^(?:['’]?s)?(?:\s+\p{Lu}[\p{L}\p{N}&.'’-]*)*$|^[\p{Script=Han}\p{Script=Katakana}ー・･]*$/u;
+
+/**
+ * 別の語を定義する括弧の前の名前の中の現れ（This Services Agreement (this "Agreement") の Services、
+ * 本サービス利用契約（以下「本契約」という。）の本サービス）。文書が自分に付けた名前で、後で定義する語の使用ではない。
+ */
+const insideDefiningName = (texts: readonly BodyText[], inline: readonly DefinedTerm[], defined: DefinedTerm, offset: number): boolean => {
+  const body = sentenceAt(texts, offset);
+  if (body === undefined) return false;
+  const from = offset + defined.term.length;
+  const bodyEnd = body.start + body.text.length;
+  return inline.some(
+    (other) =>
+      other.term !== defined.term &&
+      other.span.start >= from &&
+      other.span.start <= bodyEnd &&
+      NAME_RUN.test(nameBefore(body.text.slice(from - body.start, other.span.start - body.start))),
+  );
+};
+
 const CAPITAL_OR_NON_LATIN = /\p{Lu}|[^\p{Script=Latin}\p{N}\s\p{P}]/u;
 
 /**
@@ -226,6 +247,7 @@ export const usesBeforeDefinition = (
   groupsOf(terms)
     .filter((group) => group.first.inline && isDistinctive(group.first.term))
     .flatMap(({ first: defined, spans }) => {
+      const inline = terms.filter((term) => term.inline);
       const defining = sentenceAt(texts, defined.span.start)?.start ?? defined.span.start;
       const uses = usesOf(defined.term, texts, spans, "exact", defined.bare === true ? mentioned : NEVER_MENTIONED);
       const first = uses.find(
@@ -234,7 +256,8 @@ export const usesBeforeDefinition = (
           !isTitle(offset) &&
           !continuesInHan(texts, defined.term, offset) &&
           !insideKatakanaName(texts, defined.term, offset) &&
-          !echoesLongName(texts, defined, offset),
+          !echoesLongName(texts, defined, offset) &&
+          !insideDefiningName(texts, inline, defined, offset),
       );
       return first !== undefined && first < defining ? [{ term: defined, offset: first }] : [];
     });

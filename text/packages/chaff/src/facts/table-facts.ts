@@ -1,6 +1,7 @@
 import type { Span } from "../plugin.ts";
 import { linesOf, type Line } from "../structure/lines.ts";
 import { TABLE_RULE } from "../structure/runs.ts";
+import { fencedLineIndexes } from "../structure/fenced-lines.ts";
 import { CELL_SEPARATOR } from "../structure/bare-numbers.ts";
 import type { FactValue } from "./fact-values.ts";
 import type { Fact } from "./labelled-facts.ts";
@@ -29,15 +30,17 @@ export const cellsOf = (line: Line): Cell[] => {
 
 const plain = withoutEdgeMarks;
 
-/** 区切り行（|---|）の前の行が見出し、後ろに続く | の行が本体。 */
-export const tablesOf = (lines: readonly Line[]): { header: Line; rows: Line[] }[] =>
-  lines.flatMap((line, index) => {
+/** 区切り行（|---|）の前の行が見出し、後ろに続く | の行が本体。コードブロックの中の表は例なので読まない。 */
+export const tablesOf = (lines: readonly Line[]): { header: Line; rows: Line[] }[] => {
+  const fenced = fencedLineIndexes(lines.map((line) => line.text));
+  return lines.flatMap((line, index) => {
     const header = lines[index - 1];
-    if (!TABLE_RULE.test(line.text) || header === undefined || !header.text.includes("|")) return [];
+    if (fenced.has(index) || !TABLE_RULE.test(line.text) || header === undefined || !header.text.includes("|")) return [];
     const after = lines.slice(index + 1);
     const end = after.findIndex((row) => !row.text.includes("|"));
     return [{ header, rows: end === -1 ? after : after.slice(0, end) }];
   });
+};
 
 const inside = (cell: Span, value: FactValue): boolean => value.start >= cell.start && value.end <= cell.end;
 

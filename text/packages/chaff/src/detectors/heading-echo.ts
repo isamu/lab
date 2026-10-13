@@ -1,6 +1,7 @@
 import { lengthOf, proseText } from "../measure.ts";
 import { newContentMorphemes } from "./content-morphemes.ts";
 import { echoedHeadingUnits, trigrams } from "./heading-overlap.ts";
+import { formValueTokens, isFormBlock } from "./form-line.ts";
 import { titleTokens } from "../heading-label.ts";
 import { handsOver } from "./lead-in.ts";
 import { holdsLink, namesLocation } from "./location-pointer.ts";
@@ -81,6 +82,17 @@ export const statesFigure = (heading: string, sentence: string): boolean => {
   return figuresOf(sentence).some((figure) => !inHeading.has(figure));
 };
 
+/**
+ * 最初の文が、見出しに無い名前や値を書いた、名前だけの行（レターヘッド）か項目と値の行（Customer: Laura Pennington）。
+ * 書式の頭で、見出しを言い直す文ではない。見出しをそのまま写した行（### 環境情報学研究科 → 環境情報学研究科、詳細：〈見出し〉）は繰り返し。
+ */
+const opensForm = (section: Section): boolean => {
+  const first = section.firstSentence;
+  if (first?.tokens === undefined || section.headingTokens === undefined || !isFormBlock(first.text, first.span.start, first.tokens)) return false;
+  const heading = titleTokens(section.heading, measuredHeading(section), section.headingTokens);
+  return newContentMorphemes(heading, formValueTokens(first.text, first.span.start, first.tokens)) > 0;
+};
+
 /** 見出しとの重なりを測る文。用語集や表記の手引きは見出しの語の別の書き方を引用する（Not “datacentre”）ので、それは数えない。 */
 const echoedText = (section: Section): string => withoutQuotedVariants(section.firstSentence?.text ?? "", measuredHeading(section));
 
@@ -88,7 +100,13 @@ export const headingEcho: Detector = (doc, options): Finding[] => {
   const leadIns = (doc.lexicons["lead-in"] ?? []).map((entry) => entry.pattern);
   return doc.sections
     .filter((section) => section.heading.length > 0 && section.firstSentence !== undefined && addsLittle(section, doc.lengthUnit))
-    .filter((section) => !leadsIn(doc, section, leadIns) && !pointsElsewhere(doc, section) && !statesFigure(section.heading, section.firstSentence?.text ?? ""))
+    .filter(
+      (section) =>
+        !leadsIn(doc, section, leadIns) &&
+        !pointsElsewhere(doc, section) &&
+        !statesFigure(section.heading, section.firstSentence?.text ?? "") &&
+        !opensForm(section),
+    )
     .map((section) => ({ section, overlap: Math.round(containment(trigrams(measuredHeading(section)), trigrams(echoedText(section))) * 100) }))
     .filter(({ overlap }) => overlap >= options.limit)
     .map(({ section, overlap }) => ({

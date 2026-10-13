@@ -3,7 +3,9 @@
 #   particle: 前の語に続けて書く助詞や語（当社は、弊社と、本契約における）。漢字やかなのすぐ後ろのひらがなは、この語で始まるときだけ、
 #             この語の後ろを名前の頭と読む。形の語のすぐ後ろ（株式会社と、株式会社の）のひらがなが、この語で始まれば名前と読まない
 #   opener:   句読点や行の頭に立つ語（また、なお）。名前の頭がこの語で始まれば名前と読まない
-#   end:      名前の頭の終わりに来ない字（の、る、て）。助詞や動詞の終わりで、名前の頭がこの字で終われば名前と読まない
+#   end:      名前の頭の終わりに来ない字や字の並び（の、る、ない）。助詞や動詞・形容詞の終わりで、名前の頭がこれで終われば名前と読まない。
+#             い で終わる名前（しおさい、みらい）があるので、い は一字でなく、形容詞や打ち消しの終わり（ない、しい）で書く。
+#             品詞解析が形容詞・動詞と読む い の終わり（ながい）は、name-variant が別に外す
 id: company-name-kana
 language: ja
 entries:
@@ -88,4 +90,10 @@ entries:
   - { pattern: だ, group: end }
   - { pattern: な, group: end }
   - { pattern: る, group: end }
-  - { pattern: い, group: end }
+  - { pattern: ない, group: end }
+  - { pattern: たい, group: end }
+  - { pattern: しい, group: end }
+  - { pattern: よい, group: end }
+  - { pattern: いい, group: end }
+  - { pattern: すい, group: end }
+  - { pattern: くい, group: end }

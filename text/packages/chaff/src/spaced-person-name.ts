@@ -4,7 +4,7 @@ import { isInPersonField as isFieldValue } from "./person-field.ts";
 // 空白を挟んで書いた姓と名（高瀬 誠、佐伯 未咲）を、解析器の品詞に頼らず、前後の語で人の名前と読む。解析器は姓を地名やふつうの
 // 名詞と読み、名を二語に切ることがあるので、姓と名を一つの名前にできない。後ろに敬称か肩書き（様、部長）が付くか、人を書く欄
 // （氏名：、承認者：）の行の終わりにあれば、人の名前と読む。欄に書いた名と同じ名を空白の後ろに書いたもの（受託者：西村 亮 の
-// 文書の 西邑 亮が）も、人の名前と読む。
+// 文書の 西邑 亮が）も、人の名前と読む。名はかなで書いてもよい（松本 あかり 様）。
 
 /** suffixes は敬称（様、さん）、titles は名前のすぐ後ろの肩書き（部長）、labels は人を書く欄の語（氏名、承認者）。語彙表から。 */
 export type SpacedNameCues = { readonly suffixes: readonly string[]; readonly titles: readonly string[]; readonly labels: readonly string[] };
@@ -31,6 +31,13 @@ const LINE_MARKS = /^[\s>*#+-]*/u;
 const FIELD_END = /^[\u0020\u3000]*(?:[（(][^（()）\n]*[）)][\u0020\u3000]*)?(?:\r?\n|$)/u;
 
 const isHan = (letter: string | undefined): boolean => letter !== undefined && HAN.test(letter);
+const KANA = /^[\p{Script=Hiragana}\p{Script=Katakana}]$/u;
+const LEADING_KANA = /^[\p{Script=Hiragana}\p{Script=Katakana}ー]+/u;
+/** かなで書いた名の字数（あかり、エミリー）。一字のかな（ご担当 の ご）は名でない。 */
+const MIN_KANA_GIVEN = 2;
+const MAX_KANA_GIVEN = 5;
+
+const isKana = (letter: string | undefined): boolean => letter !== undefined && KANA.test(letter);
 
 /** 人を書く欄の行（承認者：営業部長 高瀬 誠）で、姓が欄の語の後ろにあるか。 */
 const isInPersonField = (source: string, surnameStart: number, labels: readonly string[]): boolean => {
@@ -53,8 +60,23 @@ const givenBeforeSuffix = (run: string, after: string, words: readonly string[])
     });
 };
 
+/**
+ * かなで書いた名（松本 あかり 様）。かなの連なりまるごとを名と読み、後ろに空白一つまでを挟んで敬称か肩書きが付くか、人を書く欄の
+ * 行の終わりにあるときだけ。かなの続きの中で敬称を切り出さない（みなさま を みな と さま にしない）。
+ */
+const kanaGivenAt = (source: string, start: number, cues: SpacedNameCues, inField: boolean, fieldGivens: ReadonlySet<string>): string | undefined => {
+  const run = LEADING_KANA.exec(source.slice(start, start + LOOKBACK))?.[0];
+  const length = [...(run ?? "")].length;
+  if (run === undefined || length < MIN_KANA_GIVEN || length > MAX_KANA_GIVEN) return undefined;
+  const after = source.slice(start + run.length, start + run.length + LOOKBACK);
+  const rest = after.replace(ONE_SPACE, "");
+  if ([...cues.suffixes, ...cues.titles].some((word) => rest.startsWith(word))) return run;
+  return fieldGivens.has(run) || (inField && FIELD_END.test(after)) ? run : undefined;
+};
+
 /** fieldGivens は、文書が人を書く欄に書いた名（亮）。その名と同じ漢字の連なりは、敬称が無くても名と読む。 */
 const givenAt = (source: string, start: number, cues: SpacedNameCues, inField: boolean, fieldGivens: ReadonlySet<string>): string | undefined => {
+  if (isKana(source.charAt(start))) return kanaGivenAt(source, start, cues, inField, fieldGivens);
   const run = LEADING_HAN.exec(source.slice(start, start + LOOKBACK))?.[0];
   if (run === undefined) return undefined;
   const after = source.slice(start + run.length, start + run.length + LOOKBACK);
@@ -73,10 +95,13 @@ const surnameBefore = (source: string, space: number, cues: SpacedNameCues): str
   return [...cues.titles, ...cues.suffixes].some((word) => run.endsWith(word)) ? undefined : run;
 };
 
+/** 名の頭の字。漢字か、かな（松本 あかり）。 */
+const isNameLetter = (letter: string | undefined): boolean => isHan(letter) || isKana(letter);
+
 const namesIn = (source: string, cues: SpacedNameCues, fieldGivens: ReadonlySet<string>): SpacedName[] =>
   [...source.matchAll(NAME_SPACE)].flatMap((match) => {
     const space = match.index;
-    if (!isHan(LAST_LETTER.exec(source.slice(Math.max(0, space - 2), space))?.[0]) || !isHan(FIRST_LETTER.exec(source.slice(space + 1, space + 3))?.[0]))
+    if (!isHan(LAST_LETTER.exec(source.slice(Math.max(0, space - 2), space))?.[0]) || !isNameLetter(FIRST_LETTER.exec(source.slice(space + 1, space + 3))?.[0]))
       return [];
     const surname = surnameBefore(source, space, cues);
     if (surname === undefined) return [];

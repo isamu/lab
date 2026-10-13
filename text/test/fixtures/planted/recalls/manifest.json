@@ -38,7 +38,7 @@
         },
         {
           "kind": "model-number",
-          "rule": "name-variant",
+          "rule": "reference-number-variant",
           "line": 38,
           "clean": "NH-805 をお使いの",
           "planted": "NH-850 をお使いの"
@@ -103,7 +103,7 @@
         },
         {
           "kind": "model-number",
-          "rule": "name-variant",
+          "rule": "reference-number-variant",
           "line": 38,
           "clean": "KB-120 の商品",
           "planted": "KB-210 の商品"
@@ -168,7 +168,7 @@
         },
         {
           "kind": "model-number",
-          "rule": "name-variant",
+          "rule": "reference-number-variant",
           "line": 36,
           "clean": "If you own an SH-710",
           "planted": "If you own an SH-701"
@@ -233,7 +233,7 @@
         },
         {
           "kind": "model-number",
-          "rule": "name-variant",
+          "rule": "reference-number-variant",
           "line": 38,
           "clean": "If you have GB-240 bars",
           "planted": "If you have GB-204 bars"

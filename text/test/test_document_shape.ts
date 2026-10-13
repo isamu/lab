@@ -128,6 +128,27 @@ describe("no-lead: a lead that only restates the title", () => {
   it("does not run on a contract", () => assert.equal(fired(ja, "# 利用規約\n\nこの利用規約について定めます。\n", "no-lead", "legal/contract"), 0));
 });
 
+describe("no-lead: a form opens with fields or a letterhead, not a lead", () => {
+  it("valid: a field line, a block of field lines, or a name alone under the title", () => {
+    assert.equal(fired(en, "# Delivery Note\n\nDelivery note number: DN-1\n\nDelivered to: Fernhill Ltd.\n", "no-lead", "business/report"), 0);
+    assert.equal(fired(en, "# Delivery Note\n\nDelivery note number: DN-1\nDelivery date: May 1, 2026\n", "no-lead", "business/report"), 0);
+    assert.equal(fired(en, "# Renovation Quote\n\nLarchmere Home Renovations\n\nClient: Laura Pennington\n", "no-lead", "business/report"), 0);
+    assert.equal(fired(ja, "# 納品書のご案内\n\n納品書番号：DN-1\n\n納品日：2026年5月1日\n", "no-lead", "business/report"), 0);
+  });
+
+  it("invalid: a sentence that restates the title, also behind a label or after a name", () => {
+    assert.equal(fired(en, "# Delivery Note\n\nThis page is the delivery note.\n", "no-lead", "business/report"), 1);
+    assert.equal(fired(en, "# Delivery Note\n\nNote: this page is the delivery note.\n", "no-lead", "business/report"), 1);
+    assert.equal(fired(en, "# Delivery Note\n\nFernhill Logistics\nThis page is the delivery note.\n", "no-lead", "business/report"), 1);
+    assert.equal(fired(ja, "# 納品書のご案内\n\nこのページは納品書のご案内です。\n", "no-lead", "business/report"), 1);
+  });
+
+  it("invalid: a name line or a field that only copies the title", () => {
+    assert.equal(fired(ja, "# 環境情報学研究科\n\n環境情報学研究科\n", "no-lead", "business/report"), 1);
+    assert.equal(fired(ja, "# 環境情報学研究科\n\n詳細：環境情報学研究科\n", "no-lead", "business/report"), 1);
+  });
+});
+
 describe("title-length: a title or heading too long to scan", () => {
   const LONG_JA = "## 2025年度から始まる新しい在庫管理システムへの移行に伴う各店舗での作業手順と注意点について";
   const LONG_EN = "## What every store needs to do during the move to the new inventory system in the 2025 financial year";

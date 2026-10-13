@@ -28,6 +28,15 @@ const HYPHENATED = new RegExp(
   "gu",
 );
 const CAPITALS_SERIAL = new RegExp(`(?<![A-Za-z0-9.${HYPHEN_CHARS}])[A-Z]+\\d{4,}(?![A-Za-z0-9${HYPHEN_CHARS}]|\\.[A-Za-z0-9])`, "gu");
+/**
+ * A Japanese number plate after its place name: a class number of two or three digits, one hiragana and a serial
+ * (330 ね 48-15, 500み・・12). A one-digit class number, or a serial that a kanji or katakana word follows, is a reference
+ * such as 「表3の12-15行」「表30の12-34行」, not a plate. The spaces inside a plate are its layout, and the one before it ends the place name.
+ */
+const PLATE = new RegExp(
+  `(?<![\\d${HYPHEN_CHARS}])\\d{2,3}[ \\u3000]?\\p{Script=Hiragana}[ \\u3000]?(?:\\d{1,2}[${HYPHEN_CHARS}]\\d{2}|[・･]{1,3}\\d{1,3})(?![\\d${HYPHEN_CHARS}\\p{Script=Han}\\p{Script=Katakana}])`,
+  "gu",
+);
 const HAS_LETTER = /[A-Za-z]/u;
 const SERIAL_DIGITS = /\d{3}/u;
 
@@ -40,8 +49,10 @@ export const addressSpans = (text: string): Span[] => spansOf(text, ASCII_RUN).f
 
 const isIdentifier = (word: string): boolean => HAS_LETTER.test(word) && SERIAL_DIGITS.test(word);
 
-export const identifierSpans = (text: string): Span[] =>
-  [...spansOf(text, HYPHENATED), ...spansOf(text, CAPITALS_SERIAL)].filter((span) => isIdentifier(text.slice(span.start, span.end)));
+export const identifierSpans = (text: string): Span[] => [
+  ...[...spansOf(text, HYPHENATED), ...spansOf(text, CAPITALS_SERIAL)].filter((span) => isIdentifier(text.slice(span.start, span.end))),
+  ...spansOf(text, PLATE),
+];
 
 /** Whether the character at `at` is inside one of the spans. */
 export const isInsideSpan = (spans: readonly Span[], at: number): boolean => spans.some((span) => span.start <= at && at < span.end);

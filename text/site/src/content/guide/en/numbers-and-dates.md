@@ -157,11 +157,11 @@ Which genre to use for payslips, bills and statements is in [Payslips, bills and
 ## When the document is right
 
 Sometimes two figures look as if they disagree and do not, because of something chaff cannot know.
-A salary paid on the 25th for the whole month is one; it is in [Payslips, bills and statements](./documents-paperwork#when-a-finding-is-right-in-general-but-not-here).
+A salary paid in advance, on the 25th of the month before, is one; it is in [Payslips, bills and statements](./documents-paperwork#when-a-finding-is-right-in-general-but-not-here).
 Then silence that one spot with `stet`, and write why:
 
 ```markdown
-<!-- stet: due-before-issue — salary is paid on the 25th for the whole month -->
+<!-- stet: due-before-issue — salary is paid in advance, on the 25th of the month before -->
 ```
 
 Only that paragraph, list or table is silenced; the rest of the document is still checked.

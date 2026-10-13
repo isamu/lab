@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { datesOutOfOrder, pairedDatesOutOfOrder, periodEndOf } from "../packages/chaff/src/structure/labelled-date-order.ts";
+import { datesOutOfOrder, pairedDatesOutOfOrder, periodEndOf, periodStartOf, spanStartsOf } from "../packages/chaff/src/structure/labelled-date-order.ts";
 import type { OrderLabel } from "../packages/chaff/src/structure/labelled-order.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
@@ -580,18 +580,18 @@ const tripEn = (departLabel: string, depart: string, returned: string): string =
   `# Travel Expense Report\n\n## Travel\n\n| Leg | Date and time | Route |\n| --- | --- | --- |\n| ${departLabel} | ${depart} | Office to Example City |\n| Return | ${returned} | Example City to Office |\n`;
 
 describe("due-before-issue (period, order): 給与明細の支給日、出張の帰着", () => {
-  it("支給の対象期間が終わる前の支給日を指す", () => {
-    assert.deepEqual(findingsOf(payslipJa("支給対象期間", "2026年9月1日〜2026年9月30日", "2026年9月25日")), [
-      "「支給日」の 2026年9月25日 が、「支給対象期間」の終わり 2026年9月30日 より前です",
+  it("支給の対象期間が始まる前の支給日を指す", () => {
+    assert.deepEqual(findingsOf(payslipJa("支給対象期間", "2026年9月1日〜2026年9月30日", "2025年9月25日")), [
+      "「支給日」の 2025年9月25日 が、「支給対象期間」の始め 2026年9月1日 より前です",
     ]);
-    assert.deepEqual(findingsOf(payslipJa("計算期間", "2026年9月16日〜2026年10月15日", "2026年10月5日")), [
-      "「支給日」の 2026年10月5日 が、「計算期間」の終わり 2026年10月15日 より前です",
+    assert.deepEqual(findingsOf(payslipJa("計算期間", "2026年9月16日〜2026年10月15日", "2026年9月5日")), [
+      "「支給日」の 2026年9月5日 が、「計算期間」の始め 2026年9月16日 より前です",
     ]);
-    assert.deepEqual(findingsOf(payslipJa("対象期間", "2026年9月1日〜2026年9月30日", "2026年9月25日")), [
-      "「支給日」の 2026年9月25日 が、「対象期間」の終わり 2026年9月30日 より前です",
+    assert.deepEqual(findingsOf(payslipJa("対象期間", "2026年9月1日〜2026年9月30日", "2026年8月25日")), [
+      "「支給日」の 2026年8月25日 が、「対象期間」の始め 2026年9月1日 より前です",
     ]);
-    assert.deepEqual(findingsOf(payslipEn("September 1, 2026 – September 30, 2026", "September 25, 2026"), en), [
-      '"Pay date" September 25, 2026 is before the end of the "Pay period", September 30, 2026',
+    assert.deepEqual(findingsOf(payslipEn("September 1, 2026 – September 30, 2026", "August 25, 2026"), en), [
+      '"Pay date" August 25, 2026 is before the start of the "Pay period", September 1, 2026',
     ]);
   });
 
@@ -632,6 +632,71 @@ describe("due-before-issue (period, order): 給与明細の支給日、出張の
     assert.deepEqual(findingsOf("# 旅行のご案内\n\n出発日：2026年12月3日\n\n返却日：2026年11月20日\n"), []);
     assert.deepEqual(findingsOf("# Tour Guide\n\nDeparture date: December 3, 2026\n\nReturn date: November 20, 2026\n", en), []);
     assert.deepEqual(findingsOf("# 精算\n\n帰着：2026年9月16日\n\n支給日：2026年9月10日\n"), []);
+  });
+});
+
+describe("due-before-issue (period-start): 給与の支給日は支給の期間の始めと比べる", () => {
+  it("期間の途中の支給日（毎月25日にその月の分）と、期間の始めの日の支給日（前払い）は言わない", () => {
+    assert.deepEqual(findingsOf(payslipJa("支給対象期間", "2026年10月1日〜2026年10月31日", "2026年10月25日")), []);
+    assert.deepEqual(findingsOf(payslipJa("支給対象期間", "2026年10月1日〜2026年10月31日", "2026年10月1日")), []);
+    assert.deepEqual(findingsOf(payslipJa("計算期間", "2026年9月16日〜2026年10月15日", "2026年10月5日")), []);
+    assert.deepEqual(findingsOf(payslipJa("給与計算期間", "2026年10月1日〜2026年10月31日", "2026年10月25日")), []);
+    assert.deepEqual(findingsOf(payslipJa("対象期間", "2026年10月1日〜2026年10月31日", "2026年10月20日")), []);
+    assert.deepEqual(findingsOf(payslipEn("October 1, 2026 – October 31, 2026", "October 25, 2026"), en), []);
+    assert.deepEqual(findingsOf(payslipEn("October 1, 2026 – October 31, 2026", "October 1, 2026"), en), []);
+  });
+
+  it("給与計算期間も支給の期間と読み、その始めより前の支給日を指す", () => {
+    assert.deepEqual(findingsOf(payslipJa("給与計算期間", "2026年10月1日〜2026年10月31日", "2025年10月25日")), [
+      "「支給日」の 2025年10月25日 が、「給与計算期間」の始め 2026年10月1日 より前です",
+    ]);
+    assert.deepEqual(findingsOf(payslipJa("給与計算期間", "2026年10月1日〜2026年10月31日", "2026年9月30日")), [
+      "「支給日」の 2026年9月30日 が、「給与計算期間」の始め 2026年10月1日 より前です",
+    ]);
+  });
+
+  it("二列の表の一行に書いた支給の期間も、始めと比べる", () => {
+    const table = (payDate: string): string =>
+      `# 給与明細書\n\n| 項目 | 内容 |\n| --- | --- |\n| 氏名 | 架空 太郎 様 |\n| 支給対象期間 | 2026年10月1日〜2026年10月31日 |\n| 支給日 | ${payDate} |\n`;
+    assert.deepEqual(findingsOf(table("2026年10月25日")), []);
+    assert.deepEqual(findingsOf(table("2025年10月25日")), ["「支給日」の 2025年10月25日 が、「支給対象期間」の始め 2026年10月1日 より前です"]);
+  });
+
+  it("対象期間は、決算説明会と交付日の組ではこれまでどおり終わりと比べる", () => {
+    assert.deepEqual(findingsOf("# 決算説明会のご案内\n\n対象期間：2025年4月1日〜2026年3月31日\n\n決算説明会：2026年3月25日\n"), [
+      "「決算説明会」の 2026年3月25日 が、「対象期間」の終わり 2026年3月31日 より前です",
+    ]);
+    assert.deepEqual(findingsOf("# 源泉徴収票\n\n対象期間：2026年1月1日〜2026年12月31日\n\n交付日：2026年12月20日\n"), [
+      "「交付日」の 2026年12月20日 が、「対象期間」の終わり 2026年12月31日 より前です",
+    ]);
+  });
+
+  it("spanStartsOf: 組を名指して position before の語だけを、その組で始めと読む", () => {
+    const spanLabels: readonly OrderLabel[] = [
+      { pattern: "対象期間" },
+      { pattern: "支給対象期間", group: "payroll", position: "before" },
+      { pattern: "対象期間", group: "payroll", position: "before" },
+      { pattern: "会計期間", group: "payroll", position: "after" },
+    ];
+    assert.deepEqual(spanStartsOf(spanLabels, "payroll"), ["支給対象期間", "対象期間"]);
+    assert.deepEqual(spanStartsOf(spanLabels, "earnings"), []);
+    assert.deepEqual(spanStartsOf([], "payroll"), []);
+  });
+
+  it("periodStartOf: 期間を書いた行の始めの日。年の無い期間は undefined", () => {
+    const spans = { labels: ["支給対象期間"], connectors: ["〜"], months: [], weekdays: [] };
+    const line = (text: string) => ({ text, start: 0, number: 1 });
+    const dates = [
+      { offset: 7, end: 17, value: "2026-10-01" },
+      { offset: 18, end: 29, value: "2026-10-31" },
+    ];
+    assert.deepEqual(periodStartOf(line("支給対象期間：2026年10月1日〜2026年10月31日"), "支給対象期間", dates, spans), { offset: 0, value: "2026-10-01" });
+    const noYear = [
+      { offset: 7, end: 12, value: "10-01" },
+      { offset: 13, end: 19, value: "10-31" },
+    ];
+    assert.equal(periodStartOf(line("支給対象期間：10月1日〜10月31日"), "支給対象期間", noYear, spans), undefined);
+    assert.equal(periodStartOf(line("支給対象期間：2026年10月1日"), "支給対象期間", dates.slice(0, 1), spans), undefined);
   });
 });
 

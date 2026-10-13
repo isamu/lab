@@ -8,6 +8,10 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import { countedFacts, type CountedPhrase } from "../packages/chaff/src/facts/counted-facts.ts";
 import type { FactValue } from "../packages/chaff/src/facts/fact-values.ts";
+import { perUnitOf, withPerUnits, type PerUnitWords } from "../packages/chaff/src/facts/per-unit.ts";
+import { columnUnits, headingPerUnit, IN_FULL, UNIT_PRICE, type HeadingUnitWords } from "../packages/chaff/src/facts/column-units.ts";
+import { comparable } from "../packages/chaff/src/facts/fact-values.ts";
+import { crossDocFactConflict } from "../packages/chaff/src/detectors/cross-facts.ts";
 
 // 同じ項目に違う値（fact-conflict）と、冒頭や要約の値が本文と違う（summary-fact-mismatch）。
 
@@ -564,5 +568,243 @@ describe("summary-fact-mismatch: the opening's date for an event against the bod
 
   it("a word that only contains the event word is not the event", () => {
     assert.deepEqual(pressEn("The prerelease opens on November 9, 2026.", "The release date is November 2, 2026."), []);
+  });
+});
+
+describe("fact-conflict: a value per a unit (a rate) is not the amount it multiplies into", () => {
+  const WORDS: PerUnitWords = {
+    marks: [
+      { pattern: "日額", group: "day" },
+      { pattern: "/km", group: "km" },
+      { pattern: "a day", group: "day" },
+    ],
+    templates: [
+      { pattern: "*あたり", position: "before" },
+      { pattern: "*につき", position: "before" },
+      { pattern: "毎*", position: "before" },
+      { pattern: "per *", position: "after" },
+      { pattern: "each", position: "after" },
+      { pattern: "for each *", position: "after" },
+    ],
+    units: [
+      { pattern: "日", group: "day" },
+      { pattern: "月", group: "month" },
+      { pattern: "km", group: "km" },
+      { pattern: "mile", group: "mile" },
+      { pattern: "day", group: "day" },
+      { pattern: "か月", group: "month" },
+      { pattern: "credit hour", group: "credit" },
+    ],
+    percentUnits: ["%"],
+    priceHeadings: [],
+  };
+  const perAt = (source: string, written: string): string | undefined => {
+    const start = source.indexOf(written);
+    return perUnitOf(source, { start, end: start + written.length, kind: "quantity", key: "", unit: "" }, WORDS);
+  };
+  const expensesJa = (sentence: string, column = "金額", cell = "1,650円"): string =>
+    ["## 精算額", "", `| 区分 | ${column} |`, "| --- | --- |", "| 交通費 | 7,000円 |", `| 自家用車の使用 | ${cell} |`, "", sentence].join("\n");
+  const expensesEn = (sentence: string, column = "Amount", cell = "$165.00"): string =>
+    ["## Totals", "", `| Item | ${column} |`, "| --- | --- |", "| Fares | $70.00 |", `| Mileage | ${cell} |`, "", sentence].join("\n");
+
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+    await en.prepare?.({ pos: true });
+  });
+
+  it("perUnitOf reads a quantity unit from a fixed mark or a shape, in the rate-unit's name", () => {
+    assert.equal(perAt("自家用車の使用は、1kmあたり15円で計算します。", "15円"), "km");
+    assert.equal(perAt("入院1日につき10,000円", "10,000円"), "day");
+    assert.equal(perAt("駐車場代は、毎月5,000円です。", "5,000円"), "month");
+    assert.equal(perAt("| 入院給付金 | 日額5,000円 |", "5,000円"), "day");
+    assert.equal(perAt("15円/km", "15円"), "km");
+    assert.equal(perAt("Mileage is paid at $0.45 per mile.", "$0.45"), "mile");
+    assert.equal(perAt("Hospital cash is $100 a day.", "$100"), "day");
+    assert.equal(perAt("Hospital cash is paid at $150 for each day.", "$150"), "day");
+    assert.equal(perAt("会費は、1か月あたり、1,000円です。", "1,000円"), "month");
+    assert.equal(perAt("Tuition is $300 per credit hour.", "$300"), "credit");
+  });
+
+  it("withPerUnits leaves a percentage alone: its period is the rate's basis, compared with a rate that states none", () => {
+    const source = "Interest: 4.8% per year, fee: $10 per day";
+    const percent: FactValue = { start: 10, end: 14, kind: "quantity", key: "4.8", unit: "%" };
+    const dollars: FactValue = { start: 30, end: 33, kind: "quantity", key: "10", unit: "$" };
+    assert.deepEqual(
+      withPerUnits(source, [percent, dollars], WORDS).map((value) => value.per),
+      [undefined, "day"],
+    );
+  });
+
+  it("perUnitOf finds no unit in an amount, a shape away from the value, a hiragana word after 毎, or a word that is not a quantity", () => {
+    assert.equal(perAt("振込手数料は、1件につき220円です。", "220円"), undefined);
+    assert.equal(perAt("The fee is $2.50 for each outgoing payment.", "$2.50"), undefined);
+    assert.equal(perAt("Tickets are $5 each.", "$5"), undefined);
+    assert.equal(perAt("The room is $160 per night.", "$160"), undefined);
+    assert.equal(perAt("The bonus is $165 per milestone.", "$165"), undefined);
+    assert.equal(perAt("We paid $165, per mile it was $0.45.", "$165"), undefined);
+    assert.equal(perAt("ご利用日につき5,000円", "5,000円"), undefined);
+    assert.equal(perAt("自家用車の使用は、1,650円です。", "1,650円"), undefined);
+    assert.equal(perAt("1kmあたりの単価を見直し、合計は1,650円です。", "1,650円"), undefined);
+    assert.equal(perAt("毎月末日までに5,000円を納めてください。", "5,000円"), undefined);
+    assert.equal(perAt("Mileage came to $165 for the month.", "$165"), undefined);
+    assert.equal(perAt("The fee is $5, paid each term.", "$5"), undefined);
+    assert.equal(perAt("", "15円"), undefined);
+    assert.equal(
+      perUnitOf(
+        "15円 per mile",
+        { start: 0, end: 3, kind: "quantity", key: "15", unit: "円" },
+        { marks: [], templates: [], units: [], percentUnits: [], priceHeadings: [] },
+      ),
+      undefined,
+    );
+  });
+
+  it("a rate in the sentence against the amount in the table row is silent (ja, en)", () => {
+    assert.deepEqual(conflictJa(expensesJa("自家用車の使用は、1kmあたり15円で計算しています。")), []);
+    assert.deepEqual(conflictJa(expensesJa("自家用車の使用は、走行1kmにつき15円です。")), []);
+    assert.deepEqual(conflictJa(expensesJa("自家用車の使用は、毎月1,500円です。")), []);
+    assert.deepEqual(conflictEn(expensesEn("Mileage is reimbursed at $0.45 per mile.")), []);
+  });
+
+  it("a fee per transfer against the fee in the table is still compared: a count of items is not a quantity (ja, en)", () => {
+    const feesJa = (sentence: string): string =>
+      ["## 手数料", "", "| 手数料 | 金額 |", "| --- | --- |", "| 振込手数料 | 165円 |", "| 発行手数料 | 880円 |", "", sentence].join("\n");
+    const feesEn = (sentence: string): string =>
+      ["## Fees", "", "| Fee | Amount |", "| --- | --- |", "| Wire transfer fee | $25.00 |", "| Statement fee | $5.00 |", "", sentence].join("\n");
+    assert.deepEqual(conflictJa(feesJa("振込手数料は、1件につき220円です。")), ["振込手数料:220円≠165円"]);
+    assert.deepEqual(conflictJa(feesJa("振込手数料は、1件につき165円です。")), []);
+    assert.deepEqual(conflictEn(feesEn("The wire transfer fee is $35.00 for each outgoing transfer.")), ["Wire transfer fee:$35.00≠$25.00"]);
+    assert.deepEqual(conflictEn(feesEn("The wire transfer fee is $25.00 for each outgoing transfer.")), []);
+  });
+
+  it("the same rate stated two ways, or the same amount stated two ways, is reported (ja, en)", () => {
+    assert.deepEqual(conflictJa(expensesJa("自家用車の使用は、1kmあたり20円で計算しています。", "単価", "1kmあたり15円")), ["自家用車の使用:20円≠15円"]);
+    assert.deepEqual(conflictJa(expensesJa("自家用車の使用は、1,850円です。")), ["自家用車の使用:1,850円≠1,650円"]);
+    assert.deepEqual(conflictJa(expensesJa("自家用車の使用は、1日につき3,000円です。", "支払額", "日額2,000円")), ["自家用車の使用:3,000円≠2,000円"]);
+    assert.deepEqual(conflictEn(expensesEn("Mileage is reimbursed at $0.50 per mile.", "Rate", "$0.45 per mile")), ["Mileage:$0.50≠$0.45"]);
+    assert.deepEqual(conflictEn(expensesEn("Mileage is $185.00.")), ["Mileage:$185.00≠$165.00"]);
+  });
+
+  it("rates per different units are not compared, and the same rate per the same unit is silent", () => {
+    assert.deepEqual(conflictJa(expensesJa("自家用車の使用は、1日につき3,000円です。", "支払額", "月額2,000円")), []);
+    assert.deepEqual(conflictJa(expensesJa("自家用車の使用は、1kmあたり15円で計算しています。", "単価", "1kmあたり15円")), []);
+    assert.deepEqual(conflictEn(expensesEn("Mileage is reimbursed at $0.45 per mile.", "Rate", "$0.45 per mile")), []);
+  });
+
+  it("a labelled rate against a table amount of the same name is silent, a labelled amount is not (ja)", () => {
+    const fees = ["## 料金", "", "| 項目 | 金額 |", "| --- | --- |", "| 会費 | 12,000円 |", "| 入会金 | 3,000円 |", ""];
+    assert.deepEqual(conflictJa(...fees, "会費：1か月あたり1,000円"), []);
+    assert.deepEqual(conflictJa(...fees, "会費：10,000円"), ["会費:10,000円≠12,000円"]);
+  });
+});
+
+describe("fact-conflict: a value under a unit price column is not the amount under an amount column", () => {
+  const HEADINGS: HeadingUnitWords = {
+    headings: [
+      { pattern: "単価", group: UNIT_PRICE },
+      { pattern: "Unit price", group: UNIT_PRICE },
+      { pattern: "時給", group: "hour" },
+      { pattern: "Rate", group: "unstated" },
+    ],
+    phrases: [
+      { pattern: "/日", group: "day" },
+      { pattern: "日あたり", group: "day" },
+      { pattern: "per day", group: "day" },
+      { pattern: "a month", group: "month" },
+      { pattern: "/h", group: "hour" },
+      { pattern: "/hr", group: "hour" },
+    ],
+  };
+  const pricesJa = (column: string, apple: string): string[] => [`| 品目 | ${column} |`, "| --- | --- |", `| りんご | ${apple} |`, "| みかん | 80円 |", ""];
+  const pricesEn = (column: string, design: string): string[] => [
+    `| Service | ${column} |`,
+    "| --- | --- |",
+    `| Design work | ${design} |`,
+    "| Hosting | $80 |",
+    "",
+  ];
+  const cell = (column: string | undefined, key = "120"): FactValue => ({
+    start: 0,
+    end: 4,
+    kind: "quantity",
+    key,
+    unit: "円",
+    ...(column === undefined ? {} : { column }),
+  });
+
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+    await en.prepare?.({ pos: true });
+  });
+
+  it("headingPerUnit reads a unit price heading as its group, and a per-unit phrase in a heading as its unit", () => {
+    assert.equal(headingPerUnit("単価", HEADINGS), UNIT_PRICE);
+    assert.equal(headingPerUnit(" **Unit Price** ", HEADINGS), UNIT_PRICE);
+    assert.equal(headingPerUnit("時給", HEADINGS), "hour");
+    assert.equal(headingPerUnit("Rate", HEADINGS), "unstated");
+    assert.equal(headingPerUnit("料金（円/日）", HEADINGS), "day");
+    assert.equal(headingPerUnit("1日あたりの料金", HEADINGS), "day");
+    assert.equal(headingPerUnit("Cost per day", HEADINGS), "day");
+    assert.equal(headingPerUnit("Rate/hr", HEADINGS), "hour");
+  });
+
+  it("headingPerUnit reads any other heading, a phrase inside a word, or nothing, as an amount in full", () => {
+    assert.equal(headingPerUnit("金額", HEADINGS), IN_FULL);
+    assert.equal(headingPerUnit("Amount", HEADINGS), IN_FULL);
+    assert.equal(headingPerUnit("単価合計", HEADINGS), IN_FULL);
+    assert.equal(headingPerUnit("Data monthly", HEADINGS), IN_FULL);
+    assert.equal(headingPerUnit("Cost per days", HEADINGS), IN_FULL);
+    assert.equal(headingPerUnit("", HEADINGS), IN_FULL);
+    assert.equal(headingPerUnit("単価", { headings: [], phrases: [] }), IN_FULL);
+  });
+
+  it("columnUnits gives each body cell its column's unit; text outside a table has none", () => {
+    const source = ["| 品目 | 単価 | 金額 |", "| --- | --- | --- |", "| りんご | 120円 | 1,200円 |", "", "りんごは120円です。"].join("\n");
+    const units = columnUnits(source, HEADINGS).map((unit) => `${source.slice(unit.start, unit.end).trim()}:${unit.column}`);
+    assert.deepEqual(units, ["りんご:", "120円:unit-price", "1,200円:"]);
+    assert.deepEqual(columnUnits("りんごは120円です。", HEADINGS), []);
+    assert.deepEqual(columnUnits("", HEADINGS), []);
+  });
+
+  it("comparable: two cells only under columns of the same unit; a value outside a table with any cell", () => {
+    assert.equal(comparable(cell(UNIT_PRICE), cell(IN_FULL)), false);
+    assert.equal(comparable(cell("hour"), cell(UNIT_PRICE)), false);
+    assert.equal(comparable(cell(UNIT_PRICE), cell(UNIT_PRICE, "150")), true);
+    assert.equal(comparable(cell(IN_FULL), cell(IN_FULL, "150")), true);
+    assert.equal(comparable(cell(undefined), cell(UNIT_PRICE)), true);
+    assert.equal(comparable(cell(IN_FULL), cell(undefined)), true);
+  });
+
+  it("a unit price table and an amount table with the same row labels are silent (ja, en)", () => {
+    assert.deepEqual(conflictJa(...pricesJa("単価", "120円"), ...pricesJa("金額", "1,200円")), []);
+    assert.deepEqual(conflictJa(...pricesJa("時給", "1,200円"), ...pricesJa("小計", "9,600円")), []);
+    assert.deepEqual(conflictEn(...pricesEn("Unit price", "$120"), ...pricesEn("Amount", "$1,200")), []);
+    assert.deepEqual(conflictEn(...pricesEn("Price per day", "$120"), ...pricesEn("Total", "$1,200")), []);
+  });
+
+  it("two unit price tables, or two amount tables, that differ are still reported (ja, en)", () => {
+    assert.deepEqual(conflictJa(...pricesJa("単価", "120円"), ...pricesJa("単価", "150円")), ["りんご:150円≠120円"]);
+    assert.deepEqual(conflictJa(...pricesJa("金額", "1,200円"), ...pricesJa("金額", "1,500円")), ["りんご:1,500円≠1,200円"]);
+    assert.deepEqual(conflictEn(...pricesEn("Unit price", "$120"), ...pricesEn("Unit price", "$150")), ["Design work:$150≠$120"]);
+    assert.deepEqual(conflictEn(...pricesEn("Amount", "$1,200"), ...pricesEn("Amount", "$1,500")), ["Design work:$1,500≠$1,200"]);
+  });
+
+  it("a sentence against a unit price cell is still compared: only a reader can tell which value it states (ja, en)", () => {
+    assert.deepEqual(conflictJa(...pricesJa("単価", "120円"), "りんごは150円です。"), ["りんご:150円≠120円"]);
+    assert.deepEqual(conflictEn(...pricesEn("Unit price", "$120"), "Design work is $150."), ["Design work:$150≠$120"]);
+    const lines = ["| 品目 | 単価 | 数量 | 金額 |", "| --- | --- | --- | --- |", "| りんご | 120円 | 10 | 1,200円 |", ""];
+    assert.deepEqual(conflictJa(...lines, "りんごの単価は150円です。"), ["りんごの単価:150円≠120円"]);
+  });
+
+  it("across files: a unit price in one file is not the amount in the others; amounts that differ are (ja, en)", () => {
+    const filesOf = (adapter: LanguageAdapter, tables: readonly string[][]): string[] =>
+      crossDocFactConflict(
+        tables.map((lines, index) => buildDocument(`${String(index)}.md`, ["# 表", "", ...lines].join("\n"), adapter)),
+        { limit: 0 },
+      ).map(({ path, finding }) => `${path}:${String(finding.values["value"])}`);
+    assert.deepEqual(filesOf(ja, [pricesJa("単価", "120円"), pricesJa("金額", "1,200円"), pricesJa("金額", "1,200円")]), []);
+    assert.deepEqual(filesOf(ja, [pricesJa("金額", "1,500円"), pricesJa("金額", "1,200円"), pricesJa("金額", "1,200円")]), ["0.md:1,500円"]);
+    assert.deepEqual(filesOf(en, [pricesEn("Unit price", "$120"), pricesEn("Amount", "$1,200"), pricesEn("Amount", "$1,200")]), []);
+    assert.deepEqual(filesOf(en, [pricesEn("Amount", "$1,500"), pricesEn("Amount", "$1,200"), pricesEn("Amount", "$1,200")]), ["0.md:$1,500"]);
   });
 });

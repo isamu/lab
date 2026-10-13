@@ -241,3 +241,30 @@ describe("isTotalLine", () => {
     );
   });
 });
+
+describe("isTotalLine: a bracketed note after the total word", () => {
+  it("reads a note that ends the label as part of a total line", () => {
+    [
+      "| Total (incl. tax) | $2,080 |",
+      "- Total (phase 1): $2,080",
+      "- Subtotal (USD) $2,080",
+      "| Total (see note (1)) | $2,080 |",
+      "| **Total** (incl. tax) | $2,080 |",
+      "| Total (see note (a (1))) | $2,080 |",
+    ].forEach((line) => assert.equal(isTotalLine(line, en), true, line));
+    ["| 合計（税込） | 2,080円 |", "- 小計（第1期）：2,080円", "| 合計（税込）（円） | 2,080 |", "| 合計（税込 | 2,080円 |"].forEach((line) =>
+      assert.equal(isTotalLine(line, ja), true, line),
+    );
+  });
+
+  it("does not read a note followed by more words as a total line: the cell names an item", () => {
+    [
+      "| Total (phase 1) design | $2,080 |",
+      "- Total (phase 1) design: $2,080",
+      "| Subtotal (USD) review fee | $2,080 |",
+      "| Total (phase (a (1))) design | $2,080 |",
+      String.raw`| Total (phase \| alpha) design | $2,080 |`,
+    ].forEach((line) => assert.equal(isTotalLine(line, en), false, line));
+    ["| 合計（第1期）設計 | 2,080円 |", "- 小計（税抜）設計費：2,080円"].forEach((line) => assert.equal(isTotalLine(line, ja), false, line));
+  });
+});

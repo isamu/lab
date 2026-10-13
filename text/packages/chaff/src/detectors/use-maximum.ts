@@ -3,6 +3,7 @@ import { exceededMaxima } from "../derived/use-maximum.ts";
 import { paragraphsOf } from "../derived/period-counts.ts";
 import { limitWordsOf, marksOf, periodCountWordsOf } from "./use-count-words.ts";
 import { quoteAt } from "./structure-tree.ts";
+import { withoutCodeBlocks } from "./code-fences.ts";
 import { isMoneySpan, type CurrencyMark } from "../derived/money-span.ts";
 
 // 1回の量 × 期間あたりの回数が、その期間の上限を超える（product-exceeds-maximum）。語は use-count-word と use-amount-word から取る。
@@ -19,7 +20,8 @@ export const productExceedsMaximum: Detector = (doc): Finding[] => {
   const marks = currencyMarksOf(doc);
   const unitOf = (span: Span): string => written(doc, span).replace(LEADING_NUMBER, "");
   const isMoney = (span: Span): boolean => isMoneySpan(doc.source, span, unitOf(span), marks);
-  const amounts = exceededMaxima(doc.source, paragraphsOf(doc.source), words).filter((exceeded) => !isMoney(exceeded.maximum) && !isMoney(exceeded.perUse));
+  const text = withoutCodeBlocks(doc.source);
+  const amounts = exceededMaxima(text, paragraphsOf(text), words).filter((exceeded) => !isMoney(exceeded.maximum) && !isMoney(exceeded.perUse));
   return amounts.map((exceeded) => ({
     rule: "product-exceeds-maximum",
     severity: "warning",

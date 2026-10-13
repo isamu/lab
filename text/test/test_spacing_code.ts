@@ -59,6 +59,17 @@ describe("identifierSpans", () => {
   });
 });
 
+describe("identifierSpans: number plates", () => {
+  it("finds a plate with spaces, without them, and with a dotted serial", () => {
+    const text = "登録番号ひばり野 330 ね 48-15 のお車、品川500み12-34、横浜 30 さ ・・12 も";
+    assert.deepEqual(texts(text, identifierSpans(text)), ["330 ね 48-15", "500み12-34", "30 さ ・・12"]);
+  });
+
+  it("does not read a one-digit number, a serial that a word follows, or a longer number as a plate", () => {
+    for (const text of ["表3の12-15行", "表30の12-34行", "表30の12-34ページ", "1と12-15", "第1234を12-15"]) assert.deepEqual(identifierSpans(text), [], text);
+  });
+});
+
 describe("isInsideSpan", () => {
   it("counts the start and not the end", () => {
     assert.ok(isInsideSpan([{ start: 2, end: 4 }], 2));

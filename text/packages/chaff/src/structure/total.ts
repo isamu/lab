@@ -53,15 +53,54 @@ export const leadingText = (text: string): string =>
     .replace(/^[*_]+/u, "")
     .trimStart();
 
+/** 表の行の頭に並ぶ空の升（| | 合計 |）。最初の区切りは残す。 */
+const LEADING_BLANK_CELLS = /^([ \t]*\|)(?:[ \t]*\|)+/u;
+
+/** 表の行から頭の空の升を除いたもの。合計の語を最初の空でない升に書いた行を、最初の升に書いた行と同じに読むため。 */
+export const withoutLeadingBlankCells = (row: string): string => row.replace(LEADING_BLANK_CELLS, "$1");
+
 /**
- * 合計の語のすぐ後ろ。行や列の終わり、区切り（: |）、括弧の注記（合計（税込））、金額。
+ * 合計の語のすぐ後ろ。行や列の終わり、区切り（: |）、金額。括弧の注記は endsLabel が飛ばす。
  * 「計画」や「Total conversion: 25%」のように語が続くものは合計の行ではない。
  */
-const AFTER_LABEL = /^[*_]*[ \t\u3000]*(?:$|[:：|（(]|[-−▲△$€£¥￥\p{N}])/u;
+const AFTER_LABEL = /^[*_]*[ \t\u3000]*(?:$|[:：|]|[-−▲△$€£¥￥\p{N}])/u;
+
+/** 見出しのすぐ後ろの括弧の注記（合計（税込）、Total (incl. tax)）の開き。 */
+const NOTE_OPEN = /^[*_]*[ \t\u3000]*[（(]/u;
+const OPENERS = new Set(["(", "（"]);
+const CLOSERS = new Set([")", "）"]);
+
+type NoteScan = { readonly depth: number; readonly end: number | undefined; readonly stopped: boolean };
+
+/** 開きの括弧（start）に対応する閉じの次の位置。中の括弧は何段でもよい。升の区切り（\| でない |）までに閉じなければ undefined。 */
+const noteEnd = (text: string, start: number): number | undefined =>
+  text
+    .slice(start)
+    .split("")
+    .reduce<NoteScan>(
+      (scan, char, offset) => {
+        if (scan.end !== undefined || scan.stopped) return scan;
+        if (char === "|" && text[start + offset - 1] !== "\\") return { ...scan, stopped: true };
+        const depth = scan.depth + (OPENERS.has(char) ? 1 : 0) - (CLOSERS.has(char) ? 1 : 0);
+        return { depth, end: depth === 0 ? start + offset + 1 : undefined, stopped: false };
+      },
+      { depth: 0, end: undefined, stopped: false },
+    ).end;
+
+/**
+ * 見出しの語の後ろが見出しの終わりか。括弧の注記は飛ばして、その後ろを同じに読む。注記の後ろに語が続けば（Tax (10%) workshop、
+ * 合計（第1期）設計）、注記の付いた項目の名前。升の中で閉じない括弧は、そこからを注記とみなす。
+ */
+const endsLabel = (rest: string): boolean => {
+  const open = NOTE_OPEN.exec(rest);
+  if (open === null) return AFTER_LABEL.test(rest);
+  const end = noteEnd(rest, open[0].length - 1);
+  return end === undefined || endsLabel(rest.slice(end));
+};
 
 export const isTotalLabel = (text: string, labels: readonly string[]): boolean => {
   const lead = leadingText(text).toLowerCase();
-  return labels.some((label) => lead.startsWith(label.toLowerCase()) && AFTER_LABEL.test(lead.slice(label.length)));
+  return labels.some((label) => lead.startsWith(label.toLowerCase()) && endsLabel(lead.slice(label.length)));
 };
 
 const centsOf = (source: string, line: Line, amount: Amount): number | undefined => {
