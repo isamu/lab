@@ -120,6 +120,7 @@ describe("heading-echo and a sentence that states something about the heading", 
     assert.equal(echoes("## Delivery charges\n\nHere are the delivery charges.\n", en), 1);
     assert.equal(echoes("## Delivery charges\n\nSee the delivery charges page.\n", en), 1);
     assert.equal(echoes("## Delivery charges\n\nThis section tells you about delivery charges.\n", en), 1);
+    assert.equal(echoes("## restoreCache\n\nThe restoreCache step restores the cache.\n", en), 1);
     assert.equal(echoes("## Server object\n\nAn object representing a server.\n", en), 1);
     assert.equal(echoes("## The draft is not the plan\n\nWriting the draft is not the plan.\n", en), 1);
   });
@@ -161,6 +162,13 @@ describe("makesClaim", () => {
     assert.equal(makesClaim(heading, [token("charges", "NOUN", "charge"), token("are", "VERB", "be")], words), false);
     assert.equal(makesClaim(heading, [token("listing", "VERB", "list", { VerbForm: "Ger" }), token("charges", "NOUN", "charge")], words), false);
     assert.equal(makesClaim(heading, [token("charge", "VERB")], words), false);
+  });
+
+  it("the words of a code name in the heading are the heading's own", () => {
+    const codeName = [token("restoreFixtures", "PROPN", "restorefixtures")];
+    assert.equal(makesClaim(codeName, [token("restores", "VERB", "restore"), token("fixtures", "NOUN", "fixture")], words), false);
+    assert.equal(makesClaim([token("cache_key", "X")], [token("keys", "VERB", "key")], words), false);
+    assert.equal(makesClaim(codeName, [token("runs", "VERB", "run")], words), true);
   });
 
   it("a denial the heading already makes is not the sentence's own", () => {

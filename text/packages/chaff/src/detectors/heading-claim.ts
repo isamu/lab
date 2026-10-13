@@ -62,8 +62,14 @@ const predicatesOf = (tokens: readonly Token[], words: AnnouncerWords): Predicat
  * point (covers, below, 説明, 以下), or a denial the heading does not make. "All charges include sales tax." says
  * something about charges; "This section covers installation." and "The full reference is in the manual." do not.
  */
+/** A code name in a heading holds words of its own (restoreFixtures, cache_key, dry-run): the sentence that spells them out repeats them. */
+const CODE_NAME_PART = /\p{Lu}?[\p{Ll}\p{Nd}]+|\p{Lu}+(?!\p{Ll})/gu;
+
+const headingWords = (heading: readonly Token[]): Set<string> =>
+  new Set(heading.flatMap((token) => [baseForm(token), ...(token.surface.match(CODE_NAME_PART) ?? []).map((part) => part.toLowerCase())]));
+
 export const makesClaim = (heading: readonly Token[], sentence: readonly Token[], words: AnnouncerWords): boolean => {
-  const said = new Set(heading.map(baseForm));
+  const said = headingWords(heading);
   const unsaid = (token: Token): boolean => !said.has(baseForm(token));
   const ownWord = (token: Token): boolean => isContent(token) && unsaid(token) && !words.announcing.has(baseForm(token)) && !words.copulas.has(baseForm(token));
   return predicatesOf(sentence, words).some((predicate) => predicate.negations.some(unsaid) || predicate.words.some(ownWord));
