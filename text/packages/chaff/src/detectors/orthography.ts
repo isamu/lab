@@ -1,11 +1,11 @@
 import type { Detector, Finding, ProseDocument, Sentence, Span } from "../plugin.ts";
 import { calendarRuns, calendarUnitsOf, type CalendarUnits } from "../calendar-number.ts";
 import { escapeRegExp, latinBoundaries, occurrencesOutside, type Boundary, type SpacingKind } from "../orthography.ts";
-import { minorityReport } from "../spacing-minority.ts";
+import { minorityReport, withoutSideOnTie } from "../spacing-minority.ts";
 import { isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { digitRunAround, endsWithDivisionLabel, isNumberName, sequenceLabelStarts, type NameContext } from "../number-name.ts";
 import { isSpacedLocationPart, type FloorWords } from "../location-part.ts";
-import { isNameSeparator, type OrganizationWords } from "../name-separator.ts";
+import { isFieldSeparator, isNameSeparator, type OrganizationWords } from "../name-separator.ts";
 import { addressSpans, clockTimeSpans, identifierSpans, isInsideSpan } from "../spacing-code.ts";
 
 /** チームが chaff.yaml の prefer に書いた「使わない書き方」。書いていなければ何も言わない。 */
@@ -91,7 +91,7 @@ type SentenceCodes = {
  * 日付・時刻は前の境目（「は 9月」「午後3時」「令和 3 年」）も数えない。日付はまとめて一つの書き方で、数量の空け方の票にはしない。コロンで書いた時刻（13:30）も同じ。
  * メールアドレス・URL の前後の境目も数えない（spacing-code.ts）。「予約番号 MN-48215 を」の番号の前後も、番号を文から区切る空白なので数えない。
  * 「本社 5階」のように名前の後ろに空白で区切った階・部屋の番号の前の空白も、所在の組の区切りなので数えない（location-part.ts）。
- * 「経営企画部 IR担当」のように名前だけを並べた行で、名前と名前を分ける空白も数えない（name-separator.ts）。
+ * 「経営企画部 IR担当」のように名前だけを並べた行で、名前と名前を分ける空白も、「所属：経済学科 1年」のように項目の値の組を分ける空白も数えない（name-separator.ts）。
  */
 const isCounted = (sentence: Sentence, boundary: Boundary, context: NumberContext, codes: SentenceCodes): boolean => {
   if (followsItemNumber(sentence.text, boundary, context.itemNumbers) || besideSpan(codes.identifiers, boundary)) return false;
@@ -103,6 +103,7 @@ const isCounted = (sentence: Sentence, boundary: Boundary, context: NumberContex
   if (run === undefined) return true;
   if (codes.calendar.has(run.start)) return false;
   if (boundary.kind === "before-digit" && isSpacedLocationPart(sentence.text, run, sentence.tokens, sentence.span.start, context.floors)) return false;
+  if (isFieldSeparator(sentence.text, boundary, sentence.tokens, sentence.span.start)) return false;
   return !isNumberName(sentence.text, run, sentence.tokens, sentence.span.start, context);
 };
 
@@ -135,9 +136,9 @@ const findingAt = (entry: Located, values: Finding["values"], variant?: string):
   values: { ...values, offset: entry.sentence.span.start + entry.offset },
 });
 
-/** 一つの種類の境目の指摘。少ないほうを 1 箇所ずつか、書き方が二通りあれば 1 件で（spacing-minority.ts）。 */
+/** 一つの種類の境目の指摘。少ないほうを 1 箇所ずつか、書き方が二通りあれば 1 件で（spacing-minority.ts）。同数ならどちらの側にも立たない。 */
 const findingsOf = (kind: SpacingKind, ofKind: readonly Located[], limit: number): Finding[] => {
-  const report = minorityReport(ofKind, limit);
+  const report = withoutSideOnTie(minorityReport(ofKind, limit), ofKind);
   if (report === undefined) return [];
   if (report.mode === "mixed") {
     const { first, odd, spaced, touching } = report;
