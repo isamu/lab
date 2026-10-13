@@ -8,6 +8,7 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import { rangeFrameOf, withoutTrailingWeekday } from "../packages/chaff/src/structure/date-range.ts";
 import { afterSpanLabel } from "../packages/chaff/src/structure/span-label.ts";
+import { reversedReading, YEAR_END_CROSSING_DAYS } from "../packages/chaff/src/structure/range-years.ts";
 
 // 期間の終わりが始まりより前（date-range-reversed）。「4月1日〜3月31日」のように、範囲の記号でつないだ二つの日付を比べる。
 
@@ -62,6 +63,32 @@ describe("date-range-reversed", () => {
   it("a period written without a year may cross into the next year, so it is not judged", () => {
     assert.deepEqual(found(doc("休業：12月28日〜1月4日"), ja), []);
     assert.deepEqual(found(doc("休業：2026年12月28日〜1月4日"), ja), []);
+  });
+
+  it("a year written on one end carries to the other: start forward in Japanese, end back in English", () => {
+    assert.deepEqual(found(doc("期間：2026年7月9日（木）〜7月8日（水）（1泊2日）"), ja), ["2026-07-09>2026-07-08"]);
+    assert.deepEqual(found(doc("期間：2026年7月9日〜7月8日"), ja), ["2026-07-09>2026-07-08"]);
+    assert.deepEqual(found(doc("期間：2026年7月9日（木）〜7月10日（金）"), ja), []);
+    assert.deepEqual(found(doc("Dates: Thursday, July 9 – Wednesday, July 8, 2026 (one night)")), ["2026-07-09>2026-07-08"]);
+    assert.deepEqual(found(doc("Dates: Thursday, July 9 – Friday, July 10, 2026 (one night)")), []);
+  });
+
+  it("a period that crosses the year end is written with one year and stays silent", () => {
+    assert.deepEqual(found(doc("冬期講習：2026年12月28日（月）〜1月4日（月）"), ja), []);
+    assert.deepEqual(found(doc("冬期講習：2026年12月28日〜1月4日"), ja), []);
+    assert.deepEqual(found(doc("Winter course: Monday, December 28 – Monday, January 4, 2027")), []);
+    assert.deepEqual(found(doc("Winter course: December 28 – January 4, 2027")), []);
+  });
+
+  it("weekdays decide the year: the same year's weekday reports even a short span, the next year's keeps a long one silent", () => {
+    // 2026-12-28 は月曜、2027-01-04 も月曜、2026-01-04 は日曜。
+    assert.deepEqual(found(doc("講習：2026年12月28日（月）〜1月4日（日）"), ja), ["2026-12-28>2026-01-04"]);
+    // 2026-03-01 は日曜、2027-03-01 は月曜。またぐ読み方は300日を超えるが、曜日がそれを選ぶ。
+    assert.deepEqual(found(doc("期間：2026年3月2日（月）〜3月1日（月）"), ja), []);
+    assert.deepEqual(found(doc("期間：2026年3月2日（月）〜3月1日（日）"), ja), ["2026-03-02>2026-03-01"]);
+    // 2027-12-28 は火曜、2026-12-28 は月曜。
+    assert.deepEqual(found(doc("Course: Tuesday, December 28 – Monday, January 4, 2027")), ["2027-12-28>2027-01-04"]);
+    assert.deepEqual(found(doc("Course: Monday, December 28 – Monday, January 4, 2027")), []);
   });
 
   it("an English period with a dash or through", () => {
@@ -172,6 +199,43 @@ describe("date-range-reversed", () => {
   it("two dates with words between them are not a period", () => {
     assert.deepEqual(found(doc("2026年4月1日、2026年3月1日の二回"), ja), []);
     assert.deepEqual(found(doc("Signed March 5, 2026 and March 3, 2026.")), []);
+  });
+});
+
+describe("reversedReading", () => {
+  it("compares two dated ends as written", () => {
+    assert.deepEqual(reversedReading({ value: "2026-04-01" }, { value: "2026-03-31" }), { start: "2026-04-01", end: "2026-03-31" });
+    assert.deepEqual(reversedReading({ value: "2026-04" }, { value: "2025-03" }), { start: "2026-04", end: "2025-03" });
+    assert.equal(reversedReading({ value: "2026-04-01" }, { value: "2026-04-01" }), undefined);
+  });
+
+  it("reports a one-year range only when the year-end crossing reading is longer than the bound", () => {
+    // 2026-12-31 から 2027-10-27 は YEAR_END_CROSSING_DAYS ちょうど、10-28 はそれを一日超える。
+    assert.equal(YEAR_END_CROSSING_DAYS, 300);
+    assert.equal(reversedReading({ value: "2026-12-31" }, { value: "10-27" }), undefined);
+    assert.deepEqual(reversedReading({ value: "2026-12-31" }, { value: "10-28" }), { start: "2026-12-31", end: "2026-10-28" });
+    assert.deepEqual(reversedReading({ value: "10-28" }, { value: "2027-12-31" }), undefined);
+    assert.deepEqual(reversedReading({ value: "12-31" }, { value: "2027-01-02" }), undefined);
+    assert.deepEqual(reversedReading({ value: "12-31" }, { value: "2027-03-01" }), undefined);
+    assert.deepEqual(reversedReading({ value: "07-09" }, { value: "2026-07-08" }), { start: "2026-07-09", end: "2026-07-08" });
+  });
+
+  it("a weekday on the yearless end decides the year when it matches one reading, and is ignored when it matches neither", () => {
+    assert.deepEqual(reversedReading({ value: "2026-12-28" }, { value: "01-04", weekday: 0 }), { start: "2026-12-28", end: "2026-01-04" });
+    assert.equal(reversedReading({ value: "2026-12-28" }, { value: "01-04", weekday: 1 }), undefined);
+    assert.equal(reversedReading({ value: "2026-12-28" }, { value: "01-04", weekday: 3 }), undefined);
+    assert.deepEqual(reversedReading({ value: "2026-07-09" }, { value: "07-08", weekday: 5 }), { start: "2026-07-09", end: "2026-07-08" });
+    assert.equal(reversedReading({ value: "2026-03-02" }, { value: "03-01", weekday: 1 }), undefined);
+  });
+
+  it("is undefined for a range not in order, both ends without a year, or a date the calendar does not have", () => {
+    assert.equal(reversedReading({ value: "2026-07-09" }, { value: "07-10" }), undefined);
+    assert.equal(reversedReading({ value: "12-28" }, { value: "01-04" }), undefined);
+    assert.equal(reversedReading({ value: "2026-07-09" }, { value: "02-30" }), undefined);
+    assert.equal(reversedReading({ value: "2026-07-09" }, { value: "02-29" }), undefined);
+    assert.equal(reversedReading({ value: "2026-04" }, { value: "03-01" }), undefined);
+    assert.equal(reversedReading({ value: "" }, { value: "" }), undefined);
+    assert.equal(reversedReading({ value: "July 9" }, { value: "2026-07-08" }), undefined);
   });
 });
 
