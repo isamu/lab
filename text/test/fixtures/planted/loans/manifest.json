@@ -116,13 +116,6 @@
           "planted": "210,000円"
         },
         {
-          "kind": "lender-name",
-          "rule": "name-variant",
-          "line": 46,
-          "clean": "もりかわ家具店から",
-          "planted": "もりかわ家具から"
-        },
-        {
           "kind": "condition-numbering",
           "rule": "numbering-gap",
           "line": 47,
