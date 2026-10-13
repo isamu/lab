@@ -19,6 +19,8 @@ export type NumberWords = {
   readonly countWords: readonly string[];
   /** Plural nouns of measure (days, miles) that take figures in every style: a number before one is not a count. */
   readonly figureNouns: readonly string[];
+  /** Words written before a number to name one of a series (Grade 5, Room 12): the number after one is not a count. */
+  readonly nameWords: readonly string[];
 };
 
 const alternation = (words: readonly string[]): string =>
@@ -147,9 +149,14 @@ const valueOf = (surface: string, words: readonly string[]): number | undefined 
 const isCountedNoun = (token: Token | undefined, figureNouns: readonly string[]): boolean =>
   token?.pos === "NOUN" && token.features?.["Number"] === "Plur" && !figureNouns.includes(token.surface.toLowerCase());
 
+/** Whether the text ends in one of the name words, standing as a word of its own (Grade 5, No. 5). */
+const endsInNameWord = (before: string, nameWords: readonly string[]): boolean =>
+  nameWords.length > 0 && new RegExp(`(?<![\\p{L}\\p{N}])(?:${alternation(nameWords)})\\s*$`, "u").test(before);
+
 /**
  * A number before a plural noun (three files, 3 files), from two to the last number word the language lists. One is a
- * pronoun as often as a count. A number word that opens the sentence is spelt out by every style, so it is not counted.
+ * pronoun as often as a count. A number word that opens the sentence is spelt out by every style, so it is not counted,
+ * nor a number after a name word (Grade 5 students), which names the group rather than counting it.
  */
 const englishCountMarks = (sentence: Sentence, words: NumberWords): NumberMark[] => {
   const tokens = sentence.tokens ?? [];
@@ -157,8 +164,9 @@ const englishCountMarks = (sentence: Sentence, words: NumberWords): NumberMark[]
     const value = valueOf(token.surface, words.countWords);
     if (value === undefined || value < SMALL_FROM || value > words.countWords.length || index === 0 || !isCountedNoun(tokens[index + 1], words.figureNouns))
       return [];
+    if (endsInNameWord(sentence.text.slice(0, token.span.start - sentence.span.start), words.nameWords)) return [];
     const style = /^\d+$/u.test(token.surface) ? "digits" : "words";
-    return [{ kind: value < LARGE_FROM ? "count-small" : "count-large", style, written: token.surface, offset: sentence.span.start + token.span.start }];
+    return [{ kind: value < LARGE_FROM ? "count-small" : "count-large", style, written: token.surface, offset: token.span.start }];
   });
 };
 
@@ -201,6 +209,7 @@ const wordsOf = (doc: ProseDocument): NumberWords => {
     percentUnits: patterns("percent-unit"),
     countWords: patterns("count-number"),
     figureNouns: patterns("figure-noun"),
+    nameWords: patterns("number-name-word"),
   };
 };
 
