@@ -207,7 +207,7 @@ describe("email-greeting-closing: a greeting and a closing", () => {
     assert.deepEqual(variantsOf(en, "email-greeting-closing", "# Notes\n\nThe meeting is at two.\n", "business/report"), []));
 });
 
-describe("email-greeting-closing: a confirmation email that opens with thanks", () => {
+describe("email-greeting-closing: a confirmation email that opens with このたびは", () => {
   const JA_CONFIRMATION = [
     "# お申し込み受付のお知らせ",
     "",
@@ -223,41 +223,35 @@ describe("email-greeting-closing: a confirmation email that opens with thanks", 
   const EN_CONFIRMATION = [
     "# Booking Confirmed",
     "",
+    "Dear Ms Takahashi,",
+    "",
     "Thank you for booking a place on the Spring Pottery Class. We have received your booking with the details below.",
     "",
     "Booking number: PT-1024",
-    "",
-    "We look forward to seeing you.",
     "",
     "Best regards,",
     "The Pottery Studio",
     "",
   ].join("\n");
 
-  it("takes このたびは, この度は and a thanks for a greeting", () => {
+  it("takes このたびは and この度は for a greeting", () => {
     assert.deepEqual(variantsOf(ja, "email-greeting-closing", JA_CONFIRMATION), []);
     assert.deepEqual(variantsOf(ja, "email-greeting-closing", JA_CONFIRMATION.replace("このたびは", "この度は")), []);
-    const thanksOnly = JA_CONFIRMATION.replace("このたびは「春の陶芸教室」に", "ご注文");
-    assert.deepEqual(variantsOf(ja, "email-greeting-closing", thanksOnly), []);
   });
 
-  it("takes an opening thanks (Thank you for, Thanks for) for a greeting", () => {
-    assert.deepEqual(variantsOf(en, "email-greeting-closing", EN_CONFIRMATION), []);
-    assert.deepEqual(variantsOf(en, "email-greeting-closing", EN_CONFIRMATION.replace("Thank you for booking", "Thanks for booking")), []);
-  });
-
-  it("still reports a confirmation that opens with no greeting and no thanks", () => {
+  it("still reports a confirmation that opens with no greeting", () => {
     const bare = JA_CONFIRMATION.replace(/このたびは.*?受け付けました。/u, "下記のとおり受け付けました。");
     assert.deepEqual(variantsOf(ja, "email-greeting-closing", bare), ["greeting"]);
-    const bareEn = EN_CONFIRMATION.replace("Thank you for booking a place on the Spring Pottery Class. ", "");
-    assert.deepEqual(variantsOf(en, "email-greeting-closing", bareEn), ["greeting"]);
   });
 
-  it("does not take a closing thanks, or thanks inside a sentence, for an English greeting", () => {
-    assert.equal(lineHas("Thank you,", ["Thank you for", "Thanks for"]), false);
-    assert.equal(lineHas("We thank you for booking.", ["Thank you for", "Thanks for"]), false);
-    const closingOnly = EN_CONFIRMATION.replace("Thank you for booking a place on the Spring Pottery Class. ", "").replace("Best regards,", "Thank you,");
-    assert.deepEqual(variantsOf(en, "email-greeting-closing", closingOnly), ["greeting"]);
+  it("does not take a bare thanks for a greeting: it ends emails too, and thanks for an earlier favour in the body", () => {
+    const thanksOnly = JA_CONFIRMATION.replace("このたびは「春の陶芸教室」に", "ご注文");
+    assert.deepEqual(variantsOf(ja, "email-greeting-closing", thanksOnly), ["greeting"]);
+  });
+
+  it("takes the English salutation, not an opening thanks, for the greeting", () => {
+    assert.deepEqual(variantsOf(en, "email-greeting-closing", EN_CONFIRMATION), []);
+    assert.deepEqual(variantsOf(en, "email-greeting-closing", EN_CONFIRMATION.replace("Dear Ms Takahashi,\n\n", "")), ["greeting"]);
   });
 });
 

@@ -1,6 +1,5 @@
 # The greeting a work email or letter opens with. One of the first lines of the body opening with one of these is a
-# greeting; case does not matter, and a word must not run on into another (Hi is not History). A confirmation email opens
-# with thanks (Thank you for your order); "for" keeps a closing "Thank you," from counting as the greeting.
+# greeting; case does not matter, and a word must not run on into another (Hi is not History).
 id: email-greeting
 language: en
 entries:
@@ -16,9 +15,3 @@ entries:
   - pattern: Ladies and gentlemen
   - pattern: Sir
   - pattern: Madam
-  - pattern: Thank you for
-  - pattern: Thank you very much for
-  - pattern: Thank you so much for
-  - pattern: Thanks for
-  - pattern: Thanks so much for
-  - pattern: Many thanks for
