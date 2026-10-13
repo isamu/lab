@@ -1,0 +1,9 @@
+---
+// A line of the home page's text, its backtick spans set as code.
+import { segmentsOf } from "../lib/homeText";
+
+type Props = { text: string };
+const { text } = Astro.props;
+---
+
+{segmentsOf(text).map((segment) => (segment.code ? <code class="font-mono text-[0.9em]">{segment.text}</code> : segment.text))}

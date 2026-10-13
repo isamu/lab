@@ -1,0 +1,10 @@
+genre: business/proposal
+
+prefer:
+  e-mail: email
+
+jargon:
+  - circle back
+
+required_sections:
+  - Risks
