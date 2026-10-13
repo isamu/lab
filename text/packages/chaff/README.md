@@ -79,6 +79,17 @@ npx chaffjs --genre legal/contract nda.md
 npx chaffjs genres                        # what is available
 ```
 
+| Group | Genres |
+| --- | --- |
+| Technical | `technical/spec` `technical/readme` |
+| Blog | `blog/tech` (the default) `blog/essay` `blog/owned-media` |
+| Business | `business/proposal` `business/report` `business/email` `business/press-release` `business/meeting-notes` |
+| Legal | `legal/contract` `legal/statute` `legal/judgment` `legal/patent` |
+| Docs | `docs/manual` `docs/faq` `docs/glossary` |
+| Academic | `academic/paper` |
+| Literature | `literature/fiction` `literature/essay` `literature/poetry` `literature/play` |
+| Speech | `speech/address` `speech/transcript` |
+
 With a genre set, the report opens with that genre's guide: what a good document of the kind
 does, written as questions to check the draft against, and the rules that matter most.
 `--no-guide` leaves it out for one run; `guide:` in `chaff.yaml` replaces, adds to or turns off

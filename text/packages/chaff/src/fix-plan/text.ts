@@ -109,7 +109,7 @@ export const FIX_PLAN_TEXT: Texts<FixPlanText> = {
     spots: "見つけた箇所",
     at: (line) => `${String(line)} 行目`,
     notRunHeading: "動かなかったルール",
-    notExperimental: "試験中のルールは動かしていません。AIっぽさのルールの多くは試験中です。--experimental を付けると見ます。",
+    notExperimental: "試験中のルールは動かしていません。--experimental を付けると見ます。",
     checksHeading: "直したあとの確かめ",
     saveAs: (path) => `書き直したものを ${path} に保存して、次を実行します。`,
     checksNote:
@@ -174,7 +174,7 @@ export const FIX_PLAN_TEXT: Texts<FixPlanText> = {
     spots: "Spots",
     at: (line) => `line ${String(line)}`,
     notRunHeading: "Rules that did not run",
-    notExperimental: "The experimental rules did not run, and most rules for generated text are experimental. Add --experimental to run them.",
+    notExperimental: "The experimental rules did not run. Add --experimental to run them.",
     checksHeading: "Check after rewriting",
     saveAs: (path) => `Save the rewrite as ${path} and run:`,
     checksNote:

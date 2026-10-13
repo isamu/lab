@@ -1,6 +1,6 @@
 {
   "name": "chaffjs",
-  "version": "0.31.0",
+  "version": "0.32.0",
   "description": "Prose validation harness. Finds what is hard to read, and never rewrites it for you.",
   "keywords": [
     "chaff",
@@ -64,7 +64,21 @@
     "./dist/config/working-dir.js": "./dist/browser/working-dir.js",
     "node:path": "./dist/browser/path.js"
   },
-  "files": ["LICENSE", "README.md", "README.ja.md", "bin", "dist", "genres.yaml", "profiles", "reference-headings.yaml", "structure-baseline.yaml", "rules", "skills", "styles", "src"],
+  "files": [
+    "LICENSE",
+    "README.md",
+    "README.ja.md",
+    "bin",
+    "dist",
+    "genres.yaml",
+    "profiles",
+    "reference-headings.yaml",
+    "structure-baseline.yaml",
+    "rules",
+    "skills",
+    "styles",
+    "src"
+  ],
   "engines": {
     "node": ">=24"
   },
@@ -74,8 +88,8 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.125.0",
-    "@chaffjs/lang-en": "0.28.0",
-    "@chaffjs/lang-ja": "0.30.0",
+    "@chaffjs/lang-en": "0.29.0",
+    "@chaffjs/lang-ja": "0.31.0",
     "character-entities": "^2.0.2",
     "mdast-util-from-markdown": "^2.0.3",
     "mdast-util-frontmatter": "^2.0.1",

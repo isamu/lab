@@ -15,6 +15,7 @@ on:
       - "text/scripts/guide-screens.ts"
       - "text/scripts/guide-screens-parse.ts"
       - "text/scripts/browser-files.ts"
+      - "text/scripts/home-screens.ts"
       - "text/yarn.lock"
       - ".github/workflows/chaff-site-deploy.yml"
   workflow_dispatch:

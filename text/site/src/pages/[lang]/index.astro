@@ -1,44 +1,231 @@
 ---
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import Base from "../../layouts/Base.astro";
 import { LANGS, href, isLang, t } from "../../lib/i18n";
 import { rules } from "../../lib/rules";
 import { guidePages } from "../../lib/guide";
+import { HOME_ARGS, isHomeScreens, type HomeExample } from "../../lib/homeExamples";
+import { HOME_TEXT } from "../../lib/homeText";
+import Inline from "../../components/Inline.astro";
 
 export const getStaticPaths = () => LANGS.map((lang) => ({ params: { lang } }));
 
 const { lang } = Astro.params;
 if (!isLang(lang)) throw new Error(`unknown language ${String(lang)}`);
 const firstGuidePage = (await guidePages(lang))[0];
+const text = HOME_TEXT[lang];
+
+// astro build runs in text/site; `yarn examples` writes this file first (scripts/home-screens.ts).
+const SCREENS_FILE = resolve(process.cwd(), "src", "generated", "home-screens.json");
+const parsedScreens: unknown = JSON.parse(readFileSync(SCREENS_FILE, "utf8"));
+if (!isHomeScreens(parsedScreens)) throw new Error(`${SCREENS_FILE}: not the output of scripts/home-screens.ts; run yarn examples`);
+const screens = parsedScreens[lang];
+
+const documentOf = (example: HomeExample): string => screens[example].files[HOME_ARGS[lang][example].at(-1) ?? ""] ?? "";
+const screenOf = (example: HomeExample): string => `$ ${screens[example].command}\n\n${screens[example].output}`;
+const teamConfig = screens.team.files["chaff.yaml"] ?? "";
+
+const SOURCE = "https://github.com/isamu/lab/tree/main/text";
+const PLANTED = "https://github.com/isamu/lab/tree/main/text/test/fixtures/planted";
+const CORPUS = "https://github.com/isamu/lab/tree/main/text/corpus";
+const LICENSE = "https://github.com/isamu/lab/blob/main/text/LICENSE";
+const NPM = "https://www.npmjs.com/package/chaffjs";
+
+const link = "text-blue-700 underline dark:text-blue-400";
+const pre = "mt-3 overflow-x-auto rounded bg-zinc-100 p-4 font-mono text-sm leading-snug dark:bg-zinc-900";
+const h2 = "mt-14 text-2xl font-semibold";
+const h3 = "mt-8 text-lg font-semibold";
+const muted = "text-zinc-600 dark:text-zinc-400";
+const summary = "mt-3 cursor-pointer text-sm text-zinc-600 dark:text-zinc-400";
 ---
 
-<Base lang={lang} title={t(lang, "siteTitle")} path="">
+<Base lang={lang} title={t(lang, "siteTitle")} documentTitle={text.documentTitle} description={text.description} path="">
   <h1 class="font-mono text-4xl font-bold">{t(lang, "siteTitle")}</h1>
-  <p class="mt-3 text-lg text-zinc-600 dark:text-zinc-400">{t(lang, "tagline")}</p>
-  <pre class="mt-6 overflow-x-auto rounded bg-zinc-100 p-4 font-mono text-sm dark:bg-zinc-900">{`npx chaffjs article.md
+  <p class="mt-3 text-lg">{text.lede}</p>
+  <p class:list={["mt-3", muted]}>{text.audience}</p>
+  <pre class={pre}>{`npx chaffjs article.md
 npx chaffjs --genre legal/contract ${lang === "ja" ? "契約書.md" : "contract.md"}`}</pre>
-  <p class="mt-3">
-    <a href={href(`${lang}/genres`)} class="text-blue-700 underline dark:text-blue-400">
-      {t(lang, "pickGenre")}
-    </a>
-  </p>
-  <p class="mt-1">
-    <a href={href(`${lang}/playground`)} class="text-blue-700 underline dark:text-blue-400">
-      {t(lang, "tryInBrowser")}
-    </a>
-  </p>
-  {firstGuidePage && (
-    <p class="mt-8">
+  <p class:list={["mt-2 text-sm", muted]}>{text.needs}</p>
+  <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
+    {firstGuidePage && (
       <a
         href={href(`${lang}/guide/${firstGuidePage.slug}`)}
         class="rounded bg-zinc-900 px-3 py-2 text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
       >
         {t(lang, "startGuide")}
       </a>
-    </p>
-  )}
-  <p class="mt-6">
-    <a href={href(`${lang}/rules`)} class="text-blue-700 underline dark:text-blue-400">
-      {rules.length} {t(lang, "ruleCount")}
+    )}
+    <a href={href(`${lang}/playground`)} class={link}>
+      {t(lang, "tryInBrowser")}
+    </a>
+    <a href={SOURCE} class={link}>
+      {text.sourceLink}
+    </a>
+  </div>
+  <p class="mt-4">
+    <a href={href(`${lang}/genres`)} class={link}>
+      {t(lang, "pickGenre")}
     </a>
   </p>
+  <p class="mt-1">
+    <a href={href(`${lang}/rules`)} class={link}>
+      {`${rules.length} ${t(lang, "ruleCount")}`}
+    </a>
+  </p>
+
+  <h2 class={h2}>{text.examplesHeading}</h2>
+  <p class:list={["mt-3", muted]}>{text.examplesNote}</p>
+
+  <h3 class={h3}>{text.contractHeading}</h3>
+  <p class="mt-2">{text.contractIntro}</p>
+  <pre class={pre}>{documentOf("contract")}</pre>
+  <pre class={pre}>{screenOf("contract")}</pre>
+
+  <h3 class={h3}>{text.draftHeading}</h3>
+  <p class="mt-2">{text.draftIntro}</p>
+  <details>
+    <summary class={summary}>{text.showDocument}</summary>
+    <pre class={pre}>{documentOf("draft")}</pre>
+  </details>
+  <pre class={pre}>{screenOf("draft")}</pre>
+  <p class="mt-4">{text.rewriteIntro}</p>
+  <details>
+    <summary class={summary}>{text.showRewrite}</summary>
+    <pre class={pre}>{documentOf("rewrite")}</pre>
+  </details>
+  <pre class={pre}>{screenOf("rewrite")}</pre>
+
+  <h3 class={h3}>{text.teamHeading}</h3>
+  <p class="mt-2">{text.teamIntro}</p>
+  <pre class={pre}>{teamConfig}</pre>
+  <details>
+    <summary class={summary}>{text.showDocument}</summary>
+    <pre class={pre}>{documentOf("team")}</pre>
+  </details>
+  <pre class={pre}>{screenOf("team")}</pre>
+
+  <h2 class={h2}>{text.differentHeading}</h2>
+  <dl class="mt-4 grid gap-x-8 gap-y-5 md:grid-cols-2">
+    {text.different.map((point) => (
+      <div>
+        <dt class="font-semibold">{point.title}</dt>
+        <dd class="mt-1">
+          <Inline text={point.body} />
+        </dd>
+      </div>
+    ))}
+  </dl>
+
+  <h2 class={h2}>{text.neverRewritesHeading}</h2>
+  {text.neverRewrites.map((paragraph) => (
+    <p class="mt-3">
+      <Inline text={paragraph} />
+    </p>
+  ))}
+
+  <h2 class={h2}>{text.privacyHeading}</h2>
+  {text.privacy.map((paragraph) => (
+    <p class="mt-3">
+      <Inline text={paragraph} />
+    </p>
+  ))}
+
+  <h2 class={h2}>{text.toolsHeading}</h2>
+  <p class="mt-3">{text.toolsIntro}</p>
+  <dl class="mt-4 space-y-5">
+    {text.tools.map((tool) => (
+      <div>
+        <dt>
+          <code class="font-mono text-sm break-words">{tool.command}</code>
+        </dt>
+        <dd class="mt-1">
+          <Inline text={tool.body} />{" "}
+          <a href={href(`${lang}/guide/${tool.guide}`)} class={link}>
+            {text.readMore}
+          </a>
+        </dd>
+      </div>
+    ))}
+  </dl>
+
+  <h2 class={h2}>{text.compareHeading}</h2>
+  <p class="mt-3">{text.compareIntro}</p>
+  <div class="mt-4 space-y-6">
+    {text.compare.map((other) => (
+      <div class="border-t border-zinc-200 pt-4 dark:border-zinc-800">
+        <h3 class="font-semibold">
+          {other.url === "" ? (
+            other.name
+          ) : (
+            <a href={other.url} class={link}>
+              {other.name}
+            </a>
+          )}
+        </h3>
+        <p class="mt-1">
+          <span class={muted}>{text.compareTheirs}: </span>
+          {other.theirs}
+        </p>
+        <p class="mt-1">
+          <span class={muted}>{text.compareChaff}: </span>
+          <Inline text={other.chaff} />
+        </p>
+      </div>
+    ))}
+  </div>
+
+  <h2 class={h2}>{text.limitsHeading}</h2>
+  <dl class="mt-4 space-y-5">
+    {text.limits.map((point) => (
+      <div>
+        <dt class="font-semibold">{point.title}</dt>
+        <dd class="mt-1">
+          <Inline text={point.body} />
+        </dd>
+      </div>
+    ))}
+  </dl>
+
+  <h2 class={h2}>{text.measuredHeading}</h2>
+  {text.measured.map((paragraph) => (
+    <p class="mt-3">{paragraph}</p>
+  ))}
+  <ul class="mt-3 list-disc pl-5">
+    <li>
+      <a href={PLANTED} class={link}>
+        {text.plantedLink}
+      </a>
+    </li>
+    <li>
+      <a href={CORPUS} class={link}>
+        {text.corpusLink}
+      </a>
+    </li>
+  </ul>
+
+  <h2 class={h2}>{text.reportHeading}</h2>
+  <p class="mt-3">
+    <Inline text={text.report} />
+  </p>
+
+  <h2 class={h2}>{text.sourceHeading}</h2>
+  <ul class="mt-3 list-disc pl-5">
+    <li>
+      <a href={SOURCE} class={link}>
+        github.com/isamu/lab (text/)
+      </a>
+    </li>
+    <li>
+      <a href={LICENSE} class={link}>
+        {text.license}
+      </a>
+    </li>
+    <li>
+      <a href={NPM} class={link}>
+        npm: chaffjs
+      </a>
+    </li>
+    <li>{text.maker}</li>
+  </ul>
 </Base>
