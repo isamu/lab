@@ -64,7 +64,21 @@
     "./dist/config/working-dir.js": "./dist/browser/working-dir.js",
     "node:path": "./dist/browser/path.js"
   },
-  "files": ["LICENSE", "README.md", "README.ja.md", "bin", "dist", "genres.yaml", "profiles", "reference-headings.yaml", "structure-baseline.yaml", "rules", "skills", "styles", "src"],
+  "files": [
+    "LICENSE",
+    "README.md",
+    "README.ja.md",
+    "bin",
+    "dist",
+    "genres.yaml",
+    "profiles",
+    "reference-headings.yaml",
+    "structure-baseline.yaml",
+    "rules",
+    "skills",
+    "styles",
+    "src"
+  ],
   "engines": {
     "node": ">=24"
   },
