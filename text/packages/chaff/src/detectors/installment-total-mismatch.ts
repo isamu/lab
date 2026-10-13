@@ -4,12 +4,11 @@
 // and amount-range-word.
 import type { Detector, Finding, Lexicon, ProseDocument } from "../plugin.ts";
 import { installmentFeeMismatches, type InstallmentSeriesWords } from "../structure/installment-fee.ts";
-import { installmentTotalMismatches, type InstallmentAmount, type InstallmentWords, type PositionedWord } from "../structure/installment-total.ts";
-import { scaledAmountOf, scaleWordsOf } from "./amount-scale.ts";
-import { amountsIn, formsOf } from "./currency-notation.ts";
+import { installmentTotalMismatches, type InstallmentWords, type PositionedWord } from "../structure/installment-total.ts";
 import type { StructureIssue } from "../structure/issues.ts";
 import { proseAndTablesOf } from "../table-text.ts";
 import { quoteAround } from "./quote-around.ts";
+import { statedAmountsOf } from "./stated-amounts.ts";
 
 const entriesOf = (doc: ProseDocument, lexicon: string, group?: string): Lexicon =>
   (doc.lexicons[lexicon] ?? []).filter((entry) => group === undefined || entry.group === group);
@@ -57,20 +56,6 @@ const seriesWordsOf = (doc: ProseDocument): InstallmentSeriesWords => ({
   feeLinks: patternsOf(doc, "installment-word", "fee-link"),
 });
 
-const amountsOf = (text: string, doc: ProseDocument): InstallmentAmount[] => {
-  const scales = scaleWordsOf(doc);
-  return amountsIn(
-    text,
-    formsOf(doc),
-    scales.map((scale) => scale.word),
-  ).flatMap((amount) => {
-    const read = scaledAmountOf(text, amount, scales);
-    return read === undefined
-      ? []
-      : [{ offset: read.offset, end: amount.offset + amount.written.length, currency: read.currency, value: read.value, scale: read.unit }];
-  });
-};
-
 const findingOf = (text: string, issue: StructureIssue, variant?: string): Finding => ({
   rule: "installment-total-mismatch",
   severity: "warning",
@@ -83,7 +68,7 @@ const findingOf = (text: string, issue: StructureIssue, variant?: string): Findi
 
 export const installmentTotalMismatch: Detector = (doc): Finding[] => {
   const text = proseAndTablesOf(doc);
-  const amounts = amountsOf(text, doc);
+  const amounts = statedAmountsOf(text, doc);
   const words = wordsOf(doc);
   const loans = installmentTotalMismatches(text, amounts, words);
   const headings = (doc.markup?.headings ?? []).map((heading) => heading.start);
