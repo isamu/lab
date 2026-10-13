@@ -1,0 +1,33 @@
+# 節の最初の文で、見出しの主題について何かを言うのではなく、節を予告したり指したりするだけの語（本節ではインストールについて説明します。）。
+# heading-echo は、述語がこれだけの文を繰り返しとして指摘する。見出しに無い動詞や「です」の前の語を持つ文（料金はすべて消費税を
+# 含みます。）は事実を述べていて、指摘しない。原形で照らす。group copula は「です」のようにつなぐ語で、position の側の語が述語になる。
+id: heading-announcer
+language: ja
+entries:
+  - pattern: です
+    group: copula
+    position: before
+  - pattern: だ
+    group: copula
+    position: before
+  - pattern: 説明
+  - pattern: 紹介
+  - pattern: 解説
+  - pattern: 述べる
+  - pattern: 示す
+  - pattern: まとめる
+  - pattern: 扱う
+  - pattern: 取り上げる
+  - pattern: 見る
+  - pattern: 記載
+  - pattern: 記す
+  - pattern: 以下
+  - pattern: とおり
+  - pattern: 通り
+  # 「につきましては」の「つき」。
+  - pattern: つく
+  - pattern: 下記
+  - pattern: 次
+  - pattern: 本節
+  - pattern: 節
+  - pattern: 章
