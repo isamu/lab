@@ -14,6 +14,10 @@ rewrites your text**. Every command returns an exit code, so it runs in CI on ev
 **Try it in your browser:** [the playground](https://isamu.github.io/lab/en/playground/). Paste
 a draft and see what comes back, with nothing to install.
 
+**Inside a coding agent:** `/plugin marketplace add isamu/lab`, then `/plugin install chaff@lab`.
+The bundled skill picks the genre, runs chaff, and reads each finding back to you. It changes no text
+on its own.
+
 ## First run
 
 With Node.js 24 or later, nothing to install, no config file, no API key, no language to declare:

@@ -8,6 +8,10 @@ Two tools for checking work by machine, each in its own workspace: one for code 
 **Try chaff in your browser:** [playground (English)](https://isamu.github.io/lab/en/playground/) ·
 [playground (日本語)](https://isamu.github.io/lab/ja/playground/)
 
+**Use chaff inside Claude Code, Codex or Cursor:** `/plugin marketplace add isamu/lab`, then
+`/plugin install chaff@lab`. The skill picks the genre for the kind of document, runs chaff and reads
+each finding back to you. It changes nothing on its own.
+
 ## What is here
 
 - [`text/`](text/): **chaff**, a linter and unit tests for prose, for contracts, blog posts and technical documents,

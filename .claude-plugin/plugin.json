@@ -1,0 +1,12 @@
+{
+  "name": "chaff",
+  "description": "Check writing with chaff (npx chaffjs): find long sentences, padding, mixed styles, broken clause references, and totals and dates that disagree. English and Japanese. It never rewrites the text.",
+  "version": "0.32.0",
+  "skills": "./text/packages/chaff/skills/",
+  "author": {
+    "name": "isamu"
+  },
+  "homepage": "https://isamu.github.io/lab/en/",
+  "repository": "https://github.com/isamu/lab",
+  "license": "MIT"
+}
