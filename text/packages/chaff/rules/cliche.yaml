@@ -13,7 +13,7 @@ name:
 
 why:
   ja: 「今さら聞けない」「徹底解説」「〜の極意」や、英語の「at the end of the day」「low-hanging fruit」のような決まり文句は、使われすぎて中身が抜けた言い回しです。読み手は見慣れた形を読み飛ばし、この文書で何が言いたいのかが残りません。言い回しの一覧は言語ごとの語彙表にあり、それぞれに何を書けばよいかが付いています。
-  en: '"At the end of the day", "low-hanging fruit" and "move the needle" (今さら聞けない, 徹底解説) are figures of speech worn down to filler. The reader skims the familiar shape and learns nothing about this document. The phrases are listed in the lexicon, each with what to write instead.'
+  en: '"At the end of the day", "low-hanging fruit" and "move the needle" are figures of speech worn down to filler. The reader skims the familiar shape and learns nothing about this document. The phrases are listed in the lexicon, each with what to write instead.'
 
 message:
   ja: 「{matched}」は使い古された決まり文句です
