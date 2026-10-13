@@ -299,7 +299,7 @@ Reopen Claude Code and it is available as /chaff.
 ```
 
 The skill covers how to run chaff, reading the genre's guide before the findings, how to read a finding, when to fix, `stet` or `relax --why`, setting things up
-with `rules --json`, and `tree` and `cite`. Running it again replaces the skill with the new version. A file whose
+with `rules --json`, what to do when numbers or dates disagree, `chaff test`, rewriting text that sounds generated, `tree`, `cite` and `grade`. Running it again replaces the skill with the new version. A file whose
 contents differ may have been edited by hand, so it is replaced only with `--force`.
 
 ## Reporting a wrong or missed finding
