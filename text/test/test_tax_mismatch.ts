@@ -292,6 +292,20 @@ describe("tax-mismatch: サービス料の行と、その下の税の行", () =>
   });
 });
 
+describe("tax-mismatch: 税の語の括弧の注記の後ろに語が続く行", () => {
+  it("注記で終わる税の行は読む", () => {
+    assert.deepEqual(findingsOf(table([...ITEMS, "| 消費税（10%） | 50,000円 |"])), ["税額「50,000円」が、上の金額の10%（80,000円）と合いません"]);
+    assert.deepEqual(findingsOf(enTable([...EN_ITEMS, "| Tax (10%) | $500 |"]), en), ["The tax $500 is not 10% of the amount above it ($800)"]);
+    assert.deepEqual(findingsOf("- Design: $8,000\n- Tax (10%): $500\n", en), ["The tax $500 is not 10% of the amount above it ($800)"]);
+  });
+
+  it("注記の後ろに語が続けば、注記の付いた項目なので税の行と読まない", () => {
+    assert.deepEqual(findingsOf(table([...ITEMS, "| 消費税（10%）対応講習 | 50,000円 |"])), []);
+    assert.deepEqual(findingsOf(enTable([...EN_ITEMS, "| Tax (10%) workshop | $500 |"]), en), []);
+    assert.deepEqual(findingsOf("- Design: $8,000\n- Tax (10%) workshop: $500\n", en), []);
+  });
+});
+
 describe("tax-mismatch: 頭の升を空けて、見出しを次の升に書いた税の行と小計の行", () => {
   const dated = (rows: readonly string[]): string => ["| 日付 | 項目 | 金額 |", "| --- | --- | --- |", ...rows].join("\n") + "\n";
   const enDated = (rows: readonly string[]): string => ["| Date | Item | Amount |", "| --- | --- | --- |", ...rows].join("\n") + "\n";

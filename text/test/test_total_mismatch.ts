@@ -766,3 +766,26 @@ describe("total-mismatch", () => {
     });
   });
 });
+
+describe("total-mismatch: a bracketed note after the total word", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+  });
+
+  const enTable = (...rows: string[]): string => doc("| Item | Amount |", "| --- | --- |", ...rows);
+  const jaTable = (...rows: string[]): string => doc("| 品目 | 金額 |", "| --- | --- |", ...rows);
+
+  it("still reads a total whose note ends the label", () => {
+    assert.deepEqual(found(enTable("| Design | $3,000 |", "| Build | $5,000 |", "| Total (incl. tax) | $9,000 |")), ["$9,000≠$8,000"]);
+    assert.deepEqual(found(jaTable("| 設計 | 300,000円 |", "| 実装 | 500,000円 |", "| 合計（税込） | 900,000円 |"), ja, "ja"), ["900,000円≠800,000円"]);
+  });
+
+  it("reads a row whose note is followed by more words as an item, not as a total", () => {
+    const enRows = ["| Design | $3,000 |", "| Build | $5,000 |", "| Total (phase 1) design | $4,000 |"];
+    assert.deepEqual(found(enTable(...enRows, "| Total | $12,000 |")), []);
+    assert.deepEqual(found(enTable(...enRows, "| Total | $13,000 |")), ["$13,000≠$12,000"]);
+    const jaRows = ["| 設計 | 300,000円 |", "| 実装 | 500,000円 |", "| 合計（第1期）設計 | 400,000円 |"];
+    assert.deepEqual(found(jaTable(...jaRows, "| 合計 | 1,200,000円 |"), ja, "ja"), []);
+    assert.deepEqual(found(jaTable(...jaRows, "| 合計 | 1,300,000円 |"), ja, "ja"), ["1,300,000円≠1,200,000円"]);
+  });
+});
