@@ -8,7 +8,7 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import { countedFacts, type CountedPhrase } from "../packages/chaff/src/facts/counted-facts.ts";
 import type { FactValue } from "../packages/chaff/src/facts/fact-values.ts";
-import { perUnitOf, type PerUnitWords } from "../packages/chaff/src/facts/per-unit.ts";
+import { perUnitOf, withPerUnits, type PerUnitWords } from "../packages/chaff/src/facts/per-unit.ts";
 
 // 同じ項目に違う値（fact-conflict）と、冒頭や要約の値が本文と違う（summary-fact-mismatch）。
 
@@ -592,6 +592,7 @@ describe("fact-conflict: a value per a unit (a rate) is not the amount it multip
       { pattern: "か月", group: "month" },
       { pattern: "credit hour", group: "credit" },
     ],
+    percentUnits: ["%"],
   };
   const perAt = (source: string, written: string): string | undefined => {
     const start = source.indexOf(written);
@@ -620,6 +621,16 @@ describe("fact-conflict: a value per a unit (a rate) is not the amount it multip
     assert.equal(perAt("Tuition is $300 per credit hour.", "$300"), "credit");
   });
 
+  it("withPerUnits leaves a percentage alone: its period is the rate's basis, compared with a rate that states none", () => {
+    const source = "Interest: 4.8% per year, fee: $10 per day";
+    const percent: FactValue = { start: 10, end: 14, kind: "quantity", key: "4.8", unit: "%" };
+    const dollars: FactValue = { start: 30, end: 33, kind: "quantity", key: "10", unit: "$" };
+    assert.deepEqual(
+      withPerUnits(source, [percent, dollars], WORDS).map((value) => value.per),
+      [undefined, "day"],
+    );
+  });
+
   it("perUnitOf finds no unit in an amount, a shape away from the value, a hiragana word after 毎, or a word that is not a quantity", () => {
     assert.equal(perAt("振込手数料は、1件につき220円です。", "220円"), undefined);
     assert.equal(perAt("The fee is $2.50 for each outgoing payment.", "$2.50"), undefined);
@@ -634,7 +645,10 @@ describe("fact-conflict: a value per a unit (a rate) is not the amount it multip
     assert.equal(perAt("Mileage came to $165 for the month.", "$165"), undefined);
     assert.equal(perAt("The fee is $5, paid each term.", "$5"), undefined);
     assert.equal(perAt("", "15円"), undefined);
-    assert.equal(perUnitOf("15円 per mile", { start: 0, end: 3, kind: "quantity", key: "15", unit: "円" }, { marks: [], templates: [], units: [] }), undefined);
+    assert.equal(
+      perUnitOf("15円 per mile", { start: 0, end: 3, kind: "quantity", key: "15", unit: "円" }, { marks: [], templates: [], units: [], percentUnits: [] }),
+      undefined,
+    );
   });
 
   it("a rate in the sentence against the amount in the table row is silent (ja, en)", () => {

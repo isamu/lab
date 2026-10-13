@@ -18,6 +18,8 @@ export type PerUnitWords = {
   readonly templates: readonly PerUnitTemplate[];
   /** 量の単位の語と、それが数える単位（日 は day）。ここに無い語（件、回）は何あたりとは読まない。 */
   readonly units: readonly PerUnitMark[];
+  /** 百分率の単位（%）。率の期間（年4.8%）は率の基準（rate-values）が見て、期間を書かない率とも比べるので、ここでは読まない。 */
+  readonly percentUnits: readonly string[];
 };
 
 const PLACEHOLDER = "*";
@@ -79,6 +81,7 @@ export const perUnitOf = (source: string, value: FactValue, words: PerUnitWords)
 /** 数量の値に、何あたりかを付ける。 */
 export const withPerUnits = <T extends FactValue>(source: string, values: readonly T[], words: PerUnitWords): T[] =>
   values.map((value) => {
-    const per = value.kind === "quantity" ? perUnitOf(source, value, words) : undefined;
+    const percent = words.percentUnits.some((unit) => folded(unit) === folded(value.unit));
+    const per = value.kind === "quantity" && !percent ? perUnitOf(source, value, words) : undefined;
     return per === undefined ? value : { ...value, per };
   });
