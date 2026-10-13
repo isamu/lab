@@ -70,7 +70,7 @@ yarn bench           # 誤りを植えた見本で見逃しを数え、test/fixt
 yarn planted         # 誤りを仕込んだ文書の組（test/fixtures/planted/<組>/）で種類ごとに見つけた数を数え、組の expected.json と比べる。落ちるのは悪くなったときだけで、良くなった所は出すだけ（--update で書き換える）
 yarn bench:ai        # AI っぽさのルールを、人・生成文・書き直しの見本と corpus にかけ、当たりと誤報を数える
 yarn rules:measure   # ルールごとに、各ジャンルの人の文書の何割で指摘するかと bench の成績を表にする
-yarn example         # examples/ の実文書にかける（1 行形式。yarn example:friendly で既定の出力）
+yarn example         # examples/ の実文書にかける（--compact の短い形式。yarn example:friendly で既定の出力）
 yarn screens:update  # サイトの手引きに載せた画面を、chaff がいま出すものに書き換える（en/commands.md のようにページを渡すとそのページだけ）
 ```
 

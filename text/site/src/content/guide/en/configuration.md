@@ -112,10 +112,12 @@ How the language is chosen, documents that mix both, and which rules run in whic
 Some documents are written to fixed conventions, statutes for one.
 A Japanese statute writes its addresses in kanji numerals (第二十二条第二項), and counting that as a long run of kanji would be wrong.
 Knowledge like that lives in settings files bundled with chaff (`profiles/*.yaml`), and applies only to the documents it is chosen for.
-The one bundled today is Japanese statutes (`statute`).
+Two are bundled today: Japanese statutes (`statute`) and Japanese property listings (`listing`).
+In a listing, a walking time is compared with its distance at the industry's standard rate even when no rate is written.
 
 Leave it out and the genre chooses it (`legal/statute` reads with `statute`).
-With no such genre, it is chosen from the content: three or more lines that start with an article, like `第一条　`, make a statute.
+With no such genre, it is chosen from the content: three or more lines that start with an article, like `第一条　`, make a statute,
+and lines of property details such as 交通, 賃料, 敷金 and 間取り make a listing.
 The choice is shown on the first line of `chaff tree`.
 
 ```
