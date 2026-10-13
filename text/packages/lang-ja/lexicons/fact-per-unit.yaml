@@ -1,0 +1,13 @@
+# 値が何あたりかを言う型（fact-conflict、summary-fact-mismatch、cross-doc-fact-conflict）。* が単位の語（1kmあたり の km）で、
+# rate-unit にある量の単位（時間、日、月、km）のときだけ読む。position は値のどちら側に書くか（1kmあたり15円 は前）。
+# 量あたりの値（単価）は、それを掛けた金額とは別の量なので比べない。1件につき のような件や回ごとの値は、これまでどおり比べる。
+# 単位まで決まった印（日額、/km）は per-unit-mark。
+id: fact-per-unit
+language: ja
+entries:
+  - { pattern: "*あたり", position: before }
+  - { pattern: "*当たり", position: before }
+  - { pattern: "*につき", position: before }
+  - { pattern: "毎*", position: before }
+  - { pattern: "/*", position: after }
+  - { pattern: "／*", position: after }

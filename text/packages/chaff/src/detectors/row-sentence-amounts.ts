@@ -4,15 +4,8 @@ import { factValues, type FactValue } from "../facts/fact-values.ts";
 import { cellsOf, tablesOf } from "../facts/table-facts.ts";
 import { scopedFacts, type ScopedFact } from "../facts/fact-scope.ts";
 import { withoutEdgeMarks } from "../facts/trim-marks.ts";
-import {
-  periodOf,
-  rowSentenceConflicts,
-  type Amount,
-  type AmountRow,
-  type PeriodMark,
-  type SubjectSentence,
-  type SubjectWords,
-} from "../facts/row-sentence-amounts.ts";
+import { rowSentenceConflicts, type Amount, type AmountRow, type SubjectSentence, type SubjectWords } from "../facts/row-sentence-amounts.ts";
+import { perUnitsOf } from "./per-unit-words.ts";
 import { linesOf, type Line } from "../structure/lines.ts";
 import { quoteAt } from "./structure-tree.ts";
 
@@ -57,19 +50,11 @@ const subjectWordsOf = (doc: ProseDocument): SubjectWords => ({
   conditions: patternsOf(doc, "fact-amount-condition"),
 });
 
-const periodMarksOf = (doc: ProseDocument): PeriodMark[] =>
-  (doc.lexicons["per-unit-mark"] ?? []).map((entry): PeriodMark => ({ pattern: entry.pattern, group: entry.group ?? entry.pattern }));
-
-/** 金額: 通貨の語彙表の印を単位に書いた数量。前後に期間あたりの印があれば、その期間も。 */
+/** 金額: 通貨の語彙表の印を単位に書いた数量。何あたりの金額（日額、1kmあたり）は、その単位も。 */
 const amountsOf = (doc: ProseDocument, tree: StructureNode): Amount[] => {
   const currencies = new Set(patternsOf(doc, "currency-notation").map((pattern) => pattern.normalize("NFKC")));
-  const marks = periodMarksOf(doc);
-  return factValues(tree, doc.source, nameSpans(doc))
-    .filter((value) => value.kind === "quantity" && currencies.has(value.unit))
-    .map((value): Amount => {
-      const period = periodOf(doc.source, value, marks);
-      return period === undefined ? value : { ...value, period };
-    });
+  const amounts = factValues(tree, doc.source, nameSpans(doc)).filter((value) => value.kind === "quantity" && currencies.has(value.unit));
+  return perUnitsOf(doc, amounts);
 };
 
 /** 表の行の金額と、その行の見出しを主語にした文の金額の食い違い。名前付きの値として読めた文の値は、ほかの読みが比べる。 */
