@@ -77,12 +77,12 @@ const lettersOf = (text: string): string[] =>
 const hasWords = (words: readonly string[], mark: readonly string[]): boolean =>
   mark.length > 0 && words.some((_, index) => mark.every((word, offset) => words[index + offset] === word));
 
-/** 表の行の見出しの升（最初の升）に年齢の印の語があり、数がその後ろの升にある（| Age at entry | 20 to 70 |）。 */
+/** 表の行の見出しの升（最初の升）に年齢の印の語があり、数がそのすぐ後ろの升にある（| Age at entry | 20 to 70 |）。 */
 const underAgeHeading = (source: string, value: FactValue, words: AgeWords): boolean => {
   const line = source.slice(source.lastIndexOf("\n", value.start - 1) + 1, value.start);
   if (value.unit !== "" || !TABLE_ROW.test(line)) return false;
   const [heading, ...before] = line.trim().slice(1).split("|");
-  if (heading === undefined || before.length === 0) return false;
+  if (heading === undefined || before.length !== 1) return false;
   const headingWords = lettersOf(heading);
   return words.marks.some((mark) => hasWords(headingWords, lettersOf(mark.pattern)));
 };

@@ -2,7 +2,7 @@ import type { Detector, Finding, ProseDocument, StructureNode } from "../plugin.
 import { countedFacts, countedPhraseAt, type CountedPhrase } from "../facts/counted-facts.ts";
 import { nameSpans } from "../compare/proper-nouns.ts";
 import { factValues, type FactValue } from "../facts/fact-values.ts";
-import { labelledFacts, type AttributePhrase, type Fact, type FactWords } from "../facts/labelled-facts.ts";
+import { attributePhrasesOf, labelledFacts, type Fact, type FactWords } from "../facts/labelled-facts.ts";
 import { tableFacts, type TotalColumns } from "../facts/table-facts.ts";
 import { withCellKeys } from "../facts/cell-keys.ts";
 import { verbQuantityFacts, type VerbQuantityWords } from "../facts/verb-quantity-facts.ts";
@@ -53,7 +53,7 @@ export const factWordsOf = (doc: ProseDocument): FactWords => ({
   leads: patternsOf(doc, "fact-label-lead"),
   rates: rateWordsOf(doc),
   readings: { verbs: patternsOf(doc, "fact-reading-verb"), gauges: patternsOf(doc, "fact-reading-gauge"), clauses: patternsOf(doc, "fact-reading-clause") },
-  attributes: (doc.lexicons["fact-attribute"] ?? []).map((entry): AttributePhrase => ({ pattern: entry.pattern, position: entry.position ?? "before" })),
+  attributes: attributePhrasesOf(doc.lexicons["fact-attribute"] ?? []),
 });
 
 const placedWordsOf = (doc: ProseDocument, id: string): PlacedWord[] =>

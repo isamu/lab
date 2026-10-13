@@ -25,7 +25,7 @@ export type TermValueWords = {
   /** 起算の句の印（から は値の前の句の終わり、from は値の後ろの句の頭）。 */
   readonly starts: readonly PlacedWord[];
   readonly valueEnds: readonly string[];
-  /** 名前のすぐ後ろで、その値を何に使ったかを言う分詞（used、applied）。後ろの句ごと落としても同じ項目。 */
+  /** 名前のすぐ後ろで、その値を何に使ったかを言う句の頭（used for the）。後ろの句ごと落としても同じ項目。 */
   readonly restating?: readonly string[];
   /** 名前と値を囲む型（を*として）。* が値。型の値は、期間でなくても読む。 */
   readonly frames?: readonly string[];
@@ -88,7 +88,7 @@ const termOf = (key: string, words: TermValueWords): string | undefined => {
   return words.terms.map((word) => folded(word.pattern)).find((pattern) => pattern === key || pattern === qualified);
 };
 
-/** 何に使ったかを言う分詞から後ろを落とした名前（number of dependants used for the allowance の number of dependants）。 */
+/** 何に使ったかを言う句から後ろを落とした名前（number of dependants used for the allowance の number of dependants）。 */
 const withoutRestating = (key: string, words: TermValueWords): string | undefined =>
   (words.restating ?? [])
     .flatMap((word) => {

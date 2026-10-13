@@ -829,6 +829,19 @@ describe("fact-conflict: an entry age limit and a dependants count written as a 
     assert.deepEqual(applyEn("| Maximum age | 70 |", "Children can travel free up to the age of 12."), []);
     assert.deepEqual(applyEn("| Maximum age | 70 |", "You can renew up to the age of 85."), []);
     assert.deepEqual(applyEn("| Maximum age (children) | 12 |", "You can apply up to the age of 70."), []);
+    assert.deepEqual(
+      conflictEn(
+        "## Who can apply",
+        "",
+        "For the basic plan, you can apply up to the age of 65.",
+        "",
+        "For the premium plan, you can apply up to the age of 75.",
+      ),
+      [],
+    );
+    assert.deepEqual(conflictEn("## Who can apply", "", "You can apply up to the age of 65.", "", "You can apply up to the age of 75."), [
+      "you can apply:up to the age of 75≠up to the age of 65",
+    ]);
   });
 
   it("a bare range is an age only in a row headed by an age word", () => {
@@ -857,6 +870,7 @@ describe("fact-conflict: an entry age limit and a dependants count written as a 
     assert.deepEqual(ages("| Pages | 20 to 70 |"), []);
     assert.deepEqual(ages("| Storage | 20 to 70 |"), []);
     assert.deepEqual(ages("| 20 to 70 | Age |"), []);
+    assert.deepEqual(ages("| Age at entry | 18 to 65 | 75 |"), ["18-65"]);
     assert.deepEqual(ages("Age at entry 20 to 70"), []);
   });
 
@@ -871,6 +885,8 @@ describe("fact-conflict: an entry age limit and a dependants count written as a 
     ]);
     assert.deepEqual(dependantsEn("The number of dependants used for the dependant allowance is 1."), []);
     assert.deepEqual(dependantsEn("The number of dependants under 17 is 2."), []);
+    assert.deepEqual(dependantsEn("The number of dependants used for children under 17 is 2."), []);
+    assert.deepEqual(dependantsEn("The number of dependants applied for children under 17 is 2."), []);
   });
 
   it("a count framed as を…として is the count, unless a condition or a value comes before it (ja)", () => {
