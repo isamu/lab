@@ -291,3 +291,38 @@ describe("tax-mismatch: サービス料の行と、その下の税の行", () =>
     assert.deepEqual(findingsOf(table([...BANQUET, "| サービス料（10%） | 50,000円 |", "| 消費税（8%） | 1,000円 |", "| 消費税（10%） | 2,000円 |"])), []);
   });
 });
+
+describe("tax-mismatch: 頭の升を空けて、見出しを次の升に書いた税の行と小計の行", () => {
+  const dated = (rows: readonly string[]): string => ["| 日付 | 項目 | 金額 |", "| --- | --- | --- |", ...rows].join("\n") + "\n";
+  const enDated = (rows: readonly string[]): string => ["| Date | Item | Amount |", "| --- | --- | --- |", ...rows].join("\n") + "\n";
+  const DAYS = ["| 4/1 | 設計 | 6,000円 |", "| 4/2 | 開発 | 6,000円 |", "| | 小計 | 12,000円 |"];
+  const EN_DAYS = ["| 4/1 | Design | $600.00 |", "| 4/2 | Build | $600.00 |", "| | Subtotal | $1,200.00 |"];
+
+  it("小計の率と違う税額を指す", () => {
+    assert.deepEqual(findingsOf(dated([...DAYS, "| | 消費税（10%） | 1,500円 |", "| | 合計 | 13,500円 |"])), [
+      "税額「1,500円」が、上の金額の10%（1,200円）と合いません",
+    ]);
+    assert.deepEqual(findingsOf(enDated([...EN_DAYS, "| | Sales tax (8%) | $100.00 |"]), en), ["The tax $100.00 is not 8% of the amount above it ($96.00)"]);
+  });
+
+  it("小計の率と合えば言わない", () => {
+    assert.deepEqual(findingsOf(dated([...DAYS, "| | 消費税（10%） | 1,200円 |", "| | 合計 | 13,200円 |"])), []);
+    assert.deepEqual(findingsOf(enDated([...EN_DAYS, "| | Sales tax (8%) | $96.00 |"]), en), []);
+  });
+
+  it("空の升が二つ続いても、最初の空でない升の見出しを読む", () => {
+    const rows = ["| 日付 | 区分 | 項目 | 金額 |", "| --- | --- | --- | --- |", "| 4/1 | 作業 | 設計 | 6,000円 |", "| | | 小計 | 6,000円 |"];
+    assert.deepEqual(findingsOf([...rows, "| | | 消費税（10%） | 900円 |"].join("\n") + "\n"), ["税額「900円」が、上の金額の10%（600円）と合いません"]);
+    assert.deepEqual(findingsOf([...rows, "| | | 消費税（10%） | 600円 |"].join("\n") + "\n"), []);
+  });
+
+  it("前の升に何か書いてあれば、次の升の語は税の行の見出しとして読まない", () => {
+    assert.deepEqual(findingsOf(dated([...DAYS, "| 4/3 | 消費税（10%） | 1,500円 |"])), []);
+    assert.deepEqual(findingsOf(enDated([...EN_DAYS, "| 4/3 | Sales tax (8%) | $100.00 |"]), en), []);
+  });
+
+  it("内税の行は、頭の升を空けても読まない", () => {
+    assert.deepEqual(findingsOf(dated([...DAYS, "| | うち消費税（10%） | 1,500円 |"])), []);
+    assert.deepEqual(findingsOf(enDated([...EN_DAYS, "| | Sales tax (8%) included | $100.00 |"]), en), []);
+  });
+});
