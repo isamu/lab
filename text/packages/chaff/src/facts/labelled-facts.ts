@@ -10,7 +10,14 @@ import { isRate, joinsNextClause, rateHead, rateTail, type RateBasis, type RateW
  * 「$300 per person」）、条件の付いた値なので読まない。読点のあとから始まる名前（「大人は、」「For adults, the fee」）も、
  * 前に条件があるので読まない。言語の知識（区切り、値の終わり、落とす冠詞）は言語パッケージの語彙表から取る。
  */
-export type AttributePhrase = { readonly pattern: string; readonly position: "before" | "after" };
+/** clause: 主語から書いた節（you can apply）。前に読点があれば、読点の前の句は条件（For the basic plan, you can apply）。 */
+export type AttributePhrase = { readonly pattern: string; readonly position: "before" | "after"; readonly clause?: boolean };
+
+type AttributeEntry = { readonly pattern: string; readonly group?: string | undefined; readonly position?: "before" | "after" | undefined };
+
+/** 語彙表の言い回し。group が clause なら主語から書いた節。 */
+export const attributePhrasesOf = (entries: readonly AttributeEntry[]): AttributePhrase[] =>
+  entries.map((entry) => ({ pattern: entry.pattern, position: entry.position ?? "before", clause: entry.group === "clause" }));
 
 export type FactWords = {
   /** 名前と値の区切り（：、は、is）。英字だけの区切りは、前が空白のときだけ。 */
@@ -173,6 +180,9 @@ const labelledFact = (source: string, read: FactValue, words: FactWords): Fact |
   return undefined;
 };
 
+/** 前に置いた言い回しの前に、同じ文の読点がある（For the basic plan, you can apply）。読点の前の句は条件。 */
+const afterCondition = (head: string, phrase: string): boolean => CLAUSE_COMMA.test(afterLastBreak(head.slice(0, head.length - phrase.length)));
+
 /** 属性の言い回しのすぐ前か後ろの値。名前は言い回しそのもの。 */
 const attributeFact = (source: string, value: FactValue, words: FactWords): Fact | undefined => {
   const head = trimEndOf(source.slice(lineStartOf(source, value.start), value.start), EDGE_MARKS).toLowerCase();
@@ -183,7 +193,11 @@ const attributeFact = (source: string, value: FactValue, words: FactWords): Fact
   const found = words.attributes.find((phrase) =>
     phrase.position === "before" ? head.endsWith(phrase.pattern.toLowerCase()) : tail.startsWith(phrase.pattern.toLowerCase()),
   );
-  if (found === undefined || (found.position === "before" && !endsAfter(source, value, words))) return undefined;
+  if (
+    found === undefined ||
+    (found.position === "before" && (!endsAfter(source, value, words) || (found.clause === true && afterCondition(head, found.pattern))))
+  )
+    return undefined;
   return { label: found.pattern, key: keyOf(found.pattern, words), value };
 };
 

@@ -17,6 +17,12 @@ entries:
   - { pattern: maximum age, group: age-limit }
   - { pattern: maximum entry age, group: age-limit }
   - { pattern: maximum age at entry, group: age-limit }
+  - { pattern: you can apply, group: age-limit }
+  - { pattern: you can join, group: age-limit }
+  - { pattern: you can enrol, group: age-limit }
+  - { pattern: you can enroll, group: age-limit }
+  - { pattern: you can buy this policy, group: age-limit }
+  - { pattern: you can take out this policy, group: age-limit }
   # The length of a warranty ("the warranty runs for 12 months" names it as the warranty). An extended warranty is
   # another name.
   - { pattern: warranty period, group: warranty-period }

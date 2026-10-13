@@ -3,7 +3,7 @@
     "ja": {
       "issue-before-period-end": "2/2",
       "taxable-amount": "2/2",
-      "dependants": "1/2",
+      "dependants": "2/2",
       "withheld-total": "2/2",
       "tax-year": "2/2",
       "employee-name": "2/2",
@@ -12,7 +12,7 @@
     "en": {
       "issue-before-period-end": "2/2",
       "taxable-amount": "2/2",
-      "dependants": "1/2",
+      "dependants": "2/2",
       "withheld-total": "2/2",
       "tax-year": "2/2",
       "employee-name": "2/2",

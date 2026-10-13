@@ -2,7 +2,7 @@ import type { Detector, Finding, ProseDocument, StructureNode } from "../plugin.
 import { countedFacts, countedPhraseAt, type CountedPhrase } from "../facts/counted-facts.ts";
 import { nameSpans } from "../compare/proper-nouns.ts";
 import { factValues, type FactValue } from "../facts/fact-values.ts";
-import { labelledFacts, type AttributePhrase, type Fact, type FactWords } from "../facts/labelled-facts.ts";
+import { attributePhrasesOf, labelledFacts, type Fact, type FactWords } from "../facts/labelled-facts.ts";
 import { tableFacts, type TotalColumns } from "../facts/table-facts.ts";
 import { withCellKeys } from "../facts/cell-keys.ts";
 import { verbQuantityFacts, type VerbQuantityWords } from "../facts/verb-quantity-facts.ts";
@@ -21,7 +21,8 @@ import { overlapsAny, spanIndex } from "../compare/spans.ts";
 import { documentTermConflicts, isTermName, termHomes, type TermWord, type TermWords } from "../facts/document-terms.ts";
 import { termValues, type PlacedWord, type TermValueWords } from "../facts/term-values.ts";
 import { inDocumentOrder } from "../structure/issues.ts";
-import { ageValues, type AgeWord, type AgeWords } from "../facts/age-values.ts";
+import { ageValues } from "../facts/age-values.ts";
+import { ageWordsOf } from "./age-words.ts";
 import { qualifiedKeyOf, qualifiedKeys, type QualifierWords } from "../facts/qualified-labels.ts";
 import { rowSentenceFindings } from "./row-sentence-amounts.ts";
 import type { RateWord, RateWords } from "../facts/rate-values.ts";
@@ -52,7 +53,7 @@ export const factWordsOf = (doc: ProseDocument): FactWords => ({
   leads: patternsOf(doc, "fact-label-lead"),
   rates: rateWordsOf(doc),
   readings: { verbs: patternsOf(doc, "fact-reading-verb"), gauges: patternsOf(doc, "fact-reading-gauge"), clauses: patternsOf(doc, "fact-reading-clause") },
-  attributes: (doc.lexicons["fact-attribute"] ?? []).map((entry): AttributePhrase => ({ pattern: entry.pattern, position: entry.position ?? "before" })),
+  attributes: attributePhrasesOf(doc.lexicons["fact-attribute"] ?? []),
 });
 
 const placedWordsOf = (doc: ProseDocument, id: string): PlacedWord[] =>
@@ -72,6 +73,10 @@ const termValueWordsOf = (doc: ProseDocument): TermValueWords => ({
   selves: placedWordsOf(doc, "fact-term-self"),
   starts: placedWordsOf(doc, "fact-term-start"),
   valueEnds: patternsOf(doc, "fact-value-end"),
+  restating: patternsOf(doc, "fact-term-restating"),
+  frames: patternsOf(doc, "fact-term-frame"),
+  conditions: patternsOf(doc, "fact-amount-condition"),
+  qualifiers: qualifierWordsOf(doc),
 });
 
 const totalColumnsOf = (doc: ProseDocument): TotalColumns => {
@@ -89,15 +94,6 @@ const durationWordsOf = (doc: ProseDocument): DurationWord[] => [
     isDurationUnit(entry.group) ? [{ pattern: entry.pattern, unit: entry.group }] : [],
   ),
 ];
-
-const ageWordsAt = (doc: ProseDocument, id: string): AgeWord[] =>
-  (doc.lexicons[id] ?? []).map((entry): AgeWord => ({ pattern: entry.pattern, position: entry.position ?? "before" }));
-
-const ageWordsOf = (doc: ProseDocument): AgeWords => ({
-  marks: ageWordsAt(doc, "fact-age-mark"),
-  limits: ageWordsAt(doc, "fact-age-limit"),
-  joiners: patternsOf(doc, "fact-age-joiner"),
-});
 
 const qualifierWordsOf = (doc: ProseDocument): QualifierWords => ({
   templates: patternsOf(doc, "fact-label-qualifier"),
