@@ -1,0 +1,67 @@
+id: formula-amount-mismatch
+layer: L3
+status: stable
+how_to_find: formula-amount
+# The words of a formula come from formula-amount-word and percent-unit; a tax-included word and a stated tax rate are read
+# with tax-price-column, as tax-mismatch reads them, and a tax's name with a word of inclusion (消費税8%込み) with tax-label
+# and tax-included-word. The amounts are currency-notation's. A document profile may give the
+# tax rate a label means when the document states none (tax_rate).
+extra_word_lists: [formula-amount-word, percent-unit, tax-price-column, tax-label, tax-included-word]
+severity: warning
+
+name:
+  ja: 見出しに書いた計算と合わない金額
+  en: An amount that is not what its label's formula gives
+
+why:
+  ja: 精算書や請求書で「仲介手数料（売買代金の3%＋60,000円、消費税込み）」のように見出しに計算のしかたを書くと、読み手は金額を確かめずに払います。売買代金を直して手数料を直し忘れたとき、決まった額や税を足し忘れたとき、桁を打ち間違えたときに食い違います。見出しに「名前の率%」（売買代金の3%）か「率% of 名前」（5% of the sale price）があり、行の終わりに金額が一つあるとき、文書がその名前の見出しで書いた金額（売買代金 | 48,000,000円）に率を掛け、「＋」の後の額を足して比べます。見出しが税込みと言えば、見出しの税率、無ければ文書が「消費税10%」のように書いた税率、それも無ければ文書の種類の税率を足します。
+  en: 'When a statement writes how a fee is worked out in its label ("Commission (5% of the sale price)"), readers pay it without checking. It goes wrong when the price is changed and the fee is not, when a fixed part or the tax is left out, or when a digit is mistyped. When a label holds "rate% of name" (or "name × rate%") and its line ends in one amount, the rate is applied to the amount the document labels with that name (Sale price | $324,000.00), a fixed amount after "plus" is added, and the result is compared with the line''s amount. A label saying tax is included adds the rate it states, else the one rate the document states beside a tax word.'
+
+message:
+  ja: 「{written}」が、{name}「{base}」で「{formula}」を計算した額（{expected}）と合いません
+  en: '{written} is not "{formula}" worked out on the {name} {base} ({expected})'
+
+how_to_fix:
+  ja: 元の金額と率、足す額を確かめて、金額か見出しの計算を直してください。
+  en: Check the amount it is worked out from, the rate and any fixed part, and correct the amount or the label.
+
+levels: { strict: error, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+off_for:
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+
+group: facts
+summary:
+  ja: 「売買代金の3%」のような見出しの計算と合わない金額
+  en: An amount that is not what its label's formula ("5% of the sale price") gives
+example:
+  ja:
+    before: |
+      | 項目 | 金額 |
+      | --- | --- |
+      | 売買代金 | 30,000,000円 |
+      | 仲介手数料（売買代金の3%＋60,000円、消費税10%込み） | 990,000円 |
+    after: |
+      | 項目 | 金額 |
+      | --- | --- |
+      | 売買代金 | 30,000,000円 |
+      | 仲介手数料（売買代金の3%＋60,000円、消費税10%込み） | 1,056,000円 |
+  en:
+    before: |
+      | Item | Amount |
+      | --- | --- |
+      | Sale price | $250,000.00 |
+      | Commission (5% of the sale price) | $12,000.00 |
+    after: |
+      | Item | Amount |
+      | --- | --- |
+      | Sale price | $250,000.00 |
+      | Commission (5% of the sale price) | $12,500.00 |
+
+not_flagged:
+  ja: 端数は切り捨て・四捨五入・切り上げのどれでも、税の前でも後でも、円やドルの位で合っていると読みます。その名前の見出しの金額が無いもの、名前の見出しが二つあって額が違うもの、見出しに率と名前の組が二つあるもの、見出しに足す額のほかの金額があるもの、通貨が違うもの、行の金額が「165万円」のように桁の語で書いたものは比べません。税込みと書いて、見出しにも文書にも文書の種類にも税率が無いもの、文書が違う税率を二つ書いたものも比べません。文の中に書いた計算は読みません。
+  en: "Rounding down, to the nearest or up, before or after the tax, to the cent or to the unit, is read as right. Nothing is compared when no line labels the named amount, when two such lines give different amounts, when the label holds two rates with names or an amount other than the fixed part, when the currencies differ, or when the line's amount is written with a word of scale. A label saying tax is included is not compared when no rate is stated in it, in the document or in the document's profile, or when the document states two rates. A formula written in a sentence is not read."
+level_meaning:
+  ja: 金額が、見出しに書いた計算で出した額と合わないとき指摘
+  en: reported when an amount is not what its label's formula gives

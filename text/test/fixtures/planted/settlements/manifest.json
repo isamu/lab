@@ -1,5 +1,5 @@
 {
-  "note": "Self-written property sale settlement statements (不動産売買代金精算書・決済明細書 / settlement statement) for made-up brokers, made-up buyers and sellers and made-up addresses, with fictional amounts: a house sale settled for the buyer and a land sale settled for the seller, each in a clean version and a planted one that differs only on the lines below. They run as business/proposal, the genre the quotes and statements of the other sets run as: no genre is made for settlement statements. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line; a mistake that breaks a pair of lines names the pair's other line as pairedLine. A settlement date before the contract date is written as two labelled lines and named for due-before-issue, the rule that compares pairs of labelled dates; the plant changes the settlement date, and the contract line is the pairedLine. The property address is written twice, after an address label in the header and in the property table; the plant changes one block number in the table and is named for contact-variant. The land price is the surveyed area times the price per area, named for line-amount-mismatch; the plant changes the area, not the amount, so the price still agrees with the proceeds table. The balance due is the price minus the deposit minus the loan, two deductions, and is named for net-amount-mismatch, the rule that compares an amount with a subtraction; the plant changes the balance. The prorated property tax is the days times the daily amount, named for line-amount-mismatch; the plant changes the days, not the amount. The brokerage fee is written on one line with the rate it is worked out from (in Japanese the statutory 3% plus 60,000 yen with consumption tax, in English a percentage of the price) and the plant changes the amount, as if the fixed part or a digit were lost; no rule reads a fee from the rate in its label, and it is named for line-amount-mismatch, the rule that compares a line's amount with the numbers it is worked out from. The buyer's or the seller's name written once with one character changed is named for name-variant (each name is written three times, so one form is the usual one). Each plant was also run alone on its clean document, so no plant depends on another. yarn planted settlements scores them; expected.json is the committed score.",
+  "note": "Self-written property sale settlement statements (不動産売買代金精算書・決済明細書 / settlement statement) for made-up brokers, made-up buyers and sellers and made-up addresses, with fictional amounts: a house sale settled for the buyer and a land sale settled for the seller, each in a clean version and a planted one that differs only on the lines below. They run as business/proposal, the genre the quotes and statements of the other sets run as: no genre is made for settlement statements. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line; a mistake that breaks a pair of lines names the pair's other line as pairedLine. A settlement date before the contract date is written as two labelled lines and named for due-before-issue, the rule that compares pairs of labelled dates; the plant changes the settlement date, and the contract line is the pairedLine. The property address is written twice, after an address label in the header and in the property table; the plant changes one block number in the table and is named for contact-variant. The land price is the surveyed area times the price per area, named for line-amount-mismatch; the plant changes the area, not the amount, so the price still agrees with the proceeds table. The balance due is the price minus the deposit minus the loan, two deductions, and is named for net-amount-mismatch, the rule that compares an amount with a subtraction; the plant changes the balance. The prorated property tax is the days times the daily amount, named for line-amount-mismatch; the plant changes the days, not the amount. The brokerage fee is written on one line with the rate it is worked out from (in Japanese the statutory 3% plus 60,000 yen with consumption tax, in English a percentage of the price) and the plant changes the amount, as if the fixed part or a digit were lost; it is named for formula-amount-mismatch, the rule that works a label's formula out on the amount the document labels with its name. The buyer's or the seller's name written once with one character changed is named for name-variant (each name is written three times, so one form is the usual one). Each plant was also run alone on its clean document, so no plant depends on another. yarn planted settlements scores them; expected.json is the committed score.",
   "documents": [
     {
       "id": "ja/house-closing",
@@ -39,7 +39,7 @@
         },
         {
           "kind": "brokerage-fee",
-          "rule": "line-amount-mismatch",
+          "rule": "formula-amount-mismatch",
           "line": 46,
           "clean": "消費税込み） | 1,650,000円 |",
           "planted": "消費税込み） | 1,584,000円 |"
@@ -98,7 +98,7 @@
         },
         {
           "kind": "brokerage-fee",
-          "rule": "line-amount-mismatch",
+          "rule": "formula-amount-mismatch",
           "line": 54,
           "clean": "消費税込み） | 1,702,470円 |",
           "planted": "消費税込み） | 1,636,470円 |"
@@ -150,7 +150,7 @@
         },
         {
           "kind": "brokerage-fee",
-          "rule": "line-amount-mismatch",
+          "rule": "formula-amount-mismatch",
           "line": 46,
           "clean": "purchase price) | $12,360.00 |",
           "planted": "purchase price) | $13,260.00 |"
@@ -209,7 +209,7 @@
         },
         {
           "kind": "brokerage-fee",
-          "rule": "line-amount-mismatch",
+          "rule": "formula-amount-mismatch",
           "line": 54,
           "clean": "sale price) | $16,200.00 |",
           "planted": "sale price) | $16,020.00 |"

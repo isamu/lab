@@ -1,0 +1,11 @@
+# The words of formula-amount-mismatch. rate-name stands between a rate and the amount it is of ("5% of the sale price");
+# name-rate between the amount and its rate ("sale price × 5%"). plus comes before a fixed amount added to the rate's part
+# ("plus $500").
+id: formula-amount-word
+language: en
+entries:
+  - { pattern: of the, group: rate-name }
+  - { pattern: of, group: rate-name }
+  - { pattern: ×, group: name-rate }
+  - { pattern: plus, group: plus }
+  - { pattern: "+", group: plus }

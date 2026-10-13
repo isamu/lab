@@ -281,6 +281,8 @@ export type DocumentProfile = {
   readonly quoteMentionsTerm?: boolean | undefined;
   /** 文書に速さが無いときの、徒歩の分数を出す速さ（m/分）と、端数を切り上げるか。不動産の広告は 80m で1分、切り上げ。 */
   readonly walkRate?: { readonly metresPerMinute: number; readonly roundUp: boolean } | undefined;
+  /** ラベルが「消費税込み」とだけ書き、ラベルにも文書にも税率が無いときの税率（%）。 */
+  readonly taxRate?: number | undefined;
 };
 
 /**
