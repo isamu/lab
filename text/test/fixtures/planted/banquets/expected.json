@@ -1,7 +1,7 @@
 {
   "recall": {
     "ja": {
-      "validity-after-event": "1/2",
+      "validity-after-event": "2/2",
       "closing-before-opening": "1/1",
       "per-person-line": "2/2",
       "room-hours-line": "2/2",
