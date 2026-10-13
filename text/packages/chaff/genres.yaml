@@ -212,6 +212,14 @@ genres:
         - Do the figures for the problem, the proposal and the benefit have a basis, and agree between the text and the tables?
         - Are the risks stated, each with what is done about it?
         - Does it say what decision is asked of the reader, and by when?
+    # A quote or a price list asks the reader to decide: its number, its date and how long the price holds, as labelled lines.
+    suggest:
+      ja:
+        line: "^(?:[-*]\\s+|\\|\\s*)?(?:\\*\\*)?(?:見積(?:書)?(?:番号|日|金額|有効期限)|お見積(?:り)?(?:番号|日|金額)|有効期限|有効期間|適用(?:開始|終了)日|価格表番号)(?:\\*\\*)?\\s*(?:[（(][^）)]*[）)]\\s*)?[:：|]|^#{1,6}\\s*(?:御?見積書|お見積(?:り)?書?|価格表)"
+        min_lines: 2
+      en:
+        line: "^(?:[-*]\\s+|\\|\\s*)?(?:\\*\\*)?(?:Quot(?:e|ation) (?:[Nn]umber|[Nn]o\\.|#|[Dd]ate)|Estimate (?:[Nn]umber|[Nn]o\\.|#|[Dd]ate)|Date of estimate|Quoted [Aa]mount|Valid (?:[Uu]ntil|[Ff]rom|[Tt]hrough)|Price [Ll]ist (?:[Nn]umber|[Nn]o\\.))(?:\\*\\*)?\\s*(?:\\([^)]*\\)\\s*)?[:|]|^#{1,6}\\s*(?:Quot(?:e|ation)|Estimate|Price list)\\b"
+        min_lines: 2
   - id: business/report
     name: { ja: 報告書, en: Report }
     summary:
@@ -228,6 +236,15 @@ genres:
         - Do the numbers have a source and a date, and do totals and percentages add up?
         - Are facts kept apart from opinions and guesses?
         - Are the next actions given with an owner and a deadline?
+    # Paperwork that reports figures (a payslip, a bill, a statement, a receipt): the labels of its amounts, balances, periods
+    # and reference numbers, as labelled lines or table rows. A word in a sentence is not a label.
+    suggest:
+      ja:
+        line: "^(?:[-*]\\s+|\\|\\s*)?(?:\\*\\*)?(?:総支給額|差引支給額|控除(?:額)?合計|支給日|支給対象期間|勤怠集計期間|(?:社員|従業員)番号|課税対象額|口座(?:名義|番号)|お取引期間|お預入れ合計|お引出し合計|(?:前月末|前回|今回|期首|期末|繰越)の?残高|お借入金額|毎月のお支払額|初回お支払日|分割手数料|お支払い?(?:期限|期日|金額|総額)|ご?請求(?:日|番号|金額|額)|検針期間|料金算定期間|お客さま番号|患者番号|入院日|退院日|診療日|発注(?:日|番号)|納品書番号|インボイス番号|到着予定日|契約番号|入居日|解約通知日|決済日|取引番号|学籍番号|納入額|提出日|出張期間|会員番号|予約番号|無料キャンセル期限|登録番号|注文番号|証券番号|会計年度|会計|前年度繰越金|売上高|営業利益|経常利益|(?:当期|四半期)純利益|保険期間|待機期間|契約年齢|整備日|記録番号|次回点検日|申請者|承認者|対象期間|精算(?:額|日)|退去日|月額賃料|差引合計|ご契約者名|ご利用(?:開始|終了)日|代表電話番号|売主|買主|売買(?:契約日|代金)|残代金|手付金|輸出者|荷受人|船積(?:港|日)|仕向港|受託者|作業期間|報告日|納品(?:日|場所)|納入期限|学生氏名|発行日|交付日)(?:\\*\\*)?\\s*(?:[（(][^）)]*[）)]\\s*)?[:：|]"
+        min_lines: 3
+      en:
+        line: "^(?:[-*]\\s+|\\|\\s*)?(?:\\*\\*)?(?:Gross [Pp]ay|Net [Pp]ay|Total [Dd]eductions|Pay [Pp]eriod|Pay [Dd]ate|Timesheet [Pp]eriod|Taxable [Ii]ncome|Employee(?: (?:ID|[Nn]umber))?|Account (?:[Hh]older|[Nn]umber)|Statement (?:[Pp]eriod|[Dd]ate)|(?:Opening|Closing) [Bb]alance|Balance (?:[Bb]rought|[Cc]arried) [Ff]orward|Balance [Dd]ue[^:|]{0,40}|Total (?:[Dd]eposits|[Ww]ithdrawals|[Cc]harges|[Ii]ncome|[Ee]xpenditure|[Dd]ue|[Oo]f [Pp]ayments|[Ff]or the year)|Amount (?:[Dd]ue|[Ff]inanced|[Pp]aid|[Bb]illed)(?: for [^:|]{1,30})?|Finance [Cc]harge|Monthly [Pp]ayment|Number of [Pp]ayments|First [Pp]ayment [Dd]ate|Payment [Dd]ue(?: by)?|Due [Dd]ate|Billing (?:[Pp]eriod|[Dd]ate)|Bill [Tt]o|Pay [Tt]o|Patient (?:[Nn]umber|[Ss]hare)|Invoice (?:[Nn]o\\.|#|[Nn]umber|[Dd]ate)|PO (?:[Nn]umber|#)|Order (?:[Nn]umber|#|[Dd]ate)|Delivery (?:[Dd]ate|[Nn]ote [Nn]umber)|Receipt (?:[Nn]umber|[Nn]o\\.|#)|(?:Reservation|Booking|Registration|Confirmation) (?:[Nn]umber|#)|Free [Cc]ancellation [Uu]ntil|Member [Nn]umber|Points (?:[Ee]arned|[Uu]sed)[^:|]{0,30}|Policy [Nn]umber|Date of (?:claim|incident|admission|discharge|visit)|Settlement [Dd]ate|(?:Purchase|Sale) [Pp]rice|Tenancy [Aa]greement [Nn]umber|Deposit [Hh]eld|Student ID|Record [Nn]umber|Service [Dd]ate|Next [Ii]nspection [Dd]ue|Reporting [Pp]eriod|Report [Dd]ate|Port of (?:[Ll]oading|[Dd]ischarge)|Exporter|Consignee|Financial [Yy]ear|Submitted|Approver|Per [Dd]iem|Contractor|Contract (?:[Nn]umber|[Dd]ate)|Buyer|Seller|Property [Aa]ddress|Loan [Pp]roceeds|Net [Ss]ales|Operating [Pp]rofit|Profit [Bb]efore [Tt]ax|Net [Pp]rofit|Period of [Cc]over|Waiting [Pp]eriod|Age at [Ee]ntry|Issued|Date [Ii]ssued|Issue [Dd]ate)(?:\\*\\*)?\\s*(?:\\([^)]*\\)\\s*)?[:|]"
+        min_lines: 3
   - id: business/email
     name: { ja: メール・手紙, en: Email and letter }
     summary:

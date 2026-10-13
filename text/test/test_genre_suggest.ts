@@ -377,3 +377,51 @@ describe("画面の見当", () => {
     });
   });
 });
+
+describe("書類（明細・請求・見積）の見当", () => {
+  const data = loadGenres();
+  const guess = (path: string, source: string, language: string): string | undefined => suggestGenre({ path, source, language }, data, loadProfiles())?.id;
+
+  const PAYSLIP_JA =
+    "# 給与明細書（2026年9月分）\n\n社員番号：A-1024\n\n支給日：2026年9月25日\n\n| 項目 | 金額 |\n| --- | --- |\n| 基本給 | 250,000円 |\n| 総支給額 | 262,000円 |\n| 控除合計 | 48,500円 |\n\n- 差引支給額：213,500円\n";
+  const PAYSLIP_EN =
+    "# Payslip: September 2026\n\nEmployee number: 40718\n\nPay period: 1 September 2026 to 30 September 2026\n\n## Summary\n\n- Gross pay: $3,293.00\n- Total deductions: $714.96\n- Net pay: $2,578.04\n";
+  const INVOICE_JA = "# 請求書\n\n請求番号：INV-0042\n\n発行日：2026年10月1日\n\nお支払期限：2026年10月31日\n\n下記のとおりご請求申し上げます。\n";
+  const STATEMENT_EN =
+    "# Statement\n\nStatement period: August 1, 2026 – August 31, 2026\n\nAccount number: 60418273\n\nOpening balance: $2,418.36\n\nClosing balance: $2,156.56\n";
+  const QUOTE_JA = "# 御見積書\n\n見積番号：Q-0142\n\n見積日：2026年10月1日\n\n有効期限：2026年10月31日\n\nお支払期限：納品月の翌月末\n";
+  const QUOTE_EN = "# Quotation\n\nQuote number: Q-2026-0142\n\nValid until: October 31, 2026\n\nPayment due: 30 days after delivery\n";
+  const PRICE_LIST_EN = "# Price list, autumn 2026\n\nPrice list number: PL-07\n\nValid from: October 1, 2026\n\nValid until: March 31, 2027\n";
+
+  const cases: readonly (readonly [string, string, string, string | undefined])[] = [
+    ["給与明細", "ja", PAYSLIP_JA, "business/report"],
+    ["英語の給与明細", "en", PAYSLIP_EN, "business/report"],
+    ["請求書", "ja", INVOICE_JA, "business/report"],
+    ["英語の取引明細", "en", STATEMENT_EN, "business/report"],
+    ["語頭が大文字のラベルの請求書", "en", "# Invoice\n\nInvoice #: INV-1\n\nInvoice Date: 2026-10-01\n\nDue Date: 2026-10-31\n", "business/report"],
+    ["見積書（支払期限の行があっても）", "ja", QUOTE_JA, "business/proposal"],
+    ["英語の見積書（支払期限の行があっても）", "en", QUOTE_EN, "business/proposal"],
+    ["英語の価格表", "en", PRICE_LIST_EN, "business/proposal"],
+    ["日付と対象のラベルが並ぶリリースノート", "en", "# Release notes\n\nRelease date: 2026-10-01\n\nIssued: Ops\n\nCustomer: Self-hosted users\n", undefined],
+    ["ラベルが二つだけ", "en", "# Note\n\nIssued: May 1, 2026\n\nDue date: May 31, 2026\n\nThanks for reading.\n", undefined],
+    [
+      "文の中の語はラベルではない",
+      "en",
+      "# Pay day\n\nMy net pay: it went up.\nThe gross pay was higher, and the total deductions fell.\nSo the amount due: none.\n",
+      undefined,
+    ],
+    [
+      "給与の話をする記事",
+      "ja",
+      "# 給与明細の読み方\n\n総支給額から控除合計を引いたものが差引支給額です。\n\n支給日は会社ごとに違います。\n\n口座番号は明細に載りません。\n",
+      undefined,
+    ],
+    ["手順の英語マニュアル", "en", "# Restore a backup\n\n1. Open Settings.\n2. Choose Backups.\n3. Select the backup, then Restore.\n", undefined],
+  ];
+  cases.forEach(([label, language, source, expected]) => {
+    it(`${label} → ${expected ?? "挙げない"}`, () => assert.equal(guess("a.md", source, language), expected));
+  });
+
+  it("パスの手がかりは、書類の行より強い", () => assert.equal(guess("guides/payslip.md", PAYSLIP_EN, "en"), "docs/manual"));
+  it("書類の行は、その言語でだけ数える", () => assert.equal(guess("a.md", PAYSLIP_EN, "ja"), undefined));
+});
