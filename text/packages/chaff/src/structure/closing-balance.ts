@@ -11,7 +11,11 @@ import { amountOf, isExact, shown, type LabelledLine, type NetAmount, type NetCe
 export const BALANCE_ROLES = ["opening", "inflow", "outflow", "closing"] as const;
 export type BalanceRole = (typeof BALANCE_ROLES)[number];
 
-export type BalanceWords = Pick<NetWords, "magnitudes" | "percentUnits"> & { readonly labels: Readonly<Record<BalanceRole, readonly string[]>> };
+export type BalanceWords = Pick<NetWords, "magnitudes" | "percentUnits"> & {
+  readonly labels: Readonly<Record<BalanceRole, readonly string[]>>;
+  /** Words that make a label's note the date the balance is taken on (時点, as of): such a note is not a unit. */
+  readonly asOf?: readonly string[] | undefined;
+};
 
 export type BalanceAmount = NetAmount & { readonly role: BalanceRole };
 
@@ -54,12 +58,46 @@ export const closingMismatch = (amounts: readonly BalanceAmount[], words: Balanc
   return { offset: closing.start, values: { written: closing.written, expected: shown(expected, closing, decimals) } };
 };
 
-const labelledCells = (labels: readonly NetCell[], values: readonly NetCell[], words: BalanceWords): BalanceAmount[] =>
+const DIGIT = /\d/u;
+
+/** A note naming the date a balance is taken on (（2026年6月30日時点）, (as of June 30, 2026)): a date, not a unit. */
+export const isDatedNote = (note: string, asOf: readonly string[]): boolean => {
+  const key = keyOf(note);
+  return DIGIT.test(key) && asOf.some((word) => key.includes(keyOf(word)));
+};
+
+const CURRENCY_CODE = /\b[A-Z]{3}\b/u;
+
+/** A note that names a scale or a currency besides the date ((thousand yen, as of June 30, 2026)) still names a unit. */
+const namesUnitToo = (note: string, words: BalanceWords): boolean =>
+  CURRENCY_CODE.test(note.normalize("NFKC")) || words.magnitudes.some((word) => keyOf(note).includes(keyOf(word)));
+
+/** The note of a label that may give its amount a unit: a note that only dates it gives none, so dated and undated rows compare. */
+const unitNoteOf = (label: string, words: BalanceWords): string => {
+  const note = noteOf(label);
+  return isDatedNote(note, words.asOf ?? []) && !namesUnitToo(note, words) ? "" : note;
+};
+
+/** A column heading that is a word with no digit or bracket (ポイント, Points): the unit of the bare numbers under it. */
+const UNIT_HEADING = /^[^\d()[\]（）]+$/u;
+const BARE_MARKS = "||";
+
+/**
+ * A bare number under a heading naming its unit compares with the cells that write the unit out (14,310 under ポイント,
+ * against 4,960ポイント). Its marks stay empty, so it is still read as possibly rounded.
+ */
+export const withHeadingUnit = (amount: NetAmount, heading: string | undefined): NetAmount => {
+  const unit = keyOf(heading ?? "");
+  if (amount.prefix + amount.suffix !== "" || !UNIT_HEADING.test(unit)) return amount;
+  return { ...amount, unit: `|${unit}|${amount.unit.slice(BARE_MARKS.length)}` };
+};
+
+const labelledCells = (labels: readonly NetCell[], values: readonly NetCell[], words: BalanceWords, heading?: string): BalanceAmount[] =>
   labels.flatMap((label, column) => {
     const role = balanceRoleOf(label.text, words);
     const value = values[column];
-    const amount = role === undefined || value === undefined ? undefined : amountOf(value.text, value.start, noteOf(label.text), words);
-    return role === undefined || amount === undefined ? [] : [{ ...amount, role }];
+    const amount = role === undefined || value === undefined ? undefined : amountOf(value.text, value.start, unitNoteOf(label.text, words), words);
+    return role === undefined || amount === undefined ? [] : [{ ...withHeadingUnit(amount, heading), role }];
   });
 
 const issuesOf = (scopes: readonly (readonly BalanceAmount[])[], words: BalanceWords): NetIssue[] =>
@@ -75,14 +113,14 @@ const byColumns = (header: readonly NetCell[], rows: readonly (readonly NetCell[
     words,
   );
 
-/** A table whose rows are labelled in their first cell: each column after the labels is one scope. */
-const byRows = (rows: readonly (readonly NetCell[])[], words: BalanceWords): NetIssue[] => {
+/** A table whose rows are labelled in their first cell: each column after the labels is one scope, under its heading. */
+const byRows = (header: readonly NetCell[], rows: readonly (readonly NetCell[])[], words: BalanceWords): NetIssue[] => {
   const labelled = rows.filter((row) => row[0] !== undefined && balanceRoleOf(row[0].text, words) !== undefined);
   const width = labelled[0]?.length ?? 0;
   if (labelled.length === 0 || labelled.some((row) => row.length !== width)) return [];
   const columns = Array.from({ length: width - 1 }, (_, index) => index + 1);
   return issuesOf(
-    columns.map((column) => labelled.flatMap((row) => labelledCells(row.slice(0, 1), row.slice(column, column + 1), words))),
+    columns.map((column) => labelled.flatMap((row) => labelledCells(row.slice(0, 1), row.slice(column, column + 1), words, header[column]?.text))),
     words,
   );
 };
@@ -92,7 +130,7 @@ const byRows = (rows: readonly (readonly NetCell[])[], words: BalanceWords): Net
  * four totals in its header or its first column, so it gives no scope; running-balance-mismatch reads it row by row.
  */
 export const tableClosingMismatches = (header: readonly NetCell[], rows: readonly (readonly NetCell[])[], words: BalanceWords): NetIssue[] => {
-  const issues = [...byColumns(header, rows, words), ...byRows(rows, words)];
+  const issues = [...byColumns(header, rows, words), ...byRows(header, rows, words)];
   return issues.filter((issue, index) => issues.findIndex((other) => other.offset === issue.offset) === index);
 };
 

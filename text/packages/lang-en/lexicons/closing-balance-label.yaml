@@ -2,6 +2,7 @@
 # of the period), inflow (the total paid in), outflow (the total paid out) or closing (the balance at the end). When one
 # table or one section has one word each of the four, each with an amount, the closing balance is compared with opening
 # + inflow - outflow. A table heading, row label or line label that is only this word (a unit in brackets aside) is read.
+# Group as-of marks a bracketed note that dates a balance (Previous balance (as of June 30, 2026)): a date, not a unit.
 # Previous balance and New balance stand with Points earned and Points used: a card statement uses them for an amount owed,
 # which credits reduce, but no word here names a card's payments or purchases, and points are not compared with dollars.
 # Credits and Debits alone are left out for the same reason: on a card or loan statement credits lower the balance.
@@ -33,3 +34,5 @@ entries:
   - { pattern: Balance carried forward, group: closing }
   - { pattern: Balance at the end of this month, group: closing }
   - { pattern: New balance, group: closing }
+  - { pattern: as of, group: as-of }
+  - { pattern: as at, group: as-of }

@@ -2,6 +2,7 @@
 # inflow（入ってきた額の合計）、outflow（出ていった額の合計）、closing（期間の終わりの残高）。
 # 同じ表か同じ節に四つの名前が一つずつあり、それぞれに金額があるとき、closing が opening + inflow − outflow と合うかを比べる。
 # 表の見出しや項目、名前と金額だけの行の名前がこの語だけ（単位の括弧は除く）のときに読む。
+# group の as-of は、残高の日付を示す括弧書き（前回の残高（2026年6月30日時点））の印。日付であって単位ではない。
 # ポイントの明細（獲得・利用）と会計報告の繰越金（収入・支出）も同じ足し引き。単位が違う金額（ポイントと円）は比べない。
 # 「お預入れ」「入金」だけの語は取引の表の列の見出しなので入れない（running-balance-mismatch が行ごとに読む）。
 id: closing-balance-label
@@ -46,3 +47,5 @@ entries:
   - { pattern: 今月末の残高, group: closing }
   - { pattern: 今回の残高, group: closing }
   - { pattern: 次年度繰越金, group: closing }
+  - { pattern: 時点, group: as-of }
+  - { pattern: 現在, group: as-of }

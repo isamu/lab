@@ -20,6 +20,7 @@ const wordsOf = (doc: ProseDocument): BalanceWords => ({
     outflow: patternsOf(doc, LEXICON, "outflow"),
     closing: patternsOf(doc, LEXICON, "closing"),
   },
+  asOf: patternsOf(doc, LEXICON, "as-of"),
   magnitudes: patternsOf(doc, "amount-multiplier"),
   percentUnits: patternsOf(doc, "percent-unit"),
 });

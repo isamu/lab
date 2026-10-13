@@ -7,8 +7,16 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { prepare } from "../packages/lang-ja/src/pos.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
-import { amountOf } from "../packages/chaff/src/structure/net-amount.ts";
-import { balanceRoleOf, closingMismatch, type BalanceAmount, type BalanceRole, type BalanceWords } from "../packages/chaff/src/structure/closing-balance.ts";
+import { amountOf, isExact, type NetAmount } from "../packages/chaff/src/structure/net-amount.ts";
+import {
+  balanceRoleOf,
+  closingMismatch,
+  isDatedNote,
+  withHeadingUnit,
+  type BalanceAmount,
+  type BalanceRole,
+  type BalanceWords,
+} from "../packages/chaff/src/structure/closing-balance.ts";
 
 // 前月末残高 ＋ 入金合計 − 出金合計 と当月末残高（closing-balance-mismatch）。例の明細はすべて自作。
 
@@ -218,5 +226,113 @@ describe("closing-balance-mismatch: a treasurer's carry-over", () => {
 
   it("does not read the carry-over sentence, which names no opening amount", () => {
     assert.deepEqual(found("次年度繰越金は、収入合計120,000円から支出合計95,000円を差し引いた52,000円です。", ja), []);
+  });
+});
+
+describe("closing-balance-mismatch: dated labels and a unit in the column heading", () => {
+  const AS_OF = ["時点", "現在", "as of", "as at"];
+  const read = (text: string): NetAmount => {
+    const amount = amountOf(text, 0, "", WORDS);
+    assert.ok(amount !== undefined);
+    return amount;
+  };
+  const JA = ["| 項目 | ポイント |", "| --- | --- |", "| 前回の残高（2026年6月30日時点） | 18,450 |", "| 今回の獲得 | 4,960 |", "| 今回の利用 | 10,000 |"];
+  const EN = [
+    "| Item | Points |",
+    "| --- | --- |",
+    "| Previous balance (as of June 30, 2026) | 18,450 |",
+    "| Points earned | 4,960 |",
+    "| Points used | 10,000 |",
+  ];
+
+  it("reads a bracketed note naming the day a balance is taken on as a date", () => {
+    assert.equal(isDatedNote("（2026年6月30日時点）", AS_OF), true);
+    assert.equal(isDatedNote("（9月30日現在）", AS_OF), true);
+    assert.equal(isDatedNote("(as of June 30, 2026)", AS_OF), true);
+    assert.equal(isDatedNote("(As at 30 June 2026)", AS_OF), true);
+  });
+
+  it("does not read a unit, a note without a date, or a date without an as-of word as a dated note", () => {
+    assert.equal(isDatedNote("（千円）", AS_OF), false);
+    assert.equal(isDatedNote("(USD)", AS_OF), false);
+    assert.equal(isDatedNote("（時点）", AS_OF), false);
+    assert.equal(isDatedNote("(2026)", AS_OF), false);
+    assert.equal(isDatedNote("", AS_OF), false);
+    assert.equal(isDatedNote("（2026年6月30日時点）", []), false);
+  });
+
+  it("gives a bare number the unit of a word heading, still read as possibly rounded", () => {
+    assert.equal(withHeadingUnit(read("14,310"), "ポイント").unit, read("4,960ポイント").unit);
+    assert.equal(withHeadingUnit(read("14,310"), "Points").unit, read("4,960 points").unit);
+    assert.equal(isExact(withHeadingUnit(read("14,310"), "ポイント"), WORDS), false);
+  });
+
+  it("leaves a written unit, a heading with a digit or a bracket, and no heading as they are", () => {
+    assert.equal(withHeadingUnit(read("4,960ポイント"), "金額").unit, read("4,960ポイント").unit);
+    assert.equal(withHeadingUnit(read("14,310"), "2026年9月").unit, read("14,310").unit);
+    assert.equal(withHeadingUnit(read("14,310"), "金額（千円）").unit, read("14,310").unit);
+    assert.equal(withHeadingUnit(read("14,310"), "").unit, read("14,310").unit);
+    assert.equal(withHeadingUnit(read("14,310"), undefined).unit, read("14,310").unit);
+  });
+
+  it("compares dated and undated rows of bare numbers, and passes a right balance", () => {
+    assert.deepEqual(found([...JA, "| 今回の残高（2026年9月30日時点） | 14,310 |"].join("\n"), ja), ["14,310:13,410"]);
+    assert.deepEqual(found([...JA, "| 今回の残高（2026年9月30日時点） | 13,410 |"].join("\n"), ja), []);
+    assert.deepEqual(found([...EN, "| New balance (as of September 30, 2026) | 14,310 |"].join("\n"), en), ["14,310:13,410"]);
+    assert.deepEqual(found([...EN, "| New balance (as of September 30, 2026) | 13,410 |"].join("\n"), en), []);
+  });
+
+  it("reads dated label lines of a section", () => {
+    const section = ["- 前回の残高（6月30日現在）：18,450", "- 今回の獲得：4,960", "- 今回の利用：10,000"];
+    assert.deepEqual(found(lines([...section, "- 今回の残高（9月30日現在）：14,310"]), ja), ["14,310:13,410"]);
+    assert.deepEqual(found(lines([...section, "- 今回の残高（9月30日現在）：13,410"]), ja), []);
+  });
+
+  it("compares bare numbers with numbers written in the unit their column heading names", () => {
+    const mixed = [...JA.slice(0, 3), "| 今回の獲得 | 4,960ポイント |", "| 今回の利用 | 10,000ポイント |"];
+    assert.deepEqual(found([...mixed, "| 今回の残高（2026年9月30日時点） | 14,310 |"].join("\n"), ja), ["14,310:13,410"]);
+    assert.deepEqual(found([...mixed, "| 今回の残高（2026年9月30日時点） | 13,410 |"].join("\n"), ja), []);
+    const english = [...EN.slice(0, 3), "| Points earned | 4,960 points |", "| Points used | 10,000 points |"];
+    assert.deepEqual(found([...english, "| New balance | 14,310 |"].join("\n"), en), ["14,310:13,410"]);
+  });
+
+  it("keeps apart a heading that is not the written unit, and a note that is a unit", () => {
+    const amounts = [
+      "| Item | Amount |",
+      "| --- | --- |",
+      "| Previous balance | 18,450 |",
+      "| Points earned | 4,960 points |",
+      "| Points used | 10,000 points |",
+    ];
+    assert.deepEqual(found([...amounts, "| New balance | 14,310 |"].join("\n"), en), []);
+    const thousands = [...JA.slice(0, 2), "| 前回の残高（千ポイント） | 18 |", "| 今回の獲得 | 4,960 |", "| 今回の利用 | 10,000 |"];
+    assert.deepEqual(found([...thousands, "| 今回の残高 | 14,310 |"].join("\n"), ja), []);
+    const datedThousands = [...JA.slice(0, 2), "| 前回の残高（2026年6月30日時点・千ポイント） | 18 |", "| 今回の獲得 | 4,960 |", "| 今回の利用 | 10,000 |"];
+    assert.deepEqual(found([...datedThousands, "| 今回の残高 | 14,310 |"].join("\n"), ja), []);
+    const datedCurrency = [
+      ...EN.slice(0, 2),
+      "| Previous balance (USD, as of June 30, 2026) | 18,450 |",
+      "| Points earned | 4,960 |",
+      "| Points used | 10,000 |",
+    ];
+    assert.deepEqual(found([...datedCurrency, "| New balance | 14,310 |"].join("\n"), en), []);
+    const datedScale = [
+      ...EN.slice(0, 2),
+      "| Previous balance (thousand points, as of June 30, 2026) | 18 |",
+      "| Points earned | 4,960 |",
+      "| Points used | 10,000 |",
+    ];
+    assert.deepEqual(found([...datedScale, "| New balance | 14,310 |"].join("\n"), en), []);
+  });
+
+  it("leaves a dated card statement alone when no points flow is named", () => {
+    const card = [
+      "| Item | Amount |",
+      "| --- | --- |",
+      "| Previous balance (as of June 30, 2026) | $500.00 |",
+      "| Payments | $100.00 |",
+      "| Purchases | $50.00 |",
+    ];
+    assert.deepEqual(found([...card, "| New balance (as of July 31, 2026) | $450.00 |"].join("\n"), en), []);
   });
 });
