@@ -177,6 +177,9 @@ and the old ones do not block it. [CI](https://isamu.github.io/lab/en/guide/ci/)
 
 ## Documentation
 
+The site at [isamu.github.io/lab/en](https://isamu.github.io/lab/en/) has all of this, with a worked
+example of every command on one page.
+
 - [Getting started](https://isamu.github.io/lab/en/guide/getting-started/)
 - [Commands](https://isamu.github.io/lab/en/guide/commands/)
 - [Configuration](https://isamu.github.io/lab/en/guide/configuration/)

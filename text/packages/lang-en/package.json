@@ -41,7 +41,7 @@
     "url": "git+https://github.com/isamu/lab.git",
     "directory": "text/packages/lang-en"
   },
-  "homepage": "https://github.com/isamu/lab/tree/main/text",
+  "homepage": "https://isamu.github.io/lab/en/",
   "publishConfig": {
     "access": "public"
   }
