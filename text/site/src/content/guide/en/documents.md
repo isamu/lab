@@ -26,6 +26,7 @@ Each page names the genre to use, runs chaff on a short sample and shows the rea
 | [Business email](./documents-email): an email or a letter to a client | Sentences too long to follow, stacked hedges, wrong weekdays, blanks left in |
 | [Meeting minutes](./documents-minutes): minutes or meeting notes | Wrong weekdays, skipped item numbers, counts that do not match, decisions with nobody behind them |
 | [Business reports](./documents-report): a monthly report, a white paper or an internal document | Openings that fit any document, stacked hedges, passives that never say who acts, sentences that run too long |
+| [Payslips, bills and statements](./documents-paperwork): a payslip, an expense claim, a bank statement, a bill, checkup results, a transcript, a delivery note | Net amounts, totals and balances that do not add up, dates in the wrong order, a booking or employee number written two ways |
 | [Manuals and API docs](./documents-manual): a user guide, an API doc or a help page | Links that go nowhere, images with no description, skipped heading levels, empty sections |
 | [Press releases and announcements](./documents-press): a press release or an announcement | Wrong weekdays, periods that run backwards, totals and breakdowns that do not add up |
 | [Papers and abstracts](./documents-paper): a paper, an abstract or a conference submission | Mixed British and American spelling, doubled words, references to missing figures |
@@ -54,4 +55,5 @@ The first time, it asks whether it may fetch the package. Press `y` to go on.
 ## What to read next
 
 - How to read the screen, and the three ways to respond to a finding, are in [Getting started](./getting-started).
+- What a finding about figures or dates means, and how to fix one, is in [Numbers and dates that disagree](./numbers-and-dates).
 - To fit rule strength and genre to your team, read [Configuration](./configuration).
