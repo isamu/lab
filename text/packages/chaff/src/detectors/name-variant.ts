@@ -13,7 +13,8 @@ import { tableBodyCells } from "../facts/table-facts.ts";
 import { cellNamesIn, cellNameVariants, proseNamesOf } from "../table-names.ts";
 import { placeMentionsIn, placeVariants, type PlaceChars, type PlaceReader, type PlaceWord } from "../place-names.ts";
 import { productMentionsIn, productVariants, type ProductForm } from "../product-names.ts";
-import type { Span, TableCell, Token } from "../plugin.ts";
+import type { Sentence, Span, TableCell, Token } from "../plugin.ts";
+import { isLineBlock, tokensByLine } from "../name-line-block.ts";
 import { proseWithCells } from "../table-cells.ts";
 import { modelCodeFindings } from "./name-variant-model-codes.ts";
 import { fullNameGaps, joinFullNames, spacedOnly } from "../person-full-name.ts";
@@ -237,11 +238,17 @@ const spacedNameMentionsOf = (doc: ProseDocument, prose: string, charReadings: C
   });
 };
 
+/** 文の語。短い行を 1 行に 1 つずつ並べた文（署名、住所）は行ごと。名前を次の行の語まで伸ばして読まないため。 */
+const tokenRunsOf = (sentence: Sentence): readonly (readonly Token[])[] => {
+  const tokens = sentence.tokens ?? [];
+  return isLineBlock(sentence.text) ? tokensByLine(tokens, sentence.text, sentence.span.start) : [tokens];
+};
+
 /** 人・製品・会社の名前の現れ。解析器が固有名詞と読む語、敬称の付く名前、前後の語で名前と読める漢字。空白を挟んだ姓と名は一つ。 */
 const nameMentionsOf = (doc: ProseDocument, prose: string, chars: VariantChars): NameMention[] => {
   const cues: NameCues = { leads: patternsOf(doc, "person-lead"), suffixes: patternsOf(doc, "person-suffix"), particles: patternsOf(doc, "name-particle") };
   const charReadings = charReadingsOf(doc);
-  const tagged = doc.sentences.flatMap((sentence) => mentionsIn(sentence.tokens ?? [], doc.source, cues.suffixes, charReadings));
+  const tagged = doc.sentences.flatMap((sentence) => tokenRunsOf(sentence).flatMap((tokens) => mentionsIn(tokens, doc.source, cues.suffixes, charReadings)));
   const taggedOrSuffixed = [...tagged, ...suffixedNamesIn(prose, cues.suffixes, chars, tagged)];
   const cued = [...taggedOrSuffixed, ...cuedNamesIn(prose, cues, chars, taggedOrSuffixed)].map((mention): NameMention => {
     const cue = mention.cue ?? nameCueAt(prose, mention.offset, mention.surface, cues);

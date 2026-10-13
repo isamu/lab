@@ -17,6 +17,7 @@ import {
 import { isLabelledIn, isTitledIn, withOrdinaryWords } from "../packages/chaff/src/name-ordinary-word.ts";
 import type { Token } from "../packages/chaff/src/plugin.ts";
 import { spacedPersonNamesIn } from "../packages/chaff/src/spaced-person-name.ts";
+import { isLineBlock, tokensByLine } from "../packages/chaff/src/name-line-block.ts";
 import { isInPersonField } from "../packages/chaff/src/person-field.ts";
 import { heavierFirst, outweighs, type NameWeight } from "../packages/chaff/src/name-weight.ts";
 import { isLookalikeApart, lookalikeSlipsIn } from "../packages/chaff/src/name-lookalike-chars.ts";
@@ -629,6 +630,85 @@ describe("name-variant: カタカナか英字の名前に付く 社", () => {
       variants("サウスベイ・インポート株式会社（以下「サウスベイ・インポート社」）と契約します。\nサウスベイ・インポート社が支払います。\n", ja),
       [],
     );
+  });
+});
+
+describe("name-variant: a signature or address written one item to a line", () => {
+  before(async () => {
+    await en.prepare?.({ pos: true });
+  });
+
+  const letter = (leader: string): string =>
+    [
+      "# Trip to the Coast",
+      "",
+      `Trip leader: Mr Owen ${leader} (Head of Year 8)`,
+      "",
+      "If you have questions, please contact Mr Owen Prestwick by email.",
+      "",
+      "Yours faithfully,",
+      "",
+      "Mr Owen Prestwick",
+      "Head of Year 8",
+      "Harrowgate College",
+      "",
+    ].join("\n");
+
+  it("each line of a signature is read on its own, so the name on its first line is counted", () => {
+    assert.deepEqual(variants(letter("Prestwich")), [
+      '"Mr Owen Prestwich" is one letter away from "Mr Owen Prestwick", which the document uses more than once',
+    ]);
+  });
+
+  it("a letter that writes the name one way throughout is not reported", () => {
+    assert.deepEqual(variants(letter("Prestwick")), []);
+  });
+
+  it("a name wrapped across the lines of an ordinary sentence is still one name", () => {
+    const source = [
+      "Please send the signed form to Mr Owen",
+      "Prestwick before the end of the week, so that the coach can be booked.",
+      "",
+      "Questions about the coach go to Mr Owen",
+      "Prestwick at the school office, which is open every morning.",
+      "",
+      "The trip is led by Mr Owen Prestwich this year.",
+      "",
+    ].join("\n");
+    assert.deepEqual(variants(source), ['"Mr Owen Prestwich" is one letter away from "Mr Owen Prestwick", which the document uses more than once']);
+  });
+});
+
+describe("isLineBlock and tokensByLine: short lines read one at a time", () => {
+  it("a signature or an address is a line block", () => {
+    assert.equal(isLineBlock("Mr Owen Prestwick\nHead of Year 8\nHarrowgate College"), true);
+    assert.equal(isLineBlock("Harrowgate College,\n14 Mill Lane\nHarrowgate HG1 2AB\n"), true);
+  });
+
+  it("a sentence wrapped across lines, a single line and an empty text are not", () => {
+    assert.equal(isLineBlock("Please send the signed form to Mr Owen\nPrestwick before the end of the week."), false);
+    assert.equal(isLineBlock("Mr Owen Prestwick"), false);
+    assert.equal(isLineBlock(""), false);
+    assert.equal(isLineBlock("\n\n"), false);
+  });
+
+  it("long lines, a line ending a sentence, a blank line or a long list are not", () => {
+    assert.equal(isLineBlock("Please send the signed form to Mr Owen\nPrestwick before Friday"), false);
+    assert.equal(isLineBlock("Send it to Mr Owen\nby Friday"), false);
+    assert.equal(isLineBlock("Trip leader:\nMr Owen Prestwick"), false);
+    assert.equal(isLineBlock("Mr Owen Prestwick\n\nHead of Year 8"), false);
+    assert.equal(isLineBlock(Array.from({ length: 12 }, (_unused, index) => `Town ${String(index)}, ST`).join("\n")), false);
+  });
+
+  it("tokensByLine splits where a line break falls between two words", () => {
+    const text = "Mr Owen\nHead of\nCollege";
+    const token = (surface: string, start: number): Token => ({ surface, pos: "PROPN", span: { start, end: start + surface.length } });
+    const tokens = [token("Mr", 100), token("Owen", 103), token("Head", 108), token("of", 113), token("College", 116)];
+    assert.deepEqual(
+      tokensByLine(tokens, text, 100).map((line) => line.map((found) => found.surface)),
+      [["Mr", "Owen"], ["Head", "of"], ["College"]],
+    );
+    assert.deepEqual(tokensByLine([], text, 100), []);
   });
 });
 
