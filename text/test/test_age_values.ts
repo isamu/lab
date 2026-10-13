@@ -162,6 +162,6 @@ describe("fact-conflict: an age limit written two ways", () => {
   });
 
   it("an unlabelled limit is not read as the item (no name in the sentence)", () => {
-    assert.deepEqual(conflictEn("## Who can apply", "", ...TABLE_EN, "| Maximum age | 70 |", "", "You can apply up to the age of 75."), []);
+    assert.deepEqual(conflictEn("## Who can apply", "", ...TABLE_EN, "| Maximum age | 70 |", "", "Cover continues up to the age of 75."), []);
   });
 });

@@ -38,6 +38,17 @@ entries:
   - { pattern: "採血日", group: checkup-report, position: before }
   - { pattern: "健診日", group: checkup-report, position: before }
   - { pattern: "報告日", group: checkup-report, position: after }
+  # 結果の報告書の発行日も、受診した日や採血した日より後に来る。受診券や案内と分けるため、題か欄の名前で結果の報告と分かる文書だけ読む。
+  - { pattern: "受診日", group: checkup-result-issue, position: before }
+  - { pattern: "検査日", group: checkup-result-issue, position: before }
+  - { pattern: "採血日", group: checkup-result-issue, position: before }
+  - { pattern: "健診日", group: checkup-result-issue, position: before }
+  - { pattern: "発行日", group: checkup-result-issue, position: after }
+  - { pattern: "検査結果", group: checkup-result-issue }
+  - { pattern: "健診結果", group: checkup-result-issue }
+  - { pattern: "診断結果", group: checkup-result-issue }
+  - { pattern: "結果報告", group: checkup-result-issue }
+  - { pattern: "結果のお知らせ", group: checkup-result-issue }
   # 製品の保証書。製品の登録の締切は、買った日より後に来る。
   - { pattern: "お買い上げ日", group: warranty, position: before }
   - { pattern: "購入日", group: warranty, position: before }
@@ -225,10 +236,13 @@ entries:
   - { pattern: "売買契約日", group: sale-settlement, position: before }
   - { pattern: "決済日", group: sale-settlement, position: after }
   # 宴会や会議室の見積書。見積は催しの前に受けるので、有効期限は開催日より後に来ない。組を作るのは催しの日の語。
-  # 「ご利用日」は入れない。ポイントの明細やクーポンでは、ご利用日の後に有効期限が来る。表の列は「見積」の列がある表だけ読む。
+  # 「見積」は文書の種類を言う語で、表なら「見積」の列がある表だけ、行なら題に「見積」があるか、欄の名前が「見積番号」の文書だけ読む。
+  # ポイントの明細やクーポンでは、ご利用日の後に有効期限が来る。「ご利用日」を組めるのは、この語で見積書と分かるから。
   - { pattern: "有効期限", group: quote-validity, position: before }
   - { pattern: "見積有効期限", group: quote-validity, position: before }
   - { pattern: "御見積有効期限", group: quote-validity, position: before }
   - { pattern: "開催日", group: quote-validity, position: after }
   - { pattern: "ご宴会日", group: quote-validity, position: after }
+  - { pattern: "ご利用日", group: quote-validity, position: after }
   - { pattern: "見積", group: quote-validity }
+  - { pattern: "見積番号", group: quote-validity }

@@ -1,0 +1,9 @@
+# 文の頭で内訳の語の前に書いて、前の文の合計を指す語（「費用は合計12,000円です。その内訳は設計5,000円、開発6,000円です。」）。
+# total-mismatch は、内訳の語の前に何も無いか、これだけがあるときに、次の文の内訳を前の文の合計と比べる。
+id: total-back-reference
+language: ja
+entries:
+  - pattern: その
+  - pattern: この
+  - pattern: なお、
+  - pattern: なお

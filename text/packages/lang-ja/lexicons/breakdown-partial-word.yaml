@@ -1,0 +1,17 @@
+# 合計と後ろの金額のあいだにあれば、その金額は合計の内訳のすべてとは限らないと読む語。一部だけ（「うち設計5,000円」）、
+# どれか一つ（「5,000円または6,000円」）、上限（「最大5,000円」）。total-mismatch は、このときの内訳を合計と比べない。
+id: breakdown-partial-word
+language: ja
+entries:
+  - pattern: うち
+  - pattern: など
+  - pattern: 等
+  - pattern: 含む
+  - pattern: 含め
+  - pattern: 少なくとも
+  - pattern: または
+  - pattern: 又は
+  - pattern: もしくは
+  - pattern: 若しくは
+  - pattern: 最大
+  - pattern: 上限

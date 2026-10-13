@@ -65,7 +65,9 @@ export const dueDate: Detector = (doc): Finding[] => {
   const spans = { ...periodWordsOf(doc, [...new Set(spanEntries.map((entry) => entry.pattern))]), entries: spanEntries };
   return [
     ...dueBeforeIssue(text, dates, wordsOf(doc)).map((issue) => findingOf(doc, issue)),
-    ...pairedDatesOutOfOrder(text, dates, pairs, orderAsidesOf(doc), MAX_RECORD_LINE_GAP, spans).map((issue) => findingOf(doc, issue, variantOf(issue))),
+    ...pairedDatesOutOfOrder(text, dates, pairs, orderAsidesOf(doc), MAX_RECORD_LINE_GAP, { spans, whole: doc.source }).map((issue) =>
+      findingOf(doc, issue, variantOf(issue)),
+    ),
     ...columnDatesOutOfOrder(text, dates, [...pairs, ...(doc.lexicons["dated-column-label"] ?? [])], orderAsidesOf(doc)).map((issue) =>
       findingOf(doc, issue, "order"),
     ),

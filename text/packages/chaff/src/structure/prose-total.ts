@@ -5,6 +5,8 @@ import { shownTotal, type Amount } from "./total.ts";
  * 文の中で書いた合計と内訳。表や箇条書きでなく、一つの文に並べた金額を読む。二つの形がある。
  *   内訳のあとに合計:  「保守費60,000円、運用費30,000円とし、合計100,000円とする」 "$6,000 for hosting and $3,000 for support, for a total of $9,000"
  *   合計のあとに内訳:  「月額150,000円（内訳：保守費90,000円、運用費60,000円）」 "costs $8 per month, made up of a base fee of $6 and a storage fee of $2"
+ *   合計の語のあとに内訳:  「総額12,000円：設計5,000円、開発6,000円」 "a total of $12,000: $5,000 for design and $6,000 for development"
+ *     （内訳を始める記号や語 total-breakdown-lead が合計の金額のすぐ後ろにあるか、合計で終わる文の次の文が内訳の語で始まるとき）
  * 合計の語（total-phrase）はすぐ後ろに合計の金額が来る語、内訳の語（breakdown-phrase）はすぐ後ろから内訳が始まる語。
  * 内訳は合計と同じ単位の金額で、二つ以上。合計の語のすぐ前（内訳の語のすぐ後ろ）から続く並びのどれかの和が合計と合えば
  * 合っているとみなし、どれとも合わないときだけ言う。文の中のほかの金額（単価・上限・遅延損害金）を内訳に数えて誤って言わないため。
@@ -16,6 +18,12 @@ export type TotalWords = {
   readonly breakdowns: readonly string[];
   readonly discounts: readonly string[];
   readonly joiners: readonly string[];
+  /** 合計の金額のすぐ後ろに書いて、そこから内訳のすべてが続くことを言う記号や語（": $5,000 for design and …"）。 */
+  readonly leads: readonly string[];
+  /** 合計と内訳のあいだにあれば、後ろの金額は合計の内訳のすべてとは限らないと読む語（including、うち、or）。 */
+  readonly partials: readonly string[];
+  /** 次の文で内訳の語の前に書いて、前の文の合計を指す語（This、It、その）。何も書かなくてもよい。 */
+  readonly backReferences: readonly string[];
 };
 
 type Span = { readonly start: number; readonly end: number };
@@ -124,12 +132,83 @@ const totalsBeforeParts = (source: string, sentence: Span, amounts: readonly Amo
   });
 };
 
+/** 合計の金額と、後ろに続く内訳を始める記号や語のあいだに書いてよいもの: 空白と、読点一つ。 */
+const isLeadGap = (gap: string): boolean => /^[、,，]?$/u.test(gap.trim());
+/** 割合（40%）を並べた内訳は、金額が合計のどの部分かを言わないので比べない。 */
+const PERCENT = /[%％]/u;
+/** 合計の文と内訳の文のあいだに空行があれば、別の段落で、続く内訳とは読まない。 */
+const PARAGRAPH_BREAK = /\n\s*\n/u;
+
+/** 合計の語のすぐ後ろの金額。 */
+const totalsAt = (source: string, markers: readonly Span[], amounts: readonly Amount[]): Amount[] =>
+  markers.flatMap((marker) => amounts.find((amount) => amount.offset >= marker.end && isTotalGap(gapBefore(source, marker.end, amount))) ?? []);
+
+/**
+ * 合計の後ろから始まる内訳のすべてを合計と比べる。内訳の金額がどれも合計と同じ単位で、合計から内訳の終わりまでに
+ * 一部だけを言う語（including、うち）も割合も無いときだけ。
+ */
+const fullBreakdown = (source: string, total: Amount, listed: readonly Amount[], from: number, words: TotalWords): StructureIssue[] => {
+  const last = listed.at(-1);
+  if (last === undefined || listed.some((part) => part.unit !== total.unit)) return [];
+  const between = source.slice(total.end, last.offset);
+  if (PERCENT.test(between) || phraseSpans(between, total.end, words.partials).length > 0) return [];
+  return mismatch(source, { total, parts: listed, from, nearEnd: false }, words.discounts);
+};
+
+/** 文の中で、合計の語の金額のすぐ後ろに内訳を始める記号や語（": "）があれば、その後ろから文の終わりか次の記号までが内訳。 */
+const totalsThenLead = (source: string, sentence: Span, amounts: readonly Amount[], words: TotalWords): StructureIssue[] => {
+  const text = source.slice(sentence.start, sentence.end);
+  const markers = phraseSpans(text, sentence.start, words.totals);
+  const leads = phraseSpans(text, sentence.start, words.leads);
+  return totalsAt(source, markers, amounts).flatMap((total) => {
+    const lead = leads.find((span) => span.start >= total.end && isLeadGap(source.slice(total.end, span.start)));
+    if (lead === undefined) return [];
+    const end = Math.min(sentence.end, ...[...leads, ...markers].filter((span) => span.start >= lead.end).map((span) => span.start));
+    return fullBreakdown(source, total, inside(amounts, lead.end, end), lead.end, words);
+  });
+};
+
+/** 文の最後の金額が合計の語のすぐ後ろの金額なら、その金額。 */
+const closingTotal = (source: string, sentence: Span, amounts: readonly Amount[], words: TotalWords): Amount | undefined => {
+  const last = inside(amounts, sentence.start, sentence.end).at(-1);
+  const markers = phraseSpans(source.slice(sentence.start, sentence.end), sentence.start, words.totals);
+  return totalsAt(source, markers, amounts).find((total) => total === last);
+};
+
+/** 内訳の語の前に書いたものが、何も無いか前の合計を指す語だけ（"This consists of" 「内訳は」「その内訳は」）。 */
+const refersBack = (opening: string, backReferences: readonly string[]): boolean => {
+  const subject = opening.trim().toLowerCase();
+  return subject === "" || backReferences.some((word) => word.toLowerCase() === subject);
+};
+
+/** 合計で終わる文のすぐ次の文が、前の合計を指して内訳の語で始まれば（内訳は、This consists of）、その後ろの金額が内訳。 */
+const totalThenNextSentence = (source: string, pair: readonly [Span, Span], amounts: readonly Amount[], words: TotalWords): StructureIssue[] => {
+  const [previous, next] = pair;
+  const total = closingTotal(source, previous, amounts, words);
+  if (total === undefined || PARAGRAPH_BREAK.test(source.slice(previous.end, next.start))) return [];
+  const text = source.slice(next.start, next.end);
+  const marker = phraseSpans(text, next.start, words.breakdowns)[0];
+  if (marker === undefined || !refersBack(source.slice(next.start, marker.start), words.backReferences)) return [];
+  const inNext = inside(amounts, next.start, next.end);
+  const end = phraseSpans(text, next.start, words.totals).find((span) => span.start >= marker.end)?.start ?? next.end;
+  return fullBreakdown(source, total, inside(inNext, marker.end, end), marker.end, words);
+};
+
 /** 文ごとに、書いた合計が内訳の和と合わない所。一つの金額は一度だけ言う。 */
 export const proseTotalMismatches = (source: string, sentences: readonly Span[], amounts: readonly Amount[], words: TotalWords): StructureIssue[] => {
-  const issues = sentences.flatMap((sentence) => {
+  const inSentences = sentences.flatMap((sentence) => {
     const inSentence = inside(amounts, sentence.start, sentence.end);
     if (inSentence.length <= MIN_PARTS) return [];
-    return [...totalsAfterParts(source, sentence, inSentence, words), ...totalsBeforeParts(source, sentence, inSentence, words)];
+    return [
+      ...totalsAfterParts(source, sentence, inSentence, words),
+      ...totalsBeforeParts(source, sentence, inSentence, words),
+      ...totalsThenLead(source, sentence, inSentence, words),
+    ];
   });
+  const acrossSentences = sentences.flatMap((previous, index) => {
+    const next = sentences[index + 1];
+    return next === undefined ? [] : totalThenNextSentence(source, [previous, next], amounts, words);
+  });
+  const issues = [...inSentences, ...acrossSentences];
   return issues.filter((issue, index) => issues.findIndex((other) => other.offset === issue.offset) === index);
 };

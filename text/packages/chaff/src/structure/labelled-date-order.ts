@@ -1,3 +1,4 @@
+import { namesDocumentKind } from "./document-context.ts";
 import type { DatedPoint } from "./due-date.ts";
 import type { StructureIssue } from "./issues.ts";
 import type { Line } from "./lines.ts";
@@ -110,11 +111,31 @@ export type PairSpans = PeriodWords & { readonly entries: readonly OrderLabel[] 
 export const spanStartsOf = (spanLabels: readonly OrderLabel[], group: string): string[] =>
   spanLabels.filter((label) => label.group === group && label.position === "before").map((label) => label.pattern);
 
+/** The span words to read periods with, and the whole document (its headings too) to read the words naming its kind. */
+export type PairedReading = { readonly spans?: PairSpans | undefined; readonly whole?: string | undefined };
+
+/** The words a group names its kind of document with: the group's entries without a position (見積, Quote). */
+const contextOf = (labels: readonly OrderLabel[], group: string): string[] =>
+  labels.filter((label) => label.group === group && label.position === undefined).map((label) => label.pattern);
+
+const sameDates = (one: PairedIssue, other: PairedIssue): boolean =>
+  one.offset === other.offset && one.values["later"] === other.values["later"] && one.values["earlier"] === other.values["earlier"];
+
+/**
+ * The issues, two groups comparing one later date with the same earlier date reported once (a leaver's issue date before
+ * both the leaving date and the end of the period covered, which is the same day). Different earlier dates are kept.
+ */
+const withoutRepeats = (issues: readonly PairedIssue[]): PairedIssue[] =>
+  issues.filter((issue, index) => issues.findIndex((other) => sameDates(other, issue)) === index);
+
 /**
  * Every pair of a dated-pair lexicon: the entries of one group with position before label the earlier date, those with
  * position after the later one. The values name both labels, so the message can quote them. The issue is on whichever
  * of the two dates is written second: a reader meets the contradiction there (a cancellation deadline below check-in).
- * spans.entries are the dated-span lexicon's entries, for the span words a group reads by the period's start.
+ * A group with entries without a position is read only in a document whose title or a field's label names one of them
+ * (namesDocumentKind, over reading.whole: the document with its headings, which source blanks out): ご利用日 before 有効期限 is a
+ * quote's mistake and a points statement's normal order.
+ * reading.spans.entries are the dated-span lexicon's entries, for the span words a group reads by the period's start.
  */
 export const pairedDatesOutOfOrder = (
   source: string,
@@ -122,14 +143,18 @@ export const pairedDatesOutOfOrder = (
   labels: readonly OrderLabel[],
   passed: readonly string[],
   maxLineGap: number,
-  spans?: PairSpans,
+  { spans, whole = source }: PairedReading = {},
 ): PairedIssue[] =>
-  labelPairsOf(labels).flatMap((pair) => {
-    const fromStart = spanStartsOf(spans?.entries ?? [], pair.group);
-    return datesOutOfOrder(source, dates, { ...pair, passed, maxLineGap, spans, fromStart }).map(({ earlier, later }) => ({
-      offset: Math.max(later.date.offset, earlier.date.offset),
-      values: { later: later.date.value, earlier: earlier.date.value, later_label: later.label, earlier_label: earlier.label },
-      period: earlier.span,
-      ...(earlier.span && fromStart.includes(earlier.label) ? { fromStart: true } : {}),
-    }));
-  });
+  withoutRepeats(
+    labelPairsOf(labels).flatMap((pair) => {
+      const context = contextOf(labels, pair.group);
+      if (context.length > 0 && !namesDocumentKind(whole, context)) return [];
+      const fromStart = spanStartsOf(spans?.entries ?? [], pair.group);
+      return datesOutOfOrder(source, dates, { ...pair, passed, maxLineGap, spans, fromStart }).map(({ earlier, later }) => ({
+        offset: Math.max(later.date.offset, earlier.date.offset),
+        values: { later: later.date.value, earlier: earlier.date.value, later_label: later.label, earlier_label: earlier.label },
+        period: earlier.span,
+        ...(earlier.span && fromStart.includes(earlier.label) ? { fromStart: true } : {}),
+      }));
+    }),
+  );

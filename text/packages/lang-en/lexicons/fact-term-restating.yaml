@@ -1,0 +1,10 @@
+# The start of a phrase written right after a one-value item's name (fact-document-term, fact-conflict) to say what the
+# value was used for: "the number of dependants used for the dependant allowance" is the number of dependants. A phrase
+# that narrows the item to a part ("the number of dependants used for children under 17", "applied to part-time staff")
+# is not here: only a purpose named with "the" is.
+id: fact-term-restating
+language: en
+entries:
+  - pattern: used for the
+  - pattern: used in the
+  - pattern: used to calculate the

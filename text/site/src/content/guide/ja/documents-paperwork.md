@@ -59,6 +59,7 @@ npx chaffjs init --genre business/report        このフォルダーの chaff.y
 - 文章は書き換えません。直すのは書いた人です。
 - 数字が本当かは見ません。ホテル代が本当に 19,000円 だったかは、領収書が決めます。
 - 税率、給与の決まり、値段は知りません。文書に書いた数字を、同じ文書のほかの所と比べるだけです。
+  例外は日本語の不動産の売買の精算書で、「消費税込み」とだけ書いて税率を書いていない仲介手数料を、消費税 10% で確かめます（[`formula-amount-mismatch`](../../rules/formula-amount-mismatch/)、[文書の種類を決める](./configuration#文書の種類を決める)の `property-sale`）。
 - 文の中の数字は、表や名前の付いた行の数字ほどは読みません（[chaff が読まないもの](./numbers-and-dates#chaff-が読まないもの)）。
 
 ## かけてみる

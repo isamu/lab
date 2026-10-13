@@ -265,6 +265,9 @@ const totalIssues = (doc: ProseDocument, tree: NonNullable<ProseDocument["struct
     breakdowns: patternsOf(doc, "breakdown-phrase"),
     discounts: patternsOf(doc, "discount-word"),
     joiners: patternsOf(doc, "breakdown-gap-joiner"),
+    leads: patternsOf(doc, "total-breakdown-lead"),
+    partials: patternsOf(doc, "breakdown-partial-word"),
+    backReferences: patternsOf(doc, "total-back-reference"),
   };
   const prose = proseTotalMismatches(
     doc.source,

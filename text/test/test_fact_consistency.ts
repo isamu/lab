@@ -12,6 +12,7 @@ import { perUnitOf, withPerUnits, type PerUnitWords } from "../packages/chaff/sr
 import { columnUnits, headingPerUnit, IN_FULL, UNIT_PRICE, type HeadingUnitWords } from "../packages/chaff/src/facts/column-units.ts";
 import { comparable } from "../packages/chaff/src/facts/fact-values.ts";
 import { crossDocFactConflict } from "../packages/chaff/src/detectors/cross-facts.ts";
+import { ageValues, type AgeWords } from "../packages/chaff/src/facts/age-values.ts";
 
 // 同じ項目に違う値（fact-conflict）と、冒頭や要約の値が本文と違う（summary-fact-mismatch）。
 
@@ -806,5 +807,93 @@ describe("fact-conflict: a value under a unit price column is not the amount und
     assert.deepEqual(filesOf(ja, [pricesJa("金額", "1,500円"), pricesJa("金額", "1,200円"), pricesJa("金額", "1,200円")]), ["0.md:1,500円"]);
     assert.deepEqual(filesOf(en, [pricesEn("Unit price", "$120"), pricesEn("Amount", "$1,200"), pricesEn("Amount", "$1,200")]), []);
     assert.deepEqual(filesOf(en, [pricesEn("Amount", "$1,500"), pricesEn("Amount", "$1,200"), pricesEn("Amount", "$1,200")]), ["0.md:$1,500"]);
+  });
+});
+
+describe("fact-conflict: an entry age limit and a dependants count written as a sentence, not as a name", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+    await en.prepare?.({ pos: true });
+  });
+
+  const ITEMS_EN = ["| Item | Details |", "| --- | --- |"];
+  const applyEn = (cell: string, sentence: string): string[] => conflictEn("## Who can apply", "", ...ITEMS_EN, cell, "", "## Terms", "", sentence);
+
+  it("what the reader can do up to an age is the entry age limit, against the table's range or limit (en)", () => {
+    assert.deepEqual(applyEn("| Age at entry | 20 to 70 |", "You can apply up to the age of 75."), ["you can apply:up to the age of 75≠20 to 70"]);
+    assert.deepEqual(applyEn("| Maximum age | 70 |", "You can buy this policy up to the age of 75."), ["you can buy this policy:up to the age of 75≠70"]);
+  });
+
+  it("the same upper end agrees, and another group's or another case's limit is not the entry limit (en)", () => {
+    assert.deepEqual(applyEn("| Age at entry | 20 to 70 |", "You can apply up to the age of 70."), []);
+    assert.deepEqual(applyEn("| Maximum age | 70 |", "Children can travel free up to the age of 12."), []);
+    assert.deepEqual(applyEn("| Maximum age | 70 |", "You can renew up to the age of 85."), []);
+    assert.deepEqual(applyEn("| Maximum age (children) | 12 |", "You can apply up to the age of 70."), []);
+    assert.deepEqual(
+      conflictEn(
+        "## Who can apply",
+        "",
+        "For the basic plan, you can apply up to the age of 65.",
+        "",
+        "For the premium plan, you can apply up to the age of 75.",
+      ),
+      [],
+    );
+    assert.deepEqual(conflictEn("## Who can apply", "", "You can apply up to the age of 65.", "", "You can apply up to the age of 75."), [
+      "you can apply:up to the age of 75≠up to the age of 65",
+    ]);
+  });
+
+  it("a bare range is an age only in a row headed by an age word", () => {
+    const words: AgeWords = {
+      marks: [
+        { pattern: "age", position: "before" },
+        { pattern: "歳", position: "after" },
+      ],
+      limits: [],
+      joiners: ["to", "〜"],
+    };
+    const ages = (source: string): string[] =>
+      ageValues(
+        source,
+        [...source.matchAll(/\d+/gu)].map((match): FactValue => ({
+          start: match.index,
+          end: match.index + match[0].length,
+          kind: "quantity",
+          key: match[0],
+          unit: "",
+        })),
+        words,
+      ).map((age) => `${age.lower ?? ""}-${age.key}`);
+    assert.deepEqual(ages("| Age at entry | 20 to 70 |"), ["20-70"]);
+    assert.deepEqual(ages("| 対象（歳） | 6〜12 |"), ["6-12"]);
+    assert.deepEqual(ages("| Pages | 20 to 70 |"), []);
+    assert.deepEqual(ages("| Storage | 20 to 70 |"), []);
+    assert.deepEqual(ages("| 20 to 70 | Age |"), []);
+    assert.deepEqual(ages("| Age at entry | 18 to 65 | 75 |"), ["18-65"]);
+    assert.deepEqual(ages("Age at entry 20 to 70"), []);
+  });
+
+  const dependantsEn = (sentence: string): string[] =>
+    conflictEn("## Dependants", "", "| Dependant | Count |", "| --- | --- |", "| Number of dependants | 1 |", "", "## Deductions", "", sentence);
+  const dependantsJa = (sentence: string): string[] =>
+    conflictJa("## 扶養親族", "", "| 区分 | 人数 |", "| --- | --- |", "| 扶養親族の数 | 1人 |", "", "## 所得控除", "", sentence);
+
+  it("a count's name with what it was used for is the count (en)", () => {
+    assert.deepEqual(dependantsEn("The number of dependants used for the dependant allowance is 2."), [
+      "The number of dependants used for the dependant allowance:2≠1",
+    ]);
+    assert.deepEqual(dependantsEn("The number of dependants used for the dependant allowance is 1."), []);
+    assert.deepEqual(dependantsEn("The number of dependants under 17 is 2."), []);
+    assert.deepEqual(dependantsEn("The number of dependants used for children under 17 is 2."), []);
+    assert.deepEqual(dependantsEn("The number of dependants applied for children under 17 is 2."), []);
+  });
+
+  it("a count framed as を…として is the count, unless a condition or a value comes before it (ja)", () => {
+    assert.deepEqual(dependantsJa("扶養控除は、扶養親族の数を2人として計算しています。"), ["扶養親族の数:2人≠1人"]);
+    assert.deepEqual(dependantsJa("扶養控除は、扶養親族の数を1人として計算しています。"), []);
+    assert.deepEqual(dependantsJa("配偶者がいる場合、扶養親族の数を2人として計算します。"), []);
+    assert.deepEqual(dependantsJa("2027年分は、扶養親族の数を2人として計算します。"), []);
+    assert.deepEqual(dependantsJa("扶養控除は、特定扶養親族の数を2人として計算しています。"), []);
   });
 });
