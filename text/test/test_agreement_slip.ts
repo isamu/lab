@@ -299,3 +299,26 @@ describe("agreement-slip — 英語", () => {
     assert.deepEqual(findingsOf("資料を送ります。", ja, "ja"), []);
   });
 });
+
+describe("agreement-slip — ファイル名とパス", () => {
+  before(async () => {
+    await en.prepare?.({ pos: true });
+  });
+
+  it("valid: 冠詞の後ろのファイル名・パスの一部は、綴りが決まった名前なので数えない", () => {
+    const valid = [
+      "Write the result to a quotes.json file.",
+      "Save a notes.md next to the draft.",
+      "Open a reports/2026 folder.",
+      "Copy it into a docs/guides tree.",
+      "Keep a backups/ folder.",
+    ];
+    valid.forEach((text) => assert.deepEqual(findingsOf(text), [], text));
+  });
+
+  it("invalid: 文末の句点や名詞のあとの記号は、ファイル名にしない", () => {
+    assert.deepEqual(findingsOf("We saw a changes. Then it left."), ["1:8 a changes"]);
+    assert.deepEqual(findingsOf("The team wrote a detailed notes."), ["1:16 a detailed notes"]);
+    assert.deepEqual(findingsOf("These new version is out."), ["1:1 These new version"]);
+  });
+});
