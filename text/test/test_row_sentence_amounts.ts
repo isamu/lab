@@ -9,7 +9,6 @@ import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import {
   hasCondition,
   namesSubject,
-  periodOf,
   rowSentenceConflicts,
   type Amount,
   type AmountRow,
@@ -43,18 +42,6 @@ describe("namesSubject", () => {
   });
 });
 
-const MARKS = [
-  { pattern: "日額", group: "day" },
-  { pattern: "月額", group: "month" },
-  { pattern: "a day", group: "day" },
-  { pattern: "per month", group: "month" },
-];
-
-const at = (source: string, written: string, key: string, unit: string): Amount => {
-  const start = source.indexOf(written);
-  return { start, end: start + written.length, kind: "quantity", key, unit };
-};
-
 describe("hasCondition", () => {
   it("a condition word anywhere in the sentence", () => {
     assert.equal(hasCondition("入院給付金は、集中治療室に入院した場合、1日につき15,000円をお支払いします。", ["場合", "とき"]), true);
@@ -70,34 +57,13 @@ describe("hasCondition", () => {
   });
 });
 
-describe("periodOf", () => {
-  it("a per-period mark right before or right after the amount", () => {
-    const ja = "| 入院給付金 | 日額5,000円 |";
-    assert.equal(periodOf(ja, at(ja, "5,000円", "5000", "円"), MARKS), "day");
-    const en = "| Hospital cash | $100 a day |";
-    assert.equal(periodOf(en, at(en, "$100", "100", "$"), MARKS), "day");
-    const month = "Premium: $24 per month.";
-    assert.equal(periodOf(month, at(month, "$24", "24", "$"), MARKS), "month");
-  });
-
-  it("no mark, or a mark that is not next to the amount", () => {
-    const ja = "入院1日につき5,000円をお支払いします。";
-    assert.equal(periodOf(ja, at(ja, "5,000円", "5000", "円"), MARKS), undefined);
-    const en = "Hospital cash is paid at $100 for each day.";
-    assert.equal(periodOf(en, at(en, "$100", "100", "$"), MARKS), undefined);
-    const far = "a day later we paid $100.";
-    assert.equal(periodOf(far, at(far, "$100", "100", "$"), MARKS), undefined);
-    assert.equal(periodOf("", { start: 0, end: 0, kind: "quantity", key: "", unit: "" }, MARKS), undefined);
-  });
-});
-
-const yen = (start: number, key: string, period?: string): Amount => ({
+const yen = (start: number, key: string, per?: string): Amount => ({
   start,
   end: start + 1,
   kind: "quantity",
   key,
   unit: "円",
-  ...(period === undefined ? {} : { period }),
+  ...(per === undefined ? {} : { per }),
 });
 const row = (amounts: Amount[], scope = "s1", label = "入院給付金"): AmountRow => ({ label, scope, amounts });
 const sentence = (amounts: Amount[], scope = "s1", text = "入院給付金は、入院1日につき10,000円をお支払いします。"): SubjectSentence => ({
@@ -110,7 +76,7 @@ const values = (rows: AmountRow[], sentences: SubjectSentence[]): string[] =>
 
 describe("rowSentenceConflicts", () => {
   it("the one amount of the row and the one amount of the sentence naming it", () => {
-    assert.deepEqual(values([row([yen(1, "5000", "day")])], [sentence([yen(50, "10000")])]), ["入院給付金:10000≠5000"]);
+    assert.deepEqual(values([row([yen(1, "5000", "day")])], [sentence([yen(50, "10000", "day")])]), ["入院給付金:10000≠5000"]);
     assert.deepEqual(values([row([yen(1, "5000")])], [sentence([yen(50, "5000")])]), []);
   });
 
@@ -125,8 +91,10 @@ describe("rowSentenceConflicts", () => {
     assert.deepEqual(values([row([yen(1, "5000")])], [sentence([yen(50, "15000")], "s1", "入院給付金は、集中治療室に入院した場合、15,000円です。")]), []);
   });
 
-  it("amounts for different periods, or in different currencies, are different values", () => {
+  it("amounts per different units, a rate against an amount, or in different currencies, are different values", () => {
     assert.deepEqual(values([row([yen(1, "5000", "day")])], [sentence([yen(50, "150000", "month")])]), []);
+    assert.deepEqual(values([row([yen(1, "1650")])], [sentence([yen(50, "15", "km")])]), []);
+    assert.deepEqual(values([row([yen(1, "5000", "day")])], [sentence([yen(50, "10000")])]), []);
     const dollars: Amount = { start: 50, end: 54, kind: "quantity", key: "100", unit: "$" };
     assert.deepEqual(values([row([yen(1, "5000")])], [sentence([dollars])]), []);
   });

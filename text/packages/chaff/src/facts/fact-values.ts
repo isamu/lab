@@ -12,6 +12,7 @@ export type ValueKind = "quantity" | "date" | "name";
 /**
  * bound: upper なら key は上の端（満70歳まで、20 to 70 の 70）。lower は範囲の下の端（満20歳〜満70歳 の 20）。
  * basis: 率に書いた基準（period:year、kind:fixed）。両方に書いた同じ種類の基準が違えば、別の量として比べない。
+ * per: 何あたりの値か（1kmあたり15円 の km、per-unit.ts）。何あたりかの違う値、片方だけ何あたりの値は比べない。
  */
 export type FactValue = Span & {
   readonly kind: ValueKind;
@@ -20,6 +21,7 @@ export type FactValue = Span & {
   readonly bound?: "upper";
   readonly lower?: string;
   readonly basis?: RateBasis;
+  readonly per?: string;
 };
 
 const attr = (node: StructureNode, name: string): string => String(node.attrs[name] ?? "");
@@ -127,7 +129,8 @@ const comparableBounds = (left: FactValue, right: FactValue): boolean =>
 /** 同じ種類の値で、比べられるもの。数量は同じ単位どうし（単位の違いは別の rule が見る）。 */
 export const comparable = (left: FactValue, right: FactValue): boolean => {
   if (left.kind !== right.kind) return false;
-  if (left.kind === "quantity") return left.unit === right.unit && comparableBounds(left, right) && basesAgree(left.basis, right.basis);
+  if (left.kind === "quantity")
+    return left.unit === right.unit && left.per === right.per && comparableBounds(left, right) && basesAgree(left.basis, right.basis);
   return left.kind !== "date" || comparableDates(left.key, right.key) !== undefined;
 };
 
