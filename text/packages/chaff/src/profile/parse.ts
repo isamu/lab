@@ -1,4 +1,5 @@
 import type { DocumentProfile, RelativeVocabulary } from "../plugin.ts";
+import { withoutListMarkers } from "./cue-lines.ts";
 
 /** profiles/*.yaml を一つ読んだもの。言語ごとの中身と、内容から選ぶための形を持つ。 */
 export type ProfileDefinition = {
@@ -137,10 +138,10 @@ export const parseProfile = (raw: unknown): ProfileDefinition | undefined => {
   return { id, name: texts(raw["name"]), detect, languages: languagesOf(id, raw) };
 };
 
-/** 行頭から数える。source 全体に m フラグで当てれば、行ごとに分けずに数えられる。 */
+/** 行頭から数える。source 全体に m フラグで当てれば、行ごとに分けずに数えられる。箇条の印は行頭に数えない。 */
 export const detected = (definition: ProfileDefinition, source: string, language: string): boolean => {
   const detect = definition.detect[language];
   if (detect === undefined) return false;
-  const count = [...source.matchAll(new RegExp(detect.line, "gmu"))].length;
+  const count = [...withoutListMarkers(source).matchAll(new RegExp(detect.line, "gmu"))].length;
   return count >= detect.minLines;
 };

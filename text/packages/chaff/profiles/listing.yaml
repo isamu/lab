@@ -9,7 +9,7 @@ why:
   en: Japanese property advertising computes walking times at 80 m of road per minute, a part minute rounded up (the real-estate fair-competition code). In a Japanese listing, walking times are compared with their distances at that rate even when it is not written. There is no such standard for English listings, so this profile has no English part.
 
 # 設定（chaff.yaml の profile / by_path）が無いときに、内容から選ぶ。物件概要の項目（交通、賃料、敷金、間取り…）の行が
-# min_lines 行以上あれば物件広告として読む。表の行（| 賃料 | …）も、「賃料：…」の行も数える。
+# min_lines 行以上あれば物件広告として読む。表の行（| 賃料 | …）も、「賃料：…」の行も、箇条の行（- 賃料：…）も数える。
 detect:
   ja:
     line: "^[ \\t]*\\|?[ \\t]*(?:交通|賃料|家賃|管理費|共益費|敷金|礼金|保証金|間取り|専有面積|入居可能日|築年月)[ \\t]*[|｜:：]"
