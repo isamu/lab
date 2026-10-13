@@ -1,0 +1,10 @@
+# Words that mark the start of a trip. In a trip notice (event-trip-word), the first dated day on a line starting with
+# one ("Departure: Wednesday 14 October 2026", "Dates: October 14–16, 2026") is read by deadline-after-event as the
+# event's date, without a time of day. "Dates" outside a trip notice (a billing period) is not read.
+id: event-start-label
+language: en
+entries:
+  - pattern: Departure
+  - pattern: Departure date
+  - pattern: Dates
+  - pattern: Trip dates

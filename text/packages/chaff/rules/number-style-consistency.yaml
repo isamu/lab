@@ -67,8 +67,8 @@ example:
       We fixed three bugs, closed four issues and merged two pull requests. The release also adds five tests.
 
 not_flagged:
-  ja: 鉤括弧や引用符の中の数、注や URL を含む文、日本語の中の英文は数えません。「一つ」「一人」のような一だけの漢数字と、「万人」「千人」のような位の字だけの漢数字、「第三回」「統一」のように漢字の後ろの数、日付の日・月・年は数えません。位取りは、通貨の記号か数え方の語・単位が付いた大きな数だけを見て、年に見える 4 桁の数（2019 年）、番号（H.R. 5376）、版や電話番号は見ません。全角と半角の違いは fullwidth-alnum-consistency が見ます。法務・文学・話し言葉のジャンルでは見ません。
-  en: 'Numbers inside quotation marks, sentences with a note mark or a URL, and text in another language are not counted. A number word that opens a sentence (spelt out by every style), "one", and a number before a unit of measure (6 months, 3 miles) are not counts. Grouping is checked only for large numbers with a currency sign or a word after them; a four-digit number that looks like a year, a label number (H.R. 5376, Form 1040), versions and phone numbers are left out. Legal, literary and speech genres do not run this rule.'
+  ja: 鉤括弧や引用符の中の数、注や URL を含む文、日本語の中の英文は数えません。「一つ」「一人」のような一だけの漢数字と、「万人」「千人」のような位の字だけの漢数字、「第三回」「統一」のように漢字の後ろの数、日付の日・月・年、英語で名前の一部になった数（Grade 5 students、Room 12）は数えません。位取りは、通貨の記号か数え方の語・単位が付いた大きな数だけを見て、年に見える 4 桁の数（2019 年）、番号（H.R. 5376）、版や電話番号は見ません。全角と半角の違いは fullwidth-alnum-consistency が見ます。法務・文学・話し言葉のジャンルでは見ません。
+  en: 'Numbers inside quotation marks, sentences with a note mark or a URL, and text in another language are not counted. A number word that opens a sentence (spelt out by every style), "one", a number before a unit of measure (6 months, 3 miles) and a number that names a group (Grade 5 students, Room 12) are not counts. Grouping is checked only for large numbers with a currency sign or a word after them; a four-digit number that looks like a year, a label number (H.R. 5376, Form 1040), versions and phone numbers are left out. Legal, literary and speech genres do not run this rule.'
 level_meaning:
   ja: 少ないほうの書き方が、その種類の数の {limit}% 以下のとき指摘
   en: reported when the less common style is {limit}% of its kind or less

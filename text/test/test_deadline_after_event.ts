@@ -7,6 +7,9 @@ import {
   isRegistrationDeadline,
   isTicketOrder,
   isTicketPaymentDeadline,
+  isTripNotice,
+  isTripPaymentDeadline,
+  rangeStartOf,
   type EventDeadlineWords,
 } from "../packages/chaff/src/structure/deadline-after-event.ts";
 
@@ -115,6 +118,14 @@ describe("deadline-after-event: 申込締切が催しの日より後", () => {
     assert.deepEqual(findingsOf("# 座席表\n\n日時：2026年12月12日（土）18:30開演\n\nお支払い期限：2026年12月15日（火）\n"), []);
   });
 
+  it("期日の語（due）は旅行の知らせの外では締め切りと読まない", () => {
+    assert.deepEqual(findingsOf(`${EN_EVENT}Registration is due to open on Friday, November 27, 2026.\n`, en), []);
+    assert.deepEqual(
+      findingsOf("# Your Ticket Order\n\nDate: Saturday, December 12, 2026, 18:30\n\nPayment is due to be processed on December 15, 2026.\n", en),
+      [],
+    );
+  });
+
   it("メールの頭の Date: は催しの日と読まない", () => {
     assert.deepEqual(findingsOf("Date: Friday, November 20, 2026, 2:00 PM\n\nPlease register by Friday, November 27, 2026.\n", en), []);
   });
@@ -129,6 +140,10 @@ describe("isRegistrationDeadline", () => {
     tickets: ["チケット", "ticket"],
     payments: ["支払", "Payment"],
     bills: ["請求", "invoice"],
+    trips: [],
+    starts: [],
+    paymentDeadlines: [],
+    dues: [],
   };
 
   it("申込の語と締め切りの語の両方があれば締め切りと読む", () => {
@@ -154,6 +169,10 @@ describe("isTicketPaymentDeadline / isTicketOrder", () => {
     tickets: ["チケット", "ticket"],
     payments: ["支払", "Payment"],
     bills: ["請求", "invoice"],
+    trips: [],
+    starts: [],
+    paymentDeadlines: [],
+    dues: [],
   };
 
   it("支払の語と締め切りの語があれば、支払の語が後に来てよいものの語でも読む", () => {
@@ -176,5 +195,112 @@ describe("isTicketPaymentDeadline / isTicketOrder", () => {
     assert.equal(isTicketOrder("チケット販売代行料", "ご請求金額", WORDS), false);
     assert.equal(isTicketOrder("Ticket sales", "Please pay this Invoice", WORDS), false);
     assert.equal(isTicketOrder("Tickets", "", { ...WORDS, tickets: [] }), false);
+  });
+});
+
+describe("deadline-after-event: 旅行の知らせの、出発の後の納入期限", () => {
+  const JA_TRIP = "# 修学旅行のお知らせ\n\n出発日：2026年10月14日（水）\n\n";
+  const EN_TRIP = "# School Trip to York\n\nDeparture: Wednesday 14 October 2026\n\n";
+  const JA_LATE = ["支払の期限（2026年10月20日）が、催しの日（2026年10月14日）より後です"];
+  const EN_LATE = ["The payment deadline 20 October 2026 is after the event on 14 October 2026"];
+
+  it("出発日・期間の始まりより後の納入期限を指す", () => {
+    assert.deepEqual(findingsOf(`${JA_TRIP}納入期限：2026年10月20日（火）\n`), JA_LATE);
+    assert.deepEqual(
+      findingsOf("# 林間学校のお知らせ\n\n期間：2026年10月14日（水）〜16日（金）\n\n- 第2回：6,000円（納入期限 2026年10月20日（火））\n"),
+      JA_LATE,
+    );
+    assert.deepEqual(findingsOf("# 修学旅行のお知らせ\n\n旅行期間：2026年10月14日〜2026年10月16日\n\n2026年10月15日までに旅行代金をお振り込みください。\n"), [
+      "支払の期限（2026年10月15日）が、催しの日（2026年10月14日）より後です",
+    ]);
+    assert.deepEqual(findingsOf(`${EN_TRIP}Payment due: Tuesday 20 October 2026\n`, en), EN_LATE);
+    assert.deepEqual(
+      findingsOf("# Outdoor Camp\n\nDates: Wednesday, October 14 – Friday, October 16, 2026\n\n- Second payment: $60, due Tuesday, October 20, 2026\n", en),
+      ["The payment deadline October 20, 2026 is after the event on October 14, 2026"],
+    );
+  });
+
+  it("納入期限の列の表の升も読む", () => {
+    const jaRows = "| 第1回 | 30,000円 | 2026年9月15日（火） |\n| 第2回 | 32,000円 | 2026年10月20日（火） |\n";
+    assert.deepEqual(findingsOf(`${JA_TRIP}| 回 | 金額 | 納入期限 |\n| --- | --- | --- |\n${jaRows}`), JA_LATE);
+    assert.deepEqual(findingsOf(`${JA_TRIP}| 回 | 金額 | 引き落とし日 |\n| --- | --- | --- |\n${jaRows}`), JA_LATE);
+    const enRows = "| 1st payment | £170 | Tuesday 15 September 2026 |\n| 2nd payment | £150 | Tuesday 20 October 2026 |\n";
+    assert.deepEqual(findingsOf(`${EN_TRIP}| Instalment | Amount | Due by |\n| --- | --- | --- |\n${enRows}`, en), EN_LATE);
+  });
+
+  it("出発の前の納入期限、納入期限でない列、帰着日、返金は言わない", () => {
+    assert.deepEqual(findingsOf(`${JA_TRIP}納入期限：2026年9月30日（水）\n`), []);
+    assert.deepEqual(findingsOf(`${EN_TRIP}Payment due: Wednesday 30 September 2026\n`, en), []);
+    assert.deepEqual(findingsOf(`${JA_TRIP}| 日 | 行き先 |\n| --- | --- |\n| 2026年10月15日 | 奈良 |\n`), []);
+    assert.deepEqual(findingsOf(`${JA_TRIP}帰着日：2026年10月16日（金）\n`), []);
+    assert.deepEqual(findingsOf(`${JA_TRIP}残金は2026年10月30日までに返金として振り込みます。\n`), []);
+    assert.deepEqual(findingsOf(`${EN_TRIP}We return on Friday 16 October 2026, due to the half-term break.\n`, en), []);
+    assert.deepEqual(findingsOf(`${EN_TRIP}Any refund payment will be made by Friday 30 October 2026.\n`, en), []);
+    assert.deepEqual(findingsOf(`${EN_TRIP}Permission slip due date: Tuesday 20 October 2026\n`, en), []);
+  });
+
+  it("旅行の知らせでない文書の期間、請求書や納品の支払期限は言わない", () => {
+    assert.deepEqual(findingsOf("# 電気料金のお知らせ\n\n期間：2026年9月1日〜2026年9月30日\n\n納付期限：2026年10月20日\n"), []);
+    assert.deepEqual(findingsOf("# 旅行代金のご請求\n\n出発日：2026年10月14日（水）\n\n納入期限：2026年10月20日（火）\n"), []);
+    assert.deepEqual(findingsOf("# 納品のお知らせ\n\n納品日：2026年10月14日\n\nお支払期限：2026年11月30日\n"), []);
+    assert.deepEqual(findingsOf("# Statement\n\nDates: September 1–30, 2026\n\nPayment due: October 20, 2026\n", en), []);
+    assert.deepEqual(findingsOf("# Tour invoice\n\nDeparture: 14 October 2026\n\nPayment due: 20 October 2026\n", en), []);
+  });
+});
+
+describe("isTripNotice / isTripPaymentDeadline", () => {
+  const WORDS: EventDeadlineWords = {
+    events: [],
+    registrations: [],
+    deadlines: ["まで", "due"],
+    asides: ["返金", "refund", "支払", "payment"],
+    tickets: [],
+    payments: ["支払", "payment"],
+    bills: ["請求", "invoice"],
+    trips: ["旅行", "trip"],
+    starts: [],
+    paymentDeadlines: ["納入期限", "payment due"],
+    dues: ["due"],
+  };
+
+  it("題名に旅行の語があり、請求書の語が無いときだけ旅行の知らせ", () => {
+    assert.equal(isTripNotice("修学旅行のお知らせ", "", WORDS), true);
+    assert.equal(isTripNotice("School Trip", "", WORDS), true);
+    assert.equal(isTripNotice(undefined, "旅行", WORDS), false);
+    assert.equal(isTripNotice("お知らせ", "旅行", WORDS), false);
+    assert.equal(isTripNotice("旅行代金", "ご請求金額", WORDS), false);
+    assert.equal(isTripNotice("Trip invoice", "", WORDS), false);
+  });
+
+  it("納入期限の語、その列の見出し、支払の語と締め切りの語を読む", () => {
+    assert.equal(isTripPaymentDeadline("納入期限：10月20日", undefined, WORDS), true);
+    assert.equal(isTripPaymentDeadline("| 第2回 | 10月20日 |", "納入期限", WORDS), true);
+    assert.equal(isTripPaymentDeadline("| 2nd payment | £150 | 20 October |", "Due by", WORDS), true);
+    assert.equal(isTripPaymentDeadline("Second payment: $60, due October 20", undefined, WORDS), true);
+  });
+
+  it("見出しが納入期限でない列、締め切りの語だけ、返金の語、空の文は読まない", () => {
+    assert.equal(isTripPaymentDeadline("| 第2回 | 10月20日 |", "備考", WORDS), false);
+    assert.equal(isTripPaymentDeadline("due to rain", undefined, WORDS), false);
+    assert.equal(isTripPaymentDeadline("返金の納入期限", undefined, WORDS), false);
+    assert.equal(isTripPaymentDeadline("refund payment due by October 30", undefined, WORDS), false);
+    assert.equal(isTripPaymentDeadline("Permission slip due date: October 20", undefined, WORDS), false);
+    assert.equal(isTripPaymentDeadline("", undefined, WORDS), false);
+  });
+});
+
+describe("rangeStartOf", () => {
+  it("期間の始まりの日。年の無い始まりは終わりの年を借りる", () => {
+    assert.equal(rangeStartOf(["2026-10-14", "2026-10-16"]), "2026-10-14");
+    assert.equal(rangeStartOf(["10-14", "2026-10-16"]), "2026-10-14");
+    assert.equal(rangeStartOf(["12-30", "2027-01-02"]), "2026-12-30");
+    assert.equal(rangeStartOf(["07-09", "2026-07-08"]), "2026-07-09");
+    assert.equal(rangeStartOf(["2026-10-16"]), "2026-10-16");
+  });
+
+  it("日付が無い、年がどこにも無い、年月だけのものは読まない", () => {
+    assert.equal(rangeStartOf([]), undefined);
+    assert.equal(rangeStartOf(["10-14", "10-16"]), undefined);
+    assert.equal(rangeStartOf(["2026-10"]), undefined);
   });
 });

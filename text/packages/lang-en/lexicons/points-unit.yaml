@@ -1,0 +1,10 @@
+# The units a points amount is written in. Points earned written so may be compared with a dollar amount spent times its
+# rate (line-amount-mismatch).
+id: points-unit
+language: en
+entries:
+  - pattern: points
+  - pattern: point
+  - pattern: pts
+  - pattern: pt
+  - pattern: miles

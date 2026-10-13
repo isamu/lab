@@ -1,0 +1,7 @@
+# Words that mark a date something falls due. Only in a trip notice (event-trip-word), and only beside a payment word
+# (event-payment-word), deadline-after-event reads a sentence holding one as a payment deadline ("Second payment: $60,
+# due …"). Not a deadline word for registrations or ticket orders: "due to open" and "due to be processed" are not deadlines.
+id: event-due-word
+language: en
+entries:
+  - pattern: due

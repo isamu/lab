@@ -20,3 +20,8 @@ entries:
   - { pattern: km, group: km }
   # 授業の単位（2単位）。1単位あたりの授業料は単位の数とだけ掛ける。
   - { pattern: 単位, group: credit }
+  # 面積の単位。㎡と坪は別の単位なので、㎡単価は坪の数量と掛けない。
+  - { pattern: ㎡, group: sqm }
+  - { pattern: 平米, group: sqm }
+  - { pattern: 平方メートル, group: sqm }
+  - { pattern: 坪, group: tsubo }

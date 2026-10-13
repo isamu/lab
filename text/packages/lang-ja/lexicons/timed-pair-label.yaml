@@ -15,6 +15,9 @@ entries:
   - { pattern: "開始", group: doors, position: after }
   - { pattern: "開始時間", group: doors, position: after }
   - { pattern: "開始時刻", group: doors, position: after }
+  - { pattern: "開宴", group: doors, position: after }
+  - { pattern: "開宴時間", group: doors, position: after }
+  - { pattern: "開宴時刻", group: doors, position: after }
   # 受付を始めてから会を始める。
   - { pattern: "受付開始", group: reception, position: before }
   - { pattern: "受付開始時間", group: reception, position: before }
@@ -24,6 +27,16 @@ entries:
   - { pattern: "開始", group: reception, position: after }
   - { pattern: "開始時間", group: reception, position: after }
   - { pattern: "開始時刻", group: reception, position: after }
+  - { pattern: "開宴", group: reception, position: after }
+  - { pattern: "開宴時間", group: reception, position: after }
+  - { pattern: "開宴時刻", group: reception, position: after }
+  # 受付を始めてから受付を締める。
+  - { pattern: "受付開始", group: reception-span, position: before }
+  - { pattern: "受付開始時間", group: reception-span, position: before }
+  - { pattern: "受付開始時刻", group: reception-span, position: before }
+  - { pattern: "受付終了", group: reception-span, position: after }
+  - { pattern: "受付終了時間", group: reception-span, position: after }
+  - { pattern: "受付終了時刻", group: reception-span, position: after }
   # 旅行やツアー。集合してから、搭乗を始めてから出発する。
   - { pattern: "集合", group: departure, position: before }
   - { pattern: "集合時間", group: departure, position: before }
@@ -35,12 +48,24 @@ entries:
   - { pattern: "出発時刻", group: departure, position: after }
   # 始めてから終わる。
   - { pattern: "開演", group: span, position: before }
+  - { pattern: "開演時間", group: span, position: before }
+  - { pattern: "開演時刻", group: span, position: before }
   - { pattern: "開会", group: span, position: before }
   - { pattern: "開始", group: span, position: before }
   - { pattern: "開始時刻", group: span, position: before }
   - { pattern: "終演", group: span, position: after }
   - { pattern: "終演予定", group: span, position: after }
+  - { pattern: "終演時間", group: span, position: after }
+  - { pattern: "終演時刻", group: span, position: after }
   - { pattern: "閉会", group: span, position: after }
   - { pattern: "終了", group: span, position: after }
   - { pattern: "終了予定", group: span, position: after }
   - { pattern: "終了時刻", group: span, position: after }
+  # 宴会。開宴してから閉宴する（お開きになる）。
+  - { pattern: "開宴", group: banquet, position: before }
+  - { pattern: "開宴時間", group: banquet, position: before }
+  - { pattern: "開宴時刻", group: banquet, position: before }
+  - { pattern: "閉宴", group: banquet, position: after }
+  - { pattern: "閉宴時間", group: banquet, position: after }
+  - { pattern: "閉宴時刻", group: banquet, position: after }
+  - { pattern: "お開き", group: banquet, position: after }

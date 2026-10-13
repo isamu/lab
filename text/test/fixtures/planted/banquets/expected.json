@@ -1,21 +1,21 @@
 {
   "recall": {
     "ja": {
-      "validity-after-event": "0/2",
-      "closing-before-opening": "0/1",
-      "per-person-line": "2/2",
-      "room-hours-line": "2/2",
-      "service-charge-rate": "0/2",
-      "guaranteed-count": "0/2",
-      "organiser-name": "1/2",
-      "hours-reversed": "1/1"
-    },
-    "en": {
-      "validity-after-event": "0/2",
+      "validity-after-event": "1/2",
       "closing-before-opening": "1/1",
       "per-person-line": "2/2",
       "room-hours-line": "2/2",
-      "service-charge-rate": "0/2",
+      "service-charge-rate": "2/2",
+      "guaranteed-count": "0/2",
+      "organiser-name": "2/2",
+      "hours-reversed": "1/1"
+    },
+    "en": {
+      "validity-after-event": "2/2",
+      "closing-before-opening": "1/1",
+      "per-person-line": "2/2",
+      "room-hours-line": "2/2",
+      "service-charge-rate": "2/2",
       "guaranteed-count": "0/2",
       "organiser-name": "2/2",
       "hours-reversed": "1/1"

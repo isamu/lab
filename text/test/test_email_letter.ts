@@ -1,6 +1,16 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { bodyLines, firstMention, frameSlips, lineHas, ownText, showsAttachment, withoutReplyMarks } from "../packages/chaff/src/detectors/email-letter.ts";
+import {
+  bodyLines,
+  endsSentence,
+  firstMention,
+  frameSlips,
+  greetingLineCount,
+  lineHas,
+  ownText,
+  showsAttachment,
+  withoutReplyMarks,
+} from "../packages/chaff/src/detectors/email-letter.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
@@ -47,6 +57,74 @@ const EN_MAIL = [
   "",
 ].join("\n");
 
+const JA_LETTER = [
+  "# 町内清掃のお知らせ",
+  "",
+  "2026年5月10日",
+  "",
+  "自治会員各位",
+  "",
+  "さくら台三丁目自治会",
+  "会長 森田 健",
+  "環境部長 石井 由美",
+  "",
+  "拝啓 新緑の候、皆様にはますますご清祥のこととお喜び申し上げます。",
+  "",
+  "さて、下記のとおり町内清掃を行います。ご参加くださいますようお願い申し上げます。",
+  "",
+  "敬具",
+  "",
+].join("\n");
+const EN_LETTER = [
+  "Riverside Allotment Society",
+  "4 Mill Lane",
+  "Norwich NR3 1AB",
+  "",
+  "10 May 2026",
+  "",
+  "Mrs A Okafor",
+  "12 Elm Road",
+  "Norwich NR2 4CD",
+  "",
+  "Dear Mrs Okafor,",
+  "",
+  "Your plot renewal for the coming season is now due. Please return the form by the end of the month.",
+  "",
+  "Yours sincerely,",
+  "Tom Hale",
+  "",
+].join("\n");
+
+describe("endsSentence and greetingLineCount: a letter's header before the greeting", () => {
+  const marks = ["。", "."];
+
+  it("reads a sentence's end mark at the end of a line, past a closing bracket or quote", () => {
+    assert.ok(endsSentence("ご参加ください。", marks));
+    assert.ok(endsSentence("「ご参加ください。」  ", marks));
+    assert.ok(endsSentence('He said "yes."', marks));
+  });
+
+  it("does not read a header line, an empty line or a line of closers as a sentence", () => {
+    assert.ok(!endsSentence("保護者各位", marks));
+    assert.ok(!endsSentence("10 May 2026", marks));
+    assert.ok(!endsSentence("Dear Mrs Okafor,", marks));
+    assert.ok(!endsSentence("", marks));
+    assert.ok(!endsSentence("」）", marks));
+    assert.ok(!endsSentence("Text.", []));
+  });
+
+  it("counts the header and the first sentence's line, and never fewer than the first lines", () => {
+    assert.equal(greetingLineCount(linesIn("a\nb\nc\nd\ne\nf\ng\nText.\n"), marks), 8);
+    assert.equal(greetingLineCount(linesIn("Text.\nb\n"), marks), 5);
+    assert.equal(greetingLineCount([], marks), 5);
+  });
+
+  it("reads only the first lines when no sentence ends in the header's reach", () => {
+    const unpunctuated = Array.from({ length: 14 }, (_, index) => `line ${String(index)}`).join("\n");
+    assert.equal(greetingLineCount(linesIn(`${unpunctuated}\nText.\n`), marks), 5);
+  });
+});
+
 describe("lineHas: a greeting or closing word in a line", () => {
   it("reads a Latin word at the line's head only, and not as part of a longer word", () => {
     assert.ok(lineHas("Hi Anna,", ["Hi"]));
@@ -73,7 +151,7 @@ describe("email-greeting-closing: a greeting and a closing", () => {
   it("finds a closing before an appendix or a signature that breaks the text", () => {
     assert.deepEqual(variantsOf(en, "email-greeting-closing", `${EN_MAIL}\n## Appendix A\n\nTerms one.\n\nTerms two.\n`), []);
     const lines = linesIn("Dear Ann,\n\nText.\n\nThanks,\nBo\n\n# Terms\n\nOne.\n");
-    assert.deepEqual(frameSlips(lines, ["Dear"], ["Thanks"]), []);
+    assert.deepEqual(frameSlips(lines, ["Dear"], ["Thanks"], ["."]), []);
     assert.deepEqual(
       lines.map((line) => line.breaks),
       [false, false, false, false, true],
@@ -108,6 +186,21 @@ describe("email-greeting-closing: a greeting and a closing", () => {
   it("does not read a quoted reply", () => {
     const quoted = `${EN_MAIL.replace("Best regards,", "")}\n> Best regards,\n> Ann\n`;
     assert.deepEqual(variantsOf(en, "email-greeting-closing", quoted), ["closing"]);
+  });
+
+  it("looks for the greeting past a letter's header: the date, the addressee, the sender", () => {
+    assert.deepEqual(variantsOf(ja, "email-greeting-closing", JA_LETTER), []);
+    assert.deepEqual(variantsOf(en, "email-greeting-closing", EN_LETTER), []);
+  });
+
+  it("still reports a letter whose header is followed by no greeting", () => {
+    assert.deepEqual(variantsOf(ja, "email-greeting-closing", JA_LETTER.replace(/拝啓 新緑の候、/u, "")), ["greeting"]);
+    assert.deepEqual(variantsOf(en, "email-greeting-closing", EN_LETTER.replace("Dear Mrs Okafor,\n\n", "")), ["greeting"]);
+  });
+
+  it("does not read a greeting word past the first sentence after the header", () => {
+    const late = JA_LETTER.replace("拝啓 新緑の候、", "").replace("さて、", "拝啓 さて、");
+    assert.deepEqual(variantsOf(ja, "email-greeting-closing", late), ["greeting"]);
   });
 
   it("runs only in the email and letter genre", () =>

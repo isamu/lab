@@ -12,6 +12,8 @@ import { labelProductMismatches, type LabelProductWords } from "../structure/lin
 import { amountsIn, formsOf } from "./currency-notation.ts";
 import { scaleWordsOf } from "./amount-scale.ts";
 import { quoteAt } from "./structure-tree.ts";
+import { pointsMismatches, type PointsRole, type PointsWords } from "../structure/line-amount-rate.ts";
+import { linesOf } from "../structure/lines.ts";
 
 const patternsOf = (doc: ProseDocument, lexicon: string): string[] => (doc.lexicons[lexicon] ?? []).map((entry) => entry.pattern);
 
@@ -47,9 +49,32 @@ const labelWordsOf = (doc: ProseDocument): LabelProductWords => {
   };
 };
 
+const POINTS_ROLES: readonly string[] = ["base", "rate", "earned"] satisfies readonly PointsRole[];
+const isPointsRole = (group: string | undefined): group is PointsRole => group !== undefined && POINTS_ROLES.includes(group);
+const HEADING = /^#{1,6}[ \t]/u;
+
+/** Lexicons points-earned-column (group base, rate or earned; a rate's weight is what a bare rate is per), points-unit, points-rate-joiner. */
+const pointsWordsOf = (doc: ProseDocument): PointsWords => ({
+  columns: (doc.lexicons["points-earned-column"] ?? []).flatMap((entry) =>
+    isPointsRole(entry.group) ? [{ pattern: entry.pattern, role: entry.group, per: entry.weight }] : [],
+  ),
+  units: patternsOf(doc, "points-unit"),
+  joiners: patternsOf(doc, "points-rate-joiner"),
+});
+
+/** Where each heading of the source starts: the prose blanks headings, and a stated rate is read only in its table's section. */
+const headingStarts = (doc: ProseDocument): number[] =>
+  linesOf(doc.source)
+    .filter((line) => HEADING.test(line.text))
+    .map((line) => line.start);
+
 const mismatchesOf = (doc: ProseDocument): StructureIssue[] => {
   const text = proseAndTablesOf(doc);
-  return [...lineAmountMismatches(text, wordsOf(doc)), ...labelProductMismatches(text, labelWordsOf(doc))];
+  return [
+    ...lineAmountMismatches(text, wordsOf(doc)),
+    ...labelProductMismatches(text, labelWordsOf(doc)),
+    ...pointsMismatches(text, headingStarts(doc), pointsWordsOf(doc)),
+  ];
 };
 
 export const lineAmount: Detector = (doc): Finding[] =>

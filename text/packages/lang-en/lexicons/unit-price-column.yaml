@@ -8,6 +8,16 @@ entries:
   - pattern: Price
   - pattern: Rate per unit
   - pattern: Price per unit
+  # A cost per head. The group says it is per a person, so it is multiplied only by a bare number under a head-count or
+  # plain quantity heading, never by days or hours.
+  - { pattern: Per student, group: person }
+  - { pattern: Per person, group: person }
+  - { pattern: Per head, group: person }
+  - { pattern: Per guest, group: person }
+  - { pattern: Per participant, group: person }
+  - { pattern: Per attendee, group: person }
+  - { pattern: Cost per student, group: person }
+  - { pattern: Price per person, group: person }
   # A rate is a price per a period of time, and the header does not say which (group: a unit no quantity word counts).
   - { pattern: Rate, group: unstated }
   - { pattern: Hourly rate, group: hour }
@@ -22,3 +32,11 @@ entries:
   - { pattern: Tuition per credit, group: credit }
   - { pattern: Fee per credit, group: credit }
   - { pattern: Per credit, group: credit }
+  # The daily amount of a property tax proration (daily amount × days = proration).
+  - { pattern: Daily amount, group: day }
+  # A price per area. A square foot and a square metre are different units, so each is its own group.
+  - { pattern: Price per sq ft, group: sqft }
+  - { pattern: Price per square foot, group: sqft }
+  - { pattern: Price per m², group: sqm }
+  - { pattern: Price per square metre, group: sqm }
+  - { pattern: Price per square meter, group: sqm }

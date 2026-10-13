@@ -1,0 +1,18 @@
+# Headings of a points statement's amount spent (base), earning rate (rate) and points earned (earned) columns: amount
+# spent × rate is compared with the points earned (line-amount-mismatch). A rate cell written as 3% is that percentage; a
+# bare number is read only under a heading whose weight says what it is per (Points per $1: 1).
+id: points-earned-column
+language: en
+entries:
+  - { pattern: Amount spent, group: base }
+  - { pattern: Purchase amount, group: base }
+  - { pattern: Spend, group: base }
+  - { pattern: Room rate, group: base }
+  - { pattern: Earn rate, group: rate }
+  - { pattern: Points rate, group: rate }
+  - { pattern: Points per $1, group: rate, weight: 1 }
+  - { pattern: Points per dollar, group: rate, weight: 1 }
+  - { pattern: Miles per $1, group: rate, weight: 1 }
+  - { pattern: Points earned, group: earned }
+  - { pattern: Points awarded, group: earned }
+  - { pattern: Miles earned, group: earned }

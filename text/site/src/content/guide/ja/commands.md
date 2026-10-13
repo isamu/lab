@@ -291,7 +291,8 @@ $ npx chaffjs suppressions docs/
 ## Claude Code の skill を入れる
 
 `skill` は、Claude Code に chaff の使い方を教える skill を入れます。
-かけ方、指摘より先にジャンルの指針を読むこと、指摘の読み方、直す・`stet`・`relax --why` の選び方、`rules --json` での設定、`tree` と `cite` が入っています。
+かけ方、指摘より先にジャンルの指針を読むこと、指摘の読み方、直す・`stet`・`relax --why` の選び方、`rules --json` での設定が入っています。
+食い違う数字や日付の直し方、`chaff test`、生成された文章らしさの直し方、`tree` と `cite`、`grade` も入っています。
 `--global` を付けなければこのリポジトリの `.claude/skills/chaff/` に、付ければ `~/.claude/` に入ります。
 
 ```

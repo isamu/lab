@@ -14,6 +14,7 @@ export const REQUEST_LEXICONS = {
   deadline: "request-deadline",
   owner: "request-owner",
   pointer: "request-pointer",
+  offer: "request-offer",
 } as const;
 
 type Words = Readonly<Record<keyof typeof REQUEST_LEXICONS, readonly string[]>>;
@@ -30,6 +31,7 @@ const wordsOf = (doc: ProseDocument): Words => ({
   deadline: patternsOf(doc.lexicons[REQUEST_LEXICONS.deadline]),
   owner: patternsOf(doc.lexicons[REQUEST_LEXICONS.owner]),
   pointer: patternsOf(doc.lexicons[REQUEST_LEXICONS.pointer]),
+  offer: patternsOf(doc.lexicons[REQUEST_LEXICONS.offer]),
 });
 
 /** How far apart, in characters, the action word and the request ending may be: the action must be what is requested. */
@@ -57,13 +59,14 @@ const gapBetween = (left: Place, right: Place): number => Math.max(left.start - 
 
 /**
  * A request for an action: an action word next to a request ending (「確認してください」「please send」), not a condition
- * (「ご不明な点があれば…ください」 is an offer), and not a pointer to where to read more (「詳細は資料をご確認ください」).
+ * (「ご不明な点があれば…ください」 is an offer), not an open offer to take the reader's questions (「ご質問はメールでお送りください」),
+ * and not a pointer to where to read more (「詳細は資料をご確認ください」).
  * The action has to be close to the ending, or a noun like 検討会 or 履修登録 earlier in the sentence would make one.
  */
 export const isRequest = (text: string, words: Words): boolean => {
   const endings = placesOf(text, words.ending);
   const asked = placesOf(text, words.action).some((action) => endings.some((ending) => gapBetween(action, ending) <= ACTION_REACH));
-  return asked && !containsAny(text, words.condition) && !containsAny(text, words.pointer);
+  return asked && ![words.condition, words.offer, words.pointer].some((patterns) => containsAny(text, patterns));
 };
 
 const NAMED = new Set(["PROPN"]);

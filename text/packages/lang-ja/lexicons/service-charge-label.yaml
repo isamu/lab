@@ -1,0 +1,6 @@
+# 率で掛かる料金の行を示す語。表や箇条書きの行の頭にこの語があり率（10%）を書いた行の金額を、上の小計に率を掛けた額と比べる。その下の税の行は、小計にこの料金を足した額に掛かってもよい（tax-mismatch）。
+id: service-charge-label
+language: ja
+entries:
+  - pattern: サービス料
+  - pattern: 奉仕料

@@ -95,8 +95,14 @@ const dayName = (doc: ProseDocument, day: unknown): string => {
   return doc.lexicons["weekday"]?.[index]?.pattern ?? String(index);
 };
 
+const weekdayAttr = (weekday: unknown): number | undefined => (typeof weekday === "number" ? weekday : undefined);
+
 const datedSpans = (tree: NonNullable<ProseDocument["structure"]>): DatedSpan[] =>
-  inDocumentOrder(tree).flatMap((node) => (node.kind === "date" ? [{ offset: node.span.start, end: node.span.end, value: String(node.attrs["value"]) }] : []));
+  inDocumentOrder(tree).flatMap((node) =>
+    node.kind === "date"
+      ? [{ offset: node.span.start, end: node.span.end, value: String(node.attrs["value"]), weekday: weekdayAttr(node.attrs["weekday"]) }]
+      : [],
+  );
 
 /** 引用符の中で日付の横にあってよい語は、曜日の一語だけ（"Monday, December 5, 2026"、「2026年12月5日（月）」）。 */
 const WEEKDAY_WORDS = 1;

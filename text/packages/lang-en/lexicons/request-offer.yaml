@@ -1,0 +1,12 @@
+# The reader's own questions, taken as an open offer ("Please send any questions to me"): nothing is due. "any comments"
+# and "any feedback" are left out: "Please send any feedback from beta users" is a task.
+id: request-offer
+language: en
+entries:
+  - pattern: any questions
+  - pattern: any question
+  - pattern: your questions
+  - pattern: any queries
+  - pattern: any concerns
+  - pattern: any inquiries
+  - pattern: any enquiries

@@ -1,12 +1,14 @@
 ---
 name: chaff
-description: "Check prose with chaff (npx chaffjs): pick the genre preset for the kind of document (contract, statute, manual, FAQ, paper, fiction, transcript…), run it on Markdown or text, read each finding, fix the text or record why not, and tune chaff.yaml with rules --json and relax --why. Use when asked to lint, proofread or tighten documents, or to set up a team's writing rules. Also use when asked to make text sound less AI-generated (「AIっぽさをなくして」「AI臭さを消して」「人間らしく書き直して」, 'make this sound human'): Light, Bold or Full mode, with Full (全面書き直し) when the request says 「全面的に」 or 'from scratch'."
+description: "Check prose with chaff (npx chaffjs): pick the genre preset for the kind of document (contract, statute, manual, FAQ, paper, fiction, transcript…), run it on Markdown or text, read each finding, fix the text or record why not, and tune chaff.yaml with rules --json and relax --why. Use when asked to lint, proofread or tighten documents, to check that a document's totals, dates and references agree, or to set up a team's writing rules. Also use when asked to make text sound less AI-generated (「AIっぽさをなくして」「AI臭さを消して」「人間らしく書き直して」, 'make this sound human'): Light, Bold or Full mode, with Full (全面書き直し) when the request says 「全面的に」 or 'from scratch'."
 ---
 
 # Checking writing with chaff
 
 chaff finds what makes writing hard to read — long sentences, padding, mixed styles, broken references in a
-contract — and never rewrites anything. Reading the findings and changing the text is your part. Japanese and
+contract. It also finds where a document's own numbers and dates disagree: a total that is not the sum of its
+items, a date and its weekday that do not match, an end date before the start. It never rewrites anything, and the
+same text gives the same result every time. Reading the findings and changing the text is your part. Japanese and
 English documents both work; the language is detected per file.
 
 ## Pick the genre first
@@ -26,7 +28,7 @@ read. A contract checked as a blog post gets wrong findings, so choose the genre
 5. With the genre set, the report opens with the genre's guide: what a good document of that kind does, and the
    rules that matter most for it. Read it first, before any finding, and hold the draft (or your rewrite) to each
    line; most of it is what no rule can check. The team may have changed it with `guide:` in `chaff.yaml`. A
-   guessed or default genre shows no guide.
+   guessed or default genre shows no guide, and `--no-guide` leaves it out.
 
 A rule the genre turns off is listed under "did not run" with the genre as the reason. That is the preset's
 choice, not a gap; turn it back on (`rules:` in `chaff.yaml`) only when the person asks.
@@ -43,10 +45,24 @@ A run exits 1 when a finding is an `error`. It also exits 1 when it could not ch
 check, an unknown `--genre`, no package for the language. So a clean exit means the files were checked.
 
 After the findings comes the list of rules that did not run, and why. Only the default output shows it;
-`--compact` gives just their number. Read it before saying a document is clean.
+`--compact` gives just their number. Read it before saying a document is clean. Two reasons there are not about
+the genre: a rule that compares documents runs only when chaff is given two or more files or a folder, and a rule
+that reads meaning runs only under `npx chaffjs test` (below).
 
 A run over several files prints only the files that have findings. To call one file clean, run chaff on that
 file alone and read its list.
+
+The default output ends each file with an `AI-likeness:` line (low, medium or high, or why it was not scored).
+`npx chaffjs ai-score <file>` gives the same on its own. It counts signs common in generated text against human
+documents of the genre; it does not say who wrote the text.
+
+## Checks that read meaning
+
+A few checks need a reader: does the proposal state its risks, does the conclusion only restate the body, does a
+number claiming an effect have a source. chaff never runs a model in a plain check. `npx chaffjs test <file|dir>`
+narrows the candidates by machine and sends only those passages to an AI (Anthropic or OpenAI, set by
+`ai_backend` in `chaff.yaml`; it needs an API key). Run it with `--dry-run` first: it shows what would be sent and
+calls nothing. Ask the person before a real run; the passages leave the machine.
 
 ## For each finding, choose one of three
 
@@ -59,6 +75,18 @@ file alone and read its list.
 `npx chaffjs explain <rule-id>` shows why a rule exists, its levels and the current one. Read it before
 relaxing a rule.
 
+## When numbers or dates disagree
+
+The group "Facts that disagree" in `npx chaffjs rules` checks what a sum or a calendar can settle. Among them:
+totals and their items, quantity times price, tax and net amounts, and percentages that should add up to 100%.
+Also a date and its weekday, dates and periods out of order, a reference number written two ways, and one fee or
+deadline given two values. Most of these are an `error`.
+
+Such a finding says two places in the document disagree. It does not say which one is wrong. Check the source
+(the quote, the ledger, the calendar, the booking, or the person) before changing anything, then fix the wrong one.
+Never "fix" it by changing the figure that was right, and never adjust both so they merely agree. If you cannot
+tell which is right, leave both and ask.
+
 ## Tune chaff.yaml
 
 - `npx chaffjs init --genre <genre>` writes a commented `chaff.yaml` for that genre when there is none (an
@@ -67,7 +95,8 @@ relaxing a rule.
   the genre's preset included) and why a rule is off. Read it instead of guessing rule names or limits.
   `npx chaffjs rules` shows the same as a table, grouped, with the level each rule runs at now.
 - A level is `strict` / `normal` / `relaxed` / `off`; when even `relaxed` is too tight, a positive number is the
-  limit itself (`max-sentence-length: 260`).
+  limit itself (`max-sentence-length: 260`). A rule with nothing to count takes fewer levels, and no number;
+  `levels_you_can_set` in `rules --json` lists them.
 - `prefer:` maps spellings to the team's (`e-mail: email`); `preferred-term: normal` turns the rule on.
 - Unknown rule names and unreadable values are reported on stderr — read stderr after editing `chaff.yaml`.
 - `genre:` sets the kind of document. `by_path` sets it per path, as a list of `files` globs, each with `genre`,
@@ -82,6 +111,10 @@ relaxing a rule.
   A file's front matter `genre:` (or `type:`) sets that one file, when neither `genre:` nor a matching `by_path`
   entry does. Strongest first: `--genre` for one run, then `by_path`, `genre:`, front matter, the path, the content,
   and `blog/tech`. `rules:` wins over the genre's preset.
+- `profile:` names a bundled kind of document with fixed conventions (`statute`). Leave it out: the genre or the
+  content chooses it, and the first line of `npx chaffjs tree` shows the choice. `none` stops the choice.
+- `names:` lists the team's names (organisations, products), each read as one name. `include:` adds files besides
+  Markdown when a folder is checked (`include: ["*.yaml"]`).
 
 ## Turn a team's style note into chaff.yaml
 
@@ -109,7 +142,7 @@ Pick the easiest way that can say the requirement:
 | A fixed phrase or pattern, with the team's own message | `custom_rules` of type `words` or `pattern` |
 | Decided by part of speech or inflection | `custom_rules` of type `tokens` |
 | Counting or comparing that the above cannot express | a Node function, `type: module` |
-| The same rules shared across repositories | a rule pack of YAML files: `npx chaffjs init --plugin <name>`, then `plugins:` in `chaff.yaml` |
+| The same rules shared across repositories | a rule pack of YAML files: `npx chaffjs init --plugin <name>`, `npx chaffjs plugin-test` in its folder, then `plugins:` in `chaff.yaml` |
 
 A `words` rule names the words, the team's text for each field `explain` shows, and one example:
 
@@ -137,11 +170,13 @@ Use this section when asked to make a text sound less generated: 「AIっぽさ�
 
 chaff marks the shapes common in generated text (group "Signs of generated text" in `npx chaffjs rules`: `ai-tell`,
 `contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in` (Japanese only), `assistant-residue`, and the signals
-`ai-generated-composite` reads). They run by default outside legal, manual, literary and spoken genres. None of them says the text was
-generated. chaff never rewrites; the rewriting is yours.
+`ai-generated-composite` reads, among others). Most of them do not run in `technical/spec` or in the legal, docs, literature and
+speech genres; `assistant-residue` (words left from a pasted chat reply) runs in almost every genre. `npx chaffjs rules --json`
+says per rule and genre. None of them says the text was generated. chaff never rewrites; the rewriting is yours.
 
 **Start with the plan.** Run `npx chaffjs fix-plan <file>` (with the genre's `--genre`; `--json` to
-read it as data). It prints, in the document's language:
+read it as data; `--depth light|structure|register` when how deep the rewrite may go is already decided). It
+prints, in the document's language:
 
 - the genre's guide first, when the genre is set: what a good document of the kind does, the lines your rewrite
   is held to;
@@ -166,6 +201,11 @@ Pick one of three modes and say which.
 | **Light** | only the flagged spots | the content and the structure are fine and only some phrasing is off |
 | **Bold** | each section's prose, keeping the outline | the outline is fixed (a report template, a manual, required sections) |
 | **Full** | the whole document, from scratch | the request says 「全面的に」「一から」「全部書き直して」 / "from scratch" / "rewrite the whole thing"; or the genre is `blog/*` or an essay (`literature/essay`); or `ai-generated-composite` fires; or the plan's structure score reaches its limit |
+
+The plan also names a fourth way, Register: a Full rewrite that also converts the style (polite to plain endings,
+です/ます to だ/である, and so on). chaff never recommends it; use it only when the person asks for the style to change
+(`--depth register`). With `--depth light`, a rule whose direction needs a deeper rewrite is listed by name and
+spot count only.
 
 For a blog or an essay, and whenever `ai-generated-composite` fires, recommend Full. A Light or Bold pass leaves the
 skeleton of generated text: a heading every few paragraphs, bold lead-ins, symmetric sections, a closing まとめ that
@@ -286,6 +326,16 @@ output before and after.
   terms defined twice.
 - `npx chaffjs cite <source> <quotes.json>` checks that quotations (`[{ "address", "quote" }]`) are really in
   the source; exit 1 if any is not. Use it to back every quotation you put in an answer or a summary.
+  `cite --url <URL> <quotes.json>` checks against a web page; `cite --scaffold <file>` prints the quotations in a
+  file that give no source, as JSON to fill in and pass to `cite`.
+- `tree --format json` and `cite --format json` give the same as data.
+
+## Grading model outputs
+
+`npx chaffjs grade <items.jsonl>` grades a file of model outputs, one JSON object per line (`id`, `output`, and
+`reference`, `sources` and `citations` when there are any): findings, dropped or added facts, quotations, pass or
+fail. It exits 1 when an output fails (with `--baseline`, when the run got worse) and sends nothing.
+`chaffjs/grade` does the same in code. The guide page "Using chaff for AI evals" covers baselines and variants.
 
 ## When chaff is wrong
 

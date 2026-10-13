@@ -2,6 +2,7 @@ import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { cuedNamesIn, mentionsIn, nameVariants, suffixedNamesIn, type NameMention, type VariantChars } from "../name-variants.ts";
 import { withKnownNeighbours } from "../name-neighbours.ts";
 import type { SpellingInput } from "../name-spelling-chars.ts";
+import { lookalikeSlipsIn, type LookalikeChars } from "../name-lookalike-chars.ts";
 import { readingOfWords, type CharReadings } from "../name-char-reading.ts";
 import { nameCueAt, type NameCues } from "../name-cue.ts";
 import { quoteAt } from "./structure-tree.ts";
@@ -12,7 +13,8 @@ import { tableBodyCells } from "../facts/table-facts.ts";
 import { cellNamesIn, cellNameVariants, proseNamesOf } from "../table-names.ts";
 import { placeMentionsIn, placeVariants, type PlaceChars, type PlaceReader, type PlaceWord } from "../place-names.ts";
 import { productMentionsIn, productVariants, type ProductForm } from "../product-names.ts";
-import type { Span, TableCell, Token } from "../plugin.ts";
+import type { Sentence, Span, TableCell, Token } from "../plugin.ts";
+import { isLineBlock, tokensByLine } from "../name-line-block.ts";
 import { proseWithCells } from "../table-cells.ts";
 import { modelCodeFindings } from "./name-variant-model-codes.ts";
 import { fullNameGaps, joinFullNames, spacedOnly } from "../person-full-name.ts";
@@ -236,11 +238,17 @@ const spacedNameMentionsOf = (doc: ProseDocument, prose: string, charReadings: C
   });
 };
 
+/** 文の語。短い行を 1 行に 1 つずつ並べた文（署名、住所）は行ごと。名前を次の行の語まで伸ばして読まないため。 */
+const tokenRunsOf = (sentence: Sentence): readonly (readonly Token[])[] => {
+  const tokens = sentence.tokens ?? [];
+  return isLineBlock(sentence.text) ? tokensByLine(tokens, sentence.text, sentence.span.start) : [tokens];
+};
+
 /** 人・製品・会社の名前の現れ。解析器が固有名詞と読む語、敬称の付く名前、前後の語で名前と読める漢字。空白を挟んだ姓と名は一つ。 */
 const nameMentionsOf = (doc: ProseDocument, prose: string, chars: VariantChars): NameMention[] => {
   const cues: NameCues = { leads: patternsOf(doc, "person-lead"), suffixes: patternsOf(doc, "person-suffix"), particles: patternsOf(doc, "name-particle") };
   const charReadings = charReadingsOf(doc);
-  const tagged = doc.sentences.flatMap((sentence) => mentionsIn(sentence.tokens ?? [], doc.source, cues.suffixes, charReadings));
+  const tagged = doc.sentences.flatMap((sentence) => tokenRunsOf(sentence).flatMap((tokens) => mentionsIn(tokens, doc.source, cues.suffixes, charReadings)));
   const taggedOrSuffixed = [...tagged, ...suffixedNamesIn(prose, cues.suffixes, chars, tagged)];
   const cued = [...taggedOrSuffixed, ...cuedNamesIn(prose, cues, chars, taggedOrSuffixed)].map((mention): NameMention => {
     const cue = mention.cue ?? nameCueAt(prose, mention.offset, mention.surface, cues);
@@ -253,6 +261,12 @@ const nameMentionsOf = (doc: ProseDocument, prose: string, chars: VariantChars):
   );
   return withKnownNeighbours([...outside, ...spaced], prose).toSorted((left, right) => left.offset - right.offset);
 };
+
+/** 人の名前で形の似た別の字（太 と 大）は語彙表 name-lookalike-char が組（group）ごとに言う。 */
+const lookalikeCharsOf = (doc: ProseDocument): LookalikeChars =>
+  new Map(
+    (doc.lexicons["name-lookalike-char"] ?? []).flatMap((entry): [string, string][] => (entry.group === undefined ? [] : [[entry.pattern, entry.group]])),
+  );
 
 /** 一語の名前の中で同じ音を書く字（ヶ・ケ・が）は語彙表 name-spelling-char が組（group）ごとに言う。 */
 const spellingCharsOf = (doc: ProseDocument): VariantChars =>
@@ -302,9 +316,16 @@ export const nameVariant: Detector = (doc): Finding[] => {
   const prose = doc.prose ?? doc.source;
   const chars = variantCharsOf(doc);
   const mentions = labelledNamesOf(doc, ordinaryNamesOf(doc, nameMentionsOf(doc, prose, chars)));
-  const names = nameVariants(mentions, chars, spellingInputOf(doc))
+  const variants = nameVariants(mentions, chars, spellingInputOf(doc))
     .map(({ mention, usual, kind }): Reported => ({ offset: mention.offset, name: mention.surface, usual, kind }))
     .filter(notSpacingOnly);
+  const lookalikes = lookalikeSlipsIn(mentions, lookalikeCharsOf(doc)).map(({ mention, usual }) => ({
+    offset: mention.offset,
+    name: mention.surface,
+    usual,
+    kind: "lookalike",
+  }));
+  const names = [...variants, ...lookalikes.filter((found) => !overlapsAny(variants, found.offset, found.name.length))];
   const namesAndCompanies = [...names, ...companyFindings(doc, prose, names)];
   const withTables = [...namesAndCompanies, ...tableFindings(doc, prose, mentions, namesAndCompanies).filter(notSpacingOnly)];
   const withPlaces = [...withTables, ...placeFindings(doc, prose, withTables, chars)];

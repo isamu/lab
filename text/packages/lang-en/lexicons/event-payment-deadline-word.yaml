@@ -1,0 +1,12 @@
+# Words that name the date a trip must be paid by on their own. In a trip notice (event-trip-word), a date after the trip's
+# start in a sentence holding one, or in a table column headed by one, is reported by deadline-after-event. Not "due by"
+# or "due date" alone: a permission slip has a due date too. Those count with a payment word (event-payment-word) beside
+# them ("2nd payment" in a "Due by" column). An invoice's due date is not read: an invoice is paid after the service.
+id: event-payment-deadline-word
+language: en
+entries:
+  - pattern: payment due
+  - pattern: payments due
+  - pattern: pay by
+  - pattern: payment deadline
+  - pattern: payment date

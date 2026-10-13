@@ -1,0 +1,6 @@
+# Words that mark a charge at a rate. A list or table line starting with one and giving a rate (20%) is compared with that rate of the subtotal above it; a tax line below it may be on the subtotal with the charge added (tax-mismatch).
+id: service-charge-label
+language: en
+entries:
+  - pattern: Service charge
+  - pattern: Gratuity
