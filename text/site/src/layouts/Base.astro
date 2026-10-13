@@ -4,11 +4,15 @@ import { href, otherLang, t, type Lang } from "../lib/i18n";
 import { guidePages } from "../lib/guide";
 
 // `otherPath` is where the language switch goes: the same page in the other language, or its home when there is none.
-type Props = { lang: Lang; title: string; path: string; otherPath?: string; description?: string };
-const { lang, title, path, otherPath = path, description } = Astro.props;
+// `documentTitle` replaces the whole <title> where the page name alone would say too little (the home page).
+type Props = { lang: Lang; title: string; path: string; otherPath?: string; description?: string; documentTitle?: string };
+const { lang, title, path, otherPath = path, description, documentTitle } = Astro.props;
 const other = otherLang(lang);
 const firstGuidePage = (await guidePages(lang))[0];
-const pageTitle = title === t(lang, "siteTitle") ? title : `${title} | ${t(lang, "siteTitle")}`;
+const pageTitle = documentTitle ?? (title === t(lang, "siteTitle") ? title : `${title} | ${t(lang, "siteTitle")}`);
+const pageDescription = description ?? t(lang, "tagline");
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const OG_LOCALE: Record<Lang, string> = { ja: "ja_JP", en: "en_US" };
 ---
 
 <!doctype html>
@@ -17,12 +21,23 @@ const pageTitle = title === t(lang, "siteTitle") ? title : `${title} | ${t(lang,
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{pageTitle}</title>
-    <meta name="description" content={description ?? t(lang, "tagline")} />
-    <link rel="alternate" hreflang={other} href={href(`${other}/${otherPath}`)} />
+    <meta name="description" content={pageDescription} />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang={lang} href={canonical} />
+    <link rel="alternate" hreflang={other} href={new URL(href(`${other}/${otherPath}`), Astro.site).href} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={t(lang, "siteTitle")} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content={OG_LOCALE[lang]} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDescription} />
   </head>
   <body class="min-h-screen bg-white text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-100">
     <header class="border-b border-zinc-200 dark:border-zinc-800">
-      <nav class="mx-auto flex max-w-4xl items-center gap-6 px-4 py-3">
+      <nav class="mx-auto flex max-w-4xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
         <a href={href(lang)} class="font-mono text-lg font-bold tracking-tight">
           {t(lang, "siteTitle")}
         </a>

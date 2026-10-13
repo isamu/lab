@@ -67,7 +67,7 @@ const USAGE_JA = `chaff — 文章の読みにくいところを見つけます�
   chaff feedback <file> --rule <rule> [--line N] | --missed --line N
                                  誤った指摘・見逃しの報告の下書きを作る（何も送らない。--with-config で chaff.yaml 全体も載せる）
 
-  --compact         エンジニア向けの 1 行形式
+  --compact         エンジニア向けの短い形式。指摘 1 件を 2 行で出す（位置・重さ・説明、その下に rule の id）
   --no-guide        ジャンルを決めたときに最初に出す、そのジャンルの指針を出さない
   --experimental    試験中の rule も動かす
   --genre <ジャンル>  この実行だけジャンルを決める（chaff.yaml より優先）
@@ -126,7 +126,7 @@ const USAGE_EN = `chaff — finds what makes writing hard to read. It never rewr
   chaff feedback <file> --rule <rule> [--line N] | --missed --line N
                                  draft a report of a wrong or missed finding (sends nothing; --with-config adds all of chaff.yaml)
 
-  --compact         one line per finding, for engineers
+  --compact         a short form for engineers: two lines per finding (position, severity, message; the rule id below)
   --no-guide        leave out the genre's guide, which comes first when the genre is set
   --experimental    run the experimental rules too
   --genre <genre>   the genre for this run only (wins over chaff.yaml)
