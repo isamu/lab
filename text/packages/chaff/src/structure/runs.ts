@@ -1,3 +1,5 @@
+import { fencedLineIndexes } from "./fenced-lines.ts";
+
 /**
  * 箇条書きと表の行の並び。続いた箇条書きの同じ深さの項目か、続いた表の行を一つの並びとして読む。
  * 並びの中の値（日付、金額）を比べる rule が共通に使う。
@@ -29,14 +31,21 @@ const pipelessTableLines = (texts: readonly string[]): Set<number> => {
   return inTable;
 };
 
+/** コードブロックの中の箇条書きや表は例なので、並びにしない。 */
+const kindAt = (texts: readonly string[], index: number, pipeless: ReadonlySet<number>, fenced: ReadonlySet<number>): Kind | undefined => {
+  if (fenced.has(index)) return undefined;
+  return pipeless.has(index) ? "table" : kindOf(texts[index] ?? "");
+};
+
 const linesOf = (source: string): Line[] => {
   const texts = source.split("\n");
   const pipeless = pipelessTableLines(texts);
+  const fenced = fencedLineIndexes(texts);
   const found: Line[] = [];
   let start = 0;
   texts.forEach((text, index) => {
     const indent = INDENT.exec(text)?.[0].length ?? 0;
-    const kind = pipeless.has(index) ? "table" : kindOf(text);
+    const kind = kindAt(texts, index, pipeless, fenced);
     found.push({ start, end: start + text.length, kind, indent, rule: TABLE_RULE.test(text) });
     start += text.length + 1;
   });
