@@ -1,0 +1,10 @@
+# 文の終わりの印。手紙の頭の、文でない行（日付、宛名の「保護者各位」、差出人、表題）は、これで終わらない。挨拶はその後ろに探す。
+id: email-sentence-end
+language: ja
+entries:
+  - pattern: 。
+  - pattern: ．
+  - pattern: ！
+  - pattern: ？
+  - pattern: "!"
+  - pattern: "?"
