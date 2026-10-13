@@ -3,7 +3,8 @@ import { linesOf, type Line } from "./lines.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { roundedMatches } from "./tax.ts";
 import { hasSuperscriptPower } from "../facts/superscript-power.ts";
-import { cellNumber, cellsOf, plain, shownExpected, tablesOf, type Cell, type CellNumber } from "./line-amount.ts";
+import { cellNumber, cellsOf, plain, shownExpected, type Cell, type CellNumber } from "./line-amount.ts";
+import { tablesOf } from "../facts/table-facts.ts";
 
 /**
  * line-amount-mismatch, the product written in an item cell: 「| 会費（3,000円×24名） | 72,000円 |」,

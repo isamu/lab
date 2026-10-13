@@ -11,6 +11,7 @@ import { reversedTimeRanges } from "../structure/time-range.ts";
 import { cellMinutes, reversedShiftRows, showsOvernightWork } from "../structure/shift-times.ts";
 import { pairedTimesOutOfOrder } from "../structure/labelled-time-order.ts";
 import { quoteAt, rangeWordsOf } from "./structure-tree.ts";
+import { withoutCodeBlocks } from "./code-fences.ts";
 
 // 一日の予定の時刻の順番と、語の決まった二つの時刻の順番（time-order）、発より前の着（arrival-before-departure）、移動の時間より短い乗り継ぎ（connection-time-short）。時刻は compare/clock-time.ts が読み、
 // 発着・翌日・時間帯の語は言語パッケージの語彙表（leg-mark、leg-column、day-shift-mark、time-zone、local-time-mark）から取る。
@@ -43,11 +44,12 @@ const variantOf = (issue: StructureIssue, variant: string | undefined): string |
   return "end_label" in issue.values ? "columns" : undefined;
 };
 
-/** 表と箇条書きを行のまま読むので、原文を渡す（doc.prose は表を覆う）。 */
+/** 表と箇条書きを行のまま読むので、原文を渡す（doc.prose は表を覆う）。コードブロックは例なので覆う。 */
 const detectorOf =
   (rule: string, find: Finder, variant?: string): Detector =>
-  (doc): Finding[] =>
-    find(doc.source, timesOf(doc.source), datesOf(doc), timeWordsOf(doc), doc).map((issue) => {
+  (doc): Finding[] => {
+    const source = withoutCodeBlocks(doc.source);
+    return find(source, timesOf(source), datesOf(doc), timeWordsOf(doc), doc).map((issue) => {
       const named = variantOf(issue, variant);
       return {
         rule,
@@ -59,6 +61,7 @@ const detectorOf =
         ...(named === undefined ? {} : { variant: named }),
       };
     });
+  };
 
 const timeOrderInList: Detector = detectorOf("time-order", timeOrderBreaks);
 /** 語の決まった二つの時刻（開場と開演）。語は語彙表 timed-pair-label から取る。 */

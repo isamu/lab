@@ -3,6 +3,7 @@
 import { stepTimeSlip, type StepTimeWords } from "../structure/step-times.ts";
 import type { Mark } from "../structure/time-marks.ts";
 import { quoteAt } from "./structure-tree.ts";
+import { withoutCodeBlocks } from "./code-fences.ts";
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 
 const SECONDS_PER_HOUR = 3600;
@@ -35,7 +36,7 @@ const wordsOf = (doc: ProseDocument): StepTimeWords => {
 };
 
 export const stepTimeSumMismatch: Detector = (doc): Finding[] => {
-  const slip = stepTimeSlip(doc.source, wordsOf(doc));
+  const slip = stepTimeSlip(withoutCodeBlocks(doc.source), wordsOf(doc));
   if (slip === undefined) return [];
   return [
     {

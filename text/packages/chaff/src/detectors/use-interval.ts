@@ -4,6 +4,7 @@ import { paragraphsOf } from "../derived/period-counts.ts";
 import { timeLengths, type TimeLength } from "../derived/time-lengths.ts";
 import { limitWordsOf, marksOf, periodCountWordsOf } from "./use-count-words.ts";
 import { quoteAt } from "./structure-tree.ts";
+import { withoutCodeBlocks } from "./code-fences.ts";
 
 // 使う間隔の下限と期間あたりの回数の上限が両立しない、または表の回数と合わない（interval-count-mismatch）。
 // 語は use-count-word と use-interval-word、長さの単位は unit-time から取る。
@@ -14,8 +15,8 @@ const SECONDS_PER_MINUTE = 60;
 const patternsOf = (doc: ProseDocument, lexicon: string, weight?: number): string[] =>
   (doc.lexicons[lexicon] ?? []).filter((entry) => weight === undefined || entry.weight === weight).map((entry) => entry.pattern);
 
-const lengthsOf = (doc: ProseDocument): TimeLength[] =>
-  timeLengths(doc.source, {
+const lengthsOf = (doc: ProseDocument, text: string): TimeLength[] =>
+  timeLengths(text, {
     hourUnits: patternsOf(doc, "unit-time", SECONDS_PER_HOUR),
     minuteUnits: patternsOf(doc, "unit-time", SECONDS_PER_MINUTE),
     halves: patternsOf(doc, "length-half"),
@@ -39,8 +40,10 @@ const valuesOf = (doc: ProseDocument, mismatch: IntervalMismatch): Record<string
     ? { count: written(doc, mismatch.count), interval: written(doc, mismatch.interval), needed: mismatch.neededHours, hours: mismatch.count.hours }
     : { count: written(doc, mismatch.count), column: mismatch.column, table: mismatch.tableCount };
 
-export const intervalCountMismatch: Detector = (doc): Finding[] =>
-  intervalCountMismatches(doc.source, paragraphsOf(doc.source), lengthsOf(doc), wordsOf(doc)).map((mismatch) => ({
+/** コードブロックの中の用法は例なので、覆って読む。 */
+export const intervalCountMismatch: Detector = (doc): Finding[] => {
+  const text = withoutCodeBlocks(doc.source);
+  return intervalCountMismatches(text, paragraphsOf(text), lengthsOf(doc, text), wordsOf(doc)).map((mismatch) => ({
     rule: "interval-count-mismatch",
     severity: "warning",
     line: 0,
@@ -49,3 +52,4 @@ export const intervalCountMismatch: Detector = (doc): Finding[] =>
     values: { ...valuesOf(doc, mismatch), offset: mismatch.count.start },
     ...(mismatch.kind === "table" ? { variant: "table" } : {}),
   }));
+};
