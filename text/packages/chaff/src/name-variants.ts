@@ -2,6 +2,7 @@ import type { Token } from "./plugin.ts";
 import { escapeRegExp } from "./orthography.ts";
 import { nameCueAt, type NameCue, type NameCues } from "./name-cue.ts";
 import { isNearSurname } from "./surname-near.ts";
+import { isEndWordSlip, NO_WORD_USE, type WordUse } from "./name-end-letter.ts";
 import { foldedKeysOf, NO_SPELLING, type SpellingInput } from "./name-spelling-chars.ts";
 import { NO_CHAR_READINGS, readingOfWords } from "./name-char-reading.ts";
 import { isPersonRun } from "./name-person.ts";
@@ -283,13 +284,16 @@ const isSwapOrReplace = (left: string, right: string): boolean => {
 const isInnerDrop = (longer: string, shorter: string): boolean =>
   [...longer].some((_char, index) => index > 0 && index < longer.length - 1 && longer.slice(0, index) + longer.slice(index + 1) === shorter);
 
-/** 二つの語が一字違いか。英字だけの、長さ 5 以上の語で。 */
-export const isNearWord = (left: string, right: string): boolean => {
-  if (left === right || !LATIN_WORD.test(left) || !LATIN_WORD.test(right) || Math.min(left.length, right.length) < MIN_NEAR_LENGTH) return false;
+/** 二つの英字だけの語が一字違いか（置き換え・隣どうしの入れ替え・中の抜け）。長さは問わない。 */
+const isOneLetterApart = (left: string, right: string): boolean => {
+  if (left === right || !LATIN_WORD.test(left) || !LATIN_WORD.test(right)) return false;
   if (left.length === right.length) return isSwapOrReplace(left, right);
   if (left.length === right.length + 1) return isInnerDrop(left, right);
   return right.length === left.length + 1 && isInnerDrop(right, left);
 };
+
+/** 二つの語が一字違いか。英字だけの、長さ 5 以上の語で。 */
+export const isNearWord = (left: string, right: string): boolean => Math.min(left.length, right.length) >= MIN_NEAR_LENGTH && isOneLetterApart(left, right);
 
 /** 語の一つを伏せた形。ほかの語が同じ二つの名前は、同じ形を一つ持つ。 */
 const maskedKeys = (tally: Tally): string[] => {
@@ -312,7 +316,24 @@ const isSlipOf = (tally: Tally, other: Tally): boolean => {
   return words !== undefined && isNearWord(...words);
 };
 
-const nearVariants = (tallies: readonly Tally[]): NameVariant[] => variantsIn(groupBy(tallies, maskedKeys), "near", isSlipOf, true);
+/**
+ * 二語以上の名前の一語だけが、終わりの一字の抜けか足し（Rachel Whitmore と Rachel Whitmor）か、最後の語（姓）が四字でも一字違い
+ * （Daniel Reyes と Daniel Reys）で、相手のほうが重い（outweighs）。違う語のどちらかがふつうの語なら語の形の違い。
+ */
+const isEndSlipOf =
+  (use: WordUse): Alike =>
+  (tally, other) => {
+    const [words, others] = [wordsOf(tally.surface), wordsOf(other.surface)];
+    const at = words.findIndex((word, index) => word !== others[index]);
+    const [word, usual] = [words[at], others[at]];
+    if (!outweighs(other, tally) || words.length < 2 || words.length !== others.length || word === undefined || usual === undefined) return false;
+    return !use.ordinary.has(word) && !use.ordinary.has(usual) && isEndWordSlip(words, at, usual, use, isOneLetterApart);
+  };
+
+const nearVariants = (tallies: readonly Tally[], use: WordUse): NameVariant[] => {
+  const isEndSlip = isEndSlipOf(use);
+  return variantsIn(groupBy(tallies, maskedKeys), "near", (tally, other) => isSlipOf(tally, other) || isEndSlip(tally, other), true);
+};
 
 /**
  * 名が同じで姓だけが二字ほど違う人の名前（Rachel Whitford と Rachel Whitfield）。一字違い（near）より遠いので、名と姓の二語以上
@@ -375,9 +396,14 @@ const personReadingVariants = (tallies: readonly Tally[]): NameVariant[] =>
 
 /**
  * 同じ名前の、少ないほうの書き方。書き方ごとに最初の現れを一つ。同じ現れを二つの見方が言えば、先の見方だけ。chars は字体の
- * 違う同じ字の組（語彙表 name-variant-char）。
+ * 違う同じ字の組（語彙表 name-variant-char）。use は文書での英字の語の使い方。
  */
-export const nameVariants = (mentions: readonly NameMention[], chars: VariantChars = new Map(), spelling: SpellingInput = NO_SPELLING): NameVariant[] => {
+export const nameVariants = (
+  mentions: readonly NameMention[],
+  chars: VariantChars = new Map(),
+  spelling: SpellingInput = NO_SPELLING,
+  use: WordUse = NO_WORD_USE,
+): NameVariant[] => {
   const tallies = talliesOf(mentions);
   const found = [
     ...variantsIn(
@@ -393,7 +419,7 @@ export const nameVariants = (mentions: readonly NameMention[], chars: VariantCha
       "reading",
       oneWordApart,
     ),
-    ...nearVariants(tallies),
+    ...nearVariants(tallies, use),
     ...surnameVariants(tallies),
     ...characterVariants(tallies, chars),
     ...personReadingVariants(tallies),

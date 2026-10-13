@@ -1,5 +1,6 @@
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { cuedNamesIn, mentionsIn, nameVariants, suffixedNamesIn, type NameMention, type VariantChars } from "../name-variants.ts";
+import type { WordUse } from "../name-end-letter.ts";
 import { withKnownNeighbours } from "../name-neighbours.ts";
 import type { SpellingInput } from "../name-spelling-chars.ts";
 import { lookalikeSlipsIn, type LookalikeChars } from "../name-lookalike-chars.ts";
@@ -332,12 +333,27 @@ const labelledNamesOf = (doc: ProseDocument, mentions: readonly NameMention[]): 
   );
 };
 
+const LATIN_WORD = /^[A-Za-z]+$/u;
+const LOWERCASE_WORD = /^[a-z]+$/u;
+
+/** 文書が小文字で書くか、品詞解析が普通名詞と読む英字の語（文頭の Hurricane）。 */
+const isCommonToken = (token: Token): boolean => LOWERCASE_WORD.test(token.surface) || (token.pos === "NOUN" && LATIN_WORD.test(token.surface));
+
+/** 文書での英字の語の使い方。名前と読んだ語のうち小文字で書けばふつうの語と、普通名詞として書いた語。 */
+const wordUseOf = (doc: ProseDocument): WordUse => {
+  const tokens = tokensOf(doc);
+  return {
+    ordinary: new Set(tokens.flatMap((token) => (isOrdinaryToken(token) ? [token.surface.toLowerCase()] : []))),
+    common: new Set(tokens.flatMap((token) => (isCommonToken(token) ? [token.surface.toLowerCase()] : []))),
+  };
+};
+
 /** 同じ名前を、文書の中で少しだけ違う形に書いた所（GitHub と Github、山田太郎 と 山田太朗）。少ないほうを指す。 */
 export const nameVariant: Detector = (doc): Finding[] => {
   const prose = doc.prose ?? doc.source;
   const chars = variantCharsOf(doc);
   const mentions = labelledNamesOf(doc, ordinaryNamesOf(doc, nameMentionsOf(doc, prose, chars)));
-  const variants = nameVariants(mentions, chars, spellingInputOf(doc))
+  const variants = nameVariants(mentions, chars, spellingInputOf(doc), wordUseOf(doc))
     .map(({ mention, usual, kind }): Reported => ({ offset: mention.offset, name: mention.surface, usual, kind }))
     .filter(notSpacingOnly);
   const lookalikes = lookalikeSlipsIn(mentions, lookalikeCharsOf(doc)).map(({ mention, usual }) => ({

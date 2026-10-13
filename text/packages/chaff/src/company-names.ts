@@ -1,5 +1,6 @@
 import { nameKey } from "./name-variants.ts";
 import { escapeRegExp } from "./orthography.ts";
+import { isNameEndingSlip } from "./company-name-ending.ts";
 
 // 会社の名前を、文書の中で二通りに書いた所（株式会社アオバシステム と アオバシステム株式会社、Aoba Systems Inc. と Aoba Systems Ltd.）。
 // 会社の形の語（株式会社、Inc）は語彙表 company-form が言う。group が同じ語は同じ形（Inc と Incorporated、株式会社 と (株)）、
@@ -27,8 +28,11 @@ export type CompanyMention = {
   readonly foreign?: boolean | undefined;
 };
 
-/** 二つの書き方の違い。spelling は記号・幅・大小だけ、form は会社の形、position は形の語の側、near は名前の一字違い。 */
-type CompanyRelation = "spelling" | "form" | "position" | "near";
+/**
+ * 二つの書き方の違い。spelling は記号・幅・大小だけ、form は会社の形、position は形の語の側、near は名前の一字違い、ending は
+ * 名前の一語の終わりだけの違い（company-name-ending.ts）。
+ */
+type CompanyRelation = "spelling" | "form" | "position" | "near" | "ending";
 
 type CompanyVariant = { readonly mention: CompanyMention; readonly usual: string; readonly kind: CompanyRelation };
 
@@ -342,12 +346,17 @@ const talliesOf = (mentions: readonly CompanyMention[]): Tally[] => {
 /** 多いほうが先。同数なら先に書いたほう。 */
 const byUsage = (left: Tally, right: Tally): number => right.count - left.count || left.first.offset - right.first.offset;
 
-/** 短い名前のかなの一字違いは、別の会社のこともあるので、相手が二度以上、こちらが一度だけのときに限る。 */
+/**
+ * 短い名前のかなの一字違いと、名前の一語の終わりだけの違い（Brightmoor と Brightmore、Water Utility と Water Utilities）は、別の
+ * 会社のこともあるので、形も側も同じで、相手が二度以上、こちらが一度だけのときに限る。
+ */
 const relationBetween = (tally: Tally, other: Tally): CompanyRelation | undefined => {
   const relation = companyRelation(tally.first, other.first);
   if (relation !== undefined || tally.count !== 1 || other.count < 2) return relation;
   const [left, right] = [tally.first, other.first];
-  return left.form === right.form && left.position === right.position && isKanaWordSlip(nameKey(left.base), nameKey(right.base)) ? "near" : undefined;
+  if (left.form !== right.form || left.position !== right.position) return undefined;
+  if (isKanaWordSlip(nameKey(left.base), nameKey(right.base))) return "near";
+  return isNameEndingSlip(left.base, right.base) ? "ending" : undefined;
 };
 
 /** 同じ会社の、少ないほうの書き方。同じ会社と言える相手のうち一番多いものと比べる。書き方ごとに最初の現れを一つ。 */
