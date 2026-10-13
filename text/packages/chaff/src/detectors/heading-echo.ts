@@ -2,6 +2,7 @@ import { lengthOf, proseText } from "../measure.ts";
 import { newContentMorphemes } from "./content-morphemes.ts";
 import { echoedHeadingUnits, trigrams } from "./heading-overlap.ts";
 import { titleTokens } from "../heading-label.ts";
+import { announcerWords, makesClaim } from "./heading-claim.ts";
 import { handsOver } from "./lead-in.ts";
 import { holdsLink, namesLocation } from "./location-pointer.ts";
 import { withoutQuotedVariants } from "./quoted-variant.ts";
@@ -65,6 +66,17 @@ const pointsElsewhere = (doc: ProseDocument, section: Section): boolean => {
   return first !== undefined && (holdsLink(doc.source, first.span, doc.links) || namesLocation(doc.source.slice(first.span.start, first.span.end)));
 };
 
+/**
+ * 最初の文が、見出しに無い述語で見出しの主題について何かを述べている（## Charges → All charges include sales tax.）。
+ * 予告や指示の語（covers, below, 説明, 以下）だけを述語にする文は、見出しを言い直しているだけで繰り返し。
+ */
+const statesClaim = (doc: ProseDocument, section: Section): boolean => {
+  const first = section.firstSentence;
+  if (first?.tokens === undefined || section.headingTokens === undefined) return false;
+  const heading = titleTokens(section.heading, measuredHeading(section), section.headingTokens);
+  return makesClaim(heading, first.tokens, announcerWords(doc.lexicons["heading-announcer"] ?? []));
+};
+
 /** A figure, with its thousands separators (1,320,000), compared without them. */
 const FIGURE = /\p{Nd}+(?:[,，]\p{Nd}{3})*/gu;
 /** Note marks are not figures: [^1], ※1, <sup>1</sup>. */
@@ -91,6 +103,7 @@ export const headingEcho: Detector = (doc, options): Finding[] => {
     .filter((section) => !leadsIn(doc, section, leadIns) && !pointsElsewhere(doc, section) && !statesFigure(section.heading, section.firstSentence?.text ?? ""))
     .map((section) => ({ section, overlap: Math.round(containment(trigrams(measuredHeading(section)), trigrams(echoedText(section))) * 100) }))
     .filter(({ overlap }) => overlap >= options.limit)
+    .filter(({ section }) => !statesClaim(doc, section))
     .map(({ section, overlap }) => ({
       rule: "heading-echo",
       severity: "warning",

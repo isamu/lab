@@ -1,0 +1,47 @@
+# Words in a section's first sentence that announce or point at the section instead of saying something about its
+# subject (This section covers installation. Charges are described below.). heading-echo still reports a sentence whose
+# only predicate is one of these; a sentence with a verb or a copula's complement of its own (All charges include sales
+# tax.) states a fact and is not reported. Matched against the word's base form. group copula: a linking verb, whose
+# complement on the given side is the predicate. group negation: a word that denies what the copula links (There are no
+# issues.), which is a claim. An imperative with one of these verbs (Give feedback in private.) is still reported.
+id: heading-announcer
+language: en
+entries:
+  - pattern: be
+    group: copula
+    position: after
+  - pattern: "no"
+    group: negation
+  - pattern: not
+    group: negation
+  - pattern: never
+    group: negation
+  - pattern: n't
+    group: negation
+  - pattern: cover
+  - pattern: describe
+  - pattern: explain
+  - pattern: list
+  - pattern: outline
+  - pattern: introduce
+  - pattern: discuss
+  - pattern: present
+  - pattern: summarize
+  - pattern: summarise
+  - pattern: show
+  - pattern: detail
+  - pattern: provide
+  - pattern: contain
+  - pattern: give
+  - pattern: tell
+  - pattern: mention
+  - pattern: read
+  - pattern: let
+  - pattern: see
+  - pattern: refer
+  - pattern: below
+  - pattern: following
+  - pattern: follow
+  - pattern: section
+  - pattern: chapter
+  - pattern: page
