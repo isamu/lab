@@ -1516,3 +1516,84 @@ describe("due-before-issue (order): 表の一行の、二つの日付の列", ()
     assert.deepEqual(columnDatesOutOfOrder("Date: A\nExpires: B\n", [], labels, []), []);
   });
 });
+
+describe("due-before-issue (order): 不動産の売買の決済と、宴会の見積の有効期限", () => {
+  it("売買契約日より前の決済日を、決済日の行で指す", () => {
+    const statement = labelledDoc("不動産売買代金精算書", ["売買契約日：2026年7月18日", "決済日：2026年6月30日"]);
+    assert.deepEqual(findingsOf(statement), ["「決済日」（2026年6月30日）が、「売買契約日」（2026年7月18日）より前です"]);
+    assert.deepEqual(ruleLines(statement), [5]);
+    const statementEn = labelledDoc("Settlement Statement", ["Contract date: July 18, 2026", "Settlement date: June 30, 2026"]);
+    assert.deepEqual(findingsOf(statementEn, en), ['"Settlement date" June 30, 2026 is before "Contract date" July 18, 2026']);
+    assert.deepEqual(ruleLines(statementEn, en), [5]);
+  });
+
+  it("契約日、契約締結日と、残代金決済日、引渡日、所有権移転日、Closing date、Possession date も組む", () => {
+    assert.deepEqual(findingsOf(labelledDoc("精算書", ["契約日：2026年7月18日", "引渡日：2026年7月1日"])), [
+      "「引渡日」（2026年7月1日）が、「契約日」（2026年7月18日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("精算書", ["契約締結日：2026年7月18日", "残代金決済日：2026年7月1日"])), [
+      "「残代金決済日」（2026年7月1日）が、「契約締結日」（2026年7月18日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("精算書", ["売買契約日：2026年7月18日", "所有権移転日：2026年7月1日"])), [
+      "「所有権移転日」（2026年7月1日）が、「売買契約日」（2026年7月18日）より前です",
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("Closing Statement", ["Date of contract: July 18, 2026", "Closing date: July 1, 2026"]), en), [
+      '"Closing date" July 1, 2026 is before "Date of contract" July 18, 2026',
+    ]);
+    assert.deepEqual(findingsOf(labelledDoc("Closing Statement", ["Contract date: July 18, 2026", "Possession date: July 1, 2026"]), en), [
+      '"Possession date" July 1, 2026 is before "Contract date" July 18, 2026',
+    ]);
+  });
+
+  it("決済日は売買契約日とだけ組む。ただの契約日の後に申込みの時の決済日があっても言わない", () => {
+    assert.deepEqual(findingsOf(labelledDoc("ご契約内容", ["契約日：2026年7月18日", "決済日：2026年7月1日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("ご契約内容", ["契約締結日：2026年7月18日", "決済日：2026年7月1日"])), []);
+  });
+
+  it("順の合った日付、同じ日の決済は言わない", () => {
+    assert.deepEqual(findingsOf(labelledDoc("精算書", ["売買契約日：2026年7月18日", "決済日：2026年9月30日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("精算書", ["売買契約日：2026年7月18日", "引渡日：2026年7月18日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Settlement Statement", ["Contract date: July 18, 2026", "Settlement date: September 30, 2026"]), en), []);
+  });
+
+  it("開催日より後の有効期限を、後に書いた開催日の行で指す", () => {
+    const quote = labelledDoc("ご宴会御見積書", ["有効期限：2026年12月20日", "開催日：2026年12月4日"]);
+    assert.deepEqual(findingsOf(quote), ["「開催日」（2026年12月4日）が、「有効期限」（2026年12月20日）より前です"]);
+    assert.deepEqual(findingsOf(labelledDoc("御見積書", ["見積有効期限：2026年10月30日", "ご宴会日：2026年10月22日"])), [
+      "「ご宴会日」（2026年10月22日）が、「見積有効期限」（2026年10月30日）より前です",
+    ]);
+    const quoteEn = labelledDoc("Banquet Quote", ["Valid until: December 20, 2026", "Event date: December 4, 2026"]);
+    assert.deepEqual(findingsOf(quoteEn, en), ['"Event date" December 4, 2026 is before "Valid until" December 20, 2026']);
+    assert.deepEqual(findingsOf(labelledDoc("Quote", ["Quote valid until: October 30, 2026", "Date of event: October 22, 2026"]), en), [
+      '"Date of event" October 22, 2026 is before "Quote valid until" October 30, 2026',
+    ]);
+  });
+
+  it("開催日より前か同じ日の有効期限は言わない", () => {
+    assert.deepEqual(findingsOf(labelledDoc("ご宴会御見積書", ["有効期限：2026年11月20日", "ご宴会日：2026年12月4日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("ご宴会御見積書", ["有効期限：2026年12月4日", "開催日：2026年12月4日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Banquet Quote", ["Valid until: November 20, 2026", "Event date: December 4, 2026"]), en), []);
+  });
+
+  it("ご利用日は有効期限と組まない。ポイントの明細やクーポンでは、ご利用日の後に有効期限が来る", () => {
+    assert.deepEqual(findingsOf(labelledDoc("ご利用明細", ["ご利用日：2026年9月6日", "有効期限：2027年9月30日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("ご利用明細", ["有効期限：2027年9月30日", "ご利用日：2026年9月6日"])), []);
+  });
+
+  it("表の列は、見積を言う列がある表だけ読む", () => {
+    const events = tablesDoc("催しの一覧", datedTable(["開催日", "有効期限"], [["2026年10月2日", "2026年10月31日"]]));
+    assert.deepEqual(findingsOf(events), []);
+    const quotes = tablesDoc("見積の一覧", datedTable(["見積番号", "有効期限", "開催日"], [["Q-1", "2026年10月31日", "2026年10月2日"]]));
+    assert.deepEqual(findingsOf(quotes), ["「開催日」（2026年10月2日）が、「有効期限」（2026年10月31日）より前です"]);
+    const eventsEn = tablesDoc("Events", datedTable(["Event date", "Valid until"], [["October 2, 2026", "October 31, 2026"]]));
+    assert.deepEqual(findingsOf(eventsEn, en), []);
+  });
+
+  it("別の組の語どうしは比べない（有効期限とお支払期限や発行日、Valid until と Completion date、Contract date と Event date と Completion date）", () => {
+    assert.deepEqual(findingsOf(labelledDoc("Contract", ["Contract date: October 1, 2026", "Completion date: September 1, 2026"]), en), []);
+    assert.deepEqual(findingsOf(labelledDoc("ご請求書", ["有効期限：2026年12月31日", "お支払期限：2026年11月30日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("クーポン", ["有効期限：2026年12月31日", "発行日：2026年11月30日"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("Renovation Quote", ["Valid until: October 10, 2026", "Completion date: September 23, 2026"]), en), []);
+    assert.deepEqual(findingsOf(labelledDoc("Banquet Quote", ["Contract date: July 18, 2026", "Event date: July 1, 2026"]), en), []);
+  });
+});

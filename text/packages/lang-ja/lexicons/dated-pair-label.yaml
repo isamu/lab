@@ -211,3 +211,22 @@ entries:
   - { pattern: "監査日", group: fiscal-audit, position: after }
   - { pattern: "会計監査日", group: fiscal-audit, position: after }
   - { pattern: "監査実施日", group: fiscal-audit, position: after }
+  # 不動産の売買の精算書。残代金の決済、引渡し、所有権の移転は、売買の契約より後に来る。契約日は loan にもあるが、組ごとに比べる。
+  # 「決済日」は「売買契約日」とだけ組む（sale-settlement）。ただの契約日や契約締結日は、申込みの時に払う契約の日でもある。
+  - { pattern: "売買契約日", group: sale, position: before }
+  - { pattern: "契約締結日", group: sale, position: before }
+  - { pattern: "契約日", group: sale, position: before }
+  - { pattern: "残代金決済日", group: sale, position: after }
+  - { pattern: "引渡日", group: sale, position: after }
+  - { pattern: "引渡し日", group: sale, position: after }
+  - { pattern: "所有権移転日", group: sale, position: after }
+  - { pattern: "売買契約日", group: sale-settlement, position: before }
+  - { pattern: "決済日", group: sale-settlement, position: after }
+  # 宴会や会議室の見積書。見積は催しの前に受けるので、有効期限は開催日より後に来ない。組を作るのは催しの日の語。
+  # 「ご利用日」は入れない。ポイントの明細やクーポンでは、ご利用日の後に有効期限が来る。表の列は「見積」の列がある表だけ読む。
+  - { pattern: "有効期限", group: quote-validity, position: before }
+  - { pattern: "見積有効期限", group: quote-validity, position: before }
+  - { pattern: "御見積有効期限", group: quote-validity, position: before }
+  - { pattern: "開催日", group: quote-validity, position: after }
+  - { pattern: "ご宴会日", group: quote-validity, position: after }
+  - { pattern: "見積", group: quote-validity }

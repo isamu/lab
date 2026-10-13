@@ -1,7 +1,7 @@
 {
   "recall": {
     "ja": {
-      "settlement-before-contract": "0/2",
+      "settlement-before-contract": "2/2",
       "address-two-ways": "2/2",
       "balance-due": "2/2",
       "tax-proration": "2/2",
@@ -10,7 +10,7 @@
       "land-price-area": "1/1"
     },
     "en": {
-      "settlement-before-contract": "0/2",
+      "settlement-before-contract": "2/2",
       "address-two-ways": "2/2",
       "balance-due": "2/2",
       "tax-proration": "2/2",
