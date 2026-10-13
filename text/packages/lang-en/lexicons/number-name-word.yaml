@@ -1,0 +1,49 @@
+# Words written before a number to name one of a series (Grade 5, Room 12, No. 3): the number is a name, not a count,
+# so "Grade 5 students" is not a vote on how the document writes counts. Matched as written: in lower case some of these
+# are an ordinary noun before a count ("every day 3 buses leave"). Read by number-style-consistency.
+id: number-name-word
+language: en
+entries:
+  - pattern: Grade
+  - pattern: Year
+  - pattern: Class
+  - pattern: Room
+  - pattern: Table
+  - pattern: Gate
+  - pattern: Bus
+  - pattern: Platform
+  - pattern: Level
+  - pattern: Floor
+  - pattern: Chapter
+  - pattern: Section
+  - pattern: Article
+  - pattern: Part
+  - pattern: Item
+  - pattern: No.
+  - pattern: Version
+  - pattern: Phase
+  - pattern: Stage
+  - pattern: Step
+  - pattern: Day
+  - pattern: Week
+  - pattern: Unit
+  - pattern: Module
+  - pattern: Lesson
+  - pattern: Team
+  - pattern: Figure
+  - pattern: Question
+  - pattern: Round
+  - pattern: Session
+  - pattern: Route
+  - pattern: Zone
+  - pattern: Ward
+  - pattern: Page
+  - pattern: Appendix
+  - pattern: Exhibit
+  - pattern: Example
+  - pattern: Exercise
+  - pattern: Problem
+  - pattern: Line
+  - pattern: Flight
+  - pattern: Terminal
+  - pattern: Aisle

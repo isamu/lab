@@ -26,6 +26,7 @@ const wordsOf = (adapter: LanguageAdapter): NumberWords => {
     percentUnits: patterns("percent-unit"),
     countWords: patterns("count-number"),
     figureNouns: patterns("figure-noun"),
+    nameWords: patterns("number-name-word"),
   };
 };
 
@@ -92,6 +93,16 @@ describe("numberMarksIn: English", () => {
     ["It is in the 2019 annual report.", []],
     ["It is in the 12500 annual report.", ["grouping:plain:12500"]],
     ["See H.R. 5376 for details.", []],
+    ["Our Grade 5 students leave at eight.", []],
+    ["The Year 9 pupils and the Class 3 parents meet.", []],
+    ["Guests at Table 4 and Room 12 guests wait.", []],
+    ["Take Bus 2 seats from Gate 7 and Platform 3 trains.", []],
+    ["See No. 5 entries and Chapter 2 notes.", []],
+    ["The Day 1 sessions and Week 2 lessons are short.", []],
+    ["Every day 3 buses leave.", ["count-small:digits:3"]],
+    ["This week 5 students joined.", ["count-small:digits:5"]],
+    ["The grade 5 students joined.", ["count-small:digits:5"]],
+    ["Gradebook 5 entries are new.", ["count-small:digits:5"]],
     ["Turnout rose 12% in March.", ["percent:%:12%"]],
     ["Turnout rose 12 percent in March.", ["percent:percent:12 percent"]],
   ];
@@ -130,6 +141,20 @@ describe("number-style-consistency: the minority style in a document", () => {
     assert.deepEqual(flagged(en, "# Release\n\nWe fixed three bugs, closed four issues and added two pages. The release also adds 5 tests.\n"), [
       "count-small:5",
     ]));
+
+  it("does not count a number that names a group (Grade 5 students) among spelled-out counts", () =>
+    assert.deepEqual(flagged(en, "# Camp\n\nOur Grade 5 students will spend two days at the camp with three teachers and four parents.\n"), []));
+
+  it("still reports a digit count beside a named group", () =>
+    assert.deepEqual(flagged(en, "# Camp\n\nOur Grade 5 students will bring two bags and three hats. Each class also brings 4 tents.\n"), ["count-small:4"]));
+
+  it("places an English count on its own line", () => {
+    const source = "# Release\n\nWe fixed three bugs and closed four issues.\n\nWe added two pages and six notes.\n\nThe release also adds 5 tests.\n";
+    assert.deepEqual(
+      findingsOf(en, source).map((finding) => [finding.line, finding.values["offset"]]),
+      [[7, source.indexOf("5 tests")]],
+    );
+  });
 
   it("names the usual style and the tally", () => {
     const finding = findingsOf(ja, "# 件数\n\n今月は 12件、先月は 9件、先々月は 7件でした。うち三件は同じ内容です。\n")[0];

@@ -1,4 +1,3 @@
-18f-handbook-one-on-ones  1
 18f-handbook-travel-faq  1
 aoml-hurricane-faq  11
 arxiv-2609-27842-genai-assessment  1
@@ -10,6 +9,5 @@ mhlw-norovirus-qa  7
 mit-ocw-6-0001-syllabus  1
 nsf-19-582-reu-solicitation  1
 nws-glossary-a  2
-rfc9457  1
 wikivoyage-ja-shimoda  2
 zenn-kaityo256-happy-presentation  2
