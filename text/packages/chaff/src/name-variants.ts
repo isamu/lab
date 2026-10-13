@@ -15,7 +15,8 @@ import { heavierFirst, outweighs, type NameWeight } from "./name-weight.ts";
  * words は名前の語（記号を除く）。読みが同じ二つの名前が、どの語で違うかを見るため。person は人の名前と読めるもの（解析器が
  * 人名と読むか、敬称が付く）。cue は前後の語から見た名前らしさ（name-cue.ts）。ordinary は、ふつうの語でもある一語の名前で、
  * 文書がその形をどこでも名前に使わないもの（name-ordinary-word.ts）。labelled は、人を書く欄（氏名：、Contractor:）に書いた名前
- * （person-field.ts）。
+ * （person-field.ts）。givenNameReading は、空白を挟んだ姓と名の名を、名の中での字の読みで読み直した読み（name-char-reading.ts の
+ * givenNameReadingOf）。解析器が名を別の読みに切ったとき（建太 を タテフトシ）のもう一通りの読み。
  */
 export type NameMention = {
   readonly surface: string;
@@ -26,6 +27,7 @@ export type NameMention = {
   readonly cue?: NameCue;
   readonly ordinary?: boolean;
   readonly labelled?: boolean;
+  readonly givenNameReading?: string | undefined;
 };
 
 export type NameVariant = {
@@ -163,8 +165,12 @@ export const nameKey = (surface: string): string =>
  */
 export type NameEvidence = { readonly person: boolean; readonly named: boolean; readonly nameLike: boolean };
 
-/** readings は書き方の現れの読みのすべて。解析器は同じ字を所によって別に読む（佐伯 を サエキ と サイキ）。 */
-type Tally = NameEvidence & NameWeight & { readonly surface: string; readonly first: NameMention; readonly readings: readonly string[] };
+/**
+ * readings は書き方の現れの読みのすべて。解析器は同じ字を所によって別に読む（佐伯 を サエキ と サイキ）。givenNameReadings は
+ * 現れの givenNameReading のすべて。
+ */
+type Tally = NameEvidence &
+  NameWeight & { readonly surface: string; readonly first: NameMention; readonly readings: readonly string[]; readonly givenNameReadings: readonly string[] };
 
 const readingsWith = (readings: readonly string[], reading: string | undefined): readonly string[] =>
   reading === undefined || readings.includes(reading) ? readings : [...readings, reading];
@@ -184,11 +190,20 @@ const talliesOf = (mentions: readonly NameMention[]): Tally[] => {
     tallies.set(
       mention.surface,
       tally === undefined
-        ? { surface: mention.surface, first: mention, count: 1, readings: readingsWith([], mention.reading), labelled: mention.labelled === true, ...evidence }
+        ? {
+            surface: mention.surface,
+            first: mention,
+            count: 1,
+            readings: readingsWith([], mention.reading),
+            givenNameReadings: readingsWith([], mention.givenNameReading),
+            labelled: mention.labelled === true,
+            ...evidence,
+          }
         : {
             ...tally,
             count: tally.count + 1,
             readings: readingsWith(tally.readings, mention.reading),
+            givenNameReadings: readingsWith(tally.givenNameReadings, mention.givenNameReading),
             person: tally.person || evidence.person,
             named: tally.named || evidence.named,
             nameLike: tally.nameLike || evidence.nameLike,
@@ -343,7 +358,7 @@ const oneCharApart = (left: string, right: string): boolean => {
 
 /**
  * 読みが同じ人の名前が、一字だけ違う（松本 と 松元）。読みの同じ別の姓（伊藤 と 伊東）もあるので、相手のほうが重い（outweighs）
- * ときに限る。
+ * ときに限る。名を名の中での字の読みで読み直した読み（健太 と 建太 の ケンタ）でも比べる。
  */
 const isPersonSlipOf = (tally: Tally, other: Tally): boolean => outweighs(other, tally) && oneCharApart(tally.surface, other.surface);
 
@@ -351,7 +366,7 @@ const personReadingVariants = (tallies: readonly Tally[]): NameVariant[] =>
   variantsIn(
     groupBy(
       tallies.filter((tally) => tally.person),
-      (tally) => tally.readings,
+      (tally) => [...tally.readings, ...tally.givenNameReadings],
     ),
     "reading",
     isPersonSlipOf,

@@ -22,6 +22,7 @@ import { isInPersonField } from "../packages/chaff/src/person-field.ts";
 import { heavierFirst, outweighs, type NameWeight } from "../packages/chaff/src/name-weight.ts";
 import { isLookalikeApart, lookalikeSlipsIn } from "../packages/chaff/src/name-lookalike-chars.ts";
 import { voicedReadingOf } from "../packages/chaff/src/company-kana-spelling.ts";
+import { givenNameReadingOf } from "../packages/chaff/src/name-char-reading.ts";
 import { companyMentionsIn } from "../packages/chaff/src/company-names.ts";
 
 // 同じ名前の書き分け（name-variant）。例文はすべて自作。
@@ -862,5 +863,80 @@ describe("name-variant (ja): 解析器が姓と読まない姓、い で終わ�
     assert.equal(voicedReadingOf("ノ"), undefined);
     assert.equal(voicedReadingOf("ガワ"), undefined);
     assert.equal(voicedReadingOf(""), undefined);
+  });
+});
+
+describe("name-variant: 名の中での字の読みで読み直した名（健太 と 建太）", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+  });
+
+  const given = new Map([
+    ["建", "ケン"],
+    ["太", "タ"],
+    ["花", "カ"],
+  ]);
+  const unread = new Map([["汰", "タ"]]);
+
+  it("givenNameReadingOf: 字がどれも語彙表にある語は字の読みで、ほかの語は解析器の読みで読む", () => {
+    assert.equal(
+      givenNameReadingOf(
+        [
+          { surface: "建", reading: "タテ" },
+          { surface: "太", reading: "フトシ" },
+        ],
+        given,
+        unread,
+      ),
+      "ケンタ",
+    );
+    assert.equal(
+      givenNameReadingOf(
+        [
+          { surface: "春", reading: "ハル" },
+          { surface: "花", reading: "ハナ" },
+        ],
+        given,
+        unread,
+      ),
+      "ハルカ",
+    );
+    assert.equal(
+      givenNameReadingOf(
+        [
+          { surface: "建", reading: "タテ" },
+          { surface: "太郎", reading: "タロウ" },
+        ],
+        given,
+        unread,
+      ),
+      "ケンタロウ",
+    );
+    assert.equal(givenNameReadingOf([{ surface: "健太", reading: "ケンタ" }], given, unread), "ケンタ");
+    assert.equal(givenNameReadingOf([{ surface: "建" }, { surface: "汰" }], given, unread), "ケンタ");
+  });
+
+  it("givenNameReadingOf: 一字の名、語の無い名、読めない語のある名は読まない", () => {
+    assert.equal(givenNameReadingOf([{ surface: "太", reading: "フトシ" }], given, unread), undefined);
+    assert.equal(givenNameReadingOf([], given, unread), undefined);
+    assert.equal(givenNameReadingOf([{ surface: "建", reading: "タテ" }, { surface: "颯" }], given, unread), undefined);
+    assert.equal(givenNameReadingOf([{ surface: "" }, { surface: "" }], given, unread), undefined);
+  });
+
+  it("解析器が別の読みに切った名を、名の中での字の読みで比べて指す", () => {
+    const pay = "氏名：藤井 健太 様\n\n支給日に藤井 建太 様名義の口座へ振り込みます。\n\n藤井 健太 様の有給休暇の残りは、12日です。\n";
+    assert.deepEqual(variants(pay, ja), ["「藤井 建太」は、ほかの所では同じ読みの「藤井 健太」と書いています"]);
+    const bill = "お客さま名：川辺 春花 様\n\n川辺 春香 様名義の口座から振り替えます。\n\n川辺 春香 様の今月のご使用量です。\n";
+    assert.deepEqual(variants(bill, ja), ["「川辺 春花」は、ほかの所では同じ読みの「川辺 春香」と書いています"]);
+  });
+
+  it("一度ずつ書いた二つの名は、欄に書いたほうが無ければ指さない", () => {
+    assert.deepEqual(variants("藤井 健太 様にお送りします。\n\n藤井 建太 様の予約です。\n", ja), []);
+  });
+
+  it("読みの違う名（健太 と 健二）、一字の名、姓は読み直さない", () => {
+    assert.deepEqual(variants("森 健太 様にお送りします。\n\n森 健太 様の結果です。\n\n森 健二 様の予約です。\n", ja), []);
+    assert.deepEqual(variants("山本 太 様にお送りします。\n\n山本 太 様の結果です。\n\n山本 汰 様の予約です。\n", ja), []);
+    assert.deepEqual(variants("拓 健一 様にお送りします。\n\n拓 健一 様の結果です。\n\n卓 健一 様の予約です。\n", ja), []);
   });
 });
