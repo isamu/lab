@@ -9,6 +9,7 @@ import { scopedFacts, type ScopedFact } from "../facts/fact-scope.ts";
 import { factsOutOfStep, writtenValue, type FactOutOfStep } from "../facts/cross-facts.ts";
 import { factWordsOf } from "./fact-consistency.ts";
 import { quoteAt } from "./structure-tree.ts";
+import { perUnitsOf } from "./per-unit-words.ts";
 
 // cross-doc-fact-conflict reads facts as fact-conflict does (fact-consistency.ts), with two more kinds of value that a docs
 // site repeats from page to page: an email address and a version of three parts or more (2.4.1, v3).
@@ -32,7 +33,7 @@ const COLON_BEFORE = /[:：][\s*_]*$/u;
 const isEntry = (source: string, fact: Fact): boolean => COLON_BEFORE.test(source.slice(source.lastIndexOf("\n", fact.value.start - 1) + 1, fact.value.start));
 
 const factsOf = (doc: ProseDocument, tree: StructureNode): ScopedFact[] => {
-  const values = factValues(tree, doc.source, namedValues(doc));
+  const values = perUnitsOf(doc, factValues(tree, doc.source, namedValues(doc)));
   const entries = labelledFacts(doc.source, values, factWordsOf(doc)).filter((fact) => isEntry(doc.source, fact));
   return scopedFacts([...entries, ...tableFacts(doc.source, values)], tree, doc.source, summaryHeadings(doc));
 };

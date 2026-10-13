@@ -1,0 +1,10 @@
+# Shapes saying a value is per a unit (fact-conflict, summary-fact-mismatch, cross-doc-fact-conflict). * is the unit word
+# (per mile), read only when rate-unit names it (a quantity: hour, day, mile). position is the side of the value it is written
+# on ($0.45 per mile: after). A value per a quantity is a price, a different thing from the amount it multiplies into, so the
+# two are not compared. "for each transfer" is not a quantity and is compared as before. Fixed marks (a day, /km) are per-unit-mark.
+id: fact-per-unit
+language: en
+entries:
+  - { pattern: "per *", position: after }
+  - { pattern: "for each *", position: after }
+  - { pattern: "/*", position: after }

@@ -5,17 +5,14 @@ import { withoutEdgeMarks } from "./trim-marks.ts";
  * 表の行の金額と、その行の見出しを主語に書いた文の金額（| 治療・救援費用 | 3,000万円 | と「治療・救援費用は、5,000万円を限度に」）。
  * 文は値の前後に言い回し（入院1日につき、を限度に、is paid at）を書くので、名前付きの値（labelled-facts）としては読めない。
  * 主語が行の見出しとちょうど同じで、同じ範囲にあり、行と文のどちらにも同じ通貨の金額がちょうど一つのときだけ比べる。
- * 二つ以上あれば、どれがどれに当たるか（日額と上限）は読まないと分からないので比べない。期間あたりの印（日額、a day）が両方に
- * あって期間が違えば（日額と月額）、別の値なので比べない。
+ * 二つ以上あれば、どれがどれに当たるか（日額と上限）は読まないと分からないので比べない。何あたりの金額（日額、1kmあたり）は、
+ * 同じ何あたりの金額とだけ比べる（fact-values の comparable）。日額と月額、1kmあたりの単価とそれを掛けた金額は別の値。
  */
-/** period: 金額の前後に書いた期間あたりの印の期間（日額 の day）。 */
-export type Amount = FactValue & { readonly period?: string };
+export type Amount = FactValue;
 
 export type AmountRow = { readonly label: string; readonly scope: string; readonly amounts: readonly Amount[] };
 
 export type SubjectSentence = { readonly text: string; readonly scope: string; readonly amounts: readonly Amount[] };
-
-export type PeriodMark = { readonly pattern: string; readonly group: string };
 
 export type SubjectWords = {
   /** 主語と述べる部分の区切り（は、は、、is、are）。英字だけの区切りは、前が空白で後ろが語の切れ目のときだけ。 */
@@ -28,8 +25,6 @@ export type SubjectWords = {
 
 export type RowSentenceConflict = { readonly label: string; readonly value: FactValue; readonly other: FactValue };
 
-const SPACE = /^[ \t]?/u;
-const MARK_REACH = 16;
 const STRONG_MARK = /\*\*|__/gu;
 const LATIN_WORD = /^[a-z ]+$/iu;
 const LATIN_LETTER = /[a-z]/iu;
@@ -37,20 +32,6 @@ const BLOCK_MARK = /^[ \t]*(?:#{1,6}[ \t]+|>[ \t]?)?/u;
 const ITEM_MARK = /^(?:[-*+]|\d{1,3}[.)])[ \t]+/u;
 
 const folded = (text: string): string => text.normalize("NFKC").toLowerCase().replace(/\s+/gu, " ");
-
-const markAt = (text: string, marks: readonly PeriodMark[]): string | undefined => {
-  const lowered = folded(text);
-  return marks.find((mark) => lowered.startsWith(folded(mark.pattern)))?.group;
-};
-
-const markBefore = (text: string, marks: readonly PeriodMark[]): string | undefined => {
-  const lowered = folded(text).trimEnd();
-  return marks.find((mark) => lowered.endsWith(folded(mark.pattern)))?.group;
-};
-
-/** 金額のすぐ前（日額5,000円）かすぐ後ろ（$100 a day、5,000円/日）の期間あたりの印の期間。 */
-export const periodOf = (source: string, value: FactValue, marks: readonly PeriodMark[]): string | undefined =>
-  markAt(source.slice(value.end).replace(SPACE, ""), marks) ?? markBefore(source.slice(Math.max(0, value.start - MARK_REACH), value.start), marks);
 
 const withoutDeterminer = (text: string, determiners: readonly string[]): string => {
   const word = determiners.map(folded).find((determiner) => LATIN_WORD.test(determiner) && text.startsWith(`${determiner} `));
@@ -87,13 +68,10 @@ const onlyPair = (row: AmountRow, sentence: SubjectSentence, value: Amount): Amo
   return inRow.length === 1 && inSentence.length === 1 ? inRow[0] : undefined;
 };
 
-/** 期間の違う金額（日額と月額）は別の値。片方にしか印が無ければ比べる（1日につき は語彙表に無い書き方）。 */
-const samePeriod = (left: Amount, right: Amount): boolean => left.period === undefined || right.period === undefined || left.period === right.period;
-
 const conflictsWith = (row: AmountRow, sentence: SubjectSentence): RowSentenceConflict[] =>
   sentence.amounts.flatMap((value) => {
     const other = onlyPair(row, sentence, value);
-    return other === undefined || sameValue(other, value) || !samePeriod(other, value) ? [] : [{ label: row.label, value, other }];
+    return other === undefined || sameValue(other, value) ? [] : [{ label: row.label, value, other }];
   });
 
 const rowsByScope = (rows: readonly AmountRow[]): ReadonlyMap<string, AmountRow[]> =>
