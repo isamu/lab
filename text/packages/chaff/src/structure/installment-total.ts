@@ -87,7 +87,7 @@ const wordPattern = (word: string): string => {
 };
 
 /** One alternation of the words, longest first so 初回お支払額 wins over 初回. Undefined when there are none. */
-const alternation = (words: readonly string[]): string | undefined =>
+export const alternation = (words: readonly string[]): string | undefined =>
   words.length === 0
     ? undefined
     : words
@@ -95,7 +95,7 @@ const alternation = (words: readonly string[]): string | undefined =>
         .map(wordPattern)
         .join("|");
 
-const occurrences = (text: string, words: readonly string[]): Span[] => {
+export const occurrences = (text: string, words: readonly string[]): Span[] => {
   const pattern = alternation(words);
   if (pattern === undefined) return [];
   return [...text.matchAll(new RegExp(pattern, "giu"))].map((match) => ({ start: match.index, end: match.index + match[0].length }));
@@ -109,7 +109,7 @@ const withoutWords = (text: string, words: readonly string[]): string => {
 /** Whether only separators and these words stand in a gap on one line (「：」, "の", " of "). */
 export const isPlainGap = (gap: string, words: readonly string[]): boolean => !gap.includes("\n") && withoutWords(gap, words).replace(SEPARATORS, "") === "";
 
-const lineBounds = (text: string, offset: number): Span => {
+export const lineBounds = (text: string, offset: number): Span => {
   const end = text.indexOf("\n", offset);
   return { start: text.lastIndexOf("\n", offset - 1) + 1, end: end === -1 ? text.length : end };
 };
@@ -142,7 +142,7 @@ const countPattern = (words: InstallmentWords): string => {
   return numberWords === undefined ? DIGITS : `${DIGITS}|${numberWords}`;
 };
 
-const hasWord = (text: string, words: readonly string[]): boolean => occurrences(text, words).length > 0;
+export const hasWord = (text: string, words: readonly string[]): boolean => occurrences(text, words).length > 0;
 
 /** How far around a value its marks are looked for. */
 const MARK_REACH = 16;
@@ -166,7 +166,7 @@ const opensRange = (text: string, value: Span, connectors: readonly string[]): b
   return connectors.some((connector) => after.startsWith(connector.toLowerCase()) && /^\s*[$€£¥￥0-9０-９]/u.test(after.slice(connector.length)));
 };
 
-const isRough = (text: string, value: Span, words: InstallmentWords): boolean =>
+export const isRough = (text: string, value: Span, words: InstallmentWords): boolean =>
   isMarked(text, value, words.markers) || opensRange(text, value, words.connectors);
 
 type Label = Span & { readonly kind: LabelKind };
@@ -315,7 +315,7 @@ export const writtenLike = (value: number, part: Part): string => {
   return part.amount.scale === undefined ? part.written.replace(/[0-9０-９][0-9０-９,，.．]*/u, digits) : digits;
 };
 
-const describe = (parts: readonly Part[]): string =>
+export const describe = (parts: readonly Part[]): string =>
   parts.map((part) => (part.count === 1 ? part.written : `${part.written} × ${String(part.count)}`)).join(" + ");
 
 const regularOf = (parts: readonly Part[]): Part | undefined => parts.toSorted((left, right) => right.count - left.count)[0];

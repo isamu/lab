@@ -43,3 +43,28 @@ entries:
   - { pattern: residual, group: skip }
   - { pattern: deferred, group: skip }
   - { pattern: trade-in, group: skip }
+  # ordinal is a number written as a word in a numbered instalment (First payment), with its value. payment says a section
+  # is about paying instalments; one must stand in the section of the series. fee states the fee, and fee-link may stand
+  # between it and its amount ("The fee per student is $130").
+  - { pattern: first, weight: 1, group: ordinal }
+  - { pattern: second, weight: 2, group: ordinal }
+  - { pattern: third, weight: 3, group: ordinal }
+  - { pattern: fourth, weight: 4, group: ordinal }
+  - { pattern: fifth, weight: 5, group: ordinal }
+  - { pattern: sixth, weight: 6, group: ordinal }
+  - { pattern: seventh, weight: 7, group: ordinal }
+  - { pattern: eighth, weight: 8, group: ordinal }
+  - { pattern: ninth, weight: 9, group: ordinal }
+  - { pattern: tenth, weight: 10, group: ordinal }
+  - { pattern: payment, group: payment }
+  - { pattern: payments, group: payment }
+  - { pattern: instalment, group: payment }
+  - { pattern: instalments, group: payment }
+  - { pattern: installment, group: payment }
+  - { pattern: installments, group: payment }
+  - { pattern: costs, group: fee }
+  - { pattern: fee, group: fee }
+  - { pattern: per student, group: fee-link }
+  - { pattern: per pupil, group: fee-link }
+  - { pattern: per child, group: fee-link }
+  - { pattern: per person, group: fee-link }

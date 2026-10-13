@@ -1,0 +1,12 @@
+# formula-amount-mismatch の語。name-rate は名前と率の間の語（売買代金の3%、売買価格×3%）。rate-name は率と名前の間の語で、
+# 日本語では書かない。plus は率の分に足す決まった額の前の語（＋60,000円）。not-included は、税の名前と「込み」の語が
+# あっても税を含まないと言う語（消費税は含まない）。
+id: formula-amount-word
+language: ja
+entries:
+  - { pattern: の, group: name-rate }
+  - { pattern: ×, group: name-rate }
+  - { pattern: ＋, group: plus }
+  - { pattern: "+", group: plus }
+  - { pattern: 含まない, group: not-included }
+  - { pattern: 含みません, group: not-included }

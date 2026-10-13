@@ -68,6 +68,8 @@ export type LexiconEntry = {
   readonly group?: string | undefined;
   /** 元号の元年の西暦の年（令和は 2019）。元号で書いた年を西暦の年にする rule が使う。 */
   readonly first_year?: number | undefined;
+  /** The genres or groups the entry holds in (legal, blog/tech). Without them, every genre. A detector reads them with entriesForGenre. */
+  readonly genres?: readonly string[] | undefined;
   /** pattern を adapter が語に分けたもの。品詞が読めるときだけ core が入れる。語彙表を書く側は書かない。 */
   readonly tokens?: readonly Token[] | undefined;
 };
@@ -281,6 +283,8 @@ export type DocumentProfile = {
   readonly quoteMentionsTerm?: boolean | undefined;
   /** 文書に速さが無いときの、徒歩の分数を出す速さ（m/分）と、端数を切り上げるか。不動産の広告は 80m で1分、切り上げ。 */
   readonly walkRate?: { readonly metresPerMinute: number; readonly roundUp: boolean } | undefined;
+  /** ラベルが「消費税込み」とだけ書き、ラベルにも文書にも税率が無いときの税率（%）。 */
+  readonly taxRate?: number | undefined;
 };
 
 /**
@@ -427,6 +431,8 @@ export type DetectorOptions = {
   readonly settings?: Readonly<Record<string, OptionValue>> | undefined;
   /** A custom rule's spec (RuleDefinition.custom). */
   readonly custom?: CustomSpec | undefined;
+  /** The document's genre (legal/contract), for word-list entries that hold in some genres only. */
+  readonly genre?: string | undefined;
 };
 
 /** The value of one rule option: a choice, a count, or a list of words. */

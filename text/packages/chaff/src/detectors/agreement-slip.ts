@@ -1,4 +1,5 @@
 import type { Detector, Finding, Lexicon, Token } from "../plugin.ts";
+import { isPartOfAddress } from "./address-word.ts";
 import { isPartOfLongerWord } from "./doubled-word.ts";
 
 /**
@@ -130,6 +131,8 @@ const numberSlipAt = (source: string, tokens: readonly Token[], at: number, list
   const nounAt = at + determiner.length + modifiers.length;
   const noun = tokens[nounAt];
   if (!isCommonNoun(noun) || !hasOneNumber(noun, lists.invariant) || isPlural(noun) === determiner.plural) return undefined;
+  // A file name or a path (a quotes.json, a docs/ folder) is spelled as it must be, not counted.
+  if (isPartOfAddress(source, noun.span.start, noun.span.end)) return undefined;
   if (mayBeVerb(determiner, modifiers, noun, tokens[nounAt + 1], lists.finite)) return undefined;
   const span = tokens.slice(at, nounAt + 1);
   if (!endsNounPhrase(tokens[nounAt + 1], lists.finite) || !joinedBySpace(source, span) || isPartOfLongerWord(source, determiner.head, noun)) return undefined;

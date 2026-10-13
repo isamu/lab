@@ -207,6 +207,54 @@ describe("email-greeting-closing: a greeting and a closing", () => {
     assert.deepEqual(variantsOf(en, "email-greeting-closing", "# Notes\n\nThe meeting is at two.\n", "business/report"), []));
 });
 
+describe("email-greeting-closing: a confirmation email that opens with このたびは", () => {
+  const JA_CONFIRMATION = [
+    "# お申し込み受付のお知らせ",
+    "",
+    "高橋 葵 様",
+    "",
+    "このたびは「春の陶芸教室」にお申し込みいただき、誠にありがとうございます。下記のとおり受け付けました。",
+    "",
+    "受付番号：PT-1024",
+    "",
+    "当日お会いできるのを楽しみにしております。よろしくお願いいたします。",
+    "",
+  ].join("\n");
+  const EN_CONFIRMATION = [
+    "# Booking Confirmed",
+    "",
+    "Dear Ms Takahashi,",
+    "",
+    "Thank you for booking a place on the Spring Pottery Class. We have received your booking with the details below.",
+    "",
+    "Booking number: PT-1024",
+    "",
+    "Best regards,",
+    "The Pottery Studio",
+    "",
+  ].join("\n");
+
+  it("takes このたびは and この度は for a greeting", () => {
+    assert.deepEqual(variantsOf(ja, "email-greeting-closing", JA_CONFIRMATION), []);
+    assert.deepEqual(variantsOf(ja, "email-greeting-closing", JA_CONFIRMATION.replace("このたびは", "この度は")), []);
+  });
+
+  it("still reports a confirmation that opens with no greeting", () => {
+    const bare = JA_CONFIRMATION.replace(/このたびは.*?受け付けました。/u, "下記のとおり受け付けました。");
+    assert.deepEqual(variantsOf(ja, "email-greeting-closing", bare), ["greeting"]);
+  });
+
+  it("does not take a bare thanks for a greeting: it ends emails too, and thanks for an earlier favour in the body", () => {
+    const thanksOnly = JA_CONFIRMATION.replace("このたびは「春の陶芸教室」に", "ご注文");
+    assert.deepEqual(variantsOf(ja, "email-greeting-closing", thanksOnly), ["greeting"]);
+  });
+
+  it("takes the English salutation, not an opening thanks, for the greeting", () => {
+    assert.deepEqual(variantsOf(en, "email-greeting-closing", EN_CONFIRMATION), []);
+    assert.deepEqual(variantsOf(en, "email-greeting-closing", EN_CONFIRMATION.replace("Dear Ms Takahashi,\n\n", "")), ["greeting"]);
+  });
+});
+
 describe("email-subject-length: the subject line", () => {
   it("takes the marks a mail program adds off the subject", () => {
     assert.equal(withoutReplyMarks("Re: Fwd: Lunch", ["Re", "Fwd"]), "Lunch");

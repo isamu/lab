@@ -1,0 +1,29 @@
+# A period written with a start word and an end word in one sentence: "The term starts on 1 April 2026 and ends on
+# 31 March 2027" (date-range-reversed). group start goes right before the first date, group end right before the second,
+# and only a group joint word stands between them besides the end word. A sentence with two start words or two end words
+# is not read: which date belongs to which period is not certain ("Phase 1 starts on … and Phase 2 starts on …").
+id: range-start-end
+language: en
+entries:
+  - { pattern: starts on, group: start }
+  - { pattern: start on, group: start }
+  - { pattern: starting on, group: start }
+  - { pattern: begins on, group: start }
+  - { pattern: begin on, group: start }
+  - { pattern: beginning on, group: start }
+  - { pattern: commences on, group: start }
+  - { pattern: commence on, group: start }
+  - { pattern: commencing on, group: start }
+  - { pattern: ends on, group: end }
+  - { pattern: end on, group: end }
+  - { pattern: ending on, group: end }
+  - { pattern: expires on, group: end }
+  - { pattern: expire on, group: end }
+  - { pattern: expiring on, group: end }
+  - { pattern: terminates on, group: end }
+  - { pattern: terminate on, group: end }
+  - { pattern: terminating on, group: end }
+  - { pattern: and, group: joint }
+  - { pattern: ", and", group: joint }
+  - { pattern: and shall, group: joint }
+  - { pattern: and will, group: joint }

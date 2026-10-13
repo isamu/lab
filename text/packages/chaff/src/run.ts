@@ -307,6 +307,7 @@ export const runRulesWith = (doc: ProseDocument, rules: readonly RuleDefinition[
       embeddedLimits: embeddedLimitsFor(rule, level, genre, embedded),
       ...(rule.options === undefined ? {} : { settings: optionValues(settleOptions(rule.id, rule.options, optionLayers)) }),
       ...(rule.custom === undefined ? {} : { custom: rule.custom }),
+      genre,
     };
     const ran = runDetector(detector, doc, options);
     if ("notRun" in ran) return { findings: acc.findings, skipped: [...acc.skipped, { rule: rule.id, why: ran.notRun }] };

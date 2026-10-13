@@ -19,3 +19,19 @@ entries:
   - { pattern: 残価, group: skip }
   - { pattern: 据置, group: skip }
   - { pattern: 据え置き, group: skip }
+  # payment は分納の話だと分かる語で、分納の並びと同じ節に一つ要る。fee は費用を言う語、fee-link はその語と額の間に
+  # 挟んでよい語（旅行代金は、1人あたり62,000円）。
+  - { pattern: 積立金, group: payment }
+  - { pattern: 分納, group: payment }
+  - { pattern: 納入, group: payment }
+  - { pattern: 旅行代金, group: fee }
+  - { pattern: 参加費, group: fee }
+  - { pattern: 費用, group: fee }
+  - { pattern: 1人あたり, group: fee-link }
+  - { pattern: 1人当たり, group: fee-link }
+  - { pattern: 一人あたり, group: fee-link }
+  - { pattern: 一人当たり, group: fee-link }
+  - { pattern: 1名あたり, group: fee-link }
+  - { pattern: 児童, group: fee-link }
+  - { pattern: 生徒, group: fee-link }
+  - { pattern: 参加者, group: fee-link }

@@ -7,6 +7,8 @@ const DIR = joinPath(PACKAGE_DIR, "lexicons");
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 
+const isStringList = (value: unknown): value is string[] => Array.isArray(value) && value.every((item) => typeof item === "string");
+
 const POSITIONS = ["before", "after"] as const;
 
 const toEntry = (raw: unknown): LexiconEntry | undefined => {
@@ -15,6 +17,7 @@ const toEntry = (raw: unknown): LexiconEntry | undefined => {
   const instead = raw["instead_of"];
   const rewrite = raw["rewrite"];
   const group = raw["group"];
+  const genres = raw["genres"];
   const firstYear = raw["first_year"];
   return {
     pattern: raw["pattern"],
@@ -23,6 +26,7 @@ const toEntry = (raw: unknown): LexiconEntry | undefined => {
     position: POSITIONS.find((position) => position === raw["position"]),
     rewrite: typeof rewrite === "string" ? rewrite : undefined,
     ...(typeof group === "string" ? { group } : {}),
+    ...(isStringList(genres) ? { genres } : {}),
     ...(typeof firstYear === "number" ? { first_year: firstYear } : {}),
   };
 };

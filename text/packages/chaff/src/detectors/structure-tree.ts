@@ -14,6 +14,7 @@ import { withCompoundHours } from "../structure/compound-hours.ts";
 import { timeLengths } from "../derived/time-lengths.ts";
 import { measureUnitsOf } from "../facts/measure-units.ts";
 import { rangeFrameOf, reversedRanges, type DatedSpan, type RangeWords } from "../structure/date-range.ts";
+import { isStartEndRange, startEndWordsOf } from "../structure/start-end-range.ts";
 import { afterLabel } from "../structure/stated-period.ts";
 import { afterSpanLabel } from "../structure/span-label.ts";
 import { percentSumMismatches, type ShareWords } from "../structure/percent-sum.ts";
@@ -310,11 +311,12 @@ const labelledAt =
     return after !== undefined && offset >= lineStart + after;
   };
 
-/** 期間の終わりが始まりより前。範囲の記号と語は言語パッケージの語彙表（range-connector、range-opener、range-closer）から取る。 */
+/** 期間の終わりが始まりより前。範囲の記号と語は言語パッケージの語彙表（range-connector、range-opener、range-closer、range-start-end）から取る。 */
 export const dateRangeReversed: Detector = (doc): Finding[] => {
   if (doc.structure === undefined) return [];
   const dates = datedSpans(doc.structure);
-  return reversedRanges(doc.source, dates, rangeWordsOf(doc), labelledAt(doc))
+  const startEnd = startEndWordsOf(doc.lexicons["range-start-end"] ?? [], patternsOf(doc, "weekday"));
+  return reversedRanges(doc.source, dates, rangeWordsOf(doc), labelledAt(doc), (start, end) => isStartEndRange(doc.source, start, end, startEnd))
     .filter((issue) => {
       const start = dateAt(dates, issue.offset);
       return !quotedDates(doc, dates[start], dates[start + 1]);

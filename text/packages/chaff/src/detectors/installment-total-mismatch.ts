@@ -3,9 +3,11 @@
 // labels are installment-label, the other words installment-word, approximate-marker, number-word (digit), range-connector
 // and amount-range-word.
 import type { Detector, Finding, Lexicon, ProseDocument } from "../plugin.ts";
+import { installmentFeeMismatches, type InstallmentSeriesWords } from "../structure/installment-fee.ts";
 import { installmentTotalMismatches, type InstallmentAmount, type InstallmentWords, type PositionedWord } from "../structure/installment-total.ts";
 import { scaledAmountOf, scaleWordsOf } from "./amount-scale.ts";
 import { amountsIn, formsOf } from "./currency-notation.ts";
+import type { StructureIssue } from "../structure/issues.ts";
 import { proseAndTablesOf } from "../table-text.ts";
 import { quoteAround } from "./quote-around.ts";
 
@@ -41,6 +43,20 @@ const wordsOf = (doc: ProseDocument): InstallmentWords => ({
   numberWords: numberWordsOf(doc),
 });
 
+const weightedOf = (doc: ProseDocument, lexicon: string, group: string): InstallmentSeriesWords["ordinals"] =>
+  entriesOf(doc, lexicon, group).flatMap((entry) => (entry.weight === undefined ? [] : [{ word: entry.pattern, value: entry.weight }]));
+
+const seriesWordsOf = (doc: ProseDocument): InstallmentSeriesWords => ({
+  numbered: patternsOf(doc, "installment-label", "numbered"),
+  finals: patternsOf(doc, "installment-label", "final"),
+  deposits: patternsOf(doc, "installment-label", "deposit"),
+  ordinals: [...weightedOf(doc, "installment-word", "ordinal"), ...numberWordsOf(doc)],
+  ordinalSuffixes: [...new Set(patternsOf(doc, "ordinal-suffix"))],
+  payments: patternsOf(doc, "installment-word", "payment"),
+  fees: patternsOf(doc, "installment-word", "fee"),
+  feeLinks: patternsOf(doc, "installment-word", "fee-link"),
+});
+
 const amountsOf = (text: string, doc: ProseDocument): InstallmentAmount[] => {
   const scales = scaleWordsOf(doc);
   return amountsIn(
@@ -55,14 +71,24 @@ const amountsOf = (text: string, doc: ProseDocument): InstallmentAmount[] => {
   });
 };
 
+const findingOf = (text: string, issue: StructureIssue, variant?: string): Finding => ({
+  rule: "installment-total-mismatch",
+  severity: "warning",
+  line: 0,
+  column: 0,
+  quote: quoteAround(text, issue.offset),
+  values: { ...issue.values, offset: issue.offset },
+  ...(variant === undefined ? {} : { variant }),
+});
+
 export const installmentTotalMismatch: Detector = (doc): Finding[] => {
   const text = proseAndTablesOf(doc);
-  return installmentTotalMismatches(text, amountsOf(text, doc), wordsOf(doc)).map((issue) => ({
-    rule: "installment-total-mismatch",
-    severity: "warning",
-    line: 0,
-    column: 0,
-    quote: quoteAround(text, issue.offset),
-    values: { ...issue.values, offset: issue.offset },
-  }));
+  const amounts = amountsOf(text, doc);
+  const words = wordsOf(doc);
+  const loans = installmentTotalMismatches(text, amounts, words);
+  const headings = (doc.markup?.headings ?? []).map((heading) => heading.start);
+  const fees = installmentFeeMismatches(text, amounts, headings, words, seriesWordsOf(doc)).filter(
+    (issue) => !loans.some((loan) => loan.offset === issue.offset),
+  );
+  return [...loans.map((issue) => findingOf(text, issue)), ...fees.map((issue) => findingOf(text, issue, "fee"))];
 };

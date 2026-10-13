@@ -31,3 +31,17 @@ entries:
   - { pattern: Total amount payable, group: total }
   - { pattern: Total amount repayable, group: total }
   - { pattern: Total repayable, group: total }
+  # numbered labels a table row or a list item of a series of instalments; {n} is its number (1st payment, Instalment 2,
+  # Second payment). final is the last one after the others, deposit a deposit listed as one of them. They are added up
+  # and compared with the fee stated in the same section ("The trip costs £300 per student").
+  - { pattern: "{n} payment", group: numbered }
+  - { pattern: "{n} instalment", group: numbered }
+  - { pattern: "{n} installment", group: numbered }
+  - { pattern: "Payment {n}", group: numbered }
+  - { pattern: "Instalment {n}", group: numbered }
+  - { pattern: "Installment {n}", group: numbered }
+  - { pattern: Final payment, group: final }
+  - { pattern: Final instalment, group: final }
+  - { pattern: Final installment, group: final }
+  - { pattern: Last payment, group: final }
+  - { pattern: Deposit, group: deposit }

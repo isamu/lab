@@ -1,0 +1,21 @@
+id: property-sale
+
+name:
+  ja: 不動産の売買の精算書
+  en: Property sale settlement statement
+
+why:
+  ja: 日本の不動産の売買の精算書は、仲介手数料を「売買代金の3%＋6万円（消費税込み）」のように税込みと書き、税率を書かないことが多くあります。宅地建物取引業者の仲介手数料には消費税10%がかかるため、精算書では、税率を書いていなくても10%で手数料の計算を確かめます。
+  en: A Japanese property sale settlement statement often writes a brokerage fee as "3% of the price plus 60,000 yen, consumption tax included" without the rate. A broker's fee bears the 10% consumption tax, so in such a statement the fee is checked at 10% even when the rate is not written. English statements have no such convention, so this profile has no English part.
+
+# 設定（chaff.yaml の profile / by_path）が無いときに、内容から選ぶ。売買の精算の項目（売買代金、手付金、残代金、仲介手数料、
+# 売買契約日、決済日）の行が min_lines 行以上あれば精算書として読む。代金の表の三行（売買代金・手付金・残代金）だけでは選ばない。
+# 表の行（| 売買代金 | …）も「決済日：…」の行も、見出しの括弧（手付金（契約時にお支払い済み））も数える。
+detect:
+  ja:
+    line: "^[ \\t]*\\|?[ \\t]*(?:売買代金|手付金|残代金|仲介手数料|売買契約日|決済日)(?:[（(][^）)\\n]*[）)])?[ \\t]*[|｜:：]"
+    min_lines: 4
+
+ja:
+  # 見出しが「消費税込み」とだけ書き、見出しにも文書にも税率が無いときの税率（%）（formula-amount-mismatch）。
+  tax_rate: 10
