@@ -6,12 +6,15 @@ import { nameSpans } from "../compare/proper-nouns.ts";
 const marksOf = (doc: ProseDocument, id: string): PerUnitMark[] =>
   (doc.lexicons[id] ?? []).map((entry): PerUnitMark => ({ pattern: entry.pattern, group: entry.group ?? entry.pattern }));
 
-/** 何あたりかの語: 決まった印（per-unit-mark）、型（fact-per-unit）、単位の語（rate-unit）、読まない百分率（percent-unit）。 */
+/** 何あたりかの語: 決まった印（per-unit-mark）、型（fact-per-unit）、単位の語（rate-unit）、読まない百分率（percent-unit）、単価の列の見出し（unit-price-column）。 */
 const perUnitWordsOf = (doc: ProseDocument): PerUnitWords => ({
   marks: marksOf(doc, "per-unit-mark"),
   templates: (doc.lexicons["fact-per-unit"] ?? []).map((entry): PerUnitTemplate => ({ pattern: entry.pattern, position: entry.position ?? "before" })),
   units: marksOf(doc, "rate-unit"),
   percentUnits: (doc.lexicons["percent-unit"] ?? []).map((entry) => entry.pattern),
+  priceHeadings: (doc.lexicons["unit-price-column"] ?? []).map((entry) =>
+    entry.group === undefined ? { pattern: entry.pattern } : { pattern: entry.pattern, group: entry.group },
+  ),
 });
 
 /** 文書の値に、何あたりか（1kmあたり15円 の km）を付ける。 */
