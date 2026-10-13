@@ -1,0 +1,66 @@
+id: toki-as-condition
+layer: L3
+status: stable
+how_to_find: condition-toki
+word_list: condition-toki
+extra_word_lists: [condition-follower]
+requires: [pos]
+languages: [ja]
+severity: info
+
+name:
+  ja: 条件を言う「時」
+  en: 時 written for a condition (法令用語の「とき」)
+
+why:
+  ja: 法令の文では、「時」は時点（相続開始の時から）、「とき」は条件（認定を受けたときは）を言います。「認定を受けた時は」と書くと、読み手は「受けた時点で」の意味か「受けた場合に」の意味かを考えます。契約書や規程は法令の書き方にそろえるので、同じ使い分けをします。動詞や助動詞で終わる節の後ろの「時」に、「は」「には」「も」が続くときだけ指します。
+  en: Japanese legal drafting writes 時 for a point in time (相続開始の時から, "from the time the succession opens") and とき for a condition (認定を受けたときは, "if the approval is given"). With 認定を受けた時は the reader has to decide whether a moment or a condition is meant. Contracts and internal rules follow the statutes' usage. chaff reports 時 only after a clause that ends in a verb or an auxiliary and before は, には or も.
+
+message:
+  ja: 条件を言うなら「{matched}」は「{preferred}」と書きます
+  en: 'For a condition, legal Japanese writes "{matched}" as "{preferred}"'
+
+how_to_fix:
+  ja: 条件なら「とき」にしてください（認定を受けた時は → 認定を受けたときは）。時点を言うなら「時から」「時に」のように書けば、時点と読めます。
+  en: For a condition, write とき (認定を受けた時は → 認定を受けたときは). For a point in time, write 時から or 時に so that it reads as one.
+
+placeholders:
+  matched:
+    ja: 見つけた語
+    en: the word found
+  preferred:
+    ja: 条件を言う書き方
+    en: the word for a condition
+
+levels: { strict: warning, normal: info, relaxed: info }
+
+use_for: [legal]
+
+group: wording
+summary:
+  ja: 「認定を受けた時は」のように、条件を「とき」でなく「時」で書いた所
+  en: 時 written for a condition (受けた時は) where legal Japanese writes とき
+example:
+  ja:
+    config: { genre: legal/contract }
+    before: |
+      第5条　乙は、許可の取消しを受けた時は、直ちに甲に通知しなければならない。
+    after: |
+      第5条　乙は、許可の取消しを受けたときは、直ちに甲に通知しなければならない。
+
+not_flagged:
+  ja: 時点を言う「時」（相続開始の時から、死亡した時に、契約の終了の時まで）、名詞や「その」「ある」の後ろの「時」（事故の時は、その時は）、「時効」「時間」「同時」「随時」「臨時」「当時」「時点」「時期」のような語、鉤括弧で引いた中は指しません。法務のジャンルだけで動きます。
+  en: 時 for a point in time (相続開始の時から, 死亡した時に, 契約の終了の時まで), 時 after a noun or after その and ある (事故の時は, その時は), words such as 時効, 時間, 同時, 随時, 臨時, 当時, 時点 and 時期, and anything quoted in 「」 are not reported. Only the legal genres run this rule.
+rewrite:
+  depth: light
+  ja:
+    direction: 条件を言う「時」を「とき」に替えてください。替えるのはその一語だけです。
+    pairs:
+      - before: 乙は、許可の取消しを受けた時は、直ちに甲に通知しなければならない。
+        after: 乙は、許可の取消しを受けたときは、直ちに甲に通知しなければならない。
+      - before: 支払期日を過ぎる時には、年三パーセントの遅延損害金を支払う。
+        after: 支払期日を過ぎるときには、年三パーセントの遅延損害金を支払う。
+    keep:
+      - 条の番号と中身
+    avoid:
+      - 時点を言う「時」（時から、時まで、時に）まで替える

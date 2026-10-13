@@ -1,0 +1,8 @@
+# condition-toki の名詞のすぐ後ろに来て、節を条件にする助詞（認定を受けた時は、期限を過ぎる時には、終了した時も）。toki-as-condition が読む。
+# 「から」「まで」「に」「において」は時点（相続開始の時から、死亡した時に）なので入れない。
+id: condition-follower
+language: ja
+entries:
+  - pattern: は
+  - pattern: には
+  - pattern: も

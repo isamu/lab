@@ -1,6 +1,7 @@
 {
   "recall": {
     "ja": {
+      "toki-as-condition": "1/1",
       "total-in-prose": "1/1",
       "party-role-name": "4/4",
       "party-full-name": "3/3",
