@@ -1,0 +1,30 @@
+# 一つの文に始まりの語と終わりの語で書いた期間（2026年4月1日から開始し、2027年3月31日に終了する。開始日は2026年4月1日、
+# 終了日は2027年3月31日とする）（date-range-reversed）。group start は一つ目の日付に、group end は二つ目の日付に付く語で、
+# position は日付のどちら側に書くか（before は日付の前、after は後ろ）。二つの日付の間には、付いた語のほかは group joint の語だけ。
+# 始まりの語か終わりの語が二つある文は、どの日付がどの期間のものか決まらないので読まない。
+# group tail は、日付の後ろに付く終わりの語（に終了）のさらに後ろに来てよい語。「、」で終わる語の後ろは文が続いてよく、
+# ほかの語は文の終わりまでがその語だけ。「2026年3月31日に終了した旧契約」は名詞にかかる語で、期間の終わりではない。
+id: range-start-end
+language: ja
+entries:
+  - { pattern: 開始日は, group: start, position: before }
+  - { pattern: 開始日を, group: start, position: before }
+  - { pattern: 開始日：, group: start, position: before }
+  - { pattern: から開始, group: start, position: after }
+  - { pattern: より開始, group: start, position: after }
+  - { pattern: に開始, group: start, position: after }
+  - { pattern: 終了日は, group: end, position: before }
+  - { pattern: 終了日を, group: end, position: before }
+  - { pattern: 終了日：, group: end, position: before }
+  - { pattern: 満了日は, group: end, position: before }
+  - { pattern: に終了, group: end, position: after }
+  - { pattern: をもって終了, group: end, position: after }
+  - { pattern: に満了, group: end, position: after }
+  - { pattern: をもって満了, group: end, position: after }
+  - { pattern: 、, group: joint }
+  - { pattern: し、, group: joint }
+  - { pattern: とし、, group: joint }
+  - { pattern: する, group: tail }
+  - { pattern: します, group: tail }
+  - { pattern: するものとする, group: tail }
+  - { pattern: し、, group: tail }

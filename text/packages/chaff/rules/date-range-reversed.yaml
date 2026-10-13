@@ -10,8 +10,8 @@ name:
   en: A period that ends before it starts
 
 why:
-  ja: 「2026年4月1日〜2026年3月31日」のように、期間の終わりの日付が始まりより前だと、読み手はどちらの日付が正しいのかを問い合わせることになります。年を書き写し間違えたときや、日付を片方だけ直したときに起きます。二つの日付の間が範囲の記号（〜、–）だけのときと、「から」でつなぎ終わりの日付のあとに「まで」が続くときを期間として比べます。年の無い期間（12月28日〜1月4日）は年をまたぐかもしれないので比べません。年を片方にだけ書いた期間（2026年7月9日〜7月8日）は同じ年と読み、逆になるときは、年の無い側の曜日がその年に合うか、翌年（または前年）にまたぐと読むと一年近くになるときだけ言います（2026年12月28日〜1月4日は年をまたぐ期間です）。
-  en: 'When a period such as "5 April 2026 – 2 April 2026" ends before it starts, the reader has to ask which date is right. It happens when a year is copied wrong, or when only one of the two dates is changed. Two dates are read as a period when only a range mark (–, —) or a word such as "through" or "until" stands between them, or when they are written "from … to …". A period without a year ("28 December – 4 January") may run into the next year and is not compared. With the year on one end only ("July 9 – July 8, 2026"), both ends are read in that year; a reversed one is reported only when the weekday on the end without a year matches that reading, or when reading it across the year end would make the period nearly a year long ("December 28 – January 4, 2027" crosses the year end).'
+  ja: 「2026年4月1日〜2026年3月31日」のように、期間の終わりの日付が始まりより前だと、読み手はどちらの日付が正しいのかを問い合わせることになります。年を書き写し間違えたときや、日付を片方だけ直したときに起きます。二つの日付の間が範囲の記号（〜、–）だけのときと、「から」でつなぎ終わりの日付のあとに「まで」が続くときと、一つの文に始まりの語と終わりの語が一つずつあり二つの日付に付くとき（2026年4月1日から開始し、2027年3月31日に終了する）を期間として比べます。年の無い期間（12月28日〜1月4日）は年をまたぐかもしれないので比べません。年を片方にだけ書いた期間（2026年7月9日〜7月8日）は同じ年と読み、逆になるときは、年の無い側の曜日がその年に合うか、翌年（または前年）にまたぐと読むと一年近くになるときだけ言います（2026年12月28日〜1月4日は年をまたぐ期間です）。
+  en: 'When a period such as "5 April 2026 – 2 April 2026" ends before it starts, the reader has to ask which date is right. It happens when a year is copied wrong, or when only one of the two dates is changed. Two dates are read as a period when only a range mark (–, —) or a word such as "through" or "until" stands between them, or when they are written "from … to …", or when one sentence gives the start and the end with one start word and one end word on the two dates ("starts on 1 April 2026 and ends on 31 March 2027"). A period without a year ("28 December – 4 January") may run into the next year and is not compared. With the year on one end only ("July 9 – July 8, 2026"), both ends are read in that year; a reversed one is reported only when the weekday on the end without a year matches that reading, or when reading it across the year end would make the period nearly a year long ("December 28 – January 4, 2027" crosses the year end).'
 
 message:
   ja: 期間「{period}」の終わりが始まりより前です
@@ -44,5 +44,5 @@ example:
       Applications are open 1 April 2026 – 31 March 2027.
 
 not_flagged:
-  ja: 年の無い期間（12月28日〜1月4日）、「から」だけで「まで」の無いもの（10日から3日に変更）、日付の間に言葉のあるものは比べません。
-  en: 'A period without a year, "from … to …" in a sentence with a word that changes a date ("moved from March 10 to March 3", "… was postponed"), and two dates with words between them are not compared.'
+  ja: 年の無い期間（12月28日〜1月4日）、「から」だけで「まで」の無いもの（10日から3日に変更）、日付の間に言葉のあるもの、始まりの語か終わりの語が二つある文は比べません。
+  en: 'A period without a year, "from … to …" in a sentence with a word that changes a date ("moved from March 10 to March 3", "… was postponed"), two dates with words between them, and a sentence with two start words or two end words ("starts on … and phase 2 starts on …") are not compared.'

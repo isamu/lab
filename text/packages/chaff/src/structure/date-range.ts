@@ -55,7 +55,7 @@ export const rangeFrameOf = (pattern: string): RangeFrame | undefined => {
 /** 日付に添えた曜日（（水））と時刻（10:00）は、期間のつなぎ目ではないので読み飛ばす。 */
 const ASIDES = /[（(][^（()）\n]{1,6}[）)]|\d{1,2}[:：]\d{2}/gu;
 
-const bare = (text: string): string => text.replace(ASIDES, "").trim().toLowerCase();
+export const bare = (text: string): string => text.replace(ASIDES, "").trim().toLowerCase();
 
 const isOneOf = (text: string, words: readonly string[]): boolean => words.some((word) => word.toLowerCase() === text);
 
@@ -159,17 +159,18 @@ const writtenPeriod = (source: string, start: DatedSpan, end: DatedSpan): string
 
 /**
  * 隣り合う二つの日付のうち、期間をなし、終わりが始まりより前のもの。期間の書き出しを指し、書いたままの期間を見せる。
- * isLabelled は、その位置の日付が期間の語で始まる行（Dates: …）の、語より後ろにあるか。
+ * isLabelled は、その位置の日付が期間の語で始まる行（Dates: …）の、語より後ろにあるか。alsoRange は、ほかの書き方で期間と読める組か。
  */
 export const reversedRanges = (
   source: string,
   dates: readonly DatedSpan[],
   words: RangeWords,
   isLabelled: (offset: number) => boolean = () => false,
+  alsoRange: (start: DatedSpan, end: DatedSpan) => boolean = () => false,
 ): StructureIssue[] =>
   dates.slice(1).flatMap((end, index) => {
     const start = dates[index];
     const reading = start === undefined ? undefined : reversedReading(start, end);
-    if (start === undefined || reading === undefined || !isRange(source, start, end, words, isLabelled)) return [];
+    if (start === undefined || reading === undefined || !(isRange(source, start, end, words, isLabelled) || alsoRange(start, end))) return [];
     return [{ offset: start.offset, values: { start: reading.start, end: reading.end, period: writtenPeriod(source, start, end) } }];
   });
