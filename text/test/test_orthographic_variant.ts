@@ -10,6 +10,7 @@ import { oddSpellings } from "../packages/chaff/src/spelling-variants.ts";
 import { dropsOkurigana, isKanaForKanji, kanjiKeyAmong, kanjiSkeleton, katakanaKey, lemmaReading } from "../packages/chaff/src/kana-spelling.ts";
 import { furiganaSpans } from "../packages/chaff/src/furigana.ts";
 import { acronymsIn, isCapitalsNotSpelling } from "../packages/chaff/src/capitals-with-small.ts";
+import { entriesForGenre } from "../packages/chaff/src/lexicon-genres.ts";
 
 // 表記ゆれ（orthographic-variant）。例文はすべて自作。
 
@@ -467,5 +468,56 @@ describe("orthographic-variant: 辞書が片方だけ切る語は一語で比べ
     assert.deepEqual(findingsOf("山田 太郎 様へ送ります。鈴木 一郎 様へ送ります。佐藤 花子 さまへ送ります。お客さまにも送ります。\n"), [
       "「さま」と書いています（この文書はふつう「様」と書く語です。3 箇所のうち 1 箇所が違う）",
     ]);
+  });
+});
+
+describe("orthographic-variant: 法務のジャンルでは、法令の書き分けを比べない", () => {
+  const inGenre = (source: string, genre: string): readonly string[] => namedRuleRun(RULE, source, ja, "a.md", genre).findings;
+  const TOKI = "解除したときは、通知する。遅れたときは、催告する。届いたときは、記録する。契約の終了の時に返還する。\n";
+  const MONO = "書面で定めたものに限る。承認したものを除く。返還すべきものとする。記録した物を引き渡す。\n";
+
+  it("契約・法令の 時（時点）と とき（場合）は、同じ語の書き方のゆれではない", () => {
+    assert.deepEqual(inGenre(TOKI, "legal/contract"), []);
+    assert.deepEqual(inGenre(TOKI, "legal/statute"), []);
+  });
+
+  it("法務の 物（有体物）と もの も比べない", () => {
+    assert.deepEqual(inGenre(MONO, "legal/contract"), []);
+  });
+
+  it("ほかのジャンルでは、時 と とき、物 と もの をこれまでどおり言う", () => {
+    assert.deepEqual(inGenre(TOKI, "blog/tech"), ["「時」と書いています（この文書はふつう「とき」と書く語です。4 箇所のうち 1 箇所が違う）"]);
+    assert.deepEqual(inGenre(MONO, "business/report"), ["「物」と書いています（この文書はふつう「もの」と書く語です。4 箇所のうち 1 箇所が違う）"]);
+  });
+
+  it("法務でも、ほかの語のゆれは言う（出来る と できる）", () => {
+    assert.deepEqual(inGenre("解除できる。返還できる。催告出来る。\n", "legal/contract"), [
+      "「出来る」と書いています（この文書はふつう「できる」と書く語です。3 箇所のうち 1 箇所が違う）",
+    ]);
+  });
+});
+
+describe("entriesForGenre: ジャンルを限った語彙表の語", () => {
+  const lexicon = [{ pattern: "イウ" }, { pattern: "トキ", genres: ["legal"] }, { pattern: "カタ", genres: ["blog/tech", "docs"] }];
+  const patterns = (genre: string | undefined): string[] => entriesForGenre(lexicon, genre).map((entry) => entry.pattern);
+
+  it("ジャンルの無い語はどこでも、ジャンルの付いた語はそのジャンルとその下だけ", () => {
+    assert.deepEqual(patterns("legal"), ["イウ", "トキ"]);
+    assert.deepEqual(patterns("legal/contract"), ["イウ", "トキ"]);
+    assert.deepEqual(patterns("blog/tech"), ["イウ", "カタ"]);
+    assert.deepEqual(patterns("docs/manual"), ["イウ", "カタ"]);
+  });
+
+  it("名前の頭が同じだけのジャンル、上のグループ、ジャンルが分からないときは入れない", () => {
+    assert.deepEqual(patterns("legalese"), ["イウ"]);
+    assert.deepEqual(patterns("blog"), ["イウ"]);
+    assert.deepEqual(patterns("blog/essay"), ["イウ"]);
+    assert.deepEqual(patterns(""), ["イウ"]);
+    assert.deepEqual(patterns(undefined), ["イウ"]);
+  });
+
+  it("空の語彙表と、空の genres", () => {
+    assert.deepEqual(entriesForGenre([], "legal"), []);
+    assert.deepEqual(entriesForGenre([{ pattern: "トキ", genres: [] }], "legal"), []);
   });
 });

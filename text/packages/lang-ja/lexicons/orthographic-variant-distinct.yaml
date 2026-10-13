@@ -18,3 +18,9 @@ entries:
   - pattern: ソウ
   - pattern: 者
   - pattern: ヒト
+  # genres の付いたものは、そのジャンルだけで外す。法令の書き方では「とき」は場合（〜したとき）、「時」は時点（終結の時、
+  # 到達した時）、「物」は有体物、「もの」はそれ以外の物・こと。ほかのジャンルでは、同じ語の書き方のゆれとして比べる。
+  - pattern: トキ
+    genres: [legal]
+  - pattern: モノ
+    genres: [legal]

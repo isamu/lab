@@ -4,7 +4,7 @@ status: stable
 how_to_find: orthographic-variant
 # 語の一覧は持たない。文書の中の語を、日本語は辞書の形の読み（出来る・できる はどちらもデキル）で、カタカナ語は小さい字と「ー」を
 # ならした形で、英字は大文字小文字とハイフンを外した形で束ね、同じ語の書き方が二つあれば少ないほうを指す。
-# 読みが同じで意味の違う語（成る・なる）は lang-ja の orthographic-variant-distinct に並べて外す。
+# 読みが同じで意味の違う語（成る・なる）は lang-ja の orthographic-variant-distinct に並べて外す。genres を付けた語はそのジャンルだけで外す。
 uses: [pos]
 severity: info
 
@@ -56,8 +56,8 @@ example:
       Send the form by email. We answer every email within a day. Attach the receipt to the email.
 
 not_flagged:
-  ja: 読みが同じでも漢字の違う語（書く・描く）、補助動詞・形式名詞と本来の使い方の書き分け（見て下さい・資料を下さい）、書き分けが意味の違いになる語（成る・なる、言う・いう）、語末の「ー」だけの違い（katakana-long-vowel が見ます）、鉤括弧や引用符の中、語の直後のふりがなの括弧の中（HTTP（えいちてぃーてぃーぴー））、chaff.yaml の names に書いた名前は見ません。名詞に続けて書いたかなの名詞（全員ぶん）と慣用句の動詞（気をつける）は、同じ読みの語（文、名札を付ける）と別に比べます。英字は、頭の字の大文字小文字（Email と email）と、大文字だけの語（強調や略語）、大文字の名前に語尾が付いた語（関数名の SENDs）、同じ文の略語の字を示した語（CLIPER と並ぶ CLImatology）を書き方の違いにしません（HBase のような名前の大文字は比べます）。少ないほうが三分の一を超えるときも言いません。文学のジャンルでは既定で止めています（その時代の書き方のため）。
-  en: The case of a word's first letter (Email, email; Long-Term, long-term) is not a spelling, nor is a word in capitals only (emphasis or an acronym), nor a name in capitals with an ending (SENDs, OPENed), nor the letters of an acronym picked out beside it (CLImatology next to CLIPER). A name spelled with capitals (HBase) is still compared. Hyphenated words that are another word (re-sign, resign), part of an address (github.com), anything in quotation marks, a Japanese reading in brackets right after a word (HTTP（えいちてぃーてぃーぴー）) and the team's names are not compared. Nothing is reported when the minority is more than a third. The literature preset turns it off, since old spelling belongs to its time.
+  ja: 読みが同じでも漢字の違う語（書く・描く）、補助動詞・形式名詞と本来の使い方の書き分け（見て下さい・資料を下さい）、書き分けが意味の違いになる語（成る・なる、言う・いう。法務のジャンルでは、法令の書き方で書き分ける 時・とき と 物・もの も）、語末の「ー」だけの違い（katakana-long-vowel が見ます）、鉤括弧や引用符の中、語の直後のふりがなの括弧の中（HTTP（えいちてぃーてぃーぴー））、chaff.yaml の names に書いた名前は見ません。名詞に続けて書いたかなの名詞（全員ぶん）と慣用句の動詞（気をつける）は、同じ読みの語（文、名札を付ける）と別に比べます。英字は、頭の字の大文字小文字（Email と email）と、大文字だけの語（強調や略語）、大文字の名前に語尾が付いた語（関数名の SENDs）、同じ文の略語の字を示した語（CLIPER と並ぶ CLImatology）を書き方の違いにしません（HBase のような名前の大文字は比べます）。少ないほうが三分の一を超えるときも言いません。文学のジャンルでは既定で止めています（その時代の書き方のため）。
+  en: The case of a word's first letter (Email, email; Long-Term, long-term) is not a spelling, nor is a word in capitals only (emphasis or an acronym), nor a name in capitals with an ending (SENDs, OPENed), nor the letters of an acronym picked out beside it (CLImatology next to CLIPER). A name spelled with capitals (HBase) is still compared. In Japanese, words whose kanji and kana forms mean different things (成る and なる) are not compared, and in the legal genres neither are 時 and とき or 物 and もの, which legal drafting writes apart. Hyphenated words that are another word (re-sign, resign), part of an address (github.com), anything in quotation marks, a Japanese reading in brackets right after a word (HTTP（えいちてぃーてぃーぴー）) and the team's names are not compared. Nothing is reported when the minority is more than a third. The literature preset turns it off, since old spelling belongs to its time.
 level_meaning:
   ja: 少ないほうが語の {limit}% 以下のとき指摘
   en: reported when the minority spelling is {limit}% of the word's uses or less

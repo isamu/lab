@@ -8,6 +8,7 @@ import { furiganaSpans } from "../furigana.ts";
 import { acronymsIn, isCapitalsNotSpelling } from "../capitals-with-small.ts";
 import { isPartOfAddress } from "./address-word.ts";
 import { wholeWordRuns, type WholeWordRun } from "../whole-word-runs.ts";
+import { entriesForGenre } from "../lexicon-genres.ts";
 
 /**
  * A word found in the document: where it is, which sentence it is in, its key and spelling, how it is written when that differs, and
@@ -41,7 +42,8 @@ const IDIOM = "orthographic-variant-idiom";
 /** Lexicon: words the tokenizer cuts in one spelling and not the other (お客様, お客 and さま). Each is read whole, keyed by its group. */
 const WHOLE_WORD = "orthographic-variant-whole-word";
 
-const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
+const patternsOf = (doc: ProseDocument, id: string, genre: string | undefined): string[] =>
+  entriesForGenre(doc.lexicons[id] ?? [], genre).map((entry) => entry.pattern);
 
 /**
  * Whether a stretch of the sentence is outside a quotation, the team's names and a reading in brackets (HTTP（えいちてぃーてぃーぴー）):
@@ -300,8 +302,8 @@ const cellPlace = (cell: TableCell, names: readonly string[]): Place => {
  */
 export const orthographicVariant: Detector = (doc, options): Finding[] => {
   const skips: Skips = {
-    skip: new Set([...patternsOf(doc, DISTINCT), ...patternsOf(doc, FUKUSHI)]),
-    idioms: new Set(patternsOf(doc, IDIOM)),
+    skip: new Set([...patternsOf(doc, DISTINCT, options.genre), ...patternsOf(doc, FUKUSHI, options.genre)]),
+    idioms: new Set(patternsOf(doc, IDIOM, options.genre)),
     wholeWords: new Map((doc.lexicons[WHOLE_WORD] ?? []).map((entry) => [entry.pattern, entry.group ?? entry.pattern])),
   };
   const names = doc.names ?? [];
