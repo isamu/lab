@@ -182,6 +182,10 @@ const ignoredColumnsOf = (header: readonly Cell[], amount: number, words: LineAm
 
 const distinct = (indexes: readonly number[]): boolean => indexes.every((index) => index >= 0) && new Set(indexes).size === indexes.length;
 
+/** The units quantity headings count (Hours: hour, Students: person). */
+const quantityHeadingUnits = (words: LineAmountWords): string[] =>
+  words.headerUnits.flatMap((word) => (columnNamed([{ start: 0, text: word.pattern }], words.quantity) === 0 ? [word.unit] : []));
+
 const tableOf = (header: readonly Cell[], words: LineAmountWords): Table | undefined => {
   const quantities = quantityColumnsOf(header, words);
   const [unitPrice, amount] = [columnNamed(header, words.unitPrice), columnNamed(header, words.amount)];
@@ -189,7 +193,8 @@ const tableOf = (header: readonly Cell[], words: LineAmountWords): Table | undef
   if (quantities.some((column) => column.index === unitPrice || column.index === amount)) return undefined;
   const priceUnit = headerUnit(header[unitPrice], words);
   const rateUnits = words.units.map((word) => word.unit);
-  const columns = quantities.map((column) => ({ ...column, priceUnit: priceHeadingUnit(priceUnit, column.unit, rateUnits) }));
+  const headingUnits = quantityHeadingUnits(words);
+  const columns = quantities.map((column) => ({ ...column, priceUnit: priceHeadingUnit(priceUnit, column.unit, rateUnits, headingUnits) }));
   return { quantities: columns, unitPrice, amount, amountCounts: headerUnit(header[amount], words), ignored: ignoredColumnsOf(header, amount, words) };
 };
 

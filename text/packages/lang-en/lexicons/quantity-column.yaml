@@ -11,6 +11,14 @@ entries:
   - pattern: Attendees
   - pattern: Seats
   - pattern: Persons
+  # The head count of a school trip or event budget (a cost per student or per person times the head count). The group
+  # is not a rate-unit: a Rate column (a hotel's rate per night) beside it is not read as per person.
+  - { pattern: Students, group: person }
+  - { pattern: People, group: person }
+  - { pattern: Participants, group: person }
+  - { pattern: Guests, group: person }
+  - { pattern: Headcount, group: person }
+  - { pattern: No. of students, group: person }
   - { pattern: Hours, group: hour }
   - { pattern: Miles, group: mile }
   # The months of a rent statement (monthly × months = annual).

@@ -537,14 +537,14 @@ describe("line-amount-mismatch: 数量×単価が金額と合わない", () => {
     assert.equal(unitsAgree(undefined, "hour"), false);
     assert.equal(unitsAgree("hour", "unstated"), false);
     const rateUnits = ["hour", "day", "mile"];
-    assert.equal(priceHeadingUnit("unstated", "hour", rateUnits), "hour");
-    assert.equal(priceHeadingUnit("unstated", "mile", rateUnits), "mile");
-    assert.equal(priceHeadingUnit("unstated", undefined, rateUnits), "unstated");
-    assert.equal(priceHeadingUnit("unstated", "unstated", rateUnits), "unstated");
-    assert.equal(priceHeadingUnit("unstated", "hour", []), "unstated");
-    assert.equal(priceHeadingUnit("day", "hour", rateUnits), "day");
-    assert.equal(priceHeadingUnit(undefined, "hour", rateUnits), undefined);
-    assert.equal(priceHeadingUnit(undefined, undefined, []), undefined);
+    assert.equal(priceHeadingUnit("unstated", "hour", rateUnits, []), "hour");
+    assert.equal(priceHeadingUnit("unstated", "mile", rateUnits, []), "mile");
+    assert.equal(priceHeadingUnit("unstated", undefined, rateUnits, []), "unstated");
+    assert.equal(priceHeadingUnit("unstated", "unstated", rateUnits, []), "unstated");
+    assert.equal(priceHeadingUnit("unstated", "hour", [], []), "unstated");
+    assert.equal(priceHeadingUnit("day", "hour", rateUnits, []), "day");
+    assert.equal(priceHeadingUnit(undefined, "hour", rateUnits, []), undefined);
+    assert.equal(priceHeadingUnit(undefined, undefined, [], []), undefined);
   });
 });
 
@@ -618,5 +618,79 @@ describe("line-amount-mismatch: 項目の升の括弧に書いた 単価×人数
     assert.equal(labelProductOf("会費（3,000円×24¹名）", words), undefined);
     assert.equal(labelProductOf("会費（24名×24名）", words), undefined);
     assert.equal(labelProductOf("会費（3,000円×3,000円）", words), undefined);
+  });
+});
+
+describe("line-amount-mismatch: a cost per head times a head count (en)", () => {
+  const budget = (price: string, count: string, rows: readonly string[]): string =>
+    [`| Item | ${price} | ${count} | Amount |`, "| --- | --- | --- | --- |", ...rows].join("\n") + "\n";
+
+  it("reads a cost per student times the students", () => {
+    assert.deepEqual(findingsOf(budget("Per student", "Students", ["| Lodging | $85 | 86 | $7,310 |", "| Activities | $15 | 86 | $1,390 |"]), en), [
+      "The amount $1,390 is not quantity × unit price (86 × $15 = $1,290)",
+    ]);
+    assert.deepEqual(findingsOf(budget("Cost per student", "No. of students", ["| Bus | $30 | 40 | $1,300 |"]), en), [
+      "The amount $1,300 is not quantity × unit price (40 × $30 = $1,200)",
+    ]);
+    assert.deepEqual(findingsOf(budget("Per student", "Students", ["| Lodging | $85 | 86 | $7,310 |", "| Activities | $15 | 86 | $1,290 |"]), en), []);
+  });
+
+  it("reads each per-head price heading with each head-count heading", () => {
+    const prices = ["Per student", "Per person", "Per head", "Per guest", "Per participant", "Per attendee", "Cost per student", "Price per person"];
+    const counts = ["Students", "People", "Persons", "Participants", "Attendees", "Guests", "Headcount", "No. of students"];
+    prices.forEach((price) =>
+      counts.forEach((count) => {
+        assert.equal(findingsOf(budget(price, count, ["| Dinner | $40.00 | 12 | $500.00 |"]), en).length, 1, `${price} | ${count}`);
+        assert.deepEqual(findingsOf(budget(price, count, ["| Dinner | $40.00 | 12 | $480.00 |"]), en), [], `${price} | ${count}`);
+      }),
+    );
+    assert.equal(findingsOf(budget("Per person", "Quantity", ["| Dinner | $40.00 | 12 | $500.00 |"]), en).length, 1);
+    assert.equal(findingsOf(budget("Unit price", "Guests", ["| Dinner | $40.00 | 12 | $500.00 |"]), en).length, 1);
+  });
+
+  it("does not multiply a cost per head by days, hours or nights", () => {
+    assert.deepEqual(findingsOf(budget("Per student", "Days", ["| Lodging | $85 | 3 | $7,310 |"]), en), []);
+    assert.deepEqual(findingsOf(budget("Per student", "Hours", ["| Coaching | $15 | 2 | $1,290 |"]), en), []);
+    assert.deepEqual(findingsOf(budget("Per person", "Quantity", ["| Lodging | $85 | 3 days | $7,310 |", "| Guide | $15 | 2 hours | $1,290 |"]), en), []);
+    assert.deepEqual(findingsOf(budget("Per person", "Quantity", ["| Lodging | $85 | 3 nights | $7,310 |"]), en), []);
+  });
+
+  it("does not read a head count against a rate of an unstated period, an hourly rate or a monthly price", () => {
+    assert.deepEqual(findingsOf(budget("Rate", "Guests", ["| Double | $150.00 | 2 | $450.00 |"]), en), []);
+    assert.deepEqual(findingsOf(budget("Hourly rate", "Students", ["| Tutoring | $40.00 | 3 | $80.00 |"]), en), []);
+    assert.deepEqual(findingsOf(budget("Monthly", "People", ["| Gym | $30.00 | 4 | $360.00 |"]), en), []);
+  });
+
+  it("does not read a head count written with a word against a cost per head (costed: such a cell is not read)", () => {
+    assert.deepEqual(findingsOf(budget("Per student", "Students", ["| Bus | $30 | 40 students | $1,300 |"]), en), []);
+  });
+
+  it("does not read a head count without a unit price and an amount column", () => {
+    const roster = "| Class | Teacher | Students |\n| --- | --- | --- |\n| 5A | Ms. Hale | 28 |\n| 5B | Mr. Ortiz | 27 |\n";
+    assert.deepEqual(findingsOf(roster, en), []);
+    const grades = "| Grade | Students | Average | Total |\n| --- | --- | --- | --- |\n| 4 | 52 | 81 | 4,212 |\n| 5 | 48 | 79 | 3,800 |\n";
+    assert.deepEqual(findingsOf(grades, en), []);
+    const enrolment = "| Course | Students | Amount |\n| --- | --- | --- |\n| Art | 24 | $1,000 |\n";
+    assert.deepEqual(findingsOf(enrolment, en), []);
+    const perHead = "| Item | Per student | Amount |\n| --- | --- | --- |\n| Bus | $30 | $2,580 |\n";
+    assert.deepEqual(findingsOf(perHead, en), []);
+  });
+
+  it("counts people as a unit of their own, which no rate is per", () => {
+    const rateUnits = ["hour", "day", "month"];
+    const headingUnits = ["hour", "day", "person"];
+    assert.equal(priceHeadingUnit("person", "person", rateUnits, headingUnits), "person");
+    assert.equal(priceHeadingUnit("person", "hour", rateUnits, headingUnits), "person");
+    assert.equal(priceHeadingUnit("person", "day", rateUnits, headingUnits), "person");
+    assert.equal(priceHeadingUnit("person", "hour", rateUnits, []), "hour");
+    assert.equal(priceHeadingUnit("unstated", "person", rateUnits, headingUnits), "unstated");
+    assert.equal(priceHeadingUnit("unstated", "hour", rateUnits, headingUnits), "hour");
+    assert.equal(priceHeadingUnit(undefined, "person", rateUnits, headingUnits), undefined);
+    assert.equal(unitsAgree("person", "person"), true);
+    assert.equal(unitsAgree("", "person"), true);
+    assert.equal(unitsAgree("person", undefined), true);
+    assert.equal(unitsAgree("day", "person"), false);
+    assert.equal(unitsAgree("person", "unstated"), false);
+    assert.equal(unitsAgree(undefined, "person"), false);
   });
 });
