@@ -66,11 +66,11 @@ If you have not set up yet, do [Getting ready](./documents#getting-ready) first.
 The payslip below was saved as `payslip.md`. The names are made up.
 
 ```markdown file=payslip.md
-# Payslip: September 2026
+# Payslip: October 2026
 
 Employee: Dana Whitfield
 Employee number: 40718
-Pay period: 1 September 2026 to 30 September 2026
+Pay period: 1 October 2026 to 31 October 2026
 Pay date: 25 September 2026
 
 ## Earnings
@@ -110,7 +110,7 @@ $ npx chaffjs payslip.md --genre business/report --compact
 
 payslip.md   business/report · English   genre from --genre
 
-  6:11    error   "Pay date" 25 September 2026 is before the end of the "Pay period", 30 September 2026
+  6:11    error   "Pay date" 25 September 2026 is before the start of the "Pay period", 1 October 2026
                   due-before-issue
   29:12   warning "$2,587.04" is written, but the gross amount minus the deductions is $2,578.04
                   net-amount-mismatch
@@ -124,7 +124,7 @@ payslip.md   business/report · English   genre from --genre
 
 | Line | Finding | What it means | Where to look |
 | --- | --- | --- | --- |
-| 6 | [`due-before-issue`](../../rules/due-before-issue/) | The pay date comes before the pay period ends | The payroll calendar |
+| 6 | [`due-before-issue`](../../rules/due-before-issue/) | The pay date comes before the pay period starts | The payroll calendar |
 | 29 | [`net-amount-mismatch`](../../rules/net-amount-mismatch/) | $3,293.00 less $714.96 is $2,578.04, not $2,587.04 | The deductions table, and the amount actually paid |
 | 31 | [`reference-number-variant`](../../rules/reference-number-variant/) | 40178 is 40718 with two digits swapped | The employee record |
 
@@ -133,12 +133,12 @@ Line 31 is fixed from the employee record, not from the line at the top; either 
 
 ## When a finding is right in general but not here
 
-A pay date before the pay period ends usually means a wrong date.
-At this employer, though, salary is paid on the 25th for the whole month, so the date is right.
+A pay date before the pay period starts usually means a wrong date.
+At this employer, though, salary is paid in advance, on the 25th of the month before, so the date is right.
 Put this line just above the paragraph that holds the dates, and say why:
 
 ```markdown
-<!-- stet: due-before-issue — salary is paid on the 25th for the whole month -->
+<!-- stet: due-before-issue — salary is paid in advance, on the 25th of the month before -->
 Employee: Dana Whitfield
 ```
 
@@ -171,12 +171,12 @@ For one spot, `stet` is the narrower choice.
 The net amount and the employee number are fixed, and the pay date keeps its `stet`.
 
 ```markdown file=payslip-fixed.md
-# Payslip: September 2026
+# Payslip: October 2026
 
-<!-- stet: due-before-issue — salary is paid on the 25th for the whole month -->
+<!-- stet: due-before-issue — salary is paid in advance, on the 25th of the month before -->
 Employee: Dana Whitfield
 Employee number: 40718
-Pay period: 1 September 2026 to 30 September 2026
+Pay period: 1 October 2026 to 31 October 2026
 Pay date: 25 September 2026
 
 ## Earnings

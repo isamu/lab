@@ -1,12 +1,16 @@
 # dated-pair-label の語のうち、行に一つの日ではなく期間を書く語（対象期間：2025年4月1日〜2026年3月31日）。
 # due-before-issue は、この語の行の期間の終わりを、組の先に来る日付として比べる。期間に年が書いてなければ比べない。
+# group と position before を書いた語は、その組の中でだけ、期間の始めと比べる。給与は期間の途中（毎月25日にその月の分）
+# にも払うので、支給日が期間の始めより前のときだけ指す。対象期間は、決算と源泉徴収の明細の組ではこれまでどおり終わりと比べる。
 id: dated-span-label
 language: ja
 entries:
   - pattern: 対象期間
   - pattern: 報告対象期間
   - pattern: 会計期間
-  - pattern: 支給対象期間
-  - pattern: 計算期間
   - pattern: 会計年度
   - pattern: 事業年度
+  - { pattern: 支給対象期間, group: payroll, position: before }
+  - { pattern: 計算期間, group: payroll, position: before }
+  - { pattern: 給与計算期間, group: payroll, position: before }
+  - { pattern: 対象期間, group: payroll, position: before }

@@ -10,7 +10,7 @@ Employment type: Part-time, paid hourly
 
 Pay period: September 16, 2026 – October 15, 2026
 
-Pay date: October 5, 2026
+Pay date: October 25, 2025
 
 ## Hours worked
 
