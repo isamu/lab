@@ -7,6 +7,8 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { renderCompact } from "../packages/chaff/src/render/compact.ts";
 import type { TeamRules } from "../packages/chaff/src/document.ts";
+import type { Token } from "../packages/chaff/src/plugin.ts";
+import { isDictionaryVerb } from "../packages/chaff/src/detectors/conjugated-entry.ts";
 
 const RULES = loadRules("ja");
 
@@ -128,5 +130,71 @@ describe("English screens of the team rules", () => {
       "business/proposal",
     );
     assert.match(renderCompact("t.md", result, RULES_EN, "en"), /^1 finding$/mu);
+  });
+});
+
+describe("internal-jargon: a verb listed in its dictionary form matches its conjugations", () => {
+  const RULES_JA = loadRules("ja");
+  const RULES_EN = loadRules("en");
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+    await en.prepare?.({ pos: true });
+  });
+
+  const quotesFor = (adapter: typeof ja, source: string, jargon: readonly string[]): string[] =>
+    runRules(buildDocument("t.md", source, adapter, { jargon, requiredSections: [] }), adapter === ja ? RULES_JA : RULES_EN, {}, true, "business/proposal")
+      .findings.filter((finding) => finding.rule === "internal-jargon")
+      .map((finding) => finding.quote);
+
+  it("a compound verb (巻き取る) matches 巻き取ります, 巻き取った and 巻き取れば", () => {
+    const source = "# 手順\n\n在庫を巻き取ります。\n\n昨日は在庫を巻き取った。\n\n早めに巻き取れば安心です。\n";
+    assert.deepEqual(quotesFor(ja, source, ["巻き取る"]), ["在庫を巻き取ります。", "昨日は在庫を巻き取った。", "早めに巻き取れば安心です。"]);
+  });
+
+  it("a verb entry does not match its noun form, which the team did not list", () => {
+    assert.deepEqual(quotesFor(ja, "# 手順\n\n巻き取りは明日です。\n", ["巻き取る"]), []);
+  });
+
+  it("the noun form still matches when the team lists it", () => {
+    assert.deepEqual(quotesFor(ja, "# 手順\n\n巻き取りは明日です。\n", ["巻き取り"]), ["巻き取りは明日です。"]);
+  });
+
+  it("a verb entry does not match the same pieces split by other words", () => {
+    assert.deepEqual(quotesFor(ja, "# 手順\n\n糸を巻きながら取ります。\n", ["巻き取る"]), []);
+  });
+
+  it("a conjugated entry (握った) matches only as written", () => {
+    assert.deepEqual(quotesFor(ja, "# 手順\n\n先方と握ったら共有します。\n", ["握った"]), ["先方と握ったら共有します。"]);
+    assert.deepEqual(quotesFor(ja, "# 手順\n\n先方と握ります。\n", ["握った"]), []);
+  });
+
+  it("an English verb the tagger knows matches its past form", () => {
+    assert.deepEqual(quotesFor(en, "# Note\n\nI pinged the vendor.\n", ["ping"]), ["I pinged the vendor."]);
+  });
+
+  it("an English noun entry is matched as written, not as a verb", () => {
+    assert.deepEqual(quotesFor(en, "# Note\n\nWe met the vendor.\n", ["meeting"]), []);
+  });
+});
+
+describe("isDictionaryVerb", () => {
+  const token = (surface: string, pos: string, lemma?: string): Token => ({
+    span: { start: 0, end: surface.length },
+    surface,
+    pos,
+    ...(lemma === undefined ? {} : { lemma }),
+  });
+
+  it("is true when the last word is a verb in its dictionary form", () => {
+    assert.equal(isDictionaryVerb({ pattern: "巻き取る", tokens: [token("巻き", "VERB", "巻く"), token("取る", "VERB", "取る")] }), true);
+    assert.equal(isDictionaryVerb({ pattern: "Ping", tokens: [token("Ping", "VERB", "ping")] }), true);
+  });
+
+  it("is false for a noun, a conjugated form, a word with no lemma, and an entry with no words", () => {
+    assert.equal(isDictionaryVerb({ pattern: "巻き取り", tokens: [token("巻き", "VERB", "巻く"), token("取り", "NOUN", "取り")] }), false);
+    assert.equal(isDictionaryVerb({ pattern: "握った", tokens: [token("握っ", "VERB", "握る"), token("た", "AUX", "た")] }), false);
+    assert.equal(isDictionaryVerb({ pattern: "握る", tokens: [token("握る", "VERB")] }), false);
+    assert.equal(isDictionaryVerb({ pattern: "握る", tokens: [] }), false);
+    assert.equal(isDictionaryVerb({ pattern: "握る" }), false);
   });
 });
