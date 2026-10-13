@@ -3,6 +3,7 @@ import { occurrencesOutside } from "../orthography.ts";
 import { tokenRuns } from "../custom/token-pattern.ts";
 import { joinedView, type JoinedView } from "../joined-view.ts";
 import { boundedMatches } from "../custom/bounded-match.ts";
+import { entriesForGenre } from "../lexicon-genres.ts";
 
 // The detectors behind a team's custom_rules. Each reports every place it finds, at the rule's level; the spec comes from
 // the rule (DetectorOptions.custom). Positions are the document's, like every other finding.
@@ -48,7 +49,9 @@ const pairsOf = (
   spec: { readonly words: readonly { readonly avoid: string; readonly use: string }[] },
   options: DetectorOptions,
 ): readonly { avoid: string; use: string }[] =>
-  spec.words.length > 0 ? spec.words : (options.lexicon ?? []).map((entry) => ({ avoid: entry.pattern, use: entry.rewrite ?? "" }));
+  spec.words.length > 0
+    ? spec.words
+    : entriesForGenre(options.lexicon ?? [], options.genre).map((entry) => ({ avoid: entry.pattern, use: entry.rewrite ?? "" }));
 
 /** words: each spelling to avoid, outside the spelling to use (「ユーザ」 inside 「ユーザー」 is not reported). */
 export const customWords: Detector = (doc, options): Finding[] => {

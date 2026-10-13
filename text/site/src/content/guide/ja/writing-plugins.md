@@ -185,6 +185,14 @@ rules:
 lexicons: { weasel: { ja: ["と言われている", "一般的に"], en: ["some say", "arguably"] } },
 ```
 
+1 項目は語 1 つか、`{ pattern, instead_of, rewrite, genres }` です。
+`genres` を書くと、その項目は書いたジャンルかその組（`genres: [legal]`、`genres: [blog/tech]`）の文書だけでルールに渡ります。
+chaff の知らないジャンルや空の並びは、その項目を名指しして止まります（一覧は `npx chaffjs genres`）。
+
+```js
+lexicons: { terms: { ja: [{ pattern: "甲乙", rewrite: "当事者", genres: ["legal"] }, "一般的に"] } },
+```
+
 スタイルは、ルールの段階をまとめて決めます。書き方は chaff のスタイル（`styles/*.yaml`）と同じです。
 使う側は `style: example/careful` と書きます。
 
