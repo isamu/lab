@@ -1,4 +1,4 @@
-cc-by-4-legalcode-ja  2
+cc-by-4-legalcode-ja  1
 chrome-blog-pwa-origin-migration-ja  1
 da-ai-advisory-board-1  2
 da-copyright-policy  1
@@ -12,15 +12,14 @@ dwango-nicolive-manifest-generator  9
 entaku-rb-4  1
 etax-oshirase-mail-templates  9
 genai-web-api  4
-genai-web-procedure  9
+genai-web-procedure  3
 jstage-jkg-72-4-133  6
-jstage-jniph-74-1-2-rehabilitation  7
+jstage-jniph-74-1-2-rehabilitation  6
 jstage-jniph-74-2-119-wbgt  8
-jstage-jniph-74-2-157-heat-policy  7
+jstage-jniph-74-2-157-heat-policy  6
 jstage-jnlp-32-1-114-nmt  1
 koenote-requirements  1
-meti-keiryoshi-exam-correction  1
-meti-press-level4-bus  2
+meti-press-level4-bus  1
 mhlw-norovirus-qa  1
 neeview-changelog-ja  4
 nta-kids-mijika-na-zeikin  1

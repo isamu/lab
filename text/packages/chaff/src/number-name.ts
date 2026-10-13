@@ -6,7 +6,7 @@ import type { Span, Token } from "./plugin.ts";
  * 「〒100-8916 東京都」の郵便番号、「紀尾井町1-3 東京ガーデンテラス」の番地は、後ろの空白が番号と題・項目の区切りで、「3回」「3 回」のような空け方の好みではない。
  * 空け方を数える材料にしない。
  *
- * 形で名前と読むのは六つだけ。0 で始まる組を含むハイフンつなぎの番号、※・〒や鉤括弧のすぐ後ろの番号、市・区・町まで下りた地名のすぐ後ろのハイフンつなぎの番号、
+ * 形で名前と読むのは七つだけ。桁の区切りの無い 6 桁以上の番号（口座番号 3056172）、0 で始まる組を含むハイフンつなぎの番号、※・〒や鉤括弧のすぐ後ろの番号、市・区・町まで下りた地名のすぐ後ろのハイフンつなぎの番号、
  * 文頭の階層つきの節番号（2.1、3.1.2）、続き番号になった行や番号の並ぶ箇条書きの頭の番号（白書の注、関連コード）、「問3」のように番号の前に書く語のすぐ後ろの番号。
  * 文頭でも「223 言語」「1ターン」は数量なので、階層の無い数は文頭というだけでは名前と読まない。
  * そのうえで、すぐ後ろ（空白 1 つまで）の語が数につく語（助数詞・数・助詞・助動詞）なら数量として数え続ける（「3-5 日」「26.7 万行」）。
@@ -53,8 +53,16 @@ const wordAfter = (tokens: readonly Token[], text: string, run: Span, base: numb
   return tokens.find((token) => token.span.start === base + next);
 };
 
-const isBoundToNumber = (token: Token): boolean =>
-  token.features?.["NounType"] === "Class" || token.features?.["NumType"] === "Card" || BOUND_TO_NUMBER.has(token.pos);
+/** 助数詞（NounType=Class）か数（NumType=Card）。 */
+const isCounterOrNumber = (token: Token | undefined): boolean => token?.features?.["NounType"] === "Class" || token?.features?.["NumType"] === "Card";
+
+const isBoundToNumber = (token: Token): boolean => isCounterOrNumber(token) || BOUND_TO_NUMBER.has(token.pos);
+
+/**
+ * 桁の区切りの無い、6 桁以上の数字だけの番号（口座番号 3056172 を、普通 1234567）。この大きさの数量は桁を区切るか単位を付けて書くので、
+ * 助数詞か数が続くとき（1234567円、250000 人）だけ数量と読む。助詞が続いても番号のまま。
+ */
+const PLAIN_CODE = /^\d{6,}$/u;
 
 /** 「1 又は 2」の接続詞は数どうしをつなぐが、続き番号の注の本文は「31 ただし、…」のように接続詞でも始まる。 */
 const CONJUNCTIONS = new Set(["CCONJ", "SCONJ"]);
@@ -221,6 +229,7 @@ export type NameContext = {
 export const isNumberName = (text: string, run: Span, tokens: readonly Token[] | undefined, base: number, context: NameContext = {}): boolean => {
   const inSequence = context.sequence?.has(base + run.start) ?? false;
   if (tokens === undefined) return false;
+  if (PLAIN_CODE.test(text.slice(run.start, run.end))) return !isCounterOrNumber(wordAfter(tokens, text, run, base));
   const shaped =
     inSequence ||
     isNameShaped(text, run) ||

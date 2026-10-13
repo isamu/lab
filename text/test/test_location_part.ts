@@ -66,7 +66,7 @@ describe("latin-spacing and floors", () => {
   it("still counts a floor after a particle, and a building with floors as a count", () => {
     assert.deepEqual(spacing("# 会場\n\n参加は120名、定員は150名です。\n\n会場は 5階です。\n"), ["後ろの数字:空けています"]);
     assert.deepEqual(spacing("# 会場\n\n参加は120名、定員は150名です。\n\n建物は地上 5階建てです。\n"), ["後ろの数字:空けています"]);
-    assert.deepEqual(spacing("# 会場\n\n参加は120名、定員は150名です。\n\n建物は地下 1階、地上 5階。\n"), [
+    assert.deepEqual(spacing("# 会場\n\n参加は120名、定員は150名、受付は3回です。\n\n建物は地下 1階、地上 5階。\n"), [
       "後ろの数字:空けています",
       "後ろの数字:空けています",
     ]);

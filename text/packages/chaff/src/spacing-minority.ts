@@ -25,3 +25,20 @@ export const minorityReport = <T extends { readonly spaced: boolean }>(ofKind: r
   const spaced = ofKind.filter((entry) => entry.spaced).length;
   return { mode: "mixed", first, odd: odd.length, spaced, touching: ofKind.length - spaced };
 };
+
+/** 同数のとき、書き方が二通りあると 1 件で言う最少の数。1 対 1 は一つずつの書き違いとも区別がつかないので言わない。 */
+const MIN_TIE = 2;
+
+/**
+ * 二通りが同じ数なら少ないほうは無く、1 箇所ずつ「違う」と指すとどちらかの側に立つ。MIN_TIE 対 MIN_TIE 以上なら書き方が二通りあることを 1 件で言い、
+ * それより少なければ言わない。同数でなければ report のまま。
+ */
+export const withoutSideOnTie = <T extends { readonly spaced: boolean }>(
+  report: MinorityReport<T> | undefined,
+  ofKind: readonly T[],
+): MinorityReport<T> | undefined => {
+  if (report?.mode !== "each" || report.odd.length * 2 !== ofKind.length) return report;
+  const first = ofKind[0];
+  if (report.odd.length < MIN_TIE || first === undefined) return undefined;
+  return { mode: "mixed", first, odd: report.odd.length, spaced: report.odd.length, touching: report.odd.length };
+};

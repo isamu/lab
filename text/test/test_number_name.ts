@@ -350,9 +350,15 @@ describe("latin-spacing with parts of speech", () => {
   });
 
   it("still counts numbered lines that count things, and a note number standing alone", () => {
-    assert.deepEqual(spacing("# 手順\n\n3回呼び、5件直した。\n\n1 回目で止める。\n\n2 回目で直す。\n"), ["前の数字:空けています", "前の数字:空けています"]);
+    assert.deepEqual(spacing("# 手順\n\n3回呼び、5件直し、7日待った。\n\n1 回目で止める。\n\n2 回目で直す。\n"), [
+      "前の数字:空けています",
+      "前の数字:空けています",
+    ]);
     assert.deepEqual(spacing("# 注\n\n本文では3回と5件を扱う。\n\n9 首相の発言。\n"), ["前の数字:空けています"]);
-    assert.deepEqual(spacing("# 値\n\n3回呼び、5件直した。\n\n200 のままにする。\n\n201 のままにする。\n"), ["前の数字:空けています", "前の数字:空けています"]);
+    assert.deepEqual(spacing("# 値\n\n3回呼び、5件直し、7日待った。\n\n200 のままにする。\n\n201 のままにする。\n"), [
+      "前の数字:空けています",
+      "前の数字:空けています",
+    ]);
     assert.deepEqual(spacing("# 注\n\n本文では3回と5件を扱う。\n\n```\n8 x\n```\n\n9 首相の発言。\n"), ["前の数字:空けています"]);
   });
 
@@ -436,7 +442,7 @@ describe("latin-spacing leaves labels out", () => {
       "前の数字:詰めています",
       "前の数字:詰めています",
     ]);
-    assert.deepEqual(spacing("# 関連コード\n\n対応は412件、残りは12件です。\n\n- 1122 医療費\n- 1124 出産\n"), [
+    assert.deepEqual(spacing("# 関連コード\n\n対応は412件、残りは12件、保留は7件です。\n\n- 1122 医療費\n- 1124 出産\n"), [
       "前の数字:空けています",
       "前の数字:空けています",
     ]);
