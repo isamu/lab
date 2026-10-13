@@ -10,7 +10,7 @@ const WORDS = {
   breakdowns: ["内訳：", "made up of"],
   discounts: ["値引き", "discount"],
   joiners: [" and "],
-  leads: [":", "of which"],
+  leads: [":"],
   partials: ["including"],
   backReferences: ["this"],
 };

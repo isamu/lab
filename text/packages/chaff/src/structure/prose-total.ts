@@ -18,7 +18,7 @@ export type TotalWords = {
   readonly breakdowns: readonly string[];
   readonly discounts: readonly string[];
   readonly joiners: readonly string[];
-  /** 合計の金額のすぐ後ろに書いて、そこから内訳のすべてが続くことを言う記号や語（": $5,000 for design and …" "of which …"）。 */
+  /** 合計の金額のすぐ後ろに書いて、そこから内訳のすべてが続くことを言う記号や語（": $5,000 for design and …"）。 */
   readonly leads: readonly string[];
   /** 合計と内訳のあいだにあれば、後ろの金額は合計の内訳のすべてとは限らないと読む語（including、うち、or）。 */
   readonly partials: readonly string[];
@@ -155,7 +155,7 @@ const fullBreakdown = (source: string, total: Amount, listed: readonly Amount[],
   return mismatch(source, { total, parts: listed, from, nearEnd: false }, words.discounts);
 };
 
-/** 文の中で、合計の語の金額のすぐ後ろに内訳を始める記号や語（": " "of which"）があれば、その後ろから文の終わりか次の記号までが内訳。 */
+/** 文の中で、合計の語の金額のすぐ後ろに内訳を始める記号や語（": "）があれば、その後ろから文の終わりか次の記号までが内訳。 */
 const totalsThenLead = (source: string, sentence: Span, amounts: readonly Amount[], words: TotalWords): StructureIssue[] => {
   const text = source.slice(sentence.start, sentence.end);
   const markers = phraseSpans(text, sentence.start, words.totals);
