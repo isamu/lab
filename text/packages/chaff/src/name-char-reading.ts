@@ -22,3 +22,19 @@ export const readingOfWords = (words: readonly ReadToken[], chars: CharReadings)
   const readings = words.map((token) => tokenReadingOf(token, chars));
   return words.length > 0 && readings.every(isRead) ? readings.join("") : undefined;
 };
+
+/** 名の字の読みで読み直す、名の字数の下限。一字の名（太 を フトシ）は、二字の名の中の読み（健太 の タ）で読まない。 */
+const MIN_GIVEN_LETTERS = 2;
+
+/**
+ * 名をもう一通りに読んだもの。解析器は名を別の読みに切ることがある（建太 を タテ と フトシ）。字がどれも givenChars（名の中での
+ * 字の読み）にある語はその字の読みをつなぎ、ほかの語は tokenReadingOf で読む。一字の名と、読めない語のある名は読まない。
+ */
+export const givenNameReadingOf = (words: readonly ReadToken[], givenChars: CharReadings, chars: CharReadings): string | undefined => {
+  if (words.reduce((letters, token) => letters + [...token.surface].length, 0) < MIN_GIVEN_LETTERS) return undefined;
+  const readings = words.map((token) => {
+    const letters = [...token.surface].map((letter) => givenChars.get(letter));
+    return letters.length > 0 && letters.every(isRead) ? letters.join("") : tokenReadingOf(token, chars);
+  });
+  return readings.every(isRead) ? readings.join("") : undefined;
+};
