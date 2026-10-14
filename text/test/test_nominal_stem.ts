@@ -51,6 +51,12 @@ describe("asNounWhereNominal", () => {
     goesOn.forEach((next) => assert.equal(asNounWhereNominal(verb("払込み", "払込む"), next).pos, "VERB"));
   });
 
+  it("接尾として渡した名詞（受取り前 の 前）の前は名詞。渡していない名詞の前は動詞のまま", () => {
+    const before = at("前", "NOUN");
+    assert.equal(asNounWhereNominal(verb("受取り", "受取る"), before, new Set(["前"])).pos, "NOUN");
+    assert.equal(asNounWhereNominal(verb("受取り", "受取る"), before, new Set(["後"])).pos, "VERB");
+  });
+
   it("動詞でないもの、辞書の形、連用形でない形、lemma の無いものはそのまま", () => {
     const next = at("の", "ADP");
     const unchanged = [at("期日", "NOUN", { lemma: "期日" }), verb("払い込む", "払い込む"), verb("ください", "下さる"), at("払込み", "VERB")];

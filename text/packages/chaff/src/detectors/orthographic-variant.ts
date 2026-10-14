@@ -167,7 +167,7 @@ const readingWords = (sentence: Sentence, isOpen: IsOpen, skips: Skips): Placed[
     ...tokens.flatMap((written, at): Placed[] => {
       if (inRun.has(at)) return [];
       const next = tokens[at + 1];
-      const token = asNounWhereNominal(written, next);
+      const token = asNounWhereNominal(written, next, skips.phraseSuffixes);
       const key = readingKeyOf({ token, previous: tokens[at - 1], before: tokens[at - 2] }, skips);
       const local = token.span.start - sentence.span.start;
       if (key === undefined || token.lemma === undefined || !isOpen(local, local + token.surface.length)) return [];
