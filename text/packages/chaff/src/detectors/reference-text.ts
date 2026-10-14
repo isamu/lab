@@ -17,6 +17,7 @@ const inputOf = (doc: ProseDocument): ReferenceInput | undefined => {
       asides: patternsOf(doc, "reference-aside"),
       topicLinks: patternsOf(doc, "reference-topic-link"),
       vagueTopics: patternsOf(doc, "reference-topic-vague"),
+      listJoints: patternsOf(doc, "reference-list-joint"),
     },
   };
 };
