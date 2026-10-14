@@ -62,11 +62,10 @@ A `chaff.yaml` in the folder you run from applies to every check, as in the [con
      ✗ refund: citations.failed 1 > 0
 
    Rule rates (per 1,000 words, outputs with a finding)
-     ai-generated-composite   6.7   1 output
-     ai-tell                  6.7   1 output
-     closing-cliche           13.3  1 output
-     contraction-consistency  6.7   1 output
-     padded-intro             6.7   1 output
+     ai-generated-composite  6.7   1 output
+     ai-tell                 6.7   1 output
+     closing-cliche          13.3  1 output
+     padded-intro            6.7   1 output
 
    Facts: 3 dropped (date 1, number 2), 1 added (date 1)
    Quotations: 2 checked, 1 failed
@@ -229,12 +228,11 @@ Failed outputs
   AI low/med/high    0/0/0 (3)   0/0/0 (3)
 
 Rule rates (per 1,000 words)
-                           prompt-a  prompt-b
-  ai-generated-composite   0.0       6.7
-  ai-tell                  0.0       6.7
-  closing-cliche           0.0       13.3
-  contraction-consistency  0.0       6.7
-  padded-intro             0.0       6.7
+                          prompt-a  prompt-b
+  ai-generated-composite  0.0       6.7
+  ai-tell                 0.0       6.7
+  closing-cliche          0.0       13.3
+  padded-intro            0.0       6.7
 
 2 outputs where pass or fail differs
   ✗ q3: passed in prompt-a; failed in prompt-b (facts.dropped 3 > 0, facts.added 1 > 0)
@@ -481,7 +479,7 @@ Four worked examples, each with its documents and chaff's real output, are on th
 
 ```
 $ npx chaffjs prompt-b.md --compact --sarif out/prompt-b.sarif
-  Wrote SARIF: out/prompt-b.sarif (6 findings)
+  Wrote SARIF: out/prompt-b.sarif (5 findings)
 
 prompt-b.md   blog/tech · English   genre from the default
 
