@@ -25,3 +25,10 @@ entries:
   - pattern: Foreword
   - pattern: Changelog
   - pattern: Revision History
+  # The contact block at the end of a press release or a notice.
+  - pattern: Contact
+  - pattern: Contacts
+  - pattern: Media contact
+  - pattern: Media contacts
+  - pattern: Press contact
+  - pattern: Press contacts
