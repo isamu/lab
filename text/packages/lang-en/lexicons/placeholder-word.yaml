@@ -25,3 +25,15 @@ entries:
     group: marker
   - pattern: FIXME
     group: marker
+  # group: template — a word that, in a heading, says the section is a template ("## Template", "# Sample letter").
+  # Blanks under that heading (to the next heading at its depth or above) are what the template is for, so they are not reported.
+  - pattern: template
+    group: template
+  - pattern: templates
+    group: template
+  - pattern: sample letter
+    group: template
+  - pattern: model letter
+    group: template
+  - pattern: model form
+    group: template

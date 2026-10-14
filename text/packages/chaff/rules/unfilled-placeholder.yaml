@@ -43,5 +43,5 @@ example:
       We can meet on Friday 9 October to go through the quote.
 
 not_flagged:
-  ja: "例として置いた「○○」、Markdown のリンク、脚注の番号、チェック欄とチェックリストの項目（- [ ] TODO: …）、値が続く見出しの札（【氏名】山田）、コードとコードのコメント（// TODO）、文の中の「未定」（日程は未定です）は指しません。"
-  en: 'Markdown links and reference definitions, footnote numbers, checkboxes and checklist items ("- [ ] TODO: …"), a label its value follows ("[Date]: 2024-04-01"), code and code comments ("// TODO"), and "TBD" inside a sentence ("the date is TBD") are not reported.'
+  ja: "例として置いた「○○」、Markdown のリンク、脚注の番号、チェック欄とチェックリストの項目（- [ ] TODO: …）、値が続く見出しの札（【氏名】山田）、コードとコードのコメント（// TODO）、文の中の「未定」（日程は未定です）、見出しが雛形と言う節（「## 雛形」「# 記入例」）の中の空欄は指しません。"
+  en: 'Markdown links and reference definitions, footnote numbers, checkboxes and checklist items ("- [ ] TODO: …"), a label its value follows ("[Date]: 2024-04-01"), code and code comments ("// TODO"), "TBD" inside a sentence ("the date is TBD"), and blanks under a heading that names a template ("## Template", "# Sample letter") are not reported.'
