@@ -1,0 +1,21 @@
+{
+  "recall": {
+    "ja": {
+      "announced-count": "2/2",
+      "support-period": "1/2",
+      "version-order": "2/2",
+      "release-date-order": "2/2",
+      "weekday": "2/2",
+      "version-notation": "0/2"
+    },
+    "en": {
+      "announced-count": "2/2",
+      "support-period": "0/2",
+      "version-order": "2/2",
+      "release-date-order": "2/2",
+      "weekday": "2/2",
+      "version-notation": "0/2"
+    }
+  },
+  "clean": []
+}

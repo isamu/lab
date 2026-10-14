@@ -1,0 +1,211 @@
+{
+  "note": "Self-written release notes and changelogs (変更履歴・リリースノート / changelog, release notes) for made-up software: a desktop app's changelog with one heading per release, newest first, and a mobile app's release notes for one version with a table of earlier releases and a support section, each in a clean version and a planted one that differs only on the lines below. They run as technical/readme, the genre a changelog file is guessed as. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line; an end of support written as its own labelled line names the release date line as pairedLine. A version out of order is planted so that only one version breaks the order: with four releases, a version that could be swapped with its neighbour leaves two longest runs and the rule rightly says nothing. The end of support written as a labelled line is named for due-before-issue, whose date pairs do not yet list a release date and an end of support. A rule that does not exist yet is named as the rule that should: version-notation-variant (one version written in two forms in one document, 2.4.0 and v2.4.0, or 3.0.0 and 3.0). yarn planted releasenotes scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/kotonoha",
+      "language": "ja",
+      "genre": "technical/readme",
+      "clean": "ja/kotonoha.clean.md",
+      "planted": "ja/kotonoha.planted.md",
+      "mistakes": [
+        {
+          "kind": "announced-count",
+          "rule": "announced-count-mismatch",
+          "line": 9,
+          "clean": "次の3件の修正",
+          "planted": "次の4件の修正"
+        },
+        {
+          "kind": "support-period",
+          "rule": "date-range-reversed",
+          "line": 17,
+          "clean": "2026年10月6日〜2028年10月5日",
+          "planted": "2026年10月6日〜2025年10月5日"
+        },
+        {
+          "kind": "version-order",
+          "rule": "version-order",
+          "line": 19,
+          "clean": "## 2.3.1（2026年8月18日）",
+          "planted": "## 2.1.3（2026年8月18日）"
+        },
+        {
+          "kind": "release-date-order",
+          "rule": "date-order",
+          "line": 23,
+          "clean": "## 2.3.0（2026年7月7日）",
+          "planted": "## 2.3.0（2026年11月7日）"
+        },
+        {
+          "kind": "weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 33,
+          "clean": "2026年12月8日（火）",
+          "planted": "2026年12月8日（水）"
+        },
+        {
+          "kind": "version-notation",
+          "rule": "version-notation-variant",
+          "line": 35,
+          "clean": "2.4.0 へ更新",
+          "planted": "v2.4.0 へ更新"
+        }
+      ]
+    },
+    {
+      "id": "ja/mamebobo",
+      "language": "ja",
+      "genre": "technical/readme",
+      "clean": "ja/mamebobo.clean.md",
+      "planted": "ja/mamebobo.planted.md",
+      "mistakes": [
+        {
+          "kind": "weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 5,
+          "clean": "リリース日：2026年9月29日（火）",
+          "planted": "リリース日：2026年9月29日（月）"
+        },
+        {
+          "kind": "announced-count",
+          "rule": "announced-count-mismatch",
+          "line": 18,
+          "clean": "次の3件の不具合",
+          "planted": "次の2件の不具合"
+        },
+        {
+          "kind": "release-date-order",
+          "rule": "date-order",
+          "line": 29,
+          "clean": "| 2.6.0 | 2026年6月23日 |",
+          "planted": "| 2.6.0 | 2026年10月23日 |"
+        },
+        {
+          "kind": "version-order",
+          "rule": "version-order",
+          "line": 31,
+          "clean": "| 2.4.0 | 2026年3月3日 |",
+          "planted": "| 2.8.0 | 2026年3月3日 |"
+        },
+        {
+          "kind": "support-period",
+          "rule": "due-before-issue",
+          "line": 35,
+          "pairedLine": 5,
+          "clean": "サポート終了日：2028年9月30日",
+          "planted": "サポート終了日：2025年9月30日"
+        },
+        {
+          "kind": "version-notation",
+          "rule": "version-notation-variant",
+          "line": 37,
+          "clean": "3.0.0 へ更新",
+          "planted": "3.0 へ更新"
+        }
+      ]
+    },
+    {
+      "id": "en/tidepool",
+      "language": "en",
+      "genre": "technical/readme",
+      "clean": "en/tidepool.clean.md",
+      "planted": "en/tidepool.planted.md",
+      "mistakes": [
+        {
+          "kind": "announced-count",
+          "rule": "announced-count-mismatch",
+          "line": 9,
+          "clean": "the following three fixes:",
+          "planted": "the following four fixes:"
+        },
+        {
+          "kind": "support-period",
+          "rule": "date-range-reversed",
+          "line": 17,
+          "clean": "Supported: October 6, 2026 to October 5, 2028",
+          "planted": "Supported: October 6, 2026 to October 5, 2025"
+        },
+        {
+          "kind": "version-order",
+          "rule": "version-order",
+          "line": 19,
+          "clean": "## 4.1.1 - 2026-08-18",
+          "planted": "## 1.4.1 - 2026-08-18"
+        },
+        {
+          "kind": "release-date-order",
+          "rule": "date-order",
+          "line": 23,
+          "clean": "## 4.1.0 - 2026-07-07",
+          "planted": "## 4.1.0 - 2026-11-07"
+        },
+        {
+          "kind": "weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 33,
+          "clean": "Tuesday, December 8, 2026",
+          "planted": "Wednesday, December 8, 2026"
+        },
+        {
+          "kind": "version-notation",
+          "rule": "version-notation-variant",
+          "line": 35,
+          "clean": "update to 4.2.0",
+          "planted": "update to v4.2.0"
+        }
+      ]
+    },
+    {
+      "id": "en/ledgerly",
+      "language": "en",
+      "genre": "technical/readme",
+      "clean": "en/ledgerly.clean.md",
+      "planted": "en/ledgerly.planted.md",
+      "mistakes": [
+        {
+          "kind": "weekday",
+          "rule": "date-weekday-mismatch",
+          "line": 5,
+          "clean": "Release date: Tuesday, September 29, 2026",
+          "planted": "Release date: Monday, September 29, 2026"
+        },
+        {
+          "kind": "announced-count",
+          "rule": "announced-count-mismatch",
+          "line": 18,
+          "clean": "the following three issues:",
+          "planted": "the following two issues:"
+        },
+        {
+          "kind": "release-date-order",
+          "rule": "date-order",
+          "line": 29,
+          "clean": "| 4.6.0 | June 23, 2026 |",
+          "planted": "| 4.6.0 | October 23, 2026 |"
+        },
+        {
+          "kind": "version-order",
+          "rule": "version-order",
+          "line": 31,
+          "clean": "| 4.4.0 | March 3, 2026 |",
+          "planted": "| 4.8.0 | March 3, 2026 |"
+        },
+        {
+          "kind": "support-period",
+          "rule": "due-before-issue",
+          "line": 35,
+          "pairedLine": 5,
+          "clean": "End of support for 5.0.0: September 30, 2028",
+          "planted": "End of support for 5.0.0: September 30, 2025"
+        },
+        {
+          "kind": "version-notation",
+          "rule": "version-notation-variant",
+          "line": 37,
+          "clean": "update to 5.0.0",
+          "planted": "update to 5.0"
+        }
+      ]
+    }
+  ]
+}
