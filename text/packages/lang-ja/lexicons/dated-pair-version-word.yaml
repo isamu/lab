@@ -1,0 +1,6 @@
+# 版を dated-pair-label の語につなぐ語（due-before-issue）。position before は、版、この語、語の順（3.0.0 のサポート終了日：2028年9月30日）。
+# 版（3.0、3.0.0、v3.0）が行の頭にあるときだけ読む。
+id: dated-pair-version-word
+language: ja
+entries:
+  - { pattern: "の", position: before }

@@ -244,3 +244,11 @@ entries:
   - { pattern: "Quote", group: quote-validity }
   - { pattern: "Quotation", group: quote-validity }
   - { pattern: "Quote number", group: quote-validity }
+  # Release notes. A version's support ends after the version is released: an end of support before the release date
+  # has ended when the version comes out. A label naming its version (End of support for 5.0.0) is read too
+  # (dated-pair-version-word).
+  - { pattern: "Release date", group: release-support, position: before }
+  - { pattern: "Released", group: release-support, position: before }
+  - { pattern: "End of support", group: release-support, position: after }
+  - { pattern: "Support ends", group: release-support, position: after }
+  - { pattern: "End of life", group: release-support, position: after }

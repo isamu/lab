@@ -246,3 +246,9 @@ entries:
   - { pattern: "ご利用日", group: quote-validity, position: after }
   - { pattern: "見積", group: quote-validity }
   - { pattern: "見積番号", group: quote-validity }
+  # リリースノート。版のサポートは、その版を出してから終わる。リリース日より前のサポート終了日は、出した時点で終わっている。
+  # 「3.0.0 のサポート終了日」のように版を前に書いた語も読む（dated-pair-version-word）。
+  - { pattern: "リリース日", group: release-support, position: before }
+  - { pattern: "公開日", group: release-support, position: before }
+  - { pattern: "サポート終了日", group: release-support, position: after }
+  - { pattern: "サポート期限", group: release-support, position: after }

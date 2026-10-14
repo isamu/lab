@@ -2,6 +2,7 @@ import { linesOf, type Line } from "./lines.ts";
 import { tableAround } from "./key-value-row.ts";
 import { signerRoleOf } from "./signed-date-line.ts";
 import { isTotalLabel } from "./total.ts";
+import { withoutLabelVersion, type VersionWords } from "./versioned-label.ts";
 
 /**
  * Two labelled points that must come in order: a line (or a list item, or a table's first column) starting with an
@@ -24,6 +25,8 @@ export type PairWords = {
    * pointOf decides whether the line is one. A signature closes the whole document, so it is read at any distance.
    */
   readonly signers?: readonly string[] | undefined;
+  /** The words that join a version to a label (End of support for 5.0.0, 3.0.0 のサポート終了日). */
+  readonly versions?: VersionWords | undefined;
 };
 
 /** A labelled point: the word that labels it, as the lexicon writes it. span is set when the point ends a stated period. */
@@ -36,7 +39,13 @@ export type PointOf = (line: Line, label: string, tableOf: () => readonly string
 
 type Read = LabelledPoint & { readonly kind: "earlier" | "later"; readonly signed?: boolean | undefined };
 
-const labelOf = (text: string, words: readonly string[]): string | undefined => words.find((word) => isTotalLabel(text, [word]));
+const isVersionedLabel = (text: string, word: string, versions: VersionWords | undefined): boolean => {
+  const bare = versions === undefined ? undefined : withoutLabelVersion(text, word, versions);
+  return bare !== undefined && isTotalLabel(bare, [word]);
+};
+
+const labelOf = (text: string, words: readonly string[], versions?: VersionWords): string | undefined =>
+  words.find((word) => isTotalLabel(text, [word]) || isVersionedLabel(text, word, versions));
 
 const signerOf = (text: string, words: PairWords): Pick<Read, "kind" | "label" | "signed"> | undefined => {
   const role = signerRoleOf(text, words.signers ?? []);
@@ -44,9 +53,9 @@ const signerOf = (text: string, words: PairWords): Pick<Read, "kind" | "label" |
 };
 
 const kindOf = (text: string, words: PairWords): Pick<Read, "kind" | "label" | "signed"> | undefined => {
-  const earlier = labelOf(text, words.earlier);
+  const earlier = labelOf(text, words.earlier, words.versions);
   if (earlier !== undefined) return { kind: "earlier", label: earlier };
-  const later = labelOf(text, words.later);
+  const later = labelOf(text, words.later, words.versions);
   return later === undefined ? signerOf(text, words) : { kind: "later", label: later };
 };
 
