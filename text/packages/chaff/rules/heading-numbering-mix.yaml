@@ -111,8 +111,8 @@ example:
       The summary.
 
 not_flagged:
-  ja: 兄弟が三つ未満の所、少ないほうと多いほうが同じ数の所、深さや親の違う見出しどうし（「1.」の下の「1.1」）は比べません。前後の見出し（目次、参考文献、付録）は兄弟に数えません。見出しの頭の数でも、区切りの記号の無い数（「2026年の計画」「3つの理由」）は番号と読みません。期間や催しを名指す番号（「第1週」「1日目」「第3回」「Week 1」）も番号と読みません。
-  en: Fewer than three siblings, a tie between the two sides, and headings at different depths or under different parents ("1." and "1.1") are not compared. Front and back matter (Contents, References, Appendix) is not counted among the siblings. A number at the head of a heading without a separator ("2026 roadmap", "3 reasons") is not read as a heading number. Nor is a number that names a period or an event ("Week 1", "Day 2", "Phase 3", "第3回").
+  ja: 兄弟が三つ未満の所、少ないほうと多いほうが同じ数の所、深さや親の違う見出しどうし（「1.」の下の「1.1」）は比べません。前後の見出し（目次、参考文献、付録、末尾の「担当」「お問い合わせ先」）は兄弟に数えません。見出しの頭の数でも、区切りの記号の無い数（「2026年の計画」「3つの理由」）は番号と読みません。期間や催しを名指す番号（「第1週」「1日目」「第3回」「Week 1」）も番号と読みません。
+  en: Fewer than three siblings, a tie between the two sides, and headings at different depths or under different parents ("1." and "1.1") are not compared. Front and back matter (Contents, References, Appendix, a closing Contact) is not counted among the siblings. A number at the head of a heading without a separator ("2026 roadmap", "3 reasons") is not read as a heading number. Nor is a number that names a period or an event ("Week 1", "Day 2", "Phase 3", "第3回").
 rewrite:
   depth: light
   ja:
