@@ -1,5 +1,5 @@
 {
-  "note": "Self-written treasurer's reports (会計報告書・収支決算報告書 / treasurer's report, income and expenditure statement) for made-up clubs and residents' associations: a hobby club's report with income, expenditure, a carry-over table and the auditor's statement, and a residents' association's statement with budget, actual and variance columns, a carry-over sentence and the audit and approval dates, each in a clean version and a planted one that differs only on the lines below. They run as business/report: no genre is made for treasurer's reports. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: variance-mismatch (a budget-versus-actual difference column, 増減 or Variance, that is not the actual less the budget; △ and brackets mark a negative). A carry-over (brought forward plus income less expenditure) is named for net-amount-mismatch, which compares an amount with a subtraction of named amounts. A membership fee written as a unit price times a head count inside the item cell is named for line-amount-mismatch. An audit or approval dated before the end of the financial year it reports is named for due-before-issue, which compares labelled dates and the end of a labelled period. Each plant was also run alone on its clean document, so no plant depends on another. yarn planted treasurer scores them; expected.json is the committed score.",
+  "note": "Self-written treasurer's reports (会計報告書・収支決算報告書 / treasurer's report, income and expenditure statement) for made-up clubs and residents' associations: a hobby club's report with income, expenditure, a carry-over table and the auditor's statement, and a residents' association's statement with budget, actual and variance columns, a carry-over sentence and the audit and approval dates, each in a clean version and a planted one that differs only on the lines below. They run as business/report: no genre is made for treasurer's reports. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line. A rule that does not exist yet is named as the rule that should: variance-mismatch (a budget-versus-actual difference column, 増減 or Variance, that is not the actual less the budget; △ and brackets mark a negative). A carry-over (brought forward plus income less expenditure) is named for net-amount-mismatch, which compares an amount with a subtraction of named amounts. A membership fee written as a unit price times a head count inside the item cell is named for line-amount-mismatch. An audit or approval dated before the end of the financial year it reports is named for due-before-issue, which compares labelled dates and the end of a labelled period. Each plant was also run alone on its clean document, so no plant depends on another. The club's auditor date is planted in a second planted document of the club (club-audit, scored against the same clean version), because the club's reversed financial year leaves no year end to compare it with. yarn planted treasurer scores them; expected.json is the committed score.",
   "documents": [
     {
       "id": "ja/club",
@@ -35,7 +35,16 @@
           "line": 38,
           "clean": "| 47,630円 |",
           "planted": "| 47,360円 |"
-        },
+        }
+      ]
+    },
+    {
+      "id": "ja/club-audit",
+      "language": "ja",
+      "genre": "business/report",
+      "clean": "ja/club.clean.md",
+      "planted": "ja/club-audit.planted.md",
+      "mistakes": [
         {
           "kind": "audit-before-year-end",
           "rule": "due-before-issue",
@@ -116,7 +125,16 @@
           "line": 38,
           "clean": "| $753.80 |",
           "planted": "| $735.80 |"
-        },
+        }
+      ]
+    },
+    {
+      "id": "en/club-audit",
+      "language": "en",
+      "genre": "business/report",
+      "clean": "en/club.clean.md",
+      "planted": "en/club-audit.planted.md",
+      "mistakes": [
         {
           "kind": "audit-before-year-end",
           "rule": "due-before-issue",
