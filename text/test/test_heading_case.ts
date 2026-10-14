@@ -4,6 +4,7 @@ import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { isTitleCase, minorityCase, pageTitleOf } from "../packages/chaff/src/detectors/heading-case.ts";
+import { namesWrittenMidSentence } from "../packages/chaff/src/detectors/heading-names.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 
 const RULES = loadRules("en");
@@ -332,5 +333,69 @@ describe("title-case-consistency と番号の札・曜日と月の名", () => {
       "\n\n",
     );
     assert.deepEqual(quotesFor(source), ["Section 3. Destruction Of Records"]);
+  });
+});
+
+describe("namesWrittenMidSentence", () => {
+  it("文の途中で大文字の語を、所有格の形と一緒に返す", () => {
+    const names = namesWrittenMidSentence(["The service announced that Flood Inundation Mapping is available, said NOAA Administrator Jacobs."]);
+    ["Flood", "Inundation", "Mapping", "NOAA", "NOAA's", "Administrator", "Jacobs"].forEach((name) => assert.ok(names.has(name), name));
+  });
+
+  it("文の頭の語は名前と数えない", () => {
+    assert.deepEqual([...namesWrittenMidSentence(["Maps help forecasters."])], []);
+  });
+
+  it("所有格は外して数え、曲がったアポストロフィも同じ", () => {
+    const names = namesWrittenMidSentence(["Today NOAA’s service expanded."]);
+    assert.ok(names.has("NOAA"));
+    assert.ok(names.has("NOAA's"));
+  });
+
+  it("番号が続く語（Example 4）は札で、名前と数えない", () => {
+    assert.deepEqual([...namesWrittenMidSentence(["We follow a running example, called Example 4."])], []);
+  });
+
+  it("引用符の中の題は名前と数えない", () => {
+    assert.deepEqual([...namesWrittenMidSentence(['The source is "Food Ingredients and Food Culture" from the county.'])], []);
+    assert.deepEqual([...namesWrittenMidSentence(["The source is “Food Ingredients and Food Culture” from the county."])], []);
+  });
+
+  it("小文字だけの文や空の入力では何も返さない", () => {
+    assert.deepEqual([...namesWrittenMidSentence(["it is all lowercase here."])], []);
+    assert.deepEqual([...namesWrittenMidSentence([])], []);
+    assert.deepEqual([...namesWrittenMidSentence([""])], []);
+  });
+});
+
+describe("title-case-consistency と本文が名前として書く語", () => {
+  // noaa-press-flood-mapping の形。About のほかは、本文が文の途中で大文字で書く名前。
+  it("valid: 見出しの大文字が本文でも大文字の名前から来るなら、Title Case と数えない", () => {
+    const source = [
+      "# Flood maps now cover the country",
+      "## Experimental maps provide guidance for the public\n\nThe service announced today that Flood Inundation Mapping is available, said NOAA staff.",
+      "## Making a difference from day one\n\nText.",
+      "## About NOAA’s Flood Inundation Mapping\n\nText.",
+    ].join("\n\n");
+    assert.deepEqual(quotesFor(source), []);
+  });
+
+  it("invalid: 本文が小文字で書く語の見出しは、これまでどおり Title Case と数える", () => {
+    const source = [
+      "# Flood maps now cover the country",
+      "## Experimental maps provide guidance for the public\n\nThe service shows flood inundation for the public.",
+      "## Making a difference from day one\n\nText.",
+      "## About Flood Inundation Maps\n\nText.",
+    ].join("\n\n");
+    assert.deepEqual(quotesFor(source), ["About Flood Inundation Maps"]);
+  });
+
+  it("invalid: 本文が番号の札（Example 4）で大文字にする語は、名前と数えない", () => {
+    const source = [
+      "## Lifetime inference constraints\n\nWe explain the design with a running example, called Example 4.",
+      "## Solving constraints\n\nText.",
+      "## Running Example\n\nText.",
+    ].join("\n\n");
+    assert.deepEqual(quotesFor(source), ["Running Example"]);
   });
 });
