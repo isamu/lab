@@ -9,6 +9,7 @@ import { acronymsIn, isCapitalsNotSpelling } from "../capitals-with-small.ts";
 import { isPartOfAddress } from "./address-word.ts";
 import { wholeWordRuns, type WholeWordRun } from "../whole-word-runs.ts";
 import { entriesForGenre } from "../lexicon-genres.ts";
+import { asNounWhereNominal } from "../nominal-stem.ts";
 
 /**
  * A word found in the document: where it is, which sentence it is in, its key and spelling, how it is written when that differs, and
@@ -41,6 +42,8 @@ const FUKUSHI = "hiragana-fukushi";
 const IDIOM = "orthographic-variant-idiom";
 /** Lexicon: words the tokenizer cuts in one spelling and not the other (お客様, お客 and さま). Each is read whole, keyed by its group. */
 const WHOLE_WORD = "orthographic-variant-whole-word";
+/** Lexicon: suffixes written onto a word that do not make a compound of it (割当て等, 引受け後): the word keeps its okurigana there. */
+const PHRASE_SUFFIX = "orthographic-variant-phrase-suffix";
 
 const patternsOf = (doc: ProseDocument, id: string, genre: string | undefined): string[] =>
   entriesForGenre(doc.lexicons[id] ?? [], genre).map((entry) => entry.pattern);
@@ -121,7 +124,12 @@ const isCutFromKatakana = ({ token, previous }: InContext): boolean =>
 const isCopulaReadAsVerb = ({ token, previous }: InContext): boolean =>
   token.pos === "VERB" && token.surface === "で" && previous !== undefined && previous.pos !== "ADP";
 
-type Skips = { readonly skip: ReadonlySet<string>; readonly idioms: ReadonlySet<string>; readonly wholeWords: ReadonlyMap<string, string> };
+type Skips = {
+  readonly skip: ReadonlySet<string>;
+  readonly idioms: ReadonlySet<string>;
+  readonly wholeWords: ReadonlyMap<string, string>;
+  readonly phraseSuffixes: ReadonlySet<string>;
+};
 
 const readingKeyOf = (word: InContext, { skip, idioms }: Skips): string | undefined => {
   const { token } = word;
@@ -156,13 +164,14 @@ const readingWords = (sentence: Sentence, isOpen: IsOpen, skips: Skips): Placed[
   const whole = runs.flatMap((run) => wholeWordOf(sentence, tokens, run, isOpen, skips.wholeWords));
   return [
     ...whole,
-    ...tokens.flatMap((token, at): Placed[] => {
+    ...tokens.flatMap((written, at): Placed[] => {
       if (inRun.has(at)) return [];
+      const next = tokens[at + 1];
+      const token = asNounWhereNominal(written, next, skips.phraseSuffixes);
       const key = readingKeyOf({ token, previous: tokens[at - 1], before: tokens[at - 2] }, skips);
       const local = token.span.start - sentence.span.start;
       if (key === undefined || token.lemma === undefined || !isOpen(local, local + token.surface.length)) return [];
-      const next = tokens[at + 1];
-      const compoundHead = token.pos === "NOUN" && next?.pos === "NOUN" && isTouching(token, next);
+      const compoundHead = token.pos === "NOUN" && next?.pos === "NOUN" && isTouching(token, next) && !skips.phraseSuffixes.has(next.surface);
       return [{ key, spelling: token.lemma, sentence, offset: token.span.start, compoundHead }];
     }),
   ];
@@ -305,6 +314,7 @@ export const orthographicVariant: Detector = (doc, options): Finding[] => {
     skip: new Set([...patternsOf(doc, DISTINCT, options.genre), ...patternsOf(doc, FUKUSHI, options.genre)]),
     idioms: new Set(patternsOf(doc, IDIOM, options.genre)),
     wholeWords: new Map((doc.lexicons[WHOLE_WORD] ?? []).map((entry) => [entry.pattern, entry.group ?? entry.pattern])),
+    phraseSuffixes: new Set(patternsOf(doc, PHRASE_SUFFIX, options.genre)),
   };
   const names = doc.names ?? [];
   const placed: Place[] = [

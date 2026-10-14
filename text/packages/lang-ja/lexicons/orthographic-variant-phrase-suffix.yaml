@@ -1,0 +1,9 @@
+# 語に続けて書いても、複合語を作らない接尾の語。orthographic-variant は、この前の語を複合語の頭として比べない。
+# 公用文は複合語の頭の送り仮名を省く（割当日、引受人）が、「等」「後」「前」は語を作らずに句に付くので、前の語は送り仮名を残す
+# （割当て等、引受け後、受取り前）。これを複合語の頭と見ると、割当日 の「割当」と同じ語の書き方のゆれに見えてしまう。
+id: orthographic-variant-phrase-suffix
+language: ja
+entries:
+  - pattern: 等
+  - pattern: 後
+  - pattern: 前

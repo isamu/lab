@@ -24,3 +24,6 @@ entries:
     genres: [legal]
   - pattern: モノ
     genres: [legal]
+  # 法令は所在を「在る」（店舗に在る物品、船舶の中に在った者）、存在を「ある」と書き分ける。ほかのジャンルでは書き方のゆれ。
+  - pattern: 在る
+    genres: [legal]
