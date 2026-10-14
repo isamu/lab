@@ -11,7 +11,11 @@ export type GradeText = {
   readonly contextsUnread: (kind: string, reason: string) => string;
   readonly uncheckedSentences: (count: number) => string;
   readonly unknownRule: string;
-  readonly rubricProblem: (problem: RubricProblem) => string;
+  /** A problem under chaff.yaml's `grade:`, or, given `file`, under a --rubric file's top level. */
+  readonly rubricProblem: (problem: RubricProblem, file?: string) => string;
+  /** A --rubric file whose extension is none of .yaml, .yml, .json. */
+  readonly rubricFormat: (file: string) => string;
+  readonly rubricSyntax: (file: string, why: string) => string;
   readonly penalty: (total: number) => string;
   /** The outputs at each level of the AI-likeness quick score. */
   readonly aiScore: (low: number, medium: number, high: number, notScored: number) => string;
@@ -103,14 +107,17 @@ const aside = (open: string, inner: string, close: string): string => (inner ===
 export const GRADE_TEXT: Texts<GradeText> = {
   ja: {
     usage:
-      "使い方: chaff grade <items.jsonl> [--out <results.jsonl>] [--baseline <前の results.jsonl>] [--allow-stamp-mismatch] [--variant-key <欄の名前>] [--format text|json|markdown] [--json] [--compact] [--experimental] [--genre <ジャンル>]",
+      "使い方: chaff grade <items.jsonl> [--rubric <rubric.yaml|.json>] [--out <results.jsonl>] [--baseline <前の results.jsonl>] [--allow-stamp-mismatch] [--variant-key <欄の名前>] [--format text|json|markdown] [--json] [--compact] [--experimental] [--genre <ジャンル>]",
     noReference: "reference が無い（事実は reference と照らす）",
     noCitations: "citations が無い（chaff は出力から引用を推測しない）",
     noContexts: "contexts が無い（回答の事実は、検索で取った一節と照らす）",
     contextsUnread: (kind, reason) => `contexts と照らすとき、${kind} を読み切れなかった（${reason}）。その種類の事実は、一節にあっても見つからないことがある`,
     uncheckedSentences: (count) => `数・日付・名前・引用の無い文 ${String(count)} 件は、contexts に支えられているかを照らしていない（意味を読む必要がある）`,
     unknownRule: "grade: に書かれているが、chaff の知らないルール",
-    rubricProblem: (problem) => `chaff.yaml の ${problem.path} は${EXPECTED_JA[problem.expected]}で書いてください（書かれていたのは ${problem.written}）`,
+    rubricProblem: (problem, file) =>
+      `${file ?? "chaff.yaml"} の ${problem.path === "" ? "最上位" : problem.path} は${EXPECTED_JA[problem.expected]}で書いてください（書かれていたのは ${problem.written}）`,
+    rubricFormat: (file) => `${file}: --rubric のファイルは .yaml・.yml・.json のどれかにしてください`,
+    rubricSyntax: (file, why) => `${file} を採点の基準として読めませんでした: ${why}`,
     penalty: (total) => `減点の和: ${String(total)}`,
     aiScore: (low, medium, high, notScored) =>
       `AI らしさ: 低 ${String(low)}、中 ${String(medium)}、高 ${String(high)}、測っていない ${String(notScored)}（書いたのが AI かどうかの判定ではありません。合否には入りません）`,
@@ -135,7 +142,7 @@ export const GRADE_TEXT: Texts<GradeText> = {
   },
   en: {
     usage:
-      "usage: chaff grade <items.jsonl> [--out <results.jsonl>] [--baseline <earlier results.jsonl>] [--allow-stamp-mismatch] [--variant-key <field>] [--format text|json|markdown] [--json] [--compact] [--experimental] [--genre <genre>]",
+      "usage: chaff grade <items.jsonl> [--rubric <rubric.yaml|.json>] [--out <results.jsonl>] [--baseline <earlier results.jsonl>] [--allow-stamp-mismatch] [--variant-key <field>] [--format text|json|markdown] [--json] [--compact] [--experimental] [--genre <genre>]",
     noReference: "no reference given (facts are checked against a reference)",
     noCitations: "no citations given (chaff does not guess quotations from the output)",
     noContexts: "no contexts given (the output's facts are checked against retrieved passages)",
@@ -144,7 +151,10 @@ export const GRADE_TEXT: Texts<GradeText> = {
     uncheckedSentences: (count) =>
       `${String(count)} ${count === 1 ? "sentence states" : "sentences state"} no number, date, name or quotation, so their support by contexts is not checked (it needs reading)`,
     unknownRule: "named under grade: but not a rule chaff knows",
-    rubricProblem: (problem) => `chaff.yaml: ${problem.path} must be ${EXPECTED_EN[problem.expected]} (found ${problem.written})`,
+    rubricProblem: (problem, file) =>
+      `${file ?? "chaff.yaml"}: ${problem.path === "" ? "the top level" : problem.path} must be ${EXPECTED_EN[problem.expected]} (found ${problem.written})`,
+    rubricFormat: (file) => `${file}: a --rubric file must end in .yaml, .yml or .json`,
+    rubricSyntax: (file, why) => `Could not read ${file} as a rubric: ${why}`,
     penalty: (total) => `Penalty points: ${String(total)}`,
     aiScore: (low, medium, high, notScored) =>
       `AI-likeness: low ${String(low)}, medium ${String(medium)}, high ${String(high)}, not scored ${String(notScored)} (not a verdict on whether AI wrote them; not part of pass or fail)`,
