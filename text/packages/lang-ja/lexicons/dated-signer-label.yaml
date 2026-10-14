@@ -1,0 +1,11 @@
+# 署名の行に読む役職の語。group と position は dated-pair-label と同じで、署名の行の日付を組の後の日付として読む（due-before-issue）。
+# 署名の行は、日付が一つ、この語、名前だけの行（2026年4月12日　会計監査 戸川 隆）。文（「…に監査を受け、…で承認されました」）や、
+# 名前の無い行、ほかの役職（会長）の行は読まない。行の頭に語のある行は dated-pair-label で読む。
+id: dated-signer-label
+language: ja
+entries:
+  # 会計報告書の監査の署名。会計の監査は、その会計年度が終わってから受ける。
+  - { pattern: "会計監査", group: fiscal-audit, position: after }
+  - { pattern: "会計監査人", group: fiscal-audit, position: after }
+  - { pattern: "監事", group: fiscal-audit, position: after }
+  - { pattern: "監査人", group: fiscal-audit, position: after }
