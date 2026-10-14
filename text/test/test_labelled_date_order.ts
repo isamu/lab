@@ -1472,6 +1472,8 @@ describe("due-before-issue (period): 会計報告書の監査の署名の行", (
       "2026年3月12日　会計監査",
       "2026年3月12日に会計監査を受けました",
       "2026年3月12日　会計監査 架空 一郎、架空 二郎",
+      "2026年3月12日 会計監査 架空一郎、架空二郎",
+      "2026年3月12日 監事 架空が確認",
       "2026年3月12日　会長 架空 一郎",
       "| 2026年3月12日 | 会計監査 | 架空 一郎 |",
     ].forEach((line) => assert.deepEqual(findingsOf(auditReport(fiscalJa, line)), [], line));
@@ -1481,6 +1483,9 @@ describe("due-before-issue (period): 会計報告書の監査の署名の行", (
       "The Auditor signed on March 12, 2026",
       "Jane Example, Chair, March 12, 2026",
       "Jane Example, Auditor's statement, March 12, 2026",
+      "Auditor, March 12, 2026 Report",
+      "March 12, 2026 Auditor Annual Report",
+      "Jane Auditor Example, March 12, 2026",
     ].forEach((line) => assert.deepEqual(findingsOf(auditReport(fiscalEn, line), en), [], line));
   });
 });
