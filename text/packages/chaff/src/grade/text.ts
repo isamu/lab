@@ -59,6 +59,11 @@ const PROBLEM_JA: Readonly<Record<ItemProblemKind, (problem: ItemProblem) => str
   "which-source": (problem) => `${lineJa(problem)}番地 ${problem.detail ?? ""} の引用に source がありません。原文が二つ以上あるときは名前を書いてください`,
   "unknown-language": (problem) => `${lineJa(problem)}language "${problem.detail ?? ""}" は読めません`,
   "unknown-genre": (problem) => `${lineJa(problem)}genre "${problem.detail ?? ""}" は chaff の知らないジャンルです（chaff genres で一覧）`,
+  "not-expect": (problem) => `${lineJa(problem)}${problem.detail ?? ""} は { "facts": ["…"], "absent": ["…"] } の形で、空でない文字列の並びを書いてください`,
+  "expect-no-fact": (problem) =>
+    `${lineJa(problem)}${problem.detail ?? ""} から事実を読めません（数・日付・時刻・URL・コード・名前・引用のどれか 1 つを書いてください）`,
+  "expect-several-facts": (problem) =>
+    `${lineJa(problem)}${problem.detail ?? ""} は事実を 2 つ以上含みます（compare が 1 つの事実と読む書き方で、1 項目に 1 つ書いてください）`,
   empty: () => "採点する出力が 1 行もありません",
 };
 
@@ -78,6 +83,11 @@ const PROBLEM_EN: typeof PROBLEM_JA = {
   "which-source": (problem) => `${lineEn(problem)}the citation of ${problem.detail ?? ""} names no source; with two or more sources, name one`,
   "unknown-language": (problem) => `${lineEn(problem)}language "${problem.detail ?? ""}" cannot be read`,
   "unknown-genre": (problem) => `${lineEn(problem)}genre "${problem.detail ?? ""}" is not one chaff knows (chaff genres lists them)`,
+  "not-expect": (problem) => `${lineEn(problem)}${problem.detail ?? ""} must be { "facts": ["…"], "absent": ["…"] } with non-empty strings`,
+  "expect-no-fact": (problem) =>
+    `${lineEn(problem)}${problem.detail ?? ""} states no fact chaff can read (write one number, date, time, URL, code, name or quotation)`,
+  "expect-several-facts": (problem) =>
+    `${lineEn(problem)}${problem.detail ?? ""} states more than one fact (write one per entry, in a form compare reads as one fact)`,
   empty: () => "no output to grade: the file has no item",
 };
 

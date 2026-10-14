@@ -5,6 +5,7 @@ import type { Config } from "../config/load.ts";
 import { readDocumentFile } from "../files.ts";
 import { GENRES } from "../genre.ts";
 import { gradeItem, type GradeSetup } from "../grade/grade-item.ts";
+import { expectProblems } from "../grade/expect-read.ts";
 import { DEFAULT_VARIANT_FIELD, ITEM_FIELDS, parseItems, type GradeItem, type VariantField } from "../grade/item.ts";
 import { renderMarkdown } from "../grade/render-markdown.ts";
 import { renderVariants, renderVariantsCompact } from "../grade/render-variants.ts";
@@ -57,11 +58,13 @@ export type GradeContext = {
   readonly ui: UiLanguage;
 };
 
-const readItems = async (path: string, variantField: VariantField, text: GradeText): Promise<readonly GradeItem[] | undefined> => {
+type ReadItems = { readonly items: readonly GradeItem[]; readonly lines: readonly number[] };
+
+const readItems = async (path: string, variantField: VariantField, text: GradeText): Promise<ReadItems | undefined> => {
   try {
     const vocabulary = { isLanguage: (language: string) => packageFor(language) !== undefined, genres: GENRES };
     const parsed = parseItems(await readDocumentFile(path), vocabulary, variantField);
-    if ("items" in parsed) return parsed.items;
+    if ("items" in parsed) return parsed;
     parsed.problems.forEach((problem) => console.error(`${path}: ${text.problem(problem)}`));
   } catch (error) {
     console.error(text.unreadable(path, error instanceof Error ? error.message : String(error)));
@@ -129,6 +132,13 @@ const setupFor = async (
     console.error(text.cannotLoad(error instanceof Error ? error.message : String(error)));
     return undefined;
   }
+};
+
+/** Whether every expect entry is one fact; else says which are not, on their lines, before anything is graded. */
+const expectReadable = async (path: string, read: ReadItems, setup: GradeSetup, text: GradeText): Promise<boolean> => {
+  const problems = (await Promise.all(read.items.map((item, index) => expectProblems(item, read.lines[index] ?? 0, setup)))).flat();
+  problems.forEach((problem) => console.error(`${path}: ${text.problem(problem)}`));
+  return problems.length === 0;
 };
 
 /** One output after another, in the file's order: the results file lines up with the input. */
@@ -212,9 +222,10 @@ export const runGrade = async (argv: readonly string[], context: GradeContext): 
   if (options === undefined) return GRADE_EXIT.unreadable;
   const { path } = options;
   const rubric = readRubric(options.rubric, context.config, host);
-  const items = rubric === undefined ? undefined : await readItems(path, options.variantField, host);
-  const setup = items === undefined || rubric === undefined ? undefined : await setupFor(items, rubric, argv, context, host);
-  if (setup === undefined || items === undefined || rubric === undefined) return GRADE_EXIT.unreadable;
+  const read = rubric === undefined ? undefined : await readItems(path, options.variantField, host);
+  const setup = read === undefined || rubric === undefined ? undefined : await setupFor(read.items, rubric, argv, context, host);
+  if (setup === undefined || read === undefined || rubric === undefined || !(await expectReadable(path, read, setup, host))) return GRADE_EXIT.unreadable;
+  const { items } = read;
   const baseline = await chooseBaseline(context.flag(argv, "--baseline"), setup.stamp, argv.includes("--allow-stamp-mismatch"), context.ui);
   if (baseline.kind === "stop") return GRADE_EXIT.unreadable;
   warnUnknownRules(rubric, context.config, host);

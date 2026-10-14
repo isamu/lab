@@ -72,8 +72,13 @@ const isRates = (value: unknown): boolean => isRecord(value) && Object.values(va
 /** The id, and the variant when the output had one. */
 const isLabel = (value: Record<string, unknown>): boolean => isString(value["id"]) && (value["variant"] === undefined || isString(value["variant"]));
 
-/** The parts a result carries only sometimes: contexts, a rubric's score, the quick score. Each is checked when present. */
-const hasOptionalParts = (value: Record<string, unknown>): boolean => isContexts(value["contexts"]) && isScore(value["score"]) && isAiScore(value["aiScore"]);
+/** Absent when the item gave no expect. */
+const isExpect = (value: unknown): boolean =>
+  value === undefined || (isRecord(value) && isNumber(value["checked"]) && isArrayOf(value["missing"], isString) && isArrayOf(value["present"], isString));
+
+/** The parts a result carries only sometimes: contexts, expect, a rubric's score, the quick score. Each is checked when present. */
+const hasOptionalParts = (value: Record<string, unknown>): boolean =>
+  isContexts(value["contexts"]) && isExpect(value["expect"]) && isScore(value["score"]) && isAiScore(value["aiScore"]);
 
 /** A line `--out` writes, every field checked: a line that only looks like one would be compared as if it had been graded. */
 export const isGradeResult = (value: unknown): value is GradeResult =>

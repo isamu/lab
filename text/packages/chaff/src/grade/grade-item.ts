@@ -14,7 +14,9 @@ import type { GradeSettings } from "./stamp.ts";
 import { GRADE_TEXT } from "./text.ts";
 import { aiScoreOfDocument } from "../ai-score/of-document.ts";
 import { gradeAiScoreOf } from "./ai-score.ts";
-import { defaultVerdict, type Verdict } from "./verdict.ts";
+import { defaultVerdict, verdictOf, type Verdict } from "./verdict.ts";
+import { expectFailures, type GradeExpectResult } from "./expect.ts";
+import { expectOfItem } from "./expect-read.ts";
 
 /** One run's settings, its `grade:` rubric when chaff.yaml has one, and its stamp, which every result carries. */
 export type GradeSetup = GradeSettings & { readonly stamp: Stamp; readonly rubric?: Rubric | undefined };
@@ -34,6 +36,7 @@ type Checked = {
   readonly facts: GradeFacts | null;
   readonly cited: CitationsRead | undefined;
   readonly contexts: ContextsRead | undefined;
+  readonly expect: GradeExpectResult | undefined;
 };
 
 const checkItem = async (item: GradeItem, setup: GradeSetup): Promise<Checked> => {
@@ -50,6 +53,7 @@ const checkItem = async (item: GradeItem, setup: GradeSetup): Promise<Checked> =
     facts: item.reference === undefined ? null : await factsAgainst(texts, reading, allowedBy(setup.rubric)),
     cited: item.citations === undefined ? undefined : await citationsAgainst(item, item.citations, reading, ui),
     contexts: await contextsOf(item, check.language, reading, setup.rubric),
+    expect: await expectOfItem(item, { ...reading, language: check.language }),
   };
 };
 
@@ -99,7 +103,10 @@ const judge = (item: GradeItem, checked: Checked, setup: GradeSetup): { readonly
 /** Grades one output (spec §29.3): its findings and their rates, the facts against its reference, its quotations, and pass or fail. */
 export const gradeItem = async (item: GradeItem, setup: GradeSetup): Promise<GradeResult> => {
   const checked = await checkItem(item, setup);
-  const { verdict, score } = judge(item, checked, setup);
+  const judged = judge(item, checked, setup);
+  const { score } = judged;
+  // expect is the item's own answer, so it fails the output with or without a `grade:` rubric.
+  const verdict = verdictOf([...judged.verdict.failedBecause, ...expectFailures(checked.expect)]);
   return {
     id: item.id,
     ...(item.variant === undefined ? {} : { variant: item.variant }),
@@ -115,6 +122,7 @@ export const gradeItem = async (item: GradeItem, setup: GradeSetup): Promise<Gra
     facts: checked.facts,
     citations: citationsOf(checked),
     ...(checked.contexts === undefined ? {} : { contexts: checked.contexts.contexts }),
+    ...(checked.expect === undefined ? {} : { expect: checked.expect }),
     ...(score === undefined ? {} : { score }),
     aiScore: gradeAiScoreOf(aiScoreOfDocument(checked.check.doc, checked.check.rules, checked.check.genre.genre)),
     pass: verdict.pass,
