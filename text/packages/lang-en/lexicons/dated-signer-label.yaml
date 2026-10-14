@@ -1,0 +1,11 @@
+# Role words read on a signature line. group and position are as in dated-pair-label: the signature line's date is the
+# group's later date (due-before-issue). A signature line holds one date, this word and a name, and nothing else
+# (Jane Doe, Honorary Auditor, April 12, 2026). A sentence, a line without a name, or another role (Chair) is not read.
+# A line headed by a label is read by dated-pair-label.
+id: dated-signer-label
+language: en
+entries:
+  # A treasurer's report's audit signature. The accounts are audited after the financial year ends.
+  - { pattern: "Auditor", group: fiscal-audit, position: after }
+  - { pattern: "Honorary Auditor", group: fiscal-audit, position: after }
+  - { pattern: "Hon. Auditor", group: fiscal-audit, position: after }

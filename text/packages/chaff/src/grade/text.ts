@@ -64,6 +64,7 @@ const PROBLEM_JA: Readonly<Record<ItemProblemKind, (problem: ItemProblem) => str
     `${lineJa(problem)}${problem.detail ?? ""} から事実を読めません（数・日付・時刻・URL・コード・名前・引用のどれか 1 つを書いてください）`,
   "expect-several-facts": (problem) =>
     `${lineJa(problem)}${problem.detail ?? ""} は事実を 2 つ以上含みます（compare が 1 つの事実と読む書き方で、1 項目に 1 つ書いてください）`,
+  "unknown-task": (problem) => `${lineJa(problem)}task "${problem.detail ?? ""}" は採点基準の tasks にありません`,
   empty: () => "採点する出力が 1 行もありません",
 };
 
@@ -88,6 +89,7 @@ const PROBLEM_EN: typeof PROBLEM_JA = {
     `${lineEn(problem)}${problem.detail ?? ""} states no fact chaff can read (write one number, date, time, URL, code, name or quotation)`,
   "expect-several-facts": (problem) =>
     `${lineEn(problem)}${problem.detail ?? ""} states more than one fact (write one per entry, in a form compare reads as one fact)`,
+  "unknown-task": (problem) => `${lineEn(problem)}task "${problem.detail ?? ""}" is not among the rubric's tasks`,
   empty: () => "no output to grade: the file has no item",
 };
 

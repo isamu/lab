@@ -117,6 +117,18 @@ describe("pairing and regressions", () => {
     assert.deepEqual(compareRuns(before, after, new Set()).regressions, []);
   });
 
+  it("counts a rule's rise as a regression only in the outputs whose own task's rubric names it", () => {
+    const before = [result("s", {}, { task: "strict" }), result("l", {}, { task: "lenient" })];
+    const after = [result("s", { rules: ["closing-cliche"] }, { task: "strict" }), result("l", { rules: ["closing-cliche"] }, { task: "lenient" })];
+    const strictOnly = (graded: GradeResult): ReadonlySet<string> => new Set(graded.task === "strict" ? ["closing-cliche"] : []);
+    const comparison = compareRuns(before, after, strictOnly);
+    assert.deepEqual(comparison.regressions, ["rules.closing-cliche: more findings in s"]);
+    assert.deepEqual(comparison.rules[0]?.increasedIn, ["s", "l"]);
+    assert.equal(comparison.rules[0]?.inRubric, true);
+    const lenientOnly = compareRuns(before.slice(1), after.slice(1), strictOnly);
+    assert.deepEqual([lenientOnly.regressions, lenientOnly.rules[0]?.inRubric], [[], false]);
+  });
+
   it("is a regression when the penalty points add up to more", () => {
     const comparison = compareRuns(
       [result("a", { penalty: 2 }), result("b", { penalty: 3 })],

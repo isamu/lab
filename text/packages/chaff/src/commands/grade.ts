@@ -16,6 +16,7 @@ import type { GradeResult } from "../grade/result.ts";
 import { gradeSetup } from "../grade/setup.ts";
 import { parseRubric, type Rubric } from "../grade/rubric.ts";
 import { parseRubricFile, type RubricFileProblem } from "../grade/rubric-file.ts";
+import { rubricRuleEntries, taskNamesOf, taskRuleIds } from "../grade/task-rubric.ts";
 import { rulesOf } from "../custom/load.ts";
 import { summaryOf } from "../grade/summary.ts";
 import { GRADE_TEXT, type GradeText } from "../grade/text.ts";
@@ -60,9 +61,9 @@ export type GradeContext = {
 
 type ReadItems = { readonly items: readonly GradeItem[]; readonly lines: readonly number[] };
 
-const readItems = async (path: string, variantField: VariantField, text: GradeText): Promise<ReadItems | undefined> => {
+const readItems = async (path: string, variantField: VariantField, tasks: readonly string[], text: GradeText): Promise<ReadItems | undefined> => {
   try {
-    const vocabulary = { isLanguage: (language: string) => packageFor(language) !== undefined, genres: GENRES };
+    const vocabulary = { isLanguage: (language: string) => packageFor(language) !== undefined, genres: GENRES, tasks };
     const parsed = parseItems(await readDocumentFile(path), vocabulary, variantField);
     if ("items" in parsed) return parsed;
     parsed.problems.forEach((problem) => console.error(`${path}: ${text.problem(problem)}`));
@@ -107,10 +108,10 @@ const readRubric = (rubricPath: string | undefined, config: Config, text: GradeT
 /** A rule id under the rubric's rules that chaff does not know. Said once here; each result also lists it as not run. */
 const warnUnknownRules = (rubric: RubricRead, config: Config, text: GradeText): void => {
   const known = new Set(rulesOf(config.language ?? "en", config).map((rule) => rule.id));
-  const where = rubric.file === undefined ? "chaff: grade.rules" : `${rubric.file.path}: rules`;
-  Object.keys(rubric.rubric?.rules ?? {})
-    .filter((id) => !known.has(id))
-    .forEach((id) => console.error(`${where}.${id}: ${text.unknownRule}`));
+  const where = rubric.file === undefined ? "chaff: grade." : `${rubric.file.path}: `;
+  rubricRuleEntries(rubric.rubric)
+    .filter((entry) => !known.has(entry.id))
+    .forEach((entry) => console.error(`${where}${entry.path}.${entry.id}: ${text.unknownRule}`));
 };
 
 const setupFor = async (
@@ -222,7 +223,7 @@ export const runGrade = async (argv: readonly string[], context: GradeContext): 
   if (options === undefined) return GRADE_EXIT.unreadable;
   const { path } = options;
   const rubric = readRubric(options.rubric, context.config, host);
-  const read = rubric === undefined ? undefined : await readItems(path, options.variantField, host);
+  const read = rubric === undefined ? undefined : await readItems(path, options.variantField, taskNamesOf(rubric.rubric), host);
   const setup = read === undefined || rubric === undefined ? undefined : await setupFor(read.items, rubric, argv, context, host);
   if (setup === undefined || read === undefined || rubric === undefined || !(await expectReadable(path, read, setup, host))) return GRADE_EXIT.unreadable;
   const { items } = read;
@@ -231,7 +232,7 @@ export const runGrade = async (argv: readonly string[], context: GradeContext): 
   warnUnknownRules(rubric, context.config, host);
   const results = await gradeInOrder(items, setup);
   writeResults(context.flag(argv, "--out"), results, host);
-  const rubricRules = new Set(Object.keys(setup.rubric?.rules ?? {}));
+  const rubricRules = (result: GradeResult): ReadonlySet<string> => taskRuleIds(setup.rubric, result.task);
   const compared = baseline.kind === "compare" ? { path: baseline.path, comparison: compareRuns(baseline.before, results, rubricRules) } : undefined;
   const ui = sharedLanguage(
     results.map((result) => result.language),

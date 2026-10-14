@@ -3,7 +3,8 @@
 // action-section-heading, earlier-section-word, action-due-label, item-done-word) and the other pairs of dates that must come in
 // order (dated-pair-label, date-now-word, and dated-span-label for the words whose line states a period, read up to its end,
 // or from its start in the group a dated-span-label entry names;
-// a table whose header names both columns of a pair, from dated-pair-label and the header-only dated-column-label);
+// a table whose header names both columns of a pair, from dated-pair-label and the header-only dated-column-label;
+// a signature line giving a pair's later date, from the role words of dated-signer-label);
 // the dates are the structure tree's, and the lines are read with code masked.
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { actionDueBeforeMeeting, type ActionWords } from "../structure/action-due.ts";
@@ -65,9 +66,11 @@ export const dueDate: Detector = (doc): Finding[] => {
   const spans = { ...periodWordsOf(doc, [...new Set(spanEntries.map((entry) => entry.pattern))]), entries: spanEntries };
   return [
     ...dueBeforeIssue(text, dates, wordsOf(doc)).map((issue) => findingOf(doc, issue)),
-    ...pairedDatesOutOfOrder(text, dates, pairs, orderAsidesOf(doc), MAX_RECORD_LINE_GAP, { spans, whole: doc.source }).map((issue) =>
-      findingOf(doc, issue, variantOf(issue)),
-    ),
+    ...pairedDatesOutOfOrder(text, dates, pairs, orderAsidesOf(doc), MAX_RECORD_LINE_GAP, {
+      spans,
+      whole: doc.source,
+      signers: doc.lexicons["dated-signer-label"] ?? [],
+    }).map((issue) => findingOf(doc, issue, variantOf(issue))),
     ...columnDatesOutOfOrder(text, dates, [...pairs, ...(doc.lexicons["dated-column-label"] ?? [])], orderAsidesOf(doc)).map((issue) =>
       findingOf(doc, issue, "order"),
     ),

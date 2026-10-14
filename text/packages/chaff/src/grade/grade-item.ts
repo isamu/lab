@@ -10,6 +10,7 @@ import { ratesOf, sizeOf, type OutputSize } from "./rates.ts";
 import type { GradeCitations, GradeFacts, GradeFinding, GradeResult, GradeScore, NotRunEntry, Stamp } from "./result.ts";
 import type { Rubric } from "./rubric.ts";
 import { rubricVerdict } from "./rubric-verdict.ts";
+import { rubricForTask } from "./task-rubric.ts";
 import type { GradeSettings } from "./stamp.ts";
 import { GRADE_TEXT } from "./text.ts";
 import { aiScoreOfDocument } from "../ai-score/of-document.ts";
@@ -101,7 +102,8 @@ const judge = (item: GradeItem, checked: Checked, setup: GradeSetup): { readonly
 };
 
 /** Grades one output (spec §29.3): its findings and their rates, the facts against its reference, its quotations, and pass or fail. */
-export const gradeItem = async (item: GradeItem, setup: GradeSetup): Promise<GradeResult> => {
+export const gradeItem = async (item: GradeItem, runSetup: GradeSetup): Promise<GradeResult> => {
+  const setup = item.task === undefined ? runSetup : { ...runSetup, rubric: rubricForTask(runSetup.rubric, item.task) };
   const checked = await checkItem(item, setup);
   const judged = judge(item, checked, setup);
   const { score } = judged;
@@ -110,6 +112,7 @@ export const gradeItem = async (item: GradeItem, setup: GradeSetup): Promise<Gra
   return {
     id: item.id,
     ...(item.variant === undefined ? {} : { variant: item.variant }),
+    ...(item.task === undefined ? {} : { task: item.task }),
     language: checked.check.language,
     genre: checked.check.genre.genre,
     size: checked.size,

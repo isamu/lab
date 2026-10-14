@@ -60,13 +60,22 @@ type Pair = { readonly before: GradeResult; readonly after: GradeResult };
 
 const countIn = (result: GradeResult, rule: string): number => result.findings.filter((finding) => finding.rule === rule).length;
 
-const movementsOf = (pairs: readonly Pair[], rubricRules: ReadonlySet<string>): RuleMovement[] =>
+/** The rules the rubric names for one output: with rubric tasks, its task's rules over the top level's. */
+export type RubricRulesOf = (result: GradeResult) => ReadonlySet<string>;
+
+/** A rule's movement, and the outputs it rose in whose own rubric names it: only those are a regression. */
+type Moved = { readonly movement: RuleMovement; readonly regressedIn: readonly string[] };
+
+const movementsOf = (pairs: readonly Pair[], rubricRulesOf: RubricRulesOf): Moved[] =>
   rateRows([pairs.map((pair) => pair.before), pairs.map((pair) => pair.after)]).flatMap(({ rule, unit, rates: [before = 0, after = 0] }) => {
     const inUnit = pairs.filter((pair) => pair.after.size.unit === unit);
-    const increasedIn = inUnit.filter((pair) => countIn(pair.after, rule) > countIn(pair.before, rule)).map((pair) => resultName(pair.after));
+    const increased = inUnit.filter((pair) => countIn(pair.after, rule) > countIn(pair.before, rule));
+    const increasedIn = increased.map((pair) => resultName(pair.after));
     const decreasedIn = inUnit.filter((pair) => countIn(pair.after, rule) < countIn(pair.before, rule)).map((pair) => resultName(pair.after));
     if (increasedIn.length === 0 && decreasedIn.length === 0 && before === after) return [];
-    return [{ rule, unit, before, after, increasedIn, decreasedIn, inRubric: rubricRules.has(rule) }];
+    const graded = (pair: Pair): boolean => rubricRulesOf(pair.after).has(rule);
+    const regressedIn = increased.filter(graded).map((pair) => resultName(pair.after));
+    return [{ movement: { rule, unit, before, after, increasedIn, decreasedIn, inRubric: inUnit.some(graded) }, regressedIn }];
   });
 
 const factKey = (fact: GradeFact): string => `${fact.kind}\n${fact.key}`;
@@ -100,11 +109,9 @@ const penaltyOf = (results: readonly GradeResult[]): number => results.reduce((s
 
 const scored = (pairs: readonly Pair[]): boolean => pairs.some((pair) => pair.after.score !== undefined);
 
-const regressionsOf = (newlyFailed: readonly string[], movements: readonly RuleMovement[], penalty: Comparison["penalty"]): string[] => [
+const regressionsOf = (newlyFailed: readonly string[], moved: readonly Moved[], penalty: Comparison["penalty"]): string[] => [
   ...newlyFailed.map((id) => `${id}: passed, now fails`),
-  ...movements
-    .filter((movement) => movement.inRubric && movement.increasedIn.length > 0)
-    .map((movement) => `rules.${movement.rule}: more findings in ${movement.increasedIn.join(", ")}`),
+  ...moved.filter((entry) => entry.regressedIn.length > 0).map((entry) => `rules.${entry.movement.rule}: more findings in ${entry.regressedIn.join(", ")}`),
   ...(penalty !== undefined && penalty.after > penalty.before ? [`score.penalty ${String(penalty.before)} → ${String(penalty.after)}`] : []),
 ];
 
@@ -112,9 +119,10 @@ const pairRead = (pair: Pair): boolean => sameReading([pair.before, pair.after])
 
 /**
  * `after` compared with `before`, output by output: an output is paired with the earlier one of its id and variant.
- * `rubricRules`: the rules the rubric names, whose increase is a regression.
+ * `rubricRules`: the rules the rubric names, whose increase is a regression; per output when the rubric has tasks.
  */
-export const compareRuns = (before: readonly GradeResult[], after: readonly GradeResult[], rubricRules: ReadonlySet<string>): Comparison => {
+export const compareRuns = (before: readonly GradeResult[], after: readonly GradeResult[], rubricRules: ReadonlySet<string> | RubricRulesOf): Comparison => {
+  const rubricRulesOf: RubricRulesOf = typeof rubricRules === "function" ? rubricRules : () => rubricRules;
   const earlier = new Map(before.map((result) => [resultKey(result), result]));
   const keys = new Set(after.map(resultKey));
   const matched = after.flatMap((result) => {
@@ -122,7 +130,7 @@ export const compareRuns = (before: readonly GradeResult[], after: readonly Grad
     return match === undefined ? [] : [{ before: match, after: result }];
   });
   const pairs = matched.filter(pairRead);
-  const rules = movementsOf(pairs, rubricRules);
+  const moved = movementsOf(pairs, rubricRulesOf);
   const newlyFailed = pairs.filter((pair) => pair.before.pass && !pair.after.pass).map((pair) => resultName(pair.after));
   const penalty = scored(pairs) ? { before: penaltyOf(pairs.map((pair) => pair.before)), after: penaltyOf(pairs.map((pair) => pair.after)) } : undefined;
   return {
@@ -130,11 +138,11 @@ export const compareRuns = (before: readonly GradeResult[], after: readonly Grad
     onlyBefore: before.filter((result) => !keys.has(resultKey(result))).map(resultName),
     onlyAfter: after.filter((result) => !earlier.has(resultKey(result))).map(resultName),
     readOtherwise: matched.filter((pair) => !pairRead(pair)).map((pair) => resultName(pair.after)),
-    rules,
+    rules: moved.map((entry) => entry.movement),
     newlyFailed,
     newlyPassed: pairs.filter((pair) => !pair.before.pass && pair.after.pass).map((pair) => resultName(pair.after)),
     items: pairs.map(itemChange).filter((change) => change.dropped.length + change.added.length + change.citations.length > 0),
     ...(penalty === undefined ? {} : { penalty }),
-    regressions: regressionsOf(newlyFailed, rules, penalty),
+    regressions: regressionsOf(newlyFailed, moved, penalty),
   };
 };

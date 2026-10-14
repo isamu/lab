@@ -4,6 +4,7 @@ import type { StructureIssue } from "./issues.ts";
 import type { Line } from "./lines.ts";
 import { labelPairsOf, pointsOutOfOrder, type OrderLabel, type PairWords, type PointOf } from "./labelled-order.ts";
 import { TABLE_ROW } from "./runs.ts";
+import { isSignedDateLine } from "./signed-date-line.ts";
 import { statedPeriod, type DateMention, type PeriodWords } from "./stated-period.ts";
 
 /**
@@ -70,15 +71,27 @@ export const periodStartOf = (
   tableOf?: () => readonly string[],
 ): DatedPoint | undefined => periodBoundOf("start", line, label, dates, spans, tableOf);
 
-const oneDateOf = (line: Line, dates: readonly OrderDate[]): DatedPoint | undefined => {
+const oneDateOf = (line: Line, dates: readonly OrderDate[]): OrderDate | undefined => {
   const end = line.start + line.text.length;
   const onLine = dates.filter((date) => date.offset >= line.start && date.offset <= end && FULL_DATE.test(date.value));
   return onLine.length === 1 ? onLine[0] : undefined;
 };
 
+/** The one date on a signature line (2026年4月12日 会計監査 戸川 隆): the line holds that date, the role and a name, nothing else. */
+const signedDateOf = (line: Line, role: string, dates: readonly OrderDate[]): DatedPoint | undefined => {
+  const date = oneDateOf(line, dates);
+  if (date?.end === undefined) return undefined;
+  const span = { start: date.offset - line.start, end: date.end - line.start };
+  return isSignedDateLine(line.text, role, span) ? date : undefined;
+};
+
 const dateOf =
-  (dates: readonly OrderDate[], spans: PeriodWords | undefined, fromStart: readonly string[]): PointOf =>
+  (dates: readonly OrderDate[], spans: PeriodWords | undefined, fromStart: readonly string[], signers: readonly string[]): PointOf =>
   (line, label, tableOf) => {
+    if (signers.includes(label)) {
+      const date = signedDateOf(line, label, dates);
+      return date === undefined ? undefined : { point: date, span: false };
+    }
     if (spans === undefined || !spans.labels.includes(label)) {
       const date = oneDateOf(line, dates);
       return date === undefined ? undefined : { point: date, span: false };
@@ -93,7 +106,7 @@ const dateOf =
  * record's. A later date written once (an issue date below the records) belongs to the whole document and keeps the first.
  */
 export const datesOutOfOrder = (source: string, dates: readonly OrderDate[], words: DateOrderWords): OutOfOrder[] =>
-  pointsOutOfOrder(source, words, dateOf(dates, words.spans, words.fromStart ?? [])).map(({ earlier, later }) => ({
+  pointsOutOfOrder(source, words, dateOf(dates, words.spans, words.fromStart ?? [], words.signers ?? [])).map(({ earlier, later }) => ({
     earlier: { label: earlier.label, date: earlier.point, line: earlier.line, span: earlier.span },
     later: { label: later.label, date: later.point, line: later.line, span: later.span },
   }));
@@ -111,8 +124,18 @@ export type PairSpans = PeriodWords & { readonly entries: readonly OrderLabel[] 
 export const spanStartsOf = (spanLabels: readonly OrderLabel[], group: string): string[] =>
   spanLabels.filter((label) => label.group === group && label.position === "before").map((label) => label.pattern);
 
-/** The span words to read periods with, and the whole document (its headings too) to read the words naming its kind. */
-export type PairedReading = { readonly spans?: PairSpans | undefined; readonly whole?: string | undefined };
+/**
+ * The span words to read periods with, the whole document (its headings too) to read the words naming its kind, and the
+ * role words whose signature line gives a group's later date (a dated-signer lexicon's entries with position after).
+ */
+export type PairedReading = {
+  readonly spans?: PairSpans | undefined;
+  readonly whole?: string | undefined;
+  readonly signers?: readonly OrderLabel[] | undefined;
+};
+
+const signersOf = (signers: readonly OrderLabel[], group: string): string[] =>
+  signers.filter((label) => label.group === group && label.position === "after").map((label) => label.pattern);
 
 /** The words a group names its kind of document with: the group's entries without a position (見積, Quote). */
 const contextOf = (labels: readonly OrderLabel[], group: string): string[] =>
@@ -143,14 +166,15 @@ export const pairedDatesOutOfOrder = (
   labels: readonly OrderLabel[],
   passed: readonly string[],
   maxLineGap: number,
-  { spans, whole = source }: PairedReading = {},
+  { spans, whole = source, signers = [] }: PairedReading = {},
 ): PairedIssue[] =>
   withoutRepeats(
     labelPairsOf(labels).flatMap((pair) => {
       const context = contextOf(labels, pair.group);
       if (context.length > 0 && !namesDocumentKind(whole, context)) return [];
       const fromStart = spanStartsOf(spans?.entries ?? [], pair.group);
-      return datesOutOfOrder(source, dates, { ...pair, passed, maxLineGap, spans, fromStart }).map(({ earlier, later }) => ({
+      const words = { ...pair, passed, maxLineGap, spans, fromStart, signers: signersOf(signers, pair.group) };
+      return datesOutOfOrder(source, dates, words).map(({ earlier, later }) => ({
         offset: Math.max(later.date.offset, earlier.date.offset),
         values: { later: later.date.value, earlier: earlier.date.value, later_label: later.label, earlier_label: earlier.label },
         period: earlier.span,
