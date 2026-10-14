@@ -186,6 +186,14 @@ On a document in a language the list does not cover, the rule is listed as not r
 lexicons: { weasel: { en: ["some say", "arguably"], ja: ["と言われている", "一般的に"] } },
 ```
 
+An entry is a word, or `{ pattern, instead_of, rewrite, genres }`.
+`genres` limits the entry to some genres or groups (`genres: [legal]`, `genres: [blog/tech]`): elsewhere the rule is not given it.
+A genre chaff does not know, or an empty list, stops the run and names the entry (`npx chaffjs genres` lists them).
+
+```js
+lexicons: { terms: { en: [{ pattern: "herein", rewrite: "in this contract", genres: ["legal"] }, "arguably"] } },
+```
+
 A style sets the levels of several rules at once, written as chaff's own styles (`styles/*.yaml`) are.
 A project chooses it with `style: example/careful`.
 

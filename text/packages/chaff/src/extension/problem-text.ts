@@ -64,6 +64,8 @@ const PLUGIN_TEXT: Texts<PluginText> = {
       "name-mismatch": (plugin, detail) => `plugins の ${plugin}: name は ${detail} にしてください（パッケージの名前から決まります）`,
       "no-detect": (plugin, detail) => `plugins の ${plugin}: ルール ${detail} に detect がありません`,
       "bad-lexicon": (plugin, detail) => `plugins の ${plugin}: 語彙表 ${detail} が読めません（名前: { ja: [語, …], en: [語, …] }）`,
+      "bad-lexicon-genres": (plugin, detail) =>
+        `plugins の ${plugin}: 語彙表 ${detail} の genres が読めません。chaff の知っているジャンルかその組の並び（[legal] や [blog/tech]）で書いてください。npx chaffjs genres で一覧が出ます`,
       "bad-style": (plugin, detail) => `plugins の ${plugin}: スタイルが読めません（${detail}）`,
     },
   },
@@ -87,6 +89,8 @@ const PLUGIN_TEXT: Texts<PluginText> = {
       "name-mismatch": (plugin, detail) => `plugins ${plugin}: its name must be ${detail}, which the package's name gives`,
       "no-detect": (plugin, detail) => `plugins ${plugin}: the rule ${detail} has no detect`,
       "bad-lexicon": (plugin, detail) => `plugins ${plugin}: cannot read the word list ${detail} (name: { ja: [word, …], en: [word, …] })`,
+      "bad-lexicon-genres": (plugin, detail) =>
+        `plugins ${plugin}: cannot read the genres of the word list entry ${detail}; write a list of genres or groups chaff knows ([legal], [blog/tech]). npx chaffjs genres lists them`,
       "bad-style": (plugin, detail) => `plugins ${plugin}: cannot read a style (${detail})`,
     },
   },

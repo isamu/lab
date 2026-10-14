@@ -31,8 +31,17 @@ export type Section = { readonly depth: number; readonly heading: string; readon
 /** One bulleted or numbered list, with the length of each item in characters. */
 export type List = { readonly span: Span; readonly itemLengths: readonly number[] };
 
-/** One entry of a word list. instead_of is another way to write the same thing, for rules that check a document is consistent. */
-export type LexiconEntry = { readonly pattern: string; readonly instead_of?: string };
+/**
+ * One entry of a word list. instead_of is another way to write the same thing, for rules that check a document is
+ * consistent; rewrite, how to rewrite this phrase. genres: the genres or groups it holds in (legal, blog/tech); without
+ * them, every genre. options.lexicon holds only the entries for the document's genre; doc.lexicons holds them all.
+ */
+export type LexiconEntry = {
+  readonly pattern: string;
+  readonly instead_of?: string;
+  readonly rewrite?: string;
+  readonly genres?: readonly string[];
+};
 
 export type Lexicon = readonly LexiconEntry[];
 

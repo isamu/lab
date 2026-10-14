@@ -5,6 +5,7 @@ import { modulePathOf, type ModulePathRefusal } from "./module-path.ts";
 import type { FieldProblem } from "../rule-fields.ts";
 import { failed, ok, type Checked } from "./checked.ts";
 import { describedOf, exampleSides, levelsOf, type Described, type RuleLevels } from "./dsl-fields.ts";
+import { NO_REWRITE } from "./no-rewrite.ts";
 
 // custom_rules in chaff.yaml: a team's own deterministic rules, written without code. Each becomes a RuleDefinition like the
 // built-in ones, so findings, explain, rules --json, stet, the baseline and SARIF treat it the same. Pure: the YAML comes in parsed.
@@ -198,12 +199,27 @@ const languagesOf = (raw: unknown, at: string): Checked<readonly string[] | unde
   return list.length > 0 && list.every(nonEmpty) ? ok(list.map((entry: string) => entry.trim())) : failed({ kind: "bad-languages", at });
 };
 
+/** The rule's name and what was found: the message for a finding with no spelling to use. */
+const namedMessage = (name: Localized): Localized =>
+  Object.fromEntries(Object.entries(name).map(([language, text]) => [language, language === "ja" ? `${text}:「{matched}」` : `${text}: "{matched}"`]));
+
 /** The message when a rule does not write one: the replacement for a word list, else the rule's name and what was found. */
 const defaultMessage = (spec: CustomSpec, name: Localized): Localized => {
   if (spec.type === "words" && spec.words.every((pair) => pair.use !== ""))
     return { ja: "「{matched}」は「{preferred}」と書きます", en: 'Write "{preferred}", not "{matched}"' };
-  return Object.fromEntries(Object.entries(name).map(([language, text]) => [language, language === "ja" ? `${text}:「{matched}」` : `${text}: "{matched}"`]));
+  return namedMessage(name);
 };
+
+/** In each language, the rule's own message unless it offers {preferred}, else the named message. */
+const noRewriteMessage = (written: Localized | undefined, name: Localized): Localized => {
+  const named = namedMessage(name);
+  if (written === undefined) return named;
+  return Object.fromEntries(Object.entries(written).map(([language, text]) => [language, text.includes("{preferred}") ? (named[language] ?? text) : text]));
+};
+
+/** A word-list entry may have no rewrite: that finding must not offer an empty spelling. */
+const defaultMessages = (spec: CustomSpec, written: Localized | undefined, name: Localized): Readonly<Record<string, Localized>> =>
+  spec.type === "words" ? { [NO_REWRITE]: noRewriteMessage(written, name) } : {};
 
 const PLACEHOLDERS: Readonly<Record<string, Localized>> = {
   matched: { ja: "見つけた語句", en: "the text found" },
@@ -249,7 +265,7 @@ const definitionOf = (id: string, raw: Record<string, unknown>, parts: Parts, us
   why: parts.texts.why,
   how_to_fix: parts.texts.how_to_fix,
   message: localizedOf(raw["message"]) ?? defaultMessage(parts.spec, parts.texts.name),
-  messages: {},
+  messages: defaultMessages(parts.spec, localizedOf(raw["message"]), parts.texts.name),
   placeholders: PLACEHOLDERS,
   levels: parts.levels.table,
   level_sets: "severity",

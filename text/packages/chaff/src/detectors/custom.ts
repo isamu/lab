@@ -3,6 +3,8 @@ import { occurrencesOutside } from "../orthography.ts";
 import { tokenRuns } from "../custom/token-pattern.ts";
 import { joinedView, type JoinedView } from "../joined-view.ts";
 import { boundedMatches } from "../custom/bounded-match.ts";
+import { entriesForGenre } from "../lexicon-genres.ts";
+import { NO_REWRITE } from "../custom/no-rewrite.ts";
 
 // The detectors behind a team's custom_rules. Each reports every place it finds, at the rule's level; the spec comes from
 // the rule (DetectorOptions.custom). Positions are the document's, like every other finding.
@@ -17,6 +19,9 @@ const findingOf = (hit: Hit): Finding => ({
   quote: hit.sentence.text.trim(),
   values: { matched: hit.matched, preferred: hit.preferred, offset: hit.sentence.span.start + hit.offset },
 });
+
+/** A words finding: with no spelling to use (a word-list entry without rewrite), its rule's message for that. */
+const wordsFindingOf = (hit: Hit): Finding => ({ ...findingOf(hit), ...(hit.preferred === "" ? { variant: NO_REWRITE } : {}) });
 
 /**
  * The sentence with the line breaks that fall inside a word taken out (「関\nする」 reads 「関する」), so words and patterns
@@ -48,7 +53,9 @@ const pairsOf = (
   spec: { readonly words: readonly { readonly avoid: string; readonly use: string }[] },
   options: DetectorOptions,
 ): readonly { avoid: string; use: string }[] =>
-  spec.words.length > 0 ? spec.words : (options.lexicon ?? []).map((entry) => ({ avoid: entry.pattern, use: entry.rewrite ?? "" }));
+  spec.words.length > 0
+    ? spec.words
+    : entriesForGenre(options.lexicon ?? [], options.genre).map((entry) => ({ avoid: entry.pattern, use: entry.rewrite ?? "" }));
 
 /** words: each spelling to avoid, outside the spelling to use (「ユーザ」 inside 「ユーザー」 is not reported). */
 export const customWords: Detector = (doc, options): Finding[] => {
@@ -58,7 +65,7 @@ export const customWords: Detector = (doc, options): Finding[] => {
   return doc.sentences.flatMap((sentence) => {
     const view = readAsWritten(sentence);
     return pairs.flatMap((pair) =>
-      occurrencesOutside(view.text, pair.avoid, pair.use).map((start) => findingOf(hitAt(sentence, view, start, start + pair.avoid.length, pair.use))),
+      occurrencesOutside(view.text, pair.avoid, pair.use).map((start) => wordsFindingOf(hitAt(sentence, view, start, start + pair.avoid.length, pair.use))),
     );
   });
 };

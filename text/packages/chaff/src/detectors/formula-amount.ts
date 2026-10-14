@@ -4,12 +4,10 @@
 // currency-notation's, read with amount-multiplier's words of scale. The profile may give the tax rate a document leaves out.
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { formulaAmountMismatches, type FormulaWords } from "../structure/formula-amount.ts";
-import type { StatedAmount } from "../structure/stated-multiple.ts";
 import type { TaxPriceRole, TaxPriceWord } from "../structure/tax-price.ts";
-import { scaledAmountOf, scaleWordsOf } from "./amount-scale.ts";
-import { amountsIn, formsOf } from "./currency-notation.ts";
 import { proseAndTablesOf } from "../table-text.ts";
 import { quoteAround } from "./quote-around.ts";
+import { statedAmountsOf } from "./stated-amounts.ts";
 
 const TAX_ROLES: readonly string[] = ["excluded", "included", "rate"] satisfies readonly TaxPriceRole[];
 const isTaxRole = (group: string | undefined): group is TaxPriceRole => group !== undefined && TAX_ROLES.includes(group);
@@ -31,23 +29,9 @@ const wordsOf = (doc: ProseDocument): FormulaWords => ({
   notIncluded: patternsOf(doc, "formula-amount-word", "not-included"),
 });
 
-const amountsOf = (text: string, doc: ProseDocument): StatedAmount[] => {
-  const scales = scaleWordsOf(doc);
-  return amountsIn(
-    text,
-    formsOf(doc),
-    scales.map((scale) => scale.word),
-  ).flatMap((amount) => {
-    const read = scaledAmountOf(text, amount, scales);
-    return read === undefined
-      ? []
-      : [{ offset: read.offset, end: amount.offset + amount.written.length, currency: read.currency, value: read.value, scale: read.unit }];
-  });
-};
-
 export const formulaAmount: Detector = (doc): Finding[] => {
   const text = proseAndTablesOf(doc);
-  const input = { text, amounts: amountsOf(text, doc), defaultTaxRate: doc.profile?.taxRate };
+  const input = { text, amounts: statedAmountsOf(text, doc), defaultTaxRate: doc.profile?.taxRate };
   return formulaAmountMismatches(input, wordsOf(doc)).map((issue) => ({
     rule: "formula-amount-mismatch",
     severity: "warning",

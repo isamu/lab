@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { packageFor } from "../adapter-load.ts";
 import type { Config } from "../config/load.ts";
@@ -14,6 +14,7 @@ import { renderCompact, renderSummary } from "../grade/render.ts";
 import type { GradeResult } from "../grade/result.ts";
 import { gradeSetup } from "../grade/setup.ts";
 import { parseRubric, type Rubric } from "../grade/rubric.ts";
+import { parseRubricFile, type RubricFileProblem } from "../grade/rubric-file.ts";
 import { rulesOf } from "../custom/load.ts";
 import { summaryOf } from "../grade/summary.ts";
 import { GRADE_TEXT, type GradeText } from "../grade/text.ts";
@@ -26,7 +27,7 @@ import { chooseBaseline } from "./grade-baseline.ts";
 /** Exit codes (spec §29.3). 2 keeps "the grader did not run" apart from "an output is bad" at a CI gate. */
 export const GRADE_EXIT = { passed: 0, failed: 1, unreadable: 2 } as const;
 
-const VALUED: ReadonlySet<string> = new Set(["--out", "--genre", "--baseline", "--format", "--variant-key"]);
+const VALUED: ReadonlySet<string> = new Set(["--out", "--genre", "--baseline", "--format", "--variant-key", "--rubric"]);
 
 const FORMATS = ["text", "json", "markdown"] as const;
 
@@ -68,33 +69,62 @@ const readItems = async (path: string, variantField: VariantField, text: GradeTe
   return undefined;
 };
 
-/** The `grade:` rubric, or undefined after saying what is wrong with it. `rubric: undefined` is a run with no rubric. */
-const readRubric = (config: Config, text: GradeText): { readonly rubric: Rubric | undefined } | undefined => {
+/** The rubric a run grades by, and the --rubric file it came from when it came from one. */
+type RubricRead = { readonly rubric: Rubric | undefined; readonly file?: { readonly path: string; readonly digest: string } | undefined };
+
+/** chaff.yaml's `grade:` rubric, or undefined after saying what is wrong with it. `rubric: undefined` is a run with no rubric. */
+const readConfigRubric = (config: Config, text: GradeText): RubricRead | undefined => {
   const parsed = parseRubric(config.grade);
   if ("rubric" in parsed) return parsed;
   parsed.problems.forEach((problem) => console.error(`chaff: ${text.rubricProblem(problem)}`));
   return undefined;
 };
 
-/** A rule id under grade.rules that chaff does not know. Said once here; each result also lists it as not run. */
-const warnUnknownRules = (rubric: Rubric | undefined, config: Config, text: GradeText): void => {
+const fileProblemText = (path: string, problem: RubricFileProblem, text: GradeText): string => {
+  if (problem.kind === "format") return text.rubricFormat(path);
+  if (problem.kind === "syntax") return text.rubricSyntax(path, problem.why);
+  return text.rubricProblem(problem.problem, path);
+};
+
+/** A --rubric file's rubric, which replaces chaff.yaml's `grade:`, or undefined after saying why it cannot be read. */
+const readRubricFile = (path: string, text: GradeText): RubricRead | undefined => {
+  try {
+    const parsed = parseRubricFile(path, readFileSync(path, "utf8"));
+    if ("rubric" in parsed) return { rubric: parsed.rubric, file: { path, digest: parsed.digest } };
+    parsed.problems.forEach((problem) => console.error(fileProblemText(path, problem, text)));
+  } catch (error) {
+    console.error(text.unreadable(path, error instanceof Error ? error.message : String(error)));
+  }
+  return undefined;
+};
+
+const readRubric = (rubricPath: string | undefined, config: Config, text: GradeText): RubricRead | undefined =>
+  rubricPath === undefined ? readConfigRubric(config, text) : readRubricFile(rubricPath, text);
+
+/** A rule id under the rubric's rules that chaff does not know. Said once here; each result also lists it as not run. */
+const warnUnknownRules = (rubric: RubricRead, config: Config, text: GradeText): void => {
   const known = new Set(rulesOf(config.language ?? "en", config).map((rule) => rule.id));
-  Object.keys(rubric?.rules ?? {})
+  const where = rubric.file === undefined ? "chaff: grade.rules" : `${rubric.file.path}: rules`;
+  Object.keys(rubric.rubric?.rules ?? {})
     .filter((id) => !known.has(id))
-    .forEach((id) => console.error(`chaff: grade.rules.${id}: ${text.unknownRule}`));
+    .forEach((id) => console.error(`${where}.${id}: ${text.unknownRule}`));
 };
 
 const setupFor = async (
   items: readonly GradeItem[],
-  rubric: Rubric | undefined,
+  rubric: RubricRead,
   argv: readonly string[],
   context: GradeContext,
   text: GradeText,
 ): Promise<GradeSetup | undefined> => {
   const languages = items.flatMap((item) => (item.language === undefined ? [] : [item.language]));
-  const run = { experimental: context.config.experimental || argv.includes("--experimental"), genre: context.flag(argv, "--genre") };
+  const run = {
+    experimental: context.config.experimental || argv.includes("--experimental"),
+    genre: context.flag(argv, "--genre"),
+    rubricFile: rubric.file?.digest,
+  };
   try {
-    return await gradeSetup(context.config, run, languages, rubric);
+    return await gradeSetup(context.config, run, languages, rubric.rubric);
   } catch (error) {
     console.error(text.cannotLoad(error instanceof Error ? error.message : String(error)));
     return undefined;
@@ -144,14 +174,24 @@ const printSummary = (path: string, results: readonly GradeResult[], compared: C
   } else printText(path, results, variants, compared, printing);
 };
 
-type RunOptions = { readonly path: string; readonly format: Format; readonly variantField: VariantField };
+type RunOptions = { readonly path: string; readonly format: Format; readonly variantField: VariantField; readonly rubric: string | undefined };
+
+/** --rubric's file: undefined when not given, null when given without one (a usage error, not a quiet fall back to chaff.yaml). */
+const rubricPathOf = (argv: readonly string[], context: GradeContext): string | undefined | null => {
+  if (!argv.includes("--rubric")) return undefined;
+  const path = context.flag(argv, "--rubric");
+  return path === undefined || path === "" || path.startsWith("--") ? null : path;
+};
 
 /** The file to grade and how to read and print it, or undefined after printing the usage. */
 const runOptionsOf = (argv: readonly string[], context: GradeContext): RunOptions | undefined => {
   const [path, ...extra] = gradeTargets(argv);
   const format = formatOf(argv, context);
   const variantField = variantFieldOf(argv, context);
-  if (path !== undefined && extra.length === 0 && format !== undefined && variantField !== undefined) return { path, format, variantField };
+  const rubric = rubricPathOf(argv, context);
+  if (path !== undefined && extra.length === 0 && format !== undefined && variantField !== undefined && rubric !== null) {
+    return { path, format, variantField, rubric };
+  }
   console.error(GRADE_TEXT[context.ui].usage);
   return undefined;
 };
@@ -171,13 +211,13 @@ export const runGrade = async (argv: readonly string[], context: GradeContext): 
   const options = runOptionsOf(argv, context);
   if (options === undefined) return GRADE_EXIT.unreadable;
   const { path } = options;
-  const rubric = readRubric(context.config, host);
+  const rubric = readRubric(options.rubric, context.config, host);
   const items = rubric === undefined ? undefined : await readItems(path, options.variantField, host);
-  const setup = items === undefined || rubric === undefined ? undefined : await setupFor(items, rubric.rubric, argv, context, host);
-  if (setup === undefined || items === undefined) return GRADE_EXIT.unreadable;
+  const setup = items === undefined || rubric === undefined ? undefined : await setupFor(items, rubric, argv, context, host);
+  if (setup === undefined || items === undefined || rubric === undefined) return GRADE_EXIT.unreadable;
   const baseline = await chooseBaseline(context.flag(argv, "--baseline"), setup.stamp, argv.includes("--allow-stamp-mismatch"), context.ui);
   if (baseline.kind === "stop") return GRADE_EXIT.unreadable;
-  warnUnknownRules(setup.rubric, context.config, host);
+  warnUnknownRules(rubric, context.config, host);
   const results = await gradeInOrder(items, setup);
   writeResults(context.flag(argv, "--out"), results, host);
   const rubricRules = new Set(Object.keys(setup.rubric?.rules ?? {}));

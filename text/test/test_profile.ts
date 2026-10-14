@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { detected, parseProfile, type ProfileDefinition } from "../packages/chaff/src/profile/parse.ts";
 import { chooseProfile, NO_PROFILE, type ProfileRequest } from "../packages/chaff/src/profile/select.ts";
 import { loadProfiles } from "../packages/chaff/src/profile/load.ts";
+import { withoutListMarkers } from "../packages/chaff/src/profile/cue-lines.ts";
 
 // 文書の種類（profiles/*.yaml）。読み方と選び方。種類の中身は YAML にあり、コードは読むだけ。
 
@@ -129,6 +130,46 @@ describe("detected", () => {
   it("契約書の「第1条（目的）」は法令の形ではない", () => assert.equal(detected(statute, CONTRACT, "ja"), false));
   it("本文の中の「第一条　」は行頭でなければ数えない", () => assert.equal(detected(statute, "前の第一条　と第二条　と第三条　を見る。", "ja"), false));
   it("その言語の形が無ければ選ばない", () => assert.equal(detected(statute, STATUTE, "en"), false));
+});
+
+describe("withoutListMarkers", () => {
+  it("行頭の - * + 1. 1) を外し、字下げは残す", () => {
+    assert.equal(withoutListMarkers("- 賃料：1\n* 敷金：2\n+ 礼金：3\n1. 交通：4\n12) 間取り：5"), "賃料：1\n敷金：2\n礼金：3\n交通：4\n間取り：5");
+    assert.equal(withoutListMarkers("  - 賃料：1\n\t* Rent: 2"), "  賃料：1\n\tRent: 2");
+  });
+
+  it("印のあとに空白が無ければ印ではない。行の途中の - も外さない", () => {
+    ["**賃料**：1", "-5度", "1.5倍", "*注", "賃料 - 1", "", "-", "1."].forEach((line) => assert.equal(withoutListMarkers(line), line, line));
+  });
+});
+
+describe("物件広告は、項目の行が箇条でも選ばれる", () => {
+  const listing = loadProfiles().find((definition) => definition.id === "listing");
+  if (listing === undefined) throw new Error("no listing profile");
+  const FACTS = ["交通：北線「北駅」徒歩5分（約800m）", "賃料：85,000円", "管理費：5,000円", "敷金：1ヶ月", "間取り：1LDK"];
+  const listed = (marker: (index: number) => string): string => ["# 物件概要", "", ...FACTS.map((line, index) => `${marker(index)}${line}`)].join("\n");
+
+  it("印の無い行、- * + の箇条、番号付きの箇条、字下げした箇条", () => {
+    [() => "", () => "- ", () => "* ", () => "+ ", (index: number) => `${index + 1}. `, (index: number) => `${index + 1}) `, () => "  - "].forEach((marker) =>
+      assert.equal(chooseProfile(loadProfiles(), request({ source: listed(marker) }))?.profile.id, "listing", marker(0)),
+    );
+  });
+
+  it("項目の語を文の中で書いた箇条は、物件広告ではない", () => {
+    const prose = ["- 賃料は月85,000円で、北駅から徒歩5分です。", "- 敷金は1ヶ月で、管理費は5,000円です。", "- 間取りは1LDKです。", "1. 交通の便がよい。"].join(
+      "\n",
+    );
+    assert.equal(detected(listing, prose, "ja"), false);
+  });
+
+  it("箇条でも、項目の行が min_lines に足りなければ選ばない", () =>
+    assert.equal(detected(listing, ["- 賃料：85,000円", "- 敷金：1ヶ月", "- 駐車場：あり"].join("\n"), "ja"), false));
+
+  it("英語の物件広告には英語の中身が無いので、箇条でも選ばない", () =>
+    assert.equal(
+      chooseProfile(loadProfiles(), request({ source: ["- Rent: $1,800", "- Deposit: $1,800", "- Layout: 1 bedroom"].join("\n"), language: "en" })),
+      undefined,
+    ));
 });
 
 describe("chooseProfile", () => {

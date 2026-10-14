@@ -20,6 +20,15 @@ export type GradeSettings = {
   readonly experimental: boolean;
   /** --genre, which wins over chaff.yaml for every item that does not name its own. */
   readonly genre: string | undefined;
+  /** The digest of a --rubric file, which replaces chaff.yaml's `grade:` for the run. */
+  readonly rubricFile?: string | undefined;
+};
+
+/** The rubric a run grades by: a --rubric file by its digest, else chaff.yaml's `grade:`. */
+const gradeOf = (settings: GradeSettings): unknown => {
+  if (settings.rubricFile !== undefined) return { file: settings.rubricFile };
+  // A bare `grade:` reads as null and is an empty rubric, which grades otherwise than no `grade:` at all.
+  return settings.config.grade === undefined ? "none" : settings.config.grade;
 };
 
 /** The parts of chaff.yaml that change a finding, a fact or a verdict. Paths and the AI judge do not. */
@@ -40,8 +49,7 @@ export const settingsOf = (settings: GradeSettings): Record<string, unknown> => 
     requiredSections: config.requiredSections,
     names: config.names,
     byPath: config.byPath,
-    // A bare `grade:` reads as null and is an empty rubric, which grades otherwise than no `grade:` at all.
-    grade: config.grade === undefined ? "none" : config.grade,
+    grade: gradeOf(settings),
   };
 };
 
