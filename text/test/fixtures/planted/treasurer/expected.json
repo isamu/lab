@@ -5,7 +5,7 @@
       "membership-fee": "1/1",
       "income-total": "1/1",
       "carry-over": "1/2",
-      "audit-before-year-end": "0/2",
+      "audit-before-year-end": "1/2",
       "budget-variance": "1/1",
       "expenditure-total": "1/1"
     },
@@ -14,7 +14,7 @@
       "membership-fee": "1/1",
       "income-total": "1/1",
       "carry-over": "1/2",
-      "audit-before-year-end": "0/2",
+      "audit-before-year-end": "1/2",
       "budget-variance": "1/1",
       "expenditure-total": "1/1"
     }

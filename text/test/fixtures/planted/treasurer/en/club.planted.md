@@ -43,4 +43,4 @@ The balance is held in the club's savings account. Receipts and bank statements 
 
 I have examined the club's books, receipts and bank statements and found them to be correct.
 
-Margaret Lindqvist, Honorary Auditor, March 12, 2026
+Margaret Lindqvist, Honorary Auditor, April 12, 2026
