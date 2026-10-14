@@ -4,7 +4,7 @@ chaff can grade a model's outputs next to your model-graded scores.
 The same output always gets the same result. Every point names a line and a rule, and nothing is sent anywhere.
 It does not judge meaning. Whether an answer is right stays with a model judge or a person.
 This page shows how, step by step and with real output.
-It covers grading a file of outputs, a rubric, comparing two runs, a library call and the eval frameworks it plugs into.
+It covers grading a file of outputs, a rubric, comparing two runs, scoring a benchmark, a library call and the eval frameworks it plugs into.
 
 ## What chaff can check in an output
 
@@ -15,6 +15,7 @@ It covers grading a file of outputs, a rubric, comparing two runs, a library cal
 | Does the output contradict itself? | `npx chaffjs <output>` | a total is not the sum of its items, a date has the wrong weekday |
 | Does it read as generated, or hard to read? | `npx chaffjs <output> --sarif <path>` | only `error` findings fail; the rest are counted |
 | All of the above, for a file of outputs | `npx chaffjs grade <items.jsonl> --out <results.jsonl>` | an output failed (2 when the input cannot be read) |
+| Does an extraction or a calculation match its known answer? | `npx chaffjs grade <items.jsonl>` (with `expect` on the line) | an expected fact is missing, or a fact that must not appear is there |
 | What should a regeneration step fix? | `npx chaffjs fix-plan <output> --json` | never; it is a set of instructions |
 
 For many outputs, use `chaff grade`, below. The plain check has no `--json`; read its findings from SARIF, as shown under "Findings as SARIF".
@@ -352,6 +353,118 @@ grade:
 ```
 
 `grade()` takes the passages as `contexts` too: `await grade(answer, { contexts: passages })`.
+
+## Scoring an LLM benchmark: `--rubric`, `expect` and `tasks`
+
+A benchmark mixes kinds of question: summaries, extraction, answers grounded in a source.
+chaff scores the part a machine can decide, the same way on every run, next to your model-graded metrics.
+The scoring rules live in their own file, so they travel with the data.
+A question with a known answer, such as an extraction or a calculation, carries that answer on its line.
+
+**Write the rubric.** It has the same shape as the inside of `grade:` in `chaff.yaml`.
+Under `tasks:`, each kind of question gets its own rubric.
+
+```yaml file=rubric.yaml
+rules:
+  total-mismatch: { max: 0 } # every question: a total that does not match its parts fails
+facts: { dropped: 0, added: 0 }
+tasks:
+  summary:
+    facts: { added: 0 } # a summary may leave facts out, but must not add any
+  extraction: # the top level as it is; the answer is checked by each line's expect
+  grounded:
+    citations: { failed: 0, required: true }
+```
+
+- A key a task writes replaces the top-level key whole. The `summary` task's `facts` has no `dropped`, so a fact left out does not fail a summary.
+- A key a task does not write is inherited. `rules` alone is merged rule by rule: a task replaces only the rules it names.
+- A task with nothing under it (`extraction:`) is the top-level rubric as it is.
+- JSON works too: name the file `.json` and give it the same shape.
+
+**List the questions.** A line names its kind with `task`. A line without `task` is scored by the top-level rubric.
+A question with a known answer gets `expect`: `facts` the output must state, and `absent` facts it must not.
+
+```json file=bench.jsonl
+{"id": "summary-1", "task": "summary", "output": "On April 8, 12 people attended the meeting.", "reference": "# Monthly meeting\n\nThe April meeting was held on April 8, and 12 people attended. The next meeting is on May 13."}
+{"id": "summary-2", "task": "summary", "output": "On April 8, 15 people attended the meeting.", "reference": "# Monthly meeting\n\nThe April meeting was held on April 8, and 12 people attended. The next meeting is on May 13."}
+{"id": "extract-1", "task": "extraction", "output": "The invoice total is $12000, due 2026-03-31.", "expect": {"facts": ["$12,000", "March 31, 2026"]}}
+{"id": "extract-2", "task": "extraction", "output": "The invoice total is $15,000, due March 31, 2026.", "expect": {"facts": ["$12,000", "March 31, 2026"], "absent": ["$15,000"]}}
+{"id": "refund", "task": "grounded", "output": "You can ask for a refund within 14 days of delivery. Shipping is not refunded.", "sources": {"policy": "# Refund policy\n\nArticle 1 (Time limit)\nA refund may be requested within 14 days of delivery.\nShipping costs are not refunded.\n"}, "citations": [{"address": "1.1", "quote": "within 14 days of delivery"}, {"address": "1.2", "quote": "Shipping costs are refunded in full."}]}
+```
+
+**Score with the rubric file.** With `--rubric`, the run does not use `chaff.yaml`'s `grade:`.
+
+```
+$ npx chaffjs grade bench.jsonl --rubric rubric.yaml
+bench.jsonl: 5 outputs, 2 passed, 3 failed
+
+Failed outputs
+  ✗ summary-2: facts.added 1 > 0
+  ✗ extract-2: expect.missing $12,000, expect.present $15,000
+  ✗ refund: citations.failed 1 > 0
+
+Facts: 5 dropped (date 2, heading 2, number 1), 1 added (number 1)
+Quotations: 2 checked, 1 failed
+Penalty points: 0
+AI-likeness: low 0, medium 0, high 0, not scored 5 (not a verdict on whether AI wrote them; not part of pass or fail)
+…
+```
+
+```
+$ npx chaffjs grade bench.jsonl --rubric rubric.yaml --compact
+summary-1	pass	penalty 0
+summary-2	fail	penalty 0	facts.added 1 > 0
+extract-1	pass	penalty 0
+extract-2	fail	penalty 0	expect.missing $12,000, expect.present $15,000
+refund	fail	penalty 0	citations.failed 1 > 0
+bench.jsonl: 5 outputs, 2 passed, 3 failed
+```
+
+How to read it:
+- `summary-1` left out the heading and the next meeting's date. The `summary` rubric sets no limit on facts left out, so it passes. The facts it left out are still counted on the "Facts:" line.
+- `summary-2` added "15 people", which the source does not say, so it fails.
+- `extract-1` answers with `$12000` and `2026-03-31`. They are the same facts as the expected `$12,000` and `March 31, 2026`, so it passes.
+- `extract-2` fails: the expected amount is missing (`expect.missing`), and an amount that must not appear is there (`expect.present`).
+- `refund` fails on the `grounded` rubric's `citations`: its second quotation is not in the source.
+
+In `--out`, the line of an output gets its `task`, and what `expect` checked, missed and found.
+
+```json
+"task":"extraction",…,"expect":{"checked":3,"missing":["$12,000"],"present":["$15,000"]}
+```
+
+The stamp's settings hash covers the rubric file's contents. `--baseline` stops rather than compare two runs scored by different rubrics.
+
+**Which written forms are the same fact.** `expect` reads a fact as `compare` does.
+`$12,000` and `$12000` are the same fact, and so are `March 31, 2026` and `2026-03-31`.
+`12,000 dollars`, `USD 12,000` and `$12K` are read as facts other than `$12,000`.
+A right answer written as a paraphrase does not match. "Due at the end of the fiscal year" fails with `expect.missing March 31, 2026`, and is listed among the failed outputs.
+Only reading can decide those, so send the listed outputs to a model judge or a person.
+
+**Input that stops the run.** These are mistakes in the questions, not in the outputs. chaff names the line and the field, and stops with exit code 2.
+
+A task name the rubric's `tasks` does not define. Falling back to the top-level rubric silently would change how the line is scored without a word.
+
+```json file=bad-task.jsonl
+{"id": "translate-1", "task": "translation", "output": "The meeting was held on April 8."}
+```
+
+```
+$ npx chaffjs grade bad-task.jsonl --rubric rubric.yaml
+bad-task.jsonl: line 1: task "translation" is not among the rubric's tasks
+```
+
+An `expect` entry that is not exactly one fact. "$12,000 by March 31, 2026" holds two facts, and which one to check is not decided.
+An entry with no fact at all stops the run the same way, so that an entry that checks nothing cannot pass.
+
+```json file=bad-expect.jsonl
+{"id": "extract-3", "task": "extraction", "output": "The invoice total is $12,000, due March 31, 2026.", "expect": {"facts": ["$12,000 by March 31, 2026"]}}
+```
+
+```
+$ npx chaffjs grade bad-expect.jsonl --rubric rubric.yaml
+bad-expect.jsonl: line 1: expect.facts[0] $12,000 by March 31, 2026 states more than one fact (write one per entry, in a form compare reads as one fact)
+```
 
 ## Examples
 
