@@ -4,7 +4,8 @@
 // order (dated-pair-label, date-now-word, and dated-span-label for the words whose line states a period, read up to its end,
 // or from its start in the group a dated-span-label entry names;
 // a table whose header names both columns of a pair, from dated-pair-label and the header-only dated-column-label;
-// a signature line giving a pair's later date, from the role words of dated-signer-label);
+// a signature line giving a pair's later date, from the role words of dated-signer-label;
+// a pair's label naming a version, End of support for 5.0.0 or 3.0.0 のサポート終了日, from dated-pair-version-word);
 // the dates are the structure tree's, and the lines are read with code masked.
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { actionDueBeforeMeeting, type ActionWords } from "../structure/action-due.ts";
@@ -15,6 +16,7 @@ import { inDocumentOrder, type StructureIssue } from "../structure/issues.ts";
 import { proseAndTablesOf } from "../table-text.ts";
 import { periodWordsOf } from "./range-words.ts";
 import { quoteAt } from "./structure-tree.ts";
+import type { VersionWords } from "../structure/versioned-label.ts";
 import { readableDates, withReadableDates } from "./readable-dates.ts";
 
 /** A record's facts table can sit well below its header date (a listing date above the table holding the move-in date). */
@@ -36,6 +38,12 @@ const actionWordsOf = (doc: ProseDocument): ActionWords => ({
   done: patternsOf(doc, "item-done-word"),
   minutes: patternsOf(doc, "minutes-title-word"),
 });
+
+const versionWordsOf = (doc: ProseDocument): VersionWords => {
+  const entries = doc.lexicons["dated-pair-version-word"] ?? [];
+  const at = (position: "before" | "after"): string[] => entries.filter((entry) => entry.position === position).map((entry) => entry.pattern);
+  return { after: at("after"), before: at("before") };
+};
 
 const orderAsidesOf = (doc: ProseDocument): string[] => [...patternsOf(doc, "deadline-passed-word"), ...patternsOf(doc, "date-now-word")];
 
@@ -70,6 +78,7 @@ export const dueDate: Detector = (doc): Finding[] => {
       spans,
       whole: doc.source,
       signers: doc.lexicons["dated-signer-label"] ?? [],
+      versions: versionWordsOf(doc),
     }).map((issue) => findingOf(doc, issue, variantOf(issue))),
     ...columnDatesOutOfOrder(text, dates, [...pairs, ...(doc.lexicons["dated-column-label"] ?? [])], orderAsidesOf(doc)).map((issue) =>
       findingOf(doc, issue, "order"),

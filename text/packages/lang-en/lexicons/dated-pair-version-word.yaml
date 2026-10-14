@@ -1,0 +1,7 @@
+# The word that joins a version to a dated-pair-label word (due-before-issue). position after: the label, this word and
+# the version, then the colon (End of support for 5.0.0: September 30, 2028). Only a version (5.0, 5.0.0, v5.0) is read
+# there, and nothing but the colon may follow it.
+id: dated-pair-version-word
+language: en
+entries:
+  - { pattern: "for", position: after }
