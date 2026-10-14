@@ -1,0 +1,8 @@
+# 読み手にすることを伝える文の終わり（〜してください、〜しましょう）。concrete-evidence-density は、こう終わる文を主張に数えない。
+# 文末の句点や括弧を除いた終わりと比べる。
+id: advice-ending
+language: ja
+entries:
+  - pattern: ください
+  - pattern: 下さい
+  - pattern: ましょう

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
-import { evidenceSpans, hasNumeral, startsWithin } from "../packages/chaff/src/detectors/concrete-evidence.ts";
+import { evidenceSpans, hasNumeral, isClaim, isLabelOnly, startsWithin, type AdviceWords } from "../packages/chaff/src/detectors/concrete-evidence.ts";
 import { indexLetterOf } from "../packages/chaff/src/detectors/lettered-index.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
@@ -170,7 +170,7 @@ describe("concrete-evidence-density: 英語の数の語", () => {
   it("invalid: one of・two-way・one-on-one は量ではない", () => {
     [
       "One of the things we value is openness. We believe in trust. We act with care.",
-      "Make two-way door decisions. We believe in trust. We act with care.",
+      "We make two-way door decisions. We believe in trust. We act with care.",
       "We hold one-on-one meetings. We believe in trust. We act with care.",
     ].forEach((last) => assert.ok(flaggedIn(englishWith(last), en).includes("Last"), last));
   });
@@ -334,5 +334,134 @@ describe("indexLetterOf", () => {
   it("文字が無ければ空", () => {
     assert.equal(indexLetterOf(""), "");
     assert.equal(indexLetterOf("2026"), "");
+  });
+});
+
+const ADVICE: AdviceWords = { openers: ["please", "never", "do not"], endings: ["ください", "ましょう"] };
+const sentence = (text: string, tokens?: readonly Token[]): { text: string; tokens?: readonly Token[] } => ({
+  text,
+  ...(tokens === undefined ? {} : { tokens }),
+});
+
+describe("isClaim", () => {
+  it("問いは主張ではない（? と ？、閉じ括弧の内側も）", () => {
+    ["Which tasks should require human review?", "What is it?”", "マルウェアはどこから来るの？", "（何を確認しますか？）", "【何を確認しますか？】"].forEach(
+      (text) => assert.equal(isClaim(sentence(text), "en", ADVICE), false, text),
+    );
+  });
+
+  it("語彙表の書き出しや文末で、読み手にすることを伝える文は主張ではない", () => {
+    ["Never use a gas stovetop to heat your home.", "Please submit your comments only once.", "Do not use a gas stove."].forEach((text) =>
+      assert.equal(isClaim(sentence(text), "en", ADVICE), false, text),
+    );
+    ["怪しいリンクは開かないでください。", "正しいURLからアクセスしましょう。"].forEach((text) =>
+      assert.equal(isClaim(sentence(text), "ja", ADVICE), false, text),
+    );
+  });
+
+  const verb = (surface: string, start: number, lemma: string, features?: Readonly<Record<string, string>>): Token => ({
+    ...token(surface, start, "VERB", features),
+    lemma,
+  });
+  const ALSO_VERB = { AlsoVerb: "Yes" };
+
+  it("原形の動詞で始まる英語の文は指示（名詞と読まれた、動詞にもなる語も）", () => {
+    const keep = [verb("Keep", 0, "keep"), token("freezers", 5, "NOUN", PLURAL), verb("closed", 14, "close"), token(".", 20, "PUNCT")];
+    assert.equal(isClaim(sentence("Keep freezers closed.", keep), "en", ADVICE), false);
+    const use = [token("Use", 0, "NOUN", ALSO_VERB), token("a", 4, "DET"), token("generator", 6, "NOUN"), token(".", 15, "PUNCT")];
+    assert.equal(isClaim(sentence("Use a generator.", use), "en", ADVICE), false);
+  });
+
+  it("valid: 動詞にもなる名詞でも、主語・複数形・見出し語・-ing 形は指示ではない", () => {
+    const cases: readonly (readonly [string, readonly Token[]])[] = [
+      ["Power may return.", [token("Power", 0, "NOUN", ALSO_VERB), token("may", 6, "AUX"), verb("return", 10, "return"), token(".", 16, "PUNCT")]],
+      [
+        "Issues for the board.",
+        [token("Issues", 0, "NOUN", { ...ALSO_VERB, ...PLURAL }), token("for", 7, "ADP"), token("the", 11, "DET"), token("board", 15, "NOUN")],
+      ],
+      ["Release: none.", [token("Release", 0, "NOUN", ALSO_VERB), token(":", 7, "PUNCT"), token("none", 9, "PRON"), token(".", 13, "PUNCT")]],
+      [
+        "Using an oven can increase the risk.",
+        [verb("Using", 0, "use", { VerbForm: "Ger" }), token("an", 6, "DET"), token("oven", 9, "NOUN"), token("can", 14, "AUX")],
+      ],
+    ];
+    cases.forEach(([text, tokens]) => assert.equal(isClaim(sentence(text, tokens), "en", ADVICE), true, text));
+  });
+
+  it("valid: 述べる文は主張のまま（問いの語や依頼の語が途中にあっても）", () => {
+    [
+      "Our help desk got much better.",
+      "The team asked why it failed.",
+      "Customers never complained.",
+      "Pleased customers wrote back.",
+      "The question mark? is part of the name here.",
+    ].forEach((text) => assert.equal(isClaim(sentence(text), "en", ADVICE), true, text));
+    ["お客様からの評判も上々です。", "ご確認くださいという依頼が増えました。"].forEach((text) =>
+      assert.equal(isClaim(sentence(text), "ja", ADVICE), true, text),
+    );
+  });
+
+  it("日本語の文は、品詞が動詞で始まっても指示に読まない", () => {
+    const tokens = [token("メール", 0, "NOUN"), token("に", 3, "ADP"), token("注意", 4, "NOUN"), token("する", 6, "VERB")];
+    assert.equal(isClaim(sentence("メールに注意する。", tokens), "ja", ADVICE), true);
+  });
+
+  it("空の文や品詞の無い文は、主張として数える", () => {
+    assert.equal(isClaim(sentence(""), "en", ADVICE), true);
+    assert.equal(isClaim(sentence("Revenue grew.", []), "en", ADVICE), true);
+    assert.equal(isClaim(sentence("Never mind."), "en", { openers: [], endings: [] }), true);
+  });
+});
+
+describe("isLabelOnly", () => {
+  it("項目の番号だけの文（a. (1) iv. 2)）", () => {
+    ["a.", "(1)", "（2）", "iv.", "2)", "12.", "B."].forEach((text) => assert.equal(isLabelOnly({ text }), true, text));
+  });
+
+  it("valid: 短い語や文は番号ではない（API. Yes. はい。 Why?）", () => {
+    ["API.", "Yes.", "はい。", "Why?", "", "a", "(abc)"].forEach((text) => assert.equal(isLabelOnly({ text }), false, text));
+  });
+});
+
+describe("concrete-evidence-density: 問いと指示の節", () => {
+  before(async () => {
+    await en.prepare?.({ pos: true });
+    await ja.prepare?.({ pos: true });
+  });
+
+  it("valid: 問いを並べた節（情報提供の依頼）は見ない", () => {
+    // Federal Register 2026-16371（NIST の RFI、パブリックドメイン）から。
+    const last = [
+      "Which tasks are most appropriate for AI-enabled automation?",
+      "Which tasks should require human review?",
+      "What other actions could NIST take to improve vulnerability management processes?",
+    ].join(" ");
+    assert.deepEqual(flaggedIn(englishWith(last), en), OTHERS_EN);
+  });
+
+  it("valid: 指示を並べた節（安全の手引き）は見ない", () => {
+    // Ready.gov「Power Outages」（FEMA、パブリックドメイン）から。
+    const last = [
+      "Take an inventory of the items you need that rely on electricity.",
+      "Have flashlights for every household member.",
+      "Never use a gas stovetop or oven to heat your home.",
+      "Keep freezers and refrigerators closed.",
+    ].join(" ");
+    assert.deepEqual(flaggedIn(englishWith(last), en), OTHERS_EN);
+  });
+
+  it("valid: 日本語でも、〜ましょう・〜ください で終わる節は見ない", () => {
+    const last = "正しいアドレスからアクセスしましょう。怪しいメールは開かないでください。パスワードを使い回さないようにしましょう。";
+    assert.deepEqual(flaggedIn(japaneseWith(last), ja), OTHERS_JA);
+  });
+
+  it("invalid: 主張が 3 つあれば、問いや指示が混ざっていても指摘する", () => {
+    assert.ok(flaggedIn(englishWith(`${ABSTRACT_EN} Why does this matter? Keep it in mind.`), en).includes("Last"));
+    assert.ok(flaggedIn(japaneseWith(`${ABSTRACT_JA}なぜでしょう？覚えておきましょう。`), ja).includes("最後"));
+  });
+
+  it("invalid: 数字の無い報告の節は、今までどおり指摘する", () => {
+    const last = "Our help desk got much better. Customers are pleased with it. The team feels less pressure too.";
+    assert.ok(flaggedIn(englishWith(last), en).includes("Last"));
   });
 });

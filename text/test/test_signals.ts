@@ -432,8 +432,8 @@ describe("concrete-evidence-density", () => {
   });
 
   it("短い書き出しはそのまま", () => {
-    const source = "Be kind. We keep it short. We say what we mean.\n\n## Next\n\nMore text.";
-    assert.equal(leadWord(source, en), "Be kind.");
+    const source = "We care. We keep it short. We say what we mean.\n\n## Next\n\nMore text.";
+    assert.equal(leadWord(source, en), "We care.");
   });
 
   it("invalid: 数値もコードもリンクも無い節が並ぶ", () => {

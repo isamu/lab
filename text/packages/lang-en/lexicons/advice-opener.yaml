@@ -1,0 +1,12 @@
+# Words that open a sentence telling the reader what to do, ahead of its verb (Never use, Please submit). The tagger
+# reads them as adverbs, so the sentence does not open with its verb. concrete-evidence-density does not count such a
+# sentence as a claim. Matched in lower case at the start of a sentence, followed by a space.
+id: advice-opener
+language: en
+entries:
+  - pattern: please
+  - pattern: never
+  - pattern: always
+  - pattern: do not
+  - pattern: don't
+  - pattern: don’t
