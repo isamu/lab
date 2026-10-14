@@ -31,6 +31,8 @@ export type Rubric = {
   readonly citations?: CitationLimits | undefined;
   readonly contexts?: ContextLimits | undefined;
   readonly penalty?: number | undefined;
+  /** Each task's own rubric, as written: what it does not write comes from the top level (task-rubric.ts). */
+  readonly tasks?: Readonly<Record<string, Rubric>> | undefined;
 };
 
 /** What a value under `grade:` should have been. */
@@ -78,10 +80,10 @@ const ruleLimit = (raw: unknown, path: string): Read<RuleLimit> => {
   };
 };
 
-const rulesOf = (raw: unknown): Read<Record<string, RuleLimit>> => {
+const rulesOf = (raw: unknown, base: string): Read<Record<string, RuleLimit>> => {
   if (raw === undefined) return ok({});
-  if (!isRecord(raw)) return { value: {}, problems: [problem("grade.rules", "map", raw)] };
-  const read = Object.entries(raw).map(([id, limit]) => ({ id, read: ruleLimit(limit, `grade.rules.${id}`) }));
+  if (!isRecord(raw)) return { value: {}, problems: [problem(`${base}.rules`, "map", raw)] };
+  const read = Object.entries(raw).map(([id, limit]) => ({ id, read: ruleLimit(limit, `${base}.rules.${id}`) }));
   return { value: Object.fromEntries(read.map((entry) => [entry.id, entry.read.value])), problems: read.flatMap((entry) => entry.read.problems) };
 };
 
@@ -98,13 +100,14 @@ const kindsOf = (raw: unknown, path: string): Read<AtomKind[]> => {
   return kinds.length === entries.length ? ok(kinds) : { value: kinds, problems: [problem(path, "kinds", raw)] };
 };
 
-const factsOf = (raw: unknown): Read<FactLimits | undefined> => {
+const factsOf = (raw: unknown, base: string): Read<FactLimits | undefined> => {
   if (raw === undefined) return ok(undefined);
-  if (!isRecord(raw)) return { value: undefined, problems: [problem("grade.facts", "map", raw)] };
-  const dropped = optional(raw, "dropped", "grade.facts", "count");
-  const added = optional(raw, "added", "grade.facts", "count");
-  const allowDropped = kindsOf(raw["allow_dropped"], "grade.facts.allow_dropped");
-  const allowAdded = kindsOf(raw["allow_added"], "grade.facts.allow_added");
+  const path = `${base}.facts`;
+  if (!isRecord(raw)) return { value: undefined, problems: [problem(path, "map", raw)] };
+  const dropped = optional(raw, "dropped", path, "count");
+  const added = optional(raw, "added", path, "count");
+  const allowDropped = kindsOf(raw["allow_dropped"], `${path}.allow_dropped`);
+  const allowAdded = kindsOf(raw["allow_added"], `${path}.allow_added`);
   return {
     value: { dropped: dropped.value, added: added.value, allowDropped: allowDropped.value, allowAdded: allowAdded.value },
     problems: [
@@ -112,7 +115,7 @@ const factsOf = (raw: unknown): Read<FactLimits | undefined> => {
       ...added.problems,
       ...allowDropped.problems,
       ...allowAdded.problems,
-      ...unknownKeys(raw, ["dropped", "added", "allow_dropped", "allow_added"], "grade.facts"),
+      ...unknownKeys(raw, ["dropped", "added", "allow_dropped", "allow_added"], path),
     ],
   };
 };
@@ -125,35 +128,83 @@ const requiredOf = (raw: Record<string, unknown>, path: string): Read<boolean> =
     : { value: false, problems: [problem(`${path}.required`, "boolean", required)] };
 };
 
-const citationsOf = (raw: unknown): Read<CitationLimits | undefined> => {
+const citationsOf = (raw: unknown, base: string): Read<CitationLimits | undefined> => {
   if (raw === undefined) return ok(undefined);
-  if (!isRecord(raw)) return { value: undefined, problems: [problem("grade.citations", "map", raw)] };
-  const failed = optional(raw, "failed", "grade.citations", "count");
-  const required = requiredOf(raw, "grade.citations");
+  const path = `${base}.citations`;
+  if (!isRecord(raw)) return { value: undefined, problems: [problem(path, "map", raw)] };
+  const failed = optional(raw, "failed", path, "count");
+  const required = requiredOf(raw, path);
   return {
     value: { failed: failed.value, required: required.value },
-    problems: [...failed.problems, ...required.problems, ...unknownKeys(raw, ["failed", "required"], "grade.citations")],
+    problems: [...failed.problems, ...required.problems, ...unknownKeys(raw, ["failed", "required"], path)],
   };
 };
 
-const contextsOf = (raw: unknown): Read<ContextLimits | undefined> => {
+const contextsOf = (raw: unknown, base: string): Read<ContextLimits | undefined> => {
   if (raw === undefined) return ok(undefined);
-  if (!isRecord(raw)) return { value: undefined, problems: [problem("grade.contexts", "map", raw)] };
-  const unsupported = optional(raw, "unsupported", "grade.contexts", "count");
-  const allowUnsupported = kindsOf(raw["allow_unsupported"], "grade.contexts.allow_unsupported");
-  const required = requiredOf(raw, "grade.contexts");
+  const path = `${base}.contexts`;
+  if (!isRecord(raw)) return { value: undefined, problems: [problem(path, "map", raw)] };
+  const unsupported = optional(raw, "unsupported", path, "count");
+  const allowUnsupported = kindsOf(raw["allow_unsupported"], `${path}.allow_unsupported`);
+  const required = requiredOf(raw, path);
   return {
     value: { unsupported: unsupported.value, allowUnsupported: allowUnsupported.value, required: required.value },
     problems: [
       ...unsupported.problems,
       ...allowUnsupported.problems,
       ...required.problems,
-      ...unknownKeys(raw, ["unsupported", "allow_unsupported", "required"], "grade.contexts"),
+      ...unknownKeys(raw, ["unsupported", "allow_unsupported", "required"], path),
     ],
   };
 };
 
-const RUBRIC_KEYS: readonly string[] = ["rules", "required_sections", "facts", "citations", "contexts", "penalty"];
+/** The keys a task's rubric may write: every top-level key but `tasks`, so a task cannot hold tasks of its own. */
+const TASK_KEYS: readonly string[] = ["rules", "required_sections", "facts", "citations", "contexts", "penalty"];
+
+const RUBRIC_KEYS: readonly string[] = [...TASK_KEYS, "tasks"];
+
+/** One rubric's keys under `base` (`grade`, or `grade.tasks.<name>`); a key not among `keys` is a problem. */
+const rubricAt = (raw: Record<string, unknown>, base: string, keys: readonly string[]): Read<Rubric> => {
+  const rules = rulesOf(raw["rules"], base);
+  const sections = wordsOf(raw["required_sections"], `${base}.required_sections`);
+  const facts = factsOf(raw["facts"], base);
+  const citations = citationsOf(raw["citations"], base);
+  const contexts = contextsOf(raw["contexts"], base);
+  const penalty = optional(raw, "penalty", base, "number");
+  return {
+    value: {
+      rules: rules.value,
+      requiredSections: sections.value,
+      facts: facts.value,
+      citations: citations.value,
+      contexts: contexts.value,
+      penalty: penalty.value,
+    },
+    problems: [
+      ...rules.problems,
+      ...sections.problems,
+      ...facts.problems,
+      ...citations.problems,
+      ...contexts.problems,
+      ...penalty.problems,
+      ...unknownKeys(raw, keys, base),
+    ],
+  };
+};
+
+/** One task's rubric. A bare `<name>:` (null) writes nothing, so the task inherits the whole top-level rubric. */
+const taskOf = (raw: unknown, path: string): Read<Rubric> => {
+  if (raw === null) return ok({ rules: {} });
+  if (!isRecord(raw)) return { value: { rules: {} }, problems: [problem(path, "map", raw)] };
+  return rubricAt(raw, path, TASK_KEYS);
+};
+
+const tasksOf = (raw: unknown): Read<Record<string, Rubric> | undefined> => {
+  if (raw === undefined) return ok(undefined);
+  if (!isRecord(raw)) return { value: undefined, problems: [problem("grade.tasks", "map", raw)] };
+  const read = Object.entries(raw).map(([name, task]) => ({ name, read: taskOf(task, `grade.tasks.${name}`) }));
+  return { value: Object.fromEntries(read.map((entry) => [entry.name, entry.read.value])), problems: read.flatMap((entry) => entry.read.problems) };
+};
 
 /**
  * The rubric, or every problem in it. No `grade:` key is no rubric: the default pass or fail applies (spec §29.3). A bare
@@ -163,30 +214,9 @@ export const parseRubric = (raw: unknown): { readonly rubric: Rubric | undefined
   if (raw === undefined) return { rubric: undefined };
   if (raw === null) return { rubric: { rules: {} } };
   if (!isRecord(raw)) return { problems: [problem("grade", "map", raw)] };
-  const rules = rulesOf(raw["rules"]);
-  const sections = wordsOf(raw["required_sections"], "grade.required_sections");
-  const facts = factsOf(raw["facts"]);
-  const citations = citationsOf(raw["citations"]);
-  const contexts = contextsOf(raw["contexts"]);
-  const penalty = optional(raw, "penalty", "grade", "number");
-  const problems = [
-    ...rules.problems,
-    ...sections.problems,
-    ...facts.problems,
-    ...citations.problems,
-    ...contexts.problems,
-    ...penalty.problems,
-    ...unknownKeys(raw, RUBRIC_KEYS, "grade"),
-  ];
+  const top = rubricAt(raw, "grade", RUBRIC_KEYS);
+  const tasks = tasksOf(raw["tasks"]);
+  const problems = [...top.problems, ...tasks.problems];
   if (problems.length > 0) return { problems };
-  return {
-    rubric: {
-      rules: rules.value,
-      requiredSections: sections.value,
-      facts: facts.value,
-      citations: citations.value,
-      contexts: contexts.value,
-      penalty: penalty.value,
-    },
-  };
+  return { rubric: tasks.value === undefined ? top.value : { ...top.value, tasks: tasks.value } };
 };
