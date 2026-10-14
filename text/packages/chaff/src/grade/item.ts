@@ -150,6 +150,20 @@ const taskOf = (raw: unknown, vocabulary: ItemVocabulary, line: number): Parsed<
   return (vocabulary.tasks ?? []).includes(raw) ? { value: raw } : { problem: { kind: "unknown-task", line, detail: raw } };
 };
 
+/** The item's variant and task, each written only when given, checked in that order. */
+const labelsOf = (
+  raw: Record<string, unknown>,
+  line: number,
+  vocabulary: ItemVocabulary,
+  variantKey: string,
+): Parsed<{ readonly variant?: string; readonly task?: string }> => {
+  const variant = variantOf(raw, variantKey, line);
+  if ("problem" in variant) return variant;
+  const task = taskOf(raw["task"], vocabulary, line);
+  if ("problem" in task) return task;
+  return { value: { ...(variant.value === undefined ? {} : { variant: variant.value }), ...(task.value === undefined ? {} : { task: task.value }) } };
+};
+
 const itemOf = (raw: Record<string, unknown>, line: number, vocabulary: ItemVocabulary, variantKey: string): Parsed<GradeItem> => {
   const id = raw["id"];
   if (typeof id !== "string" || id === "") return { problem: { kind: "no-id", line } };
@@ -159,10 +173,8 @@ const itemOf = (raw: Record<string, unknown>, line: number, vocabulary: ItemVoca
   if ("problem" in fields) return fields;
   const unknown = vocabularyProblem(fields.value, vocabulary, line);
   if (unknown !== undefined) return { problem: unknown };
-  const variant = variantOf(raw, variantKey, line);
-  if ("problem" in variant) return variant;
-  const task = taskOf(raw["task"], vocabulary, line);
-  if ("problem" in task) return task;
+  const labels = labelsOf(raw, line, vocabulary, variantKey);
+  if ("problem" in labels) return labels;
   const sources = sourcesOf(raw["sources"], line);
   if ("problem" in sources) return sources;
   const citations = citationsOf(raw["citations"], sources.value, line);
@@ -172,9 +184,10 @@ const itemOf = (raw: Record<string, unknown>, line: number, vocabulary: ItemVoca
   const expect = expectOf(raw["expect"]);
   if ("wrong" in expect) return { problem: { kind: "not-expect", line, detail: expect.wrong } };
   const passages = contexts.value === undefined ? {} : { contexts: contexts.value };
-  const labelled = variant.value === undefined ? {} : { variant: variant.value };
-  const tasked = task.value === undefined ? {} : { task: task.value };
   const expected = expect.expect === undefined ? {} : { expect: expect.expect };
+  const { variant, task } = labels.value;
+  const labelled = variant === undefined ? {} : { variant };
+  const tasked = task === undefined ? {} : { task };
   return { value: { id, output, ...fields.value, sources: sources.value, citations: citations.value, ...passages, ...labelled, ...expected, ...tasked } };
 };
 
