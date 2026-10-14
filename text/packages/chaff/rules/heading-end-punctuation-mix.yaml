@@ -128,8 +128,8 @@ example:
       Put everything back.
 
 not_flagged:
-  ja: 文書の題（最初の一つだけの一番上の見出し）は比べません。同じ深さの見出しが四つ未満の所、記号で終わる見出しと終わらない見出しが同じくらいある文書（少ないほうが四分の一を超える）は指しません。疑問符・感嘆符で終わる見出しは、記号なしと数えます。「…」や「etc.」「Inc.」のように言葉の一部の点で終わる見出しは比べません（点で終わる略語は言語ごとの語彙表にあります）。
-  en: The page title (a single top-level heading that opens the document) is not compared. Fewer than four headings at one depth, or where both ways are common (the smaller side above a quarter), is not reported. A heading ending with a question mark or an exclamation mark counts as bare. A heading ending with a full stop that is part of the words ("…", "etc.", "Inc.") is left out of the comparison; the abbreviations are in each language's lexicon.
+  ja: 文書の題（最初の一つだけの一番上の見出し）は比べません。同じ深さの見出しが四つ未満の所、記号で終わる見出しと終わらない見出しが同じくらいある文書（少ないほうが四分の一を超える）は指しません。疑問符・感嘆符で終わる見出しは、記号なしと数えます。「…」や「etc.」「Inc.」のように言葉の一部の点で終わる見出しは比べません（点で終わる略語は言語ごとの語彙表にあります）。英語の文書で大文字だけで書いた見出し（「AGENCY:」のような告示の見出し語）は、普通の書き方の見出しとは別に、大文字の見出しどうしで比べます。
+  en: The page title (a single top-level heading that opens the document) is not compared. Fewer than four headings at one depth, or where both ways are common (the smaller side above a quarter), is not reported. A heading ending with a question mark or an exclamation mark counts as bare. A heading ending with a full stop that is part of the words ("…", "etc.", "Inc.") is left out of the comparison; the abbreviations are in each language's lexicon. Headings set in capitals (a notice's captions, "AGENCY:") are compared with each other, apart from headings in ordinary case.
 rewrite:
   depth: light
   ja:

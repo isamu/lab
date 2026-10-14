@@ -39,8 +39,21 @@ export const endMarkOf = (heading: string, words: readonly string[] = []): strin
 
 type Judged = { readonly heading: MarkupHeading; readonly mark: string };
 
-/** The odd ones among headings of one depth, each with the usual side's first heading and count. */
-const oddAtDepth = (doc: ProseDocument, judged: readonly Judged[]): Finding[] => {
+const LOWER_CASE = /\p{Ll}/u;
+/** A word of this many capitals is a word set in capitals, not only an acronym (AGENCY, DATES; not FAQ). */
+const CAPITALS_WORD = /\p{Lu}{4,}/u;
+
+/**
+ * Whether a heading is set in capitals ("AGENCY:", "FOR FURTHER INFORMATION CONTACT:"). A notice's captions are one kind of
+ * heading and its sections in ordinary case ("Footnotes") another, so the two are compared apart.
+ */
+export const isCapitalsHeading = (heading: string): boolean => !LOWER_CASE.test(heading) && CAPITALS_WORD.test(heading);
+
+/** Headings compared with one another: the same depth, and the same case (capitals or ordinary). */
+const kindOf = (entry: Judged): string => `${String(entry.heading.depth)}:${String(isCapitalsHeading(entry.heading.text))}`;
+
+/** The odd ones among headings of one kind, each with the usual side's first heading and count. */
+const oddOfKind = (doc: ProseDocument, judged: readonly Judged[]): Finding[] => {
   if (judged.length < MIN_HEADINGS) return [];
   const odd = minorityWithin(judged, (entry) => entry.mark !== "", MINORITY_PERCENT);
   const usual = judged.filter((entry) => !odd.includes(entry));
@@ -56,9 +69,9 @@ const oddAtDepth = (doc: ProseDocument, judged: readonly Judged[]): Finding[] =>
 };
 
 /**
- * Headings that end with a colon or a full stop where most headings of the same depth do not, or the other way round. Headings
- * of one depth are one kind of heading; a depth of labels ("Optional:") is its own way. The page title (one top-level heading
- * that opens the document) is a name and is not compared.
+ * Headings that end with a colon or a full stop where most headings of the same depth and case do not, or the other way round.
+ * Headings of one depth are one kind of heading; a depth of labels ("Optional:") is its own way, and so are captions set in
+ * capitals. The page title (one top-level heading that opens the document) is a name and is not compared.
  */
 export const headingEndMark: Detector = (doc, options): Finding[] => {
   const words = (options.lexicon ?? []).map((entry) => entry.pattern);
@@ -70,12 +83,12 @@ export const headingEndMark: Detector = (doc, options): Finding[] => {
       const mark = endMarkOf(heading.text, words);
       return mark === undefined ? [] : [{ heading, mark }];
     });
-  const depths = [...new Set(judged.map((entry) => entry.heading.depth))];
-  return depths
-    .flatMap((depth) =>
-      oddAtDepth(
+  const kinds = [...new Set(judged.map(kindOf))];
+  return kinds
+    .flatMap((kind) =>
+      oddOfKind(
         doc,
-        judged.filter((entry) => entry.heading.depth === depth),
+        judged.filter((entry) => kindOf(entry) === kind),
       ),
     )
     .toSorted((left, right) => Number(left.values["offset"]) - Number(right.values["offset"]));
