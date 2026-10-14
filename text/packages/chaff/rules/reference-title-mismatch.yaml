@@ -74,8 +74,8 @@ example:
       The fee is monthly.
 
 not_flagged:
-  ja: 参照先が見出しを持たないとき、参照先が一つに決まらないとき、他の文書の条（民法第709条）、括弧の中が数字を含むか「前述」「参照」のような語のときは見ません。
-  en: References whose target has no heading or cannot be told apart, references to another document, and brackets holding a number or a word like "above" or "see" are left alone.
+  ja: 参照先が見出しを持たないとき、参照先が一つに決まらないとき、他の文書の条（民法第709条）、括弧の中が数字を含むか「前述」「参照」のような語のとき、句点で終わる断り（「第七項を除く。」）のときは見ません。
+  en: References whose target has no heading or cannot be told apart, references to another document, brackets holding a number or a word like "above" or "see", and brackets closed by a Japanese full stop (a note on the scope, 「第七項を除く。」) are left alone.
 rewrite:
   depth: light
   ja:
