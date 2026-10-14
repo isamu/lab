@@ -1,6 +1,6 @@
 18f-blog-oracle-databases  1
 18f-handbook-travel-faq  5
-aoml-hurricane-faq  21
+aoml-hurricane-faq  14
 asf-board-minutes-2025-01  1
 bls-glossary  2
 cloudgov-security-ir-guide  1

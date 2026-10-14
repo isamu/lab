@@ -5,6 +5,7 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { bracketProblems, withRunOnRestored } from "../packages/chaff/src/detectors/unbalanced-bracket.ts";
 import { isLabelClose, isLabelInAside } from "../packages/chaff/src/detectors/bracket-label.ts";
+import { isInchMark } from "../packages/chaff/src/detectors/inch-mark.ts";
 
 // 括弧の組（unbalanced-bracket）。例文はすべて自作。
 
@@ -169,5 +170,45 @@ describe("isLabelClose", () => {
     assert.equal(isLabelClose("上記事例2）", 5), true);
     assert.equal(isLabelClose("資料をみる）", 5), false);
     assert.equal(isLabelClose("", 0), false);
+  });
+});
+
+describe("unbalanced-bracket: a curly quote written as the inch mark", () => {
+  it("a number, the mark, then a unit opens and closes nothing", () => {
+    assert.deepEqual(findingsOf("The barometer falls 1 mb/hr (.029 “Hg/hr) as the wind rises.\n", en), []);
+    assert.deepEqual(findingsOf("Pressure at sea level is 29.92”Hg on average.\n", en), []);
+    assert.deepEqual(findingsOf("It fell to 28.5 “Hg, and he called it “the big one” later.\n", en), []);
+  });
+
+  it("a quote after a number is still a quote, and an unclosed one is still said", () => {
+    assert.deepEqual(findingsOf("In 1969 “Hurricane Camille” struck the coast.\n", en), []);
+    assert.deepEqual(findingsOf("In 1969 “Hurricane Camille struck the coast.\n", en), ['"“" is never closed']);
+    assert.deepEqual(findingsOf("In 1969 “Camille fell 2 “Hg at landfall.\n", en), ['"“" is never closed', '"“" is never closed']);
+    assert.deepEqual(findingsOf("In 1969 “Hurricane Camille struck” the coast, and “it was over.\n", en), ['"“" is never closed']);
+    assert.deepEqual(findingsOf("Smith, 1996:”Hurricane landfall” was the paper.\n", en), [
+      '"”" closes nothing that was opened',
+      '"”" closes nothing that was opened',
+    ]);
+    assert.deepEqual(findingsOf("The pipe is 12” wide.\n", en), ['"”" closes nothing that was opened']);
+  });
+});
+
+describe("isInchMark", () => {
+  it("between a number and a unit, with nothing in the paragraph left to close it", () => {
+    assert.equal(isInchMark(".015 “Hg/hr)", 5, false), true);
+    assert.equal(isInchMark("29.92”Hg", 5, false), true);
+    assert.equal(isInchMark("2.5 “Hg\n\nsaid “so”", 4, false), true);
+    assert.equal(isInchMark("28.5 “in, said “so”", 5, false), true);
+  });
+
+  it("not after a whole number or a letter, not before a word or a space, not a closer while a quote is open, not an opener its paragraph closes", () => {
+    assert.equal(isInchMark("1969 “Hg", 5, false), false);
+    assert.equal(isInchMark("the “Hg", 4, false), false);
+    assert.equal(isInchMark("2.5 “Hurricane", 4, false), false);
+    assert.equal(isInchMark("12.5” wide", 4, false), false);
+    assert.equal(isInchMark("29.92”Hg", 5, true), false);
+    assert.equal(isInchMark("2.5 “Hg” hit", 4, false), false);
+    assert.equal(isInchMark("2.5 (Hg", 4, false), false);
+    assert.equal(isInchMark("", 0, false), false);
   });
 });
