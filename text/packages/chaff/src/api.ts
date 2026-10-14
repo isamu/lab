@@ -34,7 +34,7 @@ export type List = { readonly span: Span; readonly itemLengths: readonly number[
 /**
  * One entry of a word list. instead_of is another way to write the same thing, for rules that check a document is
  * consistent; rewrite, how to rewrite this phrase. genres: the genres or groups it holds in (legal, blog/tech); without
- * them, every genre. options.lexicon holds only the entries for the document's genre; doc.lexicons holds them all.
+ * them, every genre. options.lexicon and doc.lexicons hold only the entries for the document's genre.
  */
 export type LexiconEntry = {
   readonly pattern: string;

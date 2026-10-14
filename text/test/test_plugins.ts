@@ -290,6 +290,10 @@ describe("plugins", () => {
         "      id: 'coded', word_list: 'terms', name: 'A coded word', why: 'W', how_to_fix: 'F', example: { before: 'B', after: 'A' },",
         "      detect: (doc, { lexicon }) => doc.sentences.flatMap((s) => lexicon.flatMap((e) => { const at = s.text.indexOf(e.pattern); return at < 0 ? [] : [{ start: s.span.start + at, end: s.span.start + at + e.pattern.length }]; })),",
         "    },",
+        "    {",
+        "      id: 'viewed', name: 'A viewed word', why: 'W', how_to_fix: 'F', example: { before: 'B', after: 'A' },",
+        "      detect: (doc) => doc.sentences.flatMap((s) => doc.lexicons['foo/terms'].flatMap((e) => { const at = s.text.indexOf(e.pattern); return at < 0 ? [] : [{ start: s.span.start + at, end: s.span.start + at + e.pattern.length }]; })),",
+        "    },",
         "  ],",
         "};",
       ].join("\n");
@@ -303,6 +307,7 @@ describe("plugins", () => {
         assert.match(run.out, /A coded word: "herein"/u);
         assert.match(run.out, /Write "here", not "herein"\s+foo\/listed/u);
         assert.match(run.out, /A coded word: "arguably"/u);
+        assert.match(run.out, /A viewed word: "herein"/u);
       });
 
       it("is left out in another genre, while the entries for every genre still hold", async () => {
@@ -310,6 +315,7 @@ describe("plugins", () => {
         assert.doesNotMatch(run.out, /herein/u);
         assert.match(run.out, /A coded word: "arguably"/u);
         assert.match(run.out, /Write "I think", not "arguably"\s+foo\/listed/u);
+        assert.match(run.out, /A viewed word: "arguably"/u);
       });
 
       it("an unknown genre stops the run, naming the plugin, the list and the entry", async () => {
