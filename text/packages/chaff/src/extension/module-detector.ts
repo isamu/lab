@@ -39,8 +39,12 @@ const messageOf = (error: unknown): string => {
  * What the detector returned, as findings, or how it failed. Reading the return can run the plugin's code too (a getter,
  * a Proxy), so it is checked inside the try. A Promise is a wrong return; its rejection must not end the run later.
  */
-const findingsOf = (detect: UntrustedDetector, doc: ProseDocument, options: Api.DetectorOptions): { findings: Finding[] } | { failure: RuleFailure } => {
-  const view = ruleDocumentOf(doc);
+const findingsOf = (
+  detect: UntrustedDetector,
+  view: Api.RuleDocument,
+  doc: ProseDocument,
+  options: Api.DetectorOptions,
+): { findings: Finding[] } | { failure: RuleFailure } => {
   try {
     const returned: unknown = detect(view, options);
     if (returned instanceof Promise) returned.catch(() => undefined);
@@ -56,7 +60,7 @@ export const moduleDetector =
   (detect: UntrustedDetector, origin: string): Detector =>
   (doc, options): Finding[] => {
     const lexicon = options.lexicon === undefined ? undefined : frozenLexiconOf(entriesForGenre(options.lexicon, options.genre));
-    const outcome = findingsOf(detect, doc, Object.freeze({ lexicon }));
+    const outcome = findingsOf(detect, ruleDocumentOf(doc, options.genre), doc, Object.freeze({ lexicon }));
     if ("failure" in outcome) throw new PluginRuleFailure(outcome.failure, origin);
     return outcome.findings;
   };
