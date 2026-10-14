@@ -1,7 +1,7 @@
 {
   "recall": {
     "ja": {
-      "detected-before-start": "0/2",
+      "detected-before-start": "1/2",
       "duration": "0/2",
       "timeline-order": "2/2",
       "announced-count": "1/2",
@@ -10,7 +10,7 @@
       "incident-number": "2/2"
     },
     "en": {
-      "detected-before-start": "0/2",
+      "detected-before-start": "1/2",
       "duration": "0/2",
       "timeline-order": "2/2",
       "announced-count": "0/2",
