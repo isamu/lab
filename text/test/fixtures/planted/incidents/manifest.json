@@ -1,0 +1,251 @@
+{
+  "note": "Self-written incident reports and postmortems (障害報告書・振り返り / incident report, postmortem) for made-up services: an incident report with a header list of start, detection and resolution times, a timeline table, a breakdown table with a total row and a follow-up table with due dates, and a postmortem with the times in prose, a timeline list under date headings that crosses midnight, a breakdown in one sentence and follow-up actions with due dates in brackets, each in a clean version and a planted one that differs only on the lines below. They run as business/report: no genre is made for incident reports. Each mistake names its kind, the line it is on, the text the clean line has there (clean) and the planted line has instead (planted), and the rule expected to report it on that line; pairedLine is the line the planted one contradicts (the start time, the incident date, the first writing of the incident number, the total row), where the rule's finding counts too. Rules are named for what they do not do yet: time-order for a detection time before the stated start (a labelled pair like doors open and start), duration-mismatch for a stated length that is not the end less the start in times of day, due-before-issue for a follow-up action due before the incident date, reference-number-variant for incident and postmortem numbers (インシデント番号, 管理番号, Incident number, Postmortem ID), announced-count-mismatch for counts of regions and groups (3地域, three regions, two groups), and percent-sum-mismatch for an English breakdown whose rest is written as '10% other'. A breakdown table with a total row of 100% is reported by total-mismatch on the total row. The incident number appears twice in each document, once in the header and once in the closing sentence. yarn planted incidents scores them; expected.json is the committed score.",
+  "documents": [
+    {
+      "id": "ja/outage",
+      "language": "ja",
+      "genre": "business/report",
+      "clean": "ja/outage.clean.md",
+      "planted": "ja/outage.planted.md",
+      "mistakes": [
+        {
+          "kind": "detected-before-start",
+          "rule": "time-order",
+          "line": 18,
+          "pairedLine": 17,
+          "clean": "検知時刻：14:12",
+          "planted": "検知時刻：13:58"
+        },
+        {
+          "kind": "duration",
+          "rule": "duration-mismatch",
+          "line": 20,
+          "clean": "影響時間：1時間42分",
+          "planted": "影響時間：1時間24分"
+        },
+        {
+          "kind": "timeline-order",
+          "rule": "time-order",
+          "line": 29,
+          "clean": "| 14:40 |",
+          "planted": "| 14:20 |"
+        },
+        {
+          "kind": "announced-count",
+          "rule": "announced-count-mismatch",
+          "line": 35,
+          "clean": "次の3地域",
+          "planted": "次の4地域"
+        },
+        {
+          "kind": "percent-sum",
+          "rule": "total-mismatch",
+          "line": 45,
+          "pairedLine": 48,
+          "clean": "| 62% |",
+          "planted": "| 52% |"
+        },
+        {
+          "kind": "follow-up-before-incident",
+          "rule": "due-before-issue",
+          "line": 58,
+          "pairedLine": 7,
+          "clean": "| 2026年9月30日 |",
+          "planted": "| 2026年9月10日 |"
+        },
+        {
+          "kind": "incident-number",
+          "rule": "reference-number-variant",
+          "line": 62,
+          "pairedLine": 5,
+          "clean": "番号INC-20461について",
+          "planted": "番号INC-20416について"
+        }
+      ]
+    },
+    {
+      "id": "ja/postmortem",
+      "language": "ja",
+      "genre": "business/report",
+      "clean": "ja/postmortem.clean.md",
+      "planted": "ja/postmortem.planted.md",
+      "mistakes": [
+        {
+          "kind": "duration",
+          "rule": "duration-mismatch",
+          "line": 13,
+          "clean": "2時間25分続きました",
+          "planted": "2時間52分続きました"
+        },
+        {
+          "kind": "detected-before-start",
+          "rule": "time-order",
+          "line": 15,
+          "pairedLine": 13,
+          "clean": "21分後の22:31です",
+          "planted": "21分後の21:58です"
+        },
+        {
+          "kind": "timeline-order",
+          "rule": "time-order",
+          "line": 25,
+          "clean": "- 23:20 古い",
+          "planted": "- 22:20 古い"
+        },
+        {
+          "kind": "announced-count",
+          "rule": "announced-count-mismatch",
+          "line": 35,
+          "clean": "次の2つの窓口",
+          "planted": "次の3つの窓口"
+        },
+        {
+          "kind": "percent-sum",
+          "rule": "percent-sum-mismatch",
+          "line": 40,
+          "clean": "その他が10%",
+          "planted": "その他が15%"
+        },
+        {
+          "kind": "follow-up-before-incident",
+          "rule": "due-before-issue",
+          "line": 48,
+          "pairedLine": 7,
+          "clean": "期限：2026年9月4日",
+          "planted": "期限：2026年8月14日"
+        },
+        {
+          "kind": "incident-number",
+          "rule": "reference-number-variant",
+          "line": 52,
+          "pairedLine": 5,
+          "clean": "管理番号PM-7318を",
+          "planted": "管理番号PM-7381を"
+        }
+      ]
+    },
+    {
+      "id": "en/outage",
+      "language": "en",
+      "genre": "business/report",
+      "clean": "en/outage.clean.md",
+      "planted": "en/outage.planted.md",
+      "mistakes": [
+        {
+          "kind": "detected-before-start",
+          "rule": "time-order",
+          "line": 18,
+          "pairedLine": 17,
+          "clean": "Detected: 2:12 PM",
+          "planted": "Detected: 1:58 PM"
+        },
+        {
+          "kind": "duration",
+          "rule": "duration-mismatch",
+          "line": 20,
+          "clean": "Duration: 1 hour 42 minutes",
+          "planted": "Duration: 1 hour 24 minutes"
+        },
+        {
+          "kind": "timeline-order",
+          "rule": "time-order",
+          "line": 29,
+          "clean": "| 2:40 PM |",
+          "planted": "| 2:20 PM |"
+        },
+        {
+          "kind": "announced-count",
+          "rule": "announced-count-mismatch",
+          "line": 35,
+          "clean": "following three regions",
+          "planted": "following four regions"
+        },
+        {
+          "kind": "percent-sum",
+          "rule": "total-mismatch",
+          "line": 45,
+          "pairedLine": 48,
+          "clean": "| 62% |",
+          "planted": "| 52% |"
+        },
+        {
+          "kind": "follow-up-before-incident",
+          "rule": "due-before-issue",
+          "line": 58,
+          "pairedLine": 7,
+          "clean": "| September 30, 2026 |",
+          "planted": "| September 10, 2026 |"
+        },
+        {
+          "kind": "incident-number",
+          "rule": "reference-number-variant",
+          "line": 62,
+          "pairedLine": 5,
+          "clean": "incident INC-58203,",
+          "planted": "incident INC-58230,"
+        }
+      ]
+    },
+    {
+      "id": "en/postmortem",
+      "language": "en",
+      "genre": "business/report",
+      "clean": "en/postmortem.clean.md",
+      "planted": "en/postmortem.planted.md",
+      "mistakes": [
+        {
+          "kind": "duration",
+          "rule": "duration-mismatch",
+          "line": 13,
+          "clean": "lasted 2 hours 25 minutes",
+          "planted": "lasted 2 hours 52 minutes"
+        },
+        {
+          "kind": "detected-before-start",
+          "rule": "time-order",
+          "line": 15,
+          "pairedLine": 13,
+          "clean": "alarm at 10:31 PM",
+          "planted": "alarm at 9:58 PM"
+        },
+        {
+          "kind": "timeline-order",
+          "rule": "time-order",
+          "line": 25,
+          "clean": "- 11:20 PM The old",
+          "planted": "- 10:20 PM The old"
+        },
+        {
+          "kind": "announced-count",
+          "rule": "announced-count-mismatch",
+          "line": 35,
+          "clean": "following two groups",
+          "planted": "following three groups"
+        },
+        {
+          "kind": "percent-sum",
+          "rule": "percent-sum-mismatch",
+          "line": 40,
+          "clean": "10% other",
+          "planted": "15% other"
+        },
+        {
+          "kind": "follow-up-before-incident",
+          "rule": "due-before-issue",
+          "line": 48,
+          "pairedLine": 7,
+          "clean": "due September 4, 2026",
+          "planted": "due August 14, 2026"
+        },
+        {
+          "kind": "incident-number",
+          "rule": "reference-number-variant",
+          "line": 52,
+          "pairedLine": 5,
+          "clean": "quote PM-4672 to",
+          "planted": "quote PM-4762 to"
+        }
+      ]
+    }
+  ]
+}
