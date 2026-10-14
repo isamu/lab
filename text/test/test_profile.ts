@@ -138,8 +138,17 @@ describe("withoutListMarkers", () => {
     assert.equal(withoutListMarkers("  - 賃料：1\n\t* Rent: 2"), "  賃料：1\n\tRent: 2");
   });
 
+  it("行頭の「・」と、項目の名だけを包む行頭の太字も外す", () => {
+    assert.equal(withoutListMarkers("・賃料：1\n・ 敷金：2\n  ・礼金：3"), "賃料：1\n敷金：2\n  礼金：3");
+    assert.equal(withoutListMarkers("**賃料**：1\n- **敷金** ：2\n・**交通**｜4\n| 礼金 |"), "賃料：1\n敷金 ：2\n交通｜4\n| 礼金 |");
+  });
+
+  it("太字が名の後ろまで続くか、行の途中にあれば外さない", () => {
+    ["**賃料：1**", "**賃料**は：1", "この**賃料**：1", "**賃料**", "**：1", "****：1"].forEach((line) => assert.equal(withoutListMarkers(line), line, line));
+  });
+
   it("印のあとに空白が無ければ印ではない。行の途中の - も外さない", () => {
-    ["**賃料**：1", "-5度", "1.5倍", "*注", "賃料 - 1", "", "-", "1."].forEach((line) => assert.equal(withoutListMarkers(line), line, line));
+    ["-5度", "1.5倍", "*注", "賃料 - 1", "", "-", "1."].forEach((line) => assert.equal(withoutListMarkers(line), line, line));
   });
 });
 
@@ -170,6 +179,40 @@ describe("物件広告は、項目の行が箇条でも選ばれる", () => {
       chooseProfile(loadProfiles(), request({ source: ["- Rent: $1,800", "- Deposit: $1,800", "- Layout: 1 bedroom"].join("\n"), language: "en" })),
       undefined,
     ));
+
+  it("「・」の箇条（後ろの空白があってもなくても）、字下げした「・」", () => {
+    ["・", "・ ", "・　", "  ・"].forEach((marker) =>
+      assert.equal(chooseProfile(loadProfiles(), request({ source: listed(() => marker) }))?.profile.id, "listing", marker),
+    );
+  });
+
+  const bold = (line: string): string => line.replace(/^([^：]+)/u, "**$1**");
+  it("項目の名だけを太字にした行（印の有無、「・」、番号付き）", () => {
+    [(line: string) => bold(line), (line: string) => `- ${bold(line)}`, (line: string) => `・${bold(line)}`, (line: string) => `1. ${bold(line)}`].forEach(
+      (form) => {
+        const source = ["# 物件概要", "", ...FACTS.map(form)].join("\n");
+        assert.equal(chooseProfile(loadProfiles(), request({ source }))?.profile.id, "listing", form(FACTS[1] ?? ""));
+      },
+    );
+  });
+
+  it("「・」で始まる文が項目の語を文の中で書いても、物件広告ではない", () => {
+    const prose = [
+      "・この部屋の賃料：月85,000円は相場どおりです。",
+      "・北駅からの交通は徒歩5分です。",
+      "・敷金は1ヶ月、管理費は5,000円です。",
+      "・間取りは1LDKです。",
+    ].join("\n");
+    assert.equal(detected(listing, prose, "ja"), false);
+  });
+
+  it("文の中の太字や、名の後ろまで太字の行は、項目の名を外に出さない", () => {
+    const running = ["この**賃料**：85,000円は安い。", "**賃料は**：85,000円", "**賃料**は：85,000円", "- 今月の**敷金**：1ヶ月", "**賃料：85,000円**"];
+    running.forEach((line) => assert.equal(detected(toy("listing", "^賃料：|^敷金："), line, "ja"), false, line));
+  });
+
+  it("「・」や太字でも、項目の行が min_lines に足りなければ選ばない", () =>
+    assert.equal(detected(listing, ["・賃料：85,000円", "- **敷金**：1ヶ月", "・駐車場：あり"].join("\n"), "ja"), false));
 });
 
 describe("chooseProfile", () => {
