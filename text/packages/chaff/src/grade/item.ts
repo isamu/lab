@@ -1,5 +1,6 @@
 // One line of `chaff grade`'s input: a model's output and what to check it against. Pure: reads text, returns items
 // or what is wrong with them, so a harness that writes the file can be told which line to fix.
+import { expectOf, type GradeExpect } from "./expect.ts";
 import { resultKey } from "./result-name.ts";
 
 export type GradeCitation = { readonly source: string; readonly address: string; readonly quote: string };
@@ -18,10 +19,12 @@ export type GradeItem = {
   readonly contexts?: readonly string[] | undefined;
   /** The prompt, model or setting that produced this output. Outputs of several variants are compared on the same ids. */
   readonly variant?: string | undefined;
+  /** Facts the output must state and facts it must not: a question's known answer. Undefined when not given. */
+  readonly expect?: GradeExpect | undefined;
 };
 
 /** The fields an item already has a meaning for: none of them can name a variant. */
-export const ITEM_FIELDS: readonly string[] = ["id", "output", "reference", "sources", "citations", "contexts", "language", "genre"];
+export const ITEM_FIELDS: readonly string[] = ["id", "output", "reference", "sources", "citations", "contexts", "language", "genre", "expect"];
 
 /** Which field names an output's variant, and whether every line must have it (the key was given on the command line). */
 export type VariantField = { readonly key: string; readonly required: boolean };
@@ -44,6 +47,9 @@ export type ItemProblemKind =
   | "which-source"
   | "unknown-language"
   | "unknown-genre"
+  | "not-expect"
+  | "expect-no-fact"
+  | "expect-several-facts"
   | "empty";
 
 /** Why a line cannot be graded. `detail`: the field, the value or the parser's message; `first`: the line an id was first on. */
@@ -146,9 +152,12 @@ const itemOf = (raw: Record<string, unknown>, line: number, vocabulary: ItemVoca
   if ("problem" in citations) return citations;
   const contexts = contextsOf(raw["contexts"], line);
   if ("problem" in contexts) return contexts;
+  const expect = expectOf(raw["expect"]);
+  if ("wrong" in expect) return { problem: { kind: "not-expect", line, detail: expect.wrong } };
   const passages = contexts.value === undefined ? {} : { contexts: contexts.value };
   const labelled = variant.value === undefined ? {} : { variant: variant.value };
-  return { value: { id, output, ...fields.value, sources: sources.value, citations: citations.value, ...passages, ...labelled } };
+  const expected = expect.expect === undefined ? {} : { expect: expect.expect };
+  return { value: { id, output, ...fields.value, sources: sources.value, citations: citations.value, ...passages, ...labelled, ...expected } };
 };
 
 /** One item from a value already parsed, as `grade()` receives it; `line` is 0 when it came from no file. */
@@ -192,7 +201,7 @@ export const parseItems = (
   text: string,
   vocabulary: ItemVocabulary,
   variantField: VariantField = DEFAULT_VARIANT_FIELD,
-): { readonly items: readonly GradeItem[] } | { readonly problems: readonly ItemProblem[] } => {
+): { readonly items: readonly GradeItem[]; readonly lines: readonly number[] } | { readonly problems: readonly ItemProblem[] } => {
   const lines = text.split(/\r?\n/u).map((body, index) => ({ body, line: index + 1 }));
   const parsed = lines
     .filter(({ body }) => body.trim() !== "")
@@ -204,5 +213,5 @@ export const parseItems = (
     ...unlabelled(read, variantField),
   ];
   if (problems.length > 0) return { problems: problems.toSorted((left, right) => left.line - right.line) };
-  return read.length === 0 ? { problems: [{ kind: "empty", line: 0 }] } : { items: read.map((entry) => entry.item) };
+  return read.length === 0 ? { problems: [{ kind: "empty", line: 0 }] } : { items: read.map((entry) => entry.item), lines: read.map((entry) => entry.line) };
 };

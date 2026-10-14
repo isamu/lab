@@ -3,6 +3,7 @@ import type { CitationStatus } from "../structure/cite.ts";
 import type { Severity } from "../plugin.ts";
 import type { OutputSize } from "./rates.ts";
 import type { GradeAiScore } from "./ai-score.ts";
+import type { GradeExpectResult } from "./expect.ts";
 
 // The shape of one line of `chaff grade --out`, and of what `grade()` returns. Spec §29.3.
 
@@ -74,6 +75,8 @@ export type GradeResult = {
   readonly citations: GradeCitations | null;
   /** Only when the item gave contexts, so results of items without them keep their shape. */
   readonly contexts?: GradeContexts | undefined;
+  /** Only when the item gave expect: the entries checked, the facts not stated and the absent ones stated. */
+  readonly expect?: GradeExpectResult | undefined;
   /** Only with a `grade:` rubric. */
   readonly score?: GradeScore | undefined;
   /** The AI-likeness quick score. Absent only in results written before it existed. Never part of pass or fail. */
