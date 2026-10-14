@@ -1,6 +1,7 @@
 # Words and marks that, alone between two references, make them one list or range (reference-title-mismatch): "sections 9
 # to 11 (stay of legal proceedings)". A name in brackets after such a list names the group, not the last section. A bare
 # comma is not one: "Subject to section 5, section 7 (Pricing) applies" names section 7 alone; a list ends in "and" or "or".
+# Japanese has no such list: in 第三条、第三十九条（第七項を除く。） the bracket binds to the article right before it.
 id: reference-list-joint
 language: en
 entries:

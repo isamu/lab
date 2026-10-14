@@ -1,5 +1,0 @@
-# 二つの参照の間にそれだけを置いて一つの並びにし、後ろの括弧を並び全体の名前にする語（reference-title-mismatch）。
-# 日本語には無い。「第三条、第三十九条（第七項を除く。）」のように、並びの中の括弧はすぐ前の条だけに掛かる。
-id: reference-list-joint
-language: ja
-entries: []
