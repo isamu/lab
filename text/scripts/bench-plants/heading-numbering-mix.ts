@@ -4,8 +4,9 @@ import { codeLines, linesOf, type Mutation, type Plant } from "../bench-text.ts"
 
 const HEADING = /^(#{2,6})\s+(\S.*)$/u;
 
-/** 前後の見出し（目次・参考文献）。rule が兄弟に数えないので、これを含む並びには植えない。 */
-const MATTER = /^(?:目次|参考文献|付録|謝辞|Contents|References|Abstract|Appendix|Acknowledg)/iu;
+/** 前後の見出し（目次・参考文献・末尾の連絡先）。rule が兄弟に数えないので、これを含む並びには植えない。 */
+const MATTER =
+  /^(?:目次|参考文献|付録|謝辞|担当|連絡先|お?問い?合わ?せ|Contents|References|Abstract|Appendix|Acknowledg|Contacts?$|(?:Media|Press) contacts?)/iu;
 
 /** 番号で始まる見出しの言葉。すでに番号がある兄弟は植えない。 */
 const NUMBERED = /^(?:[0-9０-９]|第|[(（①-⑳]|Chapter|Step|Part|Section)/u;
