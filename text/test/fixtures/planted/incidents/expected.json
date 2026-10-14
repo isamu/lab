@@ -1,0 +1,23 @@
+{
+  "recall": {
+    "ja": {
+      "detected-before-start": "0/2",
+      "duration": "0/2",
+      "timeline-order": "2/2",
+      "announced-count": "1/2",
+      "percent-sum": "2/2",
+      "follow-up-before-incident": "0/2",
+      "incident-number": "0/2"
+    },
+    "en": {
+      "detected-before-start": "0/2",
+      "duration": "0/2",
+      "timeline-order": "2/2",
+      "announced-count": "0/2",
+      "percent-sum": "1/2",
+      "follow-up-before-incident": "0/2",
+      "incident-number": "0/2"
+    }
+  },
+  "clean": []
+}
