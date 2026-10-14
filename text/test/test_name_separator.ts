@@ -1,7 +1,7 @@
 import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { latinSpacing } from "./rule-run.ts";
-import { isNameSeparator, type OrganizationWords } from "../packages/chaff/src/name-separator.ts";
+import { isFieldSeparator, isNameSeparator, type OrganizationWords } from "../packages/chaff/src/name-separator.ts";
 import { latinBoundaries, type Boundary } from "../packages/chaff/src/orthography.ts";
 import type { Token } from "../packages/chaff/src/plugin.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
@@ -93,6 +93,53 @@ describe("isNameSeparator", () => {
       letterBoundaries(text).map((boundary) => isNameSeparator(text, boundary, shifted, 0, WORDS)),
       [false],
     );
+  });
+});
+
+describe("isFieldSeparator on a label and its value", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+  });
+
+  /** text の空けた「数字の前」の境目ごとに、項目の区切りと読むか。 */
+  const fields = (text: string, tokens: readonly Token[] | undefined = tokensOf(text), base = 0): boolean[] =>
+    latinBoundaries(text)
+      .filter((boundary) => boundary.kind === "before-digit" && boundary.spaced)
+      .map((boundary) => isFieldSeparator(text, boundary, tokens, base));
+
+  it("reads the space between a short label and the value it names as a separator", () => {
+    assert.deepEqual(fields("最高速度 40km/h"), [true]);
+    assert.deepEqual(fields("- 定員 30名"), [true]);
+    assert.deepEqual(fields("2. 会費 500円"), [true]);
+    assert.deepEqual(fields("受付窓口（内線 3839）"), [true]);
+    assert.deepEqual(fields("電話 03-1234-5678、内線 3839～40"), [true]);
+    assert.deepEqual(fields("| 定員 30名 | 会費 500円 |"), [true, true]);
+    assert.deepEqual(fields("- 合計 1,000円"), [true]);
+    assert.deepEqual(fields("詳しくは担当窓口（内線 3839）にお問い合わせください。"), [true]);
+  });
+
+  it("does not read a value in a sentence, a value followed by a word, or a label that is a quantity lead", () => {
+    assert.deepEqual(fields("当日は最高速度 40km/hで走ります。"), [false]);
+    assert.deepEqual(fields("定員 30名で行います。"), [false]);
+    assert.deepEqual(fields("最高速度 40km/h。"), [false]);
+    assert.deepEqual(fields("受付は、内線 3839 までお電話ください。"), [false]);
+    assert.deepEqual(fields("約 30名"), [false]);
+    assert.deepEqual(fields("およそ 30名"), [false]);
+    assert.deepEqual(fields("定員は 30名"), [false]);
+    assert.deepEqual(fields("参加者 30名 と 来場者 50名"), [false, false]);
+    assert.deepEqual(fields("合計 1,000円です。"), [false]);
+    assert.deepEqual(fields("参加者 30名、来場者50名を見込みます"), [false]);
+  });
+
+  it("does not read without parts of speech, and reads tokens in document coordinates", () => {
+    const text = "最高速度 40km/h";
+    assert.deepEqual(
+      latinBoundaries(text).map((boundary) => isFieldSeparator(text, boundary, undefined, 0)),
+      [false],
+    );
+    assert.deepEqual(fields(text, []), [false]);
+    const shifted = tokensOf(text).map((token) => ({ ...token, span: { start: token.span.start + 100, end: token.span.end + 100 } }));
+    assert.deepEqual(fields(text, shifted, 100), [true]);
   });
 });
 

@@ -19,7 +19,6 @@ jstage-jniph-74-2-119-wbgt  8
 jstage-jniph-74-2-157-heat-policy  6
 jstage-jnlp-32-1-114-nmt  1
 koenote-requirements  1
-meti-press-level4-bus  1
 mhlw-norovirus-qa  1
 neeview-changelog-ja  4
 nta-kids-mijika-na-zeikin  1
