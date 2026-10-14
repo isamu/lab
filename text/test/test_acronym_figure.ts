@@ -19,7 +19,7 @@ const reportedIn = (path: string, source: string): string[] =>
     .findings.filter((finding) => finding.rule === "undefined-acronym")
     .map((finding) => String(finding.values["word"]));
 
-/** In prose, "WAIT (??)" reads as WAIT with its expansion in brackets. In the figure, "(??)" is only a cell. */
+/** In prose, "WFIT (??)" reads as WFIT with its expansion in brackets. In the figure, "(??)" is only a cell. */
 const FIGURE = [
   "   The exchange below shows both sides.",
   "",
@@ -27,9 +27,9 @@ const FIGURE = [
   "",
   "   1.  IDLE                                   IDLE",
   "",
-  "   2.  WAIT (??)  --> <ID=7><KIND=HELLO>      ...",
+  "   2.  WFIT (??)  --> <ID=7><KIND=HELLO>      ...",
   "",
-  "   3.  OPEN       <-- <ID=9><KIND=REPLY>      <-- WAIT",
+  "   3.  OPEN       <-- <ID=9><KIND=REPLY>      <-- WFIT",
   "",
   "   Figure 1: A greeting between two nodes",
 ].join("\n");
@@ -43,11 +43,11 @@ describe("undefined-acronym: an acronym in a figure", () => {
     });
 
     it(`${path}: an acronym shown in a figure, then used in prose without an expansion, is reported`, () => {
-      assert.deepEqual(reportedIn(path, documentWith("   A node in WAIT resends its greeting after one second.")), ["WAIT"]);
+      assert.deepEqual(reportedIn(path, documentWith("   A node in WFIT resends its greeting after one second.")), ["WFIT"]);
     });
 
     it(`${path}: expanded in prose, it is explained`, () => {
-      const prose = "   A node in Waiting After Initial Transmit (WAIT) resends its greeting after one second.";
+      const prose = "   A node in Waiting For Initial Transmit (WFIT) resends its greeting after one second.";
       assert.deepEqual(reportedIn(path, documentWith(prose)), []);
     });
   });

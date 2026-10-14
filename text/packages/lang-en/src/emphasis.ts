@@ -33,6 +33,23 @@ export const isEmphasisedAdverb = (surface: string, tagsOf: TagsOf): boolean => 
   return tags.length > 0 && tags.every((tag) => ADVERB_TAGS.has(tag));
 };
 
+/** Shorter capitals that spell a word are acronyms too often (PIE, GUT, JAR, TAP): only words this long are read from the vocabulary alone. */
+const ORDINARY_WORD_MIN_LENGTH = 4;
+
+/** Penn tags of the open word classes: common noun, verb, adjective, adverb. */
+const OPEN_CLASS_TAG = /^(?:NNS?|VB[DGNPZ]?|JJ[RS]?|RB[RS]?)$/u;
+
+/**
+ * The tagger's vocabulary knows the lower-case word as an ordinary English word (start, return, none, thank, safe) and never as
+ * a proper noun. Acronyms the vocabulary holds are proper nouns or absent (NASA, NIST, HTTP), so these capitals spell the word.
+ * A word that is also an acronym (FAST the telescope) is given up: precision first, and only meaning tells the two apart.
+ */
+export const isCapitalisedOrdinaryWord = (surface: string, tagsOf: TagsOf): boolean => {
+  if (!CAPITALS.test(surface) || [...surface].length < ORDINARY_WORD_MIN_LENGTH) return false;
+  const tags = tagsOf(surface.toLowerCase()) ?? [];
+  return tags.some((tag) => OPEN_CLASS_TAG.test(tag)) && !tags.some((tag) => tag.startsWith("NNP"));
+};
+
 /** After a verb, a word the tagger read as a noun must also be a verb in the dictionary (DID form), or it is what the capitals name (DID token). */
 const canFollowVerb = (next: TaggedWord, tagsOf: TagsOf): boolean => !next.pos.startsWith("NN") || (tagsOf(next.value.toLowerCase()) ?? []).includes("VB");
 
@@ -59,6 +76,11 @@ const JOINED = /[\p{L}\p{N}_&/'’-]/u;
 type WordSpan = { readonly start: number; readonly end: number };
 
 export const standsAlone = (text: string, span: WordSpan): boolean => !JOINED.test(text.charAt(span.start - 1)) && !JOINED.test(text.charAt(span.end));
+
+const HYPHENS = /[-‐‑]/u;
+
+/** A word hyphened to another (LAST-ACK, DRUM-TAPS) is one part of a compound, which the vocabulary does not hold as a whole. */
+export const isHyphenated = (text: string, span: WordSpan): boolean => HYPHENS.test(text.charAt(span.start - 1)) || HYPHENS.test(text.charAt(span.end));
 
 /** A capitals word the sentence reads as an English word (not the adverb-only case above), so emphasis and not an acronym. */
 export const isEmphasisedWord = (tagged: readonly TaggedWord[], at: number, tagsOf: TagsOf): boolean => {
