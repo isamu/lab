@@ -55,7 +55,12 @@ const sectionOf = (section: Section, copy: SentenceCopies): Api.Section => ({
 const listOf = (list: BulletList): Api.List => ({ span: spanOf(list.span), itemLengths: [...list.items] });
 
 const lexiconOf = (lexicon: Lexicon): Api.Lexicon =>
-  lexicon.map((entry) => ({ pattern: entry.pattern, ...(entry.instead_of === undefined ? {} : { instead_of: entry.instead_of }) }));
+  lexicon.map((entry) => ({
+    pattern: entry.pattern,
+    ...(entry.instead_of === undefined ? {} : { instead_of: entry.instead_of }),
+    ...(entry.rewrite === undefined ? {} : { rewrite: entry.rewrite }),
+    ...(entry.genres === undefined ? {} : { genres: [...entry.genres] }),
+  }));
 
 const markupOf = (markup: Markup): Api.Markup => ({
   markdown: markup.markdown,

@@ -98,6 +98,23 @@ describe("plugins", () => {
       assert.deepEqual(kinds(plugin({ name: "team" }), local), []);
     });
 
+    it("carries a word-list entry's genres and rewrite, by genre or group", () => {
+      const read = parsePlugin(
+        plugin({ lexicons: { terms: { en: [{ pattern: "herein", rewrite: "here", genres: ["legal", "blog/tech"] }, "arguably"] } } }),
+        ORIGIN,
+        USE_FOR,
+      );
+      assert.deepEqual(read.problems, []);
+      assert.deepEqual(read.plugin?.lexicons, {
+        en: { "foo/terms": [{ pattern: "herein", rewrite: "here", genres: ["legal", "blog/tech"] }, { pattern: "arguably" }] },
+      });
+    });
+
+    it("names the plugin, the list, the language and the entry whose genres cannot be read", () => {
+      const read = parsePlugin(plugin({ lexicons: { terms: { en: ["ok", { pattern: "herein", genres: ["legal", "leagl", 2] }] } } }), ORIGIN, USE_FOR);
+      assert.deepEqual(read.problems, [{ kind: "bad-lexicon-genres", plugin: "chaff-plugin-foo", detail: 'terms (en) "herein": ["leagl",2]' }]);
+    });
+
     const problems: readonly (readonly [string, unknown, string])[] = [
       ["a default export that is not an object", detect, "bad-export"],
       ["no API version", { name: "foo" }, "no-api-version"],
@@ -110,6 +127,11 @@ describe("plugins", () => {
       ["a word list with a bad entry", plugin({ lexicons: { weasel: { en: [1] } } }), "bad-lexicon"],
       ["a word list that is not by language", plugin({ lexicons: { weasel: ["x"] } }), "bad-lexicon"],
       ["a word list with a bad name", plugin({ lexicons: { "Bad Name": { en: ["x"] } } }), "bad-lexicon"],
+      ["a word-list entry with genres that are not a list", plugin({ lexicons: { terms: { en: [{ pattern: "x", genres: "legal" }] } } }), "bad-lexicon-genres"],
+      ["a word-list entry with an empty genres list", plugin({ lexicons: { terms: { en: [{ pattern: "x", genres: [] }] } } }), "bad-lexicon-genres"],
+      ["a word-list entry with a genre that is not text", plugin({ lexicons: { terms: { en: [{ pattern: "x", genres: [1] }] } } }), "bad-lexicon-genres"],
+      ["a word-list entry with an unknown genre", plugin({ lexicons: { terms: { en: [{ pattern: "x", genres: ["leagl"] }] } } }), "bad-lexicon-genres"],
+      ["a word-list entry with a null genres", plugin({ lexicons: { terms: { en: [{ pattern: "x", genres: null }] } } }), "bad-lexicon-genres"],
       ["a style without a source", plugin({ styles: [{ id: "house", name: "H", summary: "S", rules: { x: "off" } }] }), "bad-style"],
       ["a style without an id", plugin({ styles: [{ name: "H" }] }), "bad-style"],
       ["styles that are not a list", plugin({ styles: {} }), "bad-style"],
@@ -253,6 +275,47 @@ describe("plugins", () => {
         const run = await runCli(files, ["a.md"], "en_US.UTF-8");
         assert.equal(run.code, 1);
         assert.match(run.err, message);
+      });
+    });
+
+    describe("a word-list entry for some genres only", () => {
+      const GENRED = [
+        "export default {",
+        "  apiVersion: 1,",
+        "  name: 'foo',",
+        "  lexicons: { terms: { en: [{ pattern: 'herein', rewrite: 'here', genres: ['legal'] }, { pattern: 'arguably', rewrite: 'I think' }] } },",
+        "  rules: [",
+        "    { id: 'listed', type: 'words', word_list: 'terms', name: 'A listed word', why: 'W', how_to_fix: 'F', example: { before: 'B', after: 'A' } },",
+        "    {",
+        "      id: 'coded', word_list: 'terms', name: 'A coded word', why: 'W', how_to_fix: 'F', example: { before: 'B', after: 'A' },",
+        "      detect: (doc, { lexicon }) => doc.sentences.flatMap((s) => lexicon.flatMap((e) => { const at = s.text.indexOf(e.pattern); return at < 0 ? [] : [{ start: s.span.start + at, end: s.span.start + at + e.pattern.length }]; })),",
+        "    },",
+        "  ],",
+        "};",
+      ].join("\n");
+      const inGenre = (genre: string): Record<string, string> => ({
+        ...project([`genre: ${genre}`, ...WITH_FOO], GENRED),
+        "a.md": "# Terms\n\nThe parties agree herein to pay. It is arguably late.\n",
+      });
+
+      it("holds in its genre, for a words rule and a code rule", async () => {
+        const run = await runCli(inGenre("legal/contract"), ["a.md", "--compact"], "en_US.UTF-8");
+        assert.match(run.out, /A coded word: "herein"/u);
+        assert.match(run.out, /Write "here", not "herein"\s+foo\/listed/u);
+        assert.match(run.out, /A coded word: "arguably"/u);
+      });
+
+      it("is left out in another genre, while the entries for every genre still hold", async () => {
+        const run = await runCli(inGenre("blog/tech"), ["a.md", "--compact"], "en_US.UTF-8");
+        assert.doesNotMatch(run.out, /herein/u);
+        assert.match(run.out, /A coded word: "arguably"/u);
+        assert.match(run.out, /Write "I think", not "arguably"\s+foo\/listed/u);
+      });
+
+      it("an unknown genre stops the run, naming the plugin, the list and the entry", async () => {
+        const run = await runCli(project(WITH_FOO, GENRED.replace("genres: ['legal']", "genres: ['leagl']")), ["a.md"], "en_US.UTF-8");
+        assert.equal(run.code, 1);
+        assert.match(run.err, /plugins chaff-plugin-foo: cannot read the genres of the word list entry terms \(en\) "herein": \["leagl"\]/u);
       });
     });
 
