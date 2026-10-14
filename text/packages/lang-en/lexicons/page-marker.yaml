@@ -1,0 +1,8 @@
+# Page markers a converted print edition leaves inside a sentence: the Federal Register's web edition
+# ("remediation ( printed page 52044) workflows") and the GPO text edition ("[[Page 52044]]"). max-sentence-length does
+# not count them. "#" stands for the page number, and a space for any run of spaces, none included.
+id: page-marker
+language: en
+entries:
+  - pattern: "( printed page #)"
+  - pattern: "[[Page #]]"

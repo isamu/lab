@@ -2,6 +2,7 @@ id: max-sentence-length
 layer: L1
 status: stable
 how_to_find: sentence-length
+word_list: page-marker
 severity: info
 
 name:
@@ -100,8 +101,8 @@ example:
       The new pricing will be trialled from next month. We have not yet decided how to explain it to existing customers, or when to change the billing system. We will agree on a plan this week.
 
 not_flagged:
-  ja: 見出し、表のセル、コードは数えません。法令や論文のように長い一文が普通の種類では、ジャンルが上限を長くします。
-  en: Headings, table cells and code are not counted. Genres where long sentences are normal (statutes, papers) raise the limit.
+  ja: 見出し、表のセル、コードは数えません。印刷版を文字にした文書が文の途中に残すページの印（「( printed page 52044)」「－ 12 －」）も数えません。法令や論文のように長い一文が普通の種類では、ジャンルが上限を長くします。
+  en: Headings, table cells and code are not counted, nor are the page markers a converted print edition leaves inside a sentence ("( printed page 52044)", "[[Page 52044]]"). Genres where long sentences are normal (statutes, papers) raise the limit.
 level_meaning:
   ja: 一文 {limit} 字まで
   en: up to {limit} words in a sentence
