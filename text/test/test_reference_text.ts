@@ -5,7 +5,7 @@ import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { holdsAside } from "../packages/chaff/src/structure/reference-text.ts";
+import { endsAsSentence, holdsAside } from "../packages/chaff/src/structure/reference-text.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
 // 参照に添えた名前と参照先の見出し（reference-title-mismatch）、参照に添えた話題と参照先の中身（reference-topic-missing）。
@@ -72,6 +72,9 @@ describe("reference-title-mismatch", () => {
       );
     assert.deepEqual(contract("乙が第2条（損害賠償）"), ["第2条:損害賠償≠秘密保持"]);
     assert.deepEqual(contract("乙が第2条（秘密保持）"), []);
+    assert.deepEqual(contract("乙が第2条（第三項を除く。）"), []);
+    assert.deepEqual(contract("乙が第2条（第3条において準用する場合を含む。）"), []);
+    assert.deepEqual(contract("乙が第2条（損害賠償）（第三項を除く。）"), ["第2条:損害賠償≠秘密保持"]);
   });
 
   it("a number given to two articles points at neither", () => {
@@ -148,5 +151,22 @@ describe("holdsAside", () => {
     assert.equal(holdsAside("et seq.", "et seq"), true);
     assert.equal(holdsAside("上記参照", "上記"), true);
     assert.equal(holdsAside("Pricing", ""), false);
+  });
+});
+
+describe("endsAsSentence", () => {
+  it("brackets closed by a full stop hold a note on the reference's scope, not a name", () => {
+    assert.equal(endsAsSentence("第七項を除く。"), true);
+    assert.equal(endsAsSentence("同条第二項において準用する場合を含む。"), true);
+    assert.equal(endsAsSentence("第二号に係る部分に限る．"), true);
+  });
+
+  it("a name, an English abbreviation's period and an empty bracket are not a sentence", () => {
+    assert.equal(endsAsSentence("秘密保持"), false);
+    assert.equal(endsAsSentence("除く。の解釈"), false);
+    assert.equal(endsAsSentence("Payments to Acme Inc."), false);
+    assert.equal(endsAsSentence("stay of legal proceedings, &c."), false);
+    assert.equal(endsAsSentence(""), false);
+    assert.equal(endsAsSentence("。"), true);
   });
 });
