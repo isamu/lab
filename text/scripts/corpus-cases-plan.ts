@@ -63,7 +63,8 @@ const entryProblem = (raw: unknown, index: number): string | undefined => {
   if (!Number.isInteger(raw["line"]) || Number(raw["line"]) < 1) return `${where} has no positive line`;
   if (typeof raw["verdict"] !== "string" || !KNOWN_VERDICTS.includes(raw["verdict"])) return `${where} has an unknown verdict`;
   const textKey = raw["verdict"] === "missed" ? "what" : "text";
-  return typeof raw[textKey] === "string" ? undefined : `${where} has no ${textKey}`;
+  if (typeof raw[textKey] !== "string") return `${where} has no ${textKey}`;
+  return raw["note"] === undefined || raw["note"] === null || typeof raw["note"] === "string" ? undefined : `${where} has a note that is not text`;
 };
 
 const openEntryOf = (raw: Readonly<Record<string, unknown>>): OpenEntry[] => {
@@ -84,7 +85,7 @@ const entryOrder = (left: OpenEntry, right: OpenEntry): number =>
 export const openCaseOf = (raw: unknown, id: string, documentPath: string | undefined): CorpusCase | CaseProblem => {
   if (!isRecord(raw)) return { id, problem: "the file is not a mapping" };
   if (raw["id"] !== id) return { id, problem: `its id is not "${id}" (the file name)` };
-  const findings = raw["findings"] ?? [];
+  const findings = "findings" in raw ? raw["findings"] : [];
   if (!Array.isArray(findings)) return { id, problem: "findings is not a list" };
   const problems = findings.flatMap((entry: unknown, index) => entryProblem(entry, index) ?? []);
   if (problems.length > 0) return { id, problem: problems.join("; ") };
@@ -147,14 +148,27 @@ const closeComment = (id: string, reason: "resolved" | "removed"): string =>
     ? `\`${id}\` has no \`false-positive\` or \`missed\` entry left in ${CORPUS_REPOSITORY}'s expected/${id}.yaml, so this case is resolved.`
     : `\`${id}\` is no longer in ${CORPUS_REPOSITORY} (expected/${id}.yaml is gone), so this case is closed.`;
 
-/** The issue of each marked document: the open one when there is one, else the most recent. */
-const issuesById = (issues: readonly ExistingIssue[]): Map<string, ExistingIssue> =>
-  issues
-    .toSorted((left, right) => Number(left.state === "OPEN") - Number(right.state === "OPEN") || left.number - right.number)
-    .reduce((byId, issue) => {
-      const id = markedId(issue.body);
-      return id === undefined ? byId : byId.set(id, issue);
-    }, new Map<string, ExistingIssue>());
+/** The order that puts the issue a document keeps first: the oldest open one, else the most recent closed one. */
+const keptFirst = (left: ExistingIssue, right: ExistingIssue): number =>
+  Number(right.state === "OPEN") - Number(left.state === "OPEN") || (left.state === "OPEN" ? left.number - right.number : right.number - left.number);
+
+/** The marked issues of each document, the one it keeps first. */
+const issuesById = (issues: readonly ExistingIssue[]): Map<string, ExistingIssue[]> =>
+  issues.toSorted(keptFirst).reduce((byId, issue) => {
+    const id = markedId(issue.body);
+    return id === undefined ? byId : byId.set(id, [...(byId.get(id) ?? []), issue]);
+  }, new Map<string, ExistingIssue[]>());
+
+/** A second open issue with the same marker (two runs that raced, or a copied body) is closed in favour of the kept one. */
+const duplicateCloses = (id: string, issues: readonly ExistingIssue[]): IssueAction[] => {
+  const [kept, ...others] = issues;
+  if (kept === undefined) return [];
+  return others
+    .filter((issue) => issue.state === "OPEN")
+    .map((issue) => ({ kind: "close", id, number: issue.number, comment: `A duplicate of #${String(kept.number)}, which keeps this case.` }));
+};
+
+const actionNumber = (action: IssueAction): number => (action.kind === "create" ? 0 : action.number);
 
 const isProblem = (item: CorpusCase | CaseProblem): item is CaseProblem => "problem" in item;
 
@@ -163,7 +177,7 @@ const actionFor = (corpusCase: CorpusCase, issue: ExistingIssue | undefined): Is
   const body = bodyOf(corpusCase);
   if (issue === undefined) return { kind: "create", id: corpusCase.id, title, body };
   const reopen = issue.state === "CLOSED";
-  if (!reopen && issue.title === title && issue.body.trimEnd() === body.trimEnd()) return undefined;
+  if (!reopen && issue.title === title && issue.body.replaceAll("\r\n", "\n").trimEnd() === body.trimEnd()) return undefined;
   return { kind: "update", id: corpusCase.id, number: issue.number, title, body, reopen };
 };
 
@@ -175,14 +189,19 @@ export const planIssues = (cases: readonly (CorpusCase | CaseProblem)[], issues:
   const byId = issuesById(issues);
   const known = new Set(cases.map((item) => item.id));
   const open = cases.filter((item): item is CorpusCase => !isProblem(item) && item.entries.length > 0);
-  const opened = open.map((corpusCase) => ({ id: corpusCase.id, action: actionFor(corpusCase, byId.get(corpusCase.id)) }));
+  const opened = open.map((corpusCase) => ({ id: corpusCase.id, action: actionFor(corpusCase, byId.get(corpusCase.id)?.[0]) }));
   const openIds = new Set(open.map((corpusCase) => corpusCase.id));
   const problemIds = new Set(cases.filter(isProblem).map((problem) => problem.id));
-  const closed = [...byId.entries()]
-    .filter(([id, issue]) => issue.state === "OPEN" && !openIds.has(id) && !problemIds.has(id))
-    .map(([id, issue]): IssueAction => ({ kind: "close", id, number: issue.number, comment: closeComment(id, known.has(id) ? "resolved" : "removed") }));
+  const touchable = [...byId.entries()].filter(([id]) => !problemIds.has(id));
+  const closed = touchable
+    .filter(([id]) => !openIds.has(id))
+    .flatMap(([id, issues]) => issues.filter((issue) => issue.state === "OPEN").map((issue) => ({ id, issue })))
+    .map(({ id, issue }): IssueAction => ({ kind: "close", id, number: issue.number, comment: closeComment(id, known.has(id) ? "resolved" : "removed") }));
+  const duplicates = touchable.filter(([id]) => openIds.has(id)).flatMap(([id, issues]) => duplicateCloses(id, issues));
   return {
-    actions: [...opened.flatMap((item) => item.action ?? []), ...closed].toSorted((left, right) => left.id.localeCompare(right.id, "en")),
+    actions: [...opened.flatMap((item) => item.action ?? []), ...duplicates, ...closed].toSorted(
+      (left, right) => left.id.localeCompare(right.id, "en") || actionNumber(left) - actionNumber(right),
+    ),
     unchanged: opened.filter((item) => item.action === undefined).map((item) => item.id),
     problems: cases.filter(isProblem),
   };

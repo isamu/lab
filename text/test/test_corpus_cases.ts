@@ -75,6 +75,7 @@ describe("openCaseOf", () => {
     assert.match(problemOf(openCaseOf(null, "q3", DOCUMENT)), /not a mapping/u);
     assert.match(problemOf(openCaseOf(parse("id: other\nfindings: []"), "q3", DOCUMENT)), /id is not "q3"/u);
     assert.match(problemOf(openCaseOf(parse("id: q3\nfindings: nope"), "q3", DOCUMENT)), /not a list/u);
+    assert.match(problemOf(openCaseOf(parse("id: q3\nfindings:"), "q3", DOCUMENT)), /not a list/u);
   });
 
   it("calls the whole file a problem when one entry is malformed, so its issue is not closed by mistake", () => {
@@ -86,6 +87,7 @@ describe("openCaseOf", () => {
       ["  - rule: r\n    line: 3\n    text: x\n    verdict: wrong", /unknown verdict/u],
       ["  - rule: r\n    line: 3\n    verdict: false-positive", /no text/u],
       ["  - rule: r\n    line: 3\n    text: x\n    verdict: missed", /no what/u],
+      ["  - rule: r\n    line: 3\n    text: x\n    verdict: false-positive\n    note: [a, list]", /note that is not text/u],
     ];
     cases.forEach(([finding, pattern]) => {
       const result = caseOf([FALSE_POSITIVE, finding].join("\n"));
@@ -147,6 +149,8 @@ describe("planIssues", () => {
     const plan = planIssues([q3], [issueFor(q3)]);
     assert.deepEqual(plan.actions, []);
     assert.deepEqual(plan.unchanged, ["q3"]);
+    const stored = planIssues([q3], [issueFor(q3, { body: `${bodyOf(q3).replaceAll("\n", "\r\n")}\r\n` })]);
+    assert.deepEqual(stored.unchanged, ["q3"]);
   });
 
   it("updates the issue when the entries change", () => {
@@ -197,6 +201,28 @@ describe("planIssues", () => {
   it("ignores issues with the label but no marker", () => {
     const plan = planIssues([], [{ number: 3, title: "chaff-corpus: talk", body: "free text", state: "OPEN" }]);
     assert.deepEqual(plan.actions, []);
+  });
+
+  it("reopens the most recent of several closed issues", () => {
+    const plan = planIssues([q3], [issueFor(q3, { number: 2, state: "CLOSED" }), issueFor(q3, { number: 9, state: "CLOSED" })]);
+    assert.deepEqual(plan.actions, [{ kind: "update", id: "q3", number: 9, title: titleOf(q3), body: bodyOf(q3), reopen: true }]);
+  });
+
+  it("closes a second open issue with the same marker and keeps the older one", () => {
+    const plan = planIssues([q3], [issueFor(q3, { number: 9 }), issueFor(q3, { number: 4 })]);
+    assert.deepEqual(plan.unchanged, ["q3"]);
+    assert.deepEqual(plan.actions, [{ kind: "close", id: "q3", number: 9, comment: "A duplicate of #4, which keeps this case." }]);
+  });
+
+  it("closes every open issue of a resolved case", () => {
+    const plan = planIssues([openCase(CORRECT)], [issueFor(q3, { number: 9 }), issueFor(q3, { number: 4 })]);
+    assert.deepEqual(
+      plan.actions.map((action) => [action.kind, action.kind === "create" ? 0 : action.number]),
+      [
+        ["close", 4],
+        ["close", 9],
+      ],
+    );
   });
 
   it("works on the open issue when a closed one has the same marker", () => {
