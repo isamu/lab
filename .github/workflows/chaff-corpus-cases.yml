@@ -1,0 +1,100 @@
+# isamu/chaff-corpus の未解決の case を lab の issue に写す。expected/<id>.yaml に false-positive か missed が残っている文書
+# 一つにつき issue 一つ（label corpus-case、本文の <!-- corpus-case: <id> --> で見つけ直す）。
+# 項目が変われば本文を直し、閉じた issue に項目が戻れば開き直し、項目がなくなれば一言添えて閉じる。
+# 何をするかは scripts/corpus-cases.ts（純粋な部分は scripts/corpus-cases-plan.ts）が決め、ここは gh で当てるだけ。
+# 手元では node scripts/corpus-cases.ts --corpus <checkout> で計画だけを見られる。
+name: chaff corpus cases
+
+on:
+  schedule:
+    - cron: "41 4 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Print the plan without touching any issue"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chaff-corpus-cases
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      LABEL: corpus-case
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: checkout isamu/chaff-corpus
+        uses: actions/checkout@v7
+        with:
+          repository: isamu/chaff-corpus
+          ref: main
+          path: corpus
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: yarn
+          cache-dependency-path: text/yarn.lock
+
+      - name: install
+        working-directory: text
+        run: yarn install --frozen-lockfile
+
+      - name: plan
+        shell: bash
+        run: |
+          set -euo pipefail
+          # label がまだ無ければ issue も無い。label を作るのは apply だけ（dry run では何も書かない）。
+          if gh label list --repo "$GITHUB_REPOSITORY" --limit 1000 --json name --jq '.[].name' | grep -qxF "$LABEL"; then
+            gh issue list --repo "$GITHUB_REPOSITORY" --label "$LABEL" --state all --limit 1000 --json number,title,body,state > issues.json
+          else
+            echo '[]' > issues.json
+          fi
+          node text/scripts/corpus-cases.ts --corpus corpus --issues issues.json --plan plan.json | tee plan.txt
+          { echo "# chaff corpus cases"; echo; echo '```'; cat plan.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: apply
+        if: ${{ !inputs.dry_run }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! gh label list --repo "$GITHUB_REPOSITORY" --limit 1000 --json name --jq '.[].name' | grep -qxF "$LABEL"; then
+            gh label create "$LABEL" --repo "$GITHUB_REPOSITORY" --color c5def5 --description "An open case from isamu/chaff-corpus (kept by chaff-corpus-cases.yml)"
+          fi
+          jq -c '.actions[]' plan.json | while IFS= read -r action; do
+            kind=$(jq -r '.kind' <<<"$action")
+            case "$kind" in
+              create)
+                jq -r '.body' <<<"$action" > body.md
+                gh issue create --repo "$GITHUB_REPOSITORY" --label "$LABEL" --title "$(jq -r '.title' <<<"$action")" --body-file body.md
+                ;;
+              update)
+                number=$(jq -r '.number' <<<"$action")
+                if [ "$(jq -r '.reopen' <<<"$action")" = "true" ]; then gh issue reopen "$number" --repo "$GITHUB_REPOSITORY"; fi
+                jq -r '.body' <<<"$action" > body.md
+                gh issue edit "$number" --repo "$GITHUB_REPOSITORY" --title "$(jq -r '.title' <<<"$action")" --body-file body.md
+                ;;
+              close)
+                gh issue close "$(jq -r '.number' <<<"$action")" --repo "$GITHUB_REPOSITORY" --comment "$(jq -r '.comment' <<<"$action")"
+                ;;
+              *)
+                echo "unknown action: $kind" >&2
+                exit 1
+                ;;
+            esac
+          done
