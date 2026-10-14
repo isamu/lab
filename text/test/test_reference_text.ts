@@ -75,6 +75,7 @@ describe("reference-title-mismatch", () => {
     assert.deepEqual(contract("乙が第2条（第三項を除く。）"), []);
     assert.deepEqual(contract("乙が第2条（第3条において準用する場合を含む。）"), []);
     assert.deepEqual(contract("乙が第2条（損害賠償）（第三項を除く。）"), ["第2条:損害賠償≠秘密保持"]);
+    assert.deepEqual(contract("乙が第2条「乙は秘密を守る。」"), []);
   });
 
   it("a number given to two articles points at neither", () => {

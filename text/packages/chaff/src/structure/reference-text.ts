@@ -70,7 +70,7 @@ export const holdsAside = (name: string, aside: string): boolean => {
   return aside.trim() !== "" && words.includes(` ${aside.trim().toLowerCase()} `);
 };
 
-/** 句点で終わる括弧は名前でなく範囲の断り（…において準用する場合を含む。）。見出しは句点で終わらない。 */
+/** 句点で終わる括弧や引用符の中は名前でなく文（範囲の断り「…を除く。」、引いた条文）。見出しは句点で終わらない。 */
 const SENTENCE_STOP = /[。．]$/u;
 
 export const endsAsSentence = (name: string): boolean => SENTENCE_STOP.test(name);
