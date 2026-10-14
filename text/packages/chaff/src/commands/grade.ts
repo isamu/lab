@@ -15,7 +15,7 @@ import type { GradeResult } from "../grade/result.ts";
 import { gradeSetup } from "../grade/setup.ts";
 import { parseRubric, type Rubric } from "../grade/rubric.ts";
 import { parseRubricFile, type RubricFileProblem } from "../grade/rubric-file.ts";
-import { rubricRuleEntries, rubricRuleIds, taskNamesOf } from "../grade/task-rubric.ts";
+import { rubricRuleEntries, taskNamesOf, taskRuleIds } from "../grade/task-rubric.ts";
 import { rulesOf } from "../custom/load.ts";
 import { summaryOf } from "../grade/summary.ts";
 import { GRADE_TEXT, type GradeText } from "../grade/text.ts";
@@ -221,7 +221,7 @@ export const runGrade = async (argv: readonly string[], context: GradeContext): 
   warnUnknownRules(rubric, context.config, host);
   const results = await gradeInOrder(items, setup);
   writeResults(context.flag(argv, "--out"), results, host);
-  const rubricRules = rubricRuleIds(setup.rubric);
+  const rubricRules = (result: GradeResult): ReadonlySet<string> => taskRuleIds(setup.rubric, result.task);
   const compared = baseline.kind === "compare" ? { path: baseline.path, comparison: compareRuns(baseline.before, results, rubricRules) } : undefined;
   const ui = sharedLanguage(
     results.map((result) => result.language),

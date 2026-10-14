@@ -4,7 +4,7 @@ import { parseItems, type ItemVocabulary } from "../packages/chaff/src/grade/ite
 import { parseRubric, type Rubric } from "../packages/chaff/src/grade/rubric.ts";
 import { parseRubricFile } from "../packages/chaff/src/grade/rubric-file.ts";
 import type { GradeResult } from "../packages/chaff/src/grade/result.ts";
-import { rubricForTask, rubricRuleEntries, rubricRuleIds, taskNamesOf } from "../packages/chaff/src/grade/task-rubric.ts";
+import { rubricForTask, rubricRuleEntries, taskNamesOf, taskRuleIds } from "../packages/chaff/src/grade/task-rubric.ts";
 import { runCli } from "./cli-run.ts";
 import { jsonl, resultsIn } from "./grade-run.ts";
 
@@ -126,8 +126,13 @@ describe("the rubric for a task", () => {
       { path: "tasks.lenient.rules", id: "total-mismatch" },
       { path: "tasks.lenient.rules", id: "kanji-ratio" },
     ]);
-    assert.deepEqual([...rubricRuleIds(rubric)], ["total-mismatch", "ai-tell", "kanji-ratio"]);
-    assert.deepEqual([...rubricRuleIds(undefined)], []);
+  });
+
+  it("gives the rule ids each task's outputs are graded by", () => {
+    assert.deepEqual([...taskRuleIds(rubric, "lenient")], ["total-mismatch", "ai-tell", "kanji-ratio"]);
+    assert.deepEqual([...taskRuleIds(rubric, "facts")], ["total-mismatch", "ai-tell"]);
+    assert.deepEqual([...taskRuleIds(rubric, undefined)], ["total-mismatch", "ai-tell"]);
+    assert.deepEqual([...taskRuleIds(undefined, undefined)], []);
   });
 });
 

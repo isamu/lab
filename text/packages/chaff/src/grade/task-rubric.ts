@@ -14,9 +14,6 @@ export const rubricRuleEntries = (rubric: Rubric | undefined): readonly { readon
   ...Object.entries(rubric?.tasks ?? {}).flatMap(([name, task]) => Object.keys(task.rules).map((id) => ({ path: `tasks.${name}.rules`, id }))),
 ];
 
-/** Every rule id the rubric names, at the top level or in any task: the rules whose rise is a regression. */
-export const rubricRuleIds = (rubric: Rubric | undefined): ReadonlySet<string> => new Set(rubricRuleEntries(rubric).map((entry) => entry.id));
-
 const overlay = (top: Rubric, task: Rubric): Rubric => ({
   rules: { ...top.rules, ...task.rules },
   requiredSections: task.requiredSections ?? top.requiredSections,
@@ -36,3 +33,7 @@ export const rubricForTask = (rubric: Rubric | undefined, task: string | undefin
   if (rubric === undefined || own === undefined) throw new Error(`chaff grade: no rubric for task "${task}"`);
   return overlay(rubric, own);
 };
+
+/** The rule ids an output of `task` is graded by: whose rise in that output is a regression against a baseline. */
+export const taskRuleIds = (rubric: Rubric | undefined, task: string | undefined): ReadonlySet<string> =>
+  new Set(Object.keys(rubricForTask(rubric, task)?.rules ?? {}));

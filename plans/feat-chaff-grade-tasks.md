@@ -20,7 +20,8 @@ issue: #1167（3 番目の項目）
   文字の要約は変えない。
 - **stamp。** 基準は（tasks ごと）既に stamp に入っている（chaff.yaml の `grade:` そのもの、またはファイルの hash）。
   task の基準だけを変えても settings の hash が変わることをテストで確かめる。
-- **`--baseline` の「基準にある規則」** は最上位と全 task の規則 id を合わせたもの。知らない規則 id の警告は
+- **`--baseline` の「基準にある規則」** は出力ごとに決める: その出力の task の基準（重ねた後）が名指す規則が
+  増えたときだけ後退とする。別の task だけが名指す規則が増えても後退にしない。知らない規則 id の警告は
   `grade.tasks.<名前>.rules.<id>` と書かれた場所を出す。
 - 重ね方は純粋な `grade/task-rubric.ts`。読むのは `grade/rubric.ts`、項目の `task` は `grade/item.ts`。
 
