@@ -34,7 +34,12 @@ placeholders:
 
 levels: { strict: warning, normal: info, relaxed: info }
 
-use_for: [legal]
+use_for: [legal, docs, academic, literature, speech]
+off_for:
+  docs: "The 時 / とき split is a convention of legal drafting: outside it, 時は for a condition is not a slip."
+  academic: "The 時 / とき split is a convention of legal drafting: outside it, 時は for a condition is not a slip."
+  literature: "The 時 / とき split is a convention of legal drafting: outside it, 時は for a condition is not a slip."
+  speech: "The 時 / とき split is a convention of legal drafting: outside it, 時は for a condition is not a slip."
 
 group: wording
 summary:
