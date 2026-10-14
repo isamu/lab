@@ -650,3 +650,39 @@ describe("reference-number-variant: the one model a product document is about", 
     );
   });
 });
+
+describe("reference-number-variant: an incident report's own number", () => {
+  const incidentJa = (...lines: string[]): string => ["# 障害報告書", "", ...lines, ""].join("\n");
+  const incidentEn = (...lines: string[]): string => ["# Incident report", "", ...lines, ""].join("\n");
+
+  it("ja: インシデント番号・障害番号・管理番号の、隣り合う文字が入れ違った番号を指す", () => {
+    assert.deepEqual(found(incidentJa("インシデント番号：INC-20461", "", "インシデント番号INC-20416についてのお問い合わせ"), ja), [5]);
+    assert.deepEqual(found(incidentJa("障害番号：F-30912", "", "障害番号はF-30921です。"), ja), [5]);
+    assert.deepEqual(found(incidentJa("インシデントID：INC-20461", "", "インシデント番号 INC-20416"), ja), [5]);
+    assert.deepEqual(found(incidentJa("管理番号：PM-7318", "", "管理番号PM-7381を添えてお問い合わせください。"), ja), [5]);
+  });
+
+  it("ja: インシデント番号と管理番号は比べず、同じ番号や語の無い番号どうしは指さない", () => {
+    assert.deepEqual(found(incidentJa("インシデント番号：INC-20461", "", "管理番号：INC-20416"), ja), []);
+    assert.deepEqual(found(incidentJa("インシデント番号：INC-20461", "", "インシデント番号INC-20461について"), ja), []);
+    assert.deepEqual(found(incidentJa("障害 INC-20461", "", "障害 INC-20416"), ja), []);
+  });
+
+  it("en: an incident, postmortem or ticket number written once with two neighbours swapped", () => {
+    assert.deepEqual(found(incidentEn("Incident number: INC-58203", "", "Incident no. INC-58230 is closed."), en), [5]);
+    assert.deepEqual(found(incidentEn("Postmortem ID: PM-4672", "", "Postmortem ID: PM-4762"), en), [5]);
+    assert.deepEqual(found(incidentEn("Ticket number: SR-60318", "", "Ticket SR-60381 is open."), en), [5]);
+  });
+
+  it("en: a code with no label (incident INC-58230, quote PM-4762) is compared with the one labelled code it swaps to", () => {
+    assert.deepEqual(found(incidentEn("Incident number: INC-58203", "", "For questions about incident INC-58230, please contact us."), en), [5]);
+    assert.deepEqual(found(incidentEn("Postmortem ID: PM-4672", "", "Please quote PM-4762 to the Systems Group."), en), [5]);
+  });
+
+  it("en: not numbers of different kinds, a bare incident, nor the same number twice", () => {
+    assert.deepEqual(found(incidentEn("Incident number: INC-58203", "", "Ticket number: INC-58230"), en), []);
+    assert.deepEqual(found(incidentEn("Postmortem ID: PM-4672", "", "Incident ID: PM-4762"), en), []);
+    assert.deepEqual(found(incidentEn("The incident INC-58203 began at noon.", "", "The incident INC-58230 ended at one."), en), []);
+    assert.deepEqual(found(incidentEn("Incident number: INC-58203", "", "Incident number: INC-58203"), en), []);
+  });
+});
