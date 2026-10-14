@@ -2,6 +2,7 @@ id: repeated-sentence-ending
 layer: L3
 status: stable
 how_to_find: ending-run
+word_list: parallel-definition
 requires: [pos]
 languages: [ja]
 severity: info
@@ -40,8 +41,8 @@ example:
       この機能は必要で、設定も簡単です。費用はかかりません。
 
 not_flagged:
-  ja: 段落をまたいだ文は続きと見ません。助動詞で終わらない文（体言止め、言い切りの動詞）は比べず、そこで続きが切れます。動詞が違えば（読みました、書きました）同じ文末とは見ません。
-  en: Sentences in different paragraphs are not a run. A sentence that does not end with an auxiliary (a noun, a bare verb) is not compared and breaks the run. Different verbs (読みました, 書きました) are different endings.
+  ja: 段落をまたいだ文は続きと見ません。助動詞で終わらない文（体言止め、言い切りの動詞）は比べず、そこで続きが切れます。動詞が違えば（読みました、書きました）同じ文末とは見ません。違う語を同じ型で定義する文の並び（台風は〜を指します。ハリケーンは〜を指します。）は、型をそろえたものなので指しません。
+  en: Sentences in different paragraphs are not a run. A sentence that does not end with an auxiliary (a noun, a bare verb) is not compared and breaks the run. Different verbs (読みました, 書きました) are different endings. Sentences that each define a different term in the same frame (台風は〜を指します。ハリケーンは〜を指します。) share their ending on purpose and are not reported.
 level_meaning:
   ja: 同じ文末の文が {limit} 文続くまで
   en: up to {limit} sentences in a row with the same ending
