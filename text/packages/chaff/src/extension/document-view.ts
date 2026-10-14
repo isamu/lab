@@ -1,5 +1,6 @@
 import type * as Api from "../api.ts";
 import type { BulletList, Lexicon, Markup, Paragraph, ProseDocument, Section, Sentence, Span, Token } from "../plugin.ts";
+import { entriesForGenre } from "../lexicon-genres.ts";
 
 // The document as the plugin API shows it (api.ts RuleDocument): copies of only the public fields, frozen. A copy, so
 // chaff's own shapes can change without breaking a plugin; frozen, so a plugin's rule cannot change what the next rule reads.
@@ -73,7 +74,7 @@ const markupOf = (markup: Markup): Api.Markup => ({
 
 const EMPTY_MARKUP: Markup = { markdown: false, headings: [], images: [], links: [], ids: new Set(), texts: [] };
 
-const viewOf = (doc: ProseDocument): Api.RuleDocument => {
+const viewOf = (doc: ProseDocument, genre: string | undefined): Api.RuleDocument => {
   const copy = sentenceCopier();
   const fields = deepFreeze({
     path: doc.path,
@@ -86,7 +87,7 @@ const viewOf = (doc: ProseDocument): Api.RuleDocument => {
     lists: doc.lists.map(listOf),
     listItems: doc.listSpans.map(spanOf),
     links: doc.links.map(spanOf),
-    lexicons: Object.fromEntries(Object.entries(doc.lexicons).map(([name, lexicon]) => [name, lexiconOf(lexicon)])),
+    lexicons: Object.fromEntries(Object.entries(doc.lexicons).map(([name, lexicon]) => [name, lexiconOf(entriesForGenre(lexicon, genre))])),
   });
   // The markup is read from the Markdown tree only when a rule asks for it, as chaff's own rules do.
   const markup: { value: Api.Markup | undefined } = { value: undefined };
@@ -102,13 +103,16 @@ const viewOf = (doc: ProseDocument): Api.RuleDocument => {
 /** A word list as a detector is given it (DetectorOptions.lexicon): public fields only, frozen. */
 export const frozenLexiconOf = (lexicon: Lexicon): Api.Lexicon => deepFreeze(lexiconOf(lexicon));
 
-const views = new WeakMap<ProseDocument, Api.RuleDocument>();
+// By genre too: the run, not the document, carries the genre, so one document may be run under several.
+const views = new WeakMap<ProseDocument, Map<string | undefined, Api.RuleDocument>>();
 
-/** The document as a plugin's detector sees it. Made once per document, however many plugin rules read it. */
-export const ruleDocumentOf = (doc: ProseDocument): Api.RuleDocument => {
-  const known = views.get(doc);
+/** The document as a plugin's detector sees it in a genre, its word lists holding that genre's entries. Made once per document and genre. */
+export const ruleDocumentOf = (doc: ProseDocument, genre: string | undefined): Api.RuleDocument => {
+  const byGenre = views.get(doc) ?? new Map<string | undefined, Api.RuleDocument>();
+  views.set(doc, byGenre);
+  const known = byGenre.get(genre);
   if (known !== undefined) return known;
-  const view = viewOf(doc);
-  views.set(doc, view);
+  const view = viewOf(doc, genre);
+  byGenre.set(genre, view);
   return view;
 };
