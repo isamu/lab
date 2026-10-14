@@ -33,7 +33,6 @@ jstage-jniph-74-1-2-rehabilitation  2
 jstage-jniph-74-2-119-wbgt  1
 kantei-221-shisei-hoshin  7
 kantei-unga81-general-debate-speech  1
-kimino-mayor-2022-09  1
 kokkai-217-sangiin-shohisha-7  22
 maff-kyodo-ryori-okaisan-ja  1
 mdn-using-fetch-ja  1
