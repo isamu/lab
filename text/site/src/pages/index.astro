@@ -1,11 +1,14 @@
 ---
 import { href } from "../lib/i18n";
+
+// Search Console fetches /lab/ to verify ownership, and this page does not use Base.astro, so the verification meta is repeated here.
 ---
 
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta name="google-site-verification" content="8MAfhFhSHnIJqDtwfiEIIs4pkIkk0EMHgN_3p0zVMrg" />
     <meta http-equiv="refresh" content={`0; url=${href("ja")}`} />
     <title>chaff</title>
   </head>
