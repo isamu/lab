@@ -4,7 +4,7 @@ chaff は、model の出力の採点役として、model による採点の横�
 同じ出力にはいつも同じ結果を返し、一つ一つの指摘が行とルールを指し、どこにも何も送りません。
 意味は読みません。答えが正しいかどうかは、これまでどおり model の採点か人が決めます。
 このページでは、そのやり方を手順と実際の出力で示します。
-扱うのは順に、出力をまとめた採点、基準の書き方、2 つの回の比べ方、関数からの呼び出し、評価基盤へのつなぎ方です。
+扱うのは順に、出力をまとめた採点、基準の書き方、2 つの回の比べ方、ベンチマークの採点、関数からの呼び出し、評価基盤へのつなぎ方です。
 
 ## 出力の何を確かめられるか
 
@@ -15,6 +15,7 @@ chaff は、model の出力の採点役として、model による採点の横�
 | 回答が自分と矛盾していないか | `npx chaffjs <出力>` | 合計が内訳の和と合わない、日付と曜日が合わない |
 | 生成文らしい形や、読みにくさ | `npx chaffjs <出力> --sarif <path>` | `error` の指摘だけ。ほかは数として数えます |
 | 上のすべてを、たくさんの出力に | `npx chaffjs grade <items.jsonl> --out <results.jsonl>` | 落ちた出力がある（入力が読めなければ 2） |
+| 抜き出しや計算の答えが、決まった正解と合うか | `npx chaffjs grade <items.jsonl>`（行に `expect` を書く） | 正解の事実が無いか、あってはならない事実がある |
 | 作り直しの段で何を直させるか | `npx chaffjs fix-plan <出力> --json` | なりません。直す指示を出すだけです |
 
 たくさんの出力には、下の `chaff grade` を使います。ふつうの検査には `--json` が無いので、指摘は SARIF で読みます（「指摘を SARIF で受け取る」）。
@@ -355,6 +356,118 @@ grade:
 ```
 
 `grade()` にも `contexts` で一節を渡せます: `await grade(answer, { contexts: passages })`。
+
+## LLM のベンチマークを採点する（`--rubric`、`expect`、`tasks`）
+
+ベンチマークは、要約・抜き出し・資料に拠った回答など、種類の違う問いを混ぜます。
+chaff は、AI による採点の横で、機械で決まる部分を毎回同じに採点します。
+採点の基準はデータと一緒に持ち運べるよう、別のファイルに書きます。
+抜き出しや計算のように正解の決まった問いには、行ごとに正解の事実を書きます。
+
+**採点の基準を書きます。** 形は `chaff.yaml` の `grade:` の中身と同じです。
+`tasks:` の下に、問いの種類ごとの基準を書きます。
+
+```yaml file=rubric.yaml
+rules:
+  total-mismatch: { max: 0 } # どの問いでも、合計と内訳が合わなければ落とす
+facts: { dropped: 0, added: 0 }
+tasks:
+  summary:
+    facts: { added: 0 } # 要約は事実を省いてよい。足してはいけない
+  extraction: # 最上位のまま。正解は行ごとの expect で確かめる
+  grounded:
+    citations: { failed: 0, required: true }
+```
+
+- 種類の基準が書いたキーは、最上位のそのキーを丸ごと置き換えます。`summary` の `facts` には `dropped` が無いので、省いた事実では落ちません。
+- 書かなかったキーは最上位を継ぎます。`rules` だけはルールごとに重ね、種類の基準が書いたルールだけを置き換えます。
+- 何も書かない種類（`extraction:`）は、最上位の基準そのままです。
+- JSON でも書けます。拡張子を `.json` にし、同じ形で書きます。
+
+**問いを並べます。** 行の `task` に種類の名前を書きます。`task` の無い行は、最上位の基準で採点します。
+正解の決まった問いには `expect` を書きます。`facts` は出力にあるべき事実、`absent` はあってはならない事実です。
+
+```json file=bench.jsonl
+{"id": "要約-1", "task": "summary", "output": "4 月 8 日の定例会議には 12 人が参加しました。", "reference": "# 定例会議の記録\n\n4 月の定例会議は 4 月 8 日に開き、12 人が参加しました。次の会議は 5 月 13 日です。"}
+{"id": "要約-2", "task": "summary", "output": "4 月 8 日の定例会議には 15 人が参加しました。", "reference": "# 定例会議の記録\n\n4 月の定例会議は 4 月 8 日に開き、12 人が参加しました。次の会議は 5 月 13 日です。"}
+{"id": "抜き出し-1", "task": "extraction", "output": "請求額は 12000円、支払いの期限は 2026-03-31 です。", "expect": {"facts": ["12,000円", "2026年3月31日"]}}
+{"id": "抜き出し-2", "task": "extraction", "output": "請求額は 15,000円、支払いの期限は 2026年3月31日です。", "expect": {"facts": ["12,000円", "2026年3月31日"], "absent": ["15,000円"]}}
+{"id": "返金", "task": "grounded", "output": "商品が届いてから 14 日以内なら返金を求められます。送料は戻りません。", "sources": {"policy": "# 返金の決まり\n\n第1条（期限）\n商品が届いた日から 14 日以内なら、返金を求められる。\n送料は返金しない。\n"}, "citations": [{"address": "1.1", "quote": "商品が届いた日から 14 日以内"}, {"address": "1.2", "quote": "送料も返金する。"}]}
+```
+
+**基準のファイルを渡して採点します。** `--rubric` を渡した回は、`chaff.yaml` の `grade:` を使いません。
+
+```
+$ npx chaffjs grade bench.jsonl --rubric rubric.yaml
+bench.jsonl: 5 件の出力、2 件が通り、3 件が落ちた
+
+落ちた出力
+  ✗ 要約-2: facts.added 1 > 0
+  ✗ 抜き出し-2: expect.missing 12,000円, expect.present 15,000円
+  ✗ 返金: citations.failed 1 > 0
+
+事実: 落ちた 9（heading 2, number 7）、足された 1（number 1）
+引用: 2 件を照らし、1 件が外れた
+減点の和: 0
+AI らしさ: 低 0、中 0、高 0、測っていない 5（書いたのが AI かどうかの判定ではありません。合否には入りません）
+…
+```
+
+```
+$ npx chaffjs grade bench.jsonl --rubric rubric.yaml --compact
+要約-1	pass	penalty 0
+要約-2	fail	penalty 0	facts.added 1 > 0
+抜き出し-1	pass	penalty 0
+抜き出し-2	fail	penalty 0	expect.missing 12,000円, expect.present 15,000円
+返金	fail	penalty 0	citations.failed 1 > 0
+bench.jsonl: 5 件の出力、2 件が通り、3 件が落ちた
+```
+
+読み方:
+- `要約-1` は見出しと次の会議の日を省きましたが、`summary` の基準は省いた事実に上限を置かないので通ります。省いた事実は「事実:」の行に数えます。
+- `要約-2` は元に無い「15 人」を足したので落ちます。
+- `抜き出し-1` は `12000円` と `2026-03-31` で答えています。正解の `12,000円` と `2026年3月31日` と同じ事実なので通ります。
+- `抜き出し-2` は正解の金額が無く（`expect.missing`）、あってはならない金額がある（`expect.present`）ので落ちます。
+- `返金` は 2 つめの引用が原文にありません。`grounded` の基準の `citations` で落ちます。
+
+`--out` の結果の行には、`task` と、`expect` で照らした数、無かった事実、あった事実が入ります。
+
+```json
+"task":"extraction",…,"expect":{"checked":3,"missing":["12,000円"],"present":["15,000円"]}
+```
+
+再現の印（`stamp`）に入る設定のハッシュは、基準のファイルの中身も含めて作ります。基準の違う回どうしは、`--baseline` が比べずに止まります。
+
+**同じ事実と読む書き方。** `expect` の事実は `compare` と同じに読みます。
+`12,000円` と `12000円` と `１２,０００円`、`2026年3月31日` と `2026-03-31` は同じ事実です。
+`¥12,000` と `1万2000円` は、`12,000円` とは別の事実と読みます。
+正しい答えでも、言い換えると合いません。「期限は年度末です」は `expect.missing 2026年3月31日` で落ち、落ちた出力に並びます。
+これは意味を読まないと決まらないので、並んだ出力を AI による採点か人に回します。
+
+**採点が始まらない入力。** 次の入力は、出力の誤りではなく問いの誤りです。行と欄を示し、終了コード 2 で止まります。
+
+基準の `tasks` に無い種類の名前です。黙って最上位の基準で採点すると、その行の基準が知らないうちに変わるので止めます。
+
+```json file=bad-task.jsonl
+{"id": "翻訳-1", "task": "translation", "output": "The meeting was held on April 8."}
+```
+
+```
+$ npx chaffjs grade bad-task.jsonl --rubric rubric.yaml
+bad-task.jsonl: 1 行目: task "translation" は採点基準の tasks にありません
+```
+
+ちょうど 1 つの事実でない `expect` の項目です。`1万2000円` は 2 つの事実に読まれ、どちらを確かめるのか決まりません。
+事実が 1 つも無い項目も同じに止まります。確かめるものの無い項目が、何も見ずに通らないためです。
+
+```json file=bad-expect.jsonl
+{"id": "抜き出し-3", "task": "extraction", "output": "請求額は 1万2000円です。", "expect": {"facts": ["1万2000円"]}}
+```
+
+```
+$ npx chaffjs grade bad-expect.jsonl --rubric rubric.yaml
+bad-expect.jsonl: 1 行目: expect.facts[0] 1万2000円 は事実を 2 つ以上含みます（compare が 1 つの事実と読む書き方で、1 項目に 1 つ書いてください）
+```
 
 ## 例
 
