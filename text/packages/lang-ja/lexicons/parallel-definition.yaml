@@ -1,0 +1,25 @@
+# 並べた定義（台風は〜を指します。ハリケーンは〜を指します。）。repeated-sentence-ending が読む。
+# frame: 定義の文の述語。述語の前の助詞と、述語の原形をつないで照らす（を＋指す、と＋いう、の＋こと）。
+# 「とする」は決めごと（期限は3月末とします）にも使うので入れない。
+# topic: 定義される語を閉じる助詞。これより前が、その文が定義する語。無ければ、述語の前の助詞の直前の語（〜を台風といいます）。
+id: parallel-definition
+language: ja
+entries:
+  - pattern: をいう
+    group: frame
+  - pattern: を言う
+    group: frame
+  - pattern: を指す
+    group: frame
+  - pattern: を意味する
+    group: frame
+  - pattern: という
+    group: frame
+  - pattern: と言う
+    group: frame
+  - pattern: と呼ぶ
+    group: frame
+  - pattern: のこと
+    group: frame
+  - pattern: は
+    group: topic
