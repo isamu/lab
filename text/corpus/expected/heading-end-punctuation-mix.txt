@@ -3,5 +3,4 @@ aoml-hurricane-faq  2
 automattic-offer-letter-us  1
 cc-by-4-legalcode-ja  2
 dailymed-advil-otc-label  2
-fr-2026-16371-nvd-rfi  1
 mhlw-norovirus-qa  1

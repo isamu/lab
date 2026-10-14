@@ -20,6 +20,9 @@ describe("seriesLabelSpans", () => {
     ["公募の番号", "under NSF 19-582 grants", ["NSF 19-582"]],
     ["文の終わり", "under NSF 19-582.", ["NSF 19-582"]],
     ["日本語の文の中", "NIST SP 800-61に従う", ["SP 800-61"]],
+    ["英字の頭を持つ区切り", "- XRIN 0693-XC139", ["XRIN 0693-XC139"]],
+    ["点で終わる略しを挟む", "[FR Doc. 2026-16371 Filed 8-11-26; 8:45 am]", ["FR Doc. 2026-16371"]],
+    ["年で始まる長い通し番号", "under EO 2026-16371 rules", ["EO 2026-16371"]],
   ].forEach(([form, text, labels]) => {
     it(`valid: ${String(form)}`, () => assert.deepEqual(labelsIn(String(text)), labels));
   });
@@ -28,6 +31,11 @@ describe("seriesLabelSpans", () => {
     ["区切りの無い番号", "the RFC 9110 text and the EO 14028 order"],
     ["版の番号（. で区切る）", "the SDK 3.1 release"],
     ["年の範囲", "the FY 2024-25 budget and the NFL 1999-2000 season"],
+    ["略しを挟んだ年の範囲", "the FY No. 2024-25 budget"],
+    ["英字だけの区切り", "the RIN 0693-XC text"],
+    ["略しが 2 語", "the FR Doc. No. 2026-16371 text"],
+    ["略しでない長い語", "the API Report. 2026-16371 text"],
+    ["英字の頭が長い区切りや短い番号", "the HTTP 404-HTML5 page and the ABC 1-NotFound123 id"],
     ["範囲や得点（短い）", "the SRE 1-2 handoff, the NFL 3-1 win and UK 5-10 days and NSF 19-1"],
     ["2 桁ずつの番号（日付や範囲と見分けられない）", "the SRE 01-02 handoff and BOD 25-01"],
     ["同じ桁数で小さいほうからの範囲", "the SLO 100-200 ms tier and the SLA 500-599 errors"],
@@ -59,6 +67,11 @@ describe("undefined-acronym と文書番号", () => {
 
   it("en: 範囲の前の SRE は数える", () => {
     assert.deepEqual(reportedAcronyms(en, "# Notes\n\nThe SRE 1-2 handoff failed.\n"), ["SRE"]);
+  });
+
+  it("en: 識別子の札（XRIN 0693-XC139、FR Doc. 2026-16371）は数えず、本文の略語は数える", () => {
+    const source = "# Notice\n\n- XRIN 0693-XC139\n\nThe NVD is open.\n\n[FR Doc. 2026-16371 Filed 8-11-26; 8:45 am]\n";
+    assert.deepEqual(reportedAcronyms(en, source), ["NVD"]);
   });
 
   it("en: 年の範囲の前の FY は数える", () => {

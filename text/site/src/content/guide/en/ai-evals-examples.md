@@ -159,8 +159,6 @@ prompt-b.md   blog/tech · English   genre from the default
                   padded-intro
   3:1     warning "ai-tell, padded-intro, closing-cliche" occur together in this document (3 signals, 3 needed)
                   ai-generated-composite
-  6:3     info    "wasn't" is written differently from the rest of the document
-                  contraction-consistency
   12:1    warning Closes with "in conclusion"
                   closing-cliche
   12:70   warning Closes with "hope this helps"

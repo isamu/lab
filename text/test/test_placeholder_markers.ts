@@ -4,6 +4,7 @@ import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { placeholderSpans } from "../packages/chaff/src/detectors/placeholder-text.ts";
+import { TEMPLATE, namesTemplate, templateSections } from "../packages/chaff/src/detectors/template-sections.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter, Level } from "../packages/chaff/src/plugin.ts";
@@ -170,5 +171,100 @@ describe("unfilled-placeholder on a document", () => {
 
   it("does not run at off", () => {
     assert.deepEqual(findings("# Notes\n\nTBD\n", en, "t.md", "off"), []);
+  });
+});
+
+describe("namesTemplate: a heading that says the section is a template", () => {
+  const enTemplate = enWords.filter((word) => word.group === TEMPLATE);
+  const jaTemplate = jaWords.filter((word) => word.group === TEMPLATE);
+  const named: readonly (readonly [string, typeof enWords])[] = [
+    ["Template", enTemplate],
+    ["Download this template", enTemplate],
+    ["Letter templates", enTemplate],
+    ["Sample letter: notice of a hearing", enTemplate],
+    ["退職届の雛形", jaTemplate],
+    ["見積書のテンプレート", jaTemplate],
+    ["申請書の記入例", jaTemplate],
+  ];
+  named.forEach(([heading, words]) => {
+    it(`reads "${heading}" as a template`, () => {
+      assert.equal(namesTemplate(heading, words), true);
+    });
+  });
+  const unnamed: readonly (readonly [string, typeof enWords])[] = [
+    ["Templated reports", enTemplate],
+    ["Model risk", enTemplate],
+    ["Notice of a hearing", enTemplate],
+    ["", enTemplate],
+    ["Template", []],
+    ["見積もりのご案内", jaTemplate],
+  ];
+  unnamed.forEach(([heading, words]) => {
+    it(`does not read "${heading}" as a template`, () => {
+      assert.equal(namesTemplate(heading, words), false);
+    });
+  });
+});
+
+describe("templateSections: where a template heading reaches", () => {
+  const words = enWords.filter((word) => word.group === TEMPLATE);
+  const heading = (depth: number, text: string, start: number) => ({ depth, text, start, end: start + text.length });
+  it("runs to the next heading at its depth or above, past deeper ones", () => {
+    const headings = [heading(1, "Guide", 0), heading(2, "Template", 10), heading(3, "Body", 30), heading(2, "Reply", 50)];
+    assert.deepEqual(templateSections(headings, 80, words), [{ start: 10, end: 50 }]);
+  });
+  it("covers the whole document under a template title", () => {
+    assert.deepEqual(templateSections([heading(1, "Sample letter", 0), heading(2, "Body", 20)], 60, words), [{ start: 0, end: 60 }]);
+  });
+  it("finds nothing without headings or without template words", () => {
+    assert.deepEqual(templateSections([], 60, words), []);
+    assert.deepEqual(templateSections([heading(1, "Template", 0)], 60, []), []);
+  });
+});
+
+describe("unfilled-placeholder in a template", () => {
+  it("leaves the blanks under a Template heading alone", () => {
+    const source = [
+      "# Notice of a meeting",
+      "",
+      "A letter to invite a worker to a meeting. Copy it into an email.",
+      "",
+      "## Template",
+      "",
+      "Dear [name of worker]",
+      "",
+      "Please come to a meeting on [date] in [location].",
+      "",
+      "### Signature",
+      "",
+      "[name of manager]",
+      "",
+    ].join("\n");
+    assert.deepEqual(findings(source, en), []);
+  });
+
+  it("still reports a blank outside the template section", () => {
+    const source = ["# Guide", "", "## Template", "", "Dear [Your Name],", "", "## Our reply", "", "We will call on [Insert Date].", ""].join("\n");
+    assert.deepEqual(
+      findings(source, en).map((finding) => finding.line),
+      [9],
+    );
+  });
+
+  it("still reports a blank written before a template title", () => {
+    assert.deepEqual(
+      findings("Sent by [Your Name].\n\n# Sample letter\n\nDear [name of worker]\n", en).map((finding) => finding.line),
+      [1],
+    );
+  });
+
+  it("still reports a forgotten blank in a letter whose headings name no template", () => {
+    const source = "# Templated reports\n\nDear [Your Name],\n\nThe report is attached.\n";
+    assert.equal(findings(source, en).length, 1);
+  });
+
+  it("leaves the blanks of a document titled 雛形 alone, and reports one in a real letter", () => {
+    assert.deepEqual(findings("# 退職届の雛形\n\n【氏名】の退職届です。\n", ja), []);
+    assert.equal(findings("# 見積もりのご案内\n\n【会社名】の田中です。\n", ja).length, 1);
   });
 });

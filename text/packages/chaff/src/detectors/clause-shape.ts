@@ -1,5 +1,6 @@
 import type { Detector, DetectorOptions, Finding, Lexicon, ProseDocument, Sentence, Token } from "../plugin.ts";
 import { isWithinAny, quotedIn } from "../quoted-span.ts";
+import { definitionWordsOf, isParallelDefinition } from "./parallel-definition.ts";
 
 // The shape of a clause read from its words: how it ends, a paired word left alone, an adverb that needs a
 // negation, a particle used where another one belongs. Every word comes from a lexicon; this file knows parts of speech.
@@ -74,13 +75,22 @@ const runFinding = (run: readonly Ended[], limit: number): Finding => {
   };
 };
 
-/** More than limit sentences in a row within one paragraph that end with the same words. */
-export const endingRun: Detector = (doc, options): Finding[] =>
-  doc.paragraphs.flatMap((paragraph) =>
+/** More than limit sentences in a row within one paragraph that end with the same words, unless they define different terms in one frame. */
+export const endingRun: Detector = (doc, options): Finding[] => {
+  const words = definitionWordsOf(options.lexicon);
+  return doc.paragraphs.flatMap((paragraph) =>
     endingRuns(paragraph.sentences)
-      .filter((run) => run.length > options.limit)
+      .filter(
+        (run) =>
+          run.length > options.limit &&
+          !isParallelDefinition(
+            run.map(({ sentence }) => sentence),
+            words,
+          ),
+      )
       .map((run) => runFinding(run, options.limit)),
   );
+};
 
 // --- unpaired-parallel: a word that lists by pairs (〜たり) used once, followed by another clause -----------------
 

@@ -38,3 +38,17 @@ entries:
   # group: instruction — 丸括弧の中の、書き手に向けた指示の書き出し（（ここに会社名を書く））。丸括弧は、ほかの語では空欄と数えない。
   - pattern: ここに
     group: instruction
+  # group: template — 見出しにあれば、その節が雛形だと言う語（「## 雛形」「# 記入例」）。
+  # その見出しの下（同じ深さか浅い次の見出しまで）の空欄は雛形の役目なので数えない。
+  - pattern: 雛形
+    group: template
+  - pattern: ひな形
+    group: template
+  - pattern: ひながた
+    group: template
+  - pattern: テンプレート
+    group: template
+  - pattern: 記入例
+    group: template
+  - pattern: 文例
+    group: template
