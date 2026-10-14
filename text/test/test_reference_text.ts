@@ -5,7 +5,7 @@ import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { endsAsSentence, holdsAside } from "../packages/chaff/src/structure/reference-text.ts";
+import { endsAsSentence, endsList, holdsAside } from "../packages/chaff/src/structure/reference-text.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
 // 参照に添えた名前と参照先の見出し（reference-title-mismatch）、参照に添えた話題と参照先の中身（reference-topic-missing）。
@@ -114,6 +114,21 @@ describe("reference-title-mismatch", () => {
     assert.deepEqual(titleEn("As in Section 2 (b) and Section 3(ii), fees apply."), []);
   });
 
+  it("a name after a list or range of references names the group, not the last one", () => {
+    assert.deepEqual(titleEn("See sections 2 and 3 (fees and refunds)."), []);
+    assert.deepEqual(titleEn("See sections 1 to 3 (general terms, &c.)."), []);
+    assert.deepEqual(titleEn("See section 2 and section 3 (money)."), []);
+    assert.deepEqual(titleEn("See sections 1, 2 or 3 (money)."), []);
+  });
+
+  it("a reference in a list that carries its own name, or a Japanese list (the bracket binds to the last), is compared", () => {
+    assert.deepEqual(titleEn("See section 2 (Pricing) and section 3 (Pricing)."), ["section 3:Pricing≠Refunds"]);
+    assert.deepEqual(titleEn("Section 2 applies; see Section 3 (Pricing)."), ["Section 3:Pricing≠Refunds"]);
+    assert.deepEqual(titleEn("Subject to section 2, section 3 (Pricing) applies."), ["section 3:Pricing≠Refunds"]);
+    assert.deepEqual(titleJa("第2章（料金）及び第3章（料金）を見てください。"), ["第3章:料金≠返金"]);
+    assert.deepEqual(titleJa("第2章及び第3章（料金）を見てください。"), ["第3章:料金≠返金"]);
+  });
+
   it("a reference to another document is not compared with this document's headings", () => {
     assert.deepEqual(titleJa("民法第2章（総則）に従います。"), []);
   });
@@ -169,5 +184,25 @@ describe("endsAsSentence", () => {
     assert.equal(endsAsSentence("stay of legal proceedings, &c."), false);
     assert.equal(endsAsSentence(""), false);
     assert.equal(endsAsSentence("。"), true);
+  });
+});
+
+describe("endsList", () => {
+  const joints = ["and", "to", ", and", "及び"];
+  it("a joint alone between two references makes a list", () => {
+    assert.equal(endsList(" and ", joints), true);
+    assert.equal(endsList(" to ", joints), true);
+    assert.equal(endsList(", and ", joints), true);
+    assert.equal(endsList("及び", joints), true);
+  });
+
+  it("anything more than a joint, or nothing, is not a list", () => {
+    assert.equal(endsList("", joints), false);
+    assert.equal(endsList(", ", joints), false);
+    assert.equal(endsList("  ", joints), false);
+    assert.equal(endsList(" (Pricing) and ", joints), false);
+    assert.equal(endsList(" applies; see ", joints), false);
+    assert.equal(endsList(" and the ", joints), false);
+    assert.equal(endsList(" and ", []), false);
   });
 });
