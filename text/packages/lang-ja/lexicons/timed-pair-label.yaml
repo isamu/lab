@@ -69,3 +69,14 @@ entries:
   - { pattern: "閉宴時間", group: banquet, position: after }
   - { pattern: "閉宴時刻", group: banquet, position: after }
   - { pattern: "お開き", group: banquet, position: after }
+  # 障害の報告。障害が起きてから、それに気づく。「復旧」は入れない。気づく前に戻っていた障害もある。
+  - { pattern: "発生", group: incident, position: before }
+  - { pattern: "発生時刻", group: incident, position: before }
+  - { pattern: "発生時間", group: incident, position: before }
+  - { pattern: "障害発生", group: incident, position: before }
+  - { pattern: "障害発生時刻", group: incident, position: before }
+  - { pattern: "検知", group: incident, position: after }
+  - { pattern: "検知時刻", group: incident, position: after }
+  - { pattern: "検知時間", group: incident, position: after }
+  - { pattern: "障害検知", group: incident, position: after }
+  - { pattern: "障害検知時刻", group: incident, position: after }

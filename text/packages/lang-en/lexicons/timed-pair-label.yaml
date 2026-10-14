@@ -52,3 +52,11 @@ entries:
   - { pattern: "Finish", group: span, position: after }
   - { pattern: "Finishes", group: span, position: after }
   - { pattern: "Expected finish", group: span, position: after }
+  # An incident report: the incident starts, then it is detected. "Resolved" is left out: an incident can clear before anyone notices.
+  - { pattern: "Started", group: incident, position: before }
+  - { pattern: "Start time", group: incident, position: before }
+  - { pattern: "Began", group: incident, position: before }
+  - { pattern: "Incident start", group: incident, position: before }
+  - { pattern: "Detected", group: incident, position: after }
+  - { pattern: "Detection time", group: incident, position: after }
+  - { pattern: "Time detected", group: incident, position: after }

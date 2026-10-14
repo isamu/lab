@@ -60,6 +60,30 @@ describe("time-order (pair): a labelled time that must come first comes later", 
     assert.deepEqual(findingsOf(concertJa("終演：16:00", "開場：17:30")), []);
   });
 
+  const incidentJa = (...items: string[]): string => ["# 障害報告書", "", "発生日：2026年9月15日", "", ...items.map((item) => `- ${item}`)].join("\n");
+  const incidentEn = (...items: string[]): string =>
+    ["# Incident report", "", "Incident date: September 15, 2026", "", ...items.map((item) => `- ${item}`)].join("\n");
+
+  it("an incident detected before it started is pointed at, on the start (ja, en)", () => {
+    assert.deepEqual(findingsOf(incidentJa("発生時刻：14:05", "検知時刻：13:58", "復旧時刻：15:47")), [
+      "「発生時刻」の「14:05」が、後に来るはずの「検知時刻」の「13:58」より遅くなっています",
+    ]);
+    assert.deepEqual(findingsOf(incidentEn("Started: 2:05 PM", "Detected: 1:58 PM", "Resolved: 3:47 PM"), en), [
+      "Started at 2:05 PM is later than Detected at 1:58 PM, which should come after it",
+    ]);
+    assert.deepEqual(findingsOf(incidentEn("Began: 2:05 PM", "Detection time: 1:58 PM"), en).length, 1);
+    assert.deepEqual(findingsOf(incidentEn("Start time: 2:05 PM", "Detected: 1:58 PM"), en).length, 1);
+  });
+
+  it("an incident detected after it started, or resolved before it was detected, says nothing (ja, en)", () => {
+    assert.deepEqual(findingsOf(incidentJa("発生時刻：14:05", "検知時刻：14:12", "復旧時刻：15:47")), []);
+    assert.deepEqual(findingsOf(incidentEn("Started: 2:05 PM", "Detected: 2:12 PM", "Resolved: 3:47 PM"), en), []);
+    assert.deepEqual(findingsOf(incidentJa("発生時刻：14:05", "復旧時刻：14:20", "検知時刻：14:30")), []);
+    assert.deepEqual(findingsOf(incidentEn("Detected: 2:30 PM", "Resolved: 2:20 PM"), en), []);
+    assert.deepEqual(findingsOf(incidentJa("報告時刻：14:05", "検知時刻：13:58")), []);
+    assert.deepEqual(findingsOf(incidentEn("Reported: 2:05 PM", "Detected: 1:58 PM"), en), []);
+  });
+
   it("times in order, equal times, and times inside a sentence say nothing", () => {
     assert.deepEqual(findingsOf(concertJa("開場：17:30", "開演：18:30", "終演予定：20:30")), []);
     assert.deepEqual(findingsOf(concertJa("開場：18:30", "開演：18:30")), []);
