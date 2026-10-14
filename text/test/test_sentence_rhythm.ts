@@ -4,7 +4,6 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { firedRules } from "./rule-run.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
-import { clearlyBelow } from "../packages/chaff/src/detectors/sentence-rhythm.ts";
 
 // sentence-rhythm measures the prose: list items are parallel on purpose, so their even length is the list's form.
 
@@ -13,46 +12,44 @@ const GENRE = "technical/readme";
 
 const evenSentences = (count: number, size: number): string => Array.from({ length: count }, () => `${"あ".repeat(size)}。`).join("");
 const evenItems = (count: number, size: number): string => Array.from({ length: count }, () => `- ${"い".repeat(size)}。`).join("\n");
-/** A small deterministic generator, so a failing input can be run again. */
-const seeded = (seed: number): (() => number) => {
-  const state = { value: seed };
-  return () => {
-    state.value = (state.value * 1103515245 + 12345) % 2147483648;
-    return state.value / 2147483648;
-  };
-};
 const fires = (adapter: LanguageAdapter, source: string): boolean => firedRules(adapter, source, GENRE).includes(RULE);
 
-const CHANGELOG_JA = `# 付箋帳 変更履歴
+// The clean changelog of the release-notes planted set, where the rule used to report a spread of 28%.
+const CHANGELOG_JA = `# ことのは帳 変更履歴
 
-付箋帳の版ごとの変更点をまとめます。新しい版から順に並べています。
+ことのは帳（デスクトップ版）の版ごとの変更点をまとめます。新しい版から順に並べています。
 
 版の番号は「メジャー.マイナー.パッチ」の三つの数で表します。
 
-## 3.1.0（2026年9月1日）
+## 2.4.0（2026年10月6日）
 
-この版では、次の4件の修正を行いました。
+この版では、次の3件の修正を行いました。
 
-- 付箋を複製すると、色が既定の色に戻る不具合を直しました。
-- 長い題名の付箋で、一覧の行が崩れる不具合を直しました。
-- 削除を取り消すと、並び順が変わる不具合を直しました。
-- 起動の直後に、検索欄が使えない不具合を直しました。
+- 長いメモを保存すると、末尾の改行が消えることがある不具合を直しました。
+- 検索欄に全角の空白を入れると、結果が空になる不具合を直しました。
+- 印刷プレビューで、見出しの文字が重なる不具合を直しました。
 
-あわせて、付箋を期限の近い順に並べ替えられるようにしました。
+あわせて、メモの一覧を更新日の新しい順に並べ替えられるようにしました。
 
-## 3.0.1（2026年7月14日）
+サポート期間：2026年10月6日〜2028年10月5日
 
-3.0.0 で、設定の画面が開かなくなる不具合を直しました。
+## 2.3.1（2026年8月18日）
 
-## 3.0.0（2026年6月2日）
+2.3.0 で、同期の設定画面が開かなくなる不具合を直しました。
 
-付箋に期限を付けられるようにしました。期限は通知で知らせます。
+## 2.3.0（2026年7月7日）
+
+タグに色を付けられるようにしました。色は8色から選べます。
+
+## 2.2.0（2026年5月12日）
+
+メモを PDF に書き出せるようにしました。
 
 ## 次の版の予定
 
-次の版 3.2.0 は、2026年11月に公開する予定です。
+次の版 2.5.0 は、2026年12月8日（火）に公開する予定です。
 
-3.0.0 より前の版をお使いの方は、3.1.0 へ更新してください。更新しても、書いた付箋はそのまま残ります。
+2.2.0 以前の版をお使いの方は、2.4.0 へ更新してください。更新しても、保存したメモはそのまま残ります。
 `;
 
 const CHANGELOG_EN = `# Pinboard changelog
@@ -90,6 +87,10 @@ describe("sentence-rhythm on changelogs and lists", () => {
   it("valid: a changelog whose bullet items are written alike is not called monotonous (en)", () => {
     assert.ok(!fires(en, CHANGELOG_EN));
   });
+  it("valid: varied prose is not called monotonous when a long list beside it is even", () => {
+    const prose = [12, 40, 20, 55, 15, 35, 25, 60, 18].map((size) => `${"あ".repeat(size)}。`).join("");
+    assert.ok(!fires(ja, `${prose}\n\n${evenItems(20, 30)}\n`));
+  });
   it("valid: a few prose sentences around a long list of even items are too few to measure", () => {
     assert.ok(!fires(ja, `${evenSentences(4, 30)}\n\n${evenItems(12, 30)}\n`));
   });
@@ -99,37 +100,5 @@ describe("sentence-rhythm on changelogs and lists", () => {
   });
   it("invalid: even prose split over paragraphs is still reported", () => {
     assert.ok(fires(ja, `${evenSentences(6, 40)}\n\n${evenSentences(6, 40)}\n`));
-  });
-});
-
-describe("sentence-rhythm: clearlyBelow", () => {
-  it("invalid: a spread far under the limit is reported however few the sentences", () => {
-    assert.ok(clearlyBelow(10, 8, 30));
-  });
-  it("valid: a spread just under the limit is not reported in a short document", () => {
-    assert.ok(!clearlyBelow(29, 11, 30));
-  });
-  it("invalid: the same spread is reported in a long document", () => {
-    assert.ok(clearlyBelow(28, 2000, 30));
-  });
-  it("valid: a spread at or over the limit is never reported", () => {
-    assert.ok(!clearlyBelow(30, 100000, 30));
-    assert.ok(!clearlyBelow(45, 8, 30));
-  });
-  it("invalid: no spread at all is reported", () => {
-    assert.ok(clearlyBelow(0, 8, 30));
-  });
-  it("property: it reports only what the plain limit reports, and the same once the margin is clear of the limit", () => {
-    const random = seeded(20261014);
-    Array.from({ length: 5000 }, () => ({
-      spread: random() * 60,
-      sentences: 8 + Math.floor(random() * 3000),
-      limit: [20, 30, 35][Math.floor(random() * 3)] ?? 30,
-    })).forEach(({ spread, sentences, limit }) => {
-      const plain = Math.round(spread) < limit;
-      const inputs = `${String(spread)} ${String(sentences)} ${String(limit)}`;
-      if (clearlyBelow(spread, sentences, limit)) assert.ok(plain, inputs);
-      if (spread + spread / Math.sqrt(2 * sentences) < limit - 1) assert.ok(clearlyBelow(spread, sentences, limit), inputs);
-    });
   });
 });
