@@ -124,3 +124,12 @@ entries:
   - { pattern: 会員IDは, group: member }
   - { pattern: お客様番号, group: customer }
   - { pattern: お客様番号は, group: customer }
+  # 障害報告書のインシデントの番号。管理番号は何の番号にも付く語なので、インシデント番号とは別の group にする。
+  - { pattern: インシデント番号, group: incident }
+  - { pattern: インシデント番号は, group: incident }
+  - { pattern: インシデントID, group: incident }
+  - { pattern: インシデントIDは, group: incident }
+  - { pattern: 障害番号, group: incident }
+  - { pattern: 障害番号は, group: incident }
+  - { pattern: 管理番号, group: control }
+  - { pattern: 管理番号は, group: control }
