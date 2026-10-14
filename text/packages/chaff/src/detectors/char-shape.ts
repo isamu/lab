@@ -4,6 +4,7 @@ import { leadingCounter } from "./counter-edge.ts";
 import { maskAddresses } from "../address-chain.ts";
 import { isAddressRun } from "./place-run.ts";
 import { isOneName } from "./name-run.ts";
+import { isOrganisationRun, type OrganisationWords } from "./organisation-run.ts";
 import { proseText } from "../measure.ts";
 import { parallelDotCount } from "./middle-dot.ts";
 import { maskSpans } from "../mask.ts";
@@ -44,27 +45,33 @@ const runsOf = (sentence: Sentence, profile: DocumentProfile | undefined, names:
   });
 };
 
-/** 漢字の連なりが住所（東京都港区新橋二丁目）か 1 つの名前（日本銀行）か。形態素解析の地名・人名・組織名と数で決める。 */
-const isPlaceName = (tokens: readonly Token[], span: Span, topUnits: ReadonlySet<string>): boolean => {
+/** 連なりを数えないと決める語彙: 住所の先頭にしか来ない単位（都道府県）と、組織の名前の形と単位。 */
+type NameWords = { readonly topUnits: ReadonlySet<string>; readonly organisation: OrganisationWords };
+
+/**
+ * 漢字の連なりが住所（東京都港区新橋二丁目）か 1 つの名前（日本銀行）か 1 つの組織の名前（国立研究開発法人産業技術総合研究所）か。
+ * 形態素解析の地名・人名・組織名と数、組織の語彙で決める。
+ */
+const isPlaceName = (tokens: readonly Token[], span: Span, words: NameWords): boolean => {
   const covering = tokens.flatMap((token, index) => (token.span.start < span.end && span.start < token.span.end ? [index] : []));
-  return isAddressRun(tokens, covering, topUnits) || isOneName(tokens, covering);
+  return isAddressRun(tokens, covering, words.topUnits) || isOneName(tokens, covering) || isOrganisationRun(tokens, covering, words.organisation);
 };
 
 /**
  * 数えない連なりは空。頭の、数に付いた助数詞（2日日本弁護士連合会の「日」）は数えない。
  * 住所か名前かは、助数詞を外した残りで決める（1日日本銀行の「日本銀行」）。品詞が無ければ判定しない。
  */
-const measuredRun = (tokens: readonly Token[] | undefined, run: KanjiRun, topUnits: ReadonlySet<string>): string => {
+const measuredRun = (tokens: readonly Token[] | undefined, run: KanjiRun, words: NameWords): string => {
   if (run.quoted) return "";
   if (tokens === undefined || run.span === undefined) return run.text;
   const counter = leadingCounter(tokens, run.span.start, run.text);
   const rest = counter === undefined ? run.span : { start: counter.span.end, end: run.span.end };
-  return isPlaceName(tokens, rest, topUnits) ? "" : run.text.slice(counter?.surface.length ?? 0);
+  return isPlaceName(tokens, rest, words) ? "" : run.text.slice(counter?.surface.length ?? 0);
 };
 
-const longestKanji = (sentence: Sentence, profile: DocumentProfile | undefined, topUnits: ReadonlySet<string>, names: readonly string[]): string =>
+const longestKanji = (sentence: Sentence, profile: DocumentProfile | undefined, words: NameWords, names: readonly string[]): string =>
   runsOf(sentence, profile, names)
-    .map((run) => measuredRun(sentence.tokens, run, topUnits))
+    .map((run) => measuredRun(sentence.tokens, run, words))
     .reduce((longest, run) => (run.length > longest.length ? run : longest), "");
 
 /**
@@ -72,9 +79,13 @@ const longestKanji = (sentence: Sentence, profile: DocumentProfile | undefined, 
  * 「情報処理推進機構認定試験」は 12 字。ひらがなを 1 つ挟むだけで読める。
  */
 export const kanjiRun: Detector = (doc, options): Finding[] => {
-  const topUnits = new Set((doc.lexicons["prefecture-unit"] ?? []).map((entry) => entry.pattern));
+  const patterns = (id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
+  const words: NameWords = {
+    topUnits: new Set(patterns("prefecture-unit")),
+    organisation: { forms: patterns("organisation-form"), units: patterns("organisation-unit") },
+  };
   return doc.sentences
-    .map((sentence) => ({ sentence, run: longestKanji(sentence, doc.profile, topUnits, doc.names ?? []) }))
+    .map((sentence) => ({ sentence, run: longestKanji(sentence, doc.profile, words, doc.names ?? []) }))
     .filter(({ run }) => run.length > options.limit)
     .map(({ sentence, run }) => ({
       rule: "max-kanji-continuous",

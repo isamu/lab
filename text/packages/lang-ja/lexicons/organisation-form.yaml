@@ -1,0 +1,39 @@
+# 組織の名前の前に立つ形（法人格と、国立・県立のような設置者）。漢字の連なりがこれで始まり、組織の単位（organisation-unit）で
+# 閉じれば、その連なりは 1 つの組織の正式名称（国立研究開発法人産業技術総合研究所）。書き手が割れる複合語ではない。
+id: organisation-form
+language: ja
+entries:
+  - pattern: 国立研究開発法人
+  - pattern: 独立行政法人
+  - pattern: 地方独立行政法人
+  - pattern: 国立大学法人
+  - pattern: 公立大学法人
+  - pattern: 大学共同利用機関法人
+  - pattern: 一般社団法人
+  - pattern: 一般財団法人
+  - pattern: 公益社団法人
+  - pattern: 公益財団法人
+  - pattern: 特定非営利活動法人
+  - pattern: 学校法人
+  - pattern: 医療法人
+  - pattern: 社会福祉法人
+  - pattern: 宗教法人
+  - pattern: 弁護士法人
+  - pattern: 税理士法人
+  - pattern: 監査法人
+  - pattern: 株式会社
+  - pattern: 有限会社
+  - pattern: 合同会社
+  - pattern: 合資会社
+  - pattern: 合名会社
+  - pattern: 国立
+  - pattern: 公立
+  - pattern: 私立
+  - pattern: 都立
+  - pattern: 道立
+  - pattern: 府立
+  - pattern: 県立
+  - pattern: 市立
+  - pattern: 区立
+  - pattern: 町立
+  - pattern: 村立
