@@ -9,6 +9,13 @@
       "planted": "ja/outsourcing.planted.md",
       "mistakes": [
         {
+          "kind": "toki-as-condition",
+          "rule": "toki-as-condition",
+          "line": 37,
+          "clean": "是正しないときは",
+          "planted": "是正しない時は"
+        },
+        {
           "kind": "total-in-prose",
           "rule": "total-mismatch",
           "line": 12,
