@@ -55,8 +55,8 @@ example:
       Today we look at the new tool. Open the settings. The gear icon at the top right opens a list of everything you can change, so pick the option you want there and switch it on. Then save. That is the first part done. Next, invite the rest of the team from the page on the left.
 
 not_flagged:
-  ja: 文が 8 文より少ない文書は、ばらつきが当てにならないので測りません。
-  en: A document with fewer than 8 sentences is not measured, because the spread means little.
+  ja: 箇条書きの項目は数えません（揃えて書くのが正しい形です）。地の文が 8 文より少ない文書は、ばらつきが当てにならないので測りません。
+  en: List items are not counted, since a list is written alike on purpose. Prose of fewer than 8 sentences is not measured, because the spread means little.
 level_meaning:
   ja: 文の長さのばらつきが {limit}% 未満なら指摘
   en: reported when sentence length varies by less than {limit}%
