@@ -104,14 +104,14 @@ article.md   blog/tech · English   genre from --genre
                   padded-intro
   3:1     warning "ai-tell, section-length-uniformity, padded-intro, closing-cliche, announcing-opener" occur together in this document (5 signals, 3 needed)
                   ai-generated-composite
-  9:1     info    "isn't" is written differently from the rest of the document
-                  contraction-consistency
-  9:31    info    "it's" is written differently from the rest of the document
+  3:94    info    "we will" is written differently from the rest of the document
                   contraction-consistency
   11:1    info    "Honestly," and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
   15:1    info    "The key point is" and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
+  21:3    info    "did not" is written differently from the rest of the document
+                  contraction-consistency
   23:1    info    "What's important is" and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
   25:17   info    This heading's capitalisation differs from the rest (1 in this document)
@@ -120,8 +120,6 @@ article.md   blog/tech · English   genre from --genre
                   announced-count-mismatch
   33:77   warning The link "[the build time log](#build-time-log)" points to "#build-time-log", which is not a heading on this page
                   broken-link
-  37:42   info    "it's" is written differently from the rest of the document
-                  contraction-consistency
   39:1    warning Closes with "hope this helps"
                   closing-cliche
   39:20   warning Closes with "happy coding"
@@ -173,7 +171,7 @@ A team changes the lines with `guide:` in `chaff.yaml` ([Changing the genre's gu
 | --- | --- | --- | --- |
 | 3 | `padded-intro` | "In today's fast-paced world" fits any article | Start with the problem: "Every CI build took 9 minutes." |
 | 3 | `ai-tell` | "delve into", "in today's fast-paced world" and "it's not just" are common in generated text, and they pile up here | Say what the article does in plain words: "This article shows how we cut our build time." |
-| 9, 37 | `contraction-consistency` | Most of the article writes words in full ("did not"), but these lines use "isn't" and "it's" | Pick one and use it throughout |
+| 3, 21 | `contraction-consistency` | Most of the article uses contractions ("isn't", "it's"), but these lines write "we will" and "did not" in full | Pick one and use it throughout |
 | 11, 15, 23 | `announcing-opener` | "Honestly,", "The key point is" and "What's important is" announce instead of saying | Delete the announcement and start with the point |
 | 25 | `title-case-consistency` | "What we fixed" is in sentence case; the other headings are in Title Case | Make the headings agree |
 | 27 | `announced-count-mismatch` | It says "two changes", but the list has three | Fix the number or the list, whichever is wrong |
