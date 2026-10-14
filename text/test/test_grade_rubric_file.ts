@@ -48,10 +48,12 @@ describe("reading a rubric file", () => {
   });
 
   it("is an empty rubric when the file is empty or null, as a bare grade: is", () => {
-    [parseRubricFile("r.yaml", ""), parseRubricFile("r.yaml", "# nothing yet\n"), parseRubricFile("r.json", "null")].forEach((parsed) => {
-      assert.ok("rubric" in parsed);
-      assert.deepEqual(parsed.rubric, { rules: {} });
-    });
+    [parseRubricFile("r.yaml", ""), parseRubricFile("r.yaml", "# nothing yet\n"), parseRubricFile("r.json", "null"), parseRubricFile("r.json", " \n")].forEach(
+      (parsed) => {
+        assert.ok("rubric" in parsed);
+        assert.deepEqual(parsed.rubric, { rules: {} });
+      },
+    );
   });
 
   it("names every problem by its path from the file's top level", () => {

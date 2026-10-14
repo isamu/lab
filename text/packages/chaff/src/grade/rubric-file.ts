@@ -19,6 +19,8 @@ const formatOf = (path: string): Format | undefined => FORMATS[extname(path).toL
 
 const syntaxOf = (content: string, format: Format): { readonly raw: unknown } | { readonly why: string } => {
   try {
+    // An empty file reads as null in YAML but throws in JSON; both are an empty rubric, as a bare `grade:` is.
+    if (content.trim() === "") return { raw: null };
     return { raw: format === "json" ? JSON.parse(content) : parse(content) };
   } catch (error) {
     return { why: error instanceof Error ? error.message : String(error) };
