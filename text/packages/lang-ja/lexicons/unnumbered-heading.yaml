@@ -21,6 +21,18 @@ entries:
   - pattern: 変更履歴
   - pattern: 更新履歴
   - pattern: 改訂履歴
+  # 文書の末尾に置く連絡先（報道発表の「担当」「お問い合わせ先」）。
+  - pattern: 担当
+  - pattern: 担当者
+  - pattern: 連絡先
+  - pattern: 問い合わせ
+  - pattern: お問い合わせ
+  - pattern: 問合せ
+  - pattern: お問合せ
+  - pattern: 問い合わせ先
+  - pattern: お問い合わせ先
+  - pattern: 問合せ先
+  - pattern: お問合せ先
   - pattern: はしがき
   - pattern: あとがき
   - pattern: 序文

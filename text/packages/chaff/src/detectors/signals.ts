@@ -9,7 +9,9 @@ import { isExplained } from "./acronym-compound.ts";
 import { conjugatedForms } from "./conjugated-form.ts";
 import { evidenceSpans, hasNumeral, startsWithin } from "./concrete-evidence.ts";
 import { letteredIndexEntries } from "./lettered-index.ts";
+import { outlineLabelSpans } from "./outline-label.ts";
 import { hasPredicateIn } from "./gram-predicate.ts";
+import { gramPassagesOf } from "./gram-passages.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
 import { referenceListSpans } from "../reference-lists.ts";
 import type { Detector, Finding, ProseDocument, Section, Sentence } from "../plugin.ts";
@@ -127,11 +129,22 @@ const tallySentence = (doc: ProseDocument, sentence: Sentence, tally: Tally): vo
     });
 };
 
-const gramsOf = (doc: ProseDocument): Tally => {
+const gramsOf = (doc: ProseDocument, sentences: readonly Sentence[]): Tally => {
   const tally: Tally = { counts: new Map(), first: new Map() };
-  doc.sentences.forEach((sentence) => tallySentence(doc, sentence, tally));
+  sentences.forEach((sentence) => tallySentence(doc, sentence, tally));
   return tally;
 };
+
+type Repeat = { readonly key: string; readonly count: number; readonly at: FirstSeen | undefined };
+
+/** 範囲（gram-passages.ts）ごとに数える。よくある質問の別々の答えは別の範囲。 */
+const repeatsOf = (doc: ProseDocument, limit: number): Repeat[] =>
+  gramPassagesOf(doc.sections).flatMap((sentences) => {
+    const tally = gramsOf(doc, sentences);
+    return [...tally.counts.entries()]
+      .filter(([key, count]) => count > limit && isPhrasing(key, doc.lengthUnit))
+      .map(([key, count]) => ({ key, count, at: tally.first.get(key) }));
+  });
 
 /**
  * 語句が文の中で占める範囲に、述語になる動詞か助動詞があるか（gram-predicate.ts）。
@@ -145,11 +158,8 @@ const hasPredicate = (at: FirstSeen | undefined, unit: ProseDocument["lengthUnit
 
 export const ngramRepetition: Detector = (doc, options): Finding[] => {
   if (wordsOf(doc) < MIN_DOCUMENT_LENGTH[doc.lengthUnit]) return [];
-  const tally = gramsOf(doc);
-  const worst = [...tally.counts.entries()]
-    .filter(([key, count]) => count > options.limit && isPhrasing(key, doc.lengthUnit))
-    .toSorted(([, left], [, right]) => right - left)
-    .map(([key, count]) => ({ key, count, at: tally.first.get(key) }))
+  const worst = repeatsOf(doc, options.limit)
+    .toSorted((left, right) => right.count - left.count)
     .find(({ at }) => hasPredicate(at, doc.lengthUnit));
   if (worst === undefined) return [];
   const at = worst.at?.sentence;
@@ -304,7 +314,10 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   const headings = doc.sections.map((section) => section.heading);
   const explainedAlone = (word: string): boolean =>
     common.has(word) || entries.has(word) || isExpanded(body, word, expandedAt) || headings.some((heading) => expandsInHeading(heading, word, expandedAt));
-  const hits = outsideSpans(acronymsOf(doc, notationOf(doc)), referenceListSpans(doc.source, patternsOf(doc, "reference-list-heading")));
+  const hits = outsideSpans(acronymsOf(doc, notationOf(doc)), [
+    ...referenceListSpans(doc.source, patternsOf(doc, "reference-list-heading")),
+    ...outlineLabelSpans(doc.source, patternsOf(doc, "numbered-division")),
+  ]);
   const unexplained = new Set([...firstHits(hits).keys()].filter((acronym) => !isExplained(acronym, explainedAlone)));
   // 日付を読むには文書の木を作る。上限に届かない文書では作らない。
   if (unexplained.size < options.limit) return [];

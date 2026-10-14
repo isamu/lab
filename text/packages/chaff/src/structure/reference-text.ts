@@ -16,6 +16,8 @@ export type ReferenceWords = {
   readonly topicLinks: readonly string[];
   /** 話題にならない語（詳細、内容、details）。どの節にも当てはまる。 */
   readonly vagueTopics: readonly string[];
+  /** 二つの参照を一つの並びにする語（及び、から、and、to）。並びの後ろの括弧は並び全体の名前。 */
+  readonly listJoints: readonly string[];
 };
 
 export type ReferenceInput = {
@@ -70,17 +72,37 @@ export const holdsAside = (name: string, aside: string): boolean => {
   return aside.trim() !== "" && words.includes(` ${aside.trim().toLowerCase()} `);
 };
 
+/** 句点で終わる括弧や引用符の中は名前でなく文（範囲の断り「…を除く。」、引いた条文）。見出しは句点で終わらない。 */
+const SENTENCE_STOP = /[。．]$/u;
+
+export const endsAsSentence = (name: string): boolean => SENTENCE_STOP.test(name);
+
 const isName = (name: string, words: ReferenceWords): boolean =>
-  LETTER.test(name) && !DIGIT.test(name) && !ITEM_LABEL.test(name.normalize("NFKC")) && !words.asides.some((aside) => holdsAside(name, aside));
+  LETTER.test(name) &&
+  !DIGIT.test(name) &&
+  !ITEM_LABEL.test(name.normalize("NFKC")) &&
+  !endsAsSentence(name) &&
+  !words.asides.some((aside) => holdsAside(name, aside));
 
 const agrees = (name: string, heading: string): boolean => {
   const [a, b] = [normalized(name), normalized(heading)];
   return a.includes(b) || b.includes(a);
 };
 
-/** 名前を添えた参照で、名前が参照先の見出しと合わない。 */
+/**
+ * The reference ends a list or range of references ("sections 162 and 164", "sections 9 to 11"): only a joint stands
+ * between it and the reference before it.
+ */
+export const endsList = (between: string, joints: readonly string[]): boolean => {
+  const joint = between.normalize("NFKC").trim().toLowerCase();
+  return joint !== "" && joints.some((candidate) => candidate.normalize("NFKC").trim().toLowerCase() === joint);
+};
+
+/** 名前を添えた参照で、名前が参照先の見出しと合わない。並びの後ろの括弧は並び全体の名前なので、どの見出しとも比べない。 */
 export const titleMismatches = (input: ReferenceInput): StructureIssue[] =>
-  input.references.flatMap((reference) => {
+  input.references.flatMap((reference, index) => {
+    const previous = input.references[index - 1];
+    if (previous !== undefined && endsList(input.source.slice(previous.span.end, reference.span.start), input.words.listJoints)) return [];
     const target = input.targetOf(reference);
     const heading = target === undefined ? "" : headingOf(target);
     const found = nameAfter(input.source, reference.span.end);

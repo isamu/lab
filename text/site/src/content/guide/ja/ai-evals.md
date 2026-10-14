@@ -524,6 +524,7 @@ prompt-b.md   blog/tech · 日本語   ジャンルは既定から
 
 `chaffjs/grade` は 1 つの出力をその場で採点し、`--out` の 1 行と同じ結果を返します。
 `chaff.yaml` を読むのは `config` で名指したときだけで、ファイルに書くことはありません。
+行に書く欄は、`task` と `expect` も含めて同じ名前で渡せます: `await grade(output, { task: "extraction", expect: { facts: ["12,000円"] }, config: "chaff.yaml" })`。
 
 ```js
 import { grade, toScorer } from "chaffjs/grade";

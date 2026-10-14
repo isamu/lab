@@ -4,6 +4,7 @@ import type { StructureIssue } from "./issues.ts";
 import type { Line } from "./lines.ts";
 import { labelPairsOf, pointsOutOfOrder, type OrderLabel, type PairWords, type PointOf } from "./labelled-order.ts";
 import { TABLE_ROW } from "./runs.ts";
+import type { VersionWords } from "./versioned-label.ts";
 import { isSignedDateLine } from "./signed-date-line.ts";
 import { statedPeriod, type DateMention, type PeriodWords } from "./stated-period.ts";
 
@@ -132,6 +133,8 @@ export type PairedReading = {
   readonly spans?: PairSpans | undefined;
   readonly whole?: string | undefined;
   readonly signers?: readonly OrderLabel[] | undefined;
+  /** The words that join a version to a label (End of support for 5.0.0, 3.0.0 のサポート終了日). */
+  readonly versions?: VersionWords | undefined;
 };
 
 const signersOf = (signers: readonly OrderLabel[], group: string): string[] =>
@@ -166,14 +169,14 @@ export const pairedDatesOutOfOrder = (
   labels: readonly OrderLabel[],
   passed: readonly string[],
   maxLineGap: number,
-  { spans, whole = source, signers = [] }: PairedReading = {},
+  { spans, whole = source, signers = [], versions }: PairedReading = {},
 ): PairedIssue[] =>
   withoutRepeats(
     labelPairsOf(labels).flatMap((pair) => {
       const context = contextOf(labels, pair.group);
       if (context.length > 0 && !namesDocumentKind(whole, context)) return [];
       const fromStart = spanStartsOf(spans?.entries ?? [], pair.group);
-      const words = { ...pair, passed, maxLineGap, spans, fromStart, signers: signersOf(signers, pair.group) };
+      const words = { ...pair, passed, maxLineGap, spans, fromStart, signers: signersOf(signers, pair.group), versions };
       return datesOutOfOrder(source, dates, words).map(({ earlier, later }) => ({
         offset: Math.max(later.date.offset, earlier.date.offset),
         values: { later: later.date.value, earlier: earlier.date.value, later_label: later.label, earlier_label: earlier.label },

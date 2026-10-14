@@ -4,8 +4,11 @@ import { codeLines, linesOf, type Mutation, type Plant } from "../bench-text.ts"
 
 const HEADING = /^(#{2,6})\s+(\S.*)$/u;
 
-/** 前後の見出し（目次・参考文献）。rule が兄弟に数えないので、これを含む並びには植えない。 */
+/** 前後の見出し（目次・参考文献）と末尾の連絡先。rule が兄弟に数えないので、これを含む並びには植えない。 */
 const MATTER = /^(?:目次|参考文献|付録|謝辞|Contents|References|Abstract|Appendix|Acknowledg)/iu;
+const CONTACT = /^(?:担当|連絡先|お?問い?合わ?せ|(?:Media |Press )?Contacts?$)/iu;
+
+const isMatter = (text: string): boolean => MATTER.test(text) || CONTACT.test(text);
 
 /** 番号で始まる見出しの言葉。すでに番号がある兄弟は植えない。 */
 const NUMBERED = /^(?:[0-9０-９]|第|[(（①-⑳]|Chapter|Step|Part|Section)/u;
@@ -27,7 +30,7 @@ const firstSiblingRun = (headings: readonly Heading[]): Heading[] | undefined =>
     const end = after.findIndex((other) => other.depth < head.depth);
     return (end === -1 ? after : after.slice(0, end)).filter((other) => other.depth === head.depth);
   });
-  return runs.find((run) => run.length >= 3 && run.every((head) => !NUMBERED.test(head.text) && !MATTER.test(head.text)));
+  return runs.find((run) => run.length >= 3 && run.every((head) => !NUMBERED.test(head.text) && !isMatter(head.text)));
 };
 
 /** 兄弟の見出しに、最後の一つを除いて番号を付ける。最後の見出しだけ番号が無くなる。 */

@@ -117,15 +117,16 @@ describe("max-kanji-continuous と names", () => {
     await ja.prepare?.({ pos: true });
   });
 
+  // 組織の語で閉じる組織の名前（国土交通省鉄道局総務課）は、並べなくても数えない。ここでは組織の語で閉じない名前で names を読む。
   it("invalid: 並べていない正式名称は今までどおり指摘する", () => {
-    assert.deepEqual(kanjiWords("個人情報保護委員会事務局に問い合わせる。"), ["個人情報保護委員会事務局"]);
-    assert.deepEqual(kanjiWords("国土交通省鉄道局総務課に届ける。", ["個人情報保護委員会"]), ["国土交通省鉄道局総務課"]);
+    assert.deepEqual(kanjiWords("個人情報保護委員会規則に従う。"), ["個人情報保護委員会規則"]);
+    assert.deepEqual(kanjiWords("情報処理推進機構認定試験に届ける。", ["個人情報保護委員会"]), ["情報処理推進機構認定試験"]);
   });
 
   it("valid: 並べた名前は連なりの中で数えない", () => {
-    assert.deepEqual(kanjiWords("関西館文献提供課複写貸出係に申し込む。", ["関西館文献提供課複写貸出係"]), []);
-    assert.deepEqual(kanjiWords("国土交通省鉄道局総務課に届ける。", ["国土交通省鉄道局総務課"]), []);
-    assert.deepEqual(kanjiWords("個人情報保護委員会事務局に問い合わせる。", ["個人情報保護委員会"]), []);
+    assert.deepEqual(kanjiWords("情報処理推進機構認定試験に申し込む。", ["情報処理推進機構認定試験"]), []);
+    assert.deepEqual(kanjiWords("全国社会福祉協議会に届ける。", ["全国社会福祉協議会"]), []);
+    assert.deepEqual(kanjiWords("個人情報保護委員会規則に従う。", ["個人情報保護委員会"]), []);
   });
 
   it("invalid: 名前の外に続く漢字は、それだけで長ければ指摘する", () => {
@@ -133,7 +134,7 @@ describe("max-kanji-continuous と names", () => {
   });
 
   it("invalid: 名前の一部だけが本文にあっても、名前として扱わない", () => {
-    assert.deepEqual(kanjiWords("個人情報保護委員事務局総務課に届ける。", ["個人情報保護委員会"]), ["個人情報保護委員事務局総務課"]);
+    assert.deepEqual(kanjiWords("個人情報保護委員事務局総務課長に届ける。", ["個人情報保護委員会"]), ["個人情報保護委員事務局総務課長"]);
   });
 });
 

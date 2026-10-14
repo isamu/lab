@@ -80,8 +80,8 @@ describe("区切りの名前の後ろのローマ数字", () => {
   [
     ["崩れた書き方（IIII、VX、IC、XD、LLVM、MMMMM）", "Section IIII, Section VX, Part IC, Part XD, Part LLVM, Volume MMMMM"],
     ["番号の後ろに英字・数字・&が続く", "Section IIa, Part IIIB, Section CIA, Part II2, Part CD&R"],
-    ["区切りの名前が語の一部", "COUNTERPART II, SUBSECTION IV, PARTS II"],
-    ["小文字の名前（本文の part）", "the part II of it, section VI"],
+    ["区切りの名前が語の一部", "COUNTERPART VI, SUBSECTION IV, PARTS VI"],
+    ["小文字の名前（本文の part）", "the part IV of it, section VI"],
     ["名前と番号の間に別の語", "Section on CI, Part of CD"],
     ["名前が無い", "CI, CD, DC, CV, MD, MIX, DIV, CLI, LV, DX, IV, MM, XL"],
   ].forEach(([form, text]) => {
@@ -91,7 +91,7 @@ describe("区切りの名前の後ろのローマ数字", () => {
   it("異常な入力: 空文字、名前だけ、空の語彙表", () => {
     assert.deepEqual(spans(""), []);
     assert.deepEqual(spans("Section "), []);
-    assert.deepEqual(notAcronymSpansOf(NONE)("Part II"), []);
+    assert.deepEqual(notAcronymSpansOf(NONE)("Part IV"), []);
   });
 });
 

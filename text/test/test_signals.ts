@@ -409,8 +409,8 @@ describe("undefined-acronym: 略語でない大文字を数えない（コーパ
       assert.deepEqual(acronymsIn("# Travel\n\n**TIP**: ask first. The office is in the USA."), []);
     });
 
-    it("invalid: 語の形をした本物の略語は数える", () => {
-      assert.deepEqual(acronymsIn("# Values\n\nThis touches our CREDIT values and the SAFE framework."), ["CREDIT", "SAFE"]);
+    it("invalid: 3 文字までの語の形をした略語は数える（4 文字以上は語彙が普通の語として知れば数えない）", () => {
+      assert.deepEqual(acronymsIn("# Values\n\nThis touches our PIE build and the GUT model."), ["PIE", "GUT"]);
     });
   });
 });

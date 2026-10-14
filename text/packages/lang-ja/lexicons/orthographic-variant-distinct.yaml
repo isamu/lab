@@ -12,6 +12,8 @@ entries:
   - pattern: ヨル
   - pattern: カタ
   - pattern: ツク
+  # 「町」は自治体（当町、町としては）、「まち」は暮らしの場（まちづくり、まちの魅力）。役所の文書はこの二つを書き分ける。
+  - pattern: 町
   - pattern: カケル
   - pattern: トル
   # 「〜そうだ」の「そう」は名詞と読まれ、「層」と同じ読みになる。
@@ -23,4 +25,7 @@ entries:
   - pattern: トキ
     genres: [legal]
   - pattern: モノ
+    genres: [legal]
+  # 法令は所在を「在る」（店舗に在る物品、船舶の中に在った者）、存在を「ある」と書き分ける。ほかのジャンルでは書き方のゆれ。
+  - pattern: 在る
     genres: [legal]

@@ -165,6 +165,29 @@ describe("latin-spacing は番号の中や項目の値を区切る空白を数�
     assert.deepEqual(spacing("# 試し\n\n参加者100人、来場者200人を見込みます。\n\n目標：参加者 100人を想定\n"), ["後ろの数字:空けています"]);
   });
 
+  it("短い項目名と値を空白で並べただけの組（行の頭・箇条書き・括弧の中・読点の後ろ）の空白は数えない", () => {
+    const body = "# 試し\n\n振込手数料は1件につき330円です。定員は30名、参加費は500円です。\n\n";
+    assert.deepEqual(spacing(`${body}最高速度 40km/h\n`), []);
+    assert.deepEqual(spacing(`${body}- 定員 30名\n- 会費 500円\n`), []);
+    assert.deepEqual(spacing(`${body}1. 定員 30名\n`), []);
+    assert.deepEqual(spacing(`${body}受付窓口（内線 3839）\n`), []);
+    assert.deepEqual(spacing(`${body}電話 03-1234-5678、内線 3839～40\n`), []);
+  });
+
+  it("文の中の値や、量の前置き・値の後ろの語のある組の空白は、これまでどおり数える", () => {
+    const body = "# 試し\n\n振込手数料は1件につき330円です。定員は30名、参加費は500円です。\n\n";
+    assert.deepEqual(spacing(`${body}当日は最高速度 40km/hで走ります。\n`), ["後ろの数字:空けています"]);
+    assert.deepEqual(spacing(`${body}定員 30名で行います。\n`), ["後ろの数字:空けています"]);
+    assert.deepEqual(spacing(`${body}最高速度 40km/h。\n`), ["後ろの数字:空けています"]);
+    assert.deepEqual(spacing(`${body}受付は、内線 3839 までお電話ください。\n`), ["後ろの数字:空けています", "前の数字:空けています"]);
+    assert.deepEqual(spacing(`${body}約 30名\n`), ["後ろの数字:空けています"]);
+    assert.deepEqual(spacing(`${body}およそ 30名\n`), ["後ろの数字:空けています"]);
+  });
+
+  it("英字の前後の空け方は、項目の組とは関わらずこれまでどおり数える", () => {
+    assert.deepEqual(spacing("# 試し\n\nPythonを使い、Rubyで書き、Goで動かします。次は Python を使います。\n"), ["英字:空けています", "英字:空けています"]);
+  });
+
   it("表の升目の空白は数えない", () => {
     assert.deepEqual(spacing("# 試し\n\n| 口座 | 場所 |\n| --- | --- |\n| 普通 1234567 | 本社 5階 |\n\n手数料は330円、定員は30名です。\n"), []);
   });

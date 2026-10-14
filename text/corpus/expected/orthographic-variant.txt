@@ -9,7 +9,7 @@ cloudgov-your-first-deploy  1
 commonpaper-csa  1
 da-agile-review-4  1
 da-ai-advisory-board-1  11
-da-area-data-model  3
+da-area-data-model  2
 da-legal-practice  3
 da-minister-press-conference-2026-09-18  1
 da-recruitment-career-faq  1
@@ -28,12 +28,11 @@ herp-da-data-product-manager  3
 ietf-draft-httpapi-ratelimit-headers-10  5
 jma-faq-typhoon  1
 jma-yougo-kaze  1
-jp-2011-056072-seiu-kenyo-gasa  6
+jp-2011-056072-seiu-kenyo-gasa  5
 jstage-jniph-74-1-2-rehabilitation  2
 jstage-jniph-74-2-119-wbgt  1
-kantei-221-shisei-hoshin  8
+kantei-221-shisei-hoshin  7
 kantei-unga81-general-debate-speech  1
-kimino-mayor-2022-09  1
 kokkai-217-sangiin-shohisha-7  22
 maff-kyodo-ryori-okaisan-ja  1
 mdn-using-fetch-ja  1
@@ -43,11 +42,10 @@ mhlw-norovirus-qa  16
 moriguchi-satsuki-gakuen-ijime-houshin  3
 neeview-changelog-ja  9
 nsf-19-582-reu-solicitation  1
-nstac-microdata-forum  1
 nta-taxanswer-1120  2
 nws-glossary-a  2
 openapi-spec-3-1-0  2
-ppc-guidelines-tsusoku  13
+ppc-guidelines-tsusoku  12
 python-code-quality-list-2016-03  4
 qiita-jnchito-good-sample-code  4
 react-ja-thinking  3
@@ -62,7 +60,7 @@ tokyoapp-service-terms  3
 us-4683202-nucleic-acid-amplification  5
 utokyo-gakui-kisoku  1
 vue-docs-ja-reactivity-fundamentals  2
-wikipedia-ja-idobata-template-collapse  2
+wikipedia-ja-idobata-template-collapse  3
 wikipedia-ja-talk-oden  9
 zenn-coji-ai-smell-lint  2
 zenn-kaityo256-happy-presentation  9

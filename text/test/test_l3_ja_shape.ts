@@ -64,11 +64,9 @@ describe("L3 日本語 — 文字と語彙", () => {
     });
 
     it("invalid: 都道府県や丁目が無い長い語、住所の後ろに続く長い語は数える", () => {
-      assert.ok(idsFor("東京都知事選挙管理委員会事務局に問い合わせる。").includes("max-kanji-continuous"));
+      // 組織の名前の後ろに役職や普通の語が続けば、書き手が組み立てた語。
       assert.ok(idsFor("新宿区役所総務部総務課長に届ける。").includes("max-kanji-continuous"));
-      assert.ok(idsFor("埼玉県市町村総合事務組合に問い合わせる。").includes("max-kanji-continuous"));
       assert.ok(idsFor("大阪府市町村振興協会資料を確認する。").includes("max-kanji-continuous"));
-      assert.ok(idsFor("東京都港区政策経営部に届ける。").includes("max-kanji-continuous"));
       // 数と単位だけの連なりは、地名で始まらないので住所ではない。
       assert.ok(idsFor("三百二十五万四千八百人が参加した。").includes("max-kanji-continuous"));
       // 地名を並べただけのものは住所ではない（地名が単位を挟まずに続く）。
@@ -76,8 +74,6 @@ describe("L3 日本語 — 文字と語彙", () => {
       assert.ok(idsFor("京都奈良大阪神戸市に展開します。").includes("max-kanji-continuous"));
       // 都道府県の単位（語彙表 prefecture-unit）は住所の先頭にしか来ない。地名の後ろに付けば並び。
       assert.ok(idsFor("北海道神奈川県横浜市に展開します。").includes("max-kanji-continuous"));
-      // 割られた町名の後ろに普通の語が続けば住所ではない。
-      assert.ok(idsFor("和歌山県海草郡紀美野町役場総務課に届ける。").includes("max-kanji-continuous"));
       // 数の後ろが助数詞でない語なら住所ではない。
       assert.ok(idsFor("東京都港区新橋二政策に届ける。").includes("max-kanji-continuous"));
       // 住所の後ろの 1 字の語も連なりの一部で、住所だけの連なりではない。
@@ -107,7 +103,7 @@ describe("L3 日本語 — 文字と語彙", () => {
       assert.deepEqual(kanjiWords("2026年\n度東京都港区新橋二丁目に置く。"), []);
       assert.deepEqual(kanjiWords("2026年\n度東京都港区新橋二丁目課に置く。"), ["東京都港区新橋二丁目課"]);
       assert.deepEqual(kanjiWords("昭和41年7月1日新東京国際空港公団が発足した。"), []);
-      assert.deepEqual(kanjiWords("7月1日新東京国際空港公団総務部が発足した。"), ["新東京国際空港公団総務部"]);
+      assert.deepEqual(kanjiWords("7月1日新東京国際空港公団総務部長が着任した。"), ["新東京国際空港公団総務部長"]);
     });
 
     it("同じ連なりが文に二度出れば、それぞれの位置で助数詞かどうかを読む", () => {
@@ -128,11 +124,28 @@ describe("L3 日本語 — 文字と語彙", () => {
       assert.ok(!idsFor("動力炉核燃料開発事業団の報告を読む。").includes("max-kanji-continuous"));
     });
 
+    it("valid: 組織の名前は、書き手が変えられないので数えない（語彙表 organisation-form・organisation-unit）", () => {
+      // 法人格で始まり組織の語で閉じる。経済産業省の報道発表にある研究所の名前。
+      assert.ok(!idsFor("国立研究開発法人産業技術総合研究所が参加します。").includes("max-kanji-continuous"));
+      // 地名で始まり組織の語で閉じる。紀美野町のお知らせにある会議と組織の名前。
+      assert.ok(!idsFor("紀美野町青少年育成町民会議が主催します。").includes("max-kanji-continuous"));
+      assert.ok(!idsFor("下神野地区自主防災組織が訓練をしました。").includes("max-kanji-continuous"));
+      assert.ok(!idsFor("日本経済団体連合会が提言した。").includes("max-kanji-continuous"));
+      // 組織の語で閉じる区切りが続く（〜省〜局〜課、住所の後ろの役場・部・課）。
+      assert.ok(!idsFor("経済産業省製造産業局自動車課に問い合わせる。").includes("max-kanji-continuous"));
+      assert.ok(!idsFor("新東京国際空港公団総務部に届ける。").includes("max-kanji-continuous"));
+      // デジタル庁のサービスデザインガイドラインにある学部名。
+      assert.ok(!idsFor("武蔵野美術大学造形構想学部の教員が参加した。").includes("max-kanji-continuous"));
+      assert.ok(!idsFor("東京都知事選挙管理委員会事務局に問い合わせる。").includes("max-kanji-continuous"));
+      assert.ok(!idsFor("埼玉県市町村総合事務組合に問い合わせる。").includes("max-kanji-continuous"));
+      assert.ok(!idsFor("東京都港区政策経営部に届ける。").includes("max-kanji-continuous"));
+      assert.ok(!idsFor("和歌山県海草郡紀美野町役場総務課に届ける。").includes("max-kanji-continuous"));
+    });
+
     it("invalid: 名前に普通の語が続く語、名前の並び、辞書が固有名詞と読まない正式名称は数える", () => {
-      assert.ok(idsFor("新東京国際空港公団総務部に届ける。").includes("max-kanji-continuous"));
-      // デジタル庁のサービスデザインガイドラインにある学部名。武蔵野美術大学だけが固有名詞で、後ろは普通の語。
-      assert.ok(idsFor("武蔵野美術大学造形構想学部の教員が参加した。").includes("max-kanji-continuous"));
-      assert.ok(idsFor("日本経済団体連合会が提言した。").includes("max-kanji-continuous"));
+      // 頭に法人格も地名も無い 1 区切りは、書き手が組み立てた語と見分けられない。
+      assert.ok(idsFor("個人情報保護法施行規則改正案検討会が開かれた。").includes("max-kanji-continuous"));
+      assert.ok(idsFor("社会課題解決推進会議を開きます。").includes("max-kanji-continuous"));
       assert.ok(idsFor("田中一郎山田花子佐藤次郎が出席した。").includes("max-kanji-continuous"));
       // デジタル庁のプライバシーポリシーにある委員会名。形態素解析は 個人/情報/保護/委員/会 と普通の語に割る。
       assert.ok(idsFor("個人情報保護委員会規則に従う。").includes("max-kanji-continuous"));

@@ -156,3 +156,22 @@ entries:
   - { pattern: member no, group: member }
   - { pattern: customer number, group: customer }
   - { pattern: customer number is, group: customer }
+  # An incident's number. A postmortem and a support ticket may be numbered apart from the incident, so each is a group of its own.
+  # A bare "incident" is not a label (an incident in March); a code with no label is still compared with the one labelled code it swaps to.
+  - { pattern: incident number, group: incident }
+  - { pattern: incident number is, group: incident }
+  - { pattern: incident no., group: incident }
+  - { pattern: incident no, group: incident }
+  - { pattern: incident id, group: incident }
+  - { pattern: incident id is, group: incident }
+  - { pattern: postmortem id, group: postmortem }
+  - { pattern: postmortem id is, group: postmortem }
+  - { pattern: postmortem number, group: postmortem }
+  - { pattern: postmortem number is, group: postmortem }
+  - { pattern: ticket, group: ticket }
+  - { pattern: ticket number, group: ticket }
+  - { pattern: ticket number is, group: ticket }
+  - { pattern: ticket no., group: ticket }
+  - { pattern: ticket no, group: ticket }
+  - { pattern: ticket id, group: ticket }
+  - { pattern: ticket id is, group: ticket }

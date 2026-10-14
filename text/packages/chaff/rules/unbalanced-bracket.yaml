@@ -52,5 +52,5 @@ example:
       The plan (see below) is ready.
 
 not_flagged:
-  ja: 行の頭や空白の後ろの「1)」「a)」「事例）」のような三文字までの番号の印、数の後ろの「）」、行の頭でも使う番号の印を括弧の中に書いたもの（「以下、事例5）まで同じ。」）、コードと URL は数えません。段落をまたいで閉じる括弧と、次の段落を同じ引用符で始める台詞も指しません。
-  en: Labels of up to three characters such as "1)" or "a)" at the start of a line or after a space, a ")" right after a number, a numbered label also used at the start of a line, written inside an aside ("(see the notes; A3) and more)"), code and URLs are not counted. A bracket closed in a later paragraph, and a quotation carried into a paragraph that opens with the same mark, are not reported.
+  ja: 行の頭や空白の後ろの「1)」「a)」「事例）」のような三文字までの番号の印、数の後ろの「）」、行の頭でも使う番号の印を括弧の中に書いたもの（「以下、事例5）まで同じ。」）、コードと URL は数えません。段落をまたいで閉じる括弧と、次の段落を同じ引用符で始める台詞も指しません。小数と単位の間の引用符はインチの印（.015 “Hg）として数えません。
+  en: Labels of up to three characters such as "1)" or "a)" at the start of a line or after a space, a ")" right after a number, a numbered label also used at the start of a line, written inside an aside ("(see the notes; A3) and more)"), code and URLs are not counted. A bracket closed in a later paragraph, and a quotation carried into a paragraph that opens with the same mark, are not reported. A curly quote between a decimal number and a unit is an inch mark (".015 “Hg") and is not counted.

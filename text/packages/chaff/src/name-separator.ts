@@ -49,13 +49,64 @@ const QUANTITY_LEAD_POS = new Set(["ADJ", "ADV", "ADP", "AUX", "VERB", "SCONJ", 
 /** 値の組の最も短い長さ。1 字の語（計 5件）は量の前置き。 */
 const MIN_PART_LENGTH = 2;
 
+/** 組を囲む字（括弧・表の升目の線）。組が囲みの中で読点で並ぶこともある（電話 03-1234-5678、内線 3839）。 */
+const LAST_ENCLOSURE_OPEN = /[（(｜|][^（(｜|]*$/u;
+const ENCLOSURE_CLOSE = /[）)｜|]/u;
+
+/** 組と組を分ける読点。数の桁の区切り（1,000）のコンマは除く。 */
+const PAIR_COMMA = /[、，]|(?<!\d),|,(?!\d)/gu;
+
+/** 行の頭の字下げと箇条書きの印（「- 」「1. 」）。 */
+const PAIR_LEAD = /^[ \t\u3000]*(?:(?:[-*+]|\d{1,3}[.．)）])[ \t\u3000]+)?/u;
+
+/** 項目名: 空白・数字・区切りの字を含まない短い語。値: 数字で始まり、空白も区切りも文の終わりも含まない一続き（桁の区切りのコンマは含む）。 */
+const PAIR_LABEL = /^[^\s\d、，,（）()｜|：:。！？]{2,12}$/u;
+const PAIR_VALUE = /^\d(?:[^\s、，,（）()｜|。！？]|(?<=\d),(?=\d))*$/u;
+
+/** 項目名に出る品詞。名詞だけで、助詞・副詞（およそ）・接頭の語（約）を含めば、量の前置きか文。 */
+const PAIR_LABEL_POS = new Set(["NOUN", "PROPN"]);
+
+const SPACE_RUN = /^[ \t\u3000]*/u;
+
+/** at を含む囲み: 括弧か表の升目の線の内側、無ければ行（字下げと箇条書きの印の後ろ）。 */
+const enclosureAround = (text: string, line: Span, at: number): Span => {
+  const open = LAST_ENCLOSURE_OPEN.exec(text.slice(line.start, at));
+  const start = open === null ? line.start + (PAIR_LEAD.exec(text.slice(line.start, line.end))?.[0].length ?? 0) : line.start + open.index + 1;
+  const close = text.slice(at, line.end).search(ENCLOSURE_CLOSE);
+  return { start, end: close === -1 ? line.end : at + close };
+};
+
+/** 囲みの中で at を含む組。読点で区切り、前後の空白を除く。 */
+const pairAround = (text: string, enclosure: Span, at: number): Span => {
+  const commas = [...text.slice(enclosure.start, enclosure.end).matchAll(PAIR_COMMA)].map((match) => enclosure.start + match.index);
+  const rawStart = (commas.filter((comma) => comma < at).at(-1) ?? enclosure.start - 1) + 1;
+  const rawEnd = commas.find((comma) => comma > at) ?? enclosure.end;
+  const start = rawStart + (SPACE_RUN.exec(text.slice(rawStart, at))?.[0].length ?? 0);
+  return { start, end: rawStart + text.slice(rawStart, rawEnd).trimEnd().length };
+};
+
 /**
- * 「所属：経済学部 経済学科 1年」「物件：メゾンかえで 203号室」「振込先：みなと銀行 普通 1234567」のように、項目名とコロンの後ろに
- * 値の組を空白で並べた行で、組と、数で始まる次の組のあいだの空白。値の区切りで、日本語と数字のあいだの空け方ではない。
- * boundary は空けた数字の前の境目（text[offset] が空白）。tokens は文書全体の座標で、base は text の先頭の位置。
+ * 「最高速度 40km/h」「（内線 3839～40）」「- 定員 30名」のように、短い項目名と、それが名指す値を空白一つで並べただけの組の、名と値のあいだの空白。
+ * 組は行・括弧の中・表の升目にそれだけで書くか、読点で並べる。項目の区切りで、文の中の空け方ではない。
+ * 囲みの中に助詞や動詞がある（定員 30名で行います、参加者 30名、来場者50名を見込みます）、値の後ろに語が続く（内線 3839 まで）、
+ * 項目名が 1 字（約 30名）か名詞でない語を含む組は、文の中の空白として数える。
  */
-export const isFieldSeparator = (text: string, boundary: Boundary, tokens: readonly Token[] | undefined, base: number): boolean => {
-  if (tokens === undefined || boundary.kind !== "before-digit" || !boundary.spaced) return false;
+const isLabelledValue = (text: string, boundary: Boundary, tokens: readonly Token[], base: number): boolean => {
+  const enclosure = enclosureAround(text, lineAround(text, boundary.offset), boundary.offset);
+  const pair = pairAround(text, enclosure, boundary.offset);
+  const label = { start: pair.start, end: boundary.offset };
+  if (!PAIR_LABEL.test(text.slice(label.start, label.end)) || !PAIR_VALUE.test(text.slice(boundary.offset + 1, pair.end))) return false;
+  if (SENTENCE_END.test(text.slice(enclosure.start, enclosure.end))) return false;
+  const labelTokens = tokensIn(tokens, label, base);
+  return (
+    labelTokens.length > 0 &&
+    labelTokens.every((token) => PAIR_LABEL_POS.has(token.pos)) &&
+    !tokensIn(tokens, enclosure, base).some((token) => CLAUSE_POS.has(token.pos))
+  );
+};
+
+/** 項目名とコロンの後ろに値の組を並べた行の、組と、数で始まる次の組のあいだの空白か。 */
+const isColonFieldPart = (text: string, boundary: Boundary, tokens: readonly Token[], base: number): boolean => {
   const line = lineAround(text, boundary.offset);
   const label = FIELD_LABEL.exec(text.slice(line.start, line.end));
   if (label === null || SENTENCE_END.test(text.slice(line.start, line.end))) return false;
@@ -64,6 +115,16 @@ export const isFieldSeparator = (text: string, boundary: Boundary, tokens: reado
   const partStart = Math.max(wordStart(text, boundary.offset), valueStart);
   const partEnd = tokens.find((token) => token.span.end === base + boundary.offset);
   return boundary.offset - partStart >= MIN_PART_LENGTH && partEnd !== undefined && !QUANTITY_LEAD_POS.has(partEnd.pos);
+};
+
+/**
+ * 項目と値を分ける空白。「所属：経済学部 経済学科 1年」「振込先：みなと銀行 普通 1234567」のように項目名とコロンの後ろに値の組を並べた行の組と組のあいだか、
+ * 「最高速度 40km/h」「（内線 3839）」のように短い項目名と値を並べただけの組の、名と値のあいだ。値の区切りで、日本語と数字のあいだの空け方ではない。
+ * boundary は空けた数字の前の境目（text[offset] が空白）。tokens は文書全体の座標で、base は text の先頭の位置。
+ */
+export const isFieldSeparator = (text: string, boundary: Boundary, tokens: readonly Token[] | undefined, base: number): boolean => {
+  if (tokens === undefined || boundary.kind !== "before-digit" || !boundary.spaced) return false;
+  return isColonFieldPart(text, boundary, tokens, base) || isLabelledValue(text, boundary, tokens, base);
 };
 
 /**

@@ -5,7 +5,7 @@ import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { holdsAside } from "../packages/chaff/src/structure/reference-text.ts";
+import { endsAsSentence, endsList, holdsAside } from "../packages/chaff/src/structure/reference-text.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
 // 参照に添えた名前と参照先の見出し（reference-title-mismatch）、参照に添えた話題と参照先の中身（reference-topic-missing）。
@@ -72,6 +72,10 @@ describe("reference-title-mismatch", () => {
       );
     assert.deepEqual(contract("乙が第2条（損害賠償）"), ["第2条:損害賠償≠秘密保持"]);
     assert.deepEqual(contract("乙が第2条（秘密保持）"), []);
+    assert.deepEqual(contract("乙が第2条（第三項を除く。）"), []);
+    assert.deepEqual(contract("乙が第2条（第3条において準用する場合を含む。）"), []);
+    assert.deepEqual(contract("乙が第2条（損害賠償）（第三項を除く。）"), ["第2条:損害賠償≠秘密保持"]);
+    assert.deepEqual(contract("乙が第2条「乙は秘密を守る。」"), []);
   });
 
   it("a number given to two articles points at neither", () => {
@@ -108,6 +112,21 @@ describe("reference-title-mismatch", () => {
     assert.deepEqual(titleEn("For fees, see Section 2 (2024 edition)."), []);
     assert.deepEqual(titleJa("料金は第2章（前述）のとおりです。"), []);
     assert.deepEqual(titleEn("As in Section 2 (b) and Section 3(ii), fees apply."), []);
+  });
+
+  it("a name after a list or range of references names the group, not the last one", () => {
+    assert.deepEqual(titleEn("See sections 2 and 3 (fees and refunds)."), []);
+    assert.deepEqual(titleEn("See sections 1 to 3 (general terms, &c.)."), []);
+    assert.deepEqual(titleEn("See section 2 and section 3 (money)."), []);
+    assert.deepEqual(titleEn("See sections 1, 2 or 3 (money)."), []);
+  });
+
+  it("a reference in a list that carries its own name, or a Japanese list (the bracket binds to the last), is compared", () => {
+    assert.deepEqual(titleEn("See section 2 (Pricing) and section 3 (Pricing)."), ["section 3:Pricing≠Refunds"]);
+    assert.deepEqual(titleEn("Section 2 applies; see Section 3 (Pricing)."), ["Section 3:Pricing≠Refunds"]);
+    assert.deepEqual(titleEn("Subject to section 2, section 3 (Pricing) applies."), ["section 3:Pricing≠Refunds"]);
+    assert.deepEqual(titleJa("第2章（料金）及び第3章（料金）を見てください。"), ["第3章:料金≠返金"]);
+    assert.deepEqual(titleJa("第2章及び第3章（料金）を見てください。"), ["第3章:料金≠返金"]);
   });
 
   it("a reference to another document is not compared with this document's headings", () => {
@@ -148,5 +167,42 @@ describe("holdsAside", () => {
     assert.equal(holdsAside("et seq.", "et seq"), true);
     assert.equal(holdsAside("上記参照", "上記"), true);
     assert.equal(holdsAside("Pricing", ""), false);
+  });
+});
+
+describe("endsAsSentence", () => {
+  it("brackets closed by a full stop hold a note on the reference's scope, not a name", () => {
+    assert.equal(endsAsSentence("第七項を除く。"), true);
+    assert.equal(endsAsSentence("同条第二項において準用する場合を含む。"), true);
+    assert.equal(endsAsSentence("第二号に係る部分に限る．"), true);
+  });
+
+  it("a name, an English abbreviation's period and an empty bracket are not a sentence", () => {
+    assert.equal(endsAsSentence("秘密保持"), false);
+    assert.equal(endsAsSentence("除く。の解釈"), false);
+    assert.equal(endsAsSentence("Payments to Acme Inc."), false);
+    assert.equal(endsAsSentence("stay of legal proceedings, &c."), false);
+    assert.equal(endsAsSentence(""), false);
+    assert.equal(endsAsSentence("。"), true);
+  });
+});
+
+describe("endsList", () => {
+  const joints = ["and", "to", ", and", "及び"];
+  it("a joint alone between two references makes a list", () => {
+    assert.equal(endsList(" and ", joints), true);
+    assert.equal(endsList(" to ", joints), true);
+    assert.equal(endsList(", and ", joints), true);
+    assert.equal(endsList("及び", joints), true);
+  });
+
+  it("anything more than a joint, or nothing, is not a list", () => {
+    assert.equal(endsList("", joints), false);
+    assert.equal(endsList(", ", joints), false);
+    assert.equal(endsList("  ", joints), false);
+    assert.equal(endsList(" (Pricing) and ", joints), false);
+    assert.equal(endsList(" applies; see ", joints), false);
+    assert.equal(endsList(" and the ", joints), false);
+    assert.equal(endsList(" and ", []), false);
   });
 });

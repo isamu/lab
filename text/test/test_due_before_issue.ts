@@ -4,6 +4,7 @@ import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { dueBeforeIssue, type DueWords } from "../packages/chaff/src/structure/due-date.ts";
+import { withoutLabelVersion } from "../packages/chaff/src/structure/versioned-label.ts";
 
 // 期限が発行日より前（due-before-issue）。例文はすべて自作。
 
@@ -80,5 +81,70 @@ describe("due-before-issue: 期限が発行日より前", () => {
     assert.deepEqual(dueBeforeIssue("発行日：2026年11月30日\nお支払期限：2026年11月25日", dates, { issue: [], due: [], passed: [] }), []);
     assert.deepEqual(dueBeforeIssue("", [], WORDS), []);
     assert.deepEqual(findingsOf(""), []);
+  });
+});
+
+const JA_NOTES = (support: string): string => `# まめ帳簿 3.0.0 リリースノート\n\nリリース日：2026年9月29日\n\n本文です。\n\n${support}\n`;
+const EN_NOTES = (support: string): string => `# Ledgerly 5.0.0 Release Notes\n\nRelease date: September 29, 2026\n\nBody text.\n\n${support}\n`;
+
+describe("due-before-issue: リリース日より前のサポート終了日", () => {
+  it("リリース日より前のサポート終了日を指す。版を書いた語も、書かない語も読む", () => {
+    ["サポート終了日：2025年9月30日", "3.0.0 のサポート終了日：2025年9月30日", "v3.0 のサポート期限：2025年9月30日"].forEach((line) => {
+      assert.equal(findingsOf(JA_NOTES(line)).length, 1, line);
+    });
+    ["End of support: September 30, 2025", "End of support for 5.0.0: September 30, 2025", "Support ends for v5.0: September 30, 2025"].forEach((line) => {
+      assert.equal(findingsOf(EN_NOTES(line), en).length, 1, line);
+    });
+    assert.deepEqual(findingsOf(EN_NOTES("End of support for 5.0.0: September 30, 2025"), en), [
+      '"End of support" September 30, 2025 is before "Release date" September 29, 2026',
+    ]);
+  });
+
+  it("リリース日より後のサポート終了日は言わない", () => {
+    assert.deepEqual(findingsOf(JA_NOTES("3.0.0 のサポート終了日：2028年9月30日")), []);
+    assert.deepEqual(findingsOf(EN_NOTES("End of support for 5.0.0: September 30, 2028"), en), []);
+  });
+
+  it("版でないものや、版の後ろに語が続く行は読まない", () => {
+    [
+      "End of support for enterprise customers: September 30, 2025",
+      "End of support for 5: September 30, 2025",
+      "End of support for 5.0.0 users: September 30, 2025",
+      "End of support for 5.0.0-beta: September 30, 2025",
+      "End of support with 5.0.0: September 30, 2025",
+      "Note: End of support for 5.0.0: September 30, 2025",
+    ].forEach((line) => assert.deepEqual(findingsOf(EN_NOTES(line), en), [], line));
+    ["法人のサポート終了日：2025年9月30日", "なお 3.0.0 のサポート終了日：2025年9月30日", "3.0.0 と 2.0 のサポート終了日：2025年9月30日"].forEach((line) =>
+      assert.deepEqual(findingsOf(JA_NOTES(line)), [], line),
+    );
+  });
+
+  it("リリース日の語は、ほかの組の発行日にならない", () => {
+    assert.deepEqual(findingsOf("# 請求書\n\nリリース日：2026年11月30日\n\nお支払期限：2026年11月25日\n"), []);
+    assert.deepEqual(findingsOf("# Price list\n\nRelease date: November 30, 2026\n\nValid until: November 25, 2026\n", en), []);
+  });
+});
+
+describe("withoutLabelVersion", () => {
+  const words = { after: ["for"], before: ["の"] };
+
+  it("版を除いた語の行を返す", () => {
+    assert.equal(withoutLabelVersion("End of support for 5.0.0: September 30, 2025", "End of support", words), "End of support: September 30, 2025");
+    assert.equal(withoutLabelVersion("- end of support FOR v5.0 | 2025", "End of support", words), "end of support | 2025");
+    assert.equal(withoutLabelVersion("| 3.0.0 のサポート終了日 | 2025年9月30日 |", "サポート終了日", words), "サポート終了日 | 2025年9月30日 |");
+    assert.equal(withoutLabelVersion("3.0の　サポート終了日：2025年9月30日", "サポート終了日", words), "サポート終了日：2025年9月30日");
+    assert.equal(withoutLabelVersion("1. 3.0.0 のサポート終了日：2025年9月30日", "サポート終了日", words), "サポート終了日：2025年9月30日");
+    assert.equal(withoutLabelVersion("2) End of support for 5.0.0: 2025", "End of support", words), "End of support: 2025");
+  });
+
+  it("版を書いていない行、版でないもの、語の無い言語では undefined", () => {
+    assert.equal(withoutLabelVersion("End of support: September 30, 2025", "End of support", words), undefined);
+    assert.equal(withoutLabelVersion("End of support for 2026: September 30, 2025", "End of support", words), undefined);
+    assert.equal(withoutLabelVersion("End of support for: September 30, 2025", "End of support", words), undefined);
+    assert.equal(withoutLabelVersion("End of supportfor 5.0: September 30, 2025", "End of support", words), undefined);
+    assert.equal(withoutLabelVersion("3.0.0 サポート終了日：2025年9月30日", "サポート終了日", words), undefined);
+    assert.equal(withoutLabelVersion("3.0.0 の法人のサポート終了日：2025年9月30日", "サポート終了日", words), undefined);
+    assert.equal(withoutLabelVersion("End of support for 5.0.0: September 30, 2025", "End of support", { after: [], before: [] }), undefined);
+    assert.equal(withoutLabelVersion("", "End of support", words), undefined);
   });
 });
