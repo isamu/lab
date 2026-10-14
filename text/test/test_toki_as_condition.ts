@@ -35,8 +35,8 @@ describe("toki-as-condition: 条件の「時」を指す", () => {
   it("法令の「とき」を「時」に替えると指し、元の文は指さない（労働基準法第十八条第五項）", () => {
     const written =
       "使用者は、労働者の貯蓄金をその委託を受けて管理する場合において、労働者がその返還を請求したときは、遅滞なく、これを返還しなければならない。";
-    assert.deepEqual(findingsOf(`第十八条　${written}\n`, STATUTE), []);
-    assert.deepEqual(findingsOf(`第十八条　${written.replace("請求したときは", "請求した時は")}\n`, STATUTE), [SAYS]);
+    assert.deepEqual(findingsOf(`第十八条\u3000${written}\n`, STATUTE), []);
+    assert.deepEqual(findingsOf(`第十八条\u3000${written.replace("請求したときは", "請求した時は")}\n`, STATUTE), [SAYS]);
   });
 
   it("どの位置か: 時の字を指す", () => {
