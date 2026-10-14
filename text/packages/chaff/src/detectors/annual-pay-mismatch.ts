@@ -3,9 +3,8 @@
 // are annual-pay-label, the other words annual-pay-word, approximate-marker, duration-month, number-word (digit),
 // range-connector and amount-range-word.
 import type { Detector, Finding, Lexicon, ProseDocument } from "../plugin.ts";
-import { annualPayMismatches, type AnnualPayWords, type PayAmount, type PositionedWord } from "../structure/annual-pay.ts";
-import { scaledAmountOf, scaleWordsOf } from "./amount-scale.ts";
-import { amountsIn, formsOf } from "./currency-notation.ts";
+import { annualPayMismatches, type AnnualPayWords, type PositionedWord } from "../structure/annual-pay.ts";
+import { statedAmountsOf } from "./stated-amounts.ts";
 import { proseAndTablesOf } from "../table-text.ts";
 import { quoteAround } from "./quote-around.ts";
 
@@ -44,23 +43,9 @@ const wordsOf = (doc: ProseDocument): AnnualPayWords => ({
   numberWords: numberWordsOf(doc),
 });
 
-const amountsOf = (text: string, doc: ProseDocument): PayAmount[] => {
-  const scales = scaleWordsOf(doc);
-  return amountsIn(
-    text,
-    formsOf(doc),
-    scales.map((scale) => scale.word),
-  ).flatMap((amount) => {
-    const read = scaledAmountOf(text, amount, scales);
-    return read === undefined
-      ? []
-      : [{ offset: read.offset, end: amount.offset + amount.written.length, currency: read.currency, value: read.value, scale: read.unit }];
-  });
-};
-
 export const annualPayMismatch: Detector = (doc): Finding[] => {
   const text = proseAndTablesOf(doc);
-  return annualPayMismatches(text, amountsOf(text, doc), wordsOf(doc)).map((issue) => ({
+  return annualPayMismatches(text, statedAmountsOf(text, doc), wordsOf(doc)).map((issue) => ({
     rule: "annual-pay-mismatch",
     severity: "warning",
     line: 0,
