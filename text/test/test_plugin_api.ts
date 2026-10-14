@@ -36,7 +36,7 @@ describe("the plugin API", () => {
     const doc = buildDocument("plan.md", SOURCE, en);
 
     it("has the public fields and none of chaff's own", () => {
-      const view = ruleDocumentOf(doc);
+      const view = ruleDocumentOf(doc, undefined);
       assert.deepEqual(Object.keys(view).toSorted(byName), [
         "language",
         "lengthUnit",
@@ -69,18 +69,18 @@ describe("the plugin API", () => {
     });
 
     it("is frozen all the way down, so one rule cannot change what the next reads", () => {
-      const view = ruleDocumentOf(doc);
+      const view = ruleDocumentOf(doc, undefined);
       const sentence = view.sentences[0];
       assert.ok(sentence !== undefined);
       assert.throws(() => Reflect.set(view, "source", "x") || assert.fail("not frozen"));
       assert.equal(Object.isFrozen(sentence), true);
-      assert.equal(Object.isFrozen(ruleDocumentOf(buildDocument("a.md", "会議を行った。\n", ja)).sentences[0]?.tokens?.[0]?.span), true);
+      assert.equal(Object.isFrozen(ruleDocumentOf(buildDocument("a.md", "会議を行った。\n", ja), undefined).sentences[0]?.tokens?.[0]?.span), true);
       assert.equal(Object.isFrozen(view.markup.headings), true);
       assert.equal(Object.isFrozen(view.lexicons), true);
     });
 
     it("shares one copy of a sentence between the document, its paragraphs and its sections", () => {
-      const view = ruleDocumentOf(doc);
+      const view = ruleDocumentOf(doc, undefined);
       const inParagraph = view.paragraphs[0]?.sentences[0];
       assert.ok(inParagraph !== undefined);
       assert.ok(view.sentences.includes(inParagraph));
@@ -95,16 +95,55 @@ describe("the plugin API", () => {
           return Reflect.get(target, key, receiver);
         },
       });
-      const view = ruleDocumentOf(counted);
-      assert.equal(ruleDocumentOf(counted), view);
+      const view = ruleDocumentOf(counted, undefined);
+      assert.equal(ruleDocumentOf(counted, undefined), view);
       assert.equal(reads.count, 0);
       assert.equal(view.markup.markdown, true);
       assert.equal(view.markup, view.markup);
       assert.equal(reads.count, 1);
     });
 
+    describe("its word lists, by the genre the document is run in", () => {
+      const TERMS = [
+        { pattern: "herein", rewrite: "here", genres: ["legal"] },
+        { pattern: "hereto", genres: ["legal/contract", "blog"] },
+        { pattern: "arguably" },
+      ];
+      const withLexicons = (lexicons: ProseDocument["lexicons"]): ProseDocument =>
+        new Proxy(buildDocument("plan.md", SOURCE, en), {
+          get: (target, key, receiver): unknown => (key === "lexicons" ? lexicons : Reflect.get(target, key, receiver)),
+        });
+      const withTerms = (): ProseDocument => withLexicons({ terms: TERMS });
+      const patternsIn = (doc: ProseDocument, genre: string | undefined): string[] =>
+        (ruleDocumentOf(doc, genre).lexicons["terms"] ?? []).map((entry) => entry.pattern);
+
+      it("hold an entry in its genre or group, and the entries for every genre", () => {
+        const doc = withTerms();
+        assert.deepEqual(patternsIn(doc, "legal/contract"), ["herein", "hereto", "arguably"]);
+        assert.deepEqual(patternsIn(doc, "legal/statute"), ["herein", "arguably"]);
+        assert.deepEqual(patternsIn(doc, "blog/tech"), ["hereto", "arguably"]);
+      });
+
+      it("leave an entry out in another genre, or with no genre known, and keep the list when nothing is left", () => {
+        const doc = withLexicons({ terms: TERMS, legal: TERMS.slice(0, 1) });
+        assert.deepEqual(patternsIn(doc, "business/report"), ["arguably"]);
+        assert.deepEqual(patternsIn(doc, undefined), ["arguably"]);
+        assert.deepEqual(ruleDocumentOf(doc, "blog/tech").lexicons["legal"], []);
+        assert.deepEqual(patternsIn(doc, "legalese"), ["arguably"]);
+      });
+
+      it("keep each entry's genres, and are made once per document and genre", () => {
+        const doc = withTerms();
+        const legal = ruleDocumentOf(doc, "legal/contract");
+        assert.deepEqual(legal.lexicons["terms"]?.[0], { pattern: "herein", rewrite: "here", genres: ["legal"] });
+        assert.equal(ruleDocumentOf(doc, "legal/contract"), legal);
+        assert.notEqual(ruleDocumentOf(doc, "blog/tech"), legal);
+        assert.deepEqual(patternsIn(doc, "legal/contract"), ["herein", "hereto", "arguably"]);
+      });
+    });
+
     it("gives tokens with parts of speech and lemmas when the adapter read them", () => {
-      const view = ruleDocumentOf(buildDocument("a.md", "会議を行った。\n", ja));
+      const view = ruleDocumentOf(buildDocument("a.md", "会議を行った。\n", ja), undefined);
       const verb = view.sentences[0]?.tokens?.find((token) => token.pos === "VERB");
       assert.equal(verb?.lemma, "行う");
     });
