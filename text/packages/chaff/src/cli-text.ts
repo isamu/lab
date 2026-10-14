@@ -49,9 +49,10 @@ const USAGE_JA = `chaff — 文章の読みにくいところを見つけます�
   chaff ai-score <file>... [--format text|json] [--json] [--compact]
                                  AI らしさの簡易判定（低・中・高）。生成文に多い目印を、同じジャンルの人の文書と比べる（書いたのが AI かは判定しない）
                                  --json は --format json と同じ。--compact はファイルごとに 1 行
-  chaff grade <items.jsonl> [--out <results.jsonl>] [--baseline <前の results.jsonl>] [--allow-stamp-mismatch]
+  chaff grade <items.jsonl> [--rubric <rubric.yaml|.json>] [--out <results.jsonl>] [--baseline <前の results.jsonl>] [--allow-stamp-mismatch]
               [--variant-key <欄>] [--format text|json|markdown] [--json] [--compact]
                                  AI の出力を JSONL でまとめて採点する（指摘の率・事実・引用・合否。何も送らない）
+                                 --rubric はその回だけ chaff.yaml の grade: の代わりにそのファイル（grade: と同じ形の YAML か JSON）で採点する
                                  --allow-stamp-mismatch はルールか設定が前の回と違っても比べる（そのことを先に出す）
                                  --variant-key は variant の欄の代わりにその欄で出力を分けて並べる。--json は --format json と同じ。markdown は PR のコメント向け
   chaff fix-plan <file> [--depth light|structure|register] [--json]
@@ -108,9 +109,10 @@ const USAGE_EN = `chaff — finds what makes writing hard to read. It never rewr
   chaff ai-score <file>... [--format text|json] [--json] [--compact]
                                  quick AI-likeness score (low, medium, high): signs common in generated text against human documents of the genre (not a verdict on who wrote it)
                                  --json is --format json; --compact prints one line per file
-  chaff grade <items.jsonl> [--out <results.jsonl>] [--baseline <earlier results.jsonl>] [--allow-stamp-mismatch]
+  chaff grade <items.jsonl> [--rubric <rubric.yaml|.json>] [--out <results.jsonl>] [--baseline <earlier results.jsonl>] [--allow-stamp-mismatch]
               [--variant-key <field>] [--format text|json|markdown] [--json] [--compact]
                                  grade a JSONL file of model outputs (finding rates, facts, quotations, pass or fail; sends nothing)
+                                 --rubric grades by that file (YAML or JSON, shaped like grade:) instead of chaff.yaml's grade: for this run
                                  --allow-stamp-mismatch compares with the baseline even when its rules or settings differ, saying so first
                                  --variant-key splits the outputs by that field instead of variant; --json is --format json; markdown is for a PR comment
   chaff fix-plan <file> [--depth light|structure|register] [--json]

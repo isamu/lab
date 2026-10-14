@@ -1,9 +1,10 @@
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { cuedNamesIn, mentionsIn, nameVariants, suffixedNamesIn, type NameMention, type VariantChars } from "../name-variants.ts";
+import type { WordUse } from "../name-end-letter.ts";
 import { withKnownNeighbours } from "../name-neighbours.ts";
 import type { SpellingInput } from "../name-spelling-chars.ts";
 import { lookalikeSlipsIn, type LookalikeChars } from "../name-lookalike-chars.ts";
-import { readingOfWords, type CharReadings } from "../name-char-reading.ts";
+import { givenNameReadingOf, readingOfWords, type CharReadings } from "../name-char-reading.ts";
 import { nameCueAt, type NameCues } from "../name-cue.ts";
 import { quoteAt } from "./structure-tree.ts";
 import { companyMentionsIn, companyVariants, type CompanyForm, type IsProper, type PredicateEnds } from "../company-names.ts";
@@ -32,6 +33,18 @@ const variantCharsOf = (doc: ProseDocument): VariantChars =>
 /** 解析器が読めない名前の字（汰）の読みは、語彙表 name-char-reading が組（group）に言う。 */
 const charReadingsOf = (doc: ProseDocument): CharReadings =>
   new Map((doc.lexicons["name-char-reading"] ?? []).flatMap((entry): [string, string][] => (entry.group === undefined ? [] : [[entry.pattern, entry.group]])));
+
+/**
+ * 名の中での字の読み（建太 の 建 を ケン）は、語彙表 given-name-char-reading が組（group）に言う。解析器が読めない字の読み
+ * （name-char-reading）も名の中で同じに読む。
+ */
+const givenCharReadingsOf = (doc: ProseDocument, chars: CharReadings): CharReadings =>
+  new Map([
+    ...chars,
+    ...(doc.lexicons["given-name-char-reading"] ?? []).flatMap((entry): [string, string][] =>
+      entry.group === undefined ? [] : [[entry.pattern, entry.group]],
+    ),
+  ]);
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
 
@@ -225,21 +238,25 @@ const wordsCovering = (tokens: readonly Token[], startAt: ReadonlyMap<number, nu
 
 /**
  * 空白を挟んだ姓と名で、敬称か肩書きが付くか、人を書く欄にあるもの（高瀬 誠部長、氏名：森川 大輔）。語は解析器の切り方のまま、
- * 読みは語の読みをつなぐ。解析器の語の切れ目と姓・名の端が合わないものは読まない。
+ * 読みは語の読みをつなぐ。名を名の中での字の読みで読み直した読みも持つ（givenNameReading）。解析器の語の切れ目と姓・名の端が
+ * 合わないものは読まない。
  */
 const spacedNameMentionsOf = (doc: ProseDocument, prose: string, charReadings: CharReadings): NameMention[] => {
   const cues = { suffixes: patternsOf(doc, "person-suffix"), titles: patternsOf(doc, "person-title"), labels: patternsOf(doc, "person-label") };
   const tokens = tokensOf(doc);
   const startAt = new Map(tokens.map((token, index) => [token.span.start, index]));
+  const givenChars = givenCharReadingsOf(doc, charReadings);
   return spacedPersonNamesIn(prose, cues).flatMap(({ surname, given }): NameMention[] => {
     const surnameWords = wordsCovering(tokens, startAt, surname);
     const givenWords = wordsCovering(tokens, startAt, given);
     if (surnameWords === undefined || givenWords === undefined) return [];
     const words = [...surnameWords, ...givenWords];
     const surface = `${prose.slice(surname.start, surname.end)} ${prose.slice(given.start, given.end)}`;
-    return [
-      { surface, offset: surname.start, reading: readingOfWords(words, charReadings), words: words.map((word) => word.surface), person: true, cue: "person" },
-    ];
+    const surnameReading = readingOfWords(surnameWords, charReadings);
+    const givenReading = givenNameReadingOf(givenWords, givenChars, charReadings);
+    const givenNameReading = surnameReading === undefined || givenReading === undefined ? undefined : surnameReading + givenReading;
+    const reading = readingOfWords(words, charReadings);
+    return [{ surface, offset: surname.start, reading, givenNameReading, words: words.map((word) => word.surface), person: true, cue: "person" }];
   });
 };
 
@@ -316,12 +333,27 @@ const labelledNamesOf = (doc: ProseDocument, mentions: readonly NameMention[]): 
   );
 };
 
+const LATIN_WORD = /^[A-Za-z]+$/u;
+const LOWERCASE_WORD = /^[a-z]+$/u;
+
+/** 文書が小文字で書くか、品詞解析が普通名詞と読む英字の語（文頭の Hurricane）。 */
+const isCommonToken = (token: Token): boolean => LOWERCASE_WORD.test(token.surface) || (token.pos === "NOUN" && LATIN_WORD.test(token.surface));
+
+/** 文書での英字の語の使い方。名前と読んだ語のうち小文字で書けばふつうの語と、普通名詞として書いた語。 */
+const wordUseOf = (doc: ProseDocument): WordUse => {
+  const tokens = tokensOf(doc);
+  return {
+    ordinary: new Set(tokens.flatMap((token) => (isOrdinaryToken(token) ? [token.surface.toLowerCase()] : []))),
+    common: new Set(tokens.flatMap((token) => (isCommonToken(token) ? [token.surface.toLowerCase()] : []))),
+  };
+};
+
 /** 同じ名前を、文書の中で少しだけ違う形に書いた所（GitHub と Github、山田太郎 と 山田太朗）。少ないほうを指す。 */
 export const nameVariant: Detector = (doc): Finding[] => {
   const prose = doc.prose ?? doc.source;
   const chars = variantCharsOf(doc);
   const mentions = labelledNamesOf(doc, ordinaryNamesOf(doc, nameMentionsOf(doc, prose, chars)));
-  const variants = nameVariants(mentions, chars, spellingInputOf(doc))
+  const variants = nameVariants(mentions, chars, spellingInputOf(doc), wordUseOf(doc))
     .map(({ mention, usual, kind }): Reported => ({ offset: mention.offset, name: mention.surface, usual, kind }))
     .filter(notSpacingOnly);
   const lookalikes = lookalikeSlipsIn(mentions, lookalikeCharsOf(doc)).map(({ mention, usual }) => ({

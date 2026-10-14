@@ -8,6 +8,7 @@ import { describeValue } from "./returned-findings.ts";
 import { isPluginName } from "./plugin-name.ts";
 import { knownGenres } from "../known-genres.ts";
 import { guideLayerOf, type GuideLayer, type GuideProblem } from "../genre-guide/layer.ts";
+import { genresProblemOf, readGenres } from "./entry-genres.ts";
 
 // What a plugin package exports (api.ts PluginSpec), read into what chaff runs: its rules with ids under the plugin's
 // name, their detectors, its word lists and its house styles. A rule is read exactly like a rule in custom_rules, with
@@ -28,6 +29,7 @@ type PluginProblemKind =
   | "name-mismatch"
   | "no-detect"
   | "bad-lexicon"
+  | "bad-lexicon-genres"
   | "bad-style";
 
 /** plugin: as chaff.yaml writes it. detail: what was there instead, the name expected, the rule, list or style at fault. */
@@ -137,30 +139,46 @@ const rulesOf = (raw: unknown, context: RulesContext): Rules => {
 
 // ───────── word lists ─────────
 
-const lexiconEntryOf = (value: unknown): LexiconEntry | undefined => {
+const lexiconEntryOf = (value: unknown, known: ReadonlySet<string>): LexiconEntry | undefined => {
   if (typeof value === "string") return value.trim() === "" ? undefined : { pattern: value.trim() };
   if (!isRecord(value) || typeof value["pattern"] !== "string" || value["pattern"].trim() === "") return undefined;
   const [insteadOf, rewrite] = [value["instead_of"], value["rewrite"]];
+  const genres = readGenres(value["genres"], known);
   return {
     pattern: value["pattern"].trim(),
     ...(typeof insteadOf === "string" && insteadOf.trim() !== "" ? { instead_of: insteadOf.trim() } : {}),
     ...(typeof rewrite === "string" && rewrite.trim() !== "" ? { rewrite: rewrite.trim() } : {}),
+    ...(genres === undefined ? {} : { genres }),
   };
 };
 
-const lexiconOf = (words: unknown): Lexicon | undefined => {
-  const entries = Array.isArray(words) ? words.map(lexiconEntryOf) : [undefined];
+const lexiconOf = (words: unknown, known: ReadonlySet<string>): Lexicon | undefined => {
+  const entries = Array.isArray(words) ? words.map((word: unknown) => lexiconEntryOf(word, known)) : [undefined];
   const readable = entries.flatMap((entry) => (entry === undefined ? [] : [entry]));
   // An empty list would leave its rules running and finding nothing, which reads as a clean document.
   return readable.length === entries.length && readable.length > 0 ? readable : undefined;
 };
 
+/** An entry's genres that cannot be read, as its list, language and pattern with what is wrong. */
+const entryGenresProblem = (list: string, language: string, word: unknown, known: ReadonlySet<string>): string[] => {
+  if (!isRecord(word) || word["genres"] === undefined) return [];
+  const wrong = genresProblemOf(word["genres"], known);
+  return wrong === undefined ? [] : [`${list} (${language}) ${printed(word["pattern"])}: ${wrong}`];
+};
+
+const genresProblemsOf = (list: string, raw: unknown, known: ReadonlySet<string>): string[] =>
+  isRecord(raw)
+    ? Object.entries(raw).flatMap(([language, words]) =>
+        (Array.isArray(words) ? words : []).flatMap((word: unknown) => entryGenresProblem(list, language, word, known)),
+      )
+    : [];
+
 type ListInLanguage = { readonly language: string; readonly list: string; readonly lexicon: Lexicon };
 
 /** One word list in each language it has. undefined when any part of it cannot be read. */
-const listOf = (list: string, raw: unknown): ListInLanguage[] | undefined => {
+const listOf = (list: string, raw: unknown, known: ReadonlySet<string>): ListInLanguage[] | undefined => {
   if (!LOCAL_NAME.test(list) || !isRecord(raw)) return undefined;
-  const read = Object.entries(raw).map(([language, words]) => ({ language, lexicon: lexiconOf(words) }));
+  const read = Object.entries(raw).map(([language, words]) => ({ language, lexicon: lexiconOf(words, known) }));
   const readable = read.flatMap(({ language, lexicon }) => (lexicon === undefined ? [] : [{ language, list, lexicon }]));
   return readable.length === read.length ? readable : undefined;
 };
@@ -178,12 +196,16 @@ const byLanguage = (lists: readonly ListInLanguage[], name: string): Record<stri
 const lexiconsOf = (raw: unknown, name: string, problem: Problem): Lexicons => {
   if (raw === undefined) return { lexicons: {}, lists: new Set(), problems: [] };
   if (!isRecord(raw)) return { lexicons: {}, lists: new Set(), problems: [problem("bad-lexicon", printed(raw))] };
-  const read = Object.entries(raw).map(([list, words]) => ({ list, inLanguages: listOf(list, words) }));
+  const known = new Set(knownGenres());
+  const read = Object.entries(raw).map(([list, words]) => ({ list, words, inLanguages: listOf(list, words, known) }));
   const readable = read.flatMap((entry) => entry.inLanguages ?? []);
   return {
     lexicons: byLanguage(readable, name),
     lists: new Set(readable.map((entry) => entry.list)),
-    problems: read.filter((entry) => entry.inLanguages === undefined).map((entry) => problem("bad-lexicon", entry.list)),
+    problems: [
+      ...read.filter((entry) => entry.inLanguages === undefined).map((entry) => problem("bad-lexicon", entry.list)),
+      ...read.flatMap((entry) => genresProblemsOf(entry.list, entry.words, known).map((detail) => problem("bad-lexicon-genres", detail))),
+    ],
   };
 };
 

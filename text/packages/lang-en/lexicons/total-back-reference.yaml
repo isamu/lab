@@ -1,0 +1,16 @@
+# Words that open a sentence and point back to the total of the sentence before, just before a breakdown phrase
+# ("The project costs a total of $12,000. This consists of $5,000 for design and $6,000 for development.").
+# total-mismatch reads the next sentence's breakdown only when nothing, or one of these, comes before the phrase:
+# "The maintenance plan consists of ..." is about another item.
+id: total-back-reference
+language: en
+entries:
+  - pattern: this
+  - pattern: it
+  - pattern: that
+  - pattern: the total
+  - pattern: this total
+  - pattern: this amount
+  - pattern: the amount
+  - pattern: this sum
+  - pattern: the sum

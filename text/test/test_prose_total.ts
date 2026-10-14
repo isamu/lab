@@ -10,6 +10,9 @@ const WORDS = {
   breakdowns: ["内訳：", "made up of"],
   discounts: ["値引き", "discount"],
   joiners: [" and "],
+  leads: [":"],
+  partials: ["including"],
+  backReferences: ["this"],
 };
 
 /** source の中の金額を、書いた順に単位付きで拾う（テスト用の小さな読み方: 3桁区切りの数と、前の $ か後ろの 円）。 */
@@ -61,6 +64,9 @@ describe("proseTotalMismatches", () => {
         breakdowns: [],
         discounts: [],
         joiners: [],
+        leads: [],
+        partials: [],
+        backReferences: [],
       }),
       [],
     );

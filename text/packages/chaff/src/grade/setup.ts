@@ -28,16 +28,16 @@ const ruleSetOf = async (config: Config, languages: readonly string[]): Promise<
   };
 };
 
-/** A run's settings, rubric and stamp. `languages`: those the items name, beyond the bundled ones. Throws when a language package cannot be loaded. */
+/** A run's settings, rubric and stamp. `run.rubricFile`: a --rubric file's digest, when the rubric came from one. `languages`: those the items name, beyond the bundled ones. Throws when a language package cannot be loaded. */
 export const gradeSetup = async (
   config: Config,
-  run: { readonly experimental: boolean; readonly genre: string | undefined },
+  run: { readonly experimental: boolean; readonly genre: string | undefined; readonly rubricFile?: string | undefined },
   languages: readonly string[],
   rubric: Rubric | undefined,
 ): Promise<GradeSetup> => {
   // chaff.yaml's language and its by_path languages are loaded here too, so a missing package stops the run before grading.
   const named = [config.language, ...config.byPath.map((rule) => rule.language)].filter((language) => language !== undefined);
   const all = [...new Set([...BUNDLED_LANGUAGES, ...named, ...languages])].toSorted(compareText);
-  const settings = { config, experimental: run.experimental, genre: run.genre };
+  const settings = { config, experimental: run.experimental, genre: run.genre, rubricFile: run.rubricFile };
   return { ...settings, rubric, stamp: stampOf(VERSION_LINES, await ruleSetOf(config, all), settings) };
 };

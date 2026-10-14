@@ -9610,6 +9610,14 @@
         "falseAlarms": 0
       }
     },
+    "toki-as-condition": {
+      "groups": {
+        "legal": {
+          "documents": 21,
+          "fired": 1
+        }
+      }
+    },
     "topic-predicate-distance": {
       "groups": {
         "academic": {

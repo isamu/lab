@@ -1,6 +1,28 @@
 # Phrases naming an attribute (fact-conflict, summary-fact-mismatch), written before the value: "headquartered in Austin".
+# The reader's entry age limit, written as what the reader can do up to an age ("You can apply up to the age of 70"): the
+# value right after the phrase is the item fact-document-term groups as age-limit. A phrase about someone else ("Children
+# can travel free up to the age of 12") or about renewal is another limit and is not here. group clause: the phrase is a
+# clause with its own subject, so a phrase before it and a comma ("For the basic plan, you can apply") is a condition.
 id: fact-attribute
 language: en
 entries:
   - pattern: headquartered in
     position: before
+  - pattern: you can apply
+    position: before
+    group: clause
+  - pattern: you can join
+    position: before
+    group: clause
+  - pattern: you can enrol
+    position: before
+    group: clause
+  - pattern: you can enroll
+    position: before
+    group: clause
+  - pattern: you can buy this policy
+    position: before
+    group: clause
+  - pattern: you can take out this policy
+    position: before
+    group: clause

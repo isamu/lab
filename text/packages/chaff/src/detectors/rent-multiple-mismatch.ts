@@ -4,11 +4,9 @@
 // range of rent is joined by range-connector or amount-range-word.
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { rentMultipleMismatches, type RentMultipleWords } from "../structure/rent-multiple.ts";
-import type { StatedAmount } from "../structure/stated-multiple.ts";
-import { scaledAmountOf, scaleWordsOf } from "./amount-scale.ts";
-import { amountsIn, formsOf } from "./currency-notation.ts";
 import { proseAndTablesOf } from "../table-text.ts";
 import { quoteAround } from "./quote-around.ts";
+import { statedAmountsOf } from "./stated-amounts.ts";
 
 const patternsOf = (doc: ProseDocument, lexicon: string, group?: string): string[] =>
   (doc.lexicons[lexicon] ?? []).filter((entry) => group === undefined || entry.group === group).map((entry) => entry.pattern);
@@ -30,23 +28,9 @@ const wordsOf = (doc: ProseDocument): RentMultipleWords => ({
   numberWords: numberWordsOf(doc),
 });
 
-const amountsOf = (text: string, doc: ProseDocument): StatedAmount[] => {
-  const scales = scaleWordsOf(doc);
-  return amountsIn(
-    text,
-    formsOf(doc),
-    scales.map((scale) => scale.word),
-  ).flatMap((amount) => {
-    const read = scaledAmountOf(text, amount, scales);
-    return read === undefined
-      ? []
-      : [{ offset: read.offset, end: amount.offset + amount.written.length, currency: read.currency, value: read.value, scale: read.unit }];
-  });
-};
-
 export const rentMultipleMismatch: Detector = (doc): Finding[] => {
   const text = proseAndTablesOf(doc);
-  return rentMultipleMismatches(text, amountsOf(text, doc), wordsOf(doc)).map((issue) => ({
+  return rentMultipleMismatches(text, statedAmountsOf(text, doc), wordsOf(doc)).map((issue) => ({
     rule: "rent-multiple-mismatch",
     severity: "warning",
     line: 0,

@@ -1,4 +1,4 @@
-import { describe, it } from "node:test";
+import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { latinSpacing } from "./rule-run.ts";
 import { mkdtempSync, writeFileSync } from "node:fs";
@@ -185,6 +185,52 @@ describe("preferred-term", () => {
     const doc = buildDocument("a.md", "# 設定\n\nサーバーを起動する。\n", ja, teamRules(config));
     const ids = runRules(doc, loadRules("ja"), {}, false, "technical/readme").findings.map((finding) => finding.rule);
     assert.ok(ids.includes("preferred-term"));
+  });
+});
+
+describe("preferred-term: a verb to avoid, listed in its dictionary form, matches its conjugations", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+    await en.prepare?.({ pos: true });
+  });
+
+  const offsets = (yaml: string, source: string, adapter = ja): (string | number | undefined)[][] => {
+    const doc = buildDocument("a.md", source, adapter, teamRules(configFrom(yaml)));
+    return runRules(doc, loadRules(adapter.id), { "preferred-term": "normal" }, false, "technical/readme")
+      .findings.filter((finding) => finding.rule === "preferred-term")
+      .map((finding) => [finding.values["matched"], source.slice(Number(finding.values["offset"]), Number(finding.values["offset"]) + 2)]);
+  };
+
+  it("行う matches 行います and 行った, once each", () => {
+    assert.deepEqual(offsets("prefer:\n  行う: おこなう\n", "# 手順\n\n確認を行います。結果は昨日行った。\n"), [
+      ["行う", "行い"],
+      ["行う", "行っ"],
+    ]);
+  });
+
+  it("does not match the spelling to use, nor another okurigana", () => {
+    assert.deepEqual(offsets("prefer:\n  行う: おこなう\n", "# 手順\n\n確認をおこないます。確認を行ないます。\n"), []);
+  });
+
+  it("finds the written form once, not again as a conjugation", () => {
+    assert.deepEqual(offsets("prefer:\n  行う: おこなう\n", "# 手順\n\n確認を行う。\n"), [["行う", "行う"]]);
+  });
+
+  it("does not match the back half of another compound verb, nor inside the conjugated spelling to use", () => {
+    assert.deepEqual(offsets("prefer:\n  取る: とる\n", "# 手順\n\n荷物を受け取ります。荷物を手に取ります。\n"), [["取る", "取り"]]);
+    assert.deepEqual(offsets("prefer:\n  取る: 巻き取る\n", "# 手順\n\n在庫を巻き取ります。\n"), []);
+  });
+
+  it("a noun to avoid is matched as written", () => {
+    assert.deepEqual(offsets("prefer:\n  申込: 申し込み\n", "# 手順\n\n申し込みます。\n"), []);
+  });
+
+  it("an English verb matches its -ing form, which does not contain the entry", () => {
+    assert.deepEqual(offsets("prefer:\n  utilize: use\n", "# Notes\n\nWe are utilizing the tool.\n", en), [["utilize", "ut"]]);
+  });
+
+  it("a pair that differs only in case is not matched through the lemma", () => {
+    assert.deepEqual(offsets("prefer:\n  Ping: ping\n", "# Notes\n\nI pinged the vendor.\n", en), []);
   });
 });
 

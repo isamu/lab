@@ -1,6 +1,7 @@
 import type * as Api from "../api.ts";
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { frozenLexiconOf, ruleDocumentOf } from "./document-view.ts";
+import { entriesForGenre } from "../lexicon-genres.ts";
 import { returnedFindings, type ShapeProblem } from "./returned-findings.ts";
 
 // A detector a team or a plugin wrote, run as one of chaff's. It reads the document through the plugin API, and what it
@@ -54,7 +55,7 @@ const findingsOf = (detect: UntrustedDetector, doc: ProseDocument, options: Api.
 export const moduleDetector =
   (detect: UntrustedDetector, origin: string): Detector =>
   (doc, options): Finding[] => {
-    const lexicon = options.lexicon === undefined ? undefined : frozenLexiconOf(options.lexicon);
+    const lexicon = options.lexicon === undefined ? undefined : frozenLexiconOf(entriesForGenre(options.lexicon, options.genre));
     const outcome = findingsOf(detect, doc, Object.freeze({ lexicon }));
     if ("failure" in outcome) throw new PluginRuleFailure(outcome.failure, origin);
     return outcome.findings;

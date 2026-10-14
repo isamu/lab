@@ -1,0 +1,9 @@
+# Marks that, right after the amount of a total phrase, start the list of every item of that total
+# ("a total of $12,000: $5,000 for design and $6,000 for development").
+# total-mismatch compares the total with the items up to the end of the sentence. "Including" and "of which" are left out: they may name only some of the items.
+id: total-breakdown-lead
+language: en
+entries:
+  - pattern: ":"
+  - pattern: "—"
+  - pattern: "–"

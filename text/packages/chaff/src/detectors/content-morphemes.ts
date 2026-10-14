@@ -7,7 +7,8 @@ import type { Token } from "../plugin.ts";
 const CONTENT_POS = new Set(["NOUN", "PROPN", "NUM", "VERB", "ADJ", "ADV"]);
 
 /** 接頭詞・接尾・非自立の語（Bound）と、動詞にするだけの「する」（VerbType=Light）は、付いた語が中身を持つ。 */
-const isContent = (token: Token): boolean => CONTENT_POS.has(token.pos) && token.features?.["Bound"] !== "Yes" && token.features?.["VerbType"] !== "Light";
+export const isContent = (token: Token): boolean =>
+  CONTENT_POS.has(token.pos) && token.features?.["Bound"] !== "Yes" && token.features?.["VerbType"] !== "Light";
 
 /** 原形で照らす（変えました → 変える）。原形の無い語は書いた形で。 */
 const baseForm = (token: Token): string => (token.lemma ?? token.surface).toLowerCase();

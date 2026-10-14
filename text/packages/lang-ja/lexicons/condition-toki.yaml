@@ -1,0 +1,10 @@
+# 法令の用語の使い分け: 「時」は時点、「とき」は条件（仮定）を言う。toki-as-condition が読む。
+# 法令用語の慣用で、「法令における漢字使用等について」（平成 22 年 内閣法制局長官決定）も条件の「とき」をかなで書く。
+#
+# pattern は時点を言う名詞、rewrite は条件を言うときの書き方。動詞・助動詞・形容詞のすぐ後ろで、
+# condition-follower の助詞が続く所だけを見る（事故の時、その時、相続開始の時から は見ない）。
+id: condition-toki
+language: ja
+entries:
+  - pattern: 時
+    rewrite: とき

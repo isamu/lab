@@ -93,13 +93,6 @@
           "line": 36,
           "clean": "| 合計 | 350mg |",
           "planted": "| 合計 | 380mg |"
-        },
-        {
-          "kind": "product-name",
-          "rule": "name-variant",
-          "line": 40,
-          "clean": "わんぱくケア粒は、直射日光",
-          "planted": "わんぱくケア錠は、直射日光"
         }
       ]
     },

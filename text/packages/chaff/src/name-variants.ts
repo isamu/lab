@@ -2,6 +2,7 @@ import type { Token } from "./plugin.ts";
 import { escapeRegExp } from "./orthography.ts";
 import { nameCueAt, type NameCue, type NameCues } from "./name-cue.ts";
 import { isNearSurname } from "./surname-near.ts";
+import { isEndWordSlip, NO_WORD_USE, type WordUse } from "./name-end-letter.ts";
 import { foldedKeysOf, NO_SPELLING, type SpellingInput } from "./name-spelling-chars.ts";
 import { NO_CHAR_READINGS, readingOfWords } from "./name-char-reading.ts";
 import { isPersonRun } from "./name-person.ts";
@@ -15,7 +16,8 @@ import { heavierFirst, outweighs, type NameWeight } from "./name-weight.ts";
  * words は名前の語（記号を除く）。読みが同じ二つの名前が、どの語で違うかを見るため。person は人の名前と読めるもの（解析器が
  * 人名と読むか、敬称が付く）。cue は前後の語から見た名前らしさ（name-cue.ts）。ordinary は、ふつうの語でもある一語の名前で、
  * 文書がその形をどこでも名前に使わないもの（name-ordinary-word.ts）。labelled は、人を書く欄（氏名：、Contractor:）に書いた名前
- * （person-field.ts）。
+ * （person-field.ts）。givenNameReading は、空白を挟んだ姓と名の名を、名の中での字の読みで読み直した読み（name-char-reading.ts の
+ * givenNameReadingOf）。解析器が名を別の読みに切ったとき（建太 を タテフトシ）のもう一通りの読み。
  */
 export type NameMention = {
   readonly surface: string;
@@ -26,6 +28,7 @@ export type NameMention = {
   readonly cue?: NameCue;
   readonly ordinary?: boolean;
   readonly labelled?: boolean;
+  readonly givenNameReading?: string | undefined;
 };
 
 export type NameVariant = {
@@ -163,8 +166,12 @@ export const nameKey = (surface: string): string =>
  */
 export type NameEvidence = { readonly person: boolean; readonly named: boolean; readonly nameLike: boolean };
 
-/** readings は書き方の現れの読みのすべて。解析器は同じ字を所によって別に読む（佐伯 を サエキ と サイキ）。 */
-type Tally = NameEvidence & NameWeight & { readonly surface: string; readonly first: NameMention; readonly readings: readonly string[] };
+/**
+ * readings は書き方の現れの読みのすべて。解析器は同じ字を所によって別に読む（佐伯 を サエキ と サイキ）。givenNameReadings は
+ * 現れの givenNameReading のすべて。
+ */
+type Tally = NameEvidence &
+  NameWeight & { readonly surface: string; readonly first: NameMention; readonly readings: readonly string[]; readonly givenNameReadings: readonly string[] };
 
 const readingsWith = (readings: readonly string[], reading: string | undefined): readonly string[] =>
   reading === undefined || readings.includes(reading) ? readings : [...readings, reading];
@@ -184,11 +191,20 @@ const talliesOf = (mentions: readonly NameMention[]): Tally[] => {
     tallies.set(
       mention.surface,
       tally === undefined
-        ? { surface: mention.surface, first: mention, count: 1, readings: readingsWith([], mention.reading), labelled: mention.labelled === true, ...evidence }
+        ? {
+            surface: mention.surface,
+            first: mention,
+            count: 1,
+            readings: readingsWith([], mention.reading),
+            givenNameReadings: readingsWith([], mention.givenNameReading),
+            labelled: mention.labelled === true,
+            ...evidence,
+          }
         : {
             ...tally,
             count: tally.count + 1,
             readings: readingsWith(tally.readings, mention.reading),
+            givenNameReadings: readingsWith(tally.givenNameReadings, mention.givenNameReading),
             person: tally.person || evidence.person,
             named: tally.named || evidence.named,
             nameLike: tally.nameLike || evidence.nameLike,
@@ -268,13 +284,16 @@ const isSwapOrReplace = (left: string, right: string): boolean => {
 const isInnerDrop = (longer: string, shorter: string): boolean =>
   [...longer].some((_char, index) => index > 0 && index < longer.length - 1 && longer.slice(0, index) + longer.slice(index + 1) === shorter);
 
-/** 二つの語が一字違いか。英字だけの、長さ 5 以上の語で。 */
-export const isNearWord = (left: string, right: string): boolean => {
-  if (left === right || !LATIN_WORD.test(left) || !LATIN_WORD.test(right) || Math.min(left.length, right.length) < MIN_NEAR_LENGTH) return false;
+/** 二つの英字だけの語が一字違いか（置き換え・隣どうしの入れ替え・中の抜け）。長さは問わない。 */
+const isOneLetterApart = (left: string, right: string): boolean => {
+  if (left === right || !LATIN_WORD.test(left) || !LATIN_WORD.test(right)) return false;
   if (left.length === right.length) return isSwapOrReplace(left, right);
   if (left.length === right.length + 1) return isInnerDrop(left, right);
   return right.length === left.length + 1 && isInnerDrop(right, left);
 };
+
+/** 二つの語が一字違いか。英字だけの、長さ 5 以上の語で。 */
+export const isNearWord = (left: string, right: string): boolean => Math.min(left.length, right.length) >= MIN_NEAR_LENGTH && isOneLetterApart(left, right);
 
 /** 語の一つを伏せた形。ほかの語が同じ二つの名前は、同じ形を一つ持つ。 */
 const maskedKeys = (tally: Tally): string[] => {
@@ -297,7 +316,24 @@ const isSlipOf = (tally: Tally, other: Tally): boolean => {
   return words !== undefined && isNearWord(...words);
 };
 
-const nearVariants = (tallies: readonly Tally[]): NameVariant[] => variantsIn(groupBy(tallies, maskedKeys), "near", isSlipOf, true);
+/**
+ * 二語以上の名前の一語だけが、終わりの一字の抜けか足し（Rachel Whitmore と Rachel Whitmor）か、最後の語（姓）が四字でも一字違い
+ * （Daniel Reyes と Daniel Reys）で、相手のほうが重い（outweighs）。違う語のどちらかがふつうの語なら語の形の違い。
+ */
+const isEndSlipOf =
+  (use: WordUse): Alike =>
+  (tally, other) => {
+    const [words, others] = [wordsOf(tally.surface), wordsOf(other.surface)];
+    const at = words.findIndex((word, index) => word !== others[index]);
+    const [word, usual] = [words[at], others[at]];
+    if (!outweighs(other, tally) || words.length < 2 || words.length !== others.length || word === undefined || usual === undefined) return false;
+    return !use.ordinary.has(word) && !use.ordinary.has(usual) && isEndWordSlip(words, at, usual, use, isOneLetterApart);
+  };
+
+const nearVariants = (tallies: readonly Tally[], use: WordUse): NameVariant[] => {
+  const isEndSlip = isEndSlipOf(use);
+  return variantsIn(groupBy(tallies, maskedKeys), "near", (tally, other) => isSlipOf(tally, other) || isEndSlip(tally, other), true);
+};
 
 /**
  * 名が同じで姓だけが二字ほど違う人の名前（Rachel Whitford と Rachel Whitfield）。一字違い（near）より遠いので、名と姓の二語以上
@@ -343,7 +379,7 @@ const oneCharApart = (left: string, right: string): boolean => {
 
 /**
  * 読みが同じ人の名前が、一字だけ違う（松本 と 松元）。読みの同じ別の姓（伊藤 と 伊東）もあるので、相手のほうが重い（outweighs）
- * ときに限る。
+ * ときに限る。名を名の中での字の読みで読み直した読み（健太 と 建太 の ケンタ）でも比べる。
  */
 const isPersonSlipOf = (tally: Tally, other: Tally): boolean => outweighs(other, tally) && oneCharApart(tally.surface, other.surface);
 
@@ -351,7 +387,7 @@ const personReadingVariants = (tallies: readonly Tally[]): NameVariant[] =>
   variantsIn(
     groupBy(
       tallies.filter((tally) => tally.person),
-      (tally) => tally.readings,
+      (tally) => [...tally.readings, ...tally.givenNameReadings],
     ),
     "reading",
     isPersonSlipOf,
@@ -360,9 +396,14 @@ const personReadingVariants = (tallies: readonly Tally[]): NameVariant[] =>
 
 /**
  * 同じ名前の、少ないほうの書き方。書き方ごとに最初の現れを一つ。同じ現れを二つの見方が言えば、先の見方だけ。chars は字体の
- * 違う同じ字の組（語彙表 name-variant-char）。
+ * 違う同じ字の組（語彙表 name-variant-char）。use は文書での英字の語の使い方。
  */
-export const nameVariants = (mentions: readonly NameMention[], chars: VariantChars = new Map(), spelling: SpellingInput = NO_SPELLING): NameVariant[] => {
+export const nameVariants = (
+  mentions: readonly NameMention[],
+  chars: VariantChars = new Map(),
+  spelling: SpellingInput = NO_SPELLING,
+  use: WordUse = NO_WORD_USE,
+): NameVariant[] => {
   const tallies = talliesOf(mentions);
   const found = [
     ...variantsIn(
@@ -378,7 +419,7 @@ export const nameVariants = (mentions: readonly NameMention[], chars: VariantCha
       "reading",
       oneWordApart,
     ),
-    ...nearVariants(tallies),
+    ...nearVariants(tallies, use),
     ...surnameVariants(tallies),
     ...characterVariants(tallies, chars),
     ...personReadingVariants(tallies),

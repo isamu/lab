@@ -110,12 +110,15 @@ chaff-spec.md   technical/spec · 日本語   ジャンルはパスから
 法令のように、書き方に決まりのある文書があります。
 法令は番地を`第二十二条第二項`と漢数字で書くので、これを漢字の続けすぎと数えると誤りになります。
 そうした種類ごとの知識は、chaff に同梱した設定ファイル（`profiles/*.yaml`）に書いてあり、選ばれた文書にだけ効きます。
-いま同梱しているのは、日本語の法令（`statute`）と、日本語の不動産の物件広告（`listing`）です。
+いま同梱しているのは、日本語の法令（`statute`）、日本語の不動産の物件広告（`listing`）、日本語の不動産の売買の精算書（`property-sale`）です。
 物件広告では、速さを書いていない徒歩の分数も、業界の決まりの速さで距離と比べます。
+精算書では、「消費税込み」とだけ書いて税率を書いていない仲介手数料も、仲介手数料にかかる消費税 10% で計算を確かめます。
 
 書かなければ、ジャンルが決めます（`legal/statute` は `statute` で読みます）。
 ジャンルも決めていなければ、内容から決まります。「第一条　」のように条で始まる行が 3 行以上あれば、法令として読みます。
 交通・賃料・敷金・間取りのような物件概要の項目の行が並んでいれば、物件広告として読みます。
+「決済日：」のように、売買代金・手付金・残代金・仲介手数料・売買契約日・決済日の項目で始まる行が 4 行以上あれば、精算書として読みます。
+代金の 3 行（売買代金・手付金・残代金）だけでは選びません。
 決まった種類は、`chaff tree` の 1 行目に出ます。
 
 ```
@@ -269,6 +272,7 @@ prefer:
 ```
 
 左の書き方を見つけると、`preferred-term` が右の書き方に直すよう指摘します。
+左が辞書形の動詞（`行う: おこなう`）なら、活用した形（行います・行った）も見つけます。
 `prefer` に何も書かなければ、何も言いません。
 
 ## 社内用語と必須の見出しを決める
@@ -296,7 +300,7 @@ required_sections: # この種類の文書に無いと困る見出し
 
 | 項目 | 当たりかた |
 | --- | --- |
-| `jargon` | 辞書形（`握る`）でも語幹（`巻き取`）でも書けます。活用していても当たります |
+| `jargon` | 辞書形の動詞（`握る`・`巻き取る`）は、活用した形（握った・巻き取ります）にも当たります。名詞（`巻き取り`）は書いた形のまま当たります。語幹（`巻き取`）でも書けます |
 | `required_sections` | 見出しとの部分一致です。`リスク` は「リスクと対策」でも満たされます |
 
 `required_sections` の既定の重さは `error` です。
@@ -432,7 +436,7 @@ $ npx chaffjs keiyaku.md
   - 解除・損害賠償・準拠法・紛争の解決を定めた条項があるか
   - 支払いの期限を、いつから数えて何日と書いているか
 
-  このジャンルで特に効く rule: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, obligation-without-deadline, party-order, party-role-name, requirement-smell, total-mismatch, undefined-term, vague-deadline
+  このジャンルで特に効く rule: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, obligation-without-deadline, party-order, party-role-name, requirement-smell, toki-as-condition, total-mismatch, undefined-term, vague-deadline
   書いたところ: genres.yaml → chaff.yaml
   chaff.yaml の guide: で書き換えられます。出さないときは --no-guide。
 
@@ -469,7 +473,7 @@ $ npx chaffjs keiyaku.md
   - 支払いの期限を、いつから数えて何日と書いているか
   - 合意管轄を東京地方裁判所としているか
 
-  このジャンルで特に効く rule: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, obligation-without-deadline, party-order, party-role-name, requirement-smell, total-mismatch, undefined-term, vague-deadline
+  このジャンルで特に効く rule: dangling-figure-reference, dangling-reference, date-range-reversed, date-weekday-mismatch, defined-name-repeated, defined-term-form, duplicate-definition, numbering-gap, obligation-without-deadline, party-order, party-role-name, requirement-smell, toki-as-condition, total-mismatch, undefined-term, vague-deadline
   書いたところ: genres.yaml → chaff.yaml
   chaff.yaml の guide: で書き換えられます。出さないときは --no-guide。
 

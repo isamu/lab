@@ -47,11 +47,12 @@ export const withKnownNeighbours = (mentions: readonly NameMention[], source: st
         surface: `${before} ${mention.surface}`,
         offset: mention.offset - 1 - before.length,
         reading: undefined,
+        givenNameReading: undefined,
         words: [before, ...mention.words],
       };
     }
     if (after !== undefined && known.has(`${mention.surface} ${after}`) && !taken(end + 1, end + 1 + after.length)) {
-      return { ...mention, surface: `${mention.surface} ${after}`, reading: undefined, words: [...mention.words, after] };
+      return { ...mention, surface: `${mention.surface} ${after}`, reading: undefined, givenNameReading: undefined, words: [...mention.words, after] };
     }
     return mention;
   });
