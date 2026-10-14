@@ -5,6 +5,7 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import { formsOf, isShouting, lowerCaseWords, partialForms } from "../packages/chaff/src/detectors/mark-shape.ts";
+import { captionsOf, isCaptionAt } from "../packages/chaff/src/detectors/caps-caption.ts";
 
 // Marks and shapes: quote-style-consistency, bracket-width-consistency, exclamation-width-consistency,
 // sentence-spacing-consistency, hyphen-as-dash, latin-abbreviation-form, all-caps-shouting. Every example is self-written.
@@ -192,9 +193,53 @@ describe("all-caps-shouting", () => {
     assert.deepEqual(findingsOf(RULE, "Pick a, b or c. Options A B C are listed.\n"), []);
   });
 
+  it("a caption in capitals, and prose that names it, are not shouting", () => {
+    const notice = [
+      "BOARD OF PARKS",
+      "",
+      "WHO MAY APPLY: Anyone who lives in the town may apply.",
+      "",
+      "# FOR MORE DETAILS:",
+      "",
+      "Call the office. If you cannot call, write to the person named in the FOR MORE DETAILS section below.",
+      "",
+    ].join("\n");
+    assert.deepEqual(findingsOf(RULE, notice), []);
+  });
+
+  it("shouting that is not a caption is still reported: mid-sentence, a sentence of its own, a wrapped line", () => {
+    assert.deepEqual(findingsOf(RULE, "Do not delete the log.\n\nDO NOT DELETE THIS FILE.\n"), ['"DO NOT DELETE THIS FILE" is written in capitals']);
+    assert.deepEqual(findingsOf(RULE, "Do not delete the log. Keep it\nDO NOT DELETE THIS FILE\nbefore the audit.\n"), [
+      '"DO NOT DELETE THIS FILE" is written in capitals',
+    ]);
+    assert.deepEqual(findingsOf(RULE, "Do not delete the log.\n\nDO NOT DELETE THIS, the file is needed.\n"), ['"DO NOT DELETE THIS" is written in capitals']);
+  });
+
   it("the legal presets turn it off", () => {
     const source = "The software is provided as is. THE SOFTWARE IS PROVIDED AS IS.\n";
     assert.ok(firedRules(en, source, "business/report").includes(RULE));
     assert.ok(!firedRules(en, source, "legal/contract").includes(RULE));
+  });
+});
+
+describe("captions in capitals", () => {
+  const source = "WHO MAY APPLY: anyone.\n\nBOARD OF PARKS\n\nWe met.\nTHE BOARD MET\nagain.\n";
+  const at = (run: string): boolean => isCaptionAt(source, source.indexOf(run), source.indexOf(run) + run.length);
+
+  it("a run opening a paragraph and ending in a colon or the paragraph is a caption", () => {
+    assert.equal(at("WHO MAY APPLY"), true);
+    assert.equal(at("BOARD OF PARKS"), true);
+  });
+
+  it("a run inside a paragraph, or cut short of its colon, is not", () => {
+    assert.equal(at("THE BOARD MET"), false);
+    assert.equal(at("WHO MAY"), false);
+  });
+
+  it("the captions of a source, as their words", () => {
+    assert.deepEqual([...captionsOf(source)], ["WHO MAY APPLY", "BOARD OF PARKS"]);
+    assert.deepEqual([...captionsOf("# FOR MORE DETAILS:\n\n- KEY DATES:\n")], ["FOR MORE DETAILS", "KEY DATES"]);
+    assert.deepEqual([...captionsOf("")], []);
+    assert.deepEqual([...captionsOf("Intro.\r\n\r\nBOARD OF PARKS\r\n\r\nWe met.\r\n")], ["BOARD OF PARKS"]);
   });
 });
