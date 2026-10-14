@@ -1,5 +1,6 @@
 import { linesOf, type Line } from "./lines.ts";
 import { tableAround } from "./key-value-row.ts";
+import { signerRoleOf } from "./signed-date-line.ts";
 import { isTotalLabel } from "./total.ts";
 
 /**
@@ -18,6 +19,11 @@ export type PairWords = {
   readonly passed: readonly string[];
   /** How many lines from the earlier point a later point may be and still be read as the same record's. */
   readonly maxLineGap: number;
+  /**
+   * Role words whose line, when no label heads it, may give a later point (a signature: 2026年4月12日 会計監査 戸川 隆).
+   * pointOf decides whether the line is one. A signature closes the whole document, so it is read at any distance.
+   */
+  readonly signers?: readonly string[] | undefined;
 };
 
 /** A labelled point: the word that labels it, as the lexicon writes it. span is set when the point ends a stated period. */
@@ -28,16 +34,23 @@ export type PointPair = { readonly earlier: LabelledPoint; readonly later: Label
 /** The point a labelled line gives, or undefined when it gives none. tableOf gives the table the line is a row of. */
 export type PointOf = (line: Line, label: string, tableOf: () => readonly string[]) => Pick<LabelledPoint, "point" | "span"> | undefined;
 
-type Read = LabelledPoint & { readonly kind: "earlier" | "later" };
+type Read = LabelledPoint & { readonly kind: "earlier" | "later"; readonly signed?: boolean | undefined };
 
 const labelOf = (text: string, words: readonly string[]): string | undefined => words.find((word) => isTotalLabel(text, [word]));
 
-const kindOf = (text: string, words: PairWords): Pick<Read, "kind" | "label"> | undefined => {
+const signerOf = (text: string, words: PairWords): Pick<Read, "kind" | "label" | "signed"> | undefined => {
+  const role = signerRoleOf(text, words.signers ?? []);
+  return role === undefined ? undefined : { kind: "later", label: role, signed: true };
+};
+
+const kindOf = (text: string, words: PairWords): Pick<Read, "kind" | "label" | "signed"> | undefined => {
   const earlier = labelOf(text, words.earlier);
   if (earlier !== undefined) return { kind: "earlier", label: earlier };
   const later = labelOf(text, words.later);
-  return later === undefined ? undefined : { kind: "later", label: later };
+  return later === undefined ? signerOf(text, words) : { kind: "later", label: later };
 };
+
+const withinGap = (later: Read, earlier: Read, maxLineGap: number): boolean => later.signed === true || Math.abs(later.line - earlier.line) < maxLineGap;
 
 const labelledPoints = (source: string, words: PairWords, pointOf: PointOf): Read[] => {
   const lines = linesOf(source);
@@ -75,7 +88,7 @@ export type PairReading = {
 const nearestOutOfOrder = (labelled: readonly Read[], earliers: readonly Read[], maxLineGap: number): PointPair[] =>
   labelled.flatMap((later) => {
     const earlier = later.kind === "later" ? nearestEarlier(earliers, later) : undefined;
-    return earlier !== undefined && later.point.value < earlier.point.value && Math.abs(later.line - earlier.line) < maxLineGap ? [{ earlier, later }] : [];
+    return earlier !== undefined && later.point.value < earlier.point.value && withinGap(later, earlier, maxLineGap) ? [{ earlier, later }] : [];
   });
 
 /**
@@ -89,10 +102,7 @@ const firstOutOfOrder = (labelled: readonly Read[], earliers: readonly Read[], m
   const records = labelled.filter((entry) => entry.kind === "later").length > 1;
   const beforeOwnRecord = (later: Read): boolean => !records || later.point.value < (nearestEarlier(earliers, later) ?? earlier).point.value;
   return labelled
-    .filter(
-      (entry) =>
-        entry.kind === "later" && entry.point.value < earlier.point.value && Math.abs(entry.line - earlier.line) < maxLineGap && beforeOwnRecord(entry),
-    )
+    .filter((entry) => entry.kind === "later" && entry.point.value < earlier.point.value && withinGap(entry, earlier, maxLineGap) && beforeOwnRecord(entry))
     .map((later) => ({ earlier, later }));
 };
 

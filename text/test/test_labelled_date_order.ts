@@ -1419,13 +1419,69 @@ describe("due-before-issue (period): 会計報告書の監査日と会計年度�
     assert.deepEqual(findingsOf(labelledDoc("Interim Report", ["Financial year: April 1, 2025 – March 31, 2026", "Report date: October 15, 2025"]), en), []);
   });
 
-  it("行の頭に語の無い監査や承認の日（署名の行、文の中の総会）は比べない", () => {
-    assert.deepEqual(findingsOf(labelledDoc("会計報告書", ["会計年度：2025年4月1日〜2026年3月31日", "2026年3月12日　会計監査 架空 一郎"])), []);
+  it("文の中の監査や承認の日（定期総会で承認、監事の監査を受け）は比べない", () => {
     assert.deepEqual(findingsOf(labelledDoc("会計報告書", ["会計年度：2025年4月1日〜2026年3月31日", "本報告は2026年3月26日の定期総会で承認されました。"])), []);
+    assert.deepEqual(findingsOf(labelledDoc("会計報告書", ["会計年度：2025年4月1日〜2026年3月31日", "本報告は2026年3月9日に監事の監査を受けました。"])), []);
     assert.deepEqual(
-      findingsOf(labelledDoc("Treasurer's Report", ["Fiscal year: April 1, 2025 – March 31, 2026", "Jane Example, Honorary Auditor, March 12, 2026"]), en),
+      findingsOf(
+        labelledDoc("Treasurer's Report", ["Fiscal year: April 1, 2025 – March 31, 2026", "These accounts were examined by the Auditor on March 9, 2026."]),
+        en,
+      ),
       [],
     );
+  });
+});
+
+const fiscalJa = "会計年度：2025年4月1日〜2026年3月31日";
+const fiscalEn = "Financial year: April 1, 2025 – March 31, 2026";
+const auditReport = (fiscal: string, signature: string, filler = 0): string =>
+  labelledDoc("会計報告書", [fiscal, ...Array.from({ length: filler }, (_, index) => `項目${String(index + 1)}`), signature]);
+
+describe("due-before-issue (period): 会計報告書の監査の署名の行", () => {
+  it("日付と監査の役職と名前だけの署名の行が、会計年度の終わりより前なら指す", () => {
+    assert.deepEqual(findingsOf(auditReport(fiscalJa, "2026年3月12日　会計監査 架空 一郎")), [
+      "「会計監査」の 2026年3月12日 が、「会計年度」の終わり 2026年3月31日 より前です",
+    ]);
+    assert.deepEqual(findingsOf(auditReport(fiscalJa, "監事　架空一郎　2026年3月12日")), [
+      "「監事」の 2026年3月12日 が、「会計年度」の終わり 2026年3月31日 より前です",
+    ]);
+    assert.deepEqual(findingsOf(auditReport(fiscalEn, "Jane Example, Honorary Auditor, March 12, 2026"), en), [
+      '"Honorary Auditor" March 12, 2026 is before the end of the "Financial year", March 31, 2026',
+    ]);
+    assert.deepEqual(findingsOf(auditReport(fiscalEn, "March 12, 2026 Auditor: Jane Q. Example"), en), [
+      '"Auditor" March 12, 2026 is before the end of the "Financial year", March 31, 2026',
+    ]);
+  });
+
+  it("署名は文書の終わりに来るので、会計年度から離れていても読む", () => {
+    assert.deepEqual(findingsOf(auditReport(fiscalJa, "2026年3月12日　会計監査 架空 一郎", 45)), [
+      "「会計監査」の 2026年3月12日 が、「会計年度」の終わり 2026年3月31日 より前です",
+    ]);
+  });
+
+  it("年度の終わりと同じ日か後の署名は言わない", () => {
+    assert.deepEqual(findingsOf(auditReport(fiscalJa, "2026年4月12日　会計監査 架空 一郎")), []);
+    assert.deepEqual(findingsOf(auditReport(fiscalJa, "2026年3月31日　会計監査 架空 一郎")), []);
+    assert.deepEqual(findingsOf(auditReport(fiscalEn, "Jane Example, Honorary Auditor, April 12, 2026"), en), []);
+  });
+
+  it("日付が二つの行、名前の無い行、文、ほかの役職の行は署名と読まない", () => {
+    [
+      "2026年3月12日　会計監査 架空 一郎　2026年4月1日",
+      "2026年3月12日　会計監査 架空 一郎 3月20日",
+      "2026年3月12日　会計監査",
+      "2026年3月12日に会計監査を受けました",
+      "2026年3月12日　会計監査 架空 一郎、架空 二郎",
+      "2026年3月12日　会長 架空 一郎",
+      "| 2026年3月12日 | 会計監査 | 架空 一郎 |",
+    ].forEach((line) => assert.deepEqual(findingsOf(auditReport(fiscalJa, line)), [], line));
+    [
+      "Jane Example, Honorary Auditor, March 12, 2026 and April 1, 2026",
+      "Honorary Auditor, March 12, 2026",
+      "The Auditor signed on March 12, 2026",
+      "Jane Example, Chair, March 12, 2026",
+      "Jane Example, Auditor's statement, March 12, 2026",
+    ].forEach((line) => assert.deepEqual(findingsOf(auditReport(fiscalEn, line), en), [], line));
   });
 });
 
