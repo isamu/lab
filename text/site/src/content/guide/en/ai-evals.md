@@ -521,6 +521,7 @@ The levels are `error`, `warning` and `note` (chaff's `info`). The same file sho
 
 `chaffjs/grade` grades one output in process and returns the same result as one line of `--out`.
 It reads `chaff.yaml` only when `config` names it, and never writes a file.
+It takes the fields of an item line as options, `task` and `expect` among them: `await grade(output, { task: "extraction", expect: { facts: ["$12,000"] }, config: "chaff.yaml" })`.
 
 ```js
 import { grade, toScorer } from "chaffjs/grade";

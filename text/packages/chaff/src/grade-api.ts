@@ -11,10 +11,13 @@ import { withStyle } from "./config/style.ts";
 import { withExtensions } from "./extension/load.ts";
 import { GENRES } from "./genre.ts";
 import { gradeItem, type GradeSetup } from "./grade/grade-item.ts";
-import { readItem } from "./grade/item.ts";
+import { expectProblems } from "./grade/expect-read.ts";
+import type { GradeExpect } from "./grade/expect.ts";
+import { readItem, type GradeItem } from "./grade/item.ts";
 import type { GradeResult } from "./grade/result.ts";
 import { parseRubric, type Rubric } from "./grade/rubric.ts";
 import { gradeSetup } from "./grade/setup.ts";
+import { taskNamesOf } from "./grade/task-rubric.ts";
 import { GRADE_TEXT } from "./grade/text.ts";
 import { compareVariantGroups, type VariantComparison } from "./grade/variants.ts";
 import { variantGroupsOf, type VariantInput } from "./grade/variants-input.ts";
@@ -36,6 +39,7 @@ export type {
   SupportedFact,
 } from "./grade/result.ts";
 export type { OutputSize } from "./grade/rates.ts";
+export type { GradeExpect } from "./grade/expect.ts";
 export type { AiLevelCounts, GradeAiScore } from "./grade/ai-score.ts";
 export { toScorer, type ChaffScore } from "./grade/scorer.ts";
 export type { Disagreement, VariantColumn, VariantComparison, VariantRates } from "./grade/variants.ts";
@@ -56,6 +60,10 @@ export type GradeOptions = {
   readonly genre?: string;
   /** The prompt, model or setting that produced the output, kept on the result for compareVariants(). */
   readonly variant?: string;
+  /** The rubric task to grade under: one of chaff.yaml's `grade.tasks`. The top-level rubric when left out. */
+  readonly task?: string;
+  /** Facts the output must state (`facts`) and must not (`absent`), each one fact as `chaff compare` reads it. */
+  readonly expect?: Partial<GradeExpect>;
   /** Run the experimental rules too, as --experimental does. chaff.yaml's `experimental` when left out. */
   readonly experimental?: boolean;
   /** chaff.yaml's path, or settings already read. Without it chaff's defaults apply and no file is read. */
@@ -125,36 +133,32 @@ const rubricOf = (config: Config): Rubric | undefined => {
  */
 const setups = new WeakMap<Config, Map<string, Promise<GradeSetup>>>();
 
-const setupFor = (config: Config, experimental: boolean, languages: readonly string[]): Promise<GradeSetup> => {
+const setupFor = (config: Config, rubric: Rubric | undefined, experimental: boolean, languages: readonly string[]): Promise<GradeSetup> => {
   const run = { experimental, genre: undefined };
   const own = setups.get(config) ?? new Map<string, Promise<GradeSetup>>();
   setups.set(config, own);
-  const key = `${String(experimental)}\n${languages.join(",")}`;
+  // The rubric is in the key: an item's task was checked against this rubric, so the setup must grade by the same one.
+  const key = `${String(experimental)}\n${languages.join(",")}\n${JSON.stringify(rubric) ?? ""}`;
   const known = own.get(key);
   if (known !== undefined) return known;
-  const made = remember(own, key, gradeSetup(config, run, languages, rubricOf(config)));
+  const made = remember(own, key, gradeSetup(config, run, languages, rubric));
   // A language package that failed to load may be installed before the next call: do not keep the failure.
   made.catch(() => own.delete(key));
   return made;
 };
 
 /** The setup, or GradeInputError when a language package cannot be loaded, as `chaff grade` ends with 2 then. */
-const loadedSetup = async (config: Config, experimental: boolean, languages: readonly string[]): Promise<GradeSetup> => {
+const loadedSetup = async (config: Config, rubric: Rubric | undefined, experimental: boolean, languages: readonly string[]): Promise<GradeSetup> => {
   try {
-    return await setupFor(config, experimental, languages);
+    return await setupFor(config, rubric, experimental, languages);
   } catch (error) {
     if (error instanceof GradeInputError) throw error;
     throw new GradeInputError([TEXT.cannotLoad(error instanceof Error ? error.message : String(error))]);
   }
 };
 
-/**
- * Grades one output (spec §29.6): its findings and rates, its facts against `reference`, its `citations` against
- * `sources`, and pass or fail by chaff.yaml's `grade:` or the default. Reads a file only when `config` is a path, and
- * never writes one. Throws GradeInputError for an input or a chaff.yaml `chaff grade` would refuse with exit 2.
- */
-export const grade = async (output: string, options: GradeOptions = {}): Promise<GradeResult> => {
-  const config = await configOf(options.config);
+/** The options read as one line of `chaff grade`'s input, refused as that line would be. `tasks`: those the rubric defines. */
+const itemOf = (output: string, options: GradeOptions, tasks: readonly string[]): GradeItem => {
   const raw = {
     id: options.id ?? "output",
     output,
@@ -165,11 +169,29 @@ export const grade = async (output: string, options: GradeOptions = {}): Promise
     language: options.language,
     genre: options.genre,
     variant: options.variant,
+    task: options.task,
+    expect: options.expect,
   };
-  const read = readItem(raw, { isLanguage: (language) => packageFor(language) !== undefined, genres: GENRES });
+  const read = readItem(raw, { isLanguage: (language) => packageFor(language) !== undefined, genres: GENRES, tasks });
   if ("problem" in read) throw new GradeInputError([TEXT.problem(read.problem)]);
-  const languages = read.item.language === undefined ? [] : [read.item.language];
-  return gradeItem(read.item, await loadedSetup(config, options.experimental ?? config.experimental, languages));
+  return read.item;
+};
+
+/**
+ * Grades one output (spec §29.6): its findings and rates, its facts against `reference`, its `citations` against
+ * `sources`, its `expect` facts, and pass or fail by chaff.yaml's `grade:` (its `task`'s rubric when named) or the
+ * default. Reads a file only when `config` is a path, and never writes one. Throws GradeInputError for an input or a
+ * chaff.yaml `chaff grade` would refuse with exit 2, an unknown `task` or an `expect` entry that is not one fact among them.
+ */
+export const grade = async (output: string, options: GradeOptions = {}): Promise<GradeResult> => {
+  const config = await configOf(options.config);
+  const rubric = rubricOf(config);
+  const item = itemOf(output, options, taskNamesOf(rubric));
+  const languages = item.language === undefined ? [] : [item.language];
+  const setup = await loadedSetup(config, rubric, options.experimental ?? config.experimental, languages);
+  const problems = await expectProblems(item, 0, setup);
+  if (problems.length > 0) throw new GradeInputError(problems.map((problem) => TEXT.problem(problem)));
+  return gradeItem(item, setup);
 };
 
 /**
