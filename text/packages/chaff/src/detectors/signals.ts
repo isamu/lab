@@ -7,7 +7,7 @@ import { notAcronymSpansOf, type NotAcronymSpans } from "./acronym-context.ts";
 import { abbreviates, expansionAt, termEntryAcronyms, type ExpandedAt } from "./acronym-expansion.ts";
 import { isExplained } from "./acronym-compound.ts";
 import { conjugatedForms } from "./conjugated-form.ts";
-import { evidenceSpans, hasNumeral, startsWithin } from "./concrete-evidence.ts";
+import { evidenceSpans, hasNumeral, isClaim, isLabelOnly, startsWithin, type AdviceWords } from "./concrete-evidence.ts";
 import { letteredIndexEntries } from "./lettered-index.ts";
 import { hasPredicateIn } from "./gram-predicate.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
@@ -341,9 +341,26 @@ const openingOf = (sentence: Sentence | undefined, unit: ProseDocument["lengthUn
 
 const hasNumeralIn = (section: Section): boolean => section.sentences.some((sentence) => hasNumeral(sentence.tokens ?? []));
 
+/** これより短い節は、具体物があるべきか判断できない。 */
+const MIN_SENTENCES = 3;
+
+const adviceWordsOf = (doc: ProseDocument): AdviceWords => ({
+  openers: (doc.lexicons["advice-opener"] ?? []).map((entry) => entry.pattern),
+  endings: (doc.lexicons["advice-ending"] ?? []).map((entry) => entry.pattern),
+});
+
+/** 文の半分以上が問いか指示の節（質問の一覧、手引き）は、数字で裏づける主張をしていない。番号だけの文（a.）は数えない。 */
+const mostlyClaims = (section: Section, language: string, advice: AdviceWords): boolean => {
+  const said = section.sentences.filter((sentence) => !isLabelOnly(sentence));
+  return said.filter((sentence) => isClaim(sentence, language, advice)).length * 2 > said.length;
+};
+
 export const concreteEvidence: Detector = (doc, options): Finding[] => {
   const entries = letteredIndexEntries(doc.sections);
-  const sections = doc.sections.filter((section) => section.sentences.length >= 3 && !entries.has(section));
+  const advice = adviceWordsOf(doc);
+  const sections = doc.sections.filter(
+    (section) => section.sentences.length >= MIN_SENTENCES && !entries.has(section) && mostlyClaims(section, doc.language, advice),
+  );
   const bare = sections.filter(
     (section) => !CONCRETE.test(doc.source.slice(section.span.start, section.span.end)) && !hasNumeralIn(section) && !startsWithin(section.span, doc.links),
   );
