@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { endMarkOf } from "../packages/chaff/src/detectors/heading-end-mark.ts";
+import { endMarkOf, isCapitalsHeading } from "../packages/chaff/src/detectors/heading-end-mark.ts";
 
 // Headings of one depth that end with a colon or a full stop where the rest do not, or the other way round. Self-written examples.
 
@@ -76,6 +76,30 @@ describe("heading-end-punctuation-mix", () => {
   it("reports a short word ending with a full stop, and leaves out a heading ending with an abbreviation", () => {
     assert.deepEqual(run(doc("Guide", ["Why.", "Setup", "Build", "Run"]), en), ['The heading "Why." ends with ".", while 3 other headings end bare ("Setup")']);
     assert.deepEqual(run(doc("Guide", ["Plan", "Tools, etc.", "Setup", "Run", "Deploy"]), en), []);
+  });
+
+  it("compares captions in capitals apart from headings in ordinary case", () => {
+    const notice = ["Notice", "", "# AGENCY:", "", "# ACTION:", "", "# SUMMARY:", "", "# DATES:", "", "# Footnotes"];
+    assert.deepEqual(run(notice.join("\n"), en), []);
+  });
+
+  it("still reports a mixed ending among captions in capitals, or among ordinary headings", () => {
+    const captions = doc("Notice", ["AGENCY:", "ACTION:", "SUMMARY", "DATES:", "Footnotes"]);
+    assert.deepEqual(run(captions, en), ['The heading "SUMMARY" ends bare, while 3 other headings end with a mark ("AGENCY:")']);
+    const ordinary = doc("Guide", ["Preparation", "Steps", "Checks:", "Cleanup", "FAQ"]);
+    assert.deepEqual(run(ordinary, en), ['The heading "Checks:" ends with ":", while 4 other headings end bare ("Preparation")']);
+  });
+
+  it("isCapitalsHeading: no lower-case letter and a word of four capitals or more", () => {
+    assert.deepEqual(["AGENCY:", "FOR FURTHER INFORMATION CONTACT:", "FAQ", "API v2", "Footnotes", "準備：", ""].map(isCapitalsHeading), [
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+    ]);
   });
 
   it("leaves the page title out of the comparison", () => {
