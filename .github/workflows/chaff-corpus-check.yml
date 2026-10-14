@@ -1,0 +1,153 @@
+# PR の chaff を isamu/chaff-corpus（利用者が「chaff がここを間違えた」を投稿する実文書の corpus）にかけて、
+# この PR が解決する case（誤検出が消えた・見逃しが出た）と、失う「正しい」判定（後退）を job summary に出す。
+# 報告だけの workflow。required check にはしない（branch protection に足さない）。
+# 同じ shard の中で PR の chaff と base（PR の向き先）の chaff を同じ文書に走らせ、差だけを出す。
+# main にもう入っていてまだ公開していない修正は両方に出るので、この PR のものとしては数えない。
+# 再配布できない文書は shard の中で一度だけ取りに行き、.cache を二つの実行で使い回す（artifact には載せない）。
+name: chaff corpus check
+
+on:
+  pull_request:
+    paths: ["text/**", ".github/workflows/chaff-corpus-check.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chaff-corpus-check-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  # matrix の shard と揃える。matrix は env から作れない。
+  SHARD_COUNT: "3"
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # 報告だけ。corpus 側の不調（取得先が落ちた等）で PR に赤を付けない。
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - name: checkout this PR
+        uses: actions/checkout@v7
+        with:
+          path: pr
+          persist-credentials: false
+
+      - name: checkout the base
+        uses: actions/checkout@v7
+        with:
+          path: base
+          ref: ${{ github.event.pull_request.base.sha || 'main' }}
+          persist-credentials: false
+
+      - name: checkout isamu/chaff-corpus
+        uses: actions/checkout@v7
+        with:
+          repository: isamu/chaff-corpus
+          ref: main
+          path: corpus
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: yarn
+          cache-dependency-path: |
+            pr/text/yarn.lock
+            base/text/yarn.lock
+            corpus/yarn.lock
+
+      - name: build both chaffs
+        run: |
+          set -euo pipefail
+          for side in pr base; do
+            (cd "$side/text" && yarn install --frozen-lockfile && yarn build)
+          done
+
+      - name: install the corpus
+        working-directory: corpus
+        run: yarn install --frozen-lockfile
+
+      - name: run the corpus with both chaffs
+        working-directory: corpus
+        env:
+          SHARD: ${{ matrix.shard }}
+        run: |
+          set -uo pipefail
+          only=$(find docs -name '*.yaml' | LC_ALL=C sort | awk -v k="$SHARD" -v n="$SHARD_COUNT" 'NR % n == k % n' | xargs -n1 basename -s .yaml | paste -sd, -)
+          mkdir -p ../reports
+          # PR を先に走らせて取得した文書を .cache に置き、base はそれを読む。exit 1（失敗や後退）も報告の材料なので止めない。
+          # GITHUB_STEP_SUMMARY を空にして、runner が shard ごとの全体の表を summary に書かないようにする。
+          GITHUB_STEP_SUMMARY='' node scripts/run.ts --chaff ../pr/text --only "$only" --jobs 4 > "../reports/pr-$SHARD.md" || true
+          GITHUB_STEP_SUMMARY='' node scripts/run.ts --chaff ../base/text --only "$only" --jobs 4 --offline > "../reports/base-$SHARD.md" || true
+          # 片方でも chaff が動かなければ、差を取ると全部が差に見える。その shard は比べずに理由だけ残す。
+          for side in pr base; do
+            if ! head -n 1 "../reports/$side-$SHARD.md" | grep -q '^# chaff-corpus:'; then
+              echo "- shard $SHARD: the run with the $side chaff gave no report (see this job's log)" >> "../reports/error-$SHARD.md"
+            fi
+          done
+          if [ -f "../reports/error-$SHARD.md" ]; then rm -f "../reports/pr-$SHARD.md" "../reports/base-$SHARD.md"; fi
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: corpus-report-${{ matrix.shard }}
+          path: reports/
+          retention-days: 3
+
+  report:
+    needs: run
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    continue-on-error: true
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: corpus-report-*
+          path: reports
+          merge-multiple: true
+
+      - name: write the difference to the job summary
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          # ある見出しの下の箇条書きを、全 shard の分まとめて並べる。
+          section() { local side=$1 heading=$2; for file in reports/"$side"-*.md; do awk -v h="## $heading" '$0 == h { on = 1; next } /^## / { on = 0 } on && /^- /' "$file"; done | LC_ALL=C sort -u; }
+          only_in() { LC_ALL=C comm -13 <(section "$1" "$3") <(section "$2" "$3"); }
+          list() { local title=$1 lines=$2; echo "## $title"; echo; if [ -z "$lines" ]; then echo "none"; else echo "$lines"; fi; echo; }
+          resolved=$(only_in base pr Improvements)
+          regressions=$(only_in base pr Failures | grep -F -- '- a correct finding chaff no longer gives:' || true)
+          new_on_judged=$(only_in base pr Failures | grep -F -- '- a new finding on a fully judged document:' || true)
+          base_failures_fixed=$(only_in pr base Failures)
+          undone=$(only_in pr base Improvements)
+          problems=$(section pr Problems)
+          errors=$(cat reports/error-*.md 2>/dev/null || true)
+          shards=$(find reports -name 'pr-*.md' | wc -l | tr -d ' ')
+          {
+            echo "# chaff-corpus: this PR against its base"
+            echo
+            echo "Report only. What this PR and its base give the same way is left out; the corpus's expected/ was judged against its pinned chaffjs. Shards compared: $shards of $SHARD_COUNT."
+            echo
+            if [ -n "$errors" ]; then list "Shards not compared" "$errors"; fi
+            list "Cases this PR resolves (false positives gone, misses found)" "$resolved"
+            list "Judged-correct findings this PR loses (regressions)" "$regressions"
+            list "New findings on fully judged documents (to judge)" "$new_on_judged"
+            list "Failures of the base that this PR no longer has" "$base_failures_fixed"
+            list "Improvements of the base that this PR undoes" "$undone"
+            if [ -n "$problems" ]; then list "Problems running the corpus" "$problems"; fi
+            for file in reports/pr-*.md; do
+              echo "<details><summary>full report with this PR's chaff, $(basename "$file" .md)</summary>"
+              echo
+              cat "$file"
+              echo
+              echo "</details>"
+              echo
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
