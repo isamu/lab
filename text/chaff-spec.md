@@ -2681,6 +2681,7 @@ grade:
 - `failedBecause` は条件の名前と数で書く: `rules.<id> N > max`、`rules.<id>.rate R > max_rate`、`required_sections.missing N > 0: <見出し>`、`facts.dropped N > 上限`、`facts.added N > 上限`、`citations.failed N > 上限`、`citations.required: …`、`contexts.unsupported N > 上限`、`contexts.required: no contexts given`、`score.penalty P > penalty`。
 - 要約には全出力の点の和（`penalty`）が入る。画面では `--compact` の 1 行ごとにも点を出す。
 - 基準の中身（重みと上限）は `stamp` の `settings` に入る。基準を変えた前後の点は比べない（§29.5）。
+- **問題の種類ごとの基準（`tasks`）。** `tasks: { <名前>: <基準> }` の各値は最上位と同じ形（`tasks` は入れ子にできない）。項目が `"task": "<名前>"` を持つと、その task の基準で採点し、結果に `task` を残す。task が書いたキーは最上位の同じキーを丸ごと置き換え、書かないキーは最上位を継ぐ。`rules` だけは規則 id ごとに置き換え、task が書かない id は最上位のまま効く。基準に無い task や文字列でない `task` は入力の誤りで、終了コード 2。`task` の無い項目は最上位の基準で採点する。
 
 ### 29.5 A/B と回帰
 

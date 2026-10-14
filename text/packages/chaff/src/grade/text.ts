@@ -59,6 +59,7 @@ const PROBLEM_JA: Readonly<Record<ItemProblemKind, (problem: ItemProblem) => str
   "which-source": (problem) => `${lineJa(problem)}番地 ${problem.detail ?? ""} の引用に source がありません。原文が二つ以上あるときは名前を書いてください`,
   "unknown-language": (problem) => `${lineJa(problem)}language "${problem.detail ?? ""}" は読めません`,
   "unknown-genre": (problem) => `${lineJa(problem)}genre "${problem.detail ?? ""}" は chaff の知らないジャンルです（chaff genres で一覧）`,
+  "unknown-task": (problem) => `${lineJa(problem)}task "${problem.detail ?? ""}" は採点基準の tasks にありません`,
   empty: () => "採点する出力が 1 行もありません",
 };
 
@@ -78,6 +79,7 @@ const PROBLEM_EN: typeof PROBLEM_JA = {
   "which-source": (problem) => `${lineEn(problem)}the citation of ${problem.detail ?? ""} names no source; with two or more sources, name one`,
   "unknown-language": (problem) => `${lineEn(problem)}language "${problem.detail ?? ""}" cannot be read`,
   "unknown-genre": (problem) => `${lineEn(problem)}genre "${problem.detail ?? ""}" is not one chaff knows (chaff genres lists them)`,
+  "unknown-task": (problem) => `${lineEn(problem)}task "${problem.detail ?? ""}" is not among the rubric's tasks`,
   empty: () => "no output to grade: the file has no item",
 };
 

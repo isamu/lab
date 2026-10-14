@@ -62,6 +62,8 @@ export type GradeResult = {
   readonly id: string;
   /** The item's variant label, when it had one. */
   readonly variant?: string | undefined;
+  /** The rubric task the output was graded under, when the item named one. */
+  readonly task?: string | undefined;
   readonly language: string;
   readonly genre: string;
   readonly size: OutputSize;

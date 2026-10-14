@@ -18,10 +18,12 @@ export type GradeItem = {
   readonly contexts?: readonly string[] | undefined;
   /** The prompt, model or setting that produced this output. Outputs of several variants are compared on the same ids. */
   readonly variant?: string | undefined;
+  /** The rubric task this item is graded under (`grade.tasks.<name>`). Undefined: the top-level rubric. */
+  readonly task?: string | undefined;
 };
 
 /** The fields an item already has a meaning for: none of them can name a variant. */
-export const ITEM_FIELDS: readonly string[] = ["id", "output", "reference", "sources", "citations", "contexts", "language", "genre"];
+export const ITEM_FIELDS: readonly string[] = ["id", "output", "reference", "sources", "citations", "contexts", "language", "genre", "task"];
 
 /** Which field names an output's variant, and whether every line must have it (the key was given on the command line). */
 export type VariantField = { readonly key: string; readonly required: boolean };
@@ -44,13 +46,19 @@ export type ItemProblemKind =
   | "which-source"
   | "unknown-language"
   | "unknown-genre"
+  | "unknown-task"
   | "empty";
 
 /** Why a line cannot be graded. `detail`: the field, the value or the parser's message; `first`: the line an id was first on. */
 export type ItemProblem = { readonly kind: ItemProblemKind; readonly line: number; readonly detail?: string; readonly first?: number };
 
 /** What an item may name: the languages chaff can load and the genres it knows. */
-export type ItemVocabulary = { readonly isLanguage: (language: string) => boolean; readonly genres: readonly string[] };
+export type ItemVocabulary = {
+  readonly isLanguage: (language: string) => boolean;
+  readonly genres: readonly string[];
+  /** The tasks the rubric defines. None given: an item naming a task is refused, as there is no rubric for it. */
+  readonly tasks?: readonly string[] | undefined;
+};
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 
@@ -129,6 +137,13 @@ const variantOf = (raw: Record<string, unknown>, key: string, line: number): Par
   return typeof value === "string" && value !== "" ? { value } : { problem: { kind: "not-string", line, detail: key } };
 };
 
+/** The item's task: a non-empty string the rubric defines, or none. Never a silent fall back to the top-level rubric. */
+const taskOf = (raw: unknown, vocabulary: ItemVocabulary, line: number): Parsed<string | undefined> => {
+  if (raw === undefined) return { value: undefined };
+  if (typeof raw !== "string" || raw === "") return { problem: { kind: "not-string", line, detail: "task" } };
+  return (vocabulary.tasks ?? []).includes(raw) ? { value: raw } : { problem: { kind: "unknown-task", line, detail: raw } };
+};
+
 const itemOf = (raw: Record<string, unknown>, line: number, vocabulary: ItemVocabulary, variantKey: string): Parsed<GradeItem> => {
   const id = raw["id"];
   if (typeof id !== "string" || id === "") return { problem: { kind: "no-id", line } };
@@ -140,6 +155,8 @@ const itemOf = (raw: Record<string, unknown>, line: number, vocabulary: ItemVoca
   if (unknown !== undefined) return { problem: unknown };
   const variant = variantOf(raw, variantKey, line);
   if ("problem" in variant) return variant;
+  const task = taskOf(raw["task"], vocabulary, line);
+  if ("problem" in task) return task;
   const sources = sourcesOf(raw["sources"], line);
   if ("problem" in sources) return sources;
   const citations = citationsOf(raw["citations"], sources.value, line);
@@ -148,7 +165,8 @@ const itemOf = (raw: Record<string, unknown>, line: number, vocabulary: ItemVoca
   if ("problem" in contexts) return contexts;
   const passages = contexts.value === undefined ? {} : { contexts: contexts.value };
   const labelled = variant.value === undefined ? {} : { variant: variant.value };
-  return { value: { id, output, ...fields.value, sources: sources.value, citations: citations.value, ...passages, ...labelled } };
+  const tasked = task.value === undefined ? {} : { task: task.value };
+  return { value: { id, output, ...fields.value, sources: sources.value, citations: citations.value, ...passages, ...labelled, ...tasked } };
 };
 
 /** One item from a value already parsed, as `grade()` receives it; `line` is 0 when it came from no file. */
