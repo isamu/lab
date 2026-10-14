@@ -2,6 +2,57 @@
 
 Newest first.
 
+## 0.34.0 — 2026-10-14
+
+`chaff grade` can now score an LLM benchmark: the rubric lives in its own YAML or JSON file (`--rubric`), each question
+can carry its known answer (`expect`: facts that must appear, facts that must not), and one rubric can hold a different
+standard per question type (`tasks`). Totals stated before their breakdown, dates in the wrong order for the kind of
+document, an audit date on a signature line, and condition 時 in legal drafting are now caught; many false findings in
+paperwork, tables and code blocks are gone.
+
+### Rules
+
+- New: toki-as-condition, 「…た時は」 used for a condition in legal genres (#1169).
+- total-mismatch reads a total stated before its breakdown, after a colon or dash or in the next sentence (#1162).
+- due-before-issue reads some date pairs only in the document kind the title or a field names (#1158), an auditor's
+  signature line as the audit date (#1181), and a payslip's pay date against the start of its pay period (#1142).
+- name-variant reads kana given names, readings of given names, voiced kana in company names, end-letter slips in
+  English names and ending slips in company names (#1150, #1155, #1161).
+- fact-conflict reads an entry age limit and a dependants count written as a sentence (#1163).
+- reference-number-variant reads a product document's own model code (#1152).
+- closing-balance-mismatch reads dated balance labels and a unit in the column heading (#1156).
+- Fewer false findings: fact-conflict does not compare unit prices per distance or time, or the unit-price and amount
+  columns of one row (#1137, #1149), nor values in a fenced code block (#1143); total and tax rows whose label follows
+  blank cells are read, and a bracketed note must end the label (#1144, #1146, #1148); latin-spacing does not count
+  separators in numbers and field values (#1139); list-item-form-mix reads imperatives at an item's start (#1140);
+  heading-echo skips a first sentence that states something (#1151); forms, piece counts, defining names and code
+  names are not findings (#1145); jargon / prefer match inflected verbs (#1154).
+- Genre suggestion: paperwork is told business/report, quotes business/proposal (#1147).
+- Profiles: listing and other profiles are chosen when their fact lines are list items, 「・」 bullets or bold labels
+  (#1164, #1172).
+
+### Grade
+
+- `chaff grade --rubric <file>`: a rubric in its own YAML or JSON file, recorded in the stamp (#1171).
+- `expect: { facts, absent }` per item, matched as compare facts (#1174).
+- Rubric `tasks:` with item `task`, one standard per question type (#1183).
+
+### Plugins
+
+- A plugin word-list entry keeps its `genres`, for word rules, code rules and `doc.lexicons` (#1165, #1177).
+- A word rule with no replacement says "A word to avoid" instead of offering an empty spelling (#1170).
+
+### Docs
+
+- The AI evals guide has a section on scoring an LLM benchmark (#1186).
+- The configuration guide names the bundled property-sale profile (#1159); the README leads with chaff (#1175).
+
+### Tests and tools
+
+- One shared stated-amounts reader for five amount detectors, proved behaviour-preserving (#1168, #1179).
+- Planted sets re-planted where a plant hit a deliberate exclusion or another plant (#1153, #1185).
+- Landed through #1141, #1157, #1160, #1166, #1173, #1176, #1180, #1182 and #1187.
+
 ## 0.33.0 — 2026-10-13
 
 A fee or amount whose label states its formula ("3% of the sale price plus 60,000 yen, tax included") is now checked
