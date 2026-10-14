@@ -1,4 +1,5 @@
 import { joinWords } from "./word-list.ts";
+import { contractionMinority, type FormCounts } from "./contraction-minority.ts";
 import { straightApostrophes } from "../orthography.ts";
 import { wordsOf } from "./structure.ts";
 import type { Detector, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
@@ -265,19 +266,27 @@ export const aiTell: Detector = (doc, options): Finding[] => {
  * 語の境界で照合する。部分一致だと「it isn't」が「it is」を含んでしまい、
  * 短縮形を使っている文が「使っていない」側に数えられる。
  */
-const containsWord = (text: string, word: string): boolean => new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&")}\\b`, "u").test(text);
+const wordUses = (text: string, word: string): number => [...text.matchAll(new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&")}\\b`, "gu"))].length;
+
+const containsWord = (text: string, word: string): boolean => wordUses(text, word) > 0;
 
 /** アポストロフィの形（don’t と don't）は短縮形かどうかを変えない。違うのは印刷の形で、文体ではない。 */
 const comparableText = (sentence: Sentence): string => straightApostrophes(sentence.text).toLowerCase();
+
+type ContractionPair = { readonly short: string; readonly long: string };
+
+const formCounts = (body: string, pairs: readonly ContractionPair[], side: keyof ContractionPair): FormCounts => ({
+  kinds: pairs.length,
+  uses: pairs.reduce((sum, pair) => sum + wordUses(body, pair[side].toLowerCase()), 0),
+});
 
 export const contractionMix: Detector = (doc, options): Finding[] => {
   const pairs = (options.lexicon ?? []).flatMap((entry) => (entry.instead_of === undefined ? [] : [{ short: entry.pattern, long: entry.instead_of }]));
   const body = doc.sentences.map(comparableText).join(" ");
   const used = pairs.filter((pair) => containsWord(body, pair.short.toLowerCase()));
   const spelled = pairs.filter((pair) => containsWord(body, pair.long.toLowerCase()));
-  // 片方しか無ければ一貫している。両方あるときだけ、少数派を指摘する。
-  if (used.length === 0 || spelled.length === 0) return [];
-  const minorityIsShort = used.length <= spelled.length;
+  const minorityIsShort = contractionMinority(formCounts(body, used, "short"), formCounts(body, spelled, "long"));
+  if (minorityIsShort === undefined) return [];
   const few = minorityIsShort ? used : spelled;
   if (few.length > options.limit) return [];
   const wanted = few.map((pair) => (minorityIsShort ? pair.short : pair.long).toLowerCase());

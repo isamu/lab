@@ -5,14 +5,62 @@ import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
+import { contractionMinority } from "../packages/chaff/src/detectors/contraction-minority.ts";
 
 const idsFor = (source: string): string[] =>
   runRules(buildDocument("t.md", source, en), loadRules("en"), {}, true, "blog/tech").findings.map((finding) => finding.rule);
 
 describe("contraction-consistency", () => {
   it("invalid: 短縮形と長い形が混ざる", () => {
-    const source = "# Report\n\nWe don't ship on Fridays. It's a rule we keep.\nThe team cannot change it. The process is not negotiable.";
+    const source =
+      "# Report\n\nWe don't ship on Fridays. It's a rule we keep.\nThe team cannot change it. The process is not negotiable. We will not revisit it.";
     assert.ok(idsFor(source).includes("contraction-consistency"));
+  });
+
+  describe("少数派が無ければ指摘しない", () => {
+    // noaa-press-flood-mapping の形。短縮形は It’s の 1 つだけで、長い形も does not の 1 つだけ。
+    it("valid: 短縮形 1 つと長い形 1 つは、どちらも少数派ではない", () => {
+      const source = "# Flood maps\n\nIt’s a tool for forecasters and the public. The latest expansion does not yet cover northern Alaska.";
+      assert.ok(!idsFor(source).includes("contraction-consistency"));
+    });
+
+    it("valid: 種類も回数も同数なら、少数派は無い", () => {
+      const source = "# Report\n\nWe don't ship on Fridays. It's a rule we keep.\nThe team cannot change it. The process is not negotiable.";
+      assert.ok(!idsFor(source).includes("contraction-consistency"));
+    });
+
+    it("invalid: 種類が同数でも、長い形が何度も出るなら、1 度だけの短縮形を指す", () => {
+      const source = "# Report\n\nIt’s a tool for forecasters. The map does not cover Alaska. It does not cover Guam. It does not cover Samoa.";
+      assert.deepEqual(
+        runRules(buildDocument("t.md", source, en), loadRules("en"), {}, true, "blog/tech")
+          .findings.filter((finding) => finding.rule === "contraction-consistency")
+          .map((finding) => String(finding.values?.["matched"])),
+        ["it's"],
+      );
+    });
+  });
+
+  describe("contractionMinority", () => {
+    it("種類の少ないほうが少数派", () => {
+      assert.equal(contractionMinority({ kinds: 1, uses: 5 }, { kinds: 3, uses: 3 }), true);
+      assert.equal(contractionMinority({ kinds: 3, uses: 3 }, { kinds: 1, uses: 5 }), false);
+    });
+
+    it("種類が同数なら回数の少ないほう", () => {
+      assert.equal(contractionMinority({ kinds: 1, uses: 1 }, { kinds: 1, uses: 3 }), true);
+      assert.equal(contractionMinority({ kinds: 2, uses: 4 }, { kinds: 2, uses: 2 }), false);
+    });
+
+    it("種類も回数も同数なら少数派は無い", () => {
+      assert.equal(contractionMinority({ kinds: 1, uses: 1 }, { kinds: 1, uses: 1 }), undefined);
+      assert.equal(contractionMinority({ kinds: 2, uses: 3 }, { kinds: 2, uses: 3 }), undefined);
+    });
+
+    it("片方しか無ければ一貫している", () => {
+      assert.equal(contractionMinority({ kinds: 0, uses: 0 }, { kinds: 2, uses: 2 }), undefined);
+      assert.equal(contractionMinority({ kinds: 1, uses: 1 }, { kinds: 0, uses: 0 }), undefined);
+      assert.equal(contractionMinority({ kinds: 0, uses: 0 }, { kinds: 0, uses: 0 }), undefined);
+    });
   });
 
   it("valid: 短縮形で揃っていれば指摘しない", () => {
@@ -44,7 +92,8 @@ describe("contraction-consistency", () => {
         .map((finding) => String(finding.values?.["matched"]));
 
     it("invalid: 曲がった短縮形と長い形が混ざる", () => {
-      const source = "# Report\n\nWe don’t ship on Fridays. It’s a rule we keep.\nThe team cannot change it. The process is not negotiable.";
+      const source =
+        "# Report\n\nWe don’t ship on Fridays. It’s a rule we keep.\nThe team cannot change it. The process is not negotiable. We will not revisit it.";
       assert.ok(idsFor(source).includes("contraction-consistency"));
     });
 

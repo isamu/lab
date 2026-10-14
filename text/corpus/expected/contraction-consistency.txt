@@ -1,5 +1,5 @@
 18f-engineering-on-call  1
-apidatagov-developer-manual  4
+apidatagov-developer-manual  2
 automattic-offer-letter-us  2
 cdc-co-poisoning-basics  2
 chrome-blog-pwa-origin-migration  1
@@ -19,11 +19,9 @@ loc-signal-new-online-2026-07  2
 logingov-help-face-or-touch-unlock  1
 nasa-knows-spacewalk-k4  1
 nextcloud-user-2fa  2
-noaa-press-flood-mapping  1
 nodejs-tsc-minutes-2026-05-06  6
 nws-heat-wave-safety  4
 openapi-spec-3-1-0  1
-plainlanguage-use-tables  1
 rust-lang-minutes-2022-11-22  2
 usajobs-va-it-specialist-customer-support  1
 vite-plugin-legacy-changelog  7

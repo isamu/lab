@@ -42,8 +42,8 @@ example:
       We don't store your password. We can't read your messages. We won't share your data. We don't sell your address.
 
 not_flagged:
-  ja: 短縮形を使うかどうかは決めません。文書の中で少ないほうだけを指します。
-  en: Whether to use contractions is not decided; only the minority form in the document is pointed at.
+  ja: 短縮形を使うかどうかは決めません。文書の中で少ないほうだけを指します。種類も回数も同じなら、少ないほうが無いので指しません。
+  en: Whether to use contractions is not decided; only the minority form in the document is pointed at. When both forms appear as often, there is no minority and nothing is pointed at.
 level_meaning:
   ja: 少ないほうの書き方が {limit} 箇所以下のとき指摘
   en: reported when the minority form appears {limit} times or fewer
