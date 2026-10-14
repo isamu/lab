@@ -166,3 +166,76 @@ describe("rule pack — what goes wrong, and what the user is told", () => {
     assert.match(run.err, /cannot read the word list vague-deadline/u);
   });
 });
+
+describe("rule pack — a words rule whose word list gives no rewrite for an entry", () => {
+  const RULE = [
+    "id: plain-words",
+    "type: words",
+    "word_list: plain-words",
+    "name: { ja: 避ける語, en: A word to avoid }",
+    "why: { ja: 読み手に通じません。, en: Readers do not know it. }",
+    "how_to_fix: { ja: 言い換えます。, en: Say it plainly. }",
+    "example:",
+    "  ja: { before: 例の件です。, after: 先週の発注の件です。 }",
+    "  en: { before: Leverage it., after: Use it. }",
+    "",
+  ].join("\n");
+  const projectFiles = (): Record<string, string> => ({
+    ...packFiles("pack"),
+    "pack/rules/plain-words.yaml": RULE,
+    "pack/lexicons/en/plain-words.yaml": "- { pattern: leverage, rewrite: use }\n- synergy\n",
+    "pack/lexicons/ja/plain-words.yaml": "- { pattern: 例の件, rewrite: その件 }\n- アジェンダ\n",
+    "chaff.yaml": config("./pack"),
+    "en.md": "# Plan\n\nWe leverage synergy across teams.\n",
+    "ja.md": "# 計画\n\n例の件はアジェンダに入れます。\n",
+  });
+
+  it("names the rule for an entry with no rewrite, and gives the rewrite where there is one (en)", async () => {
+    const run = await runCli(projectFiles(), ["en.md", "--compact"], "en_US.UTF-8");
+    assert.match(run.out, /Write "use", not "leverage"/u);
+    assert.match(run.out, /A word to avoid: "synergy"/u);
+    assert.doesNotMatch(run.out, /Write "", not/u);
+  });
+
+  it("does the same in Japanese", async () => {
+    const run = await runCli(projectFiles(), ["ja.md", "--compact"], "ja_JP.UTF-8");
+    assert.match(run.out, /「例の件」は「その件」と書きます/u);
+    assert.match(run.out, /避ける語:「アジェンダ」/u);
+    assert.doesNotMatch(run.out, /は「」と書きます/u);
+  });
+
+  it("a rule's own message that offers {preferred} gives way to the rule's name where there is none", async () => {
+    const lexicon = "pack/lexicons/en/casual-forms.yaml";
+    const base = packFiles("pack");
+    const run = await runCli(
+      { ...base, [lexicon]: `${base[lexicon] ?? ""}- gonna\n`, "chaff.yaml": config("./pack"), "en.md": "# Plan\n\nWe're gonna ship it, but don't wait.\n" },
+      ["en.md", "--compact"],
+      "en_US.UTF-8",
+    );
+    assert.match(run.out, /Write "do not", not "don't"/u);
+    assert.match(run.out, /A casual form: "gonna"/u);
+  });
+
+  it("in each language, only a message that offers {preferred} gives way", async () => {
+    const mixed = `${RULE}message: { ja: '「{matched}」は避けます', en: 'Write "{preferred}", not "{matched}"' }\n`;
+    const files = { ...projectFiles(), "pack/rules/plain-words.yaml": mixed };
+    const ja = await runCli(files, ["ja.md", "--compact"], "ja_JP.UTF-8");
+    assert.match(ja.out, /「アジェンダ」は避けます/u);
+    const en = await runCli(files, ["en.md", "--compact"], "en_US.UTF-8");
+    assert.match(en.out, /A word to avoid: "synergy"/u);
+  });
+
+  it("SARIF carries the same message", async () => {
+    const run = await runCli(projectFiles(), ["en.md", "--sarif", "out.sarif"], "en_US.UTF-8");
+    const sarif = readFileSync(join(run.dir, "out.sarif"), "utf8");
+    assert.match(sarif, /A word to avoid: \\"synergy\\"/u);
+    assert.doesNotMatch(sarif, /Write \\"\\", not/u);
+  });
+
+  it("a rule's own message without {preferred} stays as written", async () => {
+    const ownMessage = { ...projectFiles(), "pack/rules/plain-words.yaml": `${RULE}message: { ja: '「{matched}」は避けます', en: 'Avoid "{matched}"' }\n` };
+    const run = await runCli(ownMessage, ["en.md", "--compact"], "en_US.UTF-8");
+    assert.match(run.out, /Avoid "synergy"/u);
+    assert.match(run.out, /Avoid "leverage"/u);
+  });
+});
