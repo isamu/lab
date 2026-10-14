@@ -1,6 +1,7 @@
 import { lengthOf } from "../measure.ts";
 import { isClosed } from "../sentence-shape.ts";
 import { isTitleCase, minorityCase, pageTitleOf } from "./heading-case.ts";
+import { namesWrittenMidSentence } from "./heading-names.ts";
 import type { Detector, Finding, Lexicon, ProseDocument, Section, Sentence, Token } from "../plugin.ts";
 import { entryOpens } from "./lexicon-match.ts";
 
@@ -137,7 +138,10 @@ const headingsOf = (sections: readonly Section[], fixedCase: ReadonlySet<string>
  * 見るのは文書の中で揃っているかだけで、少数派のほうを指摘する。題名は指摘しない（minorityCase）。
  */
 export const titleCaseMix: Detector = (doc, options): Finding[] => {
-  const fixedCase = new Set(FIXED_CASE_LISTS.flatMap((id) => (doc.lexicons[id] ?? []).map((entry) => entry.pattern)));
+  const fixedCase = new Set([
+    ...FIXED_CASE_LISTS.flatMap((id) => (doc.lexicons[id] ?? []).map((entry) => entry.pattern)),
+    ...namesWrittenMidSentence(doc.sentences.map((sentence) => sentence.text)),
+  ]);
   const pageTitle = pageTitleOf(doc.sections);
   const judged = headingsOf(
     doc.sections.filter((section) => section !== pageTitle),
