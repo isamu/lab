@@ -1,0 +1,6 @@
+# 印刷版の文書を文字にしたとき、文の途中に残るページの印（PDF のページ下の「－ 12 －」）。max-sentence-length はこれを
+# 文の長さに数えない。「#」はページの番号、空白はいくつの空白でも（無くても）よいことを表す。
+id: page-marker
+language: ja
+entries:
+  - pattern: "－ # －"

@@ -24,7 +24,7 @@ etax-oshirase-mail-templates  51
 fac-adr-0016-file-uploads  1
 fed-powell-2025-08-22-framework-review  65
 fomc-minutes-2025-07  11
-fr-2026-16371-nvd-rfi  2
+fr-2026-16371-nvd-rfi  1
 ghdocs-basic-writing-and-formatting  1
 gitlab-values  4
 go-1-23-release-notes  1
