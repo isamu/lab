@@ -9,6 +9,7 @@ import { isExplained } from "./acronym-compound.ts";
 import { conjugatedForms } from "./conjugated-form.ts";
 import { evidenceSpans, hasNumeral, startsWithin } from "./concrete-evidence.ts";
 import { letteredIndexEntries } from "./lettered-index.ts";
+import { outlineLabelSpans } from "./outline-label.ts";
 import { hasPredicateIn } from "./gram-predicate.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
 import { referenceListSpans } from "../reference-lists.ts";
@@ -304,7 +305,10 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   const headings = doc.sections.map((section) => section.heading);
   const explainedAlone = (word: string): boolean =>
     common.has(word) || entries.has(word) || isExpanded(body, word, expandedAt) || headings.some((heading) => expandsInHeading(heading, word, expandedAt));
-  const hits = outsideSpans(acronymsOf(doc, notationOf(doc)), referenceListSpans(doc.source, patternsOf(doc, "reference-list-heading")));
+  const hits = outsideSpans(acronymsOf(doc, notationOf(doc)), [
+    ...referenceListSpans(doc.source, patternsOf(doc, "reference-list-heading")),
+    ...outlineLabelSpans(doc.source, patternsOf(doc, "numbered-division")),
+  ]);
   const unexplained = new Set([...firstHits(hits).keys()].filter((acronym) => !isExplained(acronym, explainedAlone)));
   // 日付を読むには文書の木を作る。上限に届かない文書では作らない。
   if (unexplained.size < options.limit) return [];

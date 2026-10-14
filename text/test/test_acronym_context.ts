@@ -148,7 +148,7 @@ describe("notAcronymSpansOf: 語彙表の形", () => {
   };
 
   it("空の語彙表はどこにも当たらない（空の選択肢で文字の間に当たらない）", () => {
-    assert.deepEqual(notAcronymSpansOf(none)("at 3:30 PM, USD 1,000, Berkeley, CA 94720, NOT, PART II"), []);
+    assert.deepEqual(notAcronymSpansOf(none)("at 3:30 PM, USD 1,000, Berkeley, CA 94720, NOT, PART IV"), []);
   });
 
   it("語は字面どおりに照らす。正規表現の記号は記号のまま（NB+ は NBB に当たらない）", () => {

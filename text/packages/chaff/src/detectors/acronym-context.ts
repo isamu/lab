@@ -5,6 +5,7 @@ import { dottedNameSpans } from "./dotted-name.ts";
 import { letterJoinedNameSpans } from "./letter-joined-name.ts";
 import { loneNumeralSpans, nameNumeralSpans } from "./name-numeral.ts";
 import { placeholderSpans } from "./placeholder.ts";
+import { numeralWordSpans } from "./numeral-word.ts";
 import { seriesLabelSpans } from "./series-label.ts";
 
 /**
@@ -113,5 +114,6 @@ export const notAcronymSpansOf = (words: NotationWords): NotAcronymSpans => {
     ...loneNumeralSpans(text),
     ...seriesLabelSpans(text),
     ...placeholderSpans(text, words.dateTimeUnits),
+    ...numeralWordSpans(text),
   ];
 };
