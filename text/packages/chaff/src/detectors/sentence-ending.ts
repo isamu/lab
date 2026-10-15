@@ -2,6 +2,7 @@ import { endingTokens, isClosed } from "../sentence-shape.ts";
 import { enumeratedRuns, enumeratorStarts, numberedStarts } from "./enumerated-runs.ts";
 import { continuesInto, groupOf, registerOf, slipsOf, type Register } from "./register.ts";
 import { isRunInLabel } from "./run-in-label.ts";
+import { chronologyRows } from "../chronology-rows.ts";
 import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span } from "../plugin.ts";
 
 /**
@@ -10,6 +11,7 @@ import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span } f
  * どちらが正しいかは決めない。決めると、方針の違う書き手にそのまま無視される。
  * 見るのは文書の中での一貫性だけで、少数派のほうを指摘する。spec §12.3 の方針を日本語にも。
  * 終止符で終わらないもの（見出しの下の `MaaSサービス` のような名前だけの行）と、項目や段落の頭の太字の札（**速く書ける。**）は文として数えない。
+ * 年表の行（1921年信号装置の製作を開始する。）も、文書の文体と揃えない書き方なので数えない。
  */
 type Entry = { readonly sentence: Sentence; readonly register: Register; readonly group: number | undefined };
 
@@ -35,8 +37,9 @@ const runsOf = (doc: ProseDocument, registers: readonly Register[]): Span[] => {
 export const judgedSentences = (doc: ProseDocument, polite: readonly LexiconEntry[]): Entry[] => {
   const neutral = doc.lexicons["neutral-ending"] ?? [];
   const lists = doc.lists.map((list) => list.span);
+  const rows = chronologyRows(doc);
   const found = doc.sentences.flatMap((sentence, index): { sentence: Sentence; register: Register }[] => {
-    if (!isClosed(sentence) || continuesInto(sentence, doc.sentences[index + 1]) || isRunInLabel(doc.source, sentence.span)) return [];
+    if (!isClosed(sentence) || rows.has(sentence) || continuesInto(sentence, doc.sentences[index + 1]) || isRunInLabel(doc.source, sentence.span)) return [];
     const register = registerOfSentence(sentence, polite, neutral);
     return register === undefined ? [] : [{ sentence, register }];
   });
