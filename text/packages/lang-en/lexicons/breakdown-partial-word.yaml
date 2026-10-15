@@ -12,3 +12,11 @@ entries:
   - pattern: " or "
   - pattern: either
   - pattern: up to
+  # group main: words saying the amounts listed are only the main ones. Before the items listed ahead of a total
+  # ("spending went mainly to $20 million for lighting and …, for a total of $190 million"), they are not compared either.
+  - { pattern: mainly, group: main }
+  - { pattern: chiefly, group: main }
+  - { pattern: principally, group: main }
+  - { pattern: primarily, group: main }
+  - { pattern: mostly, group: main }
+  - { pattern: largely, group: main }

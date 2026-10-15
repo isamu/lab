@@ -1,0 +1,9 @@
+# Units of amounts written rounded to a digit ($6,655 million, $3.1 billion). When a total in a sentence and all its items
+# are in one of these, total-mismatch reads a difference of up to (number of items − 1) last digits as rounding.
+id: rounded-amount-unit
+language: en
+entries:
+  - pattern: thousand
+  - pattern: million
+  - pattern: billion
+  - pattern: trillion
