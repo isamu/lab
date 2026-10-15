@@ -22,9 +22,9 @@ describe("latinCompanyFormSpans: 英字の会社の形", () => {
     assert.deepEqual(formsIn("AOBA(THAILAND)CO.，LTD.が"), ["CO.，LTD."]);
   });
 
-  it("終わりの「.」は無くても形", () => {
-    assert.deepEqual(formsIn("AOBA USA INC、"), ["INC"]);
-    assert.deepEqual(formsIn("AOBA Co., Ltdと"), ["Co., Ltd"]);
+  it("点まで書いたとおりに照らす（点の無い INC は形ではない）", () => {
+    assert.deepEqual(formsIn("AOBA USA INC.、"), ["INC."]);
+    assert.deepEqual(formsIn("AOBA USA INC、"), []);
   });
 
   it("長い形を先に取る", () => {
@@ -32,7 +32,17 @@ describe("latinCompanyFormSpans: 英字の会社の形", () => {
   });
 
   it("英字の語の中や、略語の中の同じ字は形ではない（Zinc、INCOME、U.S.A.）", () => {
-    assert.deepEqual(formsIn("Zinc と INCOME と U.S.A. と LLCs"), []);
+    assert.deepEqual(formsIn("Zinc と INCOME と U.S.A. と LLCs と AOBA LLC&XYZ と AOBA LLC2"), []);
+  });
+
+  it("前に名前の無い所の同じ字は形ではない（LTDの基金、文の頭の LLC）", () => {
+    assert.deepEqual(formsIn("LTDの基金と、LLC は"), []);
+    assert.deepEqual(formsIn("the LTD fund. LLC filings, the LLC."), []);
+  });
+
+  it("名前と形のあいだは空白か「,」（AOBA,INC.）", () => {
+    assert.deepEqual(formsIn("AOBA,INC.を買収"), ["INC."]);
+    assert.deepEqual(formsIn("AOBA、INC.を買収"), []);
   });
 
   it("語彙表が空なら何も無い", () => {
