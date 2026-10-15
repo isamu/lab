@@ -1,0 +1,7 @@
+# 大文字で書く決まり文句（前文の NOW, THEREFORE、/ で繋いだ接続詞 AND/OR）。大文字の語は語で、略語ではない。句のままでだけ外す。
+# OR だけなら Oregon でもある。字面どおりに照らす。
+id: capital-phrase
+language: ja
+entries:
+  - pattern: "NOW, THEREFORE"
+  - pattern: "AND/OR"

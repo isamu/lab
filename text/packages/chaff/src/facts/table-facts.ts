@@ -67,18 +67,21 @@ const cellLabel = (rowLabel: string, column: string, headings: readonly string[]
   return headings.length > TWO_COLUMNS ? `${rowLabel} ${column}` : rowLabel;
 };
 
-/** 列が三つ以上の表の升は、行の見出し（row）と列の見出し（column）の二つで名前になる。 */
-export type TableFact = Fact & { readonly cell?: { readonly row: string; readonly column: string } };
+/**
+ * 列が三つ以上の表の升は、行の見出し（row）と列の見出し（column）の二つで名前になる。
+ * columnGroup: 見出しの並びを繰り返す表（Day | Hours | Day | Hours の、第1週と第2週を横に並べた表）の、何番目の並びの升か。
+ */
+export type TableFact = Fact & { readonly cell?: { readonly row: string; readonly column: string }; readonly columnGroup?: number };
 
 const rowFacts = (
-  row: Line,
+  cells: readonly Cell[],
   headings: readonly string[],
   values: readonly FactValue[],
   source: string,
   totals?: TotalColumns,
   counts?: CountLabelWords,
 ): TableFact[] => {
-  const [first, ...rest] = cellsOf(row);
+  const [first, ...rest] = cells;
   if (first === undefined) return [];
   const rowLabel = plain(first.text);
   const isCountHead = (value: FactValue): boolean => counts !== undefined && isCountLabelHead(source, first, value, counts);
@@ -94,11 +97,45 @@ const rowFacts = (
   });
 };
 
+const MIN_GROUPS = 2;
+
+/** 見出しが同じ並びを二度以上繰り返すなら、その並びの幅。並びごとに別の表として読む。 */
+export const columnGroupWidth = (headings: readonly string[]): number | undefined => {
+  const keys = headings.map(keyOf);
+  const widths = Array.from({ length: Math.floor(keys.length / MIN_GROUPS) - 1 }, (_, index) => index + TWO_COLUMNS);
+  return widths.find((width) => keys.length % width === 0 && keys[0] !== "" && keys.every((key, index) => key === keys[index % width]));
+};
+
+const groupsOf = <T>(items: readonly T[], width: number | undefined): T[][] =>
+  width === undefined ? [[...items]] : Array.from({ length: Math.ceil(items.length / width) }, (_, index) => items.slice(index * width, (index + 1) * width));
+
+/** columnGroups: 見出しを繰り返す表を、並びごとに読む（並びの升には columnGroup が付く）。 */
+export type TableReading = { readonly columnGroups?: boolean };
+
+type RowReading = { readonly values: readonly FactValue[]; readonly source: string; readonly totals?: TotalColumns; readonly counts?: CountLabelWords };
+
+/** 一つの行の升の値。見出しを繰り返す表（width がある）は、並びごとに読んで columnGroup を付ける。 */
+const groupedRowFacts = (row: Line, headings: readonly string[], width: number | undefined, at: RowReading): TableFact[] => {
+  const headingGroups = groupsOf(headings, width);
+  return groupsOf(cellsOf(row), width).flatMap((cells, group) => {
+    const facts = rowFacts(cells, headingGroups[group] ?? [], at.values, at.source, at.totals, at.counts);
+    return width === undefined ? facts : facts.map((fact) => ({ ...fact, columnGroup: group }));
+  });
+};
+
 /** 文書の表すべての升の値。 */
-export const tableFacts = (source: string, values: readonly FactValue[], totals?: TotalColumns, counts?: CountLabelWords): TableFact[] =>
+export const tableFacts = (
+  source: string,
+  values: readonly FactValue[],
+  totals?: TotalColumns,
+  counts?: CountLabelWords,
+  reading: TableReading = {},
+): TableFact[] =>
   tablesOf(linesOf(source)).flatMap((table) => {
     const headings = cellsOf(table.header).map((cell) => plain(cell.text));
-    return table.rows.flatMap((row) => rowFacts(row, headings, values, source, totals, counts));
+    const width = reading.columnGroups === true ? columnGroupWidth(headings) : undefined;
+    const at: RowReading = { values, source, ...(totals === undefined ? {} : { totals }), ...(counts === undefined ? {} : { counts }) };
+    return table.rows.flatMap((row) => groupedRowFacts(row, headings, width, at));
   });
 
 /** 文書の表すべての、本体の行の升（見出しの行を除く）。text は書いたまま。 */

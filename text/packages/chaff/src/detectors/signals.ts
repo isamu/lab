@@ -4,8 +4,10 @@ import { compacted, placeAt, type Compacted } from "./gram-place.ts";
 import { charWindows, wordWindows } from "./gram-windows.ts";
 import { furnitureMask, isFurniture } from "./gram-furniture.ts";
 import { notAcronymSpansOf, type NotAcronymSpans } from "./acronym-context.ts";
+import { nameSpansOf } from "./acronym-name.ts";
 import { abbreviates, expansionAt, termEntryAcronyms, type ExpandedAt } from "./acronym-expansion.ts";
 import { isExplained } from "./acronym-compound.ts";
+import { statedAcronyms } from "./acronym-definition.ts";
 import { isBracketed, isInHeading, isNamePart } from "./acronym-lone.ts";
 import { conjugatedForms } from "./conjugated-form.ts";
 import { evidenceSpans, hasNumeral, isClaim, isLabelOnly, startsWithin, type AdviceWords } from "./concrete-evidence.ts";
@@ -285,8 +287,8 @@ const expandsInHeading = (heading: string, acronym: string, expandedAt: Expanded
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
 
-const notationOf = (doc: ProseDocument): NotAcronymSpans =>
-  notAcronymSpansOf({
+const notationOf = (doc: ProseDocument): NotAcronymSpans => {
+  const notation = notAcronymSpansOf({
     meridiem: patternsOf(doc, "meridiem"),
     timeZones: patternsOf(doc, "time-zone"),
     currencies: patternsOf(doc, "currency-code"),
@@ -298,6 +300,17 @@ const notationOf = (doc: ProseDocument): NotAcronymSpans =>
     titles: patternsOf(doc, "name-title"),
     dateTimeUnits: patternsOf(doc, "date-time-unit"),
   });
+  const names = nameSpansOf({
+    legalForms: patternsOf(doc, "legal-form"),
+    determiners: patternsOf(doc, "name-determiner"),
+    citationSeries: patternsOf(doc, "citation-series"),
+    carriers: patternsOf(doc, "carrier-name"),
+    namePrefixes: patternsOf(doc, "name-prefix"),
+    streetSuffixes: patternsOf(doc, "street-suffix"),
+    capitalPhrases: patternsOf(doc, "capital-phrase"),
+  });
+  return (text) => [...notation(text), ...names(text)];
+};
 
 /** 定義の語は、語彙表の形（という）と、この文書で活用して書かれた形（といいます）の両方で照らす。 */
 const definitionVerbsOf = (doc: ProseDocument): string[] => {
@@ -325,11 +338,17 @@ const isNamePartAt = (acronym: string, hit: Hit): boolean => {
  */
 export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   const body = bodyOf(doc);
-  // HTTP のメソッド名（GET）は略語ではないので、通じる略語と同じく展開を求めない。
+  // HTTP のメソッド名（GET）は略語ではなく、税の名前（VAT、GST）は読み手が名前として知るので、通じる略語と同じく展開を求めない。
   // 並べた名前（JAXA）も、繋いだ略語（JAXA-ISAS）の片割れとして説明済みに数える。
-  const common = new Set([...(options.lexicon ?? []).map((entry) => entry.pattern), ...patternsOf(doc, "http-method"), ...(doc.names ?? [])]);
+  const common = new Set([
+    ...(options.lexicon ?? []).map((entry) => entry.pattern),
+    ...patternsOf(doc, "http-method"),
+    ...patternsOf(doc, "tax-code"),
+    ...(doc.names ?? []),
+  ]);
   const expandedAt = expansionAt({ markers: patternsOf(doc, "definition-marker"), verbs: definitionVerbsOf(doc) });
-  const entries = termEntryAcronyms(doc.source);
+  const stated = statedAcronyms(doc.source, { statements: patternsOf(doc, "definition-statement"), markers: patternsOf(doc, "definition-marker") });
+  const entries = new Set([...termEntryAcronyms(doc.source), ...stated]);
   const headings = doc.sections.map((section) => section.heading);
   const explainedAlone = (word: string): boolean =>
     common.has(word) || entries.has(word) || isExpanded(body, word, expandedAt) || headings.some((heading) => expandsInHeading(heading, word, expandedAt));
@@ -340,7 +359,9 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   const acronyms = [...firstHits(hits).keys()];
   const unexplained = new Set(acronyms.filter((acronym) => !isExplained(acronym, explainedAlone)));
   const bracketed = (acronym: string): boolean => [body, ...headings].some((text) => isBracketed(text, acronym));
-  const writerSpellsOut = acronyms.filter((acronym) => !common.has(acronym) && explainedAlone(acronym) && bracketed(acronym)).length >= options.limit;
+  // 定義の一覧（"SOW" means …）で定義する書き手も、略語を展開する書き手と数える。
+  const definedByWriter = (acronym: string): boolean => bracketed(acronym) || stated.has(acronym);
+  const writerSpellsOut = acronyms.filter((acronym) => !common.has(acronym) && explainedAlone(acronym) && definedByWriter(acronym)).length >= options.limit;
   // 日付を読むには文書の木を作る。上限に届かない文書では作らない。
   if (unexplained.size < options.limit && !writerSpellsOut) return [];
   const bare = [...firstHits(outsideSpans(hits, dateSpans(doc)))].filter(([acronym]) => unexplained.has(acronym));

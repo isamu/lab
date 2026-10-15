@@ -32,3 +32,9 @@ entries:
   - pattern: Media contacts
   - pattern: Press contact
   - pattern: Press contacts
+  # The standard closing sections of an HMRC notice, after its numbered parts.
+  - pattern: Your rights and obligations
+  - pattern: Help us improve this notice
+  - pattern: Putting things right
+  - pattern: How we use your information
+  - pattern: How HMRC uses your information

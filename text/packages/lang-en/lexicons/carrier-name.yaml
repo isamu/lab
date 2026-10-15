@@ -1,0 +1,11 @@
+# Parcel and courier companies (Federal Express, UPS, DHL). Read as names only when a sentence lists two or more of them:
+# alone, UPS is also an uninterruptible power supply. Matched as written.
+id: carrier-name
+language: en
+entries:
+  - pattern: "UPS"
+  - pattern: "DHL"
+  - pattern: "USPS"
+  - pattern: "TNT"
+  - pattern: "FedEx"
+  - pattern: "Federal Express"

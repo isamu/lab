@@ -8,6 +8,8 @@ import { furiganaSpans } from "../furigana.ts";
 import { japaneseCompanyNameSpans } from "../company-name-run.ts";
 import { acronymsIn, isCapitalsNotSpelling } from "../capitals-with-small.ts";
 import { isPartOfAddress } from "./address-word.ts";
+import { isInCapitalsPassage } from "../capitals-passage.ts";
+import { withoutCoinedNames } from "../coined-hyphen-name.ts";
 import { wholeWordRuns, type WholeWordRun } from "../whole-word-runs.ts";
 import { entriesForGenre } from "../lexicon-genres.ts";
 import { asNounWhereNominal } from "../nominal-stem.ts";
@@ -277,7 +279,7 @@ const latinWords = (sentence: Sentence, isOpen: IsOpen, skip: ReadonlySet<string
     const plain = word.toLowerCase().replaceAll("-", "");
     const end = match.index + word.length;
     if (plain.length < MIN_LATIN_KEY || !LOWER.test(word) || isCapitalsNotSpelling(word, acronyms) || skip.has(word.toLowerCase())) return [];
-    if (isPartOfAddress(sentence.text, match.index, end) || !isOpen(match.index, end)) return [];
+    if (isPartOfAddress(sentence.text, match.index, end) || !isOpen(match.index, end) || isInCapitalsPassage(sentence.text, match.index, end)) return [];
     return [{ key: `latin|${plain}`, spelling: latinSpelling(word), shown: word, sentence, offset: sentence.span.start + match.index }];
   });
 };
@@ -332,7 +334,11 @@ export const orthographicVariant: Detector = (doc, options): Finding[] => {
   const reading = byKanji(placed.flatMap(({ sentence, isOpen }) => readingWords(sentence, isOpen, skips)));
   const katakana = placed.flatMap(({ sentence, isOpen }) => katakanaWords(sentence, isOpen));
   const runs = placed.flatMap(({ sentence, isOpen }) => katakanaRunWords(sentence, isOpen));
-  const latin = placed.flatMap(({ sentence, isOpen, readsLatin }) => (readsLatin ? latinWords(sentence, isOpen, skips.skip) : []));
+  const dictionary = doc.dictionary?.();
+  const latin = withoutCoinedNames(
+    placed.flatMap(({ sentence, isOpen, readsLatin }) => (readsLatin ? latinWords(sentence, isOpen, skips.skip) : [])),
+    (word) => dictionary?.has(word) ?? true,
+  );
   const odd = [reading, katakana, latin].flatMap((words) => oddSpellings(words, options.limit));
   const oddRuns = oddSpellings(runs, options.limit).filter(({ word }) => !odd.some((other) => coversOffset(word, other.word.offset)));
   const all = [...reading, ...katakana, ...runs, ...latin];

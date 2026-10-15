@@ -1,0 +1,16 @@
+# Street types written short and in capitals after a street number and name (512 Bayshore DR). Read only there. Matched as written.
+id: street-suffix
+language: en
+entries:
+  - pattern: "DR"
+  - pattern: "ST"
+  - pattern: "AVE"
+  - pattern: "BLVD"
+  - pattern: "RD"
+  - pattern: "LN"
+  - pattern: "CT"
+  - pattern: "PKWY"
+  - pattern: "HWY"
+  - pattern: "PL"
+  - pattern: "SQ"
+  - pattern: "TER"

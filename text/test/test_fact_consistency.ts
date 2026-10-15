@@ -13,6 +13,7 @@ import { columnUnits, headingPerUnit, IN_FULL, UNIT_PRICE, type HeadingUnitWords
 import { comparable } from "../packages/chaff/src/facts/fact-values.ts";
 import { crossDocFactConflict } from "../packages/chaff/src/detectors/cross-facts.ts";
 import { ageValues, type AgeWords } from "../packages/chaff/src/facts/age-values.ts";
+import { columnGroupWidth } from "../packages/chaff/src/facts/table-facts.ts";
 
 // 同じ項目に違う値（fact-conflict）と、冒頭や要約の値が本文と違う（summary-fact-mismatch）。
 
@@ -895,5 +896,79 @@ describe("fact-conflict: an entry age limit and a dependants count written as a 
     assert.deepEqual(dependantsJa("配偶者がいる場合、扶養親族の数を2人として計算します。"), []);
     assert.deepEqual(dependantsJa("2027年分は、扶養親族の数を2人として計算します。"), []);
     assert.deepEqual(dependantsJa("扶養控除は、特定扶養親族の数を2人として計算しています。"), []);
+  });
+});
+
+describe("fact-conflict: worked examples and side-by-side tables", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+    await en.prepare?.({ pos: true });
+  });
+
+  it("each worked example headed by a name-only line keeps its own values (en)", () => {
+    const examples = conflictEn(
+      "## Adding VAT",
+      "",
+      "Multiply the price by 1.2.",
+      "",
+      "Example",
+      "",
+      "A lamp costs £50 before VAT.",
+      "",
+      "The price including VAT is £60.",
+      "",
+      "Multiply the price by 1.05 for the reduced rate.",
+      "",
+      "Example",
+      "",
+      "A heater costs £100 before VAT.",
+      "",
+      "The price including VAT is £105.",
+    );
+    assert.deepEqual(examples, []);
+  });
+
+  it("two values inside one example, or in body text with no example line, are still reported (en)", () => {
+    const oneExample = conflictEn("## Adding VAT", "", "Example", "", "The price including VAT is £60.", "", "The price including VAT is £65.");
+    assert.deepEqual(oneExample, ["The price including VAT:£65≠£60"]);
+    const body = conflictEn("## Adding VAT", "", "The price including VAT is £60.", "", "Multiply it by 1.2.", "", "The price including VAT is £65.");
+    assert.deepEqual(body, ["The price including VAT:£65≠£60"]);
+  });
+
+  it("numbered parts of one example, each headed by its own name line, are not one fact (en)", () => {
+    const part = (name: string, value: string): string[] => [name, `The value before tax: ${value}.`, ""];
+    const parts = conflictEn("## Recording", "", ...part("Item 1 (standard rated portion)", "£1.50"), ...part("Item 2 (zero rated portion)", "£1.20"));
+    assert.deepEqual(parts, []);
+    const unnamed = conflictEn("## Recording", "", ...part("Read the parts.", "£1.50"), ...part("Then the second.", "£1.20"));
+    assert.deepEqual(unnamed, ["The value before tax:£1.20≠£1.50"]);
+  });
+
+  it("a short line that ends a sentence or carries the value is not an example's name (en)", () => {
+    assert.deepEqual(conflictEn("## Fees", "", "Fee: $300", "", "Fee: $350"), ["Fee:$350≠$300"]);
+    assert.deepEqual(conflictEn("## Fees", "", "Fee: $300", "", "Read this first.", "", "Fee: $350"), ["Fee:$350≠$300"]);
+  });
+
+  it("each worked example headed by 例 keeps its own values (ja)", () => {
+    assert.deepEqual(conflictJa("## 税込価格", "", "例", "", "税込価格は1,100円です。", "", "例", "", "税込価格は2,200円です。"), []);
+    assert.deepEqual(conflictJa("## 税込価格", "", "税込価格は1,100円です。", "", "税込価格は2,200円です。"), ["税込価格:2,200円≠1,100円"]);
+  });
+
+  it("a table that repeats its headings side by side (week 1 | week 2) compares each week on its own", () => {
+    const weeks = (row: string): string[] =>
+      conflictEn("| Day | Hours | Day | Hours |", "| --- | --- | --- | --- |", "| Monday | 5 hours | Monday | 10 hours |", row);
+    assert.deepEqual(weeks("| Tuesday | 9 hours | Tuesday | 7 hours |"), []);
+    assert.deepEqual(weeks("| Monday | 6 hours | Tuesday | 7 hours |"), ["Monday:6 hours≠5 hours"]);
+    const japanese = conflictJa("| 曜日 | 時間 | 曜日 | 時間 |", "| --- | --- | --- | --- |", "| 月曜 | 5時間 | 月曜 | 10時間 |");
+    assert.deepEqual(japanese, []);
+  });
+
+  it("the width of a repeated heading group, and none when the headings do not repeat", () => {
+    assert.equal(columnGroupWidth(["Day", "Hours", "Day", "Hours"]), 2);
+    assert.equal(columnGroupWidth(["Day", "Hours", "day", "hours", "Day", "Hours"]), 2);
+    assert.equal(columnGroupWidth(["Item", "Before", "After", "Item", "Before", "After"]), 3);
+    assert.equal(columnGroupWidth(["Group", "Fee", "Seats"]), undefined);
+    assert.equal(columnGroupWidth(["Item", "Fee", "Item", "Seats"]), undefined);
+    assert.equal(columnGroupWidth(["", "", "", ""]), undefined);
+    assert.equal(columnGroupWidth([]), undefined);
   });
 });

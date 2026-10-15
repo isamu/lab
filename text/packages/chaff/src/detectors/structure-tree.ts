@@ -49,19 +49,18 @@ const findingsOf =
           values: { ...issue.values, offset: issue.offset },
         }));
 
-export const danglingReference: Detector = findingsOf("dangling-reference", danglingReferences);
+export const danglingReference: Detector = (doc, options) =>
+  findingsOf("dangling-reference", (tree, source) => danglingReferences(tree, source, patternsOf(doc, "section-name-noun")))(doc, options);
 /** Markdown の HTML ブロックの中の条は木に入らない。そこを挟んだ抜けは、見えなかった番号かもしれない。 */
 const structureNumberingGap: Detector = (doc, options) =>
   findingsOf("numbering-gap", (tree, source) => numberingBreaks(tree, doc.markup?.markdown === true ? htmlTextBlocks(source) : []))(doc, options);
 
 const lineStartAt = (source: string, offset: number): number => source.lastIndexOf("\n", offset - 1) + 1;
 
-/** The written numbers of the document's Markdown ordered lists that skip or repeat (structure/list-numbering.ts). */
-const QUOTED_LINE = /^[ \t]*>/u;
-
 /** 引用の中の箇条書きは、ほかの文書の例で、この文書の番号ではない。 */
-const isQuotedList = (source: string, start: number): boolean => QUOTED_LINE.test(source.slice(lineStartAt(source, start), start));
+const isQuotedList = (source: string, start: number): boolean => /^[ \t]*>/u.test(source.slice(lineStartAt(source, start), start));
 
+/** The written numbers of the document's Markdown ordered lists that skip or repeat (structure/list-numbering.ts). */
 const listNumberingGaps = (doc: ProseDocument): StructureIssue[] =>
   listsNumberBreaks(doc.source, doc.lists, (list) => !isQuotedList(doc.source, list.span.start));
 

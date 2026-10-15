@@ -65,8 +65,8 @@ example:
       1. The Customer pays the Supplier within thirty days of each invoice.
 
 not_flagged:
-  ja: 短い呼び名を定める前の使用、呼び名と同じ行にある使用、名前だけの行（署名欄）、四字に満たない名前（「法律」）、一語の英語の名前、呼び名が名前を含むもの（「本サービス」）、前の語が絞り込む名前（「妊娠中の女性従業員」「本利用規約」）、それ自体が定義した語である名前、長い語の一部（「株式会社みなと製作所大阪支店」）は見ません。法務のジャンルで見ます。
-  en: 'Uses before the short name is defined, uses on a line that also gives the short name, lines holding little more than the name (a signature block), names shorter than four characters, one-word English names, short names that contain the long one, names narrowed by the word before them ("the Beta Preview"), names that are defined terms themselves, and a name inside a longer word are not reported. The legal genres run this rule.'
+  ja: 短い呼び名を定める前の使用、呼び名と同じ行にある使用、名前だけの行（署名欄）、四字に満たない名前（「法律」）、一語の英語の名前、小文字だけの英語の語や日付・金額（with respect thereto、January 26, 2015、$1.00）、呼び名が名前を含むもの（「本サービス」）、前の語が絞り込む名前（「妊娠中の女性従業員」「本利用規約」、Customer's Web site）、それ自体が定義した語である名前、長い語の一部（「株式会社みなと製作所大阪支店」）、それぞれや全体を呼ぶ括弧（(each, a "Certificate")、(collectively, the "Plans")）は見ません。この括弧は前の節の頭の語を呼び、すぐ前の名前を呼ぶのではないからです。法務のジャンルで見ます。
+  en: 'Uses before the short name is defined, uses on a line that also gives the short name, lines holding little more than the name (a signature block), names shorter than four characters, one-word English names, lower-case words, dates and amounts (with respect thereto, January 26, 2015, $1.00), short names that contain the long one, names narrowed by the word before them ("the Beta Preview", "Customer''s Web site"), names that are defined terms themselves, a name inside a longer word, and a bracket that names each or all of several things ((each, a "Certificate"), (collectively, the "Plans")), which names the head of the clause before it rather than its last words, are not reported. The legal genres run this rule.'
 rewrite:
   depth: light
   ja:

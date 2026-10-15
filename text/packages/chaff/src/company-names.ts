@@ -359,12 +359,33 @@ const relationBetween = (tally: Tally, other: Tally): CompanyRelation | undefine
   return isNameEndingSlip(left.base, right.base) ? "ending" : undefined;
 };
 
-/** 同じ会社の、少ないほうの書き方。同じ会社と言える相手のうち一番多いものと比べる。書き方ごとに最初の現れを一つ。 */
+/** 会社のグループと見る、同じ名前の部分に付く形の組の数。 */
+const MIN_GROUP_FORMS = 3;
+
+/**
+ * 三つ以上の形の組で書いた名前の部分（GitLab Inc、GitLab Ltd、GitLab GmbH）。国ごとの会社を並べたグループで、形の違いは別の会社を
+ * 言い分けている。比べる形（nameKey）で。
+ */
+export const companyGroupBases = (mentions: readonly CompanyMention[]): Set<string> => {
+  const forms = new Map<string, Set<string>>();
+  mentions.forEach((mention) => {
+    const base = nameKey(mention.base);
+    forms.set(base, (forms.get(base) ?? new Set()).add(mention.form));
+  });
+  return new Set([...forms].flatMap(([base, groups]) => (groups.size >= MIN_GROUP_FORMS ? [base] : [])));
+};
+
+/** 同じ会社の、少ないほうの書き方。同じ会社と言える相手のうち一番多いものと比べる。会社のグループの形の違いは比べない。書き方ごとに最初の現れを一つ。 */
 export const companyVariants = (mentions: readonly CompanyMention[]): CompanyVariant[] => {
   const tallies = talliesOf(mentions);
+  const groups = companyGroupBases(mentions);
+  const relationOf = (tally: Tally, other: Tally): CompanyRelation | undefined => {
+    const relation = relationBetween(tally, other);
+    return relation === "form" && groups.has(nameKey(tally.first.base)) ? undefined : relation;
+  };
   return tallies.flatMap((tally) => {
-    const [usual] = tallies.filter((other) => other === tally || relationBetween(tally, other) !== undefined).toSorted(byUsage);
-    const kind = usual === undefined || usual === tally ? undefined : relationBetween(tally, usual);
+    const [usual] = tallies.filter((other) => other === tally || relationOf(tally, other) !== undefined).toSorted(byUsage);
+    const kind = usual === undefined || usual === tally ? undefined : relationOf(tally, usual);
     return usual === undefined || kind === undefined ? [] : [{ mention: tally.first, usual: usual.first.surface, kind }];
   });
 };

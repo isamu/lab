@@ -1,0 +1,11 @@
+# Labels of a contact line ("Phone:", "Fax:"), counted only when a colon follows. A request in the same sentence as that line
+# says how to reach the writer.
+id: request-contact
+language: en
+entries:
+  - pattern: phone
+  - pattern: tel
+  - pattern: telephone
+  - pattern: fax
+  - pattern: email
+  - pattern: e-mail

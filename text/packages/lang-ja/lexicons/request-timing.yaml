@@ -1,0 +1,16 @@
+# 依頼の文の中で、ほかの出来事を基準にいつするかを言う語（「ご提出いただく前に」「送信後、」「提出時に」）。
+# 期限の日付が無くても、いつするかは決まっている。依頼の文そのものにあるときだけ数える（次の文の「その後、」は別の話）。
+id: request-timing
+language: ja
+entries:
+  - pattern: 前に
+  - pattern: 後に
+  - pattern: 後、
+  - pattern: 時に
+  - pattern: 時、
+  - pattern: 際に
+  - pattern: 際、
+  - pattern: 事前に
+  - pattern: あらかじめ
+  - pattern: はじめに
+  - pattern: 初めに

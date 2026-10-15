@@ -1,0 +1,16 @@
+# 連絡先の行の札（「電話：」「ファックス番号：」）。後ろにコロンが続くときだけ数える。その行と同じ文の依頼は、連絡の手段の案内。
+id: request-contact
+language: ja
+entries:
+  - pattern: 電話
+  - pattern: 電話番号
+  - pattern: tel
+  - pattern: ファックス
+  - pattern: ファックス番号
+  - pattern: ファクス
+  - pattern: fax
+  - pattern: fax番号
+  - pattern: メール
+  - pattern: メールアドレス
+  - pattern: e-mail
+  - pattern: email

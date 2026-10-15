@@ -38,3 +38,5 @@ entries:
   - pattern: 期間内
   - pattern: 期間中
   - pattern: この期間
+  - pattern: 随時
+  - pattern: いつでも

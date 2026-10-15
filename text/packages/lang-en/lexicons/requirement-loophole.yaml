@@ -5,7 +5,10 @@ language: en
 entries:
   - pattern: as far as possible
   - pattern: as much as possible
+  # group: time is a loophole about when. A number of days in the same sentence (concrete-deadline) bounds it:
+  # "as soon as possible, but in any event no later than two Business Days after".
   - pattern: as soon as possible
+    group: time
   - pattern: as fast as possible
   - pattern: to the extent possible
   - pattern: if possible

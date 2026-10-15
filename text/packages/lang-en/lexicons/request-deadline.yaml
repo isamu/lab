@@ -65,3 +65,5 @@ entries:
   - pattern: dec
   - pattern: immediately
   - pattern: urgently
+  - pattern: any time
+  - pattern: anytime

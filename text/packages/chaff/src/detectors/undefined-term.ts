@@ -91,6 +91,8 @@ const findingOf = (doc: ProseDocument, use: UndefinedTerm): Finding => ({
 });
 
 const NAME_LISTS = ["proper-name-word", "place-region", "calendar-name", "month-name", "company-form", "party-role"] as const;
+/** The lists whose words end a name right after a comma (Post Holdings, Inc.; Canton, Ohio). */
+const FORM_ENDS = ["company-form", "place-region"] as const;
 
 /** Capitalised terms, for a language whose package lists the words that join one name (name-joiner); Japanese has none. */
 const capitalisedUses = (doc: ProseDocument, sentences: readonly (readonly Token[])[], defined: readonly Defined[]): UndefinedTerm[] => {
@@ -99,6 +101,12 @@ const capitalisedUses = (doc: ProseDocument, sentences: readonly (readonly Token
     names: NAME_LISTS.flatMap((id) => patternsOf(doc, id)),
     divisions: patternsOf(doc, "numbered-division"),
     joiners: patternsOf(doc, "name-joiner"),
+    nameEnds: patternsOf(doc, "proper-name-word"),
+    formEnds: FORM_ENDS.flatMap((id) => patternsOf(doc, id)),
+    definitionMarkers: patternsOf(doc, "definition-marker"),
+    definedElsewhere: patternsOf(doc, "defined-elsewhere"),
+    capacityMarkers: patternsOf(doc, "capacity-marker"),
+    articles: patternsOf(doc, "article"),
   };
   const marked = [...(doc.markup?.headings ?? []), ...doc.links, ...setApartSpans(doc.source)];
   return capitalisedTerms({ source: doc.source, readable: readableText(doc.source), sentences, defined, named: namedWords(doc.source), marked, words });
