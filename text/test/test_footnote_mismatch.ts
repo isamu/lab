@@ -54,7 +54,10 @@ describe("footnote-mismatch: 注の無い印と、印の無い注", () => {
   });
 
   it("※ の後ろが英語の序数（1st、2nd、23rd）なら注の番号ではない。序数でない英字が続く番号は注", () => {
-    assert.deepEqual(slipsIn("修理先※1を選ぶ。\n※1 指定の業者\n※1st Party の見積もりを正とする。\n※2nd Floor は対象外。\n※23RD 版を使う。\n※１st 版も同じ。"), []);
+    assert.deepEqual(
+      slipsIn("修理先※1を選ぶ。\n※1 指定の業者\n※1st Party の見積もりを正とする。\n※2nd Floor は対象外。\n※23RD 版を使う。\n※１st 版も同じ。"),
+      [],
+    );
     assert.deepEqual(slipsIn("修理先※1と費用※2。\n※1 指定の業者\n※1st Party の見積もりを正とする。"), ["※2:missing"]);
     assert.deepEqual(slipsIn("料金※1と手当※2。\n※1 平日のみ\n※2standard 版は対象外"), []);
     assert.deepEqual(
