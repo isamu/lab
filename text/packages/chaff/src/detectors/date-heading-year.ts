@@ -10,7 +10,8 @@ export type HeadingYearWords = { readonly eras: readonly string[]; readonly labe
 
 /** A year written as figures: 2024年度, "2024 events". */
 const YEAR_FIGURES = /(?<![0-9０-９])(?:1[89]|20)\d{2}(?![0-9０-９])/u;
-const ERA_YEAR_NUMBER = /^[ \t]?(?:[0-9０-９]{1,2}|元)/u;
+/** An era's year after its name: 8年 of 令和8年, 元年 of 令和元年度 (not 8月). */
+const ERA_YEAR_NUMBER = /^[ \t]?(?:[0-9０-９]{1,2}|元)[ \t]?年/u;
 /** A fiscal year's number: two figures (FY27) or four (FY2027). */
 const LABEL_YEAR = /^(?:\d{2}|\d{4})(?!\d)/u;
 const LETTER = /\p{L}/u;

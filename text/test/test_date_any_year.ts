@@ -139,6 +139,7 @@ describe("date-any-year: 例の続き、決算日", () => {
     { word: "for example", reach: "example" },
     { word: "if", reach: "continues" },
     { word: "例えば", reach: "example" },
+    { word: "例：", reach: "example" },
     { word: "もし", reach: "continues" },
     { word: "fiscal year end", reach: "near" },
     { word: "決算日", reach: "near" },
@@ -147,6 +148,8 @@ describe("date-any-year: 例の続き、決算日", () => {
   it("例の語は、同じ箇条書きの項目の終わりまでかかり、項目の外にはかからない", () => {
     const item = "- For example, a form sent on May 4 is late. Its reply is due on May 18.\n";
     assert.ok(covered(item, "May 18", EXAMPLES));
+    assert.ok(covered("- 例：5月4日に届いた。返信は5月18日。\n", "5月18日", EXAMPLES));
+    assert.ok(!covered("例：5月4日に届いた。返信は5月18日。\n", "5月18日", EXAMPLES));
     assert.ok(!covered("For example, a form sent on May 4 is late. Its reply is due on May 18.\n", "May 18", EXAMPLES));
     assert.ok(!covered(`${item}- The office closed on May 20.\n`, "May 20", EXAMPLES));
   });
@@ -213,6 +216,7 @@ describe("headingNamesYear: 年を名指す見出し", () => {
     assert.ok(!headingNamesYear("Top 300 tasks", WORDS));
     assert.ok(!headingNamesYear("Room 12034", WORDS));
     assert.ok(!headingNamesYear("令和の行事", WORDS));
+    assert.ok(!headingNamesYear("令和8月の予定", WORDS));
     assert.ok(!headingNamesYear("SPFY27 code", WORDS));
     assert.ok(!headingNamesYear("FY plan", WORDS));
     assert.ok(!headingNamesYear("FY123 plan", WORDS));
@@ -248,5 +252,10 @@ describe("date-without-year: 見出しの年、例の続き、毎年の期間", 
     assert.deepEqual(namedRuleRun("date-without-year", `${EN_YEARS}${quiet}\n\n## Meetings\n\nThe board met on March 12.\n`, en).findings, [
       '"March 12" has no year, and the document\'s dates run from 2025 to 2026, so the year is unclear',
     ]);
+  });
+
+  it("年は日付のすぐ上の見出しからだけ取り、その上の見出しの年は下の節に及ばない", () => {
+    const nested = "# Guide\n\nRevised on October 1, 2025 and in force from April 1, 2026.\n\n## 2026 plan\n\n### Meetings\n\nThe board met on March 12.\n";
+    assert.equal(namedRuleRun("date-without-year", nested, en).findings.length, 1);
   });
 });

@@ -12,9 +12,13 @@ entries:
   - pattern: たとえば
     group: example
   - pattern: 例：
+    group: example
   - pattern: "例:"
+    group: example
   - pattern: 例）
+    group: example
   - pattern: 例)
+    group: example
   - pattern: もし
     group: continues
   - pattern: 仮に
