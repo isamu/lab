@@ -1,0 +1,10 @@
+# Nouns that turn "section N" into the name of a thing defined by another Act: "a section 21 notice", "a section 8 form".
+# dangling-reference reads every "section 21" in a document that writes "section 21 notice" as that Act's section, not
+# one of its own. Only the lower-case "section" counts: a contract's "Section 5 notice" points into the contract.
+id: section-name-noun
+language: en
+entries:
+  - pattern: notice
+  - pattern: notices
+  - pattern: form
+  - pattern: forms

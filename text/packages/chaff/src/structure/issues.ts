@@ -1,4 +1,6 @@
 import type { StructureNode } from "../plugin.ts";
+import { writtenReading } from "./written-resolve.ts";
+import { namedTargets, pointsToNamedSection } from "./section-names.ts";
 import { listedTags } from "./listed-tags.ts";
 import { namesAbsentUnit } from "./unit-word.ts";
 import { isListedParagraph, listedParagraphsByArticle } from "./listed-paragraph.ts";
@@ -113,7 +115,7 @@ const numbering = (node: StructureNode): unknown => node.attrs["numbering"];
  * 参照の番地が木に無い。他の文書の名前が付いた参照（民法第709条、Section 9 of the Master Agreement）は引かない。
  * 条を 1 つも持たない文書も見ない。他の文書を指しているだけかもしれない。
  */
-export const danglingReferences = (tree: StructureNode, source: string): StructureIssue[] => {
+export const danglingReferences = (tree: StructureNode, source: string, nameNouns: readonly string[] = []): StructureIssue[] => {
   const nodes = inDocumentOrder(tree);
   // 参照は条を指す。条を一つも持たない文書（契約書に付ける承諾書のひな形など）の「契約書第6条」は、別の文書の条。
   if (!nodes.some((node) => node.kind === "article")) return [];
@@ -130,14 +132,20 @@ export const danglingReferences = (tree: StructureNode, source: string): Structu
   const chapters = chaptersOf(nodes);
   const elsewhere = elsewhereReferences(nodes, source);
   const quoted = referencesInCitedDocuments(tree);
-  const unresolved = nodes
-    .filter((node) => node.kind === "reference" && !citesOther(node) && !otherNumbering(node))
+  const references = nodes.filter((node) => node.kind === "reference");
+  const named = namedTargets(references, source, nameNouns);
+  const unresolved = references
+    .filter((node) => !citesOther(node) && !otherNumbering(node) && !pointsToNamedSection(node, named))
     .filter((node) => !namesAbsentUnit(node, articleLabels) && !elsewhere.has(node))
     .filter((node) => !quoted.has(node) && !resolves(node, addresses, chapters));
   // 規程は条の下の項を箇条書き（「1. 」「２．」）で書くことがあり、木はそれを項として読まない。条の本文は、要るときに一度だけ読む。
   const listed = unresolved.length === 0 ? new Map() : listedParagraphsByArticle(nodes, source);
+  // 平文の契約は見出しを「9. Indemnification.」と本文の形で書き、木はそれを番地にしない。残った参照があるときだけ読む。
+  const written = unresolved.length === 0 ? undefined : writtenReading(nodes, source);
+  const writtenAddresses = new Set(written?.addresses);
   return unresolved
     .filter((node) => !isListedParagraph(textOf(node, "target"), listed))
+    .filter((node) => !writtenAddresses.has(textOf(node, "target")) && written?.subdivision(node) !== true)
     .map((node) => ({ offset: node.span.start, values: { label: textOf(node, "label"), target: textOf(node, "target") } }));
 };
 
