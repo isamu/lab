@@ -1,5 +1,7 @@
 # 組織の名前の前に立つ形（法人格と、国立・県立のような設置者）。漢字の連なりがこれで始まり、組織の単位（organisation-unit）で
 # 閉じれば、その連なりは 1 つの組織の正式名称（国立研究開発法人産業技術総合研究所）。書き手が割れる複合語ではない。
+# position: before の語（設置者）は名前の前にしか立たない。それ以外の法人格は名前の後ろにも立ち、連なりを閉じれば
+# その連なりも 1 つの名前（東日本自動車販売株式会社）。
 id: organisation-form
 language: ja
 entries:
@@ -26,14 +28,14 @@ entries:
   - pattern: 合同会社
   - pattern: 合資会社
   - pattern: 合名会社
-  - pattern: 国立
-  - pattern: 公立
-  - pattern: 私立
-  - pattern: 都立
-  - pattern: 道立
-  - pattern: 府立
-  - pattern: 県立
-  - pattern: 市立
-  - pattern: 区立
-  - pattern: 町立
-  - pattern: 村立
+  - { pattern: 国立, position: before }
+  - { pattern: 公立, position: before }
+  - { pattern: 私立, position: before }
+  - { pattern: 都立, position: before }
+  - { pattern: 道立, position: before }
+  - { pattern: 府立, position: before }
+  - { pattern: 県立, position: before }
+  - { pattern: 市立, position: before }
+  - { pattern: 区立, position: before }
+  - { pattern: 町立, position: before }
+  - { pattern: 村立, position: before }

@@ -141,6 +141,12 @@ describe("L3 日本語 — 文字と語彙", () => {
       assert.ok(!idsFor("埼玉県市町村総合事務組合に問い合わせる。").includes("max-kanji-continuous"));
       assert.ok(!idsFor("東京都港区政策経営部に届ける。").includes("max-kanji-continuous"));
       assert.ok(!idsFor("和歌山県海草郡紀美野町役場総務課に届ける。").includes("max-kanji-continuous"));
+      // 名前の後ろに立つ法人格で閉じる会社の名前（有価証券報告書の契約先の形）。
+      assert.ok(!idsFor("当社は東日本青葉自動車販売株式会社と契約した。").includes("max-kanji-continuous"));
+    });
+
+    it("invalid: 法人格で閉じない長い連なりは数える（法人格の後ろに語が続く）", () => {
+      assert.ok(idsFor("当社は東日本青葉自動車販売株式会社営業推進課題を検討した。").includes("max-kanji-continuous"));
     });
 
     it("invalid: 名前に普通の語が続く語、名前の並び、辞書が固有名詞と読まない正式名称は数える", () => {
