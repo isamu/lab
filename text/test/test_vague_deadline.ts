@@ -52,6 +52,12 @@ describe("vague-deadline", () => {
     assert.deepEqual(wordsIn(en, en_("3. Either party may terminate this Agreement immediately on notice.")), []);
   });
 
+  it("reads 'not later than' as a stated limit, like 'no later than'", () => {
+    const bounded = "3. Promptly after the Closing (but not later than two business days thereafter), the Buyer shall send each holder a notice.";
+    assert.deepEqual(wordsIn(en, en_(bounded)), []);
+    assert.deepEqual(wordsIn(en, en_("3. Promptly after the Closing, the Buyer shall send each holder a notice.")), ["Promptly"]);
+  });
+
   it("does not run in a statute, where these words are terms of art, nor outside the legal genres", () => {
     assert.deepEqual(wordsIn(ja, ja_("第3条　事業者は、速やかに届け出なければならない。"), "legal/statute"), []);
     assert.deepEqual(wordsIn(en, en_("3. The seller must deliver the goods promptly."), "business/report"), []);

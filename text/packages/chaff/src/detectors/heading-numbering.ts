@@ -1,6 +1,6 @@
 import type { Detector, Finding, LexiconEntry } from "../plugin.ts";
 import { findingAt, writtenHeadings } from "./markup-finding.ts";
-import { numberingMinorities, numberingStyleOf, UNNUMBERED, type NumberingMinority, type NumberLabel } from "../heading-numbering.ts";
+import { numberingMinorities, numberingStyleOf, opensNumbering, UNNUMBERED, type NumberingMinority, type NumberLabel } from "../heading-numbering.ts";
 
 const labelsOf = (entries: readonly LexiconEntry[]): NumberLabel[] =>
   entries.map((entry) => ({ word: entry.pattern, position: entry.position === "after" ? "after" : "before" }));
@@ -28,7 +28,12 @@ export const headingNumbering: Detector = (doc): Finding[] => {
   const labels = labelsOf(doc.lexicons["heading-number-label"] ?? []);
   const matter = (doc.lexicons["unnumbered-heading"] ?? []).map((entry) => entry.pattern.toLowerCase());
   const styles = headings.map((heading) => numberingStyleOf(heading.text, labels));
-  const read = headings.map((heading, at) => ({ depth: heading.depth, style: styles[at] ?? UNNUMBERED, skipped: isFrontOrBackMatter(heading.text, matter) }));
+  const read = headings.map((heading, at) => ({
+    depth: heading.depth,
+    style: styles[at] ?? UNNUMBERED,
+    skipped: isFrontOrBackMatter(heading.text, matter),
+    opens: opensNumbering(heading.text, labels),
+  }));
   return numberingMinorities(read).flatMap((minority) => {
     const heading = headings[minority.at];
     if (heading === undefined) return [];

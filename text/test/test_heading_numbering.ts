@@ -3,7 +3,14 @@ import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { numberingMinorities, numberingStyleOf, siblingGroups, type NumberedHeading, type NumberLabel } from "../packages/chaff/src/heading-numbering.ts";
+import {
+  numberingMinorities,
+  numberingStyleOf,
+  opensNumbering,
+  siblingGroups,
+  type NumberedHeading,
+  type NumberLabel,
+} from "../packages/chaff/src/heading-numbering.ts";
 
 // 見出しの番号の付け方（heading-numbering-mix）。例文はすべて自作。
 
@@ -42,6 +49,34 @@ describe("heading-numbering-mix: 兄弟の見出しの番号の付け方", () =>
     assert.deepEqual(mixed(["## 1. 概要", "## 2. 日程", "## お問い合わせ先"]), []);
     assert.deepEqual(mixed(["## 1. Overview", "## 2. Schedule", "## Media contact"], en), []);
     assert.deepEqual(mixed(["## 1. Overview", "## 2. Schedule", "## Contacts"], en), []);
+  });
+
+  it("文書の題と、1 から始まる番号の前の見出しは番号の並びの外", () => {
+    const page = (lines: readonly string[]): readonly string[] =>
+      namedRuleRun("heading-numbering-mix", lines.map((line) => `${line}\n\nText.\n`).join("\n"), en).findings;
+    assert.deepEqual(page(["# Tenancy deposit protection", "# 1. Overview", "# 2. Information for tenants", "# 3. Disputes"]), []);
+    assert.deepEqual(mixed(["## Applies to England", "## 1. Before you start", "## 2. Looking for a home", "## 3. Living there"], en), []);
+    assert.deepEqual(mixed(["## はじめに", "## 第1章 背景", "## 第2章 方針"]), []);
+    assert.deepEqual(mixed(["## Notice", "## 1.1 Scope", "## 1.2 Terms"], en), []);
+  });
+
+  it("番号が 1 から始まらないとき、番号付きが一つだけのとき、番号の後ろの見出しは言う", () => {
+    assert.deepEqual(mixed(["## Overview", "## 2. Steps", "## 3. Results"], en), [
+      'The heading "Overview" has no number, while 2 of its siblings do ("2. Steps")',
+    ]);
+    assert.deepEqual(mixed(["## 背景", "## 方針", "## 1. 手順", "## 課題"]), [
+      "見出し「1. 手順」だけ番号があります（兄弟の見出しは「背景」など 3 個が番号なし）",
+    ]);
+    assert.deepEqual(mixed(["## Applies to England", "## 1. Before you start", "## 2. Looking", "## Summary"], en), [
+      'The heading "Summary" has no number, while 2 of its siblings do ("1. Before you start")',
+    ]);
+  });
+
+  it("HMRC の通知の末尾の決まった見出しは前後の見出しとして比べない", () => {
+    const back = ["## Your rights and obligations", "## Help us improve this notice", "## Putting things right", "## How HMRC uses your information"];
+    assert.deepEqual(mixed(["## 1. Overview", "## 2. Issuing invoices", "## 3. Contents", ...back], en), []);
+    assert.deepEqual(mixed(["## 1. Overview", "## 2. Issuing invoices", "## 3. Contents", "## How we use your information"], en), []);
+    assert.deepEqual(mixed(["## 1. Overview", "## 2. Issuing invoices", "## 3. Contents", "## Your rights"], en).length, 1);
   });
 
   it("連絡先の語を含むだけの見出しは前後の見出しにしない", () => {
@@ -181,8 +216,62 @@ describe("numberingStyleOf", () => {
   });
 });
 
+describe("opensNumbering", () => {
+  const labels: readonly NumberLabel[] = [
+    { word: "章", position: "after" },
+    { word: "Chapter", position: "before" },
+  ];
+
+  it("the first number of a run", () => {
+    const first = [
+      "1. Overview",
+      "1.1 Scope",
+      "7.1 Designatory data",
+      "(1) 概要",
+      "1）概要",
+      "① 概要",
+      "一、概要",
+      "第1章 背景",
+      "第一章 背景",
+      "Chapter 1 Plan",
+      "CHAPTER I Plan",
+      "I. Plan",
+      "A. Plan",
+      "**1. 概要**",
+      "１．概要",
+    ];
+    assert.deepEqual(
+      first.map((text) => opensNumbering(text, labels)),
+      first.map(() => true),
+    );
+  });
+
+  it("a later number, a heading without a number, and the empty string", () => {
+    const later = [
+      "2. Steps",
+      "1.2 Terms",
+      "10. Notes",
+      "11. Notes",
+      "(2) 概要",
+      "② 概要",
+      "十一、概要",
+      "第2章 方針",
+      "Chapter 2 Plan",
+      "B. Plan",
+      "II. Plan",
+      "Overview",
+      "1 Introduction",
+      "",
+    ];
+    assert.deepEqual(
+      later.map((text) => opensNumbering(text, labels)),
+      later.map(() => false),
+    );
+  });
+});
+
 describe("siblingGroups and numberingMinorities", () => {
-  const heading = (depth: number, style: string, skipped = false): NumberedHeading => ({ depth, style, skipped });
+  const heading = (depth: number, style: string, skipped = false, opens = false): NumberedHeading => ({ depth, style, skipped, opens });
 
   it("siblings share a parent and a depth", () => {
     assert.deepEqual(siblingGroups([heading(1, "none"), heading(2, "dot"), heading(3, "dot"), heading(2, "dot"), heading(3, "dot")]), [[0], [1, 3], [2], [4]]);
@@ -196,6 +285,12 @@ describe("siblingGroups and numberingMinorities", () => {
     assert.deepEqual(numberingMinorities([heading(2, "dot"), heading(2, "dot"), heading(2, "none"), heading(2, "none")]), []);
     assert.deepEqual(numberingMinorities([heading(2, "dot"), heading(2, "none")]), []);
     assert.deepEqual(numberingMinorities([heading(2, "dot"), heading(2, "dot"), heading(2, "none", true)]), []);
+  });
+
+  it("unnumbered siblings before a run that opens at 1 are left out", () => {
+    assert.deepEqual(numberingMinorities([heading(1, "none"), heading(1, "dot", false, true), heading(1, "dot"), heading(1, "dot")]), []);
+    assert.deepEqual(numberingMinorities([heading(1, "none"), heading(1, "dot"), heading(1, "dot"), heading(1, "dot")]).length, 1);
+    assert.deepEqual(numberingMinorities([heading(1, "none"), heading(1, "none"), heading(1, "dot", false, true), heading(1, "none")]).length, 1);
   });
 
   it("styles are compared among the numbered siblings only", () => {

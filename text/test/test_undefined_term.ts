@@ -122,6 +122,31 @@ describe("undefined-term in English", () => {
     ];
     assert.deepEqual(termsIn(en, en_(...marked)), []);
   });
+
+  it("does not report a name the words around it show: a longer name, a number, its definition, a capacity, its initials", () => {
+    const names = [
+      "1.2 The Supplier complies with the Federal Food, Drug, and Cosmetic Act and the policies of Post Holdings, Inc. and Davis Polk & Wardwell LLP.",
+      '1.3 The Supplier meets Proposition 65, provides a Certificate of Analysis ("COA") and reports to the Food and Drug Administration (the "FDA").',
+      "1.4 Disputes are heard in Canton, Ohio, or in London, United Kingdom.",
+      "1.5 The fee is due on the Closing (as defined in the Merger Agreement).",
+      "1.6 The loan was made by Harbour Works Ltd, as Administrative Agent, and Northwind Retail Inc., as the Borrower.",
+      '1.7 "IRS" means the Internal Revenue Service.',
+      "1.8 No Representation or Warranty. Neither party makes any other promise.",
+      "1.9 The Chief Executive Officer of the Customer signs, save for acts of God.",
+    ];
+    assert.deepEqual(termsIn(en, en_(...names)), []);
+  });
+
+  it("still reports a term the words around it do not make a name", () => {
+    assert.deepEqual(termsIn(en, en_("1.2 With respect to Proprietary Data, Receiving Party shall return it.")), ["Proprietary Data"]);
+    assert.deepEqual(termsIn(en, en_("1.2 Under the Master Plan, Harbour Works Ltd pays the Supplier.")), ["Master Plan"]);
+    assert.deepEqual(termsIn(en, en_("1.2 The Supplier protects Proprietary Data (as described in Schedule B).")), ["Proprietary Data"]);
+    assert.deepEqual(termsIn(en, en_("1.2 The Supplier treats the data as Confidential Material.")), ["Confidential Material"]);
+    assert.deepEqual(termsIn(en, en_('1.2 "IRS" means the Internal Revenue Service.', "1.3 The Supplier tells the Internal Audit Team.")), [
+      "Internal Audit Team",
+    ]);
+    assert.deepEqual(termsIn(en, en_("1.2 Fees. The Supplier charges for Proprietary Data.")), ["Proprietary Data"]);
+  });
 });
 
 describe("capitalisedTerms", () => {
@@ -130,7 +155,17 @@ describe("capitalisedTerms", () => {
   const sentence = (source: string, pos: Readonly<Record<string, string>> = {}): Token[] =>
     [...source.matchAll(/\S+/gu)].map((match) => token(match[0], pos[match[0]] ?? "X", match.index));
   const DEFINED = [{ term: "Services" }, { term: "Customer" }];
-  const WORDS = { names: ["Act"], divisions: ["Section"], joiners: ["of"] };
+  const WORDS = {
+    names: ["Act"],
+    divisions: ["Section"],
+    joiners: ["of", "and"],
+    nameEnds: ["Act"],
+    formEnds: ["Inc", "Ohio"],
+    definitionMarkers: ["the"],
+    definedElsewhere: ["as defined in"],
+    capacityMarkers: ["as"],
+    articles: ["the", "a"],
+  };
   const terms = (source: string, overrides: Partial<CapitalisedInput> = {}): string[] =>
     capitalisedTerms({
       source,
@@ -167,6 +202,32 @@ describe("capitalisedTerms", () => {
     assert.deepEqual(terms("to its Customer Services ."), []);
     assert.deepEqual(terms("to its Affiliates or its Affiliate ."), ["Affiliates"]);
   });
+
+  it("leaves a run that carries a number or starts a longer name, and keeps one followed by another name", () => {
+    assert.deepEqual(terms("under the Proposition 65 ."), []);
+    assert.deepEqual(terms("by the Post Holdings , Inc ."), []);
+    assert.deepEqual(terms("held in Canton , Ohio ."), []);
+    assert.deepEqual(terms("under the Federal Food , Drug , and Cosmetic Act ."), []);
+    assert.deepEqual(terms("for the Proprietary Data , Cosmetic Act ."), ["Proprietary Data"]);
+    assert.deepEqual(terms("to the Master Plan , Harbour Inc ."), ["Master Plan"]);
+    assert.deepEqual(terms("for the Proprietary Data , Drug and Cosmetic Act ."), ["Proprietary Data"]);
+    assert.deepEqual(terms("under the Proposition\n\n65 ."), ["Proposition"]);
+  });
+
+  it("leaves a run defined by the brackets after it, spelt out from a defined acronym, or naming a party's capacity", () => {
+    assert.deepEqual(terms('for a Certificate of Analysis ( "COA" ) .'), []);
+    assert.deepEqual(terms('for the Food and Drug Administration ( the "FDA" ) .'), []);
+    assert.deepEqual(terms('between Harbour Data ( "Buyer" or "HD" ) .'), []);
+    assert.deepEqual(terms('for the Proprietary Data ( "including records" ) .'), ["Proprietary Data"]);
+    assert.deepEqual(terms("on the Closing ( as defined in the Merger Act ) ."), []);
+    assert.deepEqual(terms("for the Proprietary Data ( see below ) ."), ["Proprietary Data"]);
+    assert.deepEqual(terms("under the Internal Audit Team .", { named: ["IAT"] }), []);
+    assert.deepEqual(terms("under the Internal Audit Team ."), ["Internal Audit Team"]);
+    assert.deepEqual(terms("Harbour Ltd , as Agent , pays ."), []);
+    assert.deepEqual(terms("Harbour Ltd , as the Borrower , pays ."), []);
+    assert.deepEqual(terms("treats the data as Agent ."), ["Agent"]);
+    assert.deepEqual(terms("when it ends , as Agent , pays ."), ["Agent"]);
+  });
 });
 
 describe("setApartSpans and namedWords", () => {
@@ -178,6 +239,16 @@ describe("setApartSpans and namedWords", () => {
     );
     assert.deepEqual(namedWords(source), ["Fees", "Cover Page", "Account", "Cover Page"]);
     assert.deepEqual(namedWords(""), []);
+  });
+
+  it("finds a clause's run-in caption, at a line's start or after a sentence, and not a sentence", () => {
+    const captions = (source: string): string[] => setApartSpans(source).map((span) => source.slice(span.start, span.end).trim());
+    assert.deepEqual(captions("5.8 No Representation or Warranty. Neither party makes a promise."), ["5.8 No Representation or Warranty"]);
+    assert.deepEqual(captions("It ends. Section 3.8 Compliance with Laws; Permits. (a) Each"), ["Section 3.8 Compliance with Laws; Permits"]);
+    assert.deepEqual(captions("(e) Obligation to Terminate Existing Discussions. The Company"), ["(e) Obligation to Terminate Existing Discussions"]);
+    assert.deepEqual(captions("1.1 The Supplier shall provide the Services."), []);
+    assert.deepEqual(captions("as set out in Section 4.2 Supplier Duties."), []);
+    assert.deepEqual(captions("5.8 Warranty.5 more"), []);
   });
 });
 

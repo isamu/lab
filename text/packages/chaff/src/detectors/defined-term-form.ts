@@ -199,11 +199,31 @@ const MIN_NAME_CHARS = 4;
 /** In English a long name has two words or more (Acme Corporation); one capitalised word is the term's own kind of word. */
 const MIN_NAME_WORDS = 2;
 const LATIN = /\p{Script=Latin}/u;
+const LETTER = /\p{L}/u;
+const JAPANESE = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u;
 
 const isNamePart = (token: Token): boolean => NAME_PARTS.has(token.pos) || NAME_MARKS.has(token.surface);
 
+/**
+ * A label for each of several things or for all of them together ((each, a "Certificate"), (collectively, the "Plans"))
+ * names the head of the clause before it (a certificate that represented any share of Common Stock), not its last words.
+ */
+const LABELS_THE_CLAUSE = /^[(（](?:each|collectively)\b/iu;
+
+/**
+ * Whether the words make a long name. In English, two words with letters, one of them capitalised: a figure is not a word
+ * of a name (as amended on January 26, 2015 (the "Indenture"), a par value of $1.00 (the "Preference Stock")), and lower-case
+ * words (with respect thereto) are used in their own sense. A name with Japanese in it (株式会社ABC), four characters or more.
+ */
+const isLongName = (name: string): boolean => {
+  const words = name.split(/\s+/u).filter((word) => LETTER.test(word));
+  if (words.length === 0 || [...name].length < MIN_NAME_CHARS) return false;
+  return !LATIN.test(name) || JAPANESE.test(name) || (words.length >= MIN_NAME_WORDS && words.some((word) => UPPER_START.test(word)));
+};
+
 /** The long name written right before an inline definition: the run of name words that ends at its opening bracket. */
 export const nameBefore = (sentence: Sentence, bracket: number): string | undefined => {
+  if (LABELS_THE_CLAUSE.test(sentence.text.slice(bracket - sentence.span.start))) return undefined;
   const tokens = (sentence.tokens ?? []).filter((token) => token.span.end <= bracket);
   const firstOfRun = tokens.findLastIndex((token) => !isNamePart(token)) + 1;
   if (isModifier(tokens[firstOfRun - 1])) return undefined;
@@ -212,16 +232,17 @@ export const nameBefore = (sentence: Sentence, bracket: number): string | undefi
   const end = run.at(-1);
   if (first === undefined || end === undefined || bracket - end.span.end > 1) return undefined;
   const name = withoutTrailingMarks(sentence.text.slice(first.span.start - sentence.span.start, end.span.end - sentence.span.start));
-  const words = name.split(/\s+/u).length;
-  return [...name].length < MIN_NAME_CHARS || (LATIN.test(name) && words < MIN_NAME_WORDS) ? undefined : name;
+  return isLongName(name) ? name : undefined;
 };
 
 /**
- * A word that narrows the name before it: an article, an adjective, a verb, or の (妊娠中の女性従業員, the Beta Preview, 本利用規約).
- * The words then name a kind of thing the definition picks out, not one party, and are used in their own sense again.
+ * A word that narrows the name before it: an article, an adjective, a verb, or a possessive (妊娠中の女性従業員, the Beta
+ * Preview, 本利用規約, users of Customer's Web site). The words then name a kind of thing the definition picks out, not one
+ * party, and are used in their own sense again.
  */
 const MODIFIERS = new Set(["DET", "ADJ", "VERB", "AUX"]);
-const isModifier = (token: Token | undefined): boolean => token !== undefined && (MODIFIERS.has(token.pos) || token.surface === "の");
+const POSSESSIVES = new Set(["の", "'s", "’s", "'", "’"]);
+const isModifier = (token: Token | undefined): boolean => token !== undefined && (MODIFIERS.has(token.pos) || POSSESSIVES.has(token.surface));
 
 const TRAILING_MARKS = new Set([",", ".", " "]);
 

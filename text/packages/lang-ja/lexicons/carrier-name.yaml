@@ -1,0 +1,11 @@
+# 運送会社の名前（Federal Express、UPS、DHL）。1 つの文に 2 社以上を並べたときだけ名前と読む。UPS は 1 つだけなら無停電電源でもある。
+# 字面どおりに照らす。
+id: carrier-name
+language: ja
+entries:
+  - pattern: "UPS"
+  - pattern: "DHL"
+  - pattern: "USPS"
+  - pattern: "TNT"
+  - pattern: "FedEx"
+  - pattern: "Federal Express"

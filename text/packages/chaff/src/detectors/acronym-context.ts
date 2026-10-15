@@ -1,4 +1,3 @@
-import { escapeRegExp } from "../orthography.ts";
 import { ROMAN_NUMERAL, romanRangeOf } from "./roman-numeral.ts";
 import { citationKeySpans } from "./citation-key.ts";
 import { dottedNameSpans } from "./dotted-name.ts";
@@ -7,9 +6,10 @@ import { loneNumeralSpans, nameNumeralSpans } from "./name-numeral.ts";
 import { placeholderSpans } from "./placeholder.ts";
 import { numeralWordSpans } from "./numeral-word.ts";
 import { seriesLabelSpans } from "./series-label.ts";
+import { oneOf } from "./acronym-name.ts";
 
 /**
- * 大文字の語が略語ではなく、決まった書き方の一部として読める所（3:30 PM、1pm ET、USD 1,000、Kansas City, MO 64108）。
+ * 大文字の語が略語ではなく、決まった書き方の一部として読める所（3:30 PM、1pm ET、USD 1,000、Kansas City, MO 64108、Fort Lauderdale FL 33304）。
  * どれも閉じた集合で、しかも隣の数字（州は地名でもよい）があるときだけ認める。PM（project manager）、CT、CA（certificate authority）は
  * その隣でなければ略語のまま数える。語は言語パッケージの語彙表から読み、書き方の組み立てだけをここに置く。
  */
@@ -34,9 +34,6 @@ export type NotationWords = {
   /** 日付・時刻の数字の後ろに書く単位（年、月、日、時、分）。その前の同じ大文字の繰り返し（YY年）は書式の置き場所。 */
   readonly dateTimeUnits: readonly string[];
 };
-
-// 空の語彙表は「その書き方が無い」。空の選択肢 (?:) は至る所で空文字に当たるので、何にも当たらない形にする。
-const oneOf = (words: readonly string[]): string => (words.length === 0 ? "(?!)" : `(?:${words.map(escapeRegExp).join("|")})`);
 
 const MINUTES = String.raw`:[0-5]\d`;
 const CLOCK_12 = String.raw`(?<![\d:.])(?:1[0-2]|0?[1-9])(?:${MINUTES})?`;
@@ -89,7 +86,7 @@ const patternsOf = (words: NotationWords): readonly RegExp[] => [
   new RegExp(String.raw`(?:${CLOCK_24}|${CLOCK_12}\s*${ANY_MERIDIEM})\s*${oneOf(words.timeZones)}`, "gu"),
   new RegExp(String.raw`${oneOf(words.currencies)}\s*[$€£¥]?${AMOUNT}`, "gu"),
   new RegExp(String.raw`(?<![\w.,])${AMOUNT}\s*${oneOf(words.currencies)}`, "gu"),
-  new RegExp(String.raw`,\s+${oneOf(words.usStates)}\s+\d{5}(?:-\d{4})?(?!\d)`, "gu"),
+  new RegExp(String.raw`(?:,\s+|(?<=(?<!\p{L})\p{Lu}\p{Ll}+)\s+)${oneOf(words.usStates)}\s+\d{5}(?:-\d{4})?(?!\d)`, "gu"),
   placeAndState(oneOf(words.usStates)),
   new RegExp(oneOf(words.emphasis), "gu"),
   ...numberedPatterns(words),

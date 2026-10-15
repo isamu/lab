@@ -7,6 +7,7 @@ extra_word_lists:
   [
     definition-marker,
     definition-verb,
+    definition-statement,
     meridiem,
     time-zone,
     currency-code,
@@ -19,6 +20,14 @@ extra_word_lists:
     date-time-unit,
     http-method,
     reference-list-heading,
+    legal-form,
+    citation-series,
+    carrier-name,
+    name-prefix,
+    street-suffix,
+    tax-code,
+    capital-phrase,
+    name-determiner,
   ]
 uses: [pos]
 severity: info

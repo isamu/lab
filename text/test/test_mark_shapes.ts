@@ -67,6 +67,14 @@ describe("bracket-width-consistency", () => {
     ]);
   });
 
+  it("文頭の番号の括弧（(1）、(2）も、前の文の字に接していれば数える", () => {
+    const source = "会議（定例）は月曜です。報告（月次）は金曜です。(1）案を出す。(2）表を出す。\n";
+    assert.deepEqual(findingsOf(RULE, source, ja), [
+      "括弧を「(」と書いています（この文書はふつう「（」。8 箇所のうち 2 箇所が違う）",
+      "括弧を「(」と書いています（この文書はふつう「（」。8 箇所のうち 2 箇所が違う）",
+    ]);
+  });
+
   it("英字に挟まれた括弧と、鉤括弧の中は数えない", () => {
     assert.deepEqual(findingsOf(RULE, "会議（定例）は月曜です。関数 f(x) を使います。報告（月次）は金曜です。\n", ja), []);
     assert.deepEqual(findingsOf(RULE, "会議（定例）は月曜です。題は「資料(最新版)」です。\n", ja), []);

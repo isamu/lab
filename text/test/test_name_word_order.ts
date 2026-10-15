@@ -50,6 +50,22 @@ describe("name-variant order: the parts", () => {
     );
   });
 
+  it("Title Case spans: an article joins only after another small word, not across a phrase boundary", () => {
+    const text = "the Bank of the West, under this Agreement the Stockholders, and Bank the West";
+    assert.deepEqual(
+      titleCaseSpans(text, ["of", "for"], () => false, ["the"]).map((span) => text.slice(span.start, span.end)),
+      ["Bank of the West"],
+    );
+    assert.deepEqual(
+      titleCaseSpans("this Agreement the Stockholders", ["of", "the"]).map((span) => [span.start, span.end]),
+      [[5, 31]],
+    );
+    assert.deepEqual(
+      titleCaseSpans("Agreement the Stockholders", [], () => false, ["the"]),
+      [],
+    );
+  });
+
   it("labelled spans: after a label and a colon, up to the punctuation", () => {
     const text = "前提科目：統計学基礎、ほか\nCourse: Data Lab. Then";
     assert.deepEqual(
@@ -138,6 +154,18 @@ describe("name-variant order: the parts", () => {
     assert.deepEqual(wordOrderVariants([]), []);
   });
 
+  it("two forms written in one sentence are not compared; in two sentences they are", () => {
+    const usual = named("Request Additional Time", 10, ["request", "addition", "time"]);
+    const other = named("Additional Time Requests", 40, ["addition", "time", "request"]);
+    const oneSentence = (): number => 0;
+    assert.deepEqual(wordOrderVariants([usual, { ...usual, offset: 90 }, other], new Set(), oneSentence), []);
+    const byHundred = (offset: number): number => Math.floor(offset / 100);
+    assert.deepEqual(wordOrderVariants([usual, { ...usual, offset: 130 }, { ...other, offset: 240 }], new Set(), byHundred), [
+      { name: { ...other, offset: 240 }, usual: "Request Additional Time" },
+    ]);
+    assert.deepEqual(wordOrderVariants([usual, { ...usual, offset: 130 }, other], new Set(), byHundred), []);
+  });
+
   it("two names neither written as a name (only Title Case) are compared only when one is a whole table cell", () => {
     const usual = named("Supreme Court of Florida", 0, ["supreme", "court", "florida"], false);
     const other = named("Florida Supreme Court", 50, ["florida", "supreme", "court"], false);
@@ -185,6 +213,37 @@ describe("name-variant order: through the rule", () => {
     assert.deepEqual(variants("Prerequisite: Foundations of Statistics\n\nFirst-year students start with Statistical Foundations.\n"), [
       '"Statistical Foundations" is written "Foundations of Statistics", with the words in another order, elsewhere in the document',
     ]);
+  });
+
+  it("silent for two labels written side by side, a defined term and its definition, and words across a phrase boundary", () => {
+    assert.deepEqual(
+      variants(
+        'Ask for the hours under "Request Additional Time" on the timecard or "Additional Time Requests" on the self-service page.\n\nYour lead approves each "Request Additional Time" entry.\n',
+      ),
+      [],
+    );
+    assert.deepEqual(variants("“Branch Office” means each Office of the Branch.\n\nEach Branch Office files a report. A Branch Office may close.\n"), []);
+    assert.deepEqual(
+      variants(
+        "“Branch Office” means a local office that the Bank runs.\n\nEach Branch Office files a report.\n\nThe Office of the Branch keeps its own books.\n",
+      ),
+      [],
+    );
+    assert.deepEqual(
+      variants(
+        "Concurrently with the signing of this Agreement the Members have delivered their consents.\n\nThe “Members Agreement” governs the vote. The Members Agreement is attached.\n",
+      ),
+      [],
+    );
+  });
+
+  it("two labels in separate sentences are still compared", () => {
+    assert.deepEqual(
+      variants(
+        'Open the "Request Additional Time" page. Your lead reads each "Request Additional Time" entry.\n\nLater, open "Additional Time Requests" to see the answer.\n',
+      ),
+      ['"Additional Time Requests" is written "Request Additional Time", with the words in another order, elsewhere in the document'],
+    );
   });
 
   it("silent for reordered words that are not written as names", () => {
