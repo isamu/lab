@@ -5,6 +5,7 @@ import type { GenreData } from "../packages/chaff/src/genre-parse.ts";
 import { presetLevelsOf } from "../packages/chaff/src/genre-parse.ts";
 import { severityAt } from "../packages/chaff/src/levels.ts";
 import { benchPrecision, shareOf, type RuleMeasure } from "./rules-measure-score.ts";
+import { precisionOf, type GroupPrecision, type LanguagePrecision } from "./rules-precision-score.ts";
 
 /** A rule that reports on at most this share of a group's human documents runs at its own level there. */
 export const NORMAL_MAX_SHARE = 0.1;
@@ -14,6 +15,35 @@ export const OFF_MIN_SHARE = 0.5;
 export const MIN_DOCUMENTS = 10;
 /** Every finding a rule gives in the bench and the AI-shape bench must be right for it to run at its own level. */
 export const BENCH_MIN_PRECISION = 1;
+/** A rule whose judged findings in a group are right this often or less is off for that group (yarn rules:precision). */
+export const LOW_PRECISION_MAX = 0.2;
+/** Fewer judged findings than this, and one verdict moves the precision too far: the group does not decide. */
+export const PRECISION_MIN_FINDINGS = 15;
+/** Findings from fewer documents than this are one document's pattern, not the group's: the group does not decide. */
+export const PRECISION_MIN_DOCUMENTS = 3;
+
+/** Enough judged findings, from enough documents, show the rule is rarely right in this language. */
+export const isRarelyRight = (counts: LanguagePrecision): boolean =>
+  counts.correct + counts.falsePositive >= PRECISION_MIN_FINDINGS &&
+  counts.documents >= PRECISION_MIN_DOCUMENTS &&
+  (precisionOf(counts) ?? 1) <= LOW_PRECISION_MAX;
+
+/**
+ * The groups where the rule is rarely right in every language it reports in there. off_for turns a rule off for a
+ * group in both languages, so a language it reports in without that evidence (too few verdicts, or only unjudged
+ * findings) keeps the group on; a language it gives no finding in has nothing to lose.
+ */
+export const lowPrecisionGroups = (groups: Readonly<Record<string, GroupPrecision>> | undefined): string[] =>
+  Object.entries(groups ?? {})
+    .filter(([, languages]) => Object.keys(languages).length > 0 && Object.values(languages).every(isRarelyRight))
+    .map(([group]) => group);
+
+/**
+ * The groups with a genre that genres.yaml turns this rule on for by hand, with its reason written there. Judged
+ * precision does not overrule a written reason: the group stays on, and `yarn rules:precision` lists it for a person.
+ */
+export const heldOnGroups = (data: GenreData, rule: string): Set<string> =>
+  new Set(data.genres.filter((genre) => genre.rules[rule] !== undefined && genre.rules[rule] !== "off").map((genre) => genre.id.split("/")[0] ?? genre.id));
 
 /**
  * How a rule runs with no settings:
@@ -21,7 +51,8 @@ export const BENCH_MIN_PRECISION = 1;
  *   experimental: no group has enough documents it ran on; runs only with --experimental
  *   normal:       on, at its own level
  *   info:         on, but its findings are information (reports on too many human documents, or a bench finding was wrong)
- * `off` lists the groups it reports on most human documents of; it is off for every genre in them.
+ * `off` lists the groups it reports on most human documents of, and those its judged findings are rarely right in;
+ * it is off for every genre in them.
  */
 export type Standing = { readonly kind: "judge" } | { readonly kind: "experimental" } | { readonly kind: "normal" | "info"; readonly off: readonly string[] };
 
@@ -39,12 +70,16 @@ const decidingShares = (measure: RuleMeasure): (readonly [string, number])[] =>
     .filter(([, share]) => share.documents >= MIN_DOCUMENTS)
     .map(([group, share]) => [group, shareOf(share)] as const);
 
-/** handOff: the groups the rule's off_for already turns it off for (a written reason, not a measurement). */
-export const standingOf = (rule: RuleFacts, measure: RuleMeasure | undefined, handOff: ReadonlySet<string>): Standing => {
+/**
+ * handOff: the groups the rule's off_for already turns it off for (a written reason, not a measurement).
+ * lowPrecision: the groups lowPrecisionGroups names for the rule.
+ */
+export const standingOf = (rule: RuleFacts, measure: RuleMeasure | undefined, handOff: ReadonlySet<string>, lowPrecision: readonly string[] = []): Standing => {
   if (rule.layer === "L4") return { kind: "judge" };
   const shares = measure === undefined ? [] : decidingShares(measure);
   if (measure === undefined || shares.length === 0) return { kind: "experimental" };
-  const off = shares.filter(([, share]) => share > OFF_MIN_SHARE).map(([group]) => group);
+  const crowded = shares.filter(([, share]) => share > OFF_MIN_SHARE).map(([group]) => group);
+  const off = [...crowded, ...lowPrecision.filter((group) => !crowded.includes(group))];
   const running = shares.filter(([group]) => !off.includes(group) && !handOff.has(group)).map(([, share]) => share);
   const worst = Math.max(0, ...running);
   return { kind: worst <= NORMAL_MAX_SHARE && benchPasses(measure) ? "normal" : "info", off };

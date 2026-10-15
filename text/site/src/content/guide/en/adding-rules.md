@@ -309,6 +309,17 @@ From how often the rule reports on those human documents, it sets the rule's `st
 It also writes a group it measured the rule off for into `off_for` as `measured by yarn rules:measure`.
 `yarn test` stops when a rule's placement no longer matches the measurement in `corpus/rules-measure.json`.
 
+How often a rule is right decides too. In [isamu/chaff-corpus](https://github.com/isamu/chaff-corpus), people judge each finding chaff gives on real documents: correct or false positive.
+`yarn rules:precision --corpus <checkout>` runs that corpus with this checkout's chaff (`yarn build` first) and writes, per rule, genre group and language, the judged findings that were right into `corpus/rules-precision.json`.
+Unjudged findings never count, and neither does a verdict whose note starts with `extraction artefact:` or `dataset artefact:`: it is about how the document was extracted, not about the rule.
+
+A rule is off for a group when its judged findings there are right 20% of the time or less, over at least 15 findings from at least 3 documents, in every language it reports in there.
+`off_for` turns a rule off in both languages, so a language where the rule reports without that evidence keeps the group on.
+When the line was set, the judged precisions on the corpus fell into a low cluster and a higher one, and the line sits in the gap between them.
+Fewer findings let one verdict move the precision too far, and one or two documents can give hundreds of findings from one pattern of their own.
+A group where a genre turns the rule on by hand in `genres.yaml` stays on: the run lists it for a person to decide.
+`yarn rules:precision --apply` writes the file and places the rules as `yarn rules:measure --apply` does (it reads both files), so the off is written the same way.
+
 The guide's screens do not copy out what changes with every new rule.
 A screen writes `{not-run}` where chaff lists the rules that did not run (the hint under the list comes with it), and `{counts}` where `--compact` ends with its tally.
 To show one rule's line of such a list, write `{not-run: <rule>}`: chaff pads the list to its longest id, so a copied line changes with every new rule.
