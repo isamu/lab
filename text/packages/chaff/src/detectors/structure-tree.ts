@@ -1,6 +1,7 @@
 import type { Detector, Finding, ProseDocument, StructureNode } from "../plugin.ts";
 import { danglingReferences, duplicateDefinitions, inDocumentOrder, type StructureIssue } from "../structure/issues.ts";
 import { numberingBreaks } from "../structure/numbering.ts";
+import { htmlTextBlocks } from "../structure/html-text-blocks.ts";
 import { listNumberBreaks, writtenNumbers } from "../structure/list-numbering.ts";
 import { weekdayMismatches } from "../structure/weekday.ts";
 import { documentDateOf } from "./document-date.ts";
@@ -49,7 +50,9 @@ const findingsOf =
         }));
 
 export const danglingReference: Detector = findingsOf("dangling-reference", danglingReferences);
-const structureNumberingGap: Detector = findingsOf("numbering-gap", numberingBreaks);
+/** Markdown の HTML ブロックの中の条は木に入らない。そこを挟んだ抜けは、見えなかった番号かもしれない。 */
+const structureNumberingGap: Detector = (doc, options) =>
+  findingsOf("numbering-gap", (tree, source) => numberingBreaks(tree, doc.markup?.markdown === true ? htmlTextBlocks(source) : []))(doc, options);
 
 const lineStartAt = (source: string, offset: number): number => source.lastIndexOf("\n", offset - 1) + 1;
 
