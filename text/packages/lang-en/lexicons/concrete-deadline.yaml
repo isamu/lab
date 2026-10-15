@@ -9,6 +9,7 @@ entries:
   - pattern: within … week
   - pattern: within … month
   - pattern: no later than
+  - pattern: not later than
   - pattern: business day of
   - pattern: days of
   - pattern: days after
