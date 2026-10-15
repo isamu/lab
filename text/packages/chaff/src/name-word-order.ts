@@ -127,19 +127,31 @@ export const orderNamesOf = (text: string, spans: readonly NameSpan[], words: re
 
 type Tally = { readonly first: OrderName; readonly count: number; readonly anchored: boolean; readonly offsets: readonly number[] };
 
-const talliesOf = (names: readonly OrderName[]): Tally[] => [
-  ...names
-    .reduce<Map<string, Tally>>((tallies, name) => {
-      const known = tallies.get(name.surface);
-      return tallies.set(name.surface, {
-        first: known?.first ?? name,
-        count: (known?.count ?? 0) + 1,
-        anchored: (known?.anchored ?? false) || name.anchored,
-        offsets: [...(known?.offsets ?? []), name.offset],
-      });
-    }, new Map())
-    .values(),
-];
+/** 書き方ごとの、現れの位置のすべて。 */
+const offsetsBySurface = (names: readonly OrderName[]): Map<string, number[]> =>
+  names.reduce((offsets, name) => {
+    const known = offsets.get(name.surface);
+    if (known === undefined) offsets.set(name.surface, [name.offset]);
+    else known.push(name.offset);
+    return offsets;
+  }, new Map<string, number[]>());
+
+const talliesOf = (names: readonly OrderName[]): Tally[] => {
+  const offsets = offsetsBySurface(names);
+  return [
+    ...names
+      .reduce<Map<string, Tally>>((tallies, name) => {
+        const known = tallies.get(name.surface);
+        return tallies.set(name.surface, {
+          first: known?.first ?? name,
+          count: (known?.count ?? 0) + 1,
+          anchored: (known?.anchored ?? false) || name.anchored,
+          offsets: offsets.get(name.surface) ?? [],
+        });
+      }, new Map())
+      .values(),
+  ];
+};
 
 /** 多いほうが前。同じ数なら先に書いたほうが前。 */
 const byUse = (left: Tally, right: Tally): number => right.count - left.count || left.first.offset - right.first.offset;
