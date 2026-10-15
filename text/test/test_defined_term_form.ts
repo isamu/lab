@@ -427,6 +427,44 @@ describe("defined-name-repeated: a long name used again after its short name", (
     assert.deepEqual(valuesOf(ja, "defined-name-repeated", `${JA_PARTIES}\n第1条\u3000株式会社みなと製作所大阪支店は対象外とする。\n`, "term"), []);
   });
 
+  it("does not read the last words of a clause that the label names as a whole", () => {
+    const read = (text: string): string | undefined => {
+      const sentence = tokensOf(en, text);
+      assert.ok(sentence !== undefined);
+      return nameBefore(sentence, text.lastIndexOf("("));
+    };
+    assert.equal(read('Each holder of a certificate that represented any share of Harbour Common Stock (each, a "Certificate") may exchange it.'), undefined);
+    assert.equal(read('Each plan listed for the employees of Harbour Works Ltd (collectively, the "Plans") continues.'), undefined);
+    assert.equal(
+      read('The Indenture, dated as of May 2, 2011, as amended on February 13, 2013 and January 26, 2015 (the "Trust Indenture") remains.'),
+      undefined,
+    );
+    assert.equal(read('One share of a class designated preference stock, with a par value of $1.00 (the "Preference Stock") is issued.'), undefined);
+    assert.equal(read('It answers messages from customers and other users of Customer\'s Web site ("Users").'), undefined);
+    assert.equal(read('All reports issued by the accountants with respect thereto (the "Financial Statements") are true.'), undefined);
+    assert.equal(read('This agreement is made with Harbour Works Ltd (the "Supplier").'), "Harbour Works Ltd");
+    assert.equal(read('It is made with Harbour 24 Ltd (the "Carrier") only.'), "Harbour 24 Ltd");
+  });
+
+  it("does not report a clause's last words named by its label, but does report a party named again", () => {
+    const source = [
+      "# Merger Agreement",
+      "",
+      'Each holder of a certificate that represented any share of Harbour Common Stock (each, a "Certificate") may exchange it.',
+      "",
+      'This agreement is between Harbour Works Ltd (the "Company") and North Trading Inc (the "Parent").',
+      "",
+      "1. Each share of Harbour Common Stock is cancelled, and Harbour Works Ltd pays the price.",
+      "",
+    ].join("\n");
+    assert.deepEqual(valuesOf(en, "defined-name-repeated", source, "term"), ["name Company"]);
+  });
+
+  it("reads a Japanese name with Latin letters in it (株式会社ABC) as a long name", () => {
+    const source = ["# 契約書", "", "株式会社ABC（以下「甲」という。）は、次のとおり契約を結ぶ。", "", "第1条　株式会社ABCは、代金を支払う。", ""].join("\n");
+    assert.deepEqual(valuesOf(ja, "defined-name-repeated", source, "term"), ["name 甲"]);
+  });
+
   it("reports the long name when the short name is its first word, but not a line that gives the short name beside it", () => {
     const head = ["# Terms", "", 'These terms govern the App provided by Pinecone Software Ltd ("Pinecone").', ""];
     assert.deepEqual(
