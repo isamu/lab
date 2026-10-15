@@ -20,21 +20,30 @@ const close = (actual: number | undefined, expected: number): void => {
 
 describe("displayStep", () => {
   it("is one last digit in the rounded unit", () => {
-    const source = "総額6,655百万円、3.1億円、801千円";
+    const source = "総額6,655百万円、31.4億円、801千円";
     close(displayStep(source, at(source, "6,655百万円", 6_655_000_000), JA), 1_000_000);
-    close(displayStep(source, at(source, "3.1億円", 310_000_000), JA), 10_000_000);
+    close(displayStep(source, at(source, "31.4億円", 3_140_000_000), JA), 10_000_000);
     close(displayStep(source, at(source, "801千円", 801_000), JA), 1000);
   });
 
   it("reads an English unit right after the number", () => {
-    const source = "a total of $5.6 million and $3 billion";
-    close(displayStep(source, at(source, "5.6", 5.6, "$"), EN), 0.1);
-    close(displayStep(source, at(source, "3", 3, "$"), EN), 1);
+    const source = "a total of $5.68 million and $300 billion";
+    close(displayStep(source, at(source, "5.68", 5.68, "$"), EN), 0.01);
+    close(displayStep(source, at(source, "300", 300, "$"), EN), 1);
   });
 
   it("reads full-width digits", () => {
     const source = "総額６，６５５百万円";
     close(displayStep(source, at(source, "６，６５５百万円", 6_655_000_000), JA), 1_000_000);
+  });
+
+  it("is undefined for a figure with fewer than three significant digits, leading zeros not counted", () => {
+    const source = "4億円、3.1億円、0.25百万円、$5.6 million、100百万円";
+    assert.equal(displayStep(source, at(source, "4億円", 400_000_000), JA), undefined);
+    assert.equal(displayStep(source, at(source, "3.1億円", 310_000_000), JA), undefined);
+    assert.equal(displayStep(source, at(source, "0.25百万円", 250_000), JA), undefined);
+    assert.equal(displayStep(source, at(source, "5.6", 5.6, "$"), EN), undefined);
+    close(displayStep(source, at(source, "100百万円", 100_000_000), JA), 1_000_000);
   });
 
   it("is undefined for an amount not in a rounded unit, a word that only begins with the unit, kanji numerals or zero", () => {
@@ -49,9 +58,9 @@ describe("displayStep", () => {
 });
 
 describe("coarsestStep", () => {
-  const source = "A 3.1億円、B 2百万円、C 500円";
-  const tenth = at(source, "3.1億円", 310_000_000);
-  const million = at(source, "2百万円", 2_000_000);
+  const source = "A 31.4億円、B 200百万円、C 500円";
+  const tenth = at(source, "31.4億円", 3_140_000_000);
+  const million = at(source, "200百万円", 200_000_000);
   const plain = at(source, "500円", 500);
 
   it("is the coarsest last digit when every amount is rounded", () => {

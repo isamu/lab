@@ -740,12 +740,23 @@ describe("total-mismatch", () => {
       assert.deepEqual(research("6,652百万円"), []);
       assert.deepEqual(research("6,657百万円"), ["6,657百万円≠6,654,000,000円"]);
       assert.deepEqual(research("6,651百万円"), ["6,651百万円≠6,654,000,000円"]);
-      assert.deepEqual(jaFound("費用は、A3.1億円、B2.4億円で、総額5.6億円です。"), []);
-      assert.deepEqual(jaFound("費用は、A3.1億円、B2.4億円で、総額5.7億円です。"), ["5.7億円≠550,000,000円"]);
+      assert.deepEqual(jaFound("費用は、A31.4億円、B24.3億円で、総額55.8億円です。"), []);
+      assert.deepEqual(jaFound("費用は、A31.4億円、B24.3億円で、総額55.9億円です。"), ["55.9億円≠5,570,000,000円"]);
       assert.deepEqual(jaFound("設計300千円、開発500千円で、合計801千円とする。"), []);
-      const rd = (total: string): string[] => found(doc(`R&D was $3.1 million for A and $2.4 million for B, for a total of ${total}.`));
-      assert.deepEqual(rd("$5.6 million"), []);
-      assert.deepEqual(rd("$5.7 million"), ["$5.7≠$5.50"]);
+      const rd = (total: string): string[] => found(doc(`R&D was $3.14 million for A and $2.43 million for B, for a total of ${total}.`));
+      assert.deepEqual(rd("$5.58 million"), []);
+      assert.deepEqual(rd("$5.59 million"), ["$5.59≠$5.57"]);
+    });
+
+    it("figures with fewer than three significant digits are not read as rounded: the miss is as large as the figures", () => {
+      assert.deepEqual(jaFound("費用は、A1億円、B2億円で、合計4億円です。"), ["4億円≠300,000,000円"]);
+      assert.deepEqual(jaFound("費用は1億円＋2億円＝合計4億円です。"), ["4億円≠300,000,000円"]);
+      assert.deepEqual(jaFound("費用は3,074百万円＋2,434百万円＋1,146百万円＝合計6,655百万円です。"), []);
+      assert.deepEqual(jaFound("費用は、A3.1億円、B2.4億円で、総額5.6億円です。"), ["5.6億円≠550,000,000円"]);
+      assert.deepEqual(jaFound("研究開発費は、A事業3,074百万円、B事業2,434百万円、共通46百万円で、総額5,555百万円であります。"), [
+        "5,555百万円≠5,554,000,000円",
+      ]);
+      assert.deepEqual(found(doc("R&D was $3.1 million for A and $2.4 million for B, for a total of $5.6 million.")), ["$5.6≠$5.50"]);
     });
 
     it("amounts not in a rounded unit, or a total in another way of writing, still have to add up exactly", () => {
