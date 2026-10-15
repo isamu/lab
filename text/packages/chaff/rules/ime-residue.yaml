@@ -37,8 +37,8 @@ example:
       この資料はとてもおもしろいです。
 
 not_flagged:
-  ja: 大文字（A 社、B さん）、二字以上の英字（while 文、note）、コードの中は指しません。後ろに助詞が続く一字（変数 x が、まず x を、を x で）は変数の名と読み、一字の後ろが漢字のもの（の x 座標）も指しません。片仮名の後ろの一字（サイズ m、プラン b）は記号と読み、パスの中（/docs/…）も見ません。
-  en: Capitals (A社, Bさん), runs of two or more letters (while文, note) and code are not reported. A letter followed by a particle (変数xが, まずxを, をxで) is read as the name of a variable, and a letter followed by a kanji (のx座標) is not reported either. A letter after katakana (サイズm, プランb) is read as a label, and paths (/docs/…) are not read.
+  ja: 大文字（A 社、B さん）、二字以上の英字（while 文、note）、コードの中は指しません。後ろに助詞が続く一字（変数 x が、まず x を、を x で）は変数の名と読み、一字の後ろが漢字のもの（の x 座標）も指しません。片仮名の後ろの一字（サイズ m、プラン b）は記号と読み、パスの中（/docs/…）も見ません。母音の一字（e ラーニング、i モード）は、ローマ字入力ならすぐ仮名になるので残りではなく、語の一部と読みます。
+  en: Capitals (A社, Bさん), runs of two or more letters (while文, note) and code are not reported. A letter followed by a particle (変数xが, まずxを, をxで) is read as the name of a variable, and a letter followed by a kanji (のx座標) is not reported either. A letter after katakana (サイズm, プランb) is read as a label, and paths (/docs/…) are not read. A lone vowel (eラーニング, iモード) is part of the word, since romaji input turns a vowel into kana at once and never leaves it behind.
 sources: [textlint-ja-presets]
 rewrite:
   depth: light
