@@ -7,15 +7,21 @@ const labelOf = (node: StructureNode): string => String(node.attrs["label"] ?? n
 
 type Ordered = { readonly node: StructureNode; readonly ordinal: number; readonly last: number };
 
+const OPENING_BRACKET = /^[([{〔【〈《]/u;
+
+/** 括弧で囲んだ番号（（1）、(a)）か。全角と半角は同じに見る。 */
+const isBracketed = (label: string): boolean => OPENING_BRACKET.test(label.normalize("NFKC"));
+
 /**
- * 同じ親の子のうち、番号の付いたものを種類と深さごとに分ける。条と項は別の並び、項と号も別の並び。
+ * 同じ親の子のうち、番号の付いたものを種類と深さと書き方ごとに分ける。条と項は別の並び、項と号も別の並び。
  * 法令の第 1 項は番号が無いので、その号（一、二）と第 2 項（２）は同じ条の直下に並ぶ。深さで分けないと「二の次が２」に見える。
+ * 社内規程は号の（1）（2）と第 2 項の「2」を同じ深さに読むことがあるので、括弧で囲んだ番号は囲まない番号と別の並びにする。
  */
 const sequencesOf = (parent: StructureNode, quoting: ReadonlySet<StructureNode>): Ordered[][] => {
   const groups = new Map<string, Ordered[]>();
   parent.children.forEach((node) => {
     if (node.ordinal === undefined || quoting.has(node)) return;
-    const key = `${node.kind}/${String(node.level ?? "")}`;
+    const key = `${node.kind}/${String(node.level ?? "")}/${isBracketed(labelOf(node)) ? "bracketed" : "bare"}`;
     // 配列を作り直さずに足す。条が何千もある法令で二乗にしない。
     const group = groups.get(key) ?? [];
     group.push({ node, ordinal: node.ordinal, last: node.ordinalTo ?? node.ordinal });
