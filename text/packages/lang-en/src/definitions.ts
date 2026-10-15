@@ -50,7 +50,7 @@ const CAPITALISED = /^\p{Lu}/u;
 
 /**
  * After a party's name, the name of all the parties: (the "Company" and, together with Parent, the "Parties"). The first
- * name is the party's; the quoted names in the rest name the parties together.
+ * name is the party's; the rest must end on a capitalised quoted name, so a bracket that trails off is not read.
  */
 const TOGETHER_WITH = /^[,;]? and,? (?:together|collectively) with /u;
 
@@ -68,10 +68,10 @@ const namesInList = (inside: string): QuotedName[] => {
   }));
   const [first] = names;
   if (first === undefined || !CAPITALISED.test(first.term) || !LIST_LEAD.test(inside.slice(0, first.start))) return [];
-  if (TOGETHER_WITH.test(inside.slice(first.end))) return names;
-  if (names.length < 2) return [];
+  if (names.length < 2 || inside.slice(names.at(-1)?.end ?? 0) !== "") return [];
+  if (TOGETHER_WITH.test(inside.slice(first.end))) return names.every((name) => CAPITALISED.test(name.term)) ? names : [];
   const joined = names.slice(1).every((name, index) => LIST_JOINT.test(inside.slice(names[index]?.end ?? 0, name.start)));
-  return joined && inside.slice(names.at(-1)?.end ?? 0) === "" ? names : [];
+  return joined ? names : [];
 };
 
 /**

@@ -47,6 +47,9 @@ describe("English definitions", () => {
     assert.deepEqual(read('Shares (as adjusted "Shares" and, together with Units, the "Securities") vest.'), []);
     assert.deepEqual(read('Shares (together with Units, the "Securities") vest.'), []);
     assert.deepEqual(read('The words ("mine" and, together with others, "ours") are examples.'), []);
+    assert.deepEqual(read('Birch Labs, Inc. (the "Company" and, together with Parent) agree.'), []);
+    assert.deepEqual(read('Birch Labs, Inc. (the "Company" and, together with Parent, "aside" trailing) agree.'), []);
+    assert.deepEqual(read('A thing (the "Thing" and, together with others, the "examples") is here.'), []);
   });
 
   it("keeps a party named for one section to that section, as the one-name form does", () => {
