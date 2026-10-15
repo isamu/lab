@@ -1,4 +1,5 @@
 import type { StructureIssue } from "./issues.ts";
+import { coarsestStep, roundingAllowance } from "./rounded-amount.ts";
 import { shownTotal, type Amount } from "./total.ts";
 
 /**
@@ -22,6 +23,10 @@ export type TotalWords = {
   readonly leads: readonly string[];
   /** 合計と内訳のあいだにあれば、後ろの金額は合計の内訳のすべてとは限らないと読む語（including、うち、or）。 */
   readonly partials: readonly string[];
+  /** partials のうち、並べた金額が主なものだけだと言う語（主な、mainly）。合計の前に並べた内訳の前に書いても、内訳は合計のすべてではない。 */
+  readonly mainOnly: readonly string[];
+  /** 丸めた桁で書く金額の単位（百万円、千円、million）。どの金額もこの単位なら、丸めのずれ（内訳の数 − 1 桁まで）は合うとみなす。 */
+  readonly roundedUnits: readonly string[];
   /** 次の文で内訳の語の前に書いて、前の文の合計を指す語（This、It、その）。何も書かなくてもよい。 */
   readonly backReferences: readonly string[];
 };
@@ -85,13 +90,15 @@ const signedValues = (source: string, parts: readonly Amount[], from: number, di
 
 type Breakdown = { readonly total: Amount; readonly parts: readonly Amount[]; readonly from: number; readonly nearEnd: boolean };
 
-const mismatch = (source: string, breakdown: Breakdown, discounts: readonly string[]): StructureIssue[] => {
+const mismatch = (source: string, breakdown: Breakdown, words: TotalWords): StructureIssue[] => {
   const { total, from, nearEnd } = breakdown;
   const parts = breakdown.parts.filter((part) => part.unit === total.unit);
   if (parts.length < MIN_PARTS) return [];
-  const values = signedValues(source, parts, from, discounts);
+  const values = signedValues(source, parts, from, words.discounts);
   const written = centsOf(total);
-  if (nearRuns(values, nearEnd).some((run) => sumOf(run) === written)) return [];
+  const step = coarsestStep(source, [total, ...parts], words.roundedUnits) * CENTS;
+  const matches = (run: readonly number[]): boolean => Math.abs(sumOf(run) - written) <= Math.round(roundingAllowance(step, run.length));
+  if (nearRuns(values, nearEnd).some(matches)) return [];
   return [{ offset: total.offset, values: shownTotal(source, total, sumOf(values)) }];
 };
 
@@ -106,6 +113,10 @@ const breakdownEnd = (source: string, total: Amount, marker: Span, sentence: Spa
 
 const inside = (amounts: readonly Amount[], start: number, end: number): Amount[] => amounts.filter((amount) => amount.offset >= start && amount.end <= end);
 
+/** 内訳の前（start から end まで）に、主なものだけを並べると言う語があるか（「主な設備投資は、…」「主な内訳は」）。 */
+const saysMainOnly = (source: string, start: number, end: number, words: TotalWords): boolean =>
+  phraseSpans(source.slice(start, end), start, words.mainOnly).length > 0;
+
 /** 合計の語のすぐ後ろの金額を、その前の内訳と比べる。内訳は、前の合計の語か内訳の語より後ろから。 */
 const totalsAfterParts = (source: string, sentence: Span, amounts: readonly Amount[], words: TotalWords): StructureIssue[] => {
   const text = source.slice(sentence.start, sentence.end);
@@ -115,7 +126,9 @@ const totalsAfterParts = (source: string, sentence: Span, amounts: readonly Amou
     const total = amounts.find((amount) => amount.offset >= marker.end && isTotalGap(gapBefore(source, marker.end, amount)));
     if (total === undefined) return [];
     const from = Math.max(sentence.start, markers[index - 1]?.end ?? 0, ...breakdowns.filter((span) => span.end <= marker.start).map((span) => span.end));
-    return mismatch(source, { total, parts: inside(amounts, from, marker.start), from, nearEnd: true }, words.discounts);
+    const parts = inside(amounts, from, marker.start);
+    if (saysMainOnly(source, from, parts[0]?.offset ?? from, words)) return [];
+    return mismatch(source, { total, parts, from, nearEnd: true }, words);
   });
 };
 
@@ -126,9 +139,10 @@ const totalsBeforeParts = (source: string, sentence: Span, amounts: readonly Amo
   return phraseSpans(text, sentence.start, words.breakdowns).flatMap((marker) => {
     const total = amounts.findLast((amount) => amount.end <= marker.start);
     if (total === undefined || phraseSpans(source.slice(total.end, marker.start), total.end, words.joiners).length > 0) return [];
+    if (saysMainOnly(source, total.end, marker.start, words)) return [];
     const nextTotal = totalMarkers.find((span) => span.start >= marker.end)?.start ?? sentence.end;
     const parts = inside(amounts, marker.end, Math.min(nextTotal, breakdownEnd(source, total, marker, sentence)));
-    return mismatch(source, { total, parts, from: marker.end, nearEnd: false }, words.discounts);
+    return mismatch(source, { total, parts, from: marker.end, nearEnd: false }, words);
   });
 };
 
@@ -152,7 +166,7 @@ const fullBreakdown = (source: string, total: Amount, listed: readonly Amount[],
   if (last === undefined || listed.some((part) => part.unit !== total.unit)) return [];
   const between = source.slice(total.end, last.offset);
   if (PERCENT.test(between) || phraseSpans(between, total.end, words.partials).length > 0) return [];
-  return mismatch(source, { total, parts: listed, from, nearEnd: false }, words.discounts);
+  return mismatch(source, { total, parts: listed, from, nearEnd: false }, words);
 };
 
 /** 文の中で、合計の語の金額のすぐ後ろに内訳を始める記号や語（": "）があれば、その後ろから文の終わりか次の記号までが内訳。 */
