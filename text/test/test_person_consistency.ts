@@ -1,6 +1,6 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
-import { personMentions, personMinorities, type PersonMention, type PersonWords } from "../packages/chaff/src/person-forms.ts";
+import { personMentions, personMinorities, withoutOtherSenses, type PersonMention, type PersonWords } from "../packages/chaff/src/person-forms.ts";
 import type { Lexicon } from "../packages/chaff/src/plugin.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
@@ -140,6 +140,20 @@ describe("personMinorities", () => {
   it("is empty for no entries", () => assert.deepEqual(personMinorities([], 20), []));
 });
 
+describe("withoutOtherSenses", () => {
+  const kept = (list: readonly string[]): string[] => withoutOtherSenses(ofForms(list), new Set(["本社"])).map((entry) => entry.mention.form);
+
+  it("drops a form with another sense when it is not the usual one", () => {
+    assert.deepEqual(kept(["当社", "当社", "本社", "当社"]), ["当社", "当社", "当社"]);
+  });
+
+  it("keeps it when it is the usual one, and keeps every other form", () => {
+    assert.deepEqual(kept(["本社", "本社", "当社", "本社"]), ["本社", "本社", "当社", "本社"]);
+    assert.deepEqual(kept(["当社", "当社", "弊社", "当社"]), ["当社", "当社", "弊社", "当社"]);
+    assert.deepEqual(kept([]), []);
+  });
+});
+
 describe("person-consistency, through the rule", () => {
   before(async () => {
     await ja.prepare?.({ pos: true });
@@ -155,6 +169,18 @@ describe("person-consistency, through the rule", () => {
   it("reports one in an English document that says you", () => {
     const source = "# Desk\n\nYou can book a slot. Your booking shows next. If you miss it, you can book again. One can also call.\n";
     assert.deepEqual(findings(source, en), ['"One can" here, where the document usually says "you" (1 of 5)']);
+  });
+
+  it("does not read 本社 as the company when the document calls itself 当社: it is the head office", () => {
+    const office = "# 拠点\n\n当社は製品を作ります。当社の工場は二つです。当社は本社（東京都港区）で管理します。当社は検査を続けます。\n";
+    assert.deepEqual(findings(office, ja), []);
+  });
+
+  it("still reports a stray form in a document that calls itself 本社, and 弊社 in one that says 当社", () => {
+    const paper = "# 調査\n\n本社は調査を行いました。本社の記者が集計しました。本社は結果を公表します。本社は続報を出します。当社の見解は後日示します。\n";
+    assert.equal(findings(paper, ja).length, 1);
+    const mixed = "# 拠点\n\n当社は製品を作ります。当社の工場は二つです。弊社は検査を続けます。当社は記録を残します。当社は保管します。\n";
+    assert.equal(findings(mixed, ja).length, 1);
   });
 
   it("reads 私 and 私たち as two parties", () => {
