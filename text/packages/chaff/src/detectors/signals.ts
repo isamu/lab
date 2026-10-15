@@ -4,6 +4,8 @@ import { compacted, placeAt, type Compacted } from "./gram-place.ts";
 import { charWindows, wordWindows } from "./gram-windows.ts";
 import { furnitureMask, isFurniture } from "./gram-furniture.ts";
 import { notAcronymSpansOf, type NotAcronymSpans } from "./acronym-context.ts";
+import { companyNameSpans } from "./company-name-span.ts";
+import { latinCompanyFormRegExp } from "../latin-company-form.ts";
 import { abbreviates, expansionAt, termEntryAcronyms, type ExpandedAt } from "./acronym-expansion.ts";
 import { isExplained } from "./acronym-compound.ts";
 import { isBracketed, isInHeading, isNamePart } from "./acronym-lone.ts";
@@ -336,6 +338,7 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   const hits = outsideSpans(acronymsOf(doc, notationOf(doc)), [
     ...referenceListSpans(doc.source, patternsOf(doc, "reference-list-heading")),
     ...outlineLabelSpans(doc.source, patternsOf(doc, "numbered-division")),
+    ...companyNameSpans(doc.source, { forms: patternsOf(doc, "company-form"), latinForms: latinCompanyFormRegExp(patternsOf(doc, "company-form-latin")) }),
   ]);
   const acronyms = [...firstHits(hits).keys()];
   const unexplained = new Set(acronyms.filter((acronym) => !isExplained(acronym, explainedAlone)));

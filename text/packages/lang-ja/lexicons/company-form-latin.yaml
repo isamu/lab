@@ -1,0 +1,20 @@
+# 日本語の文の中に英字のまま書く、外国の会社の名前の後ろに立つ形（SUNCALL CO., LTD.、JCI USA INC.）。名前の一部で、
+# 中の「，」「．」は日本語の句読点ではなく、CO・LTD・INC は説明の要る略語ではない。
+# 大文字・小文字と全角・半角、「，」の後ろの空白の有無は問わない（CO.，LTD. も Co., Ltd. と読む）。長い形を先に置く。
+id: company-form-latin
+language: ja
+entries:
+  - pattern: "Co., Ltd."
+  - pattern: "Pte. Ltd."
+  - pattern: "Pty. Ltd."
+  - pattern: "Sdn. Bhd."
+  - pattern: "S.A. de C.V."
+  - pattern: "Co., Inc."
+  - pattern: "Inc."
+  - pattern: "Ltd."
+  - pattern: "Corp."
+  - pattern: "LLC"
+  - pattern: "GmbH"
+  - pattern: "B.V."
+  - pattern: "S.A."
+  - pattern: "PLC"
