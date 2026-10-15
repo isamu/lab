@@ -55,6 +55,17 @@ describe("doubled-punctuation: 句読点が重なっている", () => {
     assert.deepEqual(findingsOf("`a,,b` と `..` はコードです。\n"), []);
   });
 
+  it("英字の会社の名前の形の点と「，」は名前の一部（INC.、 CO.，LTD.）", () => {
+    assert.deepEqual(findingsOf("子会社 AOBA USA INC.、AOBA (THAILAND) CO.，LTD. と ＳＵＮ ＣＯ．，ＬＴＤ．、が販売します。\n"), []);
+  });
+
+  it("会社の形の後ろでも、印が二つ重なれば重なり（INC.、。）。形でない語の後ろの点は数える（API.、）", () => {
+    assert.deepEqual(findingsOf("子会社 AOBA INC.、。が販売します。\n\n対応は API.、次に進みます。\n"), [
+      "「.、。」と句読点が重なっています",
+      "「.、」と句読点が重なっています",
+    ]);
+  });
+
   it("空の文書", () => {
     assert.deepEqual(runsOf(""), []);
   });

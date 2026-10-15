@@ -1,4 +1,6 @@
-import type { Detector, Finding } from "../plugin.ts";
+import type { Detector, Finding, Span } from "../plugin.ts";
+import { latinCompanyFormRegExp, latinCompanyFormSpans } from "../latin-company-form.ts";
+import { firstEndingAfter } from "../soft-break.ts";
 import { quoteAround } from "./quote-around.ts";
 
 /**
@@ -32,16 +34,35 @@ const withoutWordDot = (text: string, found: DoubledMarks): DoubledMarks =>
     ? { start: found.start, run: found.run.slice(0, -1) }
     : found;
 
-const isSlip = (text: string, { start, run }: DoubledMarks): boolean =>
-  run.length >= 2 && !isDrawnOut(run) && !isDrawnOutThenClosed(run) && !AFTER_ABBREVIATION.test(run) && !isJoinedDots(text, start, run);
+/**
+ * 並びのうち、英字の会社の形（CO.，LTD.、INC.）の中の印の数。形の点や「，」は名前の一部で、並びの印ではない。
+ * names は昇順で重ならない（正規表現の順の一致）。並びに掛かりうるのは、並びの終わる前に始まる高々 run.length 個の形。
+ */
+const marksInNames = ({ start, run }: DoubledMarks, names: readonly Span[]): number => {
+  const first = firstEndingAfter(names, start);
+  const near = names.slice(first, first + run.length);
+  return [...run].filter((_, at) => near.some((name) => start + at >= name.start && start + at < name.end)).length;
+};
 
-/** text の中の、句読点が重なった並び（位置と並び）。 */
-export const doubledMarks = (text: string): DoubledMarks[] =>
-  [...text.matchAll(PUNCTUATION_RUN)].map((match) => withoutWordDot(text, { start: match.index, run: match[0] })).filter((found) => isSlip(text, found));
+const isSlip = (text: string, found: DoubledMarks, names: readonly Span[]): boolean => {
+  const { start, run } = found;
+  return (
+    run.length - marksInNames(found, names) >= 2 &&
+    !isDrawnOut(run) &&
+    !isDrawnOutThenClosed(run) &&
+    !AFTER_ABBREVIATION.test(run) &&
+    !isJoinedDots(text, start, run)
+  );
+};
+
+/** text の中の、句読点が重なった並び（位置と並び）。names は数えない名前（英字の会社の形）の範囲。 */
+export const doubledMarks = (text: string, names: readonly Span[] = []): DoubledMarks[] =>
+  [...text.matchAll(PUNCTUATION_RUN)].map((match) => withoutWordDot(text, { start: match.index, run: match[0] })).filter((found) => isSlip(text, found, names));
 
 export const doubledPunctuation: Detector = (doc): Finding[] => {
   const text = doc.prose ?? doc.source;
-  return doubledMarks(text).map(({ start, run }) => ({
+  const forms = latinCompanyFormRegExp((doc.lexicons["company-form-latin"] ?? []).map((entry) => entry.pattern));
+  return doubledMarks(text, latinCompanyFormSpans(text, forms)).map(({ start, run }) => ({
     rule: "",
     severity: "warning",
     line: 0,

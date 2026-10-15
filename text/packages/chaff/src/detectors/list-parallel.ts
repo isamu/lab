@@ -72,47 +72,116 @@ const AFTER_ADJECTIVE = new Set(["ADP", "PART"]);
 const isNounOrAdjective = (token: Token): boolean =>
   token.pos === "NOUN" || token.pos === "ADJ" || (token.pos === "PROPN" && token.features?.["OrdinaryWord"] === "Yes");
 
+/** A verb in the base form an instruction takes (describe), not a past or third-person form (described, describes). */
+const isBaseVerb = (token: Token | undefined): boolean =>
+  token?.pos === "VERB" && token.features?.["VerbForm"] === undefined && token.lemma === token.surface.toLowerCase();
+
 /**
- * The head of an item whose first two words overrule the first word's tag, or undefined when they do not. "Open the console"
- * and "Press the button" open with a verb. "Clean up after closing" and "Bake in the oven" may open with a verb or an
- * adjective phrase (Close to the station), and "Washing machine space" with a compound noun or a gerund and its object
- * (Washing dishes): neither is judged.
+ * An -ed word the tagger left without VerbForm (decreased, agreed, unauthorized): like a participle, it may modify the noun
+ * after it. Proceed and need end in -ed too but are their own base forms.
  */
-const headFromNextWord = (first: Token, next: Token | undefined): "verb" | "unjudged" | undefined => {
+const isPastForm = (token: Token): boolean =>
+  token.pos === "VERB" &&
+  token.features?.["VerbForm"] === undefined &&
+  /ed$/iu.test(token.surface) &&
+  (token.lemma !== token.surface.toLowerCase() || !/eed$/iu.test(token.surface));
+
+/** An -s word read as a verb that the tagger could not take back to a base form (Revisions): a plural noun, misread. Discuss and Focus are verbs. */
+const isMisreadPlural = (token: Token): boolean =>
+  token.pos === "VERB" && token.features?.["VerbForm"] === undefined && /[^su]s$/iu.test(token.surface) && token.lemma === token.surface.toLowerCase();
+
+/** Participles (Generated files) and gerunds (Recovering from illness) open noun phrases and duties alike, so neither form. */
+const NEITHER_FORM_VERB = new Set(["Part", "Ger"]);
+
+/** The head as the first word's tag gives it. */
+const headFromTag = (first: Token): string | undefined => {
+  if (isUnsure(first) || isPastForm(first) || isMisreadPlural(first)) return undefined;
+  if (first.pos === "VERB") return NEITHER_FORM_VERB.has(first.features?.["VerbForm"] ?? "") ? undefined : "verb";
+  return NOUN_HEAD.has(first.pos) ? "noun" : undefined;
+};
+
+/** What the head axis reads besides the item's own words: the adapter's word lists, and the nouns of the item's list. */
+export type HeadContext = {
+  /** Verbs the tagger does not know as verbs (click), from the adapter's instruction-verb word list. */
+  readonly instructionVerbs: ReadonlySet<string>;
+  /** Words that open an instruction or an adjective phrase (Secure the server, Secure configuration), from verb-or-adjective. */
+  readonly verbOrAdjective: ReadonlySet<string>;
+  /** The lemmas the tagger read as nouns anywhere in the item's list. */
+  readonly nounsInList: ReadonlySet<string>;
+};
+
+export const NO_HEAD_CONTEXT: HeadContext = { instructionVerbs: new Set(), verbOrAdjective: new Set(), nounsInList: new Set() };
+
+type HeadReading = "verb" | "noun" | "unjudged" | undefined;
+
+/** Reads the head from the item's tokens, its first word at `at`; undefined leaves it to the next reader. */
+type HeadReader = (tokens: readonly Token[], at: number, context: HeadContext) => HeadReading;
+
+/** A subject and its verb in one word (you're, we've): the item opens with its subject, as "you love …" does. */
+const SUBJECT_CONTRACTION = /^(?:i|you|we|they|he|she|it)['’]\p{L}+$/iu;
+
+const subjectContraction: HeadReader = (tokens, at) => (SUBJECT_CONTRACTION.test(tokens[at]?.surface ?? "") ? "noun" : undefined);
+
+/** Secure, Open: a verb before "the", "a" or "your" (Secure the server), else maybe an adjective (Secure configuration). */
+const verbOrAdjective: HeadReader = (tokens, at, context) => {
+  if (!context.verbOrAdjective.has(tokens[at]?.surface.toLowerCase() ?? "")) return undefined;
+  return opensObject(tokens[at + 1]) ? "verb" : "unjudged";
+};
+
+/** A verb the tagger does not know. Before a common noun the word may head a compound (Click fraud, Scroll bar), so its tag decides. */
+const instructionVerb: HeadReader = (tokens, at, context) =>
+  context.instructionVerbs.has(tokens[at]?.surface.toLowerCase() ?? "") && tokens[at + 1]?.pos !== "NOUN" ? "verb" : undefined;
+
+const isSeriesJoint = (token: Token): boolean => token.surface === "," || token.pos === "CCONJ";
+
+/** The single words of a series the item opens with: "Scope, estimate and describe tasks" gives Scope, estimate, describe. */
+const openingSeries = (tokens: readonly Token[], at: number): readonly Token[] => {
+  const word = tokens[at];
+  if (word === undefined) return [];
+  const after = tokens.findIndex((token, index) => index > at && !isSeriesJoint(token));
+  return after === -1 || after === at + 1 ? [word] : [word, ...openingSeries(tokens, after)];
+};
+
+/** A series one of whose later words is a verb in its base form (Instrument, monitor and profile): it is a series of verbs. */
+const seriesOfVerbs: HeadReader = (tokens, at) => (openingSeries(tokens, at).slice(1).some(isBaseVerb) ? "verb" : undefined);
+
+/**
+ * The first two words overrule the first word's tag. "Open the console" and "Press the button" open with a verb. "Clean up
+ * after closing" and "Bake in the oven" may open with a verb or an adjective phrase (Close to the station), and "Washing
+ * machine space" with a compound noun or a gerund and its object (Washing dishes): neither is judged.
+ */
+const nextWord: HeadReader = (tokens, at) => {
+  const first = tokens[at];
+  // The word right after, punctuation included: in "Next, the candidate" the comma ends the opener.
+  const next = tokens[at + 1];
+  if (first === undefined) return undefined;
   if (isNounOrAdjective(first) && opensObject(next)) return "verb";
   if (first.pos === "ADJ" && AFTER_ADJECTIVE.has(next?.pos ?? "")) return "unjudged";
   return first.features?.["VerbForm"] === "Ger" && next?.pos === "NOUN" ? "unjudged" : undefined;
 };
 
-/** The head as the first word's tag gives it. */
-const headFromTag = (first: Token): string | undefined => {
-  if (isUnsure(first)) return undefined;
-  // A participle (Generated files, Nested lists) modifies the noun after it; the item is a noun phrase, but the tag does not say so.
-  if (first.pos === "VERB") return first.features?.["VerbForm"] === "Part" ? undefined : "verb";
-  return NOUN_HEAD.has(first.pos) ? "noun" : undefined;
+/** A verb that the same list uses as a noun (holiday pay … pay during your notice), with no object after it: either reading. */
+const nounElsewhereInList: HeadReader = (tokens, at, context) => {
+  const first = tokens[at];
+  return first?.pos === "VERB" && context.nounsInList.has(first.lemma ?? "") && !opensObject(tokens[at + 1]) ? "unjudged" : undefined;
 };
 
-const englishHead = (sentences: readonly Sentence[], instructionVerbs: ReadonlySet<string>): string | undefined => {
+const HEAD_READERS: readonly HeadReader[] = [subjectContraction, verbOrAdjective, instructionVerb, seriesOfVerbs, nextWord, nounElsewhereInList];
+
+const englishHead = (sentences: readonly Sentence[], context: HeadContext): string | undefined => {
   const tokens = sentences[0]?.tokens ?? [];
   const at = tokens.findIndex((token) => !SKIPPED_AT_END.has(token.pos));
   const first = tokens[at];
   if (at === -1 || first === undefined || isTitleCase(sentences[0]?.text ?? "")) return undefined;
-  // The word right after, punctuation included: in "Next, the candidate" the comma ends the opener.
-  const next = tokens[at + 1];
-  // Before a common noun the word may head a compound (Click fraud, Scroll bar), so its tag decides.
-  if (instructionVerbs.has(first.surface.toLowerCase()) && next?.pos !== "NOUN") return "verb";
-  const overruled = headFromNextWord(first, next);
-  if (overruled === undefined) return headFromTag(first);
-  return overruled === "verb" ? "verb" : undefined;
+  const reading = HEAD_READERS.reduce<HeadReading>((found, reader) => found ?? reader(tokens, at, context), undefined);
+  if (reading === undefined) return headFromTag(first);
+  return reading === "unjudged" ? undefined : reading;
 };
 
-/**
- * An item's form on an axis, or undefined when its words do not tell. Japanese items have no head axis (the verb comes last).
- * instructionVerbs: verbs the tagger does not know as verbs (click), from the adapter's instruction-verb word list.
- */
-export const formOf = (axis: Axis, sentences: readonly Sentence[], language: string, instructionVerbs: ReadonlySet<string> = new Set()): string | undefined => {
+/** An item's form on an axis, or undefined when its words do not tell. Japanese items have no head axis (the verb comes last). */
+export const formOf = (axis: Axis, sentences: readonly Sentence[], language: string, context: HeadContext = NO_HEAD_CONTEXT): string | undefined => {
   if (language === "ja") return axis === "ending" ? japaneseEnding(sentences) : undefined;
-  return axis === "ending" ? englishEnding(sentences) : englishHead(sentences, instructionVerbs);
+  return axis === "ending" ? englishEnding(sentences) : englishHead(sentences, context);
 };
 
 const within = (inner: Span, outer: Span): boolean => inner.start >= outer.start && inner.end <= outer.end;
@@ -162,6 +231,19 @@ const isJudged = (written: string, sentences: readonly Sentence[]): boolean => {
 
 const runsOn = (sentences: readonly Sentence[]): boolean => RUNNING_ON.test(sentences.at(-1)?.text.trim() ?? "");
 
+const wordsOf = (doc: ProseDocument, lexicon: string): ReadonlySet<string> =>
+  new Set((doc.lexicons[lexicon] ?? []).map((entry) => entry.pattern.toLowerCase()));
+
+const headContext = (doc: ProseDocument, items: readonly (readonly Sentence[])[]): HeadContext => ({
+  instructionVerbs: wordsOf(doc, "instruction-verb"),
+  verbOrAdjective: wordsOf(doc, "verb-or-adjective"),
+  nounsInList: new Set(
+    items.flatMap((sentences) =>
+      sentences.flatMap((sentence) => (sentence.tokens ?? []).flatMap((token) => (token.pos === "NOUN" && token.lemma !== undefined ? [token.lemma] : []))),
+    ),
+  ),
+});
+
 const listFindings = (doc: ProseDocument, list: BulletList, limit: number): Finding[] => {
   const sentencesOf = list.itemSpans.map((span) => itemSentences(doc, span));
   if (sentencesOf.some(runsOn)) return [];
@@ -169,10 +251,10 @@ const listFindings = (doc: ProseDocument, list: BulletList, limit: number): Find
     const span = list.itemSpans[index];
     return span !== undefined && isJudged(doc.source.slice(span.start, sentences.at(-1)?.span.end ?? span.end), sentences);
   });
-  const instructionVerbs = new Set((doc.lexicons["instruction-verb"] ?? []).map((entry) => entry.pattern.toLowerCase()));
+  const context = headContext(doc, judged);
   return AXES.flatMap((axis) => {
     const items = judged.flatMap((sentences) => {
-      const form = formOf(axis, sentences, doc.language, instructionVerbs);
+      const form = formOf(axis, sentences, doc.language, context);
       return form === undefined ? [] : [{ sentences, form }];
     });
     const odd = minorityWithin(items, (item) => item.form === FORMS[axis][0], limit);

@@ -5,6 +5,7 @@ id: instruction-verb
 language: en
 entries:
   - pattern: click
+  - pattern: partner
   - pattern: scroll
   - pattern: swipe
   - pattern: toggle

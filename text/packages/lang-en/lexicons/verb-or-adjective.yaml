@@ -1,0 +1,14 @@
+# Words that open an instruction (Secure the server, Open the app) and also an adjective before a noun (Secure
+# configuration, Open questions). list-item-form-mix reads a list item opening with one as opening with a verb only when
+# "the", "a" or a possessive follows; otherwise it does not judge the item's first word. Matched in lower case.
+id: verb-or-adjective
+language: en
+entries:
+  - pattern: secure
+  - pattern: open
+  - pattern: clean
+  - pattern: clear
+  - pattern: close
+  - pattern: complete
+  - pattern: empty
+  - pattern: free
