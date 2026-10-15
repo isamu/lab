@@ -95,6 +95,21 @@ describe("party-role-name", () => {
     assert.deepEqual(rolesIn(en, later), ["Vendor (Supplier, Customer, Recipient)"]);
   });
 
+  it("reads the merger-agreement forms of a party's name, and still reports a role word no bracket names", () => {
+    const merger = (party: string, line = "1. The Company shall pay the Vendor and Parent."): string[] =>
+      rolesIn(
+        en,
+        ["# Merger Agreement", "", `This agreement is made by Alder Holdings Corp. ("Parent") and Birch Labs, Inc. ${party}.`, "", line, ""].join("\n"),
+      );
+    assert.deepEqual(merger('(the "Company" and, together with Parent, the "Parties")'), ["Vendor (Parent, Company)"]);
+    assert.deepEqual(merger('(the "Company"; and together with Parent, collectively, the "Parties")'), ["Vendor (Parent, Company)"]);
+    assert.deepEqual(merger('(hereinafter the "Company")'), ["Vendor (Parent, Company)"]);
+    assert.deepEqual(merger('(hereinafter referred to as the "Company")'), ["Vendor (Parent, Company)"]);
+    assert.deepEqual(merger('("Birch" or the "Company")'), ["Vendor (Parent, Birch)"]);
+    assert.deepEqual(merger('("Birch")'), ["Company (Parent, Birch)", "Vendor (Parent, Birch)"]);
+    assert.deepEqual(merger('(the "Company" and, together with Parent, the "Parties")', "1. The Company shall pay Parent."), []);
+  });
+
   it("needs a party: a document whose definitions name no party is not read", () => {
     const statuteLike = [
       "# 規程",

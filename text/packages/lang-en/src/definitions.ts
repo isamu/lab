@@ -6,8 +6,8 @@ import { readsAsExample } from "./example-name.ts";
 
 const DEFINITIONS = [
   /["“](?<term>[^"”\n]{1,60})["”] (?:means|shall mean|refers to|has the meaning)\b/gu,
-  /\((?:the |these |this |hereinafter |each,? an? |collectively,? the )?["“](?<term>[^"”\n]{1,60})["”]\)/gu,
-  /\(hereinafter referred to as ["“](?<term>[^"”\n]{1,60})["”]\)/gu,
+  /\((?:the |these |this |each,? an? |collectively,? the )?["“](?<term>[^"”\n]{1,60})["”]\)/gu,
+  /\(hereinafter (?:referred to as |called )?(?:the )?["“](?<term>[^"”\n]{1,60})["”]\)/gu,
 ];
 
 /**
@@ -42,15 +42,24 @@ const BARE = /^\(["“]/u;
 const BRACKET = /\((?<inside>[^()\n]{1,300})\)/gu;
 const QUOTED_NAME = /["“](?<term>[^"”\n]{1,60})["”]/gu;
 /** What may come before the first name: (the "Company", (each, a "Party", (collectively, the "Parties". */
-const LIST_LEAD = /^(?:the |collectively,? the |each,? an? )?$/u;
+const LIST_LEAD = /^(?:the |hereinafter (?:the )?|collectively,? the |each,? an? )?$/u;
 /** What may come between two names: a comma, and or or, and the. */
 const LIST_JOINT = /^(?:, (?:and |or )?| and | or )(?:the )?$/u;
 /** A list of names starts with a capitalised one ("Pinecone"); ("mine", "not mine", "yours") quotes examples. */
 const CAPITALISED = /^\p{Lu}/u;
 
+/**
+ * After a party's name, the name of all the parties: (the "Company" and, together with Parent, the "Parties"). The first
+ * name is the party's; the quoted names in the rest name the parties together.
+ */
+const TOGETHER_WITH = /^[,;]? and,? (?:together|collectively) with /u;
+
 type QuotedName = { readonly term: string; readonly start: number; readonly end: number };
 
-/** The quoted names of a bracket that holds nothing but two or more names, joined as a list; otherwise none. */
+/**
+ * The quoted names of a bracket that holds nothing but two or more names joined as a list, or a name followed by the
+ * name of all the parties; otherwise none.
+ */
 const namesInList = (inside: string): QuotedName[] => {
   const names = [...inside.matchAll(QUOTED_NAME)].map((match) => ({
     term: match.groups?.["term"] ?? "",
@@ -58,7 +67,9 @@ const namesInList = (inside: string): QuotedName[] => {
     end: match.index + match[0].length,
   }));
   const [first] = names;
-  if (first === undefined || names.length < 2 || !CAPITALISED.test(first.term) || !LIST_LEAD.test(inside.slice(0, first.start))) return [];
+  if (first === undefined || !CAPITALISED.test(first.term) || !LIST_LEAD.test(inside.slice(0, first.start))) return [];
+  if (TOGETHER_WITH.test(inside.slice(first.end))) return names;
+  if (names.length < 2) return [];
   const joined = names.slice(1).every((name, index) => LIST_JOINT.test(inside.slice(names[index]?.end ?? 0, name.start)));
   return joined && inside.slice(names.at(-1)?.end ?? 0) === "" ? names : [];
 };
