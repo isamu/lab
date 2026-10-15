@@ -716,6 +716,55 @@ describe("total-mismatch", () => {
       assert.deepEqual(jaFound("費用は60,000円、作業は3日、合計5日とする。"), []);
       assert.deepEqual(found(doc("- A: $1,200", "- B: $300", "- Total: $1,600")), ["$1,600≠$1,500"]);
     });
+
+    it("items introduced as only the main ones need not add up to the total", () => {
+      const investment = (lead: string): string[] =>
+        jaFound(`当期の${lead}設備投資は、照明設備20百万円及び設備の更新等79百万円、車両35百万円の総額190百万円であります。`);
+      assert.deepEqual(investment("主な"), []);
+      assert.deepEqual(investment(""), ["190百万円≠134,000,000円"]);
+      assert.deepEqual(jaFound("設備投資は総額190百万円（主な内訳は、建物20百万円、車両79百万円）です。"), []);
+      assert.deepEqual(jaFound("設備投資は総額190百万円（内訳は、建物20百万円、車両79百万円）です。"), ["190百万円≠99,000,000円"]);
+      assert.deepEqual(jaFound("設備投資の総額は190百万円です。主な内訳は、建物20百万円、車両79百万円です。"), []);
+      assert.deepEqual(jaFound("設備投資の総額は190百万円です。内訳は、建物20百万円、車両79百万円です。"), ["190百万円≠99,000,000円"]);
+      assert.deepEqual(jaFound("設備投資は総額190百万円で、主なものは、建物20百万円、車両79百万円です。"), []);
+      const spending = (lead: string): string[] =>
+        found(doc(`Spending went ${lead}to $20 million for lighting and $79 million for vehicles, for a total of $190 million.`));
+      assert.deepEqual(spending("mainly "), []);
+      assert.deepEqual(spending(""), ["$190≠$99"]);
+    });
+
+    it("amounts rounded to a unit (百万円, 億円, million) may miss the total by up to one last digit per item but one", () => {
+      const research = (total: string): string[] => jaFound(`研究開発費は、A事業3,074百万円、B事業2,434百万円、共通1,146百万円で、総額${total}であります。`);
+      assert.deepEqual(research("6,655百万円"), []);
+      assert.deepEqual(research("6,656百万円"), []);
+      assert.deepEqual(research("6,652百万円"), []);
+      assert.deepEqual(research("6,657百万円"), ["6,657百万円≠6,654,000,000円"]);
+      assert.deepEqual(research("6,651百万円"), ["6,651百万円≠6,654,000,000円"]);
+      assert.deepEqual(jaFound("費用は、A31.4億円、B24.3億円で、総額55.8億円です。"), []);
+      assert.deepEqual(jaFound("費用は、A31.4億円、B24.3億円で、総額55.9億円です。"), ["55.9億円≠5,570,000,000円"]);
+      assert.deepEqual(jaFound("設計300千円、開発500千円で、合計801千円とする。"), []);
+      const rd = (total: string): string[] => found(doc(`R&D was $3.14 million for A and $2.43 million for B, for a total of ${total}.`));
+      assert.deepEqual(rd("$5.58 million"), []);
+      assert.deepEqual(rd("$5.59 million"), ["$5.59≠$5.57"]);
+    });
+
+    it("figures with fewer than three significant digits are not read as rounded: the miss is as large as the figures", () => {
+      assert.deepEqual(jaFound("費用は、A1億円、B2億円で、合計4億円です。"), ["4億円≠300,000,000円"]);
+      assert.deepEqual(jaFound("費用は1億円＋2億円＝合計4億円です。"), ["4億円≠300,000,000円"]);
+      assert.deepEqual(jaFound("費用は3,074百万円＋2,434百万円＋1,146百万円＝合計6,655百万円です。"), []);
+      assert.deepEqual(jaFound("費用は、A3.1億円、B2.4億円で、総額5.6億円です。"), ["5.6億円≠550,000,000円"]);
+      assert.deepEqual(jaFound("研究開発費は、A事業3,074百万円、B事業2,434百万円、共通46百万円で、総額5,555百万円であります。"), [
+        "5,555百万円≠5,554,000,000円",
+      ]);
+      assert.deepEqual(found(doc("R&D was $3.1 million for A and $2.4 million for B, for a total of $5.6 million.")), ["$5.6≠$5.50"]);
+    });
+
+    it("amounts not in a rounded unit, or a total in another way of writing, still have to add up exactly", () => {
+      assert.deepEqual(jaFound("設計30万円、開発50万円で、合計81万円とする。"), ["81万円≠800,000円"]);
+      assert.deepEqual(jaFound("設計300,000円、開発500,000円で、合計800,001円とする。"), ["800,001円≠800,000円"]);
+      assert.deepEqual(jaFound("設計3,074百万円、開発2,434百万円で、合計5,508,500,000円とする。"), ["5,508,500,000円≠5,508,000,000円"]);
+      assert.deepEqual(found(doc("Design was $3,100 and build $2,400, for a total of $5,501.")), ["$5,501≠$5,500"]);
+    });
   });
   describe("a total row whose label is in the first cell that is not blank", () => {
     const jaExpenses = (...last: string[]): string =>

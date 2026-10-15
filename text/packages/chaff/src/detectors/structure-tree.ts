@@ -9,6 +9,7 @@ import { dateOrderBreaks } from "../structure/date-order.ts";
 import { totalMismatches, type Amount } from "../structure/total.ts";
 import { isListedTotal, isPeriodTotalLine, isTotalLikeLine, isTotalLine } from "../structure/total-line.ts";
 import { proseTotalMismatches } from "../structure/prose-total.ts";
+import { proseTotalWordsOf } from "./prose-total-words.ts";
 import { countedAmounts, type SummedCounter } from "../structure/counted-amounts.ts";
 import { measuredAmounts, type MeasureMarks, type SummedMeasure } from "../structure/measured-amounts.ts";
 import { withCompoundHours } from "../structure/compound-hours.ts";
@@ -262,20 +263,11 @@ const totalIssues = (doc: ProseDocument, tree: NonNullable<ProseDocument["struct
     (text) => isPeriodTotalLine(text, words),
     { isListed: (text) => isListedTotal(text, words), isTotalLike: (text, header) => isTotalLikeLine(text, words, header) },
   );
-  const phrases = {
-    totals: patternsOf(doc, "total-phrase"),
-    breakdowns: patternsOf(doc, "breakdown-phrase"),
-    discounts: patternsOf(doc, "discount-word"),
-    joiners: patternsOf(doc, "breakdown-gap-joiner"),
-    leads: patternsOf(doc, "total-breakdown-lead"),
-    partials: patternsOf(doc, "breakdown-partial-word"),
-    backReferences: patternsOf(doc, "total-back-reference"),
-  };
   const prose = proseTotalMismatches(
     doc.source,
     doc.sentences.map((sentence) => sentence.span),
     amounts,
-    phrases,
+    proseTotalWordsOf(doc),
   );
   return [...lines, ...prose.filter((issue) => !lines.some((line) => line.offset === issue.offset))];
 };

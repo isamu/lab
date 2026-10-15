@@ -1,0 +1,6 @@
+# The word in front of a name that points at this document itself ("this Agreement", "this Policy"). A term the document
+# defines as its own name (this "Agreement") may be written with it before the definition (use-before-definition).
+id: self-prefix
+language: en
+entries:
+  - pattern: this

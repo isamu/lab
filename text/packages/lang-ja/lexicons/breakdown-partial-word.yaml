@@ -15,3 +15,10 @@ entries:
   - pattern: 若しくは
   - pattern: 最大
   - pattern: 上限
+  # group main: 並べた金額が主なものだけだと言う語。合計の前の内訳（「主な設備投資は、A 20百万円、B 79百万円の総額190百万円」）や
+  # 「主な内訳は」の前にあっても、内訳を合計と比べない。
+  - { pattern: 主な, group: main }
+  - { pattern: 主に, group: main }
+  - { pattern: 主として, group: main }
+  - { pattern: 主要な, group: main }
+  - { pattern: 主たる, group: main }

@@ -302,6 +302,7 @@ const notationOf = (doc: ProseDocument): NotAcronymSpans => {
   });
   const names = nameSpansOf({
     legalForms: patternsOf(doc, "legal-form"),
+    companyForms: patternsOf(doc, "company-form"),
     determiners: patternsOf(doc, "name-determiner"),
     citationSeries: patternsOf(doc, "citation-series"),
     carriers: patternsOf(doc, "carrier-name"),

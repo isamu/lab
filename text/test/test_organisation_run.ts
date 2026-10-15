@@ -7,7 +7,11 @@ import type { Token } from "../packages/chaff/src/plugin.ts";
 
 const LEXICONS = loadLexicons();
 const patternsOf = (id: string): string[] => (LEXICONS[id] ?? []).map((entry) => entry.pattern);
-const WORDS: OrganisationWords = { forms: patternsOf("organisation-form"), units: patternsOf("organisation-unit") };
+const WORDS: OrganisationWords = {
+  forms: patternsOf("organisation-form"),
+  closingForms: (LEXICONS["organisation-form"] ?? []).filter((entry) => entry.position !== "before").map((entry) => entry.pattern),
+  units: patternsOf("organisation-unit"),
+};
 
 const tokensOf = (text: string): Token[] => {
   const tokens = tokenize(text);
@@ -93,8 +97,27 @@ describe("isOrganisationRun — 漢字の連なりが 1 つの組織の名前か
   });
 
   it("invalid: 語彙表が空なら、どれも組織の名前と言わない", () => {
-    assert.ok(!isOrganisation("国土交通省鉄道局総務課", { forms: [], units: [] }));
-    assert.ok(!isOrganisation("国立研究開発法人産業技術総合研究所", { forms: WORDS.forms, units: [] }));
+    assert.ok(!isOrganisation("国土交通省鉄道局総務課", { forms: [], closingForms: [], units: [] }));
+    assert.ok(!isOrganisation("国立研究開発法人産業技術総合研究所", { forms: WORDS.forms, closingForms: [], units: [] }));
+    assert.ok(!isOrganisation("東日本自動車販売株式会社", { forms: WORDS.forms, closingForms: [], units: WORDS.units }));
+  });
+
+  it("valid: 名前の後ろに立つ法人格で閉じる（東日本自動車販売株式会社、青葉監査法人）", () => {
+    assert.ok(WORDS.closingForms.includes("株式会社"));
+    assert.ok(isOrganisation("東日本自動車販売株式会社"));
+    assert.ok(isOrganisation("青葉山監査法人"));
+  });
+
+  it("invalid: 設置者の語（県立）は名前を閉じない。法人格の前に名前が 1 字しか無いか、数を含む連なりも名前と言わない", () => {
+    assert.ok(!WORDS.closingForms.includes("県立"));
+    assert.ok(!isOrganisation("情報処理推進機構認定県立"));
+    assert.ok(!isOrganisation("新株式会社"));
+    assert.ok(!isOrganisation("２０２４年度株式会社"));
+    assert.ok(!isOrganisation("第三東京自動車販売株式会社"));
+    assert.ok(!isOrganisation("二〇二四年度東京自動車販売株式会社"));
+    // 会社法の語。固有名詞の無い連なりは、法人格で閉じても名前ではない。
+    assert.ok(!isOrganisation("株式交換完全親株式会社"));
+    assert.ok(!isOrganisation("当該新設合併設立株式会社"));
   });
 
   it("invalid: 語が無い・範囲の外・語のあいだに隙間がある", () => {

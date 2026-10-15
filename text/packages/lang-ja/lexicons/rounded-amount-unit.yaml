@@ -1,0 +1,13 @@
+# 丸めた桁で書く金額の単位（6,655百万円、3.1億円）。total-mismatch は、文の中の合計と内訳のどれもがこの単位なら、内訳の和と合計の
+# ずれが（内訳の数 − 1）× 最後の桁一つ分までなら丸めのずれと読む。万円は端数の無い額にも使うので入れない。
+id: rounded-amount-unit
+language: ja
+entries:
+  - pattern: 千円
+  - pattern: 百万円
+  - pattern: 億円
+  - pattern: 千ドル
+  - pattern: 百万ドル
+  - pattern: 億ドル
+  - pattern: million
+  - pattern: billion

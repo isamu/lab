@@ -120,7 +120,11 @@ export const kanjiRun: Detector = (doc, options): Finding[] => {
   const patterns = (id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
   const words: NameWords = {
     topUnits: new Set(patterns("prefecture-unit")),
-    organisation: { forms: patterns("organisation-form"), units: patterns("organisation-unit") },
+    organisation: {
+      forms: patterns("organisation-form"),
+      closingForms: (doc.lexicons["organisation-form"] ?? []).filter((entry) => entry.position !== "before").map((entry) => entry.pattern),
+      units: patterns("organisation-unit"),
+    },
     title: { endings: patterns("title-ending") },
   };
   const names = doc.names ?? [];
