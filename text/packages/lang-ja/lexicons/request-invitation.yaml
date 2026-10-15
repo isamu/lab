@@ -1,0 +1,15 @@
+# 誘いの動詞。依頼の終わりの直前にあれば（「ご相談ください」「お越しください」）、来るかどうかは読み手しだいで、済ませる仕事ではない。
+id: request-invitation
+language: ja
+entries:
+  - pattern: お越し
+  - pattern: ご来場
+  - pattern: ご来庁
+  - pattern: ご来所
+  - pattern: お立ち寄り
+  - pattern: ご相談
+  - pattern: ご参加
+  - pattern: ご応募
+  - pattern: ご利用
+  - pattern: ご使用
+  - pattern: ご活用
