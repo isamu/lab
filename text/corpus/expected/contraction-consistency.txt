@@ -16,9 +16,7 @@ ghdocs-basic-writing-and-formatting  3
 govuk-guidance-academy-senior-pay  1
 k8s-overview-en  1
 loc-signal-new-online-2026-07  2
-logingov-help-face-or-touch-unlock  1
 nasa-knows-spacewalk-k4  1
-nextcloud-user-2fa  2
 nodejs-tsc-minutes-2026-05-06  6
 nws-heat-wave-safety  4
 openapi-spec-3-1-0  1
