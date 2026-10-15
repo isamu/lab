@@ -32,7 +32,7 @@ describe("latinCompanyFormSpans: 英字の会社の形", () => {
   });
 
   it("英字の語の中や、略語の中の同じ字は形ではない（Zinc、INCOME、U.S.A.）", () => {
-    assert.deepEqual(formsIn("Zinc と INCOME と U.S.A. と LLCs"), []);
+    assert.deepEqual(formsIn("Zinc と INCOME と U.S.A. と LLCs と AOBA LLC&XYZ と AOBA LLC2"), []);
   });
 
   it("前に名前の無い所の同じ字は形ではない（LTDの基金、文の頭の LLC）", () => {

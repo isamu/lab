@@ -10,7 +10,7 @@ const SPACE = "[\\s\\u3000]";
  */
 const NAME_WORD = "(?<![A-Za-zＡ-Ｚａ-ｚ])[A-ZＡ-Ｚ0-9０-９][A-Za-zＡ-Ｚａ-ｚ0-9０-９&＆]*";
 const BEFORE = `(?<=${NAME_WORD}(?:${SPACE}|[,，]${SPACE}?)|[)）]${SPACE}?)`;
-const AFTER = "(?![A-Za-zＡ-Ｚａ-ｚ])";
+const AFTER = "(?![A-Za-zＡ-Ｚａ-ｚ0-9０-９&＆])";
 
 const escaped = (char: string): string => char.replace(/[.*+?^${}()|[\]\\]/u, "\\$&");
 
