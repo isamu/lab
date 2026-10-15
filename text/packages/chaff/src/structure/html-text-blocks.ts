@@ -3,13 +3,27 @@ import { spanOf, type MarkdownNode } from "../markdown-node.ts";
 import type { Span } from "../plugin.ts";
 
 const COMMENT = /<!--[\s\S]*?(?:-->|$)/gu;
-// A quoted attribute may hold `>` (`<div title=">">`).
-const TAG = /<(?:[^>"']|"[^"]*"|'[^']*')*>/gu;
 const INLINE_CONTAINERS = new Set(["paragraph", "heading", "tableCell"]);
 const ENTITY = /&(?:#\d+|#x[\da-f]+|[a-z]+\d*);/giu;
 
+type TagScan = { readonly kept: string[]; inTag: boolean; quote: string | undefined };
+
+/** Reads one character of HTML: text outside a tag is kept. A quoted attribute may hold `>` (`<div title=">">`). */
+const scanned = (scan: TagScan, char: string): TagScan => {
+  if (!scan.inTag) {
+    if (char === "<") scan.inTag = true;
+    else scan.kept.push(char);
+  } else if (scan.quote !== undefined) {
+    if (char === scan.quote) scan.quote = undefined;
+  } else if (char === '"' || char === "'") scan.quote = char;
+  else if (char === ">") scan.inTag = false;
+  return scan;
+};
+
+const withoutTags = (html: string): string => [...html].reduce<TagScan>(scanned, { kept: [], inTag: false, quote: undefined }).kept.join("");
+
 /** What an HTML block shows the reader: its text without tags, comments and character references such as `&nbsp;`. */
-const showsText = (html: string): boolean => html.replace(COMMENT, "").replace(TAG, "").replace(ENTITY, "").trim() !== "";
+const showsText = (html: string): boolean => withoutTags(html.replace(COMMENT, "")).replace(ENTITY, "").trim() !== "";
 
 /**
  * Markdown's HTML blocks that show text. CommonMark runs a block that starts with a tag alone on its line (`<br/>`) to
