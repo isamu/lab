@@ -111,10 +111,19 @@ export const echoesName = (sentence: Sentence, at: number, term: string, name: s
 
 const LATIN_LETTER = /\p{Script=Latin}/u;
 
+const SCRIPTS = [/\p{Script=Han}/u, /\p{Script=Hiragana}/u, /\p{Script=Katakana}/u];
+
+/** 二つの字が同じ字の種類（漢字、平仮名、片仮名）か。基本規程の「本」は、前の「基」と一続きの語の一部。 */
+const sameScript = (left: string, right: string): boolean => SCRIPTS.some((script) => script.test(left) && script.test(right));
+
+/** 漢字・仮名の頭が、前の語に続かずに text の終わりにあるか（この規則、本規程。基本規程の本、そこの規則のこの は当たらない）。 */
+const endsWithWordPrefix = (text: string, prefix: string): boolean =>
+  text.endsWith(prefix) && !sameScript(text.charAt(text.length - prefix.length - 1), prefix.charAt(0));
+
 /** text の終わりが、文書自身を指す頭（この、本、this）か。英語の頭は語として（this の後ろに空白）、大文字小文字を問わない。 */
 const endsWithSelfPrefix = (text: string, prefixes: readonly string[]): boolean =>
   prefixes.some((prefix) =>
-    LATIN_LETTER.test(prefix) ? new RegExp(String.raw`(?<![\p{L}\p{N}])${escapeRegExp(prefix)}\s+$`, "iu").test(text) : text.endsWith(prefix),
+    LATIN_LETTER.test(prefix) ? new RegExp(String.raw`(?<![\p{L}\p{N}])${escapeRegExp(prefix)}\s+$`, "iu").test(text) : endsWithWordPrefix(text, prefix),
   );
 
 /** 定義が文書自身の名前か（この就業規則（以下「規則」）、本規程（以下「規程」）、This Agreement … (this "Agreement")）。 */

@@ -308,6 +308,12 @@ describe("use-before-definition: contents, captions and longer names", () => {
     assert.deepEqual(early(`# 心得\n\nみなと法を毎朝よく読む。\n\n${law}`, ja), ["「みなと法」を、5 行目の定義より前で使っています"]);
   });
 
+  it("本 or この inside a longer word is not the document naming itself (基本規程)", () => {
+    const defining = "第1条　本規程（以下「規程」という。）は、社員に適用する。\n";
+    assert.deepEqual(early(`# 規程\n\n本規程は、全員が毎年読む。\n\n${defining}`, ja), []);
+    assert.deepEqual(early(`# 規程\n\n基本規程は、全員が毎年読む。\n\n${defining}`, ja), ["「規程」を、5 行目の定義より前で使っています"]);
+  });
+
   it("valid and invalid: a company name on the title line before the company is defined", () => {
     const defining = "第1条　この規則は、株式会社みなと（以下「会社」という。）の社員に適用する。\n";
     assert.deepEqual(early(`# 就業規則\n\n株式会社みなと\n\n${defining}`, ja), []);

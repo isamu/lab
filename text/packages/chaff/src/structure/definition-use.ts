@@ -257,15 +257,41 @@ const definingNames = (terms: readonly DefinedTerm[], texts: readonly BodyText[]
  */
 type InsideLongerName = (term: string, offset: number) => boolean;
 
+/** 位置がどれかの範囲の中か。範囲を頭の順に並べ、二分探索で引く（定義が何千あっても、現れ一つに対数）。 */
+const insideAnyOf = (spans: readonly Span[]): ((offset: number) => boolean) => {
+  const sorted = spans.toSorted((left, right) => left.start - right.start);
+  const furthestEnd: number[] = [];
+  sorted.forEach((span, index) => furthestEnd.push(Math.max(furthestEnd[index - 1] ?? 0, span.end)));
+  return (offset) => {
+    let low = 0;
+    let high = sorted.length - 1;
+    while (low <= high) {
+      const middle = (low + high) >> 1;
+      if ((sorted[middle]?.start ?? 0) <= offset) low = middle + 1;
+      else high = middle - 1;
+    }
+    if (high < 0 || (furthestEnd[high] ?? 0) <= offset) return false;
+    return offset < (sorted[high]?.end ?? 0) || inside(offset, sorted.slice(0, high));
+  };
+};
+
 const insideLongerNameIn = (texts: readonly BodyText[], terms: readonly DefinedTerm[], names: ReadonlyMap<DefinedTerm, DefiningName>): InsideLongerName => {
-  const spans = terms.map((term) => term.span);
+  const insideDefinition = insideAnyOf(terms.map((term) => term.span));
   const longNames = [...new Set([...[...names.values()].map((defining) => defining.name), ...terms.map((term) => term.term)])];
+  const holding = new Map<string, readonly string[]>();
+  const namesHolding = (term: string): readonly string[] => {
+    const known = holding.get(term);
+    if (known !== undefined) return known;
+    const found = longNames.filter((name) => name !== term && name.includes(term));
+    holding.set(term, found);
+    return found;
+  };
   return (term, offset) => {
-    if (inside(offset, spans)) return true;
+    if (insideDefinition(offset)) return true;
     const sentence = sentenceAt(texts, offset);
     if (sentence === undefined) return false;
     const at = offset - sentence.start;
-    return endsLatinName(sentence, at, term) || longNames.some((name) => name.includes(term) && echoesName(sentence, at, term, name));
+    return endsLatinName(sentence, at, term) || namesHolding(term).some((name) => echoesName(sentence, at, term, name));
   };
 };
 
