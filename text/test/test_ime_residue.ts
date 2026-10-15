@@ -33,6 +33,13 @@ describe("ime-residue: 変換し損ねた英字", () => {
     assert.deepEqual(lettersOf(""), []);
   });
 
+  it("母音の一字は語の一部（eラーニング、iモード）と読み、子音の残りは指す", () => {
+    assert.deepEqual(findingsOf("社員はeラーニングで研修を受け、結果はeメールで届く。"), []);
+    assert.deepEqual(lettersOf("当時はiモードで予約した。あとでuおいた。新しいaプランとoモードもある。"), []);
+    assert.deepEqual(lettersOf("研修はkラーニングで受ける。"), ["k"]);
+    assert.deepEqual(lettersOf("社員はeラーニングで研修を受け、報告sた。"), ["s"]);
+  });
+
   it("コードの中は読まない", () => {
     assert.deepEqual(findingsOf("設定は `おもしrおい` のように書きます。"), []);
   });
