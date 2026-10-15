@@ -74,10 +74,32 @@ export const namedDocument = (text: string, reference: number, vocabulary: Citat
   return { name, self };
 };
 
+/** 名前と番地のあいだの空白（「就業規則 第25条」）。 */
+const SPACE_CHARS: ReadonlySet<string> = new Set([" ", "\t", "\u3000"]);
+/** 名前と番地のあいだに置かれうる空白の長さ。後ろ向きに読む長さを抑える。 */
+const MAX_SPACES = 4;
+
+const spacesBefore = (text: string, at: number): number => {
+  let count = 0;
+  while (count < MAX_SPACES && SPACE_CHARS.has(text[at - count - 1] ?? "")) count += 1;
+  return count;
+};
+
+/**
+ * 空白を挟んで前に書かれた文書の名前（「就業規則 第25条」の就業規則）。空白を挟むと番地が名前の一部か分からないので、
+ * 種類の語で終わる名前だけを読む。この文書を指す名前（「本規則 第3条」）は名前にしない。
+ */
+const spacedName = (text: string, reference: number, vocabulary: CitationVocabulary): string | undefined => {
+  const spaces = spacesBefore(text, reference);
+  const named = spaces === 0 ? undefined : namedDocument(text, reference - spaces, vocabulary);
+  return named === undefined || named.self || !endsWithKind(named.name, vocabulary.kinds) ? undefined : named.name;
+};
+
 /** reference の直前に書かれた他の文書の名前。この文書を指すか、名前が無ければ undefined。 */
 export const citedDocument = (text: string, reference: number, vocabulary: CitationVocabulary): string | undefined => {
   const named = namedDocument(text, reference, vocabulary);
-  return named === undefined || named.self ? undefined : named.name;
+  if (named !== undefined) return named.self ? undefined : named.name;
+  return spacedName(text, reference, vocabulary);
 };
 
 /** 自分を指す頭の語の長さの上限（この・本・当）。後ろ向きに読む長さを抑える。 */
