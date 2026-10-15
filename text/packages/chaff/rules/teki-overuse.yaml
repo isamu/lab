@@ -3,6 +3,7 @@ layer: L3
 status: stable
 how_to_find: sentence-word-count
 word_list: teki-suffix
+extra_word_lists: [teki-fixed-term]
 requires: [pos]
 languages: [ja]
 severity: info
@@ -39,8 +40,8 @@ example:
       問い合わせを半分に減らす施策を、四月から全店で始めます。
 
 not_flagged:
-  ja: 接尾の「的」だけを数えます。「目的」「的確」「標的」のように一語になったものと、鉤括弧で引いたものの中は数えません。
-  en: Only the suffix 的 is counted; words such as 目的 and 的確, and anything in 「」, are not.
+  ja: 接尾の「的」だけを数えます。「目的」「的確」「標的」のように一語になったもの、法令が定めた語（電磁的方法、反社会的勢力）、鉤括弧で引いたものの中は数えません。
+  en: Only the suffix 的 is counted; words such as 目的 and 的確, terms the law defines (電磁的方法, 反社会的勢力), and anything in 「」 are not.
 level_meaning:
   ja: 一文の「〜的」{limit} 個まで
   en: up to {limit} 〜的 words in a sentence

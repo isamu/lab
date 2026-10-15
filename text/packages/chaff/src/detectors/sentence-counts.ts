@@ -1,4 +1,5 @@
-import type { Detector, DetectorOptions, Finding, Lexicon, ProseDocument, Sentence, Token } from "../plugin.ts";
+import type { Detector, DetectorOptions, Finding, Lexicon, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
+import { escapeRegExp } from "../orthography.ts";
 import { isWithinAny, quotedIn } from "../quoted-span.ts";
 import { entryOpens } from "./lexicon-match.ts";
 
@@ -6,10 +7,25 @@ type TokenTest = (token: Token, at: number, tokens: readonly Token[]) => boolean
 
 const wordsOf = (lexicon: Lexicon | undefined): ReadonlySet<string> => new Set((lexicon ?? []).map((entry) => entry.pattern));
 
-/** The tokens of a sentence that pass the test, outside anything quoted in 「」『』: a quotation is not the writer's to rephrase. */
-const countedTokens = (sentence: Sentence, test: TokenTest): Token[] => {
-  const quoted = quotedIn(sentence);
-  return (sentence.tokens ?? []).filter((token, at, tokens) => test(token, at, tokens) && !isWithinAny(quoted, token.span));
+/** The terms whose counted word belongs to the term itself (電磁的方法), not to the writer's style. */
+export const FIXED_TERM_LEXICON = "teki-fixed-term";
+
+/** Where the sentence holds one of the terms, in the document's coordinates. */
+const termSpans = (sentence: Sentence, terms: Lexicon): Span[] =>
+  terms.flatMap((entry) =>
+    [...sentence.text.matchAll(new RegExp(escapeRegExp(entry.pattern), "gu"))].map((match) => ({
+      start: sentence.span.start + match.index,
+      end: sentence.span.start + match.index + entry.pattern.length,
+    })),
+  );
+
+/**
+ * The tokens of a sentence that pass the test, outside anything quoted in 「」『』 and outside the fixed terms: neither a
+ * quotation nor a term the law defines (電磁的方法) is the writer's to rephrase.
+ */
+const countedTokens = (sentence: Sentence, test: TokenTest, fixedTerms: Lexicon): Token[] => {
+  const kept = [...quotedIn(sentence), ...termSpans(sentence, fixedTerms)];
+  return (sentence.tokens ?? []).filter((token, at, tokens) => test(token, at, tokens) && !isWithinAny(kept, token.span));
 };
 
 const findingOf = (sentence: Sentence, counted: readonly Token[], limit: number): Finding => ({
@@ -21,16 +37,16 @@ const findingOf = (sentence: Sentence, counted: readonly Token[], limit: number)
   values: { word: counted[0]?.surface ?? "", count: counted.length, limit, offset: sentence.span.start },
 });
 
-const sentencesOver = (doc: ProseDocument, limit: number, test: TokenTest): Finding[] =>
+const sentencesOver = (doc: ProseDocument, limit: number, test: TokenTest, fixedTerms: Lexicon = []): Finding[] =>
   doc.sentences.flatMap((sentence) => {
-    const counted = countedTokens(sentence, test);
+    const counted = countedTokens(sentence, test, fixedTerms);
     return counted.length > limit ? [findingOf(sentence, counted, limit)] : [];
   });
 
 /** A sentence holding more than limit tokens written as one of the lexicon's words (the suffix 的). */
 export const sentenceWordCount: Detector = (doc, options): Finding[] => {
   const words = wordsOf(options.lexicon);
-  return sentencesOver(doc, options.limit, (token) => words.has(token.surface));
+  return sentencesOver(doc, options.limit, (token) => words.has(token.surface), doc.lexicons[FIXED_TERM_LEXICON] ?? []);
 };
 
 const NOMINAL: ReadonlySet<string> = new Set(["NOUN", "PROPN", "NUM"]);
