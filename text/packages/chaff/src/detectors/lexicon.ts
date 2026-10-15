@@ -1,5 +1,5 @@
 import { joinWords } from "./word-list.ts";
-import { contractionMinority, type FormCounts } from "./contraction-minority.ts";
+import { pairMinority } from "./contraction-minority.ts";
 import { straightApostrophes } from "../orthography.ts";
 import { wordsOf } from "./structure.ts";
 import type { Detector, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
@@ -259,8 +259,9 @@ export const aiTell: Detector = (doc, options): Finding[] => {
  * **どちらが正しいかは決めない。** 短縮形を使うかどうかは文体の選択で、
  * 立場を取ると方針の違う書き手に rule ごと無視される。spec §12.3。
  *
- * 語彙表は対を持つ（`pattern` と `instead_of`）。片方だけを数えても、
- * 意図した硬い文体なのか不統一なのかが分からない。
+ * 語彙表は対を持つ（`pattern` と `instead_of`）。比べるのは対の中だけで、別の語どうしは比べない。
+ * GOV.UK の文体は「you're」を使い否定は「do not」と書く。語ごとに決めた書きかたで、混在ではない。
+ * 否定と代名詞＋動詞の族にもまとめない。「don't」と「does not」を書き分ける文書もある。
  */
 /**
  * 語の境界で照合する。部分一致だと「it isn't」が「it is」を含んでしまい、
@@ -270,37 +271,39 @@ const wordUses = (text: string, word: string): number => [...text.matchAll(new R
 
 const containsWord = (text: string, word: string): boolean => wordUses(text, word) > 0;
 
-/** アポストロフィの形（don’t と don't）は短縮形かどうかを変えない。違うのは印刷の形で、文体ではない。 */
-const comparableText = (sentence: Sentence): string => straightApostrophes(sentence.text).toLowerCase();
+/**
+ * アポストロフィの形（don’t と don't）は短縮形かどうかを変えない。違うのは印刷の形で、文体ではない。
+ * 折り返した行（「do」で改行して「not」）も、空白 1 つと同じに読む。
+ */
+const comparableText = (sentence: Sentence): string => straightApostrophes(sentence.text).replace(/\s+/gu, " ").toLowerCase();
 
-type ContractionPair = { readonly short: string; readonly long: string };
+type MixedPair = { readonly minority: string; readonly majority: string; readonly count: number };
 
-const formCounts = (body: string, pairs: readonly ContractionPair[], side: keyof ContractionPair): FormCounts => ({
-  kinds: pairs.length,
-  uses: pairs.reduce((sum, pair) => sum + wordUses(body, pair[side].toLowerCase()), 0),
-});
+const mixedPair = (body: string, short: string, long: string): MixedPair | undefined => {
+  const uses = { short: wordUses(body, short), long: wordUses(body, long) };
+  const side = pairMinority(uses);
+  if (side === undefined) return undefined;
+  return side === "short" ? { minority: short, majority: long, count: uses.short } : { minority: long, majority: short, count: uses.long };
+};
 
 export const contractionMix: Detector = (doc, options): Finding[] => {
-  const pairs = (options.lexicon ?? []).flatMap((entry) => (entry.instead_of === undefined ? [] : [{ short: entry.pattern, long: entry.instead_of }]));
-  const body = doc.sentences.map(comparableText).join(" ");
-  const used = pairs.filter((pair) => containsWord(body, pair.short.toLowerCase()));
-  const spelled = pairs.filter((pair) => containsWord(body, pair.long.toLowerCase()));
-  const minorityIsShort = contractionMinority(formCounts(body, used, "short"), formCounts(body, spelled, "long"));
-  if (minorityIsShort === undefined) return [];
-  const few = minorityIsShort ? used : spelled;
-  if (few.length > options.limit) return [];
-  const wanted = few.map((pair) => (minorityIsShort ? pair.short : pair.long).toLowerCase());
+  // 文は改行でつなぐ。空白でつなぐと、箇条書きの「What we do」と次の項目「not every…」が「do not」と数えられる。
+  const body = doc.sentences.map(comparableText).join("\n");
+  const mixed = (options.lexicon ?? []).flatMap((entry) => {
+    const pair = entry.instead_of === undefined ? undefined : mixedPair(body, entry.pattern.toLowerCase(), entry.instead_of.toLowerCase());
+    return pair === undefined || pair.count > options.limit ? [] : [pair];
+  });
   const hits = doc.sentences.flatMap((sentence) => {
     const text = comparableText(sentence);
-    const matched = wanted.find((word) => containsWord(text, word));
-    return matched === undefined ? [] : [{ sentence, matched }];
+    const pair = mixed.find((candidate) => containsWord(text, candidate.minority));
+    return pair === undefined ? [] : [{ sentence, pair }];
   });
-  return hits.map((hit) => ({
+  return hits.map(({ sentence, pair }) => ({
     rule: "contraction-consistency",
     severity: "info",
     line: 0,
     column: 0,
-    quote: hit.sentence.text.trim(),
-    values: { matched: hit.matched, count: few.length, limit: options.limit, offset: hit.sentence.span.start },
+    quote: sentence.text.trim(),
+    values: { matched: pair.minority, majority: pair.majority, count: pair.count, limit: options.limit, offset: sentence.span.start },
   }));
 };

@@ -286,13 +286,14 @@ const CONTRACTIONS: readonly Swap[] = [
 
 const sameCase = (found: string, word: string): string => (/^[A-Z]/u.test(found) ? `${word.charAt(0).toUpperCase()}${word.slice(1)}` : word);
 const wordPattern = (word: string): RegExp => new RegExp(`\\b${word}\\b`, "iu");
-const MIN_SPELLED_OUT = 2;
+const MIN_SPELLED_OUT = 3;
+const usesOf = (body: string, word: string): number => [...body.matchAll(new RegExp(`\\b${word}\\b`, "giu"))].length;
 
-/** 短縮形を使わない文書で、一か所だけ短縮形にする。書き分けの対が二種類以上あるときだけ。 */
+/** 短縮形を使わない文書で、一か所だけ短縮形にする。同じ語を長い形で何度も書いていて、短縮形が少数派になるときだけ。 */
 export const contract = (source: string): Plant | undefined => {
   const body = linesOf(source).filter(isProse).join("\n");
-  const spelled = CONTRACTIONS.filter(([long]) => wordPattern(long).test(body));
-  if (spelled.length < MIN_SPELLED_OUT || CONTRACTIONS.some(([, short]) => wordPattern(short).test(body))) return undefined;
+  const spelled = CONTRACTIONS.filter(([long]) => usesOf(body, long) >= MIN_SPELLED_OUT);
+  if (spelled.length === 0 || CONTRACTIONS.some(([, short]) => wordPattern(short).test(body))) return undefined;
   const hasSpelled = (line: string): boolean => isProse(line) && spelled.some(([long]) => wordPattern(long).test(line));
   return rewriteFirst(source, hasSpelled, (line) => {
     const pair = spelled.find(([long]) => wordPattern(long).test(line));
