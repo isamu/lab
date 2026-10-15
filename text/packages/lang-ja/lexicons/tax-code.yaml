@@ -1,0 +1,6 @@
+# 略した形で読み手が知る税の名前（VAT、GST）。通じる略語と同じく、展開を求めない。字面どおりに照らす。
+id: tax-code
+language: ja
+entries:
+  - pattern: "VAT"
+  - pattern: "GST"

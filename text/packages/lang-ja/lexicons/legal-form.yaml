@@ -1,0 +1,27 @@
+# 会社名の後ろに大文字で書く法人の形（JVLS, LLC、TRATON SE、SUNCALL（Guangzhou）CO.,LTD.）。名前の一部で、展開する略語ではない。
+# 大文字で始まる語か閉じ括弧のすぐ後ろでだけ見る。CO は点を付けた形（CO.）だけにし、NV は入れない。どちらも米国の州でもある（Denver, CO 80202）。字面どおりに照らす。
+id: legal-form
+language: ja
+entries:
+  - pattern: "LLC"
+  - pattern: "LLP"
+  - pattern: "LP"
+  - pattern: "INC"
+  - pattern: "LTD"
+  - pattern: "PLC"
+  - pattern: "CORP"
+  - pattern: "CO."
+  - pattern: "SE"
+  - pattern: "AG"
+  - pattern: "KG"
+  - pattern: "BV"
+  - pattern: "SA"
+  - pattern: "SAS"
+  - pattern: "SPA"
+  - pattern: "PTE"
+  - pattern: "PTY"
+  - pattern: "GK"
+  - pattern: "KK"
+  - pattern: "AB"
+  - pattern: "ASA"
+  - pattern: "OYJ"

@@ -1,0 +1,28 @@
+# Legal forms written in capitals after a company's name (JVLS, LLC; TRATON SE; GitLab Singapore PTE. LTD.). Part of the
+# name, not an acronym to spell out; read only right after a capitalised word or a closing bracket. CO counts only with its
+# period (CO., LTD.) and NV is left out: both are also US states (Denver, CO 80202). Matched as written.
+id: legal-form
+language: en
+entries:
+  - pattern: "LLC"
+  - pattern: "LLP"
+  - pattern: "LP"
+  - pattern: "INC"
+  - pattern: "LTD"
+  - pattern: "PLC"
+  - pattern: "CORP"
+  - pattern: "CO."
+  - pattern: "SE"
+  - pattern: "AG"
+  - pattern: "KG"
+  - pattern: "BV"
+  - pattern: "SA"
+  - pattern: "SAS"
+  - pattern: "SPA"
+  - pattern: "PTE"
+  - pattern: "PTY"
+  - pattern: "GK"
+  - pattern: "KK"
+  - pattern: "AB"
+  - pattern: "ASA"
+  - pattern: "OYJ"

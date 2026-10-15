@@ -1,0 +1,25 @@
+# 名詞句を始める英語の語（the、this、each、our）。文の頭で大文字になっても（The SE team）会社名の語ではないので、そのすぐ後ろの
+# 法人の形は略語として数える。大文字と小文字を区別せずに照らす。
+id: name-determiner
+language: ja
+entries:
+  - pattern: "the"
+  - pattern: "a"
+  - pattern: "an"
+  - pattern: "this"
+  - pattern: "that"
+  - pattern: "these"
+  - pattern: "those"
+  - pattern: "each"
+  - pattern: "every"
+  - pattern: "any"
+  - pattern: "no"
+  - pattern: "some"
+  - pattern: "all"
+  - pattern: "our"
+  - pattern: "your"
+  - pattern: "their"
+  - pattern: "its"
+  - pattern: "his"
+  - pattern: "her"
+  - pattern: "my"
