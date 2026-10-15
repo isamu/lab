@@ -1,0 +1,7 @@
+# Fixed phrases written in capitals (the recital formula NOW, THEREFORE; the joined conjunctions AND/OR). Their capital
+# words are words, not acronyms. Only the whole phrase counts: OR alone is also Oregon. Matched as written.
+id: capital-phrase
+language: en
+entries:
+  - pattern: "NOW, THEREFORE"
+  - pattern: "AND/OR"

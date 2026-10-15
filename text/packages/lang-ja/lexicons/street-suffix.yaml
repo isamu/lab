@@ -1,0 +1,16 @@
+# 番地と通りの名前の後ろに大文字で略して書く、通りの種類（512 Bayshore DR）。その位置でだけ見る。字面どおりに照らす。
+id: street-suffix
+language: ja
+entries:
+  - pattern: "DR"
+  - pattern: "ST"
+  - pattern: "AVE"
+  - pattern: "BLVD"
+  - pattern: "RD"
+  - pattern: "LN"
+  - pattern: "CT"
+  - pattern: "PKWY"
+  - pattern: "HWY"
+  - pattern: "PL"
+  - pattern: "SQ"
+  - pattern: "TER"

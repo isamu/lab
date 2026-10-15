@@ -89,6 +89,8 @@ describe("notAcronymSpans: 通貨", () => {
 describe("notAcronymSpans: 米国の住所", () => {
   [
     ["Kansas City, MO 64108", ["MO"]],
+    ["Fort Lauderdale FL 33304", ["FL"]],
+    ["Berkeley CA 94720", ["CA"]],
     ["Berkeley, CA 94720-1234", ["CA"]],
     ["Washington, DC 20405", ["DC"]],
     ["Berkeley,\nCA  94720", ["CA"]],
@@ -108,7 +110,9 @@ describe("notAcronymSpans: 米国の住所", () => {
     ["the CA signs it", []],
     ["Berkeley, CA 947", []],
     ["Berkeley, CA 947201", []],
-    ["Berkeley CA 94720", []],
+    ["the PA 94720 desk", []],
+    ["berkeley CA 94720", []],
+    ["fooLondon CA 90210", []],
     ["notes, XX 94720", []],
     ["the review, CA certificates", []],
     ["Sales, PA Team", []],

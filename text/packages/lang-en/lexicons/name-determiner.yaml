@@ -1,0 +1,25 @@
+# Words that open a noun phrase (the, this, each, our). Capitalised at the start of a sentence (The SE team), they are still
+# not part of a company's name, so a legal form right after one is read as an acronym. Matched without regard to case.
+id: name-determiner
+language: en
+entries:
+  - pattern: "the"
+  - pattern: "a"
+  - pattern: "an"
+  - pattern: "this"
+  - pattern: "that"
+  - pattern: "these"
+  - pattern: "those"
+  - pattern: "each"
+  - pattern: "every"
+  - pattern: "any"
+  - pattern: "no"
+  - pattern: "some"
+  - pattern: "all"
+  - pattern: "our"
+  - pattern: "your"
+  - pattern: "their"
+  - pattern: "its"
+  - pattern: "his"
+  - pattern: "her"
+  - pattern: "my"
