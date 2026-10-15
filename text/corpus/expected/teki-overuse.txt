@@ -5,5 +5,5 @@ jstage-jniph-74-1-2-rehabilitation  2
 kantei-221-shisei-hoshin  2
 kokkai-217-sangiin-shohisha-7  2
 nttcom-onboarding-week1  1
-ppc-guidelines-tsusoku  8
+ppc-guidelines-tsusoku  5
 saikosai-h18-09-14-bengoshi-chokai  1

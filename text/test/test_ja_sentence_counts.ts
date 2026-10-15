@@ -73,6 +73,12 @@ describe("teki-overuse: 一文の「〜的」", () => {
   it("一語になった「目的」「的確」は数えない", () => {
     assert.deepEqual(findingsOf(RULE, "目的を的確に伝え、具体的な標的を決めます。\n", "strict"), []);
   });
+
+  it("法令が定めた語（電磁的方法、反社会的勢力）の「的」は数えず、そのほかの「的」は数える", () => {
+    assert.deepEqual(findingsOf(RULE, "書面または電磁的方法により、具体的な理由を電磁的記録で通知する。\n"), []);
+    assert.deepEqual(findingsOf(RULE, "# 通知\n\n前の段落です。\n\n反社会的勢力との関係は、電磁的方式で具体的に確認します。\n"), []);
+    assert.deepEqual(findingsOf(RULE, "電磁的方法により、効果的かつ効率的な施策を、積極的に通知する。\n"), ["一文に「〜的」が 3 個あります（2 個まで）"]);
+  });
 });
 
 describe("adversative-ga-repeat: 一文の逆接の「が」", () => {
