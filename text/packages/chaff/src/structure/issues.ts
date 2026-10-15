@@ -1,6 +1,8 @@
 import type { StructureNode } from "../plugin.ts";
 import { listedTags } from "./listed-tags.ts";
 import { namesAbsentUnit } from "./unit-word.ts";
+import { isListedParagraph, listedParagraphsByArticle } from "./listed-paragraph.ts";
+import { referencesInCitedDocuments } from "./cited-document-section.ts";
 
 // 木だけで決まる誤り。参照先が無い、番号が飛ぶ・重なる、同じ語を二度定義する。
 // 意味の食い違いは判定しない。書いてあることから機械で決まるものだけを出す。
@@ -127,10 +129,15 @@ export const danglingReferences = (tree: StructureNode, source: string): Structu
   const articleLabels = nodes.filter((node) => node.kind === "article").map((node) => textOf(node, "label"));
   const chapters = chaptersOf(nodes);
   const elsewhere = elsewhereReferences(nodes, source);
-  return nodes
+  const quoted = referencesInCitedDocuments(tree);
+  const unresolved = nodes
     .filter((node) => node.kind === "reference" && !citesOther(node) && !otherNumbering(node))
     .filter((node) => !namesAbsentUnit(node, articleLabels) && !elsewhere.has(node))
-    .filter((node) => !resolves(node, addresses, chapters))
+    .filter((node) => !quoted.has(node) && !resolves(node, addresses, chapters));
+  // 規程は条の下の項を箇条書き（「1. 」「２．」）で書くことがあり、木はそれを項として読まない。条の本文は、要るときに一度だけ読む。
+  const listed = unresolved.length === 0 ? new Map() : listedParagraphsByArticle(nodes, source);
+  return unresolved
+    .filter((node) => !isListedParagraph(textOf(node, "target"), listed))
     .map((node) => ({ offset: node.span.start, values: { label: textOf(node, "label"), target: textOf(node, "target") } }));
 };
 
