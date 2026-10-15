@@ -12,6 +12,8 @@ type Span = { readonly start: number; readonly end: number };
 export type NameWords = {
   /** 会社名の後ろに大文字で書く法人の形（LLC、INC、SE、PTE、PTY）。 */
   readonly legalForms: readonly string[];
+  /** 日本の会社の形（株式会社、㈱。語彙表 company-form）。すぐ隣の英字の語は会社の名前（㈱ADEKA、DOWAホールディングス㈱）。 */
+  readonly companyForms: readonly string[];
   /** 名詞の前に置く限定の語（the、this、each）。文の頭で大文字になっても（The SE team）名前の語ではない。大小を問わずに照らす。 */
   readonly determiners: readonly string[];
   /** 法令・官報の引用の大文字の部分（45 CFR §164、21 USC §301、94/820/EC）。 */
@@ -52,18 +54,38 @@ const NAME_WORDS_MAX = 5;
 /**
  * 名前の語のすぐ後ろ（読点を挟んでもよい）の法人の形と、その前の名前（JVLS, LLC、CPM Medical Consultants LLC、TRATON SE、
  * GitLab Singapore PTE. LTD.）。名前の語は空白だけで続くものを数え、読点で切れた先（CENTENE CORPORATION, MAYFLOWER …）は入れない。
- * 名前に続けて書いた括弧のすぐ後ろの形（SUNCALL（Guangzhou）CO.,LTD.）も名前の終わり。空白を挟んだ括弧（Section (A) LLC）は名前の一部ではない。形のすぐ前が限定の語なら名前ではない（The SE team）。
+ * 名前に続けて書いた括弧のすぐ後ろの形（SUNCALL（Guangzhou）CO.,LTD.、SUNCALL CO.,（H.K.）LTD.）も名前の終わり。日本語の文の中の「，」も区切り（JCI(THAILAND)CO.，LTD.）。空白を挟んだ括弧（Section (A) LLC）は名前の一部ではない。形のすぐ前が限定の語なら名前ではない（The SE team）。
  */
 export const companyNameSpans = (text: string, forms: readonly string[], determiners: readonly string[]): Span[] => {
   if (forms.length === 0) return [];
   const single = `${oneOf(forms)}${EDGE_AFTER}`;
   // 形を重ねて書く（PTE. LTD.、CO.,LTD.）。
-  const form = String.raw`${single}(?:\.?,?[ \t]*${single})*`;
-  const named = new RegExp(String.raw`${EDGE_BEFORE}(?:${NAME_WORD}[ \t]+){0,${NAME_WORDS_MAX - 1}}(?<last>${NAME_WORD})(?:,[ \t]*|[ \t]+)${form}`, "gu");
-  const bracketed = new RegExp(String.raw`(?<=${NAME_WORD}[(（][\p{L} ]+[)）][ \t]*)${form}`, "gu");
+  const form = String.raw`${single}(?:\.?[,，]?[ \t]*${single})*`;
+  const named = new RegExp(String.raw`${EDGE_BEFORE}(?:${NAME_WORD}[ \t]+){0,${NAME_WORDS_MAX - 1}}(?<last>${NAME_WORD})(?:[,，][ \t]*|[ \t]+)${form}`, "gu");
+  const bracketed = new RegExp(String.raw`(?<=${NAME_WORD}[,，]?[(（][\p{L}. ]+[)）][ \t]*)${form}`, "gu");
   const determiner = new Set(determiners.map((word) => word.toLowerCase()));
   const names = [...text.matchAll(named)].filter((match) => !determiner.has((match.groups?.["last"] ?? "").toLowerCase()));
   return [...names.map((match) => ({ start: match.index, end: match.index + match[0].length })), ...spansOf(text, bracketed)];
+};
+
+/** 日本の会社の名前の英字の語（ADEKA、DOWA）。英字の語と形のあいだに書く名前の続きの片仮名（DOWAホールディングス㈱ の ホールディングス）。 */
+const LATIN_NAME = "[A-Za-zＡ-Ｚａ-ｚ][A-Za-zＡ-Ｚａ-ｚ0-9０-９&＆]*";
+const KATAKANA_TAIL = "[ァ-ヺー・]*";
+
+/** 英字だけの形（英語の Ltd）は英字の語に続けて書かれず、続いて見えれば語の一部。漢字か片仮名を含む形だけを読む。 */
+const NOT_LATIN = /[^\p{Script=Latin}\p{P}\s]/u;
+
+/**
+ * 日本の会社の形のすぐ後ろの英字の語（㈱ADEKA、株式会社ADEKA）と、片仮名を挟んですぐ前の英字の語（ADEKA株式会社、
+ * DOWAホールディングス㈱）。名前の英字で、説明を待つ略語ではない。範囲は英字の語だけ。
+ */
+export const japaneseCompanyNameSpans = (text: string, forms: readonly string[]): Span[] => {
+  const japanese = forms.filter((form) => NOT_LATIN.test(form));
+  if (japanese.length === 0) return [];
+  const form = oneOf(japanese);
+  const after = new RegExp(`(?<=${form})${LATIN_NAME}`, "gu");
+  const before = new RegExp(`(?<![A-Za-zＡ-Ｚａ-ｚ])${LATIN_NAME}(?=${KATAKANA_TAIL}${form})`, "gu");
+  return [...spansOf(text, after), ...spansOf(text, before)];
 };
 
 /** 通貨の記号に付けた大文字（USD$、AU$10、US$ 5）。国や通貨の印で、略語ではない。 */
@@ -108,6 +130,7 @@ export const nameSpansOf =
   (words: NameWords) =>
   (text: string): Span[] => [
     ...companyNameSpans(text, words.legalForms, words.determiners),
+    ...japaneseCompanyNameSpans(text, words.companyForms),
     ...currencySymbolSpans(text),
     ...citationSpans(text, words.citationSeries),
     ...carrierListSpans(text, words.carriers),
