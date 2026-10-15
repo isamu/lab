@@ -44,6 +44,31 @@ describe("ellipsis-consistency: 省略記号の書き方の混在", () => {
     assert.deepEqual(findingsOf("Loading… Saving… Use 1...10 and see https://example.com/a...b.", en), []);
   });
 
+  it("項目名の後ろで空白を詰めて桁を揃える点（リーダー）は省略記号ではない", () => {
+    const forms = ["……", "…", "・・・", "..."];
+    assert.deepEqual(ellipsesIn("製造事業……　　部品を作ります。販売事業…　　製品を売ります。", forms), []);
+    assert.deepEqual(ellipsesIn("Build...  makes the parts.\nSell...  ships them.\n", forms), []);
+    const leaders = "製造事業……　　部品を作ります。物流事業………　　製品を運びます。販売事業…　　製品を売ります。";
+    assert.deepEqual(findingsOf(`${leaders}準備中です……。確認中です……。`), []);
+  });
+
+  it("リーダーの形が 1 か所だけ、文の途中の点、空白の入った前置きは、空白が 2 つ続いても省略記号", () => {
+    assert.deepEqual(
+      ellipsesIn("えっと……　　そうです。", ["……"]).map((ellipsis) => ellipsis.form),
+      ["……"],
+    );
+    assert.equal(ellipsesIn("I thought...  but no.  We tried...  and failed.", ["..."]).length, 2);
+    assert.equal(ellipsesIn("待って、あの……　　そう。待って、その……　　ええ。", ["……"]).length, 2);
+  });
+
+  it("空白が 1 つ続くだけの点は省略記号として数える", () => {
+    assert.deepEqual(
+      ellipsesIn("待つ…… そして行く。待つ…　そして行く。", ["……", "…"]).map((ellipsis) => ellipsis.form),
+      ["……", "…"],
+    );
+    assert.equal(findingsOf("準備中です……。確認中です……。少々お待ちください… すぐ戻ります。").length, 1);
+  });
+
   it("reads each form whole, longest first, and skips longer runs of dots", () => {
     const forms = ["……", "…", "・・・", "..."];
     assert.deepEqual(
