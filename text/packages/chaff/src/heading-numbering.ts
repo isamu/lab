@@ -41,16 +41,31 @@ const labelPattern = (label: NumberLabel): RegExp =>
 /** 見出しの頭の強調の印と空白。「**1. 概要**」も「1. 概要」と読む。 */
 const LEAD = /^[\s*_]+/u;
 
-/** 見出しの言葉から、番号の書き方を読む。番号を持つ語（第1章）を先に、字だけの形（1.）を後に見る。 */
-export const numberingStyleOf = (heading: string, labels: readonly NumberLabel[]): string => {
+type NumberMark = { readonly style: string; readonly mark: string };
+
+const markOf = (heading: string, labels: readonly NumberLabel[]): NumberMark => {
   const text = heading.replace(LEAD, "");
   const label = labels.find((candidate) => labelPattern(candidate).test(text));
-  if (label !== undefined) return `label:${label.word.toLowerCase()}`;
-  return SHAPES.find(([, shape]) => shape.test(text))?.[0] ?? UNNUMBERED;
+  if (label !== undefined) return { style: `label:${label.word.toLowerCase()}`, mark: labelPattern(label).exec(text)?.[0] ?? "" };
+  const shape = SHAPES.find(([, pattern]) => pattern.test(text));
+  return shape === undefined ? { style: UNNUMBERED, mark: "" } : { style: shape[0], mark: shape[1].exec(text)?.[0] ?? "" };
 };
 
-/** 見出し 1 つ。depth は深さ（#の数）、style は番号の書き方、skipped は番号を付けない前後の見出し（目次・参考文献）。 */
-export type NumberedHeading = { readonly depth: number; readonly style: string; readonly skipped: boolean };
+/** 見出しの言葉から、番号の書き方を読む。番号を持つ語（第1章）を先に、字だけの形（1.）を後に見る。 */
+export const numberingStyleOf = (heading: string, labels: readonly NumberLabel[]): string => markOf(heading, labels).style;
+
+/** 番号の中の数の一つ一つ（「7.1」の 7 と 1、「Chapter II」の II）。番号は印の最後に来るので、語の頭の大文字（Chapter の C）は最後にならない。 */
+const NUMBER_TOKEN = /[0-9０-９]+|[A-ZⅠ-Ⅻ①-⑳一二三四五六七八九十百]+/gu;
+const FIRST_NUMBERS: ReadonlySet<string> = new Set(["1", "１", "I", "Ⅰ", "A", "①", "一"]);
+
+/** 番号が並びの最初（1.、1.1、第1章、A.、①）か。最後の数が最初の数のときで、番号の無い見出しは並びを始めない。 */
+export const opensNumbering = (heading: string, labels: readonly NumberLabel[]): boolean => {
+  const last = markOf(heading, labels).mark.match(NUMBER_TOKEN)?.at(-1);
+  return last !== undefined && FIRST_NUMBERS.has(last);
+};
+
+/** 見出し 1 つ。depth は深さ（#の数）、style は番号の書き方、skipped は番号を付けない前後の見出し（目次・参考文献）、opens は番号が 1 から始まるか。 */
+export type NumberedHeading = { readonly depth: number; readonly style: string; readonly skipped: boolean; readonly opens: boolean };
 
 /** 親（直前の浅い見出し）と深さが同じ見出しの組。番号は兄弟の見出しのあいだで揃える。位置は渡した並びの添え字。 */
 export const siblingGroups = (headings: readonly NumberedHeading[]): number[][] => {
@@ -87,13 +102,25 @@ const minorityBy = (members: readonly number[], keyOf: (at: number) => string): 
 const minoritiesOf = (split: Split | undefined, kind: NumberingMinority["kind"]): NumberingMinority[] =>
   split === undefined ? [] : split.minority.map((at) => ({ at, kind, majority: split.majority, count: split.count, example: split.example }));
 
+/** 番号の並びの最初の兄弟が 1 から始まるとき、その前の番号の無い兄弟（文書の題、「Applies to England」）は並びの外。番号付きの兄弟が二つ以上あるときだけ。 */
+const MIN_NUMBERED_RUN = 2;
+
+const leadingFrontMatter = (members: readonly number[], headings: readonly NumberedHeading[]): ReadonlySet<number> => {
+  const numbered = members.filter((at) => (headings[at]?.style ?? UNNUMBERED) !== UNNUMBERED);
+  const first = numbered[0];
+  if (first === undefined || numbered.length < MIN_NUMBERED_RUN || headings[first]?.opens !== true) return new Set();
+  return new Set(members.filter((at) => at < first));
+};
+
 /**
  * 兄弟の見出しのうち、少ないほうの書き方のもの。先に番号の有無を比べ（「1. 概要」「2. 手順」「まとめ」の「まとめ」）、
- * 番号の付いた見出しのあいだで書き方を比べる（「1.」「2.」「3）」の「3）」）。同じ数なら言わない（二つだけの兄弟は必ず同じ数か一つの書き方）。前後の見出し（目次・参考文献）は数えない。
+ * 番号の付いた見出しのあいだで書き方を比べる（「1.」「2.」「3）」の「3）」）。同じ数なら言わない（二つだけの兄弟は必ず同じ数か一つの書き方）。前後の見出し（目次・参考文献）と、1 から始まる番号の前の見出しは数えない。
  */
 export const numberingMinorities = (headings: readonly NumberedHeading[]): NumberingMinority[] =>
   siblingGroups(headings).flatMap((group) => {
-    const members = group.filter((at) => headings[at]?.skipped !== true);
+    const listed = group.filter((at) => headings[at]?.skipped !== true);
+    const front = leadingFrontMatter(listed, headings);
+    const members = listed.filter((at) => !front.has(at));
     const styleOf = (at: number): string => headings[at]?.style ?? UNNUMBERED;
     const numbered = members.filter((at) => styleOf(at) !== UNNUMBERED);
     return [
