@@ -46,7 +46,7 @@ nttcom-onboarding-week1  3
 nws-glossary-a  9
 ppc-guidelines-tsusoku  3
 rfc3693-geopriv-requirements  18
-rfc9293-tcp  32
+rfc9293-tcp  31
 rfc9457  11
 ruby-3-4-0-released-ja  5
 rust-lang-minutes-2022-11-22  3
