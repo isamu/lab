@@ -1,6 +1,7 @@
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { definedTerms, unusedDefinitions, usesBeforeDefinition, type BodyText, type IsTitle, type Mentioned } from "../structure/definition-use.ts";
 import { titleLineNumbers } from "../structure/title-lines.ts";
+import { contentsLineNumbers } from "../structure/contents-lines.ts";
 import { expansionConflicts, expansionsIn } from "../acronym-expansions.ts";
 import { linesOf, lineNumberAt } from "../structure/lines.ts";
 import { isQuotedAlone } from "../quoted-span.ts";
@@ -34,10 +35,13 @@ export const unusedDefinition: Detector = (doc): Finding[] =>
         findingAt(doc, defined.span.start, { term: defined.term }),
       );
 
-/** 題・見出し（Markdown の見出し、章・節の行、条の前の見出しの行）の上の位置か。 */
+const patternsOf = (doc: ProseDocument, lexicon: string): string[] => (doc.lexicons[lexicon] ?? []).map((entry) => entry.pattern);
+
+/** 題・見出し（Markdown の見出し、章・節の行、条の前の見出しの行）と、目次・索引の行の上の位置か。 */
 const titleIn = (doc: ProseDocument): IsTitle => {
   const lines = linesOf(doc.source);
-  const numbers = titleLineNumbers(doc.structure, lines, doc.markup?.headings ?? []);
+  const headings = doc.markup?.headings ?? [];
+  const numbers = new Set([...titleLineNumbers(doc.structure, lines, headings), ...contentsLineNumbers(lines, headings, patternsOf(doc, "toc-heading"))]);
   return (offset) => numbers.has(lineNumberAt(lines, offset) ?? 0);
 };
 
@@ -45,7 +49,7 @@ const titleIn = (doc: ProseDocument): IsTitle => {
 export const useBeforeDefinition: Detector = (doc): Finding[] =>
   doc.structure === undefined
     ? []
-    : usesBeforeDefinition(definedTerms(doc.structure), bodyOf(doc), mentionedIn(doc), titleIn(doc)).map((use) =>
+    : usesBeforeDefinition(definedTerms(doc.structure), bodyOf(doc), mentionedIn(doc), titleIn(doc), patternsOf(doc, "self-prefix")).map((use) =>
         findingAt(doc, use.offset, { term: use.term.term, defined: use.term.line }),
       );
 

@@ -244,6 +244,89 @@ describe("use-before-definition: the name another definition gives", () => {
   });
 });
 
+describe("use-before-definition: contents, captions and longer names", () => {
+  const body = 'Section 1.1 Closing. The parties close the deal by email (the "Closing").\n';
+
+  it("valid: a table of contents or an index of defined terms packed on one line", () => {
+    const contents = "TABLE OF CONTENTS Page ARTICLE I THE DEAL Section 1.1 Closing 2 Section 1.2 Payment 3 Section 1.3 Notices 4\n\n";
+    assert.deepEqual(early(`${contents}${body}`), []);
+    const index = "Each of these terms is defined in the Section opposite it: Term Section Closing 1.1 Payment 1.2(a) Notices 1.3\n\n";
+    assert.deepEqual(early(`${index}${body}`), []);
+  });
+
+  it("invalid: a sentence that cites sections is not a contents line", () => {
+    const cites = "The Closing follows Section 1.2 and Section 1.3 and Section 1.4 once the payment is made.\n\n";
+    assert.deepEqual(early(`${cites}${body}`), ['"Closing" is used here, before it is defined on line 3']);
+  });
+
+  it("valid: a numbered title line and a clause caption are not uses", () => {
+    assert.deepEqual(early(`1 Supply of Goods\n\n1.1 Hill Ltd sells timber to Harbour Ltd ("Goods").\n`), []);
+    assert.deepEqual(early(body), []);
+    assert.deepEqual(early(`Section 1.1.\n\nFinal Closing.\n\n${body}`), []);
+  });
+
+  it("invalid: a numbered sentence, or a caption that goes on as a sentence, is a use", () => {
+    assert.deepEqual(early(`1 Hill Ltd sells the Goods every month\n\n1.1 Hill Ltd sells timber ("Goods").\n`), [
+      '"Goods" is used here, before it is defined on line 3',
+    ]);
+    assert.deepEqual(early('Section 1.1 Closing happens by email. The parties meet (the "Closing").\n'), [
+      '"Closing" is used here, before it is defined on line 1',
+    ]);
+  });
+
+  it("valid: the long name a short form abbreviates, another term's definition, a longer defined term", () => {
+    assert.deepEqual(early('The Audit Committee of our Board of Directors meets twice a year. We report to our Board of Directors ("Board").\n'), []);
+    assert.deepEqual(early('The Seller files a merger notice (the "Certificate of Merger"). Each share has a paper record (each, a "Certificate").\n'), []);
+    assert.deepEqual(early('Hill Ltd signs the Licence Agreement (the "Licence Agreement") with Harbour Ltd (the "Licence").\n'), []);
+    assert.deepEqual(early('Lenders include Harbour Financial Corporation. The bank was formed in 1990 (the "Corporation").\n'), []);
+  });
+
+  it("invalid: the short form itself, or a sentence that opens with it", () => {
+    assert.deepEqual(early('The Board meets twice a year. We report to our Board of Directors ("Board").\n'), [
+      '"Board" is used here, before it is defined on line 1',
+    ]);
+    assert.deepEqual(early('The Corporation lends money. The bank was formed in 1990 (the "Corporation").\n'), [
+      '"Corporation" is used here, before it is defined on line 1',
+    ]);
+  });
+
+  it("valid: the document naming itself, and a use that gives the long name in brackets", () => {
+    assert.deepEqual(early('Read this Agreement first. Harbour Ltd and Hill Ltd sign this sales agreement (this "Agreement").\n'), []);
+    assert.deepEqual(early("この規則は、会社と社員の約束である。\n\n第1条　この就業規則（以下「規則」という。）は、社員の働き方を定める。\n", ja), []);
+    const law = "港の利用に関する法律（令和6年法律第1号。以下「みなと法」という。）を守る。\n";
+    assert.deepEqual(early(`# 心得\n\nみなと法（港の利用に関する法律）を毎朝よく読む。\n\n${law}`, ja), []);
+  });
+
+  it("invalid: the same words without the self-reference or the gloss", () => {
+    assert.deepEqual(early('The Agreement binds both. Harbour Ltd and Hill Ltd sign this sales agreement (this "Agreement").\n'), [
+      '"Agreement" is used here, before it is defined on line 1',
+    ]);
+    assert.deepEqual(early("規則は、会社と社員の約束である。\n\n第1条　この就業規則（以下「規則」という。）は、社員の働き方を定める。\n", ja), [
+      "「規則」を、3 行目の定義より前で使っています",
+    ]);
+    const law = "港の利用に関する法律（令和6年法律第1号。以下「みなと法」という。）を守る。\n";
+    assert.deepEqual(early(`# 心得\n\nみなと法を毎朝よく読む。\n\n${law}`, ja), ["「みなと法」を、5 行目の定義より前で使っています"]);
+  });
+
+  it("本 or この inside a longer word is not the document naming itself (基本規程)", () => {
+    const defining = "第1条　本規程（以下「規程」という。）は、社員に適用する。\n";
+    assert.deepEqual(early(`# 規程\n\n本規程は、全員が毎年読む。\n\n${defining}`, ja), []);
+    assert.deepEqual(early(`# 規程\n\n基本規程は、全員が毎年読む。\n\n${defining}`, ja), ["「規程」を、5 行目の定義より前で使っています"]);
+  });
+
+  it("valid and invalid: a company name on the title line before the company is defined", () => {
+    const defining = "第1条　この規則は、株式会社みなと（以下「会社」という。）の社員に適用する。\n";
+    assert.deepEqual(early(`# 就業規則\n\n株式会社みなと\n\n${defining}`, ja), []);
+    assert.deepEqual(early(`# 就業規則\n\n会社は社員を守る。\n\n${defining}`, ja), ["「会社」を、5 行目の定義より前で使っています"]);
+  });
+
+  it("valid: entries of a contents list under a contents heading", () => {
+    const source = "## 目次\n\n- 利用目的の特定と変更\n- 安全管理\n\n## 決めること\n\n事業者は、使う目的（以下「利用目的」という。）を決める。\n";
+    assert.deepEqual(early(source, ja), []);
+    assert.deepEqual(early(source.replace("## 目次", "## はじめに"), ja), ["「利用目的」を、8 行目の定義より前で使っています"]);
+  });
+});
+
 describe("the reading behind both rules", () => {
   const texts = [
     { start: 0, text: "The Seller ships." },
