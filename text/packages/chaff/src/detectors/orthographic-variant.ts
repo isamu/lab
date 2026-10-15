@@ -5,6 +5,7 @@ import { isKatakanaWord, stemOf } from "../long-vowel.ts";
 import { QUOTATION_MARKS, isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
 import { furiganaSpans } from "../furigana.ts";
+import { japaneseCompanyNameSpans } from "../company-name-run.ts";
 import { acronymsIn, isCapitalsNotSpelling } from "../capitals-with-small.ts";
 import { isPartOfAddress } from "./address-word.ts";
 import { wholeWordRuns, type WholeWordRun } from "../whole-word-runs.ts";
@@ -48,13 +49,20 @@ const PHRASE_SUFFIX = "orthographic-variant-phrase-suffix";
 const patternsOf = (doc: ProseDocument, id: string, genre: string | undefined): string[] =>
   entriesForGenre(doc.lexicons[id] ?? [], genre).map((entry) => entry.pattern);
 
+/** The team's names, and the company forms (株式会社, ㈱) a registered company name is written next to. */
+type Names = { readonly team: readonly string[]; readonly companyForms: readonly string[] };
+
 /**
- * Whether a stretch of the sentence is outside a quotation, the team's names and a reading in brackets (HTTP（えいちてぃーてぃーぴー）):
- * the first two keep their own spelling, and a reading is not a spelling at all.
+ * Whether a stretch of the sentence is outside a quotation, the team's names, a company's name (関東珪曹硝子㈱) and a reading in
+ * brackets (HTTP（えいちてぃーてぃーぴー）): the first three keep their own spelling, and a reading is not a spelling at all.
  */
-const isOpenIn = (sentence: Sentence, names: readonly string[]): IsOpen => {
-  const closed = [...quotedSpans(sentence.text, QUOTATION_MARKS), ...furiganaSpans(sentence.text)];
-  const named = nameSpans(sentence.text, names);
+const isOpenIn = (sentence: Sentence, names: Names): IsOpen => {
+  const closed = [
+    ...quotedSpans(sentence.text, QUOTATION_MARKS),
+    ...furiganaSpans(sentence.text),
+    ...japaneseCompanyNameSpans(sentence.text, names.companyForms),
+  ];
+  const named = nameSpans(sentence.text, names.team);
   return (start, end) => !isWithinAny(closed, { start, end }) && !touchesAny(named, start, end);
 };
 
@@ -298,7 +306,7 @@ const LINK_CHROME = /\]\([^)]*\)|\]\[[^\]]*\]|\[/gu;
 const withoutLinkChrome = (text: string): string => text.replaceAll(LINK_CHROME, (chrome) => " ".repeat(chrome.length));
 
 /** A body cell of a table read as a sentence of its own: the prose covers tables, so a cell's words (片栗粉 in a list of ingredients) are not in the sentences. Header rows stay out. */
-const cellPlace = (cell: TableCell, names: readonly string[]): Place => {
+const cellPlace = (cell: TableCell, names: Names): Place => {
   const text = withoutLinkChrome(cell.text);
   const sentence: Sentence = { span: { start: cell.start, end: cell.end }, text, tokens: cell.tokens ?? [] };
   return { sentence, isOpen: isOpenIn(sentence, names), readsLatin: !DATA_KEY_CELL.test(text.trim()) };
@@ -316,7 +324,7 @@ export const orthographicVariant: Detector = (doc, options): Finding[] => {
     wholeWords: new Map((doc.lexicons[WHOLE_WORD] ?? []).map((entry) => [entry.pattern, entry.group ?? entry.pattern])),
     phraseSuffixes: new Set(patternsOf(doc, PHRASE_SUFFIX, options.genre)),
   };
-  const names = doc.names ?? [];
+  const names: Names = { team: doc.names ?? [], companyForms: (doc.lexicons["company-form"] ?? []).map((entry) => entry.pattern) };
   const placed: Place[] = [
     ...doc.sentences.map((sentence) => ({ sentence, isOpen: isOpenIn(sentence, names), readsLatin: true })),
     ...(doc.tableCells?.() ?? []).map((cell) => cellPlace(cell, names)),
