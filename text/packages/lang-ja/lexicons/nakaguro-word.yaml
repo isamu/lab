@@ -1,0 +1,13 @@
+# 中黒を含めて 1 語として書く語。外来語の複合語で、中黒は語の中の切れ目であり、項目を並べてはいない（キャッシュ・フロー計算書）。
+# no-nakaguro-parallel は、この語の中の中黒を数えない。会計・経営の文書に定まった書き方のある語だけを入れる。
+id: nakaguro-word
+language: ja
+entries:
+  - pattern: キャッシュ・フロー
+  - pattern: ファイナンス・リース
+  - pattern: オペレーティング・リース
+  - pattern: ストック・オプション
+  - pattern: コーポレート・ガバナンス
+  - pattern: ワーク・ライフ・バランス
+  - pattern: サプライ・チェーン
+  - pattern: デュー・デリジェンス

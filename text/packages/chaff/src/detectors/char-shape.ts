@@ -145,10 +145,12 @@ export const kanjiRun: Detector = (doc, options): Finding[] => {
 /**
  * 中黒で並べると、どこまでが 1 つの項目か分からなくなる。
  * 「企画・開発・運用・保守体制」は、保守体制が 1 つなのか保守と体制なのか読めない。
+ * 語彙表（nakaguro-word）の、中黒を含めて 1 語の語（キャッシュ・フロー）の中黒は並べていないので数えない。
  */
-export const middleDot: Detector = (doc, options): Finding[] =>
-  doc.sentences
-    .map((sentence) => ({ sentence, count: parallelDotCount(sentence.text) }))
+export const middleDot: Detector = (doc, options): Finding[] => {
+  const words = (options.lexicon ?? []).map((entry) => entry.pattern).toSorted((left, right) => right.length - left.length);
+  return doc.sentences
+    .map((sentence) => ({ sentence, count: parallelDotCount(sentence.text, words) }))
     .filter(({ count }) => count > options.limit)
     .map(({ sentence, count }) => ({
       rule: "no-nakaguro-parallel",
@@ -158,3 +160,4 @@ export const middleDot: Detector = (doc, options): Finding[] =>
       quote: sentence.text.trim(),
       values: { count, limit: options.limit, offset: sentence.span.start },
     }));
+};

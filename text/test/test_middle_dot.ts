@@ -41,6 +41,14 @@ describe("parallelDotCount", () => {
   it("行頭で続いた「・・」は、印の一つだけを除く", () => {
     assert.equal(parallelDotCount("・・資料"), 1);
   });
+
+  it("中黒を含めて 1 語の語（words）の中黒は数えない。語の外の中黒は数える", () => {
+    const words = ["キャッシュ・フロー", "ファイナンス・リース"];
+    assert.equal(parallelDotCount("営業キャッシュ・フローと投資キャッシュ・フロー", words), 0);
+    assert.equal(parallelDotCount("キャッシュ・フロー・利益・売上", words), 2);
+    assert.equal(parallelDotCount("キャッシュ・フロー", []), 1);
+    assert.equal(parallelDotCount("キャッシュ・ポジション", words), 1);
+  });
 });
 
 describe("no-nakaguro-parallel", () => {
@@ -68,6 +76,16 @@ describe("no-nakaguro-parallel", () => {
   it("invalid: 箇条書きの項目の中で中黒を並べすぎれば指摘する", () => {
     const crowded = lines("・ 企画・開発・運用・保守・営業・販売・広報の体制を見直すこと", "・ 無理をしないこと");
     assert.ok(idsFor(crowded).includes("no-nakaguro-parallel"));
+  });
+
+  it("valid: キャッシュ・フローの中黒は並べた項目ではない", () => {
+    const statement =
+      "営業活動によるキャッシュ・フロー、投資活動によるキャッシュ・フロー、財務活動によるキャッシュ・フロー、フリー・キャッシュ・フロー、ファイナンス・リース債務の返済とキャッシュ・フローの合計を示します。";
+    assert.ok(!idsFor(statement).includes("no-nakaguro-parallel"));
+  });
+
+  it("invalid: 語彙表の語が混ざっても、並べた中黒が多ければ指摘する", () => {
+    assert.ok(idsFor("キャッシュ・フローと企画・開発・運用・保守・営業・販売・広報の体制を見直します。").includes("no-nakaguro-parallel"));
   });
 
   it("invalid: 地の文で中黒を並べすぎれば、これまでどおり指摘する", () => {
