@@ -20,7 +20,7 @@ da-ai-advisory-board-1  2
 da-data-strategy  1
 da-legal-practice  2
 eip-1559-fee-market  8
-etax-oshirase-mail-templates  51
+etax-oshirase-mail-templates  37
 fac-adr-0016-file-uploads  1
 fed-powell-2025-08-22-framework-review  65
 fomc-minutes-2025-07  11

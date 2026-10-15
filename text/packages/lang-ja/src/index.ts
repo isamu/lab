@@ -9,6 +9,7 @@ import { splitAtQuotedStops } from "./quoted-stop.ts";
 import { reattachClosingQuotes } from "./closing-quote.ts";
 import { insideBrackets, startsWithCloser } from "./inside-brackets.ts";
 import { structure } from "./structure.ts";
+import { cutAtBreaks, listItemHeads, listLineBreaks, startsListItem } from "./list-line.ts";
 import { isReady, predicateOnly, prepare, readsAsCounter, readsAsOneAdverb, readsAsOneWord, tokenize } from "./pos.ts";
 import { markSpacedCounters } from "./spaced-counter.ts";
 import { tokensWithin } from "./tokens-within.ts";
@@ -45,6 +46,8 @@ const LINE_BREAK = /[\n\r]/u;
 
 const ENGLISH: EmbeddedLanguage = { id: "en", lengthUnit: "word" };
 
+const asListItem = (sentence: Sentence): Sentence => ({ ...sentence, listItem: true });
+
 const withLanguage = (text: string, span: Span): Sentence => (isEnglishRun(text) ? { span, text, embeddedLanguage: ENGLISH } : { span, text });
 
 /**
@@ -53,6 +56,8 @@ const withLanguage = (text: string, span: Span): Sentence => (isEnglishRun(text)
  */
 const merge = (source: string, spans: readonly Span[]): Sentence[] => {
   const open = insideBrackets(source);
+  const listBreaks = listLineBreaks(source);
+  const itemHeads = listItemHeads(source);
   return spans
     .reduce<Span[]>((acc, span) => {
       const last = acc.at(-1);
@@ -65,7 +70,9 @@ const merge = (source: string, spans: readonly Span[]): Sentence[] => {
       else acc.push(span);
       return acc;
     }, [])
-    .map((span) => withLanguage(source.slice(span.start, span.end), span));
+    .flatMap((span) => cutAtBreaks(span, listBreaks))
+    .map((span) => withLanguage(source.slice(span.start, span.end), span))
+    .map((sentence) => (startsListItem(itemHeads, sentence.span.start) ? asListItem(sentence) : sentence));
 };
 
 /**

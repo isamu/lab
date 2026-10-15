@@ -7,7 +7,7 @@ da-service-design-guidelines-2  1
 jstage-jnlp-32-1-114-nmt  1
 kantei-221-shisei-hoshin  1
 kokkai-217-sangiin-shohisha-7  53
-mext-heatstroke-after-holidays  2
+mext-heatstroke-after-holidays  1
 mhlw-norovirus-qa  1
 ppc-guidelines-tsusoku  2
 saikosai-h18-09-14-bengoshi-chokai  1

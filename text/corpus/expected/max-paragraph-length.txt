@@ -13,7 +13,6 @@ crs-r47585-subcontracting  3
 crs-rl32781-salt  8
 da-ai-advisory-board-1  9
 eip-1559-fee-market  3
-etax-oshirase-mail-templates  1
 fed-powell-2025-08-22-framework-review  6
 fomc-minutes-2025-07  12
 github-general-privacy-statement  1
@@ -30,10 +29,9 @@ kimino-mayor-2022-09  1
 kobayashi-nento-shokan-2026  1
 maff-kyodo-ryori-okaisan-en  1
 meti-press-level4-bus  1
-mext-heatstroke-after-holidays  2
+mext-heatstroke-after-holidays  1
 mhlw-norovirus-qa  1
 mit-ocw-6-0001-syllabus  1
-mlit-press-planned-suspension  1
 nih-research-matters-hpv-one-dose  2
 nps-yellowstone-faqs  1
 nsf-19-582-reu-solicitation  10
