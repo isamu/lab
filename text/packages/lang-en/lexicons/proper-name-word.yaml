@@ -1,6 +1,7 @@
 # Words that make a capitalised run a name, not a term the document defines: of a law or a document (the Federal Trade
-# Commission Act, Acceptable Use Policies, the GitHub Privacy Statement), of a body (the Department of Commerce), of a place
-# (the State of New York), of the parties (the Parties, the Indemnifying Party), and words English capitalises by convention (the Internet). undefined-term leaves every run that
+# Commission Act, Acceptable Use Policies, the GitHub Privacy Statement), of a body (the Department of Commerce, the World
+# Health Organization), of a place (the State of New York), of the parties (the Parties, the Indemnifying Party), of an office
+# (the Chief Executive Officer, the President), and words English capitalises by convention (the Internet, the Web, acts of God). undefined-term leaves every run that
 # holds one of these, in its singular or plural form, as it leaves places (place-region), weekdays and months, company
 # forms and party roles. Matched as written, word by word.
 id: proper-name-word
@@ -43,6 +44,8 @@ entries:
   - pattern: Foundation
   - pattern: Association
   - pattern: Institute
+  - pattern: Organization
+  - pattern: Organisation
   - pattern: University
   - pattern: List
   - pattern: State
@@ -52,4 +55,9 @@ entries:
   - pattern: Republic
   - pattern: Kingdom
   - pattern: Internet
+  - pattern: Web
+  - pattern: God
+  - pattern: Officer
+  - pattern: President
+  - pattern: Director
   - pattern: Party
