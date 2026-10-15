@@ -101,6 +101,13 @@ describe("vague-word-density: 一つの文の中のあいまいな語", () => {
     assert.deepEqual(wordsIn("Give reasonable notice as needed.", "blog/tech"), ["reasonable", "as needed"]);
   });
 
+  it("品詞が無くても、同じ物差しで長い語と決まった言い方を見る", () => {
+    const sentence = { span: { start: 100, end: 160 }, text: "Notify us in a timely manner, on reasonable notice." };
+    const vague = [{ pattern: "timely" }, { pattern: "in a timely manner" }, { pattern: "reasonable" }];
+    assert.deepEqual(vagueWordsIn(sentence, vague, []), ["in a timely manner", "reasonable"]);
+    assert.deepEqual(vagueWordsIn(sentence, vague, [{ pattern: "reasonable notice" }]), ["in a timely manner"]);
+  });
+
   it("語の無い文と空の文は何も返さない", () => {
     assert.deepEqual(wordsIn("The meeting starts at ten.", "legal/contract"), []);
     assert.deepEqual(wordsIn("", "legal/contract"), []);
