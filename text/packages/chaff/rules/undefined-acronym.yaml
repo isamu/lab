@@ -70,5 +70,5 @@ not_flagged:
   ja: 誰でも知っている略語（URL、PDF など）と、前後の括弧で説明した略語は指しません。
   en: Common acronyms (URL, PDF) and acronyms spelled out in brackets next to them are not reported.
 level_meaning:
-  ja: 説明のない略語が {limit} 種類あれば指摘
-  en: reported once {limit} different acronyms go unexplained
+  ja: 説明のない略語が {limit} 種類あれば指摘。文書が自分で略語を {limit} 個展開していれば、1 つの抜けから指摘
+  en: reported once {limit} different acronyms go unexplained, or from the first one when the document itself spells out {limit} others
