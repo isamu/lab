@@ -6,6 +6,7 @@ import { furnitureMask, isFurniture } from "./gram-furniture.ts";
 import { notAcronymSpansOf, type NotAcronymSpans } from "./acronym-context.ts";
 import { abbreviates, expansionAt, termEntryAcronyms, type ExpandedAt } from "./acronym-expansion.ts";
 import { isExplained } from "./acronym-compound.ts";
+import { isBracketed, isInHeading, isNamePart } from "./acronym-lone.ts";
 import { conjugatedForms } from "./conjugated-form.ts";
 import { evidenceSpans, hasNumeral, isClaim, isLabelOnly, startsWithin, type AdviceWords } from "./concrete-evidence.ts";
 import { letteredIndexEntries } from "./lettered-index.ts";
@@ -304,6 +305,24 @@ const definitionVerbsOf = (doc: ProseDocument): string[] => {
   return [...verbs, ...conjugatedForms(doc.sentences, verbs)];
 };
 
+const acronymFinding = (acronym: string, hit: Hit, count: number, limit: number): Finding => ({
+  rule: "undefined-acronym",
+  severity: "info",
+  line: 0,
+  column: 0,
+  quote: hit.sentence.text.trim(),
+  values: { word: acronym, count, limit, offset: hit.offset },
+});
+
+const isNamePartAt = (acronym: string, hit: Hit): boolean => {
+  const start = hit.offset - hit.sentence.span.start;
+  return isNamePart(hit.sentence.text, start, start + acronym.length);
+};
+
+/**
+ * 説明のない略語が上限に届かなくても、この文書が自分で上限の数だけ略語を展開しているなら、展開しなかった 1 つも指す。
+ * 書き手が展開する文書では、展開の抜けは抜けとして読める。名前の一部の略語（SRI International）は、そのときも指さない。
+ */
 export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   const body = bodyOf(doc);
   // HTTP のメソッド名（GET）は略語ではないので、通じる略語と同じく展開を求めない。
@@ -318,19 +337,17 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
     ...referenceListSpans(doc.source, patternsOf(doc, "reference-list-heading")),
     ...outlineLabelSpans(doc.source, patternsOf(doc, "numbered-division")),
   ]);
-  const unexplained = new Set([...firstHits(hits).keys()].filter((acronym) => !isExplained(acronym, explainedAlone)));
+  const acronyms = [...firstHits(hits).keys()];
+  const unexplained = new Set(acronyms.filter((acronym) => !isExplained(acronym, explainedAlone)));
+  const bracketed = (acronym: string): boolean => [body, ...headings].some((text) => isBracketed(text, acronym));
+  const writerSpellsOut = acronyms.filter((acronym) => !common.has(acronym) && explainedAlone(acronym) && bracketed(acronym)).length >= options.limit;
   // 日付を読むには文書の木を作る。上限に届かない文書では作らない。
-  if (unexplained.size < options.limit) return [];
+  if (unexplained.size < options.limit && !writerSpellsOut) return [];
   const bare = [...firstHits(outsideSpans(hits, dateSpans(doc)))].filter(([acronym]) => unexplained.has(acronym));
-  if (bare.length < options.limit) return [];
-  return bare.map(([acronym, hit]) => ({
-    rule: "undefined-acronym",
-    severity: "info",
-    line: 0,
-    column: 0,
-    quote: hit.sentence.text.trim(),
-    values: { word: acronym, count: bare.length, limit: options.limit, offset: hit.offset },
-  }));
+  if (bare.length >= options.limit) return bare.map(([acronym, hit]) => acronymFinding(acronym, hit, bare.length, options.limit));
+  if (!writerSpellsOut) return [];
+  const alone = bare.filter(([acronym, hit]) => !isNamePartAt(acronym, hit) && !isInHeading(headings, acronym));
+  return alone.map(([acronym, hit]) => acronymFinding(acronym, hit, alone.length, options.limit));
 };
 
 /**
