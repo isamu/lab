@@ -23,3 +23,10 @@ export const namedTargets = (references: readonly StructureNode[], source: strin
     }),
   );
 };
+
+/**
+ * 名前として書かれた番号を指す参照か。小文字で書いた参照（「under section 21」）だけ。同じ文書の大文字の「Section 21」は、
+ * 文書が自分の section を指す書き方なので、名前があっても探す。Pure.
+ */
+export const pointsToNamedSection = (reference: StructureNode, named: ReadonlySet<string>): boolean =>
+  LOWER_START.test(String(reference.attrs["label"] ?? "")) && named.has(String(reference.attrs["target"] ?? ""));

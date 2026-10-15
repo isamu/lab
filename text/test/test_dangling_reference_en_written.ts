@@ -136,6 +136,8 @@ describe("a section number that names another Act's form (section 21 notice)", (
   it("reads a section 8 form the same way", () => assert.deepEqual(danglingLabels(guide("Fill in a section 8 form."), "guide.md", "docs/manual"), []));
   it("still reports a section without such a name", () =>
     assert.deepEqual(danglingLabels(guide("Under section 21 the court decides."), "guide.md", "docs/manual"), ["section 21"]));
+  it("still reports a capitalised Section 21 in a text that names a section 21 notice", () =>
+    assert.deepEqual(danglingLabels(guide("Give a section 21 notice as Section 21 says."), "guide.md", "docs/manual"), ["Section 21"]));
   it("does not read a capitalised Section N notice as a name: it points into the document", () =>
     assert.deepEqual(danglingLabels(guide("Give a Section 9 notice to the landlord."), "guide.md", "docs/manual"), ["Section 9"]));
 });

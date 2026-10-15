@@ -1,6 +1,6 @@
 import type { StructureNode } from "../plugin.ts";
 import { writtenReading } from "./written-resolve.ts";
-import { namedTargets } from "./section-names.ts";
+import { namedTargets, pointsToNamedSection } from "./section-names.ts";
 import { listedTags } from "./listed-tags.ts";
 import { namesAbsentUnit } from "./unit-word.ts";
 
@@ -132,7 +132,7 @@ export const danglingReferences = (tree: StructureNode, source: string, nameNoun
   const references = nodes.filter((node) => node.kind === "reference");
   const named = namedTargets(references, source, nameNouns);
   const unresolved = references
-    .filter((node) => !citesOther(node) && !otherNumbering(node) && !named.has(textOf(node, "target")))
+    .filter((node) => !citesOther(node) && !otherNumbering(node) && !pointsToNamedSection(node, named))
     .filter((node) => !namesAbsentUnit(node, articleLabels) && !elsewhere.has(node))
     .filter((node) => !resolves(node, addresses, chapters));
   // 平文の契約は見出しを「9. Indemnification.」と本文の形で書き、木はそれを番地にしない。残った参照があるときだけ読む。

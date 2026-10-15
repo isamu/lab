@@ -24,7 +24,9 @@ const treeRegions = (nodes: readonly StructureNode[], headings: readonly Written
     .forEach((node) => {
       while ((headings[next]?.start ?? Infinity) <= node.span.start) next += 1;
       const end = Math.min(headings[next]?.start ?? node.span.end, node.span.end);
-      regions.set(node.address, [...(regions.get(node.address) ?? []), [node.span.start, end]]);
+      const found = regions.get(node.address) ?? [];
+      found.push([node.span.start, end]);
+      regions.set(node.address, found);
     });
   return regions;
 };

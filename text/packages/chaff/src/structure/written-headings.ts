@@ -129,7 +129,9 @@ export const headingRegions = (headings: readonly WrittenHeading[], length: numb
   const regions = new Map<string, (readonly [number, number])[]>();
   headings.forEach((heading, index) => {
     const end = headings[index + 1]?.start ?? length;
-    regions.set(heading.address, [...(regions.get(heading.address) ?? []), [heading.start, end]]);
+    const found = regions.get(heading.address) ?? [];
+    found.push([heading.start, end]);
+    regions.set(heading.address, found);
   });
   return regions;
 };
