@@ -1,18 +1,29 @@
 # 年の無い日付を、どの年のものでもない日付にする言葉。date-without-year は、これがかかる日付を指さない。
 # 「毎年4月1日」は毎年の日、「例えば…4月1日に届いた場合」は例の日付で、書き足す年が無い。
 # group の無い語は、同じ文の前（かっこで切れていないところ）と、日付の並ぶ箇条書きを導く行の終わり（「例：」）にかかる。
-# group: label は、日付の入ったかっこの直前の名前にかかる（年末年始閉庁日（12月29日～1月3日））。
+# group: example はそれに加えて、同じ箇条書きの項目の終わりまでかかる。group: continues は、例の項目のすぐ次の項目の頭に
+# あれば、その項目も例の続きにする（「- もし6月25日に届いたなら…」）。group: near は、数文字あとの日付にかかる
+# （決算日は、12月31日）。group: label は、日付の入ったかっこの直前の名前にかかる（年末年始閉庁日（12月29日～1月3日））。
 id: any-year-marker
 language: ja
 entries:
   - pattern: 例えば
+    group: example
   - pattern: たとえば
+    group: example
   - pattern: 例：
   - pattern: "例:"
   - pattern: 例）
   - pattern: 例)
+  - pattern: もし
+    group: continues
+  - pattern: 仮に
+    group: continues
   - pattern: 毎年
   - pattern: 毎月
   - pattern: 例年
+  - pattern: 毎期
+  - pattern: 決算日
+    group: near
   - pattern: 年末年始
     group: label

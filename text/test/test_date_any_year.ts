@@ -4,6 +4,8 @@ import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { anyYearDate, opensSpan, type AnyYearMarker, type DateSpan } from "../packages/chaff/src/detectors/date-any-year.ts";
+import { headingNamesYear, yearLabelOf, type HeadingYearWords } from "../packages/chaff/src/detectors/date-heading-year.ts";
+import { wholeYear } from "../packages/chaff/src/detectors/date-year.ts";
 
 // 年の無い日付のうち、どの年のものでもない日付（毎年の日、例の日付）。例文はすべて自作。
 
@@ -128,6 +130,123 @@ describe("date-without-year: どの年のものでもない日付は言わない
     assert.deepEqual(namedRuleRun("date-without-year", `${EN_YEARS}${quiet}\n`, en).findings, []);
     assert.deepEqual(namedRuleRun("date-without-year", `${EN_YEARS}${quiet}\n\nThe briefing was held on October 28.\n`, en).findings, [
       '"October 28" has no year, and the document\'s dates run from 2025 to 2026, so the year is unclear',
+    ]);
+  });
+});
+
+describe("date-any-year: 例の続き、決算日", () => {
+  const EXAMPLES: readonly AnyYearMarker[] = [
+    { word: "for example", reach: "example" },
+    { word: "if", reach: "continues" },
+    { word: "例えば", reach: "example" },
+    { word: "もし", reach: "continues" },
+    { word: "fiscal year end", reach: "near" },
+    { word: "決算日", reach: "near" },
+  ];
+
+  it("例の語は、同じ箇条書きの項目の終わりまでかかり、項目の外にはかからない", () => {
+    const item = "- For example, a form sent on May 4 is late. Its reply is due on May 18.\n";
+    assert.ok(covered(item, "May 18", EXAMPLES));
+    assert.ok(!covered("For example, a form sent on May 4 is late. Its reply is due on May 18.\n", "May 18", EXAMPLES));
+    assert.ok(!covered(`${item}- The office closed on May 20.\n`, "May 20", EXAMPLES));
+  });
+
+  it("例の項目のすぐ次で if に始まる項目は、例の続きと読む", () => {
+    const list =
+      "- For example, a form sent on May 4 is due on May 18.\n- If it is instead sent on May 6, it is due on May 20.\n- If that is late too, it is due on May 27.\n";
+    assert.ok(covered(list, "May 6", EXAMPLES));
+    assert.ok(covered(list, "May 27", EXAMPLES));
+    assert.ok(covered("- 例えば5月4日に届いた場合。\n- もし5月6日に届いたなら、期限は5月20日。\n", "5月6日", EXAMPLES));
+  });
+
+  it("例の無い項目のあと、空行のあと、深さの違う項目、文の if は、例の続きと読まない", () => {
+    assert.ok(!covered("- Forms are checked weekly.\n- If one arrived on May 6, it was late.\n", "May 6", EXAMPLES));
+    assert.ok(!covered("- For example, a form sent on May 4.\n\n- If it arrived on May 6, it was late.\n", "May 6", EXAMPLES));
+    assert.ok(!covered("- For example, a form sent on May 4.\n    - If it arrived on May 6, it was late.\n", "May 6", EXAMPLES));
+    assert.ok(!covered("- For example, a form sent on May 4.\n- Iffy forms arrived on May 6.\n", "May 6", EXAMPLES));
+    assert.ok(!covered("For example, a form sent on May 4.\nIf it arrived on May 6, it was late.\n", "May 6", EXAMPLES));
+    assert.ok(!covered("- If it arrived on May 6, it was late.\n", "May 6", EXAMPLES));
+  });
+
+  it("決算日・fiscal year end のすぐ後ろの日付を読み、離れた日付と ended の日付は読まない", () => {
+    assert.ok(covered("子会社の決算日は、12月31日であります。", "12月31日", EXAMPLES));
+    assert.ok(covered("Our fiscal year end is March 31.", "March 31", EXAMPLES));
+    assert.ok(!covered("決算日の翌々日の3月5日に開いた。", "3月5日", EXAMPLES));
+    assert.ok(!covered("For the fiscal year ended March 31, sales rose.", "March 31", EXAMPLES));
+  });
+});
+
+describe("wholeYear: 一年まるごとの期間", () => {
+  it("終わりが始めの前の日なら一年", () => {
+    assert.ok(wholeYear("01-01", "12-31"));
+    assert.ok(wholeYear("04-01", "03-31"));
+    assert.ok(wholeYear("03-01", "02-28"));
+  });
+
+  it("一年でない期間、年のある日付、形の違う値は一年と読まない", () => {
+    assert.ok(!wholeYear("12-29", "01-03"));
+    assert.ok(!wholeYear("01-01", "12-30"));
+    assert.ok(!wholeYear("01-01", "01-01"));
+    assert.ok(!wholeYear("2026-01-01", "12-31"));
+    assert.ok(!wholeYear("", "12-31"));
+    assert.ok(!wholeYear("01-01", "garbage"));
+  });
+});
+
+describe("headingNamesYear: 年を名指す見出し", () => {
+  const WORDS: HeadingYearWords = { eras: ["令和"], labels: [yearLabelOf("FY{y}"), yearLabelOf("fiscal year {y}")].flatMap((label) => label ?? []) };
+  const NONE: HeadingYearWords = { eras: [], labels: [] };
+
+  it("数字の年、元号の年、年度の名前を読む", () => {
+    assert.ok(headingNamesYear("2026年度の予定", WORDS));
+    assert.ok(headingNamesYear("2026年度", NONE));
+    assert.ok(headingNamesYear("Events in 2026", WORDS));
+    assert.ok(headingNamesYear("令和8年の行事", WORDS));
+    assert.ok(headingNamesYear("令和元年度", WORDS));
+    assert.ok(headingNamesYear("FY27-Q2 (May 1)", WORDS));
+    assert.ok(headingNamesYear("fy2027 plan", WORDS));
+    assert.ok(headingNamesYear("Fiscal Year 27", WORDS));
+  });
+
+  it("年でない数、語の途中、年の無い名前、語の無い表は読まない", () => {
+    assert.ok(!headingNamesYear("Schedule", WORDS));
+    assert.ok(!headingNamesYear("Top 300 tasks", WORDS));
+    assert.ok(!headingNamesYear("Room 12034", WORDS));
+    assert.ok(!headingNamesYear("令和の行事", WORDS));
+    assert.ok(!headingNamesYear("SPFY27 code", WORDS));
+    assert.ok(!headingNamesYear("FY plan", WORDS));
+    assert.ok(!headingNamesYear("FY123 plan", WORDS));
+    assert.ok(!headingNamesYear("FY27-Q2", NONE));
+    assert.ok(!headingNamesYear("", WORDS));
+    assert.equal(yearLabelOf("Q{n}"), undefined);
+    assert.equal(yearLabelOf("fiscal year ending {_} {e}"), undefined);
+  });
+});
+
+describe("date-without-year: 見出しの年、例の続き、毎年の期間", () => {
+  const JA_YEARS = "# 手引\n\n2025年10月1日に改め、2026年4月1日に施行した。\n\n";
+  const EN_YEARS = "# Guide\n\nRevised on October 1, 2025 and in force from April 1, 2026.\n\n";
+
+  it("年を名指す見出しの下の日付、決算日、一年の期間を言わず、年の無い見出しの下の日付は言う", () => {
+    const quiet = [
+      "## 令和8年度の予定\n\n- 5月10日：説明会\n- 6月1日：締切",
+      "## 決算\n\n子会社の決算日は、12月31日であります。事業年度は4月1日から3月31日までです。",
+    ].join("\n\n");
+    assert.deepEqual(namedRuleRun("date-without-year", `${JA_YEARS}${quiet}\n`, ja).findings, []);
+    assert.deepEqual(namedRuleRun("date-without-year", `${JA_YEARS}${quiet}\n\n## 今後\n\n説明会は10月28日に開く。\n`, ja).findings, [
+      "「10月28日」には年がありません。この文書の日付は 2025年から2026年にわたるので、どの年か決まりません",
+    ]);
+  });
+
+  it("英語で、年度の見出し、例の続き、暦年の期間を言わず、年の無い見出しの下の会議は言う", () => {
+    const quiet = [
+      "## FY27-Q2 (May 1)\n\n- **Jan 12**: nominations open\n- **May 1**: changes take effect",
+      "## Pay changes\n\n- For example, a change made on June 22 takes effect on June 16. The next cut-off is June 23.\n- If the change is instead made on June 25, it takes effect on July 1.",
+      "## Allowance\n\nThe allowance resets each calendar year (January 1 to December 31).",
+    ].join("\n\n");
+    assert.deepEqual(namedRuleRun("date-without-year", `${EN_YEARS}${quiet}\n`, en).findings, []);
+    assert.deepEqual(namedRuleRun("date-without-year", `${EN_YEARS}${quiet}\n\n## Meetings\n\nThe board met on March 12.\n`, en).findings, [
+      '"March 12" has no year, and the document\'s dates run from 2025 to 2026, so the year is unclear',
     ]);
   });
 });
