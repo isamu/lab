@@ -1,9 +1,11 @@
 # Small words inside a Title Case name ("Foundations of Statistics", "Bank of the West"). name-variant reads capitalised
 # words across them as one name when it compares names written with the same words in another order. "and", "to" and
-# "with" are left out: across them stand two names ("Texas and Florida"), not one.
+# "with" are left out: across them stand two names ("Texas and Florida"), not one. An article (group: article) joins only
+# right after another small word ("of the"): alone it starts a new phrase ("this Agreement the Stockholders").
 id: name-title-joiner
 language: en
 entries:
   - pattern: of
   - pattern: for
   - pattern: the
+    group: article
