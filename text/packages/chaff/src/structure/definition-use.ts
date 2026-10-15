@@ -1,6 +1,19 @@
 import type { Span, StructureNode } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { inDocumentOrder } from "./issues.ts";
+import { isTitleWords } from "./contents-lines.ts";
+import {
+  definingNameOf,
+  echoesName,
+  endsLatinName,
+  followsSelfPrefix,
+  glossedWithName,
+  MIN_ECHO,
+  nameBefore,
+  namesItself,
+  sharedTail,
+  type DefiningName,
+} from "./defining-names.ts";
 
 // 定義した語が本文で使われているか、定義より前に使われていないか。どちらも木の定義と、本文の文の字面だけで決まる。
 
@@ -135,6 +148,24 @@ const LABEL_SLACK = 3;
 const isLabel = (body: BodyText | undefined, term: string): boolean =>
   body !== undefined && (body.text.replaceAll(term, "").match(LETTER) ?? []).length <= LABEL_SLACK;
 
+/** 番地の後ろの、条の題の始まり（Section 1.1   Closing. の Closing）。 */
+const AFTER_ADDRESS = /\d\.?\s+(?=\p{Lu})/gu;
+/** 文の終わりまでが、文の終わりの印を一つしか持たない（題の終わりの点）。 */
+const CAPTION_TO_END = /^[^.!?。]*[.。]?$/u;
+
+/**
+ * 条の題の中か。番地の後ろに題を置いて文がその題で終わる所（Section 1.1 Closing.）か、文が題だけのもの（Section 6.06. の後ろの
+ * Financing Covenant.、Company Stockholder Meeting; Company Proxy Statement.）。
+ */
+const insideCaption = (body: BodyText | undefined, offset: number): boolean => {
+  if (body === undefined) return false;
+  const at = offset - body.start;
+  const starts = [...body.text.matchAll(AFTER_ADDRESS)].filter((start) => start.index + start[0].length <= at);
+  const last = starts.at(-1);
+  const caption = last === undefined ? body.text : body.text.slice(last.index + last[0].length);
+  return CAPTION_TO_END.test(caption.trimEnd()) && isTitleWords(caption);
+};
+
 /** 文書の位置が、題・見出し・条の見出しの行にあるか。見出しは節の中身に名前を付けるだけで、語を使った所ではない。 */
 export type IsTitle = (offset: number) => boolean;
 
@@ -167,24 +198,6 @@ const insideKatakanaName = (texts: readonly BodyText[], term: string, offset: nu
   const joinedBefore = at > 0 && katakanaJoins(body.text.charAt(at - 1), at > 1 ? body.text.charAt(at - 2) : "");
   const joinedAfter = katakanaJoins(body.text.charAt(end), body.text.charAt(end + 1));
   return (KATAKANA.test(term.charAt(0)) && joinedBefore) || (KATAKANA.test(term.at(-1) ?? "") && joinedAfter);
-};
-
-/** 長い名前の写しと読むのに、語の前で定義の名前と重ならなければならない字の数（手引き の前の「の」と「成」）。 */
-const MIN_ECHO = 2;
-const OPENING_BRACKET = /[\s（(]/u;
-
-/** 定義の括弧を開けた字（（、空白）を後ろから外した、括弧の前の名前。 */
-const nameBefore = (text: string): string => {
-  let end = text.length;
-  while (end > 0 && OPENING_BRACKET.test(text.charAt(end - 1))) end -= 1;
-  return text.slice(0, end);
-};
-
-/** 二つの文字列が後ろから何字重なるか。 */
-const sharedTail = (left: string, right: string): number => {
-  let shared = 0;
-  while (shared < left.length && shared < right.length && left.at(-1 - shared) === right.at(-1 - shared)) shared += 1;
-  return shared;
 };
 
 /**
@@ -229,10 +242,55 @@ const CAPITAL_OR_NON_LATIN = /\p{Lu}|[^\p{Script=Latin}\p{N}\s\p{P}]/u;
  */
 const isDistinctive = (term: string): boolean => CAPITAL_OR_NON_LATIN.test(term) && !SINGLE_KANJI.test(term);
 
+/** 文の途中の定義ごとの、括弧の前の名前。 */
+const definingNames = (terms: readonly DefinedTerm[], texts: readonly BodyText[]): Map<DefinedTerm, DefiningName> =>
+  new Map(
+    terms.flatMap((term): [DefinedTerm, DefiningName][] => {
+      const sentence = term.inline ? sentenceAt(texts, term.span.start) : undefined;
+      return sentence === undefined ? [] : [[term, definingNameOf(sentence, term.span.start, term.span.end, term.term)]];
+    }),
+  );
+
+/**
+ * 語を含む、もっと長い名前の中の現れか。別の語の定義の中（(the "Certificate of Merger") の Certificate）、もっと長い定義した語
+ * （NFLN Agreement の NFLN）、定義の括弧の前の名前の写し（Board of Directors）、大文字の語に続く英語の名前の終わり。
+ */
+type InsideLongerName = (term: string, offset: number) => boolean;
+
+const insideLongerNameIn = (texts: readonly BodyText[], terms: readonly DefinedTerm[], names: ReadonlyMap<DefinedTerm, DefiningName>): InsideLongerName => {
+  const spans = terms.map((term) => term.span);
+  const longNames = [...new Set([...[...names.values()].map((defining) => defining.name), ...terms.map((term) => term.term)])];
+  return (term, offset) => {
+    if (inside(offset, spans)) return true;
+    const sentence = sentenceAt(texts, offset);
+    if (sentence === undefined) return false;
+    const at = offset - sentence.start;
+    return endsLatinName(sentence, at, term) || longNames.some((name) => name.includes(term) && echoesName(sentence, at, term, name));
+  };
+};
+
+/**
+ * 前で書いても読み手が分かる所。文書自身の名前と定義した語（この就業規則（以下「規則」））を同じ頭を付けて書いた所（この規則は、…）と、
+ * すぐ後ろの括弧に定義の長い名前を書き添えた所（こども性暴力防止法（…に関する法律））。
+ */
+const explainedInPlace = (
+  texts: readonly BodyText[],
+  term: string,
+  defining: DefiningName | undefined,
+  prefixes: readonly string[],
+  offset: number,
+): boolean => {
+  const sentence = sentenceAt(texts, offset);
+  if (defining === undefined || sentence === undefined) return false;
+  const at = offset - sentence.start;
+  return (namesItself(defining, prefixes) && followsSelfPrefix(sentence, at, prefixes)) || glossedWithName(sentence, at, term, defining.name);
+};
+
 /**
  * 文の途中で括弧に入れて定義した語（(the "Seller")、以下「甲」という）を、その定義の文より前で使っている所。最初の一つだけ。
  * 定義の文の中の現れ（株式会社GovTech東京（以下「GovTech東京」という。））は、定義する名前そのものなので数えない。札の文も、
- * isTitle が言う題・見出しの行も、漢字で終わる語にさらに漢字が続く長い語の一部も、定義の括弧の前の長い名前を写した所も数えない。
+ * isTitle が言う題・見出し・目次の行も、漢字で終わる語にさらに漢字が続く長い語の一部も、定義の括弧の前の長い名前を写した所も、
+ * 語を含むもっと長い名前の中も数えない。文書自身の名前を定義した語は、selfPrefixes（この、本、this）を付けて前で書いても数えない。
  * 定義の条（"Seller" means、「甲」とは）は条の並びの頭にも終わりにも置く書き方があるので、前で使っても言わない。
  * 定義の語の無い括弧の引用（("The key point is")）は例の引用と同じ形なので、その語を引用符で挙げただけの現れ
  * （Its sentences open with "The key point is"）は使用ではない。定義の語のある定義（(the "Seller")、以下「買主」という）は、
@@ -243,21 +301,28 @@ export const usesBeforeDefinition = (
   texts: readonly BodyText[],
   mentioned: Mentioned = NEVER_MENTIONED,
   isTitle: IsTitle = NEVER_TITLE,
-): TermUse[] =>
-  groupsOf(terms)
+  selfPrefixes: readonly string[] = [],
+): TermUse[] => {
+  const inline = terms.filter((term) => term.inline);
+  const names = definingNames(terms, texts);
+  const insideLongerName = insideLongerNameIn(texts, terms, names);
+  return groupsOf(terms)
     .filter((group) => group.first.inline && isDistinctive(group.first.term))
     .flatMap(({ first: defined, spans }) => {
-      const inline = terms.filter((term) => term.inline);
       const defining = sentenceAt(texts, defined.span.start)?.start ?? defined.span.start;
-      const uses = usesOf(defined.term, texts, spans, "exact", defined.bare === true ? mentioned : NEVER_MENTIONED);
+      const uses = usesOf(defined.term, texts, spans, "exact", defined.bare === true ? mentioned : NEVER_MENTIONED).filter((offset) => offset < defining);
       const first = uses.find(
         (offset) =>
           !isLabel(sentenceAt(texts, offset), defined.term) &&
+          !insideCaption(sentenceAt(texts, offset), offset) &&
           !isTitle(offset) &&
           !continuesInHan(texts, defined.term, offset) &&
           !insideKatakanaName(texts, defined.term, offset) &&
           !echoesLongName(texts, defined, offset) &&
-          !insideDefiningName(texts, inline, defined, offset),
+          !insideDefiningName(texts, inline, defined, offset) &&
+          !insideLongerName(defined.term, offset) &&
+          !explainedInPlace(texts, defined.term, names.get(defined), selfPrefixes, offset),
       );
-      return first !== undefined && first < defining ? [{ term: defined, offset: first }] : [];
+      return first === undefined ? [] : [{ term: defined, offset: first }];
     });
+};
