@@ -134,17 +134,23 @@ const MAX_PARAGRAPH_HEAD = 40;
 /** 文の終わりか続きの印。これで終わる行は小見出しではない。 */
 const SENTENCE_END = /[.!?。．！？:：;；,、，]$/u;
 const NOT_PLAIN_LINE = /^[ \t]*(?:[#>|]|```|~~~)/u;
+/** setext の見出しの下線。上の行は見出しで、節として木が分ける。 */
+const SETEXT_UNDERLINE = /^[ \t]*(?:=+|-+)[ \t]*$/u;
 
 /**
  * 段落の頭の、短い名前だけの行（「Example」「Element 1 (standard rated portion)」「例」）。文の終わりの印も値も無く、項目や表の行でもない。
  * 例や場合ごとに名前を付けた段落の頭で、続く値はその例の値。
  */
+const isNameOnly = (line: string): boolean => {
+  const text = line.trim();
+  if (text === "" || text.length > MAX_PARAGRAPH_HEAD) return false;
+  return /\p{L}/u.test(text) && !SENTENCE_END.test(text) && !LIST_ITEM.test(line) && !NOT_PLAIN_LINE.test(line);
+};
+
 const isParagraphHead = (lines: readonly Line[], index: number, valueLines: ReadonlySet<number>): boolean => {
-  const text = lines[index]?.text.trim() ?? "";
-  const before = lines[index - 1];
-  if (text === "" || text.length > MAX_PARAGRAPH_HEAD || (before !== undefined && before.text.trim() !== "")) return false;
-  const line = lines[index]?.text ?? "";
-  return /\p{L}/u.test(text) && !SENTENCE_END.test(text) && !LIST_ITEM.test(line) && !NOT_PLAIN_LINE.test(line) && !valueLines.has(index);
+  const startsParagraph = (lines[index - 1]?.text.trim() ?? "") === "";
+  const isSetextHeading = SETEXT_UNDERLINE.test(lines[index + 1]?.text ?? "");
+  return startsParagraph && !isSetextHeading && !valueLines.has(index) && isNameOnly(lines[index]?.text ?? "");
 };
 
 /** 小見出しの代わりの行の数に、段落の頭の名前だけの行も数える。 */
