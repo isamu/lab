@@ -49,7 +49,6 @@ const findingsOf =
           values: { ...issue.values, offset: issue.offset },
         }));
 
-/** 「section 21 notice」のように番号を名前の一部にする語は、言語の語彙表（section-name-noun）が持つ。 */
 export const danglingReference: Detector = (doc, options) =>
   findingsOf("dangling-reference", (tree, source) => danglingReferences(tree, source, patternsOf(doc, "section-name-noun")))(doc, options);
 /** Markdown の HTML ブロックの中の条は木に入らない。そこを挟んだ抜けは、見えなかった番号かもしれない。 */
