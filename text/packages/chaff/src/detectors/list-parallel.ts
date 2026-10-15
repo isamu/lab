@@ -77,10 +77,14 @@ const isBaseVerb = (token: Token | undefined): boolean =>
   token?.pos === "VERB" && token.features?.["VerbForm"] === undefined && token.lemma === token.surface.toLowerCase();
 
 /**
- * An -ed word the tagger left without VerbForm (decreased, unauthorized): like a participle, it may modify the noun after
- * it. Proceed and need end in -ed too but are base forms.
+ * An -ed word the tagger left without VerbForm (decreased, agreed, unauthorized): like a participle, it may modify the noun
+ * after it. Proceed and need end in -ed too but are their own base forms.
  */
-const isPastForm = (token: Token): boolean => token.pos === "VERB" && token.features?.["VerbForm"] === undefined && /[^e]ed$/iu.test(token.surface);
+const isPastForm = (token: Token): boolean =>
+  token.pos === "VERB" &&
+  token.features?.["VerbForm"] === undefined &&
+  /ed$/iu.test(token.surface) &&
+  (token.lemma !== token.surface.toLowerCase() || !/eed$/iu.test(token.surface));
 
 /** An -s word read as a verb that the tagger could not take back to a base form (Revisions): a plural noun, misread. Discuss and Focus are verbs. */
 const isMisreadPlural = (token: Token): boolean =>

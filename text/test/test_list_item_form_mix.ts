@@ -159,6 +159,11 @@ describe("list-item-form-mix: an imperative or a compound noun the tagger misrea
     ["Running the tests", undefined],
     ["The configuration of the server", "noun"],
     ["Separate bathroom and toilet", "noun"],
+    ["Agreed terms", undefined],
+    ["Freed records", undefined],
+    ["Proceed to checkout", "verb"],
+    ["The report to review", "noun"],
+    ["Report, review and close tickets", "verb"],
   ];
   heads.forEach(([item, form]) => {
     it(`head: ${item} → ${String(form)}`, () => {
