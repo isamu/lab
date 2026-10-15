@@ -1,5 +1,6 @@
 import type { Detector, Finding, Span } from "../plugin.ts";
 import { latinCompanyFormRegExp, latinCompanyFormSpans } from "../latin-company-form.ts";
+import { firstEndingAfter } from "../soft-break.ts";
 import { quoteAround } from "./quote-around.ts";
 
 /**
@@ -33,9 +34,15 @@ const withoutWordDot = (text: string, found: DoubledMarks): DoubledMarks =>
     ? { start: found.start, run: found.run.slice(0, -1) }
     : found;
 
-/** 並びのうち、英字の会社の形（CO.，LTD.、INC.）の中の印の数。形の点や「，」は名前の一部で、並びの印ではない。 */
-const marksInNames = ({ start, run }: DoubledMarks, names: readonly Span[]): number =>
-  [...run].filter((_, at) => names.some((name) => start + at >= name.start && start + at < name.end)).length;
+/**
+ * 並びのうち、英字の会社の形（CO.，LTD.、INC.）の中の印の数。形の点や「，」は名前の一部で、並びの印ではない。
+ * names は昇順で重ならない（正規表現の順の一致）。並びに掛かりうるのは、並びの終わる前に始まる高々 run.length 個の形。
+ */
+const marksInNames = ({ start, run }: DoubledMarks, names: readonly Span[]): number => {
+  const first = firstEndingAfter(names, start);
+  const near = names.slice(first, first + run.length);
+  return [...run].filter((_, at) => near.some((name) => start + at >= name.start && start + at < name.end)).length;
+};
 
 const isSlip = (text: string, found: DoubledMarks, names: readonly Span[]): boolean => {
   const { start, run } = found;
