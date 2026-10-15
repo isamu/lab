@@ -1,0 +1,11 @@
+# Words in the request that say when relative to something else ("after you submit", "in advance"). The date is not
+# given, but when to act is. Counted only in the request itself: the next sentence's "after that" is about something else.
+id: request-timing
+language: en
+entries:
+  - pattern: after you
+  - pattern: once you
+  - pattern: in advance
+  - pattern: beforehand
+  - pattern: at the time of
+  - pattern: upon receipt

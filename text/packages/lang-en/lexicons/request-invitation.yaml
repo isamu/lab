@@ -1,0 +1,10 @@
+# Invitation verbs. Right at the request ("please come", "please join us"), coming is the reader's choice: nothing is to be finished.
+id: request-invitation
+language: en
+entries:
+  - pattern: come
+  - pattern: join us
+  - pattern: visit
+  - pattern: drop by
+  - pattern: stop by
+  - pattern: consult
