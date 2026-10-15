@@ -210,12 +210,15 @@ describe("capitalisedTerms", () => {
     assert.deepEqual(terms("under the Federal Food , Drug , and Cosmetic Act ."), []);
     assert.deepEqual(terms("for the Proprietary Data , Cosmetic Act ."), ["Proprietary Data"]);
     assert.deepEqual(terms("to the Master Plan , Harbour Inc ."), ["Master Plan"]);
+    assert.deepEqual(terms("for the Proprietary Data , Drug and Cosmetic Act ."), ["Proprietary Data"]);
     assert.deepEqual(terms("under the Proposition\n\n65 ."), ["Proposition"]);
   });
 
   it("leaves a run defined by the brackets after it, spelt out from a defined acronym, or naming a party's capacity", () => {
     assert.deepEqual(terms('for a Certificate of Analysis ( "COA" ) .'), []);
     assert.deepEqual(terms('for the Food and Drug Administration ( the "FDA" ) .'), []);
+    assert.deepEqual(terms('between Harbour Data ( "Buyer" or "HD" ) .'), []);
+    assert.deepEqual(terms('for the Proprietary Data ( "including records" ) .'), ["Proprietary Data"]);
     assert.deepEqual(terms("on the Closing ( as defined in the Merger Act ) ."), []);
     assert.deepEqual(terms("for the Proprietary Data ( see below ) ."), ["Proprietary Data"]);
     assert.deepEqual(terms("under the Internal Audit Team .", { named: ["IAT"] }), []);

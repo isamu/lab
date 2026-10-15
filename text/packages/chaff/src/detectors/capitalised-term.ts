@@ -131,22 +131,27 @@ const lastWordsOf = (entries: readonly string[]): Set<string> =>
       .map((word) => word.replace(/\.$/u, "")),
   );
 
+/** Commas in a serial name's list (Federal Food, Drug, and Cosmetic Act). */
+const SERIAL_COMMAS = 2;
+
 type NameEnds = { readonly names: ReadonlySet<string>; readonly forms: ReadonlySet<string>; readonly formEntries: ReadonlySet<string> };
 
 /**
  * Across a comma, a company form or a place ends the run's name only as the whole of what follows the comma (Post
- * Holdings, Inc; London, United Kingdom), and a name word only inside a serial list closed by a joiner (Federal Food,
- * Drug, and Cosmetic Act): Confidential Information, Receiving Party and Servicer, Navistar Securities Corporation are
- * two things each.
+ * Holdings, Inc; London, United Kingdom), and a name word only at the end of a serial list of two commas, the last
+ * followed by a joiner (Federal Food, Drug, and Cosmetic Act): Confidential Information, Receiving Party and Servicer,
+ * Navistar Securities Corporation are two things each.
  */
 const endsName = (glued: readonly Token[], at: number, ends: NameEnds, joiners: ReadonlySet<string>): boolean => {
   const surface = glued[at]?.surface ?? "";
   const before = glued.slice(0, at);
-  const comma = before.map((token) => token.surface).lastIndexOf(",");
+  const surfaces = before.map((token) => token.surface);
+  const comma = surfaces.lastIndexOf(",");
   if (comma === -1) return ends.forms.has(surface) || ends.names.has(surface);
   const afterComma = glued.slice(comma + 1, at + 1);
   if (ends.formEntries.has(afterComma.map((token) => token.surface).join(" "))) return true;
-  return ends.names.has(surface) && afterComma.some((token) => joiners.has(token.surface));
+  const commas = surfaces.filter((each) => each === ",").length;
+  return ends.names.has(surface) && commas >= SERIAL_COMMAS && joiners.has(afterComma[0]?.surface ?? "");
 };
 
 /** The run only starts a longer name: the words after it, joined by commas, ampersands and joiners, reach a word that ends a name. */
@@ -163,23 +168,28 @@ const startsLongerName = (tokens: readonly Token[], end: number, ends: NameEnds,
 /** A number right after the run makes it a numbered name (Proposition 65, Vaccines 2Go) or a contents line's page. */
 const numberedName = (last: Token, after: Token | undefined): boolean => after !== undefined && adjacent(last, after) && DIGIT_START.test(after.surface);
 
+/** The words as written and with their first letter capitalised (the, The), as one alternation. */
 const alternativesOf = (words: readonly string[]): string =>
   words
     .filter((word) => word !== "")
+    .flatMap((word) => [word, word.charAt(0).toUpperCase() + word.slice(1)])
     .map(escapeRegExp)
     .join("|");
+
+/** A quoted label: a capitalised word or more in quotes, closing the brackets or followed by another label ("Buyer" or "PNC"). */
+const QUOTED_LABEL = String.raw`["“]\p{Lu}[^"“”\n]{0,60}["”][ \t]*(?:\)|,|;|or[ \t]|and[ \t])`;
 
 /**
  * Brackets right after a run that define it, so the run is what a definition names, not a term in use: a quoted label
  * (Food and Drug Administration (the "FDA"), Certificate of Analysis ("COA")) or a pointer to where it is defined
- * (Closing (as defined in the Merger Agreement)).
+ * (Closing (as defined in the Merger Agreement)). A quoted phrase in lower case (("including records")) is no label.
  */
 const definitionAfterPattern = (words: CapitalisedWords): RegExp => {
   const markers = alternativesOf(words.definitionMarkers);
   const elsewhere = alternativesOf(words.definedElsewhere);
-  const label = markers === "" ? `["“]` : String.raw`(?:(?:${markers})\s+)*["“]`;
+  const label = markers === "" ? QUOTED_LABEL : String.raw`(?:(?:${markers})[ \t]+)*${QUOTED_LABEL}`;
   const opening = elsewhere === "" ? label : String.raw`(?:${label}|(?:${elsewhere})(?!\p{L}))`;
-  return new RegExp(String.raw`^[ \t]*\([ \t]*${opening}`, "iu");
+  return new RegExp(String.raw`^[ \t]*\([ \t]*${opening}`, "u");
 };
 
 /** How much text after a run the bracket check reads. */
