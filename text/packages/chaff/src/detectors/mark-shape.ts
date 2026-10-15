@@ -1,6 +1,7 @@
 import type { Detector, Finding, Lexicon, ProseDocument, Sentence } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { minorityReport } from "../spacing-minority.ts";
+import { formulaBracketSpans } from "../formula-brackets.ts";
 import { isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { captionsOf, isCaptionAt } from "./caps-caption.ts";
 
@@ -43,15 +44,17 @@ const besideLetter = (text: string, at: number, step: number, script: RegExp): b
 const touchesScript = (text: string, at: number, script: RegExp): boolean => besideLetter(text, at, -1, script) || besideLetter(text, at, 1, script);
 
 /**
- * The marks in a sentence that touch a letter of the document's script, outside 「」『』 quotations. spaced is the lexicon's pattern side.
+ * The marks in a sentence that touch a letter of the document's script, outside 「」『』 quotations and outside the brackets
+ * of a formula (× (1 - 時間 ÷ 月平均)), which follow the formula's notation. spaced is the lexicon's pattern side.
  * The letters beside a mark are read in the source, so a mark that opens a sentence (。(2）当社) counts wherever the sentence starts.
  */
 export const marksIn = (source: string, sentence: Sentence, forms: ReadonlyMap<string, Form>, script: RegExp): Mark[] => {
   const quoted = quotedSpans(sentence.text);
+  const formulas = formulaBracketSpans(sentence.text);
   return sentence.text.split("").flatMap((char, at) => {
     const form = forms.get(char);
     if (form === undefined || !touchesScript(source, sentence.span.start + at, script)) return [];
-    if (isWithinAny(quoted, { start: at, end: at })) return [];
+    if (isWithinAny(quoted, { start: at, end: at }) || isWithinAny(formulas, { start: at, end: at + 1 })) return [];
     return [{ sentence, char, form, offset: sentence.span.start + at, spaced: form.side }];
   });
 };
