@@ -41,12 +41,25 @@ const CAPITALISED = "\\p{Lu}[\\p{L}'’-]*";
 
 const FIRST_WORD = new RegExp(`^${CAPITALISED}[ \\t]+`, "u");
 
+/** 小さな語の並び。冠詞（the）は前置詞（of、for）のすぐ後ろにだけ立つ（Bank of the West）。 */
+const joinerPattern = (joiners: readonly string[], articles: readonly string[]): string => {
+  if (joiners.length === 0) return "";
+  const article = articles.length === 0 ? "" : `(?:(?:${articles.map(escapeRegExp).join("|")})[ \\t]+)?`;
+  return `(?:(?:${joiners.map(escapeRegExp).join("|")})[ \\t]+${article})*`;
+};
+
 /**
- * 大文字で始まる語が二つ以上並んだ所（Foundations of Statistics）。語のあいだに小さな語（of）を挟んでよい。文の頭の語は、
- * 文の頭だから大文字のことがあるので、外す（Take Data Lab の Take）。
+ * 大文字で始まる語が二つ以上並んだ所（Foundations of Statistics）。語のあいだに小さな語（of、of the）を挟んでよい。冠詞だけを
+ * 挟んだ二つの語（this Agreement the Stockholders）は、句の切れ目をまたぐので一つの名前にしない。文の頭の語は、文の頭だから
+ * 大文字のことがあるので、外す（Take Data Lab の Take）。
  */
-export const titleCaseSpans = (text: string, joiners: readonly string[], isSentenceStart: (offset: number) => boolean = () => false): NameSpan[] => {
-  const joiner = joiners.length === 0 ? "" : `(?:(?:${joiners.map(escapeRegExp).join("|")})[ \\t]+)*`;
+export const titleCaseSpans = (
+  text: string,
+  joiners: readonly string[],
+  isSentenceStart: (offset: number) => boolean = () => false,
+  articles: readonly string[] = [],
+): NameSpan[] => {
+  const joiner = joinerPattern(joiners, articles);
   const pattern = new RegExp(`(?<![\\p{L}'’-])${CAPITALISED}(?:[ \\t]+${joiner}${CAPITALISED})+`, "gu");
   return [...text.matchAll(pattern)].map((found) => {
     const start = found.index ?? 0;
@@ -112,13 +125,18 @@ export const orderNamesOf = (text: string, spans: readonly NameSpan[], words: re
     .toSorted((left, right) => left.offset - right.offset);
 };
 
-type Tally = { readonly first: OrderName; readonly count: number; readonly anchored: boolean };
+type Tally = { readonly first: OrderName; readonly count: number; readonly anchored: boolean; readonly offsets: readonly number[] };
 
 const talliesOf = (names: readonly OrderName[]): Tally[] => [
   ...names
     .reduce<Map<string, Tally>>((tallies, name) => {
       const known = tallies.get(name.surface);
-      return tallies.set(name.surface, { first: known?.first ?? name, count: (known?.count ?? 0) + 1, anchored: (known?.anchored ?? false) || name.anchored });
+      return tallies.set(name.surface, {
+        first: known?.first ?? name,
+        count: (known?.count ?? 0) + 1,
+        anchored: (known?.anchored ?? false) || name.anchored,
+        offsets: [...(known?.offsets ?? []), name.offset],
+      });
     }, new Map())
     .values(),
 ];
@@ -135,15 +153,30 @@ export const isReordered = (left: OrderName, right: OrderName): boolean =>
   !left.surface.includes(right.surface) &&
   !right.surface.includes(left.surface);
 
+/** 文の番号。同じ文の二つの書き方を見分けるため。 */
+export type SentenceOf = (offset: number) => number;
+
+/** 二つの書き方を、どこかで同じ文に並べて書いたか（“Request Additional Time” or “Additional Time Requests”）。 */
+const sharesSentence = (left: Tally, right: Tally, sentenceOf: SentenceOf): boolean => {
+  const sentences = new Set(left.offsets.map(sentenceOf));
+  return right.offsets.some((offset) => sentences.has(sentenceOf(offset)));
+};
+
 /**
  * 多く使った書き方と同じ語を違う順に並べた名前。少ないほうを一つずつ指す。二つのどちらかが名前として書いた所（anchored）に
- * あるときだけ。surfaces は表の升まるごとの書き方で、その書き方の名前も anchored と見る。
+ * あるときだけ。surfaces は表の升まるごとの書き方で、その書き方の名前も anchored と見る。同じ文に並べて書いた二つは、書き手が
+ * 言い分けた別の名前（画面の二つの項目、定義する語とその中身）なので比べない。
  */
-export const wordOrderVariants = (names: readonly OrderName[], surfaces: ReadonlySet<string> = new Set()): OrderVariant[] => {
+export const wordOrderVariants = (
+  names: readonly OrderName[],
+  surfaces: ReadonlySet<string> = new Set(),
+  sentenceOf: SentenceOf = (offset) => offset,
+): OrderVariant[] => {
   const tallies = talliesOf(names).toSorted(byUse);
   const anchored = (tally: Tally): boolean => tally.anchored || surfaces.has(tally.first.surface);
+  const apart = (left: Tally, right: Tally): boolean => !sharesSentence(left, right, sentenceOf);
   return tallies.flatMap((tally, index) => {
-    const usual = tallies.slice(0, index).find((other) => (anchored(other) || anchored(tally)) && isReordered(other.first, tally.first));
+    const usual = tallies.slice(0, index).find((other) => (anchored(other) || anchored(tally)) && isReordered(other.first, tally.first) && apart(other, tally));
     return usual === undefined ? [] : [{ name: tally.first, usual: usual.first.surface }];
   });
 };
