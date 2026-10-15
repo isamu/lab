@@ -2,6 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { adapter } from "../packages/lang-ja/src/index.ts";
 import { insideBrackets, startsWithCloser } from "../packages/lang-ja/src/inside-brackets.ts";
+import { pairMixedWidthBrackets } from "../packages/lang-ja/src/mixed-width-bracket.ts";
 
 // 括弧・引用符の中の句点は文を閉じない。sentence-splitter は同じ種類の括弧が入れ子になると数え損ね（「（…（…）…。以下同じ。）に」）、
 // 曲がった二重引用符（“…”）は組として数えない。そこで切れた文を、括弧・引用符が閉じるまでつなぐ。
@@ -129,5 +130,53 @@ describe("startsWithCloser: 閉じ括弧・閉じの二重引用符で始まる�
     ["空白だけ", "  ", false],
   ].forEach(([label, text, expected]) => {
     it(String(label), () => assert.equal(startsWithCloser(String(text)), expected));
+  });
+});
+
+describe("幅の違う閉じで閉じる番号（(1）、（注)）", () => {
+  it("番号の後の句点で切る。開いた括弧が節の終わりまで続かない", () => {
+    const source = "(1）方針当社は品質を第一とします。次の年も続けます。 (2）計画新しい計画を立てました。";
+    assert.deepEqual(textsOf(source), ["(1）方針当社は品質を第一とします。", "次の年も続けます。", "(2）計画新しい計画を立てました。"]);
+    assert.deepEqual(textsOf("前期は（△)減少した。今期は増えた。"), ["前期は（△)減少した。", "今期は増えた。"]);
+    assert.deepEqual(textsOf("[注］数字は概算です。表を見てください。"), ["[注］数字は概算です。", "表を見てください。"]);
+  });
+
+  it("文の位置は元の文字列のまま", () => {
+    const source = "(1）方針を定めた。(2）計画を立てた。";
+    adapter.segment(source).sentences.forEach((sentence) => assert.equal(source.slice(sentence.span.start, sentence.span.end), sentence.text));
+  });
+
+  it("同じ幅で閉じる括弧の中の句点では、前と同じく切らない", () => {
+    assert.deepEqual(textsOf("費用は(交通費を含む。)本部が持つ。"), ["費用は(交通費を含む。)本部が持つ。"]);
+    assert.deepEqual(textsOf("費用は（交通費を含む。）本部が持つ。"), ["費用は（交通費を含む。）本部が持つ。"]);
+  });
+});
+
+describe("pairMixedWidthBrackets: 短い番号の開きを閉じと同じ幅に", () => {
+  [
+    ["半角の開き・全角の閉じ", "(1）方針", "（1）方針"],
+    ["全角の開き・半角の閉じ", "（△)減少", "(△)減少"],
+    ["略号", "(株）と（GGP24)", "（株）と(GGP24)"],
+    ["角括弧", "[注］と［1]", "［注］と[1]"],
+    ["外の括弧の中の番号", "（詳細は(2）を参照）", "（詳細は（2）を参照）"],
+  ].forEach(([label, text, expected]) => {
+    it(`valid: ${String(label)}`, () => assert.equal(pairMixedWidthBrackets(String(text)), expected));
+  });
+
+  [
+    ["同じ幅の組は替えない", "(1)と（2）"],
+    ["中身に空白がある", "(see 1）"],
+    ["中身が長い", "(これは長い中身の括弧です）"],
+    ["中身に同じ種類の括弧がある", "(a（b）c)"],
+    ["中身が空", "(）"],
+    ["行をまたがない", "(1\n）"],
+    ["閉じの無い開き", "(1 と書いた"],
+    ["空", ""],
+  ].forEach(([label, text]) => {
+    it(`abnormal: ${String(label)}`, () => assert.equal(pairMixedWidthBrackets(String(text)), String(text)));
+  });
+
+  it("長さを変えない", () => {
+    ["(1）", "（△)", "[注］", "𝐀(1）𝐀"].forEach((text) => assert.equal(pairMixedWidthBrackets(text).length, text.length));
   });
 });
