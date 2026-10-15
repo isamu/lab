@@ -5,6 +5,7 @@ export type OrganisationWords = { readonly forms: readonly string[]; readonly un
 
 /** 区切りの前に要る字数。1 字なら、普通の語の一部（外部・本部・課題）と見分けられない。 */
 const MIN_BODY_LENGTH = 2;
+const KANJI = /[一-鿿]/u;
 
 const surfaceOf = (tokens: readonly Token[]): string => tokens.map((token) => token.surface).join("");
 const isNumber = (token: Token): boolean => token.features?.["NumType"] === "Card";
@@ -15,6 +16,23 @@ const contiguous = (tokens: readonly Token[], covering: readonly number[]): Toke
   const run = covering.flatMap((index) => tokens.slice(index, index + 1));
   const joined = run.every((token, at) => at === 0 || run[at - 1]?.span.end === token.span.start);
   return run.length === covering.length && joined ? run : undefined;
+};
+
+/**
+ * 連なりのすぐ後ろの語が組織の語そのもの（幼稚園運営企画グループのグループ）なら、それも足した語の並び。
+ * 漢字でない組織の語は漢字の連なりの外にあるが、名前はそこで閉じる。
+ */
+const withClosingUnit = (tokens: readonly Token[], covering: readonly number[], units: readonly string[]): number[] => {
+  const next = (covering.at(-1) ?? -1) + 1;
+  const [last, closing] = [tokens[next - 1], tokens[next]];
+  const closes =
+    covering.length > 0 &&
+    last !== undefined &&
+    closing !== undefined &&
+    last.span.end === closing.span.start &&
+    !KANJI.test(closing.surface) &&
+    units.includes(closing.surface);
+  return closes ? [...covering, next] : [...covering];
 };
 
 /** 頭の、語の切れ目で終わる組織の形（国立研究開発法人）の語数。無ければ 0。 */
@@ -59,7 +77,7 @@ const segmentCount = (run: readonly Token[], units: readonly string[]): number =
  * 組織の語で閉じない連なり（情報処理推進機構認定試験、総務課長）や、頭に名前の無い 1 区切り（個人情報保護法施行規則改正案検討会）は名前ではない。
  */
 export const isOrganisationRun = (tokens: readonly Token[], covering: readonly number[], words: OrganisationWords): boolean => {
-  const run = contiguous(tokens, covering);
+  const run = contiguous(tokens, withClosingUnit(tokens, covering, words.units));
   if (run === undefined || run.length === 0) return false;
   const form = formLength(run, new Set(words.forms));
   const head = form > 0 ? form : properLength(run);

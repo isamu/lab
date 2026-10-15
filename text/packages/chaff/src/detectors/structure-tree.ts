@@ -1,7 +1,8 @@
 import type { Detector, Finding, ProseDocument, StructureNode } from "../plugin.ts";
 import { danglingReferences, duplicateDefinitions, inDocumentOrder, type StructureIssue } from "../structure/issues.ts";
 import { numberingBreaks } from "../structure/numbering.ts";
-import { listNumberBreaks, writtenNumbers } from "../structure/list-numbering.ts";
+import { htmlTextBlocks } from "../structure/html-text-blocks.ts";
+import { listsNumberBreaks } from "../structure/list-numbering.ts";
 import { weekdayMismatches } from "../structure/weekday.ts";
 import { documentDateOf } from "./document-date.ts";
 import { dateOrderBreaks } from "../structure/date-order.ts";
@@ -49,7 +50,9 @@ const findingsOf =
         }));
 
 export const danglingReference: Detector = findingsOf("dangling-reference", danglingReferences);
-const structureNumberingGap: Detector = findingsOf("numbering-gap", numberingBreaks);
+/** Markdown の HTML ブロックの中の条は木に入らない。そこを挟んだ抜けは、見えなかった番号かもしれない。 */
+const structureNumberingGap: Detector = (doc, options) =>
+  findingsOf("numbering-gap", (tree, source) => numberingBreaks(tree, doc.markup?.markdown === true ? htmlTextBlocks(source) : []))(doc, options);
 
 const lineStartAt = (source: string, offset: number): number => source.lastIndexOf("\n", offset - 1) + 1;
 
@@ -60,7 +63,7 @@ const QUOTED_LINE = /^[ \t]*>/u;
 const isQuotedList = (source: string, start: number): boolean => QUOTED_LINE.test(source.slice(lineStartAt(source, start), start));
 
 const listNumberingGaps = (doc: ProseDocument): StructureIssue[] =>
-  doc.lists.filter((list) => !isQuotedList(doc.source, list.span.start)).flatMap((list) => listNumberBreaks(writtenNumbers(doc.source, list.itemSpans) ?? []));
+  listsNumberBreaks(doc.source, doc.lists, (list) => !isQuotedList(doc.source, list.span.start));
 
 const lineFindingOf = (doc: ProseDocument, issue: StructureIssue): Finding => ({
   rule: "numbering-gap",

@@ -106,6 +106,25 @@ describe("isOrganisationRun — 漢字の連なりが 1 つの組織の名前か
     assert.ok(isOrganisationRun(joined, [0, 1, 2, 3], WORDS));
   });
 
+  it("valid: 課の下の担当、連なりのすぐ後ろのグループで閉じる（大阪市の公開ページにある問合せ先）", () => {
+    assert.ok(isOrganisation("大阪市行政委員会事務局監査部監査課特別監査担当"));
+    assert.ok(isOrganisation("大阪市教育委員会事務局教務部教職員人事担当"));
+    const text = "青少年局幼保施策部幼保企画課幼稚園運営企画グループ";
+    const tokens = tokensOf(text);
+    const kanji = tokens.flatMap((piece, index) => (/^[一-鿿]+$/u.test(piece.surface) ? [index] : []));
+    assert.ok(isOrganisationRun(tokens, kanji, WORDS));
+  });
+
+  it("invalid: 担当 1 区切りだけ、グループが隙間をあけて続く、グループのほかの語が続く", () => {
+    assert.ok(!isOrganisation("家庭児童相談員任用担当"));
+    const spaced = [token("幼保", 0), token("企画", 2), token("課", 4), token("運営", 5), token("企画", 7), token("グループ", 10)];
+    assert.ok(!isOrganisationRun(spaced, [0, 1, 2, 3, 4], WORDS));
+    const other = [token("幼保", 0), token("企画", 2), token("課", 4), token("運営", 5), token("企画", 7), token("ページ", 9)];
+    assert.ok(!isOrganisationRun(other, [0, 1, 2, 3, 4], WORDS));
+    const joined = [token("幼保", 0), token("企画", 2), token("課", 4), token("運営", 5), token("企画", 7), token("グループ", 9)];
+    assert.ok(isOrganisationRun(joined, [0, 1, 2, 3, 4], WORDS));
+  });
+
   it("invalid: 地名の単位だけでは頭の名前にならない（固有名詞が要る）", () => {
     const unitOnly = [token("県", 0, "NOUN", { NameType: "GeoUnit" }), token("振興", 1), token("協議会", 3)];
     assert.ok(!isOrganisationRun(unitOnly, [0, 1, 2], WORDS));

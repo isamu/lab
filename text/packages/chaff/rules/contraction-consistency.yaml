@@ -15,14 +15,14 @@ why:
   en: Whether to use contractions is a choice of register, and neither is wrong. Mixed within one document, the reader re-measures the distance sentence by sentence.
 
 message:
-  ja: 「{matched}」だけ他と書きかたが違います（そういう書きかたが {count} 種）
-  en: '"{matched}" is written differently from the rest of the document'
+  ja: 「{matched}」は、この文書のほかの所では「{majority}」と書かれています
+  en: '"{matched}" is written "{majority}" elsewhere in the document'
 
 how_to_fix:
-  ja: 多いほうに揃えてください。
-  en: Match the majority.
+  ja: 同じ語は、多いほうの書きかたに揃えてください。
+  en: Write the same word the way the document mostly writes it.
 
-# 少数派が何種までなら「混在」と見るか。これを超えたら混在ではなく、そういう文体。
+# 1 つの対で、少ないほうの書きかたが何回までなら「混在」と見るか。これを超えたら混在ではなく、書き分け。
 levels: { strict: 4, normal: 2, relaxed: 1 }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
@@ -32,18 +32,18 @@ off_for:
 
 group: consistency
 summary:
-  ja: 英語で、「don't」と「do not」のように短縮形を使う書き方と使わない書き方が混ざっている所
-  en: Contractions ("don't") and full forms ("do not") mixed in one document
+  ja: 英語で、同じ語を「don't」と「do not」のように両方の形で書いている所
+  en: The same word written both contracted ("don't") and in full ("do not")
 example:
   en:
     before: |
-      We don't store your password. We can't read your messages. We won't share your data. We do not sell your address.
+      We don't store your password. We don't read your messages. We don't share your data. We do not sell your address.
     after: |
-      We don't store your password. We can't read your messages. We won't share your data. We don't sell your address.
+      We don't store your password. We don't read your messages. We don't share your data. We don't sell your address.
 
 not_flagged:
-  ja: 短縮形を使うかどうかは決めません。文書の中で少ないほうだけを指します。種類も回数も同じなら、少ないほうが無いので指しません。
-  en: Whether to use contractions is not decided; only the minority form in the document is pointed at. When both forms appear as often, there is no minority and nothing is pointed at.
+  ja: 短縮形を使うかどうかは決めません。比べるのは同じ語の 2 つの形（「you're」と「you are」）だけで、別の語どうしは比べません。「you're」と書き、否定は「do not」と書く文書は揃っています。同じ語の 2 つの形が同じ回数なら、少ないほうが無いので指しません。
+  en: Whether to use contractions is not decided. Only the two forms of the same word are compared ("you're" with "you are"), never different words, so a document that writes "you're" but keeps "do not" in full is consistent. When both forms of a word appear as often, there is no minority and nothing is pointed at.
 level_meaning:
-  ja: 少ないほうの書き方が {limit} 箇所以下のとき指摘
-  en: reported when the minority form appears {limit} times or fewer
+  ja: 同じ語の少ないほうの書き方が {limit} 箇所以下のとき指摘
+  en: reported when the minority form of a word appears {limit} times or fewer

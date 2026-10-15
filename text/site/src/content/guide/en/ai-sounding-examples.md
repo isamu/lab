@@ -271,8 +271,6 @@ ai.md   blog/tech · English   genre from --genre
                   announcing-opener
   37:51   info    "not only" and other contrast frames: 7.2 per 1000 words (limit 3)
                   contrast-framing
-  45:1    info    "are not" is written differently from the rest of the document
-                  contraction-consistency
   45:1    info    "not just" and other contrast frames: 7.2 per 1000 words (limit 3)
                   contrast-framing
   47:1    warning Closes with "hope this helps"
