@@ -118,20 +118,63 @@ const headCount = (heads: ReadonlyMap<string, readonly number[]>, from: number, 
 
 type Lines = { readonly lines: readonly Line[]; readonly breakers: readonly number[]; readonly heads: ReadonlyMap<string, readonly number[]> };
 
-const scopeOf = (fact: Fact, innermost: StructureNode | undefined, at: Lines): { scope: string; record: boolean } => {
+/** 表の、見出しを繰り返した何番目の並びの升か（table-facts の columnGroup）。並びごとに別の範囲。 */
+type PlacedFact = Fact & { readonly columnGroup?: number };
+
+const scopeOf = (fact: PlacedFact, innermost: StructureNode | undefined, at: Lines): { scope: string; record: boolean } => {
   const index = lineIndexAt(at.lines, fact.value.start);
   const from = innermost === undefined ? 0 : lineIndexAt(at.lines, innermost.span.start);
   const to = innermost === undefined ? at.lines.length : lineIndexAt(at.lines, innermost.span.end - 1) + 1;
-  const scope = [innermost?.address ?? "doc", (at.breakers[index] ?? 0) - (at.breakers[from] ?? 0), parentItem(at.lines, index)].join("#");
+  const place = [innermost?.address ?? "doc", (at.breakers[index] ?? 0) - (at.breakers[from] ?? 0), parentItem(at.lines, index)];
+  const scope = [...place, ...(fact.columnGroup === undefined ? [] : [`g${fact.columnGroup}`])].join("#");
   return { scope, record: headCount(at.heads, from, to, fact.key) >= RECORD_REPEATS };
 };
 
+const MAX_PARAGRAPH_HEAD = 40;
+/** 文の終わりか続きの印。これで終わる行は小見出しではない。 */
+const SENTENCE_END = /[.!?。．！？:：;；,、，]$/u;
+const NOT_PLAIN_LINE = /^[ \t]*(?:[#>|]|```|~~~)/u;
+
+/**
+ * 段落の頭の、短い名前だけの行（「Example」「Element 1 (standard rated portion)」「例」）。文の終わりの印も値も無く、項目や表の行でもない。
+ * 例や場合ごとに名前を付けた段落の頭で、続く値はその例の値。
+ */
+const isParagraphHead = (lines: readonly Line[], index: number, valueLines: ReadonlySet<number>): boolean => {
+  const text = lines[index]?.text.trim() ?? "";
+  const before = lines[index - 1];
+  if (text === "" || text.length > MAX_PARAGRAPH_HEAD || (before !== undefined && before.text.trim() !== "")) return false;
+  const line = lines[index]?.text ?? "";
+  return /\p{L}/u.test(text) && !SENTENCE_END.test(text) && !LIST_ITEM.test(line) && !NOT_PLAIN_LINE.test(line) && !valueLines.has(index);
+};
+
+/** 小見出しの代わりの行の数に、段落の頭の名前だけの行も数える。 */
+const withParagraphHeads = (lines: readonly Line[], facts: readonly Fact[]): number[] => {
+  const valueLines = new Set(facts.map((fact) => lineIndexAt(lines, fact.value.start)));
+  return lines.reduce<number[]>(
+    (counts, line, index) => {
+      counts.push((counts[index] ?? 0) + (isBreaker(line) || isParagraphHead(lines, index, valueLines) ? 1 : 0));
+      return counts;
+    },
+    [0],
+  );
+};
+
+/** paragraphHeads: 段落の頭の名前だけの行（Example、例）でも範囲を分ける。 */
+export type ScopeReading = { readonly paragraphHeads?: boolean };
+
 /** 事実ごとに、比べてよい範囲と、文書のどの部分かを付ける。 */
-export const scopedFacts = (facts: readonly Fact[], tree: StructureNode, source: string, summaryWords: readonly string[]): ScopedFact[] => {
+export const scopedFacts = (
+  facts: readonly PlacedFact[],
+  tree: StructureNode,
+  source: string,
+  summaryWords: readonly string[],
+  reading: ScopeReading = {},
+): ScopedFact[] => {
   if (facts.length === 0) return [];
   const nodes = inDocumentOrder(tree).filter((node) => CONTAINERS.has(node.kind));
   const lines = linesOf(source);
-  const at: Lines = { lines, breakers: breakerCounts(lines), heads: headLines(lines) };
+  const breakers = reading.paragraphHeads === true ? withParagraphHeads(lines, facts) : breakerCounts(lines);
+  const at: Lines = { lines, breakers, heads: headLines(lines) };
   return facts
     .toSorted((left, right) => left.value.start - right.value.start)
     .map((fact) => {
