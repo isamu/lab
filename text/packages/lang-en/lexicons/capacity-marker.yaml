@@ -1,0 +1,7 @@
+# The word before the capacity a named party acts in, in a list of parties: Citibank, N.A., as Administrative Agent;
+# the Company, as the Borrower. undefined-term leaves the capacity after a name, a comma and one of these: it names the
+# party's role in some agreement, not a term this document defines. Matched as written.
+id: capacity-marker
+language: en
+entries:
+  - pattern: as
