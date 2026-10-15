@@ -34,6 +34,18 @@ describe("bracketDepth: 括弧の重なり", () => {
     assert.equal(bracketDepth("（a「b）（c）」"), 3);
   });
 
+  it("幅の違う閉じ括弧も、いちばん内側の開きを閉じる", () => {
+    assert.equal(bracketDepth("(1）方針は「品質第一」です。"), 1);
+    assert.equal(bracketDepth("（△)減少、[注］概算"), 1);
+    assert.equal(bracketDepth("（詳細は(2）を参照）"), 2);
+    assert.equal(bracketDepth("(1）「a」(2）「b」"), 1);
+  });
+
+  it("幅が違っても種類の違う閉じは閉じない", () => {
+    assert.equal(bracketDepth("(1］「a」"), 2);
+    assert.equal(bracketDepth("「a）"), 1);
+  });
+
   it("開きの無い閉じ括弧、閉じない開き括弧、数式、波括弧", () => {
     assert.equal(bracketDepth("1) 準備 2) 実行"), 0);
     assert.equal(bracketDepth("（閉じない（まま"), 2);
