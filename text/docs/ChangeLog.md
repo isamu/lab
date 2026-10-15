@@ -2,6 +2,52 @@
 
 Newest first.
 
+## 0.35.0 — 2026-10-16
+
+chaff now has a companion repository of real documents with judged findings, isamu/chaff-corpus, and this release is
+mostly what judging them taught: false positives found on real contracts, staff handbooks, government guidance, company
+rules and securities reports are fixed rule by rule, and rules are now placed by their judged precision on those
+documents (`yarn rules:precision`). New planted sets cover release notes and incident reports.
+
+### Rules
+
+- Fewer false findings on real documents:
+  - undefined-acronym: outline labels, numerals, placeholders, capital words, document-number labels, company forms,
+    citations, carriers, address parts; definitions in lists, party labels and name lines; a lone unexpanded acronym is
+    still reported where the document spells acronyms out (#1198, #1214, #1221, #1248, #1249).
+  - dangling-reference: plain-text contract headings, labels in a section's text, section-N names, spaced document names,
+    list-written paragraphs and quoted statutes (#1240, #1241); reference-title-mismatch: scope notes and section lists
+    (#1193, #1204).
+  - party-role-name, defined-name-repeated, undefined-term: party labels with "together with", each/collectively labels,
+    names shown by the words around them (#1226, #1250, #1255).
+  - vague-word-density, requirement-smell, vague-deadline: legal terms of art, bounded "as soon as possible", "not later
+    than" (#1251, #1252, #1253).
+  - contraction-consistency compares each contraction with its own full form (#1209, #1238); title-case-consistency,
+    name-variant and orthographic-variant leave names, groups, capitals passages and noun/verb spellings alone (#1200,
+    #1203, #1210, #1244, #1245).
+  - max-kanji-continuous: organisation names and titled names (#1199, #1229); latin-spacing: label and value pairs (#1201).
+  - numbering-gap, heading-numbering-mix, heading-end-punctuation-mix, all-caps-shouting: HTML blocks, bracketed and
+    indented lists, page titles, front and back matter, captions (#1202, #1212, #1213, #1224, #1225, #1227, #1254).
+  - fact-conflict, date-without-year, request-without-deadline, concrete-evidence-density, ngram-repetition,
+    repeated-sentence-ending, unfilled-placeholder, unbalanced-bracket, max-sentence-length, sentence-rhythm: worked
+    examples, heading years, relative timings, questions and instructions, FAQ answers, parallel definitions, template
+    sections, inch marks, page markers, list items (#1197, #1205, #1206, #1207, #1208, #1211, #1215, #1243, #1247, #1256).
+- Japanese sentence splitting pairs a bracket closed in the other width, `(1）` (#1239).
+- reference-number-variant reads incident, postmortem and ticket numbers; time-order compares an incident's start with
+  its detection (#1195, #1217); due-before-issue reads release and end-of-support dates (#1196).
+
+### Grade
+
+- `grade()` takes `expect` and `task`, as `chaff grade` does (#1192).
+
+### Tools
+
+- `yarn rules:precision`: per-rule, per-genre judged precision from isamu/chaff-corpus, recorded in
+  `corpus/rules-precision.json`, turns a rule off where it is rarely right (#1242).
+- Workflows that run isamu/chaff-corpus on chaff PRs and keep one issue per open corpus case (#1218, #1219).
+- Planted sets for release notes and incident reports (#1189, #1190).
+- Landed through #1194, #1216, #1222, #1228 and #1246.
+
 ## 0.34.0 — 2026-10-14
 
 `chaff grade` can now score an LLM benchmark: the rubric lives in its own YAML or JSON file (`--rubric`), each question
