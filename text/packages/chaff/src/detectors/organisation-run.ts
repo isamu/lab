@@ -74,7 +74,7 @@ const segmentCount = (run: readonly Token[], units: readonly string[]): number =
 };
 
 /**
- * 法人格で閉じ、その前に 2 字以上の名前がある（東日本自動車販売株式会社、青葉監査法人）。数を含む連なり（2024年株式会社）は割らない。
+ * 法人格で閉じ、その前に 2 字以上の名前がある（東日本自動車販売株式会社、青葉監査法人）。数を含む連なり（2024年株式会社、第三東京販売株式会社）は名前と読まない。
  * 呼び出し側は、名前に固有名詞か地名があることも求める。法令の語（株式交換完全親株式会社）は法人格で閉じても名前ではない。
  */
 const endsInForm = (text: string, closingForms: readonly string[]): boolean =>
@@ -89,7 +89,7 @@ const endsInForm = (text: string, closingForms: readonly string[]): boolean =>
 export const isOrganisationRun = (tokens: readonly Token[], covering: readonly number[], words: OrganisationWords): boolean => {
   const run = contiguous(tokens, withClosingUnit(tokens, covering, words.units));
   if (run === undefined || run.length === 0) return false;
-  if (endsInForm(surfaceOf(run), words.closingForms) && run.some(isProperPiece)) return true;
+  if (endsInForm(surfaceOf(run), words.closingForms) && run.some(isProperPiece) && !run.some(isNumber)) return true;
   const form = formLength(run, new Set(words.forms));
   const head = form > 0 ? form : properLength(run);
   const segments = segmentCount(run.slice(head), words.units);

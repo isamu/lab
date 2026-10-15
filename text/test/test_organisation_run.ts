@@ -113,6 +113,8 @@ describe("isOrganisationRun — 漢字の連なりが 1 つの組織の名前か
     assert.ok(!isOrganisation("情報処理推進機構認定県立"));
     assert.ok(!isOrganisation("新株式会社"));
     assert.ok(!isOrganisation("２０２４年度株式会社"));
+    assert.ok(!isOrganisation("第三東京自動車販売株式会社"));
+    assert.ok(!isOrganisation("二〇二四年度東京自動車販売株式会社"));
     // 会社法の語。固有名詞の無い連なりは、法人格で閉じても名前ではない。
     assert.ok(!isOrganisation("株式交換完全親株式会社"));
     assert.ok(!isOrganisation("当該新設合併設立株式会社"));
