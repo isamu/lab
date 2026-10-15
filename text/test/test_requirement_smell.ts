@@ -115,6 +115,18 @@ describe("requirement-smell (en)", () => {
     assert.deepEqual(found("Staff are required to file the form where possible.", en), ["loophole:where possible"]);
   });
 
+  it("as soon as possible bounded by a stated limit in the same sentence leaves nothing open", () => {
+    const bounded = "The closing shall take place as soon as possible, but in any event no later than two business days after the conditions are met.";
+    assert.deepEqual(found(bounded, en, "legal/contract"), []);
+    assert.deepEqual(found("The supplier shall reply as soon as possible, and in any case within five days.", en), []);
+    assert.deepEqual(found("The closing shall take place as soon as possible.", en, "legal/contract"), ["loophole:as soon as possible"]);
+  });
+
+  it("a stated limit bounds only a loophole about time", () => {
+    assert.deepEqual(found("The page must load as fast as possible, within five days of release.", en), ["loophole:as fast as possible"]);
+    assert.deepEqual(found("The supplier shall report if necessary, within five days.", en), ["loophole:if necessary"]);
+  });
+
   it("etc. and and/or in a requirement", () => {
     assert.deepEqual(found("The system must keep logs, traces, etc. for thirty days.", en), ["open-end:etc."]);
     assert.deepEqual(found("The system shall notify the owner and/or the user.", en), ["either:and/or"]);
