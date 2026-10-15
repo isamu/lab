@@ -9,12 +9,14 @@ import type { RuleDefinition } from "../packages/chaff/src/plugin.ts";
 import { severityAt } from "../packages/chaff/src/levels.ts";
 import { loadGenres } from "../packages/chaff/src/genre-load.ts";
 import type { Settings } from "../packages/chaff/src/run.ts";
-import { disagreements, handOffGroups, standingOf, type MeasuredOff, type Standing } from "./rule-policy.ts";
+import { disagreements, handOffGroups, heldOnGroups, lowPrecisionGroups, standingOf, type MeasuredOff, type Standing } from "./rule-policy.ts";
 import { MEASURED, measuredOffsOf, withInfoAtNormal, withMeasuredOffs, withStatus } from "./rules-apply.ts";
 import { isMeasurement, type Measurement } from "./rules-measure-score.ts";
+import { isPrecisionMeasurement, type PrecisionMeasurement } from "./rules-precision-score.ts";
 
 const ROOT = join(import.meta.dirname, "..");
 export const MEASURE_FILE = join(ROOT, "corpus", "rules-measure.json");
+export const PRECISION_FILE = join(ROOT, "corpus", "rules-precision.json");
 const PACKAGE = join(ROOT, "packages", "chaff");
 const RULES_DIR = join(PACKAGE, "rules");
 const GENRES_FILE = join(PACKAGE, "genres.yaml");
@@ -22,6 +24,12 @@ const GENRES_FILE = join(PACKAGE, "genres.yaml");
 export const readMeasurement = (path: string = MEASURE_FILE): Measurement => {
   const parsed: unknown = JSON.parse(readFileSync(path, "utf8"));
   if (!isMeasurement(parsed)) throw new Error(`${path}: not a rules measurement (yarn rules:measure --write)`);
+  return parsed;
+};
+
+export const readPrecision = (path: string = PRECISION_FILE): PrecisionMeasurement => {
+  const parsed: unknown = JSON.parse(readFileSync(path, "utf8"));
+  if (!isPrecisionMeasurement(parsed)) throw new Error(`${path}: not a judged precision measurement (yarn rules:precision --write)`);
   return parsed;
 };
 
@@ -64,19 +72,32 @@ export const measuredOffOn = (genre: string): Settings => {
   );
 };
 
-/** Each rule's standing under the measurement, in rule id order. marks: the offs --apply wrote, which are not hand offs. */
+/**
+ * Each rule's standing under the measurement and the judged precision, in rule id order. marks: the offs --apply wrote,
+ * which are not hand offs.
+ */
 export const standingsOf = (
   measurement: Measurement,
   rules: readonly RuleDefinition[],
   data: GenreData,
   marks: readonly MeasuredOff[] = measuredOffs(rules),
+  precision: PrecisionMeasurement = readPrecision(),
 ): Map<string, Standing> =>
   new Map(
     rules
       .filter((rule) => rule.opt_in !== true)
       .toSorted((left, right) => left.id.localeCompare(right.id, "en"))
-      .map((rule) => [rule.id, standingOf(rule, measurement.rules[rule.id], handOffGroups(data, rule.id, marks))] as const),
+      .map(
+        (rule) =>
+          [rule.id, standingOf(rule, measurement.rules[rule.id], handOffGroups(data, rule.id, marks), precisionOffs(data, rule.id, precision))] as const,
+      ),
   );
+
+/** The groups the judged precision turns the rule off for: low there, and no genre of the group turns it on by hand. */
+export const precisionOffs = (data: GenreData, rule: string, precision: PrecisionMeasurement): string[] => {
+  const heldOn = heldOnGroups(data, rule);
+  return lowPrecisionGroups(precision.rules[rule]).filter((group) => !heldOn.has(group));
+};
 
 /**
  * A rule that landed after the last measurement: the policy cannot place it until `yarn rules:measure --apply` runs.
@@ -87,12 +108,12 @@ const unmeasured = (rule: RuleDefinition, measurement: Measurement): string[] =>
     ? []
     : [`${rule.id}: not measured yet (yarn rules:measure --apply)`];
 
-/** Every disagreement between the rules as written and the measurement. */
-export const policyProblems = (measurement: Measurement): string[] => {
+/** Every disagreement between the rules as written and the measurement with the judged precision. */
+export const policyProblems = (measurement: Measurement, precision: PrecisionMeasurement = readPrecision()): string[] => {
   const data = genreDataOf(readGenresText());
   const rules = allRules();
   const marks = measuredOffs(rules);
-  const standings = standingsOf(measurement, rules, data, marks);
+  const standings = standingsOf(measurement, rules, data, marks, precision);
   // Each language's definition: a rule may write its severity per language.
   const problems = bothLanguages().flatMap((rule) => {
     const standing = standings.get(rule.id);
@@ -122,12 +143,12 @@ const rewriteOffs = (rule: string, groups: readonly string[]): void => {
   if (after !== before) writeFileSync(path, after);
 };
 
-/** Rewrites the rule files to agree with the measurement, and says what it changed. */
-export const applyMeasurement = (measurement: Measurement): string[] => {
+/** Rewrites the rule files to agree with the measurement and the judged precision, and says what it changed. */
+export const applyMeasurement = (measurement: Measurement, precision: PrecisionMeasurement = readPrecision()): string[] => {
   const rules = allRules();
   const missing = rules.flatMap((rule) => unmeasured(rule, measurement));
   if (missing.length > 0) throw new Error(`the measurement leaves rules out; measure again without --from:\n${missing.join("\n")}`);
-  const standings = standingsOf(measurement, rules, genreDataOf(readGenresText()));
+  const standings = standingsOf(measurement, rules, genreDataOf(readGenresText()), undefined, precision);
   const changed = rules.flatMap((rule) => {
     const standing = standings.get(rule.id);
     const line = standing === undefined ? undefined : rewriteRule(rule, standing);

@@ -306,6 +306,17 @@ off_for:
 測って止めた group は、`off_for` に `measured by yarn rules:measure` と書かれます。
 ルールの置き場所が `corpus/rules-measure.json` の測った結果と合わなくなると、`yarn test` が止まります。
 
+指摘がどれだけ正しいかでも決めます。[isamu/chaff-corpus](https://github.com/isamu/chaff-corpus) では、実際の文書に chaff が出す指摘を一つずつ、人が正しい・誤検出と判定しています。
+`yarn rules:precision --corpus <checkout>` はその corpus に手元の chaff（先に `yarn build`）をかけ、ルール・ジャンルの group・言語ごとに、判定済みの指摘のうち正しかった数を `corpus/rules-precision.json` に書きます。
+判定していない指摘は数えません。note が `extraction artefact:` か `dataset artefact:` で始まる判定も数えません。文書の取り出し方の問題で、ルールの問題ではないからです。
+
+ある group で判定済みの指摘が正しい割合が二割以下なら、そのルールはその group で止まります。ただし、3 つ以上の文書から 15 件以上の判定があり、その group でルールが指摘を出すどの言語でもそうなっているときだけです。
+`off_for` は両方の言語でルールを止めるので、それを示す判定の無いまま指摘を出している言語があれば、group は止めません。
+この線を決めたとき、corpus の判定の正しさは低い塊と高い塊に分かれていて、線はその間にあります。
+判定が少ないと一件で割合が大きく動き、一つ二つの文書は、その文書だけの書き方から何百件も指摘を出すことがあります。
+`genres.yaml` でその group のジャンルが手でルールを動かしているときは止めず、人が決めるように一覧に出します。
+`yarn rules:precision --apply` はファイルを書き、`yarn rules:measure --apply` と同じように置き場所を決めます（どちらも両方のファイルを読みます）。止めた group は同じ形で `off_for` に書かれます。
+
 手引きの画面に、ルールが増えるたびに変わる行は書き写しません。
 画面には、動いていないルールを並べる所に `{not-run}`（一覧の下のヒントも含みます）、`--compact` が最後に出す集計の行に `{counts}` と書きます。
 一覧から、あるルールの行だけを見せるときは `{not-run: <rule>}` と書きます。一覧はいちばん長い id に合わせて詰めるので、書き写した行はルールが増えるたびに変わります。
