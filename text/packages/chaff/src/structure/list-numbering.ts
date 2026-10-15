@@ -17,7 +17,7 @@ export type WrittenNumber = {
 
 /** The column an offset sits at, a tab counted to the next stop of four as CommonMark counts it. */
 const columnAt = (source: string, offset: number): number =>
-  [...source.slice(source.lastIndexOf("\n", offset - 1) + 1, offset)].reduce(
+  Array.from(source.slice(source.lastIndexOf("\n", offset - 1) + 1, offset)).reduce(
     (column, char) => (char === "\t" ? column + TAB_WIDTH - (column % TAB_WIDTH) : column + 1),
     0,
   );
