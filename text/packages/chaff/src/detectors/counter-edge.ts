@@ -27,3 +27,16 @@ export const leadingCounter = (tokens: readonly Token[], start: number, run: str
   if (counter === undefined || !isCounter(counter) || !isNumber(wordBefore(tokens, at))) return undefined;
   return run.startsWith(counter.surface) ? counter : undefined;
 };
+
+const isPrefix = (token: Token | undefined): boolean => token?.pos === "ADJ" && token.features?.["Bound"] === "Yes";
+
+/**
+ * 漢字の連なり run（文書全体の座標で end に終わる）の尻が、すぐ後ろの数に付く接頭の語（地方自治法施行令第172条の「第」）なら、その語。
+ * 接頭の語は後ろの数の一部で、前の複合語の一部ではない。そうでなければ undefined。
+ */
+export const trailingPrefix = (tokens: readonly Token[], end: number, run: string): Token | undefined => {
+  const at = tokens.findIndex((token) => token.span.end === end);
+  const [prefix, next] = [tokens[at], tokens[at + 1]];
+  if (prefix === undefined || next === undefined || !isPrefix(prefix) || !touches(prefix, next) || !isNumber(next)) return undefined;
+  return run.endsWith(prefix.surface) ? prefix : undefined;
+};

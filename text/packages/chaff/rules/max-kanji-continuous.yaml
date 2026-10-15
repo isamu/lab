@@ -7,7 +7,8 @@ uses: [pos]
 # chaff.yaml の names に並べた名前は連なりを切る。鉤括弧の中身がまるごと 1 つの連なりなら数えない（書き手が 1 つの名前と示している）。
 # 住所の先頭にしか来ない単位（都道府県）。地名の後ろに付けば、割られた町名ではなく地名の並び。
 # 組織の名前（organisation-form で始まるか地名・固有名詞で始まり organisation-unit で閉じる、または organisation-unit で閉じる区切りが続く）は数えない。
-extra_word_lists: [prefecture-unit, organisation-form, organisation-unit]
+# 題の名前（title-ending で閉じ、括弧を閉じるか補いの括弧が続くか一行だけか見出しにあるもの: 〜実施要綱、〜選考試験）は数えない。
+extra_word_lists: [prefecture-unit, organisation-form, organisation-unit, title-ending]
 languages: [ja]
 severity: info
 
@@ -50,8 +51,8 @@ example:
     after: 来週、新しい顧客を増やす施策を話し合う会議を開きます。
 
 not_flagged:
-  ja: 組織の正式名称（国立研究開発法人産業技術総合研究所、経済産業省製造産業局自動車課）、chaff.yaml の names に書いた組織名や製品名、法令の条番号（第二十二条第二項）は数えません。
-  en: Official organisation names (a legal form or a place name followed by a name that ends in a unit such as 研究所 or 協会, or a chain of units such as 省・局・課), names listed under names in chaff.yaml, and provision numbers in statutes (第二十二条第二項) are not counted.
+  ja: 組織の正式名称（国立研究開発法人産業技術総合研究所、経済産業省製造産業局自動車課）、題の名前（要綱・試験・事業・法令などで終わり、一行だけで書くか括弧でくくるか見出しにあるもの。大阪市鶴見区役所公募型比較見積実施要綱など）、chaff.yaml の names に書いた組織名や製品名、法令の条番号（第二十二条第二項）は数えません。
+  en: Official organisation names (a legal form or a place name followed by a name that ends in a unit such as 研究所 or 協会, or a chain of units such as 省・局・課), titles of named things (a run ending in 要綱, 試験, 事業, 法 and the like that stands on a line of its own, closes a bracket, is followed by a bracketed note, or appears in a heading), names listed under names in chaff.yaml, and provision numbers in statutes (第二十二条第二項) are not counted.
 level_meaning:
   ja: 漢字の連続 {limit} 字まで
   en: up to {limit} kanji in a row

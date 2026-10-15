@@ -12,6 +12,9 @@ entries:
   - pattern: 課
   - pattern: 室
   - pattern: 係
+  # 課の下の担当とグループ（監査課特別監査担当、幼保企画課幼稚園運営企画グループ）。グループは漢字の連なりのすぐ後ろに付く。
+  - pattern: 担当
+  - pattern: グループ
   - pattern: 本部
   - pattern: 事務局
   - pattern: 委員会
