@@ -9,10 +9,14 @@ export const YEAR_SPAN_JOINER_LEXICON = "year-span-joiner";
 
 /**
  * Where a marker reaches. `sentence`: earlier in the date's sentence, not closed off by a bracket (例えば…4月1日), or the
- * line a list of dates hangs from ("for example:"). `adjacent`: just before the date ("each December 31"). `label`: before
- * the bracket the date is in (年末年始閉庁日（12月29日～1月3日）).
+ * line a list of dates hangs from ("for example:"). `example`: as `sentence`, and on to the end of the list item it is in.
+ * `adjacent`: just before the date ("each December 31"). `near`: ending a few characters before it (決算日は、12月31日).
+ * `label`: before the bracket the date is in (年末年始閉庁日（12月29日～1月3日）). `continues`: opening a list item just
+ * after an example's item, it carries the example on ("- For example, … June 22." then "- If instead … June 25").
  */
-export type MarkerReach = "sentence" | "adjacent" | "label";
+export type MarkerReach = "sentence" | "example" | "adjacent" | "near" | "label" | "continues";
+
+export const MARKER_REACHES: readonly MarkerReach[] = ["sentence", "example", "adjacent", "near", "label", "continues"];
 
 export type AnyYearMarker = { readonly word: string; readonly reach: MarkerReach };
 
@@ -24,6 +28,9 @@ const SPAN_GAP_REACH = 12;
 
 /** How many lines above a list item its introducing line is looked for: a longer list is read as no example. */
 const LIST_REACH = 64;
+
+/** How many characters a `near` marker may end before the date: 「は、」 of 「決算日は、」, " is " of "fiscal year end is". */
+const NEAR_REACH = 4;
 
 /** The end of a sentence: 。, a line break, or a full stop before a capital or a digit ("Mar 3. The", "so. 10 November"). */
 const SENTENCE_END = /[。！？\n]|[.!?]["'”’)\]]*\s+(?=[A-Z0-9])/u;
@@ -109,17 +116,56 @@ const introOf = (source: string, before: string, offset: number): string | undef
 /** The line ends with the marker, before or after its colon: 「例：」 and "for example:" alike. */
 const introEndsWith = (intro: string, word: string): boolean => isAdjacent(intro, word) || isAdjacent(intro.replace(COLON_END, ""), word);
 
+const wordsOf = (markers: readonly AnyYearMarker[], reach: MarkerReach): string[] =>
+  markers.flatMap((marker) => (marker.reach === reach && marker.word !== "" ? [latinLower(marker.word)] : []));
+
+/** A list item's text after its bullet: "If instead …" of "    - If instead …". */
+const itemText = (line: string): string => line.replace(LIST_ITEM, "");
+
+const indentOf = (line: string): number => line.length - line.trimStart().length;
+
+/** The line just above the one at `offset`, when it is a list item at the same depth (no blank line between). */
+const itemAbove = (source: string, offset: number): string | undefined => {
+  const start = lineStart(source, offset);
+  if (start === 0) return undefined;
+  const above = source.slice(lineStart(source, start - 1), start - 1);
+  return LIST_ITEM.test(above) && indentOf(above) === indentOf(source.slice(start, offset)) ? above : undefined;
+};
+
+const opensWith = (text: string, word: string): boolean => text.startsWith(word) && !runsOn(text, word);
+
+const opensWithAny = (line: string, words: readonly string[]): boolean => words.some((word) => opensWith(latinLower(itemText(line)), word));
+
+/** `item` holds an example, or carries one on from the item above it; `steps` bounds how far up the chain is followed. */
+const exampleItem = (source: string, item: string, itemEnd: number, markers: readonly AnyYearMarker[], steps: number): boolean => {
+  if (wordsOf(markers, "example").some((word) => lastWordAt(latinLower(item), word) !== -1)) return true;
+  if (steps === 0 || !opensWithAny(item, wordsOf(markers, "continues"))) return false;
+  const above = itemAbove(source, itemEnd);
+  return above !== undefined && exampleItem(source, above, lineStart(source, itemEnd) - 1, markers, steps - 1);
+};
+
+/** The date's list item opens with a word that carries on the example in the list item just above it. */
+const continuesExample = (date: DateSpan, before: string, source: string, markers: readonly AnyYearMarker[]): boolean => {
+  if (!LIST_ITEM.test(before) || !opensWithAny(before, wordsOf(markers, "continues"))) return false;
+  const above = itemAbove(source, date.offset);
+  return above !== undefined && exampleItem(source, above, lineStart(source, date.offset) - 1, markers, LIST_REACH);
+};
+
+const coversDate = (before: string, dateStart: string, intro: string | undefined, word: string, reach: MarkerReach): boolean => {
+  if (reach === "adjacent") return isAdjacent(latinLower(before), word);
+  if (reach === "near") return lastWordAt(latinLower(before.slice(-(word.length + NEAR_REACH))), word) !== -1;
+  if (reach === "label") return latinLower(labelOf(before) ?? "").includes(word);
+  if (reach === "continues") return false;
+  const inItem = reach === "example" && LIST_ITEM.test(before) && lastWordAt(latinLower(before), word) !== -1;
+  return inItem || inSentence(before, dateStart, word) || (intro !== undefined && introEndsWith(latinLower(intro), word));
+};
+
 /** The date is a recurring day or a worked example: a marker stands where its reach covers the date. */
 export const anyYearDate = (date: DateSpan, source: string, markers: readonly AnyYearMarker[]): boolean => {
   const before = source.slice(lineStart(source, date.offset), date.offset);
   const intro = introOf(source, before, date.offset);
-  return markers.some(({ word: written, reach }) => {
-    const word = latinLower(written);
-    if (word === "") return false;
-    if (reach === "adjacent") return isAdjacent(latinLower(before), word);
-    if (reach === "label") return latinLower(labelOf(before) ?? "").includes(word);
-    return inSentence(before, source.charAt(date.offset), word) || (intro !== undefined && introEndsWith(latinLower(intro), word));
-  });
+  const covered = markers.some(({ word, reach }) => word !== "" && coversDate(before, source.charAt(date.offset), intro, latinLower(word), reach));
+  return covered || continuesExample(date, before, source, markers);
 };
 
 /** The date opens a period whose other end, just after it, follows a joiner (「4月1日から翌年3月31日」). */
