@@ -20,7 +20,7 @@ concurrency:
 
 env:
   # matrix の shard と揃える。matrix は env から作れない。
-  SHARD_COUNT: "3"
+  SHARD_COUNT: "5"
 
 jobs:
   run:
@@ -31,7 +31,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3]
+        shard: [1, 2, 3, 4, 5]
     steps:
       - name: checkout this PR
         uses: actions/checkout@v7
