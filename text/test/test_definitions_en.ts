@@ -30,6 +30,28 @@ describe("English definitions", () => {
     assert.equal(second?.start, 16);
   });
 
+  it("reads a party's name followed by the name of all the parties, and hereinafter with the", () => {
+    assert.deepEqual(read('Birch Labs, Inc. (the "Company" and, together with Parent and Merger Sub, the "Parties") agree.'), ["Company inline", "Parties"]);
+    assert.deepEqual(read('Birch Labs, Inc. (the "Company", and together with Parent, each a "Party" and collectively the "Parties")'), [
+      "Company inline",
+      "Party",
+      "Parties",
+    ]);
+    assert.deepEqual(read('Birch Labs, Inc. ("Birch" and, collectively with Parent, the "Parties")'), ["Birch inline bare", "Parties bare"]);
+    assert.deepEqual(read('Birch Labs, Inc. (hereinafter the "Company") agrees.'), ["Company inline"]);
+    assert.deepEqual(read('Birch Labs, Inc. (hereinafter called "Company") agrees.'), ["Company inline"]);
+    assert.deepEqual(read('Birch Labs, Inc. (hereinafter "Birch" or the "Company") agrees.'), ["Birch inline", "Company"]);
+  });
+
+  it("does not read a bracket where the name is not first, or the together-with clause comes without a name before it", () => {
+    assert.deepEqual(read('Shares (as adjusted "Shares" and, together with Units, the "Securities") vest.'), []);
+    assert.deepEqual(read('Shares (together with Units, the "Securities") vest.'), []);
+    assert.deepEqual(read('The words ("mine" and, together with others, "ours") are examples.'), []);
+    assert.deepEqual(read('Birch Labs, Inc. (the "Company" and, together with Parent) agree.'), []);
+    assert.deepEqual(read('Birch Labs, Inc. (the "Company" and, together with Parent, "aside" trailing) agree.'), []);
+    assert.deepEqual(read('A thing (the "Thing" and, together with others, the "examples") is here.'), []);
+  });
+
   it("keeps a party named for one section to that section, as the one-name form does", () => {
     const local = definitions('This section applies where a person ("Seller" or "Vendor") sells goods.').map((mention) => mention.attrs["scope"]);
     assert.deepEqual(local, ["local", "local"]);
