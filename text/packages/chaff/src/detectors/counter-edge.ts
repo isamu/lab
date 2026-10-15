@@ -30,13 +30,23 @@ export const leadingCounter = (tokens: readonly Token[], start: number, run: str
 
 const isPrefix = (token: Token | undefined): boolean => token?.pos === "ADJ" && token.features?.["Bound"] === "Yes";
 
+/** at の語のすぐ後ろの語。空白一つ（改行を含む）を挟んでもよい（「第\n172条」）。 */
+const wordAfter = (tokens: readonly Token[], at: number): Token | undefined => {
+  const [token, next] = [tokens[at], tokens[at + 1]];
+  if (token === undefined || next === undefined || !touches(token, next)) return undefined;
+  if (!BLANK.test(next.surface)) return next;
+  const beyond = tokens[at + 2];
+  return beyond !== undefined && touches(next, beyond) ? beyond : undefined;
+};
+
 /**
  * 漢字の連なり run（文書全体の座標で end に終わる）の尻が、すぐ後ろの数に付く接頭の語（地方自治法施行令第172条の「第」）なら、その語。
  * 接頭の語は後ろの数の一部で、前の複合語の一部ではない。そうでなければ undefined。
  */
 export const trailingPrefix = (tokens: readonly Token[], end: number, run: string): Token | undefined => {
-  const at = tokens.findIndex((token) => token.span.end === end);
-  const [prefix, next] = [tokens[at], tokens[at + 1]];
-  if (prefix === undefined || next === undefined || !isPrefix(prefix) || !touches(prefix, next) || !isNumber(next)) return undefined;
+  // 折り返しをまたぐ語は span が surface より長いので、end で終わる語ではなく end の直前の字を覆う語を探す。
+  const at = tokens.findIndex((token) => token.span.start < end && end <= token.span.end);
+  const prefix = tokens[at];
+  if (prefix === undefined || !isPrefix(prefix) || !isNumber(wordAfter(tokens, at))) return undefined;
   return run.endsWith(prefix.surface) ? prefix : undefined;
 };
