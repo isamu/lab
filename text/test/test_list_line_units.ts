@@ -45,6 +45,7 @@ describe("startsWithListMarker: 行頭の印", () => {
       "本文の行",
       "○事務局",
       "※ 書類は返却しません",
+      "J. Smith wrote it.",
     ].forEach((line) => assert.equal(startsWithListMarker(line), false, line));
   });
 });

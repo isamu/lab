@@ -56,8 +56,10 @@ const withLanguage = (text: string, span: Span): Sentence => (isEnglishRun(text)
  */
 const merge = (source: string, spans: readonly Span[]): Sentence[] => {
   const open = insideBrackets(source);
-  const listBreaks = listLineBreaks(source);
-  const itemHeads = listItemHeads(source);
+  // 英文だけの段落は英語のアダプタと同じに切る。行頭の「J.」は人名の頭文字で、項目の印ではない。
+  const english = isEnglishRun(source);
+  const listBreaks = english ? [] : listLineBreaks(source);
+  const itemHeads = english ? [] : listItemHeads(source);
   return spans
     .reduce<Span[]>((acc, span) => {
       const last = acc.at(-1);

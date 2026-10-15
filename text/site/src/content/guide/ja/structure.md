@@ -192,8 +192,6 @@ $ npx chaffjs fixed.txt --compact
 fixed.txt   blog/tech · 日本語   ジャンルは既定から
    法令・規程のようです。--genre legal/statute を試せます
 
-  12:1    info    この段落は 6 文あります（5 文まで）
-                  max-paragraph-length
   14:91   info    「ただし」と書いています（この文書はふつう「但し」と書く語です。3 箇所のうち 1 箇所が違う）
                   orthographic-variant
   16:2    info    「は」で出した主題から述語まで 94 字あります（80 字まで）
