@@ -1,0 +1,21 @@
+# Terms of art that hold a vague word. In the genres listed, law and practice give them a meaning ("reasonable" is the
+# standard a court applies, "best efforts" a known degree of effort, "from time to time" means as amended), so
+# vague-word-density does not count a vague word inside one there. Elsewhere the same words are counted.
+id: vague-word-term-of-art
+language: en
+entries:
+  - pattern: reasonable
+    genres: [legal]
+  - pattern: reasonably
+    genres: [legal]
+  - pattern: best efforts
+    genres: [legal]
+  - pattern: best effort
+    genres: [legal]
+  - pattern: from time to time
+    genres: [legal]
+  # The test for injunctive relief: damages that cannot adequately compensate the harm.
+  - pattern: adequately compensate
+    genres: [legal]
+  - pattern: adequate remedy
+    genres: [legal]
