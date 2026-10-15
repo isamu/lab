@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { leadingCounter } from "../packages/chaff/src/detectors/counter-edge.ts";
 import type { Token } from "../packages/chaff/src/plugin.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
+import { namedRuleRun } from "./rule-run.ts";
 
 type Word = { readonly surface: string; readonly features?: Readonly<Record<string, string>> };
 
@@ -107,5 +108,43 @@ describe("leadingCounter — 形態素解析の語で", () => {
   it("前提と反対側: 助数詞でない語（会計）、数の無い日（日本）は外さない", () => {
     assert.equal(realLength("2021会計年度国防授権法", "会計年度国防授権法"), 0);
     assert.equal(realLength("日本弁護士連合会", "日本弁護士連合会"), 0);
+  });
+});
+
+describe("leadingCounter — 解析が助数詞と言わない日付の単位（4月の「月」）", () => {
+  const POSITIONAL = ["月", "時", "時半"];
+
+  it("数の後ろの、positional にある単位を外す。数と一語の「４月」も単位の分だけ外す", () => {
+    const tokens = tokensOf([{ surface: "4", features: NUMBER }, { surface: "月" }, { surface: "空調" }]);
+    assert.equal(leadingCounter(tokens, 1, "月空調", POSITIONAL)?.surface, "月");
+    const glued = tokensOf([{ surface: "４月" }, { surface: "空調" }]);
+    assert.deepEqual(leadingCounter(glued, 1, "月空調", POSITIONAL)?.span, { start: 1, end: 2 });
+    assert.equal(leadingCounter(glued, 1, "月空調", POSITIONAL)?.surface, "月");
+  });
+
+  it("positional が無い、数が前に無い、数でない語と一語の単位（毎月）は外さない", () => {
+    const tokens = tokensOf([{ surface: "4", features: NUMBER }, { surface: "月" }, { surface: "空調" }]);
+    assert.equal(leadingCounter(tokens, 1, "月空調"), undefined);
+    assert.equal(leadingCounter(tokensOf([{ surface: "毎" }, { surface: "月" }, { surface: "空調" }]), 1, "月空調", POSITIONAL), undefined);
+    assert.equal(leadingCounter(tokensOf([{ surface: "毎月" }, { surface: "空調" }]), 1, "月空調", POSITIONAL), undefined);
+    assert.equal(leadingCounter(tokensOf([{ surface: "４月" }, { surface: "空調" }]), 1, "空調", POSITIONAL), undefined);
+  });
+});
+
+describe("max-kanji-continuous: 日付の月は連なりに数えない", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+  });
+
+  const words = (source: string): readonly string[] => namedRuleRun("max-kanji-continuous", source, ja).findings;
+
+  it("年表の行の、月のすぐ後ろの名前は上限の内（全角・半角の数とも）", () => {
+    assert.deepEqual(words("2003年４月東京証券取引所第一部に上場。"), []);
+    assert.deepEqual(words("2003年4月東京証券取引所第一部に上場。"), []);
+  });
+
+  it("月を外しても長い連なりは指す", () => {
+    assert.equal(words("2003年４月東京証券取引所市場第一部上場手続完了。").length, 1);
+    assert.equal(words("東京証券取引所市場第一部上場手続完了。").length, 1);
   });
 });

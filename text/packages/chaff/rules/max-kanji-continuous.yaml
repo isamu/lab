@@ -8,7 +8,8 @@ uses: [pos]
 # 住所の先頭にしか来ない単位（都道府県）。地名の後ろに付けば、割られた町名ではなく地名の並び。
 # 組織の名前（organisation-form で始まるか地名・固有名詞で始まり organisation-unit で閉じる、または organisation-unit で閉じる区切りが続く）は数えない。
 # 題の名前（title-ending で閉じ、括弧を閉じるか補いの括弧が続くか一行だけか見出しにあるもの: 〜実施要綱、〜選考試験）は数えない。
-extra_word_lists: [prefecture-unit, organisation-form, organisation-unit, title-ending]
+# 日付の単位（4月の「月」）は、数に付いた助数詞として連なりの頭から外す。
+extra_word_lists: [prefecture-unit, organisation-form, organisation-unit, title-ending, calendar-unit]
 languages: [ja]
 severity: info
 

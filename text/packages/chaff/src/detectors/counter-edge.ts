@@ -16,15 +16,30 @@ const wordBefore = (tokens: readonly Token[], at: number): Token | undefined => 
   return beyond !== undefined && touches(beyond, previous) ? beyond : undefined;
 };
 
+const DIGITS = /^[0-9０-９]+$/u;
+
+/**
+ * 数と一語に解析された日付の単位（全角の「４月」）。連なりは単位から始まるので、単位の分だけの語にして返す。
+ * positional は数の後ろに置くだけで暦や時計の位置を言う単位（月、時）。
+ */
+const gluedUnit = (tokens: readonly Token[], start: number, run: string, positional: readonly string[]): Token | undefined => {
+  const token = tokens.find((candidate) => candidate.span.start < start && start < candidate.span.end);
+  if (token === undefined) return undefined;
+  const unit = positional.find((word) => token.surface.endsWith(word) && DIGITS.test(token.surface.slice(0, -word.length)));
+  return unit !== undefined && run.startsWith(unit) ? { ...token, surface: unit, span: { start, end: token.span.end } } : undefined;
+};
+
 /**
  * 漢字の連なり run（文書全体の座標で start から始まる）の頭が、直前の数に付いた助数詞（2日、第76回、24時間）なら、その助数詞の語。
  * 数字が区切りを見せるので、助数詞は数と読まれ、後ろの複合語の一部ではない。そうでなければ undefined。
+ * 解析が助数詞と言わない日付の単位（4月の「月」）も、positional にあれば助数詞と読む。
  * 折り返しをまたぐ語（年\n度）は span が surface より長いので、連なりの残りは span の終わりから始まる。
  */
-export const leadingCounter = (tokens: readonly Token[], start: number, run: string): Token | undefined => {
+export const leadingCounter = (tokens: readonly Token[], start: number, run: string, positional: readonly string[] = []): Token | undefined => {
   const at = tokens.findIndex((token) => token.span.start === start);
   const counter = tokens[at];
-  if (counter === undefined || !isCounter(counter) || !isNumber(wordBefore(tokens, at))) return undefined;
+  if (counter === undefined) return gluedUnit(tokens, start, run, positional);
+  if (!(isCounter(counter) || positional.includes(counter.surface)) || !isNumber(wordBefore(tokens, at))) return undefined;
   return run.startsWith(counter.surface) ? counter : undefined;
 };
 
