@@ -35,32 +35,45 @@ export type MarkExceptions = { readonly kana: ReadonlySet<string>; readonly comp
  * 印の点の後ろには、同じ行に項目の本文が続く。行の終わりの点（対象はロ．、締切は（予定）10．）は句点。
  * 文は「イ．」の点で割れることがあるので、文ではなく文書の行の続きを見る。
  */
-const isFollowed = (source: string, offset: number): boolean => (source.slice(offset + 1).split("\n", 1)[0] ?? "").trim() !== "";
+const isFollowed = (source: string, offset: number): boolean => {
+  const lineEnd = source.indexOf("\n", offset);
+  return source.slice(offset + 1, lineEnd === -1 ? source.length : lineEnd).trim() !== "";
+};
 
 type Place = { readonly text: string; readonly at: number; readonly source: string; readonly offset: number };
 
 const isKanaLabel = ({ text, at, source, offset }: Place, kana: ReadonlySet<string>): boolean =>
   kana.has(text.charAt(at - 1)) && !KATAKANA.test(text.charAt(at - 2)) && isFollowed(source, offset);
 
-/** 括弧や句点の後ろの番号（(注)１．、事項）１．）。数の後ろに本文が続くときだけ印と読む。 */
-const CLOSED_NUMBER = /[。）)】］\]][\d０-９]{1,3}$/u;
+/**
+ * 括弧の後ろの番号。注の印の後ろ（(注)２．）か、括弧で閉じた見出しの後ろの最初の番号（事項）１．）。数の後ろに本文が続くときだけ印と読む。
+ * 括弧で添えた語の後ろのほかの数（締切は（予定）10．）は文の終わり。
+ */
+const NOTE_NUMBER_LABEL = /[（(]注[）)][\d０-９]{1,3}$/u;
+const CLOSED_FIRST_NUMBER = /[。）)】］\]][1１]$/u;
+const NOTE_REACH = 6;
 
 const FULLWIDTH_OFFSET = 0xfee0;
 const TRAILING_NUMBER = /[\d０-９]{1,3}$/u;
 const asNumber = (digits: string): number => Number(digits.replace(/[０-９]/gu, (char) => String.fromCharCode(char.charCodeAt(0) - FULLWIDTH_OFFSET)));
 
+const NUMBER_POINT = /(?<![\d０-９])([\d０-９]{1,3})[．.](?![\d０-９])/gu;
+
+/** numbers の中に、1 から順に last まで、この順で並ぶか。 */
+const countsUpTo = (numbers: readonly number[], last: number): boolean => numbers.reduce((next, number) => (number === next ? next + 1 : next), 1) > last;
+
 /**
- * 行が改行を失って続いた注（…持株会２．株式分割…３．有償…）の番号。同じ行の前に一つ前の番号の印（１．）があり、後ろに本文が続く。
- * 文の中の数の後ろの句点（締切は10．）は、前に「９．」が無い。
+ * 行が改行を失って続いた注（…（注）１．…持株会２．株式分割…３．有償…）の番号。同じ行の前に「１．」から一つ前までの番号の点が
+ * 順に並び、後ろに本文が続く。文の中の数の後ろの句点（締切は10．次回は11．）は、前に「１．」からの並びが無い。
  */
 const isNextInRun = ({ source, offset }: Place): boolean => {
   const lineStart = source.lastIndexOf("\n", offset) + 1;
   const before = source.slice(lineStart, offset);
   const digits = TRAILING_NUMBER.exec(before)?.[0];
   if (digits === undefined || !isFollowed(source, offset)) return false;
+  const earlier = [...before.slice(0, -digits.length).matchAll(NUMBER_POINT)].map((match) => asNumber(match[1] ?? ""));
   const previous = asNumber(digits) - 1;
-  const earlier = before.slice(0, -digits.length);
-  return previous > 0 && [...earlier.matchAll(/(?<![\d０-９])([\d０-９]{1,3})[．.](?![\d０-９])/gu)].some((match) => asNumber(match[1] ?? "") === previous);
+  return previous > 0 && countsUpTo(earlier, previous);
 };
 
 const isInsideNumber = (text: string, at: number): boolean => DIGIT.test(text.charAt(at - 1)) && DIGIT.test(text.charAt(at + 1));
@@ -70,7 +83,8 @@ const isLabelPeriod = (place: Place, kana: ReadonlySet<string>): boolean => {
   const beforeNumber = text.slice(Math.max(0, at - LIST_NUMBER_REACH), at);
   return (
     isKanaLabel(place, kana) ||
-    (CLOSED_NUMBER.test(beforeNumber) && isFollowed(place.source, place.offset)) ||
+    ((NOTE_NUMBER_LABEL.test(text.slice(Math.max(0, at - NOTE_REACH), at)) || CLOSED_FIRST_NUMBER.test(beforeNumber)) &&
+      isFollowed(place.source, place.offset)) ||
     isNextInRun(place) ||
     LIST_NUMBER.test(beforeNumber) ||
     LATIN_LABEL.test(text.slice(Math.max(0, at - LATIN_LABEL_REACH), at))
