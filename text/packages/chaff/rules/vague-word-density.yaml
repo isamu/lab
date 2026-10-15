@@ -53,8 +53,8 @@ example:
       Report an incident within 30 minutes and notify the affected teams. Record it in the incident log and fix the cause by the next working day.
 
 not_flagged:
-  ja: 文書の長さに対して少ないものは指しません。短すぎる文書も測りません。要求の文の中の「可能な限り」「必要に応じて」は、要求の書き方として requirement-smell も見ます。
-  en: A few vague words for the document's length are not reported, and very short documents are not measured. Inside a requirement, requirement-smell also reads "where possible" and "as needed".
+  ja: 文書の長さに対して少ないものは指しません。短すぎる文書も測りません。指すのは語のある文ごとに一度で、長い言い方の中の語（in a timely manner の timely）は一つと数えます。英語の法務の文書では、法律や慣行が意味を決めている言い方（reasonable、best efforts、from time to time）の中の語は数えません。要求の文の中の「可能な限り」「必要に応じて」は、要求の書き方として requirement-smell も見ます。
+  en: 'A few vague words for the document''s length are not reported, and very short documents are not measured. Each sentence is reported once, and a word inside a longer phrase ("timely" in "in a timely manner") counts once. In legal documents, a word inside a term that law and practice define ("reasonable", "best efforts", "from time to time") is not counted. Inside a requirement, requirement-smell also reads "where possible" and "as needed".'
 level_meaning:
   ja: 1000 字あたりあいまいな語 {limit} 個まで
   en: up to {limit} vague words per 1000 words

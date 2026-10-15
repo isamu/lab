@@ -1,0 +1,7 @@
+# 大文字で始まる語の前に置いて名前を作る語（HM Revenue & Customs、HM Treasury、HMS Victory）。字面どおりに照らす。
+id: name-prefix
+language: ja
+entries:
+  - pattern: "HM"
+  - pattern: "HMS"
+  - pattern: "HRH"

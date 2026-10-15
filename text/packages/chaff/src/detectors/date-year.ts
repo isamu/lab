@@ -3,15 +3,27 @@
 import type { Detector, Finding, LexiconEntry, ProseDocument, StructureNode } from "../plugin.ts";
 import { inDocumentOrder } from "../structure/issues.ts";
 import { quoteAt } from "./structure-tree.ts";
-import { ANY_YEAR_MARKER_LEXICON, YEAR_SPAN_JOINER_LEXICON, anyYearDate, opensSpan, type AnyYearMarker, type MarkerReach } from "./date-any-year.ts";
+import {
+  ANY_YEAR_MARKER_LEXICON,
+  MARKER_REACHES,
+  YEAR_SPAN_JOINER_LEXICON,
+  anyYearDate,
+  opensSpan,
+  type AnyYearMarker,
+  type MarkerReach,
+} from "./date-any-year.ts";
+import { datesUnderYearHeadings, yearLabelOf, type HeadingYearWords } from "./date-heading-year.ts";
 
 /** The words that make a yearless date any year's (毎年, 例えば, "each") and that join a period's two ends (から, "to"). */
 export type AnyYearWords = { readonly markers: readonly AnyYearMarker[]; readonly joiners: readonly string[] };
 
 const NO_ANY_YEAR_WORDS: AnyYearWords = { markers: [], joiners: [] };
 
-/** A date as the tree reads it: "2026-10-14" with its year, "10-14" without. */
-export type DatePoint = { readonly offset: number; readonly end: number; readonly value: string };
+/**
+ * A date as the tree reads it: "2026-10-14" with its year, "10-14" without. `yearHeaded`: the heading of its section
+ * names a year ("FY27-Q2 (May 1)", 「2026年度の予定」), which the date takes.
+ */
+export type DatePoint = { readonly offset: number; readonly end: number; readonly value: string; readonly yearHeaded?: boolean };
 
 /** The first and the last year of the document's dated dates. */
 export type YearSpan = { readonly from: number; readonly to: number };
@@ -106,8 +118,22 @@ const hasYearWord = (point: DatePoint, source: string, yearWords: readonly YearW
  */
 const yearGiven = (point: DatePoint, anchors: readonly DatePoint[], source: string, yearWords: readonly YearWord[]): boolean => {
   const start = lineStart(source, point.offset);
-  return hasYearWord(point, source, yearWords) || anchors.some((other) => other.offset >= start && other.offset < point.offset);
+  return point.yearHeaded === true || hasYearWord(point, source, yearWords) || anchors.some((other) => other.offset >= start && other.offset < point.offset);
 };
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+const COMMON_YEAR_MS = 365 * DAY_MS;
+/** A year with no 29 February, so that "03-01" follows "02-28" as it does in most years. */
+const COMMON_YEAR = 2025;
+
+const dayOf = (value: string): number => Date.UTC(COMMON_YEAR, Number(value.slice(0, 2)) - 1, Number(value.slice(3, 5)));
+
+/**
+ * A period of one whole year: its end is the day before its start (January 1 to December 31, 4月1日から3月31日). Without
+ * a year it is every year's, like a calendar or a fiscal year.
+ */
+export const wholeYear = (start: string, end: string): boolean =>
+  MONTH_DAY.test(start) && MONTH_DAY.test(end) && (dayOf(end) + DAY_MS - dayOf(start)) % COMMON_YEAR_MS === 0;
 
 /**
  * The yearless dates whose year the reader cannot tell. Where most dates carry a year (at least two, and more than the
@@ -124,9 +150,13 @@ export const yearGaps = (
   const dated = points.filter((point) => FULL.test(point.value));
   const anchors = [...dated, ...points.filter((point) => hasYearWord(point, source, yearWords))];
   const nextOf = new Map(points.map((point, index) => [point, points[index + 1]]));
+  const previousOf = new Map(points.map((point, index) => [point, points[index - 1]]));
+  const yearlySpan = (start: DatePoint | undefined, end: DatePoint | undefined): boolean =>
+    start !== undefined && end !== undefined && wholeYear(start.value, end.value) && opensSpan(start, end, source, anyYear.joiners);
   const yearOfAny = (point: DatePoint): boolean => {
     const next = nextOf.get(point);
     if (anyYearDate(point, source, anyYear.markers)) return true;
+    if (yearlySpan(point, next) || yearlySpan(previousOf.get(point), point)) return true;
     return next !== undefined && opensSpan(point, next, source, anyYear.joiners) && hasYearWord(next, source, yearWords);
   };
   // A recurring day or an example's date has no year to write, and is not the document's way of writing dates either.
@@ -134,20 +164,35 @@ export const yearGaps = (
   const span = spanOf(dated);
   const unclear = dated.length >= 2 && yearless.length < dated.length && span !== undefined && span.to > span.from;
   const datedSides = new Set(dated.flatMap((point) => sideOf(monthOf(FULL, point.value)) ?? []));
-  const previousOf = new Map(points.map((point, index) => [point, points[index - 1]]));
   return yearless.flatMap((point): YearGap[] => {
     if (unclear) return [{ point, kind: "years", span }];
     return crossesYear(point, previousOf.get(point), datedSides) ? [{ point, kind: "boundary", span }] : [];
   });
 };
 
-export const datePoints = (tree: StructureNode): DatePoint[] =>
-  inDocumentOrder(tree).flatMap((node) => (node.kind === "date" ? [{ offset: node.span.start, end: node.span.end, value: String(node.attrs["value"]) }] : []));
+const NO_HEADING_YEAR_WORDS: HeadingYearWords = { eras: [], labels: [] };
+
+export const datePoints = (tree: StructureNode, headingWords: HeadingYearWords = NO_HEADING_YEAR_WORDS): DatePoint[] => {
+  const yearHeaded = new Set(datesUnderYearHeadings(tree, headingWords));
+  return inDocumentOrder(tree).flatMap((node) =>
+    node.kind === "date"
+      ? [{ offset: node.span.start, end: node.span.end, value: String(node.attrs["value"]), yearHeaded: yearHeaded.has(node.span.start) }]
+      : [],
+  );
+};
 
 const yearWordsOf = (doc: ProseDocument): YearWord[] =>
   (doc.lexicons[YEAR_REFERENCE_LEXICON] ?? []).map((entry: LexiconEntry) => ({ word: entry.pattern, position: entry.position }));
 
-const reachOf = (group: string | undefined): MarkerReach => (group === "adjacent" || group === "label" ? group : "sentence");
+/** The era names (calendar-era) and the fiscal-year names ("FY{y}" of reporting-period-frame) a heading may give a year with. */
+const headingYearWordsOf = (doc: ProseDocument): HeadingYearWords => ({
+  eras: (doc.lexicons["calendar-era"] ?? []).map((entry: LexiconEntry) => entry.pattern),
+  labels: (doc.lexicons["reporting-period-frame"] ?? []).flatMap((entry: LexiconEntry) =>
+    entry.group === "fiscal-year" ? (yearLabelOf(entry.pattern) ?? []) : [],
+  ),
+});
+
+const reachOf = (group: string | undefined): MarkerReach => MARKER_REACHES.find((reach) => reach === group) ?? "sentence";
 
 const anyYearWordsOf = (doc: ProseDocument): AnyYearWords => ({
   markers: (doc.lexicons[ANY_YEAR_MARKER_LEXICON] ?? []).map((entry: LexiconEntry) => ({ word: entry.pattern, reach: reachOf(entry.group) })),
@@ -157,7 +202,7 @@ const anyYearWordsOf = (doc: ProseDocument): AnyYearWords => ({
 export const dateWithoutYear: Detector = (doc: ProseDocument): Finding[] =>
   doc.structure === undefined
     ? []
-    : yearGaps(datePoints(doc.structure), doc.source, yearWordsOf(doc), anyYearWordsOf(doc)).map((gap) => ({
+    : yearGaps(datePoints(doc.structure, headingYearWordsOf(doc)), doc.source, yearWordsOf(doc), anyYearWordsOf(doc)).map((gap) => ({
         rule: "date-without-year",
         severity: "warning",
         line: 0,

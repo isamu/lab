@@ -60,8 +60,8 @@ example:
       I have no other questions.
 
 not_flagged:
-  ja: 確認・返信・提出のように、済んだかどうかが後で分かる動作を頼む文だけを見ます。「ご了承ください」のような心構えの依頼と、「ご不明な点があれば、ご連絡ください」のような条件付きの申し出と、「ご質問はメールでお送りください」のような質問を受け付ける申し出は見ません。期限か担当が、その文か次の文にあれば指しません。ビジネスの文書でだけ動きます。
-  en: Only requests for an action whose completion can be checked (review, reply, send) are read. Courtesy requests, conditional offers ("If you have questions, let me know") and open offers ("Please send any questions to me") are not. A deadline or owner in the same or the next sentence is enough. Business documents only.
+  ja: 確認・返信・提出のように、済んだかどうかが後で分かる動作を頼む文だけを見ます。「ご了承ください」のような心構えの依頼、「ご不明な点があれば、ご連絡ください」のような条件付きの申し出、「ご質問はメールでお送りください」のような質問を受け付ける申し出、「ご相談ください」「お越しください」のような誘い、連絡先の行（「電話：」）と同じ文の依頼は見ません。期限か担当が、その文か次の文にあれば指しません。「ご提出いただく前に」「送信後、」のように、いつするかを依頼の文が言っていれば期限と読みます。見出しが期限を言っていれば（「見積提出期限：…」「【随時受付】」）、その下の依頼はその期限を受け継ぎます。ビジネスの文書でだけ動きます。
+  en: Only requests for an action whose completion can be checked (review, reply, send) are read. Courtesy requests, conditional offers ("If you have questions, let me know"), open offers ("Please send any questions to me"), invitations ("Please come and register") and a request on a contact line (a "Fax" or "Phone" label and its number) are not. A deadline or owner in the same or the next sentence is enough; so is a timing in the request itself ("after you pay"), or a heading above it that names the deadline. Business documents only.
 rewrite:
   depth: light
   ja:

@@ -32,6 +32,15 @@ export type WordUse = { readonly ordinary: ReadonlySet<string>; readonly common:
 export const NO_WORD_USE: WordUse = { ordinary: new Set(), common: new Set() };
 
 /**
+ * 終わりの重なった字の一つの抜け（Licensee と License、Bennett と Bennet）で、どちらかを文書が小文字か普通名詞で書く（license）。
+ * 語の終わりの抜けと同じく、語の形の違い（License と、その許諾を受ける Licensee）。
+ */
+export const isWordFormOf = (left: string, right: string, use: WordUse): boolean => {
+  const [longer, shorter] = left.length > right.length ? [left, right] : [right, left];
+  return longer.slice(0, -1) === shorter && (use.common.has(longer) || use.common.has(shorter));
+};
+
+/**
  * 名前の語（words、小文字）の at の語を usual と書いた名前があるとき、その違いを書き損じと見るか。違う語が最後の語（姓）なら、
  * 終わりの一字の抜けか足しか、四字以上の一字違い（oneLetterApart）で、前の語がどれも文書の中で普通名詞として書かない語（Rachel、Mr）
  * のとき。Hurricane Hanna と Hurricane Hannah は名前の違う二つの嵐。最後でない語なら、八字以上の終わりの一字の抜けか足しで、名前の

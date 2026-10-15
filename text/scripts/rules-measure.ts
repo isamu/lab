@@ -9,7 +9,7 @@
 //   --write                write the corpus part to corpus/rules-measure.json, which test/test_rule_policy.ts holds the rules to,
 //                          and the AI-likeness score's human shares (scripts/ai-score-shares.ts)
 //   --apply                measure, write corpus/rules-measure.json, and set each rule's status and severity, and the groups each
-//                          is measured off for (off_for), from it: the one step that places a rule that just landed (--from <json> skips the run)
+//                          is measured off for (off_for), from it and the committed corpus/rules-precision.json (yarn rules:precision): the one step that places a rule that just landed (--from <json> skips the run)
 //   --baseline <dir>       also run every .md in <dir> (never committed) and add a baseline column
 //   --baseline-genre <id>  the genre the baseline is read as (blog/tech when left out)
 //   --from <json>          read a measurement --json printed before instead of running chaff again

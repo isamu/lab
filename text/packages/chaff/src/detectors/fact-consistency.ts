@@ -140,9 +140,10 @@ const readFacts = (doc: ProseDocument, tree: StructureNode): ScopedFact[] => {
   );
   const read = new Set([...termed, ...labelled.map((fact) => fact.value.start)]);
   const verbs = verbQuantityFacts(doc.source, values, verbQuantityWordsOf(doc)).filter((fact) => !read.has(fact.value.start));
-  const tabled = tableFacts(doc.source, values, totalColumnsOf(doc), countLabelWordsOf(doc.lexicons));
+  const tabled = tableFacts(doc.source, values, totalColumnsOf(doc), countLabelWordsOf(doc.lexicons), { columnGroups: true });
   const facts = withQualifiedKeys(doc, [...labelled, ...terms, ...verbs, ...tabled]);
-  return withCellKeys(scopedFacts(facts, tree, doc.source, patternsOf(doc, "summary-heading")), qualifierWordsOf(doc));
+  const scoped = scopedFacts(facts, tree, doc.source, patternsOf(doc, "summary-heading"), { paragraphHeads: true });
+  return withCellKeys(scoped, qualifierWordsOf(doc));
 };
 
 /** 文書の名前付きの値。二つの rule が読むので、文書ごとに一度だけ読む。 */

@@ -42,12 +42,15 @@ const besideLetter = (text: string, at: number, step: number, script: RegExp): b
 
 const touchesScript = (text: string, at: number, script: RegExp): boolean => besideLetter(text, at, -1, script) || besideLetter(text, at, 1, script);
 
-/** The marks in a sentence that touch a letter of the document's script, outside 「」『』 quotations. spaced is the lexicon's pattern side. */
-export const marksIn = (sentence: Sentence, forms: ReadonlyMap<string, Form>, script: RegExp): Mark[] => {
+/**
+ * The marks in a sentence that touch a letter of the document's script, outside 「」『』 quotations. spaced is the lexicon's pattern side.
+ * The letters beside a mark are read in the source, so a mark that opens a sentence (。(2）当社) counts wherever the sentence starts.
+ */
+export const marksIn = (source: string, sentence: Sentence, forms: ReadonlyMap<string, Form>, script: RegExp): Mark[] => {
   const quoted = quotedSpans(sentence.text);
   return sentence.text.split("").flatMap((char, at) => {
     const form = forms.get(char);
-    if (form === undefined || !touchesScript(sentence.text, at, script)) return [];
+    if (form === undefined || !touchesScript(source, sentence.span.start + at, script)) return [];
     if (isWithinAny(quoted, { start: at, end: at })) return [];
     return [{ sentence, char, form, offset: sentence.span.start + at, spaced: form.side }];
   });
@@ -89,7 +92,7 @@ export const markConsistency: Detector = (doc, options): Finding[] => {
   const script = SCRIPT[doc.language];
   if (script === undefined) return [];
   const forms = formsOf(options.lexicon ?? []);
-  const marks = ownSentences(doc).flatMap((sentence) => marksIn(sentence, forms, script));
+  const marks = ownSentences(doc).flatMap((sentence) => marksIn(doc.source, sentence, forms, script));
   const kinds = [...new Set(marks.map((mark) => mark.form.kind))];
   return kinds.flatMap((kind) =>
     minorityFindings(

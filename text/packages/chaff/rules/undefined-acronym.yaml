@@ -7,6 +7,7 @@ extra_word_lists:
   [
     definition-marker,
     definition-verb,
+    definition-statement,
     meridiem,
     time-zone,
     currency-code,
@@ -19,8 +20,15 @@ extra_word_lists:
     date-time-unit,
     http-method,
     reference-list-heading,
+    legal-form,
     company-form,
-    company-form-latin,
+    citation-series,
+    carrier-name,
+    name-prefix,
+    street-suffix,
+    tax-code,
+    capital-phrase,
+    name-determiner,
   ]
 uses: [pos]
 severity: info
@@ -70,7 +78,7 @@ example:
 
 not_flagged:
   ja: 誰でも知っている略語（URL、PDF など）と、前後の括弧で説明した略語、会社の名前の中の英字（㈱ADEKA、CO.,LTD.）は指しません。
-  en: Common acronyms (URL, PDF), acronyms spelled out in brackets next to them, and the letters of a company name in a Japanese sentence (㈱ADEKA, CO.,LTD.) are not reported.
+  en: Common acronyms (URL, PDF), acronyms spelled out in brackets next to them, and the letters of a company name (㈱ADEKA, CO.,LTD.) are not reported.
 level_meaning:
   ja: 説明のない略語が {limit} 種類あれば指摘。文書が自分で略語を {limit} 個展開していれば、1 つの抜けから指摘
   en: reported once {limit} different acronyms go unexplained, or from the first one when the document itself spells out {limit} others

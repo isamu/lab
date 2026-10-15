@@ -1,0 +1,11 @@
+# 番号で引く法令集・法令（45 CFR Parts 160、21 USC §301、22 CCR §§ 12701、94/820/EC）。巻の番号の後ろか、§・Part・番号の前の、
+# 引用の形の中でだけ見る。字面どおりに照らす。
+id: citation-series
+language: ja
+entries:
+  - pattern: "CFR"
+  - pattern: "USC"
+  - pattern: "CCR"
+  - pattern: "EC"
+  - pattern: "EEC"
+  - pattern: "EU"

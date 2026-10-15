@@ -7,7 +7,7 @@ import { lookalikeSlipsIn, type LookalikeChars } from "../name-lookalike-chars.t
 import { givenNameReadingOf, readingOfWords, type CharReadings } from "../name-char-reading.ts";
 import { nameCueAt, type NameCues } from "../name-cue.ts";
 import { quoteAt } from "./structure-tree.ts";
-import { companyMentionsIn, companyVariants, type CompanyForm, type IsProper, type PredicateEnds } from "../company-names.ts";
+import { companyMentionsIn, companyVariants, type CompanyForm, type CompanyMention, type IsProper, type PredicateEnds } from "../company-names.ts";
 import { kanaSpelledCompanies, type ReadWord } from "../company-kana-spelling.ts";
 import { proseAndTablesOf } from "../table-text.ts";
 import { tableBodyCells } from "../facts/table-facts.ts";
@@ -23,6 +23,7 @@ import { spacedPersonNamesIn } from "../spaced-person-name.ts";
 import { isOrdinaryToken, withOrdinaryWords } from "../name-ordinary-word.ts";
 import { isInPersonField } from "../person-field.ts";
 import { labelledSpans, orderNamesOf, quotedSpans, stemOf, titleCaseSpans, wordOrderVariants, type OrderWord } from "../name-word-order.ts";
+import { isGroupPairOf, notDefinedTerms, outsideCapitals, sentenceIndexOf, withGivenNames } from "./name-variant-apart.ts";
 
 // 人の名前と読ませる敬称（様、さん）は語彙表 person-suffix、人を指す前置き（担当の）は person-lead、名前のすぐ後ろに来る語
 // （です、まで）は name-particle、字体の違う同じ字（斎・斉・齋）は name-variant-char が組（group）ごとに言う。
@@ -145,20 +146,22 @@ const predicateEndsOf = (doc: ProseDocument): PredicateEnds =>
 const readWordsOf = (doc: ProseDocument): ReadWord[] =>
   tokensOf(doc).map((token) => ({ start: token.span.start, end: token.span.end, surface: token.surface, reading: token.reading }));
 
+/** 会社の名前の現れ。大文字で書いた一節の中のものは除く。 */
+const companyMentionsOf = (doc: ProseDocument, prose: string): CompanyMention[] =>
+  outsideCapitals(prose, companyMentionsIn(prose, [...companyFormsOf(doc), ...foreignFormsOf(doc)], properOf(doc), kanaStopsOf(doc), predicateEndsOf(doc)));
+
 /**
  * 会社の名前の書き分けと、名前の漢字一字をその読みのかなで書いた所（みどり野 と みどりの）。名前の見方がすでに指した所と重なる
  * ものは除く。
  */
-const companyFindings = (doc: ProseDocument, prose: string, reported: readonly Reported[]): Reported[] => {
-  const stops = kanaStopsOf(doc);
-  const mentions = companyMentionsIn(prose, [...companyFormsOf(doc), ...foreignFormsOf(doc)], properOf(doc), stops, predicateEndsOf(doc));
+const companyFindings = (doc: ProseDocument, prose: string, mentions: readonly CompanyMention[], reported: readonly Reported[]): Reported[] => {
   const variants = companyVariants(mentions).map(({ mention, usual, kind }) => ({
     offset: mention.offset,
     name: mention.surface,
     usual,
     kind: kind === "spelling" ? kind : `company-${kind}`,
   }));
-  const kana = kanaSpelledCompanies(prose, mentions, readWordsOf(doc), stops.particles)
+  const kana = kanaSpelledCompanies(prose, mentions, readWordsOf(doc), kanaStopsOf(doc).particles)
     .map(({ surface, offset, usual }) => ({ offset, name: surface, usual, kind: "company-kana" }))
     .filter((found) => !overlapsAny(variants, found.offset, found.name.length));
   return [...variants, ...kana].filter(({ offset, name }) => !overlapsAny(reported, offset, name.length));
@@ -207,6 +210,9 @@ const orderWordsOf = (doc: ProseDocument): OrderWord[] => {
     .map((token) => ({ start: token.span.start, end: token.span.end, key: stemOf(token.surface, suffixes) }));
 };
 
+/** 語彙表 name-title-joiner の、前置詞の後ろにだけ立つ冠詞（the）の組。 */
+const ARTICLE = "article";
+
 /**
  * 語の順を入れ替えて書いた同じ名前（統計学基礎 と 基礎統計学）。名前と読める所は、括弧の中（name-quote）、大文字で始まる語の並び
  * （name-title-joiner を挟んでよい）、名前を書く欄の後ろ（name-label）。大文字の語の並びどうしは、片方が表の升まるごとに
@@ -214,13 +220,20 @@ const orderWordsOf = (doc: ProseDocument): OrderWord[] => {
  */
 const orderFindings = (doc: ProseDocument, prose: string, reported: readonly Reported[]): Reported[] => {
   const starts = sentenceStartsOf(doc);
+  const joiners = doc.lexicons["name-title-joiner"] ?? [];
   const spans = [
     ...quotedSpans(prose, patternsOf(doc, "name-quote")),
-    ...titleCaseSpans(prose, patternsOf(doc, "name-title-joiner"), (offset) => starts.has(offset)),
+    ...titleCaseSpans(
+      prose,
+      joiners.filter((entry) => entry.group !== ARTICLE).map((entry) => entry.pattern),
+      (offset) => starts.has(offset),
+      joiners.filter((entry) => entry.group === ARTICLE).map((entry) => entry.pattern),
+    ),
     ...labelledSpans(prose, patternsOf(doc, "name-label")),
   ];
   const cells = new Set(tableBodyCells(proseAndTablesOf(doc)).map((cell) => cell.text.trim()));
-  return wordOrderVariants(orderNamesOf(doc.source, spans, orderWordsOf(doc), orderStopsOf(doc)), cells)
+  const names = notDefinedTerms(doc, orderNamesOf(doc.source, spans, orderWordsOf(doc), orderStopsOf(doc)));
+  return wordOrderVariants(names, cells, sentenceIndexOf(doc))
     .filter(({ name }) => !overlapsAny(reported, name.offset, name.surface.length))
     .map(({ name, usual }) => ({ offset: name.offset, name: name.surface, usual, kind: "order" }));
 };
@@ -270,7 +283,7 @@ const tokenRunsOf = (sentence: Sentence): readonly (readonly Token[])[] => {
 const nameMentionsOf = (doc: ProseDocument, prose: string, chars: VariantChars): NameMention[] => {
   const cues: NameCues = { leads: patternsOf(doc, "person-lead"), suffixes: patternsOf(doc, "person-suffix"), particles: patternsOf(doc, "name-particle") };
   const charReadings = charReadingsOf(doc);
-  const tagged = doc.sentences.flatMap((sentence) => tokenRunsOf(sentence).flatMap((tokens) => mentionsIn(tokens, doc.source, cues.suffixes, charReadings)));
+  const tagged = doc.sentences.flatMap((sentence) => tokenRunsOf(sentence).flatMap((tokens) => mentionsIn(tokens, prose, cues.suffixes, charReadings)));
   const taggedOrSuffixed = [...tagged, ...suffixedNamesIn(prose, cues.suffixes, chars, tagged)];
   const cued = [...taggedOrSuffixed, ...cuedNamesIn(prose, cues, chars, taggedOrSuffixed)].map((mention): NameMention => {
     const cue = mention.cue ?? nameCueAt(prose, mention.offset, mention.surface, cues);
@@ -281,7 +294,7 @@ const nameMentionsOf = (doc: ProseDocument, prose: string, chars: VariantChars):
   const outside = joined.filter(
     (mention) => !spaced.some((name) => name.offset < mention.offset + mention.surface.length && mention.offset < name.offset + name.surface.length),
   );
-  return withKnownNeighbours([...outside, ...spaced], prose).toSorted((left, right) => left.offset - right.offset);
+  return outsideCapitals(prose, withKnownNeighbours([...outside, ...spaced], prose)).toSorted((left, right) => left.offset - right.offset);
 };
 
 /** 人の名前で形の似た別の字（太 と 大）は語彙表 name-lookalike-char が組（group）ごとに言う。 */
@@ -352,10 +365,15 @@ const wordUseOf = (doc: ProseDocument): WordUse => {
 export const nameVariant: Detector = (doc): Finding[] => {
   const prose = doc.prose ?? doc.source;
   const chars = variantCharsOf(doc);
-  const mentions = labelledNamesOf(doc, ordinaryNamesOf(doc, nameMentionsOf(doc, prose, chars)));
+  const mentions = labelledNamesOf(doc, ordinaryNamesOf(doc, withGivenNames(tokensOf(doc), doc.source, nameMentionsOf(doc, prose, chars))));
+  const companies = companyMentionsOf(doc, prose);
+  const inGroup = isGroupPairOf(
+    companies,
+    companyFormsOf(doc).map((form) => form.pattern),
+  );
   const variants = nameVariants(mentions, chars, spellingInputOf(doc), wordUseOf(doc))
     .map(({ mention, usual, kind }): Reported => ({ offset: mention.offset, name: mention.surface, usual, kind }))
-    .filter(notSpacingOnly);
+    .filter((found) => notSpacingOnly(found) && !inGroup(found));
   const lookalikes = lookalikeSlipsIn(mentions, lookalikeCharsOf(doc)).map(({ mention, usual }) => ({
     offset: mention.offset,
     name: mention.surface,
@@ -363,7 +381,7 @@ export const nameVariant: Detector = (doc): Finding[] => {
     kind: "lookalike",
   }));
   const names = [...variants, ...lookalikes.filter((found) => !overlapsAny(variants, found.offset, found.name.length))];
-  const namesAndCompanies = [...names, ...companyFindings(doc, prose, names)];
+  const namesAndCompanies = [...names, ...companyFindings(doc, prose, companies, names)];
   const withTables = [...namesAndCompanies, ...tableFindings(doc, prose, mentions, namesAndCompanies).filter(notSpacingOnly)];
   const withPlaces = [...withTables, ...placeFindings(doc, prose, withTables, chars)];
   const withProducts = [...withPlaces, ...productFindings(doc, prose, withPlaces)];

@@ -2,7 +2,8 @@ import type { Token } from "./plugin.ts";
 import { escapeRegExp } from "./orthography.ts";
 import { nameCueAt, type NameCue, type NameCues } from "./name-cue.ts";
 import { isNearSurname } from "./surname-near.ts";
-import { isEndWordSlip, NO_WORD_USE, type WordUse } from "./name-end-letter.ts";
+import { isEndWordSlip, isWordFormOf, NO_WORD_USE, type WordUse } from "./name-end-letter.ts";
+import { areOtherPeople, givenNamesBySurface, type GivenNames } from "./name-given-before.ts";
 import { foldedKeysOf, NO_SPELLING, type SpellingInput } from "./name-spelling-chars.ts";
 import { NO_CHAR_READINGS, readingOfWords } from "./name-char-reading.ts";
 import { isPersonRun } from "./name-person.ts";
@@ -17,7 +18,8 @@ import { heavierFirst, outweighs, type NameWeight } from "./name-weight.ts";
  * 人名と読むか、敬称が付く）。cue は前後の語から見た名前らしさ（name-cue.ts）。ordinary は、ふつうの語でもある一語の名前で、
  * 文書がその形をどこでも名前に使わないもの（name-ordinary-word.ts）。labelled は、人を書く欄（氏名：、Contractor:）に書いた名前
  * （person-field.ts）。givenNameReading は、空白を挟んだ姓と名の名を、名の中での字の読みで読み直した読み（name-char-reading.ts の
- * givenNameReadingOf）。解析器が名を別の読みに切ったとき（建太 を タテフトシ）のもう一通りの読み。
+ * givenNameReadingOf）。解析器が名を別の読みに切ったとき（建太 を タテフトシ）のもう一通りの読み。givenName は、名前のすぐ前に
+ * 書いた名（Jeffrey D. Walker の Jeffrey、name-given-before.ts）。
  */
 export type NameMention = {
   readonly surface: string;
@@ -29,6 +31,7 @@ export type NameMention = {
   readonly ordinary?: boolean;
   readonly labelled?: boolean;
   readonly givenNameReading?: string | undefined;
+  readonly givenName?: string | undefined;
 };
 
 export type NameVariant = {
@@ -310,11 +313,13 @@ const differingWords = (left: Tally, right: Tally): readonly [string, string] | 
 };
 
 /** 一語だけが一字違いで、相手のほうが重い（outweighs）。どちらもふつうの語（Green と Greek）なら、別の二つの語。 */
-const isSlipOf = (tally: Tally, other: Tally): boolean => {
-  if (!outweighs(other, tally) || (tally.first.ordinary === true && other.first.ordinary === true)) return false;
-  const words = differingWords(tally, other);
-  return words !== undefined && isNearWord(...words);
-};
+const isSlipOf =
+  (use: WordUse): Alike =>
+  (tally, other) => {
+    if (!outweighs(other, tally) || (tally.first.ordinary === true && other.first.ordinary === true)) return false;
+    const words = differingWords(tally, other);
+    return words !== undefined && isNearWord(...words) && !isWordFormOf(...words, use);
+  };
 
 /**
  * 二語以上の名前の一語だけが、終わりの一字の抜けか足し（Rachel Whitmore と Rachel Whitmor）か、最後の語（姓）が四字でも一字違い
@@ -330,9 +335,14 @@ const isEndSlipOf =
     return !use.ordinary.has(word) && !use.ordinary.has(usual) && isEndWordSlip(words, at, usual, use, isOneLetterApart);
   };
 
-const nearVariants = (tallies: readonly Tally[], use: WordUse): NameVariant[] => {
-  const isEndSlip = isEndSlipOf(use);
-  return variantsIn(groupBy(tallies, maskedKeys), "near", (tally, other) => isSlipOf(tally, other) || isEndSlip(tally, other), true);
+const nearVariants = (tallies: readonly Tally[], use: WordUse, givenNames: GivenNames): NameVariant[] => {
+  const [isSlip, isEndSlip] = [isSlipOf(use), isEndSlipOf(use)];
+  return variantsIn(
+    groupBy(tallies, maskedKeys),
+    "near",
+    (tally, other) => !areOtherPeople(givenNames.get(tally.surface), givenNames.get(other.surface)) && (isSlip(tally, other) || isEndSlip(tally, other)),
+    true,
+  );
 };
 
 /**
@@ -419,7 +429,7 @@ export const nameVariants = (
       "reading",
       oneWordApart,
     ),
-    ...nearVariants(tallies, use),
+    ...nearVariants(tallies, use, givenNamesBySurface(mentions)),
     ...surnameVariants(tallies),
     ...characterVariants(tallies, chars),
     ...personReadingVariants(tallies),

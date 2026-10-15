@@ -1,0 +1,7 @@
+# Words written before a capitalised word to make a name (HM Revenue & Customs, HM Treasury, HMS Victory). Matched as written.
+id: name-prefix
+language: en
+entries:
+  - pattern: "HM"
+  - pattern: "HMS"
+  - pattern: "HRH"

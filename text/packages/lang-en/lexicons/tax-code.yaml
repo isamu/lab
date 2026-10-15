@@ -1,0 +1,7 @@
+# Names of taxes a reader knows by their short form (VAT, GST). Like common acronyms, they are not asked to be spelled out.
+# Matched as written.
+id: tax-code
+language: en
+entries:
+  - pattern: "VAT"
+  - pattern: "GST"

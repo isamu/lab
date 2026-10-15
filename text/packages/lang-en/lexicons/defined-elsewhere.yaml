@@ -1,0 +1,12 @@
+# Words opening brackets right after a capitalised run that say where it is defined: the Closing (as defined in the
+# Merger Agreement), Additional Fees (as defined in Exhibit A). undefined-term leaves such a run: the document points at
+# its definition. Matched without regard to case.
+id: defined-elsewhere
+language: en
+entries:
+  - pattern: as defined in
+  - pattern: as defined under
+  - pattern: as defined by
+  - pattern: as defined and set forth
+  - pattern: as such term is defined
+  - pattern: as that term is defined

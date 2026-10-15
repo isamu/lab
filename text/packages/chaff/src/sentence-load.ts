@@ -20,18 +20,23 @@ const BRACKETS: Readonly<Record<string, string>> = {
   "“": "”",
 };
 
+/** A closer and the same closer in the other width: a numbering marker written (1） closes the bracket it opened. */
+const OTHER_WIDTH: Readonly<Record<string, string>> = { ")": "）", "）": ")", "]": "］", "］": "]" };
+
 /** A formula written in TeX ($d^k = -\nabla f(x^k)$): its brackets are the formula's, not the sentence's. */
 const FORMULA = /\$\$[^$]*\$\$|\$[^$\n]*\$/gu;
 
 /**
  * The deepest the brackets of a text nest: 「計画（案）」 is one, 「（注（a）を参照）」 two, plain text none. A closer with no
- * opener (the 1) of a list) is ignored, an opener never closed counts as open until the end, and formulas in $…$ are skipped.
+ * opener (the 1) of a list) is ignored, an opener never closed counts as open until the end, a closer of the other width closes
+ * its opener ((1） is one), and formulas in $…$ are skipped.
  */
 export const bracketDepth = (text: string): number => {
   // The closers still awaited, innermost last. Pushed and popped in place: copying it per character is quadratic on deep nesting.
   const awaited: string[] = [];
   return [...text.replace(FORMULA, " ")].reduce((deepest, char) => {
-    if (awaited.at(-1) === char) awaited.pop();
+    const innermost = awaited.at(-1);
+    if (innermost !== undefined && (innermost === char || innermost === OTHER_WIDTH[char])) awaited.pop();
     else if (BRACKETS[char] !== undefined) awaited.push(BRACKETS[char]);
     return Math.max(deepest, awaited.length);
   }, 0);

@@ -1,16 +1,20 @@
 import type { Detector, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence } from "../plugin.ts";
 import { entryCloses, entryIn, entryRanges } from "./lexicon-match.ts";
 import { openEndAt, openEndNames, type OpenEndNames } from "./open-end-names.ts";
+import { statesConcrete } from "./vague-deadline.ts";
 
 // Requirements smells (Femmer et al. 2017; Berry et al. 2003; ISO/IEC/IEEE 29148): a loophole, an open-ended list and
 // "and/or", in a sentence that states a requirement. What makes a sentence a requirement, and each smell's words, come
 // from the language's lexicons; this file knows neither language.
 
 const OPEN_END = "requirement-open-end";
+const LOOPHOLE = "requirement-loophole";
+const TIME = "time";
+const CONCRETE_DEADLINE = "concrete-deadline";
 
 /** Each smell: the lexicon of its words, and the finding's variant (the rule's messages). */
 const SMELLS = [
-  { lexicon: "requirement-loophole", variant: "loophole" },
+  { lexicon: LOOPHOLE, variant: "loophole" },
   { lexicon: OPEN_END, variant: "open-end" },
   { lexicon: "requirement-either", variant: "either" },
 ] as const;
@@ -43,9 +47,18 @@ const findingOf = (sentence: Sentence, entry: LexiconEntry, variant: string, off
   values: { matched: entry.pattern, offset },
 });
 
+/** A loophole about when (group: time) that the sentence bounds with a stated limit ("as soon as possible, but no later than two days after"). */
+const boundedInTime = (doc: ProseDocument, sentence: Sentence, entry: LexiconEntry, lexicon: string): boolean =>
+  lexicon === LOOPHOLE &&
+  entry.group === TIME &&
+  statesConcrete(
+    { start: sentence.span.start, text: sentence.text },
+    (doc.lexicons[CONCRETE_DEADLINE] ?? []).map((limit) => limit.pattern),
+  );
+
 /** Where the word stands as a smell. An open-end word inside a name the document gives (業務執行取締役等) is none; without tokens it cannot be told apart. */
 const smellAt = (doc: ProseDocument, sentence: Sentence, entry: LexiconEntry, lexicon: string, names: () => OpenEndNames): number | undefined => {
-  if (!entryIn(sentence, entry)) return undefined;
+  if (!entryIn(sentence, entry) || boundedInTime(doc, sentence, entry, lexicon)) return undefined;
   const tokenized = sentence.tokens !== undefined && (entry.tokens?.length ?? 0) > 0;
   return lexicon === OPEN_END && tokenized ? openEndAt(doc, sentence, entry, names()) : offsetOf(sentence, entry);
 };

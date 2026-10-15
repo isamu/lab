@@ -75,7 +75,7 @@ describe("request-without-deadline: 期限も担当も無い依頼", () => {
   });
 
   it("語の一部（同様の様、たくさんのさん、3時間の時）は担当や期限と読まない", () => {
-    ["同様の内容を確認してください。", "たくさんの資料を確認してください。", "3時間後に資料を確認してください。"].forEach((source) =>
+    ["同様の内容を確認してください。", "たくさんの資料を確認してください。", "3時間かけて資料を確認してください。"].forEach((source) =>
       assert.deepEqual(findingsOf(source), [MESSAGE_JA], source),
     );
     assert.deepEqual(findingsOf("Please review the report. The 3amplitude result changed.", en), [MESSAGE_EN]);
@@ -86,6 +86,67 @@ describe("request-without-deadline: 期限も担当も無い依頼", () => {
     assert.deepEqual(findingsOf("- 見積書を確認してください。\n- 山田さんは休みです。"), [MESSAGE_JA]);
     assert.deepEqual(findingsOf("Please review the report. Tokyo is noisy today in the north.", en), []);
     assert.deepEqual(findingsOf("Please review the report. Tokyo is noisy.", en), [MESSAGE_EN]);
+  });
+
+  it("ほかの出来事を基準にした時機が依頼の文にあれば言わない", () => {
+    [
+      "申込書をご提出いただく前に、要項を必ず確認してください。",
+      "送信後、必ずご連絡ください。",
+      "申込書の提出時に、明細も提出してください。",
+      "3時間後に資料を確認してください。",
+    ].forEach((source) => assert.deepEqual(findingsOf(source), [], source));
+    assert.deepEqual(findingsOf("Please send the receipt after you pay.", en), []);
+    assert.deepEqual(findingsOf("Please review the agenda in advance.", en), []);
+  });
+
+  it("時機の語が次の文にあるだけなら言う（次の文は別の話）", () => {
+    assert.deepEqual(findingsOf("申込書をご提出ください。その後、面談の日程をお知らせします。"), [MESSAGE_JA]);
+    assert.deepEqual(findingsOf("Please send the form. After you leave, the doors lock.", en), [MESSAGE_EN]);
+  });
+
+  it("誘いの動詞で終わる依頼と、望む人に向けた依頼は言わない", () => {
+    ["会員登録をしにお越しください。", "登録できますのでご相談ください。", "入力用にご使用ください。", "参加したい方は、まずは登録をお願いします。"].forEach(
+      (source) => assert.deepEqual(findingsOf(source), [], source),
+    );
+    assert.deepEqual(findingsOf("Please come to register at the front desk.", en), []);
+  });
+
+  it("誘いの動詞が依頼の終わりから離れていれば言う", () => {
+    assert.deepEqual(findingsOf("ご相談の内容を記入してください。"), [MESSAGE_JA]);
+    assert.deepEqual(findingsOf("Please register the visit in the log.", en), [MESSAGE_EN]);
+  });
+
+  it("誘いと読点で区切られた動作は、誘いとは別の依頼として言う", () => {
+    assert.deepEqual(findingsOf("申請書を提出し、会場へお越しください。"), [MESSAGE_JA]);
+    assert.deepEqual(findingsOf("Please submit the form, then come to the hall.", en), [MESSAGE_EN]);
+  });
+
+  it("連絡先の行（札とコロン）と同じ文の依頼は言わない", () => {
+    assert.deepEqual(findingsOf("ファックス番号：012-3456-7890\n※送られたら必ずご連絡ください。"), []);
+    assert.deepEqual(findingsOf("Fax: 012-345-6789\nPlease confirm receipt with a call.", en), []);
+  });
+
+  it("コロンの無い連絡の手段の語は連絡先の行と読まない", () => {
+    assert.deepEqual(findingsOf("ファックスで見積書をご提出ください。"), [MESSAGE_JA]);
+    assert.deepEqual(findingsOf("Please send the fax to the printer.", en), [MESSAGE_EN]);
+  });
+
+  it("見出しが期限を言っていれば、その下の依頼は期限を受け継ぐ", () => {
+    const heading = (title: string, body: string): readonly string[] =>
+      namedRuleRun(RULE, `# 件\n\n## ${title}\n\n${body}\n`, ja, "a.md", "business/email").findings;
+    assert.deepEqual(heading("見積提出期限：2026年10月26日", "### 様式\n\n見積書を確認してください。"), []);
+    assert.deepEqual(heading("【随時受付】講師の募集", "履歴書を提出してください。"), []);
+    assert.deepEqual(heading("提出書類", "見積書を確認してください。"), [MESSAGE_JA]);
+  });
+
+  it("見出しに日付だけがあっても（発出日や催しの日）、期限とは読まない", () => {
+    const source = "# 熱中症の防止について（2026年8月22日　事務連絡）\n\n防止策の状況を報告してください。\n";
+    assert.deepEqual(namedRuleRun(RULE, source, ja, "a.md", "business/email").findings, [MESSAGE_JA]);
+  });
+
+  it("期限を言う見出しは、別の節の依頼には受け継がない", () => {
+    const source = "# 件\n\n## 見積提出期限：2026年10月26日\n\n見積書を2026年10月26日までにお送りください。\n\n## 提出書類\n\n見積書を確認してください。\n";
+    assert.deepEqual(namedRuleRun(RULE, source, ja, "a.md", "business/email").findings, [MESSAGE_JA]);
   });
 
   it("ビジネスの文書でだけ動く", () => {
