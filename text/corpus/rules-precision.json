@@ -69,8 +69,8 @@
       "business": {
         "ja": {
           "correct": 0,
-          "falsePositive": 2,
-          "documents": 2,
+          "falsePositive": 0,
+          "documents": 0,
           "unjudged": 4
         }
       },
@@ -307,9 +307,9 @@
       "business": {
         "ja": {
           "correct": 1,
-          "falsePositive": 7,
-          "documents": 7,
-          "unjudged": 19
+          "falsePositive": 2,
+          "documents": 3,
+          "unjudged": 7
         }
       },
       "docs": {
@@ -323,7 +323,7 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 2
+          "unjudged": 1
         }
       },
       "legal": {
@@ -337,7 +337,7 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 44
+          "unjudged": 37
         }
       },
       "literature": {
@@ -379,7 +379,7 @@
           "correct": 18,
           "falsePositive": 0,
           "documents": 11,
-          "unjudged": 166
+          "unjudged": 176
         }
       },
       "docs": {
@@ -463,9 +463,9 @@
       "business": {
         "ja": {
           "correct": 3,
-          "falsePositive": 2,
-          "documents": 5,
-          "unjudged": 19
+          "falsePositive": 0,
+          "documents": 3,
+          "unjudged": 8
         }
       },
       "docs": {
@@ -565,7 +565,7 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 2
+          "unjudged": 3
         }
       },
       "technical": {
@@ -613,7 +613,7 @@
           "correct": 2,
           "falsePositive": 0,
           "documents": 2,
-          "unjudged": 4
+          "unjudged": 5
         }
       },
       "legal": {
@@ -626,6 +626,14 @@
       }
     },
     "contraction-consistency": {
+      "academic": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 4
+        }
+      },
       "blog": {
         "en": {
           "correct": 0,
@@ -639,23 +647,15 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 24
-        }
-      },
-      "docs": {
-        "en": {
-          "correct": 1,
-          "falsePositive": 37,
-          "documents": 11,
-          "unjudged": 14
+          "unjudged": 32
         }
       },
       "legal": {
         "en": {
-          "correct": 2,
+          "correct": 0,
           "falsePositive": 0,
-          "documents": 1,
-          "unjudged": 0
+          "documents": 0,
+          "unjudged": 15
         }
       },
       "technical": {
@@ -663,7 +663,7 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 26
+          "unjudged": 31
         }
       }
     },
@@ -721,30 +721,22 @@
         },
         "ja": {
           "correct": 0,
-          "falsePositive": 2,
-          "documents": 1,
+          "falsePositive": 0,
+          "documents": 0,
           "unjudged": 3
-        }
-      },
-      "docs": {
-        "en": {
-          "correct": 0,
-          "falsePositive": 6,
-          "documents": 1,
-          "unjudged": 0
         }
       },
       "legal": {
         "en": {
           "correct": 0,
-          "falsePositive": 77,
-          "documents": 4,
-          "unjudged": 123
+          "falsePositive": 2,
+          "documents": 1,
+          "unjudged": 98
         },
         "ja": {
           "correct": 0,
-          "falsePositive": 4,
-          "documents": 3,
+          "falsePositive": 0,
+          "documents": 0,
           "unjudged": 43
         }
       },
@@ -871,7 +863,7 @@
           "correct": 0,
           "falsePositive": 36,
           "documents": 3,
-          "unjudged": 1
+          "unjudged": 2
         },
         "ja": {
           "correct": 0,
@@ -887,7 +879,7 @@
           "correct": 1,
           "falsePositive": 6,
           "documents": 3,
-          "unjudged": 38
+          "unjudged": 39
         },
         "ja": {
           "correct": 0,
@@ -1961,7 +1953,7 @@
           "correct": 0,
           "falsePositive": 5,
           "documents": 3,
-          "unjudged": 31
+          "unjudged": 24
         }
       },
       "docs": {
@@ -2168,19 +2160,11 @@
           "unjudged": 4
         }
       },
-      "business": {
-        "ja": {
-          "correct": 3,
-          "falsePositive": 28,
-          "documents": 14,
-          "unjudged": 144
-        }
-      },
       "docs": {
         "ja": {
           "correct": 0,
-          "falsePositive": 6,
-          "documents": 2,
+          "falsePositive": 2,
+          "documents": 1,
           "unjudged": 10
         }
       },
@@ -2241,7 +2225,7 @@
           "correct": 3,
           "falsePositive": 6,
           "documents": 9,
-          "unjudged": 57
+          "unjudged": 65
         }
       },
       "docs": {
@@ -2313,9 +2297,9 @@
         },
         "ja": {
           "correct": 13,
-          "falsePositive": 7,
-          "documents": 9,
-          "unjudged": 313
+          "falsePositive": 6,
+          "documents": 8,
+          "unjudged": 316
         }
       },
       "docs": {
@@ -2365,9 +2349,9 @@
       "business": {
         "ja": {
           "correct": 2,
-          "falsePositive": 5,
-          "documents": 5,
-          "unjudged": 24
+          "falsePositive": 1,
+          "documents": 2,
+          "unjudged": 14
         }
       },
       "literature": {
@@ -2755,7 +2739,7 @@
           "correct": 0,
           "falsePositive": 4,
           "documents": 3,
-          "unjudged": 9
+          "unjudged": 6
         }
       },
       "legal": {
@@ -2893,8 +2877,8 @@
         },
         "ja": {
           "correct": 5,
-          "falsePositive": 5,
-          "documents": 8,
+          "falsePositive": 0,
+          "documents": 5,
           "unjudged": 3
         }
       },
@@ -3187,7 +3171,7 @@
       "legal": {
         "en": {
           "correct": 0,
-          "falsePositive": 379,
+          "falsePositive": 1,
           "documents": 1,
           "unjudged": 0
         }
@@ -3503,7 +3487,7 @@
           "correct": 3,
           "falsePositive": 2,
           "documents": 5,
-          "unjudged": 60
+          "unjudged": 78
         }
       },
       "literature": {
@@ -3639,7 +3623,7 @@
           "correct": 1,
           "falsePositive": 0,
           "documents": 1,
-          "unjudged": 1
+          "unjudged": 2
         }
       },
       "legal": {
@@ -3963,8 +3947,8 @@
       "business": {
         "ja": {
           "correct": 5,
-          "falsePositive": 3,
-          "documents": 6,
+          "falsePositive": 1,
+          "documents": 4,
           "unjudged": 8
         }
       },
@@ -4099,9 +4083,9 @@
       "business": {
         "ja": {
           "correct": 15,
-          "falsePositive": 4,
-          "documents": 9,
-          "unjudged": 158
+          "falsePositive": 3,
+          "documents": 8,
+          "unjudged": 168
         }
       },
       "docs": {
@@ -4438,6 +4422,12 @@
           "falsePositive": 0,
           "documents": 0,
           "unjudged": 13
+        },
+        "ja": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 2
         }
       },
       "speech": {
@@ -4545,7 +4535,7 @@
           "correct": 0,
           "falsePositive": 9,
           "documents": 4,
-          "unjudged": 87
+          "unjudged": 90
         },
         "ja": {
           "correct": 0,
