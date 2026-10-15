@@ -7,6 +7,7 @@ import { notAcronymSpansOf, type NotAcronymSpans } from "./acronym-context.ts";
 import { nameSpansOf } from "./acronym-name.ts";
 import { abbreviates, expansionAt, termEntryAcronyms, type ExpandedAt } from "./acronym-expansion.ts";
 import { isExplained } from "./acronym-compound.ts";
+import { statedAcronyms } from "./acronym-definition.ts";
 import { isBracketed, isInHeading, isNamePart } from "./acronym-lone.ts";
 import { conjugatedForms } from "./conjugated-form.ts";
 import { evidenceSpans, hasNumeral, isClaim, isLabelOnly, startsWithin, type AdviceWords } from "./concrete-evidence.ts";
@@ -346,7 +347,8 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
     ...(doc.names ?? []),
   ]);
   const expandedAt = expansionAt({ markers: patternsOf(doc, "definition-marker"), verbs: definitionVerbsOf(doc) });
-  const entries = termEntryAcronyms(doc.source);
+  const stated = statedAcronyms(doc.source, { statements: patternsOf(doc, "definition-statement"), markers: patternsOf(doc, "definition-marker") });
+  const entries = new Set([...termEntryAcronyms(doc.source), ...stated]);
   const headings = doc.sections.map((section) => section.heading);
   const explainedAlone = (word: string): boolean =>
     common.has(word) || entries.has(word) || isExpanded(body, word, expandedAt) || headings.some((heading) => expandsInHeading(heading, word, expandedAt));
@@ -357,7 +359,9 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   const acronyms = [...firstHits(hits).keys()];
   const unexplained = new Set(acronyms.filter((acronym) => !isExplained(acronym, explainedAlone)));
   const bracketed = (acronym: string): boolean => [body, ...headings].some((text) => isBracketed(text, acronym));
-  const writerSpellsOut = acronyms.filter((acronym) => !common.has(acronym) && explainedAlone(acronym) && bracketed(acronym)).length >= options.limit;
+  // 定義の一覧（"SOW" means …）で定義する書き手も、略語を展開する書き手と数える。
+  const definedByWriter = (acronym: string): boolean => bracketed(acronym) || stated.has(acronym);
+  const writerSpellsOut = acronyms.filter((acronym) => !common.has(acronym) && explainedAlone(acronym) && definedByWriter(acronym)).length >= options.limit;
   // 日付を読むには文書の木を作る。上限に届かない文書では作らない。
   if (unexplained.size < options.limit && !writerSpellsOut) return [];
   const bare = [...firstHits(outsideSpans(hits, dateSpans(doc)))].filter(([acronym]) => unexplained.has(acronym));
