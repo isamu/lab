@@ -1846,11 +1846,11 @@
       "groups": {
         "academic": {
           "documents": 5,
-          "fired": 0
+          "fired": 1
         },
         "blog": {
           "documents": 9,
-          "fired": 4
+          "fired": 3
         },
         "business": {
           "documents": 41,
@@ -1858,28 +1858,28 @@
         },
         "docs": {
           "documents": 11,
-          "fired": 2
+          "fired": 5
         },
         "legal": {
           "documents": 14,
-          "fired": 0
+          "fired": 3
         },
         "literature": {
           "documents": 9,
-          "fired": 0
+          "fired": 5
         },
         "speech": {
           "documents": 3,
-          "fired": 0
+          "fired": 1
         },
         "technical": {
           "documents": 27,
-          "fired": 11
+          "fired": 13
         }
       },
       "bench": {
-        "planted": 2,
-        "found": 2,
+        "planted": 1,
+        "found": 1,
         "falseAlarms": 0
       }
     },

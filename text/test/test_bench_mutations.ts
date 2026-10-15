@@ -220,12 +220,13 @@ describe("spaceLatin", () => {
 
 describe("contract", () => {
   it("短縮形を使わない文書で、一か所だけ短縮形にする。文頭の大文字は残す", () => {
-    assert.deepEqual(at(contract(lines("Do not wait.", "It is fine."))), [1, "Don't wait."]);
+    assert.deepEqual(at(contract(lines("Do not wait.", "Do not run.", "Do not shout."))), [1, "Don't wait."]);
   });
 
-  it("書き分けの対が一種類だけの文書や、もう短縮形のある文書には植えない", () => {
-    assert.equal(contract("Do not wait. Do not run."), undefined);
-    assert.equal(contract("Do not wait. It is fine. Don't run."), undefined);
+  it("同じ語の長い形が 3 回未満の文書や、もう短縮形のある文書には植えない", () => {
+    // 2 回のうち 1 回を縮めると 1 対 1 で、少数派が無い。別の語の長い形は数えない。
+    assert.equal(contract("Do not wait. Do not run. It is fine. It is late."), undefined);
+    assert.equal(contract("Do not wait. Do not run. Do not shout. Don't stop."), undefined);
   });
 });
 
