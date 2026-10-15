@@ -5,11 +5,11 @@ import type { Span } from "./plugin.ts";
 const OPENING = new Set(["(", "（"]);
 const CLOSING = new Set([")", "）"]);
 /** Inside the brackets: a multiplication or division sign, or a plus, minus or equals sign with a space on each side. Unspaced, - and = are hyphens and labels (A-1, 2026-04). */
-const OPERATOR_INSIDE = /[×÷]|[ 　][+＋\-−－=＝][ 　]/u;
+const OPERATOR_INSIDE = /[×÷]|[ \u3000][+＋\-−－=＝][ \u3000]/u;
 /** Just before the opening bracket, past spaces: a multiplication or division sign, or a spaced sign. */
-const OPERATOR_BEFORE = /(?:[×÷]|[ 　][+＋\-−－=＝])[ 　]*$/u;
+const OPERATOR_BEFORE = /(?:[×÷]|[ \u3000][+＋\-−－=＝])[ \u3000]*$/u;
 /** Just after the closing bracket, past spaces. An asterisk is not a sign here: in prose it marks a note (*（注）). */
-const OPERATOR_AFTER = /^[ 　]*(?:[×÷]|[+＋\-−－=＝][ 　])/u;
+const OPERATOR_AFTER = /^[ \u3000]*(?:[×÷]|[+＋\-−－=＝][ \u3000])/u;
 
 type Scan = { readonly open: number[]; readonly pairs: Span[] };
 
