@@ -16,7 +16,13 @@ const subjectFindings = (adapter: LanguageAdapter, source: string): Finding[] =>
   );
 const variantsOf = (adapter: LanguageAdapter, source: string): string[] => subjectFindings(adapter, source).map((finding) => finding.variant ?? "");
 
-const VOCABULARY: SubjectVocabulary = { fields: ["Subject"], replyMarks: ["Re"], greetings: ["Dear", "Hi"], sentenceEnds: [".", "?", "!"] };
+const VOCABULARY: SubjectVocabulary = {
+  fields: ["Subject"],
+  replyMarks: ["Re"],
+  headerFields: ["From", "Subject"],
+  greetings: ["Dear", "Hi"],
+  sentenceEnds: [".", "?", "!"],
+};
 const below = (text: string, index = 0): string => {
   const lines: { start: number; text: string }[] = [];
   text.split("\n").forEach((line) => lines.push({ start: (lines.at(-1)?.start ?? 0) + (lines.at(-1)?.text.length ?? -1) + 1, text: line }));
@@ -27,9 +33,11 @@ describe("valueBelow: the subject on the line under its label", () => {
   it("takes the next line with text, past blank lines", () => {
     assert.equal(below("SUBJECT:\n\n  Car park repairs  \n\nThe car park closes."), "Car park repairs");
     assert.equal(below("Subject:\nCar park repairs"), "Car park repairs");
+    assert.equal(below("Subject:\nRe: Car park repairs"), "Re: Car park repairs");
+    assert.equal(below("Subject:\nQ3: budget review at 10:00"), "Q3: budget review at 10:00");
   });
 
-  it("leaves the subject empty when the next line is the body, a field, a quote, or nothing", () => {
+  it("leaves the subject empty when the next line is the body, a header field, a quote, or nothing", () => {
     assert.equal(below("Subject:\n\nDear Ann,"), "");
     assert.equal(below("Subject:\n\nThe car park closes on Monday."), "");
     assert.equal(below("Subject:\nFrom: Ann"), "");
@@ -48,6 +56,10 @@ describe("email-subject-length with the subject under its label", () => {
     const long = "Repairs to the staff car park behind the town hall and the closing of the side gate on Mill Lane";
     assert.deepEqual(
       subjectFindings(en, memo(long)).map((finding) => finding.values?.["count"]),
+      [[...long].length],
+    );
+    assert.deepEqual(
+      subjectFindings(en, memo(`Re: ${long}`)).map((finding) => finding.values?.["count"]),
       [[...long].length],
     );
   });
