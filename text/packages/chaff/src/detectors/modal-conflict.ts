@@ -1,5 +1,6 @@
 import type { Detector, Finding, StructureNode } from "../plugin.ts";
 import { inDocumentOrder } from "../structure/issues.ts";
+import { listLeadIns } from "../structure/list-lead-in.ts";
 import { modalConflicts, modalStatements, type Obligation } from "../structure/modal-conflict.ts";
 import { linesOf, lineNumberAt } from "../structure/lines.ts";
 import { quoteAt } from "./structure-tree.ts";
@@ -15,7 +16,7 @@ export const obligationsOf = (tree: StructureNode): Obligation[] =>
 export const modalConflict: Detector = (doc): Finding[] => {
   if (doc.structure === undefined) return [];
   const lines = linesOf(doc.source);
-  return modalConflicts(modalStatements(obligationsOf(doc.structure), doc.sentences)).map(({ statement, earlier }) => ({
+  return modalConflicts(modalStatements(obligationsOf(doc.structure), doc.sentences, listLeadIns(doc.source, doc.sentences))).map(({ statement, earlier }) => ({
     rule: "",
     severity: "warning",
     line: 0,
