@@ -117,6 +117,12 @@ export const opensLine = (text: string, offset: number): boolean => LINE_HEAD.te
 
 /** 刻印のラベルと日付の間に来る字（更新日：、Last updated: ）。 */
 const STAMP_GAP = /[\s:：]/u;
+/** 末尾の、ラベルと日付の間の字を外した文字列。 */
+const withoutGap = (text: string): string => {
+  const chars = text.split("");
+  return chars.slice(0, chars.findLastIndex((char) => !STAMP_GAP.test(char)) + 1).join("");
+};
+
 /** 刻印のラベルの前に来てよい字。行の頭か、ページの部品を区切る空白と縦線（ページID：0014616 更新日：）。 */
 const STAMP_LEAD = /[\s|｜]/u;
 
@@ -135,8 +141,7 @@ const endsWithLabel = (text: string, word: string): boolean => {
  * 刻印は CMS が付ける付帯情報で、本文の日付の書き方（令和8年…）とは別の書き方をしてよい。
  */
 export const stampedDate = (text: string, offset: number, stampLabels: readonly string[]): boolean => {
-  const line = [...text.slice(text.lastIndexOf("\n", offset - 1) + 1, offset)];
-  const before = line.slice(0, line.findLastIndex((char) => !STAMP_GAP.test(char)) + 1).join("");
+  const before = withoutGap(text.slice(text.lastIndexOf("\n", offset - 1) + 1, offset));
   return stampLabels.some((label) => endsWithLabel(before, label));
 };
 
