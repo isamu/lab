@@ -1,0 +1,15 @@
+# Words right before an opening quote that name the quoted words as a term: the definition of "Material Adverse Effect",
+# the term "Affiliate". The term is mentioned there, not used, so defined-term-form does not report it as quoted again.
+# Matched without regard to case.
+id: term-mention-cue
+language: en
+entries:
+  - pattern: definition of
+  - pattern: definitions of
+  - pattern: meaning of
+  - pattern: the term
+  - pattern: the terms
+  - pattern: the word
+  - pattern: the words
+  - pattern: the phrase
+  - pattern: defined term
