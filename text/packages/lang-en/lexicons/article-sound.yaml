@@ -79,12 +79,15 @@ entries:
   - { pattern: RAG, group: word }
   - { pattern: MIR, group: word }
   - { pattern: SEP, group: word }
+  - { pattern: SIG, group: word }
   - { pattern: SQL, group: either }
   - { pattern: FAQ, group: either }
   - { pattern: URL, group: either }
   - { pattern: RST, group: either }
   - { pattern: RCV, group: either }
   - { pattern: SWS, group: either }
+  - { pattern: SKU, group: either }
+  - { pattern: NIC, group: either }
   - { pattern: herb, group: either }
   - { pattern: histor, group: either }
   - { pattern: hotel, group: either }

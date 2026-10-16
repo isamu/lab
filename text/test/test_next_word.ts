@@ -48,6 +48,11 @@ describe("startsWithVowelSound: the sound a word starts with, from lexicon artic
   it("short capitals with a vowel said as a word (RAG, MIR, SEP) take the word's sound", () => {
     assert.deepEqual(["RAG", "MIR", "SEP"].map(soundOf), [false, false, false]);
   });
+
+  it("a group's name said as a word (SIG) takes the word's sound; a stock code or a card said both ways (SKU, NIC) is left alone", () => {
+    assert.deepEqual(["SIG", "SKU", "NIC"].map(soundOf), [false, undefined, undefined]);
+    assert.deepEqual(["SEC", "MIT"].map(soundOf), [true, true]);
+  });
 });
 
 describe("article-sound", () => {
@@ -88,6 +93,14 @@ describe("article-sound", () => {
   it("an acronym said as a word takes the article of its sound (a RAG answer), not of its first letter's name", () => {
     assert.deepEqual(findingsOf(RULE, "Check a RAG answer, a MIR lvalue and a SEP plan.\n"), []);
     assert.deepEqual(findingsOf(RULE, "Check an RAG answer.\n"), ['"an RAG" takes "a" before that sound']);
+  });
+
+  it("a SIG is a working group said as a word, and a SKU or an SKU is either; an SIG and a MIT are still slips", () => {
+    assert.deepEqual(findingsOf(RULE, "Ask a SIG to own it. Give a SKU or an SKU to each item, and a NIC or an NIC to each host.\n"), []);
+    assert.deepEqual(findingsOf(RULE, "Ask an SIG to own it, and a MIT lab to review it.\n"), [
+      '"an SIG" takes "a" before that sound',
+      '"a MIT" takes "an" before that sound',
+    ]);
   });
 });
 
