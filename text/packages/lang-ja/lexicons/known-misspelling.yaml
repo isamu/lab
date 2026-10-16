@@ -129,6 +129,29 @@ entries:
     instead_of: やむをえず
   - pattern: うる覚え
     instead_of: うろ覚え
+  # 規程の決まった言い回しの書き誤り。「名号」「第三保証人」はそれだけなら別の語にもなるので、前後の語ごと書く
+  - pattern: 次の名号
+    instead_of: 次の各号
+  - pattern: ばならかない
+    instead_of: ばならない
+  - pattern: てはならかない
+    instead_of: てはならない
+  - pattern: に該当場合
+    instead_of: に該当する場合
+  - pattern: 第三保証人なし
+    instead_of: 第三者保証人なし
+  - pattern: 第三保証人不要
+    instead_of: 第三者保証人不要
+  - pattern: 自家用車自動車
+    instead_of: 自家用自動車
+  # 法人格の書き誤り。「公共」の付く法人格は無い
+  - pattern: 公共財団法人
+    instead_of: 公益財団法人
+  - pattern: 公共社団法人
+    instead_of: 公益社団法人
+  # 和文に引いた英語の画面表記。Denger は人の姓にもあるので語の組ごと書く
+  - pattern: denger zone
+    instead_of: danger zone
   # 仮名の打ち重ね。文末の形が一字だけ重なったもの
   - pattern: ですす
     instead_of: です

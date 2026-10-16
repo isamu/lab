@@ -219,6 +219,9 @@ entries:
     instead_of: definitely
   - pattern: desparate
     instead_of: desperate
+  # Denger is a surname, so only the phrase
+  - pattern: denger zone
+    instead_of: danger zone
   - pattern: developement
     instead_of: development
   - pattern: dilemna
