@@ -8,8 +8,11 @@ import { escapeRegExp } from "../orthography.ts";
 import type { Detector, Finding, Lexicon, LexiconEntry, Sentence } from "../plugin.ts";
 import { comparableText, comparableWords, entryRanges } from "./lexicon-match.ts";
 import { rateOver } from "./lexicon.ts";
+import { specifiedByBracket } from "./bracket-specified.ts";
 
 const TERMS_OF_ART = "vague-word-term-of-art";
+/** The words that start an aside giving a name (以下「HR」という, hereinafter): such an aside pins nothing down. */
+const NAME_MARKERS = "definition-marker";
 
 type Place = { readonly start: number; readonly end: number };
 
@@ -36,13 +39,25 @@ const covers = (outer: Place, inner: Place): boolean => outer.start <= inner.sta
 
 const isLonger = (outer: Match, inner: Match): boolean => outer.place.end - outer.place.start > inner.place.end - inner.place.start;
 
-/** The vague words of one sentence, in the order written, each once: none inside a longer vague word or a term of art. */
-export const vagueWordsIn = (sentence: Sentence, vague: Lexicon, termsOfArt: Lexicon): string[] => {
+/** Whether a bracket right after the match pins the word down; token places are in the document, text places in the comparable text. */
+const pinnedDown = (sentence: Sentence, match: Match, byTokens: boolean, nameMarkers: readonly string[]): boolean =>
+  byTokens
+    ? specifiedByBracket(sentence.text, match.place.end - sentence.span.start, nameMarkers)
+    : specifiedByBracket(comparableText(sentence), match.place.end, nameMarkers);
+
+/**
+ * The vague words of one sentence, in the order written, each once: none inside a longer vague word or a term of art,
+ * and none pinned down by the bracket right after it (一定の事項（…）). nameMarkers: the words that start a name in an aside.
+ */
+export const vagueWordsIn = (sentence: Sentence, vague: Lexicon, termsOfArt: Lexicon, nameMarkers: readonly string[] = []): string[] => {
   const byTokens = readsTokens(sentence, [...vague, ...termsOfArt]);
   const matches = matchesOf(sentence, vague, byTokens);
   const terms = matchesOf(sentence, termsOfArt, byTokens);
   const kept = matches.filter(
-    (match) => !matches.some((other) => isLonger(other, match) && covers(other.place, match.place)) && !terms.some((term) => covers(term.place, match.place)),
+    (match) =>
+      !matches.some((other) => isLonger(other, match) && covers(other.place, match.place)) &&
+      !terms.some((term) => covers(term.place, match.place)) &&
+      !pinnedDown(sentence, match, byTokens, nameMarkers),
   );
   return [...new Set(kept.toSorted((left, right) => left.place.start - right.place.start).map((match) => match.pattern))];
 };
@@ -51,8 +66,9 @@ type SentenceHits = { readonly sentence: Sentence; readonly words: readonly stri
 
 export const vagueDensity: Detector = (doc, options): Finding[] => {
   const termsOfArt = entriesForGenre(doc.lexicons[TERMS_OF_ART] ?? [], options.genre);
+  const nameMarkers = (doc.lexicons[NAME_MARKERS] ?? []).map((entry) => entry.pattern);
   const hits: SentenceHits[] = doc.sentences
-    .map((sentence) => ({ sentence, words: vagueWordsIn(sentence, options.lexicon ?? [], termsOfArt) }))
+    .map((sentence) => ({ sentence, words: vagueWordsIn(sentence, options.lexicon ?? [], termsOfArt, nameMarkers) }))
     .filter((hit) => hit.words.length > 0);
   const count = hits.reduce((sum, hit) => sum + hit.words.length, 0);
   const density = rateOver(doc, count, options.limit);
