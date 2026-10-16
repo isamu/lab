@@ -4,7 +4,7 @@ import { hasTitle } from "./heading-title.ts";
 import { maskSpans } from "./mask.ts";
 import { spansWithin, unmaskedSoftBreaks } from "./soft-break.ts";
 import { segmentJoined } from "./joined-view.ts";
-import { documentLineParagraphs } from "./line-paragraphs.ts";
+import { paragraphsOf } from "./document-paragraphs.ts";
 import { closingRun, standaloneLines, subheadingPieces, type StandsAlone } from "./subheading-line.ts";
 import { isLinkLine } from "./link-line.ts";
 import { speakerLabels } from "./speaker-labels.ts";
@@ -26,7 +26,7 @@ import { markdownFigures } from "./text-figures.ts";
 import { documentMarkup } from "./markup.ts";
 import { BARE_URL } from "./bare-url.ts";
 import { lazyCells, tableCellsOf } from "./table-cells.ts";
-import type { BulletList, LanguageAdapter, Markup, Paragraph, ProseDocument, Sentence, Span, StructureNode, DocumentProfile } from "./plugin.ts";
+import type { BulletList, LanguageAdapter, Markup, ProseDocument, Sentence, Span, StructureNode, DocumentProfile } from "./plugin.ts";
 
 /**
  * 本文として数えないもの。
@@ -234,29 +234,9 @@ const sentencesOf = (prose: string, paragraphs: readonly Span[], adapter: Langua
         ...(sentence.tokens === undefined ? {} : { tokens: sentence.tokens.map((token) => ({ ...token, span: shift(token.span, paragraph.start) })) }),
         ...(sentence.wrapBreaks === undefined ? {} : { wrapBreaks: sentence.wrapBreaks.map((span) => shift(span, paragraph.start)) }),
         ...(sentence.embeddedLanguage === undefined ? {} : { embeddedLanguage: sentence.embeddedLanguage }),
+        ...(sentence.listItem === undefined ? {} : { listItem: sentence.listItem }),
       })),
   );
-
-/** sentences（並び順）の中で、start が offset 以上の最初の添字。1 行 1 段落の何万行でも、段落ごとに全部をなめない。 */
-const firstStartingAt = (sentences: readonly Sentence[], offset: number): number => {
-  const search = (low: number, high: number): number => {
-    if (low >= high) return low;
-    const middle = (low + high) >> 1;
-    return (sentences[middle]?.span.start ?? Number.POSITIVE_INFINITY) >= offset ? search(low, middle) : search(middle + 1, high);
-  };
-  return search(0, sentences.length);
-};
-
-const sentencesWithin = (sentences: readonly Sentence[], span: Span): Sentence[] =>
-  sentences.slice(firstStartingAt(sentences, span.start), firstStartingAt(sentences, span.end));
-
-const paragraphsOf = (prose: string, spans: readonly Span[], sentences: readonly Sentence[], listSpans: readonly Span[]): Paragraph[] => {
-  // 箇条書きの中の段落は「段落」として数えない。項目 1 つを 1 段落と読むと、
-  // 段落あたりの文数も長さのばらつきも、箇条書きの多い文書で壊れる。
-  const outsideLists = spans.filter((span) => !listSpans.some((list) => span.start >= list.start && span.start < list.end));
-  const withSentences = outsideLists.map((span) => ({ span, sentences: sentencesWithin(sentences, span).map((sentence) => sentence.span) }));
-  return documentLineParagraphs(prose, withSentences).map((span) => ({ span, sentences: sentencesWithin(sentences, span) }));
-};
 
 /** 箇条書きは list ノードの直下の項目を数える。入れ子の項目は内側の list のものとして数える。目次のような案内だけの箇条書きは数えない。 */
 const listsOf = (root: Node, source: string, anchors: InPageAnchors): BulletList[] => {
