@@ -1,3 +1,4 @@
+import { escapeRegExp } from "../orthography.ts";
 import type { Detector, Finding, Sentence, Span } from "../plugin.ts";
 
 /**
@@ -56,6 +57,31 @@ export const followsSentenceEnd = (source: string, offset: number, labels: Reado
   return DIGITS.test(word) || (PLAIN_WORD.test(word) && !labels.has(word.toLowerCase()));
 };
 
+const CLAUSE_NUMBER = /^(?<parent>\d{1,3})\.(?<child>\d{1,3})$/u;
+const BLANK = /^[ \t]*$/u;
+
+/** Whether offset is the first thing on its line, after spaces only. */
+const startsLine = (source: string, offset: number): boolean => BLANK.test(source.slice(source.lastIndexOf("\n", offset - 1) + 1, offset));
+
+/** Whether a line opens with this clause number (2.2) and a space. */
+const opensLine = (source: string, clause: string): boolean => new RegExp(String.raw`(?:^|\n)[ \t]*${escapeRegExp(clause)}[ \t]`, "u").test(source);
+
+/**
+ * A clause number that opens a numbered paragraph (2.1 the term starts on signing.), not a figure: it opens a line, and a
+ * clause next to it in the same numbering (2.0 or 2.2) opens a line too. A figure at a line's start (2.5 million units
+ * were sold.) has no such neighbour.
+ */
+export const opensNumberedParagraph = (source: string, offset: number, numeral: string): boolean => {
+  const clause = CLAUSE_NUMBER.exec(numeral)?.groups;
+  if (clause === undefined || !startsLine(source, offset)) return false;
+  const child = clause["child"] ?? "";
+  // 3.10 sits next to 3.9 or, numbered with a zero, 3.09.
+  const neighbours = [Number(child) - 1, Number(child) + 1]
+    .filter((neighbour) => neighbour >= 0)
+    .flatMap((neighbour) => [String(neighbour), String(neighbour).padStart(child.length, "0")]);
+  return neighbours.some((neighbour) => opensLine(source, `${clause["parent"] ?? ""}.${neighbour}`));
+};
+
 const inside = (spans: readonly Span[], offset: number): boolean => spans.some((span) => span.start <= offset && offset < span.end);
 
 const leadingSpace = (sentence: Sentence): number => sentence.text.length - sentence.text.trimStart().length;
@@ -66,7 +92,7 @@ export const numeralOpener: Detector = (doc): Finding[] => {
     const offset = sentence.span.start + leadingSpace(sentence);
     if (sentence.embeddedLanguage !== undefined || inside(doc.listSpans, offset)) return [];
     const numeral = openingNumeral(sentence.text);
-    if (numeral === undefined || !followsSentenceEnd(doc.source, offset, labels)) return [];
+    if (numeral === undefined || !followsSentenceEnd(doc.source, offset, labels) || opensNumberedParagraph(doc.source, offset, numeral)) return [];
     return [{ rule: "", severity: "warning", line: 0, column: 0, quote: sentence.text.trim(), values: { numeral, offset } }];
   });
 };

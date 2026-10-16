@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
-import { followsSentenceEnd, openingNumeral } from "../packages/chaff/src/detectors/numeral-opener.ts";
+import { followsSentenceEnd, openingNumeral, opensNumberedParagraph } from "../packages/chaff/src/detectors/numeral-opener.ts";
 
 // 数字で始まる英語の文（numeral-sentence-start）。例文はすべて自作。
 
@@ -50,6 +50,25 @@ describe("numeral-sentence-start: 数字で始まる英語の文", () => {
   it("箇条書き、見出し、表、コードは読まない", () => {
     assert.deepEqual(findingsOf("# 3 reasons to switch\n\n- 3 items were left.\n\n| a |\n| - |\n| 5 rows were added. |\n"), []);
     assert.deepEqual(findingsOf("```\n20 people came.\n```\n"), []);
+  });
+
+  it("番号を付けた段落の頭の条の番号（2.1 the term …）は言わないが、行の途中の番号や、隣の番号の無い数は言う", () => {
+    const clauses = "2. Term.\n\n2.1 the term starts on signing.\n\n2.2 eWidget renews the term each year.\n";
+    assert.deepEqual(findingsOf(clauses), []);
+    assert.deepEqual(findingsOf("The parties met.\n\n2.5 million units were sold.\n\n2. Term.\n"), ['The sentence opens with the numeral "2.5"']);
+    const midLine = "2.1 the term starts on signing.\n\n2.2 the term ends after a year. 2.3 the parties may renew.\n";
+    assert.deepEqual(findingsOf(midLine), ['The sentence opens with the numeral "2.3"']);
+    assert.equal(opensNumberedParagraph("x\n3.1 a\n3.2 b\n", 2, "3.1"), true);
+    assert.equal(opensNumberedParagraph("x\n  3.2 a\n3.1 b\n", 4, "3.2"), true);
+    assert.equal(opensNumberedParagraph("x\n3.10 a\n3.9 b\n", 2, "3.10"), true);
+    assert.equal(opensNumberedParagraph("x\n3.10 a\n3.09 b\n", 2, "3.10"), true);
+    assert.equal(opensNumberedParagraph("x\n3.09 a\n3.10 b\n", 2, "3.09"), true);
+    assert.equal(opensNumberedParagraph("x\n3.1 a\n3.3 b\n", 2, "3.1"), false);
+    assert.equal(opensNumberedParagraph("x\n3.1 a\n4.2 b\n", 2, "3.1"), false);
+    assert.equal(opensNumberedParagraph("x. 3.1 a\n3.2 b\n", 3, "3.1"), false);
+    assert.equal(opensNumberedParagraph("3.1 a\n3.2 b\n", 0, "3.1"), true);
+    assert.equal(opensNumberedParagraph("20 a\n21 b\n", 0, "20"), false);
+    assert.equal(opensNumberedParagraph("3.1 a\n3.2% b\n", 0, "3.1"), false);
   });
 
   it("日本語の文書は読まない", () => {
