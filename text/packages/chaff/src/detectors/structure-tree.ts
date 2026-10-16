@@ -57,10 +57,8 @@ export const danglingReference: Detector = (doc, options) =>
 /** Markdown の HTML ブロックの中の条は木に入らない。そこを挟んだ抜けは、見えなかった番号かもしれない。 */
 const structureNumberingGap: Detector = (doc, options) => {
   const isSideStep = sideStepReader(patternsOf(doc, "side-step-label"));
-  return findingsOf("numbering-gap", (tree, source) => numberingBreaks(tree, doc.markup?.markdown === true ? htmlTextBlocks(source) : [], isSideStep))(
-    doc,
-    options,
-  );
+  const hiddenBlocks = (source: string) => (doc.markup?.markdown === true ? htmlTextBlocks(source) : []);
+  return findingsOf("numbering-gap", (tree, source) => numberingBreaks(tree, hiddenBlocks(source), isSideStep))(doc, options);
 };
 
 const lineStartAt = (source: string, offset: number): number => source.lastIndexOf("\n", offset - 1) + 1;
@@ -98,11 +96,10 @@ export const numberingGap: Detector = (doc, options): Finding[] => {
     (left, right) => Number(left.values["offset"]) - Number(right.values["offset"]),
   );
 };
-export const duplicateDefinition: Detector = (doc, options) =>
-  findingsOf("duplicate-definition", (tree, source) => duplicateDefinitions(tree, attachedPartStarts(source, patternsOf(doc, "attached-instrument-label"))))(
-    doc,
-    options,
-  );
+export const duplicateDefinition: Detector = (doc, options) => {
+  const labels = patternsOf(doc, "attached-instrument-label");
+  return findingsOf("duplicate-definition", (tree, source) => duplicateDefinitions(tree, attachedPartStarts(source, labels)))(doc, options);
+};
 
 /** 曜日の名前は言語パッケージの語彙表（weekday、日曜日から順）から取る。無ければ番号のまま。 */
 const dayName = (doc: ProseDocument, day: unknown): string => {
