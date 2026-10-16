@@ -55,9 +55,9 @@ const rawCells = (line: Line): { readonly raw: string; readonly from: number }[]
 
 /**
  * An inline HTML tag in a cell (`<div style="…">`, `</div>`, `<br/>`): the reader sees none of it. A tag name ends at a space,
- * a slash or `>`, so an autolink (`<https://…>`) is not one; a quoted attribute may hold a `>`.
+ * a slash or `>`, so an autolink (`<https://…>`) is not one; an attribute in double quotes may hold a `>`.
  */
-const HTML_TAG = /<\/?[A-Za-z][A-Za-z0-9-]*(?:\s(?:[^<>"']|"[^"]*"|'[^']*')*)?\/?>/gu;
+const HTML_TAG = /<\/?[A-Za-z][\w-]*(?:\s(?:"[^"]*"|[^<>"])*)?\/?>/gu;
 
 /**
  * The cell with its HTML tags blanked out, same length, so the words keep their offsets and the spaces around them trim.
