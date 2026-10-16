@@ -13,6 +13,7 @@ import { withoutCoinedNames } from "../coined-hyphen-name.ts";
 import { wholeWordRuns, type WholeWordRun } from "../whole-word-runs.ts";
 import { entriesForGenre } from "../lexicon-genres.ts";
 import { asNounWhereNominal, documentNounKeys } from "../nominal-stem.ts";
+import { isCompoundHead } from "../compound-head.ts";
 
 /**
  * A word found in the document: where it is, which sentence it is in, its key and spelling, how it is written when that differs, and
@@ -183,7 +184,7 @@ const readingWords = (sentence: Sentence, isOpen: IsOpen, skips: Skips): Placed[
       const key = readingKeyOf({ token, previous: tokens[at - 1], before: tokens[at - 2] }, skips);
       const local = token.span.start - sentence.span.start;
       if (key === undefined || token.lemma === undefined || !isOpen(local, local + token.surface.length)) return [];
-      const compoundHead = token.pos === "NOUN" && next?.pos === "NOUN" && isTouching(token, next) && !skips.phraseSuffixes.has(next.surface);
+      const compoundHead = isCompoundHead(token, tokens, at, skips.phraseSuffixes);
       return [{ key, spelling: token.lemma, sentence, offset: token.span.start, compoundHead }];
     }),
   ];
