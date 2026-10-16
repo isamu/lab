@@ -52,7 +52,7 @@ export const markerShape = (text: string, lastLetters: ReadonlyMap<string, strin
 
 type Entry = { readonly sentence: Sentence; readonly leadIns: readonly Sentence[] };
 
-/** 段落の中で、いま開いている項目の形ごとの最後の項目と、最後の導入の文。 */
+/** 段落の中で、項目の形ごとの最後の項目と、すぐ前の文が導入ならその文。 */
 type Block = {
   readonly lastByShape: Map<string, { readonly at: number; readonly entry: Entry }>;
   readonly lastLetters: Map<string, string>;
@@ -61,7 +61,7 @@ type Block = {
 
 const newBlock = (): Block => ({ lastByShape: new Map(), lastLetters: new Map(), leadIn: undefined });
 
-/** 項目の導入の文: 同じ形の前の項目（兄弟）が導入より後にあればその導入、無ければ最後の導入の文とその導入。 */
+/** 項目の導入の文: すぐ前の文が導入で、それより後に同じ形の項目（兄弟）が無ければその文とその導入、でなければ兄弟の導入。 */
 const leadInsOf = (block: Block, shape: string): readonly Sentence[] => {
   const sibling = block.lastByShape.get(shape);
   const leadIn = block.leadIn;
@@ -71,7 +71,8 @@ const leadInsOf = (block: Block, shape: string): readonly Sentence[] => {
 
 /**
  * 箇条書きの項目の文（listItem）ごとの、導入の文。近い順で、導入が項目なら、その導入も続ける。
- * 導入は、同じ段落（空行を挟まない）の前の文で、「—」「:」「：」で終わるもの。同じ形の項目どうしは同じ導入の下にある。
+ * 導入は、並びの最初の項目のすぐ前の文で、「—」「:」「：」で終わるもの。同じ段落（空行を挟まない）の中で、同じ形の項目どうしは
+ * 同じ導入の下にある。
  * sentences は文書の順。source は sentences の span の座標の文字列。
  */
 export const listLeadIns = (source: string, sentences: readonly Sentence[]): Map<Sentence, readonly Sentence[]> => {
@@ -87,7 +88,7 @@ export const listLeadIns = (source: string, sentences: readonly Sentence[]): Map
       block.lastByShape.set(marker.shape, { at, entry });
       if (marker.letter !== undefined) block.lastLetters.set(marker.shape, marker.letter.at(-1) ?? "");
     }
-    if (LEAD_IN_END.test(sentence.text)) block.leadIn = { at, entry };
+    block.leadIn = LEAD_IN_END.test(sentence.text) ? { at, entry } : undefined;
   });
   return found;
 };

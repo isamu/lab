@@ -66,6 +66,14 @@ describe("listLeadIns: 項目の文の導入の文", () => {
     assert.deepEqual(leadInsOf("受託者は、次のとおりとする。\n・ 報告書を公表しなければならない。"), ["・ 報"]);
   });
 
+  it("a lead-in is the sentence right before the list's first item", () => {
+    assert.deepEqual(leadInsOf("The following rule applies—\nThis is an unrelated sentence.\n(a) The Manager must publish the plan."), ["(a)"]);
+    assert.deepEqual(
+      leadInsOf("(1) If the Board rejects the plan—\n(a) the Manager must not publish it.\nThe plan lapses.\n(b) the Manager must prepare another plan."),
+      ["(1)", "(a) < (1)", "(b) < (1)"],
+    );
+  });
+
   it("a sentence that is not an item has no lead-in", () => {
     assert.deepEqual(leadInsOf("The Supplier must:\nThe Supplier must not disclose the data."), []);
     assert.deepEqual(leadInsOf(""), []);

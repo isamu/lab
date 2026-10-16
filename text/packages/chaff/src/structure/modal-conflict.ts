@@ -80,7 +80,14 @@ export const modalStatements = (
     const item = itemMarkerSpan(sentence);
     return contentKey(tokens, item === undefined ? markers : [...markers, item]);
   };
-  const leadInKey = (sentence: Sentence): string => (sentence.tokens === undefined ? "" : keyOf(sentence, sentence.tokens, bySentence.get(sentence) ?? []));
+  const leadInKeys = new Map<Sentence, string>();
+  const leadInKey = (sentence: Sentence): string => {
+    const known = leadInKeys.get(sentence);
+    if (known !== undefined) return known;
+    const key = sentence.tokens === undefined ? "" : keyOf(sentence, sentence.tokens, bySentence.get(sentence) ?? []);
+    leadInKeys.set(sentence, key);
+    return key;
+  };
   return [...bySentence].flatMap(([sentence, found]) => {
     const [only] = found;
     if (found.length !== 1 || only === undefined || sentence.tokens === undefined) return [];
