@@ -2,6 +2,8 @@ id: no-nakaguro-parallel
 layer: L3
 status: stable
 how_to_find: middle-dot
+# 中黒を含めて 1 語の語（キャッシュ・フロー）。その中黒は並べた項目の切れ目ではないので数えない。
+word_list: nakaguro-word
 languages: [ja]
 severity: info
 
