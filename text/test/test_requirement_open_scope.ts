@@ -57,6 +57,10 @@ describe("requirement-smell: a list a condition, a permission or a prohibition h
     assert.deepEqual(found("写真等を保存し、故障が起きた場合は報告すること。", ja), ["open-end:等"]);
   });
 
+  it("なければ that opens a condition is no duty: the permission after it decides", () => {
+    assert.deepEqual(found("会員が写真等を提出しなければ、運営者は会員の登録を消去できるものとする。", ja), []);
+  });
+
   it("a duty word before a prohibition word decides (しなければならないものとする)", () => {
     assert.deepEqual(found("受託者は、写真等を提出しなければならないものとする。", ja), ["open-end:等"]);
   });

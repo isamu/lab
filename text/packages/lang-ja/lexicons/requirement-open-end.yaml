@@ -13,7 +13,8 @@ entries:
   # 条件（訂正等を行った際に）、与える権利（消去できるものとします）、禁止や免責（転載等をしてはならない、責任を負わないものとします）
   # の中の一覧は、わざと広く取った契約の普通の書き方。「等」の後ろで最初に当たった目印が決める。条件の語は、述語のすぐ後ろにあって、
   # 一覧の節が読点で閉じる前（消去し、の前）のときだけ数える。
-  - { pattern: なければ, group: scope-duty }
+  - { pattern: なければならない, group: scope-duty }
+  - { pattern: なければなりません, group: scope-duty }
   - { pattern: 必要がある, group: scope-duty }
   - { pattern: ものとする, group: scope-duty }
   - { pattern: できるものとする, group: scope-permission }
