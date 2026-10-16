@@ -1,6 +1,7 @@
 // A defined term used later in another form, and a long name used again after its short name was defined. Pure. The
 // definitions come from the document's structure tree (以下「甲」という, ("Seller")); which words may stand in a long
 // name is read from the tokens' parts of speech.
+import { inEntryOfTerm } from "./term-mention-sentence.ts";
 import { definedTerms, usesOf, type BodyText, type DefinedTerm } from "../structure/definition-use.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { prefixGroupsOf, prefixVariants, variantUses } from "../structure/term-prefix.ts";
@@ -182,7 +183,7 @@ export const definedTermForm: Detector = (doc, options): Finding[] => {
     const uses = usesOf(term.term, texts, spans, "loose");
     const definingEnd = definingSentenceEnd(doc, term.span);
     const quoted = quotedFindings(doc, term, uses, definingEnd);
-    const caseUses = withLoweredWords(doc, term.term, texts, spans, uses);
+    const caseUses = withLoweredWords(doc, term.term, texts, spans, uses).filter((offset) => !inEntryOfTerm(doc.sentences, term.term, offset));
     const nounUses = caseUses.filter((offset) => !isVerbAt(doc, offset));
     const lower = lowerCaseUses(doc.source, term.term, nounUses, definingEnd, options.limit).map((offset) =>
       finding(doc, "defined-term-form", offset, "case", { term: term.term, line: term.line }),
