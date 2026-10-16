@@ -252,3 +252,105 @@ describe("isNamePart", () => {
     assert.equal(isNamePart(tokens, 99), false);
   });
 });
+
+/** [surface, pos, lemma, VerbForm]: the tagger's lemma and verb form, which tell "rate" (as written) from "says". */
+type Tagged = readonly [surface: string, pos: string, lemma?: string, verbForm?: string];
+
+const taggedPredicateIn = (words: readonly Tagged[], gram: string, unit: LengthUnit = "word"): boolean => {
+  const separator = unit === "word" ? " " : "";
+  const { text, tokens } = sentenceOf(
+    words.map(([surface, pos]): Word => [surface, pos]),
+    separator,
+  );
+  const tagged = tokens.map((token, index) => {
+    const [, , lemma, verbForm] = words[index] ?? [];
+    return { ...token, ...(lemma === undefined ? {} : { lemma }), ...(verbForm === undefined ? {} : { features: { VerbForm: verbForm } }) };
+  });
+  return hasPredicateIn(tagged, windowOf(text, gram), unit);
+};
+
+describe("hasPredicateIn: a verb as written after a run of nouns and adjectives is the tagger's misreading of a noun", () => {
+  const RATE: readonly Tagged[] = [
+    ["The", "DET", "the"],
+    ["federal", "ADJ", "federal"],
+    ["funds", "NOUN", "fund"],
+    ["rate", "VERB", "rate"],
+    ["stayed", "VERB", "stay"],
+    ["near", "ADP", "near"],
+    ["the", "DET", "the"],
+    ["target", "NOUN", "target"],
+    [".", "PUNCT"],
+  ];
+
+  it("a window of nouns and adjectives ending in the verb has no predicate (a leading article allowed)", () => {
+    assert.equal(taggedPredicateIn(RATE, "federal funds rate"), false);
+    assert.equal(taggedPredicateIn(RATE, "The federal funds rate"), false);
+    const gerund: Tagged[] = [
+      ["small", "ADJ", "small"],
+      ["business", "NOUN", "business"],
+      ["subcontracting", "VERB", "subcontract", "Ger"],
+      ["goals", "NOUN", "goal"],
+    ];
+    assert.equal(taggedPredicateIn(gerund, "small business subcontracting"), false);
+  });
+
+  it("an inflected verb (says, described) stays a predicate", () => {
+    const says: Tagged[] = [
+      ["the", "DET", "the"],
+      ["employment", "NOUN", "employment"],
+      ["contract", "NOUN", "contract"],
+      ["says", "VERB", "say"],
+      ["so", "ADV", "so"],
+    ];
+    assert.equal(taggedPredicateIn(says, "the employment contract says"), true);
+  });
+
+  it("a verb followed by its object (an article, a pronoun, a number) stays a predicate", () => {
+    const generate: Tagged[] = [
+      ["large", "ADJ", "large"],
+      ["language", "NOUN", "language"],
+      ["models", "NOUN", "model"],
+      ["generate", "VERB", "generate"],
+      ["the", "DET", "the"],
+      ["text", "NOUN", "text"],
+    ];
+    assert.equal(taggedPredicateIn(generate, "language models generate"), true);
+    const them: Tagged[] = [
+      ["red", "ADJ", "red"],
+      ["flags", "NOUN", "flag"],
+      ["block", "VERB", "block"],
+      ["them", "PRON", "them"],
+    ];
+    assert.equal(taggedPredicateIn(them, "red flags block"), true);
+  });
+
+  it("a function word in the window, or only one word before the verb, keeps the predicate", () => {
+    const agree: Tagged[] = [
+      ["if", "SCONJ", "if"],
+      ["member", "NOUN", "member"],
+      ["states", "NOUN", "state"],
+      ["agree", "VERB", "agree"],
+    ];
+    assert.equal(taggedPredicateIn(agree, "if member states agree"), true);
+    assert.equal(taggedPredicateIn(RATE.slice(2), "funds rate"), true);
+  });
+
+  it("the verb must end the window: words after it make a clause", () => {
+    assert.equal(taggedPredicateIn(RATE, "funds rate stayed near"), true);
+  });
+
+  it("only English words are read this way, and only with the tagger's lemma", () => {
+    assert.equal(taggedPredicateIn(RATE, "federalfundsrate", "char"), true);
+    assert.equal(
+      predicateIn(
+        [
+          ["federal", "ADJ"],
+          ["funds", "NOUN"],
+          ["rate", "VERB"],
+        ],
+        "federal funds rate",
+      ),
+      true,
+    );
+  });
+});
