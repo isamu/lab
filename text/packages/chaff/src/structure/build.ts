@@ -261,10 +261,11 @@ const headingsByLine = (lines: readonly Line[], headings: readonly Heading[]): M
  * 見出しの行から見出しの言葉を取る。コードを覆った後の行から取るので、見出しの中のコードも読まない。
  * ATX（行頭が #）なら印と閉じの # を外す。setext（下線で書く見出し）の末尾の # は言葉なので残す。
  */
-const headingLineText = (text: string): string => {
+const headingLineText = (text: string, atx: boolean): string => {
   const line = text.trim();
   if (!line.startsWith("#")) return headingText(line);
-  return atxHeadingText(line.replace(/^#{1,6}/u, "").trim());
+  // A heading that ends on its own line is ATX, and its hashes go even with no space after them (unspaced-heading.ts).
+  return atxHeadingText(line.replace(atx ? /^#{1,6}/u : /^#{1,6}(?=[ \t]|$)/u, "").trim());
 };
 
 const captionPatterns = new WeakMap<DocumentProfile, RegExp | undefined>();
@@ -320,7 +321,7 @@ const withCaption = (state: State, line: Line, numbered: NumberedLine | undefine
 type Around = { readonly next: string | undefined; readonly previous: string | undefined; readonly inTable: boolean };
 
 const readLine = (state: State, patterns: StructurePatterns, line: Line, heading: Heading | undefined, around: Around): void => {
-  const text = heading === undefined ? line.text : headingLineText(line.text);
+  const text = heading === undefined ? line.text : headingLineText(line.text, heading.end <= line.start + line.text.length);
   const openNumbers = state.stack.flatMap((frame) => (frame.numbered === undefined ? [] : [frame.numbered]));
   const context = { open: openNumbers, isHeading: heading !== undefined };
   const found = around.inTable ? undefined : (numberedLine(state, patterns, text, context) ?? codeTitledNumber(state, patterns, text, heading, context));

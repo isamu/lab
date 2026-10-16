@@ -94,6 +94,10 @@ describe("numbering-gap: an article heading written without the space after the 
     );
   });
 
+  it("keeps the hash of a setext heading's title: 「#第二条」 underlined is a title, not article 2", () => {
+    assert.deepEqual(structureFindings(contract("#第二条\n====")), [["dangling-reference", "第二条"]]);
+  });
+
   it("does not read seven hashes as a heading", () => {
     assert.deepEqual(structureFindings(contract("#######第二条 （存続条項）")), [
       ["dangling-reference", "第二条"],
