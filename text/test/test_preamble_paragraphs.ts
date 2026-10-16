@@ -40,6 +40,19 @@ describe("preambleParagraphs", () => {
     assert.deepEqual(starts(paragraphs, 50), []);
   });
 
+  it("注の印（※）で始まる段落は注で、前置きに数えない。印が段落の頭でなければ数える", () => {
+    const source = "前置き※1です。\n\n※1 平日だけです。\n\n ※ 予約は不要です。\n\n前置き※2の二です。\n\n";
+    const paragraphs = source
+      .split("\n\n")
+      .filter((text) => text !== "")
+      .map((text) => at(source.indexOf(text), text));
+    const counted = (marks: readonly string[]): number[] =>
+      preambleParagraphs(paragraphs, source.length, source, marks).map((paragraph) => paragraph.span.start);
+    assert.deepEqual(counted(["※"]), [0, source.indexOf("前置き※2")]);
+    assert.equal(counted([]).length, 4);
+    assert.equal(counted([""]).length, 4);
+  });
+
   it("本題の位置ちょうどの段落と後ろの段落は数えない。段落も文も無ければ空", () => {
     assert.deepEqual(starts([at(0, "一。"), at(10, "二。")], 10), [0]);
     assert.deepEqual(starts([at(0, "一。")], 0), []);
@@ -56,6 +69,17 @@ describe("preamble-length と文でない段落", () => {
     const source =
       "# 新しい窓口を開きます\n\n2026年1月13日\n\n暮らし・手続\n\n来月から駅前に窓口を開きます。※1\n\n※1 平日の昼だけです。\n\n## 1．概要\n\n中身です。\n";
     assert.deepEqual(findingsFor(source, ja, "business/press-release"), []);
+  });
+
+  it("日本語: リードの後の注が二つあっても、注は前置きの段落に数えない", () => {
+    const source =
+      "# 新しい窓口を開きます\n\n2026年1月13日\n\n暮らし・手続\n\n来月から駅前に窓口を開きます※1。予約は要りません※2。\n\n※1 平日の昼だけです。\n※2 混雑時は番号札を配ります。\n\n## 1．概要\n\n中身です。\n";
+    assert.deepEqual(findingsFor(source, ja, "business/press-release"), []);
+  });
+
+  it("日本語: 注を除いても文の段落が上限を超えれば指摘する", () => {
+    const source = "# 表題\n\n前置き一です※1。\n\n前置き二です。\n\n前置き三です。\n\n※1 注です。\n\n## 本題\n\n中身です。\n";
+    assert.equal(findingsFor(source, ja)[0]?.values["count"], 3);
   });
 
   it("日本語: 札を除いても文の段落が上限を超えれば指摘し、数と位置は最初の文の段落から", () => {
