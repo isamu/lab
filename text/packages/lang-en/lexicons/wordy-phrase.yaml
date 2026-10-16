@@ -1,6 +1,8 @@
 # Wordy phrases: several words where one or two say the same. Read by wordy-phrase; rewrite is the short form.
 # Only phrases whose short form says the same in every context. "with regard to", "prior to" and "in accordance with"
-# are left out: contracts and statutes use them on purpose. Matched as whole words, case aside.
+# are left out: contracts and statutes use them on purpose. "a small number of" is left out too: "a few" names a
+# different count, and minutes use both as separate points of one scale (a few, a small number, some, several, many).
+# Matched as whole words, case aside.
 id: wordy-phrase
 language: en
 entries:
@@ -60,8 +62,6 @@ entries:
     rewrite: except
   - pattern: in the majority of cases
     rewrite: usually
-  - pattern: a small number of
-    rewrite: a few
   - pattern: at an early date
     rewrite: soon
   - pattern: by means of
