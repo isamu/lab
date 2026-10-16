@@ -138,7 +138,8 @@ const withoutDateStamps = (doc: ProseDocument, paragraphs: readonly Paragraph[])
 export const preambleLength: Detector = (doc, options): Finding[] => {
   const body = bodySectionOf(doc.sections);
   if (body === undefined) return [];
-  const all = preambleParagraphs(doc.paragraphs, body.span.start, doc.source);
+  const noteMarks = (doc.lexicons["note-mark"] ?? []).map((entry) => entry.pattern);
+  const all = preambleParagraphs(doc.paragraphs, body.span.start, doc.source, noteMarks);
   if (all.length <= options.limit) return [];
   const before = withoutDateStamps(doc, all);
   if (before.length <= options.limit) return [];
