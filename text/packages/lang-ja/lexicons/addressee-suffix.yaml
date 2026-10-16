@@ -1,0 +1,8 @@
+# 宛先の名前のすぐ後ろに付ける語（志木市役所市政情報課宛て、総務部御中）。max-kanji-continuous は、漢字の連なりの尻にこの語が
+# あれば、名前の後ろに付いた語として連なりに数えない。語の切れ目で始まるときだけ。字面どおりに照らす。
+id: addressee-suffix
+language: ja
+entries:
+  - pattern: 宛
+  - pattern: 御中
+  - pattern: 殿
