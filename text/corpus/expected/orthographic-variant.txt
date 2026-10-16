@@ -15,7 +15,7 @@ da-minister-press-conference-2026-09-18  1
 da-recruitment-career-faq  1
 da-service-design-guidelines-2  11
 denkiyagi-ryohi-kitei  1
-denkiyagi-shugyo-kisoku  14
+denkiyagi-shugyo-kisoku  13
 entaku-rb-4  3
 entaku-rb-5  1
 env-nikko-national-park-story  1
@@ -37,7 +37,7 @@ kokkai-217-sangiin-shohisha-7  22
 maff-kyodo-ryori-okaisan-ja  1
 mdn-using-fetch-ja  1
 mext-heatstroke-after-holidays  5
-mhlw-icd-committee-26-minutes  2
+mhlw-icd-committee-26-minutes  1
 mhlw-norovirus-qa  16
 moriguchi-satsuki-gakuen-ijime-houshin  3
 neeview-changelog-ja  9
@@ -45,7 +45,7 @@ nsf-19-582-reu-solicitation  1
 nta-taxanswer-1120  2
 nws-glossary-a  2
 openapi-spec-3-1-0  2
-ppc-guidelines-tsusoku  12
+ppc-guidelines-tsusoku  11
 python-code-quality-list-2016-03  4
 qiita-jnchito-good-sample-code  4
 react-ja-thinking  3
