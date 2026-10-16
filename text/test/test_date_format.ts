@@ -120,6 +120,15 @@ describe("opensLine and dateGroups", () => {
     assert.equal(stampedDate(text, 0, []), false);
     assert.equal(stampedDate(text, 0, [""]), false);
   });
+
+  it("a label inside a sentence or a word is no stamp", () => {
+    const labels = ["公開", "Date", "Updated", "更新日"];
+    const text = "この日付は公開：2026年10月13日です。\nThe date: 2026-10-14\n1Updated: 2026-10-15\nページID：1 更新日：2026年10月16日\n| Date: 2026-10-17\n";
+    assert.deepEqual(
+      datesIn(text, WORDS).map((date) => stampedDate(text, date.offset, labels)),
+      [false, false, false, true, true],
+    );
+  });
 });
 
 describe("date-format-consistency: ページの更新日の刻印", () => {

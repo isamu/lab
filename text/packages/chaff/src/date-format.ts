@@ -117,13 +117,17 @@ export const opensLine = (text: string, offset: number): boolean => LINE_HEAD.te
 
 /** 刻印のラベルと日付の間に来る字（更新日：、Last updated: ）。 */
 const STAMP_GAP = /[\s:：]/u;
-const LATIN_LETTER = /[A-Za-z]/u;
+/** 刻印のラベルの前に来てよい字。行の頭か、ページの部品を区切る空白と縦線（ページID：0014616 更新日：）。 */
+const STAMP_LEAD = /[\s|｜]/u;
 
-/** text が word で終わり、ラテン文字の語なら語の途中で始まらない（outdated の updated は Updated ではない）。大文字と小文字は区別しない。 */
-const endsWithWord = (text: string, word: string): boolean => {
+/**
+ * text が刻印のラベル word で終わり、ラベルが行の頭か区切りの後ろから始まる。文の中の語（この日付は公開：、The date:、
+ * 1Updated）は刻印のラベルではない。語彙表に書いたとおりの字で照らす。
+ */
+const endsWithLabel = (text: string, word: string): boolean => {
   const start = text.length - word.length;
-  if (word === "" || start < 0 || text.slice(start).toLowerCase() !== word.toLowerCase()) return false;
-  return !LATIN_LETTER.test(word.charAt(0)) || !LATIN_LETTER.test(text.charAt(start - 1));
+  if (word === "" || start < 0 || !text.endsWith(word)) return false;
+  return start === 0 || STAMP_LEAD.test(text.charAt(start - 1));
 };
 
 /**
@@ -133,7 +137,7 @@ const endsWithWord = (text: string, word: string): boolean => {
 export const stampedDate = (text: string, offset: number, stampLabels: readonly string[]): boolean => {
   const line = [...text.slice(text.lastIndexOf("\n", offset - 1) + 1, offset)];
   const before = line.slice(0, line.findLastIndex((char) => !STAMP_GAP.test(char)) + 1).join("");
-  return stampLabels.some((label) => endsWithWord(before, label));
+  return stampLabels.some((label) => endsWithLabel(before, label));
 };
 
 type DateGroup = "head" | "body" | "stamp";
