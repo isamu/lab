@@ -11,8 +11,8 @@ name:
   en: Word written twice
 
 why:
-  ja: 「資料をを送ります」「確認確認します」のように同じ語が続くのは、消し忘れか、書き換えの途中で残った語です。読み手はつまずき、急いで書いた文書に見えます。重ねて「それぞれの」を言う名詞（人・単位・時・場所。「個人個人」「一行一行」「毎年毎年」）、名詞や形容詞を重ねて強める形（「駄目駄目」「若い若い」）、擬音・擬態語（「ムクムク」「もちもち」）、笑い声（「ははは」）、決まった言い回し（「などなど」「あるある」）は、重ねるのが正しい書き方なので数えていません。
-  en: The same word twice in a row ("the the"), or two words where English takes one ("our the platform"), is left over from an edit. The reader stumbles, and the document looks rushed. Repeats that grammar allows ("had had", "that that", "is, is") and repeats for emphasis ("very very") are not counted.
+  ja: 「資料をを送ります」「確認確認します」のように同じ語が続くのは、消し忘れか、書き換えの途中で残った語です。読み手はつまずき、急いで書いた文書に見えます。括弧の注を挟んで同じ助詞が二度ある形（「本規約は（以下、規約）は」）も、注を書き足したときの消し忘れです。重ねて「それぞれの」を言う名詞（人・単位・時・場所。「個人個人」「一行一行」「毎年毎年」）、名詞や形容詞を重ねて強める形（「駄目駄目」「若い若い」）、擬音・擬態語（「ムクムク」「もちもち」）、笑い声（「ははは」）、決まった言い回し（「などなど」「あるある」）は、重ねるのが正しい書き方なので数えていません。
+  en: The same word twice in a row ("the the"), or two words where English takes one ("our the platform"), is left over from an edit. The reader stumbles, and the document looks rushed. In Japanese, the same particle on both sides of a parenthetical aside (本規約は（以下、規約）は) is left over the same way. Repeats that grammar allows ("had had", "that that", "is, is") and repeats for emphasis ("very very") are not counted.
 
 message:
   ja: 「{word}」で語が重なっています。どちらかが余分です

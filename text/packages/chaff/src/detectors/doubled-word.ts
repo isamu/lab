@@ -1,5 +1,6 @@
 import type { Detector, Finding, Lexicon, Sentence, Token } from "../plugin.ts";
 import { citedNamesOf, endsCitedName } from "./cited-name.ts";
+import { doubledAcrossAside } from "./doubled-across-aside.ts";
 
 /**
  * 語を書き損じて二度書いた（the the / 資料をを）。消し忘れと、書き換えの途中で残った語（our the platform）の二つ。
@@ -159,7 +160,7 @@ export const doubledWord: Detector = (doc, options): Finding[] => {
   const kinds = new Set((doc.lexicons[DOCUMENT_KIND] ?? []).map((entry) => entry.pattern));
   const phrases = doc.lexicons[FIXED_PHRASE] ?? [];
   return doc.sentences.flatMap((sentence) =>
-    doubledIn(doc.source, sentence.tokens ?? [], spaced, allowed, phrases)
+    [...doubledIn(doc.source, sentence.tokens ?? [], spaced, allowed, phrases), ...(spaced ? [] : doubledAcrossAside(doc.source, sentence.tokens ?? []))]
       .filter((doubled) => !endsCitedName(doubled.first, doubled.second, cited, kinds))
       .map((doubled) => findingOf(sentence, doubled, spaced)),
   );
