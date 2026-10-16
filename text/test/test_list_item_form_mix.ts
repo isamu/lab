@@ -1,6 +1,6 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
-import { formOf, itemSentences, NO_HEAD_CONTEXT } from "../packages/chaff/src/detectors/list-parallel.ts";
+import { formOf, itemOwnEnd, itemSentences, NO_HEAD_CONTEXT } from "../packages/chaff/src/detectors/list-parallel.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
@@ -303,5 +303,41 @@ describe("list-item-form-mix: words whose part of speech the tagger gets wrong a
   it("does not judge a verb that the same list uses as a noun, unless an object follows it", () => {
     assert.deepEqual(flagged(en, list("redundancy pay", "pay during your notice period", "holiday pay", "sick pay")), []);
     assert.deepEqual(flagged(en, list("redundancy pay", "holiday pay", "sick pay", "pay the invoice by Friday")), ["head-verb:pay the invoice by Friday"]);
+  });
+});
+
+describe("a note line under a list is not part of its last item", () => {
+  const withNote = (...lines: string[]): string => ["# 題", "", ...lines, ""].join("\n");
+
+  it("reads the last item up to an unindented ※ line under it", () => {
+    const source = withNote("- 登録申込書の原本", "- 資格を証明する書類（写し）", "- 運転免許証（写し）", "※提出した書類は返却できません。");
+    assert.deepEqual(flagged(ja, source), []);
+    const english = withNote(
+      "- Your current passport",
+      "- Two passport photographs",
+      "- One certified copy of your current driving licence",
+      "Note: we do not return the documents you send.",
+    );
+    assert.deepEqual(flagged(en, english), []);
+  });
+
+  it("still reads a line under the item without a note lead as part of it, and an item that is a sentence", () => {
+    const source = withNote("- 登録申込書の原本", "- 資格を証明する書類（写し）", "- 運転免許証（写し）", "提出した書類は返却できません。");
+    assert.deepEqual(flagged(ja, source), ["ending-sentence:運転免許証（写し）\n提出した書類は返却できません。"]);
+    assert.deepEqual(flagged(ja, list("登録申込書の原本", "資格を証明する書類（写し）", "運転免許証は写しを出します。")), [
+      "ending-sentence:運転免許証は写しを出します。",
+    ]);
+  });
+
+  it("ends the item before the note line only when the line opens with the lead, unindented", () => {
+    const source = "- 運転免許証（写し）\n※返却しません。\n";
+    const item = { start: 0, end: source.length - 1 };
+    assert.equal(itemOwnEnd(source, item, ["※"]), source.indexOf("\n"));
+    assert.equal(itemOwnEnd(source, item, []), item.end);
+    assert.equal(itemOwnEnd(source, item, [""]), item.end);
+    const indented = "- 運転免許証（写し）\n  ※返却しません。\n";
+    assert.equal(itemOwnEnd(indented, { start: 0, end: indented.length - 1 }, ["※"]), indented.length - 1);
+    const inline = "- 運転免許証（写し）※返却しません。\n";
+    assert.equal(itemOwnEnd(inline, { start: 0, end: inline.length - 1 }, ["※"]), inline.length - 1);
   });
 });

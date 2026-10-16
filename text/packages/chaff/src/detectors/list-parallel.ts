@@ -192,6 +192,33 @@ export const itemSentences = (doc: ProseDocument, item: Span): Sentence[] => {
   return doc.sentences.filter((sentence) => within(sentence.span, item) && !nested.some((span) => within(sentence.span, span)));
 };
 
+/**
+ * Where an item's own words end: before a line in it that opens, unindented, with a note lead (※応募書類は返却できません。,
+ * "Note: …"). Markdown reads such a line as the last item's, but the note is about the whole list.
+ */
+export const itemOwnEnd = (source: string, item: Span, noteLeads: readonly string[]): number => {
+  const lineStarts = [...source.slice(item.start, item.end).matchAll(/\n/gu)].map((match) => item.start + match.index + 1);
+  const noteLine = lineStarts.find((start) => noteLeads.some((lead) => lead !== "" && source.startsWith(lead, start)));
+  return noteLine === undefined ? item.end : noteLine - 1;
+};
+
+/** The sentence up to `end`: a note line under the item is not part of the item's last sentence. */
+const cutAt = (sentence: Sentence, end: number, source: string): Sentence =>
+  sentence.span.end <= end
+    ? sentence
+    : {
+        ...sentence,
+        span: { start: sentence.span.start, end },
+        text: source.slice(sentence.span.start, end),
+        ...(sentence.tokens === undefined ? {} : { tokens: sentence.tokens.filter((token) => token.span.end <= end) }),
+      };
+
+/** The item's own sentences, up to a note line under it. */
+const ownSentences = (doc: ProseDocument, item: Span, noteLeads: readonly string[]): Sentence[] => {
+  const end = itemOwnEnd(doc.source, item, noteLeads);
+  return itemSentences(doc, item).flatMap((sentence) => (sentence.span.start < end ? [cutAt(sentence, end, doc.source)] : []));
+};
+
 type Item = { readonly sentences: readonly Sentence[]; readonly form: string };
 
 const findingOf = (axis: Axis, item: Item, count: number, of: number, limit: number): Finding => {
@@ -245,7 +272,8 @@ const headContext = (doc: ProseDocument, items: readonly (readonly Sentence[])[]
 });
 
 const listFindings = (doc: ProseDocument, list: BulletList, limit: number): Finding[] => {
-  const sentencesOf = list.itemSpans.map((span) => itemSentences(doc, span));
+  const noteLeads = (doc.lexicons["list-note-lead"] ?? []).map((entry) => entry.pattern);
+  const sentencesOf = list.itemSpans.map((span) => ownSentences(doc, span, noteLeads));
   if (sentencesOf.some(runsOn)) return [];
   const judged = sentencesOf.filter((sentences, index) => {
     const span = list.itemSpans[index];

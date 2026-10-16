@@ -1,0 +1,9 @@
+# What opens a note line written just under a list without indentation ("Note: documents are not returned."). Markdown
+# reads that line as part of the last item; list-item-form-mix reads the item's form only up to it, since the note is
+# about the whole list, not part of its last item.
+id: list-note-lead
+language: en
+entries:
+  - pattern: "Note:"
+  - pattern: "NB:"
+  - pattern: "N.B."
