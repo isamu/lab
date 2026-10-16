@@ -41,8 +41,8 @@ example:
       Do not delete the log. Do not delete this file before the audit.
 
 not_flagged:
-  ja: 三語以上の連なりだけを見ます。略語の並び（文書のほかの所で小文字で書かれない語）とコードは見ません。仕様書の MUST や SHALL は慣習の大文字として数えません。段落の頭に置いた大文字の見出し語（「AGENCY:」「WORKING GROUP MEMBERS」のように、コロンで終わるか一行で段落になるもの）と、本文でその見出し語を挙げた所も見ません。法令と文学の文書では既定で止めています（大文字で目立たせる決まりや、題を大文字で組む慣習があるため）。
-  en: Only runs of three or more words. Runs of acronyms (words never written in lower case elsewhere) and code are not reported, and MUST or SHALL in a specification count as conventional capitals. A caption in capitals that opens a paragraph and ends in a colon or stands alone ("AGENCY:", "WORKING GROUP MEMBERS"), and prose naming such a caption, are not reported either. The legal and literature presets turn it off, since contracts set disclaimers in capitals by rule and older texts set titles that way.
+  ja: 三語以上の連なりだけを見ます。略語の並び（文書のほかの所で小文字で書かれない語）とコードは見ません。仕様書の MUST や SHALL は慣習の大文字として数えません。段落の頭に置いた大文字の見出し語（「AGENCY:」「WORKING GROUP MEMBERS」のように、コロンで終わるか一行で段落になるもの）と、本文でその見出し語を挙げた所も見ません。文書の頭で最初の文より前にある、全部の行が大文字で文で終わらない段落（「BOARD OF GOVERNORS」で始まるレターヘッドや宛名）も見ません。法令と文学の文書では既定で止めています（大文字で目立たせる決まりや、題を大文字で組む慣習があるため）。
+  en: Only runs of three or more words. Runs of acronyms (words never written in lower case elsewhere) and code are not reported, and MUST or SHALL in a specification count as conventional capitals. A caption in capitals that opens a paragraph and ends in a colon or stands alone ("AGENCY:", "WORKING GROUP MEMBERS"), and prose naming such a caption, are not reported either. Nor is a paragraph at the head of the document, before its first sentence, whose lines are all in capitals and end no sentence, such as a letterhead or an addressee block ("BOARD OF GOVERNORS"). The legal and literature presets turn it off, since contracts set disclaimers in capitals by rule and older texts set titles that way.
 level_meaning:
   ja: "{limit} 箇所あれば指摘"
   en: reported once there are {limit}
