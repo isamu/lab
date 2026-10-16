@@ -29,7 +29,8 @@ describe("英語の文分割", () => {
   });
 
   it("番号に見えても、行頭・次が小文字・小数・番号の前の略語では切らない", () => {
-    assert.deepEqual(textsOf("1. First item\n2. Second item"), ["1. First item\n2. Second item"]);
+    // 行頭の番号の並びは箇条書きの項目なので、項目ごとに切る。
+    assert.deepEqual(textsOf("1. First item\n2. Second item"), ["1. First item", "2. Second item"]);
     assert.deepEqual(textsOf("  3. Indented item"), ["3. Indented item"]);
     assert.deepEqual(textsOf("Title\r1. Item"), ["Title\r1. Item"]);
     assert.deepEqual(textsOf("It was 2026. (and more) Then."), ["It was 2026. (and more) Then."]);

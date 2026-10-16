@@ -9,6 +9,8 @@ import { splitAtQuotedStops as enSplitAtQuotedStops } from "../packages/lang-en/
 import { closingRunLength as jaClosingRunLength, reattachClosingQuotes as jaReattachClosingQuotes } from "../packages/lang-ja/src/closing-quote.ts";
 import { closingRunLength as enClosingRunLength, reattachClosingQuotes as enReattachClosingQuotes } from "../packages/lang-en/src/closing-quote.ts";
 import { isEnglishRun } from "../packages/lang-ja/src/english-run.ts";
+import { listItemHeads as jaListItemHeads, listLineBreaks as jaListLineBreaks } from "../packages/lang-ja/src/english-list-line.ts";
+import { listItemHeads as enListItemHeads, listLineBreaks as enListLineBreaks } from "../packages/lang-en/src/list-line.ts";
 import type { Span } from "../packages/chaff/src/plugin.ts";
 
 // 和文の中の英文にも、英語のアダプタと同じ切り方を当てる（番号の前の略した名前、閉じ引用符の内側の句点、文頭に残った閉じ引用符）。
@@ -164,6 +166,14 @@ describe("日本語のアダプタの写しは英語のアダプタの関数と�
     englishSamples().forEach((sample) =>
       assert.deepEqual(jaSplitAtQuotedStops(sample, whole(sample)), enSplitAtQuotedStops(sample, whole(sample)), JSON.stringify(sample)),
     );
+  });
+
+  it("listLineBreaks と listItemHeads（英文の項目の行）", () => {
+    const lists = ["The tenant must—\n(a) pay;\n(b) leave.", "- a\n- b\n* c", "1. one\n2. two", "in Section 2\n(a) of this", "Notes\n(1) A note."];
+    [...englishSamples(), ...lists].forEach((sample) => {
+      assert.deepEqual(jaListLineBreaks(sample), enListLineBreaks(sample), JSON.stringify(sample));
+      assert.deepEqual(jaListItemHeads(sample), enListItemHeads(sample), JSON.stringify(sample));
+    });
   });
 
   it("closingRunLength", () => {
