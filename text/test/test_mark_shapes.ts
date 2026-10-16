@@ -92,9 +92,10 @@ describe("bracket-width-consistency", () => {
 
   const PROSE = "会議（定例）は月曜です。報告（月次）は金曜です。資料（案）を配ります。\n\n";
 
-  it("行の頭の番号の括弧（(1)開催趣旨）は、文の中の括弧と別に比べる", () => {
+  it("番号の括弧（(1)開催趣旨、文の中の (1)及び(2)）は、文の中の括弧と別に比べる", () => {
     const minutes = `${PROSE}(1)開催趣旨の確認\n事務局から説明があった。\n\n(2) 設置要綱の承認\n事務局から提案があった。\n\n- (3) 座長の選出\n`;
     assert.deepEqual(findingsOf(RULE, minutes, ja), []);
+    assert.deepEqual(findingsOf(RULE, `${PROSE}(1)履歴書\n(2)職務経歴書\n\n次の(1)及び(2)の書類を送ってください。\n`, ja), []);
   });
 
   it("番号の括弧どうしの幅の違いと、文の中の半角の括弧は、番号があっても言う", () => {
@@ -106,8 +107,8 @@ describe("bracket-width-consistency", () => {
     ]);
   });
 
-  it("幅の揃わない番号（(1）と、行の途中の (1) は、番号として分けない", () => {
-    assert.deepEqual([...enumeratorBracketOffsets("(1)開催\n  - （ア）説明\n(1）案\n説明 (2)案\n(長い番号)案")], [0, 2, 10, 12]);
+  it("番号の括弧は行の頭でも文の中でも分け、幅の揃わない番号（(1）と、番号でない語の括弧（(背景)、(注)）は分けない", () => {
+    assert.deepEqual([...enumeratorBracketOffsets("(1)開催\n  - （ア）説明\n(1）案\n説明 (2)案\n(背景)案\n(注)案\n(iv)案")], [0, 2, 10, 12, 24, 26, 40, 43]);
     assert.deepEqual([...enumeratorBracketOffsets("")], []);
   });
 });

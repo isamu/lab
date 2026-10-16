@@ -4,7 +4,6 @@ import { minorityReport } from "../spacing-minority.ts";
 import { formulaBracketSpans } from "../formula-brackets.ts";
 import { isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { captionsOf, isCaptionAt } from "./caps-caption.ts";
-import { lineStarts } from "../position.ts";
 
 /** The letters a mark must touch to count as part of the document's text, by language. */
 const SCRIPT: Readonly<Record<string, RegExp>> = {
@@ -88,28 +87,23 @@ const minorityFindings = <T extends Sided>(items: readonly T[], limit: number, v
 const ownSentences = (doc: ProseDocument): readonly Sentence[] => doc.sentences.filter((sentence) => sentence.embeddedLanguage === undefined);
 
 /**
- * A bracketed number or letter opening a line ((1)開催趣旨, （ア）, a list bullet before it), both brackets of one width.
- * It numbers the line, a style of its own: the brackets of the prose around it may be written the other width.
+ * A bracketed item number ((1)開催趣旨, （ア）, (iv)), both brackets of one width, at a line's head or where the prose
+ * refers to it (次の(1)及び(2)の書類). Item numbers are a style of their own: the brackets of the prose around them may be
+ * written the other width. A bracketed word ((背景), (注), (社)) is not a number and stays with the prose.
  */
-const LINE_HEAD = /^\s*(?:[-*+] +)?/u;
-const BRACKETED = /^([(（[［])[\p{L}\p{N}]{1,3}([)）\]］])/u;
+const BRACKETED = /([(（[［])([^)）\]］(（[［\s]{1,4})([)）\]］])/gu;
+const NUMBERING = /^(?:[0-9０-９]{1,3}|[一二三四五六七八九十]{1,3}|[ivxIVX]{1,4}|[A-Za-zＡ-Ｚａ-ｚァ-ヶぁ-んｦ-ﾝ])$/u;
 const CLOSER_OF: Readonly<Record<string, string>> = { "(": ")", "（": "）", "[": "]", "［": "］" };
 
-/** The offsets in a line of its enumerator's opening and closing bracket, or none. */
-const enumeratorIn = (line: string): readonly number[] => {
-  const head = LINE_HEAD.exec(line)?.[0].length ?? 0;
-  const found = BRACKETED.exec(line.slice(head));
-  if (found === null || CLOSER_OF[found[1] ?? ""] !== found[2]) return [];
-  return [head, head + found[0].length - 1];
-};
+/** The offsets in `source` of each item number's opening and closing bracket. */
+export const enumeratorBracketOffsets = (source: string): ReadonlySet<number> =>
+  new Set(
+    [...source.matchAll(BRACKETED)].flatMap((found) =>
+      CLOSER_OF[found[1] ?? ""] === found[3] && NUMBERING.test(found[2] ?? "") ? [found.index, found.index + found[0].length - 1] : [],
+    ),
+  );
 
-/** The offsets in `source` of each line enumerator's opening and closing bracket. */
-export const enumeratorBracketOffsets = (source: string): ReadonlySet<number> => {
-  const starts = lineStarts(source);
-  return new Set(source.split("\n").flatMap((line, index) => enumeratorIn(line).map((at) => (starts[index] ?? 0) + at)));
-};
-
-/** A line enumerator's bracket is a kind of its own, compared only with the other enumerators' brackets. */
+/** An item number's bracket is a kind of its own, compared only with the other item numbers' brackets. */
 const withEnumeratorKind = (mark: Mark, enumerators: ReadonlySet<number>): Mark =>
   enumerators.has(mark.offset) ? { ...mark, form: { ...mark.form, kind: `${mark.form.kind} enumerator` } } : mark;
 
