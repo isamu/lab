@@ -12,6 +12,8 @@ export type ListWords = {
   readonly example: Lexicon;
   readonly pair: ReadonlySet<string>;
   readonly region: Lexicon;
+  /** 題名を導く語（whose full title is、entitled）。すぐ後ろの Title Case の語の続きは題名で、その中の読点は題名を付けた人のもの。 */
+  readonly titleCue?: readonly string[];
 };
 
 const LIST_CONJUNCTION: ReadonlySet<string> = new Set(["and", "or"]);
@@ -193,6 +195,6 @@ export const listSentenceOf = (tokens: readonly Token[], words: ListWords, sourc
     exampleStarts: byDepth(depths, (index) => (exampleEnds[index]?.length ?? 0) > 0),
     pairOpeners: pairOpenersOf(tokens, depths, words.pair),
     commas: byDepth(depths, (index) => tokens[index]?.surface === "," && !regionCommas.has(index)),
-    inCitedTitle: citedTitles(tokens, source),
+    inCitedTitle: citedTitles(tokens, source, words.titleCue),
   };
 };
