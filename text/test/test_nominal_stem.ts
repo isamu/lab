@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { asNounWhereNominal, isStemForm } from "../packages/chaff/src/nominal-stem.ts";
+import { asNounWhereNominal, documentNounKeys, isStemForm, nounKeyOf } from "../packages/chaff/src/nominal-stem.ts";
 import type { Token } from "../packages/chaff/src/plugin.ts";
 
 // 動詞の連用形が名詞として使われているか（nominal-stem.ts）。例はすべて自作。
@@ -61,5 +61,58 @@ describe("asNounWhereNominal", () => {
     const next = at("の", "ADP");
     const unchanged = [at("期日", "NOUN", { lemma: "期日" }), verb("払い込む", "払い込む"), verb("ください", "下さる"), at("払込み", "VERB")];
     unchanged.forEach((token) => assert.equal(asNounWhereNominal(token, next), token));
+  });
+
+  it("する・できるの前の連用形は名詞（申出する）。ほかの動詞の前は動詞のまま", () => {
+    const light = [
+      at("する", "VERB", { lemma: "する" }),
+      at("し", "VERB", { lemma: "する" }),
+      at("できる", "VERB", { lemma: "できる" }),
+      at("出来る", "VERB", { lemma: "出来る" }),
+    ];
+    light.forEach((next) => assert.equal(asNounWhereNominal(verb("申出", "申出る"), next).pos, "NOUN"));
+    assert.equal(asNounWhereNominal(verb("申出", "申出る"), at("始める", "VERB", { lemma: "始める" })).pos, "VERB");
+    assert.equal(asNounWhereNominal(verb("申出", "申出る"), at("ます", "AUX", { lemma: "ます" })).pos, "VERB");
+  });
+
+  it("文書がほかで名詞として書く語なら、自立の名詞の前でも名詞（申し出期限）。書かない語は動詞のまま", () => {
+    const stem = verb("申し出", "申し出る");
+    const withReading = { ...stem, reading: "モウシデ" };
+    const deadline = at("期限", "NOUN");
+    assert.equal(asNounWhereNominal(withReading, deadline, new Set(), new Set(["申出|モウシデ"])).pos, "NOUN");
+    assert.equal(asNounWhereNominal(withReading, deadline, new Set(), new Set(["受取|ウケトリ"])).pos, "VERB");
+    assert.equal(asNounWhereNominal(withReading, deadline).pos, "VERB");
+    // 漢字の無い語は名詞の一覧と突き合わせない（かかり と 係 は読みが同じでも別の語）。
+    const kana = { ...verb("かかり", "かかる"), reading: "カカリ" };
+    assert.equal(asNounWhereNominal(kana, at("療養", "NOUN"), new Set(), new Set(["|カカリ", "係|カカリ"])).pos, "VERB");
+  });
+});
+
+describe("nounKeyOf", () => {
+  it("漢字と読み。送り仮名が違っても同じ（申出 と 申し出）", () => {
+    assert.equal(nounKeyOf(at("申出", "NOUN", { reading: "モウシデ" })), "申出|モウシデ");
+    assert.equal(nounKeyOf(at("申し出", "VERB", { reading: "モウシデ" })), "申出|モウシデ");
+  });
+
+  it("漢字の無い語、読みの無い語は無い", () => {
+    assert.equal(nounKeyOf(at("かかり", "VERB", { reading: "カカリ" })), undefined);
+    assert.equal(nounKeyOf(at("申出", "NOUN")), undefined);
+    assert.equal(nounKeyOf(at("", "NOUN", { reading: "" })), undefined);
+  });
+});
+
+describe("documentNounKeys", () => {
+  const read = (surface: string, pos: string, reading: string, extra: Partial<Token> = {}): Token => at(surface, pos, { reading, ...extra });
+
+  it("名詞と、名詞として使った連用形（申出 の前の の）を集める", () => {
+    const sentence = [read("申出", "VERB", "モウシデ", { lemma: "申出る" }), read("の", "ADP", "ノ"), read("撤回", "NOUN", "テッカイ")];
+    assert.deepEqual(documentNounKeys([sentence]), new Set(["申出|モウシデ", "撤回|テッカイ"]));
+  });
+
+  it("動詞として続く連用形（読点の前）、漢字の無い名詞、空の文書は集めない", () => {
+    const sentence = [read("申し出", "VERB", "モウシデ", { lemma: "申し出る" }), read("、", "PUNCT", "、"), read("こと", "NOUN", "コト")];
+    assert.deepEqual([...documentNounKeys([sentence])], []);
+    assert.deepEqual([...documentNounKeys([])], []);
+    assert.deepEqual([...documentNounKeys([[]])], []);
   });
 });
