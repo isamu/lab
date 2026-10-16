@@ -78,8 +78,8 @@ example:
     after: Our key goal indicator (KGI) this term is to reach product-market fit (PMF).
 
 not_flagged:
-  ja: 誰でも知っている略語（URL、PDF など）と、前後の括弧で説明した略語、会社の名前の中の英字（㈱ADEKA、CO.,LTD.）は指しません。
-  en: Common acronyms (URL, PDF), acronyms spelled out in brackets next to them, and the letters of a company name (㈱ADEKA, CO.,LTD.) are not reported.
+  ja: 誰でも知っている略語（URL、PDF など）と、前後の括弧で説明した略語、会社の名前の中の英字（㈱ADEKA、CO.,LTD.）は指しませんひな形の名前の置き場所（OOOO、XX 月）と、外のページへのリンクを並べた一覧の題名の中の略語も指しません（題名の略語は数には入れます）。
+  en: Common acronyms (URL, PDF), acronyms spelled out in brackets next to them, and the letters of a company name (㈱ADEKA, CO.,LTD.) are not reported. Neither are a template's placeholders (OOOO, XX 月) or an acronym in the title of a page in a list of links (it still counts towards the limit).
 level_meaning:
   ja: 説明のない略語が {limit} 種類あれば指摘。文書が自分で略語を {limit} 個展開していれば、1 つの抜けから指摘
   en: reported once {limit} different acronyms go unexplained, or from the first one when the document itself spells out {limit} others
