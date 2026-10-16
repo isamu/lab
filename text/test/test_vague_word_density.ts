@@ -6,6 +6,7 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { entriesForGenre } from "../packages/chaff/src/lexicon-genres.ts";
 import { vagueWordsIn } from "../packages/chaff/src/detectors/vague-density.ts";
+import { specifiedByBracket } from "../packages/chaff/src/detectors/bracket-specified.ts";
 
 // あいまいな語の密度（vague-word-density）。例文はすべて自作。
 
@@ -111,5 +112,48 @@ describe("vague-word-density: 一つの文の中のあいまいな語", () => {
   it("語の無い文と空の文は何も返さない", () => {
     assert.deepEqual(wordsIn("The meeting starts at ten.", "legal/contract"), []);
     assert.deepEqual(wordsIn("", "legal/contract"), []);
+  });
+});
+
+/** The vague words of each sentence, as the rule reads them, with the language's name markers. */
+const wordsWithMarkers = (text: string, adapter = ja): string[] => {
+  const doc = buildDocument("a.md", `${text}\n`, adapter);
+  const markers = (doc.lexicons["definition-marker"] ?? []).map((entry) => entry.pattern);
+  return doc.sentences.flatMap((sentence) => vagueWordsIn(sentence, doc.lexicons["vague-word"] ?? [], [], markers));
+};
+
+describe("vague-word-density: すぐ後ろの括弧で中身を決めた語", () => {
+  it("括弧が中身を書いていれば、あいまいな語として数えない", () => {
+    assert.deepEqual(wordsWithMarkers("一定の事項（請求書に書く必要のある事項）を記載した書類を保存します。"), []);
+    assert.deepEqual(wordsWithMarkers("相当の期間(30日)を定めて催告します。"), []);
+    assert.deepEqual(wordsWithMarkers("A reasonable fee (USD 50) applies.", en), []);
+  });
+
+  it("括弧が無い、離れている、名前を付けるだけ、の語は数える", () => {
+    assert.deepEqual(wordsWithMarkers("一定の事項を記載した書類を保存します。"), ["一定の"]);
+    assert.deepEqual(wordsWithMarkers("一定の事項を、記録（紙）に残します。"), ["一定の"]);
+    assert.deepEqual(wordsWithMarkers("適切な措置（以下「本措置」という。）を講じます。"), ["適切な"]);
+    assert.deepEqual(wordsWithMarkers('A reasonable fee (hereinafter the "Fee") applies.', en), ["reasonable"]);
+  });
+});
+
+describe("specifiedByBracket", () => {
+  const markers = ["以下", "hereinafter"];
+
+  it("a short noun and a closed aside right after the word pin it down", () => {
+    assert.equal(specifiedByBracket("一定の事項（記載事項）を残す", 3, markers), true);
+    assert.equal(specifiedByBracket("相当の(30日)", 3, markers), true);
+    assert.equal(specifiedByBracket("reasonable fee (USD 50)", 10, markers), true);
+  });
+
+  it("no bracket, a bracket after punctuation or too far, an empty or unclosed aside, or a name: not pinned down", () => {
+    assert.equal(specifiedByBracket("一定の事項を残す", 3, markers), false);
+    assert.equal(specifiedByBracket("一定の事項、記録（紙）", 3, markers), false);
+    assert.equal(specifiedByBracket("一定のとても長い名前の付いた書類の事項（紙）", 3, markers), false);
+    assert.equal(specifiedByBracket("一定の事項（）を残す", 3, markers), false);
+    assert.equal(specifiedByBracket("一定の事項（記載事項を残す", 3, markers), false);
+    assert.equal(specifiedByBracket("適切な措置（以下「本措置」という。）", 3, markers), false);
+    assert.equal(specifiedByBracket("", 0, markers), false);
+    assert.equal(specifiedByBracket("一定の", 10, []), false);
   });
 });
