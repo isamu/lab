@@ -95,14 +95,18 @@ const ownSentences = (doc: ProseDocument): readonly Sentence[] => doc.sentences.
  */
 const LINE_HEAD = /^\s*(?:[-*+] +)?/u;
 const BRACKETED = /^([(（[［])([^)）\]］]{1,4})([)）\]］])/u;
-const NUMBERING = /^(?:[0-9０-９]{1,3}|[一二三四五六七八九十]{1,3}|[ivxIVX]{1,4}|[A-Za-zＡ-Ｚａ-ｚァ-ヶぁ-んｦ-ﾝ])$/u;
+const NUMBERING = /^(?:[0-9０-９]{1,3}|[一二三四五六七八九十]{1,3}|[A-Za-zＡ-Ｚａ-ｚァ-ヶぁ-んｦ-ﾝ])$/u;
+/** Roman numerals i to x, either case. */
+const ROMAN = /^(?:i{2,3}|iv|vi{1,3}|ix|I{2,3}|IV|VI{1,3}|IX)$/u;
 const CLOSER_OF: Readonly<Record<string, string>> = { "(": ")", "（": "）", "[": "]", "［": "］" };
+
+const isItemNumber = (text: string): boolean => NUMBERING.test(text) || ROMAN.test(text);
 
 /** The offsets in a line of its item number's opening and closing bracket, or none. */
 const enumeratorIn = (line: string): readonly number[] => {
   const head = LINE_HEAD.exec(line)?.[0].length ?? 0;
   const found = BRACKETED.exec(line.slice(head));
-  if (found === null || CLOSER_OF[found[1] ?? ""] !== found[3] || !NUMBERING.test(found[2] ?? "")) return [];
+  if (found === null || CLOSER_OF[found[1] ?? ""] !== found[3] || !isItemNumber(found[2] ?? "")) return [];
   return [head, head + found[0].length - 1];
 };
 
@@ -112,9 +116,12 @@ export const enumeratorBracketOffsets = (source: string): ReadonlySet<number> =>
   return new Set(source.split("\n").flatMap((line, index) => enumeratorIn(line).map((at) => (starts[index] ?? 0) + at)));
 };
 
+/** Appended to a mark's kind for an item number's bracket. A lexicon's group, a word from YAML, never holds a NUL. */
+const ENUMERATOR_KIND = "\u0000enumerator";
+
 /** A line's item number's bracket is a kind of its own, compared only with the other item numbers' brackets. */
 const withEnumeratorKind = (mark: Mark, enumerators: ReadonlySet<number>): Mark =>
-  enumerators.has(mark.offset) ? { ...mark, form: { ...mark.form, kind: `${mark.form.kind} enumerator` } } : mark;
+  enumerators.has(mark.offset) ? { ...mark, form: { ...mark.form, kind: `${mark.form.kind}${ENUMERATOR_KIND}` } } : mark;
 
 /**
  * A mark written two ways in one document (（ and (, “ and "), the less common way reported. The two ways come from the

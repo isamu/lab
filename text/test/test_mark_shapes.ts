@@ -109,7 +109,7 @@ describe("bracket-width-consistency", () => {
   });
 
   it("行の途中の (2)、幅の揃わない番号（(1）、番号でない語の括弧（(背景)、(注)）は、番号として分けない", () => {
-    assert.deepEqual([...enumeratorBracketOffsets("(1)開催\n  - （ア）説明\n(1）案\n説明 (2)案\n(背景)案\n(注)案\n(iv)案")], [0, 2, 10, 12, 40, 43]);
+    assert.deepEqual([...enumeratorBracketOffsets("(1)開催\n  - （ア）説明\n(1）案\n説明 (2)案\n(背景)案\n(注)案\n(iv)案\n(iiii)案")], [0, 2, 10, 12, 40, 43]);
     assert.deepEqual([...enumeratorBracketOffsets("")], []);
   });
 });
