@@ -14,10 +14,12 @@ import type { Span } from "chaffjs/plugin";
 const PAREN = String.raw`\((?:\d{1,3}[A-Z]?|[a-z]{1,2}|[A-Z]|[ivxlc]{2,6}|[IVXLC]{2,6})\)`;
 const NUMBER = String.raw`\d{1,3}(?:\.\d{1,3})*[.)]|\d{1,3}(?:\.\d{1,3})+`;
 const LETTER = String.raw`[a-z][.)]`;
+/** An appendix's numbered part ("A.1.", "B.2.3"), as an RFC writes it in the body and in its contents. */
+const APPENDIX = String.raw`[A-Z](?:\.\d{1,3})+\.?`;
 const BULLET = "[-–•●▪◦‣*·]";
 
 /** The marker, then the first character of the item's text. A marker other than a bracketed one needs a space after it. */
-const MARKER = new RegExp(String.raw`^[ \t]*(?:(${PAREN})[ \t]*|(${NUMBER}|${LETTER}|${BULLET})[ \t]+)(\S)?`, "u");
+const MARKER = new RegExp(String.raw`^[ \t]*(?:(${PAREN})[ \t]*|(${NUMBER}|${APPENDIX}|${LETTER}|${BULLET})[ \t]+)(\S)?`, "u");
 
 /** marker: as written ("(a)", "2.", "-"). capital: the item's text starts with a capital or a digit. */
 type Item = { readonly marker: string; readonly bracketed: boolean; readonly capital: boolean };
