@@ -2,6 +2,7 @@ import type { Detector, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence 
 import { entryCloses, entryIn, entryRanges } from "./lexicon-match.ts";
 import { classWordsOf, isClassCue, namesClassAfter } from "./open-end-class.ts";
 import { openEndAt, openEndNames, type OpenEndNames } from "./open-end-names.ts";
+import { asksAfter, questionWordsOf } from "./open-end-question.ts";
 import { statesConcrete } from "./vague-deadline.ts";
 
 // Requirements smells (Femmer et al. 2017; Berry et al. 2003; ISO/IEC/IEEE 29148): a loophole, an open-ended list and
@@ -10,6 +11,8 @@ import { statesConcrete } from "./vague-deadline.ts";
 
 const OPEN_END = "requirement-open-end";
 const LOOPHOLE = "requirement-loophole";
+/** The words of a question that an open list gives example answers to. */
+const OPEN_QUESTION = "requirement-open-question";
 const TIME = "time";
 const CONCRETE_DEADLINE = "concrete-deadline";
 
@@ -72,13 +75,17 @@ const smellAt = (doc: ProseDocument, sentence: Sentence, entry: LexiconEntry, le
   return openEndAt(doc, sentence, entry, names(), (tokens, range) => namesClassAfter(tokens, range, classWords));
 };
 
+/** An open list right before a question the reader answers (…措置など、どのような措置を求めるのか): its items are example answers. */
+const answersQuestion = (doc: ProseDocument, sentence: Sentence, entry: LexiconEntry, lexicon: string, offset: number): boolean =>
+  lexicon === OPEN_END && asksAfter(sentence, offset + entry.pattern.length, questionWordsOf(doc.lexicons[OPEN_QUESTION] ?? []));
+
 /** The first word of each smell in one requirement sentence: one finding per smell, not per word. */
 const smellsIn = (doc: ProseDocument, sentence: Sentence, names: () => OpenEndNames): Finding[] =>
   SMELLS.flatMap(({ lexicon, variant }) =>
     smellWords(doc, lexicon)
       .flatMap((entry) => {
         const offset = smellAt(doc, sentence, entry, lexicon, names);
-        return offset === undefined ? [] : [findingOf(sentence, entry, variant, offset)];
+        return offset === undefined || answersQuestion(doc, sentence, entry, lexicon, offset) ? [] : [findingOf(sentence, entry, variant, offset)];
       })
       .slice(0, 1),
   );

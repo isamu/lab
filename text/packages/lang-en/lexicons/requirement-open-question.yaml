@@ -1,0 +1,6 @@
+# Words of a question that an open list gives example answers to (〜措置など、どのような措置を求めるのか in Japanese). English
+# puts such a list after its question ("state which measures you seek, such as …"), where "such as" is no open-end word,
+# so there are none; the list exists so both languages name the same lists.
+id: requirement-open-question
+language: en
+entries: []
