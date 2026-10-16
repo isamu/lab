@@ -2,7 +2,6 @@ aoml-hurricane-faq  1
 chrome-blog-pwa-origin-migration  1
 chrome-blog-pwa-origin-migration-ja  1
 da-agile-review-4  1
-da-recruitment-office-visit  1
 ecfr-16-cfr-310-telemarketing  2
 gutenberg-whitman-leaves-of-grass  1
 meti-press-level4-bus  1
