@@ -47,6 +47,10 @@ describe("heading-numbering-mix: 兄弟の見出しの番号の付け方", () =>
   it("末尾の連絡先（担当、お問い合わせ先、Contact）は前後の見出しとして比べない", () => {
     assert.deepEqual(mixed(["## 1．概要", "## 2．経緯・詳細等", "## 3．実証実験の内容", "## 担当"]), []);
     assert.deepEqual(mixed(["## 1. 概要", "## 2. 日程", "## お問い合わせ先"]), []);
+    assert.deepEqual(mixed(["## 1. 概要", "## 2. 日程", "## お問合せ先"]), []);
+    assert.deepEqual(mixed(["## 1. 概要", "## 2. 日程", "## お問合わせ先"]), []);
+    assert.deepEqual(mixed(["## 1．概要", "## 2．日程", "## 照会先"]), []);
+    assert.deepEqual(mixed(["## 1．概要", "## 2．日程", "## お問い合わせ窓口"]), []);
     assert.deepEqual(mixed(["## 1. Overview", "## 2. Schedule", "## Media contact"], en), []);
     assert.deepEqual(mixed(["## 1. Overview", "## 2. Schedule", "## Contacts"], en), []);
   });
@@ -80,6 +84,7 @@ describe("heading-numbering-mix: 兄弟の見出しの番号の付け方", () =>
   });
 
   it("連絡先の語を含むだけの見出しは前後の見出しにしない", () => {
+    assert.equal(mixed(["## 1．概要", "## 2．日程", "## 照会先の一覧と役割"]).length, 1);
     assert.deepEqual(mixed(["## 1. 概要", "## 2. 日程", "## 担当部署の役割"]), [
       "見出し「担当部署の役割」だけ番号がありません（兄弟の見出しは「1. 概要」など 2 個が番号付き）",
     ]);
