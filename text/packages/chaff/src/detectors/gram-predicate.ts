@@ -40,10 +40,31 @@ const onlyNamesBeside = (tokens: readonly Token[], predicate: number, window: Sp
   return names.length > 0 && rest.every((index) => FUNCTION_POS.has(tokens[index]?.pos ?? ""));
 };
 
+const COMPOUND_POS = new Set(["NOUN", "PROPN", "ADJ", "NUM"]);
+/** 動詞の前の名詞句がこれだけの語を持てば、動詞はその名詞句の最後の名詞。the contract says は 1 語なので述語のまま。 */
+const MIN_COMPOUND_WORDS = 2;
+
+/** 語形を変えていない動詞（rate）か -ing 形（subcontracting）。名詞と同じ形で、名詞の読み違いになりうる。described や says は述語の形。 */
+const isNounShaped = (token: Token): boolean =>
+  token.features?.["VerbForm"] === "Ger" || (token.lemma !== undefined && token.lemma === token.surface.toLowerCase());
+
+/**
+ * 英語で、窓の最後の名詞の形の動詞の前が名詞と形容詞だけ（先頭の冠詞は許す）なら、動詞は名詞の続きの読み違い
+ * （the federal funds rate の rate、small business subcontracting）。窓の中に機能語があれば言い回し（your contract says）。
+ */
+const endsNounCompound = (tokens: readonly Token[], index: number, window: Span, unit: LengthUnit): boolean => {
+  const verb = tokens[index];
+  if (unit !== "word" || verb?.pos !== "VERB" || !isNounShaped(verb)) return false;
+  const touched = tokens.flatMap((token, at) => (overlaps(token, window) ? [at] : []));
+  if (touched.at(-1) !== index) return false;
+  const before = touched.slice(0, -1).filter((at, order) => !(order === 0 && tokens[at]?.pos === "DET"));
+  return before.length >= MIN_COMPOUND_WORDS && before.every((at) => COMPOUND_POS.has(tokens[at]?.pos ?? ""));
+};
+
 const countsAsPredicate = (tokens: readonly Token[], index: number, window: Span, unit: LengthUnit): boolean => {
   const token = tokens[index];
   if (token === undefined || !PREDICATE_POS.has(token.pos) || !overlaps(token, window)) return false;
-  if (modifiesNoun(tokens, index, unit) || namePartAt(tokens, index, unit)) return false;
+  if (modifiesNoun(tokens, index, unit) || namePartAt(tokens, index, unit) || endsNounCompound(tokens, index, window, unit)) return false;
   return !isCut(token, window) || !onlyNamesBeside(tokens, index, window, unit);
 };
 

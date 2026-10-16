@@ -3,7 +3,6 @@ arxiv-astro-ph-new-2025-01-03  1
 asf-board-minutes-2025-01  1
 cisa-scuba-teams  1
 crs-r47235-budget-timeline  1
-crs-r47585-subcontracting  1
 crs-rl32781-salt  1
 da-annual-report-2024  1
 da-gss-incident  1
