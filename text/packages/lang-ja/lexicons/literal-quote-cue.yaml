@@ -1,0 +1,22 @@
+# 鉤括弧の中身が、そのとおりに打ち込む文字列（メールの件名、ファイル名）だと言う語。中の括弧は文字列の一部で、外せない。
+# bracket-nesting は、この語が前（position: before、件名に「…」）か直後（「…」と記載）に付く引用を一つの括弧として数える。
+# 「と記載」のように書き写させる語だけを置く。「と言う」「と考える」は引いた言葉で、中の括弧は書き手が外せる。
+id: literal-quote-cue
+language: ja
+entries:
+  - { pattern: 件名に, position: before }
+  - { pattern: 件名を, position: before }
+  - { pattern: 件名は, position: before }
+  - { pattern: 件名：, position: before }
+  - { pattern: "件名:", position: before }
+  - { pattern: ファイル名に, position: before }
+  - { pattern: ファイル名を, position: before }
+  - { pattern: ファイル名は, position: before }
+  - { pattern: ファイル名：, position: before }
+  - { pattern: "ファイル名:", position: before }
+  - pattern: と記載
+  - pattern: と記入
+  - pattern: と入力
+  - pattern: と明記
+  - pattern: とファイル名
+  - pattern: と件名

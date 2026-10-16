@@ -1,0 +1,16 @@
+# Words that say a quotation is a string to type as it stands (an e-mail subject, a file name, a title). Its brackets
+# are the string's own and the writer cannot take them out. bracket-nesting counts such a quotation as one bracket when
+# one of these stands right before it (position: before, as in with the subject line “…”) or right after it.
+id: literal-quote-cue
+language: en
+entries:
+  - { pattern: subject line, position: before }
+  - { pattern: "subject:", position: before }
+  - { pattern: the subject, position: before }
+  - { pattern: file name, position: before }
+  - { pattern: filename, position: before }
+  - { pattern: "file name:", position: before }
+  - { pattern: named, position: before }
+  - { pattern: titled, position: before }
+  - pattern: as the subject
+  - pattern: as the file name
