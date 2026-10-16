@@ -2,6 +2,7 @@ import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { innerLowered, lowerCaseUses, nameBefore, quotedUses } from "../packages/chaff/src/detectors/defined-term-form.ts";
 import { extendedAfter, extendedBefore } from "../packages/chaff/src/detectors/term-extension.ts";
+import { headsKindPhrase, insideLongerTerm, isNamedAsTerm, isNarrowedUse } from "../packages/chaff/src/detectors/ordinary-phrase.ts";
 import { isSignatureLine, opensClosingBlock } from "../packages/chaff/src/detectors/name-field.ts";
 import { prefixGroupsOf, prefixVariants, variantUses } from "../packages/chaff/src/structure/term-prefix.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
@@ -11,7 +12,7 @@ import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import type { Finding, LanguageAdapter } from "../packages/chaff/src/plugin.ts";
+import type { Finding, LanguageAdapter, Token } from "../packages/chaff/src/plugin.ts";
 
 // A contract's defined terms in another form (quoted again, lower case), and a long name used again after its short
 // name was defined. Every example is self-written.
@@ -472,5 +473,181 @@ describe("defined-name-repeated: a long name used again after its short name", (
       ["name Pinecone"],
     );
     assert.deepEqual(valuesOf(en, "defined-name-repeated", [...head, "Pinecone (Pinecone Software Ltd) is not liable.", ""].join("\n"), "term"), []);
+  });
+});
+
+describe("defined-term-form: an ordinary phrase that shares a word with a defined term", () => {
+  const tokensOf = (words: readonly (readonly [string, string])[]): Token[] =>
+    words.map(([surface, pos], index) => ({ surface, pos, span: { start: index * 10, end: index * 10 + surface.length } }));
+
+  it("does not report a phrase inside a longer defined term, a narrowed noun, or a noun heading a kind of thing", () => {
+    const source = [
+      "# Merger Agreement",
+      "",
+      '1. "Company" means Southfield Tools. "Parent" means Northwind Holdings. "Certificate" means a certificate for a Share.',
+      "",
+      '2. The Company shall file a certificate of merger for the Merger (the "Certificate of Merger"). The Merger takes effect on filing.',
+      "",
+      "3. Parent pays for each Certificate. The Company may hold cash in certificates of deposit. The Company is a limited liability company.",
+      "",
+      "4. The Company has not been in a tax group with a common parent.",
+      "",
+    ].join("\n");
+    assert.deepEqual(valuesOf(en, "defined-term-form", source, "term"), []);
+  });
+
+  it("still reports the defined term in lower case after a pointing word, or before of and a particular thing", () => {
+    const head = ["# Agreement", "", '1. "Party" means the Buyer or the Seller. "Certificate" means a certificate for a Share.', ""];
+    const other = [...head, "2. Each Party pays its costs. A Party gives notice to the other party.", ""];
+    assert.deepEqual(valuesOf(en, "defined-term-form", other.join("\n"), "term"), ["case Party"]);
+    const particular = [...head, "2. Each Certificate is cancelled. Each Certificate is paid. The certificate of the holder is void.", ""];
+    assert.deepEqual(valuesOf(en, "defined-term-form", particular.join("\n"), "term"), ["case Certificate"]);
+  });
+
+  it("does not report a quoted term the words before it name as a term, but does report one quoted again", () => {
+    const head = ["# Agreement", "", '1. "Material Adverse Effect" means a change that harms the Company.', ""];
+    const named = [
+      ...head,
+      '2. A change excluded from the definition of "Material Adverse Effect" may be counted. So may the term "Material Adverse Effect".',
+      "",
+    ];
+    assert.deepEqual(valuesOf(en, "defined-term-form", named.join("\n"), "term"), []);
+    const quoted = [...head, '2. No "Material Adverse Effect" has occurred.', ""];
+    assert.deepEqual(valuesOf(en, "defined-term-form", quoted.join("\n"), "term"), ["quoted Material Adverse Effect"]);
+  });
+
+  it("isNarrowedUse: an adjective or a noun before the use, not a pointing word", () => {
+    const pointers = ["other", "next"];
+    assert.equal(
+      isNarrowedUse(
+        tokensOf([
+          ["common", "ADJ"],
+          ["parent", "NOUN"],
+        ]),
+        1,
+        pointers,
+      ),
+      true,
+    );
+    assert.equal(
+      isNarrowedUse(
+        tokensOf([
+          ["liability", "NOUN"],
+          ["company", "NOUN"],
+        ]),
+        1,
+        pointers,
+      ),
+      true,
+    );
+    assert.equal(
+      isNarrowedUse(
+        tokensOf([
+          ["Other", "ADJ"],
+          ["party", "NOUN"],
+        ]),
+        1,
+        pointers,
+      ),
+      false,
+    );
+    assert.equal(
+      isNarrowedUse(
+        tokensOf([
+          ["the", "DET"],
+          ["party", "NOUN"],
+        ]),
+        1,
+        pointers,
+      ),
+      false,
+    );
+    assert.equal(isNarrowedUse(tokensOf([["party", "NOUN"]]), 0, pointers), false);
+    assert.equal(
+      isNarrowedUse(
+        tokensOf([
+          ["契約", "NOUN"],
+          ["services", "NOUN"],
+        ]),
+        1,
+        pointers,
+      ),
+      false,
+    );
+  });
+
+  it("headsKindPhrase: of and a bare lower-case noun after the use", () => {
+    assert.equal(
+      headsKindPhrase(
+        tokensOf([
+          ["certificates", "NOUN"],
+          ["of", "ADP"],
+          ["deposit", "NOUN"],
+        ]),
+        0,
+      ),
+      true,
+    );
+    assert.equal(
+      headsKindPhrase(
+        tokensOf([
+          ["certificate", "NOUN"],
+          ["of", "ADP"],
+          ["the", "DET"],
+        ]),
+        0,
+      ),
+      false,
+    );
+    assert.equal(
+      headsKindPhrase(
+        tokensOf([
+          ["certificate", "NOUN"],
+          ["of", "ADP"],
+          ["Acme", "PROPN"],
+        ]),
+        0,
+      ),
+      false,
+    );
+    assert.equal(
+      headsKindPhrase(
+        tokensOf([
+          ["certificate", "NOUN"],
+          ["for", "ADP"],
+          ["deposit", "NOUN"],
+        ]),
+        0,
+      ),
+      false,
+    );
+    assert.equal(
+      headsKindPhrase(
+        tokensOf([
+          ["certificate", "NOUN"],
+          ["of", "ADP"],
+        ]),
+        0,
+      ),
+      false,
+    );
+  });
+
+  it("insideLongerTerm: the use inside another defined term written in any case", () => {
+    const source = "file a certificate of merger now";
+    assert.equal(insideLongerTerm(source, 22, "Merger", ["Merger", "Certificate of Merger"]), true);
+    assert.equal(insideLongerTerm(source, 7, "Certificate", ["Certificate of Merger"]), true);
+    assert.equal(insideLongerTerm(source, 22, "Merger", ["Merger", "Plan of Merger"]), false);
+    assert.equal(insideLongerTerm("merger", 0, "Merger", ["Certificate of Merger"]), false);
+    assert.equal(insideLongerTerm("the agent of agent here", 13, "Agent", ["Agent of Agent"]), true);
+  });
+
+  it("isNamedAsTerm: a cue word right before the quote, as a whole word, in any case", () => {
+    const cues = ["definition of", "the term"];
+    assert.equal(isNamedAsTerm('the definition of "X"', 18, cues), true);
+    assert.equal(isNamedAsTerm('The Term "X"', 9, cues), true);
+    assert.equal(isNamedAsTerm('redefinition of "X"', 16, cues), false);
+    assert.equal(isNamedAsTerm('a copy of "X"', 10, cues), false);
+    assert.equal(isNamedAsTerm('"X"', 0, [""]), false);
   });
 });
