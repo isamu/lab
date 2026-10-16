@@ -53,7 +53,21 @@ const rawCells = (line: Line): { readonly raw: string; readonly from: number }[]
   return inner.at(-1)?.raw.trim() === "" ? inner.slice(0, -1) : inner;
 };
 
-const labelCell = (line: Line, { raw, from }: { readonly raw: string; readonly from: number }): HeaderCell[] => {
+/**
+ * An inline HTML tag in a cell (`<div style="…">`, `</div>`, `<br/>`): the reader sees none of it. A tag name ends at a space,
+ * a slash or `>`, so an autolink (`<https://…>`) is not one; a quoted attribute may hold a `>`.
+ */
+const HTML_TAG = /<\/?[A-Za-z][A-Za-z0-9-]*(?:\s(?:[^<>"']|"[^"]*"|'[^']*')*)?\/?>/gu;
+
+/**
+ * The cell with its HTML tags blanked out, same length, so the words keep their offsets and the spaces around them trim.
+ * A cell with a code span is left whole: a tag written in code is text the reader sees.
+ */
+const withoutTags = (raw: string): string => (raw.includes("`") ? raw : raw.replace(HTML_TAG, (tag) => " ".repeat(tag.length)));
+
+const labelCell = (line: Line, cell: { readonly raw: string; readonly from: number }): HeaderCell[] => {
+  const { from } = cell;
+  const raw = withoutTags(cell.raw);
   const trimmed = raw.trim();
   const unwrapped = unwrap(trimmed);
   const written = unwrapped.replace(INNER_MARKS, "").trim();

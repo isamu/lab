@@ -63,6 +63,24 @@ describe("tableHeaderCells: the label cells of a document's tables", () => {
     ]);
   });
 
+  it("reads the words inside inline HTML, without the tags or the spaces inside them, and points at the words", () => {
+    assert.deepEqual(tableHeaderCells('| <div align="center">組織</div> | <b> 役割 </b> |\n|---|---|\n'), [
+      { written: "組織", offset: 22 },
+      { written: "役割", offset: 37 },
+    ]);
+    assert.deepEqual(
+      tableHeaderCells("| a < b | Total |\n|---|---|\n").map((cell) => cell.written),
+      ["a < b", "Total"],
+    );
+  });
+
+  it("keeps an autolink, a tag inside code, and reads past a > inside a quoted attribute", () => {
+    assert.deepEqual(
+      tableHeaderCells('| <https://e.com> | `a <b> c` | <span title="a > b">担当者</span> |\n|---|---|---|\n').map((cell) => cell.written),
+      ["<https://e.com>", "a <b> c", "担当者"],
+    );
+  });
+
   it("does not read a delimiter row with a different number of cells", () => assert.deepEqual(tableHeaderCells("| a | b |\n| --- |\n"), []));
 
   it("does not read a table in indented code, nor inside a ~~~ line within a ``` fence", () => {
@@ -128,6 +146,12 @@ describe("table-header-variant: a header written two ways", () => {
 
   it("does not report one spelling used throughout", () =>
     assert.deepEqual(flagged(ja, doc(table(["作業", "担当者"], ["発注", "山田"]), table(["作業", "担当者"], ["検品", "鈴木"]))), []));
+
+  it("does not report headers in inline HTML that differ only by a space inside the tag, and still reports a real variant there", () => {
+    const centred = (label: string): string => `<div style="text-align: center;">${label}</div>`;
+    assert.deepEqual(flagged(ja, doc(table([centred("作業"), centred("役割 ")], ["発注", "山田"]), table([centred(" 作業"), centred("役割")], ["検品", "鈴木"]))), []);
+    assert.deepEqual(flagged(ja, doc(table([centred("作業"), centred("担当者")], ["発注", "山田"]), table([centred("作業"), centred("担当")], ["検品", "鈴木"]))), ["担当"]);
+  });
 
   it("does not report different labels", () =>
     assert.deepEqual(flagged(en, doc(table(["Date", "Owner"], ["May", "Kim"]), table(["Time", "Lead"], ["9", "Lee"]))), []));
