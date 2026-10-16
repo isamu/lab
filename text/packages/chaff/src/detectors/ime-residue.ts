@@ -6,15 +6,16 @@ import { quoteAround } from "./quote-around.ts";
 /** One stray letter, and where it is in the text. */
 export type StrayLetter = { readonly offset: number; readonly letter: string };
 
-// Hiragana or kanji before (after katakana a letter is a label: サイズm, プランb), kana after.
-const STRAY = /(?<=[\p{Script=Hiragana}\p{Script=Han}々])[a-z](?=[\p{Script=Hiragana}\p{Script=Katakana}ー])/gu;
+// Hiragana or kanji before (after katakana a letter is a label: サイズm, プランb), kana after. Only a consonant: romaji
+// input turns a vowel into kana at once, so a lone vowel is a word of its own (eラーニング, iモード), never a residue.
+const STRAY = /(?<=[\p{Script=Hiragana}\p{Script=Han}々])[b-df-hj-np-tv-z](?=[\p{Script=Hiragana}\p{Script=Katakana}ー])/gu;
 /** Marks that make the run around the letter a path, an address or an assignment (/docs/あaい, a=b). */
 const PATH_MARK = /[/\\=@#]/u;
 
 const runBefore = (text: string, offset: number): string => text.slice(0, offset).split(/\s/u).at(-1) ?? "";
 
 /**
- * One lower-case letter between Japanese: hiragana or kanji before, kana after. A letter followed by a particle names
+ * One lower-case consonant between Japanese: hiragana or kanji before, kana after. A letter followed by a particle names
  * something (変数xが, まずxを, をxで), so it is left alone; the particles come from the lexicon.
  */
 export const strayLettersIn = (text: string, particles: readonly string[]): StrayLetter[] =>

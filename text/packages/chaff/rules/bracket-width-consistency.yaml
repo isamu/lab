@@ -44,8 +44,8 @@ example:
       会議（定例）は月曜です。報告（月次）は金曜です。資料（最新版）を配ります。
 
 not_flagged:
-  ja: 日本語の字に接する括弧だけを数えます。英語の中の括弧（f(x)、API(s)）、コード、鉤括弧で引いたものの中は数えません。
-  en: Only brackets touching Japanese text. Brackets in English text (f(x)), code, and 「」 quotations are not counted.
+  ja: 日本語の字に接する括弧だけを数えます。英語の中の括弧（f(x)、API(s)）、式の括弧（賃金 × (1 - 時間 ÷ 月平均)）、コード、鉤括弧で引いたものの中は数えません。
+  en: Only brackets touching Japanese text. Brackets in English text (f(x)), brackets in a formula (賃金 × (1 - 時間 ÷ 月平均)), code, and 「」 quotations are not counted.
 level_meaning:
   ja: 少ないほうの書き方が {limit} 箇所あれば指摘
   en: reported once the less common way appears {limit} times

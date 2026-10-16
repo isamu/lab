@@ -35,6 +35,19 @@ const wordAround = (text: string, start: number, end: number): string => {
   return text.slice(from, after === -1 ? text.length : end + after);
 };
 
+/**
+ * A leader pads a label out to a column: the label opens a line or follows a sentence end, holds no space or punctuation,
+ * and two spaces or more follow the dots (化学品事業…… then two full-width spaces, then the description). One such place
+ * may be an ellipsis followed by spaces; MIN_LEADERS of them are a list of labels.
+ */
+const LEADER_LABEL = /(?:^|[\n。．！？!?])[^\S\n]*[^\s\p{P}]{1,20}$/u;
+const LEADER_PADDING = /^[^\S\n]{2}/u;
+const LABEL_REACH = 24;
+const MIN_LEADERS = 2;
+
+const isLeaderShaped = (text: string, start: number, end: number): boolean =>
+  LEADER_PADDING.test(text.slice(end)) && LEADER_LABEL.test(text.slice(Math.max(0, start - LABEL_REACH), start));
+
 /** Dots that are not an ellipsis in running text: a range, a path or address, a table of contents leader. */
 const isNotProse = (text: string, start: number, end: number): boolean =>
   NOT_PROSE_BESIDE.test(text.charAt(start - 1)) ||
@@ -50,9 +63,11 @@ export const ellipsesIn = (text: string, forms: readonly string[]): WrittenEllip
     .map(escapeRegExp)
     .join("|");
   const pattern = new RegExp(`(?<!${ELLIPSIS_PART})(?:${alternatives})(?!${ELLIPSIS_PART})`, "gu");
-  return [...text.matchAll(pattern)].flatMap((match) =>
+  const found = [...text.matchAll(pattern)].flatMap((match) =>
     isNotProse(text, match.index, match.index + match[0].length) ? [] : [{ offset: match.index, form: match[0] }],
   );
+  const leaders = found.filter((ellipsis) => isLeaderShaped(text, ellipsis.offset, ellipsis.offset + ellipsis.form.length));
+  return leaders.length < MIN_LEADERS ? found : found.filter((ellipsis) => !leaders.includes(ellipsis));
 };
 
 export const ellipsisConsistency: Detector = (doc, options): Finding[] => {

@@ -59,8 +59,8 @@ example:
       [^2]: During the trial period.
 
 not_flagged:
-  ja: Markdown の脚注（[^1] と行頭の [^1]:）と、※ に一桁か二桁の番号を付けた印（※1、（※2））を読みます。※ の注が文書に一つも無いときは、注を別の所（表や別紙）に置いた文書と読んで言いません。※ の後ろに数が続くもの（※2018年度）は注の番号ではありません。コードの中は読みません。
-  en: Markdown footnotes ([^1] and a line starting "[^1]:") and a ※ with a one- or two-digit number (※1, (※2)) are read. When a document has no ※ note at all, its notes are taken to be elsewhere (a table, an annex) and nothing is reported for ※. A ※ before a longer number ("※2018") is not a note mark. Code is not read.
+  ja: Markdown の脚注（[^1] と行頭の [^1]:）と、※ に一桁か二桁の番号を付けた印（※1、（※2））を読みます。※ の注が文書に一つも無いときは、注を別の所（表や別紙）に置いた文書と読んで言いません。※ の後ろに数が続くもの（※2018年度）と英語の序数（※1st Party）は注の番号ではありません。コードの中は読みません。
+  en: Markdown footnotes ([^1] and a line starting "[^1]:") and a ※ with a one- or two-digit number (※1, (※2)) are read. When a document has no ※ note at all, its notes are taken to be elsewhere (a table, an annex) and nothing is reported for ※. A ※ before a longer number ("※2018") or an English ordinal ("※1st Party") is not a note mark. Code is not read.
 
 rewrite:
   ja:

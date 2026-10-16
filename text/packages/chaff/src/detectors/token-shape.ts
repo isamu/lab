@@ -1,10 +1,11 @@
 import { hasParticle, isClosed, lastContent } from "../sentence-shape.ts";
 import { isWithinAny, quotedIn } from "../quoted-span.ts";
+import { chronologyRows } from "../chronology-rows.ts";
 import type { Detector, Finding, Span, Token } from "../plugin.ts";
 
 /**
  * 文末が名詞で終わる（体言止め）。箇条書きでは普通だが、本文では文が途中で切れて読める。
- * 実文書で測ったら、指摘の 9 割が箇条書きの項目だった。箇条書きは除く。
+ * 実文書で測ったら、指摘の 9 割が箇条書きの項目だった。箇条書きは除く。年表の行（1950年4月 設立。）も名詞で止める書き方なので除く。
  */
 const NOMINAL = new Set(["NOUN", "PROPN"]);
 
@@ -14,8 +15,9 @@ const isDependent = (token: Token): boolean => token.features?.["NounType"] === 
 const inside = (span: Span, spans: readonly Span[]): boolean => spans.some((other) => span.start >= other.start && span.start < other.end);
 
 export const nounEnding: Detector = (doc, options): Finding[] => {
+  const rows = chronologyRows(doc);
   const ended = doc.sentences.filter((sentence) => {
-    if (inside(sentence.span, doc.listSpans) || !isClosed(sentence) || !hasParticle(sentence)) return false;
+    if (inside(sentence.span, doc.listSpans) || rows.has(sentence) || !isClosed(sentence) || !hasParticle(sentence)) return false;
     const last = lastContent(sentence);
     return last !== undefined && NOMINAL.has(last.pos) && !isDependent(last);
   });

@@ -184,9 +184,10 @@ export const ngramRepetition: Detector = (doc, options): Finding[] => {
  *
  * & で繋いだ大文字は 1 語として読む（ATT&CK、M&IE）。割ると CK や IE が別の略語に見える。
  * - で繋いだ略語どうしも 1 語（RT-PCR）。割ると RT が別の略語に見える。数字を含むもの（COVID-19）は識別子として外す。
+ * 下付きの数字が続く大文字は化学式（CO₂、SO₄）で、説明を待つ略語ではない。数字や小文字が続くもの（CO2、NOx）と同じく語の途中と読む。
  */
 const EDGE_BEFORE = String.raw`(?<![A-Za-z0-9_&])`;
-const EDGE_AFTER = String.raw`(?![A-Za-z0-9_&])`;
+const EDGE_AFTER = String.raw`(?![A-Za-z0-9_&\u2080-\u2089])`;
 /** 略語として読む大文字の長さの上限。これより長い大文字の語（BILLING）は、普通の語を大文字で書いたもの。 */
 const ACRONYM_MAX = 6;
 const ACRONYM_PART = String.raw`(?:[A-Z]+(?:&[A-Z]+)+|[A-Z]{2,${ACRONYM_MAX}})`;

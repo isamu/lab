@@ -3,7 +3,7 @@ da-ai-advisory-board-1  1
 da-area-data-map-format  1
 entaku-rb-5  1
 jstage-jkg-72-4-133  1
-kobayashi-press-hananoa-2026-02  2
+kobayashi-press-hananoa-2026-02  1
 koho-tokyo-2026-06-suigai  2
 mhlw-icd-committee-26-minutes  1
 mhlw-norovirus-qa  3

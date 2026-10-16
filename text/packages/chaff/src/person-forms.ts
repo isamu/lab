@@ -105,6 +105,21 @@ const usualForm = (forms: readonly string[]): string | undefined => {
 };
 
 /**
+ * Pure: entries without the places of a form that also names something else (本社 is also the head office), unless that
+ * form is the slot's usual one. A document that calls itself 当社 writes 本社 for its head office; one that calls itself
+ * 本社 still has its stray 当社 pointed at.
+ */
+export const withoutOtherSenses = <T extends { readonly mention: PersonMention }>(entries: readonly T[], otherSenses: ReadonlySet<string>): T[] => {
+  const usual = new Map(
+    [...new Set(entries.map((entry) => entry.mention.slot))].map((slot) => [
+      slot,
+      usualForm(entries.filter((entry) => entry.mention.slot === slot).map((entry) => entry.mention.form)),
+    ]),
+  );
+  return entries.filter((entry) => !otherSenses.has(entry.mention.form) || usual.get(entry.mention.slot) === entry.mention.form);
+};
+
+/**
  * Pure: for each slot, the places that use another form than the document's usual one. Entries are in document order.
  * Nothing when the slot has one form, when the usual form has fewer than MIN_USUAL places, or when the other forms pass
  * limitPercent of the slot's places: then the document uses two forms on purpose, and pointing at either takes a side.

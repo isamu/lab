@@ -79,6 +79,16 @@ describe("bracket-width-consistency", () => {
     assert.deepEqual(findingsOf(RULE, "会議（定例）は月曜です。関数 f(x) を使います。報告（月次）は金曜です。\n", ja), []);
     assert.deepEqual(findingsOf(RULE, "会議（定例）は月曜です。題は「資料(最新版)」です。\n", ja), []);
   });
+
+  it("式の括弧（× (1 - 時間 ÷ 月平均)）は数えず、文の中の半角の括弧は数える", () => {
+    const formula =
+      "会議（定例）は月曜です。報告（月次）は金曜です。\n\n- 支給額 × (1 - 欠勤時間 ÷ 所定時間)　+ 手当\n- 支給額 × (勤務時間 ÷ 所定時間)　+ 手当\n";
+    assert.deepEqual(findingsOf(RULE, formula, ja), []);
+    assert.deepEqual(findingsOf(RULE, `${formula}\n資料(最新版)を配ります。\n`, ja), [
+      "括弧を「(」と書いています（この文書はふつう「（」。6 箇所のうち 2 箇所が違う）",
+      "括弧を「)」と書いています（この文書はふつう「）」。6 箇所のうち 2 箇所が違う）",
+    ]);
+  });
 });
 
 describe("exclamation-width-consistency", () => {

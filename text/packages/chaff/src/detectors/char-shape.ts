@@ -54,7 +54,13 @@ const runsOf = (sentence: Sentence, profile: DocumentProfile | undefined, names:
 };
 
 /** 連なりを数えないと決める語彙: 住所の先頭にしか来ない単位（都道府県）と、組織の名前の形と単位と、題の名前を閉じる語。 */
-type NameWords = { readonly topUnits: ReadonlySet<string>; readonly organisation: OrganisationWords; readonly title: TitleWords };
+type NameWords = {
+  readonly topUnits: ReadonlySet<string>;
+  readonly organisation: OrganisationWords;
+  readonly title: TitleWords;
+  /** 数の後ろで日付・時刻の位置を言う単位（月）。連なりの頭にあれば、数に付いた助数詞。 */
+  readonly positional: readonly string[];
+};
 
 /** 1 つの文書で連なりを読むのに要るもの。titled は、文書の中で題として置かれた名前（titledNames）。 */
 type RunContext = {
@@ -91,7 +97,7 @@ const isTitle = (tokens: readonly Token[], span: Span, text: string, placed: boo
 const measuredRun = (tokens: readonly Token[] | undefined, run: KanjiRun, context: RunContext): string => {
   if (run.quoted) return "";
   if (tokens === undefined || run.span === undefined) return run.text;
-  const counter = leadingCounter(tokens, run.span.start, run.text);
+  const counter = leadingCounter(tokens, run.span.start, run.text, context.words.positional);
   const prefix = trailingPrefix(tokens, run.span.end, run.text);
   const rest = { start: counter?.span.end ?? run.span.start, end: prefix?.span.start ?? run.span.end };
   const text = run.text.slice(counter?.surface.length ?? 0, run.text.length - (prefix?.surface.length ?? 0));
@@ -126,6 +132,7 @@ export const kanjiRun: Detector = (doc, options): Finding[] => {
       units: patterns("organisation-unit"),
     },
     title: { endings: patterns("title-ending") },
+    positional: patterns("calendar-unit"),
   };
   const names = doc.names ?? [];
   const context: RunContext = { profile: doc.profile, names, words, titled: titledNames(doc, doc.profile, names) };
@@ -145,10 +152,12 @@ export const kanjiRun: Detector = (doc, options): Finding[] => {
 /**
  * 中黒で並べると、どこまでが 1 つの項目か分からなくなる。
  * 「企画・開発・運用・保守体制」は、保守体制が 1 つなのか保守と体制なのか読めない。
+ * 語彙表（nakaguro-word）の、中黒を含めて 1 語の語（キャッシュ・フロー）の中黒は並べていないので数えない。
  */
-export const middleDot: Detector = (doc, options): Finding[] =>
-  doc.sentences
-    .map((sentence) => ({ sentence, count: parallelDotCount(sentence.text) }))
+export const middleDot: Detector = (doc, options): Finding[] => {
+  const words = (options.lexicon ?? []).map((entry) => entry.pattern).toSorted((left, right) => right.length - left.length);
+  return doc.sentences
+    .map((sentence) => ({ sentence, count: parallelDotCount(sentence.text, words) }))
     .filter(({ count }) => count > options.limit)
     .map(({ sentence, count }) => ({
       rule: "no-nakaguro-parallel",
@@ -158,3 +167,4 @@ export const middleDot: Detector = (doc, options): Finding[] =>
       quote: sentence.text.trim(),
       values: { count, limit: options.limit, offset: sentence.span.start },
     }));
+};

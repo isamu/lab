@@ -24,6 +24,11 @@ export type Sentence = {
    * 長さの rule はこの単位で数え、この言語の上限と比べる。
    */
   readonly embeddedLanguage?: EmbeddedLanguage;
+  /**
+   * 行頭の印で始まる箇条書きの項目を始める文（「①誓約書」「・〜に関する業務」）。adapter が入れる。
+   * core は項目ごとに段落を改める。
+   */
+  readonly listItem?: true;
 };
 
 export type EmbeddedLanguage = { readonly id: string; readonly lengthUnit: LengthUnit };

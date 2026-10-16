@@ -26,9 +26,12 @@ const markdownMarks = (text: string): NoteMark[] =>
     return { offset: match.index, label: `[^${match.groups?.["key"] ?? ""}]`, kind: MARKDOWN, key: (match.groups?.["key"] ?? "").toLowerCase(), note };
   });
 
-/** 印と一桁か二桁の番号。後ろに数字や小数が続けば年や数（※2018年度、※1.2倍）で、注の番号ではない。 */
+/** 番号の後ろに続くと、番号が英語の序数（1st、2nd、23rd）になるもの。 */
+const ORDINAL_SUFFIX = "(?:[sS][tT]|[nN][dD]|[rR][dD]|[tT][hH])(?![A-Za-z])";
+
+/** 印と一桁か二桁の番号。後ろに数字や小数が続けば年や数（※2018年度、※1.2倍）、序数が続けば英語の語（※1st Party）で、注の番号ではない。 */
 const wordMarks = (text: string, mark: string): NoteMark[] =>
-  [...text.matchAll(new RegExp(`${escapeRegExp(mark)}(?<key>[0-9０-９]{1,2})(?![0-9０-９]|[.．,，][0-9０-９])`, "gu"))].map((match) => ({
+  [...text.matchAll(new RegExp(`${escapeRegExp(mark)}(?<key>[0-9０-９]{1,2})(?![0-9０-９]|[.．,，][0-9０-９]|${ORDINAL_SUFFIX})`, "gu"))].map((match) => ({
     offset: match.index,
     label: match[0],
     kind: mark,
