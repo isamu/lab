@@ -1,6 +1,7 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { statesAmount, untimedDuties, type DutyWords } from "../packages/chaff/src/detectors/obligation-without-deadline.ts";
+import { actsTimedAt, unitAt } from "../packages/chaff/src/detectors/deadline-unit.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
@@ -67,6 +68,24 @@ describe("obligation-without-deadline", () => {
     assert.deepEqual(wordsIn(en, en_("3. The Customer will not submit Sensitive Data to the Service.")), []);
     assert.deepEqual(wordsIn(en, en_("3. The Customer shall pay the Supplier a monthly fee of $9,000.")), []);
     assert.deepEqual(wordsIn(en, en_("3. Each party shall keep the other party's information confidential.")), []);
+  });
+
+  it("does not report a duty whose article names the dated deadline of its act (支払期日 for 支払), which times it", () => {
+    const article = ["第3条　代金の支払", "", "1. 乙は、甲に対し、本件業務の対価を支払う。", "2. 乙は、支払期日を過ぎたときは、遅延利息を負担する。", ""];
+    assert.deepEqual(wordsIn(ja, ja_(...article)), []);
+    const list = ["3. The Customer shall pay the Fees.", "4. Fees unpaid after the Due Date bear interest at 1% a month."];
+    assert.deepEqual(wordsIn(en, en_(...list)), []);
+  });
+
+  it("still reports a duty whose own article names no deadline for its act, though another article or another act has one", () => {
+    const apart = ["第3条　乙は、甲に対し、本件業務の対価を支払う。", "", "第4条　乙は、支払期日を過ぎたときは、遅延利息を負担する。", ""];
+    assert.deepEqual(wordsIn(ja, ja_(...apart)), ["支払"]);
+    const paragraphs = ["## Fees", "", "The Customer shall pay the Fees.", "", "## Interest", "", "Fees unpaid after the Due Date bear interest."];
+    assert.deepEqual(wordsIn(en, en_(...paragraphs)), ["pay"]);
+    const otherAct = ["第3条　代金の支払", "", "1. 乙は、甲に対し、本件業務の対価を支払う。", "2. 甲は、納期までに成果物を納入する。", ""];
+    assert.deepEqual(wordsIn(ja, ja_(...otherAct)), ["支払"]);
+    const delivery = ["3. The Customer shall pay the Fees.", "4. The Supplier shall ship the goods before the delivery date."];
+    assert.deepEqual(wordsIn(en, en_(...delivery)), ["pay"]);
   });
 
   it("does not run in a statute nor outside the legal genres", () => {
@@ -171,5 +190,56 @@ describe("statesAmount", () => {
     assert.equal(statesAmount("円建てで", currencies), false);
     assert.equal(statesAmount("", currencies), false);
     assert.equal(statesAmount("$9,000", []), false);
+  });
+});
+
+describe("unitAt and actsTimedAt", () => {
+  const source = "第1条 乙は代金を支払う。支払期日に払う。\n\n第2条 乙は報告する。";
+  const units = {
+    articles: [
+      { start: 0, end: 22 },
+      { start: 24, end: 35 },
+    ],
+    lists: [{ start: 0, end: 35 }],
+    paragraphs: [{ start: 24, end: 35 }],
+  };
+  const deadlines = [
+    { name: "支払期日", act: "支払" },
+    { name: "支払期日", act: "振込" },
+    { name: "納期", act: "納入" },
+  ];
+  const holds = (text: string, name: string): boolean => text.includes(name);
+
+  it("takes the article first, then the list, then the paragraph, and the innermost of each", () => {
+    assert.deepEqual(unitAt(units, 5), { start: 0, end: 22 });
+    assert.deepEqual(unitAt({ articles: [], lists: units.lists, paragraphs: units.paragraphs }, 30), { start: 0, end: 35 });
+    assert.deepEqual(unitAt({ articles: [], lists: [], paragraphs: units.paragraphs }, 30), { start: 24, end: 35 });
+    assert.deepEqual(
+      unitAt(
+        {
+          articles: [
+            { start: 0, end: 30 },
+            { start: 5, end: 10 },
+          ],
+          lists: [],
+          paragraphs: [],
+        },
+        6,
+      ),
+      { start: 5, end: 10 },
+    );
+  });
+
+  it("gives the acts whose deadline the unit holding the offset names, each once", () => {
+    assert.deepEqual(actsTimedAt(source, units, 5, deadlines, holds), ["支払", "振込"]);
+    assert.deepEqual(actsTimedAt(source, units, 30, deadlines, holds), []);
+  });
+
+  it("an offset outside every unit, no units, no text or no deadlines give no act", () => {
+    assert.equal(unitAt(units, 100), undefined);
+    assert.deepEqual(actsTimedAt(source, units, 100, deadlines, holds), []);
+    assert.deepEqual(actsTimedAt(source, { articles: [], lists: [], paragraphs: [] }, 5, deadlines, holds), []);
+    assert.deepEqual(actsTimedAt("", units, 5, deadlines, holds), []);
+    assert.deepEqual(actsTimedAt(source, units, 5, [], holds), []);
   });
 });
