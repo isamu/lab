@@ -9,6 +9,7 @@ import { lineNumberAt, linesOf, type Line } from "./lines.ts";
 import { universalNumber } from "./universal.ts";
 import { unnumberedUnit, type OpenUnit } from "./unnumbered.ts";
 import { readsOnHeading } from "./heading-leaves.ts";
+import { unspacedHeadings } from "./unspaced-heading.ts";
 import { onLine, wrappedLine, type WrappedLine } from "./wrapped-tail.ts";
 import { foldPostOrder } from "../tree-walk.ts";
 
@@ -263,7 +264,7 @@ const headingsByLine = (lines: readonly Line[], headings: readonly Heading[]): M
 const headingLineText = (text: string): string => {
   const line = text.trim();
   if (!line.startsWith("#")) return headingText(line);
-  return atxHeadingText(line.replace(/^#{1,6}(?=[ \t]|$)/u, "").trim());
+  return atxHeadingText(line.replace(/^#{1,6}/u, "").trim());
 };
 
 const captionPatterns = new WeakMap<DocumentProfile, RegExp | undefined>();
@@ -361,7 +362,8 @@ export const buildTree = (input: StructureInput, patterns: StructurePatterns): S
   // コードは同じ長さの空白で覆ってから読む。コードブロックの行は空になって飛ばされ、
   // 文中の `第99条` は参照として拾われない。位置は元の文書のまま。
   const lines = linesOf(maskSpans(input.source, outline.opaque));
-  const headings = headingsByLine(lines, outline.headings);
+  const marked = headingsByLine(lines, outline.headings);
+  const headings = input.markdown ? new Map([...marked, ...unspacedHeadings(lines, marked, patterns)]) : marked;
   const attrs = { path: input.path, language: input.language, ...(input.profile === undefined ? {} : { profile: input.profile.id }) };
   const doc = draftOf("doc", "", { text: "", start: 0, number: 1 }, attrs);
   doc.end = input.source.length;
