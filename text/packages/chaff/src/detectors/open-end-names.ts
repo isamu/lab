@@ -135,6 +135,12 @@ const isNamed = (source: string, occurrence: Occurrence, names: OpenEndNames): b
   inQuotedName(source, occurrence, names.quoted) ||
   partsHoldingWord(source, occurrence).some((part) => names.defined.has(part) || names.heads.some((head) => head.startsWith(part)));
 
-/** Where the word first stands outside a name the document gives (its document offset), or undefined when it never does. */
-export const openEndAt = (doc: ProseDocument, sentence: Sentence, word: LexiconEntry, names: OpenEndNames): number | undefined =>
-  occurrencesIn(sentence, word).find((occurrence) => !isNamed(doc.source, occurrence, names))?.start;
+/** Whether the words around an occurrence bound its list; range: the tokens the word covers. */
+export type BoundedAfter = (tokens: readonly Token[], range: TokenRange) => boolean;
+
+/**
+ * Where the word first stands outside a name the document gives and is not bounded by the words after it (its document
+ * offset), or undefined when it never does.
+ */
+export const openEndAt = (doc: ProseDocument, sentence: Sentence, word: LexiconEntry, names: OpenEndNames, boundedAfter: BoundedAfter): number | undefined =>
+  occurrencesIn(sentence, word).find((occurrence) => !isNamed(doc.source, occurrence, names) && !boundedAfter(occurrence.tokens, occurrence.range))?.start;

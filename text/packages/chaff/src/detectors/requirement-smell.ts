@@ -1,5 +1,6 @@
 import type { Detector, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence } from "../plugin.ts";
 import { entryCloses, entryIn, entryRanges } from "./lexicon-match.ts";
+import { classWordsOf, isClassCue, namesClassAfter } from "./open-end-class.ts";
 import { openEndAt, openEndNames, type OpenEndNames } from "./open-end-names.ts";
 import { statesConcrete } from "./vague-deadline.ts";
 
@@ -56,17 +57,25 @@ const boundedInTime = (doc: ProseDocument, sentence: Sentence, entry: LexiconEnt
     (doc.lexicons[CONCRETE_DEADLINE] ?? []).map((limit) => limit.pattern),
   );
 
-/** Where the word stands as a smell. An open-end word inside a name the document gives (業務執行取締役等) is none; without tokens it cannot be told apart. */
+/** A lexicon's words; the open-end lexicon also holds the cues of a class named after the list, which are no smell. */
+const smellWords = (doc: ProseDocument, lexicon: string): LexiconEntry[] => (doc.lexicons[lexicon] ?? []).filter((entry) => !isClassCue(entry));
+
+/**
+ * Where the word stands as a smell. An open-end word inside a name the document gives (業務執行取締役等), or giving examples
+ * of a class named right after it (印刷等、二次的に利用), is none; without tokens neither can be told apart.
+ */
 const smellAt = (doc: ProseDocument, sentence: Sentence, entry: LexiconEntry, lexicon: string, names: () => OpenEndNames): number | undefined => {
   if (!entryIn(sentence, entry) || boundedInTime(doc, sentence, entry, lexicon)) return undefined;
   const tokenized = sentence.tokens !== undefined && (entry.tokens?.length ?? 0) > 0;
-  return lexicon === OPEN_END && tokenized ? openEndAt(doc, sentence, entry, names()) : offsetOf(sentence, entry);
+  if (lexicon !== OPEN_END || !tokenized) return offsetOf(sentence, entry);
+  const classWords = classWordsOf(doc.lexicons[OPEN_END] ?? []);
+  return openEndAt(doc, sentence, entry, names(), (tokens, range) => namesClassAfter(tokens, range, classWords));
 };
 
 /** The first word of each smell in one requirement sentence: one finding per smell, not per word. */
 const smellsIn = (doc: ProseDocument, sentence: Sentence, names: () => OpenEndNames): Finding[] =>
   SMELLS.flatMap(({ lexicon, variant }) =>
-    (doc.lexicons[lexicon] ?? [])
+    smellWords(doc, lexicon)
       .flatMap((entry) => {
         const offset = smellAt(doc, sentence, entry, lexicon, names);
         return offset === undefined ? [] : [findingOf(sentence, entry, variant, offset)];
@@ -80,6 +89,6 @@ export const requirementSmell: Detector = (doc): Finding[] => {
   const statements = (doc.lexicons[STATEMENTS] ?? []).map((entry) => entry.pattern);
   // Read once, and only when a requirement has an open-end word to tell apart from a name.
   const cache: { names?: OpenEndNames } = {};
-  const names = (): OpenEndNames => (cache.names ??= openEndNames(doc, doc.lexicons[OPEN_END] ?? [], statements));
+  const names = (): OpenEndNames => (cache.names ??= openEndNames(doc, smellWords(doc, OPEN_END), statements));
   return doc.sentences.filter((sentence) => isRequirement(sentence, markers, notMarkers)).flatMap((sentence) => smellsIn(doc, sentence, names));
 };
