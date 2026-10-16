@@ -60,13 +60,31 @@ export const asNounWhereNominal = (
   return next !== undefined && verbGoesOn(token, next, suffixes, nouns) ? token : { ...token, pos: "NOUN", lemma: token.surface };
 };
 
+/** A particle that ties what is before it to a noun after it (の, での, に関する, における): what follows it is a noun. */
+const ATTRIBUTIVE_PARTICLE = /[のる]$/u;
+
+const isStemAfterParticle = (token: Token, previous: Token | undefined, next: Token | undefined): boolean =>
+  previous?.pos === "ADP" &&
+  ATTRIBUTIVE_PARTICLE.test(previous.surface) &&
+  CLAUSE_COMMA.has(next?.surface ?? "") &&
+  token.pos === "VERB" &&
+  token.lemma !== undefined &&
+  isStemForm(token.surface, token.lemma);
+
+/**
+ * The sentence with a stem form between a particle that ties it to a noun and a comma (地域の取組み、) read as the noun it is,
+ * spelled as written: before a comma the stem form is otherwise the verb (課題に取り組み、成果を上げた).
+ */
+export const withNounsAfterParticles = (tokens: readonly Token[]): readonly Token[] =>
+  tokens.map((token, at) => (isStemAfterParticle(token, tokens[at - 1], tokens[at + 1]) ? { ...token, pos: "NOUN", lemma: token.surface } : token));
+
 /**
  * The keys (nounKeyOf) of the nouns a document writes, stem forms the verb does not go on from included (申出 before の): what
  * tells asNounWhereNominal that a stem form before a noun makes a compound (申し出期限) rather than ends a clause (疾病にかかり療養).
  */
 export const documentNounKeys = (sentences: readonly (readonly Token[])[], suffixes: ReadonlySet<string> = new Set()): Set<string> =>
   new Set(
-    sentences.flatMap((tokens) =>
+    sentences.map(withNounsAfterParticles).flatMap((tokens) =>
       tokens.flatMap((token, at) => {
         const key = asNounWhereNominal(token, tokens[at + 1], suffixes).pos === "NOUN" ? nounKeyOf(token) : undefined;
         return key === undefined ? [] : [key];

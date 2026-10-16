@@ -12,7 +12,7 @@ import { isInCapitalsPassage } from "../capitals-passage.ts";
 import { withoutCoinedNames } from "../coined-hyphen-name.ts";
 import { wholeWordRuns, type WholeWordRun } from "../whole-word-runs.ts";
 import { entriesForGenre } from "../lexicon-genres.ts";
-import { asNounWhereNominal, documentNounKeys } from "../nominal-stem.ts";
+import { asNounWhereNominal, documentNounKeys, withNounsAfterParticles } from "../nominal-stem.ts";
 
 /**
  * A word found in the document: where it is, which sentence it is in, its key and spelling, how it is written when that differs, and
@@ -170,7 +170,7 @@ const wholeWordOf = (
 
 /** Japanese words keyed by part of speech, use and the reading of the dictionary form, spelled as the dictionary form. */
 const readingWords = (sentence: Sentence, isOpen: IsOpen, skips: Skips): Placed[] => {
-  const tokens = sentence.tokens ?? [];
+  const tokens = withNounsAfterParticles(sentence.tokens ?? []);
   const runs = wholeWordRuns(tokens, skips.wholeWords);
   const inRun = new Set(runs.flatMap(({ first, last }) => Array.from({ length: last - first + 1 }, (_, extra) => first + extra)));
   const whole = runs.flatMap((run) => wholeWordOf(sentence, tokens, run, isOpen, skips.wholeWords));
