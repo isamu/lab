@@ -91,13 +91,13 @@ const spanOf = (paragraph: readonly Line[]): Span[] => {
 /**
  * The paragraphs in capitals at the head of a document, before its first sentence: a letterhead, an office's name, an
  * address block (BOARD OF GOVERNORS / WASHINGTON, D.C. 20551). Every line is in capitals and none ends a sentence, so a
- * disclaimer in capitals, which is sentences, is not one.
+ * disclaimer in capitals, which is sentences, is not one. A document with no sentence has no head to tell apart.
  */
 export const letterheadSpans = (source: string): Span[] => {
   const paragraphs = paragraphsOf(linesOf(source));
   const firstSentence = paragraphs.findIndex((paragraph) => paragraph.some((line) => SENTENCE_END.test(line.text)));
   return paragraphs
-    .slice(0, firstSentence === -1 ? paragraphs.length : firstSentence)
+    .slice(0, Math.max(firstSentence, 0))
     .filter((paragraph) => paragraph.every(isCapitalLine))
     .flatMap(spanOf);
 };

@@ -40,9 +40,13 @@ describe("letterheadSpans", () => {
     assert.deepEqual(textsOf("WHY IS THE BOX OPEN?\n"), []);
   });
 
-  it("an empty source, and a source without a sentence, read to the end", () => {
+  it("CRLF lines are read like LF lines", () => {
+    assert.deepEqual(textsOf("# Notes\r\n\r\nOFFICE OF THE CLERK\r\nTOWN HALL\r\n\r\nWe met.\r\n"), ["OFFICE OF THE CLERK\r\nTOWN HALL"]);
+  });
+
+  it("an empty source, or one with no sentence, has no letterhead", () => {
     assert.deepEqual(textsOf(""), []);
-    assert.deepEqual(textsOf("# Notes\r\n\r\nOFFICE OF THE CLERK\r\nTOWN HALL\r\n"), ["OFFICE OF THE CLERK\r\nTOWN HALL"]);
+    assert.deepEqual(textsOf("keep the gate shut\n\nKEEP THE GATE\nSHUT AT NIGHT\n"), []);
   });
 });
 
