@@ -79,16 +79,47 @@ const HEADING = /^[ \t]{0,3}#/u;
  */
 const CAPTION_AFTER = /^(?:[ \t]*$|[:：.．—–\-|()（）【】\]*_]|[ \t\u3000]+[^\p{Script=Hiragana}\p{Ll}])/u;
 
+/** A title runs at most this many words after its number (Exhibit A to Merger Agreement). */
+const TITLE_MAX_WORDS = 6;
+/** A word this long or shorter may stay in lower case in a title (to, of, the, and). */
+const TITLE_SMALL_WORD = 3;
+const SENTENCE_END = /[.!?。．？！]$/u;
+const BLANK_LINE = /\n[ \t\r]*\n[ \t\r]*$/u;
+const ENDS_LINE = /^[ \t\r]*\n/u;
+const LOWER_START = /^\p{Ll}/u;
+
+/**
+ * The words after the number make a title on a line of its own, as a plain-text heading (Exhibit A to Merger Agreement):
+ * a blank line or the document's edge on both sides, a few words with every long one capitalised, and no full stop.
+ * A sentence (Figure 3 shows the trend.) has a full stop or a lower-case word.
+ */
+export const isTitleLine = (source: string, lineStart: number, lineEnd: number, rest: string): boolean => {
+  const words = rest
+    .trim()
+    .split(/\s+/u)
+    .filter((word) => word !== "");
+  const before = source.slice(0, lineStart);
+  const after = lineEnd === -1 ? "" : source.slice(lineEnd + 1);
+  return (
+    words.length <= TITLE_MAX_WORDS &&
+    !SENTENCE_END.test(rest.trim()) &&
+    words.every((word) => word.length <= TITLE_SMALL_WORD || !LOWER_START.test(word)) &&
+    (before.trim() === "" || BLANK_LINE.test(`\n${before}`)) &&
+    (after.trim() === "" || ENDS_LINE.test(after))
+  );
+};
+
 /**
  * 行の頭に書いた番号。前にあるのが飾り（#、**、![、|、【、箇条書きの印）だけで、見出しの中か、後ろが題の区切りならキャプション。
- * 行の頭から始まる本文の文（図３の例では、…）は、図の置き場所ではない。
+ * 行の頭から始まる本文の文（図３の例では、…）は、図の置き場所ではない。題だけの行（Exhibit A to Merger Agreement）も見出し。
  */
 const isLabelled = (source: string, mention: Mention): boolean => {
   const lineStart = source.lastIndexOf("\n", mention.start - 1) + 1;
   const lineEnd = source.indexOf("\n", mention.end);
   const before = source.slice(lineStart, mention.start);
   if (LETTER.test(outsideMarkup(before))) return false;
-  return HEADING.test(before) || CAPTION_AFTER.test(source.slice(mention.end, lineEnd === -1 ? source.length : lineEnd));
+  const rest = source.slice(mention.end, lineEnd === -1 ? source.length : lineEnd);
+  return HEADING.test(before) || CAPTION_AFTER.test(rest) || isTitleLine(source, lineStart, lineEnd, rest);
 };
 
 const LATIN_WORD = /^[A-Za-z]/u;
