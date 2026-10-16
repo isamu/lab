@@ -25,3 +25,16 @@ entries:
   - { pattern: ご苦労さま, group: ご苦労様 }
   - { pattern: お世話様, group: お世話様 }
   - { pattern: お世話さま, group: お世話様 }
+  # 表外の漢字をかなにした交ぜ書きの語で、辞書が漢字とかなに切るもの。切られたかな（証ひょうの「ひょう」）が、同じ読みの別の語
+  # （一覧表の「表」）と比べられてしまう。辞書が一語に持つ交ぜ書き（漏えい、改ざん、補てん）は挙げない。
+  - { pattern: 証憑, group: 証憑 }
+  - { pattern: 証ひょう, group: 証憑 }
+  - { pattern: 頒布, group: 頒布 }
+  - { pattern: はん布, group: 頒布 }
+  - { pattern: 塡補, group: 塡補 }
+  - { pattern: 填補, group: 塡補 }
+  - { pattern: てん補, group: 塡補 }
+  - { pattern: 貼付, group: 貼付 }
+  - { pattern: ちょう付, group: 貼付 }
+  - { pattern: 蛋白, group: 蛋白 }
+  - { pattern: たん白, group: 蛋白 }
