@@ -1,0 +1,7 @@
+# Words a step-by-step list writes in place of a step's number, for a step done alongside the one before it
+# ("1 Check the rules", "and Book a courier", "3 Pack the parcel"). Such a step may have taken a number.
+id: side-step-label
+language: en
+entries:
+  - pattern: and
+  - pattern: or

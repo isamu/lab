@@ -9,12 +9,28 @@ const NOUNS = new Set(["NOUN", "PROPN", "ADJ"]);
 /** 中身を持たない語。名前の前後に付いても、名前の繰り返しを言い回しに変えない。 */
 const FUNCTION_POS = new Set(["ADP", "DET", "CCONJ", "SCONJ", "PART", "PUNCT", "SYM", "X"]);
 
+/** 形式名詞（とき、こと）。動詞が節を名詞にしているだけで、用語は作らない（承認又は断るとき）。 */
+const isDependentNoun = (token: Token | undefined): boolean => token?.features?.["NounType"] === "Dependent";
+
+/**
+ * 日本語で、名詞と接続詞（又は、及び）のすぐ後ろで名詞を飾る動詞（行為又は怠る事実）は、名詞を並べた一つの用語の中にあり、述語ではない。
+ * 用語は言い換えられないので、繰り返して当たり前。名詞に「する」が付いた動詞（承認又は拒否する）は、行為を並べた述語と見分けられないので外さない。
+ */
+const inCoordinatedNoun = (tokens: readonly Token[], index: number, unit: LengthUnit): boolean =>
+  unit === "char" &&
+  tokens[index]?.pos === "VERB" &&
+  tokens[index]?.features?.["VerbType"] !== "Light" &&
+  tokens[index - 1]?.pos === "CCONJ" &&
+  NOUNS.has(tokens[index - 2]?.pos ?? "") &&
+  NOUNS.has(tokens[index + 1]?.pos ?? "") &&
+  !isDependentNoun(tokens[index + 1]);
+
 /**
  * 英語で名詞のすぐ前の動詞は、名詞を飾る語（形容詞を挟んでも同じ）（the upcoming fiscal year、the Disclosing Party、the borrow checker）で、
- * 述語ではない。日本語の名詞の前の動詞（〜にあるコンポーネント）は言い回しの一部になるので、word 単位だけで見る。
+ * 述語ではない。日本語の名詞の前の動詞（〜にあるコンポーネント）は言い回しの一部になるので、接続詞の後ろの用語の中（inCoordinatedNoun）だけを外す。
  */
 const modifiesNoun = (tokens: readonly Token[], index: number, unit: LengthUnit): boolean =>
-  unit === "word" && tokens[index]?.pos === "VERB" && NOUNS.has(tokens[index + 1]?.pos ?? "");
+  (unit === "word" && tokens[index]?.pos === "VERB" && NOUNS.has(tokens[index + 1]?.pos ?? "")) || inCoordinatedNoun(tokens, index, unit);
 
 /** 英語で大文字の名前の一部になった動詞（Procedures Guide、the Location Object）も、述語ではない。 */
 const namePartAt = (tokens: readonly Token[], index: number, unit: LengthUnit): boolean => unit === "word" && isNamePart(tokens, index);
@@ -40,10 +56,34 @@ const onlyNamesBeside = (tokens: readonly Token[], predicate: number, window: Sp
   return names.length > 0 && rest.every((index) => FUNCTION_POS.has(tokens[index]?.pos ?? ""));
 };
 
+const COMPOUND_POS = new Set(["NOUN", "PROPN", "ADJ", "NUM"]);
+/** 動詞の前の名詞句がこれだけの語を持てば、動詞はその名詞句の最後の名詞。the contract says は 1 語なので述語のまま。 */
+const MIN_COMPOUND_WORDS = 2;
+
+/** 語形を変えていない動詞（rate）か -ing 形（subcontracting）。名詞と同じ形で、名詞の読み違いになりうる。described や says は述語の形。 */
+const isNounShaped = (token: Token): boolean =>
+  token.features?.["VerbForm"] === "Ger" || (token.lemma !== undefined && token.lemma === token.surface.toLowerCase());
+
+/** 動詞の目的語の始まり（models generate the text の the）。後ろにこれが続く動詞は述語。 */
+const OBJECT_START = new Set(["DET", "PRON", "NUM"]);
+
+/**
+ * 英語で、窓の最後の名詞の形の動詞の前が名詞と形容詞だけ（先頭の冠詞は許す）で、後ろに目的語が続かなければ、動詞は名詞の続きの
+ * 読み違い（the federal funds rate の rate、small business subcontracting）。窓の中に機能語があれば言い回し（your contract says）。
+ */
+const endsNounCompound = (tokens: readonly Token[], index: number, window: Span, unit: LengthUnit): boolean => {
+  const verb = tokens[index];
+  if (unit !== "word" || verb?.pos !== "VERB" || !isNounShaped(verb) || OBJECT_START.has(tokens[index + 1]?.pos ?? "")) return false;
+  const touched = tokens.flatMap((token, at) => (overlaps(token, window) ? [at] : []));
+  if (touched.at(-1) !== index) return false;
+  const before = touched.slice(0, -1).filter((at, order) => !(order === 0 && tokens[at]?.pos === "DET"));
+  return before.length >= MIN_COMPOUND_WORDS && before.every((at) => COMPOUND_POS.has(tokens[at]?.pos ?? ""));
+};
+
 const countsAsPredicate = (tokens: readonly Token[], index: number, window: Span, unit: LengthUnit): boolean => {
   const token = tokens[index];
   if (token === undefined || !PREDICATE_POS.has(token.pos) || !overlaps(token, window)) return false;
-  if (modifiesNoun(tokens, index, unit) || namePartAt(tokens, index, unit)) return false;
+  if (modifiesNoun(tokens, index, unit) || namePartAt(tokens, index, unit) || endsNounCompound(tokens, index, window, unit)) return false;
   return !isCut(token, window) || !onlyNamesBeside(tokens, index, window, unit);
 };
 

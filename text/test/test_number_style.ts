@@ -68,6 +68,14 @@ describe("numberMarksIn: Japanese", () => {
     ["割合は 12％ です。", ["percent:％:12％"]],
     ["割合は 12パーセントです。", ["percent:パーセント:12パーセント"]],
     ["割合は 0.05％ です。", ["percent:％:0.05％"]],
+    ["三　人事委員会の委員である者", []],
+    ["2 人事部に届け出た者", []],
+    ["一　件名を書いた者", []],
+    ["三人が来ました。", ["count:kanji:三人"]],
+    ["3 人が来ました。", ["count:digits:3 人"]],
+    ["3 人来ました。", ["count:digits:3 人"]],
+    ["三　人が来ました。", ["count:kanji:三　人"]],
+    ["3人事務員がいます。", ["count:digits:3人"]],
   ];
   cases.forEach(([sentence, marks]) => {
     it(`${sentence} → ${marks.join(", ") || "none"}`, () =>
@@ -130,6 +138,12 @@ describe("minorityStyles: the usual style and the odd ones", () => {
 describe("number-style-consistency: the minority style in a document", () => {
   it("reports a kanji count among digit counts", () =>
     assert.deepEqual(flagged(ja, "# 件数\n\n今月は 12件、先月は 9件、先々月は 7件でした。うち三件は同じ内容です。\n"), ["count:三件"]));
+
+  it("does not read a quoted item number (三　人事委員会) as a kanji count, and still reports one beside it", () => {
+    const items = "# 欠格\n\n応募者は 3人、合格者は 2人、辞退者は 1人です。\n\n二　禁錮以上の刑に処せられた者\n\n三　人事委員会の委員の職にあった者\n";
+    assert.deepEqual(flagged(ja, items), []);
+    assert.deepEqual(flagged(ja, `${items}\n補欠は三人です。\n`), ["count:三人"]);
+  });
 
   it("reports a plain large number among grouped ones", () =>
     assert.deepEqual(flagged(ja, "# 費用\n\n参加費は 1,500円、資料代は 2,000円、懇親会は 3000円です。\n"), ["grouping:3000"]));

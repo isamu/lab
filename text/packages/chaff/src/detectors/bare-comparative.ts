@@ -7,6 +7,7 @@ import { followsInlineCode } from "./code-before.ts";
  * 語は語彙表 comparative-baseline が言う。group marker は日本語の比べる副詞（より、さらに）、more は英語の比べる語、comparative は比べた形の語
  * （faster、better）、baseline は相手を言う語（従来、以前、than、previous）、exempt は比較でない決まった言い方（より多くの、より詳しく）、
  * condition は比較を条件や仮定の下に置く語（使うと、if、would）。条件を書いた比較は、その条件の無い場合と比べている。
+ * beyond は比べた形のすぐ前で、いま述べたものを越えると言う語（even better、still faster）。相手はその直前に書いてある。
  * 同じ文か前の二文に相手を言う語があれば、相手は書いてある。
  */
 
@@ -17,6 +18,7 @@ export type ComparativeLists = {
   readonly baselines: readonly string[];
   readonly exempt: ReadonlySet<string>;
   readonly conditions: ReadonlySet<string>;
+  readonly beyond: ReadonlySet<string>;
 };
 
 export type BareComparative = { readonly first: Token; readonly last: Token };
@@ -87,10 +89,16 @@ const predicateAt = (tokens: readonly Token[], at: number, lists: ComparativeLis
 const isConditional = (tokens: readonly Token[], found: BareComparative, conditions: ReadonlySet<string>): boolean =>
   tokens.some((token) => token.span.start < found.first.span.start && token.pos !== "CCONJ" && conditions.has(lower(token)));
 
+/** 比べた形のすぐ前が、いま述べたものを越えると言う語か（performed even better）。 */
+const goesBeyond = (tokens: readonly Token[], found: BareComparative, beyond: ReadonlySet<string>): boolean => {
+  const before = tokens.findLastIndex((token) => token.span.end <= found.first.span.start);
+  return beyond.has(lower(tokens[before]));
+};
+
 export const bareComparativesIn = (tokens: readonly Token[], lists: ComparativeLists): BareComparative[] =>
   tokens
     .flatMap((_, at) => markedAt(tokens, at, lists) ?? predicateAt(tokens, at, lists) ?? [])
-    .filter((found) => !isConditional(tokens, found, lists.conditions));
+    .filter((found) => !isConditional(tokens, found, lists.conditions) && !goesBeyond(tokens, found, lists.beyond));
 
 /**
  * 語が比べる相手を言う語か。語の形か原形で照らし、一字の語（旧）は語の頭だけ（旧版は相手、復旧は相手でない）。
@@ -128,6 +136,7 @@ export const listsOf = (lexicon: Lexicon): ComparativeLists => ({
   baselines: groupOf(lexicon, "baseline"),
   exempt: new Set(groupOf(lexicon, "exempt")),
   conditions: new Set(groupOf(lexicon, "condition")),
+  beyond: new Set(groupOf(lexicon, "beyond")),
 });
 
 /** 鉤括弧の中の比較（「給与所得の確定申告がさらに簡単に！」ページ）は題や語を挙げたもので、書き手の比較ではない。 */

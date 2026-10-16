@@ -4,6 +4,8 @@ import { documentDateOf } from "./document-date.ts";
 import { overlapsAny, spanIndex } from "../compare/spans.ts";
 import { yearOf, type DurationUnit } from "../derived/date-arithmetic.ts";
 import { durationMismatches, type DatedValue, type Duration } from "../derived/durations.ts";
+import { isCountPerPeriod, type PeriodWord, type PerPeriodWords } from "../derived/count-per-period.ts";
+import { occurrences } from "../structure/stated-multiple.ts";
 import { elapsedMismatches, type Elapsed, type OriginWord, type Year } from "../derived/elapsed.ts";
 import { numberWordCounts } from "../derived/number-word-counts.ts";
 import { hyphenatedCounts, withoutArticle } from "../derived/hyphenated-counts.ts";
@@ -91,12 +93,25 @@ const isApproximate = (doc: ProseDocument, span: Attributed): boolean =>
   positioned(doc, "approximate-marker", "before").some((word) => textBefore(doc, span).endsWith(word)) ||
   positioned(doc, "approximate-marker", "after").some((word) => textAfter(doc, span).startsWith(word));
 
-/** 木の数量（3 months）と、名詞の前に書いた期間（a 3-month trial）。 */
-const durationsOf = (doc: ProseDocument, quantities: readonly Quantity[], text: string): Duration[] =>
-  [...quantities, ...hyphenatedCounts(text, patternsOf(doc, ...DURATION_LEXICONS.map(([id]) => id)))].flatMap((quantity) => {
+const isDurationUnit = (group: string | undefined): group is DurationUnit => DURATION_LEXICONS.some(([, unit]) => unit === group);
+
+const perPeriodWordsOf = (doc: ProseDocument): PerPeriodWords => ({
+  periods: (doc.lexicons["duration-per-period"] ?? []).flatMap((entry): PeriodWord[] =>
+    isDurationUnit(entry.group) ? [{ word: entry.pattern.toLowerCase(), position: entry.position === "after" ? "after" : "before", unit: entry.group }] : [],
+  ),
+  schedules: spanIndex(occurrences(doc.source, patternsOf(doc, "weekly-days-off"))),
+});
+
+/** 木の数量（3 months）と、名詞の前に書いた期間（a 3-month trial）。期間あたりの数（週3日）は期間ではない。 */
+const durationsOf = (doc: ProseDocument, quantities: readonly Quantity[], text: string): Duration[] => {
+  const perPeriod = perPeriodWordsOf(doc);
+  return [...quantities, ...hyphenatedCounts(text, patternsOf(doc, ...DURATION_LEXICONS.map(([id]) => id)))].flatMap((quantity) => {
     const unit = DURATION_LEXICONS.find(([id]) => patternsOf(doc, id).some((pattern) => pattern.normalize("NFKC") === quantity.unit))?.[1];
-    return unit === undefined || isApproximate(doc, quantity) ? [] : [{ ...quantity, unit }];
+    if (unit === undefined || isApproximate(doc, quantity)) return [];
+    const duration = { ...quantity, unit };
+    return isCountPerPeriod(duration, textBefore(doc, quantity), textAfter(doc, quantity), perPeriod) ? [] : [duration];
   });
+};
 
 const sentencesOf = (doc: ProseDocument): Span[] => doc.sentences.map((sentence) => sentence.span);
 

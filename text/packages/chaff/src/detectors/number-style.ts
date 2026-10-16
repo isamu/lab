@@ -51,12 +51,24 @@ const MAGNITUDES = /^[一百千万億]+$/u;
 
 const isIdiomNumeral = (numeral: string): boolean => MAGNITUDES.test(numeral);
 
-const countMarks = (text: string, base: number, words: NumberWords): NumberMark[] => {
+/**
+ * A number set off by a space from a word that only begins with a counter: 三, a space, 人事委員会 is the item number 三 of a list,
+ * not 三人. The tokenizer reads 人事 as one word there and 人 alone in 3 人が来た.
+ */
+const isBeforeLongerWord = (numeral: string, written: string, offset: number, tokens: readonly Token[]): boolean => {
+  const counter = written.slice(numeral.length).trimStart();
+  if (counter.length === written.length - numeral.length) return false;
+  const word = tokens.find((token) => token.span.start === offset + written.length - counter.length);
+  return word !== undefined && word.surface.length > counter.length;
+};
+
+const countMarks = (text: string, base: number, words: NumberWords, tokens: readonly Token[]): NumberMark[] => {
   const pattern = countPattern(words);
   if (pattern === undefined) return [];
   return [...text.matchAll(pattern)].flatMap((match): NumberMark[] => {
     const [written, digits, kanji] = match;
     if (kanji !== undefined && isIdiomNumeral(kanji)) return [];
+    if (isBeforeLongerWord(digits ?? kanji ?? "", written, base + match.index, tokens)) return [];
     return [{ kind: "count", style: digits === undefined ? "kanji" : "digits", written, offset: base + match.index }];
   });
 };
@@ -176,7 +188,7 @@ const englishCountMarks = (sentence: Sentence, words: NumberWords): NumberMark[]
 export const numberMarksIn = (sentence: Sentence, words: NumberWords, language: string, source: string): NumberMark[] => {
   const base = sentence.span.start;
   const marks = [
-    ...countMarks(sentence.text, base, words),
+    ...countMarks(sentence.text, base, words, sentence.tokens ?? []),
     ...groupingMarks(sentence.text, base, words, source),
     ...percentMarks(sentence.text, base, words),
     ...(language === "ja" ? [] : englishCountMarks(sentence, words)),

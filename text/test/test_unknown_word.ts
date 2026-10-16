@@ -37,6 +37,13 @@ describe("unknown-word: a word not in the dictionary, one letter from one that i
     assert.deepEqual(unknown("Both hypothses failed."), ['"hypothses" is not in the dictionary; did you mean "hypotheses"?']);
   });
 
+  it("everyday words of security and the workplace are known, but a typo among them is still reported", () => {
+    assert.deepEqual(unknown("A botnet hit the servers, the requestors waited, and burnout rose across the team."), []);
+    assert.deepEqual(unknown("A botnet hit the servers and the requestors waited for the burnuot survey."), [
+      '"burnuot" is not in the dictionary; did you mean "burnout"?',
+    ]);
+  });
+
   it("words of everyday AI evaluation are known (#621)", () => {
     assert.deepEqual(unknown("Read the guide on running evals over a model's outputs."), []);
   });

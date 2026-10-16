@@ -1,0 +1,18 @@
+# Words that make a count of days or weeks a count in each period (duration-mismatch): "3 days a week" is how many days every
+# week, not a length to add to a date. after: written after the count; group: the period's unit. Only a count in a smaller
+# unit than its period is one ("1 year every year" is a length).
+id: duration-per-period
+language: en
+entries:
+  - { pattern: a week, group: week, position: after }
+  - { pattern: per week, group: week, position: after }
+  - { pattern: each week, group: week, position: after }
+  - { pattern: every week, group: week, position: after }
+  - { pattern: a month, group: month, position: after }
+  - { pattern: per month, group: month, position: after }
+  - { pattern: each month, group: month, position: after }
+  - { pattern: every month, group: month, position: after }
+  - { pattern: a year, group: year, position: after }
+  - { pattern: per year, group: year, position: after }
+  - { pattern: each year, group: year, position: after }
+  - { pattern: every year, group: year, position: after }

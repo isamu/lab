@@ -41,8 +41,8 @@ example:
       The fee is waived on request for members, including student members under 25.
 
 not_flagged:
-  ja: 二重までの括弧、開きの無い閉じ括弧（「1)」）、コードと数式（$…$）の中の括弧、波括弧は数えません。
-  en: Two levels of brackets, a closing bracket with no opener ("1)"), brackets in code or in a formula ($…$), and curly braces are not counted.
+  ja: 二重までの括弧、開きの無い閉じ括弧（「1)」）、コードと数式（$…$）の中の括弧、波括弧は数えません。そのとおりに打ち込む文字列の引用（件名に「応募（総務課）」と記載、「【様式】（氏名）」とファイル名を変更）は、中の括弧が文字列の一部で外せないので、一つの括弧として数えます。
+  en: Two levels of brackets, a closing bracket with no opener ("1)"), brackets in code or in a formula ($…$), and curly braces are not counted. A quotation of a string to type as it stands (an e-mail subject, a file name, as in with the subject line “Entry (Training)”) counts as one bracket, since its own brackets cannot be taken out.
 level_meaning:
   ja: 括弧の重なり {limit} 重まで
   en: brackets nested up to {limit} deep

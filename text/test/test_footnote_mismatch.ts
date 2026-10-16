@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { noteSlips } from "../packages/chaff/src/detectors/footnote-mismatch.ts";
+import { noteSlips, quotedFootnoteKeys } from "../packages/chaff/src/detectors/footnote-mismatch.ts";
 
 // 注の無い注の印と、印の無い注（footnote-mismatch）。例文はすべて自作。
 
@@ -68,6 +68,21 @@ describe("footnote-mismatch: 注の無い印と、印の無い注", () => {
 
   it("コードの中は読まない", () => {
     assert.deepEqual(findingsOf("例：`free[^9]` と書きます。\n", en), []);
+  });
+
+  it("引用（>）の中の印も注を指す。引用の段落の続きの行も引用", () => {
+    assert.deepEqual(findingsOf("> Write the review so the cause is understood.[^1]\n\nOur own text.\n\n[^1]: A book on reviews.\n", en), []);
+    assert.deepEqual(findingsOf("> Write the review so the cause\nis understood.[^1]\n\nOur own text.\n\n[^1]: A book on reviews.\n", en), []);
+  });
+
+  it("引用が指さない注は言う。引用の中の印に注が無くても言わない", () => {
+    assert.deepEqual(findingsOf("> A quoted line.[^2]\n\nOur own text.\n\n[^1]: A book on reviews.\n", en), ['Nothing in the text points to the note "[^1]"']);
+  });
+
+  it("引用の中の印の番号。空行、見出し、箇条書きで引用は終わる。引用の中の注の定義は印ではない", () => {
+    assert.deepEqual([...quotedFootnoteKeys("> a[^x]\nlazy[^Y]\n\nafter[^z]\n> b\n- item[^w]\n> [^q]: a quoted note\n# Head[^h]")], ["x", "y"]);
+    assert.deepEqual([...quotedFootnoteKeys("> `[^c]` is code, [^d] is not")], ["d"]);
+    assert.deepEqual([...quotedFootnoteKeys("")], []);
   });
 
   it("空の文字列", () => {

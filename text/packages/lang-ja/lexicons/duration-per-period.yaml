@@ -1,0 +1,17 @@
+# 期間の単位を持つ数を、一つの期間あたりの数にする語（duration-mismatch）。「週3日」「月10日」は毎週・毎月の日数で、始まりに足す
+# 長さではない。before は数の前に書く語、group はその期間の単位。期間より小さな単位の数だけがこれに当たる（「毎年1年間」は長さ）。
+# 前に数がある「1年3か月」「3か月10日」は二つの単位で書いた一つの長さで、これにも当たらない。
+# 勤務の決まりの名（週休2日制、4週8休）の中の数は weekly-days-off の語から読む。
+id: duration-per-period
+language: ja
+entries:
+  - { pattern: 週, group: week, position: before }
+  - { pattern: 毎週, group: week, position: before }
+  - { pattern: 週に, group: week, position: before }
+  - { pattern: 月, group: month, position: before }
+  - { pattern: 毎月, group: month, position: before }
+  - { pattern: 月に, group: month, position: before }
+  - { pattern: 年, group: year, position: before }
+  - { pattern: 毎年, group: year, position: before }
+  - { pattern: 年に, group: year, position: before }
+  - { pattern: 年間, group: year, position: before }
