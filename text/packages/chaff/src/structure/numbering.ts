@@ -2,6 +2,7 @@ import type { Span, StructureNode } from "../plugin.ts";
 import { inDocumentOrder, type StructureIssue } from "./issues.ts";
 import { numbersQuotedInside } from "./quoted-number.ts";
 import { isVersionHistory } from "./version-order.ts";
+import { withRepeatsNamed } from "./repeated-number.ts";
 
 const labelOf = (node: StructureNode): string => String(node.attrs["label"] ?? node.address);
 
@@ -73,13 +74,14 @@ const breaksIn =
  * 1 に戻った番号は新しい並びの始まりとして扱うので、「(a) の後の (a)」の重なりは見逃す。
  * 同じ番号の節を中に持つ節（ほかの文書の条を引いた手本の見出し）は、並びに入れない。
  * 変更履歴の版の見出し（## 3.1.0）は番号の並びではない。版の順番は version-order が見る。
+ * 同じ番号が二度続いて次が飛ぶ（4.1、4.1、4.3）ものは、重なりと抜けに分けず、二つ目で一度だけ言う（repeated-number.ts）。
  * unread は、読み手には見えるが木に入らない範囲（Markdown の HTML ブロックの中の文字）を、始まりの順に並べたもの。
  */
 export const numberingBreaks = (tree: StructureNode, unread: readonly Span[] = []): StructureIssue[] => {
   const quoting = numbersQuotedInside(tree);
-  return inDocumentOrder(tree)
+  const breaks = inDocumentOrder(tree)
     .flatMap((parent) => sequencesOf(parent, quoting))
     .filter((sequence) => !isVersionHistory(sequence.map((ordered) => labelOf(ordered.node))))
-    .flatMap(breaksIn(unread))
-    .toSorted((left, right) => left.offset - right.offset);
+    .flatMap(breaksIn(unread));
+  return withRepeatsNamed(tree, quoting, breaks, unread);
 };

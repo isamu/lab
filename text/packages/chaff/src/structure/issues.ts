@@ -10,7 +10,8 @@ import { referencesInCitedDocuments } from "./cited-document-section.ts";
 // 木だけで決まる誤り。参照先が無い、番号が飛ぶ・重なる、同じ語を二度定義する。
 // 意味の食い違いは判定しない。書いてあることから機械で決まるものだけを出す。
 
-export type StructureIssue = { readonly offset: number; readonly values: Readonly<Record<string, string | number>> };
+/** variant は、rule の messages から文を選ぶ鍵。無ければ message。 */
+export type StructureIssue = { readonly offset: number; readonly values: Readonly<Record<string, string | number>>; readonly variant?: string };
 
 const NUMBERED: ReadonlySet<string> = new Set(["chapter", "article", "item"]);
 
