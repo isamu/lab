@@ -74,6 +74,33 @@ describe("withCutNounsJoined", () => {
   });
 });
 
+describe("withCutNounsJoined: て で切れた名詞", () => {
+  const te = (head: string, reading: string, pos = "ADP"): Sentence =>
+    sentenceOf([
+      [head, "NOUN", { reading }],
+      ["て", pos, { reading: "テ" }],
+      ["又は", "CCONJ"],
+    ]);
+
+  it("読みが テ で終わる漢字の名詞と て（申立 と て）は一語の 申立て。読みは名詞のもの", () => {
+    [te("申立", "モウシタテ"), te("申立", "モウシタテ", "SCONJ")].forEach((sentence) => {
+      const joined = withCutNounsJoined(sentence, new Set());
+      assert.deepEqual(surfacesOf(joined), ["申立て", "又は"]);
+      assert.equal(joined.tokens?.[0]?.reading, "モウシタテ");
+    });
+  });
+
+  it("読みが テ で終わらない名詞、て でない仮名（長野 の）、助詞でない て は戻さない", () => {
+    assert.deepEqual(surfacesOf(withCutNounsJoined(te("漢字", "カンジ"), new Set())), ["漢字", "て", "又は"]);
+    assert.deepEqual(surfacesOf(withCutNounsJoined(te("申立", "モウシタテ", "VERB"), new Set())), ["申立", "て", "又は"]);
+    const nagano = sentenceOf([
+      ["長野", "NOUN", { reading: "ナガノ" }],
+      ["の", "ADP", { reading: "ノ" }],
+    ]);
+    assert.equal(withCutNounsJoined(nagano, new Set(["長野|ナガノ"])), nagano);
+  });
+});
+
 describe("orthographic-variant: 文頭と の の前で切れた 申込み", () => {
   before(async () => {
     await ja.prepare?.({ pos: true });
@@ -85,6 +112,10 @@ describe("orthographic-variant: 文頭と の の前で切れた 申込み", () 
     assert.deepEqual(findingsOf("会場で申し込みを受け付ける。期限までに申し込みをする。申込みは窓口でもできる。\n"), [
       "「申込み」と書いています（この文書はふつう「申し込み」と書く語です。3 箇所のうち 1 箇所が違う）",
     ]);
+  });
+
+  it("申立て の て が切れた所と、名詞の 申立て を比べない（同じ書き方）", () => {
+    assert.deepEqual(findingsOf("申立ての期間は三月とする。申立て又は審査の開始は更新とみなす。申立てがあったときは通知する。\n"), []);
   });
 
   it("どこでも 申込み と書く文書、ほかに名詞の無い文書は何も言わない", () => {
