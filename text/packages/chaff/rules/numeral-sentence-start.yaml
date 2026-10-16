@@ -38,8 +38,8 @@ example:
     after: The meeting ran long. Twenty people stayed for the vote.
 
 not_flagged:
-  ja: 年（2026 was a good year.）、数字の後ろが大文字の語や記号のもの（1 Introduction、9:00 Opening remarks）、箇条書きの項目、見出しと表、言い終えていない行は指しません。前の文が句点で終わっていない数（Lane の行の次の「2 contains」）、番号に付ける略した語の後ろの数（vol. 28、H.R. 5376）も、文の頭と決められないので指しません。英語の文だけを読みます。
-  en: 'A year ("2026 was a good year."), a numeral followed by a capitalised word or a mark ("1 Introduction", "9:00 Opening remarks"), list items, headings and tables, and lines that do not end as a sentence are not reported. Nor is a number after text with no full stop ("Lane" on the line before "2 contains"), after a label written with a full stop ("vol. 28", "H.R. 5376"), since chaff cannot tell that a sentence starts there. Only English sentences are read.'
+  ja: 年（2026 was a good year.）、数字の後ろが大文字の語や記号のもの（1 Introduction、9:00 Opening remarks）、箇条書きの項目、見出しと表、言い終えていない行は指しません。前の文が句点で終わっていない数（Lane の行の次の「2 contains」）、番号に付ける略した語の後ろの数（vol. 28、H.R. 5376）も、文の頭と決められないので指しません。番号を付けた段落の頭の条の番号（2.1 the term starts on signing.）は、隣の番号（2.0 か 2.2）も行の頭にあれば数ではないので指しません。英語の文だけを読みます。
+  en: 'A year ("2026 was a good year."), a numeral followed by a capitalised word or a mark ("1 Introduction", "9:00 Opening remarks"), list items, headings and tables, and lines that do not end as a sentence are not reported. Nor is a number after text with no full stop ("Lane" on the line before "2 contains"), after a label written with a full stop ("vol. 28", "H.R. 5376"), since chaff cannot tell that a sentence starts there. A clause number that opens a numbered paragraph ("2.1 the term starts on signing.") is not a figure and is not reported when the clause next to it (2.0 or 2.2) opens a line too. Only English sentences are read.'
 
 rewrite:
   depth: light
