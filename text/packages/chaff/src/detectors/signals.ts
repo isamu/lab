@@ -3,12 +3,12 @@ import { dateSpans, wordsOf } from "./structure.ts";
 import { compacted, placeAt, type Compacted } from "./gram-place.ts";
 import { charWindows, wordWindows } from "./gram-windows.ts";
 import { furnitureMask, isFurniture } from "./gram-furniture.ts";
-import { notAcronymSpansOf, type NotAcronymSpans } from "./acronym-context.ts";
-import { nameSpansOf } from "./acronym-name.ts";
-import { abbreviates, expansionAt, termEntryAcronyms, type ExpandedAt } from "./acronym-expansion.ts";
+import { lexiconNotationOf, type NotAcronymSpans } from "./acronym-context.ts";
+import { abbreviates, expansionAt, termEntryAcronyms, type DefinitionWords, type ExpandedAt } from "./acronym-expansion.ts";
 import { isExplained } from "./acronym-compound.ts";
 import { statedAcronyms } from "./acronym-definition.ts";
 import { isBracketed, isInHeading, isNamePart } from "./acronym-lone.ts";
+import { linkTitleSpans } from "./acronym-link.ts";
 import { conjugatedForms } from "./conjugated-form.ts";
 import { evidenceSpans, hasNumeral, isClaim, isLabelOnly, startsWithin, type AdviceWords } from "./concrete-evidence.ts";
 import { letteredIndexEntries } from "./lettered-index.ts";
@@ -275,9 +275,10 @@ const outsideSpans = (hits: readonly AcronymHit[], spans: readonly Span[]): Acro
 /**
  * どこか 1 か所で展開してあればよい。初出が節の見出し代わりの語（「5.3. DPA.」）で、
  * 展開がその直後の文にあることが契約書では普通にある。見るのは語として現れた所だけ（CISA の中の CI は見ない）。
+ * 複数形（Special Interest Groups (SIGs)）の展開は、s の無い略語（SIG）の展開でもある。
  */
 const isExpanded = (body: string, acronym: string, expandedAt: ExpandedAt): boolean =>
-  [...body.matchAll(new RegExp(`${EDGE_BEFORE}${acronym}${EDGE_AFTER}`, "gu"))].some((match) => expandedAt(body, acronym, match.index));
+  [...body.matchAll(new RegExp(`${EDGE_BEFORE}${acronym}s?${EDGE_AFTER}`, "gu"))].some((match) => expandedAt(body, match[0], match.index));
 
 /**
  * 見出しは文にならないので、見出しの中の展開（Maximum Envelope of Water (MEOW) runs）は見出しの文字列で探す。
@@ -288,36 +289,13 @@ const expandsInHeading = (heading: string, acronym: string, expandedAt: Expanded
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
 
-const notationOf = (doc: ProseDocument): NotAcronymSpans => {
-  const notation = notAcronymSpansOf({
-    meridiem: patternsOf(doc, "meridiem"),
-    timeZones: patternsOf(doc, "time-zone"),
-    currencies: patternsOf(doc, "currency-code"),
-    usStates: patternsOf(doc, "us-state-code"),
-    emphasis: patternsOf(doc, "emphasis-word"),
-    divisions: patternsOf(doc, "numbered-division"),
-    abbreviatedLabels: patternsOf(doc, "abbreviated-label"),
-    honorifics: patternsOf(doc, "honorific"),
-    titles: patternsOf(doc, "name-title"),
-    dateTimeUnits: patternsOf(doc, "date-time-unit"),
-  });
-  const names = nameSpansOf({
-    legalForms: patternsOf(doc, "legal-form"),
-    companyForms: patternsOf(doc, "company-form"),
-    determiners: patternsOf(doc, "name-determiner"),
-    citationSeries: patternsOf(doc, "citation-series"),
-    carriers: patternsOf(doc, "carrier-name"),
-    namePrefixes: patternsOf(doc, "name-prefix"),
-    streetSuffixes: patternsOf(doc, "street-suffix"),
-    capitalPhrases: patternsOf(doc, "capital-phrase"),
-  });
-  return (text) => [...notation(text), ...names(text)];
-};
+const notationOf = (doc: ProseDocument): NotAcronymSpans => lexiconNotationOf((id) => patternsOf(doc, id));
 
-/** 定義の語は、語彙表の形（という）と、この文書で活用して書かれた形（といいます）の両方で照らす。 */
-const definitionVerbsOf = (doc: ProseDocument): string[] => {
+/** 定義の語。定義の動詞は、語彙表の形（という）と、この文書で活用して書かれた形（といいます）の両方で照らす。 */
+const definitionWordsOf = (doc: ProseDocument): DefinitionWords => {
   const verbs = patternsOf(doc, "definition-verb");
-  return [...verbs, ...conjugatedForms(doc.sentences, verbs)];
+  const alternatives = patternsOf(doc, "definition-alternative");
+  return { markers: patternsOf(doc, "definition-marker"), verbs: [...verbs, ...conjugatedForms(doc.sentences, verbs)], alternatives };
 };
 
 const acronymFinding = (acronym: string, hit: Hit, count: number, limit: number): Finding => ({
@@ -348,26 +326,31 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
     ...patternsOf(doc, "tax-code"),
     ...(doc.names ?? []),
   ]);
-  const expandedAt = expansionAt({ markers: patternsOf(doc, "definition-marker"), verbs: definitionVerbsOf(doc) });
+  const expandedAt = expansionAt(definitionWordsOf(doc));
   const stated = statedAcronyms(doc.source, { statements: patternsOf(doc, "definition-statement"), markers: patternsOf(doc, "definition-marker") });
   const entries = new Set([...termEntryAcronyms(doc.source), ...stated]);
   const headings = doc.sections.map((section) => section.heading);
   const explainedAlone = (word: string): boolean =>
     common.has(word) || entries.has(word) || isExpanded(body, word, expandedAt) || headings.some((heading) => expandsInHeading(heading, word, expandedAt));
-  const hits = outsideSpans(acronymsOf(doc, notationOf(doc)), [
+  const counted = outsideSpans(acronymsOf(doc, notationOf(doc)), [
     ...referenceListSpans(doc.source, patternsOf(doc, "reference-list-heading")),
     ...outlineLabelSpans(doc.source, patternsOf(doc, "numbered-division")),
   ]);
+  // リンク先のページの題名の略語（[NASA Fprime AI Policy](https://…)）は、読み手が出会う説明の無い略語として数に入れるが、
+  // 書き手が直せないので指さない。
+  const hits = outsideSpans(counted, linkTitleSpans(doc.source, doc.links));
   const acronyms = [...firstHits(hits).keys()];
   const unexplained = new Set(acronyms.filter((acronym) => !isExplained(acronym, explainedAlone)));
+  const quoted = [...firstHits(counted).keys()].filter((acronym) => !acronyms.includes(acronym) && !isExplained(acronym, explainedAlone)).length;
   const bracketed = (acronym: string): boolean => [body, ...headings].some((text) => isBracketed(text, acronym));
   // 定義の一覧（"SOW" means …）で定義する書き手も、略語を展開する書き手と数える。
   const definedByWriter = (acronym: string): boolean => bracketed(acronym) || stated.has(acronym);
   const writerSpellsOut = acronyms.filter((acronym) => !common.has(acronym) && explainedAlone(acronym) && definedByWriter(acronym)).length >= options.limit;
   // 日付を読むには文書の木を作る。上限に届かない文書では作らない。
-  if (unexplained.size < options.limit && !writerSpellsOut) return [];
+  if (unexplained.size + quoted < options.limit && !writerSpellsOut) return [];
   const bare = [...firstHits(outsideSpans(hits, dateSpans(doc)))].filter(([acronym]) => unexplained.has(acronym));
-  if (bare.length >= options.limit) return bare.map(([acronym, hit]) => acronymFinding(acronym, hit, bare.length, options.limit));
+  const met = bare.length + quoted;
+  if (met >= options.limit) return bare.map(([acronym, hit]) => acronymFinding(acronym, hit, met, options.limit));
   if (!writerSpellsOut) return [];
   const alone = bare.filter(([acronym, hit]) => !isNamePartAt(acronym, hit) && !isInHeading(headings, acronym));
   return alone.map(([acronym, hit]) => acronymFinding(acronym, hit, alone.length, options.limit));
