@@ -149,8 +149,14 @@ describe("table-header-variant: a header written two ways", () => {
 
   it("does not report headers in inline HTML that differ only by a space inside the tag, and still reports a real variant there", () => {
     const centred = (label: string): string => `<div style="text-align: center;">${label}</div>`;
-    assert.deepEqual(flagged(ja, doc(table([centred("作業"), centred("役割 ")], ["発注", "山田"]), table([centred(" 作業"), centred("役割")], ["検品", "鈴木"]))), []);
-    assert.deepEqual(flagged(ja, doc(table([centred("作業"), centred("担当者")], ["発注", "山田"]), table([centred("作業"), centred("担当")], ["検品", "鈴木"]))), ["担当"]);
+    assert.deepEqual(
+      flagged(ja, doc(table([centred("作業"), centred("役割 ")], ["発注", "山田"]), table([centred(" 作業"), centred("役割")], ["検品", "鈴木"]))),
+      [],
+    );
+    assert.deepEqual(
+      flagged(ja, doc(table([centred("作業"), centred("担当者")], ["発注", "山田"]), table([centred("作業"), centred("担当")], ["検品", "鈴木"]))),
+      ["担当"],
+    );
   });
 
   it("does not report different labels", () =>
