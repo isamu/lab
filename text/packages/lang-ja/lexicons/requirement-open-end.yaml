@@ -1,6 +1,11 @@
 # 列挙を閉じない語（Femmer ほか 2017 の open-ended terms）。要求の文にあると、ほかに何が含まれるのかを読み手が決められない。
+# group: class-link と class-suffix は語ではなく、一覧のすぐ後ろで種類を名指す目印。「印刷等、二次的に利用」「印刷等の二次的利用」は、
+# 「等」のすぐ後ろ（class-link）の名詞が「的」（class-suffix）で種類を名指していて、一覧はその例なので開いていない。
 id: requirement-open-end
 language: ja
 entries:
   - pattern: 等
   - pattern: など
+  - { pattern: 、, group: class-link }
+  - { pattern: の, group: class-link }
+  - { pattern: 的, group: class-suffix }

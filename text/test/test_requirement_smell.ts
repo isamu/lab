@@ -5,7 +5,8 @@ import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
+import type { LanguageAdapter, Token } from "../packages/chaff/src/plugin.ts";
+import { classWordsOf, isClassCue, namesClassAfter } from "../packages/chaff/src/detectors/open-end-class.ts";
 
 // requirement-smell: a loophole, an open-ended list or "and/or" in a sentence that states a requirement (Femmer et al.
 // 2017; Berry et al. 2003; ISO/IEC/IEEE 29148). Self-written sentences only.
@@ -102,6 +103,22 @@ describe("requirement-smell (ja)", () => {
     assert.deepEqual(found("受託者は、委託先等（委託先及び再委託先をいう。）及びログ等を管理しなければならない。", ja), ["open-end:等"]);
   });
 
+  it("等 that gives examples of a class named right after it leaves nothing open (印刷等、二次的に利用)", () => {
+    assert.deepEqual(found("本書が印刷等、二次的に利用される場合、受託者は委託者に通知しなければならない。", ja), []);
+    assert.deepEqual(found("資料の印刷等の二次的利用には、委託者の承諾を得なければならない。", ja), []);
+    assert.deepEqual(found("資料の複製などの営利的な利用には、委託者の承諾を得なければならない。", ja), []);
+    assert.deepEqual(found("受託者が本書を印刷等、二次的に利用する場合は、委託者に通知しなければならない。", ja), []);
+  });
+
+  it("等 followed by words that name no class still leaves the list open", () => {
+    assert.deepEqual(found("資料の印刷等の利用には、委託者の承諾を得なければならない。", ja), ["open-end:等"]);
+    assert.deepEqual(found("ログ等、必要な記録を保存すること。", ja), ["open-end:等"]);
+    assert.deepEqual(found("ログ等を的確に保存すること。", ja), ["open-end:等"]);
+    assert.deepEqual(found("ログ等、具体的に保存すること。", ja), ["open-end:等"]);
+    assert.deepEqual(found("ログ等、一般的に保存すること。", ja), ["open-end:等"]);
+    assert.deepEqual(found("書類等、具体的に保存し、報告すること。", ja), ["open-end:等"]);
+  });
+
   it("a requirement whose subject ends in 等 is no definition, even with とする in it", () => {
     assert.deepEqual(found("ログ等は、三十日保存するものとする。", ja), ["open-end:等"]);
     assert.deepEqual(found("一　ログ等は、三十日保存するものとする。", ja), ["open-end:等"]);
@@ -178,5 +195,79 @@ describe("requirement-smell — which documents, with --experimental and no leve
       "business/report",
     ];
     assert.deepEqual(others.filter(firesIn), []);
+  });
+});
+
+describe("namesClassAfter", () => {
+  const words = classWordsOf([
+    { pattern: "等" },
+    { pattern: "、", group: "class-link" },
+    { pattern: "の", group: "class-link" },
+    { pattern: "的", group: "class-suffix" },
+  ]);
+  /** [surface, pos] or [surface, pos, true] for a noun that names an act (印刷, 利用). */
+  type Part = readonly [string, string] | readonly [string, string, boolean];
+  /** Tokens written one after another, with no space between them. */
+  const tokensOf = (...parts: readonly Part[]): Token[] =>
+    parts.reduce<Token[]>((tokens, [surface, pos, act]) => {
+      const start = tokens.at(-1)?.span.end ?? 0;
+      const features = act === true ? { VerbForm: "Vnoun" } : undefined;
+      return [...tokens, { surface, pos, span: { start, end: start + surface.length }, ...(features === undefined ? {} : { features }) }];
+    }, []);
+  const PRINT: Part = ["印刷", "NOUN", true];
+  const USE: Part = ["利用", "NOUN", true];
+  const ETC: Part = ["等", "NOUN"];
+  const AFTER_ETC = { start: 1, end: 2 };
+  /** What follows an act that heads a condition: 場合、 and the requirement. */
+  const REST: readonly Part[] = [
+    ["、", "PUNCT"],
+    ["通知", "NOUN", true],
+    ["する", "VERB"],
+    ["こと", "NOUN"],
+    ["。", "PUNCT"],
+  ];
+  const CASE_THEN: readonly Part[] = [["する", "VERB"], ["場合", "NOUN"], ...REST];
+
+  it("reads the link and the suffix by group, and tells them from the open words", () => {
+    assert.deepEqual(words, { links: new Set(["、", "の"]), suffixes: new Set(["的"]) });
+    assert.equal(isClassCue({ pattern: "的", group: "class-suffix" }), true);
+    assert.equal(isClassCue({ pattern: "等" }), false);
+  });
+
+  it("an act, the open word, a link, a noun built with the suffix and an act: a kind of act", () => {
+    const comma = tokensOf(PRINT, ETC, ["、", "PUNCT"], ["二", "NOUN"], ["次", "NOUN"], ["的", "NOUN"], ["に", "PART"], USE, ...CASE_THEN);
+    assert.equal(namesClassAfter(comma, AFTER_ETC, words), true);
+    const compound = tokensOf(PRINT, ETC, ["の", "ADP"], ["二", "NOUN"], ["次", "NOUN"], ["的", "NOUN"], USE, ["に", "ADP"], ["は", "ADP"], ...REST);
+    assert.equal(namesClassAfter(compound, AFTER_ETC, words), true);
+  });
+
+  it("a list of things, no link, no suffix, the suffix alone, no act after it, or nothing after: no kind", () => {
+    const things = tokensOf(["ログ", "NOUN"], ETC, ["、", "PUNCT"], ["具体", "NOUN"], ["的", "NOUN"], ["に", "PART"], USE, ...CASE_THEN);
+    assert.equal(namesClassAfter(things, AFTER_ETC, words), false);
+    const predicate = tokensOf(
+      PRINT,
+      ETC,
+      ["、", "PUNCT"],
+      ["具体", "NOUN"],
+      ["的", "NOUN"],
+      ["に", "PART"],
+      USE,
+      ["する", "VERB"],
+      ["こと", "NOUN"],
+      ["。", "PUNCT"],
+    );
+    assert.equal(namesClassAfter(predicate, AFTER_ETC, words), false);
+    const continued = tokensOf(PRINT, ETC, ["、", "PUNCT"], ["具体", "NOUN"], ["的", "NOUN"], ["に", "PART"], USE, ["し", "VERB"], ...REST);
+    assert.equal(namesClassAfter(continued, AFTER_ETC, words), false);
+    assert.equal(namesClassAfter(tokensOf(PRINT, ETC, ["を", "ADP"], ["二", "NOUN"], ["的", "NOUN"], USE), AFTER_ETC, words), false);
+    assert.equal(namesClassAfter(tokensOf(PRINT, ETC, ["の", "ADP"], USE), AFTER_ETC, words), false);
+    assert.equal(namesClassAfter(tokensOf(PRINT, ETC, ["の", "ADP"], ["的", "NOUN"], USE), AFTER_ETC, words), false);
+    assert.equal(
+      namesClassAfter(tokensOf(PRINT, ETC, ["の", "ADP"], ["二", "NOUN"], ["的", "NOUN"], ["な", "AUX"], ["もの", "NOUN"]), AFTER_ETC, words),
+      false,
+    );
+    assert.equal(namesClassAfter(tokensOf(PRINT, ETC), AFTER_ETC, words), false);
+    assert.equal(namesClassAfter([], { start: 0, end: 0 }, words), false);
+    assert.equal(namesClassAfter(tokensOf(PRINT, ETC, ["、", "PUNCT"], ["二", "NOUN"], ["的", "NOUN"], USE), AFTER_ETC, classWordsOf([])), false);
   });
 });
