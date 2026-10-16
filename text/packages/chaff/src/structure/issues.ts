@@ -1,5 +1,6 @@
 import type { StructureNode } from "../plugin.ts";
 import { writtenReading } from "./written-resolve.ts";
+import { partAt } from "./attached-parts.ts";
 import { namedTargets, pointsToNamedSection } from "./section-names.ts";
 import { listedTags } from "./listed-tags.ts";
 import { namesAbsentUnit } from "./unit-word.ts";
@@ -195,13 +196,15 @@ const definitionsInOrder = (tree: StructureNode): Definition[] => {
 /**
  * 同じ語の二度目以降の定義。どちらが正しいかは決めず、両方の場所を示す。
  * 範囲を限った定義（この条において「X」とは）は、同じ条の中でだけ比べる。別の条で定義し直すのは正しい書き方。
+ * 添付した文書（partStarts から始まる Exhibit A など）は別の文書なので、その中の定義はその中でだけ比べる。
  */
-export const duplicateDefinitions = (tree: StructureNode): StructureIssue[] => {
+export const duplicateDefinitions = (tree: StructureNode, partStarts: readonly number[] = []): StructureIssue[] => {
   const first = new Map<string, StructureNode>();
   return definitionsInOrder(tree).flatMap(({ node, article }) => {
     const term = textOf(node, "term");
     const within = node.attrs["within"] === undefined ? article : textOf(node, "within");
-    const key = node.attrs["scope"] === "local" ? `${within}\u0000${term}` : term;
+    const scoped = node.attrs["scope"] === "local" ? `${within}\u0000${term}` : term;
+    const key = `${partAt(partStarts, node.span.start)}\u0000${scoped}`;
     const earlier = first.get(key);
     if (earlier === undefined) {
       first.set(key, node);
