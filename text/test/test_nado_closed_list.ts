@@ -43,6 +43,22 @@ describe("nado-closed-list", () => {
     assert.deepEqual(found(notice("対象は正社員等に限られません。"), ja), []);
     assert.deepEqual(found(notice("本人確認書類などのみでは手続きできません。"), ja), []);
     assert.deepEqual(found(notice("健康診査の結果等に限定されるものではなく、人間ドックの結果も該当する。"), ja), []);
+    assert.deepEqual(found(notice("当社は、事務機器等に限定されることなく、幅広い製品を扱う。"), ja), []);
+    assert.deepEqual(found(notice("相談は、電話等に限られることなく、窓口でも受け付ける。"), ja), []);
+  });
+
+  it("ja: 括弧の中の例の一覧で、限る語が括弧の前の語に係るものは指さない", () => {
+    assert.deepEqual(found(notice("手当は、原則として営業職に就く社員（店長、販売員等）のみに支給する。"), ja), []);
+    assert.deepEqual(found(notice("書類（申込書、同意書等）に限り、郵送で受け付けます。"), ja), []);
+    assert.deepEqual(found(notice("収集の対象は「家具、寝具及び自転車等」に限ります。"), ja), [3]);
+    assert.deepEqual(found(notice("（家具、寝具及び自転車等）に限ります。"), ja), [3]);
+  });
+
+  it("ja: 同じ文で先に挙げた一覧を指し直す「等」は指さない", () => {
+    assert.deepEqual(found(notice("社内の規程及び会社の通知等が英語でのみ示される場合は、当該規程及び通知等に限り、英語の文を正とする。"), ja), []);
+    assert.deepEqual(found(notice("当該通知等に限り、英語の文を正とする。"), ja), [3]);
+    assert.deepEqual(found(notice("通知を受けた者は、通知等に限り、英語の文を正とする。"), ja), [3]);
+    assert.deepEqual(found(notice("電子通知等が届いた場合は、通知等に限り、英語の文を正とする。"), ja), [3]);
   });
 
   it("ja: 語の一部の「等」と等級は指さない", () => {
@@ -66,6 +82,7 @@ describe("nado-closed-list", () => {
     assert.deepEqual(found(en1("It covers not only tuition, books, etc. but also travel."), en), []);
     assert.deepEqual(found(en1("Bring pens, paper, etc. Only one bag is allowed."), en), []);
     assert.deepEqual(found(en1("Only current employees, not only directors, officers, etc., are eligible."), en), []);
+    assert.deepEqual(found(en1("The allowance covers staff (engineers, designers, etc.) only."), en), []);
     assert.deepEqual(found(en1("A person employed only in private households (a cleaner, gardener, babysitter, etc.) is not counted."), en), []);
   });
 
