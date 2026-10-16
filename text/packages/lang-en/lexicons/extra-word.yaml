@@ -1,6 +1,8 @@
 # Words in everyday technical and business writing that WordNet does not list. unknown-word reads them as known, with
 # their endings: function words WordNet leaves out (cannot, wherein, albeit, whilst), Latin phrases in English text
-# (a priori, in forma pauperis) and newer coinages (onboard, roadmap, phishing). A team adds its own words under names in chaff.yaml; this list is only for words any document may use.
+# (a priori, in forma pauperis, de minimis), the legal words of contracts (thereunder, herefrom, monies, pendency,
+# cedent, telecopy) and newer coinages (onboard, roadmap, phishing). A team adds its own words under names in chaff.yaml;
+# this list is only for words any document may use.
 id: extra-word
 language: en
 entries:
@@ -23,6 +25,7 @@ entries:
   - pattern: browser
   - pattern: callout
   - pattern: cannot
+  - pattern: cedent
   - pattern: changelog
   - pattern: checkbox
   - pattern: checkout
@@ -31,6 +34,7 @@ entries:
   - pattern: codebase
   - pattern: codec
   - pattern: config
+  - pattern: conveniens
   - pattern: counterparty
   - pattern: covid
   - pattern: cron
@@ -42,6 +46,7 @@ entries:
   - pattern: dedup
   - pattern: dedupe
   - pattern: deploy
+  - pattern: designee
   - pattern: dev
   - pattern: devops
   - pattern: dialog
@@ -67,6 +72,9 @@ entries:
   - pattern: hardcode
   - pattern: hardcoded
   - pattern: hashtag
+  - pattern: hereat
+  - pattern: herefrom
+  - pattern: hereon
   - pattern: hostname
   - pattern: html
   - pattern: http
@@ -76,12 +84,14 @@ entries:
   - pattern: inbox
   - pattern: incentivise
   - pattern: incentivize
+  - pattern: indemnitee
   - pattern: init
   - pattern: inline
   - pattern: interoperability
   - pattern: interoperable
   - pattern: json
   - pattern: lest
+  - pattern: licensor
   - pattern: lifecycle
   - pattern: linter
   - pattern: localhost
@@ -92,12 +102,16 @@ entries:
   - pattern: meta
   - pattern: metadata
   - pattern: middleware
+  - pattern: minimis
   - pattern: modulo
+  - pattern: monies
   - pattern: multi
   - pattern: multiplet
   - pattern: mutex
   - pattern: namespace
   - pattern: npm
+  - pattern: obligee
+  - pattern: obligor
   - pattern: offline
   - pattern: offsite
   - pattern: onboard
@@ -108,8 +122,10 @@ entries:
   - pattern: params
   - pattern: parser
   - pattern: pauperis
+  - pattern: payor
   - pattern: payout
   - pattern: pdf
+  - pattern: pendency
   - pattern: phishing
   - pattern: plaintext
   - pattern: plugin
@@ -149,7 +165,10 @@ entries:
   - pattern: subproject
   - pattern: sustainably
   - pattern: syntax
+  - pattern: telecopy
   - pattern: thenceforward
+  - pattern: thereat
+  - pattern: thereunder
   - pattern: thereupon
   - pattern: timeline
   - pattern: timestamp
@@ -175,11 +194,16 @@ entries:
   - pattern: webinar
   - pattern: webpage
   - pattern: website
+  - pattern: whereat
   - pattern: whereby
+  - pattern: wherefrom
   - pattern: wherein
   - pattern: whereof
   - pattern: whereon
+  - pattern: whereto
+  - pattern: whereunder
   - pattern: whereupon
+  - pattern: wherewith
   - pattern: whilst
   - pattern: whitelist
   - pattern: whither

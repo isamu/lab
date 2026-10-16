@@ -7,6 +7,7 @@ import { prefixGroupsOf, prefixVariants, variantUses } from "../structure/term-p
 import { quoteAt } from "./structure-tree.ts";
 import { isPartOfAddress } from "./address-word.ts";
 import { exactOffsets, extendedAfter, extendedBefore } from "./term-extension.ts";
+import { headsKindPhrase, insideLongerTerm, isNamedAsTerm, isNarrowedUse } from "./ordinary-phrase.ts";
 import { CLOSES_SENTENCE, isNameField, isSignatureLine, opensClosingBlock, SLACK } from "./name-field.ts";
 import type { Detector, Finding, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 
@@ -146,18 +147,36 @@ const prefixFindings = (doc: ProseDocument, texts: readonly BodyText[], term: De
         ),
   );
 
-/** The term set in quotes again, unless the document's profile says a quoted term is the term mentioned (「株主」とあるのは). */
-const quotedFindings = (doc: ProseDocument, term: DefinedTerm, uses: readonly number[], definingEnd: number): Finding[] =>
-  doc.profile?.quoteMentionsTerm === true
-    ? []
-    : quotedUses(doc.source, term.term, uses, definingEnd).map((offset) =>
-        finding(doc, "defined-term-form", offset, "quoted", { term: term.term, line: term.line }),
-      );
+const patternsOf = (doc: ProseDocument, lexicon: string): string[] => (doc.lexicons[lexicon] ?? []).map((entry) => entry.pattern);
+
+/**
+ * The term set in quotes again, unless the document's profile says a quoted term is the term mentioned (「株主」とあるのは),
+ * or the words before the quote name it as a term (the definition of "Material Adverse Effect").
+ */
+const quotedFindings = (doc: ProseDocument, term: DefinedTerm, uses: readonly number[], definingEnd: number): Finding[] => {
+  if (doc.profile?.quoteMentionsTerm === true) return [];
+  const cues = patternsOf(doc, "term-mention-cue");
+  return quotedUses(doc.source, term.term, uses, definingEnd)
+    .filter((offset) => !isNamedAsTerm(doc.source, offset - 1, cues))
+    .map((offset) => finding(doc, "defined-term-form", offset, "quoted", { term: term.term, line: term.line }));
+};
+
+/**
+ * A lower-case use that is the ordinary word in a phrase of its own: inside another defined term (certificate of merger),
+ * narrowed by the word before it (the common parent), or heading a kind of thing (certificates of deposit).
+ */
+const isOrdinaryPhraseAt = (doc: ProseDocument, offset: number, term: string, defined: readonly string[]): boolean => {
+  if (insideLongerTerm(doc.source, offset, term, defined)) return true;
+  const { tokens, at } = tokensAt(doc, offset);
+  if (at === -1) return false;
+  const last = tokens.findLastIndex((token) => token.span.start < offset + term.length);
+  return isNarrowedUse(tokens, at, patternsOf(doc, "defined-term-pointer")) || headsKindPhrase(tokens, last);
+};
 
 /** The term written longer with a word of its definition (文書管理責任者, the Application), after the sentence that defines it. */
 const extendedFindings = (doc: ProseDocument, texts: readonly BodyText[], term: DefinedTerm, spans: readonly Span[], defined: readonly string[]): Finding[] => {
   const definition = definingSentence(doc, term.span)?.text ?? "";
-  const pointers = (doc.lexicons["defined-term-pointer"] ?? []).map((entry) => entry.pattern);
+  const pointers = patternsOf(doc, "defined-term-pointer");
   // Every sentence that defines the term (a second definition too) holds the long words it is defined from.
   const defining = spans.map((span) => definingSentence(doc, span)?.span ?? span);
   const definingEnd = definingSentenceEnd(doc, term.span);
@@ -184,9 +203,9 @@ export const definedTermForm: Detector = (doc, options): Finding[] => {
     const quoted = quotedFindings(doc, term, uses, definingEnd);
     const caseUses = withLoweredWords(doc, term.term, texts, spans, uses);
     const nounUses = caseUses.filter((offset) => !isVerbAt(doc, offset));
-    const lower = lowerCaseUses(doc.source, term.term, nounUses, definingEnd, options.limit).map((offset) =>
-      finding(doc, "defined-term-form", offset, "case", { term: term.term, line: term.line }),
-    );
+    const lower = lowerCaseUses(doc.source, term.term, nounUses, definingEnd, options.limit)
+      .filter((offset) => !isOrdinaryPhraseAt(doc, offset, term.term, defined))
+      .map((offset) => finding(doc, "defined-term-form", offset, "case", { term: term.term, line: term.line }));
     return [...quoted, ...lower, ...prefixFindings(doc, texts, term, definingEnd, defined), ...extendedFindings(doc, texts, term, spans, defined)];
   });
 };

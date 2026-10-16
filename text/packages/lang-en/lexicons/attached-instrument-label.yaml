@@ -1,0 +1,12 @@
+# Words that open the title line of an instrument attached to an agreement: "Exhibit A to Merger Agreement", "ANNEX 1".
+# What is attached is a separate document (a restated charter, a form of note), so duplicate-definition compares its
+# definitions only with each other, not with the agreement's. A report's appendix is part of the report and is not listed.
+id: attached-instrument-label
+language: en
+entries:
+  - pattern: Exhibit
+  - pattern: EXHIBIT
+  - pattern: Annex
+  - pattern: ANNEX
+  - pattern: Schedule
+  - pattern: SCHEDULE

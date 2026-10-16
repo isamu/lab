@@ -38,6 +38,8 @@ const CLAUSE_POS: ReadonlySet<string> = new Set(["AUX", "VERB"]);
 /** A verb form that modifies a noun inside a list (a driving licence, used cars). */
 const NOUN_MODIFYING_FORMS: ReadonlySet<string> = new Set(["Ger", "Part"]);
 const LIST_SEPARATOR = /[,、]/u;
+/** The parts of speech a list item is made of. */
+const NAME_POS: ReadonlySet<string> = new Set(["NOUN", "PROPN"]);
 
 /** Where a word occurs in a text; a Latin word only as whole words, any case. */
 const placesOf = (text: string, word: string): number[] => {
@@ -59,10 +61,51 @@ const standsAsOpenWord = (tokens: readonly Token[], at: number, open: string): b
   return token !== undefined && open.toLowerCase().startsWith(token.surface.toLowerCase()) && token.features?.NounType !== CLASS_NOUN;
 };
 
-const limitRightAfter = (rest: string, words: ClosedListWords): string | undefined => {
-  const after = rest.slice(BETWEEN_OPEN_AND_LIMIT.exec(rest)?.[0].length ?? 0);
-  if (words.notLimits.some((phrase) => startsWithWord(after, phrase))) return undefined;
+const BRACKET = /[(（)）]/gu;
+const CLOSE_BRACKET = /[)）]/u;
+
+/** Where the bracket still open at offset opened, or -1 when none is. */
+const openBracketBefore = (text: string, at: number): number => {
+  const stillOpen = [...text.slice(0, at).matchAll(BRACKET)].reduce<number[]>(
+    (open, bracket) => (CLOSE_BRACKET.test(bracket[0]) ? open.slice(0, -1) : [...open, bracket.index]),
+    [],
+  );
+  return stillOpen.at(-1) ?? -1;
+};
+
+/**
+ * The open word ends an aside on the word before the bracket, and the limit stands outside it (従業員（エンジニア、デザイナー等）のみ):
+ * the limit governs that word, and the list only gives examples of it.
+ */
+const closesAsideBeforeLimit = (text: string, at: number, skipped: string): boolean => {
+  if (!CLOSE_BRACKET.test(skipped)) return false;
+  const bracket = openBracketBefore(text, at);
+  return LETTER.test(text.slice(0, Math.max(bracket, 0)).trimEnd().at(-1) ?? "");
+};
+
+const limitRightAfter = (text: string, at: number, open: string, words: ClosedListWords): string | undefined => {
+  const rest = text.slice(at + open.length);
+  const skipped = BETWEEN_OPEN_AND_LIMIT.exec(rest)?.[0] ?? "";
+  const after = rest.slice(skipped.length);
+  if (words.notLimits.some((phrase) => startsWithWord(after, phrase)) || closesAsideBeforeLimit(text, at, skipped)) return undefined;
   return longestFirst(words.limitsAfter).find((limit) => startsWithWord(after, limit));
+};
+
+const isItemToken = (token: Token | undefined): token is Token => token !== undefined && NAME_POS.has(token.pos);
+
+/** Where the run of nouns written right before end starts (監査 in 監査指示 before 等), or end when no noun ends there. */
+const itemStart = (tokens: readonly Token[], end: number): number => {
+  const last = tokens.find((token) => token.span.end === end);
+  return isItemToken(last) ? itemStart(tokens, last.span.start) : end;
+};
+
+/** The nouns written right before the open word (指示 in 指示等), by the tokens; empty when none are. */
+const itemBefore = (text: string, tokens: readonly Token[], at: number): string => text.slice(itemStart(tokens, at), at);
+
+/** The same list written earlier in the sentence (個別の指示等が … 当該指示等に限り): the open word refers back to it, and leaves nothing new open. */
+const repeatsEarlierList = (text: string, tokens: readonly Token[], at: number, open: string): boolean => {
+  const item = itemBefore(text, tokens, at);
+  return item !== "" && placesOf(text.slice(0, at - item.length), open).some((earlier) => itemBefore(text, tokens, earlier) === item);
 };
 
 const longestFirst = (words: readonly string[]): string[] => [...words].sort((a, b) => b.length - a.length);
@@ -97,9 +140,9 @@ const limitBefore = (text: string, tokens: readonly Token[], at: number, words: 
 export const openWordsOnClosedLists = (text: string, tokens: readonly Token[], words: ClosedListWords): OpenOnClosed[] =>
   words.open
     .flatMap((open) => placesOf(text, open).map((at) => ({ open, at })))
-    .filter(({ open, at }) => standsAsOpenWord(tokens, at, open))
+    .filter(({ open, at }) => standsAsOpenWord(tokens, at, open) && !repeatsEarlierList(text, tokens, at, open))
     .flatMap(({ open, at }) => {
-      const limit = limitRightAfter(text.slice(at + open.length), words) ?? limitBefore(text, tokens, at, words);
+      const limit = limitRightAfter(text, at, open, words) ?? limitBefore(text, tokens, at, words);
       return limit === undefined ? [] : [{ offset: at, open, limit }];
     })
     .sort((a, b) => a.offset - b.offset || b.open.length - a.open.length)

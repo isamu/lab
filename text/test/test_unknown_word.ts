@@ -41,6 +41,17 @@ describe("unknown-word: a word not in the dictionary, one letter from one that i
     assert.deepEqual(unknown("Read the guide on running evals over a model's outputs."), []);
   });
 
+  it("the legal words of contracts are known, but a typo among them is still reported", () => {
+    const contract = [
+      "Monies held by the cedent are paid to the designee, and notice given by telecopy is effective.",
+      "The rights arising thereunder survive, and no claim arises herefrom during the pendency of the dispute.",
+      "Each obligor, obligee, payor and licensor attends the meeting and votes thereat.",
+      "A de minimis change is not a breach, and forum non conveniens is not raised.",
+    ];
+    assert.deepEqual(unknown(contract.join(" ")), []);
+    assert.deepEqual(unknown("The rights arising therunder survive."), ['"therunder" is not in the dictionary; did you mean "thereunder"?']);
+  });
+
   it("names, code, URLs, words used twice, and words with no near dictionary word are not reported", () => {
     assert.deepEqual(unknown("Ask Attched Ltd. about it."), []);
     assert.deepEqual(unknown("Run `attched` now, or open https://example.com/attched today."), []);

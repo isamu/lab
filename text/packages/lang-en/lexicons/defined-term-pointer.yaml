@@ -1,0 +1,26 @@
+# Words that point at one of the things a defined term names: "the other party", "such company", "the next succeeding
+# business day" where Party, Company and Business Day are defined. defined-term-form reads a lower-case term after an adjective as an ordinary phrase (a common parent, a
+# limited liability company); after one of these words it is the defined term written in lower case, and is reported.
+# Matched without regard to case.
+id: defined-term-pointer
+language: en
+entries:
+  - pattern: other
+  - pattern: such
+  - pattern: said
+  - pattern: same
+  - pattern: respective
+  - pattern: applicable
+  - pattern: relevant
+  - pattern: aforesaid
+  - pattern: aforementioned
+  - pattern: foregoing
+  - pattern: above
+  - pattern: above-mentioned
+  - pattern: next
+  - pattern: following
+  - pattern: preceding
+  - pattern: succeeding
+  - pattern: first
+  - pattern: last
+  - pattern: prior

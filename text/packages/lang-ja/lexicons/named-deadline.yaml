@@ -1,0 +1,34 @@
+# 日付を名指す期限の語（支払期日、納期）と、その日が時を決める行い（group: timed-duty の語）。義務と同じ条（条が無ければ同じ箇条書きか段落）に
+# その行いの期限の語があれば、義務の時はその日で決まっている（obligation-without-deadline は指さない）。「乙は代金を支払う。」の後に
+# 「支払期日までに支払うことができないときは…」と書く契約書。別の行いの日（納期のそばの支払う義務）は時を決めない。
+id: named-deadline
+language: ja
+entries:
+  - { pattern: 支払期日, group: 支払 }
+  - { pattern: 支払い期日, group: 支払 }
+  - { pattern: 支払期限, group: 支払 }
+  - { pattern: 支払い期限, group: 支払 }
+  - { pattern: 支払期日, group: 振込 }
+  - { pattern: 支払期限, group: 振込 }
+  - { pattern: 振込期日, group: 振込 }
+  - { pattern: 振込期限, group: 振込 }
+  - { pattern: 支払期日, group: 振り込 }
+  - { pattern: 支払期限, group: 振り込 }
+  - { pattern: 振込期日, group: 振り込 }
+  - { pattern: 振込期限, group: 振り込 }
+  - { pattern: 納期, group: 納入 }
+  - { pattern: 納入期日, group: 納入 }
+  - { pattern: 納入期限, group: 納入 }
+  - { pattern: 納期, group: 納品 }
+  - { pattern: 納品期日, group: 納品 }
+  - { pattern: 納品期限, group: 納品 }
+  - { pattern: 引渡期日, group: 引渡 }
+  - { pattern: 引渡し期日, group: 引渡 }
+  - { pattern: 引き渡し期日, group: 引渡 }
+  - { pattern: 引渡期日, group: 引き渡 }
+  - { pattern: 引渡し期日, group: 引き渡 }
+  - { pattern: 引き渡し期日, group: 引き渡 }
+  - { pattern: 提出期日, group: 提出 }
+  - { pattern: 提出期限, group: 提出 }
+  - { pattern: 返還期日, group: 返還 }
+  - { pattern: 返還期限, group: 返還 }
