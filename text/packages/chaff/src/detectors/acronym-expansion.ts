@@ -111,7 +111,7 @@ const oneOf = (words: readonly string[]): string => (words.length === 0 ? "(?!)"
 const definitionPatterns = (words: DefinitionWords): DefinitionPatterns => ({
   opened: new RegExp(String.raw`[(（]\s*(?<markers>(?:(?:${oneOf(words.markers)})${MARKER_GAP})*)${WRAP}(?<![A-Za-z])$`, "iu"),
   closes: new RegExp(String.raw`^${WRAP}(?<verb>(?:${oneOf(words.verbs)})[。.]?)?${WRAP}[)）]`, "iu"),
-  alternative: new RegExp(String.raw`[,，]\s*(?:${oneOf(words.alternatives ?? [])})\s+$`, "iu"),
+  alternative: new RegExp(String.raw`[,，、]\s*(?:${oneOf(words.alternatives ?? [])})\s*$`, "iu"),
 });
 
 /**

@@ -91,6 +91,11 @@ describe("undefined-acronym: Name, or ACRONYMs", () => {
     assert.deepEqual(reportedAcronyms(en, source), ["SRE"]);
   });
 
+  it("ja: 名前、通称 略語", () => {
+    assert.deepEqual(reportedAcronyms(ja, `# T\n\nSIGの規則を見る。\n\nSpecial Interest Group、通称SIGを置く。SREも見ます。\n`), ["SRE"]);
+    assert.deepEqual(reportedAcronyms(ja, `# T\n\nSIGの規則を見る。\n\n審査委員会、通称SIGを置く。SREも見ます。\n`), ["SIG", "SRE"]);
+  });
+
   it("the plural in brackets explains the singular", () => {
     assert.deepEqual(reportedAcronyms(en, `# T\n\nSee the SIG rules.\n\nWe have Special Interest Groups (SIGs). The SRE joins.\n`), ["SRE"]);
   });
