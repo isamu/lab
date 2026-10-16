@@ -22,7 +22,9 @@ entries:
   - pattern: bona
   - pattern: bool
   - pattern: boolean
+  - pattern: botnet
   - pattern: browser
+  - pattern: burnout
   - pattern: callout
   - pattern: cannot
   - pattern: cedent
@@ -143,6 +145,7 @@ entries:
   - pattern: regexp
   - pattern: repo
   - pattern: reputational
+  - pattern: requestor
   - pattern: roadmap
   - pattern: runtime
   - pattern: sandbox
