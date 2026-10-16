@@ -4,6 +4,8 @@
 # group: example はそれに加えて、同じ箇条書きの項目の終わりまでかかる。group: continues は、例の項目のすぐ次の項目の頭に
 # あれば、その項目も例の続きにする（「- もし6月25日に届いたなら…」）。group: near は、数文字あとの日付にかかる
 # （決算日は、12月31日）。group: label は、日付の入ったかっこの直前の名前にかかる（年末年始閉庁日（12月29日～1月3日））。
+# group: listed は、一覧をつなぐ語（及び、、）だけをはさんですぐ後ろの日付にかかる（祝休日及び12月29日から1月3日まで）。
+# 期間の始めの日付にかかれば、その終わりの日付にもかかる。
 id: any-year-marker
 language: ja
 entries:
@@ -31,3 +33,7 @@ entries:
     group: near
   - pattern: 年末年始
     group: label
+  - pattern: 祝日
+    group: listed
+  - pattern: 休日
+    group: listed

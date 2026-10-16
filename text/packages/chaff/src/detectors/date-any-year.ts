@@ -13,10 +13,11 @@ export const YEAR_SPAN_JOINER_LEXICON = "year-span-joiner";
  * `adjacent`: just before the date ("each December 31"). `near`: ending a few characters before it (決算日は、12月31日).
  * `label`: before the bracket the date is in (年末年始閉庁日（12月29日～1月3日）). `continues`: opening a list item just
  * after an example's item, it carries the example on ("- For example, … June 22." then "- If instead … June 25").
+ * `listed`: named in one list with the date, only list joiners between (祝休日及び12月29日, "public holidays and December 24").
  */
-export type MarkerReach = "sentence" | "example" | "adjacent" | "near" | "label" | "continues";
+export type MarkerReach = "sentence" | "example" | "adjacent" | "near" | "label" | "continues" | "listed";
 
-export const MARKER_REACHES: readonly MarkerReach[] = ["sentence", "example", "adjacent", "near", "label", "continues"];
+export const MARKER_REACHES: readonly MarkerReach[] = ["sentence", "example", "adjacent", "near", "label", "continues", "listed"];
 
 export type AnyYearMarker = { readonly word: string; readonly reach: MarkerReach };
 
@@ -151,8 +152,24 @@ const continuesExample = (date: DateSpan, before: string, source: string, marker
   return above !== undefined && exampleItem(source, above, lineStart(source, date.offset) - 1, markers, LIST_REACH);
 };
 
-const coversDate = (before: string, dateStart: string, intro: string | undefined, word: string, reach: MarkerReach): boolean => {
+/** What is left of `gap` once the list joiners at its head and the spaces around them are taken off. */
+const afterJoiners = (gap: string, joiners: readonly string[]): string => {
+  const trimmed = gap.trimStart();
+  const joiner = joiners.find((candidate) => candidate !== "" && trimmed.startsWith(candidate) && !runsOn(trimmed, candidate));
+  return joiner === undefined ? trimmed : afterJoiners(trimmed.slice(joiner.length), joiners);
+};
+
+/** The word stands just before the date with only list joiners between: 「祝休日及び」, "holidays, and ". */
+const listedBefore = (before: string, word: string, joiners: readonly string[]): boolean => {
+  const found = lastWordAt(before, word);
+  if (found === -1) return false;
+  const gap = before.slice(found + word.length);
+  return gap.trim() !== "" && afterJoiners(gap, joiners) === "";
+};
+
+const coversDate = (before: string, dateStart: string, intro: string | undefined, word: string, reach: MarkerReach, joiners: readonly string[]): boolean => {
   if (reach === "adjacent") return isAdjacent(latinLower(before), word);
+  if (reach === "listed") return listedBefore(latinLower(before), word, joiners);
   if (reach === "near") return lastWordAt(latinLower(before.slice(-(word.length + NEAR_REACH))), word) !== -1;
   if (reach === "label") return latinLower(labelOf(before) ?? "").includes(word);
   if (reach === "continues") return false;
@@ -160,11 +177,15 @@ const coversDate = (before: string, dateStart: string, intro: string | undefined
   return inItem || inSentence(before, dateStart, word) || (intro !== undefined && introEndsWith(latinLower(intro), word));
 };
 
-/** The date is a recurring day or a worked example: a marker stands where its reach covers the date. */
-export const anyYearDate = (date: DateSpan, source: string, markers: readonly AnyYearMarker[]): boolean => {
+/**
+ * The date is a recurring day or a worked example: a marker stands where its reach covers the date. `listJoiners` are the
+ * words a `listed` marker may stand before the date with (及び, "and").
+ */
+export const anyYearDate = (date: DateSpan, source: string, markers: readonly AnyYearMarker[], listJoiners: readonly string[] = []): boolean => {
   const before = source.slice(lineStart(source, date.offset), date.offset);
   const intro = introOf(source, before, date.offset);
-  const covered = markers.some(({ word, reach }) => word !== "" && coversDate(before, source.charAt(date.offset), intro, latinLower(word), reach));
+  const joiners = listJoiners.map(latinLower);
+  const covered = markers.some(({ word, reach }) => word !== "" && coversDate(before, source.charAt(date.offset), intro, latinLower(word), reach, joiners));
   return covered || continuesExample(date, before, source, markers);
 };
 

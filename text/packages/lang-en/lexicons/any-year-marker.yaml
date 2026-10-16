@@ -5,7 +5,8 @@
 # item just after an example's item, carries the example on ("- If the change is instead processed on June 25, …").
 # group: adjacent covers only the date just after it ("each December 31"). group: near covers a date a few characters
 # after it ("the fiscal year end is December 31"). group: label covers the dates in the bracket after it ("New Year
-# holidays (December 29 to January 3)").
+# holidays (December 29 to January 3)"). group: listed covers a date named in one list with it, only list joiners between
+# ("public holidays and December 24"). A word that covers a period's first date covers its last date too.
 id: any-year-marker
 language: en
 entries:
@@ -39,3 +40,7 @@ entries:
     group: label
   - pattern: year-end holidays
     group: label
+  - pattern: holidays
+    group: listed
+  - pattern: weekends
+    group: listed

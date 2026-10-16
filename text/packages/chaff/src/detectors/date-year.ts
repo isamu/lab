@@ -14,8 +14,11 @@ import {
 } from "./date-any-year.ts";
 import { datesUnderYearHeadings, yearLabelOf, type HeadingYearWords } from "./date-heading-year.ts";
 
-/** The words that make a yearless date any year's (毎年, 例えば, "each") and that join a period's two ends (から, "to"). */
-export type AnyYearWords = { readonly markers: readonly AnyYearMarker[]; readonly joiners: readonly string[] };
+/**
+ * The words that make a yearless date any year's (毎年, 例えば, "each"), that join a period's two ends (から, "to"), and
+ * that join the names of one list (及び, "and"), for a marker named in one list with the date.
+ */
+export type AnyYearWords = { readonly markers: readonly AnyYearMarker[]; readonly joiners: readonly string[]; readonly listJoiners?: readonly string[] };
 
 const NO_ANY_YEAR_WORDS: AnyYearWords = { markers: [], joiners: [] };
 
@@ -153,10 +156,14 @@ export const yearGaps = (
   const previousOf = new Map(points.map((point, index) => [point, points[index - 1]]));
   const yearlySpan = (start: DatePoint | undefined, end: DatePoint | undefined): boolean =>
     start !== undefined && end !== undefined && wholeYear(start.value, end.value) && opensSpan(start, end, source, anyYear.joiners);
+  const markedAnyYear = (point: DatePoint | undefined): boolean => point !== undefined && anyYearDate(point, source, anyYear.markers, anyYear.listJoiners);
   const yearOfAny = (point: DatePoint): boolean => {
     const next = nextOf.get(point);
-    if (anyYearDate(point, source, anyYear.markers)) return true;
-    if (yearlySpan(point, next) || yearlySpan(previousOf.get(point), point)) return true;
+    const previous = previousOf.get(point);
+    if (markedAnyYear(point)) return true;
+    if (yearlySpan(point, next) || yearlySpan(previous, point)) return true;
+    // The end of a period whose start is any year's is too: 「祝休日及び12月29日から1月3日まで」.
+    if (previous !== undefined && opensSpan(previous, point, source, anyYear.joiners) && markedAnyYear(previous)) return true;
     return next !== undefined && opensSpan(point, next, source, anyYear.joiners) && hasYearWord(next, source, yearWords);
   };
   // A recurring day or an example's date has no year to write, and is not the document's way of writing dates either.
@@ -192,11 +199,15 @@ const headingYearWordsOf = (doc: ProseDocument): HeadingYearWords => ({
   ),
 });
 
+/** The words that join the names of one list (及び, "and"): a `listed` marker stands before the date with these between. */
+const LIST_JOINER_LEXICON = "enumeration-joiner";
+
 const reachOf = (group: string | undefined): MarkerReach => MARKER_REACHES.find((reach) => reach === group) ?? "sentence";
 
 const anyYearWordsOf = (doc: ProseDocument): AnyYearWords => ({
   markers: (doc.lexicons[ANY_YEAR_MARKER_LEXICON] ?? []).map((entry: LexiconEntry) => ({ word: entry.pattern, reach: reachOf(entry.group) })),
   joiners: (doc.lexicons[YEAR_SPAN_JOINER_LEXICON] ?? []).map((entry: LexiconEntry) => entry.pattern),
+  listJoiners: (doc.lexicons[LIST_JOINER_LEXICON] ?? []).map((entry: LexiconEntry) => entry.pattern),
 });
 
 export const dateWithoutYear: Detector = (doc: ProseDocument): Finding[] =>
