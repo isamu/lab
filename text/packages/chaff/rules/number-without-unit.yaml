@@ -2,7 +2,6 @@ id: number-without-unit
 layer: L1
 status: stable
 how_to_find: number-without-unit
-extra_word_lists: [figure-scale-word, figure-scale-joiner, range-connector, enumeration-joiner, currency-notation]
 severity: warning
 
 name:
