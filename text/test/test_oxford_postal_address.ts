@@ -23,8 +23,9 @@ describe("oxford-comma-consistency: a postal address before and / or", () => {
     assert.equal(firedWith("Send it to the Print Office, 12 Main Street, Springfield, IL 62701, and keep a copy."), false);
   });
 
-  it("still counts a list with a serial comma that ends in no postcode", () => {
+  it("still counts a list with a serial comma that ends in no postcode, or in a product's code", () => {
     assert.equal(firedWith("The team reviewed the plan, the budget, and the schedule."), true);
+    assert.equal(firedWith("We compared model X1 4AB, model Y2 5CD, and model Z3 6EF."), true);
   });
 
   it("finds a postcode only right before the and / or, its comma allowed", () => {
@@ -36,6 +37,8 @@ describe("oxford-comma-consistency: a postal address before and / or", () => {
     assert.equal(at("Ottawa, ON K1A 0B1, "), true);
     assert.equal(at("posters, cards, "), false);
     assert.equal(at("model XLS1 4AB, "), false);
+    assert.equal(at("model X1 4AB, "), false);
+    assert.equal(at("LS1 4AB, "), false);
     assert.equal(at("in 2024, "), false);
     assert.equal(at(""), false);
   });
