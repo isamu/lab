@@ -103,9 +103,10 @@ const measuredRun = (tokens: readonly Token[] | undefined, run: KanjiRun, contex
   if (tokens === undefined || run.span === undefined) return run.text;
   const counter = leadingCounter(tokens, run.span.start, run.text, context.words.positional);
   const prefix = trailingPrefix(tokens, run.span.end, run.text);
-  const addressee = prefix === undefined ? trailingAddressee(tokens, run.span.end, run.text, context.words.addressee) : 0;
-  const rest = { start: counter?.span.end ?? run.span.start, end: prefix?.span.start ?? run.span.end - addressee };
-  const text = run.text.slice(counter?.surface.length ?? 0, run.text.length - (prefix?.surface.length ?? addressee));
+  const tail =
+    prefix === undefined ? trailingAddressee(tokens, run.span.end, run.text, context.words.addressee) : { surface: prefix.surface, start: prefix.span.start };
+  const rest = { start: counter?.span.end ?? run.span.start, end: tail?.start ?? run.span.end };
+  const text = run.text.slice(counter?.surface.length ?? 0, run.text.length - (tail?.surface.length ?? 0));
   return isPlaceName(tokens, rest, context.words) || isTitle(tokens, rest, text, run.placed, context) ? "" : text;
 };
 

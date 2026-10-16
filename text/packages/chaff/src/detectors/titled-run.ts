@@ -7,10 +7,11 @@ export type TitleWords = { readonly endings: readonly string[] };
 /** 題を囲む括弧。鉤括弧と、見出しや分類の名前を囲む隅付き括弧。 */
 const TITLE_MARKS = { "「": "」", "『": "』", "【": "】" };
 /**
- * 名前のすぐ後ろ（空白を挟んでもよい）に付く、その名前の補い（就職氷河期世代、＜創業型＞）、略称（以下「奨励金」という。）、
- * 日付や番号、ファイルの種類と大きさ（[PDFファイル／333KB]）の括弧。
+ * 名前のすぐ後ろ（同じ行の空白を挟んでもよい）に付く、その名前の補い（就職氷河期世代、＜創業型＞）、略称（以下「奨励金」という。）、
+ * 日付や番号、ファイルの種類と大きさ（[PDFファイル／333KB]）の括弧。角括弧は同じ行で閉じ、Markdown のリンク（[文字](…)）でないもの。
+ * 半角の < は HTML の札と見分けられないので読まない。
  */
-const QUALIFIER_OPENERS = new Set(["（", "(", "＜", "<", "〈", "[", "［"]);
+const QUALIFIER = /^[ \t\u3000]*(?:[（(＜〈［]|\[[^\]\n]*\](?![([]))/u;
 /** 閉じる語の前に要る字数。1 字なら、題ではなく普通の語（新法、本事業）。 */
 const MIN_BODY_LENGTH = 2;
 const BLANK = /^\s*$/u;
@@ -35,7 +36,7 @@ export const endsInTitle = (run: readonly Token[], words: TitleWords): boolean =
  */
 export const isTitlePosition = (text: string, start: number, end: number): boolean => {
   const closesBracket = quotedSpans(text, TITLE_MARKS).some((span) => span.end === end && span.start <= start);
-  const qualified = QUALIFIER_OPENERS.has(text.slice(end).trimStart().charAt(0));
+  const qualified = QUALIFIER.test(text.slice(end));
   const alone = BLANK.test(text.slice(0, start)) && BLANK.test(text.slice(end));
   return closesBracket || qualified || alone;
 };

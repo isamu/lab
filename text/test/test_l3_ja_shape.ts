@@ -200,12 +200,17 @@ describe("L3 日本語 — 文字と語彙", () => {
 
     it("invalid: 補いの括弧の無い書式の名前と、文の中で使っただけの補助金の名前は数える", () => {
       assert.deepEqual(kanjiWords("今年は臨時職員採用登録申込書の受付が遅れた。"), ["臨時職員採用登録申込書"]);
+      // リンクの文字の [ ]( )、HTML の <、次の行の括弧は、名前の補いではない。
+      assert.deepEqual(kanjiWords("今年は臨時職員採用登録申込書 [こちら](https://example.com/) を見る。"), ["臨時職員採用登録申込書"]);
+      assert.deepEqual(kanjiWords("今年は臨時職員採用登録申込書<br>を見る。"), ["臨時職員採用登録申込書"]);
+      assert.deepEqual(kanjiWords("今年は臨時職員採用登録申込書\n（受付は終わった）を見る。"), ["臨時職員採用登録申込書"]);
       assert.deepEqual(kanjiWords("地域商店街販路開拓支援補助金の詳細は市のページをご覧ください。\n"), ["地域商店街販路開拓支援補助金"]);
     });
 
     it("宛先に付く語（宛て、御中）は、名前の連なりに数えない", () => {
       assert.deepEqual(kanjiWords("##### 郵送先\n\n353-0000\n志木市中宗岡1-1-1\n東市役所市民活動推進課宛て\n"), []);
       assert.deepEqual(kanjiWords("株式会社東西市場調査企画部御中\n"), []);
+      assert.deepEqual(kanjiWords("株式会社東西市場調査企画部御\n中\n"), []);
       // 宛先の語を外しても長い連なりは数える。
       assert.deepEqual(kanjiWords("新規顧客獲得施策検討会議宛て\n"), ["新規顧客獲得施策検討会議"]);
     });
