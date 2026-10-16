@@ -33,6 +33,12 @@ entries:
   - pattern: お問い合わせ先
   - pattern: 問合せ先
   - pattern: お問合せ先
+  - pattern: 問合わせ先
+  - pattern: お問合わせ先
+  - pattern: 問い合わせ窓口
+  - pattern: お問い合わせ窓口
+  # 官公庁の報道発表が使う「照会先」。
+  - pattern: 照会先
   - pattern: はしがき
   - pattern: あとがき
   - pattern: 序文
