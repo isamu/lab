@@ -1,0 +1,12 @@
+# Names of a dated deadline (the Due Date, the Payment Date) and the act whose time each sets (group: a timed-duty word). A
+# duty to do that act in the same article (else the same list or paragraph) as its deadline's name is timed by that date, and
+# obligation-without-deadline leaves it: "The Customer shall pay the Fees." beside "Fees not paid by the Due Date bear
+# interest." A date for another act (a delivery date beside a duty to pay) times nothing.
+id: named-deadline
+language: en
+entries:
+  - { pattern: due date, group: pay }
+  - { pattern: payment date, group: pay }
+  - { pattern: payment due date, group: pay }
+  - { pattern: delivery date, group: deliver }
+  - { pattern: return date, group: return }

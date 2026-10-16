@@ -6,14 +6,19 @@
 // duty-marker (shall, will), duty-ending (う, するものとする: what may follow a Japanese act at the sentence end),
 // stated-deadline (by the, までに) with concrete-deadline and vague-deadline, deadline-permission and currency-notation. Pure.
 import { quoteAt } from "./structure-tree.ts";
+import { actsTimedAt, type NamedDeadline, type Units } from "./deadline-unit.ts";
+import { inDocumentOrder } from "../structure/issues.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { grantsRight, statesConcrete, vagueIn } from "./vague-deadline.ts";
 import type { Detector, Finding, LexiconEntry, ProseDocument } from "../plugin.ts";
 
 export type UntimedDuty = { readonly offset: number; readonly act: string };
 
-/** sameLine: the sentence goes on the line of the one before it (no line break between them). */
-type Text = { readonly start: number; readonly text: string; readonly sameLine?: boolean };
+/**
+ * sameLine: the sentence goes on the line of the one before it (no line break between them). timedActs: the acts whose
+ * dated deadline (支払期日 for 支払) its article, else its list or paragraph, names; a duty to do one of them is timed.
+ */
+type Text = { readonly start: number; readonly text: string; readonly sameLine?: boolean; readonly timedActs?: readonly string[] };
 
 /** What the word lists give the decision. */
 export type DutyWords = {
@@ -155,6 +160,7 @@ export const untimedDuties = (texts: readonly Text[], words: DutyWords): Untimed
     if (grantsRight(text, words.permissions) || statesAmount(text.text, words.currencies)) return [];
     const act = actIn(text.text, words);
     if (act === undefined || (LATIN.test(act.act) && !isWordStart(text.text, act.at))) return [];
+    if (text.timedActs?.some((timed) => timed.toLowerCase() === act.act.toLowerCase()) === true) return [];
     return [{ offset: text.start + act.at, act: text.text.slice(act.at, act.at + act.act.length) }];
   });
   const limitedSentences = texts.filter((text) => statesLimit(text, words)).length;
@@ -163,12 +169,30 @@ export const untimedDuties = (texts: readonly Text[], words: DutyWords): Untimed
 
 const patternsOf = (doc: ProseDocument, lexicon: string): string[] => (doc.lexicons[lexicon] ?? []).map((entry) => entry.pattern);
 
-export const obligationWithoutDeadline: Detector = (doc): Finding[] =>
-  untimedDuties(
+const unitsOf = (doc: ProseDocument): Units => ({
+  articles: doc.structure === undefined ? [] : inDocumentOrder(doc.structure).flatMap((node) => (node.kind === "article" ? [node.span] : [])),
+  lists: doc.lists.map((list) => list.span),
+  paragraphs: doc.paragraphs.map((paragraph) => paragraph.span),
+});
+
+/** The acts a sentence's unit names a dated deadline for (named-deadline: the name, and the act as its group). */
+const timedActsReader = (doc: ProseDocument): ((offset: number) => string[]) => {
+  const deadlines: NamedDeadline[] = (doc.lexicons["named-deadline"] ?? []).flatMap((entry) =>
+    entry.group === undefined ? [] : [{ name: entry.pattern, act: entry.group }],
+  );
+  if (deadlines.length === 0) return () => [];
+  const units = unitsOf(doc);
+  return (offset) => actsTimedAt(doc.source, units, offset, deadlines, phraseIn);
+};
+
+export const obligationWithoutDeadline: Detector = (doc): Finding[] => {
+  const timedActs = timedActsReader(doc);
+  return untimedDuties(
     doc.sentences.map((sentence, index) => ({
       start: sentence.span.start,
       text: sentence.text,
       sameLine: index > 0 && !doc.source.slice(doc.sentences[index - 1]?.span.end ?? 0, sentence.span.start).includes("\n"),
+      timedActs: timedActs(sentence.span.start),
     })),
     {
       acts: patternsOf(doc, "timed-duty"),
@@ -190,3 +214,4 @@ export const obligationWithoutDeadline: Detector = (doc): Finding[] =>
     quote: quoteAt(doc.source, duty.offset),
     values: { word: duty.act, offset: duty.offset },
   }));
+};
