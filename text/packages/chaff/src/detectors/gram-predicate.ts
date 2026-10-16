@@ -48,13 +48,16 @@ const MIN_COMPOUND_WORDS = 2;
 const isNounShaped = (token: Token): boolean =>
   token.features?.["VerbForm"] === "Ger" || (token.lemma !== undefined && token.lemma === token.surface.toLowerCase());
 
+/** 動詞の目的語の始まり（models generate the text の the）。後ろにこれが続く動詞は述語。 */
+const OBJECT_START = new Set(["DET", "PRON", "NUM"]);
+
 /**
- * 英語で、窓の最後の名詞の形の動詞の前が名詞と形容詞だけ（先頭の冠詞は許す）なら、動詞は名詞の続きの読み違い
- * （the federal funds rate の rate、small business subcontracting）。窓の中に機能語があれば言い回し（your contract says）。
+ * 英語で、窓の最後の名詞の形の動詞の前が名詞と形容詞だけ（先頭の冠詞は許す）で、後ろに目的語が続かなければ、動詞は名詞の続きの
+ * 読み違い（the federal funds rate の rate、small business subcontracting）。窓の中に機能語があれば言い回し（your contract says）。
  */
 const endsNounCompound = (tokens: readonly Token[], index: number, window: Span, unit: LengthUnit): boolean => {
   const verb = tokens[index];
-  if (unit !== "word" || verb?.pos !== "VERB" || !isNounShaped(verb)) return false;
+  if (unit !== "word" || verb?.pos !== "VERB" || !isNounShaped(verb) || OBJECT_START.has(tokens[index + 1]?.pos ?? "")) return false;
   const touched = tokens.flatMap((token, at) => (overlaps(token, window) ? [at] : []));
   if (touched.at(-1) !== index) return false;
   const before = touched.slice(0, -1).filter((at, order) => !(order === 0 && tokens[at]?.pos === "DET"));

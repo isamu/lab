@@ -305,6 +305,25 @@ describe("hasPredicateIn: a verb as written after a run of nouns and adjectives 
     assert.equal(taggedPredicateIn(says, "the employment contract says"), true);
   });
 
+  it("a verb followed by its object (an article, a pronoun, a number) stays a predicate", () => {
+    const generate: Tagged[] = [
+      ["large", "ADJ", "large"],
+      ["language", "NOUN", "language"],
+      ["models", "NOUN", "model"],
+      ["generate", "VERB", "generate"],
+      ["the", "DET", "the"],
+      ["text", "NOUN", "text"],
+    ];
+    assert.equal(taggedPredicateIn(generate, "language models generate"), true);
+    const them: Tagged[] = [
+      ["red", "ADJ", "red"],
+      ["flags", "NOUN", "flag"],
+      ["block", "VERB", "block"],
+      ["them", "PRON", "them"],
+    ];
+    assert.equal(taggedPredicateIn(them, "red flags block"), true);
+  });
+
   it("a function word in the window, or only one word before the verb, keeps the predicate", () => {
     const agree: Tagged[] = [
       ["if", "SCONJ", "if"],
