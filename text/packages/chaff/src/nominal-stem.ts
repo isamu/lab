@@ -1,4 +1,5 @@
 import type { Token } from "./plugin.ts";
+import { kanjiSkeleton } from "./kana-spelling.ts";
 
 /** The last kana of a verb's dictionary form, and the kana its stem form (連用形) ends in instead: 払い込む → 払い込み. */
 const STEM_ENDING: Readonly<Record<string, string>> = { う: "い", く: "き", ぐ: "ぎ", す: "し", つ: "ち", ぬ: "に", ぶ: "び", む: "み", る: "り" };
@@ -17,20 +18,58 @@ export const isStemForm = (surface: string, lemma: string): boolean => {
 /** What carries a verb on (払い込み、払い込んで, 払い込みます, 払い込みやすい): after these the stem form is still the verb. */
 const VERB_GOES_ON = new Set(["AUX", "SCONJ", "VERB", "ADJ"]);
 const CLAUSE_COMMA = new Set(["、", "，", ","]);
+/** The verbs that make a verb of a noun written right before them (申出する, 申出できる): the stem form there is the noun. */
+const LIGHT_VERBS = new Set(["する", "できる", "出来る"]);
+
+const carriesTheVerb = (next: Token): boolean => VERB_GOES_ON.has(next.pos) && !(next.pos === "VERB" && LIGHT_VERBS.has(next.lemma ?? ""));
+
+/** A word's kanji and reading, one key for 申出 and 申し出 (申出|モウシデ); undefined for a word with no kanji or no reading. */
+export const nounKeyOf = (token: Token): string | undefined => {
+  const kanji = kanjiSkeleton(token.surface);
+  return kanji === "" || token.reading === undefined ? undefined : `${kanji}|${token.reading}`;
+};
+
+const isAmong = (token: Token, nouns: ReadonlySet<string>): boolean => {
+  const key = nounKeyOf(token);
+  return key !== undefined && nouns.has(key);
+};
 
 /**
  * A free noun after the stem form may begin the next clause (疾病にかかり療養のために), so the stem form stays a verb; a suffix
- * (払込み等), or a noun the caller lists as one (受取り前), may not.
+ * (払込み等), a noun the caller lists as one (受取り前), or any noun after a word the document writes as a noun elsewhere
+ * (申し出期限 beside 申出の撤回) may not.
  */
-const verbGoesOn = (next: Token, suffixes: ReadonlySet<string>): boolean =>
-  VERB_GOES_ON.has(next.pos) || CLAUSE_COMMA.has(next.surface) || (next.pos === "NOUN" && next.features?.["Bound"] !== "Yes" && !suffixes.has(next.surface));
+const verbGoesOn = (token: Token, next: Token, suffixes: ReadonlySet<string>, nouns: ReadonlySet<string>): boolean =>
+  carriesTheVerb(next) ||
+  CLAUSE_COMMA.has(next.surface) ||
+  (next.pos === "NOUN" && next.features?.["Bound"] !== "Yes" && !suffixes.has(next.surface) && !isAmong(token, nouns));
 
 /**
  * A verb's stem form that the verb does not go on from (払込みの期日, 申出により, 株式の買取り）): a noun the analyser read as the
  * verb, returned as the noun it is, spelled as written. Official Japanese spells the noun and the verb apart (払込み, 払い込む),
  * so the two are not one word in two spellings; the noun is compared with nouns. Any other token is returned as it is.
+ * nouns holds the document's nouns (documentNounKeys).
  */
-export const asNounWhereNominal = (token: Token, next: Token | undefined, suffixes: ReadonlySet<string> = new Set()): Token => {
+export const asNounWhereNominal = (
+  token: Token,
+  next: Token | undefined,
+  suffixes: ReadonlySet<string> = new Set(),
+  nouns: ReadonlySet<string> = new Set(),
+): Token => {
   if (token.pos !== "VERB" || token.lemma === undefined || !isStemForm(token.surface, token.lemma)) return token;
-  return next !== undefined && verbGoesOn(next, suffixes) ? token : { ...token, pos: "NOUN", lemma: token.surface };
+  return next !== undefined && verbGoesOn(token, next, suffixes, nouns) ? token : { ...token, pos: "NOUN", lemma: token.surface };
 };
+
+/**
+ * The keys (nounKeyOf) of the nouns a document writes, stem forms the verb does not go on from included (申出 before の): what
+ * tells asNounWhereNominal that a stem form before a noun makes a compound (申し出期限) rather than ends a clause (疾病にかかり療養).
+ */
+export const documentNounKeys = (sentences: readonly (readonly Token[])[], suffixes: ReadonlySet<string> = new Set()): Set<string> =>
+  new Set(
+    sentences.flatMap((tokens) =>
+      tokens.flatMap((token, at) => {
+        const key = asNounWhereNominal(token, tokens[at + 1], suffixes).pos === "NOUN" ? nounKeyOf(token) : undefined;
+        return key === undefined ? [] : [key];
+      }),
+    ),
+  );

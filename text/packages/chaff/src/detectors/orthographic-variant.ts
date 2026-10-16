@@ -12,7 +12,7 @@ import { isInCapitalsPassage } from "../capitals-passage.ts";
 import { withoutCoinedNames } from "../coined-hyphen-name.ts";
 import { wholeWordRuns, type WholeWordRun } from "../whole-word-runs.ts";
 import { entriesForGenre } from "../lexicon-genres.ts";
-import { asNounWhereNominal } from "../nominal-stem.ts";
+import { asNounWhereNominal, documentNounKeys } from "../nominal-stem.ts";
 
 /**
  * A word found in the document: where it is, which sentence it is in, its key and spelling, how it is written when that differs, and
@@ -139,6 +139,8 @@ type Skips = {
   readonly idioms: ReadonlySet<string>;
   readonly wholeWords: ReadonlyMap<string, string>;
   readonly phraseSuffixes: ReadonlySet<string>;
+  /** The document's nouns, as documentNounKeys keys them. */
+  readonly nouns: ReadonlySet<string>;
 };
 
 const readingKeyOf = (word: InContext, { skip, idioms }: Skips): string | undefined => {
@@ -177,7 +179,7 @@ const readingWords = (sentence: Sentence, isOpen: IsOpen, skips: Skips): Placed[
     ...tokens.flatMap((written, at): Placed[] => {
       if (inRun.has(at)) return [];
       const next = tokens[at + 1];
-      const token = asNounWhereNominal(written, next, skips.phraseSuffixes);
+      const token = asNounWhereNominal(written, next, skips.phraseSuffixes, skips.nouns);
       const key = readingKeyOf({ token, previous: tokens[at - 1], before: tokens[at - 2] }, skips);
       const local = token.span.start - sentence.span.start;
       if (key === undefined || token.lemma === undefined || !isOpen(local, local + token.surface.length)) return [];
@@ -320,17 +322,22 @@ const cellPlace = (cell: TableCell, names: Names): Place => {
  * document writes less is pointed at. No way is called right; limit is the largest share, in percent, the minority may have.
  */
 export const orthographicVariant: Detector = (doc, options): Finding[] => {
-  const skips: Skips = {
-    skip: new Set([...patternsOf(doc, DISTINCT, options.genre), ...patternsOf(doc, FUKUSHI, options.genre)]),
-    idioms: new Set(patternsOf(doc, IDIOM, options.genre)),
-    wholeWords: new Map((doc.lexicons[WHOLE_WORD] ?? []).map((entry) => [entry.pattern, entry.group ?? entry.pattern])),
-    phraseSuffixes: new Set(patternsOf(doc, PHRASE_SUFFIX, options.genre)),
-  };
   const names: Names = { team: doc.names ?? [], companyForms: (doc.lexicons["company-form"] ?? []).map((entry) => entry.pattern) };
   const placed: Place[] = [
     ...doc.sentences.map((sentence) => ({ sentence, isOpen: isOpenIn(sentence, names), readsLatin: true })),
     ...(doc.tableCells?.() ?? []).map((cell) => cellPlace(cell, names)),
   ];
+  const phraseSuffixes = new Set(patternsOf(doc, PHRASE_SUFFIX, options.genre));
+  const skips: Skips = {
+    skip: new Set([...patternsOf(doc, DISTINCT, options.genre), ...patternsOf(doc, FUKUSHI, options.genre)]),
+    idioms: new Set(patternsOf(doc, IDIOM, options.genre)),
+    wholeWords: new Map((doc.lexicons[WHOLE_WORD] ?? []).map((entry) => [entry.pattern, entry.group ?? entry.pattern])),
+    phraseSuffixes,
+    nouns: documentNounKeys(
+      placed.map(({ sentence }) => sentence.tokens ?? []),
+      phraseSuffixes,
+    ),
+  };
   const reading = byKanji(placed.flatMap(({ sentence, isOpen }) => readingWords(sentence, isOpen, skips)));
   const katakana = placed.flatMap(({ sentence, isOpen }) => katakanaWords(sentence, isOpen));
   const runs = placed.flatMap(({ sentence, isOpen }) => katakanaRunWords(sentence, isOpen));

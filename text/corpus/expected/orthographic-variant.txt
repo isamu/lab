@@ -56,7 +56,7 @@ soumu-kokumin-cyber-glossary-a  2
 soumu-wp-r06-misinformation  1
 sre-next-bunsho-kanri  1
 tcu-rishu-toroku-2026-kouki  2
-tokyoapp-service-terms  3
+tokyoapp-service-terms  2
 us-4683202-nucleic-acid-amplification  5
 utokyo-gakui-kisoku  1
 vue-docs-ja-reactivity-fundamentals  2
