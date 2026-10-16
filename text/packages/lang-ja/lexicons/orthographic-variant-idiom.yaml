@@ -23,3 +23,17 @@ entries:
   - pattern: 決着を付ける
   - pattern: 難癖をつける
   - pattern: 難癖を付ける
+  # 「〜をもって」は、気持ちや心構えを添えて行う言い方（目的をもって開発する、責任をもって管理する）。公用文はかなで書き、
+  # 物を持つ（鍵を持つ、権限を持つ）とは書き分ける。
+  - pattern: 目的をもつ
+  - pattern: 目的を持つ
+  - pattern: 責任をもつ
+  - pattern: 責任を持つ
+  - pattern: 誠意をもつ
+  - pattern: 誠意を持つ
+  - pattern: 敬意をもつ
+  - pattern: 敬意を持つ
+  - pattern: 自信をもつ
+  - pattern: 自信を持つ
+  - pattern: 余裕をもつ
+  - pattern: 余裕を持つ
