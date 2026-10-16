@@ -2,6 +2,7 @@ import type { Detector, Finding, ProseDocument, StructureNode } from "../plugin.
 import { danglingReferences, duplicateDefinitions, inDocumentOrder, type StructureIssue } from "../structure/issues.ts";
 import { numberingBreaks } from "../structure/numbering.ts";
 import { attachedPartStarts } from "../structure/attached-parts.ts";
+import { sideStepReader } from "../structure/side-step.ts";
 import { htmlTextBlocks } from "../structure/html-text-blocks.ts";
 import { listsNumberBreaks } from "../structure/list-numbering.ts";
 import { weekdayMismatches } from "../structure/weekday.ts";
@@ -54,8 +55,13 @@ const findingsOf =
 export const danglingReference: Detector = (doc, options) =>
   findingsOf("dangling-reference", (tree, source) => danglingReferences(tree, source, patternsOf(doc, "section-name-noun")))(doc, options);
 /** Markdown の HTML ブロックの中の条は木に入らない。そこを挟んだ抜けは、見えなかった番号かもしれない。 */
-const structureNumberingGap: Detector = (doc, options) =>
-  findingsOf("numbering-gap", (tree, source) => numberingBreaks(tree, doc.markup?.markdown === true ? htmlTextBlocks(source) : []))(doc, options);
+const structureNumberingGap: Detector = (doc, options) => {
+  const isSideStep = sideStepReader(patternsOf(doc, "side-step-label"));
+  return findingsOf("numbering-gap", (tree, source) => numberingBreaks(tree, doc.markup?.markdown === true ? htmlTextBlocks(source) : [], isSideStep))(
+    doc,
+    options,
+  );
+};
 
 const lineStartAt = (source: string, offset: number): number => source.lastIndexOf("\n", offset - 1) + 1;
 

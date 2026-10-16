@@ -5,7 +5,8 @@ import { isVersionHistory } from "./version-order.ts";
 
 const labelOf = (node: StructureNode): string => String(node.attrs["label"] ?? node.address);
 
-type Ordered = { readonly node: StructureNode; readonly ordinal: number; readonly last: number };
+/** sideSteps は、この番号の直前にある番号の無い手順（GOV.UK の「and」）の数。それぞれが番号を一つ使っていてよい。 */
+type Ordered = { readonly node: StructureNode; readonly ordinal: number; readonly last: number; readonly sideSteps: number };
 
 const OPENING_BRACKET = /^[([{〔【〈《]/u;
 
@@ -17,15 +18,21 @@ const isBracketed = (label: string): boolean => OPENING_BRACKET.test(label.norma
  * 法令の第 1 項は番号が無いので、その号（一、二）と第 2 項（２）は同じ条の直下に並ぶ。深さで分けないと「二の次が２」に見える。
  * 社内規程は号の（1）（2）と第 2 項の「2」を同じ深さに読むことがあるので、括弧で囲んだ番号は囲まない番号と別の並びにする。
  */
-const sequencesOf = (parent: StructureNode, quoting: ReadonlySet<StructureNode>): Ordered[][] => {
+const sequencesOf = (parent: StructureNode, quoting: ReadonlySet<StructureNode>, isSideStep: (node: StructureNode) => boolean): Ordered[][] => {
   const groups = new Map<string, Ordered[]>();
+  let sideSteps = 0;
   parent.children.forEach((node) => {
-    if (node.ordinal === undefined || quoting.has(node)) return;
+    if (node.ordinal === undefined) {
+      if (isSideStep(node)) sideSteps += 1;
+      return;
+    }
+    if (quoting.has(node)) return;
     const key = `${node.kind}/${String(node.level ?? "")}/${isBracketed(labelOf(node)) ? "bracketed" : "bare"}`;
     // 配列を作り直さずに足す。条が何千もある法令で二乗にしない。
     const group = groups.get(key) ?? [];
-    group.push({ node, ordinal: node.ordinal, last: node.ordinalTo ?? node.ordinal });
+    group.push({ node, ordinal: node.ordinal, last: node.ordinalTo ?? node.ordinal, sideSteps });
     groups.set(key, group);
+    sideSteps = 0;
   });
   return [...groups.values()];
 };
@@ -59,6 +66,7 @@ const breaksIn =
       // 範囲をまとめた行（第四十三条から第五十五条まで）の次は、範囲の最後から数える。
       if (previous === undefined || current.ordinal === previous.last + 1 || current.ordinal === 1) return [];
       if (current.ordinal > previous.last + 1 && unreadBetween(unread, previous, current)) return [];
+      if (current.ordinal > previous.last + 1 && current.ordinal <= previous.last + 1 + current.sideSteps) return [];
       return [
         {
           offset: current.node.span.start,
@@ -74,11 +82,16 @@ const breaksIn =
  * 同じ番号の節を中に持つ節（ほかの文書の条を引いた手本の見出し）は、並びに入れない。
  * 変更履歴の版の見出し（## 3.1.0）は番号の並びではない。版の順番は version-order が見る。
  * unread は、読み手には見えるが木に入らない範囲（Markdown の HTML ブロックの中の文字）を、始まりの順に並べたもの。
+ * isSideStep は、番号の代わりに「and」と書いた手順（前の手順と並べて行う）。その数だけ、次の番号は飛んでよい。
  */
-export const numberingBreaks = (tree: StructureNode, unread: readonly Span[] = []): StructureIssue[] => {
+export const numberingBreaks = (
+  tree: StructureNode,
+  unread: readonly Span[] = [],
+  isSideStep: (node: StructureNode) => boolean = () => false,
+): StructureIssue[] => {
   const quoting = numbersQuotedInside(tree);
   return inDocumentOrder(tree)
-    .flatMap((parent) => sequencesOf(parent, quoting))
+    .flatMap((parent) => sequencesOf(parent, quoting, isSideStep))
     .filter((sequence) => !isVersionHistory(sequence.map((ordered) => labelOf(ordered.node))))
     .flatMap(breaksIn(unread))
     .toSorted((left, right) => left.offset - right.offset);
