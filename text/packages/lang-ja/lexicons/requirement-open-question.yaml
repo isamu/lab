@@ -1,0 +1,18 @@
+# 列挙の例のすぐ後ろで、読み手に選ばせる問い（〜措置など、どのような措置を求めるのか）。例は問いへの答えの見本で、一覧が開いているのは書き手の意図（requirement-smell）。
+# group: interrogative は問いを始める語（何を選ぶかを聞く語）、question-end は問いを閉じる助詞、not-interrogative は同じ書き出しでやり方を聞く語、universal-mark は問いの語を「どれでも」に変える助詞。
+id: requirement-open-question
+language: ja
+entries:
+  - { pattern: どのような, group: interrogative }
+  - { pattern: どんな, group: interrogative }
+  - { pattern: どの, group: interrogative }
+  - { pattern: いかなる, group: interrogative }
+  # 何らか（何らかの措置）は問いではないので、助詞まで含めて書く。
+  - { pattern: 何を, group: interrogative }
+  - { pattern: 何が, group: interrogative }
+  - { pattern: 何に, group: interrogative }
+  - { pattern: か, group: question-end }
+  # やり方を聞く問い。どの・どのような と同じ書き出しだが、一覧の答えを選ばせない。
+  - { pattern: どのように, group: not-interrogative }
+  # 問いの語を「どれでも」に変える助詞（どの部署でも、何をも）。これが か より前にあれば問いではない。
+  - { pattern: も, group: universal-mark }

@@ -4,7 +4,7 @@ status: stable
 how_to_find: requirement-smell
 # 要求の文の目印と、三つの見つけ方の語。語はすべて言語ごとの語彙表にある。
 word_list: requirement-marker
-extra_word_lists: [requirement-loophole, requirement-open-end, requirement-either, definition-statement]
+extra_word_lists: [requirement-loophole, requirement-open-end, requirement-either, definition-statement, requirement-open-question]
 uses: [pos]
 severity: info
 
