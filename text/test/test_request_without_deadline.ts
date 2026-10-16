@@ -111,6 +111,31 @@ describe("request-without-deadline: 期限も担当も無い依頼", () => {
     assert.deepEqual(findingsOf("Please come to register at the front desk.", en), []);
   });
 
+  it("頼む相手をある人たちに絞る依頼（〜する方は、〜た方は、〜ない方は）は言わない", () => {
+    [
+      "証明書の発行を申請する方は、必ずご確認ください。",
+      "申込書 [PDFファイル／64KB] 証明書の発行を申請される方は、必ずご確認ください。",
+      "申し込まれた方は、受付票を保管してください。",
+      "印鑑をお持ちでない方は、署名欄に記入してください。",
+    ].forEach((source) => assert.deepEqual(findingsOf(source), [], source));
+  });
+
+  it("〜者を主語に立てた依頼は、誰がするかを言っているので言わない", () => {
+    ["掲載する広告のデザインは出店者が作成してください。", "同意書は保護者が記入してください。", "記入した用紙は記入者は提出してください。"].forEach((source) =>
+      assert.deepEqual(findingsOf(source), [], source),
+    );
+  });
+
+  it("相手を絞らない依頼と、主語でない〜者や「方」は、担当とも条件とも読まずに言う", () => {
+    [
+      "申込書を提出してください。",
+      "書類の書き方を確認してください。",
+      "記入の仕方は資料を確認してください。",
+      "第三者に渡さず、申込書を提出してください。",
+      "使い方を確認して、返信してください。",
+    ].forEach((source) => assert.deepEqual(findingsOf(source), [MESSAGE_JA], source));
+  });
+
   it("誘いの動詞が依頼の終わりから離れていれば言う", () => {
     assert.deepEqual(findingsOf("ご相談の内容を記入してください。"), [MESSAGE_JA]);
     assert.deepEqual(findingsOf("Please register the visit in the log.", en), [MESSAGE_EN]);
