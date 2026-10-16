@@ -1,4 +1,5 @@
 import type { Sentence, Span, Token } from "../plugin.ts";
+import { itemMarkerSpan } from "./list-lead-in.ts";
 
 // 同じ主語と行為に、逆の様相（しなければならない と してはならない、may と must not）を書いた二つの文。
 // 主語と行為は、文の中身の語（名詞・固有名詞・動詞・形容詞）の集まりで近似する。様相の語そのものは数えない。
@@ -51,11 +52,21 @@ const sentenceAt = (sentences: readonly Sentence[], offset: number): Sentence | 
   return undefined;
 };
 
+/** 中身の語の集まりを足し合わせたもの。並べ方は contentKey と同じ。 */
+const joinedKey = (keys: readonly string[]): string =>
+  [...new Set(keys.flatMap((key) => (key === "" ? [] : key.split(" "))))].toSorted((left, right) => left.localeCompare(right, "en")).join(" ");
+
 /**
  * 様相の語を一つだけ持つ文の、様相と中身。二つ以上持つ文（shall do A and shall not do B）は、どの語がどの行為にかかるかが
  * 中身の語の集まりからは分からないので外す。品詞の無い文も外す。
+ * leadIns は箇条書きの項目の文の導入の文（listLeadIns）。項目の中身には導入の中身の語を足す。導入の条件（"If … is made—"）は
+ * 項目の行為の条件なので、違う導入の下の項目どうしは、同じ行為を決めていない。
  */
-export const modalStatements = (obligations: readonly Obligation[], sentences: readonly Sentence[]): ModalStatement[] => {
+export const modalStatements = (
+  obligations: readonly Obligation[],
+  sentences: readonly Sentence[],
+  leadIns: ReadonlyMap<Sentence, readonly Sentence[]> = new Map(),
+): ModalStatement[] => {
   const bySentence = new Map<Sentence, Obligation[]>();
   obligations.forEach((obligation) => {
     const sentence = sentenceAt(sentences, obligation.start);
@@ -64,11 +75,19 @@ export const modalStatements = (obligations: readonly Obligation[], sentences: r
     if (found === undefined) bySentence.set(sentence, [obligation]);
     else found.push(obligation);
   });
+  /** 様相の語と項目の印を除いた中身。 */
+  const keyOf = (sentence: Sentence, tokens: readonly Token[], markers: readonly Span[]): string => {
+    const item = itemMarkerSpan(sentence);
+    return contentKey(tokens, item === undefined ? markers : [...markers, item]);
+  };
+  const leadInKey = (sentence: Sentence): string => (sentence.tokens === undefined ? "" : keyOf(sentence, sentence.tokens, bySentence.get(sentence) ?? []));
   return [...bySentence].flatMap(([sentence, found]) => {
     const [only] = found;
     if (found.length !== 1 || only === undefined || sentence.tokens === undefined) return [];
-    const key = contentKey(sentence.tokens, [only]);
-    return key.split(" ").length < MIN_CONTENT_WORDS ? [] : [{ offset: sentence.span.start, type: only.type, marker: only.marker, key }];
+    const own = keyOf(sentence, sentence.tokens, [only]);
+    if (own.split(" ").length < MIN_CONTENT_WORDS) return [];
+    const key = joinedKey([own, ...(leadIns.get(sentence) ?? []).map(leadInKey)]);
+    return [{ offset: sentence.span.start, type: only.type, marker: only.marker, key }];
   });
 };
 
