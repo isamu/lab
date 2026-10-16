@@ -1,6 +1,6 @@
 // A work email or letter's own parts: a greeting and a closing, a subject line, and an attachment the text mentions.
 // Pure. The words (お世話になっております, Dear, Best regards, 件名, attached) come from the language's email-greeting,
-// email-closing, email-sentence-end, email-subject-field, attachment-mention, attachment-not-mention and attachment-line lexicons. The
+// email-closing, email-sentence-end, memo-header-label, email-subject-field, attachment-mention, attachment-not-mention and attachment-line lexicons. The
 // header and the signature are masked in doc.prose; a quoted reply is someone else's words and is left out.
 import { escapeRegExp } from "../orthography.ts";
 import { quoteAt } from "./structure-tree.ts";
@@ -141,13 +141,46 @@ export const frameSlips = (
   ];
 };
 
+/** The marks around a label line: a heading's #, emphasis, 【】. */
+const LINE_MARKS = new Set("#*_【】 \t\u3000");
+
+const withoutMarks = (line: string): string => {
+  const chars = [...line];
+  const first = chars.findIndex((char) => !LINE_MARKS.has(char));
+  return first === -1 ? "" : chars.slice(first, chars.findLastIndex((char) => !LINE_MARKS.has(char)) + 1).join("");
+};
+
+const LABEL_END = /^(?:[:：]|$)/u;
+
+/**
+ * Whether a line is a memo's header label (TO:, SUBJECT:, MEMORANDUM, 発信者：): a label as the lexicon writes it, case
+ * included, then a colon or the line's end. A memo sets its labels in capitals; a mail program writes "To:" and "Subject:".
+ */
+export const isMemoLabel = (line: string, labels: readonly string[]): boolean => {
+  const bare = withoutMarks(line);
+  return labels.some((label) => bare.startsWith(label) && LABEL_END.test(bare.slice(label.length)));
+};
+
+/**
+ * A memo: one of its header labels among the source's lines before the first sentence (the first lines, when no line ends
+ * one). The source, not the body, since a block of TO: / FROM: lines is masked as an email's header. A memo takes no
+ * greeting and no closing.
+ */
+export const isMemo = (source: string, labels: readonly string[], sentenceEnds: readonly string[]): boolean => {
+  const lines = source.split("\n").filter((line) => line.trim() !== "" && !line.trimStart().startsWith(">"));
+  const firstSentence = lines.findIndex((line) => endsSentence(line, sentenceEnds));
+  return lines.slice(0, firstSentence === -1 ? HEADER_LINES : firstSentence).some((line) => isMemoLabel(line, labels));
+};
+
+const frameSlipsOf = (doc: ProseDocument): FrameSlip[] => {
+  const sentenceEnds = patternsOf(doc, "email-sentence-end");
+  if (isMemo(doc.source, patternsOf(doc, "memo-header-label"), sentenceEnds)) return [];
+  const lines = bodyLines(doc.source, doc.prose ?? doc.source, doc.replyQuotes ?? []);
+  return frameSlips(lines, patternsOf(doc, "email-greeting"), patternsOf(doc, "email-closing"), sentenceEnds);
+};
+
 export const emailFrame: Detector = (doc): Finding[] =>
-  frameSlips(
-    bodyLines(doc.source, doc.prose ?? doc.source, doc.replyQuotes ?? []),
-    patternsOf(doc, "email-greeting"),
-    patternsOf(doc, "email-closing"),
-    patternsOf(doc, "email-sentence-end"),
-  ).map((slip) => ({
+  frameSlipsOf(doc).map((slip) => ({
     rule: "email-greeting-closing",
     severity: "info",
     line: 0,
@@ -226,15 +259,6 @@ export const firstMention = (lines: readonly BodyLine[], mentions: readonly stri
   };
   const line = lines.find((candidate) => isMention(candidate.text));
   return line === undefined ? undefined : line.start + line.text.length - line.text.trimStart().length;
-};
-
-/** The marks around a label line: a heading's #, emphasis, 【】. */
-const LINE_MARKS = new Set("#*_【】 \t\u3000");
-
-const withoutMarks = (line: string): string => {
-  const chars = [...line];
-  const first = chars.findIndex((char) => !LINE_MARKS.has(char));
-  return first === -1 ? "" : chars.slice(first, chars.findLastIndex((char) => !LINE_MARKS.has(char)) + 1).join("");
 };
 
 /** A line that labels what is attached: the label and a colon (Attachment: quote.pdf), or the label alone (### Enclosures, 【添付資料】). */
