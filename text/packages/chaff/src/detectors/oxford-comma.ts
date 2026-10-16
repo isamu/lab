@@ -45,6 +45,7 @@ import {
   type View,
 } from "./list-view.ts";
 import { lowerBound, type TokenRange } from "./token-column.ts";
+import { followsPostcode } from "./postcode-end.ts";
 
 const EMPTY: TokenRange = { start: 0, end: 0 };
 
@@ -254,7 +255,8 @@ export const listVerdicts = (tokens: readonly Token[], words: ListWords, source:
   const readItems = listReader(sentence);
   return tokens.flatMap((token, at) => {
     if (!isJudgedConjunction(token, at)) return [];
-    return [sentence.inCitedTitle(at) ? undefined : listAt(readItems(at), at)];
+    // 郵便番号で終わる住所のあとの and / or は、住所の行を区切る読点のあと。並びの読点ではない。
+    return [sentence.inCitedTitle(at) || followsPostcode(source, token.span.start) ? undefined : listAt(readItems(at), at)];
   });
 };
 
