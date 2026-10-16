@@ -9,12 +9,28 @@ const NOUNS = new Set(["NOUN", "PROPN", "ADJ"]);
 /** 中身を持たない語。名前の前後に付いても、名前の繰り返しを言い回しに変えない。 */
 const FUNCTION_POS = new Set(["ADP", "DET", "CCONJ", "SCONJ", "PART", "PUNCT", "SYM", "X"]);
 
+/** 形式名詞（とき、こと）。動詞が節を名詞にしているだけで、用語は作らない（承認又は断るとき）。 */
+const isDependentNoun = (token: Token | undefined): boolean => token?.features?.["NounType"] === "Dependent";
+
+/**
+ * 日本語で、名詞と接続詞（又は、及び）のすぐ後ろで名詞を飾る動詞（行為又は怠る事実）は、名詞を並べた一つの用語の中にあり、述語ではない。
+ * 用語は言い換えられないので、繰り返して当たり前。名詞に「する」が付いた動詞（承認又は拒否する）は、行為を並べた述語と見分けられないので外さない。
+ */
+const inCoordinatedNoun = (tokens: readonly Token[], index: number, unit: LengthUnit): boolean =>
+  unit === "char" &&
+  tokens[index]?.pos === "VERB" &&
+  tokens[index]?.features?.["VerbType"] !== "Light" &&
+  tokens[index - 1]?.pos === "CCONJ" &&
+  NOUNS.has(tokens[index - 2]?.pos ?? "") &&
+  NOUNS.has(tokens[index + 1]?.pos ?? "") &&
+  !isDependentNoun(tokens[index + 1]);
+
 /**
  * 英語で名詞のすぐ前の動詞は、名詞を飾る語（形容詞を挟んでも同じ）（the upcoming fiscal year、the Disclosing Party、the borrow checker）で、
- * 述語ではない。日本語の名詞の前の動詞（〜にあるコンポーネント）は言い回しの一部になるので、word 単位だけで見る。
+ * 述語ではない。日本語の名詞の前の動詞（〜にあるコンポーネント）は言い回しの一部になるので、接続詞の後ろの用語の中（inCoordinatedNoun）だけを外す。
  */
 const modifiesNoun = (tokens: readonly Token[], index: number, unit: LengthUnit): boolean =>
-  unit === "word" && tokens[index]?.pos === "VERB" && NOUNS.has(tokens[index + 1]?.pos ?? "");
+  (unit === "word" && tokens[index]?.pos === "VERB" && NOUNS.has(tokens[index + 1]?.pos ?? "")) || inCoordinatedNoun(tokens, index, unit);
 
 /** 英語で大文字の名前の一部になった動詞（Procedures Guide、the Location Object）も、述語ではない。 */
 const namePartAt = (tokens: readonly Token[], index: number, unit: LengthUnit): boolean => unit === "word" && isNamePart(tokens, index);
