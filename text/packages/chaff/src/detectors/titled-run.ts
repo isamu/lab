@@ -6,8 +6,12 @@ export type TitleWords = { readonly endings: readonly string[] };
 
 /** 題を囲む括弧。鉤括弧と、見出しや分類の名前を囲む隅付き括弧。 */
 const TITLE_MARKS = { "「": "」", "『": "』", "【": "】" };
-/** 名前のすぐ後ろに付く、その名前の補い（就職氷河期世代）、略称（以下「奨励金」という。）、日付や番号。 */
-const QUALIFIER_OPENERS = new Set(["（", "("]);
+/**
+ * 名前のすぐ後ろ（同じ行の空白を挟んでもよい）に付く、その名前の補い（就職氷河期世代、＜創業型＞）、略称（以下「奨励金」という。）、
+ * 日付や番号、ファイルの種類と大きさ（[PDFファイル／333KB]）の括弧。角括弧は同じ行で閉じ、Markdown のリンク（[文字](…)）でないもの。
+ * 半角の < は HTML の札と見分けられないので読まない。
+ */
+const QUALIFIER = /^[ \t\u3000]*(?:[（(＜〈［]|\[[^\]\n]*\](?![([]))/u;
 /** 閉じる語の前に要る字数。1 字なら、題ではなく普通の語（新法、本事業）。 */
 const MIN_BODY_LENGTH = 2;
 const BLANK = /^\s*$/u;
@@ -27,11 +31,12 @@ export const endsInTitle = (run: readonly Token[], words: TitleWords): boolean =
 /**
  * 文（text）の start から end までの連なりが、題の名前の置き方をしているか。
  * 括弧の中身の終わりで閉じる（「令和8年度高度統計人材育成強化拠点形成事業」）、すぐ後ろに補いの括弧が付く
- * （国家公務員中途採用者選考試験（就職氷河期世代））、または文がその連なりだけ（要綱の題を並べた行）。
+ * （国家公務員中途採用者選考試験（就職氷河期世代）、持続化補助金＜創業型＞、登録申込書 [PDFファイル／333KB]）、
+ * または文がその連なりだけ（要綱の題を並べた行）。
  */
 export const isTitlePosition = (text: string, start: number, end: number): boolean => {
   const closesBracket = quotedSpans(text, TITLE_MARKS).some((span) => span.end === end && span.start <= start);
-  const qualified = QUALIFIER_OPENERS.has(text.charAt(end));
+  const qualified = QUALIFIER.test(text.slice(end));
   const alone = BLANK.test(text.slice(0, start)) && BLANK.test(text.slice(end));
   return closesBracket || qualified || alone;
 };

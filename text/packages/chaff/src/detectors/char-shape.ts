@@ -1,6 +1,7 @@
 import type { Detector, DocumentProfile, Finding, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 import { compacted } from "./gram-place.ts";
 import { leadingCounter, trailingPrefix } from "./counter-edge.ts";
+import { trailingAddressee } from "./addressee-edge.ts";
 import { maskAddresses } from "../address-chain.ts";
 import { isAddressRun } from "./place-run.ts";
 import { isOneName } from "./name-run.ts";
@@ -60,6 +61,8 @@ type NameWords = {
   readonly title: TitleWords;
   /** 数の後ろで日付・時刻の位置を言う単位（月）。連なりの頭にあれば、数に付いた助数詞。 */
   readonly positional: readonly string[];
+  /** 宛先の名前に付く語（宛、御中）。連なりの尻にあれば、名前の後ろに付いた語。 */
+  readonly addressee: readonly string[];
 };
 
 /** 1 つの文書で連なりを読むのに要るもの。titled は、文書の中で題として置かれた名前（titledNames）。 */
@@ -91,7 +94,8 @@ const isTitle = (tokens: readonly Token[], span: Span, text: string, placed: boo
   (placed || isTitledName(text, context.titled));
 
 /**
- * 数えない連なりは空。頭の、数に付いた助数詞（2日日本弁護士連合会の「日」）と、尻の、数に付く接頭の語（施行令第172条の「第」）は数えない。
+ * 数えない連なりは空。頭の、数に付いた助数詞（2日日本弁護士連合会の「日」）と、尻の、数に付く接頭の語（施行令第172条の「第」）と
+ * 宛先に付く語（市政情報課宛ての「宛」）は数えない。
  * 住所か名前かは、それを外した残りで決める（1日日本銀行の「日本銀行」）。品詞が無ければ判定しない。
  */
 const measuredRun = (tokens: readonly Token[] | undefined, run: KanjiRun, context: RunContext): string => {
@@ -99,8 +103,10 @@ const measuredRun = (tokens: readonly Token[] | undefined, run: KanjiRun, contex
   if (tokens === undefined || run.span === undefined) return run.text;
   const counter = leadingCounter(tokens, run.span.start, run.text, context.words.positional);
   const prefix = trailingPrefix(tokens, run.span.end, run.text);
-  const rest = { start: counter?.span.end ?? run.span.start, end: prefix?.span.start ?? run.span.end };
-  const text = run.text.slice(counter?.surface.length ?? 0, run.text.length - (prefix?.surface.length ?? 0));
+  const tail =
+    prefix === undefined ? trailingAddressee(tokens, run.span.end, run.text, context.words.addressee) : { surface: prefix.surface, start: prefix.span.start };
+  const rest = { start: counter?.span.end ?? run.span.start, end: tail?.start ?? run.span.end };
+  const text = run.text.slice(counter?.surface.length ?? 0, run.text.length - (tail?.surface.length ?? 0));
   return isPlaceName(tokens, rest, context.words) || isTitle(tokens, rest, text, run.placed, context) ? "" : text;
 };
 
@@ -133,6 +139,7 @@ export const kanjiRun: Detector = (doc, options): Finding[] => {
     },
     title: { endings: patterns("title-ending") },
     positional: patterns("calendar-unit"),
+    addressee: patterns("addressee-suffix"),
   };
   const names = doc.names ?? [];
   const context: RunContext = { profile: doc.profile, names, words, titled: titledNames(doc, doc.profile, names) };
