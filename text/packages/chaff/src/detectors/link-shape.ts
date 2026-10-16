@@ -2,7 +2,7 @@ import type { Detector, Finding, Markup, ProseDocument, Span } from "../plugin.t
 import { findingAt, markupOf, quoteOf } from "./markup-finding.ts";
 import { linkTextOf } from "../link-text.ts";
 import { bareUrls } from "../bare-url.ts";
-import { isFileNameAlt, isUrlText, mismatchedHost } from "../link-shape.ts";
+import { isFieldValueUrl, isFileNameAlt, isUrlText, mismatchedHost } from "../link-shape.ts";
 import { minorityWithin } from "../orthography.ts";
 import { readMarkdown, spansOfType } from "../markdown-read.ts";
 
@@ -23,16 +23,23 @@ const FAILED_DESTINATION = "](";
 
 const inside = (span: Span, regions: readonly Span[]): boolean => regions.some((region) => span.start >= region.start && span.start < region.end);
 
+const isFieldValue = (source: string, url: Span): boolean => {
+  const lineStart = source.lastIndexOf("\n", url.start - 1) + 1;
+  const lineEnd = source.indexOf("\n", url.end);
+  return isFieldValueUrl(source.slice(lineStart, url.start), source.slice(url.end, lineEnd === -1 ? source.length : lineEnd));
+};
+
 /**
  * The bare URLs the reader sees as text (outside links, code and quotations). A URL in a table cell is a value the table lists
- * (an example request, a field's content), not a link the prose points to, so tables are left out.
+ * (an example request, a field's content), not a link the prose points to, so tables are left out, and so is a field's value
+ * on its own line (`**Licence text** https://…`).
  */
 const bareUrlSpans = (source: string, markup: Markup): Span[] => {
   const tables = spansOfType(readMarkdown(source).root, "table");
   return markup.texts.flatMap((text) =>
     bareUrls(source.slice(text.start, text.end))
       .map((url) => ({ start: text.start + url.start, end: text.start + url.end }))
-      .filter((url) => !source.startsWith(FAILED_DESTINATION, url.start - FAILED_DESTINATION.length) && !inside(url, tables)),
+      .filter((url) => !source.startsWith(FAILED_DESTINATION, url.start - FAILED_DESTINATION.length) && !inside(url, tables) && !isFieldValue(source, url)),
   );
 };
 
