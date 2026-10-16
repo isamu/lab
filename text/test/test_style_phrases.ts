@@ -41,6 +41,12 @@ describe("wordy-phrase", () => {
     assert.deepEqual(findingsOf(RULE, "Except on Friday, we met online. The office is near the station. To save time, we stayed.\n", en, "strict"), []);
   });
 
+  it("a count on a scale (a small number of) is not shortened to another count; a large number of still is", () => {
+    const counts = "A small number of members voted against. A few members abstained.\n";
+    assert.deepEqual(findingsOf(RULE, counts, en, "strict"), []);
+    assert.deepEqual(findingsOf(RULE, "A large number of members voted against.\n", en, "strict"), ['"a large number of" can be said in fewer words']);
+  });
+
   it("Japanese: two sentences with a wordy phrase are reported at normal, one is not", () => {
     const two = "資料は社内から閲覧することが可能です。現時点において、追加の予定はありません。\n";
     assert.deepEqual(findingsOf(RULE, two, ja), ["「することが可能」は、もっと短く言えます", "「現時点において」は、もっと短く言えます"]);
