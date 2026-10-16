@@ -3,6 +3,7 @@
 # baseline: 比べる相手を言う語。同じ文か直前の文にあれば、相手は書いてある。語に分かれて書かれていても読む（これ・まで）。
 # exempt: 比べる副詞の後ろで、比較でない決まった言い方を作る語（より多くの人に、より詳しくは、さらに詳しく）と、程度でなく位置を言う語（さらに上の階層）。
 # condition: 比較より前にあれば、比較を条件の下に置く語（入れるとより良くなる）。比べる相手は、その条件の無い場合。
+# aim: 比べた語のすぐ後ろで、今より良くする目当てを作る語（より良い社会、より豊かな暮らし、より良いものにする）。比べる相手は今の状態。
 id: comparative-baseline
 language: ja
 entries:
@@ -31,6 +32,17 @@ entries:
   - { pattern: 先, group: exempt }
   - { pattern: 前, group: exempt }
   - { pattern: 後, group: exempt }
+  - { pattern: 社会, group: aim }
+  - { pattern: 未来, group: aim }
+  - { pattern: 世界, group: aim }
+  - { pattern: 暮らし, group: aim }
+  - { pattern: 生活, group: aim }
+  - { pattern: まち, group: aim }
+  - { pattern: 地域, group: aim }
+  - { pattern: ものにする, group: aim }
+  - { pattern: ものにし, group: aim }
+  - { pattern: ものとする, group: aim }
+  - { pattern: ものとし, group: aim }
   - { pattern: と, group: condition }
   - { pattern: ば, group: condition }
   - { pattern: たら, group: condition }
