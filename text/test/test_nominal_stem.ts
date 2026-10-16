@@ -1,7 +1,9 @@
-import { describe, it } from "node:test";
+import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { asNounWhereNominal, documentNounKeys, isStemForm, nounKeyOf } from "../packages/chaff/src/nominal-stem.ts";
+import { asNounWhereNominal, documentNounKeys, isStemForm, nounKeyOf, withNounsAfterParticles } from "../packages/chaff/src/nominal-stem.ts";
 import type { Token } from "../packages/chaff/src/plugin.ts";
+import { adapter as ja } from "../packages/lang-ja/src/index.ts";
+import { namedRuleRun } from "./rule-run.ts";
 
 // 動詞の連用形が名詞として使われているか（nominal-stem.ts）。例はすべて自作。
 
@@ -114,5 +116,48 @@ describe("documentNounKeys", () => {
     assert.deepEqual([...documentNounKeys([sentence])], []);
     assert.deepEqual([...documentNounKeys([])], []);
     assert.deepEqual([...documentNounKeys([[]])], []);
+  });
+});
+
+describe("withNounsAfterParticles", () => {
+  const comma = at("、", "PUNCT");
+  const stem = verb("取組み", "取組む");
+  const posOf = (tokens: readonly Token[]): string[] => withNounsAfterParticles(tokens).map((token) => token.pos);
+
+  it("の や に関する と読点のあいだの連用形は、書いたとおりの名詞（地域の取組み、）", () => {
+    ["の", "での", "に関する", "における"].forEach((particle) => {
+      const read = withNounsAfterParticles([at("地域", "NOUN"), at(particle, "ADP"), stem, comma]);
+      assert.equal(read[2]?.pos, "NOUN");
+      assert.equal(read[2]?.lemma, "取組み");
+    });
+  });
+
+  it("に・を の後、読点でない語の前、連用形でない形、動詞でない語はそのまま（課題に取り組み、）", () => {
+    assert.deepEqual(posOf([at("課題", "NOUN"), at("に", "ADP"), verb("取り組み", "取り組む"), comma]), ["NOUN", "ADP", "VERB", "PUNCT"]);
+    assert.deepEqual(posOf([at("成果", "NOUN"), at("を", "ADP"), verb("上げ", "上げる"), comma]), ["NOUN", "ADP", "VERB", "PUNCT"]);
+    assert.deepEqual(posOf([at("の", "ADP"), stem, at("を", "ADP")]), ["ADP", "VERB", "ADP"]);
+    assert.deepEqual(posOf([at("の", "ADP"), verb("取り組ん", "取り組む"), comma]), ["ADP", "VERB", "PUNCT"]);
+    assert.deepEqual(posOf([at("の", "ADP"), at("取組み", "VERB"), comma]), ["ADP", "VERB", "PUNCT"]);
+    assert.deepEqual(posOf([at("の", "NOUN"), stem, comma]), ["NOUN", "VERB", "PUNCT"]);
+    assert.deepEqual(posOf([stem, comma]), ["VERB", "PUNCT"]);
+    assert.deepEqual(posOf([at("の", "ADP"), stem]), ["ADP", "VERB"]);
+    assert.deepEqual(posOf([]), []);
+  });
+});
+
+describe("orthographic-variant: の と読点のあいだの連用形", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+  });
+
+  const findingsOf = (source: string): readonly string[] => namedRuleRun("orthographic-variant", source, ja).findings;
+
+  it("地域の取組み、 は名詞。動詞の 取り組む とは比べない", () => {
+    assert.deepEqual(findingsOf("課題に取り組み、成果を上げた。新しい事業に取り組む。研修に取り組みます。地域の取組み、学校の取組みを紹介する。\n"), []);
+  });
+
+  it("動詞の 取り組み、 は動詞のまま。名詞の 取組み とは比べず、動詞どうしで比べる", () => {
+    assert.deepEqual(findingsOf("学校の取組みを紹介する。地域の取組みは三つある。課題に取り組み、成果を上げた。\n"), []);
+    assert.equal(findingsOf("課題に取組み、成果を上げた。新しい事業に取り組む。研修に取り組みます。\n").length, 1);
   });
 });
