@@ -16,10 +16,19 @@ const PER = 1000;
 /** 密度を見る rule は短い文書を測らない。単位は言語で違うので床も分ける。 */
 const FLOOR = { word: 200, char: 500 };
 
-type Hit = { readonly sentence: Sentence; readonly matched: string };
+type Hit = { readonly sentence: Sentence; readonly matched: string; readonly group?: string | undefined };
 
 const hitsFor = (doc: ProseDocument, lexicon: Lexicon): Hit[] =>
-  doc.sentences.flatMap((sentence) => lexicon.filter((entry) => entryIn(sentence, entry)).map((entry) => ({ sentence, matched: entry.pattern })));
+  doc.sentences.flatMap((sentence) =>
+    lexicon.filter((entry) => entryIn(sentence, entry)).map((entry) => ({ sentence, matched: entry.pattern, group: entry.group })),
+  );
+
+/**
+ * A lexicon word in group address says how the document speaks to its reader (あなたの). Alone it is the writer's chosen
+ * register, so it counts only beside a phrase from outside the group.
+ */
+const ADDRESS_GROUP = "address";
+const onlyAddress = (hits: readonly Hit[]): boolean => hits.every((hit) => hit.group === ADDRESS_GROUP);
 
 /**
  * 床より短い文書の扱い。skip は測らない。at-floor は SHORT_LENGTH の長さの文書として測り、一つだけなら言わない（一つは礼儀）。
@@ -52,7 +61,7 @@ const densityRule =
     const hits = hitsFor(doc, options.lexicon ?? []);
     const length = wordsOf(doc);
     const isShort = length < FLOOR[doc.lengthUnit];
-    if (hits.length === 0 || (isShort && (short === "skip" || hits.length < SHORT_MINIMUM_HITS))) return [];
+    if (onlyAddress(hits) || (isShort && (short === "skip" || hits.length < SHORT_MINIMUM_HITS))) return [];
     if (perThousand(hits.length, isShort ? SHORT_LENGTH[doc.lengthUnit] : length) <= options.limit) return [];
     const density = perThousand(hits.length, length);
     return hits.map((hit) => ({
