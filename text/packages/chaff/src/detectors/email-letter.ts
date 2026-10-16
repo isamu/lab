@@ -180,14 +180,45 @@ export const fieldOf = (line: string): { readonly name: string; readonly value: 
       };
 };
 
+/** The subject field's names and reply marks, and what tells the body's first line from a subject: a greeting, a sentence's end. */
+export type SubjectVocabulary = {
+  readonly fields: readonly string[];
+  readonly replyMarks: readonly string[];
+  readonly greetings: readonly string[];
+  readonly sentenceEnds: readonly string[];
+};
+
+/** The text of the first line with text after `index`, trimmed. Scans only the blank lines between, so many empty subjects stay linear. */
+const nextText = (lines: readonly SourceLine[], index: number): string => {
+  for (let at = index + 1; at < lines.length; at += 1) {
+    const text = lines[at]?.text.trim() ?? "";
+    if (text !== "") return text;
+  }
+  return "";
+};
+
+/**
+ * The value under a subject label with nothing after its colon: the next line with text, as a form that sets the label and
+ * the value in two columns reads once it is text ("SUBJECT:" over "Car park repairs"). A quoted line, a field, a greeting
+ * or a sentence there is the body, and the subject stays empty.
+ */
+export const valueBelow = (lines: readonly SourceLine[], index: number, vocabulary: SubjectVocabulary): string => {
+  const text = nextText(lines, index);
+  const isBody = text.startsWith(">") || fieldOf(text) !== undefined || lineHas(text, vocabulary.greetings) || endsSentence(text, vocabulary.sentenceEnds);
+  return isBody ? "" : text;
+};
+
 /** The subject lines (Subject: …, 件名：…), outside a quoted reply, with reply and forward marks (Re:, Fwd:) taken off the value. */
-export const subjectLines = (source: string, fields: readonly string[], replyMarks: readonly string[], replyQuotes: readonly Span[]): SubjectLine[] => {
-  const names = new Set(fields.map((field) => field.toLowerCase()));
+export const subjectLines = (source: string, vocabulary: SubjectVocabulary, replyQuotes: readonly Span[]): SubjectLine[] => {
+  const names = new Set(vocabulary.fields.map((field) => field.toLowerCase()));
   const quoted = insideCursor(replyQuotes);
-  return linesWithOffsets(source).flatMap(({ start, text }): SubjectLine[] => {
+  const lines = linesWithOffsets(source);
+  return lines.flatMap(({ start, text }, index): SubjectLine[] => {
     const field = fieldOf(text);
     const inQuote = quoted(start);
-    return field === undefined || inQuote || !names.has(field.name.toLowerCase()) ? [] : [{ start, subject: withoutReplyMarks(field.value, replyMarks) }];
+    if (field === undefined || inQuote || !names.has(field.name.toLowerCase())) return [];
+    const value = field.value === "" ? valueBelow(lines, index, vocabulary) : field.value;
+    return [{ start, subject: withoutReplyMarks(value, vocabulary.replyMarks) }];
   });
 };
 
@@ -201,7 +232,16 @@ export const withoutReplyMarks = (subject: string, marks: readonly string[]): st
 };
 
 export const emailSubject: Detector = (doc, options): Finding[] =>
-  subjectLines(doc.source, patternsOf(doc, "email-subject-field"), patternsOf(doc, "email-reply-mark"), doc.replyQuotes ?? []).flatMap((line): Finding[] => {
+  subjectLines(
+    doc.source,
+    {
+      fields: patternsOf(doc, "email-subject-field"),
+      replyMarks: patternsOf(doc, "email-reply-mark"),
+      greetings: patternsOf(doc, "email-greeting"),
+      sentenceEnds: patternsOf(doc, "email-sentence-end"),
+    },
+    doc.replyQuotes ?? [],
+  ).flatMap((line): Finding[] => {
     const length = [...line.subject].length;
     if (length > 0 && length <= options.limit) return [];
     return [
