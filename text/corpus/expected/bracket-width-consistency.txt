@@ -3,7 +3,7 @@ da-recruitment-office-visit  1
 entaku-rb-4  1
 entaku-rb-5  2
 env-nikko-national-park-story  2
-etax-oshirase-mail-templates  5
+etax-oshirase-mail-templates  4
 jma-press-hot-2026-07  2
 jstage-jkg-72-4-133  2
 jstage-jniph-74-1-2-rehabilitation  2
@@ -15,7 +15,7 @@ kimino-cleanup-notice  1
 kimino-staff-exam-guide  1
 kobayashi-press-hananoa-2026-02  3
 koho-tokyo-2026-06-suigai  2
-mhlw-norovirus-qa  10
+mhlw-norovirus-qa  2
 nta-tsutatsu-shohi-05-01  1
 nttcom-onboarding-week1  1
 ppc-guidelines-tsusoku  21
