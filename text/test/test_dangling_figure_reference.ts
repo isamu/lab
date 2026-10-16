@@ -6,6 +6,7 @@ import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
+import { isTitleLine } from "../packages/chaff/src/figure-references.ts";
 
 // 図・表・付録の参照先が無い（dangling-figure-reference）。本文の「図3」を、行の頭に書いた図の番号（見出し・キャプション）と照らす。
 
@@ -44,6 +45,34 @@ describe("dangling-figure-reference", () => {
   it("a sentence that starts with a reference is not a caption", () => {
     assert.deepEqual(found(lines("図1　売上", "", "図3の例では、費用が減った。"), ja), ["図3"]);
     assert.deepEqual(found(lines("Figure 1: Sales", "", "Figure 3 shows that costs fell.")), ["Figure 3"]);
+  });
+
+  it("a title on a line of its own labels an exhibit, but a missing exhibit or a sentence is still reported", () => {
+    const agreement = (...exhibits: string[]): string =>
+      lines("The charter reads as set forth in Exhibit A, and the prices are in Exhibit B.", "", "Section 2. Price.", "", ...exhibits);
+    assert.deepEqual(found(agreement("Exhibit A to Merger Agreement", "", "FIRST: The name is Example Corp.", "", "Exhibit B to Merger Agreement")), []);
+    assert.deepEqual(found(agreement("Exhibit A to Merger Agreement", "", "FIRST: The name is Example Corp.")), ["Exhibit B"]);
+    assert.deepEqual(found(agreement("Exhibit A to Merger Agreement", "", "Exhibit B sets out the prices for each year.")), ["Exhibit B", "Exhibit B"]);
+    assert.deepEqual(found(agreement("Exhibit A to Merger Agreement", "", "Exhibit B prices the goods")), ["Exhibit B", "Exhibit B"]);
+  });
+
+  it("isTitleLine: a few capitalised words with no full stop, between blank lines", () => {
+    const at = (source: string, line: string, rest: string): boolean => {
+      const start = source.indexOf(line);
+      const end = source.indexOf("\n", start);
+      return isTitleLine(source, start, end, rest);
+    };
+    assert.equal(at("x\n\nExhibit A to Merger Agreement\n\ny", "Exhibit A", " to Merger Agreement"), true);
+    assert.equal(at("Exhibit A\n", "Exhibit A", ""), true);
+    assert.equal(at("x\r\n\r\nExhibit A to Merger Agreement\r\n\r\ny", "Exhibit A", " to Merger Agreement\r"), true);
+    assert.equal(at("x\nExhibit A to Merger Agreement\n\ny", "Exhibit A", " to Merger Agreement"), false);
+    assert.equal(at("x\n\nExhibit A to Merger Agreement\ny", "Exhibit A", " to Merger Agreement"), false);
+    assert.equal(at("x\n\nExhibit A to the Merger Agreement.\n\ny", "Exhibit A", " to the Merger Agreement."), false);
+    assert.equal(at("x\n\nExhibit A lists the prices\n\ny", "Exhibit A", " lists the prices"), false);
+    assert.equal(
+      at("x\n\nExhibit A to The Agreement Of Merger And Plan Of Reorganization\n\ny", "Exhibit A", " to The Agreement Of Merger And Plan Of Reorganization"),
+      false,
+    );
   });
 
   it("a number in a heading labels it, whatever follows it", () => {
