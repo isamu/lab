@@ -7,6 +7,7 @@ import { announcerWords, makesClaim } from "./heading-claim.ts";
 import { handsOver } from "./lead-in.ts";
 import { holdsLink, namesLocation } from "./location-pointer.ts";
 import { withoutQuotedVariants } from "./quoted-variant.ts";
+import { namesHeadingSubject } from "./subject-name-line.ts";
 import type { Detector, Finding, LengthUnit, ProseDocument, Section } from "../plugin.ts";
 
 /** 見出しが短すぎると、偶然の一致で 100% になる。これ未満の見出しは見ない。 */
@@ -105,6 +106,15 @@ const opensForm = (section: Section): boolean => {
   return newContentMorphemes(heading, formValueTokens(first.text, first.span.start, first.tokens)) > 0;
 };
 
+/** 最初の行が、見出しが扱うものの名前だけ（リンクや添付の札、見出しの名の一覧）。見出しを言い直す文ではない。 */
+const namesSubject = (doc: ProseDocument, section: Section): boolean => {
+  const first = section.firstSentence;
+  if (first?.tokens === undefined || section.headingTokens === undefined) return false;
+  const heading = titleTokens(section.heading, measuredHeading(section), section.headingTokens);
+  const announcing = announcerWords(doc.lexicons["heading-announcer"] ?? []).announcing;
+  return namesHeadingSubject(measuredHeading(section), heading, first.text, first.span.start, first.tokens, announcing);
+};
+
 /** 見出しとの重なりを測る文。用語集や表記の手引きは見出しの語の別の書き方を引用する（Not “datacentre”）ので、それは数えない。 */
 const echoedText = (section: Section): string => withoutQuotedVariants(section.firstSentence?.text ?? "", measuredHeading(section));
 
@@ -117,7 +127,8 @@ export const headingEcho: Detector = (doc, options): Finding[] => {
         !leadsIn(doc, section, leadIns) &&
         !pointsElsewhere(doc, section) &&
         !statesFigure(section.heading, section.firstSentence?.text ?? "") &&
-        !opensForm(section),
+        !opensForm(section) &&
+        !namesSubject(doc, section),
     )
     .map((section) => ({ section, overlap: Math.round(containment(trigrams(measuredHeading(section)), trigrams(echoedText(section))) * 100) }))
     .filter(({ overlap }) => overlap >= options.limit)
