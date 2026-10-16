@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { dateGroups, dateMinority, datesIn, opensLine, type WrittenDate } from "../packages/chaff/src/date-format.ts";
+import { dateGroups, dateMinority, datesIn, opensLine, stampedDate, type WrittenDate } from "../packages/chaff/src/date-format.ts";
 
 // 日付の書き方の揃い（date-format-consistency）。例文はすべて自作。
 
@@ -101,5 +101,42 @@ describe("opensLine and dateGroups", () => {
       [4, 1],
     );
     assert.deepEqual(dateGroups("", []), []);
+  });
+
+  it("a date right after a stamp label forms its own group", () => {
+    const labels = ["更新日", "Last updated"];
+    const text = "更新日：2026年10月13日更新\nLast updated: 2026-10-14\nOn 2026-10-20 e\nThe page was outdated 2026-10-21\n";
+    assert.deepEqual(
+      datesIn(text, WORDS).map((date) => stampedDate(text, date.offset, labels)),
+      [true, true, false, false],
+    );
+    assert.deepEqual(
+      dateGroups(text, datesIn(text, WORDS), labels).map((group) => group.map((date) => date.written)),
+      [
+        ["2026-10-20", "2026-10-21"],
+        ["2026年10月13日", "2026-10-14"],
+      ],
+    );
+    assert.equal(stampedDate(text, 0, []), false);
+    assert.equal(stampedDate(text, 0, [""]), false);
+  });
+});
+
+describe("date-format-consistency: ページの更新日の刻印", () => {
+  it("更新日の刻印の西暦は、本文の和暦と比べない", () => {
+    const page =
+      "ページID：0012345 更新日：2026年10月13日更新 印刷ページ表示\n\n申込みは令和8年11月1日から令和8年11月30日までです。掲載は令和9年4月1日からです。";
+    assert.deepEqual(mixed(page), []);
+    assert.deepEqual(
+      mixed("Last updated: 2026-10-13\n\nApplications open on 1 November 2026 and close on 30 November 2026. Adverts run from 1 April 2027.", en),
+      [],
+    );
+  });
+
+  it("本文の中の違う書き方の日付は、刻印があっても指す", () => {
+    const page = "更新日：2026年10月13日\n\n申込みは令和8年11月1日から令和8年11月30日までです。掲載は令和9年4月1日から、説明会は2026年10月20日です。";
+    assert.deepEqual(mixed(page), ["日付「2026年10月20日」の書き方が、この文書のほかの日付（「令和8年11月1日」など 3 箇所）と違います"]);
+    const english = "The page was outdated 2026-10-13.\n\nApplications open on 1 November 2026 and close on 30 November 2026. Adverts run from 1 April 2027.";
+    assert.deepEqual(mixed(english, en), ['The date "2026-10-13" is written differently from 3 other dates in the document (such as "1 November 2026")']);
   });
 });

@@ -1,4 +1,5 @@
 # Labels of a page's date stamp. A paragraph holding only one of these and a date is page metadata, not preamble.
+# date-format-consistency compares a date right after one (Last updated: 2 October 2026) apart from the body's dates.
 id: date-stamp-label
 language: en
 entries:

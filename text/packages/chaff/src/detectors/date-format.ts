@@ -22,7 +22,8 @@ export const dateFormat: Detector = (doc, options): Finding[] => {
     eras: (doc.lexicons["calendar-era"] ?? []).map((entry) => entry.pattern),
   };
   const text = doc.prose ?? doc.source;
-  return dateGroups(text, datesIn(text, words)).flatMap((group) => {
+  const stampLabels = (doc.lexicons["date-stamp-label"] ?? []).map((entry) => entry.pattern);
+  return dateGroups(text, datesIn(text, words), stampLabels).flatMap((group) => {
     const minority = dateMinority(group, options.limit);
     return minority === undefined ? [] : findingsOf(doc, minority);
   });

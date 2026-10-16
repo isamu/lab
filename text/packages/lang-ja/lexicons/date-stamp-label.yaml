@@ -1,4 +1,5 @@
 # 更新日・公開日の刻印のラベル。これと日付だけの段落は、ページの付帯情報として本題までの段落に数えない。
+# このすぐ後ろの日付（更新日：2026年10月13日）は、date-format-consistency が本文の日付と別に比べる。
 id: date-stamp-label
 language: ja
 entries:
