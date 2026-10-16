@@ -1,0 +1,13 @@
+# Negating words. modal-conflict reads them: a negation inside the act or its condition ("goods that do not conform")
+# is part of what a sentence decides, so two sentences that differ only by it decide different things.
+# Matched by the written form or the lemma, lower-cased. "n't" is the contracted not.
+id: negation-word
+language: en
+entries:
+  - pattern: not
+  - pattern: n't
+  - pattern: no
+  - pattern: never
+  - pattern: neither
+  - pattern: nor
+  - pattern: without

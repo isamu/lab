@@ -3,6 +3,7 @@ import { inDocumentOrder } from "../structure/issues.ts";
 import { modalConflicts, modalStatements, type Obligation } from "../structure/modal-conflict.ts";
 import { linesOf, lineNumberAt } from "../structure/lines.ts";
 import { quoteAt } from "./structure-tree.ts";
+import { negationsMarked, negationWords } from "../structure/negated-act.ts";
 
 export const obligationsOf = (tree: StructureNode): Obligation[] =>
   inDocumentOrder(tree).flatMap((node) =>
@@ -12,7 +13,8 @@ export const obligationsOf = (tree: StructureNode): Obligation[] =>
   );
 
 /** 同じ主語と行為に、前の文と逆の様相（しなければならない と してはならない、may と must not）を書いた文。 */
-export const modalConflict: Detector = (doc): Finding[] => {
+export const modalConflict: Detector = (written): Finding[] => {
+  const doc = { ...written, sentences: negationsMarked(written.sentences, negationWords(written.lexicons["negation-word"])) };
   if (doc.structure === undefined) return [];
   const lines = linesOf(doc.source);
   return modalConflicts(modalStatements(obligationsOf(doc.structure), doc.sentences)).map(({ statement, earlier }) => ({

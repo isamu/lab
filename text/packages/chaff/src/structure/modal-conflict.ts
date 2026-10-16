@@ -1,3 +1,4 @@
+import { isMarkedNegation, negatedWords } from "./negated-act.ts";
 import type { Sentence, Span, Token } from "../plugin.ts";
 
 // 同じ主語と行為に、逆の様相（しなければならない と してはならない、may と must not）を書いた二つの文。
@@ -24,13 +25,21 @@ const OPPOSITE: Readonly<Record<string, readonly string[]>> = {
 
 const overlaps = (token: Token, spans: readonly Span[]): boolean => spans.some((span) => token.span.start < span.end && span.start < token.span.end);
 
-/** 文の中身の語を、原形の小文字で、重ねずに並べたもの。様相の語の範囲にかかる語は外す。 */
+/**
+ * 文の中身の語を、原形の小文字で、重ねずに並べたもの。様相の語の範囲にかかる語は外す。
+ * 打ち消しの印の付いた機能語（negationsMarked）は、近くの中身の語に印を付ける（negatedWords）。様相の語の中の打ち消し（must not）は数えない。
+ */
 export const contentKey = (tokens: readonly Token[], markers: readonly Span[]): string =>
   [
     ...new Set(
-      tokens
-        .filter((token) => CONTENT.has(token.pos) && !overlaps(token, markers))
-        .map((token) => (token.lemma !== undefined && token.lemma !== "" ? token.lemma : token.surface).toLowerCase()),
+      negatedWords(
+        tokens
+          .filter((token) => (CONTENT.has(token.pos) || isMarkedNegation(token)) && !overlaps(token, markers))
+          .map((token) => ({
+            word: (token.lemma !== undefined && token.lemma !== "" ? token.lemma : token.surface).toLowerCase(),
+            negation: !CONTENT.has(token.pos),
+          })),
+      ),
     ),
   ]
     .toSorted((left, right) => left.localeCompare(right, "en"))
