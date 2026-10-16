@@ -1,6 +1,7 @@
 import { escapeRegExp } from "./orthography.ts";
 import { lowerBound } from "./detectors/token-column.ts";
 import type { DocumentNamer, Span } from "./plugin.ts";
+import { isTitleLine, type TitleNotion } from "./title-line.ts";
 
 /**
  * 本文で番号を指した図・表・付録（図3、Table 2、Appendix B）と、それを行の頭に書いた所（キャプション、見出し）。
@@ -79,35 +80,8 @@ const HEADING = /^[ \t]{0,3}#/u;
  */
 const CAPTION_AFTER = /^(?:[ \t]*$|[:：.．—–\-|()（）【】\]*_]|[ \t\u3000]+[^\p{Script=Hiragana}\p{Ll}])/u;
 
-/** A title runs at most this many words after its number (Exhibit A to Merger Agreement). */
-const TITLE_MAX_WORDS = 6;
-/** A word this long or shorter may stay in lower case in a title (to, of, the, and). */
-const TITLE_SMALL_WORD = 3;
-const SENTENCE_END = /[.!?。．？！]$/u;
-const BLANK_LINE = /\n[ \t\r]*\n[ \t\r]*$/u;
-const ENDS_LINE = /^[ \t\r]*\n/u;
-const LOWER_START = /^\p{Ll}/u;
-
-/**
- * The words after the number make a title on a line of its own, as a plain-text heading (Exhibit A to Merger Agreement):
- * a blank line or the document's edge on both sides, a few words with every long one capitalised, and no full stop.
- * A sentence (Figure 3 shows the trend.) has a full stop or a lower-case word.
- */
-export const isTitleLine = (source: string, lineStart: number, lineEnd: number, rest: string): boolean => {
-  const words = rest
-    .trim()
-    .split(/\s+/u)
-    .filter((word) => word !== "");
-  const before = source.slice(0, lineStart);
-  const after = lineEnd === -1 ? "" : source.slice(lineEnd + 1);
-  return (
-    words.length <= TITLE_MAX_WORDS &&
-    !SENTENCE_END.test(rest.trim()) &&
-    words.every((word) => word.length <= TITLE_SMALL_WORD || !LOWER_START.test(word)) &&
-    (before.trim() === "" || BLANK_LINE.test(`\n${before}`)) &&
-    (after.trim() === "" || ENDS_LINE.test(after))
-  );
-};
+/** A caption's title (Exhibit A to Merger Agreement): every long word capitalised, since Figure 3 shows the trend is a sentence. */
+export const CAPTION_TITLE: TitleNotion = { sentenceEnd: /[.!?。．？！]$/u, capitalised: true, edge: "any-whitespace" };
 
 /**
  * 行の頭に書いた番号。前にあるのが飾り（#、**、![、|、【、箇条書きの印）だけで、見出しの中か、後ろが題の区切りならキャプション。
@@ -119,7 +93,7 @@ const isLabelled = (source: string, mention: Mention): boolean => {
   const before = source.slice(lineStart, mention.start);
   if (LETTER.test(outsideMarkup(before))) return false;
   const rest = source.slice(mention.end, lineEnd === -1 ? source.length : lineEnd);
-  return HEADING.test(before) || CAPTION_AFTER.test(rest) || isTitleLine(source, lineStart, lineEnd, rest);
+  return HEADING.test(before) || CAPTION_AFTER.test(rest) || isTitleLine(source, lineStart, lineEnd, rest, CAPTION_TITLE);
 };
 
 const LATIN_WORD = /^[A-Za-z]/u;
