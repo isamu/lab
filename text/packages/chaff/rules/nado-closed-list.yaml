@@ -49,8 +49,8 @@ example:
       Collection covers furniture, bedding and bicycles only.
 
 not_flagged:
-  ja: 「等」「など」「等々」のすぐ後ろ（読点や閉じ括弧を挟んでもよい）に「に限り」「に限る」「に限定」「のみ」「だけ」が来た所だけを見ます。「に限らず」「のみならず」「だけでなく」のように限らない言い方、「同等」「平等」のように「等」が語の一部のもの、「1等」のような等級は指しません。
-  en: 'Only "etc.", "and so on" and "and the like" right before "only", or at the end of a comma-separated list that "only", "limited to", "restricted to", "solely" or "exclusively" governs. A list with a verb between the limit and the open word ("Only members may use the gym, the pool, etc.": only governs members) is not reported, nor is "not only", "not limited to" or "including but not limited to".'
+  ja: 「等」「など」「等々」のすぐ後ろ（読点や閉じ括弧を挟んでもよい）に「に限り」「に限る」「に限定」「のみ」「だけ」が来た所だけを見ます。「に限らず」「のみならず」「だけでなく」のように限らない言い方、「同等」「平等」のように「等」が語の一部のもの、「1等」のような等級は指しません。括弧の中の例の一覧で、限る語が括弧の前の語に係るもの（従業員（エンジニア、デザイナー等）のみ）と、同じ文で先に書いた一覧を指し直すもの（個別の指示等が……当該指示等に限り）も指しません。
+  en: 'Only "etc.", "and so on" and "and the like" right before "only", or at the end of a comma-separated list that "only", "limited to", "restricted to", "solely" or "exclusively" governs. A list with a verb between the limit and the open word ("Only members may use the gym, the pool, etc.": only governs members) is not reported, nor is "not only", "not limited to" or "including but not limited to". Nor is a list of examples in brackets after a word, when the limit stands after the bracket and governs that word ("staff (engineers, designers, etc.) only"). In Japanese, 等 that repeats a list the same sentence named before (指示等が … 当該指示等に限り) is not reported either.'
 rewrite:
   depth: light
   ja:

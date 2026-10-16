@@ -22,6 +22,10 @@ entries:
   - { pattern: に限定されない, group: not-limit }
   - { pattern: に限定せず, group: not-limit }
   - { pattern: に限定しない, group: not-limit }
+  - { pattern: に限ることなく, group: not-limit }
+  - { pattern: に限られることなく, group: not-limit }
+  - { pattern: に限定することなく, group: not-limit }
+  - { pattern: に限定されることなく, group: not-limit }
   - { pattern: のみならず, group: not-limit }
   - { pattern: のみでなく, group: not-limit }
   - { pattern: のみではなく, group: not-limit }
