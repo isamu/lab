@@ -39,11 +39,38 @@ const wordMarks = (text: string, mark: string): NoteMark[] =>
     note: NOTE_LINE_HEAD.test(lineHeadOf(text, match.index)),
   }));
 
+const QUOTE_LINE = /^[ \t]{0,3}>/u;
+const QUOTE_MARKS = /^(?:[ \t]{0,3}>)+/u;
+/** 引用の段落を終わらせる行（見出し、コード、箇条書き、脚注の定義）。これ以外の空でない行は、引用の段落の続き（CommonMark の lazy continuation）。 */
+const BLOCK_START = /^[ \t]{0,3}(?:[#`~]|[-*+][ \t]|\d{1,9}[.)][ \t]|\[\^)/u;
+const CODE_SPAN = /(`+)[\s\S]*?\1/gu;
+
+const quotedLines = (source: string): string[] =>
+  source.split("\n").reduce<{ lines: string[]; open: boolean }>(
+    (state, line) => {
+      const open = QUOTE_LINE.test(line) || (state.open && line.trim() !== "" && !BLOCK_START.test(line));
+      return { lines: open ? [...state.lines, line.replace(QUOTE_MARKS, "")] : state.lines, open };
+    },
+    { lines: [], open: false },
+  ).lines;
+
+/**
+ * 引用（`>`）の中の Markdown の脚注の印の番号。引用は本文から覆われるが、引用の中の印も注を指している。
+ * 引用の中の印に注が無くても言わない（引用元の注かもしれない）。注が指されているかだけに使う。
+ */
+export const quotedFootnoteKeys = (source: string): ReadonlySet<string> =>
+  new Set(
+    markdownMarks(quotedLines(source).join("\n").replace(CODE_SPAN, ""))
+      .filter((mark) => !mark.note)
+      .map((mark) => mark.key),
+  );
+
 /** 一つの種類の印のうち、合わないもの。印の語（※）は、その種類の注が一つも無ければ注を別に置いた文書と読んで言わない。 */
-const slipsOfKind = (marks: readonly NoteMark[], kind: string): NoteSlip[] => {
+const slipsOfKind = (marks: readonly NoteMark[], kind: string, quotedKeys: ReadonlySet<string>): NoteSlip[] => {
   const ofKind = marks.filter((mark) => mark.kind === kind);
   const notes = new Set(ofKind.filter((mark) => mark.note).map((mark) => mark.key));
-  const referenced = new Set(ofKind.filter((mark) => !mark.note).map((mark) => mark.key));
+  const quoted = kind === MARKDOWN ? [...quotedKeys] : [];
+  const referenced = new Set([...ofKind.filter((mark) => !mark.note).map((mark) => mark.key), ...quoted]);
   if (notes.size === 0 && kind !== MARKDOWN) return [];
   const missing = ofKind
     .filter((mark) => !mark.note && !notes.has(mark.key))
@@ -55,15 +82,17 @@ const slipsOfKind = (marks: readonly NoteMark[], kind: string): NoteSlip[] => {
 };
 
 /** 文字列の中の、注の無い印と印の無い注。 */
-export const noteSlips = (text: string, words: readonly string[]): NoteSlip[] => {
+export const noteSlips = (text: string, words: readonly string[], quotedKeys: ReadonlySet<string> = new Set()): NoteSlip[] => {
   const marks = [...markdownMarks(text), ...words.flatMap((word) => wordMarks(text, word))];
-  return [...new Set(marks.map((mark) => mark.kind))].flatMap((kind) => slipsOfKind(marks, kind)).toSorted((left, right) => left.offset - right.offset);
+  return [...new Set(marks.map((mark) => mark.kind))]
+    .flatMap((kind) => slipsOfKind(marks, kind, quotedKeys))
+    .toSorted((left, right) => left.offset - right.offset);
 };
 
 export const footnoteMismatch: Detector = (doc): Finding[] => {
   const text = doc.prose ?? doc.source;
   const words = (doc.lexicons["note-mark"] ?? []).map((entry) => entry.pattern);
-  return noteSlips(text, words).map((slip) => ({
+  return noteSlips(text, words, quotedFootnoteKeys(doc.source)).map((slip) => ({
     rule: "",
     severity: "warning",
     line: 0,
