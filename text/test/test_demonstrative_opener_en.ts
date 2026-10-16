@@ -40,6 +40,14 @@ describe("demonstrative-opener-run: English", () => {
     assert.deepEqual(findingsOf("It is obvious that costs rose. It is reasonable to wait. It is helpful to retry.\n"), []);
   });
 
+  it("does not count an opening that names the document as guidance, a handbook or a manual, and still counts one that points back", () => {
+    assert.deepEqual(findingsOf("This guidance sets the steps. It covers every team. It lists the forms.\n"), []);
+    assert.deepEqual(findingsOf("This handbook is for new staff. It explains the tools. It ends with a checklist.\n"), []);
+    assert.deepEqual(findingsOf("The board issued new guidance. This changed the steps. It covers every team. It lists the forms.\n"), [
+      '3 sentences in a row open with a word that points back, such as "This" (limit 2)',
+    ]);
+  });
+
   it("does not count a that which opens a clause", () => {
     assert.deepEqual(findingsOf("That the plan failed is clear. It was costly. This should not recur.\n"), []);
   });
