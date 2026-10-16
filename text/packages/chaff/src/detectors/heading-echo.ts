@@ -1,6 +1,7 @@
 import { lengthOf, proseText } from "../measure.ts";
 import { newContentMorphemes } from "./content-morphemes.ts";
 import { echoedHeadingUnits, trigrams } from "./heading-overlap.ts";
+import { withoutFieldLabel } from "./field-label.ts";
 import { formValueTokens, isFormBlock } from "./form-line.ts";
 import { titleTokens } from "../heading-label.ts";
 import { announcerWords, makesClaim } from "./heading-claim.ts";
@@ -115,8 +116,11 @@ const namesSubject = (doc: ProseDocument, section: Section): boolean => {
   return namesHeadingSubject(measuredHeading(section), heading, first.text, first.span.start, first.tokens, announcing);
 };
 
-/** 見出しとの重なりを測る文。用語集や表記の手引きは見出しの語の別の書き方を引用する（Not “datacentre”）ので、それは数えない。 */
-const echoedText = (section: Section): string => withoutQuotedVariants(section.firstSentence?.text ?? "", measuredHeading(section));
+/**
+ * 見出しとの重なりを測る文。用語集や表記の手引きは見出しの語の別の書き方を引用する（Not “datacentre”）ので、それは数えない。
+ * 行頭の項目名（Current project status: Ongoing）も数えない。報告の書式が見出しの語で項目を立てるのは書式で、書き手が言ったのは値。
+ */
+const echoedText = (section: Section): string => withoutQuotedVariants(withoutFieldLabel(section.firstSentence?.text ?? ""), measuredHeading(section));
 
 export const headingEcho: Detector = (doc, options): Finding[] => {
   const leadIns = (doc.lexicons["lead-in"] ?? []).map((entry) => entry.pattern);
