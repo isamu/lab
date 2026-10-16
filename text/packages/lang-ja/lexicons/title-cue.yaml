@@ -1,0 +1,5 @@
+# 引用符なしで書いた題名を導く語。英語の oxford-comma-consistency だけが使う（日本語の題名は「」や『』で囲む）ので、
+# 語は無い。二つの言語が同じ表を持つように置く。
+id: title-cue
+language: ja
+entries: []

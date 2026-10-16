@@ -71,13 +71,24 @@ const VENUE_END = /^\s*(?:[,;.]|$)/u;
  */
 const holdsPhrase = (runs: Runs, start: number, end: number): boolean => firstIn(runs.phrasePair, { start: start + 1, end: end + 1 }) !== -1;
 
+const LETTER = /\p{L}/u;
+
+/** 語の続きのすぐ前が、題名を導く語（whose full title is、entitled）で終わるか。語の途中（retitled）からは読まない。 */
+const afterTitleCue = (source: string, first: Token, titleCues: readonly string[]): boolean => {
+  const before = source.slice(source.lastIndexOf("\n", first.span.start - 1) + 1, first.span.start);
+  if (before === before.trimEnd()) return false;
+  const lead = before.trimEnd().toLowerCase();
+  return titleCues.some((cue) => cue !== "" && lead.endsWith(cue.toLowerCase()) && !LETTER.test(lead.charAt(lead.length - cue.length - 1)));
+};
+
 /**
  * 文の and / or が、引用した題名の中にあるか。and / or の両隣が Title Case の語の続きで、2 語以上の句を含み、その続きが
- * 引用符か強調の印で囲まれているか、引用符で閉じた論文名のすぐ後ろにあって読点か文の終わりが続く（誌名）とき。
+ * 引用符か強調の印で囲まれているか、引用符で閉じた論文名のすぐ後ろにあって読点か文の終わりが続く（誌名）か、題名を導く語
+ * （titleCues: whose full title is、entitled）のすぐ後ろにあるとき。
  * 本文の固有名詞の並び（Login.gov, TTS Engineering and USAi）や著者の並びは囲まれていないので、題名と読まない。
  * 文を一度だけ読み、どの位置の問いにも続きを読み直さずに答える。
  */
-export const citedTitles = (tokens: readonly Token[], source: string): ((at: number) => boolean) => {
+export const citedTitles = (tokens: readonly Token[], source: string, titleCues: readonly string[] = []): ((at: number) => boolean) => {
   const runs = runsOf(tokens, source);
   return (at) => {
     const start = leftStart(runs, at);
@@ -88,7 +99,8 @@ export const citedTitles = (tokens: readonly Token[], source: string): ((at: num
     if (!holdsPhrase(runs, start, end)) return false;
     const before = source.slice(Math.max(0, first.span.start - MARK_REACH), first.span.start);
     const after = source.slice(last.span.end, last.span.end + MARK_REACH);
-    return (OPENING.test(before) && CLOSING.test(after)) || (AFTER_QUOTED_TITLE.test(before) && VENUE_END.test(after));
+    const quoted = (OPENING.test(before) && CLOSING.test(after)) || (AFTER_QUOTED_TITLE.test(before) && VENUE_END.test(after));
+    return quoted || afterTitleCue(source, first, titleCues);
   };
 };
 

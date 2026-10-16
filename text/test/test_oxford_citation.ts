@@ -48,6 +48,12 @@ const NOT_JUDGED: readonly Case[] = [
   ],
   ["* で強調した誌名", WITH_COMMA, "See *Journal of Money, Credit and Banking* for the full paper."],
   ["_ で強調した誌名", WITH_COMMA, "See _Journal of Money, Credit and Banking_ for the full paper."],
+  [
+    "題名を導く語のあとの、引用符の無い題名",
+    WITHOUT_COMMA,
+    "The report, whose full title is Keeping Passwords and Keys Safe from Loss, Theft, and Misuse (Guide 12), came out today.",
+  ],
+  ["entitled のあとの、引用符の無い題名", WITHOUT_COMMA, "She wrote a book entitled Ships, Trains, and Planes of the North last year."],
 ];
 
 const JUDGED: readonly Case[] = [
@@ -78,6 +84,8 @@ const JUDGED: readonly Case[] = [
     'See Sahm (2019), "Direct Stimulus Payments," in Heather Boushey, Ryan Nunn and Jay Shambaugh, eds., Recession Ready.',
   ],
   ["強調が並びの一部だけを囲む", WITH_COMMA, "We visited *Paris*, Rome and Madrid."],
+  ["題名を導く語の無い Title Case の並び", WITHOUT_COMMA, "Our team covers Ships, Trains, and Planes of the North every year."],
+  ["語の途中の titled（retitled）は題名を導かない", WITHOUT_COMMA, "The page was retitled Ships, Trains, and Planes of the North last year."],
   ["ピリオドのあとの閉じる引用符に続く固有名詞の並びは誌名と読まない", WITH_COMMA, "He said “we are done.” Paris, Rome and Madrid agreed."],
 ];
 

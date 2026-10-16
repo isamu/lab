@@ -275,6 +275,7 @@ export const oxfordComma: Detector = (doc, options): Finding[] => {
     example: doc.lexicons["example-marker"] ?? [],
     pair: patternsOf(doc.lexicons["pair-opener"]),
     region: doc.lexicons["place-region"] ?? [],
+    titleCue: (doc.lexicons["title-cue"] ?? []).map((entry) => entry.pattern),
   };
   const judged = doc.sentences.flatMap((sentence) => {
     const oxford = oxfordIn(sentence.tokens ?? [], words, doc.source);

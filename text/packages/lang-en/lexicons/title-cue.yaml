@@ -1,0 +1,9 @@
+# Words that introduce a cited title written without quotes ("whose full title is Protecting Tokens and Assertions from
+# Forgery, Theft, and Misuse"). The run of Title Case words right after one is the title, and its commas are the title
+# author's, so oxford-comma-consistency does not count them as the writer's choice.
+id: title-cue
+language: en
+entries:
+  - pattern: title is
+  - pattern: titled
+  - pattern: entitled
