@@ -2,6 +2,7 @@ id: number-without-unit
 layer: L1
 status: stable
 how_to_find: number-without-unit
+extra_word_lists: [figure-scale-word, figure-scale-joiner, range-connector, enumeration-joiner, currency-notation]
 severity: warning
 
 name:
@@ -9,12 +10,17 @@ name:
   en: Number without its unit
 
 why:
-  ja: 表の同じ列や、同じ見出しの語（「予算：」）のほかの値には単位があるのに、一つだけ数しか書いていない所です。円なのか千円なのか、分なのか時間なのかを、読み手が推し量ることになります。
-  en: Every other value in the same table column, or under the same label ("Budget:"), carries a unit, and this one is a bare number. The reader has to guess whether it is dollars or thousands, minutes or hours.
+  ja: 表の同じ列や、同じ見出しの語（「予算：」）のほかの値には単位があるのに、一つだけ数しか書いていない所です。円なのか千円なのか、分なのか時間なのかを、読み手が推し量ることになります。本文でも、「83,494百万円」のように桁の語（百万、千、億）に単位を付けて何度も書く文書で、一つだけ「83,494百万」と単位を落とした数を指します。
+  en: Every other value in the same table column, or under the same label ("Budget:"), carries a unit, and this one is a bare number. The reader has to guess whether it is dollars or thousands, minutes or hours. In prose too, when a document writes a word of scale (million, thousand, billion) with a unit many times ("$83 million"), the one number written with that word and no unit ("83 million") is pointed out.
 
 message:
   ja: 「{value}」に単位がありません（「{name}」のほかの値には「{unit}」が付いています）
   en: '"{value}" has no unit (the other "{name}" values carry "{unit}")'
+
+messages:
+  scale:
+    ja: 「{value}」に単位がありません（この文書は「{name}」の付いたほかの数に「{unit}」を付けています）
+    en: '"{value}" has no unit (the document gives its other "{name}" figures "{unit}")'
 
 how_to_fix:
   ja: 単位を書いてください。列のすべての値が同じ単位なら、見出しに書いて（「金額（円）」）値から外す書き方もあります。
@@ -65,8 +71,8 @@ example:
       | Taxi | $100 |
 
 not_flagged:
-  ja: ほかの値に二つ以上、同じ一つの単位が付いているときだけ指します。単位の無い値のほうが多い列、単位が混ざる列（分と時間）、数でない値（未定）は見ません。表の見出しの単位（「金額（円）」）は読みません。数量の列で、ほかの値が借りる期間（4日、2泊）のとき、単位の無い整数（チャイルドシート 1）は個数なので指しません。
-  en: Reported only when at least two other values carry one and the same unit. A column where bare numbers are the majority, one that mixes units (minutes and hours), and values that are not numbers (TBD) are not checked. A unit written in the header ("Amount ($)") is not read. In a Quantity column whose other values are a hired period (4 days, 2 nights), a bare whole number (Child seat | 1) is a count of pieces and is not reported.
+  ja: ほかの値に二つ以上、同じ一つの単位が付いているときだけ指します。単位の無い値のほうが多い列、単位が混ざる列（分と時間）、数でない値（未定）は見ません。表の見出しの単位（「金額（円）」）は読みません。数量の列で、ほかの値が借りる期間（4日、2泊）のとき、単位の無い整数（チャイルドシート 1）は個数なので指しません。本文の桁の語は、同じ桁の語に同じ一つの単位を5回以上付けていて、単位の無い数がほかに一つも無いときだけ指します。「（単位：百万円）」と書いて本文でも「百万」だけで書く文書、百万円と百万株のように単位が二つある文書、「100百万〜200百万円」のように後ろの数の単位を前の数にも使う書き方は言いません。万は単位を付けずに書くことが多いので見ません。
+  en: Reported only when at least two other values carry one and the same unit. A column where bare numbers are the majority, one that mixes units (minutes and hours), and values that are not numbers (TBD) are not checked. A unit written in the header ("Amount ($)") is not read. In a Quantity column whose other values are a hired period (4 days, 2 nights), a bare whole number (Child seat | 1) is a count of pieces and is not reported. In prose, a word of scale is checked only when the document gives it one and the same unit at least five times and has no other bare number with it. A document that states "(in millions of dollars)" and writes "million" alone throughout, one with two units for the word ("$5 million" and "5 million shares"), and one unit serving two numbers ("from $1.1 million to 1.3 million") are not reported.
 rewrite:
   depth: light
   ja:

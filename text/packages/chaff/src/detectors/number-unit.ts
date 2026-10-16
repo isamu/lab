@@ -6,6 +6,8 @@ import { readMarkdown } from "../markdown-read.ts";
 import { spanOf, type MarkdownNode } from "../markdown-node.ts";
 import { eachPreOrder } from "../tree-walk.ts";
 import { quoteAt } from "./structure-tree.ts";
+import { formsOf } from "./currency-notation.ts";
+import { scaledFiguresIn, scaleGaps, type ScaleWords } from "./scaled-figure-unit.ts";
 
 /** One value of a kind: where its number starts, as written, and its unit ("" when bare). */
 export type Measured = { readonly kind: string; readonly name: string; readonly offset: number; readonly written: string; readonly unit: string };
@@ -157,7 +159,30 @@ const pieceCountOf = (doc: ProseDocument): PieceCount => {
   return { columns: patterns("column"), periods: patterns("period") };
 };
 
-export const numberWithoutUnit: Detector = (doc: ProseDocument): Finding[] => {
+const patternsOf = (doc: ProseDocument, name: string): string[] => (doc.lexicons[name] ?? []).map((entry) => entry.pattern);
+
+const scaleWordsOf = (doc: ProseDocument): ScaleWords => ({
+  scales: patternsOf(doc, "figure-scale-word"),
+  forms: formsOf(doc),
+  joiners: ["figure-scale-joiner", "range-connector", "enumeration-joiner"].flatMap((name) => patternsOf(doc, name)),
+});
+
+/** The one number in prose with a word of scale and no unit, where that word otherwise always carries one (83,494百万). */
+const scaleFindings = (doc: ProseDocument): Finding[] => {
+  const prose = doc.prose ?? doc.source;
+  const words = scaleWordsOf(doc);
+  return scaleGaps(prose, scaledFiguresIn(prose, words), words.joiners).map(({ figure, unit }) => ({
+    rule: "number-without-unit",
+    severity: "warning",
+    line: 0,
+    column: 0,
+    variant: "scale",
+    quote: quoteAt(doc.source, figure.offset),
+    values: { value: figure.written, name: figure.scale, unit, offset: figure.offset },
+  }));
+};
+
+const columnFindings = (doc: ProseDocument): Finding[] => {
   const count = pieceCountOf(doc);
   return unitGaps(measuredValues(doc.source, doc.prose ?? doc.source, unitsOf(doc)))
     .filter((gap) => !isPieceCount(gap, count))
@@ -170,3 +195,5 @@ export const numberWithoutUnit: Detector = (doc: ProseDocument): Finding[] => {
       values: { value: gap.value.written, name: gap.value.name, unit: gap.unit, offset: gap.value.offset },
     }));
 };
+
+export const numberWithoutUnit: Detector = (doc: ProseDocument): Finding[] => [...columnFindings(doc), ...scaleFindings(doc)];

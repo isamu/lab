@@ -1,0 +1,6 @@
+# Words between two numbers with a word of scale that let one unit serve both ("from $1.1 million to 1.3 million"),
+# beyond range-connector and enumeration-joiner. number-without-unit does not read a number joined so as missing its unit.
+id: figure-scale-joiner
+language: en
+entries:
+  - pattern: to
