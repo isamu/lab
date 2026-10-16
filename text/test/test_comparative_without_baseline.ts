@@ -27,6 +27,20 @@ describe("comparative-without-baseline: 比べる相手の無い比較", () => {
     assert.deepEqual(findingsOf("The cache was rebuilt. Lookups are now much more efficient."), ['"more efficient" does not say what it is compared with']);
   });
 
+  it("相手が同じ文の前の節にある比較は言わない（even better、whereas、一方）", () => {
+    assert.deepEqual(findingsOf("The index rose two percent; smaller firms performed even better."), []);
+    assert.deepEqual(findingsOf("Loan prices for software firms fell sharply, whereas prices in other sectors were more stable."), []);
+    assert.deepEqual(findingsOf("The cache was rebuilt. Lookups are still faster."), []);
+    assert.deepEqual(findingsOf("検索の処理は遅くなった一方、集計の処理はさらに高速になりました。", ja), []);
+  });
+
+  it("相手を言わない比較は、even や whereas が離れた所にあっても言う", () => {
+    assert.deepEqual(findingsOf("We even rewrote the parser. The new engine is faster."), ['"faster" does not say what it is compared with']);
+    assert.deepEqual(findingsOf("検索の処理は遅くなりました。集計の処理はさらに高速になりました。", ja), [
+      "「さらに高速」は、何と比べているかが書かれていません",
+    ]);
+  });
+
   it("副詞を挟んだ more も言い、一字の相手の語は語の頭だけで読む", () => {
     assert.deepEqual(findingsOf("We rewrote the stage. The pipeline is more computationally efficient."), [
       '"more computationally efficient" does not say what it is compared with',
