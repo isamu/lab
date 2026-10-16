@@ -19,7 +19,6 @@ github-general-privacy-statement  1
 gitlab-meetings  2
 gitlab-values  23
 govuk-cddo-roadmap-2022-2025  1
-ietf-draft-httpapi-ratelimit-headers-10  1
 irs-online-account-faq  1
 jma-faq-typhoon  1
 jstage-jniph-74-1-2-rehabilitation  2
