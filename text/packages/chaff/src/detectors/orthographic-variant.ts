@@ -2,6 +2,7 @@ import type { Detector, Finding, ProseDocument, Sentence, TableCell, Token } fro
 import { groupBy, oddSpellings, type KeyedWord, type OddSpelling } from "../spelling-variants.ts";
 import { dropsOkurigana, kanjiKeyAmong, katakanaKey, lemmaReading } from "../kana-spelling.ts";
 import { isKatakanaWord, stemOf } from "../long-vowel.ts";
+import { withNounsAfterParticles } from "../nominal-stem.ts";
 import { QUOTATION_MARKS, isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
 import { furiganaSpans } from "../furigana.ts";
@@ -12,7 +13,7 @@ import { isInCapitalsPassage } from "../capitals-passage.ts";
 import { withoutCoinedNames } from "../coined-hyphen-name.ts";
 import { wholeWordRuns, type WholeWordRun } from "../whole-word-runs.ts";
 import { entriesForGenre } from "../lexicon-genres.ts";
-import { asNounWhereNominal, documentNounKeys, withNounsAfterParticles } from "../nominal-stem.ts";
+import { asNounWhereNominal, documentNounKeys } from "../nominal-stem.ts";
 
 /**
  * A word found in the document: where it is, which sentence it is in, its key and spelling, how it is written when that differs, and
