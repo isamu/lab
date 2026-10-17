@@ -1,6 +1,6 @@
 import { proseText } from "../measure.ts";
 import { dateSpans, wordsOf } from "./structure.ts";
-import { compacted, placeAt, type Compacted } from "./gram-place.ts";
+import { compacted, linkedIn, placeAt } from "./gram-place.ts";
 import { charWindows, wordWindows } from "./gram-windows.ts";
 import { furnitureMask, isFurniture } from "./gram-furniture.ts";
 import { lexiconNotationOf, type NotAcronymSpans } from "./acronym-context.ts";
@@ -16,6 +16,7 @@ import { knownByDocument } from "./acronym-known.ts";
 import { outlineLabelSpans } from "./outline-label.ts";
 import { hasPredicateIn } from "./gram-predicate.ts";
 import { gramPassagesOf } from "./gram-passages.ts";
+import { sectionOpeners } from "./gram-openers.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
 import { referenceListSpans } from "../reference-lists.ts";
 import type { Detector, Finding, ProseDocument, Section, Sentence } from "../plugin.ts";
@@ -98,15 +99,6 @@ type FirstSeen = { readonly gram: string; readonly sentence: Sentence; readonly 
 
 type Tally = { readonly counts: Map<string, number>; readonly first: Map<string, FirstSeen> };
 
-/** 詰めた文の index 番目の文字が、リンクの文字か。 */
-const linkedIn = (doc: ProseDocument, sentence: Sentence, source: Compacted): ((index: number) => boolean) => {
-  const links = doc.links.filter((link) => link.start < sentence.span.end && sentence.span.start < link.end);
-  return (index) => {
-    const at = sentence.span.start + (source.offsets[index] ?? -1);
-    return links.some((link) => link.start <= at && at < link.end);
-  };
-};
-
 /** 英語は大文字と小文字を区別せずに数える。文頭の "Proposals submitted via" も文中の "proposals submitted via" も同じ言い回し。 */
 const keyOf = (gram: string, unit: ProseDocument["lengthUnit"]): string => (unit === "word" ? gram.toLowerCase() : gram);
 
@@ -141,12 +133,16 @@ const gramsOf = (doc: ProseDocument, sentences: readonly Sentence[]): Tally => {
 
 type Repeat = { readonly key: string; readonly count: number; readonly at: FirstSeen | undefined };
 
-/** 範囲（gram-passages.ts）ごとに数える。よくある質問の別々の答えは別の範囲。 */
-const repeatsOf = (doc: ProseDocument, limit: number): Repeat[] =>
+/** 範囲（gram-passages.ts）ごとに数える。よくある質問の別々の答えは別の範囲。節の最初の文にだけ出るものは節のひな形（gram-openers.ts）。 */
+const repeatsOf = (doc: ProseDocument, limit: number, openers = sectionOpeners(doc.sections, doc.source)): Repeat[] =>
   gramPassagesOf(doc.sections).flatMap((sentences) => {
     const tally = gramsOf(doc, sentences);
+    const opening = gramsOf(
+      doc,
+      sentences.filter((sentence) => openers.has(sentence)),
+    ).counts;
     return [...tally.counts.entries()]
-      .filter(([key, count]) => count > limit && isPhrasing(key, doc.lengthUnit))
+      .filter(([key, count]) => count > limit && isPhrasing(key, doc.lengthUnit) && (opening.get(key) ?? 0) < count)
       .map(([key, count]) => ({ key, count, at: tally.first.get(key) }));
   });
 
