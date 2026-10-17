@@ -64,13 +64,19 @@ const IMAGE_MARK = "!";
 
 /** 印の前の逃がし（\）を数えるのに見る字数。 */
 const ESCAPE_REACH = 16;
-const TRAILING_BACKSLASHES = /\\*$/u;
+const BACKSLASH = "\\";
+
+/** 字の並びの終わりに続く \ の数。 */
+const trailingBackslashes = (text: string): number => {
+  const reversed = [...text].reverse();
+  const other = reversed.findIndex((char) => char !== BACKSLASH);
+  return other === -1 ? reversed.length : other;
+};
 
 /** start の括弧の直前に、逃がしていない ! がある（「\![x][]」は画像ではなくリンク）。 */
 const imageAt = (source: string, start: number): boolean => {
   if (source.charAt(start - 1) !== IMAGE_MARK) return false;
-  const before = source.slice(Math.max(0, start - 1 - ESCAPE_REACH), start - 1);
-  return (TRAILING_BACKSLASHES.exec(before)?.[0].length ?? 0) % 2 === 0;
+  return trailingBackslashes(source.slice(Math.max(0, start - 1 - ESCAPE_REACH), start - 1)) % 2 === 0;
 };
 
 /**
