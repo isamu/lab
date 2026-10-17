@@ -1,0 +1,11 @@
+# 言い回しを使うのではなく、言葉として名指す語（「徹底解説」という言い方、「今さら聞けない」という表現）。
+# group after は言い回しのすぐ後ろ（かぎ括弧を挟んでよい）、group before はすぐ前。
+id: mention-cue
+language: ja
+entries:
+  - { pattern: という言い方, group: after }
+  - { pattern: という言葉, group: after }
+  - { pattern: という表現, group: after }
+  - { pattern: という言い回し, group: after }
+  - { pattern: といった言い方, group: after }
+  - { pattern: といった表現, group: after }
