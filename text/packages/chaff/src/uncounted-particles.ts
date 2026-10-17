@@ -28,9 +28,29 @@ const numberedCounterAt = (tokens: readonly Token[], at: number, words: Uncounte
   return token !== undefined && words.counters.includes(token.surface) && numeralAt(tokens, at - 1, words);
 };
 
+const NOMINAL = new Set(["NOUN", "PROPN"]);
+const LETTER = /\p{L}/u;
+
+/** Where the run of number tokens that starts at `at` ends (三十 may be two tokens). */
+const numeralRunEnd = (tokens: readonly Token[], at: number, words: UncountedWords): number => {
+  const end = tokens.findIndex((token, index) => index >= at && !isNumeral(token.surface, words.numeralChars));
+  return end === -1 ? tokens.length : end;
+};
+
+/**
+ * A word after the number makes it a quantity (資料２－１の４ページ: page 4 of it), not a branch number. A word that opens
+ * the next number (第 of 第70条の２第１項) is not one.
+ */
+const isWordAt = (tokens: readonly Token[], at: number, words: UncountedWords): boolean => {
+  const token = tokens[at];
+  return token !== undefined && NOMINAL.has(token.pos) && LETTER.test(token.surface) && !numeralAt(tokens, at + 1, words);
+};
+
 /** 第70条の２, 70の２－８の２, 第２の２: the particle joins a branch number to the number before it, so it is part of the number. */
 const isNumberingConnector = (tokens: readonly Token[], at: number, words: UncountedWords): boolean =>
-  numeralAt(tokens, at + 1, words) && (numeralAt(tokens, at - 1, words) || numberedCounterAt(tokens, at - 1, words));
+  numeralAt(tokens, at + 1, words) &&
+  !isWordAt(tokens, numeralRunEnd(tokens, at + 1, words), words) &&
+  (numeralAt(tokens, at - 1, words) || numberedCounterAt(tokens, at - 1, words));
 
 /** The second の of のための: the compound particle is one link, written with two of the particle. */
 const isCompoundTail = (tokens: readonly Token[], at: number, words: UncountedWords): boolean => {

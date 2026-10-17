@@ -31,6 +31,7 @@ describe("uncountedParticles", () => {
     assert.deepEqual(uncountedAt(["70", "の", "２", "－", "８", "の", "２"]), [1, 5]);
     assert.deepEqual(uncountedAt(["第", "三", "条", "の", "二"]), [3]);
     assert.deepEqual(uncountedAt(["第", "２", "の", "２", "の", "改正"]), [2]);
+    assert.deepEqual(uncountedAt(["第", "十", "二", "条", "の", "三", "十", "第", "一", "項"]), [4]);
   });
 
   it("valid: the second の of のための is not counted", () => {
@@ -43,6 +44,11 @@ describe("uncountedParticles", () => {
     assert.deepEqual(uncountedAt(["本", "条", "の", "２"]), []);
     assert.deepEqual(uncountedAt(["その", "ため", "の", "口座"]), []);
     assert.deepEqual(uncountedAt(["受取", "の", "ため", "に"]), []);
+  });
+
+  it("invalid: a number followed by a word is a quantity, and the の before it is a particle", () => {
+    assert.deepEqual(uncountedAt(["資料", "２", "－", "１", "の", "４", "ページ"]), []);
+    assert.deepEqual(uncountedAt(["第", "２", "条", "の", "三", "十", "日"]), []);
   });
 
   it("invalid: an empty sentence and a lone particle give nothing", () => {
@@ -76,6 +82,7 @@ describe("no-doubled-joshi: branch numbers and のための", () => {
   it("invalid: a real chain next to a branch number is still reported", () => {
     assert.equal(countFor("規則第12条の３の規定の適用の範囲を改める。"), 1);
     assert.equal(countFor("本社の営業部の第二課の方針を確認しました。"), 1);
+    assert.equal(countFor("資料２－１の４ページ目の後半の部分を確認しました。"), 1);
   });
 
   it("invalid: a chain that goes on after のための is still reported", () => {
