@@ -63,6 +63,16 @@ describe("bare-url-mix: a bare URL among worded links", () => {
     assert.deepEqual(bareUrl(`${WORDED_JA}\n\n**問い合わせ先**：https://example.com/contact`), []);
   });
 
+  it("a URL that is a member of an example payload written in the text is not bare, its quotes escaped or not", () => {
+    assert.deepEqual(bareUrl(`${WORDED_EN}\n\n{\n\n\\"name\\": \\"Ann Example\\",\n\n\\"home\\": \\"https://e.com/people/ann\\"\n\n}`, en), []);
+    assert.deepEqual(bareUrl(`${WORDED_EN}\n\n{ "home": "https://e.com/people/ann" }`, en), []);
+  });
+
+  it("a quoted URL in a sentence is still bare", () =>
+    assert.deepEqual(bareUrl(`${WORDED_EN}\n\nThe page "https://e.com/terms" has the full terms.`, en), [
+      'The URL "https://e.com/terms" is written bare (3 worded links in this document)',
+    ]));
+
   it("a URL in a sentence, or followed by more words after a label, is still bare", () => {
     assert.deepEqual(bareUrl(`${WORDED_EN}\n\n**Licence text** https://e.com/licence.txt has the full terms.`, en), [
       'The URL "https://e.com/licence.txt" is written bare (3 worded links in this document)',
@@ -88,6 +98,20 @@ describe("isFieldValueUrl: a URL as a field's value", () => {
     assert.equal(isFieldValueUrl("**The service is unavailable.** ", ""), false);
     assert.equal(isFieldValueUrl("", ""), false);
     assert.equal(isFieldValueUrl("The terms are posted on the public page of the project at: ", ""), false);
+  });
+
+  it("takes a quoted member of a data object, its quotes escaped or not", () => {
+    assert.equal(isFieldValueUrl('"home": "', '",'), true);
+    assert.equal(isFieldValueUrl('  \\"home\\": \\"', '\\";'), true);
+    assert.equal(isFieldValueUrl('{ "home": "', '" }'), true);
+    assert.equal(isFieldValueUrl('\\"home\\": \\"', '";'), true);
+  });
+
+  it("rejects a quoted URL in a sentence, or a member followed by more words", () => {
+    assert.equal(isFieldValueUrl('The page "', '" has the terms.'), false);
+    assert.equal(isFieldValueUrl('Set "home" to "', '" first.'), false);
+    assert.equal(isFieldValueUrl('"home": "', '" and more'), false);
+    assert.equal(isFieldValueUrl('Use the string "home": "', '"'), false);
   });
 });
 
