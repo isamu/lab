@@ -6,6 +6,7 @@ import { codeFences, codeSpans, type CodeFence } from "./code-fences.ts";
 import { opensAsNounPhrase } from "./nominal-step.ts";
 import { quoteAt } from "./structure-tree.ts";
 import { escapeRegExp } from "../orthography.ts";
+import { isFormatTemplate } from "../format-template.ts";
 import type { Detector, Finding, ProseDocument, Span, Token } from "../plugin.ts";
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
@@ -25,6 +26,9 @@ const finding = (doc: ProseDocument, rule: string, offset: number, values: Reado
   values: { ...values, offset },
 });
 
+/** A fence that should name a language: an untagged format template (<MAJOR>.<MINOR>) is in none, so it is left out. */
+const wantsLanguage = (fence: CodeFence): boolean => fence.language !== "" || !isFormatTemplate(fence.lines);
+
 /** Fences without a language, when they are the fewer kind: a document that mostly leaves the language out is not reported. */
 export const untaggedFewer = (fences: readonly CodeFence[], limit: number): readonly CodeFence[] => {
   const untagged = fences.filter((fence) => fence.language === "");
@@ -33,7 +37,7 @@ export const untaggedFewer = (fences: readonly CodeFence[], limit: number): read
 };
 
 export const codeFenceLanguage: Detector = (doc, options): Finding[] => {
-  const fences = codeFences(doc.source);
+  const fences = codeFences(doc.source).filter(wantsLanguage);
   const tagged = fences.filter((fence) => fence.language !== "").length;
   return untaggedFewer(fences, options.limit).map((fence) =>
     finding(doc, "code-fence-language-mix", fence.start, { tagged, untagged: fences.length - tagged }),
