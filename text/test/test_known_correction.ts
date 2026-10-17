@@ -54,6 +54,30 @@ describe("known-misspelling: よくある書き誤り", () => {
     assert.deepEqual(misspelt("この書類は書きづらいです。会議はまだつづく。やむをえず中止しました。"), []);
     assert.deepEqual(misspelt("ビックカメラで買ったバックパックを使う。"), []);
   });
+
+  it("規程の言い回しと法人格の書き誤りを指し、正しい形とそれだけで語になる形は指さない", () => {
+    assert.deepEqual(misspelt("取扱いは次の名号による。"), ["「次の名号」は「次の各号」の書き誤りです"]);
+    assert.deepEqual(misspelt("会社に申し出なければならかない。"), ["「ばならか」は「ばなら」の書き誤りです"]);
+    assert.deepEqual(misspelt("次のいずれかに該当場合は届け出る。"), ["「に該当」は「に該当する」の書き誤りです"]);
+    assert.deepEqual(misspelt("無担保、第三保証人なしで利用できる。"), ["「第三」は「第三者」の書き誤りです"]);
+    assert.deepEqual(misspelt("自家用車自動車での出張は認めない。"), ["「自家用車」は「自家用」の書き誤りです"]);
+    assert.deepEqual(misspelt("公共財団法人みどり振興会と連携する。"), ["「公共」は「公益」の書き誤りです"]);
+    assert.deepEqual(
+      misspelt("取扱いは次の各号による。会社に申し出なければならない。次のいずれかに該当する場合は届け出る。第三者保証人なしで利用できる。"),
+      [],
+    );
+    assert.deepEqual(misspelt("寺で名号を唱える。第一保証人と第二保証人を立てる。自家用自動車と自家用車。公益財団法人と公共施設。"), []);
+  });
+
+  it("和文に引いた英語の画面表記", () => {
+    assert.deepEqual(misspelt("設定の Denger Zone を開く。"), ["「Denger」は「Danger」の書き誤りです"]);
+    assert.deepEqual(misspelt("設定の Danger Zone を開く。Denger 氏の資料を読む。"), []);
+  });
+
+  it("English: a phrase whose first word is also a name", () => {
+    assert.deepEqual(misspelt("Open the Denger Zone settings.", en), ['"Denger" is a misspelling of "Danger"']);
+    assert.deepEqual(misspelt("Open the Danger Zone settings. Dr. Denger signed the zone map.", en), []);
+  });
 });
 
 describe("misconversion: 変換の誤り", () => {
