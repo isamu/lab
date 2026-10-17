@@ -1,0 +1,14 @@
+# Words of a sentence that talks about an abbreviation itself (the abbreviation DOB, whether to spell out the field).
+# undefined-acronym reads an acronym as explained when such a sentence also spells it out in words whose initials are its
+# letters (date of birth). Matched without regard to case.
+id: abbreviation-mention
+language: en
+entries:
+  - pattern: abbreviation
+  - pattern: abbreviated
+  - pattern: acronym
+  - pattern: stands for
+  - pattern: short for
+  - pattern: spell out
+  - pattern: spelled out
+  - pattern: spelt out
