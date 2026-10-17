@@ -1,6 +1,7 @@
 import type { Detector, Finding, Lexicon, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 import { quotedIn } from "../quoted-span.ts";
 import { followsInlineCode } from "./code-before.ts";
+import { isNamedStep, plainStepKeys } from "./graded-step.ts";
 
 /**
  * 比べる相手の無い比較（より良い結果、さらに高速に、The new engine is faster.）。何より良いのか、何より速いのかが書かれていない。
@@ -148,12 +149,18 @@ const isThanAfterCode = (doc: ProseDocument, found: BareComparative): boolean =>
 
 export const bareComparative: Detector = (doc): Finding[] => {
   const lists = listsOf(doc.lexicons["comparative-baseline"] ?? []);
+  const steps = plainStepKeys(
+    doc.sentences.map((sentence) => sentence.tokens ?? []),
+    lists.markers,
+    isGradable,
+  );
   return doc.sentences.flatMap((sentence, at) => {
     const nearby = doc.sentences.slice(Math.max(0, at - BASELINE_REACH), at + 1);
     if (sentence.embeddedLanguage !== undefined || nearby.some((near) => namesBaseline(near, lists.baselines))) return [];
     const quoted = quotedIn(sentence);
     return bareComparativesIn(sentence.tokens ?? [], lists)
       .filter((found) => !quoted.some((span) => insideSpan(found, span)) && !isThanAfterCode(doc, found))
+      .filter((found) => !isNamedStep(sentence.tokens ?? [], found.last, steps))
       .map((found) => ({
         rule: "",
         severity: "info",

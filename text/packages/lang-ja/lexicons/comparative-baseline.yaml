@@ -1,6 +1,6 @@
 # 比べる相手の無い比較を comparative-without-baseline が読むための語。
 # marker: 程度を言う語の前に立つ比べる副詞（より良い、さらに高速）。助詞の「より」（従来より速い）は相手を言うので含まない。
-# baseline: 比べる相手を言う語。同じ文か直前の文にあれば、相手は書いてある。「一方」は前の節を相手に立てる（Aは下落した一方、Bはより安定）。語に分かれて書かれていても読む（これ・まで）。
+# baseline: 比べる相手を言う語。同じ文か直前の文にあれば、相手は書いてある。「一方」は前の節を相手に立てる（Aは下落した一方、Bはより安定）。語に分かれて書かれていても読む（これ・まで）。「の方が」は比べる二つの一方を立てる（良い例2の方がより良い）。
 # exempt: 比べる副詞の後ろで、比較でない決まった言い方を作る語（より多くの人に、より詳しくは、さらに詳しく）と、程度でなく位置を言う語（さらに上の階層）。
 # condition: 比較より前にあれば、比較を条件の下に置く語（入れるとより良くなる）。比べる相手は、その条件の無い場合。
 id: comparative-baseline
@@ -22,6 +22,8 @@ entries:
   - { pattern: 先ほど, group: baseline }
   - { pattern: ではなく, group: baseline }
   - { pattern: 一方, group: baseline }
+  - { pattern: の方が, group: baseline }
+  - { pattern: のほうが, group: baseline }
   - { pattern: 多く, group: exempt }
   - { pattern: 一層, group: exempt }
   - { pattern: 詳しく, group: exempt }
