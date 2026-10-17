@@ -24,7 +24,7 @@ github-general-privacy-statement  9
 gitlab-values  1
 govuk-cddo-roadmap-2022-2025  1
 gsi-maps-smartphone-howto  1
-herp-da-data-product-manager  3
+herp-da-data-product-manager  2
 ietf-draft-httpapi-ratelimit-headers-10  5
 jma-faq-typhoon  1
 jma-yougo-kaze  1
