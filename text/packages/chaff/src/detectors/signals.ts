@@ -1,6 +1,6 @@
 import { proseText } from "../measure.ts";
 import { dateSpans, wordsOf } from "./structure.ts";
-import { compacted, placeAt, type Compacted } from "./gram-place.ts";
+import { compacted, linkedIn, placeAt } from "./gram-place.ts";
 import { charWindows, wordWindows } from "./gram-windows.ts";
 import { furnitureMask, isFurniture } from "./gram-furniture.ts";
 import { notAcronymSpansOf, type NotAcronymSpans } from "./acronym-context.ts";
@@ -98,15 +98,6 @@ type FirstSeen = { readonly gram: string; readonly sentence: Sentence; readonly 
 
 type Tally = { readonly counts: Map<string, number>; readonly first: Map<string, FirstSeen> };
 
-/** 詰めた文の index 番目の文字が、リンクの文字か。 */
-const linkedIn = (doc: ProseDocument, sentence: Sentence, source: Compacted): ((index: number) => boolean) => {
-  const links = doc.links.filter((link) => link.start < sentence.span.end && sentence.span.start < link.end);
-  return (index) => {
-    const at = sentence.span.start + (source.offsets[index] ?? -1);
-    return links.some((link) => link.start <= at && at < link.end);
-  };
-};
-
 /** 英語は大文字と小文字を区別せずに数える。文頭の "Proposals submitted via" も文中の "proposals submitted via" も同じ言い回し。 */
 const keyOf = (gram: string, unit: ProseDocument["lengthUnit"]): string => (unit === "word" ? gram.toLowerCase() : gram);
 
@@ -141,23 +132,18 @@ const gramsOf = (doc: ProseDocument, sentences: readonly Sentence[]): Tally => {
 
 type Repeat = { readonly key: string; readonly count: number; readonly at: FirstSeen | undefined };
 
-/**
- * 範囲（gram-passages.ts）ごとに数える。よくある質問の別々の答えは別の範囲。
- * どの出現も節の最初の文にある言い回しは、節のひな形（gram-openers.ts）なので数えない。
- */
-const repeatsOf = (doc: ProseDocument, limit: number): Repeat[] => {
-  const openers = sectionOpeners(doc.sections);
-  return gramPassagesOf(doc.sections).flatMap((sentences) => {
+/** 範囲（gram-passages.ts）ごとに数える。よくある質問の別々の答えは別の範囲。節の最初の文にだけ出るものは節のひな形（gram-openers.ts）。 */
+const repeatsOf = (doc: ProseDocument, limit: number, openers = sectionOpeners(doc.sections)): Repeat[] =>
+  gramPassagesOf(doc.sections).flatMap((sentences) => {
     const tally = gramsOf(doc, sentences);
     const opening = gramsOf(
       doc,
       sentences.filter((sentence) => openers.has(sentence)),
-    );
+    ).counts;
     return [...tally.counts.entries()]
-      .filter(([key, count]) => count > limit && isPhrasing(key, doc.lengthUnit) && (opening.counts.get(key) ?? 0) < count)
+      .filter(([key, count]) => count > limit && isPhrasing(key, doc.lengthUnit) && (opening.get(key) ?? 0) < count)
       .map(([key, count]) => ({ key, count, at: tally.first.get(key) }));
   });
-};
 
 /**
  * 語句が文の中で占める範囲に、述語になる動詞か助動詞があるか（gram-predicate.ts）。

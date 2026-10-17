@@ -1,5 +1,5 @@
 import { softBreaks } from "../soft-break.ts";
-import type { LengthUnit, Span } from "../plugin.ts";
+import type { LengthUnit, ProseDocument, Sentence, Span } from "../plugin.ts";
 
 /** 数えるために詰めた文と、詰めた文の各文字が元の文のどこにあったか。 */
 export type Compacted = { readonly text: string; readonly offsets: readonly number[] };
@@ -49,4 +49,13 @@ export const placeAt = (source: Compacted, window: Span): Span | undefined => {
 export const placeOf = (source: Compacted, gram: string): Span | undefined => {
   const at = source.text.indexOf(gram);
   return at === -1 ? undefined : placeAt(source, { start: at, end: at + gram.length });
+};
+
+/** 詰めた文の index 番目の文字が、リンクの文字か。 */
+export const linkedIn = (doc: ProseDocument, sentence: Sentence, source: Compacted): ((index: number) => boolean) => {
+  const links = doc.links.filter((link) => link.start < sentence.span.end && sentence.span.start < link.end);
+  return (index) => {
+    const at = sentence.span.start + (source.offsets[index] ?? -1);
+    return links.some((link) => link.start <= at && at < link.end);
+  };
 };
