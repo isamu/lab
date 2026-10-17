@@ -76,7 +76,7 @@ const COLON_LABEL = /^[^.!?。！？,，、:：]{1,40}[:：]$/u;
  * or the object's close. A sentence before the key makes it prose.
  */
 const MEMBER_KEY = /^[\s{]*\\?"[^"\\\n]{1,40}\\?"\s*:\s*\\?"$/u;
-const MEMBER_END = /^\\?"\s*[,;}\]]?\s*$/u;
+const MEMBER_END = /^\\?"[,;}\]]?$/u;
 
 const isLabelledValue = (lineBefore: string, lineAfter: string): boolean => {
   if (lineAfter.trim() !== "") return false;
@@ -90,4 +90,4 @@ const isLabelledValue = (lineBefore: string, lineAfter: string): boolean => {
  * content, as in a table cell, so writing it bare is right.
  */
 export const isFieldValueUrl = (lineBefore: string, lineAfter: string): boolean =>
-  isLabelledValue(lineBefore, lineAfter) || (MEMBER_KEY.test(lineBefore) && MEMBER_END.test(lineAfter));
+  isLabelledValue(lineBefore, lineAfter) || (MEMBER_KEY.test(lineBefore) && MEMBER_END.test(lineAfter.replaceAll(/\s/gu, "")));
