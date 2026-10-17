@@ -18,7 +18,7 @@ moriguchi-satsuki-gakuen-ijime-houshin  1
 ndl-digital-transmission-individuals  1
 neeview-changelog-ja  5
 nstac-microdata-forum  1
-nta-taxanswer-1120  4
+nta-taxanswer-1120  3
 nttcom-onboarding-week1  1
 react-ja-thinking  2
 ruby-3-4-0-released-ja  1
