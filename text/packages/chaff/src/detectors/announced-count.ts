@@ -13,6 +13,7 @@ const countWordsOf = (doc: ProseDocument): CountWords => ({
   frames: patternsOf(doc, "count-frame"),
   hedgesBefore: patternsOf(doc, "count-hedge", "before"),
   hedgesAfter: patternsOf(doc, "count-hedge", "after"),
+  titles: patternsOf(doc, "count-title"),
 });
 
 const memberGroup = (doc: ProseDocument, group: string): string[] =>

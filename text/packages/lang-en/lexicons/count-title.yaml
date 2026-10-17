@@ -1,0 +1,10 @@
+# Words that, with a number, make a one-line heading announcing the list below by themselves ("Three-line summary",
+# "3-point summary"). Read only when the block right above the list is that number and word alone (emphasis marks and a
+# colon at the end are allowed).
+id: count-title
+language: en
+entries:
+  - pattern: -line summary
+  - pattern: line summary
+  - pattern: -point summary
+  - pattern: point summary
