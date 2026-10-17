@@ -10,8 +10,8 @@ name:
   en: Unfilled placeholder
 
 why:
-  ja: "「【会社名】」「[Your Name]」「（ここに会社名を書く）」は、雛形や生成した下書きに残る空欄です。値に「TODO: …」「未定」とだけ書いたものも、後で埋めるつもりの空欄です。文体の好みではなく、埋め忘れです。例として置いた「○○」は正しい書き方なので数えません。"
-  en: '"[Your Name]" and "[Insert Date]" are the blanks a template or a generated draft leaves. A value that only says "TODO: …" or "TBD" is a blank too, left to fill in later. This is not a matter of style: the blank was never filled.'
+  ja: "「【会社名】」「[Your Name]」「（ここに会社名を書く）」は、雛形や生成した下書きに残る空欄です。値に「TODO: …」「未定」とだけ書いたものも、後で埋めるつもりの空欄です。英語の雛形の指示の行（OPTIONAL: General conclusions …）が、埋めた報告書に残ったものも同じです。文体の好みではなく、埋め忘れです。例として置いた「○○」は正しい書き方なので数えません。"
+  en: '"[Your Name]" and "[Insert Date]" are the blanks a template or a generated draft leaves. A value that only says "TODO: …" or "TBD" is a blank too, left to fill in later, and so is an instruction line from the template left in a filled report ("OPTIONAL: General conclusions …"). This is not a matter of style: the blank was never filled.'
 
 message:
   ja: 「{matched}」が埋まっていません
@@ -43,5 +43,5 @@ example:
       We can meet on Friday 9 October to go through the quote.
 
 not_flagged:
-  ja: "例として置いた「○○」、Markdown のリンク、脚注の番号、チェック欄とチェックリストの項目（- [ ] TODO: …）、値が続く見出しの札（【氏名】山田）、コードとコードのコメント（// TODO）、文の中の「未定」（日程は未定です）、見出しが雛形と言う節（「## 雛形」「# 記入例」）の中の空欄は指しません。"
-  en: 'Markdown links and reference definitions, footnote numbers, checkboxes and checklist items ("- [ ] TODO: …"), a label its value follows ("[Date]: 2024-04-01"), code and code comments ("// TODO"), "TBD" inside a sentence ("the date is TBD"), and blanks under a heading that names a template ("## Template", "# Sample letter") are not reported.'
+  ja: "例として置いた「○○」、Markdown のリンク、脚注の番号、チェック欄とチェックリストの項目（- [ ] TODO: …）、値が続く見出しの札（【氏名】山田）、大文字でない「Optional:」と行の途中の OPTIONAL、コードとコードのコメント（// TODO）、文の中の「未定」（日程は未定です）、見出しが雛形と言う節（「## 雛形」「# 記入例」）の中の空欄は指しません。"
+  en: 'Markdown links and reference definitions, footnote numbers, checkboxes and checklist items ("- [ ] TODO: …"), a label its value follows ("[Date]: 2024-04-01"), "Optional:" not in capitals and OPTIONAL inside a line, code and code comments ("// TODO"), "TBD" inside a sentence ("the date is TBD"), and blanks under a heading that names a template ("## Template", "# Sample letter") are not reported.'

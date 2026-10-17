@@ -29,6 +29,7 @@ const withoutClosers = (text: string): string => {
 /** Lexicon groups of placeholder-word. An entry without a group is a word written inside a template's brackets. */
 const MARKER = "marker";
 const INSTRUCTION = "instruction";
+const LABEL = "label";
 
 const innerOf = (match: RegExpExecArray): string => (match[1] ?? match[2] ?? match[3] ?? "").trim().toLowerCase();
 
@@ -64,11 +65,24 @@ const markerSpans = (text: string, markers: Lexicon): Span[] => {
   return [{ start, end: start + withoutClosers(rest).length }];
 };
 
+/**
+ * A template's instruction label left in the text ("OPTIONAL: General conclusions"): the label exactly as the lexicon
+ * writes it, in capitals, opening the line before a colon and some text. "Optional: bring a jacket" is a note, not a label.
+ */
+const labelSpans = (line: string, labels: Lexicon): Span[] => {
+  const start = OPENING.exec(line)?.[0].length ?? 0;
+  const rest = line.slice(start);
+  const label = labels.find((entry) => rest.startsWith(entry.pattern));
+  if (label === undefined) return [];
+  const after = rest.slice(label.pattern.length);
+  return COLON_NEXT.test(after) && withoutClosers(after.replace(COLON_NEXT, "")) !== "" ? [{ start, end: start + rest.trimEnd().length }] : [];
+};
+
 /** Each line of a sentence on its own: values a line apart ("TBD: owner" then "TBD: date") are two blanks, not one. */
-const lineMarkerSpans = (text: string, markers: Lexicon): Span[] =>
+const lineMarkerSpans = (text: string, markers: Lexicon, labels: Lexicon): Span[] =>
   text.split("\n").flatMap((line, index, lines) => {
     const offset = lines.slice(0, index).reduce((sum, previous) => sum + previous.length + 1, 0);
-    return markerSpans(line, markers).map((span) => ({ start: span.start + offset, end: span.end + offset }));
+    return [...markerSpans(line, markers), ...labelSpans(line, labels)].map((span) => ({ start: span.start + offset, end: span.end + offset }));
   });
 
 /** 文の中の、埋め忘れた雛形の空欄（[Your Name]、【会社名】、（ここに会社名を書く）、TBD: …）の範囲。words は placeholder-word の語彙表。 */
@@ -76,9 +90,10 @@ export const placeholderSpans = (text: string, words: Lexicon): Span[] => {
   const bracketWords = words.filter((word) => word.group === undefined);
   const instructions = words.filter((word) => word.group === INSTRUCTION);
   const markers = words.filter((word) => word.group === MARKER);
+  const labels = words.filter((word) => word.group === LABEL);
   return [
     ...bracketedSpans(text, BRACKETED, (inner) => holdsWord(inner, bracketWords)),
     ...(instructions.length === 0 ? [] : bracketedSpans(text, PARENTHESIZED, (inner) => opensWith(inner, instructions))),
-    ...lineMarkerSpans(text, markers),
+    ...lineMarkerSpans(text, markers, labels),
   ].toSorted((left, right) => left.start - right.start);
 };

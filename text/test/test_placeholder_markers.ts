@@ -268,3 +268,39 @@ describe("unfilled-placeholder in a template", () => {
     assert.equal(findings("# 見積もりのご案内\n\n【会社名】の田中です。\n", ja).length, 1);
   });
 });
+
+describe("placeholderSpans: a template's instruction label left in the text", () => {
+  it("finds a capitalised OPTIONAL label opening a line before a colon and text", () => {
+    assert.deepEqual(matched("OPTIONAL: General conclusions (bullet points or narrative)", enWords), [
+      "OPTIONAL: General conclusions (bullet points or narrative)",
+    ]);
+    assert.deepEqual(matched("Went well.\nOPTIONAL: (Use bullet points) for example: monitoring caught it", enWords), [
+      "OPTIONAL: (Use bullet points) for example: monitoring caught it",
+    ]);
+  });
+
+  it("does not find the word in another case, inside a sentence, without a colon, or with nothing after the colon", () => {
+    assert.deepEqual(matched("Optional: bring a jacket for the evening walk", enWords), []);
+    assert.deepEqual(matched("The second step is OPTIONAL: skip it if short of time", enWords), []);
+    assert.deepEqual(matched("OPTIONAL fields are marked with a star", enWords), []);
+    assert.deepEqual(matched("OPTIONAL:", enWords), []);
+    assert.deepEqual(matched("OPTIONALLY: add a note", enWords), []);
+  });
+
+  it("is reported in a report whose sections are filled", () => {
+    const source = [
+      "# Outage of 3 May",
+      "",
+      "## What went well?",
+      "",
+      "- The alert fired within a minute.",
+      "",
+      "OPTIONAL: (Use bullet points) for example: automated monitoring detected the incident",
+      "",
+    ].join("\n");
+    assert.deepEqual(
+      findings(source, en).map((finding) => finding.line),
+      [7],
+    );
+  });
+});
