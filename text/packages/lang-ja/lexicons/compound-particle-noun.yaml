@@ -1,0 +1,6 @@
+# 前と後ろの「の」と組んで一つの複合助詞になる名詞（受取のための口座）。「のための」は一つの係りなので、
+# no-doubled-joshi は後ろの「の」を助詞の連なりに数えない。前に「の」が無いとき（そのための）は何もしない。
+id: compound-particle-noun
+language: ja
+entries:
+  - pattern: ため
