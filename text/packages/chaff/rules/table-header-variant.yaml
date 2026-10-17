@@ -70,8 +70,8 @@ example:
       | Check | Lee |
 
 not_flagged:
-  ja: 文字の無い見出し（数や記号だけ）、コードの例の中の表、見出しの違いが名前を変える場合（「日付」と「日時」）は見ません。二列の表でなければ、左の欄は見出しとして集めません。
-  en: Headers without letters (numbers or symbols only), tables inside a code sample, and headers that differ in meaning (Date and Time) are not compared. The left cell is collected only in two-column tables.
+  ja: 文字の無い見出し（数や記号だけ）、コードの例の中の表、見出しの違いが名前を変える場合（「日付」と「日時」）は見ません。見出しの中の HTML のタグ（<div style="…">）とその内側の空白は、見える文字でないので比べません。二列の表でなければ、左の欄は見出しとして集めません。
+  en: Headers without letters (numbers or symbols only), tables inside a code sample, and headers that differ in meaning (Date and Time) are not compared. Inline HTML tags in a header (<div style="…">) and the spaces inside them are not seen by the reader and are not compared. The left cell is collected only in two-column tables.
 level_meaning:
   ja: 少ないほうの書き方が、その見出しの {limit}% 以下のとき指摘
   en: reported when the less common spelling is {limit}% of the header's uses or less
