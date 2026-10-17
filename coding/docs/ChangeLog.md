@@ -2,6 +2,44 @@
 
 Newest first.
 
+## 0.4.0 — 2026-10-18
+
+Confidence that means something, a type check that can read Vue, and a chart whose labels can be
+read.
+
+### Changed
+
+- **A tool that could not run lowers its dimension's confidence** (#1457). Confidence had been
+  decided by suppression density alone, so nearly every dimension of nearly every repository read
+  `high` — including a test-coverage of 100 with no coverage report to read. It is now the lower of
+  two signals: suppressions, as before, and the share of the dimension's weight whose probe was
+  skipped or produced no result. Any of it unmeasured is `medium`; half or more is `low`. The reason
+  names each probe and why it did not run. A skip that means there is nothing to measure — no UI
+  files, a JavaScript project — lowers nothing, and a new optional `notApplicable` on a skipped
+  `ProbeStatus` is how a probe says so. Under `mode: ratchet`, a `low` dimension is not gated, as
+  before; more dimensions can now be `low`.
+- **A Vue project is type-checked with its own `vue-tsc`** (#1459). Plain `tsc` cannot open a
+  `.vue` file, so every component import came back as `TS2307` — errors about the measurement,
+  reported as defects in the code. A Vue project without `vue-tsc` is now skipped rather than
+  measured wrongly. The tool version is recorded under the checker that ran, so the switch shows
+  up as a tool change against an existing baseline rather than as a regression.
+- **The job summary's chart is horizontal** (#1455). Nine dimension names side by side along the
+  bottom overlapped until none could be read.
+
+### Added
+
+- **A missing formatter is a config gap** (#1453). Neither `prettier`, `@biomejs/biome` nor
+  `dprint` in `package.json` is reported by `doctor` and counts toward `config-integrity`. A config
+  file without the dependency still counts as missing: an editor-only formatter is not a gate CI can
+  run. Adding a check widens the gap ratio's denominator, so other gaps weigh slightly less.
+- **[docs/guide.md](guide.md)** — what scoria is, how to run it and how to read it, in English and
+  Japanese (#107), and what it reads and what to do when it will not run (#108).
+
+### Fixed
+
+- Pointing scoria at a path that does not exist says which path it could not read, instead of
+  printing Node's own stack trace (#108).
+
 ## 0.3.0 — 2026-09-13
 
 Two more dimensions, a gate, and three separate ways the report was saying something untrue.
