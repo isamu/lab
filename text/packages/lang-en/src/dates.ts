@@ -13,6 +13,9 @@ const ISO_DATE = /\b(?<y>\d{4})-(?<m>\d{2})-(?<d>\d{2})\b/gu;
 const DAY_BEFORE = /(?<d>\d{1,2})(?:st|nd|rd|th)? $/u;
 const DAY_YEAR_AFTER = /^ (?<d>\d{1,2})(?:st|nd|rd|th)?,? (?<y>\d{4})\b/u;
 const YEAR_AFTER = /^,? (?<y>\d{4})\b/u;
+/** "Mar 28 14:02:11 UTC 2024", the form of `date` and C's ctime: the year comes after the time and its zone. */
+const DAY_TIME_YEAR_AFTER = /^ (?<d>\d{1,2}) \d{1,2}:\d{2}(?::\d{2})?(?: [A-Z]{2,5})? (?<y>\d{4})\b/u;
+const TIME_YEAR_REACH = 32;
 
 const pad = (value: string): string => value.padStart(2, "0");
 
@@ -26,6 +29,14 @@ const dayBefore = (text: string, at: number): { readonly day: string; readonly s
 /** "April 1, 2024" → 2024-04-01. */
 const monthDayYear = (text: string, at: number, end: number, month: number): Mention | undefined => {
   const found = DAY_YEAR_AFTER.exec(text.slice(end, end + 16));
+  if (found?.groups === undefined) return undefined;
+  const value = `${found.groups["y"] ?? ""}-${pad(String(month))}-${pad(found.groups["d"] ?? "")}`;
+  return { start: at, end: end + found[0].length, attrs: { value } };
+};
+
+/** "Mar 28 14:02:11 UTC 2024" → 2024-03-28. */
+const monthDayTimeYear = (text: string, at: number, end: number, month: number): Mention | undefined => {
+  const found = DAY_TIME_YEAR_AFTER.exec(text.slice(end, end + TIME_YEAR_REACH));
   if (found?.groups === undefined) return undefined;
   const value = `${found.groups["y"] ?? ""}-${pad(String(month))}-${pad(found.groups["d"] ?? "")}`;
   return { start: at, end: end + found[0].length, attrs: { value } };
@@ -104,7 +115,7 @@ const namedDate = (text: string, match: RegExpExecArray): Mention | undefined =>
   const month = full === 0 ? (ABBREVIATED.get(word) ?? 0) : full;
   if (month === 0) return undefined;
   const end = match.index + match[0].length + (full === 0 && text.charAt(match.index + match[0].length) === "." ? 1 : 0);
-  const dated = monthDayYear(text, match.index, end, month) ?? monthYear(text, match.index, end, month);
+  const dated = monthDayYear(text, match.index, end, month) ?? monthYear(text, match.index, end, month) ?? monthDayTimeYear(text, match.index, end, month);
   return dated ?? (ALL_CAPS.test(match[0]) ? undefined : monthDay(text, match.index, end, month));
 };
 

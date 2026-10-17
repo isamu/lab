@@ -2,6 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { StructurePatterns } from "../packages/chaff/src/plugin.ts";
+import { namedRuleRun } from "./rule-run.ts";
 
 type Attr = number | string | undefined;
 
@@ -32,6 +33,11 @@ describe("English dates", () => {
     ["From December 28 to January 3.", ["12-28", "01-03"]],
     ["Monday, July 20 (Monday)", ["07-20"]],
     ["Held 5 March to 7 April 2026, the year written once.", ["2026-04-07"]],
+    ["Built Thu Mar 28 14:02:11 UTC 2024 on the runner.", ["2024-03-28"]],
+    ["- ~Wed Mar 27 23:59 2024 the patch is merged", ["2024-03-27"]],
+    ["Logged Fri Jan 5 09:15:00 2024.", ["2024-01-05"]],
+    ["The rollout starts Mar 27 23:59 and ends at dawn.", ["03-27"]],
+    ["The window is Mar 27 23:59 UTC, after the freeze.", ["03-27"]],
   ];
   cases.forEach(([text, expected]) => {
     it(text, () => assert.deepEqual(dateOf(text), expected));
@@ -103,6 +109,18 @@ describe("a tab between a number and its unit or currency", () => {
     assert.deepEqual(amounts("Within 30\tdays, pay USD\t500."), [
       [30, "days"],
       [500, "USD"],
+    ]);
+  });
+});
+
+describe("date-without-year: the year after the time (ctime)", () => {
+  const timeline = (line: string): string =>
+    ["## Timeline", "", "- 2023-12-30 10:00 the job is scheduled", "- 2024-03-27 21:34 the patch is merged", `- ${line}`, ""].join("\n");
+  it("reads the year written after the time, and still reports a day and month with no year", () => {
+    assert.deepEqual(namedRuleRun("date-without-year", timeline("~Wed Mar 27 23:59 2024 traffic is moved"), en).findings, []);
+    assert.deepEqual(namedRuleRun("date-without-year", timeline("Thu Mar 28 14:02:11 UTC 2024 the cluster is back"), en).findings, []);
+    assert.deepEqual(namedRuleRun("date-without-year", timeline("Mar 27 23:59 traffic is moved"), en).findings, [
+      '"Mar 27" has no year, and the document\'s dates run from 2023 to 2024, so the year is unclear',
     ]);
   });
 });
