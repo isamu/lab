@@ -152,7 +152,7 @@ const withoutMarks = (line: string): string => {
 
 const LABEL_END = /^(?:[:：]|$)/u;
 
-/** An inline HTML tag around a label (<h3> FROM: <br/>), read as a space. */
+/** An inline HTML tag around a label (<h3> FROM: <br/>, <b>TO</b>:), dropped so the colon still follows the label. */
 const INLINE_HTML_TAG = /<\/?[A-Za-z][A-Za-z0-9-]*(?:\s[^<>]*)?\/?>/gu;
 
 /**
@@ -160,7 +160,7 @@ const INLINE_HTML_TAG = /<\/?[A-Za-z][A-Za-z0-9-]*(?:\s[^<>]*)?\/?>/gu;
  * included, then a colon or the line's end. A memo sets its labels in capitals; a mail program writes "To:" and "Subject:".
  */
 export const isMemoLabel = (line: string, labels: readonly string[]): boolean => {
-  const bare = withoutMarks(line.replace(INLINE_HTML_TAG, " "));
+  const bare = withoutMarks(line.replace(INLINE_HTML_TAG, ""));
   return labels.some((label) => bare.startsWith(label) && LABEL_END.test(bare.slice(label.length)));
 };
 

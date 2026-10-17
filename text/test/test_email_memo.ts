@@ -39,6 +39,7 @@ describe("isMemoLabel: a memo's header label", () => {
     assert.equal(isMemoLabel("<h3> FROM: <br/>Ann Lee<br/>Town Clerk</h3>", EN_LABELS), true);
     assert.equal(isMemoLabel('<p class="head">SUBJECT:</p>', EN_LABELS), true);
     assert.equal(isMemoLabel("<b>MEMORANDUM</b>", EN_LABELS), true);
+    assert.equal(isMemoLabel("<b>TO</b>: All branch staff", EN_LABELS), true);
   });
 
   it("does not take a tag's own name, a mail program's field inside a tag, or a label run into words past a tag", () => {
