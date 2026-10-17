@@ -1,0 +1,9 @@
+# 条件を言う語。この語のすぐ後ろの括弧の中の「等」「など」（必要ない場合（単一テーブルへの SELECT 等）も付与すること）は、
+# 要求がいつ当てはまるかの例で、要求の範囲を開いたままにしているのではない。requirement-smell が読む。
+id: requirement-open-condition
+language: ja
+entries:
+  - pattern: 場合
+  - pattern: とき
+  - pattern: 時
+  - pattern: 際
