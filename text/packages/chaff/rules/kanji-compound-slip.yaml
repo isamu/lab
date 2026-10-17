@@ -1,0 +1,67 @@
+id: kanji-compound-slip
+layer: L3
+status: stable
+how_to_find: kanji-compound-slip
+word_list: compound-slip-ignored
+requires: [pos]
+languages: [ja]
+severity: warning
+
+name:
+  ja: 長い漢字の語の一字違い
+  en: One kanji off in a long compound
+
+why:
+  ja: 「就職氷河期世代」と何度も書いた文書に、一度だけ「就職永河期世代」とあるのは打ち違いです。字の形が似ていると、書き手も読み手も見落とします。chaff は文書の中で 3 回以上書いた 4 字以上の漢字の語と、同じ長さで一字だけ違い、一、二度しか出てこない語を比べます。違う字のところで解析器が語を読めず（永・河・期 とばらばらになる）、いつもの形ではそこが一つの語（氷河期）であるときだけ指します。どちらも普通の語の書き分け（第一条と第二条、前年度と今年度、関係会社と関連会社）や、語の頭と終わりの一字（資本金等、取締役会又は）は指しません。
+  en: A document that writes 就職氷河期世代 ("the employment ice-age generation") several times and 就職永河期世代 once has a slip of the pen, and a kanji that looks like another is easy to miss. chaff compares each kanji compound of four or more characters written at least three times with compounds of the same length written once or twice that differ in one kanji. It reports one only where the morphological analyser cannot read the changed word (永 / 河 / 期 come apart) while the usual form holds that kanji inside one word (氷河期). Two real words told apart on purpose (第一条 and 第二条, 前年度 and 今年度, 関係会社 and 関連会社) and the first or last kanji of a run (資本金等, 取締役会又は) are not reported.
+
+message:
+  ja: 「{written}」と書いています（この文書は「{usual}」を {count} 回書いています）
+  en: '"{written}" here, where the document writes "{usual}" {count} times'
+
+how_to_fix:
+  ja: 打ち違いなら、文書のほかの所の書き方に直してください。別の語として書いているなら、そのままにします。
+  en: If it is a slip, write it the way the rest of the document does. If it is another word on purpose, leave it.
+
+placeholders:
+  written:
+    ja: この箇所の語
+    en: the compound here
+  usual:
+    ja: 文書がいつも書く語
+    en: the compound the document usually writes
+  count:
+    ja: いつもの語の数
+    en: how often the usual compound appears
+
+levels: { strict: warning, normal: warning, relaxed: info }
+
+use_for: [business, technical, blog, legal, docs, academic, literature, speech]
+
+group: slips
+summary:
+  ja: 何度も書いた長い漢字の語を、一か所だけ一字違えて書いた所
+  en: A long kanji compound written once with one kanji changed
+example:
+  ja:
+    before: |
+      就職氷河期世代の方を対象に、選考を行います。就職氷河期世代の方の応募をお待ちしています。就職氷河期世代の採用は三年間続けます。就職永河期世代の方の説明会も開きます。
+    after: |
+      就職氷河期世代の方を対象に、選考を行います。就職氷河期世代の方の応募をお待ちしています。就職氷河期世代の採用は三年間続けます。就職氷河期世代の方の説明会も開きます。
+
+not_flagged:
+  ja: どちらの形も解析器が語として読めるとき（関係会社と関連会社、休憩時間と休息時間）、違う語を文書がほかの所でも書いているとき（当該質権者の横に質権の設定）、違う字が数・順・番地・期間の字のとき（第一条と第二条、前年度と今年度、同条と同項、五日以内と五年以内）、違う字が漢字の続きの頭か終わりのとき（資本金等と資本金及び）、いつもの形が 3 回未満か、違う形の倍より少ないとき、違う形が 3 回以上あるときは指しません。
+  en: Not reported when the analyser reads both forms as words (関係会社 and 関連会社), when the document writes the changed word elsewhere (質権 beside 当該質権者), when the differing kanji is a number, an order, a part of an address in a statute or a unit of time (第一条 and 第二条, 前年度 and 今年度, 同条 and 同項, 五日以内 and 五年以内), when it is the first or last kanji of the run (資本金等 beside 資本金及), when the usual form appears fewer than three times or not more than twice as often, or when the other form appears three times or more.
+rewrite:
+  depth: light
+  ja:
+    direction: 一字違いの語を、文書がいつも書く形に直してください。直すのはその一字だけです。
+    pairs:
+      - before: 就職永河期世代の方の説明会も開きます。
+        after: 就職氷河期世代の方の説明会も開きます。
+      - before: 地域包活支援センターの職員が相談を受けます。
+        after: 地域包括支援センターの職員が相談を受けます。
+    keep:
+      - 文の中のほかの語
+    avoid:
+      - 別の語として書き分けた語まで、いつもの形に替える

@@ -4949,6 +4949,42 @@
         "falseAlarms": 0
       }
     },
+    "kanji-compound-slip": {
+      "groups": {
+        "academic": {
+          "documents": 5,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 14,
+          "fired": 0
+        },
+        "business": {
+          "documents": 39,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 10,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 21,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 4,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 4,
+          "fired": 0
+        },
+        "technical": {
+          "documents": 22,
+          "fired": 0
+        }
+      }
+    },
     "katakana-density": {
       "groups": {
         "academic": {
