@@ -3,10 +3,13 @@
 import type { Token } from "../plugin.ts";
 
 /** Only marks (!!, ?!, …), whatever tag the tagger gave them. */
-const MARKS_ONLY = /^[\p{P}\p{S}\s]+$/u;
+const MARKS_ONLY = /^[\p{P}\s]+$/u;
 
 /** The caret that opens a footnote reference: alone after its masked bracket, or with the bracket when no definition masks it ([^). */
 const CARET = /^\[?\^$/u;
+
+/** The blank a masked bracket leaves before the caret. */
+const BLANK = /^\s+$/u;
 
 /** A footnote label after the caret: [^1], [^note-2]. */
 const FOOTNOTE_LABEL = /^[\p{L}\p{N}_-]+$/u;
@@ -21,14 +24,14 @@ export const markOrSkipped =
     skipped.has(token.pos) || MARKS_ONLY.test(token.surface);
 
 /**
- * The tokens before a footnote reference at the end (…まだ先 [^1]). The caret must carry its bracket or follow a mark,
- * so x^2 keeps its exponent.
+ * The tokens before a footnote reference at the end (…まだ先 [^1]). The caret must carry its bracket or follow the blank
+ * its masked bracket leaves, so x^2 and "x: ^2" keep their exponent.
  */
 export const withoutFootnoteReference = (tokens: readonly Token[], isMark: IsMark): readonly Token[] => {
   const caret = tokens.findLastIndex((token) => CARET.test(token.surface));
   const opener = tokens[caret];
   const before = tokens[caret - 1];
-  if (opener === undefined || !(opener.surface.startsWith("[") || (before !== undefined && isMark(before)))) return tokens;
+  if (opener === undefined || !(opener.surface.startsWith("[") || (before !== undefined && BLANK.test(before.surface)))) return tokens;
   const label = tokens.slice(caret + 1);
   return label.every((token) => isMark(token) || FOOTNOTE_LABEL.test(token.surface)) ? tokens.slice(0, caret) : tokens;
 };
