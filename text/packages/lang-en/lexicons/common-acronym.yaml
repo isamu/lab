@@ -48,6 +48,7 @@ entries:
   - pattern: IT
   - pattern: SDK
   - pattern: IDE
+  - pattern: IE # read as a browser's name (Internet Explorer)
   - pattern: PNG
   - pattern: JPEG
   - pattern: GIF
