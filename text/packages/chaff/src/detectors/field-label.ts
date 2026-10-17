@@ -13,13 +13,13 @@ const isLabel = (label: string): boolean =>
   HAS_LETTER.test(label) && !SENTENCE_END.test(label) && label.length <= MAX_LABEL_CHARS && label.trim().split(/\s+/u).length <= MAX_LABEL_WORDS;
 
 /**
- * The text with the label of a field on its first line taken out, value kept (blank when the field is left empty). A report
- * template's field repeats its heading by design (## Project Status → Current project status: Ongoing); the label is the
- * form, and only the value is what the writer said.
+ * Where the value of a field on the text's first line starts, just past the colon (the value may be blank), or undefined
+ * when the first line opens with no label. Whether the label is a name and not a clause ("The following apply:") is the
+ * caller's to judge from the parts of speech.
  */
-export const withoutFieldLabel = (text: string): string => {
+export const fieldValueStart = (text: string): number | undefined => {
   const marker = LIST_MARKER.exec(text)?.[0] ?? "";
   const field = FIELD.exec(text.slice(marker.length));
-  if (field?.[1] === undefined || !isLabel(field[1].replaceAll("**", ""))) return text;
-  return text.slice(marker.length + field[0].length);
+  if (field?.[1] === undefined || !isLabel(field[1].replaceAll("**", ""))) return undefined;
+  return marker.length + field[0].length;
 };

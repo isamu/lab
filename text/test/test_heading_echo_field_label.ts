@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
-import { withoutFieldLabel } from "../packages/chaff/src/detectors/field-label.ts";
+import { fieldValueStart } from "../packages/chaff/src/detectors/field-label.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
@@ -13,27 +13,26 @@ import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
 const echoes = (source: string, adapter: LanguageAdapter): number => {
   const doc = buildDocument("a.md", source, adapter);
-  return runRules(doc, loadRules(adapter.id), {}, false, "business/press-release").findings.filter((finding) => finding.rule === "heading-echo")
-    .length;
+  return runRules(doc, loadRules(adapter.id), {}, false, "business/press-release").findings.filter((finding) => finding.rule === "heading-echo").length;
 };
 
-describe("withoutFieldLabel", () => {
-  it("takes out the label of a field on the first line", () => {
-    assert.equal(withoutFieldLabel("Current project status: Ongoing."), " Ongoing.");
-    assert.equal(withoutFieldLabel("- Current project status:Ongoing (low activity)"), "Ongoing (low activity)");
-    assert.equal(withoutFieldLabel("**Current status:** Ongoing"), "** Ongoing");
-    assert.equal(withoutFieldLabel("現在の状況：継続中です。"), "継続中です。");
-    assert.equal(withoutFieldLabel("Current project status:\nNo new members."), "\nNo new members.");
+describe("fieldValueStart", () => {
+  it("where the value of a field on the first line starts", () => {
+    assert.equal(fieldValueStart("Current project status: Ongoing."), "Current project status:".length);
+    assert.equal(fieldValueStart("- Current project status:Ongoing (low activity)"), "- Current project status:".length);
+    assert.equal(fieldValueStart("**Current status:** Ongoing"), "**Current status:".length);
+    assert.equal(fieldValueStart("現在の状況：継続中です。"), "現在の状況：".length);
+    assert.equal(fieldValueStart("Current project status:\nNo new members."), "Current project status:".length);
   });
 
-  it("keeps a sentence, a long clause, a link, and text with no colon", () => {
-    assert.equal(withoutFieldLabel("We met twice. Status: fine."), "We met twice. Status: fine.");
-    assert.equal(withoutFieldLabel("The status of the project as of this quarter is: ongoing."), "The status of the project as of this quarter is: ongoing.");
-    assert.equal(withoutFieldLabel("https://example.com/status"), "https://example.com/status");
-    assert.equal(withoutFieldLabel("No colon here."), "No colon here.");
-    assert.equal(withoutFieldLabel(""), "");
-    assert.equal(withoutFieldLabel(": no label"), ": no label");
-    assert.equal(withoutFieldLabel("12: 30"), "12: 30");
+  it("none for a sentence, a long clause, a link, text with no colon, or no letter before the colon", () => {
+    assert.equal(fieldValueStart("We met twice. Status: fine."), undefined);
+    assert.equal(fieldValueStart("The status of the project as of this quarter is: ongoing."), undefined);
+    assert.equal(fieldValueStart("https://example.com/status"), undefined);
+    assert.equal(fieldValueStart("No colon here."), undefined);
+    assert.equal(fieldValueStart(""), undefined);
+    assert.equal(fieldValueStart(": no label"), undefined);
+    assert.equal(fieldValueStart("12: 30"), undefined);
   });
 });
 
@@ -53,6 +52,7 @@ describe("heading-echo and a template field named after its heading", () => {
   it("invalid: a value or a sentence that restates the heading", () => {
     assert.equal(echoes("## Project Status\n\nNote: this is the project status.\n", en), 1);
     assert.equal(echoes("## Project Status\n\nThis section gives the project status.\n", en), 1);
+    assert.equal(echoes("## Expenses requiring receipts\n\nThe following expenses require receipts:\n", en), 1);
     assert.equal(echoes("## 事業の現在の状況\n\n事業の現在の状況について説明します。\n", ja), 1);
   });
 });

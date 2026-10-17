@@ -1,7 +1,7 @@
 import { lengthOf, proseText } from "../measure.ts";
 import { newContentMorphemes } from "./content-morphemes.ts";
 import { echoedHeadingUnits, trigrams } from "./heading-overlap.ts";
-import { withoutFieldLabel } from "./field-label.ts";
+import { fieldValueStart } from "./field-label.ts";
 import { formValueTokens, isFormBlock } from "./form-line.ts";
 import { titleTokens } from "../heading-label.ts";
 import { announcerWords, makesClaim } from "./heading-claim.ts";
@@ -9,7 +9,7 @@ import { handsOver } from "./lead-in.ts";
 import { holdsLink, namesLocation } from "./location-pointer.ts";
 import { withoutQuotedVariants } from "./quoted-variant.ts";
 import { namesHeadingSubject } from "./subject-name-line.ts";
-import type { Detector, Finding, LengthUnit, ProseDocument, Section } from "../plugin.ts";
+import type { Detector, Finding, LengthUnit, ProseDocument, Section, Sentence } from "../plugin.ts";
 
 /** 見出しが短すぎると、偶然の一致で 100% になる。これ未満の見出しは見ない。 */
 const MIN_GRAMS = 4;
@@ -116,11 +116,24 @@ const namesSubject = (doc: ProseDocument, section: Section): boolean => {
   return namesHeadingSubject(measuredHeading(section), heading, first.text, first.span.start, first.tokens, announcing);
 };
 
+/** 述語の品詞。項目名にあれば、コロンの前は名前ではなく文の頭（The following expenses require receipts:）。 */
+const PREDICATE_POS: ReadonlySet<string> = new Set(["VERB", "AUX"]);
+
 /**
- * 見出しとの重なりを測る文。用語集や表記の手引きは見出しの語の別の書き方を引用する（Not “datacentre”）ので、それは数えない。
- * 行頭の項目名（Current project status: Ongoing）も数えない。報告の書式が見出しの語で項目を立てるのは書式で、書き手が言ったのは値。
+ * 行頭の項目名（Current project status: Ongoing）を除いた文。報告の書式が見出しの語で項目を立てるのは書式で、書き手が言ったのは値。
+ * 品詞が読めなければ、項目名かどうか決められないので除かない。
  */
-const echoedText = (section: Section): string => withoutQuotedVariants(withoutFieldLabel(section.firstSentence?.text ?? ""), measuredHeading(section));
+const withoutFieldLabel = (sentence: Sentence): string => {
+  const valueStart = fieldValueStart(sentence.text);
+  if (valueStart === undefined || sentence.tokens === undefined) return sentence.text;
+  const labelEnd = sentence.span.start + valueStart;
+  const isClause = sentence.tokens.some((token) => token.span.start < labelEnd && PREDICATE_POS.has(token.pos));
+  return isClause ? sentence.text : sentence.text.slice(valueStart);
+};
+
+/** 見出しとの重なりを測る文。用語集や表記の手引きは見出しの語の別の書き方を引用する（Not “datacentre”）ので、それは数えない。 */
+const echoedText = (section: Section): string =>
+  section.firstSentence === undefined ? "" : withoutQuotedVariants(withoutFieldLabel(section.firstSentence), measuredHeading(section));
 
 export const headingEcho: Detector = (doc, options): Finding[] => {
   const leadIns = (doc.lexicons["lead-in"] ?? []).map((entry) => entry.pattern);
