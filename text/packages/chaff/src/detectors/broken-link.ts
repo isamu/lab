@@ -62,10 +62,17 @@ const CITATION_NUMBERS = /^[\d\s,，、–-]+$/u;
 /** 画像の参照（`![alt][label]`）の頭の印。指摘の範囲に含める。 */
 const IMAGE_MARK = "!";
 
+/**
+ * 名前を省いた画像の参照（`![Complete][]`）は、サイトが全ページに定義を足す印や絵（mdBook の前処理、サイト共通の定義）。
+ * 画像の行き先をページの中で一度も書かずに名前だけで呼ぶのは、定義がページの外にあるとき。名前を書いた形（`![alt][logo]`）と
+ * リンク（`[text][]`）は指摘する。
+ */
+export const siteDefinedImage = (source: string, start: number, label: string): boolean => label === "" && source.charAt(start - 1) === IMAGE_MARK;
+
 export const unresolvedReferences = (source: string, markup: Markup): Span[] =>
   markup.texts.flatMap((text) =>
     [...source.slice(text.start, text.end).matchAll(REFERENCE_LIKE)]
-      .filter((match) => !CITATION_NUMBERS.test(match[1] ?? ""))
+      .filter((match) => !CITATION_NUMBERS.test(match[1] ?? "") && !siteDefinedImage(source, text.start + match.index, match[2] ?? ""))
       .map((match) => ({ start: text.start + match.index, end: text.start + match.index + match[0].length }))
       .map((span) => (source.charAt(span.start - 1) === IMAGE_MARK ? { start: span.start - 1, end: span.end } : span)),
   );

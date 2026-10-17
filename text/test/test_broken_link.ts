@@ -91,6 +91,23 @@ describe("broken-link: 行き先の無いリンク", () => {
     assert.deepEqual(findingsOf("See [the report][] first.\n", en).length, 1);
   });
 
+  it("名前を省いた画像の参照（![Done][]）は、サイトが定義を足す印なので指摘しない", () => {
+    const table = ["| Task | Owner | Status |", "| --- | --- | --- |", "| Book the room | ![Team][] [ops] | ![Done][] |", ""].join("\n");
+    assert.deepEqual(findingsOf(table, en), []);
+    assert.deepEqual(findingsOf("状況：![完了][]\n"), []);
+  });
+
+  it("名前を省いた画像の参照があっても、同じ文書の定義の無いリンクと名前を書いた画像の参照は指摘する", () => {
+    const source = "Status: ![Done][]. See [the plan][plan] and ![chart][fig-1].\n";
+    assert.deepEqual(findingsOf(source, en), [
+      '"[the plan][plan]" is a reference-style link with no definition (it shows as plain text)',
+      '"![chart][fig-1]" is a reference-style link with no definition (it shows as plain text)',
+    ]);
+    assert.deepEqual(findingsOf("![Done][] means [finished][].\n", en), [
+      '"[finished][]" is a reference-style link with no definition (it shows as plain text)',
+    ]);
+  });
+
   it("定義のある参照はリンクなので指摘しない（大文字小文字と空白の違いは問わない）", () => {
     assert.deepEqual(findingsOf("See [the report][Annual  Report].\n\n[annual report]: https://example.com/\n", en), []);
   });
