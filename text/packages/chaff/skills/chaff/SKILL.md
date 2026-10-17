@@ -31,7 +31,9 @@ read. A contract checked as a blog post gets wrong findings, so choose the genre
    guessed or default genre shows no guide, and `--no-guide` leaves it out.
 
 A rule the genre turns off is listed under "did not run" with the genre as the reason. That is the preset's
-choice, not a gap; turn it back on (`rules:` in `chaff.yaml`) only when the person asks.
+choice, not a gap; turn it back on (`rules:` in `chaff.yaml`) only when the person asks. Some of these are off
+because chaff measured them to be mostly wrong for that kind of document on real, judged documents
+([isamu/chaff-corpus](https://github.com/isamu/chaff-corpus)); turning one back on brings those false findings back.
 
 ## Run it
 
@@ -74,6 +76,10 @@ calls nothing. Ask the person before a real run; the passages leave the machine.
 
 `npx chaffjs explain <rule-id>` shows why a rule exists, its levels and the current one. Read it before
 relaxing a rule.
+
+When a finding is wrong for a reason that is not about this team (chaff misread the text), tell the person and offer
+`npx chaffjs feedback <file> --rule <rule-id> --line <n>`: it drafts a report and sends nothing. A document the
+person may share can go to isamu/chaff-corpus, where wrong findings become test cases and rule fixes.
 
 ## When numbers or dates disagree
 
