@@ -40,8 +40,8 @@ example:
       We sell apples, pears, and plums. We ship to homes, offices, and schools. We accept cash, cards, and vouchers.
 
 not_flagged:
-  ja: カンマを打つかどうかは決めません。半々に分かれた文書では、どちらが少ないとも言えないので指しません。郵便番号で終わる住所のあとの and / or（Leeds LS1 4AB, or email）は、住所の読点のあとなので並びとして数えません。
-  en: Whether to use the comma is not decided. A document split evenly has no minority and is not reported. An and / or right after a postal address closed by its postcode ("Leeds LS1 4AB, or email us") follows the address's commas and is not counted as a list.
+  ja: カンマを打つかどうかは決めません。半々に分かれた文書では、どちらが少ないとも言えないので指しません。郵便番号で終わる住所のあとの and / or（Leeds LS1 4AB, or email）は、住所の読点のあとなので並びとして数えません。主語と述語のあいだに読点で挟んだ例の句（X, such as Y, are excluded and are not…）も並びの項目に数えません。
+  en: Whether to use the comma is not decided. A document split evenly has no minority and is not reported. An and / or right after a postal address closed by its postcode ("Leeds LS1 4AB, or email us") follows the address's commas and is not counted as a list. Nor is an example phrase set off by commas between a subject and its predicate ("X, such as Y, are excluded and are not…") counted as an item.
 level_meaning:
   ja: 少ないほうの打ち方が {limit} 箇所以下のとき指摘
   en: reported when the minority style appears {limit} times or fewer
