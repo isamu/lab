@@ -85,6 +85,6 @@ export const uiToken: Probe = {
   ],
   // A repository with no components has no UI to be consistent about, and the dimension says `—`
   // rather than scoring it (spec §18.1).
-  detect: (ctx) => Promise.resolve(ctx.files.some(isUiFile) ? { kind: "ok" } : { kind: "skipped", reason: "no .vue, .tsx or .jsx files" }),
+  detect: (ctx) => Promise.resolve(ctx.files.some(isUiFile) ? { kind: "ok" } : { kind: "skipped", reason: "no .vue, .tsx or .jsx files", notApplicable: true }),
   run: (ctx) => Promise.resolve(assess(ctx)),
 };

@@ -74,9 +74,15 @@ that an average of a few does not look like an average of all.
 
 ### Confidence
 
-`high` is the normal case. Anything lower means the dimension was measured through a lot of
-silenced errors — `as any`, `@ts-ignore`, `eslint-disable` — and the number is as much about the
-silencing as about the code. **Read the confidence before the score.**
+`high` is the normal case. Anything lower has one of two causes, and the reason beside it says which:
+
+- the dimension was measured through a lot of silenced errors — `as any`, `@ts-ignore`,
+  `eslint-disable` — so the number is as much about the silencing as about the code;
+- a tool that feeds it could not run (not installed, no readable output, no coverage report), so
+  part of it was never measured. Half or more of its weight unmeasured is `low`.
+
+A tool skipped because it does not apply — no UI files, a JavaScript project — lowers nothing.
+**Read the confidence before the score.**
 
 ## What it reads
 

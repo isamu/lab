@@ -4,6 +4,7 @@ import type { Probe } from "./plugin.ts";
 import { scoreDimension } from "./rubric.ts";
 import { slocOf } from "./files.ts";
 import { perKiloLines } from "./stats.ts";
+import { judgeConfidence, type Confidence, type UnrunProbe } from "./confidence.ts";
 import { basename } from "node:path";
 
 /** Warning counts by rule. A hundred untyped files is one decision, not a hundred findings. */
@@ -12,11 +13,6 @@ export const tallyWarnings = (report: Report): readonly (readonly [string, numbe
   report.findings.filter((finding) => finding.severity === "warning").forEach((finding) => byRule.set(finding.rule, (byRule.get(finding.rule) ?? 0) + 1));
   return [...byRule.entries()];
 };
-
-export type Confidence = "high" | "medium" | "low";
-
-const MEDIUM_ABOVE = 0.5;
-const LOW_ABOVE = 2.0;
 
 export interface DimensionReport extends ScoredDimension {
   readonly confidence: Confidence;
@@ -94,23 +90,36 @@ const withContributors = (metrics: readonly ScoredMetric[], contributors: Readon
     return found === undefined ? metric : { ...metric, topContributors: found };
   });
 
-/**
- * Where suppressions are dense, the other probes' measurements are themselves untrustworthy
- * (spec §15.4). So suppressions do not merely deduct points; they lower the dimension's confidence.
- */
-const confidenceOf = (rubric: Rubric, values: ReadonlyMap<string, number>, sloc: number): DimensionReport["confidence"] => {
-  const density = perKiloLines(
-    rubric.confidenceFrom.reduce((sum, id) => sum + (values.get(id) ?? 0), 0),
-    sloc,
-  );
-  if (density >= LOW_ABOVE) return "low";
-  if (density >= MEDIUM_ABOVE) return "medium";
-  return "high";
+/** `<probe>.<metric>` is the contract every rubric id follows. */
+const probeOfMetric = (metric: string): string => metric.split(".")[0] ?? "";
+
+/** Probes that could have measured part of this dimension and did not, with the weight they left unmeasured. */
+const unrunProbes = (rubric: Rubric, results: readonly ProbeResult[]): readonly UnrunProbe[] => {
+  const status = new Map(results.map((result) => [result.probe, result.status]));
+  const weights = new Map<string, number>();
+  rubric.metrics.forEach((rule) => {
+    const probe = probeOfMetric(rule.metric);
+    const found = status.get(probe);
+    if (found?.kind === "skipped" && found.notApplicable !== true) weights.set(probe, (weights.get(probe) ?? 0) + rule.weight);
+  });
+  return [...weights.entries()].map(([probe, weight]) => {
+    const found = status.get(probe);
+    return { probe, weight, reason: found !== undefined && "reason" in found ? found.reason : "" };
+  });
 };
 
-const reasonOf = (rubric: Rubric, values: ReadonlyMap<string, number>): string => {
-  const count = rubric.confidenceFrom.reduce((sum, id) => sum + (values.get(id) ?? 0), 0);
-  return rubric.confidenceFrom.length === 0 ? "no suppression signal wired" : `${count} suppressions in scope`;
+/**
+ * Dense suppressions mean the other probes saw less than the code holds (spec §15.4), and a probe
+ * that could not run leaves part of the weight unmeasured. Either lowers confidence, not only points.
+ */
+const confidenceOf = (rubric: Rubric, values: ReadonlyMap<string, number>, results: readonly ProbeResult[], sloc: number) => {
+  const suppressionCount = rubric.confidenceFrom.reduce((sum, id) => sum + (values.get(id) ?? 0), 0);
+  return judgeConfidence({
+    suppressionsPerKloc: rubric.confidenceFrom.length === 0 ? undefined : perKiloLines(suppressionCount, sloc),
+    suppressionCount,
+    totalWeight: rubric.metrics.reduce((sum, rule) => sum + rule.weight, 0),
+    unrun: unrunProbes(rubric, results),
+  });
 };
 
 /** One flat map of every tool version any probe reported, for the rebaseline check (spec §17.3). */
@@ -144,11 +153,12 @@ export const buildReport = (
   const sloc = slocOfKind(files, "source");
   const dimensions = rubrics.map((rubric) => {
     const scored = scoreDimension(rubric, states);
+    const verdict = confidenceOf(rubric, values, results, sloc);
     return {
       ...scored,
       metrics: withContributors(scored.metrics, contributors),
-      confidence: confidenceOf(rubric, values, sloc),
-      confidenceReason: reasonOf(rubric, values),
+      confidence: verdict.confidence,
+      confidenceReason: verdict.reason,
     };
   });
   return {
