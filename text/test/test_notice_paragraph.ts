@@ -42,4 +42,15 @@ describe("no-mixed-desumasu: 断り書きの段落は本文と比べない", () 
     const plain = "本規約は誰でも利用できます。\n分からない点は窓口に問い合わせてください。\n";
     assert.equal(findingsOf(`${plain}\n${body}`).length, 2);
   });
+
+  it("文書の多いほうと同じ調子の断り書きは数えるので、本文の少ないほうを指す", () => {
+    const notice = [
+      "本規約は誰でも無償で利用できます。",
+      "作成者は一切の責任を負いません。",
+      "内容は予告なく変更することがありますので、あらかじめご了承ください。",
+      "",
+    ].join("\n");
+    const short = ["# 前提", "", "本規約は社内の開発チームを対象とする。", "命名は英小文字とハイフンで書く。", ""].join("\n");
+    assert.equal(findingsOf(`${notice}\n${short}`).length, 2);
+  });
 });

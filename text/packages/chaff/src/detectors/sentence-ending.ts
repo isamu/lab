@@ -1,6 +1,6 @@
 import { endingTokens, isClosed } from "../sentence-shape.ts";
 import { enumeratedRuns, enumeratorStarts, numberedStarts } from "./enumerated-runs.ts";
-import { continuesInto, groupOf, registerOf, slipsOf, type Register } from "./register.ts";
+import { continuesInto, groupOf, majorityOf, registerOf, slipsOf, type Register } from "./register.ts";
 import { isRunInLabel } from "./run-in-label.ts";
 import { noticeSentences } from "./notice-paragraph.ts";
 import { chronologyRows } from "../chronology-rows.ts";
@@ -46,7 +46,8 @@ export const judgedSentences = (doc: ProseDocument, polite: readonly LexiconEntr
     return register === undefined ? [] : [{ sentence, register }];
   });
   const registers = new Map(all.map((entry) => [entry.sentence, entry.register]));
-  const notices = noticeSentences(doc.paragraphs, doc.lexicons["notice-phrase"] ?? [], (sentence) => registers.get(sentence));
+  const majority = majorityOf(all.map((entry) => ({ register: entry.register, group: undefined })));
+  const notices = noticeSentences(doc.paragraphs, doc.lexicons["notice-phrase"] ?? [], (sentence) => registers.get(sentence), majority);
   const found = all.filter((entry) => !notices.has(entry.sentence));
   const runs = runsOf(
     doc,
