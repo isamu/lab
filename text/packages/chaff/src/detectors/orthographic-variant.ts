@@ -5,6 +5,7 @@ import { isKatakanaWord, stemOf } from "../long-vowel.ts";
 import { QUOTATION_MARKS, isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
 import { furiganaSpans } from "../furigana.ts";
+import { withCutNounsJoined } from "../split-noun.ts";
 import { japaneseCompanyNameSpans } from "../company-name-run.ts";
 import { acronymsIn, isCapitalsNotSpelling } from "../capitals-with-small.ts";
 import { isPartOfAddress } from "./address-word.ts";
@@ -368,7 +369,7 @@ export const orthographicVariant: Detector = (doc, options): Finding[] => {
       phraseSuffixes,
     ),
   };
-  const reading = byKanji(placed.flatMap(({ sentence, isOpen }) => readingWords(sentence, isOpen, skips)));
+  const reading = byKanji(placed.flatMap(({ sentence, isOpen }) => readingWords(withCutNounsJoined(sentence, skips.nouns), isOpen, skips)));
   const katakana = placed.flatMap(({ sentence, isOpen }) => katakanaWords(sentence, isOpen));
   const runs = placed.flatMap(({ sentence, isOpen }) => katakanaRunWords(sentence, isOpen));
   const dictionary = doc.dictionary?.();
