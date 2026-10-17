@@ -30,6 +30,13 @@ describe("openingDateOf", () => {
     assert.equal(openingDateOf(sentence, [spanOf(sentence, "March 4, 2026", "2026-03-04")], []), undefined);
   });
 
+  it("a label on a line of its own takes the date below it; front matter is not the title block", () => {
+    const split = "Committee Minutes\nDate:\n2026-03-04\n";
+    assert.equal(openingDateOf(split, [spanOf(split, "2026-03-04", "2026-03-04")], ["Date"]), "2026-03-04");
+    const front = "---\ntitle: Minutes\nauthor: Clerk\nlang: en\n---\n\n# Committee Minutes\n\nMarch 4, 2026\n";
+    assert.equal(openingDateOf(front, [spanOf(front, "March 4, 2026", "2026-03-04")], []), "2026-03-04");
+  });
+
   it("a date alone on a line below the title block is not the document's date", () => {
     const late = "One\n\nTwo\n\nThree\n\nFour\n\nFive\n\nMarch 4, 2026\n";
     assert.equal(openingDateOf(late, [spanOf(late, "March 4, 2026", "2026-03-04")], []), undefined);
