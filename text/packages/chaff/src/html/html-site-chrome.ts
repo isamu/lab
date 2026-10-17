@@ -46,7 +46,10 @@ const tokens = (value: string): string[] => value.split(/\s+/u).filter((token) =
 
 const holdsTitle = (range: ElementRange): boolean => /<h1\b/iu.test(range.inner);
 
-const sentenceCount = (html: string): number => plainText(html.replace(/<[^>]*>/gu, " ")).split(new RegExp(CLOSED_SENTENCE.source, "gu")).length - 1;
+const SENTENCE_ENDS = new RegExp(CLOSED_SENTENCE.source, "gu");
+
+/** Each tag read as a space, as hasSentence does, so that "Done.</li><li>Next" ends one. */
+const sentenceCount = (html: string): number => [...plainText(html.replace(/<\/?[a-z!][^>]*>/giu, " ")).matchAll(SENTENCE_ENDS)].length;
 
 /** The block's own running text: what is left without its links (a menu) and its headings (a title, a menu's labels). */
 const ownSentences = (html: string): number => sentenceCount(withoutRanges(html, headingRanges(html)).replace(ANY_LINK, " "));
