@@ -35,6 +35,7 @@ describe("vague-deadline", () => {
   it("reports a vague limit in a contract that writes its other limits as numbers", () => {
     assert.deepEqual(wordsIn(ja, ja_("第3条　乙は、甲の求めを受けたときは、速やかに資料を提出する。")), ["速やかに"]);
     assert.deepEqual(wordsIn(ja, ja_("第3条　甲は、前項の請求を受けたときは、遅滞なく修補する。")), ["遅滞なく"]);
+    assert.deepEqual(wordsIn(ja, ja_("第3条　乙は、本契約が終了したときは、貸与物を遅延なく甲に返還する。")), ["遅延なく"]);
     assert.deepEqual(wordsIn(en, en_("3. The Supplier shall notify the Customer promptly of any breach.")), ["promptly"]);
     assert.deepEqual(wordsIn(en, en_("3. The Customer shall return the equipment within a reasonable time.")), ["within a reasonable time"]);
   });
@@ -48,6 +49,8 @@ describe("vague-deadline", () => {
   it("does not report a sentence that also states a limit in numbers, nor a precise one", () => {
     assert.deepEqual(wordsIn(ja, ja_("第3条　乙は、速やかに、遅くとも7日以内に資料を提出する。")), []);
     assert.deepEqual(wordsIn(ja, ja_("第3条　甲は、直ちに本契約を解除することができる。")), []);
+    assert.deepEqual(wordsIn(ja, ja_("第3条　乙は、遅延なく、遅くとも7日以内に貸与物を返還する。")), []);
+    assert.deepEqual(wordsIn(ja, ja_("第3条　乙は、甲の求めを受けたときは、直ちに作業を止める。")), []);
     assert.deepEqual(wordsIn(en, en_("3. The Supplier shall notify the Customer promptly, and in any case within five business days.")), []);
     assert.deepEqual(wordsIn(en, en_("3. Either party may terminate this Agreement immediately on notice.")), []);
   });
