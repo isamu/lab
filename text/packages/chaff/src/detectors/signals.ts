@@ -133,7 +133,7 @@ const gramsOf = (doc: ProseDocument, sentences: readonly Sentence[]): Tally => {
 type Repeat = { readonly key: string; readonly count: number; readonly at: FirstSeen | undefined };
 
 /** 範囲（gram-passages.ts）ごとに数える。よくある質問の別々の答えは別の範囲。節の最初の文にだけ出るものは節のひな形（gram-openers.ts）。 */
-const repeatsOf = (doc: ProseDocument, limit: number, openers = sectionOpeners(doc.sections)): Repeat[] =>
+const repeatsOf = (doc: ProseDocument, limit: number, openers = sectionOpeners(doc.sections, doc.source)): Repeat[] =>
   gramPassagesOf(doc.sections).flatMap((sentences) => {
     const tally = gramsOf(doc, sentences);
     const opening = gramsOf(
