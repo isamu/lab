@@ -53,12 +53,7 @@ describe("list-item-form-mix: a headline's あり / なし after a noun is a phr
 });
 
 describe("list-item-form-mix: an item ending in a colon leads into what follows", () => {
-  const items = [
-    "The parser reads the file.",
-    "The renderer draws the page.",
-    "The exporter writes the archive.",
-    "The checker validates the output.",
-  ];
+  const items = ["The parser reads the file.", "The renderer draws the page.", "The exporter writes the archive.", "The checker validates the output."];
 
   it("does not judge a lead-in item for a nested list", () => {
     const source = ["# Title", "", ...items.map((item) => `- ${item}`), "- Other kinds of output:", "  - The printer prints a copy.", ""].join("\n");
