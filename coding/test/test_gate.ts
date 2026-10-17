@@ -1,7 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { judge, UNREASONED_SUPPRESSIONS } from "../packages/scoria/src/gate.ts";
-import type { Confidence, DimensionReport, Report } from "../packages/scoria/src/report.ts";
+import type { DimensionReport, Report } from "../packages/scoria/src/report.ts";
+import type { Confidence } from "../packages/scoria/src/confidence.ts";
 import type { Finding } from "../packages/scoria/src/plugin.ts";
 
 interface DimensionOptions {

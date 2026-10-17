@@ -90,7 +90,12 @@ export const tsc: Probe = {
   apiVersion: 1,
   tier: 1,
   declares: ["tsc.type_errors", "tsc.type_errors_per_kloc"],
+  // A JavaScript project has no types for tsc to check; a TypeScript one without a tsconfig is a gap.
   detect: (ctx) =>
-    Promise.resolve(findConfig(ctx.configFiles, "tsconfig.json") === undefined ? { kind: "skipped", reason: "no tsconfig.json" } : { kind: "ok" }),
+    Promise.resolve(
+      findConfig(ctx.configFiles, "tsconfig.json") !== undefined
+        ? { kind: "ok" }
+        : { kind: "skipped", reason: "no tsconfig.json", ...(ctx.project.typescript ? {} : { notApplicable: true as const }) },
+    ),
   run,
 };

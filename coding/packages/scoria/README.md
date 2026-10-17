@@ -216,9 +216,10 @@ downstream tooling reads one stable vocabulary, and the rule id joins the two.
 ## Reading the report
 
 **Read the Confidence column before the Score column.** `medium` or `low` means the dimension was
-measured through suppressions, so the number describes the measurement as much as the code. A
-readability of 88 with 60 `eslint-disable` comments in scope is not a readable codebase; it is an
-unmeasured one.
+measured through suppressions, or that a tool feeding it could not run — the reason beside it says
+which. Either way the number describes the measurement as much as the code. A readability of 88 with
+60 `eslint-disable` comments in scope is not a readable codebase; it is an unmeasured one. Neither is a
+test-coverage of 100 with no coverage report to read.
 
 **A single run tells you little.** The score exists to watch one repository's own trend, and the
 first run is only the baseline. Comparing it to another project's number is meaningless.

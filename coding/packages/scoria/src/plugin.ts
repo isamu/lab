@@ -30,10 +30,13 @@ export interface Metric {
 /**
  * absent and skipped are kept apart so that a repository with no tests at all cannot score full
  * marks (spec §18). absent means the project is missing something it ought to have, and scores 0.
- * skipped means scoria could not measure it, and is not scored at all.
+ * skipped means scoria could not measure it, and is not scored at all. `notApplicable` separates
+ * "there is nothing here to measure" from "it could not be measured": only the second lowers confidence.
  */
 export type ProbeStatus =
-  { readonly kind: "ok" } | { readonly kind: "absent"; readonly reason: string } | { readonly kind: "skipped"; readonly reason: string };
+  | { readonly kind: "ok" }
+  | { readonly kind: "absent"; readonly reason: string }
+  | { readonly kind: "skipped"; readonly reason: string; readonly notApplicable?: true };
 
 export interface Finding {
   readonly rule: string;

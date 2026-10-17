@@ -151,3 +151,9 @@ test("SARIF maps severities onto the three levels it defines", async () => {
   assert.match(renderSarif(informational, "0.1.0"), /"level": "note"/);
   assert.match(renderSarif(report, "0.1.0"), /"level": "error"/);
 });
+
+/** The caveat tells a reader what a low confidence means; naming only one cause sends them to the wrong fix. */
+test("both languages give both causes of a confidence below high", () => {
+  assert.match(messagesFor("en").notComparableLong, /suppressions.*could not run/);
+  assert.match(messagesFor("ja").notComparableLong, /抑制.*道具が動かなかった/);
+});

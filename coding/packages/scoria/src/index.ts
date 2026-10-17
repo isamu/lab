@@ -1,6 +1,7 @@
 export type { Finding, Metric, Probe, ProbeContext, ProbeResult, ProbeStatus, SourceFile, StackAdapter } from "./plugin.ts";
 export type { Rubric, Scale, ScoredDimension, ScoredMetric } from "./rubric.ts";
-export type { Report, DimensionReport, Confidence } from "./report.ts";
+export type { Report, DimensionReport } from "./report.ts";
+export type { Confidence } from "./confidence.ts";
 export type { Mover, ReportDiff } from "./diff.ts";
 export type { Exemption, GateReason, Verdict } from "./gate.ts";
 export type { BadgeEndpoint } from "./badge.ts";
