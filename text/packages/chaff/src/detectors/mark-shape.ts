@@ -1,5 +1,6 @@
 import type { Detector, Finding, Lexicon, ProseDocument, Sentence } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
+import { isConventionalPhrase } from "./caps-phrase.ts";
 import { minorityReport } from "../spacing-minority.ts";
 import { formulaBracketSpans } from "../formula-brackets.ts";
 import { isWithinAny, quotedSpans } from "../quoted-span.ts";
@@ -246,9 +247,11 @@ export const lowerCaseWords = (source: string): ReadonlySet<string> =>
 
 /**
  * Whether more than half the words of a capital run are also written elsewhere in lower case. Words the lexicon lists as
- * written in capitals by convention (MUST NOT in a specification) count like acronyms.
+ * written in capitals by convention (MUST NOT in a specification) count like acronyms, and a run made of its phrases
+ * (NOW, THEREFORE, BE IT RESOLVED) is not shouting.
  */
 export const isShouting = (run: string, known: ReadonlySet<string>, conventional: ReadonlySet<string>): boolean => {
+  if (isConventionalPhrase(run, conventional)) return false;
   const words = run.split(/,? /u);
   const ordinary = words.filter((word) => !conventional.has(word) && known.has(word.toLowerCase()));
   const long = words.filter((word) => word.length > 1);

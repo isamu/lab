@@ -1,5 +1,6 @@
-# Words written in capitals by convention, not to shout: the requirement keywords of RFC 2119 and BCP 14.
-# all-caps-shouting counts them like acronyms, so "the client MUST NOT" is not a shouted run.
+# Words written in capitals by convention, not to shout: the requirement keywords of RFC 2119 and BCP 14, and the formal
+# wording of a resolution (WHEREAS, NOW, THEREFORE, BE IT RESOLVED). all-caps-shouting counts a word like an acronym, so
+# "the client MUST NOT" is not a shouted run; a run made only of the phrases of several words is not one either.
 id: caps-convention
 language: en
 entries:
@@ -10,3 +11,8 @@ entries:
   - pattern: REQUIRED
   - pattern: RECOMMENDED
   - pattern: OPTIONAL
+  - pattern: WHEREAS
+  - pattern: RESOLVED
+  - pattern: NOW, THEREFORE
+  - pattern: BE IT RESOLVED
+  - pattern: BE IT FURTHER RESOLVED
