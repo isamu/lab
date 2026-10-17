@@ -10,8 +10,9 @@ import { linkTextOf } from "./link-text.ts";
 
 const EXTERNAL = /^<?https?:\/\//iu;
 const TEXT_END = "](";
-/** リンクの前に書いてよいもの: 行頭の空白、箇条書きの印、コロンで終わる短い見出し語（参考:、出典：、See also:）。 */
-const LINE_HEAD = /^[ \t]*(?:(?:[-*+]|\d{1,3}[.)])[ \t]+)?(?:[^\n:：。、.,[\]]{1,15}[:：][ \t]*)?$/u;
+/** リンクの前に書いてよいもの: 行頭の空白と箇条書きの印、その後ろにコロンで終わる短い見出し語（参考:、出典：、See also:）。 */
+const BULLET = /^[ \t]*(?:(?:[-*+]|\d{1,3}[.)])[ \t]+)?/u;
+const LABEL = /^(?:[^\n:：。、.,[\]]{1,15}[:：][ \t]*)?$/u;
 /** リンクの後ろに書いてよいもの: 行末までの空白と句読点か、説明を始めるコロン。 */
 const LINE_TAIL = /^(?:[ \t.,;。、]*(?:\n|$)|[ \t]*[:：])/u;
 
@@ -26,7 +27,7 @@ const externalTextOf = (source: string, link: Span): Span | undefined => {
 
 const headsItsLine = (source: string, link: Span): boolean => {
   const lineStart = source.lastIndexOf("\n", link.start - 1) + 1;
-  return LINE_HEAD.test(source.slice(lineStart, link.start)) && LINE_TAIL.test(source.slice(link.end));
+  return LABEL.test(source.slice(lineStart, link.start).replace(BULLET, "")) && LINE_TAIL.test(source.slice(link.end));
 };
 
 /** 外のページの題名を引いたリンクの、文字の範囲（角括弧は含まない）。位置は source の上。links は doc.links。 */
