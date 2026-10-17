@@ -1,4 +1,5 @@
-import type { Detector, Finding, ProseDocument, Sentence, TableCell, Token } from "../plugin.ts";
+import type { Detector, Finding, ProseDocument, Sentence, Span, TableCell, Token } from "../plugin.ts";
+import { externalLinkTitleSpans } from "../link-title.ts";
 import { groupBy, oddSpellings, type KeyedWord, type OddSpelling } from "../spelling-variants.ts";
 import { dropsOkurigana, kanjiKeyAmong, katakanaKey, lemmaReading } from "../kana-spelling.ts";
 import { isKatakanaWord, stemOf } from "../long-vowel.ts";
@@ -51,8 +52,15 @@ const PHRASE_SUFFIX = "orthographic-variant-phrase-suffix";
 const patternsOf = (doc: ProseDocument, id: string, genre: string | undefined): string[] =>
   entriesForGenre(doc.lexicons[id] ?? [], genre).map((entry) => entry.pattern);
 
-/** The team's names, and the company forms (株式会社, ㈱) a registered company name is written next to. */
-type Names = { readonly team: readonly string[]; readonly companyForms: readonly string[] };
+/**
+ * The team's names, the company forms (株式会社, ㈱) a registered company name is written next to, and the links that quote an
+ * outside page's title (link-title.ts), placed in the source.
+ */
+type Names = { readonly team: readonly string[]; readonly companyForms: readonly string[]; readonly linkTitles: readonly Span[] };
+
+/** Spans placed in the source, placed in a sentence's text instead. */
+const inSentence = (sentence: Sentence, spans: readonly Span[]): Span[] =>
+  spans.map((span) => ({ start: span.start - sentence.span.start, end: span.end - sentence.span.start }));
 
 /**
  * Whether a stretch of the sentence is outside a quotation, the team's names, a company's name (関東珪曹硝子㈱) and a reading in
@@ -63,6 +71,7 @@ const isOpenIn = (sentence: Sentence, names: Names): IsOpen => {
     ...quotedSpans(sentence.text, QUOTATION_MARKS),
     ...furiganaSpans(sentence.text),
     ...japaneseCompanyNameSpans(sentence.text, names.companyForms),
+    ...inSentence(sentence, names.linkTitles),
   ];
   const named = nameSpans(sentence.text, names.team);
   return (start, end) => !isWithinAny(closed, { start, end }) && !touchesAny(named, start, end);
@@ -322,7 +331,11 @@ const cellPlace = (cell: TableCell, names: Names): Place => {
  * document writes less is pointed at. No way is called right; limit is the largest share, in percent, the minority may have.
  */
 export const orthographicVariant: Detector = (doc, options): Finding[] => {
-  const names: Names = { team: doc.names ?? [], companyForms: (doc.lexicons["company-form"] ?? []).map((entry) => entry.pattern) };
+  const names: Names = {
+    team: doc.names ?? [],
+    companyForms: (doc.lexicons["company-form"] ?? []).map((entry) => entry.pattern),
+    linkTitles: externalLinkTitleSpans(doc.source, doc.links),
+  };
   const placed: Place[] = [
     ...doc.sentences.map((sentence) => ({ sentence, isOpen: isOpenIn(sentence, names), readsLatin: true })),
     ...(doc.tableCells?.() ?? []).map((cell) => cellPlace(cell, names)),

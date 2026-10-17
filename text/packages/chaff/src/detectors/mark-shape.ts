@@ -1,6 +1,7 @@
 import type { Detector, Finding, Lexicon, ProseDocument, Sentence } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { minorityReport } from "../spacing-minority.ts";
+import { externalLinkTitleSpans } from "../link-title.ts";
 import { formulaBracketSpans } from "../formula-brackets.ts";
 import { isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { captionsOf, isCaptionAt } from "./caps-caption.ts";
@@ -94,12 +95,14 @@ const ownSentences = (doc: ProseDocument): readonly Sentence[] => doc.sentences.
 export const markConsistency: Detector = (doc, options): Finding[] => {
   const script = SCRIPT[doc.language];
   if (script === undefined) return [];
+  // A link that quotes an outside page's title keeps that page's marks ((コンテキスト内) in a WCAG title).
+  const titles = externalLinkTitleSpans(doc.source, doc.links);
   const forms = formsOf(options.lexicon ?? []);
   const marks = ownSentences(doc).flatMap((sentence) => marksIn(doc.source, sentence, forms, script));
   const kinds = [...new Set(marks.map((mark) => mark.form.kind))];
   return kinds.flatMap((kind) =>
     minorityFindings(
-      marks.filter((mark) => mark.form.kind === kind),
+      marks.filter((mark) => mark.form.kind === kind && !isWithinAny(titles, { start: mark.offset, end: mark.offset + 1 })),
       options.limit,
       (mark) => ({ mark: mark.char, usual: mark.form.other }),
     ),
