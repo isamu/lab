@@ -1,0 +1,9 @@
+# Words that state a condition. An open list in brackets right after one ("in other cases (a single-table query, etc.)")
+# gives examples of when the requirement applies, not what it covers. Read by requirement-smell.
+id: requirement-open-condition
+language: en
+entries:
+  - pattern: case
+  - pattern: cases
+  - pattern: when
+  - pattern: where
