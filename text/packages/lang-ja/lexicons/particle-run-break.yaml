@@ -17,3 +17,7 @@ entries:
   - pattern: "->"
   - pattern: "=>"
   - pattern: "<-"
+  - pattern: "<->"
+  - pattern: "<=>"
+  - pattern: "=="
+  - pattern: ":="

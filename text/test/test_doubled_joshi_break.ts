@@ -13,7 +13,7 @@ describe("no-doubled-joshi: a mark between phrases ends the run", () => {
   });
 
   it("valid: an equals sign, a colon or an arrow between two phrases ends the run", () => {
-    ["=", "＝", ":", "：", "→", "⇒", "->", " = "].forEach((mark) => {
+    ["=", "＝", ":", "：", "→", "⇒", "->", " = ", "==", ":="].forEach((mark) => {
       assert.equal(countFor(`インスタンス名の制限${mark}タグの制限のため、短くします。`), 0, mark);
     });
   });
