@@ -43,6 +43,8 @@ const DISTINCT = "orthographic-variant-distinct";
 const FUKUSHI = "hiragana-fukushi";
 /** Lexicon: idioms written as noun, particle and verb (気をつける). The verb there is compared apart from the verb on its own. */
 const IDIOM = "orthographic-variant-idiom";
+/** Lexicon: verbs whose て-form opening a sentence before a comma is a conjunction (あわせて、). */
+const CONJUNCTION = "orthographic-variant-conjunction";
 /** Lexicon: words the tokenizer cuts in one spelling and not the other (お客様, お客 and さま). Each is read whole, keyed by its group. */
 const WHOLE_WORD = "orthographic-variant-whole-word";
 /** Lexicon: suffixes written onto a word that do not make a compound of it (割当て等, 引受け後): the word keeps its okurigana there. */
@@ -68,8 +70,13 @@ const isOpenIn = (sentence: Sentence, names: Names): IsOpen => {
   return (start, end) => !isWithinAny(closed, { start, end }) && !touchesAny(named, start, end);
 };
 
-/** A word and the two words before it, in its sentence. */
-type InContext = { readonly token: Token; readonly previous: Token | undefined; readonly before: Token | undefined };
+/** A word, the two words before it and the two after it, in its sentence. */
+type InContext = {
+  readonly token: Token;
+  readonly previous: Token | undefined;
+  readonly before: Token | undefined;
+  readonly following?: readonly Token[];
+};
 
 /** A verb's て-form the tokenizer read as a conjunction (追って at the head of a sentence): a kanji stem and て or で. Connectives (そして, それで) are kana. */
 const TE_FORM_CONJUNCTION = /^\p{Script=Han}.*[てで]$/u;
@@ -107,13 +114,32 @@ const isKanaSuffix = ({ token, previous }: InContext): boolean =>
 const isIdiomVerb = ({ token, previous, before }: InContext, idioms: ReadonlySet<string>): boolean =>
   token.pos === "VERB" && previous?.pos === "ADP" && before !== undefined && idioms.has(`${before.surface}${previous.surface}${token.lemma ?? token.surface}`);
 
+const TE = new Set(["て", "で"]);
+const COMMA = new Set(["、", "，", ","]);
+
+/**
+ * A listed verb's て-form that opens its sentence and is followed by a comma (あわせて、…): a conjunction ("in addition"), which
+ * many guides write in kana while the verb (日程を合わせる) keeps its kanji.
+ */
+const isConjunctionUse = ({ token, previous, following }: InContext, conjunctions: ReadonlySet<string>): boolean =>
+  token.pos === "VERB" &&
+  conjunctions.has(token.lemma ?? "") &&
+  (previous === undefined || previous.pos === "PUNCT") &&
+  TE.has(following?.[0]?.surface ?? "") &&
+  COMMA.has(following?.[1]?.surface ?? "");
+
+/** The lexicons that set a verb's use apart: idioms (気をつける) and conjunctions (あわせて、). */
+type Uses = { readonly idioms: ReadonlySet<string>; readonly conjunctions: ReadonlySet<string> };
+
 /**
  * A helper verb or a dependent noun (見て下さい, その事) is written kana by many guides while the full word keeps its kanji (資料を下さい).
  * The two uses are compared apart, so a document that follows that convention is consistent. A suffix (業務用, 全員ぶん) is a third use:
- * it is not the dependent noun of the same reading (このように). The verb of an idiom (気をつける) is a fourth.
+ * it is not the dependent noun of the same reading (このように). The verb of an idiom (気をつける) is a fourth, and a
+ * て-form used as a conjunction (あわせて、) a fifth.
  */
-const useOf = (word: InContext, idioms: ReadonlySet<string>): string => {
+const useOf = (word: InContext, { idioms, conjunctions }: Uses): string => {
   if (isIdiomVerb(word, idioms)) return "idiom";
+  if (isConjunctionUse(word, conjunctions)) return "conjunction";
   if (isKanaSuffix(word)) return "suffix";
   if (!isHelper(word)) return "free";
   return word.token.pos === "NOUN" && word.token.features?.["NounType"] !== "Dependent" ? "suffix" : "bound";
@@ -137,19 +163,21 @@ const isCopulaReadAsVerb = ({ token, previous }: InContext): boolean =>
 type Skips = {
   readonly skip: ReadonlySet<string>;
   readonly idioms: ReadonlySet<string>;
+  readonly conjunctions: ReadonlySet<string>;
   readonly wholeWords: ReadonlyMap<string, string>;
   readonly phraseSuffixes: ReadonlySet<string>;
   /** The document's nouns, as documentNounKeys keys them. */
   readonly nouns: ReadonlySet<string>;
 };
 
-const readingKeyOf = (word: InContext, { skip, idioms }: Skips): string | undefined => {
+const readingKeyOf = (word: InContext, skips: Skips): string | undefined => {
+  const { skip } = skips;
   const { token } = word;
   const lemma = token.lemma;
   if (!CONTENT.has(token.pos) || token.reading === undefined || lemma === undefined || !JAPANESE_WORD.test(lemma) || skip.has(lemma)) return undefined;
   const reading = lemmaReading(token.surface, lemma, token.reading);
   if (reading === undefined || [...reading].length < MIN_READING || skip.has(reading) || isCutFromKatakana(word) || isCopulaReadAsVerb(word)) return undefined;
-  return `${token.pos}|${useOf(word, idioms)}|${reading}`;
+  return `${token.pos}|${useOf(word, skips)}|${reading}`;
 };
 
 /**
@@ -180,7 +208,7 @@ const readingWords = (sentence: Sentence, isOpen: IsOpen, skips: Skips): Placed[
       if (inRun.has(at)) return [];
       const next = tokens[at + 1];
       const token = asNounWhereNominal(written, next, skips.phraseSuffixes, skips.nouns);
-      const key = readingKeyOf({ token, previous: tokens[at - 1], before: tokens[at - 2] }, skips);
+      const key = readingKeyOf({ token, previous: tokens[at - 1], before: tokens[at - 2], following: tokens.slice(at + 1, at + 3) }, skips);
       const local = token.span.start - sentence.span.start;
       if (key === undefined || token.lemma === undefined || !isOpen(local, local + token.surface.length)) return [];
       const compoundHead = token.pos === "NOUN" && next?.pos === "NOUN" && isTouching(token, next) && !skips.phraseSuffixes.has(next.surface);
@@ -331,6 +359,7 @@ export const orthographicVariant: Detector = (doc, options): Finding[] => {
   const skips: Skips = {
     skip: new Set([...patternsOf(doc, DISTINCT, options.genre), ...patternsOf(doc, FUKUSHI, options.genre)]),
     idioms: new Set(patternsOf(doc, IDIOM, options.genre)),
+    conjunctions: new Set(patternsOf(doc, CONJUNCTION, options.genre)),
     wholeWords: new Map((doc.lexicons[WHOLE_WORD] ?? []).map((entry) => [entry.pattern, entry.group ?? entry.pattern])),
     phraseSuffixes,
     nouns: documentNounKeys(

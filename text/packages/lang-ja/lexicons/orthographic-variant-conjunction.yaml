@@ -1,0 +1,13 @@
+# 文の頭で、て形に読点を続けると接続詞になる動詞（あわせて、／加えて、／続いて、）。辞書の形で、漢字とかなの両方を挙げる。
+# 公用文は接続詞をかなで書き（あわせて）、動詞は漢字で書く（日程を合わせる）ので、orthographic-variant はこの二つを別に比べる。
+# ほかの動詞のて形（みて、驚いた）は、文の頭でも動詞として比べる。
+id: orthographic-variant-conjunction
+language: ja
+entries:
+  - pattern: あわせる
+  - pattern: 合わせる
+  - pattern: 併せる
+  - pattern: 加える
+  - pattern: くわえる
+  - pattern: 続く
+  - pattern: つづく

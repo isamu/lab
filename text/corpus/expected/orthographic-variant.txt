@@ -31,7 +31,7 @@ jma-yougo-kaze  1
 jp-2011-056072-seiu-kenyo-gasa  5
 jstage-jniph-74-1-2-rehabilitation  2
 jstage-jniph-74-2-119-wbgt  1
-kantei-221-shisei-hoshin  7
+kantei-221-shisei-hoshin  6
 kantei-unga81-general-debate-speech  1
 kokkai-217-sangiin-shohisha-7  22
 maff-kyodo-ryori-okaisan-ja  1
