@@ -34,6 +34,19 @@ describe("isMemoLabel: a memo's header label", () => {
     assert.equal(isMemoLabel("", EN_LABELS), false);
     assert.equal(isMemoLabel("TO:", []), false);
   });
+
+  it("reads a label wrapped in inline HTML tags", () => {
+    assert.equal(isMemoLabel("<h3> FROM: <br/>Ann Lee<br/>Town Clerk</h3>", EN_LABELS), true);
+    assert.equal(isMemoLabel('<p class="head">SUBJECT:</p>', EN_LABELS), true);
+    assert.equal(isMemoLabel("<b>MEMORANDUM</b>", EN_LABELS), true);
+  });
+
+  it("does not take a tag's own name, a mail program's field inside a tag, or a label run into words past a tag", () => {
+    assert.equal(isMemoLabel("<h3>From: Ann Lee</h3>", EN_LABELS), false);
+    assert.equal(isMemoLabel("<to>All staff</to>", EN_LABELS), false);
+    assert.equal(isMemoLabel("<b>TOTAL</b>: 3 rooms", EN_LABELS), false);
+    assert.equal(isMemoLabel("## M-17-01<br/>MEMORANDUM FOR THE HEADS OF OFFICES", EN_LABELS), false);
+  });
 });
 
 describe("isMemo: a label in the header, before the first sentence", () => {
@@ -74,6 +87,23 @@ describe("email-greeting-closing on a memo", () => {
       "",
     ].join("\n");
     assert.deepEqual(variantsOf(en, memo), []);
+  });
+
+  it("reads a memo whose labels are set in inline HTML headings", () => {
+    const memo = [
+      "## M-17-01<br/>MEMORANDUM FOR THE HEADS OF BRANCH OFFICES",
+      "<h3> FROM: <br/>Ann Lee<br/>Town Clerk</h3>",
+      "<h3> SUBJECT: <br/>Car park repairs</h3>",
+      "",
+      "The car park closes on Monday for repairs. Staff may park on Mill Lane.",
+      "",
+    ].join("\n");
+    assert.deepEqual(variantsOf(en, memo), []);
+  });
+
+  it("still reports an email whose only HTML heading is not a memo label", () => {
+    const mail = ["<h3>Car park repairs</h3>", "", "The car park closes on Monday.", "", "Ichiro", ""].join("\n");
+    assert.deepEqual(variantsOf(en, mail), ["greeting", "closing"]);
   });
 
   it("still reports an email whose header is a mail program's, and a memo label found only in the body", () => {
