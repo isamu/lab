@@ -3,6 +3,7 @@
 // one list is reported. です/ます against plain endings inside a list is no-mixed-desumasu's, not this.
 import { minorityWithin } from "../orthography.ts";
 import { isQuotedAt } from "./bold-label.ts";
+import { endsAsHeadline, markOrSkipped, withoutFootnoteReference, withoutTrailingMarks } from "./list-item-ending.ts";
 import type { BulletList, Detector, Finding, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 
 /** What an item is made of: a phrase or a sentence (ending), and the word it opens with (head, English only). */
@@ -12,6 +13,7 @@ export type Axis = "ending" | "head";
 export const FORMS: Readonly<Record<Axis, readonly [string, string]>> = { ending: ["phrase", "sentence"], head: ["verb", "noun"] };
 
 const SKIPPED_AT_END = new Set(["PUNCT", "SYM", "X"]);
+const isMark = markOrSkipped(SKIPPED_AT_END);
 const NOMINAL = new Set(["NOUN", "PROPN", "NUM", "PRON"]);
 const PREDICATE = new Set(["VERB", "AUX", "ADJ"]);
 const NOUN_HEAD = new Set(["NOUN", "ADJ", "DET", "NUM", "PRON", "PROPN"]);
@@ -33,12 +35,16 @@ const withoutClosingAside = (tokens: readonly Token[]): readonly Token[] => {
   return open <= 0 ? tokens : tokens.slice(0, open);
 };
 
-/** Japanese: a predicate at the end (出します, 済ませる, 早い) is a sentence; a noun (月末, 確認すること) is a phrase. */
-const japaneseEnding = (sentences: readonly Sentence[]): string | undefined => {
+/**
+ * Japanese: a predicate at the end (出します, 済ませる, 早い) is a sentence; a noun (月末, 確認すること) or a headline's
+ * あり / なし after a noun (翻訳あり) is a phrase. Marks after the last word (!!, a footnote reference) are not words.
+ */
+const japaneseEnding = (sentences: readonly Sentence[], headlineEndings: ReadonlySet<string>): string | undefined => {
   if (sentences.length > 1) return "sentence";
-  const last = withoutClosingAside(sentences[0]?.tokens ?? []).findLast((token) => !SKIPPED_AT_END.has(token.pos));
+  const words = withoutTrailingMarks(withoutClosingAside(withoutFootnoteReference(sentences[0]?.tokens ?? [], isMark)), isMark);
+  const last = words.at(-1);
   if (last === undefined) return undefined;
-  if (NOMINAL.has(last.pos)) return "phrase";
+  if (NOMINAL.has(last.pos) || endsAsHeadline(words, headlineEndings)) return "phrase";
   return PREDICATE.has(last.pos) ? "sentence" : undefined;
 };
 
@@ -100,7 +106,7 @@ const headFromTag = (first: Token): string | undefined => {
   return NOUN_HEAD.has(first.pos) ? "noun" : undefined;
 };
 
-/** What the head axis reads besides the item's own words: the adapter's word lists, and the nouns of the item's list. */
+/** What the axes read besides the item's own words: the adapter's word lists, and the nouns of the item's list. */
 export type HeadContext = {
   /** Verbs the tagger does not know as verbs (click), from the adapter's instruction-verb word list. */
   readonly instructionVerbs: ReadonlySet<string>;
@@ -108,9 +114,11 @@ export type HeadContext = {
   readonly verbOrAdjective: ReadonlySet<string>;
   /** The lemmas the tagger read as nouns anywhere in the item's list. */
   readonly nounsInList: ReadonlySet<string>;
+  /** Words that end a Japanese item as a headline does after a noun (翻訳あり), from headline-ending. */
+  readonly headlineEndings: ReadonlySet<string>;
 };
 
-export const NO_HEAD_CONTEXT: HeadContext = { instructionVerbs: new Set(), verbOrAdjective: new Set(), nounsInList: new Set() };
+export const NO_HEAD_CONTEXT: HeadContext = { instructionVerbs: new Set(), verbOrAdjective: new Set(), nounsInList: new Set(), headlineEndings: new Set() };
 
 type HeadReading = "verb" | "noun" | "unjudged" | undefined;
 
@@ -180,7 +188,7 @@ const englishHead = (sentences: readonly Sentence[], context: HeadContext): stri
 
 /** An item's form on an axis, or undefined when its words do not tell. Japanese items have no head axis (the verb comes last). */
 export const formOf = (axis: Axis, sentences: readonly Sentence[], language: string, context: HeadContext = NO_HEAD_CONTEXT): string | undefined => {
-  if (language === "ja") return axis === "ending" ? japaneseEnding(sentences) : undefined;
+  if (language === "ja") return axis === "ending" ? japaneseEnding(sentences, context.headlineEndings) : undefined;
   return axis === "ending" ? englishEnding(sentences) : englishHead(sentences, context);
 };
 
@@ -215,6 +223,9 @@ const LABELLED = /^[^:：。.]{1,40}\s*[:：]\s*\S/u;
 /** Code or a link in the item as written: chaff masks it out of the sentence, so the item's words are not all there. */
 const CODE_OR_LINK = /`|\]\(|\]\[|https?:\/\//u;
 
+/** An item that ends in a colon (Other kinds of decisions:) leads into what follows it, often a nested list: neither form. */
+const LEAD_IN = /[:：]$/u;
+
 /** An item ending like a clause of one running sentence (…conduct;, …、, …and): the list is one sentence split up. */
 const RUNNING_ON = /(?:[;,、，]|\b(?:and|or))$/iu;
 
@@ -226,7 +237,7 @@ const wordCount = (sentences: readonly Sentence[]): number =>
 
 const isJudged = (written: string, sentences: readonly Sentence[]): boolean => {
   const text = sentences.map((sentence) => sentence.text).join(" ");
-  return wordCount(sentences) >= MIN_WORDS && !LABELLED.test(text.trim()) && !CODE_OR_LINK.test(written);
+  return wordCount(sentences) >= MIN_WORDS && !LABELLED.test(text.trim()) && !LEAD_IN.test(text.trim()) && !CODE_OR_LINK.test(written);
 };
 
 const runsOn = (sentences: readonly Sentence[]): boolean => RUNNING_ON.test(sentences.at(-1)?.text.trim() ?? "");
@@ -237,6 +248,7 @@ const wordsOf = (doc: ProseDocument, lexicon: string): ReadonlySet<string> =>
 const headContext = (doc: ProseDocument, items: readonly (readonly Sentence[])[]): HeadContext => ({
   instructionVerbs: wordsOf(doc, "instruction-verb"),
   verbOrAdjective: wordsOf(doc, "verb-or-adjective"),
+  headlineEndings: wordsOf(doc, "headline-ending"),
   nounsInList: new Set(
     items.flatMap((sentences) =>
       sentences.flatMap((sentence) => (sentence.tokens ?? []).flatMap((token) => (token.pos === "NOUN" && token.lemma !== undefined ? [token.lemma] : []))),

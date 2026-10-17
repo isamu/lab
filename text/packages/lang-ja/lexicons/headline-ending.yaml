@@ -1,0 +1,9 @@
+# 名詞のすぐ後ろに付けて、見出しのように「〜がある」「〜がない」を言う語（翻訳あり、駐車場なし）。箇条書きの項目がこれで
+# 終われば、述語ではなく名詞で止めた形と読む。助詞を挟んだもの（翻訳があり）は節の途中。list-item-form-mix が読む。
+id: headline-ending
+language: ja
+entries:
+  - pattern: あり
+  - pattern: 有り
+  - pattern: なし
+  - pattern: 無し
