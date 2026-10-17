@@ -23,7 +23,10 @@ describe("oxford-comma-consistency: contrasts and introductions", () => {
 
   it("does not read a sequence word and the phrase after it as items", () => {
     assert.equal(firedAfter(WITH_COMMA, "First, outside a block, the helper checks for the error and re-throws it."), false);
-    assert.equal(firedAfter(WITH_COMMA, "First, outside a block, `try call()` [checks for the error and re-throws it](https://example.com/a), like the old macro."), false);
+    assert.equal(
+      firedAfter(WITH_COMMA, "First, outside a block, `try call()` [checks for the error and re-throws it](https://example.com/a), like the old macro."),
+      false,
+    );
   });
 
   it("still counts a list inside the contrast, after a sequence word, and of sequence words", () => {

@@ -60,8 +60,7 @@ const commaBefore = (scope: ItemScope, at: number): boolean => scope.sentence.to
  */
 const LEAD_POS = new Set(["ADP", "SCONJ", "ADV", "PART"]);
 
-const isSequenceWord = (scope: ItemScope, token: Token | undefined): boolean =>
-  scope.sentence.words.sequence?.has(token?.surface.toLowerCase() ?? "") ?? false;
+const isSequenceWord = (scope: ItemScope, token: Token | undefined): boolean => scope.sentence.words.sequence?.has(token?.surface.toLowerCase() ?? "") ?? false;
 
 const SENTENCE_MARKS = new Set(["PUNCT", "SYM"]);
 
@@ -77,7 +76,8 @@ const withoutSequenceWord = (view: View): View | undefined => {
   const at = firstAt(scope, "open", first.item);
   const { tokens } = scope.sentence;
   const opensSentence = tokens.slice(0, at).every((token) => SENTENCE_MARKS.has(token.pos));
-  if (!opensSentence || !isSequenceWord(scope, tokens[at]) || tokens[at + 1]?.surface !== "," || isSequenceWord(scope, openingOf(scope, second.item))) return undefined;
+  if (!opensSentence || !isSequenceWord(scope, tokens[at]) || tokens[at + 1]?.surface !== "," || isSequenceWord(scope, openingOf(scope, second.item)))
+    return undefined;
   const rest = { start: at + 2, end: first.item.end };
   return hasContent(scope, rest) ? { ...withoutFirst(view), pre: rest } : withoutFirst(view);
 };
