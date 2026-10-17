@@ -63,6 +63,29 @@ const PAIR_LEAD = /^[ \t\u3000]*(?:(?:[-*+]|\d{1,3}[.．)）])[ \t\u3000]+)?/u;
 const PAIR_LABEL = /^[^\s\d、，,（）()｜|：:。！？]{2,12}$/u;
 const PAIR_VALUE = /^\d(?:[^\s、，,（）()｜|。！？]|(?<=\d),(?=\d))*$/u;
 
+/**
+ * 値の後ろに括弧で添えた説明（10万円 (税込 11万円)）の、開く字と閉じる字。囲みは閉じ括弧の手前で終わるので、最後の開き括弧から後ろが説明。
+ * 入れ子の括弧（(税込 (内訳))）は読まない。
+ */
+const ASIDE_PAIRS: ReadonlyMap<string, string> = new Map([
+  ["(", ")"],
+  ["（", "）"],
+]);
+
+/** 説明の括弧の後ろに残ってよいもの: 空白と強調の印。語が続けば（で募集します）文の中の値。 */
+const LINE_REST = /^[\s*_]*$/u;
+
+/**
+ * 組の値。値の後ろに同じ形の括弧で閉じた説明を添えて行が終わるなら、説明を除いた値。閉じていないか、
+ * 説明の後ろに語が続けば undefined。fromEnclosureEnd は囲みの終わり（閉じ括弧か行末）から行末まで。
+ */
+const valueOf = (written: string, fromEnclosureEnd: string): string | undefined => {
+  const aside = Math.max(...[...ASIDE_PAIRS.keys()].map((open) => written.lastIndexOf(open)));
+  if (aside < 0) return written;
+  const closed = fromEnclosureEnd[0] === ASIDE_PAIRS.get(written[aside] ?? "");
+  return closed && LINE_REST.test(fromEnclosureEnd.slice(1)) ? written.slice(0, aside).trimEnd() : undefined;
+};
+
 /** 項目名に出る品詞。名詞だけで、助詞・副詞（およそ）・接頭の語（約）を含めば、量の前置きか文。 */
 const PAIR_LABEL_POS = new Set(["NOUN", "PROPN"]);
 
@@ -92,10 +115,12 @@ const pairAround = (text: string, enclosure: Span, at: number): Span => {
  * 項目名が 1 字（約 30名）か名詞でない語を含む組は、文の中の空白として数える。
  */
 const isLabelledValue = (text: string, boundary: Boundary, tokens: readonly Token[], base: number): boolean => {
-  const enclosure = enclosureAround(text, lineAround(text, boundary.offset), boundary.offset);
+  const line = lineAround(text, boundary.offset);
+  const enclosure = enclosureAround(text, line, boundary.offset);
   const pair = pairAround(text, enclosure, boundary.offset);
   const label = { start: pair.start, end: boundary.offset };
-  if (!PAIR_LABEL.test(text.slice(label.start, label.end)) || !PAIR_VALUE.test(text.slice(boundary.offset + 1, pair.end))) return false;
+  const value = valueOf(text.slice(boundary.offset + 1, pair.end), text.slice(enclosure.end, line.end));
+  if (!PAIR_LABEL.test(text.slice(label.start, label.end)) || value === undefined || !PAIR_VALUE.test(value)) return false;
   if (SENTENCE_END.test(text.slice(enclosure.start, enclosure.end))) return false;
   const labelTokens = tokensIn(tokens, label, base);
   return (
