@@ -2,7 +2,6 @@
 18f-handbook-projects-in-distress  1
 18f-handbook-travel-faq  1
 aoml-hurricane-faq  3
-chrome-blog-pwa-origin-migration-ja  1
 da-annual-report-2024  1
 da-area-data-map-format  3
 da-recruitment-office-visit  3
@@ -20,7 +19,6 @@ neeview-changelog-ja  11
 nsf-19-582-reu-solicitation  1
 nstac-microdata-forum  3
 readygov-power-outages  1
-ruby-3-4-0-released-ja  1
 usajobs-va-it-specialist-customer-support  3
 wikivoyage-ja-shikoku-henro  1
 wikivoyage-ja-shimoda  1

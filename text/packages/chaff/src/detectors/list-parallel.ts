@@ -187,7 +187,13 @@ const englishHead = (sentences: readonly Sentence[], context: HeadContext): stri
 };
 
 /** An item's form on an axis, or undefined when its words do not tell. Japanese items have no head axis (the verb comes last). */
+/** An item that ends in a colon (Other kinds of decisions:) leads into what follows it: its ending is not its own, its opening still is. */
+const LEAD_IN = /[:：]$/u;
+
+const leadsIn = (sentences: readonly Sentence[]): boolean => LEAD_IN.test(sentences.at(-1)?.text.trim() ?? "");
+
 export const formOf = (axis: Axis, sentences: readonly Sentence[], language: string, context: HeadContext = NO_HEAD_CONTEXT): string | undefined => {
+  if (axis === "ending" && leadsIn(sentences)) return undefined;
   if (language === "ja") return axis === "ending" ? japaneseEnding(sentences, context.headlineEndings) : undefined;
   return axis === "ending" ? englishEnding(sentences) : englishHead(sentences, context);
 };
@@ -223,9 +229,6 @@ const LABELLED = /^[^:：。.]{1,40}\s*[:：]\s*\S/u;
 /** Code or a link in the item as written: chaff masks it out of the sentence, so the item's words are not all there. */
 const CODE_OR_LINK = /`|\]\(|\]\[|https?:\/\//u;
 
-/** An item that ends in a colon (Other kinds of decisions:) leads into what follows it, often a nested list: neither form. */
-const LEAD_IN = /[:：]$/u;
-
 /** An item ending like a clause of one running sentence (…conduct;, …、, …and): the list is one sentence split up. */
 const RUNNING_ON = /(?:[;,、，]|\b(?:and|or))$/iu;
 
@@ -237,7 +240,7 @@ const wordCount = (sentences: readonly Sentence[]): number =>
 
 const isJudged = (written: string, sentences: readonly Sentence[]): boolean => {
   const text = sentences.map((sentence) => sentence.text).join(" ");
-  return wordCount(sentences) >= MIN_WORDS && !LABELLED.test(text.trim()) && !LEAD_IN.test(text.trim()) && !CODE_OR_LINK.test(written);
+  return wordCount(sentences) >= MIN_WORDS && !LABELLED.test(text.trim()) && !CODE_OR_LINK.test(written);
 };
 
 const runsOn = (sentences: readonly Sentence[]): boolean => RUNNING_ON.test(sentences.at(-1)?.text.trim() ?? "");
