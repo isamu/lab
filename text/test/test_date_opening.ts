@@ -8,6 +8,7 @@ import { openingDateOf, type DatedSpan } from "../packages/chaff/src/detectors/o
 // The document's own date in its title block, and the yearless dates it places in one year. All text is self-written.
 
 const RULE = "date-without-year";
+const MINUTES = "business/meeting-notes";
 
 const spanOf = (source: string, text: string, value: string): DatedSpan => {
   const start = source.indexOf(text);
@@ -53,24 +54,30 @@ describe("date-without-year: the minutes' own date places a day and month near i
     ].join("\n");
 
   it("a day within a few months of the minutes' date takes its year", () => {
-    assert.deepEqual(namedRuleRun(RULE, minutes("The autumn show was held on November 8th."), en, "a.txt").findings, []);
-    assert.deepEqual(namedRuleRun(RULE, minutes("The next work day is March 7."), en, "a.txt").findings, []);
+    assert.deepEqual(namedRuleRun(RULE, minutes("The autumn show was held on November 8th."), en, "a.txt", MINUTES).findings, []);
+    assert.deepEqual(namedRuleRun(RULE, minutes("The next work day is March 7."), en, "a.txt", MINUTES).findings, []);
   });
 
   it("a day further from it is still unclear", () => {
-    assert.deepEqual(namedRuleRun(RULE, minutes("The pond was dug on August 3."), en, "a.txt").findings, [
+    assert.deepEqual(namedRuleRun(RULE, minutes("The pond was dug on August 3."), en, "a.txt", MINUTES).findings, [
       '"August 3" has no year, and the document\'s dates run from 2019 to 2026, so the year is unclear',
     ]);
   });
 
   it("without the date in the title block, the near day is reported as before", () => {
     const untitled = minutes("The autumn show was held on November 8th.").replace("January 14, 2026", "Winter meeting");
-    assert.equal(namedRuleRun(RULE, untitled, en, "a.txt").findings.length, 1);
+    assert.equal(namedRuleRun(RULE, untitled, en, "a.txt", MINUTES).findings.length, 1);
+  });
+
+  it("a web page's date at the top is when it was posted: a near day is still reported outside the dated genres", () => {
+    const page = minutes("The autumn show was held on November 8th.");
+    assert.equal(namedRuleRun(RULE, page, en, "a.txt", "business/report").findings.length, 1);
+    assert.deepEqual(namedRuleRun(RULE, page, en, "a.txt", "business/email").findings, []);
   });
 
   it("in Japanese too: 議事録の日付の近くの月日はその年", () => {
     const ja1 = "# 理事会議事録\n\n2026年1月14日\n\n倉庫の契約は2019年3月2日に結び、2025年6月30日に更新した。\n\n秋の品評会は11月8日に開いた。\n";
-    assert.deepEqual(namedRuleRun(RULE, ja1, ja).findings, []);
-    assert.equal(namedRuleRun(RULE, ja1.replace("11月8日", "8月3日"), ja).findings.length, 1);
+    assert.deepEqual(namedRuleRun(RULE, ja1, ja, "a.md", MINUTES).findings, []);
+    assert.equal(namedRuleRun(RULE, ja1.replace("11月8日", "8月3日"), ja, "a.md", MINUTES).findings.length, 1);
   });
 });

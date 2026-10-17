@@ -1,6 +1,7 @@
 // A date written without its year where the reader cannot tell which year it is: the document's dated dates span more
 // than one year, or its dates cross the turn of a year. Pure; reads the date nodes of the structure tree.
-import type { Detector, Finding, LexiconEntry, ProseDocument, StructureNode } from "../plugin.ts";
+import type { Detector, DetectorOptions, Finding, LexiconEntry, ProseDocument, StructureNode } from "../plugin.ts";
+import { isIn } from "../lexicon-genres.ts";
 import { inDocumentOrder } from "../structure/issues.ts";
 import { quoteAt } from "./structure-tree.ts";
 import {
@@ -204,7 +205,18 @@ const stampOf = (doc: ProseDocument, tree: StructureNode): string | undefined =>
   return openingDateOf(doc.source, dates, labels);
 };
 
-const pointsOf = (doc: ProseDocument, tree: StructureNode): DatePoint[] => datePoints(tree, headingYearWordsOf(doc), stampOf(doc, tree));
+/**
+ * The genres whose date at the top is the occasion the text is about (minutes, a letter), from the rule's dated_genres.
+ * A web page's date at the top says when it was posted, and its days and months may be any year's.
+ */
+const datedByOccasion = (options: DetectorOptions): boolean => {
+  const genres = options.settings?.["dated_genres"];
+  const genre = options.genre;
+  return genre !== undefined && Array.isArray(genres) && genres.some((target: string) => isIn(genre, target));
+};
+
+const pointsOf = (doc: ProseDocument, tree: StructureNode, options: DetectorOptions): DatePoint[] =>
+  datePoints(tree, headingYearWordsOf(doc), datedByOccasion(options) ? stampOf(doc, tree) : undefined);
 
 const yearWordsOf = (doc: ProseDocument): YearWord[] =>
   (doc.lexicons[YEAR_REFERENCE_LEXICON] ?? []).map((entry: LexiconEntry) => ({ word: entry.pattern, position: entry.position }));
@@ -224,10 +236,10 @@ const anyYearWordsOf = (doc: ProseDocument): AnyYearWords => ({
   joiners: (doc.lexicons[YEAR_SPAN_JOINER_LEXICON] ?? []).map((entry: LexiconEntry) => entry.pattern),
 });
 
-export const dateWithoutYear: Detector = (doc: ProseDocument): Finding[] =>
+export const dateWithoutYear: Detector = (doc: ProseDocument, options: DetectorOptions): Finding[] =>
   doc.structure === undefined
     ? []
-    : yearGaps(pointsOf(doc, doc.structure), doc.source, yearWordsOf(doc), anyYearWordsOf(doc)).map((gap) => ({
+    : yearGaps(pointsOf(doc, doc.structure, options), doc.source, yearWordsOf(doc), anyYearWordsOf(doc)).map((gap) => ({
         rule: "date-without-year",
         severity: "warning",
         line: 0,
