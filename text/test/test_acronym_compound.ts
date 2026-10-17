@@ -111,7 +111,7 @@ describe("undefined-acronym: 2 語の強調", () => {
   });
 
   it("invalid: 略語 2 つの並びは強調ではない", () => {
-    assert.deepEqual(reportedAcronyms(en, "# Notes\n\nThe AWS KMS key rotates."), ["AWS", "KMS"]);
+    assert.deepEqual(reportedAcronyms(en, "# Notes\n\nThe ACME KMS key rotates."), ["ACME", "KMS"]);
   });
 
   it("invalid: 略語の長さの上限ちょうどの語は、略語として数える", () => {

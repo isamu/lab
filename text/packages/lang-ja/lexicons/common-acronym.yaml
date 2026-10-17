@@ -31,6 +31,9 @@ entries:
   - pattern: TODO
   - pattern: NOTE
   - pattern: TIP
+  # 大文字で書くクラウドの名前。その名前で呼ばれ、展開して書かれることがない。
+  - pattern: AWS
+  - pattern: GCP
   # 通信と符号化。技術文書でなくても説明なしで通じる。
   - pattern: DNS
   - pattern: IP

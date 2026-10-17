@@ -37,7 +37,7 @@ const REPORTED: readonly Case[] = [
   ["括弧の中に小文字の語", `${NAME} (see ON RRP) here`, "RRP"],
   ["括弧の中の列挙（読点）", `${NAME} (ON, RRP) here`, "ON"],
   ["括弧の外の並び", `${NAME}, ON RRP today`, "ON"],
-  ["括弧の前の並びの頭（括弧の直前の語だけが展開される）", "use AWS KMS (Key Management Service) today", "AWS"],
+  ["括弧の前の並びの頭（括弧の直前の語だけが展開される）", "use ACME KMS (Key Management Service) today", "ACME"],
   ["括弧が閉じない", `${NAME} (ON RRP is used`, "ON"],
   ["2 つの語の間に空白が 2 つ", `${NAME} (ON  RRP) here`, "ON"],
   ["1 文字の語と並ぶ", `${NAME} (O RRP) here`, "RRP"],
