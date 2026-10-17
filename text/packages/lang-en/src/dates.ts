@@ -14,7 +14,7 @@ const DAY_BEFORE = /(?<d>\d{1,2})(?:st|nd|rd|th)? $/u;
 const DAY_YEAR_AFTER = /^ (?<d>\d{1,2})(?:st|nd|rd|th)?,? (?<y>\d{4})\b/u;
 const YEAR_AFTER = /^,? (?<y>\d{4})\b/u;
 /** "Mar 28 14:02:11 UTC 2024", the form of `date` and C's ctime: the year comes after the time and its zone. */
-const DAY_TIME_YEAR_AFTER = /^ (?<d>\d{1,2}) \d{1,2}:\d{2}(?::\d{2})?(?: [A-Z]{2,5})? (?<y>\d{4})\b/u;
+const DAY_TIME_YEAR_AFTER = /^ (?<d>\d{1,2}) (?:[01]?\d|2[0-3]):[0-5]\d(?::[0-5]\d)?(?: (?!AM\b|PM\b)[A-Z]{2,5})? (?<y>\d{4})\b/u;
 const TIME_YEAR_REACH = 32;
 
 const pad = (value: string): string => value.padStart(2, "0");
@@ -34,12 +34,13 @@ const monthDayYear = (text: string, at: number, end: number, month: number): Men
   return { start: at, end: end + found[0].length, attrs: { value } };
 };
 
-/** "Mar 28 14:02:11 UTC 2024" → 2024-03-28. */
+/** "Mar 28 14:02:11 UTC 2024" → 2024-03-28. The mention ends at the day, so the time stays a time of its own. */
 const monthDayTimeYear = (text: string, at: number, end: number, month: number): Mention | undefined => {
   const found = DAY_TIME_YEAR_AFTER.exec(text.slice(end, end + TIME_YEAR_REACH));
-  if (found?.groups === undefined) return undefined;
-  const value = `${found.groups["y"] ?? ""}-${pad(String(month))}-${pad(found.groups["d"] ?? "")}`;
-  return { start: at, end: end + found[0].length, attrs: { value } };
+  const day = found?.groups?.["d"];
+  if (found?.groups === undefined || day === undefined) return undefined;
+  const value = `${found.groups["y"] ?? ""}-${pad(String(month))}-${pad(day)}`;
+  return { start: at, end: end + 1 + day.length, attrs: { value } };
 };
 
 /** "1 April 2024" → 2024-04-01, "April 2024" → 2024-04. */

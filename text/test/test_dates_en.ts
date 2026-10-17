@@ -38,6 +38,8 @@ describe("English dates", () => {
     ["Logged Fri Jan 5 09:15:00 2024.", ["2024-01-05"]],
     ["The rollout starts Mar 27 23:59 and ends at dawn.", ["03-27"]],
     ["The window is Mar 27 23:59 UTC, after the freeze.", ["03-27"]],
+    ["Not a clock: Mar 27 99:99 2024 units.", ["03-27"]],
+    ["A 12-hour time is no ctime: Mar 27 10:00 PM 2024 rows.", ["03-27"]],
   ];
   cases.forEach(([text, expected]) => {
     it(text, () => assert.deepEqual(dateOf(text), expected));
@@ -114,6 +116,13 @@ describe("a tab between a number and its unit or currency", () => {
 });
 
 describe("date-without-year: the year after the time (ctime)", () => {
+  it("the date's span ends at the day, leaving the time to be read as a time", () => {
+    const text = "Thu Mar 28 14:02:11 UTC 2024 the cluster is back";
+    assert.deepEqual(
+      (patterns().dates?.(text) ?? []).map((mention) => text.slice(mention.start, mention.end)),
+      ["Mar 28"],
+    );
+  });
   const timeline = (line: string): string =>
     ["## Timeline", "", "- 2023-12-30 10:00 the job is scheduled", "- 2024-03-27 21:34 the patch is merged", `- ${line}`, ""].join("\n");
   it("reads the year written after the time, and still reports a day and month with no year", () => {
