@@ -13,6 +13,14 @@ const ISO_DATE = /\b(?<y>\d{4})-(?<m>\d{2})-(?<d>\d{2})\b/gu;
 const DAY_BEFORE = /(?<d>\d{1,2})(?:st|nd|rd|th)? $/u;
 const DAY_YEAR_AFTER = /^ (?<d>\d{1,2})(?:st|nd|rd|th)?,? (?<y>\d{4})\b/u;
 const YEAR_AFTER = /^,? (?<y>\d{4})\b/u;
+/** A time zone or "hrs" after four figures: "1300 UTC", "0930 PST", "1300 hrs". */
+const ZONE_AFTER = /^ ?(?:UTC|GMT|Z|[A-Z]{1,3}T|hrs|hours)\b/u;
+const HOURS_IN_DAY = 24;
+const MINUTES_IN_HOUR = 60;
+
+/** "Mar 28 1300 UTC": four figures that read as a 24-hour clock and carry a time zone are the time, not the year. */
+const clockTime = (figures: string, rest: string): boolean =>
+  Number(figures.slice(0, 2)) < HOURS_IN_DAY && Number(figures.slice(2)) < MINUTES_IN_HOUR && ZONE_AFTER.test(rest);
 
 const pad = (value: string): string => value.padStart(2, "0");
 
@@ -26,7 +34,7 @@ const dayBefore = (text: string, at: number): { readonly day: string; readonly s
 /** "April 1, 2024" → 2024-04-01. */
 const monthDayYear = (text: string, at: number, end: number, month: number): Mention | undefined => {
   const found = DAY_YEAR_AFTER.exec(text.slice(end, end + 16));
-  if (found?.groups === undefined) return undefined;
+  if (found?.groups === undefined || clockTime(found.groups["y"] ?? "", text.slice(end + found[0].length))) return undefined;
   const value = `${found.groups["y"] ?? ""}-${pad(String(month))}-${pad(found.groups["d"] ?? "")}`;
   return { start: at, end: end + found[0].length, attrs: { value } };
 };
@@ -35,7 +43,7 @@ const monthDayYear = (text: string, at: number, end: number, month: number): Men
 const monthYear = (text: string, at: number, end: number, month: number): Mention | undefined => {
   const found = YEAR_AFTER.exec(text.slice(end, end + 8));
   const year = found?.groups?.["y"];
-  if (found === null || year === undefined) return undefined;
+  if (found === null || year === undefined || clockTime(year, text.slice(end + found[0].length))) return undefined;
   const before = dayBefore(text, at);
   const value = [year, pad(String(month)), ...(before === undefined ? [] : [pad(before.day)])].join("-");
   return { start: before?.start ?? at, end: end + found[0].length, attrs: { value } };
