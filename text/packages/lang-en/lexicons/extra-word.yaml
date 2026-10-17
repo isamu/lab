@@ -1,13 +1,14 @@
 # Words in everyday technical and business writing that WordNet does not list. unknown-word reads them as known, with
 # their endings: function words WordNet leaves out (cannot, wherein, albeit, whilst), Latin phrases in English text
 # (a priori, in forma pauperis, de minimis), the legal words of contracts (thereunder, herefrom, monies, pendency,
-# cedent, telecopy) and newer coinages (onboard, roadmap, phishing). A team adds its own words under names in chaff.yaml;
-# this list is only for words any document may use.
+# cedent, telecopy) and newer coinages (onboard, roadmap, phishing, vishing, ransomware). A team adds its own words
+# under names in chaff.yaml; this list is only for words any document may use.
 id: extra-word
 language: en
 entries:
   - pattern: accessibility
   - pattern: admin
+  - pattern: adware
   - pattern: albeit
   - pattern: alia
   - pattern: api
@@ -92,6 +93,7 @@ entries:
   - pattern: interoperability
   - pattern: interoperable
   - pattern: json
+  - pattern: keylogger
   - pattern: lest
   - pattern: licensor
   - pattern: lifecycle
@@ -128,6 +130,7 @@ entries:
   - pattern: payout
   - pattern: pdf
   - pattern: pendency
+  - pattern: pharming
   - pattern: phishing
   - pattern: plaintext
   - pattern: plugin
@@ -139,6 +142,8 @@ entries:
   - pattern: prepend
   - pattern: priori
   - pattern: quadrupole
+  - pattern: quishing
+  - pattern: ransomware
   - pattern: realtime
   - pattern: refactor
   - pattern: regex
@@ -147,16 +152,19 @@ entries:
   - pattern: reputational
   - pattern: requestor
   - pattern: roadmap
+  - pattern: rootkit
   - pattern: runtime
   - pattern: sandbox
   - pattern: sans
   - pattern: scalability
+  - pattern: scareware
   - pattern: screenshot
   - pattern: sdk
   - pattern: sectoral
   - pattern: serverless
   - pattern: signup
   - pattern: smartphone
+  - pattern: smishing
   - pattern: snowmelt
   - pattern: soever
   - pattern: spreadsheet
@@ -191,6 +199,7 @@ entries:
   - pattern: verbatim
   - pattern: versa
   - pattern: virtualize
+  - pattern: vishing
   - pattern: vitae
   - pattern: watersports
   - pattern: webhook

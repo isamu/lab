@@ -40,7 +40,7 @@ const chartOf = (report: Report, diff?: ReportDiff): string => renderChart(repor
 
 test("the chart is a mermaid fence GitHub renders wherever it renders Markdown", () => {
   const chart = chartOf(reportOf([dimensionOf("readability", 72)]));
-  assert.ok(chart.startsWith("```mermaid\nxychart-beta\n"));
+  assert.ok(chart.startsWith("```mermaid\nxychart-beta horizontal\n"));
   assert.ok(chart.trimEnd().endsWith("```"));
 });
 

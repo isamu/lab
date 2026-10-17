@@ -60,6 +60,19 @@ test("tsc parses file, line, code and message out of its plain output", async ()
   assert.equal(result.findings[0]?.rule, "tsc/TS2322");
 });
 
+test("tsc records the version under the checker it ran", async () => {
+  const result = await tsc.run(contextWith(files, { exec: execReturning("Version 6.0.3", 0) }));
+  assert.deepEqual(Object.keys(result.toolVersions), ["typescript"]);
+});
+
+/** Plain tsc on a Vue project reports every component import as missing; no number beats that one. */
+test("a Vue project without vue-tsc is skipped rather than checked with tsc", async () => {
+  const vue = { typescript: true, installed: true, packageManager: "yarn" as const, stacks: ["vue", "ts"] };
+  const result = await tsc.run(contextWith(files, { project: vue, exec: execReturning(TSC_OUTPUT, 2) }));
+  assert.equal(result.status.kind, "skipped");
+  assert.ok(result.status.kind === "skipped" && result.status.reason.includes("vue-tsc"));
+});
+
 test("tsc is skipped where the project has no tsconfig", async () => {
   const status = await tsc.detect(contextWith(files));
   assert.equal(status.kind, "skipped");

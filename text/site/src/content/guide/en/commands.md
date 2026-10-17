@@ -309,6 +309,7 @@ It keeps only the lines around the finding, and sends nothing itself.
 `--missed --line N` reports something chaff should have said; `--with-config` adds all of `chaff.yaml`.
 The draft, `.chaff-feedback.md`, holds the version and OS, the one finding with two lines on each side, and that rule's setting in `chaff.yaml`.
 A report becomes a test and a fix.
+A document you may share can also go to [isamu/chaff-corpus](https://github.com/isamu/chaff-corpus) by pull request, with a verdict for each finding; one you may not share can be recorded there by URL and hash only. Its CI runs every chaff release over those documents.
 
 ```
 $ npx chaffjs feedback sample.md --rule heading-echo --line 11

@@ -3,7 +3,7 @@ layer: L3
 status: stable
 how_to_find: sentence-ending
 word_list: polite-ending
-extra_word_lists: [neutral-ending]
+extra_word_lists: [neutral-ending, notice-phrase]
 requires: [pos]
 languages: [ja]
 severity: info
@@ -51,8 +51,8 @@ example:
       新しい料金は来月から始まります。請求書の形式も変わります。支払いの期限は月末です。古い料金は三月で終わります。
 
 not_flagged:
-  ja: どちらの調子が正しいかは決めません。多いほうに揃っていない、少ないほうの文だけを指します。本文と箇条書きは別々に数えます。箇条書きの中の少ないほうが文書全体では多いほうなら、その文は指しません。項目や段落の頭の太字の札（「- **速く書ける。** 説明です。」の「速く書ける。」）は見出しと同じく文に数えません。
-  en: Neither register is called right; only the sentences in the minority are pointed at. The body and each list are counted apart, and a sentence in a list's minority is left alone when its register is the document's majority. A bold label that opens an item or a paragraph and is followed by more text on its line is a heading, not a sentence.
+  ja: どちらの調子が正しいかは決めません。多いほうに揃っていない、少ないほうの文だけを指します。本文と箇条書きは別々に数えます。箇条書きの中の少ないほうが文書全体では多いほうなら、その文は指しません。項目や段落の頭の太字の札（「- **速く書ける。** 説明です。」の「速く書ける。」）は見出しと同じく文に数えません。免責や変更の予告を書いた段落（「…ご了承ください。」）が、2 文以上すべて文書の多いほうと違う同じ調子でそろっているときも、本文とは別の決まり文句として数えません。
+  en: Neither register is called right; only the sentences in the minority are pointed at. The body and each list are counted apart, and a sentence in a list's minority is left alone when its register is the document's majority. A bold label that opens an item or a paragraph and is followed by more text on its line is a heading, not a sentence. A paragraph of disclaimer or notice wording (…ご了承ください。) whose two or more sentences all share the register the rest of the document does not use is boilerplate in its own voice and is not counted.
 level_meaning:
   ja: 少ないほうの調子の文が {limit} 文以下のとき、それを指摘
   en: reported when the minority register has {limit} sentences or fewer

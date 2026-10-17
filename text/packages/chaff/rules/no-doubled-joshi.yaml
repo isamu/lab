@@ -42,8 +42,8 @@ example:
     after: 本社営業部にある第二課の方針を確認しました。
 
 not_flagged:
-  ja: 読点で区切った並び、「」や『』の中の題名や引用、行の頭のリンクで引いた外のページの題名は数えません。
-  en: Items separated by commas, titles or quotations inside 「」 or 『』, and the title of an outside page quoted by a link at a line's head are not counted.
+  ja: 読点で区切った並び、＝・：・→ で区切った句、「」や『』の中の題名や引用、行の頭のリンクで引いた外のページの題名は数えません。
+  en: Items separated by commas, phrases separated by =, a colon or an arrow, titles or quotations inside 「」 or 『』, and the title of an outside page quoted by a link at a line's head are not counted.
 level_meaning:
   ja: 同じ助詞の連続 {limit} 回まで
   en: up to {limit} of the same particle in a row

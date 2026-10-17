@@ -2,6 +2,64 @@
 
 Newest first.
 
+## 0.36.0 — 2026-10-18
+
+Most of this release is what judging more real documents in isamu/chaff-corpus taught: Japanese company rules, contracts,
+municipal pages, securities reports and tax notices; English OSS governance, memos, postmortems, standards and FOMC
+minutes. False positives found there are fixed rule by rule, a few misses are now caught, list lines in plain text are
+read one item per sentence in both languages, and there is one new rule.
+
+### Rules
+
+- New: kanji-compound-slip reports a long kanji compound written once with one kanji changed, where the document writes
+  the usual form several times (就職永河期世代 among 就職氷河期世代) (#1402).
+- number-without-unit catches a figure whose scale word drops the unit the rest of the document uses (83,494百万 among
+  百万円) (#1394); announced-count-mismatch reads a one-line heading such as 3行要約 (#1408); unfilled-placeholder
+  reports a template's OPTIONAL: instruction left in a report (#1412); numbering-gap names a number written twice
+  before a skip once (#1393); doubled-word catches a particle repeated across a parenthetical aside (#1387);
+  known-misspelling and misconversion learn typos found in real documents (#1378, #1379, #1414).
+- Sentences and paragraphs: one list item per line is its own sentence and paragraph in Japanese and English, with
+  appendix markers (A.1.) (#1274, #1360, #1370); modal-conflict compares list items under their lead-in's condition and
+  reads a negation inside the act (#1366, #1374).
+- Fewer false findings on real documents:
+  - orthographic-variant: noun and verb forms of one word, split 交ぜ書き words, 係る and かかる, をもとに, company
+    names, bracketed compound heads, nouns the tokenizer cut in two (#1263, #1285, #1291, #1392, #1398, #1399, #1401,
+    #1404, #1417); the #1200 regression in 0.35.0 (申し出期限) is fixed (#1285).
+  - undefined-acronym: company names, chemical formulas, link titles, placeholders, plural and later-heading expansions,
+    code keywords, cited venues, cloud and browser names (#1260, #1275, #1383, #1396, #1405).
+  - requirement-smell, nado-closed-list, obligation-without-deadline, vague-deadline, vague-word-density: lists that give
+    examples, conditions, permissions and prohibitions, deadlines named in the article, 事前に, 遅延なく, words pinned down
+    by a bracket (#1279, #1283, #1287, #1288, #1359, #1381, #1389, #1397, #1429).
+  - Contracts: defined-term-form, numeral-sentence-start, unknown-word, dangling-figure-reference, duplicate-definition,
+    dangling-reference, use-before-definition (#1262, #1280, #1281, #1284, #1304, #1286, #1289, #1361, #1380, #1385).
+  - Memos and letters: all-caps-shouting, email-greeting-closing, email-subject-length read letterheads, memo labels
+    (also inside HTML), resolutions and subjects on the next line (#1362, #1363, #1365, #1403, #1424).
+  - Japanese pages and reports: kutoten-consistency, doubled-punctuation, max-kanji-continuous, bracket-width-consistency,
+    bracket-nesting, latin-spacing, no-nakaguro-parallel, no-doubled-joshi, no-mixed-desumasu, taigen-dome-in-prose,
+    teki-overuse, ime-residue, person-consistency, number-style-consistency, heading-echo, heading-numbering-mix,
+    preamble-length, request-without-deadline, list-item-form-mix (#1257, #1258, #1265, #1268, #1270, #1271, #1272,
+    #1273, #1276, #1278, #1292, #1297, #1298, #1299, #1302, #1364, #1372, #1373, #1376, #1409, #1415, #1419, #1420, #1425).
+  - Dates and numbers: date-without-year, date-format-consistency, date-weekday-mismatch, duration-mismatch,
+    total-mismatch, ellipsis-consistency, footnote-mismatch, numbering-gap (#1261, #1269, #1277, #1290, #1295, #1367, #1371, #1410,
+    #1368, #1411, #1413, #1426).
+  - English style: list-item-form-mix, oxford-comma-consistency, ngram-repetition, wordy-phrase,
+    comparative-without-baseline, article-sound, demonstrative-opener-run, translationese-density, bare-url-mix,
+    table-header-variant, broken-link, code-fence-language-mix, cliche, empty-table-cell (#1259, #1293, #1294, #1300,
+    #1301, #1303, #1305, #1375, #1382, #1384, #1386, #1388, #1390, #1391, #1400, #1407, #1416, #1418, #1421, #1422, #1427,
+    #1428, #1430, #1444).
+
+### HTML and statutes
+
+- HTML pages: site chrome (banner, search, breadcrumbs, page header and footer) is dropped before the main content is
+  chosen (#1377).
+- Statute texts separate an item's columns with a full-width space, as e-Gov shows them (#1406).
+
+### Documentation
+
+- READMEs, the skill and the guide describe isamu/chaff-corpus, precision-based rule placement and how to report a
+  wrong finding (#1450).
+- Landed through #1266, #1267, #1282, #1296, #1369, #1395, #1423 and #1449.
+
 ## 0.35.0 — 2026-10-16
 
 chaff now has a companion repository of real documents with judged findings, isamu/chaff-corpus, and this release is

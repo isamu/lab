@@ -64,7 +64,9 @@ export const sourceMix: Probe = {
   declares: ["source-mix.untyped_file_ratio", "source-mix.untyped_sloc_ratio", "source-mix.untyped_file_count", "source-mix.typed_file_count"],
   detect: (ctx) =>
     Promise.resolve(
-      ctx.project.typescript ? { kind: "ok" } : { kind: "skipped", reason: "typescript is not a dependency; not applicable to a JavaScript project" },
+      ctx.project.typescript
+        ? { kind: "ok" }
+        : { kind: "skipped", reason: "typescript is not a dependency; not applicable to a JavaScript project", notApplicable: true },
     ),
   run: (ctx) => Promise.resolve(assess(ctx)),
 };

@@ -121,8 +121,8 @@ example:
       ```
 
 not_flagged:
-  ja: 字下げだけのコードブロック、引用の中のブロックは見ません。言語名の無いブロックが {limit} 個を超えるとき、または言語名のあるブロックより多いときは、使い分けとみなして指しません。
-  en: Indented code blocks and blocks inside a quotation are not read. When more than {limit} blocks lack a language, or they are as many as those with one, it is taken as a choice and not reported.
+  ja: 字下げだけのコードブロック、引用の中のブロック、書式の型だけを書いたブロック（<MAJOR>.<MINOR>.<PATCH>）は見ません。言語名の無いブロックが {limit} 個を超えるとき、または言語名のあるブロックより多いときは、使い分けとみなして指しません。
+  en: Indented code blocks, blocks inside a quotation, and blocks that hold only a format template (<MAJOR>.<MINOR>.<PATCH>) are not read. When more than {limit} blocks lack a language, or they are as many as those with one, it is taken as a choice and not reported.
 level_meaning:
   ja: 言語名の無いブロックが {limit} 個以下で、ある方より少ないとき指摘
   en: reported when {limit} or fewer blocks lack a language and they are fewer than those with one

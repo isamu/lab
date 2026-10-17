@@ -1,0 +1,15 @@
+# Words that name a phrase as a term rather than use it: when saying "raise the bar", the phrase "low-hanging fruit".
+# group before: right before the phrase (quote marks may stand between). Written forms only: "say" would also take
+# "I'd say the bottom line is", which uses the phrase.
+id: mention-cue
+language: en
+entries:
+  - { pattern: saying, group: before }
+  - { pattern: the phrase, group: before }
+  - { pattern: the term, group: before }
+  - { pattern: the expression, group: before }
+  - { pattern: the idiom, group: before }
+  - { pattern: the cliché, group: before }
+  - { pattern: the cliche, group: before }
+  - { pattern: the words, group: before }
+  - { pattern: so-called, group: before }

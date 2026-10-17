@@ -21,7 +21,8 @@ is wrong (a false positive) or blind (a miss). Each one becomes a test and a fix
 better, and it is the normal way to work here:
 
 1. Run chaff on real documents — the corpus (`yarn corpus:fetch`; public-domain statutes are committed, other
-   documents stay in a local cache) or a user's report.
+   documents stay in a local cache), the judged documents in isamu/chaff-corpus (`node scripts/run.ts --chaff
+   <this text/>` there; every finding is judged correct, false positive or missed), or a user's report.
 2. For every finding that is wrong, find the pattern, not the instance: which other documents take the same path.
 3. Put a minimal real excerpt in a test (public-domain text only), watch it fail, fix, watch it pass.
 4. Re-run the corpus and confirm nothing else moved.
@@ -49,7 +50,11 @@ The direction is tracked in isamu/lab#130.
   `test/test_*.ts`; `CHAFF_TEST_JOBS=4 yarn test` caps the processes when several checkouts share a machine).
 - `yarn corpus`, `yarn bench` and `yarn planted` compare findings with committed expectations (`--update` accepts a
   change). `yarn rules:measure --apply` places a new or changed rule, over the documents pinned in
-  `corpus/rules-measure-documents.json`. `yarn screens:update` regenerates the guide's screens.
+  `corpus/rules-measure-documents.json`. `yarn rules:precision --corpus <chaff-corpus clone> --apply` turns a rule off
+  for a genre where its judged precision is low (recorded in `corpus/rules-precision.json`). `yarn screens:update`
+  regenerates the guide's screens.
+- A change to a user-visible behaviour (a new rule, a new command, a new mechanism) updates the READMEs (en and ja),
+  `packages/chaff/skills/chaff/SKILL.md` and the site guide in the same round.
 - A change that claims Japanese output is unchanged is proved by diffing the old and new builds over many
   commands, not by reading.
 - Tests use only public-domain or self-written text. Never commit a document that may not be redistributed.

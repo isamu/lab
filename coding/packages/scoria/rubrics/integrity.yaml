@@ -25,7 +25,7 @@ metrics:
     scale: { good: 0, bad: 200 }
     weight: 0.1
 
-  # No ESLint config, no strict mode, no lint script: the standards themselves are missing.
+  # No ESLint config, no formatter, no strict mode, no lint script: the standards themselves are missing.
   - metric: config-integrity.gap_ratio
     scale: { good: 0, bad: 0.6 }
     weight: 0.25

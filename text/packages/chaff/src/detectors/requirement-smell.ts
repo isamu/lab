@@ -1,6 +1,7 @@
 import type { Detector, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence } from "../plugin.ts";
 import { entryCloses, entryIn, entryRanges } from "./lexicon-match.ts";
 import { classWordsOf, isClassCue, namesClassAfter } from "./open-end-class.ts";
+import { glossesCondition } from "./open-end-condition.ts";
 import { openEndAt, openEndNames, type OpenEndNames } from "./open-end-names.ts";
 import { asksAfter, questionWordsOf } from "./open-end-question.ts";
 import { isScopeCue, openOnPurpose, scopeWordsOf } from "./open-end-scope.ts";
@@ -14,6 +15,8 @@ const OPEN_END = "requirement-open-end";
 const LOOPHOLE = "requirement-loophole";
 /** The words of a question that an open list gives example answers to. */
 const OPEN_QUESTION = "requirement-open-question";
+/** The words of a condition whose bracketed examples an open list may give. */
+const OPEN_CONDITION = "requirement-open-condition";
 const TIME = "time";
 const CONCRETE_DEADLINE = "concrete-deadline";
 
@@ -83,13 +86,23 @@ const smellAt = (doc: ProseDocument, sentence: Sentence, entry: LexiconEntry, le
 const answersQuestion = (doc: ProseDocument, sentence: Sentence, entry: LexiconEntry, lexicon: string, offset: number): boolean =>
   lexicon === OPEN_END && asksAfter(sentence, offset + entry.pattern.length, questionWordsOf(doc.lexicons[OPEN_QUESTION] ?? []));
 
+/** An open list in brackets right after a condition word (場合（単一テーブルへの SELECT 等）): examples of when, not of what. */
+const glossesConditionAt = (doc: ProseDocument, sentence: Sentence, lexicon: string, offset: number): boolean =>
+  lexicon === OPEN_END &&
+  glossesCondition(
+    sentence,
+    offset,
+    (doc.lexicons[OPEN_CONDITION] ?? []).map((entry) => entry.pattern),
+  );
+
 /** The first word of each smell in one requirement sentence: one finding per smell, not per word. */
 const smellsIn = (doc: ProseDocument, sentence: Sentence, names: () => OpenEndNames): Finding[] =>
   SMELLS.flatMap(({ lexicon, variant }) =>
     smellWords(doc, lexicon)
       .flatMap((entry) => {
         const offset = smellAt(doc, sentence, entry, lexicon, names);
-        return offset === undefined || answersQuestion(doc, sentence, entry, lexicon, offset) ? [] : [findingOf(sentence, entry, variant, offset)];
+        const examples = offset !== undefined && (answersQuestion(doc, sentence, entry, lexicon, offset) || glossesConditionAt(doc, sentence, lexicon, offset));
+        return offset === undefined || examples ? [] : [findingOf(sentence, entry, variant, offset)];
       })
       .slice(0, 1),
   );

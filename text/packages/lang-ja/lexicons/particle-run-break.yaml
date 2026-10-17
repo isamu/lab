@@ -1,0 +1,23 @@
+# 句と句の間に置いて、助詞の連なりを切る記号（no-doubled-joshi）。
+# 「インスタンス名の制限=タグの制限のため」の「=」の前と後ろは別の句で、「の」は続いていない。
+# 全角の＝・：・→ は読点と同じく句読点として切れるが、半角の = や : は名詞として読まれるので、ここで切る。
+id: particle-run-break
+language: ja
+entries:
+  - pattern: "="
+  - pattern: ＝
+  - pattern: ":"
+  - pattern: ：
+  - pattern: →
+  - pattern: ⇒
+  - pattern: ←
+  - pattern: ⇐
+  - pattern: ↔
+  - pattern: ⇔
+  - pattern: "->"
+  - pattern: "=>"
+  - pattern: "<-"
+  - pattern: "<->"
+  - pattern: "<=>"
+  - pattern: "=="
+  - pattern: ":="

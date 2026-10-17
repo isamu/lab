@@ -1,5 +1,6 @@
-import type { Detector, DetectorOptions, Finding, Lexicon, ProseDocument, Sentence } from "../plugin.ts";
+import type { Detector, DetectorOptions, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence } from "../plugin.ts";
 import { entryEnds, entryIn } from "./lexicon-match.ts";
+import { mentionCuesOf, onlyMentioned } from "./mentioned-phrase.ts";
 import { closingSentences } from "../closing-paragraph.ts";
 
 /** 冒頭は先頭 2 段落ぶん。「どの記事にも当てはまる書き出し」は冒頭にあるときだけ問題。 */
@@ -17,9 +18,12 @@ const inScope = (doc: ProseDocument, where: string | undefined): readonly Senten
 
 type Hit = { readonly sentence: Sentence; readonly matched: string };
 
-const hitsIn = (sentences: readonly Sentence[], lexicon: Lexicon): Hit[] =>
+/** Whether the entry's words in the sentence count as a use. phrase-match counts every one. */
+type IsUsed = (sentence: Sentence, entry: LexiconEntry) => boolean;
+
+const hitsIn = (sentences: readonly Sentence[], lexicon: Lexicon, isUsed: IsUsed = () => true): Hit[] =>
   sentences.flatMap((sentence) => {
-    const matched = lexicon.find((entry) => entryIn(sentence, entry));
+    const matched = lexicon.find((entry) => entryIn(sentence, entry) && isUsed(sentence, entry));
     return matched === undefined ? [] : [{ sentence, matched: matched.pattern }];
   });
 
@@ -33,9 +37,9 @@ const findingsOf = (hits: readonly Hit[], limit: number, count = hits.length): F
     values: { matched: hit.matched, count, limit, offset: hit.sentence.span.start },
   }));
 
-const phraseHits = (doc: ProseDocument, options: DetectorOptions): Hit[] => {
+const phraseHits = (doc: ProseDocument, options: DetectorOptions, isUsed?: IsUsed): Hit[] => {
   const lexicon = options.lexicon ?? [];
-  return lexicon.length === 0 ? [] : hitsIn(inScope(doc, options.where), lexicon);
+  return lexicon.length === 0 ? [] : hitsIn(inScope(doc, options.where), lexicon, isUsed);
 };
 
 /**
@@ -44,6 +48,13 @@ const phraseHits = (doc: ProseDocument, options: DetectorOptions): Hit[] => {
  */
 export const phraseMatch: Detector = (doc, options): Finding[] => {
   const hits = phraseHits(doc, options);
+  return hits.length < options.limit ? [] : findingsOf(hits, options.limit);
+};
+
+/** phrase-match の、言葉として名指しただけの言い回し（the phrase "…", 「…」という言い方）を数えない版（mentioned-phrase.ts）。 */
+export const phraseInUse: Detector = (doc, options): Finding[] => {
+  const cues = mentionCuesOf(doc.lexicons["mention-cue"] ?? []);
+  const hits = phraseHits(doc, options, (sentence, entry) => !onlyMentioned(sentence, entry, cues));
   return hits.length < options.limit ? [] : findingsOf(hits, options.limit);
 };
 
