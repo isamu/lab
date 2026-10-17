@@ -13,7 +13,7 @@ before(async () => {
 
 const titlesOf = (source: string): string[] => {
   const doc = buildDocument("a.md", source, ja);
-  return externalLinkTitleSpans(doc.source, doc.links).map((span) => source.slice(span.start, span.end));
+  return externalLinkTitleSpans(doc.source, doc.links).map((span) => doc.source.slice(span.start, span.end));
 };
 
 describe("externalLinkTitleSpans: 外のページの題名を引いたリンク", () => {
@@ -26,6 +26,7 @@ describe("externalLinkTitleSpans: 外のページの題名を引いたリンク"
 
   it("番号付きの項目、見出し語の後ろ（参考: ）、説明を始めるコロンの前のリンクも題名", () => {
     assert.deepEqual(titlesOf("# 参考\n\n1. [手順の説明](https://example.com/a)\n"), ["手順の説明"]);
+    assert.deepEqual(titlesOf("# 参考\r\n\r\n- [手順の説明](https://example.com/a)\r\n"), ["手順の説明"]);
     assert.deepEqual(titlesOf("# 参考\n\n- 参考: [設定を変える](https://example.com/a)\n"), ["設定を変える"]);
     assert.deepEqual(titlesOf("# 参考\n\n- [基準 1.2: 名前 (短い)](https://example.com/a): よい改善。名前だけで分かる。\n"), ["基準 1.2: 名前 (短い)"]);
   });
