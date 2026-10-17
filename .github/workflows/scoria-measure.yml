@@ -1,0 +1,175 @@
+# A reusable workflow: measure a repository with scoria, upload the findings to code scanning, and
+# publish a shields.io endpoint badge — called from any repository, so each one carries a few lines
+# instead of a copy of this file.
+#
+#   jobs:
+#     scoria:
+#       uses: isamu/lab/.github/workflows/scoria-measure.yml@<commit sha>
+#       permissions:
+#         contents: write          # the badge job pushes to the badges branch
+#         security-events: write   # the upload job writes code scanning results
+#       with:
+#         before: yarn run test:coverage
+#
+# Pin the call to a commit SHA: the caller hands this workflow write permissions, so a moving ref
+# would let any later commit here act with them.
+
+name: scoria (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: Node.js version for the measurement. scoria needs 24 or later.
+        type: string
+        default: 24.x
+      working-directory:
+        description: Directory to measure, relative to the repository root.
+        type: string
+        default: .
+      cache:
+        description: Package manager cache for actions/setup-node (yarn, npm, pnpm), or empty for none.
+        type: string
+        default: yarn
+      install:
+        description: Installs dependencies, so scoria can run tsc, knip and the cycle check.
+        type: string
+        default: yarn install --frozen-lockfile --ignore-scripts
+      before:
+        description: Runs after install and before scoria, e.g. a command that writes coverage/lcov.info.
+        type: string
+        default: ""
+      scoria:
+        description: How to run scoria. npx prefers the project's own install when it has one.
+        type: string
+        default: npx -y scoria
+      sarif:
+        description: Upload the findings to code scanning.
+        type: boolean
+        default: true
+      badge:
+        description: Publish the badge endpoint JSON to the badge branch on a push to the default branch.
+        type: boolean
+        default: true
+      badge-branch:
+        description: Branch the badge JSON is committed to. It holds nothing else and no history of the code.
+        type: string
+        default: badges
+
+permissions:
+  contents: read
+
+jobs:
+  # Runs the project's code (install, before, scoria), so it holds nothing but read access.
+  measure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    outputs:
+      has-sarif: ${{ steps.outputs.outputs.sarif }}
+      has-badge: ${{ steps.outputs.outputs.badge }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: ${{ inputs.cache }}
+      - run: ${{ inputs.install }}
+      - if: ${{ inputs.before != '' }}
+        run: ${{ inputs.before }}
+      # With several targets scoria inserts each directory's name into these paths, so they all land
+      # in one directory the later jobs can take whole.
+      - name: measure
+        env:
+          SCORIA: ${{ inputs.scoria }}
+          WANT_SARIF: ${{ inputs.sarif }}
+          WANT_BADGE: ${{ inputs.badge }}
+        run: |
+          mkdir -p scoria-out
+          args=()
+          if [ "$WANT_SARIF" = "true" ]; then args+=(--sarif scoria-out/scoria.sarif); fi
+          if [ "$WANT_BADGE" = "true" ]; then args+=(--badge-json scoria-out/scoria.json); fi
+          $SCORIA "${args[@]}"
+      - id: outputs
+        if: ${{ !cancelled() }}
+        run: |
+          echo "sarif=$(compgen -G 'scoria-out/*.sarif' > /dev/null && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "badge=$(compgen -G 'scoria-out/*.json' > /dev/null && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() && (steps.outputs.outputs.sarif == 'true' || steps.outputs.outputs.badge == 'true') }}
+        with:
+          name: scoria-out
+          path: ${{ inputs.working-directory }}/scoria-out
+          retention-days: 7
+
+  # Only this job writes code scanning results, and it runs no project code. Skipped for pull
+  # requests from forks, whose head is not this repository.
+  upload:
+    needs: measure
+    if: ${{ inputs.sarif && needs.measure.outputs.has-sarif == 'true' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      security-events: write
+    # Actions in this job are pinned to commit SHAs because it holds a write permission.
+    steps:
+      # The finding paths are relative to the measured directory; checkout_path tells code scanning
+      # which one. Nothing checked out here is executed.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: scoria-out
+          path: ${{ runner.temp }}/scoria-out
+      - uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+        with:
+          sarif_file: ${{ runner.temp }}/scoria-out
+          category: scoria
+          checkout_path: ${{ github.workspace }}/${{ inputs.working-directory }}
+
+  # contents: write is held only here, only on a push to the default branch, and never while project
+  # code runs. The badge branch is orphaned: it carries the badge files and none of the history.
+  badge:
+    needs: measure
+    if: ${{ inputs.badge && needs.measure.outputs.has-badge == 'true' && github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: scoria-out
+          path: scoria-out
+      # The token goes in the push URL rather than into git config, so no later step inherits it.
+      - name: publish the badge endpoints
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ inputs.badge-branch }}
+        run: |
+          git init -q repo && cd repo
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          remote="https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          # An orphan branch has no ref until its first commit; only an existing one can be fetched.
+          if git fetch -q --depth 1 "$remote" "$BRANCH" 2>/dev/null; then
+            git switch -q -c "$BRANCH" FETCH_HEAD
+          else
+            git switch -q --orphan "$BRANCH"
+          fi
+          cp ../scoria-out/*.json .
+          git add -- *.json
+          if git diff --cached --quiet; then
+            echo "badges unchanged"
+            exit 0
+          fi
+          git commit -q -m "chore: scoria badges for ${GITHUB_SHA}"
+          git push -q "$remote" "HEAD:refs/heads/${BRANCH}"

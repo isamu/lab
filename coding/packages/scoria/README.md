@@ -174,6 +174,47 @@ dimension fell since the baseline, orange when one did, blue when there is no ba
 by the number would claim that 90 means the same thing in every repository, which is the one thing
 this tool refuses to say.
 
+### All three from one reusable workflow
+
+Measuring, uploading the findings and publishing the badge can be called as one workflow instead
+of copied into each repository:
+
+```yaml
+name: scoria
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  scoria:
+    uses: isamu/lab/.github/workflows/scoria-measure.yml@<commit sha>
+    permissions:
+      contents: write # the badge job pushes the badge branch
+      security-events: write # the upload job writes code scanning results
+    with:
+      before: yarn run test:coverage # optional: anything that must run before scoria
+```
+
+The project's own code — install, `before`, scoria — runs in a job that holds only read access. The
+upload and the badge are separate jobs that run none of it, and the badge job runs only on a push to
+the default branch. **Pin the call to a commit SHA**: the caller hands the workflow write
+permissions, and a moving ref would let any later commit to it act with them. Inputs are listed at
+the top of [the workflow](https://github.com/isamu/lab/blob/main/.github/workflows/scoria-measure.yml): Node version, working
+directory, install command, `before`, how to run scoria, and whether to upload SARIF or publish a
+badge.
+
+The badge then reads from the `badges` branch it writes:
+
+```markdown
+[![scoria](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/OWNER/REPO/badges/scoria.json)](https://github.com/OWNER/REPO/actions/workflows/scoria.yml)
+```
+
+It needs a public repository (shields reads the file anonymously), a `badges` branch that no ruleset
+blocks, and workflow permissions that allow `contents: write`. With several `targets`, each directory
+gets its own `scoria.<dir>.json`.
+
 ## Output
 
 ```text

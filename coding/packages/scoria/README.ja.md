@@ -494,6 +494,44 @@ commit するだけで十分です）、あとは shields に URL を渡すだ�
 点数の高さで色を変えると「どのリポジトリでも 90 は緑」という意味になってしまい、
 それはこのツールが唯一言わないと決めていることだからです。
 
+### 3つまとめて、再利用ワークフローで
+
+計測・指摘のアップロード・バッジの公開は、各リポジトリに写す代わりに、1つのワークフローとして呼べます。
+
+```yaml
+name: scoria
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  scoria:
+    uses: isamu/lab/.github/workflows/scoria-measure.yml@<commit sha>
+    permissions:
+      contents: write # バッジのジョブが badges ブランチに push する
+      security-events: write # アップロードのジョブが code scanning に書く
+    with:
+      before: yarn run test:coverage # 任意。scoria の前に動かしておくもの
+```
+
+プロジェクト自身のコード（install、`before`、scoria）は、読み取り権限しか持たないジョブで動きます。
+アップロードとバッジは、それを一切動かさない別のジョブで、バッジはデフォルトブランチへの push のときだけ動きます。
+**呼び出しは commit SHA で固定してください。** 呼び出し側は書き込み権限を渡すので、動く参照にすると、
+この先の commit がその権限で動けてしまいます。入力は [ワークフロー](https://github.com/isamu/lab/blob/main/.github/workflows/scoria-measure.yml) の先頭にあります
+（Node の版、作業ディレクトリ、install のコマンド、`before`、scoria の動かし方、SARIF とバッジを出すかどうか）。
+
+バッジは、書き込まれた `badges` ブランチから読みます。
+
+```markdown
+[![scoria](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/OWNER/REPO/badges/scoria.json)](https://github.com/OWNER/REPO/actions/workflows/scoria.yml)
+```
+
+公開リポジトリであること（shields は匿名で読みに行きます）、`badges` ブランチを止めるルールが無いこと、
+ワークフローに `contents: write` が許されていることが条件です。`targets` が複数あるときは、
+ディレクトリごとに `scoria.<ディレクトリ名>.json` ができます。
+
 ## 設定ファイル
 
 ```json
