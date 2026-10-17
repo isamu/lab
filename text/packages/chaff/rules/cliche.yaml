@@ -1,8 +1,9 @@
 id: cliche
 layer: L2
 status: stable
-how_to_find: phrase-match
+how_to_find: phrase-in-use
 word_list: cliche
+extra_word_lists: [mention-cue]
 requires: [pos]
 languages: [ja, en]
 severity: info
@@ -47,8 +48,8 @@ example:
       The new cache cuts load time from 2 seconds to 0.5.
 
 not_flagged:
-  ja: 一覧にある言い回しだけを見ます。見出しの中は見ず、本文の文だけを見ます。ほかの規則が見る言い回し（closing-cliche の「いかがでしたか」、ai-tell の「深く掘り下げる」「game-changer」、empty-intensifier の「needless to say」）は入れていません。「結論から言うと」は人の記事にも同じくらいあるので、「〜まとめ」「〜な件」は普通の文（まとめました、重要な件）と分けられないので見ません。文学と講演の書き起こしは対象にしません。
-  en: Only the phrases on chaff's list are checked, in body sentences; headings are not read. Phrases another rule reads (いかがでしたか in closing-cliche, "game-changer" in ai-tell, "needless to say" in empty-intensifier) are not on it. In Japanese, 結論から言うと is left out because human articles use it as often, and 〜まとめ and 〜な件 because ordinary sentences share them (まとめました, 重要な件). Literature and speech transcripts are not checked.
+  ja: 一覧にある言い回しだけを見ます。見出しの中は見ず、本文の文だけを見ます。ほかの規則が見る言い回し（closing-cliche の「いかがでしたか」、ai-tell の「深く掘り下げる」「game-changer」、empty-intensifier の「needless to say」）は入れていません。「結論から言うと」は人の記事にも同じくらいあるので、「〜まとめ」「〜な件」は普通の文（まとめました、重要な件）と分けられないので見ません。文学と講演の書き起こしは対象にしません。言い回しを言葉として名指しているだけのもの（「徹底解説」という言い方、the phrase "low-hanging fruit"）も指しません。
+  en: Only the phrases on chaff's list are checked, in body sentences; headings are not read. Phrases another rule reads (いかがでしたか in closing-cliche, "game-changer" in ai-tell, "needless to say" in empty-intensifier) are not on it. In Japanese, 結論から言うと is left out because human articles use it as often, and 〜まとめ and 〜な件 because ordinary sentences share them (まとめました, 重要な件). Literature and speech transcripts are not checked. A phrase that is only named as a term ("when saying raising the bar", the phrase "low-hanging fruit", 「徹底解説」という言い方) is not reported.
 level_meaning:
   ja: 当てはまる言い回しが {limit} 箇所あれば指摘
   en: reported once there are {limit}
