@@ -18,10 +18,14 @@ const childrenOf = (node: Node): readonly Node[] => {
   return Array.isArray(value) ? value.filter(isNode) : [];
 };
 
+/** e-Gov shows the columns of an item (the defined term, then its definition) apart, with a full-width space between them. */
+const separatorOf = (children: readonly Node[]): string => (children.some((child) => tagOf(child) === "Column") ? "　" : "");
+
 /** All the text inside, with the whitespace the XML puts between elements removed. */
 const textOf = (node: Node): string => {
   if (typeof node["#text"] === "string" || typeof node["#text"] === "number") return String(node["#text"]).trim();
-  return childrenOf(node).map(textOf).join("");
+  const children = childrenOf(node);
+  return children.map(textOf).join(separatorOf(children));
 };
 
 const firstChild = (node: Node, tag: string): Node | undefined => childrenOf(node).find((child) => tagOf(child) === tag);
