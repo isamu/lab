@@ -47,6 +47,11 @@ describe("known-misspelling: よくある書き誤り", () => {
     assert.deepEqual(misspelt("We plan to acquire the license. The committee meets on Monday. Which option did you pick?", en), []);
   });
 
+  it("English: a word built from a real word and an ending that is not a word (completement)", () => {
+    assert.deepEqual(misspelt("The survey is a good completement to the interviews.", en), ['"completement" is a misspelling of "complement"']);
+    assert.deepEqual(misspelt("The survey is a good complement to the interviews. The enablement team completed it.", en), []);
+  });
+
   it("ずらい・ずく・おえない の書き誤りを指し、正しい形と別の語は指さない", () => {
     assert.deepEqual(misspelt("この書類は書きずらいです。"), ["「書きずらい」は「書きづらい」の書き誤りです"]);
     assert.deepEqual(misspelt("会議はまだつずく。"), ["「つずく」は「つづく」の書き誤りです"]);
