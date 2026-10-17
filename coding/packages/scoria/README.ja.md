@@ -210,24 +210,24 @@ eslint の設定を代わりに選ぶような、判断が要ることはしま�
 
 ## 見ている項目の一覧
 
-| 項目               | 観点                     | 見ているもの                                                                                |
-| ------------------ | ------------------------ | ------------------------------------------------------------------------------------------- |
-| `oxlint`           | correctness, readability | **scoria 自身のルール** 133 個。相手に何もインストールしなくても動きます                    |
-| `tsc`              | type-safety              | **プロジェクト自身の** TypeScript が出す型エラー                                            |
-| `knip`             | architecture             | どこからも参照されていないファイル・export・依存                                            |
-| `jscpd`            | readability              | コピペの重複                                                                                |
-| `audit`            | security                 | 既知の脆弱性。プロジェクト自身のパッケージマネージャに聞きます                              |
-| `circular`         | architecture             | 循環依存。「使われていないコード」とは別の壊れ方で、knip には見えません                     |
-| `test-presence`    | test-coverage            | テストコードの量（対象コードとの比）                                                        |
-| `ui-token`         | ui-consistency           | コンポーネントが使っている色と余白の**種類数**、インラインスタイル、style ブロック          |
-| `readme-contract`  | documentation            | README があるか、どれだけ書いてあるか、いま受け取るフラグがそこに載っているか               |
-| `comment-quality`  | documentation            | コードに残った TODO / FIXME / XXX / HACK。コメント密度は記録のみで採点しません              |
-| `coverage`         | test-coverage            | 行・分岐・関数のカバレッジ。プロジェクトが出力済みのレポートを読みます                      |
-| `suppression-scan` | integrity                | `as any` / `@ts-ignore` / `eslint-disable` / `it.skip`。理由がないものだけを error にします |
-| `config-integrity` | integrity                | eslint の設定はあるか、`strict` は on か、必要なスクリプトはあるか                          |
-| `ci-integrity`     | integrity                | CI が lint / typecheck / build / test を回しているか、失敗を握りつぶしていないか            |
-| `file-shape`       | readability              | ファイルの大きさ（上位 5% の大きさ、最大値、500 行超の本数）                                |
-| `source-mix`       | type-safety              | TypeScript のプロジェクトに残っている `.js` / `.jsx`                                        |
+| 項目               | 観点                     | 見ているもの                                                                                                              |
+| ------------------ | ------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| `oxlint`           | correctness, readability | **scoria 自身のルール** 133 個。相手に何もインストールしなくても動きます                                                  |
+| `tsc`              | type-safety              | **プロジェクト自身の** TypeScript が出す型エラー                                                                          |
+| `knip`             | architecture             | どこからも参照されていないファイル・export・依存                                                                          |
+| `jscpd`            | readability              | コピペの重複                                                                                                              |
+| `audit`            | security                 | 既知の脆弱性。プロジェクト自身のパッケージマネージャに聞きます                                                            |
+| `circular`         | architecture             | 循環依存。「使われていないコード」とは別の壊れ方で、knip には見えません                                                   |
+| `test-presence`    | test-coverage            | テストコードの量（対象コードとの比）                                                                                      |
+| `ui-token`         | ui-consistency           | コンポーネントが使っている色と余白の**種類数**、インラインスタイル、style ブロック                                        |
+| `readme-contract`  | documentation            | README があるか、どれだけ書いてあるか、いま受け取るフラグがそこに載っているか                                             |
+| `comment-quality`  | documentation            | コードに残った TODO / FIXME / XXX / HACK。コメント密度は記録のみで採点しません                                            |
+| `coverage`         | test-coverage            | 行・分岐・関数のカバレッジ。プロジェクトが出力済みのレポートを読みます                                                    |
+| `suppression-scan` | integrity                | `as any` / `@ts-ignore` / `eslint-disable` / `it.skip`。理由がないものだけを error にします                               |
+| `config-integrity` | integrity                | eslint の設定はあるか、整形ツール（Prettier / Biome / dprint）は入っているか、`strict` は on か、必要なスクリプトはあるか |
+| `ci-integrity`     | integrity                | CI が lint / typecheck / build / test を回しているか、失敗を握りつぶしていないか                                          |
+| `file-shape`       | readability              | ファイルの大きさ（上位 5% の大きさ、最大値、500 行超の本数）                                                              |
+| `source-mix`       | type-safety              | TypeScript のプロジェクトに残っている `.js` / `.jsx`                                                                      |
 
 ### 測る基準は「あなたの設定」ではなく scoria のものです
 
