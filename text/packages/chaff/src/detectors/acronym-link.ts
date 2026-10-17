@@ -35,3 +35,41 @@ export const linkTitleSpans = (source: string, links: readonly Span[]): Span[] =
     const text = externalTextOf(source, link);
     return text !== undefined && standsAlone(source, link) ? [text] : [];
   });
+
+/** 語だけの箇条書きの項目（- GPL）と、その下に入れ子にした、外のページへのリンクだけの項目（  - [GNU General Public License …](https://…)）。 */
+const TERM_ITEM = /^(?<indent>[ \t]*)(?:[-*+]|\d+[.)])[ \t]+(?<term>[A-Z][A-Za-z\d&-]*[A-Z\d])[ \t]*$/u;
+const LINK_ITEM = /^(?<indent>[ \t]*)(?:[-*+]|\d+[.)])[ \t]+\[(?<title>[^\]\n]+)\]\(<?https?:\/\/[^)\s]+>?\)[ \t]*$/u;
+/** 題名の名前の終わり。サイトの名前を添える区切り（ | Open Source Initiative、 — CC BY 4.0）。 */
+const TITLE_PART_END = /\s[|—–-]\s/u;
+const CAPITALIZED = /^[A-Z]/u;
+
+const wordsOf = (text: string): string[] => text.split(/[\s-]+/u).filter((word) => word !== "");
+
+/** 題名が語そのものを含む（About the WTFPL、… — CC BY 4.0）か、題名の名前の大文字で始まる語の頭文字が語の字で終わる（GNU General Public License）。 */
+const titleNames = (title: string, term: string): boolean => {
+  const termWords = wordsOf(term.toUpperCase());
+  const titleWords = wordsOf(title.toUpperCase());
+  const contains = titleWords.some((_, start) => termWords.every((word, offset) => titleWords[start + offset] === word));
+  const initials = wordsOf(title.split(TITLE_PART_END)[0] ?? "")
+    .filter((word) => CAPITALIZED.test(word))
+    .map((word) => word.charAt(0))
+    .join("");
+  return contains || initials.endsWith(term.replaceAll(/[&-]/gu, ""));
+};
+
+/**
+ * 名前を並べた一覧で、語だけの項目のすぐ下に、その語を名指す外のページへのリンクを入れ子にした語（ライセンスの一覧の GPL、WTFPL）。
+ * 語はリンク先のページの名前で、読み手はリンクから中身に行ける。題名が語を名指さないリンク（- AWS / - [Console](…)）では数えない。
+ */
+export const linkedListTerms = (source: string): Set<string> => {
+  const lines = source.split(/\r?\n/u);
+  return new Set(
+    lines.flatMap((line, index) => {
+      const term = TERM_ITEM.exec(line)?.groups;
+      const link = LINK_ITEM.exec(lines[index + 1] ?? "")?.groups;
+      if (term?.["term"] === undefined || link?.["title"] === undefined) return [];
+      const nested = (link["indent"] ?? "").length > (term["indent"] ?? "").length;
+      return nested && titleNames(link["title"], term["term"]) ? [term["term"]] : [];
+    }),
+  );
+};

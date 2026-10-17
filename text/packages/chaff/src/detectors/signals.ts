@@ -8,7 +8,8 @@ import { abbreviates, expansionAt, termEntryAcronyms, type DefinitionWords, type
 import { isExplained } from "./acronym-compound.ts";
 import { statedAcronyms } from "./acronym-definition.ts";
 import { isBracketed, isInHeading, isNamePart } from "./acronym-lone.ts";
-import { linkTitleSpans } from "./acronym-link.ts";
+import { linkedListTerms, linkTitleSpans } from "./acronym-link.ts";
+import { caseVariantsIn, spelledOutAcronyms } from "./acronym-mention.ts";
 import { conjugatedForms } from "./conjugated-form.ts";
 import { evidenceSpans, hasNumeral, isClaim, isLabelOnly, startsWithin, type AdviceWords } from "./concrete-evidence.ts";
 import { letteredIndexEntries } from "./lettered-index.ts";
@@ -329,10 +330,24 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   ]);
   const expandedAt = expansionAt(definitionWordsOf(doc));
   const stated = statedAcronyms(doc.source, { statements: patternsOf(doc, "definition-statement"), markers: patternsOf(doc, "definition-marker") });
-  const entries = new Set([...termEntryAcronyms(doc.source), ...stated]);
+  // 一覧の語のすぐ下でその語を名指すリンク（- GPL / [GNU General Public License …](…)）と、略語を話題にして書き出した文
+  // （the abbreviation DOB … date of birth）も、略語の説明と読む。
+  const spelled = spelledOutAcronyms(
+    doc.sentences.map((sentence) => sentence.text),
+    patternsOf(doc, "abbreviation-mention"),
+  );
+  const entries = new Set([...termEntryAcronyms(doc.source), ...stated, ...linkedListTerms(doc.source), ...spelled]);
   const headings = doc.sections.map((section) => section.heading);
-  const explainedAlone = (word: string): boolean =>
+  const explainedAsWritten = (word: string): boolean =>
     common.has(word) || entries.has(word) || isExpanded(body, word, expandedAt) || headings.some((heading) => expandsInHeading(heading, word, expandedAt));
+  // 大文字の違うだけの書き方（TCoP と TCOP）は同じ略語と読む。どちらかで説明してあれば説明済み。
+  const written = [body, ...headings].join("\n");
+  const explained = new Map<string, boolean>();
+  const explainedAlone = (word: string): boolean => {
+    const known = explained.get(word) ?? (explainedAsWritten(word) || caseVariantsIn(written, word).some(explainedAsWritten));
+    explained.set(word, known);
+    return known;
+  };
   const counted = outsideSpans(acronymsOf(doc, notationOf(doc)), [
     ...referenceListSpans(doc.source, patternsOf(doc, "reference-list-heading")),
     ...outlineLabelSpans(doc.source, patternsOf(doc, "numbered-division")),
