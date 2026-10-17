@@ -9,6 +9,9 @@ import type { ReportDiff } from "./diff.ts";
  * carry confidence, or the reason a dimension went unmeasured, and those decide how to read the
  * number (§21.1).
  *
+ * Horizontal, because nine dimension names side by side along the bottom overlap until none can be
+ * read; stacked down the side, each has a line of its own.
+ *
  * Bars are this run. The line is the baseline, drawn only where the two measured the same metrics —
  * a rubric change makes the old number a measurement of something else (§16.2).
  */
@@ -42,7 +45,7 @@ export const renderChart = (report: Report, diff?: ReportDiff): readonly string[
   const title = `scoria · ${report.label}`;
   return [
     "```mermaid",
-    "xychart-beta",
+    "xychart-beta horizontal",
     `    title ${quoted(title)}`,
     `    x-axis [${entries.map((entry) => quoted(entry.dimension)).join(", ")}]`,
     `    y-axis "score" 0 --> ${String(SCALE_MAX)}`,
