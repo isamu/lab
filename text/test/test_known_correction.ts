@@ -119,6 +119,13 @@ describe("misconversion: 変換の誤り", () => {
     assert.deepEqual(misconverted("例えば、次の手順で進めます。"), []);
     assert.deepEqual(misconverted("設定は意外と簡単でした。"), []);
   });
+
+  it("列挙を指す「揚げる」を指し、掲げる・挙げると、旗や天ぷらを揚げるは指さない", () => {
+    assert.deepEqual(misconverted("応募者は次の各号に揚げる書類を出す。"), ["「各号に揚げる」は「各号に掲げる」の変換の誤りです"]);
+    assert.deepEqual(misconverted("前項に揚げた者は除く。"), ["「前項に揚げ」は「前項に掲げ」の変換の誤りです"]);
+    assert.deepEqual(misconverted("応募者は次の各号に掲げる書類を出す。次の各号に挙げる書類も出す。"), []);
+    assert.deepEqual(misconverted("港で旗を揚げる。次に揚げる天ぷらは海老です。左に揚げる帆を見る。"), []);
+  });
 });
 
 describe("known-correction: names", () => {
