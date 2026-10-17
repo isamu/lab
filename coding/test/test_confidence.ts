@@ -139,3 +139,16 @@ test("the skips that mean 'nothing here to measure' say so, and only those", asy
   assert.equal(flag(noTsconfigTs), false);
   assert.equal(noTsconfigTs.kind, "skipped");
 });
+
+test("in a report, a probe with no result at all counts as not run", () => {
+  const results = [resultOf("file-shape", { kind: "ok" }, [{ id: "file-shape.p95", value: 0, unit: "lines" }])];
+  const dimension = buildReport(".", [], results, [RUBRIC]).dimensions[0];
+  assert.equal(dimension?.confidence, "medium");
+  assert.equal(dimension?.confidenceReason, "not run: jscpd (produced no result)");
+});
+
+/** A probe that ran and had nothing to say about one metric — no CLI, so no flags to document — measured what applies. */
+test("in a report, a probe that ran but omitted one of its metrics lowers nothing", () => {
+  const results = [resultOf("file-shape", { kind: "ok" }, [{ id: "file-shape.p95", value: 0, unit: "lines" }]), resultOf("jscpd", { kind: "ok" }, [])];
+  assert.equal(buildReport(".", [], results, [RUBRIC]).dimensions[0]?.confidence, "high");
+});

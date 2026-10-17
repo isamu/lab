@@ -93,19 +93,25 @@ const withContributors = (metrics: readonly ScoredMetric[], contributors: Readon
 /** `<probe>.<metric>` is the contract every rubric id follows. */
 const probeOfMetric = (metric: string): string => metric.split(".")[0] ?? "";
 
+const NO_RESULT = "produced no result";
+
+/** A probe with no result at all left its metrics as unmeasured as one that was skipped. */
+const unrunReasonOf = (status: ProbeStatus | undefined): string | undefined => {
+  if (status === undefined) return NO_RESULT;
+  return status.kind === "skipped" && status.notApplicable !== true ? status.reason : undefined;
+};
+
 /** Probes that could have measured part of this dimension and did not, with the weight they left unmeasured. */
 const unrunProbes = (rubric: Rubric, results: readonly ProbeResult[]): readonly UnrunProbe[] => {
   const status = new Map(results.map((result) => [result.probe, result.status]));
-  const weights = new Map<string, number>();
+  const unrun = new Map<string, UnrunProbe>();
   rubric.metrics.forEach((rule) => {
     const probe = probeOfMetric(rule.metric);
-    const found = status.get(probe);
-    if (found?.kind === "skipped" && found.notApplicable !== true) weights.set(probe, (weights.get(probe) ?? 0) + rule.weight);
+    const reason = unrunReasonOf(status.get(probe));
+    if (reason === undefined) return;
+    unrun.set(probe, { probe, reason, weight: (unrun.get(probe)?.weight ?? 0) + rule.weight });
   });
-  return [...weights.entries()].map(([probe, weight]) => {
-    const found = status.get(probe);
-    return { probe, weight, reason: found !== undefined && "reason" in found ? found.reason : "" };
-  });
+  return [...unrun.values()];
 };
 
 /**

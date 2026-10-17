@@ -134,7 +134,7 @@ const en: Messages = {
   fromDimensions: (count) => `mean of ${count}`,
   notComparableLong:
     "Scores are not comparable across repositories — only this repository's own trend means anything. " +
-    "Read Confidence before Score: anything below `high` means the dimension was measured through suppressions.",
+    "Read Confidence before Score: anything below `high` means the dimension was measured through suppressions, or that a tool feeding it could not run.",
   topContributors: (metric) => `largest contributors to ${metric}`,
   doctorClean: "No gaps found in the project's own gates.",
   doctorFound: (count) => `${count} ${count === 1 ? "gap" : "gaps"} in the gates this project sets for itself`,
@@ -205,7 +205,7 @@ const ja: Messages = {
   fromDimensions: (count) => `${count} 軸の平均`,
   notComparableLong:
     "点は他のリポジトリと比べられません。意味があるのは同じリポジトリの推移だけです。" +
-    "Score より先に Confidence を見てください。`high` 未満は、その軸が抑制ごしに測られたという意味です。",
+    "Score より先に Confidence を見てください。`high` 未満は、その軸が抑制ごしに測られたか、値を出す道具が動かなかったという意味です。",
   topContributors: (metric) => `${metric} に効いているファイル`,
   doctorClean: "プロジェクト自身のゲートに抜けはありません。",
   doctorFound: (count) => `プロジェクトが自分に課しているゲートの抜けが ${count} 件`,
