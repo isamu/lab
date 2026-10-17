@@ -7,6 +7,8 @@ import { HYPHEN_CHARS } from "./orthography.ts";
 
 /** A clock time: hours, a colon, minutes, and seconds optionally (9:05, 13:30, 08:00:15). */
 const CLOCK_TIME = /(?<![\d:：.])\d{1,2}[:：][0-5]\d(?:[:：][0-5]\d)?(?![\d:：])/gu;
+/** AM or PM written after a clock time, with a space or without (9:30AM, 9:30 p.m.). */
+const MERIDIEM = /^ ?[AaPp]\.?[Mm]\.?(?![A-Za-z])/u;
 
 /** A run of printable ASCII without brackets: an address ends where Japanese text, a space or a bracket starts (…/faq で). */
 const ASCII_RUN = /[!-'*-~]+/gu;
@@ -43,7 +45,9 @@ const SERIAL_DIGITS = /\d{3}/u;
 const spansOf = (text: string, pattern: RegExp): Span[] =>
   [...text.matchAll(pattern)].map((match) => ({ start: match.index, end: match.index + match[0].length }));
 
-export const clockTimeSpans = (text: string): Span[] => spansOf(text, CLOCK_TIME);
+/** Clock times, each with the AM or PM written after it (9:30AM). */
+export const clockTimeSpans = (text: string): Span[] =>
+  spansOf(text, CLOCK_TIME).map((span) => ({ start: span.start, end: span.end + (MERIDIEM.exec(text.slice(span.end))?.[0].length ?? 0) }));
 
 export const addressSpans = (text: string): Span[] => spansOf(text, ASCII_RUN).filter((span) => isAddress(text.slice(span.start, span.end)));
 
