@@ -62,19 +62,30 @@ const CITATION_NUMBERS = /^[\d\s,，、–-]+$/u;
 /** 画像の参照（`![alt][label]`）の頭の印。指摘の範囲に含める。 */
 const IMAGE_MARK = "!";
 
+/** 印の前の逃がし（\）を数えるのに見る字数。 */
+const ESCAPE_REACH = 16;
+const TRAILING_BACKSLASHES = /\\*$/u;
+
+/** start の括弧の直前に、逃がしていない ! がある（「\![x][]」は画像ではなくリンク）。 */
+const imageAt = (source: string, start: number): boolean => {
+  if (source.charAt(start - 1) !== IMAGE_MARK) return false;
+  const before = source.slice(Math.max(0, start - 1 - ESCAPE_REACH), start - 1);
+  return (TRAILING_BACKSLASHES.exec(before)?.[0].length ?? 0) % 2 === 0;
+};
+
 /**
  * 名前を省いた画像の参照（`![Complete][]`）は、サイトが全ページに定義を足す印や絵（mdBook の前処理、サイト共通の定義）。
  * 画像の行き先をページの中で一度も書かずに名前だけで呼ぶのは、定義がページの外にあるとき。名前を書いた形（`![alt][logo]`）と
  * リンク（`[text][]`）は指摘する。
  */
-export const siteDefinedImage = (source: string, start: number, label: string): boolean => label === "" && source.charAt(start - 1) === IMAGE_MARK;
+export const siteDefinedImage = (source: string, start: number, label: string): boolean => label === "" && imageAt(source, start);
 
 export const unresolvedReferences = (source: string, markup: Markup): Span[] =>
   markup.texts.flatMap((text) =>
     [...source.slice(text.start, text.end).matchAll(REFERENCE_LIKE)]
       .filter((match) => !CITATION_NUMBERS.test(match[1] ?? "") && !siteDefinedImage(source, text.start + match.index, match[2] ?? ""))
       .map((match) => ({ start: text.start + match.index, end: text.start + match.index + match[0].length }))
-      .map((span) => (source.charAt(span.start - 1) === IMAGE_MARK ? { start: span.start - 1, end: span.end } : span)),
+      .map((span) => (imageAt(source, span.start) ? { start: span.start - 1, end: span.end } : span)),
   );
 
 const emptyLinks = (doc: ProseDocument, markup: Markup): Finding[] =>

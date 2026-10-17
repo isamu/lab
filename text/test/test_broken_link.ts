@@ -103,6 +103,7 @@ describe("broken-link: 行き先の無いリンク", () => {
       '"[the plan][plan]" is a reference-style link with no definition (it shows as plain text)',
       '"![chart][fig-1]" is a reference-style link with no definition (it shows as plain text)',
     ]);
+    assert.deepEqual(findingsOf("A literal \\![chart][] here.\n", en), ['"[chart][]" is a reference-style link with no definition (it shows as plain text)']);
     assert.deepEqual(findingsOf("![Done][] means [finished][].\n", en), [
       '"[finished][]" is a reference-style link with no definition (it shows as plain text)',
     ]);
