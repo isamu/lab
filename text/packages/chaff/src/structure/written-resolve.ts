@@ -1,5 +1,6 @@
 import type { StructureNode } from "../plugin.ts";
 import { headingRegions, parentAndLabels, writtenHeadings, writtenSubdivisions, type WrittenHeading } from "./written-headings.ts";
+import { hasListPath, listLabels } from "./written-list-path.ts";
 
 // 木が番地にしない平文の見出しと、本文の中に書いた括弧の小見出し（「6.1 … that (i) the Software …」）を、参照の行き先として引く。
 
@@ -31,27 +32,33 @@ const treeRegions = (nodes: readonly StructureNode[], headings: readonly Written
   return regions;
 };
 
+/** 範囲の本文を read で読んだ結果。範囲ごとに、要るときに一度だけ読む。 */
+const perRegion = <T>(source: string, read: (body: string) => T): ((region: Region) => T) => {
+  const cache = new Map<string, T>();
+  return ([start, end]) => {
+    const key = `${String(start)}:${String(end)}`;
+    const found = cache.get(key) ?? read(source.slice(start, end));
+    cache.set(key, found);
+    return found;
+  };
+};
+
 /**
  * 平文の見出しの番地と、参照（Section 6.1(i)）の親（6.1）が木の条か平文の見出しとしてあり、その範囲の本文に札「(i)」が
- * 書かれているかを引く関数。範囲ごとの札は、要るときに一度だけ読む。Pure.
+ * 書かれているか（札を行の頭に入れ子で書いた箇条書きも読む）を引く関数。Pure.
  */
 export const writtenReading = (nodes: readonly StructureNode[], source: string): WrittenReading => {
   const references = nodes.filter((node) => node.kind === "reference").map((node) => ({ start: node.span.start, end: node.span.end, target: targetOf(node) }));
   const headings = writtenHeadings(references, source);
   const written = headingRegions(headings, source.length);
   const tree = treeRegions(nodes, headings);
-  const labels = new Map<string, ReadonlySet<string>>();
-  const labelsIn = ([start, end]: Region): ReadonlySet<string> => {
-    const key = `${String(start)}:${String(end)}`;
-    const found = labels.get(key) ?? writtenSubdivisions(source.slice(start, end));
-    labels.set(key, found);
-    return found;
-  };
+  const labelsIn = perRegion(source, writtenSubdivisions);
+  const listIn = perRegion(source, listLabels);
   const regionsOf = (address: string): Region[] => [...(tree.get(address) ?? []), ...(written.get(address) ?? [])];
   const subdivision = (reference: StructureNode): boolean => {
     const wanted = parentAndLabels(targetOf(reference), String(reference.attrs["label"] ?? ""));
     if (wanted === undefined) return false;
-    return regionsOf(wanted.parent).some((region) => wanted.labels.every((label) => labelsIn(region).has(label)));
+    return regionsOf(wanted.parent).some((region) => wanted.labels.every((label) => labelsIn(region).has(label)) || hasListPath(listIn(region), wanted.labels));
   };
   return { addresses: headings.map((heading) => heading.address), subdivision };
 };
