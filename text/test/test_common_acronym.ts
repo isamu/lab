@@ -35,6 +35,16 @@ const PENDING = { en: "SRE, XYZ and CBA are pending.", ja: "SRE、XYZ、CBAは�
       ["RFC", "IANA", "NIST", "GSA", "NASA"].forEach((word) => assert.ok(!common.includes(word), word));
     });
 
+    it("ブラウザの名前 IE は、版の番号が付いても並べて書いても指摘しない。IE で始まる別の略語（IEEE）は指摘する", () => {
+      const source =
+        adapter.id === "ja"
+          ? `# T\n\n${pending} 動作の確認: IE/Edge/Firefox/Chrome。IE11 でも IE で表示する。IEEE の規格に従う。\n`
+          : `# T\n\n${pending} Check it in IE/Edge/Firefox/Chrome. It must work in IE11 and IE, i.e. the old browser. It follows an IEEE standard.\n`;
+      const found = reported(adapter, source);
+      assert.ok(!found.includes("IE"), found.join(","));
+      assert.ok(found.includes("IEEE"), found.join(","));
+    });
+
     it("語彙表のどの語も指摘しない。載っていない略語は指摘する", () => {
       common.forEach((word) => {
         const usage = adapter.id === "ja" ? word + "を使う。" : "We use " + word + " here.";

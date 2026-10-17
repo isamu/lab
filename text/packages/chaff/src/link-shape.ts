@@ -60,3 +60,22 @@ export const isFileNameAlt = (alt: string, prefixes: readonly string[]): boolean
   const lowered = written.toLowerCase();
   return prefixes.some((prefix) => lowered.startsWith(prefix.toLowerCase()) && COUNTER.test(written.slice(prefix.length)));
 };
+
+/** A list item's marker before a line's text (`- `, `* `, `1. `). */
+const LIST_MARKER = /^\s*(?:[-*+]|\d{1,3}[.)])\s+/u;
+/**
+ * A field's label: a few words in bold (`**Licence text**`, a colon after it or not), or ending in a colon (`Website:`).
+ * Sentence punctuation or a comma in it makes it prose (`For example, visit:`).
+ */
+const BOLD_LABEL = /^(?:\*\*[^*\n.!?。！？,，、:：]{1,40}\*\*|__[^_\n.!?。！？,，、:：]{1,40}__)\s*[:：]?$/u;
+const COLON_LABEL = /^[^.!?。！？,，、:：]{1,40}[:：]$/u;
+
+/**
+ * Whether a URL is the value of a field (`**Licence text** https://…`, `Website: https://…`): on its line only a label comes
+ * before it and nothing after. There the address is the content, as in a table cell, so writing it bare is right.
+ */
+export const isFieldValueUrl = (lineBefore: string, lineAfter: string): boolean => {
+  if (lineAfter.trim() !== "") return false;
+  const label = lineBefore.replace(LIST_MARKER, "").trim();
+  return BOLD_LABEL.test(label) || COLON_LABEL.test(label);
+};

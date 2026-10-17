@@ -1,11 +1,10 @@
 // Where an instrument attached to the document starts: a title line naming it (Exhibit A to Merger Agreement, Annex 1).
 // What is attached is a separate document (a restated charter, a form of note), so its definitions are its own. Pure.
 import { escapeRegExp } from "../orthography.ts";
+import { isTitleLine, type TitleNotion } from "../title-line.ts";
 
-/** A title runs at most this many words after the label and its letter or number. */
-const TITLE_MAX_WORDS = 6;
-const SENTENCE_END = /[.!?。．？！:;,]$/u;
-const BLANK = /^[ \t\r]*$/u;
+/** An instrument's title: any case (EXHIBIT A to the merger agreement), but no `: ; ,` after it, and only blank lines around. */
+export const INSTRUMENT_TITLE: TitleNotion = { sentenceEnd: /[.!?。．？！:;,]$/u, capitalised: false, edge: "blank-line" };
 
 const linesOf = (source: string): { readonly start: number; readonly text: string }[] => {
   const starts = [0, ...[...source.matchAll(/\n/gu)].map((match) => match.index + 1)];
@@ -24,10 +23,8 @@ export const attachedPartStarts = (source: string, labels: readonly string[]): n
   return lines.flatMap((line, index) => {
     const label = title.exec(line.text);
     if (label === null) return [];
-    const rest = line.text.slice(label[0].length).trim();
-    const alone = BLANK.test(lines[index - 1]?.text ?? "") && BLANK.test(lines[index + 1]?.text ?? "");
-    const short = rest.split(/\s+/u).filter((word) => word !== "").length <= TITLE_MAX_WORDS && !SENTENCE_END.test(rest);
-    return alone && short ? [line.start] : [];
+    const lineEnd = index === lines.length - 1 ? -1 : line.start + line.text.length;
+    return isTitleLine(source, line.start, lineEnd, line.text.slice(label[0].length), INSTRUMENT_TITLE) ? [line.start] : [];
   });
 };
 

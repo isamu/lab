@@ -1,6 +1,8 @@
 import type { Detector, Finding, Lexicon, ProseDocument, Sentence } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
+import { isConventionalPhrase } from "./caps-phrase.ts";
 import { minorityReport } from "../spacing-minority.ts";
+import { externalLinkTitleSpans } from "../link-title.ts";
 import { formulaBracketSpans } from "../formula-brackets.ts";
 import { isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { captionsOf, isCaptionAt, letterheadSpans } from "./caps-caption.ts";
@@ -131,13 +133,15 @@ const withEnumeratorKind = (mark: Mark, enumerators: ReadonlySet<number>): Mark 
 export const markConsistency: Detector = (doc, options): Finding[] => {
   const script = SCRIPT[doc.language];
   if (script === undefined) return [];
+  // A link that quotes an outside page's title keeps that page's marks ((コンテキスト内) in a WCAG title).
+  const titles = externalLinkTitleSpans(doc.source, doc.links);
   const forms = formsOf(options.lexicon ?? []);
   const enumerators = enumeratorBracketOffsets(doc.source);
   const marks = ownSentences(doc).flatMap((sentence) => marksIn(doc.source, sentence, forms, script).map((mark) => withEnumeratorKind(mark, enumerators)));
   const kinds = [...new Set(marks.map((mark) => mark.form.kind))];
   return kinds.flatMap((kind) =>
     minorityFindings(
-      marks.filter((mark) => mark.form.kind === kind),
+      marks.filter((mark) => mark.form.kind === kind && !isWithinAny(titles, { start: mark.offset, end: mark.offset + 1 })),
       options.limit,
       (mark) => ({ mark: mark.char, usual: mark.form.other }),
     ),
@@ -246,9 +250,11 @@ export const lowerCaseWords = (source: string): ReadonlySet<string> =>
 
 /**
  * Whether more than half the words of a capital run are also written elsewhere in lower case. Words the lexicon lists as
- * written in capitals by convention (MUST NOT in a specification) count like acronyms.
+ * written in capitals by convention (MUST NOT in a specification) count like acronyms, and a run made of its phrases
+ * (NOW, THEREFORE, BE IT RESOLVED) is not shouting.
  */
 export const isShouting = (run: string, known: ReadonlySet<string>, conventional: ReadonlySet<string>): boolean => {
+  if (isConventionalPhrase(run, conventional)) return false;
   const words = run.split(/,? /u);
   const ordinary = words.filter((word) => !conventional.has(word) && known.has(word.toLowerCase()));
   const long = words.filter((word) => word.length > 1);

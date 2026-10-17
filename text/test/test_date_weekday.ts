@@ -182,6 +182,17 @@ describe("English: the weekday beside a date", () => {
     assert.deepEqual(found("# Trip\n\nWe leave on Friday, 1 October 2026.", en, "en"), ["1 October 2026:Friday:Thursday"]);
   });
 
+  it("four figures with a time zone after the day are the time, so the day takes the timeline's year", () => {
+    const timeline = (line: string): string => `## Timeline\n\nAll times in UTC.\n\n- 2024-03-27 21:34 the patch is merged\n- ${line}\n`;
+    assert.deepEqual(found(timeline("Thurs Mar 28 1300 UTC the quorum is restored"), en, "en"), []);
+    assert.deepEqual(found(timeline("Thu 28 Mar 0930 PST the quorum is restored"), en, "en"), []);
+    assert.deepEqual(found(timeline("Fri Mar 28 1300 UTC the quorum is restored"), en, "en"), ["March 28, 2024:Friday:Thursday"]);
+    assert.deepEqual(found("# Trip\n\nWe leave on Friday, October 1 2026.", en, "en"), ["October 1, 2026:Friday:Thursday"]);
+    assert.deepEqual(found("# Log\n\nRestarted on Friday, March 28 2024 UTC.", en, "en"), ["March 28, 2024:Friday:Thursday"]);
+    assert.deepEqual(found("# Log\n\nSigned on Monday, 28 March 1300 IT staff present.", en, "en"), ["28 March 1300:Monday:Sunday"]);
+    assert.deepEqual(found("# History\n\nThe charter was sealed on Monday, 28 March 1300.", en, "en"), ["28 March 1300:Monday:Sunday"]);
+  });
+
   it("the sample itinerary: only the second day is wrong", () => {
     const source = readFileSync(new URL("fixtures/dates/itinerary-en.md", import.meta.url), "utf8");
     assert.deepEqual(found(source, en, "en"), ["2 October 2026:Saturday:Friday"]);

@@ -118,6 +118,18 @@ describe("isFieldSeparator on a label and its value", () => {
     assert.deepEqual(fields("詳しくは担当窓口（内線 3839）にお問い合わせください。"), [true]);
   });
 
+  it("reads a label and its value with a bracketed aside after the value as a separator", () => {
+    assert.deepEqual(fields("- 標準プラン 10万円 (税込 11万円)"), [true, true]);
+    assert.deepEqual(fields("- 定員 30名（先着順）"), [true]);
+  });
+
+  it("does not read a value and aside in a sentence, or a value followed by a word before the aside", () => {
+    assert.deepEqual(fields("標準プラン 10万円 (税込 11万円)で募集します。"), [false, true]);
+    assert.deepEqual(fields("- 標準プラン 10万円から (税込)"), [false]);
+    assert.deepEqual(fields("- 定員 30名（先着順"), [false]);
+    assert.deepEqual(fields("- 標準プラン 10万円 (税込 11万円）"), [false, true]);
+  });
+
   it("does not read a value in a sentence, a value followed by a word, or a label that is a quantity lead", () => {
     assert.deepEqual(fields("当日は最高速度 40km/hで走ります。"), [false]);
     assert.deepEqual(fields("定員 30名で行います。"), [false]);

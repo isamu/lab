@@ -3,6 +3,7 @@ import { entryCloses, entryIn, entryRanges } from "./lexicon-match.ts";
 import { classWordsOf, isClassCue, namesClassAfter } from "./open-end-class.ts";
 import { openEndAt, openEndNames, type OpenEndNames } from "./open-end-names.ts";
 import { asksAfter, questionWordsOf } from "./open-end-question.ts";
+import { isScopeCue, openOnPurpose, scopeWordsOf } from "./open-end-scope.ts";
 import { statesConcrete } from "./vague-deadline.ts";
 
 // Requirements smells (Femmer et al. 2017; Berry et al. 2003; ISO/IEC/IEEE 29148): a loophole, an open-ended list and
@@ -60,19 +61,22 @@ const boundedInTime = (doc: ProseDocument, sentence: Sentence, entry: LexiconEnt
     (doc.lexicons[CONCRETE_DEADLINE] ?? []).map((limit) => limit.pattern),
   );
 
-/** A lexicon's words; the open-end lexicon also holds the cues of a class named after the list, which are no smell. */
-const smellWords = (doc: ProseDocument, lexicon: string): LexiconEntry[] => (doc.lexicons[lexicon] ?? []).filter((entry) => !isClassCue(entry));
+/** A lexicon's words; the open-end lexicon also holds the cues of a class named after the list and of what holds it, which are no smell. */
+const smellWords = (doc: ProseDocument, lexicon: string): LexiconEntry[] =>
+  (doc.lexicons[lexicon] ?? []).filter((entry) => !isClassCue(entry) && !isScopeCue(entry));
 
 /**
- * Where the word stands as a smell. An open-end word inside a name the document gives (業務執行取締役等), or giving examples
- * of a class named right after it (印刷等、二次的に利用), is none; without tokens neither can be told apart.
+ * Where the word stands as a smell. An open-end word inside a name the document gives (業務執行取締役等), giving examples
+ * of a class named right after it (印刷等、二次的に利用), or ending a list a condition, a permission or a prohibition holds
+ * (転載等をしてはならない), is none; without tokens none of these can be told apart.
  */
 const smellAt = (doc: ProseDocument, sentence: Sentence, entry: LexiconEntry, lexicon: string, names: () => OpenEndNames): number | undefined => {
   if (!entryIn(sentence, entry) || boundedInTime(doc, sentence, entry, lexicon)) return undefined;
   const tokenized = sentence.tokens !== undefined && (entry.tokens?.length ?? 0) > 0;
   if (lexicon !== OPEN_END || !tokenized) return offsetOf(sentence, entry);
   const classWords = classWordsOf(doc.lexicons[OPEN_END] ?? []);
-  return openEndAt(doc, sentence, entry, names(), (tokens, range) => namesClassAfter(tokens, range, classWords));
+  const scopeWords = scopeWordsOf(doc.lexicons[OPEN_END] ?? []);
+  return openEndAt(doc, sentence, entry, names(), (tokens, range) => namesClassAfter(tokens, range, classWords) || openOnPurpose(tokens, range, scopeWords));
 };
 
 /** An open list right before a question the reader answers (…措置など、どのような措置を求めるのか): its items are example answers. */

@@ -1,10 +1,13 @@
-import type { Detector, Finding, ProseDocument, Sentence, TableCell, Token } from "../plugin.ts";
+import type { Detector, Finding, ProseDocument, Sentence, Span, TableCell, Token } from "../plugin.ts";
+import { externalLinkTitleSpans } from "../link-title.ts";
 import { groupBy, oddSpellings, type KeyedWord, type OddSpelling } from "../spelling-variants.ts";
 import { dropsOkurigana, kanjiKeyAmong, katakanaKey, lemmaReading } from "../kana-spelling.ts";
 import { isKatakanaWord, stemOf } from "../long-vowel.ts";
+import { withNounsAfterParticles } from "../nominal-stem.ts";
 import { QUOTATION_MARKS, isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
 import { furiganaSpans } from "../furigana.ts";
+import { withCutNounsJoined } from "../split-noun.ts";
 import { japaneseCompanyNameSpans } from "../company-name-run.ts";
 import { acronymsIn, isCapitalsNotSpelling } from "../capitals-with-small.ts";
 import { isPartOfAddress } from "./address-word.ts";
@@ -13,6 +16,7 @@ import { withoutCoinedNames } from "../coined-hyphen-name.ts";
 import { wholeWordRuns, type WholeWordRun } from "../whole-word-runs.ts";
 import { entriesForGenre } from "../lexicon-genres.ts";
 import { asNounWhereNominal, documentNounKeys } from "../nominal-stem.ts";
+import { isCompoundHead } from "../compound-head.ts";
 
 /**
  * A word found in the document: where it is, which sentence it is in, its key and spelling, how it is written when that differs, and
@@ -43,6 +47,8 @@ const DISTINCT = "orthographic-variant-distinct";
 const FUKUSHI = "hiragana-fukushi";
 /** Lexicon: idioms written as noun, particle and verb (気をつける). The verb there is compared apart from the verb on its own. */
 const IDIOM = "orthographic-variant-idiom";
+/** Lexicon: verbs whose て-form opening a sentence before a comma is a conjunction (あわせて、). */
+const CONJUNCTION = "orthographic-variant-conjunction";
 /** Lexicon: words the tokenizer cuts in one spelling and not the other (お客様, お客 and さま). Each is read whole, keyed by its group. */
 const WHOLE_WORD = "orthographic-variant-whole-word";
 /** Lexicon: suffixes written onto a word that do not make a compound of it (割当て等, 引受け後): the word keeps its okurigana there. */
@@ -51,8 +57,15 @@ const PHRASE_SUFFIX = "orthographic-variant-phrase-suffix";
 const patternsOf = (doc: ProseDocument, id: string, genre: string | undefined): string[] =>
   entriesForGenre(doc.lexicons[id] ?? [], genre).map((entry) => entry.pattern);
 
-/** The team's names, and the company forms (株式会社, ㈱) a registered company name is written next to. */
-type Names = { readonly team: readonly string[]; readonly companyForms: readonly string[] };
+/**
+ * The team's names, the company forms (株式会社, ㈱) a registered company name is written next to, and the links that quote an
+ * outside page's title (link-title.ts), placed in the source.
+ */
+type Names = { readonly team: readonly string[]; readonly companyForms: readonly string[]; readonly linkTitles: readonly Span[] };
+
+/** Spans placed in the source, placed in a sentence's text instead. */
+const inSentence = (sentence: Sentence, spans: readonly Span[]): Span[] =>
+  spans.map((span) => ({ start: span.start - sentence.span.start, end: span.end - sentence.span.start }));
 
 /**
  * Whether a stretch of the sentence is outside a quotation, the team's names, a company's name (関東珪曹硝子㈱) and a reading in
@@ -63,13 +76,19 @@ const isOpenIn = (sentence: Sentence, names: Names): IsOpen => {
     ...quotedSpans(sentence.text, QUOTATION_MARKS),
     ...furiganaSpans(sentence.text),
     ...japaneseCompanyNameSpans(sentence.text, names.companyForms),
+    ...inSentence(sentence, names.linkTitles),
   ];
   const named = nameSpans(sentence.text, names.team);
   return (start, end) => !isWithinAny(closed, { start, end }) && !touchesAny(named, start, end);
 };
 
-/** A word and the two words before it, in its sentence. */
-type InContext = { readonly token: Token; readonly previous: Token | undefined; readonly before: Token | undefined };
+/** A word, the two words before it and the two after it, in its sentence. */
+type InContext = {
+  readonly token: Token;
+  readonly previous: Token | undefined;
+  readonly before: Token | undefined;
+  readonly following?: readonly Token[];
+};
 
 /** A verb's て-form the tokenizer read as a conjunction (追って at the head of a sentence): a kanji stem and て or で. Connectives (そして, それで) are kana. */
 const TE_FORM_CONJUNCTION = /^\p{Script=Han}.*[てで]$/u;
@@ -107,13 +126,32 @@ const isKanaSuffix = ({ token, previous }: InContext): boolean =>
 const isIdiomVerb = ({ token, previous, before }: InContext, idioms: ReadonlySet<string>): boolean =>
   token.pos === "VERB" && previous?.pos === "ADP" && before !== undefined && idioms.has(`${before.surface}${previous.surface}${token.lemma ?? token.surface}`);
 
+const TE = new Set(["て", "で"]);
+const COMMA = new Set(["、", "，", ","]);
+
+/**
+ * A listed verb's て-form that opens its sentence and is followed by a comma (あわせて、…): a conjunction ("in addition"), which
+ * many guides write in kana while the verb (日程を合わせる) keeps its kanji.
+ */
+const isConjunctionUse = ({ token, previous, following }: InContext, conjunctions: ReadonlySet<string>): boolean =>
+  token.pos === "VERB" &&
+  conjunctions.has(token.lemma ?? "") &&
+  (previous === undefined || previous.pos === "PUNCT") &&
+  TE.has(following?.[0]?.surface ?? "") &&
+  COMMA.has(following?.[1]?.surface ?? "");
+
+/** The lexicons that set a verb's use apart: idioms (気をつける) and conjunctions (あわせて、). */
+type Uses = { readonly idioms: ReadonlySet<string>; readonly conjunctions: ReadonlySet<string> };
+
 /**
  * A helper verb or a dependent noun (見て下さい, その事) is written kana by many guides while the full word keeps its kanji (資料を下さい).
  * The two uses are compared apart, so a document that follows that convention is consistent. A suffix (業務用, 全員ぶん) is a third use:
- * it is not the dependent noun of the same reading (このように). The verb of an idiom (気をつける) is a fourth.
+ * it is not the dependent noun of the same reading (このように). The verb of an idiom (気をつける) is a fourth, and a
+ * て-form used as a conjunction (あわせて、) a fifth.
  */
-const useOf = (word: InContext, idioms: ReadonlySet<string>): string => {
+const useOf = (word: InContext, { idioms, conjunctions }: Uses): string => {
   if (isIdiomVerb(word, idioms)) return "idiom";
+  if (isConjunctionUse(word, conjunctions)) return "conjunction";
   if (isKanaSuffix(word)) return "suffix";
   if (!isHelper(word)) return "free";
   return word.token.pos === "NOUN" && word.token.features?.["NounType"] !== "Dependent" ? "suffix" : "bound";
@@ -137,19 +175,21 @@ const isCopulaReadAsVerb = ({ token, previous }: InContext): boolean =>
 type Skips = {
   readonly skip: ReadonlySet<string>;
   readonly idioms: ReadonlySet<string>;
+  readonly conjunctions: ReadonlySet<string>;
   readonly wholeWords: ReadonlyMap<string, string>;
   readonly phraseSuffixes: ReadonlySet<string>;
   /** The document's nouns, as documentNounKeys keys them. */
   readonly nouns: ReadonlySet<string>;
 };
 
-const readingKeyOf = (word: InContext, { skip, idioms }: Skips): string | undefined => {
+const readingKeyOf = (word: InContext, skips: Skips): string | undefined => {
+  const { skip } = skips;
   const { token } = word;
   const lemma = token.lemma;
   if (!CONTENT.has(token.pos) || token.reading === undefined || lemma === undefined || !JAPANESE_WORD.test(lemma) || skip.has(lemma)) return undefined;
   const reading = lemmaReading(token.surface, lemma, token.reading);
   if (reading === undefined || [...reading].length < MIN_READING || skip.has(reading) || isCutFromKatakana(word) || isCopulaReadAsVerb(word)) return undefined;
-  return `${token.pos}|${useOf(word, idioms)}|${reading}`;
+  return `${token.pos}|${useOf(word, skips)}|${reading}`;
 };
 
 /**
@@ -170,7 +210,7 @@ const wholeWordOf = (
 
 /** Japanese words keyed by part of speech, use and the reading of the dictionary form, spelled as the dictionary form. */
 const readingWords = (sentence: Sentence, isOpen: IsOpen, skips: Skips): Placed[] => {
-  const tokens = sentence.tokens ?? [];
+  const tokens = withNounsAfterParticles(sentence.tokens ?? []);
   const runs = wholeWordRuns(tokens, skips.wholeWords);
   const inRun = new Set(runs.flatMap(({ first, last }) => Array.from({ length: last - first + 1 }, (_, extra) => first + extra)));
   const whole = runs.flatMap((run) => wholeWordOf(sentence, tokens, run, isOpen, skips.wholeWords));
@@ -180,10 +220,10 @@ const readingWords = (sentence: Sentence, isOpen: IsOpen, skips: Skips): Placed[
       if (inRun.has(at)) return [];
       const next = tokens[at + 1];
       const token = asNounWhereNominal(written, next, skips.phraseSuffixes, skips.nouns);
-      const key = readingKeyOf({ token, previous: tokens[at - 1], before: tokens[at - 2] }, skips);
+      const key = readingKeyOf({ token, previous: tokens[at - 1], before: tokens[at - 2], following: tokens.slice(at + 1, at + 3) }, skips);
       const local = token.span.start - sentence.span.start;
       if (key === undefined || token.lemma === undefined || !isOpen(local, local + token.surface.length)) return [];
-      const compoundHead = token.pos === "NOUN" && next?.pos === "NOUN" && isTouching(token, next) && !skips.phraseSuffixes.has(next.surface);
+      const compoundHead = isCompoundHead(token, tokens, at, skips.phraseSuffixes);
       return [{ key, spelling: token.lemma, sentence, offset: token.span.start, compoundHead }];
     }),
   ];
@@ -322,7 +362,11 @@ const cellPlace = (cell: TableCell, names: Names): Place => {
  * document writes less is pointed at. No way is called right; limit is the largest share, in percent, the minority may have.
  */
 export const orthographicVariant: Detector = (doc, options): Finding[] => {
-  const names: Names = { team: doc.names ?? [], companyForms: (doc.lexicons["company-form"] ?? []).map((entry) => entry.pattern) };
+  const names: Names = {
+    team: doc.names ?? [],
+    companyForms: (doc.lexicons["company-form"] ?? []).map((entry) => entry.pattern),
+    linkTitles: externalLinkTitleSpans(doc.source, doc.links),
+  };
   const placed: Place[] = [
     ...doc.sentences.map((sentence) => ({ sentence, isOpen: isOpenIn(sentence, names), readsLatin: true })),
     ...(doc.tableCells?.() ?? []).map((cell) => cellPlace(cell, names)),
@@ -331,6 +375,7 @@ export const orthographicVariant: Detector = (doc, options): Finding[] => {
   const skips: Skips = {
     skip: new Set([...patternsOf(doc, DISTINCT, options.genre), ...patternsOf(doc, FUKUSHI, options.genre)]),
     idioms: new Set(patternsOf(doc, IDIOM, options.genre)),
+    conjunctions: new Set(patternsOf(doc, CONJUNCTION, options.genre)),
     wholeWords: new Map((doc.lexicons[WHOLE_WORD] ?? []).map((entry) => [entry.pattern, entry.group ?? entry.pattern])),
     phraseSuffixes,
     nouns: documentNounKeys(
@@ -338,7 +383,7 @@ export const orthographicVariant: Detector = (doc, options): Finding[] => {
       phraseSuffixes,
     ),
   };
-  const reading = byKanji(placed.flatMap(({ sentence, isOpen }) => readingWords(sentence, isOpen, skips)));
+  const reading = byKanji(placed.flatMap(({ sentence, isOpen }) => readingWords(withCutNounsJoined(sentence, skips.nouns), isOpen, skips)));
   const katakana = placed.flatMap(({ sentence, isOpen }) => katakanaWords(sentence, isOpen));
   const runs = placed.flatMap(({ sentence, isOpen }) => katakanaRunWords(sentence, isOpen));
   const dictionary = doc.dictionary?.();

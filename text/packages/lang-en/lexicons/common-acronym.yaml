@@ -31,6 +31,9 @@ entries:
   - pattern: TODO
   - pattern: NOTE
   - pattern: TIP
+  # A cloud service's name written in capitals, which its own documents never spell out.
+  - pattern: AWS
+  - pattern: GCP
   # 通信と符号化。技術文書でなくても説明なしで通じる。
   - pattern: DNS
   - pattern: IP
@@ -48,6 +51,7 @@ entries:
   - pattern: IT
   - pattern: SDK
   - pattern: IDE
+  - pattern: IE # read as a browser's name (Internet Explorer)
   - pattern: PNG
   - pattern: JPEG
   - pattern: GIF
@@ -89,6 +93,9 @@ entries:
   - pattern: DIY
   - pattern: HIV
   - pattern: UV
+  # Names a reader knows as names, not as acronyms to spell out: the file every repository opens with, and a licence.
+  - pattern: README
+  - pattern: MIT
   # & で繋いだ、仕事の文書で説明なしで通じる語。
   - pattern: Q&A
   - pattern: R&D

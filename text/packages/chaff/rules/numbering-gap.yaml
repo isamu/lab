@@ -17,6 +17,11 @@ message:
   ja: 「{previous}」の次が「{label}」です（{expected} 番目のはず）
   en: '"{label}" follows "{previous}" (expected number {expected})'
 
+messages:
+  repeated:
+    ja: 「{label}」が二度あり、次の番号が飛んでいます（二つ目は「{probably}」のはず）
+    en: '"{label}" appears twice and the next number skips; the second is probably "{probably}"'
+
 how_to_fix:
   ja: 番号を振り直してください。削った条を欠番として残すなら、「第4条（削除）」のように番号だけを残すと読み手に伝わります。
   en: Renumber. If a provision was removed on purpose, keep its number with a note such as "Section 4 [Deleted]".

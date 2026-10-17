@@ -1,0 +1,11 @@
+# 数のすぐ後に書く桁の語（83,494百万円、3千台）。number-without-unit は、同じ桁の語のほかの数に単位が付いているのに、
+# 一つだけ単位の無い数（83,494百万）を探す。長い語から照らすので、千万 を 千 とは読まない。万は単位を付けずに書くことが多いので入れない。
+id: figure-scale-word
+language: ja
+entries:
+  - pattern: 千
+  - pattern: 百万
+  - pattern: 千万
+  - pattern: 億
+  - pattern: 十億
+  - pattern: 兆

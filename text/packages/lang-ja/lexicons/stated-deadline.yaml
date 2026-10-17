@@ -11,3 +11,7 @@ entries:
   - pattern: ただちに
   - pattern: 同時に
   - pattern: 当日
+  # 「事前に」「あらかじめ」は、決まった出来事（変更、作業）より前と時を決める（英語の before、prior to と同じ）。
+  - pattern: 事前に
+  - pattern: あらかじめ
+  - pattern: 予め

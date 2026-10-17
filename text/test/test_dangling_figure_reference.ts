@@ -6,7 +6,8 @@ import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
-import { isTitleLine } from "../packages/chaff/src/figure-references.ts";
+import { CAPTION_TITLE } from "../packages/chaff/src/figure-references.ts";
+import { isTitleLine } from "../packages/chaff/src/title-line.ts";
 
 // 図・表・付録の参照先が無い（dangling-figure-reference）。本文の「図3」を、行の頭に書いた図の番号（見出し・キャプション）と照らす。
 
@@ -60,7 +61,7 @@ describe("dangling-figure-reference", () => {
     const at = (source: string, line: string, rest: string): boolean => {
       const start = source.indexOf(line);
       const end = source.indexOf("\n", start);
-      return isTitleLine(source, start, end, rest);
+      return isTitleLine(source, start, end, rest, CAPTION_TITLE);
     };
     assert.equal(at("x\n\nExhibit A to Merger Agreement\n\ny", "Exhibit A", " to Merger Agreement"), true);
     assert.equal(at("Exhibit A\n", "Exhibit A", ""), true);

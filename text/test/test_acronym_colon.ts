@@ -33,7 +33,7 @@ const REPORTED: readonly Case[] = [
   ["列挙の項目の頭文字がたまたま揃う", "Two teams (Legal, Finance: LF) sign off.", "LF"],
   ["名前の頭文字が揃わない", "The panel (Data Board: DRB) met.", "DRB"],
   ["名前の頭文字が余る", "The panel (Data Retention Board Panel: DRB) met.", "DRB"],
-  ["例示の印（例：）", "クラウド（例：AWS）を使う。", "AWS"],
+  ["例示の印（例：）", "クラウド（例：ACME）を使う。", "ACME"],
   ["日本語の名前（頭文字を確かめられない）", "推進機構（情報処理推進機構：IPA）に設置された。", "IPA"],
   ["略語のあとで括弧が閉じない", "The panel (Data Retention Board: DRB and more) met.", "DRB"],
   ["コロンの前に括弧が無い", "Data Retention Board: DRB) met.", "DRB"],

@@ -1,0 +1,8 @@
+# 桁の語の付いた二つの数のあいだに書いて、単位を後ろの数にだけ書く語（100百万から200百万円）。range-connector と
+# enumeration-joiner に無いものだけ。number-without-unit は、この語で後ろの数とつながる数を単位の無い数と読まない。
+id: figure-scale-joiner
+language: ja
+entries:
+  - pattern: から
+  - pattern: ないし
+  - pattern: 乃至

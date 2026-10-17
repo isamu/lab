@@ -1,0 +1,10 @@
+# 英字の語に付けて一つの語にする接尾の語（PDF版、IT化、Apple製、A型）。空けて書く書き手もふつう詰めるので、
+# この語の前の境目は日本語と英字のあいだの空け方の票にしない（latin-spacing）。語として切れたときだけ当てる（製品、型番は別の語）。
+# 空けて書くことのある語（Windows 用、CLI 系、CASE 式）は入れない。
+id: latin-bound-suffix
+language: ja
+entries:
+  - pattern: 版
+  - pattern: 化
+  - pattern: 製
+  - pattern: 型

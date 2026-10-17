@@ -3,6 +3,8 @@
 # 人の書いた技術記事でもふつうに使う言い回し（〜を提供する、〜に焦点を当てる、〜することができる）は載せない。
 # 一つの文に二つの語が当たると二つと数えるので、ほかの語を含む長い形（することを可能にする）は載せない。
 # 動詞は原形で書けば活用した形（可能にします、果たしている）にも当たる。rewrite は日本語として素直な言い方の例。
+# group address は読み手への呼びかけ（あなたの）。行動規範や案内のように読み手に語りかける文書では書き手の選んだ書き方なので、
+# ほかの言い回しと一緒のときだけ数える。
 id: translationese
 language: ja
 entries:
@@ -29,8 +31,10 @@ entries:
   - pattern: という利点を持つ
     rewrite: 〜という利点がある
   - pattern: あなたは
+    group: address
     rewrite: 主語を省く、または「読者は」「利用者は」
   - pattern: あなたの
+    group: address
     rewrite: 主語を省く、または「自分の」
   - pattern: 彼女は
     rewrite: 名前で呼ぶ、または主語を省く
@@ -45,6 +49,7 @@ entries:
   - pattern: 驚くべきことに
     rewrite: 省く、または何が意外なのかを書く
   - pattern: あなた自身
+    group: address
     rewrite: 自分、または主語を省く
   - pattern: 最後になりましたが
     rewrite: 最後に

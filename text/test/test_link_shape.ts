@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { hostOf, isFileNameAlt, isUrlText, mismatchedHost } from "../packages/chaff/src/link-shape.ts";
+import { hostOf, isFieldValueUrl, isFileNameAlt, isUrlText, mismatchedHost } from "../packages/chaff/src/link-shape.ts";
 
 // The shapes of links and images: a bare URL among worded links, link text showing another site, a file name as alt text.
 // Every example is self-written.
@@ -55,6 +55,39 @@ describe("bare-url-mix: a bare URL among worded links", () => {
   it("a URL in a table cell is a value, and a destination the parser gave up on is a link", () => {
     assert.deepEqual(bareUrl(`${WORDED_EN}\n\n| Field | Example |\n| --- | --- |\n| callback | https://e.com/hook |`, en), []);
     assert.deepEqual(bareUrl(`${WORDED_EN}\n\nSee [the history](https://e.com/commits/{{ page.path }}) too.`, en), []);
+  });
+
+  it("a URL that is a field's value on its own line (a bold label, or a short label with a colon) is not bare", () => {
+    assert.deepEqual(bareUrl(`${WORDED_EN}\n\n**Licence text** https://e.com/licence.txt`, en), []);
+    assert.deepEqual(bareUrl(`${WORDED_EN}\n\n- Website: https://e.com/\n- Source code: https://e.com/src`, en), []);
+    assert.deepEqual(bareUrl(`${WORDED_JA}\n\n**問い合わせ先**：https://example.com/contact`), []);
+  });
+
+  it("a URL in a sentence, or followed by more words after a label, is still bare", () => {
+    assert.deepEqual(bareUrl(`${WORDED_EN}\n\n**Licence text** https://e.com/licence.txt has the full terms.`, en), [
+      'The URL "https://e.com/licence.txt" is written bare (3 worded links in this document)',
+    ]);
+    assert.deepEqual(bareUrl(`${WORDED_EN}\n\nThe full terms of the licence are at https://e.com/licence.txt`, en), [
+      'The URL "https://e.com/licence.txt" is written bare (3 worded links in this document)',
+    ]);
+  });
+});
+
+describe("isFieldValueUrl: a URL as a field's value", () => {
+  it("takes a bold label or a short colon label before, and nothing after", () => {
+    assert.equal(isFieldValueUrl("**Licence text** ", ""), true);
+    assert.equal(isFieldValueUrl("- **Home**: ", "  "), true);
+    assert.equal(isFieldValueUrl("1. Website: ", ""), true);
+    assert.equal(isFieldValueUrl("ホームページ：", ""), true);
+  });
+
+  it("rejects a sentence before, words after, no label, or a label too long to be one", () => {
+    assert.equal(isFieldValueUrl("**Licence text** ", " has the terms."), false);
+    assert.equal(isFieldValueUrl("Read it. Then go to: ", ""), false);
+    assert.equal(isFieldValueUrl("For example, visit: ", ""), false);
+    assert.equal(isFieldValueUrl("**The service is unavailable.** ", ""), false);
+    assert.equal(isFieldValueUrl("", ""), false);
+    assert.equal(isFieldValueUrl("The terms are posted on the public page of the project at: ", ""), false);
   });
 });
 

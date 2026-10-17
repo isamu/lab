@@ -47,12 +47,41 @@ describe("known-misspelling: よくある書き誤り", () => {
     assert.deepEqual(misspelt("We plan to acquire the license. The committee meets on Monday. Which option did you pick?", en), []);
   });
 
+  it("English: a word built from a real word and an ending that is not a word (completement)", () => {
+    assert.deepEqual(misspelt("The survey is a good completement to the interviews.", en), ['"completement" is a misspelling of "complement"']);
+    assert.deepEqual(misspelt("The survey is a good complement to the interviews. The enablement team completed it.", en), []);
+  });
+
   it("ずらい・ずく・おえない の書き誤りを指し、正しい形と別の語は指さない", () => {
     assert.deepEqual(misspelt("この書類は書きずらいです。"), ["「書きずらい」は「書きづらい」の書き誤りです"]);
     assert.deepEqual(misspelt("会議はまだつずく。"), ["「つずく」は「つづく」の書き誤りです"]);
     assert.deepEqual(misspelt("やむおえず中止しました。"), ["「やむおえず」は「やむをえず」の書き誤りです"]);
     assert.deepEqual(misspelt("この書類は書きづらいです。会議はまだつづく。やむをえず中止しました。"), []);
     assert.deepEqual(misspelt("ビックカメラで買ったバックパックを使う。"), []);
+  });
+
+  it("規程の言い回しと法人格の書き誤りを指し、正しい形とそれだけで語になる形は指さない", () => {
+    assert.deepEqual(misspelt("取扱いは次の名号による。"), ["「次の名号」は「次の各号」の書き誤りです"]);
+    assert.deepEqual(misspelt("会社に申し出なければならかない。"), ["「ばならか」は「ばなら」の書き誤りです"]);
+    assert.deepEqual(misspelt("次のいずれかに該当場合は届け出る。"), ["「に該当」は「に該当する」の書き誤りです"]);
+    assert.deepEqual(misspelt("無担保、第三保証人なしで利用できる。"), ["「第三」は「第三者」の書き誤りです"]);
+    assert.deepEqual(misspelt("自家用車自動車での出張は認めない。"), ["「自家用車」は「自家用」の書き誤りです"]);
+    assert.deepEqual(misspelt("公共財団法人みどり振興会と連携する。"), ["「公共」は「公益」の書き誤りです"]);
+    assert.deepEqual(
+      misspelt("取扱いは次の各号による。会社に申し出なければならない。次のいずれかに該当する場合は届け出る。第三者保証人なしで利用できる。"),
+      [],
+    );
+    assert.deepEqual(misspelt("寺で名号を唱える。第一保証人と第二保証人を立てる。自家用自動車と自家用車。公益財団法人と公共施設。"), []);
+  });
+
+  it("和文に引いた英語の画面表記", () => {
+    assert.deepEqual(misspelt("設定の Denger Zone を開く。"), ["「Denger」は「Danger」の書き誤りです"]);
+    assert.deepEqual(misspelt("設定の Danger Zone を開く。Denger 氏の資料を読む。"), []);
+  });
+
+  it("English: a phrase whose first word is also a name", () => {
+    assert.deepEqual(misspelt("Open the Denger Zone settings.", en), ['"Denger" is a misspelling of "Danger"']);
+    assert.deepEqual(misspelt("Open the Danger Zone settings. Dr. Denger signed the zone map.", en), []);
   });
 });
 
@@ -94,6 +123,13 @@ describe("misconversion: 変換の誤り", () => {
     assert.deepEqual(misconverted("制度の確立が急がれる。"), []);
     assert.deepEqual(misconverted("例えば、次の手順で進めます。"), []);
     assert.deepEqual(misconverted("設定は意外と簡単でした。"), []);
+  });
+
+  it("列挙を指す「揚げる」を指し、掲げる・挙げると、旗や天ぷらを揚げるは指さない", () => {
+    assert.deepEqual(misconverted("応募者は次の各号に揚げる書類を出す。"), ["「各号に揚げる」は「各号に掲げる」の変換の誤りです"]);
+    assert.deepEqual(misconverted("前項に揚げた者は除く。"), ["「前項に揚げ」は「前項に掲げ」の変換の誤りです"]);
+    assert.deepEqual(misconverted("応募者は次の各号に掲げる書類を出す。次の各号に挙げる書類も出す。"), []);
+    assert.deepEqual(misconverted("港で旗を揚げる。次に揚げる天ぷらは海老です。左に揚げる帆を見る。"), []);
   });
 });
 

@@ -8,6 +8,7 @@ import { digitRunAround, endsWithDivisionLabel, isNumberName, sequenceLabelStart
 import { isSpacedLocationPart, type FloorWords } from "../location-part.ts";
 import { isFieldSeparator, isNameSeparator, type OrganizationWords } from "../name-separator.ts";
 import { addressSpans, clockTimeSpans, identifierSpans, isInsideSpan } from "../spacing-code.ts";
+import { isBoundSuffix, isJoinerSpace } from "../latin-word-boundary.ts";
 
 /** 書いた形の出現に、動詞の活用した形（行う → 行います）を足したもの。同じ位置は一度だけ。 */
 const avoidedStarts = (sentence: Sentence, entry: LexiconEntry, use: string): number[] => {
@@ -55,6 +56,8 @@ type NumberContext = NameContext & {
   readonly itemNumbers: ReadonlySet<string>;
   readonly floors: FloorWords;
   readonly organizations: OrganizationWords;
+  /** 日本語の句をつなぐ英語の語（or、vs.）と、英字の語に付ける接尾の語（版、化）。 */
+  readonly latinWords: { readonly joiners: ReadonlySet<string>; readonly boundSuffixes: ReadonlySet<string> };
 };
 
 /** 文頭の項目の番号の後ろと見る境目の位置の上限。番号は短く文の頭にあるので、これより後ろの境目は番号の後ろではない。長い文で文頭からの切り出しを繰り返さない。 */
@@ -105,7 +108,12 @@ const isCounted = (sentence: Sentence, boundary: Boundary, context: NumberContex
   if (followsItemNumber(sentence.text, boundary, context.itemNumbers) || besideSpan(codes.identifiers, boundary)) return false;
   if (boundary.kind !== "after-digit" && endsWithDivisionLabel(sentence.text.slice(0, boundary.offset), context.divisions)) return false;
   if (boundary.kind === "letter")
-    return !besideSpan(codes.addresses, boundary) && !isNameSeparator(sentence.text, boundary, sentence.tokens, sentence.span.start, context.organizations);
+    return (
+      !besideSpan(codes.addresses, boundary) &&
+      !isNameSeparator(sentence.text, boundary, sentence.tokens, sentence.span.start, context.organizations) &&
+      !isJoinerSpace(sentence.text, boundary, context.latinWords.joiners) &&
+      !isBoundSuffix(sentence.text, boundary, sentence.tokens, sentence.span.start, context.latinWords.boundSuffixes)
+    );
   if (isInsideSpan(codes.clockTimes, digitBeside(boundary))) return false;
   const run = digitRunAround(sentence.text, digitBeside(boundary));
   if (run === undefined) return true;
@@ -180,6 +188,7 @@ export const latinSpacing: Detector = (doc, options): Finding[] => {
     itemNumbers: numberedItems(patternList(doc, "item-number"), doc.prose ?? doc.source),
     floors: { units: patternsOf(doc, "floor-unit"), levels: patternsOf(doc, "floor-level") },
     organizations: { units: patternsOf(doc, "organization-unit"), forms: patternList(doc, "company-form") },
+    latinWords: { joiners: patternsOf(doc, "latin-joiner"), boundSuffixes: patternsOf(doc, "latin-bound-suffix") },
   };
   const located: Located[] = doc.sentences.flatMap((sentence) => {
     const quoted = quotedSpans(sentence.text);

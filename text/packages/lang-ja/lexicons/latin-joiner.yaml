@@ -1,0 +1,10 @@
+# 日本語の句と句をつなぐ英語の語（「15文字以内の名前 or 任意のメッセージ」「A案 vs. B案」）。小文字で書く。
+# この語の前後の空白は語を区切る空白で、日本語と英字のあいだを空けるか詰めるかの票にしない（latin-spacing）。
+id: latin-joiner
+language: ja
+entries:
+  - pattern: or
+  - pattern: and
+  - pattern: vs
+  - pattern: vs.
+  - pattern: versus

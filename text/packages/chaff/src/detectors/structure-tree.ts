@@ -44,7 +44,7 @@ const findingsOf =
     doc.structure === undefined
       ? []
       : issuesOf(doc.structure, doc.source).map((issue) => ({
-          rule,
+          ...(issue.variant === undefined ? { rule } : { rule, variant: issue.variant }),
           severity: "error",
           line: 0,
           column: 0,

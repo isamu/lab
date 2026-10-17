@@ -22,6 +22,20 @@ describe("comparative-without-baseline: 比べる相手の無い比較", () => {
     assert.deepEqual(findingsOf("私たちはより良い結果を届けます。", ja), ["「より良い」は、何と比べているかが書かれていません"]);
   });
 
+  it("今より良くする目当て（より良い社会、より豊かな暮らし、より良いものにする）は、相手が今の状態なので言わない", () => {
+    assert.deepEqual(findingsOf("この変化は、より良い社会を実現する好機です。", ja), []);
+    assert.deepEqual(findingsOf("公開した後も、利用者の声を聞いて、より良いものにしていきます。", ja), []);
+    assert.deepEqual(findingsOf("仕組みをより良いものにするため、運用の記録を残します。", ja), []);
+    assert.deepEqual(findingsOf("地域の皆さんと、より豊かな暮らしを考えます。", ja), []);
+  });
+
+  it("目当ての語が続かない「より良い」「さらに」は言う", () => {
+    assert.deepEqual(findingsOf("利用者に、より良いものを届けます。", ja), ["「より良い」は、何と比べているかが書かれていません"]);
+    assert.deepEqual(findingsOf("新しい版で、社会の動きをより速く伝えます。", ja), ["「より速く」は、何と比べているかが書かれていません"]);
+    assert.deepEqual(findingsOf("より良い社会保障を実現します。", ja), ["「より良い」は、何と比べているかが書かれていません"]);
+    assert.deepEqual(findingsOf("新しい版は、より良いものに違いありません。", ja), ["「より良い」は、何と比べているかが書かれていません"]);
+  });
+
   it("英語の、節を閉じる比べた形を言う", () => {
     assert.deepEqual(findingsOf("We rewrote the parser. The new engine is faster."), ['"faster" does not say what it is compared with']);
     assert.deepEqual(findingsOf("The cache was rebuilt. Lookups are now much more efficient."), ['"more efficient" does not say what it is compared with']);

@@ -35,6 +35,11 @@ describe("translationese-density: 翻訳調が多い", () => {
     assert.deepEqual(translated("料金は月額です。速度は変わりません。この画面は管理者が使います。管理者が設定を受け持ちます。"), []);
   });
 
+  it("読み手への呼びかけ（あなたの）だけなら書き手の選んだ書き方なので言わず、ほかの言い回しと重なれば数える", () => {
+    assert.deepEqual(translated("参加者の背景に配慮してください。あなたの発言で悲しむ人がいるかもしれません。相談はあなたの同意なく広めません。"), []);
+    assert.equal(translated("あなたの設定は、共有することを可能にします。あなたの画面にも出ます。").length, 3);
+  });
+
   it("素直な言い方と、短い文書は数えない", () => {
     assert.deepEqual(translated("この機能を使うと、設定を共有できます。速度にはキャッシュが大きく効きます。"), []);
     assert.deepEqual(namedRuleRun("translationese-density", "あなたは共有することを可能にします。あなたの設定です。\n", ja).findings, []);

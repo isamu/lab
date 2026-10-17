@@ -109,6 +109,19 @@ entries:
     instead_of: 依然として変わる
   - pattern: お侘び
     instead_of: お詫び
+  # 列挙を指す「あげる」（各号に掲げる・挙げる）。「旗を揚げる」「天ぷらを揚げる」と分けるため、指す先の語ごと書く
+  - pattern: 各号に揚げる
+    instead_of: 各号に掲げる
+  - pattern: 以下に揚げる
+    instead_of: 以下に掲げる
+  - pattern: 前項に揚げる
+    instead_of: 前項に掲げる
+  - pattern: 前条に揚げる
+    instead_of: 前条に掲げる
+  - pattern: 別表に揚げる
+    instead_of: 別表に掲げる
+  - pattern: 上記に揚げる
+    instead_of: 上記に掲げる
   # それ自体が誤りの形
   - pattern: 不可決
     instead_of: 不可欠

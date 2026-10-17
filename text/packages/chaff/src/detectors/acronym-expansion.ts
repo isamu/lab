@@ -13,6 +13,9 @@ import { escapeRegExp } from "../orthography.ts";
  *   人事部（以下「HR」という。）      括弧の中が定義の語と略語だけ
  *   overnight reverse repurchase agreement (ON RRP)  括弧の中が空白で繋いだ略語だけで、前の名前から文字が順に拾える
  *   Partnership On Wide Energy and Resources Resilience Asia (POWERR Asia)  括弧の中が略語と添えた語で、前の名前の頭文字と揃う
+ *   End User Technical Advisory Board (“End User TAB”)  括弧の中が名前の頭の語と略語で、前の名前の頭文字と揃う
+ *   Special Interest Groups, or SIGs  名前の後ろの読点と言い換えの語（語彙表の definition-alternative）の後ろで、名前の頭文字と揃う
+ * 複数形の s を付けた略語（SIGs）の展開は、s の無い略語（SIG）の展開でもある。
  * 括弧と略語の間には、引用符（(“MNDA”)、（「MNDA」））と空白だけを許す。
  */
 const WRAP = String.raw`[\s"“”'‘’「」『』]*`;
@@ -37,11 +40,14 @@ const DEFINITION_REACH = 60;
 /** 定義の語どうし、定義の語と略語の間に来てよいもの（以下、HR）。英字が続けば語の途中（(theSLA)）。 */
 const MARKER_GAP = String.raw`(?![A-Za-z])[\s、,]*`;
 
+/** 複数形の略語の終わりの s（SIGs）。頭文字と比べる文字ではない。 */
+const PLURAL_END = /(?<=[A-Z])s$/u;
+
 /**
  * 角括弧は引用の印にも使う（[IANA]、[1]）。直前の語のうち大文字で始まる語の頭文字が
  * 略語と揃うときだけ展開と見なす。見る語は略語の文字数の 2 倍まで（and や of を挟むため）。
  */
-const lettersOf = (acronym: string): string => acronym.replaceAll(/[&-]/gu, "");
+const lettersOf = (acronym: string): string => acronym.replaceAll(/[&-]/gu, "").replace(PLURAL_END, "");
 
 const initialsOf = (words: readonly string[]): string =>
   words
@@ -92,16 +98,20 @@ const isNamedBeforeAt = (body: string, acronym: string, at: number): boolean => 
   return namesAcronym(named.groups?.["name"] ?? "", acronym);
 };
 
-/** 言語パッケージの語彙表から読む、括弧の中で略語の前に書く語（以下、hereinafter）と後ろに書く語（という）。 */
-export type DefinitionWords = { readonly markers: readonly string[]; readonly verbs: readonly string[] };
+/**
+ * 言語パッケージの語彙表から読む、括弧の中で略語の前に書く語（以下、hereinafter）と後ろに書く語（という）、名前の後ろの読点に続けて
+ * 略語の前に書く言い換えの語（Special Interest Groups, or SIGs の or）。
+ */
+export type DefinitionWords = { readonly markers: readonly string[]; readonly verbs: readonly string[]; readonly alternatives?: readonly string[] };
 
-type DefinitionPatterns = { readonly opened: RegExp; readonly closes: RegExp };
+type DefinitionPatterns = { readonly opened: RegExp; readonly closes: RegExp; readonly alternative: RegExp };
 
 const oneOf = (words: readonly string[]): string => (words.length === 0 ? "(?!)" : words.map(escapeRegExp).join("|"));
 
 const definitionPatterns = (words: DefinitionWords): DefinitionPatterns => ({
   opened: new RegExp(String.raw`[(（]\s*(?<markers>(?:(?:${oneOf(words.markers)})${MARKER_GAP})*)${WRAP}(?<![A-Za-z])$`, "iu"),
   closes: new RegExp(String.raw`^${WRAP}(?<verb>(?:${oneOf(words.verbs)})[。.]?)?${WRAP}[)）]`, "iu"),
+  alternative: new RegExp(String.raw`[,，、]\s*(?:${oneOf(words.alternatives ?? [])})\s*$`, "iu"),
 });
 
 /**
@@ -166,12 +176,39 @@ const isQualifiedAt = (body: string, acronym: string, at: number): boolean => {
   return spellsOut(name.endsWith(words) ? name.slice(0, -words.length) : name, acronym);
 };
 
+/** 括弧の中で略語の前に置いた、大文字で始まる語（(“End User TAB”) の End User）。 */
+const PREFIX = new RegExp(String.raw`[(（]${WRAP}(?<words>(?:[A-Z][a-z]+ )+)$`, "u");
+
+/**
+ * 括弧の中が、前の名前の頭の語と略語だけの形（End User Technical Advisory Board (“End User TAB”)）。添えた語が括弧の前の名前にあり、
+ * 名前の頭文字が略語と揃うときだけ展開と見なす。名前に無い語を添えた括弧（Review Board (“Community CRB”)）は別の名前。
+ */
+const isPrefixedAt = (body: string, acronym: string, at: number): boolean => {
+  const prefix = PREFIX.exec(body.slice(Math.max(0, at - DEFINITION_REACH), at));
+  if (prefix === null || !CLOSES.test(body.slice(at + acronym.length, at + acronym.length + NEAR))) return false;
+  const name = body.slice(0, at - prefix[0].length);
+  const words = (prefix.groups?.["words"] ?? "").trim();
+  return name.slice(-DEFINITION_REACH).includes(words) && spellsOut(name, acronym);
+};
+
+/** 名前の後ろの読点と言い換えの語に続く略語（Special Interest Groups, or SIGs）。名前の頭文字が略語と揃うときだけ。 */
+const isAlternativeAt = (patterns: DefinitionPatterns, body: string, acronym: string, at: number): boolean => {
+  const joined = patterns.alternative.exec(body.slice(Math.max(0, at - DEFINITION_REACH), at));
+  return joined !== null && spellsOut(body.slice(0, at - joined[0].length), acronym);
+};
+
 const isBracketedAt = (body: string, acronym: string, at: number): boolean => {
   const after = body.slice(at + acronym.length, at + acronym.length + NEAR);
   const before = body.slice(Math.max(0, at - NEAR), at);
   if (OPENS.test(after) || (OPENED.test(before) && CLOSES.test(after))) return true;
   if (SQUARE_OPENED.test(before) && SQUARE_CLOSES.test(after) && spellsOut(body.slice(0, at), acronym)) return true;
-  return isSeparatedAt(body, acronym, at) || isNamedBeforeAt(body, acronym, at) || isJointBracketedAt(body, acronym, at) || isQualifiedAt(body, acronym, at);
+  return (
+    isSeparatedAt(body, acronym, at) ||
+    isNamedBeforeAt(body, acronym, at) ||
+    isJointBracketedAt(body, acronym, at) ||
+    isQualifiedAt(body, acronym, at) ||
+    isPrefixedAt(body, acronym, at)
+  );
 };
 
 /**
@@ -358,5 +395,9 @@ export type ExpandedAt = (body: string, acronym: string, at: number) => boolean;
 /** body の at にある略語が、その場で展開・定義されているか。語彙表から一度だけ組み立てて、略語ごとに呼ぶ。 */
 export const expansionAt = (words: DefinitionWords): ExpandedAt => {
   const patterns = definitionPatterns(words);
-  return (body, acronym, at) => isBracketedAt(body, acronym, at) || isDefinedAt(patterns, body, acronym, at) || isEqualsDefinedAt(body, acronym, at);
+  return (body, acronym, at) =>
+    isBracketedAt(body, acronym, at) ||
+    isDefinedAt(patterns, body, acronym, at) ||
+    isAlternativeAt(patterns, body, acronym, at) ||
+    isEqualsDefinedAt(body, acronym, at);
 };

@@ -25,6 +25,11 @@ entries:
     group: marker
   - pattern: FIXME
     group: marker
+  # group: label — a template's instruction label left in a filled document ("OPTIONAL: General conclusions (bullet
+  # points or narrative)"). It counts only written in capitals exactly as here, opening a line before a colon and some
+  # text: "Optional: bring a jacket" is a note to the reader, not a template's instruction.
+  - pattern: OPTIONAL
+    group: label
   # group: template — a word that, in a heading, says the section is a template ("## Template", "# Sample letter").
   # Blanks under that heading (to the next heading at its depth or above) are what the template is for, so they are not reported.
   - pattern: template
