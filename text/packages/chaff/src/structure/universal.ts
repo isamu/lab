@@ -51,10 +51,13 @@ export const dottedNumber = (line: string, context: NumberingContext, plainText 
 export const isAmount = (dotted: DottedLine, countedAfter: StructurePatterns["countedAfter"]): boolean =>
   !dotted.closedByDot && countedAfter?.(dotted.number, dotted.rest) === true;
 
-/** 番号が日付の頭（「8 December 2022」の 8）か。日付を言語の dates が読む。年表の見出しの日は番号の並びではない。 */
+/** 年まで書いた日付の値（2022-12-08）。年の無い「2 May」は、番号 2 の題「May」とも読める。 */
+const WITH_YEAR = /^\d{4}-/u;
+
+/** 番号が年まで書いた日付の頭（「8 December 2022」の 8）か。日付を言語の dates が読む。年表の見出しの日は番号の並びではない。 */
 export const startsDate = (text: string, dates: StructurePatterns["dates"]): boolean => {
   const at = text.length - text.trimStart().length;
-  return (dates?.(text) ?? []).some((date) => date.start <= at && at < date.end);
+  return (dates?.(text) ?? []).some((date) => date.start <= at && at < date.end && WITH_YEAR.test(String(date.attrs["value"] ?? "")));
 };
 
 /** 言語を問わない通し番号。後ろが単位なら数量、日付なら日、本文の文の続きなら文の中の数なので、番号にしない。 */

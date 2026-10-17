@@ -24,10 +24,11 @@ before(async () => {
 describe("startsDate", () => {
   it("is true when a date the language reads starts at the number", () => {
     assert.equal(startsDate("8 December 2022", en.structure?.dates), true);
-    assert.equal(startsDate("  18 December", en.structure?.dates), true);
+    assert.equal(startsDate("  18 December 2022", en.structure?.dates), true);
   });
 
-  it("is false for a numbered title, a date later in the line, and no date reader", () => {
+  it("is false for a numbered title, a day and month without a year, a date later in the line, and no date reader", () => {
+    assert.equal(startsDate("2 May", en.structure?.dates), false);
     assert.equal(startsDate("3 Results", en.structure?.dates), false);
     assert.equal(startsDate("3 Results of 8 December", en.structure?.dates), false);
     assert.equal(startsDate("8 December 2022", undefined), false);
