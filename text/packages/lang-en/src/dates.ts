@@ -13,14 +13,16 @@ const ISO_DATE = /\b(?<y>\d{4})-(?<m>\d{2})-(?<d>\d{2})\b/gu;
 const DAY_BEFORE = /(?<d>\d{1,2})(?:st|nd|rd|th)? $/u;
 const DAY_YEAR_AFTER = /^ (?<d>\d{1,2})(?:st|nd|rd|th)?,? (?<y>\d{4})\b/u;
 const YEAR_AFTER = /^,? (?<y>\d{4})\b/u;
-/** A time zone or "hrs" after four figures: "1300 UTC", "0930 PST", "1300 hrs". */
-const ZONE_AFTER = /^ ?(?:UTC|GMT|Z|[A-Z]{1,3}T|hrs|hours)\b/u;
+/** A time zone or "hrs" after four figures: "1300 UTC", "0930 PST", "1300Z", "1300 hrs". */
+const ZONE_AFTER = /^ ?(?:UTC|GMT|Z|[ECMP][SD]T|BST|IST|JST|KST|CES?T|EES?T|AES?T|AEDT|hrs|hours)(?![\w&])/u;
 const HOURS_IN_DAY = 24;
 const MINUTES_IN_HOUR = 60;
+/** From here on, four figures before a zone may be a year as well as a time ("March 28 2024 UTC"), and stay a year. */
+const MODERN_YEARS_FROM = 1900;
 
-/** "Mar 28 1300 UTC": four figures that read as a 24-hour clock and carry a time zone are the time, not the year. */
+/** "Mar 28 1300 UTC": four figures that can only be a 24-hour clock, with a time zone after them, are the time, not the year. */
 const clockTime = (figures: string, rest: string): boolean =>
-  Number(figures.slice(0, 2)) < HOURS_IN_DAY && Number(figures.slice(2)) < MINUTES_IN_HOUR && ZONE_AFTER.test(rest);
+  Number(figures) < MODERN_YEARS_FROM && Number(figures.slice(0, 2)) < HOURS_IN_DAY && Number(figures.slice(2)) < MINUTES_IN_HOUR && ZONE_AFTER.test(rest);
 
 const pad = (value: string): string => value.padStart(2, "0");
 

@@ -188,6 +188,8 @@ describe("English: the weekday beside a date", () => {
     assert.deepEqual(found(timeline("Thu 28 Mar 0930 PST the quorum is restored"), en, "en"), []);
     assert.deepEqual(found(timeline("Fri Mar 28 1300 UTC the quorum is restored"), en, "en"), ["March 28, 2024:Friday:Thursday"]);
     assert.deepEqual(found("# Trip\n\nWe leave on Friday, October 1 2026.", en, "en"), ["October 1, 2026:Friday:Thursday"]);
+    assert.deepEqual(found("# Log\n\nRestarted on Friday, March 28 2024 UTC.", en, "en"), ["March 28, 2024:Friday:Thursday"]);
+    assert.deepEqual(found("# Log\n\nSigned on Monday, 28 March 1300 IT staff present.", en, "en"), ["28 March 1300:Monday:Sunday"]);
     assert.deepEqual(found("# History\n\nThe charter was sealed on Monday, 28 March 1300.", en, "en"), ["28 March 1300:Monday:Sunday"]);
   });
 
