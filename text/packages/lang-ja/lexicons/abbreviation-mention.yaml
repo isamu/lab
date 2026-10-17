@@ -1,0 +1,9 @@
+# 略語そのものを話題にする文の語（略語の DOB、DOB は date of birth の略）。undefined-acronym は、この語のある文が略語を頭文字の揃う
+# 語で書き出していれば（date of birth）、略語を説明済みと読む。
+id: abbreviation-mention
+language: ja
+entries:
+  - pattern: 略語
+  - pattern: 略称
+  - pattern: の略
+  - pattern: 略して
