@@ -38,7 +38,7 @@ const HANDLE_MARK = /[#@]/u;
 const HANDLE_CHAR = /[A-Za-z0-9_.-]/u;
 const HANDLE_HEAD = /[A-Za-z]/u;
 /** 印の前の英数字。あれば印は語やメールアドレスの中のもの（C#、sato@example）。 */
-const WORD_CHAR = /[A-Za-z0-9_]/u;
+const WORD_CHAR = /\w/u;
 
 /**
  * チャンネルや宛先の名前（「#pj_oss-team チャンネル」「@sato さん」）の後ろの境目。名前は空白で閉じ、詰めると後ろの字まで名前に
