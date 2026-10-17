@@ -317,6 +317,7 @@ npx chaffjs feedback a.md --missed --line 42                     見逃し
 文書の全体は載せないので、読んでから送るかを決めます。`chaff.yaml` 全体も載せたいときは `--with-config` を付けます。
 送り方（`gh issue create -R isamu/lab --title … --body-file .chaff-feedback.md`、または題だけを載せたリンク）も画面に出ます。
 chaff は何も送りません。届いた報告は、そのまま試験と修正になります。
+公開してよい文書は、指摘ごとの判定と一緒に [isamu/chaff-corpus](https://github.com/isamu/chaff-corpus) へ PR で足すこともできます。公開できない文書は URL とハッシュだけで記録できます。chaff-corpus の CI が、リリースごとにそれらの文書で chaff を流します。
 
 ## 書き換えで事実が落ちていないか確かめる
 

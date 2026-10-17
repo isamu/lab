@@ -113,6 +113,21 @@ npx chaffjs relax <rule>         # or strict / off
 Rules about a team's own words need their lists in `chaff.yaml`. The checks that read meaning
 rather than form run with `npx chaffjs test`.
 
+Where a rule is measured to be mostly wrong for a kind of document, its genre preset turns it off there, and the
+rule is listed under "did not run" with that reason. The measurement is the judged precision on real documents
+(below), recorded per rule and genre.
+
+## Real documents, and reporting a wrong finding
+
+[isamu/chaff-corpus](https://github.com/isamu/chaff-corpus) holds real business documents in Japanese and English
+(contracts, statutes, company rules, government guidance, minutes, reports) with every finding chaff gives on them
+judged correct, a false positive, or a miss. Its CI runs each release over all of them and reports precision and
+misses per rule and genre; the false positives found there are how chaff's rules get fixed.
+
+If chaff is wrong on your document, `npx chaffjs feedback <file> --rule <rule> --line <n>` drafts a report
+(nothing is sent). A document you may share can be added to chaff-corpus by pull request with its verdicts; one you
+may not share can be recorded by URL and hash only. Its README explains both.
+
 ## Your own preset
 
 A `chaff.yaml` at the top of the repository sets:
