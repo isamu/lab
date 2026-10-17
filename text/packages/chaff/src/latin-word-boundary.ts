@@ -33,6 +33,24 @@ export const isJoinerSpace = (text: string, boundary: Boundary, joiners: Readonl
   return joiners.has(text.slice(word.start, word.end).toLowerCase()) && standsBetweenJapanese(text, word);
 };
 
+/** チャンネルや宛先の名前（#pj_oss-team、@sato）の頭の印と、名前を作る字。名前は英字で始まる（#1件、@2名は番号と数）。 */
+const HANDLE_MARK = /[#@]/u;
+const HANDLE_CHAR = /[A-Za-z0-9_.-]/u;
+const HANDLE_HEAD = /[A-Za-z]/u;
+/** 印の前の英数字。あれば印は語やメールアドレスの中のもの（C#、sato@example）。 */
+const WORD_CHAR = /[A-Za-z0-9_]/u;
+
+/**
+ * チャンネルや宛先の名前（「#pj_oss-team チャンネル」「@sato さん」）の後ろの境目。名前は空白で閉じ、詰めると後ろの字まで名前に
+ * 読まれるので、空けるのは名前を閉じるためで空け方の好みではない。詰めて書いた所（#generalで）も書き手の空け方の票にしない。
+ */
+export const followsHandle = (text: string, boundary: Boundary): boolean => {
+  const before = Array.from(text.slice(0, boundary.offset));
+  const mark = before.findLastIndex((char) => !HANDLE_CHAR.test(char));
+  if (mark === -1 || !HANDLE_MARK.test(before[mark] ?? "") || !HANDLE_HEAD.test(before[mark + 1] ?? "")) return false;
+  return !WORD_CHAR.test(before[mark - 1] ?? "");
+};
+
 /**
  * 英字の語に付けて一つの語にする日本語の接尾の語（PDF版、IT化、Apple製）の前の境目。空けて書くことはほとんど無く、
  * 詰めたのは空け方の好みではない。語の頭の字が同じでも別の語（製品、型番）なら数える。suffixes は語彙表 latin-bound-suffix の語。

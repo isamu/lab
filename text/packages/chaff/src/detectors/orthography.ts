@@ -8,7 +8,7 @@ import { digitRunAround, endsWithDivisionLabel, isNumberName, sequenceLabelStart
 import { isSpacedLocationPart, type FloorWords } from "../location-part.ts";
 import { isFieldSeparator, isNameSeparator, type OrganizationWords } from "../name-separator.ts";
 import { addressSpans, clockTimeSpans, identifierSpans, isInsideSpan } from "../spacing-code.ts";
-import { isBoundSuffix, isJoinerSpace } from "../latin-word-boundary.ts";
+import { followsHandle, isBoundSuffix, isJoinerSpace } from "../latin-word-boundary.ts";
 
 /** 書いた形の出現に、動詞の活用した形（行う → 行います）を足したもの。同じ位置は一度だけ。 */
 const avoidedStarts = (sentence: Sentence, entry: LexiconEntry, use: string): number[] => {
@@ -105,7 +105,8 @@ type SentenceCodes = {
  * 「経営企画部 IR担当」のように名前だけを並べた行で、名前と名前を分ける空白も、「所属：経済学科 1年」のように項目の値の組を分ける空白も数えない（name-separator.ts）。
  */
 const isCounted = (sentence: Sentence, boundary: Boundary, context: NumberContext, codes: SentenceCodes): boolean => {
-  if (followsItemNumber(sentence.text, boundary, context.itemNumbers) || besideSpan(codes.identifiers, boundary)) return false;
+  if (followsItemNumber(sentence.text, boundary, context.itemNumbers) || besideSpan(codes.identifiers, boundary) || followsHandle(sentence.text, boundary))
+    return false;
   if (boundary.kind !== "after-digit" && endsWithDivisionLabel(sentence.text.slice(0, boundary.offset), context.divisions)) return false;
   if (boundary.kind === "letter")
     return (
