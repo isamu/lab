@@ -4,7 +4,8 @@ import { mkdtemp, mkdir, writeFile, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { applyFixes, diagnose } from "../packages/scoria/src/doctor.ts";
-import { configGaps } from "../packages/scoria/src/probes/config-integrity.ts";
+import { configGaps, configIntegrity } from "../packages/scoria/src/probes/config-integrity.ts";
+import { contextOf } from "./helpers.ts";
 import { ciGaps } from "../packages/scoria/src/probes/ci-integrity.ts";
 
 const project = async (files: Readonly<Record<string, string>>): Promise<string> => {
@@ -44,6 +45,59 @@ test("reports strict mode being off", () => {
 test("says nothing about strict mode when it is on", () => {
   const files = [{ path: "tsconfig.json", text: '{"compilerOptions":{"strict":true}}' }];
   assert.ok(!ids(configGaps(files, true)).includes("tsconfig-strict"));
+});
+
+const formatterGap = (packageJson: string) => configGaps([{ path: "package.json", text: packageJson }], false).find((gap) => gap.id === "formatter-missing");
+
+test("reports no formatter being installed as a warning", () => {
+  assert.equal(formatterGap("{}")?.severity, "warning");
+  assert.equal(formatterGap('{"devDependencies":{"eslint":"^10"}}')?.severity, "warning");
+});
+
+test("a formatter config without the dependency is still not installed", () => {
+  const files = [
+    { path: "package.json", text: "{}" },
+    { path: ".prettierrc", text: "{}" },
+  ];
+  assert.ok(ids(configGaps(files, false)).includes("formatter-missing"));
+});
+
+test("says nothing when Prettier, Biome or dprint is a dependency", () => {
+  assert.equal(formatterGap('{"devDependencies":{"prettier":"^3"}}'), undefined);
+  assert.equal(formatterGap('{"dependencies":{"prettier":"^3"}}'), undefined);
+  assert.equal(formatterGap('{"devDependencies":{"@biomejs/biome":"^2"}}'), undefined);
+  assert.equal(formatterGap('{"devDependencies":{"dprint":"^0.50"}}'), undefined);
+});
+
+test("a package merely named like a formatter does not count", () => {
+  assert.ok(formatterGap('{"devDependencies":{"eslint-config-prettier":"^10","biome":"^0.3"}}') !== undefined);
+});
+
+const gatedProject = (devDependencies: string) => [
+  { path: "package.json", text: `{"scripts":{"lint":"x","build":"x","test":"x","typecheck":"x"},"devDependencies":${devDependencies}}` },
+  { path: "eslint.config.js", text: "export default [];" },
+  { path: "tsconfig.json", text: '{"compilerOptions":{"strict":true}}' },
+  { path: ".gitignore", text: "node_modules/\n" },
+];
+
+const integrityMetrics = async (devDependencies: string) => {
+  const result = await configIntegrity.run(contextOf([], undefined, gatedProject(devDependencies)));
+  return Object.fromEntries(result.metrics.map((metric) => [metric.id, metric.value]));
+};
+
+/** The gap has to reach the score, not only the doctor's list. */
+test("a missing formatter raises the config gap ratio", async () => {
+  const without = await integrityMetrics("{}");
+  const withPrettier = await integrityMetrics('{"prettier":"^3"}');
+  assert.equal(without["config-integrity.gap_count"], 1);
+  assert.ok((without["config-integrity.gap_ratio"] ?? 0) > 0);
+  assert.equal(withPrettier["config-integrity.gap_count"], 0);
+  assert.equal(withPrettier["config-integrity.gap_ratio"], 0);
+});
+
+test("an unreadable package.json counts as no formatter", () => {
+  assert.ok(formatterGap("not json") !== undefined);
+  assert.ok(ids(configGaps([], false)).includes("formatter-missing"));
 });
 
 test("asks for a typecheck script only in a TypeScript project", () => {

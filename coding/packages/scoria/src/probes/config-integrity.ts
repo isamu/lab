@@ -1,6 +1,6 @@
 import type { Finding, Probe, ProbeContext, ProbeResult, ConfigFile } from "../plugin.ts";
 import { findConfig } from "../config-files.ts";
-import { isRecord } from "../package-json.ts";
+import { hasDependency, isRecord } from "../package-json.ts";
 
 /**
  * Whether the project's own gates are configured at all, and how far they have been loosened.
@@ -126,14 +126,30 @@ const gitignoreGaps = (files: readonly ConfigFile[]): readonly Gap[] => {
   ];
 };
 
+const FORMATTERS = ["prettier", "@biomejs/biome", "dprint"];
+
+/** A formatter run from an editor only is a preference; one in the dependencies is a gate CI can run. */
+const formatterGaps = (pkg: Record<string, unknown> | undefined): readonly Gap[] =>
+  FORMATTERS.some((name) => hasDependency(pkg, name))
+    ? []
+    : [
+        {
+          id: "formatter-missing",
+          severity: "warning",
+          title: "No formatter is installed",
+          detail: `None of ${FORMATTERS.join(", ")} is in package.json, so formatting is left to each editor and no gate can check it.`,
+          fixable: false,
+        },
+      ];
+
 export const configGaps = (files: readonly ConfigFile[], typescript: boolean): readonly Gap[] => {
   const pkg = parseJson(findConfig(files, "package.json"));
   const tsconfig = parseJson(findConfig(files, "tsconfig.json"));
-  return [...eslintGaps(files), ...scriptGaps(pkg, typescript), ...strictGaps(tsconfig), ...gitignoreGaps(files)];
+  return [...eslintGaps(files), ...scriptGaps(pkg, typescript), ...strictGaps(tsconfig), ...gitignoreGaps(files), ...formatterGaps(pkg)];
 };
 
 /** Checks attempted, so the gap ratio is scale-free rather than a raw count. */
-const CHECKS = 8;
+const CHECKS = 9;
 
 const toFinding = (gap: Gap): Finding => ({
   rule: gap.id,
