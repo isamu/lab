@@ -170,7 +170,12 @@ describe("empty-table-cell: 表の空欄", () => {
 
   it("金額の列が決まらない表では、合計の行の空欄も言う", () => {
     assert.deepEqual(
-      names(tableBlanks(table("| 10月16日 | 伊藤 | 修正 |", "| 10月21日 | 鈴木 | 配布 |", "| 合計 |  | 二件 |"), [], (row) => row.includes("合計"))),
+      names(
+        tableBlanks(table("| 10月16日 | 伊藤 | 修正 |", "| 10月21日 | 鈴木 | 配布 |", "| 合計 |  | 二件 |"), [], {
+          isTotalRow: (row) => row.includes("合計"),
+          totalWords: [],
+        }),
+      ),
       ["担当"],
     );
   });
@@ -215,6 +220,43 @@ describe("empty-table-cell: 合計の語を二つ目より後の升に書いた�
     assert.deepEqual(namedRuleRun("empty-table-cell", claims("| 4 | | Parking | $50 |"), en).findings, ['The "Date" column is blank in this row only']);
     assert.deepEqual(namedRuleRun("empty-table-cell", claims("| 4 | | Total | $1,200 |"), en).findings, ['The "Date" column is blank in this row only']);
     assert.deepEqual(namedRuleRun("empty-table-cell", claims("| | | Total | |"), en).findings, ['The "Amount" column is blank in this row only']);
+  });
+});
+
+describe("empty-table-cell: 二つの列にまたがる行の見出し（変換した表）", () => {
+  const scorecard = titledTable(
+    "Scorecard",
+    "| Area | Question | Answer | Notes |",
+    "| --- | --- | --- | --- |",
+    "| People | Were fewer than five people paged? | no | |",
+    "| | Were pages routed to the right team? | yes | |",
+    "| Process | Was a status page entry created? | no | |",
+  );
+  const scores = titledTable(
+    "点数",
+    "| 区分 | 項目 | 点 |",
+    "| --- | --- | --- |",
+    "| 体制 | 連絡が届いたか | 1 |",
+    "| 手順 | 手順書があったか | 0 |",
+    "| 道具 | 監視が鳴ったか | 1 |",
+  );
+
+  it("合計の語で始まるか終わる見出し、コロンで終わる見出しのすぐ後ろの空欄は、その後ろが埋まっていれば言わない", () => {
+    ['| Total score (count of all "yes" answers above) | | 5 | |', "| Total: | | 5 | |", "| **Grand total** | | 5 | |"].forEach((row) =>
+      assert.deepEqual(namedRuleRun("empty-table-cell", scorecard(row), en).findings, [], row),
+    );
+    ["| 得点合計 | | 2 |", "| 合計（はいの数） | | 2 |", "| 点数： | | 2 |"].forEach((row) =>
+      assert.deepEqual(namedRuleRun("empty-table-cell", scores(row), ja).findings, [], row),
+    );
+  });
+
+  it("見出しでない升の後ろ、合計の語が語の一部の見出しの後ろ、後ろも空いた空欄は言う", () => {
+    ["| Parking | | 5 | |", "| Totality | | 5 | |", "| Summary | | 5 | |", "| Total | | | |"].forEach((row) =>
+      assert.ok(namedRuleRun("empty-table-cell", scorecard(row), en).findings.includes('The "Question" column is blank in this row only'), row),
+    );
+    ["| 設計 | | 2 |", "| 計画 | | 2 |", "| 体制ほか | | 2 |"].forEach((row) =>
+      assert.ok(namedRuleRun("empty-table-cell", scores(row), ja).findings.includes("表の「項目」の列で、この行だけが空欄です"), row),
+    );
   });
 });
 
