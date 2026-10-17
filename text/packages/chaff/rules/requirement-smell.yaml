@@ -4,7 +4,7 @@ status: stable
 how_to_find: requirement-smell
 # 要求の文の目印と、三つの見つけ方の語。語はすべて言語ごとの語彙表にある。
 word_list: requirement-marker
-extra_word_lists: [requirement-loophole, requirement-open-end, requirement-either, definition-statement, requirement-open-question]
+extra_word_lists: [requirement-loophole, requirement-open-end, requirement-either, definition-statement, requirement-open-question, requirement-open-condition]
 uses: [pos]
 severity: info
 
@@ -74,5 +74,5 @@ example:
     config: { genre: technical/spec }
 
 not_flagged:
-  ja: 要求の文でない文（説明や背景）、法令、ブログやビジネス文書は見ません。語彙表にない言い方は指しません。文書が定めた名前の「等」（以下「委託先等」という、銀行等（…をいう。）、定義の号の頭の語）と、監査等委員会のように後ろへ語が続く「等」は、列挙を閉じているので指しません。すぐ後ろで種類を名指す「等」（印刷等、二次的に利用される場合／印刷等の二次的利用）も、一覧がその種類の例なので指しません。条件（訂正等を行った際に）、与える権利（消去等できるものとします）、禁止や免責（転載等をしてはならない、責任を負わないものとします）の中の「等」も、わざと広く取った一覧なので指しません。英語の as soon as possible は、同じ文に日数の期限（no later than two days after）があれば、期限が決まっているので指しません。
-  en: Sentences that state no requirement (background, explanation), statutes, and blogs and business documents are not checked. Phrases not on chaff's lists are not reported. An open-ended word inside a name the document defines (a quoted term, or one defined in the brackets after it) is not reported. "As soon as possible" followed in the same sentence by a limit in numbers ("but in any event no later than two days after") is bounded, and not reported. In Japanese, 等 right before the words that name the kind it gives examples of (印刷等、二次的に利用, "secondary use, such as printing") is not reported either. Nor is a Japanese 等 in a condition (訂正等を行った際に), a right the writer grants (できるものとする) or a prohibition or disclaimer (てはならない, ないものとする), because such a list is kept wide on purpose.
+  ja: 要求の文でない文（説明や背景）、法令、ブログやビジネス文書は見ません。語彙表にない言い方は指しません。文書が定めた名前の「等」（以下「委託先等」という、銀行等（…をいう。）、定義の号の頭の語）と、監査等委員会のように後ろへ語が続く「等」は、列挙を閉じているので指しません。すぐ後ろで種類を名指す「等」（印刷等、二次的に利用される場合／印刷等の二次的利用）も、一覧がその種類の例なので指しません。条件（訂正等を行った際に）、与える権利（消去等できるものとします）、禁止や免責（転載等をしてはならない、責任を負わないものとします）の中の「等」も、わざと広く取った一覧なので指しません。条件の語のすぐ後ろの括弧の中の「等」（不要な場合（一つの表だけを読むとき等）も付けること）は、いつ当てはまるかの例なので指しません。英語の as soon as possible は、同じ文に日数の期限（no later than two days after）があれば、期限が決まっているので指しません。
+  en: Sentences that state no requirement (background, explanation), statutes, and blogs and business documents are not checked. Phrases not on chaff's lists are not reported. An open-ended word inside a name the document defines (a quoted term, or one defined in the brackets after it) is not reported. "As soon as possible" followed in the same sentence by a limit in numbers ("but in any event no later than two days after") is bounded, and not reported. In Japanese, 等 right before the words that name the kind it gives examples of (印刷等、二次的に利用, "secondary use, such as printing") is not reported either. Nor is a Japanese 等 in a condition (訂正等を行った際に), a right the writer grants (できるものとする) or a prohibition or disclaimer (てはならない, ないものとする), because such a list is kept wide on purpose, or an open list in brackets right after a condition word (場合（…等）, "in cases (…, etc.)"), which gives examples of when the requirement applies.

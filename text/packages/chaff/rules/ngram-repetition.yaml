@@ -52,8 +52,8 @@ example:
       We listen to our customers. Regulars try every prototype, and store staff ask shoppers what they thought.
 
 not_flagged:
-  ja: 一覧の飾り（各項目に付くタグやリンクの文字）と、名前にかかる語句は数えません。英語の、名詞と形容詞だけが並ぶ用語（the federal funds rate）は言い回しではないので数えません。よくある質問の答えは、問いの見出しごとに別々に数えます。短い文書は測りません。
-  en: Tags, link text and symbols that a listing repeats on every entry, and the words around a repeated name, are not counted. A term made only of nouns and adjectives ("the federal funds rate") is not a phrasing and is not counted. The answers in a FAQ are counted one question at a time. Short documents are not measured.
+  ja: 一覧の飾り（各項目に付くタグやリンクの文字）と、名前にかかる語句は数えません。英語の、名詞と形容詞だけが並ぶ用語（the federal funds rate）は言い回しではないので数えません。よくある質問の答えは、問いの見出しごとに別々に数えます。どの出現も節の最初の文にある言い回し（節ごとのひな形の書き出し）は数えません。短い文書は測りません。
+  en: Tags, link text and symbols that a listing repeats on every entry, and the words around a repeated name, are not counted. A term made only of nouns and adjectives ("the federal funds rate") is not a phrasing and is not counted. The answers in a FAQ are counted one question at a time. A phrase found only in the first sentence of sections (each section's template opening) is not counted. Short documents are not measured.
 level_meaning:
   ja: 同じ言い回し {limit} 回まで
   en: up to {limit} uses of the same phrase

@@ -1,0 +1,15 @@
+# 断り書き（免責・変更の予告・転載の断り）の語。これを含む段落は、本文とは別の声で書く決まり文句の段落として、文末の調子を本文と比べない。
+# 動詞は原形で書く（「負う」は「負わない」「負いません」に当たる）。
+id: notice-phrase
+language: ja
+entries:
+  - pattern: ご了承
+  - pattern: 予告なく
+  - pattern: 予告なしに
+  - pattern: 責任を負う
+  - pattern: 責務を負う
+  - pattern: 一切の責任
+  - pattern: 免責
+  - pattern: 無断転載
+  - pattern: 無断で転載
+  - pattern: 無断で複製

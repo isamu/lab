@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { codeFences, codeSpans, fenceOf, languageOf } from "../packages/chaff/src/detectors/code-fences.ts";
 import { commandsIn, isStatement, minorityOf, promptStyleOf, showsCommand } from "../packages/chaff/src/detectors/technical-docs.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
+import { isFormatTemplate } from "../packages/chaff/src/format-template.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
@@ -93,6 +94,38 @@ describe("code-fence-language-mix: a block without a language among blocks with 
 
   it("does not run in a business genre", () =>
     assert.deepEqual(findingsOf(en, "code-fence-language-mix", doc(fence("bash", "a"), fence("sh", "b"), fence("", "c")), "business/report"), []));
+
+  it("does not report a block that holds only a format template", () => {
+    const tagged = [fence("json", '{ "version": "1.2.0" }'), fence("json", '{ "version": "2.0.0" }')];
+    assert.deepEqual(findingsOf(ja, "code-fence-language-mix", doc(...tagged, fence("", "<MAJOR>.<MINOR>.<PATCH>"))), []);
+    assert.deepEqual(findingsOf(en, "code-fence-language-mix", doc(...tagged, fence("", "{year}-{month}-{day}"))), []);
+  });
+
+  it("still reports an untagged block of code beside a template", () => {
+    const tagged = [fence("json", '{ "version": "1.2.0" }'), fence("json", '{ "version": "2.0.0" }')];
+    assert.equal(findingsOf(en, "code-fence-language-mix", doc(...tagged, fence("", "release <MAJOR>.<MINOR>"))).length, 1);
+    assert.equal(findingsOf(en, "code-fence-language-mix", doc(...tagged, fence("", '{ "version": "<MAJOR>" }'))).length, 1);
+    assert.equal(findingsOf(en, "code-fence-language-mix", doc(...tagged, fence("", "<div>"))).length, 1);
+  });
+});
+
+describe("isFormatTemplate: placeholders and separators only", () => {
+  it("valid: angle or brace placeholders joined by separators, blank lines allowed", () => {
+    assert.equal(isFormatTemplate(["<MAJOR>.<MINOR>.<PATCH>"]), true);
+    assert.equal(isFormatTemplate(["{year}-{month}-{day}", "", "<host>:<port>"]), true);
+  });
+
+  it("invalid: a literal word, code, no placeholder, or nothing at all", () => {
+    assert.equal(isFormatTemplate(["v<MAJOR>.<MINOR>"]), false);
+    assert.equal(isFormatTemplate(["npm install <package>"]), false);
+    assert.equal(isFormatTemplate(["1.2.3"]), false);
+    assert.equal(isFormatTemplate(["{}"]), false);
+    assert.equal(isFormatTemplate(["<div>"]), false);
+    assert.equal(isFormatTemplate(["<div><span>", "<br> <hr>"]), false);
+    assert.equal(isFormatTemplate(["<MAJOR>"]), false);
+    assert.equal(isFormatTemplate(["", "  "]), false);
+    assert.equal(isFormatTemplate([]), false);
+  });
 });
 
 describe("shell-prompt-mix: commands with and without a prompt", () => {

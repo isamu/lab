@@ -1,0 +1,17 @@
+# One word that opens a sentence by giving its place in a sequence (First, …; Finally, …). Followed by a comma it is an
+# introduction, not the first item of a list, though the tagger may read First as an adjective. Read by oxford-comma-consistency.
+id: sequence-opener
+language: en
+entries:
+  - pattern: first
+  - pattern: firstly
+  - pattern: second
+  - pattern: secondly
+  - pattern: third
+  - pattern: thirdly
+  - pattern: fourth
+  - pattern: next
+  - pattern: then
+  - pattern: last
+  - pattern: lastly
+  - pattern: finally

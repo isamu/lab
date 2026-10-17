@@ -29,6 +29,18 @@ describe("comparative-without-baseline: 比べる相手の無い比較", () => {
     assert.deepEqual(findingsOf("地域の皆さんと、より豊かな暮らしを考えます。", ja), []);
   });
 
+  it("「より良くする」「より簡単にする」は改める・易しくするの意味で、相手は今の状態なので言わない", () => {
+    assert.deepEqual(findingsOf("手引きをより良くする提案は、いつでも歓迎します。", ja), []);
+    assert.deepEqual(findingsOf("申請をより簡単にするため、書式を一つにまとめます。", ja), []);
+    assert.deepEqual(findingsOf("利用者の声を聞いて、画面をより見やすくしていきます。", ja), []);
+    assert.deepEqual(findingsOf("来月から、手続きをより簡単にします。", ja), []);
+  });
+
+  it("変わったことを言う「より速くなる」「より速くした」は、今までの何と比べたかを言う", () => {
+    assert.deepEqual(findingsOf("新しい版で、検索がより速くなります。", ja), ["「より速く」は、何と比べているかが書かれていません"]);
+    assert.deepEqual(findingsOf("新しい版で、検索をより速くしました。", ja), ["「より速く」は、何と比べているかが書かれていません"]);
+  });
+
   it("目当ての語が続かない「より良い」「さらに」は言う", () => {
     assert.deepEqual(findingsOf("利用者に、より良いものを届けます。", ja), ["「より良い」は、何と比べているかが書かれていません"]);
     assert.deepEqual(findingsOf("新しい版で、社会の動きをより速く伝えます。", ja), ["「より速く」は、何と比べているかが書かれていません"]);

@@ -44,6 +44,13 @@ describe("unknown-word: a word not in the dictionary, one letter from one that i
     ]);
   });
 
+  it("the names of social-engineering attacks are known, but a typo among them is still reported", () => {
+    assert.deepEqual(unknown("Report phishing, vishing, smishing or pharming, and any ransomware or keylogger you find."), []);
+    assert.deepEqual(unknown("Report vishing to the desk at once, since a vishng call is common."), [
+      '"vishng" is not in the dictionary; did you mean "vishing"?',
+    ]);
+  });
+
   it("words of everyday AI evaluation are known (#621)", () => {
     assert.deepEqual(unknown("Read the guide on running evals over a model's outputs."), []);
   });
