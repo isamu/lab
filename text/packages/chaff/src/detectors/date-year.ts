@@ -13,7 +13,6 @@ import {
   type MarkerReach,
 } from "./date-any-year.ts";
 import { datesUnderYearHeadings, yearLabelOf, type HeadingYearWords } from "./date-heading-year.ts";
-import { documentDateOf } from "./document-date.ts";
 import { openingDateOf } from "./opening-date.ts";
 import { withNearestYear } from "../structure/weekday.ts";
 
@@ -195,11 +194,14 @@ export const datePoints = (tree: StructureNode, headingWords: HeadingYearWords =
   });
 };
 
-/** The document's own date: its date-stamp paragraph, or a date alone on a line of its title block. */
+/**
+ * The document's own date: a date alone, or labelled, on a line of its title block. A date-only paragraph further down
+ * (an agenda's "April 4, 2023") is a date the text talks about, not the document's.
+ */
 const stampOf = (doc: ProseDocument, tree: StructureNode): string | undefined => {
   const dates = inDocumentOrder(tree).flatMap((node) => (node.kind === "date" ? [{ ...node.span, value: String(node.attrs["value"]) }] : []));
   const labels = (doc.lexicons["date-stamp-label"] ?? []).map((entry: LexiconEntry) => entry.pattern);
-  return documentDateOf(doc, tree) ?? openingDateOf(doc.source, dates, labels);
+  return openingDateOf(doc.source, dates, labels);
 };
 
 const pointsOf = (doc: ProseDocument, tree: StructureNode): DatePoint[] => datePoints(tree, headingYearWordsOf(doc), stampOf(doc, tree));
