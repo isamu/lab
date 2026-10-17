@@ -11,7 +11,7 @@ const JAPANESE = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ー]/u;
 /** 境目の英字の側の語の範囲（「名前 or 任意」の or）。 */
 const latinWordAt = (text: string, boundary: Boundary): Span => {
   if (LATIN_WORD_CHAR.test(text[boundary.offset - 1] ?? "")) {
-    const reversed = [...text.slice(0, boundary.offset)].toReversed().join("");
+    const reversed = Array.from(text.slice(0, boundary.offset)).toReversed().join("");
     return { start: boundary.offset - (LATIN_WORD_AFTER.exec(reversed)?.[0].length ?? 0), end: boundary.offset };
   }
   const start = boundary.offset + (boundary.spaced ? 1 : 0);
