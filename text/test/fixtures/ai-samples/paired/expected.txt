@@ -21,7 +21,7 @@ rule-of-three              0/3          0/3              0/3                  0/
 section-length-uniformity  1/3          0/3              1/3                  0/63
 sentence-rhythm            0/3          0/3              0/3                  0/63
 stock-transition           0/3          0/3              0/3                  0/63
-translationese-density     0/3          0/3              0/3                  1/63
+translationese-density     0/3          0/3              0/3                  0/63
 unfilled-placeholder       0/3          0/3              0/3                  0/63
 
 ## en

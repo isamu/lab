@@ -43,8 +43,8 @@ example:
       この機能を使うと、設定を共有できます。速度にはキャッシュが大きく効きます。設定は設定画面からいつでも変えられます。
 
 not_flagged:
-  ja: 一つ一つは誤りではないので、短い文書（500 字未満）は測りません。人の書いた技術記事でもふつうに使う言い回し（〜を提供する、〜に焦点を当てる、〜することができる）は数えません。文学のジャンルでは既定で止めています（人物を「彼女は」と呼ぶのは小説の書き方です）。
-  en: None of these is wrong alone, so documents shorter than 500 characters are not measured. Phrasings common in human technical writing (を提供する, に焦点を当てる, することができる) are not counted. The literature preset turns it off, since a novel calls its characters 彼女.
+  ja: 一つ一つは誤りではないので、短い文書（500 字未満）は測りません。人の書いた技術記事でもふつうに使う言い回し（〜を提供する、〜に焦点を当てる、〜することができる）は数えません。読み手への呼びかけ（あなたの、あなたは）だけの文書は、読み手に語りかける書き方を選んだものとして言いません（ほかの言い回しと重なれば数えます）。文学のジャンルでは既定で止めています（人物を「彼女は」と呼ぶのは小説の書き方です）。
+  en: None of these is wrong alone, so documents shorter than 500 characters are not measured. Phrasings common in human technical writing (を提供する, に焦点を当てる, することができる) are not counted. A document whose only such phrases address the reader (あなたの, あなたは) has chosen to speak to its reader and is not reported; beside other phrases they count. The literature preset turns it off, since a novel calls its characters 彼女.
 level_meaning:
   ja: 1000 字あたり翻訳調の言い回し {limit} 個まで
   en: up to {limit} translated phrasings per 1000 characters
