@@ -16,6 +16,30 @@ const YEAR_AFTER = /^,? (?<y>\d{4})\b/u;
 /** "Mar 28 14:02:11 UTC 2024", the form of `date` and C's ctime: the year comes after the time and its zone. */
 const DAY_TIME_YEAR_AFTER = /^ (?<d>\d{1,2}) (?:[01]?\d|2[0-3]):[0-5]\d(?::[0-5]\d)?(?: (?!AM\b|PM\b)[A-Z]{2,5})? (?<y>\d{4})\b/u;
 const TIME_YEAR_REACH = 32;
+/** A time zone or "hrs" after four figures: "1300 UTC", "0930 PST", "1300 hrs". */
+const ZONE_WORDS: ReadonlySet<string> = new Set(
+  ["UTC", "GMT", "Z", "EST", "EDT", "CST", "CDT", "MST", "MDT", "PST", "PDT", "BST", "IST", "JST", "KST"].concat([
+    "CET",
+    "CEST",
+    "EET",
+    "EEST",
+    "AEST",
+    "AEDT",
+    "hrs",
+    "hours",
+  ]),
+);
+/** The word after the figures, unless it runs on into "&" ("AT&T"). */
+const WORD_AFTER = /^ ?(?<word>[A-Za-z]+)(?![\w&])/u;
+const zoneAfter = (rest: string): boolean => ZONE_WORDS.has(WORD_AFTER.exec(rest)?.groups?.["word"] ?? "");
+const HOURS_IN_DAY = 24;
+const MINUTES_IN_HOUR = 60;
+/** From here on, four figures before a zone may be a year as well as a time ("March 28 2024 UTC"), and stay a year. */
+const MODERN_YEARS_FROM = 1900;
+
+/** "Mar 28 1300 UTC": four figures that can only be a 24-hour clock, with a time zone after them, are the time, not the year. */
+const clockTime = (figures: string, rest: string): boolean =>
+  Number(figures) < MODERN_YEARS_FROM && Number(figures.slice(0, 2)) < HOURS_IN_DAY && Number(figures.slice(2)) < MINUTES_IN_HOUR && zoneAfter(rest);
 
 const pad = (value: string): string => value.padStart(2, "0");
 
@@ -29,7 +53,7 @@ const dayBefore = (text: string, at: number): { readonly day: string; readonly s
 /** "April 1, 2024" → 2024-04-01. */
 const monthDayYear = (text: string, at: number, end: number, month: number): Mention | undefined => {
   const found = DAY_YEAR_AFTER.exec(text.slice(end, end + 16));
-  if (found?.groups === undefined) return undefined;
+  if (found?.groups === undefined || clockTime(found.groups["y"] ?? "", text.slice(end + found[0].length))) return undefined;
   const value = `${found.groups["y"] ?? ""}-${pad(String(month))}-${pad(found.groups["d"] ?? "")}`;
   return { start: at, end: end + found[0].length, attrs: { value } };
 };
@@ -47,7 +71,7 @@ const monthDayTimeYear = (text: string, at: number, end: number, month: number):
 const monthYear = (text: string, at: number, end: number, month: number): Mention | undefined => {
   const found = YEAR_AFTER.exec(text.slice(end, end + 8));
   const year = found?.groups?.["y"];
-  if (found === null || year === undefined) return undefined;
+  if (found === null || year === undefined || clockTime(year, text.slice(end + found[0].length))) return undefined;
   const before = dayBefore(text, at);
   const value = [year, pad(String(month)), ...(before === undefined ? [] : [pad(before.day)])].join("-");
   return { start: before?.start ?? at, end: end + found[0].length, attrs: { value } };
