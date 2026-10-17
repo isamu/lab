@@ -2,6 +2,7 @@ import type { Detector, Finding, ProseDocument, Sentence, TableCell, Token } fro
 import { groupBy, oddSpellings, type KeyedWord, type OddSpelling } from "../spelling-variants.ts";
 import { dropsOkurigana, kanjiKeyAmong, katakanaKey, lemmaReading } from "../kana-spelling.ts";
 import { isKatakanaWord, stemOf } from "../long-vowel.ts";
+import { withNounsAfterParticles } from "../nominal-stem.ts";
 import { QUOTATION_MARKS, isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
 import { furiganaSpans } from "../furigana.ts";
@@ -200,7 +201,7 @@ const wholeWordOf = (
 
 /** Japanese words keyed by part of speech, use and the reading of the dictionary form, spelled as the dictionary form. */
 const readingWords = (sentence: Sentence, isOpen: IsOpen, skips: Skips): Placed[] => {
-  const tokens = sentence.tokens ?? [];
+  const tokens = withNounsAfterParticles(sentence.tokens ?? []);
   const runs = wholeWordRuns(tokens, skips.wholeWords);
   const inRun = new Set(runs.flatMap(({ first, last }) => Array.from({ length: last - first + 1 }, (_, extra) => first + extra)));
   const whole = runs.flatMap((run) => wholeWordOf(sentence, tokens, run, isOpen, skips.wholeWords));
