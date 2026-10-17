@@ -4,6 +4,7 @@ import { perKiloLines } from "../stats.ts";
 import { resolveBinFrom } from "../bin-resolve.ts";
 import { findConfig } from "../config-files.ts";
 import { skippedResult } from "./shared.ts";
+import { chooseTypeChecker } from "../type-checker.ts";
 
 /**
  * Type errors, from the project's own TypeScript (spec §12.1).
@@ -66,9 +67,9 @@ const toFinding = (error: TypeError): Finding => ({
 
 const run = async (ctx: ProbeContext): Promise<ProbeResult> => {
   const started = Date.now();
-  const bin = resolveBinFrom(ctx.root, "typescript", "tsc");
-  if (bin === undefined) return skippedResult("tsc", "the project has no installed typescript", started);
-  const result = await ctx.execNode(bin, ["--noEmit", "--pretty", "false"]);
+  const checker = chooseTypeChecker(ctx.project.stacks, (packageName, binName) => resolveBinFrom(ctx.root, packageName, binName));
+  if (checker.kind === "missing") return skippedResult("tsc", checker.reason, started);
+  const result = await ctx.execNode(checker.bin, ["--noEmit", "--pretty", "false"]);
   const errors = parse(`${result.stdout}\n${result.stderr}`);
   const sloc = sourceSloc(ctx.files);
   return {
@@ -79,7 +80,7 @@ const run = async (ctx: ProbeContext): Promise<ProbeResult> => {
       { id: "tsc.type_errors_per_kloc", value: perKiloLines(errors.length, sloc), unit: "per_kloc" },
     ],
     findings: errors.slice(0, MAX_FINDINGS).map(toFinding),
-    toolVersions: { typescript: (await ctx.execNode(bin, ["--version"])).stdout.trim().replace("Version ", "") },
+    toolVersions: { [checker.tool]: (await ctx.execNode(checker.bin, ["--version"])).stdout.trim().replace("Version ", "") },
     durationMs: Date.now() - started,
   };
 };
