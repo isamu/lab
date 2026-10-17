@@ -1,0 +1,9 @@
+# Words of scale written right after a number ($83 million, 3 thousand cars). number-without-unit looks for the one
+# number with such a word and no unit (83 million) where the other numbers with that word all carry one.
+id: figure-scale-word
+language: en
+entries:
+  - pattern: thousand
+  - pattern: million
+  - pattern: billion
+  - pattern: trillion
