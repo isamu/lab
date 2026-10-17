@@ -71,11 +71,23 @@ const BOLD_LABEL = /^(?:\*\*[^*\n.!?。！？,，、:：]{1,40}\*\*|__[^_\n.!?�
 const COLON_LABEL = /^[^.!?。！？,，、:：]{1,40}[:：]$/u;
 
 /**
- * Whether a URL is the value of a field (`**Licence text** https://…`, `Website: https://…`): on its line only a label comes
- * before it and nothing after. There the address is the content, as in a table cell, so writing it bare is right.
+ * A member of a data object written in the text (`"company": "https://…",`), its quotes escaped or not: the line opens with
+ * a quoted key (after the object's brace, if any) and a colon, then the URL inside quotes, then at most a comma, a semicolon
+ * or the object's close. A sentence before the key makes it prose.
  */
-export const isFieldValueUrl = (lineBefore: string, lineAfter: string): boolean => {
+const MEMBER_KEY = /^[\s{]*\\?"[^"\\\n]{1,40}\\?"\s*:\s*\\?"$/u;
+const MEMBER_END = /^\\?"\s*[,;}\]]?\s*$/u;
+
+const isLabelledValue = (lineBefore: string, lineAfter: string): boolean => {
   if (lineAfter.trim() !== "") return false;
   const label = lineBefore.replace(LIST_MARKER, "").trim();
   return BOLD_LABEL.test(label) || COLON_LABEL.test(label);
 };
+
+/**
+ * Whether a URL is the value of a field (`**Licence text** https://…`, `Website: https://…`, `"home": "https://…"`): on its
+ * line only a label comes before it and nothing after, or it is a quoted member of a data object. There the address is the
+ * content, as in a table cell, so writing it bare is right.
+ */
+export const isFieldValueUrl = (lineBefore: string, lineAfter: string): boolean =>
+  isLabelledValue(lineBefore, lineAfter) || (MEMBER_KEY.test(lineBefore) && MEMBER_END.test(lineAfter));
