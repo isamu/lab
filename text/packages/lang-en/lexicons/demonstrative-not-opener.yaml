@@ -21,6 +21,9 @@ entries:
   - pattern: this paper
   - pattern: this page
   - pattern: this guide
+  - pattern: this guidance
+  - pattern: this handbook
+  - pattern: this manual
   - pattern: this memo
   - pattern: this specification
   - pattern: this rfc
