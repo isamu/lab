@@ -63,8 +63,11 @@ const LEAD_POS = new Set(["ADP", "SCONJ", "ADV", "PART"]);
 const isSequenceWord = (scope: ItemScope, token: Token | undefined): boolean =>
   scope.sentence.words.sequence?.has(token?.surface.toLowerCase() ?? "") ?? false;
 
+const SENTENCE_MARKS = new Set(["PUNCT", "SYM"]);
+
 /**
  * 順番の語と読点（First, / Next,）で始まる最初の項目から、その語を外した並び。解析器は First を形容詞と読み、読点で項目を切らないことがある。
+ * 文頭の語だけ。文の途中の first は項目のことがある（We support first, fallback, and legacy modes）。
  * 次の項目も順番の語なら、順番の語の並び（first, second and third）なので外さない。
  */
 const withoutSequenceWord = (view: View): View | undefined => {
@@ -73,7 +76,8 @@ const withoutSequenceWord = (view: View): View | undefined => {
   if (first === undefined || second === undefined) return undefined;
   const at = firstAt(scope, "open", first.item);
   const { tokens } = scope.sentence;
-  if (!isSequenceWord(scope, tokens[at]) || tokens[at + 1]?.surface !== "," || isSequenceWord(scope, openingOf(scope, second.item))) return undefined;
+  const opensSentence = tokens.slice(0, at).every((token) => SENTENCE_MARKS.has(token.pos));
+  if (!opensSentence || !isSequenceWord(scope, tokens[at]) || tokens[at + 1]?.surface !== "," || isSequenceWord(scope, openingOf(scope, second.item))) return undefined;
   const rest = { start: at + 2, end: first.item.end };
   return hasContent(scope, rest) ? { ...withoutFirst(view), pre: rest } : withoutFirst(view);
 };

@@ -30,5 +30,6 @@ describe("oxford-comma-consistency: contrasts and introductions", () => {
     assert.equal(firedAfter(WITHOUT_COMMA, "The fix made the parser correct, not faster, smaller, or simpler."), true);
     assert.equal(firedAfter(WITH_COMMA, "First, the team tested the parser, the renderer and the exporter."), true);
     assert.equal(firedAfter(WITHOUT_COMMA, "The first, second, and third places went to one team."), true);
+    assert.equal(firedAfter(WITHOUT_COMMA, "The club sells first, standard, and economy tickets."), true);
   });
 });
