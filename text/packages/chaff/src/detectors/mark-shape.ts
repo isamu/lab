@@ -3,7 +3,8 @@ import { escapeRegExp } from "../orthography.ts";
 import { minorityReport } from "../spacing-minority.ts";
 import { formulaBracketSpans } from "../formula-brackets.ts";
 import { isWithinAny, quotedSpans } from "../quoted-span.ts";
-import { captionsOf, isCaptionAt } from "./caps-caption.ts";
+import { captionsOf, isCaptionAt, letterheadSpans } from "./caps-caption.ts";
+import { lineStarts } from "../position.ts";
 
 /** The letters a mark must touch to count as part of the document's text, by language. */
 const SCRIPT: Readonly<Record<string, RegExp>> = {
@@ -87,15 +88,52 @@ const minorityFindings = <T extends Sided>(items: readonly T[], limit: number, v
 const ownSentences = (doc: ProseDocument): readonly Sentence[] => doc.sentences.filter((sentence) => sentence.embeddedLanguage === undefined);
 
 /**
+ * A bracketed item number opening a line ((1)開催趣旨, （ア）, (iv), a list bullet before it), both brackets of one width.
+ * It numbers the line, a style of its own: the brackets of the prose around it may be written the other width. A
+ * bracketed word at a line's head ((背景), (注)) is not a number, and an item number the prose refers to (次の(1)及び(2))
+ * is written in the prose; both stay with the prose's brackets.
+ */
+const LINE_HEAD = /^\s*(?:[-*+] +)?/u;
+const BRACKETED = /^([(（[［])([^)）\]］]{1,4})([)）\]］])/u;
+const NUMBERING = /^(?:[0-9０-９]{1,3}|[一二三四五六七八九十]{1,3}|[A-Za-zＡ-Ｚａ-ｚァ-ヶぁ-んｦ-ﾝ])$/u;
+/** Roman numerals i to x, either case. */
+const ROMAN = /^(?:i{2,3}|iv|vi{1,3}|ix|I{2,3}|IV|VI{1,3}|IX)$/u;
+const CLOSER_OF: Readonly<Record<string, string>> = { "(": ")", "（": "）", "[": "]", "［": "］" };
+
+const isItemNumber = (text: string): boolean => NUMBERING.test(text) || ROMAN.test(text);
+
+/** The offsets in a line of its item number's opening and closing bracket, or none. */
+const enumeratorIn = (line: string): readonly number[] => {
+  const head = LINE_HEAD.exec(line)?.[0].length ?? 0;
+  const found = BRACKETED.exec(line.slice(head));
+  if (found === null || CLOSER_OF[found[1] ?? ""] !== found[3] || !isItemNumber(found[2] ?? "")) return [];
+  return [head, head + found[0].length - 1];
+};
+
+/** The offsets in `source` of each line's item number's opening and closing bracket. */
+export const enumeratorBracketOffsets = (source: string): ReadonlySet<number> => {
+  const starts = lineStarts(source);
+  return new Set(source.split("\n").flatMap((line, index) => enumeratorIn(line).map((at) => (starts[index] ?? 0) + at)));
+};
+
+/** Appended to a mark's kind for an item number's bracket. A lexicon's group, a word from YAML, never holds a NUL. */
+const ENUMERATOR_KIND = "\u0000enumerator";
+
+/** A line's item number's bracket is a kind of its own, compared only with the other item numbers' brackets. */
+const withEnumeratorKind = (mark: Mark, enumerators: ReadonlySet<number>): Mark =>
+  enumerators.has(mark.offset) ? { ...mark, form: { ...mark.form, kind: `${mark.form.kind}${ENUMERATOR_KIND}` } } : mark;
+
+/**
  * A mark written two ways in one document (（ and (, “ and "), the less common way reported. The two ways come from the
  * lexicon; neither is called right. Only marks next to a letter of the document's script count, so a bracket in code-like
- * text (f(x)) or an English aside in a Japanese document does not.
+ * text (f(x)) or an English aside in a Japanese document does not. A line enumerator's brackets ((1)) are compared apart.
  */
 export const markConsistency: Detector = (doc, options): Finding[] => {
   const script = SCRIPT[doc.language];
   if (script === undefined) return [];
   const forms = formsOf(options.lexicon ?? []);
-  const marks = ownSentences(doc).flatMap((sentence) => marksIn(doc.source, sentence, forms, script));
+  const enumerators = enumeratorBracketOffsets(doc.source);
+  const marks = ownSentences(doc).flatMap((sentence) => marksIn(doc.source, sentence, forms, script).map((mark) => withEnumeratorKind(mark, enumerators)));
   const kinds = [...new Set(marks.map((mark) => mark.form.kind))];
   return kinds.flatMap((kind) =>
     minorityFindings(
@@ -217,12 +255,19 @@ export const isShouting = (run: string, known: ReadonlySet<string>, conventional
   return long.length >= MIN_LONG_WORDS && ordinary.length * 2 > words.length;
 };
 
-/** Runs of three or more all-capital words that are ordinary words, not acronyms ("DO NOT DELETE THIS"), and not a caption or a mention of one. */
+/**
+ * Runs of three or more all-capital words that are ordinary words, not acronyms ("DO NOT DELETE THIS"), and not a
+ * caption, a mention of one, or a letterhead.
+ */
 export const capsShouting: Detector = (doc, options): Finding[] => {
   const known = lowerCaseWords(doc.prose ?? doc.source);
   const conventional = new Set((options.lexicon ?? []).map((entry) => entry.pattern));
   const captions = captionsOf(doc.source);
-  const isCaption = (hit: Hit): boolean => captions.has(hit.matched) || isCaptionAt(doc.source, hit.offset, hit.offset + hit.matched.length);
-  const hits = hitsOf(ownSentences(doc), CAPS_RUN).filter((hit) => isShouting(hit.matched, known, conventional) && !isCaption(hit));
+  const letterheads = letterheadSpans(doc.source);
+  const isCaptionOrLetterhead = (hit: Hit): boolean =>
+    captions.has(hit.matched) ||
+    isCaptionAt(doc.source, hit.offset, hit.offset + hit.matched.length) ||
+    isWithinAny(letterheads, { start: hit.offset, end: hit.offset + hit.matched.length });
+  const hits = hitsOf(ownSentences(doc), CAPS_RUN).filter((hit) => isShouting(hit.matched, known, conventional) && !isCaptionOrLetterhead(hit));
   return reportFrom(hits, options.limit);
 };

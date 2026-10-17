@@ -1,6 +1,6 @@
 // A work email or letter's own parts: a greeting and a closing, a subject line, and an attachment the text mentions.
 // Pure. The words (お世話になっております, Dear, Best regards, 件名, attached) come from the language's email-greeting,
-// email-closing, email-sentence-end, email-subject-field, attachment-mention, attachment-not-mention and attachment-line lexicons. The
+// email-closing, email-sentence-end, memo-header-label, email-subject-field, attachment-mention, attachment-not-mention and attachment-line lexicons. The
 // header and the signature are masked in doc.prose; a quoted reply is someone else's words and is left out.
 import { escapeRegExp } from "../orthography.ts";
 import { quoteAt } from "./structure-tree.ts";
@@ -141,13 +141,46 @@ export const frameSlips = (
   ];
 };
 
+/** The marks around a label line: a heading's #, emphasis, 【】. */
+const LINE_MARKS = new Set("#*_【】 \t\u3000");
+
+const withoutMarks = (line: string): string => {
+  const chars = [...line];
+  const first = chars.findIndex((char) => !LINE_MARKS.has(char));
+  return first === -1 ? "" : chars.slice(first, chars.findLastIndex((char) => !LINE_MARKS.has(char)) + 1).join("");
+};
+
+const LABEL_END = /^(?:[:：]|$)/u;
+
+/**
+ * Whether a line is a memo's header label (TO:, SUBJECT:, MEMORANDUM, 発信者：): a label as the lexicon writes it, case
+ * included, then a colon or the line's end. A memo sets its labels in capitals; a mail program writes "To:" and "Subject:".
+ */
+export const isMemoLabel = (line: string, labels: readonly string[]): boolean => {
+  const bare = withoutMarks(line);
+  return labels.some((label) => bare.startsWith(label) && LABEL_END.test(bare.slice(label.length)));
+};
+
+/**
+ * A memo: one of its header labels among the source's lines before the first sentence (the first lines, when no line ends
+ * one). The source, not the body, since a block of TO: / FROM: lines is masked as an email's header. A memo takes no
+ * greeting and no closing.
+ */
+export const isMemo = (source: string, labels: readonly string[], sentenceEnds: readonly string[]): boolean => {
+  const lines = source.split("\n").filter((line) => line.trim() !== "" && !line.trimStart().startsWith(">"));
+  const firstSentence = lines.findIndex((line) => endsSentence(line, sentenceEnds));
+  return lines.slice(0, firstSentence === -1 ? HEADER_LINES : firstSentence).some((line) => isMemoLabel(line, labels));
+};
+
+const frameSlipsOf = (doc: ProseDocument): FrameSlip[] => {
+  const sentenceEnds = patternsOf(doc, "email-sentence-end");
+  if (isMemo(doc.source, patternsOf(doc, "memo-header-label"), sentenceEnds)) return [];
+  const lines = bodyLines(doc.source, doc.prose ?? doc.source, doc.replyQuotes ?? []);
+  return frameSlips(lines, patternsOf(doc, "email-greeting"), patternsOf(doc, "email-closing"), sentenceEnds);
+};
+
 export const emailFrame: Detector = (doc): Finding[] =>
-  frameSlips(
-    bodyLines(doc.source, doc.prose ?? doc.source, doc.replyQuotes ?? []),
-    patternsOf(doc, "email-greeting"),
-    patternsOf(doc, "email-closing"),
-    patternsOf(doc, "email-sentence-end"),
-  ).map((slip) => ({
+  frameSlipsOf(doc).map((slip) => ({
     rule: "email-greeting-closing",
     severity: "info",
     line: 0,
@@ -180,14 +213,53 @@ export const fieldOf = (line: string): { readonly name: string; readonly value: 
       };
 };
 
+/** The subject field's names and reply marks, and what tells the body's first line from a subject: a greeting, a sentence's end. */
+export type SubjectVocabulary = {
+  readonly fields: readonly string[];
+  readonly replyMarks: readonly string[];
+  readonly headerFields: readonly string[];
+  readonly greetings: readonly string[];
+  readonly sentenceEnds: readonly string[];
+};
+
+/** The text of the first line with text after `index`, trimmed. Scans only the blank lines between, so many empty subjects stay linear. */
+const nextText = (lines: readonly SourceLine[], index: number): string => {
+  for (let at = index + 1; at < lines.length; at += 1) {
+    const text = lines[at]?.text.trim() ?? "";
+    if (text !== "") return text;
+  }
+  return "";
+};
+
+/** A header field's line (From: Ann). Not any colon: a subject may hold one (Re: Lunch, 10:00 meeting, Q3: budget). */
+const isHeaderField = (line: string, headerFields: readonly string[]): boolean => {
+  const name = fieldOf(line)?.name.toLowerCase();
+  return name !== undefined && headerFields.some((field) => field.toLowerCase() === name);
+};
+
+/**
+ * The value under a subject label with nothing after its colon: the next line with text, as a form that sets the label and
+ * the value in two columns reads once it is text ("SUBJECT:" over "Car park repairs"). A quoted line, a header field, a
+ * greeting or a sentence there is the body, and the subject stays empty.
+ */
+export const valueBelow = (lines: readonly SourceLine[], index: number, vocabulary: SubjectVocabulary): string => {
+  const text = nextText(lines, index);
+  const isBody =
+    text.startsWith(">") || isHeaderField(text, vocabulary.headerFields) || lineHas(text, vocabulary.greetings) || endsSentence(text, vocabulary.sentenceEnds);
+  return isBody ? "" : text;
+};
+
 /** The subject lines (Subject: …, 件名：…), outside a quoted reply, with reply and forward marks (Re:, Fwd:) taken off the value. */
-export const subjectLines = (source: string, fields: readonly string[], replyMarks: readonly string[], replyQuotes: readonly Span[]): SubjectLine[] => {
-  const names = new Set(fields.map((field) => field.toLowerCase()));
+export const subjectLines = (source: string, vocabulary: SubjectVocabulary, replyQuotes: readonly Span[]): SubjectLine[] => {
+  const names = new Set(vocabulary.fields.map((field) => field.toLowerCase()));
   const quoted = insideCursor(replyQuotes);
-  return linesWithOffsets(source).flatMap(({ start, text }): SubjectLine[] => {
+  const lines = linesWithOffsets(source);
+  return lines.flatMap(({ start, text }, index): SubjectLine[] => {
     const field = fieldOf(text);
     const inQuote = quoted(start);
-    return field === undefined || inQuote || !names.has(field.name.toLowerCase()) ? [] : [{ start, subject: withoutReplyMarks(field.value, replyMarks) }];
+    if (field === undefined || inQuote || !names.has(field.name.toLowerCase())) return [];
+    const value = field.value === "" ? valueBelow(lines, index, vocabulary) : field.value;
+    return [{ start, subject: withoutReplyMarks(value, vocabulary.replyMarks) }];
   });
 };
 
@@ -201,7 +273,17 @@ export const withoutReplyMarks = (subject: string, marks: readonly string[]): st
 };
 
 export const emailSubject: Detector = (doc, options): Finding[] =>
-  subjectLines(doc.source, patternsOf(doc, "email-subject-field"), patternsOf(doc, "email-reply-mark"), doc.replyQuotes ?? []).flatMap((line): Finding[] => {
+  subjectLines(
+    doc.source,
+    {
+      fields: patternsOf(doc, "email-subject-field"),
+      replyMarks: patternsOf(doc, "email-reply-mark"),
+      headerFields: patternsOf(doc, "email-header-field"),
+      greetings: patternsOf(doc, "email-greeting"),
+      sentenceEnds: patternsOf(doc, "email-sentence-end"),
+    },
+    doc.replyQuotes ?? [],
+  ).flatMap((line): Finding[] => {
     const length = [...line.subject].length;
     if (length > 0 && length <= options.limit) return [];
     return [
@@ -226,15 +308,6 @@ export const firstMention = (lines: readonly BodyLine[], mentions: readonly stri
   };
   const line = lines.find((candidate) => isMention(candidate.text));
   return line === undefined ? undefined : line.start + line.text.length - line.text.trimStart().length;
-};
-
-/** The marks around a label line: a heading's #, emphasis, 【】. */
-const LINE_MARKS = new Set("#*_【】 \t\u3000");
-
-const withoutMarks = (line: string): string => {
-  const chars = [...line];
-  const first = chars.findIndex((char) => !LINE_MARKS.has(char));
-  return first === -1 ? "" : chars.slice(first, chars.findLastIndex((char) => !LINE_MARKS.has(char)) + 1).join("");
 };
 
 /** A line that labels what is attached: the label and a colon (Attachment: quote.pdf), or the label alone (### Enclosures, 【添付資料】). */

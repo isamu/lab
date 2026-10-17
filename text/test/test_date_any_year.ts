@@ -259,3 +259,51 @@ describe("date-without-year: 見出しの年、例の続き、毎年の期間", 
     assert.equal(namedRuleRun("date-without-year", nested, en).findings.length, 1);
   });
 });
+
+describe("date-any-year: 休日と一つの一覧に並ぶ日付", () => {
+  const LISTED: readonly AnyYearMarker[] = [
+    { word: "祝日", reach: "listed" },
+    { word: "休日", reach: "listed" },
+    { word: "holidays", reach: "listed" },
+  ];
+  const JA_JOINERS = ["及び", "、", "・"];
+  const EN_JOINERS = [",", "and"];
+  const listed = (source: string, date: string, joiners: readonly string[]): boolean => anyYearDate(spanOf(source, date), source, LISTED, joiners);
+
+  it("一覧をつなぐ語だけをはさんで休日のすぐ後ろにある日付を読む", () => {
+    assert.ok(listed("（土・日曜日、祝休日及び12月29日から1月3日までを除く）", "12月29日", JA_JOINERS));
+    assert.ok(listed("土日祝日、12月31日は休み", "12月31日", JA_JOINERS));
+    assert.ok(listed("except public holidays and December 24", "December 24", EN_JOINERS));
+    assert.ok(listed("except weekends, holidays, and December 24", "December 24", EN_JOINERS));
+  });
+
+  it("休日と日付の間に一覧をつなぐ語のほかの言葉があれば、読まない", () => {
+    assert.ok(!listed("土日祝日を除き、3月3日までに出す", "3月3日", JA_JOINERS));
+    assert.ok(!listed("説明会は休日の後の3月3日に開く", "3月3日", JA_JOINERS));
+    assert.ok(!listed("Except holidays, send it by March 3", "March 3", EN_JOINERS));
+    assert.ok(!listed("Pay holidays andrews on March 3", "March 3", EN_JOINERS));
+    assert.ok(!listed("祝休日12月29日", "12月29日", JA_JOINERS));
+    assert.ok(!listed("祝休日及び12月29日", "12月29日", []));
+  });
+});
+
+describe("date-without-year: 休日と並ぶ年末年始の期間は言わない", () => {
+  const JA_YEARS = "# 手引\n\n2025年10月1日に改め、2026年4月1日に施行し、2026年5月1日に見直した。\n\n";
+  const EN_YEARS = "# Guide\n\nRevised on October 1, 2025, in force from April 1, 2026, reviewed on May 1, 2026.\n\n";
+
+  it("日本語で、休日と並ぶ期間の始めと終わりを言わず、休日を除いて言う期限は言う", () => {
+    const hours = "受付は午前9時から午後5時まで（土・日曜日、祝休日及び12月29日から1月3日までを除く）。\n";
+    assert.deepEqual(namedRuleRun("date-without-year", `${JA_YEARS}${hours}`, ja).findings, []);
+    assert.deepEqual(namedRuleRun("date-without-year", `${JA_YEARS}土日祝日を除き、3月3日までに出す。\n`, ja).findings, [
+      "「3月3日」には年がありません。この文書の日付は 2025年から2026年にわたるので、どの年か決まりません",
+    ]);
+  });
+
+  it("英語で、休日と並ぶ期間を言わず、休日を除いて言う期限は言う", () => {
+    const hours = "The office is open on weekdays, except public holidays and December 24 to January 2.\n";
+    assert.deepEqual(namedRuleRun("date-without-year", `${EN_YEARS}${hours}`, en).findings, []);
+    assert.deepEqual(namedRuleRun("date-without-year", `${EN_YEARS}Except holidays, send it by March 3.\n`, en).findings, [
+      '"March 3" has no year, and the document\'s dates run from 2025 to 2026, so the year is unclear',
+    ]);
+  });
+});

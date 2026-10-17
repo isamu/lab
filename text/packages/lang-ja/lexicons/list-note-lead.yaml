@@ -1,0 +1,8 @@
+# 箇条書きのすぐ下に字下げせずに書いた注の行の頭（※応募書類は返却できません。）。Markdown はこの行を最後の項目の続きと
+# 読むが、list-item-form-mix は項目の形をこの行の前までで見る。注は箇条書き全体に付くもので、最後の項目の一部ではない。
+id: list-note-lead
+language: ja
+entries:
+  - pattern: ※
+  - pattern: 注：
+  - pattern: "注:"

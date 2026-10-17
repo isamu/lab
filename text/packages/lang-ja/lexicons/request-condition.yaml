@@ -14,6 +14,9 @@ entries:
   - pattern: 時は
   - pattern: 必要に応じて
   - pattern: よろしければ
+  # 頼む相手を、ある人たちに絞る（「申請する方は」「申し込まれた方は」「お持ちでない方は」）。その人たちへの案内で、全員への依頼ではない。
   - pattern: たい方は
   - pattern: 希望の方は
-  - pattern: 希望する方は
+  - pattern: る方は
+  - pattern: た方は
+  - pattern: ない方は

@@ -77,8 +77,8 @@ example:
       Best regards,
       Ichiro
 not_flagged:
-  ja: 「件名：」の行が無いメールや手紙、引用した返信の中の件名は見ません。メール・手紙のジャンルでだけ見ます。
-  en: 'An email or letter without a "Subject:" line, and subjects inside a quoted reply, are not checked. Only the email and letter genre runs this rule.'
+  ja: 「件名：」の行が無いメールや手紙、引用した返信の中の件名は見ません。「件名：」の後ろが空なら次の行を件名として読みます（項目名と値を二段に組んだ文書）。ただし次の行が挨拶、文、別の項目なら件名は空です。メール・手紙のジャンルでだけ見ます。
+  en: 'An email or letter without a "Subject:" line, and subjects inside a quoted reply, are not checked. When nothing follows the colon, the next line with text is read as the subject (a form that sets the label and the value in two columns), unless that line is a greeting, a sentence or another field. Only the email and letter genre runs this rule.'
 level_meaning:
   ja: 件名 {limit} 字まで
   en: up to {limit} characters in the subject

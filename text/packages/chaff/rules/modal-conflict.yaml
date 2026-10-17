@@ -2,6 +2,7 @@ id: modal-conflict
 layer: L3
 status: stable
 how_to_find: modal-conflict
+extra_word_lists: [negation-word]
 requires: [structure, pos]
 severity: warning
 

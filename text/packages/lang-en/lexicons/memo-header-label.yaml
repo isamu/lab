@@ -1,0 +1,16 @@
+# The labels of a memorandum's header (TO:, FROM:, SUBJECT:), as a memo sets them: in capitals. A label in the header,
+# before the first sentence, followed by a colon or the line's end, makes the document a memo, which takes no greeting
+# and no closing. Matched with case, since a mail program's header writes "To:" and "Subject:".
+id: memo-header-label
+language: en
+entries:
+  - pattern: MEMORANDUM
+  - pattern: MEMO
+  - pattern: TO
+  - pattern: FROM
+  - pattern: THROUGH
+  - pattern: THRU
+  - pattern: SUBJECT
+  - pattern: RE
+  - pattern: DATE
+  - pattern: CC

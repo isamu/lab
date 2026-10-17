@@ -115,9 +115,48 @@ const LINE_HEAD = /(?:^|\|)[\s>*_+-]*(?:\d+[.)]\s+)?$/u;
 /** 日付が行の頭（箇条書きの項目や表の升の頭）にあるか。 */
 export const opensLine = (text: string, offset: number): boolean => LINE_HEAD.test(text.slice(text.lastIndexOf("\n", offset - 1) + 1, offset));
 
+/** 刻印のラベルと日付の間に来る字（更新日：、Last updated: ）。 */
+const STAMP_GAP = /[\s:：]/u;
+/** 末尾の、ラベルと日付の間の字を外した文字列。 */
+const withoutGap = (text: string): string => {
+  const chars = text.split("");
+  return chars.slice(0, chars.findLastIndex((char) => !STAMP_GAP.test(char)) + 1).join("");
+};
+
+/** 刻印のラベルの前に来てよい字。行の頭か、ページの部品を区切る空白と縦線（ページID：0014616 更新日：）。 */
+const STAMP_LEAD = /[\s|｜]/u;
+
 /**
- * 行の頭の日付と、文の中の日付を分ける。予定表を 2026-10-16 で並べ、文では 14 October 2026 と書くのは使い分けで、混ざりではない。
- * 書き方はそれぞれの組の中でだけ比べる。
+ * text が刻印のラベル word で終わり、ラベルが行の頭か区切りの後ろから始まる。文の中の語（この日付は公開：、The date:、
+ * 1Updated）は刻印のラベルではない。語彙表に書いたとおりの字で照らす。
  */
-export const dateGroups = (text: string, dates: readonly WrittenDate[]): WrittenDate[][] =>
-  [true, false].map((head) => dates.filter((date) => opensLine(text, date.offset) === head)).filter((group) => group.length > 0);
+const endsWithLabel = (text: string, word: string): boolean => {
+  const start = text.length - word.length;
+  if (word === "" || start < 0 || !text.endsWith(word)) return false;
+  return start === 0 || STAMP_LEAD.test(text.charAt(start - 1));
+};
+
+/**
+ * 日付のすぐ前が、ページの更新日・公開日の刻印のラベル（更新日：2026年10月13日、Last updated: 2 October 2026）。
+ * 刻印は CMS が付ける付帯情報で、本文の日付の書き方（令和8年…）とは別の書き方をしてよい。
+ */
+export const stampedDate = (text: string, offset: number, stampLabels: readonly string[]): boolean => {
+  const before = withoutGap(text.slice(text.lastIndexOf("\n", offset - 1) + 1, offset));
+  return stampLabels.some((label) => endsWithLabel(before, label));
+};
+
+type DateGroup = "head" | "body" | "stamp";
+
+const groupOf = (text: string, date: WrittenDate, stampLabels: readonly string[]): DateGroup => {
+  if (stampedDate(text, date.offset, stampLabels)) return "stamp";
+  return opensLine(text, date.offset) ? "head" : "body";
+};
+
+const GROUP_ORDER: readonly DateGroup[] = ["head", "body", "stamp"];
+
+/**
+ * 行の頭の日付と、文の中の日付と、更新日・公開日の刻印の日付を分ける。予定表を 2026-10-16 で並べ、文では 14 October 2026 と
+ * 書くのは使い分けで、混ざりではない。刻印のラベルは言語パッケージの語彙表（date-stamp-label）が渡す。書き方はそれぞれの組の中でだけ比べる。
+ */
+export const dateGroups = (text: string, dates: readonly WrittenDate[], stampLabels: readonly string[] = []): WrittenDate[][] =>
+  GROUP_ORDER.map((group) => dates.filter((date) => groupOf(text, date, stampLabels) === group)).filter((group) => group.length > 0);

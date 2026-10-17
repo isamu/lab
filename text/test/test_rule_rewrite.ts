@@ -49,7 +49,7 @@ const LISTS_ITS_CONTEXT: ReadonlySet<string> = new Set([
 ]);
 
 /** Word lists a rule reads around a finding (便利な's な) or passes over (the very first), not phrases it flags. */
-const UNFLAGGED_LISTS: ReadonlySet<string> = new Set(["very-copula", "very-exception"]);
+const UNFLAGGED_LISTS: ReadonlySet<string> = new Set(["very-copula", "very-exception", "negation-word"]);
 
 const MIN_PAIRS = 2;
 const MAX_PAIRS = 3;

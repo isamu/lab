@@ -3,8 +3,10 @@ import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { contentKey, modalConflicts, type ModalStatement } from "../packages/chaff/src/structure/modal-conflict.ts";
-import type { Token } from "../packages/chaff/src/plugin.ts";
+import { contentKey, modalConflicts, modalStatements, type ModalStatement, type Obligation } from "../packages/chaff/src/structure/modal-conflict.ts";
+import { listLeadIns } from "../packages/chaff/src/structure/list-lead-in.ts";
+import { buildDocument } from "../packages/chaff/src/document.ts";
+import type { Sentence, Span, Token } from "../packages/chaff/src/plugin.ts";
 
 // 同じ行為への逆の決まり（modal-conflict）。例文はすべて自作。
 
@@ -78,6 +80,115 @@ describe("modal-conflict: 同じ行為への逆の決まり", () => {
       ),
       [],
     );
+  });
+});
+
+/** 導入の行と、その下に 1 行 1 項目で並べた項目。 */
+const UNDER_TWO_CONDITIONS_JA = [
+  "## 第5条（報告書）",
+  "",
+  "委託者が報告書を承認した場合：",
+  "① 受託者は、報告書を公表しなければならない。",
+  "② 受託者は、写しを保管する。",
+  "委託者が報告書の修正を求めた場合：",
+  "① 受託者は、報告書を公表してはならない。",
+  "② 受託者は、報告書を作り直す。",
+  "",
+].join("\n");
+
+const UNDER_TWO_CONDITIONS_EN = [
+  "Section 7 Approval of the plan",
+  "(1) If the Board rejects the plan—",
+  "(a) the Manager must not publish the plan, and",
+  "(b) the Manager must prepare another plan.",
+  "(2) If the Board approves the plan—",
+  "(a) the Manager must publish the plan, and",
+  "(b) the plan takes effect after 21 days.",
+  "",
+].join("\n");
+
+const UNDER_ONE_CONDITION_EN = [
+  "Section 7 Approval of the plan",
+  "(1) If the Board approves the plan—",
+  "(a) the Manager must publish the plan, and",
+  "(b) the Manager must not publish the plan.",
+  "",
+].join("\n");
+
+/**
+ * 1 行を項目の文として、adapter の segment と structure.obligations で読んだ様相の文の食い違い。en の adapter が 1 行 1 項目の
+ * 箇条書きを項目の文に切るかどうかに関わらず、項目の文を作って比べる。
+ */
+const lineItemConflicts = (source: string, adapter = en): number => {
+  const lines = [...source.matchAll(/[^\n]+/gu)].map((match) => ({ line: match[0], start: match.index }));
+  const shifted =
+    (start: number) =>
+    (span: Span): Span => ({ start: span.start + start, end: span.end + start });
+  const sentences: Sentence[] = lines.flatMap(({ line, start }) =>
+    adapter.segment(line).sentences.map((sentence) => ({
+      ...sentence,
+      ...(line.startsWith("(") ? { listItem: true as const } : {}),
+      span: shifted(start)(sentence.span),
+      tokens: (sentence.tokens ?? []).map((token) => ({ ...token, span: shifted(start)(token.span) })),
+    })),
+  );
+  const obligations: Obligation[] = lines.flatMap(({ line, start }) =>
+    (adapter.structure?.obligations(line) ?? []).map((found) => ({
+      ...shifted(start)(found),
+      type: String(found.attrs["type"] ?? ""),
+      marker: String(found.attrs["marker"] ?? ""),
+    })),
+  );
+  return modalConflicts(modalStatements(obligations, sentences, listLeadIns(source, sentences))).length;
+};
+
+describe("modal-conflict: 箇条書きの項目は導入の条件の下で比べる", () => {
+  before(async () => {
+    await en.prepare?.({ pos: true });
+    await ja.prepare?.({ pos: true });
+  });
+
+  it("項目が違う導入（条件）の下にあれば食い違いではない", () => {
+    assert.deepEqual(conflicts(UNDER_TWO_CONDITIONS_JA, ja), []);
+  });
+
+  it("同じ導入の下の二つの項目が逆なら出す。項目の番号は中身に数えない", () => {
+    assert.deepEqual(
+      conflicts(
+        [
+          "## 第5条（報告書）",
+          "",
+          "委託者が報告書を承認した場合：",
+          "① 受託者は、報告書を公表しなければならない。",
+          "② 受託者は、報告書を公表してはならない。",
+          "",
+        ].join("\n"),
+        ja,
+      ),
+      ["「してはならない」と書いていますが、4 行目では同じ行為を「しなければならない」と書いています"],
+    );
+  });
+
+  it("導入の無い項目は、別の条の文と比べる", () => {
+    assert.equal(
+      conflicts(sections("① 受託者は、本件業務を第三者に委託してはならない。", "② 受託者は、本件業務を第三者に委託することができる。"), ja).length,
+      1,
+    );
+  });
+
+  it("English items under different lead-ins are not a conflict; under one lead-in they are", () => {
+    assert.equal(lineItemConflicts(UNDER_TWO_CONDITIONS_EN), 0);
+    assert.equal(lineItemConflicts(UNDER_ONE_CONDITION_EN), 1);
+  });
+
+  it("English through the whole pipeline, once the adapter reads one item a line as its own sentence", (context) => {
+    const itemized = buildDocument("a.md", UNDER_ONE_CONDITION_EN, en).sentences.some((sentence) => sentence.listItem === true);
+    if (!itemized) {
+      context.skip("the English adapter does not split one-item-a-line lists yet");
+      return;
+    }
+    assert.deepEqual(conflicts(UNDER_TWO_CONDITIONS_EN), []);
+    assert.equal(conflicts(UNDER_ONE_CONDITION_EN).length, 1);
   });
 });
 
