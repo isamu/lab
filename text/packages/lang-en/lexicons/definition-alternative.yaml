@@ -1,0 +1,6 @@
+# Words written after a name and a comma, right before its acronym, to define it: Special Interest Groups, or SIGs.
+# They count only when the initials of the name before the comma spell the acronym. Matched without regard to case.
+id: definition-alternative
+language: en
+entries:
+  - pattern: or

@@ -1,0 +1,6 @@
+# 名前と読点の後ろ、略語の直前に書いて略語を定義する言い換えの語（Special Interest Group、通称 SIG）。
+# 英語の Special Interest Groups, or SIGs の or にあたる。名前の頭文字が略語と揃うときだけ定義と読む。
+id: definition-alternative
+language: ja
+entries:
+  - pattern: 通称

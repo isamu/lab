@@ -6,7 +6,7 @@ import { loneNumeralSpans, nameNumeralSpans } from "./name-numeral.ts";
 import { placeholderSpans } from "./placeholder.ts";
 import { numeralWordSpans } from "./numeral-word.ts";
 import { seriesLabelSpans } from "./series-label.ts";
-import { oneOf } from "./acronym-name.ts";
+import { nameSpansOf, oneOf } from "./acronym-name.ts";
 
 /**
  * 大文字の語が略語ではなく、決まった書き方の一部として読める所（3:30 PM、1pm ET、USD 1,000、Kansas City, MO 64108、Fort Lauderdale FL 33304）。
@@ -113,4 +113,33 @@ export const notAcronymSpansOf = (words: NotationWords): NotAcronymSpans => {
     ...placeholderSpans(text, words.dateTimeUnits),
     ...numeralWordSpans(text),
   ];
+};
+
+/**
+ * 略語として数えない範囲（書き方の範囲と、名前の中の範囲）を、言語パッケージの語彙表から組み立てる。wordsOf は語彙表の id から語を返す。
+ */
+export const lexiconNotationOf = (wordsOf: (id: string) => string[]): NotAcronymSpans => {
+  const notation = notAcronymSpansOf({
+    meridiem: wordsOf("meridiem"),
+    timeZones: wordsOf("time-zone"),
+    currencies: wordsOf("currency-code"),
+    usStates: wordsOf("us-state-code"),
+    emphasis: wordsOf("emphasis-word"),
+    divisions: wordsOf("numbered-division"),
+    abbreviatedLabels: wordsOf("abbreviated-label"),
+    honorifics: wordsOf("honorific"),
+    titles: wordsOf("name-title"),
+    dateTimeUnits: wordsOf("date-time-unit"),
+  });
+  const names = nameSpansOf({
+    legalForms: wordsOf("legal-form"),
+    companyForms: wordsOf("company-form"),
+    determiners: wordsOf("name-determiner"),
+    citationSeries: wordsOf("citation-series"),
+    carriers: wordsOf("carrier-name"),
+    namePrefixes: wordsOf("name-prefix"),
+    streetSuffixes: wordsOf("street-suffix"),
+    capitalPhrases: wordsOf("capital-phrase"),
+  });
+  return (text) => [...notation(text), ...names(text)];
 };

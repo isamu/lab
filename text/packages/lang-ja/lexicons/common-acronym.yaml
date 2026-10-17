@@ -89,6 +89,11 @@ entries:
   - pattern: DIY
   - pattern: HIV
   - pattern: UV
+  # 略語としてではなく名前として読む語（どのリポジトリにもあるファイルの名前、ライセンスの名前）と、日本語の日常の外来語（NPO、NGO）。
+  - pattern: README
+  - pattern: MIT
+  - pattern: NPO
+  - pattern: NGO
   # & で繋いだ、仕事の文書で説明なしで通じる語。
   - pattern: Q&A
   - pattern: R&D

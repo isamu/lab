@@ -89,6 +89,9 @@ entries:
   - pattern: DIY
   - pattern: HIV
   - pattern: UV
+  # Names a reader knows as names, not as acronyms to spell out: the file every repository opens with, and a licence.
+  - pattern: README
+  - pattern: MIT
   # & で繋いだ、仕事の文書で説明なしで通じる語。
   - pattern: Q&A
   - pattern: R&D
