@@ -13,6 +13,9 @@ import {
   type MarkerReach,
 } from "./date-any-year.ts";
 import { datesUnderYearHeadings, yearLabelOf, type HeadingYearWords } from "./date-heading-year.ts";
+import { documentDateOf } from "./document-date.ts";
+import { openingDateOf } from "./opening-date.ts";
+import { withNearestYear } from "../structure/weekday.ts";
 
 /** The words that make a yearless date any year's (毎年, 例えば, "each") and that join a period's two ends (から, "to"). */
 export type AnyYearWords = { readonly markers: readonly AnyYearMarker[]; readonly joiners: readonly string[] };
@@ -21,9 +24,16 @@ const NO_ANY_YEAR_WORDS: AnyYearWords = { markers: [], joiners: [] };
 
 /**
  * A date as the tree reads it: "2026-10-14" with its year, "10-14" without. `yearHeaded`: the heading of its section
- * names a year ("FY27-Q2 (May 1)", 「2026年度の予定」), which the date takes.
+ * names a year ("FY27-Q2 (May 1)", 「2026年度の予定」), which the date takes. `nearStamp`: the document's own date (minutes
+ * dated "January 17, 2024") lies within a few months of it in one year only, which the date takes.
  */
-export type DatePoint = { readonly offset: number; readonly end: number; readonly value: string; readonly yearHeaded?: boolean };
+export type DatePoint = {
+  readonly offset: number;
+  readonly end: number;
+  readonly value: string;
+  readonly yearHeaded?: boolean;
+  readonly nearStamp?: boolean;
+};
 
 /** The first and the last year of the document's dated dates. */
 export type YearSpan = { readonly from: number; readonly to: number };
@@ -118,7 +128,8 @@ const hasYearWord = (point: DatePoint, source: string, yearWords: readonly YearW
  */
 const yearGiven = (point: DatePoint, anchors: readonly DatePoint[], source: string, yearWords: readonly YearWord[]): boolean => {
   const start = lineStart(source, point.offset);
-  return point.yearHeaded === true || hasYearWord(point, source, yearWords) || anchors.some((other) => other.offset >= start && other.offset < point.offset);
+  const placed = point.yearHeaded === true || point.nearStamp === true;
+  return placed || hasYearWord(point, source, yearWords) || anchors.some((other) => other.offset >= start && other.offset < point.offset);
 };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -172,14 +183,26 @@ export const yearGaps = (
 
 const NO_HEADING_YEAR_WORDS: HeadingYearWords = { eras: [], labels: [] };
 
-export const datePoints = (tree: StructureNode, headingWords: HeadingYearWords = NO_HEADING_YEAR_WORDS): DatePoint[] => {
+/** A yearless date that the document's own date ("2024-01-17") places in one year: within a few months of it. */
+const nearStampOf = (value: string, stamp: string | undefined): boolean => stamp !== undefined && withNearestYear(value, stamp) !== undefined;
+
+export const datePoints = (tree: StructureNode, headingWords: HeadingYearWords = NO_HEADING_YEAR_WORDS, stamp?: string): DatePoint[] => {
   const yearHeaded = new Set(datesUnderYearHeadings(tree, headingWords));
-  return inDocumentOrder(tree).flatMap((node) =>
-    node.kind === "date"
-      ? [{ offset: node.span.start, end: node.span.end, value: String(node.attrs["value"]), yearHeaded: yearHeaded.has(node.span.start) }]
-      : [],
-  );
+  return inDocumentOrder(tree).flatMap((node) => {
+    if (node.kind !== "date") return [];
+    const value = String(node.attrs["value"]);
+    return [{ offset: node.span.start, end: node.span.end, value, yearHeaded: yearHeaded.has(node.span.start), nearStamp: nearStampOf(value, stamp) }];
+  });
 };
+
+/** The document's own date: its date-stamp paragraph, or a date alone on a line of its title block. */
+const stampOf = (doc: ProseDocument, tree: StructureNode): string | undefined => {
+  const dates = inDocumentOrder(tree).flatMap((node) => (node.kind === "date" ? [{ ...node.span, value: String(node.attrs["value"]) }] : []));
+  const labels = (doc.lexicons["date-stamp-label"] ?? []).map((entry: LexiconEntry) => entry.pattern);
+  return documentDateOf(doc, tree) ?? openingDateOf(doc.source, dates, labels);
+};
+
+const pointsOf = (doc: ProseDocument, tree: StructureNode): DatePoint[] => datePoints(tree, headingYearWordsOf(doc), stampOf(doc, tree));
 
 const yearWordsOf = (doc: ProseDocument): YearWord[] =>
   (doc.lexicons[YEAR_REFERENCE_LEXICON] ?? []).map((entry: LexiconEntry) => ({ word: entry.pattern, position: entry.position }));
@@ -202,7 +225,7 @@ const anyYearWordsOf = (doc: ProseDocument): AnyYearWords => ({
 export const dateWithoutYear: Detector = (doc: ProseDocument): Finding[] =>
   doc.structure === undefined
     ? []
-    : yearGaps(datePoints(doc.structure, headingYearWordsOf(doc)), doc.source, yearWordsOf(doc), anyYearWordsOf(doc)).map((gap) => ({
+    : yearGaps(pointsOf(doc, doc.structure), doc.source, yearWordsOf(doc), anyYearWordsOf(doc)).map((gap) => ({
         rule: "date-without-year",
         severity: "warning",
         line: 0,
