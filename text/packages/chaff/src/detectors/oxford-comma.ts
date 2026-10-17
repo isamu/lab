@@ -56,10 +56,35 @@ const commaBefore = (scope: ItemScope, at: number): boolean => scope.sentence.to
  * 節の最初の項目が前置詞・接続詞・副詞・to・過去分詞で始まり、次の項目と頭の形が違えば外す。
  * Quickly, quietly and carefully は残る。For managers, engineers and designers, も外れるが、前置詞のあとの名詞を
  * 項目と読むと、Over this period, the subcommittees and the full committee ... を並びと誤る。こちらのほうが多い。
+ * 順番の語（First,）のあとにもう一つ導入の句が続く（First, outside a block, …）ときは、順番の語を外してから確かめる。
  */
 const LEAD_POS = new Set(["ADP", "SCONJ", "ADV", "PART"]);
 
+const isSequenceWord = (scope: ItemScope, token: Token | undefined): boolean => scope.sentence.words.sequence?.has(token?.surface.toLowerCase() ?? "") ?? false;
+
+const SENTENCE_MARKS = new Set(["PUNCT", "SYM"]);
+
+/**
+ * 順番の語と読点（First, / Next,）で始まる最初の項目から、その語を外した並び。解析器は First を形容詞と読み、読点で項目を切らないことがある。
+ * 文頭の語だけ。文の途中の first は項目のことがある（We support first, fallback, and legacy modes）。
+ * 次の項目も順番の語なら、順番の語の並び（first, second and third）なので外さない。
+ */
+const withoutSequenceWord = (view: View): View | undefined => {
+  const { scope } = view.list;
+  const [first, second] = [firstOf(view), secondOf(view)];
+  if (first === undefined || second === undefined) return undefined;
+  const at = firstAt(scope, "open", first.item);
+  const { tokens } = scope.sentence;
+  const opensSentence = tokens.slice(0, at).every((token) => SENTENCE_MARKS.has(token.pos));
+  if (!opensSentence || !isSequenceWord(scope, tokens[at]) || tokens[at + 1]?.surface !== "," || isSequenceWord(scope, openingOf(scope, second.item)))
+    return undefined;
+  const rest = { start: at + 2, end: first.item.end };
+  return hasContent(scope, rest) ? { ...withoutFirst(view), pre: rest } : withoutFirst(view);
+};
+
 const withoutLead = (view: View): View => {
+  const afterSequence = withoutSequenceWord(view);
+  if (afterSequence !== undefined) return withoutLead(afterSequence);
   const { scope } = view.list;
   const [first, second] = [firstOf(view), secondOf(view)];
   const opening = first === undefined ? undefined : openingOf(scope, first.item);
@@ -226,6 +251,15 @@ const itemsAgree = (scope: ItemScope, view: View, afterItem: TokenRange, shape: 
   return clausesAgree && (!VERBAL.has(shape) || every(view, "hasVerb"));
 };
 
+/** 否定で始まる項目（not cleaner）。 */
+const CONTRAST = new Set(["not", "never"]);
+
+/**
+ * and / or の前の項目が否定で始まれば、読点の前と対比している（more correct, not cleaner or more elegant）。
+ * and / or が結ぶのは否定の中の 2 つで、読点の前の項目と並ぶ 3 つではない。
+ */
+const opensContrast = (scope: ItemScope, item: TokenRange): boolean => CONTRAST.has(openingOf(scope, item)?.surface.toLowerCase() ?? "");
+
 /**
  * 読点で区切った項目が and / or の前に 2 つ以上あり、最後の項目と and の後ろが同じ形のときだけ並列。
  * 導入の読点（After the review, the team fixed the bug and shipped it.）や、節をつなぐ読点
@@ -238,6 +272,7 @@ const listAt = (list: ItemList, at: number): boolean | undefined => {
   const items = fromParticiplePhrase(fromExample(afterClosedList(withoutLead(wholeList(list)))), afterItem);
   if (listContinues(scope, afterItem) || isAppositive(scope, at, items, afterItem) || insideLastItem(scope, at, items, afterItem)) return undefined;
   const last = lastOf(items);
+  if (last !== undefined && opensContrast(scope, last.item)) return undefined;
   const shape = last === undefined ? undefined : shapeOf(scope, last.item);
   if (sizeOf(items) < 2 || shape === undefined || shape !== shapeOf(scope, afterItem)) return undefined;
   return itemsAgree(scope, items, afterItem, shape) ? commaBefore(scope, at) : undefined;
@@ -278,6 +313,7 @@ export const oxfordComma: Detector = (doc, options): Finding[] => {
     pair: patternsOf(doc.lexicons["pair-opener"]),
     region: doc.lexicons["place-region"] ?? [],
     titleCue: (doc.lexicons["title-cue"] ?? []).map((entry) => entry.pattern),
+    sequence: patternsOf(doc.lexicons["sequence-opener"]),
   };
   const judged = doc.sentences.flatMap((sentence) => {
     const oxford = oxfordIn(sentence.tokens ?? [], words, doc.source);

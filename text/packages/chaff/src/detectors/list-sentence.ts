@@ -14,6 +14,8 @@ export type ListWords = {
   readonly region: Lexicon;
   /** 題名を導く語（whose full title is、entitled）。すぐ後ろの Title Case の語の続きは題名で、その中の読点は題名を付けた人のもの。 */
   readonly titleCue?: readonly string[];
+  /** 文頭で順番を言う一語（First, Next, Finally）。解析器が形容詞と読んでも、並びの項目ではなく導入の語。 */
+  readonly sequence?: ReadonlySet<string>;
 };
 
 const LIST_CONJUNCTION: ReadonlySet<string> = new Set(["and", "or"]);
