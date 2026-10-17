@@ -50,6 +50,8 @@ describe("obligation-without-deadline", () => {
   it("does not report a duty whose sentence or line states a limit, a vague one, or terms elsewhere", () => {
     assert.deepEqual(wordsIn(ja, ja_("第3条　甲は、解除の日から30日以内に、委託料を支払う。")), []);
     assert.deepEqual(wordsIn(ja, ja_("第3条　乙は、速やかに資料を提出する。")), []);
+    assert.deepEqual(wordsIn(ja, ja_("第3条　当社は、本規約を変更するときは、事前に変更の内容をユーザーに通知します。")), []);
+    assert.deepEqual(wordsIn(ja, ja_("第3条　乙は、作業に入るときは、あらかじめその日程を甲に通知する。")), []);
     assert.deepEqual(wordsIn(ja, ja_("第3条　甲は、別途定める支払条件に従い、委託料を支払う。")), []);
     assert.deepEqual(
       wordsIn(en, en_("3. The Customer will pay the fees described in the Order. All amounts are due within 30 days after the invoice date.")),
