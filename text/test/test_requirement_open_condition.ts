@@ -31,6 +31,12 @@ describe("glossesCondition", () => {
     assert.equal(at("不要な場合（一つの表だけを読むとき等）も付けること。", "等"), true);
     assert.equal(at("不要な場合 (一つの表だけを読むとき等) も付けること。", "等"), true);
     assert.equal(at("不要な場合（表（一つ）だけを読むとき等）も付けること。", "等"), true);
+    assert.equal(at("不要な場合（一つの表（索引等）だけを読むとき）も付けること。", "等"), true);
+  });
+
+  it("closes a bracket only with its own kind", () => {
+    assert.equal(at("不要な場合（一つの表)、ログ等を残すこと。", "等"), true);
+    assert.equal(at("不要な場合(一つの表)、ログ等を残すこと。", "等"), false);
   });
 
   it("is false outside brackets, after a closed bracket, and in brackets after another word", () => {
