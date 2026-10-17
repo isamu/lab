@@ -8,7 +8,7 @@ automattic-privacy-policy  8
 bls-glossary  5
 bonterms-cloud-terms  2
 cisa-scuba-teams  5
-cloudgov-security-ir-guide  10
+cloudgov-security-ir-guide  9
 commonpaper-csa  5
 crs-r47235-budget-timeline  4
 crs-r47585-subcontracting  10
@@ -17,11 +17,9 @@ da-ai-advisory-board-1  10
 da-priority-policy-program  3
 da-service-design-guidelines-2  5
 ecfr-16-cfr-310-telemarketing  7
-fac-adr-0016-file-uploads  5
 fed-powell-2025-08-22-framework-review  1
 fomc-minutes-2025-07  3
 fr-2026-16371-nvd-rfi  2
-genai-web-procedure  3
 github-general-privacy-statement  4
 gitlab-meetings  7
 gitlab-values  8
@@ -50,7 +48,7 @@ rfc9293-tcp  31
 rfc9457  11
 ruby-3-4-0-released-ja  5
 rust-lang-minutes-2022-11-22  3
-rust-rfc-2094-nll  10
+rust-rfc-2094-nll  9
 soumu-kokumin-cyber-glossary-a  3
 soumu-wp-r06-ai-booms  3
 soumu-wp-r06-misinformation  9
@@ -58,4 +56,3 @@ tc39-agenda-2026-07  1
 us-4683202-nucleic-acid-amplification  15
 us-6285999-node-ranking  4
 usajobs-va-it-specialist-customer-support  14
-yamano-akashi-architecture  5

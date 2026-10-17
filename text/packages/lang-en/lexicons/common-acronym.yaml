@@ -31,6 +31,9 @@ entries:
   - pattern: TODO
   - pattern: NOTE
   - pattern: TIP
+  # A cloud service's name written in capitals, which its own documents never spell out.
+  - pattern: AWS
+  - pattern: GCP
   # 通信と符号化。技術文書でなくても説明なしで通じる。
   - pattern: DNS
   - pattern: IP

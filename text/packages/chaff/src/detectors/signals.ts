@@ -12,6 +12,7 @@ import { isBracketed, isInHeading, isNamePart } from "./acronym-lone.ts";
 import { conjugatedForms } from "./conjugated-form.ts";
 import { evidenceSpans, hasNumeral, isClaim, isLabelOnly, startsWithin, type AdviceWords } from "./concrete-evidence.ts";
 import { letteredIndexEntries } from "./lettered-index.ts";
+import { knownByDocument } from "./acronym-known.ts";
 import { outlineLabelSpans } from "./outline-label.ts";
 import { hasPredicateIn } from "./gram-predicate.ts";
 import { gramPassagesOf } from "./gram-passages.ts";
@@ -342,10 +343,10 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   const body = bodyOf(doc);
   // HTTP のメソッド名（GET）は略語ではなく、税の名前（VAT、GST）は読み手が名前として知るので、通じる略語と同じく展開を求めない。
   // 並べた名前（JAXA）も、繋いだ略語（JAXA-ISAS）の片割れとして説明済みに数える。
+  // 文書が自分で知らせた語（select を書いた文書の SELECT、リンクで引いた講演の場 [Jane Roe, FOSDEM 2024](…)）も同じ。
   const common = new Set([
     ...(options.lexicon ?? []).map((entry) => entry.pattern),
-    ...patternsOf(doc, "http-method"),
-    ...patternsOf(doc, "tax-code"),
+    ...[...knownByDocument(doc.source, doc.links), ...patternsOf(doc, "http-method"), ...patternsOf(doc, "tax-code")],
     ...(doc.names ?? []),
   ]);
   const expandedAt = expansionAt({ markers: patternsOf(doc, "definition-marker"), verbs: definitionVerbsOf(doc) });
