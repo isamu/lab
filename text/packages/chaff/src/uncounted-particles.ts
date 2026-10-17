@@ -8,8 +8,6 @@ export type UncountedWords = {
   readonly numeralChars: ReadonlySet<string>;
   /** Words that number a provision and may be followed by a branch number (第70条の２: 条). */
   readonly counters: readonly string[];
-  /** Nouns that make one compound particle with the particle on each side (のための: ため). */
-  readonly compoundNouns: readonly string[];
 };
 
 const DECIMAL_DIGITS = /^\p{Nd}+$/u;
@@ -52,15 +50,6 @@ const isNumberingConnector = (tokens: readonly Token[], at: number, words: Uncou
   !isWordAt(tokens, numeralRunEnd(tokens, at + 1, words), words) &&
   (numeralAt(tokens, at - 1, words) || numberedCounterAt(tokens, at - 1, words));
 
-/** The second の of のための: the compound particle is one link, written with two of the particle. */
-const isCompoundTail = (tokens: readonly Token[], at: number, words: UncountedWords): boolean => {
-  const noun = tokens[at - 1];
-  const head = tokens[at - 2];
-  return noun !== undefined && head !== undefined && words.compoundNouns.includes(noun.surface) && head.surface === tokens[at]?.surface;
-};
-
-/** The particle tokens of a sentence that are not links of a chain: a numbering connector, the tail of a compound particle. */
+/** The particle tokens of a sentence that join the parts of a number (第70条の２) and are not links of a chain. */
 export const uncountedParticles = (tokens: readonly Token[], words: UncountedWords): ReadonlySet<Token> =>
-  new Set(
-    tokens.filter((token, at) => words.particles.includes(token.surface) && (isNumberingConnector(tokens, at, words) || isCompoundTail(tokens, at, words))),
-  );
+  new Set(tokens.filter((token, at) => words.particles.includes(token.surface) && isNumberingConnector(tokens, at, words)));

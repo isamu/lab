@@ -5,7 +5,7 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { isNumeral, uncountedParticles, type UncountedWords } from "../packages/chaff/src/uncounted-particles.ts";
 import type { Token } from "../packages/chaff/src/plugin.ts";
 
-// no-doubled-joshi and the の that is not a link of a chain: a branch number (第70条の２) and the tail of のための. Every example is self-written.
+// no-doubled-joshi and the の inside a number (第70条の２, 70の２－８の２), which is not a link of a chain. Every example is self-written.
 
 const countFor = (source: string): number => firedRules(ja, source).filter((id) => id === "no-doubled-joshi").length;
 
@@ -13,7 +13,6 @@ const WORDS: UncountedWords = {
   particles: ["の"],
   numeralChars: new Set(["一", "二", "三", "十"]),
   counters: ["条", "項"],
-  compoundNouns: ["ため"],
 };
 
 const tokensOf = (surfaces: readonly string[]): Token[] =>
@@ -34,16 +33,10 @@ describe("uncountedParticles", () => {
     assert.deepEqual(uncountedAt(["第", "十", "二", "条", "の", "三", "十", "第", "一", "項"]), [4]);
   });
 
-  it("valid: the second の of のための is not counted", () => {
-    assert.deepEqual(uncountedAt(["受取", "の", "ため", "の", "口座"]), [3]);
-  });
-
   it("invalid: a の next to only one number, or after a counter with no number, is a particle", () => {
     assert.deepEqual(uncountedAt(["２", "の", "改正"]), []);
     assert.deepEqual(uncountedAt(["本社", "の", "２"]), []);
     assert.deepEqual(uncountedAt(["本", "条", "の", "２"]), []);
-    assert.deepEqual(uncountedAt(["その", "ため", "の", "口座"]), []);
-    assert.deepEqual(uncountedAt(["受取", "の", "ため", "に"]), []);
   });
 
   it("invalid: a number followed by a word is a quantity, and the の before it is a particle", () => {
@@ -63,7 +56,7 @@ describe("uncountedParticles", () => {
   });
 });
 
-describe("no-doubled-joshi: branch numbers and のための", () => {
+describe("no-doubled-joshi: branch numbers", () => {
   before(async () => {
     await ja.prepare?.({ pos: true });
   });
@@ -75,17 +68,13 @@ describe("no-doubled-joshi: branch numbers and のための", () => {
     assert.equal(countFor("附則第十二条の三第二項の規定を改める。"), 0);
   });
 
-  it("valid: のための counts as one link", () => {
-    assert.equal(countFor("会員の会費のための口座として登録します。"), 0);
-  });
-
   it("invalid: a real chain next to a branch number is still reported", () => {
     assert.equal(countFor("規則第12条の３の規定の適用の範囲を改める。"), 1);
     assert.equal(countFor("本社の営業部の第二課の方針を確認しました。"), 1);
     assert.equal(countFor("資料２－１の４ページ目の後半の部分を確認しました。"), 1);
   });
 
-  it("invalid: a chain that goes on after のための is still reported", () => {
-    assert.equal(countFor("会員の会費のための口座の番号の確認をします。"), 1);
+  it("invalid: のための is three の, and a chain through it is still reported", () => {
+    assert.equal(countFor("会員の会費のための口座として登録します。"), 1);
   });
 });

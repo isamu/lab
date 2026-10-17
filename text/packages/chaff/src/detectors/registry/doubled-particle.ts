@@ -3,7 +3,6 @@ import { doubledParticle } from "../token-shape.ts";
 import { uncountedParticles, type UncountedWords } from "../../uncounted-particles.ts";
 
 const COUNTER_LEXICON = "numbering-counter";
-const COMPOUND_LEXICON = "compound-particle-noun";
 const NUMBER_LEXICON = "number-word";
 const NUMERAL_GROUPS: readonly (string | undefined)[] = ["digit", "place"];
 
@@ -11,7 +10,6 @@ const wordsOf = (doc: ProseDocument, particles: readonly string[]): UncountedWor
   particles,
   numeralChars: new Set((doc.lexicons[NUMBER_LEXICON] ?? []).filter((entry) => NUMERAL_GROUPS.includes(entry.group)).map((entry) => entry.pattern)),
   counters: (doc.lexicons[COUNTER_LEXICON] ?? []).map((entry) => entry.pattern),
-  compoundNouns: (doc.lexicons[COMPOUND_LEXICON] ?? []).map((entry) => entry.pattern),
 });
 
 const withoutUncounted = (sentence: Sentence, words: UncountedWords): Sentence => {
