@@ -1,7 +1,7 @@
 import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { latinSpacing } from "./rule-run.ts";
-import { isBoundSuffix, isJoinerSpace } from "../packages/chaff/src/latin-word-boundary.ts";
+import { followsHandle, isBoundSuffix, isJoinerSpace } from "../packages/chaff/src/latin-word-boundary.ts";
 import { latinBoundaries } from "../packages/chaff/src/orthography.ts";
 import type { Token } from "../packages/chaff/src/plugin.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
@@ -62,6 +62,31 @@ describe("isBoundSuffix", () => {
   });
 });
 
+describe("followsHandle", () => {
+  const afterHandle = (text: string): boolean[] => latinBoundaries(text).map((boundary) => followsHandle(text, boundary));
+
+  it("reads the boundary after a channel or handle name, spaced or touching", () => {
+    assert.deepEqual(afterHandle("相談は #pj_oss-team チャンネルで"), [true]);
+    assert.deepEqual(afterHandle("連絡は @sato さんへ"), [true]);
+    assert.deepEqual(afterHandle("相談は#generalでどうぞ"), [true]);
+    assert.deepEqual(afterHandle("#dev-2024 で話します"), [true]);
+    assert.deepEqual(afterHandle("参照: #general で"), [true]);
+    assert.deepEqual(afterHandle("「#general で」"), [true]);
+  });
+
+  it("does not read a number after the mark", () => {
+    assert.deepEqual(afterHandle("問い合わせ #1件 です"), [false]);
+    assert.deepEqual(afterHandle("参加者 @2名 です"), [false]);
+  });
+
+  it("does not read a word, a mark inside a word or an address, or a bare mark", () => {
+    assert.deepEqual(afterHandle("相談は Slack でどうぞ"), [false, false]);
+    assert.deepEqual(afterHandle("処理は C# で書きます"), [false]);
+    assert.deepEqual(afterHandle("宛先はsato@example宛て"), [false, false]);
+    assert.deepEqual(afterHandle("番号は # です"), []);
+  });
+});
+
 describe("latin-spacing and words decided by the Latin side", () => {
   before(async () => {
     await ja.prepare?.({ pos: true });
@@ -76,6 +101,12 @@ describe("latin-spacing and words decided by the Latin side", () => {
 
   it("does not count the spaces around a joining word in a document that touches", () => {
     assert.deepEqual(spacing("# 案内\n\n資料はWordで作り、Excelの表を付けます。図はPowerPointで描きます。\n\n名前 or 一言メッセージを書いてください。\n"), []);
+  });
+
+  it("does not count the space that closes a channel or handle name in a document that touches", () => {
+    const touching = "# 案内\n\n資料はWordで作り、Excelの表を付けます。図はPowerPointで描きます。\n\n";
+    assert.deepEqual(spacing(`${touching}相談は #pj_oss-team チャンネルで受けます。\n`), []);
+    assert.deepEqual(spacing(`${touching}依頼は Slack の #pj_oss-team でどうぞ。\n`), ["英字:空けています", "英字:空けています"]);
   });
 
   it("still counts a touching word that is not a suffix, and a spaced word that does not join", () => {
