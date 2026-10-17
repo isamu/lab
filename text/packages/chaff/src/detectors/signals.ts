@@ -15,6 +15,7 @@ import { letteredIndexEntries } from "./lettered-index.ts";
 import { outlineLabelSpans } from "./outline-label.ts";
 import { hasPredicateIn } from "./gram-predicate.ts";
 import { gramPassagesOf } from "./gram-passages.ts";
+import { sectionOpeners } from "./gram-openers.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
 import { referenceListSpans } from "../reference-lists.ts";
 import type { Detector, Finding, ProseDocument, Section, Sentence } from "../plugin.ts";
@@ -140,14 +141,23 @@ const gramsOf = (doc: ProseDocument, sentences: readonly Sentence[]): Tally => {
 
 type Repeat = { readonly key: string; readonly count: number; readonly at: FirstSeen | undefined };
 
-/** 範囲（gram-passages.ts）ごとに数える。よくある質問の別々の答えは別の範囲。 */
-const repeatsOf = (doc: ProseDocument, limit: number): Repeat[] =>
-  gramPassagesOf(doc.sections).flatMap((sentences) => {
+/**
+ * 範囲（gram-passages.ts）ごとに数える。よくある質問の別々の答えは別の範囲。
+ * どの出現も節の最初の文にある言い回しは、節のひな形（gram-openers.ts）なので数えない。
+ */
+const repeatsOf = (doc: ProseDocument, limit: number): Repeat[] => {
+  const openers = sectionOpeners(doc.sections);
+  return gramPassagesOf(doc.sections).flatMap((sentences) => {
     const tally = gramsOf(doc, sentences);
+    const opening = gramsOf(
+      doc,
+      sentences.filter((sentence) => openers.has(sentence)),
+    );
     return [...tally.counts.entries()]
-      .filter(([key, count]) => count > limit && isPhrasing(key, doc.lengthUnit))
+      .filter(([key, count]) => count > limit && isPhrasing(key, doc.lengthUnit) && (opening.counts.get(key) ?? 0) < count)
       .map(([key, count]) => ({ key, count, at: tally.first.get(key) }));
   });
+};
 
 /**
  * 語句が文の中で占める範囲に、述語になる動詞か助動詞があるか（gram-predicate.ts）。
