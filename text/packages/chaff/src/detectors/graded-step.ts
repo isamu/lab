@@ -1,4 +1,5 @@
-import type { Token } from "../plugin.ts";
+import type { Span, Token } from "../plugin.ts";
+import { isWithinAny } from "../quoted-span.ts";
 
 /**
  * 段階の一つとしての比較（より良い（BESTな）改善 と 良い（BETTERな）改善、より良い実装例1 と 良い実装例2）。文書が同じ語を
@@ -29,12 +30,15 @@ export const stepKeyAt = (tokens: readonly Token[], at: number): string | undefi
   return `${word.lemma ?? word.surface}|${noun.surface}`;
 };
 
+/** 文の語と、引いたもの（鉤括弧の中）の範囲。引いた語（「良い対応」という表現）は文書が書いた段ではない。 */
+export type StepSentence = { readonly tokens: readonly Token[]; readonly quoted: readonly Span[] };
+
 /** 文書が比べる副詞（markers）なしで書いた、程度を言う語と名詞の段の名前。 */
-export const plainStepKeys = (sentences: readonly (readonly Token[])[], markers: ReadonlySet<string>, isGradable: IsGradable): ReadonlySet<string> =>
+export const plainStepKeys = (sentences: readonly StepSentence[], markers: ReadonlySet<string>, isGradable: IsGradable): ReadonlySet<string> =>
   new Set(
-    sentences.flatMap((tokens) =>
-      tokens.flatMap((_, at) => {
-        if (markers.has(tokens[at - 1]?.surface ?? "") || !isGradable(tokens, at)) return [];
+    sentences.flatMap(({ tokens, quoted }) =>
+      tokens.flatMap((token, at) => {
+        if (markers.has(tokens[at - 1]?.surface ?? "") || isWithinAny(quoted, token.span) || !isGradable(tokens, at)) return [];
         const key = stepKeyAt(tokens, at);
         return key === undefined ? [] : [key];
       }),

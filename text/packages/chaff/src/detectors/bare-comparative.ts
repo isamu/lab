@@ -150,7 +150,7 @@ const isThanAfterCode = (doc: ProseDocument, found: BareComparative): boolean =>
 export const bareComparative: Detector = (doc): Finding[] => {
   const lists = listsOf(doc.lexicons["comparative-baseline"] ?? []);
   const steps = plainStepKeys(
-    doc.sentences.map((sentence) => sentence.tokens ?? []),
+    doc.sentences.map((sentence) => ({ tokens: sentence.tokens ?? [], quoted: quotedIn(sentence) })),
     lists.markers,
     isGradable,
   );
@@ -160,7 +160,7 @@ export const bareComparative: Detector = (doc): Finding[] => {
     const quoted = quotedIn(sentence);
     return bareComparativesIn(sentence.tokens ?? [], lists)
       .filter((found) => !quoted.some((span) => insideSpan(found, span)) && !isThanAfterCode(doc, found))
-      .filter((found) => !isNamedStep(sentence.tokens ?? [], found.last, steps))
+      .filter((found) => !lists.markers.has(found.first.surface) || !isNamedStep(sentence.tokens ?? [], found.last, steps))
       .map((found) => ({
         rule: "",
         severity: "info",

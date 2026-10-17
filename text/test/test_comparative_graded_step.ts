@@ -30,6 +30,10 @@ describe("comparative-without-baseline: 段階の一つとしての比較", () =
     assert.deepEqual(findingsOf("# 記入例\n\n申込書は、下のより良い記入例1を見て書く。\n"), [BARE]);
   });
 
+  it("鉤括弧で引いた「良い対応」は、文書が書いた段ではない", () => {
+    assert.deepEqual(findingsOf("# 対応\n\n「良い対応」という言い方がある。\n\n私たちはより良い対応を目指す。\n"), [BARE]);
+  });
+
   it("名詞の違う「良い」は一段下の段ではない", () => {
     assert.deepEqual(findingsOf("# 対応\n\n- より良い対応。案内の文だけで用件が分かる。\n- 良い天気の日に配る。\n"), [BARE]);
   });
