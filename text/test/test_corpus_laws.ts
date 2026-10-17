@@ -66,6 +66,29 @@ describe("e-Gov の法令 XML を、画面と同じ文字に直す", () => {
     );
   });
 
+  it("号の Column は e-Gov と同じく全角空白で区切り、Sentence はつなげる", () => {
+    const columns = [
+      "<Law><LawBody><MainProvision><Article><ArticleTitle>第二条</ArticleTitle>",
+      "<Paragraph><ParagraphNum/><ParagraphSentence><Sentence>次に定める。</Sentence></ParagraphSentence>",
+      "<Item><ItemTitle>一</ItemTitle><ItemSentence><Column><Sentence>電子公告</Sentence></Column>",
+      "<Column><Sentence>公告方法のうち、</Sentence><Sentence>措置をいう。</Sentence></Column></ItemSentence>",
+      "<Subitem1><Subitem1Title>イ</Subitem1Title><Subitem1Sentence><Column><Sentence>株式会社</Sentence></Column>",
+      "<Column><Sentence>合同会社</Sentence></Column></Subitem1Sentence></Subitem1>",
+      "</Item><Item><ItemTitle>二</ItemTitle><ItemSentence><Sentence>前号の株式の買取り。</Sentence><Sentence>ただし、この限りでない。</Sentence></ItemSentence></Item>",
+      "</Paragraph></Article></MainProvision></LawBody></Law>",
+    ].join("");
+    assert.equal(
+      lawText(columns),
+      [
+        "第二条　次に定める。",
+        "一　電子公告　公告方法のうち、措置をいう。",
+        "イ　株式会社　合同会社",
+        "二　前号の株式の買取り。ただし、この限りでない。",
+        "",
+      ].join("\n"),
+    );
+  });
+
   it("空でも落ちない", () => {
     assert.equal(lawText(""), "\n");
   });
