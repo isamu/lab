@@ -18,7 +18,7 @@ const childrenOf = (node: Node): readonly Node[] => {
   return Array.isArray(value) ? value.filter(isNode) : [];
 };
 
-/** e-Gov shows the columns of an item (「一　会社　株式会社…をいう。」) apart, with a full-width space between them. */
+/** e-Gov shows the columns of an item (the defined term, then its definition) apart, with a full-width space between them. */
 const separatorOf = (children: readonly Node[]): string => (children.some((child) => tagOf(child) === "Column") ? "　" : "");
 
 /** All the text inside, with the whitespace the XML puts between elements removed. */
