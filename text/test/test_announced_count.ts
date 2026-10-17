@@ -242,4 +242,24 @@ describe("announced-count-mismatch", () => {
     assert.deepEqual(found(doc("We use two of the following kinds of cookies:", "- A", "- B", "- C")), []);
     assert.deepEqual(found(doc("以下の3種類のうち1つを選んでください。", "- A", "- B"), ja), []);
   });
+
+  it("a one-line heading of a number and a summary word (3行要約) announces the list below", () => {
+    const items = ["- 会場が決まった", "- 発表を募集する", "- 協賛を募集する", "- 券はまだ売らない"];
+    assert.deepEqual(found(doc("3行要約", ...items), ja), ["3行要約/4"]);
+    assert.deepEqual(found(doc("**三行まとめ**", ...items.slice(1)), ja), []);
+    assert.deepEqual(found(doc("**三行まとめ**", ...items.slice(2)), ja), ["三行まとめ/2"]);
+    assert.deepEqual(found(doc("３行要約：", "- 甲", "- 乙"), ja), ["３行要約/2"]);
+    assert.deepEqual(found(doc("Three-line summary:", "- Venue", "- Talks")), ["Three-line summary/2"]);
+    assert.deepEqual(found(doc("**3-point summary**", "- Venue", "- Talks", "- Sponsors")), []);
+  });
+
+  it("a summary word inside a sentence, or with more text on its line, is not a heading", () => {
+    const items = ["- 甲", "- 乙", "- 丙", "- 丁"];
+    assert.deepEqual(found(doc("先週は3行要約を書いた。", ...items), ja), []);
+    assert.deepEqual(found(doc("3行要約（長くなったので4行）", ...items), ja), []);
+    assert.deepEqual(found(doc("社内向け\n3行要約", ...items), ja), []);
+    assert.deepEqual(found(doc("We wrote a three-line summary last week.", "- A", "- B")), []);
+    assert.deepEqual(found(doc("The 3-line summary", "- A", "- B")), []);
+    assert.deepEqual(found(doc("**3行要約*", ...items), ja), []);
+  });
 });

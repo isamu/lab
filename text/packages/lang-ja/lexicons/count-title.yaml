@@ -1,0 +1,13 @@
+# 数と合わせて、その一行だけで下の箇条書きの数を言う見出しの語（3行要約、3行まとめ）。
+# 箇条書きのすぐ上の塊が「数＋この語」だけ（強調の印と終わりのコロンは許す）のときに、その数を予告の数として読む。
+id: count-title
+language: ja
+entries:
+  - pattern: 行要約
+  - pattern: 行まとめ
+  - pattern: 行で要約
+  - pattern: 行でまとめると
+  - pattern: 行サマリー
+  - pattern: 行サマリ
+  - pattern: 点要約
+  - pattern: 点まとめ

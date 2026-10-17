@@ -20,6 +20,8 @@ export type CountWords = {
   readonly hedgesBefore: readonly string[];
   /** 数か数える語のすぐ後ろにあると予告でなくなる語（以上、目、or more）。 */
   readonly hedgesAfter: readonly string[];
+  /** 数と合わせて、その一行だけで下の並びの数を言う見出しの語（3行要約、three-line summary）。 */
+  readonly titles: readonly string[];
 };
 
 export type CountMismatch = { readonly offset: number; readonly phrase: string; readonly announced: number; readonly listed: number };
@@ -101,7 +103,17 @@ const numberPattern = (words: CountWords): RegExp => {
   return new RegExp(latin.length === 0 ? digits : `${digits}|(?<![A-Za-z])(?:${alternation(latin)})(?![A-Za-z])`, "iu");
 };
 
-type Patterns = { readonly phrase: RegExp; readonly number: RegExp };
+/**
+ * 予告の塊が一行で、数と見出しの語だけ（3行要約、**Three-line summary:**）。前後でそろった強調の印と終わりのコロンは許す。
+ * 文の中の「3行要約を書いた」は予告でない。
+ */
+const titlePattern = (words: CountWords): RegExp | undefined => {
+  if (words.titles.length === 0) return undefined;
+  const numbers = words.numbers.length === 0 ? "\\p{Nd}+" : `\\p{Nd}+|${alternation(words.numbers)}`;
+  return new RegExp(`^([ \\t]*(\\*\\*|__|\\*|_)?)((${numbers})[ \\t]?(?:${alternation(words.titles)}))\\2[ \\t]*[:：]?[ \\t]*$`, "iu");
+};
+
+type Patterns = { readonly phrase: RegExp; readonly number: RegExp; readonly title: RegExp | undefined };
 
 /**
  * 数える語の無い数は、先を指す語のすぐ後ろでだけ（the following two:）。「under $75:」の金額を数に読まない。
@@ -181,20 +193,35 @@ const matchesList = (announced: number, source: string, list: BulletList): boole
 
 type Context = { readonly source: string; readonly words: CountWords; readonly patterns: Patterns; readonly neighbours: Neighbours };
 
+/** 予告の塊のどこに、何と書いて、いくつと言ったか。 */
+type Announcement = { readonly start: number; readonly phrase: string; readonly announced: number };
+
+/** 最後の一文の予告（以下の3点）か、塊が見出しの語句だけの予告（3行要約）。 */
+const announcementIn = (lead: string, words: CountWords, patterns: Patterns): Announcement | undefined => {
+  const sentenceStart = lastSentenceStart(lead);
+  const sentence = lead.slice(sentenceStart);
+  const phrase = announcedIn(sentence, words, patterns);
+  if (phrase !== undefined)
+    return { start: sentenceStart + phrase.start, phrase: sentence.slice(phrase.start, phrase.end).trim(), announced: phrase.announced };
+  const title = patterns.title?.exec(lead);
+  const written = title?.[3];
+  if (title === null || title === undefined || written === undefined) return undefined;
+  const announced = valueOf(title[4] ?? "", words.numbers);
+  return announced < 1 ? undefined : { start: (title[1] ?? "").length, phrase: written, announced };
+};
+
 const mismatchOf = ({ source, words, patterns, neighbours }: Context, list: BulletList): CountMismatch[] => {
   if (hasNeighbour(source, list.span, neighbours)) return [];
   const lead = leadBefore(source, list.span.start);
   if (lead === undefined) return [];
-  const sentenceStart = lastSentenceStart(lead.text);
-  const sentence = lead.text.slice(sentenceStart);
-  const phrase = announcedIn(sentence, words, patterns);
-  if (phrase === undefined || matchesList(phrase.announced, source, list)) return [];
-  const offset = lead.start + sentenceStart + phrase.start;
-  return [{ offset, phrase: sentence.slice(phrase.start, phrase.end).trim(), announced: phrase.announced, listed: list.items.length }];
+  const announcement = announcementIn(lead.text, words, patterns);
+  if (announcement === undefined || matchesList(announcement.announced, source, list)) return [];
+  return [{ offset: lead.start + announcement.start, phrase: announcement.phrase, announced: announcement.announced, listed: list.items.length }];
 };
 
 export const announcedCountMismatches = (source: string, lists: readonly BulletList[], words: CountWords): CountMismatch[] => {
   if (words.counters.length === 0) return [];
-  const context = { source, words, patterns: { phrase: phrasePattern(words), number: numberPattern(words) }, neighbours: neighboursOf(source, lists) };
+  const patterns = { phrase: phrasePattern(words), number: numberPattern(words), title: titlePattern(words) };
+  const context = { source, words, patterns, neighbours: neighboursOf(source, lists) };
   return lists.flatMap((list) => mismatchOf(context, list));
 };
