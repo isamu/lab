@@ -127,6 +127,11 @@ entries:
     instead_of: category
   - pattern: completly
     instead_of: completely
+  # complete + -ment: unknown-word takes it for a derived word, so only this list catches it.
+  - pattern: completement
+    instead_of: complement
+  - pattern: completements
+    instead_of: complements
   - pattern: compatability
     instead_of: compatibility
   - pattern: dissapoint
