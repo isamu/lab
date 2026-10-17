@@ -38,3 +38,7 @@ entries:
   - { pattern: ちょう付, group: 貼付 }
   - { pattern: 蛋白, group: 蛋白 }
   - { pattern: たん白, group: 蛋白 }
+  # 「をもとに」（based on）は複合の助詞で、かなで書くことが多い。名詞の「元」（元となる値）とは別に、自分の書き方どうし（を元に、を基に）とだけ比べる。
+  - { pattern: をもとに, group: を基に }
+  - { pattern: を元に, group: を基に }
+  - { pattern: を基に, group: を基に }
