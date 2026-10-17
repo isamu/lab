@@ -1,6 +1,7 @@
 import { hasParticle, isClosed, lastContent } from "../sentence-shape.ts";
 import { isWithinAny, quotedIn } from "../quoted-span.ts";
 import { chronologyRows } from "../chronology-rows.ts";
+import { externalLinkTitleSpans } from "../link-title.ts";
 import type { Detector, Finding, Span, Token } from "../plugin.ts";
 
 /**
@@ -64,6 +65,7 @@ const BREAK: Run = { surface: "", tokens: [] };
  *
  * 鉤括弧で引いたもの（括弧ごと）は、名詞と同じく連なりの中身として飛ばす。引いた題名（「食品中のウイルスの制御のための…ガイドライン」）や
  * 発言は書き手が言い換えられないので、中の助詞は数えない。題名も名前なので、外の連なり（弊社の「新製品」の販売の計画）は続けて数える。
+ * 外のページの題名を引いたリンクの文字（- [サービスの料金の計算の方法](https://…)）も、引いた題名と同じに読む。
  */
 const runsOf = (tokens: readonly Token[], nesting: readonly string[], quoted: readonly Span[]): Run[] =>
   tokens.reduce<Run[]>((acc, token) => {
@@ -75,8 +77,9 @@ const runsOf = (tokens: readonly Token[], nesting: readonly string[], quoted: re
 
 export const doubledParticle: Detector = (doc, options): Finding[] => {
   const nesting = (options.lexicon ?? []).map((entry) => entry.pattern);
+  const titles = externalLinkTitleSpans(doc.source, doc.links);
   return doc.sentences.flatMap((sentence) =>
-    runsOf(sentence.tokens ?? [], nesting, quotedIn(sentence))
+    runsOf(sentence.tokens ?? [], nesting, [...quotedIn(sentence), ...titles])
       .filter((run) => run.tokens.length > options.limit)
       .map((run) => ({
         rule: "no-doubled-joshi",
