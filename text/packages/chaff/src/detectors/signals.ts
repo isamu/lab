@@ -346,7 +346,7 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   // 文書が自分で知らせた語（select を書いた文書の SELECT、リンクで引いた講演の場 [Jane Roe, FOSDEM 2024](…)）も同じ。
   const common = new Set([
     ...(options.lexicon ?? []).map((entry) => entry.pattern),
-    ...[...knownByDocument(doc.source, doc.links), ...patternsOf(doc, "http-method"), ...patternsOf(doc, "tax-code")],
+    ...knownByDocument(doc.source, doc.links).concat(patternsOf(doc, "http-method"), patternsOf(doc, "tax-code")),
     ...(doc.names ?? []),
   ]);
   const expandedAt = expansionAt({ markers: patternsOf(doc, "definition-marker"), verbs: definitionVerbsOf(doc) });
