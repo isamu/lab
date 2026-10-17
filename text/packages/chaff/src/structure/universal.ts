@@ -51,10 +51,16 @@ export const dottedNumber = (line: string, context: NumberingContext, plainText 
 export const isAmount = (dotted: DottedLine, countedAfter: StructurePatterns["countedAfter"]): boolean =>
   !dotted.closedByDot && countedAfter?.(dotted.number, dotted.rest) === true;
 
-/** 言語を問わない通し番号。後ろが単位なら数量、本文の文の続きなら文の中の数なので、番号にしない。 */
+/** 番号が日付の頭（「8 December 2022」の 8）か。日付を言語の dates が読む。年表の見出しの日は番号の並びではない。 */
+export const startsDate = (text: string, dates: StructurePatterns["dates"]): boolean => {
+  const at = text.length - text.trimStart().length;
+  return (dates?.(text) ?? []).some((date) => date.start <= at && at < date.end);
+};
+
+/** 言語を問わない通し番号。後ろが単位なら数量、日付なら日、本文の文の続きなら文の中の数なので、番号にしない。 */
 export const universalNumber = (patterns: StructurePatterns, text: string, context: NumberingContext, plainText: boolean): NumberedLine | undefined => {
   const dotted = dottedNumber(text, context, plainText);
-  if (dotted === undefined || isAmount(dotted, patterns.countedAfter)) return undefined;
+  if (dotted === undefined || isAmount(dotted, patterns.countedAfter) || startsDate(text, patterns.dates)) return undefined;
   const numbered = { number: dotted.number, rest: dotted.rest, isHeading: context.isHeading };
   return numberInSentence(numbered, patterns.continuesSentence) ? undefined : dotted;
 };
