@@ -8,6 +8,7 @@ import { followsInlineCode } from "./code-before.ts";
  * （faster、better）、baseline は相手を言う語（従来、以前、than、previous）、exempt は比較でない決まった言い方（より多くの、より詳しく）、
  * condition は比較を条件や仮定の下に置く語（使うと、if、would）。条件を書いた比較は、その条件の無い場合と比べている。
  * beyond は比べた形のすぐ前で、いま述べたものを越えると言う語（even better、still faster）。相手はその直前に書いてある。
+ * aim は比べた語の後ろで、今より良くする目当てを言う語（より良い社会、より良いものにする）。比べる相手は今の状態。
  * 同じ文か前の二文に相手を言う語があれば、相手は書いてある。
  */
 
@@ -19,6 +20,7 @@ export type ComparativeLists = {
   readonly exempt: ReadonlySet<string>;
   readonly conditions: ReadonlySet<string>;
   readonly beyond: ReadonlySet<string>;
+  readonly aims: ReadonlySet<string>;
 };
 
 export type BareComparative = { readonly first: Token; readonly last: Token };
@@ -46,13 +48,35 @@ const isGradable = (tokens: readonly Token[], at: number): boolean => {
 /** 比べる副詞が語の頭に立つか。前が助詞・記号・接続の語か文の頭のときだけ（「学年だより等」の「より」は語の一部）。 */
 const OPENS_WORD = new Set(["ADP", "PUNCT", "SCONJ", "CCONJ", "ADV"]);
 
-/** 日本語: 副詞の「より」「さらに」の直後の、程度を言える語。比較の決まった言い方（より多くの）は除く。 */
+/** 語から続く語をつないだもの（もの、ものに、ものにする）と、それぞれの後ろの語の位置。 */
+const MAX_AIM_TOKENS = 3;
+const runsFrom = (tokens: readonly Token[], at: number): { readonly run: string; readonly after: number }[] =>
+  tokens
+    .slice(at, at + MAX_AIM_TOKENS)
+    .reduce<{ run: string; after: number }[]>(
+      (runs, token, index) => [...runs, { run: `${runs.at(-1)?.run ?? ""}${token.surface}`, after: at + index + 1 }],
+      [],
+    );
+
+/** 続く語に名詞が付いて、より長い語の頭になっているか（社会保障の「社会」）。 */
+const headsCompound = (tokens: readonly Token[], after: number): boolean => {
+  const [last, next] = [tokens[after - 1], tokens[after]];
+  return last?.pos === "NOUN" && next?.pos === "NOUN" && last.span.end === next.span.start;
+};
+
+/** 程度を言う語（at）の後ろが、今より良くする目当てか（より良い社会、より豊かな暮らし、より良いものにする）。 */
+const namesAim = (tokens: readonly Token[], at: number, aims: ReadonlySet<string>): boolean => {
+  const next = tokens[at]?.pos === "NOUN" && ADJECTIVAL_TAIL.has(tokens[at + 1]?.surface ?? "") ? at + 2 : at + 1;
+  return runsFrom(tokens, next).some(({ run, after }) => aims.has(run) && !headsCompound(tokens, after));
+};
+
+/** 日本語: 副詞の「より」「さらに」の直後の、程度を言える語。比較の決まった言い方（より多くの）と、今より良くする目当て（より良い社会）は除く。 */
 const markedAt = (tokens: readonly Token[], at: number, lists: ComparativeLists): BareComparative | undefined => {
   const [marker, word] = [tokens[at], tokens[at + 1]];
   if (marker?.pos !== "ADV" || !lists.markers.has(marker.surface) || word === undefined || lists.exempt.has(word.surface)) return undefined;
   const previous = tokens[at - 1];
   if (previous !== undefined && !OPENS_WORD.has(previous.pos)) return undefined;
-  return isGradable(tokens, at + 1) ? { first: marker, last: word } : undefined;
+  return isGradable(tokens, at + 1) && !namesAim(tokens, at + 1, lists.aims) ? { first: marker, last: word } : undefined;
 };
 
 /** 比べた形の後ろで節が終わるか。読点の後ろに形容詞が続けば、名詞の前に並べた修飾語（better, more predictable results）。 */
@@ -137,6 +161,7 @@ export const listsOf = (lexicon: Lexicon): ComparativeLists => ({
   exempt: new Set(groupOf(lexicon, "exempt")),
   conditions: new Set(groupOf(lexicon, "condition")),
   beyond: new Set(groupOf(lexicon, "beyond")),
+  aims: new Set(groupOf(lexicon, "aim")),
 });
 
 /** 鉤括弧の中の比較（「給与所得の確定申告がさらに簡単に！」ページ）は題や語を挙げたもので、書き手の比較ではない。 */
