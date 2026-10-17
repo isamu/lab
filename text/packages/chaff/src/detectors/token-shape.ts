@@ -67,19 +67,23 @@ const BREAK: Run = { surface: "", tokens: [] };
  * 発言は書き手が言い換えられないので、中の助詞は数えない。題名も名前なので、外の連なり（弊社の「新製品」の販売の計画）は続けて数える。
  * 外のページの題名を引いたリンクの文字（- [サービスの料金の計算の方法](https://…)）も、引いた題名と同じに読む。
  */
-const runsOf = (tokens: readonly Token[], nesting: readonly string[], quoted: readonly Span[]): Run[] =>
+const runsOf = (tokens: readonly Token[], nesting: readonly string[], breaks: readonly string[], quoted: readonly Span[]): Run[] =>
   tokens.reduce<Run[]>((acc, token) => {
     if (isWithinAny(quoted, token.span)) return acc;
     if (nesting.includes(token.surface)) return extend(acc, token);
-    if (token.pos === "PUNCT" || PARTICLE.has(token.pos)) acc.push(BREAK);
+    if (token.pos === "PUNCT" || PARTICLE.has(token.pos) || breaks.includes(token.surface)) acc.push(BREAK);
     return acc;
   }, []);
+
+/** 句と句の間の記号（制限=タグの制限、A→B）。半角の = や : は名詞として読まれ、句読点のようには切れない。 */
+const RUN_BREAK_LEXICON = "particle-run-break";
 
 export const doubledParticle: Detector = (doc, options): Finding[] => {
   const nesting = (options.lexicon ?? []).map((entry) => entry.pattern);
   const titles = externalLinkTitleSpans(doc.source, doc.links);
+  const breaks = (doc.lexicons[RUN_BREAK_LEXICON] ?? []).map((entry) => entry.pattern);
   return doc.sentences.flatMap((sentence) =>
-    runsOf(sentence.tokens ?? [], nesting, [...quotedIn(sentence), ...titles])
+    runsOf(sentence.tokens ?? [], nesting, breaks, [...quotedIn(sentence), ...titles])
       .filter((run) => run.tokens.length > options.limit)
       .map((run) => ({
         rule: "no-doubled-joshi",
