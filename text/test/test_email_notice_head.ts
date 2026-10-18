@@ -90,21 +90,33 @@ describe("email-greeting-closing on an official notice", () => {
 
   it("still reports an email without a greeting or a closing", () => {
     const email = ["株式会社サンプル", "総務部　山田様", "", "打ち合わせの日程をお知らせします。", "", "10月13日の14時からです。", ""].join("\n");
-    assert.deepEqual(variantsOf(email).sort(), ["closing", "greeting"]);
+    assert.deepEqual(
+      variantsOf(email).sort((a, b) => a.localeCompare(b)),
+      ["closing", "greeting"],
+    );
   });
 
   it("still reports an email addressed with 殿 that has no document number", () => {
     const email = ["株式会社サンプル", "総務部　山田　殿", "", "打ち合わせの日程をお知らせします。", "", "10月13日の14時からです。", ""].join("\n");
-    assert.deepEqual(variantsOf(email).sort(), ["closing", "greeting"]);
+    assert.deepEqual(
+      variantsOf(email).sort((a, b) => a.localeCompare(b)),
+      ["closing", "greeting"],
+    );
   });
 
   it("still reports an email whose head holds a numbered topic and an addressee with 殿", () => {
     const email = ["課題3", "総務部　山田　殿", "", "打ち合わせの日程をお知らせします。", "", "10月13日の14時からです。", ""].join("\n");
-    assert.deepEqual(variantsOf(email).sort(), ["closing", "greeting"]);
+    assert.deepEqual(
+      variantsOf(email).sort((a, b) => a.localeCompare(b)),
+      ["closing", "greeting"],
+    );
   });
 
   it("still reports an email whose document number and 殿 come after the first sentence", () => {
     const email = ["打ち合わせの日程をお知らせします。", "", "課資3-7", "", "各国税局長　殿", "", "10月13日の14時からです。", ""].join("\n");
-    assert.deepEqual(variantsOf(email).sort(), ["closing", "greeting"]);
+    assert.deepEqual(
+      variantsOf(email).sort((a, b) => a.localeCompare(b)),
+      ["closing", "greeting"],
+    );
   });
 });
