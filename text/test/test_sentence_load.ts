@@ -25,6 +25,14 @@ describe("bracketDepth: 括弧の重なり", () => {
     assert.equal(bracketDepth("「彼は『はい（たぶん）』と言った」"), 3);
   });
 
+  it("二重の丸括弧（((題))）は一つの印。中に括弧がある二重や、閉じが離れた二重は重なりとして数える", () => {
+    assert.equal(bracketDepth("〔規程第3条((届出の期限))関係〕のうち3－1((提出先))を改める。"), 2);
+    assert.equal(bracketDepth("別表（（注））を見る。"), 1);
+    assert.equal(bracketDepth("((a)と(b))を比べる。"), 2);
+    assert.equal(bracketDepth("（（注）の内容）を見る。"), 2);
+    assert.equal(bracketDepth("((届出の(期限)))を見る。"), 3);
+  });
+
   it("並んだ括弧は重ならない。いちばん深い所を覚えておく", () => {
     assert.equal(bracketDepth("（a）と（b）と（c）"), 1);
     assert.equal(bracketDepth("（注（a（b）））と（c）"), 3);

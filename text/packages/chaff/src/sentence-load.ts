@@ -27,14 +27,23 @@ const OTHER_WIDTH: Readonly<Record<string, string>> = { ")": "）", "）": ")", 
 const FORMULA = /\$\$[^$]*\$\$|\$[^$\n]*\$/gu;
 
 /**
+ * A doubled parenthesis around text with no parenthesis inside (((居住の用に供したとき等)), （（注））): one mark written with two
+ * characters, as a directive sets an article's caption, not a bracket inside a bracket.
+ */
+const DOUBLED_PAREN = /\(\(([^()（）]*)\)\)|（（([^()（）]*)））/gu;
+
+const singled = (text: string): string =>
+  text.replace(DOUBLED_PAREN, (_whole: string, half?: string, full?: string) => (half === undefined ? `（${full ?? ""}）` : `(${half})`));
+
+/**
  * The deepest the brackets of a text nest: 「計画（案）」 is one, 「（注（a）を参照）」 two, plain text none. A closer with no
  * opener (the 1) of a list) is ignored, an opener never closed counts as open until the end, a closer of the other width closes
- * its opener ((1） is one), and formulas in $…$ are skipped.
+ * its opener ((1） is one), a doubled parenthesis ((題)) is one, and formulas in $…$ are skipped.
  */
 export const bracketDepth = (text: string): number => {
   // The closers still awaited, innermost last. Pushed and popped in place: copying it per character is quadratic on deep nesting.
   const awaited: string[] = [];
-  return [...text.replace(FORMULA, " ")].reduce((deepest, char) => {
+  return [...singled(text.replace(FORMULA, " "))].reduce((deepest, char) => {
     const innermost = awaited.at(-1);
     if (innermost !== undefined && (innermost === char || innermost === OTHER_WIDTH[char])) awaited.pop();
     else if (BRACKETS[char] !== undefined) awaited.push(BRACKETS[char]);

@@ -1,5 +1,6 @@
 import { joinWords } from "./word-list.ts";
 import { pairMinority } from "./contraction-minority.ts";
+import { withoutMentions } from "./contraction-mention.ts";
 import { straightApostrophes } from "../orthography.ts";
 import { wordsOf } from "./structure.ts";
 import type { Detector, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
@@ -283,7 +284,7 @@ const containsWord = (text: string, word: string): boolean => wordUses(text, wor
  * アポストロフィの形（don’t と don't）は短縮形かどうかを変えない。違うのは印刷の形で、文体ではない。
  * 折り返した行（「do」で改行して「not」）も、空白 1 つと同じに読む。
  */
-const comparableText = (sentence: Sentence): string => straightApostrophes(sentence.text).replace(/\s+/gu, " ").toLowerCase();
+const comparableText = (sentence: Sentence): string => withoutMentions(straightApostrophes(sentence.text)).replace(/\s+/gu, " ").toLowerCase();
 
 type MixedPair = { readonly minority: string; readonly majority: string; readonly count: number };
 

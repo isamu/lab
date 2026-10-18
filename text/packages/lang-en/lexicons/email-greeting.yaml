@@ -11,6 +11,7 @@ entries:
   - pattern: Good afternoon
   - pattern: Good evening
   - pattern: Greetings
+  - pattern: Welcome
   - pattern: To whom it may concern
   - pattern: Ladies and gentlemen
   - pattern: Sir

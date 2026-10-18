@@ -12,8 +12,20 @@ export type WrittenRange = { readonly offset: number; readonly written: string; 
 const FULLWIDTH_OFFSET = 0xfee0;
 const NUMBER = "[0-9０-９]+(?:[.．][0-9０-９]+)?";
 
-/** 範囲のすぐ後ろ（空白一つまで）の単位や語。番号にも使う記号（ハイフン）は、これが続くときだけ範囲と読む。 */
-const UNIT_AFTER = /^\s?[\p{L}%％]/u;
+/** 範囲のすぐ後ろ（同じ行の空白一つまで）の単位や語。番号にも使う記号（ハイフン）は、これが続くときだけ範囲と読む。 */
+const UNIT_AFTER = /^[^\S\n]?[\p{L}%％]/u;
+
+/**
+ * 漢字の語に詰めて書いた番号の後ろに仮名が続けば、文書の番号（直資4－5ほか、課資3-1の）。範囲なら後ろは単位（約3-5日）で、
+ * 仮名で始まる単位（約3-5か月、3-5つ）は語彙表 range-kana-unit が言う。
+ */
+const CODE_BEFORE = /\p{Script=Han}$/u;
+const KANA_AFTER = /^[^\S\n]?(\p{Script=Hiragana}.*)/u;
+
+const isDocumentNumber = (lineBefore: string, after: string, kanaUnits: readonly string[]): boolean => {
+  const kana = KANA_AFTER.exec(after)?.[1];
+  return CODE_BEFORE.test(lineBefore) && kana !== undefined && !kanaUnits.some((unit) => kana.startsWith(unit));
+};
 
 /** 行の頭（見出しや箇条書きの印の後ろ）の「1-2」は節の番号、閉じ括弧のすぐ後ろの「(703) 292-7827」は電話番号。 */
 const LABEL_BEFORE = /(?:^\s*[#>*+|-][\s#>*+|-]*|\)\s?)$/u;
@@ -30,9 +42,15 @@ const halfWidth = (text: string): string => text.replace(/[０-９．]/gu, (char
 /**
  * 文字列の中の数の範囲。前後にさらに数が続く並び（日付 2026-10-02、電話番号、時刻 10:00、版 1.2-3）は範囲ではない。
  * 終わりが始まりより小さいもの（郵便番号 100-0001、試合の 3-2）も範囲ではない。ambiguous の記号は、後ろに単位や語が続き、
- * 前が番号の札（図 2-1、Section 1-2、NSF 13-542）でないときだけ。
+ * 前が番号の札（図 2-1、Section 1-2、NSF 13-542）でも文書の番号（直資4－5ほか）でもないときだけ。
  */
-export const rangesIn = (text: string, marks: readonly string[], ambiguous: readonly string[] = [], labels: readonly string[] = []): WrittenRange[] => {
+export const rangesIn = (
+  text: string,
+  marks: readonly string[],
+  ambiguous: readonly string[] = [],
+  labels: readonly string[] = [],
+  kanaUnits: readonly string[] = [],
+): WrittenRange[] => {
   if (marks.length === 0) return [];
   const joiner = marks
     .toSorted((left, right) => right.length - left.length)
@@ -46,9 +64,10 @@ export const rangesIn = (text: string, marks: readonly string[], ambiguous: read
     const from = Number(halfWidth(match.groups?.["from"] ?? ""));
     const to = Number(halfWidth(match.groups?.["to"] ?? ""));
     const mark = match.groups?.["mark"] ?? "";
-    const unitFollows = UNIT_AFTER.test(text.slice(match.index + match[0].length));
+    const after = text.slice(match.index + match[0].length);
     const lineBefore = text.slice(text.lastIndexOf("\n", match.index - 1) + 1, match.index);
-    return to > from && !LABEL_BEFORE.test(lineBefore) && (!ambiguous.includes(mark) || (unitFollows && !isNumberLabel(lineBefore, labels)))
+    const readsAsRange = UNIT_AFTER.test(after) && !isNumberLabel(lineBefore, labels) && !isDocumentNumber(lineBefore, after, kanaUnits);
+    return to > from && !LABEL_BEFORE.test(lineBefore) && (!ambiguous.includes(mark) || readsAsRange)
       ? [{ offset: match.index, written: match[0], form: mark }]
       : [];
   });
@@ -62,6 +81,7 @@ export const rangeNotation: Detector = (doc, options): Finding[] => {
     entries.map((entry) => entry.pattern),
     entries.filter((entry) => entry.group === "ambiguous").map((entry) => entry.pattern),
     ["figure-label", "numbered-division", "numbered-label"].flatMap((id) => (doc.lexicons[id] ?? []).map((entry) => entry.pattern)),
+    (doc.lexicons["range-kana-unit"] ?? []).map((entry) => entry.pattern),
   );
   const minority = formMinority(ranges, options.limit);
   if (minority === undefined) return [];

@@ -30,7 +30,6 @@ govuk-style-guide-a-to-z  29
 ietf-draft-httpapi-ratelimit-headers-10  10
 irs-online-account-faq  6
 kep-2214-indexed-job  5
-kobayashi-press-hananoa-2026-02  3
 koenote-requirements  6
 mhlw-icd-committee-26-minutes  3
 mhlw-kokuji-h18-107-keiji-jiko  4

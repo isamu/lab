@@ -69,9 +69,39 @@ const itemEndBefore = (at: number, tokens: readonly Token[]): number => {
 /** The index of the token the next item starts with, past spaces. */
 const itemStartAfter = (at: number, tokens: readonly Token[]): number => tokens.findIndex((token, index) => index > at && !isSpace(token));
 
-/** A comma between two nouns separates listed items (名前、会社名、連絡先), not clauses. A bracketed note after an item is part of it. */
+/** A prefix bound to the noun after it (第I, 各部署) starts a noun. */
+const isBoundPrefix = (token: Token | undefined): boolean => token?.features?.["Bound"] === "Yes" && token.pos === "ADJ";
+
+const startsNoun = (at: number, tokens: readonly Token[]): boolean => {
+  const start = itemStartAfter(at, tokens);
+  return isNominal(tokens[start]) || (isBoundPrefix(tokens[start]) && isNominal(tokens[start + 1]));
+};
+
+const QUOTE_CLOSERS: ReadonlySet<string> = new Set(["」", "』"]);
+const QUOTE_OPENERS: ReadonlySet<string> = new Set(["「", "『"]);
+
+/** Whether the token at `closer` closes a quotation of a noun phrase (「技術の確立」), not of a clause (「成功した」). */
+const closesNounQuotation = (closer: number, tokens: readonly Token[]): boolean =>
+  QUOTE_CLOSERS.has(tokens[closer]?.surface ?? "") && isNominal(tokens[closer - 1]);
+
+/**
+ * A comma from one quoted noun phrase straight to the next (「計画」、「予算」) lists quoted items. A noun before a quotation
+ * (対応するもの、「A」に関しては) may end a clause, and so may a quoted clause, so only noun quotation to noun quotation counts.
+ */
+const betweenQuotations = (at: number, tokens: readonly Token[]): boolean => {
+  const before = tokens.findLastIndex((token, index) => index < at && !isSpace(token));
+  const start = itemStartAfter(at, tokens);
+  if (!QUOTE_OPENERS.has(tokens[start]?.surface ?? "")) return false;
+  const after = tokens.findIndex((token, index) => index > start && QUOTE_CLOSERS.has(token.surface));
+  return closesNounQuotation(before, tokens) && closesNounQuotation(after, tokens);
+};
+
+/**
+ * A comma between two nouns separates listed items (名前、会社名、連絡先), not clauses. A bracketed note after an item is part of
+ * it, a noun after its prefix (第I、第II) is a noun, and so is a quotation listed next to another.
+ */
 export const separatesItems = (at: number, tokens: readonly Token[]): boolean =>
-  isNominal(tokens[itemEndBefore(at, tokens)]) && isNominal(tokens[itemStartAfter(at, tokens)]);
+  betweenQuotations(at, tokens) || (isNominal(tokens[itemEndBefore(at, tokens)]) && startsNoun(at, tokens));
 
 /** A sentence cut by more than limit of the lexicon's commas (読点). Commas between listed nouns are not counted. */
 export const sentenceCommaCount: Detector = (doc, options): Finding[] => {
@@ -81,10 +111,16 @@ export const sentenceCommaCount: Detector = (doc, options): Finding[] => {
 
 const CONJUNCTIVE = "SCONJ";
 
-/** A sentence joining more than limit clauses with the lexicon's conjunctive particle (逆接の「が」), not the same word as a case particle. */
+/** The phrases ending in a prefatory が (繰り返しになりますが、〜の件でありますが): no contrast with what follows. */
+export const PREFATORY_LEXICON = "adversative-ga-prefatory";
+
+/**
+ * A sentence joining more than limit clauses with the lexicon's conjunctive particle (逆接の「が」), not the same word as a
+ * case particle, and not inside a prefatory phrase.
+ */
 export const sentenceConjunctiveCount: Detector = (doc, options): Finding[] => {
   const words = wordsOf(options.lexicon);
-  return sentencesOver(doc, options.limit, (token) => token.pos === CONJUNCTIVE && words.has(token.surface));
+  return sentencesOver(doc, options.limit, (token) => token.pos === CONJUNCTIVE && words.has(token.surface), doc.lexicons[PREFATORY_LEXICON] ?? []);
 };
 
 type Opened = { readonly sentence: Sentence; readonly opener: string | undefined };

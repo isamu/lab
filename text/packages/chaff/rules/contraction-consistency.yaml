@@ -42,8 +42,8 @@ example:
       We don't store your password. We don't read your messages. We don't share your data. We don't sell your address.
 
 not_flagged:
-  ja: 短縮形を使うかどうかは決めません。比べるのは同じ語の 2 つの形（「you're」と「you are」）だけで、別の語どうしは比べません。「you're」と書き、否定は「do not」と書く文書は揃っています。同じ語の 2 つの形が同じ回数なら、少ないほうが無いので指しません。
-  en: Whether to use contractions is not decided. Only the two forms of the same word are compared ("you're" with "you are"), never different words, so a document that writes "you're" but keeps "do not" in full is consistent. When both forms of a word appear as often, there is no minority and nothing is pointed at.
+  ja: 短縮形を使うかどうかは決めません。比べるのは同じ語の 2 つの形（「you're」と「you are」）だけで、別の語どうしは比べません。「you're」と書き、否定は「do not」と書く文書は揃っています。同じ語の 2 つの形が同じ回数なら、少ないほうが無いので指しません。引用符で挙げた短い語句（"Do Not Disturb"、‘we’re going to x’）は名前か例なので数えません。
+  en: Whether to use contractions is not decided. Only the two forms of the same word are compared ("you're" with "you are"), never different words, so a document that writes "you're" but keeps "do not" in full is consistent. When both forms of a word appear as often, there is no minority and nothing is pointed at. A short phrase in quotation marks ("Do Not Disturb", ‘we’re going to x’) is a name or an example and is not counted.
 level_meaning:
   ja: 同じ語の少ないほうの書き方が {limit} 箇所以下のとき指摘
   en: reported when the minority form of a word appears {limit} times or fewer

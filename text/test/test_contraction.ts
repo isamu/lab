@@ -156,6 +156,36 @@ describe("contraction-consistency", () => {
     });
   });
 
+  describe("引用符で挙げた短い語句は、使ったのではなく名前か例", () => {
+    it('valid: 機能の名前（"Do Not Disturb"）は do not に数えない', () => {
+      // gitlab-time-away-philosophy の形。本文は don't で揃い、設定の名前だけが Do Not。
+      const source = "# Away\n\nDon't check email. Don't join calls.\n\n- Sets your status and turns on \"Do Not Disturb\" settings.";
+      assert.deepEqual(matchedFor(source), []);
+    });
+
+    it("valid: 一重引用符で挙げた例（‘we’re going to x’）は we're に数えない", () => {
+      // govuk-style-guide-a-to-z の形。言い換えの例として挙げた語句。
+      const source =
+        "# Words to avoid\n\nWe are clear. We are brief. We are plain.\n\n- commit/pledge, use ‘plan to x’, or ‘we’re going to x’ where ‘x’ is a specific verb";
+      assert.deepEqual(matchedFor(source), []);
+    });
+
+    it("invalid: 引用符の外で使えば、これまでどおり指す", () => {
+      const source = "# Away\n\nDon't check email. Don't join calls.\n\nDo not open \"Settings\" today.";
+      assert.deepEqual(matchedFor(source), ["do not"]);
+    });
+
+    it("invalid: 話した言葉の引用（句読点を持つ）は文書の言葉として数える", () => {
+      const source = '# Notes\n\nWe do not ship on Fridays. We do not ship at night.\n\n"We don\'t know yet," she said.';
+      assert.deepEqual(matchedFor(source), ["don't"]);
+    });
+
+    it("invalid: 5 語以上の引用は語句ではなく文として数える", () => {
+      const source = "# Notes\n\nWe do not ship on Fridays. We do not ship at night.\n\nThe sign read “we don't open on Sundays at all”.";
+      assert.deepEqual(matchedFor(source), ["don't"]);
+    });
+  });
+
   it("日本語では動かさない。表記ゆれは別の話", () => {
     const result = runRules(buildDocument("t.md", "これは文です。", ja), loadRules("ja"), {}, true, "blog/tech");
     assert.ok(result.skipped.some((entry) => entry.rule === "contraction-consistency"));

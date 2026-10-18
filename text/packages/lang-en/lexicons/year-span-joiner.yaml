@@ -1,5 +1,6 @@
 # Words that join the start and the end of a period. date-without-year does not report the start of a period whose end
-# gives its year in words ("April 1 to March 31 of the following year"): like a fiscal year, it holds for any year.
+# gives its year in words ("April 1 to March 31 of the following year"): like a fiscal year, it holds for any year. The
+# start may name its year relative to the end ("6 April in one year to 5 April in the next"); those words join too.
 id: year-span-joiner
 language: en
 entries:
@@ -7,6 +8,9 @@ entries:
   - pattern: through
   - pattern: until
   - pattern: till
+  - pattern: in one year to
+  - pattern: of one year to
+  - pattern: one year to
   - pattern: "-"
   - pattern: –
   - pattern: —

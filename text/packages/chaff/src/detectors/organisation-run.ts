@@ -86,10 +86,15 @@ const endsInForm = (text: string, closingForms: readonly string[]): boolean =>
  * または組織の語で閉じる区切りが 2 つ以上続くもの（国土交通省鉄道局総務課）。
  * 組織の語で閉じない連なり（情報処理推進機構認定試験、総務課長）や、頭に名前の無い 1 区切り（個人情報保護法施行規則改正案検討会）は名前ではない。
  */
+/** 尻の法人格（独立行政法人）の前が、組織の語で閉じる区切りだけに割れるか（文部科学省独立行政法人: 所管の組織と法人の種類）。 */
+const segmentsBeforeForm = (run: readonly Token[], words: OrganisationWords): boolean =>
+  run.some((_, at) => at > 0 && words.closingForms.includes(surfaceOf(run.slice(at))) && segmentCount(run.slice(0, at), words.units) >= 1);
+
 export const isOrganisationRun = (tokens: readonly Token[], covering: readonly number[], words: OrganisationWords): boolean => {
   const run = contiguous(tokens, withClosingUnit(tokens, covering, words.units));
   if (run === undefined || run.length === 0) return false;
-  if (endsInForm(surfaceOf(run), words.closingForms) && run.some(isProperPiece) && !run.some(isNumber)) return true;
+  const named = run.some(isProperPiece) || segmentsBeforeForm(run, words);
+  if (endsInForm(surfaceOf(run), words.closingForms) && named && !run.some(isNumber)) return true;
   const form = formLength(run, new Set(words.forms));
   const head = form > 0 ? form : properLength(run);
   const segments = segmentCount(run.slice(head), words.units);

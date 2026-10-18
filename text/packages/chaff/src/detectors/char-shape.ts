@@ -1,7 +1,8 @@
 import type { Detector, DocumentProfile, Finding, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 import { compacted } from "./gram-place.ts";
 import { leadingCounter, trailingPrefix } from "./counter-edge.ts";
-import { trailingAddressee } from "./addressee-edge.ts";
+import { trailingAddressee, type AddresseeSuffix } from "./addressee-edge.ts";
+import { leadingPrefix, trailingTitle, type AddresseeWords } from "./addressee-title-edge.ts";
 import { maskAddresses } from "../address-chain.ts";
 import { isAddressRun } from "./place-run.ts";
 import { isOneName } from "./name-run.ts";
@@ -22,8 +23,15 @@ const KANJI_RUN = /[一-鿿]+/gu;
 /**
  * 漢字の連なりと、その文書全体の座標での範囲。quoted は括弧の中身がまるごとこの連なりであること。
  * placed は、題の名前の置き方（括弧を閉じる、補いの括弧が続く、文がこれだけ）をしていること。
+ * after は、連なりが文の頭にあるときの、その後ろの文字（宛名の行の、空白と「殿」）。頭になければ undefined。
  */
-type KanjiRun = { readonly text: string; readonly span: Span | undefined; readonly quoted: boolean; readonly placed: boolean };
+type KanjiRun = {
+  readonly text: string;
+  readonly span: Span | undefined;
+  readonly quoted: boolean;
+  readonly placed: boolean;
+  readonly after: string | undefined;
+};
 
 const SPACE = /\s/gu;
 
@@ -48,9 +56,10 @@ const runsOf = (sentence: Sentence, profile: DocumentProfile | undefined, names:
   return [...maskedProse(prose, profile, names).matchAll(KANJI_RUN)].map((match) => {
     const before = prose.slice(0, match.index).replace(SPACE, "").length;
     const [start, last] = [printed[before], printed[before + match[0].length - 1]];
-    if (start === undefined || last === undefined) return { text: match[0], span: undefined, quoted: false, placed: false };
+    if (start === undefined || last === undefined) return { text: match[0], span: undefined, quoted: false, placed: false, after: undefined };
     const span = { start: sentence.span.start + start, end: sentence.span.start + last + 1 };
-    return { text: match[0], span, quoted: fillsQuote(sentence, start, last + 1), placed: isTitlePosition(sentence.text, start, last + 1) };
+    const after = sentence.text.slice(0, start).trim() === "" ? sentence.text.slice(last + 1) : undefined;
+    return { text: match[0], span, quoted: fillsQuote(sentence, start, last + 1), placed: isTitlePosition(sentence.text, start, last + 1), after };
   });
 };
 
@@ -63,7 +72,11 @@ type NameWords = {
   readonly positional: readonly string[];
   /** 宛先の名前に付く語（宛、御中）。連なりの尻にあれば、名前の後ろに付いた語。 */
   readonly addressee: readonly string[];
+  /** 宛名の並びの、組織の名前の前の「各」と後ろの役職（各…学校長、…協会会長）。 */
+  readonly addressees: AddresseeWords;
 };
+
+type Tail = AddresseeSuffix;
 
 /** 1 つの文書で連なりを読むのに要るもの。titled は、文書の中で題として置かれた名前（titledNames）。 */
 type RunContext = {
@@ -93,21 +106,44 @@ const isTitle = (tokens: readonly Token[], span: Span, text: string, placed: boo
   ) &&
   (placed || isTitledName(text, context.titled));
 
+/** 宛名の行（各国公私立高等専門学校長、…協会会長 殿）: 連なりが行の頭にあり、後ろは空白と宛先に付く語だけ。 */
+const isAddresseeLine = (run: KanjiRun, words: NameWords): boolean => {
+  const after = run.after?.trim();
+  return after !== undefined && (after === "" || words.addressee.includes(after));
+};
+
+/** 尻の外す語: 数に付く接頭の語か宛先に付く語と、宛名の行ならその前の役職（日本博物館協会会長殿の「会長殿」）。 */
+const tailOf = (tokens: readonly Token[], run: KanjiRun, span: Span, words: NameWords): Tail | undefined => {
+  const prefix = trailingPrefix(tokens, span.end, run.text);
+  const suffix = prefix === undefined ? trailingAddressee(tokens, span.end, run.text, words.addressee) : { surface: prefix.surface, start: prefix.span.start };
+  const title = isAddresseeLine(run, words) ? trailingTitle(run.text.slice(0, run.text.length - (suffix?.surface.length ?? 0)), words.addressees) : undefined;
+  if (title === undefined) return suffix;
+  return { surface: title + (suffix?.surface ?? ""), start: (suffix?.start ?? span.end) - title.length };
+};
+
+/** 外す語を外した残り。頭の「各」は、宛名の行でなければ、残りが名前と決まったときだけ外す（呼び出し側が戻す）。 */
+type Measured = { readonly rest: Span; readonly text: string; readonly keptHead: string };
+
+const measuredOf = (tokens: readonly Token[], run: KanjiRun, span: Span, words: NameWords): Measured => {
+  const tail = tailOf(tokens, run, span, words);
+  const name = run.text.slice(0, run.text.length - (tail?.surface.length ?? 0));
+  const counter = leadingCounter(tokens, span.start, run.text, words.positional);
+  const prefix = counter === undefined ? leadingPrefix(tokens, span.start, name, words.addressees) : undefined;
+  const head = counter ?? prefix;
+  const keptHead = prefix !== undefined && !isAddresseeLine(run, words) ? prefix.surface : "";
+  return { rest: { start: head?.span.end ?? span.start, end: tail?.start ?? span.end }, text: name.slice(head?.surface.length ?? 0), keptHead };
+};
+
 /**
  * 数えない連なりは空。頭の、数に付いた助数詞（2日日本弁護士連合会の「日」）と、尻の、数に付く接頭の語（施行令第172条の「第」）と
- * 宛先に付く語（市政情報課宛ての「宛」）は数えない。
+ * 宛先に付く語（市政情報課宛ての「宛」）は数えない。宛名の「各」と、宛名の行の役職（各国公私立高等専門学校長の「各」と「長」）も数えない。
  * 住所か名前かは、それを外した残りで決める（1日日本銀行の「日本銀行」）。品詞が無ければ判定しない。
  */
 const measuredRun = (tokens: readonly Token[] | undefined, run: KanjiRun, context: RunContext): string => {
   if (run.quoted) return "";
   if (tokens === undefined || run.span === undefined) return run.text;
-  const counter = leadingCounter(tokens, run.span.start, run.text, context.words.positional);
-  const prefix = trailingPrefix(tokens, run.span.end, run.text);
-  const tail =
-    prefix === undefined ? trailingAddressee(tokens, run.span.end, run.text, context.words.addressee) : { surface: prefix.surface, start: prefix.span.start };
-  const rest = { start: counter?.span.end ?? run.span.start, end: tail?.start ?? run.span.end };
-  const text = run.text.slice(counter?.surface.length ?? 0, run.text.length - (tail?.surface.length ?? 0));
-  return isPlaceName(tokens, rest, context.words) || isTitle(tokens, rest, text, run.placed, context) ? "" : text;
+  const { rest, text, keptHead } = measuredOf(tokens, run, run.span, context.words);
+  return isPlaceName(tokens, rest, context.words) || isTitle(tokens, rest, text, run.placed, context) ? "" : keptHead + text;
 };
 
 const longestKanji = (sentence: Sentence, context: RunContext): string =>
@@ -130,16 +166,18 @@ const titledNames = (doc: ProseDocument, profile: DocumentProfile | undefined, n
  */
 export const kanjiRun: Detector = (doc, options): Finding[] => {
   const patterns = (id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
+  const organisation: OrganisationWords = {
+    forms: patterns("organisation-form"),
+    closingForms: (doc.lexicons["organisation-form"] ?? []).filter((entry) => entry.position !== "before").map((entry) => entry.pattern),
+    units: patterns("organisation-unit"),
+  };
   const words: NameWords = {
     topUnits: new Set(patterns("prefecture-unit")),
-    organisation: {
-      forms: patterns("organisation-form"),
-      closingForms: (doc.lexicons["organisation-form"] ?? []).filter((entry) => entry.position !== "before").map((entry) => entry.pattern),
-      units: patterns("organisation-unit"),
-    },
+    organisation,
     title: { endings: patterns("title-ending") },
     positional: patterns("calendar-unit"),
     addressee: patterns("addressee-suffix"),
+    addressees: { prefixes: patterns("addressee-prefix"), titles: patterns("addressee-title"), endings: organisation.units, forms: organisation.closingForms },
   };
   const names = doc.names ?? [];
   const context: RunContext = { profile: doc.profile, names, words, titled: titledNames(doc, doc.profile, names) };
