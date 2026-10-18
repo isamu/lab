@@ -93,7 +93,10 @@ jobs:
         run: ${{ inputs.before }}
       # With several targets scoria inserts each directory's name into these paths, so they all land
       # in one directory the later jobs can take whole.
+      # A failed ratchet still wrote its SARIF and badge, and those matter most then. The exit code is
+      # held until they are published, and returned by the last step.
       - name: measure
+        id: measure
         env:
           SCORIA: ${{ inputs.scoria }}
           WANT_SARIF: ${{ inputs.sarif }}
@@ -103,7 +106,9 @@ jobs:
           args=()
           if [ "$WANT_SARIF" = "true" ]; then args+=(--sarif scoria-out/scoria.sarif); fi
           if [ "$WANT_BADGE" = "true" ]; then args+=(--badge-json scoria-out/scoria.json); fi
-          $SCORIA "${args[@]}"
+          status=0
+          $SCORIA "${args[@]}" || status=$?
+          echo "status=$status" >> "$GITHUB_OUTPUT"
       # Each target's SARIF has paths relative to that target, and its file name carries only the
       # directory's basename, so one upload cannot place them all. Several are left out, and said so.
       - id: outputs
@@ -121,12 +126,17 @@ jobs:
           name: scoria-out
           path: ${{ inputs.working-directory }}/scoria-out
           retention-days: 7
+      - name: scoria's own exit code
+        if: ${{ steps.measure.outputs.status != '0' }}
+        env:
+          STATUS: ${{ steps.measure.outputs.status }}
+        run: exit "$STATUS"
 
   # Only this job writes code scanning results, and it runs no project code. Skipped for pull
   # requests from forks, whose head is not this repository.
   upload:
     needs: measure
-    if: ${{ inputs.sarif && needs.measure.outputs.has-sarif == 'true' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository) }}
+    if: ${{ !cancelled() && inputs.sarif && needs.measure.outputs.has-sarif == 'true' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository) }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -153,7 +163,7 @@ jobs:
   # code runs. The badge branch is orphaned: it carries the badge files and none of the history.
   badge:
     needs: measure
-    if: ${{ inputs.badge && needs.measure.outputs.has-badge == 'true' && github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+    if: ${{ !cancelled() && inputs.badge && needs.measure.outputs.has-badge == 'true' && github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
