@@ -9,6 +9,7 @@ import {
   lineHas,
   ownText,
   showsAttachment,
+  signingLines,
   withoutReplyMarks,
 } from "../packages/chaff/src/detectors/email-letter.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
@@ -252,6 +253,61 @@ describe("email-greeting-closing: a confirmation email that opens with このた
   it("takes the English salutation, not an opening thanks, for the greeting", () => {
     assert.deepEqual(variantsOf(en, "email-greeting-closing", EN_CONFIRMATION), []);
     assert.deepEqual(variantsOf(en, "email-greeting-closing", EN_CONFIRMATION.replace("Dear Ms Takahashi,\n\n", "")), ["greeting"]);
+  });
+
+  const OFFER = [
+    "Welcome to Northgate, **NAME**!",
+    "",
+    "We are glad to offer you the role of editor.",
+    "",
+    "We can not wait to work with you.",
+    "",
+    "```",
+    "Northgate Ltd.",
+    "",
+    "_____________________",
+    "",
+    "A Writer",
+    "```",
+    "",
+    "## Acceptance",
+    "",
+    "I accept this offer under the terms in this letter.",
+    "",
+    "Date: ________________",
+    "",
+    "Signature: ________________",
+    "",
+  ].join("\n");
+
+  it("takes an opening welcome for the greeting, and a letter signed off before an acceptance block for closed", () => {
+    assert.deepEqual(variantsOf(en, "email-greeting-closing", OFFER), []);
+  });
+
+  it("still reports a letter with no welcome, and one whose only signing lines are fields to fill in", () => {
+    assert.deepEqual(variantsOf(en, "email-greeting-closing", OFFER.replace("Welcome to Northgate, **NAME**!\n\n", "")), ["greeting"]);
+    assert.deepEqual(variantsOf(en, "email-greeting-closing", OFFER.replace("_____________________", "")), ["closing"]);
+    assert.deepEqual(variantsOf(en, "email-greeting-closing", "Dear Ann,\n\nText.\n\nMore text.\n\n___\n"), ["closing"]);
+  });
+
+  it("does not take underscores for a signing line without a signer below, or inside a quoted reply", () => {
+    const paragraph = "This paragraph is a long section of text that runs on well past any name or title.";
+    assert.deepEqual(signingLines(`Text.\n\n_______\n\n${paragraph}\n`), []);
+    assert.deepEqual(signingLines("Text.\n\n_______\n\n## Appendix\n"), []);
+    assert.deepEqual(signingLines("Text.\n\n_______\n"), []);
+    const quotedSource = "Text.\n\n_______\nBo\n";
+    assert.deepEqual(signingLines(quotedSource, [{ start: quotedSource.indexOf("_"), end: quotedSource.length }]), []);
+    assert.deepEqual(signingLines(quotedSource), [quotedSource.indexOf("_")]);
+  });
+
+  it("reads a signing line only among a part's last lines or after them", () => {
+    const source = "Dear Ann,\n\nText.\n\n# Terms\n\nOne.\n\n_______\nBo\n";
+    const lines = linesIn(source);
+    assert.deepEqual(signingLines(source), [source.indexOf("_")]);
+    assert.deepEqual(frameSlips(lines, ["Dear"], ["Thanks"], ["."], signingLines(source)), []);
+    assert.deepEqual(frameSlips(lines, ["Dear"], ["Thanks"], ["."], []), [{ variant: "closing", offset: source.indexOf("Bo") }]);
+    const long = ["Dear Ann,", "_______", "Bo", ...Array.from({ length: 12 }, (_, index) => `Line ${String(index + 1)}.`)].join("\n");
+    assert.deepEqual(frameSlips(linesIn(long), ["Dear"], ["Thanks"], ["."], signingLines(long)), [{ variant: "closing", offset: long.indexOf("Line 12.") }]);
   });
 });
 

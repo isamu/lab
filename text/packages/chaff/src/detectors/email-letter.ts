@@ -124,18 +124,51 @@ export const greetingLineCount = (lines: readonly BodyLine[], sentenceEnds: read
   return Math.max(GREETING_LINES, firstSentence + 1);
 };
 
-/** A missing greeting (none in the first lines, or past the letter's header) and a missing closing (none in the last lines of any part). */
+/** A signing line: a rule of underscores the writer signs on, alone on its line (not "Date: ____", a field to fill in). */
+const SIGNING_LINE = /^[ \t]*_{5,}[ \t]*$/u;
+
+/** The signer's name or title under a signing line is short; a paragraph there means the underscores were a section break. */
+const MAX_SIGNER_LENGTH = 60;
+
+/** Whether the next line with text is a signer's line: short, holding a letter, not a heading. */
+const signerBelow = (lines: readonly SourceLine[], index: number): boolean => {
+  const below = nextText(lines, index);
+  const signer = withoutMarks(below);
+  return !below.startsWith("#") && [...signer].length <= MAX_SIGNER_LENGTH && LETTER.test(signer);
+};
+
+/** Where each signing line starts in the source: underscores alone on a line, a signer's line below, outside a quoted reply. */
+export const signingLines = (source: string, replyQuotes: readonly Span[] = []): number[] => {
+  const quoted = insideCursor(replyQuotes);
+  const lines = linesWithOffsets(source);
+  return lines.flatMap(({ start, text }, index) => (!quoted(start) && SIGNING_LINE.test(text) && signerBelow(lines, index) ? [start] : []));
+};
+
+/** Whether a signing line stands among the part's last lines or between them and the next part: the part is signed off. */
+const signedOff = (part: readonly BodyLine[], next: BodyLine | undefined, signings: readonly number[]): boolean => {
+  const from = part.slice(-CLOSING_LINES)[0]?.start ?? Infinity;
+  return signings.some((offset) => offset >= from && offset < (next?.start ?? Infinity));
+};
+
+/**
+ * A missing greeting (none in the first lines, or past the letter's header) and a missing closing: none in the last lines
+ * of any part, and no part signed off on a signing line (a letter signed before an acceptance block the recipient signs).
+ */
 export const frameSlips = (
   lines: readonly BodyLine[],
   greetings: readonly string[],
   closings: readonly string[],
   sentenceEnds: readonly string[],
+  signings: readonly number[] = [],
 ): FrameSlip[] => {
   const first = lines[0];
   const last = lines.at(-1);
   if (first === undefined || last === undefined) return [];
   const greeted = lines.slice(0, greetingLineCount(lines, sentenceEnds)).some((line) => lineHas(line.text, greetings));
-  const closed = partsOf(lines).some((part) => part.slice(-CLOSING_LINES).some((line) => lineHas(line.text, closings)));
+  const parts = partsOf(lines);
+  const closed = parts.some(
+    (part, index) => part.slice(-CLOSING_LINES).some((line) => lineHas(line.text, closings)) || signedOff(part, parts[index + 1]?.[0], signings),
+  );
   return [
     ...(greeted ? [] : [{ variant: "greeting" as const, offset: first.start }]),
     ...(closed ? [] : [{ variant: "closing" as const, offset: last.start }]),
@@ -189,7 +222,7 @@ const frameSlipsOf = (doc: ProseDocument): FrameSlip[] => {
   const sentenceEnds = patternsOf(doc, "email-sentence-end");
   if (takesNoFrame(doc, sentenceEnds)) return [];
   const lines = bodyLines(doc.source, doc.prose ?? doc.source, doc.replyQuotes ?? []);
-  return frameSlips(lines, patternsOf(doc, "email-greeting"), patternsOf(doc, "email-closing"), sentenceEnds);
+  return frameSlips(lines, patternsOf(doc, "email-greeting"), patternsOf(doc, "email-closing"), sentenceEnds, signingLines(doc.source, doc.replyQuotes ?? []));
 };
 
 export const emailFrame: Detector = (doc): Finding[] =>
