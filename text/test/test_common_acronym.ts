@@ -35,6 +35,11 @@ const PENDING = { en: "SRE, XYZ and CBA are pending.", ja: "SRE、XYZ、CBAは�
       ["RFC", "IANA", "NIST", "GSA", "NASA"].forEach((word) => assert.ok(!common.includes(word), word));
     });
 
+    it("日常の略語（FYI、LGBTQ）は載せる。日本語の日常の語 WEB は日本語だけ", () => {
+      ["FYI", "LGBTQ"].forEach((word) => assert.ok(common.includes(word), word));
+      assert.equal(common.includes("WEB"), adapter.id === "ja");
+    });
+
     it("ブラウザの名前 IE は、版の番号が付いても並べて書いても指摘しない。IE で始まる別の略語（IEEE）は指摘する", () => {
       const source =
         adapter.id === "ja"

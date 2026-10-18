@@ -111,7 +111,7 @@ const oneOf = (words: readonly string[]): string => (words.length === 0 ? "(?!)"
 const definitionPatterns = (words: DefinitionWords): DefinitionPatterns => ({
   opened: new RegExp(String.raw`[(（]\s*(?<markers>(?:(?:${oneOf(words.markers)})${MARKER_GAP})*)${WRAP}(?<![A-Za-z])$`, "iu"),
   closes: new RegExp(String.raw`^${WRAP}(?<verb>(?:${oneOf(words.verbs)})[。.]?)?${WRAP}[)）]`, "iu"),
-  alternative: new RegExp(String.raw`[,，、]\s*(?:${oneOf(words.alternatives ?? [])})\s*$`, "iu"),
+  alternative: new RegExp(String.raw`[,，、]\s*(?:${oneOf(words.alternatives ?? [])})\s*["“'‘]?$`, "iu"),
 });
 
 /**
@@ -191,10 +191,17 @@ const isPrefixedAt = (body: string, acronym: string, at: number): boolean => {
   return name.slice(-DEFINITION_REACH).includes(words) && spellsOut(name, acronym);
 };
 
-/** 名前の後ろの読点と言い換えの語に続く略語（Special Interest Groups, or SIGs）。名前の頭文字が略語と揃うときだけ。 */
+/** 引用符で囲んで書き終えた名前（‘abstract syntax tree’）。小文字の語でも、囲みが名前の始まりと終わりを決める。 */
+const QUOTED_NAME_END = /(?:“(?<curly>[^“”\n]{1,60})”|‘(?<single>[^‘’\n]{1,60})’|"(?<straight>[^"\n]{1,60})")$/u;
+
+/** 名前の後ろの読点と言い換えの語に続く略語（Special Interest Groups, or SIGs、‘abstract syntax tree’, or ‘AST’）。名前の頭文字が略語と揃うときだけ。 */
 const isAlternativeAt = (patterns: DefinitionPatterns, body: string, acronym: string, at: number): boolean => {
   const joined = patterns.alternative.exec(body.slice(Math.max(0, at - DEFINITION_REACH), at));
-  return joined !== null && spellsOut(body.slice(0, at - joined[0].length), acronym);
+  if (joined === null) return false;
+  const name = body.slice(0, at - joined[0].length);
+  const groups = QUOTED_NAME_END.exec(name)?.groups;
+  const quoted = groups?.["curly"] ?? groups?.["single"] ?? groups?.["straight"];
+  return spellsOut(name, acronym) || (quoted !== undefined && namesAcronym(quoted, acronym));
 };
 
 const isBracketedAt = (body: string, acronym: string, at: number): boolean => {

@@ -46,8 +46,8 @@ export const oneOf = (words: readonly string[]): string =>
 const spansOf = (text: string, pattern: RegExp): Span[] =>
   [...text.matchAll(pattern)].map((match) => ({ start: match.index, end: match.index + match[0].length }));
 
-/** 名前の語。大文字で始まり、点・& ・アポストロフィ・ハイフンを含んでよい（BorrowMoney.com、PTE.、O'Neil）。 */
-const NAME_WORD = String.raw`\p{Lu}[\p{L}\p{N}&.'’-]*`;
+/** 名前の語。大文字か、数字に続く字で始まり（37signals）、点・& ・アポストロフィ・ハイフンを含んでよい（BorrowMoney.com、PTE.、O'Neil）。 */
+const NAME_WORD = String.raw`(?:\p{Lu}|\p{N}+\p{L})[\p{L}\p{N}&.'’-]*`;
 /** 法人の形の前に並ぶ名前の語の数の上限（CNH INDUSTRIAL SOUTH DAKOTA, INC.）。文の頭まで遡って別の語を名前に入れないため。 */
 const NAME_WORDS_MAX = 5;
 
