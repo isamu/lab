@@ -522,13 +522,15 @@ jobs:
 この先の commit がその権限で動けてしまいます。入力は [ワークフロー](https://github.com/isamu/lab/blob/main/.github/workflows/scoria-measure.yml) の先頭にあります
 （Node の版、作業ディレクトリ、install のコマンド、`before`、scoria の動かし方、SARIF とバッジを出すかどうか）。
 
-既定は `yarn.lock` のある Yarn です。それ以外では両方を指定します。
+既定は、リポジトリのルートに `yarn.lock` がある Yarn です。それ以外では次のように指定します。
 
-| パッケージマネージャ | `cache` | `install`                                                                         |
-| -------------------- | ------- | --------------------------------------------------------------------------------- |
-| npm                  | `npm`   | `npm ci --ignore-scripts`                                                         |
-| pnpm                 | `pnpm`  | `pnpm install --frozen-lockfile --ignore-scripts`（先に runner へ pnpm を入れる） |
-| lockfile なし        | `''`    | そのプロジェクトを入れるコマンド                                                  |
+| プロジェクト                           | 指定                                                                   |
+| -------------------------------------- | ---------------------------------------------------------------------- |
+| npm                                    | `cache: npm`、`install: npm ci --ignore-scripts`                       |
+| lockfile が `working-directory` にある | `cache-dependency-path: <dir>/yarn.lock`（または `package-lock.json`） |
+| lockfile なし                          | `cache: ''`（キャッシュを一切しない）と、lockfile 無しで動く `install` |
+
+pnpm には対応していません。setup-node の前に pnpm が入っている必要があり、呼び出し側にはそこに手順を差し込む場所が無いためです。
 
 `install`・`before`・`scoria` はコマンドとして実行されるので、決まった文字列だけを渡し、イベントから取った値は渡さないでください。
 

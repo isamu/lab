@@ -205,13 +205,15 @@ the top of [the workflow](https://github.com/isamu/lab/blob/main/.github/workflo
 directory, install command, `before`, how to run scoria, and whether to upload SARIF or publish a
 badge.
 
-The defaults assume Yarn with a `yarn.lock`. Elsewhere, set both:
+The defaults assume Yarn with a `yarn.lock` at the repository root. Elsewhere:
 
-| package manager | `cache` | `install`                                                                    |
-| --------------- | ------- | ---------------------------------------------------------------------------- |
-| npm             | `npm`   | `npm ci --ignore-scripts`                                                    |
-| pnpm            | `pnpm`  | `pnpm install --frozen-lockfile --ignore-scripts` (pnpm on the runner first) |
-| no lockfile     | `''`    | whatever installs the project                                                |
+| project                         | set                                                                       |
+| ------------------------------- | ------------------------------------------------------------------------- |
+| npm                             | `cache: npm`, `install: npm ci --ignore-scripts`                          |
+| lockfile in `working-directory` | `cache-dependency-path: <dir>/yarn.lock` (or `package-lock.json`)         |
+| no lockfile                     | `cache: ''` — no caching at all — and an `install` that works without one |
+
+pnpm is not supported: setup-node needs pnpm installed before it runs, and a caller has no step there.
 
 `install`, `before` and `scoria` are run as commands, so pass fixed strings, never values taken from
 the event.

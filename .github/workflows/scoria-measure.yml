@@ -28,9 +28,13 @@ on:
         type: string
         default: .
       cache:
-        description: Package manager cache for actions/setup-node (yarn, npm, pnpm), or empty for none.
+        description: Package manager cache for actions/setup-node (yarn or npm), or empty for no caching at all.
         type: string
         default: yarn
+      cache-dependency-path:
+        description: Lockfile the cache is keyed on, relative to the repository root. Needed when working-directory is not the root.
+        type: string
+        default: ""
       install:
         description: Installs dependencies, so scoria can run tsc, knip and the cycle check. Like before and scoria, it is run as a command, so pass only fixed strings, never event data.
         type: string
@@ -80,6 +84,10 @@ jobs:
         with:
           node-version: ${{ inputs.node-version }}
           cache: ${{ inputs.cache }}
+          cache-dependency-path: ${{ inputs.cache-dependency-path }}
+          # Without this, setup-node caches npm on its own when package.json names npm, and fails
+          # where there is no lockfile to key it on.
+          package-manager-cache: ${{ inputs.cache != '' }}
       - run: ${{ inputs.install }}
       - if: ${{ inputs.before != '' }}
         run: ${{ inputs.before }}
