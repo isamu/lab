@@ -81,10 +81,16 @@ export const sentenceCommaCount: Detector = (doc, options): Finding[] => {
 
 const CONJUNCTIVE = "SCONJ";
 
-/** A sentence joining more than limit clauses with the lexicon's conjunctive particle (逆接の「が」), not the same word as a case particle. */
+/** The phrases ending in a prefatory が (繰り返しになりますが、〜の件でありますが): no contrast with what follows. */
+export const PREFATORY_LEXICON = "adversative-ga-prefatory";
+
+/**
+ * A sentence joining more than limit clauses with the lexicon's conjunctive particle (逆接の「が」), not the same word as a
+ * case particle, and not inside a prefatory phrase.
+ */
 export const sentenceConjunctiveCount: Detector = (doc, options): Finding[] => {
   const words = wordsOf(options.lexicon);
-  return sentencesOver(doc, options.limit, (token) => token.pos === CONJUNCTIVE && words.has(token.surface));
+  return sentencesOver(doc, options.limit, (token) => token.pos === CONJUNCTIVE && words.has(token.surface), doc.lexicons[PREFATORY_LEXICON] ?? []);
 };
 
 type Opened = { readonly sentence: Sentence; readonly opener: string | undefined };
