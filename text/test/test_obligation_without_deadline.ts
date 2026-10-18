@@ -61,6 +61,13 @@ describe("obligation-without-deadline", () => {
     assert.deepEqual(wordsIn(en, en_("3. The Customer shall pay the Fees in accordance with the Order Form.")), []);
   });
 
+  it("a notice period in the same sentence times the duty to notify; a notice with no period does not", () => {
+    assert.deepEqual(wordsIn(en, en_("3. If we change prices, we will give at least 30 days notice and will notify you by email.")), []);
+    assert.deepEqual(wordsIn(en, en_("3. The terminating party must notify the other party by giving 30 days advance notice.")), []);
+    assert.deepEqual(wordsIn(en, en_("3. The terminating party must notify the other party by giving 30 days’ advance notice.")), []);
+    assert.deepEqual(wordsIn(en, en_("3. If we change prices, we will give notice and will notify you by email.")), ["notify"]);
+  });
+
   it("does not report a right, a duty not to act, an amount, or a duty that is not an act at a time", () => {
     assert.deepEqual(wordsIn(ja, ja_("第3条　乙は、甲に対し、資料の返還を請求することができる。")), []);
     assert.deepEqual(wordsIn(ja, ja_("第3条　甲は、乙に対し、月額150,000円を支払う。")), []);

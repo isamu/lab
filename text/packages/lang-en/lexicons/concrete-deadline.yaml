@@ -18,3 +18,10 @@ entries:
   - pattern: days following
   - pattern: days from
   - pattern: days' notice
+  # A notice period written without the apostrophe, with a curly one, or as advance notice: "at least 30 days notice",
+  # "30 days advance notice". The duty to notify is timed by it.
+  - pattern: days’ notice
+  - pattern: days notice
+  - pattern: days advance notice
+  - pattern: days' advance notice
+  - pattern: days’ advance notice
