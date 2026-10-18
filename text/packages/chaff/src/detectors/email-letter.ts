@@ -1,9 +1,10 @@
 // A work email or letter's own parts: a greeting and a closing, a subject line, and an attachment the text mentions.
 // Pure. The words (お世話になっております, Dear, Best regards, 件名, attached) come from the language's email-greeting,
-// email-closing, email-sentence-end, memo-header-label, email-subject-field, attachment-mention, attachment-not-mention and attachment-line lexicons. The
+// email-closing, email-sentence-end, memo-header-label, notice-header, email-subject-field, attachment-mention, attachment-not-mention and attachment-line lexicons. The
 // header and the signature are masked in doc.prose; a quoted reply is someone else's words and is left out.
 import { escapeRegExp } from "../orthography.ts";
 import { quoteAt } from "./structure-tree.ts";
+import { isNoticeHead, noticeWordsOf } from "../notice-header.ts";
 import type { Detector, Finding, ProseDocument, Span } from "../plugin.ts";
 
 /** A greeting comes before the body: past the subject, the addressee (株式会社… / 総務部 山田様) and the writer's name. */
@@ -169,15 +170,24 @@ export const isMemoLabel = (line: string, labels: readonly string[]): boolean =>
  * one). The source, not the body, since a block of TO: / FROM: lines is masked as an email's header. A memo takes no
  * greeting and no closing.
  */
-export const isMemo = (source: string, labels: readonly string[], sentenceEnds: readonly string[]): boolean => {
+export const isMemo = (source: string, labels: readonly string[], sentenceEnds: readonly string[]): boolean =>
+  headLines(source, sentenceEnds).some((line) => isMemoLabel(line, labels));
+
+/** The source's lines before the first sentence (the first lines, when no line ends one), past blank lines and a quoted reply. */
+export const headLines = (source: string, sentenceEnds: readonly string[]): string[] => {
   const lines = source.split("\n").filter((line) => line.trim() !== "" && !line.trimStart().startsWith(">"));
   const firstSentence = lines.findIndex((line) => endsSentence(line, sentenceEnds));
-  return lines.slice(0, firstSentence === -1 ? HEADER_LINES : firstSentence).some((line) => isMemoLabel(line, labels));
+  return lines.slice(0, firstSentence === -1 ? HEADER_LINES : firstSentence);
 };
+
+/** A memo (TO: / 発信者：) or an official notice (課資2－7 / 各国税局長 殿) takes no greeting and no closing. */
+const takesNoFrame = (doc: ProseDocument, sentenceEnds: readonly string[]): boolean =>
+  isMemo(doc.source, patternsOf(doc, "memo-header-label"), sentenceEnds) ||
+  isNoticeHead(headLines(doc.source, sentenceEnds), noticeWordsOf(doc.lexicons["notice-header"] ?? []));
 
 const frameSlipsOf = (doc: ProseDocument): FrameSlip[] => {
   const sentenceEnds = patternsOf(doc, "email-sentence-end");
-  if (isMemo(doc.source, patternsOf(doc, "memo-header-label"), sentenceEnds)) return [];
+  if (takesNoFrame(doc, sentenceEnds)) return [];
   const lines = bodyLines(doc.source, doc.prose ?? doc.source, doc.replyQuotes ?? []);
   return frameSlips(lines, patternsOf(doc, "email-greeting"), patternsOf(doc, "email-closing"), sentenceEnds);
 };
