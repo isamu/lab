@@ -93,6 +93,8 @@ entries:
   - pattern: DIY
   - pattern: HIV
   - pattern: UV
+  - pattern: FYI
+  - pattern: LGBTQ
   # 略語としてではなく名前として読む語（どのリポジトリにもあるファイルの名前、ライセンスの名前）と、日本語の日常の外来語（NPO、NGO）。
   - pattern: README
   - pattern: MIT
@@ -102,3 +104,5 @@ entries:
   - pattern: Q&A
   - pattern: R&D
   - pattern: M&A
+  # 日本語の日常の語として書く略語（WEBサイト）。
+  - pattern: WEB

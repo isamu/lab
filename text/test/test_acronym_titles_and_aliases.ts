@@ -96,6 +96,12 @@ describe("undefined-acronym: Name, or ACRONYMs", () => {
     assert.deepEqual(reportedAcronyms(ja, `# T\n\nSIGの規則を見る。\n\n審査委員会、通称SIGを置く。SREも見ます。\n`), ["SIG", "SRE"]);
   });
 
+  it("the name and the acronym each in curly quotes", () => {
+    const source = `# T\n\nRead the AST below.\n\nAn ‘abstract syntax tree’, or ‘AST’, is a structure. The SRE joins.\n`;
+    assert.deepEqual(reportedAcronyms(en, source), ["SRE"]);
+    assert.deepEqual(reportedAcronyms(en, `# T\n\nRead the AST below.\n\nA ‘parse result’, or ‘AST’, is a structure. The SRE joins.\n`), ["AST", "SRE"]);
+  });
+
   it("the plural in brackets explains the singular", () => {
     assert.deepEqual(reportedAcronyms(en, `# T\n\nSee the SIG rules.\n\nWe have Special Interest Groups (SIGs). The SRE joins.\n`), ["SRE"]);
   });

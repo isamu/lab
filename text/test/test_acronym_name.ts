@@ -55,6 +55,7 @@ cases(
     ["点を付けた形と読点", "Source: FUSE MEDICAL, INC., 10-K", ["FUSE", "MEDICAL", "INC"]],
     ["点と読点で繋いだ形", "SUNCALL TECHNOLOGY VIETNAM CO.,LTD.", ["SUNCALL", "TECHNOLOGY", "VIETNAM", "CO", "LTD"]],
     ["閉じ括弧のすぐ後ろの形", "SUNCALL（Guangzhou）CO.,LTD.", ["CO", "LTD"]],
+    ["数字で始まる名前の語に続く形", "referring to 37signals LLC and us", ["LLC"]],
   ],
   [
     ["形が名前の語の後ろにない", "the LLC and the SE team"],
@@ -64,6 +65,7 @@ cases(
     ["点の無い CO はコロラド州でもある", "Kansas City, CO 64108"],
     ["限定の語の後ろ", "The SE team and This AB test"],
     ["空白を挟んだ括弧の後ろ", "Section (A) LLC requirements"],
+    ["字の無い数字の後ろ", "Section 5 LLC requirements"],
   ],
 );
 
