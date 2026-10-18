@@ -51,8 +51,8 @@ example:
       Prices are on [the pricing page](https://example.com/pricing). Send questions through [the contact form](https://example.com/contact) today.
 
 not_flagged:
-  ja: 山括弧で囲んだ URL（<https://…>）、言葉が URL のリンク、コードと引用の中の URL、項目の値として行に一つだけ書いた URL（**ライセンス本文** https://…）は指しません。参照の形のリンク（[言葉][1]）は言葉のリンクに数えません。言葉のリンクが指摘に要る数に届かない文書と、URL をそのまま書くほうが多い文書も指しません。
-  en: A URL in angle brackets ("<https://…>"), a link whose text is the URL, URLs in code or quotations, and a URL that is a field's value alone on its line ("**Licence text** https://…") are not reported; reference-style links ("[text][1]") are not counted as worded links; nor is a document with fewer worded links than the level needs, or one where bare URLs are not the few.
+  ja: 山括弧で囲んだ URL（<https://…>）、言葉が URL のリンク、コードと引用の中の URL、項目の値として行に一つだけ書いた URL（**ライセンス本文** https://…）、本文に書いたデータの例の値（{"home":"https://…"}）は指しません。参照の形のリンク（[言葉][1]）は言葉のリンクに数えません。言葉のリンクが指摘に要る数に届かない文書と、URL をそのまま書くほうが多い文書も指しません。
+  en: A URL in angle brackets ("<https://…>"), a link whose text is the URL, URLs in code or quotations, a URL that is a field's value alone on its line ("**Licence text** https://…"), and one that is a value in an example payload written in the text (`{"home":"https://…"}`) are not reported; reference-style links ("[text][1]") are not counted as worded links; nor is a document with fewer worded links than the level needs, or one where bare URLs are not the few.
 level_meaning:
   ja: 言葉のリンクが {limit} 個以上ある文書で指摘
   en: reported in a document with {limit} or more worded links

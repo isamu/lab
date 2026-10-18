@@ -26,7 +26,7 @@ import {
   shapeOf,
 } from "./list-item.ts";
 import { listReader, type ItemList } from "./list-items.ts";
-import { APPOSITIVE_ANCHOR, isListConjunction, listSentenceOf, VERBAL, type ItemScope, type ListWords } from "./list-sentence.ts";
+import { APPOSITIVE_ANCHOR, isListConjunction, listSentenceOf, NOMINAL, VERBAL, type ItemScope, type ListWords } from "./list-sentence.ts";
 import {
   after,
   contentOnlyWith,
@@ -42,6 +42,7 @@ import {
   some,
   wholeList,
   withoutFirst,
+  type Member,
   type View,
 } from "./list-view.ts";
 import { lowerBound, type TokenRange } from "./token-column.ts";
@@ -109,6 +110,31 @@ const afterClosedList = (view: View): View => {
   return hasContent(scope, rest) ? { ...after(view, closing), pre: rest } : withoutLead(after(view, closing));
 };
 
+const opensAsNoun = (scope: ItemScope, item: TokenRange): boolean => {
+  const opening = openingOf(scope, item);
+  return opening !== undefined && (opening.pos === "DET" || NOMINAL.has(opening.pos));
+};
+
+const opensAsPredicate = (scope: ItemScope, item: TokenRange): boolean => {
+  const opening = openingOf(scope, item);
+  return opening !== undefined && VERBAL.has(opening.pos) && !isParticiple(opening);
+};
+
+/**
+ * 読点で挟んだ例の句が主語と述語のあいだにある形（Any services not listed above, such as connected services, are excluded and
+ * are not authorized）。句は読点の直後から始まり、例は名詞の句で、句の後ろの項目は動詞で始まる。主語も句も並びの項目ではなく、
+ * 並びがあるなら句の後ろから（are excluded and are not authorized は 2 つ）。例の中の分詞（connected）は名詞にかかる語で、
+ * 述語と同じ形と読まない。句の前は並びの最初の項目で、名詞の句（主語）。動詞で始まれば述語の並びの項目
+ * （Review backups, such as daily snapshots, update indexes and archive logs は 3 つ）。
+ */
+const isAsideBeforePredicate = (view: View, phrase: Member, examples: TokenRange): boolean => {
+  const { scope } = view.list;
+  const [subject, next] = [firstOf(view), firstOf(after(view, phrase))];
+  if (subject === undefined || next === undefined || subject.j !== phrase.j - 1) return false;
+  const opensPhrase = (scope.sentence.exampleEnds[phrase.item.start]?.length ?? 0) > 0;
+  return opensPhrase && opensAsNoun(scope, subject.item) && opensAsNoun(scope, examples) && opensAsPredicate(scope, next.item);
+};
+
 /**
  * 例の句（such as / including / e.g.）のあとが並び。句の前の項目は並びではない（the screen lock on your phone, such as a PIN or
  * phone-based fingerprint は 2 つ）。句の中の項目の形が揃わなければ句で切らない（materials such as green steel, utilizing ..., and
@@ -121,7 +147,9 @@ const fromExample = (view: View): View => {
   const { scope } = view.list;
   const examples = { start: exampleEnd(scope, phrase.item), end: phrase.item.end };
   if (hasListConjunction(scope, examples)) return view;
-  const inPhrase = contentOnlyWith(after(view, phrase), examples);
+  const rest = after(view, phrase);
+  if (isAsideBeforePredicate(view, phrase, examples)) return rest;
+  const inPhrase = contentOnlyWith(rest, examples);
   return sameShapes(inPhrase) ? inPhrase : view;
 };
 

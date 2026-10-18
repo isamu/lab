@@ -3,6 +3,7 @@ import { isWithinAny, quotedIn } from "../quoted-span.ts";
 import { chronologyRows } from "../chronology-rows.ts";
 import { externalLinkTitleSpans } from "../link-title.ts";
 import type { Detector, Finding, Span, Token } from "../plugin.ts";
+import { countedTokens, uncountedWordsOf } from "../uncounted-particles.ts";
 
 /**
  * 文末が名詞で終わる（体言止め）。箇条書きでは普通だが、本文では文が途中で切れて読める。
@@ -82,8 +83,9 @@ export const doubledParticle: Detector = (doc, options): Finding[] => {
   const nesting = (options.lexicon ?? []).map((entry) => entry.pattern);
   const titles = externalLinkTitleSpans(doc.source, doc.links);
   const breaks = (doc.lexicons[RUN_BREAK_LEXICON] ?? []).map((entry) => entry.pattern);
+  const numbering = uncountedWordsOf(doc.lexicons, nesting);
   return doc.sentences.flatMap((sentence) =>
-    runsOf(sentence.tokens ?? [], nesting, breaks, [...quotedIn(sentence), ...titles])
+    runsOf(countedTokens(sentence.tokens ?? [], numbering), nesting, breaks, [...quotedIn(sentence), ...titles])
       .filter((run) => run.tokens.length > options.limit)
       .map((run) => ({
         rule: "no-doubled-joshi",
