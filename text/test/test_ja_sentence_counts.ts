@@ -109,6 +109,18 @@ describe("adversative-ga-repeat: 一文の逆接の「が」", () => {
   it("文が分かれていれば数えない", () => {
     assert.deepEqual(findingsOf(RULE, "予算は足りるが、人手は足りない。人手は足りないが、納期は守る。\n"), []);
   });
+
+  it("前置きの「が」（繰り返しになりますが、〜の件でありますが）は数えない", () => {
+    assert.deepEqual(findingsOf(RULE, "繰り返しになりますが、予算は足りますが、人手は足りません。\n"), []);
+    assert.deepEqual(findingsOf(RULE, "会議の件でありますが、予算は足りますが、人手は足りません。\n"), []);
+  });
+
+  it("前置きでない逆接の「が」は、前置きと並んでも二つあれば指す", () => {
+    assert.deepEqual(findingsOf(RULE, "繰り返しになりますが、予算は足りますが、人手は足りませんが、納期は守ります。\n"), [
+      "一文に逆接の「が」が 2 個あります（1 個まで）",
+    ]);
+    assert.deepEqual(findingsOf(RULE, "重要でありますが、予算は足りますが、人手は足りません。\n"), ["一文に逆接の「が」が 2 個あります（1 個まで）"]);
+  });
 });
 
 describe("openerRuns: 同じ段落で、語彙の語で始まる文の連続", () => {

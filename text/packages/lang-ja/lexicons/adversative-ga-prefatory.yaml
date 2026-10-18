@@ -1,0 +1,27 @@
+# 前置きの「が」で終わる言い回し（繰り返しになりますが、〜の件でありますが）。後ろと対比しないので逆接ではない。
+# adversative-ga-repeat は、この言い回しの中の「が」を数えない。「重要でありますが」のように対比にもなる形は入れない。
+id: adversative-ga-prefatory
+language: ja
+entries:
+  - pattern: 繰り返しになりますが
+  - pattern: 繰り返しになるが
+  - pattern: 繰り返しますが
+  - pattern: 重ねて申し上げますが
+  - pattern: 先ほども申し上げましたが
+  - pattern: 先ほど申し上げましたが
+  - pattern: 冒頭申し上げましたが
+  - pattern: 冒頭にも申し上げましたが
+  - pattern: 恐縮ですが
+  - pattern: 恐れ入りますが
+  - pattern: お手数ですが
+  - pattern: お手数をおかけしますが
+  - pattern: 余談ですが
+  - pattern: 余談になりますが
+  - pattern: 私事ですが
+  - pattern: 念のためですが
+  - pattern: についてでありますが
+  - pattern: についてですが
+  - pattern: の件でありますが
+  - pattern: の件ですが
+  - pattern: の内容でありますが
+  - pattern: の内容ですが

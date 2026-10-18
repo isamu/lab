@@ -3,6 +3,7 @@ layer: L3
 status: stable
 how_to_find: sentence-conjunctive-count
 word_list: adversative-particle
+extra_word_lists: [adversative-ga-prefatory]
 requires: [pos]
 languages: [ja]
 severity: info
