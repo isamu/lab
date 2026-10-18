@@ -38,8 +38,7 @@ const isNumberedForm = (line: string, words: NoticeWords): boolean =>
     (tail) => tail !== "" && line.endsWith(tail) && words.numberHeads.some((head) => head !== "" && line.slice(0, -tail.length).includes(head)),
   );
 
-const isNumberShaped = (line: string): boolean =>
-  line.length <= MAX_NUMBER_LENGTH && DIGIT.test(line) && !BLANK.test(line) && !HIRAGANA.test(line);
+const isNumberShaped = (line: string): boolean => line.length <= MAX_NUMBER_LENGTH && DIGIT.test(line) && !BLANK.test(line) && !HIRAGANA.test(line);
 
 /** Whether a line is a document number alone: short, one run of characters with a digit and no hiragana, in one of the lexicon's forms. */
 export const isDocumentNumber = (line: string, words: NoticeWords): boolean => {
