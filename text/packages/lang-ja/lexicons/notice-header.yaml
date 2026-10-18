@@ -1,0 +1,10 @@
+# 官公庁の通達の頭に置く語。最初の文より前の頭の部分に、文書番号の行（課資2－7、総務省発第123号）と、宛名の後ろに敬称を置いた行（各国税局長　殿）が
+# どちらもあれば通達の形とみなし、挨拶と結びを求めない。number-prefix は文書番号の書き出し、number-head と number-tail は「第〜号」の前後、addressee は宛名の敬称。
+id: notice-header
+language: ja
+entries:
+  - { pattern: 課, group: number-prefix }
+  - { pattern: 直, group: number-prefix }
+  - { pattern: 第, group: number-head }
+  - { pattern: 号, group: number-tail }
+  - { pattern: 殿, group: addressee }
