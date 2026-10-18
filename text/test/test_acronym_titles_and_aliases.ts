@@ -100,6 +100,10 @@ describe("undefined-acronym: Name, or ACRONYMs", () => {
     const source = `# T\n\nRead the AST below.\n\nAn ‘abstract syntax tree’, or ‘AST’, is a structure. The SRE joins.\n`;
     assert.deepEqual(reportedAcronyms(en, source), ["SRE"]);
     assert.deepEqual(reportedAcronyms(en, `# T\n\nRead the AST below.\n\nA ‘parse result’, or ‘AST’, is a structure. The SRE joins.\n`), ["AST", "SRE"]);
+    assert.deepEqual(reportedAcronyms(en, `# T\n\nRead the AST below.\n\nAn “abstract syntax tree’, or ‘AST’, is a structure. The SRE joins.\n`), [
+      "AST",
+      "SRE",
+    ]);
   });
 
   it("the plural in brackets explains the singular", () => {

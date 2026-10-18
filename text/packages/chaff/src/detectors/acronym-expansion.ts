@@ -192,14 +192,15 @@ const isPrefixedAt = (body: string, acronym: string, at: number): boolean => {
 };
 
 /** 引用符で囲んで書き終えた名前（‘abstract syntax tree’）。小文字の語でも、囲みが名前の始まりと終わりを決める。 */
-const QUOTED_NAME_END = /["“‘'](?<name>[^"“”‘’'\n]{1,60})["”’']$/u;
+const QUOTED_NAME_END = /(?:“(?<curly>[^“”\n]{1,60})”|‘(?<single>[^‘’\n]{1,60})’|"(?<straight>[^"\n]{1,60})")$/u;
 
 /** 名前の後ろの読点と言い換えの語に続く略語（Special Interest Groups, or SIGs、‘abstract syntax tree’, or ‘AST’）。名前の頭文字が略語と揃うときだけ。 */
 const isAlternativeAt = (patterns: DefinitionPatterns, body: string, acronym: string, at: number): boolean => {
   const joined = patterns.alternative.exec(body.slice(Math.max(0, at - DEFINITION_REACH), at));
   if (joined === null) return false;
   const name = body.slice(0, at - joined[0].length);
-  const quoted = QUOTED_NAME_END.exec(name)?.groups?.["name"];
+  const groups = QUOTED_NAME_END.exec(name)?.groups;
+  const quoted = groups?.["curly"] ?? groups?.["single"] ?? groups?.["straight"];
   return spellsOut(name, acronym) || (quoted !== undefined && namesAcronym(quoted, acronym));
 };
 
