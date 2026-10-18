@@ -56,10 +56,17 @@ export const readBaseline = async (root: string): Promise<Baseline | undefined> 
   }
 };
 
+/**
+ * The baseline is committed, so an absolute path in it would publish one machine's directory layout
+ * and change with whoever recorded it. The file lives inside the project it describes, which is all
+ * the location it needs.
+ */
+export const forCommit = (report: Report): Report => ({ ...report, root: "." });
+
 export const writeBaseline = async (root: string, report: Report): Promise<string> => {
   const path = join(root, BASELINE_PATH);
   await mkdir(dirname(path), { recursive: true });
-  const baseline: Baseline = { report, createdAt: new Date().toISOString() };
+  const baseline: Baseline = { report: forCommit(report), createdAt: new Date().toISOString() };
   await writeFile(path, `${JSON.stringify(baseline, null, 2)}\n`, "utf8");
   return path;
 };
