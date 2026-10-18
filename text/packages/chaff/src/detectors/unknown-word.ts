@@ -13,7 +13,7 @@ const MAX_LENGTH = 30;
 const patternsOf = (doc: ProseDocument, name: string): string[] => (doc.lexicons[name] ?? []).map((entry) => entry.pattern.toLowerCase());
 
 /** 辞書と、語彙表 extra-word の語と、チームの names と、別の rule が言う誤り（known-misspelling）を足した語。 */
-const spellerOf = (doc: ProseDocument, dictionary: ReadonlySet<string>): Speller => ({
+export const spellerOf = (doc: ProseDocument, dictionary: ReadonlySet<string>): Speller => ({
   words: [dictionary, new Set([...patternsOf(doc, "extra-word"), ...(doc.names ?? []).map((name) => name.toLowerCase())])],
   suffixes: (doc.lexicons["word-suffix"] ?? []).map((entry) => ({ suffix: entry.pattern, replacement: entry.instead_of ?? "" })),
   prefixes: patternsOf(doc, "word-prefix"),

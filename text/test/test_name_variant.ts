@@ -19,6 +19,7 @@ import type { Token } from "../packages/chaff/src/plugin.ts";
 import { spacedPersonNamesIn } from "../packages/chaff/src/spaced-person-name.ts";
 import { isLineBlock, tokensByLine } from "../packages/chaff/src/name-line-block.ts";
 import { isInPersonField } from "../packages/chaff/src/person-field.ts";
+import { usualIsMisspelt } from "../packages/chaff/src/name-misspelt-usual.ts";
 import { heavierFirst, outweighs, type NameWeight } from "../packages/chaff/src/name-weight.ts";
 import { isLookalikeApart, lookalikeSlipsIn } from "../packages/chaff/src/name-lookalike-chars.ts";
 import { voicedReadingOf } from "../packages/chaff/src/company-kana-spelling.ts";
@@ -54,6 +55,27 @@ describe("name-variant: 同じ名前の書き分け", () => {
     assert.deepEqual(variants("Microsoft builds the tool. Microsoft sells it. Microsft ships it.\n"), [
       '"Microsft" is one letter away from "Microsoft", which the document uses more than once',
     ]);
+  });
+
+  it("a repeated typo is not offered as the usual form of the right spelling", () => {
+    const typo = "See the Kubernetes Release Sechedule. The Kubernetes Release Sechedule is fixed. Read the Kubernetes Release Schedule.\n";
+    assert.deepEqual(variants(typo), []);
+    const right = "See the Kubernetes Release Schedule. The Kubernetes Release Schedule is fixed. Read the Kubernetes Release Sechedule.\n";
+    assert.equal(variants(right).length, 1);
+  });
+
+  it("usualIsMisspelt: the usual form's own words are all missing from the dictionary, the pointed form's all in it", () => {
+    const words = new Set(["release", "schedule", "kubernetes", "the", "word", "lord"]);
+    const known = (word: string): boolean => words.has(word) || words.has(word.replace(/s$/u, ""));
+    assert.ok(usualIsMisspelt("Release Schedule", "Release Sechedule", known));
+    assert.ok(!usualIsMisspelt("Release Sechedule", "Release Schedule", known));
+    assert.ok(!usualIsMisspelt("Microsft", "Microsoft", known));
+    assert.ok(!usualIsMisspelt("GitHub", "Github", known));
+    assert.ok(!usualIsMisspelt("West Gate House", "Westgate House", (word) => ["west", "gate", "house"].includes(word)));
+    assert.ok(!usualIsMisspelt("Words", "Lords", known));
+    assert.ok(!usualIsMisspelt("Release Schedule", "Release Timetable", known));
+    assert.ok(!usualIsMisspelt("斉藤様", "斎藤様", known));
+    assert.ok(!usualIsMisspelt("", "", known));
   });
 
   it("consistent names, and different short names, are not reported", () => {

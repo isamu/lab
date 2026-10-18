@@ -24,6 +24,9 @@ import { isOrdinaryToken, withOrdinaryWords } from "../name-ordinary-word.ts";
 import { isInPersonField } from "../person-field.ts";
 import { labelledSpans, orderNamesOf, quotedSpans, stemOf, titleCaseSpans, wordOrderVariants, type OrderWord } from "../name-word-order.ts";
 import { isGroupPairOf, notDefinedTerms, outsideCapitals, sentenceIndexOf, withGivenNames } from "./name-variant-apart.ts";
+import { usualIsMisspelt } from "../name-misspelt-usual.ts";
+import { spellerOf } from "./unknown-word.ts";
+import { isKnownWord } from "../spelling.ts";
 
 // 人の名前と読ませる敬称（様、さん）は語彙表 person-suffix、人を指す前置き（担当の）は person-lead、名前のすぐ後ろに来る語
 // （です、まで）は name-particle、字体の違う同じ字（斎・斉・齋）は name-variant-char が組（group）ごとに言う。
@@ -387,7 +390,10 @@ export const nameVariant: Detector = (doc): Finding[] => {
   const withProducts = [...withPlaces, ...productFindings(doc, prose, withPlaces)];
   const withOrder = [...withProducts, ...orderFindings(doc, prose, withProducts)];
   const codes = modelCodeFindings(doc, prose).filter((code) => !overlapsAny(withOrder, code.offset, code.name.length));
+  const dictionary = doc.dictionary?.();
+  const speller = dictionary === undefined ? undefined : spellerOf(doc, dictionary);
   return [...withOrder, ...codes]
+    .filter(({ name, usual }) => speller === undefined || !usualIsMisspelt(name, usual, (word) => isKnownWord(word, speller)))
     .toSorted((left, right) => left.offset - right.offset)
     .map(({ offset, name, usual, kind }) => ({
       rule: "",
