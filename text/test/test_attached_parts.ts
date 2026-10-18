@@ -68,6 +68,36 @@ describe("duplicate-definition: an attached instrument", () => {
     assert.deepEqual(attachedPartStarts("a\n\nExhibit A\n\nb", []), []);
   });
 
+  it("reads a bold schedule heading right under a closing fence as an attached instrument", () => {
+    const form = [
+      'This agreement is made between Example Corp. (the "Company") and the undersigned employee.',
+      "",
+      "```",
+      "Signature: ________",
+      "```",
+      "## **SCHEDULE B**",
+      "",
+      "**TERMINATION CERTIFICATE**",
+      "",
+      'I have returned all property of Example Corp. (the "Company").',
+      "",
+    ];
+    assert.deepEqual(duplicates(form.join("\n")), []);
+    const twice = [...form, 'I will not work for Example Corp. (the "Company") again.', ""];
+    assert.deepEqual(duplicates(twice.join("\n")), ['"Company" is also defined on line 10']);
+  });
+
+  it("attachedPartStarts: bold is ignored, a heading needs no blank line, a sentence is still not a title", () => {
+    const labels = ["Schedule", "SCHEDULE"];
+    assert.deepEqual(attachedPartStarts("a\n\n**SCHEDULE A**\n\nb", labels), [3]);
+    assert.deepEqual(attachedPartStarts("a\n```\n## **SCHEDULE B**\nb", labels), [6]);
+    assert.deepEqual(attachedPartStarts("a\n## Schedule 2\nb", labels), [2]);
+    assert.deepEqual(attachedPartStarts("a\n**SCHEDULE A**\nb", labels), []);
+    assert.deepEqual(attachedPartStarts("a\n    ## Schedule 2\nb", labels), []);
+    assert.deepEqual(attachedPartStarts("a\n## Schedule A lists the prices for the goods sold to the Buyer.\nb", labels), []);
+    assert.deepEqual(attachedPartStarts("a\n## **Schedule a**\nb", labels), []);
+  });
+
   it("partAt: 0 before the first attachment, then its number", () => {
     assert.equal(partAt([], 5), 0);
     assert.equal(partAt([10, 20], 5), 0);
