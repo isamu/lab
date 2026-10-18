@@ -1,0 +1,13 @@
+# 法令・通達の箇所を数える語（第70条、第３項、第二章）。数の後ろのこの語に「の」と数が続けば枝番号で（第70条の２、第三章の二）、
+# その「の」は番号の一部として、no-doubled-joshi が助詞の連なりに数えない。数どうしを「の」で繋いだ番号（70の２－８の２）も同じに読む。
+id: numbering-counter
+language: ja
+entries:
+  - pattern: 編
+  - pattern: 章
+  - pattern: 節
+  - pattern: 款
+  - pattern: 目
+  - pattern: 条
+  - pattern: 項
+  - pattern: 号
