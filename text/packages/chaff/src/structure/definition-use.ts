@@ -144,15 +144,24 @@ const LETTER = /\p{L}/gu;
 /** 札の文が語のほかに持ってよい字の数（"The Agreement." の The）。 */
 const LABEL_SLACK = 3;
 
-/** 札に添えた短い括弧の注（（第7条関係）、(Section 4)）。入れ子の無い一組で、中身は 20 字まで。長い括弧は文の一部として読む。 */
-const BRACKETED_NOTE = /[（(][^（）()]{0,20}[）)]/gu;
+/**
+ * 札の終わりに添えた条の番地の注（（第7条関係）、(Section 4)）。同じ形の括弧の一組で、入れ子が無く、中身は番号を含む 20 字まで。
+ * 長い括弧、番号の無い括弧（(if any)）、文の途中の括弧は、文の一部として読む。
+ */
+const SECTION_NOTE = /(?:（[^（）()]{0,20}）|\([^（）()]{0,20}\))[.。．]?\s*$/u;
+const NUMBER = /[\p{N}〇一二三四五六七八九十]/u;
+
+const withoutSectionNote = (text: string): string => {
+  const note = SECTION_NOTE.exec(text);
+  return note === null || !NUMBER.test(note[0]) ? text : text.slice(0, note.index);
+};
 
 /**
  * 語だけの札の文（**12.2.** Taxes.、1. The Agreement.、（1）文化芸術推進基本計画（第7条関係））。条や節の頭に語を掲げただけで、
- * 使用ではない。括弧の注は札の字に数えない。
+ * 使用ではない。終わりに添えた条の番地の注は札の字に数えない。
  */
 const isLabel = (body: BodyText | undefined, term: string): boolean =>
-  body !== undefined && (body.text.replaceAll(term, "").replaceAll(BRACKETED_NOTE, "").match(LETTER) ?? []).length <= LABEL_SLACK;
+  body !== undefined && (withoutSectionNote(body.text.trimEnd()).replaceAll(term, "").match(LETTER) ?? []).length <= LABEL_SLACK;
 
 /** 番地の後ろの、条の題の始まり（Section 1.1   Closing. の Closing）。 */
 const AFTER_ADDRESS = /\d\.?\s+(?=\p{Lu})/gu;
