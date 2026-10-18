@@ -1,4 +1,4 @@
-import type { Token } from "./plugin.ts";
+import type { Lexicon, Token } from "./plugin.ts";
 
 /** The words that decide which particle-looking tokens are not links in a chain of particles. */
 export type UncountedWords = {
@@ -53,3 +53,20 @@ const isNumberingConnector = (tokens: readonly Token[], at: number, words: Uncou
 /** The particle tokens of a sentence that join the parts of a number (第70条の２) and are not links of a chain. */
 export const uncountedParticles = (tokens: readonly Token[], words: UncountedWords): ReadonlySet<Token> =>
   new Set(tokens.filter((token, at) => words.particles.includes(token.surface) && isNumberingConnector(tokens, at, words)));
+
+const COUNTER_LEXICON = "numbering-counter";
+const NUMBER_LEXICON = "number-word";
+const NUMERAL_GROUPS: readonly (string | undefined)[] = ["digit", "place"];
+
+/** The words for `uncountedParticles`, read from the document's lexicons. */
+export const uncountedWordsOf = (lexicons: Readonly<Record<string, Lexicon>>, particles: readonly string[]): UncountedWords => ({
+  particles,
+  numeralChars: new Set((lexicons[NUMBER_LEXICON] ?? []).filter((entry) => NUMERAL_GROUPS.includes(entry.group)).map((entry) => entry.pattern)),
+  counters: (lexicons[COUNTER_LEXICON] ?? []).map((entry) => entry.pattern),
+});
+
+/** The tokens of a sentence without the particles that join the parts of a number. */
+export const countedTokens = (tokens: readonly Token[], words: UncountedWords): readonly Token[] => {
+  const uncounted = uncountedParticles(tokens, words);
+  return uncounted.size === 0 ? tokens : tokens.filter((token) => !uncounted.has(token));
+};
