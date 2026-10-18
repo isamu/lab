@@ -42,8 +42,8 @@ example:
       Groups of 10–20 meet for 30–40 minutes, at 5–8 dollars each. Children aged 6–12 are welcome.
 
 not_flagged:
-  ja: 前後にさらに数の続く並び（日付の 2026-10-02、電話番号、時刻の 10:00〜12:00、版）と、終わりが始まりより小さいもの（郵便番号の 100-0001、試合の 3-2）は範囲と読みません。「10から20」のような言葉の範囲は比べません。少ないほうが範囲の三分の一を超える文書と、二つの記号が同じ数の文書は、使い分けと読んで言いません。コードの中は読みません。
-  en: Runs with more numbers around them (the date 2026-10-02, phone numbers, times such as 10:00–12:00, versions) and pairs whose end is smaller than the start (a score of 3-2, a postcode such as 100-0001) are not read as ranges. Words ("10 to 20") are not compared. When the less common mark is over a third of the ranges, or the two are equally common, the document is read as using both on purpose. Code is not read.
+  ja: 前後にさらに数の続く並び（日付の 2026-10-02、電話番号、時刻の 10:00〜12:00、版）と、終わりが始まりより小さいもの（郵便番号の 100-0001、試合の 3-2）、漢字の語に詰めて書いた文書の番号（直資4－5ほか）は範囲と読みません。「10から20」のような言葉の範囲は比べません。少ないほうが範囲の三分の一を超える文書と、二つの記号が同じ数の文書は、使い分けと読んで言いません。コードの中は読みません。
+  en: Runs with more numbers around them (the date 2026-10-02, phone numbers, times such as 10:00–12:00, versions) and pairs whose end is smaller than the start (a score of 3-2, a postcode such as 100-0001), and Japanese document numbers written against a kanji word (直資4－5ほか) are not read as ranges. Words ("10 to 20") are not compared. When the less common mark is over a third of the ranges, or the two are equally common, the document is read as using both on purpose. Code is not read.
 level_meaning:
   ja: 少ないほうの記号が、範囲の {limit}% 以下のとき指摘
   en: reported when the less common mark is {limit}% of the ranges or less
