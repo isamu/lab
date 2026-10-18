@@ -230,6 +230,8 @@ describe("title-length: a title or heading too long to scan", () => {
     assert.equal(fired(en, series, "title-length", "docs/glossary"), 0);
     const aside = "# Glossary of terms for tax and National Insurance contributions for employee travel (with worked examples)\n\nText.\n";
     assert.equal(fired(en, aside, "title-length", "docs/glossary"), 1);
+    const ratio = "# Glossary of terms for tax and National Insurance contributions for employee travel (ratio 2025: 10 per cent)\n\nText.\n";
+    assert.equal(fired(en, ratio, "title-length", "docs/glossary"), 1);
   });
 
   it("counts another document's title quoted in 「」 as one name, but not a quoted event name nor a heading that is only a quote", () => {

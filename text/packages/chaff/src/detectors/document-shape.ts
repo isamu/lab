@@ -99,8 +99,8 @@ const QUESTION_END = /[?？]["'”’)）」』]*$/u;
 
 export const isQuestionHeading = (heading: string): boolean => QUESTION_END.test(heading.trim());
 
-/** A series label in brackets at a heading's end, a number and a colon in it ("(490: Employee travel)"): the manual's reference. */
-const SERIES_LABEL_END = /\s*[(（][^()（）]*\d[^()（）]*[:：][^()（）]*[)）]\s*$/u;
+/** A series label in brackets at a heading's end, a number and a colon opening it ("(490: Employee travel)"): the manual's reference. */
+const SERIES_LABEL_END = /\s*[(（]\s*\p{N}+[:：]\s*[^()（）]+[)）]\s*$/u;
 const QUOTED = /「[^「」]*」/gu;
 const QUOTED_NAME = "「」";
 
