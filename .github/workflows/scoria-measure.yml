@@ -32,7 +32,7 @@ on:
         type: string
         default: yarn
       install:
-        description: Installs dependencies, so scoria can run tsc, knip and the cycle check.
+        description: Installs dependencies, so scoria can run tsc, knip and the cycle check. Like before and scoria, it is run as a command, so pass only fixed strings, never event data.
         type: string
         default: yarn install --frozen-lockfile --ignore-scripts
       before:
@@ -96,10 +96,16 @@ jobs:
           if [ "$WANT_SARIF" = "true" ]; then args+=(--sarif scoria-out/scoria.sarif); fi
           if [ "$WANT_BADGE" = "true" ]; then args+=(--badge-json scoria-out/scoria.json); fi
           $SCORIA "${args[@]}"
+      # Each target's SARIF has paths relative to that target, and its file name carries only the
+      # directory's basename, so one upload cannot place them all. Several are left out, and said so.
       - id: outputs
         if: ${{ !cancelled() }}
         run: |
-          echo "sarif=$(compgen -G 'scoria-out/*.sarif' > /dev/null && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          sarifs=$(find scoria-out -maxdepth 1 -name '*.sarif' | wc -l)
+          if [ "$sarifs" -gt 1 ]; then
+            echo "::warning::scoria measured several targets; their SARIF is not uploaded, because each is relative to its own directory."
+          fi
+          echo "sarif=$([ "$sarifs" -eq 1 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
           echo "badge=$(compgen -G 'scoria-out/*.json' > /dev/null && echo true || echo false)" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() && (steps.outputs.outputs.sarif == 'true' || steps.outputs.outputs.badge == 'true') }}
@@ -165,6 +171,9 @@ jobs:
           else
             git switch -q --orphan "$BRANCH"
           fi
+          # The branch holds this run's endpoints and nothing else, so a target that was removed or
+          # renamed stops serving a badge.
+          git rm -q --ignore-unmatch -- '*.json'
           cp ../scoria-out/*.json .
           git add -- *.json
           if git diff --cached --quiet; then

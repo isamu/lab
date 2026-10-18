@@ -522,15 +522,24 @@ jobs:
 この先の commit がその権限で動けてしまいます。入力は [ワークフロー](https://github.com/isamu/lab/blob/main/.github/workflows/scoria-measure.yml) の先頭にあります
 （Node の版、作業ディレクトリ、install のコマンド、`before`、scoria の動かし方、SARIF とバッジを出すかどうか）。
 
-バッジは、書き込まれた `badges` ブランチから読みます。
+既定は `yarn.lock` のある Yarn です。それ以外では両方を指定します。
+
+| パッケージマネージャ | `cache` | `install`                                                                         |
+| -------------------- | ------- | --------------------------------------------------------------------------------- |
+| npm                  | `npm`   | `npm ci --ignore-scripts`                                                         |
+| pnpm                 | `pnpm`  | `pnpm install --frozen-lockfile --ignore-scripts`（先に runner へ pnpm を入れる） |
+| lockfile なし        | `''`    | そのプロジェクトを入れるコマンド                                                  |
+
+`install`・`before`・`scoria` はコマンドとして実行されるので、決まった文字列だけを渡し、イベントから取った値は渡さないでください。
+
+バッジは、書き込まれた `badges` ブランチから読みます。リンクには自分のワークフローのファイル名を入れてください。
 
 ```markdown
-[![scoria](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/OWNER/REPO/badges/scoria.json)](https://github.com/OWNER/REPO/actions/workflows/scoria.yml)
+[![scoria](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/OWNER/REPO/badges/scoria.json)](https://github.com/OWNER/REPO/actions/workflows/<自分のワークフローのファイル名>.yml)
 ```
 
 公開リポジトリであること（shields は匿名で読みに行きます）、`badges` ブランチを止めるルールが無いこと、
-ワークフローに `contents: write` が許されていることが条件です。`targets` が複数あるときは、
-ディレクトリごとに `scoria.<ディレクトリ名>.json` ができます。
+ワークフローに `contents: write` が許されていることが条件です。`targets` が複数あるときは、ディレクトリごとに `scoria.<ディレクトリ名>.json` ができ、ブランチには今のものだけが残ります。SARIF はアップロードしません。それぞれが自分のディレクトリからの相対パスで、1 回のアップロードでは表せないためです。
 
 ## 設定ファイル
 

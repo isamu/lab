@@ -205,15 +205,28 @@ the top of [the workflow](https://github.com/isamu/lab/blob/main/.github/workflo
 directory, install command, `before`, how to run scoria, and whether to upload SARIF or publish a
 badge.
 
-The badge then reads from the `badges` branch it writes:
+The defaults assume Yarn with a `yarn.lock`. Elsewhere, set both:
+
+| package manager | `cache` | `install`                                                                    |
+| --------------- | ------- | ---------------------------------------------------------------------------- |
+| npm             | `npm`   | `npm ci --ignore-scripts`                                                    |
+| pnpm            | `pnpm`  | `pnpm install --frozen-lockfile --ignore-scripts` (pnpm on the runner first) |
+| no lockfile     | `''`    | whatever installs the project                                                |
+
+`install`, `before` and `scoria` are run as commands, so pass fixed strings, never values taken from
+the event.
+
+The badge then reads from the `badges` branch it writes — put your own workflow's file name in the
+link:
 
 ```markdown
-[![scoria](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/OWNER/REPO/badges/scoria.json)](https://github.com/OWNER/REPO/actions/workflows/scoria.yml)
+[![scoria](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/OWNER/REPO/badges/scoria.json)](https://github.com/OWNER/REPO/actions/workflows/<your workflow file>.yml)
 ```
 
 It needs a public repository (shields reads the file anonymously), a `badges` branch that no ruleset
 blocks, and workflow permissions that allow `contents: write`. With several `targets`, each directory
-gets its own `scoria.<dir>.json`.
+gets its own `scoria.<dir>.json`, and the branch keeps only the current set. Their SARIF is not
+uploaded: each is relative to its own directory, which one upload cannot express.
 
 ## Output
 
