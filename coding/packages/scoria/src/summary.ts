@@ -4,6 +4,7 @@ import { tallyWarnings } from "./report.ts";
 import { messagesFor, type Lang, type Messages } from "./messages.ts";
 import type { ReportDiff } from "./diff.ts";
 import { renderChart } from "./chart.ts";
+import { SCORIA_HOME } from "./home.ts";
 
 /**
  * The report as GitHub-flavoured Markdown, for `$GITHUB_STEP_SUMMARY`.
@@ -119,7 +120,11 @@ const skippedBlock = (report: Report, messages: Messages): readonly string[] => 
   ];
 };
 
-export const renderGithubSummary = (report: Report, lang: Lang, diff?: ReportDiff): string => {
+/** The badge links here, so this is where a reader who has never heard of scoria arrives. */
+const creditLine = (messages: Messages, version: string | undefined): readonly string[] =>
+  version === undefined ? [] : ["", ["<sub>", messages.measuredBy(`[scoria](${SCORIA_HOME})`, version), "</sub>"].join("")];
+
+export const renderGithubSummary = (report: Report, lang: Lang, diff?: ReportDiff, version?: string): string => {
   const messages = messagesFor(lang);
   return [
     `## scoria · ${report.label} — ${report.overall.score.toFixed(0)} / 100`,
@@ -138,6 +143,7 @@ export const renderGithubSummary = (report: Report, lang: Lang, diff?: ReportDif
     ...skippedBlock(report, messages),
     "",
     `> ${messages.notComparableLong}`,
+    ...creditLine(messages, version),
     "",
   ].join("\n");
 };

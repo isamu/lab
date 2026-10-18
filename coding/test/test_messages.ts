@@ -157,3 +157,17 @@ test("both languages give both causes of a confidence below high", () => {
   assert.match(messagesFor("en").notComparableLong, /suppressions.*could not run/);
   assert.match(messagesFor("ja").notComparableLong, /抑制.*道具が動かなかった/);
 });
+
+/** The README badge links to the job summary, so it has to say what scoria is and where to get it. */
+test("the GitHub summary ends with where scoria comes from, in both languages", async () => {
+  const { renderGithubSummary } = await import("../packages/scoria/src/summary.ts");
+  const en = renderGithubSummary(report, "en", undefined, "9.9.9");
+  assert.match(en, /<sub>Measured by \[scoria\]\(https:\/\/www\.npmjs\.com\/package\/scoria\) 9\.9\.9 — `npx scoria`/);
+  assert.match(renderGithubSummary(report, "ja", undefined, "9.9.9"), /\[scoria\]\(https:\/\/www\.npmjs\.com\/package\/scoria\) 9\.9\.9 で計測しました/);
+  assert.ok(en.trimEnd().endsWith("</sub>"));
+});
+
+test("without a version the summary carries no credit line", async () => {
+  const { renderGithubSummary } = await import("../packages/scoria/src/summary.ts");
+  assert.ok(!renderGithubSummary(report, "en").includes("Measured by"));
+});
