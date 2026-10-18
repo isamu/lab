@@ -99,6 +99,22 @@ const QUESTION_END = /[?？]["'”’)）」』]*$/u;
 
 export const isQuestionHeading = (heading: string): boolean => QUESTION_END.test(heading.trim());
 
+/** A series label in brackets at a heading's end, a number and a colon in it ("(490: Employee travel)"): the manual's reference. */
+const SERIES_LABEL_END = /\s*[(（][^()（）]*\d[^()（）]*[:：][^()（）]*[)）]\s*$/u;
+const QUOTED = /「[^「」]*」/gu;
+const QUOTED_NAME = "「」";
+
+/**
+ * The words the heading's writer chose: without a series label at its end, and with another document's title, quoted
+ * right before what is done to it (「…の取扱いについて」等の一部改正, the cited-title-action word list), as one name.
+ */
+export const ownWordsOf = (heading: string, citedTitleActions: readonly string[]): string =>
+  heading
+    .replace(SERIES_LABEL_END, "")
+    .replaceAll(QUOTED, (quote, offset: number) =>
+      citedTitleActions.some((action) => action !== "" && heading.startsWith(action, offset + quote.length)) ? QUOTED_NAME : quote,
+    );
+
 /** The heading's words without a number label at its head (Chapter 2, 1.), from the section the heading opens. */
 const unlabeledOf = (doc: ProseDocument, heading: MarkupHeading): string =>
   doc.sections.find((section) => section.span.start === heading.end)?.unlabeledHeading ?? heading.text;
@@ -107,10 +123,11 @@ const unlabeledOf = (doc: ProseDocument, heading: MarkupHeading): string =>
 export const titleLength: Detector = (doc, options): Finding[] => {
   const headings = writtenHeadings(doc);
   const title = headings.find((heading) => heading.depth === 1);
+  const citedTitleActions = (doc.lexicons["cited-title-action"] ?? []).map((entry) => entry.pattern);
   return headings
     .map((heading) => ({ heading, words: unlabeledOf(doc, heading) }))
     .filter(({ words }) => !isParagraphHeading(words) && !isQuestionHeading(words))
-    .map(({ heading, words }) => ({ heading, count: headingLength(words, doc.lengthUnit) }))
+    .map(({ heading, words }) => ({ heading, count: headingLength(ownWordsOf(words, citedTitleActions), doc.lengthUnit) }))
     .filter(({ count }) => count > options.limit)
     .map(({ heading, count }) => ({
       ...findingAt(doc, heading, { heading: heading.text.trim(), count, limit: options.limit }, heading === title ? "title" : undefined),
