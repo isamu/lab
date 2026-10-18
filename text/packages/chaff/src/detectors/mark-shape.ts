@@ -126,6 +126,28 @@ const withEnumeratorKind = (mark: Mark, enumerators: ReadonlySet<number>): Mark 
   enumerators.has(mark.offset) ? { ...mark, form: { ...mark.form, kind: `${mark.form.kind}${ENUMERATOR_KIND}` } } : mark;
 
 /**
+ * A doubled parenthesis around text with no parenthesis inside, such as ((居住の用に供したとき等)) or （（注））: one mark written
+ * with two characters, as a directive sets an article's caption. Its width is that notation's, not the prose's.
+ */
+const DOUBLED_PAREN = /\(\([^()（）\n]*\)\)|（（[^()（）\n]*））/gu;
+const PAIR_LENGTH = 2;
+
+/** The offsets in `source` of every character of a doubled parenthesis. */
+export const doubledParenOffsets = (source: string): ReadonlySet<number> =>
+  new Set(
+    [...source.matchAll(DOUBLED_PAREN)].flatMap((match) => {
+      const end = match.index + match[0].length;
+      return [match.index, match.index + 1, end - PAIR_LENGTH, end - 1];
+    }),
+  );
+
+const DOUBLED_KIND = "\u0000doubled";
+
+/** A doubled parenthesis is a kind of its own, compared only with the other doubled parentheses. */
+const withDoubledKind = (mark: Mark, doubled: ReadonlySet<number>): Mark =>
+  doubled.has(mark.offset) ? { ...mark, form: { ...mark.form, kind: `${mark.form.kind}${DOUBLED_KIND}` } } : mark;
+
+/**
  * A mark written two ways in one document (（ and (, “ and "), the less common way reported. The two ways come from the
  * lexicon; neither is called right. Only marks next to a letter of the document's script count, so a bracket in code-like
  * text (f(x)) or an English aside in a Japanese document does not. A line enumerator's brackets ((1)) are compared apart.
@@ -137,7 +159,10 @@ export const markConsistency: Detector = (doc, options): Finding[] => {
   const titles = externalLinkTitleSpans(doc.source, doc.links);
   const forms = formsOf(options.lexicon ?? []);
   const enumerators = enumeratorBracketOffsets(doc.source);
-  const marks = ownSentences(doc).flatMap((sentence) => marksIn(doc.source, sentence, forms, script).map((mark) => withEnumeratorKind(mark, enumerators)));
+  const doubled = doubledParenOffsets(doc.source);
+  const marks = ownSentences(doc).flatMap((sentence) =>
+    marksIn(doc.source, sentence, forms, script).map((mark) => withDoubledKind(withEnumeratorKind(mark, enumerators), doubled)),
+  );
   const kinds = [...new Set(marks.map((mark) => mark.form.kind))];
   return kinds.flatMap((kind) =>
     minorityFindings(
