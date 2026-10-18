@@ -24,7 +24,7 @@ export type AnyYearMarker = { readonly word: string; readonly reach: MarkerReach
 /** The span of a yearless date in the source. */
 export type DateSpan = { readonly offset: number; readonly end: number };
 
-/** How far apart the two ends of a period may stand: the joiner and a year word (「から翌年」, " to "). */
+/** How far apart the two ends of a period may stand besides the joiner itself: a year word (「から翌年」, " to the next "). */
 const SPAN_GAP_REACH = 12;
 
 /** How many lines above a list item its introducing line is looked for: a longer list is read as no example. */
@@ -191,7 +191,11 @@ export const anyYearDate = (date: DateSpan, source: string, markers: readonly An
 
 /** The date opens a period whose other end, just after it, follows a joiner (「4月1日から翌年3月31日」). */
 export const opensSpan = (date: DateSpan, next: DateSpan | undefined, source: string, joiners: readonly string[]): boolean => {
-  if (next === undefined || next.offset - date.end > SPAN_GAP_REACH) return false;
+  const longest = Math.max(0, ...joiners.map((joiner) => joiner.length));
+  if (next === undefined || next.offset - date.end > SPAN_GAP_REACH + longest) return false;
   const gap = source.slice(date.end, next.offset).trimStart();
-  return !SENTENCE_END.test(gap) && joiners.some((joiner) => joiner !== "" && gap.startsWith(joiner) && !runsOn(gap, joiner));
+  return (
+    !SENTENCE_END.test(gap) &&
+    joiners.some((joiner) => joiner !== "" && gap.length - joiner.length <= SPAN_GAP_REACH && gap.startsWith(joiner) && !runsOn(gap, joiner))
+  );
 };

@@ -260,6 +260,21 @@ describe("date-without-year: 見出しの年、例の続き、毎年の期間", 
   });
 });
 
+describe("date-without-year: a year named relative to the period's end", () => {
+  const DATED = "# Guide\n\nRevised on October 1, 2025, in force from April 1, 2026, reviewed on May 1, 2026.\n\n";
+
+  it("a whole year from a day in one year to the day before it in the next is any year's", () => {
+    assert.deepEqual(namedRuleRun("date-without-year", `${DATED}The tax year runs from 6 April in one year to 5 April in the next.\n`, en).findings, []);
+  });
+
+  it("a period that is not a whole year is still reported", () => {
+    assert.deepEqual(namedRuleRun("date-without-year", `${DATED}The review ran from 6 April in one year to 9 May in the next.\n`, en).findings, [
+      '"6 April" has no year, and the document\'s dates run from 2025 to 2026, so the year is unclear',
+      '"9 May" has no year, and the document\'s dates run from 2025 to 2026, so the year is unclear',
+    ]);
+  });
+});
+
 describe("date-any-year: 休日と一つの一覧に並ぶ日付", () => {
   const LISTED: readonly AnyYearMarker[] = [
     { word: "祝日", reach: "listed" },
