@@ -4,7 +4,14 @@ import { firedRules, namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
-import { enumeratorBracketOffsets, formsOf, isShouting, lowerCaseWords, partialForms } from "../packages/chaff/src/detectors/mark-shape.ts";
+import {
+  doubledParenOffsets,
+  enumeratorBracketOffsets,
+  formsOf,
+  isShouting,
+  lowerCaseWords,
+  partialForms,
+} from "../packages/chaff/src/detectors/mark-shape.ts";
 import { captionsOf, isCaptionAt } from "../packages/chaff/src/detectors/caps-caption.ts";
 
 // Marks and shapes: quote-style-consistency, bracket-width-consistency, exclamation-width-consistency,
@@ -106,6 +113,20 @@ describe("bracket-width-consistency", () => {
     ]);
     // 文の中で番号を指す (1) は、文の括弧として数える。
     assert.deepEqual(findingsOf(RULE, `${PROSE}(1)履歴書\n(2)職務経歴書\n\n次の(1)と(2)を送ってください。\n`, ja).length, 4);
+  });
+
+  it("二重の丸括弧（((題))）は文の括弧と別に比べる。一重の半角の括弧は文の括弧として数える", () => {
+    const captions = `${PROSE}規程第3条((届出の期限))及び第4条((届出の様式))を改める。第5条((提出先))も改める。\n`;
+    assert.deepEqual(findingsOf(RULE, captions, ja), []);
+    assert.deepEqual(findingsOf(RULE, `${captions}資料(最新版)を配ります。\n`, ja), [
+      "括弧を「(」と書いています（この文書はふつう「（」。8 箇所のうち 2 箇所が違う）",
+      "括弧を「)」と書いています（この文書はふつう「）」。8 箇所のうち 2 箇所が違う）",
+    ]);
+  });
+
+  it("二重の丸括弧の四つの字の位置。中に括弧があるもの、閉じが離れたものは二重と読まない", () => {
+    assert.deepEqual([...doubledParenOffsets("第3条((期限))と（（注））")], [3, 4, 7, 8, 10, 11, 13, 14]);
+    assert.deepEqual([...doubledParenOffsets("((a)と(b))、（（注）の内容）")], []);
   });
 
   it("行の途中の (2)、幅の揃わない番号（(1）、番号でない語の括弧（(背景)、(注)）は、番号として分けない", () => {
