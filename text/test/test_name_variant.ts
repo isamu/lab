@@ -73,6 +73,9 @@ describe("name-variant: 同じ名前の書き分け", () => {
     assert.ok(!usualIsMisspelt("GitHub", "Github", known));
     assert.ok(!usualIsMisspelt("West Gate House", "Westgate House", (word) => ["west", "gate", "house"].includes(word)));
     assert.ok(!usualIsMisspelt("Words", "Lords", known));
+    assert.ok(!usualIsMisspelt("Release2 Schedule", "Releas Schedule", known));
+    assert.ok(!usualIsMisspelt("Release Schedule", "Schedul Release", known));
+    assert.ok(!usualIsMisspelt("Release Schedule Schedule", "Release Schedul", known));
     assert.ok(!usualIsMisspelt("Release Schedule", "Release Timetable", known));
     assert.ok(!usualIsMisspelt("斉藤様", "斎藤様", known));
     assert.ok(!usualIsMisspelt("", "", known));

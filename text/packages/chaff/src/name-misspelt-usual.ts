@@ -6,19 +6,20 @@ import { editsOf } from "./spelling.ts";
 /** Whether a lower-case word is a dictionary word, with its endings (lords, schedules). */
 export type IsKnown = (word: string) => boolean;
 
-const LATIN_WORD = /\p{Script=Latin}+/gu;
+/** A word the edits are made on: ASCII letters only, as editsOf makes them. */
+const PLAIN_WORD = /^[a-z]+$/u;
 
-const wordsOf = (name: string): string[] => (name.match(LATIN_WORD) ?? []).map((word) => word.toLowerCase());
+const wordsOf = (name: string): string[] => name.toLowerCase().trim().split(/\s+/u);
 
 /** The usual form's word is a one-letter slip of the pointed form's dictionary word in the same place. */
-const isSlipOf = (usualWord: string, nameWord: string | undefined, isKnown: IsKnown): boolean =>
-  nameWord !== undefined && isKnown(nameWord) && !isKnown(usualWord) && editsOf(usualWord).includes(nameWord);
+const isSlipOf = (usualWord: string, nameWord: string, isKnown: IsKnown): boolean =>
+  PLAIN_WORD.test(usualWord) && PLAIN_WORD.test(nameWord) && isKnown(nameWord) && !isKnown(usualWord) && editsOf(usualWord).includes(nameWord);
 
-/** Whether every word the usual form has in place of the pointed form's is a one-letter slip of a dictionary word. */
+/** Whether the two forms have the same words in the same places but where the usual one has a one-letter slip of a dictionary word. */
 export const usualIsMisspelt = (name: string, usual: string, isKnown: IsKnown): boolean => {
   const nameWords = wordsOf(name);
   const usualWords = wordsOf(usual);
-  const onlyInName = nameWords.filter((word) => !usualWords.includes(word));
-  const onlyInUsual = usualWords.filter((word) => !nameWords.includes(word));
-  return onlyInUsual.length > 0 && onlyInUsual.length === onlyInName.length && onlyInUsual.every((word, index) => isSlipOf(word, onlyInName[index], isKnown));
+  if (nameWords.length !== usualWords.length) return false;
+  const differing = usualWords.flatMap((word, index) => (word === nameWords[index] ? [] : [index]));
+  return differing.length > 0 && differing.every((index) => isSlipOf(usualWords[index] ?? "", nameWords[index] ?? "", isKnown));
 };
