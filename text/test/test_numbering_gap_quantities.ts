@@ -151,6 +151,18 @@ describe("a number closed by a dot is a label, even before a word that reads as 
     assert.equal(amountOf("5 ページ自身の通信"), true);
   });
 
+  it("「9　年間収入階級」: a number set off by an ideographic space is a label; a half-width space may still be an amount", () => {
+    assert.equal(amountOf("9　年間収入階級と五分位"), false);
+    assert.equal(amountOf("1.5　万人が参加した"), false);
+    assert.equal(amountOf("9 年間収入階級と五分位"), true);
+  });
+
+  it("日本語: 「###  9　年間収入階級」は 8 と 10 のあいだの番号で、抜けは無い", () => {
+    const section = (heading: string): string[] => [heading, "", "本文です。", ""];
+    const source = lines("# 用語", "", ...section("###  8　購入頻度"), ...section("###  9　年間収入階級"), ...section("###  10　住居の所有関係"));
+    assert.deepEqual(gapsOf(ja, source), []);
+  });
+
   it("without a language's reading of units, nothing is an amount", () => {
     const dotted = dottedNumber("1.5 万人", heading);
     assert.ok(dotted !== undefined);
