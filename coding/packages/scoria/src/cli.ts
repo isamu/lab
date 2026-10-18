@@ -103,7 +103,7 @@ const freezeIfNeeded = async (target: string, frozen: boolean, write: boolean, l
 const writeGithubSummary = async (report: Report, lang: Lang, enabled: boolean, diff?: ReportDiff): Promise<void> => {
   const path = process.env["GITHUB_STEP_SUMMARY"];
   if (!enabled || path === undefined || path === "") return;
-  await appendFile(path, renderGithubSummary(report, lang, diff), "utf8");
+  await appendFile(path, renderGithubSummary(report, lang, diff, SCORIA_VERSION), "utf8");
 };
 
 /** GitHub code scanning reads SARIF, which puts each finding inline on the changed lines. */

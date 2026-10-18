@@ -1,5 +1,6 @@
 import type { Finding, Severity } from "./plugin.ts";
 import type { Report } from "./report.ts";
+import { SCORIA_HOME } from "./home.ts";
 
 /**
  * The report as SARIF 2.1.0, for GitHub code scanning (spec §22.4).
@@ -10,7 +11,6 @@ import type { Report } from "./report.ts";
  */
 
 const SCHEMA = "https://json.schemastore.org/sarif-2.1.0.json";
-const INFORMATION_URI = "https://www.npmjs.com/package/scoria";
 
 type Level = "error" | "warning" | "note";
 
@@ -80,7 +80,7 @@ export const renderSarif = (report: Report, version: string): string =>
             driver: {
               name: "scoria",
               version,
-              informationUri: INFORMATION_URI,
+              informationUri: SCORIA_HOME,
               rules: rulesIn(report.findings),
             },
           },
