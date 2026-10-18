@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtemp, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { BASELINE_PATH, changedTools, readBaseline, writeBaseline } from "../packages/scoria/src/baseline.ts";
+import { BASELINE_PATH, changedTools, forCommit, readBaseline, writeBaseline } from "../packages/scoria/src/baseline.ts";
 import { buildReport } from "../packages/scoria/src/report.ts";
 import type { ProbeResult } from "../packages/scoria/src/plugin.ts";
 import type { Rubric } from "../packages/scoria/src/rubric.ts";
@@ -68,4 +68,21 @@ test("a corrupt baseline is ignored rather than crashing the run", async () => {
   const { writeFile } = await import("node:fs/promises");
   await writeFile(join(root, BASELINE_PATH), "{ not json", "utf8");
   assert.equal(await readBaseline(root), undefined);
+});
+
+/** The file is committed; a machine's absolute path in it would differ with whoever recorded it. */
+test("a written baseline carries no absolute path to the project", async () => {
+  const root = await emptyDir();
+  const report = buildReport(root, [], [resultWith(200, {})], rubrics);
+  const path = await writeBaseline(root, report);
+  const text = await readFile(path, "utf8");
+  assert.ok(!text.includes(root), "the recording machine's directory leaked into the baseline");
+  assert.equal((await readBaseline(root))?.report.root, ".");
+});
+
+test("forCommit changes the location and nothing else", () => {
+  const report = buildReport("/home/someone/project", [], [resultWith(200, {})], rubrics);
+  const committed = forCommit(report);
+  assert.equal(committed.root, ".");
+  assert.deepEqual({ ...committed, root: report.root }, report);
 });
