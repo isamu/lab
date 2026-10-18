@@ -2,6 +2,31 @@
 
 Newest first.
 
+## 0.4.1 — 2026-10-18
+
+A way to put scoria on any repository's README, and a trail from that badge back to scoria.
+
+### Added
+
+- **A reusable workflow** (#1463), `isamu/lab/.github/workflows/scoria-measure.yml`. A repository
+  calls it in a few lines and gets the measurement, the findings on code scanning, and a shields.io
+  badge committed to a `badges` branch. The project's own code runs only in a read-only job; the
+  upload and the badge are separate jobs that run none of it, and the badge job runs only on a push
+  to the default branch. A failed ratchet still publishes its SARIF and badge before the run fails.
+  Callers pin it to a commit SHA, since they hand it write permissions. The README documents the
+  inputs, npm and nested-lockfile settings, and what it needs: a public repository, a `badges`
+  branch no ruleset blocks, and `contents: write` allowed.
+- **The job summary ends with where scoria comes from** (#1467): the version, a link to the npm
+  package, and `npx scoria`. A README badge links to that summary, so a reader who has never heard
+  of scoria now has a way to it.
+
+### Fixed
+
+- **A recorded baseline carries no absolute path** (#1469). `.scoria/baseline.json` stored the
+  directory it was recorded in, which published one machine's layout into the repository and
+  changed with whoever recorded it. It now stores `"."`; nothing read the stored path, so existing
+  baselines still compare as before and lose theirs the next time they are recorded.
+
 ## 0.4.0 — 2026-10-18
 
 Confidence that means something, a type check that can read Vue, and a chart whose labels can be
