@@ -1,0 +1,35 @@
+# 組織の名前のすぐ後ろに付く役職（日本博物館協会会長、都道府県教育委員会教育長、国公私立高等専門学校長）。
+# max-kanji-continuous は、残りが組織の語（organisation-unit）か法人格（organisation-form）で閉じるときだけ、この語を数えない。
+# 長い方を先に試す（大学共同利用機関法人機構長は「機構長」を外し、法人格で閉じる）。
+id: addressee-title
+language: ja
+entries:
+  - pattern: 長
+  - pattern: 会長
+  - pattern: 副会長
+  - pattern: 理事長
+  - pattern: 副理事長
+  - pattern: 代表理事
+  - pattern: 理事
+  - pattern: 次長
+  - pattern: 事務局長
+  - pattern: 副学長
+  - pattern: 副所長
+  - pattern: 教育長
+  - pattern: 機構長
+  - pattern: 総長
+  - pattern: 学長
+  - pattern: 校長
+  - pattern: 所長
+  - pattern: 館長
+  - pattern: 院長
+  - pattern: 園長
+  - pattern: 局長
+  - pattern: 部長
+  - pattern: 課長
+  - pattern: 室長
+  - pattern: 委員長
+  - pattern: 議長
+  - pattern: 社長
+  - pattern: 頭取
+  - pattern: 総裁
