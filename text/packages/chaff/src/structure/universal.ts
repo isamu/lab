@@ -28,7 +28,7 @@ const dottedGroups = (line: string, context: NumberingContext): Readonly<Record<
 
 /**
  * closedByDot: 番号を点で閉じたか（「5. 」）。「1.5 万人」の 1.5 は閉じていない。wideGap: 番号と題の間に全角の空白を置いたか
- * （「9　年間収入階級」）。どちらも番号の札の書き方で、数量はそう書かない。
+ * （「9（全角空白）年間収入階級」）。どちらも番号の札の書き方で、数量はそう書かない。
  */
 type DottedLine = NumberedLine & { readonly closedByDot: boolean; readonly wideGap: boolean };
 
@@ -61,7 +61,7 @@ export const dottedNumber = (line: string, context: NumberingContext, plainText 
 
 /**
  * 番号の後ろが単位なら数量（「1.5 万人」「2.5 days」）。点で閉じた番号（「5. ページ自身の通信」「2. Days off」）と、全角の空白を
- * 置いた番号（「9　年間収入階級」）は札で、数量はそう書かないので、後ろに単位の語が来ても数量にしない。
+ * 置いた番号（「9（全角空白）年間収入階級」）は札で、数量はそう書かないので、後ろに単位の語が来ても数量にしない。
  */
 export const isAmount = (dotted: DottedLine, countedAfter: StructurePatterns["countedAfter"]): boolean =>
   !dotted.closedByDot && !dotted.wideGap && countedAfter?.(dotted.number, dotted.rest) === true;
