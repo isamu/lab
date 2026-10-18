@@ -1,0 +1,16 @@
+# 仮名で始まる単位や程度の語（3-5か月、約3-5つ、3-5ほど）。漢字の語に詰めて書いた番号の後ろに仮名が続けば文書の番号
+# （直資4－5ほか）と読むが、この語が続くなら範囲として読む（range-notation-consistency）。字面どおりに照らす。
+id: range-kana-unit
+language: ja
+entries:
+  - pattern: か月
+  - pattern: かげつ
+  - pattern: か所
+  - pattern: か国
+  - pattern: か年
+  - pattern: か条
+  - pattern: つ
+  - pattern: ほど
+  - pattern: くらい
+  - pattern: ぐらい
+  - pattern: まで

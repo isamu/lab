@@ -49,6 +49,25 @@ describe("range-notation-consistency: 範囲の記号が混ざっている", () 
     );
   });
 
+  it("漢字の語に詰めた番号で後ろが仮名なもの（文書の番号）と、行の終わりのものは読まない。単位が続けば範囲", () => {
+    assert.deepEqual(rangesOf("総務5-2ほか2課共同の通知と、人事4-7の規程"), []);
+    assert.deepEqual(rangesOf("総務3-7\n人事2-18\n"), []);
+    assert.deepEqual(rangesOf("毎年4-5月、約3-5日、期間は 3-5 か月"), ["4-5=-", "3-5=-", "3-5=-"]);
+    const kanaUnits = ["か月", "か所", "つ", "ほど"];
+    const written = rangesIn("約3-5か月、毎日3-5か所、約3-5 つ、各2-3ほど、総務5-2ほか", MARKS, AMBIGUOUS, [], kanaUnits).map((range) => range.written);
+    assert.deepEqual(written, ["3-5", "3-5", "3-5", "2-3"]);
+  });
+
+  it("仮名で始まる単位（か月）の範囲は、語彙表から読んで記号の混ざりを言う", () => {
+    const source = "期間は 10〜20 日、所要は 30〜40 分、費用は 500〜800 円、休みは約3-5か月です。\n";
+    assert.deepEqual(findingsOf(source), ["範囲を「3-5」と書いています（この文書はふつう「10〜20」のように書きます。4 箇所のうち 1 箇所が違う）"]);
+  });
+
+  it("番号の文書でも、文の中の範囲の記号の混ざりは言う", () => {
+    const source = "総務5-2ほか2課共同の通知による。定員は 10〜20 名、所要は 30〜40 分、費用は 500〜800 円、対象は 6-12 歳です。\n";
+    assert.deepEqual(findingsOf(source), ["範囲を「6-12」と書いています（この文書はふつう「10〜20」のように書きます。4 箇所のうち 1 箇所が違う）"]);
+  });
+
   it("少ないほうが三分の一を超えるか、同じ数なら使い分けと読む", () => {
     assert.equal(formMinority(rangesIn("10〜20人、30〜40人、5-8人、6-9人、1〜2人", MARKS, AMBIGUOUS), NORMAL_LIMIT), undefined);
     assert.equal(formMinority(rangesIn("10〜20人、5-8人", MARKS, AMBIGUOUS), NORMAL_LIMIT), undefined);
