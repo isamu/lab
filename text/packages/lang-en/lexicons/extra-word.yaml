@@ -36,7 +36,9 @@ entries:
   - pattern: cli
   - pattern: codebase
   - pattern: codec
+  - pattern: combinator
   - pattern: config
+  - pattern: const
   - pattern: conveniens
   - pattern: counterparty
   - pattern: covid
@@ -125,6 +127,7 @@ entries:
   - pattern: param
   - pattern: params
   - pattern: parser
+  - pattern: partway
   - pattern: pauperis
   - pattern: payor
   - pattern: payout

@@ -55,6 +55,11 @@ describe("unknown-word: a word not in the dictionary, one letter from one that i
     assert.deepEqual(unknown("Read the guide on running evals over a model's outputs."), []);
   });
 
+  it("partway, combinators and const are known, but a typo among them is still reported", () => {
+    assert.deepEqual(unknown("The upload stopped partway, so the parser combinators marked the item const."), []);
+    assert.deepEqual(unknown("The upload stopped partwya through."), ['"partwya" is not in the dictionary; did you mean "partway"?']);
+  });
+
   it("the legal words of contracts are known, but a typo among them is still reported", () => {
     const contract = [
       "Monies held by the cedent are paid to the designee, and notice given by telecopy is effective.",
