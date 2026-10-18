@@ -36,6 +36,10 @@ describe("max-ten: 一文の読点", () => {
     assert.deepEqual(findingsOf(RULE, listed, "strict"), []);
     const noted = "入力項目は、名前（必須）、会社名（任意）、訪問先（任意）、人数（予定）、時刻（予定）、部署（任意）、連絡先（必須）です。\n";
     assert.deepEqual(findingsOf(RULE, noted, "strict"), []);
+    const quoted = "論点は、「人材」、「設備」、「予算」、「時期」、「体制」、「広報」、「評価」です。\n";
+    assert.deepEqual(findingsOf(RULE, quoted, "strict"), []);
+    const clauses = "担当者が、会議室で、新人に、「資料」を配り、内容を、丁寧に、説明し、帰りました。\n";
+    assert.deepEqual(findingsOf(RULE, clauses), ["一文に読点が 7 個あります（6 個まで）"]);
   });
 
   it("和文の中の英文の読点は、英語の語（名詞と読む）のあいだなので数えない", () => {
@@ -59,6 +63,16 @@ describe("separatesItems: 名詞と名詞のあいだの読点", () => {
     assert.deepEqual(commaKinds("名前（必須）、会社名を書く。"), [true]);
     assert.deepEqual(commaKinds("名前 、会社名を書く。"), [true]);
     assert.deepEqual(commaKinds("担当者が（本日）、説明した。"), [false]);
+  });
+
+  it("鉤括弧で引いた項目と、接頭詞の付いた名詞（第I）も項目の区切り。引用の後ろが助詞や副詞なら節の区切り", () => {
+    assert.deepEqual(commaKinds("「人材の確保」、「設備の更新」、『予算』の観点で見る。"), [true, true]);
+    assert.deepEqual(commaKinds("順に第I、第II、第III群と呼ぶ。"), [true, true]);
+    assert.deepEqual(commaKinds("彼は「了解」、と返した。"), [false]);
+    assert.deepEqual(commaKinds("「確認します」、そう言って帰った。"), [false]);
+    assert.deepEqual(commaKinds("資料を読み、第一に費用を見る。"), [false]);
+    assert.deepEqual(commaKinds("損害に対応するもの、「利用者」に関しては別に扱う。"), [false]);
+    assert.deepEqual(commaKinds("「計画は成功した」、「予算は足りない」と報告した。"), [false]);
   });
 });
 
