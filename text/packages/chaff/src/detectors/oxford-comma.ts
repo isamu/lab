@@ -47,6 +47,7 @@ import {
 } from "./list-view.ts";
 import { lowerBound, type TokenRange } from "./token-column.ts";
 import { followsPostcode } from "./postcode-end.ts";
+import { withoutCoordinateAdjective } from "./coordinate-adjective.ts";
 import { dashBreaks } from "./dash-break.ts";
 
 const EMPTY: TokenRange = { start: 0, end: 0 };
@@ -298,7 +299,7 @@ const opensContrast = (scope: ItemScope, item: TokenRange): boolean => CONTRAST.
 const listAt = (list: ItemList, at: number): boolean | undefined => {
   const { scope } = list;
   const afterItem = itemAfter(scope, at);
-  const items = fromParticiplePhrase(fromExample(afterClosedList(withoutLead(wholeList(list)))), afterItem);
+  const items = fromParticiplePhrase(fromExample(afterClosedList(withoutLead(withoutCoordinateAdjective(wholeList(list))))), afterItem);
   if (listContinues(scope, afterItem) || isAppositive(scope, at, items, afterItem) || insideLastItem(scope, at, items, afterItem)) return undefined;
   const last = lastOf(items);
   if (last !== undefined && opensContrast(scope, last.item)) return undefined;
