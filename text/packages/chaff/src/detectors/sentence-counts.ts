@@ -114,13 +114,17 @@ const CONJUNCTIVE = "SCONJ";
 /** The phrases ending in a prefatory が (繰り返しになりますが、〜の件でありますが): no contrast with what follows. */
 export const PREFATORY_LEXICON = "adversative-ga-prefatory";
 
+/** The phrases opening with a causal が (惧れるが故に): the parser reads that が as conjunctive, but it gives a reason, not a contrast. */
+export const CAUSAL_LEXICON = "adversative-ga-causal";
+
 /**
  * A sentence joining more than limit clauses with the lexicon's conjunctive particle (逆接の「が」), not the same word as a
- * case particle, and not inside a prefatory phrase.
+ * case particle, and not inside a prefatory or a causal phrase.
  */
 export const sentenceConjunctiveCount: Detector = (doc, options): Finding[] => {
   const words = wordsOf(options.lexicon);
-  return sentencesOver(doc, options.limit, (token) => token.pos === CONJUNCTIVE && words.has(token.surface), doc.lexicons[PREFATORY_LEXICON] ?? []);
+  const notContrast = [...(doc.lexicons[PREFATORY_LEXICON] ?? []), ...(doc.lexicons[CAUSAL_LEXICON] ?? [])];
+  return sentencesOver(doc, options.limit, (token) => token.pos === CONJUNCTIVE && words.has(token.surface), notContrast);
 };
 
 type Opened = { readonly sentence: Sentence; readonly opener: string | undefined };

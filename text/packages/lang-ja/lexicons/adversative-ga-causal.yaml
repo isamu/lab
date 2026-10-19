@@ -1,0 +1,11 @@
+# 理由を言う「が」で始まる言い回し（惧れるが故に、勝たんがために）。古い連体の「が」で、後ろと対比しないので逆接ではない。
+# 解析器はこの「が」を接続助詞と読むので、adversative-ga-repeat はこの言い回しの中の「が」を数えない。
+id: adversative-ga-causal
+language: ja
+entries:
+  - pattern: が故に
+  - pattern: がゆえに
+  - pattern: が故の
+  - pattern: がゆえの
+  - pattern: がために
+  - pattern: が為に
