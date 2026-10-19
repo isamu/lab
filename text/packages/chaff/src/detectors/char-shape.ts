@@ -187,19 +187,16 @@ const surfaceWithin = (token: Token, span: Span): string =>
   token.surface.slice(Math.max(0, span.start - token.span.start), Math.max(0, span.end - token.span.start));
 
 /**
- * 連なりの、知っている語（頭の組織の名前、文書がほかで単独で使う組織の名前、連なりを閉じる決まった語）を外した残りのうち、最も長いもの。
- * 国連安全保障理事会改革は「改革」、安全保障理事会常任理事国は（安全保障理事会を単独で使う文書なら）「常任理事国」を数える。
+ * 連なりの、知っている語（文書がほかで単独で使う組織の名前、連なりを閉じる決まった語）を外した残りのうち、最も長いもの。
+ * 安全保障理事会常任理事国は（安全保障理事会を単独で使う文書なら）「常任理事国」、日本国内閣総理大臣は「日本国」を数える。
+ * 名前に普通の語が続く連なり（日本弁護士連合会臨時総会決議）は、名前がその文書で単独で使われていなければ、まるごと数える。
  */
 const longestUnknown = (tokens: readonly Token[], rest: Span, keptHead: string, context: RunContext): string => {
   const covering = coveringOf(tokens, rest);
   const words = covering.flatMap((index) => tokens.slice(index, index + 1).map((token) => surfaceWithin(token, rest)));
   const isKnown = (start: number, end: number): boolean => {
     const piece = words.slice(start, end).join("");
-    return (
-      context.terms.has(piece) ||
-      (end === words.length && context.words.knownWords.has(piece)) ||
-      (start === 0 && end < words.length && isOrganisationRun(tokens, covering.slice(start, end), context.words.organisation))
-    );
+    return context.terms.has(piece) || (end === words.length && context.words.knownWords.has(piece));
   };
   return unknownPieces(words, isKnown)
     .map((piece) => (piece.first ? keptHead + piece.text : piece.text))
