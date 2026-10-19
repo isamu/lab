@@ -2,6 +2,7 @@ import { type Atom, type AtomKind, type Extraction, type Unread } from "./atom.t
 import { compareAtoms, type Reformed } from "./match.ts";
 import { unwrittenNames } from "./written-names.ts";
 import { unstatedChanges } from "./distinct.ts";
+import { pairRespelled } from "./respelled.ts";
 
 /** One document as compared: where it is, how many facts of each kind it states, and what could not be read. */
 export type Side = {
@@ -19,6 +20,8 @@ export type Outcome = {
   readonly dropped: readonly Change[];
   readonly added: readonly Change[];
   readonly reformed: readonly Reformed[];
+  /** A name whose spelling the rewrite corrected (Borrowmoney → BorrowMoney): one fact, so neither dropped nor added. */
+  readonly respelled: readonly Reformed[];
   /** No fact dropped or added, other than of a kind allowed to be. */
   readonly ok: boolean;
 };
@@ -67,14 +70,20 @@ const changesOf = (changes: readonly Atom[], own: Extraction, other: Extraction,
 /** What `chaff compare` reports: the comparison of two documents' facts, with the allowed kinds set aside. */
 export const outcomeOf = (before: Compared, after: Compared, allowed: Allowed = NOTHING_ALLOWED, counting: Counting = "as-stated"): Outcome => {
   const comparison = compareAtoms(before.extraction.atoms, after.extraction.atoms);
-  const dropped = marked(changesOf(comparison.dropped, before.extraction, after.extraction, counting), allowed.dropped);
-  const added = marked(changesOf(comparison.added, after.extraction, before.extraction, counting), allowed.added);
+  const respelling = pairRespelled(
+    changesOf(comparison.dropped, before.extraction, after.extraction, counting),
+    changesOf(comparison.added, after.extraction, before.extraction, counting),
+    before.extraction.nameText,
+  );
+  const dropped = marked(respelling.dropped, allowed.dropped);
+  const added = marked(respelling.added, allowed.added);
   return {
     before: sideOf(before.path, before.extraction),
     after: sideOf(after.path, after.extraction),
     dropped,
     added,
     reformed: comparison.reformed,
+    respelled: respelling.respelled,
     ok: [...dropped, ...added].every((change) => change.allowed),
   };
 };
