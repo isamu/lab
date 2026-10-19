@@ -1,0 +1,8 @@
+# A request not to do something ("Please do not submit comments by email.") forbids; there is nothing to finish by a date.
+id: request-prohibition
+language: en
+entries:
+  - pattern: do not
+  - pattern: don't
+  - pattern: never
+  - pattern: must not
