@@ -42,8 +42,8 @@ example:
       来週は、新しい担当者の紹介、先月から続く予算の見直し、春の本社移転の準備、秋の採用計画の確認、年末の懇親会の段取りを話し合います。そのため定例会議は二時間に延長します。
 
 not_flagged:
-  ja: 主題（名詞＋は）の無い文、鉤括弧で引いたものの中、上限までの距離は見ません。英語の文書には使いません。
-  en: Sentences with no topic (noun + は), quotations in 「」, and distances up to the limit are not counted. Not used on English documents.
+  ja: 主題（名詞＋は）の無い文、鉤括弧で引いたものの中、上限までの距離は見ません。主題の述語が先の節で閉じる文（「この計画は簡単ではありませんが、…」「〜であって、…」、後ろの節に別の主語がある「〜ではなく、」「〜であるため、」「〜ており、」、受け身で伝える引用「〜だと言われているが」）は、その節の終わりまでを数えます。英語の文書には使いません。
+  en: Sentences with no topic (noun + は), quotations in 「」, and distances up to the limit are not counted. When the topic gets its own predicate in an earlier clause (〜ではありませんが, 〜であって; 〜ではなく, 〜であるため or 〜ており followed by a clause with its own subject; a passive report 〜だと言われているが), the count stops at that clause's end. Not used on English documents.
 level_meaning:
   ja: 主題から述語まで {limit} 字まで
   en: up to {limit} characters between the topic and the predicate
