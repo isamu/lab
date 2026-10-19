@@ -104,6 +104,14 @@ describe("topicDistance: 主題から述語まで", () => {
     assert.equal(topicDistance(tokensOf("当社は、今後も需要が拡大すると考えております。")), 17);
   });
 
+  it("文の述語まで数えるもの: 絞り込む「〜であって、〜者」、条件の中の主語、こと＋が、「〜とされていて」", () => {
+    const whole = (text: string): number | undefined => topicDistance(tokensOf(text));
+    assert.equal(whole("この制度は、仕事を探している人であって、支援が必要な者の就職を助けるものです。"), 31);
+    assert.equal(whole("業者は、帳簿を保存することが義務付けられており、客が閲覧を求めた場合、これに応じなければなりません。"), 45);
+    assert.equal(whole("人材の確保は、喫緊の課題となっており、仕組みを作ることが急務となっています。"), 29);
+    assert.equal(whole("大臣は、事務を機構に行わせることとされていて、機構は、基準を公表している。"), 31);
+  });
+
   it("空白は数えない", () => {
     assert.equal(topicDistance(tokensOf("会議は 明日に 延期します。")), topicDistance(tokensOf("会議は明日に延期します。")));
   });
