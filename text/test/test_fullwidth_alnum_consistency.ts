@@ -104,6 +104,43 @@ describe("fullwidth-alnum-consistency: 英数字の全角と半角が混ざっ�
     assert.deepEqual(findingsOf(`${PLAIN}画面には「２０２４年度」と出ます。\n`), []);
   });
 
+  // 厚生労働省の募集案内の形: 製品の名前は半角、連絡先の行は全角。
+  it("番号の札（ＴＥＬ：０３…）は番号の幅に従い、英字の票にしない", () => {
+    const notice =
+      "- パソコン（Excel、Word等）の操作ができること。\n\n担当：山田\nＴＥＬ：０３－１２３４－５６７８\n\nPDFを見るには、Adobe Readerが要ります。Adobe Readerは無料です。\n";
+    assert.deepEqual(findingsOf(notice), []);
+    assert.deepEqual(findingsOf(`${PLAIN}FAX:03-1234-5678 です。\n`), []);
+  });
+
+  it("番号の続かない全角の英字は今までどおり指摘する", () => {
+    const notice =
+      "- パソコン（Excel、Word等）の操作ができること。\n\n担当：山田\nＴＥＬは内線です。\n\nPDFを見るには、Adobe Readerが要ります。Adobe Readerは無料です。\n";
+    assert.deepEqual(findingsOf(notice), ["全角の「ＴＥＬ」と書いています（この文書はふつう半角の「TEL」。8 箇所のうち 1 箇所が違う）"]);
+  });
+
+  it("アポストロフィでつないだ英字の語のかけら（Van't Hoff の t）を、全角の一字と比べない", () => {
+    assert.deepEqual(findingsOf("Ａの雲とＢの丘とＣの林とＤの谷、そして Van't Hoff の雲と l'estudiantina を聞く。\n"), []);
+  });
+
+  it("一字の英字は今までどおり比べる", () => {
+    assert.deepEqual(findingsOf("Ａの雲とＢの丘とＣの林とＤの谷、そして E の谷。\n"), [
+      "半角の「E」と書いています（この文書はふつう全角の「Ｅ」。5 箇所のうち 1 箇所が違う）",
+    ]);
+  });
+
+  // 首相官邸の演説の形: 頁の頭の日付は半角、演説は全角。
+  const speech = "卒業生の諸君、おめでとう。１２月に着任し、２７名が配属されます。９時に集まり、７時に解散します。\n";
+
+  it("文書の頭の日付の行（更新日：令和7年9月27日）を、本文の数と比べない", () => {
+    assert.deepEqual(findingsOf(`# 祝辞\n\n更新日：令和7年9月27日 総理の演説・記者会見など\n\n${speech}`), []);
+    assert.deepEqual(findingsOf(`# 式辞\n\n令和8年8月15日\n\n${speech}`), []);
+  });
+
+  it("本文の中の日付、文になった頭の段落の日付は今までどおり比べる", () => {
+    assert.equal(findingsOf(`# 祝辞\n\n${speech}\n式は令和7年9月27日に開きました。\n`).length, 1);
+    assert.equal(findingsOf(`# 祝辞\n\n令和7年9月27日に式を開きました。\n\n${speech}`).length, 1);
+  });
+
   it("そろっていれば何も言わない", () => {
     assert.deepEqual(findingsOf(PLAIN), []);
   });

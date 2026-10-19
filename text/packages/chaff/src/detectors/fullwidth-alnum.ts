@@ -1,4 +1,4 @@
-import type { Detector, Finding, Sentence, Span } from "../plugin.ts";
+import type { Detector, Finding, ProseDocument, Sentence, Span } from "../plugin.ts";
 import { minorityWithin } from "../orthography.ts";
 import { QUOTATION_MARKS, isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { isCitation } from "./kutoten-consistency.ts";
@@ -48,6 +48,22 @@ const isInAddress = (text: string, start: number, end: number): boolean =>
   (text.charAt(start - 1) === "." && LETTER_BESIDE.test(text.charAt(start - 2))) ||
   (text.charAt(end) === "." && LETTER_BESIDE.test(text.charAt(end + 1)));
 
+/** アポストロフィでつないだ英字の語のかけら（Van't Hoff の t、l'estudiantina の l）。字の幅は語の言葉が決め、文書の書き方の票ではない。 */
+const APOSTROPHE = /['’]/u;
+
+const isInApostropheWord = (text: string, start: number, end: number): boolean =>
+  (APOSTROPHE.test(text.charAt(start - 1)) && LETTER_BESIDE.test(text.charAt(start - 2))) ||
+  (APOSTROPHE.test(text.charAt(end)) && LETTER_BESIDE.test(text.charAt(end + 1)));
+
+/**
+ * 番号の札（ＴＥＬ：０３－…、FAX:03-…）。英字の後ろにコロンと、同じ幅の数字が続く。札は番号と一続きに一つの幅で書くので、
+ * 番号の書き方に従い、英字の書き方の票にはしない。
+ */
+const NUMBER_AFTER = { fullwidth: /^\s*[：:]\s*[０-９]/u, halfwidth: /^\s*[：:]\s*\d/u };
+
+const isNumberLabel = (text: string, end: number, run: string): boolean =>
+  LETTER.test(run) && NUMBER_AFTER[FULLWIDTH.test(run) ? "fullwidth" : "halfwidth"].test(text.slice(end));
+
 /** 英字の後ろに数字を続けた名前（TLS1、Python3）と、その後ろの点でつないだ番号（Python3.12）。版の番号の頭になる。 */
 const VERSION_SO_FAR = /[A-Za-zＡ-Ｚａ-ｚ][0-9０-９]+(?:\.[0-9０-９]+)*$/u;
 
@@ -76,6 +92,8 @@ export const alnumRunsIn = (sentence: Sentence, source: string): AlnumRun[] => {
     .filter((match) => !isLabel(sentence.text, match.index, match.index + match[0].length))
     .filter((match) => !isListItemNumber(source, sentence.span.start + match.index))
     .filter((match) => !isInAddress(sentence.text, match.index, match.index + match[0].length))
+    .filter((match) => !isInApostropheWord(sentence.text, match.index, match.index + match[0].length))
+    .filter((match) => !isNumberLabel(sentence.text, match.index + match[0].length, match[0]))
     .filter((match) => !continuesVersion(sentence.text, match.index, match[0]))
     .map((match) => ({ kind: kindOf(match[0]), fullwidth: FULLWIDTH.test(match[0]), written: match[0], offset: sentence.span.start + match.index }));
 };
@@ -99,6 +117,15 @@ const HALFWIDTH_LOWER = /[a-z]/u;
  */
 const isHalfwidthEnglishWord = (run: AlnumRun): boolean => run.kind === "letters" && !run.fullwidth && HALFWIDTH_LOWER.test(run.written);
 
+/** 日付で始まり、句点の無い段落（更新日：令和7年9月27日 総理の演説…、令和8年8月15日）。 */
+const DATELINE = /^(?:[^\s：:]{1,6}[：:]\s*)?\S{0,2}[0-9０-９]{1,4}年[0-9０-９]{1,2}月[0-9０-９]{1,2}日[^。]*$/u;
+
+/** 文書の最初の段落が日付の行なら、その範囲。ページや配信が付ける日付で、書き手の数の書き方ではない。 */
+const datelineOf = (doc: ProseDocument): Span | undefined => {
+  const first = doc.paragraphs[0];
+  return first !== undefined && DATELINE.test(doc.source.slice(first.span.start, first.span.end).trim()) ? first.span : undefined;
+};
+
 const findingOf = ({ sentence, run }: Located, count: number, of: number, limit: number): Finding => ({
   rule: "",
   severity: "warning",
@@ -115,8 +142,10 @@ const findingOf = ({ sentence, run }: Located, count: number, of: number, limit:
  * どちらが正しいかは決めない。
  */
 export const fullwidthAlnum: Detector = (doc, options): Finding[] => {
+  const dateline = datelineOf(doc);
   const located: Located[] = doc.sentences
     .filter((sentence) => sentence.embeddedLanguage === undefined && !isCitation(sentence, doc.source))
+    .filter((sentence) => dateline === undefined || !isWithinAny([dateline], sentence.span))
     .flatMap((sentence) => alnumRunsIn(sentence, doc.source).map((run) => ({ sentence, run })));
   return KINDS.flatMap((kind) => {
     const ofKind = located.filter(({ run }) => run.kind === kind);
