@@ -16,7 +16,7 @@ crs-rl32781-salt  5
 da-ai-advisory-board-1  10
 da-priority-policy-program  3
 da-service-design-guidelines-2  4
-ecfr-16-cfr-310-telemarketing  7
+ecfr-16-cfr-310-telemarketing  6
 fed-powell-2025-08-22-framework-review  1
 fomc-minutes-2025-07  3
 fr-2026-16371-nvd-rfi  2
@@ -44,7 +44,7 @@ nws-glossary-a  9
 ppc-guidelines-tsusoku  3
 rfc3693-geopriv-requirements  17
 rfc9293-tcp  31
-rfc9457  11
+rfc9457  10
 ruby-3-4-0-released-ja  5
 rust-lang-minutes-2022-11-22  3
 rust-rfc-2094-nll  9

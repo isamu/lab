@@ -55,6 +55,8 @@ entries:
   - pattern: PNG
   - pattern: JPEG
   - pattern: GIF
+  - pattern: WAV
+  - pattern: MOV
   - pattern: SVG
   - pattern: QR
   - pattern: GPS

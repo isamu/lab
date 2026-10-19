@@ -14,6 +14,7 @@ import { conjugatedForms } from "./conjugated-form.ts";
 import { evidenceSpans, hasNumeral, isClaim, isLabelOnly, startsWithin, type AdviceWords } from "./concrete-evidence.ts";
 import { letteredIndexEntries } from "./lettered-index.ts";
 import { knownByDocument } from "./acronym-known.ts";
+import { grammarSpans } from "./abnf-grammar.ts";
 import { outlineLabelSpans } from "./outline-label.ts";
 import { hasPredicateIn } from "./gram-predicate.ts";
 import { gramPassagesOf } from "./gram-passages.ts";
@@ -218,8 +219,13 @@ const REQUIREMENT_WORD = new RegExp(
   "gu",
 );
 
-/** - か . で繋がり、数字を含む識別子（AC-2、MS.TEAMS.1.1v1）。大文字の部品は略語ではない。 */
-const IDENTIFIER = /(?<![A-Za-z0-9_&.-])[A-Z0-9][A-Za-z0-9]*(?:[.-][A-Z0-9][A-Za-z0-9]*)+/gu;
+/**
+ * - か . で繋がり、数字を含む識別子（AC-2、MS.TEAMS.1.1v1、REC-webstorage-20160419）。大文字の部品は略語ではない。
+ * - の後ろの部品は小文字で始まってもよい。
+ */
+const IDENTIFIER = /(?<![A-Za-z0-9_&.-])[A-Z0-9][A-Za-z0-9]*(?:\.[A-Z0-9][A-Za-z0-9]*|-[A-Za-z0-9][A-Za-z0-9]*)+/gu;
+/** 識別子の頭の大文字を、その前にもう一度書いた語（WD WD-CSP3-20160913、CR CR-referrer-policy-20170126）。識別子の種類の印。 */
+const IDENTIFIER_KIND = /(?<![A-Za-z0-9_&.-])(?<kind>[A-Z]{2,}) \k<kind>-(?=[A-Za-z0-9-]*\d)[A-Za-z0-9-]+(?![\w&])/gu;
 
 /** Creative Commons のライセンス名。CC と BY は 1 つの名前の部品。 */
 const LICENCE = new RegExp(String.raw`${EDGE_BEFORE}CC BY(?:-(?:SA|NC|ND))*${EDGE_AFTER}`, "gu");
@@ -231,6 +237,7 @@ const spanOf = (match: RegExpExecArray): Span => ({ start: match.index, end: mat
 const spansOf = (text: string, notation: NotAcronymSpans): Span[] => [
   ...[...text.matchAll(UNCASED_STRETCH)].filter((match) => SHOUTED_RUN.test(match[0])).map(spanOf),
   ...[...text.matchAll(IDENTIFIER)].filter((match) => /\d/u.test(match[0])).map(spanOf),
+  ...[...text.matchAll(IDENTIFIER_KIND)].map(spanOf),
   ...[SHOUTED_PAIR, QUOTED_CAPS, REQUIREMENT_WORD, LICENCE].flatMap((pattern) => [...text.matchAll(pattern)].map(spanOf)),
   ...notation(text),
 ];
@@ -347,6 +354,7 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   const counted = outsideSpans(acronymsOf(doc, notationOf(doc)), [
     ...referenceListSpans(doc.source, patternsOf(doc, "reference-list-heading")),
     ...outlineLabelSpans(doc.source, patternsOf(doc, "numbered-division")),
+    ...grammarSpans(doc.source),
   ]);
   // リンク先のページの題名の略語（[NASA Fprime AI Policy](https://…)）は、読み手が出会う説明の無い略語として数に入れるが、
   // 書き手が直せないので指さない。
