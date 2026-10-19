@@ -18,6 +18,7 @@ import { entriesForGenre } from "../lexicon-genres.ts";
 import { asNounWhereNominal, documentNounKeys } from "../nominal-stem.ts";
 import { isCompoundHead } from "../compound-head.ts";
 import { leadingLabelSpans } from "../leading-label.ts";
+import { mentionedSpellingSpans } from "../spelling-mention.ts";
 
 /**
  * A word found in the document: where it is, which sentence it is in, its key and spelling, how it is written when that differs, and
@@ -45,6 +46,7 @@ const MIN_LATIN_KEY = 3;
 
 /** Lexicons: readings and spellings whose kanji and kana forms mean different things (成る and なる, 者 and もの), and adverbs hiragana-fukushi reads. */
 const DISTINCT = "orthographic-variant-distinct";
+const SPELLING_MENTION = "spelling-mention";
 const FUKUSHI = "hiragana-fukushi";
 /** Lexicon: idioms written as noun, particle and verb (気をつける). The verb there is compared apart from the verb on its own. */
 const IDIOM = "orthographic-variant-idiom";
@@ -70,7 +72,13 @@ const patternsOf = (doc: ProseDocument, id: string, genre: string | undefined): 
  * The team's names, the company forms (株式会社, ㈱) a registered company name is written next to, and the links that quote an
  * outside page's title (link-title.ts), placed in the source.
  */
-type Names = { readonly team: readonly string[]; readonly companyForms: readonly string[]; readonly linkTitles: readonly Span[] };
+type Names = {
+  readonly team: readonly string[];
+  readonly companyForms: readonly string[];
+  readonly linkTitles: readonly Span[];
+  /** Phrases that say a word is also spelled another way (とも書く): the bracketed words before them are spellings mentioned. */
+  readonly mentions: readonly string[];
+};
 
 /** Spans placed in the source, placed in a sentence's text instead. */
 const inSentence = (sentence: Sentence, spans: readonly Span[]): Span[] =>
@@ -78,8 +86,8 @@ const inSentence = (sentence: Sentence, spans: readonly Span[]): Span[] =>
 
 /**
  * Whether a stretch of the sentence is outside a quotation, the team's names, a company's name (関東珪曹硝子㈱), a reading in
- * brackets (HTTP（えいちてぃーてぃーぴー）) and a label opening the sentence (（答）): the first three keep their own spelling,
- * a reading is not a spelling at all, and a label is a fixed short form.
+ * brackets (HTTP（えいちてぃーてぃーぴー）), a label opening the sentence (（答）) and a spelling mentioned (（曇）とも書く): the first
+ * three keep their own spelling, a reading is not a spelling at all, a label is a fixed short form, and a mention is the subject.
  */
 const isOpenIn = (sentence: Sentence, names: Names): IsOpen => {
   const closed = [
@@ -88,6 +96,7 @@ const isOpenIn = (sentence: Sentence, names: Names): IsOpen => {
     ...japaneseCompanyNameSpans(sentence.text, names.companyForms),
     ...inSentence(sentence, names.linkTitles),
     ...leadingLabelSpans(sentence.text),
+    ...mentionedSpellingSpans(sentence.text, names.mentions),
   ];
   const named = nameSpans(sentence.text, names.team);
   return (start, end) => !isWithinAny(closed, { start, end }) && !touchesAny(named, start, end);
@@ -403,6 +412,7 @@ export const orthographicVariant: Detector = (doc, options): Finding[] => {
     team: doc.names ?? [],
     companyForms: (doc.lexicons["company-form"] ?? []).map((entry) => entry.pattern),
     linkTitles: externalLinkTitleSpans(doc.source, doc.links),
+    mentions: (doc.lexicons[SPELLING_MENTION] ?? []).map((entry) => entry.pattern),
   };
   const placed: Place[] = [
     ...doc.sentences.map((sentence) => ({ sentence, isOpen: isOpenIn(sentence, names), readsLatin: true })),
