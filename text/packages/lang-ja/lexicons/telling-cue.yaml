@@ -1,0 +1,12 @@
+# 引用した言葉を、誰がいつ言ったかを名指す語。「申し込んだら、「…」と言われています」「業者から「…」と言われている」の
+# 「と言われている」は、名前の無い大勢の説ではなく、その場で相手から言われた言葉。weasel-word はこの形の言い回しを指さない。
+# group: occasion は引用より前のどこかにあれば、言われた場面を名指す（〜たら、・〜ところ、）。group: sayer は引用の直前に
+# あれば、言った人を名指す（業者から「）。
+id: telling-cue
+language: ja
+entries:
+  - { pattern: たら、, group: occasion }
+  - { pattern: だら、, group: occasion }
+  - { pattern: ところ、, group: occasion }
+  - { pattern: から, group: sayer }
+  - { pattern: より, group: sayer }

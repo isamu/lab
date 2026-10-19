@@ -1,0 +1,6 @@
+# Words that name who said a quotation, or when (in Japanese, 申し込んだら、「…」と言われています). The English phrases weasel-word
+# reads ("many experts say", "studies show") do not report a quotation, so there are none; the list exists so both languages
+# name the same lists.
+id: telling-cue
+language: en
+entries: []

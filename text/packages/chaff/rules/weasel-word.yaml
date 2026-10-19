@@ -1,8 +1,9 @@
 id: weasel-word
 layer: L2
 status: stable
-how_to_find: phrase-match
+how_to_find: weasel-word
 word_list: weasel-word
+extra_word_lists: [telling-cue]
 requires: [pos]
 languages: [ja, en]
 severity: info
@@ -48,8 +49,8 @@ example:
       A 2023 Stanford study of 1,600 staff found remote work raised output by 4%.
 
 not_flagged:
-  ja: 一覧にある言い回しだけを見ます。すぐ後ろに出典が書いてあっても指摘します（文の中で研究の名前を言えるため）。日本語では、前に出典が来やすい「研究によると」「専門家によると」は「ある」「最近の」「多くの」が付いた形だけを、「と言われる」は「と言われている」だけを見ます（「よく言われる話」のように言い回しを話題にするものは見ません）。「一般的に」だけでは指しません。
-  en: Only the phrases on chaff's list are checked. A citation right after the phrase does not silence it, since the sentence can name the study itself. In Japanese, 研究によると and 専門家によると, which often follow their source, are checked only as ある・最近の・多くの forms, と言われる only as と言われている (not よく言われる, which mostly talks about the saying itself), and 一般的に alone is not checked.
+  ja: 一覧にある言い回しだけを見ます。すぐ後ろに出典が書いてあっても指摘します（文の中で研究の名前を言えるため）。日本語では、前に出典が来やすい「研究によると」「専門家によると」は「ある」「最近の」「多くの」が付いた形だけを、「と言われる」は「と言われている」だけを見ます（「よく言われる話」のように言い回しを話題にするものは見ません）。「一般的に」だけでは指しません。その場で相手から言われた言葉を引用して伝える形（「申し込んだら、「…」と言われています」「業者から「…」と言われている」）も、言った人がいるので指しません。
+  en: Only the phrases on chaff's list are checked. A citation right after the phrase does not silence it, since the sentence can name the study itself. In Japanese, 研究によると and 専門家によると, which often follow their source, are checked only as ある・最近の・多くの forms, と言われる only as と言われている (not よく言われる, which mostly talks about the saying itself), and 一般的に alone is not checked. Nor is a quotation reported as told on an occasion or by a named sayer (申し込んだら、「…」と言われています, 業者から「…」と言われている), since someone did say it.
 level_meaning:
   ja: 当てはまる言い回しが {limit} 箇所あれば指摘
   en: reported once there are {limit}
