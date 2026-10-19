@@ -18,3 +18,5 @@ entries:
     position: before
   - pattern: のなかで
     position: before
+  - pattern: の中では
+    position: before

@@ -20,6 +20,7 @@ describe("unqualified-superlative: the set named right before the superlative", 
       "物価の上がり方は、Ｇ７の中で最も低い水準にあります。",
       "賃金の伸びは、先進国の中で最も高い水準です。",
       "参加国のなかで最も早く手続きを終えました。",
+      "この町の中では最も古い店です。",
     ].forEach((sentence) => assert.equal(superlativeReported(ja, sentence), false, sentence));
   });
 
