@@ -4,8 +4,8 @@ import type { LexiconEntry, Section, Sentence } from "../plugin.ts";
 // are not in the writer's voice. The heading words come from the language's asker-heading lexicon. Pure.
 
 /** Marks around a heading's words (【相談事例等】, ［ご質問内容］, a trailing colon); they are not part of the words. */
-const OPENING: ReadonlySet<string> = new Set([..." \t\u3000【〔［[（(「『"]);
-const CLOSING: ReadonlySet<string> = new Set([..." \t\u3000】〕］]）)」』:："]);
+const OPENING: ReadonlySet<string> = new Set(" \t\u3000【〔［[（(「『");
+const CLOSING: ReadonlySet<string> = new Set(" \t\u3000】〕］]）)」』:：");
 
 const headingWords = (section: Section): string => {
   const chars = [...(section.unlabeledHeading ?? section.heading)];
