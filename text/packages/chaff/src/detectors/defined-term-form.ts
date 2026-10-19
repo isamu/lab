@@ -43,10 +43,14 @@ const firstDefinitions = (terms: readonly DefinedTerm[]): { readonly term: Defin
   return [...groups.values()];
 };
 
+/** Where a quoted use's closing quote stands: right after the term and its ending (「Services」 for Service). */
+const closingAt = (source: string, term: string, offset: number): number =>
+  offset + term.length + (WORD_ENDING.exec(source.slice(offset + term.length, offset + term.length + 2))?.[0].length ?? 0);
+
 /** A use of the term set in quotes again after its definition: 「本サービス」 where 本サービス was defined. */
 export const quotedUses = (source: string, term: string, uses: readonly number[], definedAt: number): number[] =>
   uses.filter((offset) => {
-    const after = offset + term.length + (WORD_ENDING.exec(source.slice(offset + term.length, offset + term.length + 2))?.[0].length ?? 0);
+    const after = closingAt(source, term, offset);
     return (
       offset > definedAt &&
       OPENING_QUOTES.has(source.charAt(offset - 1)) &&
@@ -161,7 +165,9 @@ const quotedFindings = (doc: ProseDocument, term: DefinedTerm, uses: readonly nu
   const cues = patternsOf(doc, "term-mention-cue");
   const wording = wordingCuesOf(doc.lexicons["quoted-wording-cue"] ?? []);
   return quotedUses(doc.source, term.term, uses, definingEnd)
-    .filter((offset) => !isNamedAsTerm(doc.source, offset - 1, cues) && !quotesWording(doc.source, offset - 1, offset + term.term.length, wording))
+    .filter(
+      (offset) => !isNamedAsTerm(doc.source, offset - 1, cues) && !quotesWording(doc.source, offset - 1, closingAt(doc.source, term.term, offset), wording),
+    )
     .map((offset) => finding(doc, "defined-term-form", offset, "quoted", { term: term.term, line: term.line }));
 };
 
