@@ -1,6 +1,7 @@
 import type { Detector, Finding, Lexicon, Sentence, Token } from "../plugin.ts";
 import { citedNamesOf, endsCitedName } from "./cited-name.ts";
 import { doubledAcrossAside } from "./doubled-across-aside.ts";
+import { furiganaSpans } from "../furigana.ts";
 
 /**
  * 語を書き損じて二度書いた（the the / 資料をを）。消し忘れと、書き換えの途中で残った語（our the platform）の二つ。
@@ -153,6 +154,12 @@ const DOCUMENT_KIND = "document-kind";
 /** 冠詞のような語で始まる決まった句。語彙表はアダプタが持つ。冠詞の無い言語（日本語）は持たない。 */
 const FIXED_PHRASE = "fixed-phrase";
 
+/** 語の読みの括弧（凛々（りり）しい）の中の重なり。読みは語の書き方ではなく、仮名を重ねて読む語もある。 */
+const inReading = (sentence: Sentence, doubled: Doubled): boolean =>
+  furiganaSpans(sentence.text).some(
+    (span) => sentence.span.start + span.start <= doubled.first.span.start && doubled.second.span.end <= sentence.span.start + span.end,
+  );
+
 export const doubledWord: Detector = (doc, options): Finding[] => {
   const spaced = doc.lengthUnit === "word";
   const allowed = options.lexicon ?? [];
@@ -161,7 +168,7 @@ export const doubledWord: Detector = (doc, options): Finding[] => {
   const phrases = doc.lexicons[FIXED_PHRASE] ?? [];
   return doc.sentences.flatMap((sentence) =>
     [...doubledIn(doc.source, sentence.tokens ?? [], spaced, allowed, phrases), ...(spaced ? [] : doubledAcrossAside(doc.source, sentence.tokens ?? []))]
-      .filter((doubled) => !endsCitedName(doubled.first, doubled.second, cited, kinds))
+      .filter((doubled) => !endsCitedName(doubled.first, doubled.second, cited, kinds) && !inReading(sentence, doubled))
       .map((doubled) => findingOf(sentence, doubled, spaced)),
   );
 };

@@ -42,5 +42,5 @@ example:
     after: We will send the file tomorrow.
 
 not_flagged:
-  ja: 品詞の違う同じ語、重ねて「それぞれの」を言う名詞（「個人個人」「一行一行」「毎年毎年」）、名詞や形容詞を重ねて強める形（「駄目駄目」「えらいえらい」）、仮名の擬音・擬態語（「ムクムク」「もちもち」）、同じ一字の仮名が三つ以上続く笑い声（「ははは」）、決まった言い回し（「などなど」「あるある」）、重ねて強める書き方（「そうそう」「very very」）は指しません。ほかの漢語の名詞の重なり（「確認確認」「資料資料」）、外来語の重なり（「ユーザーユーザー」）、三つ続く重なり（「早め早め早め」）は指します。英語で文法が許す重なり（had had、that that）も指しません。
-  en: Repeats that grammar allows ("had had", "that that"), repeats for emphasis ("very very"), and the same word in two different parts of speech are not reported.
+  ja: 品詞の違う同じ語、重ねて「それぞれの」を言う名詞（「個人個人」「一行一行」「毎年毎年」）、名詞や形容詞を重ねて強める形（「駄目駄目」「えらいえらい」）、仮名の擬音・擬態語（「ムクムク」「もちもち」）、同じ一字の仮名が三つ以上続く笑い声（「ははは」）、決まった言い回し（「などなど」「あるある」）、重ねて強める書き方（「そうそう」「very very」）は指しません。ほかの漢語の名詞の重なり（「確認確認」「資料資料」）、外来語の重なり（「ユーザーユーザー」）、三つ続く重なり（「早め早め早め」）は指します。英語で文法が許す重なり（had had、that that）も指しません。語の後ろの括弧書きの読み（凛々（りり）しい）の中の仮名の重なりも指しません。
+  en: Repeats that grammar allows ("had had", "that that"), repeats for emphasis ("very very"), and the same word in two different parts of speech are not reported. Nor is kana repeated inside a Japanese reading in parentheses (凛々（りり）しい).
