@@ -47,6 +47,7 @@ import {
 } from "./list-view.ts";
 import { lowerBound, type TokenRange } from "./token-column.ts";
 import { followsPostcode } from "./postcode-end.ts";
+import { dashBreaks } from "./dash-break.ts";
 
 const EMPTY: TokenRange = { start: 0, end: 0 };
 
@@ -316,10 +317,13 @@ export const listVerdicts = (tokens: readonly Token[], words: ListWords, source:
   if (!tokens.some(isJudgedConjunction)) return [];
   const sentence = listSentenceOf(tokens, words, source);
   const readItems = listReader(sentence);
+  const breaks = dashBreaks(tokens, source);
   return tokens.flatMap((token, at) => {
     if (!isJudgedConjunction(token, at)) return [];
     // 郵便番号で終わる住所のあとの and / or は、住所の行を区切る読点のあと。並びの読点ではない。
-    return [sentence.inCitedTitle(at) || followsPostcode(source, token.span.start) ? undefined : listAt(readItems(at), at)];
+    // 最後の読点のあとに前後を空けたダッシュがあれば（Washington, DC – The …）、読点はダッシュの前で閉じた日付行や見出しのもの。
+    const notList = sentence.inCitedTitle(at) || followsPostcode(source, token.span.start) || breaks[at] === true;
+    return [notList ? undefined : listAt(readItems(at), at)];
   });
 };
 

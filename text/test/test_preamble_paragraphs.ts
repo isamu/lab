@@ -132,4 +132,10 @@ describe("preamble-length と文でない段落", () => {
     const source = "# 表題\n\n結論：売上前年比5%増。\n\n二つ目です。\n\n三つ目です。\n\n## 本題\n\n中身です。\n";
     assert.equal(findingsFor(source, ja)[0]?.values["count"], 3);
   });
+  it("a letter or an email is not measured: its body comes before any heading, which only marks a reply block", () => {
+    const letter =
+      "Welcome to the team, Sam!\n\nWe are glad to offer you the job.\n\nYour salary is set out below.\n\nYou start on Monday.\n\n## Acceptance\n\nI accept this offer.\n";
+    assert.deepEqual(findingsFor(letter, en, "business/email"), []);
+    assert.equal(findingsFor(letter, en, "business/report")[0]?.values["count"], 4);
+  });
 });
