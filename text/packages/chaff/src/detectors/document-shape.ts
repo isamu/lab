@@ -117,21 +117,22 @@ export const ownWordsOf = (heading: string, citedTitleActions: readonly string[]
       citedTitleActions.some((action) => action !== "" && heading.startsWith(action, offset + quote.length)) ? QUOTED_NAME : quote,
     );
 
-/** A document identifier opening the heading: CA 23-6:, SR 26-8:, a series code and a number before a colon. */
-const IDENTIFIER_HEAD = /^\p{Lu}{1,6} ?\p{N}+[-–.]\p{N}+[:：]/u;
-/** Who the case concerns, in square brackets at the end (［厚生労働本省、2労働局］), then perhaps the case's number. */
-const BODIES_END = /[［【[][^［］【】[\]]+[］】\]] *(?:[(（]\p{N}+[)）])?$/u;
-/** The case's number in brackets at the end: …もの(83). */
-const CASE_NUMBER_END = /[(（]\p{N}+[)）]$/u;
+/** A document identifier opening the heading: a series code, then a year and a number joined by a hyphen (CA 23-6:). */
+const IDENTIFIER_HEAD = /^\p{Lu}{1,6} ?\p{N}{1,4}-\p{N}{1,4}[:：]/u;
+/** Full-width square brackets at the end: who the case concerns (［本省、2支局］), then perhaps the case's number. */
+const BRACKETED_END = /(?:［([^［］]+)］|【([^【】]+)】) *([(（]\p{N}{1,4}[)）])?$/u;
 
 /**
- * A heading that is an official title, the form others cite it by: it carries an identifier at its head, or the bodies
- * concerned or a case number at its end. Shortening it breaks the citation, so the finding says to keep it and put a
+ * A heading that is an official title, the form others cite it by: it carries an identifier at its head (CA 23-6:), or
+ * the bodies concerned in full-width brackets at its end, perhaps with the case's number (［本省、2支局］(12)). Shortening it breaks the citation, so the finding says to keep it and put a
  * short summary under it.
  */
 export const isOfficialTitle = (heading: string): boolean => {
   const words = heading.trim();
-  return IDENTIFIER_HEAD.test(words) || BODIES_END.test(words) || CASE_NUMBER_END.test(words);
+  const bracketed = BRACKETED_END.exec(words);
+  // A list of bodies (［本省、2支局］) or a case number after the bracket; one word in brackets (［初心者向け］) is an aside.
+  const bodiesOrCase = bracketed !== null && ((bracketed[1] ?? bracketed[2] ?? "").includes("、") || bracketed[3] !== undefined);
+  return IDENTIFIER_HEAD.test(words) || bodiesOrCase;
 };
 
 const variantOf = (heading: MarkupHeading, title: MarkupHeading | undefined): string | undefined => {
