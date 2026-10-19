@@ -4,7 +4,7 @@ import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { headingKey, repeatedSiblingHeadings } from "../packages/chaff/src/detectors/duplicate-heading.ts";
-import { insideRecordRhythm, recordLabelOf } from "../packages/chaff/src/detectors/heading-record-rhythm.ts";
+import { recordLabelOf, recordRhythmMask } from "../packages/chaff/src/detectors/heading-record-rhythm.ts";
 import type { MarkupHeading } from "../packages/chaff/src/plugin.ts";
 
 // 兄弟の見出しの重複（duplicate-heading）。例文はすべて自作。
@@ -201,10 +201,11 @@ describe("duplicate-heading: 同じ見出しが兄弟に二つある", () => {
     assert.equal(recordLabelOf("【事例（約款）】"), "【事例】");
     assert.equal(recordLabelOf("examples (draft)"), "examples");
     assert.equal(recordLabelOf("（注）"), "（注）");
-    assert.equal(insideRecordRhythm(["a", "b", "a", "b"], 2), true);
-    assert.equal(insideRecordRhythm(["a", "a", "a", "a"], 2), false);
-    assert.equal(insideRecordRhythm(["a", "b", "a"], 2), false);
-    assert.equal(insideRecordRhythm([], 0), false);
+    assert.deepEqual(recordRhythmMask(["a", "b", "a", "b"]), [true, true, true, true]);
+    assert.deepEqual(recordRhythmMask(["a", "a", "a", "a"]), [false, false, false, false]);
+    assert.deepEqual(recordRhythmMask(["a", "b", "a"]), [false, false, false]);
+    assert.deepEqual(recordRhythmMask(["x", "a", "b", "c", "a", "b", "c", "y"]), [false, true, true, true, true, true, true, false]);
+    assert.deepEqual(recordRhythmMask([]), []);
   });
 
   it("違う見出しなら何も言わない", () => {
