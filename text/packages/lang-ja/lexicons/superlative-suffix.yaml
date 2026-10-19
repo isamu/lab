@@ -1,0 +1,5 @@
+# 最上級の語に付いて別の語を作る接尾辞。「最大化する」は「最大にする」という動詞で、何かが一番だという主張ではない。
+id: superlative-suffix
+language: ja
+entries:
+  - pattern: 化

@@ -1,6 +1,7 @@
 // How much one sentence asks the reader to hold at once: brackets inside brackets, clauses chained one after another, and how
 // far the topic stands from the end where its predicate is. Pure: a sentence's text and tokens come in, numbers go out.
 import type { Token } from "./plugin.ts";
+import { topicClauseEnd } from "./topic-clause.ts";
 
 /**
  * Opening brackets and the mark that closes each. Quotation marks that open and close with the same character are left out, and
@@ -80,6 +81,7 @@ const TOPIC_BEFORE = new Set(["NOUN", "PRON", "PROPN"]);
 /**
  * How far the sentence's first topic (会議は, これは) stands from the end of the sentence, where Japanese puts the predicate the
  * topic belongs to, in characters of the words between them (spaces, and a link's address the document hides, are not read).
+ * When the topic gets its own predicate in an earlier clause (topicClauseEnd), the distance is to that clause's end.
  * undefined when the sentence has no topic. The distance is the reader's wait: everything between has to be held before the
  * topic is said to do anything.
  */
@@ -87,5 +89,5 @@ export const topicDistance = (tokens: readonly Token[]): number | undefined => {
   const topic = tokens.findIndex((token, at) => token.surface === "は" && token.pos === "ADP" && TOPIC_BEFORE.has(tokens[at - 1]?.pos ?? ""));
   const last = tokens.findLastIndex((token) => !TRAILING.has(token.pos));
   if (topic === -1 || last <= topic) return undefined;
-  return tokens.slice(topic + 1, last).reduce((sum, token) => sum + [...token.surface.replace(/\s/gu, "")].length, 0);
+  return tokens.slice(topic + 1, topicClauseEnd(tokens, topic, last) ?? last).reduce((sum, token) => sum + [...token.surface.replace(/\s/gu, "")].length, 0);
 };

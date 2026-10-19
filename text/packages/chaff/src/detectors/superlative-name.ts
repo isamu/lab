@@ -31,3 +31,13 @@ export const namesQuantity = (tokens: readonly Token[], range: TokenRange, quant
   const last = single ? lastJoined(tokens, range.end) : undefined;
   return last !== undefined && measures(last, quantities);
 };
+
+/**
+ * 最上級の名詞に空白を挟まず接尾辞が付いて、別の語になっているか（最大化・最大化する）。「最大にする」という動詞で、
+ * 何かが一番だという主張ではない。接尾辞は言語パッケージの語彙表が持つ。
+ */
+export const makesWord = (tokens: readonly Token[], range: TokenRange, suffixes: Lexicon): boolean => {
+  const last = tokens[range.end - 1];
+  const next = tokens[range.end];
+  return last !== undefined && next !== undefined && last.span.end === next.span.start && suffixes.some((entry) => entry.pattern === next.surface);
+};

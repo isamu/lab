@@ -101,8 +101,8 @@ example:
       The new pricing will be trialled from next month. We have not yet decided how to explain it to existing customers, or when to change the billing system. We will agree on a plan this week.
 
 not_flagged:
-  ja: 見出し、表のセル、コードは数えません。印刷版を文字にした文書が文の途中に残すページの印（「( printed page 52044)」「－ 12 －」）も数えません。法令や論文のように長い一文が普通の種類では、ジャンルが上限を長くします。
-  en: Headings, table cells and code are not counted, nor are the page markers a converted print edition leaves inside a sentence ("( printed page 52044)", "[[Page 52044]]"). Genres where long sentences are normal (statutes, papers) raise the limit.
+  ja: 見出し、表のセル、コードは数えません。印刷版を文字にした文書が文の途中に残すページの印（「( printed page 52044)」「－ 12 －」）も数えません。脚注の文献の記載（著者 (2025), "題," 出版者）は、その前に書き手が置いた言葉（For example, see …）だけを数えます。法令や論文のように長い一文が普通の種類では、ジャンルが上限を長くします。
+  en: Headings, table cells and code are not counted, nor are the page markers a converted print edition leaves inside a sentence ("( printed page 52044)", "[[Page 52044]]"). A footnote that is a bibliographic citation (authors (2025), "Title," publisher) counts only the words the writer puts before it ("For example, see …"). Genres where long sentences are normal (statutes, papers) raise the limit.
 level_meaning:
   ja: 一文 {limit} 字まで
   en: up to {limit} words in a sentence

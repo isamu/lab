@@ -74,5 +74,5 @@ example:
       Wear gloves.
 
 not_flagged:
-  ja: 親が違う見出しどうし（版ごとの「追加」「修正」、章ごとの「まとめ」）は比べません。Markdown の文書でだけ動きます。
-  en: Headings under different parents (each version's "Added" and "Fixed", each chapter's "Summary") are not compared. It runs on Markdown only.
+  ja: 親が違う見出しどうし（版ごとの「追加」「修正」、章ごとの「まとめ」）は比べません。事例ごとに決まった見出しの組（【相談事例】【回答】、Question と Answer）を同じ順でくり返す所も言いません。括弧の添え書き（【事例（約款）】）は除いて組を見ます。Markdown の文書でだけ動きます。
+  en: Headings under different parents (each version's "Added" and "Fixed", each chapter's "Summary") are not compared. A fixed set of labels repeated in the same order for each case (Question and Answer, 【相談事例】 and 【回答】) is not reported either; a qualifier in brackets (Case (terms)) is set aside when the set is read. It runs on Markdown only.

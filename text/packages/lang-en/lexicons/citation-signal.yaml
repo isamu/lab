@@ -1,0 +1,8 @@
+# Words that introduce a citation in a footnote ("For example, see Lisa Cook (2024), …", "See also …"). What comes before
+# the last of them is the writer's own sentence; what follows is the reference. Matched case-insensitively, as whole words.
+id: citation-signal
+language: en
+entries:
+  - pattern: see
+  - pattern: see also
+  - pattern: cf.
