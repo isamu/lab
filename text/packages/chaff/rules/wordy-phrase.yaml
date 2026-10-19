@@ -49,8 +49,8 @@ example:
       To save time, we met online. Because the room was booked, we stayed home.
 
 not_flagged:
-  ja: 一覧にある言い回しだけを見ます。契約や法令がわざと使う言い方（with regard to、prior to、in accordance with）は一覧に入れていません。日本語では、人の書いた文章でもふつうの「することができる」と、名詞として要る「必要性」は入れていません。翻訳調（を可能にする）は translationese-density が、「〜を行う」は nominalization が見ます。
-  en: Only the phrases on chaff's list are checked. Phrases that contracts and statutes use on purpose ("with regard to", "prior to", "in accordance with") are not on it. In Japanese, することができる, ordinary in human writing, and 必要性, which a noun phrase may need, are left out; translationese (を可能にする) is translationese-density's and 〜を行う is nominalization's.
+  ja: 一覧にある言い回しだけを見ます。契約や法令がわざと使う言い方（with regard to、prior to、in accordance with）と、決まりの及ぶ範囲を言う at all times（pets must be on a leash at all times）は一覧に入れていません。日本語では、人の書いた文章でもふつうの「することができる」と、名詞として要る「必要性」は入れていません。翻訳調（を可能にする）は translationese-density が、「〜を行う」は nominalization が見ます。
+  en: Only the phrases on chaff's list are checked. Phrases that contracts and statutes use on purpose ("with regard to", "prior to", "in accordance with") are not on it, nor is "at all times", which states the scope of a rule ("pets must be on a leash at all times"). In Japanese, することができる, ordinary in human writing, and 必要性, which a noun phrase may need, are left out; translationese (を可能にする) is translationese-density's and 〜を行う is nominalization's.
 level_meaning:
   ja: 回りくどい言い回しを含む文が {limit} 文あれば指摘
   en: reported once {limit} sentences hold one
