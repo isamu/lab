@@ -4,6 +4,7 @@ import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { isTooLongParagraph } from "../packages/chaff/src/paragraph-length.ts";
+import { contractionExtraWords } from "../packages/chaff/src/contraction-words.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
@@ -94,6 +95,48 @@ describe("max-paragraph-length (English)", () => {
     assert.deepEqual(findingsOf(`# Spacewalks\n\n${NASA_AIRLOCK}\n`, en, "blog/owned-media", { [RULE]: 3 }), ["7"]);
   });
 });
+
+describe("contractionExtraWords: the words a contraction stands for beyond the one written", () => {
+  const cases: readonly (readonly [string, number])[] = [
+    ["Don't write for a class.", 1],
+    ["Don’t write. It’s late. You’re right, we’ve said it, I’ll go, I’m here, I'd stay.", 7],
+    ["They can't and won't.", 2],
+    ["That's true; let's go; there's one.", 3],
+    ["The audience's level and the company’s plan.", 0],
+    ["Rock 'n' roll at o'clock with O'Donnell.", 0],
+    ["Do not write for a class.", 0],
+    ["", 0],
+  ];
+  cases.forEach(([text, extra]) => {
+    it(`${JSON.stringify(text)} has ${String(extra)}`, () => assert.equal(contractionExtraWords(text), extra));
+  });
+});
+
+// Self-written: seven sentences that sit at the length limit, with two contractions.
+const AT_THE_LIMIT = [
+  "Many writers believe that plain language means writing for a reader who knows nothing about the subject at hand.",
+  "That's not what it means.",
+  "Plain language means writing for the readers you actually have, with the words they already use every day.",
+  "Think about what your readers already know before you start.",
+  "Don't explain the basics to a room full of specialists who work with them all the time.",
+  "Explain them only when your readers are new to it.",
+  "Ask a colleague who knows your readers to read the draft.",
+].join(" ");
+
+describe("max-paragraph-length: expanding a contraction does not change the length", () => {
+  it("reports the paragraph the same with Don't and with Do not", () => {
+    const contracted = findingsOf(`# Plain language\n\n${AT_THE_LIMIT}\n`, en, "blog/owned-media");
+    const expanded = findingsOf(`# Plain language\n\n${AT_THE_LIMIT.replace("Don't", "Do not").replace("That's", "That is")}\n`, en, "blog/owned-media");
+    assert.deepEqual(contracted, expanded);
+    assert.deepEqual(contracted, ["7"]);
+  });
+
+  it("does not add to a Japanese length, which is in characters", () => {
+    assert.deepEqual(findingsOf(`# 見出し\n\n${SHORT_JA_FOR_CONTRACTIONS}\n`, ja, "blog/tech"), []);
+  });
+});
+
+const SHORT_JA_FOR_CONTRACTIONS = Array.from({ length: 8 }, (_, index) => `これは${String(index)}番目の文で、don't と書きます。`).join("");
 
 const SHORT_JA = Array.from({ length: 8 }, (_, index) => `これは${String(index)}番目の文です。`).join("");
 const LONG_JA = Array.from(
