@@ -25,3 +25,11 @@ entries:
   - { pattern: 場合, group: scope-condition }
   - { pattern: 際, group: scope-condition }
   - { pattern: とき, group: scope-condition }
+  # group: scope-topic は、述語で終わる節が説明する名詞のすぐ後ろの「は」（…を行う個人間融資は）。一覧はその名詞の説明の中にあって、
+  # 要求が何についてかを言っているだけで、果たす義務の中にはない。「は」の後ろに読点があるときだけ。
+  # group: scope-nominal は、その名詞が行い自体を名指すとき（提出することは、提出する義務は）。一覧は義務の中にある。
+  - { pattern: は, group: scope-topic }
+  - { pattern: こと, group: scope-nominal }
+  - { pattern: 義務, group: scope-nominal }
+  - { pattern: 責任, group: scope-nominal }
+  - { pattern: 必要, group: scope-nominal }

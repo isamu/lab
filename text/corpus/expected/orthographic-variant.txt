@@ -30,9 +30,8 @@ jma-yougo-kaze  1
 jp-2011-056072-seiu-kenyo-gasa  5
 jstage-jniph-74-1-2-rehabilitation  2
 jstage-jniph-74-2-119-wbgt  1
-kantei-221-shisei-hoshin  6
-kantei-unga81-general-debate-speech  1
-kokkai-217-sangiin-shohisha-7  22
+kantei-221-shisei-hoshin  5
+kokkai-217-sangiin-shohisha-7  23
 maff-kyodo-ryori-okaisan-ja  1
 mdn-using-fetch-ja  1
 mext-heatstroke-after-holidays  5
@@ -43,7 +42,7 @@ nsf-19-582-reu-solicitation  1
 nta-taxanswer-1120  2
 nws-glossary-a  2
 openapi-spec-3-1-0  2
-ppc-guidelines-tsusoku  11
+ppc-guidelines-tsusoku  10
 python-code-quality-list-2016-03  4
 qiita-jnchito-good-sample-code  4
 react-ja-thinking  3
