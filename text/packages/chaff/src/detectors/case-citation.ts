@@ -29,10 +29,16 @@ const secondParty = (joiner: string): RegExp =>
  * The court and year in parentheses right after a pin cite: a page after a comma or a reporter ("F.R.D. 335, 338 (SDNY 1952)")
  * or a docket number in parentheses ("(No. 14,692d) (CC Va. 1807)"). A number after a word ("Version 2 (RFC 8305)") is not a page.
  */
-const COURT_YEAR = /(?<=(?:[.,\]][ \t]+\d+|\))[ \t]+)\((?:\p{Lu}[\p{L}.]*[ \t]+){1,3}(?:1[6-9]|20)\d{2}\)/gu;
+const COURT_YEAR = /\((?:\p{Lu}[\p{L}.]*[ \t]){1,3}(?:1[6-9]|20)\d{2}\)/gu;
+/** How far before the court a pin cite is read: a page number and the mark before it. */
+const PIN_CITE_REACH = 12;
+const PIN_CITE_BEFORE = /(?:[.,\]] \d+|\)) $/u;
+
+const courtSpans = (text: string): Span[] =>
+  spansOf(text, COURT_YEAR).filter((span) => PIN_CITE_BEFORE.test(text.slice(Math.max(0, span.start - PIN_CITE_REACH), span.start)));
 
 export const caseCitationSpans = (text: string, joiners: readonly string[]): Span[] => {
-  const courts = spansOf(text, COURT_YEAR);
+  const courts = courtSpans(text);
   if (joiners.length === 0) return courts;
   const joiner = oneOf(joiners);
   return [...spansOf(text, firstParty(joiner)), ...spansOf(text, secondParty(joiner)), ...courts];
