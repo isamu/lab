@@ -4,7 +4,17 @@ status: stable
 how_to_find: agreement-slip
 requires: [pos]
 languages: [en]
-extra_word_lists: [singular-determiner, plural-determiner, invariant-noun, count-adjective, dependent-possessive, finite-auxiliary, misnumbered-phrase]
+extra_word_lists:
+  [
+    singular-determiner,
+    plural-determiner,
+    invariant-noun,
+    count-adjective,
+    dependent-possessive,
+    finite-auxiliary,
+    misnumbered-phrase,
+    determiner-after-article,
+  ]
 severity: warning
 
 name:
@@ -12,8 +22,8 @@ name:
   en: Words that do not agree
 
 why:
-  ja: 「a significant changes」「these new version」のように限定詞と名詞の単数・複数が食い違う文や、「Your can check」のように所有の語が主語の位置にある文は、書き換えの途中で片方だけ直した跡です。読み手はつまずき、急いで書いた文書に見えます。解析器の読みが一通りに決まる形だけを数え、単数と複数が同じ綴りの語（series / data）、代名詞にも読める this / these の直後の語、名詞を重ねた語（a sales team）は数えていません。
-  en: A determiner and a noun that differ in number ("a significant changes", "these new version"), or a possessive where the subject belongs ("Your can check"), is left over from an edit that fixed one word and not the other. The reader stumbles, and the document looks rushed. Only forms with one reading are counted; nouns spelled alike in both numbers ("series", "data"), a word right after "this" or "these" (which can stand alone), and nouns that modify another noun ("a sales team") are not.
+  ja: 「a significant changes」「these new version」のように限定詞と名詞の単数・複数が食い違う文や、「Your can check」のように所有の語が主語の位置にある文や、「the some roads」のように冠詞の後ろに限定詞が続く文は、書き換えの途中で片方だけ直した跡です。読み手はつまずき、急いで書いた文書に見えます。解析器の読みが一通りに決まる形だけを数え、単数と複数が同じ綴りの語（series / data）、代名詞にも読める this / these の直後の語、名詞を重ねた語（a sales team）は数えていません。
+  en: A determiner and a noun that differ in number ("a significant changes", "these new version"), a possessive where the subject belongs ("Your can check"), or two determiners in a row ("the some roads"), is left over from an edit that fixed one word and not the other. The reader stumbles, and the document looks rushed. Only forms with one reading are counted; nouns spelled alike in both numbers ("series", "data"), a word right after "this" or "these" (which can stand alone), and nouns that modify another noun ("a sales team") are not.
 
 message:
   ja: 「{word}」で単数と複数が合っていません
@@ -26,10 +36,13 @@ messages:
   possessive:
     ja: 「{word}」で、所有の語が主語の位置にあります
     en: '"{word}" puts a possessive where the subject belongs'
+  determiner:
+    ja: 「{word}」で、限定詞が二つ続いています
+    en: '"{word}" puts two determiners in a row'
 
 how_to_fix:
-  ja: 限定詞か名詞のどちらかに揃えてください（a significant change / significant changes）。所有の語なら、主語の語に直してください（Your can → You can、their is → there is）。
-  en: Make the determiner and the noun agree ("a significant change" or "significant changes"). For a possessive, write the subject you meant ("Your can" becomes "You can", "their is" becomes "there is").
+  ja: 限定詞か名詞のどちらかに揃えてください（a significant change / significant changes）。所有の語なら、主語の語に直してください（Your can → You can、their is → there is）。限定詞が二つ続いていれば、どちらかを消してください（the some roads → some roads か that some roads）。
+  en: Make the determiner and the noun agree ("a significant change" or "significant changes"). For a possessive, write the subject you meant ("Your can" becomes "You can", "their is" becomes "there is"). For two determiners in a row, drop one ("the some roads" becomes "some roads", or "that some roads" if that was meant).
 
 levels: { strict: error, normal: warning, relaxed: info }
 
