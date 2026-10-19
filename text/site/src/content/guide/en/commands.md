@@ -331,6 +331,7 @@ A number goes missing, a date moves by a day, a URL falls out, or a figure appea
 
 `compare` is the guardrail that catches it. It reads the facts out of the text before and after the rewrite, the same way for both, and compares them.
 The facts are numbers, dates, times, URLs, code, names, quotations, headings, references and footnotes.
+A quotation opened with the closing mark (”Visit the page.”) is read as a quotation too, so repairing its marks is a quotation written another way, not one added.
 Position does not matter, so a fact that moved with its paragraph is fine. No AI makes the call: the same two documents always give the same result. chaff only compares; it never rewrites.
 
 ```
