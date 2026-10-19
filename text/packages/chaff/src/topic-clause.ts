@@ -23,8 +23,13 @@ const COPULA_TAIL = new Set(["ある", "ござる", "ます", "ん", "ぬ", "は
 const isCopulaTail = (token: Token): boolean => COPULA_TAIL.has(token.lemma ?? token.surface) || COPULA_TAIL.has(token.surface);
 
 /** Whether the words just before end are a copula and its tail (ではありません, でございます, である). */
-const copulaBefore = (tokens: readonly Token[], end: number): boolean =>
-  isCopula(tokens[tokens.findLastIndex((token, at) => at < end && !isCopulaTail(token))]);
+/** The first word at or before at that is not a copula's tail. Walks back only over the tail, so each call is short. */
+const beforeTail = (tokens: readonly Token[], at: number): number => {
+  const token = tokens[at];
+  return token !== undefined && isCopulaTail(token) ? beforeTail(tokens, at - 1) : at;
+};
+
+const copulaBefore = (tokens: readonly Token[], end: number): boolean => isCopula(tokens[beforeTail(tokens, end - 1)]);
 
 const isComma = (token: Token | undefined): boolean => COMMA.has(token?.surface ?? "");
 
@@ -34,13 +39,14 @@ const isOwnNoun = (token: Token | undefined): boolean => NOMINAL.has(token?.pos 
 const isParticle = (token: Token, surface: string): boolean => token.surface === surface && token.pos === "ADP";
 
 /**
- * A subject of its own after from: a new topic (法律はありませんが) anywhere, or a noun with が that the final predicate takes
- * (no comma after it: 動きが見られ始めている). A noun with が inside a condition (債務者が請求した場合、) is not one.
+ * The last place a subject of its own stands before the sentence's last word: a new topic (法律はありませんが) anywhere, or a
+ * noun with が that the final predicate takes (no comma after it: 動きが見られ始めている). A noun with が inside a condition
+ * (債務者が請求した場合、) is not one. -1 when there is none. A clause has a subject of its own after it when this is past it.
  */
-const ownSubjectAfter = (tokens: readonly Token[], from: number, last: number): boolean => {
+const lastOwnSubject = (tokens: readonly Token[], last: number): number => {
   const lastComma = tokens.findLastIndex((token, at) => at < last && isComma(token));
-  return tokens.some(
-    (token, at) => at > from && at < last && isOwnNoun(tokens[at - 1]) && (isParticle(token, "は") || (isParticle(token, "が") && at > lastComma)),
+  return tokens.findLastIndex(
+    (token, at) => at < last && isOwnNoun(tokens[at - 1]) && (isParticle(token, "は") || (isParticle(token, "が") && at > lastComma)),
   );
 };
 
@@ -52,7 +58,7 @@ const nextClause = (tokens: readonly Token[], from: number, last: number): reado
 
 /** であって that narrows a class to a head noun after it (失業者であって、支援の必要がある者の…): the topic's predicate is still to come. */
 const narrowsToHead = (tokens: readonly Token[], comma: number, last: number): boolean =>
-  nextClause(tokens, comma, last).some((token) => token.pos === "NOUN" && RESTRICTED_HEADS.has(token.surface));
+  nextClause(tokens, comma, last).some((token, at, clause) => token.pos === "NOUN" && RESTRICTED_HEADS.has(token.surface) && clause[at + 1]?.surface !== "は");
 
 /** A copula with が or て and a comma (〜ではありませんが、, 〜でございますが、, 〜であって、 that does not narrow to a head noun). */
 const closesCopula = (tokens: readonly Token[], at: number, last: number): boolean => {
@@ -87,8 +93,7 @@ const closesIfNewSubject = (tokens: readonly Token[], at: number): boolean => {
  * topic's predicate is the one the sentence ends on.
  */
 export const topicClauseEnd = (tokens: readonly Token[], topic: number, last: number): number | undefined => {
-  const end = tokens.findIndex(
-    (_, at) => at > topic && at < last && (closesSurely(tokens, at, last) || (closesIfNewSubject(tokens, at) && ownSubjectAfter(tokens, at, last))),
-  );
+  const subject = lastOwnSubject(tokens, last);
+  const end = tokens.findIndex((_, at) => at > topic && at < last && (closesSurely(tokens, at, last) || (closesIfNewSubject(tokens, at) && subject > at)));
   return end === -1 ? undefined : end;
 };

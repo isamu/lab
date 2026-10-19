@@ -89,6 +89,7 @@ describe("topicDistance: 主題から述語まで", () => {
     assert.equal(topicDistance(tokensOf("この計画は簡単なものではありませんが、来年の春までに必ず終えます。")), 12);
     assert.equal(topicDistance(tokensOf("本日の議題は、お配りした資料のとおりでございますが、最初に予算をお諮りします。")), 18);
     assert.equal(topicDistance(tokensOf("この提案は来年の計画につながるものであって、大変ありがたいと受け止めています。")), 15);
+    assert.equal(topicDistance(tokensOf("この計画は重要なものであって、担当者は来年に実施する。")), 8);
   });
 
   it("〜ではなく、〜であるため、〜ており、は、後ろの節に別の主語があるときだけ節の終わりで切る", () => {
