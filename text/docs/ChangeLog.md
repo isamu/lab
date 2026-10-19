@@ -2,6 +2,43 @@
 
 Newest first.
 
+## 0.37.0 — 2026-10-19
+
+This release comes from judging more real documents in isamu/chaff-corpus: Cabinet Office press conferences, FSA
+consultation FAQs, 文化庁 notices, a company handbook, CISA releases, a Senate hearing, Prime Minister's speeches, Fed
+speeches and US and Japanese Supreme Court opinions. False positives found there are fixed rule by rule. Japanese
+sentence splitting now ends a sentence at a lone label line. There are no new rules.
+
+### Rules
+
+- Sentences: a Japanese line that is only a label (第１), a line that opens with a tag such as （別添）, and a ※ line
+  followed by another ※ line each end their sentence (#1526).
+- Genre defaults: concrete-evidence-density is off for business/meeting-notes (#1522), and preamble-length is off for
+  business/email (#1528).
+- Fewer false findings on real documents:
+  - Notices and letters: email-greeting-closing reads an official notice (通達), a signed-off letter and a welcome
+    line (#1464, #1508); max-kanji-continuous reads a notice's addressee list as names (#1514); adversative-ga-repeat
+    skips a prefatory が (#1512).
+  - Brackets, numbers and ranges: bracket-nesting and bracket-width-consistency read a doubled parenthesis ((題)) as one
+    (#1510, #1513); numbering-gap reads a number set off by an ideographic space as a label (#1515);
+    range-notation-consistency reads a document number (直資4－5ほか) (#1516); kutoten-consistency reads a period that
+    refers to an item number (#1533); no-doubled-joshi skips the の of a branch number (第70条の２) (#1451).
+  - Definitions and contracts: duplicate-definition, use-before-definition, unused-definition, undefined-term,
+    requirement-smell and obligation-without-deadline read attached schedules and forms, captioned labels, gerund
+    phrases, "but not limited to" and "30 days notice" (#1517, #1520, #1521, #1524, #1527, #1530).
+  - Japanese wording: orthographic-variant tells the person 方, a （答） label and the judging みる apart (#1525);
+    max-ten reads commas between quoted or prefixed list items (#1506); topic-predicate-distance stops where the topic
+    gets its own predicate (#1538); unqualified-superlative reads a named comparison set (Ｇ７の中で最も) and 最大化
+    (#1546); fullwidth-alnum-consistency does not report a half-width English word (#1529); duplicate-heading reads a
+    set of labels repeated for each case (#1536); ngram-repetition reads numbered item titles as a template (#1535).
+  - English wording: undefined-acronym (#1448, #1509), unknown-word (#1505, #1542), contraction-consistency skips a
+    short quoted phrase (#1507), oxford-comma-consistency reads an example phrase and a comma closed by a spaced dash
+    (#1445, #1532), latin-spacing (#1447), bare-url-mix (#1431), date-without-year reads "6 April in one year to 5 April
+    in the next" (#1511), name-variant does not offer a repeated typo as the usual form (#1519), all-caps-shouting reads
+    capital headings and rosters (#1537), max-sentence-length counts only the writer's words in a citation footnote
+    (#1544), title-length skips a series label and a quoted title being amended (#1518).
+- Site chrome stripping keeps search results and headed header prose (#1446).
+
 ## 0.36.0 — 2026-10-18
 
 Most of this release is what judging more real documents in isamu/chaff-corpus taught: Japanese company rules, contracts,
