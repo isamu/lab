@@ -43,13 +43,16 @@ describe("isFieldLabel", () => {
     assert.equal(isFieldLabel("電話：", "\n\n03-0000-0000\n"), true);
   });
 
-  it("not without a colon, over a sentence, or over nothing", () => {
+  it("not without a colon, over a sentence, a list, words without a number, many lines, or nothing", () => {
     assert.equal(isFieldLabel("Phone", "\n\n555 0100\n"), false);
     assert.equal(isFieldLabel("Getting there:", "\n\nTake the shuttle from the visitor center.\n"), false);
     assert.equal(isFieldLabel("Questions:", "\n\nWhat should I bring?\n"), false);
     assert.equal(isFieldLabel("Getting there:", "\n\nTake the shuttle from the visitor center\n"), false);
     assert.equal(isFieldLabel("Contact:", "\n\nPlease email **support@example.com.**\n"), false);
     assert.equal(isFieldLabel("Phone:", "\n\n"), false);
+    assert.equal(isFieldLabel("Attendees:", "\n\n- Alice 1\n- Bob 2\n"), false);
+    assert.equal(isFieldLabel("Notes:", "\n\nSee below\n"), false);
+    assert.equal(isFieldLabel("Hours:", "\n\nMon 9\nTue 9\nWed 9\nThu 9\n"), false);
     assert.equal(isFieldLabel("", ""), false);
   });
 });
