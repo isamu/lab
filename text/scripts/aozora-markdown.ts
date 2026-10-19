@@ -16,13 +16,16 @@ const NOTES_CLASS = /^<span\b[^>]*\bclass\s*=\s*(["'])(?:[^"']*\s)?notes(?:\s[^"
 
 const NOTE_TEXT = /^［＃.*］$/u;
 
-// A character 青空文庫 cannot encode is typed as ※ and a note naming it (［＃「曾＋りっとう」、17-6］); that note stands
-// for the character, so it stays.
-const CHARACTER_NOTE = /^［＃「.*」、(?:第\d水準|U\+[0-9A-F]|\d+-\d+)/iu;
+// A character 青空文庫 cannot encode is typed as ※ and a note naming it, ending in where it is coded or printed
+// (［＃「曾＋りっとう」、17-6］, ［＃二の字点、1-2-22］, ［＃「口＋世」、第3水準1-14-87］); that note stands for the
+// character, so it stays.
+const CHARACTER_PLACES = [/、第\d水準\d+-\d+-\d+］$/u, /、U\+[0-9A-F]{4,6}(?:、\d+-\d+)?］$/iu, /、\d+-\d+(?:-\d+)?］$/u];
+
+const isCharacterNote = (text: string): boolean => !text.slice(0, -1).includes("］") && CHARACTER_PLACES.some((place) => place.test(text));
 
 const isInputNote = (range: ElementRange): boolean => {
   const text = plainText(range.inner);
-  return NOTES_CLASS.test(range.openTag) && NOTE_TEXT.test(text) && !CHARACTER_NOTE.test(text);
+  return NOTES_CLASS.test(range.openTag) && NOTE_TEXT.test(text) && !isCharacterNote(text);
 };
 
 // Cut with nothing in its place: a space would split the Japanese sentence the note sat in.
