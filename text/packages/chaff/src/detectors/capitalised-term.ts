@@ -28,6 +28,10 @@ export type CapitalisedWords = {
   readonly capacityMarkers: readonly string[];
   /** Articles, which may stand between a capacity word and the capacity (as the Borrower). */
   readonly articles: readonly string[];
+  /** Words right after a run that say it is attached (Termination Certificate attached hereto). */
+  readonly attachedCues: readonly string[];
+  /** Last words of a run that name a kind of document (Certificate, Form): with attachedCues after, the run is a title. */
+  readonly attachedTitleEnds: readonly string[];
 };
 
 /** A term the document defines; bare is a definition with no defining word (("GPC")), which names more than it defines. */
@@ -216,9 +220,26 @@ const capacityOfAName = (tokens: readonly Token[], start: number, words: Capital
   return words.capacityMarkers.includes(marker.surface) && (continues(name) || name.surface === ".");
 };
 
+/** Words right after a run that say it is attached (the Certificate attached hereto), ending at a word's edge. */
+const attachedAfterPattern = (cues: readonly string[]): RegExp | undefined => {
+  const words = cues.filter((cue) => cue !== "").map(escapeRegExp);
+  return words.length === 0 ? undefined : new RegExp(String.raw`^[ \t]+(?:${words.join("|")})(?![\p{L}\p{N}_])`, "u");
+};
+
+/**
+ * The run is the title of a document the agreement attaches: its last word names a kind of document (Certificate,
+ * Form) and words right after it say it is attached. Confidential Information attached hereto is no title.
+ */
+const titlesAttachment = (words: CapitalisedWords): ((last: Token, after: string) => boolean) => {
+  const attached = attachedAfterPattern(words.attachedCues);
+  const titleEnds = new Set(words.attachedTitleEnds);
+  return (last, after) => attached !== undefined && titleEnds.has(last.surface) && attached.test(after);
+};
+
 /**
  * Whether a run is a name by what surrounds it: a number after it, a longer name it starts, brackets after it that
- * define it, initials that spell a term the document defines (“IRS” means the Internal Revenue Service), or a capacity.
+ * define it, initials that spell a term the document defines (“IRS” means the Internal Revenue Service), a capacity, or
+ * words that make it the title of an attached form.
  */
 type NameCue = (tokens: readonly Token[], start: number, end: number, term: string) => boolean;
 
@@ -226,14 +247,17 @@ const nameCues = (input: CapitalisedInput, joiners: ReadonlySet<string>): NameCu
   const words = input.words;
   const ends = { names: lastWordsOf(words.nameEnds), forms: lastWordsOf(words.formEnds), formEntries: new Set(words.formEnds) };
   const definitionAfter = definitionAfterPattern(words);
+  const attachedTitle = titlesAttachment(words);
   const abbreviations = new Set([...input.defined.map((definition) => definition.term), ...input.named].filter((term) => ACRONYM.test(term)));
   return (tokens, start, end, term) => {
     const last = tokens[end - 1];
     if (last === undefined) return false;
+    const after = input.source.slice(last.span.end, last.span.end + DEFINITION_AFTER_CHARS);
     return (
       numberedName(last, tokens[end]) ||
       startsLongerName(tokens, end, ends, joiners) ||
-      definitionAfter.test(input.source.slice(last.span.end, last.span.end + DEFINITION_AFTER_CHARS)) ||
+      definitionAfter.test(after) ||
+      attachedTitle(last, after) ||
       initialsOf(term, joiners).some((initials) => abbreviations.has(initials)) ||
       capacityOfAName(tokens, start, words)
     );

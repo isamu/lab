@@ -133,6 +133,8 @@ describe("undefined-term in English", () => {
       '1.7 "IRS" means the Internal Revenue Service.',
       "1.8 No Representation or Warranty. Neither party makes any other promise.",
       "1.9 The Chief Executive Officer of the Customer signs, save for acts of God.",
+      "1.10 On leaving, the Supplier signs the Exit Certificate attached hereto as Schedule B.",
+      "1.11 The Customer issues the Order Form annexed to this Agreement.",
     ];
     assert.deepEqual(termsIn(en, en_(...names)), []);
   });
@@ -146,6 +148,8 @@ describe("undefined-term in English", () => {
       "Internal Audit Team",
     ]);
     assert.deepEqual(termsIn(en, en_("1.2 Fees. The Supplier charges for Proprietary Data.")), ["Proprietary Data"]);
+    assert.deepEqual(termsIn(en, en_("1.2 The Supplier keeps Proprietary Data, attached or not, in escrow.")), ["Proprietary Data"]);
+    assert.deepEqual(termsIn(en, en_("1.2 The Supplier sends the Proprietary Data attached hereto as Exhibit C.")), ["Proprietary Data"]);
   });
 });
 
@@ -165,6 +169,8 @@ describe("capitalisedTerms", () => {
     definedElsewhere: ["as defined in"],
     capacityMarkers: ["as"],
     articles: ["the", "a"],
+    attachedCues: ["attached hereto"],
+    attachedTitleEnds: ["Certificate"],
   };
   const terms = (source: string, overrides: Partial<CapitalisedInput> = {}): string[] =>
     capitalisedTerms({
@@ -220,6 +226,11 @@ describe("capitalisedTerms", () => {
     assert.deepEqual(terms('between Harbour Data ( "Buyer" or "HD" ) .'), []);
     assert.deepEqual(terms('for the Proprietary Data ( "including records" ) .'), ["Proprietary Data"]);
     assert.deepEqual(terms("on the Closing ( as defined in the Merger Act ) ."), []);
+    assert.deepEqual(terms("sign the Exit Certificate attached hereto ."), []);
+    assert.deepEqual(terms("sign the Exit Certificate attached ."), ["Exit Certificate"]);
+    assert.deepEqual(terms("sign the Exit Certificate attached heretofore ."), ["Exit Certificate"]);
+    assert.deepEqual(terms("keep the Proprietary Data attached hereto ."), ["Proprietary Data"]);
+    assert.deepEqual(terms("sign the Exit Certificate attached hereto .", { words: { ...WORDS, attachedCues: [] } }), ["Exit Certificate"]);
     assert.deepEqual(terms("for the Proprietary Data ( see below ) ."), ["Proprietary Data"]);
     assert.deepEqual(terms("under the Internal Audit Team .", { named: ["IAT"] }), []);
     assert.deepEqual(terms("under the Internal Audit Team ."), ["Internal Audit Team"]);
