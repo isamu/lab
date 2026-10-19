@@ -6,6 +6,7 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { usesBeforeDefinition, unusedDefinitions, usesOf, type DefinedTerm } from "../packages/chaff/src/structure/definition-use.ts";
 import { comparableName, expansionConflicts, expansionsIn, nameBefore } from "../packages/chaff/src/acronym-expansions.ts";
 import { deniesSaying } from "../packages/lang-ja/src/denied-saying.ts";
+import { verbFormsOf } from "../packages/chaff/src/structure/gerund-phrase.ts";
 
 // 定義した語の使い方（unused-definition、use-before-definition）と、略語の展開の食い違い（acronym-expansion-conflict）。例文はすべて自作。
 
@@ -27,6 +28,34 @@ describe("unused-definition: 定義したのに使っていない語", () => {
     assert.deepEqual(unused('"Seller" means Harbour Ltd. Both Sellers agree.\n'), []);
     assert.deepEqual(unused('"Policy" means an internal rule. Policies apply to staff.\n'), []);
     assert.deepEqual(unused('"Seller" means Harbour Ltd. The Seller\'s address is below.\n'), []);
+  });
+
+  it("a phrase led by a gerund is used when its verb is written in another form", () => {
+    const defined = '"Filing a claim" means sending us the claim form.';
+    assert.deepEqual(unused(`${defined} You may file a claim within 30 days.\n`), []);
+    assert.deepEqual(unused(`${defined} Once you filed a claim, we reply.\n`), []);
+    assert.deepEqual(unused('"Running the report" means pressing Start. Run the report daily.\n'), []);
+  });
+
+  it("a gerund phrase whose verb never appears with its words, and a gerund alone, stay unused", () => {
+    assert.deepEqual(unused('"Filing a claim" means sending us the claim form. File the form within 30 days.\n'), [
+      '"Filing a claim" is defined but never used',
+    ]);
+    assert.deepEqual(unused('"Licensing" means granting rights. The license is yearly.\n'), ['"Licensing" is defined but never used']);
+    assert.deepEqual(unused('"Pricing information" means our rate card. Price information on request.\n'), ['"Pricing information" is defined but never used']);
+  });
+
+  it("verbFormsOf: the other forms of a gerund followed by a determiner", () => {
+    const determiners = new Set(["a", "the", "your"]);
+    assert.ok(verbFormsOf("Exercising your options", determiners).includes("Exercise your options"));
+    assert.ok(verbFormsOf("Running the report", determiners).includes("Run the report"));
+    assert.ok(verbFormsOf("filing a claim", determiners).includes("filed a claim"));
+    assert.deepEqual(verbFormsOf("Building materials", determiners), []);
+    assert.deepEqual(verbFormsOf("Licensing", determiners), []);
+    assert.deepEqual(verbFormsOf("Service the car", determiners), []);
+    assert.deepEqual(verbFormsOf("Ring the bell", determiners), []);
+    assert.deepEqual(verbFormsOf("Filing a claim", new Set()), []);
+    assert.deepEqual(verbFormsOf("", determiners), []);
   });
 
   it("a word that only contains the term is not a use", () => {

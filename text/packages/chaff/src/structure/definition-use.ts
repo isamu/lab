@@ -2,6 +2,7 @@ import type { Span, StructureNode } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { inDocumentOrder } from "./issues.ts";
 import { isTitleWords } from "./contents-lines.ts";
+import { verbFormsOf } from "./gerund-phrase.ts";
 import {
   definingNameOf,
   echoesName,
@@ -109,13 +110,23 @@ const groupsOf = (terms: readonly DefinedTerm[]): TermGroup[] => {
   return [...groups.values()];
 };
 
-/** 定義したのに、定義の外で一度も使っていない語。同じ語の定義が二つあれば、最初の一つだけを言う（二つ目は duplicate-definition）。 */
-export const unusedDefinitions = (terms: readonly DefinedTerm[], texts: readonly BodyText[], mentioned: Mentioned = NEVER_MENTIONED): DefinedTerm[] => {
+/** 語か、動名詞で始まる句の動詞の形（Exercising your options の exercise your options）が、定義の外に一度でも現れるか。 */
+const isUsed = (group: TermGroup, texts: readonly BodyText[], determiners: ReadonlySet<string>): boolean =>
+  [group.first.term, ...verbFormsOf(group.first.term, determiners)].some((form) => usesOf(form, texts, group.spans).length > 0);
+
+/**
+ * 定義したのに、定義の外で一度も使っていない語。同じ語の定義が二つあれば、最初の一つだけを言う（二つ目は duplicate-definition）。
+ * determiners: 動名詞の後ろに来て、それが目的語を取る動詞だと分かる語（英語の a, the, your）。
+ */
+export const unusedDefinitions = (
+  terms: readonly DefinedTerm[],
+  texts: readonly BodyText[],
+  mentioned: Mentioned = NEVER_MENTIONED,
+  determiners: ReadonlySet<string> = new Set(),
+): DefinedTerm[] => {
   const groups = groupsOf(terms);
   const examples = quotesExamples(groups, texts, mentioned);
-  return groups
-    .filter((group) => !(examples && group.first.bare === true) && usesOf(group.first.term, texts, group.spans).length === 0)
-    .map((group) => group.first);
+  return groups.filter((group) => !(examples && group.first.bare === true) && !isUsed(group, texts, determiners)).map((group) => group.first);
 };
 
 /**

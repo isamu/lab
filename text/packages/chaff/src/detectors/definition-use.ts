@@ -27,15 +27,19 @@ const findingAt = (doc: ProseDocument, offset: number, values: Readonly<Record<s
 const headingsOf = (doc: ProseDocument): BodyText[] =>
   (doc.markup?.headings ?? []).map((heading) => ({ start: heading.start, text: doc.source.slice(heading.start, heading.end) }));
 
-/** 定義したのに、定義の外（文と見出し）で一度も使っていない語。 */
-export const unusedDefinition: Detector = (doc): Finding[] =>
-  doc.structure === undefined
-    ? []
-    : unusedDefinitions(definedTerms(doc.structure), [...bodyOf(doc), ...headingsOf(doc)], mentionedIn(doc)).map((defined) =>
-        findingAt(doc, defined.span.start, { term: defined.term }),
-      );
-
 const patternsOf = (doc: ProseDocument, lexicon: string): string[] => (doc.lexicons[lexicon] ?? []).map((entry) => entry.pattern);
+
+/** 動名詞の後ろに来て、それが目的語を取る動詞だと分かる語（冠詞と所有の語）。 */
+const DETERMINER_LISTS = ["article", "dependent-possessive"] as const;
+
+/** 定義したのに、定義の外（文と見出し）で一度も使っていない語。 */
+export const unusedDefinition: Detector = (doc): Finding[] => {
+  if (doc.structure === undefined) return [];
+  const determiners = new Set(DETERMINER_LISTS.flatMap((list) => patternsOf(doc, list)));
+  return unusedDefinitions(definedTerms(doc.structure), [...bodyOf(doc), ...headingsOf(doc)], mentionedIn(doc), determiners).map((defined) =>
+    findingAt(doc, defined.span.start, { term: defined.term }),
+  );
+};
 
 /** 題・見出し（Markdown の見出し、章・節の行、条の前の見出しの行）と、目次・索引の行の上の位置か。 */
 const titleIn = (doc: ProseDocument): IsTitle => {
