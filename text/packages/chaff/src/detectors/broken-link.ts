@@ -39,15 +39,16 @@ export const anchorsOf = (markup: Markup): Anchors => ({
 });
 
 /** 印の付いた名前に行き先がある、同じ形の見出しの数。`#setup-2` は 3 つ以上、`#setup_2` は 2 つ以上。 */
-const headingsNeeded = (mark: string, number: number): number | undefined => {
+const headingsNeeded = (mark: string, digits: string): number | undefined => {
+  const number = Number(digits);
   if (mark !== MDN_SUFFIX) return number + 1;
-  return number >= MDN_FIRST_DUPLICATE ? number : undefined;
+  return number >= MDN_FIRST_DUPLICATE && !digits.startsWith("0") ? number : undefined;
 };
 
 const reachesDuplicate = (fragment: string, headings: ReadonlyMap<string, number>): boolean => {
   const suffix = DUPLICATE_SUFFIX.exec(fragment);
   if (suffix === null) return false;
-  const needed = headingsNeeded(suffix[1] ?? "", Number(suffix[2]));
+  const needed = headingsNeeded(suffix[1] ?? "", suffix[2] ?? "");
   return needed !== undefined && (headings.get(anchorKey(fragment.slice(0, suffix.index))) ?? 0) >= needed;
 };
 

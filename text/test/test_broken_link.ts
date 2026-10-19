@@ -57,6 +57,7 @@ describe("broken-link: 行き先の無いリンク", () => {
       "リンク「[b](#max-age_1)」が指す「#max-age_1」の見出しがこの文書にありません",
     ]);
     assert.deepEqual(findingsOf("#### `max-age`\n\n[`max-age`](#max-age_2)\n").length, 1);
+    assert.deepEqual(findingsOf("## Setup\n\n## Setup\n\n[a](#setup_02)\n").length, 1);
   });
 
   it("-1 は見出しだけに付く。同じ名前の id は数えない", () => {
