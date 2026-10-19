@@ -54,3 +54,46 @@ describe("aozoraToMarkdown", () => {
     assert.equal(aozoraToMarkdown(BIBLIOGRAPHY).trim(), "");
   });
 });
+
+// 入力者注の形は 青空文庫 の XHTML のもの、本文は自作。
+const withText = (text: string): string => aozoraToMarkdown(page(BIBLIOGRAPHY).replace("　こんな夢を見た。", text));
+const note = (text: string): string => `<span class="notes">${text}</span>`;
+
+describe("aozoraToMarkdown: 入力者注（［＃…］）", () => {
+  it("valid: 文の途中の注は、空白も残さず落とす", () => {
+    assert.ok(withText(`雲は燃えるほど${note("［＃「燃えるほど」は底本では「燃えるほど）」］")}高くなる。`).includes("雲は燃えるほど高くなる。"));
+    assert.ok(withText(`五十篇${note("［＃「五十篇」はママ］")}を選んだ。`).includes("五十篇を選んだ。"));
+    assert.ok(withText(`一、二${note("［＃「一、二」は底本では「一、2-3」］")}と数えた。`).includes("一、二と数えた。"));
+  });
+
+  it("valid: 注の中に傍点の印があっても落とす", () => {
+    const text = withText(
+      `声は<em class="sesame_dot">はつきり</em>と${note('［＃「<em class="sesame_dot">はつきり</em>と」は底本では「はつきりと」］')}した。`,
+    );
+    assert.ok(text.includes("声ははつきりとした。"), text);
+    assert.ok(!text.includes("［＃"), text);
+  });
+
+  it("valid: 改ページの注だけの行は、行ごと消える", () => {
+    const text = withText(`一行目<br />\n${note("［＃改ページ］")}<br />\n二行目`);
+    assert.ok(!text.includes("［＃"), text);
+    assert.ok(text.includes("一行目") && text.includes("二行目"), text);
+  });
+
+  it("invalid: 符号化できない字を表す注（※の後の外字注）は残す", () => {
+    ["［＃「曾＋りっとう」、17-6］", "［＃「口＋世」、第3水準1-14-87］", "［＃「土へん＋竒」、U+5D5C、12-3］", "［＃二の字点、1-2-22］"].forEach((gaiji) => {
+      assert.ok(withText(`君の※${note(gaiji)}を待つ。`).includes(`君の※${gaiji}を待つ。`), gaiji);
+    });
+  });
+
+  it("invalid: notes 以外の class の span、［＃ で始まらない notes、印の無い［＃ は本文として残す", () => {
+    assert.ok(withText('<span class="notes_x">［＃作者の括弧］</span>だ。').includes("［＃作者の括弧］だ。"));
+    assert.ok(withText(`${note("作者の注記")}だ。`).includes("作者の注記だ。"));
+    assert.ok(withText("作者が［＃改ページ］と書いた。").includes("作者が［＃改ページ］と書いた。"));
+  });
+
+  it("異常な入力: 閉じていない span、空の注", () => {
+    assert.ok(withText('<span class="notes">［＃改ページ］だ。').includes("［＃改ページ］だ。"));
+    assert.ok(withText(`空${note("")}だ。`).includes("空だ。"));
+  });
+});
