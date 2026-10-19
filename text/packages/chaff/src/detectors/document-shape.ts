@@ -117,6 +117,28 @@ export const ownWordsOf = (heading: string, citedTitleActions: readonly string[]
       citedTitleActions.some((action) => action !== "" && heading.startsWith(action, offset + quote.length)) ? QUOTED_NAME : quote,
     );
 
+/** A document identifier opening the heading: CA 23-6:, SR 26-8:, a series code and a number before a colon. */
+const IDENTIFIER_HEAD = /^\p{Lu}{1,6} ?\p{N}+[-–.]\p{N}+[:：]/u;
+/** Who the case concerns, in square brackets at the end (［厚生労働本省、2労働局］), then perhaps the case's number. */
+const BODIES_END = /[［【[][^［］【】[\]]+[］】\]] *(?:[(（]\p{N}+[)）])?$/u;
+/** The case's number in brackets at the end: …もの(83). */
+const CASE_NUMBER_END = /[(（]\p{N}+[)）]$/u;
+
+/**
+ * A heading that is an official title, the form others cite it by: it carries an identifier at its head, or the bodies
+ * concerned or a case number at its end. Shortening it breaks the citation, so the finding says to keep it and put a
+ * short summary under it.
+ */
+export const isOfficialTitle = (heading: string): boolean => {
+  const words = heading.trim();
+  return IDENTIFIER_HEAD.test(words) || BODIES_END.test(words) || CASE_NUMBER_END.test(words);
+};
+
+const variantOf = (heading: MarkupHeading, title: MarkupHeading | undefined): string | undefined => {
+  if (isOfficialTitle(heading.text)) return "official";
+  return heading === title ? "title" : undefined;
+};
+
 /** The heading's words without a number label at its head (Chapter 2, 1.), from the section the heading opens. */
 const unlabeledOf = (doc: ProseDocument, heading: MarkupHeading): string =>
   doc.sections.find((section) => section.span.start === heading.end)?.unlabeledHeading ?? heading.text;
@@ -132,7 +154,7 @@ export const titleLength: Detector = (doc, options): Finding[] => {
     .map(({ heading, words }) => ({ heading, count: headingLength(ownWordsOf(words, citedTitleActions), doc.lengthUnit) }))
     .filter(({ count }) => count > options.limit)
     .map(({ heading, count }) => ({
-      ...findingAt(doc, heading, { heading: heading.text.trim(), count, limit: options.limit }, heading === title ? "title" : undefined),
+      ...findingAt(doc, heading, { heading: heading.text.trim(), count, limit: options.limit }, variantOf(heading, title)),
       rule: "title-length",
       severity: "info",
     }));
