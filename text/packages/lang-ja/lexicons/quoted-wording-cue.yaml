@@ -1,0 +1,14 @@
+# かぎ括弧に入れた語が、定義した語の使い直しではなく、条文や文書の文言を引いたものだと分かる語（defined-term-form）。
+# group before は開きかぎ括弧のすぐ前で終わる語（憲法一九条にいう「良心の自由」、第1項1号の「特定居住用宅地等」）。
+# group after は閉じかぎ括弧のすぐ後ろ（並べた引用の後ろ）で始まる語（「謝罪」の文言、「謝罪」、「陳謝」という文言）。
+id: quoted-wording-cue
+language: ja
+entries:
+  - { pattern: にいう, group: before }
+  - { pattern: にいわゆる, group: before }
+  - { pattern: 条の, group: before }
+  - { pattern: 項の, group: before }
+  - { pattern: 号の, group: before }
+  - { pattern: の文言, group: after }
+  - { pattern: という文言, group: after }
+  - { pattern: との文言, group: after }

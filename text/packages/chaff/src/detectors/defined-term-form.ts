@@ -6,6 +6,7 @@ import { definedTerms, usesOf, type BodyText, type DefinedTerm } from "../struct
 import { escapeRegExp } from "../orthography.ts";
 import { prefixGroupsOf, prefixVariants, variantUses } from "../structure/term-prefix.ts";
 import { quoteAt } from "./structure-tree.ts";
+import { quotesWording, wordingCuesOf } from "./quoted-wording.ts";
 import { isPartOfAddress } from "./address-word.ts";
 import { exactOffsets, extendedAfter, extendedBefore } from "./term-extension.ts";
 import { headsKindPhrase, insideLongerTerm, isNamedAsTerm, isNarrowedUse } from "./ordinary-phrase.ts";
@@ -152,13 +153,15 @@ const patternsOf = (doc: ProseDocument, lexicon: string): string[] => (doc.lexic
 
 /**
  * The term set in quotes again, unless the document's profile says a quoted term is the term mentioned (「株主」とあるのは),
- * or the words before the quote name it as a term (the definition of "Material Adverse Effect").
+ * the words before the quote name it as a term (the definition of "Material Adverse Effect"), or the quote is a provision's
+ * or a document's wording (憲法一九条にいう「良心の自由」, 「謝罪」の文言).
  */
 const quotedFindings = (doc: ProseDocument, term: DefinedTerm, uses: readonly number[], definingEnd: number): Finding[] => {
   if (doc.profile?.quoteMentionsTerm === true) return [];
   const cues = patternsOf(doc, "term-mention-cue");
+  const wording = wordingCuesOf(doc.lexicons["quoted-wording-cue"] ?? []);
   return quotedUses(doc.source, term.term, uses, definingEnd)
-    .filter((offset) => !isNamedAsTerm(doc.source, offset - 1, cues))
+    .filter((offset) => !isNamedAsTerm(doc.source, offset - 1, cues) && !quotesWording(doc.source, offset - 1, offset + term.term.length, wording))
     .map((offset) => finding(doc, "defined-term-form", offset, "quoted", { term: term.term, line: term.line }));
 };
 
