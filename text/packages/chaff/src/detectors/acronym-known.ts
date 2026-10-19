@@ -1,5 +1,8 @@
-// Words in capitals that a document itself makes known without spelling them out: a keyword of its code, a cited venue. Pure.
+// Words in capitals that a document itself makes known without spelling them out: a keyword of its code, a cited venue, a
+// rule its grammar defines, the rungs of a grade ladder. Pure.
 import { codeFences, codeSpans, withoutCodeBlocks } from "./code-fences.ts";
+import { grammarRuleNames } from "./abnf-grammar.ts";
+import { gradeLadderWords } from "./grade-ladder.ts";
 
 type Span = { readonly start: number; readonly end: number };
 
@@ -36,5 +39,10 @@ export const citedVenues = (source: string, links: readonly Span[]): Set<string>
     }),
   );
 
-/** Both: the capitals a document makes known, which undefined-acronym does not ask to spell out. */
-export const knownByDocument = (source: string, links: readonly Span[]): string[] => [...codeWords(source), ...citedVenues(source, links)];
+/** All of them: the capitals a document makes known, which undefined-acronym does not ask to spell out. */
+export const knownByDocument = (source: string, links: readonly Span[]): string[] => [
+  ...codeWords(source),
+  ...citedVenues(source, links),
+  ...grammarRuleNames(source),
+  ...gradeLadderWords(source),
+];
