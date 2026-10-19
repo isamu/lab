@@ -51,18 +51,22 @@ const isInAddress = (text: string, start: number, end: number): boolean =>
 /** アポストロフィでつないだ英字の語のかけら（Van't Hoff の t、l'estudiantina の l）。字の幅は語の言葉が決め、文書の書き方の票ではない。 */
 const APOSTROPHE = /['’]/u;
 
+const ONLY_LETTERS = /^[A-Za-zＡ-Ｚａ-ｚ]+$/u;
+
 const isInApostropheWord = (text: string, start: number, end: number): boolean =>
-  (APOSTROPHE.test(text.charAt(start - 1)) && LETTER_BESIDE.test(text.charAt(start - 2))) ||
-  (APOSTROPHE.test(text.charAt(end)) && LETTER_BESIDE.test(text.charAt(end + 1)));
+  ONLY_LETTERS.test(text.slice(start, end)) &&
+  ((APOSTROPHE.test(text.charAt(start - 1)) && LETTER_BESIDE.test(text.charAt(start - 2))) ||
+    (APOSTROPHE.test(text.charAt(end)) && LETTER_BESIDE.test(text.charAt(end + 1))));
 
 /**
- * 番号の札（ＴＥＬ：０３－…、FAX:03-…）。英字の後ろにコロンと、同じ幅の数字が続く。札は番号と一続きに一つの幅で書くので、
- * 番号の書き方に従い、英字の書き方の票にはしない。
+ * 番号の札（ＴＥＬ：０３－…、FAX:03-…）。大文字二字以上の後ろにコロンと、同じ幅の数字を区切りでつないだ番号が続く。札は番号と
+ * 一続きに一つの幅で書くので、番号の書き方に従い、英字の書き方の票にはしない。
  */
-const NUMBER_AFTER = { fullwidth: /^\s*[：:]\s*[０-９]/u, halfwidth: /^\s*[：:]\s*\d/u };
+const CAPITALS = /^(?:[A-Z]{2,}|[Ａ-Ｚ]{2,})$/u;
+const NUMBER_AFTER = { fullwidth: /^\s*[：:]\s*[０-９]+[－‐−ー-][０-９]/u, halfwidth: /^\s*[：:]\s*\d+[-‐−]\d/u };
 
 const isNumberLabel = (text: string, end: number, run: string): boolean =>
-  LETTER.test(run) && NUMBER_AFTER[FULLWIDTH.test(run) ? "fullwidth" : "halfwidth"].test(text.slice(end));
+  CAPITALS.test(run) && NUMBER_AFTER[FULLWIDTH.test(run) ? "fullwidth" : "halfwidth"].test(text.slice(end));
 
 /** 英字の後ろに数字を続けた名前（TLS1、Python3）と、その後ろの点でつないだ番号（Python3.12）。版の番号の頭になる。 */
 const VERSION_SO_FAR = /[A-Za-zＡ-Ｚａ-ｚ][0-9０-９]+(?:\.[0-9０-９]+)*$/u;
@@ -117,8 +121,8 @@ const HALFWIDTH_LOWER = /[a-z]/u;
  */
 const isHalfwidthEnglishWord = (run: AlnumRun): boolean => run.kind === "letters" && !run.fullwidth && HALFWIDTH_LOWER.test(run.written);
 
-/** 日付で始まり、句点の無い段落（更新日：令和7年9月27日 総理の演説…、令和8年8月15日）。 */
-const DATELINE = /^(?:[^\s：:]{1,6}[：:]\s*)?\S{0,2}[0-9０-９]{1,4}年[0-9０-９]{1,2}月[0-9０-９]{1,2}日[^。]*$/u;
+/** 日付で始まり、句点の無い一行の段落（更新日：令和7年9月27日 総理の演説…、令和8年8月15日）。 */
+const DATELINE = /^(?:[^\s：:]{1,6}[：:]\s*)?\S{0,2}[0-9０-９]{1,4}年[0-9０-９]{1,2}月[0-9０-９]{1,2}日[^。\n]*$/u;
 
 /** 文書の最初の段落が日付の行なら、その範囲。ページや配信が付ける日付で、書き手の数の書き方ではない。 */
 const datelineOf = (doc: ProseDocument): Span | undefined => {

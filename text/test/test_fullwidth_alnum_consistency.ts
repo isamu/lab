@@ -116,6 +116,15 @@ describe("fullwidth-alnum-consistency: 英数字の全角と半角が混ざっ�
     const notice =
       "- パソコン（Excel、Word等）の操作ができること。\n\n担当：山田\nＴＥＬは内線です。\n\nPDFを見るには、Adobe Readerが要ります。Adobe Readerは無料です。\n";
     assert.deepEqual(findingsOf(notice), ["全角の「ＴＥＬ」と書いています（この文書はふつう半角の「TEL」。8 箇所のうち 1 箇所が違う）"]);
+    assert.equal(findingsOf(notice.replace("ＴＥＬは内線です。", "ＴＥＬ：２３６１")).length, 1);
+  });
+
+  it("番号の札でない英字と数字（Ａ：１、AB:12）は今までどおり数える", () => {
+    assert.equal(findingsOf("ＵＲＬとＩＤとＰＤＦとＣＳＶを使います。型番はAB:12です。\n").length, 1);
+  });
+
+  it("アポストロフィの横でも、英字でない並び（3'rd の 3）は数える", () => {
+    assert.equal(findingsOf("会場は１２階です。受付は１５時です。控室は１３号室です。予備は１４号室です。順位は33'rd です。\n").length, 1);
   });
 
   it("アポストロフィでつないだ英字の語のかけら（Van't Hoff の t）を、全角の一字と比べない", () => {
@@ -139,6 +148,7 @@ describe("fullwidth-alnum-consistency: 英数字の全角と半角が混ざっ�
   it("本文の中の日付、文になった頭の段落の日付は今までどおり比べる", () => {
     assert.equal(findingsOf(`# 祝辞\n\n${speech}\n式は令和7年9月27日に開きました。\n`).length, 1);
     assert.equal(findingsOf(`# 祝辞\n\n令和7年9月27日に式を開きました。\n\n${speech}`).length, 1);
+    assert.equal(findingsOf(`# 祝辞\n\n令和7年9月27日\n式を開きました\n\n${speech}`).length, 1);
   });
 
   it("そろっていれば何も言わない", () => {
