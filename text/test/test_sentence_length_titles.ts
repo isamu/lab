@@ -11,7 +11,8 @@ import { isTitleCase, isTitleLine, quotedTitleWords, termSeriesSaving } from "..
 const RULE = "max-sentence-length";
 const findingsOf = (source: string): readonly string[] => namedRuleRun(RULE, `${source}\n`, en, "a.md", "business/email").findings;
 
-const LONG_TITLE = "Interagency Notice: Agencies Extend the Review Period for Community Lending Programs Affected by the Spring Floods in the Northern River Counties";
+const LONG_TITLE =
+  "Interagency Notice: Agencies Extend the Review Period for Community Lending Programs Affected by the Spring Floods in the Northern River Counties";
 const LONG_SENTENCE =
   "The agencies extend the review period for the community lending programs that the spring floods affected in the northern river counties because the banks there could not finish their reports in time.";
 
