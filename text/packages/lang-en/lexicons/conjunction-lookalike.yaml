@@ -1,0 +1,13 @@
+# Phrases that open with the same word as a sentence-opening conjunction (sentence-opener) but are adverbial phrases,
+# not a conjunction tying the sentence to the one before ("So far, I've been discussing …", "Yet another rule …").
+# sentence-initial-conjunction-run does not count a sentence that opens with one. Matched regardless of case, up to a
+# word boundary.
+id: conjunction-lookalike
+language: en
+entries:
+  - pattern: so far
+  - pattern: so much
+  - pattern: so many
+  - pattern: so few
+  - pattern: yet another
+  - pattern: yet more
