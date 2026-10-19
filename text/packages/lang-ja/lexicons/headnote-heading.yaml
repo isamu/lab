@@ -1,0 +1,9 @@
+# 判決や決定の頭に置く要旨の見出し。この見出しの下は本文を縮めた要約で、本文の語の使い始めではない（use-before-definition）。
+# 要約の見出しの語彙表 summary-heading と合わせて読む。見出しとまるごと同じときだけ。
+id: headnote-heading
+language: ja
+entries:
+  - pattern: 裁判要旨
+  - pattern: 判示事項
+  - pattern: 判決要旨
+  - pattern: 決定要旨

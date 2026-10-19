@@ -2,6 +2,7 @@ import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { definedTerms, unusedDefinitions, usesBeforeDefinition, type BodyText, type IsTitle, type Mentioned } from "../structure/definition-use.ts";
 import { titleLineNumbers } from "../structure/title-lines.ts";
 import { contentsLineNumbers } from "../structure/contents-lines.ts";
+import { summaryLineNumbers } from "../structure/summary-lines.ts";
 import { expansionConflicts, expansionsIn } from "../acronym-expansions.ts";
 import { linesOf, lineNumberAt } from "../structure/lines.ts";
 import { isQuotedAlone } from "../quoted-span.ts";
@@ -41,11 +42,15 @@ export const unusedDefinition: Detector = (doc): Finding[] => {
   );
 };
 
-/** 題・見出し（Markdown の見出し、章・節の行、条の前の見出しの行）と、目次・索引の行の上の位置か。 */
+/** 題・見出し（Markdown の見出し、章・節の行、条の前の見出しの行、番号と題だけの項目の行）と、目次・索引の行と、要約の節の上の位置か。 */
 const titleIn = (doc: ProseDocument): IsTitle => {
   const lines = linesOf(doc.source);
   const headings = doc.markup?.headings ?? [];
-  const numbers = new Set([...titleLineNumbers(doc.structure, lines, headings), ...contentsLineNumbers(lines, headings, patternsOf(doc, "toc-heading"))]);
+  const numbers = new Set([
+    ...titleLineNumbers(doc.structure, lines, headings),
+    ...contentsLineNumbers(lines, headings, patternsOf(doc, "toc-heading")),
+    ...summaryLineNumbers(lines, headings, [...patternsOf(doc, "summary-heading"), ...patternsOf(doc, "headnote-heading")]),
+  ]);
   return (offset) => numbers.has(lineNumberAt(lines, offset) ?? 0);
 };
 
@@ -53,9 +58,14 @@ const titleIn = (doc: ProseDocument): IsTitle => {
 export const useBeforeDefinition: Detector = (doc): Finding[] =>
   doc.structure === undefined
     ? []
-    : usesBeforeDefinition(definedTerms(doc.structure), bodyOf(doc), mentionedIn(doc), titleIn(doc), patternsOf(doc, "self-prefix")).map((use) =>
-        findingAt(doc, use.offset, { term: use.term.term, defined: use.term.line }),
-      );
+    : usesBeforeDefinition(
+        definedTerms(doc.structure),
+        bodyOf(doc),
+        mentionedIn(doc),
+        titleIn(doc),
+        patternsOf(doc, "self-prefix"),
+        patternsOf(doc, "term-source-marker"),
+      ).map((use) => findingAt(doc, use.offset, { term: use.term.term, defined: use.term.line }));
 
 /** 同じ略語を、文書の中で二通りに展開している所。 */
 export const acronymExpansionConflict: Detector = (doc): Finding[] => {

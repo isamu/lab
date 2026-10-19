@@ -1,6 +1,5 @@
 cc-by-4-legalcode-ja  1
 commonpaper-mutual-nda  1
-crs-rl32781-salt  1
 github-general-privacy-statement  1
 github-terms-of-service  1
 mext-heatstroke-after-holidays  1

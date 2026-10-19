@@ -1,0 +1,8 @@
+# Headings of the summary placed above a judgment. What sits under one restates the body in short, so a term there is
+# not its first use (use-before-definition). Read together with summary-heading; the whole heading must match.
+id: headnote-heading
+language: en
+entries:
+  - pattern: Syllabus
+  - pattern: Headnote
+  - pattern: Headnotes
