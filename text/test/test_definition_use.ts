@@ -185,6 +185,27 @@ describe("use-before-definition: 定義より前で使っている語", () => {
     ]);
   });
 
+  it("番号と語に短い括弧の注を添えただけの札（（1）予約基本計画（第3条関係））は、使った所ではない", () => {
+    const definition = "- 市は、予約に関する基本的な計画（以下「予約基本計画」という。）を定めること。\n";
+    assert.deepEqual(early(`- （1）予約基本計画（第3条関係）\n\n${definition}`, ja), []);
+    assert.deepEqual(early(`- （1）予約基本計画の件（第3条関係）\n\n${definition}`, ja), []);
+    assert.deepEqual(early('(a) Seller (Section 2)\n\nHarbour Ltd (the "Seller") ships the goods.\n'), []);
+  });
+
+  it("括弧の注を除いても語のほかに言葉のある文、長い括弧の文は、使った所", () => {
+    const definition = "- 市は、予約に関する基本的な計画（以下「予約基本計画」という。）を定めること。\n";
+    const reported = ["「予約基本計画」を、3 行目の定義より前で使っています"];
+    assert.deepEqual(early(`- （1）予約基本計画を定める手順（第3条関係）\n\n${definition}`, ja), reported);
+    assert.deepEqual(early(`- （1）市は予約基本計画を定めること。\n\n${definition}`, ja), reported);
+    const seller = ['"Seller" is used here, before it is defined on line 3'];
+    assert.deepEqual(early('The Seller pays (see Section 4).\n\nHarbour Ltd (the "Seller") ships the goods.\n'), seller);
+    assert.deepEqual(early('Seller (the party that ships the goods to the Buyer).\n\nHarbour Ltd (the "Seller") ships the goods.\n'), seller);
+    // 番号の無い括弧、入れ子の括弧、形の違う括弧の組、文の途中の括弧は、注として除かない。
+    ["（再掲）", "（第3条（再掲））", "（第3条関係)", "（第3条関係）の写し"].forEach((note) => {
+      assert.deepEqual(early(`- （1）予約基本計画の件${note}\n\n${definition}`, ja), reported);
+    });
+  });
+
   it("条の前の見出しの行と、章・節の行の語は、使った所ではない", () => {
     const statute = (head: string): readonly string[] =>
       namedRuleRun("use-before-definition", `${head}第一条\u3000株式会社やまと（以下「買主」という。）は、代金を支払う。\n`, ja, "a.txt", "legal/statute")
