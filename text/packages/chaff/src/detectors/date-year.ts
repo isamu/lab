@@ -16,6 +16,7 @@ import {
 import { datesUnderYearHeadings, yearLabelOf, type HeadingYearWords } from "./date-heading-year.ts";
 import { openingDateOf } from "./opening-date.ts";
 import { withNearestYear } from "../structure/weekday.ts";
+import { continuesDatedRun } from "./date-run.ts";
 
 /**
  * The words that make a yearless date any year's (毎年, 例えば, "each"), that join a period's two ends (から, "to"), and
@@ -178,7 +179,11 @@ export const yearGaps = (
     return next !== undefined && opensSpan(point, next, source, anyYear.joiners) && hasYearWord(next, source, yearWords);
   };
   // A recurring day or an example's date has no year to write, and is not the document's way of writing dates either.
-  const yearless = points.filter((point) => MONTH_DAY.test(point.value) && !yearGiven(point, anchors, source, yearWords) && !yearOfAny(point));
+  // A date that carries a dated account forward (On April 21, 1952, … on April 30 … May 3) takes that account's year.
+  const continuesRun = (point: DatePoint): boolean => continuesDatedRun(point, (earlier) => previousOf.get(earlier));
+  const yearless = points.filter(
+    (point) => MONTH_DAY.test(point.value) && !yearGiven(point, anchors, source, yearWords) && !yearOfAny(point) && !continuesRun(point),
+  );
   const span = spanOf(dated);
   const unclear = dated.length >= 2 && yearless.length < dated.length && span !== undefined && span.to > span.from;
   const datedSides = new Set(dated.flatMap((point) => sideOf(monthOf(FULL, point.value)) ?? []));
