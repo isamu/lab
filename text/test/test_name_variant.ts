@@ -25,6 +25,7 @@ import { isLookalikeApart, lookalikeSlipsIn } from "../packages/chaff/src/name-l
 import { voicedReadingOf } from "../packages/chaff/src/company-kana-spelling.ts";
 import { givenNameReadingOf } from "../packages/chaff/src/name-char-reading.ts";
 import { companyMentionsIn } from "../packages/chaff/src/company-names.ts";
+import { isAuthorName } from "../packages/chaff/src/detectors/name-variant-reference-list.ts";
 import { isEndLetterApart, isEndWordSlip, type WordUse } from "../packages/chaff/src/name-end-letter.ts";
 import { isEndingApart, isNameEndingSlip, isPluralOf } from "../packages/chaff/src/company-name-ending.ts";
 
@@ -55,6 +56,43 @@ describe("name-variant: 同じ名前の書き分け", () => {
     assert.deepEqual(variants("Microsoft builds the tool. Microsoft sells it. Microsft ships it.\n"), [
       '"Microsft" is one letter away from "Microsoft", which the document uses more than once',
     ]);
+  });
+
+  it("names a letter apart in a reference list are two authors; a case slip there is still reported", () => {
+    const references = [
+      "# Trust",
+      "",
+      "Advisers owe loyalty (Friedman, 2020).",
+      "",
+      "## References",
+      "",
+      "- Friedman (2020) A. Friedman and B. Hale. Loyalty at work. Sage Publications.",
+      "- Friedman (2021) A. Friedman. Duty of care. SAGE Publications.",
+      "- Lee et al. (2019) D. Lee, C. Freedman, and E. Moss. Trust by design. SAGE Publications.",
+      "",
+    ].join("\n");
+    assert.deepEqual(variants(references), ['"Sage Publications" is written "SAGE Publications" elsewhere in the document (case, width or punctuation)']);
+    const body = "Friedman wrote the first study. Friedman wrote the second. Freedman wrote the third.\n";
+    assert.deepEqual(variants(body), ['"Freedman" is one letter away from "Friedman", which the document uses more than once']);
+  });
+
+  it("a misspelt journal in a reference list, with no initials beside it, is still reported", () => {
+    const references = [
+      "# Work",
+      "",
+      "## References",
+      "",
+      "- Lee, D. (2019). Shifts. Journal of Occupational Health, 4.",
+      "- Moss, E. (2020). Rest. Journal of Occupational Health, 5.",
+      "- Kim, F. (2021). Noise. Journal of Occupatiional Health, 6.",
+      "",
+    ].join("\n");
+    assert.deepEqual(variants(references), ['"Occupatiional Health" is one letter away from "Occupational Health", which the document uses more than once']);
+    assert.ok(isAuthorName("and A. Freedman, T. Korbak", 7, 8));
+    assert.ok(isAuthorName("Freedman, A. (2020)", 0, 8));
+    assert.ok(isAuthorName("J.-P. Freedman", 6, 8));
+    assert.ok(!isAuthorName("Journal of Freedman Studies", 11, 8));
+    assert.ok(!isAuthorName("the U.S. Freedman Act", 9, 8));
   });
 
   it("a repeated typo is not offered as the usual form of the right spelling", () => {
