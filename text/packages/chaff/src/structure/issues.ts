@@ -6,6 +6,7 @@ import { listedTags } from "./listed-tags.ts";
 import { namesAbsentUnit } from "./unit-word.ts";
 import { isListedParagraph, listedParagraphsByArticle } from "./listed-paragraph.ts";
 import { referencesInCitedDocuments } from "./cited-document-section.ts";
+import { citedElsewhereReader } from "./cited-elsewhere.ts";
 
 // 木だけで決まる誤り。参照先が無い、番号が飛ぶ・重なる、同じ語を二度定義する。
 // 意味の食い違いは判定しない。書いてあることから機械で決まるものだけを出す。
@@ -136,8 +137,9 @@ export const danglingReferences = (tree: StructureNode, source: string, nameNoun
   const quoted = referencesInCitedDocuments(tree);
   const references = nodes.filter((node) => node.kind === "reference");
   const named = namedTargets(references, source, nameNouns);
+  const citedElsewhereToo = citedElsewhereReader(references, citesOther);
   const unresolved = references
-    .filter((node) => !citesOther(node) && !otherNumbering(node) && !pointsToNamedSection(node, named))
+    .filter((node) => !citesOther(node) && !otherNumbering(node) && !pointsToNamedSection(node, named) && !citedElsewhereToo(node))
     .filter((node) => !namesAbsentUnit(node, articleLabels) && !elsewhere.has(node))
     .filter((node) => !quoted.has(node) && !resolves(node, addresses, chapters));
   // 規程は条の下の項を箇条書き（「1. 」「２．」）で書くことがあり、木はそれを項として読まない。条の本文は、要るときに一度だけ読む。
