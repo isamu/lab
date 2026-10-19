@@ -1,0 +1,8 @@
+# 引用の「と」の後（〜とみる、〜ともみられる）と、「られる」を続けた形（増加がみられる）で、見立て・観察を言う動詞。
+# 新聞や白書はこの使い方をかなで書き（〜とみられる）、目で見る動詞は漢字で書く（資料を見る）ので、orthographic-variant は
+# この二つを別に比べる。辞書の形で、漢字とかなの両方を挙げる。
+id: orthographic-variant-judging
+language: ja
+entries:
+  - pattern: 見る
+  - pattern: みる
