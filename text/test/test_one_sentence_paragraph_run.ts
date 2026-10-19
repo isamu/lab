@@ -74,3 +74,30 @@ describe("one-sentence-paragraph-run", () => {
     assert.deepEqual(findingsOf(`${paragraphs(3)}\n\n## 次の話\n\n${paragraphs(3)}\n`), []);
   });
 });
+
+describe("one-sentence-paragraph-run: 印で始まる段落は手で印を付けた項目", () => {
+  const marked = (mark: string): string =>
+    Array.from({ length: 5 }, (_unused, at) => `${mark}${String(at + 1)}件目の相談では、申し込んだ後に手数料を求められました。`).join("\n\n");
+
+  it("○ や ・ や ※ で始まる一文の段落の並びは指さない", () => {
+    assert.deepEqual(findingsOf(`${marked("○")}\n`), []);
+    assert.deepEqual(findingsOf(`${marked("・ ")}\n`), []);
+    assert.deepEqual(findingsOf(`${marked("※")}\n`), []);
+    assert.deepEqual(runLengths(`${marked("○")}\n`), []);
+  });
+
+  it("印の無い段落の並び、名前を伏せる ○○ で始まる段落は、これまでどおり数える", () => {
+    assert.equal(findingsOf(`${marked("")}\n`).length, 1);
+    assert.equal(findingsOf(`${marked("○○県の")}\n`).length, 1);
+    assert.equal(findingsOf(`${marked("○●県の")}\n`).length, 1);
+  });
+
+  it("議事録の話し手の印（○委員長（…）　）で始まる段落は発言で、並びに数える", () => {
+    const turn = "○委員長（山田一郎君）　ただいまから委員会を開会いたします。";
+    assert.deepEqual(runLengths(`${turn}\n\n${paragraphs(4)}\n`), [5]);
+  });
+
+  it("印の段落を挟めば、前後の印の無い段落は別の並び", () => {
+    assert.deepEqual(runLengths(`${paragraphs(3)}\n\n○印の付いた項目です。\n\n${paragraphs(3)}\n`), [3, 3]);
+  });
+});
