@@ -465,3 +465,12 @@ describe("concrete-evidence-density: 問いと指示の節", () => {
     assert.ok(flaggedIn(englishWith(last), en).includes("Last"));
   });
 });
+
+describe("concrete-evidence-density: minutes record opinions", () => {
+  const ranIn = (genre: string): number =>
+    runRules(buildDocument("t.md", japaneseWith(ABSTRACT_JA), ja), loadRules("ja"), {}, true, genre).findings.filter((finding) => finding.rule === RULE).length;
+
+  it("does not run on minutes, whose sections record what members said", () => assert.equal(ranIn("business/meeting-notes"), 0));
+
+  it("still runs on a report", () => assert.ok(ranIn("business/report") > 0));
+});
