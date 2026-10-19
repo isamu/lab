@@ -1,0 +1,9 @@
+# 名前の前に形容詞として立つ、点の付いた大文字の略語（U.S. Census Bureau、U.K. Parliament）。文頭の語ではない大文字の語の
+# 前では、点で文が終わらない。日本語の文書の中の英文も同じ分割器で切るので、英語と同じ語を置く。字面どおりに照らす。
+id: prepositive-abbreviation
+language: ja
+entries:
+  - pattern: U.S.
+  - pattern: U.K.
+  - pattern: U.N.
+  - pattern: E.U.
