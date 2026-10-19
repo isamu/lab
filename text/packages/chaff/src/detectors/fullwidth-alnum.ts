@@ -2,11 +2,8 @@ import type { Detector, Finding, ProseDocument, Sentence, Span } from "../plugin
 import { minorityWithin } from "../orthography.ts";
 import { QUOTATION_MARKS, isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { isCitation } from "./kutoten-consistency.ts";
+import { ALNUM_RUN, FULLWIDTH, HALFWIDTH } from "./alnum-number.ts";
 
-/** 英字と数字の並び。半角（ABC123）と全角（ＡＢＣ１２３）。 */
-const ALNUM_RUN = /[A-Za-z0-9Ａ-Ｚａ-ｚ０-９]+/gu;
-const FULLWIDTH = /^[Ａ-Ｚａ-ｚ０-９]+$/u;
-const HALFWIDTH = /^[A-Za-z0-9]+$/u;
 const LETTER = /[A-Za-zＡ-Ｚａ-ｚ]/u;
 
 /**
@@ -106,7 +103,7 @@ const KINDS: readonly AlnumKind[] = ["letter", "letters", "digit", "digits"];
 
 /** 半角の英数字を全角に（NFKC の逆）。 */
 const FULLWIDTH_OFFSET = 0xfee0;
-const toFullwidth = (text: string): string => text.replace(/[A-Za-z0-9]/gu, (char) => String.fromCodePoint((char.codePointAt(0) ?? 0) + FULLWIDTH_OFFSET));
+const toFullwidth = (text: string): string => text.replace(/[A-Za-z0-9./]/gu, (char) => String.fromCodePoint((char.codePointAt(0) ?? 0) + FULLWIDTH_OFFSET));
 
 /** 同じ並びの、もう一方の幅の書き方。 */
 const otherWidth = (run: AlnumRun): string => (run.fullwidth ? run.written.normalize("NFKC") : toFullwidth(run.written));
