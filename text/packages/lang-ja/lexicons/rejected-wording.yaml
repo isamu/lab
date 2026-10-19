@@ -1,0 +1,13 @@
+# 鉤括弧で引いた言い方のすぐ後ろに来て、その言い方を「書かない」と退ける語（「風雨が強い」とはせずに、…）。「X」とは、の定義に
+# 見えても定義ではないので、unused-definition はその語を指さない。字面どおりに照らす。
+id: rejected-wording
+language: ja
+entries:
+  - pattern: とはせず
+  - pattern: とはしない
+  - pattern: とは書かず
+  - pattern: とは書かない
+  - pattern: とは言わず
+  - pattern: とは言わない
+  - pattern: とはいわず
+  - pattern: とはいわない
