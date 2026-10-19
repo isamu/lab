@@ -3,6 +3,7 @@ import { compacted } from "./gram-place.ts";
 import { leadingCounter, trailingPrefix } from "./counter-edge.ts";
 import { trailingAddressee, type AddresseeSuffix } from "./addressee-edge.ts";
 import { leadingPrefix, trailingTitle, type AddresseeWords } from "./addressee-title-edge.ts";
+import { followsForm, holdsName, leadingOrdinal, leadingReference, type Edge } from "./kanji-name-edge.ts";
 import { maskAddresses } from "../address-chain.ts";
 import { isAddressRun } from "./place-run.ts";
 import { isOneName } from "./name-run.ts";
@@ -24,6 +25,7 @@ const KANJI_RUN = /[一-鿿]+/gu;
  * 漢字の連なりと、その文書全体の座標での範囲。quoted は括弧の中身がまるごとこの連なりであること。
  * placed は、題の名前の置き方（括弧を閉じる、補いの括弧が続く、文がこれだけ）をしていること。
  * after は、連なりが文の頭にあるときの、その後ろの文字（宛名の行の、空白と「殿」）。頭になければ undefined。
+ * before は、文の頭から連なりの前までの文字（空白を挟んだ法人格）。
  */
 type KanjiRun = {
   readonly text: string;
@@ -31,6 +33,7 @@ type KanjiRun = {
   readonly quoted: boolean;
   readonly placed: boolean;
   readonly after: string | undefined;
+  readonly before: string;
 };
 
 const SPACE = /\s/gu;
@@ -46,9 +49,12 @@ const NAME_MARKS = { "「": "」", "『": "』", "【": "】" };
 const maskedProse = (prose: string, profile: DocumentProfile | undefined, names: readonly string[]): string =>
   maskSpans(maskAddresses(prose, profile), nameSpans(prose, names));
 
-/** 鉤括弧と隅付き括弧の中身が、ちょうどこの範囲（文の先頭からの位置）か。括弧でくくった漢字だけの語は、書き手が 1 つの名前として示したもの。 */
+/**
+ * 鉤括弧と隅付き括弧の中身が、この範囲（文の先頭からの位置）と、漢字も平仮名も無い語（ページ、センター）だけか。
+ * 括弧でくくった名前は、書き手が 1 つの名前として示したもの（「登録業者情報検索入力ページ」）。
+ */
 const fillsQuote = (sentence: Sentence, start: number, end: number): boolean =>
-  quotedSpans(sentence.text, NAME_MARKS).some((span) => span.start === start && span.end === end);
+  quotedSpans(sentence.text, NAME_MARKS).some((span) => holdsName(sentence.text, span, start, end));
 
 const runsOf = (sentence: Sentence, profile: DocumentProfile | undefined, names: readonly string[]): KanjiRun[] => {
   const prose = proseText(sentence);
@@ -56,10 +62,11 @@ const runsOf = (sentence: Sentence, profile: DocumentProfile | undefined, names:
   return [...maskedProse(prose, profile, names).matchAll(KANJI_RUN)].map((match) => {
     const before = prose.slice(0, match.index).replace(SPACE, "").length;
     const [start, last] = [printed[before], printed[before + match[0].length - 1]];
-    if (start === undefined || last === undefined) return { text: match[0], span: undefined, quoted: false, placed: false, after: undefined };
+    if (start === undefined || last === undefined) return { text: match[0], span: undefined, quoted: false, placed: false, after: undefined, before: "" };
     const span = { start: sentence.span.start + start, end: sentence.span.start + last + 1 };
     const after = sentence.text.slice(0, start).trim() === "" ? sentence.text.slice(last + 1) : undefined;
-    return { text: match[0], span, quoted: fillsQuote(sentence, start, last + 1), placed: isTitlePosition(sentence.text, start, last + 1), after };
+    const quoted = fillsQuote(sentence, start, last + 1);
+    return { text: match[0], span, quoted, placed: isTitlePosition(sentence.text, start, last + 1), after, before: sentence.text.slice(0, start) };
   });
 };
 
@@ -74,6 +81,10 @@ type NameWords = {
   readonly addressee: readonly string[];
   /** 宛名の並びの、組織の名前の前の「各」と後ろの役職（各…学校長、…協会会長）。 */
   readonly addressees: AddresseeWords;
+  /** 前に書いたものを指す語（上記、当該）。連なりの頭にあれば、後ろの語に付いた指示の語。 */
+  readonly references: readonly string[];
+  /** 並べた物の後ろに付く語（等）。連なりの尻にあれば、名前の後ろに付いた語。 */
+  readonly listSuffixes: readonly string[];
 };
 
 type Tail = AddresseeSuffix;
@@ -93,9 +104,9 @@ const coveringOf = (tokens: readonly Token[], span: Span): number[] =>
  * 漢字の連なりが住所（東京都港区新橋二丁目）か 1 つの名前（日本銀行）か 1 つの組織の名前（国立研究開発法人産業技術総合研究所）か。
  * 形態素解析の地名・人名・組織名と数、組織の語彙で決める。
  */
-const isPlaceName = (tokens: readonly Token[], span: Span, words: NameWords): boolean => {
+const isPlaceName = (tokens: readonly Token[], span: Span, words: NameWords, formBefore: boolean): boolean => {
   const covering = coveringOf(tokens, span);
-  return isAddressRun(tokens, covering, words.topUnits) || isOneName(tokens, covering) || isOrganisationRun(tokens, covering, words.organisation);
+  return isAddressRun(tokens, covering, words.topUnits) || isOneName(tokens, covering) || isOrganisationRun(tokens, covering, words.organisation, formBefore);
 };
 
 /** 題の名前（大阪市鶴見区役所公募型比較見積実施要綱）か。題を閉じる語で終わり、ここか文書のほかの所で題として置かれている。 */
@@ -115,7 +126,10 @@ const isAddresseeLine = (run: KanjiRun, words: NameWords): boolean => {
 /** 尻の外す語: 数に付く接頭の語か宛先に付く語と、宛名の行ならその前の役職（日本博物館協会会長殿の「会長殿」）。 */
 const tailOf = (tokens: readonly Token[], run: KanjiRun, span: Span, words: NameWords): Tail | undefined => {
   const prefix = trailingPrefix(tokens, span.end, run.text);
-  const suffix = prefix === undefined ? trailingAddressee(tokens, span.end, run.text, words.addressee) : { surface: prefix.surface, start: prefix.span.start };
+  const suffix =
+    prefix === undefined
+      ? (trailingAddressee(tokens, span.end, run.text, words.addressee) ?? trailingAddressee(tokens, span.end, run.text, words.listSuffixes))
+      : { surface: prefix.surface, start: prefix.span.start };
   const title = isAddresseeLine(run, words) ? trailingTitle(run.text.slice(0, run.text.length - (suffix?.surface.length ?? 0)), words.addressees) : undefined;
   if (title === undefined) return suffix;
   return { surface: title + (suffix?.surface ?? ""), start: (suffix?.start ?? span.end) - title.length };
@@ -124,12 +138,20 @@ const tailOf = (tokens: readonly Token[], run: KanjiRun, span: Span, words: Name
 /** 外す語を外した残り。頭の「各」は、宛名の行でなければ、残りが名前と決まったときだけ外す（呼び出し側が戻す）。 */
 type Measured = { readonly rest: Span; readonly text: string; readonly keptHead: string };
 
+/** 頭の外す語: 数に付いた助数詞、宛名の「各」、前に書いたものを指す語（上記）の順に、最初に当たったもの。prefix は「各」のとき。 */
+const headOf = (tokens: readonly Token[], run: KanjiRun, span: Span, name: string, words: NameWords): { head?: Edge; prefix?: Token } => {
+  const counter = leadingCounter(tokens, span.start, run.text, words.positional);
+  if (counter !== undefined) return { head: counter };
+  const prefix = leadingPrefix(tokens, span.start, name, words.addressees);
+  if (prefix !== undefined) return { head: prefix, prefix };
+  const reference = leadingReference(tokens, span.start, name, words.references) ?? leadingOrdinal(tokens, span.start, name);
+  return reference === undefined ? {} : { head: reference };
+};
+
 const measuredOf = (tokens: readonly Token[], run: KanjiRun, span: Span, words: NameWords): Measured => {
   const tail = tailOf(tokens, run, span, words);
   const name = run.text.slice(0, run.text.length - (tail?.surface.length ?? 0));
-  const counter = leadingCounter(tokens, span.start, run.text, words.positional);
-  const prefix = counter === undefined ? leadingPrefix(tokens, span.start, name, words.addressees) : undefined;
-  const head = counter ?? prefix;
+  const { head, prefix } = headOf(tokens, run, span, name, words);
   const keptHead = prefix !== undefined && !isAddresseeLine(run, words) ? prefix.surface : "";
   return { rest: { start: head?.span.end ?? span.start, end: tail?.start ?? span.end }, text: name.slice(head?.surface.length ?? 0), keptHead };
 };
@@ -143,7 +165,8 @@ const measuredRun = (tokens: readonly Token[] | undefined, run: KanjiRun, contex
   if (run.quoted) return "";
   if (tokens === undefined || run.span === undefined) return run.text;
   const { rest, text, keptHead } = measuredOf(tokens, run, run.span, context.words);
-  return isPlaceName(tokens, rest, context.words) || isTitle(tokens, rest, text, run.placed, context) ? "" : keptHead + text;
+  const formBefore = rest.start === run.span.start && followsForm(run.before, context.words.organisation.forms);
+  return isPlaceName(tokens, rest, context.words, formBefore) || isTitle(tokens, rest, text, run.placed, context) ? "" : keptHead + text;
 };
 
 const longestKanji = (sentence: Sentence, context: RunContext): string =>
@@ -178,6 +201,8 @@ export const kanjiRun: Detector = (doc, options): Finding[] => {
     positional: patterns("calendar-unit"),
     addressee: patterns("addressee-suffix"),
     addressees: { prefixes: patterns("addressee-prefix"), titles: patterns("addressee-title"), endings: organisation.units, forms: organisation.closingForms },
+    references: patterns("reference-prefix"),
+    listSuffixes: patterns("list-suffix"),
   };
   const names = doc.names ?? [];
   const context: RunContext = { profile: doc.profile, names, words, titled: titledNames(doc, doc.profile, names) };

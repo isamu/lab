@@ -1,0 +1,6 @@
+# 並べた物や一つの物の後ろに付き、ほかにもあることを示す語（国家安全保障戦略等、施設周辺等）。
+# max-kanji-continuous は、漢字の連なりの尻にこの語があり、解析が語の切れ目で分けたときは、この語を数えない。
+id: list-suffix
+language: ja
+entries:
+  - pattern: 等

@@ -50,6 +50,7 @@ entries:
   - pattern: 検疫所
   - pattern: 営業所
   - pattern: 出張所
+  - pattern: 相談所
   - pattern: 大学
   - pattern: 学部
   - pattern: 研究科
@@ -66,3 +67,4 @@ entries:
   - pattern: 公民館
   - pattern: 銀行
   - pattern: 支店
+  - pattern: センター
