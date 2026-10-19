@@ -4,6 +4,7 @@ import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { headingKey, repeatedSiblingHeadings } from "../packages/chaff/src/detectors/duplicate-heading.ts";
+import { recordLabelOf, recordRhythmMask } from "../packages/chaff/src/detectors/heading-record-rhythm.ts";
 import type { MarkupHeading } from "../packages/chaff/src/plugin.ts";
 
 // 兄弟の見出しの重複（duplicate-heading）。例文はすべて自作。
@@ -106,6 +107,105 @@ describe("duplicate-heading: 同じ見出しが兄弟に二つある", () => {
   it("句点の無い二行の下線の見出しも、区切り線の上の段落", () => {
     const footer = "発行元\n総務課\n----------\n\n";
     assert.deepEqual(findingsOf(`# お知らせ\n\n本文です。\n\n${footer}次の本文です。\n\n${footer}`), []);
+  });
+
+  it("事例ごとに決まった見出しの組をくり返す FAQ は、重複と言わない", () => {
+    const faq = [
+      "# 相談事例集",
+      "## 1. 借入れの相談",
+      "### 【相談事例】",
+      "返済が苦しいという相談です。",
+      "### 【回答】",
+      "窓口を紹介しました。",
+      "### 【相談事例】",
+      "取立てが強いという相談です。",
+      "### 【回答】",
+      "記録を残すよう伝えました。",
+    ].join("\n\n");
+    assert.deepEqual(findingsOf(`${faq}\n`), []);
+  });
+
+  it("添え書きの違う事例見出しも、同じ型の組のくり返しとして読む", () => {
+    assert.deepEqual(
+      repeatedIn([
+        [2, "1. 契約の相談"],
+        [3, "【事例（約款）】"],
+        [3, "【回答】"],
+        [3, "【事例（解約）】"],
+        [3, "【回答】"],
+        [3, "【事例（約款）】"],
+        [3, "【回答】"],
+      ]),
+      [],
+    );
+    assert.deepEqual(
+      repeatedIn([
+        [2, "Questions"],
+        [3, "Question"],
+        [3, "Answer"],
+        [3, "Question"],
+        [3, "Answer"],
+      ]),
+      [],
+    );
+  });
+
+  it("組の途中に違う見出しが一つ挟まっても、残りがくり返していれば言わない", () => {
+    assert.deepEqual(
+      repeatedIn([
+        [2, "2. 本人確認"],
+        [3, "【事例】"],
+        [3, "【回答とお願い】"],
+        [3, "【事例】"],
+        [3, "【回答】"],
+        [3, "【事例】"],
+        [3, "【回答】"],
+      ]),
+      [],
+    );
+  });
+
+  it("組にならない重複は、括弧の見出しでも言う", () => {
+    assert.deepEqual(
+      repeatedIn([
+        [1, "Changelog"],
+        [2, "1.1.0"],
+        [3, "Added"],
+        [3, "Fixed"],
+        [3, "Added"],
+      ]),
+      ["Added@2"],
+    );
+    assert.deepEqual(
+      repeatedIn([
+        [2, "相談"],
+        [3, "【事例】"],
+        [3, "【事例】"],
+        [3, "【回答】"],
+      ]),
+      ["【事例】@1"],
+    );
+    assert.deepEqual(
+      repeatedIn([
+        [2, "手順"],
+        [3, "準備"],
+        [3, "確認"],
+        [3, "片付け"],
+        [3, "準備"],
+      ]),
+      ["準備@1"],
+    );
+  });
+
+  it("型は括弧の添え書きを除いた言葉。組の中の型はみな違う", () => {
+    assert.equal(recordLabelOf("【事例（約款）】"), "【事例】");
+    assert.equal(recordLabelOf("examples (draft)"), "examples");
+    assert.equal(recordLabelOf("（注）"), "（注）");
+    assert.deepEqual(recordRhythmMask(["a", "b", "a", "b"]), [true, true, true, true]);
+    assert.deepEqual(recordRhythmMask(["a", "a", "a", "a"]), [false, false, false, false]);
+    assert.deepEqual(recordRhythmMask(["a", "b", "a"]), [false, false, false]);
+    assert.deepEqual(recordRhythmMask(["x", "a", "b", "c", "a", "b", "c", "y"]), [false, true, true, true, true, true, true, false]);
+    assert.deepEqual(recordRhythmMask([]), []);
   });
 
   it("違う見出しなら何も言わない", () => {
