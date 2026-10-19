@@ -89,15 +89,32 @@ const spanOf = (paragraph: readonly Line[]): Span[] => {
 };
 
 /**
- * The paragraphs in capitals at the head of a document, before its first sentence: a letterhead, an office's name, an
- * address block (BOARD OF GOVERNORS / WASHINGTON, D.C. 20551). Every line is in capitals and none ends a sentence, so a
- * disclaimer in capitals, which is sentences, is not one. A document with no sentence has no head to tell apart.
+ * The paragraphs whose every line is in capitals and none ends a sentence: a letterhead or an address block at the head
+ * (BOARD OF GOVERNORS / WASHINGTON, D.C. 20551), and a heading a transcript sets in capitals on lines of its own
+ * (OPENING STATEMENT OF HON. JANE DOE, / U.S. SENATOR FROM OHIO). A warning in capitals is sentences, so it is not one. A
+ * document with no sentence has no prose to tell such a paragraph apart from.
  */
-export const letterheadSpans = (source: string): Span[] => {
+export const capitalParagraphSpans = (source: string): Span[] => {
   const paragraphs = paragraphsOf(linesOf(source));
-  const firstSentence = paragraphs.findIndex((paragraph) => paragraph.some((line) => SENTENCE_END.test(line.text)));
-  return paragraphs
-    .slice(0, Math.max(firstSentence, 0))
-    .filter((paragraph) => paragraph.every(isCapitalLine))
-    .flatMap(spanOf);
+  const endsSentence = (paragraph: readonly Line[]): boolean => paragraph.some((line) => SENTENCE_END.test(line.text));
+  if (!paragraphs.some(endsSentence)) return [];
+  return paragraphs.filter((paragraph) => paragraph.every(isCapitalLine) && !endsSentence(paragraph)).flatMap(spanOf);
 };
+
+/** Columns on a line: two spaces or more, or a tab, stand between them. */
+const COLUMN_CELL = /[^\t ]+(?: [^\t ]+)*/gu;
+/** A name in capitals, a comma, and a place or office in ordinary case: JANE Q. DOE, Ohio / JOHN DOE, JR., New Mexico. */
+const ROSTER_CELL = /^([A-Z][A-Z.'’-]*(?: [A-Z][A-Z.'’-]*)*(?:, [JS]R\.)?), \p{Lu}\p{Ll}+(?: \p{Lu}\p{Ll}+)*$/u;
+
+/**
+ * The names of a roster: a column that holds a name in capitals and the member's place in ordinary case (a committee's
+ * members, as a hearing sets them). A run in capitals followed by a comma and prose is no roster.
+ */
+export const rosterNameSpans = (source: string): Span[] =>
+  linesOf(source).flatMap((line) =>
+    [...line.text.matchAll(COLUMN_CELL)].flatMap((cell) => {
+      const name = ROSTER_CELL.exec(cell[0])?.[1];
+      const start = line.start + cell.index;
+      return name === undefined ? [] : [{ start, end: start + name.length }];
+    }),
+  );
