@@ -1,5 +1,6 @@
 import type { Detector, Finding, MarkupHeading } from "../plugin.ts";
 import { lineNumberAt, linesOf } from "../structure/lines.ts";
+import { insideRecordRhythm, recordLabelOf } from "./heading-record-rhythm.ts";
 import { findingAt, writtenHeadings } from "./markup-finding.ts";
 
 /** 見出しの言葉を比べる形。全角と半角、大文字と小文字、空白の数は同じ見出しの違いにしない。 */
@@ -21,22 +22,42 @@ export type RepeatedHeading = { readonly heading: MarkupHeading; readonly first:
 
 type Seen = Map<number, Map<string, MarkupHeading>>;
 
+/** 見出しごとに、同じ親の下の兄弟の型の並びと、その中での自分の位置。 */
+const siblingPlaces = (parents: readonly number[], keys: readonly string[]): { labels: string[]; at: number }[] => {
+  const byParent = new Map<number, string[]>();
+  return keys.map((key, index) => {
+    const labels = byParent.get(parents[index] ?? -1) ?? [];
+    byParent.set(parents[index] ?? -1, labels);
+    labels.push(recordLabelOf(key));
+    return { labels, at: labels.length - 1 };
+  });
+};
+
 /**
  * 同じ親の下で、前の見出しと同じ言葉の見出し（markdownlint の MD024 siblings_only）。変更履歴の版ごとの「Added」「Fixed」のように、
  * 親が違えば同じ言葉でもよい。深さが違っても親が同じなら兄弟として比べる（飛んだ深さの見出しも同じ親の下にある）。
+ * 事例ごとに決まった見出しの組をくり返す所（insideRecordRhythm）は、文書の作りとしての重複なので言わない。
  */
 export const repeatedSiblingHeadings = (headings: readonly MarkupHeading[]): RepeatedHeading[] => {
   const parents = parentIndexes(headings);
+  const keys = headings.map((heading) => headingKey(heading.text));
+  const places = siblingPlaces(parents, keys);
   const seen: Seen = new Map();
-  return headings.flatMap((heading, index) => {
-    const key = headingKey(heading.text);
+  const repeats = headings.flatMap((heading, index) => {
+    const key = keys[index] ?? "";
     const parent = parents[index] ?? -1;
     const siblings = seen.get(parent) ?? new Map<string, MarkupHeading>();
     seen.set(parent, siblings);
     const first = siblings.get(key);
     if (first === undefined) siblings.set(key, heading);
-    return first === undefined || key === "" ? [] : [{ heading, first }];
+    return first === undefined || key === "" ? [] : [{ heading, first, index }];
   });
+  return repeats
+    .filter(({ index }) => {
+      const place = places[index];
+      return place === undefined || !insideRecordRhythm(place.labels, place.at);
+    })
+    .map(({ heading, first }) => ({ heading, first }));
 };
 
 export const duplicateHeading: Detector = (doc): Finding[] => {
