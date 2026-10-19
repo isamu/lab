@@ -36,26 +36,38 @@ describe("isCitationSentence", () => {
   });
 
   it("does not read prose that names a year, quotes someone, or has a parenthesis", () => {
-    [PROSE_WITH_YEAR, PROSE_WITH_QUOTE, PROSE_WITH_YEAR_AND_PLACE, "", "(2024),", 'Rivers (2024) said "yes," twice.'].forEach((text) =>
-      assert.equal(isCitationSentence(text), false, text),
-    );
+    [
+      PROSE_WITH_YEAR,
+      PROSE_WITH_QUOTE,
+      PROSE_WITH_YEAR_AND_PLACE,
+      "",
+      "(2024),",
+      'Rivers (2024) said "yes," twice.',
+      "The board (2024), after a long review of every district, made a note (Important: keep this) for the council.",
+      "The board (2024), after a long review of its findings, pp. 1, went on.",
+    ].forEach((text) => assert.equal(isCitationSentence(text), false, text));
   });
 });
 
 describe("citationLead", () => {
   const SIGNALS = ["see", "see also", "cf."];
 
-  it("is what comes before the last signal ahead of the year, or nothing for a bare citation", () => {
+  it("is what comes before the last signal ahead of the year, or the authors before the year", () => {
     assert.equal(citationLead(`For example, ${QUOTED_TITLE}`, SIGNALS), "For example,");
     assert.equal(citationLead(`Our figures differ; see also ${PUBLISHER_ONLY}`, SIGNALS), "Our figures differ;");
-    assert.equal(citationLead(PUBLISHER_ONLY, SIGNALS), "");
     assert.equal(citationLead(QUOTED_TITLE, SIGNALS), "");
-    assert.equal(citationLead(QUOTED_TITLE, []), "");
+    assert.equal(citationLead(PUBLISHER_ONLY, SIGNALS), "Dan Hale and Eve Sato, eds.");
+    assert.equal(citationLead(QUOTED_TITLE, []), "See Ann Rivers, Ben Okafor, and Carla Mendes");
+  });
+
+  it("takes the year the publication follows, not an earlier year in the writer's words", () => {
+    const prose = "According to the board (2024), the review went on through every district before it came to";
+    assert.equal(citationLead(`${prose} ${PAGES}`, SIGNALS), prose);
   });
 
   it("does not read a signal after the year, and is undefined for prose", () => {
-    assert.equal(citationLead('Ann Rivers (2024), "How to See the Plains," working paper (Springfield, Ill.: Prairie Press).', SIGNALS), "");
-    assert.equal(citationLead("Seeds (2024), the seedling fund (Springfield: Fund Office), grew.", SIGNALS), "");
+    assert.equal(citationLead('Ann Rivers (2024), "How to See the Plains," working paper (Springfield, Ill.: Prairie Press).', SIGNALS), "Ann Rivers");
+    assert.equal(citationLead("Seeds (2024), the seedling fund (Springfield: Fund Office), grew.", SIGNALS), "Seeds");
     assert.equal(citationLead(PROSE_WITH_YEAR, SIGNALS), undefined);
     assert.equal(citationLead("", SIGNALS), undefined);
   });
