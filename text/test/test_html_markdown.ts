@@ -33,6 +33,15 @@ describe("htmlToMarkdown: 見出し・段落・箇条書き", () => {
     assert.equal(htmlToMarkdown("<p>　議長、始めます。<br>　次に進みます。</p>"), "議長、始めます。\n次に進みます。\n");
   });
 
+  it("タグをはさむ空白も一つにまとめる (論文の参考文献の欄の区切り)。&nbsp; で書いた空白は残す", () => {
+    const entry =
+      '<ul><li><span class="tag">Doe (2020)</span>\n<span class="block"><span>J. Doe</span>\n</span>\n<span class="block"><span>A short title</span>.\n</span>\n<span class="block">Cited by: §1.\n</span></li></ul>';
+    assert.equal(htmlToMarkdown(entry), "- Doe (2020) J. Doe A short title. Cited by: §1.\n");
+    assert.equal(htmlToMarkdown("<p>One <em> two </em> three <span hidden>x</span> four.</p>"), "One two three four.\n");
+    assert.equal(htmlToMarkdown("<p>It ends here.&nbsp; Then it goes on.</p>"), "It ends here.  Then it goes on.\n");
+    assert.equal(htmlToMarkdown("<p>It ends here.&#32; Then.</p>"), "It ends here.  Then.\n");
+  });
+
   it("p ごとの段落と、br を二つ重ねた段落の間は空行。br 一つは行を改めるだけ", () => {
     assert.equal(htmlToMarkdown("<p>一つ目の段落です。</p><p>二つ目の段落です。</p>"), "一つ目の段落です。\n\n二つ目の段落です。\n");
     assert.equal(
