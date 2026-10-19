@@ -13,6 +13,7 @@ export type CompareText = {
   readonly droppedHeading: (count: number, before: string, after: string) => string;
   readonly addedHeading: (count: number, after: string) => string;
   readonly reformedHeading: (count: number) => string;
+  readonly respelledHeading: (count: number) => string;
   readonly allowed: (flag: string) => string;
   readonly lines: (before: number, after: number) => string;
   readonly checked: (before: number, after: number, perKind: string) => string;
@@ -20,7 +21,7 @@ export type CompareText = {
   readonly clean: string;
   readonly failed: (dropped: number, added: number) => string;
   /** The tally of the compact output. */
-  readonly tally: (dropped: number, added: number, reformed: number) => string;
+  readonly tally: (dropped: number, added: number, reformed: number, respelled: number) => string;
 };
 
 const KINDS_JA: Readonly<Record<AtomKind, string>> = {
@@ -80,6 +81,10 @@ const UNREAD_EN: Readonly<Record<UnreadReason, (kind: AtomKind) => string>> = {
   "plain-text": () => "the document is not Markdown, so it has no code markup",
 };
 
+/** The respelled count in the compact tally, only when there is one: a run with none reads as before. */
+const respelledJa = (count: number): string => (count > 0 ? `、綴りの直し ${String(count)} 件` : "");
+const respelledEn = (count: number): string => (count > 0 ? `, ${String(count)} respelled` : "");
+
 export const COMPARE_TEXT: Texts<CompareText> = {
   ja: {
     usage:
@@ -92,13 +97,15 @@ export const COMPARE_TEXT: Texts<CompareText> = {
     droppedHeading: (count, before, after) => `✗ 落ちた事実 ${String(count)} 件（${before} にあって ${after} に無い）`,
     addedHeading: (count, after) => `✗ 足された事実 ${String(count)} 件（${after} にだけある）`,
     reformedHeading: (count) => `i 書き方だけ変わった事実 ${String(count)} 件`,
+    respelledHeading: (count) => `i 綴りを直した名前 ${String(count)} 件（大文字と小文字か、文書がほかで使う綴りへの一字の直し）`,
     allowed: (flag) => `（${flag} で許可）`,
     lines: (before, after) => `${String(before)} 行目 → ${String(after)} 行目`,
     checked: (before, after, perKind) => `照合した事実 ${String(before)} 件 → ${String(after)} 件: ${perKind}`,
     separator: "、",
     clean: "落ちた事実も足された事実もありません",
     failed: (dropped, added) => `落ちた事実 ${String(dropped)} 件、足された事実 ${String(added)} 件`,
-    tally: (dropped, added, reformed) => `落ちた ${String(dropped)} 件、足された ${String(added)} 件、書き方だけ ${String(reformed)} 件`,
+    tally: (dropped, added, reformed, respelled) =>
+      `落ちた ${String(dropped)} 件、足された ${String(added)} 件、書き方だけ ${String(reformed)} 件${respelledJa(respelled)}`,
   },
   en: {
     usage: "usage: chaff compare <before> <after> [--compact | --json] [--allow-dropped <kind>] [--allow-added <kind>] [--distinct] [--language ja|en|…]",
@@ -110,12 +117,14 @@ export const COMPARE_TEXT: Texts<CompareText> = {
     droppedHeading: (count, before, after) => `✗ ${counted(count, "fact")} dropped (in ${before}, not in ${after})`,
     addedHeading: (count, after) => `✗ ${counted(count, "fact")} added (only in ${after})`,
     reformedHeading: (count) => `i ${counted(count, "fact")} written another way`,
+    respelledHeading: (count) => `i ${counted(count, "name")} respelled (a change of case, or one letter changed to the spelling the document uses elsewhere)`,
     allowed: (flag) => ` (allowed by ${flag})`,
     lines: (before, after) => `line ${String(before)} → line ${String(after)}`,
     checked: (before, after, perKind) => `Facts checked: ${String(before)} → ${String(after)}: ${perKind}`,
     separator: ", ",
     clean: "No fact dropped or added",
     failed: (dropped, added) => `${counted(dropped, "fact")} dropped, ${counted(added, "fact")} added`,
-    tally: (dropped, added, reformed) => `${String(dropped)} dropped, ${String(added)} added, ${String(reformed)} written another way`,
+    tally: (dropped, added, reformed, respelled) =>
+      `${String(dropped)} dropped, ${String(added)} added, ${String(reformed)} written another way${respelledEn(respelled)}`,
   },
 };

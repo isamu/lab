@@ -236,7 +236,9 @@ repeats the body. The writer usually wants the structure changed, not only the s
 3. Run chaff again and report the same signals before and after, from chaff's output.
 4. Run `npx chaffjs compare <old> <new>` (exit 1 on a dropped or added fact; `--json` to act on it). Restore every
    dropped fact; for one that is not a fact (a number inside a metaphor, the heading of a section you cut), say why it
-   stays out. `--allow-dropped <kind>` excludes a kind you cut on purpose. Never leave an added fact.
+   stays out. `--allow-dropped <kind>` excludes a kind you cut on purpose. Never leave an added fact. A name listed as
+   respelled (a change of case, or one letter to the spelling the document uses elsewhere) is not a failure; check
+   that the new spelling is the right one.
 
 **Full** (全面書き直し, from scratch):
 

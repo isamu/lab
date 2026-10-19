@@ -153,6 +153,8 @@ npx chaffjs fix-plan --depth light|structure|register article.md
 
 A plan for whoever rewrites the file, a person or an AI: the findings by rule, how to rewrite
 each one, and the checks to run afterwards. `--depth` sets how far the rewrite may go.
+One of the checks is `npx chaffjs compare article.md after.md`: it fails when a fact was dropped or added, and lists
+a name whose spelling the rewrite corrected (Borrowmoney → BorrowMoney) as respelled, not as a fact lost.
 
 ## AI score
 
