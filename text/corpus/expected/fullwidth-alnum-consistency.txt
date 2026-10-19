@@ -4,13 +4,13 @@ denkiyagi-shugyo-kisoku  1
 env-nikko-national-park-story  1
 etax-oshirase-mail-templates  4
 jma-faq-typhoon  2
-jma-press-hot-2026-07  8
+jma-press-hot-2026-07  6
 jma-tokubetsu-keiho  3
-jma-yougo-kaze  3
+jma-yougo-kaze  2
 jsprimer-loop  1
 mext-heatstroke-after-holidays  1
 mhlw-kikan-gyomu-shokuin-boshu  2
-mhlw-norovirus-qa  1
+mhlw-norovirus-qa  13
 mhlw-pubcomment-rodohoken  4
 ppc-guidelines-tsusoku  13
 saikosai-h26-09-02-nagano  3
