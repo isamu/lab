@@ -1,0 +1,12 @@
+# 前に書いたもの（または後に書くもの）を指して語の頭に付く語（上記暗号資産交換業者、当該保険契約）。
+# max-kanji-continuous は、漢字の連なりの頭にこの語があり、解析が別の語に分けたときは、この語を数えない。
+id: reference-prefix
+language: ja
+entries:
+  - pattern: 上記
+  - pattern: 下記
+  - pattern: 前記
+  - pattern: 後記
+  - pattern: 当該
+  - pattern: 前述
+  - pattern: 後述

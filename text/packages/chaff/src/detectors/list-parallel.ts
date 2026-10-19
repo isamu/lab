@@ -5,6 +5,7 @@ import { minorityWithin } from "../orthography.ts";
 import { isQuotedAt } from "./bold-label.ts";
 import { endsAsHeadline, markOrSkipped, withoutFootnoteReference, withoutTrailingMarks } from "./list-item-ending.ts";
 import type { BulletList, Detector, Finding, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
+import { isLinkLabel } from "./link-label.ts";
 
 /** What an item is made of: a phrase or a sentence (ending), and the word it opens with (head, English only). */
 export type Axis = "ending" | "head";
@@ -288,11 +289,14 @@ const headContext = (doc: ProseDocument, items: readonly (readonly Sentence[])[]
 
 const listFindings = (doc: ProseDocument, list: BulletList, limit: number): Finding[] => {
   const noteLeads = (doc.lexicons["list-note-lead"] ?? []).map((entry) => entry.pattern);
+  const linkEndings = (doc.lexicons["link-label-ending"] ?? []).map((entry) => entry.pattern);
   const sentencesOf = list.itemSpans.map((span) => ownSentences(doc, span, noteLeads));
   if (sentencesOf.some(runsOn)) return [];
   const judged = sentencesOf.filter((sentences, index) => {
     const span = list.itemSpans[index];
-    return span !== undefined && isJudged(doc.source.slice(span.start, sentences.at(-1)?.span.end ?? span.end), sentences);
+    if (span === undefined) return false;
+    const written = doc.source.slice(span.start, sentences.at(-1)?.span.end ?? span.end);
+    return isJudged(written, sentences) && !isLinkLabel(written, linkEndings);
   });
   const context = headContext(doc, judged);
   return AXES.flatMap((axis) => {
