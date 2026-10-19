@@ -85,6 +85,36 @@ describe("topicDistance: 主題から述語まで", () => {
     assert.equal(topicDistance(tokensOf("延期ではなく中止にします。")), undefined);
   });
 
+  it("主題の述語が先の節で閉じるなら、その節の終わりまで（〜ではありませんが、〜でございますが、〜であって）", () => {
+    assert.equal(topicDistance(tokensOf("この計画は簡単なものではありませんが、来年の春までに必ず終えます。")), 12);
+    assert.equal(topicDistance(tokensOf("本日の議題は、お配りした資料のとおりでございますが、最初に予算をお諮りします。")), 18);
+    assert.equal(topicDistance(tokensOf("この提案は来年の計画につながるものであって、大変ありがたいと受け止めています。")), 15);
+    assert.equal(topicDistance(tokensOf("この計画は重要なものであって、担当者は来年に実施する。")), 8);
+  });
+
+  it("〜ではなく、〜であるため、〜であるならば、〜ところ、〜ており、は、後ろの節に別の主語があるときだけ節の終わりで切る", () => {
+    assert.equal(topicDistance(tokensOf("この申請は、当課の受付ではなく、窓口は別の課にあります。")), 8);
+    assert.equal(topicDistance(tokensOf("この保険は、事故の相手に払う保険であるため、自分のけがは対象になりません。")), 14);
+    assert.equal(topicDistance(tokensOf("売上は順調に伸びており、新しい店の計画が動き始めている。")), 6);
+    assert.equal(topicDistance(tokensOf("この土地は，事業の地区内にあるところ，その施行者である市は，所有者に通知した。")), 10);
+    assert.equal(topicDistance(tokensOf("守るのは役所の仕事であるならば、それは、議論が続いております。")), 10);
+    assert.equal(topicDistance(tokensOf("当社は、価格ではなく、品質で勝負します。")), 14);
+    assert.equal(topicDistance(tokensOf("売上は順調に伸びており、来年も増える見込みです。")), 18);
+  });
+
+  it("受け身で伝える引用（〜だと言われているが）の中の主題は、引用の中で閉じる。自分で考える引用は文の述語まで", () => {
+    assert.equal(topicDistance(tokensOf("世間では、この計画は無理だと言われているが、実際は順調に進んでいる。")), 3);
+    assert.equal(topicDistance(tokensOf("当社は、今後も需要が拡大すると考えております。")), 17);
+  });
+
+  it("文の述語まで数えるもの: 絞り込む「〜であって、〜者」、条件の中の主語、こと＋が、「〜とされていて」", () => {
+    const whole = (text: string): number | undefined => topicDistance(tokensOf(text));
+    assert.equal(whole("この制度は、仕事を探している人であって、支援が必要な者の就職を助けるものです。"), 31);
+    assert.equal(whole("業者は、帳簿を保存することが義務付けられており、客が閲覧を求めた場合、これに応じなければなりません。"), 45);
+    assert.equal(whole("人材の確保は、喫緊の課題となっており、仕組みを作ることが急務となっています。"), 29);
+    assert.equal(whole("大臣は、事務を機構に行わせることとされていて、機構は、基準を公表している。"), 31);
+  });
+
   it("空白は数えない", () => {
     assert.equal(topicDistance(tokensOf("会議は 明日に 延期します。")), topicDistance(tokensOf("会議は明日に延期します。")));
   });
@@ -128,6 +158,15 @@ describe("topic-predicate-distance", () => {
       "来週の定例会議は、新しい担当者の紹介と、先月から続いている予算の見直しと、春に予定している本社の移転の準備と、秋の採用計画の確認と、年末の懇親会の段取りについて話し合う必要があるため、二時間に延長します。\n";
     assert.deepEqual(findingsOf("topic-predicate-distance", far), ["「は」で出した主題から述語まで 91 字あります（80 字まで）"]);
     assert.deepEqual(findingsOf("topic-predicate-distance", "そのため定例会議は二時間に延長します。\n"), []);
+  });
+
+  it("主題の述語が先の節で閉じる文は、その節が長いときだけ指す", () => {
+    const own =
+      "この道行きは安易なものではありませんが、先日の会見で、いわゆる緩和政策が必要な局面ではないと考えている旨を申し上げたのは、こうした賃金と物価の循環的な動きを踏まえた現状の認識に基づくものであります。\n";
+    assert.deepEqual(findingsOf("topic-predicate-distance", own), []);
+    const long =
+      "来週の定例会議は、新しい担当者の紹介と、先月から続いている予算の見直しと、春に予定している本社の移転の準備と、秋の採用計画の確認と、年末の懇親会の段取りについて話し合うための長い会議ではありませんが、資料は前日までに配ります。\n";
+    assert.equal(findingsOf("topic-predicate-distance", long).length, 1);
   });
 
   it("主題の無い文は見ない", () => {
