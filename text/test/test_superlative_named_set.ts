@@ -24,12 +24,9 @@ describe("unqualified-superlative: the set named right before the superlative", 
   });
 
   it("still reports a superlative with no set before it", () => {
-    [
-      "最大の課題は、人手不足です。",
-      "当社の製品は最も優れています。",
-      "この方法で最高の結果が出ます。",
-      "会議の中で、最も大事な点を決めました。",
-    ].forEach((sentence) => assert.equal(superlativeReported(ja, sentence), true, sentence));
+    ["最大の課題は、人手不足です。", "当社の製品は最も優れています。", "この方法で最高の結果が出ます。", "会議の中で、最も大事な点を決めました。"].forEach(
+      (sentence) => assert.equal(superlativeReported(ja, sentence), true, sentence),
+    );
   });
 });
 
