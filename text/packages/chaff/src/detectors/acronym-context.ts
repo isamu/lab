@@ -66,12 +66,12 @@ const numberedPatterns = (words: NotationWords): readonly RegExp[] => {
 const SURNAME_IN_CAPITALS = String.raw`[A-Z]+(?:['’-][A-Z]+)*(?![\p{L}\p{N}_])`;
 
 /**
- * 文頭か行頭の、点で終わる敬称の大文字の書き方と大文字の名前（判決の MR. JUSTICE REHNQUIST took no part …）。文の途中の MR.（the MR.
+ * 文頭か行頭の、点で終わる敬称の大文字の書き方と大文字の名前（判決の MR. JUSTICE REHNQUIST took no part …、MR. CHIEF JUSTICE BURGER）。文の途中の MR.（the MR.
  * HAWLEY file）と点の無い DR（disaster recovery）は略語でもあるので、頭に立つ点の付いた形だけ。
  */
 const capitalHonorific = (words: readonly string[]): RegExp =>
   new RegExp(
-    String.raw`(?<=(?:^|\n)[ \t]*)${oneOf(words.filter((word) => word.endsWith(".")).map((word) => word.toUpperCase()))}\s+${SURNAME_IN_CAPITALS}`,
+    String.raw`(?<=(?:^|\n)[ \t]*)${oneOf(words.filter((word) => word.endsWith(".")).map((word) => word.toUpperCase()))}(?:\s+${SURNAME_IN_CAPITALS}){1,3}`,
     "gu",
   );
 

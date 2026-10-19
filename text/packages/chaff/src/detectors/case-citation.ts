@@ -17,8 +17,9 @@ const REPORTER = String.raw`,[ \t]+\d+[ \t]+\p{Lu}[\p{L}\p{N}. ]*?[ \t]+(?:at[ \
 const spansOf = (text: string, pattern: RegExp): Span[] =>
   [...text.matchAll(pattern)].map((match) => ({ start: match.index, end: match.index + match[0].length }));
 
-/** The first party in capitals, right before the joiner and a capitalised second party (ICC v. Jersey City). */
-const firstParty = (joiner: string): RegExp => new RegExp(String.raw`${EDGE_BEFORE}${CAPITALS}(?=[ \t]+${joiner}[ \t]+\p{Lu})`, "gu");
+/** The first party in capitals, before the joiner and a second party that the reporter follows (ICC v. Jersey City, 322 U.S. 503). */
+const firstParty = (joiner: string): RegExp =>
+  new RegExp(String.raw`${EDGE_BEFORE}${CAPITALS}(?=[ \t]+${joiner}[ \t]+(?:${NAME_WORD}[ \t]+){0,4}${NAME_WORD}${REPORTER})`, "gu");
 
 /** The second party in capitals, after the joiner and before the reporter (v. ICC, 337 U.S. 426; v. TVA, 297 U.S. 288). */
 const secondParty = (joiner: string): RegExp =>

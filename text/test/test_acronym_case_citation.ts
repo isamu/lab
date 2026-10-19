@@ -32,6 +32,7 @@ describe("caseCitationSpans", () => {
     assert.equal(covered("The FTA reviewed the filing in 1950.", "FTA"), false);
     assert.equal(covered("Baker v. FTA was argued twice.", "FTA"), false);
     assert.equal(covered("The FTA v. the states debate went on.", "FTA"), false);
+    assert.equal(covered("The FTA v. Hill Farms dispute went on.", "FTA"), false);
     assert.equal(covered("Growth slowed (OECD 2020) in most places.", "OECD"), false);
     assert.equal(covered("FTA v. Hill Farms, 312 U.S. 40.", "FTA"), true);
     assert.equal(caseCitationSpans("FTA v. Hill Farms", []).length, 0);
@@ -41,7 +42,7 @@ describe("caseCitationSpans", () => {
 describe("undefined-acronym in a court opinion", () => {
   it("does not ask to expand the parties, the courts or a capitalised honorific", () => {
     const opinion = [
-      "MR. JUSTICE BAKER delivered the opinion of the Court.",
+      "MR. CHIEF JUSTICE BAKER delivered the opinion of the Court.",
       "",
       "In Baker v. FTA, 312 U.S. 40 (1950), the Court looked past the label. See also KLM v. Hill Farms, 315 U.S. 9 (1951); Lee v. Ross, 12 F.R.D. 30, 31 (EDNY 1951).",
       "",
