@@ -2,6 +2,7 @@
 // referred to while their siblings are. Pure; the figure words come from the language's figure-label lexicon.
 import { figureMentions, type Mention as FigureMention } from "../figure-references.ts";
 import { labelWordsOf } from "./dangling-figure.ts";
+import { figureListMentions, figureListWordsOf } from "./figure-number-list.ts";
 import { quoteAt } from "./structure-tree.ts";
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 
@@ -62,7 +63,12 @@ export const placementSlips = (
 };
 
 export const figureOrderSlips = (doc: ProseDocument): FigureOrderSlip[] => {
-  const { captions, references } = figureMentions(doc.source, doc.prose ?? doc.source, labelWordsOf(doc), doc.links);
+  const prose = doc.prose ?? doc.source;
+  const { captions, references: singular } = figureMentions(doc.source, prose, labelWordsOf(doc), doc.links);
+  // A plural reference counts only for a figure it names exactly: "Tables 3-5" may be a range or Table 3-5.
+  const captionedKeys = new Set(captions.map((mention) => mention.key));
+  const plural = figureListMentions(prose, figureListWordsOf(doc), doc.links).filter((mention) => captionedKeys.has(mention.key));
+  const references = [...singular, ...plural].toSorted((left, right) => left.start - right.start);
   const headingStarts = (doc.markup?.headings ?? []).map((heading) => heading.start);
   const inTextKinds = new Set((doc.lexicons["figure-in-text"] ?? []).map((entry) => entry.pattern));
   const slips = [...outOfOrder(references), ...placementSlips(captions, references, headingStarts, inTextKinds)];

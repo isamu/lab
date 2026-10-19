@@ -4,6 +4,7 @@ import { authorKey, citationMarks, numbersIn, type CitationMark, type CitationWo
 import { citingFootnotes, minorityCitations } from "../packages/chaff/src/detectors/citation-style.ts";
 import { citationSlips, namesEntry, namesEntryAmong } from "../packages/chaff/src/detectors/citation-entry.ts";
 import { labelOf } from "../packages/chaff/src/detectors/abstract-length.ts";
+import { numbersOfList } from "../packages/chaff/src/detectors/figure-number-list.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
@@ -213,6 +214,49 @@ describe("figure-reference-order: figures referred to in order and in place", ()
 
   it("does not report figures the text never refers to at all", () => {
     assert.deepEqual(variantsOf(en, "figure-reference-order", "# Naps\n\nText.\n\nFigure 1: Design\n\nFigure 2: Recall\n"), []);
+  });
+
+  const tables = "\n\nTable 1: A\n\nTable 2: B\n\nTable 3: C\n\nTable 4: D\n\nTable 5: E\n";
+
+  it("counts each table a plural reference names, as a list or a range", () => {
+    const source = `# Naps\n\nTable 1 shows the design. Tables 2 and 3 pool the sites, and Tables 3 through 5 split them.${tables}`;
+    assert.deepEqual(findingsOf(en, "figure-reference-order", source), []);
+    const order = `# Naps\n\nTables 3, 4, and 5 pool the sites. Table 1 shows the design. Table 2 splits them.${tables}`;
+    assert.deepEqual(
+      findingsOf(en, "figure-reference-order", order).map((finding) => [finding.variant, finding.values["label"], finding.values["after"]]),
+      [
+        ["order", "Table 1", "Table 5"],
+        ["order", "Table 2", "Table 5"],
+      ],
+    );
+  });
+
+  it("does not count a plural reference to another document's tables, or one in a link", () => {
+    const elsewhere = `# Naps\n\nTable 1 shows the design. Tables 2 to 5 of the census pool the sites.${tables}`;
+    assert.deepEqual(variantsOf(en, "figure-reference-order", elsewhere), ["unreferenced", "unreferenced", "unreferenced", "unreferenced"]);
+    const linked = `# Naps\n\nTable 1 shows the design. See [Tables 2 to 5](other.md).${tables}`;
+    assert.deepEqual(variantsOf(en, "figure-reference-order", linked), ["unreferenced", "unreferenced", "unreferenced", "unreferenced"]);
+  });
+
+  it("spreads a range of whole numbers in order, and keeps the ends of any other range", () => {
+    const words = { plurals: [{ word: "Tables", kind: "Table" }], list: [",", "and"], ranges: ["through", "to", "–"], elsewhere: [] };
+    assert.deepEqual(numbersOfList("14, 15, and 17", words), ["14", "15", "17"]);
+    assert.deepEqual(numbersOfList("15 through 19", words), ["15", "16", "17", "18", "19"]);
+    assert.deepEqual(numbersOfList("2–4 and 9", words), ["2", "3", "4", "9"]);
+    assert.deepEqual(numbersOfList("1 to 2020", words), ["1", "2020"]);
+    assert.deepEqual(numbersOfList("5 to 3", words), ["5", "3"]);
+    assert.deepEqual(numbersOfList("3.1 to 3.3", words), ["3.1", "3.3"]);
+    assert.deepEqual(numbersOfList("2-1 and 2-2", words), ["2-1", "2-2"]);
+    assert.deepEqual(numbersOfList("１ through ３", words), ["1", "2", "3"]);
+    assert.deepEqual(numbersOfList("١ through ٣", words), ["١", "٣"]);
+    assert.deepEqual(numbersOfList("1 TO 3", words), ["1", "2", "3"]);
+  });
+
+  it("reads sub-numbers and capitals as a singular reference does, and counts only tables a caption names exactly", () => {
+    const sub = "# Naps\n\nBoth TABLES 2-1 AND 2-2 pool the sites.\n\nTable 2-1: A\n\nTable 2-2: B\n";
+    assert.deepEqual(findingsOf(en, "figure-reference-order", sub), []);
+    const hyphenRange = `# Naps\n\nTable 1 shows the design. Tables 2-5 pool the sites.${tables}`;
+    assert.deepEqual(variantsOf(en, "figure-reference-order", hyphenRange), ["unreferenced", "unreferenced", "unreferenced", "unreferenced"]);
   });
 });
 
