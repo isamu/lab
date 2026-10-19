@@ -66,6 +66,10 @@ describe("orthographic-variant: 文の頭の接続詞", () => {
     assert.equal(findingsOf("# 演説\n\n価格の転嫁、さらには賃上げを進めます。協力を更に深めます。検討を更に加速します。環境を更に整えます。\n").length, 1);
   });
 
+  it("読点の続かない文の頭の「さらに」（さらに高い）は、副詞として今までどおり比べる", () => {
+    assert.equal(findingsOf("# 演説\n\nさらに高い成果を目指します。協力を更に深めます。検討を更に加速します。環境を更に整えます。\n").length, 1);
+  });
+
   it("文の頭の接続詞どうしは比べる", () => {
     assert.equal(findingsOf("# 演説\n\nさらに、進めます。さらに、続けます。さらに、広げます。更に、深めます。\n").length, 1);
   });
@@ -134,7 +138,7 @@ describe("orthographic-variant: 判決の裁判官ごとの意見", () => {
       { span: { start: 40, end: 50 }, text: "意見である。" },
       { span: { start: 60, end: 80 }, text: "裁判官乙丙の反対意見は次のごとくである。" },
     ];
-    const openings = [/裁判官[^。]{1,20}?の(?:補足|反対)?意見は[、，,]?次の(?:とおり|通り|ごとく|如く)/u];
+    const openings = (ja.lexicons["orthographic-variant-voice"] ?? []).map((entry) => new RegExp(entry.pattern, "u"));
     const starts = voiceStarts(sentences, openings);
     assert.deepEqual(starts, [10, 60]);
     assert.deepEqual(
@@ -144,5 +148,7 @@ describe("orthographic-variant: 判決の裁判官ごとの意見", () => {
     assert.deepEqual(voiceStarts(sentences, []), []);
     assert.deepEqual(voiceStarts([], openings), []);
     assert.deepEqual(voiceStarts([{ span: { start: 0, end: 9 }, text: "多数意見は次のとおりである。" }], openings), []);
+    assert.deepEqual(voiceStarts([{ span: { start: 0, end: 9 }, text: "上告理由三についての裁判官甲の補足意見は次のごとくである。" }], openings), [0]);
+    assert.deepEqual(voiceStarts([{ span: { start: 0, end: 9 }, text: "裁判官甲の反対意見は次のとおりであるが、採らない。" }], openings), []);
   });
 });

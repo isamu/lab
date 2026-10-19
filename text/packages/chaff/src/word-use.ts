@@ -60,9 +60,13 @@ const isTeFormConjunction = ({ token, previous, following }: InContext): boolean
   TE.has(following?.[0]?.surface ?? "") &&
   COMMA.has(following?.[1]?.surface ?? "");
 
-/** A listed adverb at the very head of its sentence, at most after a bracket or a dash (さらに、 ――もっとも): there it joins the sentence to the one before. */
-const isOpeningAdverb = ({ token, previous, before }: InContext): boolean =>
-  token.pos === "ADV" && (previous === undefined || (previous.pos === "PUNCT" && !COMMA.has(previous.surface) && before === undefined));
+/**
+ * A listed adverb that opens its sentence with a comma after it (さらに、), or right after a dash or a bracket (――もっとも): there it
+ * joins the sentence to the one before. Opening a sentence alone (さらに高い成果を) it may still be the adverb.
+ */
+const isOpeningAdverb = ({ token, previous, before, following }: InContext): boolean =>
+  token.pos === "ADV" &&
+  ((previous === undefined && COMMA.has(following?.[0]?.surface ?? "")) || (previous?.pos === "PUNCT" && !COMMA.has(previous.surface) && before === undefined));
 
 const isConjunctionUse = (word: InContext, conjunctions: ReadonlySet<string>): boolean =>
   conjunctions.has(word.token.lemma ?? "") && (isTeFormConjunction(word) || isOpeningAdverb(word));
