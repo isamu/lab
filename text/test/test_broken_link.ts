@@ -50,6 +50,15 @@ describe("broken-link: 行き先の無いリンク", () => {
     assert.deepEqual(findingsOf(source, en), ['The link "[b](#setup-2)" points to "#setup-2", which is not a heading on this page']);
   });
 
+  it("MDN の書き方の _2、_3 は、二つ目、三つ目の同じ見出し。その数だけあるときだけ行き先がある", () => {
+    const source = "#### `max-age`\n\n#### `max-age`\n\n| [`max-age`](#max-age) | [`max-age`](#max-age_2) | [a](#max-age_3) | [b](#max-age_1) |\n";
+    assert.deepEqual(findingsOf(source), [
+      "リンク「[a](#max-age_3)」が指す「#max-age_3」の見出しがこの文書にありません",
+      "リンク「[b](#max-age_1)」が指す「#max-age_1」の見出しがこの文書にありません",
+    ]);
+    assert.deepEqual(findingsOf("#### `max-age`\n\n[`max-age`](#max-age_2)\n").length, 1);
+  });
+
   it("-1 は見出しだけに付く。同じ名前の id は数えない", () => {
     assert.deepEqual(findingsOf('## Setup\n\n<a id="setup"></a>\n\n[bad](#setup-1)\n', en).length, 1);
   });

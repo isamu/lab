@@ -7,8 +7,10 @@ const PAGE_TOP = new Set(["", "top"]);
 /** 名前を比べる形。字と数字だけを小文字で残す。見出しから名前を作る決まりは表示するものごとに違う（空白を - にする・記号を消す）ので、その違いを畳む。 */
 export const anchorKey = (name: string): string => name.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
 
-/** 同じ見出しが二つあると、表示するものは二つ目以降に -1、-2 を付ける。 */
-const DUPLICATE_SUFFIX = /-(\d+)$/u;
+/** 同じ見出しが二つあると、表示するものは二つ目以降に印を付ける。GitHub などは -1、-2（二つ目が 1）、MDN は _2、_3（二つ目が 2）。 */
+const DUPLICATE_SUFFIX = /([-_])(\d+)$/u;
+const MDN_SUFFIX = "_";
+const MDN_FIRST_DUPLICATE = 2;
 
 const decoded = (fragment: string): string => {
   try {
@@ -36,11 +38,17 @@ export const anchorsOf = (markup: Markup): Anchors => ({
     .reduce((counts, key) => counts.set(key, (counts.get(key) ?? 0) + 1), new Map<string, number>()),
 });
 
-/** `#setup-2` は、同じ形の見出しが 3 つ以上あるときだけ行き先がある（二つ目が -1）。 */
+/** 印の付いた名前に行き先がある、同じ形の見出しの数。`#setup-2` は 3 つ以上、`#setup_2` は 2 つ以上。 */
+const headingsNeeded = (mark: string, number: number): number | undefined => {
+  if (mark !== MDN_SUFFIX) return number + 1;
+  return number >= MDN_FIRST_DUPLICATE ? number : undefined;
+};
+
 const reachesDuplicate = (fragment: string, headings: ReadonlyMap<string, number>): boolean => {
   const suffix = DUPLICATE_SUFFIX.exec(fragment);
   if (suffix === null) return false;
-  return (headings.get(anchorKey(fragment.slice(0, suffix.index))) ?? 0) > Number(suffix[1]);
+  const needed = headingsNeeded(suffix[1] ?? "", Number(suffix[2]));
+  return needed !== undefined && (headings.get(anchorKey(fragment.slice(0, suffix.index))) ?? 0) >= needed;
 };
 
 /** `#…` の行き先が、文書の中の見出しか id を指しているか。 */
