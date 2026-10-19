@@ -1,0 +1,8 @@
+# 比べる「ほう」（早いほうがよい、資料のほうで）と同じ字を、人（担当の方に＝かた）にも使う語。辞書はどちらもホウと読む。
+# 人の「方」は「に」「の」「は」の前に多く、「が」「で」の前には少ない。orthographic-variant はこの語を、後ろに「が」か「で」が
+# 続くところでだけ比べ、ほかの所は比べない。辞書の形で、漢字とかなの両方を挙げる。
+id: orthographic-variant-comparative
+language: ja
+entries:
+  - pattern: 方
+  - pattern: ほう

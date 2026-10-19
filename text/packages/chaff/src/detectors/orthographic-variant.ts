@@ -17,6 +17,7 @@ import { wholeWordRuns, type WholeWordRun } from "../whole-word-runs.ts";
 import { entriesForGenre } from "../lexicon-genres.ts";
 import { asNounWhereNominal, documentNounKeys } from "../nominal-stem.ts";
 import { isCompoundHead } from "../compound-head.ts";
+import { leadingLabelSpans } from "../leading-label.ts";
 
 /**
  * A word found in the document: where it is, which sentence it is in, its key and spelling, how it is written when that differs, and
@@ -49,6 +50,14 @@ const FUKUSHI = "hiragana-fukushi";
 const IDIOM = "orthographic-variant-idiom";
 /** Lexicon: verbs whose て-form opening a sentence before a comma is a conjunction (あわせて、). */
 const CONJUNCTION = "orthographic-variant-conjunction";
+/** Lexicon: verbs whose judging use (〜とみられる, 増加がみられる) is written in kana while the verb (資料を見る) keeps its kanji. */
+const JUDGING = "orthographic-variant-judging";
+/**
+ * Lexicon: words whose kanji is also a person (方 as かた): compared only before が or で (早いほうが, 資料のほうで), where the
+ * person is rare; before に, の or は (担当の方に) the kanji is mostly the person.
+ */
+const COMPARATIVE = "orthographic-variant-comparative";
+const COMPARATIVE_PARTICLES = new Set(["が", "で"]);
 /** Lexicon: words the tokenizer cuts in one spelling and not the other (お客様, お客 and さま). Each is read whole, keyed by its group. */
 const WHOLE_WORD = "orthographic-variant-whole-word";
 /** Lexicon: suffixes written onto a word that do not make a compound of it (割当て等, 引受け後): the word keeps its okurigana there. */
@@ -68,8 +77,9 @@ const inSentence = (sentence: Sentence, spans: readonly Span[]): Span[] =>
   spans.map((span) => ({ start: span.start - sentence.span.start, end: span.end - sentence.span.start }));
 
 /**
- * Whether a stretch of the sentence is outside a quotation, the team's names, a company's name (関東珪曹硝子㈱) and a reading in
- * brackets (HTTP（えいちてぃーてぃーぴー）): the first three keep their own spelling, and a reading is not a spelling at all.
+ * Whether a stretch of the sentence is outside a quotation, the team's names, a company's name (関東珪曹硝子㈱), a reading in
+ * brackets (HTTP（えいちてぃーてぃーぴー）) and a label opening the sentence (（答）): the first three keep their own spelling,
+ * a reading is not a spelling at all, and a label is a fixed short form.
  */
 const isOpenIn = (sentence: Sentence, names: Names): IsOpen => {
   const closed = [
@@ -77,6 +87,7 @@ const isOpenIn = (sentence: Sentence, names: Names): IsOpen => {
     ...furiganaSpans(sentence.text),
     ...japaneseCompanyNameSpans(sentence.text, names.companyForms),
     ...inSentence(sentence, names.linkTitles),
+    ...leadingLabelSpans(sentence.text),
   ];
   const named = nameSpans(sentence.text, names.team);
   return (start, end) => !isWithinAny(closed, { start, end }) && !touchesAny(named, start, end);
@@ -140,18 +151,37 @@ const isConjunctionUse = ({ token, previous, following }: InContext, conjunction
   TE.has(following?.[0]?.surface ?? "") &&
   COMMA.has(following?.[1]?.surface ?? "");
 
-/** The lexicons that set a verb's use apart: idioms (気をつける) and conjunctions (あわせて、). */
-type Uses = { readonly idioms: ReadonlySet<string>; readonly conjunctions: ReadonlySet<string> };
+/** と, or と and は or も (〜ともみられる): the quotative particle before a verb of judging. */
+const QUOTATIVE = "と";
+const QUOTATIVE_TOPIC = new Set(["は", "も"]);
+const PASSIVE = new Set(["られる", "れる"]);
+
+const followsQuotative = (previous: Token | undefined, before: Token | undefined): boolean =>
+  previous?.pos === "ADP" && (previous.surface === QUOTATIVE || (QUOTATIVE_TOPIC.has(previous.surface) && before?.surface === QUOTATIVE));
+
+/** The particles of the subject before an observing られる (増加がみられる, 発生はみられない); after を it is looking (映画を見られる). */
+const OBSERVED_SUBJECT = new Set(["が", "は", "も"]);
+
+const isObserved = (previous: Token | undefined, following: readonly Token[] | undefined): boolean =>
+  previous?.pos === "ADP" && OBSERVED_SUBJECT.has(previous.surface) && PASSIVE.has(following?.[0]?.lemma ?? "");
+
+/** A listed verb after the quotative と (〜とみる) or observing with られる (増加がみられる): judging what is seen, not looking. */
+const isJudgingUse = ({ token, previous, before, following }: InContext, judging: ReadonlySet<string>): boolean =>
+  token.pos === "VERB" && judging.has(token.lemma ?? "") && (followsQuotative(previous, before) || isObserved(previous, following));
+
+/** The lexicons that set a verb's use apart: idioms (気をつける), conjunctions (あわせて、) and judging (〜とみられる). */
+type Uses = { readonly idioms: ReadonlySet<string>; readonly conjunctions: ReadonlySet<string>; readonly judging: ReadonlySet<string> };
 
 /**
  * A helper verb or a dependent noun (見て下さい, その事) is written kana by many guides while the full word keeps its kanji (資料を下さい).
  * The two uses are compared apart, so a document that follows that convention is consistent. A suffix (業務用, 全員ぶん) is a third use:
  * it is not the dependent noun of the same reading (このように). The verb of an idiom (気をつける) is a fourth, and a
- * て-form used as a conjunction (あわせて、) a fifth.
+ * て-form used as a conjunction (あわせて、) a fifth, and a verb of judging (〜とみられる) a sixth.
  */
-const useOf = (word: InContext, { idioms, conjunctions }: Uses): string => {
+const useOf = (word: InContext, { idioms, conjunctions, judging }: Uses): string => {
   if (isIdiomVerb(word, idioms)) return "idiom";
   if (isConjunctionUse(word, conjunctions)) return "conjunction";
+  if (isJudgingUse(word, judging)) return "judging";
   if (isKanaSuffix(word)) return "suffix";
   if (!isHelper(word)) return "free";
   return word.token.pos === "NOUN" && word.token.features?.["NounType"] !== "Dependent" ? "suffix" : "bound";
@@ -176,17 +206,24 @@ type Skips = {
   readonly skip: ReadonlySet<string>;
   readonly idioms: ReadonlySet<string>;
   readonly conjunctions: ReadonlySet<string>;
+  readonly judging: ReadonlySet<string>;
+  readonly comparative: ReadonlySet<string>;
   readonly wholeWords: ReadonlyMap<string, string>;
   readonly phraseSuffixes: ReadonlySet<string>;
   /** The document's nouns, as documentNounKeys keys them. */
   readonly nouns: ReadonlySet<string>;
 };
 
+/** A listed word outside the comparative frame (担当の方に): the kanji there may be the person of the same reading. */
+const isOutsideComparative = ({ token, following }: InContext, comparative: ReadonlySet<string>): boolean =>
+  comparative.has(token.lemma ?? "") && !COMPARATIVE_PARTICLES.has(following?.[0]?.surface ?? "");
+
 const readingKeyOf = (word: InContext, skips: Skips): string | undefined => {
   const { skip } = skips;
   const { token } = word;
   const lemma = token.lemma;
   if (!CONTENT.has(token.pos) || token.reading === undefined || lemma === undefined || !JAPANESE_WORD.test(lemma) || skip.has(lemma)) return undefined;
+  if (isOutsideComparative(word, skips.comparative)) return undefined;
   const reading = lemmaReading(token.surface, lemma, token.reading);
   if (reading === undefined || [...reading].length < MIN_READING || skip.has(reading) || isCutFromKatakana(word) || isCopulaReadAsVerb(word)) return undefined;
   return `${token.pos}|${useOf(word, skips)}|${reading}`;
@@ -376,6 +413,8 @@ export const orthographicVariant: Detector = (doc, options): Finding[] => {
     skip: new Set([...patternsOf(doc, DISTINCT, options.genre), ...patternsOf(doc, FUKUSHI, options.genre)]),
     idioms: new Set(patternsOf(doc, IDIOM, options.genre)),
     conjunctions: new Set(patternsOf(doc, CONJUNCTION, options.genre)),
+    judging: new Set(patternsOf(doc, JUDGING, options.genre)),
+    comparative: new Set(patternsOf(doc, COMPARATIVE, options.genre)),
     wholeWords: new Map((doc.lexicons[WHOLE_WORD] ?? []).map((entry) => [entry.pattern, entry.group ?? entry.pattern])),
     phraseSuffixes,
     nouns: documentNounKeys(
