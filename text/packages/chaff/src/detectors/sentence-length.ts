@@ -1,5 +1,6 @@
 import { lengthOf, proseText } from "../measure.ts";
 import type { Detector, DetectorOptions, Finding, LengthUnit, Sentence } from "../plugin.ts";
+import { isCitationSentence } from "./citation-sentence.ts";
 import { pageMarkerPattern, pageMarkerSize } from "./page-marker.ts";
 
 type Measure = { readonly size: number; readonly limit: number; readonly variant?: string };
@@ -17,9 +18,11 @@ const measureOf = (sentence: Sentence, unit: LengthUnit, options: DetectorOption
   return { size: lengthOf(sentence, embedded.lengthUnit), limit, variant: `embedded-${embedded.id}` };
 };
 
+/** 脚注の文献の記載（著者 (2025), "題," …）は書き手の文ではないので測らない。 */
 export const sentenceLength: Detector = (doc, options): Finding[] => {
   const markers = pageMarkerPattern((options.lexicon ?? []).map((entry) => entry.pattern));
   return doc.sentences
+    .filter((sentence) => !isCitationSentence(proseText(sentence)))
     .map((sentence) => ({ sentence, measure: measureOf(sentence, doc.lengthUnit, options, markers) }))
     .filter(({ measure }) => measure.size > measure.limit)
     .map(({ sentence, measure }) => ({
