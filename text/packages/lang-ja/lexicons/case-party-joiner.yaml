@@ -1,0 +1,7 @@
+# 英米の判例名で当事者の名前を繋ぐ語（Ashwander v. TVA）。和文の中の英文の判例の引用で、隣の大文字の語は当事者の名前で、
+# 展開を待つ略語ではない。字面どおりに照らす。
+id: case-party-joiner
+language: ja
+entries:
+  - pattern: "v."
+  - pattern: "vs."
