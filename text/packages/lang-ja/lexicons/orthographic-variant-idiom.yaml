@@ -37,3 +37,6 @@ entries:
   - pattern: 自信を持つ
   - pattern: 余裕をもつ
   - pattern: 余裕を持つ
+  # 「憂き目にあう」「ひどい目にあう」の「あう」は「遭う」で、「合う」「会う」とは別の語。
+  - pattern: 目にあう
+  - pattern: 目に遭う

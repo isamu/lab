@@ -18,6 +18,8 @@ import { entriesForGenre } from "../lexicon-genres.ts";
 import { asNounWhereNominal, documentNounKeys } from "../nominal-stem.ts";
 import { isCompoundHead } from "../compound-head.ts";
 import { leadingLabelSpans } from "../leading-label.ts";
+import { voiceAt, voiceStarts } from "../voice-parts.ts";
+import { isCopulaReadAsVerb, isCutFromKatakana, isNumeral, isTouching, isWrittenOntoWord, useOf, type InContext, type Uses } from "../word-use.ts";
 
 /**
  * A word found in the document: where it is, which sentence it is in, its key and spelling, how it is written when that differs, and
@@ -58,6 +60,10 @@ const JUDGING = "orthographic-variant-judging";
  */
 const COMPARATIVE = "orthographic-variant-comparative";
 const COMPARATIVE_PARTICLES = new Set(["が", "で"]);
+/** Lexicon: katakana spellings of a word that name a sense of their own (モノ for goods, beside the formal noun もの). */
+const SENSE = "orthographic-variant-katakana-sense";
+/** Lexicon: sentences that open a separate voice (a justice's own opinion), as regular expressions. Each voice is compared on its own. */
+const VOICE = "orthographic-variant-voice";
 /** Lexicon: words the tokenizer cuts in one spelling and not the other (お客様, お客 and さま). Each is read whole, keyed by its group. */
 const WHOLE_WORD = "orthographic-variant-whole-word";
 /** Lexicon: suffixes written onto a word that do not make a compound of it (割当て等, 引受け後): the word keeps its okurigana there. */
@@ -93,120 +99,8 @@ const isOpenIn = (sentence: Sentence, names: Names): IsOpen => {
   return (start, end) => !isWithinAny(closed, { start, end }) && !touchesAny(named, start, end);
 };
 
-/** A word, the two words before it and the two after it, in its sentence. */
-type InContext = {
-  readonly token: Token;
-  readonly previous: Token | undefined;
-  readonly before: Token | undefined;
-  readonly following?: readonly Token[];
-};
-
-/** A verb's て-form the tokenizer read as a conjunction (追って at the head of a sentence): a kanji stem and て or で. Connectives (そして, それで) are kana. */
-const TE_FORM_CONJUNCTION = /^\p{Script=Han}.*[てで]$/u;
-
-/** After a て-form (見てみる). The tokenizer reads the て as a joining word, or the whole て-form as a conjunction (追って / みる). */
-const followsTeForm = (previous: Token | undefined): boolean =>
-  (previous?.pos === "SCONJ" && (previous.surface === "て" || previous.surface === "で")) ||
-  (previous?.pos === "CCONJ" && TE_FORM_CONJUNCTION.test(previous.surface));
-
-/** は or も after a word ending in で, て or く: the ない after them negates (事実ではない, どれでもない, 高くはない); it is not 無い. */
-const TOPIC_AFTER_LINK = new Set(["は", "も"]);
-const LINK_END = /[でてく]$/u;
-const NEGATION = new Set(["ない", "無い"]);
-
-/** では and でも read as one word after a space (2 ではなく). */
-const LINK_AND_TOPIC = new Set(["では", "でも"]);
-
-const followsLinkAndTopic = (previous: Token | undefined, before: Token | undefined): boolean =>
-  LINK_AND_TOPIC.has(previous?.surface ?? "") || (previous?.pos === "ADP" && TOPIC_AFTER_LINK.has(previous.surface) && LINK_END.test(before?.surface ?? ""));
-
-const negatesAfterTopic = ({ token, previous, before }: InContext): boolean =>
-  token.pos === "ADJ" && NEGATION.has(token.lemma ?? "") && followsLinkAndTopic(previous, before);
-
-const isHelper = (word: InContext): boolean => word.token.features?.["Bound"] === "Yes" || followsTeForm(word.previous) || negatesAfterTopic(word);
-
-const isTouching = (left: Token | undefined, right: Token): boolean => left !== undefined && left.span.end === right.span.start;
-
-const HIRAGANA_ONLY = /^[ぁ-ゖー]+$/u;
-
-/** A kana noun written onto a noun (全員ぶん): a suffix, which may not be the free noun of the same reading (文). */
-const isKanaSuffix = ({ token, previous }: InContext): boolean =>
-  token.pos === "NOUN" && previous?.pos === "NOUN" && isTouching(previous, token) && HIRAGANA_ONLY.test(token.surface);
-
-/** The verb of an idiom (気をつける): the noun, the particle and the verb's dictionary form are in the idiom lexicon. */
-const isIdiomVerb = ({ token, previous, before }: InContext, idioms: ReadonlySet<string>): boolean =>
-  token.pos === "VERB" && previous?.pos === "ADP" && before !== undefined && idioms.has(`${before.surface}${previous.surface}${token.lemma ?? token.surface}`);
-
-const TE = new Set(["て", "で"]);
-const COMMA = new Set(["、", "，", ","]);
-
-/**
- * A listed verb's て-form that opens its sentence and is followed by a comma (あわせて、…): a conjunction ("in addition"), which
- * many guides write in kana while the verb (日程を合わせる) keeps its kanji.
- */
-const isConjunctionUse = ({ token, previous, following }: InContext, conjunctions: ReadonlySet<string>): boolean =>
-  token.pos === "VERB" &&
-  conjunctions.has(token.lemma ?? "") &&
-  (previous === undefined || previous.pos === "PUNCT") &&
-  TE.has(following?.[0]?.surface ?? "") &&
-  COMMA.has(following?.[1]?.surface ?? "");
-
-/** と, or と and は or も (〜ともみられる): the quotative particle before a verb of judging. */
-const QUOTATIVE = "と";
-const QUOTATIVE_TOPIC = new Set(["は", "も"]);
-const PASSIVE = new Set(["られる", "れる"]);
-
-const followsQuotative = (previous: Token | undefined, before: Token | undefined): boolean =>
-  previous?.pos === "ADP" && (previous.surface === QUOTATIVE || (QUOTATIVE_TOPIC.has(previous.surface) && before?.surface === QUOTATIVE));
-
-/** The particles of the subject before an observing られる (増加がみられる, 発生はみられない); after を it is looking (映画を見られる). */
-const OBSERVED_SUBJECT = new Set(["が", "は", "も"]);
-
-const isObserved = (previous: Token | undefined, following: readonly Token[] | undefined): boolean =>
-  previous?.pos === "ADP" && OBSERVED_SUBJECT.has(previous.surface) && PASSIVE.has(following?.[0]?.lemma ?? "");
-
-/** A listed verb after the quotative と (〜とみる) or observing with られる (増加がみられる): judging what is seen, not looking. */
-const isJudgingUse = ({ token, previous, before, following }: InContext, judging: ReadonlySet<string>): boolean =>
-  token.pos === "VERB" && judging.has(token.lemma ?? "") && (followsQuotative(previous, before) || isObserved(previous, following));
-
-/** The lexicons that set a verb's use apart: idioms (気をつける), conjunctions (あわせて、) and judging (〜とみられる). */
-type Uses = { readonly idioms: ReadonlySet<string>; readonly conjunctions: ReadonlySet<string>; readonly judging: ReadonlySet<string> };
-
-/**
- * A helper verb or a dependent noun (見て下さい, その事) is written kana by many guides while the full word keeps its kanji (資料を下さい).
- * The two uses are compared apart, so a document that follows that convention is consistent. A suffix (業務用, 全員ぶん) is a third use:
- * it is not the dependent noun of the same reading (このように). The verb of an idiom (気をつける) is a fourth, and a
- * て-form used as a conjunction (あわせて、) a fifth, and a verb of judging (〜とみられる) a sixth.
- */
-const useOf = (word: InContext, { idioms, conjunctions, judging }: Uses): string => {
-  if (isIdiomVerb(word, idioms)) return "idiom";
-  if (isConjunctionUse(word, conjunctions)) return "conjunction";
-  if (isJudgingUse(word, judging)) return "judging";
-  if (isKanaSuffix(word)) return "suffix";
-  if (!isHelper(word)) return "free";
-  return word.token.pos === "NOUN" && word.token.features?.["NounType"] !== "Dependent" ? "suffix" : "bound";
-};
-
-/** One katakana and then kana that is not katakana (スる): no verb stem is one katakana long, as サボる and ググる are two. */
-const ONE_KATAKANA_HEAD = /^\p{Script=Katakana}(?!\p{Script=Katakana})/u;
-const KATAKANA_END = /\p{Script=Katakana}$/u;
-
-/** A piece the tokenizer cut out of a katakana run (ミスっ read as ミ and スる): not a word of its own. */
-const isCutFromKatakana = ({ token, previous }: InContext): boolean =>
-  ONE_KATAKANA_HEAD.test(token.surface) && token.surface.length > 1 && isTouching(previous, token) && KATAKANA_END.test(previous?.surface ?? "");
-
-/**
- * で read as the verb 出る right after a word with no particle between (JSON でない): the copula's で, which the tokenizer
- * misreads after a space or a name. 出る after a particle (結果がでない) or at the head of a sentence (でない音) is the verb.
- */
-const isCopulaReadAsVerb = ({ token, previous }: InContext): boolean =>
-  token.pos === "VERB" && token.surface === "で" && previous !== undefined && previous.pos !== "ADP";
-
-type Skips = {
+type Skips = Uses & {
   readonly skip: ReadonlySet<string>;
-  readonly idioms: ReadonlySet<string>;
-  readonly conjunctions: ReadonlySet<string>;
-  readonly judging: ReadonlySet<string>;
   readonly comparative: ReadonlySet<string>;
   readonly wholeWords: ReadonlyMap<string, string>;
   readonly phraseSuffixes: ReadonlySet<string>;
@@ -226,6 +120,7 @@ const readingKeyOf = (word: InContext, skips: Skips): string | undefined => {
   if (isOutsideComparative(word, skips.comparative)) return undefined;
   const reading = lemmaReading(token.surface, lemma, token.reading);
   if (reading === undefined || [...reading].length < MIN_READING || skip.has(reading) || isCutFromKatakana(word) || isCopulaReadAsVerb(word)) return undefined;
+  if (isNumeral(token) || isWrittenOntoWord(word)) return undefined;
   return `${token.pos}|${useOf(word, skips)}|${reading}`;
 };
 
@@ -393,6 +288,22 @@ const cellPlace = (cell: TableCell, names: Names): Place => {
   return { sentence, isOpen: isOpenIn(sentence, names), readsLatin: !DATA_KEY_CELL.test(text.trim()) };
 };
 
+/** The odd spellings among places that speak in one voice. */
+const findingsIn = (placed: readonly Place[], skips: Skips, isWord: (word: string) => boolean, limit: number): Finding[] => {
+  const reading = byKanji(placed.flatMap(({ sentence, isOpen }) => readingWords(withCutNounsJoined(sentence, skips.nouns), isOpen, skips)));
+  const katakana = placed.flatMap(({ sentence, isOpen }) => katakanaWords(sentence, isOpen));
+  const runs = placed.flatMap(({ sentence, isOpen }) => katakanaRunWords(sentence, isOpen));
+  const latin = withoutCoinedNames(
+    placed.flatMap(({ sentence, isOpen, readsLatin }) => (readsLatin ? latinWords(sentence, isOpen, skips.skip) : [])),
+    isWord,
+  );
+  const odd = [reading, katakana, latin].flatMap((words) => oddSpellings(words, limit));
+  const oddRuns = oddSpellings(runs, limit).filter(({ word }) => !odd.some((other) => coversOffset(word, other.word.offset)));
+  const all = [...reading, ...katakana, ...runs, ...latin];
+  // A word can be odd by its reading and by its katakana key at once; one place is said once.
+  return [...new Map([...odd, ...oddRuns].map((entry) => [entry.word.offset, entry])).values()].map((entry) => findingOf(all, entry));
+};
+
 /**
  * One word written two ways in one document (出来る and できる, 引っ越し and 引越し, ウィンドウ and ウインドウ, e-mail and email),
  * found without a list of words: the document's own words are grouped by reading or by an evened-out spelling, and the way the
@@ -414,6 +325,7 @@ export const orthographicVariant: Detector = (doc, options): Finding[] => {
     idioms: new Set(patternsOf(doc, IDIOM, options.genre)),
     conjunctions: new Set(patternsOf(doc, CONJUNCTION, options.genre)),
     judging: new Set(patternsOf(doc, JUDGING, options.genre)),
+    senses: new Set(patternsOf(doc, SENSE, options.genre)),
     comparative: new Set(patternsOf(doc, COMPARATIVE, options.genre)),
     wholeWords: new Map((doc.lexicons[WHOLE_WORD] ?? []).map((entry) => [entry.pattern, entry.group ?? entry.pattern])),
     phraseSuffixes,
@@ -422,17 +334,12 @@ export const orthographicVariant: Detector = (doc, options): Finding[] => {
       phraseSuffixes,
     ),
   };
-  const reading = byKanji(placed.flatMap(({ sentence, isOpen }) => readingWords(withCutNounsJoined(sentence, skips.nouns), isOpen, skips)));
-  const katakana = placed.flatMap(({ sentence, isOpen }) => katakanaWords(sentence, isOpen));
-  const runs = placed.flatMap(({ sentence, isOpen }) => katakanaRunWords(sentence, isOpen));
   const dictionary = doc.dictionary?.();
-  const latin = withoutCoinedNames(
-    placed.flatMap(({ sentence, isOpen, readsLatin }) => (readsLatin ? latinWords(sentence, isOpen, skips.skip) : [])),
-    (word) => dictionary?.has(word) ?? true,
+  const isWord = (word: string): boolean => dictionary?.has(word) ?? true;
+  const starts = voiceStarts(
+    doc.sentences,
+    patternsOf(doc, VOICE, options.genre).map((pattern) => new RegExp(pattern, "u")),
   );
-  const odd = [reading, katakana, latin].flatMap((words) => oddSpellings(words, options.limit));
-  const oddRuns = oddSpellings(runs, options.limit).filter(({ word }) => !odd.some((other) => coversOffset(word, other.word.offset)));
-  const all = [...reading, ...katakana, ...runs, ...latin];
-  // A word can be odd by its reading and by its katakana key at once; one place is said once.
-  return [...new Map([...odd, ...oddRuns].map((entry) => [entry.word.offset, entry])).values()].map((entry) => findingOf(all, entry));
+  const voices = groupBy(placed, ({ sentence }) => String(voiceAt(starts, sentence.span.start)));
+  return [...voices.values()].flatMap((voice) => findingsIn(voice, skips, isWord, options.limit));
 };

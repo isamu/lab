@@ -1,0 +1,8 @@
+# カタカナで書いて、かなや漢字の語と別の意味にする書き方。「モノとサービス」のモノは品物で、形式名詞の「もの」とは別の語。
+# orthographic-variant はここに挙げた書き方を、同じ読みのかなや漢字の書き方と別に比べる。
+# 種類の名前としてカタカナにする語（ネギ、オムツ）は、かなの書き方（ねぎ、おむつ）のゆれなので挙げない。
+id: orthographic-variant-katakana-sense
+language: ja
+entries:
+  - pattern: モノ
+  - pattern: コト
