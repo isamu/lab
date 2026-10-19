@@ -1,4 +1,5 @@
 import type { Span } from "chaffjs/plugin";
+import { escapeRegExp } from "./regexp.ts";
 
 /**
  * 空行を挟まず 1 行に 1 項目を並べた箇条書き（「①誓約書」「・〜に関する業務」「(1)学歴：…」、`<br>` で改めた行）。
@@ -6,6 +7,8 @@ import type { Span } from "chaffjs/plugin";
  *
  * 切るのは、印で始まる行の前と後ろの改行。ただし前の行が読点で終わるか、括弧を開いたまま終わるなら、文は次の行へ続いている。
  * 印の無い行の折り返しは切らない。
+ *
+ * 番号だけの札の行（「第１」「第３条」）と、行頭の括弧で囲んだ札（「（別添）…」）も、印で始まる行と同じに切る。札の語は辞書から取る。
  */
 
 const SPACE = "[ \\t\\u3000]";
@@ -52,25 +55,53 @@ const linesOf = (text: string): Line[] => {
   });
 };
 
-/** 改行の前の行と後ろの行のどちらかが項目で、前の行が次へ続いていなければ、そこで文が改まる。 */
-const isCut = (previous: Line, next: Line): boolean =>
-  next.text.trim().length > 0 && !continuesToNextLine(previous.text) && (startsWithListMarker(next.text) || startsWithListMarker(previous.text));
+/**
+ * 注記の印（「※」）。前の行に添える注記で、前の行の文を終えるとは限らない（「ファックス番号：…\n※送ったらご連絡ください。」）。
+ * 注記は折り返して次の行へ続くこともあるので、注記の行の前と後ろでは文を改めない。ただし注記の行が並べば、その間で改める。
+ * そこで文が始まっていれば項目と同じく段落を改める。
+ */
+const NOTE = /^[ \t\u3000]*※/u;
+
+/**
+ * 印のほかに、行を項目と同じに切る札。
+ * label は番号だけの行（「第１」「第３条」「第二章の二」）。数える語は辞書 numbering-counter から。
+ * tag は行頭の括弧で囲んだ札（「（別添）」「【参考】」）。札の語は辞書 line-head-tag から。後ろが助詞なら文の中の語（「（別添）の資料」）。
+ */
+export type LineVocabulary = { readonly label: RegExp; readonly tag: RegExp | undefined };
+
+const NUMERAL = "[0-9０-９〇一二三四五六七八九十百千]+";
+const TAG_OPENER = "[（(【〔［]";
+const TAG_CLOSER = "[）)】〕］]";
+const alternativesOf = (words: readonly string[]): string => words.map(escapeRegExp).join("|");
+
+/** counters は番号を数える語（条、章）、tags は括弧で囲む札の語（別添、参考）。 */
+export const lineVocabulary = (counters: readonly string[], tags: readonly string[]): LineVocabulary => {
+  const counter = counters.length === 0 ? "" : `(?:${alternativesOf(counters)})?`;
+  return {
+    label: new RegExp(`^${SPACE}*第${NUMERAL}${counter}(?:の${NUMERAL})*${SPACE}*$`, "u"),
+    tag: tags.length === 0 ? undefined : new RegExp(`^${SPACE}*${TAG_OPENER}(?:${alternativesOf(tags)})${TAG_CLOSER}${PARTICLE_AFTER}`, "u"),
+  };
+};
+
+/** 項目の行: 箇条書きの印、番号だけの札、行頭の括弧の札で始まる。その前でも後ろでも文が改まる。 */
+const isListLine = (line: string, vocabulary: LineVocabulary): boolean =>
+  startsWithListMarker(line) || vocabulary.label.test(line) || (vocabulary.tag?.test(line) ?? false);
+
+/** 前の行と後ろの行の間で文が改まるか: どちらかが項目の行か、注記の行が続き、前の行が次へ続いていない。 */
+const isCut = (previous: Line, next: Line, vocabulary: LineVocabulary): boolean =>
+  next.text.trim().length > 0 &&
+  !continuesToNextLine(previous.text) &&
+  (isListLine(next.text, vocabulary) || isListLine(previous.text, vocabulary) || (NOTE.test(previous.text) && NOTE.test(next.text)));
 
 /** 文を改める改行の位置: 前の行の終わり（end）と、次の行の最初の文字（start）。 */
-export const listLineBreaks = (text: string): Span[] => {
+export const listLineBreaks = (text: string, vocabulary: LineVocabulary): Span[] => {
   const lines = linesOf(text);
   return lines.slice(1).flatMap((next, index) => {
     const previous = lines[index];
-    if (previous === undefined || !isCut(previous, next)) return [];
+    if (previous === undefined || !isCut(previous, next, vocabulary)) return [];
     return [{ start: previous.end, end: next.start + (next.text.length - next.text.trimStart().length) }];
   });
 };
-
-/**
- * 注記の印（「※」）。前の行に添える注記で、前の行の文を終えるとは限らない（「ファックス番号：…\n※送ったらご連絡ください。」）。
- * 文を改めはしないが、そこで文が始まっていれば項目と同じく段落を改める。
- */
-const NOTE = /^[ \t\u3000]*※/u;
 
 /** 箇条書きの項目か注記の行の頭: 行の始まりから印の最初の文字まで。項目を始める文は、ここで始まる。 */
 export const listItemHeads = (text: string): Span[] =>
