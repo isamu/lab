@@ -34,6 +34,8 @@ describe("caseCitationSpans", () => {
     assert.equal(covered("The FTA v. the states debate went on.", "FTA"), false);
     assert.equal(covered("The FTA v. Hill Farms dispute went on.", "FTA"), false);
     assert.equal(covered("Growth slowed (OECD 2020) in most places.", "OECD"), false);
+    assert.equal(covered("It supports Version 2 (RFC 8305) now.", "RFC"), false);
+    assert.equal(covered("Baker v. Lee, 12 F.R.D. 30, 31 (EDNY 8305).", "EDNY"), false);
     assert.equal(covered("FTA v. Hill Farms, 312 U.S. 40.", "FTA"), true);
     assert.equal(caseCitationSpans("FTA v. Hill Farms", []).length, 0);
   });

@@ -25,8 +25,11 @@ const firstParty = (joiner: string): RegExp =>
 const secondParty = (joiner: string): RegExp =>
   new RegExp(String.raw`(?<=(?<![\p{L}\p{N}_])${joiner}[ \t]+(?:${NAME_WORD}[ \t]+){0,3})${CAPITALS}${EDGE_AFTER}(?=${REPORTER})`, "gu");
 
-/** The court and year in parentheses right after a page or a docket number ("338 (SDNY 1952)", "(No. 14,692d) (CC Va. 1807)"). */
-const COURT_YEAR = /(?<=[\p{N})][ \t]+)\((?:\p{Lu}[\p{L}.]*[ \t]+){1,3}\d{4}\)/gu;
+/**
+ * The court and year in parentheses right after a pin cite: a page after a comma or a reporter ("F.R.D. 335, 338 (SDNY 1952)")
+ * or a docket number in parentheses ("(No. 14,692d) (CC Va. 1807)"). A number after a word ("Version 2 (RFC 8305)") is not a page.
+ */
+const COURT_YEAR = /(?<=(?:[.,\]][ \t]+\d+|\))[ \t]+)\((?:\p{Lu}[\p{L}.]*[ \t]+){1,3}(?:1[6-9]|20)\d{2}\)/gu;
 
 export const caseCitationSpans = (text: string, joiners: readonly string[]): Span[] => {
   const courts = spansOf(text, COURT_YEAR);
