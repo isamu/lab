@@ -92,10 +92,12 @@ describe("topicDistance: 主題から述語まで", () => {
     assert.equal(topicDistance(tokensOf("この計画は重要なものであって、担当者は来年に実施する。")), 8);
   });
 
-  it("〜ではなく、〜であるため、〜ており、は、後ろの節に別の主語があるときだけ節の終わりで切る", () => {
+  it("〜ではなく、〜であるため、〜であるならば、〜ところ、〜ており、は、後ろの節に別の主語があるときだけ節の終わりで切る", () => {
     assert.equal(topicDistance(tokensOf("この申請は、当課の受付ではなく、窓口は別の課にあります。")), 8);
     assert.equal(topicDistance(tokensOf("この保険は、事故の相手に払う保険であるため、自分のけがは対象になりません。")), 14);
     assert.equal(topicDistance(tokensOf("売上は順調に伸びており、新しい店の計画が動き始めている。")), 6);
+    assert.equal(topicDistance(tokensOf("この土地は，事業の地区内にあるところ，その施行者である市は，所有者に通知した。")), 10);
+    assert.equal(topicDistance(tokensOf("守るのは役所の仕事であるならば、それは、議論が続いております。")), 10);
     assert.equal(topicDistance(tokensOf("当社は、価格ではなく、品質で勝負します。")), 14);
     assert.equal(topicDistance(tokensOf("売上は順調に伸びており、来年も増える見込みです。")), 18);
   });

@@ -77,14 +77,24 @@ const closesReport = (tokens: readonly Token[], at: number): boolean => {
 /** A clause the topic's predicate closes for certain. */
 const closesSurely = (tokens: readonly Token[], at: number, last: number): boolean => closesCopula(tokens, at, last) || closesReport(tokens, at);
 
+/** 〜にあるところ、 / 〜したところ、: a clause the nominaliser ところ closes after a predicate. */
+const closesWithTokoro = (tokens: readonly Token[], at: number): boolean =>
+  tokens[at]?.surface === "ところ" && tokens[at]?.features?.["NounType"] === "Dependent" && PREDICATE.has(tokens[at - 1]?.pos ?? "");
+
+/** 〜であるならば、: a copula's conditional. */
+const closesWithCondition = (tokens: readonly Token[], at: number): boolean =>
+  tokens[at]?.surface === "ば" && tokens[at]?.pos === "SCONJ" && tokens[at - 1]?.surface === "なら" && tokens[at - 1]?.lemma === "だ";
+
 /**
- * A clause that may close the topic's predicate, when a new subject follows: a copula stopped by a comma after ない or ため
- * (〜ではなく、, 〜であるため、) and a continuing verb stopped by a comma (〜を続けており、).
+ * A clause that may close the topic's predicate, when a new subject follows, each stopped by a comma: a copula after ない or
+ * ため (〜ではなく、, 〜であるため、), a copula's condition (〜であるならば、), ところ (〜にあるところ、), and a continuing verb
+ * (〜を続けており、).
  */
 const closesIfNewSubject = (tokens: readonly Token[], at: number): boolean => {
   const token = tokens[at];
   if (!isComma(tokens[at + 1])) return false;
   if (token?.surface === "ため" || token?.lemma === "ない") return copulaBefore(tokens, at);
+  if (closesWithTokoro(tokens, at) || closesWithCondition(tokens, at)) return true;
   return token?.pos === "VERB" && token.lemma === "おる" && token.features?.["Bound"] === "Yes";
 };
 
