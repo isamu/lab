@@ -91,6 +91,14 @@ const otherWidth = (run: AlnumRun): string => (run.fullwidth ? run.written.norma
 
 type Located = { readonly sentence: Sentence; readonly run: AlnumRun };
 
+const HALFWIDTH_LOWER = /[a-z]/u;
+
+/**
+ * 小文字を含む半角の英字の語（AI for Science の for と Science）。英語の語は、略語を全角で書く文書（ＡＩ）でも半角で書く。
+ * 文書の英字の書き方の票には入れるが、少ないほうとしては指摘しない。
+ */
+const isHalfwidthEnglishWord = (run: AlnumRun): boolean => run.kind === "letters" && !run.fullwidth && HALFWIDTH_LOWER.test(run.written);
+
 const findingOf = ({ sentence, run }: Located, count: number, of: number, limit: number): Finding => ({
   rule: "",
   severity: "warning",
@@ -113,6 +121,6 @@ export const fullwidthAlnum: Detector = (doc, options): Finding[] => {
   return KINDS.flatMap((kind) => {
     const ofKind = located.filter(({ run }) => run.kind === kind);
     const odd = minorityWithin(ofKind, ({ run }) => run.fullwidth, options.limit);
-    return odd.map((entry) => findingOf(entry, odd.length, ofKind.length, options.limit));
+    return odd.filter(({ run }) => !isHalfwidthEnglishWord(run)).map((entry) => findingOf(entry, odd.length, ofKind.length, options.limit));
   });
 };

@@ -6,6 +6,7 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { usesBeforeDefinition, unusedDefinitions, usesOf, type DefinedTerm } from "../packages/chaff/src/structure/definition-use.ts";
 import { comparableName, expansionConflicts, expansionsIn, nameBefore } from "../packages/chaff/src/acronym-expansions.ts";
 import { deniesSaying } from "../packages/lang-ja/src/denied-saying.ts";
+import { verbFormsOf } from "../packages/chaff/src/structure/gerund-phrase.ts";
 
 // 定義した語の使い方（unused-definition、use-before-definition）と、略語の展開の食い違い（acronym-expansion-conflict）。例文はすべて自作。
 
@@ -27,6 +28,34 @@ describe("unused-definition: 定義したのに使っていない語", () => {
     assert.deepEqual(unused('"Seller" means Harbour Ltd. Both Sellers agree.\n'), []);
     assert.deepEqual(unused('"Policy" means an internal rule. Policies apply to staff.\n'), []);
     assert.deepEqual(unused('"Seller" means Harbour Ltd. The Seller\'s address is below.\n'), []);
+  });
+
+  it("a phrase led by a gerund is used when its verb is written in another form", () => {
+    const defined = '"Filing a claim" means sending us the claim form.';
+    assert.deepEqual(unused(`${defined} You may file a claim within 30 days.\n`), []);
+    assert.deepEqual(unused(`${defined} Once you filed a claim, we reply.\n`), []);
+    assert.deepEqual(unused('"Running the report" means pressing Start. Run the report daily.\n'), []);
+  });
+
+  it("a gerund phrase whose verb never appears with its words, and a gerund alone, stay unused", () => {
+    assert.deepEqual(unused('"Filing a claim" means sending us the claim form. File the form within 30 days.\n'), [
+      '"Filing a claim" is defined but never used',
+    ]);
+    assert.deepEqual(unused('"Licensing" means granting rights. The license is yearly.\n'), ['"Licensing" is defined but never used']);
+    assert.deepEqual(unused('"Pricing information" means our rate card. Price information on request.\n'), ['"Pricing information" is defined but never used']);
+  });
+
+  it("verbFormsOf: the other forms of a gerund followed by a determiner", () => {
+    const determiners = new Set(["a", "the", "your"]);
+    assert.ok(verbFormsOf("Exercising your options", determiners).includes("Exercise your options"));
+    assert.ok(verbFormsOf("Running the report", determiners).includes("Run the report"));
+    assert.ok(verbFormsOf("filing a claim", determiners).includes("filed a claim"));
+    assert.deepEqual(verbFormsOf("Building materials", determiners), []);
+    assert.deepEqual(verbFormsOf("Licensing", determiners), []);
+    assert.deepEqual(verbFormsOf("Service the car", determiners), []);
+    assert.deepEqual(verbFormsOf("Ring the bell", determiners), []);
+    assert.deepEqual(verbFormsOf("Filing a claim", new Set()), []);
+    assert.deepEqual(verbFormsOf("", determiners), []);
   });
 
   it("a word that only contains the term is not a use", () => {
@@ -183,6 +212,27 @@ describe("use-before-definition: 定義より前で使っている語", () => {
     assert.deepEqual(early("## 義務\n\n買主は、代金を支払う。株式会社やまと（以下「買主」という。）と契約する。\n", ja), [
       "「買主」を、3 行目の定義より前で使っています",
     ]);
+  });
+
+  it("番号と語に短い括弧の注を添えただけの札（（1）予約基本計画（第3条関係））は、使った所ではない", () => {
+    const definition = "- 市は、予約に関する基本的な計画（以下「予約基本計画」という。）を定めること。\n";
+    assert.deepEqual(early(`- （1）予約基本計画（第3条関係）\n\n${definition}`, ja), []);
+    assert.deepEqual(early(`- （1）予約基本計画の件（第3条関係）\n\n${definition}`, ja), []);
+    assert.deepEqual(early('(a) Seller (Section 2)\n\nHarbour Ltd (the "Seller") ships the goods.\n'), []);
+  });
+
+  it("括弧の注を除いても語のほかに言葉のある文、長い括弧の文は、使った所", () => {
+    const definition = "- 市は、予約に関する基本的な計画（以下「予約基本計画」という。）を定めること。\n";
+    const reported = ["「予約基本計画」を、3 行目の定義より前で使っています"];
+    assert.deepEqual(early(`- （1）予約基本計画を定める手順（第3条関係）\n\n${definition}`, ja), reported);
+    assert.deepEqual(early(`- （1）市は予約基本計画を定めること。\n\n${definition}`, ja), reported);
+    const seller = ['"Seller" is used here, before it is defined on line 3'];
+    assert.deepEqual(early('The Seller pays (see Section 4).\n\nHarbour Ltd (the "Seller") ships the goods.\n'), seller);
+    assert.deepEqual(early('Seller (the party that ships the goods to the Buyer).\n\nHarbour Ltd (the "Seller") ships the goods.\n'), seller);
+    // 番号の無い括弧、入れ子の括弧、形の違う括弧の組、文の途中の括弧は、注として除かない。
+    ["（再掲）", "（第3条（再掲））", "（第3条関係)", "（第3条関係）の写し"].forEach((note) => {
+      assert.deepEqual(early(`- （1）予約基本計画の件${note}\n\n${definition}`, ja), reported);
+    });
   });
 
   it("条の前の見出しの行と、章・節の行の語は、使った所ではない", () => {

@@ -5,7 +5,7 @@ import { numberInSentence } from "./number-in-sentence.ts";
  * 「4.2 設定」「3.1.4 Scope」のような通し番号。数字と点だけで書くので言語を問わない。
  * 各部分を 3 桁・深さを 6 までに抑え、後戻りが爆発しない形にしてある。
  */
-const DOTTED = /^[ \t]{0,3}(?<number>\d{1,3}(?:\.\d{1,3}){0,5})(?<closing>[.．])?[ \t\u3000]+(?<rest>\S.*)$/u;
+const DOTTED = /^[ \t]{0,3}(?<number>\d{1,3}(?:\.\d{1,3}){0,5})(?<closing>[.．])?(?<gap>[ \t\u3000]+)(?<rest>\S.*)$/u;
 /**
  * 見出しで、点で閉じた番号に題を詰めて書いたもの（「7.委託」「7．委託」「2.Overview」）。後ろが数字なら小数（「1.5万人」）、
  * 小文字なら版（「2.x 系」）なので読まない。
@@ -26,8 +26,11 @@ const isTopSection = (line: string, rest: string): boolean => TOP_SECTION.test(l
 const dottedGroups = (line: string, context: NumberingContext): Readonly<Record<string, string | undefined>> | undefined =>
   DOTTED.exec(line)?.groups ?? (context.isHeading ? TIGHT_HEADING.exec(line)?.groups : undefined);
 
-/** closedByDot: 番号を点で閉じたか（「5. 」）。「1.5 万人」の 1.5 は閉じていない。 */
-type DottedLine = NumberedLine & { readonly closedByDot: boolean };
+/**
+ * closedByDot: 番号を点で閉じたか（「5. 」）。「1.5 万人」の 1.5 は閉じていない。wideGap: 番号と題の間に全角の空白を置いたか
+ * （「9（全角空白）年間収入階級」）。どちらも番号の札の書き方で、数量はそう書かない。
+ */
+type DottedLine = NumberedLine & { readonly closedByDot: boolean; readonly wideGap: boolean };
 
 /**
  * 本文の「1. 」は箇条書きで、見出しの「1. 」は章番号。点を含まない番号は、見出しの行か、テキストの章見出しの形でだけ読む。
@@ -41,15 +44,27 @@ export const dottedNumber = (line: string, context: NumberingContext, plainText 
   const rest = groups?.["rest"]?.trim() ?? "";
   if (depth < 2 && !context.isHeading && !(plainText && isTopSection(line, rest))) return undefined;
   const closedByDot = groups?.["closing"] !== undefined;
-  return { kind: "article", depth, number, absolute: true, label: number, heading: rest, rest, ordinal: Number(number.split(".").at(-1)), closedByDot };
+  const wideGap = groups?.["gap"]?.includes("\u3000") === true;
+  return {
+    kind: "article",
+    depth,
+    number,
+    absolute: true,
+    label: number,
+    heading: rest,
+    rest,
+    ordinal: Number(number.split(".").at(-1)),
+    closedByDot,
+    wideGap,
+  };
 };
 
 /**
- * 番号の後ろが単位なら数量（「1.5 万人」「2.5 days」）。点で閉じた番号（「5. ページ自身の通信」「2. Days off」）は札で、
- * 数量はそう書かないので、後ろに単位の語が来ても数量にしない。
+ * 番号の後ろが単位なら数量（「1.5 万人」「2.5 days」）。点で閉じた番号（「5. ページ自身の通信」「2. Days off」）と、全角の空白を
+ * 置いた番号（「9（全角空白）年間収入階級」）は札で、数量はそう書かないので、後ろに単位の語が来ても数量にしない。
  */
 export const isAmount = (dotted: DottedLine, countedAfter: StructurePatterns["countedAfter"]): boolean =>
-  !dotted.closedByDot && countedAfter?.(dotted.number, dotted.rest) === true;
+  !dotted.closedByDot && !dotted.wideGap && countedAfter?.(dotted.number, dotted.rest) === true;
 
 /** 年まで書いた日付の値（2022-12-08）。年の無い「2 May」は、番号 2 の題「May」とも読める。 */
 const WITH_YEAR = /^\d{4}-/u;

@@ -81,6 +81,12 @@ export const undefinedTerms = (source: string, sentences: readonly (readonly Tok
 
 const patternsOf = (doc: ProseDocument, lexicon: string): string[] => (doc.lexicons[lexicon] ?? []).map((entry) => entry.pattern);
 
+/** The words of one group of a lexicon; undefined: the entries with no group. */
+const groupOf = (doc: ProseDocument, lexicon: string, group: string | undefined): string[] =>
+  (doc.lexicons[lexicon] ?? []).filter((entry) => entry.group === group).map((entry) => entry.pattern);
+
+const ATTACHED = "attached-document-cue";
+
 const findingOf = (doc: ProseDocument, use: UndefinedTerm): Finding => ({
   rule: "undefined-term",
   severity: "info",
@@ -107,6 +113,8 @@ const capitalisedUses = (doc: ProseDocument, sentences: readonly (readonly Token
     definedElsewhere: patternsOf(doc, "defined-elsewhere"),
     capacityMarkers: patternsOf(doc, "capacity-marker"),
     articles: patternsOf(doc, "article"),
+    attachedCues: groupOf(doc, ATTACHED, undefined),
+    attachedTitleEnds: groupOf(doc, ATTACHED, "title-end"),
   };
   const marked = [...(doc.markup?.headings ?? []), ...doc.links, ...setApartSpans(doc.source)];
   return capitalisedTerms({ source: doc.source, readable: readableText(doc.source), sentences, defined, named: namedWords(doc.source), marked, words });

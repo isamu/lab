@@ -9,7 +9,7 @@ import { splitAtQuotedStops } from "./quoted-stop.ts";
 import { reattachClosingQuotes } from "./closing-quote.ts";
 import { insideBrackets, startsWithCloser } from "./inside-brackets.ts";
 import { structure } from "./structure.ts";
-import { cutAtBreaks, listItemHeads, listLineBreaks, startsListItem } from "./list-line.ts";
+import { cutAtBreaks, lineVocabulary, listItemHeads, listLineBreaks, startsListItem } from "./list-line.ts";
 import { listItemHeads as englishListItemHeads, listLineBreaks as englishListLineBreaks } from "./english-list-line.ts";
 import { isReady, predicateOnly, prepare, readsAsCounter, readsAsOneAdverb, readsAsOneWord, tokenize } from "./pos.ts";
 import { markSpacedCounters } from "./spaced-counter.ts";
@@ -59,7 +59,7 @@ const merge = (source: string, spans: readonly Span[]): Sentence[] => {
   const open = insideBrackets(source);
   // 英文だけの段落は英語のアダプタと同じに切る（項目の印も英語の読み方で）。行頭の「J.」は人名の頭文字で、項目の印ではない。
   const english = isEnglishRun(source);
-  const listBreaks = english ? englishListLineBreaks(source) : listLineBreaks(source);
+  const listBreaks = english ? englishListLineBreaks(source) : listLineBreaks(source, LINE_VOCABULARY);
   const itemHeads = english ? englishListItemHeads(source) : listItemHeads(source);
   return spans
     .reduce<Span[]>((acc, span) => {
@@ -100,6 +100,9 @@ const withTokens = (source: string, sentences: readonly Sentence[]): Sentence[] 
     tokens: markReduplication(predicateOnly(tokensWithin(tokens, sentence.span)), DISTRIBUTIVE, readsAsOneAdverb, TAKES_ITERATION_MARK),
   }));
 };
+
+const patternsOf = (id: string): string[] => (LEXICONS[id] ?? []).map((entry) => entry.pattern);
+const LINE_VOCABULARY = lineVocabulary(patternsOf("numbering-counter"), patternsOf("line-head-tag"));
 
 const LABEL_STOPS = labelStops((LEXICONS["abbreviated-label"] ?? []).map((entry) => entry.pattern));
 

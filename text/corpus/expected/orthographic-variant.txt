@@ -23,7 +23,6 @@ etax-oshirase-mail-templates  4
 github-general-privacy-statement  9
 gitlab-values  1
 govuk-cddo-roadmap-2022-2025  1
-gsi-maps-smartphone-howto  1
 herp-da-data-product-manager  2
 ietf-draft-httpapi-ratelimit-headers-10  5
 jma-faq-typhoon  1
@@ -37,8 +36,7 @@ kokkai-217-sangiin-shohisha-7  22
 maff-kyodo-ryori-okaisan-ja  1
 mdn-using-fetch-ja  1
 mext-heatstroke-after-holidays  5
-mhlw-icd-committee-26-minutes  1
-mhlw-norovirus-qa  16
+mhlw-norovirus-qa  17
 moriguchi-satsuki-gakuen-ijime-houshin  3
 neeview-changelog-ja  9
 nsf-19-582-reu-solicitation  1
@@ -62,5 +60,5 @@ utokyo-gakui-kisoku  1
 vue-docs-ja-reactivity-fundamentals  2
 wikipedia-ja-idobata-template-collapse  3
 wikipedia-ja-talk-oden  9
-zenn-coji-ai-smell-lint  2
+zenn-coji-ai-smell-lint  1
 zenn-kaityo256-happy-presentation  9

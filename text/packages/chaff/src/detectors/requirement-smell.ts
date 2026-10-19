@@ -1,4 +1,5 @@
 import type { Detector, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence } from "../plugin.ts";
+import { entriesForGenre } from "../lexicon-genres.ts";
 import { entryCloses, entryIn, entryRanges } from "./lexicon-match.ts";
 import { classWordsOf, isClassCue, namesClassAfter } from "./open-end-class.ts";
 import { glossesCondition } from "./open-end-condition.ts";
@@ -64,9 +65,12 @@ const boundedInTime = (doc: ProseDocument, sentence: Sentence, entry: LexiconEnt
     (doc.lexicons[CONCRETE_DEADLINE] ?? []).map((limit) => limit.pattern),
   );
 
-/** A lexicon's words; the open-end lexicon also holds the cues of a class named after the list and of what holds it, which are no smell. */
-const smellWords = (doc: ProseDocument, lexicon: string): LexiconEntry[] =>
-  (doc.lexicons[lexicon] ?? []).filter((entry) => !isClassCue(entry) && !isScopeCue(entry));
+/**
+ * A lexicon's words that hold in the document's genre ("but not limited to" is a term of art in a contract); the open-end
+ * lexicon also holds the cues of a class named after the list and of what holds it, which are no smell.
+ */
+const smellWords = (doc: ProseDocument, lexicon: string, genre: string | undefined): LexiconEntry[] =>
+  entriesForGenre(doc.lexicons[lexicon] ?? [], genre).filter((entry) => !isClassCue(entry) && !isScopeCue(entry));
 
 /**
  * Where the word stands as a smell. An open-end word inside a name the document gives (業務執行取締役等), giving examples
@@ -96,9 +100,9 @@ const glossesConditionAt = (doc: ProseDocument, sentence: Sentence, lexicon: str
   );
 
 /** The first word of each smell in one requirement sentence: one finding per smell, not per word. */
-const smellsIn = (doc: ProseDocument, sentence: Sentence, names: () => OpenEndNames): Finding[] =>
+const smellsIn = (doc: ProseDocument, sentence: Sentence, genre: string | undefined, names: () => OpenEndNames): Finding[] =>
   SMELLS.flatMap(({ lexicon, variant }) =>
-    smellWords(doc, lexicon)
+    smellWords(doc, lexicon, genre)
       .flatMap((entry) => {
         const offset = smellAt(doc, sentence, entry, lexicon, names);
         const examples = offset !== undefined && (answersQuestion(doc, sentence, entry, lexicon, offset) || glossesConditionAt(doc, sentence, lexicon, offset));
@@ -107,12 +111,12 @@ const smellsIn = (doc: ProseDocument, sentence: Sentence, names: () => OpenEndNa
       .slice(0, 1),
   );
 
-export const requirementSmell: Detector = (doc): Finding[] => {
+export const requirementSmell: Detector = (doc, options): Finding[] => {
   const markers = doc.lexicons[MARKERS] ?? [];
   const notMarkers = doc.lexicons[NOT_MARKERS] ?? [];
   const statements = (doc.lexicons[STATEMENTS] ?? []).map((entry) => entry.pattern);
   // Read once, and only when a requirement has an open-end word to tell apart from a name.
   const cache: { names?: OpenEndNames } = {};
-  const names = (): OpenEndNames => (cache.names ??= openEndNames(doc, smellWords(doc, OPEN_END), statements));
-  return doc.sentences.filter((sentence) => isRequirement(sentence, markers, notMarkers)).flatMap((sentence) => smellsIn(doc, sentence, names));
+  const names = (): OpenEndNames => (cache.names ??= openEndNames(doc, smellWords(doc, OPEN_END, options.genre), statements));
+  return doc.sentences.filter((sentence) => isRequirement(sentence, markers, notMarkers)).flatMap((sentence) => smellsIn(doc, sentence, options.genre, names));
 };
