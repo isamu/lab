@@ -3,7 +3,7 @@ import { compacted } from "./gram-place.ts";
 import { leadingCounter, trailingPrefix } from "./counter-edge.ts";
 import { trailingAddressee, type AddresseeSuffix } from "./addressee-edge.ts";
 import { leadingPrefix, trailingTitle, type AddresseeWords } from "./addressee-title-edge.ts";
-import { followsForm, holdsName, leadingReference } from "./kanji-name-edge.ts";
+import { followsForm, holdsName, leadingOrdinal, leadingReference, type Edge } from "./kanji-name-edge.ts";
 import { maskAddresses } from "../address-chain.ts";
 import { isAddressRun } from "./place-run.ts";
 import { isOneName } from "./name-run.ts";
@@ -83,6 +83,8 @@ type NameWords = {
   readonly addressees: AddresseeWords;
   /** 前に書いたものを指す語（上記、当該）。連なりの頭にあれば、後ろの語に付いた指示の語。 */
   readonly references: readonly string[];
+  /** 並べた物の後ろに付く語（等）。連なりの尻にあれば、名前の後ろに付いた語。 */
+  readonly listSuffixes: readonly string[];
 };
 
 type Tail = AddresseeSuffix;
@@ -124,7 +126,10 @@ const isAddresseeLine = (run: KanjiRun, words: NameWords): boolean => {
 /** 尻の外す語: 数に付く接頭の語か宛先に付く語と、宛名の行ならその前の役職（日本博物館協会会長殿の「会長殿」）。 */
 const tailOf = (tokens: readonly Token[], run: KanjiRun, span: Span, words: NameWords): Tail | undefined => {
   const prefix = trailingPrefix(tokens, span.end, run.text);
-  const suffix = prefix === undefined ? trailingAddressee(tokens, span.end, run.text, words.addressee) : { surface: prefix.surface, start: prefix.span.start };
+  const suffix =
+    prefix === undefined
+      ? (trailingAddressee(tokens, span.end, run.text, words.addressee) ?? trailingAddressee(tokens, span.end, run.text, words.listSuffixes))
+      : { surface: prefix.surface, start: prefix.span.start };
   const title = isAddresseeLine(run, words) ? trailingTitle(run.text.slice(0, run.text.length - (suffix?.surface.length ?? 0)), words.addressees) : undefined;
   if (title === undefined) return suffix;
   return { surface: title + (suffix?.surface ?? ""), start: (suffix?.start ?? span.end) - title.length };
@@ -134,12 +139,12 @@ const tailOf = (tokens: readonly Token[], run: KanjiRun, span: Span, words: Name
 type Measured = { readonly rest: Span; readonly text: string; readonly keptHead: string };
 
 /** 頭の外す語: 数に付いた助数詞、宛名の「各」、前に書いたものを指す語（上記）の順に、最初に当たったもの。prefix は「各」のとき。 */
-const headOf = (tokens: readonly Token[], run: KanjiRun, span: Span, name: string, words: NameWords): { head?: Token; prefix?: Token } => {
+const headOf = (tokens: readonly Token[], run: KanjiRun, span: Span, name: string, words: NameWords): { head?: Edge; prefix?: Token } => {
   const counter = leadingCounter(tokens, span.start, run.text, words.positional);
   if (counter !== undefined) return { head: counter };
   const prefix = leadingPrefix(tokens, span.start, name, words.addressees);
   if (prefix !== undefined) return { head: prefix, prefix };
-  const reference = leadingReference(tokens, span.start, name, words.references);
+  const reference = leadingReference(tokens, span.start, name, words.references) ?? leadingOrdinal(tokens, span.start, name);
   return reference === undefined ? {} : { head: reference };
 };
 
@@ -197,6 +202,7 @@ export const kanjiRun: Detector = (doc, options): Finding[] => {
     addressee: patterns("addressee-suffix"),
     addressees: { prefixes: patterns("addressee-prefix"), titles: patterns("addressee-title"), endings: organisation.units, forms: organisation.closingForms },
     references: patterns("reference-prefix"),
+    listSuffixes: patterns("list-suffix"),
   };
   const names = doc.names ?? [];
   const context: RunContext = { profile: doc.profile, names, words, titled: titledNames(doc, doc.profile, names) };

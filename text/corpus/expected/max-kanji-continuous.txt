@@ -2,7 +2,7 @@ env-nikko-national-park-story  1
 etax-oshirase-mail-templates  2
 jma-press-hot-2026-07  1
 jstage-jkg-72-4-133  1
-jstage-jniph-74-1-2-rehabilitation  13
+jstage-jniph-74-1-2-rehabilitation  12
 jstage-jniph-74-2-119-wbgt  5
 jstage-jniph-74-2-157-heat-policy  4
 kantei-221-shisei-hoshin  4

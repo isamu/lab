@@ -4,7 +4,7 @@ import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
-import { followsForm, holdsName, leadingReference } from "../packages/chaff/src/detectors/kanji-name-edge.ts";
+import { followsForm, holdsName, leadingOrdinal, leadingReference } from "../packages/chaff/src/detectors/kanji-name-edge.ts";
 import type { Token } from "../packages/chaff/src/plugin.ts";
 import { measuredOffOn } from "../scripts/rules-measure-files.ts";
 
@@ -46,6 +46,19 @@ describe("kanji-name-edge", () => {
   });
 });
 
+describe("leadingOrdinal", () => {
+  it("第…代と初代を、解析の語の切れ目で終わるときだけ", () => {
+    assert.deepEqual(leadingOrdinal([token("第", 0), token("三", 1), token("代", 2), token("理事長", 3)], 0, "第三代理事長"), {
+      surface: "第三代",
+      span: { start: 0, end: 3 },
+    });
+    assert.equal(leadingOrdinal([token("初代", 4), token("会長", 6)], 4, "初代会長")?.surface, "初代");
+    assert.equal(leadingOrdinal([token("初代", 4)], 4, "初代"), undefined);
+    assert.equal(leadingOrdinal([token("第三", 0), token("代理人", 2)], 0, "第三代理人"), undefined);
+    assert.equal(leadingOrdinal([token("第三", 0), token("号", 2)], 0, "第三号"), undefined);
+  });
+});
+
 describe("max-kanji-continuous: 名前と指す語", () => {
   before(async () => {
     await ja.prepare?.({ pos: true });
@@ -59,6 +72,16 @@ describe("max-kanji-continuous: 名前と指す語", () => {
   it("valid: 括弧でくくった名前（漢字の連なりとカタカナの語）、前を指す語の後ろの語", () => {
     assert.deepEqual(kanjiWords("確認は、「登録業者情報検索入力ページ」をご利用ください。\n"), []);
     assert.deepEqual(kanjiWords("上記暗号資産交換業者に登録がない場合は届け出ます。\n"), []);
+  });
+
+  it("valid: 代の序数（初代）と尻の「等」は、名前と並べた物の外にある", () => {
+    assert.deepEqual(kanjiWords("十年前に私は初代地方創生担当大臣を拝命しました。\n"), []);
+    assert.deepEqual(kanjiWords("この取組は、国家安全保障戦略等に基づきます。\n"), []);
+  });
+
+  it("invalid: 序数や「等」を外しても長い連なりは数える", () => {
+    assert.deepEqual(kanjiWords("初代地方創生推進交付金担当になった。\n"), ["地方創生推進交付金担当"]);
+    assert.deepEqual(kanjiWords("防衛関係施設周辺区域等を調べる。\n"), ["防衛関係施設周辺区域"]);
   });
 
   it("invalid: 法人格が前に無い一つの区切り、平仮名を含む括弧の中、指す語を外しても長い連なりは数える", () => {

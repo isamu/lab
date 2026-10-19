@@ -1,5 +1,11 @@
 import type { Span, Token } from "../plugin.ts";
 
+/** 頭から外す語と、文書全体の座標でのその範囲。 */
+export type Edge = { readonly surface: string; readonly span: Span };
+
+/** 代の序数（第百二代、初代）。数は漢数字か算用数字。 */
+const ORDINAL = /^(?:第[〇一二三四五六七八九十百千万0-9０-９]+代|初代)/u;
+
 const KANJI_OR_HIRAGANA = /[一-鿿ぁ-ゖ]/u;
 
 /**
@@ -23,4 +29,15 @@ export const leadingReference = (tokens: readonly Token[], start: number, name: 
   const token = tokens.find((candidate) => candidate.span.start === start);
   if (token === undefined || !references.includes(token.surface)) return undefined;
   return name.startsWith(token.surface) && name.length > token.surface.length ? token : undefined;
+};
+
+/**
+ * 連なり（文書全体の座標で start から始まる）の頭の、代の序数（第百二代内閣総理大臣の「第百二代」、初代）。序数が解析の語の切れ目で
+ * 終わり、後ろに語が残るときだけ。何代目かは後ろの名前や役職に付いた語で、読み手は切れ目を迷わない。
+ */
+export const leadingOrdinal = (tokens: readonly Token[], start: number, name: string): Edge | undefined => {
+  const surface = ORDINAL.exec(name)?.[0];
+  if (surface === undefined || surface.length >= name.length) return undefined;
+  const end = start + surface.length;
+  return tokens.some((token) => token.span.end === end) ? { surface, span: { start, end } } : undefined;
 };

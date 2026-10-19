@@ -10,7 +10,7 @@ uses: [pos]
 # または固有名詞か地名を含み、名前の後ろに立つ法人格で閉じる）は数えない。
 # 題の名前（title-ending で閉じ、括弧を閉じるか補いの括弧が続くか一行だけか見出しにあるもの: 〜実施要綱、〜選考試験）は数えない。
 # 日付の単位（4月の「月」）は、数に付いた助数詞として連なりの頭から外す。
-extra_word_lists: [prefecture-unit, organisation-form, organisation-unit, title-ending, calendar-unit, addressee-prefix, addressee-title, reference-prefix]
+extra_word_lists: [prefecture-unit, organisation-form, organisation-unit, title-ending, calendar-unit, addressee-prefix, addressee-title, reference-prefix, list-suffix]
 languages: [ja]
 severity: info
 
@@ -53,8 +53,8 @@ example:
     after: 来週、新しい顧客を増やす施策を話し合う会議を開きます。
 
 not_flagged:
-  ja: 組織の正式名称（国立研究開発法人産業技術総合研究所、経済産業省製造産業局自動車課、東日本青葉自動車販売株式会社）、題の名前（要綱・試験・事業・法令などで終わり、一行だけで書くか括弧でくくるか見出しにあるもの。大阪市鶴見区役所公募型比較見積実施要綱など）、chaff.yaml の names に書いた組織名や製品名、法令の条番号（第二十二条第二項）は数えません。空白を挟んで法人格の後ろに立つ組織の名前（一般社団法人 全国〜センター）と、鉤括弧の中身が漢字の連なりとカタカナや英数字の語だけの名前（「登録業者情報検索入力ページ」）も数えません。頭の、前を指す語（上記、当該）は数えません。
-  en: Official organisation names (a legal form or a place name followed by a name that ends in a unit such as 研究所 or 協会, or a chain of units such as 省・局・課, or a name with a proper noun closed by a legal form such as 株式会社), titles of named things (a run ending in 要綱, 試験, 事業, 法 and the like that stands on a line of its own, closes a bracket, is followed by a bracketed note, or appears in a heading), names listed under names in chaff.yaml, and provision numbers in statutes (第二十二条第二項) are not counted. Nor is an organisation name that follows a legal form across a space (一般社団法人 全国〜センター), or a name in 「」 made of the kanji run and words with no kanji or hiragana (「登録業者情報検索入力ページ」). A leading word that points back or ahead (上記, 当該) is not counted.
+  ja: 組織の正式名称（国立研究開発法人産業技術総合研究所、経済産業省製造産業局自動車課、東日本青葉自動車販売株式会社）、題の名前（要綱・試験・事業・法令などで終わり、一行だけで書くか括弧でくくるか見出しにあるもの。大阪市鶴見区役所公募型比較見積実施要綱など）、chaff.yaml の names に書いた組織名や製品名、法令の条番号（第二十二条第二項）は数えません。空白を挟んで法人格の後ろに立つ組織の名前（一般社団法人 全国〜センター）と、鉤括弧の中身が漢字の連なりとカタカナや英数字の語だけの名前（「登録業者情報検索入力ページ」）も数えません。頭の、前を指す語（上記、当該）と代の序数（第百二代、初代）、尻の「等」は数えません。
+  en: Official organisation names (a legal form or a place name followed by a name that ends in a unit such as 研究所 or 協会, or a chain of units such as 省・局・課, or a name with a proper noun closed by a legal form such as 株式会社), titles of named things (a run ending in 要綱, 試験, 事業, 法 and the like that stands on a line of its own, closes a bracket, is followed by a bracketed note, or appears in a heading), names listed under names in chaff.yaml, and provision numbers in statutes (第二十二条第二項) are not counted. Nor is an organisation name that follows a legal form across a space (一般社団法人 全国〜センター), or a name in 「」 made of the kanji run and words with no kanji or hiragana (「登録業者情報検索入力ページ」). A leading word that points back or ahead (上記, 当該), a leading ordinal (第百二代, 初代) and a trailing 等 are not counted.
 level_meaning:
   ja: 漢字の連続 {limit} 字まで
   en: up to {limit} kanji in a row
