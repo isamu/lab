@@ -2,7 +2,7 @@ import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { isCitationSentence } from "../packages/chaff/src/detectors/citation-sentence.ts";
+import { citationLead, isCitationSentence } from "../packages/chaff/src/detectors/citation-sentence.ts";
 
 // max-sentence-length and a footnote that is a bibliographic citation (authors, year, title, publisher). The citation is a
 // reference, not the writer's sentence, so its length is not measured. Every citation here is self-written.
@@ -42,6 +42,25 @@ describe("isCitationSentence", () => {
   });
 });
 
+describe("citationLead", () => {
+  const SIGNALS = ["see", "see also", "cf."];
+
+  it("is what comes before the last signal ahead of the year, or nothing for a bare citation", () => {
+    assert.equal(citationLead(`For example, ${QUOTED_TITLE}`, SIGNALS), "For example,");
+    assert.equal(citationLead(`Our figures differ; see also ${PUBLISHER_ONLY}`, SIGNALS), "Our figures differ;");
+    assert.equal(citationLead(PUBLISHER_ONLY, SIGNALS), "");
+    assert.equal(citationLead(QUOTED_TITLE, SIGNALS), "");
+    assert.equal(citationLead(QUOTED_TITLE, []), "");
+  });
+
+  it("does not read a signal after the year, and is undefined for prose", () => {
+    assert.equal(citationLead('Ann Rivers (2024), "How to See the Plains," working paper (Springfield, Ill.: Prairie Press).', SIGNALS), "");
+    assert.equal(citationLead("Seeds (2024), the seedling fund (Springfield: Fund Office), grew.", SIGNALS), "");
+    assert.equal(citationLead(PROSE_WITH_YEAR, SIGNALS), undefined);
+    assert.equal(citationLead("", SIGNALS), undefined);
+  });
+});
+
 describe("max-sentence-length and citations in footnotes", () => {
   it("does not measure a footnote that is a citation", () => {
     const footnotes = [QUOTED_TITLE, PUBLISHER_ONLY, PAGES, NO_DATE].map((text, at) => `${at + 1}. ${text} Return to text`).join("\n\n");
@@ -51,5 +70,12 @@ describe("max-sentence-length and citations in footnotes", () => {
   it("still measures a long prose sentence, in the body or in a footnote beside a citation", () => {
     const findings = findingsOf([PROSE_WITH_YEAR, "", `1. ${PROSE_WITH_QUOTE} ${QUOTED_TITLE}`].join("\n"));
     assert.equal(findings.length, 2);
+  });
+
+  it("measures only the writer's words before the signal of a citation", () => {
+    const lead =
+      "A recent paper by Rivers and others discusses the cost of land, the wages of builders, the price of timber, and the time a permit takes in each of the towns";
+    assert.deepEqual(findingsOf(`1. ${lead}; ${QUOTED_TITLE}`), ["This sentence runs 31 words (limit 25)"]);
+    assert.deepEqual(findingsOf(`1. For example, ${QUOTED_TITLE}`), []);
   });
 });
