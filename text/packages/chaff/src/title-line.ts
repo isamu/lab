@@ -26,7 +26,8 @@ const ENDS_LINE = /^[ \t\r]*\n/u;
 const BLANK = /^[ \t\r]*$/u;
 const LOWER_START = /^\p{Ll}/u;
 
-const isShortTitle = (rest: string, notion: TitleNotion): boolean => {
+/** rest, the words after a label and its number, are a short title by notion's measure. */
+export const isShortTitle = (rest: string, notion: TitleNotion): boolean => {
   const title = rest.trim();
   const words = title.split(/\s+/u).filter((word) => word !== "");
   return (

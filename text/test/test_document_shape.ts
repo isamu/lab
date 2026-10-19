@@ -225,6 +225,24 @@ describe("title-length: a title or heading too long to scan", () => {
   it("does not count a number label at the head", () =>
     assert.equal(fired(en, "# Title\n\n## Chapter 12. Moving to the new inventory system this year\n\nText.\n", "title-length"), 0));
 
+  it("does not count a numbered series label in brackets at the end", () => {
+    const series = "# Glossary of terms for tax and National Insurance contributions for employee travel (490: Employee travel)\n\nText.\n";
+    assert.equal(fired(en, series, "title-length", "docs/glossary"), 0);
+    const aside = "# Glossary of terms for tax and National Insurance contributions for employee travel (with worked examples)\n\nText.\n";
+    assert.equal(fired(en, aside, "title-length", "docs/glossary"), 1);
+    const ratio = "# Glossary of terms for tax and National Insurance contributions for employee travel (ratio 2025: 10 per cent)\n\nText.\n";
+    assert.equal(fired(en, ratio, "title-length", "docs/glossary"), 1);
+  });
+
+  it("counts another document's title quoted in 「」 as one name, but not a quoted event name nor a heading that is only a quote", () => {
+    const event = "# 題\n\n本文です。\n\n## 在庫管理の業務委託見積案件について（「在庫管理システムの移行に伴う各店舗での説明会」事業の委託）\n\n本文です。\n";
+    assert.equal(fired(ja, event, "title-length", "blog/tech"), 1);
+    const amends = "# 題\n\n本文です。\n\n## 「在庫管理システムの移行に伴う各店舗での作業手順（第二版）の取扱いについて」等の一部改正について\n\n本文です。\n";
+    assert.equal(fired(ja, amends, "title-length", "blog/tech"), 0);
+    const quoteOnly = `# 題\n\n本文です。\n\n## 「${LONG_JA.slice(3)}」\n\n本文です。\n`;
+    assert.equal(fired(ja, quoteOnly, "title-length", "blog/tech"), 1);
+  });
+
   it("allows a longer formal title in a report", () => {
     const formal = "# 令和8年度における新しい在庫管理システムへの移行に伴う全国の各店舗での具体的な作業について\n\n本文です。\n";
     assert.equal(fired(ja, formal, "title-length", "blog/tech"), 1);

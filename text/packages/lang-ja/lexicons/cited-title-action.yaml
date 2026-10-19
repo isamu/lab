@@ -1,0 +1,13 @@
+# かぎ括弧で引いたほかの文書の題のすぐ後ろに書く、その文書をどうするかの語（「…の取扱いについて」等の一部改正について）。
+# title-length は、この語の前のかぎ括弧の中をほかの文書の名前と読み、一つの名前と数える。行事や事業の名前を引いた
+# かぎ括弧（「二十歳のつどい」事業）は、題の書き手の言葉なので数える。
+id: cited-title-action
+language: ja
+entries:
+  - pattern: 等の一部改正
+  - pattern: の一部改正
+  - pattern: 等の改正
+  - pattern: の改正
+  - pattern: 等の廃止
+  - pattern: の廃止
+  - pattern: の制定
