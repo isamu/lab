@@ -55,6 +55,13 @@ describe("unknown-word: a word not in the dictionary, one letter from one that i
     assert.deepEqual(unknown("Read the guide on running evals over a model's outputs."), []);
   });
 
+  it("the -ee and -or names of a party, and intel, aridification and doozy, are known; a typo among them is still reported", () => {
+    assert.deepEqual(unknown("The permittee and the franchisor told the sublicensee that the optionee had signed."), []);
+    assert.deepEqual(unknown("Field intel showed aridification across the basin, and the drought was a doozy."), []);
+    assert.deepEqual(unknown("The permitee filed the report."), ['"permitee" is not in the dictionary; did you mean "permittee"?']);
+    assert.deepEqual(unknown("The basin shows aridificaton."), ['"aridificaton" is not in the dictionary; did you mean "aridification"?']);
+  });
+
   it("partway, combinators and const are known, but a typo among them is still reported", () => {
     assert.deepEqual(unknown("The upload stopped partway, so the parser combinators marked the item const."), []);
     assert.deepEqual(unknown("The upload stopped partwya through."), ['"partwya" is not in the dictionary; did you mean "partway"?']);

@@ -13,8 +13,10 @@ entries:
   - pattern: alia
   - pattern: api
   - pattern: app
+  - pattern: aridification
   - pattern: async
   - pattern: auth
+  - pattern: awardee
   - pattern: backend
   - pattern: backlog
   - pattern: backslash
@@ -55,7 +57,9 @@ entries:
   - pattern: dev
   - pattern: devops
   - pattern: dialog
+  - pattern: distributee
   - pattern: dogfood
+  - pattern: doozy
   - pattern: dropdown
   - pattern: ebook
   - pattern: ecommerce
@@ -70,6 +74,8 @@ entries:
   - pattern: fide
   - pattern: filename
   - pattern: forma
+  - pattern: franchisee
+  - pattern: franchisor
   - pattern: frontend
   - pattern: generis
   - pattern: geospatial
@@ -90,8 +96,10 @@ entries:
   - pattern: incentivise
   - pattern: incentivize
   - pattern: indemnitee
+  - pattern: indemnitor
   - pattern: init
   - pattern: inline
+  - pattern: intel
   - pattern: interoperability
   - pattern: interoperable
   - pattern: json
@@ -105,6 +113,7 @@ entries:
   - pattern: logout
   - pattern: lookup
   - pattern: markdown
+  - pattern: mentee
   - pattern: meta
   - pattern: metadata
   - pattern: middleware
@@ -124,6 +133,7 @@ entries:
   - pattern: onboarding
   - pattern: online
   - pattern: onsite
+  - pattern: optionee
   - pattern: param
   - pattern: params
   - pattern: parser
@@ -133,6 +143,7 @@ entries:
   - pattern: payout
   - pattern: pdf
   - pattern: pendency
+  - pattern: permittee
   - pattern: pharming
   - pattern: phishing
   - pattern: plaintext
@@ -151,6 +162,7 @@ entries:
   - pattern: refactor
   - pattern: regex
   - pattern: regexp
+  - pattern: releasee
   - pattern: repo
   - pattern: reputational
   - pattern: requestor
@@ -176,6 +188,8 @@ entries:
   - pattern: strategize
   - pattern: struct
   - pattern: subfolder
+  - pattern: sublessee
+  - pattern: sublicensee
   - pattern: subproject
   - pattern: sustainably
   - pattern: syntax
