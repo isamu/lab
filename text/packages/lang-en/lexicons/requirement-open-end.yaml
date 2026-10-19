@@ -6,4 +6,7 @@ entries:
   - pattern: etc.
   - pattern: and so on
   - pattern: and the like
+  # In a contract "including, but not limited to" is a term of art: it keeps a court from narrowing the defined class to
+  # the examples listed, so the class named before it decides the scope. Specifications and documentation only.
   - pattern: but not limited to
+    genres: [technical, docs]
