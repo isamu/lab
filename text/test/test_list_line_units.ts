@@ -5,8 +5,10 @@ import { listItemParagraphs } from "../packages/chaff/src/list-item-paragraphs.t
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
-import { listLineBreaks, startsWithListMarker } from "../packages/lang-ja/src/list-line.ts";
+import { lineVocabulary, listLineBreaks, startsWithListMarker } from "../packages/lang-ja/src/list-line.ts";
 import type { Span } from "../packages/chaff/src/plugin.ts";
+
+const VOCABULARY = lineVocabulary(["章", "条", "項"], ["別添", "参考"]);
 
 const textsOf = (source: string): string[] => ja.segment(source).sentences.map((sentence) => sentence.text);
 
@@ -52,16 +54,51 @@ describe("startsWithListMarker: 行頭の印", () => {
 
 describe("listLineBreaks: 項目の行の前後で文が改まる", () => {
   it("項目の行の前と後ろで切る", () => {
-    assert.equal(listLineBreaks("次の書類を出す。\n①　誓約書\n②　身元保証書\nただし省略できる。").length, 3);
+    assert.equal(listLineBreaks("次の書類を出す。\n①　誓約書\n②　身元保証書\nただし省略できる。", VOCABULARY).length, 3);
   });
 
   it("読点で終わる行と、括弧を開いたまま終わる行の後ろでは切らない", () => {
-    assert.deepEqual(listLineBreaks("①　会社が定める書類のうち、\n本人が用意するもの"), []);
-    assert.deepEqual(listLineBreaks("①　職務経歴書（様式は任意で、\n写真を貼る。）"), []);
+    assert.deepEqual(listLineBreaks("①　会社が定める書類のうち、\n本人が用意するもの", VOCABULARY), []);
+    assert.deepEqual(listLineBreaks("①　職務経歴書（様式は任意で、\n写真を貼る。）", VOCABULARY), []);
   });
 
   it("印の無い行の折り返しでは切らない", () => {
-    assert.deepEqual(listLineBreaks("この規程は社員の勤務について\n必要な事項を定める。"), []);
+    assert.deepEqual(listLineBreaks("この規程は社員の勤務について\n必要な事項を定める。", VOCABULARY), []);
+  });
+
+  it("番号だけの札の行（第１、第３条、第二章の二）の前と後ろで切る", () => {
+    ["第１", "第３条", "　第12条　", "第二章の二", "第２の３"].forEach((label) =>
+      assert.equal(listLineBreaks(`前の文。\n${label}\n本文を次のように改める`, VOCABULARY).length, 2, label),
+    );
+  });
+
+  it("札に語の続く行や、文の中の番号は札ではない", () => {
+    ["第１回の会議で", "第３条の規定により", "第１　総則", "次の第１", "第３号様式"].forEach((line) =>
+      assert.deepEqual(listLineBreaks(`${line}\n届け出る`, VOCABULARY), [], line),
+    );
+  });
+
+  it("数える語が辞書に無ければ、第と番号だけを札と読む", () => {
+    const bare = lineVocabulary([], []);
+    assert.equal(listLineBreaks("第１\n本文", bare).length, 1);
+    assert.deepEqual(listLineBreaks("第３条\n本文", bare), []);
+  });
+
+  it("行頭の括弧の札（別添、参考）の行の前と後ろで切る", () => {
+    assert.equal(listLineBreaks("※ 改定について（PDF）\n（別添）変数の一覧（PDF）\n【参考】過去の結果", VOCABULARY).length, 2);
+  });
+
+  it("札の後ろが助詞の行、辞書に無い括弧の語、札の辞書が空なら切らない", () => {
+    assert.deepEqual(listLineBreaks("（別添）の資料を\n参照する", VOCABULARY), []);
+    assert.deepEqual(listLineBreaks("（株）山田商事は\n本日開業した", VOCABULARY), []);
+    assert.deepEqual(listLineBreaks("変更の内容\n（別添）変数の一覧\n", lineVocabulary(["条"], [])), []);
+  });
+
+  it("注記（※）の行が並べばその間で切るが、注記の行の前と、折り返した注記の後ろでは切らない", () => {
+    assert.equal(listLineBreaks("※ 変更について（PDF）\n※ 改定について（PDF）", VOCABULARY).length, 1);
+    assert.deepEqual(listLineBreaks("ファックス番号：012\n※送られたらご連絡ください", VOCABULARY), []);
+    assert.deepEqual(listLineBreaks("※これは長い注記で\n途中まで続いています。", VOCABULARY), []);
+    assert.deepEqual(listLineBreaks("※ 書類のうち、\n※印の付いたものは返却しません", VOCABULARY), []);
   });
 });
 
@@ -105,6 +142,19 @@ describe("日本語の文分割: 1 行 1 項目の箇条書き", () => {
       sentences.map((sentence) => sentence.listItem === true),
       [false, true],
     );
+  });
+
+  it("番号だけの札の行は、下の本文と別の文", () => {
+    assert.deepEqual(textsOf("第１\n令和元年の通達について、次のように改める。"), ["第１", "令和元年の通達について、次のように改める。"]);
+  });
+
+  it("並んだ注記の行と括弧の札の行は、それぞれ 1 文", () => {
+    assert.deepEqual(textsOf("※　変更について（PDF：10KB）\n※　改定について（PDF：20KB）\n（別添）変数の一覧（PDF：30KB）\n※　単身世帯は調整していない。"), [
+      "※　変更について（PDF：10KB）",
+      "※　改定について（PDF：20KB）",
+      "（別添）変数の一覧（PDF：30KB）",
+      "※　単身世帯は調整していない。",
+    ]);
   });
 
   it("項目を始める文に印を付ける", () => {
@@ -215,6 +265,26 @@ describe("段落と文の長さ: 1 行 1 項目の並びは、項目ごとに数
     assert.deepEqual(
       rulesOf(WRAPPED_LONG_SENTENCE, "business/report", ["max-sentence-length"]).map((found) => found.split(":")[0]),
       ["max-sentence-length"],
+    );
+  });
+
+  it("番号だけの札の行は、下の本文と繋いで長すぎる文と言わず、長すぎる本文の行だけを言う", () => {
+    const amended = [
+      "# 通達の改正",
+      "",
+      "第１",
+      "令和元年の通達のうち、住宅の取得に充てる資金の贈与を受けた場合の取扱いについて、別紙の表の左欄に掲げる部分を同表の右欄のとおりに改める。",
+      "",
+      "第２",
+      "令和二年の通達のうち、個人の事業用の資産を贈与により取得した場合の納税の猶予の取扱いについては、別紙の表の左欄に掲げる部分を右欄のように改めるものとする。",
+      "",
+    ].join("\n");
+    const found = runRules(buildDocument("t.md", amended, ja), loadRules("ja"), {}, true, "business/email").findings.filter(
+      (finding) => finding.rule === "max-sentence-length",
+    );
+    assert.deepEqual(
+      found.map((finding) => finding.line),
+      [7],
     );
   });
 
