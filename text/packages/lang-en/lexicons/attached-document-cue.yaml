@@ -1,0 +1,33 @@
+# The title of a document an agreement attaches: a capitalised run ending in a word that names a kind of document
+# (group: title-end) with words right after it that say it is attached (no group): the Termination Certificate attached
+# hereto as Schedule B, the Form of Note annexed to this Agreement. undefined-term leaves such a run: it names an attached
+# form, not a term the document should define. A run ending in another word (Confidential Information attached hereto)
+# is still read. Matched as written.
+id: attached-document-cue
+language: en
+entries:
+  - pattern: attached hereto
+  - pattern: attached to this
+  - pattern: attached as
+  - pattern: annexed hereto
+  - pattern: annexed to this
+  - pattern: annexed as
+  - { pattern: Acknowledgment, group: title-end }
+  - { pattern: Acknowledgement, group: title-end }
+  - { pattern: Affidavit, group: title-end }
+  - { pattern: Agreement, group: title-end }
+  - { pattern: Application, group: title-end }
+  - { pattern: Assignment, group: title-end }
+  - { pattern: Certificate, group: title-end }
+  - { pattern: Consent, group: title-end }
+  - { pattern: Declaration, group: title-end }
+  - { pattern: Deed, group: title-end }
+  - { pattern: Form, group: title-end }
+  - { pattern: Letter, group: title-end }
+  - { pattern: Note, group: title-end }
+  - { pattern: Notice, group: title-end }
+  - { pattern: Questionnaire, group: title-end }
+  - { pattern: Release, group: title-end }
+  - { pattern: Statement, group: title-end }
+  - { pattern: Undertaking, group: title-end }
+  - { pattern: Waiver, group: title-end }
