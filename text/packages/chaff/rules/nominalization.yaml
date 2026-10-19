@@ -33,6 +33,9 @@ placeholders:
 
 levels: { strict: 1, normal: 2, relaxed: 4 }
 
+# 報告書（官庁の検査報告も）では見る。chaff-corpus の判定では「会計実地検査を行った」も直すべき所で、「会計実地検査した」で調子は保てる。崩すのは「をした」への置き換えなので、rewrite の avoid に書いた。
+# Reports, a government auditor's included, stay on: chaff-corpus judges "会計実地検査を行った" worth fixing, and "会計実地検査した"
+# keeps the register. What breaks it is "をした", which the rewrite's avoid list rules out.
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 off_for:
   legal: 'Legal drafting writes 「…を行う」 and "make a payment" as its register; the corpus statutes are full of them.'
@@ -66,17 +69,20 @@ level_meaning:
 rewrite:
   depth: light
   ja:
-    direction: 「〜を実施する」「〜を行う」の名詞を動詞に戻し、運び役の動詞を消してください。誰がしたのかが書かれていれば、その人を主語に残します。
+    direction: 「〜を実施する」「〜を行う」の名詞を動詞に戻し、運び役の動詞を消してください。「を」も外して名詞に「する」を直に付けます（実地検査を行った → 実地検査した）。「する」を付けると意味が変わる語（教育を行う、授業を行う）は、そのままにします。誰がしたのかが書かれていれば、その人を主語に残します。
     pairs:
       - before: 先月、顧客満足度の調査を実施しました。
         after: 先月、顧客満足度を調査しました。
       - before: 結果の確認を行い、改善の検討を行います。
         after: 結果を確認し、改善を検討します。
+      - before: 本部は、二つの支部で実地検査を行った。
+        after: 本部は、二つの支部で実地検査した。
     keep:
       - 何を、いつ、誰がしたのか
       - 催す意味の「実施する」（研修を実施する、試験を行う）
     avoid:
       - 「実施する」を「行う」「図る」のような別の運び役に替える
+      - 「を行う」を「をする」「をした」に替える（運び役が「する」に替わるだけで、名詞のままなので、文は短くならず、報告書では調子だけが崩れる）
       - 動詞に戻すときに目的語や時期を落とす
   en:
     direction: Turn the noun back into its verb and drop the verb that was carrying it ("make a decision" becomes "decide"). Keep who acted as the subject.
@@ -89,5 +95,5 @@ rewrite:
       - what was done, to what, and when
       - who acted
     avoid:
-      - swapping one carrying verb for another ("perform", "carry out")
+      - 'swapping one carrying verb for another ("perform", "carry out", "do"); "do an audit" for "conduct an audit" keeps the noun and only lowers the register'
       - dropping the object or the time while making the verb
