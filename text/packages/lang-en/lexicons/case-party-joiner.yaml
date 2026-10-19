@@ -1,0 +1,7 @@
+# The word between the parties of a case name (Ashwander v. TVA, ICC v. Jersey City). A word in capitals beside it, in a
+# case citation, is a party's name as the reporter writes it, not an acronym to expand. Matched as written.
+id: case-party-joiner
+language: en
+entries:
+  - pattern: "v."
+  - pattern: "vs."

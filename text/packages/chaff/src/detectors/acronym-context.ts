@@ -7,6 +7,7 @@ import { placeholderSpans } from "./placeholder.ts";
 import { numeralWordSpans } from "./numeral-word.ts";
 import { seriesLabelSpans } from "./series-label.ts";
 import { nameSpansOf, oneOf } from "./acronym-name.ts";
+import { caseCitationSpans } from "./case-citation.ts";
 
 /**
  * 大文字の語が略語ではなく、決まった書き方の一部として読める所（3:30 PM、1pm ET、USD 1,000、Kansas City, MO 64108、Fort Lauderdale FL 33304）。
@@ -33,6 +34,8 @@ export type NotationWords = {
   readonly titles: readonly string[];
   /** 日付・時刻の数字の後ろに書く単位（年、月、日、時、分）。その前の同じ大文字の繰り返し（YY年）は書式の置き場所。 */
   readonly dateTimeUnits: readonly string[];
+  /** 判例の当事者の名前を繋ぐ語（ICC v. Jersey City の v.）。 */
+  readonly caseJoiners?: readonly string[];
 };
 
 const MINUTES = String.raw`:[0-5]\d`;
@@ -63,6 +66,16 @@ const numberedPatterns = (words: NotationWords): readonly RegExp[] => {
 const SURNAME_IN_CAPITALS = String.raw`[A-Z]+(?:['’-][A-Z]+)*(?![\p{L}\p{N}_])`;
 
 /**
+ * 文頭か行頭の、点で終わる敬称の大文字の書き方と大文字の名前（判決の MR. JUSTICE REHNQUIST took no part …）。文の途中の MR.（the MR.
+ * HAWLEY file）と点の無い DR（disaster recovery）は略語でもあるので、頭に立つ点の付いた形だけ。
+ */
+const capitalHonorific = (words: readonly string[]): RegExp =>
+  new RegExp(
+    String.raw`(?<=(?:^|\n)[ \t]*)${oneOf(words.filter((word) => word.endsWith(".")).map((word) => word.toUpperCase()))}\s+${SURNAME_IN_CAPITALS}`,
+    "gu",
+  );
+
+/**
  * 肩書きの後ろの大文字の語が姓と読めるのは、名前の形のときだけ。行頭の発言者の印（Senator HAWLEY.、Chairman JORDAN:）か、
  * 日本政府の英文が「姓 名」の順に書くローマ字の名前（Prime Minister ABE Shinzo）。the President NASA memo と
  * The Secretary GDPR: Article 5 の略語は数える。
@@ -91,6 +104,7 @@ const patternsOf = (words: NotationWords): readonly RegExp[] => [
   new RegExp(oneOf(words.emphasis), "gu"),
   ...numberedPatterns(words),
   new RegExp(String.raw`(?<![\p{L}\p{N}_])${oneOf(words.honorifics)}\s+${SURNAME_IN_CAPITALS}`, "gu"),
+  capitalHonorific(words.honorifics),
   ...titledName(oneOf(words.titles)),
 ];
 
@@ -112,6 +126,7 @@ export const notAcronymSpansOf = (words: NotationWords): NotAcronymSpans => {
     ...seriesLabelSpans(text),
     ...placeholderSpans(text, words.dateTimeUnits),
     ...numeralWordSpans(text),
+    ...caseCitationSpans(text, words.caseJoiners ?? []),
   ];
 };
 
@@ -130,6 +145,7 @@ export const lexiconNotationOf = (wordsOf: (id: string) => string[]): NotAcronym
     honorifics: wordsOf("honorific"),
     titles: wordsOf("name-title"),
     dateTimeUnits: wordsOf("date-time-unit"),
+    caseJoiners: wordsOf("case-party-joiner"),
   });
   const names = nameSpansOf({
     legalForms: wordsOf("legal-form"),
