@@ -76,6 +76,14 @@ const isNextInRun = ({ source, offset }: Place): boolean => {
   return previous > 0 && countsUpTo(earlier, previous);
 };
 
+/**
+ * 番号を指す点（「3．から5．までの規定」「（1）4．の改正」）。数の点の直後に、番号を受ける助詞が続く。文の終わりの点の後ろは
+ * 次の文の頭。一字の助詞は後ろが平仮名でないときだけ（「のちほど」は文の頭）。文の頭になる語の字（で、も、は、と）は入れない。
+ */
+const ITEM_REFERENCE_AFTER = /^(?:から|まで|及び|又は|並びに|[のをにへ](?![ぁ-ゖ]))/u;
+
+const isItemReference = ({ text, at }: Place): boolean => DIGIT.test(text.charAt(at - 1)) && ITEM_REFERENCE_AFTER.test(text.slice(at + 1));
+
 const isInsideNumber = (text: string, at: number): boolean => DIGIT.test(text.charAt(at - 1)) && DIGIT.test(text.charAt(at + 1));
 
 const isLabelPeriod = (place: Place, kana: ReadonlySet<string>): boolean => {
@@ -86,6 +94,7 @@ const isLabelPeriod = (place: Place, kana: ReadonlySet<string>): boolean => {
     ((NOTE_NUMBER_LABEL.test(text.slice(Math.max(0, at - NOTE_REACH), at)) || CLOSED_FIRST_NUMBER.test(beforeNumber)) &&
       isFollowed(place.source, place.offset)) ||
     isNextInRun(place) ||
+    isItemReference(place) ||
     LIST_NUMBER.test(beforeNumber) ||
     LATIN_LABEL.test(text.slice(Math.max(0, at - LATIN_LABEL_REACH), at))
   );
