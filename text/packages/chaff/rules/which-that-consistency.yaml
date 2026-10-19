@@ -43,8 +43,8 @@ example:
       The job that builds the site runs nightly. The script that checks links runs hourly. The task that sends mail runs daily. The file that stores the keys is encrypted.
 
 not_flagged:
-  ja: 読点のある非限定の節（the rule, which we added,）、前置詞の後ろの which（in which）、that の後ろに主語が来る節（the report that we wrote、the fact that it works）、多いほうが 3 箇所に満たない文書、少ないほうが水準の数を超える文書（使い分けている）は指しません。
-  en: 'A non-restrictive clause set off by a comma ("the rule, which we added,"), "which" after a preposition ("in which"), a "that" followed by its own subject ("the report that we wrote", "the fact that it works"), a document where the usual form appears fewer than 3 times, and one where the fewer form passes the level (used on purpose) are not reported.'
+  ja: 読点のある非限定の節（the rule, which we added,）、前置詞の後ろの which（in which）、that の後ろに主語が来る節（the report that we wrote、the fact that it works）、多いほうが 3 箇所に満たない文書、少ないほうが水準の数を超える文書（使い分けている）は指しません。引用符の中と、ブロック引用の段落（> の段落、小文字の語や [T]he のような角括弧の書き替えで始まる段落）は、引いた文の言葉なので数えません。
+  en: 'A non-restrictive clause set off by a comma ("the rule, which we added,"), "which" after a preposition ("in which"), a "that" followed by its own subject ("the report that we wrote", "the fact that it works"), a document where the usual form appears fewer than 3 times, and one where the fewer form passes the level (used on purpose) are not reported. Text inside quotation marks and block quotations (a > paragraph, or a paragraph opening with a lowercase word or a bracketed alteration such as [T]he) keep the quoted text''s wording and are not counted.'
 level_meaning:
   ja: 少ないほうの書き方が {limit} 箇所以下のとき指摘
   en: reported when the fewer form appears {limit} times or fewer

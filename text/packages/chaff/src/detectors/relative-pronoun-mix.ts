@@ -1,6 +1,7 @@
 import type { Detector, Finding, Lexicon, Token } from "../plugin.ts";
 import { minorityOf } from "./technical-docs.ts";
 import { isWithinAny, quotedIn, QUOTATION_MARKS } from "../quoted-span.ts";
+import { quotationParagraphIndexes } from "./quotation-paragraph.ts";
 
 /**
  * 限定の関係節を which で書く所と that で書く所が、一つの文書に混ざっている所（the file which contains / the file that contains）。
@@ -62,8 +63,14 @@ export const oddRelatives = (uses: readonly RelativeUse[], limit: number): { rea
 
 export const relativePronounMix: Detector = (doc, options): Finding[] => {
   const kinds = doc.lexicons["restrictive-relative"] ?? [];
+  // A block quotation of another text (an earlier opinion) keeps that text's wording, so it does not vote.
+  const quotations = quotationParagraphIndexes(
+    doc.source,
+    doc.paragraphs.map((paragraph) => paragraph.span),
+  );
+  const blockQuoted = new Set(doc.paragraphs.filter((_, index) => quotations.has(index)).flatMap((paragraph) => paragraph.sentences));
   const uses = doc.sentences.flatMap((sentence) => {
-    if (sentence.embeddedLanguage !== undefined) return [];
+    if (sentence.embeddedLanguage !== undefined || blockQuoted.has(sentence)) return [];
     const quoted = quotedIn(sentence, QUOTATION_MARKS);
     return relativeUses(sentence.tokens ?? [], kinds).filter((use) => !isWithinAny(quoted, use.word.span));
   });
