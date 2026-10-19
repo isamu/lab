@@ -2,7 +2,7 @@ import { proseText } from "../measure.ts";
 import { dateSpans, wordsOf } from "./structure.ts";
 import { compacted, linkedIn, placeAt } from "./gram-place.ts";
 import { charWindows, wordWindows } from "./gram-windows.ts";
-import { furnitureMask, isFurniture } from "./gram-furniture.ts";
+import { fixedEndingSpans, furnitureMask, isFurniture } from "./gram-furniture.ts";
 import { lexiconNotationOf, type NotAcronymSpans } from "./acronym-context.ts";
 import { abbreviates, expansionAt, termEntryAcronyms, type DefinitionWords, type ExpandedAt } from "./acronym-expansion.ts";
 import { isExplained } from "./acronym-compound.ts";
@@ -106,6 +106,9 @@ const keyOf = (gram: string, unit: ProseDocument["lengthUnit"]): string => (unit
 const namesOf = (doc: ProseDocument): readonly string[] =>
   doc.lengthUnit === "char" ? (doc.names ?? []).map((name) => name.replace(/\s+/gu, "")) : (doc.names ?? []);
 
+/** 語彙表 ngram-fixed-ending: 項目ごとに同じ形で結ぶ書式の結び（〜ものとすること。）。 */
+const fixedEndingsOf = (doc: ProseDocument): string[] => (doc.lexicons["ngram-fixed-ending"] ?? []).map((entry) => entry.pattern);
+
 /**
  * 文をまたいで数えない。文の終わりと次の文の始まりが繋がると、固有名詞が言い回しに見える。
  * 並べた名前にかかる語句も数えない。名前が繰り返されれば、その前後（「the …」）も一緒に繰り返されるのは当たり前。
@@ -115,6 +118,7 @@ const tallySentence = (doc: ProseDocument, sentence: Sentence, tally: Tally): vo
   const source = compacted(sentence.text, doc.lengthUnit);
   const named = nameSpans(source.text, namesOf(doc));
   const mask = furnitureMask(source.text, linkedIn(doc, sentence, source));
+  fixedEndingSpans(source.text, fixedEndingsOf(doc)).forEach((span) => mask.fill(true, span.start, span.end));
   windowsOf(source.text, doc.lengthUnit)
     .filter((window) => !touchesAny(named, window.start, window.end) && !isFurniture(source.text, mask, window))
     .forEach((window) => {
