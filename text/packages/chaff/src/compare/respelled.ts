@@ -8,12 +8,13 @@ export type Respelling = { readonly dropped: readonly Atom[]; readonly added: re
 const WORD_BREAK = /[\s-]+/u;
 const LETTER_OR_DIGIT = /[\p{L}\p{N}]/u;
 
-/** Whether text writes name as a whole name: "Aldo Piscitello" is not written inside "Aaldo Piscitello". */
-export const writesName = (text: string, name: string): boolean => {
+/** How many times text writes name as a whole name: "Aldo Piscitello" is not written inside "Aaldo Piscitello". */
+export const nameCount = (text: string, name: string): number => {
+  let count = 0;
   for (let at = text.indexOf(name); at !== -1 && name !== ""; at = text.indexOf(name, at + 1)) {
-    if (!LETTER_OR_DIGIT.test(text.charAt(at - 1)) && !LETTER_OR_DIGIT.test(text.charAt(at + name.length))) return true;
+    if (!LETTER_OR_DIGIT.test(text.charAt(at - 1)) && !LETTER_OR_DIGIT.test(text.charAt(at + name.length))) count += 1;
   }
-  return false;
+  return count;
 };
 
 /** Borrowmoney and BorrowMoney: the same letters, another case. */
@@ -32,11 +33,15 @@ type Alike = (before: Atom, after: Atom, beforeText: string) => boolean;
 
 const caseAlike: Alike = (before, after) => isCaseOnly(before.key, after.key);
 
+/** name-variant's near holds for a spelling the document writes at least this often against one it writes once. */
+const USUAL_AT_LEAST = 2;
+
 /**
- * A one-letter change is a respelling only when the original already wrote the new spelling, which is what
- * name-variant asks for (unify on the spelling the document uses); otherwise Smith → Smyth may be another person.
+ * A one-letter change is a respelling only where name-variant would call the old spelling a slip: the original wrote
+ * it once and the new spelling at least twice. Otherwise Miller → Muller may be another person.
  */
-const letterAlike: Alike = (before, after, beforeText) => isOneLetterOff(before.key, after.key) && writesName(beforeText, after.key);
+const letterAlike: Alike = (before, after, beforeText) =>
+  isOneLetterOff(before.key, after.key) && nameCount(beforeText, before.key) === 1 && nameCount(beforeText, after.key) >= USUAL_AT_LEAST;
 
 /** Whether after is before, a name, with its spelling corrected by either change. */
 export const isRespelling = (before: Atom, after: Atom, beforeText: string): boolean =>

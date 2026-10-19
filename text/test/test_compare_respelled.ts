@@ -7,7 +7,7 @@ import { extractFacts } from "../packages/chaff/src/compare/extract.ts";
 import { outcomeOf, type Outcome } from "../packages/chaff/src/compare/outcome.ts";
 import { renderCompact, renderFriendly, renderJson } from "../packages/chaff/src/compare/render.ts";
 import { COMPARE_TEXT } from "../packages/chaff/src/compare/text.ts";
-import { isRespelling, pairRespelled, writesName } from "../packages/chaff/src/compare/respelled.ts";
+import { isRespelling, nameCount, pairRespelled } from "../packages/chaff/src/compare/respelled.ts";
 import type { Atom, AtomKind } from "../packages/chaff/src/compare/atom.ts";
 
 // chaff compare: a name whose spelling the rewrite corrected is one fact respelled, not a fact dropped and one added.
@@ -40,9 +40,12 @@ describe("pairRespelled", () => {
     assert.deepEqual([paired.dropped, paired.added], [[], []]);
   });
 
-  it("pairs a one-letter change only to a spelling the original already wrote", () => {
-    assert.equal(isRespelling(atom("Mariana Holloway"), atom("Marianna Holloway"), "Marianna Holloway signs."), true);
+  it("pairs a one-letter change only where the original wrote the old spelling once and the new one twice or more", () => {
+    const usual = "Marianna Holloway signs. Mariana Holloway pays. Marianna Holloway files.";
+    assert.equal(isRespelling(atom("Mariana Holloway"), atom("Marianna Holloway"), usual), true);
     assert.equal(isRespelling(atom("Mariana Holloway"), atom("Marianna Holloway"), "Nobody else is named."), false);
+    assert.equal(isRespelling(atom("Miller"), atom("Muller"), "Miller and Muller attended."), false);
+    assert.equal(isRespelling(atom("Miller"), atom("Muller"), "Miller, Miller and Muller, Muller."), false);
   });
 
   it("does not pair two different names, a change of two letters, or another word count", () => {
@@ -57,7 +60,7 @@ describe("pairRespelled", () => {
   });
 
   it("prefers a change of case to a one-letter change, and pairs each atom once", () => {
-    const paired = pairRespelled([atom("Northwind", 1), atom("Northwind", 2)], [atom("Nortwind", 3), atom("NorthWind", 4)], "Nortwind");
+    const paired = pairRespelled([atom("Northwind", 1), atom("Northwind", 2)], [atom("Nortwind", 3), atom("NorthWind", 4)], "Northwind Nortwind Nortwind");
     assert.deepEqual(
       paired.respelled.map((pair) => [pair.before.line, pair.after.line]),
       [
@@ -74,13 +77,13 @@ describe("pairRespelled", () => {
   });
 });
 
-describe("writesName", () => {
-  it("finds a whole name, not one inside a longer word", () => {
-    assert.equal(writesName("Signed by Aldo Ferri.", "Aldo Ferri"), true);
-    assert.equal(writesName("Signed by Aaldo Ferri.", "Aldo Ferri"), false);
-    assert.equal(writesName("Signed by Aldo Ferrino.", "Aldo Ferri"), false);
-    assert.equal(writesName("", "Aldo"), false);
-    assert.equal(writesName("Aldo", ""), false);
+describe("nameCount", () => {
+  it("counts a whole name, not one inside a longer word", () => {
+    assert.equal(nameCount("Signed by Aldo Ferri and Aldo Ferri.", "Aldo Ferri"), 2);
+    assert.equal(nameCount("Signed by Aaldo Ferri.", "Aldo Ferri"), 0);
+    assert.equal(nameCount("Signed by Aldo Ferrino.", "Aldo Ferri"), 0);
+    assert.equal(nameCount("", "Aldo"), 0);
+    assert.equal(nameCount("Aldo", ""), 0);
   });
 });
 

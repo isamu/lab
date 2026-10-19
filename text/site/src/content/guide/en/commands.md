@@ -351,7 +351,7 @@ Facts checked: 7 → 5: numbers 3→2, dates 1→1, times 0→0, URLs 1→0, cod
 
 - A **dropped** fact and an **added** fact are failures: either one ends the run with 1. Even a bold rewrite must not invent facts.
 - A fact **written another way** is information: 1,000 and 1000, ５ and 5, April 1, 2026 and 2026-04-01, a reworded heading.
-- A name **respelled** is information too: a change of case (Borrowmoney → BorrowMoney), or one letter changed to a spelling the original already used (Mariana → Marianna where Marianna is written elsewhere). It is the same name with its spelling corrected, so it is neither dropped nor added. Any other change of a name stays a dropped and an added fact.
+- A name **respelled** is information too: a change of case (Borrowmoney → BorrowMoney), or one letter changed where the original wrote the old spelling once and the new one at least twice (Mariana → Marianna). It is the same name with its spelling corrected, so it is neither dropped nor added. Any other change of a name stays a dropped and an added fact.
 - The last lines count each kind before and after, zeros included, so "nothing dropped" never reads as "nothing looked at". A kind that could not be read (no part-of-speech tagger, say) is listed with the reason.
 
 To let an intended cut through, name its kind with `--allow-dropped`; for an intended addition, `--allow-added`. What they let through is still listed.
