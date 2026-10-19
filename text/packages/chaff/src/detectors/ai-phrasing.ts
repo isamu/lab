@@ -6,6 +6,7 @@ import { contrastSentences, type ContrastWords } from "./contrast-frame.ts";
 import { placeholderSpans } from "./placeholder-text.ts";
 import { colonLeadIns } from "./list-lead-in.ts";
 import { followsInlineCode } from "./code-before.ts";
+import { isSentenceTail } from "./opener-tail.ts";
 
 // 生成文に多い形。語はどれも言語パッケージの語彙表が持ち、ここは形だけを知る。
 
@@ -18,7 +19,7 @@ const SCORE_SCALE = 10;
 const PILE = 2;
 
 /** 当たった文と語。offset は指摘する位置で、無ければ文の頭。 */
-type Hit = { readonly sentence: Sentence; readonly matched: string; readonly offset?: number };
+type Hit = { readonly sentence: Sentence; readonly matched: string; readonly offset?: number; readonly entry?: LexiconEntry };
 
 const findingOf = (hit: Hit, values: Readonly<Record<string, number>>): Finding => ({
   rule: "",
@@ -59,7 +60,7 @@ export const contrastFraming: Detector = (doc, options): Finding[] => {
 const openerHits = (doc: ProseDocument, lexicon: Lexicon): Hit[] =>
   doc.sentences.flatMap((sentence) => {
     const opener = lexicon.find((entry) => entryOpens(sentence, entry));
-    return opener === undefined ? [] : [{ sentence, matched: opener.pattern }];
+    return opener === undefined ? [] : [{ sentence, matched: opener.pattern, entry: opener }];
   });
 
 /** 文頭の決まった接ぎ（Moreover、さらに）の密度。話を運ぶ語（However、また）は語彙表に入れない。 */
@@ -72,9 +73,12 @@ export const openerDensity: Detector = (doc, options): Finding[] => densityFindi
 /** Where the sentence's first word starts: its span may begin with the blanks that masked code left. */
 const firstWordAt = (sentence: Sentence): number => sentence.span.start + sentence.text.length - sentence.text.trimStart().length;
 
+/** 語彙表の語で始まるが、その語の後ろが助動詞だけの文（だからである。）。前の文の終わりで、文を始める語ではない。 */
+const opensTail = (hit: Hit): boolean => hit.entry !== undefined && isSentenceTail(hit.sentence, hit.entry);
+
 export const openerPile: Detector = (doc, options): Finding[] => {
   // A sentence that opens with inline code (`explain` でも) opens with the code, not with the word after it.
-  const hits = openerHits(doc, options.lexicon ?? []).filter((hit) => !followsInlineCode(doc.source, doc.prose, firstWordAt(hit.sentence)));
+  const hits = openerHits(doc, options.lexicon ?? []).filter((hit) => !followsInlineCode(doc.source, doc.prose, firstWordAt(hit.sentence)) && !opensTail(hit));
   return hits.length === 0 || hits.length < options.limit ? [] : hits.map((hit) => findingOf(hit, { count: hits.length, limit: options.limit }));
 };
 
