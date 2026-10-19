@@ -36,9 +36,7 @@ const usedForOthersUntagged = (sentence: Sentence, entry: LexiconEntry, ownActs:
 
 /** A use of the entry outside every own-act phrase. */
 const usedForOthers = (sentence: Sentence, entry: LexiconEntry, ownActs: readonly Span[]): boolean =>
-  sentence.tokens === undefined
-    ? usedForOthersUntagged(sentence, entry, ownActs)
-    : entrySpans(sentence, entry).some((span) => !isWithinAny(ownActs, span));
+  sentence.tokens === undefined ? usedForOthersUntagged(sentence, entry, ownActs) : entrySpans(sentence, entry).some((span) => !isWithinAny(ownActs, span));
 
 /** The first listed form the sentence uses for someone else's act, or undefined. */
 const humbleFormFor = (sentence: Sentence, forms: Lexicon, ownActPhrases: Lexicon): string | undefined => {
