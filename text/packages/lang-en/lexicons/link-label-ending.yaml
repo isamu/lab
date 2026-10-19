@@ -1,0 +1,6 @@
+# List items that end as the words of a link ("Apply online: click here"). The item points somewhere and is neither a
+# sentence nor a name, even when the link itself was lost in a copy of the page. list-item-form-mix does not judge its form.
+id: link-label-ending
+language: en
+entries:
+  - pattern: click here
