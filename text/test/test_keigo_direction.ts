@@ -46,6 +46,7 @@ describe("humble-for-others: 謙譲語を相手の動作に使う", () => {
   it("可能の言い回しと同じ文でも、相手の動作に使った形は言う", () => {
     assert.deepEqual(findingsOf(HUMBLE, "何とも申されませんが、部長が申されたとおりです。\n"), ["「申される」は謙譲語を相手の動作に使っています"]);
     assert.deepEqual(findingsOf(HUMBLE, "部長は何も申されませんでした。\n"), ["「申される」は謙譲語を相手の動作に使っています"]);
+    assert.deepEqual(findingsOf(HUMBLE, "部長は何とも申されませんでした。\n"), ["「申される」は謙譲語を相手の動作に使っています"]);
   });
 
   it("「窺われる」と同じ字の「伺われる」は言わない", () => {

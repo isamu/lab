@@ -7,10 +7,10 @@ import { entryIn, entryRanges } from "./lexicon-match.ts";
 const OWN_ACT_LEXICON = "humble-own-act";
 
 /**
- * Where the sentence holds an own-act phrase, in the document's coordinates. Matched as written, not by words: the parser
- * splits 何とも differently alone and in a sentence.
+ * Where the sentence holds one of the phrases as written, in the document's coordinates. Own-act phrases are matched this
+ * way, not by words: the parser splits 何とも differently alone and in a sentence.
  */
-const ownActSpans = (sentence: Sentence, phrases: Lexicon): Span[] =>
+const writtenSpans = (sentence: Sentence, phrases: Lexicon): Span[] =>
   phrases.flatMap((entry) =>
     [...sentence.text.matchAll(new RegExp(escapeRegExp(entry.pattern), "gu"))].map((match) => ({
       start: sentence.span.start + match.index,
@@ -28,13 +28,21 @@ const entrySpans = (sentence: Sentence, entry: LexiconEntry): Span[] => {
   });
 };
 
-/** A use of the entry outside every own-act phrase. Without tokens every match counts, as in phrase-match. */
+/** Without tokens the entry is matched as phrase-match does; a match whose every written place is in an own-act phrase is left out. */
+const usedForOthersUntagged = (sentence: Sentence, entry: LexiconEntry, ownActs: readonly Span[]): boolean => {
+  const written = writtenSpans(sentence, [entry]);
+  return entryIn(sentence, entry) && !(written.length > 0 && written.every((span) => isWithinAny(ownActs, span)));
+};
+
+/** A use of the entry outside every own-act phrase. */
 const usedForOthers = (sentence: Sentence, entry: LexiconEntry, ownActs: readonly Span[]): boolean =>
-  sentence.tokens === undefined ? entryIn(sentence, entry) : entrySpans(sentence, entry).some((span) => !isWithinAny(ownActs, span));
+  sentence.tokens === undefined
+    ? usedForOthersUntagged(sentence, entry, ownActs)
+    : entrySpans(sentence, entry).some((span) => !isWithinAny(ownActs, span));
 
 /** The first listed form the sentence uses for someone else's act, or undefined. */
 const humbleFormFor = (sentence: Sentence, forms: Lexicon, ownActPhrases: Lexicon): string | undefined => {
-  const ownActs = ownActSpans(sentence, ownActPhrases);
+  const ownActs = writtenSpans(sentence, ownActPhrases);
   return forms.find((entry) => usedForOthers(sentence, entry, ownActs))?.pattern;
 };
 
