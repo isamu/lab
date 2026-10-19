@@ -10,4 +10,6 @@ entries:
   - pattern: 最も重要なのは
   - pattern: 言うまでもなく
   - pattern: 不可欠です
+    group: necessity
   - pattern: 欠かせません
+    group: necessity
