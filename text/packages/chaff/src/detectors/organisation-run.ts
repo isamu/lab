@@ -90,7 +90,8 @@ const endsInForm = (text: string, closingForms: readonly string[]): boolean =>
 const segmentsBeforeForm = (run: readonly Token[], words: OrganisationWords): boolean =>
   run.some((_, at) => at > 0 && words.closingForms.includes(surfaceOf(run.slice(at))) && segmentCount(run.slice(0, at), words.units) >= 1);
 
-export const isOrganisationRun = (tokens: readonly Token[], covering: readonly number[], words: OrganisationWords): boolean => {
+/** formBefore: 連なりのすぐ前に、空白を挟んで法人格が立つ（一般社団法人 全国銀行個人信用情報センター）。頭に法人格があるのと同じに読む。 */
+export const isOrganisationRun = (tokens: readonly Token[], covering: readonly number[], words: OrganisationWords, formBefore = false): boolean => {
   const run = contiguous(tokens, withClosingUnit(tokens, covering, words.units));
   if (run === undefined || run.length === 0) return false;
   const named = run.some(isProperPiece) || segmentsBeforeForm(run, words);
@@ -98,5 +99,5 @@ export const isOrganisationRun = (tokens: readonly Token[], covering: readonly n
   const form = formLength(run, new Set(words.forms));
   const head = form > 0 ? form : properLength(run);
   const segments = segmentCount(run.slice(head), words.units);
-  return head > 0 ? segments >= 1 : segments >= 2;
+  return head > 0 || formBefore ? segments >= 1 : segments >= 2;
 };
