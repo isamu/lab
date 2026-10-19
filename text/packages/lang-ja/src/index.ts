@@ -7,6 +7,7 @@ import { pairMixedWidthBrackets } from "./mixed-width-bracket.ts";
 import { labelStops, unmarkLabelStops } from "./label-stop.ts";
 import { splitAtQuotedStops } from "./quoted-stop.ts";
 import { reattachClosingQuotes } from "./closing-quote.ts";
+import { splitAtQuotedLineEnds } from "./quoted-line-stop.ts";
 import { insideBrackets, startsWithCloser } from "./inside-brackets.ts";
 import { structure } from "./structure.ts";
 import { cutAtBreaks, lineVocabulary, listItemHeads, listLineBreaks, startsListItem } from "./list-line.ts";
@@ -113,7 +114,7 @@ const LABEL_STOPS = labelStops((LEXICONS["abbreviated-label"] ?? []).map((entry)
 const spansOf = (text: string): Span[] => {
   const spans = sentenceSpans(pairMixedWidthBrackets(unmarkNumberStops(unmarkLabelStops(text, LABEL_STOPS))));
   const quotedStops = spans.flatMap((span) => (isEnglishRun(text.slice(span.start, span.end)) ? splitAtQuotedStops(text, span) : [span]));
-  return reattachClosingQuotes(text, quotedStops);
+  return reattachClosingQuotes(text, quotedStops).flatMap((span) => splitAtQuotedLineEnds(text, span));
 };
 
 export const adapter: LanguageAdapter = {
