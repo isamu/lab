@@ -89,7 +89,7 @@ level_meaning:
 rewrite:
   depth: light
   ja:
-    direction: 少ないほうの項目を、同じ箇条書きのほかの項目の形にそろえてください。名詞で終わる並びなら名詞で、文で終わる並びなら文で終えます。項目の中身は変えません。
+    direction: 少ないほうの項目を、同じ箇条書きのほかの項目の形にそろえてください。名詞で終わる並びなら名詞で、文で終わる並びなら文で終えます。項目の中身は変えません。義務や許可の強さ（〜しなければならない、〜できる）も中身です。名詞止めにすると強さが消える項目（申込書は期限までに提出しなければならない）は、形をそろえず、箇条書きの外の一文にします。
     pairs:
       - before: |
           - 申込書の記入
@@ -110,11 +110,13 @@ rewrite:
     keep:
       - 項目の順番と数
       - 項目の中の語と数字
+      - 項目の強さ（〜しなければならない、〜してください、〜できる）
     avoid:
       - 形をそろえるために、項目に無かった中身を足す
       - 多いほうの項目を少ないほうに合わせて書き換える
+      - 「〜しなければならない」を名詞止めにして、決まりをただの項目に弱める
   en:
-    direction: Rewrite the odd item in the form the rest of the list uses. If the others are phrases, make it a phrase; if they open with a verb, open it with a verb. Keep what the item says.
+    direction: 'Rewrite the odd item in the form the rest of the list uses. If the others are phrases, make it a phrase; if they open with a verb, open it with a verb. Keep what the item says, and how strongly it says it: "All images must have alt text" is a requirement, and "Give all images alt text" is advice. When the list''s form cannot carry the item''s must, shall or may, take that item out of the list as a sentence of its own instead.'
     pairs:
       - before: |
           - Install the command-line tool
@@ -132,9 +134,22 @@ rewrite:
           - Faster downloads
           - Smaller files
           - A redesigned settings page
+      - before: |
+          - Write a short subject line
+          - Put the request in the first sentence
+          - Sign with your full name
+          - Every attachment must have a descriptive file name
+        after: |
+          - Write a short subject line
+          - Put the request in the first sentence
+          - Sign with your full name
+
+          Every attachment must have a descriptive file name.
     keep:
       - the order and number of the items
       - the words and figures in each item
+      - each item's force (must, shall, should, may)
     avoid:
       - adding to an item something it did not say, to make the form fit
       - rewriting the many items to match the odd one
+      - turning a requirement ("must have") into an instruction ("Give"), or an instruction into a requirement
