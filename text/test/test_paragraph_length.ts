@@ -105,6 +105,7 @@ describe("contractionExtraWords: the words a contraction stands for beyond the o
     ["The audience's level and the company’s plan.", 0],
     ["Rock 'n' roll at o'clock with O'Donnell.", 0],
     ["Do not write for a class.", 0],
+    ["I'd've gone; Iʼm here; Élan’t is not a word but counts.", 4],
     ["", 0],
   ];
   cases.forEach(([text, extra]) => {
