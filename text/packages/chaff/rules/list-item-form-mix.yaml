@@ -108,7 +108,7 @@ rewrite:
           - 週に一度バックアップを取る
           - 月末に請求書を発行する
     keep:
-      - 項目の順番と数
+      - 項目の順番と数（強さを残すために外へ出した項目のほか）
       - 項目の中の語と数字
       - 項目の強さ（〜しなければならない、〜してください、〜できる）
     avoid:
@@ -116,7 +116,7 @@ rewrite:
       - 多いほうの項目を少ないほうに合わせて書き換える
       - 「〜しなければならない」を名詞止めにして、決まりをただの項目に弱める
   en:
-    direction: 'Rewrite the odd item in the form the rest of the list uses. If the others are phrases, make it a phrase; if they open with a verb, open it with a verb. Keep what the item says, and how strongly it says it: "All images must have alt text" is a requirement, and "Give all images alt text" is advice. When the list''s form cannot carry the item''s must, shall or may, take that item out of the list as a sentence of its own instead.'
+    direction: 'Rewrite the odd item in the form the rest of the list uses. If the others are phrases, make it a phrase; if they open with a verb, open it with a verb. Keep what the item says, and how strongly it says it: "All images must have alt text" is a requirement, and "Give all images alt text" is advice. When the list''s form cannot carry the item''s must, shall, should or may, take that item out of the list as a sentence of its own instead.'
     pairs:
       - before: |
           - Install the command-line tool
@@ -146,7 +146,7 @@ rewrite:
 
           Every attachment must have a descriptive file name.
     keep:
-      - the order and number of the items
+      - the order and number of the items, but for an item taken out to keep its force
       - the words and figures in each item
       - each item's force (must, shall, should, may)
     avoid:
