@@ -2,11 +2,25 @@ import { lengthOf, proseText } from "../measure.ts";
 import type { Detector, DetectorOptions, Finding, LengthUnit, Sentence } from "../plugin.ts";
 import { citationLead } from "./citation-sentence.ts";
 import { pageMarkerPattern, pageMarkerSize } from "./page-marker.ts";
+import { isInListItem, isTitleLine, quotedTitleWords, termSeriesSaving } from "./sentence-title.ts";
 
 type Measure = { readonly size: number; readonly limit: number; readonly variant?: string };
 
-/** The page markers' pattern and the citation signals ("see"), read once per document. */
-type SentenceWords = { readonly markers: RegExp | undefined; readonly citationSignals: readonly string[] };
+/** The page markers' pattern, the citation signals ("see") and the spans of the list items, read once per document. */
+type SentenceWords = {
+  readonly markers: RegExp | undefined;
+  readonly citationSignals: readonly string[];
+  readonly listItems: readonly { readonly start: number; readonly end: number }[];
+};
+
+/**
+ * Words of a title and of a listed run of quoted terms, which the writer did not build into a sentence: a line with no
+ * full stop that is a title is not measured, a quoted title in a list item (- CA 23-1 “Changes to …” (January 31, 2023))
+ * is not counted, and quoted terms listed one after another ("MUST", "MUST NOT", … and "OPTIONAL") count as one word.
+ * Only where words are the unit: the shapes are read from capitals and spaces.
+ */
+const unwrittenWords = (sentence: Sentence, text: string, listItems: SentenceWords["listItems"]): number =>
+  termSeriesSaving(text) + (isInListItem(sentence.span, listItems) ? quotedTitleWords(text) : 0);
 
 const sizeOf = (text: string, unit: LengthUnit): number =>
   unit === "word" ? text.split(/\s+/u).filter((word) => word.length > 0).length : text.replace(/\s+/gu, "").length;
@@ -22,7 +36,10 @@ const measureOf = (sentence: Sentence, unit: LengthUnit, options: DetectorOption
   const embedded = sentence.embeddedLanguage;
   const limit = embedded === undefined ? undefined : options.embeddedLimits?.[embedded.id];
   if (embedded === undefined || limit === undefined) {
-    return { size: lengthOf(sentence, unit) - pageMarkerSize(proseText(sentence), words.markers, unit), limit: options.limit };
+    const text = proseText(sentence);
+    if (unit === "word" && isTitleLine(text)) return { size: 0, limit: options.limit };
+    const unwritten = unit === "word" ? unwrittenWords(sentence, text, words.listItems) : 0;
+    return { size: lengthOf(sentence, unit) - pageMarkerSize(text, words.markers, unit) - unwritten, limit: options.limit };
   }
   return { size: lengthOf(sentence, embedded.lengthUnit), limit, variant: `embedded-${embedded.id}` };
 };
@@ -31,6 +48,7 @@ export const sentenceLength: Detector = (doc, options): Finding[] => {
   const words: SentenceWords = {
     markers: pageMarkerPattern((options.lexicon ?? []).map((entry) => entry.pattern)),
     citationSignals: (doc.lexicons["citation-signal"] ?? []).map((entry) => entry.pattern),
+    listItems: doc.lists.flatMap((list) => list.itemSpans),
   };
   return doc.sentences
     .map((sentence) => ({ sentence, measure: measureOf(sentence, doc.lengthUnit, options, words) }))
