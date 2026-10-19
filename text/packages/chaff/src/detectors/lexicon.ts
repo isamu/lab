@@ -6,7 +6,7 @@ import { wordsOf } from "./structure.ts";
 import type { Detector, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 import { entryIn, entryOpens, entryRanges, type TokenRange } from "./lexicon-match.ts";
 import { scoped, scopeMarkersOf, type ScopeMarkers } from "./superlative-scope.ts";
-import { namesQuantity } from "./superlative-name.ts";
+import { makesWord, namesQuantity } from "./superlative-name.ts";
 import { namesAmount } from "./superlative-amount.ts";
 import { restricted, type Restrictors } from "./superlative-clause.ts";
 import { stackedHedges, type StackedHedge } from "./stacked-hedge.ts";
@@ -122,6 +122,7 @@ type Qualifiers = {
   readonly comparison: ComparisonMarkers;
   readonly scope: ScopeMarkers;
   readonly quantityNouns: Lexicon;
+  readonly suffixes: Lexicon;
   readonly amounts: Lexicon;
   readonly restrictors: Restrictors;
 };
@@ -130,6 +131,7 @@ const qualifiersOf = (doc: ProseDocument): Qualifiers => ({
   comparison: comparisonMarkersOf(doc.lexicons["comparison-marker"] ?? []),
   scope: scopeMarkersOf(doc.lexicons["superlative-scope"] ?? []),
   quantityNouns: doc.lexicons["quantity-noun"] ?? [],
+  suffixes: doc.lexicons["superlative-suffix"] ?? [],
   amounts: doc.lexicons["superlative-amount"] ?? [],
   restrictors: {
     relatives: doc.lexicons["relative-word"] ?? [],
@@ -144,6 +146,7 @@ const qualifiedAt = (tokens: readonly Token[], range: TokenRange, qualifiers: Qu
   scoped(tokens, range, qualifiers.scope) ||
   restricted(tokens, range, qualifiers.restrictors) ||
   namesQuantity(tokens, range, qualifiers.quantityNouns) ||
+  makesWord(tokens, range, qualifiers.suffixes) ||
   namesAmount(tokens, range, qualifiers.amounts);
 
 /** どの出現も引いた言葉か、限られているか、量を言うときだけ。1 つでもそうでない出現があれば、その文には限定の無い最上級がある。 */
