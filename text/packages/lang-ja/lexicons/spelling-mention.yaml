@@ -1,0 +1,9 @@
+# 別の書き方があると言う語句（用語集の「（曇）とも書く。」）。orthographic-variant は、この語句の前の丸括弧に入れた語を、
+# 書き方そのものを話題にした語と読み、本文の書き方とは比べない。
+id: spelling-mention
+language: ja
+entries:
+  - pattern: とも書く
+  - pattern: とも書きます
+  - pattern: とも表記する
+  - pattern: とも表記します
