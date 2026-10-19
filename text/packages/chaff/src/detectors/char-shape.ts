@@ -107,6 +107,8 @@ type RunContext = {
   readonly terms: ReadonlySet<string>;
   /** 見出し語の行（文がその連なりだけ）を数えない文書か（用語集）。 */
   readonly headwords: boolean;
+  /** 知っている語の語数の上限: 知っている語の字数の上限（一字一語のときの語数）。 */
+  readonly maxKnownWords: number;
 };
 
 const coveringOf = (tokens: readonly Token[], span: Span): number[] =>
@@ -194,11 +196,14 @@ const surfaceWithin = (token: Token, span: Span): string =>
 const longestUnknown = (tokens: readonly Token[], rest: Span, keptHead: string, context: RunContext): string => {
   const covering = coveringOf(tokens, rest);
   const words = covering.flatMap((index) => tokens.slice(index, index + 1).map((token) => surfaceWithin(token, rest)));
+  const whole = words.join("");
+  // A run as long as the text holds no known word; reading it word by word would take a pass per word.
+  if (![...context.terms, ...context.words.knownWords].some((known) => whole.includes(known))) return keptHead + whole;
   const isKnown = (start: number, end: number): boolean => {
     const piece = words.slice(start, end).join("");
     return context.terms.has(piece) || (end === words.length && context.words.knownWords.has(piece));
   };
-  return unknownPieces(words, isKnown)
+  return unknownPieces(words, context.maxKnownWords, isKnown)
     .map((piece) => (piece.first ? keptHead + piece.text : piece.text))
     .reduce((longest, piece) => (piece.length > longest.length ? piece : longest), "");
 };
@@ -267,6 +272,7 @@ export const kanjiRun: Detector = (doc, options): Finding[] => {
     titled: titledNames(doc, doc.profile, names),
     terms: standaloneNames(allRuns(doc, doc.profile, names), MIN_TERM_LENGTH, options.limit, organisation.units),
     headwords: isHeadwordGenre(options),
+    maxKnownWords: Math.max(options.limit, ...[...words.knownWords].map((word) => [...word].length)),
   };
   return doc.sentences
     .map((sentence) => ({ sentence, run: longestKanji(sentence, context) }))

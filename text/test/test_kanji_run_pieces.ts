@@ -27,9 +27,9 @@ describe("unknownPieces", () => {
 
   it("知っている語を外した残りの一続きを、頭から順に", () => {
     const words = ["国連", "安全", "保障", "理事", "会", "改革"];
-    assert.deepEqual(unknownPieces(words, known("国連安全保障理事会")(words)), [{ text: "改革", first: false }]);
+    assert.deepEqual(unknownPieces(words, 8, known("国連安全保障理事会")(words)), [{ text: "改革", first: false }]);
     const middle = ["新規", "安全", "保障", "理事", "会", "改革", "案"];
-    assert.deepEqual(unknownPieces(middle, known("安全保障理事会")(middle)), [
+    assert.deepEqual(unknownPieces(middle, 8, known("安全保障理事会")(middle)), [
       { text: "新規", first: true },
       { text: "改革案", first: false },
     ]);
@@ -37,20 +37,30 @@ describe("unknownPieces", () => {
 
   it("連なり全体は知っている語と読まない（呼び出し側が先に決める）。知っている語が無ければ一つの残り", () => {
     const words = ["安全", "保障", "理事", "会"];
-    assert.deepEqual(unknownPieces(words, known("安全保障理事会")(words)), [{ text: "安全保障理事会", first: true }]);
+    assert.deepEqual(unknownPieces(words, 8, known("安全保障理事会")(words)), [{ text: "安全保障理事会", first: true }]);
     assert.deepEqual(
-      unknownPieces(["新規", "顧客"], () => false),
+      unknownPieces(["新規", "顧客"], 8, () => false),
       [{ text: "新規顧客", first: true }],
     );
     assert.deepEqual(
-      unknownPieces([], () => true),
+      unknownPieces([], 8, () => true),
       [],
+    );
+  });
+
+  it("知っている語は maxWords 語まで。長い連なりも一度で読む", () => {
+    const words = ["安全", "保障", "理事", "会", "改革"];
+    assert.deepEqual(unknownPieces(words, 3, known("安全保障理事会")(words)), [{ text: "安全保障理事会改革", first: true }]);
+    const long = Array.from({ length: 100_000 }, () => "紀");
+    assert.deepEqual(
+      unknownPieces(long, 8, () => false),
+      [{ text: long.join(""), first: true }],
     );
   });
 
   it("最も長い知っている語を取る", () => {
     const words = ["日本", "国", "内閣", "総理", "大臣"];
-    assert.deepEqual(unknownPieces(words, known("総理大臣", "内閣総理大臣")(words)), [{ text: "日本国", first: true }]);
+    assert.deepEqual(unknownPieces(words, 8, known("総理大臣", "内閣総理大臣")(words)), [{ text: "日本国", first: true }]);
   });
 });
 

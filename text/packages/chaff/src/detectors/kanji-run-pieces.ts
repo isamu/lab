@@ -12,31 +12,39 @@ export type IsKnown = (start: number, end: number) => boolean;
 /** 組織の語の前に要る字数（organisation-run と同じ）。 */
 const MIN_BODY_LENGTH = 2;
 
-type Stretch = { readonly start: number; readonly end: number; readonly known: boolean };
-
-/** start から始まる最も長い知っている語の終わり。連なり全体（0 から最後まで）は問わない。無ければ undefined。 */
-const knownEnd = (length: number, start: number, isKnown: IsKnown): number | undefined =>
-  Array.from({ length: length - start }, (_, offset) => length - offset).find((end) => !(start === 0 && end === length) && isKnown(start, end));
-
-const stretchesFrom = (length: number, start: number, isKnown: IsKnown): Stretch[] => {
-  if (start >= length) return [];
-  const end = knownEnd(length, start, isKnown);
-  const stretch = end === undefined ? { start, end: start + 1, known: false } : { start, end, known: true };
-  return [stretch, ...stretchesFrom(length, stretch.end, isKnown)];
-};
+/**
+ * start から始まる最も長い知っている語の終わり。語は maxWords 語まで（知っている語の長さの上限）。連なり全体（0 から最後まで）は
+ * 問わない。無ければ undefined。
+ */
+const knownEnd = (length: number, start: number, maxWords: number, isKnown: IsKnown): number | undefined =>
+  Array.from({ length: Math.min(maxWords, length - start) }, (_, offset) => Math.min(length, start + maxWords) - offset).find(
+    (end) => !(start === 0 && end === length) && isKnown(start, end),
+  );
 
 /**
- * words（連なりの語の字、順に）を頭から読み、各位置で最も長い知っている語を外した残りの一続き。
- * 連なり全体が知っている語かは、呼び出し側が先に決めている。
+ * words（連なりの語の字、順に）を頭から読み、各位置で最も長い知っている語（maxWords 語まで）を外した残りの一続き。
+ * 連なりは文書ほどにも長くなり得るので、位置を一つずつ進める（語ごとに呼び直さない）。連なり全体が知っている語かは、呼び出し側が先に決めている。
  */
-export const unknownPieces = (words: readonly string[], isKnown: IsKnown): Piece[] =>
-  stretchesFrom(words.length, 0, isKnown).reduce<Piece[]>((pieces, stretch, at, stretches) => {
-    if (stretch.known) return pieces;
-    const text = words.slice(stretch.start, stretch.end).join("");
-    const joins = at > 0 && stretches[at - 1]?.known === false;
-    const last = pieces.at(-1);
-    return joins && last !== undefined ? [...pieces.slice(0, -1), { ...last, text: last.text + text }] : [...pieces, { text, first: stretch.start === 0 }];
-  }, []);
+export const unknownPieces = (words: readonly string[], maxWords: number, isKnown: IsKnown): Piece[] => {
+  const pieces: Piece[] = [];
+  const cursor = { at: 0, pieceStart: -1 };
+  const close = (end: number): void => {
+    if (cursor.pieceStart >= 0) pieces.push({ text: words.slice(cursor.pieceStart, end).join(""), first: cursor.pieceStart === 0 });
+    cursor.pieceStart = -1;
+  };
+  while (cursor.at < words.length) {
+    const end = knownEnd(words.length, cursor.at, maxWords, isKnown);
+    if (end === undefined) {
+      if (cursor.pieceStart < 0) cursor.pieceStart = cursor.at;
+      cursor.at += 1;
+    } else {
+      close(cursor.at);
+      cursor.at = end;
+    }
+  }
+  close(words.length);
+  return pieces;
+};
 
 /**
  * 文書が単独の連なりとして使う組織の名前（安全保障理事会）のうち、字数が min から max までのもの。
