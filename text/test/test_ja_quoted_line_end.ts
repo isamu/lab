@@ -18,6 +18,7 @@ describe("splitAtQuotedLineEnds", () => {
     assert.deepEqual(pieces("「約束を守る。」\nこの言葉は重い。"), ["「約束を守る。」", "この言葉は重い。"]);
     assert.deepEqual(pieces("「守れたか。」  \n「誇れるか。」\n問い続けます。"), ["「守れたか。」  ", "「誇れるか。」", "問い続けます。"]);
     assert.deepEqual(pieces("『終わりだ！』\r\n次へ進む。"), ["『終わりだ！』", "次へ進む。"]);
+    assert.deepEqual(pieces("【約束を守る。】\n次へ進む。"), ["【約束を守る。】", "次へ進む。"]);
   });
 
   it("does not cut inside a line, before と or a comma on the next line, or at the end", () => {
