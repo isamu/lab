@@ -10,8 +10,8 @@ name:
   en: Link text shows one address, the link goes to another
 
 why:
-  ja: 「[https://example.com/guide](https://other.example/page)」のように、リンクの言葉が URL で、その URL と実際の行き先のサイトが違うリンクです。読み手は見えている URL に行くつもりで押し、別のサイトに着きます。URL を書き換えたときに片方だけ直した跡であることが多く、なりすましの手口と同じ形でもあります。サイト（ホスト）が同じなら、短く見せた URL として指しません。
-  en: A link whose text is an address ("[https://example.com/guide](https://other.example/page)") that names a different site from where the link goes. The reader clicks expecting the address they see and lands somewhere else. It is usually what is left when a URL was changed in one place only, and it is also the shape phishing uses. When the site (host) is the same, a shortened display is not reported.
+  ja: 「[https://example.com/guide](https://other.example/page)」のように、リンクの言葉が URL で、その URL と実際の行き先のサイトが違うリンクです。読み手は見えている URL に行くつもりで押し、別のサイトに着きます。URL を書き換えたときに片方だけ直した跡であることが多く、なりすましの手口と同じ形でもあります。サイト（ホスト）が同じでも、見えているパスが行き先のパスの頭でなければ（[github.com/acme/handbook](https://github.com/handbook)）、別のページなので指します。
+  en: A link whose text is an address ("[https://example.com/guide](https://other.example/page)") that names a different site from where the link goes. The reader clicks expecting the address they see and lands somewhere else. It is usually what is left when a URL was changed in one place only, and it is also the shape phishing uses. On the same site (host), a path the target does not start with ("[github.com/acme/handbook](https://github.com/handbook)") is another page, and is reported.
 
 message:
   ja: リンクの言葉は「{shown}」ですが、行き先は「{target}」です
@@ -42,8 +42,8 @@ example:
       The new guide is at [https://docs.example.com/guide](https://docs.example.com/guide) now.
 
 not_flagged:
-  ja: 同じサイトの URL を短く見せたもの（[github.com/a](https://github.com/a/b)）、言葉が URL でないリンク、行き先が相対パスやページ内のリンク、参照の形のリンク（[言葉][1]）は指しません。www. の有無と大文字小文字は同じと読みます。
-  en: A shortened display of an address on the same site ("[github.com/a](https://github.com/a/b)"), link text that is not an address, relative or in-page targets, and reference-style links ("[text][1]") are not reported. "www." and letter case are ignored.
+  ja: 同じサイトの URL を短く見せたもの（[github.com/a](https://github.com/a/b)、途中を「…」で省いたもの）、言葉が URL でないリンク、行き先が相対パスやページ内のリンク、参照の形のリンク（[言葉][1]）は指しません。www. の有無と大文字小文字は同じと読みます。
+  en: A shortened display of an address on the same site ("[github.com/a](https://github.com/a/b)", or one cut with "…"), link text that is not an address, relative or in-page targets, and reference-style links ("[text][1]") are not reported. "www." and letter case are ignored.
 rewrite:
   depth: light
   ja:
