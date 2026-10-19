@@ -6,6 +6,8 @@ import { calendarDateOf, dateOf, shifted, valueOf, type CalendarDate, type Durat
  * later, on May 15, 2026, …"）。相対の期間のすぐ後ろに書いた日付を、基準の日付に期間を足した（前なら引いた）日と比べる。
  * 基準は、同じ文で相対の期間より前にある一番近い日付。文が相対の期間で始まる（「Two weeks later, …」）ときだけ、前の文の日付も
  * 基準にする。基準と書いた日付の片方にしか年が無ければ、月日だけを比べる。
+ * 基準の日付の後ろで節が切れ、相対の期間のすぐ前に別の起点（今井が死亡した年の翌年から起算して38年後）を書いていれば、
+ * 前の日付は基準ではない。
  */
 export type DatedValue = Span & { readonly value: string };
 
@@ -23,6 +25,8 @@ export type RelativeInput = {
   readonly relatives: readonly Relative[];
   /** 相対の語と日付のあいだに書いてよい語（の、on）。空白と区切りの記号（、, (）は、いつでもよい。 */
   readonly links: readonly string[];
+  /** 期間のすぐ前に置いて、その前の名前を起点にする語（から、から起算して）。 */
+  readonly starts: readonly string[];
 };
 
 const SEPARATORS = /[\s,、，(（:：]/gu;
@@ -56,6 +60,32 @@ const targetOf = (input: RelativeInput, relative: Relative): DatedValue | undefi
   return between === "" || input.links.some((link) => link.replace(SEPARATORS, "").toLowerCase() === between) ? next : undefined;
 };
 
+const CLAUSE_BREAK = /[,、，;；]/u;
+const BRACKETED = /[（(][^（）()]*[)）]/gu;
+const SEPARATOR = /[\s,、，]/u;
+
+const withoutTrailingSeparators = (text: string): string => {
+  let end = text.length;
+  while (end > 0 && SEPARATOR.test(text.charAt(end - 1))) end -= 1;
+  return text.slice(0, end);
+};
+/** 起点の語の前の、起点の名前の終わり（翌年、受付、10日）。「雨だから」の「だ」のような述語の終わりは起点ではない。 */
+const NAME_END = /[\p{Script=Han}\p{Script=Katakana}\p{N}ー]$/u;
+
+/**
+ * 基準の日付の後ろで節が切れ、相対の期間のすぐ前に、名前と起点の語が来るか（平成57年12月31日まで存続し、…今井が死亡した年の
+ * 翌年から起算して38年後）。期間は、その名前から数えている。日付のすぐ後ろの起点（10月2日から3日後）は、その日付を起点に言っている。
+ * 括弧の中の読点は節の切れ目に数えない。
+ */
+const startsElsewhere = (input: RelativeInput, base: DatedValue, relative: Relative): boolean => {
+  const between = withoutTrailingSeparators(input.source.slice(base.end, relative.start).replace(BRACKETED, ""));
+  return input.starts.some((start) => {
+    if (!between.endsWith(start)) return false;
+    const head = between.slice(0, -start.length);
+    return NAME_END.test(head) && CLAUSE_BREAK.test(head);
+  });
+};
+
 /** 同じ文で、相対の期間より前にある一番近い日付。文の頭の相対の期間なら、前の文まで見る。 */
 const baseOf = (input: RelativeInput, relative: Relative): DatedValue | undefined => {
   const index = sentenceIndexOf(input.sentences, relative.start);
@@ -63,7 +93,8 @@ const baseOf = (input: RelativeInput, relative: Relative): DatedValue | undefine
   if (sentence === undefined) return undefined;
   const from = opensSentence(input.source, sentence, relative) ? (input.sentences[index - 1]?.start ?? sentence.start) : sentence.start;
   const before = input.dates[firstAtOrAfter(input.dates, relative.start) - 1];
-  return before !== undefined && before.end <= relative.start && before.start >= from ? before : undefined;
+  if (before === undefined || before.end > relative.start || before.start < from) return undefined;
+  return startsElsewhere(input, before, relative) ? undefined : before;
 };
 
 /** 年の無い月日は、年を決めずに数えられない（2月28日の1日後は、うるう年なら2月29日）。考えられる年をすべて試す。 */

@@ -97,6 +97,7 @@ export const relativeDateMismatch: Detector = (doc): Finding[] => {
     dates,
     relatives: relativesOf(doc, amounts),
     links: patternsOf(doc, "relative-link"),
+    starts: patternsOf(doc, "relative-start"),
   };
   const counted = relativeMismatches(input).map((mismatch): Finding => ({
     rule: "relative-date-mismatch",
