@@ -8,5 +8,4 @@ mext-heatstroke-after-holidays  1
 mhlw-pubcomment-rodohoken  1
 nws-heat-wave-safety  1
 plainlanguage-use-tables  1
-python-code-quality-list-2016-03  1
 utelecon-account-leave  1
