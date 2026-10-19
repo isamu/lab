@@ -149,6 +149,13 @@ describe("requirement-smell (en)", () => {
     assert.deepEqual(found("The system shall notify the owner and/or the user.", en), ["either:and/or"]);
   });
 
+  it('"including, but not limited to" is a term of art in a contract, and an open list in a specification', () => {
+    const owns = "The Buyer shall own all rights in the Work, including, but not limited to, all patent rights.";
+    assert.deepEqual(found(owns, en, "legal/contract"), []);
+    assert.deepEqual(found(owns, en, "technical/spec"), ["open-end:but not limited to"]);
+    assert.deepEqual(found("The Buyer shall keep all records, including invoices, etc.", en, "legal/contract"), ["open-end:etc."]);
+  });
+
   it("a sentence that states no requirement is not read", () => {
     assert.deepEqual(found("The page loads as fast as possible.", en), []);
     assert.deepEqual(found("Users can choose email and/or text messages.", en), []);
