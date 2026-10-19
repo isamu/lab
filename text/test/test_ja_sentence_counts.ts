@@ -123,7 +123,8 @@ describe("adversative-ga-repeat: 一文の逆接の「が」", () => {
   });
 
   it("理由を言う「が故に」「がために」の「が」は数えない（中島敦『山月記』）", () => {
-    const sangetsuki = "己の珠に非ざることを惧れるが故に、敢て刻苦して磨こうともせず、又、己の珠なるべきを半ば信ずるが故に、碌々として瓦に伍することも出来なかった。\n";
+    const sangetsuki =
+      "己の珠に非ざることを惧れるが故に、敢て刻苦して磨こうともせず、又、己の珠なるべきを半ば信ずるが故に、碌々として瓦に伍することも出来なかった。\n";
     assert.deepEqual(findingsOf(RULE, sangetsuki), []);
     assert.deepEqual(findingsOf(RULE, "期限を守らんがために、予算は足りますが、人手は足りません。\n"), []);
   });
