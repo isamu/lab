@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { firedRules, namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 
-// 謙譲語を相手に使った形（humble-for-others）と、バイト敬語（baito-keigo）。例文はすべて自作。
+// 謙譲語を相手に使った形（humble-for-others）と、バイト敬語（baito-keigo）。例文は自作か、著作権の切れた作品から。
 
 const HUMBLE = "humble-for-others";
 const BAITO = "baito-keigo";
@@ -36,6 +36,16 @@ describe("humble-for-others: 謙譲語を相手の動作に使う", () => {
   it("自分の側の謙譲語と、正しい尊敬語は言わない", () => {
     assert.deepEqual(findingsOf(HUMBLE, "私が明日伺います。資料を拝見しました。母が申しておりました。\n"), []);
     assert.deepEqual(findingsOf(HUMBLE, "資料は受付でご覧ください。内容をご確認ください。部長がおっしゃったとおりです。\n"), []);
+  });
+
+  it("「何とも申されません」は自分が言えないこと（可能の「れる」）で、尊敬ではない（夏目漱石『私の個人主義』）", () => {
+    assert.deepEqual(findingsOf(HUMBLE, "善悪とか邪正とかいう問題になると、少々込み入って何とも申されません。\n", "speech/address"), []);
+    assert.deepEqual(findingsOf(HUMBLE, "その件は一概には申されない。\n"), []);
+  });
+
+  it("可能の言い回しと同じ文でも、相手の動作に使った形は言う", () => {
+    assert.deepEqual(findingsOf(HUMBLE, "何とも申されませんが、部長が申されたとおりです。\n"), ["「申される」は謙譲語を相手の動作に使っています"]);
+    assert.deepEqual(findingsOf(HUMBLE, "部長は何も申されませんでした。\n"), ["「申される」は謙譲語を相手の動作に使っています"]);
   });
 
   it("「窺われる」と同じ字の「伺われる」は言わない", () => {
