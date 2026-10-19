@@ -52,6 +52,11 @@ describe("date-without-year and a dated account", () => {
     assert.equal(findingsOf(`${EARLIER}\n\n${OPENS}\n\nThe court ruled on April 30, and the appeal was heard on May 12.`), 0);
   });
 
+  it("still reports a dated column of a table with one year dropped", () => {
+    const table = ["| Date | Item |", "| --- | --- |", "| April 9, 1952 | Notice |", "| April 21, 1952 | Closure |", "| April 30 | Ruling |"].join("\n");
+    assert.equal(findingsOf(`${EARLIER}\n\n${table}`), 1);
+  });
+
   it("still reports a yearless date that goes back before the dated one", () => {
     assert.equal(findingsOf(`${EARLIER}\n\n${OPENS}\n\nThe court had ruled on April 2, before the strike.`), 1);
   });

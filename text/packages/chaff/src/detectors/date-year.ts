@@ -105,6 +105,10 @@ const crossesYear = (point: DatePoint, previous: DatePoint | undefined, datedSid
 
 const lineStart = (source: string, offset: number): number => source.lastIndexOf("\n", offset - 1) + 1;
 
+const TABLE_ROW = /^\s*\|/u;
+
+const isTableRowAt = (source: string, offset: number): boolean => TABLE_ROW.test(source.slice(lineStart(source, offset), offset));
+
 const lineEnd = (source: string, offset: number): number => {
   const end = source.indexOf("\n", offset);
   return end === -1 ? source.length : end;
@@ -179,8 +183,9 @@ export const yearGaps = (
     return next !== undefined && opensSpan(point, next, source, anyYear.joiners) && hasYearWord(next, source, yearWords);
   };
   // A recurring day or an example's date has no year to write, and is not the document's way of writing dates either.
-  // A date that carries a dated account forward (On April 21, 1952, … on April 30 … May 3) takes that account's year.
-  const continuesRun = (point: DatePoint): boolean => continuesDatedRun(point, (earlier) => previousOf.get(earlier));
+  // A date that carries a dated account forward (On April 21, 1952, … on April 30 … May 3) takes that account's year. A
+  // table cell is a record whose fields keep one format: a dated column with one year dropped is still a slip.
+  const continuesRun = (point: DatePoint): boolean => !isTableRowAt(source, point.offset) && continuesDatedRun(point, (earlier) => previousOf.get(earlier));
   const yearless = points.filter(
     (point) => MONTH_DAY.test(point.value) && !yearGiven(point, anchors, source, yearWords) && !yearOfAny(point) && !continuesRun(point),
   );
