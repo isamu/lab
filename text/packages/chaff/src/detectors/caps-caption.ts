@@ -101,6 +101,23 @@ export const capitalParagraphSpans = (source: string): Span[] => {
   return paragraphs.filter((paragraph) => paragraph.every(isCapitalLine) && !endsSentence(paragraph)).flatMap(spanOf);
 };
 
+/** The capital paragraphs and the roster names of a source, in order of where they start. */
+export const capitalLineSpans = (source: string): Span[] =>
+  [...capitalParagraphSpans(source), ...rosterNameSpans(source)].sort((left, right) => left.start - right.start);
+
+/** The index of the last span that starts at or before at, by halving: -1 when none does. */
+const lastStartingBy = (spans: readonly Span[], at: number, low = 0, high = spans.length): number => {
+  if (low >= high) return low - 1;
+  const middle = Math.floor((low + high) / 2);
+  return (spans[middle]?.start ?? 0) <= at ? lastStartingBy(spans, at, middle + 1, high) : lastStartingBy(spans, at, low, middle);
+};
+
+/** Whether inner lies wholly in one of the spans, which do not overlap and are sorted by start (capitalLineSpans). */
+export const isWithinSorted = (spans: readonly Span[], inner: Span): boolean => {
+  const span = spans[lastStartingBy(spans, inner.start)];
+  return span !== undefined && inner.end <= span.end;
+};
+
 /** Columns on a line: two spaces or more, or a tab, stand between them. */
 const COLUMN_CELL = /[^\t ]+(?: [^\t ]+)*/gu;
 /** A name in capitals, a comma, and a place or office in ordinary case: JANE Q. DOE, Ohio / JOHN DOE, JR., New Mexico. */

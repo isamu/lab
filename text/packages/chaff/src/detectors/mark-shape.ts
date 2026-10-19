@@ -5,7 +5,7 @@ import { minorityReport } from "../spacing-minority.ts";
 import { externalLinkTitleSpans } from "../link-title.ts";
 import { formulaBracketSpans } from "../formula-brackets.ts";
 import { isWithinAny, quotedSpans } from "../quoted-span.ts";
-import { capitalParagraphSpans, captionsOf, isCaptionAt, rosterNameSpans } from "./caps-caption.ts";
+import { capitalLineSpans, captionsOf, isCaptionAt, isWithinSorted } from "./caps-caption.ts";
 import { lineStarts } from "../position.ts";
 
 /** The letters a mark must touch to count as part of the document's text, by language. */
@@ -294,11 +294,11 @@ export const capsShouting: Detector = (doc, options): Finding[] => {
   const known = lowerCaseWords(doc.prose ?? doc.source);
   const conventional = new Set((options.lexicon ?? []).map((entry) => entry.pattern));
   const captions = captionsOf(doc.source);
-  const capitalLines = [...capitalParagraphSpans(doc.source), ...rosterNameSpans(doc.source)];
+  const capitalLines = capitalLineSpans(doc.source);
   const isCaptionOrLetterhead = (hit: Hit): boolean =>
     captions.has(hit.matched) ||
     isCaptionAt(doc.source, hit.offset, hit.offset + hit.matched.length) ||
-    isWithinAny(capitalLines, { start: hit.offset, end: hit.offset + hit.matched.length });
+    isWithinSorted(capitalLines, { start: hit.offset, end: hit.offset + hit.matched.length });
   const hits = hitsOf(ownSentences(doc), CAPS_RUN).filter((hit) => isShouting(hit.matched, known, conventional) && !isCaptionOrLetterhead(hit));
   return reportFrom(hits, options.limit);
 };

@@ -2,7 +2,7 @@ import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { capitalParagraphSpans, rosterNameSpans } from "../packages/chaff/src/detectors/caps-caption.ts";
+import { capitalParagraphSpans, isWithinSorted, rosterNameSpans } from "../packages/chaff/src/detectors/caps-caption.ts";
 
 // all-caps-shouting, the paragraphs in capitals (a letterhead, a transcript's heading) and roster names. Every example is self-written.
 
@@ -62,6 +62,22 @@ describe("rosterNameSpans", () => {
 
   it("a run in capitals followed by a comma and prose, or a lower-case word, is no roster", () => {
     assert.deepEqual(rosterOf("DO NOT DELETE THIS, the file is needed.\nKEEP THE GATE SHUT, Bob.\nKEEP THE GATE SHUT, said the board\n"), []);
+  });
+});
+
+describe("isWithinSorted", () => {
+  it("inside one span whole, or not", () => {
+    const spans = [
+      { start: 0, end: 5 },
+      { start: 10, end: 20 },
+      { start: 30, end: 31 },
+    ];
+    assert.equal(isWithinSorted(spans, { start: 10, end: 20 }), true);
+    assert.equal(isWithinSorted(spans, { start: 12, end: 15 }), true);
+    assert.equal(isWithinSorted(spans, { start: 4, end: 11 }), false);
+    assert.equal(isWithinSorted(spans, { start: 25, end: 26 }), false);
+    assert.equal(isWithinSorted(spans, { start: 30, end: 31 }), true);
+    assert.equal(isWithinSorted([], { start: 0, end: 0 }), false);
   });
 });
 
