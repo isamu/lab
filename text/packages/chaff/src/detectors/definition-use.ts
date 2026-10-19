@@ -2,7 +2,7 @@ import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { definedTerms, unusedDefinitions, usesBeforeDefinition, type BodyText, type IsTitle, type Mentioned } from "../structure/definition-use.ts";
 import { titleLineNumbers } from "../structure/title-lines.ts";
 import { contentsLineNumbers } from "../structure/contents-lines.ts";
-import { summaryLineNumbers } from "../structure/summary-lines.ts";
+import { summarisesLaterDefinition, summarySections } from "../structure/summary-lines.ts";
 import { expansionConflicts, expansionsIn } from "../acronym-expansions.ts";
 import { linesOf, lineNumberAt } from "../structure/lines.ts";
 import { isQuotedAlone } from "../quoted-span.ts";
@@ -42,16 +42,19 @@ export const unusedDefinition: Detector = (doc): Finding[] => {
   );
 };
 
-/** 題・見出し（Markdown の見出し、章・節の行、条の前の見出しの行、番号と題だけの項目の行）と、目次・索引の行と、要約の節の上の位置か。 */
+/**
+ * 題・見出し（Markdown の見出し、章・節の行、条の前の見出しの行、番号と題だけの項目の行）と、目次・索引の行の上の位置か。
+ * 要約の節の行は、定義がその節の外にあるときだけ（要約は本文の定義を先取りして縮めたもの）。
+ */
 const titleIn = (doc: ProseDocument): IsTitle => {
   const lines = linesOf(doc.source);
   const headings = doc.markup?.headings ?? [];
-  const numbers = new Set([
-    ...titleLineNumbers(doc.structure, lines, headings),
-    ...contentsLineNumbers(lines, headings, patternsOf(doc, "toc-heading")),
-    ...summaryLineNumbers(lines, headings, [...patternsOf(doc, "summary-heading"), ...patternsOf(doc, "headnote-heading")]),
-  ]);
-  return (offset) => numbers.has(lineNumberAt(lines, offset) ?? 0);
+  const numbers = new Set([...titleLineNumbers(doc.structure, lines, headings), ...contentsLineNumbers(lines, headings, patternsOf(doc, "toc-heading"))]);
+  const summaries = summarySections(lines, headings, [...patternsOf(doc, "summary-heading"), ...patternsOf(doc, "headnote-heading")]);
+  return (offset, definedAt) => {
+    const line = lineNumberAt(lines, offset) ?? 0;
+    return numbers.has(line) || summarisesLaterDefinition(summaries, line, lineNumberAt(lines, definedAt) ?? 0);
+  };
 };
 
 /** 文の途中で括弧に入れて定義した語を、定義より前で使っている所。 */

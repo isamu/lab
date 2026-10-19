@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { summaryLineNumbers } from "../packages/chaff/src/structure/summary-lines.ts";
+import { summarisesLaterDefinition, summarySections } from "../packages/chaff/src/structure/summary-lines.ts";
 import { linesOf } from "../packages/chaff/src/structure/lines.ts";
 import type { MarkupHeading } from "../packages/chaff/src/plugin.ts";
 
@@ -16,6 +16,15 @@ const DEFINITION = "相続により取得した宅地等で政令で定めるも
 describe("use-before-definition: a summary section and a numbered heading are not uses", () => {
   it("a headnote under a summary heading (裁判要旨) is not a use", () => {
     assert.deepEqual(early(`## 裁判要旨\n小規模宅地等についての特例の適用があるとされた事例\n\n## 理由\n${DEFINITION}`), []);
+  });
+
+  it("a use and its definition both inside the summary are still reported", () => {
+    assert.deepEqual(early(`## 概要\n売主は、五日以内に発送する。部品は株式会社みなと（以下「売主」という。）が納める。\n\n## 詳細\n本文。\n`), [
+      "「売主」を、2 行目の定義より前で使っています",
+    ]);
+    assert.deepEqual(early(`## Summary\nThe Vendor ships within five days. The parts come from Harbour Ltd (the "Vendor").\n\n## Detail\nText.\n`, en), [
+      '"Vendor" is used here, before it is defined on line 2',
+    ]);
   });
 
   it("the same sentence under a heading that is not a summary, or only ends like one, is still reported", () => {
@@ -65,7 +74,7 @@ describe("use-before-definition: a summary section and a numbered heading are no
   });
 });
 
-describe("summaryLineNumbers", () => {
+describe("summarySections and summarisesLaterDefinition", () => {
   const heading = (source: string, text: string): MarkupHeading => {
     const start = source.indexOf(`# ${text}`);
     return { depth: 2, text, start, end: start + text.length + 2 };
@@ -73,21 +82,28 @@ describe("summaryLineNumbers", () => {
 
   it("takes the lines under a summary heading up to the next heading", () => {
     const source = "# 裁判要旨\n事例\n要約\n# 理由\n本文\n";
-    const numbers = summaryLineNumbers(linesOf(source), [heading(source, "裁判要旨"), heading(source, "理由")], ["裁判要旨"]);
-    assert.deepEqual([...numbers], [2, 3]);
+    assert.deepEqual(summarySections(linesOf(source), [heading(source, "裁判要旨"), heading(source, "理由")], ["裁判要旨"]), [{ from: 2, to: 3 }]);
   });
 
-  it("takes nothing without a summary heading, without names, or from an empty document", () => {
+  it("takes nothing without a whole summary heading, without names, or from an empty document", () => {
     const source = "# 理由\n本文\n";
-    assert.deepEqual([...summaryLineNumbers(linesOf(source), [heading(source, "理由")], ["要旨"])], []);
+    assert.deepEqual(summarySections(linesOf(source), [heading(source, "理由")], ["要旨"]), []);
+    assert.deepEqual(summarySections(linesOf(source), [heading(source, "理由")], []), []);
+    assert.deepEqual(summarySections(linesOf(""), [], ["要旨"]), []);
     const suffix = "# 裁判要旨\n事例\n";
-    assert.deepEqual([...summaryLineNumbers(linesOf(suffix), [heading(suffix, "裁判要旨")], ["要旨"])], []);
-    assert.deepEqual([...summaryLineNumbers(linesOf(source), [heading(source, "理由")], [])], []);
-    assert.deepEqual([...summaryLineNumbers(linesOf(""), [], ["要旨"])], []);
+    assert.deepEqual(summarySections(linesOf(suffix), [heading(suffix, "裁判要旨")], ["要旨"]), []);
   });
 
   it("matches case-insensitively and runs to the end when the summary is last", () => {
     const source = "# Body\ntext\n# SUMMARY\nshort\n";
-    assert.deepEqual([...summaryLineNumbers(linesOf(source), [heading(source, "Body"), heading(source, "SUMMARY")], ["summary"])], [4, 5]);
+    assert.deepEqual(summarySections(linesOf(source), [heading(source, "Body"), heading(source, "SUMMARY")], ["summary"]), [{ from: 4, to: 5 }]);
+  });
+
+  it("a use in a summary counts only when the definition is outside that summary", () => {
+    const sections = [{ from: 2, to: 3 }];
+    assert.equal(summarisesLaterDefinition(sections, 2, 10), true);
+    assert.equal(summarisesLaterDefinition(sections, 2, 3), false);
+    assert.equal(summarisesLaterDefinition(sections, 5, 10), false);
+    assert.equal(summarisesLaterDefinition([], 2, 10), false);
   });
 });

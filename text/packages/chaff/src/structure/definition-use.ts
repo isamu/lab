@@ -192,8 +192,11 @@ const insideCaption = (body: BodyText | undefined, offset: number): boolean => {
   return CAPTION_TO_END.test(caption.trimEnd()) && isTitleWords(caption);
 };
 
-/** 文書の位置が、題・見出し・条の見出しの行にあるか。見出しは節の中身に名前を付けるだけで、語を使った所ではない。 */
-export type IsTitle = (offset: number) => boolean;
+/**
+ * 文書の位置が、題・見出し・条の見出しの行（と、definedAt の定義を先取りした要約の節）にあるか。見出しは節の中身に名前を付けるだけで、
+ * 語を使った所ではない。
+ */
+export type IsTitle = (offset: number, definedAt: number) => boolean;
 
 const NEVER_TITLE: IsTitle = () => false;
 
@@ -379,7 +382,7 @@ export const usesBeforeDefinition = (
         (offset) =>
           !isLabel(sentenceAt(texts, offset), defined.term) &&
           !insideCaption(sentenceAt(texts, offset), offset) &&
-          !isTitle(offset) &&
+          !isTitle(offset, defined.span.start) &&
           !continuesInHan(texts, defined.term, offset) &&
           !insideKatakanaName(texts, defined.term, offset) &&
           !echoesLongName(texts, defined, offset) &&
