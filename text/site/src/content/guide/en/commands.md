@@ -331,6 +331,7 @@ A number goes missing, a date moves by a day, a URL falls out, or a figure appea
 
 `compare` is the guardrail that catches it. It reads the facts out of the text before and after the rewrite, the same way for both, and compares them.
 The facts are numbers, dates, times, URLs, code, names, quotations, headings, references and footnotes.
+A quotation opened with the closing mark (”Visit the page.”) is read as a quotation too, so repairing its marks is a quotation written another way, not one added.
 Position does not matter, so a fact that moved with its paragraph is fine. No AI makes the call: the same two documents always give the same result. chaff only compares; it never rewrites.
 
 ```
@@ -351,6 +352,7 @@ Facts checked: 7 → 5: numbers 3→2, dates 1→1, times 0→0, URLs 1→0, cod
 
 - A **dropped** fact and an **added** fact are failures: either one ends the run with 1. Even a bold rewrite must not invent facts.
 - A fact **written another way** is information: 1,000 and 1000, ５ and 5, April 1, 2026 and 2026-04-01, a reworded heading.
+- A name **respelled** is information too: a change of case (Borrowmoney → BorrowMoney), or one letter changed where the original wrote the old spelling once and the new one at least twice (Mariana → Marianna). It is the same name with its spelling corrected, so it is neither dropped nor added. Any other change of a name stays a dropped and an added fact.
 - The last lines count each kind before and after, zeros included, so "nothing dropped" never reads as "nothing looked at". A kind that could not be read (no part-of-speech tagger, say) is listed with the reason.
 
 To let an intended cut through, name its kind with `--allow-dropped`; for an intended addition, `--allow-added`. What they let through is still listed.

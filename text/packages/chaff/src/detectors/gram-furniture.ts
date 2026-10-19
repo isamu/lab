@@ -22,6 +22,15 @@ export const furnitureMask = (text: string, linked: (index: number) => boolean):
   return mask;
 };
 
+/**
+ * 文の終わりの決まった結び（通知が法令の改正点を並べる「〜ものとすること。」）の範囲。項目ごとに同じ結びで終えるのは書式で、
+ * 書き手の言い回しではない。endings は語彙表の結びの書き方。
+ */
+export const fixedEndingSpans = (text: string, endings: readonly string[]): Span[] => {
+  const end = text.trimEnd().length;
+  return endings.filter((ending) => ending !== "" && text.slice(0, end).endsWith(ending)).map((ending) => ({ start: end - ending.length, end }));
+};
+
 /** 窓の中の空白でない文字の過半が飾りなら、その出現は飾り。 */
 export const isFurniture = (text: string, mask: readonly boolean[], window: Span): boolean => {
   const visible = Array.from({ length: window.end - window.start }, (_, step) => window.start + step).filter((index) => !/\s/u.test(text[index] ?? ""));

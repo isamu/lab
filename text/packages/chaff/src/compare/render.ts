@@ -57,6 +57,10 @@ export const renderFriendly = (outcome: Outcome, text: CompareText): string => {
       text.reformedHeading(outcome.reformed.length),
       outcome.reformed.map((pair) => reformedLine(pair, text)),
     ),
+    ...block(
+      text.respelledHeading(outcome.respelled.length),
+      outcome.respelled.map((pair) => reformedLine(pair, text)),
+    ),
     ...unreadBlock(outcome, text),
     "",
     checkedLine(outcome, text),
@@ -67,26 +71,34 @@ export const renderFriendly = (outcome: Outcome, text: CompareText): string => {
 const compactChange = (change: Change, path: string, word: string): string =>
   `${path}:${String(change.line)}: ${word} ${change.kind} ${shown(change.text)}${change.allowed ? " (allowed)" : ""}`;
 
+const compactPair = (pair: Reformed, outcome: Outcome, word: string): string =>
+  `${outcome.before.path}:${String(pair.before.line)} → ${outcome.after.path}:${String(pair.after.line)}: ${word} ${pair.before.kind} ${shown(pair.before.text)} → ${shown(pair.after.text)}`;
+
 /** For an engineer and grep: one line per fact, the words dropped / added / reformed and the kind in English. */
 export const renderCompact = (outcome: Outcome, text: CompareText): string => {
   const { before, after } = outcome;
   return [
     ...outcome.dropped.map((change) => compactChange(change, before.path, "dropped")),
     ...outcome.added.map((change) => compactChange(change, after.path, "added")),
-    ...outcome.reformed.map(
-      (pair) =>
-        `${before.path}:${String(pair.before.line)} → ${after.path}:${String(pair.after.line)}: reformed ${pair.before.kind} ${shown(pair.before.text)} → ${shown(pair.after.text)}`,
-    ),
+    ...outcome.reformed.map((pair) => compactPair(pair, outcome, "reformed")),
+    ...outcome.respelled.map((pair) => compactPair(pair, outcome, "respelled")),
     ...before.unread.map((unread) => `${before.path}: unread ${unread.kind} (${unread.reason})`),
     ...after.unread.map((unread) => `${after.path}: unread ${unread.kind} (${unread.reason})`),
     checkedLine(outcome, text),
-    text.tally(failing(outcome.dropped), failing(outcome.added), outcome.reformed.length),
+    text.tally(failing(outcome.dropped), failing(outcome.added), outcome.reformed.length, outcome.respelled.length),
   ].join("\n");
 };
 
 export const atomJson = (atom: Atom): Readonly<Record<string, string | number>> => ({ kind: atom.kind, key: atom.key, text: atom.text, line: atom.line });
 
-/** For an AI to act on: every dropped and added fact with its line, the reformed pairs, and the counts per kind. */
+const pairJson = (pair: Reformed): Readonly<Record<string, unknown>> => ({
+  kind: pair.before.kind,
+  key: pair.before.key,
+  before: atomJson(pair.before),
+  after: atomJson(pair.after),
+});
+
+/** For an AI to act on: every dropped and added fact with its line, the reformed and respelled pairs, and the counts per kind. */
 export const renderJson = (outcome: Outcome): string =>
   JSON.stringify(
     {
@@ -95,7 +107,8 @@ export const renderJson = (outcome: Outcome): string =>
       after: outcome.after,
       dropped: outcome.dropped.map((change) => ({ ...atomJson(change), allowed: change.allowed })),
       added: outcome.added.map((change) => ({ ...atomJson(change), allowed: change.allowed })),
-      reformed: outcome.reformed.map((pair) => ({ kind: pair.before.kind, key: pair.before.key, before: atomJson(pair.before), after: atomJson(pair.after) })),
+      reformed: outcome.reformed.map(pairJson),
+      respelled: outcome.respelled.map(pairJson),
     },
     null,
     2,

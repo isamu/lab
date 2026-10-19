@@ -203,6 +203,8 @@ npx chaffjs fix-plan article.md --depth light      構成は残し、語と文�
 npx chaffjs compare article.md after.md            書き直しで事実（数・日付・URL・名前など）が落ちても足されてもいないかを確かめる
 ```
 
+`compare` は、名前の綴りを直した所（Borrowmoney → BorrowMoney）を、落ちた事実ではなく綴りの直しとして出します。
+
 深さは `light`（語と文）、`structure`（節・見出し・段落の組み替えまで）、`register`（文体の変換まで）の 3 つで、深いものは浅いものを含みます。
 決めた深さより深いルールの指摘は、名前と箇所の数だけが計画に載ります。毎回同じ深さにするなら `chaff.yaml` に `fix_plan: { depth: light }` と書きます。
 深さを決めなければ、chaff が直し方を勧め、その深さを計画に書きます。

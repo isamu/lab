@@ -42,3 +42,6 @@ entries:
   - { pattern: をもとに, group: を基に }
   - { pattern: を元に, group: を基に }
   - { pattern: を基に, group: を基に }
+  # 「ことさらに」は一つの副詞。辞書は「こと」と「さらに」に切り、その「こと」が形式名詞の「事」と比べられてしまう。
+  - { pattern: ことさらに, group: 殊更に }
+  - { pattern: 殊更に, group: 殊更に }

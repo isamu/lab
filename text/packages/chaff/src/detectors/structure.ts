@@ -1,5 +1,6 @@
-import { charLength, lengthOf } from "../measure.ts";
-import type { BulletList, Detector, DetectorOptions, Finding, Paragraph, ProseDocument, Section, Span } from "../plugin.ts";
+import { charLength, lengthOf, proseText } from "../measure.ts";
+import { contractionExtraWords } from "../contraction-words.ts";
+import type { BulletList, Detector, DetectorOptions, Finding, LengthUnit, Paragraph, ProseDocument, Section, Sentence, Span } from "../plugin.ts";
 import { dateStampIndexes, stampCandidates } from "../date-stamp.ts";
 import { inDocumentOrder } from "../structure/issues.ts";
 import { preambleParagraphs } from "../preamble-paragraphs.ts";
@@ -52,12 +53,19 @@ const uniformity = (doc: ProseDocument, values: readonly number[], span: { start
   ];
 };
 
+/**
+ * 段落の長さを測る文の長さ。語で数えるときは、短縮形を展開した語数で数える（don't は do not の 2 語）。
+ * contraction-consistency に従って Don't を Do not に直しただけで段落の指摘が出たり消えたりしないように。
+ */
+const sentenceSize = (sentence: Sentence, unit: LengthUnit): number =>
+  lengthOf(sentence, unit) + (unit === "word" ? contractionExtraWords(proseText(sentence)) : 0);
+
 /** 1 段落に文を詰めすぎると、読み手はどこで息継ぎしていいか分からなくなる。 */
 export const paragraphLength: Detector = (doc, options): Finding[] =>
   doc.paragraphs
     .filter((paragraph) =>
       isTooLongParagraph(
-        paragraph.sentences.map((sentence) => lengthOf(sentence, doc.lengthUnit)),
+        paragraph.sentences.map((sentence) => sentenceSize(sentence, doc.lengthUnit)),
         options.limit,
         options.fullSentence,
       ),

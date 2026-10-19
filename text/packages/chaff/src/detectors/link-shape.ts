@@ -3,6 +3,7 @@ import { findingAt, markupOf, quoteOf } from "./markup-finding.ts";
 import { linkTextOf } from "../link-text.ts";
 import { bareUrls } from "../bare-url.ts";
 import { isFieldValueUrl, isFileNameAlt, isUrlText, mismatchedHost } from "../link-shape.ts";
+import { mismatchedPath } from "../link-path.ts";
 import { minorityWithin } from "../orthography.ts";
 import { readMarkdown, spansOfType } from "../markdown-read.ts";
 
@@ -60,12 +61,15 @@ export const bareUrlMix: Detector = (doc: ProseDocument, options): Finding[] => 
     .map((address) => findingAt(doc, address, { url: quoteOf(doc.source, address), count: worded.length }));
 };
 
-/** A link whose text is an address on one host and whose destination is on another (`[https://a.example](https://b.example)`). */
+/**
+ * A link whose text is an address on one host and whose destination is on another (`[https://a.example](https://b.example)`),
+ * or on the same host at a path the text does not start (`[github.com/clef/handbook](https://github.com/handbook)`).
+ */
 export const linkTextUrlMismatch: Detector = (doc): Finding[] =>
   (markupOf(doc)?.links ?? []).flatMap((link) => {
     const text = linkTextOf(doc.source.slice(link.start, link.end));
-    const hosts = text === undefined ? undefined : mismatchedHost(text, link.destination);
-    return hosts === undefined ? [] : [findingAt(doc, link, hosts)];
+    const shown = text === undefined ? undefined : (mismatchedHost(text, link.destination) ?? mismatchedPath(text, link.destination));
+    return shown === undefined ? [] : [findingAt(doc, link, shown)];
   });
 
 /** An image whose alt text is its file's name (`IMG_1234.png`, `Screenshot 2026-04-01`). The name prefixes come from the lexicon. */

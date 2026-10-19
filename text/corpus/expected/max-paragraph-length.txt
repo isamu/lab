@@ -17,7 +17,7 @@ fed-powell-2025-08-22-framework-review  6
 fomc-minutes-2025-07  12
 github-general-privacy-statement  1
 gitlab-meetings  2
-gitlab-values  23
+gitlab-values  24
 govuk-cddo-roadmap-2022-2025  1
 irs-online-account-faq  1
 jma-faq-typhoon  1
@@ -49,5 +49,5 @@ wikipedia-ja-talk-oden  3
 wikisource-lincoln-letters-greeley  1
 wikivoyage-belgian-coast-tram  22
 wikivoyage-loop-art-tour  7
-wikivoyage-magnificent-mile  4
+wikivoyage-magnificent-mile  5
 zenn-kaityo256-happy-presentation  2
