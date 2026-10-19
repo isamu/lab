@@ -1,4 +1,4 @@
-import type { LexiconEntry, ProseDocument, Sentence } from "../plugin.ts";
+import type { Detector, LexiconEntry, ProseDocument, Sentence } from "../plugin.ts";
 import { entryRanges } from "./lexicon-match.ts";
 import { phraseMatchWhere } from "./phrase-match.ts";
 import { followsToldQuote, type TellingCues } from "./reported-speech.ts";
@@ -21,4 +21,4 @@ const isWeaselUse = (doc: ProseDocument, sentence: Sentence, entry: LexiconEntry
   return !ranges.every((range) => followsToldQuote(doc.source.slice(sentence.span.start, tokens[range.start]?.span.start ?? sentence.span.start), cues));
 };
 
-export const weaselWord = phraseMatchWhere(isWeaselUse);
+export const weaselWord: Detector = (doc, options) => phraseMatchWhere(doc, options, (sentence, entry) => isWeaselUse(doc, sentence, entry));

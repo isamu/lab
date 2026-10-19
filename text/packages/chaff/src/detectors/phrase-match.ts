@@ -64,14 +64,6 @@ export const phraseInUse: Detector = (doc, options): Finding[] => {
   return hits.length < options.limit ? [] : findingsOf(hits, options.limit);
 };
 
-/** phrase-match for a rule that tells which uses of a phrase count (isUsed), from the document and the sentence. */
-export const phraseMatchWhere =
-  (isUsed: (doc: ProseDocument, sentence: Sentence, entry: LexiconEntry) => boolean): Detector =>
-  (doc, options): Finding[] => {
-    const hits = phraseHits(doc, options, (sentence, entry) => isUsed(doc, sentence, entry));
-    return hits.length < options.limit ? [] : findingsOf(hits, options.limit);
-  };
-
 type Uses = { readonly sentence: Sentence; readonly matched: string; readonly count: number };
 
 /**
