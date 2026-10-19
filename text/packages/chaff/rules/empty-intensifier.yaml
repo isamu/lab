@@ -1,7 +1,7 @@
 id: empty-intensifier
 layer: L2
 status: stable
-how_to_find: phrase-match
+how_to_find: empty-intensifier
 word_list: empty-intensifier
 uses: [pos]
 severity: warning
@@ -45,8 +45,8 @@ example:
     after: The deadline is Friday; a late delivery pushes payment into next month.
 
 not_flagged:
-  ja: 一覧にある言い回しだけを見ます。「重要です」と書いたあとに理由が続くかどうかは読みません。
-  en: Only the phrases on chaff's list are checked; whether a reason follows is not read.
+  ja: 一覧にある言い回しだけを見ます。「重要です」と書いたあとに理由が続くかどうかは読みません。「店を続けるためには、人手が不可欠です」のように、何のために要るのかを同じ文で言った「不可欠です」「欠かせません」は、条件を言っているので指しません。
+  en: Only the phrases on chaff's list are checked; whether a reason follows is not read. A Japanese statement of necessity (不可欠です, 欠かせません) that names its purpose in the same sentence (〜のためには) states a condition and is not reported.
 level_meaning:
   ja: 当てはまる言い回しが {limit} 箇所あれば指摘
   en: reported once there are {limit}

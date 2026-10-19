@@ -51,6 +51,12 @@ export const phraseMatch: Detector = (doc, options): Finding[] => {
   return hits.length < options.limit ? [] : findingsOf(hits, options.limit);
 };
 
+/** phrase-match の、isUsed が使ったと読む出現だけを数える版。言い回しごとの例外を持つ rule が使う。 */
+export const phraseMatchWhere = (doc: ProseDocument, options: DetectorOptions, isUsed: IsUsed): Finding[] => {
+  const hits = phraseHits(doc, options, isUsed);
+  return hits.length < options.limit ? [] : findingsOf(hits, options.limit);
+};
+
 /** phrase-match の、言葉として名指しただけの言い回し（the phrase "…", 「…」という言い方）を数えない版（mentioned-phrase.ts）。 */
 export const phraseInUse: Detector = (doc, options): Finding[] => {
   const cues = mentionCuesOf(doc.lexicons["mention-cue"] ?? []);
