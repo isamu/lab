@@ -3,7 +3,8 @@ import { isWithinAny, quotedIn } from "../quoted-span.ts";
 import { chronologyRows } from "../chronology-rows.ts";
 import { externalLinkTitleSpans } from "../link-title.ts";
 import type { Detector, Finding, Span, Token } from "../plugin.ts";
-import { countedTokens, uncountedWordsOf } from "../uncounted-particles.ts";
+import { countedTokens, uncountedWordsOf, type UncountedWords } from "../uncounted-particles.ts";
+import { honorificGroupParticles } from "../honorific-group.ts";
 
 /**
  * 文末が名詞で終わる（体言止め）。箇条書きでは普通だが、本文では文が途中で切れて読める。
@@ -79,13 +80,24 @@ const runsOf = (tokens: readonly Token[], nesting: readonly string[], breaks: re
 /** 句と句の間の記号（制限=タグの制限、A→B）。半角の = や : は名詞として読まれ、句読点のようには切れない。 */
 const RUN_BREAK_LEXICON = "particle-run-break";
 
+/** 人の集まりを敬って呼ぶ語（国民の皆様の「皆様」）。直前の助詞は呼び方の一部で、入れ子の輪に数えない。 */
+const HONORIFIC_GROUP_LEXICON = "honorific-group";
+
+/** 数えない助詞（番号をつなぐ「の」と、敬って呼ぶ語の前の「の」）を除いた語。 */
+const chainTokens = (tokens: readonly Token[], numbering: UncountedWords, groups: readonly string[]): readonly Token[] => {
+  const honorific = honorificGroupParticles(tokens, numbering.particles, groups);
+  const counted = countedTokens(tokens, numbering);
+  return honorific.size === 0 ? counted : counted.filter((token) => !honorific.has(token));
+};
+
 export const doubledParticle: Detector = (doc, options): Finding[] => {
   const nesting = (options.lexicon ?? []).map((entry) => entry.pattern);
   const titles = externalLinkTitleSpans(doc.source, doc.links);
   const breaks = (doc.lexicons[RUN_BREAK_LEXICON] ?? []).map((entry) => entry.pattern);
   const numbering = uncountedWordsOf(doc.lexicons, nesting);
+  const groups = (doc.lexicons[HONORIFIC_GROUP_LEXICON] ?? []).map((entry) => entry.pattern);
   return doc.sentences.flatMap((sentence) =>
-    runsOf(countedTokens(sentence.tokens ?? [], numbering), nesting, breaks, [...quotedIn(sentence), ...titles])
+    runsOf(chainTokens(sentence.tokens ?? [], numbering, groups), nesting, breaks, [...quotedIn(sentence), ...titles])
       .filter((run) => run.tokens.length > options.limit)
       .map((run) => ({
         rule: "no-doubled-joshi",
