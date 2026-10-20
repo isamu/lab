@@ -3,7 +3,8 @@ import { compacted } from "./gram-place.ts";
 import { leadingCounter, trailingPrefix } from "./counter-edge.ts";
 import { trailingAddressee, type AddresseeSuffix } from "./addressee-edge.ts";
 import { leadingPrefix, trailingTitle, type AddresseeWords } from "./addressee-title-edge.ts";
-import { followsForm, holdsName, leadingOrdinal, leadingReference, type Edge } from "./kanji-name-edge.ts";
+import { followsForm, followsUnit, holdsName, isListItem, leadingOrdinal, leadingReference, type Edge } from "./kanji-name-edge.ts";
+import { isNameList } from "./name-list-sentence.ts";
 import { maskAddresses } from "../address-chain.ts";
 import { isAddressRun } from "./place-run.ts";
 import { isOneName } from "./name-run.ts";
@@ -38,6 +39,8 @@ type KanjiRun = {
   readonly before: string;
   /** 文がこの連なりだけ（用語集の見出し語の行）。 */
   readonly alone: boolean;
+  /** 名前の並び（区長、副区長、…選挙管理委員会事務局長）の、「、」で区切った 1 項目がこの連なりだけ。 */
+  readonly listItem: boolean;
 };
 
 const SPACE = /\s/gu;
@@ -63,16 +66,27 @@ const fillsQuote = (sentence: Sentence, start: number, end: number): boolean =>
 const runsOf = (sentence: Sentence, profile: DocumentProfile | undefined, names: readonly string[]): KanjiRun[] => {
   const prose = proseText(sentence);
   const printed = compacted(sentence.text, "char").offsets;
+  const nameList = isNameList(prose);
   return [...maskedProse(prose, profile, names).matchAll(KANJI_RUN)].map((match) => {
     const before = prose.slice(0, match.index).replace(SPACE, "").length;
     const [start, last] = [printed[before], printed[before + match[0].length - 1]];
     if (start === undefined || last === undefined)
-      return { text: match[0], span: undefined, quoted: false, placed: false, after: undefined, before: "", alone: false };
+      return { text: match[0], span: undefined, quoted: false, placed: false, after: undefined, before: "", alone: false, listItem: false };
     const span = { start: sentence.span.start + start, end: sentence.span.start + last + 1 };
     const after = sentence.text.slice(0, start).trim() === "" ? sentence.text.slice(last + 1) : undefined;
     const quoted = fillsQuote(sentence, start, last + 1);
     const alone = sentence.text.slice(0, start).trim() === "" && sentence.text.slice(last + 1).trim() === "";
-    return { text: match[0], span, quoted, placed: isTitlePosition(sentence.text, start, last + 1), after, before: sentence.text.slice(0, start), alone };
+    const listItem = nameList && isListItem(sentence.text, start, last + 1);
+    return {
+      text: match[0],
+      span,
+      quoted,
+      placed: isTitlePosition(sentence.text, start, last + 1),
+      after,
+      before: sentence.text.slice(0, start),
+      alone,
+      listItem,
+    };
   });
 };
 
@@ -137,6 +151,9 @@ const isAddresseeLine = (run: KanjiRun, words: NameWords): boolean => {
   return after !== undefined && (after === "" || words.addressee.includes(after));
 };
 
+/** 宛名の行か、名前の並びの 1 項目。どちらも役職を付けた名前を 1 つずつ並べたもので、尻の役職は名前の外。 */
+const isNamedEntry = (run: KanjiRun, words: NameWords): boolean => run.listItem || isAddresseeLine(run, words);
+
 /** 尻の外す語: 数に付く接頭の語か宛先に付く語と、宛名の行ならその前の役職（日本博物館協会会長殿の「会長殿」）。 */
 const tailOf = (tokens: readonly Token[], run: KanjiRun, span: Span, words: NameWords): Tail | undefined => {
   const prefix = trailingPrefix(tokens, span.end, run.text);
@@ -144,7 +161,7 @@ const tailOf = (tokens: readonly Token[], run: KanjiRun, span: Span, words: Name
     prefix === undefined
       ? (trailingAddressee(tokens, span.end, run.text, words.addressee) ?? trailingAddressee(tokens, span.end, run.text, words.listSuffixes))
       : { surface: prefix.surface, start: prefix.span.start };
-  const title = isAddresseeLine(run, words) ? trailingTitle(run.text.slice(0, run.text.length - (suffix?.surface.length ?? 0)), words.addressees) : undefined;
+  const title = isNamedEntry(run, words) ? trailingTitle(run.text.slice(0, run.text.length - (suffix?.surface.length ?? 0)), words.addressees) : undefined;
   if (title === undefined) return suffix;
   return { surface: title + (suffix?.surface ?? ""), start: (suffix?.start ?? span.end) - title.length };
 };
@@ -166,7 +183,7 @@ const measuredOf = (tokens: readonly Token[], run: KanjiRun, span: Span, words: 
   const tail = tailOf(tokens, run, span, words);
   const name = run.text.slice(0, run.text.length - (tail?.surface.length ?? 0));
   const { head, prefix } = headOf(tokens, run, span, name, words);
-  const keptHead = prefix !== undefined && !isAddresseeLine(run, words) ? prefix.surface : "";
+  const keptHead = prefix !== undefined && !isNamedEntry(run, words) ? prefix.surface : "";
   return { rest: { start: head?.span.end ?? span.start, end: tail?.start ?? span.end }, text: name.slice(head?.surface.length ?? 0), keptHead };
 };
 
@@ -179,7 +196,8 @@ const measuredRun = (tokens: readonly Token[] | undefined, run: KanjiRun, contex
   if (run.quoted || (context.headwords && run.alone)) return "";
   if (tokens === undefined || run.span === undefined) return run.text;
   const { rest, text, keptHead } = measuredOf(tokens, run, run.span, context.words);
-  const formBefore = rest.start === run.span.start && followsForm(run.before, context.words.organisation.forms);
+  const organisation = context.words.organisation;
+  const formBefore = rest.start === run.span.start && (followsForm(run.before, organisation.forms) || followsUnit(run.before, organisation.units));
   if (isPlaceName(tokens, rest, context.words, formBefore) || isTitle(tokens, rest, text, run.placed, context)) return "";
   return longestUnknown(tokens, rest, keptHead, context);
 };
