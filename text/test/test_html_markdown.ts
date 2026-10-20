@@ -437,7 +437,7 @@ describe("htmlToMarkdown: ボタン・隠れた要素・見出しの自己リン
     `<div class="panel" id="Collapsible${id}"><div class="panel-heading" id="heading${id}" role="tab"><h4 class="panel-title">` +
     `<a aria-controls="collapse${id}" aria-hidden="true" data-toggle="collapse" href="#collapse${id}" role="button"><span class="glyphicon"> </span></a> ` +
     `<a aria-controls="collapse${id}" data-toggle="collapse" href="#collapse${id}" role="button">${title}</a></h4></div>` +
-    `<div class="panel-collapse collapse" id="collapse${id}" role="tabpanel"><div class="panel-body"><ul>${items.map((item) => `<li>${item}</li>`).join("")}</ul></div></div></div>`;
+    `<div class="panel-collapse collapse" id="collapse${id}" role="tabpanel"><div class="panel-body"><ul><li>${items.join("</li><li>")}</li></ul></div></div></div>`;
 
   it("見出しの中のページ内リンク (折りたたみパネルの題) は見出しの文字。見出しを包む塊をリンクだけの塊として落とさない", () => {
     const html =

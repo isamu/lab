@@ -1,6 +1,7 @@
 // A heading's link to its own section (a permalink beside or after the title), taken out of an HTML page, and a
 // heading's other links within the page (an accordion's panel title) read as its words. Pure.
 import { ANY_LINK, ATTRIBUTES, elementRanges, hasNoWords, plainText, type ElementRange } from "./html-elements.ts";
+import { withoutFootnoteMarks } from "./html-footnote-marks.ts";
 import { decodeEntities } from "./markup-text.ts";
 
 const ID = new RegExp(String.raw`<([a-z][a-z0-9-]*)${ATTRIBUTES}\s+id\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))`, "giu");
@@ -81,7 +82,7 @@ const rangesByTag = (html: string): ((tag: string) => readonly ElementRange[]) =
  * A heading's link to its own section goes when it stands just after the heading ("Copy link to Context"), or inside
  * it as a mark without words ("Scope ¶"). A link with words inside the heading is its title and stays.
  */
-export const withoutHeadingSelfLinks = (html: string): string => {
+const withoutHeadingSelfLinks = (html: string): string => {
   const page = { ids: idTargets(html), html, rangesOf: rangesByTag(html) };
   const cut = [...html.matchAll(HEADING_THEN_LINK)].reduce<{ readonly parts: readonly string[]; readonly from: number }>(
     (acc, match) => ({
@@ -93,17 +94,23 @@ export const withoutHeadingSelfLinks = (html: string): string => {
   return [...cut.parts, html.slice(cut.from)].join("");
 };
 
-const IN_PAGE_LINK = /<a\b[^>]*\shref\s*=\s*(?:"\s*#[^"]*"|'\s*#[^']*'|#[^\s>]*)[^>]*>([\s\S]*?)<\/a\s*>/giu;
+const IN_PAGE_HREF = new RegExp(String.raw`^<a${ATTRIBUTES}\s+href\s*=\s*["']?\s*#`, "iu");
 
 const HEADING = /(<h([1-6])\b[^>]*>)([\s\S]*?)(<\/h\2\s*>)/giu;
+
+/** The link's words without the link. */
+const linkText = (link: string): string => link.replace(/^<a\b[^>]*>/iu, "").replace(/<\/a\s*>$/iu, "");
 
 /**
  * A link within the page inside a heading is part of the heading: an accordion draws each panel's title as a link
  * that opens the panel. Its words stay and the link goes, so that a block holding the heading is not read as a menu.
+ * A footnote mark in the heading goes first, as it does everywhere else.
  */
-export const withHeadingAnchorsAsText = (html: string): string =>
-  html.replace(
-    HEADING,
-    (_whole: string, open: string, _level: string, inside: string, close: string) =>
-      `${open}${inside.replace(IN_PAGE_LINK, (_link: string, text: string) => text)}${close}`,
-  );
+const withHeadingAnchorsAsText = (html: string): string =>
+  html.replace(HEADING, (_whole: string, open: string, _level: string, inside: string, close: string) => {
+    const words = withoutFootnoteMarks(inside).replace(ANY_LINK, (link: string) => (IN_PAGE_HREF.test(link) ? linkText(link) : link));
+    return `${open}${words}${close}`;
+  });
+
+/** A heading's links read as the page means them: a self-link gone, a link within the page as the heading's words. */
+export const withHeadingLinksRead = (html: string): string => withHeadingAnchorsAsText(withoutHeadingSelfLinks(html));
