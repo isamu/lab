@@ -174,6 +174,12 @@ describe("request-without-deadline: 期限も担当も無い依頼", () => {
     assert.deepEqual(findingsOf("Fax: 012-345-6789\nPlease confirm receipt with a call.", en), []);
   });
 
+  it("※の注記は、すぐ上の行が連絡先の行のときだけ連絡の依頼と読む", () => {
+    assert.deepEqual(findingsOf("電話：012-3456-7890\n※つながらないときは、メールでご連絡ください。"), []);
+    assert.deepEqual(findingsOf("提出書類：履歴書\n※写真を貼って提出してください。"), [MESSAGE_JA]);
+    assert.deepEqual(findingsOf("ファックス番号：012-3456-7890\n\n※申込書を提出してください。"), [MESSAGE_JA]);
+  });
+
   it("コロンの無い連絡の手段の語は連絡先の行と読まない", () => {
     assert.deepEqual(findingsOf("ファックスで見積書をご提出ください。"), [MESSAGE_JA]);
     assert.deepEqual(findingsOf("Please send the fax to the printer.", en), [MESSAGE_EN]);
