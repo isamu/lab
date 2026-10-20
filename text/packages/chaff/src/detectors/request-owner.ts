@@ -18,6 +18,8 @@ export const REQUEST_LEXICONS = {
   timing: "request-timing",
   invitation: "request-invitation",
   contact: "request-contact",
+  prohibition: "request-prohibition",
+  deadlineSection: "request-deadline-section",
 } as const;
 
 type Words = Readonly<Record<keyof typeof REQUEST_LEXICONS, readonly string[]>>;
@@ -38,6 +40,8 @@ const wordsOf = (doc: ProseDocument): Words => ({
   timing: patternsOf(doc.lexicons[REQUEST_LEXICONS.timing]),
   invitation: patternsOf(doc.lexicons[REQUEST_LEXICONS.invitation]),
   contact: patternsOf(doc.lexicons[REQUEST_LEXICONS.contact]),
+  prohibition: patternsOf(doc.lexicons[REQUEST_LEXICONS.prohibition]),
+  deadlineSection: patternsOf(doc.lexicons[REQUEST_LEXICONS.deadlineSection]),
 });
 
 /** How far apart, in characters, the action word and the request ending may be: the action must be what is requested. */
@@ -83,10 +87,20 @@ const holdsContactLine = (text: string, words: Words): boolean => {
   return placesOf(comparable, words.contact).some((label) => LABEL_COLON.test(comparable.slice(label.end)));
 };
 
+/** A prohibition word right at the request ending (「送らないでください」 "Please do not submit"). */
+const PROHIBITION_REACH = 1;
+
+/** Every request ending in the sentence asks not to do something: a prohibition, with nothing to finish by a date. */
+const isProhibition = (text: string, endings: readonly Place[], words: Words): boolean => {
+  const prohibitions = placesOf(text, words.prohibition);
+  return endings.length > 0 && endings.every((ending) => prohibitions.some((prohibition) => gapBetween(prohibition, ending) <= PROHIBITION_REACH));
+};
+
 /**
  * A request for an action: an action word next to a request ending (「確認してください」「please send」), not a condition
  * (「ご不明な点があれば…ください」 is an offer), not an open offer to take the reader's questions (「ご質問はメールでお送りください」),
  * not a pointer to where to read more (「詳細は資料をご確認ください」), not what an invitation is for (「登録をしにお越しください」),
+ * not a prohibition (「メールでは送らないでください」 "Please do not submit comments by email"),
  * and not the way to reach the writer on a contact line (「ファックス番号：… 送信後、ご連絡ください」).
  * The action has to be close to the ending, or a noun like 検討会 or 履修登録 earlier in the sentence would make one.
  */
@@ -98,7 +112,7 @@ export const isRequest = (text: string, words: Words): boolean => {
     (action) =>
       endings.some((ending) => gapBetween(action, ending) <= ACTION_REACH) && !invitations.some((invitation) => invitedTo(comparable, action, invitation)),
   );
-  if (!asked || holdsContactLine(text, words)) return false;
+  if (!asked || holdsContactLine(text, words) || isProhibition(text, endings, words)) return false;
   return ![words.condition, words.offer, words.pointer].some((patterns) => containsAny(text, patterns));
 };
 
@@ -184,11 +198,49 @@ const enclosingHeadings = (sections: readonly Section[], offset: number): Senten
 const underDeadlineHeading = (sections: readonly Section[], sentence: Sentence, words: Words): boolean =>
   enclosingHeadings(sections, sentence.span.start).some((heading) => holdsWord(heading, words.deadline));
 
-/** The request sentences with neither a deadline nor a person in them, in the sentence after (same paragraph or item), or in a heading above. */
+const HEADING_END = new Set([":", "：", ".", "。"]);
+
+/** A heading without its closing colon or period and spaces ("DATES:" is "DATES"). */
+const withoutHeadingEnd = (text: string): string => {
+  const chars = [...text];
+  return chars.slice(0, chars.findLastIndex((char) => char.trim() !== "" && !HEADING_END.has(char)) + 1).join("");
+};
+
+const datesInside = (span: Span, dates: readonly Span[]): Span[] => dates.filter((date) => date.start >= span.start && date.end <= span.end);
+
+/** A sentence's text with its dates blanked, so that a month's name in a date ("November 5") is no deadline word. */
+const withoutDates = (source: string, span: Span, inside: readonly Span[]): string =>
+  inside.reduce(
+    (text, date) => `${text.slice(0, date.start - span.start)}${" ".repeat(date.end - date.start)}${text.slice(date.end - span.start)}`,
+    source.slice(span.start, span.end),
+  );
+
+const statesDeadline = (source: string, sentence: Sentence, words: Words, dates: readonly Span[]): boolean => {
+  const inside = datesInside(sentence.span, dates);
+  return inside.length > 0 && containsAny(withoutDates(source, sentence.span, inside), words.deadline);
+};
+
+/**
+ * Where a section headed only by a deadline-section word (a notice's "DATES:", "2. Deadline") states a date with a
+ * deadline word: the document gives its deadline once there, for the requests that follow it. Undefined without one.
+ */
+const documentDeadlineAt = (source: string, sections: readonly Section[], words: Words, dates: readonly Span[]): number | undefined =>
+  sections.find(
+    (section) =>
+      words.deadlineSection.includes(withoutHeadingEnd(comparableWords(section.unlabeledHeading ?? section.heading)).trim()) &&
+      section.sentences.some((sentence) => statesDeadline(source, sentence, words, dates)),
+  )?.span.start;
+
+/**
+ * The request sentences with neither a deadline nor a person in them, in the sentence after (same paragraph or item), in a
+ * heading above, or in a deadline section before them.
+ */
 export const ownerlessRequests = (doc: ProseDocument): Sentence[] => {
   const words = wordsOf(doc);
   const dates = dateSpans(doc.structure);
+  const deadlineAt = documentDeadlineAt(doc.source, doc.sections, words, dates) ?? Number.POSITIVE_INFINITY;
   return doc.sentences.filter((sentence, index) => {
+    if (sentence.span.start > deadlineAt) return false;
     if (!isRequest(proseText(sentence), words) || saysWhenOrWho(sentence, words, dates, true)) return false;
     const next = doc.sentences[index + 1];
     if (continues(doc.source, sentence, next) && saysWhenOrWho(next, words, dates, false)) return false;

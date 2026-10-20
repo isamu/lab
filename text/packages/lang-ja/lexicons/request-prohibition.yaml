@@ -1,0 +1,9 @@
+# しないように頼む書き方（「メールでは送らないでください」）は禁止で、期限までに済ませることが無い。
+id: request-prohibition
+language: ja
+entries:
+  - pattern: ないでください
+  - pattern: ないようにしてください
+  - pattern: ないようお願い
+  - pattern: ご遠慮ください
+  - pattern: お控えください

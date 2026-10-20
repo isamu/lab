@@ -21,12 +21,14 @@ export type CitationSlip =
   | { readonly variant: "missing"; readonly offset: number; readonly citation: string; readonly key: string }
   | { readonly variant: "uncited"; readonly offset: number; readonly key: string };
 
-type Keyed = { readonly key: string; readonly start: number };
+/** An entry's key, and the other keys a citation may name it by (a two-word surname cited by its second word). */
+type Keyed = { readonly key: string; readonly start: number; readonly aliases?: readonly string[] };
 
 /** One kind of citation and its entries, and whether an entry's key is what a citation's key names. */
 type Side = {
   readonly entries: readonly Keyed[];
-  readonly citations: readonly { readonly mark: CitationMark; readonly keys: readonly string[] }[];
+  /** unsure: keys that may be no author at all, reported only when they name an entry, never as missing. */
+  readonly citations: readonly { readonly mark: CitationMark; readonly keys: readonly string[]; readonly unsure?: readonly string[] }[];
   readonly names: (entryKey: string, citedKey: string) => boolean;
 };
 
@@ -34,6 +36,16 @@ const NUMBERED_STYLES = new Set(["numeric", "kikko", "paren-number"]);
 const LATIN = /[a-z]/u;
 
 const keyOf = (cited: AuthorYear): string => `${cited.year} ${cited.author}`;
+
+/** An author-year entry keyed by its first author, and also by each later word of a name of several (Mostafazadeh Davani). */
+const authorYearKeyed = (entry: ReferenceEntry): Keyed[] => {
+  if (entry.authorYear === undefined) return [];
+  const { year } = entry.authorYear;
+  const aliases = (entry.otherNames ?? []).map((name) => keyOf({ year, author: name }));
+  return [{ key: keyOf(entry.authorYear), start: entry.start, ...(aliases.length === 0 ? {} : { aliases }) }];
+};
+
+const keysOf = (entry: Keyed): readonly string[] => [entry.key, ...(entry.aliases ?? [])];
 
 /** A cited Japanese surname this long or longer may be the head of an entry's full name; a shorter one (林) must match whole. */
 const MIN_PREFIX_SURNAME = 2;
@@ -64,21 +76,24 @@ const numberedSide = (entries: readonly ReferenceEntry[], marks: readonly Citati
 });
 
 const authorYearSide = (entries: readonly ReferenceEntry[], marks: readonly CitationMark[]): Side => {
-  const keyed = entries.flatMap((entry) => (entry.authorYear === undefined ? [] : [{ key: keyOf(entry.authorYear), start: entry.start }]));
+  const keyed = entries.flatMap(authorYearKeyed);
   return {
     entries: keyed,
-    citations: marks.filter((mark) => mark.style === "author-year").map((mark) => ({ mark, keys: mark.authorYears.map(keyOf) })),
-    names: namesEntryAmong(keyed.map((entry) => entry.key)),
+    citations: marks
+      .filter((mark) => mark.style === "author-year")
+      .map((mark) => ({ mark, keys: mark.authorYears.map(keyOf), unsure: mark.authorYears.filter((cited) => cited.severalWords === true).map(keyOf) })),
+    names: namesEntryAmong(keyed.flatMap(keysOf)),
   };
 };
 
 export const sideSlips = (side: Side): CitationSlip[] => {
   if (side.entries.length < MIN_ENTRIES || side.citations.length === 0) return [];
   const citedKeys = [...new Set(side.citations.flatMap((citation) => citation.keys))];
-  const isCited = (entry: Keyed): boolean => citedKeys.some((key) => side.names(entry.key, key));
+  const namesOne = (entry: Keyed, citedKey: string): boolean => keysOf(entry).some((entryKey) => side.names(entryKey, citedKey));
+  const isCited = (entry: Keyed): boolean => citedKeys.some((key) => namesOne(entry, key));
   const missing = side.citations.flatMap((citation) =>
     citation.keys
-      .filter((key) => !side.entries.some((entry) => side.names(entry.key, key)))
+      .filter((key) => !(citation.unsure ?? []).includes(key) && !side.entries.some((entry) => namesOne(entry, key)))
       .map((key): CitationSlip => ({ variant: "missing", offset: citation.mark.start, citation: citation.mark.written, key })),
   );
   const uncitedEntries = side.entries.filter((entry) => !isCited(entry));
