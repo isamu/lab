@@ -290,6 +290,8 @@ export type DocumentProfile = {
   readonly walkRate?: { readonly metresPerMinute: number; readonly roundUp: boolean } | undefined;
   /** ラベルが「消費税込み」とだけ書き、ラベルにも文書にも税率が無いときの税率（%）。 */
   readonly taxRate?: number | undefined;
+  /** ト書きを囲む括弧（戯曲の「（」「）」）。中身は台詞の文の一部ではなく、台詞と別に文に分ける。 */
+  readonly stageDirections?: { readonly open: string; readonly close: string } | undefined;
 };
 
 /**
