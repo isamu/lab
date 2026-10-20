@@ -29,6 +29,15 @@ describe("introducesList", () => {
     });
     const spaced = "shall include— \n\n\n(A) the Congress;";
     assert.equal(introducesList(spaced, dashAt(spaced)), true);
+    const crlf = "shall include—\r\n\r\n(aa) the Congress;\r\n";
+    assert.equal(introducesList(crlf, dashAt(crlf)), true);
+  });
+
+  it("a word in brackets or an indented code block below is not a list", () => {
+    ["(note) This is an aside.", "    - literal text", "    (1) literal text", "(1)no space"].forEach((line) => {
+      const source = `Output ended—\n\n${line}`;
+      assert.equal(introducesList(source, dashAt(source)), false, line);
+    });
   });
 
   it("a dash inside its line, above prose, or at the end of the text does not", () => {

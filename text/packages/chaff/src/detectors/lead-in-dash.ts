@@ -1,8 +1,9 @@
 /**
  * The start of a list item: "(1) ", "(A) ", "1. ", "a) ", "- ", "• ", optionally after the quotation mark an Act quoted in
- * a statute's notes opens each paragraph with.
+ * a statute's notes opens each paragraph with. In brackets, a number, one or two letters ("(aa)") or a roman numeral, not
+ * a word ("(note)"). Four spaces of indent make a Markdown code block, not a list.
  */
-const LIST_ITEM = /^[ \t]*["“]?(?:\([A-Za-z0-9]{1,4}\)|\d{1,3}[.)]|[A-Za-z][.)]|[-*+•])[ \t]/u;
+const LIST_ITEM = /^ {0,3}["“]?(?:\((?:\d{1,3}|[A-Za-z]{1,2}|[ivxlc]{1,6}|[IVXLC]{1,6})\)|\d{1,3}[.)]|[A-Za-z][.)]|[-*+•])[ \t]/u;
 
 /** The end of the line that holds `offset`. */
 const lineEndAt = (source: string, offset: number): number => {
