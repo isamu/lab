@@ -33,6 +33,18 @@ describe("htmlToMarkdown: 見出し・段落・箇条書き", () => {
     assert.equal(htmlToMarkdown("<p>　議長、始めます。<br>　次に進みます。</p>"), "議長、始めます。\n次に進みます。\n");
   });
 
+  it("番号の見出しのすぐ後に同じ札の小見出し (3. の後の 3.1、4. の後の (1)) があれば、上の見出しは空の節ではない", () => {
+    assert.equal(htmlToMarkdown("<h4>3. 結果</h4><h4>3.1 データ</h4><p>本文。</p>"), "#### 3. 結果\n\n#### 3.1 データ\n\n本文。\n");
+    assert.equal(htmlToMarkdown("<h4>3．結果</h4><h4>3.1 データ</h4><p>本文。</p>"), "#### 3．結果\n\n#### 3.1 データ\n\n本文。\n");
+    assert.equal(htmlToMarkdown("<h4>4. 課題</h4><h4>（1）費用</h4><p>本文。</p>"), "#### 4. 課題\n\n#### （1）費用\n\n本文。\n");
+    assert.equal(htmlToMarkdown("<h4>3. 結果</h4><h4>4. 考察</h4><p>本文。</p>"), "#### 4. 考察\n\n本文。\n");
+    assert.equal(htmlToMarkdown("<h4>3. 結果</h4><h4>3.1.2 細目</h4><p>本文。</p>"), "#### 3.1.2 細目\n\n本文。\n");
+    assert.equal(htmlToMarkdown("<h4>4. 課題</h4><h4>（2）費用</h4><p>本文。</p>"), "#### （2）費用\n\n本文。\n");
+    assert.equal(htmlToMarkdown("<h4>Menu</h4><h4>3.1 データ</h4><p>本文。</p>"), "#### 3.1 データ\n\n本文。\n");
+    assert.equal(htmlToMarkdown("<h4>4. 課題</h4><h4>① 費用</h4><p>本文。</p>"), "#### 4. 課題\n\n#### ① 費用\n\n本文。\n");
+    assert.equal(htmlToMarkdown("<h2>4. Chapter</h2><h1>(1) Other</h1><p>本文。</p>"), "# (1) Other\n\n本文。\n");
+  });
+
   it("p ごとの段落と、br を二つ重ねた段落の間は空行。br 一つは行を改めるだけ", () => {
     assert.equal(htmlToMarkdown("<p>一つ目の段落です。</p><p>二つ目の段落です。</p>"), "一つ目の段落です。\n\n二つ目の段落です。\n");
     assert.equal(

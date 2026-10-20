@@ -42,6 +42,7 @@ import { withRunInHeadingsRead } from "./html-run-in-headings.ts";
 import { withoutWidgets } from "./html-widgets.ts";
 import { withPreformattedRestored, withPreformattedStashed } from "./html-preformatted.ts";
 import { withTablesRead } from "./html-tables.ts";
+import { opensSubsection } from "./html-section-number.ts";
 import { decodeEntities, tidyLines } from "./markup-text.ts";
 
 const DROPPED = ["script", "style", "head", "nav", "aside", "footer", "form", "noscript", "svg"];
@@ -352,16 +353,17 @@ const isDrawnRule = (line: string): boolean => /^(?:([-_*=])\s*)(?:\1\s*){2,}$/u
 
 /**
  * Headings with nothing under them before the next heading of the same or a higher level: what dropped navigation left.
- * A drawn rule under a heading is not something under it.
+ * A drawn rule under a heading is not something under it, and a numbered heading whose first subsection follows it at the
+ * same level ("3." then "3.1", both <h4>) holds that subsection.
  */
 const withoutEmptySections = (lines: readonly string[]): string[] =>
-  lines.reduceRight<{ readonly kept: string[]; readonly nextLevel: number }>(
+  lines.reduceRight<{ readonly kept: string[]; readonly nextLevel: number; readonly nextHeading?: string }>(
     (state, line) => {
-      if (line === "" || isDrawnRule(line)) return { kept: [line, ...state.kept], nextLevel: state.nextLevel };
+      if (line === "" || isDrawnRule(line)) return { ...state, kept: [line, ...state.kept] };
       const level = headingLevel(line) - 1;
       if (level < 0) return { kept: [line, ...state.kept], nextLevel: Number.POSITIVE_INFINITY };
-      if (state.nextLevel <= level) return state;
-      return { kept: [line, ...state.kept], nextLevel: level };
+      if (state.nextLevel < level || (state.nextLevel === level && !opensSubsection(line, state.nextHeading))) return state;
+      return { kept: [line, ...state.kept], nextLevel: level, nextHeading: line };
     },
     { kept: [], nextLevel: 0 },
   ).kept;
