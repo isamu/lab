@@ -1,0 +1,8 @@
+# 期間のすぐ前に置いて、その前の名前を期間の起点にする語（relative-date-mismatch）。基準の日付の後ろで読点が入り、期間の前に
+# 「名前 + この語」があれば、期間は前の日付ではなくその名前から数えている（…まで存続し、今井が死亡した年の翌年から起算して38年後の…）。
+id: relative-start
+language: ja
+entries:
+  - pattern: から
+  - pattern: から起算して
+  - pattern: から数えて
