@@ -6,3 +6,5 @@ entries:
   - pattern: ※
   - pattern: 注：
   - pattern: "注:"
+  # 括弧で始まる行（（順不同））も、箇条書き全体に付く注。
+  - pattern: （

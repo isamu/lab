@@ -341,3 +341,51 @@ describe("a note line under a list is not part of its last item", () => {
     assert.equal(itemOwnEnd(inline, { start: 0, end: inline.length - 1 }, ["※"]), inline.length - 1);
   });
 });
+
+describe("list-item-form-mix: a title split by its own mark, and items that are paragraphs", () => {
+  it("reads a title holding ! ? or 。 then a dash and a label by the label; any other item of several sentences is a sentence", () => {
+    assert.equal(formOfItem(ja, "ending", "走れ!メロス ― 三鷹市"), "phrase");
+    assert.equal(formOfItem(ja, "ending", "それでも町は回っている。 ― 横浜市"), "phrase");
+    assert.equal(formOfItem(ja, "ending", "申込書を出す。期限を守る。"), "sentence");
+    assert.equal(formOfItem(en, "ending", "Hello! The Musical – Leeds"), "phrase");
+    assert.equal(formOfItem(en, "ending", "Run the tests. Then deploy."), "sentence");
+    assert.equal(formOfItem(en, "ending", "The route is marked in blue. A map at the end"), "sentence");
+    assert.equal(formOfItem(ja, "ending", "年ごとに差がある。英語だけの年とそれ以降"), "sentence");
+  });
+
+  it("reads the last item up to an unindented line under it that opens with a bracket, a note on the whole list", () => {
+    const titles = ["坊っちゃん ― 松山市", "走れ!メロス ― 三鷹市", "銀河鉄道の夜 ― 花巻市", "吾輩は猫である ― 東京都"];
+    assert.deepEqual(flagged(ja, `${list(...titles)}（順不同）\n`), []);
+    assert.deepEqual(flagged(ja, `${list(...titles.slice(0, 3), "吾輩は猫である ― 東京都。駅から歩けます。")}（順不同）\n`), [
+      "ending-sentence:吾輩は猫である ― 東京都。",
+    ]);
+  });
+
+  it("does not report a list of work titles and places, one of which holds a mark", () => {
+    assert.deepEqual(flagged(ja, list("走れ!メロス ― 三鷹市", "坊っちゃん ― 松山市", "銀河鉄道の夜 ― 花巻市", "吾輩は猫である ― 東京都")), []);
+    assert.deepEqual(flagged(ja, list("坊っちゃん ― 松山市", "それでも町は回っている。 ― 横浜市", "銀河鉄道の夜 ― 花巻市", "吾輩は猫である ― 東京都")), []);
+  });
+
+  it("still reports a closed sentence among titles", () =>
+    assert.deepEqual(flagged(ja, list("坊っちゃん ― 松山市", "銀河鉄道の夜 ― 花巻市", "吾輩は猫である ― 東京都", "どの町も駅から歩いて回れます。")), [
+      "ending-sentence:どの町も駅から歩いて回れます。",
+    ]));
+
+  it("does not read the opening word of items that are each a paragraph of several sentences", () =>
+    assert.deepEqual(
+      flagged(
+        en,
+        list(
+          "The old harbour lies to your left. Fishing boats still tie up here.",
+          "The path climbs past a small chapel. Its bell rings at noon.",
+          "Cross the bridge and turn right. A cafe sits at the corner.",
+        ),
+      ),
+      [],
+    ));
+
+  it("still reads the opening word when one item is a single sentence", () =>
+    assert.deepEqual(flagged(en, list("Install the command-line tool", "Create an account on the website", "The configuration file in your home folder")), [
+      "head-noun:The configuration file in your home folder",
+    ]));
+});
