@@ -85,6 +85,23 @@ const closesWithTokoro = (tokens: readonly Token[], at: number): boolean =>
 const closesWithCondition = (tokens: readonly Token[], at: number): boolean =>
   tokens[at]?.surface === "ば" && tokens[at]?.pos === "SCONJ" && tokens[at - 1]?.surface === "なら" && tokens[at - 1]?.lemma === "だ";
 
+/** Whether a new topic of its own (ゴーシュは) stands after at, before the sentence's last word. */
+const newTopicAfter = (tokens: readonly Token[], at: number, last: number): boolean =>
+  tokens.some((token, index) => index > at && index < last && isParticle(token, "は") && isOwnNoun(tokens[index - 1]));
+
+/**
+ * それは…水車小屋で、ゴーシュは…: a noun and the copula's continuing で that end the topic's first clause, with no comma between
+ * them, and a new topic after. Past a comma (お梶は、火のような瞳で、 / 〜ましたが、…相手に無断で、) a noun with で is more often a
+ * manner or a means, and so it is before a mere が (本件を電子メールで、相手方が指定した担当者に説明する).
+ */
+const closesFirstClauseWithNoun = (tokens: readonly Token[], topic: number, at: number, last: number): boolean =>
+  tokens[at]?.surface === "で" &&
+  isCopula(tokens[at]) &&
+  isOwnNoun(tokens[at - 1]) &&
+  isComma(tokens[at + 1]) &&
+  !tokens.slice(topic + 1, at).some(isComma) &&
+  newTopicAfter(tokens, at + 1, last);
+
 /**
  * A clause that may close the topic's predicate, when a new subject follows, each stopped by a comma: a copula after ない or
  * ため (〜ではなく、, 〜であるため、), a copula's condition (〜であるならば、), ところ (〜にあるところ、), and a continuing verb
@@ -104,6 +121,8 @@ const closesIfNewSubject = (tokens: readonly Token[], at: number): boolean => {
  */
 export const topicClauseEnd = (tokens: readonly Token[], topic: number, last: number): number | undefined => {
   const subject = lastOwnSubject(tokens, last);
-  const end = tokens.findIndex((_, at) => at > topic && at < last && (closesSurely(tokens, at, last) || (closesIfNewSubject(tokens, at) && subject > at)));
+  const closes = (at: number): boolean =>
+    closesSurely(tokens, at, last) || (closesIfNewSubject(tokens, at) && subject > at) || closesFirstClauseWithNoun(tokens, topic, at, last);
+  const end = tokens.findIndex((_, at) => at > topic && at < last && closes(at));
   return end === -1 ? undefined : end;
 };
