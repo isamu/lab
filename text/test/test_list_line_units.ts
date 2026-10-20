@@ -146,6 +146,18 @@ describe("日本語の文分割: 1 行で一つの単位の行（URL、欄、括
     assert.deepEqual(textsOf("これは長い文で（注を付けて）途中で\n折り返している。"), ["これは長い文で（注を付けて）途中で\n折り返している。"]);
   });
 
+  it("全角の英字だけの欄の行（ＴＥＬ：２３６１）は和文の文で、英文と読まない", () => {
+    const sentences = ja.segment("担当：山田\nＴＥＬ：２３６１\nTEL: 2361").sentences;
+    assert.deepEqual(
+      sentences.map((sentence) => [sentence.text, sentence.embeddedLanguage?.id ?? "ja"]),
+      [
+        ["担当：山田", "ja"],
+        ["ＴＥＬ：２３６１", "ja"],
+        ["TEL: 2361", "en"],
+      ],
+    );
+  });
+
   it("欄の行に添えた注記（※）は、欄の行に続ける", () => {
     assert.deepEqual(textsOf("電話：03-0000-0000\n※平日のみ受け付けます。"), ["電話：03-0000-0000\n※平日のみ受け付けます。"]);
   });
