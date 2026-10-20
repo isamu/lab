@@ -18,7 +18,6 @@ da-priority-policy-program  3
 da-service-design-guidelines-2  4
 ecfr-16-cfr-310-telemarketing  7
 fed-powell-2025-08-22-framework-review  1
-fomc-minutes-2025-07  3
 fr-2026-16371-nvd-rfi  2
 github-general-privacy-statement  4
 gitlab-meetings  7
@@ -34,7 +33,7 @@ koenote-requirements  6
 mhlw-icd-committee-26-minutes  3
 mhlw-kokuji-h18-107-keiji-jiko  4
 mhlw-norovirus-qa  5
-nasa-advisory-crew-13-coverage  7
+nasa-advisory-crew-13-coverage  6
 neeview-changelog-ja  17
 noaa-press-flood-mapping  3
 nodejs-tsc-minutes-2026-05-06  5

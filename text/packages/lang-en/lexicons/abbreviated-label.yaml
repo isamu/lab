@@ -12,5 +12,7 @@ entries:
   - pattern: Pts.
   - pattern: Ch.
   - pattern: Chs.
+  - pattern: Div.
+  - pattern: div.
   - pattern: Fig.
   - pattern: Figs.
