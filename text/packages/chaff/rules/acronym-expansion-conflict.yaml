@@ -55,8 +55,8 @@ example:
       We review the Service Level Agreement (SLA) every month. After an outage, refunds follow the SLA.
 
 not_flagged:
-  ja: 名前の大文字小文字、ハイフン、終わりの複数の s の違いは同じ名前と見ます。英語の名前は、頭文字が略語と揃うときだけ展開と読みます。
-  en: Differences of case, hyphens and a final plural s are not counted. An English name counts as an expansion only when its initials spell the abbreviation.
+  ja: 名前の大文字小文字、ハイフン、終わりの複数の s の違いは同じ名前と見ます。英語の名前は、頭文字が略語と揃うときだけ展開と読みます。ハイフンかスラッシュで英数字につないだ符号（CC BY-NC-SA（表示-非営利-継承））の後ろの括弧は符号全体の名前なので、最後の略語の展開とは読みません。
+  en: Differences of case, hyphens and a final plural s are not counted. An English name counts as an expansion only when its initials spell the abbreviation. The bracket after a code joined by hyphens or slashes (CC BY-NC-SA (Attribution-NonCommercial-ShareAlike)) names the whole code, not its last abbreviation.
 rewrite:
   depth: light
   ja:
