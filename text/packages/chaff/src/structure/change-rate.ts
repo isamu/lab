@@ -242,13 +242,33 @@ const readingIn = (text: ChangeText, sentence: Span): Reading | undefined => {
   return { ...text, ...parts, ...only, rates };
 };
 
+/** The rate the amount of a change gives on the earlier value, with both rounded, holds the written rate (unsigned). */
+const amountGives = (base: Rounded, amount: Rounded, written: number, decimals: number): boolean => {
+  const [baseLow, baseHigh] = [base.value - base.step * HALF, base.value + base.step * HALF];
+  const [amountLow, amountHigh] = [amount.value - amount.step * HALF, amount.value + amount.step * HALF];
+  const slack = HALF * DECIMAL_BASE ** -decimals;
+  return baseLow > 0 && written >= (amountLow / baseHigh) * PERCENT - slack && written <= (amountHigh / baseLow) * PERCENT + slack;
+};
+
+/**
+ * The second value is the amount of the change, not the value reached: it follows the earlier value's mark at once, with
+ * no mark of the value reached (「940,444人から205,087人（21.8%）減少」), and gives the rate that way.
+ */
+const isAmountOfChange = (text: Reading, pair: Pair): boolean => {
+  const { base, current: amount } = pair;
+  const mark = markOf(base, text.marks);
+  if (mark?.position !== "after" || markOf(amount, text.targets) !== undefined) return false;
+  const gap = amount.start - mark.end;
+  return gap >= 0 && gap <= MARK_GAP && amountGives(base, amount, text.rate.value, text.rate.decimals);
+};
+
 const issueIn = (text: ChangeText, sentence: Span): StructureIssue[] => {
   const reading = readingIn(text, sentence);
   const pair = reading === undefined ? undefined : (besideRate(reading) ?? beforeRate(reading) ?? reachedThenBase(reading));
   if (reading === undefined || pair === undefined) return [];
   const { rate, sign } = reading;
   const computed = disagreeingRate(pair.base, pair.current, sign * rate.value, rate.decimals);
-  if (computed === undefined) return [];
+  if (computed === undefined || isAmountOfChange(reading, pair)) return [];
   return [{ offset: rate.start, values: { rate: String(rate.value), computed: Math.abs(computed).toFixed(rate.decimals) } }];
 };
 
