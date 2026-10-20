@@ -1,10 +1,11 @@
 // A work email or letter's own parts: a greeting and a closing, a subject line, and an attachment the text mentions.
 // Pure. The words (お世話になっております, Dear, Best regards, 件名, attached) come from the language's email-greeting,
-// email-closing, email-sentence-end, memo-header-label, notice-header, email-subject-field, attachment-mention, attachment-not-mention and attachment-line lexicons. The
+// email-closing, email-sentence-end, memo-header-label, notice-header, newsletter-issue, email-subject-field, attachment-mention, attachment-not-mention and attachment-line lexicons. The
 // header and the signature are masked in doc.prose; a quoted reply is someone else's words and is left out.
 import { escapeRegExp } from "../orthography.ts";
 import { quoteAt } from "./structure-tree.ts";
 import { isNoticeHead, noticeWordsOf } from "../notice-header.ts";
+import { isIssueHead, issueWordsOf } from "../newsletter-issue.ts";
 import type { Detector, Finding, ProseDocument, Span } from "../plugin.ts";
 
 /** A greeting comes before the body: past the subject, the addressee (株式会社… / 総務部 山田様) and the writer's name. */
@@ -213,10 +214,18 @@ export const headLines = (source: string, sentenceEnds: readonly string[]): stri
   return lines.slice(0, firstSentence === -1 ? HEADER_LINES : firstSentence);
 };
 
-/** A memo (TO: / 発信者：) or an official notice (課資2－7 / 各国税局長 殿) takes no greeting and no closing. */
-const takesNoFrame = (doc: ProseDocument, sentenceEnds: readonly string[]): boolean =>
-  isMemo(doc.source, patternsOf(doc, "memo-header-label"), sentenceEnds) ||
-  isNoticeHead(headLines(doc.source, sentenceEnds), noticeWordsOf(doc.lexicons["notice-header"] ?? []));
+/**
+ * A memo (TO: / 発信者：), an official notice (課資2－7 / 各国税局長 殿) or a newsletter's issue (メールマガジン第90号) takes
+ * no greeting and no closing.
+ */
+const takesNoFrame = (doc: ProseDocument, sentenceEnds: readonly string[]): boolean => {
+  const head = headLines(doc.source, sentenceEnds);
+  return (
+    isMemo(doc.source, patternsOf(doc, "memo-header-label"), sentenceEnds) ||
+    isNoticeHead(head, noticeWordsOf(doc.lexicons["notice-header"] ?? [])) ||
+    isIssueHead(head, issueWordsOf(doc.lexicons["newsletter-issue"] ?? []))
+  );
+};
 
 const frameSlipsOf = (doc: ProseDocument): FrameSlip[] => {
   const sentenceEnds = patternsOf(doc, "email-sentence-end");
