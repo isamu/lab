@@ -102,6 +102,16 @@ describe("topicDistance: 主題から述語まで", () => {
     assert.equal(topicDistance(tokensOf("売上は順調に伸びており、来年も増える見込みです。")), 18);
   });
 
+  it("名詞＋「で、」は、後ろに別の主語があるときだけ閉じる", () => {
+    assert.equal(topicDistance(tokensOf("この建物は古い倉庫で、私はそこに一人で住んでいた。")), 4);
+    assert.equal(topicDistance(tokensOf("この建物は古い倉庫で、来年の春に取り壊す予定です。")), 17);
+    const manner = "この行為は禁じられていましたが、新しい道具は対象外だったため、昨年の改正で、相手に無断で、道具を付ける行為が対象に加わりました。";
+    assert.equal(topicDistance(tokensOf(manner)), 57);
+    assert.equal(topicDistance(tokensOf("彼女は、真剣な目で、相手の顔を見ると、私はすぐに部屋を出た。")), 25);
+    const means = "当社は本件を電子メールで、相手方が指定した担当者に説明を行う。";
+    assert.equal(topicDistance(tokensOf(means)), [...means].length - 6);
+  });
+
   it("受け身で伝える引用（〜だと言われているが）の中の主題は、引用の中で閉じる。自分で考える引用は文の述語まで", () => {
     assert.equal(topicDistance(tokensOf("世間では、この計画は無理だと言われているが、実際は順調に進んでいる。")), 3);
     assert.equal(topicDistance(tokensOf("当社は、今後も需要が拡大すると考えております。")), 17);
@@ -167,6 +177,12 @@ describe("topic-predicate-distance", () => {
     const long =
       "来週の定例会議は、新しい担当者の紹介と、先月から続いている予算の見直しと、春に予定している本社の移転の準備と、秋の採用計画の確認と、年末の懇親会の段取りについて話し合うための長い会議ではありませんが、資料は前日までに配ります。\n";
     assert.equal(findingsOf("topic-predicate-distance", long).length, 1);
+  });
+
+  it("主題が「名詞＋で、」ですぐ述語を得て、別の主語の節が長く続く文は指さない（宮沢賢治「セロ弾きのゴーシュ」）", () => {
+    const named =
+      "家といってもそれは町はずれの川ばたにあるこわれた水車小屋で、ゴーシュはそこにたった一人ですんでいて午前は小屋のまわりの小さな畑でトマトの枝をきったり甘藍の虫をひろったりしてひるすぎになるといつも出て行っていたのです。\n";
+    assert.deepEqual(findingsOf("topic-predicate-distance", named), []);
   });
 
   it("主題の無い文は見ない", () => {
