@@ -1,0 +1,8 @@
+# 名前のすぐ後ろに括弧で付ける添え書き（栄養教諭（仮称）、計画（案））。名前と一続きに読む語の一部なので、
+# bracket-nesting は括弧の重なりに数えない。前を空けて書いた括弧（「 （仮称）」）は添え書きと読まない。
+id: bracket-annotation
+language: ja
+entries:
+  - pattern: 仮称
+  - pattern: 案
+  - pattern: 仮

@@ -3,6 +3,7 @@ import { proseText } from "../measure.ts";
 import { quotedSpans } from "../quoted-span.ts";
 import { literalCues, withoutLiteralQuotes } from "../literal-quote.ts";
 import { bracketDepth, clauseCount, topicDistance } from "../sentence-load.ts";
+import { withoutWordBrackets } from "../bracket-annotation.ts";
 
 const findingOf = (sentence: Sentence, count: number, limit: number): Finding => ({
   rule: "",
@@ -38,11 +39,13 @@ const ownTokens = (sentence: Sentence): Token[] => {
 
 /**
  * Brackets inside brackets: 「（注（a）参照）」. The depth is read from the text, so it works in every language. A quotation of a
- * string to type as it stands (件名に「応募（総務課）」と記載) counts as one bracket: its own brackets cannot be taken out.
+ * string to type as it stands (件名に「応募（総務課）」と記載) counts as one bracket: its own brackets cannot be taken out. A bracket
+ * written as part of a word (the reading in 拓（ひら）く, the note in 栄養教諭（仮称）) is not counted at all (bracket-annotation.ts).
  */
 export const bracketNesting: Detector = (doc, options) => {
   const cues = literalCues(doc.lexicons["literal-quote-cue"] ?? []);
-  return overLimit((sentence) => bracketDepth(withoutLiteralQuotes(sentence.text, cues)))(doc, options);
+  const annotations = (doc.lexicons["bracket-annotation"] ?? []).map((entry) => entry.pattern);
+  return overLimit((sentence) => bracketDepth(withoutWordBrackets(withoutLiteralQuotes(sentence.text, cues), annotations)))(doc, options);
 };
 
 /** Clauses chained in one sentence (調べて、まとめ、報告したが、返事がないので、…). Needs the language's tokens. */
