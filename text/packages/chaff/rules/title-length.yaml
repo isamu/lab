@@ -21,10 +21,13 @@ messages:
   title:
     ja: 題「{heading}」は {count} 文字あります（{limit} 文字まで）
     en: 'The title "{heading}" runs {count} {count|word|words} (limit {limit})'
+  official:
+    ja: 「{heading}」は {count} 文字あります（{limit} 文字まで）。番号や対象の付いた正式な題なので、縮めずに、要点を下の最初の文に短く書いてください
+    en: '"{heading}" runs {count} {count|word|words} (limit {limit}). It is an official title with an identifier, a number or the bodies concerned: keep it as cited and put a short summary in the first sentence under it'
 
 how_to_fix:
-  ja: 見出しには名前だけを残し、条件や説明は本文の最初の文へ移してください。括弧の補足（日付、対象、版）は副題か本文に書きます。
-  en: Keep only the name in the heading and move conditions and explanations into the first sentence below it. Put a bracketed aside (a date, an audience, a version) in a subtitle or the text.
+  ja: "見出しには名前だけを残し、条件や説明は本文の最初の文へ移してください。括弧の補足（日付、対象、版）は副題か本文に書きます。番号や対象の付いた正式な題（CA 23-6: …、…もの［本省、2支局］(83)）は、ほかの文書がその形で引くので縮めず、要点を下の最初の文に書きます。"
+  en: "Keep only the name in the heading and move conditions and explanations into the first sentence below it. Put a bracketed aside (a date, an audience, a version) in a subtitle or the text. An official title with an identifier, a case number or the bodies concerned (CA 23-6: …) is cited in that form: keep it, and put the point in the first sentence under it."
 
 # 単位は adapter の lengthUnit。日本語は文字（英字の語は一語を二文字）、英語は語。
 levels:
@@ -102,9 +105,11 @@ rewrite:
     keep:
       - 見出しの順番と深さ
       - 節の中身を指す固有の語
+      - 番号や対象の付いた正式な題（ほかの文書がその形で引く。要点は下の最初の文に書く）
     avoid:
       - 縮めるために、節の中身と違う語を見出しにする
       - 見出しから外した条件を捨てる
+      - 正式な題を縮めたり言い換えたりして、引くときの形を変える
   en:
     direction: Cut the heading down to a name for what the section is. Move reasons, conditions, audiences and dates into the first sentence under it.
     pairs:
@@ -121,6 +126,8 @@ rewrite:
     keep:
       - the order and depth of the headings
       - the specific words that name the section's content
+      - an official title with an identifier, a case number or the bodies concerned (others cite it in that form; put the point in the first sentence under it)
     avoid:
       - a shorter heading that names something other than what the section holds
       - dropping the conditions taken out of the heading
+      - shortening or rewording an official title, which changes the form it is cited by

@@ -192,8 +192,11 @@ const insideCaption = (body: BodyText | undefined, offset: number): boolean => {
   return CAPTION_TO_END.test(caption.trimEnd()) && isTitleWords(caption);
 };
 
-/** 文書の位置が、題・見出し・条の見出しの行にあるか。見出しは節の中身に名前を付けるだけで、語を使った所ではない。 */
-export type IsTitle = (offset: number) => boolean;
+/**
+ * 文書の位置が、題・見出し・条の見出しの行（と、definedAt の定義を先取りした要約の節）にあるか。見出しは節の中身に名前を付けるだけで、
+ * 語を使った所ではない。
+ */
+export type IsTitle = (offset: number, definedAt: number) => boolean;
 
 const NEVER_TITLE: IsTitle = () => false;
 
@@ -338,11 +341,22 @@ const explainedInPlace = (
   return (namesItself(defining, prefixes) && followsSelfPrefix(sentence, at, prefixes)) || glossedWithName(sentence, at, term, defining.name);
 };
 
+/** 出どころの言葉の前に立つ、番地か名前の終わりの字（69条の3、同法）。「一般にいう」「特に」のような仮名の副詞は出どころではない。 */
+const SOURCE_END = /[\p{N}\p{Script=Han}]$/u;
+
+/** 語のすぐ前に、番地か名前に続けて語の意味の出どころを言う言葉（措置法69条の3所定の小規模宅地等）があるか。 */
+const citesSource = (texts: readonly BodyText[], markers: readonly string[], offset: number): boolean => {
+  const sentence = sentenceAt(texts, offset);
+  if (sentence === undefined) return false;
+  const before = sentence.text.slice(0, offset - sentence.start);
+  return markers.some((marker) => before.endsWith(marker) && SOURCE_END.test(before.slice(0, -marker.length)));
+};
+
 /**
  * 文の途中で括弧に入れて定義した語（(the "Seller")、以下「甲」という）を、その定義の文より前で使っている所。最初の一つだけ。
  * 定義の文の中の現れ（株式会社GovTech東京（以下「GovTech東京」という。））は、定義する名前そのものなので数えない。札の文も、
  * isTitle が言う題・見出し・目次の行も、漢字で終わる語にさらに漢字が続く長い語の一部も、定義の括弧の前の長い名前を写した所も、
- * 語を含むもっと長い名前の中も数えない。文書自身の名前を定義した語は、selfPrefixes（この、本、this）を付けて前で書いても数えない。
+ * 語を含むもっと長い名前の中も、語の前に意味の出どころを書いた所（69条の3所定の小規模宅地等）も数えない。文書自身の名前を定義した語は、selfPrefixes（この、本、this）を付けて前で書いても数えない。
  * 定義の条（"Seller" means、「甲」とは）は条の並びの頭にも終わりにも置く書き方があるので、前で使っても言わない。
  * 定義の語の無い括弧の引用（("The key point is")）は例の引用と同じ形なので、その語を引用符で挙げただけの現れ
  * （Its sentences open with "The key point is"）は使用ではない。定義の語のある定義（(the "Seller")、以下「買主」という）は、
@@ -354,6 +368,7 @@ export const usesBeforeDefinition = (
   mentioned: Mentioned = NEVER_MENTIONED,
   isTitle: IsTitle = NEVER_TITLE,
   selfPrefixes: readonly string[] = [],
+  sourceMarkers: readonly string[] = [],
 ): TermUse[] => {
   const inline = terms.filter((term) => term.inline);
   const names = definingNames(terms, texts);
@@ -367,13 +382,14 @@ export const usesBeforeDefinition = (
         (offset) =>
           !isLabel(sentenceAt(texts, offset), defined.term) &&
           !insideCaption(sentenceAt(texts, offset), offset) &&
-          !isTitle(offset) &&
+          !isTitle(offset, defined.span.start) &&
           !continuesInHan(texts, defined.term, offset) &&
           !insideKatakanaName(texts, defined.term, offset) &&
           !echoesLongName(texts, defined, offset) &&
           !insideDefiningName(texts, inline, defined, offset) &&
           !insideLongerName(defined.term, offset) &&
-          !explainedInPlace(texts, defined.term, names.get(defined), selfPrefixes, offset),
+          !explainedInPlace(texts, defined.term, names.get(defined), selfPrefixes, offset) &&
+          !citesSource(texts, sourceMarkers, offset),
       );
       return first === undefined ? [] : [{ term: defined, offset: first }];
     });

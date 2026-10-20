@@ -1,0 +1,11 @@
+# 語の前に置いて、その語の意味がどこで決まっているかを言う言葉（措置法69条の3所定の小規模宅地等、同法2条に規定する事業者）。
+# この言葉に続く語は、出どころを示して書いた所なので、後で同じ語を定義しても、定義より前の使用に数えない（use-before-definition）。
+id: term-source-marker
+language: ja
+entries:
+  - pattern: 所定の
+  - pattern: に規定する
+  - pattern: に規定される
+  - pattern: に規定された
+  - pattern: に定める
+  - pattern: に定められた

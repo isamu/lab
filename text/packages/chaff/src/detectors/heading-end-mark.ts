@@ -2,6 +2,7 @@ import type { Detector, Finding, MarkupHeading, ProseDocument } from "../plugin.
 import { findingAt, writtenHeadings } from "./markup-finding.ts";
 import { pageTitleOf } from "./heading-case.ts";
 import { minorityWithin } from "../orthography.ts";
+import { isFieldLabel } from "../field-label-heading.ts";
 
 /** A mark a heading may end with or go without: a colon or a full stop, in either width. A question mark belongs to the words. */
 const END_MARK = /[:：.。]$/u;
@@ -37,7 +38,8 @@ export const endMarkOf = (heading: string, words: readonly string[] = []): strin
   return END_MARK.exec(shown)?.[0] ?? "";
 };
 
-type Judged = { readonly heading: MarkupHeading; readonly mark: string };
+/** label: the heading labels a field's value (isFieldLabel), and is compared only with other labels. */
+type Judged = { readonly heading: MarkupHeading; readonly mark: string; readonly label: boolean };
 
 const LOWER_CASE = /\p{Ll}/u;
 /** A word of this many capitals is a word set in capitals, not only an acronym (AGENCY, DATES; not FAQ). */
@@ -49,8 +51,14 @@ const CAPITALS_WORD = /\p{Lu}{4,}/u;
  */
 export const isCapitalsHeading = (heading: string): boolean => !LOWER_CASE.test(heading) && CAPITALS_WORD.test(heading);
 
-/** Headings compared with one another: the same depth, and the same case (capitals or ordinary). */
-const kindOf = (entry: Judged): string => `${String(entry.heading.depth)}:${String(isCapitalsHeading(entry.heading.text))}`;
+/** Headings compared with one another: the same depth, the same case (capitals or ordinary), and labels apart from titles. */
+const kindOf = (entry: Judged): string => `${String(entry.heading.depth)}:${String(isCapitalsHeading(entry.heading.text))}:${String(entry.label)}`;
+
+/** The text under a heading, up to the next heading of any depth or the end of the document. */
+const bodyOf = (doc: ProseDocument, heading: MarkupHeading): string => {
+  const next = (doc.markup?.headings ?? []).map((other) => other.start).filter((start) => start >= heading.end);
+  return doc.source.slice(heading.end, next.length === 0 ? doc.source.length : Math.min(...next));
+};
 
 /** The odd ones among headings of one kind, each with the usual side's first heading and count. */
 const oddOfKind = (doc: ProseDocument, judged: readonly Judged[]): Finding[] => {
@@ -81,7 +89,7 @@ export const headingEndMark: Detector = (doc, options): Finding[] => {
     .filter((heading) => heading !== title)
     .flatMap((heading): Judged[] => {
       const mark = endMarkOf(heading.text, words);
-      return mark === undefined ? [] : [{ heading, mark }];
+      return mark === undefined ? [] : [{ heading, mark, label: isFieldLabel(heading.text, bodyOf(doc, heading)) }];
     });
   const kinds = [...new Set(judged.map(kindOf))];
   return kinds

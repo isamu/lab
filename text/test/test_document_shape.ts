@@ -1,7 +1,14 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { firedRules } from "./rule-run.ts";
-import { echoPercent, headingLength, isParagraphHeading, leadParagraphOf, titleSectionOf } from "../packages/chaff/src/detectors/document-shape.ts";
+import {
+  echoPercent,
+  headingLength,
+  isOfficialTitle,
+  isParagraphHeading,
+  leadParagraphOf,
+  titleSectionOf,
+} from "../packages/chaff/src/detectors/document-shape.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
@@ -149,6 +156,41 @@ describe("no-lead: a form opens with fields or a letterhead, not a lead", () => 
   });
 });
 
+describe("isOfficialTitle: a title others cite in its own form", () => {
+  const official = [
+    "倉庫の検査が十分でなかったため、保管料の支払が適正でなかったもの［総務本省、3支局］(12)",
+    "倉庫の検査が十分でなかったため、保管料の支払が適正でなかったもの【総務本省、3支局】",
+    "倉庫の検査が十分でなかったもの［総務本省］(12)",
+    "倉庫の検査が十分でなかったもの【総務本省】（12）",
+    "AB 21-4: Joint statement on the storage of records held for other parties",
+    "XY 3-2： 保管の手順",
+  ];
+  const plain = [
+    "2025年度から始まる新しい在庫管理システムへの移行に伴う各店舗での作業手順と注意点について",
+    "Moving to the new inventory system (with worked examples)",
+    "倉庫の検査（12か所）について",
+    "Step 2: open the settings page",
+    "Released in 2025: what changed",
+    "［お知らせ］倉庫の移転について",
+    "新機能の使い方［初心者向け］",
+    "How to configure caching [Node.js, Redis]",
+    "Install the CLI [Windows, macOS, Linux]",
+    "Release notes [v2.0]",
+    "Release notes (2025)",
+    "Migration steps (3)",
+    "倉庫の検査が十分でなかったもの(12)",
+    "API 2.0: Configure caching",
+    "倉庫の検査［本省、2支局】",
+    "",
+  ];
+  official.forEach((heading) => {
+    it(`${JSON.stringify(heading)} is official`, () => assert.equal(isOfficialTitle(heading), true));
+  });
+  plain.forEach((heading) => {
+    it(`${JSON.stringify(heading)} is not`, () => assert.equal(isOfficialTitle(heading), false));
+  });
+});
+
 describe("title-length: a title or heading too long to scan", () => {
   const LONG_JA = "## 2025年度から始まる新しい在庫管理システムへの移行に伴う各店舗での作業手順と注意点について";
   const LONG_EN = "## What every store needs to do during the move to the new inventory system in the 2025 financial year";
@@ -165,6 +207,23 @@ describe("title-length: a title or heading too long to scan", () => {
     assert.equal(findings[0]?.line, 5);
     assert.equal(findings[0]?.column, 1);
     assert.equal(findings[0]?.variant, undefined);
+  });
+
+  it("still reports a long official title, and says to keep it and summarise under it", () => {
+    const source =
+      "# 倉庫の検査が十分でなかったため、保管の委託契約に係る保管料の支払額が過大となっていて、委託先の監督も適正でなかったもの［総務本省、3支局］(12)\n\n本文です。\n";
+    const findings = runRules(buildDocument("a.md", source, ja), loadRules("ja"), {}, true, "business/report").findings.filter(
+      (finding) => finding.rule === "title-length",
+    );
+    assert.equal(findings.length, 1);
+    assert.equal(findings[0]?.variant, "official");
+    const identified =
+      "# Title\n\nText.\n\n## AB 21-4: Joint statement on the storage of records held for other parties by member banks and their branches in other states and countries\n\nText.\n";
+    const english = runRules(buildDocument("a.md", identified, en), loadRules("en"), {}, true, "business/report").findings;
+    assert.deepEqual(
+      english.filter((finding) => finding.rule === "title-length").map((finding) => finding.variant),
+      ["official"],
+    );
   });
 
   it("reports a long English heading", () => assert.equal(fired(en, `# Title\n\nText.\n\n${LONG_EN}\n\nText.\n`, "title-length"), 1));
