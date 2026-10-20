@@ -26,6 +26,10 @@ describe("bracket-nesting: 語の一部として書いた括弧", () => {
     assert.equal(withoutWordBrackets("これは （仮称） です", annotations), "これは （仮称） です");
     assert.equal(withoutWordBrackets("これは（たぶん）よい", annotations), "これは（たぶん）よい");
     assert.equal(withoutWordBrackets("報告（速報）を出す", annotations), "報告（速報）を出す");
+    assert.equal(withoutWordBrackets("対象（すべて）を見る", annotations), "対象（すべて）を見る");
+    assert.equal(withoutWordBrackets("これは（仮称）です", annotations), "これは（仮称）です");
+    // 読みとしても添え書きとしても当たる括弧は、一度だけ外す。
+    assert.equal(withoutWordBrackets("大字（かり）ね", ["かり"]), "大字ね");
   });
 
   it("引いた題名の中の読みと添え書きは重なりに数えず、本当に三重の括弧は指す", () => {
