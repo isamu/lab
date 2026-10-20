@@ -218,14 +218,10 @@ export const headLines = (source: string, sentenceEnds: readonly string[]): stri
  * A memo (TO: / 発信者：), an official notice (課資2－7 / 各国税局長 殿) or a newsletter's issue (# …メールマガジン第90号) takes
  * no greeting and no closing.
  */
-const takesNoFrame = (doc: ProseDocument, sentenceEnds: readonly string[]): boolean => {
-  const head = headLines(doc.source, sentenceEnds);
-  return (
-    isMemo(doc.source, patternsOf(doc, "memo-header-label"), sentenceEnds) ||
-    isNoticeHead(head, noticeWordsOf(doc.lexicons["notice-header"] ?? [])) ||
-    isIssueHead(head, issueWordsOf(doc.lexicons["newsletter-issue"] ?? []))
-  );
-};
+const takesNoFrame = (doc: ProseDocument, sentenceEnds: readonly string[], head = headLines(doc.source, sentenceEnds)): boolean =>
+  isMemo(doc.source, patternsOf(doc, "memo-header-label"), sentenceEnds) ||
+  isNoticeHead(head, noticeWordsOf(doc.lexicons["notice-header"] ?? [])) ||
+  isIssueHead(head, issueWordsOf(doc.lexicons["newsletter-issue"] ?? []));
 
 const frameSlipsOf = (doc: ProseDocument): FrameSlip[] => {
   const sentenceEnds = patternsOf(doc, "email-sentence-end");
