@@ -2,6 +2,7 @@ import type { Detector, DetectorOptions, Finding, Lexicon, ProseDocument, Senten
 import { escapeRegExp } from "../orthography.ts";
 import { isWithinAny, quotedIn } from "../quoted-span.ts";
 import { entryOpens } from "./lexicon-match.ts";
+import { isContrastiveGa } from "./adversative-ga.ts";
 
 type TokenTest = (token: Token, at: number, tokens: readonly Token[]) => boolean;
 
@@ -116,11 +117,12 @@ export const PREFATORY_LEXICON = "adversative-ga-prefatory";
 
 /**
  * A sentence joining more than limit clauses with the lexicon's conjunctive particle (逆接の「が」), not the same word as a
- * case particle, and not inside a prefatory phrase.
+ * case particle, not inside a prefatory phrase, and contrasting two clauses (adversative-ga.ts).
  */
 export const sentenceConjunctiveCount: Detector = (doc, options): Finding[] => {
   const words = wordsOf(options.lexicon);
-  return sentencesOver(doc, options.limit, (token) => token.pos === CONJUNCTIVE && words.has(token.surface), doc.lexicons[PREFATORY_LEXICON] ?? []);
+  const counts: TokenTest = (token, at, tokens) => token.pos === CONJUNCTIVE && words.has(token.surface) && isContrastiveGa(at, tokens);
+  return sentencesOver(doc, options.limit, counts, doc.lexicons[PREFATORY_LEXICON] ?? []);
 };
 
 type Opened = { readonly sentence: Sentence; readonly opener: string | undefined };

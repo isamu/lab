@@ -40,8 +40,8 @@ example:
       予算は足ります。人手は足りませんが、納期は守ります。
 
 not_flagged:
-  ja: 接続助詞の「が」だけを数えます。格助詞の「が」（私が、会社が）と、鉤括弧で引いたものの中は数えません。「けれど」「けど」も数えません。
-  en: Only the conjunctive が, outside 「」. The case particle が (私が) and けれど / けど are not counted.
+  ja: 接続助詞の「が」だけを数えます。格助詞の「が」（私が、会社が）、「あろうがあるまいが」のような意向形の後の「が」、文末の「〜ですが……」と、鉤括弧で引いたものの中は数えません。「けれど」「けど」も数えません。
+  en: Only the conjunctive が, outside 「」. The case particle が (私が), が after a volitional (あろうがあるまいが), a が that ends the sentence, and けれど / けど are not counted.
 level_meaning:
   ja: 一文の逆接の「が」{limit} 個まで
   en: up to {limit} contrastive が in a sentence
