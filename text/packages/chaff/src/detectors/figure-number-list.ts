@@ -32,10 +32,10 @@ const alternation = (words: readonly string[]): string =>
 const listPattern = (words: FigureListWords): RegExp => {
   const joiner = alternation([...words.list, ...words.ranges]);
   const next = String.raw`\s*(?:,\s*)?(?:${joiner})\s*${NUMBER}[a-z]?`;
-  return new RegExp(String.raw`(?<![\p{L}\p{N}])(${alternation(words.plurals.map((plural) => plural.word))})[  ](${NUMBER}[a-z]?(?:${next})*)`, "gu");
+  return new RegExp(String.raw`(?<![\p{L}\p{N}])(${alternation(words.plurals.map((plural) => plural.word))})[ \u00a0](${NUMBER}[a-z]?(?:${next})*)`, "gu");
 };
 
-const isInteger = (number: string): boolean => /^[0-9]+$/u.test(number);
+const isInteger = (number: string): boolean => /^\d+$/u.test(number);
 
 /** "14 through 17" as 14, 15, 16, 17; a range that is not two whole numbers in order, or is too wide, as its two ends. */
 const spread = (from: string, to: string): string[] => {
