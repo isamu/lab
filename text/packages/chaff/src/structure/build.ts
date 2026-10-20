@@ -12,6 +12,7 @@ import { readsOnHeading } from "./heading-leaves.ts";
 import { unspacedHeadings } from "./unspaced-heading.ts";
 import { onLine, wrappedLine, type WrappedLine } from "./wrapped-tail.ts";
 import { foldPostOrder } from "../tree-walk.ts";
+import { openJoinedLabels } from "./joined-labels.ts";
 
 /** 組み立て中の節点。できあがったら StructureNode に固める。 */
 type Draft = {
@@ -317,6 +318,13 @@ const withCaption = (state: State, line: Line, numbered: NumberedLine | undefine
   return numbered === undefined || caption === undefined ? numbered : { ...numbered, heading: caption };
 };
 
+const openJoined = (state: State, patterns: StructurePatterns, line: Line, first: NumberedLine | undefined, isHeading: boolean) =>
+  openJoinedLabels(
+    first,
+    (rest) => patterns.numbered(rest, { open: state.stack.flatMap((frame) => (frame.numbered === undefined ? [] : [frame.numbered])), isHeading }),
+    (inner) => openNumbered(state, line, inner, undefined, carriesBody(inner)),
+  );
+
 /** 行の周り。前の行は、前の行が見出しでなく自分が表の行でないときだけ渡す。表の行は番号として読まない。 */
 type Around = { readonly next: string | undefined; readonly previous: string | undefined; readonly inTable: boolean };
 
@@ -332,9 +340,10 @@ const readLine = (state: State, patterns: StructurePatterns, line: Line, heading
   if (numbered !== undefined && heading !== undefined) headingAddress(state, heading.depth);
   if (numbered !== undefined) openNumbered(state, line, numbered, heading?.depth, carriesBody(found));
   else if (heading !== undefined) openSection(state, line, heading);
+  const innermost = openJoined(state, patterns, line, numbered, heading !== undefined);
   extend(state, line.start + line.text.length);
   // 番号付きの行は番号の後ろだけを読む。「第3条（支払）」の「第3条」を自分への参照として拾わない。
-  const scanned = numbered === undefined ? text : numbered.rest;
+  const scanned = innermost === undefined ? text : innermost.rest;
   const offset = Math.max(0, line.text.lastIndexOf(scanned));
   const onHeading = heading !== undefined;
   // 番号付きの行は新しいまとまりの始まりなので、前の行の続きとして読まない。

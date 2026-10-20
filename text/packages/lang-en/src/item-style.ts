@@ -12,11 +12,18 @@ const AMBIGUOUS = /^[ivx]$/u;
 const DIGITS = /^\d+$/u;
 const CAPITALS = /^[A-Z]+$/u;
 const ONE_CAPITAL = /^[A-Z]$/u;
+/**
+ * "(aa)", "(bb)": the US Code numbers the items under a subclause "(I)" with a doubled letter. Elsewhere a doubled letter
+ * is a letter: a UK Act inserts "(aa)" after "(a)", and a long list goes on from "(z)" to "(aa)".
+ */
+const DOUBLED = /^(?<letter>[a-z])\k<letter>$/u;
 
-export type Style = "letter" | "roman" | "digit" | "capital" | "capital-roman";
+export type Style = "letter" | "roman" | "digit" | "capital" | "capital-roman" | "doubled";
 
 /** 大文字で書いた同じ並び。"(B)" は英字の、"(II)" はローマ数字の大文字。 */
 const CAPITAL_OF: Readonly<Record<"letter" | "roman", Style>> = { letter: "capital", roman: "capital-roman" };
+
+const isDoubled = (raw: string): boolean => DOUBLED.test(raw) && !MULTI_ROMAN.test(raw);
 
 /** 小文字にした番号を形で読む。一文字の "i" は、開いたときに付けた並びの位置で見分ける。ローマ数字なら 1、英字なら 9。 */
 const shapeOf = (lower: string, ordinal: number | undefined): "letter" | "roman" => {
@@ -29,15 +36,20 @@ export const styleOfOpen = (open: NumberedLine): Style | undefined => {
   const inner = /^\((?<n>[A-Za-z0-9]{1,5})\)$/u.exec(open.label)?.groups?.["n"];
   if (inner === undefined) return undefined;
   if (DIGITS.test(inner) || IS_INSERTED.test(inner)) return "digit";
+  if (isDoubled(inner) && open.ordinal !== undefined) return "doubled";
   const shape = shapeOf(inner.toLowerCase(), open.ordinal);
   return CAPITALS.test(inner) ? CAPITAL_OF[shape] : shape;
 };
 
 const LETTER_BEFORE_A = "a".charCodeAt(0) - 1;
 
-/** "(b)" と "(B)" は 2 番目、"(ii)" と "(II)" も 2 番目。二文字以上の英字（"(aa)"）は並びが決まらないので付けない。 */
+/**
+ * "(b)" と "(B)" は 2 番目、"(ii)" と "(II)" も 2 番目、細目の下の重ねた "(bb)" も 2 番目。英字の並びの中の "(aa)" は、
+ * 何番目かは決めない。
+ */
 export const ordinalOf = (raw: string, style: Style): number | undefined => {
   if (style === "digit") return IS_INSERTED.test(raw) ? undefined : Number(raw);
+  if (style === "doubled") return raw.charCodeAt(0) - LETTER_BEFORE_A;
   if (style === "roman" || style === "capital-roman") return parseRoman(raw);
   return raw.length === 1 ? raw.toLowerCase().charCodeAt(0) - LETTER_BEFORE_A : undefined;
 };
@@ -49,10 +61,10 @@ const follows = (raw: string, style: "letter" | "capital", context: NumberingCon
   context.open.some((open, index) => styles(context)[index] === style && open.number.charCodeAt(0) + 1 === raw.charCodeAt(0));
 
 /**
- * 英字の並びは (a) から始まるので、"(a)" や "(1)" のすぐ下に来た "(i)" は一段深いローマ数字。
- * 米国の規則は (a)(1)(i) の順に下る。見出しのすぐ下の "(i)" は、どちらとも決まらないので英字。
+ * 英字の並びは (a) から始まるので、"(a)" や "(1)" や "(A)" のすぐ下に来た "(i)" は一段深いローマ数字。
+ * 米国の規則は (a)(1)(i)、法典は (a)(1)(A)(i) の順に下る。見出しのすぐ下の "(i)" は、どちらとも決まらないので英字。
  */
-const OPENS_ROMAN: ReadonlySet<Style | undefined> = new Set(["letter", "digit"]);
+const OPENS_ROMAN: ReadonlySet<Style | undefined> = new Set(["letter", "digit", "capital"]);
 
 /** "(I)" は米国の法典で (i) の一段下の大文字ローマ数字。"(H)" の次なら英字。 */
 const capitalRoman = (raw: string, open: readonly (Style | undefined)[], context: NumberingContext): boolean => {
@@ -63,14 +75,27 @@ const capitalRoman = (raw: string, open: readonly (Style | undefined)[], context
 };
 
 /**
- * 米国の規則は (a)(1)(i)(A) と下る。大文字の "(A)" は、開いているローマ数字のすぐ下で始まるか、開いている大文字の続きのときだけ項目。
+ * 米国の規則（CFR）は (a)(1)(i)(A)、米国の法典（U.S.C.）は (a)(1)(A)(i) と下る。"(A)" はローマ数字のすぐ下か、英字の下の数字の
+ * すぐ下で始まる。見出しのすぐ下の "(1)" の下の "(A)" は、どちらの並びとも決まらない。
+ */
+const opensCapital = (open: readonly (Style | undefined)[]): boolean =>
+  open.at(-1) === "roman" || (open.at(-1) === "digit" && open.slice(0, -1).includes("letter"));
+
+/**
+ * 大文字の "(A)" は、上の並びのすぐ下で始まるか（opensCapital）、開いている大文字の続きのときだけ項目。
  * 英国の法令や契約書が一段目に使う "(A)" は、何の下とも決まらないので本文のまま読む。
  */
 const capitalStyleOf = (raw: string, context: NumberingContext): Style | undefined => {
   const open = styles(context);
   if (capitalRoman(raw, open, context)) return "capital-roman";
   if (!ONE_CAPITAL.test(raw)) return undefined;
-  return open.includes("capital") || (raw === "A" && open.at(-1) === "roman") ? "capital" : undefined;
+  return open.includes("capital") || (raw === "A" && opensCapital(open)) ? "capital" : undefined;
+};
+
+/** A doubled letter right under a subclause "(I)", or beside another doubled letter. */
+const underSubclause = (context: NumberingContext): boolean => {
+  const innermost = styles(context).at(-1);
+  return innermost === "capital-roman" || innermost === "doubled";
 };
 
 /**
@@ -80,6 +105,7 @@ const capitalStyleOf = (raw: string, context: NumberingContext): Style | undefin
 export const styleOf = (raw: string, context: NumberingContext): Style | undefined => {
   if (DIGITS.test(raw) || IS_INSERTED.test(raw)) return "digit";
   if (CAPITALS.test(raw)) return capitalStyleOf(raw, context);
+  if (isDoubled(raw)) return underSubclause(context) ? "doubled" : "letter";
   if (MULTI_ROMAN.test(raw)) return "roman";
   if (!AMBIGUOUS.test(raw) || follows(raw, "letter", context)) return "letter";
   const open = styles(context);
