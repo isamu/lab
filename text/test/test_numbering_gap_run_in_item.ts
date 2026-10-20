@@ -61,4 +61,8 @@ describe("numbering-gap: a section title run into its first item", () => {
     assert.deepEqual(addresses("Sec. 5. Scope of subsection (a) of section 3."), []);
     assert.deepEqual(addresses("Sec. 4. Applicability to section 5. (a) of this section applies only to new records."), []);
   });
+
+  it("valid: a page flattened into one line keeps its run-in labels as text", () => {
+    assert.deepEqual(addresses("ARTICLE II   EFFECT ON THE CAPITAL STOCK   Section 2.1   Effect on Capital Stock.   (a)   At the Effective Time."), []);
+  });
 });

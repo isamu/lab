@@ -52,9 +52,10 @@ const LETTERED = new RegExp(
 
 /**
  * "Sec. 4. General Provisions. (a) Nothing in this order…": a title run in before the first item of the section's own list.
- * The rest then starts with that label, which opens the item as a joined label does.
+ * The rest then starts with that label, which opens the item as a joined label does. A title is spaced as words are: a
+ * wider gap is a page flattened into one line ("ARTICLE II   EFFECT…   Section 2.1   Effect… (a)"), whose items are not its.
  */
-const RUN_IN_FIRST_ITEM = /^(?<title>\S.*?[.:])\s+(?<item>\((?:a|1)\)\s+\p{Lu}.*)$/u;
+const RUN_IN_FIRST_ITEM = /^(?<title>\S+(?: \S+)*?[.:]) (?<item>\((?:a|1)\)\s+\p{Lu}.*)$/u;
 
 const titleAndRest = (heading: string): { readonly heading: string; readonly rest: string } => {
   const groups = RUN_IN_FIRST_ITEM.exec(heading)?.groups;
