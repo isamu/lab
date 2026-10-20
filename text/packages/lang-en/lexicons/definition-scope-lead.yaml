@@ -1,0 +1,11 @@
+# The words that open a provision's definitions and name the unit they hold in: "For the purpose of this subchapter—",
+# "As used in this chapter—". unused-definition reads the unit after them: a term defined for a unit of a code
+# (enclosing-unit) that the document does not have is used by the unit's other sections. Matched as written.
+id: definition-scope-lead
+language: en
+entries:
+  - pattern: For the purpose of this
+  - pattern: For the purposes of this
+  - pattern: For purposes of this
+  - pattern: As used in this
+  - pattern: In this

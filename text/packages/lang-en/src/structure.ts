@@ -1,5 +1,5 @@
 import type { Mention, NumberedLine, NumberingContext, StructurePatterns } from "chaffjs/plugin";
-import { citedDocumentAfter, citedDocumentBefore, listedTagAround } from "./citation.ts";
+import { citedDocumentAfter, citedDocumentBefore, enclosingUnitAfter, listedTagAround } from "./citation.ts";
 import { citedCodeBefore, codeVocabulary, titledCodeAt } from "./code-citation.ts";
 import { citedLawAround, lawVocabulary } from "./law-citation.ts";
 import { loadLexicons } from "./lexicons.ts";
@@ -165,12 +165,19 @@ const glossedDocument = (gloss: Gloss): string | undefined => {
 const LEXICONS = loadLexicons();
 const CODES = codeVocabulary(LEXICONS);
 const LAWS = lawVocabulary(LEXICONS);
+const ENCLOSING_UNITS: ReadonlySet<string> = new Set((LEXICONS["enclosing-unit"] ?? []).map((entry) => entry.pattern.toLowerCase()));
 
 /** The other document a reference names, or else a bracketed tag that the core checks against the document's list. */
 const citation = (text: string, start: number, end: number, document: string | undefined): Readonly<Record<string, string>> => {
   if (document !== undefined) return { document };
   const citedTag = listedTagAround(text, start, end);
   return citedTag === undefined ? {} : { citedTag };
+};
+
+/** "section 552 of this title": the unit of a code the reference says it is in, which the core checks against the tree. */
+const enclosing = (text: string, end: number): Readonly<Record<string, string>> => {
+  const withinUnit = enclosingUnitAfter(text, end, ENCLOSING_UNITS);
+  return withinUnit === undefined ? {} : { withinUnit };
 };
 
 /**
@@ -193,7 +200,7 @@ const references = (text: string): Mention[] => {
     gloss.scanned = Math.max(gloss.scanned, end);
     if (cited !== undefined) gloss.anchors.push({ document: cited, depth: gloss.depth });
     const numbering = /^[Aa]/u.test(match.groups?.["word"] ?? "") ? "article" : "section";
-    const shared = { numbering, ...citation(text, match.index, end, document) };
+    const shared = { numbering, ...enclosing(text, end), ...citation(text, match.index, end, document) };
     const first = { start: match.index, end, attrs: { target: [main, ...parts].join("."), label: text.slice(match.index, end), ...shared } };
     const [plural, roman] = [(match.groups?.["word"] ?? "").endsWith("s"), /^[IVXLC]+$/u.test(match.groups?.["n"] ?? "")];
     return [first, ...membersAfter(text, end, [main, ...parts], shared, plural, roman)];

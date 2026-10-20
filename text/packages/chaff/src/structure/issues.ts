@@ -3,7 +3,7 @@ import { writtenReading } from "./written-resolve.ts";
 import { partAt } from "./attached-parts.ts";
 import { namedTargets, pointsToNamedSection } from "./section-names.ts";
 import { listedTags } from "./listed-tags.ts";
-import { namesAbsentUnit } from "./unit-word.ts";
+import { namesAbsentUnit, withinAbsentUnit } from "./unit-word.ts";
 import { isListedParagraph, listedParagraphsByArticle } from "./listed-paragraph.ts";
 import { referencesInCitedDocuments } from "./cited-document-section.ts";
 import { citedElsewhereReader } from "./cited-elsewhere.ts";
@@ -132,6 +132,7 @@ export const danglingReferences = (tree: StructureNode, source: string, nameNoun
   const otherNumbering = (node: StructureNode): boolean =>
     numberings.size > 0 && typeof numbering(node) === "string" && !numberings.has(String(numbering(node))) && citedElsewhere.has(numbering(node));
   const articleLabels = nodes.filter((node) => node.kind === "article").map((node) => textOf(node, "label"));
+  const unitLabels = nodes.filter((node) => NUMBERED.has(node.kind)).map((node) => textOf(node, "label"));
   const chapters = chaptersOf(nodes);
   const elsewhere = elsewhereReferences(nodes, source);
   const quoted = referencesInCitedDocuments(tree);
@@ -140,7 +141,7 @@ export const danglingReferences = (tree: StructureNode, source: string, nameNoun
   const citedElsewhereToo = citedElsewhereReader(references, citesOther);
   const unresolved = references
     .filter((node) => !citesOther(node) && !otherNumbering(node) && !pointsToNamedSection(node, named) && !citedElsewhereToo(node))
-    .filter((node) => !namesAbsentUnit(node, articleLabels) && !elsewhere.has(node))
+    .filter((node) => !namesAbsentUnit(node, articleLabels) && !withinAbsentUnit(node, unitLabels) && !elsewhere.has(node))
     .filter((node) => !quoted.has(node) && !resolves(node, addresses, chapters));
   // 規程は条の下の項を箇条書き（「1. 」「２．」）で書くことがあり、木はそれを項として読まない。条の本文は、要るときに一度だけ読む。
   const listed = unresolved.length === 0 ? new Map() : listedParagraphsByArticle(nodes, source);

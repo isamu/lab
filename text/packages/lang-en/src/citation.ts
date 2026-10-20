@@ -133,6 +133,17 @@ export const citedDocumentAfter = (text: string, end: number): string | undefine
   return words.length === 1 && SELF.has(name) ? undefined : name;
 };
 
+const THIS_UNIT = /^this (?<unit>\p{L}+)(?![\p{L}\p{N}])/u;
+
+/**
+ * The unit the reference says it is in, "title" in "section 552 of this title", when that word is one of `units`
+ * (lower case); undefined otherwise.
+ */
+export const enclosingUnitAfter = (text: string, end: number, units: ReadonlySet<string>): string | undefined => {
+  const unit = THIS_UNIT.exec(afterOf(text, end) ?? "")?.groups?.["unit"]?.toLowerCase();
+  return unit !== undefined && units.has(unit) ? unit : undefined;
+};
+
 /**
  * A tag that names another document only if this document lists it, right after a reference ("Section 4.2.3 of
  * [HTTP-CACHING]", "Section 4.2.2.17 of [19]") or just before it ("[HTTP-CACHING], Section 4", "[23], Section 2.17").
