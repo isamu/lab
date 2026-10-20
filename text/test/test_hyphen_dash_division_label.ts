@@ -24,6 +24,9 @@ describe("isDivisionSeparator", () => {
     ["a word that is not a division", "Group II - members"],
     ["no number", "PART - THE AGENCIES"],
     ["text after the number", "Part II of the Act - see below"],
+    ["a sentence after the hyphen", "Table 3 - shows the totals"],
+    ["a lower-case word after the hyphen", "Part I - and then the rest"],
+    ["a title that ends a sentence", "Figure 2 - Totals are shown below."],
   ].forEach(([form, line]) => {
     it(`invalid: ${String(form)}`, () => assert.equal(at(String(line)), false));
   });
