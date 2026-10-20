@@ -1,6 +1,6 @@
 18f-blog-oracle-databases  1
 18f-handbook-travel-faq  1
-aoml-hurricane-faq  14
+aoml-hurricane-faq  13
 arxiv-2609-38203-abs-verbal-fluency  1
 arxiv-2609-38219-abs-tamazight-speech  3
 arxiv-astro-ph-new-2025-01-03  12
@@ -19,7 +19,7 @@ python-code-quality-list-2016-03  1
 rust-lang-minutes-2022-11-22  1
 rust-rfc-2094-nll  4
 typescript-5-4-release-notes  1
-us-4683202-nucleic-acid-amplification  8
+us-4683202-nucleic-acid-amplification  7
 us-6004596-crustless-sandwich  1
 vite-plugin-legacy-changelog  2
 wikivoyage-belgian-coast-tram  3
