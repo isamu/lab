@@ -1,0 +1,11 @@
+# A heading, written alone, over the section where a notice states its deadline once for the whole document
+# (a Federal Register notice's "DATES:"). When that section holds a date with a deadline word, every request in the
+# document has that deadline. Compared with the whole heading, its case and a closing colon aside.
+id: request-deadline-section
+language: en
+entries:
+  - pattern: dates
+  - pattern: key dates
+  - pattern: important dates
+  - pattern: deadline
+  - pattern: deadlines

@@ -34,6 +34,29 @@ describe("request-without-deadline: 期限も担当も無い依頼", () => {
     assert.deepEqual(findingsOf("Please review the attached quote. We sign on Oct 20.", en), []);
   });
 
+  it("しないように頼む文は禁止で、期限の要る依頼ではない", () => {
+    assert.deepEqual(findingsOf("Please do not send comments by email. Please send the form.", en), [MESSAGE_EN]);
+    assert.deepEqual(findingsOf("Please don't share the draft.", en), []);
+    assert.deepEqual(findingsOf("資料はメールで送らないでください。"), []);
+    assert.deepEqual(findingsOf("会場での撮影はご遠慮ください。"), []);
+    assert.deepEqual(findingsOf("ご遠慮なく資料をご確認ください。"), [MESSAGE_JA]);
+    assert.deepEqual(findingsOf("Please send the report, but don't email it.", en), [MESSAGE_EN]);
+    assert.deepEqual(findingsOf("報告書を送ってください（メールでは送らないでください）。"), [MESSAGE_JA]);
+  });
+
+  it("締め切りを一度だけ書く節（DATES:、提出期限）があれば、文書の依頼はどれもその締め切りを持つ", () => {
+    const notice = (dates: string): string => `## DATES:\n\n${dates}\n\n## Questions\n\nPlease describe your current practice. Please provide examples.`;
+    assert.deepEqual(findingsOf(notice("Comments must be submitted on or before November 5, 2026."), en), []);
+    assert.deepEqual(findingsOf(notice("The meeting was held on November 5, 2026."), en), [MESSAGE_EN]);
+    assert.deepEqual(findingsOf(notice("Comments must be submitted on or before November 5, 2026.").replace("DATES:", "Dates of the study"), en), [MESSAGE_EN]);
+    const ja = "## 提出期限\n\n2026年11月5日までに提出してください。\n\n## 内容\n\n現在の取り組みをご記入ください。";
+    assert.deepEqual(findingsOf(ja), []);
+    assert.deepEqual(findingsOf(ja.replace("## 提出期限", "## 背景")), [MESSAGE_JA]);
+    assert.deepEqual(findingsOf(notice("Comments must be submitted on or before November 5, 2026.").replace("DATES:", "2. Deadline"), en), []);
+    const before = `Please send the form.\n\n${notice("Comments must be submitted on or before November 5, 2026.")}`;
+    assert.deepEqual(findingsOf(before, en), [MESSAGE_EN]);
+  });
+
   it("担当があれば言わない（呼び名、役割、人の名前）", () => {
     assert.deepEqual(findingsOf("経理部の担当者が見積書をご確認ください。"), []);
     assert.deepEqual(findingsOf("見積書のご確認をお願いします。山田さんにも伝えます。"), []);
