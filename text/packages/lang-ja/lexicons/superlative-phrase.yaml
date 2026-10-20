@@ -1,0 +1,13 @@
+# 最上級を含むが、何かが一番だと言ってはいない決まった言い方。最上級がこの中にあれば unqualified-superlative は指さない。
+# 職名・機関名（最高裁判所・最高経営責任者）は名前。「最も近い」「最も遠い」は書いている場所からの距離。
+id: superlative-phrase
+language: ja
+entries:
+  - pattern: 最高裁判所
+  - pattern: 最高裁
+  - pattern: 最高検察庁
+  - pattern: 最高指揮官
+  - pattern: 最高責任者
+  - pattern: 最高経営責任者
+  - pattern: 最も近い
+  - pattern: 最も遠い
