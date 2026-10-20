@@ -26,7 +26,7 @@ const findingsOf = (source: string): readonly string[] => namedRuleRun(RULE, sou
 /** How each paragraph of a source ends: closed, open, or - when it is not counted. */
 const formsOf = (source: string): readonly string[] => {
   const doc = buildDocument("a.md", source, ja);
-  return doc.paragraphs.map((paragraph) => paragraphEnd(doc.prose ?? doc.source, paragraph, MARKS)?.form ?? "-");
+  return doc.paragraphs.map((paragraph, index) => paragraphEnd(doc.prose ?? doc.source, paragraph, MARKS, doc.paragraphs[index + 1])?.form ?? "-");
 };
 
 describe("missing-final-period: 「。」で終わらない段落", () => {
@@ -58,14 +58,20 @@ describe("missing-final-period: 「。」で終わらない段落", () => {
     assert.deepEqual(formsOf("申請は市役所の窓口で受け付けますか？\n\n受付の時間は平日の午前九時からです！\n"), ["-", "-"]);
   });
 
-  it("●などの印で始まる一行の段落は、下に続く文の小見出しなので数えない", () => {
-    assert.deepEqual(formsOf("●1人で作業しないで声をかけ合うようにする\n\n■暑さ指数を参考にして作業の予定を決める\n"), ["-", "-"]);
-    assert.deepEqual(findingsOf(documentWith("●1人で作業しないで声をかけ合うようにする")), []);
-    // 印の無い一行、印で始まっても二行ある段落は、これまでどおり数える。
-    assert.deepEqual(formsOf("1人で作業しないで声をかけ合うようにする\n"), ["open"]);
+  it("●などの印で始まる一行の段落は、下に文が続けば小見出しなので数えない", () => {
+    const heading = "●1人で作業しないで声をかけ合うようにする";
+    const prose = "熱中症の事故の多くは、1人で作業しているときに起きています。";
+    assert.deepEqual(formsOf(`${heading}\n\n${prose}\n`), ["-", "closed"]);
+    assert.deepEqual(findingsOf(documentWith(heading, prose)), []);
+    // 印の無い一行、印で始まっても二行ある段落、後ろに何も無い一行は、これまでどおり数える。
+    assert.deepEqual(formsOf(`1人で作業しないで声をかけ合うようにする\n\n${prose}\n`)[0], "open");
     assert.deepEqual(formsOf("●作業の前に確認する。\n申請は市役所の窓口で受け付けます\n"), ["open"]);
+    assert.deepEqual(formsOf(`${heading}\n`), ["open"]);
     // 印が行の途中にあれば小見出しではない。
-    assert.deepEqual(formsOf("作業の前には●の欄を必ず確認するようにする\n"), ["open"]);
+    assert.deepEqual(formsOf(`作業の前には●の欄を必ず確認するようにする\n\n${prose}\n`)[0], "open");
+    // 印で始まる文が並ぶのは文の箇条で、「。」の有無を数える。
+    assert.deepEqual(formsOf("●申請書は市役所の窓口で受け付けます\n\n●受付の時間は平日の午前九時から午後五時までです。\n"), ["open", "closed"]);
+    assert.deepEqual(formsOf(`●申請書は市役所の窓口で受け付けます。\n\n${prose}\n`)[0], "closed");
   });
 
   it("「。」で終わらない段落の多い文書と、混ざりすぎた文書は指さない", () => {
