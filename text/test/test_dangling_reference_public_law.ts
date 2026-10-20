@@ -36,6 +36,7 @@ describe("citedLawAround", () => {
   [
     ["June 11, 1946, ch. 324, §2(a), 60 Stat. 237.", "§2(a)", "60 Stat. 2"],
     ["§2(a), August 26, 1946, 60 Stat. 237", "§2(a)", "60 Stat. 2"],
+    ["| 5 U.S.C. 1001 | June 11, 1946, ch. 324, §2 (less (a)), 60 Stat. 237. |", "§2", "60 Stat. 2"],
     ["see Ex. Ord. No. 13526, §3.6, Dec. 29, 2009, 75 F.R. 718, set out", "§3.6", "75 F.R. 7"],
   ].forEach(([text, reference, volume]) => {
     it(`valid (a volume after): ${String(reference)}`, () => assert.ok(at(String(text), String(reference))?.endsWith(String(volume))));

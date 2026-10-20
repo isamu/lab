@@ -28,6 +28,8 @@ const CITATION_PARTS: readonly RegExp[] = [
 const CITATION_PART = new RegExp(CITATION_PARTS.map((part) => part.source).join("|"), "gu");
 /** "§3.6, Dec. 29, 2009, 75 F.R. 718": a date may stand between a section and the volume's page. */
 const DATE = String.raw`(?:,\s*[A-Z][a-z]{2,8}\.?\s+\d{1,2},\s+\d{4})?`;
+/** "§2 (less (a)), 60 Stat. 237": a derivation table says in brackets which part of the section it takes. */
+const PART_TAKEN = String.raw`(?:\s\((?:[^()]|\([^()]{1,10}\)){1,40}\))?`;
 
 const namesOf = (entries: readonly LexiconEntry[]): string | undefined => {
   const names = entries.map((entry) => entry.pattern).toSorted((left, right) => right.length - left.length);
@@ -40,7 +42,7 @@ export const lawVocabulary = (lexicons: Readonly<Record<string, Lexicon>>): LawV
   const volumes = namesOf(entries.filter((entry) => entry.position === "after"));
   return {
     before: named === undefined ? undefined : new RegExp(String.raw`(?<![\p{L}\p{N}])${named}${LAW_NUMBER}`, "gu"),
-    after: volumes === undefined ? undefined : new RegExp(String.raw`^${DATE},\s*\d{1,3}\s+${volumes}\s+\d`, "u"),
+    after: volumes === undefined ? undefined : new RegExp(String.raw`^${PART_TAKEN}${DATE},\s*\d{1,3}\s+${volumes}\s+\d`, "u"),
   };
 };
 
