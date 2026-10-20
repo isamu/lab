@@ -6,7 +6,7 @@
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { unusedDefinition } from "./definition-use.ts";
-import { scopedBeyondDocument } from "./definition-scope-unit.ts";
+import { scopedBeyondReader } from "./definition-scope-unit.ts";
 
 /** How far after the definition's start the term itself is looked for. */
 const TERM_REACH = 40;
@@ -35,7 +35,7 @@ const patternsOf = (doc: ProseDocument, lexicon: string): string[] => (doc.lexic
 const scopedBeyond = (doc: ProseDocument): ((offset: number) => boolean) => {
   const leads = patternsOf(doc, "definition-scope-lead");
   const units = new Set(patternsOf(doc, "enclosing-unit").map((unit) => unit.toLowerCase()));
-  return (offset) => doc.structure !== undefined && scopedBeyondDocument(doc.structure, doc.source, offset, leads, units);
+  return doc.structure === undefined ? () => false : scopedBeyondReader(doc.structure, doc.source, leads, units);
 };
 
 const isKept =

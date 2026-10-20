@@ -7,53 +7,84 @@ import { escapeRegExp } from "../orthography.ts";
 /** The kinds that hold a provision of their own; the text before the first of them is the provision's opening words. */
 const PROVISIONS: ReadonlySet<string> = new Set(["chapter", "article", "item"]);
 
-/** The nodes from the root down to the definition that starts at `offset`, or undefined when there is none. */
-const pathTo = (tree: StructureNode, offset: number): readonly StructureNode[] | undefined => {
-  const pending: StructureNode[][] = [[tree]];
-  while (pending.length > 0) {
-    const path = pending.pop() ?? [];
-    const node = path.at(-1);
-    if (node?.kind === "definition" && node.span.start === offset) return path;
-    node?.children.filter((child) => child.span.start <= offset).forEach((child) => pending.push([...path, child]));
-  }
-  return undefined;
+/** A lead opens a line, a sentence, or the text after a provision's label ("(e) As used in this section—"). */
+const LEAD_START = String.raw`(?:^|[.;:]\s+)(?:\([^()\s]{1,5}\)\s*)?`;
+
+type Tree = {
+  readonly parents: ReadonlyMap<StructureNode, StructureNode>;
+  readonly definitions: ReadonlyMap<number, StructureNode>;
+  /** The first word of every provision's label, lower case: "chapter" for "Chapter 35". */
+  readonly labels: ReadonlySet<string>;
 };
 
-/** What a node says before its first provision, and before the next node on the path. */
+const firstWord = (label: string): string => label.trim().split(/\s/u)[0]?.toLowerCase() ?? "";
+
+/** Every node's parent, the definitions by where they start, and the provisions' label words. One pass, without recursion. */
+const indexOf = (tree: StructureNode): Tree => {
+  const parents = new Map<StructureNode, StructureNode>();
+  const definitions = new Map<number, StructureNode>();
+  const labels = new Set<string>();
+  const pending: StructureNode[] = [tree];
+  while (pending.length > 0) {
+    const node = pending.pop();
+    if (node === undefined) break;
+    if (node.kind === "definition") definitions.set(node.span.start, node);
+    if (PROVISIONS.has(node.kind)) labels.add(firstWord(String(node.attrs["label"] ?? "")));
+    node.children.forEach((child) => parents.set(child, node));
+    pending.push(...node.children);
+  }
+  return { parents, definitions, labels };
+};
+
+/** What a node says before its first provision, and before the next node on the way down to the definition. */
 const openingOf = (node: StructureNode, next: StructureNode, source: string): string => {
   const firstProvision = node.children.find((child) => PROVISIONS.has(child.kind))?.span.start ?? next.span.start;
   return source.slice(node.span.start, Math.min(firstProvision, next.span.start));
 };
 
-/** The unit word right after one of the leads in `text` ("subchapter" after "For the purpose of this"), lower case. */
-const leadUnit = (text: string, leads: readonly string[]): string | undefined => {
-  if (leads.length === 0) return undefined;
-  const pattern = new RegExp(String.raw`(?:${leads.map(escapeRegExp).join("|")})\s+(?<unit>\p{L}+)(?![\p{L}\p{N}])`, "u");
-  return pattern.exec(text)?.groups?.["unit"]?.toLowerCase();
-};
+/** The pattern of a lead and the unit word after it, or undefined when the language lists no lead. */
+const leadPattern = (leads: readonly string[]): RegExp | undefined =>
+  leads.length === 0 ? undefined : new RegExp(String.raw`${LEAD_START}(?:${leads.map(escapeRegExp).join("|")})\s+(?<unit>\p{L}+)(?![\p{L}\p{N}])`, "mu");
 
-/** The unit named by the nearest provision around the definition at `offset` that opens a scope, or undefined. */
-export const definitionScopeUnit = (tree: StructureNode, source: string, offset: number, leads: readonly string[]): string | undefined => {
-  const path = pathTo(tree, offset) ?? [];
-  const openings = path.slice(0, -1).map((node, index) => openingOf(node, path[index + 1] ?? node, source));
-  return openings.toReversed().reduce<string | undefined>((found, opening) => found ?? leadUnit(opening, leads), undefined);
+/** The unit named by the nearest provision around `definition` that opens a scope, lower case, or undefined. */
+const unitAround = (definition: StructureNode, tree: Tree, source: string, pattern: RegExp): string | undefined => {
+  for (let next = definition, node = tree.parents.get(definition); node !== undefined; next = node, node = tree.parents.get(node)) {
+    const unit = pattern.exec(openingOf(node, next, source))?.groups?.["unit"];
+    if (unit !== undefined) return unit.toLowerCase();
+  }
+  return undefined;
 };
-
-const firstWord = (label: string): string => label.trim().split(/\s/u)[0]?.toLowerCase() ?? "";
 
 /**
- * Whether a definition is made for a unit of a code (one of `units`) that the document does not have: no chapter, article
- * or item of its tree is labelled with that word. A document that is one section of the unit holds only part of the uses.
+ * Reads, for the definition at an offset, the unit it is made for (undefined when none). Built once per document: an
+ * unused-definition run asks for every unused term.
  */
-export const scopedBeyondDocument = (tree: StructureNode, source: string, offset: number, leads: readonly string[], units: ReadonlySet<string>): boolean => {
-  const unit = definitionScopeUnit(tree, source, offset, leads);
-  if (unit === undefined || !units.has(unit)) return false;
-  const pending: StructureNode[] = [tree];
-  while (pending.length > 0) {
-    const node = pending.pop();
-    if (node === undefined) break;
-    if (PROVISIONS.has(node.kind) && firstWord(String(node.attrs["label"] ?? "")) === unit) return false;
-    pending.push(...node.children);
-  }
-  return true;
+const unitReader = (index: Tree, source: string, leads: readonly string[]): ((offset: number) => string | undefined) => {
+  const pattern = leadPattern(leads);
+  return (offset) => {
+    const definition = index.definitions.get(offset);
+    return pattern === undefined || definition === undefined ? undefined : unitAround(definition, index, source, pattern);
+  };
+};
+
+export const definitionScopeReader = (tree: StructureNode, source: string, leads: readonly string[]): ((offset: number) => string | undefined) =>
+  unitReader(indexOf(tree), source, leads);
+
+/**
+ * Whether the definition at an offset is made for a unit of a code (one of `units`) that the document does not have: no
+ * chapter, article or item of its tree is labelled with that word. A document that is one section of the unit holds only
+ * part of the uses.
+ */
+export const scopedBeyondReader = (
+  tree: StructureNode,
+  source: string,
+  leads: readonly string[],
+  units: ReadonlySet<string>,
+): ((offset: number) => boolean) => {
+  const index = indexOf(tree);
+  const unitOf = unitReader(index, source, leads);
+  return (offset) => {
+    const unit = unitOf(offset);
+    return unit !== undefined && units.has(unit) && !index.labels.has(unit);
+  };
 };

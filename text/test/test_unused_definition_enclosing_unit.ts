@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
-import { definitionScopeUnit, scopedBeyondDocument } from "../packages/chaff/src/detectors/definition-scope-unit.ts";
+import { definitionScopeReader, scopedBeyondReader } from "../packages/chaff/src/detectors/definition-scope-unit.ts";
 
 // unused-definition and a definition made for a unit of a code ("For the purpose of this subchapter—") in a document that
 // is one section of that unit: the unit's other sections use it. Where the document has the unit, or the definition is
@@ -42,11 +42,17 @@ const SECTION = [
 
 const findingsOf = (source: string): readonly string[] => namedRuleRun(RULE, source, en, "s.md", "legal/statute").findings;
 const offsetOf = (source: string, term: string): number => source.indexOf(`"${term}"`);
-const treeOf = (source: string) => {
+type Tree = NonNullable<ReturnType<typeof buildDocument>["structure"]>;
+const treeOf = (source: string): Tree => {
   const tree = buildDocument("s.md", source, en).structure;
   if (tree === undefined) throw new Error("no tree");
   return tree;
 };
+
+const definitionScopeUnit = (tree: Tree, source: string, offset: number, leads: readonly string[]): string | undefined =>
+  definitionScopeReader(tree, source, leads)(offset);
+const scopedBeyondDocument = (tree: Tree, source: string, offset: number, leads: readonly string[], units: ReadonlySet<string>): boolean =>
+  scopedBeyondReader(tree, source, leads, units)(offset);
 
 describe("definitionScopeUnit", () => {
   it("valid: the unit named by the provision that opens the definitions", () => {
@@ -59,6 +65,13 @@ describe("definitionScopeUnit", () => {
     assert.equal(definitionScopeUnit(treeOf(bare), bare, offsetOf(bare, "agency"), LEADS), undefined);
     assert.equal(definitionScopeUnit(treeOf(SUBCHAPTER), SUBCHAPTER, offsetOf(SUBCHAPTER, "agency"), []), undefined);
     assert.equal(definitionScopeUnit(treeOf(SUBCHAPTER), SUBCHAPTER, 1, LEADS), undefined);
+  });
+
+  it("invalid: the lead words inside a sentence or a quotation do not open a scope", () => {
+    const quoted = '# Notes\n\n(a) The phrase "In this chapter" is illustrative; "Foo" means a thing.\n';
+    assert.equal(definitionScopeUnit(treeOf(quoted), quoted, offsetOf(quoted, "Foo"), LEADS), undefined);
+    const inside = '# Notes\n\n(a) Words used in this chapter are plain; "Foo" means a thing.\n';
+    assert.equal(definitionScopeUnit(treeOf(inside), inside, offsetOf(inside, "Foo"), LEADS), undefined);
   });
 
   it("abnormal input: an empty document, an offset past the end", () => {
