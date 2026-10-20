@@ -50,12 +50,24 @@ const LETTERED = new RegExp(
   "u",
 );
 
+/**
+ * "Sec. 4. General Provisions. (a) Nothing in this order…": a title run in before the first item of the section's own list.
+ * The rest then starts with that label, which opens the item as a joined label does.
+ */
+const RUN_IN_FIRST_ITEM = /^(?<title>\S.*?[.:])\s+(?<item>\((?:a|1)\)\s+\p{Lu}.*)$/u;
+
+const titleAndRest = (heading: string): { readonly heading: string; readonly rest: string } => {
+  const groups = RUN_IN_FIRST_ITEM.exec(heading)?.groups;
+  return groups === undefined ? { heading, rest: heading } : { heading: groups["title"] ?? heading, rest: groups["item"] ?? heading };
+};
+
 const headed = (pattern: RegExp, line: string, numbering: string, label: (n: string) => string): NumberedLine | undefined => {
   const groups = pattern.exec(line)?.groups;
   const number = numberOf(groups?.["n"]);
-  const heading = titleOf(groups?.["rest"] ?? "");
-  if (groups === undefined || number === undefined || heading === undefined) return undefined;
+  const title = titleOf(groups?.["rest"] ?? "");
+  if (groups === undefined || number === undefined || title === undefined) return undefined;
   const parts = number.split(".");
+  const { heading, rest } = titleAndRest(title);
   return {
     kind: "article",
     depth: parts.length,
@@ -63,7 +75,7 @@ const headed = (pattern: RegExp, line: string, numbering: string, label: (n: str
     absolute: true,
     label: label(groups["n"] ?? ""),
     heading,
-    rest: heading,
+    rest,
     ordinal: Number(parts.at(-1)),
     numbering,
   };
