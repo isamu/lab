@@ -7,6 +7,7 @@ import { formulaBracketSpans } from "../formula-brackets.ts";
 import { isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { capitalLineSpans, captionsOf, isCaptionAt, isWithinSorted } from "./caps-caption.ts";
 import { lineStarts } from "../position.ts";
+import { isTypewritten } from "./typewritten.ts";
 
 /** The letters a mark must touch to count as part of the document's text, by language. */
 const SCRIPT: Readonly<Record<string, RegExp>> = {
@@ -232,6 +233,8 @@ const DOUBLE_HYPHEN = "--";
 const isTypedDash = (hit: Hit, setsDashes: boolean): boolean => !setsDashes && hit.matched === DOUBLE_HYPHEN;
 
 export const hyphenDash: Detector = (doc, options): Finding[] => {
+  // A plain-text document that sets no typographic mark types every dash as a hyphen.
+  if (isTypewritten(doc.source, doc.markup?.markdown !== false)) return [];
   const sentences = ownSentences(doc);
   const setsDashes = sentences.some((sentence) => TRUE_DASH.test(sentence.text));
   return reportFrom(

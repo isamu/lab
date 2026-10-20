@@ -22,9 +22,11 @@ export type AgreementLists = {
   readonly finite: ReadonlySet<string>;
   /** 単数で書く所を複数で書いた句（ones of the most）。 */
   readonly misnumbered: Lexicon;
+  /** 冠詞の後ろに立たない限定詞（some / the）。 */
+  readonly afterArticle: ReadonlySet<string>;
 };
 
-export type Slip = { readonly variant: "number" | "possessive"; readonly first: Token; readonly last: Token; readonly word: string };
+export type Slip = { readonly variant: "number" | "possessive" | "determiner"; readonly first: Token; readonly last: Token; readonly word: string };
 
 const SPACE_ONLY = /^\s+$/u;
 const UPPER_START = /^\p{Lu}/u;
@@ -166,9 +168,28 @@ const misnumberedAt = (source: string, tokens: readonly Token[], at: number, lis
   return joinedBySpace(source, span) ? slipOf("number", source, first, last) : undefined;
 };
 
+/**
+ * 冠詞のすぐ後ろの、冠詞の後ろに立たない限定詞（the some roads、a the report）。一つを書き直して、もう一つを消し忘れた跡。
+ * 文の途中の大文字の冠詞は名前の一部、形容詞や数の後ろの a は記号の名前、大文字の限定詞は名前（the Each family）。
+ */
+const doubledDeterminerAt = (source: string, tokens: readonly Token[], at: number, lists: AgreementLists): Slip | undefined => {
+  const [article, second] = [tokens[at], tokens[at + 1]];
+  if (article === undefined || second === undefined || !isArticle(article) || !lists.afterArticle.has(lower(second))) return undefined;
+  // The same word twice (the the) is doubled-word's.
+  if (lower(article) === lower(second)) return undefined;
+  const determiner = { head: article, length: 1, plural: false };
+  if (isNamePart(tokens, at) || isLetterName(tokens, at, determiner) || !LOWER.test(second.surface.charAt(0))) return undefined;
+  if (!joinedBySpace(source, [article, second]) || isPartOfLongerWord(source, article, second)) return undefined;
+  return slipOf("determiner", source, article, second);
+};
+
 export const agreementIn = (source: string, tokens: readonly Token[], lists: AgreementLists): Slip[] =>
   tokens.flatMap((_, at) => {
-    const slip = numberSlipAt(source, tokens, at, lists) ?? possessiveSlipAt(source, tokens, at, lists) ?? misnumberedAt(source, tokens, at, lists);
+    const slip =
+      numberSlipAt(source, tokens, at, lists) ??
+      possessiveSlipAt(source, tokens, at, lists) ??
+      misnumberedAt(source, tokens, at, lists) ??
+      doubledDeterminerAt(source, tokens, at, lists);
     return slip === undefined ? [] : [slip];
   });
 
@@ -182,6 +203,7 @@ const listsOf = (lexicons: Readonly<Record<string, Lexicon>>): AgreementLists =>
   possessive: setOf(lexicons["dependent-possessive"]),
   finite: setOf(lexicons["finite-auxiliary"]),
   misnumbered: lexicons["misnumbered-phrase"] ?? [],
+  afterArticle: setOf(lexicons["determiner-after-article"]),
 });
 
 export const agreementSlip: Detector = (doc): Finding[] => {

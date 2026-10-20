@@ -41,6 +41,7 @@ const LISTS: AgreementLists = {
   possessive: new Set(["your", "their"]),
   finite: new Set(["is"]),
   misnumbered: lexicon("ones of the most"),
+  afterArticle: new Set(["the", "some"]),
 };
 
 const slips = (words: readonly Word[], lists: AgreementLists = LISTS): string[] => {
@@ -150,6 +151,20 @@ describe("agreement-slip — 純関数", () => {
     assert.deepEqual(slips([w("new", "ADJ"), ...phrase]), []);
   });
 
+  it("冠詞の後ろの、冠詞の後ろに立たない限定詞（the some roads）", () => {
+    const roads = w("roads", "NOUN", PLUR, "road");
+    assert.deepEqual(slips([w("keep", "VERB"), w("the", "DET", ART), w("some", "DET"), roads]), ["determiner the some"]);
+    assert.deepEqual(slips([w("read", "VERB"), w("a", "DET", ART), w("the", "DET", ART), w("report", "NOUN")]), ["determiner a the"]);
+  });
+
+  it("冠詞の後ろに立つ語（the few）、冠詞でない語の後ろ、同じ語の繰り返し、大文字の語、名前の一部の冠詞は数えない", () => {
+    assert.deepEqual(slips([w("keep", "VERB"), w("the", "DET", ART), w("few", "ADJ"), w("roads", "NOUN", PLUR, "road")]), []);
+    assert.deepEqual(slips([w("keep", "VERB"), w("all", "DET"), w("the", "DET", ART), w("roads", "NOUN", PLUR, "road")]), []);
+    assert.deepEqual(slips([w("keep", "VERB"), w("the", "DET", ART), w("the", "DET", ART), w("roads", "NOUN", PLUR, "road")]), []);
+    assert.deepEqual(slips([w("keep", "VERB"), w("the", "DET", ART), w("Some", "PROPN"), w("Road", "PROPN")]), []);
+    assert.deepEqual(slips([w("in", "ADP"), w("Plan", "PROPN"), w("A", "DET", ART), w("the", "DET", ART), w("roads", "NOUN", PLUR, "road")]), []);
+  });
+
   it("語彙表が空なら何も数えない", () => {
     const empty: AgreementLists = {
       singular: [],
@@ -159,9 +174,11 @@ describe("agreement-slip — 純関数", () => {
       possessive: new Set(),
       finite: new Set(),
       misnumbered: [],
+      afterArticle: new Set(),
     };
     assert.deepEqual(slips([A, w("changes", "NOUN", PLUR, "change"), END], empty), []);
     assert.deepEqual(slips([w("their", "PRON"), w("is", "VERB")], empty), []);
+    assert.deepEqual(slips([w("the", "DET", ART), w("some", "DET"), w("roads", "NOUN", PLUR, "road")], empty), []);
   });
 
   it("名詞句の終わり: 文末・助動詞・前置詞・文末の記号は終わり、名詞・動詞・接続詞・読点・所有の印は続き", () => {
@@ -222,6 +239,7 @@ describe("agreement-slip — 英語", () => {
   it("invalid: corpus で見つかった書き損じ（#274）", () => {
     assert.deepEqual(findingsOf("Your can check the status of your key."), ["1:1 Your can"]);
     assert.deepEqual(findingsOf("The problem remains ones of the most intriguing questions."), ["1:21 ones of the most"]);
+    assert.deepEqual(findingsOf("Keep in mind the some roads are closed part of the year."), ["1:14 the some"]);
     assert.deepEqual(findingsOf("The results show a significant changes in accuracy."), ["1:18 a significant changes"]);
   });
 
@@ -241,6 +259,9 @@ describe("agreement-slip — 英語", () => {
       "These help to fix the build.",
       "These data sets are a series of news reports.",
       "A few days later, a number of users wrote in.",
+      "The few who came stayed, and the same rule applies to the one road that is open.",
+      "The Some Roads Act was passed, and all the roads reopened.",
+      "We took the a priori approach, and the this pointer stays valid.",
       "We need a sales and marketing team.",
       "We need a sales team and a data driven approach.",
       "One of the most important features is speed.",

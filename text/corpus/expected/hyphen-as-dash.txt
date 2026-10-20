@@ -17,8 +17,6 @@ nsf-19-582-reu-solicitation  13
 nws-glossary-a  14
 nws-heat-wave-safety  1
 openapi-spec-3-1-0  6
-rfc3693-geopriv-requirements  1
-rfc9293-tcp  2
 typescript-5-4-release-notes  1
 usajobs-va-it-specialist-customer-support  6
 wikivoyage-belgian-coast-tram  10

@@ -2,6 +2,7 @@ import type { Detector, DetectorOptions, Finding, Lexicon, ProseDocument, Senten
 import { escapeRegExp } from "../orthography.ts";
 import { isWithinAny, quotedIn } from "../quoted-span.ts";
 import { entryOpens } from "./lexicon-match.ts";
+import { laterAlternatives } from "../alternative-words.ts";
 
 type TokenTest = (token: Token, at: number, tokens: readonly Token[]) => boolean;
 
@@ -43,10 +44,25 @@ const sentencesOver = (doc: ProseDocument, limit: number, test: TokenTest, fixed
     return counted.length > limit ? [findingOf(sentence, counted, limit)] : [];
   });
 
-/** A sentence holding more than limit tokens written as one of the lexicon's words (the suffix 的). */
+/**
+ * A sentence holding more than limit tokens written as one of the lexicon's words (the suffix 的). The options of one choice
+ * (連続的か断続的か、一時的) count once: they name one point, the kinds a thing may be.
+ */
 export const sentenceWordCount: Detector = (doc, options): Finding[] => {
   const words = wordsOf(options.lexicon);
-  return sentencesOver(doc, options.limit, (token) => words.has(token.surface), doc.lexicons[FIXED_TERM_LEXICON] ?? []);
+  const alternatives = new WeakMap<readonly Token[], ReadonlySet<number>>();
+  const laterOf = (tokens: readonly Token[]): ReadonlySet<number> => {
+    const known = alternatives.get(tokens);
+    if (known !== undefined) return known;
+    const found = laterAlternatives(
+      tokens,
+      tokens.flatMap((token, at) => (words.has(token.surface) ? [at] : [])),
+    );
+    alternatives.set(tokens, found);
+    return found;
+  };
+  const isCounted: TokenTest = (token, at, tokens) => words.has(token.surface) && !laterOf(tokens).has(at);
+  return sentencesOver(doc, options.limit, isCounted, doc.lexicons[FIXED_TERM_LEXICON] ?? []);
 };
 
 const NOMINAL: ReadonlySet<string> = new Set(["NOUN", "PROPN", "NUM"]);

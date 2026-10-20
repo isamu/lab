@@ -456,6 +456,10 @@ const withoutClosingLinks = (html: string): string =>
 // Markup's own spacing, collapsed as HTML does; U+3000 is a character Japanese text writes (a clause number and its text), so it stays.
 const MARKUP_SPACE = /[^\S\u3000]+/gu;
 
+// Spaces either side of a tag ("title.\n</span>\n<span>") are one space on the page, as HTML collapses them across
+// elements; a space written as a character reference (&nbsp;) is decoded afterwards and stays.
+const SPACES_ACROSS_TAGS = / {2,}/gu;
+
 // A zero-width space or joiner draws nothing, so a line of nothing else is empty (a page-number anchor).
 const INVISIBLE_ONLY = /^[\s\p{Cf}]*$/u;
 
@@ -471,7 +475,9 @@ export const htmlToMarkdown = (html: string): string => {
   const content = withoutClosingLinks(
     withoutLinkGroups(withoutNavigation(withoutIconMenus(withoutSiteHeader(withoutNavigationLandmarks(withoutClosingAddress(kept)))))),
   );
-  const text = decodeEntities(stripTags(asLines(markChromeLinks(withImageHeadingsRead(withRunInHeadingsRead(content), documentTitle(uncommented))))));
+  const text = decodeEntities(
+    stripTags(asLines(markChromeLinks(withImageHeadingsRead(withRunInHeadingsRead(content), documentTitle(uncommented))))).replace(SPACES_ACROSS_TAGS, " "),
+  );
   const lines = text
     .split("\n")
     .map((line) => (INVISIBLE_ONLY.test(line) ? "" : line.trim()))
