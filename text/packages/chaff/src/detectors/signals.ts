@@ -22,6 +22,7 @@ import { gramPassagesOf } from "./gram-passages.ts";
 import { sectionOpeners } from "./gram-openers.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
 import { referenceListSpans } from "../reference-lists.ts";
+import { introducesList } from "./lead-in-dash.ts";
 import type { Detector, Finding, ProseDocument, Section, Sentence } from "../plugin.ts";
 
 const PER = 1000;
@@ -459,7 +460,7 @@ export const concreteEvidence: Detector = (doc, options): Finding[] => {
 const DASH = /[\u2014\u2015]|(?<!\p{Nd})\u2013|\u2013(?!\p{Nd})/gu;
 
 export const dashDensity: Detector = (doc, options): Finding[] => {
-  const hits = findIn(doc, DASH);
+  const hits = findIn(doc, DASH).filter((hit) => !introducesList(doc.source, hit.offset));
   const first = hits[0];
   const rate = density(doc, hits.length);
   if (wordsOf(doc) < MIN_DOCUMENT_LENGTH[doc.lengthUnit] || first === undefined || rate <= options.limit) return [];
