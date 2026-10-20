@@ -6,6 +6,7 @@ import { sideStepReader } from "../structure/side-step.ts";
 import { htmlTextBlocks } from "../structure/html-text-blocks.ts";
 import { listsNumberBreaks } from "../structure/list-numbering.ts";
 import { weekdayMismatches } from "../structure/weekday.ts";
+import { revisionAnchors } from "./revision-date.ts";
 import { documentDateOf } from "./document-date.ts";
 import { dateOrderBreaks } from "../structure/date-order.ts";
 import { totalMismatches, type Amount } from "../structure/total.ts";
@@ -145,20 +146,19 @@ export const dateWeekdayMismatch: Detector = (doc): Finding[] => {
   const dates = datedSpans(doc.structure);
   const sections = doc.sections.filter((section) => section.depth > 0);
   const eras = (doc.lexicons["calendar-era"] ?? []).map((entry) => entry.pattern);
+  const quotedAt = (offset: number): boolean => {
+    const date = dates[dateAt(dates, offset)];
+    return quotedDates(doc, date, date, WEEKDAY_WORDS);
+  };
+  const revision = revisionAnchors(doc.source, dates, doc.lexicons["stamp-order-label"] ?? [], documentDateOf(doc, doc.structure));
   const context = {
-    stamp: documentDateOf(doc, doc.structure),
+    stamp: revision.stamp,
     sectionStarts: sections.map((section) => section.span.start),
     yearHeadings: sections.filter((section) => namesYear(section.heading, eras)).map((section) => section.span.start),
-    anchorable: (node: StructureNode): boolean => {
-      const date = dates[dateAt(dates, node.span.start)];
-      return !quotedDates(doc, date, date, WEEKDAY_WORDS);
-    },
+    anchorable: (node: StructureNode): boolean => !revision.skips.has(node.span.start) && !quotedAt(node.span.start),
   };
   return weekdayMismatches(doc.structure, context)
-    .filter((issue) => {
-      const date = dates[dateAt(dates, issue.offset)];
-      return !quotedDates(doc, date, date, WEEKDAY_WORDS);
-    })
+    .filter((issue) => !quotedAt(issue.offset))
     .map((issue) => ({
       rule: "date-weekday-mismatch",
       severity: "error",
