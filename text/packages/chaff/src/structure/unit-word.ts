@@ -9,3 +9,15 @@ export const namesAbsentUnit = (reference: StructureNode, articleLabels: readonl
   const unitWord = reference.attrs["unitWord"];
   return typeof unitWord === "string" && unitWord !== "" && !articleLabels.some((label) => label.includes(unitWord));
 };
+
+const firstWord = (label: string): string => label.trim().split(/\s/u)[0]?.toLowerCase() ?? "";
+
+/**
+ * 参照が自分の入っているまとまり（attrs.withinUnit、"section 552 of this title" の title）を名指していて、文書の番号の付いた
+ * まとまりのどれもその語で数えていない。法典の一つの条だけの文書の "this title" は法典の編で、参照先はこの文書の外にある。
+ * `unitLabels` は文書の章・条の label（"Part I", "Chapter 35", "Section 3"）。
+ */
+export const withinAbsentUnit = (reference: StructureNode, unitLabels: readonly string[]): boolean => {
+  const unit = reference.attrs["withinUnit"];
+  return typeof unit === "string" && unit !== "" && !unitLabels.some((label) => firstWord(label) === unit.toLowerCase());
+};
