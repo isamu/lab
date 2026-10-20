@@ -177,7 +177,10 @@ describe("citation-reference-mismatch: citations against the list", () => {
     const source = `# Data\n\n${body}\n${entries}`;
     assert.deepEqual(variantsOf(en, "citation-reference-mismatch", source), []);
     assert.deepEqual(stylesIn("Games teach (Van Dyke et al., 2019, p. 4)."), ["author-year (Van Dyke et al., 2019, p. 4)"]);
-    const many = `(${["Adams", "Baker", "Clark", "Davis", "Evans", "Foster", "Grant", "Hughes", "Irwin", "Jordan", "Keller", "Lawson"].map((name, at) => `${name} et al., ${String(2010 + at)}`).join("; ")})`;
+    const cited = ["Adams", "Baker", "Clark", "Davis", "Evans", "Foster", "Grant", "Hughes", "Irwin", "Jordan", "Keller", "Lawson"].map(
+      (name, at) => `${name} et al., ${String(2010 + at)}`,
+    );
+    const many = `(${cited.join("; ")})`;
     assert.ok(many.length > 200);
     assert.deepEqual(citationMarks(`Many agree ${many}.`, [], WORDS)[0]?.authorYears.length, 12);
   });
