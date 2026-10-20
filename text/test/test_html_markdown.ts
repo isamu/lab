@@ -42,6 +42,18 @@ describe("htmlToMarkdown: 見出し・段落・箇条書き", () => {
     assert.equal(htmlToMarkdown("<p>It ends here.&#32; Then.</p>"), "It ends here.  Then.\n");
   });
 
+  it("MathML の注釈 (式の TeX の元) は描かれないので落とす。式は一度だけ、次の字との間に空白を足さない", () => {
+    const math =
+      '<p>The rate was 14.9% <math alttext="[11.0,18.8]"><semantics><mrow><mo>[</mo><mn>11.0</mn><mo>,</mo><mn>18.8</mn><mo>]</mo></mrow><annotation encoding="application/x-tex">[11.0,18.8]</annotation></semantics></math>; with <math><semantics><mi>ρ</mi><annotation-xml encoding="MathML-Content"><ci>ρ</ci></annotation-xml><annotation encoding="application/x-tex">\\rho</annotation></semantics></math> too.</p>';
+    assert.equal(htmlToMarkdown(math), "The rate was 14.9% [11.0,18.8]; with ρ too.\n");
+    assert.equal(htmlToMarkdown("<p>An annotation of the text stays.</p>"), "An annotation of the text stays.\n");
+    const operators = "<p>Let <math><mi>log</mi><mo>\u2061</mo><mi>x</mi><mo>\u2062</mo><mi>y</mi><mi>𝕀</mi><mo>\u200b</mo><mi>z</mi></math> hold.</p>";
+    assert.equal(htmlToMarkdown(operators), "Let logxy𝕀z hold.\n");
+    assert.equal(htmlToMarkdown("<p>a\u200bb outside a formula stays</p>"), "a\u200bb outside a formula stays\n");
+    assert.equal(htmlToMarkdown("<p>foo<annotation> note </annotation>bar</p>"), "foo note bar\n");
+    assert.equal(htmlToMarkdown("<p><math><mi>x</mi><annotation-xml><annotation>a</annotation>b</annotation-xml></math> holds</p>"), "x holds\n");
+  });
+
   it("p ごとの段落と、br を二つ重ねた段落の間は空行。br 一つは行を改めるだけ", () => {
     assert.equal(htmlToMarkdown("<p>一つ目の段落です。</p><p>二つ目の段落です。</p>"), "一つ目の段落です。\n\n二つ目の段落です。\n");
     assert.equal(
