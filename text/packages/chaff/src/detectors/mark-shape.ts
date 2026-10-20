@@ -8,6 +8,7 @@ import { isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { capitalLineSpans, captionsOf, isCaptionAt, isWithinSorted } from "./caps-caption.ts";
 import { lineStarts } from "../position.ts";
 import { isTypewritten } from "./typewritten.ts";
+import { divisionLabelPattern, isDivisionSeparator } from "./division-label-separator.ts";
 
 /** The letters a mark must touch to count as part of the document's text, by language. */
 const SCRIPT: Readonly<Record<string, RegExp>> = {
@@ -237,8 +238,9 @@ export const hyphenDash: Detector = (doc, options): Finding[] => {
   if (isTypewritten(doc.source, doc.markup?.markdown !== false)) return [];
   const sentences = ownSentences(doc);
   const setsDashes = sentences.some((sentence) => TRUE_DASH.test(sentence.text));
+  const divisionLabel = divisionLabelPattern((doc.lexicons["numbered-division"] ?? []).map((entry) => entry.pattern));
   return reportFrom(
-    hitsOf(sentences, HYPHEN_DASH).filter((hit) => !isTypedDash(hit, setsDashes)),
+    hitsOf(sentences, HYPHEN_DASH).filter((hit) => !isTypedDash(hit, setsDashes) && !isDivisionSeparator(doc.source, hit.offset, divisionLabel)),
     options.limit,
   );
 };
