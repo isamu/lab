@@ -1,6 +1,7 @@
 import type { Detector, Finding, Lexicon, Sentence, Token } from "../plugin.ts";
 import { densityFindings } from "./ai-phrasing.ts";
 import { entryEndsAt } from "./lexicon-match.ts";
+import { writesAnBeforeH } from "../article-h-style.ts";
 
 /**
  * The word kinds an article can stand before. A conjunction, a preposition or a verb after "a" is the letter a ("option A
@@ -91,7 +92,10 @@ const isArticle = (token: Token, at: number, tokens: readonly Token[]): boolean 
   return token.surface === token.surface.toLowerCase() || at === first;
 };
 
-const slipAt = (source: string, tokens: readonly Token[], at: number, sounds: ArticleSounds): Slip | undefined => {
+/** An article and the word after it, with whether the article is "an" and whether the word starts with a vowel sound. */
+type ArticlePair = { readonly article: Token; readonly next: Token; readonly takesAn: boolean; readonly vowel: boolean };
+
+const articlePairAt = (source: string, tokens: readonly Token[], at: number, sounds: ArticleSounds): ArticlePair | undefined => {
   const article = tokens[at];
   const next = tokens[at + 1];
   const takesAn = ARTICLES[article?.surface.toLowerCase() ?? ""];
@@ -99,8 +103,16 @@ const slipAt = (source: string, tokens: readonly Token[], at: number, sounds: Ar
   if (!CONTENT.has(next.pos) || !LETTER_START.test(next.surface)) return undefined;
   if (!adjacent(source, article, next)) return undefined;
   const vowel = startsWithVowelSound(next.surface, sounds);
-  return vowel === undefined || vowel === takesAn ? undefined : { article, next, fits: fitting(article.surface, vowel) };
+  return vowel === undefined ? undefined : { article, next, takesAn, vowel };
 };
+
+const slipOf = (pair: ArticlePair): Slip | undefined =>
+  pair.vowel === pair.takesAn ? undefined : { article: pair.article, next: pair.next, fits: fitting(pair.article.surface, pair.vowel) };
+
+const SOUNDED_H = /^[hH]\p{Ll}/u;
+
+/** An article before a word whose h is sounded (a hospital, an hospital). */
+const isBeforeSoundedH = (pair: ArticlePair): boolean => !pair.vowel && SOUNDED_H.test(pair.next.surface);
 
 const slipFinding = (sentence: Sentence, slip: Slip): Finding => ({
   rule: "",
@@ -111,15 +123,20 @@ const slipFinding = (sentence: Sentence, slip: Slip): Finding => ({
   values: { matched: `${slip.article.surface} ${slip.next.surface}`, article: slip.fits, offset: slip.article.span.start },
 });
 
-/** "a" before a vowel sound or "an" before a consonant sound (a apple, an user), by the sound knowledge in the lexicon. */
+/**
+ * "a" before a vowel sound or "an" before a consonant sound (a apple, an user), by the sound knowledge in the lexicon. A
+ * document whose style is "an" before a sounded h (an hospital; article-h-style.ts) is not reported there.
+ */
 export const articleSound: Detector = (doc, options): Finding[] => {
   const sounds = articleSoundsOf(options.lexicon ?? []);
-  const findings = doc.sentences.flatMap((sentence) => {
+  const pairs = doc.sentences.flatMap((sentence) => {
     const tokens = sentence.tokens ?? [];
-    return tokens.flatMap((_token, at) => {
-      const slip = slipAt(doc.source, tokens, at, sounds);
-      return slip === undefined ? [] : [slipFinding(sentence, slip)];
-    });
+    return tokens.flatMap((_token, at) => articlePairAt(doc.source, tokens, at, sounds) ?? []).map((pair) => ({ sentence, pair }));
+  });
+  const anBeforeH = writesAnBeforeH(pairs.filter(({ pair }) => isBeforeSoundedH(pair)).map(({ pair }) => ({ an: pair.takesAn })));
+  const findings = pairs.flatMap(({ sentence, pair }) => {
+    const slip = anBeforeH && isBeforeSoundedH(pair) ? undefined : slipOf(pair);
+    return slip === undefined ? [] : [slipFinding(sentence, slip)];
   });
   return findings.length < options.limit ? [] : findings;
 };

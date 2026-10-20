@@ -4,8 +4,9 @@ import { namedRuleRun } from "./rule-run.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { articleSoundsOf, startsWithVowelSound } from "../packages/chaff/src/detectors/next-word.ts";
+import { writesAnBeforeH } from "../packages/chaff/src/article-h-style.ts";
 
-// Rules that read the word after another: article-sound (a / an) and very-adjective. Every example is self-written.
+// Rules that read the word after another: article-sound (a / an) and very-adjective. Every example is self-written unless it names its public-domain source.
 
 before(async () => {
   await en.prepare?.({ pos: true });
@@ -100,6 +101,36 @@ describe("article-sound", () => {
     assert.deepEqual(findingsOf(RULE, "Ask an SIG to own it, and a MIT lab to review it.\n"), [
       '"an SIG" takes "a" before that sound',
       '"a MIT" takes "an" before that sound',
+    ]);
+  });
+});
+
+describe('article-sound: a document that writes "an" before a sounded h as its style', () => {
+  const RULE = "article-sound";
+
+  it('writesAnBeforeH: at least twice, and more often than "a"', () => {
+    assert.equal(writesAnBeforeH([{ an: true }, { an: true }, { an: false }]), true);
+    assert.equal(writesAnBeforeH([{ an: true }]), false);
+    assert.equal(writesAnBeforeH([{ an: true }, { an: true }, { an: false }, { an: false }]), false);
+    assert.equal(writesAnBeforeH([]), false);
+  });
+
+  it("an 1819 opinion that writes an hospital and an hereditament throughout is not reported", () => {
+    // Dartmouth College v. Woodward, 17 U.S. 518 (1819), a U.S. Supreme Court opinion in the public domain.
+    const opinion =
+      "An hospital, founded by a private benefactor, is, in point of law, a private corporation. The franchise is an hereditament founded in property. It is a hospital in name only.\n";
+    assert.deepEqual(findingsOf(RULE, opinion), []);
+  });
+
+  it("an hospital once, or against a document that mostly writes a hospital, is still a slip", () => {
+    assert.deepEqual(findingsOf(RULE, "She was taken to an hospital nearby.\n"), ['"an hospital" takes "a" before that sound']);
+    assert.deepEqual(findingsOf(RULE, "We built a hospital, a hut and a house. Then an hospital and an hangar.\n"), [
+      '"an hospital" takes "a" before that sound',
+      '"an hangar" takes "a" before that sound',
+    ]);
+    assert.deepEqual(findingsOf(RULE, "An hospital and an hereditament came with a apple.\n"), ['"a apple" takes "an" before that sound']);
+    assert.deepEqual(findingsOf(RULE, "An honest man and an HTTP call are not counted, so an hospital stays a slip.\n"), [
+      '"an hospital" takes "a" before that sound',
     ]);
   });
 });
