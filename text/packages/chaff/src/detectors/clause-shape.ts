@@ -111,8 +111,20 @@ const leftAlone = (tokens: readonly Token[], at: number, closers: ReadonlySet<st
 
 const CONJUNCTION = "CCONJ";
 
+/**
+ * The partner may be tagged an auxiliary: in 対応していたりと the tagger reads い|たり, with たり as AUX. After a verb or an
+ * auxiliary (であったり) it still pairs with the first 〜たり, so it counts as a partner, though only a conjunction is
+ * reported. After a noun (一日たりとも) it lists nothing.
+ */
+const PREDICATE_POS: ReadonlySet<string> = new Set(["VERB", "AUX"]);
+
+const isMarkerAt = (tokens: readonly Token[], at: number): boolean => {
+  const token = tokens[at];
+  return token?.pos === CONJUNCTION || (token?.pos === "AUX" && PREDICATE_POS.has(tokens[at - 1]?.pos ?? ""));
+};
+
 const markersIn = (sentence: Sentence, markers: ReadonlySet<string>): { readonly token: Token; readonly at: number }[] =>
-  ownTokens(sentence).filter(({ token }) => token.pos === CONJUNCTION && markers.has(token.surface));
+  ownTokens(sentence).filter(({ token, at }) => markers.has(token.surface) && isMarkerAt(sentence.tokens ?? [], at));
 
 /** A sentence that uses the lexicon's paired marker once and goes on without its partner. */
 export const unpairedParallel: Detector = (doc, options): Finding[] => {
@@ -122,7 +134,7 @@ export const unpairedParallel: Detector = (doc, options): Finding[] => {
   return doc.sentences.flatMap((sentence) => {
     const found = markersIn(sentence, markers);
     const only = found.length === 1 ? found[0] : undefined;
-    if (only === undefined || !leftAlone(sentence.tokens ?? [], only.at, closers, commas)) return [];
+    if (only === undefined || only.token.pos !== CONJUNCTION || !leftAlone(sentence.tokens ?? [], only.at, closers, commas)) return [];
     return [findingAt(sentence, only.token.span.start, { word: only.token.surface })];
   });
 };
