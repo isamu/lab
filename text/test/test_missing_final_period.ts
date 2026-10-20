@@ -13,6 +13,7 @@ const MARKS = {
   ends: LEXICON.filter((entry) => entry.group === "end").map((entry) => entry.pattern),
   otherEnds: LEXICON.filter((entry) => entry.group === "other-end").map((entry) => entry.pattern),
   notes: LEXICON.filter((entry) => entry.group === "note").map((entry) => entry.pattern),
+  labels: LEXICON.filter((entry) => entry.group === "label").map((entry) => entry.pattern),
 };
 
 const CLOSED = ["申請は市役所の窓口で受け付けます。", "受付の時間は平日の午前九時から午後五時までです。", "提出した書類は二週間ほどで審査が終わります。"];
@@ -25,7 +26,7 @@ const findingsOf = (source: string): readonly string[] => namedRuleRun(RULE, sou
 /** How each paragraph of a source ends: closed, open, or - when it is not counted. */
 const formsOf = (source: string): readonly string[] => {
   const doc = buildDocument("a.md", source, ja);
-  return doc.paragraphs.map((paragraph) => paragraphEnd(doc.prose ?? doc.source, paragraph, MARKS)?.form ?? "-");
+  return doc.paragraphs.map((paragraph, index) => paragraphEnd(doc.prose ?? doc.source, paragraph, MARKS, doc.paragraphs[index + 1])?.form ?? "-");
 };
 
 describe("missing-final-period: 「。」で終わらない段落", () => {
@@ -55,6 +56,22 @@ describe("missing-final-period: 「。」で終わらない段落", () => {
     assert.deepEqual(formsOf("手続きは窓口で確認します（詳しくは別紙を参照する）\n"), ["-"]);
     assert.deepEqual(formsOf("※申請は市役所の窓口で受け付けます。\n\n申請手数料　　千円を窓口で支払います。\n"), ["-", "-"]);
     assert.deepEqual(formsOf("申請は市役所の窓口で受け付けますか？\n\n受付の時間は平日の午前九時からです！\n"), ["-", "-"]);
+  });
+
+  it("●などの印で始まる一行の段落は、下に文が続けば小見出しなので数えない", () => {
+    const heading = "●1人で作業しないで声をかけ合うようにする";
+    const prose = "熱中症の事故の多くは、1人で作業しているときに起きています。";
+    assert.deepEqual(formsOf(`${heading}\n\n${prose}\n`), ["-", "closed"]);
+    assert.deepEqual(findingsOf(documentWith(heading, prose)), []);
+    // 印の無い一行、印で始まっても二行ある段落、後ろに何も無い一行は、これまでどおり数える。
+    assert.deepEqual(formsOf(`1人で作業しないで声をかけ合うようにする\n\n${prose}\n`)[0], "open");
+    assert.deepEqual(formsOf("●作業の前に確認する。\n申請は市役所の窓口で受け付けます\n"), ["open"]);
+    assert.deepEqual(formsOf(`${heading}\n`), ["open"]);
+    // 印が行の途中にあれば小見出しではない。
+    assert.deepEqual(formsOf(`作業の前には●の欄を必ず確認するようにする\n\n${prose}\n`)[0], "open");
+    // 印で始まる文が並ぶのは文の箇条で、「。」の有無を数える。
+    assert.deepEqual(formsOf("●申請書は市役所の窓口で受け付けます\n\n●受付の時間は平日の午前九時から午後五時までです。\n"), ["open", "closed"]);
+    assert.deepEqual(formsOf(`●申請書は市役所の窓口で受け付けます。\n\n${prose}\n`)[0], "closed");
   });
 
   it("「。」で終わらない段落の多い文書と、混ざりすぎた文書は指さない", () => {
