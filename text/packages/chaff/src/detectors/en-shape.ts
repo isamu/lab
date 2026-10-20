@@ -4,6 +4,7 @@ import { isTitleCase, minorityCase, pageTitleOf } from "./heading-case.ts";
 import { namesWrittenMidSentence } from "./heading-names.ts";
 import type { Detector, Finding, Lexicon, ProseDocument, Section, Sentence, Token } from "../plugin.ts";
 import { entryOpens } from "./lexicon-match.ts";
+import { opensWithPhrase } from "./opener-phrase.ts";
 
 const PER = 1000;
 
@@ -89,11 +90,15 @@ const headsOf = (lexicon: Lexicon): Heads => ({
 const opensWithHead = (sentence: Sentence, heads: Heads): boolean =>
   heads.latin.has(firstWord(sentence).toLowerCase()) || (sentence.tokens !== undefined && heads.other.some((entry) => entryOpens(sentence, entry)));
 
-const headRuns = (sentences: readonly Sentence[], heads: Heads): Sentence[][] =>
+/** 接続詞で始まる文。接続詞と同じ語で始まる副詞の句（So far、Yet another）は、語彙表 conjunction-lookalike が言う。 */
+const opensWithConjunction = (sentence: Sentence, heads: Heads, lookalikes: readonly string[]): boolean =>
+  opensWithHead(sentence, heads) && !opensWithPhrase(sentence.text, lookalikes);
+
+const headRuns = (sentences: readonly Sentence[], heads: Heads, lookalikes: readonly string[]): Sentence[][] =>
   sentences.filter(isClosed).reduce<Sentence[][]>(
     (acc, sentence) => {
       const last = acc.at(-1) ?? [];
-      if (!opensWithHead(sentence, heads)) return [...acc.slice(0, -1), last, []];
+      if (!opensWithConjunction(sentence, heads, lookalikes)) return [...acc.slice(0, -1), last, []];
       return [...acc.slice(0, -1), [...last, sentence]];
     },
     [[]],
@@ -105,7 +110,8 @@ const headRuns = (sentences: readonly Sentence[], heads: Heads): Sentence[][] =>
  */
 export const conjunctionRun: Detector = (doc, options): Finding[] => {
   const joiner = doc.lengthUnit === "char" ? "" : " ";
-  return headRuns(doc.sentences, headsOf(options.lexicon ?? []))
+  const lookalikes = (doc.lexicons["conjunction-lookalike"] ?? []).map((entry) => entry.pattern);
+  return headRuns(doc.sentences, headsOf(options.lexicon ?? []), lookalikes)
     .filter((run) => run.length > options.limit)
     .flatMap((run) => {
       const first = run[0];

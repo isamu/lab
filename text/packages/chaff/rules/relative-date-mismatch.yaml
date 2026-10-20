@@ -42,8 +42,8 @@ example:
       Applications close on May 1, 2026. Two weeks later, on May 15, 2026, results are sent.
 
 not_flagged:
-  ja: 期間のすぐ後ろ（「の」や読点だけを挟む）に日付があるときだけ見ます。基準の日付が同じ文（文の頭の「2週間後、」なら前の文）に無いもの、「3営業日後」のように単位が日・週・月・年でないものは見ません。「来週月曜」「明日」は、頭に日付の欄が無い文書、すぐ後ろに日付の無い語、引用した返信の中の語、日付を名指す見出しの節（「## 10月1日の会」）の語は見ません。
-  en: Only a date right after the relative length (with "on" or punctuation between) is checked. A relative length with no date before it in the same sentence (or the previous one, when the sentence opens with it), and units other than days, weeks, months and years ("3 business days later"), are left alone. A day word ("next Monday", "tomorrow") is left alone when the document has no date field at its head, when no date follows the word, in a quoted reply, and in a section whose heading names a date ("## October 1 meeting").
+  ja: 期間のすぐ後ろ（「の」や読点だけを挟む）に日付があるときだけ見ます。基準の日付が同じ文（文の頭の「2週間後、」なら前の文）に無いもの、「3営業日後」のように単位が日・週・月・年でないものは見ません。前の日付の後ろで読点が入り、期間のすぐ前に「名前＋から」で別の起点を書いた期間（…まで存続し、今井が死亡した年の翌年から起算して38年後）は、前の日付から数えていないので見ません。「来週月曜」「明日」は、頭に日付の欄が無い文書、すぐ後ろに日付の無い語、引用した返信の中の語、日付を名指す見出しの節（「## 10月1日の会」）の語は見ません。
+  en: Only a date right after the relative length (with "on" or punctuation between) is checked. A relative length with no date before it in the same sentence (or the previous one, when the sentence opens with it), a Japanese length counted from a start it names itself after a clause break (…まで存続し、今井が死亡した年の翌年から起算して38年後), and units other than days, weeks, months and years ("3 business days later"), are left alone. A day word ("next Monday", "tomorrow") is left alone when the document has no date field at its head, when no date follows the word, in a quoted reply, and in a section whose heading names a date ("## October 1 meeting").
 rewrite:
   depth: light
   ja:

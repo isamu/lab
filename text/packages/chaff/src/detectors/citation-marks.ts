@@ -8,7 +8,12 @@ import type { ProseDocument, Span } from "../plugin.ts";
 
 export type CitationStyle = "numeric" | "footnote" | "author-year" | "kikko" | "paren-number";
 
-export type AuthorYear = { readonly author: string; readonly year: string };
+export type AuthorYear = {
+  readonly author: string;
+  readonly year: string;
+  /** The first author was cited as several capitalised words: a two-word surname, an organisation, or a place ("New York, 2020"). */
+  readonly severalWords?: boolean;
+};
 
 export type CitationMark = {
   readonly start: number;
@@ -21,7 +26,13 @@ export type CitationMark = {
   readonly authorYears: readonly AuthorYear[];
 };
 
-export type ReferenceEntry = { readonly start: number; readonly number?: number; readonly authorYear?: AuthorYear };
+export type ReferenceEntry = {
+  readonly start: number;
+  readonly number?: number;
+  readonly authorYear?: AuthorYear;
+  /** The other capitalised words of the entry's leading name, lower-cased: Davani in "Mostafazadeh Davani et al. (2022)". */
+  readonly otherNames?: readonly string[];
+};
 
 export type CitationWords = {
   /** Words that join two authors (and, &, ・). */
@@ -36,10 +47,12 @@ export type CitationWords = {
 
 /** A range wider than this is not a citation range ([1990-2020] is years). */
 const MAX_RANGE = 50;
-/** Text inside a parenthetical citation: wide enough for three authors and years, short enough to stay one citation. */
-const MAX_PAREN = 200;
+/** Text inside a parenthetical citation: wide enough for a list of about a dozen authors and years (every part must read as one), short enough to stay one citation. */
+const MAX_PAREN = 400;
 
 const LATIN_NAME = "\\p{Lu}[\\p{L}’'\\-]+";
+/** A name of several capitalised words: a two-word surname (Van Brummelen) or an organisation (Raspberry Pi Foundation). */
+const LATIN_NAMES = `${LATIN_NAME}(?: ${LATIN_NAME}){0,3}`;
 const JA_NAME = "[\\p{Script=Han}\\p{Script=Katakana}ー]{1,8}";
 const YEAR = "(?:1[89]|20)\\d{2}[a-z]?";
 
@@ -60,9 +73,13 @@ const alternation = (words: readonly string[]): string =>
     .map(escapeRegExp)
     .join("|");
 
-/** One author as cited: a surname, maybe a second joined by and or ・, maybe "et al." or ら. */
-const authorPattern = (words: CitationWords): string => {
-  const name = `(?:${LATIN_NAME}|${JA_NAME})`;
+/**
+ * One author as cited: a surname, maybe a second joined by and or ・, maybe "et al." or ら. Inside parentheses a name may
+ * be several words, since every part there must read as an author and a year; in a sentence the word before a surname
+ * is often the sentence's own (As Smith (2020) shows), so a name there is one word.
+ */
+const authorPattern = (words: CitationWords, latinName: string = LATIN_NAME): string => {
+  const name = `(?:${latinName}|${JA_NAME})`;
   const pair = words.pairs.length === 0 ? "" : `(?:\\s?(?:${alternation(words.pairs)})\\s?${name})?`;
   const others = words.others.length === 0 ? "" : `(?:\\s?(?:${alternation(words.others)}))?`;
   return `${name}${pair}${others}`;
@@ -115,7 +132,13 @@ export const authorKey = (author: string, others: readonly string[]): string => 
   return (other === undefined ? first : first.slice(0, -other.length)).toLowerCase();
 };
 
-const authorYearOf = (author: string, year: string, others: readonly string[]): AuthorYear => ({ author: authorKey(author, others), year: year.slice(0, 4) });
+const SEVERAL_WORDS = /^[^\s・]+ \p{Lu}/u;
+
+const authorYearOf = (author: string, year: string, others: readonly string[]): AuthorYear => ({
+  author: authorKey(author, others),
+  year: year.slice(0, 4),
+  ...(SEVERAL_WORDS.test(author) ? { severalWords: true } : {}),
+});
 
 const LATIN = /[a-z]/u;
 
@@ -123,9 +146,12 @@ const LATIN = /[a-z]/u;
 const isNotAuthor = (author: string, words: CitationWords): boolean =>
   words.notAuthors.has(author) || [...words.notAuthors].some((word) => !LATIN.test(word) && author.includes(word));
 
+/** A place in the cited work after its year: ", p. 2", ", pp. 3–5", ", para. 4". */
+const LOCATOR = "(?:[,，]\\s?(?:pp?|paras?|ch|chap|sec)\\.\\s?\\d+(?:\\s?[–—-]\\s?\\d+)?)?";
+
 /** The authors and years of one parenthetical: every part between semicolons must read as authors and years. */
 const parentheticalCitations = (inner: string, words: CitationWords): AuthorYear[] | undefined => {
-  const one = new RegExp(`^(?:[a-z.]+,?\\s){0,3}(${authorPattern(words)})[,，、]?\\s?(${YEAR})(?:[,，]\\s?${YEAR})*$`, "u");
+  const one = new RegExp(`^(?:[a-z.]+,?\\s){0,3}(${authorPattern(words, LATIN_NAMES)})[,，、]?\\s?(${YEAR})(?:[,，]\\s?${YEAR})*${LOCATOR}$`, "u");
   const parts = inner.split(/[;；]/u).map((part) => one.exec(part.trim()));
   if (parts.some((part) => part === null)) return undefined;
   const cited = parts.flatMap((part) => (part === null ? [] : [authorYearOf(part[1] ?? "", part[2] ?? "", words.others)]));
@@ -167,6 +193,14 @@ const LIST_MARKER = /^[ \t]{0,3}[-*+][ \t]/u;
 const SURNAME_INITIAL = /^\p{Lu}[\p{L}’'-]+, \p{Lu}\./u;
 const YEAR_IN = new RegExp(`(?<!\\d)(${YEAR})(?!\\d)`, "u");
 const ENTRY_AUTHOR = new RegExp(`^[ \\t]{0,3}(?:[-*+][ \\t]+)?(${LATIN_NAME}|${JA_NAME})`, "u");
+const ENTRY_NAME = new RegExp(`^[ \\t]{0,3}(?:[-*+][ \\t]+)?(${LATIN_NAMES})(?![\\p{L}’'-])`, "u");
+
+/** The words of an entry's leading name after the first, lower-cased. */
+const otherNamesOf = (line: string): string[] =>
+  (ENTRY_NAME.exec(line)?.[1] ?? "")
+    .split(" ")
+    .slice(1)
+    .map((word) => word.toLowerCase());
 
 /** One line of a reference list as an entry: a numbered one, or one that opens an item or a paragraph with an author and gives a year. */
 const entryOf = (line: string, previous: string | undefined, start: number): ReferenceEntry | undefined => {
@@ -175,7 +209,9 @@ const entryOf = (line: string, previous: string | undefined, start: number): Ref
   if (previous?.trim() !== "" && !LIST_MARKER.test(line) && !SURNAME_INITIAL.test(line)) return undefined;
   const author = ENTRY_AUTHOR.exec(line)?.[1];
   const year = YEAR_IN.exec(line)?.[1];
-  return author === undefined || year === undefined ? undefined : { start, authorYear: authorYearOf(author, year, []) };
+  if (author === undefined || year === undefined) return undefined;
+  const otherNames = otherNamesOf(line);
+  return { start, authorYear: authorYearOf(author, year, []), ...(otherNames.length === 0 ? {} : { otherNames }) };
 };
 
 /** Each entry of the reference lists: its number, or the first author's surname and the year. The first line is the heading. */

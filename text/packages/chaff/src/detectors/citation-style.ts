@@ -11,6 +11,9 @@ const YEAR = /(?<!\d)(?:1[89]|20)\d{2}(?!\d)/u;
 export const citingFootnotes = (text: string): ReadonlySet<string> =>
   new Set([...text.matchAll(FOOTNOTE_NOTE)].filter((match) => YEAR.test(match[2] ?? "")).map((match) => `[^${match[1] ?? ""}]`));
 
+/** (New York, 2020) may be a place and a year: a citation of names of several words only is no evidence of a style. */
+const isOnlySeveralWordNames = (mark: CitationMark): boolean => mark.authorYears.length > 0 && mark.authorYears.every((cited) => cited.severalWords === true);
+
 type StyleCount = { readonly style: CitationStyle; readonly marks: readonly CitationMark[] };
 
 /** The styles in use, the most used first; a tie goes to the style used first. */
@@ -34,7 +37,9 @@ export const citationStyle: Detector = (doc, options): Finding[] => {
   const words = citationWordsOf(doc);
   const text = doc.prose ?? doc.source;
   const footnotes = citingFootnotes(doc.source);
-  const marks = citationMarks(text, referenceListsOf(doc, words), words).filter((mark) => mark.style !== "footnote" || footnotes.has(mark.written));
+  const marks = citationMarks(text, referenceListsOf(doc, words), words).filter(
+    (mark) => (mark.style !== "footnote" || footnotes.has(mark.written)) && !isOnlySeveralWordNames(mark),
+  );
   return minorityCitations(marks, options.limit).map(({ mark, majority }) => ({
     rule: "citation-style-mix",
     severity: "info",

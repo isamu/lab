@@ -97,14 +97,24 @@ const titleWords = (rest: string): string[] => {
   return words;
 };
 
+/** Labels the reference did not take into its address: the "(E)" of "section 552(a)(6)(E) of title 5". */
+const UNREAD_LABELS = /^(?:\([A-Za-z0-9]{1,4}\))+/u;
+
 /** What follows the "of" after a reference and its list, or undefined when no "of" follows. */
 const afterOf = (text: string, end: number): string | undefined => {
   const rest = text.slice(end, end + 200);
-  const afterList = listEnd(rest);
+  const unread = UNREAD_LABELS.exec(rest)?.[0].length ?? 0;
+  const afterList = unread + listEnd(rest.slice(unread));
   const afterGloss = afterList + (GLOSS.exec(rest.slice(afterList))?.[0].length ?? 0);
   const of = OF.exec(rest.slice(afterGloss));
   return of === null ? undefined : rest.slice(afterGloss + of[0].length);
 };
+
+/**
+ * A code's title cited by its number: "section 552(b)(1) of title 5, United States Code", "section 1029 of title 18".
+ * An Act numbers its own titles in Roman ("title IV"), and "title 2 of this Act" says it is this document's.
+ */
+const CODE_TITLE = /^[Tt]itle (?<n>\d{1,3})(?![\p{L}\p{N}]|\.\d)(?! of this\b)/u;
 
 /**
  * The document named right after a reference, or undefined when the reference is into this document.
@@ -115,6 +125,8 @@ export const citedDocumentAfter = (text: string, end: number): string | undefine
   if (named === undefined) return undefined;
   const tag = TAG_AFTER.exec(named)?.groups?.["tag"];
   if (tag !== undefined) return tag;
+  const title = CODE_TITLE.exec(named)?.groups?.["n"];
+  if (title !== undefined) return `title ${title}`;
   const words = titleWords(named);
   if (words.length === 0) return undefined;
   const name = words.join(" ");

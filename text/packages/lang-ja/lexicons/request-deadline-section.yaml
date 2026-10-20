@@ -1,0 +1,12 @@
+# 文書の締め切りを一度だけ書く節の見出し（それだけで書いた見出し）。その節に締め切りの語と日付があれば、文書の中の
+# 依頼はどれもその締め切りを持つ。見出し全体と比べる（終わりの「：」は除く）。
+id: request-deadline-section
+language: ja
+entries:
+  - pattern: 日程
+  - pattern: 期限
+  - pattern: 締切
+  - pattern: 締め切り
+  - pattern: 提出期限
+  - pattern: 応募期限
+  - pattern: 募集期間

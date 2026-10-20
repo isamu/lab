@@ -4,6 +4,7 @@ import { continuesInto, groupOf, majorityOf, registerOf, slipsOf, type Register 
 import { isRunInLabel } from "./run-in-label.ts";
 import { noticeSentences } from "./notice-paragraph.ts";
 import { askerSentences } from "./asker-voice.ts";
+import { licenceNoticeSentences } from "./licence-notice.ts";
 import { chronologyRows } from "../chronology-rows.ts";
 import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span } from "../plugin.ts";
 
@@ -16,6 +17,7 @@ import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span } f
  * 年表の行（1921年信号装置の製作を開始する。）も、文書の文体と揃えない書き方なので数えない。
  * 断り書きの段落（…ご了承ください。）も、本文とは別の声で書く決まり文句なので数えない（notice-paragraph.ts）。
  * 読み手の相談や質問を載せる節（【相談事例等】）の文は尋ねた人の言葉のままなので数えない（asker-voice.ts）。
+ * 文書の最後に掲載先が付けた利用条件の断り書き（…ライセンスの下に提供されています。）も数えない（licence-notice.ts）。
  */
 type Entry = { readonly sentence: Sentence; readonly register: Register; readonly group: number | undefined };
 
@@ -43,11 +45,13 @@ export const judgedSentences = (doc: ProseDocument, polite: readonly LexiconEntr
   const lists = doc.lists.map((list) => list.span);
   const rows = chronologyRows(doc);
   const asked = askerSentences(doc.sections, doc.lexicons["asker-heading"] ?? []);
+  const licence = licenceNoticeSentences(doc, doc.lexicons["licence-word"] ?? []);
   const all = doc.sentences.flatMap((sentence, index): { sentence: Sentence; register: Register }[] => {
     if (
       !isClosed(sentence) ||
       rows.has(sentence) ||
       asked.has(sentence) ||
+      licence.has(sentence) ||
       continuesInto(sentence, doc.sentences[index + 1]) ||
       isRunInLabel(doc.source, sentence.span)
     )

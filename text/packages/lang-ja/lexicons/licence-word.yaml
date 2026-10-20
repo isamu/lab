@@ -1,0 +1,7 @@
+# 利用条件の名前に入る語。文書の最後の短い段落がこの語と条件の本文への URL を持てば、掲載先が付けた利用条件の断り書きとして読み、
+# 本文の文末の調子（no-mixed-desumasu）と英数字の前後の空け方（latin-spacing）に数えない。
+id: licence-word
+language: ja
+entries:
+  - pattern: ライセンス
+  - pattern: 利用許諾
