@@ -13,6 +13,7 @@ const MARKS = {
   ends: LEXICON.filter((entry) => entry.group === "end").map((entry) => entry.pattern),
   otherEnds: LEXICON.filter((entry) => entry.group === "other-end").map((entry) => entry.pattern),
   notes: LEXICON.filter((entry) => entry.group === "note").map((entry) => entry.pattern),
+  labels: LEXICON.filter((entry) => entry.group === "label").map((entry) => entry.pattern),
 };
 
 const CLOSED = ["申請は市役所の窓口で受け付けます。", "受付の時間は平日の午前九時から午後五時までです。", "提出した書類は二週間ほどで審査が終わります。"];
@@ -55,6 +56,16 @@ describe("missing-final-period: 「。」で終わらない段落", () => {
     assert.deepEqual(formsOf("手続きは窓口で確認します（詳しくは別紙を参照する）\n"), ["-"]);
     assert.deepEqual(formsOf("※申請は市役所の窓口で受け付けます。\n\n申請手数料　　千円を窓口で支払います。\n"), ["-", "-"]);
     assert.deepEqual(formsOf("申請は市役所の窓口で受け付けますか？\n\n受付の時間は平日の午前九時からです！\n"), ["-", "-"]);
+  });
+
+  it("●などの印で始まる一行の段落は、下に続く文の小見出しなので数えない", () => {
+    assert.deepEqual(formsOf("●1人で作業しないで声をかけ合うようにする\n\n■暑さ指数を参考にして作業の予定を決める\n"), ["-", "-"]);
+    assert.deepEqual(findingsOf(documentWith("●1人で作業しないで声をかけ合うようにする")), []);
+    // 印の無い一行、印で始まっても二行ある段落は、これまでどおり数える。
+    assert.deepEqual(formsOf("1人で作業しないで声をかけ合うようにする\n"), ["open"]);
+    assert.deepEqual(formsOf("●作業の前に確認する。\n申請は市役所の窓口で受け付けます\n"), ["open"]);
+    // 印が行の途中にあれば小見出しではない。
+    assert.deepEqual(formsOf("作業の前には●の欄を必ず確認するようにする\n"), ["open"]);
   });
 
   it("「。」で終わらない段落の多い文書と、混ざりすぎた文書は指さない", () => {

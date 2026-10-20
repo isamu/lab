@@ -4,14 +4,19 @@ import { formMinority } from "./form-minority.ts";
 // A paragraph whose last sentence stops without its closing mark, in a document whose other paragraphs end with one. It
 // takes no side: a document that ends none of its paragraphs with the mark (slides, labels) is not reported. The marks
 // come from the language's lexicon "final-period": group "end" is the period, group "other-end" closes a sentence another
-// way (？, ！) so the paragraph is not counted, and group "note" opens a note line. The
+// way (？, ！) so the paragraph is not counted, group "note" opens a note line, and group "label" opens a run-in heading. The
 // lexicon is read directly rather than as the rule's word list, since its marks are what a fixed paragraph ends with.
 
 /** A paragraph's end, and whether it closes with a sentence-ending mark. form is "closed" or "open". */
 export type ParagraphEnd = { readonly offset: number; readonly form: string; readonly text: string };
 
 /** The marks the detector reads, from the lexicon. */
-export type PeriodMarks = { readonly ends: readonly string[]; readonly otherEnds: readonly string[]; readonly notes: readonly string[] };
+export type PeriodMarks = {
+  readonly ends: readonly string[];
+  readonly otherEnds: readonly string[];
+  readonly notes: readonly string[];
+  readonly labels: readonly string[];
+};
 
 /** Brackets and quotes that may follow a closing mark (〜です。」). */
 const CLOSERS = '」』）)"”’';
@@ -38,6 +43,10 @@ const isClosed = (line: string, ends: readonly string[]): boolean => endsWithMar
 const isAside = (line: string, marks: PeriodMarks): boolean =>
   marks.notes.some((note) => line.startsWith(note)) || LAYOUT.test(line) || endsWithMark(line, marks.otherEnds);
 
+/** A paragraph of one line opened by a heading mark (●1人で作業しない) heads the text below it. */
+const isRunInHeading = (body: string, marks: PeriodMarks): boolean =>
+  !body.includes("\n") && marks.labels.some((label) => body.trimStart().startsWith(label));
+
 /** The paragraph's last word ends a sentence: a predicate written in its dictionary form (〜します, 〜である, 望ましい). */
 const endsInPredicate = (paragraph: Paragraph): boolean => {
   const last = (paragraph.sentences.at(-1)?.tokens ?? []).filter((token: Token) => token.surface.trim() !== "").at(-1);
@@ -50,7 +59,7 @@ export const paragraphEnd = (text: string, paragraph: Paragraph, marks: PeriodMa
   const last = body.split("\n").at(-1)?.trim() ?? "";
   if (Array.from(last).length < MIN_SENTENCE_CHARS || LEAD_IN.test(last)) return undefined;
   const offset = paragraph.span.start + body.length - 1;
-  if (isAside(last, marks)) return undefined;
+  if (isAside(last, marks) || isRunInHeading(body, marks)) return undefined;
   if (isClosed(last, marks.ends)) return { offset, form: "closed", text: last };
   // A closing parenthetical after the sentence (〜します（別紙を参照する）) is not where the period goes.
   return !CLOSERS.includes(last.at(-1) ?? "\0") && endsInPredicate(paragraph) ? { offset, form: "open", text: last } : undefined;
@@ -60,6 +69,7 @@ const marksOf = (lexicon: readonly LexiconEntry[]): PeriodMarks => ({
   ends: lexicon.filter((entry) => entry.group === "end").map((entry) => entry.pattern),
   otherEnds: lexicon.filter((entry) => entry.group === "other-end").map((entry) => entry.pattern),
   notes: lexicon.filter((entry) => entry.group === "note").map((entry) => entry.pattern),
+  labels: lexicon.filter((entry) => entry.group === "label").map((entry) => entry.pattern),
 });
 
 export const missingFinalPeriod: Detector = (doc: ProseDocument, options): Finding[] => {
