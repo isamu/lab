@@ -5,10 +5,12 @@ import { externalLinkTitleSpans } from "../link-title.ts";
 import type { Detector, Finding, Span, Token } from "../plugin.ts";
 import { countedTokens, uncountedWordsOf, type UncountedWords } from "../uncounted-particles.ts";
 import { honorificGroupParticles } from "../honorific-group.ts";
+import { noteSentences } from "../note-paragraphs.ts";
 
 /**
  * 文末が名詞で終わる（体言止め）。箇条書きでは普通だが、本文では文が途中で切れて読める。
  * 実文書で測ったら、指摘の 9 割が箇条書きの項目だった。箇条書きは除く。年表の行（1950年4月 設立。）も名詞で止める書き方なので除く。
+ * 注や文献の一覧（(1) 著者. 題. 誌名.）も、名前や題を並べた項目なので除く（note-paragraphs.ts）。
  */
 const NOMINAL = new Set(["NOUN", "PROPN"]);
 
@@ -19,8 +21,9 @@ const inside = (span: Span, spans: readonly Span[]): boolean => spans.some((othe
 
 export const nounEnding: Detector = (doc, options): Finding[] => {
   const rows = chronologyRows(doc);
+  const notes = noteSentences(doc.source, doc.paragraphs);
   const ended = doc.sentences.filter((sentence) => {
-    if (inside(sentence.span, doc.listSpans) || rows.has(sentence) || !isClosed(sentence) || !hasParticle(sentence)) return false;
+    if (inside(sentence.span, doc.listSpans) || rows.has(sentence) || notes.has(sentence) || !isClosed(sentence) || !hasParticle(sentence)) return false;
     const last = lastContent(sentence);
     return last !== undefined && NOMINAL.has(last.pos) && !isDependent(last);
   });
