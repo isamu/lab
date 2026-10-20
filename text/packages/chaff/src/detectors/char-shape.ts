@@ -1,4 +1,4 @@
-import type { Detector, DocumentProfile, Finding, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
+import type { Detector, DetectorOptions, DocumentProfile, Finding, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 import { compacted } from "./gram-place.ts";
 import { leadingCounter, trailingPrefix } from "./counter-edge.ts";
 import { trailingAddressee, type AddresseeSuffix } from "./addressee-edge.ts";
@@ -14,6 +14,8 @@ import { parallelDotCount } from "./middle-dot.ts";
 import { maskSpans } from "../mask.ts";
 import { quotedSpans } from "../quoted-span.ts";
 import { nameSpans } from "../team-names.ts";
+import { isIn } from "../lexicon-genres.ts";
+import { standaloneNames, unknownPieces } from "./kanji-run-pieces.ts";
 
 /**
  * 文字の並びを見る検出。漢字の連なりが住所か名前かだけは、形態素解析の固有名詞と数で決める。
@@ -34,6 +36,8 @@ type KanjiRun = {
   readonly placed: boolean;
   readonly after: string | undefined;
   readonly before: string;
+  /** 文がこの連なりだけ（用語集の見出し語の行）。 */
+  readonly alone: boolean;
 };
 
 const SPACE = /\s/gu;
@@ -62,11 +66,13 @@ const runsOf = (sentence: Sentence, profile: DocumentProfile | undefined, names:
   return [...maskedProse(prose, profile, names).matchAll(KANJI_RUN)].map((match) => {
     const before = prose.slice(0, match.index).replace(SPACE, "").length;
     const [start, last] = [printed[before], printed[before + match[0].length - 1]];
-    if (start === undefined || last === undefined) return { text: match[0], span: undefined, quoted: false, placed: false, after: undefined, before: "" };
+    if (start === undefined || last === undefined)
+      return { text: match[0], span: undefined, quoted: false, placed: false, after: undefined, before: "", alone: false };
     const span = { start: sentence.span.start + start, end: sentence.span.start + last + 1 };
     const after = sentence.text.slice(0, start).trim() === "" ? sentence.text.slice(last + 1) : undefined;
     const quoted = fillsQuote(sentence, start, last + 1);
-    return { text: match[0], span, quoted, placed: isTitlePosition(sentence.text, start, last + 1), after, before: sentence.text.slice(0, start) };
+    const alone = sentence.text.slice(0, start).trim() === "" && sentence.text.slice(last + 1).trim() === "";
+    return { text: match[0], span, quoted, placed: isTitlePosition(sentence.text, start, last + 1), after, before: sentence.text.slice(0, start), alone };
   });
 };
 
@@ -85,6 +91,8 @@ type NameWords = {
   readonly references: readonly string[];
   /** 並べた物の後ろに付く語（等）。連なりの尻にあれば、名前の後ろに付いた語。 */
   readonly listSuffixes: readonly string[];
+  /** 連なりを閉じる、読み手が一つの語と知っている長い語（内閣総理大臣、許可事業者）。その前で連なりを割る。 */
+  readonly knownWords: ReadonlySet<string>;
 };
 
 type Tail = AddresseeSuffix;
@@ -95,6 +103,12 @@ type RunContext = {
   readonly names: readonly string[];
   readonly words: NameWords;
   readonly titled: readonly string[];
+  /** 文書がほかで単独の連なりとして使う組織の名前（standaloneNames: 安全保障理事会）。 */
+  readonly terms: ReadonlySet<string>;
+  /** 見出し語の行（文がその連なりだけ）を数えない文書か（用語集）。 */
+  readonly headwords: boolean;
+  /** 知っている語の語数の上限: 知っている語の字数の上限（一字一語のときの語数）。 */
+  readonly maxKnownWords: number;
 };
 
 const coveringOf = (tokens: readonly Token[], span: Span): number[] =>
@@ -162,11 +176,36 @@ const measuredOf = (tokens: readonly Token[], run: KanjiRun, span: Span, words: 
  * 住所か名前かは、それを外した残りで決める（1日日本銀行の「日本銀行」）。品詞が無ければ判定しない。
  */
 const measuredRun = (tokens: readonly Token[] | undefined, run: KanjiRun, context: RunContext): string => {
-  if (run.quoted) return "";
+  if (run.quoted || (context.headwords && run.alone)) return "";
   if (tokens === undefined || run.span === undefined) return run.text;
   const { rest, text, keptHead } = measuredOf(tokens, run, run.span, context.words);
   const formBefore = rest.start === run.span.start && followsForm(run.before, context.words.organisation.forms);
-  return isPlaceName(tokens, rest, context.words, formBefore) || isTitle(tokens, rest, text, run.placed, context) ? "" : keptHead + text;
+  if (isPlaceName(tokens, rest, context.words, formBefore) || isTitle(tokens, rest, text, run.placed, context)) return "";
+  return longestUnknown(tokens, rest, keptHead, context);
+};
+
+/** 語の、範囲（span）の中の字。連なりの頭や尻で外した語にまたがる語は、範囲の中だけ。 */
+const surfaceWithin = (token: Token, span: Span): string =>
+  token.surface.slice(Math.max(0, span.start - token.span.start), Math.max(0, span.end - token.span.start));
+
+/**
+ * 連なりの、知っている語（文書がほかで単独で使う組織の名前、連なりを閉じる決まった語）を外した残りのうち、最も長いもの。
+ * 安全保障理事会常任理事国は（安全保障理事会を単独で使う文書なら）「常任理事国」、日本国内閣総理大臣は「日本国」を数える。
+ * 名前に普通の語が続く連なり（日本弁護士連合会臨時総会決議）は、名前がその文書で単独で使われていなければ、まるごと数える。
+ */
+const longestUnknown = (tokens: readonly Token[], rest: Span, keptHead: string, context: RunContext): string => {
+  const covering = coveringOf(tokens, rest);
+  const words = covering.flatMap((index) => tokens.slice(index, index + 1).map((token) => surfaceWithin(token, rest)));
+  const whole = words.join("");
+  // A run as long as the text holds no known word; reading it word by word would take a pass per word.
+  if (![...context.terms, ...context.words.knownWords].some((known) => whole.includes(known))) return keptHead + whole;
+  const isKnown = (start: number, end: number): boolean => {
+    const piece = words.slice(start, end).join("");
+    return context.terms.has(piece) || (end === words.length && context.words.knownWords.has(piece));
+  };
+  return unknownPieces(words, context.maxKnownWords, isKnown)
+    .map((piece) => (piece.first ? keptHead + piece.text : piece.text))
+    .reduce((longest, piece) => (piece.length > longest.length ? piece : longest), "");
 };
 
 const longestKanji = (sentence: Sentence, context: RunContext): string =>
@@ -174,14 +213,34 @@ const longestKanji = (sentence: Sentence, context: RunContext): string =>
     .map((run) => measuredRun(sentence.tokens, run, context))
     .reduce((longest, run) => (run.length > longest.length ? run : longest), "");
 
+/** 見出しの中の漢字の連なり。 */
+const headingRuns = (doc: ProseDocument): string[] =>
+  (doc.markup?.headings ?? []).flatMap((heading) => [...heading.text.matchAll(KANJI_RUN)].map((match) => match[0]));
+
 /**
  * 文書の中で題として置かれた漢字の連なり: 題の置き方をした文の中の連なりと、見出しの中の連なり。
  * 同じ名前を文の中で使えば（認定職業訓練実施奨励金の支給額）、それも題の名前と読む。
  */
 const titledNames = (doc: ProseDocument, profile: DocumentProfile | undefined, names: readonly string[]): string[] => [
   ...doc.sentences.flatMap((sentence) => runsOf(sentence, profile, names).flatMap((run) => (run.placed ? [run.text] : []))),
-  ...(doc.markup?.headings ?? []).flatMap((heading) => [...heading.text.matchAll(KANJI_RUN)].map((match) => match[0])),
+  ...headingRuns(doc),
 ];
+
+/** 割る手がかりにする、文書が単独で使う名前の最短の字数。短い名前（事務局、理事会）は普通の語の一部にもなる。 */
+const MIN_TERM_LENGTH = 6;
+
+/** 文書の漢字の連なり: 文の中と、見出しの中。 */
+const allRuns = (doc: ProseDocument, profile: DocumentProfile | undefined, names: readonly string[]): string[] => [
+  ...doc.sentences.flatMap((sentence) => runsOf(sentence, profile, names).map((run) => run.text)),
+  ...headingRuns(doc),
+];
+
+/** 文書の genre が、rule の headword_genres（見出し語の行を数えない genre: 用語集）にあるか。 */
+const isHeadwordGenre = (options: DetectorOptions): boolean => {
+  const genres = options.settings?.["headword_genres"];
+  const genre = options.genre;
+  return genre !== undefined && Array.isArray(genres) && genres.some((target: string) => isIn(genre, target));
+};
 
 /**
  * 漢字が続くと、どこで語が切れるのか読み手が探すことになる。
@@ -203,9 +262,18 @@ export const kanjiRun: Detector = (doc, options): Finding[] => {
     addressees: { prefixes: patterns("addressee-prefix"), titles: patterns("addressee-title"), endings: organisation.units, forms: organisation.closingForms },
     references: patterns("reference-prefix"),
     listSuffixes: patterns("list-suffix"),
+    knownWords: new Set(patterns("kanji-known-word")),
   };
   const names = doc.names ?? [];
-  const context: RunContext = { profile: doc.profile, names, words, titled: titledNames(doc, doc.profile, names) };
+  const context: RunContext = {
+    profile: doc.profile,
+    names,
+    words,
+    titled: titledNames(doc, doc.profile, names),
+    terms: standaloneNames(allRuns(doc, doc.profile, names), MIN_TERM_LENGTH, options.limit, organisation.units),
+    headwords: isHeadwordGenre(options),
+    maxKnownWords: Math.max(options.limit, ...[...words.knownWords].map((word) => [...word].length)),
+  };
   return doc.sentences
     .map((sentence) => ({ sentence, run: longestKanji(sentence, context) }))
     .filter(({ run }) => run.length > options.limit)
