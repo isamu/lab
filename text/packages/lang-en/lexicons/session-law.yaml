@@ -1,0 +1,19 @@
+# How a statute's notes cite a law by its own number and sections: "Pub. L. 98–620, title IV, §402(2)", and the page of
+# the volume that prints it, "§2(a), 60 Stat. 237" or "§3.6, Dec. 29, 2009, 75 F.R. 718". A section cited this way is a
+# section of that law, not of this document. position: before is a name written before the law's number (Pub. L.
+# 98–620); position: after is a volume written after the section, between its volume number and page.
+id: session-law
+language: en
+entries:
+  - pattern: Pub. L.
+    position: before
+  - pattern: Public Law
+    position: before
+  - pattern: Priv. L.
+    position: before
+  - pattern: Private Law
+    position: before
+  - pattern: Stat.
+    position: after
+  - pattern: F.R.
+    position: after

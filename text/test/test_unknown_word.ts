@@ -62,6 +62,12 @@ describe("unknown-word: a word not in the dictionary, one letter from one that i
     assert.deepEqual(unknown("The basin shows aridificaton."), ['"aridificaton" is not in the dictionary; did you mean "aridification"?']);
   });
 
+  it("the -y adjective of a dictionary noun is known (crunchy, possessory, stony), but a typo of it is still reported", () => {
+    assert.deepEqual(unknown("Toast the bread until it has a crunchy surface; a possessory claim stays with the stony ground."), []);
+    assert.deepEqual(unknown("Toast the bread until it has a crunchu surface."), ['"crunchu" is not in the dictionary; did you mean "crunch"?']);
+    assert.deepEqual(unknown("Toast the bread until it has a cruncy surface."), ['"cruncy" is not in the dictionary; did you mean "crunch"?']);
+  });
+
   it("partway, combinators and const are known, but a typo among them is still reported", () => {
     assert.deepEqual(unknown("The upload stopped partway, so the parser combinators marked the item const."), []);
     assert.deepEqual(unknown("The upload stopped partwya through."), ['"partwya" is not in the dictionary; did you mean "partway"?']);

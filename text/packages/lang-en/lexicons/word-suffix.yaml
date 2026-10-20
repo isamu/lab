@@ -40,6 +40,11 @@ entries:
     instead_of: ""
   - pattern: est
     instead_of: "e"
+  # The adjective of a noun: "crunchy" is "crunch", "possessory" is "possessor", "stony" is "stone".
+  - pattern: y
+    instead_of: ""
+  - pattern: y
+    instead_of: "e"
   - pattern: ly
     instead_of: ""
   - pattern: ily

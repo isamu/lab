@@ -46,8 +46,8 @@ example:
       申込書は、窓口で受け付けます。書類は、担当者が確認します。結果は、翌日に知らせます。
 
 not_flagged:
-  ja: 数の中の「，」「．」（１，０００、３．５）、番号の印の点（１．、(注)１．、イ．）、番号を指す点（3．から5．まで、（1）4．の改正）、「Ｑ．」のような英字の印、英字の会社の名前の形（CO.，LTD.）、「」の中、注の番号で始まる行と URL を含む文は数えません。どちらの書き方が正しいかは決めません。
-  en: Marks inside numbers (１，０００, ３．５), after a list number or label (１．, (注)１．, イ．), after a number that is referred to (3．から5．まで, （1）4．の改正), in a letter label (Ｑ．), in a company form (CO.，LTD.), inside 「」, and in a note or a sentence with a URL are not counted. Neither way is called right.
+  ja: 数の中の「，」「．」（１，０００、３．５）、番号の印の点（１．、(注)１．、イ．）、番号を指す点（3．から5．まで、（1）4．の改正）、「Ｑ．」や行の頭の「A1．」のような英字の印、英字の会社の名前の形（CO.，LTD.）、「」の中、注の番号で始まる行と URL を含む文は数えません。どちらの書き方が正しいかは決めません。
+  en: Marks inside numbers (１，０００, ３．５), after a list number or label (１．, (注)１．, イ．), after a number that is referred to (3．から5．まで, （1）4．の改正), in a letter label (Ｑ．, or A1． at the start of a line), in a company form (CO.，LTD.), inside 「」, and in a note or a sentence with a URL are not counted. Neither way is called right.
 level_meaning:
   ja: 少ないほうの書き方が {limit} 箇所あれば指摘
   en: reported once {limit} places go against the document's habit

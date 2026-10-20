@@ -62,6 +62,23 @@ describe("change-rate-mismatch", () => {
     assert.deepEqual(found("2024 revenue was 1,300, up 25% from 2020 revenue of 1,000.", en), []);
   });
 
+  it("ja: a value after the earlier one with no mark of the value reached may be the amount of the change", () => {
+    // 205人 is the decrease: 1,000人から205人（20.5%）減った, not a fall to 205人.
+    assert.deepEqual(found("会員は795人で、前年の1,000人から205人（20.5%）減少しました。", ja), []);
+    assert.deepEqual(found("会員は1,000人から205人（20.5%）減少した。", ja), []);
+    assert.deepEqual(found("会員は1,000人から250人（25%）増えた。", ja), []);
+    // Neither reading gives the rate: still reported.
+    assert.deepEqual(found("会員は1,000人から205人（30%）減少した。", ja), ["30:80"]);
+    // Marked as the value reached (に), it is not the amount.
+    assert.deepEqual(found("会員は1,000人から205人に20.5%減少した。", ja), ["20.5:79.5"]);
+    // Two dated values are the two values, not a value and its change.
+    assert.deepEqual(found("会員は2024年は1,000人、2025年は200人で、20%減少した。", ja), ["20:80"]);
+    assert.deepEqual(found("Revenue was $1,000 in 2024 and $200 in 2025, down 20%.", en), ["20:80"]);
+    // The amount, rounded finer than the base, does not give a rate its rounding cannot reach.
+    assert.deepEqual(found("売上は100万円から20.00万円（20.4%）増加した。", ja).length, 1);
+    assert.deepEqual(found("売上は100万円から20.00万円（20.1%）増加した。", ja), []);
+  });
+
   it("reads the value reached when marked (to, に), and a base whose mark stands beside the rate", () => {
     assert.deepEqual(found("Users rose 25% from 1,000 users to 1,200 users.", en), ["25:20"]);
     assert.deepEqual(found("会員は1,000人から1,200人に25%増えた。", ja), ["25:20"]);

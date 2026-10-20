@@ -1,8 +1,9 @@
 id: humble-for-others
 layer: L3
 status: stable
-how_to_find: phrase-match
+how_to_find: humble-for-others
 word_list: humble-for-others
+extra_word_lists: [humble-own-act]
 uses: [pos]
 languages: [ja]
 severity: warning
@@ -39,8 +40,8 @@ example:
     after: 資料は受付でご覧ください。
 
 not_flagged:
-  ja: 一覧にある形だけを見ます。「伺われる」は「窺われる（うかがえる）」と同じ字になるので見ません。「お伺いください」「ご持参ください」のように認める手引きがある形も見ません。小説の台詞にはわざと崩した敬語があるので、文学のジャンルでは見ません。
-  en: Only the forms on chaff's list are checked. 伺われる is not, as it is also 窺われる ("can be seen"). Forms some guides accept (お伺いください) are not listed. Literature does not run this rule.
+  ja: 一覧にある形だけを見ます。「何とも申されません」のように今の打ち消しで可能と決まる言い回し（自分が言えないこと）は見ません。「伺われる」は「窺われる（うかがえる）」と同じ字になるので見ません。「お伺いください」「ご持参ください」のように認める手引きがある形も見ません。小説の台詞にはわざと崩した敬語があるので、文学のジャンルでは見ません。
+  en: Only the forms on chaff's list are checked. A phrase whose present negation makes the form a potential (何とも申されません, "I cannot say") is not. 伺われる is not, as it is also 窺われる ("can be seen"). Forms some guides accept (お伺いください) are not listed. Literature does not run this rule.
 level_meaning:
   ja: 当てはまる形が {limit} 箇所あれば指摘
   en: reported once there are {limit}

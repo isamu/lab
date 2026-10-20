@@ -5,7 +5,7 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { openerRuns, separatesItems } from "../packages/chaff/src/detectors/sentence-counts.ts";
 
-// 一文の中の数と、文頭の連続を数える rule（max-ten, teki-overuse, adversative-ga-repeat, demonstrative-opener-run）。例文はすべて自作。
+// 一文の中の数と、文頭の連続を数える rule（max-ten, teki-overuse, adversative-ga-repeat, demonstrative-opener-run）。例文は自作か、著作権の切れた作品から。
 
 before(async () => {
   await ja.prepare?.({ pos: true });
@@ -120,6 +120,19 @@ describe("adversative-ga-repeat: 一文の逆接の「が」", () => {
       "一文に逆接の「が」が 2 個あります（1 個まで）",
     ]);
     assert.deepEqual(findingsOf(RULE, "重要でありますが、予算は足りますが、人手は足りません。\n"), ["一文に逆接の「が」が 2 個あります（1 個まで）"]);
+  });
+
+  it("理由を言う「が故に」「がために」の「が」は数えない（中島敦『山月記』）", () => {
+    const sangetsuki =
+      "己の珠に非ざることを惧れるが故に、敢て刻苦して磨こうともせず、又、己の珠なるべきを半ば信ずるが故に、碌々として瓦に伍することも出来なかった。\n";
+    assert.deepEqual(findingsOf(RULE, sangetsuki), []);
+    assert.deepEqual(findingsOf(RULE, "期限を守らんがために、予算は足りますが、人手は足りません。\n"), []);
+  });
+
+  it("「が故に」と並んでも、逆接の「が」が二つあれば指す", () => {
+    assert.deepEqual(findingsOf(RULE, "急ぐが故に、予算は足りますが、人手は足りませんが、納期は守ります。\n"), [
+      "一文に逆接の「が」が 2 個あります（1 個まで）",
+    ]);
   });
 });
 

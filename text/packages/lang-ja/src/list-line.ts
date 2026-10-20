@@ -9,6 +9,7 @@ import { escapeRegExp } from "./regexp.ts";
  * 印の無い行の折り返しは切らない。
  *
  * 番号だけの札の行（「第１」「第３条」）と、行頭の括弧で囲んだ札（「（別添）…」）も、印で始まる行と同じに切る。札の語は辞書から取る。
+ * URL だけの行、欄の行（電話：…、〒…）、括弧の語だけの行も、文の途中に立っていなければ前後で切る（メールマガジンや連絡先の欄）。
  */
 
 const SPACE = "[ \\t\\u3000]";
@@ -87,18 +88,75 @@ export const lineVocabulary = (counters: readonly string[], tags: readonly strin
 const isListLine = (line: string, vocabulary: LineVocabulary): boolean =>
   startsWithListMarker(line) || vocabulary.label.test(line) || (vocabulary.tag?.test(line) ?? false);
 
-/** 前の行と後ろの行の間で文が改まるか: どちらかが項目の行か、注記の行が続き、前の行が次へ続いていない。 */
-const isCut = (previous: Line, next: Line, vocabulary: LineVocabulary): boolean =>
-  next.text.trim().length > 0 &&
-  !continuesToNextLine(previous.text) &&
-  (isListLine(next.text, vocabulary) || isListLine(previous.text, vocabulary) || (NOTE.test(previous.text) && NOTE.test(next.text)));
+/** URL だけの行（▼こちら の次の行のアドレス）。 */
+const URL_LINE = new RegExp(`^${SPACE}*https?://\\S+${SPACE}*$`, "u");
+/**
+ * 欄の行: 短い札と全角か半角のコロンで始まる行（電話：03-…、E-mail：…）と、郵便番号の印〒で始まる行。連絡先の欄は 1 行 1 項目。
+ * 札が数字で終われば時刻（10:00、午前10:00）か比（1:2）で、札ではない。
+ */
+const FIELD_LINE = new RegExp(`^${SPACE}*(?:〒|[^\\s、。，：:「」『』（）()【】]{0,11}[^\\s、。，：:「」『』（）()【】0-9０-９][：:])`, "u");
+/** 括弧でくくった語だけの行（（お問い合わせ先）、【新着】（文部科学省）、「報告書は実践の宝庫」）。札か題で、文の途中ではない。 */
+const BRACKET_GROUP = "[（(【〔［「『][^（(【〔［「『）)】〕］」』\\n]*[）)】〕］」』]";
+const BRACKET_LINE = new RegExp(`^(?:${SPACE}*${BRACKET_GROUP})+${SPACE}*$`, "u");
+/** 空白の後の括弧の注記で終わる行（題 （○○小学校））。題の行の終わりで、文は折り返しても括弧の前に空白を置かない。 */
+const NOTE_IN_BRACKETS_END = new RegExp(`\\S${SPACE}+[（(][^（(）)\\n]*[）)]${SPACE}*$`, "u");
+
+/** 行が助詞で始まる: 前の行の語を受けて文が続いている（「…」\nと述べた）。 */
+const PARTICLE_START = new RegExp(`^${SPACE}*(?:の|に|を|が|は|と|で|へ|も|から|まで|より|及び|又は|並びに|若しくは)`, "u");
+/** 行が助詞で終わる: 文が次の行へ続いている（担当者は\n「…」）。 */
+const PARTICLE_END = new RegExp(`(?:の|に|を|が|は|と|で|へ|も|から|まで|より)${SPACE}*$`, "u");
+
+/** 1 行で一つの単位になりうる行: URL、欄、括弧の語だけ。 */
+const standsAlone = (line: string): boolean => URL_LINE.test(line) || FIELD_LINE.test(line) || BRACKET_LINE.test(line);
+
+/** 空白だけの行。段落の中では、伏せた URL やコードが 1 行を占めていた所。 */
+const isMaskedLine = (line: string): boolean => line.trim() === "";
+
+/**
+ * 行が文の途中に立っていない: 前の行が読点・開いた括弧・助詞で終わらず、次の行が助詞で始まらない。
+ * 折り返した文の途中に括弧の語だけの行が来ることがある（〜始まり、\n（休憩を挟んで）\n夕方まで続く。）。
+ */
+const standsBetween = (before: Line | undefined, after: Line | undefined): boolean =>
+  (before === undefined || (!continuesToNextLine(before.text) && !PARTICLE_END.test(before.text))) && (after === undefined || !PARTICLE_START.test(after.text));
+
+/** 1 行で一つの単位の行。その前でも後ろでも文が改まる。 */
+const isUnitLine = (lines: readonly Line[], index: number): boolean =>
+  standsAlone(lines[index]?.text ?? "") && standsBetween(lines[index - 1], lines[index + 1]);
+
+/**
+ * index の行の後ろで文が改まる: 1 行で一つの単位の行、題の注記で終わる行、伏せた行の後ろ。
+ * 次の行が注記（※）なら、その行に添える注記なので続ける。
+ */
+const endsUnitAt = (lines: readonly Line[], index: number): boolean => {
+  const line = lines[index]?.text ?? "";
+  const ends = isUnitLine(lines, index) || ((NOTE_IN_BRACKETS_END.test(line) || isMaskedLine(line)) && standsBetween(lines[index - 1], lines[index + 1]));
+  return ends && !NOTE.test(lines[index + 1]?.text ?? "");
+};
+
+/**
+ * index - 1 の行と index の行の間で文が改まるか: どちらかが項目の行か、1 行で一つの単位の行か、注記の行が続く。
+ * 前の行が次へ続いている（読点、開いた括弧）なら改まらない。
+ */
+const isCut = (lines: readonly Line[], index: number, vocabulary: LineVocabulary): boolean => {
+  const previous = lines[index - 1]?.text ?? "";
+  const next = lines[index]?.text ?? "";
+  return (
+    next.trim().length > 0 &&
+    !continuesToNextLine(previous) &&
+    (isListLine(next, vocabulary) ||
+      isListLine(previous, vocabulary) ||
+      isUnitLine(lines, index) ||
+      endsUnitAt(lines, index - 1) ||
+      (NOTE.test(previous) && NOTE.test(next)))
+  );
+};
 
 /** 文を改める改行の位置: 前の行の終わり（end）と、次の行の最初の文字（start）。 */
 export const listLineBreaks = (text: string, vocabulary: LineVocabulary): Span[] => {
   const lines = linesOf(text);
-  return lines.slice(1).flatMap((next, index) => {
-    const previous = lines[index];
-    if (previous === undefined || !isCut(previous, next, vocabulary)) return [];
+  return lines.slice(1).flatMap((next, offset) => {
+    const previous = lines[offset];
+    if (previous === undefined || !isCut(lines, offset + 1, vocabulary)) return [];
     return [{ start: previous.end, end: next.start + (next.text.length - next.text.trimStart().length) }];
   });
 };

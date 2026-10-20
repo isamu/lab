@@ -1,6 +1,7 @@
 import type { Mention, NumberedLine, NumberingContext, StructurePatterns } from "chaffjs/plugin";
 import { citedDocumentAfter, citedDocumentBefore, listedTagAround } from "./citation.ts";
 import { citedCodeBefore, codeVocabulary, titledCodeAt } from "./code-citation.ts";
+import { citedLawAround, lawVocabulary } from "./law-citation.ts";
 import { loadLexicons } from "./lexicons.ts";
 import { membersAfter } from "./reference-list.ts";
 import { parseRoman } from "./roman.ts";
@@ -33,6 +34,12 @@ const titleOf = (rest: string): string | undefined => {
 
 const ARTICLE = /^\s{0,3}(?:ARTICLE|Article)\s+(?<n>\d{1,3}|[IVXLC]{1,7})\b(?<rest>.*)$/u;
 const SECTION = /^\s{0,3}(?:SECTION|Section|§)\s*(?<n>\d{1,3}(?:\.\d{1,3}){0,5})\b(?<rest>.*)$/u;
+/**
+ * "Sec. 3. (a) For confidential…", '#### "SEC. 3. REQUIREMENT OF DISCLOSURE.': an Act or an Executive order set out in a
+ * statute's notes numbers its sections with the abbreviation, the number ending in a full stop; an Act quoted in the notes
+ * opens each paragraph with a quotation mark. "Sec. 552 - Public information" (a citation header) has no full stop.
+ */
+const ABBREVIATED_SECTION = /^\s{0,3}["“]?(?:SECTION|Section|SEC\.|Sec\.)\s*(?<n>\d{1,3}(?:\.\d{1,3}){0,5})\.(?=\s|$)(?<rest>.*)$/u;
 /**
  * "(a) text", "(ii) text", "(B) text", or the label alone on its line with the text below it. A US statute joins a
  * subsection's label to its first paragraph's ("(c)(1) Whenever…"): the rest then starts with the next label. A
@@ -104,6 +111,7 @@ const numbered = (line: string, context: NumberingContext): NumberedLine | undef
   chapter(CHAPTER, line, CHAPTER_DEPTH, "ch", "Chapter") ??
   headed(ARTICLE, line, "article", (n) => `Article ${n}`) ??
   headed(SECTION, line, "section", (n) => `Section ${n}`) ??
+  headed(ABBREVIATED_SECTION, line, "section", (n) => `Section ${n}`) ??
   lettered(line, context);
 
 const REFERENCE = /(?<word>\b[Ss]ections?|\b[Aa]rticles?|§) ?(?<n>\d{1,3}(?:\.\d{1,3}){0,5}|[IVXLC]{1,7})\b/gu;
@@ -156,6 +164,7 @@ const glossedDocument = (gloss: Gloss): string | undefined => {
 
 const LEXICONS = loadLexicons();
 const CODES = codeVocabulary(LEXICONS);
+const LAWS = lawVocabulary(LEXICONS);
 
 /** The other document a reference names, or else a bracketed tag that the core checks against the document's list. */
 const citation = (text: string, start: number, end: number, document: string | undefined): Readonly<Record<string, string>> => {
@@ -175,7 +184,11 @@ const references = (text: string): Mention[] => {
     if (main === undefined) return [];
     const { parts, end } = subdivisions(text, match.index + match[0].length);
     advance(gloss, text, match.index);
-    const cited = citedDocumentAfter(text, end) ?? citedDocumentBefore(text, match.index) ?? citedCodeBefore(text, match.index, CODES);
+    const cited =
+      citedDocumentAfter(text, end) ??
+      citedDocumentBefore(text, match.index) ??
+      citedCodeBefore(text, match.index, CODES) ??
+      citedLawAround(text, match.index, end, LAWS);
     const document = cited ?? glossedDocument(gloss);
     gloss.scanned = Math.max(gloss.scanned, end);
     if (cited !== undefined) gloss.anchors.push({ document: cited, depth: gloss.depth });
