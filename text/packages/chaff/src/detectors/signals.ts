@@ -356,10 +356,9 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
     isExpanded(body, word, expandedAt) ||
     headings.some((heading) => expandsInHeading(heading, word, expandedAt));
   // 大文字の違うだけの書き方（TCoP と TCOP）は同じ略語と読む。どちらかで説明してあれば説明済み。
-  const written = [body, ...headings].join("\n");
   const explained = new Map<string, boolean>();
   const explainedAlone = (word: string): boolean => {
-    const known = explained.get(word) ?? (explainedAsWritten(word) || caseVariantsIn(written, word).some(explainedAsWritten));
+    const known = explained.get(word) ?? (explainedAsWritten(word) || caseVariantsIn([body, ...headings].join("\n"), word).some(explainedAsWritten));
     explained.set(word, known);
     return known;
   };
@@ -374,9 +373,8 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   const acronyms = [...firstHits(hits).keys()];
   const unexplained = new Set(acronyms.filter((acronym) => !isExplained(acronym, explainedAlone)));
   const quoted = [...firstHits(counted).keys()].filter((acronym) => !acronyms.includes(acronym) && !isExplained(acronym, explainedAlone)).length;
-  const bracketed = (acronym: string): boolean => [body, ...headings].some((text) => isBracketed(text, acronym));
   // 定義の一覧（"SOW" means …）で定義する書き手も、略語を展開する書き手と数える。
-  const definedByWriter = (acronym: string): boolean => bracketed(acronym) || stated.has(acronym);
+  const definedByWriter = (acronym: string): boolean => [body, ...headings].some((text) => isBracketed(text, acronym)) || stated.has(acronym);
   const writerSpellsOut = acronyms.filter((acronym) => !common.has(acronym) && explainedAlone(acronym) && definedByWriter(acronym)).length >= options.limit;
   // 日付を読むには文書の木を作る。上限に届かない文書では作らない。
   if (unexplained.size + quoted < options.limit && !writerSpellsOut) return [];
