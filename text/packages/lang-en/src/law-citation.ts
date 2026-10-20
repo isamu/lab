@@ -17,8 +17,15 @@ const REACH = 160;
  * it, and "formerly".
  * The gap is these and nothing else; a word of a sentence ("see", "and the Act") ends the citation.
  */
-const CITATION_PART =
-  /(?:div\.|subtitle|part|subchapter|ch\.)\s+[A-Z0-9]{1,4}|title\s+[IVXLC]{1,7}|formerly|§|\d{1,5}[A-Za-z]{0,2}|\([A-Za-z0-9]{1,4}\)|[\s,–-]/gu;
+const CITATION_PARTS: readonly RegExp[] = [
+  /(?:div\.|subtitle|part|subchapter|ch\.)\s+[A-Z0-9]{1,4}/u,
+  /title\s+[IVXLC]{1,7}/u,
+  /formerly|§/u,
+  /\d{1,5}[A-Za-z]{0,2}/u,
+  /\([A-Za-z0-9]{1,4}\)/u,
+  /[\s,–-]/u,
+];
+const CITATION_PART = new RegExp(CITATION_PARTS.map((part) => part.source).join("|"), "gu");
 /** "§3.6, Dec. 29, 2009, 75 F.R. 718": a date may stand between a section and the volume's page. */
 const DATE = String.raw`(?:,\s*[A-Z][a-z]{2,8}\.?\s+\d{1,2},\s+\d{4})?`;
 
