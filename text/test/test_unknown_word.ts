@@ -7,7 +7,7 @@ import { editsOf, isKnownWord, isSplitWord, suggestionFor, wordsToCheck, type Sp
 import { codeWordsOf, unknownWord } from "../packages/chaff/src/detectors/unknown-word.ts";
 import { buildDocument, type TeamRules } from "../packages/chaff/src/document.ts";
 
-// 辞書に無い語（unknown-word）。例文はすべて自作。
+// 辞書に無い語（unknown-word）。例文は自作か、出典を書いたパブリックドメインの文。
 
 const unknown = (source: string): readonly string[] => namedRuleRun("unknown-word", `${source}\n`, en).findings;
 
@@ -82,6 +82,17 @@ describe("unknown-word: a word not in the dictionary, one letter from one that i
     ];
     assert.deepEqual(unknown(contract.join(" ")), []);
     assert.deepEqual(unknown("The rights arising therunder survive."), ['"therunder" is not in the dictionary; did you mean "thereunder"?']);
+  });
+
+  it("Latin maxims and old legal words in court opinions are known, but a typo among them is still reported", () => {
+    // From United States Supreme Court opinions (Dartmouth College v. Woodward, Humphrey's Executor v. United States), public domain.
+    const opinions = [
+      "The rule expressio unius est exclusio alterius does not apply, as the court held per curiam.",
+      "Before the acceptance the grant is yet in fieri, and the amotion of the trustees is a damnum absque injuria.",
+      "Their obligation is construed jure loci contractus, and the duty applies pro tanto on a prima facie showing.",
+    ];
+    assert.deepEqual(unknown(opinions.join(" ")), []);
+    assert.deepEqual(unknown("The rule expresio unius applies."), ['"expresio" is not in the dictionary; did you mean "expressio"?']);
   });
 
   it("names, code, URLs, words used twice, and words with no near dictionary word are not reported", () => {
