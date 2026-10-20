@@ -1,7 +1,7 @@
 import type { Paragraph, Sentence } from "./plugin.ts";
 
 /** 段落の頭の注の番号（(1)、（2）、[3]）。 */
-const NOTE_LABEL = /^[ \t　]*(?:[(（]\s*(\d{1,3})\s*[)）]|\[(\d{1,3})\])/u;
+const NOTE_LABEL = /^[ \t\u3000]*(?:[(（]\s*(\d{1,3})\s*[)）]|\[(\d{1,3})\])/u;
 
 /** 注の並びと読む最少の数。番号の付いた段落が二つ続くだけなら、本文の (1)(2) の列挙と見分けがつかない。 */
 const MIN_NOTES = 3;
