@@ -111,16 +111,33 @@ const dunderAround = (text: string, run: Span): boolean => {
   return DUNDER.test(text.slice(start, end === -1 ? text.length : end));
 };
 
+/**
+ * A bare URL written in text (`?__id=1&__mid=2` in a query string), in the characters a URL may hold: Japanese right after
+ * it (…/aをご覧__重要) is prose again. Its marks are the address's characters, shown as the
+ * writer meant. A `*`, and `_` or punctuation at its end, are left outside, so a mark around the URL (`__https://…__.`) still counts.
+ */
+const BARE_URL = /https?:\/\/[A-Za-z0-9\-._~:/?#[\]@!$&'()+,;=%]+/gu;
+const URL_TAIL = new Set("_.,;:!?')]");
+
+/** The URL's length without the marks and punctuation at its end. */
+const urlLength = (url: string): number => [...url].findLastIndex((char) => !URL_TAIL.has(char)) + 1;
+
+const urlSpansOf = (text: string): Span[] => [...text.matchAll(BARE_URL)].map((match) => ({ start: match.index, end: match.index + urlLength(match[0]) }));
+
+const insideAny = (spans: readonly Span[], run: Span): boolean => spans.some((span) => run.start >= span.start && run.end <= span.end);
+
 /** The strong-emphasis runs in one text node that Markdown left as text. */
-export const strayStrongRuns = (text: string): Span[] =>
-  [...text.matchAll(STRONG_RUN)].flatMap((match) => {
+export const strayStrongRuns = (text: string): Span[] => {
+  const urls = urlSpansOf(text);
+  return [...text.matchAll(STRONG_RUN)].flatMap((match) => {
     const run = { start: match.index, end: match.index + match[0].length };
     const before = text.charAt(run.start - 1);
     const after = text.charAt(run.end);
     if (before === "\\" || (WORD_CHAR.test(before) && WORD_CHAR.test(after))) return [];
     if (isSpace(before) && isSpace(after)) return [];
-    return dunderAround(text, run) ? [] : [run];
+    return dunderAround(text, run) || insideAny(urls, run) ? [] : [run];
   });
+};
 
 /**
  * `**` or `__` that Markdown shows as it is: strong emphasis left open (`**bold`), or one CommonMark cannot close because a

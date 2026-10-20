@@ -68,6 +68,21 @@ describe("strayStrongRuns", () => {
     assert.deepEqual(strayStrongRuns("Name: ________ and ***"), []);
     assert.deepEqual(strayStrongRuns("call __init__ first"), []);
   });
+
+  it("leaves the marks of a bare URL's query string, and finds marks written around a URL", () => {
+    assert.deepEqual(strayStrongRuns("https://example.jp/a?__id=1&_c=2&__mid=3&type=mail"), []);
+    assert.deepEqual(strayStrongRuns("詳細：https://example.jp/a?__id=1 をご覧ください"), []);
+    assert.deepEqual(strayStrongRuns("詳細は**https://example.jp/a**を"), [
+      { start: 3, end: 5 },
+      { start: 25, end: 27 },
+    ]);
+    assert.deepEqual(strayStrongRuns("see __https://example.jp/a__."), [
+      { start: 4, end: 6 },
+      { start: 26, end: 28 },
+    ]);
+    assert.deepEqual(strayStrongRuns("the **deadline at https://example.jp/a"), [{ start: 4, end: 6 }]);
+    assert.deepEqual(strayStrongRuns("https://example.jp/aをご覧__重要"), [{ start: 23, end: 25 }]);
+  });
 });
 
 describe("unrendered-emphasis", () => {
@@ -87,5 +102,6 @@ describe("unrendered-emphasis", () => {
     assert.deepEqual(emphasis("Write \\*\\* for two stars.", en), []);
     assert.deepEqual(emphasis("Write \\**bold for two stars.", en), []);
     assert.deepEqual(emphasis("The deadline is **Friday.", en, "a.txt"), []);
+    assert.deepEqual(emphasis("↓こちらからお読みください\nhttps://example.jp/index.htm?__ID=abc&_c_d=1&__mid=10&adtype=mail"), []);
   });
 });
