@@ -5,6 +5,7 @@ import { dropsOkurigana, kanjiKeyAmong, katakanaKey, lemmaReading } from "../kan
 import { isKatakanaWord, stemOf } from "../long-vowel.ts";
 import { withNounsAfterParticles } from "../nominal-stem.ts";
 import { QUOTATION_MARKS, isWithinAny, quotedSpans } from "../quoted-span.ts";
+import { singleQuotedSpans } from "../single-quoted-span.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
 import { furiganaSpans } from "../furigana.ts";
 import { withCutNounsJoined } from "../split-noun.ts";
@@ -88,6 +89,8 @@ type Names = {
   readonly team: readonly string[];
   readonly companyForms: readonly string[];
   readonly linkTitles: readonly Span[];
+  /** Quotations in single quotation marks (an opinion quoting a statute), placed in the source: they can span sentences. */
+  readonly singleQuoted: readonly Span[];
   /** Phrases that say a word is also spelled another way (とも書く): the bracketed words before them are spellings mentioned. */
   readonly mentions: readonly string[];
 };
@@ -107,6 +110,7 @@ const isOpenIn = (sentence: Sentence, names: Names): IsOpen => {
     ...furiganaSpans(sentence.text),
     ...japaneseCompanyNameSpans(sentence.text, names.companyForms),
     ...inSentence(sentence, names.linkTitles),
+    ...inSentence(sentence, names.singleQuoted),
     ...leadingLabelSpans(sentence.text),
     ...mentionedSpellingSpans(sentence.text, names.mentions),
   ];
@@ -338,6 +342,7 @@ export const orthographicVariant: Detector = (doc, options): Finding[] => {
     team: doc.names ?? [],
     companyForms: (doc.lexicons["company-form"] ?? []).map((entry) => entry.pattern),
     linkTitles: externalLinkTitleSpans(doc.source, doc.links),
+    singleQuoted: singleQuotedSpans(doc.source),
     mentions: (doc.lexicons[SPELLING_MENTION] ?? []).map((entry) => entry.pattern),
   };
   const placed: Place[] = [

@@ -2,6 +2,7 @@ import type { Detector, Finding, Lexicon, Token } from "../plugin.ts";
 import { minorityOf } from "./technical-docs.ts";
 import { isWithinAny, quotedIn, QUOTATION_MARKS } from "../quoted-span.ts";
 import { quotationParagraphIndexes } from "./quotation-paragraph.ts";
+import { singleQuotedSpans } from "../single-quoted-span.ts";
 
 /**
  * 限定の関係節を which で書く所と that で書く所が、一つの文書に混ざっている所（the file which contains / the file that contains）。
@@ -69,10 +70,12 @@ export const relativePronounMix: Detector = (doc, options): Finding[] => {
     doc.paragraphs.map((paragraph) => paragraph.span),
   );
   const blockQuoted = new Set(doc.paragraphs.filter((_, index) => quotations.has(index)).flatMap((paragraph) => paragraph.sentences));
+  // So does a quotation in single quotation marks (a Senate report quoted in an opinion), which can run over sentences.
+  const singleQuoted = singleQuotedSpans(doc.source);
   const uses = doc.sentences.flatMap((sentence) => {
     if (sentence.embeddedLanguage !== undefined || blockQuoted.has(sentence)) return [];
     const quoted = quotedIn(sentence, QUOTATION_MARKS);
-    return relativeUses(sentence.tokens ?? [], kinds).filter((use) => !isWithinAny(quoted, use.word.span));
+    return relativeUses(sentence.tokens ?? [], kinds).filter((use) => !isWithinAny(quoted, use.word.span) && !isWithinAny(singleQuoted, use.word.span));
   });
   const { odd, usual } = oddRelatives(uses, options.limit);
   return odd.map((use) => ({
