@@ -22,6 +22,7 @@ describe("isNameList", () => {
   it("reads five or more short items that end in a name or a title, with no full stop", () => {
     assert.equal(isNameList(ATTENDEES), true);
     assert.equal(isNameList("市長、副市長、教育長、総務部長、企画部参事（財政課長）"), true);
+    assert.equal(isNameList("市長、副市長、教育長、健康生きがい部長、総務部長"), true);
     assert.equal(isNameList("山田一郎，佐藤花子，鈴木次郎，田中三郎，高橋四郎"), true);
   });
 

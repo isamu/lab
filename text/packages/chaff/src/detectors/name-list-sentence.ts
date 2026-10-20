@@ -11,8 +11,11 @@ const SEPARATOR = /[、，]/u;
 const SENTENCE_END = /[。．！？!?][）)」』】〕］》〉"”’]*\s*$/u;
 /** A clause ends in hiragana (〜して、〜であり、〜は、); a name or a title ends in kanji, katakana, a letter, a digit or a bracket. */
 const HIRAGANA_END = /\p{Script=Hiragana}$/u;
-/** A topic, subject or object particle makes an item a clause (本計画は来年度から実施予定), not a name. */
-const CLAUSE_PARTICLE = /[はがを]/u;
+/**
+ * A topic, subject or object particle after a kanji or katakana word makes an item a clause (本計画は来年度から実施予定),
+ * not a name. After hiragana it is part of a word (健康生きがい部長).
+ */
+const CLAUSE_PARTICLE = /[\p{Script=Han}\p{Script=Katakana}ー][はがを]/u;
 
 const isNameItem = (item: string): boolean => item !== "" && [...item].length <= MAX_ITEM_LENGTH && !HIRAGANA_END.test(item) && !CLAUSE_PARTICLE.test(item);
 
