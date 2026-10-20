@@ -9,6 +9,7 @@ import { isSpacedLocationPart, type FloorWords } from "../location-part.ts";
 import { isFieldSeparator, isNameSeparator, type OrganizationWords } from "../name-separator.ts";
 import { addressSpans, clockTimeSpans, identifierSpans, isInsideSpan } from "../spacing-code.ts";
 import { followsHandle, isBoundSuffix, isJoinerSpace } from "../latin-word-boundary.ts";
+import { licenceNoticeSentences } from "./licence-notice.ts";
 
 /** 書いた形の出現に、動詞の活用した形（行う → 行います）を足したもの。同じ位置は一度だけ。 */
 const avoidedStarts = (sentence: Sentence, entry: LexiconEntry, use: string): number[] => {
@@ -194,7 +195,10 @@ export const latinSpacing: Detector = (doc, options): Finding[] => {
     organizations: { units: patternsOf(doc, "organization-unit"), forms: patternList(doc, "company-form") },
     latinWords: { joiners: patternsOf(doc, "latin-joiner"), boundSuffixes: patternsOf(doc, "latin-bound-suffix") },
   };
+  // 文書の最後の利用条件の断り書き（クリエイティブ・コモンズ 表示 4.0 国際）は、掲載先の書き方で書き手の空け方ではない。
+  const licence = licenceNoticeSentences(doc, doc.lexicons["licence-word"] ?? []);
   const located: Located[] = doc.sentences.flatMap((sentence) => {
+    if (licence.has(sentence)) return [];
     const quoted = quotedSpans(sentence.text);
     const codes = {
       calendar: calendarStarts(sentence, context.calendar),
