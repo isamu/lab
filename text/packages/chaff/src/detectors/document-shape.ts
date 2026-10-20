@@ -117,6 +117,29 @@ export const ownWordsOf = (heading: string, citedTitleActions: readonly string[]
       citedTitleActions.some((action) => action !== "" && heading.startsWith(action, offset + quote.length)) ? QUOTED_NAME : quote,
     );
 
+/** A document identifier opening the heading: a series code, then a year and a number joined by a hyphen (CA 23-6:). */
+const IDENTIFIER_HEAD = /^\p{Lu}{1,6} ?\p{N}{1,4}-\p{N}{1,4}[:：]/u;
+/** Full-width square brackets at the end: who the case concerns (［本省、2支局］), then perhaps the case's number. */
+const BRACKETED_END = /(?:［([^［］]+)］|【([^【】]+)】) *([(（]\p{N}{1,4}[)）])?$/u;
+
+/**
+ * A heading that is an official title, the form others cite it by: it carries an identifier at its head (CA 23-6:), or
+ * the bodies concerned in full-width brackets at its end, perhaps with the case's number (［本省、2支局］(12)). Shortening it breaks the citation, so the finding says to keep it and put a
+ * short summary under it.
+ */
+export const isOfficialTitle = (heading: string): boolean => {
+  const words = heading.trim();
+  const bracketed = BRACKETED_END.exec(words);
+  // A list of bodies (［本省、2支局］) or a case number after the bracket; one word in brackets (［初心者向け］) is an aside.
+  const bodiesOrCase = bracketed !== null && ((bracketed[1] ?? bracketed[2] ?? "").includes("、") || bracketed[3] !== undefined);
+  return IDENTIFIER_HEAD.test(words) || bodiesOrCase;
+};
+
+const variantOf = (heading: MarkupHeading, title: MarkupHeading | undefined): string | undefined => {
+  if (isOfficialTitle(heading.text)) return "official";
+  return heading === title ? "title" : undefined;
+};
+
 /** The heading's words without a number label at its head (Chapter 2, 1.), from the section the heading opens. */
 const unlabeledOf = (doc: ProseDocument, heading: MarkupHeading): string =>
   doc.sections.find((section) => section.span.start === heading.end)?.unlabeledHeading ?? heading.text;
@@ -132,7 +155,7 @@ export const titleLength: Detector = (doc, options): Finding[] => {
     .map(({ heading, words }) => ({ heading, count: headingLength(ownWordsOf(words, citedTitleActions), doc.lengthUnit) }))
     .filter(({ count }) => count > options.limit)
     .map(({ heading, count }) => ({
-      ...findingAt(doc, heading, { heading: heading.text.trim(), count, limit: options.limit }, heading === title ? "title" : undefined),
+      ...findingAt(doc, heading, { heading: heading.text.trim(), count, limit: options.limit }, variantOf(heading, title)),
       rule: "title-length",
       severity: "info",
     }));
