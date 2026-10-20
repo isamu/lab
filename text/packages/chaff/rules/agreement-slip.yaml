@@ -61,5 +61,5 @@ example:
     after: This new version will ship in May.
 
 not_flagged:
-  ja: 単数と複数で形が同じ名詞（series、data）、this や these の直後の語、名詞を修飾する名詞（a sales team）は指しません。
-  en: Nouns spelled alike in both numbers ("series", "data"), a word right after "this" or "these", and nouns that modify another noun ("a sales team") are not reported.
+  ja: 単数と複数で形が同じ名詞（series、data）、this や these の直後の語、名詞を修飾する名詞（a sales team）、前置詞の後ろの所有の語と名詞の will や can（at its will）は指しません。
+  en: Nouns spelled alike in both numbers ("series", "data"), a word right after "this" or "these", nouns that modify another noun ("a sales team"), and a possessive after a preposition with "will" or "can" as its noun ("at its will") are not reported.

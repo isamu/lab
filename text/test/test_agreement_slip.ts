@@ -144,6 +144,12 @@ describe("agreement-slip — 純関数", () => {
     assert.deepEqual(slips([w("Your", "PRON"), w("IS", "VERB")]), []);
   });
 
+  it("前置詞の後ろの所有の語の後ろの助動詞は名詞（at its will take）だが、be は数える", () => {
+    assert.deepEqual(slips([w("at", "ADP"), w("their", "PRON"), w("will", "AUX"), w("take", "VERB")]), []);
+    assert.deepEqual(slips([w("said", "VERB"), w("their", "PRON"), w("will", "AUX"), w("take", "VERB")]), ["possessive their will"]);
+    assert.deepEqual(slips([w("for", "ADP"), w("their", "PRON"), w("is", "VERB"), w("no", "DET")]), ["possessive their is"]);
+  });
+
   it("複数で書いた句（ones of the most）は、限定詞・形容詞・代名詞の後ろでなければ数える", () => {
     const phrase = [w("ones", "NOUN", PLUR, "one"), w("of", "ADP"), w("the", "DET", ART), w("most", "ADV")];
     assert.deepEqual(slips([w("remains", "VERB"), ...phrase]), ["number ones of the most"]);
@@ -241,6 +247,14 @@ describe("agreement-slip — 英語", () => {
     assert.deepEqual(findingsOf("The problem remains ones of the most intriguing questions."), ["1:21 ones of the most"]);
     assert.deepEqual(findingsOf("Keep in mind the some roads are closed part of the year."), ["1:14 the some"]);
     assert.deepEqual(findingsOf("The results show a significant changes in accuracy."), ["1:18 a significant changes"]);
+  });
+
+  it("valid: 前置詞の後ろの所有の語と名詞の will（at its will）", () => {
+    // Dartmouth College v. Woodward (1819), public domain.
+    const opinion =
+      "It will hardly be contended that the legislative power is so transcendent, that it may at its will take away the private property of the corporation.";
+    assert.deepEqual(findingsOf(opinion), []);
+    assert.deepEqual(findingsOf("We hope their will take the offer."), ["1:9 their will"]);
   });
 
   it("invalid: 限定詞と名詞の数の食い違い", () => {
