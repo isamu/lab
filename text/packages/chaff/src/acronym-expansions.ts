@@ -12,11 +12,8 @@ const QUOTE = String.raw`["“”'‘’「」]?`;
 
 /** 名前のあとに括弧で略語（Service Level Agreement (SLA)、(the "SLA")）。 */
 const NAME_FIRST = new RegExp(String.raw`[(（]\s*(?:the\s+)?${QUOTE}(?<acronym>${ACRONYM})${QUOTE}\s*[)）]`, "gu");
-/**
- * 略語のあとに括弧で名前（SLA (Service Level Agreement)、CI（継続的インテグレーション））。ハイフンかスラッシュで英数字に
- * つないだ略語（CC BY-NC-SA（表示-非営利-継承）の SA、TCP/IP の IP）は符号の一部で、括弧は符号全体の名前なので、展開に読まない。
- */
-const ACRONYM_FIRST = new RegExp(String.raw`(?<![\p{Script=Latin}\p{N}][-‐‑/]?)(?<acronym>${ACRONYM})\s?[(（](?<name>[^()（）\n]{2,60})[)）]`, "gu");
+/** 略語のあとに括弧で名前（SLA (Service Level Agreement)、CI（継続的インテグレーション））。 */
+const ACRONYM_FIRST = new RegExp(String.raw`(?<![\p{Script=Latin}\p{N}])(?<acronym>${ACRONYM})\s?[(（](?<name>[^()（）\n]{2,60})[)）]`, "gu");
 
 /** 頭文字に数えない短い語（Department of Defense の of）。 */
 const SMALL_WORDS: ReadonlySet<string> = new Set(["of", "and", "the", "for", "to", "in", "on", "a", "an", "&", "de", "by", "with"]);
@@ -65,6 +62,16 @@ const isNameAfter = (name: string, acronym: string): boolean => {
   return namesAcronym(name, acronym);
 };
 
+/** ハイフンかスラッシュで前の英数字につないだ略語（BY-NC-SA の SA、IEEE-SA の SA）。 */
+const JOINED_BEFORE = /[\p{Script=Latin}\p{N}][-‐‑/]$/u;
+
+/**
+ * 略語のあとの括弧の中が、その略語の名前か。符号の中につないだ略語（CC BY-NC-SA（表示-非営利-継承））の括弧は、ふつう符号全体の
+ * 名前なので、頭文字がその略語と揃う英字の名前（IEEE-SA (Standards Association)）だけを、その略語の展開と読む。
+ */
+const namesAcronymAfter = (before: string, name: string, acronym: string): boolean =>
+  JOINED_BEFORE.test(before) ? !HAS_KANA_OR_KANJI.test(name) && isNameAfter(name, acronym) : isNameAfter(name, acronym);
+
 /** 文の中の略語の展開。両方の形を、文書の中の位置の順に。 */
 export const expansionsIn = (body: ExpansionText): Expansion[] => {
   const nameFirst = [...body.text.matchAll(NAME_FIRST)].flatMap((match) => {
@@ -75,7 +82,7 @@ export const expansionsIn = (body: ExpansionText): Expansion[] => {
   const acronymFirst = [...body.text.matchAll(ACRONYM_FIRST)].flatMap((match) => {
     const acronym = match.groups?.["acronym"] ?? "";
     const name = (match.groups?.["name"] ?? "").trim();
-    return isNameAfter(name, acronym) ? [{ acronym, name, offset: body.start + match.index }] : [];
+    return namesAcronymAfter(body.text.slice(0, match.index), name, acronym) ? [{ acronym, name, offset: body.start + match.index }] : [];
   });
   return [...nameFirst, ...acronymFirst].toSorted((left, right) => left.offset - right.offset);
 };

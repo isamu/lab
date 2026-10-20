@@ -26,6 +26,8 @@ describe("acronym-expansion-conflict: ハイフンでつないだ符号の名前
   it("単独で書いた略語の展開は、これまでどおり読み、二通りなら指す", () => {
     assert.deepEqual(acronymsOf("運用は SRE（サイト信頼性工学）が担う。"), ["SRE"]);
     assert.deepEqual(acronymsOf("運用は-SRE（サイト信頼性工学）が担う。"), ["SRE"]);
+    // 符号の中の略語でも、頭文字がその略語と揃う英字の名前は、その略語の展開。
+    assert.deepEqual(acronymsOf("規格は IEEE-SA (Standards Association) が定める。"), ["SA"]);
     const source = ["# 体制", "", "運用は SRE（サイト信頼性工学）が担う。", "", "障害の対応も SRE（現場の保守班）が受ける。", ""].join("\n");
     assert.equal(conflictsOf(source).length, 1);
   });
