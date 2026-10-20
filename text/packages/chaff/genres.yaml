@@ -549,6 +549,8 @@ genres:
         - Line breaks, metre and repetition are the poet's choices; fix only typos and spellings the work itself varies
         - Are titles, stanza numbers and section marks consistent?
         - Are archaic spellings and forms used consistently within the work?
+    # A line of Japanese verse ends where the line ends, with or without 。 (profiles/verse.yaml).
+    profile: verse
     # Verse lines: short lines with no sentence punctuation (a tanka's three lines; a capitalised line of English verse).
     # A glossary or a list of names has short lines too, so it takes many of them.
     suggest:

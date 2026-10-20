@@ -1,0 +1,14 @@
+id: verse
+
+name:
+  ja: 詩
+  en: Verse
+
+why:
+  ja: 詩は行で区切って読みます。句点の無い行が続いても、行の終わりが一つの区切りで、連は一つの文ではありません。段落の中の行の終わりで文を切ります。
+  en: Japanese verse is read line by line. Its lines often have no 。, and a stanza is not one sentence, so a Japanese poem's sentences end at its line ends. English verse marks its sentences with punctuation across lines, so this profile has no English part.
+
+# 内容からは選ばない（詩の行は、用語集や名前の一覧の短い行と見分けにくい）。literature/poetry が読む。
+ja:
+  # 段落の中の改行を、文の終わりとして読む。行を折り返した散文の文は無い前提。
+  line_breaks_end_sentences: true
