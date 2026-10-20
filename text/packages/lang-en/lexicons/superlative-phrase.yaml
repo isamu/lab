@@ -1,0 +1,13 @@
+# Set phrases that hold a superlative but claim nothing is the best. A superlative inside one is not reported by
+# unqualified-superlative. "Even the best" concedes ("even the best teams slip"); "the best case" is a hypothetical.
+id: superlative-phrase
+language: en
+entries:
+  - pattern: even the best
+  - pattern: even the most
+  - pattern: even on the best
+  - pattern: even in the best
+  - pattern: even for the best
+  - pattern: even with the best
+  - pattern: the best case
+  - pattern: the best-case

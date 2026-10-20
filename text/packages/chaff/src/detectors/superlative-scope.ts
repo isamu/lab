@@ -33,7 +33,7 @@ export const PHRASE_END = new Set(["NOUN", "PROPN", "NUM", "ADJ"]);
 const isMarker = (token: Token | undefined, markers: Lexicon): boolean =>
   token !== undefined && markers.some((entry) => entry.pattern.toLowerCase() === token.surface.toLowerCase());
 
-const isNamed = (token: Token | undefined): boolean => token !== undefined && (token.pos === "PROPN" || token.features?.["NameType"] !== undefined);
+export const isNamed = (token: Token | undefined): boolean => token !== undefined && (token.pos === "PROPN" || token.features?.["NameType"] !== undefined);
 
 /** 空白も助詞も挟まずに名詞が付いた最上級（国内最大・業界最速・世界唯一）。前の名詞が範囲。 */
 const compound = (tokens: readonly Token[], range: TokenRange): boolean => {
@@ -58,12 +58,27 @@ const clauseBefore = (tokens: readonly Token[], range: TokenRange): boolean => {
 const namedBefore = (tokens: readonly Token[], range: TokenRange, markers: Lexicon): boolean =>
   isMarker(tokens[range.start - 1], markers) && isNamed(tokens[range.start - 2]);
 
+const HYPHENS = new Set(["-", "\u2010", "\u2011"]);
+
+/** 空白を挟まずに前後の語をつなぐハイフン（commonly-used・award-winning・state-of-the-art）。つないだ語は一つの修飾として読む。 */
+const joiningHyphen = (tokens: readonly Token[], at: number): boolean => {
+  const before = tokens[at - 1];
+  const token = tokens[at];
+  const after = tokens[at + 1];
+  if (before === undefined || token === undefined || after === undefined || !HYPHENS.has(token.surface)) return false;
+  return before.span.end === token.span.start && token.span.end === after.span.start;
+};
+
 /** 最上級に続く名詞句の終わり。名詞が出るまでは修飾を、出た後は名詞の連なりを読む。 */
 export const phraseEnd = (tokens: readonly Token[], at: number, nounSeen = false): number => {
   let end = at;
   let seen = nounSeen;
   for (;;) {
     const token = tokens[end];
+    if (joiningHyphen(tokens, end)) {
+      end += 2;
+      continue;
+    }
     if (token === undefined || !(seen ? NOUN_RUN : PREMODIFIER).has(token.pos)) return end;
     seen ||= NOMINAL.has(token.pos);
     end += 1;

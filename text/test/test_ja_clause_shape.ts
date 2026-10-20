@@ -80,6 +80,13 @@ describe("tari-unpaired", () => {
     assert.deepEqual(findingsOf(RULE, "電車が遅れたりもします。\n"), []);
   });
 
+  it("対の片方を解析器が助動詞と読んでも対と数える（〜であったり、〜していたりと）", () => {
+    assert.deepEqual(findingsOf(RULE, "書いていたり、読んでいたりと忙しい。\n"), []);
+    assert.deepEqual(findingsOf(RULE, "手順が短いだけであったり、名前が素直であったりと、扱いやすい道具です。\n"), []);
+    assert.deepEqual(findingsOf(RULE, "書いていたり、読んでいます。\n"), ["「たり」が一つだけで、対になる「〜たり」がありません"]);
+    assert.deepEqual(findingsOf(RULE, "一日たりとも休まず、休日は本を読んだり、映画を見ます。\n"), ["「だり」が一つだけで、対になる「〜たり」がありません"]);
+  });
+
   it("並べない「たり」と、鉤括弧の中は見ない", () => {
     assert.deepEqual(findingsOf(RULE, "一日たりとも休みません。\n"), []);
     assert.deepEqual(findingsOf(RULE, "彼は「本を読んだり、映画を見る」と書いた。\n"), []);

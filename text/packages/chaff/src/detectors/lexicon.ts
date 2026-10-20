@@ -11,6 +11,7 @@ import { namesAmount } from "./superlative-amount.ts";
 import { restricted, type Restrictors } from "./superlative-clause.ts";
 import { stackedHedges, type StackedHedge } from "./stacked-hedge.ts";
 import { comparisonMarkersOf, counterpartBefore, onlyQuoted, quotedRange, type ComparisonMarkers } from "./superlative-comparison.ts";
+import { inPhrase, ownedBefore } from "./superlative-phrase.ts";
 
 const PER = 1000;
 
@@ -115,8 +116,8 @@ export const hedging: Detector = (doc, options): Finding[] => {
   return [...stacked.map((entry) => stackedFinding(doc, entry)), ...density];
 };
 
-/** 数字は語ではないので言語を問わない。数があれば測った結果を言っている。品詞の数（NUM）は "the best one" の one まで含むので使わない。 */
-const DIGIT = /\d/u;
+/** 数字は語ではないので言語を問わない。数があれば測った結果を言っている。全角の数字（最大５億ドル）も数字。品詞の数（NUM）は "the best one" の one まで含むので使わない。 */
+const DIGIT = /\p{Nd}/u;
 
 type Qualifiers = {
   readonly comparison: ComparisonMarkers;
@@ -125,6 +126,8 @@ type Qualifiers = {
   readonly suffixes: Lexicon;
   readonly amounts: Lexicon;
   readonly restrictors: Restrictors;
+  readonly phrases: Lexicon;
+  readonly owners: Lexicon;
 };
 
 const qualifiersOf = (doc: ProseDocument): Qualifiers => ({
@@ -138,12 +141,15 @@ const qualifiersOf = (doc: ProseDocument): Qualifiers => ({
     bounds: doc.lexicons["superlative-bound"] ?? [],
     subjects: doc.lexicons["subject-pronoun"] ?? [],
   },
+  phrases: doc.lexicons["superlative-phrase"] ?? [],
+  owners: doc.lexicons["superlative-owner"] ?? [],
 });
 
-/** 範囲・節・分詞・形容詞・すぐ前の相手のどれかが最上級を限っているか、最上級が量か名前を言っているか。 */
+/** 範囲・持ち主・節・分詞・形容詞・すぐ前の相手のどれかが最上級を限っているか、最上級が量か名前を言っているか。 */
 const qualifiedAt = (tokens: readonly Token[], range: TokenRange, qualifiers: Qualifiers): boolean =>
   counterpartBefore(tokens, range, qualifiers.comparison.before) ||
   scoped(tokens, range, qualifiers.scope) ||
+  ownedBefore(tokens, range, qualifiers.owners) ||
   restricted(tokens, range, qualifiers.restrictors) ||
   namesQuantity(tokens, range, qualifiers.quantityNouns) ||
   makesWord(tokens, range, qualifiers.suffixes) ||
@@ -153,7 +159,10 @@ const qualifiedAt = (tokens: readonly Token[], range: TokenRange, qualifiers: Qu
 const everyQualified = (sentence: Sentence, entry: LexiconEntry, qualifiers: Qualifiers): boolean => {
   const tokens = sentence.tokens ?? [];
   const ranges = entryRanges(sentence, entry);
-  return ranges.length > 0 && ranges.every((range) => quotedRange(sentence, range) || qualifiedAt(tokens, range, qualifiers));
+  return (
+    ranges.length > 0 &&
+    ranges.every((range) => quotedRange(sentence, range) || inPhrase(tokens, range, qualifiers.phrases) || qualifiedAt(tokens, range, qualifiers))
+  );
 };
 
 const qualified = (sentence: Sentence, entry: LexiconEntry, qualifiers: Qualifiers): boolean =>
