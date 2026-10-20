@@ -384,28 +384,7 @@ const withoutEmptySections = (lines: readonly string[]): string[] =>
     { kept: [], nextLevel: 0 },
   ).kept;
 
-const BLOCK_TAGS = new Set([
-  "p",
-  "div",
-  "ul",
-  "ol",
-  "hr",
-  "blockquote",
-  "section",
-  "article",
-  "header",
-  "footer",
-  "main",
-  "aside",
-  "dl",
-  "dt",
-  "dd",
-  "figure",
-  "figcaption",
-  "pre",
-  "body",
-  "html",
-]);
+const BLOCK_TAGS = new Set("p div ul ol hr blockquote section article header footer main aside dl dt dd figure figcaption pre body html".split(" "));
 
 const heading = (_whole: string, level: string, inside: string): string => `\n\n${"#".repeat(Number(level))} ${stripTags(inside).trim()}\n\n`;
 
