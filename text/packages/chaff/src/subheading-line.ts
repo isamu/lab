@@ -98,11 +98,13 @@ const cutsAround = (text: string, lines: readonly Line[], index: number): Cut[] 
 /** ※で始まる行。前の行の項目（「勤務日数：週5日」）への注記で、前の行の文の続きではない。 */
 const NOTE_LINE = /^[ \t\u3000]*※/u;
 
-/** 注記の行の前の切れ目。段落の最初の行の前では切らない。 */
+/** 注記の行の前の切れ目。前に字のある行が無ければ（段落の最初の行）切らない。 */
 const noteCuts = (text: string, lines: readonly Line[]): Cut[] =>
   lines.flatMap((line, index) => {
     const previous = lines[index - 1];
-    return previous !== undefined && NOTE_LINE.test(text.slice(line.start, line.end)) ? [{ end: previous.end, next: line.start }] : [];
+    return previous !== undefined && hasText(text, previous) && NOTE_LINE.test(text.slice(line.start, line.end))
+      ? [{ end: previous.end, next: line.start }]
+      : [];
   });
 
 /**
