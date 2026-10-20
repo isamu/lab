@@ -1,0 +1,14 @@
+# Determiners that never follow an article. "the some roads" or "a the report" is left over from an edit that wrote one
+# determiner over another ("that some roads" was meant). Read by agreement-slip. "the few", "the many", "the one", "the same"
+# and "a few" are English, and are not here. Nor are "a" and "an", which open fixed phrases (the a priori approach), "this",
+# which names a keyword in technical writing (the this pointer), or "no", since "the no-fly list" splits into words.
+id: determiner-after-article
+language: en
+entries:
+  - pattern: the
+  - pattern: some
+  - pattern: any
+  - pattern: each
+  - pattern: every
+  - pattern: these
+  - pattern: those
