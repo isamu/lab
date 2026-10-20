@@ -30,8 +30,11 @@ const isMeeting = (value: unknown): value is Meeting =>
 
 const meetingsOf = (data: unknown): Meeting[] => (isRecord(data) && Array.isArray(data["meetingRecord"]) ? data["meetingRecord"].filter(isMeeting) : []);
 
-/** A line of box-drawing characters only (─────), the minutes' divider between items. */
-const RULE_LINE = new RegExp(String.raw`^[─-╿]+$`, "u");
+/**
+ * A line of box-drawing characters only (─────), or of horizontal bars (―――――, U+2015; ———, U+2014): the minutes'
+ * divider between items. One bar alone is left, as it may be a speech's own line.
+ */
+const RULE_LINE = new RegExp(String.raw`^(?:[─-╿]+|[―—]{3,})$`, "u");
 
 const isRuleLine = (line: string): boolean => RULE_LINE.test(line);
 

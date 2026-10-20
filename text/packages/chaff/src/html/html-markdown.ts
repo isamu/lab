@@ -42,9 +42,25 @@ import { withRunInHeadingsRead } from "./html-run-in-headings.ts";
 import { withoutWidgets } from "./html-widgets.ts";
 import { withPreformattedRestored, withPreformattedStashed } from "./html-preformatted.ts";
 import { withTablesRead } from "./html-tables.ts";
+import { opensSubsection } from "./html-section-number.ts";
 import { decodeEntities, tidyLines } from "./markup-text.ts";
 
 const DROPPED = ["script", "style", "head", "nav", "aside", "footer", "form", "noscript", "svg"];
+
+// A MathML annotation (the formula's TeX source, as arXiv writes it) is not drawn: the page shows the formula once, with
+// nothing put between it and the next word ("[11.0,16.0];").
+// annotation-xml first, so that an <annotation> inside it goes with it.
+const MATH_ANNOTATIONS = [/<annotation-xml\b[^>]*>[\s\S]*?<\/annotation-xml\s*>/giu, /<annotation(?![\w-])[^>]*>[\s\S]*?<\/annotation\s*>/giu];
+
+const MATH = /<math\b[^>]*>[\s\S]*?<\/math\s*>/giu;
+
+// The invisible operators a formula is written with (function application U+2061, invisible times U+2062, a zero
+// width space between two symbols) draw nothing, so the formula's text is what the reader sees without them.
+const INVISIBLE_OPERATOR = /[\u200b\u2061-\u2064]/gu;
+
+/** A formula as the page draws it: once, without its TeX source, and without its invisible operators. */
+const withMathAsDrawn = (html: string): string =>
+  html.replace(MATH, (math: string) => MATH_ANNOTATIONS.reduce((text, annotation) => text.replace(annotation, ""), math).replace(INVISIBLE_OPERATOR, ""));
 
 const withoutElement = (html: string, tag: string): string => {
   const innermost = new RegExp(`<${tag}\\b[^>]*>(?:(?!<${tag}\\b)[\\s\\S])*?</${tag}\\s*>`, "giu");
@@ -352,16 +368,17 @@ const isDrawnRule = (line: string): boolean => /^(?:([-_*=])\s*)(?:\1\s*){2,}$/u
 
 /**
  * Headings with nothing under them before the next heading of the same or a higher level: what dropped navigation left.
- * A drawn rule under a heading is not something under it.
+ * A drawn rule under a heading is not something under it, and a numbered heading whose first subsection follows it at the
+ * same level ("3." then "3.1", both <h4>) holds that subsection.
  */
 const withoutEmptySections = (lines: readonly string[]): string[] =>
-  lines.reduceRight<{ readonly kept: string[]; readonly nextLevel: number }>(
+  lines.reduceRight<{ readonly kept: string[]; readonly nextLevel: number; readonly nextHeading?: string }>(
     (state, line) => {
-      if (line === "" || isDrawnRule(line)) return { kept: [line, ...state.kept], nextLevel: state.nextLevel };
+      if (line === "" || isDrawnRule(line)) return { ...state, kept: [line, ...state.kept] };
       const level = headingLevel(line) - 1;
       if (level < 0) return { kept: [line, ...state.kept], nextLevel: Number.POSITIVE_INFINITY };
-      if (state.nextLevel <= level) return state;
-      return { kept: [line, ...state.kept], nextLevel: level };
+      if (state.nextLevel < level || (state.nextLevel === level && !opensSubsection(line, state.nextHeading))) return state;
+      return { kept: [line, ...state.kept], nextLevel: level, nextHeading: line };
     },
     { kept: [], nextLevel: 0 },
   ).kept;
@@ -468,7 +485,7 @@ const UNTITLED_HEADING = /^#{1,6}$/u;
 
 export const htmlToMarkdown = (html: string): string => {
   const uncommented = withLostParagraphTagsRestored(withAttributeMarkupEscaped(html).replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, ""));
-  const preformatted = withPreformattedStashed(withTablesRead(DROPPED.reduce(withoutElement, withoutRubyText(uncommented))));
+  const preformatted = withPreformattedStashed(withTablesRead(DROPPED.reduce(withoutElement, withMathAsDrawn(withoutRubyText(uncommented)))));
   const kept = withoutFootnoteMarks(
     withoutHeadingSelfLinks(withoutWidgets(withoutButtons(withoutReaderOnlyText(withoutHiddenElements(mainContent(withoutSiteChrome(preformatted.html))))))),
   ).replace(MARKUP_SPACE, " ");

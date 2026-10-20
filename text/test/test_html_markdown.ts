@@ -42,6 +42,30 @@ describe("htmlToMarkdown: 見出し・段落・箇条書き", () => {
     assert.equal(htmlToMarkdown("<p>It ends here.&#32; Then.</p>"), "It ends here.  Then.\n");
   });
 
+  it("MathML の注釈 (式の TeX の元) は描かれないので落とす。式は一度だけ、次の字との間に空白を足さない", () => {
+    const math =
+      '<p>The rate was 14.9% <math alttext="[11.0,18.8]"><semantics><mrow><mo>[</mo><mn>11.0</mn><mo>,</mo><mn>18.8</mn><mo>]</mo></mrow><annotation encoding="application/x-tex">[11.0,18.8]</annotation></semantics></math>; with <math><semantics><mi>ρ</mi><annotation-xml encoding="MathML-Content"><ci>ρ</ci></annotation-xml><annotation encoding="application/x-tex">\\rho</annotation></semantics></math> too.</p>';
+    assert.equal(htmlToMarkdown(math), "The rate was 14.9% [11.0,18.8]; with ρ too.\n");
+    assert.equal(htmlToMarkdown("<p>An annotation of the text stays.</p>"), "An annotation of the text stays.\n");
+    const operators = "<p>Let <math><mi>log</mi><mo>\u2061</mo><mi>x</mi><mo>\u2062</mo><mi>y</mi><mi>𝕀</mi><mo>\u200b</mo><mi>z</mi></math> hold.</p>";
+    assert.equal(htmlToMarkdown(operators), "Let logxy𝕀z hold.\n");
+    assert.equal(htmlToMarkdown("<p>a\u200bb outside a formula stays</p>"), "a\u200bb outside a formula stays\n");
+    assert.equal(htmlToMarkdown("<p>foo<annotation> note </annotation>bar</p>"), "foo note bar\n");
+    assert.equal(htmlToMarkdown("<p><math><mi>x</mi><annotation-xml><annotation>a</annotation>b</annotation-xml></math> holds</p>"), "x holds\n");
+  });
+
+  it("番号の見出しのすぐ後に同じ札の小見出し (3. の後の 3.1、4. の後の (1)) があれば、上の見出しは空の節ではない", () => {
+    assert.equal(htmlToMarkdown("<h4>3. 結果</h4><h4>3.1 データ</h4><p>本文。</p>"), "#### 3. 結果\n\n#### 3.1 データ\n\n本文。\n");
+    assert.equal(htmlToMarkdown("<h4>3．結果</h4><h4>3.1 データ</h4><p>本文。</p>"), "#### 3．結果\n\n#### 3.1 データ\n\n本文。\n");
+    assert.equal(htmlToMarkdown("<h4>4. 課題</h4><h4>（1）費用</h4><p>本文。</p>"), "#### 4. 課題\n\n#### （1）費用\n\n本文。\n");
+    assert.equal(htmlToMarkdown("<h4>3. 結果</h4><h4>4. 考察</h4><p>本文。</p>"), "#### 4. 考察\n\n本文。\n");
+    assert.equal(htmlToMarkdown("<h4>3. 結果</h4><h4>3.1.2 細目</h4><p>本文。</p>"), "#### 3.1.2 細目\n\n本文。\n");
+    assert.equal(htmlToMarkdown("<h4>4. 課題</h4><h4>（2）費用</h4><p>本文。</p>"), "#### （2）費用\n\n本文。\n");
+    assert.equal(htmlToMarkdown("<h4>Menu</h4><h4>3.1 データ</h4><p>本文。</p>"), "#### 3.1 データ\n\n本文。\n");
+    assert.equal(htmlToMarkdown("<h4>4. 課題</h4><h4>① 費用</h4><p>本文。</p>"), "#### 4. 課題\n\n#### ① 費用\n\n本文。\n");
+    assert.equal(htmlToMarkdown("<h2>4. Chapter</h2><h1>(1) Other</h1><p>本文。</p>"), "# (1) Other\n\n本文。\n");
+  });
+
   it("p ごとの段落と、br を二つ重ねた段落の間は空行。br 一つは行を改めるだけ", () => {
     assert.equal(htmlToMarkdown("<p>一つ目の段落です。</p><p>二つ目の段落です。</p>"), "一つ目の段落です。\n\n二つ目の段落です。\n");
     assert.equal(
@@ -648,21 +672,24 @@ describe("decodeEntities", () => {
   });
 });
 describe("htmlToMarkdown: 表", () => {
-  it("行の半分以上に文のある表は、見出しの行を落とし、升目を一つずつ段落にする", () => {
+  it("行の半分以上に文のある表は、見出しの行も含めて、升目を一つずつ段落にする", () => {
     const glossary =
       "<h1>風</h1><table><caption>風向に関する用語</caption><tr><th>用語</th><th>説明</th></tr>" +
       "<tr><td>風向</td><td>風の吹いてくる方向。</td></tr><tr><td></td><td><img src='i.png' alt='図'></td></tr>" +
       "<tr><td>備考</td><td>予報では８方位を用いる。</td></tr></table><p>以上。</p>";
-    assert.equal(htmlToMarkdown(glossary), "# 風\n\n風向に関する用語\n\n風向\n\n風の吹いてくる方向。\n\n備考\n\n予報では８方位を用いる。\n\n以上。\n");
+    assert.equal(
+      htmlToMarkdown(glossary),
+      "# 風\n\n風向に関する用語\n\n用語\n\n説明\n\n風向\n\n風の吹いてくる方向。\n\n備考\n\n予報では８方位を用いる。\n\n以上。\n",
+    );
     const english =
       "<table><thead><tr><th>Code</th><th>Meaning</th></tr></thead><tbody><tr><td>API_KEY_MISSING</td><td>No key was sent.</td></tr></tbody></table>";
-    assert.equal(htmlToMarkdown(english), "API_KEY_MISSING\n\nNo key was sent.\n");
+    assert.equal(htmlToMarkdown(english), "Code\n\nMeaning\n\nAPI_KEY_MISSING\n\nNo key was sent.\n");
     const named = "<table><tr><td>401(k) plan</td><td>A plan for savings.</td></tr><tr><td>24/7 desk</td><td>It never closes.</td></tr></table>";
     assert.equal(htmlToMarkdown(named), "401(k) plan\n\nA plan for savings.\n\n24/7 desk\n\nIt never closes.\n");
     const twoHeaders =
       "<table><thead><tr><th colspan=2>Definitions</th></tr><tr><th>Term</th><th>Meaning</th></tr></thead>" +
       "<tbody><tr><td>Applicant</td><td>A person who applies.</td></tr></tbody></table>";
-    assert.equal(htmlToMarkdown(twoHeaders), "Applicant\n\nA person who applies.\n");
+    assert.equal(htmlToMarkdown(twoHeaders), "Definitions\n\nTerm\n\nMeaning\n\nApplicant\n\nA person who applies.\n");
   });
 
   it("行の見出し (th) も本文の升目。数で始まる升目 (行の番号・数の範囲) は落とし、数で始まる文は残す", () => {
@@ -675,6 +702,20 @@ describe("htmlToMarkdown: 表", () => {
   it("閉じタグを省いた行と升目も、次の行・升目の始まりまで", () => {
     const html = "<table><tr><td>Term<td>It means a word.<tr><td>Other<td>It means another.</table>";
     assert.equal(htmlToMarkdown(html), "Term\n\nIt means a word.\n\nOther\n\nIt means another.\n");
+  });
+
+  it("語の札だけが三行以上並ぶ表は、一覧として升目を段落にする。その上の題の見出しも残る", () => {
+    const methods =
+      "<h4>2.1 分類</h4><p>次表のとおり。</p><h4>表　方法の分類</h4><center><table><tr><td>翻刻</td></tr>" +
+      "<tr><td>タグ付け</td></tr><tr><td>翻訳</td></tr></table></center><h4>出典：筆者作成。</h4><p>以上。</p>";
+    assert.equal(
+      htmlToMarkdown(methods),
+      "#### 2.1 分類\n\n次表のとおり。\n\n#### 表　方法の分類\n\n翻刻\n\nタグ付け\n\n翻訳\n\n#### 出典：筆者作成。\n\n以上。\n",
+    );
+    const links = "<table><tr><td><a href='/a'>A</a></td></tr><tr><td><a href='/b'>B</a></td></tr><tr><td><a href='/c'>C</a></td></tr></table><p>End.</p>";
+    assert.equal(htmlToMarkdown(links), "End.\n");
+    const numbers = "<table><tr><td>Rome</td></tr><tr><td>Paris</td></tr><tr><td>12</td></tr></table><p>End.</p>";
+    assert.equal(htmlToMarkdown(numbers), "End.\n");
   });
 
   it("文の行が半分に届かない表 (数の表に注が一つ)、文の無い表、略語の点しか無い表は、これまでどおり丸ごと落とす", () => {

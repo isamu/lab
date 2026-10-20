@@ -33,6 +33,16 @@ describe("kokkaiToMarkdown: 会議の発言を順に段落にする", () => {
     assert.equal(kokkaiToMarkdown(json), "# 第999回国会 参議院 試験委員会 第1号（2099-01-02）\n\n○委員長（試験太郎君）　散会します。\n\n午後三時散会\n");
   });
 
+  it("横棒（―、—）だけの区切りの行も落とす。横棒 1 つ・2 つの行と、文の中の横棒は残す", () => {
+    const json = response([
+      speech("試験太郎", "○委員長（試験太郎君）　採決します。\r\n　　　　―――――――――――――\r\n　　　　———\r\n　次に、案―第一号―を議題とします。\r\n　―\r\n　――"),
+    ]);
+    assert.equal(
+      kokkaiToMarkdown(json),
+      "# 第999回国会 参議院 試験委員会 第1号（2099-01-02）\n\n○委員長（試験太郎君）　採決します。\n\n次に、案―第一号―を議題とします。\n\n―\n\n――\n",
+    );
+  });
+
   it("改行が \\n だけでも行に分ける", () => {
     const json = response([speech("試験太郎", "○委員長（試験太郎君）　一行目。\n　二行目。")]);
     assert.match(kokkaiToMarkdown(json), /一行目。\n\n二行目。\n$/u);

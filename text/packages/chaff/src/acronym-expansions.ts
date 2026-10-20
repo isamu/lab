@@ -62,6 +62,16 @@ const isNameAfter = (name: string, acronym: string): boolean => {
   return namesAcronym(name, acronym);
 };
 
+/** ハイフンかスラッシュで前の英数字につないだ略語（BY-NC-SA の SA、IEEE-SA の SA）。 */
+const JOINED_BEFORE = /[\p{Script=Latin}\p{N}][-‐‑/]$/u;
+
+/**
+ * 略語のあとの括弧の中が、その略語の名前か。符号の中につないだ略語（CC BY-NC-SA（表示-非営利-継承））の括弧は、ふつう符号全体の
+ * 名前なので、頭文字がその略語と揃う英字の名前（IEEE-SA (Standards Association)）だけを、その略語の展開と読む。
+ */
+const namesAcronymAfter = (before: string, name: string, acronym: string): boolean =>
+  JOINED_BEFORE.test(before) ? !HAS_KANA_OR_KANJI.test(name) && isNameAfter(name, acronym) : isNameAfter(name, acronym);
+
 /** 文の中の略語の展開。両方の形を、文書の中の位置の順に。 */
 export const expansionsIn = (body: ExpansionText): Expansion[] => {
   const nameFirst = [...body.text.matchAll(NAME_FIRST)].flatMap((match) => {
@@ -72,7 +82,7 @@ export const expansionsIn = (body: ExpansionText): Expansion[] => {
   const acronymFirst = [...body.text.matchAll(ACRONYM_FIRST)].flatMap((match) => {
     const acronym = match.groups?.["acronym"] ?? "";
     const name = (match.groups?.["name"] ?? "").trim();
-    return isNameAfter(name, acronym) ? [{ acronym, name, offset: body.start + match.index }] : [];
+    return namesAcronymAfter(body.text.slice(0, match.index), name, acronym) ? [{ acronym, name, offset: body.start + match.index }] : [];
   });
   return [...nameFirst, ...acronymFirst].toSorted((left, right) => left.offset - right.offset);
 };

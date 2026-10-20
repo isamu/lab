@@ -43,7 +43,7 @@ mdn-using-fetch-en  1
 meti-keiryoshi-exam-correction  1
 meti-press-level4-bus  1
 mext-heatstroke-after-holidays  8
-mhlw-icd-committee-26-minutes  8
+mhlw-icd-committee-26-minutes  7
 mhlw-norovirus-qa  2
 mlit-press-planned-suspension  2
 moriguchi-satsuki-gakuen-ijime-houshin  2

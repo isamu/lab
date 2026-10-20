@@ -1,7 +1,8 @@
 // Tables as the HTML converter reads them. A table whose rows are sentences (a glossary of terms and what they mean,
-// a list of routes and how each one works) keeps each cell as a block of its own, so its sentences are read as prose;
-// its header rows go. Any other table (figures, a grid of links) goes whole, as before. Nested tables are read from
-// the inside out. Pure; a regular-expression reading, not a parser.
+// a list of routes and how each one works), or whose every cell is a label in words (a one-column list of methods),
+// keeps each cell as a block of its own, its header row first, so its words are read as the page shows them. Any other
+// table (figures, a grid of links) goes whole, as before. Nested tables are read from the inside out. Pure; a
+// regular-expression reading, not a parser.
 import { plainText, untilStable } from "./html-elements.ts";
 
 type Cell = { readonly header: boolean; readonly html: string };
@@ -60,16 +61,31 @@ const isProse = (rows: readonly Row[]): boolean => {
 
 const CAPTION = /<caption\b[^>]*>([\s\S]*?)<\/caption\s*>/iu;
 
-/** Each cell with text as a block, the caption first. */
+const LINK = /<a\b[^>]*\bhref\s*=/iu;
+
+/** A label in words that is no link: text a reader reads, not a way around the site. */
+const isWordLabel = (cell: Cell): boolean => hasText(cell) && !isNumberLabel(plainText(cell.html)) && !LINK.test(cell.html);
+
+// A pair of labels (a header and one value) is a form's field more than a list.
+const MIN_LABEL_ROWS = 3;
+
+/** Three or more rows with text below the header, and every cell with text a label in words: a list set as a table. */
+const isWordTable = (rows: readonly Row[]): boolean => {
+  const written = rows.filter((row) => row.some(hasText));
+  const body = written.filter((row) => !isHeaderRow(row));
+  return body.length >= MIN_LABEL_ROWS && written.every((row) => row.filter(hasText).every(isWordLabel));
+};
+
+/** Each cell with text as a block, the caption first, then the header row's labels. */
 const asBlocks = (table: string, rows: readonly Row[]): string => {
   const caption = CAPTION.exec(table)?.[1];
-  const cells = rows.filter((row) => !isHeaderRow(row)).flatMap((row) => row.filter(isKept).map((cell) => cell.html));
+  const cells = rows.flatMap((row) => row.filter(isKept).map((cell) => cell.html));
   return ["<div>", ...[caption ?? "", ...cells].filter((html) => html !== "").map((html) => `<div>${html}</div>`), "</div>"].join("");
 };
 
 const readTable = (_whole: string, inside: string): string => {
   const rows = rowsOf(inside);
-  return isProse(rows) ? asBlocks(inside, rows) : " ";
+  return isProse(rows) || isWordTable(rows) ? asBlocks(inside, rows) : " ";
 };
 
 /** Every table read from the inside out: a table of sentences as blocks, any other table replaced by a space. */

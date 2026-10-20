@@ -34,6 +34,18 @@ entries:
     position: after
   - pattern: of the fiscal year
     position: after
+  - pattern: of each calendar year
+    position: after
+  - pattern: of every calendar year
+    position: after
+  - pattern: of each fiscal year
+    position: after
+  - pattern: of the calendar year
+    position: after
+  - pattern: of the year in which
+    position: after
+  - pattern: of the year following
+    position: after
   - pattern: annually
     position: before
   - pattern: each year
