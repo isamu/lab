@@ -242,13 +242,24 @@ const readingIn = (text: ChangeText, sentence: Span): Reading | undefined => {
   return { ...text, ...parts, ...only, rates };
 };
 
+/**
+ * The second value read as the amount of the change, not the value reached: written after the earlier one with no mark of
+ * the value reached (「940,444人から205,087人（21.8%）減少」), and giving the rate that way.
+ */
+const isAmountOfChange = (text: Reading, pair: Pair): boolean => {
+  const { base, current: amount } = pair;
+  if (amount.start < base.end || markOf(amount, text.targets) !== undefined) return false;
+  const reached = { value: base.value + text.sign * amount.value, step: amount.step };
+  return disagreeingRate(base, reached, text.sign * text.rate.value, text.rate.decimals) === undefined;
+};
+
 const issueIn = (text: ChangeText, sentence: Span): StructureIssue[] => {
   const reading = readingIn(text, sentence);
   const pair = reading === undefined ? undefined : (besideRate(reading) ?? beforeRate(reading) ?? reachedThenBase(reading));
   if (reading === undefined || pair === undefined) return [];
   const { rate, sign } = reading;
   const computed = disagreeingRate(pair.base, pair.current, sign * rate.value, rate.decimals);
-  if (computed === undefined) return [];
+  if (computed === undefined || isAmountOfChange(reading, pair)) return [];
   return [{ offset: rate.start, values: { rate: String(rate.value), computed: Math.abs(computed).toFixed(rate.decimals) } }];
 };
 
