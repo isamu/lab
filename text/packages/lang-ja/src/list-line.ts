@@ -92,9 +92,9 @@ const isListLine = (line: string, vocabulary: LineVocabulary): boolean =>
 const URL_LINE = new RegExp(`^${SPACE}*https?://\\S+${SPACE}*$`, "u");
 /**
  * 欄の行: 短い札と全角か半角のコロンで始まる行（電話：03-…、E-mail：…）と、郵便番号の印〒で始まる行。連絡先の欄は 1 行 1 項目。
- * 札が数字だけなら時刻（10:00）で、札ではない。
+ * 札が数字で終われば時刻（10:00、午前10:00）か比（1:2）で、札ではない。
  */
-const FIELD_LINE = new RegExp(`^${SPACE}*(?:〒|(?![0-9０-９]+[：:])[^\\s、。，：:「」『』（）()【】]{1,12}[：:])`, "u");
+const FIELD_LINE = new RegExp(`^${SPACE}*(?:〒|[^\\s、。，：:「」『』（）()【】]{0,11}[^\\s、。，：:「」『』（）()【】0-9０-９][：:])`, "u");
 /** 括弧でくくった語だけの行（（お問い合わせ先）、【新着】（文部科学省）、「報告書は実践の宝庫」）。札か題で、文の途中ではない。 */
 const BRACKET_GROUP = "[（(【〔［「『][^（(【〔［「『）)】〕］」』\\n]*[）)】〕］」』]";
 const BRACKET_LINE = new RegExp(`^(?:${SPACE}*${BRACKET_GROUP})+${SPACE}*$`, "u");

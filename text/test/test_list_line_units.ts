@@ -140,6 +140,8 @@ describe("日本語の文分割: 1 行で一つの単位の行（URL、欄、括
   it("折り返した文の途中の行は、括弧や時刻やコロンを含んでも文を改めない", () => {
     assert.deepEqual(textsOf("会議は\n10:00から始まり、\n（休憩を挟んで）\n夕方まで続く。"), ["会議は\n10:00から始まり、\n（休憩を挟んで）\n夕方まで続く。"]);
     assert.deepEqual(textsOf("担当者は\n「今日は休みだ」\nと述べた。"), ["担当者は\n「今日は休みだ」\nと述べた。"]);
+    assert.deepEqual(textsOf("受付は\n午前10:00\nから始まります。"), ["受付は\n午前10:00\nから始まります。"]);
+    assert.deepEqual(textsOf("開始は朝\n午前10:00\n頃の予定です。"), ["開始は朝\n午前10:00\n頃の予定です。"]);
     assert.deepEqual(textsOf("申込みは\nhttps://example.jp/form\nから受け付けます。"), ["申込みは\nhttps://example.jp/form\nから受け付けます。"]);
     assert.deepEqual(textsOf("これは長い文で（注を付けて）途中で\n折り返している。"), ["これは長い文で（注を付けて）途中で\n折り返している。"]);
   });
