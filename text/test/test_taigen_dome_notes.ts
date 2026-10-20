@@ -27,6 +27,11 @@ describe("taigen-dome-in-prose: 番号を付けた注の一覧", () => {
     assert.deepEqual(findingsOf(`${body}\n${notes}`), []);
   });
 
+  it("番号の段落のあいだの、番号の無い続きの段落も一覧に入れる", () => {
+    const continued = notes.replace("(2) 鈴木花子.", "(2) 次の文献に詳しい。\n\n田中一郎. 雑誌の契約の行方. 図書館の雑誌. 2019.\n鈴木花子.");
+    assert.deepEqual(findingsOf(`${body}\n${continued}`), []);
+  });
+
   it("番号が 1 から始まらない段落、二つだけの段落、番号の無い段落は本文として数える", () => {
     const shifted = notes.replace("(1)", "(4)").replace("(2)", "(5)").replace("(3)", "(6)");
     assert.equal(findingsOf(`${body}\n${shifted}`).length, 1);

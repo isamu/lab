@@ -19,7 +19,7 @@ const labelOf = (source: string, paragraph: Paragraph): number | undefined => {
   return label === undefined ? undefined : Number(label);
 };
 
-/** 1 から一つずつ増える番号の付いた段落の並び。番号の無い段落は間に挟まってよく、並びには入れない。 */
+/** 1 から一つずつ増える番号の付いた段落の並び。番号の無い段落は間に挟まってよい。 */
 const labelledRuns = (source: string, paragraphs: readonly Paragraph[]): Paragraph[][] =>
   paragraphs.reduce<Paragraph[][]>((runs, paragraph) => {
     const label = labelOf(source, paragraph);
@@ -30,14 +30,19 @@ const labelledRuns = (source: string, paragraphs: readonly Paragraph[]): Paragra
     return runs;
   }, []);
 
+/** 並びの最初の番号の段落から最後の番号の段落までの段落か。番号の無い段落は、前の注の続き（文献を一行ずつ並べた段落）。 */
+const isWithinRun = (run: readonly Paragraph[], paragraph: Paragraph): boolean =>
+  paragraph.span.start >= (run[0]?.span.start ?? Number.POSITIVE_INFINITY) && paragraph.span.start <= (run.at(-1)?.span.start ?? -1);
+
 /**
  * 注や文献の一覧の段落の文（(1) 著者. 題. 誌名. 2020. / (2) …）。項目は名前や題を並べたもので、名詞で止めるのが書き方。
  * 段落の頭に 1 から順に番号を付けた段落が MIN_NOTES 以上続き、その半分以上が出典の印（URL、西暦の年）を持つものだけを、一覧と読む。
+ * 一覧は最初の番号の段落から最後の番号の段落まで。間の番号の無い段落も、注の続きとして入れる。
  */
 export const noteSentences = (source: string, paragraphs: readonly Paragraph[]): ReadonlySet<Sentence> =>
   new Set(
     labelledRuns(source, paragraphs)
       .filter((run) => run.length >= MIN_NOTES && citesSources(source, run))
-      .flat()
+      .flatMap((run) => paragraphs.filter((paragraph) => isWithinRun(run, paragraph)))
       .flatMap((paragraph) => paragraph.sentences),
   );
