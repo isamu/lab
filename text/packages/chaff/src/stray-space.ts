@@ -21,8 +21,26 @@ const LIGHT_VERB = "する";
  */
 const isBound = (token: Token): boolean => BOUND.has(token.pos) || (token.pos === "CCONJ" && [...token.surface].length === 1);
 
-const kindOf = (left: Token, right: Token): JointKind | undefined => {
-  if (isBound(right) || (right.lemma === LIGHT_VERB && left.pos === "NOUN")) return "inside-phrase";
+const ONE_HIRAGANA = /^\p{Script=Hiragana}$/u;
+const ENDS_IN_KANJI = /\p{Script=Han}$/u;
+
+/**
+ * 漢字で終わる語と空白の後ろの一字のかなを、解析器が語として読めず感動詞にしたもの（「例 えば」の「え」）。後ろに助詞や助動詞が
+ * 間を空けずに続けば、かなは前の語の続きで、空白は一つの語の途中にある。本物の感動詞（ええ、あのね）は二字以上か、読点や文の
+ * 切れ目で区切られ、助詞の後ろ（返事は あのね）に来る。
+ */
+const isCutWord = ({ left, right, next }: Pair): boolean =>
+  !PARTICLE.has(left.pos) &&
+  ENDS_IN_KANJI.test(left.surface) &&
+  right.pos === "INTJ" &&
+  ONE_HIRAGANA.test(right.surface) &&
+  next !== undefined &&
+  next.span.start === right.span.end &&
+  isBound(next);
+
+const kindOf = (pair: Pair): JointKind | undefined => {
+  const { left, right } = pair;
+  if (isBound(right) || (right.lemma === LIGHT_VERB && left.pos === "NOUN") || isCutWord(pair)) return "inside-phrase";
   // 名詞どうし（担当 田中、赤坂 文弥、フルデスクトップ モード）は名札・名前・複合語の書き方で、数えない。
   return PARTICLE.has(left.pos) ? "between-phrases" : undefined;
 };
@@ -35,12 +53,13 @@ const isLineHead = (text: string, at: number): boolean => text.slice(text.lastIn
 
 const isWord = (token: Token): boolean => token.surface.trim() !== "";
 
-type Pair = { readonly left: Token; readonly right: Token };
+/** 境目の両側の語と、右の語の次の語。 */
+type Pair = { readonly left: Token; readonly right: Token; readonly next: Token | undefined };
 
 const pairsOf = (tokens: readonly Token[]): Pair[] =>
   tokens.filter(isWord).flatMap((right, index, words) => {
     const left = words[index - 1];
-    return left === undefined ? [] : [{ left, right }];
+    return left === undefined ? [] : [{ left, right, next: words[index + 1] }];
   });
 
 // 強調とリンクの括弧。読み手には見えない。
@@ -63,7 +82,7 @@ const jointOf = (sentence: Sentence, written: string, quoted: readonly Span[], p
   if (!isJapanese(left.surface.at(-1)) || !isJapanese(right.surface.at(0))) return undefined;
   const spaced = spacing(sentence, written, pair);
   if (spaced === undefined || isWithinAny(quoted, { start: left.span.start, end: right.span.end })) return undefined;
-  const kind = kindOf(left, right);
+  const kind = kindOf(pair);
   if (kind === undefined || (kind === "between-phrases" && isLineHead(sentence.text, left.span.start - sentence.span.start))) return undefined;
   return { offset: left.span.end, kind, spaced, before: left.surface, after: right.surface };
 };
