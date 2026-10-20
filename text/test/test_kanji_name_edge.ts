@@ -4,7 +4,7 @@ import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
-import { followsForm, holdsName, leadingOrdinal, leadingReference } from "../packages/chaff/src/detectors/kanji-name-edge.ts";
+import { followsForm, followsUnit, holdsName, isListItem, leadingOrdinal, leadingReference } from "../packages/chaff/src/detectors/kanji-name-edge.ts";
 import type { Token } from "../packages/chaff/src/plugin.ts";
 import { measuredOffOn } from "../scripts/rules-measure-files.ts";
 
@@ -35,6 +35,27 @@ describe("kanji-name-edge", () => {
     assert.equal(followsForm("③一般社団法人", forms), false);
     assert.equal(followsForm("本日の ", forms), false);
     assert.equal(followsForm("", forms), false);
+  });
+
+  it("followsUnit: 空白を挟んだ、組織の語で閉じる区切りの後ろ。空白が無いか、区切りが 1 字の名の後ろなら違う", () => {
+    const units = ["局", "課", "係"];
+    assert.equal(followsUnit("生涯学習局 学校図書課 ", units), true);
+    assert.equal(followsUnit("生涯学習局　", units), true);
+    assert.equal(followsUnit("生涯学習局", units), false);
+    assert.equal(followsUnit("本日の ", units), false);
+    assert.equal(followsUnit("薬局 ", units), false);
+    assert.equal(followsUnit("学習局の 案内 ", units), false);
+    assert.equal(followsUnit("", units), false);
+  });
+
+  it("isListItem: 「、」で区切った 1 項目まるごと", () => {
+    const text = "区長、選挙管理委員会事務局長、総務課長";
+    assert.equal(isListItem(text, 3, 14), true);
+    assert.equal(isListItem(text, 0, 2), true);
+    assert.equal(isListItem(text, 15, 19), true);
+    assert.equal(isListItem(text, 3, 10), false);
+    assert.equal(isListItem("健康生きがい部長、総務課長", 6, 8), false);
+    assert.equal(isListItem(text, 3, 3), false);
   });
 
   it("leadingReference: 解析が分けた頭の語で、後ろに語が残るときだけ", () => {
@@ -89,5 +110,32 @@ describe("max-kanji-continuous: 名前と指す語", () => {
     assert.deepEqual(kanjiWords("「登録業者情報検索入力の手引き」を読む。\n"), ["登録業者情報検索入力"]);
     assert.deepEqual(kanjiWords("上記暗号資産交換業者登録簿を見る。\n"), ["暗号資産交換業者登録簿"]);
     assert.deepEqual(kanjiWords("青葉保険協会生命保険契約を結ぶ。\n"), ["青葉保険協会生命保険契約"]);
+  });
+});
+
+describe("max-kanji-continuous: 名前の並びの項目と、空白で区切った組織の名前の続き", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+  });
+
+  const ATTENDEES = "区長、副区長、教育長、総務部長、選挙管理委員会事務局長、監査委員事務局長";
+
+  it("valid: 出席者の並びの、組織の名前に役職を付けた項目", () => {
+    assert.deepEqual(kanjiWords(`${ATTENDEES}\n`), []);
+  });
+
+  it("valid: 上の組織から空白で区切って並べた名前の、最後の区切り", () => {
+    assert.deepEqual(kanjiWords("生涯学習局 学校図書課 学校図書普及促進係\n"), []);
+  });
+
+  it("invalid: 文の中の役職、文で終わる並び、短い並びは数える", () => {
+    assert.deepEqual(kanjiWords("選挙管理委員会事務局長が説明した。\n"), ["選挙管理委員会事務局長"]);
+    assert.deepEqual(kanjiWords(`${ATTENDEES}が出席した。\n`), ["選挙管理委員会事務局長"]);
+    assert.deepEqual(kanjiWords("総務部長、選挙管理委員会事務局長\n"), ["選挙管理委員会事務局長"]);
+  });
+
+  it("invalid: 前が組織の区切りでないか、連なりが組織の語で閉じなければ数える", () => {
+    assert.deepEqual(kanjiWords("本日の 学校図書普及促進係\n"), ["学校図書普及促進係"]);
+    assert.deepEqual(kanjiWords("生涯学習局 学校図書普及促進検討\n"), ["学校図書普及促進検討"]);
   });
 });
