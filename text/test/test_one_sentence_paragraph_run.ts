@@ -75,7 +75,7 @@ describe("one-sentence-paragraph-run", () => {
   });
 
   it("記録（speech/transcript）の段落は記録の組み方なので指さない。原稿（speech/address）や報告書では指す", () => {
-    const minutes = `○委員長（山田一郎君）　これより会議を開きます。\n\n${paragraphs(5)}\n`;
+    const minutes = `○委員長（山田一郎君）\u3000これより会議を開きます。\n\n${paragraphs(5)}\n`;
     assert.equal(firedRules(ja, minutes, "speech/transcript").includes(RULE), false);
     assert.equal(firedRules(ja, minutes, "speech/address").includes(RULE), true);
     assert.equal(firedRules(ja, minutes, "business/report").includes(RULE), true);
