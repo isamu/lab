@@ -81,6 +81,7 @@ describe("strayStrongRuns", () => {
       { start: 26, end: 28 },
     ]);
     assert.deepEqual(strayStrongRuns("the **deadline at https://example.jp/a"), [{ start: 4, end: 6 }]);
+    assert.deepEqual(strayStrongRuns("https://example.jp/aをご覧__重要"), [{ start: 23, end: 25 }]);
   });
 });
 

@@ -112,10 +112,11 @@ const dunderAround = (text: string, run: Span): boolean => {
 };
 
 /**
- * A bare URL written in text (`?__id=1&__mid=2` in a query string). Its marks are the address's characters, shown as the
+ * A bare URL written in text (`?__id=1&__mid=2` in a query string), in the characters a URL may hold: Japanese right after
+ * it (…/aをご覧__重要) is prose again. Its marks are the address's characters, shown as the
  * writer meant. A `*`, and `_` or punctuation at its end, are left outside, so a mark around the URL (`__https://…__.`) still counts.
  */
-const BARE_URL = /https?:\/\/[^\s<>"*（）「」、。]+/gu;
+const BARE_URL = /https?:\/\/[A-Za-z0-9\-._~:/?#[\]@!$&'()+,;=%]+/gu;
 const URL_TAIL = /[_.,;:!?')\]]+$/u;
 
 const urlSpansOf = (text: string): Span[] =>
