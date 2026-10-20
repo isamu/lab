@@ -33,8 +33,15 @@ const titleOf = (rest: string): string | undefined => {
 
 const ARTICLE = /^\s{0,3}(?:ARTICLE|Article)\s+(?<n>\d{1,3}|[IVXLC]{1,7})\b(?<rest>.*)$/u;
 const SECTION = /^\s{0,3}(?:SECTION|Section|§)\s*(?<n>\d{1,3}(?:\.\d{1,3}){0,5})\b(?<rest>.*)$/u;
-/** "(a) text", "(ii) text", "(B) text", or the label alone on its line with the text below it. */
-const LETTERED = new RegExp(`^\\s{0,6}\\((?<n>[a-z]{1,4}|[A-Z]{1,4}|\\d{1,3}|${INSERTED})\\)(?:\\s+(?<rest>\\S.*))?\\s*$`, "u");
+/**
+ * "(a) text", "(ii) text", "(B) text", or the label alone on its line with the text below it. A US statute joins a
+ * subsection's label to its first paragraph's ("(c)(1) Whenever…"): the rest then starts with the next label. A
+ * repealed item keeps its place in brackets ("[(D) Repealed. …]").
+ */
+const LETTERED = new RegExp(
+  `^\\s{0,6}\\[?\\((?<n>[a-z]{1,4}|[A-Z]{1,4}|\\d{1,3}|${INSERTED})\\)(?:\\s+(?<rest>\\S.*)|(?<joined>\\([^()\\s]{1,5}\\)\\s*\\S.*))?\\s*$`,
+  "u",
+);
 
 const headed = (pattern: RegExp, line: string, numbering: string, label: (n: string) => string): NumberedLine | undefined => {
   const groups = pattern.exec(line)?.groups;
@@ -59,9 +66,12 @@ const lettered = (line: string, context: NumberingContext): NumberedLine | undef
   const groups = LETTERED.exec(line)?.groups;
   const raw = groups?.["n"];
   if (groups === undefined || raw === undefined) return undefined;
+  // "(a)(i) …", "(a)(ii) …": a list that writes its parent's label on every line repeats the open (a), and is its (ii).
+  const joined = groups["joined"];
+  if (joined !== undefined && context.open.some((open) => open.kind === "item" && open.label === `(${raw})`)) return lettered(joined, context);
   const style = styleOf(raw, context);
   const ordinal = style === undefined ? undefined : ordinalOf(raw, style);
-  const rest = groups["rest"];
+  const rest = groups["rest"] ?? groups["joined"];
   if (style === undefined || (rest === undefined && !continuesOpen(style, ordinal, context))) return undefined;
   // 番地は書かれたままの "ii" を使う。参照「Section 4.2(a)(ii)」も同じ形で書かれるので、そのまま引ける。
   return {
