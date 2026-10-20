@@ -11,3 +11,8 @@ entries:
   - pattern: とは言わない
   - pattern: とはいわず
   - pattern: とはいわない
+  # 「X」とは言えない・とは限らない も、その語に当たらないと言っていて、定義ではない。
+  - pattern: とは言え
+  - pattern: とはいえ
+  - pattern: とは限ら
+  - pattern: とは呼べ
