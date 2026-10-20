@@ -85,6 +85,7 @@ entries:
   - pattern: UTC
   - pattern: GMT
   - pattern: GDP
+  - pattern: S&P
   - pattern: COVID
   - pattern: SMS
   - pattern: ZIP

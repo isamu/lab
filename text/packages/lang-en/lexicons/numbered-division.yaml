@@ -1,11 +1,13 @@
 # Names of the divisions of a document that take a number after them (Part II, Section VIII, Title IV). A Roman
-# numeral right after one of these is the number, not an acronym. Matched as written, or in capitals (PART II).
+# numeral right after one of these is the number, not an acronym. Matched as written, or in capitals (PART II). A US
+# statute cites a Public Law's titles in lower case ("Pub. L. 101–73, title IX, §962").
 id: numbered-division
 language: en
 entries:
   - pattern: Part
   - pattern: Section
   - pattern: Title
+  - pattern: title
   - pattern: Chapter
   - pattern: Article
   - pattern: Appendix
@@ -18,6 +20,7 @@ entries:
   - pattern: Division
   - pattern: Subpart
   - pattern: Subtitle
+  - pattern: subtitle
   - pattern: Subchapter
   - pattern: Phase
   - pattern: Table

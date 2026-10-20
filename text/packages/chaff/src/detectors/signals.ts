@@ -15,6 +15,7 @@ import { evidenceSpans, hasNumeral, isClaim, isLabelOnly, startsWithin, type Adv
 import { letteredIndexEntries } from "./lettered-index.ts";
 import { knownByDocument } from "./acronym-known.ts";
 import { grammarSpans } from "./abnf-grammar.ts";
+import { glossedAcronyms, headingsSpellingOut } from "./acronym-gloss.ts";
 import { outlineLabelSpans } from "./outline-label.ts";
 import { hasPredicateIn } from "./gram-predicate.ts";
 import { gramPassagesOf } from "./gram-passages.ts";
@@ -343,10 +344,17 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
     doc.sentences.map((sentence) => sentence.text),
     patternsOf(doc, "abbreviation-mention"),
   );
-  const entries = new Set([...termEntryAcronyms(doc.source), ...stated, ...linkedListTerms(doc.source), ...spelled]);
+  // 略語のすぐ後ろのダッシュで挟んだ同格（the VIX—a measure of …—）も、略語の説明と読む。
+  const entries = new Set([...termEntryAcronyms(doc.source), ...stated, ...linkedListTerms(doc.source), ...spelled, ...glossedAcronyms(body)]);
   const headings = doc.sections.map((section) => section.heading);
+  // 見出しが略語の名前を書き出していれば（## Federal Open Market Committee の下の FOMC）、説明済み。
+  const spelledInHeading = headingsSpellingOut(headings);
   const explainedAsWritten = (word: string): boolean =>
-    common.has(word) || entries.has(word) || isExpanded(body, word, expandedAt) || headings.some((heading) => expandsInHeading(heading, word, expandedAt));
+    common.has(word) ||
+    entries.has(word) ||
+    spelledInHeading(word) ||
+    isExpanded(body, word, expandedAt) ||
+    headings.some((heading) => expandsInHeading(heading, word, expandedAt));
   // 大文字の違うだけの書き方（TCoP と TCOP）は同じ略語と読む。どちらかで説明してあれば説明済み。
   const written = [body, ...headings].join("\n");
   const explained = new Map<string, boolean>();
