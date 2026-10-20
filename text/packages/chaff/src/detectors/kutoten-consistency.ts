@@ -25,6 +25,15 @@ const LIST_NUMBER_REACH = 4;
 const LATIN_LABEL = /(?:^|[^A-Za-zＡ-Ｚａ-ｚ])[A-Za-zＡ-Ｚａ-ｚ]{1,2}$/u;
 const LATIN_LABEL_REACH = 3;
 
+/**
+ * 英字に番号を添えた印（Q&A の「A1．」「Ｑ12．」）。行の頭（見出しや箇条書きの印の後ろ）に立ち、同じ行に本文が続くときだけ。
+ * 文の途中や句点の後ろの「A1．」（結果は A1．次に…）は文の終わり。
+ */
+const LINE_HEAD_NUMBER_LABEL = /^[\s#>*+-]*[A-Za-zＡ-Ｚａ-ｚ]{1,2}[\d０-９]{1,3}$/u;
+
+const isLineHeadNumberLabel = ({ source, offset }: Place): boolean =>
+  LINE_HEAD_NUMBER_LABEL.test(source.slice(source.lastIndexOf("\n", offset) + 1, offset)) && isFollowed(source, offset);
+
 /** 片仮名の印（イ．ロ．ハ．）。語彙表 item-number の 1 字の片仮名で、前が片仮名でないとき（データ．の タ は語の終わり）。 */
 const KATAKANA = /^[ァ-ヺー]$/u;
 
@@ -96,13 +105,14 @@ const isLabelPeriod = (place: Place, kana: ReadonlySet<string>): boolean => {
     isNextInRun(place) ||
     isItemReference(place) ||
     LIST_NUMBER.test(beforeNumber) ||
-    LATIN_LABEL.test(text.slice(Math.max(0, at - LATIN_LABEL_REACH), at))
+    LATIN_LABEL.test(text.slice(Math.max(0, at - LATIN_LABEL_REACH), at)) ||
+    isLineHeadNumberLabel(place)
   );
 };
 
 /**
  * 句読点として数えない「，」「．」。数の中の桁の区切りと小数点（１，０００、３．５）、番号の印の点（１．はじめに、、２．確認、イ．）、
- * 一、二文字の英字の印の後ろの点（Ｑ．、No．）は、日本語の文の区切りではない。
+ * 一、二文字の英字の印の後ろの点（Ｑ．、No．、A1．）は、日本語の文の区切りではない。
  */
 const isNotPunctuation = (place: Place, mark: string, kana: ReadonlySet<string>): boolean => {
   if (mark === "．") return isInsideNumber(place.text, place.at) || isLabelPeriod(place, kana);
