@@ -23,7 +23,14 @@ export const followsForm = (before: string, forms: readonly string[]): boolean =
 
 /** 組織の語の前に要る字数（organisation-run と同じ）。1 字なら普通の語の一部（本部、外部）。 */
 const MIN_UNIT_BODY_LENGTH = 2;
-const LAST_KANJI_RUN = /[一-鿿]+$/u;
+const KANJI_CHAR = /^[一-鿿]$/u;
+
+/** text の尻の漢字の一続き。 */
+const lastKanjiRun = (text: string): string => {
+  const chars = [...text];
+  const start = chars.findLastIndex((char) => !KANJI_CHAR.test(char)) + 1;
+  return chars.slice(start).join("");
+};
 
 /**
  * 連なりの前（before）が、空白を挟んだ組織の区切り（初等中等教育局 教科書課 教科用特定図書普及促進係の「教科書課」）で終わるか。
@@ -31,16 +38,24 @@ const LAST_KANJI_RUN = /[一-鿿]+$/u;
  */
 export const followsUnit = (before: string, units: readonly string[]): boolean => {
   const trimmed = before.trimEnd();
-  const last = trimmed === before ? undefined : LAST_KANJI_RUN.exec(trimmed)?.[0];
-  return last !== undefined && units.some((unit) => last.endsWith(unit) && [...last].length - [...unit].length >= MIN_UNIT_BODY_LENGTH);
+  const last = trimmed === before ? "" : lastKanjiRun(trimmed);
+  return last !== "" && units.some((unit) => last.endsWith(unit) && [...last].length - [...unit].length >= MIN_UNIT_BODY_LENGTH);
 };
 
-const ITEM_BEFORE = /(?:^|[、，])\s*$/u;
-const ITEM_AFTER = /^\s*(?:[、，]|$)/u;
+const ITEM_SEPARATORS = ["、", "，"];
+
+const opensItem = (before: string): boolean => {
+  const trimmed = before.trimEnd();
+  return trimmed === "" || ITEM_SEPARATORS.some((separator) => trimmed.endsWith(separator));
+};
+
+const closesItem = (after: string): boolean => {
+  const trimmed = after.trimStart();
+  return trimmed === "" || ITEM_SEPARATORS.some((separator) => trimmed.startsWith(separator));
+};
 
 /** text の [start, end) が、「、」で区切った 1 項目まるごとか（区長、選挙管理委員会事務局長、総務課長の 2 番目）。 */
-export const isListItem = (text: string, start: number, end: number): boolean =>
-  start < end && ITEM_BEFORE.test(text.slice(0, start)) && ITEM_AFTER.test(text.slice(end));
+export const isListItem = (text: string, start: number, end: number): boolean => start < end && opensItem(text.slice(0, start)) && closesItem(text.slice(end));
 
 /**
  * 連なり（文書全体の座標で start から始まる）の頭の、前に書いたものを指す語（上記、当該）。解析がその語を別の語に分け、
