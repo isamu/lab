@@ -150,12 +150,19 @@ const slipOf = (variant: Slip["variant"], source: string, first: Token, last: To
 
 const isBaseVerb = (token: Token | undefined): boolean => token?.pos === "VERB" && token.features?.["VerbForm"] === undefined;
 
-/** 所有の語の直後の be（their is）か、助動詞 + 動詞の原形（Your can check）。名詞にもなる助動詞（your will）は動詞が続くときだけ。 */
+/** 前置詞の目的語の頭の所有の語の後ろの助動詞は名詞（at its will take away の will）。 */
+const isNounAfterPreposition = (tokens: readonly Token[], at: number): boolean => tokens[at - 1]?.pos === "ADP";
+
+/**
+ * 所有の語の直後の be（their is）か、助動詞 + 動詞の原形（Your can check）。名詞にもなる助動詞（your will）は動詞が続くときだけで、
+ * 前置詞の後ろ（at its will）では数えない。
+ */
 const possessiveSlipAt = (source: string, tokens: readonly Token[], at: number, lists: AgreementLists): Slip | undefined => {
   const [possessive, verb] = [tokens[at], tokens[at + 1]];
   if (possessive === undefined || verb === undefined || !lists.possessive.has(lower(possessive))) return undefined;
   // 大文字だけの語は略語（Your AM = account manager）。
-  const verbal = LOWER.test(verb.surface) && (lists.finite.has(lower(verb)) || (verb.pos === "AUX" && isBaseVerb(tokens[at + 2])));
+  const auxiliary = verb.pos === "AUX" && isBaseVerb(tokens[at + 2]) && !isNounAfterPreposition(tokens, at);
+  const verbal = LOWER.test(verb.surface) && (lists.finite.has(lower(verb)) || auxiliary);
   if (!verbal || !joinedBySpace(source, [possessive, verb]) || isPartOfLongerWord(source, possessive, verb)) return undefined;
   return slipOf("possessive", source, possessive, verb);
 };

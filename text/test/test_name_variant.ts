@@ -20,6 +20,7 @@ import { spacedPersonNamesIn } from "../packages/chaff/src/spaced-person-name.ts
 import { isLineBlock, tokensByLine } from "../packages/chaff/src/name-line-block.ts";
 import { isInPersonField } from "../packages/chaff/src/person-field.ts";
 import { usualIsMisspelt } from "../packages/chaff/src/name-misspelt-usual.ts";
+import { areWordForms } from "../packages/chaff/src/name-word-form.ts";
 import { heavierFirst, outweighs, type NameWeight } from "../packages/chaff/src/name-weight.ts";
 import { isLookalikeApart, lookalikeSlipsIn } from "../packages/chaff/src/name-lookalike-chars.ts";
 import { voicedReadingOf } from "../packages/chaff/src/company-kana-spelling.ts";
@@ -29,7 +30,7 @@ import { isAuthorName } from "../packages/chaff/src/detectors/name-variant-refer
 import { isEndLetterApart, isEndWordSlip, type WordUse } from "../packages/chaff/src/name-end-letter.ts";
 import { isEndingApart, isNameEndingSlip, isPluralOf } from "../packages/chaff/src/company-name-ending.ts";
 
-// 同じ名前の書き分け（name-variant）。例文はすべて自作。
+// 同じ名前の書き分け（name-variant）。例文は自作か、出典を書いたパブリックドメインの文。
 
 const variants = (source: string, adapter = en): readonly string[] => namedRuleRun("name-variant", source, adapter, "a.md").findings;
 
@@ -117,6 +118,37 @@ describe("name-variant: 同じ名前の書き分け", () => {
     assert.ok(!usualIsMisspelt("Release Schedule", "Release Timetable", known));
     assert.ok(!usualIsMisspelt("斉藤様", "斎藤様", known));
     assert.ok(!usualIsMisspelt("", "", known));
+  });
+
+  it("areWordForms: two dictionary words where one, its ending taken off, starts the other", () => {
+    const words = new Set(["german", "germany", "englishman", "crusade", "crusader", "anderson", "andersen", "roger", "rodgers"]);
+    const suffixes = [
+      { suffix: "s", replacement: "" },
+      { suffix: "es", replacement: "" },
+      { suffix: "ers", replacement: "e" },
+      { suffix: "men", replacement: "man" },
+    ];
+    const known = (word: string): boolean =>
+      words.has(word) || suffixes.some(({ suffix, replacement }) => words.has(`${word.slice(0, -suffix.length)}${replacement}`) && word.endsWith(suffix));
+    assert.ok(areWordForms("Germans", "Germany", suffixes, known));
+    assert.ok(areWordForms("Englishman", "Englishmen", suffixes, known));
+    assert.ok(areWordForms("Crusaders", "Crusades", suffixes, known));
+    assert.ok(!areWordForms("Andersen", "Anderson", suffixes, known));
+    assert.ok(!areWordForms("Rogers", "Rodgers", suffixes, known));
+    assert.ok(!areWordForms("Marker", "Market", [...suffixes, { suffix: "er", replacement: "" }], (word) => ["mark", "marker", "market"].includes(word)));
+    assert.ok(!areWordForms("Germanns", "Germany", suffixes, known));
+    assert.ok(!areWordForms("New Germans", "New Germany", suffixes, known));
+    assert.ok(!areWordForms("", "", suffixes, known));
+  });
+
+  it("a people and its country, or a singular and its plural, are two words; a surname slip is still reported", () => {
+    // After Bacon's Essays (1625) and Stevenson's An Apology for Idlers (1877), public domain.
+    const essay = "The Goths and Vandals came out of Germany. The kings of Germany were elected. They were Germans, Goths, Saxons and Normans.\n";
+    assert.deepEqual(variants(essay), []);
+    assert.deepEqual(variants("Englishmen are fond of travel. The fault is common to Englishmen. An Englishman will not sit still.\n"), []);
+    assert.deepEqual(variants("Mr. Anderson signed the lease. Mr. Anderson paid the rent. Mr. Andersen left the keys.\n"), [
+      '"Andersen" is one letter away from "Anderson", which the document uses more than once',
+    ]);
   });
 
   it("consistent names, and different short names, are not reported", () => {

@@ -24,9 +24,8 @@ import { isOrdinaryToken, withOrdinaryWords } from "../name-ordinary-word.ts";
 import { isInPersonField } from "../person-field.ts";
 import { labelledSpans, orderNamesOf, quotedSpans, stemOf, titleCaseSpans, wordOrderVariants, type OrderWord } from "../name-word-order.ts";
 import { isGroupPairOf, notDefinedTerms, outsideCapitals, sentenceIndexOf, withGivenNames } from "./name-variant-apart.ts";
-import { usualIsMisspelt } from "../name-misspelt-usual.ts";
+import { isDictionaryPair } from "../name-word-form.ts";
 import { spellerOf } from "./unknown-word.ts";
-import { isKnownWord } from "../spelling.ts";
 import { notAnotherAuthorIn } from "./name-variant-reference-list.ts";
 
 // 人の名前と読ませる敬称（様、さん）は語彙表 person-suffix、人を指す前置き（担当の）は person-lead、名前のすぐ後ろに来る語
@@ -394,7 +393,7 @@ export const nameVariant: Detector = (doc): Finding[] => {
   const dictionary = doc.dictionary?.();
   const speller = dictionary === undefined ? undefined : spellerOf(doc, dictionary);
   return [...withOrder, ...codes]
-    .filter(({ name, usual }) => speller === undefined || !usualIsMisspelt(name, usual, (word) => isKnownWord(word, speller)))
+    .filter(({ name, usual }) => speller === undefined || !isDictionaryPair(name, usual, speller))
     .filter(notAnotherAuthorIn(doc))
     .toSorted((left, right) => left.offset - right.offset)
     .map(({ offset, name, usual, kind }) => ({

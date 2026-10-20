@@ -6,11 +6,14 @@
 id: extra-word
 language: en
 entries:
+  - pattern: absque
   - pattern: accessibility
   - pattern: admin
   - pattern: adware
   - pattern: albeit
   - pattern: alia
+  - pattern: alterius
+  - pattern: amotion
   - pattern: api
   - pattern: app
   - pattern: aridification
@@ -41,11 +44,13 @@ entries:
   - pattern: combinator
   - pattern: config
   - pattern: const
+  - pattern: contractus
   - pattern: conveniens
   - pattern: counterparty
   - pattern: covid
   - pattern: cron
   - pattern: crypto
+  - pattern: curiam
   - pattern: cyber
   - pattern: cybersecurity
   - pattern: dataset
@@ -69,10 +74,15 @@ entries:
   - pattern: enum
   - pattern: env
   - pattern: eval
+  - pattern: exclusio
+  - pattern: expressio
+  - pattern: facie
   - pattern: facto
   - pattern: favicon
   - pattern: fide
+  - pattern: fieri
   - pattern: filename
+  - pattern: flatu
   - pattern: forma
   - pattern: franchisee
   - pattern: franchisor
@@ -98,6 +108,7 @@ entries:
   - pattern: indemnitee
   - pattern: indemnitor
   - pattern: init
+  - pattern: injuria
   - pattern: inline
   - pattern: intel
   - pattern: interoperability
@@ -193,6 +204,7 @@ entries:
   - pattern: subproject
   - pattern: sustainably
   - pattern: syntax
+  - pattern: tanto
   - pattern: telecopy
   - pattern: thenceforward
   - pattern: thereat
@@ -208,6 +220,7 @@ entries:
   - pattern: transpiler
   - pattern: tuple
   - pattern: typo
+  - pattern: unius
   - pattern: upskill
   - pattern: upwelling
   - pattern: url
