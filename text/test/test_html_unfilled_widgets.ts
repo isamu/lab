@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { withoutUnfilledWidgets } from "../packages/chaff/src/html/html-unfilled.ts";
+import { withoutUnfilledWidgets } from "../packages/chaff/src/html/html-widgets.ts";
 import { htmlToMarkdown } from "../packages/chaff/src/html/html-markdown.ts";
 
 // ページが隠し、スクリプトが中身を入れてから見せる塊（関連ページの枠）は落とす。言葉ではなく作りで見分ける。
