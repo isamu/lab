@@ -19,8 +19,10 @@ import { escapeRegExp } from "../orthography.ts";
  * 括弧と略語の間には、引用符（(“MNDA”)、（「MNDA」））と空白だけを許す。
  */
 const WRAP = String.raw`[\s"“”'‘’「」『』]*`;
-const OPENS = new RegExp(String.raw`^${WRAP}[(（]`, "u");
-const CLOSES = new RegExp(String.raw`^${WRAP}[)）]`, "u");
+/** 略語のすぐ後ろの商標の印（Voluntary Product Accessibility Template (VPAT®)）。略語の一部として読む。 */
+const MARK = "[®™℠]?";
+const OPENS = new RegExp(String.raw`^${MARK}${WRAP}[(（]`, "u");
+const CLOSES = new RegExp(String.raw`^${MARK}${WRAP}[)）]`, "u");
 const OPENED = new RegExp(String.raw`[(（]${WRAP}$`, "u");
 const SQUARE_CLOSES = new RegExp(String.raw`^${WRAP}\]`, "u");
 const SQUARE_OPENED = new RegExp(String.raw`\[${WRAP}$`, "u");

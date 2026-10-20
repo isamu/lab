@@ -4,6 +4,8 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { labelStops as jaLabelStops, unmarkLabelStops as jaUnmarkLabelStops } from "../packages/lang-ja/src/label-stop.ts";
 import { labelStops as enLabelStops, unmarkLabelStops as enUnmarkLabelStops } from "../packages/lang-en/src/label-stop.ts";
+import { initialStops as jaInitialStops, unmarkInitialStops as jaUnmarkInitialStops } from "../packages/lang-ja/src/initial-stop.ts";
+import { initialStops as enInitialStops, unmarkInitialStops as enUnmarkInitialStops } from "../packages/lang-en/src/initial-stop.ts";
 import { splitAtQuotedStops as jaSplitAtQuotedStops } from "../packages/lang-ja/src/quoted-stop.ts";
 import { splitAtQuotedStops as enSplitAtQuotedStops } from "../packages/lang-en/src/quoted-stop.ts";
 import { closingRunLength as jaClosingRunLength, reattachClosingQuotes as jaReattachClosingQuotes } from "../packages/lang-ja/src/closing-quote.ts";
@@ -44,6 +46,7 @@ const PIECES = [
   "U.S.",
   "Dr.",
   "J.",
+  "C.",
   "I",
   "1",
   "XLIII",
@@ -160,6 +163,14 @@ describe("日本語のアダプタの写しは英語のアダプタの関数と�
     const enStops = enLabelStops(labels);
     englishSamples().forEach((sample) => assert.equal(jaUnmarkLabelStops(sample, jaStops), enUnmarkLabelStops(sample, enStops), JSON.stringify(sample)));
     assert.equal(jaLabelStops([]), enLabelStops([]));
+  });
+
+  it("unmarkInitialStops", () => {
+    const starts = ["The", "Then", "In"];
+    const prepositive = ["U.S."];
+    const jaStops = jaInitialStops(starts, prepositive);
+    const enStops = enInitialStops(starts, prepositive);
+    englishSamples().forEach((sample) => assert.equal(jaUnmarkInitialStops(sample, jaStops), enUnmarkInitialStops(sample, enStops), JSON.stringify(sample)));
   });
 
   it("splitAtQuotedStops", () => {

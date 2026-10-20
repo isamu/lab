@@ -1,4 +1,5 @@
-# Legal codes and instruments cited by number (45 CFR Parts 160, 21 USC §301, 22 CCR §§ 12701, 94/820/EC). Read only inside
+# Legal codes, instruments and reporters cited by number (45 CFR Parts 160, 21 USC §301, 22 CCR §§ 12701, 94/820/EC,
+# 80 FR 66128, 2022 WL 4447293). Read only inside
 # a citation: after a volume number, or before §, Part or a number. Matched as written.
 id: citation-series
 language: en
@@ -9,3 +10,5 @@ entries:
   - pattern: "EC"
   - pattern: "EEC"
   - pattern: "EU"
+  - pattern: "FR"
+  - pattern: "WL"

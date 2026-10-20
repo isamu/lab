@@ -5,6 +5,7 @@ import { isEnglishBoundary, isEnglishRun } from "./english-run.ts";
 import { unmarkNumberStops } from "./number-stop.ts";
 import { pairMixedWidthBrackets } from "./mixed-width-bracket.ts";
 import { labelStops, unmarkLabelStops } from "./label-stop.ts";
+import { initialStops, unmarkInitialStops } from "./initial-stop.ts";
 import { splitAtQuotedStops } from "./quoted-stop.ts";
 import { reattachClosingQuotes } from "./closing-quote.ts";
 import { splitAtQuotedLineEnds } from "./quoted-line-stop.ts";
@@ -106,13 +107,17 @@ const patternsOf = (id: string): string[] => (LEXICONS[id] ?? []).map((entry) =>
 const LINE_VOCABULARY = lineVocabulary(patternsOf("numbering-counter"), patternsOf("line-head-tag"));
 
 const LABEL_STOPS = labelStops((LEXICONS["abbreviated-label"] ?? []).map((entry) => entry.pattern));
+const INITIAL_STOPS = initialStops(
+  (LEXICONS["sentence-start-word"] ?? []).map((entry) => entry.pattern),
+  (LEXICONS["prepositive-abbreviation"] ?? []).map((entry) => entry.pattern),
+);
 
 /**
  * 英語のアダプタと同じ手当てを英文にも当てる。番号の前の略した名前（FIG. 1）の点で切らず、
  * 英文の閉じ引用符の内側の句点で切り、文頭に取り残された閉じ引用符を前の文へ戻す。
  */
 const spansOf = (text: string): Span[] => {
-  const spans = sentenceSpans(pairMixedWidthBrackets(unmarkNumberStops(unmarkLabelStops(text, LABEL_STOPS))));
+  const spans = sentenceSpans(pairMixedWidthBrackets(unmarkInitialStops(unmarkNumberStops(unmarkLabelStops(text, LABEL_STOPS)), INITIAL_STOPS)));
   const quotedStops = spans.flatMap((span) => (isEnglishRun(text.slice(span.start, span.end)) ? splitAtQuotedStops(text, span) : [span]));
   return reattachClosingQuotes(text, quotedStops).flatMap((span) => splitAtQuotedLineEnds(text, span));
 };

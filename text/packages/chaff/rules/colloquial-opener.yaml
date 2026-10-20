@@ -42,8 +42,8 @@ example:
       在庫が足りません。そのため、出荷は来週になります。
 
 not_flagged:
-  ja: 文の途中の「〜なので」「〜でも」と、書き言葉の接続詞（そのため、しかし、したがって）は指しません。ブログ、文芸、話し言葉のジャンルでは動きません。
-  en: なので and でも inside a sentence, and written conjunctions (そのため, しかし), are not reported. Off for blogs, literature and speech.
+  ja: 文の途中の「〜なので」「〜でも」と、書き言葉の接続詞（そのため、しかし、したがって）は指しません。後ろが助動詞だけの文（改行で切れた前の文の終わりの「だからである。」）も、文を始める接続詞ではないので指しません。ブログ、文芸、話し言葉のジャンルでは動きません。
+  en: なので and でも inside a sentence, and written conjunctions (そのため, しかし), are not reported, nor is a "sentence" with only an auxiliary after the word (だからである。, the end of the previous sentence cut by a line break). Off for blogs, literature and speech.
 level_meaning:
   ja: 話し言葉の接続詞で始まる文が {limit} 個あれば指摘
   en: reported from {limit} sentences opening with a spoken conjunction

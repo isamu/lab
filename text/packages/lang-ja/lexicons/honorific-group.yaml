@@ -1,0 +1,9 @@
+# 人の集まりを敬って呼ぶ語（国民の皆様、被災者の方々）。no-doubled-joshi は、呼び方がさらに「の」で次の語に係るとき
+# （国民の皆様の期待）、この語の直前の「の」を入れ子の「の」と数えない。「国民の皆様」は国民を言い換えた一つの呼び方。
+id: honorific-group
+language: ja
+entries:
+  - pattern: 皆様
+  - pattern: 皆さま
+  - pattern: 皆さん
+  - pattern: 方々

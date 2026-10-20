@@ -12,6 +12,7 @@ import { readsOnHeading } from "./heading-leaves.ts";
 import { unspacedHeadings } from "./unspaced-heading.ts";
 import { onLine, wrappedLine, type WrappedLine } from "./wrapped-tail.ts";
 import { foldPostOrder } from "../tree-walk.ts";
+import { unlessWrappedReference } from "./wrapped-reference.ts";
 
 /** 組み立て中の節点。できあがったら StructureNode に固める。 */
 type Draft = {
@@ -324,7 +325,8 @@ const readLine = (state: State, patterns: StructurePatterns, line: Line, heading
   const text = heading === undefined ? line.text : headingLineText(line.text, heading.end <= line.start + line.text.length);
   const openNumbers = state.stack.flatMap((frame) => (frame.numbered === undefined ? [] : [frame.numbered]));
   const context = { open: openNumbers, isHeading: heading !== undefined };
-  const found = around.inTable ? undefined : (numberedLine(state, patterns, text, context) ?? codeTitledNumber(state, patterns, text, heading, context));
+  const read = around.inTable ? undefined : (numberedLine(state, patterns, text, context) ?? codeTitledNumber(state, patterns, text, heading, context));
+  const found = unlessWrappedReference(read, heading !== undefined, around.previous);
   const numbered = withCaption(state, line, found);
   const caption = numbered === undefined && heading === undefined ? captionOf(state.profile, text) : undefined;
   if (caption !== undefined) state.captions.set(line.number, caption);

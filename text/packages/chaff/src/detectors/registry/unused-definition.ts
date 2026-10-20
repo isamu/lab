@@ -1,4 +1,4 @@
 import type { Detector } from "../../plugin.ts";
-import { unusedDefinition } from "../definition-use.ts";
+import { unusedDefinitionKept } from "../unused-definition-kept.ts";
 
-export const detector: Detector = unusedDefinition;
+export const detector: Detector = unusedDefinitionKept;

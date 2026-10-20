@@ -1,0 +1,8 @@
+# Words right after a quoted wording that reject it ("high winds" should not be used, …). The wording is not a
+# definition, so unused-definition does not report it. Matched as written.
+id: rejected-wording
+language: en
+entries:
+  - pattern: should not be used
+  - pattern: is not used
+  - pattern: must not be used

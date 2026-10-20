@@ -1,0 +1,10 @@
+# Abbreviations in capitals with full stops that stand before a name as an adjective ("U.S. Census Bureau", "U.K.
+# Parliament"). Before a capitalised word that is not a sentence-start-word, their full stop does not end the sentence.
+# Matched as written.
+id: prepositive-abbreviation
+language: en
+entries:
+  - pattern: U.S.
+  - pattern: U.K.
+  - pattern: U.N.
+  - pattern: E.U.

@@ -2,6 +2,8 @@
 # Only phrases whose short form says the same in every context. "with regard to", "prior to" and "in accordance with"
 # are left out: contracts and statutes use them on purpose. "a small number of" is left out too: "a few" names a
 # different count, and minutes use both as separate points of one scale (a few, a small number, some, several, many).
+# "at all times" is left out: a rule states its scope with it (pets must be on a leash at all times), and "always" has to
+# move before the verb and reads as a habit rather than a duty.
 # Matched as whole words, case aside.
 id: wordy-phrase
 language: en
@@ -72,8 +74,6 @@ entries:
     rewrite: near
   - pattern: in excess of
     rewrite: more than
-  - pattern: at all times
-    rewrite: always
   - pattern: has the capacity to
     rewrite: can
   - pattern: have the capacity to
