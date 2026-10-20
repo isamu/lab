@@ -68,6 +68,12 @@ const VOICE = "orthographic-variant-voice";
 const WHOLE_WORD = "orthographic-variant-whole-word";
 /** Lexicon: suffixes written onto a word that do not make a compound of it (割当て等, 引受け後): the word keeps its okurigana there. */
 const PHRASE_SUFFIX = "orthographic-variant-phrase-suffix";
+/**
+ * Lexicon: kanji spellings that read as two words, alone (行っ: 行く or 行う) or before the word written onto them (様を: さま,
+ * where よう never takes を). Each entry's group is the reading the tokenizer may wrongly pick (イク, ヨウ): read that way, the
+ * spelling is not compared with that reading's kana. Read the other way (行っ as 行う), it is compared as usual.
+ */
+const TWO_READINGS = "orthographic-variant-two-readings";
 
 const patternsOf = (doc: ProseDocument, id: string, genre: string | undefined): string[] =>
   entriesForGenre(doc.lexicons[id] ?? [], genre).map((entry) => entry.pattern);
@@ -104,6 +110,7 @@ type Skips = Uses & {
   readonly comparative: ReadonlySet<string>;
   readonly wholeWords: ReadonlyMap<string, string>;
   readonly phraseSuffixes: ReadonlySet<string>;
+  readonly twoReadings: ReadonlyMap<string, string>;
   /** The document's nouns, as documentNounKeys keys them. */
   readonly nouns: ReadonlySet<string>;
 };
@@ -111,6 +118,13 @@ type Skips = Uses & {
 /** A listed word outside the comparative frame (担当の方に): the kanji there may be the person of the same reading. */
 const isOutsideComparative = ({ token, following }: InContext, comparative: ReadonlySet<string>): boolean =>
   comparative.has(token.lemma ?? "") && !COMPARATIVE_PARTICLES.has(following?.[0]?.surface ?? "");
+
+/** A spelling listed as reading two ways, alone or with the word written onto it (様を), read as the reading in doubt. */
+const readsTwoWays = ({ token, following }: InContext, reading: string, twoReadings: ReadonlyMap<string, string>): boolean => {
+  const next = following?.[0];
+  const withNext = next !== undefined && isTouching(token, next) ? twoReadings.get(`${token.surface}${next.surface}`) : undefined;
+  return (twoReadings.get(token.surface) ?? withNext) === reading;
+};
 
 const readingKeyOf = (word: InContext, skips: Skips): string | undefined => {
   const { skip } = skips;
@@ -120,6 +134,7 @@ const readingKeyOf = (word: InContext, skips: Skips): string | undefined => {
   if (isOutsideComparative(word, skips.comparative)) return undefined;
   const reading = lemmaReading(token.surface, lemma, token.reading);
   if (reading === undefined || [...reading].length < MIN_READING || skip.has(reading) || isCutFromKatakana(word) || isCopulaReadAsVerb(word)) return undefined;
+  if (readsTwoWays(word, reading, skips.twoReadings)) return undefined;
   if (isNumeral(token) || isWrittenOntoWord(word)) return undefined;
   return `${token.pos}|${useOf(word, skips)}|${reading}`;
 };
@@ -329,6 +344,7 @@ export const orthographicVariant: Detector = (doc, options): Finding[] => {
     comparative: new Set(patternsOf(doc, COMPARATIVE, options.genre)),
     wholeWords: new Map((doc.lexicons[WHOLE_WORD] ?? []).map((entry) => [entry.pattern, entry.group ?? entry.pattern])),
     phraseSuffixes,
+    twoReadings: new Map(entriesForGenre(doc.lexicons[TWO_READINGS] ?? [], options.genre).map((entry) => [entry.pattern, entry.group ?? ""])),
     nouns: documentNounKeys(
       placed.map(({ sentence }) => sentence.tokens ?? []),
       phraseSuffixes,
