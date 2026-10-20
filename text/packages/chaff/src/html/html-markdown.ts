@@ -1,5 +1,5 @@
 // An HTML page (a CRS report as EveryCRSReport serves it, a ministry's page) as plain Markdown: headings, paragraphs,
-// list items and the text of links; ruby keeps its base text and loses its reading. Only the <main> element (else the
+// list items and the text of links, with where each section links in a closing comment (html-links.ts); ruby keeps its base text and loses its reading. Only the <main> element (else the
 // role="main" element, else a sole <article>, else the block holding the title and nearly every sentence) is read when
 // the page has one. Scripts, styles, the head, navigation (by
 // element or by role, and breadcrumbs), asides, footers, forms, tables without sentences (html-tables.ts), footnote marks, lists and blocks of nothing but
@@ -35,6 +35,7 @@ import {
 import { contentBlock } from "./html-content-block.ts";
 import { withoutFootnoteMarks } from "./html-footnote-marks.ts";
 import { withoutHeadingSelfLinks } from "./html-heading-links.ts";
+import { withLinkAddressesMarked, withSectionLinks } from "./html-links.ts";
 import { withLostParagraphTagsRestored } from "./html-lost-tags.ts";
 import { withoutReaderOnlyText } from "./html-reader-only.ts";
 import { withoutSiteChrome } from "./html-site-chrome.ts";
@@ -383,28 +384,7 @@ const withoutEmptySections = (lines: readonly string[]): string[] =>
     { kept: [], nextLevel: 0 },
   ).kept;
 
-const BLOCK_TAGS = new Set([
-  "p",
-  "div",
-  "ul",
-  "ol",
-  "hr",
-  "blockquote",
-  "section",
-  "article",
-  "header",
-  "footer",
-  "main",
-  "aside",
-  "dl",
-  "dt",
-  "dd",
-  "figure",
-  "figcaption",
-  "pre",
-  "body",
-  "html",
-]);
+const BLOCK_TAGS = new Set("p div ul ol hr blockquote section article header footer main aside dl dt dd figure figcaption pre body html".split(" "));
 
 const heading = (_whole: string, level: string, inside: string): string => `\n\n${"#".repeat(Number(level))} ${stripTags(inside).trim()}\n\n`;
 
@@ -493,7 +473,10 @@ export const htmlToMarkdown = (html: string): string => {
     withoutLinkGroups(withoutNavigation(withoutIconMenus(withoutSiteHeader(withoutNavigationLandmarks(withoutClosingAddress(kept)))))),
   );
   const text = decodeEntities(
-    stripTags(asLines(markChromeLinks(withImageHeadingsRead(withRunInHeadingsRead(content), documentTitle(uncommented))))).replace(SPACES_ACROSS_TAGS, " "),
+    stripTags(withLinkAddressesMarked(asLines(markChromeLinks(withImageHeadingsRead(withRunInHeadingsRead(content), documentTitle(uncommented)))))).replace(
+      SPACES_ACROSS_TAGS,
+      " ",
+    ),
   );
   const lines = text
     .split("\n")
@@ -501,5 +484,5 @@ export const htmlToMarkdown = (html: string): string => {
     .filter((line) => line !== "-" && !isChromeLinkLine(line))
     .map((line) => line.replaceAll(LINK_START, "").replaceAll(LINK_END, ""))
     .filter((line) => !UNTITLED_HEADING.test(line));
-  return tidyLines(withPreformattedRestored(withoutEmptySections(withoutClosingCopyright(withoutEmptySections(lines))), preformatted.blocks));
+  return tidyLines(withPreformattedRestored(withSectionLinks(withoutEmptySections(withoutClosingCopyright(withoutEmptySections(lines)))), preformatted.blocks));
 };
