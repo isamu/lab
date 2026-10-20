@@ -1,10 +1,11 @@
 import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { namedRuleRun } from "./rule-run.ts";
+import { firedRules, namedRuleRun } from "./rule-run.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 
-// demonstrative-opener-run on English: sentences in a row opening with This, That, These, Those or It. Self-written text.
+// demonstrative-opener-run on English: sentences in a row opening with This, That, These, Those or It. Self-written text,
+// except the essay passage, which names its public-domain source.
 
 const RULE = "demonstrative-opener-run";
 
@@ -50,6 +51,14 @@ describe("demonstrative-opener-run: English", () => {
 
   it("does not count a that which opens a clause", () => {
     assert.deepEqual(findingsOf("That the plan failed is clear. It was costly. This should not recur.\n"), []);
+  });
+
+  it("is off for literature, where repetition is the author's choice, and still runs elsewhere", () => {
+    // Francis Bacon, Of Wisdom for a Man's Self (1625), public domain.
+    const essay =
+      "Divide with reason between self-love and society. It is the wisdom of rats, that will be sure to leave a house somewhat before it fall. It is the wisdom of the fox, that thrusts out the badger. It is the wisdom of crocodiles, that shed tears when they would devour.\n";
+    assert.equal(firedRules(en, essay, "literature/essay").includes(RULE), false);
+    assert.equal(firedRules(en, essay, "legal/judgment").includes(RULE), true);
   });
 
   it("still reports the Japanese run, which has no English exclusions", () => {
