@@ -164,6 +164,54 @@ describe("citation-reference-mismatch: citations against the list", () => {
     assert.deepEqual(variantsOf(en, "citation-reference-mismatch", source.replace("(Jones, 2021)", "(Jones, 2022)")), ["missing", "uncited"]);
   });
 
+  it("reads a page after the year, a name of several words in parentheses, and a two-word surname cited by its second word", () => {
+    const body =
+      "Games teach (Van Dyke et al., 2019, p. 4). Clubs help (Open Data Institute, 2021). Both agree (Garcia Lopez and Kim, 2022; Smith, 2020, pp. 3–5). Lopez et al. (2023) disagree.";
+    const entries = list(
+      "Van Dyke et al. (2019) A. Van Dyke and B. Reed  Games in class.",
+      "Open Data Institute (2021) Open Data Institute  Data skills.",
+      "Garcia Lopez and Kim (2022) C. Garcia Lopez and D. Kim  Clubs.",
+      "Garcia Lopez et al. (2023) C. Garcia Lopez, D. Kim, and E. Moss  Doubts.",
+      "Smith (2020) F. Smith  Reading.",
+    );
+    const source = `# Data\n\n${body}\n${entries}`;
+    assert.deepEqual(variantsOf(en, "citation-reference-mismatch", source), []);
+    assert.deepEqual(stylesIn("Games teach (Van Dyke et al., 2019, p. 4)."), ["author-year (Van Dyke et al., 2019, p. 4)"]);
+    const cited = ["Adams", "Baker", "Clark", "Davis", "Evans", "Foster", "Grant", "Hughes", "Irwin", "Jordan", "Keller", "Lawson"].map(
+      (name, at) => `${name} et al., ${String(2010 + at)}`,
+    );
+    const many = `(${cited.join("; ")})`;
+    assert.ok(many.length > 200);
+    assert.deepEqual(citationMarks(`Many agree ${many}.`, [], WORDS)[0]?.authorYears.length, 12);
+  });
+
+  it("still reports a year the list does not have, and a citation naming no word of an entry's name", () => {
+    const body = "Games teach (Reed et al., 2018, p. 4). Clubs help (Open Data Institute, 2021). Moss et al. (2023) disagree.";
+    const entries = list(
+      "Reed et al. (2019) B. Reed and A. Van Dyke  Games in class.",
+      "Open Data Institute (2021) Open Data Institute  Data skills.",
+      "Garcia Lopez et al. (2023) C. Garcia Lopez, D. Kim, and E. Moss  Doubts.",
+    );
+    assert.deepEqual(
+      findingsOf(en, "citation-reference-mismatch", `# Data\n\n${body}\n${entries}`).map((finding) => [finding.variant, finding.values["key"]]),
+      [
+        ["missing", "reed 2018"],
+        ["missing", "moss 2023"],
+      ],
+    );
+    assert.deepEqual(stylesIn("It opened (March 2020, p. 4) and moved (see p. 4)."), []);
+  });
+
+  it("does not report a name of several words that names no entry (it may be a place), nor count it as a style", () => {
+    const body = "Naps help (Smith, 2020). The trial ran in a city (New York, 2021). Sleep helps (Jones, 2019) [4].";
+    const source = `# Sleep\n\n${body}\n${list("Smith (2020) A. Smith  Naps.", "Jones (2019) B. Jones  Sleep.")}`;
+    assert.deepEqual(variantsOf(en, "citation-reference-mismatch", source), []);
+    assert.deepEqual(variantsOf(en, "citation-reference-mismatch", source.replace("(Jones, 2019)", "(Jones, 2018)")), ["missing", "uncited"]);
+    const numbered = `# Sleep\n\nNaps help [1]. Sleep helps [2]. It ran in a city (New York, 2021).\n${list("[1] Smith, A. 2019.", "[2] Jones, B. 2021.")}`;
+    assert.deepEqual(variantsOf(en, "citation-style-mix", numbered), []);
+    assert.deepEqual(variantsOf(en, "citation-style-mix", numbered.replace("(New York, 2021)", "(Smith, 2021)")), [""]);
+  });
+
   it("reports an author-year citation whose year is not in the list", () => {
     const source = `# Sleep\n\nNaps help (Smith, 2019). Sleep helps (Jones, 2021).\n${list("Smith, A. (2020). Naps.", "Jones, B. (2021). Sleep.")}`;
     assert.deepEqual(
