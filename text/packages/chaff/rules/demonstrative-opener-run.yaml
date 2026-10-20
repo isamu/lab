@@ -46,8 +46,8 @@ example:
       We introduced a new procedure. This was meant to cut the work. The procedure reduced overtime, and the reduction should continue next month.
 
 not_flagged:
-  ja: 段落が変われば数え直します。「それぞれ」のように一語になったものと、接続詞の「そして」は数えません。英語では、「This Agreement」「This section」のように文書そのものを指す書き出しと、「It is worth」「It seems」のように後ろを指す It は数えません。
-  en: The count restarts at each paragraph. Words such as それぞれ and the conjunction そして are not counted. In English, an opening that names the document itself ("This Agreement", "This section") and an "it" that stands for what follows ("It is worth", "It seems") are not counted.
+  ja: 段落が変われば数え直します。「それぞれ」のように一語になったもの、接続詞の「そして」、話を切り替える「それはとにかく」「それはさておき」は数えません。英語では、「This Agreement」「This section」のように文書そのものを指す書き出しと、「It is worth」「It seems」のように後ろを指す It は数えません。
+  en: The count restarts at each paragraph. Words such as それぞれ, the conjunction そして, and phrases that change the subject (それはとにかく, それはさておき) are not counted. In English, an opening that names the document itself ("This Agreement", "This section") and an "it" that stands for what follows ("It is worth", "It seems") are not counted.
 level_meaning:
   ja: 指示語で始まる文 {limit} 文の連続まで
   en: up to {limit} such sentences in a row
