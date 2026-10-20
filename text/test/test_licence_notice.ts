@@ -18,7 +18,7 @@ const body = [
   "",
 ].join("\n");
 
-const notice = "本稿は表示 4.0 版 パブリック・ライセンスの下に提供されています。条件は https://example.org/licenses/by/4.0/ でご確認ください。\n";
+const notice = "本稿は表示 4.0 版 パブリック・ライセンスの下に提供されています。ライセンスの条件は https://example.org/licenses/by/4.0/ でご確認ください。\n";
 
 describe("文書の最後の利用条件の断り書き", () => {
   before(async () => {
@@ -49,5 +49,11 @@ describe("文書の最後の利用条件の断り書き", () => {
       "",
     ].join("\n");
     assert.equal(findingsOf("no-mixed-desumasu", `${body}\n${long}`).length, 1);
+  });
+
+  it("ライセンスの語と URL が別の文にある結びと、後ろに箇条書きが続く段落は本文として数える", () => {
+    const apart = "本稿の資料のライセンスは選び直しています。詳しくは https://example.org/data/ でご確認ください。\n";
+    assert.equal(findingsOf("no-mixed-desumasu", `${body}\n${apart}`).length, 2);
+    assert.equal(findingsOf("no-mixed-desumasu", `${body}\n${notice}\n- 付録の一覧\n- 用語の一覧\n`).length, 2);
   });
 });
