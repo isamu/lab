@@ -71,7 +71,7 @@ describe("the verse profile", () => {
   it("reads line_breaks_end_sentences only when it is true", () => {
     const flag = (value: unknown): unknown => parseProfile({ id: "t", ja: { line_breaks_end_sentences: value } })?.languages["ja"]?.lineBreaksEndSentences;
     assert.equal(flag(true), true);
-    [false, "true", 1, null, undefined, {}].forEach((value) => assert.equal(flag(value), undefined, String(value)));
+    [false, "true", 1, null, undefined, {}].forEach((value) => assert.equal(flag(value), undefined, JSON.stringify(value) ?? "undefined"));
   });
 });
 
