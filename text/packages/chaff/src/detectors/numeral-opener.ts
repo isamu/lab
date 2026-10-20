@@ -1,5 +1,7 @@
 import { escapeRegExp } from "../orthography.ts";
-import type { Detector, Finding, Sentence, Span } from "../plugin.ts";
+import type { Detector, Finding, ProseDocument, Sentence, Span } from "../plugin.ts";
+import { isKnownWord, type Speller } from "../spelling.ts";
+import { spellerOf } from "./unknown-word.ts";
 
 /**
  * 数字で始まる文（20 people came.）。読み手は文の頭を大文字で探すので、数字の頭は文の切れ目を見えにくくする。
@@ -44,16 +46,32 @@ const lastWordBeforeStop = (text: string): string | undefined => {
   return start === body.length ? undefined : body.slice(start);
 };
 
+/** 点で終わる、大文字で始まる短い語が同じ行に二つ続いて終わる（Co. Litt.）。二つ目の語を返す。 */
+const ABBREVIATION_PAIR = /(?:^|\s)\p{Lu}\p{Ll}{0,4}\.[ \t]+(?<last>\p{Lu}\p{Ll}+)\.$/u;
+
+/** Whether a lower-case word is in the dictionary. */
+export type IsKnownWord = (word: string) => boolean;
+
+/**
+ * 引用の略した題の終わり（Co. Litt. 113 a、Harg. Law Tr.）。大文字で始まる短い略語の後ろに、辞書に無い大文字の語が点で終わる。
+ * 文の終わりの語（St. Paul.）は辞書にあるので、文の終わりのまま。
+ */
+const endsAbbreviatedTitle = (ended: string, isKnown: IsKnownWord): boolean => {
+  const last = ABBREVIATION_PAIR.exec(ended)?.groups?.["last"];
+  return last !== undefined && !isKnown(last.toLowerCase());
+};
+
 /**
  * offset の前で、文がほんとうに終わっているか。文書か見出しの直後か、前の文が二字以上の語か数で言い終えているときだけ。
- * 番号に付ける略した語（vol. 28、H.R. 5376）や、句点の無い行（Lane\n\n2 contains、HTML から移したリンクの切れ目）の後ろの数は文の頭ではない。
+ * 番号に付ける略した語（vol. 28、H.R. 5376、Co. Litt. 113）や、句点の無い行（Lane\n\n2 contains、HTML から移したリンクの切れ目）の
+ * 後ろの数は文の頭ではない。
  */
-export const followsSentenceEnd = (source: string, offset: number, labels: ReadonlySet<string>): boolean => {
+export const followsSentenceEnd = (source: string, offset: number, labels: ReadonlySet<string>, isKnown: IsKnownWord = () => true): boolean => {
   const from = Math.max(0, offset - LOOKBACK);
   const ended = source.slice(from, offset).trimEnd();
   if ((ended === "" && from === 0) || HEADING_LINE.test(ended)) return true;
   const word = lastWordBeforeStop(ended);
-  if (word === undefined) return false;
+  if (word === undefined || endsAbbreviatedTitle(ended, isKnown)) return false;
   return DIGITS.test(word) || (PLAIN_WORD.test(word) && !labels.has(word.toLowerCase()));
 };
 
@@ -86,13 +104,27 @@ const inside = (spans: readonly Span[], offset: number): boolean => spans.some((
 
 const leadingSpace = (sentence: Sentence): number => sentence.text.length - sentence.text.trimStart().length;
 
+/** 文書の言語の辞書にある語か。辞書は大きいので、初めて問われたときに読む。辞書の無い言語では、どの語も知っている語と見る。 */
+const knownWordOf = (doc: ProseDocument): IsKnownWord => {
+  const speller: { value?: Speller | undefined; read?: true } = {};
+  return (word) => {
+    if (speller.read === undefined) {
+      const dictionary = doc.dictionary?.();
+      speller.value = dictionary === undefined ? undefined : spellerOf(doc, dictionary);
+      speller.read = true;
+    }
+    return speller.value === undefined || isKnownWord(word, speller.value);
+  };
+};
+
 export const numeralOpener: Detector = (doc): Finding[] => {
   const labels = new Set((doc.lexicons["numeral-reference-label"] ?? []).map((entry) => entry.pattern.toLowerCase()));
+  const isKnown = knownWordOf(doc);
   return doc.sentences.flatMap((sentence) => {
     const offset = sentence.span.start + leadingSpace(sentence);
     if (sentence.embeddedLanguage !== undefined || inside(doc.listSpans, offset)) return [];
     const numeral = openingNumeral(sentence.text);
-    if (numeral === undefined || !followsSentenceEnd(doc.source, offset, labels) || opensNumberedParagraph(doc.source, offset, numeral)) return [];
+    if (numeral === undefined || !followsSentenceEnd(doc.source, offset, labels, isKnown) || opensNumberedParagraph(doc.source, offset, numeral)) return [];
     return [{ rule: "", severity: "warning", line: 0, column: 0, quote: sentence.text.trim(), values: { numeral, offset } }];
   });
 };

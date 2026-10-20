@@ -47,6 +47,21 @@ describe("numeral-sentence-start: 数字で始まる英語の文", () => {
     assert.deepEqual(findingsOf("See Tbl. 20 for the retention schedule. See Subsec. 2 applies.\n"), []);
   });
 
+  it("引用の略した題（Co. Litt. 113 a）の後ろの数は文の頭ではないが、辞書にある語で終わる文の後ろの数は文の頭", () => {
+    // Dartmouth College v. Woodward (1819), public domain.
+    const citation = "Even a power, given by will, to executors, is coupled with a trust. Co. Litt. 113 a, Harg. & Butler's note 2; Sugden on Powers 140.\n";
+    assert.deepEqual(findingsOf(citation), []);
+    assert.deepEqual(findingsOf("The parade went through St. Paul. 20 people stayed for the vote.\n"), ['The sentence opens with the numeral "20"']);
+    assert.deepEqual(findingsOf("The parade went on. 20 people stayed for the vote.\n"), ['The sentence opens with the numeral "20"']);
+    const known = (word: string): boolean => word === "paul";
+    const at = (source: string): boolean => followsSentenceEnd(source, source.length, new Set(), known);
+    assert.equal(at("is coupled with a trust. Co. Litt. "), false);
+    assert.equal(at("went through St. Paul. "), true);
+    assert.equal(at("Litt. "), true);
+    assert.equal(at("Co.\nLitt. "), true);
+    assert.equal(at("the court in Butler. "), true);
+  });
+
   it("箇条書き、見出し、表、コードは読まない", () => {
     assert.deepEqual(findingsOf("# 3 reasons to switch\n\n- 3 items were left.\n\n| a |\n| - |\n| 5 rows were added. |\n"), []);
     assert.deepEqual(findingsOf("```\n20 people came.\n```\n"), []);
