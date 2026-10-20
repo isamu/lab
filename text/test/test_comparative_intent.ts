@@ -25,5 +25,6 @@ describe("comparative-without-baseline: 願いや目的の中の比較", () => {
     assert.equal(findingsOf("新しい版では、処理がより速くなりました。\n").length, 1);
     // 理由の「ため」は目的ではない。
     assert.equal(findingsOf("処理がより速くなったため、待ち時間が減った。\n").length, 1);
+    assert.equal(findingsOf("この版には、さらに安全な書き方があるため、古い関数は使わない。\n").length, 1);
   });
 });

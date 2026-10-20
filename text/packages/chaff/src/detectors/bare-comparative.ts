@@ -122,8 +122,11 @@ const goesBeyond = (tokens: readonly Token[], found: BareComparative, beyond: Re
   return beyond.has(lower(tokens[before]));
 };
 
-/** 理由を言う「ため」の前の語: 過去の「た」（速くなったため）と「の」（雨のため）。目的の「ため」は動詞の辞書の形に付く。 */
-const CAUSE_BEFORE: ReadonlySet<string> = new Set(["た", "だ", "の"]);
+/**
+ * 理由を言う「ため」の前の語: 過去の「た」（速くなったため）、「の」（雨のため）、ありさまを言う「ある」「いる」（書き方があるため、
+ * 使われているため）。目的の「ため」は、する動作の動詞の辞書の形に付く（接続させていくため）。
+ */
+const CAUSE_BEFORE: ReadonlySet<string> = new Set(["た", "だ", "の", "ある", "いる"]);
 
 const isIntentWord = (tokens: readonly Token[], at: number, intents: ReadonlySet<string>): boolean => {
   const token = tokens[at];
