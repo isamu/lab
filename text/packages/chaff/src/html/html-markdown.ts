@@ -1,12 +1,12 @@
 // An HTML page (a CRS report as EveryCRSReport serves it, a ministry's page) as plain Markdown: headings, paragraphs,
-// list items and the text of links; ruby keeps its base text and loses its reading. Only the <main> element (else the
+// list items and the text of links, with where each section links in a closing comment (html-links.ts); ruby keeps its base text and loses its reading. Only the <main> element (else the
 // role="main" element, else a sole <article>, else the block holding the title and nearly every sentence) is read when
 // the page has one. Scripts, styles, the head, navigation (by
 // element or by role, and breadcrumbs), asides, footers, forms, tables without sentences (html-tables.ts), footnote marks, lists and blocks of nothing but
 // links (a menu, a table of contents, previous/next links, a breadcrumb trail, also as a list ending in the page's
 // title), a list of the page in other languages, a block of icons with only a label, a block before the page's title that holds a menu or only links and no sentence (the site's header, with its tagline and
 // labels), buttons outside a heading, controls (html-widgets.ts: tooltips, media players, scripted link buttons, paging
-// bars, unspoken text), hidden elements, text for a screen reader only (a visually-hidden class, a skip
+// bars, unspoken text, a hidden box a script fills in), hidden elements, text for a screen reader only (a visually-hidden class, a skip
 // link's target), a heading's link to its own section beside or after its title,
 // lines of nothing but in-page or script links (never a heading), a heading drawn as an image unless its alt text is the page's
 // title, blocks of nothing but links closing the page, and a copyright notice closing the page, with an address just
@@ -34,12 +34,13 @@ import {
 } from "./html-elements.ts";
 import { contentBlock } from "./html-content-block.ts";
 import { withoutFootnoteMarks } from "./html-footnote-marks.ts";
-import { withoutHeadingSelfLinks } from "./html-heading-links.ts";
+import { withHeadingLinksRead } from "./html-heading-links.ts";
+import { withLinkAddressesMarked, withSectionLinks } from "./html-links.ts";
 import { withLostParagraphTagsRestored } from "./html-lost-tags.ts";
 import { withoutReaderOnlyText } from "./html-reader-only.ts";
 import { withoutSiteChrome } from "./html-site-chrome.ts";
 import { withRunInHeadingsRead } from "./html-run-in-headings.ts";
-import { withoutWidgets } from "./html-widgets.ts";
+import { withoutUnfilledWidgets, withoutWidgets } from "./html-widgets.ts";
 import { withPreformattedRestored, withPreformattedStashed } from "./html-preformatted.ts";
 import { withTablesRead } from "./html-tables.ts";
 import { opensSubsection } from "./html-section-number.ts";
@@ -383,28 +384,7 @@ const withoutEmptySections = (lines: readonly string[]): string[] =>
     { kept: [], nextLevel: 0 },
   ).kept;
 
-const BLOCK_TAGS = new Set([
-  "p",
-  "div",
-  "ul",
-  "ol",
-  "hr",
-  "blockquote",
-  "section",
-  "article",
-  "header",
-  "footer",
-  "main",
-  "aside",
-  "dl",
-  "dt",
-  "dd",
-  "figure",
-  "figcaption",
-  "pre",
-  "body",
-  "html",
-]);
+const BLOCK_TAGS = new Set("p div ul ol hr blockquote section article header footer main aside dl dt dd figure figcaption pre body html".split(" "));
 
 const heading = (_whole: string, level: string, inside: string): string => `\n\n${"#".repeat(Number(level))} ${stripTags(inside).trim()}\n\n`;
 
@@ -484,16 +464,19 @@ const INVISIBLE_ONLY = /^[\s\p{Cf}]*$/u;
 const UNTITLED_HEADING = /^#{1,6}$/u;
 
 export const htmlToMarkdown = (html: string): string => {
-  const uncommented = withLostParagraphTagsRestored(withAttributeMarkupEscaped(html).replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, ""));
+  const uncommented = withoutUnfilledWidgets(withLostParagraphTagsRestored(withAttributeMarkupEscaped(html).replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, "")));
   const preformatted = withPreformattedStashed(withTablesRead(DROPPED.reduce(withoutElement, withMathAsDrawn(withoutRubyText(uncommented)))));
   const kept = withoutFootnoteMarks(
-    withoutHeadingSelfLinks(withoutWidgets(withoutButtons(withoutReaderOnlyText(withoutHiddenElements(mainContent(withoutSiteChrome(preformatted.html))))))),
+    withHeadingLinksRead(withoutWidgets(withoutButtons(withoutReaderOnlyText(withoutHiddenElements(mainContent(withoutSiteChrome(preformatted.html))))))),
   ).replace(MARKUP_SPACE, " ");
   const content = withoutClosingLinks(
     withoutLinkGroups(withoutNavigation(withoutIconMenus(withoutSiteHeader(withoutNavigationLandmarks(withoutClosingAddress(kept)))))),
   );
   const text = decodeEntities(
-    stripTags(asLines(markChromeLinks(withImageHeadingsRead(withRunInHeadingsRead(content), documentTitle(uncommented))))).replace(SPACES_ACROSS_TAGS, " "),
+    stripTags(withLinkAddressesMarked(asLines(markChromeLinks(withImageHeadingsRead(withRunInHeadingsRead(content), documentTitle(uncommented)))))).replace(
+      SPACES_ACROSS_TAGS,
+      " ",
+    ),
   );
   const lines = text
     .split("\n")
@@ -501,5 +484,5 @@ export const htmlToMarkdown = (html: string): string => {
     .filter((line) => line !== "-" && !isChromeLinkLine(line))
     .map((line) => line.replaceAll(LINK_START, "").replaceAll(LINK_END, ""))
     .filter((line) => !UNTITLED_HEADING.test(line));
-  return tidyLines(withPreformattedRestored(withoutEmptySections(withoutClosingCopyright(withoutEmptySections(lines))), preformatted.blocks));
+  return tidyLines(withPreformattedRestored(withSectionLinks(withoutEmptySections(withoutClosingCopyright(withoutEmptySections(lines)))), preformatted.blocks));
 };

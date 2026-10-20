@@ -18,8 +18,11 @@ describe("htmlToMarkdown: 見出し・段落・箇条書き", () => {
     );
   });
 
-  it("リンクは文字だけ、中身の無い項目は残さない", () => {
-    assert.equal(htmlToMarkdown('<p>See <a href="https://example.com/r">the report</a>.</p><ul><li></li></ul>'), "See the report.\n");
+  it("リンクは文字だけ（行き先は節の終わりの注釈）、中身の無い項目は残さない", () => {
+    assert.equal(
+      htmlToMarkdown('<p>See <a href="https://example.com/r">the report</a>.</p><ul><li></li></ul>'),
+      "See the report.\n\n<!-- https://example.com/r -->\n",
+    );
   });
 
   it("空の入力は空", () => {
@@ -431,6 +434,40 @@ describe("htmlToMarkdown: ボタン・隠れた要素・見出しの自己リン
     assert.equal(htmlToMarkdown("<h3>Step 2 <button>Expand</button></h3><p>Sign.</p>"), "### Step 2 Expand\n\nSign.\n");
   });
 
+  // NPS「Stewardship in Recreation」(https://www.nps.gov/articles/000/stewardship-in-recreation.htm、米国政府の著作物) の折りたたみパネル。
+  // 題は見出しの中のページ内リンク（開くアイコンと題の 2 つ）で書かれ、見出しを包む div はリンクだけに見える。
+  const panel = (id: string, title: string, items: readonly string[]): string =>
+    `<div class="panel" id="Collapsible${id}"><div class="panel-heading" id="heading${id}" role="tab"><h4 class="panel-title">` +
+    `<a aria-controls="collapse${id}" aria-hidden="true" data-toggle="collapse" href="#collapse${id}" role="button"><span class="glyphicon"> </span></a> ` +
+    `<a aria-controls="collapse${id}" data-toggle="collapse" href="#collapse${id}" role="button">${title}</a></h4></div>` +
+    `<div class="panel-collapse collapse" id="collapse${id}" role="tabpanel"><div class="panel-body"><ul><li>${items.join("</li><li>")}</li></ul></div></div></div>`;
+
+  it("見出しの中のページ内リンク (折りたたみパネルの題) は見出しの文字。見出しを包む塊をリンクだけの塊として落とさない", () => {
+    const html =
+      "<main><h1>Stewardship in Recreation</h1><h3>Leave No Trace</h3><p>Practice the seven principles.</p>" +
+      panel("1", "Principle #1 – Plan Ahead and Prepare", [
+        "Know the regulations and special concerns for the area you'll visit.",
+        "Repackage food to minimize waste.",
+      ]) +
+      panel("2", "Principle #2 – Travel and Camp on Durable Surfaces", ["Protect riparian areas by camping at least 200 feet from lakes and streams."]) +
+      "</main>";
+    assert.equal(
+      htmlToMarkdown(html),
+      "# Stewardship in Recreation\n\n### Leave No Trace\n\nPractice the seven principles.\n\n" +
+        "#### Principle #1 – Plan Ahead and Prepare\n\n- Know the regulations and special concerns for the area you'll visit.\n- Repackage food to minimize waste.\n\n" +
+        "#### Principle #2 – Travel and Camp on Durable Surfaces\n\n- Protect riparian areas by camping at least 200 feet from lakes and streams.\n",
+    );
+  });
+
+  it("見出しの外のページ内リンクの塊・他のページへのリンクの見出しの塊・見出しの中の注の印は、これまでどおり落とす", () => {
+    assert.equal(htmlToMarkdown('<p>Intro.</p><div><a href="#a">Part A</a> <a href="#b">Part B</a></div><p>End.</p>'), "Intro.\n\nEnd.\n");
+    const related =
+      '<p>Intro.</p><div><h3><a href="https://example.org/a">Article A</a></h3><h3><a href="https://example.org/b">Article B</a></h3></div><p>End.</p>';
+    assert.equal(htmlToMarkdown(related), "Intro.\n\nEnd.\n");
+    const note = '<h2>Scope<a href="#fn1" class="fnref"><sup>1</sup></a></h2><p>Rain fell.</p><ol class="footnotes"><li id="fn1">A note.</li></ol>';
+    assert.match(htmlToMarkdown(note), /^## Scope\n/u);
+  });
+
   it("hidden 属性の要素は落とす。until-found・aria-hidden は残す", () => {
     const tooltip = "<h1>Moving a site<span hidden data-x><span>Save this page</span></span></h1><p>Plan first.</p>";
     assert.equal(htmlToMarkdown(tooltip), "# Moving a site\n\nPlan first.\n");
@@ -483,16 +520,25 @@ describe("htmlToMarkdown: ボタン・隠れた要素・見出しの自己リン
 
   it("見出しの直後でも、自分の節でない先・無い id・間に文字があるリンクは残す", () => {
     const earlier = '<div id="a"><h2>Scope</h2><p>x.</p><h2>Terms</h2><a href="https://example.org/r#a">Back to scope and more</a></div>';
-    assert.equal(htmlToMarkdown(earlier), "## Scope\n\nx.\n\n## Terms\n\nBack to scope and more\n");
-    assert.equal(htmlToMarkdown('<h2 id="c">Context</h2><a href="https://example.org/r#nowhere">Read the annex</a>'), "## Context\n\nRead the annex\n");
-    assert.equal(htmlToMarkdown('<h2 id="c">Context</h2>See <a href="https://example.org/r#c">the annex</a>.'), "## Context\n\nSee the annex.\n");
+    assert.equal(htmlToMarkdown(earlier), "## Scope\n\nx.\n\n## Terms\n\nBack to scope and more\n\n<!-- https://example.org/r#a -->\n");
+    assert.equal(
+      htmlToMarkdown('<h2 id="c">Context</h2><a href="https://example.org/r#nowhere">Read the annex</a>'),
+      "## Context\n\nRead the annex\n\n<!-- https://example.org/r#nowhere -->\n",
+    );
+    assert.equal(
+      htmlToMarkdown('<h2 id="c">Context</h2>See <a href="https://example.org/r#c">the annex</a>.'),
+      "## Context\n\nSee the annex.\n\n<!-- https://example.org/r#c -->\n",
+    );
     const later = '<h2>Context</h2><a href="https://example.org/r#d">Details below</a><div id="d"><p>y.</p></div>';
-    assert.equal(htmlToMarkdown(later), "## Context\n\nDetails below\n\ny.\n");
-    assert.equal(htmlToMarkdown('<div id=""><h2>Context</h2><a href="https://example.org/annex">Annex</a></div>'), "## Context\n\nAnnex\n");
+    assert.equal(htmlToMarkdown(later), "## Context\n\nDetails below\n\ny.\n\n<!-- https://example.org/r#d -->\n");
+    assert.equal(
+      htmlToMarkdown('<div id=""><h2>Context</h2><a href="https://example.org/annex">Annex</a></div>'),
+      "## Context\n\nAnnex\n\n<!-- https://example.org/annex -->\n",
+    );
     const twice = '<h2 id="x">One</h2><p>a.</p><h2><span id="x">Two</span></h2><a href="https://example.org/r#x">Jump to one</a>';
-    assert.equal(htmlToMarkdown(twice), "## One\n\na.\n\n## Two\n\nJump to one\n");
+    assert.equal(htmlToMarkdown(twice), "## One\n\na.\n\n## Two\n\nJump to one\n\n<!-- https://example.org/r#x -->\n");
     const note = '<p>Note <span id="n">one</span>.</p><h2>Terms</h2><a href="https://example.org/r#n">Read the note</a>';
-    assert.equal(htmlToMarkdown(note), "Note one.\n\n## Terms\n\nRead the note\n");
+    assert.equal(htmlToMarkdown(note), "Note one.\n\n## Terms\n\nRead the note\n\n<!-- https://example.org/r#n -->\n");
   });
 
   it("見出しの中の自己リンクは、文字の無い印 (¶ など) なら落とし、語のあるものは題として残す", () => {

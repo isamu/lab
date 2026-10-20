@@ -1,7 +1,8 @@
 // Parts of a page that are controls rather than the document: a tooltip, a media player with its buttons, a block a
 // script runs when clicked, a bar of previous and next links between arrows, and text marked never to be spoken.
 // Each is told by its structure (a role, an <audio> or <video>, an event handler, the arrows), never by a site's class
-// names. Pure; a regular-expression reading.
+// names. Also a box the page hides until a script fills it in (withoutUnfilledWidgets). Pure; a regular-expression
+// reading.
 import {
   ANY_LINK,
   ATTRIBUTES,
@@ -9,12 +10,58 @@ import {
   fileExtension,
   hasNoWords,
   hasSentence,
+  headingRanges,
   isFileLink,
   plainText,
   withoutElementsOpening,
   withoutRanges,
   type ElementRange,
 } from "./html-elements.ts";
+
+// The declaration ends at ";" or the attribute's quote, so "display:none-ish" is not it.
+const DISPLAY_NONE = String.raw`(?<![\w-])display\s*:\s*none\s*(?:!\s*important\s*)?`;
+
+const STYLE_NOT_DISPLAYED = String.raw`style\s*=\s*(?:"[^"]*${DISPLAY_NONE}(?:;[^"]*)?"|'[^']*${DISPLAY_NONE}(?:;[^']*)?')`;
+
+const HIDDEN_BY_STYLE_OPENING = new RegExp(String.raw`<([a-z][a-z0-9-]*)${ATTRIBUTES}\s+${STYLE_NOT_DISPLAYED}`, "giu");
+
+const HIDDEN_BY_STYLE = new RegExp(String.raw`^<[a-z][a-z0-9-]*${ATTRIBUTES}\s+${STYLE_NOT_DISPLAYED}`, "iu");
+
+const SCRIPT_OPENING = /<script\b[^>]*>/giu;
+
+const TYPE = /\stype\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/iu;
+
+// A script of data (JSON-LD, a template) fills nothing in; one with no type, a JavaScript type or a module does.
+const RUNNING_TYPE = /^(?:(?:text|application)\/(?:x-)?(?:java|ecma)script|module)?$/iu;
+
+const isRunning = (opening: string): boolean => {
+  const type = TYPE.exec(opening);
+  return RUNNING_TYPE.test((type?.[1] ?? type?.[2] ?? type?.[3] ?? "").trim());
+};
+
+const holdsRunningScript = (inner: string): boolean => (inner.match(SCRIPT_OPENING) ?? []).some(isRunning);
+
+const holdsOnlyHeadings = (inner: string): boolean => {
+  const headings = headingRanges(inner).toSorted((left, right) => left.start - right.start);
+  return headings.length > 0 && hasNoWords(plainText(withoutRanges(inner, headings)));
+};
+
+const isUnfilledWidget = (range: ElementRange): boolean =>
+  HIDDEN_BY_STYLE.test(range.openTag) && (holdsRunningScript(range.inner) || holdsOnlyHeadings(range.inner));
+
+// A script's own text often writes markup as strings ('<div class="item">'), which would unbalance the blocks around
+// it; the script is emptied first and still marks the block. The converter drops scripts afterwards anyway.
+const SCRIPT = /<script\b([^>]*)>[\s\S]*?<\/script\s*>/giu;
+
+const withScriptsEmptied = (html: string): string => html.replace(SCRIPT, "<script$1></script>");
+
+/**
+ * A box the page hides (an inline display: none) until a script fills it in, such as a "related pages" box drawn as a
+ * heading over empty rows: it holds a running script, or nothing but headings. A hidden block with text of its own and
+ * no running script (an accordion's body, an answer opened by a click) is the page's and stays. Read before scripts
+ * are dropped.
+ */
+export const withoutUnfilledWidgets = (html: string): string => withoutElementsOpening(withScriptsEmptied(html), HIDDEN_BY_STYLE_OPENING, isUnfilledWidget);
 
 /** Every element whose opening tag carries attribute (name and value as a pattern), matched to its own closing tag. */
 const withoutElementsWithAttribute = (html: string, attribute: string): string => {
