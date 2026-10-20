@@ -34,7 +34,7 @@ import {
 } from "./html-elements.ts";
 import { contentBlock } from "./html-content-block.ts";
 import { withoutFootnoteMarks } from "./html-footnote-marks.ts";
-import { withoutHeadingSelfLinks } from "./html-heading-links.ts";
+import { withHeadingLinksRead } from "./html-heading-links.ts";
 import { withLinkAddressesMarked, withSectionLinks } from "./html-links.ts";
 import { withLostParagraphTagsRestored } from "./html-lost-tags.ts";
 import { withoutReaderOnlyText } from "./html-reader-only.ts";
@@ -467,7 +467,7 @@ export const htmlToMarkdown = (html: string): string => {
   const uncommented = withLostParagraphTagsRestored(withAttributeMarkupEscaped(html).replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, ""));
   const preformatted = withPreformattedStashed(withTablesRead(DROPPED.reduce(withoutElement, withMathAsDrawn(withoutRubyText(uncommented)))));
   const kept = withoutFootnoteMarks(
-    withoutHeadingSelfLinks(withoutWidgets(withoutButtons(withoutReaderOnlyText(withoutHiddenElements(mainContent(withoutSiteChrome(preformatted.html))))))),
+    withHeadingLinksRead(withoutWidgets(withoutButtons(withoutReaderOnlyText(withoutHiddenElements(mainContent(withoutSiteChrome(preformatted.html))))))),
   ).replace(MARKUP_SPACE, " ");
   const content = withoutClosingLinks(
     withoutLinkGroups(withoutNavigation(withoutIconMenus(withoutSiteHeader(withoutNavigationLandmarks(withoutClosingAddress(kept)))))),
