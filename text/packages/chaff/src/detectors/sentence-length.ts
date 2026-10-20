@@ -1,6 +1,7 @@
 import { lengthOf, proseText } from "../measure.ts";
 import type { Detector, DetectorOptions, Finding, LengthUnit, Sentence } from "../plugin.ts";
 import { citationLead } from "./citation-sentence.ts";
+import { isNameList } from "./name-list-sentence.ts";
 import { pageMarkerPattern, pageMarkerSize } from "./page-marker.ts";
 
 type Measure = { readonly size: number; readonly limit: number; readonly variant?: string };
@@ -34,7 +35,7 @@ export const sentenceLength: Detector = (doc, options): Finding[] => {
   };
   return doc.sentences
     .map((sentence) => ({ sentence, measure: measureOf(sentence, doc.lengthUnit, options, words) }))
-    .filter(({ measure }) => measure.size > measure.limit)
+    .filter(({ sentence, measure }) => measure.size > measure.limit && !isNameList(proseText(sentence)))
     .map(({ sentence, measure }) => ({
       rule: "max-sentence-length",
       severity: "warning",
