@@ -32,6 +32,9 @@ describe("isNameList", () => {
     assert.equal(isNameList("計画を説明し、予算を確認し、日程を決め、担当を割り振り、次回に報告する"), false);
     assert.equal(isNameList("市長、副市長、教育長、総務部長、試験と検査の結果をまとめて報告する担当の部長"), false);
     assert.equal(isNameList("市長、、副市長、教育長、総務部長、企画部長"), false);
+    assert.equal(isNameList(Array.from({ length: 6 }, () => "本計画は来年度から実施予定").join("、")), false);
+    assert.equal(isNameList("市長、副市長、教育長、総務部長、企画部長。】"), false);
+    assert.equal(isNameList("Ann, Bob, Carol, Dave, Eve, Frank."), false);
     assert.equal(isNameList(""), false);
   });
 });
