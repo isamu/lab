@@ -53,7 +53,7 @@ const SCHEME_AND_HOST = /^(?:[a-z][a-z0-9+.-]*:)?\/\/[^/?#]*/iu;
 // A link that opens no page (tel:, mailto:, sms:) carries its own content, a number or an address.
 const OTHER_SCHEME = /^\s*(?!https?:)[a-z][a-z0-9+.-]*:(?!\/\/)/iu;
 
-const hrefOf = (link: string): string => {
+export const hrefOf = (link: string): string => {
   const href = HREF.exec(link);
   return href?.[1] ?? href?.[2] ?? href?.[3] ?? "";
 };

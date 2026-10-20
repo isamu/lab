@@ -18,8 +18,11 @@ describe("htmlToMarkdown: 見出し・段落・箇条書き", () => {
     );
   });
 
-  it("リンクは文字だけ、中身の無い項目は残さない", () => {
-    assert.equal(htmlToMarkdown('<p>See <a href="https://example.com/r">the report</a>.</p><ul><li></li></ul>'), "See the report.\n");
+  it("リンクは文字だけ（行き先は節の終わりの注釈）、中身の無い項目は残さない", () => {
+    assert.equal(
+      htmlToMarkdown('<p>See <a href="https://example.com/r">the report</a>.</p><ul><li></li></ul>'),
+      "See the report.\n\n<!-- https://example.com/r -->\n",
+    );
   });
 
   it("空の入力は空", () => {
@@ -483,16 +486,25 @@ describe("htmlToMarkdown: ボタン・隠れた要素・見出しの自己リン
 
   it("見出しの直後でも、自分の節でない先・無い id・間に文字があるリンクは残す", () => {
     const earlier = '<div id="a"><h2>Scope</h2><p>x.</p><h2>Terms</h2><a href="https://example.org/r#a">Back to scope and more</a></div>';
-    assert.equal(htmlToMarkdown(earlier), "## Scope\n\nx.\n\n## Terms\n\nBack to scope and more\n");
-    assert.equal(htmlToMarkdown('<h2 id="c">Context</h2><a href="https://example.org/r#nowhere">Read the annex</a>'), "## Context\n\nRead the annex\n");
-    assert.equal(htmlToMarkdown('<h2 id="c">Context</h2>See <a href="https://example.org/r#c">the annex</a>.'), "## Context\n\nSee the annex.\n");
+    assert.equal(htmlToMarkdown(earlier), "## Scope\n\nx.\n\n## Terms\n\nBack to scope and more\n\n<!-- https://example.org/r#a -->\n");
+    assert.equal(
+      htmlToMarkdown('<h2 id="c">Context</h2><a href="https://example.org/r#nowhere">Read the annex</a>'),
+      "## Context\n\nRead the annex\n\n<!-- https://example.org/r#nowhere -->\n",
+    );
+    assert.equal(
+      htmlToMarkdown('<h2 id="c">Context</h2>See <a href="https://example.org/r#c">the annex</a>.'),
+      "## Context\n\nSee the annex.\n\n<!-- https://example.org/r#c -->\n",
+    );
     const later = '<h2>Context</h2><a href="https://example.org/r#d">Details below</a><div id="d"><p>y.</p></div>';
-    assert.equal(htmlToMarkdown(later), "## Context\n\nDetails below\n\ny.\n");
-    assert.equal(htmlToMarkdown('<div id=""><h2>Context</h2><a href="https://example.org/annex">Annex</a></div>'), "## Context\n\nAnnex\n");
+    assert.equal(htmlToMarkdown(later), "## Context\n\nDetails below\n\ny.\n\n<!-- https://example.org/r#d -->\n");
+    assert.equal(
+      htmlToMarkdown('<div id=""><h2>Context</h2><a href="https://example.org/annex">Annex</a></div>'),
+      "## Context\n\nAnnex\n\n<!-- https://example.org/annex -->\n",
+    );
     const twice = '<h2 id="x">One</h2><p>a.</p><h2><span id="x">Two</span></h2><a href="https://example.org/r#x">Jump to one</a>';
-    assert.equal(htmlToMarkdown(twice), "## One\n\na.\n\n## Two\n\nJump to one\n");
+    assert.equal(htmlToMarkdown(twice), "## One\n\na.\n\n## Two\n\nJump to one\n\n<!-- https://example.org/r#x -->\n");
     const note = '<p>Note <span id="n">one</span>.</p><h2>Terms</h2><a href="https://example.org/r#n">Read the note</a>';
-    assert.equal(htmlToMarkdown(note), "Note one.\n\n## Terms\n\nRead the note\n");
+    assert.equal(htmlToMarkdown(note), "Note one.\n\n## Terms\n\nRead the note\n\n<!-- https://example.org/r#n -->\n");
   });
 
   it("見出しの中の自己リンクは、文字の無い印 (¶ など) なら落とし、語のあるものは題として残す", () => {
