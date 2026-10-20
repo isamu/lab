@@ -33,6 +33,12 @@ const titleOf = (rest: string): string | undefined => {
 
 const ARTICLE = /^\s{0,3}(?:ARTICLE|Article)\s+(?<n>\d{1,3}|[IVXLC]{1,7})\b(?<rest>.*)$/u;
 const SECTION = /^\s{0,3}(?:SECTION|Section|§)\s*(?<n>\d{1,3}(?:\.\d{1,3}){0,5})\b(?<rest>.*)$/u;
+/**
+ * "Sec. 3. (a) For confidential…", '#### "SEC. 3. REQUIREMENT OF DISCLOSURE.': an Act or an Executive order set out in a
+ * statute's notes numbers its sections with the abbreviation, the number ending in a full stop; an Act quoted in the notes
+ * opens each paragraph with a quotation mark. "Sec. 552 - Public information" (a citation header) has no full stop.
+ */
+const ABBREVIATED_SECTION = /^\s{0,3}["“]?(?:SECTION|Section|SEC\.|Sec\.)\s*(?<n>\d{1,3}(?:\.\d{1,3}){0,5})\.(?=\s|$)(?<rest>.*)$/u;
 /** "(a) text", "(ii) text", "(B) text", or the label alone on its line with the text below it. */
 const LETTERED = new RegExp(`^\\s{0,6}\\((?<n>[a-z]{1,4}|[A-Z]{1,4}|\\d{1,3}|${INSERTED})\\)(?:\\s+(?<rest>\\S.*))?\\s*$`, "u");
 
@@ -94,6 +100,7 @@ const numbered = (line: string, context: NumberingContext): NumberedLine | undef
   chapter(CHAPTER, line, CHAPTER_DEPTH, "ch", "Chapter") ??
   headed(ARTICLE, line, "article", (n) => `Article ${n}`) ??
   headed(SECTION, line, "section", (n) => `Section ${n}`) ??
+  headed(ABBREVIATED_SECTION, line, "section", (n) => `Section ${n}`) ??
   lettered(line, context);
 
 const REFERENCE = /(?<word>\b[Ss]ections?|\b[Aa]rticles?|§) ?(?<n>\d{1,3}(?:\.\d{1,3}){0,5}|[IVXLC]{1,7})\b/gu;
