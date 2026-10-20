@@ -198,7 +198,13 @@ const enclosingHeadings = (sections: readonly Section[], offset: number): Senten
 const underDeadlineHeading = (sections: readonly Section[], sentence: Sentence, words: Words): boolean =>
   enclosingHeadings(sections, sentence.span.start).some((heading) => holdsWord(heading, words.deadline));
 
-const HEADING_END = /[\s:：.。]+$/u;
+const HEADING_END = new Set([":", "：", ".", "。"]);
+
+/** A heading without its closing colon or period and spaces ("DATES:" is "DATES"). */
+const withoutHeadingEnd = (text: string): string => {
+  const chars = [...text];
+  return chars.slice(0, chars.findLastIndex((char) => char.trim() !== "" && !HEADING_END.has(char)) + 1).join("");
+};
 
 const datesInside = (span: Span, dates: readonly Span[]): Span[] => dates.filter((date) => date.start >= span.start && date.end <= span.end);
 
@@ -221,11 +227,8 @@ const statesDeadline = (source: string, sentence: Sentence, words: Words, dates:
 const documentDeadlineAt = (source: string, sections: readonly Section[], words: Words, dates: readonly Span[]): number | undefined =>
   sections.find(
     (section) =>
-      words.deadlineSection.includes(
-        comparableWords(section.unlabeledHeading ?? section.heading)
-          .replace(HEADING_END, "")
-          .trim(),
-      ) && section.sentences.some((sentence) => statesDeadline(source, sentence, words, dates)),
+      words.deadlineSection.includes(withoutHeadingEnd(comparableWords(section.unlabeledHeading ?? section.heading)).trim()) &&
+      section.sentences.some((sentence) => statesDeadline(source, sentence, words, dates)),
   )?.span.start;
 
 /**
