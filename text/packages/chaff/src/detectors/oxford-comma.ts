@@ -155,6 +155,18 @@ const fromExample = (view: View): View => {
   return sameShapes(inPhrase) ? inPhrase : view;
 };
 
+/**
+ * 読点で始まる例の句が and / or の直前の項目で、句の中に and / or があれば、and の前の読点は句を閉じる読点（gases in the
+ * atmosphere, such as ozone and carbon dioxide, and the amount of energy）。Oxford comma を打つかどうかの選択を見せない。
+ */
+const closesExampleAside = (view: View, at: number): boolean => {
+  const { scope } = view.list;
+  const [phrase, last] = [findLast(view, "example"), lastOf(view)];
+  if (phrase === undefined || last === undefined || phrase.j !== last.j || !commaBefore(scope, at)) return false;
+  const opensItem = (scope.sentence.exampleEnds[phrase.item.start]?.length ?? 0) > 0;
+  return opensItem && hasListConjunction(scope, { start: exampleEnd(scope, phrase.item), end: phrase.item.end });
+};
+
 /** 解析器は過去形と過去分詞（fixed）を見分けられない。動詞のある項目のあとの「過去分詞」の並びは、述語の並びと読む。 */
 const pastPredicates = (scope: ItemScope, first: TokenRange, form: string, afterItem: TokenRange): boolean =>
   form === "Part" && participleOpening(scope, afterItem)?.form === "Part" && hasVerb(scope, first);
@@ -298,6 +310,7 @@ const opensContrast = (scope: ItemScope, item: TokenRange): boolean => CONTRAST.
  */
 const listAt = (list: ItemList, at: number): boolean | undefined => {
   const { scope } = list;
+  if (closesExampleAside(wholeList(list), at)) return undefined;
   const afterItem = itemAfter(scope, at);
   const items = fromParticiplePhrase(fromExample(afterClosedList(withoutLead(withoutCoordinateAdjective(wholeList(list))))), afterItem);
   if (listContinues(scope, afterItem) || isAppositive(scope, at, items, afterItem) || insideLastItem(scope, at, items, afterItem)) return undefined;

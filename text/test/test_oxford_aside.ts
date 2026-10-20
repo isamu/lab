@@ -27,4 +27,12 @@ describe("oxford-comma-consistency: an example phrase between a subject and its 
     assert.equal(firedWith("We sell fruit, such as apples, pears and plums."), true);
     assert.equal(firedWith("Some devices, including the shared tablets, are wiped, checked and returned."), true);
   });
+
+  it("does not count the comma that closes an example phrase holding its own and before the list's and", () => {
+    const withoutComma = "We print flyers, stickers and banners.\nWe ship to shops, schools and libraries.";
+    const firedWithout = (sentence: string): boolean => firedRules(en, `${withoutComma}\n\n${sentence}\n`).includes(RULE);
+    assert.equal(firedWithout("They also measure gases in the air, such as ozone and carbon dioxide, and the heat that the planet absorbs and emits."), false);
+    assert.equal(firedWithout("We sell fruit, oranges such as navels and mandarins, and pears."), true);
+    assert.equal(firedWithout("We sell apples, pears, and plums."), true);
+  });
 });
