@@ -168,11 +168,16 @@ describe("an English contract as a tree", () => {
     assert.deepEqual(addresses(treeOf(source)), ["1", "1.a", "1.a.1", "1.a.1.i", "1.a.1.i.I", "1.a.1.i.II", "1.a.1.ii"]);
   });
 
-  it("leaves a capital (A) that opens a list, or sits under a number, as text, as it was", () => {
+  it("leaves a capital (A) that opens a list, or sits under a number right below a heading, as text", () => {
     const contract = lines("Section 1 Recitals", "(A) The Supplier provides services.", "(B) The Customer wishes to buy them.", "(a) one");
     assert.deepEqual(addresses(treeOf(contract)), ["1", "1.a"]);
+    const numbered = lines("Section 1 Terms", "(1) one", "(A) one", "(B) two", "(2) two");
+    assert.deepEqual(addresses(treeOf(numbered)), ["1", "1.1", "1.2"]);
+  });
+
+  it("reads a capital (A) under a paragraph (1) of a subsection (a) as a subparagraph, as the US Code numbers", () => {
     const code = lines("Section 1 Terms", "(a) one", "(1) one", "(A) one", "(B) two", "(2) two");
-    assert.deepEqual(addresses(treeOf(code)), ["1", "1.a", "1.a.1", "1.a.2"]);
+    assert.deepEqual(addresses(treeOf(code)), ["1", "1.a", "1.a.1", "1.a.1.A", "1.a.1.B", "1.a.2"]);
   });
 
   it("reads a label alone on its line only as the next of an open list", () => {
