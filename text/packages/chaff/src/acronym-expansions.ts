@@ -12,8 +12,11 @@ const QUOTE = String.raw`["“”'‘’「」]?`;
 
 /** 名前のあとに括弧で略語（Service Level Agreement (SLA)、(the "SLA")）。 */
 const NAME_FIRST = new RegExp(String.raw`[(（]\s*(?:the\s+)?${QUOTE}(?<acronym>${ACRONYM})${QUOTE}\s*[)）]`, "gu");
-/** 略語のあとに括弧で名前（SLA (Service Level Agreement)、CI（継続的インテグレーション））。 */
-const ACRONYM_FIRST = new RegExp(String.raw`(?<![\p{Script=Latin}\p{N}])(?<acronym>${ACRONYM})\s?[(（](?<name>[^()（）\n]{2,60})[)）]`, "gu");
+/**
+ * 略語のあとに括弧で名前（SLA (Service Level Agreement)、CI（継続的インテグレーション））。ハイフンかスラッシュで英数字に
+ * つないだ略語（CC BY-NC-SA（表示-非営利-継承）の SA、TCP/IP の IP）は符号の一部で、括弧は符号全体の名前なので、展開に読まない。
+ */
+const ACRONYM_FIRST = new RegExp(String.raw`(?<![\p{Script=Latin}\p{N}][-‐‑/]?)(?<acronym>${ACRONYM})\s?[(（](?<name>[^()（）\n]{2,60})[)）]`, "gu");
 
 /** 頭文字に数えない短い語（Department of Defense の of）。 */
 const SMALL_WORDS: ReadonlySet<string> = new Set(["of", "and", "the", "for", "to", "in", "on", "a", "an", "&", "de", "by", "with"]);
