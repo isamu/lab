@@ -4,7 +4,8 @@
  * 漢字だけなら含んでよい（英文の中の「東京」）。仮名があれば和文の一部と読む。
  */
 const KANA = /[\p{Script=Hiragana}\p{Script=Katakana}]/u;
-const LATIN = /\p{Script=Latin}/gu;
+/** 全角の英字（ＴＥＬ）は和文の組み方で、英文は使わない。英字に数えない。 */
+const LATIN = /(?![Ａ-Ｚａ-ｚ])\p{Script=Latin}/gu;
 const LETTER = /\p{L}/gu;
 // 英文の文末。閉じ括弧・引用符が続いてよい。断片の末尾だけを見る。
 const ENGLISH_STOP_AT_END = /[.?!][)\]"'”’]{0,3}$/u;
