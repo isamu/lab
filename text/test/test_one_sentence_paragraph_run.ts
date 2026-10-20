@@ -1,6 +1,6 @@
 import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { namedRuleRun } from "./rule-run.ts";
+import { firedRules, namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
@@ -72,6 +72,13 @@ describe("one-sentence-paragraph-run", () => {
 
   it("途中に見出しがあれば数え直す", () => {
     assert.deepEqual(findingsOf(`${paragraphs(3)}\n\n## 次の話\n\n${paragraphs(3)}\n`), []);
+  });
+
+  it("記録（speech/transcript）の段落は記録の組み方なので指さない。原稿（speech/address）や報告書では指す", () => {
+    const minutes = `○委員長（山田一郎君）　これより会議を開きます。\n\n${paragraphs(5)}\n`;
+    assert.equal(firedRules(ja, minutes, "speech/transcript").includes(RULE), false);
+    assert.equal(firedRules(ja, minutes, "speech/address").includes(RULE), true);
+    assert.equal(firedRules(ja, minutes, "business/report").includes(RULE), true);
   });
 });
 
