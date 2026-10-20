@@ -10,6 +10,7 @@ import { isNamedStep, plainStepKeys } from "./graded-step.ts";
  * condition は比較を条件や仮定の下に置く語（使うと、if、would）。条件を書いた比較は、その条件の無い場合と比べている。
  * beyond は比べた形のすぐ前で、いま述べたものを越えると言う語（even better、still faster）。相手はその直前に書いてある。
  * aim は比べた語の後ろで、今より良くする目当てを言う語（より良い社会、より良いものにする）。比べる相手は今の状態。
+ * intent は比べた語より後ろで、比較を願いや目的の中に置く語（より広く進めたい、より円滑にするためには）。比べる相手は今の状態。
  * 同じ文か前の二文に相手を言う語があれば、相手は書いてある。
  */
 
@@ -22,6 +23,7 @@ export type ComparativeLists = {
   readonly conditions: ReadonlySet<string>;
   readonly beyond: ReadonlySet<string>;
   readonly aims: ReadonlySet<string>;
+  readonly intents: ReadonlySet<string>;
 };
 
 export type BareComparative = { readonly first: Token; readonly last: Token };
@@ -120,10 +122,25 @@ const goesBeyond = (tokens: readonly Token[], found: BareComparative, beyond: Re
   return beyond.has(lower(tokens[before]));
 };
 
+/** 理由を言う「ため」の前の語: 過去の「た」（速くなったため）と「の」（雨のため）。目的の「ため」は動詞の辞書の形に付く。 */
+const CAUSE_BEFORE: ReadonlySet<string> = new Set(["た", "だ", "の"]);
+
+const isIntentWord = (tokens: readonly Token[], at: number, intents: ReadonlySet<string>): boolean => {
+  const token = tokens[at];
+  if (token === undefined || !(intents.has(lower(token)) || intents.has(token.lemma?.toLowerCase() ?? ""))) return false;
+  return token.surface !== "ため" || !CAUSE_BEFORE.has(tokens[at - 1]?.surface ?? "");
+};
+
+/** 比べた形より後ろに、比較を願いや目的の中に置く語があるか（より広く進めたい、より円滑にするためには）。 */
+const isIntended = (tokens: readonly Token[], found: BareComparative, intents: ReadonlySet<string>): boolean =>
+  tokens.some((token, at) => token.span.start >= found.last.span.end && isIntentWord(tokens, at, intents));
+
 export const bareComparativesIn = (tokens: readonly Token[], lists: ComparativeLists): BareComparative[] =>
   tokens
     .flatMap((_, at) => markedAt(tokens, at, lists) ?? predicateAt(tokens, at, lists) ?? [])
-    .filter((found) => !isConditional(tokens, found, lists.conditions) && !goesBeyond(tokens, found, lists.beyond));
+    .filter(
+      (found) => !isConditional(tokens, found, lists.conditions) && !goesBeyond(tokens, found, lists.beyond) && !isIntended(tokens, found, lists.intents),
+    );
 
 /**
  * 語が比べる相手を言う語か。語の形か原形で照らし、一字の語（旧）は語の頭だけ（旧版は相手、復旧は相手でない）。
@@ -163,6 +180,7 @@ export const listsOf = (lexicon: Lexicon): ComparativeLists => ({
   conditions: new Set(groupOf(lexicon, "condition")),
   beyond: new Set(groupOf(lexicon, "beyond")),
   aims: new Set(groupOf(lexicon, "aim")),
+  intents: new Set(groupOf(lexicon, "intent")),
 });
 
 /** 鉤括弧の中の比較（「給与所得の確定申告がさらに簡単に！」ページ）は題や語を挙げたもので、書き手の比較ではない。 */

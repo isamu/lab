@@ -55,3 +55,10 @@ entries:
   - { pattern: ば, group: condition }
   - { pattern: たら, group: condition }
   - { pattern: なら, group: condition }
+  # intent: 比べた語より後ろで、比較を願いや目的の中に置く語（より広く進めたい、より円滑に接続させていくためには、より一層の充実を図る）。
+  #   比べる相手は今の状態。「できる」は宣伝の「より速く動かせます」と見分けがつかないので含まない。理由の「ため」（速くなったため、雨のため）は目的ではないので数えない。
+  - { pattern: たい, group: intent }
+  - { pattern: ため, group: intent }
+  - { pattern: 目指す, group: intent }
+  - { pattern: べき, group: intent }
+  - { pattern: 図る, group: intent }
