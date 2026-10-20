@@ -62,6 +62,17 @@ describe("numbering-gap: a section title run into its first item", () => {
     assert.deepEqual(addresses("Sec. 4. Applicability to section 5. (a) of this section applies only to new records."), []);
   });
 
+  it("valid: a section's text that reaches a label, and a list flattened into one line, open nothing", () => {
+    assert.deepEqual(
+      addresses("Section 2.02. Conversion of Shares. At the Effective Time, each share shall be converted as follows: (a) Each share is cancelled."),
+      [],
+    );
+    assert.deepEqual(
+      addresses("Section 2.03. Surrender and Payment. (a) Prior to the Effective Time, Parent shall appoint an agent. (b) Each holder shall be paid."),
+      [],
+    );
+  });
+
   it("valid: a page flattened into one line keeps its run-in labels as text", () => {
     assert.deepEqual(addresses("ARTICLE II   EFFECT ON THE CAPITAL STOCK   Section 2.1   Effect on Capital Stock.   (a)   At the Effective Time."), []);
   });

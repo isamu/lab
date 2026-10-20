@@ -52,14 +52,21 @@ const LETTERED = new RegExp(
 
 /**
  * "Sec. 4. General Provisions. (a) Nothing in this order…": a title run in before the first item of the section's own list.
- * The rest then starts with that label, which opens the item as a joined label does. A title is spaced as words are: a
- * wider gap is a page flattened into one line ("ARTICLE II   EFFECT…   Section 2.1   Effect… (a)"), whose items are not its.
+ * The rest then starts with that label, which opens the item as a joined label does. A title is a few words spaced as
+ * words are, with no sentence in it: a wider gap is a page flattened into one line ("ARTICLE II   EFFECT…   Section 2.1
+ * Effect… (a)"), and "At the Effective Time, … thereof: (a) Each share" is the section's text, not its title.
  */
-const RUN_IN_FIRST_ITEM = /^(?<title>\S+(?: \S+)*?[.:]) (?<item>\((?:a|1)\)\s+\p{Lu}.*)$/u;
+const RUN_IN_FIRST_ITEM = /^(?<title>\S+(?: \S+){0,11}?[.:]) (?<item>\((?:a|1)\)\s+\p{Lu}.*)$/u;
+/** A lowercase word ending a sentence or a clause: "thereof: ", "Time. ". "U.S.C. " and "No. " end in capitals. */
+const SENTENCE_END = /\p{Ll}[.:;] /u;
+/** "(a) Prior to… (b) Each…": the next item on the same line is a list flattened into one paragraph, not one item. */
+const NEXT_RUN_IN = /[.;:] \((?:b|2)\) \p{Lu}/u;
 
 const titleAndRest = (heading: string): { readonly heading: string; readonly rest: string } => {
-  const groups = RUN_IN_FIRST_ITEM.exec(heading)?.groups;
-  return groups === undefined ? { heading, rest: heading } : { heading: groups["title"] ?? heading, rest: groups["item"] ?? heading };
+  const title = RUN_IN_FIRST_ITEM.exec(heading)?.groups?.["title"];
+  const item = title === undefined ? undefined : heading.slice(title.length + 1);
+  if (title === undefined || item === undefined || SENTENCE_END.test(title) || NEXT_RUN_IN.test(item)) return { heading, rest: heading };
+  return { heading: title, rest: item };
 };
 
 const headed = (pattern: RegExp, line: string, numbering: string, label: (n: string) => string): NumberedLine | undefined => {
