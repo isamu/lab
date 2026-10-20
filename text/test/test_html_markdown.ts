@@ -639,21 +639,24 @@ describe("decodeEntities", () => {
   });
 });
 describe("htmlToMarkdown: 表", () => {
-  it("行の半分以上に文のある表は、見出しの行を落とし、升目を一つずつ段落にする", () => {
+  it("行の半分以上に文のある表は、見出しの行も含めて、升目を一つずつ段落にする", () => {
     const glossary =
       "<h1>風</h1><table><caption>風向に関する用語</caption><tr><th>用語</th><th>説明</th></tr>" +
       "<tr><td>風向</td><td>風の吹いてくる方向。</td></tr><tr><td></td><td><img src='i.png' alt='図'></td></tr>" +
       "<tr><td>備考</td><td>予報では８方位を用いる。</td></tr></table><p>以上。</p>";
-    assert.equal(htmlToMarkdown(glossary), "# 風\n\n風向に関する用語\n\n風向\n\n風の吹いてくる方向。\n\n備考\n\n予報では８方位を用いる。\n\n以上。\n");
+    assert.equal(
+      htmlToMarkdown(glossary),
+      "# 風\n\n風向に関する用語\n\n用語\n\n説明\n\n風向\n\n風の吹いてくる方向。\n\n備考\n\n予報では８方位を用いる。\n\n以上。\n",
+    );
     const english =
       "<table><thead><tr><th>Code</th><th>Meaning</th></tr></thead><tbody><tr><td>API_KEY_MISSING</td><td>No key was sent.</td></tr></tbody></table>";
-    assert.equal(htmlToMarkdown(english), "API_KEY_MISSING\n\nNo key was sent.\n");
+    assert.equal(htmlToMarkdown(english), "Code\n\nMeaning\n\nAPI_KEY_MISSING\n\nNo key was sent.\n");
     const named = "<table><tr><td>401(k) plan</td><td>A plan for savings.</td></tr><tr><td>24/7 desk</td><td>It never closes.</td></tr></table>";
     assert.equal(htmlToMarkdown(named), "401(k) plan\n\nA plan for savings.\n\n24/7 desk\n\nIt never closes.\n");
     const twoHeaders =
       "<table><thead><tr><th colspan=2>Definitions</th></tr><tr><th>Term</th><th>Meaning</th></tr></thead>" +
       "<tbody><tr><td>Applicant</td><td>A person who applies.</td></tr></tbody></table>";
-    assert.equal(htmlToMarkdown(twoHeaders), "Applicant\n\nA person who applies.\n");
+    assert.equal(htmlToMarkdown(twoHeaders), "Definitions\n\nTerm\n\nMeaning\n\nApplicant\n\nA person who applies.\n");
   });
 
   it("行の見出し (th) も本文の升目。数で始まる升目 (行の番号・数の範囲) は落とし、数で始まる文は残す", () => {
@@ -666,6 +669,20 @@ describe("htmlToMarkdown: 表", () => {
   it("閉じタグを省いた行と升目も、次の行・升目の始まりまで", () => {
     const html = "<table><tr><td>Term<td>It means a word.<tr><td>Other<td>It means another.</table>";
     assert.equal(htmlToMarkdown(html), "Term\n\nIt means a word.\n\nOther\n\nIt means another.\n");
+  });
+
+  it("語の札だけが三行以上並ぶ表は、一覧として升目を段落にする。その上の題の見出しも残る", () => {
+    const methods =
+      "<h4>2.1 分類</h4><p>次表のとおり。</p><h4>表　方法の分類</h4><center><table><tr><td>翻刻</td></tr>" +
+      "<tr><td>タグ付け</td></tr><tr><td>翻訳</td></tr></table></center><h4>出典：筆者作成。</h4><p>以上。</p>";
+    assert.equal(
+      htmlToMarkdown(methods),
+      "#### 2.1 分類\n\n次表のとおり。\n\n#### 表　方法の分類\n\n翻刻\n\nタグ付け\n\n翻訳\n\n#### 出典：筆者作成。\n\n以上。\n",
+    );
+    const links = "<table><tr><td><a href='/a'>A</a></td></tr><tr><td><a href='/b'>B</a></td></tr><tr><td><a href='/c'>C</a></td></tr></table><p>End.</p>";
+    assert.equal(htmlToMarkdown(links), "End.\n");
+    const numbers = "<table><tr><td>Rome</td></tr><tr><td>Paris</td></tr><tr><td>12</td></tr></table><p>End.</p>";
+    assert.equal(htmlToMarkdown(numbers), "End.\n");
   });
 
   it("文の行が半分に届かない表 (数の表に注が一つ)、文の無い表、略語の点しか無い表は、これまでどおり丸ごと落とす", () => {
