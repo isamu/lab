@@ -6,7 +6,7 @@
 // links (a menu, a table of contents, previous/next links, a breadcrumb trail, also as a list ending in the page's
 // title), a list of the page in other languages, a block of icons with only a label, a block before the page's title that holds a menu or only links and no sentence (the site's header, with its tagline and
 // labels), buttons outside a heading, controls (html-widgets.ts: tooltips, media players, scripted link buttons, paging
-// bars, unspoken text), hidden elements, text for a screen reader only (a visually-hidden class, a skip
+// bars, unspoken text, a hidden box a script fills in), hidden elements, text for a screen reader only (a visually-hidden class, a skip
 // link's target), a heading's link to its own section beside or after its title,
 // lines of nothing but in-page or script links (never a heading), a heading drawn as an image unless its alt text is the page's
 // title, blocks of nothing but links closing the page, and a copyright notice closing the page, with an address just
@@ -40,7 +40,7 @@ import { withLostParagraphTagsRestored } from "./html-lost-tags.ts";
 import { withoutReaderOnlyText } from "./html-reader-only.ts";
 import { withoutSiteChrome } from "./html-site-chrome.ts";
 import { withRunInHeadingsRead } from "./html-run-in-headings.ts";
-import { withoutWidgets } from "./html-widgets.ts";
+import { withoutUnfilledWidgets, withoutWidgets } from "./html-widgets.ts";
 import { withPreformattedRestored, withPreformattedStashed } from "./html-preformatted.ts";
 import { withTablesRead } from "./html-tables.ts";
 import { opensSubsection } from "./html-section-number.ts";
@@ -464,7 +464,7 @@ const INVISIBLE_ONLY = /^[\s\p{Cf}]*$/u;
 const UNTITLED_HEADING = /^#{1,6}$/u;
 
 export const htmlToMarkdown = (html: string): string => {
-  const uncommented = withLostParagraphTagsRestored(withAttributeMarkupEscaped(html).replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, ""));
+  const uncommented = withoutUnfilledWidgets(withLostParagraphTagsRestored(withAttributeMarkupEscaped(html).replace(/<!--[\s\S]*?-->|<\?[\s\S]*?\?>/gu, "")));
   const preformatted = withPreformattedStashed(withTablesRead(DROPPED.reduce(withoutElement, withMathAsDrawn(withoutRubyText(uncommented)))));
   const kept = withoutFootnoteMarks(
     withHeadingLinksRead(withoutWidgets(withoutButtons(withoutReaderOnlyText(withoutHiddenElements(mainContent(withoutSiteChrome(preformatted.html))))))),
