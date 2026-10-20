@@ -117,10 +117,12 @@ const dunderAround = (text: string, run: Span): boolean => {
  * writer meant. A `*`, and `_` or punctuation at its end, are left outside, so a mark around the URL (`__https://…__.`) still counts.
  */
 const BARE_URL = /https?:\/\/[A-Za-z0-9\-._~:/?#[\]@!$&'()+,;=%]+/gu;
-const URL_TAIL = /[_.,;:!?')\]]+$/u;
+const URL_TAIL = new Set("_.,;:!?')]");
 
-const urlSpansOf = (text: string): Span[] =>
-  [...text.matchAll(BARE_URL)].map((match) => ({ start: match.index, end: match.index + match[0].replace(URL_TAIL, "").length }));
+/** The URL's length without the marks and punctuation at its end. */
+const urlLength = (url: string): number => [...url].findLastIndex((char) => !URL_TAIL.has(char)) + 1;
+
+const urlSpansOf = (text: string): Span[] => [...text.matchAll(BARE_URL)].map((match) => ({ start: match.index, end: match.index + urlLength(match[0]) }));
 
 const insideAny = (spans: readonly Span[], run: Span): boolean => spans.some((span) => run.start >= span.start && run.end <= span.end);
 
