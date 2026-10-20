@@ -12,10 +12,9 @@ describe("comparative-without-baseline: 願いや目的の中の比較", () => {
     await ja.prepare?.({ pos: true });
   });
 
-  it("願い（たい）、目的（ため）、目当て（図る、目指す、べき）の中の比較は指さない", () => {
+  it("願い（たい）、目的（ため）、当為（べき）の中の比較は指さない", () => {
     assert.deepEqual(findingsOf("資料の公開をより広く進めることで、地域に役立ちたい。\n"), []);
     assert.deepEqual(findingsOf("授業と実習をより円滑につなぐためには、何を見直せばよいか。\n"), []);
-    assert.deepEqual(findingsOf("窓口の対応をより丁寧に行うことを図る。\n"), []);
     assert.deepEqual(findingsOf("手続きはより簡素に整えるべきである。\n"), []);
   });
 
@@ -23,6 +22,7 @@ describe("comparative-without-baseline: 願いや目的の中の比較", () => {
     assert.equal(findingsOf("新しい版では、処理がさらに高速になりました。\n").length, 1);
     assert.equal(findingsOf("新しい版では、処理をより速く動かせます。\n").length, 1);
     assert.equal(findingsOf("新しい版では、処理がより速くなりました。\n").length, 1);
+    assert.equal(findingsOf("私たちはより良い対応を目指す。\n").length, 1);
     // 理由の「ため」は目的ではない。
     assert.equal(findingsOf("処理がより速くなったため、待ち時間が減った。\n").length, 1);
     assert.equal(findingsOf("この版には、さらに安全な書き方があるため、古い関数は使わない。\n").length, 1);
