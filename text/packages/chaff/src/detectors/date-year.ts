@@ -17,6 +17,7 @@ import { datesUnderYearHeadings, yearLabelOf, type HeadingYearWords } from "./da
 import { openingDateOf } from "./opening-date.ts";
 import { withNearestYear } from "../structure/weekday.ts";
 import { continuesDatedRun } from "./date-run.ts";
+import { revisionDatesToSkip, revisionLabelsOf } from "./revision-date.ts";
 
 /**
  * The words that make a yearless date any year's (毎年, 例えば, "each"), that join a period's two ends (から, "to"), and
@@ -165,8 +166,12 @@ export const yearGaps = (
   source = "",
   yearWords: readonly YearWord[] = [],
   anyYear: AnyYearWords = NO_ANY_YEAR_WORDS,
+  revisionLabels: readonly string[] = [],
 ): YearGap[] => {
-  const dated = points.filter((point) => FULL.test(point.value));
+  // A page's revision date (更新日 2026年6月10日) is not one of the years the text tells of, while the text gives its own.
+  const written = points.filter((point) => FULL.test(point.value));
+  const revisions = revisionDatesToSkip(source, written, revisionLabels);
+  const dated = written.filter((point) => !revisions.has(point.offset));
   const anchors = [...dated, ...points.filter((point) => hasYearWord(point, source, yearWords))];
   const nextOf = new Map(points.map((point, index) => [point, points[index + 1]]));
   const previousOf = new Map(points.map((point, index) => [point, points[index - 1]]));
@@ -260,7 +265,13 @@ const anyYearWordsOf = (doc: ProseDocument): AnyYearWords => ({
 export const dateWithoutYear: Detector = (doc: ProseDocument, options: DetectorOptions): Finding[] =>
   doc.structure === undefined
     ? []
-    : yearGaps(pointsOf(doc, doc.structure, options), doc.source, yearWordsOf(doc), anyYearWordsOf(doc)).map((gap) => ({
+    : yearGaps(
+        pointsOf(doc, doc.structure, options),
+        doc.source,
+        yearWordsOf(doc),
+        anyYearWordsOf(doc),
+        revisionLabelsOf(doc.lexicons["stamp-order-label"] ?? []),
+      ).map((gap) => ({
         rule: "date-without-year",
         severity: "warning",
         line: 0,
