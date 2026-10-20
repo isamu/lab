@@ -43,17 +43,21 @@ const LETTER = ["# 研修のご案内", "", "各位", "", "春の研修の資料
   "\n",
 );
 
-describe("newsletter-issue: an issue number in the head", () => {
-  it("reads 第…号 with a space, a bracket or the line's end after it, and Vol. with a number", () => {
+describe("newsletter-issue: an issue number in the title", () => {
+  it("reads 第…号 with a space, a bracket or the line's end after it, and Vol. with a number, in a heading", () => {
     assert.equal(isIssueHead(["# 試験課メールマガジン第12号（令和8年4月1日）"], WORDS), true);
-    assert.equal(isIssueHead(["第12号 2026/4/1"], WORDS), true);
-    assert.equal(isIssueHead(["第１２号"], WORDS), true);
+    assert.equal(isIssueHead(["## 試験課ニュース 第12号"], WORDS), true);
+    assert.equal(isIssueHead(["# 試験課メールマガジン第１２号【特集】"], WORDS), true);
     assert.equal(isIssueHead(["# Staff Newsletter, Vol. 12, April"], WORDS), true);
+    assert.equal(isIssueHead(["# Staff Newsletter Vol. 12[April 2026]"], WORDS), true);
   });
 
-  it("does not read a number followed by a word, a number without its tail, or a Latin head inside a word", () => {
-    assert.equal(isIssueHead(["件名：第3号議案のご審議について"], WORDS), false);
-    assert.equal(isIssueHead(["第3回 研修のご案内"], WORDS), false);
+  it("does not read a line that is no heading, a number followed by a word, a number without its tail, or a Latin head inside a word", () => {
+    assert.equal(isIssueHead(["第12号 2026/4/1"], WORDS), false);
+    assert.equal(isIssueHead(["件名：議案 第3号"], WORDS), false);
+    assert.equal(isIssueHead(["Subject: Citation to Vol. 12"], WORDS), false);
+    assert.equal(isIssueHead(["# 件名：第3号議案のご審議について"], WORDS), false);
+    assert.equal(isIssueHead(["# 第3回 研修のご案内"], WORDS), false);
     assert.equal(isIssueHead(["# Revol. 12 notes"], WORDS), false);
     assert.equal(isIssueHead([], WORDS), false);
     assert.equal(isIssueHead(["第12号"], []), false);
@@ -74,6 +78,8 @@ describe("email-greeting-closing on a newsletter's issue", () => {
   it("still asks a letter without an issue number for both", () => {
     assert.deepEqual(variantsOf(LETTER), ["greeting", "closing"]);
     assert.deepEqual(variantsOf(LETTER.replace("# 研修のご案内", "# 第3号議案のご案内")), ["greeting", "closing"]);
+    assert.deepEqual(variantsOf(LETTER.replace("# 研修のご案内", "件名：議案 第3号")), ["greeting", "closing"]);
+    assert.deepEqual(variantsOf("Subject: Citation to Vol. 12\n\nPlease review the attached report.\n\nThe figures are final.\n", en), ["greeting", "closing"]);
     assert.deepEqual(variantsOf("# Spring training\n\nThe spring training opens in April.\n\nSign up by April 20.\n", en), ["greeting", "closing"]);
   });
 });

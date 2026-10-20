@@ -1,5 +1,5 @@
 # The issue number of a newsletter sent on a schedule (Vol. 12), with … where the number stands. An issue number in the
-# title or in the head lines before the first sentence makes the document an issue sent to every subscriber, not a letter
+# title (a heading before the first sentence) makes the document an issue sent to every subscriber, not a letter
 # to one reader, and it takes no greeting and no closing.
 id: newsletter-issue
 language: en
