@@ -1,0 +1,20 @@
+# What joins the numbers after a plural figure-label word: group list names each number ("Tables 14, 15 and 17"),
+# group range every number from the first to the last ("Tables 15 through 19", "Figures 2–4"). A hyphen is not one:
+# "Table 2-1" is a sub-number.
+id: figure-number-joiner
+language: en
+entries:
+  - pattern: ","
+    group: list
+  - pattern: and
+    group: list
+  - pattern: "&"
+    group: list
+  - pattern: through
+    group: range
+  - pattern: thru
+    group: range
+  - pattern: to
+    group: range
+  - pattern: –
+    group: range

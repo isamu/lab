@@ -1,0 +1,19 @@
+# The plural of a figure-label word, before a list or a range of numbers ("Tables 14 and 17", "Figures 2 through 4").
+# instead_of names the figure-label word it stands for, so that each number is a reference to that figure.
+id: figure-label-plural
+language: en
+entries:
+  - pattern: Figures
+    instead_of: Figure
+  - pattern: Figs.
+    instead_of: Figure
+  - pattern: Tables
+    instead_of: Table
+  - pattern: Appendices
+    instead_of: Appendix
+  - pattern: Annexes
+    instead_of: Annex
+  - pattern: Exhibits
+    instead_of: Exhibit
+  - pattern: Charts
+    instead_of: Chart
