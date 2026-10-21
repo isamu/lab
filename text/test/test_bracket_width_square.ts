@@ -33,6 +33,18 @@ describe("bracket-width-consistency on square brackets", () => {
     assert.deepEqual(findingsOf(source), []);
   });
 
+  const BUTTONS = ["［保存］を押します。", "［戻る］を押します。", "［設定］を押します。", "［閉じる］を押します。", "［次へ］を押します。"];
+
+  it("compares a note's marker ([1], [^1]) only with the other markers", () => {
+    assert.deepEqual(findingsOf([...[1, 2, 3, 4, 5].map((n) => `本文です[${String(n)}]。`), ...BUTTONS, ""].join("\n")), []);
+    assert.deepEqual(findingsOf([...[1, 2, 3, 4, 5].map((n) => `本文です[^${String(n)}]。`), ...BUTTONS, ""].join("\n")), []);
+    assert.equal(findingsOf([...[1, 2, 3, 4, 5].map((n) => `本文です[${String(n)}]。`), "本文です［6］。", ""].join("\n")).length, 1);
+  });
+
+  it("still counts a bracket holding a word with a number", () => {
+    assert.equal(findingsOf([...BUTTONS, "[手順2]を見てください。", ""].join("\n")).length, 2);
+  });
+
   it("says nothing when one width is used throughout, or for Markdown links, footnotes and task boxes", () => {
     assert.deepEqual(findingsOf("[保存]を押します。[戻る]を押します。[閉じる]を押します。\n"), []);
     assert.deepEqual(findingsOf("［保存］を押します。詳しくは[設定の手順](https://example.com/a)を見てください。注がある[^1]。\n\n[^1]: 注の本文。\n"), []);
