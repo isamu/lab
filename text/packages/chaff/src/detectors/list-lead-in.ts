@@ -23,7 +23,15 @@ const sentenceRightBefore = (sentences: readonly Sentence[], list: BulletList, s
 const insideAny = (spans: readonly Span[], offset: number): boolean => spans.some((span) => span.start <= offset && offset < span.end);
 
 /** A label's words, without its colon and bold marks (**参考:** → 参考). */
-const labelWords = (text: string): string => text.trim().replace(/^[*_]+|[\s*_:：]+$/gu, "");
+const EMPHASIS = new Set(["*", "_"]);
+const LABEL_END = /[\s*_:：]/u;
+
+const labelWords = (text: string): string => {
+  const chars = Array.from(text.trim());
+  const start = chars.findIndex((char) => !EMPHASIS.has(char));
+  const end = chars.findLastIndex((char) => !LABEL_END.test(char));
+  return start === -1 || end < start ? "" : chars.slice(start, end + 1).join("");
+};
 
 /** A noun with no kana inflection (参考, 注意点): a name, not a sentence (以下の通りです) and not a lone symbol (⚠️). */
 const NOUN_LABEL = /^(?=.*\p{L})[^\p{Script=Hiragana}]+$/u;
