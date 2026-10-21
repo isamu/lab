@@ -366,18 +366,17 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   };
   const counted = outsideSpans(acronymsOf(doc, notationOf(doc)), [
     ...referenceListSpans(doc.source, patternsOf(doc, "reference-list-heading")),
-    // A note that opens with a citation names the cited work in its own words (a title's IMF, a series' FRBSF).
-    ...citationNoteSpans(
-      doc.source,
-      doc.sentences.map((sentence) => ({ text: sentence.text, start: sentence.span.start })),
-      patternsOf(doc, "citation-author-joiner"),
-    ),
     ...outlineLabelSpans(doc.source, patternsOf(doc, "numbered-division")),
     ...grammarSpans(doc.source),
   ]);
-  // リンク先のページの題名の略語（[NASA Fprime AI Policy](https://…)）は、読み手が出会う説明の無い略語として数に入れるが、
-  // 書き手が直せないので指さない。
-  const hits = outsideSpans(counted, linkTitleSpans(doc.source, doc.links));
+  // リンク先のページの題名の略語（[NASA Fprime AI Policy](https://…)）と、文献を引いて始まる注の中の略語（題名の IMF、誌名の
+  // FRBSF）は、読み手が出会う説明の無い略語として数に入れるが、書き手が直せないので指さない。
+  const citationNotes = citationNoteSpans(
+    doc.source,
+    doc.sentences.map((sentence) => ({ text: sentence.text, start: sentence.span.start })),
+    patternsOf(doc, "citation-author-joiner"),
+  );
+  const hits = outsideSpans(counted, [...linkTitleSpans(doc.source, doc.links), ...citationNotes]);
   const acronyms = [...firstHits(hits).keys()];
   const unexplained = new Set(acronyms.filter((acronym) => !isExplained(acronym, explainedAlone)));
   const quoted = [...firstHits(counted).keys()].filter((acronym) => !acronyms.includes(acronym) && !isExplained(acronym, explainedAlone)).length;
