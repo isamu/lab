@@ -169,6 +169,13 @@ const BREAK = /\n[^\S\n]*\n|\n[^\S\n]*(?:[-*+]|\d+[.)])[^\S\n]/u;
 const continues = (source: string, sentence: Sentence, next: Sentence | undefined): next is Sentence =>
   next !== undefined && !BREAK.test(source.slice(sentence.span.end, next.span.start));
 
+/** A note mark at the start of a sentence (「※送信後、ご連絡ください。」): the sentence is a note on the line before it. */
+const NOTE_MARK = /^\s*※/u;
+
+/** A note right under a contact line (「ファックス番号：…」 then 「※送信後、ご連絡ください。」) asks how to reach the writer, like the line itself. */
+const notesContactLine = (source: string, previous: Sentence | undefined, sentence: Sentence, words: Words): boolean =>
+  previous !== undefined && NOTE_MARK.test(proseText(sentence)) && continues(source, previous, sentence) && holdsContactLine(proseText(previous), words);
+
 const dateSpans = (tree: StructureNode | undefined): Span[] =>
   tree === undefined ? [] : inDocumentOrder(tree).flatMap((node) => (node.kind === "date" ? [node.span] : []));
 
@@ -242,6 +249,7 @@ export const ownerlessRequests = (doc: ProseDocument): Sentence[] => {
   return doc.sentences.filter((sentence, index) => {
     if (sentence.span.start > deadlineAt) return false;
     if (!isRequest(proseText(sentence), words) || saysWhenOrWho(sentence, words, dates, true)) return false;
+    if (notesContactLine(doc.source, doc.sentences[index - 1], sentence, words)) return false;
     const next = doc.sentences[index + 1];
     if (continues(doc.source, sentence, next) && saysWhenOrWho(next, words, dates, false)) return false;
     return !underDeadlineHeading(doc.sections, sentence, words);

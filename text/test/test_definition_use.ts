@@ -221,6 +221,17 @@ describe("use-before-definition: 定義より前で使っている語", () => {
     assert.deepEqual(early('(a) Seller (Section 2)\n\nHarbour Ltd (the "Seller") ships the goods.\n'), []);
   });
 
+  it("語が括弧の中にしか無い札（記載例（申込書））は、別の物の札で、語を使った所", () => {
+    const definition = "- 予約の申込みには、予約申込書（以下「申込書」という。）を使う。\n";
+    const example = "【申込者】\n【氏名】　予約　花子\n\n";
+    assert.deepEqual(early(`- 記載例（申込書）\n${example}${definition}`, ja), ["「申込書」を、5 行目の定義より前で使っています"]);
+    assert.deepEqual(early(`- 記載例（申込書）\n\n${definition}`, ja), ["「申込書」を、3 行目の定義より前で使っています"]);
+    // 語が括弧の外にある札は、これまでどおり札。
+    assert.deepEqual(early(`- 申込書（記載例）\n${example}${definition}`, ja), []);
+    assert.deepEqual(early(`- （1）申込書\n\n${definition}`, ja), []);
+    assert.deepEqual(early(`（申込書の扱い）\n\n${definition}`, ja), []);
+  });
+
   it("括弧の注を除いても語のほかに言葉のある文、長い括弧の文は、使った所", () => {
     const definition = "- 市は、予約に関する基本的な計画（以下「予約基本計画」という。）を定めること。\n";
     const reported = ["「予約基本計画」を、3 行目の定義より前で使っています"];

@@ -30,7 +30,19 @@ const isWord = (token: Token): boolean => LETTER.test(token.surface) && !REPEATA
 
 const isDeterminer = (token: Token): boolean => token.features?.["PronType"] === "Art" || token.features?.["Poss"] === "Yes";
 
-const sameWord = (first: Token, second: Token): boolean => first.surface.toLowerCase() === second.surface.toLowerCase() && first.pos === second.pos;
+/**
+ * 解析器が決めた品詞と、アダプタが付けたほかの読み（AlsoVerb / AlsoNoun）。make make sure の二つ目は、動詞の後ろなので
+ * 解析器が名詞と読み、動詞の読みを AlsoVerb に残す。
+ */
+const readingsOf = (token: Token): string[] => [
+  token.pos,
+  ...(token.features?.["AlsoVerb"] === "Yes" ? ["VERB"] : []),
+  ...(token.features?.["AlsoNoun"] === "Yes" ? ["NOUN"] : []),
+];
+
+const shareReading = (first: Token, second: Token): boolean => readingsOf(first).some((reading) => readingsOf(second).includes(reading));
+
+const sameWord = (first: Token, second: Token): boolean => first.surface.toLowerCase() === second.surface.toLowerCase() && shareReading(first, second);
 
 /** 二語のあいだ。space は空白だけ、markup は印だけ（文字も数字も無い）、text はそれ以外で、別々の語。 */
 export type Gap = "space" | "markup" | "text";

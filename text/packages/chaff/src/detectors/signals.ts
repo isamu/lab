@@ -22,6 +22,7 @@ import { gramPassagesOf } from "./gram-passages.ts";
 import { sectionOpeners } from "./gram-openers.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
 import { referenceListSpans } from "../reference-lists.ts";
+import { DASH, introducesList } from "./lead-in-dash.ts";
 import type { Detector, Finding, ProseDocument, Section, Sentence } from "../plugin.ts";
 
 const PER = 1000;
@@ -454,12 +455,8 @@ export const concreteEvidence: Detector = (doc, options): Finding[] => {
  * ダッシュの多用。英語では正当な用法が多いが、2026 年時点で最も知られた生成文のシグナルでもある。
  * 日本語の組版ではそもそも扱いが難しい。どちらが正しいかは severity の言語別指定で分ける。spec §12.4。
  */
-// An en dash between two digits (45–58, 10:00–10:15) is a range mark, the typographer's correct choice, not a dash that
-// sets off words.
-const DASH = /[\u2014\u2015]|(?<!\p{Nd})\u2013|\u2013(?!\p{Nd})/gu;
-
 export const dashDensity: Detector = (doc, options): Finding[] => {
-  const hits = findIn(doc, DASH);
+  const hits = findIn(doc, DASH).filter((hit) => !introducesList(doc.source, hit.offset));
   const first = hits[0];
   const rate = density(doc, hits.length);
   if (wordsOf(doc) < MIN_DOCUMENT_LENGTH[doc.lengthUnit] || first === undefined || rate <= options.limit) return [];

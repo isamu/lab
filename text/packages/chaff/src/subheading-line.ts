@@ -95,11 +95,26 @@ const cutsAround = (text: string, lines: readonly Line[], index: number): Cut[] 
   return [...(leadsIn ? [{ end: previous.end, next: line.start }] : []), ...(hasText(text, following) ? [{ end: line.end, next: line.next }] : [])];
 };
 
-/** 段落 text を、一つで立つ行の後ろ（と、導きの行に続くときは前）で切った片。切る所が無ければ text 全体の 1 片。片は改行を含まない端で終わる。 */
+/** ※で始まる行。前の行の項目（「勤務日数：週5日」）への注記で、前の行の文の続きではない。 */
+const NOTE_LINE = /^[ \t\u3000]*※/u;
+
+/** 注記の行の前の切れ目。前に字のある行が無ければ（段落の最初の行）切らない。 */
+const noteCuts = (text: string, lines: readonly Line[]): Cut[] =>
+  lines.flatMap((line, index) => {
+    const previous = lines[index - 1];
+    return previous !== undefined && hasText(text, previous) && NOTE_LINE.test(text.slice(line.start, line.end))
+      ? [{ end: previous.end, next: line.start }]
+      : [];
+  });
+
+/**
+ * 段落 text を、一つで立つ行の後ろ（と、導きの行に続くときは前）と、注記の行の前で切った片。切る所が無ければ text 全体の 1 片。
+ * 片は改行を含まない端で終わる。
+ */
 export const subheadingPieces = (text: string, standsAlone: StandsAlone = () => false): Span[] => {
   const lines = linesOf(text);
   const indexOf = new Map(lines.map((line, index) => [line.start, index]));
-  const cuts = standaloneLines(text, standsAlone).flatMap((line) => cutsAround(text, lines, indexOf.get(line.start) ?? 0));
+  const cuts = [...standaloneLines(text, standsAlone).flatMap((line) => cutsAround(text, lines, indexOf.get(line.start) ?? 0)), ...noteCuts(text, lines)];
   const ordered = [...new Map(cuts.map((cut) => [cut.next, cut])).values()].toSorted((left, right) => left.next - right.next);
   const starts = [0, ...ordered.map((cut) => cut.next)];
   return starts.map((start, index) => ({ start, end: ordered[index]?.end ?? text.length }));

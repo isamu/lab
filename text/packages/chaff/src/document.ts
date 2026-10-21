@@ -6,6 +6,7 @@ import { spansWithin, unmaskedSoftBreaks } from "./soft-break.ts";
 import { segmentJoined } from "./joined-view.ts";
 import { paragraphsOf } from "./document-paragraphs.ts";
 import { closingRun, standaloneLines, subheadingPieces, type StandsAlone } from "./subheading-line.ts";
+import { stageDirectionPieces, type BracketPair } from "./stage-directions.ts";
 import { isLinkLine } from "./link-line.ts";
 import { speakerLabels } from "./speaker-labels.ts";
 import type { Outline } from "./structure/build.ts";
@@ -181,13 +182,23 @@ const linkLineIn =
   (start, end) =>
     isLinkLine(source, shift({ start, end }, paragraph.start), links);
 
+/** 片を、ト書きの括弧の中と外に分ける（戯曲）。括弧の組が無ければ片のまま。 */
+const withoutStageDirections = (prose: string, piece: Span, pair: BracketPair | undefined): Span[] =>
+  pair === undefined ? [piece] : stageDirectionPieces(prose.slice(piece.start, piece.end), pair).map((span) => shift(span, piece.start));
+
+const EVERY_LINE: StandsAlone = () => true;
+
 /**
  * 段落を、中の小見出しの行（「（経済再生）」）とリンクだけの行の後ろで切った片。片ごとに分割すれば、
- * 小見出しが次の文に入らず、1 行ずつ並べたリンクが一つの長い文にならない。
+ * 小見出しが次の文に入らず、1 行ずつ並べたリンクが一つの長い文にならない。詩（lineBreaksEndSentences）なら、どの行の後ろでも切る。
+ * 戯曲（stageDirections）では、ト書きも台詞と別の片にする。
  */
-const piecesOf = (prose: string, paragraphs: readonly Span[], source: string, links: readonly Span[]): Span[] =>
+const piecesOf = (prose: string, paragraphs: readonly Span[], source: string, links: readonly Span[], profile: DocumentProfile | undefined): Span[] =>
   paragraphs.flatMap((paragraph) =>
-    subheadingPieces(prose.slice(paragraph.start, paragraph.end), linkLineIn(source, links, paragraph)).map((piece) => shift(piece, paragraph.start)),
+    subheadingPieces(
+      prose.slice(paragraph.start, paragraph.end),
+      profile?.lineBreaksEndSentences === true ? EVERY_LINE : linkLineIn(source, links, paragraph),
+    ).flatMap((piece) => withoutStageDirections(prose, shift(piece, paragraph.start), profile?.stageDirections)),
   );
 
 /**
@@ -213,12 +224,12 @@ type LineLayout = {
   readonly paragraphs: readonly Span[];
 };
 
-const lineLayoutOf = (root: Node, source: string, prose: string, paragraphs: readonly Span[]): LineLayout => {
+const lineLayoutOf = (root: Node, source: string, prose: string, paragraphs: readonly Span[], profile: DocumentProfile | undefined): LineLayout => {
   const links = [...spansOfType(root, "link"), ...spansOfType(root, "linkReference")];
   const linkItems = linkItemsOf(prose, paragraphs, source, links);
   return {
     links,
-    pieces: piecesOf(prose, paragraphs, source, links),
+    pieces: piecesOf(prose, paragraphs, source, links, profile),
     listSpans: [...spansOfType(root, "listItem"), ...linkItems],
     paragraphs: cutTextSpans(paragraphs, linkItems, source),
   };
@@ -323,7 +334,7 @@ const documentOf = (path: string, source: string, adapter: LanguageAdapter, team
   const headings = headingsOf(root, source, maskSpans(source, syntax), emailLayout.replyQuotes);
   // Markdown は段落を流し込んで表示するので、段落の中の改行は読み手に見えない。テキストの文書は行をそのまま見せる（法令は 1 行 1 号）。
   const softBreaks = markdown ? unmaskedSoftBreaks(source, prose) : [];
-  const layout = lineLayoutOf(root, source, prose, paragraphSpans);
+  const layout = lineLayoutOf(root, source, prose, paragraphSpans, profile);
   const sentences = sentencesOf(prose, layout.pieces, adapter, softBreaks);
   const lexicons = teamLexicons(adapter, team);
   const tagged = sentences.some((sentence) => sentence.tokens !== undefined);

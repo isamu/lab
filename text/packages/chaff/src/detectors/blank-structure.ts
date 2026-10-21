@@ -9,6 +9,7 @@ import { amountColumnOf, isTotalRowGap, type BodyRow } from "../structure/total-
 import { isAmountNameLine, isTotalLine } from "../structure/total-line.ts";
 import { isTotalLabel, withoutLeadingBlankCells } from "../structure/total.ts";
 import { isSpannedLabelGap } from "../structure/spanned-label-blank.ts";
+import { picturesSpreadsheet } from "./spreadsheet-grid.ts";
 
 /** Fewer body rows than this, and one blank is as likely a choice as a gap. */
 const MIN_BODY_ROWS = 3;
@@ -107,6 +108,14 @@ type TableRows = { readonly header: MarkdownNode; readonly body: readonly Markdo
 const tableBlanksOf = (source: string, table: MarkdownNode, reading: TableReading): Blank[] => {
   const [header, ...body] = table.children ?? [];
   if (header === undefined || body.length < MIN_BODY_ROWS) return [];
+  const headerCells = (header.children ?? []).map((cell) => sourceOf(source, cell));
+  if (
+    picturesSpreadsheet(
+      headerCells,
+      body.map((row) => sourceOf(source, row.children?.[0])),
+    )
+  )
+    return [];
   const rows = body.map((row) => bodyRowOf(source, row, reading.isTotalRow));
   const columns = header.children?.length ?? 0;
   return Array.from({ length: columns }, (_unused, column) => column)

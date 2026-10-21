@@ -294,6 +294,13 @@ describe("furiganaSpans: 語の直後のふりがなの括弧", () => {
     ]);
   });
 
+  it("番号の直後の読みの括弧は、カタカナが混ざっても読み（語呂合わせ）", () => {
+    assert.deepEqual(furiganaSpans("＃8891（はやくワンストップ）"), [{ start: 5, end: 16 }]);
+    assert.deepEqual(furiganaSpans("189（いちはやく）"), [{ start: 3, end: 10 }]);
+    assert.deepEqual(furiganaSpans("8891（ワンストップ）"), []);
+    assert.deepEqual(furiganaSpans("電話（スマホから）"), []);
+  });
+
   it("ひらがなの後ろ、文の頭、カタカナや漢字の混ざる括弧、ひらがなの無い括弧は読みではない", () => {
     assert.deepEqual(furiganaSpans("これは（たぶん）正しい"), []);
     assert.deepEqual(furiganaSpans("（ふりがな）"), []);

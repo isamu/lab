@@ -46,6 +46,17 @@ const INSTRUCTED_AUX = new Set(["ない", "ある"]);
 /** A verb's plain form or its negative before こと (すること, しないこと); not a past (したこと) or な (大事なこと). */
 const isInstructedAct = (token: Token | undefined): boolean => token?.pos === "VERB" || (token?.pos === "AUX" && INSTRUCTED_AUX.has(token.surface));
 
+/** A dash standing apart before a label at the item's end (― 千葉市, – Culver City). */
+const LABEL_DASH = /(?:^|\s)[―—–]\s/u;
+
+/**
+ * The sentences whose form is the item's. Several sentences make a sentence, unless the last one holds a dash and a
+ * label: a title holding its own mark, then the label (やはり俺の青春ラブコメはまちがっている。 ― 千葉市, 走れ!メロス ― 三鷹市,
+ * Jeopardy! – Culver City). The mark split the title, and the label ends the item.
+ */
+const ownEnding = (sentences: readonly Sentence[]): readonly Sentence[] =>
+  sentences.length > 1 && LABEL_DASH.test(sentences.at(-1)?.text.trim() ?? "") ? sentences.slice(-1) : sentences;
+
 /**
  * 〜すること。 / 〜しないこと。 with its full stop: the instruction or requirement form of official Japanese. It sits in a list of
  * sentences (〜しない。) as in a list of phrases (〜の確認), so it is read as neither, as no-mixed-desumasu reads こと.
@@ -69,12 +80,15 @@ const japaneseSentenceEnding = (sentence: Sentence | undefined, headlineEndings:
   return PREDICATE.has(last.pos) ? "sentence" : undefined;
 };
 
-/** Japanese: an item of several sentences is a sentence; one sentence is read by its ending. */
-const japaneseEnding = (sentences: readonly Sentence[], headlineEndings: ReadonlySet<string>): string | undefined =>
-  sentences.length > 1 ? "sentence" : japaneseSentenceEnding(sentences[0], headlineEndings);
+/** Japanese: an item of several sentences is a sentence (ownEnding aside); one sentence is read by its ending. */
+const japaneseEnding = (item: readonly Sentence[], headlineEndings: ReadonlySet<string>): string | undefined => {
+  const sentences = ownEnding(item);
+  return sentences.length > 1 ? "sentence" : japaneseSentenceEnding(sentences[0], headlineEndings);
+};
 
 /** English: a sentence closes with a full stop and has a finite verb; a phrase has neither, nor any verb at all. Anything between is not judged. */
-const englishEnding = (sentences: readonly Sentence[]): string | undefined => {
+const englishEnding = (item: readonly Sentence[]): string | undefined => {
+  const sentences = ownEnding(item);
   const tokens = sentences.flatMap((sentence) => sentence.tokens ?? []);
   if (tokens.length === 0) return undefined;
   const closed = SENTENCE_END.test(sentences.at(-1)?.text.trim() ?? "");
@@ -275,6 +289,13 @@ const findingOf = (axis: Axis, item: Item, count: number, of: number, limit: num
 
 const AXES: readonly Axis[] = ["ending", "head"];
 
+/**
+ * A list whose every item is a paragraph of several sentences (a stop on a walk, one per item) is prose cut into
+ * bullets: how a paragraph opens is not a list form, so the head axis does not read it.
+ */
+const axesOf = (items: readonly (readonly Sentence[])[]): readonly Axis[] =>
+  items.every((sentences) => sentences.length > 1) ? AXES.filter((axis) => axis !== "head") : AXES;
+
 /** An item that opens with a label and a colon (大倉さんの肌感：…, Last modified: …): a field and its value, not judged. */
 const LABELLED = /^[^:：。.]{1,40}\s*[:：]\s*\S/u;
 
@@ -323,7 +344,7 @@ const listFindings = (doc: ProseDocument, list: BulletList, limit: number): Find
     return isJudged(written, sentences) && !isLinkLabel(written, linkEndings);
   });
   const context = headContext(doc, judged);
-  return AXES.flatMap((axis) => {
+  return axesOf(judged).flatMap((axis) => {
     const items = judged.flatMap((sentences) => {
       const form = formOf(axis, sentences, doc.language, context);
       return form === undefined ? [] : [{ sentences, form }];

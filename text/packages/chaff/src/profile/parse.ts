@@ -37,6 +37,14 @@ const asideOf = (value: unknown): RelativeVocabulary["aside"] => {
   return open === undefined || close === undefined ? undefined : { open, close };
 };
 
+const isOneChar = (value: string): boolean => [...value].length === 1;
+
+/** 開きと閉じが、違う 1 字ずつでなければ読まない。括弧は 1 字ずつ数えて対にする。 */
+const stageDirectionsOf = (value: unknown): DocumentProfile["stageDirections"] => {
+  const pair = asideOf(value);
+  return pair !== undefined && isOneChar(pair.open) && isOneChar(pair.close) && pair.open !== pair.close ? pair : undefined;
+};
+
 /** 括弧の開き・閉じと、目印が一つも無ければ読まない。 */
 const substitutionOf = (value: unknown): RelativeVocabulary["substitution"] => {
   if (!isRecord(value)) return undefined;
@@ -105,6 +113,7 @@ const languagesOf = (id: string, raw: Record<string, unknown>): Record<string, D
         const unnumbered = unnumberedOf(section["unnumbered"]);
         const walkRate = walkRateOf(section["walk_rate"]);
         const taxRate = taxRateOf(section["tax_rate"]);
+        const stageDirections = stageDirectionsOf(section["stage_directions"]);
         return [
           language,
           {
@@ -118,6 +127,8 @@ const languagesOf = (id: string, raw: Record<string, unknown>): Record<string, D
             ...(section["quote_mentions_term"] === true ? { quoteMentionsTerm: true } : {}),
             ...(walkRate === undefined ? {} : { walkRate }),
             ...(taxRate === undefined ? {} : { taxRate }),
+            ...(stageDirections === undefined ? {} : { stageDirections }),
+            ...(section["line_breaks_end_sentences"] === true ? { lineBreaksEndSentences: true } : {}),
           },
         ];
       }),
