@@ -11,7 +11,8 @@ import type { LexiconEntry, Sentence, Token } from "../plugin.ts";
 const WISH = "たい";
 const QUESTION = "か";
 const CONDITIONAL = new Set(["たら", "だら"]);
-const ELLIPSIS_END = /(?:…|‥|・・・?|\.\.\.)[。．]?$/u;
+/** 三点リーダー・二点リーダーと、二つ以上の中黒、三つ以上のピリオドで書いた「…」。 */
+const ELLIPSIS_END = /(?:…+|‥+|・{2,}|\.{3,})[。．]?$/u;
 
 /** 語彙表 neutral-request の動詞（いただく、願う）に「たい」だけが付いて終わる文末。「いただきたかった」「いただきたいです」は入らない。 */
 const isHumbleWish = (ending: readonly Token[], verbs: readonly LexiconEntry[]): boolean => {
