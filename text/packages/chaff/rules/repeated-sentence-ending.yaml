@@ -28,6 +28,7 @@ levels: { strict: 2, normal: 2, relaxed: 3 }
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
 off_for:
   legal: "Articles end 〜する。〜する。 by form; the same ending in a row is the drafting style."
+  literature/poetry: "A poem repeats a line's ending on purpose, as a refrain; each line of Japanese verse is read as its own sentence."
 
 group: readability
 summary:
