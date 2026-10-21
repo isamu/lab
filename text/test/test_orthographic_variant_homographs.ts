@@ -69,3 +69,15 @@ describe("orthographic-variant: 見立ての「みる」", () => {
     assert.equal(findingsOf("# 報告\n\n資料を見る。画面を見る。図を見た。映画をみられる。\n").length, 1);
   });
 });
+
+describe("orthographic-variant: 評価を言う「〜といえる」", () => {
+  it("「〜とはいえない」を、「と」の付かない「言える」と比べない", () => {
+    assert.deepEqual(findingsOf("# 報告\n\n一概には言えない。誰にも言えない。簡単には言えません。十分とはいえない。\n"), []);
+    assert.deepEqual(findingsOf("# 報告\n\n嫌だと言えない。一概には言えない。十分とはいえない年齢だ。\n"), []);
+  });
+
+  it("「と」の後どうし、「と」の付かないものどうしは今までどおり比べる", () => {
+    assert.equal(findingsOf("# 報告\n\n妥当といえる。正しいといえる。安全といえる。十分と言える。\n").length, 1);
+    assert.equal(findingsOf("# 報告\n\n一概には言えない。誰にも言えない。簡単には言えません。誰にもいえない。\n").length, 1);
+  });
+});
