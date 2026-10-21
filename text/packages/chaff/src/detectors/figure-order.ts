@@ -62,6 +62,40 @@ export const placementSlips = (
   });
 };
 
+/** A heading that opens with one of words, in any case; a Latin word whole: "Appendix A", "APPENDICES", not "Annexation". */
+const opensWith = (heading: string, words: readonly string[]): boolean => {
+  const text = heading.trimStart().toLowerCase();
+  const wholeWord = (word: string): boolean => !/[a-z]/iu.test(word) || !/[\p{L}\p{N}]/u.test(text.charAt(word.length));
+  return words.some((word) => text.startsWith(word.toLowerCase()) && wholeWord(word));
+};
+
+/**
+ * Where the appendices start: the first heading that opens with a label of a kind not placed in the text (Appendix,
+ * Appendices, 付録). A paper numbers its appendix tables on from the text's and refers to them from the text first.
+ */
+export const appendixStart = (headings: readonly { readonly text: string; readonly start: number }[], endWords: readonly string[]): number | undefined =>
+  headings.find((heading) => opensWith(heading.text, endWords))?.start;
+
+/** The figures captioned only in the appendices; a number captioned in the text too (numbering restarted) stays the text's. */
+export const appendixKeys = (captions: readonly FigureMention[], start: number | undefined): ReadonlySet<string> => {
+  if (start === undefined) return new Set();
+  const inText = new Set(captions.filter((caption) => caption.start < start).map((caption) => caption.key));
+  return new Set(captions.filter((caption) => caption.start > start && !inText.has(caption.key)).map((caption) => caption.key));
+};
+
+/** The words of the labels of a kind not placed in the text, singular and plural (Appendix, Appendices, 付録). */
+const endWordsOf = (doc: ProseDocument, inTextKinds: ReadonlySet<string>): string[] =>
+  [...(doc.lexicons["figure-label"] ?? []), ...(doc.lexicons["figure-label-plural"] ?? [])]
+    .filter((entry) => !inTextKinds.has(entry.instead_of ?? entry.pattern))
+    .map((entry) => entry.pattern);
+
+/**
+ * The text's figures in order; an appendix figure is not ordered, since the text refers to it first and in any order,
+ * and the appendices refer across one another (Appendix D to the table of Appendix G).
+ */
+const orderSlips = (references: readonly FigureMention[], inAppendix: ReadonlySet<string>): FigureOrderSlip[] =>
+  outOfOrder(references.filter((mention) => !inAppendix.has(mention.key)));
+
 export const figureOrderSlips = (doc: ProseDocument): FigureOrderSlip[] => {
   const prose = doc.prose ?? doc.source;
   const { captions, references: singular } = figureMentions(doc.source, prose, labelWordsOf(doc), doc.links);
@@ -71,7 +105,8 @@ export const figureOrderSlips = (doc: ProseDocument): FigureOrderSlip[] => {
   const references = [...singular, ...plural].toSorted((left, right) => left.start - right.start);
   const headingStarts = (doc.markup?.headings ?? []).map((heading) => heading.start);
   const inTextKinds = new Set((doc.lexicons["figure-in-text"] ?? []).map((entry) => entry.pattern));
-  const slips = [...outOfOrder(references), ...placementSlips(captions, references, headingStarts, inTextKinds)];
+  const start = appendixStart(doc.markup?.headings ?? [], endWordsOf(doc, inTextKinds));
+  const slips = [...orderSlips(references, appendixKeys(captions, start)), ...placementSlips(captions, references, headingStarts, inTextKinds)];
   return slips.toSorted((left, right) => left.offset - right.offset);
 };
 
