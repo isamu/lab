@@ -63,7 +63,7 @@ describe("the verse profile", () => {
 
   it("other genres, and English poetry, do not", () => {
     ["literature/fiction", "literature/play", "literature/essay", "business/report"].forEach((genre) =>
-      assert.equal(profileOf(PREFACE, ja, genre), undefined, genre),
+      assert.equal(profileOf(PREFACE, ja, genre)?.lineBreaksEndSentences, undefined, genre),
     );
     assert.equal(profileOf("Because I could not stop for Death,\nHe kindly stopped for me;", en, POETRY), undefined);
   });

@@ -571,6 +571,8 @@ genres:
         - Are the speakers' names written the same in the cast list and before their lines?
         - Can stage directions be told from dialogue by their form?
         - Are acts and scenes numbered without gaps?
+    # A stage direction in （） is not part of the spoken sentence (profiles/play.yaml).
+    profile: play
     # A speaker's name before the line: 妻　　あたしは… (two ideographic spaces; a statute's 第一条　 has one), ALGERNON.
     suggest:
       paths: ["(^|/)(plays?|screenplays?|kyakuhon)(/|[-_.])"]

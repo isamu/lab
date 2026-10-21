@@ -6,6 +6,7 @@ import { spansWithin, unmaskedSoftBreaks } from "./soft-break.ts";
 import { segmentJoined } from "./joined-view.ts";
 import { paragraphsOf } from "./document-paragraphs.ts";
 import { closingRun, standaloneLines, subheadingPieces, type StandsAlone } from "./subheading-line.ts";
+import { stageDirectionPieces, type BracketPair } from "./stage-directions.ts";
 import { isLinkLine } from "./link-line.ts";
 import { speakerLabels } from "./speaker-labels.ts";
 import type { Outline } from "./structure/build.ts";
@@ -181,17 +182,23 @@ const linkLineIn =
   (start, end) =>
     isLinkLine(source, shift({ start, end }, paragraph.start), links);
 
+/** 片を、ト書きの括弧の中と外に分ける（戯曲）。括弧の組が無ければ片のまま。 */
+const withoutStageDirections = (prose: string, piece: Span, pair: BracketPair | undefined): Span[] =>
+  pair === undefined ? [piece] : stageDirectionPieces(prose.slice(piece.start, piece.end), pair).map((span) => shift(span, piece.start));
+
 const EVERY_LINE: StandsAlone = () => true;
 
 /**
  * 段落を、中の小見出しの行（「（経済再生）」）とリンクだけの行の後ろで切った片。片ごとに分割すれば、
- * 小見出しが次の文に入らず、1 行ずつ並べたリンクが一つの長い文にならない。everyLine（詩）なら、どの行の後ろでも切る。
+ * 小見出しが次の文に入らず、1 行ずつ並べたリンクが一つの長い文にならない。詩（lineBreaksEndSentences）なら、どの行の後ろでも切る。
+ * 戯曲（stageDirections）では、ト書きも台詞と別の片にする。
  */
-const piecesOf = (prose: string, paragraphs: readonly Span[], source: string, links: readonly Span[], everyLine: boolean): Span[] =>
+const piecesOf = (prose: string, paragraphs: readonly Span[], source: string, links: readonly Span[], profile: DocumentProfile | undefined): Span[] =>
   paragraphs.flatMap((paragraph) =>
-    subheadingPieces(prose.slice(paragraph.start, paragraph.end), everyLine ? EVERY_LINE : linkLineIn(source, links, paragraph)).map((piece) =>
-      shift(piece, paragraph.start),
-    ),
+    subheadingPieces(
+      prose.slice(paragraph.start, paragraph.end),
+      profile?.lineBreaksEndSentences === true ? EVERY_LINE : linkLineIn(source, links, paragraph),
+    ).flatMap((piece) => withoutStageDirections(prose, shift(piece, paragraph.start), profile?.stageDirections)),
   );
 
 /**
@@ -222,7 +229,7 @@ const lineLayoutOf = (root: Node, source: string, prose: string, paragraphs: rea
   const linkItems = linkItemsOf(prose, paragraphs, source, links);
   return {
     links,
-    pieces: piecesOf(prose, paragraphs, source, links, profile?.lineBreaksEndSentences === true),
+    pieces: piecesOf(prose, paragraphs, source, links, profile),
     listSpans: [...spansOfType(root, "listItem"), ...linkItems],
     paragraphs: cutTextSpans(paragraphs, linkItems, source),
   };
