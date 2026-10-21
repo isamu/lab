@@ -22,12 +22,17 @@ const outerQuotes = (chars: readonly string[]): Quote[] => {
   return quotes;
 };
 
+const depthAfter = (depth: number, char: string): number => {
+  if (OPENER.test(char)) return depth + 1;
+  return CLOSER.test(char) ? Math.max(0, depth - 1) : depth;
+};
+
 /** A quotation's sentences, cut after each stop outside any inner bracket (『…。』 stays whole). */
 const sentencesIn = (chars: readonly string[]): string[] => {
   const pieces: string[][] = [[]];
   chars.reduce((depth, char) => {
     pieces.at(-1)?.push(char);
-    const next = OPENER.test(char) ? depth + 1 : CLOSER.test(char) ? Math.max(0, depth - 1) : depth;
+    const next = depthAfter(depth, char);
     if (next === 0 && STOP.test(char)) pieces.push([]);
     return next;
   }, 0);
