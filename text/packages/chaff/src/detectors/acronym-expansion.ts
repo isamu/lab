@@ -15,6 +15,8 @@ import { escapeRegExp } from "../orthography.ts";
  *   Partnership On Wide Energy and Resources Resilience Asia (POWERR Asia)  括弧の中が略語と添えた語で、前の名前の頭文字と揃う
  *   End User Technical Advisory Board (“End User TAB”)  括弧の中が名前の頭の語と略語で、前の名前の頭文字と揃う
  *   Special Interest Groups, or SIGs  名前の後ろの読点と言い換えの語（語彙表の definition-alternative）の後ろで、名前の頭文字と揃う
+ *   Department of Health and Human Services (HHS or the Department)  括弧の最初の項目が略語で、言い換えの語の後ろに別の呼び名を添え、直前の語の頭文字と揃う
+ *   Advanced Research Projects Agency for Health (ARPA-H)  括弧の中が略語とハイフンで繋いだ 1、2 字で、全体が直前の語の頭文字と揃う
  * 複数形の s を付けた略語（SIGs）の展開は、s の無い略語（SIG）の展開でもある。
  * 括弧と略語の間には、引用符（(“MNDA”)、（「MNDA」））と空白だけを許す。
  */
@@ -93,6 +95,17 @@ const isSeparatedAt = (body: string, acronym: string, at: number): boolean => {
   return spellsOut(body.slice(0, at), acronym) || (closed && namesAcronym(rest, acronym));
 };
 
+/** 略語にハイフンで繋いだ 1、2 字（ARPA-H の -H）。略語の語は ARPA までなので、括弧が閉じるかはその後ろで見る。 */
+const LETTER_SUFFIX = /^-\p{Lu}{1,2}/u;
+
+/** 括弧の中が、略語とハイフンで繋いだ字だけの形（Agency for Health (ARPA-H)）。繋いだ字まで含めて、直前の語の頭文字と揃うときだけ。 */
+const isSuffixedAt = (body: string, acronym: string, at: number): boolean => {
+  const end = at + acronym.length;
+  const suffix = LETTER_SUFFIX.exec(body.slice(end, end + NEAR))?.[0];
+  if (suffix === undefined || !OPENED.test(body.slice(Math.max(0, at - NEAR), at))) return false;
+  return CLOSES.test(body.slice(end + suffix.length, end + suffix.length + NEAR)) && spellsOut(body.slice(0, at), `${acronym}${suffix}`);
+};
+
 /** 括弧の最後の項目が略語で、コロンの前に名前を書く形（（Information-technology Promotion Agency：IPA））。 */
 const isNamedBeforeAt = (body: string, acronym: string, at: number): boolean => {
   const named = NAMED_BEFORE.exec(body.slice(Math.max(0, at - DEFINITION_REACH), at));
@@ -106,7 +119,7 @@ const isNamedBeforeAt = (body: string, acronym: string, at: number): boolean => 
  */
 export type DefinitionWords = { readonly markers: readonly string[]; readonly verbs: readonly string[]; readonly alternatives?: readonly string[] };
 
-type DefinitionPatterns = { readonly opened: RegExp; readonly closes: RegExp; readonly alternative: RegExp };
+type DefinitionPatterns = { readonly opened: RegExp; readonly closes: RegExp; readonly alternative: RegExp; readonly otherName: RegExp };
 
 const oneOf = (words: readonly string[]): string => (words.length === 0 ? "(?!)" : words.map(escapeRegExp).join("|"));
 
@@ -114,7 +127,17 @@ const definitionPatterns = (words: DefinitionWords): DefinitionPatterns => ({
   opened: new RegExp(String.raw`[(（]\s*(?<markers>(?:(?:${oneOf(words.markers)})${MARKER_GAP})*)${WRAP}(?<![A-Za-z])$`, "iu"),
   closes: new RegExp(String.raw`^${WRAP}(?<verb>(?:${oneOf(words.verbs)})[。.]?)?${WRAP}[)）]`, "iu"),
   alternative: new RegExp(String.raw`[,，、]\s*(?:${oneOf(words.alternatives ?? [])})\s*["“'‘]?$`, "iu"),
+  otherName: new RegExp(String.raw`^${WRAP}[,，、]?\s*(?:${oneOf(words.alternatives ?? [])})\s[^()（）\n]{1,${String(DEFINITION_REACH)}}[)）]`, "iu"),
 });
+
+/**
+ * 括弧の最初の項目が略語で、言い換えの語の後ろに同じものの別の呼び名を添えた形（(HHS or the Department)）。直前の語の頭文字が
+ * 略語と揃うときだけ展開と見なす。揃わない並び（(EPA or the states)）は、略語の前に名前が無い。
+ */
+const isOtherNameAt = (patterns: DefinitionPatterns, body: string, acronym: string, at: number): boolean =>
+  OPENED.test(body.slice(Math.max(0, at - NEAR), at)) &&
+  patterns.otherName.test(body.slice(at + acronym.length, at + acronym.length + DEFINITION_REACH)) &&
+  spellsOut(body.slice(0, at), acronym);
 
 /**
  * 括弧の中に定義の語と略語だけがある形。語が 1 つも無い（CI）は OPENED と CLOSES が見るので、ここでは数えない。
@@ -216,7 +239,8 @@ const isBracketedAt = (body: string, acronym: string, at: number): boolean => {
     isNamedBeforeAt(body, acronym, at) ||
     isJointBracketedAt(body, acronym, at) ||
     isQualifiedAt(body, acronym, at) ||
-    isPrefixedAt(body, acronym, at)
+    isPrefixedAt(body, acronym, at) ||
+    isSuffixedAt(body, acronym, at)
   );
 };
 
@@ -408,5 +432,6 @@ export const expansionAt = (words: DefinitionWords): ExpandedAt => {
     isBracketedAt(body, acronym, at) ||
     isDefinedAt(patterns, body, acronym, at) ||
     isAlternativeAt(patterns, body, acronym, at) ||
+    isOtherNameAt(patterns, body, acronym, at) ||
     isEqualsDefinedAt(body, acronym, at);
 };

@@ -66,6 +66,24 @@ describe("doubled-punctuation: 句読点が重なっている", () => {
     ]);
   });
 
+  it("目次の行の、ページ番号の前の点線（リーダー）は数えない", () => {
+    // 米国下院の公聴会記録の目次（米国政府の著作物、パブリックドメイン）。
+    const contents = [
+      "Whiting, Gen Stephen N. USSF, Commander, U.S. Space Command,.....     6",
+      "",
+      "Guillot, Gen Gregory M., USAF, Commander, U.S. Northern Command..     7",
+      "",
+      "Preface.. iv",
+    ].join("\n");
+    assert.deepEqual(runsOf(contents), []);
+    assert.deepEqual(findingsOf(`${contents}\n`, en), []);
+  });
+
+  it("点線の後ろがページ番号だけの行でなければ、重なりとして数える", () => {
+    assert.deepEqual(runsOf("See Command.. 7 more\nThe total,.. 12 units\nDone.. Then\nNotes.. IV\nNotes.. iiii"), ["..", ",..", "..", "..", ".."]);
+    assert.deepEqual(runsOf("Command,,     7"), [",,"]);
+  });
+
   it("空の文書", () => {
     assert.deepEqual(runsOf(""), []);
   });

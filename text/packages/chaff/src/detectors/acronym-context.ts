@@ -8,6 +8,9 @@ import { numeralWordSpans } from "./numeral-word.ts";
 import { seriesLabelSpans } from "./series-label.ts";
 import { nameSpansOf, oneOf } from "./acronym-name.ts";
 import { caseCitationSpans } from "./case-citation.ts";
+import { grammarSpans } from "./abnf-grammar.ts";
+import { outlineLabelSpans } from "./outline-label.ts";
+import { referenceListSpans } from "../reference-lists.ts";
 
 /**
  * 大文字の語が略語ではなく、決まった書き方の一部として読める所（3:30 PM、1pm ET、USD 1,000、Kansas City, MO 64108、Fort Lauderdale FL 33304）。
@@ -93,6 +96,9 @@ const titledName = (titles: string): readonly RegExp[] => [
 const placeAndState = (states: string): RegExp =>
   new RegExp(String.raw`(?<=\p{Lu}\p{Ll}[\p{L}'’.-]*,\s+)${states}(?=[ \t]*(?:\r?\n|$)|[,.;:)\]!?]|\s+\p{Ll})`, "gu");
 
+/** メールアドレス（OASH-RFI@hhs.gov）。@ の前の大文字は宛先の名前で、略語ではない。 */
+const EMAIL_ADDRESS = /(?<![\p{L}\p{N}._%+-])[\p{L}\p{N}._%+-]+@[\p{L}\p{N}-]+(?:\.[\p{L}\p{N}-]+)+/gu;
+
 // 強調の記号は空白に置き換えてある（**3:30** PM）ので、部品の間の空白は数を問わない。
 const patternsOf = (words: NotationWords): readonly RegExp[] => [
   new RegExp(String.raw`${CLOCK_12}\s*${oneOf(words.meridiem)}`, "gu"),
@@ -106,6 +112,7 @@ const patternsOf = (words: NotationWords): readonly RegExp[] => [
   new RegExp(String.raw`(?<![\p{L}\p{N}_])${oneOf(words.honorifics)}\s+${SURNAME_IN_CAPITALS}`, "gu"),
   capitalHonorific(words.honorifics),
   ...titledName(oneOf(words.titles)),
+  EMAIL_ADDRESS,
 ];
 
 export type NotAcronymSpans = (text: string) => Span[];
@@ -159,3 +166,14 @@ export const lexiconNotationOf = (wordsOf: (id: string) => string[]): NotAcronym
   });
   return (text) => [...notation(text), ...names(text)];
 };
+
+/**
+ * 文書全体で読む、略語として数えない範囲。文献一覧の誌名や会議名、番号の付いた区切りの見出し、ABNF の文法、判例の引用。
+ * 判例の引用を文書全体でも読むのは、文の区切りが当事者の名前の略した語（MCI Telecomms. Corp. v. AT&T）の点でも切れるから。
+ */
+export const sourceNotAcronymSpans = (source: string, wordsOf: (id: string) => string[]): Span[] => [
+  ...referenceListSpans(source, wordsOf("reference-list-heading")),
+  ...outlineLabelSpans(source, wordsOf("numbered-division")),
+  ...grammarSpans(source),
+  ...caseCitationSpans(source, wordsOf("case-party-joiner")),
+];

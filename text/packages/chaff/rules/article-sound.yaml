@@ -42,8 +42,8 @@ example:
       We waited an hour for a user to reply.
 
 not_flagged:
-  ja: 数字の前（a 8-hour day）と、語彙表でどちらでもよいとした語（SQL、historic など）は見ません。大文字の語は語彙表のとおりに読み、載っていなければ、三字までか母音の無いもの（MBA、NTSB）だけを一字ずつ読むものとして見ます。それより長く母音のあるもの（SALT）は語として読むかもしれないので見ません。h を発音する語の前の an（an hospital、an hereditament）を二度以上、a より多く書く文書は、古い書き方をその文書の書き方としているので、そこは指しません。小説と話し言葉では既定で止めています。
-  en: Not before digits ("a 8-hour day"), nor before words the lexicon says are said both ways (SQL, historic). Capitals are read as the lexicon says; unlisted ones are read letter by letter only when short or without a vowel (MBA, NTSB), since longer ones (SALT) may be said as a word. A document that writes "an" before a sounded h ("an hospital", "an hereditament") at least twice and more often than "a" keeps the older usage as its style, and those are not reported. The fiction and speech presets turn it off.
+  ja: 数字の前（a 8-hour day）と、語彙表でどちらでもよいとした語（SQL、historic など）は見ません。大文字の語は語彙表のとおりに読み、載っていなければ、三字までか母音の無いもの（MBA、NTSB）だけを一字ずつ読むものとして見ます。それより長く母音のあるもの（SALT）は語として読むかもしれないので見ません。スラッシュでつないだ頭文字（N/I、N/A）は略した語として読むこともあるので見ません。前の数字や字にくっついた a（§ 78a et seq.）は冠詞ではないので見ません。h を発音する語の前の an（an hospital、an hereditament）を二度以上、a より多く書く文書は、古い書き方をその文書の書き方としているので、そこは指しません。小説と話し言葉では既定で止めています。
+  en: Not before digits ("a 8-hour day"), nor before words the lexicon says are said both ways (SQL, historic). Capitals are read as the lexicon says; unlisted ones are read letter by letter only when short or without a vowel (MBA, NTSB), since longer ones (SALT) may be said as a word. Initials joined by a slash (N/I, N/A) may be read as the words they shorten and are left alone, and an "a" glued to the digit or letter before it ("§ 78a et seq.") is not an article. A document that writes "an" before a sounded h ("an hospital", "an hereditament") at least twice and more often than "a" keeps the older usage as its style, and those are not reported. The fiction and speech presets turn it off.
 level_meaning:
   ja: "{limit} 箇所あれば指摘"
   en: reported once there are {limit}

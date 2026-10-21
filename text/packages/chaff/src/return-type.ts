@@ -25,8 +25,10 @@ export type ReturnTypeClash = { readonly fn: string; readonly stated: string; re
 type Stated = { readonly code: string; readonly written: string } | { readonly kind: string; readonly written: string };
 
 type Statement = { readonly fn: string; readonly stated: Stated; readonly offset: number };
-type Signature = { readonly fn: string; readonly params: string; readonly returns: string; readonly offset: number };
-type Line = { readonly text: string; readonly start: number; readonly fenced: boolean; readonly section: number };
+/** `settles` is what the body hands back: an async declaration's Promise<T> settles to T. */
+type Signature = { readonly fn: string; readonly params: string; readonly returns: string; readonly settles: string; readonly offset: number };
+/** `block` counts the fenced blocks opened so far, so the lines of one block share it. */
+type Line = { readonly text: string; readonly start: number; readonly fenced: boolean; readonly section: number; readonly block: number };
 
 const FENCE = /^ {0,3}(`{3,}|~{3,})/u;
 const HEADING = /^ {0,3}#{1,6}[ \t]/u;
@@ -36,6 +38,11 @@ const IDENTIFIER = /^[A-Za-z_$][\w$]*/u;
 const DECLARATION_HEAD = /^(?:(?:export|default|declare|async|public|static)\s+)*(?:(?:function\*?|def|fn|func)\s+)?/u;
 const ARROW_HEAD = /^(?:(?:export|declare)\s+)*(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?/u;
 const RETURN_MARK = /^\s*(?::|->)\s*/u;
+const ASYNC_HEAD = /(?:^|\s)async\s/u;
+const ASYNC_ARROW = /=\s*async\b/u;
+const PROMISE = /^Promise<(.+)>$/u;
+/** A TypeScript-handbook (twoslash) directive: the block shows code that does not compile, on purpose. */
+const ERRORS_DIRECTIVE = /^\s*\/\/\s*@errors\b/u;
 /** What may close a declaration line after its return type: an arrow's `=>` or a body's `{` with what follows, `;`, Python's `:`. */
 const withoutDeclarationTail = (text: string): string => {
   const cut = [text.indexOf("=>"), text.indexOf("{")].filter((at) => at !== -1);
@@ -64,18 +71,19 @@ const CODE_KINDS: ReadonlyMap<string, string> = new Map([
 ]);
 
 const linesOf = (source: string): Line[] => {
-  const state = { start: 0, fence: "", section: 0 };
+  const state = { start: 0, fence: "", section: 0, block: 0 };
   return source.split("\n").map((text) => {
     const start = state.start;
     state.start += text.length + 1;
     const mark = FENCE.exec(text)?.[1];
     const closes = mark !== undefined && state.fence !== "" && mark[0] === state.fence[0] && mark.length >= state.fence.length;
     if (mark !== undefined && (state.fence === "" || closes)) {
+      if (!closes) state.block += 1;
       state.fence = closes ? "" : mark;
-      return { text, start, fenced: true, section: state.section };
+      return { text, start, fenced: true, section: state.section, block: state.block };
     }
     if (state.fence === "" && HEADING.test(text)) state.section += 1;
-    return { text, start, fenced: state.fence !== "", section: state.section };
+    return { text, start, fenced: state.fence !== "", section: state.section, block: state.block };
   });
 };
 
@@ -133,12 +141,15 @@ const isReadableCode = (type: string): boolean => {
   return TYPE_TEXT.test(type.trim()) && readable && members.some((member) => !NOTHING_TYPES.has(member));
 };
 
-const declaredAt = (line: string): { readonly fn: string; readonly afterName: number } | undefined => {
+type Declared = { readonly fn: string; readonly afterName: number; readonly isAsync: boolean };
+
+/** The declared name, where it ends, and whether the declaration is async (read from the words around the name, not the name). */
+const declaredAt = (line: string): Declared | undefined => {
   const arrow = ARROW_HEAD.exec(line);
-  if (arrow?.[1] !== undefined) return { fn: arrow[1], afterName: arrow[0].length };
-  const headLength = DECLARATION_HEAD.exec(line)?.[0].length ?? 0;
-  const fn = IDENTIFIER.exec(line.slice(headLength))?.[0];
-  return fn === undefined ? undefined : { fn, afterName: headLength + fn.length };
+  if (arrow?.[1] !== undefined) return { fn: arrow[1], afterName: arrow[0].length, isAsync: ASYNC_ARROW.test(arrow[0]) };
+  const head = DECLARATION_HEAD.exec(line)?.[0] ?? "";
+  const fn = IDENTIFIER.exec(line.slice(head.length))?.[0];
+  return fn === undefined ? undefined : { fn, afterName: head.length + fn.length, isAsync: ASYNC_HEAD.test(head) };
 };
 
 /** A declaration with a return type (`wrap(text: string): string[]`, `def f(x) -> str:`); a call has none. */
@@ -150,15 +161,23 @@ export const signatureOf = (line: string, offset = 0): Signature | undefined => 
   const mark = close === -1 ? null : RETURN_MARK.exec(line.slice(close + 1));
   if (close === -1 || mark === null) return undefined;
   const returns = withoutDeclarationTail(line.slice(close + 1 + mark[0].length));
-  return TYPE_TEXT.test(returns) ? { fn: declared.fn, params: squeeze(line.slice(open + 1, close)), returns, offset } : undefined;
+  if (!TYPE_TEXT.test(returns)) return undefined;
+  const promised = declared.isAsync ? PROMISE.exec(returns)?.[1] : undefined;
+  return { fn: declared.fn, params: squeeze(line.slice(open + 1, close)), returns, settles: promised ?? returns, offset };
 };
 
-const signaturesOf = (lines: readonly Line[]): Signature[] =>
-  lines.flatMap((line) => {
+/** The blocks that say they show code which does not compile; their declarations are wrong on purpose. */
+const blocksShowingErrors = (lines: readonly Line[]): Set<number> =>
+  new Set(lines.filter((line) => line.fenced && ERRORS_DIRECTIVE.test(line.text)).map((line) => line.block));
+
+const signaturesOf = (lines: readonly Line[]): Signature[] => {
+  const showingErrors = blocksShowingErrors(lines);
+  return lines.flatMap((line) => {
     const lead = line.text.length - line.text.trimStart().length;
-    const signature = line.fenced ? signatureOf(line.text.trim(), line.start + lead) : undefined;
+    const signature = line.fenced && !showingErrors.has(line.block) ? signatureOf(line.text.trim(), line.start + lead) : undefined;
     return signature === undefined ? [] : [signature];
   });
+};
 
 const escaped = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/gu, String.raw`\$&`);
 
@@ -328,14 +347,17 @@ const clashOf = (fn: string, stated: string, signature: Signature, offset: numbe
   offset,
 });
 
-/** Two declarations with the same parameters and different return types; overloads (other parameters) are left alone. */
+/**
+ * Two declarations with the same parameters and different return types; overloads (other parameters) are left alone, and
+ * an async declaration's Promise<T> is compared as the T its body returns.
+ */
 const signatureClashes = (signatures: readonly Signature[]): ReturnTypeClash[] =>
   signatures.flatMap((later, index) => {
     const earlier = signatures
       .slice(0, index)
       .find(
         (signature) =>
-          signature.fn === later.fn && signature.params === later.params && typeMembers(signature.returns).join("|") !== typeMembers(later.returns).join("|"),
+          signature.fn === later.fn && signature.params === later.params && typeMembers(signature.settles).join("|") !== typeMembers(later.settles).join("|"),
       );
     return earlier === undefined ? [] : [clashOf(later.fn, later.returns, earlier, later.offset)];
   });
