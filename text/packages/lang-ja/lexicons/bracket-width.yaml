@@ -9,3 +9,9 @@ entries:
   - pattern: ）
     instead_of: )
     group: paren
+  - pattern: ［
+    instead_of: "["
+    group: square
+  - pattern: ］
+    instead_of: "]"
+    group: square
