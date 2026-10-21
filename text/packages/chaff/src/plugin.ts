@@ -292,6 +292,8 @@ export type DocumentProfile = {
   readonly taxRate?: number | undefined;
   /** ト書きを囲む括弧（戯曲の「（」「）」）。中身は台詞の文の一部ではなく、台詞と別に文に分ける。 */
   readonly stageDirections?: { readonly open: string; readonly close: string } | undefined;
+  /** 段落の中の行の終わりで文を切る。詩の行は句点が無くても一つで立ち、連を一つの文として読まない。 */
+  readonly lineBreaksEndSentences?: boolean | undefined;
 };
 
 /**

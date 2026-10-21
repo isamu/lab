@@ -128,6 +128,7 @@ const languagesOf = (id: string, raw: Record<string, unknown>): Record<string, D
             ...(walkRate === undefined ? {} : { walkRate }),
             ...(taxRate === undefined ? {} : { taxRate }),
             ...(stageDirections === undefined ? {} : { stageDirections }),
+            ...(section["line_breaks_end_sentences"] === true ? { lineBreaksEndSentences: true } : {}),
           },
         ];
       }),

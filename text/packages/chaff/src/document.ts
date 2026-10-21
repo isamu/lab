@@ -186,15 +186,19 @@ const linkLineIn =
 const withoutStageDirections = (prose: string, piece: Span, pair: BracketPair | undefined): Span[] =>
   pair === undefined ? [piece] : stageDirectionPieces(prose.slice(piece.start, piece.end), pair).map((span) => shift(span, piece.start));
 
+const EVERY_LINE: StandsAlone = () => true;
+
 /**
  * 段落を、中の小見出しの行（「（経済再生）」）とリンクだけの行の後ろで切った片。片ごとに分割すれば、
- * 小見出しが次の文に入らず、1 行ずつ並べたリンクが一つの長い文にならない。戯曲では、ト書きも台詞と別の片にする。
+ * 小見出しが次の文に入らず、1 行ずつ並べたリンクが一つの長い文にならない。詩（lineBreaksEndSentences）なら、どの行の後ろでも切る。
+ * 戯曲（stageDirections）では、ト書きも台詞と別の片にする。
  */
-const piecesOf = (prose: string, paragraphs: readonly Span[], source: string, links: readonly Span[], stageDirections: BracketPair | undefined): Span[] =>
+const piecesOf = (prose: string, paragraphs: readonly Span[], source: string, links: readonly Span[], profile: DocumentProfile | undefined): Span[] =>
   paragraphs.flatMap((paragraph) =>
-    subheadingPieces(prose.slice(paragraph.start, paragraph.end), linkLineIn(source, links, paragraph)).flatMap((piece) =>
-      withoutStageDirections(prose, shift(piece, paragraph.start), stageDirections),
-    ),
+    subheadingPieces(
+      prose.slice(paragraph.start, paragraph.end),
+      profile?.lineBreaksEndSentences === true ? EVERY_LINE : linkLineIn(source, links, paragraph),
+    ).flatMap((piece) => withoutStageDirections(prose, shift(piece, paragraph.start), profile?.stageDirections)),
   );
 
 /**
@@ -225,7 +229,7 @@ const lineLayoutOf = (root: Node, source: string, prose: string, paragraphs: rea
   const linkItems = linkItemsOf(prose, paragraphs, source, links);
   return {
     links,
-    pieces: piecesOf(prose, paragraphs, source, links, profile?.stageDirections),
+    pieces: piecesOf(prose, paragraphs, source, links, profile),
     listSpans: [...spansOfType(root, "listItem"), ...linkItems],
     paragraphs: cutTextSpans(paragraphs, linkItems, source),
   };
