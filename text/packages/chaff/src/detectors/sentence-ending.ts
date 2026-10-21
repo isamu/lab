@@ -20,18 +20,23 @@ import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span } f
  * 読み手の相談や質問を載せる節（【相談事例等】）の文は尋ねた人の言葉のままなので数えない（asker-voice.ts）。
  * 文書の最後に掲載先が付けた利用条件の断り書き（…ライセンスの下に提供されています。）も数えない（licence-notice.ts）。
  */
-type Entry = { readonly sentence: Sentence; readonly register: Register; readonly group: number | undefined };
+/**
+ * quiet: 常体と読めるが、願い・問い・言いさしの形（register-neutral-shape.ts）の文。どちらの調子の文書にも現れるので指さない。
+ * 数には入れる。数から外すと、常体を何度も使う文書（演説）で少数派が閾値を下回り、残りの常体の文が新たに指されてしまう。
+ */
+type Entry = { readonly sentence: Sentence; readonly register: Register; readonly group: number | undefined; readonly quiet: boolean };
 
 /** polite は語彙表 polite-ending、neutral は neutral-ending、requests は neutral-request。 */
 type EndingWords = { readonly polite: readonly LexiconEntry[]; readonly neutral: readonly LexiconEntry[]; readonly requests: readonly LexiconEntry[] };
 
-/** 常体と読めても、願い・問い・言いさしの形（register-neutral-shape.ts）なら調子に数えない。 */
-const registerOfSentence = (sentence: Sentence, words: EndingWords): Register | undefined => {
+type Read = { readonly register: Register; readonly quiet: boolean };
+
+const registerOfSentence = (sentence: Sentence, words: EndingWords): Read | undefined => {
   const ending = endingTokens(sentence);
   const tokens = sentence.tokens ?? [];
   const head = ending[0] === undefined ? -1 : tokens.indexOf(ending[0]);
   const register = registerOf(ending, head > 0 ? tokens.slice(0, head) : [], words.polite, words.neutral);
-  return register === "plain" && isNeutralPlainShape(sentence, ending, words.requests) ? undefined : register;
+  return register === undefined ? undefined : { register, quiet: register === "plain" && isNeutralPlainShape(sentence, ending, words.requests) };
 };
 
 /** 番号で始まる段落の並び。木を組むのは高いので、調子が一つだけの文書（混ざりようがない）では組まない。 */
@@ -52,7 +57,7 @@ export const judgedSentences = (doc: ProseDocument, polite: readonly LexiconEntr
   const rows = chronologyRows(doc);
   const asked = askerSentences(doc.sections, doc.lexicons["asker-heading"] ?? []);
   const licence = licenceNoticeSentences(doc, doc.lexicons["licence-word"] ?? []);
-  const all = doc.sentences.flatMap((sentence, index): { sentence: Sentence; register: Register }[] => {
+  const all = doc.sentences.flatMap((sentence, index): { sentence: Sentence; register: Register; quiet: boolean }[] => {
     if (
       !isClosed(sentence) ||
       rows.has(sentence) ||
@@ -62,8 +67,8 @@ export const judgedSentences = (doc: ProseDocument, polite: readonly LexiconEntr
       isRunInLabel(doc.source, sentence.span)
     )
       return [];
-    const register = registerOfSentence(sentence, words);
-    return register === undefined ? [] : [{ sentence, register }];
+    const read = registerOfSentence(sentence, words);
+    return read === undefined ? [] : [{ sentence, ...read }];
   });
   const registers = new Map(all.map((entry) => [entry.sentence, entry.register]));
   const majority = majorityOf(all.map((entry) => ({ register: entry.register, group: undefined })));
@@ -79,7 +84,8 @@ export const judgedSentences = (doc: ProseDocument, polite: readonly LexiconEntr
 export const sentenceEnding: Detector = (doc, options): Finding[] => {
   const judged = judgedSentences(doc, options.lexicon ?? []);
   // 数えたのは文が属するまとまりの中なので、文言もそのまとまりを名指す（本文の中で / この箇条書きの中で）。
-  return slipsOf(judged, options.limit).map(({ entry: { sentence, group }, count }) => ({
+  const slips = slipsOf(judged, options.limit).filter(({ entry }) => !entry.quiet);
+  return slips.map(({ entry: { sentence, group }, count }) => ({
     rule: "no-mixed-desumasu",
     severity: "warning",
     line: 0,
