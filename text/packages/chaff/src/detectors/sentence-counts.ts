@@ -89,9 +89,12 @@ const itemStartAfter = (at: number, tokens: readonly Token[]): number => tokens.
 /** A prefix bound to the noun after it (第I, 各部署) starts a noun. */
 const isBoundPrefix = (token: Token | undefined): boolean => token?.features?.["Bound"] === "Yes" && token.pos === "ADJ";
 
-const startsNoun = (at: number, tokens: readonly Token[]): boolean => {
+/** A dependent noun (こと, よう, ため) ends a clause, not a listed item, when a prefixed noun follows (取り組むよう、ご指示). */
+const isDependentNoun = (token: Token | undefined): boolean => token?.features?.["NounType"] === "Dependent";
+
+const startsNoun = (at: number, tokens: readonly Token[], itemEnd: Token | undefined): boolean => {
   const start = itemStartAfter(at, tokens);
-  return isNominal(tokens[start]) || (isBoundPrefix(tokens[start]) && isNominal(tokens[start + 1]));
+  return isNominal(tokens[start]) || (isBoundPrefix(tokens[start]) && isNominal(tokens[start + 1]) && !isDependentNoun(itemEnd));
 };
 
 const QUOTE_CLOSERS: ReadonlySet<string> = new Set(["」", "』"]);
@@ -117,8 +120,10 @@ const betweenQuotations = (at: number, tokens: readonly Token[]): boolean => {
  * A comma between two nouns separates listed items (名前、会社名、連絡先), not clauses. A bracketed note after an item is part of
  * it, a noun after its prefix (第I、第II) is a noun, and so is a quotation listed next to another.
  */
-export const separatesItems = (at: number, tokens: readonly Token[]): boolean =>
-  betweenQuotations(at, tokens) || (isNominal(tokens[itemEndBefore(at, tokens)]) && startsNoun(at, tokens));
+export const separatesItems = (at: number, tokens: readonly Token[]): boolean => {
+  const itemEnd = tokens[itemEndBefore(at, tokens)];
+  return betweenQuotations(at, tokens) || (isNominal(itemEnd) && startsNoun(at, tokens, itemEnd));
+};
 
 /** A sentence cut by more than limit of the lexicon's commas (読点). Commas between listed nouns are not counted. */
 export const sentenceCommaCount: Detector = (doc, options): Finding[] => {
