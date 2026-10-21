@@ -71,9 +71,9 @@ describe("figure-reference-order: tables in an appendix", () => {
     assert.equal(appendixStart([{ text: "Tables", start: 0 }], []), undefined);
   });
 
-  it("orders the appendix tables among themselves by the references inside the appendix", () => {
-    const inAppendix = paper.replace("Table 3 lists the sites.", "Table 4 lists the regions and Table 3 the sites.\n\nTable 4: Regions");
-    assert.deepEqual(slipsOf(en, inAppendix), [["order", "Table 3", "Table 4"]]);
+  it("does not order the appendix tables among themselves: the appendices refer across one another", () => {
+    const across = paper.replace("Table 3 lists the sites.", "Table 4 lists the regions and Table 3 the sites.\n\nTable 4: Regions");
+    assert.deepEqual(slipsOf(en, across), []);
   });
 
   it("keeps a number captioned in the text the text's, when the appendix restarts its numbering", () => {

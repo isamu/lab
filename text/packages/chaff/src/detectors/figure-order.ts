@@ -90,13 +90,11 @@ const endWordsOf = (doc: ProseDocument, inTextKinds: ReadonlySet<string>): strin
     .map((entry) => entry.pattern);
 
 /**
- * The text's figures in one series, and the appendices' in another: an appendix figure is ordered only by the references
- * inside the appendices, since the text refers to them first and in any order.
+ * The text's figures in order; an appendix figure is not ordered, since the text refers to it first and in any order,
+ * and the appendices refer across one another (Appendix D to the table of Appendix G).
  */
-const orderSlips = (references: readonly FigureMention[], inAppendix: ReadonlySet<string>, start: number | undefined): FigureOrderSlip[] => [
-  ...outOfOrder(references.filter((mention) => !inAppendix.has(mention.key))),
-  ...outOfOrder(references.filter((mention) => inAppendix.has(mention.key) && start !== undefined && mention.start > start)),
-];
+const orderSlips = (references: readonly FigureMention[], inAppendix: ReadonlySet<string>): FigureOrderSlip[] =>
+  outOfOrder(references.filter((mention) => !inAppendix.has(mention.key)));
 
 export const figureOrderSlips = (doc: ProseDocument): FigureOrderSlip[] => {
   const prose = doc.prose ?? doc.source;
@@ -108,7 +106,7 @@ export const figureOrderSlips = (doc: ProseDocument): FigureOrderSlip[] => {
   const headingStarts = (doc.markup?.headings ?? []).map((heading) => heading.start);
   const inTextKinds = new Set((doc.lexicons["figure-in-text"] ?? []).map((entry) => entry.pattern));
   const start = appendixStart(doc.markup?.headings ?? [], endWordsOf(doc, inTextKinds));
-  const slips = [...orderSlips(references, appendixKeys(captions, start), start), ...placementSlips(captions, references, headingStarts, inTextKinds)];
+  const slips = [...orderSlips(references, appendixKeys(captions, start)), ...placementSlips(captions, references, headingStarts, inTextKinds)];
   return slips.toSorted((left, right) => left.offset - right.offset);
 };
 
