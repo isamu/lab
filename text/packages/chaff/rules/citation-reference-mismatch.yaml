@@ -84,8 +84,8 @@ example:
       - [2] Jones, B. Naps. 2021.
 
 not_flagged:
-  ja: 「参考文献」「References」のような見出しの下に文献一覧が無い文書、番号も著者と年も読み取れない文献、文献が一つしか無い一覧は見ません。番号で引く引用と番号の文献、著者と年で引く引用と著者と年の文献は、それぞれの組の中だけで比べます。論文のジャンルでだけ見ます。
-  en: 'A document without a list under a heading such as "References", entries that give neither a number nor an author and a year, and a list of one entry are left alone. Numbered citations are compared only with numbered entries, and author-year citations only with author-year entries. Only the academic paper genre runs this rule.'
+  ja: 「参考文献」「References」のような見出しの下に文献一覧が無い文書、番号も著者と年も読み取れない文献、文献が一つしか無い一覧は見ません。番号で引く引用と番号の文献、著者と年で引く引用と著者と年の文献は、それぞれの組の中だけで比べます。「Santoni de Sio (2020)」「Council of the European Union (2024)」のように何語もの名前で引いた引用は、その名前の語のどれかで文献と合わせ、文献一覧に無くても指しません。0 を含む角括弧（[0,1]）は区間で、引用ではありません。論文のジャンルでだけ見ます。
+  en: 'A document without a list under a heading such as "References", entries that give neither a number nor an author and a year, and a list of one entry are left alone. Numbered citations are compared only with numbered entries, and author-year citations only with author-year entries. A citation by a name of several words (Santoni de Sio (2020), Council of the European Union (2024)) is matched to an entry by any of its words, and is not reported as missing. Brackets holding 0 ([0,1]) are an interval, not a citation. Only the academic paper genre runs this rule.'
 rewrite:
   depth: light
   ja:
