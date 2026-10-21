@@ -9,7 +9,7 @@ import { maskAddresses } from "../address-chain.ts";
 import { isAddressRun } from "./place-run.ts";
 import { isOneName } from "./name-run.ts";
 import { isOrganisationRun, type OrganisationWords } from "./organisation-run.ts";
-import { endsInTitle, isTitlePosition, isTitledName, type TitleWords } from "./titled-run.ts";
+import { endsInTitle, isTitlePosition, isTitledName, repeatedRuns, type TitleWords } from "./titled-run.ts";
 import { proseText } from "../measure.ts";
 import { parallelDotCount } from "./middle-dot.ts";
 import { maskSpans } from "../mask.ts";
@@ -95,6 +95,8 @@ type NameWords = {
   readonly topUnits: ReadonlySet<string>;
   readonly organisation: OrganisationWords;
   readonly title: TitleWords;
+  /** 法令・制度・給付の名前を閉じる語（施行令、制度、交付金）。置き方を問わず名前を閉じる。 */
+  readonly fixedName: TitleWords;
   /** 数の後ろで日付・時刻の位置を言う単位（月）。連なりの頭にあれば、数に付いた助数詞。 */
   readonly positional: readonly string[];
   /** 宛先の名前に付く語（宛、御中）。連なりの尻にあれば、名前の後ろに付いた語。 */
@@ -117,6 +119,8 @@ type RunContext = {
   readonly names: readonly string[];
   readonly words: NameWords;
   readonly titled: readonly string[];
+  /** 文書の文の中に二度以上出る連なり（repeatedRuns）。題を閉じる語で終われば、書き手が名前として使い回している。 */
+  readonly repeated: ReadonlySet<string>;
   /** 文書がほかで単独の連なりとして使う組織の名前（standaloneNames: 安全保障理事会）。 */
   readonly terms: ReadonlySet<string>;
   /** 見出し語の行（文がその連なりだけ）を数えない文書か（用語集）。 */
@@ -137,13 +141,15 @@ const isPlaceName = (tokens: readonly Token[], span: Span, words: NameWords, for
   return isAddressRun(tokens, covering, words.topUnits) || isOneName(tokens, covering) || isOrganisationRun(tokens, covering, words.organisation, formBefore);
 };
 
-/** 題の名前（大阪市鶴見区役所公募型比較見積実施要綱）か。題を閉じる語で終わり、ここか文書のほかの所で題として置かれている。 */
-const isTitle = (tokens: readonly Token[], span: Span, text: string, placed: boolean, context: RunContext): boolean =>
-  endsInTitle(
-    coveringOf(tokens, span).flatMap((index) => tokens.slice(index, index + 1)),
-    context.words.title,
-  ) &&
-  (placed || isTitledName(text, context.titled));
+/**
+ * 題の名前か。法令・制度・給付の名前（住民基本台帳法施行令）はそれを閉じる語で終わるだけで名前。題を閉じる語
+ * （大阪市鶴見区役所公募型比較見積実施要綱、自衛隊高級幹部会同）は、ここか文書のほかの所で題として置かれているか、文書が同じ連なりを繰り返している。
+ */
+const isTitle = (tokens: readonly Token[], span: Span, text: string, placed: boolean, context: RunContext): boolean => {
+  const run = coveringOf(tokens, span).flatMap((index) => tokens.slice(index, index + 1));
+  if (endsInTitle(run, context.words.fixedName)) return true;
+  return endsInTitle(run, context.words.title) && (placed || isTitledName(text, context.titled) || context.repeated.has(text));
+};
 
 /** 宛名の行（各国公私立高等専門学校長、…協会会長 殿）: 連なりが行の頭にあり、後ろは空白と宛先に付く語だけ。 */
 const isAddresseeLine = (run: KanjiRun, words: NameWords): boolean => {
@@ -247,11 +253,9 @@ const titledNames = (doc: ProseDocument, profile: DocumentProfile | undefined, n
 /** 割る手がかりにする、文書が単独で使う名前の最短の字数。短い名前（事務局、理事会）は普通の語の一部にもなる。 */
 const MIN_TERM_LENGTH = 6;
 
-/** 文書の漢字の連なり: 文の中と、見出しの中。 */
-const allRuns = (doc: ProseDocument, profile: DocumentProfile | undefined, names: readonly string[]): string[] => [
-  ...doc.sentences.flatMap((sentence) => runsOf(sentence, profile, names).map((run) => run.text)),
-  ...headingRuns(doc),
-];
+/** 文の中の漢字の連なり。 */
+const sentenceRuns = (doc: ProseDocument, profile: DocumentProfile | undefined, names: readonly string[]): string[] =>
+  doc.sentences.flatMap((sentence) => runsOf(sentence, profile, names).map((run) => run.text));
 
 /** 文書の genre が、rule の headword_genres（見出し語の行を数えない genre: 用語集）にあるか。 */
 const isHeadwordGenre = (options: DetectorOptions): boolean => {
@@ -275,6 +279,7 @@ export const kanjiRun: Detector = (doc, options): Finding[] => {
     topUnits: new Set(patterns("prefecture-unit")),
     organisation,
     title: { endings: patterns("title-ending") },
+    fixedName: { endings: patterns("fixed-name-ending") },
     positional: patterns("calendar-unit"),
     addressee: patterns("addressee-suffix"),
     addressees: { prefixes: patterns("addressee-prefix"), titles: patterns("addressee-title"), endings: organisation.units, forms: organisation.closingForms },
@@ -283,12 +288,14 @@ export const kanjiRun: Detector = (doc, options): Finding[] => {
     knownWords: new Set(patterns("kanji-known-word")),
   };
   const names = doc.names ?? [];
+  const inSentences = sentenceRuns(doc, doc.profile, names);
   const context: RunContext = {
     profile: doc.profile,
     names,
     words,
     titled: titledNames(doc, doc.profile, names),
-    terms: standaloneNames(allRuns(doc, doc.profile, names), MIN_TERM_LENGTH, options.limit, organisation.units),
+    repeated: repeatedRuns(inSentences),
+    terms: standaloneNames([...inSentences, ...headingRuns(doc)], MIN_TERM_LENGTH, options.limit, organisation.units),
     headwords: isHeadwordGenre(options),
     maxKnownWords: Math.max(options.limit, ...[...words.knownWords].map((word) => [...word].length)),
   };

@@ -8,7 +8,9 @@ uses: [pos]
 # 住所の先頭にしか来ない単位（都道府県）。地名の後ろに付けば、割られた町名ではなく地名の並び。
 # 組織の名前（organisation-form で始まるか地名・固有名詞で始まり organisation-unit で閉じる、organisation-unit で閉じる区切りが続く、
 # または固有名詞か地名を含み、名前の後ろに立つ法人格で閉じる）は数えない。
-# 題の名前（title-ending で閉じ、括弧を閉じるか補いの括弧が続くか一行だけか見出しにあるもの: 〜実施要綱、〜選考試験）は数えない。
+# 題の名前（title-ending で閉じ、括弧を閉じるか補いの括弧が続くか一行だけか見出しにあるか、文書の中で同じ連なりを繰り返すもの:
+# 〜実施要綱、〜選考試験、〜幹部会同）は数えない。法令・制度・給付の名前（fixed-name-ending で閉じるもの: 〜法施行令、〜制度、
+# 〜交付金）は、置き方を問わず数えない。
 # 日付の単位（4月の「月」）は、数に付いた助数詞として連なりの頭から外す。
 extra_word_lists:
   [
@@ -16,6 +18,7 @@ extra_word_lists:
     organisation-form,
     organisation-unit,
     title-ending,
+    fixed-name-ending,
     calendar-unit,
     addressee-prefix,
     addressee-title,
@@ -77,8 +80,8 @@ example:
     after: 来週、新しい顧客を増やす施策を話し合う会議を開きます。
 
 not_flagged:
-  ja: 組織の正式名称（国立研究開発法人産業技術総合研究所、経済産業省製造産業局自動車課、東日本青葉自動車販売株式会社）、題の名前（要綱・試験・事業・法令などで終わり、一行だけで書くか括弧でくくるか見出しにあるもの。大阪市鶴見区役所公募型比較見積実施要綱など）、chaff.yaml の names に書いた組織名や製品名、法令の条番号（第二十二条第二項）は数えません。空白を挟んで法人格か組織の区切りの後ろに立つ組織の名前（一般社団法人 全国〜センター、〜局 〜課 〜係）と、鉤括弧の中身が漢字の連なりとカタカナや英数字の語だけの名前（「登録業者情報検索入力ページ」）も数えません。頭の、前を指す語（上記、当該）と代の序数（第百二代、初代）、尻の「等」は数えません。文書がほかで単独で使う組織の名前（安全保障理事会常任理事国の「安全保障理事会」）、連なりを閉じる決まった語（日本国内閣総理大臣の「内閣総理大臣」、〜許可事業者）は、その前後を別の連なりとして数えます。用語集（headword_genres）の、一行が漢字の連なりだけの見出し語は数えません。出席者の並び（区長、副区長、〜委員会事務局長）のように文で終わらない名前の並びの項目は、宛名と同じく、組織の名前の後ろの役職を数えません。
-  en: Official organisation names (a legal form or a place name followed by a name that ends in a unit such as 研究所 or 協会, or a chain of units such as 省・局・課, or a name with a proper noun closed by a legal form such as 株式会社), titles of named things (a run ending in 要綱, 試験, 事業, 法 and the like that stands on a line of its own, closes a bracket, is followed by a bracketed note, or appears in a heading), names listed under names in chaff.yaml, and provision numbers in statutes (第二十二条第二項) are not counted. Nor is an organisation name that follows a legal form or an organisation unit across a space (一般社団法人 全国〜センター, 〜局 〜課 〜係), or a name in 「」 made of the kanji run and words with no kanji or hiragana (「登録業者情報検索入力ページ」). A leading word that points back or ahead (上記, 当該), a leading ordinal (第百二代, 初代) and a trailing 等 are not counted. An organisation name the document uses on its own elsewhere (安全保障理事会 in 安全保障理事会常任理事国), and a fixed word that closes the run (内閣総理大臣 in 日本国内閣総理大臣, 〜許可事業者) split the run, and what is before and after them is counted apart. In a glossary (headword_genres), a line that holds only a run of kanji is the headword and is not counted. In a list of names with no sentence end (an attendee list such as 区長、副区長、〜委員会事務局長), the title after an organisation name in an item is not counted, as in an addressee line.
+  ja: 組織の正式名称（国立研究開発法人産業技術総合研究所、経済産業省製造産業局自動車課、東日本青葉自動車販売株式会社）、題の名前（要綱・試験・事業・法令などで終わり、一行だけで書くか括弧でくくるか見出しにあるか、文書の中で繰り返すもの。大阪市鶴見区役所公募型比較見積実施要綱など）、法令・制度・給付の名前（住民基本台帳法施行令、勤労者財産形成貯蓄制度、社会資本整備総合交付金。文のどこにあっても）、chaff.yaml の names に書いた組織名や製品名、法令の条番号（第二十二条第二項）は数えません。空白を挟んで法人格か組織の区切りの後ろに立つ組織の名前（一般社団法人 全国〜センター、〜局 〜課 〜係）と、鉤括弧の中身が漢字の連なりとカタカナや英数字の語だけの名前（「登録業者情報検索入力ページ」）も数えません。頭の、前を指す語（上記、当該）と代の序数（第百二代、初代）、尻の「等」は数えません。文書がほかで単独で使う組織の名前（安全保障理事会常任理事国の「安全保障理事会」）、連なりを閉じる決まった語（日本国内閣総理大臣の「内閣総理大臣」、〜許可事業者）は、その前後を別の連なりとして数えます。用語集（headword_genres）の、一行が漢字の連なりだけの見出し語は数えません。出席者の並び（区長、副区長、〜委員会事務局長）のように文で終わらない名前の並びの項目は、宛名と同じく、組織の名前の後ろの役職を数えません。
+  en: Official organisation names (a legal form or a place name followed by a name that ends in a unit such as 研究所 or 協会, or a chain of units such as 省・局・課, or a name with a proper noun closed by a legal form such as 株式会社), titles of named things (a run ending in 要綱, 試験, 事業, 法 and the like that stands on a line of its own, closes a bracket, is followed by a bracketed note, appears in a heading, or recurs in the document), names of statutes, schemes and grants wherever they stand (住民基本台帳法施行令, 勤労者財産形成貯蓄制度, 社会資本整備総合交付金), names listed under names in chaff.yaml, and provision numbers in statutes (第二十二条第二項) are not counted. Nor is an organisation name that follows a legal form or an organisation unit across a space (一般社団法人 全国〜センター, 〜局 〜課 〜係), or a name in 「」 made of the kanji run and words with no kanji or hiragana (「登録業者情報検索入力ページ」). A leading word that points back or ahead (上記, 当該), a leading ordinal (第百二代, 初代) and a trailing 等 are not counted. An organisation name the document uses on its own elsewhere (安全保障理事会 in 安全保障理事会常任理事国), and a fixed word that closes the run (内閣総理大臣 in 日本国内閣総理大臣, 〜許可事業者) split the run, and what is before and after them is counted apart. In a glossary (headword_genres), a line that holds only a run of kanji is the headword and is not counted. In a list of names with no sentence end (an attendee list such as 区長、副区長、〜委員会事務局長), the title after an organisation name in an item is not counted, as in an addressee line.
 level_meaning:
   ja: 漢字の連続 {limit} 字まで
   en: up to {limit} kanji in a row
