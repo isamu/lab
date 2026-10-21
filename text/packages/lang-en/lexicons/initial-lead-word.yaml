@@ -1,0 +1,7 @@
+# Words that lead a person's name ("written by J. Smith", "Smith and C.W. Landsea"). After one, initials before a
+# capitalised word that is not a sentence-start-word do not end the sentence. Matched as written.
+id: initial-lead-word
+language: en
+entries:
+  - pattern: by
+  - pattern: and
