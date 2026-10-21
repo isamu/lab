@@ -23,7 +23,7 @@ const acronymCounts = (source: string, limit: number): string[] =>
     .findings.filter((finding) => finding.rule === "undefined-acronym")
     .map((finding) => `${String(finding.values["word"])}:${String(finding.values["count"])}`);
 
-const covered =(text: string, word: string): boolean => {
+const covered = (text: string, word: string): boolean => {
   const at = text.indexOf(word);
   return caseCitationSpans(text, JOINERS).some((span) => span.start <= at && at + word.length <= span.end);
 };
