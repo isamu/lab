@@ -22,12 +22,32 @@ const sentenceRightBefore = (sentences: readonly Sentence[], list: BulletList, s
 
 const insideAny = (spans: readonly Span[], offset: number): boolean => spans.some((span) => span.start <= offset && offset < span.end);
 
+/** A label's words, without its colon and bold marks (**参考:** → 参考). */
+const labelWords = (text: string): string => text.replace(/[\s*_:：]+/gu, "");
+
+/** A noun with no kana inflection (参考, 注意点): a name, not a sentence (以下の通りです). */
+const NOUN_LABEL = /^[^\p{Script=Hiragana}]+$/u;
+
+/**
+ * A field of an entry's template: the same noun label before the list of each entry (**参考:** before each entry's link).
+ * It names the field the way a table's column does; it does not lead into anything.
+ */
+const fieldLabels = (leadIns: readonly Sentence[]): ReadonlySet<string> => {
+  const counts = leadIns
+    .map((sentence) => labelWords(sentence.text))
+    .reduce((tally, words) => tally.set(words, (tally.get(words) ?? 0) + 1), new Map<string, number>());
+  return new Set([...counts].filter(([words, count]) => count > 1 && NOUN_LABEL.test(words)).map(([words]) => words));
+};
+
 /**
  * Prose sentences ending in a colon that hand the reader straight to a list (「以下の通りです：」, "Here's what you need:").
  * An item of a list is not prose: 「例: `code`」 ends in a colon once its code is masked, and it leads nowhere.
  */
-export const colonLeadIns = (sentences: readonly Sentence[], lists: readonly BulletList[], listSpans: readonly Span[], source: string): Sentence[] =>
-  lists.flatMap((list) => {
+export const colonLeadIns = (sentences: readonly Sentence[], lists: readonly BulletList[], listSpans: readonly Span[], source: string): Sentence[] => {
+  const leadIns = lists.flatMap((list) => {
     const before = sentenceRightBefore(sentences, list, source);
     return before !== undefined && endsWithColon(before.text) && !insideAny(listSpans, before.span.start) ? [before] : [];
   });
+  const fields = fieldLabels(leadIns);
+  return leadIns.filter((sentence) => !fields.has(labelWords(sentence.text)));
+};
