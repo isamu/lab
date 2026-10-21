@@ -1,0 +1,21 @@
+# Old written short forms of given names ("Jas. Whittaker", "Wm. Smith", "Joel Wm. Parker"). They stand only before a
+# surname or another name, so their full stop never ends a sentence, even before a name and a comma ("Jas.
+# Whittaker, J. Hocknell"). Forms that are also a whole name (Fred., Alex.) are left out: "I met Fred. Alex came."
+# ends there. Matched as written.
+id: name-abbreviation
+language: en
+entries:
+  - pattern: Benj.
+  - pattern: Chas.
+  - pattern: Danl.
+  - pattern: Edw.
+  - pattern: Geo.
+  - pattern: Jas.
+  - pattern: Jno.
+  - pattern: Jos.
+  - pattern: Nathl.
+  - pattern: Richd.
+  - pattern: Robt.
+  - pattern: Saml.
+  - pattern: Thos.
+  - pattern: Wm.
