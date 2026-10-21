@@ -24,7 +24,7 @@ const EDGE_BEFORE = String.raw`(?<![\p{L}\p{N}_.'’])`;
 const WORD_END = String.raw`(?![\p{L}\p{N}_.'’-])`;
 const PLAIN_LETTER = "n";
 const CAPITAL = /\p{Lu}/gu;
-const BEFORE_LOWER_CASE = new RegExp(String.raw`${EDGE_BEFORE}(?:\p{Lu}\.){1,3}(?=\s+\p{Ll}(?!\p{Lu}))`, "gu");
+const BEFORE_LOWER_CASE = new RegExp(String.raw`${EDGE_BEFORE}(?:\p{Lu}\.){1,3}(?=[ \t\r\n]+\p{Ll}(?!\p{Lu}))`, "gu");
 
 const oneOf = (words: readonly string[]): string => `(?:${words.map(escapeRegExp).join("|")})`;
 
