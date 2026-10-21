@@ -9,6 +9,8 @@
 # baseline is what came before it. "whereas" sets one clause against another, so the other clause is the baseline.
 # phrase: a set phrase ending in a comparative, set off by a comma or a colon ("or to be more precise, it"); it restates
 # the words before it and compares nothing. Matched on the words up to the comparative, joined by spaces.
+# pointer: a word opening the sentence that points at the example just shown ("This is much better!"); right after two
+# code examples, the baseline is the first one.
 id: comparative-baseline
 language: en
 entries:
@@ -50,3 +52,8 @@ entries:
   - { pattern: to be more specific, group: phrase }
   - { pattern: to be more exact, group: phrase }
   - { pattern: to be more accurate, group: phrase }
+  - { pattern: this, group: pointer }
+  - { pattern: that, group: pointer }
+  - { pattern: these, group: pointer }
+  - { pattern: those, group: pointer }
+  - { pattern: it, group: pointer }

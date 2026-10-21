@@ -13,6 +13,7 @@ import { isNamedStep, plainStepKeys } from "./graded-step.ts";
  * aim は比べた語の後ろで、今より良くする目当てを言う語（より良い社会、より良いものにする）。比べる相手は今の状態。
  * intent は比べた語より後ろで、比較を願いや目的の中に置く語（より広く進めたい、より円滑にするためには）。比べる相手は今の状態。
  * phrase は比べた形で終わる決まった言い方（to be more precise）。前の言葉を言い直すだけで、何も比べていない。
+ * pointer は文の頭で、いま見せた例を指す語（This is much better!）。二つのコードの例のすぐ後ろなら、相手は前の例。
  * 同じ文か前の二文に相手を言う語があれば、相手は書いてある。
  */
 
@@ -27,6 +28,7 @@ export type ComparativeLists = {
   readonly aims: ReadonlySet<string>;
   readonly intents: ReadonlySet<string>;
   readonly phrases: readonly string[];
+  readonly pointers: ReadonlySet<string>;
 };
 
 export type BareComparative = { readonly first: Token; readonly last: Token };
@@ -215,10 +217,15 @@ export const listsOf = (lexicon: Lexicon): ComparativeLists => ({
   aims: new Set(groupOf(lexicon, "aim")),
   intents: new Set(groupOf(lexicon, "intent")),
   phrases: groupOf(lexicon, "phrase"),
+  pointers: new Set(groupOf(lexicon, "pointer")),
 });
 
 /** 鉤括弧の中の比較（「給与所得の確定申告がさらに簡単に！」ページ）は題や語を挙げたもので、書き手の比較ではない。 */
 const insideSpan = (found: BareComparative, span: Span): boolean => found.first.span.start >= span.start && found.last.span.end <= span.end;
+
+/** 文の頭の語が、いま見せた例を指す語か（This is much better!）。 */
+const pointsAtExample = (sentence: Sentence, pointers: ReadonlySet<string>): boolean =>
+  pointers.has(lower((sentence.tokens ?? []).find((token) => token.surface.trim() !== "")));
 
 /** より right after inline code (`relaxed` より長い) is the particle "than" after a word the masking hid, not the adverb. */
 const isThanAfterCode = (doc: ProseDocument, found: BareComparative): boolean =>
@@ -235,7 +242,7 @@ export const bareComparative: Detector = (doc): Finding[] => {
   return doc.sentences.flatMap((sentence, at) => {
     const nearby = doc.sentences.slice(Math.max(0, at - BASELINE_REACH), at + 1);
     if (sentence.embeddedLanguage !== undefined || nearby.some((near) => namesBaseline(near, lists.baselines))) return [];
-    if (followsTwoExamples(doc.source, spans, at)) return [];
+    if (pointsAtExample(sentence, lists.pointers) && followsTwoExamples(doc.source, spans, at)) return [];
     const quoted = quotedIn(sentence);
     return bareComparativesIn(sentence.tokens ?? [], lists)
       .filter((found) => !quoted.some((span) => insideSpan(found, span)) && !isThanAfterCode(doc, found))
