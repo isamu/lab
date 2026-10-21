@@ -15,7 +15,7 @@ import {
 } from "./date-any-year.ts";
 import { datesUnderYearHeadings, yearLabelOf, type HeadingYearWords } from "./date-heading-year.ts";
 import { openingDateOf } from "./opening-date.ts";
-import { datelineBefore, datelines } from "./dateline.ts";
+import { datelineBefore, datelines, forwardDatelines } from "./dateline.ts";
 import { withNearestYear } from "../structure/weekday.ts";
 import { continuesDatedRun } from "./date-run.ts";
 import { revisionDatesToSkip, revisionLabelsOf } from "./revision-date.ts";
@@ -233,7 +233,10 @@ const stampAtOf = (doc: ProseDocument, tree: StructureNode): StampAt => {
   const labels = (doc.lexicons["date-stamp-label"] ?? []).map((entry: LexiconEntry) => entry.pattern);
   const opening = openingDateOf(doc.source, dates, labels);
   const weekdays = (doc.lexicons["weekday"] ?? []).map((entry: LexiconEntry) => entry.pattern);
-  const lines = datelines(doc.source, dates, weekdays).filter((line) => FULL.test(line.value));
+  const lines = forwardDatelines(
+    datelines(doc.source, dates, weekdays).filter((line) => FULL.test(line.value)),
+    opening,
+  );
   return (offset) => datelineBefore(lines, offset) ?? opening;
 };
 

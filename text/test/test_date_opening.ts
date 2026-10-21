@@ -4,7 +4,7 @@ import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { openingDateOf, type DatedSpan } from "../packages/chaff/src/detectors/opening-date.ts";
-import { datelineBefore, datelines } from "../packages/chaff/src/detectors/dateline.ts";
+import { datelineBefore, datelines, forwardDatelines } from "../packages/chaff/src/detectors/dateline.ts";
 
 // The document's own date in its title block, and the yearless dates it places in one year. All text is self-written.
 
@@ -116,6 +116,42 @@ describe("datelines", () => {
     assert.equal(datelineBefore(lines, 50), "2025-05-21");
     assert.equal(datelineBefore(lines, 200), "2025-06-03");
     assert.equal(datelineBefore([], 200), undefined);
+  });
+
+  it("a dateline that goes back before the document's date or the dateline kept before it is not a sitting's", () => {
+    const at = (start: number, value: string): DatedSpan => ({ start, end: start + 10, value });
+    const lines = [at(10, "2023-04-04"), at(20, "2023-06-21"), at(30, "2021-12-13"), at(40, "2023-07-01")];
+    assert.deepEqual(
+      forwardDatelines(lines, "2023-06-21").map((line) => line.value),
+      ["2023-06-21", "2023-07-01"],
+    );
+    assert.deepEqual(
+      forwardDatelines(lines, undefined).map((line) => line.value),
+      ["2023-04-04", "2023-06-21", "2023-07-01"],
+    );
+    assert.deepEqual(forwardDatelines([], undefined), []);
+  });
+});
+
+describe("date-without-year: a date-only answer in minutes is not a dateline", () => {
+  it("a report's date of last release does not move the minutes' date", () => {
+    const minutes = [
+      "                Board Meeting Minutes",
+      "",
+      "                    June 21, 2023",
+      "",
+      " 1. Reports",
+      "",
+      "### Date of last release:",
+      "",
+      "  2021-12-13",
+      "",
+      "Meetups:",
+      "- On June 13th, the community held a meetup.",
+      "",
+    ].join("\n");
+    assert.deepEqual(namedRuleRun(RULE, minutes, en, "a.txt", MINUTES).findings, []);
+    assert.equal(namedRuleRun(RULE, minutes.replace("June 13th", "January 9th"), en, "a.txt", MINUTES).findings.length, 1);
   });
 });
 

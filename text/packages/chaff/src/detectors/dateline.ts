@@ -33,5 +33,16 @@ export const datelines = <D extends LineDate>(source: string, dates: readonly D[
       onlyWeekdayBefore(source.slice(lineStartOf(source, date.start), date.start), weekdays),
   );
 
+/**
+ * The datelines of a record whose sittings go forward in time: each one no earlier than the document's own date (from)
+ * and the one kept before it. A date-only line that goes back (a report's "Date of last release: 2021-12-13" in minutes
+ * of 2023) is a date the text talks about, not a sitting's. Values are ISO dates, which order as strings.
+ */
+export const forwardDatelines = <D extends LineDate>(lines: readonly D[], from: string | undefined): D[] =>
+  lines.reduce<D[]>((kept, line) => {
+    const latest = kept.at(-1)?.value ?? from;
+    return latest === undefined || line.value >= latest ? [...kept, line] : kept;
+  }, []);
+
 /** The value of the last dateline before offset, or undefined where none stands before it. */
 export const datelineBefore = (lines: readonly LineDate[], offset: number): string | undefined => lines.findLast((line) => line.end <= offset)?.value;
