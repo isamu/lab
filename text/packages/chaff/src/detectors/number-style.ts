@@ -90,12 +90,15 @@ type DigitRun = { readonly written: string; readonly index: number };
  * A hexadecimal code such as a commit hash (2704b2d): after the digits, a–f letters and digits mixed (a letter, then a
  * digit), seven characters or more in all, to a word's end. A word glued to a number (10000face) has no digit after it.
  */
-const HEX_CODE = /^[0-9a-f]*[a-f][0-9a-f]*\d[0-9a-f]*(?![\p{L}\p{N}])/u;
+const HEX_RUN = /^[0-9a-f]+/u;
+const LETTER_THEN_DIGIT = /[a-f]\d/u;
+const WORD_GOES_ON = /^[\p{L}\p{N}]/u;
 const HEX_CODE_MIN = 7;
 
 const isHexCode = (written: string, after: string): boolean => {
-  const tail = HEX_CODE.exec(after)?.[0];
-  return tail !== undefined && /^\d+$/u.test(written) && written.length + tail.length >= HEX_CODE_MIN;
+  const tail = HEX_RUN.exec(after)?.[0];
+  if (tail === undefined || WORD_GOES_ON.test(after.slice(tail.length))) return false;
+  return /^\d+$/u.test(written) && LETTER_THEN_DIGIT.test(tail) && written.length + tail.length >= HEX_CODE_MIN;
 };
 
 /** Each number of four digits or more standing alone, grouped (1,000) or not (1000). */
