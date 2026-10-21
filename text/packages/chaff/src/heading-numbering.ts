@@ -54,6 +54,9 @@ const markOf = (heading: string, labels: readonly NumberLabel[]): NumberMark => 
 /** 見出しの言葉から、番号の書き方を読む。番号を持つ語（第1章）を先に、字だけの形（1.）を後に見る。 */
 export const numberingStyleOf = (heading: string, labels: readonly NumberLabel[]): string => markOf(heading, labels).style;
 
+/** 見出しの番号の印そのもの（「Q. 」の Q.、「1. 」の 1.）。空白は除く。番号が無ければ空。 */
+export const numberMarkOf = (heading: string, labels: readonly NumberLabel[]): string => markOf(heading, labels).mark.replace(/\s/gu, "");
+
 /** 番号の中の数の一つ一つ（「7.1」の 7 と 1、「Chapter II」の II）。番号は印の最後に来るので、語の頭の大文字（Chapter の C）は最後にならない。 */
 const NUMBER_TOKEN = /[0-9０-９]+|[A-ZⅠ-Ⅻ①-⑳一二三四五六七八九十百]+/gu;
 const FIRST_NUMBERS: ReadonlySet<string> = new Set(["1", "１", "I", "Ⅰ", "A", "①", "一"]);
@@ -64,8 +67,11 @@ export const opensNumbering = (heading: string, labels: readonly NumberLabel[]):
   return last !== undefined && FIRST_NUMBERS.has(last);
 };
 
-/** 見出し 1 つ。depth は深さ（#の数）、style は番号の書き方、skipped は番号を付けない前後の見出し（目次・参考文献）、opens は番号が 1 から始まるか。 */
-export type NumberedHeading = { readonly depth: number; readonly style: string; readonly skipped: boolean; readonly opens: boolean };
+/**
+ * 見出し 1 つ。depth は深さ（#の数）、style は番号の書き方、skipped は番号を付けない前後の見出し（目次・参考文献）、opens は番号が 1 から始まるか。
+ * mark は番号の印そのもの（Q.）で、無ければ字の番号を並びとして読む。
+ */
+export type NumberedHeading = { readonly depth: number; readonly style: string; readonly skipped: boolean; readonly opens: boolean; readonly mark?: string };
 
 /** 親（直前の浅い見出し）と深さが同じ見出しの組。番号は兄弟の見出しのあいだで揃える。位置は渡した並びの添え字。 */
 export const siblingGroups = (headings: readonly NumberedHeading[]): number[][] => {
@@ -112,6 +118,19 @@ const leadingFrontMatter = (members: readonly number[], headings: readonly Numbe
   return new Set(members.filter((at) => at < first));
 };
 
+/** 同じ字を付けた兄弟がこれだけあれば、その字は番号でなく印。 */
+const MIN_REPEATED_LETTERS = 2;
+
+/**
+ * 兄弟が字の番号にみな同じ字を付けている（「Q. 〜」「Q. 〜」）なら、その字は並びの番号でなく質問の印。番号の無い見出しと読む。
+ * 番号なら字は進む（A. B. C.）。
+ */
+const prefixLetters = (members: readonly number[], headings: readonly NumberedHeading[]): ReadonlySet<number> => {
+  const letters = members.filter((at) => headings[at]?.style === "letter");
+  const marks = new Set(letters.map((at) => headings[at]?.mark));
+  return letters.length >= MIN_REPEATED_LETTERS && marks.size === 1 && !marks.has(undefined) ? new Set(letters) : new Set();
+};
+
 /**
  * 兄弟の見出しのうち、少ないほうの書き方のもの。先に番号の有無を比べ（「1. 概要」「2. 手順」「まとめ」の「まとめ」）、
  * 番号の付いた見出しのあいだで書き方を比べる（「1.」「2.」「3）」の「3）」）。同じ数なら言わない（二つだけの兄弟は必ず同じ数か一つの書き方）。前後の見出し（目次・参考文献）と、1 から始まる番号の前の見出しは数えない。
@@ -121,7 +140,8 @@ export const numberingMinorities = (headings: readonly NumberedHeading[]): Numbe
     const listed = group.filter((at) => headings[at]?.skipped !== true);
     const front = leadingFrontMatter(listed, headings);
     const members = listed.filter((at) => !front.has(at));
-    const styleOf = (at: number): string => headings[at]?.style ?? UNNUMBERED;
+    const prefixed = prefixLetters(members, headings);
+    const styleOf = (at: number): string => (prefixed.has(at) ? UNNUMBERED : (headings[at]?.style ?? UNNUMBERED));
     const numbered = members.filter((at) => styleOf(at) !== UNNUMBERED);
     return [
       ...minoritiesOf(
