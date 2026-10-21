@@ -56,11 +56,11 @@ const LETTERED = new RegExp(
  * words are, with no sentence in it: a wider gap is a page flattened into one line ("ARTICLE II   EFFECT…   Section 2.1
  * Effect… (a)"), and "At the Effective Time, … thereof: (a) Each share" is the section's text, not its title.
  */
-const RUN_IN_FIRST_ITEM = /^(?<title>\S+(?: \S+){0,11}?[.:]) (?<item>\((?:a|1)\)\s+\p{Lu}.*)$/u;
+const RUN_IN_FIRST_ITEM = /^(?<title>\S+(?: \S+){0,11}?[.:]) (?<item>\([a1]\)\s+\p{Lu}.*)$/u;
 /** A lowercase word ending a sentence or a clause: "thereof: ", "Time. ". "U.S.C. " and "No. " end in capitals. */
 const SENTENCE_END = /\p{Ll}[.:;] /u;
 /** "(a) Prior to… (b) Each…": the next item on the same line is a list flattened into one paragraph, not one item. */
-const NEXT_RUN_IN = /[.;:] \((?:b|2)\) \p{Lu}/u;
+const NEXT_RUN_IN = /[.;:] \([b2]\) \p{Lu}/u;
 
 const titleAndRest = (heading: string): { readonly heading: string; readonly rest: string } => {
   const title = RUN_IN_FIRST_ITEM.exec(heading)?.groups?.["title"];
