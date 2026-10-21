@@ -779,6 +779,16 @@ describe("htmlToMarkdown: 表", () => {
     assert.equal(htmlToMarkdown(oneRow("<td>Seat</td><td>It is in the U.S.</td>")), "End.\n");
   });
 
+  it("落とす表でも題 (caption) は残る。本文が「表2－2－6」と指す先になる。空の題は残さない", () => {
+    // 「令和6年版高齢社会白書」（内閣府）第2章第2節4（https://www8.cao.go.jp/kourei/whitepaper/w-2024/html/zenbun/s2_2_4.html）を加工して作成（PDL-1.0）。
+    const figures =
+      "<p>優遇措置を行っている（表2－2－6）。</p><table><caption id='tb2_2_06'>\n表2－2－6　公営住宅等の高齢者向け住宅供給戸数\n</caption><tbody>" +
+      "<tr><th scope='col' rowspan='2'>年度</th><th scope='col' colspan='2'>優遇措置戸数</th></tr><tr><th>賃貸</th><th>分譲</th></tr>" +
+      "<tr><th scope='row'>平成10年度</th><td>3,143</td><td>571</td></tr><tr><th scope='row'>15</th><td>7,574<br>（3,524）</td><td>45</td></tr></tbody></table><p>以上。</p>";
+    assert.equal(htmlToMarkdown(figures), "優遇措置を行っている（表2－2－6）。\n\n表2－2－6　公営住宅等の高齢者向け住宅供給戸数\n\n以上。\n");
+    assert.equal(htmlToMarkdown("<p>Fees.</p><table><caption> </caption><tr><td>A</td><td>100</td></tr></table><p>End.</p>"), "Fees.\n\nEnd.\n");
+  });
+
   it("入れ子の表は内側から読む。文の表を包むレイアウトの表は、中の文を残す", () => {
     const layout =
       "<table><tr><td><table><tr><td>Term</td><td>It means a word.</td></tr></table></td></tr>" +
