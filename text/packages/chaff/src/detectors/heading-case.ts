@@ -60,10 +60,19 @@ export const isTitleCase = (heading: string, fixedCase: ReadonlySet<string> = ne
  * 見出しより前の導入部（深さ 0）は見出しではないので数えない。
  */
 export const pageTitleOf = <T extends { readonly depth: number }>(sections: readonly T[]): T | undefined => {
+  const title = enclosingHeadingOf(sections);
+  return title?.depth === TITLE_DEPTH ? title : undefined;
+};
+
+/**
+ * The first heading, when no other heading is as shallow: it encloses every other heading, so it names the document even
+ * below depth 1 ("### §1030. Fraud…" over the notes' "#### Amendments") and after a preamble that is not a heading.
+ */
+export const enclosingHeadingOf = <T extends { readonly depth: number }>(sections: readonly T[]): T | undefined => {
   const headed = sections.filter((section) => section.depth > 0);
   const first = headed[0];
-  if (first?.depth !== TITLE_DEPTH) return undefined;
-  return headed.filter((section) => section.depth === TITLE_DEPTH).length === 1 ? first : undefined;
+  if (first === undefined || headed.some((section) => section !== first && section.depth <= first.depth)) return undefined;
+  return first;
 };
 
 export type CaseCounts = { readonly titleCase: number; readonly sentenceCase: number };
