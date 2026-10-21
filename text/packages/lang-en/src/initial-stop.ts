@@ -37,11 +37,13 @@ const sentenceStops = (start: string | undefined, prepositive: readonly string[]
 // is told by having no full stop of its own.
 const PRONOUN_I = String.raw`(?!\s+I${WORD_END})`;
 
+const notBefore = (start: string | undefined): string => (start === undefined ? "" : `(?!${start})`);
+
 /** A name abbreviation before any word but a sentence-start word or the pronoun I. */
-const nameJoins = (start: string | undefined, names: readonly string[]): RegExp | undefined =>
-  names.length === 0
-    ? undefined
-    : new RegExp(String.raw`${EDGE_BEFORE}${oneOf(names)}(?=\s+\p{L})${PRONOUN_I}${start === undefined ? "" : `(?!${start})`}`, "gu");
+const nameJoins = (start: string | undefined, names: readonly string[]): RegExp | undefined => {
+  if (names.length === 0) return undefined;
+  return new RegExp(String.raw`${EDGE_BEFORE}${oneOf(names)}(?=\s+\p{L})${PRONOUN_I}${notBefore(start)}`, "gu");
+};
 
 /** Built once from the lexicons. */
 export const initialStops = (startWords: readonly string[], prepositive: readonly string[], names: readonly string[] = []): InitialStops => {
