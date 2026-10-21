@@ -1,7 +1,7 @@
 // In-text citations and reference-list entries, read by shape. Pure. The shapes are the ones papers print ([3],
 // (Smith, 2020), 〔3〕, …である3)。, a Markdown footnote); the words between authors (et al., ら) come from the
-// language's citation-author-joiner lexicon, and the words that look like an author but are not (March 2020) from
-// citation-not-author.
+// language's citation-author-joiner lexicon, the words that look like an author but are not (March 2020) from
+// citation-not-author, and the lower-case words inside a name (de, of the) from citation-name-connector.
 import { escapeRegExp } from "../orthography.ts";
 import { referenceListSpans } from "../reference-lists.ts";
 import type { ProseDocument, Span } from "../plugin.ts";
@@ -43,6 +43,8 @@ export type CitationWords = {
   readonly notAuthors: ReadonlySet<string>;
   /** The headings of a reference list (参考文献, References). */
   readonly referenceHeadings: readonly string[];
+  /** Lower-case words inside a name: a surname's particle (de, van) or an organisation's joining word (of, the). */
+  readonly connectors?: readonly string[];
 };
 
 /** A range wider than this is not a citation range ([1990-2020] is years). */
@@ -78,12 +80,20 @@ const alternation = (words: readonly string[]): string =>
  * be several words, since every part there must read as an author and a year; in a sentence the word before a surname
  * is often the sentence's own (As Smith (2020) shows), so a name there is one word.
  */
-const authorPattern = (words: CitationWords, latinName: string = LATIN_NAME): string => {
+const authorPattern = (words: CitationWords, latinName: string = LATIN_NAME, secondName: string = latinName): string => {
   const name = `(?:${latinName}|${JA_NAME})`;
-  const pair = words.pairs.length === 0 ? "" : `(?:\\s?(?:${alternation(words.pairs)})\\s?${name})?`;
+  const pair = words.pairs.length === 0 ? "" : `(?:\\s?(?:${alternation(words.pairs)})\\s?(?:${secondName}|${JA_NAME}))?`;
   const others = words.others.length === 0 ? "" : `(?:\\s?(?:${alternation(words.others)}))?`;
   return `${name}${pair}${others}`;
 };
+
+const connectorsOf = (words: CitationWords): string => {
+  const connectors = words.connectors ?? [];
+  return connectors.length === 0 ? "" : `(?:(?:${alternation(connectors)}) )*`;
+};
+
+/** A name of several capitalised words, maybe joined by connectors: Santoni de Sio, Council of the European Union. */
+const parentheticalName = (words: CitationWords): string => `${LATIN_NAME}(?: ${connectorsOf(words)}${LATIN_NAME}){0,3}`;
 
 /** "1, 3-5" as [1, 3, 4, 5]. A range that runs backwards or wider than MAX_RANGE is no citation, and gives []. */
 export const numbersIn = (list: string): number[] => {
@@ -114,7 +124,8 @@ const numberedMarks = (text: string, pattern: RegExp, style: CitationStyle): Cit
   [...text.matchAll(pattern)].flatMap((match): CitationMark[] => {
     const numbers = numbersIn(match[1] ?? "");
     const line = lineBefore(text, match.index);
-    if (numbers.length === 0 || LINE_HEAD.test(line)) return [];
+    // A list holding 0 is an interval ([0,1]): references are numbered from 1.
+    if (numbers.length === 0 || numbers.includes(0) || LINE_HEAD.test(line)) return [];
     if (style === "numeric" && isLinkLabel(text, match.index)) return [];
     if (style === "paren-number" && opensParenthesis(line)) return [];
     return [{ start: match.index, end: match.index + match[0].length, style, written: match[0], numbers, authorYears: [] }];
@@ -146,12 +157,15 @@ const LATIN = /[a-z]/u;
 const isNotAuthor = (author: string, words: CitationWords): boolean =>
   words.notAuthors.has(author) || [...words.notAuthors].some((word) => !LATIN.test(word) && author.includes(word));
 
-/** A place in the cited work after its year: ", p. 2", ", pp. 3–5", ", para. 4". */
-const LOCATOR = "(?:[,，]\\s?(?:pp?|paras?|ch|chap|sec)\\.\\s?\\d+(?:\\s?[–—-]\\s?\\d+)?)?";
+const PAGE = "\\d+(?:\\s?[–—-]\\s?\\d+)?";
+/** A place in the cited work after its year: ", p. 2", ", pp. 3–5", ", pp. 67, 82", ", para. 4". */
+const LOCATOR = `(?:[,，]\\s?(?:pp?|paras?|ch|chap|sec)\\.\\s?${PAGE}(?:,\\s?${PAGE})*)?`;
 
 /** The authors and years of one parenthetical: every part between semicolons must read as authors and years. */
 const parentheticalCitations = (inner: string, words: CitationWords): AuthorYear[] | undefined => {
-  const one = new RegExp(`^(?:[a-z.]+,?\\s){0,3}(${authorPattern(words, LATIN_NAMES)})[,，、]?\\s?(${YEAR})(?:[,，]\\s?${YEAR})*${LOCATOR}$`, "u");
+  const name = parentheticalName(words);
+  const author = authorPattern(words, name, `${connectorsOf(words)}${name}`);
+  const one = new RegExp(`^(?:[a-z.]+,?\\s){0,3}(${author})[,，、]?\\s?(${YEAR})(?:[,，]\\s?${YEAR})*${LOCATOR}$`, "u");
   const parts = inner.split(/[;；]/u).map((part) => one.exec(part.trim()));
   if (parts.some((part) => part === null)) return undefined;
   const cited = parts.flatMap((part) => (part === null ? [] : [authorYearOf(part[1] ?? "", part[2] ?? "", words.others)]));
@@ -163,15 +177,43 @@ const authorYearMark = (match: RegExpMatchArray, authorYears: readonly AuthorYea
   return { start, end: start + match[0].length, style: "author-year", written: match[0], numbers: [], authorYears };
 };
 
+/** How far before a narrative citation a longer name is looked for: wider than any organisation's name. */
+const NAME_RUN_WINDOW = 160;
+
+/** The capitalised words and connectors straight before a narrative citation's name, up to the name's start. */
+const nameRunBefore = (words: CitationWords): RegExp => {
+  const joiners = [...(words.connectors ?? []), ...words.pairs];
+  const token = joiners.length === 0 ? LATIN_NAME : `${LATIN_NAME}|${alternation(joiners)}`;
+  return new RegExp(`(?<![\\p{L}\\p{N}’'\\-])((?:(?:${token}) )+)$`, "u");
+};
+
+/**
+ * The surname a narrative citation reads may end a longer name: "Santoni de Sio (2020)", "Council of the European Union
+ * (2024)". Two or more words before it (connectors counted) make it one: the capitalised words there, lower-cased, may each
+ * be the name's key. One capitalised word is the sentence's own (As Smith (2020)), and gives none.
+ */
+const longerNameHeads = (run: string, words: CitationWords): string[] => {
+  const tokens = run.split(" ").filter((token) => token !== "");
+  const start = tokens.findIndex((token) => !words.pairs.includes(token));
+  const name = start === -1 ? [] : tokens.slice(start);
+  if (name.length < 2) return [];
+  return name.filter((token) => /^\p{Lu}/u.test(token)).map((token) => token.toLowerCase());
+};
+
 const authorYearMarks = (text: string, words: CitationWords): CitationMark[] => {
   const parenthetical = [...text.matchAll(PARENTHETICAL)].flatMap((match): CitationMark[] => {
     const authorYears = parentheticalCitations(match[1] ?? "", words);
     return authorYears === undefined ? [] : [authorYearMark(match, authorYears)];
   });
   const narrative = new RegExp(`(?<![\\p{Script=Han}\\p{Script=Katakana}A-Za-z])(${authorPattern(words)})\\s?[(（](${YEAR})[)）]`, "gu");
+  const nameBefore = nameRunBefore(words);
   const narratives = [...text.matchAll(narrative)].flatMap((match): CitationMark[] => {
     const cited = authorYearOf(match[1] ?? "", match[2] ?? "", words.others);
-    return isNotAuthor(cited.author, words) ? [] : [authorYearMark(match, [cited])];
+    if (isNotAuthor(cited.author, words)) return [];
+    const longer = longerNameHeads(nameBefore.exec(text.slice(Math.max(0, match.index - NAME_RUN_WINDOW), match.index))?.[1] ?? "", words);
+    if (longer.length === 0) return [authorYearMark(match, [cited])];
+    const asTail: AuthorYear = { ...cited, severalWords: true };
+    return [authorYearMark(match, [asTail, ...longer.map((head) => ({ author: head, year: cited.year, severalWords: true }))])];
   });
   return [...parenthetical, ...narratives.filter((mark) => !parenthetical.some((other) => other.start <= mark.start && mark.start < other.end))];
 };
@@ -234,6 +276,7 @@ export const citationWordsOf = (doc: ProseDocument): CitationWords => {
     others: joiners.filter((entry) => entry.group !== "pair").map((entry) => entry.pattern),
     notAuthors: new Set(patternsOf(doc, "citation-not-author").map((word) => word.toLowerCase())),
     referenceHeadings: patternsOf(doc, "reference-list-heading"),
+    connectors: patternsOf(doc, "citation-name-connector"),
   };
 };
 
