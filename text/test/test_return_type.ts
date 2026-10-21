@@ -77,6 +77,8 @@ describe("return-type-mismatch: reported", () => {
     assert.deepEqual(found(blocks.join("\n"), en), ["6 load: Promise<string> / number"]);
     const plain = ["```ts", "function load(): number {", "```", "", "```ts", "function load(): Promise<number> {", "```", ""];
     assert.deepEqual(found(plain.join("\n"), en), ["6 load: Promise<number> / number"]);
+    const named = ["```ts", "const async = (): number => 1;", "```", "", "```ts", "const async = (): Promise<number> => run();", "```", ""];
+    assert.deepEqual(found(named.join("\n"), en), ["6 async: Promise<number> / number"]);
   });
 
   it("the same two declarations when neither block says it shows errors, or another comment does", () => {

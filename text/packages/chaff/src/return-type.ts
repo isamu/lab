@@ -38,7 +38,8 @@ const IDENTIFIER = /^[A-Za-z_$][\w$]*/u;
 const DECLARATION_HEAD = /^(?:(?:export|default|declare|async|public|static)\s+)*(?:(?:function\*?|def|fn|func)\s+)?/u;
 const ARROW_HEAD = /^(?:(?:export|declare)\s+)*(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?/u;
 const RETURN_MARK = /^\s*(?::|->)\s*/u;
-const ASYNC = /(?:^|\s)async\s/u;
+const ASYNC_HEAD = /(?:^|\s)async\s/u;
+const ASYNC_ARROW = /=\s*async\b/u;
 const PROMISE = /^Promise<(.+)>$/u;
 /** A TypeScript-handbook (twoslash) directive: the block shows code that does not compile, on purpose. */
 const ERRORS_DIRECTIVE = /^\s*\/\/\s*@errors\b/u;
@@ -140,12 +141,15 @@ const isReadableCode = (type: string): boolean => {
   return TYPE_TEXT.test(type.trim()) && readable && members.some((member) => !NOTHING_TYPES.has(member));
 };
 
-const declaredAt = (line: string): { readonly fn: string; readonly afterName: number } | undefined => {
+type Declared = { readonly fn: string; readonly afterName: number; readonly isAsync: boolean };
+
+/** The declared name, where it ends, and whether the declaration is async (read from the words around the name, not the name). */
+const declaredAt = (line: string): Declared | undefined => {
   const arrow = ARROW_HEAD.exec(line);
-  if (arrow?.[1] !== undefined) return { fn: arrow[1], afterName: arrow[0].length };
-  const headLength = DECLARATION_HEAD.exec(line)?.[0].length ?? 0;
-  const fn = IDENTIFIER.exec(line.slice(headLength))?.[0];
-  return fn === undefined ? undefined : { fn, afterName: headLength + fn.length };
+  if (arrow?.[1] !== undefined) return { fn: arrow[1], afterName: arrow[0].length, isAsync: ASYNC_ARROW.test(arrow[0]) };
+  const head = DECLARATION_HEAD.exec(line)?.[0] ?? "";
+  const fn = IDENTIFIER.exec(line.slice(head.length))?.[0];
+  return fn === undefined ? undefined : { fn, afterName: head.length + fn.length, isAsync: ASYNC_HEAD.test(head) };
 };
 
 /** A declaration with a return type (`wrap(text: string): string[]`, `def f(x) -> str:`); a call has none. */
@@ -158,7 +162,7 @@ export const signatureOf = (line: string, offset = 0): Signature | undefined => 
   if (close === -1 || mark === null) return undefined;
   const returns = withoutDeclarationTail(line.slice(close + 1 + mark[0].length));
   if (!TYPE_TEXT.test(returns)) return undefined;
-  const promised = ASYNC.test(` ${line.slice(0, declared.afterName)}`) ? PROMISE.exec(returns)?.[1] : undefined;
+  const promised = declared.isAsync ? PROMISE.exec(returns)?.[1] : undefined;
   return { fn: declared.fn, params: squeeze(line.slice(open + 1, close)), returns, settles: promised ?? returns, offset };
 };
 
