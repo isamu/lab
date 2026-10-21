@@ -35,6 +35,7 @@ describe("withoutFootnoteMarks", () => {
     ["上付きの中のリンクの ※1", 'シルバーリーダー<sup><a href="#fn1">※1</a></sup>等を', "シルバーリーダー※1等を"],
     ["同じページへのリンクの中の上付きの 注2", '基準<a href="#n2"><sup>注2</sup></a>による', "基準注2による"],
     ["空白のある †", 'rose.<sup><a href="#d"> † </a></sup> Next', "rose.† Next"],
+    ["文字参照で書いた †1", 'rose.<sup><a href="#d">&dagger;1</a></sup> Next', "rose.&dagger;1 Next"],
   ].forEach(([form, html, kept]) => {
     it(`valid: 印の字で書いた脚注番号は字として残す（${String(form)}）`, () => assert.equal(withoutFootnoteMarks(String(html)), kept));
   });
@@ -43,6 +44,7 @@ describe("withoutFootnoteMarks", () => {
     ["全角の数字", 'rose.<sup><a href="#fn1">１</a></sup> Next'],
     ["括弧の数字", 'rose.<sup><a href="#fn1">（1）</a></sup> Next'],
     ["角括弧の数字", 'rose.<a href="#fn1"><sup>[2]</sup></a> Next'],
+    ["文字参照で書いた数字", 'rose.<sup><a href="#fn1">&#49;</a></sup> Next'],
   ].forEach(([form, html]) => {
     it(`valid: 数字と括弧だけの脚注番号は落とす（${String(form)}）`, () => assert.equal(withoutFootnoteMarks(String(html)), "rose. Next"));
   });

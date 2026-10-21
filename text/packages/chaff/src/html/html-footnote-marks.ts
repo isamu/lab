@@ -5,6 +5,7 @@
 // superscript is one only when it stays on this page, since "Brand<a href=…><sup>TM</sup></a>" is a sign. A superscript
 // with no link ("25<sup>th</sup>") is text. A mark written with a sign of its own (※1, 注2) sticks to nothing: it stays
 // as text, so the note it points at is still pointed at. Pure.
+import { decodeEntities } from "./markup-text.ts";
 
 const LINK_IN_SUPERSCRIPT = /<sup\b[^>]*>\s*<a\b[^>]*>([^<]*)<\/a\s*>\s*<\/sup\s*>/giu;
 
@@ -18,8 +19,8 @@ const isFootnoteLink = (attributes: string, mark: string): boolean => IN_PAGE_HR
 // Neither ASCII, a digit, a bracket nor a space: a sign or a word the mark is written with (※, 注, †).
 const WRITTEN_SIGN = /[^\p{ASCII}\p{Nd}\p{Ps}\p{Pe}\s]/u;
 
-/** What a footnote mark leaves in the text: the mark itself when it is written with a sign, else nothing. */
-const markText = (mark: string): string => (WRITTEN_SIGN.test(mark) ? mark.trim() : "");
+/** What a footnote mark leaves in the text: the mark itself when it is written with a sign (&dagger; as †), else nothing. */
+const markText = (mark: string): string => (WRITTEN_SIGN.test(decodeEntities(mark)) ? mark.trim() : "");
 
 export const withoutFootnoteMarks = (html: string): string =>
   html
