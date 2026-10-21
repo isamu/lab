@@ -52,15 +52,35 @@ describe("figure-reference-order: tables in an appendix", () => {
     assert.deepEqual(slipsOf(en, paper.replace("## Appendix A Sites", "## 2 Sites")), [["order", "Table 2", "Table 3"]]);
   });
 
-  it("finds the appendix by a label of a kind not placed in the text, in capitals too", () => {
-    const headings = [
-      { text: "1 Results", start: 0 },
-      { text: "APPENDIX A Sites", start: 50 },
-      { text: "Appendix B Ages", start: 90 },
-    ];
-    assert.equal(appendixStart(headings, ["Appendix", "Annex"]), 50);
-    assert.equal(appendixStart(headings.slice(0, 1), ["Appendix", "Annex"]), undefined);
+  it("finds the appendix by a label of a kind not placed in the text, in any case, singular or plural, as a whole word", () => {
+    const words = ["Appendix", "Appendices", "Annex", "付録"];
+    const at = (text: string): number | undefined =>
+      appendixStart(
+        [
+          { text: "1 Results", start: 0 },
+          { text, start: 50 },
+        ],
+        words,
+      );
+    assert.equal(at("APPENDIX A Sites"), 50);
+    assert.equal(at("appendix A sites"), 50);
+    assert.equal(at("Appendices"), 50);
+    assert.equal(at("付録A 地点"), 50);
+    assert.equal(at("Annexation study"), undefined);
+    assert.equal(at("2 Sites"), undefined);
     assert.equal(appendixStart([{ text: "Tables", start: 0 }], []), undefined);
+  });
+
+  it("orders the appendix tables among themselves by the references inside the appendix", () => {
+    const inAppendix = paper.replace("Table 3 lists the sites.", "Table 4 lists the regions and Table 3 the sites.\n\nTable 4: Regions");
+    assert.deepEqual(slipsOf(en, inAppendix), [["order", "Table 3", "Table 4"]]);
+  });
+
+  it("keeps a number captioned in the text the text's, when the appendix restarts its numbering", () => {
+    const restarted = paper
+      .replace("Table 3 repeats it for every site, and Table 2", "Table 2 splits it by age, and Table 1 again; Table 2")
+      .concat("\nTable 1: Sites again\n");
+    assert.deepEqual(slipsOf(en, restarted.replace("Table 1 shows recall. ", "Table 2 first. ")), [["order", "Table 1", "Table 2"]]);
   });
 
   it("reads a Japanese appendix heading the same way", () => {
