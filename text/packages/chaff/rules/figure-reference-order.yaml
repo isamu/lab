@@ -84,7 +84,7 @@ example:
 
 not_flagged:
   ja: キャプション（行の頭の「図1　…」）を一つも書いていない種類の図、他の文書の図（「報告書の図5」）、リンクの字、番号が字や漢数字のもの（付録A、別表第一）は見ません。付録・別表・様式は文書の終わりに置くものなので、参照の順だけを見て、置き場所と参照の有無は見ません。「付録」の見出しより後にキャプションを置いた図や表は、本文の図や表と順を比べません。論文は付録の表の番号を本文から続けて振り、本文から先に指すためです。見出しの無い文書では、節を越えたかどうかは見ません。論文のジャンルでだけ見ます。
-  en: 'A kind of figure the document never captions (a "Figure 1: …" line), figures of another document ("Figure 5 of the report"), link text, and numbers that are letters or numerals in words (Appendix A) are left alone. Appendices and annexes sit at the end, so only the order of their references is checked, not where they are or whether they are referred to. A figure or table captioned after an Appendix heading is not ordered against the text's own: a paper numbers its appendix tables on from the text's and refers to them from the text first. A document without headings is not checked for references past the section. Only the academic paper genre runs this rule.'
+  en: 'A kind of figure the document never captions (a "Figure 1: …" line), figures of another document ("Figure 5 of the report"), link text, and numbers that are letters or numerals in words (Appendix A) are left alone. Appendices and annexes sit at the end, so only the order of their references is checked, not where they are or whether they are referred to. A figure or table captioned after an Appendix heading is not ordered against those of the main text: a paper numbers its appendix tables on from the main text and refers to them from the main text first. A document without headings is not checked for references past the section. Only the academic paper genre runs this rule.'
 rewrite:
   depth: structure
   ja:
