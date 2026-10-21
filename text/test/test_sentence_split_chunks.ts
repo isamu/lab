@@ -6,6 +6,9 @@ import { chunksOf as chunksOfEn, sentenceSpans as sentenceSpansEn } from "../pac
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { unmarkNumberStops } from "../packages/lang-en/src/number-stop.ts";
+import { initialStops, unmarkInitialStops } from "../packages/lang-en/src/initial-stop.ts";
+import { labelStops, unmarkLabelStops } from "../packages/lang-en/src/label-stop.ts";
+import { leadInitials, unmarkLeadInitials } from "../packages/lang-en/src/lead-initial.ts";
 import { splitAtQuotedStops } from "../packages/lang-en/src/quoted-stop.ts";
 import { reattachClosingQuotes } from "../packages/lang-en/src/closing-quote.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
@@ -127,10 +130,17 @@ describe("文の分割は切れ目ごとに渡しても変わらない", () => {
     });
   });
 
-  // 英語のアダプタは、行の途中の番号を替えてから分割器に渡す。比べる相手も替えた後の文字列を丸ごと渡した分割器。
-  it(`英語のアダプタの文は、番号を替えた文字列を分割器に一度に渡し、閉じ引用符の後で切って、文頭の閉じ引用符を戻したときと同じ（seed ${String(SEED)}）`, () => {
+  // 英語のアダプタは、行の途中の番号と略した名前・頭文字の点を替えてから分割器に渡す。比べる相手も替えた後の文字列を丸ごと渡した分割器。
+  const wordsOf = (id: string): string[] => (en.lexicons[id] ?? []).map((entry) => entry.pattern);
+  const starts = wordsOf("sentence-start-word");
+  const stops = initialStops(starts, wordsOf("prepositive-abbreviation"), wordsOf("name-abbreviation"));
+  const labels = labelStops(wordsOf("abbreviated-label"));
+  const leads = leadInitials(wordsOf("initial-lead-word"), starts);
+  const unmarkedForSplitter = (text: string): string => unmarkLeadInitials(unmarkInitialStops(unmarkNumberStops(unmarkLabelStops(text, labels)), stops), leads);
+
+  it(`英語のアダプタの文は、点を替えた文字列を分割器に一度に渡し、閉じ引用符の後で切って、文頭の閉じ引用符を戻したときと同じ（seed ${String(SEED)}）`, () => {
     generated(SEED, CASES).forEach((text) => {
-      const unmarked = unmarkNumberStops(text);
+      const unmarked = unmarkedForSplitter(text);
       assert.equal(unmarked.length, text.length, JSON.stringify(text));
       const spans = en.segment(text).sentences.map((sentence) => sentence.span);
       // 閉じ引用符の内側で閉じた文を切るのと、文頭の閉じ引用符を戻すのは、分割器の後の処理。分割器の文に同じ処理をしたものと比べる。
