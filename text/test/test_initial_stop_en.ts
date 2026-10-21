@@ -65,6 +65,34 @@ describe("en sentences: name abbreviations", () => {
   });
 });
 
+describe("en sentences: initials before a word in lower case", () => {
+  it("an initial before a word in lower case does not end the sentence", () => {
+    assert.deepEqual(sentencesOf("Lives of Ann Lee, J. Hocknell, J. meacham, and Lucy Wright."), [
+      "Lives of Ann Lee, J. Hocknell, J. meacham, and Lucy Wright.",
+    ]);
+    assert.deepEqual(sentencesOf("See Hart, K. and J. Reed. They wrote it."), ["See Hart, K. and J. Reed.", "They wrote it."]);
+    assert.deepEqual(sentencesOf("Ask the U.K. parliament first."), ["Ask the U.K. parliament first."]);
+    assert.deepEqual(sentencesOf("Hart, K.\nand J. Reed wrote it."), ["Hart, K.\nand J. Reed wrote it."]);
+  });
+
+  it("before a capital, a name in lower case at its head only, or as a list's label, it is left as before", () => {
+    assert.deepEqual(sentencesOf("It is set by Regulation C. This guide applies."), ["It is set by Regulation C.", "This guide applies."]);
+    assert.deepEqual(sentencesOf("The plan was called Plan B. iPhone sales rose."), ["The plan was called Plan B.", "iPhone sales rose."]);
+    const none = initialStops([], []);
+    assert.equal(unmarkInitialStops("A. the first rule", none), "A. the first rule");
+    assert.equal(unmarkInitialStops("- B. the second rule", none), "- B. the second rule");
+    assert.equal(unmarkInitialStops("by J. smith and U.K. firms", none), "by Jn smith and U.Kn firms");
+  });
+
+  it("a lower-case letter, a word ending in a capital, or a point inside an abbreviation is no initial", () => {
+    const none = initialStops([], []);
+    assert.equal(unmarkInitialStops("see item c. then stop", none), "see item c. then stop");
+    assert.equal(unmarkInitialStops("an MIT. then stop", none), "an MIT. then stop");
+    assert.equal(unmarkInitialStops("a Ph.D. student", none), "a Ph.D. student");
+    assert.equal(unmarkInitialStops("J. 12 and J.", none), "J. 12 and J.");
+  });
+});
+
 describe("unmarkInitialStops", () => {
   it("the length never changes, so the spans fit the original text", () => {
     const text = "Regulation C. The U.S. Census and D.C. In the end, Wm. Hart.";

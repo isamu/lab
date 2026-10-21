@@ -10,7 +10,10 @@ import { escapeRegExp } from "./regexp.ts";
  *   word ("in the U.S. Yesterday, …"). Its last full stop is replaced with a letter;
  * - a name abbreviation (Jas., Wm.) stands before a name, so it does not end it before any word but a
  *   sentence-start-word, even before a name and a comma ("Jas. Whittaker, J. Hocknell"). Its full stop is replaced
- *   with a letter.
+ *   with a letter;
+ * - capitals with full stops (J., U.K.) before a word in lower case ("J. meacham", "Hart, K. and J. Reed") do not end
+ *   it, since no sentence opens in lower case. A word that is lower case only at its head (iPhone) may be a name that
+ *   opens one, so it is left out. Their last full stop is replaced with a letter.
  * The length does not change, so the spans fit the original text. Initials first on their line are a list's labels
  * (A. The first item) and are left as they are.
  */
@@ -21,6 +24,7 @@ const EDGE_BEFORE = String.raw`(?<![\p{L}\p{N}_.'’])`;
 const WORD_END = String.raw`(?![\p{L}\p{N}_.'’-])`;
 const PLAIN_LETTER = "n";
 const CAPITAL = /\p{Lu}/gu;
+const BEFORE_LOWER_CASE = new RegExp(String.raw`${EDGE_BEFORE}(?:\p{Lu}\.){1,3}(?=\s+\p{Ll}(?!\p{Lu}))`, "gu");
 
 const oneOf = (words: readonly string[]): string => `(?:${words.map(escapeRegExp).join("|")})`;
 
@@ -62,11 +66,15 @@ const withoutLastStop = (abbreviation: string): string => `${abbreviation.slice(
 
 const joined = (text: string, pattern: RegExp | undefined): string => (pattern === undefined ? text : text.replace(pattern, withoutLastStop));
 
-/** The text with every initial that ends a sentence, and every prepositive or name abbreviation that does not, rewritten. */
+/** Initials before a word in lower case, not first on their line (a list's label stays as it is), rewritten. */
+const joinedBeforeLowerCase = (text: string): string =>
+  text.replace(BEFORE_LOWER_CASE, (initials: string, index: number) => (isFirstOnLine(text, index) ? initials : withoutLastStop(initials)));
+
+/** The text with every initial that ends a sentence, and every prepositive or name abbreviation or initial that does not, rewritten. */
 export const unmarkInitialStops = (text: string, stops: InitialStops): string => {
   const ended =
     stops.ends === undefined
       ? text
       : text.replace(stops.ends, (initials: string, index: number) => (isFirstOnLine(text, index) ? initials : initials.replace(CAPITAL, PLAIN_LETTER)));
-  return joined(joined(ended, stops.joins), stops.names);
+  return joinedBeforeLowerCase(joined(joined(ended, stops.joins), stops.names));
 };
