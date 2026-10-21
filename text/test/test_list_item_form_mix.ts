@@ -8,7 +8,8 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { Finding, LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 
-// list-item-form-mix: one list whose items do not share a form. Every example is self-written.
+// list-item-form-mix: one list whose items do not share a form. Every example is self-written, or shortened from 政府広報オンライン
+// (https://www.gov-online.go.jp/, PDL-1.0) where noted.
 
 const RULE = "list-item-form-mix";
 
@@ -39,6 +40,16 @@ describe("formOf: how an item ends (Japanese)", () => {
     ["画面が速い", "sentence"],
     ["期限は月末", "phrase"],
     ["書類を確認すること", "phrase"],
+    ["書類を確認すること。", "sentence"],
+    ["現金を置かないこと。", "sentence"],
+    ["大事なこと。", "phrase"],
+    ["書類を提出したこと。", "phrase"],
+    ["元気ないけど、大丈夫？", "sentence"],
+    ["何か力になれることはない?", "sentence"],
+    ["大丈夫", "phrase"],
+    ["書類を出すこと。期限を守ること。", "sentence"],
+    ["申込書の記入。手数料の支払い。", "phrase"],
+    ["申込書の記入。手数料を払う。", "sentence"],
     ["手数料の支払い", "phrase"],
     ["健康診断書（3か月以内に受診したものに限る）", "phrase"],
     ["書類を出す（郵送でもよい）", "sentence"],
@@ -114,6 +125,38 @@ describe("list-item-form-mix: the minority form in one list", () => {
     assert.equal(finding?.values["of"], 3);
     assert.equal(finding?.line, 5);
   });
+
+  it("reads 〜すること。 as an instruction like 〜しない。, and a question as a sentence (ja)", () => {
+    // 政府広報オンライン「住まいの防犯対策」(PDL-1.0) を縮めたもの。
+    const instructions = list(
+      "鍵を他人に「見せない」「渡さない」、写真で「写さない」。",
+      "現金を置かないこと。在宅状況を聞かれても答えないこと。",
+      "不審を感じたら110番通報すること。",
+    );
+    assert.deepEqual(flagged(ja, instructions), []);
+    const questions = list(
+      "眠れてますか？",
+      "どうしたの？何だか辛そうだけど・・・",
+      "何か悩んでる？よかったら、話して。",
+      "なんか元気ないけど、大丈夫？",
+      "何か力になれることはない？",
+    );
+    assert.deepEqual(flagged(ja, questions), []);
+  });
+
+  it("still reports a noun-ending item among 〜すること。 instructions (ja)", () =>
+    assert.deepEqual(
+      flagged(
+        ja,
+        list(
+          "周囲を整理整頓しておくこと。",
+          "防犯設備を充実させること。部品は性能の高いものを選ぶこと。",
+          "設備を有効に役立てること。",
+          "長く留守にするときの対応も必要。",
+        ),
+      ),
+      ["ending-phrase:長く留守にするときの対応も必要。"],
+    ));
 
   it("does not report a list in one form", () => assert.deepEqual(flagged(ja, list("申込書の記入", "本人確認書類の用意", "手数料の支払い")), []));
 
