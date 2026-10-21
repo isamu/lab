@@ -104,6 +104,10 @@ describe("alternativeReader and placeholderStarts", () => {
     assert.equal(isAlternative(node(undefined, SOURCE.indexOf("第2条　別案"))), true);
     assert.equal(isAlternative(node(undefined, 0)), false);
     assert.equal(isAlternative(node("目的", 0)), false);
+    const prose = "第2条　本文\n\n本条は変更オプション条項ではない。\n\n第2条　重複\n";
+    assert.equal(alternativeReader(prose, ["オプション条項"])(node(undefined, prose.indexOf("第2条　重複"))), false);
+    const heading = "第2条　本文\n\n## 2条の変更オプション条項\n\n第2条　別案\n";
+    assert.equal(alternativeReader(heading, ["オプション条項"])(node(undefined, heading.indexOf("第2条　別案"))), true);
     assert.equal(alternativeReader(SOURCE, [""])(node(undefined, SOURCE.indexOf("第2条　別案"))), false);
   });
 

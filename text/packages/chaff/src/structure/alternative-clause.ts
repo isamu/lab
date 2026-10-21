@@ -17,8 +17,14 @@ const previousLineOf = (source: string, offset: number): string => {
   return "";
 };
 
+/** A line set apart as a label: in brackets (【…】, [ … ]) or a Markdown heading. A sentence that mentions the word is not one. */
+const isLabelLine = (line: string): boolean => {
+  const text = line.trim();
+  return text.startsWith("#") || ("【〔［[（(".includes(text.charAt(0)) && "】〕］]）)".includes(text.charAt(text.length - 1)));
+};
+
 /**
- * A division its heading, or the line just before it (【18条変更オプション条項：知財調停】), names as an alternative
+ * A division its heading, or the label line just before it (【18条変更オプション条項：知財調停】), names as an alternative
  * (alternative-clause-label).
  */
 export const alternativeReader = (source: string, labels: readonly string[]): ((node: StructureNode) => boolean) => {
@@ -26,7 +32,9 @@ export const alternativeReader = (source: string, labels: readonly string[]): ((
   const names = (text: string): boolean => words.some((word) => text.includes(word));
   return (node) => {
     const heading = node.attrs["heading"];
-    return (typeof heading === "string" && names(heading)) || names(previousLineOf(source, node.span.start));
+    if (typeof heading === "string" && names(heading)) return true;
+    const label = previousLineOf(source, node.span.start);
+    return isLabelLine(label) && names(label);
   };
 };
 
