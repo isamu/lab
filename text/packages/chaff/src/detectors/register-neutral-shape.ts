@@ -11,8 +11,14 @@ import type { LexiconEntry, Sentence, Token } from "../plugin.ts";
 const WISH = "たい";
 const QUESTION = "か";
 const CONDITIONAL = new Set(["たら", "だら"]);
-/** 三点リーダー・二点リーダーと、二つ以上の中黒、三つ以上のピリオドで書いた「…」。 */
-const ELLIPSIS_END = /(?:…+|‥+|・{2,}|\.{3,})[。．]?$/u;
+/** 三点リーダー・二点リーダーと、二つ以上の中黒、三つ以上のピリオドで書いた「…」。後ろの句点は除いてから見る。 */
+const ELLIPSIS_ENDINGS = ["…", "‥", "・・", "..."];
+const FULL_STOP = /[。．]$/u;
+
+const endsWithEllipsis = (text: string): boolean => {
+  const body = text.replace(FULL_STOP, "");
+  return ELLIPSIS_ENDINGS.some((ellipsis) => body.endsWith(ellipsis));
+};
 
 /** 語彙表 neutral-request の動詞（いただく、願う）に「たい」だけが付いて終わる文末。「いただきたかった」「いただきたいです」は入らない。 */
 const isHumbleWish = (ending: readonly Token[], verbs: readonly LexiconEntry[]): boolean => {
@@ -28,7 +34,7 @@ const endsAsQuestion = (sentence: Sentence, ending: readonly Token[]): boolean =
 };
 
 const trailsOff = (sentence: Sentence, ending: readonly Token[]): boolean =>
-  CONDITIONAL.has(ending.at(-1)?.surface ?? "") && ELLIPSIS_END.test(sentence.text.trim());
+  CONDITIONAL.has(ending.at(-1)?.surface ?? "") && endsWithEllipsis(sentence.text.trim());
 
 /** 常体と読める文末でも調子に数えない文か。ending は sentence-shape の endingTokens、verbs は語彙表 neutral-request。 */
 export const isNeutralPlainShape = (sentence: Sentence, ending: readonly Token[], verbs: readonly LexiconEntry[]): boolean =>
