@@ -19,6 +19,7 @@ const LABEL_STOPS = labelStops((LEXICONS["abbreviated-label"] ?? []).map((entry)
 const INITIAL_STOPS = initialStops(
   (LEXICONS["sentence-start-word"] ?? []).map((entry) => entry.pattern),
   (LEXICONS["prepositive-abbreviation"] ?? []).map((entry) => entry.pattern),
+  (LEXICONS["name-abbreviation"] ?? []).map((entry) => entry.pattern),
 );
 
 const LATIN_LETTER = /[a-z]/giu;

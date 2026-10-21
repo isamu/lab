@@ -61,12 +61,17 @@ const isTeFormConjunction = ({ token, previous, following }: InContext): boolean
   COMMA.has(following?.[1]?.surface ?? "");
 
 /**
- * A listed adverb that opens its sentence with a comma after it (さらに、), or right after a dash or a bracket (――もっとも): there it
- * joins the sentence to the one before. Opening a sentence alone (さらに高い成果を) it may still be the adverb.
+ * A listed adverb that opens its sentence with a comma after it (さらに、), right after a dash or a bracket (――もっとも), or that
+ * stands between two commas (推進し、さらに、): there it joins what follows to what came before. Opening a sentence alone
+ * (さらに高い成果を) or after one comma (今後、さらに増える) it may still be the adverb.
  */
-const isOpeningAdverb = ({ token, previous, before, following }: InContext): boolean =>
-  token.pos === "ADV" &&
-  ((previous === undefined && COMMA.has(following?.[0]?.surface ?? "")) || (previous?.pos === "PUNCT" && !COMMA.has(previous.surface) && before === undefined));
+const isOpeningAdverb = ({ token, previous, before, following }: InContext): boolean => {
+  if (token.pos !== "ADV") return false;
+  const commaAfter = COMMA.has(following?.[0]?.surface ?? "");
+  if (previous === undefined) return commaAfter;
+  if (COMMA.has(previous.surface)) return commaAfter;
+  return previous.pos === "PUNCT" && before === undefined;
+};
 
 const isConjunctionUse = (word: InContext, conjunctions: ReadonlySet<string>): boolean =>
   conjunctions.has(word.token.lemma ?? "") && (isTeFormConjunction(word) || isOpeningAdverb(word));

@@ -1,7 +1,7 @@
 // Tables as the HTML converter reads them. A table whose rows are sentences (a glossary of terms and what they mean,
 // a list of routes and how each one works), or whose every cell is a label in words (a one-column list of methods),
 // keeps each cell as a block of its own, its header row first, so its words are read as the page shows them. Any other
-// table (figures, a grid of links) goes whole, as before. Nested tables are read from the inside out. Pure; a
+// table (figures, a grid of links) goes, all but its caption. Nested tables are read from the inside out. Pure; a
 // regular-expression reading, not a parser.
 import { plainText, untilStable } from "./html-elements.ts";
 
@@ -83,10 +83,16 @@ const asBlocks = (table: string, rows: readonly Row[]): string => {
   return ["<div>", ...[caption ?? "", ...cells].filter((html) => html !== "").map((html) => `<div>${html}</div>`), "</div>"].join("");
 };
 
-const readTable = (_whole: string, inside: string): string => {
-  const rows = rowsOf(inside);
-  return isProse(rows) || isWordTable(rows) ? asBlocks(inside, rows) : " ";
+/** A table's caption is its title, which the text points at (表2－2－6); it stays when the cells go. */
+const captionOnly = (table: string): string => {
+  const caption = CAPTION.exec(table)?.[1];
+  return caption === undefined || plainText(caption) === "" ? " " : `<div>${caption}</div>`;
 };
 
-/** Every table read from the inside out: a table of sentences as blocks, any other table replaced by a space. */
+const readTable = (_whole: string, inside: string): string => {
+  const rows = rowsOf(inside);
+  return isProse(rows) || isWordTable(rows) ? asBlocks(inside, rows) : captionOnly(inside);
+};
+
+/** Every table read from the inside out: a table of sentences as blocks, any other table replaced by its caption or a space. */
 export const withTablesRead = (html: string): string => untilStable(html, (text) => text.replace(INNERMOST_TABLE, readTable));

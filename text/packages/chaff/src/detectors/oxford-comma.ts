@@ -49,6 +49,7 @@ import { lowerBound, type TokenRange } from "./token-column.ts";
 import { followsPostcode } from "./postcode-end.ts";
 import { withoutCoordinateAdjective } from "./coordinate-adjective.ts";
 import { dashBreaks } from "./dash-break.ts";
+import { namesDivision, qualifiesPrevious } from "./list-comma-aside.ts";
 
 const EMPTY: TokenRange = { start: 0, end: 0 };
 
@@ -314,6 +315,7 @@ const listAt = (list: ItemList, at: number): boolean | undefined => {
   const afterItem = itemAfter(scope, at);
   const items = fromParticiplePhrase(fromExample(afterClosedList(withoutLead(withoutCoordinateAdjective(wholeList(list))))), afterItem);
   if (listContinues(scope, afterItem) || isAppositive(scope, at, items, afterItem) || insideLastItem(scope, at, items, afterItem)) return undefined;
+  if (namesDivision(items) || qualifiesPrevious(items)) return undefined;
   const last = lastOf(items);
   if (last !== undefined && opensContrast(scope, last.item)) return undefined;
   const shape = last === undefined ? undefined : shapeOf(scope, last.item);
@@ -360,6 +362,7 @@ export const oxfordComma: Detector = (doc, options): Finding[] => {
     region: doc.lexicons["place-region"] ?? [],
     titleCue: (doc.lexicons["title-cue"] ?? []).map((entry) => entry.pattern),
     sequence: patternsOf(doc.lexicons["sequence-opener"]),
+    unit: patternsOf(doc.lexicons["enclosing-unit"]),
   };
   const judged = doc.sentences.flatMap((sentence) => {
     const oxford = oxfordIn(sentence.tokens ?? [], words, doc.source);
