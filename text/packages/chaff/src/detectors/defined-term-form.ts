@@ -252,7 +252,7 @@ const isLongName = (name: string): boolean => {
 
 /** A conjunction that joins the run to a name before it (書面または電磁的記録（以下「書面等」）): the bracket names them all. */
 const joinsList = (token: Token | undefined, joiners: readonly string[]): boolean =>
-  token !== undefined && token.pos === "CCONJ" && joiners.includes(token.surface);
+  token !== undefined && token.pos === "CCONJ" && joiners.includes(token.surface.toLowerCase());
 
 /**
  * The long name written right before an inline definition: the run of name words that ends at its opening bracket. A run

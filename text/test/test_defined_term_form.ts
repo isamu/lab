@@ -350,6 +350,14 @@ describe("defined-name-repeated: a long name used again after its short name", (
     const englishSentence = tokensOf(en, english);
     assert.ok(englishSentence !== undefined);
     assert.equal(nameBefore(englishSentence, english.indexOf("("), ["or"]), undefined);
+    const titled = 'Notices By Registered Mail Or Courier Delivery (the "Notice Methods") apply.';
+    const titledSentence = tokensOf(en, titled);
+    assert.ok(titledSentence !== undefined);
+    assert.equal(nameBefore(titledSentence, titled.indexOf("("), ["or"]), undefined);
+    const both = "甲の役員及び従業員（以下「役員等」という。）は、秘密を守る。";
+    const bothSentence = tokensOf(ja, both);
+    assert.ok(bothSentence !== undefined);
+    assert.equal(nameBefore(bothSentence, both.indexOf("（"), ["及び"]), undefined);
   });
 
   it("still reads a name after a particle that is no conjunction (と)", () => {
