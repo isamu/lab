@@ -167,12 +167,31 @@ const withoutSectionNote = (text: string): string => {
   return note === null || !NUMBER.test(note[0]) ? text : text.slice(0, note.index);
 };
 
+/** 入れ子の無い丸括弧の一組（（願書）、(Section 2)）。 */
+const PAREN_GROUP = /（[^（）()]*）|\([^（）()]*\)/gu;
+
+/** 全体が一組の括弧の札（（買主の義務））は、条の見出しで、括弧の中が札の字。 */
+const WHOLLY_PARENTHESISED = /^\s*(?:（([^（）()]*)）|\(([^（）()]*)\))\s*$/u;
+
+const withoutParentheses = (text: string): string => {
+  const stripped = text.replace(PAREN_GROUP, "");
+  return stripped === text ? text : withoutParentheses(stripped);
+};
+
+/** 札の、括弧の外の字。 */
+const labelWords = (text: string): string => {
+  const wholly = WHOLLY_PARENTHESISED.exec(text);
+  return withoutParentheses(wholly?.[1] ?? wholly?.[2] ?? text);
+};
+
 /**
  * 語だけの札の文（**12.2.** Taxes.、1. The Agreement.、（1）文化芸術推進基本計画（第7条関係））。条や節の頭に語を掲げただけで、
- * 使用ではない。終わりに添えた条の番地の注は札の字に数えない。
+ * 使用ではない。終わりに添えた条の番地の注は札の字に数えない。語が括弧の中にしか無い札（記載例（願書））は、別の物の札で、語は使っている。
  */
 const isLabel = (body: BodyText | undefined, term: string): boolean =>
-  body !== undefined && (withoutSectionNote(body.text.trimEnd()).replaceAll(term, "").match(LETTER) ?? []).length <= LABEL_SLACK;
+  body !== undefined &&
+  (withoutSectionNote(body.text.trimEnd()).replaceAll(term, "").match(LETTER) ?? []).length <= LABEL_SLACK &&
+  labelWords(body.text).includes(term);
 
 /** 番地の後ろの、条の題の始まり（Section 1.1   Closing. の Closing）。 */
 const AFTER_ADDRESS = /\d\.?\s+(?=\p{Lu})/gu;
