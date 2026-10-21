@@ -45,6 +45,8 @@ describe("isNeutralPlainShape", () => {
       "雨が降ったら中止する。",
       "いつもと違っていたら。",
       "それでよいかどうか検討する。",
+      "どうやって納めているのかな？",
+      "対処できているか？",
     ].forEach((text) => assert.equal(neutral(text), false, text));
   });
 });
