@@ -16,6 +16,8 @@ export type ListWords = {
   readonly titleCue?: readonly string[];
   /** 文頭で順番を言う一語（First, Next, Finally）。解析器が形容詞と読んでも、並びの項目ではなく導入の語。 */
   readonly sequence?: ReadonlySet<string>;
+  /** 番号を付けて呼ぶ法典の区分（title, chapter）。Title 44, Public Printing and Documents の読点は区分の名前を続ける読点。 */
+  readonly unit?: ReadonlySet<string>;
 };
 
 const LIST_CONJUNCTION: ReadonlySet<string> = new Set(["and", "or"]);
