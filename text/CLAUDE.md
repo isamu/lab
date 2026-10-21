@@ -51,7 +51,8 @@ The direction is tracked in isamu/lab#130.
 - `yarn corpus`, `yarn bench` and `yarn planted` compare findings with committed expectations (`--update` accepts a
   change). `yarn rules:measure --apply` places a new or changed rule, over the documents pinned in
   `corpus/rules-measure-documents.json`. `yarn rules:precision --corpus <chaff-corpus clone> --apply` turns a rule off
-  for a genre where its judged precision is low (recorded in `corpus/rules-precision.json`). `yarn screens:update`
+  for a genre where its judged precision is low (recorded in `corpus/rules-precision.json`); a rule file's `precision_hold`
+  keeps a group on while a narrowing fix is due. `yarn screens:update`
   regenerates the guide's screens.
 - A change to a user-visible behaviour (a new rule, a new command, a new mechanism) updates the READMEs (en and ja),
   `packages/chaff/skills/chaff/SKILL.md` and the site guide in the same round.

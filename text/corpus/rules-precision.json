@@ -1,5 +1,5 @@
 {
-  "corpus": "00d2da1cf1bbfe72ed36009751abeb9eb7282111",
+  "corpus": "b67ae81d9936c36287fb25f47483357d93c8ae94",
   "rules": {
     "absolute-exception": {
       "legal": {
@@ -18,6 +18,12 @@
           "falsePositive": 0,
           "documents": 0,
           "unjudged": 1
+        },
+        "ja": {
+          "correct": 0,
+          "falsePositive": 2,
+          "documents": 2,
+          "unjudged": 0
         }
       }
     },
@@ -35,17 +41,25 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 1
+          "unjudged": 2
         }
       }
     },
     "adverb-overuse": {
+      "blog": {
+        "en": {
+          "correct": 4,
+          "falsePositive": 0,
+          "documents": 4,
+          "unjudged": 2
+        }
+      },
       "business": {
         "en": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 6
+          "unjudged": 13
         }
       },
       "speech": {
@@ -58,20 +72,20 @@
       }
     },
     "adversative-ga-repeat": {
-      "blog": {
-        "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 2
-        }
-      },
       "business": {
         "ja": {
-          "correct": 0,
+          "correct": 2,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 4
+          "documents": 1,
+          "unjudged": 3
+        }
+      },
+      "docs": {
+        "ja": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
         }
       },
       "legal": {
@@ -79,7 +93,15 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 1
+          "unjudged": 2
+        }
+      },
+      "literature": {
+        "ja": {
+          "correct": 2,
+          "falsePositive": 3,
+          "documents": 3,
+          "unjudged": 4
         }
       },
       "speech": {
@@ -87,7 +109,23 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 5
+          "unjudged": 10
+        }
+      }
+    },
+    "agentless-passive": {
+      "business": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 1044
+        },
+        "ja": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 223
         }
       }
     },
@@ -95,8 +133,8 @@
       "academic": {
         "en": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "falsePositive": 1,
+          "documents": 1,
           "unjudged": 1
         }
       },
@@ -105,7 +143,7 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 1
+          "unjudged": 2
         }
       },
       "docs": {
@@ -116,12 +154,40 @@
           "unjudged": 2
         }
       },
+      "legal": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 1
+        }
+      },
       "technical": {
         "en": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
           "unjudged": 1
+        }
+      }
+    },
+    "ai-generated-composite": {
+      "blog": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 0
+        }
+      }
+    },
+    "ai-structure": {
+      "blog": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 0
         }
       }
     },
@@ -137,9 +203,9 @@
       "business": {
         "en": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 11
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 6
         }
       },
       "docs": {
@@ -147,7 +213,7 @@
           "correct": 0,
           "falsePositive": 1,
           "documents": 1,
-          "unjudged": 2
+          "unjudged": 9
         }
       },
       "technical": {
@@ -170,6 +236,14 @@
       }
     },
     "announced-count-mismatch": {
+      "business": {
+        "ja": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
       "technical": {
         "en": {
           "correct": 0,
@@ -190,10 +264,10 @@
       },
       "business": {
         "en": {
-          "correct": 0,
+          "correct": 4,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 1
+          "documents": 4,
+          "unjudged": 6
         }
       },
       "docs": {
@@ -206,9 +280,9 @@
       },
       "legal": {
         "en": {
-          "correct": 1,
+          "correct": 3,
           "falsePositive": 0,
-          "documents": 1,
+          "documents": 2,
           "unjudged": 6
         }
       },
@@ -217,24 +291,34 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 2
+          "unjudged": 20
+        }
+      }
+    },
+    "attachment-not-attached": {
+      "business": {
+        "ja": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 1
         }
       }
     },
     "bare-url-mix": {
       "business": {
         "en": {
-          "correct": 0,
+          "correct": 3,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 1
+          "documents": 2,
+          "unjudged": 14
         }
       },
       "docs": {
         "en": {
           "correct": 1,
-          "falsePositive": 0,
-          "documents": 1,
+          "falsePositive": 1,
+          "documents": 2,
           "unjudged": 0
         }
       },
@@ -243,14 +327,14 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 1
+          "unjudged": 2
         }
       },
       "technical": {
         "en": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 1
         },
         "ja": {
@@ -290,6 +374,14 @@
       }
     },
     "bracket-nesting": {
+      "academic": {
+        "ja": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 1
+        }
+      },
       "blog": {
         "en": {
           "correct": 0,
@@ -307,9 +399,9 @@
       "business": {
         "ja": {
           "correct": 1,
-          "falsePositive": 2,
-          "documents": 3,
-          "unjudged": 7
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 10
         }
       },
       "docs": {
@@ -317,12 +409,12 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 1
+          "unjudged": 2
         },
         "ja": {
-          "correct": 0,
+          "correct": 3,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 2,
           "unjudged": 1
         }
       },
@@ -331,17 +423,23 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 11
+          "unjudged": 15
         },
         "ja": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 37
+          "unjudged": 42
         }
       },
       "literature": {
         "en": {
+          "correct": 0,
+          "falsePositive": 4,
+          "documents": 1,
+          "unjudged": 1
+        },
+        "ja": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
@@ -360,41 +458,41 @@
     "bracket-width-consistency": {
       "academic": {
         "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 10
+          "correct": 1,
+          "falsePositive": 3,
+          "documents": 3,
+          "unjudged": 37
         }
       },
       "blog": {
         "ja": {
-          "correct": 0,
+          "correct": 2,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 11
         }
       },
       "business": {
         "ja": {
-          "correct": 18,
-          "falsePositive": 0,
-          "documents": 11,
-          "unjudged": 176
+          "correct": 33,
+          "falsePositive": 2,
+          "documents": 17,
+          "unjudged": 184
         }
       },
       "docs": {
         "ja": {
-          "correct": 6,
+          "correct": 32,
           "falsePositive": 0,
-          "documents": 1,
-          "unjudged": 10
+          "documents": 10,
+          "unjudged": 44
         }
       },
       "legal": {
         "ja": {
-          "correct": 25,
-          "falsePositive": 3,
-          "documents": 6,
+          "correct": 50,
+          "falsePositive": 0,
+          "documents": 11,
           "unjudged": 35
         }
       },
@@ -408,14 +506,22 @@
       },
       "technical": {
         "ja": {
-          "correct": 0,
+          "correct": 14,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 2
+          "documents": 7,
+          "unjudged": 9
         }
       }
     },
     "broken-link": {
+      "academic": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
       "business": {
         "ja": {
           "correct": 0,
@@ -424,12 +530,26 @@
           "unjudged": 1
         }
       },
+      "docs": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
       "technical": {
         "en": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
           "unjudged": 4
+        },
+        "ja": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 1
         }
       }
     },
@@ -439,7 +559,17 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 1
+          "unjudged": 2
+        }
+      }
+    },
+    "citation-reference-mismatch": {
+      "academic": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 2
         }
       }
     },
@@ -449,31 +579,31 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 1
+          "unjudged": 7
         }
       },
       "blog": {
         "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "correct": 4,
+          "falsePositive": 1,
+          "documents": 3,
           "unjudged": 5
         }
       },
       "business": {
         "ja": {
-          "correct": 3,
+          "correct": 7,
           "falsePositive": 0,
-          "documents": 3,
-          "unjudged": 8
+          "documents": 6,
+          "unjudged": 16
         }
       },
       "docs": {
         "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 1
+          "correct": 1,
+          "falsePositive": 1,
+          "documents": 2,
+          "unjudged": 3
         }
       },
       "legal": {
@@ -481,32 +611,48 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 15
+          "unjudged": 13
         }
       },
       "literature": {
         "ja": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 7
+          "falsePositive": 33,
+          "documents": 8,
+          "unjudged": 58
         }
       },
       "speech": {
         "ja": {
-          "correct": 0,
+          "correct": 18,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 65
+          "documents": 9,
+          "unjudged": 111
         }
       }
     },
     "cliche": {
+      "academic": {
+        "en": {
+          "correct": 1,
+          "falsePositive": 1,
+          "documents": 2,
+          "unjudged": 0
+        }
+      },
+      "blog": {
+        "en": {
+          "correct": 2,
+          "falsePositive": 0,
+          "documents": 2,
+          "unjudged": 0
+        }
+      },
       "business": {
         "en": {
-          "correct": 0,
+          "correct": 2,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 2,
           "unjudged": 1
         }
       },
@@ -519,7 +665,25 @@
         }
       }
     },
+    "closing-cliche": {
+      "blog": {
+        "ja": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
+        }
+      }
+    },
     "code-fence-language-mix": {
+      "blog": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
       "docs": {
         "ja": {
           "correct": 0,
@@ -536,10 +700,28 @@
           "unjudged": 2
         },
         "ja": {
+          "correct": 2,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 2
+        }
+      }
+    },
+    "colloquial-opener": {
+      "academic": {
+        "ja": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 2
+          "unjudged": 1
+        }
+      },
+      "legal": {
+        "ja": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
         }
       }
     },
@@ -554,41 +736,91 @@
       }
     },
     "comparative-without-baseline": {
-      "business": {
+      "academic": {
         "en": {
           "correct": 0,
-          "falsePositive": 2,
-          "documents": 2,
-          "unjudged": 7
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 1
         },
         "ja": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 3
+          "unjudged": 2
+        }
+      },
+      "blog": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 6,
+          "documents": 6,
+          "unjudged": 0
+        },
+        "ja": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
+      "business": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 9
+        },
+        "ja": {
+          "correct": 0,
+          "falsePositive": 3,
+          "documents": 3,
+          "unjudged": 7
+        }
+      },
+      "docs": {
+        "ja": {
+          "correct": 0,
+          "falsePositive": 2,
+          "documents": 2,
+          "unjudged": 1
+        }
+      },
+      "legal": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 0
         }
       },
       "technical": {
         "en": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 5
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 7
         },
         "ja": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 5
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 4
         }
       }
     },
     "concrete-evidence-density": {
       "blog": {
+        "en": {
+          "correct": 3,
+          "falsePositive": 38,
+          "documents": 10,
+          "unjudged": 4
+        },
         "ja": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "falsePositive": 48,
+          "documents": 7,
           "unjudged": 14
         }
       },
@@ -597,13 +829,13 @@
           "correct": 0,
           "falsePositive": 5,
           "documents": 1,
-          "unjudged": 141
+          "unjudged": 113
         },
         "ja": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 92
+          "falsePositive": 5,
+          "documents": 2,
+          "unjudged": 85
         }
       }
     },
@@ -613,61 +845,103 @@
           "correct": 2,
           "falsePositive": 0,
           "documents": 2,
-          "unjudged": 5
+          "unjudged": 6
+        }
+      },
+      "docs": {
+        "ja": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 2
         }
       },
       "legal": {
         "ja": {
-          "correct": 4,
+          "correct": 9,
           "falsePositive": 0,
-          "documents": 3,
-          "unjudged": 3
+          "documents": 5,
+          "unjudged": 8
         }
       }
     },
     "contraction-consistency": {
       "academic": {
         "en": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 4
+          "correct": 4,
+          "falsePositive": 2,
+          "documents": 3,
+          "unjudged": 1
         }
       },
       "blog": {
         "en": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 9
+          "correct": 20,
+          "falsePositive": 2,
+          "documents": 11,
+          "unjudged": 6
         }
       },
       "business": {
         "en": {
-          "correct": 0,
+          "correct": 14,
+          "falsePositive": 2,
+          "documents": 7,
+          "unjudged": 27
+        }
+      },
+      "docs": {
+        "en": {
+          "correct": 52,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 32
+          "documents": 24,
+          "unjudged": 19
         }
       },
       "legal": {
         "en": {
-          "correct": 0,
+          "correct": 12,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 15
+          "documents": 7,
+          "unjudged": 12
+        }
+      },
+      "speech": {
+        "en": {
+          "correct": 3,
+          "falsePositive": 0,
+          "documents": 3,
+          "unjudged": 0
         }
       },
       "technical": {
         "en": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 31
+          "correct": 18,
+          "falsePositive": 1,
+          "documents": 8,
+          "unjudged": 29
+        }
+      }
+    },
+    "contrast-framing": {
+      "blog": {
+        "en": {
+          "correct": 4,
+          "falsePositive": 2,
+          "documents": 2,
+          "unjudged": 1
         }
       }
     },
     "currency-notation-consistency": {
+      "academic": {
+        "ja": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 1
+        }
+      },
       "blog": {
         "ja": {
           "correct": 0,
@@ -686,10 +960,18 @@
       },
       "legal": {
         "en": {
-          "correct": 11,
+          "correct": 12,
           "falsePositive": 0,
-          "documents": 1,
+          "documents": 2,
           "unjudged": 0
+        }
+      },
+      "speech": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 1
         }
       }
     },
@@ -705,13 +987,39 @@
       "legal": {
         "en": {
           "correct": 10,
-          "falsePositive": 2,
-          "documents": 3,
+          "falsePositive": 0,
+          "documents": 2,
           "unjudged": 0
         }
       }
     },
+    "dangling-participle": {
+      "academic": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
+      "business": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 1
+        }
+      }
+    },
     "dangling-reference": {
+      "academic": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
       "business": {
         "en": {
           "correct": 0,
@@ -726,25 +1034,41 @@
           "unjudged": 3
         }
       },
+      "docs": {
+        "ja": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
       "legal": {
         "en": {
           "correct": 0,
-          "falsePositive": 2,
-          "documents": 1,
-          "unjudged": 98
+          "falsePositive": 51,
+          "documents": 7,
+          "unjudged": 80
         },
         "ja": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 43
+          "unjudged": 31
         }
       },
-      "technical": {
+      "speech": {
         "en": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
+          "unjudged": 2
+        }
+      },
+      "technical": {
+        "en": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
           "unjudged": 1
         }
       }
@@ -759,17 +1083,9 @@
         },
         "ja": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 11
-        }
-      },
-      "blog": {
-        "en": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 1
+          "falsePositive": 6,
+          "documents": 4,
+          "unjudged": 13
         }
       },
       "business": {
@@ -777,7 +1093,7 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 9
+          "unjudged": 67
         },
         "ja": {
           "correct": 0,
@@ -792,6 +1108,12 @@
           "falsePositive": 0,
           "documents": 0,
           "unjudged": 1
+        },
+        "ja": {
+          "correct": 0,
+          "falsePositive": 2,
+          "documents": 2,
+          "unjudged": 0
         }
       },
       "legal": {
@@ -802,7 +1124,35 @@
           "unjudged": 6
         }
       },
+      "literature": {
+        "en": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
       "technical": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 1
+        }
+      }
+    },
+    "date-order": {
+      "business": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 3
+        }
+      }
+    },
+    "date-weekday-mismatch": {
+      "speech": {
         "en": {
           "correct": 0,
           "falsePositive": 0,
@@ -815,8 +1165,8 @@
       "blog": {
         "en": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "falsePositive": 1,
+          "documents": 1,
           "unjudged": 1
         },
         "ja": {
@@ -831,39 +1181,39 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 11
+          "unjudged": 1
         },
         "ja": {
           "correct": 0,
-          "falsePositive": 2,
-          "documents": 2,
-          "unjudged": 20
-        }
-      },
-      "docs": {
-        "en": {
-          "correct": 0,
-          "falsePositive": 20,
-          "documents": 1,
-          "unjudged": 0
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 11
         }
       },
       "legal": {
         "en": {
           "correct": 0,
-          "falsePositive": 1,
+          "falsePositive": 3,
           "documents": 1,
-          "unjudged": 0
+          "unjudged": 1
+        }
+      },
+      "speech": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 17
         }
       }
     },
     "defined-name-repeated": {
       "legal": {
         "en": {
-          "correct": 0,
-          "falsePositive": 36,
-          "documents": 3,
-          "unjudged": 2
+          "correct": 2,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
         },
         "ja": {
           "correct": 0,
@@ -877,19 +1227,27 @@
       "legal": {
         "en": {
           "correct": 1,
-          "falsePositive": 6,
-          "documents": 3,
-          "unjudged": 39
+          "falsePositive": 1,
+          "documents": 2,
+          "unjudged": 108
         },
+        "ja": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 1
+        }
+      }
+    },
+    "demonstrative-opener-run": {
+      "academic": {
         "ja": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
           "unjudged": 1
         }
-      }
-    },
-    "demonstrative-opener-run": {
+      },
       "blog": {
         "ja": {
           "correct": 0,
@@ -912,22 +1270,26 @@
           "falsePositive": 0,
           "documents": 0,
           "unjudged": 4
-        }
-      },
-      "legal": {
-        "en": {
+        },
+        "ja": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
           "unjudged": 1
         }
       },
-      "literature": {
+      "legal": {
         "en": {
-          "correct": 0,
+          "correct": 1,
+          "falsePositive": 4,
+          "documents": 5,
+          "unjudged": 4
+        },
+        "ja": {
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 12
+          "documents": 1,
+          "unjudged": 0
         }
       },
       "speech": {
@@ -938,22 +1300,54 @@
           "unjudged": 5
         },
         "ja": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 3
+          "documents": 1,
+          "unjudged": 6
+        }
+      },
+      "technical": {
+        "en": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 1
         }
       }
     },
     "double-negative": {
-      "blog": {
-        "en": {
+      "academic": {
+        "ja": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
           "unjudged": 1
         }
       },
+      "blog": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 1
+        },
+        "ja": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
+      "business": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 1
+        }
+      }
+    },
+    "doubled-nado": {
       "business": {
         "en": {
           "correct": 0,
@@ -964,7 +1358,27 @@
       }
     },
     "doubled-punctuation": {
+      "academic": {
+        "en": {
+          "correct": 2,
+          "falsePositive": 0,
+          "documents": 2,
+          "unjudged": 1
+        },
+        "ja": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
       "blog": {
+        "en": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
+        },
         "ja": {
           "correct": 0,
           "falsePositive": 0,
@@ -974,16 +1388,10 @@
       },
       "business": {
         "en": {
-          "correct": 0,
+          "correct": 2,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 2
-        },
-        "ja": {
-          "correct": 0,
-          "falsePositive": 1,
-          "documents": 1,
-          "unjudged": 6
+          "documents": 2,
+          "unjudged": 1
         }
       },
       "docs": {
@@ -991,15 +1399,15 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 1
+          "unjudged": 3
         }
       },
       "legal": {
         "en": {
-          "correct": 0,
+          "correct": 4,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 13
+          "documents": 2,
+          "unjudged": 15
         }
       },
       "literature": {
@@ -1026,12 +1434,28 @@
       }
     },
     "doubled-word": {
+      "academic": {
+        "ja": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
+      "blog": {
+        "en": {
+          "correct": 2,
+          "falsePositive": 0,
+          "documents": 2,
+          "unjudged": 0
+        }
+      },
       "business": {
         "en": {
-          "correct": 0,
+          "correct": 6,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 1
+          "documents": 4,
+          "unjudged": 2
         },
         "ja": {
           "correct": 0,
@@ -1042,18 +1466,38 @@
       },
       "docs": {
         "en": {
+          "correct": 4,
+          "falsePositive": 0,
+          "documents": 3,
+          "unjudged": 3
+        },
+        "ja": {
           "correct": 1,
           "falsePositive": 0,
           "documents": 1,
-          "unjudged": 3
+          "unjudged": 0
         }
       },
       "legal": {
+        "en": {
+          "correct": 4,
+          "falsePositive": 0,
+          "documents": 3,
+          "unjudged": 0
+        },
+        "ja": {
+          "correct": 4,
+          "falsePositive": 0,
+          "documents": 3,
+          "unjudged": 1
+        }
+      },
+      "speech": {
         "ja": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 2
+          "falsePositive": 2,
+          "documents": 1,
+          "unjudged": 0
         }
       },
       "technical": {
@@ -1078,14 +1522,20 @@
           "falsePositive": 0,
           "documents": 0,
           "unjudged": 1
+        },
+        "ja": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 1
         }
       },
       "legal": {
         "en": {
           "correct": 0,
-          "falsePositive": 1,
-          "documents": 1,
-          "unjudged": 0
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 1
         },
         "ja": {
           "correct": 1,
@@ -1110,6 +1560,12 @@
           "falsePositive": 0,
           "documents": 0,
           "unjudged": 3
+        },
+        "ja": {
+          "correct": 0,
+          "falsePositive": 2,
+          "documents": 2,
+          "unjudged": 1
         }
       },
       "docs": {
@@ -1128,6 +1584,14 @@
           "unjudged": 1
         }
       },
+      "literature": {
+        "ja": {
+          "correct": 0,
+          "falsePositive": 20,
+          "documents": 2,
+          "unjudged": 0
+        }
+      },
       "technical": {
         "en": {
           "correct": 0,
@@ -1139,11 +1603,11 @@
     },
     "duration-mismatch": {
       "business": {
-        "ja": {
+        "en": {
           "correct": 0,
-          "falsePositive": 1,
-          "documents": 1,
-          "unjudged": 0
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 1
         }
       },
       "docs": {
@@ -1155,22 +1619,12 @@
         }
       }
     },
-    "ellipsis-consistency": {
-      "business": {
-        "ja": {
-          "correct": 0,
-          "falsePositive": 1,
-          "documents": 1,
-          "unjudged": 0
-        }
-      }
-    },
     "email-greeting-closing": {
       "business": {
         "en": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "falsePositive": 4,
+          "documents": 2,
           "unjudged": 1
         },
         "ja": {
@@ -1178,6 +1632,16 @@
           "falsePositive": 0,
           "documents": 0,
           "unjudged": 1
+        }
+      }
+    },
+    "email-subject-length": {
+      "business": {
+        "en": {
+          "correct": 8,
+          "falsePositive": 1,
+          "documents": 9,
+          "unjudged": 2
         }
       }
     },
@@ -1194,18 +1658,18 @@
     "empty-intensifier": {
       "blog": {
         "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "correct": 1,
+          "falsePositive": 1,
+          "documents": 2,
           "unjudged": 1
         }
       },
       "business": {
         "ja": {
-          "correct": 1,
-          "falsePositive": 1,
-          "documents": 2,
-          "unjudged": 1
+          "correct": 13,
+          "falsePositive": 0,
+          "documents": 4,
+          "unjudged": 10
         }
       },
       "docs": {
@@ -1216,7 +1680,29 @@
           "unjudged": 2
         }
       },
+      "legal": {
+        "en": {
+          "correct": 2,
+          "falsePositive": 0,
+          "documents": 2,
+          "unjudged": 0
+        }
+      },
       "speech": {
+        "en": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 1
+        },
+        "ja": {
+          "correct": 2,
+          "falsePositive": 1,
+          "documents": 2,
+          "unjudged": 4
+        }
+      },
+      "technical": {
         "en": {
           "correct": 0,
           "falsePositive": 0,
@@ -1224,14 +1710,6 @@
           "unjudged": 1
         },
         "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 8
-        }
-      },
-      "technical": {
-        "en": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
@@ -1250,9 +1728,9 @@
       },
       "business": {
         "en": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 1
         }
       },
@@ -1266,27 +1744,35 @@
       }
     },
     "empty-section": {
-      "blog": {
+      "academic": {
         "ja": {
           "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 6
+        }
+      },
+      "blog": {
+        "ja": {
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 7
+          "documents": 1,
+          "unjudged": 6
         }
       },
       "business": {
         "en": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 7
+          "correct": 2,
+          "falsePositive": 1,
+          "documents": 2,
+          "unjudged": 6
         }
       },
       "docs": {
         "en": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 1
         }
       },
@@ -1295,7 +1781,7 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 1
+          "unjudged": 8
         },
         "ja": {
           "correct": 0,
@@ -1314,19 +1800,27 @@
       },
       "technical": {
         "en": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 1
         }
       }
     },
     "empty-table-cell": {
-      "business": {
+      "blog": {
         "en": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
+          "unjudged": 1
+        }
+      },
+      "business": {
+        "en": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
           "unjudged": 1
         }
       },
@@ -1340,6 +1834,14 @@
       }
     },
     "excessive-hedging": {
+      "blog": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
       "business": {
         "en": {
           "correct": 0,
@@ -1351,7 +1853,7 @@
           "correct": 1,
           "falsePositive": 0,
           "documents": 1,
-          "unjudged": 0
+          "unjudged": 1
         }
       },
       "docs": {
@@ -1359,6 +1861,20 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
+          "unjudged": 2
+        },
+        "ja": {
+          "correct": 2,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
+      "speech": {
+        "ja": {
+          "correct": 0,
+          "falsePositive": 2,
+          "documents": 1,
           "unjudged": 1
         }
       },
@@ -1392,9 +1908,9 @@
     "expletive-construction": {
       "blog": {
         "en": {
-          "correct": 0,
+          "correct": 9,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 2,
           "unjudged": 6
         }
       },
@@ -1403,7 +1919,7 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 56
+          "unjudged": 154
         }
       },
       "speech": {
@@ -1416,11 +1932,19 @@
       }
     },
     "fact-conflict": {
+      "academic": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
       "docs": {
         "en": {
           "correct": 0,
-          "falsePositive": 8,
-          "documents": 3,
+          "falsePositive": 1,
+          "documents": 1,
           "unjudged": 0
         }
       },
@@ -1433,6 +1957,16 @@
         }
       }
     },
+    "figure-reference-order": {
+      "academic": {
+        "en": {
+          "correct": 5,
+          "falsePositive": 1,
+          "documents": 3,
+          "unjudged": 16
+        }
+      }
+    },
     "footnote-mismatch": {
       "business": {
         "ja": {
@@ -1441,63 +1975,55 @@
           "documents": 0,
           "unjudged": 2
         }
-      },
-      "docs": {
-        "en": {
-          "correct": 0,
-          "falsePositive": 1,
-          "documents": 1,
-          "unjudged": 0
-        }
-      },
-      "legal": {
-        "ja": {
-          "correct": 0,
-          "falsePositive": 1,
-          "documents": 1,
-          "unjudged": 0
-        }
       }
     },
     "fullwidth-alnum-consistency": {
       "blog": {
         "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "correct": 1,
+          "falsePositive": 1,
+          "documents": 2,
           "unjudged": 2
         }
       },
       "business": {
         "ja": {
-          "correct": 6,
+          "correct": 29,
           "falsePositive": 1,
-          "documents": 4,
-          "unjudged": 198
+          "documents": 10,
+          "unjudged": 157
         }
       },
       "docs": {
         "ja": {
-          "correct": 2,
-          "falsePositive": 0,
-          "documents": 1,
-          "unjudged": 4
+          "correct": 19,
+          "falsePositive": 7,
+          "documents": 10,
+          "unjudged": 25
         }
       },
       "legal": {
         "ja": {
-          "correct": 72,
+          "correct": 93,
           "falsePositive": 0,
-          "documents": 7,
+          "documents": 13,
           "unjudged": 25
+        }
+      },
+      "literature": {
+        "ja": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 0
         }
       },
       "speech": {
         "ja": {
-          "correct": 0,
+          "correct": 22,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 6
+          "documents": 5,
+          "unjudged": 5
         }
       },
       "technical": {
@@ -1510,6 +2036,30 @@
       }
     },
     "hankaku-kana": {
+      "academic": {
+        "ja": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 1
+        }
+      },
+      "business": {
+        "ja": {
+          "correct": 38,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
+      "docs": {
+        "ja": {
+          "correct": 17,
+          "falsePositive": 0,
+          "documents": 5,
+          "unjudged": 0
+        }
+      },
       "legal": {
         "ja": {
           "correct": 9,
@@ -1522,9 +2072,9 @@
     "heading-echo": {
       "blog": {
         "en": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 2
         },
         "ja": {
@@ -1539,13 +2089,13 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 33
+          "unjudged": 27
         },
         "ja": {
           "correct": 0,
-          "falsePositive": 4,
-          "documents": 4,
-          "unjudged": 8
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 5
         }
       },
       "technical": {
@@ -1553,11 +2103,25 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 6
+          "unjudged": 7
+        },
+        "ja": {
+          "correct": 2,
+          "falsePositive": 0,
+          "documents": 2,
+          "unjudged": 0
         }
       }
     },
     "heading-end-punctuation-mix": {
+      "academic": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 2
+        }
+      },
       "business": {
         "en": {
           "correct": 0,
@@ -1571,16 +2135,22 @@
           "correct": 1,
           "falsePositive": 0,
           "documents": 1,
-          "unjudged": 3
+          "unjudged": 4
         },
         "ja": {
-          "correct": 2,
+          "correct": 6,
           "falsePositive": 0,
-          "documents": 1,
-          "unjudged": 1
+          "documents": 3,
+          "unjudged": 2
         }
       },
       "legal": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 4
+        },
         "ja": {
           "correct": 0,
           "falsePositive": 0,
@@ -1590,9 +2160,9 @@
       },
       "technical": {
         "en": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 2
         }
       }
@@ -1601,25 +2171,37 @@
       "academic": {
         "en": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 2
+          "falsePositive": 5,
+          "documents": 4,
+          "unjudged": 11
+        },
+        "ja": {
+          "correct": 0,
+          "falsePositive": 9,
+          "documents": 9,
+          "unjudged": 0
         }
       },
       "blog": {
         "en": {
-          "correct": 0,
+          "correct": 5,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 5,
           "unjudged": 1
+        },
+        "ja": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
         }
       },
       "business": {
         "en": {
-          "correct": 0,
+          "correct": 8,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 17
+          "documents": 8,
+          "unjudged": 22
         },
         "ja": {
           "correct": 0,
@@ -1630,15 +2212,15 @@
       },
       "docs": {
         "en": {
-          "correct": 0,
+          "correct": 9,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 11
+          "documents": 2,
+          "unjudged": 12
         },
         "ja": {
-          "correct": 0,
+          "correct": 6,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 6,
           "unjudged": 1
         }
       },
@@ -1659,16 +2241,16 @@
       "literature": {
         "ja": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 1
+          "falsePositive": 3,
+          "documents": 3,
+          "unjudged": 3
         }
       },
       "speech": {
         "ja": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 1
         }
       },
@@ -1680,14 +2262,22 @@
           "unjudged": 10
         },
         "ja": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 40
         }
       }
     },
     "heading-numbering-mix": {
+      "academic": {
+        "ja": {
+          "correct": 0,
+          "falsePositive": 5,
+          "documents": 2,
+          "unjudged": 14
+        }
+      },
       "blog": {
         "en": {
           "correct": 0,
@@ -1701,15 +2291,27 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 4
+          "unjudged": 2
+        },
+        "ja": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 1
         }
       },
       "docs": {
         "en": {
           "correct": 0,
-          "falsePositive": 11,
-          "documents": 7,
-          "unjudged": 13
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 9
+        },
+        "ja": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 3
         }
       },
       "legal": {
@@ -1717,7 +2319,7 @@
           "correct": 7,
           "falsePositive": 0,
           "documents": 1,
-          "unjudged": 5
+          "unjudged": 4
         }
       },
       "technical": {
@@ -1725,11 +2327,19 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 3
+          "unjudged": 2
         }
       }
     },
     "hiragana-fukushi": {
+      "academic": {
+        "ja": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 1
+        }
+      },
       "business": {
         "ja": {
           "correct": 0,
@@ -1738,12 +2348,36 @@
           "unjudged": 5
         }
       },
+      "docs": {
+        "ja": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 4
+        }
+      },
       "legal": {
+        "ja": {
+          "correct": 4,
+          "falsePositive": 0,
+          "documents": 3,
+          "unjudged": 2
+        }
+      },
+      "speech": {
+        "ja": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
+      "technical": {
         "ja": {
           "correct": 2,
           "falsePositive": 0,
-          "documents": 2,
-          "unjudged": 3
+          "documents": 1,
+          "unjudged": 0
         }
       }
     },
@@ -1760,50 +2394,50 @@
     "hyphen-as-dash": {
       "academic": {
         "en": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 27
+          "documents": 1,
+          "unjudged": 29
         }
       },
       "blog": {
         "en": {
-          "correct": 0,
+          "correct": 13,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 6,
           "unjudged": 10
         }
       },
       "business": {
         "en": {
-          "correct": 4,
-          "falsePositive": 0,
-          "documents": 2,
-          "unjudged": 100
+          "correct": 6,
+          "falsePositive": 2,
+          "documents": 5,
+          "unjudged": 126
         }
       },
       "docs": {
         "en": {
-          "correct": 26,
-          "falsePositive": 0,
-          "documents": 8,
-          "unjudged": 21
+          "correct": 43,
+          "falsePositive": 3,
+          "documents": 15,
+          "unjudged": 24
         }
       },
       "legal": {
         "en": {
-          "correct": 14,
+          "correct": 19,
           "falsePositive": 3,
-          "documents": 1,
-          "unjudged": 21
+          "documents": 3,
+          "unjudged": 0
         }
       },
       "technical": {
         "en": {
-          "correct": 0,
+          "correct": 27,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 18
+          "documents": 3,
+          "unjudged": 15
         }
       }
     },
@@ -1815,34 +2449,50 @@
           "documents": 1,
           "unjudged": 0
         }
+      },
+      "legal": {
+        "ja": {
+          "correct": 7,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
+        }
       }
     },
     "image-file-name-alt": {
       "blog": {
         "ja": {
-          "correct": 0,
+          "correct": 3,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 4
+        }
+      },
+      "docs": {
+        "ja": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
         }
       }
     },
-    "ime-residue": {
-      "legal": {
-        "ja": {
+    "impossible-date": {
+      "business": {
+        "en": {
           "correct": 0,
-          "falsePositive": 2,
-          "documents": 1,
-          "unjudged": 0
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 1
         }
       }
     },
     "invisible-character": {
       "business": {
         "en": {
-          "correct": 2,
+          "correct": 26,
           "falsePositive": 0,
-          "documents": 1,
+          "documents": 5,
           "unjudged": 5
         },
         "ja": {
@@ -1859,22 +2509,40 @@
           "documents": 1,
           "unjudged": 0
         }
+      },
+      "speech": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 5
+        }
+      }
+    },
+    "kanji-compound-slip": {
+      "business": {
+        "ja": {
+          "correct": 2,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
+        }
       }
     },
     "katakana-density": {
       "blog": {
         "ja": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "falsePositive": 1,
+          "documents": 1,
           "unjudged": 1
         }
       },
       "docs": {
         "ja": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "falsePositive": 1,
+          "documents": 1,
           "unjudged": 3
         }
       }
@@ -1882,9 +2550,9 @@
     "katakana-long-vowel": {
       "blog": {
         "ja": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 1
         }
       },
@@ -1898,9 +2566,9 @@
       },
       "legal": {
         "ja": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 2
         }
       },
@@ -1914,27 +2582,53 @@
       }
     },
     "known-misspelling": {
+      "business": {
+        "en": {
+          "correct": 3,
+          "falsePositive": 0,
+          "documents": 3,
+          "unjudged": 0
+        },
+        "ja": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 2
+        }
+      },
       "docs": {
         "en": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
           "unjudged": 1
-        }
-      },
-      "legal": {
-        "en": {
+        },
+        "ja": {
           "correct": 1,
           "falsePositive": 0,
           "documents": 1,
           "unjudged": 0
         }
       },
+      "legal": {
+        "en": {
+          "correct": 2,
+          "falsePositive": 0,
+          "documents": 2,
+          "unjudged": 0
+        },
+        "ja": {
+          "correct": 4,
+          "falsePositive": 0,
+          "documents": 4,
+          "unjudged": 0
+        }
+      },
       "literature": {
         "en": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 1
         }
       }
@@ -1942,36 +2636,52 @@
     "kutoten-consistency": {
       "academic": {
         "ja": {
-          "correct": 0,
+          "correct": 2,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 20
+          "documents": 2,
+          "unjudged": 22
         }
       },
       "business": {
         "ja": {
-          "correct": 0,
-          "falsePositive": 5,
+          "correct": 4,
+          "falsePositive": 0,
           "documents": 3,
-          "unjudged": 24
+          "unjudged": 4
         }
       },
       "docs": {
         "ja": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 1
+        }
+      },
+      "legal": {
+        "ja": {
+          "correct": 0,
+          "falsePositive": 19,
+          "documents": 2,
+          "unjudged": 0
         }
       }
     },
     "latin-abbreviation-form": {
+      "academic": {
+        "en": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
       "business": {
         "en": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 4
+          "unjudged": 5
         }
       },
       "docs": {
@@ -1979,7 +2689,7 @@
           "correct": 1,
           "falsePositive": 0,
           "documents": 1,
-          "unjudged": 0
+          "unjudged": 1
         }
       },
       "legal": {
@@ -1994,10 +2704,10 @@
     "latin-spacing": {
       "academic": {
         "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 27
+          "correct": 12,
+          "falsePositive": 4,
+          "documents": 5,
+          "unjudged": 29
         }
       },
       "blog": {
@@ -2010,33 +2720,41 @@
       },
       "business": {
         "ja": {
-          "correct": 11,
-          "falsePositive": 1,
-          "documents": 8,
-          "unjudged": 58
+          "correct": 19,
+          "falsePositive": 4,
+          "documents": 14,
+          "unjudged": 60
         }
       },
       "docs": {
         "ja": {
-          "correct": 8,
+          "correct": 10,
           "falsePositive": 0,
-          "documents": 3,
-          "unjudged": 4
+          "documents": 5,
+          "unjudged": 7
         }
       },
       "legal": {
         "ja": {
-          "correct": 7,
+          "correct": 10,
           "falsePositive": 0,
-          "documents": 2,
-          "unjudged": 5
+          "documents": 3,
+          "unjudged": 6
         }
       },
-      "technical": {
+      "literature": {
         "ja": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
+          "unjudged": 1
+        }
+      },
+      "technical": {
+        "ja": {
+          "correct": 10,
+          "falsePositive": 0,
+          "documents": 1,
           "unjudged": 49
         }
       }
@@ -2053,38 +2771,44 @@
     },
     "list-item-form-mix": {
       "blog": {
-        "ja": {
+        "en": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 3
+          "falsePositive": 3,
+          "documents": 2,
+          "unjudged": 0
+        },
+        "ja": {
+          "correct": 9,
+          "falsePositive": 5,
+          "documents": 7,
+          "unjudged": 2
         }
       },
       "business": {
         "en": {
           "correct": 1,
-          "falsePositive": 8,
-          "documents": 4,
-          "unjudged": 22
+          "falsePositive": 1,
+          "documents": 2,
+          "unjudged": 16
         },
         "ja": {
-          "correct": 0,
-          "falsePositive": 2,
-          "documents": 2,
-          "unjudged": 12
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 21
         }
       },
       "docs": {
         "en": {
-          "correct": 0,
-          "falsePositive": 3,
-          "documents": 3,
-          "unjudged": 11
+          "correct": 4,
+          "falsePositive": 2,
+          "documents": 1,
+          "unjudged": 8
         },
         "ja": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "falsePositive": 2,
+          "documents": 1,
           "unjudged": 3
         }
       },
@@ -2093,23 +2817,23 @@
           "correct": 2,
           "falsePositive": 0,
           "documents": 1,
-          "unjudged": 7
+          "unjudged": 5
         },
         "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 22
+          "correct": 1,
+          "falsePositive": 2,
+          "documents": 3,
+          "unjudged": 21
         }
       }
     },
     "list-marker-mix": {
       "business": {
         "en": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 1
+          "documents": 1,
+          "unjudged": 4
         },
         "ja": {
           "correct": 0,
@@ -2118,11 +2842,25 @@
           "unjudged": 1
         }
       },
-      "technical": {
+      "docs": {
         "en": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
+          "unjudged": 2
+        },
+        "ja": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
+      "technical": {
+        "en": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
           "unjudged": 4
         },
         "ja": {
@@ -2134,6 +2872,14 @@
       }
     },
     "lookalike-character": {
+      "blog": {
+        "ja": {
+          "correct": 3,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
       "business": {
         "ja": {
           "correct": 0,
@@ -2146,34 +2892,42 @@
     "max-kanji-continuous": {
       "academic": {
         "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 23
+          "correct": 1,
+          "falsePositive": 8,
+          "documents": 5,
+          "unjudged": 32
         }
       },
       "blog": {
         "ja": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "falsePositive": 13,
+          "documents": 5,
           "unjudged": 4
+        }
+      },
+      "business": {
+        "ja": {
+          "correct": 4,
+          "falsePositive": 25,
+          "documents": 7,
+          "unjudged": 139
         }
       },
       "docs": {
         "ja": {
-          "correct": 0,
-          "falsePositive": 2,
-          "documents": 1,
-          "unjudged": 10
+          "correct": 1,
+          "falsePositive": 23,
+          "documents": 8,
+          "unjudged": 35
         }
       },
       "speech": {
         "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 6
+          "correct": 3,
+          "falsePositive": 15,
+          "documents": 8,
+          "unjudged": 7
         }
       },
       "technical": {
@@ -2188,10 +2942,10 @@
     "max-paragraph-length": {
       "academic": {
         "en": {
-          "correct": 0,
+          "correct": 2,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 22
+          "documents": 2,
+          "unjudged": 24
         },
         "ja": {
           "correct": 0,
@@ -2202,11 +2956,191 @@
       },
       "blog": {
         "en": {
+          "correct": 27,
+          "falsePositive": 0,
+          "documents": 12,
+          "unjudged": 36
+        },
+        "ja": {
+          "correct": 4,
+          "falsePositive": 0,
+          "documents": 3,
+          "unjudged": 5
+        }
+      },
+      "business": {
+        "en": {
+          "correct": 26,
+          "falsePositive": 0,
+          "documents": 8,
+          "unjudged": 123
+        },
+        "ja": {
+          "correct": 4,
+          "falsePositive": 5,
+          "documents": 9,
+          "unjudged": 69
+        }
+      },
+      "docs": {
+        "en": {
+          "correct": 12,
+          "falsePositive": 0,
+          "documents": 8,
+          "unjudged": 55
+        },
+        "ja": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 2
+        }
+      },
+      "legal": {
+        "en": {
+          "correct": 57,
+          "falsePositive": 0,
+          "documents": 9,
+          "unjudged": 46
+        },
+        "ja": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 1
+        }
+      },
+      "speech": {
+        "en": {
+          "correct": 19,
+          "falsePositive": 0,
+          "documents": 4,
+          "unjudged": 7
+        },
+        "ja": {
+          "correct": 5,
+          "falsePositive": 1,
+          "documents": 5,
+          "unjudged": 31
+        }
+      },
+      "technical": {
+        "en": {
+          "correct": 2,
+          "falsePositive": 0,
+          "documents": 2,
+          "unjudged": 37
+        },
+        "ja": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
+        }
+      }
+    },
+    "max-sentence-length": {
+      "academic": {
+        "en": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 35
+          "unjudged": 72
         },
+        "ja": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 56
+        }
+      },
+      "blog": {
+        "en": {
+          "correct": 32,
+          "falsePositive": 1,
+          "documents": 16,
+          "unjudged": 20
+        },
+        "ja": {
+          "correct": 3,
+          "falsePositive": 0,
+          "documents": 3,
+          "unjudged": 4
+        }
+      },
+      "business": {
+        "en": {
+          "correct": 103,
+          "falsePositive": 4,
+          "documents": 28,
+          "unjudged": 418
+        },
+        "ja": {
+          "correct": 181,
+          "falsePositive": 2,
+          "documents": 25,
+          "unjudged": 433
+        }
+      },
+      "docs": {
+        "en": {
+          "correct": 42,
+          "falsePositive": 0,
+          "documents": 16,
+          "unjudged": 188
+        },
+        "ja": {
+          "correct": 22,
+          "falsePositive": 2,
+          "documents": 10,
+          "unjudged": 16
+        }
+      },
+      "legal": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 943
+        },
+        "ja": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 82
+        }
+      },
+      "speech": {
+        "en": {
+          "correct": 212,
+          "falsePositive": 0,
+          "documents": 5,
+          "unjudged": 104
+        },
+        "ja": {
+          "correct": 48,
+          "falsePositive": 0,
+          "documents": 12,
+          "unjudged": 54
+        }
+      },
+      "technical": {
+        "en": {
+          "correct": 4,
+          "falsePositive": 2,
+          "documents": 3,
+          "unjudged": 160
+        },
+        "ja": {
+          "correct": 3,
+          "falsePositive": 0,
+          "documents": 2,
+          "unjudged": 4
+        }
+      }
+    },
+    "max-ten": {
+      "academic": {
         "ja": {
           "correct": 0,
           "falsePositive": 0,
@@ -2215,192 +3149,102 @@
         }
       },
       "business": {
-        "en": {
-          "correct": 1,
-          "falsePositive": 0,
-          "documents": 1,
-          "unjudged": 104
-        },
         "ja": {
-          "correct": 3,
-          "falsePositive": 6,
-          "documents": 9,
-          "unjudged": 65
+          "correct": 9,
+          "falsePositive": 1,
+          "documents": 4,
+          "unjudged": 32
         }
       },
       "docs": {
-        "en": {
-          "correct": 1,
-          "falsePositive": 0,
-          "documents": 1,
-          "unjudged": 50
-        },
         "ja": {
-          "correct": 1,
-          "falsePositive": 0,
-          "documents": 1,
-          "unjudged": 1
+          "correct": 3,
+          "falsePositive": 1,
+          "documents": 4,
+          "unjudged": 0
         }
       },
       "legal": {
-        "en": {
+        "ja": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 59
-        },
+          "unjudged": 182
+        }
+      },
+      "literature": {
         "ja": {
           "correct": 0,
-          "falsePositive": 1,
-          "documents": 1,
-          "unjudged": 14
+          "falsePositive": 32,
+          "documents": 5,
+          "unjudged": 28
         }
       },
       "speech": {
-        "en": {
+        "ja": {
+          "correct": 26,
+          "falsePositive": 0,
+          "documents": 13,
+          "unjudged": 78
+        }
+      }
+    },
+    "misconversion": {
+      "legal": {
+        "ja": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
+        }
+      }
+    },
+    "missing-final-period": {
+      "academic": {
+        "ja": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
           "unjudged": 7
         }
       },
-      "technical": {
-        "en": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 33
-        }
-      }
-    },
-    "max-sentence-length": {
-      "blog": {
-        "en": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 19
-        },
-        "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 4
-        }
-      },
-      "business": {
-        "en": {
-          "correct": 23,
-          "falsePositive": 0,
-          "documents": 5,
-          "unjudged": 240
-        },
-        "ja": {
-          "correct": 13,
-          "falsePositive": 6,
-          "documents": 8,
-          "unjudged": 316
-        }
-      },
-      "docs": {
-        "en": {
-          "correct": 10,
-          "falsePositive": 0,
-          "documents": 5,
-          "unjudged": 167
-        },
-        "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 2
-        }
-      },
-      "speech": {
-        "en": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 114
-        },
-        "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 12
-        }
-      },
-      "technical": {
-        "en": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 128
-        },
-        "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 4
-        }
-      }
-    },
-    "max-ten": {
-      "business": {
-        "ja": {
-          "correct": 2,
-          "falsePositive": 1,
-          "documents": 2,
-          "unjudged": 14
-        }
-      },
-      "literature": {
-        "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 2
-        }
-      },
-      "speech": {
-        "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 61
-        }
-      }
-    },
-    "missing-final-period": {
       "blog": {
         "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "correct": 1,
+          "falsePositive": 7,
+          "documents": 3,
           "unjudged": 1
         }
       },
       "business": {
         "ja": {
           "correct": 0,
+          "falsePositive": 2,
+          "documents": 1,
+          "unjudged": 4
+        }
+      },
+      "docs": {
+        "ja": {
+          "correct": 2,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 2
         }
       },
       "legal": {
         "ja": {
-          "correct": 0,
+          "correct": 2,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 2,
           "unjudged": 1
         }
       },
       "technical": {
         "ja": {
-          "correct": 0,
+          "correct": 2,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 2,
           "unjudged": 1
         }
       }
@@ -2408,10 +3252,10 @@
     "missing-space-after-comma": {
       "business": {
         "en": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 1
+          "documents": 1,
+          "unjudged": 2
         }
       },
       "technical": {
@@ -2424,19 +3268,19 @@
       }
     },
     "nado-closed-list": {
-      "business": {
+      "academic": {
         "ja": {
           "correct": 0,
-          "falsePositive": 1,
-          "documents": 1,
+          "falsePositive": 0,
+          "documents": 0,
           "unjudged": 1
         }
       },
       "legal": {
         "ja": {
           "correct": 0,
-          "falsePositive": 5,
-          "documents": 3,
+          "falsePositive": 0,
+          "documents": 0,
           "unjudged": 2
         }
       }
@@ -2444,16 +3288,16 @@
     "name-variant": {
       "academic": {
         "en": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "correct": 1,
+          "falsePositive": 1,
+          "documents": 1,
           "unjudged": 3
         },
         "ja": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 3
+          "unjudged": 4
         }
       },
       "blog": {
@@ -2472,10 +3316,10 @@
       },
       "business": {
         "en": {
-          "correct": 2,
-          "falsePositive": 3,
+          "correct": 4,
+          "falsePositive": 1,
           "documents": 5,
-          "unjudged": 20
+          "unjudged": 36
         },
         "ja": {
           "correct": 0,
@@ -2487,39 +3331,51 @@
       "docs": {
         "en": {
           "correct": 2,
-          "falsePositive": 1,
-          "documents": 3,
-          "unjudged": 17
+          "falsePositive": 2,
+          "documents": 4,
+          "unjudged": 15
+        },
+        "ja": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
         }
       },
       "legal": {
         "en": {
           "correct": 5,
-          "falsePositive": 11,
-          "documents": 9,
+          "falsePositive": 0,
+          "documents": 5,
           "unjudged": 3
+        },
+        "ja": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
         }
       },
       "literature": {
         "en": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 15
+          "correct": 1,
+          "falsePositive": 2,
+          "documents": 2,
+          "unjudged": 14
         }
       },
       "speech": {
         "en": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 1
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 5
         },
         "ja": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 1
+          "unjudged": 2
         }
       },
       "technical": {
@@ -2527,7 +3383,7 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 4
+          "unjudged": 10
         }
       }
     },
@@ -2535,39 +3391,9 @@
       "academic": {
         "en": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "falsePositive": 1,
+          "documents": 1,
           "unjudged": 1
-        }
-      },
-      "blog": {
-        "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 3
-        }
-      },
-      "business": {
-        "en": {
-          "correct": 0,
-          "falsePositive": 3,
-          "documents": 3,
-          "unjudged": 10
-        },
-        "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 20
-        }
-      },
-      "docs": {
-        "en": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 5
         },
         "ja": {
           "correct": 0,
@@ -2576,25 +3402,61 @@
           "unjudged": 0
         }
       },
+      "blog": {
+        "ja": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 3
+        }
+      },
+      "business": {
+        "en": {
+          "correct": 2,
+          "falsePositive": 0,
+          "documents": 2,
+          "unjudged": 11
+        },
+        "ja": {
+          "correct": 3,
+          "falsePositive": 6,
+          "documents": 9,
+          "unjudged": 26
+        }
+      },
+      "docs": {
+        "en": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 5
+        },
+        "ja": {
+          "correct": 1,
+          "falsePositive": 1,
+          "documents": 2,
+          "unjudged": 4
+        }
+      },
       "speech": {
         "ja": {
-          "correct": 0,
+          "correct": 3,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 1
+          "documents": 3,
+          "unjudged": 2
         }
       },
       "technical": {
         "en": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 6
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 8
         },
         "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "correct": 3,
+          "falsePositive": 2,
+          "documents": 5,
           "unjudged": 7
         }
       }
@@ -2602,42 +3464,42 @@
     "no-doubled-joshi": {
       "academic": {
         "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 1
+          "correct": 6,
+          "falsePositive": 1,
+          "documents": 5,
+          "unjudged": 10
         }
       },
       "blog": {
         "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "correct": 7,
+          "falsePositive": 2,
+          "documents": 5,
           "unjudged": 7
         }
       },
       "business": {
         "ja": {
-          "correct": 5,
-          "falsePositive": 2,
-          "documents": 6,
-          "unjudged": 110
+          "correct": 46,
+          "falsePositive": 4,
+          "documents": 16,
+          "unjudged": 164
         }
       },
       "docs": {
         "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 5
+          "correct": 10,
+          "falsePositive": 1,
+          "documents": 6,
+          "unjudged": 32
         }
       },
       "speech": {
         "ja": {
-          "correct": 0,
+          "correct": 5,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 4
+          "documents": 4,
+          "unjudged": 12
         }
       },
       "technical": {
@@ -2645,11 +3507,19 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 16
+          "unjudged": 25
         }
       }
     },
     "no-em-dash": {
+      "blog": {
+        "ja": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
       "business": {
         "en": {
           "correct": 0,
@@ -2662,14 +3532,6 @@
           "falsePositive": 0,
           "documents": 0,
           "unjudged": 1
-        }
-      },
-      "legal": {
-        "en": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 2
         }
       }
     },
@@ -2681,6 +3543,14 @@
           "documents": 0,
           "unjudged": 1
         }
+      },
+      "docs": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 0
+        }
       }
     },
     "no-mixed-desumasu": {
@@ -2689,26 +3559,34 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 1
+          "unjudged": 3
         }
       },
       "blog": {
         "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "correct": 1,
+          "falsePositive": 7,
+          "documents": 4,
           "unjudged": 5
         }
       },
       "business": {
         "ja": {
-          "correct": 1,
-          "falsePositive": 1,
-          "documents": 2,
-          "unjudged": 13
+          "correct": 3,
+          "falsePositive": 7,
+          "documents": 8,
+          "unjudged": 17
         }
       },
       "docs": {
+        "ja": {
+          "correct": 1,
+          "falsePositive": 5,
+          "documents": 4,
+          "unjudged": 6
+        }
+      },
+      "legal": {
         "ja": {
           "correct": 0,
           "falsePositive": 0,
@@ -2716,12 +3594,12 @@
           "unjudged": 3
         }
       },
-      "legal": {
+      "speech": {
         "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 1
+          "correct": 2,
+          "falsePositive": 10,
+          "documents": 6,
+          "unjudged": 0
         }
       },
       "technical": {
@@ -2729,7 +3607,7 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 8
+          "unjudged": 10
         }
       }
     },
@@ -2737,32 +3615,38 @@
       "business": {
         "ja": {
           "correct": 0,
-          "falsePositive": 4,
-          "documents": 3,
-          "unjudged": 6
+          "falsePositive": 3,
+          "documents": 2,
+          "unjudged": 1
         }
       },
       "legal": {
         "ja": {
           "correct": 1,
-          "falsePositive": 1,
+          "falsePositive": 0,
           "documents": 1,
-          "unjudged": 4
+          "unjudged": 7
         }
       }
     },
     "nominalization": {
       "business": {
         "ja": {
-          "correct": 6,
-          "falsePositive": 1,
-          "documents": 1,
-          "unjudged": 6
+          "correct": 81,
+          "falsePositive": 5,
+          "documents": 4,
+          "unjudged": 63
         }
       }
     },
     "nonstandard-word": {
       "blog": {
+        "en": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
+        },
         "ja": {
           "correct": 0,
           "falsePositive": 0,
@@ -2772,10 +3656,18 @@
       },
       "docs": {
         "en": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 1
+        }
+      },
+      "legal": {
+        "en": {
+          "correct": 3,
+          "falsePositive": 0,
+          "documents": 2,
+          "unjudged": 0
         }
       },
       "technical": {
@@ -2790,17 +3682,17 @@
     "number-style-consistency": {
       "academic": {
         "en": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 26
+          "correct": 2,
+          "falsePositive": 1,
+          "documents": 2,
+          "unjudged": 35
         }
       },
       "blog": {
         "ja": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 4
         }
       },
@@ -2809,26 +3701,20 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 6
-        },
-        "ja": {
-          "correct": 0,
-          "falsePositive": 1,
-          "documents": 1,
-          "unjudged": 0
+          "unjudged": 19
         }
       },
       "docs": {
         "en": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 15
         },
         "ja": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "falsePositive": 4,
+          "documents": 1,
           "unjudged": 7
         }
       },
@@ -2838,6 +3724,16 @@
           "falsePositive": 0,
           "documents": 0,
           "unjudged": 1
+        }
+      }
+    },
+    "number-without-unit": {
+      "business": {
+        "ja": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
         }
       }
     },
@@ -2853,27 +3749,39 @@
     },
     "numbering-gap": {
       "business": {
+        "en": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 3
+        },
         "ja": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "falsePositive": 1,
+          "documents": 1,
           "unjudged": 1
         }
       },
       "docs": {
         "en": {
           "correct": 0,
-          "falsePositive": 1,
+          "falsePositive": 2,
           "documents": 1,
-          "unjudged": 0
+          "unjudged": 1
+        },
+        "ja": {
+          "correct": 0,
+          "falsePositive": 2,
+          "documents": 1,
+          "unjudged": 3
         }
       },
       "legal": {
         "en": {
-          "correct": 0,
-          "falsePositive": 1,
-          "documents": 1,
-          "unjudged": 30
+          "correct": 1,
+          "falsePositive": 6,
+          "documents": 3,
+          "unjudged": 31
         },
         "ja": {
           "correct": 5,
@@ -2887,16 +3795,16 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 1
+          "unjudged": 5
         }
       }
     },
     "numeral-sentence-start": {
       "academic": {
         "en": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 1
         }
       },
@@ -2927,8 +3835,8 @@
       "legal": {
         "en": {
           "correct": 0,
-          "falsePositive": 1,
-          "documents": 1,
+          "falsePositive": 0,
+          "documents": 0,
           "unjudged": 3
         }
       }
@@ -2937,15 +3845,15 @@
       "legal": {
         "en": {
           "correct": 0,
-          "falsePositive": 1,
-          "documents": 1,
-          "unjudged": 23
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 25
         },
         "ja": {
           "correct": 0,
-          "falsePositive": 2,
-          "documents": 1,
-          "unjudged": 0
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 7
         }
       }
     },
@@ -2963,35 +3871,27 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 7
+          "unjudged": 8
         },
         "ja": {
-          "correct": 0,
+          "correct": 3,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 1
+          "documents": 2,
+          "unjudged": 2
         }
       },
       "docs": {
         "en": {
           "correct": 0,
-          "falsePositive": 2,
-          "documents": 2,
+          "falsePositive": 7,
+          "documents": 4,
           "unjudged": 2
-        }
-      },
-      "speech": {
-        "en": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 1
         },
         "ja": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 8
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 1
         }
       },
       "technical": {
@@ -2999,9 +3899,19 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 11
+          "unjudged": 12
         },
         "ja": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 1
+        }
+      }
+    },
+    "ordinal-suffix-mismatch": {
+      "business": {
+        "en": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
@@ -3012,88 +3922,104 @@
     "orthographic-variant": {
       "academic": {
         "en": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 8
+          "correct": 3,
+          "falsePositive": 3,
+          "documents": 3,
+          "unjudged": 12
         },
         "ja": {
-          "correct": 0,
+          "correct": 3,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 3
+          "documents": 3,
+          "unjudged": 14
         }
       },
       "blog": {
         "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "correct": 19,
+          "falsePositive": 5,
+          "documents": 10,
           "unjudged": 28
         }
       },
       "business": {
         "en": {
-          "correct": 2,
+          "correct": 4,
           "falsePositive": 0,
-          "documents": 2,
-          "unjudged": 21
+          "documents": 4,
+          "unjudged": 58
         },
         "ja": {
-          "correct": 10,
-          "falsePositive": 6,
-          "documents": 6,
-          "unjudged": 102
+          "correct": 21,
+          "falsePositive": 4,
+          "documents": 11,
+          "unjudged": 99
         }
       },
       "docs": {
         "en": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 15
+          "falsePositive": 3,
+          "documents": 3,
+          "unjudged": 16
         },
         "ja": {
-          "correct": 2,
-          "falsePositive": 0,
-          "documents": 2,
-          "unjudged": 22
+          "correct": 34,
+          "falsePositive": 3,
+          "documents": 13,
+          "unjudged": 59
         }
       },
       "legal": {
         "en": {
-          "correct": 9,
-          "falsePositive": 13,
-          "documents": 6,
+          "correct": 13,
+          "falsePositive": 2,
+          "documents": 9,
           "unjudged": 17
         },
         "ja": {
-          "correct": 83,
-          "falsePositive": 3,
-          "documents": 13,
-          "unjudged": 77
+          "correct": 136,
+          "falsePositive": 2,
+          "documents": 22,
+          "unjudged": 55
         }
       },
       "speech": {
-        "ja": {
+        "en": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 31
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 1
+        },
+        "ja": {
+          "correct": 20,
+          "falsePositive": 9,
+          "documents": 13,
+          "unjudged": 44
         }
       },
       "technical": {
         "en": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 10
+          "documents": 1,
+          "unjudged": 11
         },
         "ja": {
-          "correct": 0,
+          "correct": 13,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 8,
           "unjudged": 25
+        }
+      }
+    },
+    "outside-announced-list": {
+      "literature": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 0
         }
       }
     },
@@ -3101,53 +4027,69 @@
       "academic": {
         "en": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "falsePositive": 1,
+          "documents": 1,
           "unjudged": 1
+        }
+      },
+      "blog": {
+        "en": {
+          "correct": 6,
+          "falsePositive": 8,
+          "documents": 12,
+          "unjudged": 0
         }
       },
       "business": {
         "en": {
-          "correct": 3,
+          "correct": 6,
           "falsePositive": 0,
-          "documents": 3,
-          "unjudged": 13
+          "documents": 6,
+          "unjudged": 24
         }
       },
       "docs": {
         "en": {
-          "correct": 2,
-          "falsePositive": 1,
-          "documents": 3,
-          "unjudged": 3
+          "correct": 6,
+          "falsePositive": 0,
+          "documents": 6,
+          "unjudged": 7
         }
       },
       "legal": {
         "en": {
-          "correct": 1,
-          "falsePositive": 0,
-          "documents": 1,
+          "correct": 6,
+          "falsePositive": 2,
+          "documents": 7,
           "unjudged": 8
         }
       },
       "speech": {
         "en": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "falsePositive": 2,
+          "documents": 1,
           "unjudged": 2
         }
       },
       "technical": {
         "en": {
-          "correct": 0,
+          "correct": 3,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 6
+          "documents": 2,
+          "unjudged": 7
         }
       }
     },
     "padded-intro": {
+      "blog": {
+        "ja": {
+          "correct": 1,
+          "falsePositive": 1,
+          "documents": 2,
+          "unjudged": 0
+        }
+      },
       "business": {
         "ja": {
           "correct": 0,
@@ -3158,10 +4100,28 @@
       }
     },
     "paragraph-restatement": {
+      "blog": {
+        "ja": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
       "business": {
         "ja": {
           "correct": 0,
           "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 0
+        }
+      }
+    },
+    "party-order": {
+      "legal": {
+        "ja": {
+          "correct": 2,
+          "falsePositive": 0,
           "documents": 1,
           "unjudged": 0
         }
@@ -3173,16 +4133,16 @@
           "correct": 0,
           "falsePositive": 1,
           "documents": 1,
-          "unjudged": 0
+          "unjudged": 1
         }
       }
     },
     "person-consistency": {
       "blog": {
         "en": {
-          "correct": 0,
+          "correct": 4,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 1
         }
       },
@@ -3192,20 +4152,30 @@
           "falsePositive": 0,
           "documents": 0,
           "unjudged": 2
-        },
-        "ja": {
-          "correct": 0,
-          "falsePositive": 2,
-          "documents": 2,
-          "unjudged": 1
         }
       },
       "docs": {
         "en": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 18
+        }
+      },
+      "legal": {
+        "en": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 18
+          "unjudged": 1
+        }
+      },
+      "speech": {
+        "ja": {
+          "correct": 1,
+          "falsePositive": 1,
+          "documents": 2,
+          "unjudged": 0
         }
       },
       "technical": {
@@ -3221,14 +4191,14 @@
       "business": {
         "en": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 6
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 7
         },
         "ja": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "falsePositive": 2,
+          "documents": 2,
           "unjudged": 6
         }
       }
@@ -3243,8 +4213,30 @@
         },
         "ja": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "falsePositive": 3,
+          "documents": 3,
+          "unjudged": 1
+        }
+      },
+      "business": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 8,
+          "documents": 8,
+          "unjudged": 4
+        },
+        "ja": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 1
+        }
+      },
+      "technical": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
           "unjudged": 1
         }
       }
@@ -3260,35 +4252,51 @@
       }
     },
     "quote-style-consistency": {
+      "academic": {
+        "en": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
       "blog": {
         "en": {
-          "correct": 0,
+          "correct": 30,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 12,
           "unjudged": 24
         }
       },
       "business": {
         "en": {
-          "correct": 7,
+          "correct": 9,
           "falsePositive": 0,
-          "documents": 2,
-          "unjudged": 24
+          "documents": 4,
+          "unjudged": 54
         }
       },
-      "legal": {
-        "en": {
-          "correct": 14,
-          "falsePositive": 0,
-          "documents": 7,
-          "unjudged": 45
-        }
-      },
-      "speech": {
+      "docs": {
         "en": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
+          "unjudged": 86
+        }
+      },
+      "legal": {
+        "en": {
+          "correct": 37,
+          "falsePositive": 0,
+          "documents": 16,
+          "unjudged": 49
+        }
+      },
+      "speech": {
+        "en": {
+          "correct": 12,
+          "falsePositive": 0,
+          "documents": 3,
           "unjudged": 4
         }
       },
@@ -3302,7 +4310,21 @@
       }
     },
     "quote-without-source": {
+      "academic": {
+        "ja": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 4
+        }
+      },
       "blog": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 1
+        },
         "ja": {
           "correct": 0,
           "falsePositive": 0,
@@ -3314,9 +4336,9 @@
     "ra-nuki": {
       "docs": {
         "ja": {
-          "correct": 1,
+          "correct": 2,
           "falsePositive": 0,
-          "documents": 1,
+          "documents": 2,
           "unjudged": 0
         }
       }
@@ -3337,7 +4359,7 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 2
+          "unjudged": 1
         }
       },
       "docs": {
@@ -3352,13 +4374,19 @@
     "redundant-expression": {
       "academic": {
         "en": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 1
         }
       },
       "blog": {
+        "en": {
+          "correct": 3,
+          "falsePositive": 0,
+          "documents": 3,
+          "unjudged": 0
+        },
         "ja": {
           "correct": 0,
           "falsePositive": 0,
@@ -3376,45 +4404,45 @@
       },
       "docs": {
         "en": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 1
         }
       },
       "legal": {
         "en": {
-          "correct": 2,
+          "correct": 7,
           "falsePositive": 0,
-          "documents": 1,
+          "documents": 4,
           "unjudged": 3
         },
         "ja": {
-          "correct": 0,
+          "correct": 2,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 2,
           "unjudged": 1
         }
       },
       "speech": {
         "en": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 1
         },
         "ja": {
-          "correct": 0,
+          "correct": 2,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 2,
           "unjudged": 2
         }
       },
       "technical": {
         "en": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 1
         }
       }
@@ -3425,7 +4453,7 @@
           "correct": 1,
           "falsePositive": 0,
           "documents": 1,
-          "unjudged": 8
+          "unjudged": 9
         }
       }
     },
@@ -3437,15 +4465,39 @@
           "documents": 0,
           "unjudged": 6
         }
+      },
+      "technical": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 0
+        }
       }
     },
     "repeated-conjunction": {
-      "business": {
+      "academic": {
         "ja": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 1
+          "unjudged": 2
+        }
+      },
+      "blog": {
+        "ja": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
+      "business": {
+        "ja": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 2
         }
       },
       "docs": {
@@ -3453,7 +4505,7 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 1
+          "unjudged": 2
         }
       },
       "legal": {
@@ -3461,57 +4513,65 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 9
+          "unjudged": 10
         }
       }
     },
     "repeated-sentence-ending": {
       "academic": {
         "ja": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 3
         }
       },
       "blog": {
         "ja": {
-          "correct": 0,
+          "correct": 3,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 3,
           "unjudged": 1
         }
       },
       "business": {
         "ja": {
-          "correct": 3,
+          "correct": 7,
           "falsePositive": 2,
-          "documents": 5,
-          "unjudged": 78
+          "documents": 8,
+          "unjudged": 83
+        }
+      },
+      "docs": {
+        "ja": {
+          "correct": 1,
+          "falsePositive": 1,
+          "documents": 2,
+          "unjudged": 2
         }
       },
       "literature": {
         "ja": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 1
+          "falsePositive": 46,
+          "documents": 13,
+          "unjudged": 11
         }
       },
       "speech": {
         "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 11
+          "correct": 5,
+          "falsePositive": 3,
+          "documents": 6,
+          "unjudged": 33
         }
       },
       "technical": {
         "ja": {
-          "correct": 0,
+          "correct": 2,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 3
+          "documents": 2,
+          "unjudged": 6
         }
       }
     },
@@ -3533,8 +4593,8 @@
       "docs": {
         "en": {
           "correct": 0,
-          "falsePositive": 1,
-          "documents": 1,
+          "falsePositive": 2,
+          "documents": 2,
           "unjudged": 0
         }
       }
@@ -3545,13 +4605,13 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 1
+          "unjudged": 2
         },
         "ja": {
           "correct": 0,
-          "falsePositive": 11,
+          "falsePositive": 7,
           "documents": 3,
-          "unjudged": 22
+          "unjudged": 23
         }
       }
     },
@@ -3567,21 +4627,21 @@
           "correct": 0,
           "falsePositive": 1,
           "documents": 1,
-          "unjudged": 0
+          "unjudged": 10
         }
       },
       "legal": {
         "en": {
           "correct": 5,
-          "falsePositive": 1,
+          "falsePositive": 0,
           "documents": 4,
-          "unjudged": 40
+          "unjudged": 35
         },
         "ja": {
           "correct": 1,
-          "falsePositive": 1,
-          "documents": 1,
-          "unjudged": 21
+          "falsePositive": 2,
+          "documents": 3,
+          "unjudged": 20
         }
       },
       "technical": {
@@ -3592,24 +4652,58 @@
           "unjudged": 2
         },
         "ja": {
-          "correct": 0,
+          "correct": 2,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 1
+        }
+      }
+    },
+    "rule-of-three": {
+      "blog": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 2,
+          "documents": 2,
+          "unjudged": 0
+        },
+        "ja": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 0
         }
       }
     },
     "sasete-itadaku": {
       "business": {
         "ja": {
-          "correct": 0,
+          "correct": 4,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 46
         }
       }
     },
+    "section-length-uniformity": {
+      "blog": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 0
+        }
+      }
+    },
     "sentence-initial-conjunction-run": {
+      "academic": {
+        "ja": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 2
+        }
+      },
       "blog": {
         "ja": {
           "correct": 0,
@@ -3627,7 +4721,15 @@
         }
       },
       "legal": {
-        "en": {
+        "ja": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 1
+        }
+      },
+      "speech": {
+        "ja": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
@@ -3636,11 +4738,19 @@
       }
     },
     "sentence-initial-so": {
-      "blog": {
+      "academic": {
         "en": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
+          "unjudged": 3
+        }
+      },
+      "blog": {
+        "en": {
+          "correct": 3,
+          "falsePositive": 0,
+          "documents": 2,
           "unjudged": 1
         }
       },
@@ -3654,9 +4764,9 @@
       },
       "docs": {
         "en": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 3
         }
       }
@@ -3672,28 +4782,52 @@
       }
     },
     "sentence-spacing-consistency": {
+      "academic": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
+      "blog": {
+        "en": {
+          "correct": 4,
+          "falsePositive": 0,
+          "documents": 4,
+          "unjudged": 0
+        }
+      },
       "business": {
         "en": {
-          "correct": 1,
+          "correct": 2,
           "falsePositive": 0,
-          "documents": 1,
-          "unjudged": 19
+          "documents": 2,
+          "unjudged": 93
         }
       },
       "docs": {
         "en": {
-          "correct": 0,
+          "correct": 5,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 4,
           "unjudged": 34
         }
       },
       "legal": {
         "en": {
-          "correct": 3,
+          "correct": 9,
           "falsePositive": 0,
+          "documents": 5,
+          "unjudged": 42
+        }
+      },
+      "literature": {
+        "en": {
+          "correct": 7,
+          "falsePositive": 2,
           "documents": 2,
-          "unjudged": 7
+          "unjudged": 0
         }
       },
       "technical": {
@@ -3725,17 +4859,25 @@
       "academic": {
         "en": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "falsePositive": 1,
+          "documents": 1,
           "unjudged": 1
+        }
+      },
+      "blog": {
+        "en": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
         }
       },
       "business": {
         "en": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 4
+          "documents": 1,
+          "unjudged": 5
         }
       },
       "docs": {
@@ -3748,18 +4890,26 @@
       },
       "legal": {
         "en": {
-          "correct": 7,
+          "correct": 8,
           "falsePositive": 0,
-          "documents": 5,
-          "unjudged": 2
+          "documents": 6,
+          "unjudged": 4
         }
       },
       "literature": {
         "en": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 2
+        }
+      },
+      "technical": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 3,
+          "documents": 1,
+          "unjudged": 0
         }
       }
     },
@@ -3767,9 +4917,17 @@
       "academic": {
         "en": {
           "correct": 0,
+          "falsePositive": 5,
+          "documents": 3,
+          "unjudged": 28
+        }
+      },
+      "blog": {
+        "en": {
+          "correct": 4,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 23
+          "documents": 2,
+          "unjudged": 0
         }
       },
       "business": {
@@ -3777,23 +4935,31 @@
           "correct": 4,
           "falsePositive": 0,
           "documents": 1,
-          "unjudged": 13
+          "unjudged": 20
         }
       },
       "docs": {
         "en": {
-          "correct": 1,
+          "correct": 2,
           "falsePositive": 0,
-          "documents": 1,
+          "documents": 2,
           "unjudged": 5
         }
       },
       "legal": {
         "en": {
+          "correct": 5,
+          "falsePositive": 0,
+          "documents": 3,
+          "unjudged": 0
+        }
+      },
+      "speech": {
+        "en": {
           "correct": 1,
           "falsePositive": 0,
           "documents": 1,
-          "unjudged": 0
+          "unjudged": 1
         }
       },
       "technical": {
@@ -3801,7 +4967,7 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 3
+          "unjudged": 4
         }
       }
     },
@@ -3819,16 +4985,24 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 2
+          "unjudged": 3
         }
       }
     },
     "stray-space": {
+      "academic": {
+        "ja": {
+          "correct": 3,
+          "falsePositive": 0,
+          "documents": 2,
+          "unjudged": 1
+        }
+      },
       "blog": {
         "ja": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 8
         }
       },
@@ -3842,26 +5016,44 @@
       },
       "docs": {
         "ja": {
-          "correct": 0,
+          "correct": 4,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 1
+          "documents": 3,
+          "unjudged": 2
         }
       },
       "legal": {
         "ja": {
-          "correct": 2,
+          "correct": 6,
           "falsePositive": 0,
-          "documents": 1,
+          "documents": 2,
           "unjudged": 2
         }
       },
       "technical": {
         "ja": {
+          "correct": 3,
+          "falsePositive": 0,
+          "documents": 2,
+          "unjudged": 1
+        }
+      }
+    },
+    "summary-fact-mismatch": {
+      "business": {
+        "en": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
           "unjudged": 1
+        }
+      },
+      "technical": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 0
         }
       }
     },
@@ -3891,51 +5083,17 @@
           "documents": 2,
           "unjudged": 3
         }
-      }
-    },
-    "tari-unpaired": {
-      "business": {
-        "ja": {
-          "correct": 3,
-          "falsePositive": 0,
-          "documents": 3,
-          "unjudged": 1
-        }
-      },
-      "docs": {
-        "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 5
-        }
-      },
-      "legal": {
-        "ja": {
-          "correct": 7,
-          "falsePositive": 0,
-          "documents": 2,
-          "unjudged": 2
-        }
       },
       "speech": {
         "ja": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 1
-        }
-      },
-      "technical": {
-        "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 3
+          "unjudged": 2
         }
       }
     },
-    "teki-overuse": {
+    "tari-unpaired": {
       "academic": {
         "ja": {
           "correct": 0,
@@ -3944,93 +5102,191 @@
           "unjudged": 2
         }
       },
+      "blog": {
+        "ja": {
+          "correct": 2,
+          "falsePositive": 0,
+          "documents": 2,
+          "unjudged": 0
+        }
+      },
       "business": {
         "ja": {
           "correct": 5,
-          "falsePositive": 1,
+          "falsePositive": 0,
           "documents": 4,
-          "unjudged": 8
-        }
-      },
-      "legal": {
-        "ja": {
-          "correct": 0,
-          "falsePositive": 1,
-          "documents": 1,
-          "unjudged": 42
-        }
-      },
-      "literature": {
-        "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 2
-        }
-      },
-      "speech": {
-        "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 4
-        }
-      }
-    },
-    "title-case-consistency": {
-      "business": {
-        "en": {
-          "correct": 1,
-          "falsePositive": 0,
-          "documents": 1,
-          "unjudged": 8
-        }
-      },
-      "docs": {
-        "en": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 6
-        }
-      },
-      "legal": {
-        "en": {
-          "correct": 2,
-          "falsePositive": 0,
-          "documents": 1,
-          "unjudged": 5
-        }
-      },
-      "technical": {
-        "en": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 5
-        }
-      }
-    },
-    "title-length": {
-      "business": {
-        "en": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 1
-        },
-        "ja": {
-          "correct": 3,
-          "falsePositive": 0,
-          "documents": 3,
           "unjudged": 3
         }
       },
       "docs": {
         "ja": {
+          "correct": 8,
+          "falsePositive": 0,
+          "documents": 3,
+          "unjudged": 8
+        }
+      },
+      "legal": {
+        "ja": {
+          "correct": 13,
+          "falsePositive": 0,
+          "documents": 4,
+          "unjudged": 3
+        }
+      },
+      "speech": {
+        "ja": {
           "correct": 1,
           "falsePositive": 0,
           "documents": 1,
+          "unjudged": 4
+        }
+      },
+      "technical": {
+        "ja": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 3
+        }
+      }
+    },
+    "teki-overuse": {
+      "academic": {
+        "ja": {
+          "correct": 1,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 3
+        }
+      },
+      "blog": {
+        "ja": {
+          "correct": 2,
+          "falsePositive": 0,
+          "documents": 2,
+          "unjudged": 0
+        }
+      },
+      "business": {
+        "ja": {
+          "correct": 11,
+          "falsePositive": 1,
+          "documents": 9,
+          "unjudged": 35
+        }
+      },
+      "legal": {
+        "ja": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 11
+        }
+      },
+      "literature": {
+        "ja": {
+          "correct": 1,
+          "falsePositive": 3,
+          "documents": 3,
+          "unjudged": 6
+        }
+      },
+      "speech": {
+        "ja": {
+          "correct": 6,
+          "falsePositive": 0,
+          "documents": 5,
+          "unjudged": 7
+        }
+      },
+      "technical": {
+        "ja": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
+        }
+      }
+    },
+    "title-case-consistency": {
+      "blog": {
+        "en": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
+      "business": {
+        "en": {
+          "correct": 1,
+          "falsePositive": 1,
+          "documents": 2,
+          "unjudged": 9
+        }
+      },
+      "docs": {
+        "en": {
+          "correct": 8,
+          "falsePositive": 0,
+          "documents": 6,
+          "unjudged": 8
+        }
+      },
+      "legal": {
+        "en": {
+          "correct": 9,
+          "falsePositive": 0,
+          "documents": 5,
+          "unjudged": 4
+        }
+      },
+      "technical": {
+        "en": {
+          "correct": 2,
+          "falsePositive": 1,
+          "documents": 3,
+          "unjudged": 6
+        }
+      }
+    },
+    "title-length": {
+      "academic": {
+        "ja": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 1
+        }
+      },
+      "blog": {
+        "ja": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
+      "business": {
+        "en": {
+          "correct": 2,
+          "falsePositive": 0,
+          "documents": 2,
+          "unjudged": 6
+        },
+        "ja": {
+          "correct": 6,
+          "falsePositive": 0,
+          "documents": 5,
+          "unjudged": 8
+        }
+      },
+      "docs": {
+        "ja": {
+          "correct": 2,
+          "falsePositive": 4,
+          "documents": 3,
           "unjudged": 1
         }
       },
@@ -4069,83 +5325,63 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 2
+          "unjudged": 40
         }
       },
       "blog": {
         "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 10
+          "correct": 10,
+          "falsePositive": 1,
+          "documents": 7,
+          "unjudged": 8
         }
       },
       "business": {
         "ja": {
-          "correct": 15,
-          "falsePositive": 3,
-          "documents": 8,
-          "unjudged": 168
+          "correct": 43,
+          "falsePositive": 4,
+          "documents": 17,
+          "unjudged": 220
         }
       },
       "docs": {
         "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 10
+          "correct": 11,
+          "falsePositive": 2,
+          "documents": 8,
+          "unjudged": 32
         }
       },
       "legal": {
         "ja": {
-          "correct": 0,
+          "correct": 5,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 124
+          "documents": 3,
+          "unjudged": 68
         }
       },
       "literature": {
         "ja": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 13
+          "falsePositive": 19,
+          "documents": 3,
+          "unjudged": 40
         }
       },
       "speech": {
         "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 79
+          "correct": 16,
+          "falsePositive": 6,
+          "documents": 11,
+          "unjudged": 116
         }
       },
       "technical": {
         "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 9
-        }
-      }
-    },
-    "total-mismatch": {
-      "business": {
-        "ja": {
-          "correct": 0,
+          "correct": 5,
           "falsePositive": 2,
-          "documents": 2,
-          "unjudged": 0
-        }
-      }
-    },
-    "translationese-density": {
-      "legal": {
-        "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 14
+          "documents": 3,
+          "unjudged": 21
         }
       }
     },
@@ -4162,17 +5398,17 @@
     "unbalanced-bracket": {
       "academic": {
         "ja": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 2
+          "documents": 1,
+          "unjudged": 3
         }
       },
       "blog": {
         "en": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 1
         },
         "ja": {
@@ -4184,126 +5420,146 @@
       },
       "business": {
         "en": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 3
+          "documents": 1,
+          "unjudged": 10
         },
         "ja": {
-          "correct": 7,
-          "falsePositive": 0,
-          "documents": 5,
-          "unjudged": 78
+          "correct": 8,
+          "falsePositive": 1,
+          "documents": 7,
+          "unjudged": 79
         }
       },
       "docs": {
         "en": {
-          "correct": 3,
+          "correct": 13,
           "falsePositive": 0,
-          "documents": 2,
-          "unjudged": 23
+          "documents": 6,
+          "unjudged": 24
         },
         "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 2
+          "correct": 8,
+          "falsePositive": 1,
+          "documents": 5,
+          "unjudged": 3
         }
       },
       "legal": {
         "en": {
-          "correct": 0,
+          "correct": 11,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 6
+          "documents": 4,
+          "unjudged": 7
         },
         "ja": {
-          "correct": 2,
+          "correct": 8,
           "falsePositive": 0,
-          "documents": 2,
+          "documents": 4,
           "unjudged": 27
         }
       },
       "literature": {
         "en": {
+          "correct": 2,
+          "falsePositive": 0,
+          "documents": 2,
+          "unjudged": 6
+        },
+        "ja": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 6
+          "unjudged": 3
         }
       },
       "technical": {
         "en": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "correct": 1,
+          "falsePositive": 1,
+          "documents": 2,
           "unjudged": 1
         }
       }
     },
     "undefined-acronym": {
-      "business": {
+      "academic": {
         "en": {
-          "correct": 8,
-          "falsePositive": 3,
-          "documents": 5,
-          "unjudged": 254
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 153
         },
         "ja": {
           "correct": 0,
-          "falsePositive": 2,
-          "documents": 2,
-          "unjudged": 74
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 62
+        }
+      },
+      "business": {
+        "en": {
+          "correct": 15,
+          "falsePositive": 14,
+          "documents": 12,
+          "unjudged": 441
+        },
+        "ja": {
+          "correct": 14,
+          "falsePositive": 21,
+          "documents": 9,
+          "unjudged": 73
         }
       },
       "docs": {
         "en": {
-          "correct": 12,
-          "falsePositive": 7,
-          "documents": 5,
-          "unjudged": 151
+          "correct": 29,
+          "falsePositive": 12,
+          "documents": 12,
+          "unjudged": 161
         },
         "ja": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 11
+          "unjudged": 37
         }
       },
       "legal": {
         "en": {
-          "correct": 7,
-          "falsePositive": 40,
-          "documents": 13,
-          "unjudged": 171
+          "correct": 17,
+          "falsePositive": 11,
+          "documents": 9,
+          "unjudged": 140
         },
         "ja": {
-          "correct": 0,
+          "correct": 4,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 7
+          "documents": 1,
+          "unjudged": 10
         }
       },
       "speech": {
         "en": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "correct": 1,
+          "falsePositive": 4,
+          "documents": 3,
           "unjudged": 1
         }
       },
       "technical": {
         "en": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 107
+          "correct": 5,
+          "falsePositive": 9,
+          "documents": 3,
+          "unjudged": 139
         },
         "ja": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 34
+          "correct": 4,
+          "falsePositive": 1,
+          "documents": 2,
+          "unjudged": 45
         }
       }
     },
@@ -4311,9 +5567,9 @@
       "legal": {
         "en": {
           "correct": 1,
-          "falsePositive": 19,
-          "documents": 6,
-          "unjudged": 100
+          "falsePositive": 3,
+          "documents": 2,
+          "unjudged": 76
         },
         "ja": {
           "correct": 0,
@@ -4324,12 +5580,34 @@
       }
     },
     "unfilled-placeholder": {
+      "business": {
+        "en": {
+          "correct": 4,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
       "docs": {
         "en": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "falsePositive": 1,
+          "documents": 1,
           "unjudged": 2
+        },
+        "ja": {
+          "correct": 0,
+          "falsePositive": 2,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
+      "legal": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 0
         }
       }
     },
@@ -4347,49 +5625,57 @@
       "academic": {
         "en": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "falsePositive": 8,
+          "documents": 4,
           "unjudged": 16
         }
       },
       "blog": {
         "en": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "correct": 1,
+          "falsePositive": 2,
+          "documents": 3,
           "unjudged": 4
         }
       },
       "business": {
         "en": {
-          "correct": 0,
-          "falsePositive": 2,
-          "documents": 2,
-          "unjudged": 19
+          "correct": 16,
+          "falsePositive": 14,
+          "documents": 5,
+          "unjudged": 23
         }
       },
       "docs": {
         "en": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "correct": 2,
+          "falsePositive": 2,
+          "documents": 4,
           "unjudged": 21
         }
       },
       "legal": {
         "en": {
+          "correct": 23,
+          "falsePositive": 3,
+          "documents": 10,
+          "unjudged": 11
+        }
+      },
+      "speech": {
+        "en": {
           "correct": 0,
-          "falsePositive": 11,
-          "documents": 8,
-          "unjudged": 18
+          "falsePositive": 2,
+          "documents": 2,
+          "unjudged": 1
         }
       },
       "technical": {
         "en": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 13
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 14
         }
       }
     },
@@ -4399,20 +5685,20 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 2
+          "unjudged": 4
         }
       },
       "blog": {
         "en": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "correct": 7,
+          "falsePositive": 16,
+          "documents": 9,
           "unjudged": 2
         },
         "ja": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "falsePositive": 2,
+          "documents": 1,
           "unjudged": 3
         }
       },
@@ -4421,7 +5707,7 @@
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
-          "unjudged": 13
+          "unjudged": 15
         },
         "ja": {
           "correct": 0,
@@ -4433,8 +5719,8 @@
       "speech": {
         "ja": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
+          "falsePositive": 12,
+          "documents": 4,
           "unjudged": 2
         }
       }
@@ -4442,28 +5728,44 @@
     "unrendered-emphasis": {
       "legal": {
         "en": {
-          "correct": 0,
+          "correct": 2,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 19
+        }
+      },
+      "technical": {
+        "ja": {
+          "correct": 2,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
         }
       }
     },
     "unused-definition": {
       "business": {
         "ja": {
-          "correct": 1,
+          "correct": 6,
           "falsePositive": 0,
-          "documents": 1,
+          "documents": 3,
           "unjudged": 3
+        }
+      },
+      "docs": {
+        "ja": {
+          "correct": 0,
+          "falsePositive": 3,
+          "documents": 2,
+          "unjudged": 0
         }
       },
       "legal": {
         "en": {
-          "correct": 10,
+          "correct": 15,
           "falsePositive": 0,
-          "documents": 5,
-          "unjudged": 8
+          "documents": 8,
+          "unjudged": 11
         },
         "ja": {
           "correct": 1,
@@ -4482,15 +5784,7 @@
       }
     },
     "url-run-on": {
-      "business": {
-        "ja": {
-          "correct": 1,
-          "falsePositive": 0,
-          "documents": 1,
-          "unjudged": 4
-        }
-      },
-      "docs": {
+      "academic": {
         "ja": {
           "correct": 0,
           "falsePositive": 0,
@@ -4498,7 +5792,15 @@
           "unjudged": 1
         }
       },
-      "legal": {
+      "business": {
+        "ja": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 5
+        }
+      },
+      "docs": {
         "ja": {
           "correct": 0,
           "falsePositive": 0,
@@ -4517,31 +5819,33 @@
     },
     "use-before-definition": {
       "business": {
-        "en": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 1
-        },
         "ja": {
           "correct": 3,
           "falsePositive": 2,
+          "documents": 2,
+          "unjudged": 4
+        }
+      },
+      "docs": {
+        "ja": {
+          "correct": 2,
+          "falsePositive": 1,
           "documents": 3,
-          "unjudged": 1
+          "unjudged": 0
         }
       },
       "legal": {
         "en": {
           "correct": 0,
-          "falsePositive": 9,
-          "documents": 4,
-          "unjudged": 90
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 30
         },
         "ja": {
-          "correct": 0,
-          "falsePositive": 2,
+          "correct": 1,
+          "falsePositive": 0,
           "documents": 1,
-          "unjudged": 25
+          "unjudged": 19
         }
       },
       "technical": {
@@ -4557,9 +5861,9 @@
       "legal": {
         "en": {
           "correct": 10,
-          "falsePositive": 1,
+          "falsePositive": 0,
           "documents": 8,
-          "unjudged": 27
+          "unjudged": 29
         },
         "ja": {
           "correct": 1,
@@ -4577,31 +5881,45 @@
           "documents": 0,
           "unjudged": 1
         }
+      },
+      "legal": {
+        "ja": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
+        }
       }
     },
     "vague-link-text": {
       "business": {
         "en": {
-          "correct": 3,
+          "correct": 6,
           "falsePositive": 0,
-          "documents": 2,
-          "unjudged": 1
+          "documents": 3,
+          "unjudged": 2
+        },
+        "ja": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
         }
       },
       "docs": {
         "en": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 9
+          "documents": 1,
+          "unjudged": 10
         }
       },
       "legal": {
         "en": {
-          "correct": 4,
+          "correct": 5,
           "falsePositive": 0,
-          "documents": 2,
-          "unjudged": 2
+          "documents": 3,
+          "unjudged": 3
         }
       },
       "technical": {
@@ -4625,35 +5943,71 @@
           "correct": 2,
           "falsePositive": 0,
           "documents": 1,
-          "unjudged": 26
+          "unjudged": 20
         },
         "ja": {
           "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 16
+          "falsePositive": 1,
+          "documents": 1,
+          "unjudged": 43
+        }
+      },
+      "docs": {
+        "en": {
+          "correct": 13,
+          "falsePositive": 2,
+          "documents": 2,
+          "unjudged": 8
         }
       },
       "legal": {
         "en": {
           "correct": 3,
-          "falsePositive": 60,
-          "documents": 6,
-          "unjudged": 563
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 10
         },
         "ja": {
-          "correct": 3,
-          "falsePositive": 1,
-          "documents": 2,
+          "correct": 2,
+          "falsePositive": 0,
+          "documents": 1,
           "unjudged": 0
         }
       },
       "technical": {
         "en": {
-          "correct": 0,
+          "correct": 5,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 37
+        }
+      }
+    },
+    "very-adjective": {
+      "blog": {
+        "en": {
+          "correct": 0,
+          "falsePositive": 2,
+          "documents": 1,
+          "unjudged": 0
+        }
+      },
+      "business": {
+        "en": {
+          "correct": 2,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
+        }
+      }
+    },
+    "warning-without-action": {
+      "technical": {
+        "ja": {
+          "correct": 0,
+          "falsePositive": 2,
+          "documents": 1,
+          "unjudged": 0
         }
       }
     },
@@ -4664,19 +6018,25 @@
           "falsePositive": 0,
           "documents": 0,
           "unjudged": 1
-        }
-      },
-      "blog": {
-        "en": {
-          "correct": 0,
-          "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 1
         },
         "ja": {
           "correct": 0,
           "falsePositive": 0,
           "documents": 0,
+          "unjudged": 3
+        }
+      },
+      "blog": {
+        "en": {
+          "correct": 1,
+          "falsePositive": 1,
+          "documents": 2,
+          "unjudged": 1
+        },
+        "ja": {
+          "correct": 4,
+          "falsePositive": 0,
+          "documents": 3,
           "unjudged": 3
         }
       },
@@ -4694,6 +6054,12 @@
           "falsePositive": 0,
           "documents": 0,
           "unjudged": 7
+        },
+        "ja": {
+          "correct": 0,
+          "falsePositive": 0,
+          "documents": 0,
+          "unjudged": 1
         }
       },
       "technical": {
@@ -4706,35 +6072,51 @@
       }
     },
     "which-that-consistency": {
+      "academic": {
+        "en": {
+          "correct": 1,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 1
+        }
+      },
+      "blog": {
+        "en": {
+          "correct": 2,
+          "falsePositive": 0,
+          "documents": 2,
+          "unjudged": 0
+        }
+      },
       "business": {
         "en": {
-          "correct": 0,
+          "correct": 1,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 1,
           "unjudged": 5
         }
       },
       "docs": {
         "en": {
-          "correct": 1,
+          "correct": 4,
           "falsePositive": 0,
-          "documents": 1,
-          "unjudged": 2
+          "documents": 4,
+          "unjudged": 5
         }
       },
       "legal": {
         "en": {
-          "correct": 3,
+          "correct": 6,
           "falsePositive": 0,
-          "documents": 2,
-          "unjudged": 9
+          "documents": 5,
+          "unjudged": 15
         }
       },
       "technical": {
         "en": {
-          "correct": 0,
+          "correct": 3,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 2,
           "unjudged": 7
         }
       }
@@ -4746,22 +6128,42 @@
           "falsePositive": 0,
           "documents": 0,
           "unjudged": 10
+        },
+        "ja": {
+          "correct": 3,
+          "falsePositive": 0,
+          "documents": 1,
+          "unjudged": 0
         }
       },
       "blog": {
         "en": {
-          "correct": 0,
+          "correct": 7,
           "falsePositive": 0,
-          "documents": 0,
+          "documents": 3,
           "unjudged": 2
         }
       },
       "business": {
         "en": {
-          "correct": 2,
-          "falsePositive": 1,
+          "correct": 5,
+          "falsePositive": 0,
+          "documents": 3,
+          "unjudged": 31
+        },
+        "ja": {
+          "correct": 5,
+          "falsePositive": 0,
           "documents": 2,
-          "unjudged": 27
+          "unjudged": 3
+        }
+      },
+      "docs": {
+        "en": {
+          "correct": 16,
+          "falsePositive": 0,
+          "documents": 6,
+          "unjudged": 56
         },
         "ja": {
           "correct": 2,
@@ -4770,20 +6172,12 @@
           "unjudged": 0
         }
       },
-      "docs": {
-        "en": {
-          "correct": 6,
-          "falsePositive": 0,
-          "documents": 2,
-          "unjudged": 47
-        }
-      },
       "technical": {
         "en": {
-          "correct": 0,
+          "correct": 2,
           "falsePositive": 0,
-          "documents": 0,
-          "unjudged": 25
+          "documents": 1,
+          "unjudged": 32
         },
         "ja": {
           "correct": 0,
@@ -4799,7 +6193,7 @@
           "correct": 1,
           "falsePositive": 0,
           "documents": 1,
-          "unjudged": 2
+          "unjudged": 3
         }
       },
       "legal": {

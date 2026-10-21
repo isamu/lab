@@ -15,9 +15,6 @@ moriguchi-satsuki-gakuen-ijime-houshin  7
 nsf-19-582-reu-solicitation  3
 nttcom-onboarding-week1  6
 nws-heat-wave-safety  4
-qiita-jnchito-good-sample-code  6
-soumu-kokumin-cyber-malware  3
 tcu-rishu-toroku-2026-kouki  5
 usajobs-va-it-specialist-customer-support  5
 wikipedia-en-markdown  5
-zenn-kaityo256-happy-presentation  5
