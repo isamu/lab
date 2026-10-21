@@ -126,6 +126,18 @@ const isMarkerAt = (tokens: readonly Token[], at: number): boolean => {
 const markersIn = (sentence: Sentence, markers: ReadonlySet<string>): { readonly token: Token; readonly at: number }[] =>
   ownTokens(sentence).filter(({ token, at }) => markers.has(token.surface) && isMarkerAt(sentence.tokens ?? [], at));
 
+/** Opening brackets and quotation marks. The tagger reads a half-width ( or " as a noun, so the surface decides. */
+const OPENING_MARKS: ReadonlySet<string> = new Set(["(", "（", "[", "［", "【", "〔", "「", "『", '"', "“", "'", "‘"]);
+
+/**
+ * A marker with no word before it, after an opening bracket or quotation mark or at the head of the sentence (並立助詞(たり)
+ * が連続する), names the word as grammar instead of using it, so it has no verb to pair.
+ */
+const isMention = (tokens: readonly Token[], at: number): boolean => {
+  const previous = tokens.slice(0, at).findLast((token) => !isSpace(token));
+  return previous === undefined || previous.pos === "PUNCT" || OPENING_MARKS.has(previous.surface.trim());
+};
+
 /** A sentence that uses the lexicon's paired marker once and goes on without its partner. */
 export const unpairedParallel: Detector = (doc, options): Finding[] => {
   const markers = patternsOf(options.lexicon, "marker");
@@ -134,7 +146,8 @@ export const unpairedParallel: Detector = (doc, options): Finding[] => {
   return doc.sentences.flatMap((sentence) => {
     const found = markersIn(sentence, markers);
     const only = found.length === 1 ? found[0] : undefined;
-    if (only === undefined || only.token.pos !== CONJUNCTION || !leftAlone(sentence.tokens ?? [], only.at, closers, commas)) return [];
+    if (only === undefined || only.token.pos !== CONJUNCTION || isMention(sentence.tokens ?? [], only.at)) return [];
+    if (!leftAlone(sentence.tokens ?? [], only.at, closers, commas)) return [];
     return [findingAt(sentence, only.token.span.start, { word: only.token.surface })];
   });
 };

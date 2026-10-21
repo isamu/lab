@@ -91,6 +91,14 @@ describe("tari-unpaired", () => {
     assert.deepEqual(findingsOf(RULE, "一日たりとも休みません。\n"), []);
     assert.deepEqual(findingsOf(RULE, "彼は「本を読んだり、映画を見る」と書いた。\n"), []);
   });
+
+  it("語に付かず括弧や引用符の後ろに置いた「たり」は、文法の語として挙げたもので、使っていない", () => {
+    assert.deepEqual(findingsOf(RULE, "並立助詞(**たり**)が連続するのは、意図した使い方であるため許可します。\n"), []);
+    assert.deepEqual(findingsOf(RULE, "並立助詞（たり）が続くときは、対にして使います。\n"), []);
+    assert.deepEqual(findingsOf(RULE, '助詞の"たり"が続くときは、対にして使います。\n'), []);
+    // 括弧の中でも、動詞に付いた「たり」は使ったものなので、これまでどおり指す。
+    assert.deepEqual(findingsOf(RULE, "休日は（本を読んだり、映画を見ます）。\n"), ["「だり」が一つだけで、対になる「〜たり」がありません"]);
+  });
 });
 
 describe("adverb-without-negation", () => {
