@@ -11,5 +11,5 @@ govuk-style-guide-a-to-z  1
 ietf-draft-httpapi-ratelimit-headers-10  2
 nta-taxanswer-1120  1
 pep-0020-zen-of-python  1
-rfc9293-tcp  5
+rfc9293-tcp  4
 w3c-secure-contexts  2
