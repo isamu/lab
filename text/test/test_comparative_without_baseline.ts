@@ -123,3 +123,57 @@ describe("comparative-without-baseline: 比べる相手の無い比較", () => {
     assert.deepEqual(bareComparativesIn([], listsOf([])), []);
   });
 });
+
+describe("comparative-without-baseline: a compound aim, a set phrase, two examples", () => {
+  before(async () => {
+    await en.prepare?.({ pos: true });
+    await ja.prepare?.({ pos: true });
+  });
+
+  it("目当ての語で終わる複合語（より良い高齢社会、より良い地域社会）は、今より良くする目当てなので言わない", () => {
+    assert.deepEqual(findingsOf("各国がより良い高齢社会を作ることに貢献できるよう環境整備を行う。", ja), []);
+    assert.deepEqual(findingsOf("住民と一緒に、より良い地域社会を築いていきます。", ja), []);
+  });
+
+  it("目当ての語が頭なだけの複合語（社会保障）と、目当てでない複合語は言う", () => {
+    assert.deepEqual(findingsOf("より良い社会保障制度を実現します。", ja), ["「より良い」は、何と比べているかが書かれていません"]);
+    assert.deepEqual(findingsOf("私たちはより良い検索結果を届けます。", ja), ["「より良い」は、何と比べているかが書かれていません"]);
+  });
+
+  it("a set phrase ending in a comparative (to be more precise) compares nothing", () => {
+    assert.deepEqual(findingsOf("The plaintiff did not create the database; or to be more precise, it created only part of it."), []);
+    assert.deepEqual(findingsOf("The tool reads the file, or to be more specific, its first block."), []);
+  });
+
+  it("the same comparative outside the set phrase is still reported", () => {
+    assert.deepEqual(findingsOf("The new parser is more precise."), ['"more precise" does not say what it is compared with']);
+    assert.deepEqual(findingsOf("We want the engine to be more precise."), ['"more precise" does not say what it is compared with']);
+  });
+
+  const EXAMPLES = [
+    "This version takes an overload for each type:",
+    "",
+    "```ts",
+    "declare function len(s: string): number;",
+    "declare function len(arr: any[]): number;",
+    "```",
+    "",
+    "We can instead write one signature:",
+    "",
+    "```ts",
+    "function len(x: any[] | string) { return x.length; }",
+    "```",
+    "",
+  ];
+
+  it("a comparison right after two code examples compares the second with the first", () => {
+    assert.deepEqual(findingsOf([...EXAMPLES, "This is much better!"].join("\n")), []);
+  });
+
+  it("a comparison after only one code example, or away from the examples, is still reported", () => {
+    const one = ["Install the package:", "", "```sh", "yarn add fast-lib", "```", "", "The new engine is faster."].join("\n");
+    assert.deepEqual(findingsOf(one), ['"faster" does not say what it is compared with']);
+    const later = [...EXAMPLES, "Callers can use it with any value.", "", "Our new engine is faster."].join("\n");
+    assert.deepEqual(findingsOf(later), ['"faster" does not say what it is compared with']);
+  });
+});

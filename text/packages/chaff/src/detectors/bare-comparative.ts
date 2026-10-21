@@ -1,6 +1,7 @@
 import type { Detector, Finding, Lexicon, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 import { quotedIn } from "../quoted-span.ts";
 import { followsInlineCode } from "./code-before.ts";
+import { followsTwoExamples } from "./example-baseline.ts";
 import { isNamedStep, plainStepKeys } from "./graded-step.ts";
 
 /**
@@ -11,6 +12,7 @@ import { isNamedStep, plainStepKeys } from "./graded-step.ts";
  * beyond は比べた形のすぐ前で、いま述べたものを越えると言う語（even better、still faster）。相手はその直前に書いてある。
  * aim は比べた語の後ろで、今より良くする目当てを言う語（より良い社会、より良いものにする）。比べる相手は今の状態。
  * intent は比べた語より後ろで、比較を願いや目的の中に置く語（より広く進めたい、より円滑にするためには）。比べる相手は今の状態。
+ * phrase は比べた形で終わる決まった言い方（to be more precise）。前の言葉を言い直すだけで、何も比べていない。
  * 同じ文か前の二文に相手を言う語があれば、相手は書いてある。
  */
 
@@ -24,6 +26,7 @@ export type ComparativeLists = {
   readonly beyond: ReadonlySet<string>;
   readonly aims: ReadonlySet<string>;
   readonly intents: ReadonlySet<string>;
+  readonly phrases: readonly string[];
 };
 
 export type BareComparative = { readonly first: Token; readonly last: Token };
@@ -67,10 +70,22 @@ const headsCompound = (tokens: readonly Token[], after: number): boolean => {
   return last?.pos === "NOUN" && next?.pos === "NOUN" && last.span.end === next.span.start;
 };
 
+/** at から続けて書いた名詞の並び（高齢|社会）の、最後の名詞の位置。at が名詞でなければ -1。 */
+const compoundEnd = (tokens: readonly Token[], at: number): number => {
+  const nouns = tokens.slice(at).findIndex((token, index) => token.pos !== "NOUN" || (index > 0 && tokens[at + index - 1]?.span.end !== token.span.start));
+  return nouns === 0 ? -1 : at + (nouns === -1 ? tokens.length - at : nouns) - 1;
+};
+
+/** 目当ての語で終わる複合語か（より良い高齢社会、より良い地域社会）。目当ての語が頭なだけの語（社会保障）は目当てでない。 */
+const endsInAim = (tokens: readonly Token[], at: number, aims: ReadonlySet<string>): boolean => {
+  const end = compoundEnd(tokens, at);
+  return end > at && aims.has(tokens[end]?.surface ?? "");
+};
+
 /** 程度を言う語（at）の後ろが、今より良くする目当てか（より良い社会、より豊かな暮らし、より良いものにする）。 */
 const namesAim = (tokens: readonly Token[], at: number, aims: ReadonlySet<string>): boolean => {
   const next = tokens[at]?.pos === "NOUN" && ADJECTIVAL_TAIL.has(tokens[at + 1]?.surface ?? "") ? at + 2 : at + 1;
-  return runsFrom(tokens, next).some(({ run, after }) => aims.has(run) && !headsCompound(tokens, after));
+  return runsFrom(tokens, next).some(({ run, after }) => aims.has(run) && !headsCompound(tokens, after)) || endsInAim(tokens, next, aims);
 };
 
 /** 日本語: 副詞の「より」「さらに」の直後の、程度を言える語。比較の決まった言い方（より多くの）と、今より良くする目当て（より良い社会）は除く。 */
@@ -138,11 +153,26 @@ const isIntentWord = (tokens: readonly Token[], at: number, intents: ReadonlySet
 const isIntended = (tokens: readonly Token[], found: BareComparative, intents: ReadonlySet<string>): boolean =>
   tokens.some((token, at) => token.span.start >= found.last.span.end && isIntentWord(tokens, at, intents));
 
+/** 決まった言い方の後ろの、挟み込みを閉じる印（or to be more precise, it …）。印が無ければ述語（we want it to be more precise.）。 */
+const ASIDE_END = new Set([",", ":"]);
+
+/** 比べた形で終わる決まった言い方を、挟み込みとして書いたか（or to be more precise, …）。語を空白でつないで照らす。 */
+const endsSetPhrase = (tokens: readonly Token[], found: BareComparative, phrases: readonly string[]): boolean => {
+  const through = tokens.filter((token) => token.span.end <= found.last.span.end);
+  if (!ASIDE_END.has(tokens[through.length]?.surface ?? "")) return false;
+  const words = ` ${through.map((token) => lower(token)).join(" ")}`;
+  return phrases.some((phrase) => words.endsWith(` ${phrase}`));
+};
+
 export const bareComparativesIn = (tokens: readonly Token[], lists: ComparativeLists): BareComparative[] =>
   tokens
     .flatMap((_, at) => markedAt(tokens, at, lists) ?? predicateAt(tokens, at, lists) ?? [])
     .filter(
-      (found) => !isConditional(tokens, found, lists.conditions) && !goesBeyond(tokens, found, lists.beyond) && !isIntended(tokens, found, lists.intents),
+      (found) =>
+        !isConditional(tokens, found, lists.conditions) &&
+        !goesBeyond(tokens, found, lists.beyond) &&
+        !isIntended(tokens, found, lists.intents) &&
+        !endsSetPhrase(tokens, found, lists.phrases),
     );
 
 /**
@@ -184,6 +214,7 @@ export const listsOf = (lexicon: Lexicon): ComparativeLists => ({
   beyond: new Set(groupOf(lexicon, "beyond")),
   aims: new Set(groupOf(lexicon, "aim")),
   intents: new Set(groupOf(lexicon, "intent")),
+  phrases: groupOf(lexicon, "phrase"),
 });
 
 /** 鉤括弧の中の比較（「給与所得の確定申告がさらに簡単に！」ページ）は題や語を挙げたもので、書き手の比較ではない。 */
@@ -200,9 +231,11 @@ export const bareComparative: Detector = (doc): Finding[] => {
     lists.markers,
     isGradable,
   );
+  const spans = doc.sentences.map((sentence) => sentence.span);
   return doc.sentences.flatMap((sentence, at) => {
     const nearby = doc.sentences.slice(Math.max(0, at - BASELINE_REACH), at + 1);
     if (sentence.embeddedLanguage !== undefined || nearby.some((near) => namesBaseline(near, lists.baselines))) return [];
+    if (followsTwoExamples(doc.source, spans, at)) return [];
     const quoted = quotedIn(sentence);
     return bareComparativesIn(sentence.tokens ?? [], lists)
       .filter((found) => !quoted.some((span) => insideSpan(found, span)) && !isThanAfterCode(doc, found))
