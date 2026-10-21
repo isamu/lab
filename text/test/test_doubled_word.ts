@@ -71,6 +71,13 @@ describe("doubled-word — 純関数", () => {
     assert.deepEqual(pairs([w("that", "ADP"), w("that", "DET")]), []);
   });
 
+  it("同じ表層で、片方のほかの読み（AlsoVerb / AlsoNoun）がもう片方の品詞なら同じ語（make make sure）", () => {
+    assert.deepEqual(pairs([w("make", "VERB"), w("make", "NOUN", { AlsoVerb: "Yes" }), w("sure", "ADJ")]), ["make make@5"]);
+    assert.deepEqual(pairs([w("key", "NOUN"), w("key", "ADJ", { AlsoNoun: "Yes" })]), ["key key@4"]);
+    assert.deepEqual(pairs([w("make", "VERB"), w("make", "NOUN")]), []);
+    assert.deepEqual(pairs([w("key", "VERB"), w("key", "ADJ", { AlsoNoun: "Yes" })]), []);
+  });
+
   it("冠詞と所有の語は、違う語でも二つ並べば見つける", () => {
     assert.deepEqual(pairs([w("our", "PRON", POSS), w("the", "DET", ART), w("platform", "NOUN")]), ["our the@4"]);
     assert.deepEqual(pairs([w("a", "DET", ART), w("the", "DET", ART)]), ["a the@2"]);
@@ -296,6 +303,11 @@ describe("doubled-word — 英語", () => {
     assert.deepEqual(findingsOf("The vendor had had had enough time to respond.", en, "en"), ["1:20 had had"]);
     assert.deepEqual(findingsOf("The file is stored in in the shared folder.", en, "en"), ["1:23 in in"]);
     assert.deepEqual(findingsOf("Set up up the environment first.", en, "en"), ["1:8 up up"]);
+  });
+
+  it("invalid: 解析器が二つ目を名詞と読んでも、動詞の読みが残っていれば同じ語", () => {
+    // 18F, "Running a three-sprint agile workshop" (CC0).
+    assert.deepEqual(findingsOf("Coaches should make make sure that stories are written down on notecards.", en, "en"), ["1:21 make make"]);
   });
 
   it("valid: 文法が許す重なりと、並んでよい限定詞は数えない", () => {
