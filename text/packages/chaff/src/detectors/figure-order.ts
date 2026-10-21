@@ -62,6 +62,17 @@ export const placementSlips = (
   });
 };
 
+/**
+ * Where the appendices start: the first heading that opens with a label of a kind not placed in the text (Appendix,
+ * 付録). A paper numbers its appendix tables on from the text's and refers to them from the text first, out of order.
+ */
+export const appendixStart = (headings: readonly { readonly text: string; readonly start: number }[], endKinds: readonly string[]): number | undefined =>
+  headings.find((heading) => endKinds.some((kind) => [kind, kind.toUpperCase()].some((word) => heading.text.trimStart().startsWith(word))))?.start;
+
+/** The figures captioned in the appendices: they are not ordered against the text's own. */
+const appendixKeys = (captions: readonly FigureMention[], start: number | undefined): ReadonlySet<string> =>
+  new Set(start === undefined ? [] : captions.filter((caption) => caption.start > start).map((caption) => caption.key));
+
 export const figureOrderSlips = (doc: ProseDocument): FigureOrderSlip[] => {
   const prose = doc.prose ?? doc.source;
   const { captions, references: singular } = figureMentions(doc.source, prose, labelWordsOf(doc), doc.links);
@@ -71,7 +82,12 @@ export const figureOrderSlips = (doc: ProseDocument): FigureOrderSlip[] => {
   const references = [...singular, ...plural].toSorted((left, right) => left.start - right.start);
   const headingStarts = (doc.markup?.headings ?? []).map((heading) => heading.start);
   const inTextKinds = new Set((doc.lexicons["figure-in-text"] ?? []).map((entry) => entry.pattern));
-  const slips = [...outOfOrder(references), ...placementSlips(captions, references, headingStarts, inTextKinds)];
+  const endKinds = labelWordsOf(doc)
+    .labels.filter((label) => !inTextKinds.has(label.kind))
+    .map((label) => label.word);
+  const inAppendix = appendixKeys(captions, appendixStart(doc.markup?.headings ?? [], endKinds));
+  const ordered = references.filter((mention) => !inAppendix.has(mention.key));
+  const slips = [...outOfOrder(ordered), ...placementSlips(captions, references, headingStarts, inTextKinds)];
   return slips.toSorted((left, right) => left.offset - right.offset);
 };
 
