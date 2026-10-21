@@ -42,12 +42,12 @@ export const codeWordsOf = (source: string): Set<string> => {
 };
 
 /**
- * A search stem with a wildcard (ukrain*, vaccin*): the word ends in a * that closes no emphasis, since nothing opens one
- * before the word and no letter follows the *.
+ * A search stem with a wildcard in a list of terms (ukrain*, vaccin*): the word ends in a * that closes no emphasis
+ * (nothing opens one before the word), and a separator or the line's end follows it, not a word as after a footnote's *.
  */
 export const isSearchStem = (source: string, offset: number, word: string): boolean => {
   const end = offset + word.length;
-  return source[end] === "*" && source[offset - 1] !== "*" && !/\p{L}/u.test(source[end + 1] ?? "");
+  return source[end] === "*" && source[offset - 1] !== "*" && /^[ \t]*(?:[,;|)\]]|\r?\n|$)/u.test(source.slice(end + 1));
 };
 
 /**

@@ -21,14 +21,20 @@ describe("unknown-word: a search stem with a wildcard", () => {
   it("still reports a typo in emphasis, and one with no wildcard", () => {
     assert.deepEqual(unknown("The report is *attched* to this email."), ['"attched" is not in the dictionary; did you mean "attached"?']);
     assert.deepEqual(unknown("The report is **attched** to this email."), ['"attched" is not in the dictionary; did you mean "attached"?']);
+    assert.deepEqual(unknown("The report is attched* to this email."), ['"attched" is not in the dictionary; did you mean "attached"?']);
     assert.deepEqual(unknown("Health terms: doctor, vaccine, vaccin, clinic."), ['"vaccin" is not in the dictionary; did you mean "vaccine"?']);
   });
 
-  it("reads the * after the word, not one that opens or joins emphasis", () => {
+  it("reads a * that a separator or the line's end follows, not one of emphasis or a footnote", () => {
     assert.ok(isSearchStem("vaccin*, x", 0, "vaccin"));
     assert.ok(isSearchStem("econom*", 0, "econom"));
     assert.ok(!isSearchStem("*vaccin*", 1, "vaccin"));
     assert.ok(!isSearchStem("vaccin*e", 0, "vaccin"));
     assert.ok(!isSearchStem("vaccin", 0, "vaccin"));
+    assert.ok(isSearchStem("vaccin*; drug", 0, "vaccin"));
+    assert.ok(isSearchStem("vaccin*\nnext", 0, "vaccin"));
+    assert.ok(!isSearchStem("vaccin* is a footnote", 0, "vaccin"));
+    assert.ok(!isSearchStem("vaccin*.", 0, "vaccin"));
+    assert.ok(!isSearchStem("vaccin*   then more", 0, "vaccin"));
   });
 });
