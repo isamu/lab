@@ -40,19 +40,18 @@ describe("formOf: how an item ends (Japanese)", () => {
     ["画面が速い", "sentence"],
     ["期限は月末", "phrase"],
     ["書類を確認すること", "phrase"],
-    ["書類を確認すること。", "sentence"],
-    ["現金を置かないこと。", "sentence"],
+    ["書類を確認すること。", undefined],
+    ["現金を置かないこと。", undefined],
+    ["いずれかであること。", undefined],
     ["大事なこと。", "phrase"],
     ["書類を提出したこと。", "phrase"],
-    ["書類を確認すること。（詳細は別紙）", "sentence"],
+    ["書類を確認すること（詳細は別紙）。", undefined],
     ["書類を確認すること（詳細は別紙）", "phrase"],
     ["元気ないけど、大丈夫？（声かけの例）", "sentence"],
     ["元気ないけど、大丈夫？", "sentence"],
     ["何か力になれることはない?", "sentence"],
     ["大丈夫", "phrase"],
     ["書類を出すこと。期限を守ること。", "sentence"],
-    ["申込書の記入。手数料の支払い。", "phrase"],
-    ["申込書の記入。手数料を払う。", "sentence"],
     ["手数料の支払い", "phrase"],
     ["健康診断書（3か月以内に受診したものに限る）", "phrase"],
     ["書類を出す（郵送でもよい）", "sentence"],
@@ -129,7 +128,7 @@ describe("list-item-form-mix: the minority form in one list", () => {
     assert.equal(finding?.line, 5);
   });
 
-  it("reads 〜すること。 as an instruction like 〜しない。, and a question as a sentence (ja)", () => {
+  it("does not count 〜すること。 against 〜しない。, and reads a question as a sentence (ja)", () => {
     // 政府広報オンライン「住まいの防犯対策」(PDL-1.0) を縮めたもの。
     const instructions = list(
       "鍵を他人に「見せない」「渡さない」、写真で「写さない」。",
@@ -147,19 +146,12 @@ describe("list-item-form-mix: the minority form in one list", () => {
     assert.deepEqual(flagged(ja, questions), []);
   });
 
-  it("still reports a noun-ending item among 〜すること。 instructions (ja)", () =>
-    assert.deepEqual(
-      flagged(
-        ja,
-        list(
-          "周囲を整理整頓しておくこと。",
-          "防犯設備を充実させること。部品は性能の高いものを選ぶこと。",
-          "設備を有効に役立てること。",
-          "長く留守にするときの対応も必要。",
-        ),
-      ),
-      ["ending-phrase:長く留守にするときの対応も必要。"],
-    ));
+  it("counts a 〜すること。 item on neither side: labels among requirements are not a mix, a sentence among phrases still is (ja)", () => {
+    const labelled = list("（1）定義", "用語の意味を定めること。", "（2）基本理念", "国が施策を進めること。", "施策を総合的に行うこと。");
+    assert.deepEqual(flagged(ja, labelled), []);
+    const mixed = list("申込書の記入", "本人確認書類の用意", "書類を確認すること。", "手数料の支払い", "期限を守ること。", "窓口で手数料を払う");
+    assert.deepEqual(flagged(ja, mixed), ["ending-sentence:窓口で手数料を払う"]);
+  });
 
   it("does not report a list in one form", () => assert.deepEqual(flagged(ja, list("申込書の記入", "本人確認書類の用意", "手数料の支払い")), []));
 

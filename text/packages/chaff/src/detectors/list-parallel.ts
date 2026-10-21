@@ -36,39 +36,42 @@ const withoutClosingAside = (tokens: readonly Token[]): readonly Token[] => {
   return open <= 0 ? tokens : tokens.slice(0, open);
 };
 
-// Right after the last word, past closing quotes: a question mark or a full stop. An aside may follow it (すること。（別紙）).
-const QUESTION_AFTER = /^[」』"”]*[？?]/u;
-const FULL_STOP_AFTER = /^[」』"”]*[。．]/u;
+// Right after the last word, past closing quotes and an aside (すること（別紙）。): a question mark or a full stop.
+const QUESTION_AFTER = /^[」』"”]*(?:[（(][^）)]*[）)])?[？?]/u;
+const FULL_STOP_AFTER = /^[」』"”]*(?:[（(][^）)]*[）)])?[。．]/u;
 const KOTO = "こと";
-const NEGATIVE = "ない";
+/** The negative (しないこと) and the copula's ある (であること) before こと. */
+const INSTRUCTED_AUX = new Set(["ない", "ある"]);
 
 /** A verb's plain form or its negative before こと (すること, しないこと); not a past (したこと) or な (大事なこと). */
-const isInstructedAct = (token: Token | undefined): boolean => token?.pos === "VERB" || (token?.pos === "AUX" && token.surface === NEGATIVE);
+const isInstructedAct = (token: Token | undefined): boolean => token?.pos === "VERB" || (token?.pos === "AUX" && INSTRUCTED_AUX.has(token.surface));
 
-/** 〜すること。 / 〜しないこと。 with its full stop: the instruction form of official Japanese, a sentence like 〜しない。 */
+/**
+ * 〜すること。 / 〜しないこと。 with its full stop: the instruction or requirement form of official Japanese. It sits in a list of
+ * sentences (〜しない。) as in a list of phrases (〜の確認), so it is read as neither, as no-mixed-desumasu reads こと.
+ */
 const isInstruction = (words: readonly Token[], after: string): boolean =>
   words.at(-1)?.surface === KOTO && isInstructedAct(words.at(-2)) && FULL_STOP_AFTER.test(after);
 
 /**
- * One Japanese sentence: a predicate at the end (出します, 済ませる, 早い), a question (大丈夫？) or an instruction ending in
- * こと。 is a sentence; a noun (月末, 確認すること) or a headline's あり / なし after a noun (翻訳あり) is a phrase. Marks after
- * the last word (!!, a footnote reference) are not words.
+ * One Japanese sentence: a predicate at the end (出します, 済ませる, 早い) or a question (大丈夫？) is a sentence; a noun (月末,
+ * 確認すること) or a headline's あり / なし after a noun (翻訳あり) is a phrase; an instruction ending in こと。 is neither. Marks
+ * after the last word (!!, a footnote reference) are not words.
  */
 const japaneseSentenceEnding = (sentence: Sentence | undefined, headlineEndings: ReadonlySet<string>): string | undefined => {
   const words = withoutTrailingMarks(withoutClosingAside(withoutFootnoteReference(sentence?.tokens ?? [], isMark)), isMark);
   const last = words.at(-1);
   if (sentence === undefined || last === undefined) return undefined;
   const after = sentence.text.slice(last.span.end - sentence.span.start);
-  if (QUESTION_AFTER.test(after) || isInstruction(words, after)) return "sentence";
+  if (isInstruction(words, after)) return undefined;
+  if (QUESTION_AFTER.test(after)) return "sentence";
   if (NOMINAL.has(last.pos) || endsAsHeadline(words, headlineEndings)) return "phrase";
   return PREDICATE.has(last.pos) ? "sentence" : undefined;
 };
 
-/** Japanese: an item of several sentences is a phrase only when each of them is (〜の徹底。〜の確認。), else a sentence. */
-const japaneseEnding = (sentences: readonly Sentence[], headlineEndings: ReadonlySet<string>): string | undefined => {
-  if (sentences.length <= 1) return japaneseSentenceEnding(sentences[0], headlineEndings);
-  return sentences.every((sentence) => japaneseSentenceEnding(sentence, headlineEndings) === "phrase") ? "phrase" : "sentence";
-};
+/** Japanese: an item of several sentences is a sentence; one sentence is read by its ending. */
+const japaneseEnding = (sentences: readonly Sentence[], headlineEndings: ReadonlySet<string>): string | undefined =>
+  sentences.length > 1 ? "sentence" : japaneseSentenceEnding(sentences[0], headlineEndings);
 
 /** English: a sentence closes with a full stop and has a finite verb; a phrase has neither, nor any verb at all. Anything between is not judged. */
 const englishEnding = (sentences: readonly Sentence[]): string | undefined => {
