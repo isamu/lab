@@ -46,6 +46,13 @@ describe("max-ten: 一文の読点", () => {
     assert.deepEqual(findingsOf(RULE, "次の項目を確認します。Alpha， beta， gamma， delta， epsilon， zeta， eta， theta.\n", "strict"), []);
   });
 
+  it("形式名詞の後の読点は、ご・お の付いた名詞が続いても数える", () => {
+    assert.deepEqual(
+      findingsOf(RULE, "会議では、担当から説明があり、委員に対し、資料を確認すること、その際に、予算や、日程にも配慮するよう、ご指示がありました。\n"),
+      ["一文に読点が 7 個あります（6 個まで）"],
+    );
+  });
+
   it("文ごとに数え直す", () => {
     assert.deepEqual(findingsOf(RULE, "本日、会議室で、担当者が説明しました。続けて、資料を、配布しました。\n"), []);
   });
@@ -68,6 +75,11 @@ describe("separatesItems: 名詞と名詞のあいだの読点", () => {
   it("鉤括弧で引いた項目と、接頭詞の付いた名詞（第I）も項目の区切り。引用の後ろが助詞や副詞なら節の区切り", () => {
     assert.deepEqual(commaKinds("「人材の確保」、「設備の更新」、『予算』の観点で見る。"), [true, true]);
     assert.deepEqual(commaKinds("順に第I、第II、第III群と呼ぶ。"), [true, true]);
+    assert.deepEqual(commaKinds("延べ7法人、計延べ12法人とする。"), [true]);
+    assert.deepEqual(commaKinds("担当者、会社員、各部署に送る。"), [true, true]);
+    // 形式名詞（よう、こと）の後の読点は、接頭詞の付いた名詞が続いても節の区切り。
+    assert.deepEqual(commaKinds("改善に取り組むよう、ご指示がありました。"), [false]);
+    assert.deepEqual(commaKinds("資料を確認すること、ご協力をお願いします。"), [false]);
     assert.deepEqual(commaKinds("彼は「了解」、と返した。"), [false]);
     assert.deepEqual(commaKinds("「確認します」、そう言って帰った。"), [false]);
     assert.deepEqual(commaKinds("資料を読み、第一に費用を見る。"), [false]);
