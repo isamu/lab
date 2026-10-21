@@ -4,7 +4,6 @@ import { quotedSpans } from "../quoted-span.ts";
 import { literalCues, withoutLiteralQuotes } from "../literal-quote.ts";
 import { bracketDepth, clauseCount, topicDistance } from "../sentence-load.ts";
 import { withoutWordBrackets } from "../bracket-annotation.ts";
-import { conjugatedForms } from "./conjugated-form.ts";
 
 const findingOf = (sentence: Sentence, count: number, limit: number): Finding => ({
   rule: "",
@@ -41,16 +40,13 @@ const ownTokens = (sentence: Sentence): Token[] => {
 /**
  * Brackets inside brackets: 「（注（a）参照）」. The depth is read from the text, so it works in every language. A quotation of a
  * string to type as it stands (件名に「応募（総務課）」と記載) counts as one bracket: its own brackets cannot be taken out. A bracket
- * written as part of a word (the reading in 拓（ひら）く, the note in 栄養教諭（仮称）, a subsection mark in § 1813(h), an altered
- * letter in “[A] musical”) and the quotes around a term being defined (（以下「PHR」という。）) are not counted (bracket-annotation.ts).
+ * written as part of a word (the reading in 拓（ひら）く, the note in 栄養教諭（仮称）, a subsection mark in § 1813(h), a letter
+ * altered in “[A] musical”) is not counted at all (bracket-annotation.ts).
  */
 export const bracketNesting: Detector = (doc, options) => {
   const cues = literalCues(doc.lexicons["literal-quote-cue"] ?? []);
-  const wordsOf = (id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
-  const annotations = wordsOf("bracket-annotation");
-  const verbs = wordsOf("definition-verb");
-  const definitions = { markers: wordsOf("definition-marker"), verbs: [...verbs, ...conjugatedForms(doc.sentences, verbs)] };
-  return overLimit((sentence) => bracketDepth(withoutWordBrackets(withoutLiteralQuotes(sentence.text, cues), annotations, definitions)))(doc, options);
+  const annotations = (doc.lexicons["bracket-annotation"] ?? []).map((entry) => entry.pattern);
+  return overLimit((sentence) => bracketDepth(withoutWordBrackets(withoutLiteralQuotes(sentence.text, cues), annotations)))(doc, options);
 };
 
 /** Clauses chained in one sentence (調べて、まとめ、報告したが、返事がないので、…). Needs the language's tokens. */

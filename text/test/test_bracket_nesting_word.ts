@@ -5,8 +5,8 @@ import { withoutWordBrackets } from "../packages/chaff/src/bracket-annotation.ts
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 
-// 語の一部として書いた括弧（読みの 拓（ひら）く、添え書きの 栄養教諭（仮称）、条文の項の印 § 1813(h)、引用で改めた一字 [A]）と、
-// 定義の括弧の中で語を囲んだ引用符（（以下「PHR」という。））は、括弧の重なりに数えない。例文は、出典を書いたもののほかは自作。
+// 語の一部として書いた括弧（読みの 拓（ひら）く、添え書きの 栄養教諭（仮称）、条文の項の印 § 1813(h)、引用で改めた一字 [A]）は、
+// 括弧の重なりに数えない。例文は、出典を書いたもののほかは自作。
 
 const findingsOf = (source: string): readonly string[] => namedRuleRun("bracket-nesting", source, ja, "a.md", "business/report").findings;
 const enFindingsOf = (source: string, genre: string): readonly string[] => namedRuleRun("bracket-nesting", source, en, "a.md", genre).findings;
@@ -42,13 +42,11 @@ describe("bracket-nesting: 語の一部として書いた括弧", () => {
   });
 });
 
-describe("bracket-nesting: 条文の項の印、引用で改めた一字、定義する語の引用符", () => {
+describe("bracket-nesting: 条文の項の印と、引用で改めた一字", () => {
   before(async () => {
     await ja.prepare?.({ pos: true });
     await en.prepare?.({ pos: true });
   });
-
-  const definitions = { markers: ["以下", "hereinafter"], verbs: ["という"] };
 
   it("英字や数字にすぐ続けた短い括弧（§ 1813(h)、5(a)(1)、item(s)）と、角括弧の一字（[A]、[a]ll）を外す", () => {
     assert.equal(withoutWordBrackets("12 U.S.C. § 1813(h) and section 5(a)(1)(iv)", []), "12 U.S.C. § 1813 and section 5");
@@ -63,28 +61,9 @@ describe("bracket-nesting: 条文の項の印、引用で改めた一字、定�
     assert.equal(withoutWordBrackets("[AB] and [1]", []), "[AB] and [1]");
   });
 
-  it("定義の語と定義の動詞か閉じ括弧の間の引用符を外す（（以下「PHR」という。）、(hereinafter “SLA”)、(“Exchange Act”)）", () => {
-    assert.equal(withoutWordBrackets("（以下「PHR」という。）", [], definitions), "（以下PHRという。）");
-    assert.equal(withoutWordBrackets("(hereinafter “SLA”)", [], definitions), "(hereinafter SLA)");
-    assert.equal(withoutWordBrackets("the Act (“Exchange Act”) applies", [], definitions), "the Act (Exchange Act) applies");
-  });
-
-  it("定義の形でない引用符は残す", () => {
-    assert.equal(withoutWordBrackets("（以下「PHR」を参照）", [], definitions), "（以下「PHR」を参照）");
-    assert.equal(withoutWordBrackets("（「PHR」を参照）", [], definitions), "（「PHR」を参照）");
-    assert.equal(withoutWordBrackets("（以下「PHR」という。）", []), "（以下「PHR」という。）");
-    assert.equal(withoutWordBrackets("「(for the “term”)」", [], { markers: ["the"], verbs: [] }), "「(for the “term”)」");
-    assert.equal(withoutWordBrackets("以下「PHR」という。", [], definitions), "以下「PHR」という。");
-  });
-
-  it("白書の定義の括弧と、判決の引用の中の角括弧は指さず、本当に三重の括弧は指す", () => {
-    assert.deepEqual(findingsOf("個人の健康・医療データ等（パーソナル・ヘルス・レコード（以下「PHR」といいます。））を活用します。\n"), []);
-    // 令和6年版高齢社会白書（内閣府、公共データ利用規約 第1.0版）。
-    assert.deepEqual(
-      findingsOf("供給面では、個人の健康・医療データ等（パーソナル・ヘルス・レコード（以下「PHR」という。））を活用したサービスの普及を促した。\n"),
-      [],
-    );
-    assert.equal(findingsOf("供給面では、個人の健康・医療データ等（パーソナル・ヘルス・レコード（いわゆる「PHR」の一種））を活用した。\n").length, 1);
+  it("判決や条文の引用の中の角括弧の一字と項の印は指さず、本当に三重の括弧は指す", () => {
+    // 定義の括弧の中の「（以下「PHR」という。）」は三重のまま数える（特許庁の手引きの同じ形が、正しい指摘と判定されている）。
+    assert.equal(findingsOf("医療データ等（パーソナル・ヘルス・レコード（以下「PHR」という。））を活用した。\n").length, 1);
     // Micro Star v. FormGen Inc., 154 F.3d 1107 (9th Cir. 1998), a US court opinion in the public domain.
     const citation = "See 1 William F. Patry, Copyright Law and Practice 168 (1994) (“[A] musical composition may be embodied in sheet music….”).\n";
     assert.deepEqual(enFindingsOf(citation, "legal/judgment"), []);
