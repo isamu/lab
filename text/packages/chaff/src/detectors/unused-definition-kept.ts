@@ -1,7 +1,7 @@
 // unused-definition, less the terms that are not unused definitions: a wording quoted as what not to write (「風雨が強い」と
 // はせずに …), which the definition reader takes for 「X」とは, and a term a heading names under another capitalisation
 // (### Audio Content, then “Audio content” refers to …). The words after the quote come from the language's word list
-// (rejected-wording). Nor is a term defined for a unit of a code that the document is only one section of ("For the purpose
+// (rejected-wording). Nor is a quoted word a sentence asks about ("what “done” means"). Nor is a term defined for a unit of a code that the document is only one section of ("For the purpose
 // of this subchapter—" in 5 U.S.C. 551): the other sections of the unit use it. Pure.
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
@@ -19,6 +19,28 @@ export const isRejectedWording = (source: string, offset: number, term: string, 
   if (at === -1 || markers.length === 0) return false;
   const after = source.slice(offset + at + term.length).replace(CLOSING, "");
   return markers.some((marker) => after.startsWith(marker));
+};
+
+/** Opening quotes and spaces between the words before the term and the term. */
+const OPENING = new Set(["「", "『", "“", '"', "'", "‘"]);
+
+const withoutOpening = (text: string): string => {
+  const chars = [...text];
+  return chars.slice(0, chars.findLastIndex((char) => !OPENING.has(char) && char.trim() !== "") + 1).join("");
+};
+
+/** The lead as a whole word at the end of the text before the term: "what", not "somewhat". */
+const endsWithWord = (text: string, lead: string): boolean => text.endsWith(lead) && !/[\p{L}\p{N}]/u.test(text.at(-lead.length - 1) ?? "");
+
+/**
+ * Whether the quoted term follows a word that asks about it ("a definition of what “done” means"): the sentence asks
+ * what the term means, and defines nothing. The words come from the language's word list (question-wording-lead).
+ */
+export const isQuestionedWording = (source: string, offset: number, term: string, leads: readonly string[]): boolean => {
+  const at = source.slice(offset, offset + TERM_REACH + term.length).indexOf(term);
+  if (at === -1 || leads.length === 0) return false;
+  const before = withoutOpening(source.slice(Math.max(0, offset + at - TERM_REACH), offset + at)).toLowerCase();
+  return leads.some((lead) => endsWithWord(before, lead.toLowerCase()));
 };
 
 /** Whether a heading names the term, compared without case (### Audio Content and “Audio content”). */
@@ -39,16 +61,20 @@ const scopedBeyond = (doc: ProseDocument): ((offset: number) => boolean) => {
 };
 
 const isKept =
-  (doc: ProseDocument, markers: readonly string[], headings: readonly string[]) =>
+  (doc: ProseDocument, headings: readonly string[]) =>
   (finding: Finding): boolean => {
     const term = String(finding.values["term"] ?? "");
     const offset = Number(finding.values["offset"] ?? 0);
-    return !isRejectedWording(doc.source, offset, term, markers) && !isNamedByHeading(term, headings);
+    return (
+      !isRejectedWording(doc.source, offset, term, patternsOf(doc, "rejected-wording")) &&
+      !isQuestionedWording(doc.source, offset, term, patternsOf(doc, "question-wording-lead")) &&
+      !isNamedByHeading(term, headings)
+    );
   };
 
 export const unusedDefinitionKept: Detector = (doc, options): Finding[] => {
   const beyond = scopedBeyond(doc);
   return unusedDefinition(doc, options)
-    .filter(isKept(doc, patternsOf(doc, "rejected-wording"), headingTexts(doc)))
+    .filter(isKept(doc, headingTexts(doc)))
     .filter((finding) => !beyond(Number(finding.values["offset"] ?? 0)));
 };

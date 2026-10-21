@@ -50,12 +50,32 @@ const LETTERED = new RegExp(
   "u",
 );
 
+/**
+ * "Sec. 4. General Provisions. (a) Nothing in this order…": a title run in before the first item of the section's own list.
+ * The rest then starts with that label, which opens the item as a joined label does. A title is a few words spaced as
+ * words are, with no sentence in it: a wider gap is a page flattened into one line ("ARTICLE II   EFFECT…   Section 2.1
+ * Effect… (a)"), and "At the Effective Time, … thereof: (a) Each share" is the section's text, not its title.
+ */
+const RUN_IN_FIRST_ITEM = /^(?<title>\S+(?: \S+){0,11}?[.:]) (?<item>\([a1]\)\s+\p{Lu}.*)$/u;
+/** A lowercase word ending a sentence or a clause: "thereof: ", "Time. ". "U.S.C. " and "No. " end in capitals. */
+const SENTENCE_END = /\p{Ll}[.:;] /u;
+/** "(a) Prior to… (b) Each…": the next item on the same line is a list flattened into one paragraph, not one item. */
+const NEXT_RUN_IN = /[.;:] \([b2]\) \p{Lu}/u;
+
+const titleAndRest = (heading: string): { readonly heading: string; readonly rest: string } => {
+  const title = RUN_IN_FIRST_ITEM.exec(heading)?.groups?.["title"];
+  const item = title === undefined ? undefined : heading.slice(title.length + 1);
+  if (title === undefined || item === undefined || SENTENCE_END.test(title) || NEXT_RUN_IN.test(item)) return { heading, rest: heading };
+  return { heading: title, rest: item };
+};
+
 const headed = (pattern: RegExp, line: string, numbering: string, label: (n: string) => string): NumberedLine | undefined => {
   const groups = pattern.exec(line)?.groups;
   const number = numberOf(groups?.["n"]);
-  const heading = titleOf(groups?.["rest"] ?? "");
-  if (groups === undefined || number === undefined || heading === undefined) return undefined;
+  const title = titleOf(groups?.["rest"] ?? "");
+  if (groups === undefined || number === undefined || title === undefined) return undefined;
   const parts = number.split(".");
+  const { heading, rest } = titleAndRest(title);
   return {
     kind: "article",
     depth: parts.length,
@@ -63,7 +83,7 @@ const headed = (pattern: RegExp, line: string, numbering: string, label: (n: str
     absolute: true,
     label: label(groups["n"] ?? ""),
     heading,
-    rest: heading,
+    rest,
     ordinal: Number(parts.at(-1)),
     numbering,
   };
