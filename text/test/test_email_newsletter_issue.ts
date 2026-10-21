@@ -69,7 +69,31 @@ describe("newsletter-issue: an issue number in the title", () => {
   });
 });
 
+// A Japanese mail magazine that numbers its issues "Vol.691" (no space after the period), opens on its topic and ends with
+// the office in charge: shaped like a public safety mail. Self-written.
+const VOL_ISSUE = [
+  "# Vol.12 階段からの転落に注意!",
+  "",
+  "階段での転落事故が続いています。手すりを使い、足元を確かめてから上り下りしましょう。",
+  "",
+  "担当:安全課",
+  "",
+].join("\n");
+
 describe("email-greeting-closing on a newsletter's issue", () => {
+  it("reads Vol. written with or without a space after it as an issue number, in Japanese and English", () => {
+    assert.deepEqual(variantsOf(VOL_ISSUE), []);
+    assert.deepEqual(variantsOf(VOL_ISSUE.replace("Vol.12", "vol.12")), []);
+    assert.deepEqual(variantsOf(VOL_ISSUE.replace("Vol.12", "Vol. 12")), []);
+    assert.deepEqual(variantsOf("# Staff Newsletter Vol.12\n\nThe spring training opens in April.\n\nSign up by April 20.\n", en), []);
+  });
+
+  it("still asks for both when Vol. stands in the body, inside a word, or before a word", () => {
+    assert.deepEqual(variantsOf(VOL_ISSUE.replace("# Vol.12 階段からの転落に注意!", "# 階段からの転落に注意!\n\n資料 Vol.12 を参照")), ["greeting", "closing"]);
+    assert.deepEqual(variantsOf(VOL_ISSUE.replace("Vol.12", "Revol.12")), ["greeting", "closing"]);
+    assert.deepEqual(variantsOf(VOL_ISSUE.replace("Vol.12 ", "Vol.12号の")), ["greeting", "closing"]);
+  });
+
   it("asks an issue for no greeting and no closing", () => {
     assert.deepEqual(variantsOf(ISSUE), []);
     assert.deepEqual(variantsOf("# Staff Newsletter, Vol. 12\n\nThe spring training opens in April.\n\nSign up by April 20.\n", en), []);
