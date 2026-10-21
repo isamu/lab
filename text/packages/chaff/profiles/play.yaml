@@ -1,0 +1,14 @@
+id: play
+
+name:
+  ja: 戯曲
+  en: Play
+
+why:
+  ja: 戯曲は、話者の名前の後ろに台詞を書き、動きや様子（ト書き）を括弧に入れて台詞のあいだに置きます。ト書きは台詞の文の一部ではなく、中に句点があればそれ自体が文です。台詞とト書きを別々に文に分けます。
+  en: A Japanese play writes each line after the speaker's name and puts the stage directions in （） between the lines. A direction is not part of the spoken sentence, and with 。 inside it is sentences of its own, so lines and directions are split into sentences apart. English plays mark directions in other ways, so this profile has no English part.
+
+# 内容からは選ばない。literature/play が読む。
+ja:
+  # ト書きを囲む括弧。いちばん外側の組の中身を、台詞と別の片にする。
+  stage_directions: { open: "（", close: "）" }
