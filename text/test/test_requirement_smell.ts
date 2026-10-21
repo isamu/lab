@@ -79,6 +79,17 @@ describe("requirement-smell (ja)", () => {
     assert.deepEqual(found("一　委託先等　委託先及び再委託先をいう。\n\n受託者は、委託先等を監督しなければならない。", ja), []);
   });
 
+  it("等 that ends the head of an item holding only the name, defined in the paragraph after it (9 書面等)", () => {
+    const item = "9　書面等\n\n　書面および電磁的記録をいう。\n\n";
+    assert.deepEqual(found(`${item}乙は、書面等で通知しなければならない。`, ja), []);
+    assert.deepEqual(found("9　書面等\n\n　書面および電磁的記録をいう。\n\n乙は、当該書面等で通知しなければならない。", ja), []);
+  });
+
+  it("still reads 等 after an item that holds only a name and is not followed by a definition", () => {
+    assert.deepEqual(found("9　書面等\n\n　書面は甲が定める。\n\n乙は、書面等で通知しなければならない。", ja), ["open-end:等"]);
+    assert.deepEqual(found("書面等\n\n　書面および電磁的記録をいう。\n\n乙は、書面等で通知しなければならない。", ja), ["open-end:等"]);
+  });
+
   it("a longer noun that ends in a defined name narrows it and leaves nothing open (当該委託先等, 海外委託先等)", () => {
     const defined = "委託先等（委託先及び再委託先をいう。）を定める。";
     assert.deepEqual(found(`${defined}受託者は、当該委託先等を監督しなければならない。`, ja), []);
