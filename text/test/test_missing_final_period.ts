@@ -26,7 +26,9 @@ const findingsOf = (source: string): readonly string[] => namedRuleRun(RULE, sou
 /** How each paragraph of a source ends: closed, open, or - when it is not counted. */
 const formsOf = (source: string): readonly string[] => {
   const doc = buildDocument("a.md", source, ja);
-  return doc.paragraphs.map((paragraph, index) => paragraphEnd(doc.prose ?? doc.source, paragraph, MARKS, doc.paragraphs[index + 1])?.form ?? "-");
+  return doc.paragraphs.map(
+    (paragraph, index) => paragraphEnd(doc.prose ?? doc.source, paragraph, MARKS, doc.paragraphs[index + 1], doc.paragraphs[index - 1])?.form ?? "-",
+  );
 };
 
 describe("missing-final-period: 「。」で終わらない段落", () => {
@@ -82,6 +84,11 @@ describe("missing-final-period: 「。」で終わらない段落", () => {
     // 行の途中のコロン、二つ続くコロン、コロンの無い説明は、これまでどおり数える。
     assert.deepEqual(formsOf("ボタン:入力した内容をプレビューできます\n"), ["open"]);
     assert.deepEqual(formsOf("::入力した内容をプレビューできます\n"), ["open"]);
+    // 語の下でなく、文の段落の後ろや文書の頭に置いた「:」の段落は、説明ではないので数える。
+    assert.deepEqual(formsOf("申請は市役所の窓口で受け付けます。\n\n:重要な申請は窓口で受け付けます\n"), ["closed", "open"]);
+    assert.deepEqual(formsOf(":重要な申請は窓口で受け付けます\n"), ["open"]);
+    // 一つの語に説明が二つ続くときは、二つ目も説明。
+    assert.deepEqual(formsOf("プレビュー\n\n:入力した内容をプレビューできます\n\n:印刷する前の内容も確かめられます\n"), ["-", "-", "-"]);
     assert.deepEqual(findingsOf(documentWith("プレビュー", "入力した内容をプレビューできます")), [
       "この段落は「。」で終わっていません（この文書の段落はふつう「。」で終わります。4 段落のうち 1 段落）",
     ]);

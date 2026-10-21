@@ -24,10 +24,7 @@ const CLOSERS = '」』）)"”’';
 const QUOTE_CLOSERS = "」』";
 /** A paragraph ending in a colon leads into a list or a block; it is not a sentence left open. */
 const LEAD_IN = /[：:]$/u;
-/**
- * A paragraph opened by a colon is the description in a definition list (a term, then ": what it does"), written like a
- * table cell rather than a sentence.
- */
+/** A paragraph opened by a colon, under a term, is the description in a definition list (a term, then ": what it does"). */
 const DESCRIPTION = /^[：:](?![：:])/u;
 /** Two spaces in a row, half- or full-width, lay a line out like a table (an ingredient, then its amount), so it is not a sentence. */
 const LAYOUT = /[ \u3000]{2}/u;
@@ -68,10 +65,23 @@ const endsInPredicate = (paragraph: Paragraph): boolean => {
   return last !== undefined && PREDICATE.has(last.pos) && last.lemma === last.surface;
 };
 
+const bodyOf = (text: string, paragraph: Paragraph): string => text.slice(paragraph.span.start, paragraph.span.end).trim();
+
+/** A term of a definition list: one short line with no closing mark, or a description of the same term before it. */
+const isTerm = (body: string, marks: PeriodMarks): boolean =>
+  DESCRIPTION.test(body) || (!body.includes("\n") && Array.from(body).length < MIN_SENTENCE_CHARS && !isClosed(body, marks.ends));
+
+/**
+ * A description in a definition list, written like a table cell rather than a sentence: a paragraph opened by a colon
+ * right under a term (プレビュー / :入力した内容をプレビューできます).
+ */
+const isDescription = (text: string, paragraph: Paragraph, marks: PeriodMarks, previous: Paragraph | undefined): boolean =>
+  DESCRIPTION.test(bodyOf(text, paragraph)) && previous !== undefined && isTerm(bodyOf(text, previous), marks);
+
 /** How a paragraph ends, or undefined when its last line is not a sentence (a label, a lead-in, a note, a laid-out row). */
-export const paragraphEnd = (text: string, paragraph: Paragraph, marks: PeriodMarks, next?: Paragraph): ParagraphEnd | undefined => {
+export const paragraphEnd = (text: string, paragraph: Paragraph, marks: PeriodMarks, next?: Paragraph, previous?: Paragraph): ParagraphEnd | undefined => {
+  if (isDescription(text, paragraph, marks, previous)) return undefined;
   const body = text.slice(paragraph.span.start, paragraph.span.end).trimEnd();
-  if (DESCRIPTION.test(body.trimStart())) return undefined;
   const last = body.split("\n").at(-1)?.trim() ?? "";
   if (Array.from(last).length < MIN_SENTENCE_CHARS || LEAD_IN.test(last)) return undefined;
   const offset = paragraph.span.start + body.length - 1;
@@ -92,7 +102,7 @@ const marksOf = (lexicon: readonly LexiconEntry[]): PeriodMarks => ({
 export const missingFinalPeriod: Detector = (doc: ProseDocument, options): Finding[] => {
   const text = doc.prose ?? doc.source;
   const marks = marksOf(doc.lexicons["final-period"] ?? []);
-  const ends = doc.paragraphs.flatMap((paragraph, index) => paragraphEnd(text, paragraph, marks, doc.paragraphs[index + 1]) ?? []);
+  const ends = doc.paragraphs.flatMap((paragraph, index) => paragraphEnd(text, paragraph, marks, doc.paragraphs[index + 1], doc.paragraphs[index - 1]) ?? []);
   const minority = formMinority(ends, options.limit);
   if (minority === undefined || minority.usual.form !== "closed") return [];
   return minority.odd.map((end) => ({

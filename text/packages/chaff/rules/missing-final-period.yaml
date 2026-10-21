@@ -54,8 +54,8 @@ example:
       審査の結果は郵送でお知らせしました。
 
 not_flagged:
-  ja: 日本語の文書だけで動きます。十五字に満たない行、「：」で終わる行、※ や ＊ で始まる注の行、空白を二つ続けて並べた行、名詞や連用形で終わる行（受付時間の案内、可能性あり）は文として数えません。閉じ括弧で終わる行（〜をご覧ください）と、「？」「！」で終わる行、定義の箇条の説明として「:」で始めた段落（:入力した内容をプレビューできます）も数えません。段落の多くが「。」で終わらない文書（スライド、一覧）は指しません。
-  en: Only in Japanese documents. Lines under fifteen characters, lines ending in ：, note lines starting with ※ or ＊, lines laid out with two spaces in a row, and lines ending in a noun or a continuative form are not counted as sentences, nor are lines ending in a closing bracket, ？ or ！, or a paragraph opened by a colon as the description in a definition list (:入力した内容をプレビューできます). A document whose paragraphs mostly end without 。 (slides, lists) is not reported.
+  ja: 日本語の文書だけで動きます。十五字に満たない行、「：」で終わる行、※ や ＊ で始まる注の行、空白を二つ続けて並べた行、名詞や連用形で終わる行（受付時間の案内、可能性あり）は文として数えません。閉じ括弧で終わる行（〜をご覧ください）と、「？」「！」で終わる行、定義の箇条で、語の下に「:」で始めて書いた説明（プレビュー の下の :入力した内容をプレビューできます）も数えません。段落の多くが「。」で終わらない文書（スライド、一覧）は指しません。
+  en: Only in Japanese documents. Lines under fifteen characters, lines ending in ：, note lines starting with ※ or ＊, lines laid out with two spaces in a row, and lines ending in a noun or a continuative form are not counted as sentences, nor are lines ending in a closing bracket, ？ or ！, or a paragraph opened by a colon under a term, the description in a definition list (プレビュー, then :入力した内容をプレビューできます). A document whose paragraphs mostly end without 。 (slides, lists) is not reported.
 level_meaning:
   ja: 「。」の無い段落が {limit}% までなら指摘
   en: reported while paragraphs without 。 are at most {limit}% of the counted paragraphs
