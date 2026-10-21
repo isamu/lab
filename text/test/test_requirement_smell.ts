@@ -87,6 +87,8 @@ describe("requirement-smell (ja)", () => {
 
   it("still reads 等 after an item that holds only a name and is not followed by a definition", () => {
     assert.deepEqual(found("9　書面等\n\n　書面は甲が定める。\n\n乙は、書面等で通知しなければならない。", ja), ["open-end:等"]);
+    assert.deepEqual(found("9　書面等\n\n乙は、書面等を通知の対象とする。\n\n乙は、書面等で通知しなければならない。", ja), ["open-end:等"]);
+    assert.deepEqual(found("9　書面等\n\n　書面をいう場合は甲が定める。\n\n乙は、書面等で通知しなければならない。", ja), ["open-end:等"]);
     assert.deepEqual(found("書面等\n\n　書面および電磁的記録をいう。\n\n乙は、書面等で通知しなければならない。", ja), ["open-end:等"]);
   });
 

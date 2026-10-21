@@ -102,9 +102,15 @@ const nextSentenceAfter = (source: string, offset: number): string => {
   return stop === -1 ? following : following.slice(0, stop + 1);
 };
 
+/** A sentence that defines the name before it: it ends with a word of a definition and does not use the name (書面…をいう。). */
+const defines = (sentence: string, name: string, statements: readonly string[]): boolean => {
+  const body = sentence.trim().replace(/[。．.]$/u, "");
+  return !sentence.includes(name) && statements.some((word) => body.endsWith(word));
+};
+
 /**
  * Whether the noun heads a definition item: a label before it, no particle right after the word, and a definition in the
- * rest (四の二 親会社等 …をいう。), or, when the noun is all the item holds, in the sentence after it (9 書面等 / 書面…をいう。).
+ * rest (四の二 親会社等 …をいう。), or, when the noun is all the item holds, the sentence after it (9 書面等 / 書面…をいう。).
  */
 const headsItem = (source: string, occurrence: Occurrence, statements: readonly string[]): boolean => {
   const next = occurrence.tokens[occurrence.range.end];
@@ -112,7 +118,8 @@ const headsItem = (source: string, occurrence: Occurrence, statements: readonly 
   const before = source.slice(occurrence.sentence.span.start, startOf(occurrence, occurrence.first));
   if (!ITEM_LABEL.test(before)) return false;
   const rest = source.slice(endOf(occurrence, occurrence.last), occurrence.sentence.span.end);
-  return says(rest.trim() === "" ? nextSentenceAfter(source, occurrence.sentence.span.end) : rest, statements);
+  if (rest.trim() !== "") return says(rest, statements);
+  return defines(nextSentenceAfter(source, occurrence.sentence.span.end), nounOf(source, occurrence), statements);
 };
 
 const quotedNames = (source: string, words: readonly LexiconEntry[]): QuotedName[] =>
