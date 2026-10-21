@@ -86,11 +86,24 @@ const NOT_AFTER = /[\p{N}.,，．:：\-－/]/u;
 
 type DigitRun = { readonly written: string; readonly index: number };
 
+/**
+ * A hexadecimal code such as a commit hash (2704b2d): after the digits, a–f letters and digits mixed (a letter, then a
+ * digit), seven characters or more in all, to a word's end. A word glued to a number (10000face) has no digit after it.
+ */
+const HEX_CODE = /^[0-9a-f]*[a-f][0-9a-f]*\d[0-9a-f]*(?![\p{L}\p{N}])/u;
+const HEX_CODE_MIN = 7;
+
+const isHexCode = (written: string, after: string): boolean => {
+  const tail = HEX_CODE.exec(after)?.[0];
+  return tail !== undefined && /^\d+$/u.test(written) && written.length + tail.length >= HEX_CODE_MIN;
+};
+
 /** Each number of four digits or more standing alone, grouped (1,000) or not (1000). */
 const bigNumbers = (text: string): DigitRun[] =>
   [...text.matchAll(DIGITS_AND_COMMAS)].flatMap((match): DigitRun[] => {
     const written = match[0];
-    const standsAlone = !NOT_BEFORE.test(text.charAt(match.index - 1)) && !NOT_AFTER.test(text.charAt(match.index + written.length));
+    const after = text.slice(match.index + written.length);
+    const standsAlone = !NOT_BEFORE.test(text.charAt(match.index - 1)) && !NOT_AFTER.test(after.charAt(0)) && !isHexCode(written, after);
     return standsAlone && (GROUPED.test(written) || PLAIN_BIG.test(written)) ? [{ written, index: match.index }] : [];
   });
 
