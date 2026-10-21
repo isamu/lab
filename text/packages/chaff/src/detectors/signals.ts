@@ -22,6 +22,7 @@ import { gramPassagesOf } from "./gram-passages.ts";
 import { sectionOpeners } from "./gram-openers.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
 import { referenceListSpans } from "../reference-lists.ts";
+import { citationNoteSpans } from "./citation-note.ts";
 import { DASH, introducesList } from "./lead-in-dash.ts";
 import type { Detector, Finding, ProseDocument, Section, Sentence } from "../plugin.ts";
 
@@ -365,6 +366,12 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   };
   const counted = outsideSpans(acronymsOf(doc, notationOf(doc)), [
     ...referenceListSpans(doc.source, patternsOf(doc, "reference-list-heading")),
+    // A note that opens with a citation names the cited work in its own words (a title's IMF, a series' FRBSF).
+    ...citationNoteSpans(
+      doc.source,
+      doc.sentences.map((sentence) => ({ text: sentence.text, start: sentence.span.start })),
+      patternsOf(doc, "citation-author-joiner"),
+    ),
     ...outlineLabelSpans(doc.source, patternsOf(doc, "numbered-division")),
     ...grammarSpans(doc.source),
   ]);

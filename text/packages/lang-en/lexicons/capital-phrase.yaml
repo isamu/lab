@@ -1,7 +1,9 @@
 # Fixed phrases written in capitals (the recital formula NOW, THEREFORE; the joined conjunctions AND/OR). Their capital
-# words are words, not acronyms. Only the whole phrase counts: OR alone is also Oregon. Matched as written.
+# words are words, not acronyms; PO in PO Box is a post office. Only the whole phrase counts: OR alone is also Oregon, PO
+# alone a purchase order. Matched as written.
 id: capital-phrase
 language: en
 entries:
   - pattern: "NOW, THEREFORE"
   - pattern: "AND/OR"
+  - pattern: "PO Box"
