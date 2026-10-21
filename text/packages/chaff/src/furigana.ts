@@ -1,7 +1,7 @@
 import type { Span } from "./plugin.ts";
 
 /** かなと、読みの中に書く長音・中黒・空白だけの括弧書き。 */
-const KANA_ASIDE = /[（(][\p{Script=Hiragana}\p{Script=Katakana}ー・ 　]+[）)]/gu;
+const KANA_ASIDE = /[（(][\p{Script=Hiragana}\p{Script=Katakana}ー・\p{Zs}]+[）)]/gu;
 
 const HIRAGANA = /\p{Script=Hiragana}/u;
 const KATAKANA = /\p{Script=Katakana}/u;
