@@ -74,6 +74,19 @@ describe("missing-final-period: 「。」で終わらない段落", () => {
     assert.deepEqual(formsOf(`●申請書は市役所の窓口で受け付けます。\n\n${prose}\n`)[0], "closed");
   });
 
+  it("定義の箇条の説明（語の下の「:入力した内容をプレビューできます」）は文として数えない", () => {
+    const list = ["プレビュー", ":入力した内容をプレビューできます"];
+    assert.deepEqual(formsOf(`${list.join("\n\n")}\n`), ["-", "-"]);
+    assert.deepEqual(formsOf("続紙追加\n\n：申請書に続紙を追加して入力できます\n")[1], "-");
+    assert.deepEqual(findingsOf(documentWith(...list)), []);
+    // 行の途中のコロン、二つ続くコロン、コロンの無い説明は、これまでどおり数える。
+    assert.deepEqual(formsOf("ボタン:入力した内容をプレビューできます\n"), ["open"]);
+    assert.deepEqual(formsOf("::入力した内容をプレビューできます\n"), ["open"]);
+    assert.deepEqual(findingsOf(documentWith("プレビュー", "入力した内容をプレビューできます")), [
+      "この段落は「。」で終わっていません（この文書の段落はふつう「。」で終わります。4 段落のうち 1 段落）",
+    ]);
+  });
+
   it("「。」で終わらない段落の多い文書と、混ざりすぎた文書は指さない", () => {
     assert.deepEqual(findingsOf("審査の結果は郵送でお知らせしました\n\n詳しい手順は担当者から説明します\n\n申請は市役所の窓口で受け付けます。\n"), []);
     assert.deepEqual(findingsOf(documentWith("審査の結果は郵送でお知らせしました", "詳しい手順は担当者から説明します")), []);

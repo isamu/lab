@@ -24,6 +24,11 @@ const CLOSERS = '」』）)"”’';
 const QUOTE_CLOSERS = "」』";
 /** A paragraph ending in a colon leads into a list or a block; it is not a sentence left open. */
 const LEAD_IN = /[：:]$/u;
+/**
+ * A paragraph opened by a colon is the description in a definition list (a term, then ": what it does"), written like a
+ * table cell rather than a sentence.
+ */
+const DESCRIPTION = /^[：:](?![：:])/u;
 /** Two spaces in a row, half- or full-width, lay a line out like a table (an ingredient, then its amount), so it is not a sentence. */
 const LAYOUT = /[ \u3000]{2}/u;
 /** Fewer characters than this is a label or a caption, not a sentence. */
@@ -66,6 +71,7 @@ const endsInPredicate = (paragraph: Paragraph): boolean => {
 /** How a paragraph ends, or undefined when its last line is not a sentence (a label, a lead-in, a note, a laid-out row). */
 export const paragraphEnd = (text: string, paragraph: Paragraph, marks: PeriodMarks, next?: Paragraph): ParagraphEnd | undefined => {
   const body = text.slice(paragraph.span.start, paragraph.span.end).trimEnd();
+  if (DESCRIPTION.test(body.trimStart())) return undefined;
   const last = body.split("\n").at(-1)?.trim() ?? "";
   if (Array.from(last).length < MIN_SENTENCE_CHARS || LEAD_IN.test(last)) return undefined;
   const offset = paragraph.span.start + body.length - 1;
