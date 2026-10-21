@@ -74,8 +74,9 @@ const headsCompound = (tokens: readonly Token[], after: number): boolean => {
 
 /** at から続けて書いた名詞の並び（高齢|社会）の、最後の名詞の位置。at が名詞でなければ -1。 */
 const compoundEnd = (tokens: readonly Token[], at: number): number => {
-  const nouns = tokens.slice(at).findIndex((token, index) => token.pos !== "NOUN" || (index > 0 && tokens[at + index - 1]?.span.end !== token.span.start));
-  return nouns === 0 ? -1 : at + (nouns === -1 ? tokens.length - at : nouns) - 1;
+  const breaks = tokens.slice(at).findIndex((token, index) => token.pos !== "NOUN" || (index > 0 && tokens[at + index - 1]?.span.end !== token.span.start));
+  const nouns = breaks === -1 ? tokens.length - at : breaks;
+  return nouns === 0 ? -1 : at + nouns - 1;
 };
 
 /** 目当ての語で終わる複合語か（より良い高齢社会、より良い地域社会）。目当ての語が頭なだけの語（社会保障）は目当てでない。 */
