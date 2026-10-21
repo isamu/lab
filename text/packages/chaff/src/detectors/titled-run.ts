@@ -46,3 +46,12 @@ export const isTitlePosition = (text: string, start: number, end: number): boole
  * この連なりの字（text）が名前の終わりとして含まれるか。同じ名前は、文の中で使っても名前（認定職業訓練実施奨励金の支給額）。
  */
 export const isTitledName = (text: string, titled: readonly string[]): boolean => titled.some((name) => name.endsWith(text));
+
+/** 名前として繰り返したと読む、同じ連なりの最少の回数。 */
+const MIN_REPEATS = 2;
+
+/** 文書の漢字の連なり（runs）のうち、同じ字で二度以上出るもの。書き手が一つの名前として使い回している（自衛隊高級幹部会同）。 */
+export const repeatedRuns = (runs: readonly string[]): Set<string> => {
+  const counts = runs.reduce((seen, run) => seen.set(run, (seen.get(run) ?? 0) + 1), new Map<string, number>());
+  return new Set([...counts].flatMap(([run, count]) => (count >= MIN_REPEATS ? [run] : [])));
+};
