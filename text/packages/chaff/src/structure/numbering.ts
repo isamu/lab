@@ -9,6 +9,14 @@ const labelOf = (node: StructureNode): string => String(node.attrs["label"] ?? n
 /** sideSteps は、この番号の直前にある番号の無い手順（GOV.UK の「and」）の数。それぞれが番号を一つ使っていてよい。 */
 type Ordered = { readonly node: StructureNode; readonly ordinal: number; readonly last: number; readonly sideSteps: number };
 
+/**
+ * isAlternative は、別案と書いた条（alternative-clause.ts）。restarts は、番号を空けた条（第●条）が始まる位置で、
+ * そこから項の番号を振り直す。どちらも始まりの順。
+ */
+export type ClauseReadings = { readonly isAlternative: (node: StructureNode) => boolean; readonly restarts: readonly number[] };
+
+const NO_CLAUSES: ClauseReadings = { isAlternative: () => false, restarts: [] };
+
 const OPENING_BRACKET = /^[([{〔【〈《]/u;
 
 /** 括弧で囲んだ番号（（1）、(a)）か。全角と半角は同じに見る。 */
@@ -19,7 +27,12 @@ const isBracketed = (label: string): boolean => OPENING_BRACKET.test(label.norma
  * 法令の第 1 項は番号が無いので、その号（一、二）と第 2 項（２）は同じ条の直下に並ぶ。深さで分けないと「二の次が２」に見える。
  * 社内規程は号の（1）（2）と第 2 項の「2」を同じ深さに読むことがあるので、括弧で囲んだ番号は囲まない番号と別の並びにする。
  */
-const sequencesOf = (parent: StructureNode, quoting: ReadonlySet<StructureNode>, isSideStep: (node: StructureNode) => boolean): Ordered[][] => {
+const sequencesOf = (
+  parent: StructureNode,
+  quoting: ReadonlySet<StructureNode>,
+  isSideStep: (node: StructureNode) => boolean,
+  clauses: ClauseReadings,
+): Ordered[][] => {
   const groups = new Map<string, Ordered[]>();
   let sideSteps = 0;
   parent.children.forEach((node) => {
@@ -31,6 +44,8 @@ const sequencesOf = (parent: StructureNode, quoting: ReadonlySet<StructureNode>,
     const key = `${node.kind}/${String(node.level ?? "")}/${isBracketed(labelOf(node)) ? "bracketed" : "bare"}`;
     // 配列を作り直さずに足す。条が何千もある法令で二乗にしない。
     const group = groups.get(key) ?? [];
+    // 前と同じ番号で別案と書いた条（第4条の後の第4条（変更オプション条項））は、その条の代わりに選ぶもので、番号を使わない。
+    if (group.at(-1)?.last === node.ordinal && clauses.isAlternative(node)) return;
     group.push({ node, ordinal: node.ordinal, last: node.ordinalTo ?? node.ordinal, sideSteps });
     groups.set(key, group);
     sideSteps = 0;
@@ -59,13 +74,14 @@ const unreadBetween = (unread: readonly Span[], previous: Ordered, current: Orde
  * あいだに読めなかった範囲（unread）があれば、抜けた番号はそこにあるかもしれないので言わない。重なりは言う。
  */
 const breaksIn =
-  (unread: readonly Span[]) =>
+  (unread: readonly Span[], restarts: readonly Span[]) =>
   (sequence: readonly Ordered[]): StructureIssue[] =>
     sequence.flatMap((current, index) => {
       const previous = sequence[index - 1];
       // 1 に戻ったら新しい並び。一つの条に (a)(b) の箇条書きが二つある、附則が第1条から振り直す、のどちらも誤りではない。
       // 範囲をまとめた行（第四十三条から第五十五条まで）の次は、範囲の最後から数える。
       if (previous === undefined || current.ordinal === previous.last + 1 || current.ordinal === 1) return [];
+      if (unreadBetween(restarts, previous, current)) return [];
       if (current.ordinal > previous.last + 1 && unreadBetween(unread, previous, current)) return [];
       if (current.ordinal > previous.last + 1 && current.ordinal <= previous.last + 1 + current.sideSteps) return [];
       return [
@@ -85,16 +101,19 @@ const breaksIn =
  * 同じ番号が二度続いて次が飛ぶ（4.1、4.1、4.3）ものは、重なりと抜けに分けず、二つ目で一度だけ言う（repeated-number.ts）。
  * unread は、読み手には見えるが木に入らない範囲（Markdown の HTML ブロックの中の文字）を、始まりの順に並べたもの。
  * isSideStep は、番号の代わりに「and」と書いた手順（前の手順と並べて行う）。その数だけ、次の番号は飛んでよい。
+ * clauses は、別案の条（並びに入れない）と、番号を空けた条の位置（そこから振り直す）。
  */
 export const numberingBreaks = (
   tree: StructureNode,
   unread: readonly Span[] = [],
   isSideStep: (node: StructureNode) => boolean = () => false,
+  clauses: ClauseReadings = NO_CLAUSES,
 ): StructureIssue[] => {
   const quoting = numbersQuotedInside(tree);
+  const restarts = clauses.restarts.map((start) => ({ start, end: start }));
   const breaks = inDocumentOrder(tree)
-    .flatMap((parent) => sequencesOf(parent, quoting, isSideStep))
+    .flatMap((parent) => sequencesOf(parent, quoting, isSideStep, clauses))
     .filter((sequence) => !isVersionHistory(sequence.map((ordered) => labelOf(ordered.node))))
-    .flatMap(breaksIn(unread));
+    .flatMap(breaksIn(unread, restarts));
   return withRepeatsNamed(tree, quoting, breaks, unread);
 };
