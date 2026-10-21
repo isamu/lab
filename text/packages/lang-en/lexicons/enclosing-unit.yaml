@@ -1,6 +1,7 @@
 # The divisions of a code above its sections: "section 552 of this title", "as used in this subchapter". A document that
 # is one section of a code has no such division of its own, so "this title" is the code's, and so are the sections and
 # definitions it covers. Where the document has the division (a "PART 2" or "Chapter 3" heading), it is checked as usual.
+# oxford-comma-consistency reads the comma after a numbered one ("Title 44, Public Printing and Documents") as naming it.
 id: enclosing-unit
 language: en
 entries:
