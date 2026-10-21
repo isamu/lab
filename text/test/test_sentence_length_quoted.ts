@@ -50,6 +50,11 @@ describe("max-sentence-length on a quoted report of several sentences", () => {
     assert.deepEqual(findingsOf(`- ${REPORT.replace("手を伸ばした。", "手を伸ばし、")}`), ["この文は 78 文字あります（70 文字まで）"]);
   });
 
+  it("does not count a page marker in the words around the quotation", () => {
+    const outside = "保護者が目を離した時間は短かったものの、椅子の位置と床の材質と照明の明るさがどれも事故の一因と考えられるとして施設に周知した";
+    assert.deepEqual(findingsOf(`${outside}「転んだ。泣いた。」－ 12 －とある。`), []);
+  });
+
   it("still counts the words around the quotation when they are long", () => {
     const around = `事故の報告には「転んだ。泣いた。」とあり、保護者が目を離した時間は短かったものの、椅子の位置と床の材質と照明の明るさがどれも事故の一因となったと考えられ、今後の注意点として施設に周知した。`;
     assert.equal(findingsOf(around).length, 1);

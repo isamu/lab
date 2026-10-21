@@ -28,9 +28,9 @@ const sizeOf = (text: string, unit: LengthUnit): number =>
   unit === "word" ? text.split(/\s+/u).filter((word) => word.length > 0).length : text.replace(/\s+/gu, "").length;
 
 /** 「」の中に句点で閉じた文が二つ以上あれば、その一つ一つと括弧の外を別に測る（引いた事故の報告「…転落。…入院。」）。 */
-const longestQuotedPart = (text: string, size: number): number => {
+const longestQuotedPart = (text: string, size: number, markers: RegExp | undefined): number => {
   const parts = quotedSentenceParts(text);
-  return parts.length === 1 ? size : Math.max(...parts.map((part) => sizeOf(part, "char")));
+  return parts.length === 1 ? size : Math.max(...parts.map((part) => sizeOf(part, "char") - pageMarkerSize(part, markers, "char")));
 };
 
 /**
@@ -48,7 +48,7 @@ const measureOf = (sentence: Sentence, unit: LengthUnit, options: DetectorOption
     if (unit === "word" && isTitleLine(text)) return { size: 0, limit: options.limit };
     const unwritten = unit === "word" ? unwrittenWords(sentence, text, words.listItems) : 0;
     const size = lengthOf(sentence, unit) - pageMarkerSize(text, words.markers, unit) - unwritten;
-    return { size: unit === "char" ? longestQuotedPart(text, size) : size, limit: options.limit };
+    return { size: unit === "char" ? longestQuotedPart(text, size, words.markers) : size, limit: options.limit };
   }
   return { size: lengthOf(sentence, embedded.lengthUnit), limit, variant: `embedded-${embedded.id}` };
 };
