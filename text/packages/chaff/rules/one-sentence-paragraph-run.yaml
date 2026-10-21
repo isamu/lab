@@ -65,8 +65,8 @@ example:
       In the room, no food or drink is allowed. Put the desks back when you leave.
 
 not_flagged:
-  ja: 上限までの一文の段落、見出し・箇条書き・表・コードを挟んだ段落、改行一つでつないだ行、文の終わりの印（。．.!?）で終わらない段落（「日時：」のような札、項目、平文にした表の欄）、○・※ などの印で始まる段落（手で印を付けた項目の並び）は数えません。法務と文学のジャンルでは既定で止めています（条項や定義、台詞や詩の行は、一文ずつ立てるのが形のため）。
-  en: One-sentence paragraphs up to the limit, paragraphs separated by a heading, a list, a table or code, lines joined by a single line break, and paragraphs that do not end with a sentence mark (a label such as Date:, a field, a cell of a table written as plain text), and paragraphs that open with a mark such as ○, ・ or ※ (items marked by hand) are not counted together. The legal and literature presets turn it off, since a clause, a definition, a line of dialogue or of verse stands alone by form.
+  ja: 上限までの一文の段落、見出し・箇条書き・表・コードを挟んだ段落、改行一つでつないだ行、文の終わりの印（。．.!?）で終わらない段落（「日時：」のような札、項目、平文にした表の欄）、○・※ などの印で始まる段落（手で印を付けた項目の並び）、文献一覧の項目（参考文献などの見出しの下の段落と、[7] や [RFC2119] のような番号で始まる段落）は数えません。法務と文学のジャンルでは既定で止めています（条項や定義、台詞や詩の行は、一文ずつ立てるのが形のため）。
+  en: One-sentence paragraphs up to the limit, paragraphs separated by a heading, a list, a table or code, lines joined by a single line break, and paragraphs that do not end with a sentence mark (a label such as Date:, a field, a cell of a table written as plain text), paragraphs that open with a mark such as ○, ・ or ※ (items marked by hand), and the entries of a reference list (paragraphs under a References heading, or opening with a label such as [7] or [RFC2119]) are not counted together. The legal and literature presets turn it off, since a clause, a definition, a line of dialogue or of verse stands alone by form.
 level_meaning:
   ja: 一文だけの段落の連続 {limit} 個まで
   en: up to {limit} one-sentence paragraphs in a row

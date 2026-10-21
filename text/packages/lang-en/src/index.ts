@@ -2,6 +2,7 @@ import { loadLexicons } from "./lexicons.ts";
 import { unmarkNumberStops } from "./number-stop.ts";
 import { labelStops, unmarkLabelStops } from "./label-stop.ts";
 import { initialStops, unmarkInitialStops } from "./initial-stop.ts";
+import { leadInitials, unmarkLeadInitials } from "./lead-initial.ts";
 import { sentenceSpans } from "./sentence-split.ts";
 import { splitAtQuotedStops } from "./quoted-stop.ts";
 import { reattachClosingQuotes } from "./closing-quote.ts";
@@ -20,6 +21,10 @@ const INITIAL_STOPS = initialStops(
   (LEXICONS["sentence-start-word"] ?? []).map((entry) => entry.pattern),
   (LEXICONS["prepositive-abbreviation"] ?? []).map((entry) => entry.pattern),
   (LEXICONS["name-abbreviation"] ?? []).map((entry) => entry.pattern),
+);
+const LEAD_INITIALS = leadInitials(
+  (LEXICONS["initial-lead-word"] ?? []).map((entry) => entry.pattern),
+  (LEXICONS["sentence-start-word"] ?? []).map((entry) => entry.pattern),
 );
 
 const LATIN_LETTER = /[a-z]/giu;
@@ -46,9 +51,8 @@ const asListItem = (sentence: Sentence): Sentence => ({ ...sentence, listItem: t
 
 /** Spans of the splitter, cut again where a line break before a list item ends a sentence. */
 const sentencesOf = (text: string): Sentence[] => {
-  const quotedStops = sentenceSpans(unmarkInitialStops(unmarkNumberStops(unmarkLabelStops(text, LABEL_STOPS)), INITIAL_STOPS)).flatMap((span) =>
-    splitAtQuotedStops(text, span),
-  );
+  const unmarked = unmarkLeadInitials(unmarkInitialStops(unmarkNumberStops(unmarkLabelStops(text, LABEL_STOPS)), INITIAL_STOPS), LEAD_INITIALS);
+  const quotedStops = sentenceSpans(unmarked).flatMap((span) => splitAtQuotedStops(text, span));
   const listBreaks = listLineBreaks(text);
   const itemHeads = listItemHeads(text);
   return reattachClosingQuotes(text, quotedStops)
