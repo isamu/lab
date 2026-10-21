@@ -73,9 +73,12 @@ describe("bracket-nesting: 条文の項の印、引用で改めた一字、定�
     assert.equal(withoutWordBrackets("（以下「PHR」を参照）", [], definitions), "（以下「PHR」を参照）");
     assert.equal(withoutWordBrackets("（「PHR」を参照）", [], definitions), "（「PHR」を参照）");
     assert.equal(withoutWordBrackets("（以下「PHR」という。）", []), "（以下「PHR」という。）");
+    assert.equal(withoutWordBrackets("「(for the “term”)」", [], { markers: ["the"], verbs: [] }), "「(for the “term”)」");
+    assert.equal(withoutWordBrackets("以下「PHR」という。", [], definitions), "以下「PHR」という。");
   });
 
   it("白書の定義の括弧と、判決の引用の中の角括弧は指さず、本当に三重の括弧は指す", () => {
+    assert.deepEqual(findingsOf("個人の健康・医療データ等（パーソナル・ヘルス・レコード（以下「PHR」といいます。））を活用します。\n"), []);
     // 令和6年版高齢社会白書（内閣府、公共データ利用規約 第1.0版）。
     assert.deepEqual(
       findingsOf("供給面では、個人の健康・医療データ等（パーソナル・ヘルス・レコード（以下「PHR」という。））を活用したサービスの普及を促した。\n"),

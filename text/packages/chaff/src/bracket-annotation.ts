@@ -44,12 +44,12 @@ const oneOf = (words: readonly string[]): string => words.map(escapeRegExp).join
 
 /**
  * 定義の括弧の中で、定義する語を囲んだ引用符（（以下「PHR」という。）、(hereinafter “SLA”)、(“Exchange Act”)）。引用符は語の
- * 名前の印で、読み手が開いたまま覚えておく括弧ではない。前は定義の語か開き括弧、後ろは定義の動詞か閉じ括弧のときだけ。外すのは引用符の二字だけ。
+ * 名前の印で、読み手が開いたまま覚えておく括弧ではない。開き括弧のすぐ後ろ（定義の語を挟んでもよい）で、後ろが定義の動詞か閉じ括弧のときだけ。外すのは引用符の二字だけ。
  */
 const definedTermQuoteSpans = (text: string, words: DefinitionWords): Span[] => {
-  const markers = words.markers.length === 0 ? "" : String.raw`(?<![\p{L}\p{N}])(?:${oneOf(words.markers)})[\s、,]*|`;
+  const markers = words.markers.length === 0 ? "" : String.raw`(?:(?:${oneOf(words.markers)})(?![\p{L}\p{N}])[\s、,]*)*`;
   const verbs = words.verbs.length === 0 ? "" : `${oneOf(words.verbs)}|`;
-  const pattern = new RegExp(String.raw`(?:${markers}[(（]\s*)(?<open>[「“"])[^「」“”"\n]{1,40}[」”"](?=\s*(?:${verbs}[)）]))`, "giu");
+  const pattern = new RegExp(String.raw`[(（]\s*${markers}(?<open>[「“"])[^「」“”"\n]{1,40}[」”"](?=\s*(?:${verbs}[)）]))`, "giu");
   return [...text.matchAll(pattern)].flatMap((match) => {
     const end = match.index + match[0].length;
     const open = match.index + match[0].indexOf(match.groups?.["open"] ?? "");

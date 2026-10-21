@@ -4,6 +4,7 @@ import { quotedSpans } from "../quoted-span.ts";
 import { literalCues, withoutLiteralQuotes } from "../literal-quote.ts";
 import { bracketDepth, clauseCount, topicDistance } from "../sentence-load.ts";
 import { withoutWordBrackets } from "../bracket-annotation.ts";
+import { conjugatedForms } from "./conjugated-form.ts";
 
 const findingOf = (sentence: Sentence, count: number, limit: number): Finding => ({
   rule: "",
@@ -47,7 +48,8 @@ export const bracketNesting: Detector = (doc, options) => {
   const cues = literalCues(doc.lexicons["literal-quote-cue"] ?? []);
   const wordsOf = (id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
   const annotations = wordsOf("bracket-annotation");
-  const definitions = { markers: wordsOf("definition-marker"), verbs: wordsOf("definition-verb") };
+  const verbs = wordsOf("definition-verb");
+  const definitions = { markers: wordsOf("definition-marker"), verbs: [...verbs, ...conjugatedForms(doc.sentences, verbs)] };
   return overLimit((sentence) => bracketDepth(withoutWordBrackets(withoutLiteralQuotes(sentence.text, cues), annotations, definitions)))(doc, options);
 };
 
