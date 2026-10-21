@@ -25,6 +25,14 @@ describe("announced-count-mismatch", () => {
     assert.deepEqual(found(doc("申し込みの前に、次の3点を確認してください。", "- 書類", "- 口座", "- 印鑑"), ja), []);
   });
 
+  it("「いずれか一つに該当する」 is a condition to meet one item, not an announcement of one", () => {
+    const items = ["1. 公知の情報", "2. 既に保有していた情報", "3. 独自に開発した情報"];
+    assert.deepEqual(found(doc("次の各号のいずれか一つに該当する情報は、秘密情報に該当しない。", ...items), ja), []);
+    assert.deepEqual(found(doc("次の各号の何れか一つに該当する情報は、秘密情報に該当しない。", ...items), ja), []);
+    assert.deepEqual(found(doc("次の一つに該当する情報は、秘密情報に該当しない。", ...items), ja), ["一つ/3"]);
+    assert.deepEqual(found(doc("Information that meets any one of the following is not confidential:", "- Public", "- Known", "- Developed")), []);
+  });
+
   it("kanji numerals and full-width digits are counts too", () => {
     assert.deepEqual(found(doc("改善点は次の三つです。", "- 速さ", "- 費用"), ja), ["三つ/2"]);
     assert.deepEqual(found(doc("次の４項目を記入してください。", "1. 氏名", "2. 住所", "3. 電話"), ja), ["４項目/3"]);
