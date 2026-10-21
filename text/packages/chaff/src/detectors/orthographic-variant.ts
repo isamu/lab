@@ -8,6 +8,7 @@ import { QUOTATION_MARKS, isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { singleQuotedSpans } from "../single-quoted-span.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
 import { furiganaSpans } from "../furigana.ts";
+import { contactEntrySpans } from "../contact-entry.ts";
 import { withCutNounsJoined } from "../split-noun.ts";
 import { japaneseCompanyNameSpans } from "../company-name-run.ts";
 import { acronymsIn, isCapitalsNotSpelling } from "../capitals-with-small.ts";
@@ -101,13 +102,15 @@ const inSentence = (sentence: Sentence, spans: readonly Span[]): Span[] =>
 
 /**
  * Whether a stretch of the sentence is outside a quotation, the team's names, a company's name (関東珪曹硝子㈱), a reading in
- * brackets (HTTP（えいちてぃーてぃーぴー）), a label opening the sentence (（答）) and a spelling mentioned (（曇）とも書く): the first
- * three keep their own spelling, a reading is not a spelling at all, a label is a fixed short form, and a mention is the subject.
+ * brackets (HTTP（えいちてぃーてぃーぴー）), a label opening the sentence (（答）), a spelling mentioned (（曇）とも書く) and a
+ * contact's name beside its phone number: the first three and the last keep their own spelling, a reading is not a spelling at
+ * all, a label is a fixed short form, and a mention is the subject.
  */
 const isOpenIn = (sentence: Sentence, names: Names): IsOpen => {
   const closed = [
     ...quotedSpans(sentence.text, QUOTATION_MARKS),
     ...furiganaSpans(sentence.text),
+    ...contactEntrySpans(sentence.text),
     ...japaneseCompanyNameSpans(sentence.text, names.companyForms),
     ...inSentence(sentence, names.linkTitles),
     ...inSentence(sentence, names.singleQuoted),
