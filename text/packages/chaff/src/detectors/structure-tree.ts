@@ -99,7 +99,7 @@ export const numberingGap: Detector = (doc, options): Finding[] => {
 };
 export const duplicateDefinition: Detector = (doc, options) => {
   const labels = patternsOf(doc, "attached-instrument-label");
-  return findingsOf("duplicate-definition", (tree, source) => duplicateDefinitions(tree, attachedPartStarts(source, labels)))(doc, options);
+  return findingsOf("duplicate-definition", (tree, source) => duplicateDefinitions(tree, attachedPartStarts(source, labels), source))(doc, options);
 };
 
 /** 曜日の名前は言語パッケージの語彙表（weekday、日曜日から順）から取る。無ければ番号のまま。 */
