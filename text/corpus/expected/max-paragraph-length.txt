@@ -40,7 +40,7 @@ rfc3693-geopriv-requirements  2
 rfc9293-tcp  14
 rust-rfc-2094-nll  11
 soumu-wp-r06-misinformation  2
-us-4683202-nucleic-acid-amplification  7
+us-4683202-nucleic-acid-amplification  5
 us-6285999-node-ranking  4
 us-scotus-gideon-v-wainwright  1
 usajobs-va-it-specialist-customer-support  1
