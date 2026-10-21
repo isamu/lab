@@ -39,6 +39,19 @@ describe("caseCitationSpans", () => {
     assert.equal(covered("FTA v. Hill Farms, 312 U.S. 40.", "FTA"), true);
     assert.equal(caseCitationSpans("FTA v. Hill Farms", []).length, 0);
   });
+
+  it("covers a party joined by & or /, and a party followed by more words of its name", () => {
+    assert.equal(covered("See MCI Telecomms. Corp. v. AT&T, 512 U.S. 218, 231 n.4 (1994).", "MCI"), true);
+    assert.equal(covered("See MCI Telecomms. Corp. v. AT&T, 512 U.S. 218, 231 n.4 (1994).", "AT&T"), true);
+    assert.equal(covered("see Trust Co. Bank v. MGM/UA Entertainment Co., 772 F.2d 740 (11th Cir. 1985)", "MGM/UA"), true);
+  });
+
+  it("covers an agency's docket number before a pin cite and the deciding body with its year", () => {
+    assert.equal(covered("In re Colo. River Indian Tribes, NOV/CFA 01-01, 5-6 (Nat'l Indian Gaming Comm'n May 30, 2001).", "NOV/CFA"), true);
+    assert.equal(covered("The NOV/CFA 01-01 form is due.", "NOV/CFA"), false);
+    assert.equal(covered("File NOV/CFA 01-01, 5-6 copies (two sets).", "NOV/CFA"), false);
+    assert.equal(covered("The MGM/UA Entertainment Co. lot was sold.", "MGM/UA"), false);
+  });
 });
 
 describe("undefined-acronym in a court opinion", () => {
@@ -51,6 +64,18 @@ describe("undefined-acronym in a court opinion", () => {
       "MR. JUSTICE LEE took no part in the decision of this case.",
     ].join("\n");
     assert.deepEqual(reportedAcronyms(en, opinion, "legal/judgment"), []);
+  });
+
+  it("does not ask to expand the parties of citations from opinions, even when a party's name breaks the sentence", () => {
+    // Colorado River Indian Tribes v. NIGC, 466 F.3d 134 (D.C. Cir. 2006) and Micro Star v. FormGen Inc., 154 F.3d 1107 (9th
+    // Cir. 1998), US court opinions in the public domain.
+    const opinion = [
+      "In re Colo. River Indian Tribes, NOV/CFA 01-01, 5-6 (Nat'l Indian Gaming Comm'n May 30, 2001). The Commission denied the objection.",
+      "",
+      "See MCI Telecomms. Corp. v. AT&T, 512 U.S. 218, 231 n.4 (1994). A copyright owner holds the right to create sequels, see Trust Co. Bank v. MGM/UA Entertainment Co., 772 F.2d 740 (11th Cir. 1985).",
+    ].join("\n");
+    assert.deepEqual(reportedAcronyms(en, opinion, "legal/judgment"), []);
+    assert.deepEqual(reportedAcronyms(en, `${opinion} The MCI rule binds the RRB.`, "legal/judgment"), ["MCI", "RRB"]);
   });
 
   it("still asks to expand an acronym the opinion uses in its own words", () => {
