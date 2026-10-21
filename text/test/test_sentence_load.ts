@@ -125,6 +125,23 @@ describe("topicDistance: 主題から述語まで", () => {
     assert.equal(whole("大臣は、事務を機構に行わせることとされていて、機構は、基準を公表している。"), 31);
   });
 
+  it("時や量を言う「は」（今夜は、当日は、その日は、午前中は）は、後ろに別の主題があれば譲る", () => {
+    const fromLater = "今夜は、駅で古い友人に会って、長い話をしたが、とにかく、あの男の話は嘘ばかりだった。";
+    assert.equal(topicDistance(tokensOf(fromLater)), 6);
+    assert.equal(topicDistance(tokensOf("その日は朝から雨で、店の主人は客が来ないと嘆いた。")), 8);
+    assert.equal(topicDistance(tokensOf("午前中は会議が続き、部長は昼に戻った。")), 4);
+  });
+
+  it("時の「は」しか主題が無ければ、その「は」から数える。名詞・接頭辞・「の」の付いた語、連体詞の付いた自立の名詞（翌年度以降は、大多数は、利用者の多くは、その多くは）は時ではない", () => {
+    const only = "現在は計算の費用より保存の費用が高く、結果を残すより入力から計算し直すほうが安いことが多い。";
+    assert.equal(topicDistance(tokensOf(only)), 40);
+    const narrowed = "利用者の多くは、新しい料金は高いと感じている。";
+    assert.equal(topicDistance(tokensOf(narrowed)), 13);
+    assert.equal(topicDistance(tokensOf("翌年度以降は、物価が上がる中、店の需要は続く。")), 14);
+    assert.equal(topicDistance(tokensOf("大多数は反対したが、委員長は賛成した。")), 13);
+    assert.equal(topicDistance(tokensOf("その多くは反対したが、委員長は賛成した。")), 13);
+  });
+
   it("空白は数えない", () => {
     assert.equal(topicDistance(tokensOf("会議は 明日に 延期します。")), topicDistance(tokensOf("会議は明日に延期します。")));
   });

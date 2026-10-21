@@ -161,7 +161,10 @@ const toToken = (morpheme: Morpheme, start: number, { passive, echo, light, raDr
   pos: isPassiveForm(morpheme) ? "AUX" : upos(morpheme.pos, morpheme.pos_detail_1),
   ...(morpheme.basic_form === "*" ? {} : { lemma: morpheme.basic_form }),
   ...(typeof morpheme.reading !== "string" || morpheme.reading === "*" ? {} : { reading: morpheme.reading }),
-  ...withRaDropped(withEcho(withWordStatus(featuresOf(morpheme, passive), isBound(morpheme), light), echo), raDropped),
+  ...withAdverbial(
+    withRaDropped(withEcho(withWordStatus(featuresOf(morpheme, passive), isBound(morpheme), light), echo), raDropped),
+    isAdverbialNoun(morpheme),
+  ),
 });
 
 /**
@@ -194,6 +197,16 @@ const withEcho = (found: { features?: Readonly<Record<string, string>> }, echo: 
 /** ら抜き言葉の一部（「食べれる」の 食べ と れる、「見れる」）。日本語に固有の印で、UD の FEATS の言語別拡張。 */
 const withRaDropped = (found: { features?: Readonly<Record<string, string>> }, raDropped: boolean): { features?: Readonly<Record<string, string>> } =>
   raDropped ? { features: { ...found.features, PotentialRa: "Dropped" } } : found;
+
+/**
+ * 副詞としても使える名詞（IPADIC の「副詞可能」: 今夜・当日・午前、その日の「日」、午前中の「中」）。今夜は来る、のように助詞なしで
+ * 時や量を言える。日本語に固有の印で、UD の FEATS の言語別拡張。非自立名詞や接尾の印はそのまま残す。
+ */
+const isAdverbialNoun = (morpheme: Morpheme): boolean =>
+  morpheme.pos === "名詞" && (morpheme.pos_detail_1 === "副詞可能" || morpheme.pos_detail_2 === "副詞可能");
+
+const withAdverbial = (found: { features?: Readonly<Record<string, string>> }, adverbial: boolean): { features?: Readonly<Record<string, string>> } =>
+  adverbial ? { features: { ...found.features, Adverbial: "Yes" } } : found;
 
 /**
  * 数（名詞,数）。UPOS では名詞に寄せるので、数であることは UD の NumType=Card で渡す。

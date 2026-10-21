@@ -143,6 +143,15 @@ describe("agentless-passive（日本語）", () => {
     });
   });
 
+  it("副詞としても使える名詞（IPADIC の副詞可能）に Adverbial=Yes が付く。ほかの印は残す", () => {
+    const adverbial = tokensOf("今夜は午前中の会議とその日の予定を話した。", ja).flatMap((token) =>
+      token.features?.["Adverbial"] === "Yes" ? [token.surface] : [],
+    );
+    assert.deepEqual(adverbial, ["今夜", "午前", "中", "日"]);
+    const day = tokensOf("その日は休む。", ja).find((token) => token.surface === "日");
+    assert.equal(day?.features?.["NounType"], "Dependent");
+  });
+
   it("受動の「れる/られる」に Voice=Pass が付く", () => {
     const tokens = tokensOf("方針が決定されました。", ja);
     assert.ok(tokens.some((token) => token.features?.["Voice"] === "Pass" && token.pos === "AUX"));

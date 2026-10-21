@@ -139,7 +139,7 @@ describe("数と「つ」を解析器で読む", () => {
   it("does not read the auxiliary つ, idioms or kana counts as counters", () => {
     assert.deepEqual(tokensOf("行きつ戻りつ"), ["行き/VERB", "つ/AUX", "戻り/VERB", "つ/AUX"]);
     assert.deepEqual(tokensOf("三つ巴"), ["三つ巴/NOUN"]);
-    assert.deepEqual(tokensOf("ひとつ試す"), ["ひとつ/NOUN", "試す/VERB"]);
+    assert.deepEqual(tokensOf("ひとつ試す"), ['ひとつ/NOUN{"Adverbial":"Yes"}', "試す/VERB"]);
     ["行きつ戻りつ", "三つ巴の争い", "ひとつ試す", "いくつかある", "3つめの案"].forEach((text) => assert.deepEqual(quantityOf(text), [], text));
   });
 
