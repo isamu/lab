@@ -18,13 +18,13 @@ const LETTER_BEFORE_CAPITALS = /^\p{Ll}\p{Lu}{2}/u;
 const adjacent = (source: string, left: Token, right: Token): boolean => source.slice(left.span.end, right.span.start).trim() === "";
 
 /** A letter or digit right before "a" makes it part of a word or a section number (15 U.S.C. § 78a et seq.), not an article. */
-const GLUED_BEFORE = /[\p{L}\p{N}]/u;
+const GLUED_BEFORE = /[\p{L}\p{N}]$/u;
 
 /** Initials joined by a slash (N/I, N/A): they may be read as the words they shorten, so either article fits. */
 const SLASH_JOINED = /^\/\p{Lu}/u;
 const ONE_CAPITAL = /^\p{Lu}$/u;
 
-const isGlued = (source: string, article: Token): boolean => GLUED_BEFORE.test(source.charAt(article.span.start - 1));
+const isGlued = (source: string, article: Token): boolean => GLUED_BEFORE.test(source.slice(Math.max(0, article.span.start - 2), article.span.start));
 
 const isSlashAbbreviation = (source: string, next: Token): boolean =>
   ONE_CAPITAL.test(next.surface) && SLASH_JOINED.test(source.slice(next.span.end, next.span.end + 2));
