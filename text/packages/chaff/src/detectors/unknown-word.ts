@@ -42,6 +42,15 @@ export const codeWordsOf = (source: string): Set<string> => {
 };
 
 /**
+ * A search stem with a wildcard (ukrain*, vaccin*): the word ends in a * that closes no emphasis, since nothing opens one
+ * before the word and no letter follows the *.
+ */
+export const isSearchStem = (source: string, offset: number, word: string): boolean => {
+  const end = offset + word.length;
+  return source[end] === "*" && source[offset - 1] !== "*" && !/\p{L}/u.test(source[end + 1] ?? "");
+};
+
+/**
  * 辞書に無い英語の語で、一字違いの辞書の語があるもの（recieve → receive）。辞書は adapter が持ち、無い言語では動かない。
  * 大文字を含む語（固有名詞・略語）、コード・URL の中、頭の字を分けた語の残り、二度以上使う語、言い直しの無い語、
  * 文書がコードにも書いた語は言わない。
@@ -53,7 +62,7 @@ export const unknownWord: Detector = (doc): Finding[] => {
   const words = wordsToCheck(doc.prose ?? doc.source, MIN_LENGTH, MAX_LENGTH).filter(({ offset }) => !isSplitWord(doc.source, offset));
   const used = new Set(words.map(({ word }) => word).filter((word) => isKnownWord(word, speller)));
   return usedOnce(words).flatMap(({ offset, word }) => {
-    if (known.has(word) || isKnownWord(word, speller)) return [];
+    if (known.has(word) || isKnownWord(word, speller) || isSearchStem(doc.source, offset, word)) return [];
     const suggestion = suggestionFor(word, speller, used);
     if (suggestion === undefined) return [];
     return [{ rule: "", severity: "warning", line: 0, column: 0, quote: quoteAt(doc.source, offset), values: { word, suggestion, offset } }];
