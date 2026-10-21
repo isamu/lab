@@ -3,7 +3,7 @@ import { dateSpans, wordsOf } from "./structure.ts";
 import { compacted, linkedIn, placeAt } from "./gram-place.ts";
 import { charWindows, wordWindows } from "./gram-windows.ts";
 import { fixedEndingSpans, furnitureMask, isFurniture } from "./gram-furniture.ts";
-import { lexiconNotationOf, type NotAcronymSpans } from "./acronym-context.ts";
+import { lexiconNotationOf, sourceNotAcronymSpans, type NotAcronymSpans } from "./acronym-context.ts";
 import { abbreviates, expansionAt, termEntryAcronyms, type DefinitionWords, type ExpandedAt } from "./acronym-expansion.ts";
 import { isExplained } from "./acronym-compound.ts";
 import { statedAcronyms } from "./acronym-definition.ts";
@@ -14,14 +14,11 @@ import { conjugatedForms } from "./conjugated-form.ts";
 import { evidenceSpans, hasNumeral, isClaim, isLabelOnly, startsWithin, type AdviceWords } from "./concrete-evidence.ts";
 import { letteredIndexEntries } from "./lettered-index.ts";
 import { knownByDocument } from "./acronym-known.ts";
-import { grammarSpans } from "./abnf-grammar.ts";
 import { glossedAcronyms, headingsSpellingOut } from "./acronym-gloss.ts";
-import { outlineLabelSpans } from "./outline-label.ts";
 import { hasPredicateIn } from "./gram-predicate.ts";
 import { gramPassagesOf } from "./gram-passages.ts";
 import { sectionOpeners } from "./gram-openers.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
-import { referenceListSpans } from "../reference-lists.ts";
 import { citationNoteSpans } from "./citation-note.ts";
 import { DASH, introducesList } from "./lead-in-dash.ts";
 import type { Detector, Finding, ProseDocument, Section, Sentence } from "../plugin.ts";
@@ -364,11 +361,10 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
     explained.set(word, known);
     return known;
   };
-  const counted = outsideSpans(acronymsOf(doc, notationOf(doc)), [
-    ...referenceListSpans(doc.source, patternsOf(doc, "reference-list-heading")),
-    ...outlineLabelSpans(doc.source, patternsOf(doc, "numbered-division")),
-    ...grammarSpans(doc.source),
-  ]);
+  const counted = outsideSpans(
+    acronymsOf(doc, notationOf(doc)),
+    sourceNotAcronymSpans(doc.source, (id) => patternsOf(doc, id)),
+  );
   // リンク先のページの題名の略語（[NASA Fprime AI Policy](https://…)）と、文献を引いて始まる注の中の略語（題名の IMF、誌名の
   // FRBSF）は、読み手が出会う説明の無い略語として数に入れるが、書き手が直せないので指さない。
   const citationNotes = citationNoteSpans(

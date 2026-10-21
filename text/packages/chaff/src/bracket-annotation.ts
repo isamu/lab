@@ -25,6 +25,18 @@ const annotationSpans = (text: string, words: readonly string[]): Span[] => {
     .map((match) => ({ start: match.index, end: match.index + match[0].length }));
 };
 
+/**
+ * 英字や数字にすぐ続けた短い括弧の並び。条文の項の印（12 U.S.C. § 1813(h)、section 5(a)(1)）と語の終わり（item(s)）で、
+ * 読み手は番号や語の一部として読む。括弧の中は 3 桁までの数字か 4 字までの英字（(iv)）だけ。
+ */
+const LABEL_MARKS = /(?<=[A-Za-z0-9])(?:\((?:\d{1,3}|[A-Za-z]{1,4})\))+/gu;
+
+/** 引用の中で大文字・小文字を改めた一字の印（“[A] musical composition”、[a]ll）。語の頭の一字で、括弧として読まない。 */
+const ALTERATION = /\[\p{L}\]/gu;
+
+const spansOfPattern = (text: string, pattern: RegExp): Span[] =>
+  [...text.matchAll(pattern)].map((match) => ({ start: match.index, end: match.index + match[0].length }));
+
 /** 重ならない範囲だけを、後ろから。同じ括弧が読みとしても添え書きとしても当たれば、一度だけ外す。 */
 const disjointFromEnd = (spans: readonly Span[]): Span[] =>
   spans
@@ -37,7 +49,9 @@ const disjointFromEnd = (spans: readonly Span[]): Span[] =>
  * 開いた括弧として覚えておく必要が無いので、括弧の重なりに数えない。挟んだ言葉（本文（氏名（ふりがな））、対象（すべて）を）は残す。
  */
 export const withoutWordBrackets = (text: string, annotations: readonly string[]): string =>
-  disjointFromEnd([...readingSpans(text), ...annotationSpans(text, annotations)]).reduce(
-    (rest, span) => `${rest.slice(0, span.start)}${rest.slice(span.end)}`,
-    text,
-  );
+  disjointFromEnd([
+    ...readingSpans(text),
+    ...annotationSpans(text, annotations),
+    ...spansOfPattern(text, LABEL_MARKS),
+    ...spansOfPattern(text, ALTERATION),
+  ]).reduce((rest, span) => `${rest.slice(0, span.start)}${rest.slice(span.end)}`, text);

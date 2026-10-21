@@ -103,6 +103,24 @@ describe("article-sound", () => {
       '"a MIT" takes "an" before that sound',
     ]);
   });
+
+  it("initials joined by a slash may be read as the words they stand for (a N/I level), so either article is left alone", () => {
+    // Micro Star v. FormGen Inc., 154 F.3d 1107 (9th Cir. 1998), a US court opinion in the public domain.
+    assert.deepEqual(findingsOf(RULE, "The way a N/I level is played is described in a N/I MAP file. Mark it an N/A value.\n"), []);
+  });
+
+  it("a slash after more than one capital, or a lower-case letter after the slash, is not initials", () => {
+    assert.deepEqual(findingsOf(RULE, "It was a MBA/PhD path and a N/a file.\n"), [
+      '"a MBA" takes "an" before that sound',
+      '"a N" takes "an" before that sound',
+    ]);
+  });
+
+  it('"a" glued to the number or word before it is a section letter, not an article (§ 78a et seq.)', () => {
+    // Federal Reserve SR letter 25-3 (US government work, public domain).
+    assert.deepEqual(findingsOf(RULE, "registered under the Securities Exchange Act of 1934 (15 U.S.C. § 78a et seq.), except persons who register.\n"), []);
+    assert.deepEqual(findingsOf(RULE, "See § 78 a et seq. for a apple.\n"), ['"a et" takes "an" before that sound', '"a apple" takes "an" before that sound']);
+  });
 });
 
 describe('article-sound: a document that writes "an" before a sounded h as its style', () => {

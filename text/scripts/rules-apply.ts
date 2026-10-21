@@ -2,6 +2,7 @@
 // severity at normal (info), and the groups it is off for (its off_for). Pure text edits of the rule file, so the comments and the
 // layout of the YAML stay as written.
 import type { MeasuredOff } from "./rule-policy.ts";
+import { MEASURED_OFF_REASON } from "../packages/chaff/src/rule-offs.ts";
 
 const STATUS_LINE = /^status: \w+$/mu;
 
@@ -52,8 +53,7 @@ export const withInfoAtNormal = (ruleYaml: string): string => {
   return withSeverity.replace(LEVELS_LINE, `levels: {${lowered(levels, SEVERITIES.indexOf(normal))}}`);
 };
 
-/** The reason `--apply` writes for an off it measured. An off with any other reason was written by hand. */
-export const MEASURED = "measured by yarn rules:measure";
+export const MEASURED = MEASURED_OFF_REASON;
 const OFF_FOR_LINE = "off_for:";
 const ENTRY = /^ {2}([a-z0-9/-]+): (.+)$/u;
 const USE_FOR_LINE = /^use_for: /u;

@@ -2,9 +2,10 @@
 // (expected/<id>.yaml), how many were right, per genre group, with this checkout's chaff (`yarn build` first). The corpus's
 // own runner runs the documents and matches findings to verdicts; a verdict whose note says `extraction artefact:` or
 // `dataset artefact:` is left out (scripts/rules-precision-score.ts). scripts/rule-policy.ts turns a rule off for a group
-// its judged findings are rarely right in.
+// its judged findings are rarely right in. The run ignores the offs --apply measured (CHAFF_IGNORE_MEASURED_OFFS=1):
+// otherwise an off would hide the findings that put it there, and the next --apply would lift it.
 //   --corpus <dir>  the chaff-corpus checkout (its `yarn install` done)
-//   --from <json>   read a run the corpus runner wrote with --json before, instead of running it again
+//   --from <json>   read a run the corpus runner wrote with --json before (with CHAFF_IGNORE_MEASURED_OFFS=1), instead of running it again
 //   --jobs <n>      how many documents the runner runs at once
 //   --write         write corpus/rules-precision.json, which test/test_rule_policy.ts holds the rules to
 //   --apply         --write, and place the rules from it and corpus/rules-measure.json (as yarn rules:measure --apply)
@@ -13,9 +14,10 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSy
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { parse } from "yaml";
-import { applyMeasurement, genreDataOf, PRECISION_FILE, precisionOffs, readGenresText, readMeasurement } from "./rules-measure-files.ts";
+import { applyMeasurement, genreDataOf, PRECISION_FILE, precisionHolds, precisionOffs, readGenresText, readMeasurement } from "./rules-measure-files.ts";
 import { isRarelyRight, lowPrecisionGroups, PRECISION_MIN_FINDINGS } from "./rule-policy.ts";
 import type { GenreData } from "../packages/chaff/src/genre-parse.ts";
+import { IGNORE_MEASURED_OFFS_ENV } from "../packages/chaff/src/rule-offs.ts";
 import {
   artefactKeys,
   groupPrecisions,
@@ -106,7 +108,8 @@ const runCorpus = (corpus: string): CorpusResult[] => {
   const jobs = argValue("--jobs");
   try {
     const args = [join(corpus, "scripts", "run.ts"), "--chaff", ROOT, "--json", json, ...(jobs === undefined ? [] : ["--jobs", jobs])];
-    execFileSync(process.execPath, args, { cwd: corpus, stdio: ["ignore", "ignore", "inherit"] });
+    const env = { ...process.env, [IGNORE_MEASURED_OFFS_ENV]: "1" };
+    execFileSync(process.execPath, args, { cwd: corpus, env, stdio: ["ignore", "ignore", "inherit"] });
     return resultsOf(json);
   } finally {
     rmSync(dir, { recursive: true, force: true });
@@ -121,11 +124,12 @@ const measure = (corpus: string): PrecisionMeasurement => {
 
 const percent = (value: number | undefined): string => (value === undefined ? "-" : `${String(Math.round(value * 100))}%`);
 
-/** Why a group where this language is rarely right is not off: another language keeps it, or genres.yaml does. */
-const markOf = (counts: LanguagePrecision, group: string, low: readonly string[], off: readonly string[]): string => {
+/** Why a group where this language is rarely right is not off: another language keeps it, its precision_hold, or genres.yaml. */
+const markOf = (counts: LanguagePrecision, group: string, low: readonly string[], off: readonly string[], holds: readonly string[]): string => {
   if (off.includes(group)) return "off";
   if (!isRarelyRight(counts)) return "";
-  return low.includes(group) ? "on: a genre in genres.yaml turns it on by hand" : "on: another language it reports in does not show it";
+  if (!low.includes(group)) return "on: another language it reports in does not show it";
+  return holds.includes(group) ? "on: its precision_hold keeps it on" : "on: a genre in genres.yaml turns it on by hand";
 };
 
 type Row = { readonly rule: string; readonly group: string; readonly language: string; readonly counts: LanguagePrecision; readonly mark: string };
@@ -133,10 +137,11 @@ type Row = { readonly rule: string; readonly group: string; readonly language: s
 const rowsOf = (rule: string, groups: Readonly<Record<string, GroupPrecision>>, data: GenreData, measurement: PrecisionMeasurement): Row[] => {
   const low = lowPrecisionGroups(groups);
   const off = precisionOffs(data, rule, measurement);
+  const holds = precisionHolds(data, rule);
   return Object.entries(groups).flatMap(([group, languages]) =>
     Object.entries(languages)
       .filter(([, counts]) => counts.correct + counts.falsePositive >= PRECISION_MIN_FINDINGS)
-      .map(([language, counts]) => ({ rule, group, language, counts, mark: markOf(counts, group, low, off) })),
+      .map(([language, counts]) => ({ rule, group, language, counts, mark: markOf(counts, group, low, off, holds) })),
   );
 };
 

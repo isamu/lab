@@ -66,7 +66,7 @@ entries:
   - pattern: MB
   - pattern: GB
   - pattern: TB
-  # 役職と国・地域。
+  # 役職と国・地域、国際機関。
   - pattern: CEO
   - pattern: CTO
   - pattern: CFO
@@ -75,6 +75,8 @@ entries:
   - pattern: UK
   - pattern: EU
   - pattern: UN
+  - pattern: WHO
+  - pattern: ASEAN
   - pattern: DNA
   # Acronyms any general reader reads without an expansion: identifiers of publications, time standards, everyday devices.
   - pattern: DOI

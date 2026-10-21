@@ -8,7 +8,10 @@ import { escapeRegExp } from "./regexp.ts";
  * - capitals with full stops (C., D.C.) before a sentence-start-word (The, In) end the sentence. Their capitals are
  *   replaced with a plain letter, which the splitter does not read as an initial;
  * - a prepositive abbreviation (U.S.) before any other capitalised word does not end it, unless a comma follows that
- *   word ("in the U.S. Yesterday, …"). Its last full stop is replaced with a letter.
+ *   word ("in the U.S. Yesterday, …"). Its last full stop is replaced with a letter;
+ * - capitals with full stops (J., U.K.) before a word in lower case ("J. meacham", "Hart, K. and J. Reed") do not end
+ *   it, since no sentence opens in lower case. A word that is lower case only at its head (iPhone) may be a name that
+ *   opens one, so it is left out. Their last full stop is replaced with a letter.
  * The length does not change, so the spans fit the original text. Initials first on their line are a list's labels
  * (A. The first item) and are left as they are.
  */
@@ -19,6 +22,7 @@ const EDGE_BEFORE = String.raw`(?<![\p{L}\p{N}_.'’])`;
 const WORD_END = String.raw`(?![\p{L}\p{N}_.'’-])`;
 const PLAIN_LETTER = "n";
 const CAPITAL = /\p{Lu}/gu;
+const BEFORE_LOWER_CASE = new RegExp(String.raw`${EDGE_BEFORE}(?:\p{Lu}\.){1,3}(?=[ \t\r\n]+\p{Ll}(?!\p{Lu}))`, "gu");
 
 const oneOf = (words: readonly string[]): string => `(?:${words.map(escapeRegExp).join("|")})`;
 
@@ -38,11 +42,17 @@ const lineStartOf = (text: string, index: number): number => Math.max(text.lastI
 
 const isFirstOnLine = (text: string, index: number): boolean => LABEL_HEAD.test(text.slice(lineStartOf(text, index), index));
 
-/** The text with every initial that ends a sentence, and every prepositive abbreviation that does not, rewritten. */
+const withoutLastStop = (abbreviation: string): string => `${abbreviation.slice(0, -1)}${PLAIN_LETTER}`;
+
+/** Initials before a word in lower case, not first on their line (a list's label stays as it is), rewritten. */
+const joinedBeforeLowerCase = (text: string): string =>
+  text.replace(BEFORE_LOWER_CASE, (initials: string, index: number) => (isFirstOnLine(text, index) ? initials : withoutLastStop(initials)));
+
+/** The text with every initial that ends a sentence, and every prepositive abbreviation or initial that does not, rewritten. */
 export const unmarkInitialStops = (text: string, stops: InitialStops): string => {
   const ended =
     stops.ends === undefined
       ? text
       : text.replace(stops.ends, (initials: string, index: number) => (isFirstOnLine(text, index) ? initials : initials.replace(CAPITAL, PLAIN_LETTER)));
-  return stops.joins === undefined ? ended : ended.replace(stops.joins, (abbreviation: string) => `${abbreviation.slice(0, -1)}${PLAIN_LETTER}`);
+  return joinedBeforeLowerCase(stops.joins === undefined ? ended : ended.replace(stops.joins, withoutLastStop));
 };

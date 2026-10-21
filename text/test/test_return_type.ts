@@ -71,9 +71,87 @@ describe("return-type-mismatch: reported", () => {
     const source = ["```ts", "wrap(text: string): string[]", "```", "", "```ts", "wrap(text: string): string", "```", ""].join("\n");
     assert.deepEqual(found(source, en), ["6 wrap: string / string[]"]);
   });
+
+  it("an async declaration whose promise settles to another type than the plain one", () => {
+    const blocks = ["```ts", "function load(): number {", "```", "", "```ts", "async function load(): Promise<string> {", "```", ""];
+    assert.deepEqual(found(blocks.join("\n"), en), ["6 load: Promise<string> / number"]);
+    const plain = ["```ts", "function load(): number {", "```", "", "```ts", "function load(): Promise<number> {", "```", ""];
+    assert.deepEqual(found(plain.join("\n"), en), ["6 load: Promise<number> / number"]);
+    const named = ["```ts", "const async = (): number => 1;", "```", "", "```ts", "const async = (): Promise<number> => run();", "```", ""];
+    assert.deepEqual(found(named.join("\n"), en), ["6 async: Promise<number> / number"]);
+  });
+
+  it("the same two declarations when neither block says it shows errors, or another comment does", () => {
+    const blocks = (comment: string): string =>
+      ["```ts", "function fn(x: string): void;", "```", "", "```ts", comment, "function fn(x: string): string;", "```", ""].join("\n");
+    assert.deepEqual(found(blocks("// overloads"), en), ["7 fn: string / void"]);
+    assert.deepEqual(found(blocks("// see @errors below"), en), ["7 fn: string / void"]);
+    const between = [
+      "```ts",
+      "function fn(x: string): void;",
+      "```",
+      "",
+      "```ts",
+      "// @errors: 2554",
+      "fn();",
+      "```",
+      "",
+      "```ts",
+      "function fn(x: string): string;",
+      "```",
+      "",
+    ];
+    assert.deepEqual(found(between.join("\n"), en), ["11 fn: string / void"]);
+  });
 });
 
 describe("return-type-mismatch: silent", () => {
+  it("an async declaration annotated Promise<number> against one that returns number (TypeScript Handbook, CC BY 4.0)", () => {
+    // The TypeScript Handbook, "Everyday Types" (Microsoft, CC BY 4.0): two examples of one function.
+    const handbook = [
+      "```ts twoslash",
+      "function getFavoriteNumber(): number {",
+      "  return 26;",
+      "}",
+      "```",
+      "",
+      "```ts twoslash",
+      "async function getFavoriteNumber(): Promise<number> {",
+      "  return 26;",
+      "}",
+      "```",
+      "",
+    ];
+    assert.deepEqual(found(handbook.join("\n"), en), []);
+    const arrow = ["```ts", "const load = (): string[] => [];", "```", "", "```ts", "const load = async (): Promise<Array<string>> => [];", "```", ""];
+    assert.deepEqual(found(arrow.join("\n"), en), []);
+  });
+
+  it("a declaration in a block that says it shows compiler errors (TypeScript Handbook, CC BY 4.0)", () => {
+    // The TypeScript Handbook, "More on Functions" (Microsoft, CC BY 4.0): wrong overloads shown with their errors.
+    const handbook = [
+      "```ts twoslash",
+      "// @errors: 2394",
+      "function fn(x: boolean): void;",
+      "// Argument type isn't right",
+      "function fn(x: string): void;",
+      "function fn(x: boolean) {}",
+      "```",
+      "",
+      "```ts twoslash",
+      "// @errors: 2394",
+      "function fn(x: string): string;",
+      "// Return type isn't right",
+      "function fn(x: number): boolean;",
+      "function fn(x: string | number) {",
+      '  return "oops";',
+      "}",
+      "```",
+      "",
+    ];
+    assert.deepEqual(found(handbook.join("\n"), en), []);
+  });
+
   it("ja and en: a statement that matches", () => {
     assert.deepEqual(found(page(MEASURE, "戻り値：`number`。行の幅を桁数で返します。", "measure は、幅を桁数の数値で返します。"), ja), []);
     assert.deepEqual(found(page(MEASURE, "Returns: `number`, the width in columns.", "measure returns the width as a number of columns."), en), []);
