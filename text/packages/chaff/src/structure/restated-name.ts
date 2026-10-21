@@ -4,8 +4,8 @@ import type { StructureNode } from "../plugin.ts";
 // abbreviation in the subject line and again at first use, and a quoted title of another letter carries its own; the
 // same name before the same term restates one definition, so the two cannot disagree. Pure.
 
-/** Small words a name may hold between its capitalised words (Department of the Treasury, Research and Development). */
-const NAME_JOINTS: ReadonlySet<string> = new Set(["of", "the", "and", "for", "&"]);
+/** Small words a name may hold between its capitalised words (Department of the Treasury, Office on Violence Against Women). */
+const NAME_JOINTS: ReadonlySet<string> = new Set(["of", "the", "and", "for", "on", "in", "at", "to", "&"]);
 const CAPITALISED = /^\p{Lu}/u;
 /** Fewer capitalised words than this is a word, not a name (the Company). */
 const MIN_NAME_WORDS = 2;

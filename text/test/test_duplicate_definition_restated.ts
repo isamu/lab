@@ -35,6 +35,10 @@ describe("duplicate-definition: the same name restating the same term", () => {
     assert.deepEqual(duplicates(BODY, "", `The Federal Communications Network ("FinCEN") publishes the list.`), ["FinCEN"]);
   });
 
+  it("names that differ only before a small word (Office on / Bureau in Civil Rights) are different names", () => {
+    assert.deepEqual(duplicates(`The Office on Civil Rights ("OCR") reviews the claim.`, "", `The Bureau in Civil Rights ("OCR") files the report.`), ["OCR"]);
+  });
+
   it("the same term after a lower-case description names nothing, and is still reported", () => {
     assert.deepEqual(
       duplicates(`Acme Holdings, a Delaware corporation (the "Company"), agrees.`, "", `Beta Industries, a Delaware corporation (the "Company"), agrees.`),
