@@ -150,6 +150,22 @@ const withDoubledKind = (mark: Mark, doubled: ReadonlySet<number>): Mark =>
   doubled.has(mark.offset) ? { ...mark, form: { ...mark.form, kind: `${mark.form.kind}${DOUBLED_KIND}` } } : mark;
 
 /**
+ * A note's marker in square brackets: a citation number ([1], ［12］) or a footnote reference ([^3]). It follows the
+ * notation of the notes, not the prose's brackets.
+ */
+const NOTE_MARKER = /\[\^?[0-9０-９]+\]|［\^?[0-9０-９]+］/gu;
+
+/** The offsets in `source` of the brackets of every note marker. */
+export const noteMarkerOffsets = (source: string): ReadonlySet<number> =>
+  new Set([...source.matchAll(NOTE_MARKER)].flatMap((match) => [match.index, match.index + match[0].length - 1]));
+
+const NOTE_KIND = "\u0000note";
+
+/** A note marker's bracket is a kind of its own, compared only with the other note markers' brackets. */
+const withNoteKind = (mark: Mark, notes: ReadonlySet<number>): Mark =>
+  notes.has(mark.offset) && !mark.form.kind.endsWith(ENUMERATOR_KIND) ? { ...mark, form: { ...mark.form, kind: `${mark.form.kind}${NOTE_KIND}` } } : mark;
+
+/**
  * A mark written two ways in one document (（ and (, “ and "), the less common way reported. The two ways come from the
  * lexicon; neither is called right. Only marks next to a letter of the document's script count, so a bracket in code-like
  * text (f(x)) or an English aside in a Japanese document does not. A line enumerator's brackets ((1)) are compared apart.
@@ -162,8 +178,9 @@ export const markConsistency: Detector = (doc, options): Finding[] => {
   const forms = formsOf(options.lexicon ?? []);
   const enumerators = enumeratorBracketOffsets(doc.source);
   const doubled = doubledParenOffsets(doc.source);
+  const notes = noteMarkerOffsets(doc.source);
   const marks = ownSentences(doc).flatMap((sentence) =>
-    marksIn(doc.source, sentence, forms, script).map((mark) => withDoubledKind(withEnumeratorKind(mark, enumerators), doubled)),
+    marksIn(doc.source, sentence, forms, script).map((mark) => withNoteKind(withDoubledKind(withEnumeratorKind(mark, enumerators), doubled), notes)),
   );
   const kinds = [...new Set(marks.map((mark) => mark.form.kind))];
   return kinds.flatMap((kind) =>
