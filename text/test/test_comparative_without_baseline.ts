@@ -175,6 +175,25 @@ describe("comparative-without-baseline: a compound aim, a set phrase, two exampl
     assert.deepEqual(findingsOf(one), ['"faster" does not say what it is compared with']);
     const later = [...EXAMPLES, "Callers can use it with any value.", "", "Our new engine is faster."].join("\n");
     assert.deepEqual(findingsOf(later), ['"faster" does not say what it is compared with']);
+    // An example in an earlier section is not the one compared with.
+    const sections = [
+      "Use it like this:",
+      "",
+      "```ts",
+      "run();",
+      "```",
+      "",
+      "## Template checks",
+      "",
+      "Checks are stricter now.",
+      "",
+      "```ts",
+      "check();",
+      "```",
+      "",
+      "This behavior is more desirable.",
+    ];
+    assert.deepEqual(findingsOf(sections.join("\n")), ['"more desirable" does not say what it is compared with']);
     // A sentence that does not point at the example (The new engine) names its own subject.
     assert.deepEqual(findingsOf([...EXAMPLES, "The new engine is faster."].join("\n")), ['"faster" does not say what it is compared with']);
   });
