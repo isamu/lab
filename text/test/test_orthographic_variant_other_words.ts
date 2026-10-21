@@ -186,6 +186,9 @@ describe("contactEntrySpans: 電話番号の札", () => {
     assert.deepEqual(contactEntrySpans("統一ダイヤル"), []);
     assert.deepEqual(contactEntrySpans("令和5年度 12345678"), []);
     assert.deepEqual(contactEntrySpans("第2-3-1表"), []);
+    assert.deepEqual(contactEntrySpans("型番AB123-45-6789"), []);
+    assert.deepEqual(contactEntrySpans("リンク https://example.com/#8891"), []);
+    assert.deepEqual(contactEntrySpans("番号 03-1234-56789"), []);
     assert.deepEqual(contactEntrySpans(""), []);
   });
 });
