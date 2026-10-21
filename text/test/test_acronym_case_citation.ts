@@ -3,6 +3,9 @@ import assert from "node:assert/strict";
 import { reportedAcronyms } from "./rule-run.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { caseCitationSpans } from "../packages/chaff/src/detectors/case-citation.ts";
+import { buildDocument } from "../packages/chaff/src/document.ts";
+import { loadRules } from "../packages/chaff/src/rule-load.ts";
+import { runRules } from "../packages/chaff/src/run.ts";
 
 // undefined-acronym and the capitals of a case citation: a party's name (ICC v. Jersey City, Ashwander v. TVA, 297 U.S.
 // 288), a court and year after a pin cite ((SDNY 1952)), and a capitalised honorific (MR. JUSTICE). The citations here are
@@ -14,7 +17,13 @@ before(async () => {
 
 const JOINERS = ["v.", "vs."];
 
-const covered = (text: string, word: string): boolean => {
+/** undefined-acronym's findings as word:count, at the given limit, in a court opinion. */
+const acronymCounts = (source: string, limit: number): string[] =>
+  runRules(buildDocument("t.md", source, en), loadRules("en"), { "undefined-acronym": "strict" }, true, "legal/judgment", { "undefined-acronym": limit })
+    .findings.filter((finding) => finding.rule === "undefined-acronym")
+    .map((finding) => `${String(finding.values["word"])}:${String(finding.values["count"])}`);
+
+const covered =(text: string, word: string): boolean => {
   const at = text.indexOf(word);
   return caseCitationSpans(text, JOINERS).some((span) => span.start <= at && at + word.length <= span.end);
 };
@@ -76,6 +85,18 @@ describe("undefined-acronym in a court opinion", () => {
     ].join("\n");
     assert.deepEqual(reportedAcronyms(en, opinion, "legal/judgment"), []);
     assert.deepEqual(reportedAcronyms(en, `${opinion} The MCI rule binds the RRB.`, "legal/judgment"), ["MCI", "RRB"]);
+  });
+
+  it("counts the capitals of its citations towards the limit, without reporting them", () => {
+    // Colorado River Indian Tribes v. NIGC, 466 F.3d 134 (D.C. Cir. 2006), a US court opinion in the public domain: SEC is the
+    // opinion's own word; NOV/CFA, MCI and AT&T are what its citations print.
+    const citations =
+      "In re Colo. River Indian Tribes, NOV/CFA 01-01, 5-6 (Nat'l Indian Gaming Comm'n May 30, 2002). See MCI Telecomms. Corp. v. AT&T, 512 U.S. 218, 231 n.4 (1994).";
+    const own = "The Commission's logic here would entitle the SEC to dictate the details of how Harrah's conducts its casino operations.";
+    assert.deepEqual(acronymCounts(`${citations}\n\n${own}\n`, 3), ["SEC:5"]);
+    assert.deepEqual(acronymCounts(`${own}\n`, 3), []);
+    assert.deepEqual(acronymCounts(`${citations}\n`, 3), []);
+    assert.deepEqual(acronymCounts(`${citations}\n\nThe Securities and Exchange Commission (SEC) has no such power.\n`, 3), []);
   });
 
   it("still asks to expand an acronym the opinion uses in its own words", () => {

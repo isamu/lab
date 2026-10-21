@@ -14,6 +14,7 @@ import { conjugatedForms } from "./conjugated-form.ts";
 import { evidenceSpans, hasNumeral, isClaim, isLabelOnly, startsWithin, type AdviceWords } from "./concrete-evidence.ts";
 import { letteredIndexEntries } from "./lettered-index.ts";
 import { knownByDocument } from "./acronym-known.ts";
+import { documentCitationSpans } from "./case-citation.ts";
 import { glossedAcronyms, headingsSpellingOut } from "./acronym-gloss.ts";
 import { hasPredicateIn } from "./gram-predicate.ts";
 import { gramPassagesOf } from "./gram-passages.ts";
@@ -364,9 +365,12 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
     acronymsOf(doc, notationOf(doc)),
     sourceNotAcronymSpans(doc.source, (id) => patternsOf(doc, id)),
   );
-  // リンク先のページの題名の略語（[NASA Fprime AI Policy](https://…)）は、読み手が出会う説明の無い略語として数に入れるが、
-  // 書き手が直せないので指さない。
-  const hits = outsideSpans(counted, linkTitleSpans(doc.source, doc.links));
+  // リンク先のページの題名の略語（[NASA Fprime AI Policy](https://…)）と判例の引用の当事者・裁判所・事件番号（MCI Telecomms. Corp. v. AT&T）は、
+  // 読み手が出会う説明の無い略語として数に入れるが、書き手が直せないので指さない。
+  const hits = outsideSpans(counted, [
+    ...linkTitleSpans(doc.source, doc.links),
+    ...documentCitationSpans(doc.sentences, doc.source, patternsOf(doc, "case-party-joiner")),
+  ]);
   const acronyms = [...firstHits(hits).keys()];
   const unexplained = new Set(acronyms.filter((acronym) => !isExplained(acronym, explainedAlone)));
   const quoted = [...firstHits(counted).keys()].filter((acronym) => !acronyms.includes(acronym) && !isExplained(acronym, explainedAlone)).length;
