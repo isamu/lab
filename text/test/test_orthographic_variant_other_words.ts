@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { voiceAt, voiceStarts } from "../packages/chaff/src/voice-parts.ts";
+import { contactEntrySpans } from "../packages/chaff/src/contact-entry.ts";
 
 // orthographic-variant: 読みが同じでも別の語を、一つの語の書き方のゆれと見ない。例文は自作と、著作権の切れた夏目漱石「私の個人主義」、
 // 最高裁判所の判決の書き方を写した自作の文。
@@ -70,6 +71,14 @@ describe("orthographic-variant: 文の頭の接続詞", () => {
     assert.equal(findingsOf("# 演説\n\nさらに高い成果を目指します。協力を更に深めます。検討を更に加速します。環境を更に整えます。\n").length, 1);
   });
 
+  it("読点に挟まれた文の中の「、さらに、」は接続詞で、副詞の「更に」と比べない", () => {
+    assert.deepEqual(findingsOf("# 報告\n\n供給を推進し、さらに、施策と連携した。協力を更に深めます。検討を更に加速します。環境を更に整えます。\n"), []);
+  });
+
+  it("読点が一つだけの文の中の「さらに」（今後、さらに増える）は、副詞として今までどおり比べる", () => {
+    assert.equal(findingsOf("# 報告\n\n今後、さらに増える。協力を更に深めます。検討を更に加速します。環境を更に整えます。\n").length, 1);
+  });
+
   it("文の頭の接続詞どうしは比べる", () => {
     assert.equal(findingsOf("# 演説\n\nさらに、進めます。さらに、続けます。さらに、広げます。更に、深めます。\n").length, 1);
   });
@@ -91,6 +100,18 @@ describe("orthographic-variant: 別の語として挙げた書き方", () => {
 
   it("「ことさらに」を、形式名詞の「事」と比べない", () => {
     assert.deepEqual(findingsOf("# 講演\n\nことさらによそから連れて来た。行く事にした。見る事にした。読む事にした。\n"), []);
+  });
+
+  it("副詞の「かくも」を、名詞の「核」と比べない。「かくも」と「斯くも」は比べる", () => {
+    assert.deepEqual(findingsOf("# 訓示\n\n核の脅威が続く。核の問題を話す。諸官がかくも、任務に専念できるようにする。\n"), []);
+    assert.equal(findingsOf("# 訓示\n\nかくも長い。かくも深い。かくも広い。斯くも高い。\n").length, 1);
+  });
+
+  it("電話番号を持つ札（窓口の名前と番号）の語は、窓口の書き方で比べない。文の中の番号は比べる", () => {
+    const desk = "# 相談\n\n心の健康を守る。心の病気に気づく。心のサポートが役立つ。\n\nこころの健康相談統一ダイヤル\n０５７０ - ０６４ - ５５６\n";
+    assert.deepEqual(findingsOf(desk), []);
+    const sentence = "# 相談\n\n心の健康を守る。心の病気に気づく。心のサポートが役立つ。こころの相談は０５７０-０６４-５５６へ。\n";
+    assert.equal(findingsOf(sentence).length, 1);
   });
 
   it("品物の「モノ」を、形式名詞の「もの」と比べない", () => {
@@ -150,5 +171,21 @@ describe("orthographic-variant: 判決の裁判官ごとの意見", () => {
     assert.deepEqual(voiceStarts([{ span: { start: 0, end: 9 }, text: "多数意見は次のとおりである。" }], openings), []);
     assert.deepEqual(voiceStarts([{ span: { start: 0, end: 9 }, text: "上告理由三についての裁判官甲の補足意見は次のごとくである。" }], openings), [0]);
     assert.deepEqual(voiceStarts([{ span: { start: 0, end: 9 }, text: "裁判官甲の反対意見は次のとおりであるが、採らない。" }], openings), []);
+  });
+});
+
+describe("contactEntrySpans: 電話番号の札", () => {
+  it("番号を持ち、文の終わりの印の無い一文は、全体が札", () => {
+    assert.deepEqual(contactEntrySpans("統一ダイヤル\n０５７０ - ０６４ - ５５６"), [{ start: 0, end: 23 }]);
+    assert.deepEqual(contactEntrySpans("相談電話 03-1234-5678"), [{ start: 0, end: 17 }]);
+    assert.deepEqual(contactEntrySpans("＃8891（はやくワンストップ）"), [{ start: 0, end: 16 }]);
+  });
+
+  it("文の終わりの印のある文、番号の無い文、区切りの無い数、空の文は札ではない", () => {
+    assert.deepEqual(contactEntrySpans("相談は03-1234-5678へ。"), []);
+    assert.deepEqual(contactEntrySpans("統一ダイヤル"), []);
+    assert.deepEqual(contactEntrySpans("令和5年度 12345678"), []);
+    assert.deepEqual(contactEntrySpans("第2-3-1表"), []);
+    assert.deepEqual(contactEntrySpans(""), []);
   });
 });
