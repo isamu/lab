@@ -318,7 +318,9 @@ A rule is off for a group when its judged findings there are right 20% of the ti
 When the line was set, the judged precisions on the corpus fell into a low cluster and a higher one, and the line sits in the gap between them.
 Fewer findings let one verdict move the precision too far, and one or two documents can give hundreds of findings from one pattern of their own.
 A group where a genre turns the rule on by hand in `genres.yaml` stays on: the run lists it for a person to decide.
+So does a group the rule file names under `precision_hold`, with why: its false positives share one pattern, and the rule is to be narrowed for it rather than turned off.
 `yarn rules:precision --apply` writes the file and places the rules as `yarn rules:measure --apply` does (it reads both files), so the off is written the same way.
+The run ignores the offs `--apply` wrote (it sets `CHAFF_IGNORE_MEASURED_OFFS=1`), so an off does not hide the findings that put it there, and the next run places the rule the same way.
 
 The guide's screens do not copy out what changes with every new rule.
 A screen writes `{not-run}` where chaff lists the rules that did not run (the hint under the list comes with it), and `{counts}` where `--compact` ends with its tally.

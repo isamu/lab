@@ -5,6 +5,12 @@ import { readDir, readText } from "./package-files.ts";
 /** One rule a group or genre turns off by default, from the rule file's off_for, with why. */
 export type RuleOff = { readonly rule: string; readonly target: string; readonly reason: string };
 
+/** The reason `yarn rules:measure --apply` writes for an off it measured. An off with any other reason was written by hand. */
+export const MEASURED_OFF_REASON = "measured by yarn rules:measure";
+
+/** Set to 1, chaff runs as if no measured off were written, so `yarn rules:precision` still sees the findings an off hides. */
+export const IGNORE_MEASURED_OFFS_ENV = "CHAFF_IGNORE_MEASURED_OFFS";
+
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 
 /** A rule file's off_for block: the "off_for:" line and the indented lines under it. */
@@ -48,3 +54,7 @@ export const loadRuleOffs = (dir: string): RuleOff[] =>
     .filter((file) => file.endsWith(".yaml"))
     .toSorted((left, right) => left.localeCompare(right, "en"))
     .flatMap((file) => offsInFile(dir, file));
+
+/** The offs that hold: every one, or only those written by hand when the measured ones are to be ignored. */
+export const offsInForce = (offs: readonly RuleOff[], ignoreMeasured: boolean): RuleOff[] =>
+  offs.filter((off) => !ignoreMeasured || off.reason !== MEASURED_OFF_REASON);

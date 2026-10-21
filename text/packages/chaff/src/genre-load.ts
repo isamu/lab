@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { parse } from "yaml";
 import { parseGenres, presetLevelsOf, presetProfileOf, withRuleOffs, type GenreData, type PresetLevels } from "./genre-parse.ts";
-import { loadRuleOffs } from "./rule-offs.ts";
+import { IGNORE_MEASURED_OFFS_ENV, loadRuleOffs, offsInForce } from "./rule-offs.ts";
 import { PACKAGE_DIR, readText } from "./package-files.ts";
 
 const GENRES_FILE = join(PACKAGE_DIR, "genres.yaml");
@@ -13,7 +13,8 @@ const loaded: { value: GenreData | undefined } = { value: undefined };
 export const loadGenres = (): GenreData => {
   if (loaded.value !== undefined) return loaded.value;
   try {
-    loaded.value = withRuleOffs(parseGenres(parse(readText(GENRES_FILE))), loadRuleOffs(RULES_DIR));
+    const offs = offsInForce(loadRuleOffs(RULES_DIR), process.env[IGNORE_MEASURED_OFFS_ENV] === "1");
+    loaded.value = withRuleOffs(parseGenres(parse(readText(GENRES_FILE))), offs);
   } catch (error) {
     throw new Error(`cannot read ${GENRES_FILE}: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
   }

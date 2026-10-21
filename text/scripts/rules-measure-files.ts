@@ -1,5 +1,5 @@
 // The files the rule policy reads and writes: corpus/rules-measure.json, the rule YAML files (with their off_for) and genres.yaml.
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { parse } from "yaml";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
@@ -13,6 +13,7 @@ import { disagreements, handOffGroups, heldOnGroups, lowPrecisionGroups, standin
 import { MEASURED, measuredOffsOf, withInfoAtNormal, withMeasuredOffs, withStatus } from "./rules-apply.ts";
 import { isMeasurement, type Measurement } from "./rules-measure-score.ts";
 import { isPrecisionMeasurement, type PrecisionMeasurement } from "./rules-precision-score.ts";
+import { precisionHoldsOf } from "./precision-holds.ts";
 
 const ROOT = join(import.meta.dirname, "..");
 export const MEASURE_FILE = join(ROOT, "corpus", "rules-measure.json");
@@ -93,9 +94,24 @@ export const standingsOf = (
       ),
   );
 
-/** The groups the judged precision turns the rule off for: low there, and no genre of the group turns it on by hand. */
+/** The groups the rule file's precision_hold keeps the rule on in, whatever its judged precision there. */
+export const precisionHolds = (data: GenreData, rule: string): string[] => {
+  const path = rulePath(rule);
+  const parsed: unknown = existsSync(path) ? parse(readFileSync(path, "utf8")) : undefined;
+  const raw = typeof parsed === "object" && parsed !== null && "precision_hold" in parsed ? parsed.precision_hold : undefined;
+  return precisionHoldsOf(
+    rule,
+    raw,
+    data.groups.map((group) => group.id),
+  );
+};
+
+/**
+ * The groups the judged precision turns the rule off for: low there, no genre of the group turns it on by hand, and its
+ * precision_hold does not keep it on.
+ */
 export const precisionOffs = (data: GenreData, rule: string, precision: PrecisionMeasurement): string[] => {
-  const heldOn = heldOnGroups(data, rule);
+  const heldOn = new Set([...heldOnGroups(data, rule), ...precisionHolds(data, rule)]);
   return lowPrecisionGroups(precision.rules[rule]).filter((group) => !heldOn.has(group));
 };
 
