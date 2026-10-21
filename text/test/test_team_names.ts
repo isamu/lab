@@ -119,14 +119,14 @@ describe("max-kanji-continuous と names", () => {
 
   // 組織の語で閉じる組織の名前（国土交通省鉄道局総務課）は、並べなくても数えない。ここでは組織の語で閉じない名前で names を読む。
   it("invalid: 並べていない正式名称は今までどおり指摘する", () => {
-    assert.deepEqual(kanjiWords("個人情報保護委員会規則に従う。"), ["個人情報保護委員会規則"]);
+    assert.deepEqual(kanjiWords("個人情報保護委員会公表資料を読む。"), ["個人情報保護委員会公表資料"]);
     assert.deepEqual(kanjiWords("情報処理推進機構認定試験に届ける。", ["個人情報保護委員会"]), ["情報処理推進機構認定試験"]);
   });
 
   it("valid: 並べた名前は連なりの中で数えない", () => {
     assert.deepEqual(kanjiWords("情報処理推進機構認定試験に申し込む。", ["情報処理推進機構認定試験"]), []);
     assert.deepEqual(kanjiWords("全国社会福祉協議会に届ける。", ["全国社会福祉協議会"]), []);
-    assert.deepEqual(kanjiWords("個人情報保護委員会規則に従う。", ["個人情報保護委員会"]), []);
+    assert.deepEqual(kanjiWords("個人情報保護委員会公表資料を読む。", ["個人情報保護委員会"]), []);
   });
 
   it("invalid: 名前の外に続く漢字は、それだけで長ければ指摘する", () => {

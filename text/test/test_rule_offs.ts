@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
@@ -5,7 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { parse } from "yaml";
 import { parseGenres, presetLevelsOf, withRuleOffs } from "../packages/chaff/src/genre-parse.ts";
-import { loadRuleOffs, ruleOffsOf } from "../packages/chaff/src/rule-offs.ts";
+import { IGNORE_MEASURED_OFFS_ENV, loadRuleOffs, MEASURED_OFF_REASON, offsInForce, ruleOffsOf } from "../packages/chaff/src/rule-offs.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 
 // A rule a genre turns off says so in its own file (off_for), so that adding a rule edits no list every rule shares.
@@ -110,5 +111,41 @@ describe("genres with the rules' offs merged in", () => {
       Object.entries(entry.rules).flatMap(([rule, level]) => (level === "off" ? [`${entry.id}: ${rule}`] : [])),
     );
     assert.deepEqual(offs, []);
+  });
+});
+
+describe("measured offs, which yarn rules:precision runs without", () => {
+  const offs = [
+    { rule: "a", target: "legal", reason: MEASURED_OFF_REASON },
+    { rule: "b", target: "legal", reason: "It is the form." },
+  ];
+
+  it("all hold, unless the measured ones are to be ignored; an off written by hand always holds", () => {
+    assert.deepEqual(offsInForce(offs, false), offs);
+    assert.deepEqual(offsInForce(offs, true), [offs[1]]);
+    assert.deepEqual(offsInForce([], true), []);
+    const nearMiss = { rule: "c", target: "blog", reason: `${MEASURED_OFF_REASON}, and by hand` };
+    assert.deepEqual(offsInForce([nearMiss], true), [nearMiss]);
+  });
+
+  /** The bundled preset levels of these rules in a genre, read in a fresh process with CHAFF_IGNORE_MEASURED_OFFS set to `value`. */
+  const presetOf = (value: string | undefined, genre: string, rules: readonly string[]): unknown => {
+    const script = [
+      'import { presetLevels } from "./packages/chaff/src/genre-load.ts";',
+      `const levels = presetLevels(${JSON.stringify(genre)});`,
+      `console.log(JSON.stringify(${JSON.stringify(rules)}.map((rule) => levels[rule] ?? null)));`,
+    ].join("\n");
+    const rest = Object.fromEntries(Object.entries(process.env).filter(([name]) => name !== IGNORE_MEASURED_OFFS_ENV));
+    const env = value === undefined ? rest : { ...rest, [IGNORE_MEASURED_OFFS_ENV]: value };
+    const output = execFileSync(process.execPath, ["--input-type=module", "-e", script], { cwd: join(import.meta.dirname, ".."), env, encoding: "utf8" });
+    return JSON.parse(output);
+  };
+
+  // clause-chain is off for literature as measured; demonstrative-opener-run is off for it by hand.
+  it("the bundled presets drop only the measured offs, and only when CHAFF_IGNORE_MEASURED_OFFS is 1", () => {
+    const rules = ["clause-chain", "demonstrative-opener-run"];
+    assert.deepEqual(presetOf(undefined, "literature/essay", rules), ["off", "off"]);
+    assert.deepEqual(presetOf("0", "literature/essay", rules), ["off", "off"]);
+    assert.deepEqual(presetOf("1", "literature/essay", rules), [null, "off"]);
   });
 });

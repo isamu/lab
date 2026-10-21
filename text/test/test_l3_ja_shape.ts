@@ -113,10 +113,9 @@ describe("L3 日本語 — 文字と語彙", () => {
 
     it("invalid: 漢数字の後ろの助数詞と、助数詞でない語は数える", () => {
       // 漢数字は連なりの一部で、数と助数詞も連なりの中にある。
-      assert.deepEqual(kanjiWords("第三回情報処理推進機構の試験です。"), ["第三回情報処理推進機構"]);
-      // 会計は助数詞ではない（令和6年版情報通信白書）。
-      // 括弧で閉じた題の名前（「2021会計年度国防授権法」）は title-ending で数えないので、文の中に置く。
-      assert.deepEqual(kanjiWords("米国の2021会計年度国防授権法を参照する。"), ["会計年度国防授権法"]);
+      assert.deepEqual(kanjiWords("第三回情報処理推進会議の資料です。"), ["第三回情報処理推進会議"]);
+      // 会計は助数詞ではない。法令の名前（2021会計年度国防授権法）は fixed-name-ending で数えないので、普通の語で閉じる。
+      assert.deepEqual(kanjiWords("米国の2021会計年度国防予算要求額を参照する。"), ["会計年度国防予算要求額"]);
       assert.deepEqual(kanjiWords("第3回情報処理推進機構認定試験です。"), ["情報処理推進機構認定試験"]);
     });
 
@@ -154,8 +153,9 @@ describe("L3 日本語 — 文字と語彙", () => {
       assert.ok(idsFor("個人情報保護法施行規則改正案検討会が開かれた。").includes("max-kanji-continuous"));
       assert.ok(idsFor("社会課題解決推進会議を開きます。").includes("max-kanji-continuous"));
       assert.ok(idsFor("田中一郎山田花子佐藤次郎が出席した。").includes("max-kanji-continuous"));
-      // デジタル庁のプライバシーポリシーにある委員会名。形態素解析は 個人/情報/保護/委員/会 と普通の語に割る。
-      assert.ok(idsFor("個人情報保護委員会規則に従う。").includes("max-kanji-continuous"));
+      // 委員会名に普通の語が続く。形態素解析は 個人/情報/保護/委員/会 と普通の語に割る。委員会規則のような法令の名前は数えない。
+      assert.ok(idsFor("個人情報保護委員会公表資料を読む。").includes("max-kanji-continuous"));
+      assert.ok(!idsFor("個人情報保護委員会規則に従う。").includes("max-kanji-continuous"));
     });
 
     it("valid: 題の名前（語彙表 title-ending で閉じ、題の置き方をしたもの）は数えない", () => {
@@ -204,7 +204,8 @@ describe("L3 日本語 — 文字と語彙", () => {
       assert.deepEqual(kanjiWords("今年は臨時職員採用登録申込書 [こちら](https://example.com/) を見る。"), ["臨時職員採用登録申込書"]);
       assert.deepEqual(kanjiWords("今年は臨時職員採用登録申込書<br>を見る。"), ["臨時職員採用登録申込書"]);
       assert.deepEqual(kanjiWords("今年は臨時職員採用登録申込書\n（受付は終わった）を見る。"), ["臨時職員採用登録申込書"]);
-      assert.deepEqual(kanjiWords("地域商店街販路開拓支援補助金の詳細は市のページをご覧ください。\n"), ["地域商店街販路開拓支援補助金"]);
+      // 補助金・交付金・制度の名前は fixed-name-ending で閉じ、文の中に置いても名前（勤労者財産形成貯蓄制度）。
+      assert.deepEqual(kanjiWords("地域商店街販路開拓支援補助金の詳細は市のページをご覧ください。\n"), []);
     });
 
     it("宛先に付く語（宛て、御中）は、名前の連なりに数えない", () => {
@@ -231,8 +232,8 @@ describe("L3 日本語 — 文字と語彙", () => {
     });
 
     it("invalid: 番地の前後の長い複合語は指摘する", () => {
-      // 個人情報保護法第六十条。番地で切れたあとの「独立行政法人等情報公開法」は 12 字。
-      assert.ok(inStatute("独立行政法人等情報公開法第五条に規定する不開示情報").includes("max-kanji-continuous"));
+      // 番地で切れたあとの「行政機関保有情報開示請求手続」は 14 字。法令の名前（〜法）で閉じないので数える。
+      assert.ok(inStatute("行政機関保有情報開示請求手続第五条に規定する不開示情報").includes("max-kanji-continuous"));
     });
 
     it("invalid: 番地に見えても語が続けば番地ではない", () => {

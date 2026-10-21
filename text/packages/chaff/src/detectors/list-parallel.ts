@@ -36,6 +36,16 @@ const withoutClosingAside = (tokens: readonly Token[]): readonly Token[] => {
   return open <= 0 ? tokens : tokens.slice(0, open);
 };
 
+// Right after the last word, past closing quotes and an aside (すること（別紙）。): a question mark or a full stop.
+const QUESTION_AFTER = /^[」』"”]*(?:[（(][^）)]*[）)])?[？?]/u;
+const FULL_STOP_AFTER = /^[」』"”]*(?:[（(][^）)]*[）)])?[。．]/u;
+const KOTO = "こと";
+/** The negative (しないこと) and the copula's ある (であること) before こと. */
+const INSTRUCTED_AUX = new Set(["ない", "ある"]);
+
+/** A verb's plain form or its negative before こと (すること, しないこと); not a past (したこと) or な (大事なこと). */
+const isInstructedAct = (token: Token | undefined): boolean => token?.pos === "VERB" || (token?.pos === "AUX" && INSTRUCTED_AUX.has(token.surface));
+
 /** A dash standing apart before a label at the item's end (― 千葉市, – Culver City). */
 const LABEL_DASH = /(?:^|\s)[―—–]\s/u;
 
@@ -48,17 +58,32 @@ const ownEnding = (sentences: readonly Sentence[]): readonly Sentence[] =>
   sentences.length > 1 && LABEL_DASH.test(sentences.at(-1)?.text.trim() ?? "") ? sentences.slice(-1) : sentences;
 
 /**
- * Japanese: a predicate at the end (出します, 済ませる, 早い) is a sentence; a noun (月末, 確認すること) or a headline's
- * あり / なし after a noun (翻訳あり) is a phrase. Marks after the last word (!!, a footnote reference) are not words.
+ * 〜すること。 / 〜しないこと。 with its full stop: the instruction or requirement form of official Japanese. It sits in a list of
+ * sentences (〜しない。) as in a list of phrases (〜の確認), so it is read as neither, as no-mixed-desumasu reads こと.
  */
-const japaneseEnding = (item: readonly Sentence[], headlineEndings: ReadonlySet<string>): string | undefined => {
-  const sentences = ownEnding(item);
-  if (sentences.length > 1) return "sentence";
-  const words = withoutTrailingMarks(withoutClosingAside(withoutFootnoteReference(sentences[0]?.tokens ?? [], isMark)), isMark);
+const isInstruction = (words: readonly Token[], after: string): boolean =>
+  words.at(-1)?.surface === KOTO && isInstructedAct(words.at(-2)) && FULL_STOP_AFTER.test(after);
+
+/**
+ * One Japanese sentence: a predicate at the end (出します, 済ませる, 早い) or a question (大丈夫？) is a sentence; a noun (月末,
+ * 確認すること) or a headline's あり / なし after a noun (翻訳あり) is a phrase; an instruction ending in こと。 is neither. Marks
+ * after the last word (!!, a footnote reference) are not words.
+ */
+const japaneseSentenceEnding = (sentence: Sentence | undefined, headlineEndings: ReadonlySet<string>): string | undefined => {
+  const words = withoutTrailingMarks(withoutClosingAside(withoutFootnoteReference(sentence?.tokens ?? [], isMark)), isMark);
   const last = words.at(-1);
-  if (last === undefined) return undefined;
+  if (sentence === undefined || last === undefined) return undefined;
+  const after = sentence.text.slice(last.span.end - sentence.span.start);
+  if (isInstruction(words, after)) return undefined;
+  if (QUESTION_AFTER.test(after)) return "sentence";
   if (NOMINAL.has(last.pos) || endsAsHeadline(words, headlineEndings)) return "phrase";
   return PREDICATE.has(last.pos) ? "sentence" : undefined;
+};
+
+/** Japanese: an item of several sentences is a sentence (ownEnding aside); one sentence is read by its ending. */
+const japaneseEnding = (item: readonly Sentence[], headlineEndings: ReadonlySet<string>): string | undefined => {
+  const sentences = ownEnding(item);
+  return sentences.length > 1 ? "sentence" : japaneseSentenceEnding(sentences[0], headlineEndings);
 };
 
 /** English: a sentence closes with a full stop and has a finite verb; a phrase has neither, nor any verb at all. Anything between is not judged. */
