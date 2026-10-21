@@ -80,7 +80,7 @@ describe("doubled-punctuation: 句読点が重なっている", () => {
   });
 
   it("点線の後ろがページ番号だけの行でなければ、重なりとして数える", () => {
-    assert.deepEqual(runsOf("See Command.. 7 more\nThe total,.. 12 units\nDone.. Then\nNotes.. IV"), ["..", ",..", "..", ".."]);
+    assert.deepEqual(runsOf("See Command.. 7 more\nThe total,.. 12 units\nDone.. Then\nNotes.. IV\nNotes.. iiii"), ["..", ",..", "..", "..", ".."]);
     assert.deepEqual(runsOf("Command,,     7"), [",,"]);
   });
 

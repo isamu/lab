@@ -35,12 +35,19 @@ const withoutWordDot = (text: string, found: DoubledMarks): DoubledMarks =>
     : found;
 
 /** 目次の行の終わりの点線（リーダー）と、その後ろのページ番号（「Command..     7」「Forces,.....  6」「序文.... iv」）。 */
-const LEADER_THEN_PAGE = /^[ \t]*(?:\d{1,4}|[ivxlc]{1,6})[ \t]*(?:\r?\n|$)/u;
+const LEADER_THEN_PAGE = /^[ \t]*(?<page>[\divx]+)[ \t]*(?:\r?\n|$)/u;
+const PAGE_DIGITS = /^\d{1,4}$/u;
+/** 前付けのページ番号のローマ数字（i から xxxix）。 */
+const PAGE_ROMAN = /^x{0,3}(?:ix|iv|v?i{0,3})$/u;
+
+const isPageNumber = (page: string): boolean => PAGE_DIGITS.test(page) || (page !== "" && PAGE_ROMAN.test(page));
 
 /** 並びの終わりの点がページ番号の前の点線なら、その点は目次の点線で、並びの印ではない。 */
 const withoutLeader = (text: string, found: DoubledMarks): DoubledMarks => {
   const kept = found.run.slice(0, Array.from(found.run).findLastIndex((mark) => mark !== ".") + 1);
-  return kept !== found.run && LEADER_THEN_PAGE.test(text.slice(found.start + found.run.length)) ? { start: found.start, run: kept } : found;
+  return kept !== found.run && isPageNumber(LEADER_THEN_PAGE.exec(text.slice(found.start + found.run.length))?.groups?.["page"] ?? "")
+    ? { start: found.start, run: kept }
+    : found;
 };
 
 /**
