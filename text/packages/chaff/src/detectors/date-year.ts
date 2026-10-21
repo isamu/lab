@@ -235,7 +235,7 @@ const stampAtOf = (doc: ProseDocument, tree: StructureNode): StampAt => {
   const weekdays = (doc.lexicons["weekday"] ?? []).map((entry: LexiconEntry) => entry.pattern);
   const lines = forwardDatelines(
     datelines(doc.source, dates, weekdays).filter((line) => FULL.test(line.value)),
-    opening,
+    opening !== undefined && FULL.test(opening) ? opening : undefined,
   );
   return (offset) => datelineBefore(lines, offset) ?? opening;
 };
