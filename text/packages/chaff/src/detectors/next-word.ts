@@ -17,6 +17,18 @@ const LETTER_BEFORE_CAPITALS = /^\p{Ll}\p{Lu}{2}/u;
 /** Two tokens with nothing but whitespace between them in the source. Code and markup are hidden from the tokens. */
 const adjacent = (source: string, left: Token, right: Token): boolean => source.slice(left.span.end, right.span.start).trim() === "";
 
+/** A letter or digit right before "a" makes it part of a word or a section number (15 U.S.C. § 78a et seq.), not an article. */
+const GLUED_BEFORE = /[\p{L}\p{N}]/u;
+
+/** Initials joined by a slash (N/I, N/A): they may be read as the words they shorten, so either article fits. */
+const SLASH_JOINED = /^\/\p{Lu}/u;
+const ONE_CAPITAL = /^\p{Lu}$/u;
+
+const isGlued = (source: string, article: Token): boolean => GLUED_BEFORE.test(source.charAt(article.span.start - 1));
+
+const isSlashAbbreviation = (source: string, next: Token): boolean =>
+  ONE_CAPITAL.test(next.surface) && SLASH_JOINED.test(source.slice(next.span.end, next.span.end + 2));
+
 /** The sound knowledge of lexicon article-sound, by group. */
 export type ArticleSounds = {
   readonly vowelLetters: ReadonlySet<string>;
@@ -101,7 +113,7 @@ const articlePairAt = (source: string, tokens: readonly Token[], at: number, sou
   const takesAn = ARTICLES[article?.surface.toLowerCase() ?? ""];
   if (article === undefined || next === undefined || takesAn === undefined || !isArticle(article, at, tokens)) return undefined;
   if (!CONTENT.has(next.pos) || !LETTER_START.test(next.surface)) return undefined;
-  if (!adjacent(source, article, next)) return undefined;
+  if (!adjacent(source, article, next) || isGlued(source, article) || isSlashAbbreviation(source, next)) return undefined;
   const vowel = startsWithVowelSound(next.surface, sounds);
   return vowel === undefined ? undefined : { article, next, takesAn, vowel };
 };
