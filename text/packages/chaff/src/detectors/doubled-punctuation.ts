@@ -34,6 +34,15 @@ const withoutWordDot = (text: string, found: DoubledMarks): DoubledMarks =>
     ? { start: found.start, run: found.run.slice(0, -1) }
     : found;
 
+/** 目次の行の終わりの点線（リーダー）と、その後ろのページ番号（「Command..     7」「Forces,.....  6」「序文.... iv」）。 */
+const LEADER_THEN_PAGE = /^[ \t]*(?:\d{1,4}|[ivxlc]{1,6})[ \t]*(?:\r?\n|$)/u;
+
+/** 並びの終わりの点がページ番号の前の点線なら、その点は目次の点線で、並びの印ではない。 */
+const withoutLeader = (text: string, found: DoubledMarks): DoubledMarks => {
+  const kept = found.run.slice(0, Array.from(found.run).findLastIndex((mark) => mark !== ".") + 1);
+  return kept !== found.run && LEADER_THEN_PAGE.test(text.slice(found.start + found.run.length)) ? { start: found.start, run: kept } : found;
+};
+
 /**
  * 並びのうち、英字の会社の形（CO.，LTD.、INC.）の中の印の数。形の点や「，」は名前の一部で、並びの印ではない。
  * names は昇順で重ならない（正規表現の順の一致）。並びに掛かりうるのは、並びの終わる前に始まる高々 run.length 個の形。
@@ -57,7 +66,9 @@ const isSlip = (text: string, found: DoubledMarks, names: readonly Span[]): bool
 
 /** text の中の、句読点が重なった並び（位置と並び）。names は数えない名前（英字の会社の形）の範囲。 */
 export const doubledMarks = (text: string, names: readonly Span[] = []): DoubledMarks[] =>
-  [...text.matchAll(PUNCTUATION_RUN)].map((match) => withoutWordDot(text, { start: match.index, run: match[0] })).filter((found) => isSlip(text, found, names));
+  [...text.matchAll(PUNCTUATION_RUN)]
+    .map((match) => withoutLeader(text, withoutWordDot(text, { start: match.index, run: match[0] })))
+    .filter((found) => isSlip(text, found, names));
 
 export const doubledPunctuation: Detector = (doc): Finding[] => {
   const text = doc.prose ?? doc.source;
