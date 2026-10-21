@@ -1,0 +1,13 @@
+# 名前を並べてつなぐだけの接続の語（defined-name-repeated）。「書面または電磁的記録（以下「書面等」という。）」の括弧は
+# 並べた全部の呼び名で、最後の「電磁的記録」の呼び名ではない。助詞にもなる「と」「や」は入れない（北浜商事株式会社と業務委託契約）。
+id: list-conjunction
+language: ja
+entries:
+  - pattern: 及び
+  - pattern: および
+  - pattern: 並びに
+  - pattern: ならびに
+  - pattern: 又は
+  - pattern: または
+  - pattern: 若しくは
+  - pattern: もしくは

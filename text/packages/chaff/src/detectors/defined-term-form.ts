@@ -250,12 +250,19 @@ const isLongName = (name: string): boolean => {
   return !LATIN.test(name) || JAPANESE.test(name) || (words.length >= MIN_NAME_WORDS && words.some((word) => UPPER_START.test(word)));
 };
 
-/** The long name written right before an inline definition: the run of name words that ends at its opening bracket. */
-export const nameBefore = (sentence: Sentence, bracket: number): string | undefined => {
+/** A conjunction that joins the run to a name before it (書面または電磁的記録（以下「書面等」）): the bracket names them all. */
+const joinsList = (token: Token | undefined, joiners: readonly string[]): boolean =>
+  token !== undefined && token.pos === "CCONJ" && joiners.includes(token.surface);
+
+/**
+ * The long name written right before an inline definition: the run of name words that ends at its opening bracket. A run
+ * joined to the one before it by a conjunction (list-conjunction) is the last item of a list the definition names.
+ */
+export const nameBefore = (sentence: Sentence, bracket: number, joiners: readonly string[] = []): string | undefined => {
   if (LABELS_THE_CLAUSE.test(sentence.text.slice(bracket - sentence.span.start))) return undefined;
   const tokens = (sentence.tokens ?? []).filter((token) => token.span.end <= bracket);
   const firstOfRun = tokens.findLastIndex((token) => !isNamePart(token)) + 1;
-  if (isModifier(tokens[firstOfRun - 1])) return undefined;
+  if (isModifier(tokens[firstOfRun - 1]) || joinsList(tokens[firstOfRun - 1], joiners)) return undefined;
   const run = tokens.slice(firstOfRun).filter((token, index, all) => index > 0 || !NAME_MARKS.has(token.surface) || all.length === 1);
   const first = run[0];
   const end = run.at(-1);
@@ -355,13 +362,14 @@ export const standsAlone = (source: string, offset: number, name: string, joiner
 export const repeatedNames = (doc: ProseDocument, terms: readonly DefinedTerm[]): RepeatedName[] => {
   const defined = new Set(terms.map((term) => term.term));
   const joiners = (doc.lexicons["enumeration-joiner"] ?? []).map((entry) => entry.pattern);
+  const conjunctions = (doc.lexicons["list-conjunction"] ?? []).map((entry) => entry.pattern);
   const contactLabels = (doc.lexicons["contact-label"] ?? []).map((entry) => entry.pattern);
   return terms
     .filter((term) => term.inline)
     .flatMap((term) => {
       const bracket = bracketBefore(doc.source, term.span);
       const sentence = doc.sentences.find((candidate) => candidate.span.start <= bracket && bracket < candidate.span.end);
-      const name = sentence === undefined || bracket === -1 ? undefined : nameBefore(sentence, bracket);
+      const name = sentence === undefined || bracket === -1 ? undefined : nameBefore(sentence, bracket, conjunctions);
       if (name === undefined || name === term.term || term.term.includes(name) || defined.has(name)) return [];
       const pattern = new RegExp(escapeRegExp(name), "gu");
       return doc.sentences
