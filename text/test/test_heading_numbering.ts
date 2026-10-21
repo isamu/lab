@@ -305,3 +305,36 @@ describe("siblingGroups and numberingMinorities", () => {
     ]);
   });
 });
+
+describe("heading-numbering-mix: a letter every sibling repeats (Q.) is a mark, not a number", () => {
+  it("Q. headings with one whose text starts with a version number (Q. 2.0 と同じ挙動) are not mixed", () => {
+    assert.deepEqual(
+      mixed([
+        "### Q. 箇条書きでも混ざるのでは?",
+        "### Q. なぜ文末だけを見るのですか?",
+        "### Q. 2.0(以前)と同じ挙動にするには?",
+        "### Q. これは誤判定なのでは?",
+      ]),
+      [],
+    );
+    assert.deepEqual(mixed(["## Q. Why only the end of a sentence?", "## Q. Is this a false positive?", "## Q. 2.0 behaviour, how?"], en), []);
+  });
+
+  it("letters that advance (A. B. C.) are a numbering, and an unnumbered sibling is still reported", () => {
+    assert.deepEqual(mixed(["## A. 背景", "## B. 方針", "## まとめ"]), [
+      "見出し「まとめ」だけ番号がありません（兄弟の見出しは「A. 背景」など 2 個が番号付き）",
+    ]);
+  });
+
+  it("a single letter heading is not a repeated mark", () => {
+    assert.deepEqual(mixed(["## 1. 背景", "## 2. 方針", "## Q. 質問"]), ["見出し「Q. 質問」の番号の書き方が、兄弟の見出し（「1. 背景」など 2 個）と違います"]);
+  });
+
+  it("numberingMinorities reads a repeated letter mark as unnumbered, and a heading without a mark as before", () => {
+    const letter = (mark?: string): NumberedHeading => ({ depth: 2, style: "letter", skipped: false, opens: false, ...(mark === undefined ? {} : { mark }) });
+    const none: NumberedHeading = { depth: 2, style: "none", skipped: false, opens: false, mark: "" };
+    assert.deepEqual(numberingMinorities([letter("Q."), letter("Q."), none]), []);
+    assert.equal(numberingMinorities([letter("A."), letter("B."), none]).length, 1);
+    assert.equal(numberingMinorities([letter(), letter(), none]).length, 1);
+  });
+});
