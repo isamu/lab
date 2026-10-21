@@ -3,7 +3,7 @@ layer: L3
 status: stable
 how_to_find: sentence-ending
 word_list: polite-ending
-extra_word_lists: [neutral-ending, notice-phrase, asker-heading, licence-word]
+extra_word_lists: [neutral-ending, neutral-request, notice-phrase, asker-heading, licence-word]
 requires: [pos]
 languages: [ja]
 severity: info

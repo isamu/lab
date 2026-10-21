@@ -6,6 +6,7 @@ import { noticeSentences } from "./notice-paragraph.ts";
 import { askerSentences } from "./asker-voice.ts";
 import { licenceNoticeSentences } from "./licence-notice.ts";
 import { chronologyRows } from "../chronology-rows.ts";
+import { isNeutralPlainShape } from "./register-neutral-shape.ts";
 import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span } from "../plugin.ts";
 
 /**
@@ -21,11 +22,16 @@ import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span } f
  */
 type Entry = { readonly sentence: Sentence; readonly register: Register; readonly group: number | undefined };
 
-const registerOfSentence = (sentence: Sentence, polite: readonly LexiconEntry[], neutral: readonly LexiconEntry[]): Register | undefined => {
+/** polite は語彙表 polite-ending、neutral は neutral-ending、requests は neutral-request。 */
+type EndingWords = { readonly polite: readonly LexiconEntry[]; readonly neutral: readonly LexiconEntry[]; readonly requests: readonly LexiconEntry[] };
+
+/** 常体と読めても、願い・問い・言いさしの形（register-neutral-shape.ts）なら調子に数えない。 */
+const registerOfSentence = (sentence: Sentence, words: EndingWords): Register | undefined => {
   const ending = endingTokens(sentence);
   const tokens = sentence.tokens ?? [];
   const head = ending[0] === undefined ? -1 : tokens.indexOf(ending[0]);
-  return registerOf(ending, head > 0 ? tokens.slice(0, head) : [], polite, neutral);
+  const register = registerOf(ending, head > 0 ? tokens.slice(0, head) : [], words.polite, words.neutral);
+  return register === "plain" && isNeutralPlainShape(sentence, ending, words.requests) ? undefined : register;
 };
 
 /** 番号で始まる段落の並び。木を組むのは高いので、調子が一つだけの文書（混ざりようがない）では組まない。 */
@@ -41,7 +47,7 @@ const runsOf = (doc: ProseDocument, registers: readonly Register[]): Span[] => {
 
 /** 調子を持つ文と、比べ合うまとまり（groupOf）。polite は語彙表 polite-ending。 */
 export const judgedSentences = (doc: ProseDocument, polite: readonly LexiconEntry[]): Entry[] => {
-  const neutral = doc.lexicons["neutral-ending"] ?? [];
+  const words: EndingWords = { polite, neutral: doc.lexicons["neutral-ending"] ?? [], requests: doc.lexicons["neutral-request"] ?? [] };
   const lists = doc.lists.map((list) => list.span);
   const rows = chronologyRows(doc);
   const asked = askerSentences(doc.sections, doc.lexicons["asker-heading"] ?? []);
@@ -56,7 +62,7 @@ export const judgedSentences = (doc: ProseDocument, polite: readonly LexiconEntr
       isRunInLabel(doc.source, sentence.span)
     )
       return [];
-    const register = registerOfSentence(sentence, polite, neutral);
+    const register = registerOfSentence(sentence, words);
     return register === undefined ? [] : [{ sentence, register }];
   });
   const registers = new Map(all.map((entry) => [entry.sentence, entry.register]));
