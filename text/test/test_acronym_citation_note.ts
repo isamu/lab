@@ -31,7 +31,21 @@ describe("citationNoteSpans", () => {
     assert.equal(covered("The IMF said in 2015 that growth would slow.", "IMF"), false);
     assert.equal(covered('As the IMF noted, Summers (2015), "Have We Entered an Age?," was early.', "IMF"), false);
     assert.equal(covered('For example, see Summers (2015), "Have We Entered an Age?," on the IMF.', "IMF"), false);
+    assert.equal(covered('The IMF (2020), "The Future," Journal Review.', "IMF"), false);
+    assert.equal(covered('- See Summers (2015), "Have We Entered an Age?," IMF Economic Review.', "IMF"), false);
     assert.deepEqual(citationNoteSpans("", [], []), []);
+  });
+
+  it("covers the sentences after the citation on its line while they are still the reference, not the prose after them", () => {
+    const first = 'See Summers (2015), "Have We Entered an Age?"';
+    const series = "FRBSF Economic Letter 2023-13 (May 30).";
+    const prose = "The SRE remains undefined.";
+    const source = `1. ${first} ${series} ${prose}`;
+    const sentences = [first, series, prose].map((text) => ({ text, start: source.indexOf(text) }));
+    const spans = citationNoteSpans(source, sentences, []);
+    const isCovered = (word: string): boolean => spans.some((span) => span.start <= source.indexOf(word) && source.indexOf(word) < span.end);
+    assert.equal(isCovered("FRBSF"), true);
+    assert.equal(isCovered("SRE"), false);
   });
 });
 
