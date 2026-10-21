@@ -36,8 +36,9 @@ const withoutClosingAside = (tokens: readonly Token[]): readonly Token[] => {
   return open <= 0 ? tokens : tokens.slice(0, open);
 };
 
-const QUESTION_END = /[？?][！!？?」』）)]*$/u;
-const FULL_STOP_END = /[。．][」』）)]*$/u;
+// Right after the last word, past closing quotes: a question mark or a full stop. An aside may follow it (すること。（別紙）).
+const QUESTION_AFTER = /^[」』"”]*[？?]/u;
+const FULL_STOP_AFTER = /^[」』"”]*[。．]/u;
 const KOTO = "こと";
 const NEGATIVE = "ない";
 
@@ -45,8 +46,8 @@ const NEGATIVE = "ない";
 const isInstructedAct = (token: Token | undefined): boolean => token?.pos === "VERB" || (token?.pos === "AUX" && token.surface === NEGATIVE);
 
 /** 〜すること。 / 〜しないこと。 with its full stop: the instruction form of official Japanese, a sentence like 〜しない。 */
-const isInstruction = (words: readonly Token[], text: string): boolean =>
-  words.at(-1)?.surface === KOTO && isInstructedAct(words.at(-2)) && FULL_STOP_END.test(text);
+const isInstruction = (words: readonly Token[], after: string): boolean =>
+  words.at(-1)?.surface === KOTO && isInstructedAct(words.at(-2)) && FULL_STOP_AFTER.test(after);
 
 /**
  * One Japanese sentence: a predicate at the end (出します, 済ませる, 早い), a question (大丈夫？) or an instruction ending in
@@ -56,9 +57,9 @@ const isInstruction = (words: readonly Token[], text: string): boolean =>
 const japaneseSentenceEnding = (sentence: Sentence | undefined, headlineEndings: ReadonlySet<string>): string | undefined => {
   const words = withoutTrailingMarks(withoutClosingAside(withoutFootnoteReference(sentence?.tokens ?? [], isMark)), isMark);
   const last = words.at(-1);
-  const text = sentence?.text.trim() ?? "";
-  if (last === undefined) return undefined;
-  if (QUESTION_END.test(text) || isInstruction(words, text)) return "sentence";
+  if (sentence === undefined || last === undefined) return undefined;
+  const after = sentence.text.slice(last.span.end - sentence.span.start);
+  if (QUESTION_AFTER.test(after) || isInstruction(words, after)) return "sentence";
   if (NOMINAL.has(last.pos) || endsAsHeadline(words, headlineEndings)) return "phrase";
   return PREDICATE.has(last.pos) ? "sentence" : undefined;
 };
