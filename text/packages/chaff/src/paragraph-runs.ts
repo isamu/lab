@@ -1,6 +1,6 @@
 // Runs of one-sentence paragraphs: paragraphs that follow one another with nothing but blank lines between them, each holding a
 // single sentence. Pure: paragraphs and the source they are cut from come in.
-import type { Paragraph } from "./plugin.ts";
+import type { Paragraph, Span } from "./plugin.ts";
 
 /** A line break, then nothing but spaces (an ideographic space too), then another line break. */
 const BLANK_LINE = /\n[^\S\n]*\n/u;
@@ -40,12 +40,31 @@ export const opensAsItem = (source: string, paragraph: Paragraph): boolean => {
 };
 
 /**
- * Each run of adjacent one-sentence paragraphs, in document order, as the paragraphs it holds. A paragraph of two sentences or
- * more, a paragraph that does not end as a sentence or opens with an item mark, or anything between two paragraphs, ends the run.
+ * A reference list's entry label before its text ([7], [RFC2119], [WEB-ORIGIN]). Entries set one per paragraph are a list
+ * written as plain text, not prose split into one-sentence paragraphs.
  */
-export const oneSentenceRuns = (source: string, paragraphs: readonly Paragraph[]): Paragraph[][] =>
+const REFERENCE_LABEL = /^\s*\[[^\]\s]{1,32}\]\s/u;
+
+/** Whether a paragraph is an entry of a reference list: inside one found by its heading, or opening with an entry label. */
+export const isReferenceEntry = (source: string, paragraph: Paragraph, referenceLists: readonly Span[]): boolean =>
+  REFERENCE_LABEL.test(source.slice(paragraph.span.start, paragraph.span.end)) ||
+  referenceLists.some((list) => list.start <= paragraph.span.start && paragraph.span.start < list.end);
+
+/** Whether a paragraph can be counted in a run: one sentence, ending as a sentence, not an item or a reference entry. */
+const counts = (source: string, paragraph: Paragraph, referenceLists: readonly Span[]): boolean =>
+  paragraph.sentences.length === 1 &&
+  endsAsSentence(source, paragraph) &&
+  !opensAsItem(source, paragraph) &&
+  !isReferenceEntry(source, paragraph, referenceLists);
+
+/**
+ * Each run of adjacent one-sentence paragraphs, in document order, as the paragraphs it holds. A paragraph of two sentences or
+ * more, a paragraph that does not end as a sentence, opens with an item mark or is a reference list's entry, or anything
+ * between two paragraphs, ends the run.
+ */
+export const oneSentenceRuns = (source: string, paragraphs: readonly Paragraph[], referenceLists: readonly Span[] = []): Paragraph[][] =>
   paragraphs.reduce<Paragraph[][]>((runs, paragraph, at) => {
-    if (paragraph.sentences.length !== 1 || !endsAsSentence(source, paragraph) || opensAsItem(source, paragraph)) return runs;
+    if (!counts(source, paragraph, referenceLists)) return runs;
     const previous = paragraphs[at - 1];
     const current = runs.at(-1);
     const continues = previous !== undefined && current?.at(-1) === previous && isAdjacent(source, previous, paragraph);
