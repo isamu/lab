@@ -78,6 +78,38 @@ export const clauseCount = (tokens: readonly Token[]): number => {
 
 const TOPIC_BEFORE = new Set(["NOUN", "PRON", "PROPN"]);
 
+const isTopicAt = (tokens: readonly Token[], at: number): boolean =>
+  tokens[at]?.surface === "は" && tokens[at]?.pos === "ADP" && TOPIC_BEFORE.has(tokens[at - 1]?.pos ?? "");
+
+const isAdverbial = (token: Token | undefined): boolean => token?.features?.["Adverbial"] === "Yes";
+
+/**
+ * A word that makes the adverbial noun after it a phrase of its own: a noun (翌連結会計年度以降), a prefix (大多数), a の phrase
+ * (日本人の多くは), or a determiner before a noun of its own (その多くは; その日は and その時は stay settings).
+ */
+const narrows = (token: Token | undefined, head: Token | undefined): boolean =>
+  TOPIC_BEFORE.has(token?.pos ?? "") ||
+  token?.features?.["Bound"] === "Yes" ||
+  (token?.surface === "の" && token.pos === "ADP") ||
+  (token?.pos === "DET" && head?.features?.["NounType"] !== "Dependent");
+
+/**
+ * は on words that also stand as adverbs and nothing else (今夜は, 当日は, その日は, 午前中は): it sets when or how much the
+ * sentence speaks of. A noun phrase ending in one (翌連結会計年度以降は) is a topic.
+ */
+const isSettingAt = (tokens: readonly Token[], at: number): boolean => {
+  const before = tokens.slice(0, at).findLastIndex((token) => !isAdverbial(token));
+  return before < at - 1 && !narrows(tokens[before], tokens[at - 1]);
+};
+
+/** The sentence's topic: the first は on a noun, past a setting (今夜は、…死ぬといふことは) when a topic of another kind follows it. -1 when none. */
+const firstTopic = (tokens: readonly Token[]): number => {
+  const first = tokens.findIndex((_, at) => isTopicAt(tokens, at));
+  if (first === -1 || !isSettingAt(tokens, first)) return first;
+  const after = tokens.findIndex((_, at) => at > first && isTopicAt(tokens, at) && !isSettingAt(tokens, at));
+  return after === -1 ? first : after;
+};
+
 /**
  * How far the sentence's first topic (会議は, これは) stands from the end of the sentence, where Japanese puts the predicate the
  * topic belongs to, in characters of the words between them (spaces, and a link's address the document hides, are not read).
@@ -86,7 +118,7 @@ const TOPIC_BEFORE = new Set(["NOUN", "PRON", "PROPN"]);
  * topic is said to do anything.
  */
 export const topicDistance = (tokens: readonly Token[]): number | undefined => {
-  const topic = tokens.findIndex((token, at) => token.surface === "は" && token.pos === "ADP" && TOPIC_BEFORE.has(tokens[at - 1]?.pos ?? ""));
+  const topic = firstTopic(tokens);
   const last = tokens.findLastIndex((token) => !TRAILING.has(token.pos));
   if (topic === -1 || last <= topic) return undefined;
   return tokens.slice(topic + 1, topicClauseEnd(tokens, topic, last) ?? last).reduce((sum, token) => sum + [...token.surface.replace(/\s/gu, "")].length, 0);
