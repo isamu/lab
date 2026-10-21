@@ -23,10 +23,10 @@ const sentenceRightBefore = (sentences: readonly Sentence[], list: BulletList, s
 const insideAny = (spans: readonly Span[], offset: number): boolean => spans.some((span) => span.start <= offset && offset < span.end);
 
 /** A label's words, without its colon and bold marks (**参考:** → 参考). */
-const labelWords = (text: string): string => text.replace(/[\s*_:：]+/gu, "");
+const labelWords = (text: string): string => text.trim().replace(/^[*_]+|[\s*_:：]+$/gu, "");
 
-/** A noun with no kana inflection (参考, 注意点): a name, not a sentence (以下の通りです). */
-const NOUN_LABEL = /^[^\p{Script=Hiragana}]+$/u;
+/** A noun with no kana inflection (参考, 注意点): a name, not a sentence (以下の通りです) and not a lone symbol (⚠️). */
+const NOUN_LABEL = /^(?=.*\p{L})[^\p{Script=Hiragana}]+$/u;
 
 /**
  * A field of an entry's template: the same noun label before the list of each entry (**参考:** before each entry's link).

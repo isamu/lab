@@ -245,6 +245,8 @@ describe("colonLeadIns", () => {
     assert.equal(leadInsOf(`# 題\n\n**参考:**\n\n- <https://example.com/1>\n\n**注意:**\n\n- 鍵\n`).length, 2);
     assert.equal(leadInsOf(`# 題\n\n${entries("主な点は次の通りです：")}`).length, 3);
     assert.equal(leadInsOf(`# 題\n\n${entries("**使い方:**")}`).length, 3);
+    assert.equal(leadInsOf(`# 題\n\n${entries("⚠️:")}`).length, 3);
+    assert.equal(leadInsOf(`# 題\n\n参_考:\n\n- 鍵\n\n参考:\n\n- 地図\n`).length, 2);
   });
 
   it("returns nothing for a document without lists", () => {
