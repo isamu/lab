@@ -108,3 +108,49 @@ describe("one-sentence-paragraph-run: 印で始まる段落は手で印を付け
     assert.deepEqual(runLengths(`${paragraphs(3)}\n\n○印の付いた項目です。\n\n${paragraphs(3)}\n`), [3, 3]);
   });
 });
+
+describe("one-sentence-paragraph-run: a reference list's entries are a list", () => {
+  const entries = (label: (at: number) => string): string =>
+    Array.from({ length: 5 }, (_unused, at) => `${label(at)}Hart and Reed, "Tides of the North Sea ${String(at + 1)}", 2001.`).join("\n\n");
+  const labelled = entries((at) => `   [${String(at + 1)}]        `);
+  const keyed = entries((at) => `   [KEY${String(at + 1)}]   `);
+
+  it("entries that open with a label ([7], [RFC2119]) are not counted, in a text or a Markdown document", () => {
+    assert.deepEqual(namedRuleRun(RULE, `8.1.  Normative References\n\n${labelled}\n`, en, "a.txt").findings, []);
+    assert.deepEqual(namedRuleRun(RULE, `${keyed}\n`, en, "a.txt").findings, []);
+    assert.deepEqual(findingsOf(`${keyed}\n`, en), []);
+    const labelAlone = Array.from(
+      { length: 5 },
+      (_unused, at) => `   [WEB-ORIGIN${String(at)}]\n              Barth, A., "The Web Origin Concept", 2011.`,
+    ).join("\n\n");
+    assert.deepEqual(namedRuleRun(RULE, `${labelAlone}\n`, en, "a.txt").findings, []);
+  });
+
+  it("entries under a references heading are not counted, labelled or not", () => {
+    assert.deepEqual(findingsOf(`## References\n\n${entries(() => "")}\n`, en), []);
+    assert.deepEqual(findingsOf(`## Bibliography\n\n${entries(() => "")}\n`, en), []);
+  });
+
+  it("the same paragraphs under another heading, or a label inside the text or a link first, still count", () => {
+    assert.deepEqual(findingsOf(`## Notes\n\n${entries(() => "")}\n`, en), ["5 one-sentence paragraphs in a row (limit 4)"]);
+    const prose = Array.from({ length: 5 }, (_unused, at) => `Step ${String(at + 1)} follows the rule in [RFC2119] closely.`).join("\n\n");
+    assert.deepEqual(findingsOf(`${prose}\n`, en), ["5 one-sentence paragraphs in a row (limit 4)"]);
+    const link = Array.from({ length: 5 }, (_unused, at) => `[Read part ${String(at + 1)}](https://example.com) before the meeting.`).join("\n\n");
+    assert.deepEqual(findingsOf(`${link}\n`, en), ["5 one-sentence paragraphs in a row (limit 4)"]);
+  });
+
+  it("a reference list holds only the paragraphs that start inside it", () => {
+    const doc = buildDocument("a.md", "One is here.\n\nTwo is here.\n", en);
+    const second = doc.paragraphs[1];
+    assert.ok(second !== undefined);
+    const list = [{ start: second.span.start, end: second.span.end }];
+    assert.deepEqual(
+      oneSentenceRuns(doc.source, doc.paragraphs, list).map((run) => run.length),
+      [1],
+    );
+    assert.deepEqual(
+      oneSentenceRuns(doc.source, doc.paragraphs, []).map((run) => run.length),
+      [2],
+    );
+  });
+});
