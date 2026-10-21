@@ -4,6 +4,7 @@ import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { openingDateOf, type DatedSpan } from "../packages/chaff/src/detectors/opening-date.ts";
+import { datelineBefore, datelines } from "../packages/chaff/src/detectors/dateline.ts";
 
 // The document's own date in its title block, and the yearless dates it places in one year. All text is self-written.
 
@@ -86,5 +87,78 @@ describe("date-without-year: the minutes' own date places a day and month near i
     const ja1 = "# 理事会議事録\n\n2026年1月14日\n\n倉庫の契約は2019年3月2日に結び、2025年6月30日に更新した。\n\n秋の品評会は11月8日に開いた。\n";
     assert.deepEqual(namedRuleRun(RULE, ja1, ja, "a.md", MINUTES).findings, []);
     assert.equal(namedRuleRun(RULE, ja1.replace("11月8日", "8月3日"), ja, "a.md", MINUTES).findings.length, 1);
+  });
+});
+
+describe("datelines", () => {
+  const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const linesOf = (source: string, dates: readonly DatedSpan[]): string[] => datelines(source, dates, weekdays).map((date) => date.value);
+
+  it("a date alone on its line, after a weekday's name or before a short bracket, is a dateline", () => {
+    const source = "WEDNESDAY, MAY 21, 2025\n\nJune 3, 2025\n\n2025年6月4日（水）\n";
+    const dates = [spanOf(source, "MAY 21, 2025", "2025-05-21"), spanOf(source, "June 3, 2025", "2025-06-03"), spanOf(source, "2025年6月4日", "2025-06-04")];
+    assert.deepEqual(linesOf(source, dates), ["2025-05-21", "2025-06-03", "2025-06-04"]);
+  });
+
+  it("a date with other words on its line is not", () => {
+    const source = "The board met on May 21, 2025\nMAY 22, 2025 at noon\nHearing, May 23, 2025\n";
+    const dates = [spanOf(source, "May 21, 2025", "2025-05-21"), spanOf(source, "MAY 22, 2025", "2025-05-22"), spanOf(source, "May 23, 2025", "2025-05-23")];
+    assert.deepEqual(linesOf(source, dates), []);
+    assert.deepEqual(linesOf("", []), []);
+  });
+
+  it("the last dateline before an offset governs it", () => {
+    const lines = [
+      { start: 10, end: 20, value: "2025-05-21" },
+      { start: 100, end: 110, value: "2025-06-03" },
+    ];
+    assert.equal(datelineBefore(lines, 5), undefined);
+    assert.equal(datelineBefore(lines, 50), "2025-05-21");
+    assert.equal(datelineBefore(lines, 200), "2025-06-03");
+    assert.equal(datelineBefore([], 200), undefined);
+  });
+});
+
+describe("date-without-year: a hearing record's dateline places a day and month near it", () => {
+  const TRANSCRIPT = "speech/transcript";
+  const cover = (body: string): string =>
+    [
+      "[House Hearing]",
+      "",
+      "OVERSIGHT OF THE HARBOR AUTHORITY",
+      "",
+      "HEARING",
+      "",
+      "BEFORE THE",
+      "",
+      "COMMITTEE ON PORTS",
+      "",
+      "FEBRUARY 11, 2026",
+      "",
+      "Serial No. 7",
+      "",
+      "The authority was founded on March 2, 2019, and its charter was renewed on June 30, 2025.",
+      "",
+      body,
+      "",
+    ].join("\n");
+
+  it("a day within a few months of the cover page's date takes its year", () => {
+    assert.deepEqual(namedRuleRun(RULE, cover("Mr. Reed. On January 15, I wrote to the authority."), en, "a.txt", TRANSCRIPT).findings, []);
+    assert.deepEqual(namedRuleRun(RULE, cover("Mr. Reed. On December 11, the board voted."), en, "a.txt", TRANSCRIPT).findings, []);
+  });
+
+  it("a day further from it, or the same record outside the dated genres, is still reported", () => {
+    assert.equal(namedRuleRun(RULE, cover("Mr. Reed. On August 3, I wrote to the authority."), en, "a.txt", TRANSCRIPT).findings.length, 1);
+    assert.equal(namedRuleRun(RULE, cover("Mr. Reed. On January 15, I wrote to the authority."), en, "a.txt", "business/report").findings.length, 1);
+  });
+
+  it("each sitting's dateline governs the days said under it", () => {
+    const sittings = cover(
+      ["Mr. Reed. On January 15, I wrote to the authority.", "", "TUESDAY, SEPTEMBER 8, 2026", "", "Ms. Lane. On August 3, the board met."].join("\n"),
+    );
+    assert.deepEqual(namedRuleRun(RULE, sittings, en, "a.txt", TRANSCRIPT).findings, []);
+    const before = sittings.replace("Mr. Reed. On January 15", "Mr. Reed. On August 3");
+    assert.equal(namedRuleRun(RULE, before, en, "a.txt", TRANSCRIPT).findings.length, 1);
   });
 });
