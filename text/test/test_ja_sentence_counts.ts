@@ -173,6 +173,15 @@ describe("demonstrative-opener-run", () => {
     assert.deepEqual(findingsOf(RULE, "その店は閉まった。それは残念だ。その道も暗い。\n"), ["「その」など、指示語で始まる文が 3 文続いています（2 文まで）"]);
   });
 
+  it("接続詞の「その上、」「その上で、」は、かな書き（そのうえ、そのうえで）と同じく数えない。場所を指す「その上に」「その上で」は数える", () => {
+    const run = ["「その」など、指示語で始まる文が 3 文続いています（2 文まで）"];
+    assert.deepEqual(findingsOf(RULE, "その店は閉まった。その上、雨が降った。その道も暗い。\n"), []);
+    assert.deepEqual(findingsOf(RULE, "その店は閉まった。そのうえ、雨が降った。その道も暗い。\n"), []);
+    assert.deepEqual(findingsOf(RULE, "その案は通った。その上で、予算を組む。その額は小さい。\n"), []);
+    assert.deepEqual(findingsOf(RULE, "その店は閉まった。その上に看板がある。その道も暗い。\n"), run);
+    assert.deepEqual(findingsOf(RULE, "その店は閉まった。その上で猫が寝ている。その道も暗い。\n"), run);
+  });
+
   it("「それぞれ」と接続詞の「そして」は数えない", () => {
     assert.deepEqual(findingsOf(RULE, "それぞれの班が集まった。そして話し合った。それぞれが意見を出した。\n", "strict"), []);
   });
