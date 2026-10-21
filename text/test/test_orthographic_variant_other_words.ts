@@ -112,6 +112,8 @@ describe("orthographic-variant: 別の語として挙げた書き方", () => {
     assert.deepEqual(findingsOf(desk), []);
     const sentence = "# 相談\n\n心の健康を守る。心の病気に気づく。心のサポートが役立つ。こころの相談は０５７０-０６４-５５６へ。\n";
     assert.equal(findingsOf(sentence).length, 1);
+    const after = "# 窓口\n\n問い合わせは電話で受けます。問い合わせは無料です。問い合わせが増えました。\n\n事務局\n電話：080-7513-7410 問合せ時間 9時～17時\n";
+    assert.equal(findingsOf(after).length, 1);
   });
 
   it("品物の「モノ」を、形式名詞の「もの」と比べない", () => {
@@ -175,10 +177,10 @@ describe("orthographic-variant: 判決の裁判官ごとの意見", () => {
 });
 
 describe("contactEntrySpans: 電話番号の札", () => {
-  it("番号を持ち、文の終わりの印の無い一文は、全体が札", () => {
+  it("番号を持ち、文の終わりの印の無い一文は、頭から番号の終わりまでが札", () => {
     assert.deepEqual(contactEntrySpans("統一ダイヤル\n０５７０ - ０６４ - ５５６"), [{ start: 0, end: 23 }]);
     assert.deepEqual(contactEntrySpans("相談電話 03-1234-5678"), [{ start: 0, end: 17 }]);
-    assert.deepEqual(contactEntrySpans("＃8891（はやくワンストップ）"), [{ start: 0, end: 16 }]);
+    assert.deepEqual(contactEntrySpans("事務局\n電話：080-7513-7410 問合せ時間 9時～17時"), [{ start: 0, end: 20 }]);
   });
 
   it("文の終わりの印のある文、番号の無い文、区切りの無い数、空の文は札ではない", () => {
@@ -187,7 +189,9 @@ describe("contactEntrySpans: 電話番号の札", () => {
     assert.deepEqual(contactEntrySpans("令和5年度 12345678"), []);
     assert.deepEqual(contactEntrySpans("第2-3-1表"), []);
     assert.deepEqual(contactEntrySpans("型番AB123-45-6789"), []);
-    assert.deepEqual(contactEntrySpans("リンク https://example.com/#8891"), []);
+    assert.deepEqual(contactEntrySpans("リンク https://example.com/03-1234-5678"), []);
+    assert.deepEqual(contactEntrySpans("画面の修正 (#1234)"), []);
+    assert.deepEqual(contactEntrySpans("＃8891（はやくワンストップ）"), []);
     assert.deepEqual(contactEntrySpans("番号 03-1234-56789"), []);
     assert.deepEqual(contactEntrySpans(""), []);
   });
