@@ -23,6 +23,7 @@ const WORDS: CitationWords = {
   notAuthors: new Set(["march"]),
   referenceHeadings: ["References"],
   connectors: ["de", "van", "den", "of", "the"],
+  particles: ["de", "van", "den"],
 };
 
 const keysIn = (text: string): string[][] =>
@@ -74,11 +75,13 @@ describe("citation-reference-mismatch: a name of several words", () => {
   it("keeps a surname after one capitalised word of the sentence as the sure key", () => {
     assert.deepEqual(keysIn("As Smith (2020) shows."), [["smith"]]);
     assert.deepEqual(keysIn("Following Smith and Jones (2020), we test."), [["smith"]]);
-    assert.deepEqual(keysIn("Results of Smith (2020) hold."), [["smith?", "results?"]]);
+    assert.deepEqual(keysIn("Results of Smith (2020) hold."), [["smith"]]);
+    assert.deepEqual(keysIn("In van Dijk (2020) we read."), [["dijk?", "in?"]]);
   });
 
   it("still reports a one-word citation the list does not have", () => {
     assert.deepEqual(slipsOf(`# Control\n\n${body} As Brown (2019) shows.\n${entries}`), [["missing", "brown 2019"]]);
+    assert.deepEqual(slipsOf(`# Control\n\n${body} Results of Brown (2019) hold.\n${entries}`), [["missing", "brown 2019"]]);
   });
 });
 

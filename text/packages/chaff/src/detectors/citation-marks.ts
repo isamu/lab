@@ -45,6 +45,8 @@ export type CitationWords = {
   readonly referenceHeadings: readonly string[];
   /** Lower-case words inside a name: a surname's particle (de, van) or an organisation's joining word (of, the). */
   readonly connectors?: readonly string[];
+  /** The connectors that are a surname's particle (de, van), not an organisation's joining word (of, the). */
+  readonly particles?: readonly string[];
 };
 
 /** A range wider than this is not a citation range ([1990-2020] is years). */
@@ -189,15 +191,15 @@ const nameRunBefore = (words: CitationWords): RegExp => {
 
 /**
  * The surname a narrative citation reads may end a longer name: "Santoni de Sio (2020)", "Council of the European Union
- * (2024)". Two or more words before it (connectors counted) make it one: the capitalised words there, lower-cased, may each
- * be the name's key. One capitalised word is the sentence's own (As Smith (2020)), and gives none.
+ * (2024)". A particle straight before it, or two capitalised words before it, make it one: the capitalised words there,
+ * lower-cased, may each be the name's key. One capitalised word is the sentence's own (As Smith (2020), Results of
+ * Smith (2020)), and gives none.
  */
 const longerNameHeads = (run: string, words: CitationWords): string[] => {
   const tokens = run.split(" ").filter((token) => token !== "");
-  const start = tokens.findIndex((token) => !words.pairs.includes(token));
-  const name = start === -1 ? [] : tokens.slice(start);
-  if (name.length < 2) return [];
-  return name.filter((token) => /^\p{Lu}/u.test(token)).map((token) => token.toLowerCase());
+  const capitals = tokens.filter((token) => /^\p{Lu}/u.test(token));
+  const afterParticle = (words.particles ?? []).includes(tokens.at(-1) ?? "");
+  return capitals.length >= 2 || (afterParticle && capitals.length >= 1) ? capitals.map((token) => token.toLowerCase()) : [];
 };
 
 const authorYearMarks = (text: string, words: CitationWords): CitationMark[] => {
@@ -277,6 +279,7 @@ export const citationWordsOf = (doc: ProseDocument): CitationWords => {
     notAuthors: new Set(patternsOf(doc, "citation-not-author").map((word) => word.toLowerCase())),
     referenceHeadings: patternsOf(doc, "reference-list-heading"),
     connectors: patternsOf(doc, "citation-name-connector"),
+    particles: (doc.lexicons["citation-name-connector"] ?? []).filter((entry) => entry.group !== "organisation").map((entry) => entry.pattern),
   };
 };
 
