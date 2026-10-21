@@ -16,7 +16,7 @@ const covered = (source: string, word: string): boolean => {
   const at = source.indexOf(word);
   // The sentence starts at its first capital, after a note's mark ([^4]:), as the sentence reader gives it.
   const start = Math.max(0, source.search(/\p{Lu}/u));
-  const sentences = [{ text: source.slice(start), start }];
+  const sentences = [{ text: source.slice(start), span: { start } }];
   return citationNoteSpans(source, sentences, ["and", "&", "et al."]).some((span) => span.start <= at && at + word.length <= span.end);
 };
 
@@ -41,7 +41,7 @@ describe("citationNoteSpans", () => {
     const series = "FRBSF Economic Letter 2023-13 (May 30).";
     const prose = "The SRE remains undefined.";
     const source = `1. ${first} ${series} ${prose}`;
-    const sentences = [first, series, prose].map((text) => ({ text, start: source.indexOf(text) }));
+    const sentences = [first, series, prose].map((text) => ({ text, span: { start: source.indexOf(text) } }));
     const spans = citationNoteSpans(source, sentences, []);
     const isCovered = (word: string): boolean => spans.some((span) => span.start <= source.indexOf(word) && source.indexOf(word) < span.end);
     assert.equal(isCovered("FRBSF"), true);
