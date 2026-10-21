@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { isNamedByHeading, isRejectedWording } from "../packages/chaff/src/detectors/unused-definition-kept.ts";
+import { isNamedByHeading, isQuestionedWording, isRejectedWording } from "../packages/chaff/src/detectors/unused-definition-kept.ts";
 
 // unused-definition and terms that are not unused definitions: a wording quoted as what not to write (「X」とはせずに …),
 // and a term a heading names under another capitalisation. A real unused definition beside them is still reported.
@@ -28,6 +28,26 @@ describe("isRejectedWording", () => {
   });
 });
 
+const LEADS = (en.lexicons["question-wording-lead"] ?? []).map((entry) => entry.pattern);
+
+describe("isQuestionedWording", () => {
+  it("a quoted term right after a word that asks about it", () => {
+    const source = "Agree on a clear definition of what “done” means.";
+    assert.equal(isQuestionedWording(source, source.indexOf("“"), "done", LEADS), true);
+    const plain = 'Write down how "ready" is decided.';
+    assert.equal(isQuestionedWording(plain, plain.indexOf('"'), "ready", LEADS), true);
+  });
+
+  it("a definition, a lead inside a longer word, a missing term, and no word list", () => {
+    const source = "“Done” means the change is merged and released.";
+    assert.equal(isQuestionedWording(source, 0, "Done", LEADS), false);
+    const inside = "Somewhat “done” means little here.";
+    assert.equal(isQuestionedWording(inside, inside.indexOf("“"), "done", LEADS), false);
+    assert.equal(isQuestionedWording(source, 0, "absent", LEADS), false);
+    assert.equal(isQuestionedWording("what “done” means", 5, "done", []), false);
+  });
+});
+
 describe("isNamedByHeading", () => {
   it("a heading names the term under another capitalisation", () => {
     assert.equal(isNamedByHeading("Audio content", ["### Audio Content"]), true);
@@ -43,6 +63,16 @@ describe("unused-definition: wordings rejected and terms a heading names", () =>
   it("a wording quoted as what not to write is not reported; an unused definition beside it is", () => {
     const source = "# 予報の言い方\n\n予報文では、「雨が強い」とはせずに、量を示す。\n\n「降水日」とは、雨の降った日をいう。\n";
     assert.deepEqual(findingsOf(source), ["「降水日」を定義していますが、本文で使っていません"]);
+  });
+
+  it("a word said not to fit (「X」とは言えない) is not reported; an unused definition beside it is", () => {
+    const source = "# 時期\n\n五年前は「最近」とは言えませんが、「大昔」とも言えません。\n\n「降水日」とは、雨の降った日をいう。\n";
+    assert.deepEqual(findingsOf(source), ["「降水日」を定義していますが、本文で使っていません"]);
+  });
+
+  it("a term a sentence asks about is not reported; an unused definition beside it is", () => {
+    const source = "# Tickets\n\nAgree on a clear definition of what “done” means.\n\n“Backlog” means the list of work not yet started. Keep tickets short.\n";
+    assert.deepEqual(findingsOf(source, en), ['"Backlog" is defined but never used']);
   });
 
   it("a term a heading names with other capitals is not reported", () => {

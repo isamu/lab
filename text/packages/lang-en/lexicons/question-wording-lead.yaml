@@ -1,0 +1,7 @@
+# Words right before a quoted term that ask about it ("a definition of what “done” means", "how “ready” is decided").
+# The sentence asks what the term means and defines nothing, so unused-definition does not report the term.
+id: question-wording-lead
+language: en
+entries:
+  - pattern: what
+  - pattern: how
