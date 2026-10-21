@@ -7,7 +7,7 @@ import { initialStops, unmarkInitialStops } from "../packages/lang-en/src/initia
 // abbreviation before another capitalised word does not ("the U.S. Census Bureau"). Every sentence is self-written.
 
 const wordsOf = (id: string): string[] => (en.lexicons[id] ?? []).map((entry) => entry.pattern);
-const STOPS = initialStops(wordsOf("sentence-start-word"), wordsOf("prepositive-abbreviation"));
+const STOPS = initialStops(wordsOf("sentence-start-word"), wordsOf("prepositive-abbreviation"), wordsOf("name-abbreviation"));
 const sentencesOf = (text: string): string[] => en.segment(text).sentences.map((sentence) => sentence.text);
 
 describe("en sentences: initials and prepositive abbreviations", () => {
@@ -34,9 +34,40 @@ describe("en sentences: initials and prepositive abbreviations", () => {
   });
 });
 
+describe("en sentences: name abbreviations", () => {
+  it("a name abbreviation before a name never ends the sentence, even before a comma", () => {
+    assert.deepEqual(sentencesOf("Lives of Ann Lee, Jas. Whittaker, J. Hocknell, and others. Printed in 1888."), [
+      "Lives of Ann Lee, Jas. Whittaker, J. Hocknell, and others.",
+      "Printed in 1888.",
+    ]);
+    assert.deepEqual(sentencesOf("It was signed by Wm. Smith and Chas. Brown. Thos. Hart came."), [
+      "It was signed by Wm. Smith and Chas. Brown.",
+      "Thos. Hart came.",
+    ]);
+    assert.deepEqual(sentencesOf("The paper is by Joel Wm. Parker."), ["The paper is by Joel Wm. Parker."]);
+  });
+
+  it("a whole name, a name abbreviation last, or one before a sentence-start word ends the sentence", () => {
+    assert.deepEqual(sentencesOf("I met Fred. Alex came later."), ["I met Fred.", "Alex came later."]);
+    assert.deepEqual(sentencesOf("The letter was signed Jas. He sent it in May."), ["The letter was signed Jas.", "He sent it in May."]);
+    assert.deepEqual(sentencesOf("The letter was signed Wm. I sent it on."), ["The letter was signed Wm.", "I sent it on."]);
+    assert.deepEqual(sentencesOf("It names Wm. I. Hart."), ["It names Wm. I. Hart."]);
+    assert.deepEqual(sentencesOf("Signed, Jas."), ["Signed, Jas."]);
+    assert.deepEqual(sentencesOf("He wrote to Jas. the next day."), ["He wrote to Jas. the next day."]);
+  });
+
+  it("only the written form joins: a longer word or another case is not one", () => {
+    const names = initialStops([], [], ["Jas.", "Wm."]);
+    assert.equal(unmarkInitialStops("Jas. Hart and Wm. Lee", names), "Jasn Hart and Wmn Lee");
+    assert.equal(unmarkInitialStops("BJas. Hart, jas. Hart, Wm.. Lee", names), "BJas. Hart, jas. Hart, Wm.. Lee");
+    assert.equal(unmarkInitialStops("Jas. Hart", initialStops([], [], [])), "Jas. Hart");
+    assert.equal(unmarkInitialStops("Jas. 12", names), "Jas. 12");
+  });
+});
+
 describe("unmarkInitialStops", () => {
   it("the length never changes, so the spans fit the original text", () => {
-    const text = "Regulation C. The U.S. Census and D.C. In the end.";
+    const text = "Regulation C. The U.S. Census and D.C. In the end, Wm. Hart.";
     assert.equal(unmarkInitialStops(text, STOPS).length, text.length);
   });
 
