@@ -126,6 +126,7 @@ Legal documents, manuals, literature and transcripts are written differently, so
 | `stock-transition` | Too many sentences opening with "Moreover" or "Additionally" |
 | `announcing-opener` | Several sentences opening with an announcement ("The key point is", "Here's the thing", "Honestly,") |
 | `over-general-claim` | Sweeping claims about people ("most people", "nobody", "everyone") piling up (English blogs and business documents only) |
+| `q-fragment-answer` | Questions the writer answers at once with a fragment, more than once ("Is it perfect? No.", "The result? Faster builds.") (English only) |
 | `colon-lead-in` | Too many sentences ending in a colon that hand off to a list (Japanese documents only) |
 | `emoji-heading` | Headings with an emoji in them, one after another ("## 🚀 Getting started") |
 | `bold-label-list` | Many list items that open with a bold label and a colon ("- **Speed**: ...") |
