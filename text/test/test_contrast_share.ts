@@ -87,9 +87,9 @@ describe("contrast-framing counts a share of sentences", () => {
   });
 
   it("reports a share just past the limit, and not one at the limit", () => {
-    // Six sentences hold the three frames; with 54 more the share is 5.0%, with 53 it is 5.1%.
-    assert.ok(!firedRules(en, `# Post\n\n${three}${fillerEn(54)}`, "blog/tech").includes(RULE));
-    assert.ok(firedRules(en, `# Post\n\n${three}${fillerEn(53)}`, "blog/tech").includes(RULE));
+    // Six sentences hold the three frames; with 44 more the share is 6.0% (the normal limit), with 43 it is 6.1%.
+    assert.ok(!firedRules(en, `# Post\n\n${three}${fillerEn(44)}`, "blog/tech").includes(RULE));
+    assert.ok(firedRules(en, `# Post\n\n${three}${fillerEn(43)}`, "blog/tech").includes(RULE));
   });
 
   it("measures the share over the sentences in the document's language", () => {

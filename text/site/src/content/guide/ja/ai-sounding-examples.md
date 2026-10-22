@@ -278,7 +278,7 @@ ai.md   blog/tech · 日本語   ジャンルは --genre から
                   ai-tell
   3:1     warning 「ai-tell、closing-cliche、contrast-framing、announcing-opener、colon-lead-in」が同じ文書にそろっています（5 種、3 種から）
                   ai-generated-composite
-  9:1     info    「単なる」など、対比の枠が 1000 字あたり 4.4 個あります（1.5 個まで）
+  9:1     info    「単なる」など、対比の枠で書いた文が 10.3% あります（6% まで）
                   contrast-framing
   11:1    info    「正直に言うと」など、予告で始まる文が 3 個あります（3 個から）
                   announcing-opener
@@ -290,9 +290,9 @@ ai.md   blog/tech · 日本語   ジャンルは --genre から
                   announcing-opener
   31:1    info    コロンで箇条書きへ渡す文が 1000 字あたり 2.9 個あります（2 個まで）
                   colon-lead-in
-  37:25   info    「だけでなく」など、対比の枠が 1000 字あたり 4.4 個あります（1.5 個まで）
+  37:25   info    「だけでなく」など、対比の枠で書いた文が 10.3% あります（6% まで）
                   contrast-framing
-  45:1    info    「単なる」など、対比の枠が 1000 字あたり 4.4 個あります（1.5 個まで）
+  45:1    info    「単なる」など、対比の枠で書いた文が 10.3% あります（6% まで）
                   contrast-framing
   47:1    warning 「いかがでしたでしょうか」で締めています
                   closing-cliche
@@ -524,19 +524,19 @@ study.md   blog/tech · 日本語   ジャンルは --genre から
                   colon-lead-in
   15:1    info    「頻度」など、太字の札で始まる項目が 6 個あります（5 個から）
                   bold-label-list
-  23:26   info    「単なる」など、対比の枠が 1000 字あたり 3.5 個あります（1.5 個まで）
+  23:26   info    「単なる」など、対比の枠で書いた文が 8.8% あります（6% まで）
                   contrast-framing
   35:1    info    「ポイントは」など、予告で始まる文が 3 個あります（3 個から）
                   announcing-opener
   51:32   info    「重要なのは」など、予告で始まる文が 3 個あります（3 個から）
                   announcing-opener
-  51:32   info    「だけではありません」など、対比の枠が 1000 字あたり 3.5 個あります（1.5 個まで）
+  51:32   info    「だけではありません」など、対比の枠で書いた文が 8.8% あります（6% まで）
                   contrast-framing
   53:1    info    「正直に言うと」など、予告で始まる文が 3 個あります（3 個から）
                   announcing-opener
   57:1    info    コロンで箇条書きへ渡す文が 1000 字あたり 2.3 個あります（2 個まで）
                   colon-lead-in
-  65:83   info    「単なる」など、対比の枠が 1000 字あたり 3.5 個あります（1.5 個まで）
+  65:83   info    「単なる」など、対比の枠で書いた文が 8.8% あります（6% まで）
                   contrast-framing
   67:1    warning 「いかがでしたでしょうか」で締めています
                   closing-cliche

@@ -25,7 +25,7 @@ how_to_fix:
   en: Drop the X you knocked down and say Y directly.
 
 # 文書の文のうち、対比の枠で書いた文の割合（%）。枠が三つ以上ある文書だけを測る。
-levels: { strict: 3, normal: 5, relaxed: 8 }
+levels: { strict: 4, normal: 6, relaxed: 9 }
 
 use_for: [technical/readme, blog, business, legal, docs, academic, literature, speech]
 off_for:
