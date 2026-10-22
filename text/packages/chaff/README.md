@@ -164,7 +164,8 @@ npx chaffjs ai-score article.md
 
 A quick AI-likeness reading: low, medium or high. It counts the signs of generated text that
 human documents of the same genre rarely show. It is not a verdict on whether AI wrote it, and
-it is not meant to be one.
+it is not meant to be one. Among the signs: `cold-open`, an opening that piles a bare wish, a word of
+the previous sentence repeated in quotes, and a teaser ("Sounds simple. It isn't.") before any situation or example.
 
 ## Grading a model's output
 

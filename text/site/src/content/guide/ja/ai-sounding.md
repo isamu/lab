@@ -129,6 +129,7 @@ Claude Code の skill（`npx chaffjs skill`）は、指摘より先に指針を�
 | `emoji-heading` | 「## 🚀 はじめに」のように、絵文字の付いた見出しが続く所 |
 | `bold-label-list` | 「- **速さ**：〜」のように、太字の札とコロンで始まる項目の多さ（日本語の文書だけ） |
 | `assistant-residue` | 「お役に立てれば幸いです」のような、チャットの返事の名残 |
+| `cold-open` | 状況も例もないまま、短い願い（「〜に任せたい。」）、前の文の語の引き直し（この「だいたい」が）、難所の予告（「それだけのことに見えて」）が重なる書き出し |
 | `chat-citation-residue` | 「?utm_source=chatgpt.com」の付いたリンクや「oaicite」のような、チャットの答えを貼ったときに残る印 |
 | `closing-cliche` | 「いかがでしたでしょうか」で締める終わり方 |
 | `bold-density` | 太字の多さ |
