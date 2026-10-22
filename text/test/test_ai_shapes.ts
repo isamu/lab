@@ -107,7 +107,21 @@ describe("announcing-opener", () => {
   const EN_THREE = "The key point is the settings. Here's the thing: logs matter. Honestly, the manual is old.";
 
   const OPENERS: ReadonlyArray<readonly [LanguageAdapter, readonly string[]]> = [
-    [ja, ["重要なのは", "ポイントは", "正直に言うと", "注目すべきは", "注目すべき点は", "ここで注目すべきは", "ここで注目したいのは", "注目したいのは", "正直なところ", "正直、"]],
+    [
+      ja,
+      [
+        "重要なのは",
+        "ポイントは",
+        "正直に言うと",
+        "注目すべきは",
+        "注目すべき点は",
+        "ここで注目すべきは",
+        "ここで注目したいのは",
+        "注目したいのは",
+        "正直なところ",
+        "正直、",
+      ],
+    ],
     [
       en,
       [
