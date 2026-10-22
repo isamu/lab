@@ -36,6 +36,11 @@ const labelWords = (text: string): string => {
 /** A noun with no kana inflection (参考, 注意点): a name, not a sentence (以下の通りです) and not a lone symbol (⚠️). */
 const NOUN_LABEL = /^(?=.*\p{L})[^\p{Script=Hiragana}]+$/u;
 
+/** An English label is a name of a word or three (See also, Pros); past that it is a sentence (Here's what you need). */
+const MAX_LABEL_WORDS = 3;
+
+const isNounLabel = (words: string): boolean => NOUN_LABEL.test(words) && words.split(/\s+/u).length <= MAX_LABEL_WORDS;
+
 /**
  * A field of an entry's template: the same noun label before the list of each entry (**参考:** before each entry's link).
  * It names the field the way a table's column does; it does not lead into anything.
@@ -44,7 +49,7 @@ const fieldLabels = (leadIns: readonly Sentence[]): ReadonlySet<string> => {
   const counts = leadIns
     .map((sentence) => labelWords(sentence.text))
     .reduce((tally, words) => tally.set(words, (tally.get(words) ?? 0) + 1), new Map<string, number>());
-  return new Set([...counts].filter(([words, count]) => count > 1 && NOUN_LABEL.test(words)).map(([words]) => words));
+  return new Set([...counts].filter(([words, count]) => count > 1 && isNounLabel(words)).map(([words]) => words));
 };
 
 /**

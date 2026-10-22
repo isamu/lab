@@ -124,3 +124,27 @@ entries:
     weight: 0.3
   - pattern: 大幅に向上する
     weight: 0.3
+  # 生成文の言い回し。chaff-corpus の 100 本の生成文と同じジャンルの人の文書で比べて、人の側が 0 だったもの。
+  # 「最後に」「まさに」「さまざまな」「において」「適切」「重要です」は人の文書のほうが多いので入れない。
+  - pattern: それでも、
+    weight: 0.3
+  - pattern: 理解が深まる
+    weight: 0.4
+  - pattern: 見ていきましょう
+    weight: 0.4
+  - pattern: 橋渡し
+    weight: 0.3
+  - pattern: 刺さる
+    weight: 0.3
+  - pattern: 地味だけど
+    weight: 0.3
+  - pattern: 地味ですが
+    weight: 0.3
+  # 定型の比喩。測った生成文には出ないが、人の文書にも 0 なので重みを低くして置く。
+  # 「車の両輪」「伴走」「言語化」「寄り添う」「向き合う」は人の文書（白書、行政の文書）にあるので入れない。
+  - pattern: 羅針盤
+    weight: 0.3
+  - pattern: 架け橋
+    weight: 0.3
+  - pattern: ゲームチェンジャー
+    weight: 0.3
