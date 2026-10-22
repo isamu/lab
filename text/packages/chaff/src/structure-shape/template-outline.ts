@@ -7,8 +7,12 @@ export const TEMPLATE_SECTIONS = 4;
 /** Kanji or katakana: a compound goes on through them, so 効果 does not open 効果測定 and 提案 does not open 提案者. */
 const COMPOUND = /[\p{Script=Han}\p{Script=Katakana}ー]/u;
 
-const continuesCompound = (words: string, phrase: string): boolean =>
-  COMPOUND.test(phrase.at(-1) ?? "") && COMPOUND.test([...words.slice(phrase.length)][0] ?? "");
+const characterAt = (text: string, index: number): string => {
+  const code = text.codePointAt(index);
+  return code === undefined ? "" : String.fromCodePoint(code);
+};
+
+const continuesCompound = (words: string, phrase: string): boolean => COMPOUND.test(phrase.at(-1) ?? "") && COMPOUND.test(characterAt(words, phrase.length));
 
 const opensWith = (words: string, phrase: string): boolean => startsWithWord(words, phrase) && !continuesCompound(words, phrase);
 
