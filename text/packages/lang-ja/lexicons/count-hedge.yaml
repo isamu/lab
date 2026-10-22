@@ -19,6 +19,11 @@ entries:
     position: before
   - pattern: うち
     position: before
+  # 該当の条件（次の各号のいずれか一つに該当する）。一つは選ぶ数で、下の項目の数ではない。
+  - pattern: いずれか
+    position: before
+  - pattern: 何れか
+    position: before
   - pattern: 中
     position: before
   - pattern: 〜
