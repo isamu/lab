@@ -60,6 +60,8 @@ The plan was very good and very clear, and the team was very busy.
 
 So, the plan holds. So, we ship.
 
+Most people skip the check. Nobody reads the log. Everyone pays for it later.
+
 ## 🚀 Before
 
 Bring the key.

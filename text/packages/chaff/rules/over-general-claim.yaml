@@ -28,7 +28,13 @@ how_to_fix:
 # 1000 語あたりの数。二種類以上を三つ以上使った文書だけを測る。
 levels: { strict: 2, normal: 3, relaxed: 5 }
 
-use_for: [blog, business]
+use_for: [blog, business, legal, docs, academic, literature, speech]
+off_for:
+  legal: "Legal drafting states who a duty binds (anyone who, no one) on purpose; that is its form, not a sweeping claim."
+  docs: "A help page speaks to everyone who uses the product and says what anyone who does X should do; that is its audience, not a sweeping claim."
+  academic: "A paper's claims about people are bounded by its data and its citations; this count cannot tell those from sweeping ones."
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+  speech: "A speaker addresses everyone in the room and speaks to the audience in general; that is how speech is spoken."
 
 group: ai-tells
 summary:

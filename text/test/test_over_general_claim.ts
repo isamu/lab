@@ -56,7 +56,7 @@ describe("over-general-claim", () => {
     assert.ok(fired.includes("weasel-word"), fired.join(","));
   });
 
-  it("does not run outside blog and business", () => {
+  it("is off in legal documents", () => {
     assert.ok(!fires(`${SWEEPING}${filler(20)}`, "legal/contract"));
   });
 
