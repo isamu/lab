@@ -2,7 +2,7 @@
 
 Alice met Bob in London with Carol from Paris and Dave from Berlin.
 
-They agreed on the plan below.
+They agreed on the plan below. Easier said than done.
 
 ## Summary
 
