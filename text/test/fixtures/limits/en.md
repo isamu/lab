@@ -2,6 +2,8 @@
 
 Alice met Bob in London with Carol from Paris and Dave from Berlin.
 
+This isn't about tooling. That's not the point of the review. It's not a question of budget.
+
 They agreed on the plan below. I hope this email finds you well. I apologize for any inconvenience.
 
 ## Summary
