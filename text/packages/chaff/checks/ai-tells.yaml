@@ -1,0 +1,153 @@
+# The AI-likeness tells only a reader can judge, for `chaff test --checks ai-tells`.
+# Each check is asked once per document (or once per sentence its look_at picks out), in the document's language.
+# `chaff test --checks ai-tells --dry-run` shows what would be sent without calling anything.
+checks:
+  - id: invented-detail
+    languages: ja
+    name: 作った具体が無い
+    check: |
+      数、日付、曜日、人の発言、知人の話、原因などの具体が、書き手が確かめたものとして書かれていること。
+      読ませるために足したように見える具体（出どころが無く、出来すぎていて、書き手に確かめないと書けないもの）が無いこと。
+    how_to_fix: その具体が本当か書き手に聞いてください。確かめられないものは消すか、［ ］で空けて書き手に埋めてもらいます。
+  - id: invented-detail
+    languages: en
+    name: No invented specifics
+    check: |
+      The specifics (figures, dates, weekdays, quoted remarks, a friend's story, causes) read as things the writer checked.
+      There is no specific that looks added to make the text vivid: without a source, too neat, something only the writer could confirm.
+    how_to_fix: Ask the writer whether the specific is true. Cut what cannot be confirmed, or leave [ ] for the writer to fill.
+
+  - id: abstract-opening
+    languages: ja
+    name: 抽象的な書き出しでない
+    check: |
+      最初の段落が、この文書の要点か具体的な場面・事実から始まっていること。
+      「〜が求められています」「〜は重要です」「近年〜」のような、どの文書にも置ける一般論から始まっていないこと。
+    how_to_fix: 一般論の書き出しを消し、要点か、書き手が見た場面から始めてください。
+  - id: abstract-opening
+    languages: en
+    name: No abstract opening
+    check: |
+      The first paragraph starts from this document's point, or from a concrete scene or fact.
+      It does not start from a generality that could open any document ("In today's fast-paced world", "X is more important than ever").
+    how_to_fix: Cut the generic opening and start from the point, or from something the writer saw.
+
+  - id: unprompted-denial
+    languages: ja
+    name: 誰も言っていないことを打ち消さない
+    look_at: 「ではありません」「ではなく」「わけではない」「わけではありません」「とは限りません」
+    check: |
+      打ち消している内容を、文書の中の誰か（読み手や反対の立場）が実際に言っているか、そう思うのが自然であること。
+      誰も言っていないことをわざわざ否定して、自分の主張を目立たせる文（「〜というわけではありません。〜なのです」）でないこと。
+    how_to_fix: 打ち消しを外し、言いたいことをそのまま書いてください。
+  - id: unprompted-denial
+    languages: en
+    name: No denial of what nobody said
+    look_at: '"isn" "is not" "wasn" "doesn" "not about" "Not about" "not because" "Not because" "not just" "Not just"'
+    check: |
+      What the sentence denies is something someone in the document (the reader, the other side) actually holds or would naturally assume.
+      It does not deny a claim nobody made only to set off its own point ("This isn't about speed. It's about trust.").
+    how_to_fix: Drop the denial and state the point directly.
+
+  - id: moral-ending
+    languages: ja
+    name: 教訓でまとめない
+    check: |
+      最後の段落が、本文の内容の続きか、書き手自身の次の行動で終わっていること。
+      冒頭に戻って教訓や気づきで締める、きれいにまとまりすぎた結び（「〜ということを、この経験が教えてくれました」）でないこと。
+    how_to_fix: 教訓の文を消し、最後の事実か、書き手がこれからすることで終えてください。
+  - id: moral-ending
+    languages: en
+    name: No moral at the end
+    check: |
+      The last paragraph ends on the content itself, or on what the writer will do next.
+      It is not a neat callback to the opening that closes on a lesson ("And that, more than anything, is what the garden taught me.").
+    how_to_fix: Cut the lesson and end on the last fact, or on what the writer will do next.
+
+  - id: mirrored-lists
+    languages: ja
+    name: 課題と効果を一対一で並べない
+    check: |
+      効果や対策の一覧が、課題の一覧を一つずつ裏返しただけの並びになっていないこと（課題 3 つに効果 3 つ、順番も同じ、など）。
+    how_to_fix: 効果は大きいものから書き、課題と対応しないものは対応しないと書いてください。費用や手間も添えます。
+  - id: mirrored-lists
+    languages: en
+    name: No benefits list that mirrors the problems list
+    check: |
+      A list of benefits or countermeasures is not the list of problems turned inside out item by item (three problems, three benefits, in the same order).
+    how_to_fix: Lead with the largest benefit, say which problem a change does not address, and give the cost.
+
+  - id: restated-claim
+    languages: ja
+    name: 同じ主張を言い換えて繰り返さない
+    look_at: 「つまり」「言い換えると」「要するに」「このように」「すなわち」
+    check: |
+      この文が、直前の内容に新しい情報（理由、例、数、条件）を足していること。
+      直前の主張を言葉を変えて繰り返すだけの文でないこと。
+    how_to_fix: 繰り返しの文を消すか、足りない理由や例を書き手に聞いて補ってください。
+  - id: restated-claim
+    languages: en
+    name: No claim restated in other words
+    look_at: "\"In other words\" \"Put simply\" \"That is,\" \"This means\" \"In short\""
+    check: |
+      The sentence adds something new to what came before it (a reason, an example, a figure, a condition).
+      It is not the previous claim said again in other words.
+    how_to_fix: Cut the restatement, or ask the writer for the reason or example that is missing.
+
+  - id: inflated-significance
+    languages: ja
+    name: 意味を大きく言いすぎない
+    check: |
+      ふつうの出来事や道具を、必要以上に大きな意味（転機、革命、文化の変化、新しい可能性）で語っていないこと。
+      文末に「〜の大切さを示しています」「〜を象徴しています」のような、何かを言った気にさせるだけの句を付けていないこと。
+    how_to_fix: 大きな言葉を消し、実際に起きたことを書いてください。
+  - id: inflated-significance
+    languages: en
+    name: No inflated significance
+    check: |
+      Ordinary events and tools are not given a larger meaning than they carry (a turning point, a revolution, a new era).
+      No sentence ends in a clause that claims meaning without saying it (", highlighting the importance of collaboration", ", underscoring…").
+    how_to_fix: Cut the big words and say what actually happened.
+
+  - id: generic-content
+    languages: ja
+    name: どこにでも書ける内容でない
+    check: |
+      書き手にしか書けないもの（見たこと、測ったこと、したこと、意見）が文書の中にあること。
+      誰でも知っている一般論と、どちらの立場にも配慮した無難な結論だけでできていないこと。
+    how_to_fix: 書き手の経験や数を聞いて足してください。足せないなら、一般論の段落を削って短くします。
+  - id: generic-content
+    languages: en
+    name: Not generic
+    check: |
+      The document holds something only this writer could write (what they saw, measured, did or think).
+      It is not made only of common knowledge and a balanced conclusion that offends no side.
+    how_to_fix: Ask the writer for their experience or figures. If there are none, cut the generic paragraphs and make it shorter.
+
+  - id: recipient-benefit
+    languages: ja
+    name: 頼みごとを相手の得にすり替えない
+    look_at: 「にとっても」「有意義」「お役に立て」「メリット」
+    check: |
+      頼みごとや案内を、相手の得になるかのように言い換えていないこと（「〇〇様にとっても有意義な場に」）。
+    how_to_fix: 何を頼むのかをそのまま書いてください。
+  - id: recipient-benefit
+    languages: en
+    name: No request recast as the reader's benefit
+    look_at: "\"for you\" \"get the most out of\" \"benefit you\" \"valuable for\""
+    check: |
+      A request or notice is not recast as the reader's own benefit ("so you can get the most out of the session").
+    how_to_fix: Say plainly what you are asking for.
+
+  - id: same-thing-renamed
+    languages: ja
+    name: 同じものを言い換え続けない
+    check: |
+      同じものや人を、繰り返しを避けるためだけに文ごとに別の呼び方で呼んでいないこと（「このツール」「本サービス」「同製品」）。
+    how_to_fix: 一つの呼び方に揃えてください。
+  - id: same-thing-renamed
+    languages: en
+    name: No elegant variation
+    check: |
+      The same thing or person is not renamed from sentence to sentence only to avoid repetition ("the tool", "the platform", "this solution").
+    how_to_fix: Pick one name and keep it.
