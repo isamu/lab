@@ -1,0 +1,6 @@
+# A clause offered to choose instead of the one before it under the same number (numbering-gap): "4. Term" then
+# "4. Term [Alternative]". A division that repeats the number before it and is named so is not a repeat in the numbering.
+id: alternative-clause-label
+language: en
+entries:
+  - pattern: Alternative

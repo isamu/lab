@@ -1,0 +1,7 @@
+# 条の代わりに選ぶ別案と書く語（numbering-gap）。ひな形の契約は、第4条の後に同じ番号の「第4条（変更オプション条項：…）」を
+# 置き、どちらかを選ばせる。前と同じ番号でこの語を見出しか直前の行に書いた条は、番号の重なりではない。
+id: alternative-clause-label
+language: ja
+entries:
+  - pattern: オプション条項
+  - pattern: 代替条項

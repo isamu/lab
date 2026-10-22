@@ -1,0 +1,7 @@
+# A division whose number is left blank in a template (numbering-gap): "Section [●]". The tree does not read it as a
+# division, so the numbering of paragraphs starts again at the line it begins.
+id: placeholder-division
+language: en
+entries:
+  - pattern: Section [●]
+  - pattern: Article [●]

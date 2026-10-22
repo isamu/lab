@@ -338,6 +338,35 @@ describe("defined-name-repeated: a long name used again after its short name", (
     assert.deepEqual(valuesOf(en, "defined-name-repeated", english, "term"), ["name Supplier"]);
   });
 
+  it("does not read the last item of a list the definition names together (書面または電磁的記録（以下「書面等」）)", () => {
+    const pair = "開示者の書面または電磁的記録（以下「書面等」という。）による承諾を得る。";
+    const sentence = tokensOf(ja, pair);
+    assert.ok(sentence !== undefined);
+    assert.equal(nameBefore(sentence, pair.indexOf("（"), ["または"]), undefined);
+    assert.equal(nameBefore(sentence, pair.indexOf("（")), "電磁的記録");
+    const source = ["# 秘密保持契約書", "", pair, "", "第2条　本契約は、電磁的記録により締結する。", ""].join("\n");
+    assert.deepEqual(valuesOf(ja, "defined-name-repeated", source, "term"), []);
+    const english = 'You may give notice by Registered Mail or Courier Delivery (together, the "Notice Methods").';
+    const englishSentence = tokensOf(en, english);
+    assert.ok(englishSentence !== undefined);
+    assert.equal(nameBefore(englishSentence, english.indexOf("("), ["or"]), undefined);
+    const titled = 'Notices By Registered Mail Or Courier Delivery (the "Notice Methods") apply.';
+    const titledSentence = tokensOf(en, titled);
+    assert.ok(titledSentence !== undefined);
+    assert.equal(nameBefore(titledSentence, titled.indexOf("("), ["or"]), undefined);
+    const both = "甲の役員及び従業員（以下「役員等」という。）は、秘密を守る。";
+    const bothSentence = tokensOf(ja, both);
+    assert.ok(bothSentence !== undefined);
+    assert.equal(nameBefore(bothSentence, both.indexOf("（"), ["及び"]), undefined);
+  });
+
+  it("still reads a name after a particle that is no conjunction (と)", () => {
+    const text = "甲は北浜商事株式会社と業務委託契約（以下「本契約」という。）を結ぶ。";
+    const sentence = tokensOf(ja, text);
+    assert.ok(sentence !== undefined);
+    assert.equal(nameBefore(sentence, text.indexOf("（"), ["または"]), "業務委託契約");
+  });
+
   it("does not report a use before the definition, or a short name of a short word", () => {
     const earlier = [
       "# 契約書",

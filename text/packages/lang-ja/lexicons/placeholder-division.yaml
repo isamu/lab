@@ -1,0 +1,8 @@
+# 番号を空けたままの条（numbering-gap）。ひな形の契約は、足すかどうか選ぶ条を「第●条」と書く。木はこれを条と読まないので、
+# 行の頭にこれがあれば、そこから項の番号を振り直す（前の条の第3項の後の「2」は重なりではない）。
+id: placeholder-division
+language: ja
+entries:
+  - pattern: 第●条
+  - pattern: 第○条
+  - pattern: 第〇条

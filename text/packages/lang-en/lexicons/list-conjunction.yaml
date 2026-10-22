@@ -1,0 +1,7 @@
+# Words that only join the items of a list (defined-name-repeated). In "Registered Mail or Courier Delivery (together, the
+# "Notice Methods")" the bracket names the whole list, not its last item.
+id: list-conjunction
+language: en
+entries:
+  - pattern: and
+  - pattern: or

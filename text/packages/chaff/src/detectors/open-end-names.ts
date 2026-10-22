@@ -19,6 +19,8 @@ const MAX_ASIDE_CHARS = 600;
 const ITEM_LABEL = /^\s*\S{1,8}\s+$/u;
 /** A word right after the head that makes it the subject of a sentence (親会社等は), not the head of an item. */
 const FUNCTION_POS = new Set(["ADP", "AUX", "PART", "SCONJ", "CCONJ", "PUNCT"]);
+/** Where a sentence stops, in either language. */
+const SENTENCE_END = /[。．.!?！？]/u;
 
 /**
  * One place where an open-end word stands: its sentence's tokens, the tokens the word covers, the noun it is part of
@@ -93,12 +95,31 @@ const definedInAside = (source: string, occurrence: Occurrence, statements: read
   return aside !== undefined && says(aside, statements);
 };
 
-/** Whether the noun heads a definition item: a label before it, no particle right after the word, and a definition in the rest (四の二 親会社等 …をいう。). */
+/** The first sentence of the text after offset: the definition of a head that stands alone on its item (9 書面等, then 書面…をいう。). */
+const nextSentenceAfter = (source: string, offset: number): string => {
+  const following = source.slice(offset, offset + MAX_ASIDE_CHARS);
+  const stop = following.search(SENTENCE_END);
+  return stop === -1 ? following : following.slice(0, stop + 1);
+};
+
+/** A sentence that defines the name before it: it ends with a word of a definition and does not use the name (書面…をいう。). */
+const defines = (sentence: string, name: string, statements: readonly string[]): boolean => {
+  const body = sentence.trim().replace(/[。．.]$/u, "");
+  return !sentence.includes(name) && statements.some((word) => body.endsWith(word));
+};
+
+/**
+ * Whether the noun heads a definition item: a label before it, no particle right after the word, and a definition in the
+ * rest (四の二 親会社等 …をいう。), or, when the noun is all the item holds, the sentence after it (9 書面等 / 書面…をいう。).
+ */
 const headsItem = (source: string, occurrence: Occurrence, statements: readonly string[]): boolean => {
   const next = occurrence.tokens[occurrence.range.end];
   if (next !== undefined && next.surface.trim() !== "" && FUNCTION_POS.has(next.pos)) return false;
   const before = source.slice(occurrence.sentence.span.start, startOf(occurrence, occurrence.first));
-  return ITEM_LABEL.test(before) && says(source.slice(endOf(occurrence, occurrence.last), occurrence.sentence.span.end), statements);
+  if (!ITEM_LABEL.test(before)) return false;
+  const rest = source.slice(endOf(occurrence, occurrence.last), occurrence.sentence.span.end);
+  if (rest.trim() !== "") return says(rest, statements);
+  return defines(nextSentenceAfter(source, occurrence.sentence.span.end), nounOf(source, occurrence), statements);
 };
 
 const quotedNames = (source: string, words: readonly LexiconEntry[]): QuotedName[] =>
