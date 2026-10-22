@@ -10,6 +10,9 @@ import { nameSpansOf, oneOf } from "./acronym-name.ts";
 import { grammarSpans } from "./abnf-grammar.ts";
 import { outlineLabelSpans } from "./outline-label.ts";
 import { referenceListSpans } from "../reference-lists.ts";
+import { linkTitleSpans } from "./acronym-link.ts";
+import { citationNoteSpans } from "./citation-note.ts";
+import { documentCitationSpans } from "./case-citation.ts";
 
 /**
  * 大文字の語が略語ではなく、決まった書き方の一部として読める所（3:30 PM、1pm ET、USD 1,000、Kansas City, MO 64108、Fort Lauderdale FL 33304）。
@@ -167,4 +170,18 @@ export const sourceNotAcronymSpans = (source: string, wordsOf: (id: string) => s
   ...referenceListSpans(source, wordsOf("reference-list-heading")),
   ...outlineLabelSpans(source, wordsOf("numbered-division")),
   ...grammarSpans(source),
+];
+
+/**
+ * 数には入れるが指さない略語の範囲。リンク先の題名、文献を引いて始まる注、判例の引用の当事者・裁判所・事件番号は、書き手が直せない。
+ */
+export const unreportedAcronymSpans = (
+  source: string,
+  sentences: readonly { readonly text: string; readonly span: Span }[],
+  links: readonly Span[],
+  wordsOf: (id: string) => string[],
+): Span[] => [
+  ...linkTitleSpans(source, links),
+  ...citationNoteSpans(source, sentences, wordsOf("citation-author-joiner")),
+  ...documentCitationSpans(sentences, source, wordsOf("case-party-joiner")),
 ];
