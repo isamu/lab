@@ -60,6 +60,8 @@ The plan was very good and very clear, and the team was very busy.
 
 So, the plan holds. So, we ship.
 
+Is the plan perfect? No. The result? Faster builds.
+
 ## 🚀 Before
 
 Bring the key.

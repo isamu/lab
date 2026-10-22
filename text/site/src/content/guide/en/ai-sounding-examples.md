@@ -379,6 +379,7 @@ Wording and shape
   ✗ Too many contrast frames: 2  in 0 of 23 human-written documents (Blog)
   ✗ Several signals of generated text together: 3 of its signals (Cliched closing, Too many contrast frames, Too many sentences that announce before they say); from 2, its strict level, that is one more sign
   · the other 15 did not show
+  not compared (no human baseline): Questions answered with a fragment
 
 Structure (against human articles)
   ✗ list items opening with a bold label: 3  higher than 95% of human articles
@@ -391,6 +392,7 @@ AI-likeness: low (about as many signs as human-written documents (Blog))
 
 Wording and shape
   · the other 18 did not show
+  not compared (no human baseline): Questions answered with a fragment
 
 Structure (against human articles)
   ✗ sections of one or two paragraphs: 100% (mean 1.3 paragraphs)  higher than 90% of human articles

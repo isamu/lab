@@ -147,6 +147,15 @@ export const HUMAN_SHARES: HumanShares = {
     literature: { documents: 13, fired: 1 },
     speech: { documents: 7, fired: 0 },
   },
+  "q-fragment-answer": {
+    academic: { documents: 5, fired: 0 },
+    blog: { documents: 9, fired: 0 },
+    business: { documents: 41, fired: 0 },
+    docs: { documents: 11, fired: 0 },
+    legal: { documents: 14, fired: 0 },
+    literature: { documents: 9, fired: 3 },
+    speech: { documents: 3, fired: 0 },
+  },
   "rule-of-three": {
     academic: { documents: 10, fired: 0 },
     blog: { documents: 23, fired: 0 },
