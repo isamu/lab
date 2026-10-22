@@ -491,8 +491,8 @@ Three signs make "medium" and five make "high". It does not say whether AI wrote
 <!-- chaff-screen: rewrite -->
 ```
 $ npx chaffjs ai-score before.md after.md --compact
-before.md: ai-score high 6/27 announcing-opener closing-cliche colon-lead-in contrast-framing structure:bold-labels ai-generated-composite:strict
-after.md: ai-score low 1/26 structure:short-sections
+before.md: ai-score high 7/29 announcing-opener bold-emphasis closing-cliche colon-lead-in contrast-framing structure:bold-labels ai-generated-composite:strict
+after.md: ai-score low 1/28 structure:short-sections
 ```
 
 `before.md` and `after.md` are the articles the outline was measured on above. Each file gets one line: the level, the signs out of those compared, and the signs that counted.
