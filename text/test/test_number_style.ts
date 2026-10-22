@@ -113,6 +113,11 @@ describe("numberMarksIn: English", () => {
     ["Gradebook 5 entries are new.", ["count-small:digits:5"]],
     ["Turnout rose 12% in March.", ["percent:%:12%"]],
     ["Turnout rose 12 percent in March.", ["percent:percent:12 percent"]],
+    ["We used commit 2704b2d of the repository.", []],
+    ["The fix is in 5678ab9c and later.", []],
+    ["The fund paid $12500 to 3 members.", ["grouping:plain:12500", "count-small:digits:3"]],
+    ["We counted 12500 deaf voters.", ["grouping:plain:12500"]],
+    ["The fund paid $12500cafe to members.", ["grouping:plain:12500"]],
   ];
   cases.forEach(([sentence, marks]) => {
     it(`${sentence} → ${marks.join(", ") || "none"}`, () =>
