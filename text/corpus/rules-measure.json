@@ -8567,6 +8567,10 @@
           "documents": 23,
           "fired": 0
         },
+        "business": {
+          "documents": 80,
+          "fired": 0
+        },
         "docs": {
           "documents": 21,
           "fired": 0
