@@ -22,7 +22,7 @@ const ECHO_SPAN = { char: 10, word: 3 };
 const ECHO_MARKS = { ...QUOTATION_MARKS, "‘": "’" };
 
 /** 文末の句点・感嘆符・閉じ括弧。 */
-const SENTENCE_END = new Set([...'。．.!！?？」』”"’)）']);
+const SENTENCE_END = new Set('。．.!！?？」』”"’)）');
 
 /** 文末の記号と空白を除いた文。 */
 const withoutEnd = (text: string): string => {
