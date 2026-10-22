@@ -46,14 +46,25 @@ const contrastWordsOf = (doc: ProseDocument, frames: Lexicon): ContrastWords => 
   turns: doc.lexicons["contrast-turn"] ?? [],
 });
 
-/** 対比の枠（It's not X, it's Y、単なる X ではなく）。1 つなら論点の整理だが、重なると言い回しの癖になる。 */
+/** 対比の枠は、一つ二つなら論点の整理。三つ目から数える。 */
+const MIN_CONTRASTS = 3;
+const PERCENT = 100;
+
+/** 文書の言語の文のうち、対比の枠で書いた文の割合（百分率、小数 1 桁）。文の長さが言語で違っても同じ物差しで比べられる。 */
+export const contrastShare = (doc: ProseDocument, contrasts: number): number => {
+  const sentences = doc.sentences.filter((sentence) => sentence.embeddedLanguage === undefined).length;
+  return sentences === 0 ? 0 : Math.round((contrasts / sentences) * PERCENT * TENTHS) / TENTHS;
+};
+
+/** 対比の枠（It's not X, it's Y、単なる X ではなく）。1 つなら論点の整理だが、文の割合が上限を超えると言い回しの癖になる。 */
 export const contrastFraming: Detector = (doc, options): Finding[] => {
   const words = contrastWordsOf(doc, options.lexicon ?? []);
-  const hits = contrastSentences(doc.sentences, words).map((sentence) => ({
-    sentence,
-    matched: (firstIn(sentence, words.frames) ?? firstIn(sentence, words.leads))?.pattern ?? "",
-  }));
-  return densityFindings(doc, hits, options.limit);
+  const hits = contrastSentences(doc.sentences, words)
+    .filter((sentence) => sentence.embeddedLanguage === undefined)
+    .map((sentence) => ({ sentence, matched: (firstIn(sentence, words.frames) ?? firstIn(sentence, words.leads))?.pattern ?? "" }));
+  if (hits.length < MIN_CONTRASTS || wordsOf(doc) < MIN_DOCUMENT_LENGTH[doc.lengthUnit]) return [];
+  const share = contrastShare(doc, hits.length);
+  return share <= options.limit ? [] : hits.map((hit) => findingOf(hit, { count: hits.length, share, limit: options.limit }));
 };
 
 /** 語彙表の語で始まる文。 */

@@ -122,7 +122,7 @@ Claude Code の skill（`npx chaffjs skill`）は、指摘より先に指針を�
 | ルール | 見つけるもの |
 | --- | --- |
 | `ai-tell` | 生成文に多い言い回しの重なり（「重要な役割を果たす」「静かに壊れる」「時間を溶かす」） |
-| `contrast-framing` | 「単なる X ではなく Y」「X ではありません。Y です」の対比の枠の重なり |
+| `contrast-framing` | 「単なる X ではなく Y」「X ではありません。Y です」「X ではなく、Y です。」の対比の枠で書いた文の割合が多い所 |
 | `stock-transition` | 「さらに、」「加えて、」で始まる文の密度 |
 | `announcing-opener` | 「重要なのは、」「ポイントは、」「正直に言うと、」で始まる文の重なり |
 | `colon-lead-in` | 「以下の通りです：」のように、コロンで箇条書きへ渡す文の密度 |
@@ -301,7 +301,7 @@ npx chaffjs compare old.md new.md --distinct --allow-dropped heading --allow-add
 
 6. 次のどれもが成り立ったら止めます。全面書き直しは 2 回までにします。
    - `ai-generated-composite` が出ない
-   - 密度のルール（`bold-density`、`contrast-framing`、`stock-transition`、`colon-lead-in`）が上限より下にある
+   - 密度のルール（`bold-density`、`stock-transition`、`colon-lead-in`）と、対比の枠の文の割合（`contrast-framing`）が上限より下にある
    - `compare` が通るか、外したものすべてに理由が書いてある
    - `chaff outline old.md new.md` で、書き直した後の構成の AI らしさが計画の上限より下にあり、計画が目標に挙げた項目に ✗ が残っていない
 7. 書き直した文章、何をなぜ変えたのかの短い一覧、前と後の特徴と形の表を見せます。表の数は chaff の出力から取ります。

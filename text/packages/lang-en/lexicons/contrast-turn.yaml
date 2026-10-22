@@ -1,4 +1,5 @@
 # What answers a denial (contrast-lead): later in the same sentence, or opening the next one.
+# Group across: a subject that answers only by opening the next sentence ("They come for the table."), never inside one.
 id: contrast-turn
 language: en
 entries:
@@ -9,3 +10,7 @@ entries:
   - pattern: they're
   - pattern: they are
   - pattern: but
+  - pattern: it
+    group: across
+  - pattern: they
+    group: across
