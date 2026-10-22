@@ -1,1 +1,2 @@
 vite-plugin-legacy-changelog  1
+wikipedia-ja-idobata-template-collapse  1

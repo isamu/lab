@@ -167,7 +167,7 @@ export const HUMAN_SHARES: HumanShares = {
   },
   "sentence-rhythm": {
     academic: { documents: 10, fired: 0 },
-    blog: { documents: 23, fired: 0 },
+    blog: { documents: 23, fired: 1 },
     docs: { documents: 21, fired: 0 },
     legal: { documents: 35, fired: 0 },
     literature: { documents: 13, fired: 1 },
