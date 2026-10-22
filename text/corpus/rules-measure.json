@@ -342,6 +342,10 @@
           "documents": 23,
           "fired": 0
         },
+        "business": {
+          "documents": 74,
+          "fired": 1
+        },
         "docs": {
           "documents": 19,
           "fired": 0
