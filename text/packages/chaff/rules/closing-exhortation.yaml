@@ -1,0 +1,74 @@
+id: closing-exhortation
+layer: L2
+status: stable
+how_to_find: closing-exhortation
+word_list: closing-exhortation
+uses: [pos]
+severity: info
+
+name:
+  ja: 結びで励ます・請け合う文が重なる
+  en: A closing that cheers the reader on
+
+why:
+  ja: 「ぜひ〜してみてください」「きっと〜はずです」「You've got this」で結ぶ記事は、中身の代わりに読み手を励まして終わります。1 つなら人も書きますが、結びに重なると、生成文によくある型に見えます。
+  en: '"Give it a try, you''ll be glad you did", "You''ve got this", "Happy baking!" end a post by cheering the reader on instead of saying something. One is ordinary; several in the closing read like the stock ending of generated text.'
+
+message:
+  ja: 「{matched}」など、結びで励ます・請け合う文が {count} 個あります（{limit} 個から）
+  en: '"{matched}" and other cheering lines close the text: {count} ({limit} needed)'
+
+how_to_fix:
+  ja: 励ましを消して、本文で分かったことのうち一番持ち帰ってほしい 1 つを書いてください。
+  en: Drop the cheering and name the one thing from the text you want the reader to take away.
+
+# 指摘に要る文の数。1 つは人も書くので 2 つから。
+levels: { strict: 1, normal: 2, relaxed: 3 }
+
+use_for: [technical/readme, blog, business, legal, docs, academic, literature, speech]
+off_for:
+  legal: "Legal drafting repeats its terms and its sentence heads on purpose, puts the actor in the passive (shall be deemed), and joins long noun compounds (個人情報取扱事業者). This rule would only flag the form."
+  docs: "A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up."
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+  speech: "A speech opens with greetings and closes with thanks: that is its form, not padding."
+
+group: ai-tells
+summary:
+  ja: 「ぜひ〜してみてください」「きっと〜はず」のように、結びで読み手を励ます文が重なった所
+  en: A closing piled with cheering lines ("You've got this", "Happy baking!")
+example:
+  ja:
+    config: { genre: blog/essay }
+    before: |
+      # 朝の散歩
+
+      朝の散歩を半年続けました。
+
+      もし朝の時間をもてあましているなら、一度、家の周りを歩いてみてほしい。きっと、いつもの街が少し違って見えるはずだ。
+    after: |
+      # 朝の散歩
+
+      朝の散歩を半年続けました。
+
+      半年で変わったのは、起きる時刻が 30 分早くなったことだけだ。それで十分だった。
+  en:
+    config: { genre: blog/tech }
+    before: |
+      # Baking bread
+
+      I baked bread every week this year.
+
+      You've got this. Happy baking!
+    after: |
+      # Baking bread
+
+      I baked bread every week this year.
+
+      The one change that mattered was weighing the flour instead of using cups.
+
+not_flagged:
+  ja: 結びでない所の励まし、結びに 1 つだけの励まし、「ぜひご検討ください」のようなビジネス文の普通の結びは言いません。
+  en: Cheering outside the closing, a single cheering line, and "I'm happy to help!" (Happy must open the sentence) are not reported.
+level_meaning:
+  ja: 結びの励ます・請け合う文が {limit} 個あれば指摘
+  en: reported once {limit} closing sentences cheer the reader on
