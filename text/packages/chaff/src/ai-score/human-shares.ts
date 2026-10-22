@@ -150,6 +150,7 @@ export const HUMAN_SHARES: HumanShares = {
   "rule-of-three": {
     academic: { documents: 10, fired: 0 },
     blog: { documents: 23, fired: 0 },
+    business: { documents: 80, fired: 0 },
     docs: { documents: 21, fired: 0 },
     legal: { documents: 35, fired: 0 },
     literature: { documents: 13, fired: 0 },
