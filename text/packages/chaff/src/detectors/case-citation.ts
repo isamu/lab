@@ -53,3 +53,18 @@ export const caseCitationSpans = (text: string, joiners: readonly string[]): Spa
   const joiner = oneOf(joiners);
   return [...spansOf(text, firstParty(joiner)), ...spansOf(text, secondParty(joiner)), ...courts];
 };
+
+/**
+ * The citations of a document, on the source. Each sentence is read (its emphasis marks are blanked, so an italic name still
+ * meets its reporter) and so is the whole source (a sentence also breaks at the dot of an abbreviated name, MCI Telecomms. Corp.).
+ */
+export const documentCitationSpans = (
+  sentences: readonly { readonly text: string; readonly span: Span }[],
+  source: string,
+  joiners: readonly string[],
+): Span[] => [
+  ...sentences.flatMap((sentence) =>
+    caseCitationSpans(sentence.text, joiners).map((span) => ({ start: sentence.span.start + span.start, end: sentence.span.start + span.end })),
+  ),
+  ...caseCitationSpans(source, joiners),
+];

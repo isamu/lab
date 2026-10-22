@@ -7,10 +7,12 @@ import { placeholderSpans } from "./placeholder.ts";
 import { numeralWordSpans } from "./numeral-word.ts";
 import { seriesLabelSpans } from "./series-label.ts";
 import { nameSpansOf, oneOf } from "./acronym-name.ts";
-import { caseCitationSpans } from "./case-citation.ts";
 import { grammarSpans } from "./abnf-grammar.ts";
 import { outlineLabelSpans } from "./outline-label.ts";
 import { referenceListSpans } from "../reference-lists.ts";
+import { linkTitleSpans } from "./acronym-link.ts";
+import { citationNoteSpans } from "./citation-note.ts";
+import { documentCitationSpans } from "./case-citation.ts";
 
 /**
  * 大文字の語が略語ではなく、決まった書き方の一部として読める所（3:30 PM、1pm ET、USD 1,000、Kansas City, MO 64108、Fort Lauderdale FL 33304）。
@@ -37,8 +39,6 @@ export type NotationWords = {
   readonly titles: readonly string[];
   /** 日付・時刻の数字の後ろに書く単位（年、月、日、時、分）。その前の同じ大文字の繰り返し（YY年）は書式の置き場所。 */
   readonly dateTimeUnits: readonly string[];
-  /** 判例の当事者の名前を繋ぐ語（ICC v. Jersey City の v.）。 */
-  readonly caseJoiners?: readonly string[];
 };
 
 const MINUTES = String.raw`:[0-5]\d`;
@@ -133,7 +133,6 @@ export const notAcronymSpansOf = (words: NotationWords): NotAcronymSpans => {
     ...seriesLabelSpans(text),
     ...placeholderSpans(text, words.dateTimeUnits),
     ...numeralWordSpans(text),
-    ...caseCitationSpans(text, words.caseJoiners ?? []),
   ];
 };
 
@@ -152,7 +151,6 @@ export const lexiconNotationOf = (wordsOf: (id: string) => string[]): NotAcronym
     honorifics: wordsOf("honorific"),
     titles: wordsOf("name-title"),
     dateTimeUnits: wordsOf("date-time-unit"),
-    caseJoiners: wordsOf("case-party-joiner"),
   });
   const names = nameSpansOf({
     legalForms: wordsOf("legal-form"),
@@ -167,13 +165,23 @@ export const lexiconNotationOf = (wordsOf: (id: string) => string[]): NotAcronym
   return (text) => [...notation(text), ...names(text)];
 };
 
-/**
- * 文書全体で読む、略語として数えない範囲。文献一覧の誌名や会議名、番号の付いた区切りの見出し、ABNF の文法、判例の引用。
- * 判例の引用を文書全体でも読むのは、文の区切りが当事者の名前の略した語（MCI Telecomms. Corp. v. AT&T）の点でも切れるから。
- */
+/** 文書全体で読む、略語として数えない範囲。文献一覧の誌名や会議名、番号の付いた区切りの見出し、ABNF の文法。 */
 export const sourceNotAcronymSpans = (source: string, wordsOf: (id: string) => string[]): Span[] => [
   ...referenceListSpans(source, wordsOf("reference-list-heading")),
   ...outlineLabelSpans(source, wordsOf("numbered-division")),
   ...grammarSpans(source),
-  ...caseCitationSpans(source, wordsOf("case-party-joiner")),
+];
+
+/**
+ * 数には入れるが指さない略語の範囲。リンク先の題名、文献を引いて始まる注、判例の引用の当事者・裁判所・事件番号は、書き手が直せない。
+ */
+export const unreportedAcronymSpans = (
+  source: string,
+  sentences: readonly { readonly text: string; readonly span: Span }[],
+  links: readonly Span[],
+  wordsOf: (id: string) => string[],
+): Span[] => [
+  ...linkTitleSpans(source, links),
+  ...citationNoteSpans(source, sentences, wordsOf("citation-author-joiner")),
+  ...documentCitationSpans(sentences, source, wordsOf("case-party-joiner")),
 ];

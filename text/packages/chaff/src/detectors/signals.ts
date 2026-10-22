@@ -3,12 +3,12 @@ import { dateSpans, wordsOf } from "./structure.ts";
 import { compacted, linkedIn, placeAt } from "./gram-place.ts";
 import { charWindows, wordWindows } from "./gram-windows.ts";
 import { fixedEndingSpans, furnitureMask, isFurniture } from "./gram-furniture.ts";
-import { lexiconNotationOf, sourceNotAcronymSpans, type NotAcronymSpans } from "./acronym-context.ts";
+import { lexiconNotationOf, sourceNotAcronymSpans, unreportedAcronymSpans, type NotAcronymSpans } from "./acronym-context.ts";
 import { abbreviates, expansionAt, termEntryAcronyms, type DefinitionWords, type ExpandedAt } from "./acronym-expansion.ts";
 import { isExplained } from "./acronym-compound.ts";
 import { statedAcronyms } from "./acronym-definition.ts";
 import { isBracketed, isInHeading, isNamePart } from "./acronym-lone.ts";
-import { linkedListTerms, linkTitleSpans } from "./acronym-link.ts";
+import { linkedListTerms } from "./acronym-link.ts";
 import { caseVariantsIn, spelledOutAcronyms } from "./acronym-mention.ts";
 import { conjugatedForms } from "./conjugated-form.ts";
 import { evidenceSpans, hasNumeral, isClaim, isLabelOnly, startsWithin, type AdviceWords } from "./concrete-evidence.ts";
@@ -19,7 +19,6 @@ import { hasPredicateIn } from "./gram-predicate.ts";
 import { gramPassagesOf } from "./gram-passages.ts";
 import { sectionOpeners } from "./gram-openers.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
-import { citationNoteSpans } from "./citation-note.ts";
 import { DASH, introducesList } from "./lead-in-dash.ts";
 import type { Detector, Finding, ProseDocument, Section, Sentence } from "../plugin.ts";
 
@@ -365,10 +364,10 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
     acronymsOf(doc, notationOf(doc)),
     sourceNotAcronymSpans(doc.source, (id) => patternsOf(doc, id)),
   );
-  // リンク先のページの題名の略語（[NASA Fprime AI Policy](https://…)）と、文献を引いて始まる注の中の略語（題名の IMF、誌名の
-  // FRBSF）は、読み手が出会う説明の無い略語として数に入れるが、書き手が直せないので指さない。
-  const citationNotes = citationNoteSpans(doc.source, doc.sentences, patternsOf(doc, "citation-author-joiner"));
-  const hits = outsideSpans(counted, [...linkTitleSpans(doc.source, doc.links), ...citationNotes]);
+  const hits = outsideSpans(
+    counted,
+    unreportedAcronymSpans(doc.source, doc.sentences, doc.links, (id) => patternsOf(doc, id)),
+  );
   const acronyms = [...firstHits(hits).keys()];
   const unexplained = new Set(acronyms.filter((acronym) => !isExplained(acronym, explainedAlone)));
   const quoted = [...firstHits(counted).keys()].filter((acronym) => !acronyms.includes(acronym) && !isExplained(acronym, explainedAlone)).length;
