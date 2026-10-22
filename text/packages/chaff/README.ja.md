@@ -219,7 +219,7 @@ npx chaffjs ai-score article.md                  低・中・高と、出てい�
 npx chaffjs ai-score article.md --format json    同じものを JSON で
 ```
 
-短すぎる文書は測らず、そう言います。
+短すぎる文書は測らず、そう言います。目印の一つが `closing-exhortation` で、「ぜひ〜してみてください」「きっと〜はずです」のように結びで読み手を励ます文が 2 つ以上重なった所を言います。
 
 ## AI の評価に使う（chaff grade）
 
@@ -324,7 +324,8 @@ rule, how to rewrite each, and the checks to run after. `--depth light|structure
 in `chaff.yaml`) sets how deep the rewrite may go.
 
 **AI score.** `chaff ai-score <file>` — a quick AI-likeness score (low, medium, high): counts the signs of generated
-text that human documents of the same genre rarely show. It is not a verdict on whether AI wrote it.
+text that human documents of the same genre rarely show. It is not a verdict on whether AI wrote it. One sign is
+`closing-exhortation`: a closing that cheers the reader on two or more times.
 
 **AI evals.** `npx chaffjs grade outputs.jsonl --out results.jsonl` grades a JSONL file of a model's outputs (`id` and
 `output` on each line) with the rules, `compare` and `cite`, and fails when an output fails. How is in
