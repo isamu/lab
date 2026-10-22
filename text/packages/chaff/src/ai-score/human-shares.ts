@@ -91,7 +91,16 @@ export const HUMAN_SHARES: HumanShares = {
     speech: { documents: 7, fired: 0 },
     technical: { documents: 26, fired: 0 },
   },
-  "email-stock-courtesy": { business: { documents: 4, fired: 0 } },
+  "email-stock-courtesy": {
+    academic: { documents: 5, fired: 0 },
+    blog: { documents: 9, fired: 0 },
+    business: { documents: 41, fired: 1 },
+    docs: { documents: 11, fired: 0 },
+    legal: { documents: 14, fired: 0 },
+    literature: { documents: 9, fired: 0 },
+    speech: { documents: 3, fired: 0 },
+    technical: { documents: 13, fired: 0 },
+  },
   "emoji-density": {
     academic: { documents: 10, fired: 0 },
     blog: { documents: 23, fired: 0 },

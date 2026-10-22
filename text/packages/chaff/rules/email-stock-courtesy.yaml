@@ -1,6 +1,6 @@
 id: email-stock-courtesy
 layer: L2
-status: experimental
+status: stable
 how_to_find: phrase-match
 word_list: email-stock-courtesy
 uses: [pos]
@@ -26,7 +26,21 @@ how_to_fix:
 # 指摘に要る文の数。1 つは普通の礼儀なので 2 つから。
 levels: { strict: 2, normal: 2, relaxed: 3 }
 
-use_for: [business/email]
+use_for: [business, technical/readme, blog, legal, docs, academic, literature, speech]
+off_for:
+  technical/readme: "Stock email courtesies are counted in emails only."
+  blog/tech: "Stock email courtesies are counted in emails only."
+  blog/essay: "Stock email courtesies are counted in emails only."
+  blog/owned-media: "Stock email courtesies are counted in emails only."
+  business/proposal: "Stock email courtesies are counted in emails only: a proposal may close with one offer to discuss."
+  business/report: 'Stock email courtesies are counted in emails only: a handbook or report says "feel free to" as plain advice.'
+  business/press-release: "Stock email courtesies are counted in emails only."
+  business/meeting-notes: "Stock email courtesies are counted in emails only."
+  legal: "Stock email courtesies are counted in emails only."
+  docs: "Stock email courtesies are counted in emails only: a help page invites the reader to get in touch."
+  academic/paper: "Stock email courtesies are counted in emails only."
+  literature: "Stock email courtesies are counted in emails only."
+  speech: "Stock email courtesies are counted in emails only."
 
 group: ai-tells
 summary:
