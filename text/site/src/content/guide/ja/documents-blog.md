@@ -100,11 +100,13 @@ kiji.md   blog/tech · 日本語   ジャンルは --genre から
                   section-length-uniformity
   3:1     warning 「近年」は、どの記事にも当てはまる書き出しです
                   padded-intro
+  3:1     warning 文の長さのばらつきが 35%（36% 以上ほしい）
+                  sentence-rhythm
   9:1     info    「単なる」など、対比の枠が 1000 字あたり 3.8 個あります（1.5 個まで）
                   contrast-framing
   11:1    info    「正直に言うと」など、予告で始まる文が 3 個あります（3 個から）
                   announcing-opener
-  11:1    warning 「section-length-uniformity、padded-intro、closing-cliche、contrast-framing、announcing-opener、colon-lead-in」が同じ文書にそろっています（6 種、3 種から）
+  11:1    warning 「section-length-uniformity、sentence-rhythm、padded-intro、closing-cliche、contrast-framing、announcing-opener、colon-lead-in」が同じ文書にそろっています（7 種、3 種から）
                   ai-generated-composite
   15:1    info    「ポイントは」など、予告で始まる文が 3 個あります（3 個から）
                   announcing-opener

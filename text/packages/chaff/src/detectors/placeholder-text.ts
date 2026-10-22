@@ -85,15 +85,76 @@ const lineMarkerSpans = (text: string, markers: Lexicon, labels: Lexicon): Span[
     return [...markerSpans(line, markers), ...labelSpans(line, labels)].map((span) => ({ start: span.start + offset, end: span.end + offset }));
   });
 
-/** 文の中の、埋め忘れた雛形の空欄（[Your Name]、【会社名】、（ここに会社名を書く）、TBD: …）の範囲。words は placeholder-word の語彙表。 */
+/** Lexicon groups of placeholder-word for a run of blank marks (〇〇): the word after it, the word before it, and a unit after it. */
+const BLANK_SUFFIX = "blank-suffix";
+const BLANK_PREFIX = "blank-prefix";
+const BLANK_UNIT = "blank-unit";
+
+/** 伏せ字の記号の並び（〇〇、○○、△△）。例として置いた「○○」と形は同じなので、置かれた位置で空欄かを決める。 */
+const BLANK_MARKS = /[○〇◯△]+/gu;
+/** A name blank is at least two marks: one ○ is a bullet. */
+const NAME_BLANK_LENGTH = 2;
+/** 記号の前の数字（二〇二六年、一〇月）。〇 はその数の 0 で、空欄ではない。 */
+const NUMERAL_BEFORE = /[\p{N}一二三四五六七八九十百千万]$/u;
+/** 行頭から記号までが空白だけか。行頭の「○」は箇条書きの印（○日本に支店等を…）。 */
+const atLineHead = (before: string): boolean => (before.split("\n").at(-1) ?? "").trim() === "";
+
+/**
+ * 行頭の伏せ字に単位が続くとき、空欄か箇条書きの印か。一字の単位は印の後の語の頭（○日本、○月曜）と同じ形なので、
+ * 次にまた伏せ字が来る（〇月〇日）ときだけ空欄。二字以上の単位（〇万円、〇か月）は空欄。
+ */
+const unitAtLineHead = (unit: string, afterUnit: string): boolean => [...unit].length > 1 || /^[○〇◯△]/u.test(afterUnit);
+
+const startsWithAny = (text: string, words: Lexicon): Lexicon[number] | undefined => words.find((word) => text.startsWith(word.pattern));
+const endsWithAny = (text: string, words: Lexicon): boolean => words.some((word) => text.endsWith(word.pattern));
+
+type BlankWords = { readonly suffixes: Lexicon; readonly prefixes: Lexicon; readonly units: Lexicon };
+
+/** 記号の並びが空欄の位置にあるか。あれば、空欄として言う範囲（後ろに付いた語まで）。 */
+const blankSpanAt = (text: string, match: RegExpExecArray, words: BlankWords): Span | undefined => {
+  const start = match.index;
+  const end = start + match[0].length;
+  const before = text.slice(0, start);
+  const after = text.slice(end);
+  const lineAfter = after.split("\n")[0] ?? "";
+  if (match[0].length >= NAME_BLANK_LENGTH) {
+    const suffix = startsWithAny(after, words.suffixes);
+    if (suffix !== undefined) return { start, end: end + suffix.pattern.length };
+    if (endsWithAny(before.trimEnd(), words.prefixes)) return { start, end };
+    if (atLineHead(before) && lineAfter.trim() === "") return { start, end };
+  }
+  const unit = startsWithAny(after, words.units);
+  if (unit === undefined || NUMERAL_BEFORE.test(before)) return undefined;
+  return atLineHead(before) && !unitAtLineHead(unit.pattern, after.slice(unit.pattern.length)) ? undefined : { start, end: end + unit.pattern.length };
+};
+
+/**
+ * 宛名・署名・金額・日付の位置に残った伏せ字（〇〇様、株式会社〇〇、署名の行の〇〇、〇万円、〇月〇日）。
+ * 文の中で例として置いた「○○」（○○株式会社作成など）は数えない。位置の語は語彙表の blank-* の組で、使う文書の種類も語彙表が決める。
+ */
+const blankMarkSpans = (text: string, words: BlankWords): Span[] =>
+  words.suffixes.length + words.prefixes.length + words.units.length === 0
+    ? []
+    : [...text.matchAll(BLANK_MARKS)].flatMap((match) => {
+        const span = blankSpanAt(text, match, words);
+        return span === undefined ? [] : [span];
+      });
+
+/** 文の中の、埋め忘れた雛形の空欄（[Your Name]、【会社名】、（ここに会社名を書く）、TBD: …、〇〇様）の範囲。words は placeholder-word の語彙表。 */
 export const placeholderSpans = (text: string, words: Lexicon): Span[] => {
   const bracketWords = words.filter((word) => word.group === undefined);
   const instructions = words.filter((word) => word.group === INSTRUCTION);
   const markers = words.filter((word) => word.group === MARKER);
   const labels = words.filter((word) => word.group === LABEL);
+  const blankWords = {
+    suffixes: words.filter((word) => word.group === BLANK_SUFFIX),
+    prefixes: words.filter((word) => word.group === BLANK_PREFIX),
+    units: words.filter((word) => word.group === BLANK_UNIT),
+  };
   return [
     ...bracketedSpans(text, BRACKETED, (inner) => holdsWord(inner, bracketWords)),
     ...(instructions.length === 0 ? [] : bracketedSpans(text, PARENTHESIZED, (inner) => opensWith(inner, instructions))),
     ...lineMarkerSpans(text, markers, labels),
+    ...blankMarkSpans(text, blankWords),
   ].toSorted((left, right) => left.start - right.start);
 };

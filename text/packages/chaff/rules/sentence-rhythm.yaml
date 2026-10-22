@@ -1,5 +1,5 @@
 id: sentence-rhythm
-# 「AI 生成は文の長さが揃う」は未検証の仮説。corpus 評価まで既定では動かさない。spec §26-4。
+# 生成文と人の文書の文長の揃いかたを、言語とジャンルごとに測って段を置いた（yarn bench:ai と yarn rules:measure で再現できる）。
 status: stable
 layer: L1
 how_to_find: sentence-rhythm
@@ -10,8 +10,8 @@ name:
   en: Monotonous sentence rhythm
 
 why:
-  ja: どの文も同じ長さだと、読者は途中で読むリズムを失います。
-  en: When every sentence is the same length, the reader loses the rhythm.
+  ja: どの文も同じ長さだと、読者は途中で読むリズムを失います。生成された文章によく出る形でもあります。
+  en: When every sentence is the same length, the reader loses the rhythm. It is also a common shape of generated text.
 
 message:
   ja: 文の長さのばらつきが {count}%（{limit}% 以上ほしい）
@@ -22,10 +22,13 @@ how_to_fix:
   en: Mix in short sentences. Splitting one in two is enough.
 
 # 文長の変動係数を 100 分率で持つ。下回ったら指摘する。
+# 日本語のブログは、人の文書と生成文を分けて測った段（英語はそこで分かれないので既定のまま）。
 levels:
   strict: 35
   normal: 30
   relaxed: 20
+by_genre:
+  blog: { ja: { strict: 40, normal: 36, relaxed: 30 } }
 
 use_for: [technical/readme, blog, legal, docs, academic, literature, speech]
 off_for:
@@ -36,7 +39,7 @@ off_for:
   speech: "A speech opens with greetings and closes with thanks: that is its form, not padding."
 sources: [iwamoto-2026]
 
-group: readability
+group: ai-tells
 summary:
   ja: どの文もほぼ同じ長さで、読むリズムが単調な所
   en: Sentences that are all about the same length, so the text reads as a drone

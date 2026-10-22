@@ -8,6 +8,7 @@ import { TEMPLATE, namesTemplate, templateSections } from "../packages/chaff/src
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter, Level } from "../packages/chaff/src/plugin.ts";
+import { entriesForGenre } from "../packages/chaff/src/lexicon-genres.ts";
 
 // unfilled-placeholder reads a value left as a note to fill in later (TBD: …, TBD, 未定, （ここに…を書く）) as a blank,
 // and a level sets how a blank is marked: one blank is already one too many, so there is no count to set.
@@ -302,5 +303,71 @@ describe("placeholderSpans: a template's instruction label left in the text", ()
       findings(source, en).map((finding) => finding.line),
       [7],
     );
+  });
+});
+
+describe("placeholderSpans: blank marks (〇〇) where a letter needs a name, a sum or a date", () => {
+  const letterWords = entriesForGenre(jaWords, "business/email");
+  const blanks: readonly (readonly [string, readonly string[], string])[] = [
+    ["〇〇様", ["〇〇様"], "the addressee line"],
+    ["株式会社〇〇", ["〇〇"], "a company name"],
+    ["お疲れさまです。総務部の〇〇です。", ["〇〇"], "the sender's name after the department"],
+    ["営業部　〇〇", ["〇〇"], "a signature after the department"],
+    ["〇〇", ["〇〇"], "a signature line holding only the blank"],
+    ["月額〇万円程度を想定しています。", ["〇万円"], "a sum"],
+    ["実施期間：2026年〇月〇日〜〇月〇日", ["〇月", "〇日", "〇月", "〇日"], "a date"],
+    ["回収には〇か月程度かかります。", ["〇か月"], "a period"],
+    ["株式会社△△の山田です。", ["△△"], "a triangle blank"],
+    ["〇万円程度を想定しています。", ["〇万円"], "a sum at the head of a line"],
+    ["〇月〇日に開きます。", ["〇月", "〇日"], "a date at the head of a line"],
+  ];
+  blanks.forEach(([text, expected, label]) => {
+    it(`finds ${label}`, () => {
+      assert.deepEqual(matched(text, letterWords), expected);
+    });
+  });
+
+  const examples: readonly (readonly [string, string])[] = [
+    ["新しい部署名は○○の後に決めます。", "marks with no name, sum or date word beside them"],
+    ["「○○さんが違う考え方をしていたよ」と声を掛けています。", "an example person"],
+    ["○日本に支店等を設けていない場合", "a bullet mark at the line head"],
+    ["○月曜日は休業します", "a bullet before a word that starts with a unit"],
+    ["二〇二六年一〇月一日に開きます。", "a kanji numeral zero"],
+    ["○　注意事項", "a bullet before a heading word"],
+    ["○様式は別紙のとおり", "one mark is a bullet, not a name"],
+  ];
+  examples.forEach(([text, label]) => {
+    it(`does not find ${label}`, () => {
+      assert.deepEqual(matched(text, letterWords), []);
+    });
+  });
+
+  it("counts the positions only where the word list says they hold", () => {
+    assert.deepEqual(matched("〇〇様", entriesForGenre(jaWords, "blog/essay")), []);
+    assert.deepEqual(matched("月額〇万円", entriesForGenre(jaWords, "legal/contract")), []);
+  });
+});
+
+describe("unfilled-placeholder: a blank mark in a letter, and the same mark as an example", () => {
+  const findingsIn = (source: string, genre: string) =>
+    runRules(buildDocument("t.md", source, ja), loadRules("ja"), {}, true, genre).findings.filter((finding) => finding.rule === "unfilled-placeholder");
+  const letter = ["株式会社〇〇", "〇〇様", "", "いつもお世話になっております。営業部の〇〇です。", "", "営業部　〇〇", ""].join("\n");
+
+  it("reports the addressee, the sender and the signature of a letter", () => {
+    assert.deepEqual(
+      findingsIn(letter, "business/email").map((finding) => finding.line),
+      [1, 2, 4, 6],
+    );
+  });
+
+  it("leaves the same marks alone outside business documents, where 〇〇 is an example", () => {
+    assert.deepEqual(findingsIn(letter, "blog/tech"), []);
+    assert.deepEqual(findingsIn("出典を記載し、○○株式会社作成などと明記してください。\n", "legal/contract"), []);
+    assert.deepEqual(findingsIn("申請書には「○○株式会社」のように正式な名前を書きます。\n", "docs/manual"), []);
+  });
+
+  it("leaves a business document whose blanks are filled alone", () => {
+    const filled = ["株式会社山田商事", "佐藤様", "", "いつもお世話になっております。営業部の田中です。", "", "営業部　田中", ""].join("\n");
+    assert.deepEqual(findingsIn(filled, "business/email"), []);
   });
 });

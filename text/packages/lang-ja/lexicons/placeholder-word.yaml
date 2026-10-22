@@ -1,5 +1,5 @@
 # 雛形の空欄の括弧に書く語。【会社名】【氏名】。括弧の中がこの語そのものか、この語で始まって空白が続くときに数える。
-# 例として置く「○○」は正しい書き方なので入れない（官公庁の文書は記入例に使う）。
+# 例として置く「○○」は正しい書き方なので入れない（官公庁の文書は記入例に使う）。宛名・署名・金額・日付の位置の伏せ字は下の blank-* の組で数える。
 id: placeholder-word
 language: ja
 entries:
@@ -38,6 +38,68 @@ entries:
   # group: instruction — 丸括弧の中の、書き手に向けた指示の書き出し（（ここに会社名を書く））。丸括弧は、ほかの語では空欄と数えない。
   - pattern: ここに
     group: instruction
+  # group: blank-suffix / blank-prefix / blank-unit — 伏せ字（〇〇、△△）が空欄になる位置。手紙やメールの宛名・署名・金額・日付に
+  # 残った伏せ字は埋め忘れ。文の中で例に置いた「○○」（○○株式会社作成など）は数えないので、ビジネス文書の種類だけで数える。
+  # 後ろに付く語（〇〇様、〇〇部）。〇〇さんは例に挙げた人（「○○さんが…」と声を掛け）にも使うので入れない。
+  - pattern: 様
+    group: blank-suffix
+    genres: [business]
+  - pattern: 殿
+    group: blank-suffix
+    genres: [business]
+  - pattern: 御中
+    group: blank-suffix
+    genres: [business]
+  - pattern: 株式会社
+    group: blank-suffix
+    genres: [business]
+  - pattern: 部
+    group: blank-suffix
+    genres: [business]
+  - pattern: 課
+    group: blank-suffix
+    genres: [business]
+  # 前に付く語（株式会社〇〇、総務部の〇〇、署名の「営業部　〇〇」）。
+  - pattern: 株式会社
+    group: blank-prefix
+    genres: [business]
+  - pattern: 有限会社
+    group: blank-prefix
+    genres: [business]
+  - pattern: 合同会社
+    group: blank-prefix
+    genres: [business]
+  - pattern: 部の
+    group: blank-prefix
+    genres: [business]
+  - pattern: 課の
+    group: blank-prefix
+    genres: [business]
+  - pattern: 部
+    group: blank-prefix
+    genres: [business]
+  - pattern: 課
+    group: blank-prefix
+    genres: [business]
+  # 数の代わりの伏せ字に付く単位（月額〇万円、2026年〇月〇日、〇か月）。行頭の「○」は箇条書きの印なので数えない。
+  - pattern: 万円
+    group: blank-unit
+    genres: [business]
+  - pattern: 円
+    group: blank-unit
+    genres: [business]
+  - pattern: か月
+    group: blank-unit
+    genres: [business]
+  - pattern: ヶ月
+    group: blank-unit
+    genres: [business]
+  - pattern: 月
+    group: blank-unit
+    genres: [business]
+  - pattern: 日
+    group: blank-unit
+    genres: [business]
   # group: template — 見出しにあれば、その節が雛形だと言う語（「## 雛形」「# 記入例」）。
   # その見出しの下（同じ深さか浅い次の見出しまで）の空欄は雛形の役目なので数えない。
   - pattern: 雛形
