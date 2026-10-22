@@ -64,6 +64,11 @@ So, the plan holds. So, we ship.
 Most people skip the check. Nobody reads the log. Everyone pays for it later.
 Is the plan perfect? No. The result? Faster builds.
 
+## Roles
+
+- **Chair**: Tanaka.
+- **Notes**: Suzuki.
+
 ## 🚀 Before
 
 Bring the key.
@@ -71,10 +76,5 @@ Bring the key.
 ## ✅ After
 
 Return the key. You've got this.
-
-## Roles
-
-- **Chair**: Tanaka.
-- **Notes**: Suzuki.
 
 Subject: The weekly report on the budget, the hiring plan and the schedule
