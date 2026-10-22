@@ -6742,6 +6742,24 @@
         "falseAlarms": 0
       }
     },
+    "over-general-claim": {
+      "groups": {
+        "blog": {
+          "documents": 9,
+          "fired": 0
+        },
+        "business": {
+          "documents": 41,
+          "fired": 0
+        }
+      },
+      "aiBench": {
+        "hits": 0,
+        "samples": 6,
+        "falseAlarms": 0,
+        "cleanSamples": 12
+      }
+    },
     "oxford-comma-consistency": {
       "groups": {
         "academic": {
