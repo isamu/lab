@@ -164,7 +164,8 @@ npx chaffjs ai-score article.md
 
 A quick AI-likeness reading: low, medium or high. It counts the signs of generated text that
 human documents of the same genre rarely show. It is not a verdict on whether AI wrote it, and
-it is not meant to be one.
+it is not meant to be one. Among the signs: `email-stock-courtesy`, two or more stock email courtesies
+("I hope this email finds you well", "I apologize for any inconvenience") in one English email.
 
 ## Grading a model's output
 
