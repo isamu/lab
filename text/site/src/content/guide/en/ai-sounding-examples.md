@@ -263,12 +263,16 @@ ai.md   blog/tech · English   genre from --genre
                   adverb-overuse
   11:1    info    "To be honest," and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
-  11:1    warning "closing-cliche, contrast-framing, announcing-opener" occur together in this document (3 signals, 3 needed)
+  11:1    warning "closing-cliche, contrast-framing, announcing-opener, colon-lead-in" occur together in this document (4 signals, 3 needed)
                   ai-generated-composite
   17:1    info    "The key point is" and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
+  19:1    info    7.2 colon lead-ins to lists per 1000 words (limit 4)
+                  colon-lead-in
   27:1    info    "What's important is" and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
+  31:1    info    7.2 colon lead-ins to lists per 1000 words (limit 4)
+                  colon-lead-in
   37:51   info    "not only" and other contrast frames: 7.2 per 1000 words (limit 3)
                   contrast-framing
   45:1    info    "not just" and other contrast frames: 7.2 per 1000 words (limit 3)
@@ -370,14 +374,15 @@ The quick AI-likeness score (`ai-score`) compares the article before and after.
 $ npx chaffjs ai-score ai.md rewritten.md --genre blog/tech
 ai.md
 AI-likeness: high (more signs than human-written documents (Blog))
-  5 signs (of 26 compared, ones 90% of human documents do not show); medium from 3, high from 5
+  6 signs (of 27 compared, ones 90% of human documents do not show); medium from 3, high from 5
   Not a verdict on whether AI wrote it: how many signs common in generated text show, compared with human documents.
 
 Wording and shape
   ✗ Too many sentences that announce before they say: 3  in 0 of 23 human-written documents (Blog)
   ✗ Cliched closing: 1  in 0 of 23 human-written documents (Blog)
+  ✗ Too many colon lead-ins to lists: 2  in 0 of 23 human-written documents (Blog)
   ✗ Too many contrast frames: 2  in 0 of 23 human-written documents (Blog)
-  ✗ Several signals of generated text together: 3 of its signals (Cliched closing, Too many contrast frames, Too many sentences that announce before they say); from 2, its strict level, that is one more sign
+  ✗ Several signals of generated text together: 4 of its signals (Cliched closing, Too many contrast frames, Too many sentences that announce before they say, Too many colon lead-ins to lists); from 2, its strict level, that is one more sign
   · the other 15 did not show
 
 Structure (against human articles)
@@ -386,11 +391,11 @@ Structure (against human articles)
 
 rewritten.md
 AI-likeness: low (about as many signs as human-written documents (Blog))
-  1 sign (of 25 compared, ones 90% of human documents do not show); medium from 3, high from 5
+  1 sign (of 26 compared, ones 90% of human documents do not show); medium from 3, high from 5
   Not a verdict on whether AI wrote it: how many signs common in generated text show, compared with human documents.
 
 Wording and shape
-  · the other 18 did not show
+  · the other 19 did not show
 
 Structure (against human articles)
   ✗ sections of one or two paragraphs: 100% (mean 1.3 paragraphs)  higher than 90% of human articles

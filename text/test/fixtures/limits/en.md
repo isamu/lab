@@ -60,6 +60,18 @@ The plan was very good and very clear, and the team was very busy.
 
 So, the plan holds. So, we ship.
 
+## Packing
+
+Bring these things:
+
+- A key
+- A map
+
+The day goes like this:
+
+- Meet
+- Leave
+
 ## 🚀 Before
 
 Bring the key.

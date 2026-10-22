@@ -125,7 +125,7 @@ Legal documents, manuals, literature and transcripts are written differently, so
 | `contrast-framing` | Contrast frames piling up ("not just X, but Y", "It's not X. It's Y") |
 | `stock-transition` | Too many sentences opening with "Moreover" or "Additionally" |
 | `announcing-opener` | Several sentences opening with an announcement ("The key point is", "Here's the thing", "Honestly,") |
-| `colon-lead-in` | Too many sentences ending in a colon that hand off to a list (Japanese documents only) |
+| `colon-lead-in` | Too many sentences ending in a colon that hand off to a list (in English, with a higher limit) |
 | `emoji-heading` | Headings with an emoji in them, one after another ("## 🚀 Getting started") |
 | `bold-label-list` | Many list items that open with a bold label and a colon ("- **Speed**: ...") (Japanese documents only) |
 | `assistant-residue` | What is left of a chat reply ("I hope this helps", "As of my last knowledge update") |
