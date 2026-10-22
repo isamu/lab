@@ -205,7 +205,7 @@ describe("fix-plan — the plan for a document", () => {
 
   it("does not list a rule written for another language as one that did not run", async () => {
     const plan = await planOf("en-before.md");
-    assert.ok(!plan.notRun.some((skipped) => skipped.rule === "colon-lead-in"));
+    assert.ok(!plan.notRun.some((skipped) => skipped.rule === "translationese-density"));
   });
 
   it("lists only the rewrite and signal rules that did not run, not every rule lint skipped", async () => {
