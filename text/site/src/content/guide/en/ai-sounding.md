@@ -65,7 +65,7 @@ What a good document of this genre does. Rewrite toward it, and check the result
 - Does it say what was tried and failed, the limits, and the assumptions?
 - Does the ending point to what to read or try next, rather than restate the body?
 
-Rules that matter most for this genre: `closing-cliche`, `empty-conclusion`, `padded-intro`, `paragraph-length-variance`, `quote-without-source`, `rule-of-three`, `section-length-uniformity`, `sentence-rhythm`
+Rules that matter most for this genre: `closing-cliche`, `empty-conclusion`, `padded-intro`, `paragraph-length-variance`, `quote-without-source`, `section-length-uniformity`, `sentence-rhythm`
 
 …
 ```
@@ -98,7 +98,6 @@ $ npx chaffjs rules --json --genre blog/tech
       "padded-intro",
       "paragraph-length-variance",
       "quote-without-source",
-      "rule-of-three",
       "section-length-uniformity",
       "sentence-rhythm"
     ],
@@ -122,22 +121,28 @@ Legal documents, manuals, literature and transcripts are written differently, so
 | Rule | What it finds |
 | --- | --- |
 | `ai-tell` | Phrases common in generated text piling up ("plays a crucial role", "delve into") |
-| `contrast-framing` | Contrast frames piling up ("not just X, but Y", "It's not X. It's Y") |
+| `contrast-framing` | Too large a share of sentences in contrast frames ("not just X, but Y", "It wasn't X. It was Y", "It's not about X. It's about Y") |
+| `unprompted-denial` | Too large a share of sentences that deny a premise nobody stated, with nothing said in its place ("This isn't about tooling.", "That's not the point.") |
 | `stock-transition` | Too many sentences opening with "Moreover" or "Additionally" |
 | `announcing-opener` | Several sentences opening with an announcement ("The key point is", "Here's the thing", "Honestly,") |
-| `colon-lead-in` | Too many sentences ending in a colon that hand off to a list (Japanese documents only) |
+| `over-general-claim` | Sweeping claims about people ("most people", "nobody", "everyone") piling up (English blogs and business documents only) |
+| `q-fragment-answer` | Questions the writer answers at once with a fragment, more than once ("Is it perfect? No.", "The result? Faster builds.") (English only) |
+| `colon-lead-in` | Too many sentences ending in a colon that hand off to a list (in English, with a higher limit) |
 | `emoji-heading` | Headings with an emoji in them, one after another ("## 🚀 Getting started") |
-| `bold-label-list` | Many list items that open with a bold label and a colon ("- **Speed**: ...") (Japanese documents only) |
+| `bold-label-list` | Many list items that open with a bold label and a colon ("- **Speed**: ...") |
 | `assistant-residue` | What is left of a chat reply ("I hope this helps", "As of my last knowledge update") |
+| `email-stock-courtesy` | Two or more stock email courtesies in one email ("I hope this email finds you well", "I apologize for any inconvenience") (English documents only) |
+| `closing-exhortation` | A closing that cheers the reader on or promises the outcome, two or more times ("You've got this", "Happy baking!") |
 | `chat-citation-residue` | Marks a pasted chat answer leaves: links ending in "?utm_source=chatgpt.com", "oaicite" |
 | `closing-cliche` | A stock closing ("In conclusion", "I hope this helps") |
 | `bold-density` | Too much bold |
+| `bold-emphasis` | Bold phrases scattered mid-sentence through the whole text (labels opening list items are left to `bold-label-list`) |
 | `no-em-dash` | Too many em dashes |
 | `sentence-rhythm` | Sentences that are all about the same length |
 | `rule-of-three` | Lists that almost all have three items |
 | `section-length-uniformity` | Every section filled to the same size, which is what a template does |
 | `paragraph-length-variance` | Paragraphs all of about the same length, as if poured into a mould |
-| `ai-structure` | An outline past 90% of human articles on several structure measures at once (heading density, headings split into three, bold labels, uniform sections, a closing that restates). Blog and essay genres only |
+| `ai-structure` | An outline past 90% of human articles on several structure measures at once (heading density, headings split into three, bold labels, uniform sections, a closing that restates). In business documents, the textbook proposal outline (Summary, Current Situation, Proposed Solution, Expected Benefits, Costs, Risks and Mitigation…) counts as one more |
 | `ai-generated-composite` | Three or more of these in one document: `ai-tell`, `contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in`, `assistant-residue`, `closing-cliche`, `padded-intro`, `no-em-dash`, `sentence-rhythm`, `rule-of-three`, `section-length-uniformity`, `ai-structure` (`bold-density` is not counted) |
 
 None of these rules says the text was generated. People write every one of these shapes.
@@ -301,7 +306,7 @@ npx chaffjs compare old.md new.md --distinct --allow-dropped heading --allow-add
 
 6. Stop when all of these hold. Two full passes at most.
    - `ai-generated-composite` does not fire.
-   - The density rules (`bold-density`, `contrast-framing`, `stock-transition`, `colon-lead-in`) are under their limits.
+   - The density rules (`bold-density`, `stock-transition`, `colon-lead-in`) and the share of contrast frames (`contrast-framing`) are under their limits.
    - `compare` passes, or every exclusion has a reason.
    - `chaff outline old.md new.md` shows the new structure score under the plan's limit, with no ✗ left on the measures the plan listed as targets.
 7. Show the new text, a short list of what changed and why, and a table of the signals and the shape before and after. Take the numbers from chaff's output.

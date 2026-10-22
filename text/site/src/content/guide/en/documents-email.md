@@ -98,6 +98,8 @@ email.md   business/email · English   genre from --genre
 
   5:1     info    "hope this email finds you well" and other softeners: 26 per 1000 words (limit 5)
                   cushion-phrase-density
+  5:1     info    "hope this email finds you well" and other stock courtesies in 2 sentences (2 needed)
+                  email-stock-courtesy
   7:1     info    "just wanted to" and other softeners: 26 per 1000 words (limit 5)
                   cushion-phrase-density
   7:1     info    "i was wondering if" and other softeners: 26 per 1000 words (limit 5)
@@ -114,6 +116,8 @@ email.md   business/email · English   genre from --genre
                   attachment-not-attached
   15:91   warning "[Your Name]" was never filled in
                   unfilled-placeholder
+  17:1    info    "please don't hesitate" and other stock courtesies in 2 sentences (2 needed)
+                  email-stock-courtesy
 
 {counts}
 ```
@@ -140,7 +144,7 @@ Guide: Email and letter (business/email)
   - Is everything said to be attached actually attached?
   - Are the greeting, the closing and the signature in place?
 
-  Rules that matter most for this genre: attachment-not-attached, concrete-evidence-density, cushion-phrase-density, email-greeting-closing, email-subject-length, request-without-deadline, risk-disclosure, unsourced-number
+  Rules that matter most for this genre: attachment-not-attached, concrete-evidence-density, cushion-phrase-density, email-greeting-closing, email-stock-courtesy, email-subject-length, request-without-deadline, risk-disclosure, unsourced-number
   Change it with guide: in chaff.yaml; leave it out with --no-guide.
 
 ════════════════════════════════════════════════════════════

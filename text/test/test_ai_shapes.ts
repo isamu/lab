@@ -107,7 +107,21 @@ describe("announcing-opener", () => {
   const EN_THREE = "The key point is the settings. Here's the thing: logs matter. Honestly, the manual is old.";
 
   const OPENERS: ReadonlyArray<readonly [LanguageAdapter, readonly string[]]> = [
-    [ja, ["重要なのは", "ポイントは", "正直に言うと", "注目すべきは", "注目すべき点は", "ここで注目すべきは"]],
+    [
+      ja,
+      [
+        "重要なのは",
+        "ポイントは",
+        "正直に言うと",
+        "注目すべきは",
+        "注目すべき点は",
+        "ここで注目すべきは",
+        "ここで注目したいのは",
+        "注目したいのは",
+        "正直なところ",
+        "正直、",
+      ],
+    ],
     [
       en,
       [
@@ -125,6 +139,13 @@ describe("announcing-opener", () => {
         "The short answer is",
         "The real question is",
         "It's worth noting",
+        "The good news is",
+        "What surprised me most was",
+        "What surprised me was",
+        "The honest answer is",
+        "In this guide, we'll",
+        "In this guide, we will",
+        "And honestly",
       ],
     ],
   ];
@@ -151,6 +172,13 @@ describe("announcing-opener", () => {
     const two = "重要なのは、設定です。ポイントは、ログです。";
     assert.ok(!idsFor(`# 記事\n\n${two}`, ja).includes("announcing-opener"));
     assert.ok(strictRules(`# 記事\n\n${two}`, ja).includes("announcing-opener"));
+  });
+
+  it("counts a guide's stock openers, and not the same words inside a sentence", () => {
+    const guide = "The good news is that backups are cheap now. In this guide, we'll set one up. What surprised me most was the speed.";
+    assert.ok(idsFor(`# Post\n\n${guide}`, en).includes("announcing-opener"));
+    const inside = "We heard the good news is out. A reader asked what surprised me most was it the price. I wrote it in this guide, we'll see.";
+    assert.ok(!strictRules(`# Post\n\n${inside}`, en).includes("announcing-opener"));
   });
 
   it("counts only the start of a sentence, not 「このポイントは」 inside one", () => {
@@ -286,9 +314,32 @@ describe("colon-lead-in", () => {
     assert.ok(idsFor(japanese, ja).includes("colon-lead-in"));
   });
 
-  it("does not run on English, where people hand off to a list after a colon as a matter of course", () => {
-    const dense = `# Post\n\n${BULK_EN.slice(0, 1300)}\n\nBring:\n\n- A key\n\nPlan:\n\n- Meet\n\nAfter:\n\n- Clean\n`;
-    assert.ok(!idsFor(dense, en).includes("colon-lead-in"));
+  // English writers hand off to a list after a colon often, so the English limit (per 1000 words) is higher.
+  const englishLeadIns = (bulkWords: number, count: number): string => {
+    const bulk = `${BULK_EN}${BULK_EN}`.split(" ").slice(0, bulkWords).join(" ");
+    const lists = Array.from({ length: count }, (_unused, index) => `Step ${String(index + 1)} needs these things:\n\n- A key\n- A map\n`).join("\n");
+    return `# Post\n\n${bulk}\n\n${lists}`;
+  };
+
+  it("fires on English colon lead-ins piling up past the English limit", () => {
+    assert.ok(idsFor(englishLeadIns(240, 3), en).includes("colon-lead-in"));
+  });
+
+  it("does not fire on English lead-ins under the English limit, which is higher than the Japanese one", () => {
+    assert.ok(!idsFor(englishLeadIns(600, 2), en).includes("colon-lead-in"));
+    assert.ok(!idsFor(englishLeadIns(240, 1), en).includes("colon-lead-in"));
+  });
+
+  it("still counts an English lead-in sentence repeated before each list", () => {
+    const repeated = Array.from({ length: 3 }, () => "Here's what you need to bring:\n\n- A key\n- A map\n").join("\n");
+    assert.ok(idsFor(`# Post\n\n${BULK_EN.split(" ").slice(0, 240).join(" ")}\n\n${repeated}`, en).includes("colon-lead-in"));
+  });
+
+  it("does not count an English noun label repeated before each entry's list", () => {
+    const entries = ["Alpha", "Beta", "Gamma"]
+      .map((name) => `## ${name}\n\n${name} is one of the rules.\n\n**See also:**\n\n- <https://example.com/${name}>\n`)
+      .join("\n");
+    assert.ok(!idsFor(`# Rules\n\n${BULK_EN.split(" ").slice(0, 240).join(" ")}\n\n${entries}`, en).includes("colon-lead-in"));
   });
 });
 
