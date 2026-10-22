@@ -142,7 +142,7 @@ Legal documents, manuals, literature and transcripts are written differently, so
 | `section-length-uniformity` | Every section filled to the same size, which is what a template does |
 | `paragraph-length-variance` | Paragraphs all of about the same length, as if poured into a mould |
 | `ai-structure` | An outline past 90% of human articles on several structure measures at once (heading density, headings split into three, bold labels, uniform sections, a closing that restates). In business documents, the textbook proposal outline (Summary, Current Situation, Proposed Solution, Expected Benefits, Costs, Risks and Mitigation…) counts as one more |
-| `ai-generated-composite` | Three or more of these in one document: `ai-tell`, `contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in`, `assistant-residue`, `closing-cliche`, `padded-intro`, `no-em-dash`, `sentence-rhythm`, `rule-of-three`, `section-length-uniformity`, `ai-structure` (`bold-density` is not counted) |
+| `ai-generated-composite` | Three or more of these in one document: `ai-tell`, `contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in`, `assistant-residue`, `closing-cliche`, `padded-intro`, `no-em-dash`, `sentence-rhythm`, `rule-of-three`, `section-length-uniformity`, `ai-structure`, `over-general-claim`, `q-fragment-answer`, `closing-exhortation`, `unfilled-placeholder`, `bold-emphasis` (`bold-density` and `bold-label-list` are not counted; `ai-structure` already measures bold labels) |
 
 None of these rules says the text was generated. People write every one of these shapes.
 Piled up, they mark a place to reread.
@@ -161,7 +161,7 @@ Phrases people already wrote as often before (解像度を上げる, 腹落ち) 
 - The signs are the findings of the rules above and the structure measures of `chaff outline`. Only those that 90% of human documents do not show count.
 - The human documents are the corpus's human documents, by genre group (blog, technical, business and so on), and technical articles written before generative AI. Both are numbers shipped with chaff.
 - Three signs make "medium" and five make "high": the number `ai-generated-composite` reports at, and its relaxed level.
-- Two or more of the rules `ai-generated-composite` reads showing in one document (its strict level) count as one more sign. No human document in the corpus shows two of them together; `yarn ai-score:corpus --all` counts them.
+- Two or more of the rules `ai-generated-composite` reads showing in one document (its strict level) count as one more sign. Human documents in the corpus rarely show two of them together; `yarn ai-score:corpus --all --verbose` lists the ones that do.
 - A structure measure and the rule that reads the same shape (section length variation and `section-length-uniformity`, for one) count once when both show.
 - A document that is too short (under 500 characters in Japanese, 200 words in English), or in a genre without enough human documents (academic, speech), gets no level and the reason instead.
 - A plain `npx chaffjs <file>` also ends its report with the level on one line, and `chaff grade` puts `aiScore` in each output's result ([Using chaff for AI evals](./ai-evals)).

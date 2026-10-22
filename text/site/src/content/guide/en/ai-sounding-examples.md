@@ -267,7 +267,7 @@ ai.md   blog/tech · English   genre from --genre
                   contrast-framing
   11:1    info    "To be honest," and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
-  11:1    warning "closing-cliche, contrast-framing, announcing-opener, colon-lead-in" occur together in this document (4 signals, 3 needed)
+  11:1    warning "closing-cliche, contrast-framing, announcing-opener, colon-lead-in, bold-emphasis" occur together in this document (5 signals, 3 needed)
                   ai-generated-composite
   17:1    info    "The key point is" and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
@@ -387,7 +387,7 @@ Wording and shape
   ✗ Cliched closing: 1  in 0 of 23 human-written documents (Blog)
   ✗ Too many colon lead-ins to lists: 2  in 0 of 23 human-written documents (Blog)
   ✗ Too many contrast frames: 3  in 0 of 23 human-written documents (Blog)
-  ✗ Several signals of generated text together: 4 of its signals (Cliched closing, Too many contrast frames, Too many sentences that announce before they say, Too many colon lead-ins to lists); from 2, its strict level, that is one more sign
+  ✗ Several signals of generated text together: 5 of its signals (Cliched closing, Too many contrast frames, Too many sentences that announce before they say, Too many colon lead-ins to lists, Bold emphasis scattered through the text); from 2, its strict level, that is one more sign
   · the other 17 did not show
   not compared (no human baseline): Stock email courtesies piled up, Too many sweeping claims about people, Questions answered with a fragment
 
