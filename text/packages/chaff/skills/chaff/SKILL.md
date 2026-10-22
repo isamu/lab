@@ -256,6 +256,8 @@ repeats the body. The writer usually wants the structure changed, not only the s
    - merge thin sections and split overloaded ones, so a section is a real unit, not one heading per paragraph;
    - cut sections that only restate, the closing まとめ / "Conclusion" included;
    - drop a heading that wraps a single paragraph;
+   - in a proposal or report, name sections after their content rather than the textbook outline (Summary, Current
+     Situation, Proposed Solution, Expected Benefits, Costs, Risks and Mitigation): `ai-structure` counts that outline;
    - turn a list-of-points section into a narrative with one through-line;
    - no symmetric three-point sections unless the content really has three parts;
    - move the writer's concrete experience to where it carries the argument;
