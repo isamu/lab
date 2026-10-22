@@ -156,6 +156,18 @@ each one, and the checks to run afterwards. `--depth` sets how far the rewrite m
 One of the checks is `npx chaffjs compare article.md after.md`: it fails when a fact was dropped or added, and lists
 a name whose spelling the rewrite corrected (Borrowmoney → BorrowMoney) as respelled, not as a fact lost.
 
+To remove every AI tell, loop on one command:
+
+```bash
+npx chaffjs fix-plan article.md --all-ai-signs --json                              # every AI-likeness rule, the ai-score, when to stop
+npx chaffjs fix-plan after.md --all-ai-signs --before article.md --json            # the rewrite: what is left, and which rules it raised
+npx chaffjs test after.md --checks ai-tells --dry-run                              # the tells only a reader can judge (invented specifics, …)
+```
+
+`--all-ai-signs` runs every AI-likeness rule, also those the genre turns off, and adds the `ai-score` level and the
+stop conditions. `--before` lists every rule with more findings than in the original. `--checks ai-tells` asks the
+questions chaff ships for the tells no rule can see.
+
 ## AI score
 
 ```bash
@@ -164,7 +176,9 @@ npx chaffjs ai-score article.md
 
 A quick AI-likeness reading: low, medium or high. It counts the signs of generated text that
 human documents of the same genre rarely show. It is not a verdict on whether AI wrote it, and
-it is not meant to be one.
+it is not meant to be one. Among the signs: `email-stock-courtesy`, two or more stock email courtesies
+("I hope this email finds you well", "I apologize for any inconvenience") in one English email; and `closing-exhortation`, a closing that cheers
+the reader on two or more times ("You've got this", 「ぜひ〜してみてください」).
 
 ## Grading a model's output
 

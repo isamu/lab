@@ -98,7 +98,7 @@ article.md   blog/tech · English   genre from --genre
 
   1:71    info    Section length varies by only 25% (want at least 35%)
                   section-length-uniformity
-  3:1     info    "delve into, in today's fast-paced world, it's not just" appear together (score 25, limit 18)
+  3:1     info    "delve into, in today's fast-paced world, it's not just, quietly" appear together (score 28, limit 18)
                   ai-tell
   3:1     warning "in today's fast-paced world" is an opening that fits any article
                   padded-intro
@@ -149,7 +149,7 @@ Guide: Tech blog (blog/tech)
   - Does it say what was tried and failed, the limits, and the assumptions?
   - Does the ending point to what to read or try next, rather than restate the body?
 
-  Rules that matter most for this genre: closing-cliche, empty-conclusion, padded-intro, paragraph-length-variance, quote-without-source, rule-of-three, section-length-uniformity, sentence-rhythm
+  Rules that matter most for this genre: closing-cliche, empty-conclusion, padded-intro, paragraph-length-variance, quote-without-source, section-length-uniformity, sentence-rhythm
   Change it with guide: in chaff.yaml; leave it out with --no-guide.
 
 ════════════════════════════════════════════════════════════

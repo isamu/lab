@@ -175,7 +175,10 @@ Use this section when asked to make a text sound less generated: 「AIっぽさ�
 書き直して」, "make this sound human", "this reads like AI wrote it".
 
 chaff marks the shapes common in generated text (group "Signs of generated text" in `npx chaffjs rules`: `ai-tell`,
-`contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in` (Japanese only), `assistant-residue`, and the signals
+`contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in`, `over-general-claim` (English only),
+`q-fragment-answer` (English only), `assistant-residue`, `email-stock-courtesy` (English emails: stacked "I hope this email finds
+you well"-type courtesies), `closing-exhortation` (a closing that cheers the reader on: 「ぜひ〜してみてください」,
+"You've got this"), and the signals
 `ai-generated-composite` reads, among others). Most of them do not run in `technical/spec` or in the legal, docs, literature and
 speech genres; `assistant-residue` (words left from a pasted chat reply) runs in almost every genre. `npx chaffjs rules --json`
 says per rule and genre. None of them says the text was generated. chaff never rewrites; the rewriting is yours.
@@ -199,6 +202,33 @@ Follow it. Rewrite in the mode it recommends; a request that says 「全面的�
 says. Apply each rule's direction at its spots. Where a fix needs a specific the text does not give, leave ［ ］ and
 ask. Save the result under the name the plan gives, run its check commands, and report the mode and the checks'
 output. The mode steps below say the rest.
+
+**When the request is to remove all of it** (「AI臭さを全部消して」「AIっぽさを完全になくして」, "remove every AI tell"),
+run the plan with `--all-ai-signs` and loop until it says stop:
+
+1. `npx chaffjs fix-plan <file> --all-ai-signs --json` (with the genre's `--genre`). It runs every AI-likeness rule,
+   also those the genre turns off or leaves out, and adds `aiScore` (the `ai-score` level and its signs), `aiRules`
+   (the AI-likeness rules with findings) and `stop` (when to stop). `npx chaffjs facts <file> --json` is the inventory
+   of facts to keep.
+2. Rewrite in the mode the plan recommends (Full for a blog post or an essay, or when `ai-generated-composite` fires).
+   Fix every spot of every rule in `rules`, by its direction: the AI-likeness ones and the others, so the rewrite
+   leaves nothing worse.
+3. Check the tells only a reader can see. `npx chaffjs test <rewritten> --checks ai-tells --dry-run` lists the
+   questions and the passages each would be asked about: invented specifics, an abstract opening, a denial of what
+   nobody said, a moral at the end, a benefits list that mirrors the problems, a claim restated, inflated significance,
+   generic content, a request recast as the reader's benefit, the same thing renamed. Run it without `--dry-run` only
+   with an API key and the person's yes (the passages leave the machine). Otherwise read the passages yourself against
+   each question. A specific that looks invented (in the original or in your draft) is a question for the writer:
+   keep it marked, 「［105cm］くらい」 / "[on a five-hour flight]", and ask them to confirm or cut it; never replace it
+   with another invented one. Reread your own draft for wording that changes a claim; `compare` sees facts, not claims.
+4. Run the plan's checks: `npx chaffjs fix-plan <rewritten> --all-ai-signs --before <file> --json` and
+   `npx chaffjs compare <file> <rewritten>` (`--distinct --allow-dropped heading --allow-added heading` after a Full
+   rewrite).
+5. Repeat from 2 until every line of `stop` holds: `aiRules` is empty; `aiScore.level` is `low`, or the document is too
+   short to score; `since.risen` is empty (no rule has more findings than in the original); `compare` passes; none of
+   the ai-tells questions fits. Three passes at most. List what is left after the third with the reason (a placeholder
+   only the writer can fill, a word that is right in context).
+6. Report a table from chaff's output, before and after: `aiRules`, the score, `since.risen`, `compare`.
 
 Pick one of three modes and say which.
 
@@ -228,7 +258,7 @@ repeats the body. The writer usually wants the structure changed, not only the s
 **Bold** (section by section, outline kept):
 
 1. Run chaff and note the document-level signals: the `ai-generated-composite` inputs,
-   `bold-density`, `contrast-framing`, `stock-transition`, `sentence-rhythm`.
+   `bold-density`, `bold-emphasis`, `contrast-framing`, `stock-transition`, `sentence-rhythm`.
 2. Rewrite each section toward a human voice: less bold; one-line paragraphs and punchlines folded back into
    paragraphs; no "X ではありません。Y です" / "It's not X. It's Y" frames; lists turned back into sentences where the
    items connect; fewer em dashes; no announcing openers. Each paragraph carries one claim, joined to the last by a
@@ -253,6 +283,8 @@ repeats the body. The writer usually wants the structure changed, not only the s
    - merge thin sections and split overloaded ones, so a section is a real unit, not one heading per paragraph;
    - cut sections that only restate, the closing まとめ / "Conclusion" included;
    - drop a heading that wraps a single paragraph;
+   - in a proposal or report, name sections after their content rather than the textbook outline (Summary, Current
+     Situation, Proposed Solution, Expected Benefits, Costs, Risks and Mitigation): `ai-structure` counts that outline;
    - turn a list-of-points section into a narrative with one through-line;
    - no symmetric three-point sections unless the content really has three parts;
    - move the writer's concrete experience to where it carries the argument;
@@ -294,7 +326,7 @@ repeats the body. The writer usually wants the structure changed, not only the s
      once.
 6. **Stop** when all of these hold, or after two full passes, whichever comes first:
    - `ai-generated-composite` does not fire;
-   - the density rules (`bold-density`, `contrast-framing`, `stock-transition`, `colon-lead-in`) are under their limits;
+   - the density rules (`bold-density`, `bold-emphasis`, `stock-transition`, `colon-lead-in`) and the share of contrast frames (`contrast-framing`) are under their limits;
    - `chaff outline <old> <new>` shows the new structure score under the plan's limit, with no ✗ left on the measures
      the plan listed as targets;
    - `compare` is clean, or every exclusion has a stated reason.
@@ -319,7 +351,7 @@ In every mode:
 - Never add facts, people, numbers or causes the original does not have.
 - Keep a domain term a word rule trips when it is right in context.
 - Prefer a direct statement over a negated contrast. Say who does what.
-- Never loop just to silence a warning; two passes at most, and list what is left with the reason.
+- Never loop just to silence a warning; two passes at most (three with `--all-ai-signs`), and list what is left with the reason.
 - Per genre: in a tech article, replace metaphors ("静かに壊れる", "silently fails") with what happens and keep steps
   and commands as lists; in a business document, put the conclusion and who does what first and keep tables and
   figures; in an essay, fold punchlines back in and replace big words ("真理", "new possibilities") with the scene.

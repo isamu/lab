@@ -1,0 +1,11 @@
+# Sweeping claims about people in general: what most people do, what nobody does. Read by over-general-claim, which
+# counts them per length of the document; one is ordinary. "Most people agree" and "everyone knows" are weasel-word's.
+id: over-general-claim
+language: en
+entries:
+  - pattern: most people
+  - pattern: for most of us
+  - pattern: for most households
+  - pattern: nobody
+  - pattern: everyone
+  - pattern: anyone who

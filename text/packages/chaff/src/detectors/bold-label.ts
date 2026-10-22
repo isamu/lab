@@ -26,6 +26,9 @@ export const boldLabelOf = (item: string): string | undefined => {
   return label === undefined || isCodeOnly(label) ? undefined : label;
 };
 
+/** Whether an item opens with a bold label of any kind, code-only ones included: bold that labels rather than emphasises. */
+export const opensWithBoldLabel = (item: string): boolean => BOLD_LABEL.test(item.replace(ITEM_MARKER, "").replace(TASK_BOX, ""));
+
 /** Whether the line holding `offset` is quoted (`> - **a**：…`): someone else's words, not the writer's to fix. */
 export const isQuotedAt = (source: string, offset: number): boolean => source.slice(source.lastIndexOf("\n", offset - 1) + 1, offset).includes(">");
 

@@ -69,6 +69,7 @@
     "README.md",
     "README.ja.md",
     "bin",
+    "checks",
     "dist",
     "genres.yaml",
     "profiles",
