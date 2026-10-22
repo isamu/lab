@@ -1,6 +1,6 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
-import { undefinedTerms, type TermWords } from "../packages/chaff/src/detectors/undefined-term.ts";
+import { namedTerms, undefinedTerms, type TermWords } from "../packages/chaff/src/detectors/undefined-term.ts";
 import { capitalisedTerms, namedWords, readableText, setApartSpans, type CapitalisedInput } from "../packages/chaff/src/detectors/capitalised-term.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
@@ -42,6 +42,40 @@ describe("undefined-term", () => {
     assert.deepEqual(termsIn(ja, ja_("第2条　本利用規約と本サイトの定めに従う。")), []);
     assert.deepEqual(termsIn(ja, ja_("第2条　乙が作成した情報（以下、本条において「本情報」といいます。）は、本情報として扱う。")), []);
     assert.deepEqual(termsIn(ja, ja_("第2条　本人は、本日、本社に出向く。")), []);
+  });
+
+  it("reads a term named alone on an item of a definition list, or in quotes, as defined, and so the words that follow it", () => {
+    const listed = (use: string): string =>
+      ja_("第2条（定義）", "", "①　本報告書", "", "　乙が甲に提供する、本業務に関する報告書をいう。", "", ["第3条　甲は、", use, "に通知する。"].join(""));
+    assert.deepEqual(termsIn(ja, listed("本報告書提出後1週間以内")), []);
+    assert.deepEqual(termsIn(ja, listed("本報告書確認完了")), []);
+    const markdownList = ja_(
+      "第2条　用語の定義は次のとおりとする。",
+      "",
+      "2.  本発明",
+      "",
+      "　本業務の過程で得た発明を意味する。",
+      "",
+      "第3条　本発明者は、甲に通知する。",
+    );
+    assert.deepEqual(termsIn(ja, markdownList), []);
+    const halfWidthStop = ja_("第2条　甲および乙は、共同して研究（以下「本研究」という｡）を行う。", "", "第3条　乙は、本研究期間中、本研究担当者を置く。");
+    assert.deepEqual(termsIn(ja, halfWidthStop), []);
+  });
+
+  it("still reports a defined term with a group's mark, and a term only an item holding a phrase starts with", () => {
+    assert.deepEqual(termsIn(ja, ja_("第2条　乙は、本業務等の記録を保管する。")), ["本業務等"]);
+    const listed = ja_("第2条（定義）", "", "①　本報告書", "", "　乙が甲に提供する報告書をいう。", "", "第3条　本報告書等の権利は、甲に帰属する。");
+    assert.deepEqual(termsIn(ja, listed), ["本報告書等"]);
+    const phrase = ja_("第2条　乙は、次の事項を行う。", "", "1　本成果物の納入", "", "第3条　甲は、本成果物を検査する。");
+    assert.deepEqual(termsIn(ja, phrase), ["本成果物"]);
+  });
+
+  it("namedTerms finds the prefixed words in quotes and alone on a list item", () => {
+    const source = ["（以下「本研究」という｡）", "②　本報告書", "2.  本発明", "（3）本件技術", "1　本成果物の納入", "1　対象データ", "本日"].join("\n");
+    assert.deepEqual(namedTerms(source, ["本", "本件"]), ["本研究", "本報告書", "本発明", "本件技術", "本成果物の納入"]);
+    assert.deepEqual(namedTerms(source, []), []);
+    assert.deepEqual(namedTerms("", ["本"]), []);
   });
 
   it("does not read a document that defines no term with the prefix, nor outside the contract genres", () => {
@@ -273,6 +307,8 @@ describe("undefinedTerms", () => {
     prefixGroups: [["本", "本件"]],
     selfNouns: ["条", "契約"],
     isQuoted: () => false,
+    named: [],
+    groupSuffixes: ["等"],
     ...overrides,
   });
   const SOURCE = "本成果物を出す";
@@ -311,5 +347,17 @@ describe("undefinedTerms", () => {
     assert.deepEqual(undefinedTerms(SOURCE, [SENTENCE], ["本業務"], words({ selfNouns: ["成果"] })), []);
     assert.deepEqual(undefinedTerms(SOURCE, [SENTENCE], ["本業務"], words({ selfNouns: [""] })).length, 1);
     assert.deepEqual(undefinedTerms(SOURCE, [SENTENCE], ["本業務"], words({ isQuoted: (term) => term === "本成果物" })), []);
+  });
+
+  it("takes a named word as defined only where it is a run of nouns somewhere, and a group's mark as a term of its own", () => {
+    const longer = tokens(["本", "ADJ"], ["成果", "NOUN"], ["物", "NOUN"], ["提出", "NOUN"], ["後", "NOUN"]);
+    const source = "本成果物提出後";
+    assert.deepEqual(undefinedTerms(source, [longer], ["本業務"], words({ named: ["本成果物"] })), []);
+    assert.deepEqual(undefinedTerms(source, [longer], ["本業務"], words({ named: ["本成果物の納入"] })), [{ offset: 0, term: source }]);
+    assert.deepEqual(undefinedTerms(source, [longer], ["本業務"], words({ named: ["本成果品"] })), [{ offset: 0, term: source }]);
+    const grouped = tokens(["本", "ADJ"], ["成果", "NOUN"], ["物", "NOUN"], ["等", "NOUN"]);
+    assert.deepEqual(undefinedTerms("本成果物等", [grouped], ["本成果物"], words()), [{ offset: 0, term: "本成果物等" }]);
+    assert.deepEqual(undefinedTerms("本成果物等", [grouped], ["本成果物"], words({ groupSuffixes: [] })), []);
+    assert.deepEqual(undefinedTerms("本成果物等", [grouped], ["本成果物等"], words()), []);
   });
 });

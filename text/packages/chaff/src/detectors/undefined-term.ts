@@ -45,7 +45,38 @@ export type TermWords = {
   readonly selfNouns: readonly string[];
   /** The term is set in quotes somewhere (「本情報」): defined in a form the structure did not read, or named on purpose. */
   readonly isQuoted: (term: string) => boolean;
+  /** Terms the document names in a form the structure does not read as a definition: in quotes, or alone on a list item. */
+  readonly named: readonly string[];
+  /** What turns a term into another one (本報告書等 after 本報告書): a group the document has to define on its own. */
+  readonly groupSuffixes: readonly string[];
 };
+
+const QUOTED = /[「『“"](?<term>[^「」『』“”"\n]{1,40})[」』”"]/gu;
+/** An item's number: 2. or 2 and a space, ②, （2）. */
+const ITEM_NUMBER = /^\s*(?:[0-9０-９]{1,3}[.．)）]?\s|[①-⑳]|[（(][0-9０-９]{1,3}[）)])/u;
+const ONE_WORD = /^[^\s、。，．「」（）()]+$/u;
+
+/** A list item holding one word (② 本報告書, 2. 本発明): the label of a definition list, its meaning in the next paragraph. */
+const listLabelOf = (line: string): string | undefined => {
+  const number = ITEM_NUMBER.exec(line);
+  const rest = number === null ? "" : line.slice(number[0].length).trim();
+  return ONE_WORD.test(rest) ? rest : undefined;
+};
+
+const hasPrefix = (term: string, prefixes: readonly string[]): boolean =>
+  prefixes.some((prefix) => term.startsWith(prefix) && Array.from(term.slice(prefix.length)).length >= MIN_REST);
+
+/** The prefixed terms the source names in quotes or alone on a list item, which the structure does not read as definitions. */
+export const namedTerms = (source: string, prefixes: readonly string[]): string[] => {
+  const given = prefixes.filter((prefix) => prefix !== "");
+  const quoted = [...source.matchAll(QUOTED)].map((match) => match.groups?.["term"] ?? "");
+  const labels = source.split("\n").flatMap((line) => listLabelOf(line) ?? []);
+  return [...new Set([...quoted, ...labels].filter((term) => hasPrefix(term, given)))];
+};
+
+/** A use is a known form, or starts with one and goes on with more words (本報告書提出後), but not with a group's mark (本報告書等). */
+const isKnownUse = (term: string, known: readonly string[], groupSuffixes: readonly string[]): boolean =>
+  known.some((form) => form.startsWith(term) || (term.startsWith(form) && !groupSuffixes.includes(term.slice(form.length))));
 
 /** The defined terms and their other-prefix forms (本件業務 for 本業務), which defined-term-form reads. */
 const knownForms = (defined: readonly string[], groups: TermWords["prefixGroups"]): string[] => [
@@ -56,26 +87,28 @@ const knownForms = (defined: readonly string[], groups: TermWords["prefixGroups"
 /**
  * The first use of each term written with the document's prefix and defined nowhere, when the document defines at
  * least one term with that prefix (else the prefix is not its way of naming terms). A use that starts with a known
- * form (本サービス上 where 本サービス is defined) is that term.
+ * form (本サービス上 where 本サービス is defined) is that term, unless the rest is a group's mark (本サービス等).
  */
 export const undefinedTerms = (source: string, sentences: readonly (readonly Token[])[], defined: readonly string[], words: TermWords): UndefinedTerm[] => {
   const prefixes = words.prefixes.filter((prefix) => prefix !== "");
-  const prefixed = defined.filter((term) => prefixes.some((prefix) => term.startsWith(prefix) && Array.from(term.slice(prefix.length)).length >= MIN_REST));
-  if (prefixed.length === 0) return [];
-  const known = knownForms(defined, words.prefixGroups);
+  if (!defined.some((term) => hasPrefix(term, prefixes))) return [];
   const isSelf = (term: string, prefix: string): boolean => {
     const rest = term.slice(prefix.length);
     return words.selfNouns.some((noun) => noun !== "" && (rest.startsWith(noun) || rest.endsWith(noun)));
   };
-  const uses = sentences.flatMap((tokens) =>
+  const runs = sentences.flatMap((tokens) =>
     tokens.flatMap((token, index) => {
       if (!prefixes.includes(token.surface) || !isNoun(tokens[index + 1]) || continuesWord(tokens[index - 1], token)) return [];
       const use = termAt(source, tokens, index);
-      if (use === undefined || isSelf(use.term, token.surface) || words.isQuoted(use.term)) return [];
-      if (known.some((form) => use.term.startsWith(form) || form.startsWith(use.term))) return [];
-      return [use];
+      return use === undefined ? [] : [{ ...use, prefix: token.surface }];
     }),
   );
+  // A name that does not start a run of nouns (② 本研究の具体的な遂行方法) is an item of a list, not a term.
+  const named = words.named.filter((term) => runs.some((run) => run.term.startsWith(term)));
+  const known = knownForms([...defined, ...named], words.prefixGroups);
+  const uses = runs
+    .filter((run) => !isSelf(run.term, run.prefix) && !words.isQuoted(run.term) && !isKnownUse(run.term, known, words.groupSuffixes))
+    .map((run) => ({ offset: run.offset, term: run.term }));
   return uses.filter((use, index) => uses.findIndex((other) => other.term === use.term) === index);
 };
 
@@ -126,11 +159,14 @@ export const undefinedTerm: Detector = (doc): Finding[] => {
   const sentences = doc.sentences.map((sentence) => sentence.tokens ?? []);
   const definitions = definedTerms(doc.structure);
   const defined = definitions.map((term) => term.term);
+  const prefixes = prefixEntries.map((entry) => entry.pattern);
   const prefixed = undefinedTerms(doc.source, sentences, defined, {
-    prefixes: prefixEntries.map((entry) => entry.pattern),
+    prefixes,
     prefixGroups: prefixGroupsOf(prefixEntries),
     selfNouns: [...patternsOf(doc, "self-reference-noun"), ...patternsOf(doc, "document-kind")],
     isQuoted: (term) => QUOTE_PAIRS.some(([open, close]) => doc.source.includes(`${open}${term}${close}`)),
+    named: namedTerms(doc.source, prefixes),
+    groupSuffixes: patternsOf(doc, "defined-term-group-suffix"),
   });
   return [...prefixed, ...capitalisedUses(doc, sentences, definitions)].map((use) => findingOf(doc, use));
 };
