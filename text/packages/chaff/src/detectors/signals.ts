@@ -14,6 +14,7 @@ import { conjugatedForms } from "./conjugated-form.ts";
 import { evidenceSpans, hasNumeral, isClaim, isLabelOnly, startsWithin, type AdviceWords } from "./concrete-evidence.ts";
 import { letteredIndexEntries } from "./lettered-index.ts";
 import { knownByDocument } from "./acronym-known.ts";
+import { documentCitationSpans } from "./case-citation.ts";
 import { glossedAcronyms, headingsSpellingOut } from "./acronym-gloss.ts";
 import { hasPredicateIn } from "./gram-predicate.ts";
 import { gramPassagesOf } from "./gram-passages.ts";
@@ -365,10 +366,13 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
     acronymsOf(doc, notationOf(doc)),
     sourceNotAcronymSpans(doc.source, (id) => patternsOf(doc, id)),
   );
-  // リンク先のページの題名の略語（[NASA Fprime AI Policy](https://…)）と、文献を引いて始まる注の中の略語（題名の IMF、誌名の
-  // FRBSF）は、読み手が出会う説明の無い略語として数に入れるが、書き手が直せないので指さない。
+  // リンク先の題名の略語、文献を引いて始まる注の中の略語、判例の引用の当事者・裁判所・事件番号は、数に入れるが書き手が直せないので指さない。
   const citationNotes = citationNoteSpans(doc.source, doc.sentences, patternsOf(doc, "citation-author-joiner"));
-  const hits = outsideSpans(counted, [...linkTitleSpans(doc.source, doc.links), ...citationNotes]);
+  const hits = outsideSpans(counted, [
+    ...linkTitleSpans(doc.source, doc.links),
+    ...citationNotes,
+    ...documentCitationSpans(doc.sentences, doc.source, patternsOf(doc, "case-party-joiner")),
+  ]);
   const acronyms = [...firstHits(hits).keys()];
   const unexplained = new Set(acronyms.filter((acronym) => !isExplained(acronym, explainedAlone)));
   const quoted = [...firstHits(counted).keys()].filter((acronym) => !acronyms.includes(acronym) && !isExplained(acronym, explainedAlone)).length;
