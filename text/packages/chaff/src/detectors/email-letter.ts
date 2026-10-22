@@ -5,7 +5,7 @@
 import { escapeRegExp } from "../orthography.ts";
 import { quoteAt } from "./structure-tree.ts";
 import { isNoticeHead, noticeWordsOf } from "../notice-header.ts";
-import { isIssueHead, issueWordsOf } from "../newsletter-issue.ts";
+import { isHeadingLine, isIssueHead, issueWordsOf } from "../newsletter-issue.ts";
 import type { Detector, Finding, ProseDocument, Span } from "../plugin.ts";
 
 /** A greeting comes before the body: past the subject, the addressee (株式会社… / 総務部 山田様) and the writer's name. */
@@ -207,10 +207,13 @@ export const isMemoLabel = (line: string, labels: readonly string[]): boolean =>
 export const isMemo = (source: string, labels: readonly string[], sentenceEnds: readonly string[]): boolean =>
   headLines(source, sentenceEnds).some((line) => isMemoLabel(line, labels));
 
-/** The source's lines before the first sentence (the first lines, when no line ends one), past blank lines and a quoted reply. */
+/**
+ * The source's lines before the first sentence (the first lines, when no line ends one), past blank lines and a quoted reply.
+ * A heading is a title, not a sentence, even when it ends in an exclamation mark (# Vol.12 転落に注意!).
+ */
 export const headLines = (source: string, sentenceEnds: readonly string[]): string[] => {
   const lines = source.split("\n").filter((line) => line.trim() !== "" && !line.trimStart().startsWith(">"));
-  const firstSentence = lines.findIndex((line) => endsSentence(line, sentenceEnds));
+  const firstSentence = lines.findIndex((line) => !isHeadingLine(line) && endsSentence(line, sentenceEnds));
   return lines.slice(0, firstSentence === -1 ? HEADER_LINES : firstSentence);
 };
 

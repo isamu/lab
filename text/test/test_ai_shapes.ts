@@ -230,6 +230,25 @@ describe("colonLeadIns", () => {
     assert.deepEqual(leadInsOf("# 題\n\n本文です。\n\n- 例: `after_update :name`\n  - 名前が変わったときに動く\n"), []);
   });
 
+  // 自作の README の形。項目ごとに同じ太字の「参考:」の後ろにリンクを一つ置く。項目の欄の名前で、箇条書きへ渡す文ではない。
+  const entries = (label: string): string =>
+    ["【規則1】", "【規則2】", "【規則3】"]
+      .map((name) => `### ${name}\n\n${name}は冗長な表現を指します。\n\n${label}\n\n- <https://example.com/${name.length}>\n`)
+      .join("\n");
+
+  it("does not count a noun label repeated before each entry's list, the field of a template", () => {
+    assert.deepEqual(leadInsOf(`# 題\n\n${entries("**参考:**")}`), []);
+    assert.deepEqual(leadInsOf(`# 題\n\n${entries("参考：")}`), []);
+  });
+
+  it("still counts a label used once, a repeated sentence, and different labels", () => {
+    assert.equal(leadInsOf(`# 題\n\n**参考:**\n\n- <https://example.com/1>\n\n**注意:**\n\n- 鍵\n`).length, 2);
+    assert.equal(leadInsOf(`# 題\n\n${entries("主な点は次の通りです：")}`).length, 3);
+    assert.equal(leadInsOf(`# 題\n\n${entries("**使い方:**")}`).length, 3);
+    assert.equal(leadInsOf(`# 題\n\n${entries("⚠️:")}`).length, 3);
+    assert.equal(leadInsOf(`# 題\n\n参_考:\n\n- 鍵\n\n参考:\n\n- 地図\n`).length, 2);
+  });
+
   it("returns nothing for a document without lists", () => {
     assert.deepEqual(leadInsOf("# 題\n\n次の通りです：\n"), []);
   });

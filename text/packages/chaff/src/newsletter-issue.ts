@@ -29,8 +29,10 @@ const issuePatternOf = ({ head, tail }: IssueWords[number]): RegExp =>
 /** A Markdown heading: the document's title. A subject line (件名：議案 第3号) or a citation (Vol. 12) in the body is not one. */
 const HEADING = /^#{1,6}\s/u;
 
+export const isHeadingLine = (line: string): boolean => HEADING.test(line.trim());
+
 /** Whether a heading among the head lines (the lines before the first sentence) holds an issue number: the title of an issue. */
 export const isIssueHead = (headLines: readonly string[], words: IssueWords): boolean => {
   const patterns = words.map(issuePatternOf);
-  return headLines.some((line) => HEADING.test(line.trim()) && patterns.some((pattern) => pattern.test(line.trim())));
+  return headLines.some((line) => isHeadingLine(line) && patterns.some((pattern) => pattern.test(line.trim())));
 };

@@ -3,6 +3,7 @@ import type { Detector, DetectorOptions, Finding, LengthUnit, Sentence } from ".
 import { citationLead } from "./citation-sentence.ts";
 import { isNameList } from "./name-list-sentence.ts";
 import { pageMarkerPattern, pageMarkerSize } from "./page-marker.ts";
+import { quotedSentenceParts } from "./quoted-sentences.ts";
 import { isInListItem, isTitleLine, quotedTitleWords, termSeriesSaving } from "./sentence-title.ts";
 
 type Measure = { readonly size: number; readonly limit: number; readonly variant?: string };
@@ -26,6 +27,12 @@ const unwrittenWords = (sentence: Sentence, text: string, listItems: SentenceWor
 const sizeOf = (text: string, unit: LengthUnit): number =>
   unit === "word" ? text.split(/\s+/u).filter((word) => word.length > 0).length : text.replace(/\s+/gu, "").length;
 
+/** 「」の中に句点で閉じた文が二つ以上あれば、その一つ一つと括弧の外を別に測る（引いた事故の報告「…転落。…入院。」）。 */
+const longestQuotedPart = (text: string, size: number, markers: RegExp | undefined): number => {
+  const parts = quotedSentenceParts(text);
+  return parts.length === 1 ? size : Math.max(...parts.map((part) => sizeOf(part, "char") - pageMarkerSize(part, markers, "char")));
+};
+
 /**
  * 文書と違う言語の文（和文の中の英文）は、その言語の単位と上限で測る。rule がその言語の段を持たなければ文書のもので。
  * 印刷版のページの印（( printed page 52044)）は文の言葉ではないので数えない。
@@ -40,7 +47,8 @@ const measureOf = (sentence: Sentence, unit: LengthUnit, options: DetectorOption
     const text = proseText(sentence);
     if (unit === "word" && isTitleLine(text)) return { size: 0, limit: options.limit };
     const unwritten = unit === "word" ? unwrittenWords(sentence, text, words.listItems) : 0;
-    return { size: lengthOf(sentence, unit) - pageMarkerSize(text, words.markers, unit) - unwritten, limit: options.limit };
+    const size = lengthOf(sentence, unit) - pageMarkerSize(text, words.markers, unit) - unwritten;
+    return { size: unit === "char" ? longestQuotedPart(text, size, words.markers) : size, limit: options.limit };
   }
   return { size: lengthOf(sentence, embedded.lengthUnit), limit, variant: `embedded-${embedded.id}` };
 };
