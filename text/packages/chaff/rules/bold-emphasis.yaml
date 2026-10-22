@@ -26,10 +26,15 @@ levels:
   ja: { strict: 6, normal: 10, relaxed: 15 }
   en: { strict: 3, normal: 6, relaxed: 10 }
 
-# A README, a help page or a set of minutes bolds its feature names and fields as its layout.
-use_for: [blog, business]
+use_for: [blog, business, technical/readme, legal, docs, academic, literature, speech]
 off_for:
+  technical/readme: "A README bolds its feature names as its layout (**Self-healing** before each description), not as emphasis."
   business/meeting-notes: "Minutes bold their fields (Link:, Attendees:) before each item: that is their form, not emphasis."
+  legal: "Legal drafting repeats its terms and its sentence heads on purpose, puts the actor in the passive (shall be deemed), and joins long noun compounds (個人情報取扱事業者). This rule would only flag the form."
+  docs: "A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up."
+  academic: "Science writes in the passive, hedges its claims on purpose (may, suggest) and cites numbers as its evidence."
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+  speech: "A speech opens with greetings and closes with thanks: that is its form, not padding."
 sources: [zhang-2024]
 
 group: ai-tells
@@ -73,8 +78,8 @@ example:
       戻せるかどうかは**月に一度**確かめ、困る前に気付けるようにします。
 
 not_flagged:
-  ja: 太字が 2 つまでの文書と、短い文書は測りません。箇条書きの頭の太字の札（「- **速さ**：」）は bold-label-list が数えるので、ここでは数えません。表のセルと見出しの中の太字も数えません。ブログとビジネス文書だけを見ます。項目の名前を太字にする議事録は見ません。
-  en: A document with two bold spans or fewer, and a short document, are not measured. A bold label opening a list item ("- **Speed**:") is bold-label-list's to count and is not counted here, nor is bold inside a table cell or a heading. Only blogs and business documents are checked, and meeting notes, which bold their fields, are not.
+  ja: 太字が 2 つまでの文書と、短い文書は測りません。箇条書きの頭の太字の札（「- **速さ**：」）は bold-label-list が数えるので、ここでは数えません。表のセルと見出しの中の太字も数えません。README・議事録・説明書・法務・論文・文学・話し言葉のジャンルでは見ません。機能や項目の名前を太字にするのがその形だからです。
+  en: A document with two bold spans or fewer, and a short document, are not measured. A bold label opening a list item ("- **Speed**:") is bold-label-list's to count and is not counted here, nor is bold inside a table cell or a heading. READMEs, meeting notes, documentation, legal, academic, literary and speech genres do not run this rule, since they bold feature names and fields as their layout.
 level_meaning:
   ja: 太字の強調が 1000 字あたり {limit} 箇所まで
   en: up to {limit} bold spans of emphasis per 1000 words
