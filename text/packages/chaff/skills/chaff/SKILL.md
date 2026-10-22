@@ -61,7 +61,8 @@ documents of the genre; it does not say who wrote the text.
 ## Checks that read meaning
 
 A few checks need a reader: does the proposal state its risks, does the conclusion only restate the body, does a
-number claiming an effect have a source. chaff never runs a model in a plain check. `npx chaffjs test <file|dir>`
+number claiming an effect have a source, does the opening start from a generic problem instead of who did what
+(`generic-opening`). chaff never runs a model in a plain check. `npx chaffjs test <file|dir>`
 narrows the candidates by machine and sends only those passages to an AI (Anthropic or OpenAI, set by
 `ai_backend` in `chaff.yaml`; it needs an API key). Run it with `--dry-run` first: it shows what would be sent and
 calls nothing. Ask the person before a real run; the passages leave the machine.

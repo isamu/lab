@@ -1,0 +1,63 @@
+id: generic-opening
+layer: L4
+status: stable
+how_to_find: generic-opening
+severity: warning
+
+name:
+  ja: 一般論で始まる書き出し
+  en: Opening on a generic problem
+
+why:
+  ja: どの記事にも当てはまる問題から始めると、誰が何をした話なのかが読み手に届くのが遅れます。
+  en: An opening on a problem every article could name delays what this piece is about, and who did what.
+
+message:
+  ja: "{reason}"
+  en: "{reason}"
+
+how_to_fix:
+  ja: 誰が書いているのか、何を作ったのか、何が起きたのかから始めてください。
+  en: Start from who is writing, what was built, or what happened.
+
+what_to_check:
+  ja: |
+    文書の書き出しが、具体的な背景から始まっていること。
+    具体的な背景とは、書き手が誰か、何を作った・したか、何が起きたか、どの製品・場所・数の話か。
+    「多くの企業が〜という課題を抱えています」「〜に悩んでいませんか」「近年、〜が求められています」
+    「現代のビジネスにおいて〜は欠かせません」のように、どの文書にも当てはまる一般的な問題や風潮、
+    誰にでも当てはまる読者への問いかけから始めているなら、決まりに反する。
+    最初の文が一般論で、具体が二文目以降に来るときも反する。
+    読者への呼びかけでも、具体的な場面（「印刷を押しても何も出てこない」）から始めているなら反しない。
+  en: |
+    The opening must start from the concrete background: who is writing, what they built or did,
+    what happened, or which product, place or number the piece is about.
+    It violates the rule when it starts from a generic problem or trend that would fit any article,
+    or from a question to the reader that fits anyone: "Many teams struggle with…",
+    "In today's fast-paced world…", "As organizations increasingly…", "Have you ever…".
+    It also violates the rule when the first sentence is generic and the concrete part only comes later.
+    Addressing the reader is fine when it starts from a concrete scene ("You hit print. Nothing happens.").
+
+levels:
+  strict: error
+  normal: warning
+  relaxed: info
+
+# メール・議事録・プレスリリースの書き出しは挨拶か定型の一文で、背景を語る所ではない。
+use_for: [blog, business/report, business/proposal]
+
+group: wording
+summary:
+  ja: どの記事にも当てはまる問題から始める書き出し（AI に読ませる検査）
+  en: An opening on a problem any article could name (read by an AI)
+example:
+  ja:
+    before: 多くの企業が、社内の問い合わせ対応に課題を抱えています。本記事では、その解決策を紹介します。
+    after: 総務の 3 人で受けていた社内の問い合わせを、先月から FAQ ボットに一次対応させています。
+  en:
+    before: Many teams struggle with internal support requests. This post shows a way to fix that.
+    after: Our three-person office team used to answer every internal request; last month we put an FAQ bot in front of them.
+
+not_flagged:
+  ja: 機械では決めません。chaff test で、書き出しの数文だけを AI が読みます。最初の文が数（日付・件数・金額）を言うなら送りません。
+  en: No machine decides this. chaff test has an AI read the first few sentences only, and sends nothing when the first sentence states a number (a date, a count, a sum).

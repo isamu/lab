@@ -111,7 +111,8 @@ npx chaffjs relax <rule>         # or strict / off
 ```
 
 Rules about a team's own words need their lists in `chaff.yaml`. The checks that read meaning
-rather than form run with `npx chaffjs test`.
+rather than form run with `npx chaffjs test`; one of them, `generic-opening`, asks whether the opening starts
+from a generic problem ("Many teams struggle with…") instead of who did what.
 
 Where a rule is measured to be mostly wrong for a kind of document, its genre preset turns it off there, and the
 rule is listed under "did not run" with that reason. The measurement is the judged precision on real documents
