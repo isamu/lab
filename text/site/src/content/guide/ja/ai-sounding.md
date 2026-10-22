@@ -167,6 +167,35 @@ Claude Code の skill（`npx chaffjs skill`）は、指摘より先に指針を�
 
 画面の例は、[技術記事の例](./ai-sounding-examples#技術記事を節ごとに書き直す)の最後にあります。
 
+## AI らしさを全部消す
+
+「AI臭さを全部消して」と頼まれたら、計画に `--all-ai-signs` を付け、止めるときを満たすまで繰り返します。
+
+```bash
+npx chaffjs fix-plan article.md --all-ai-signs --json                       # 1. AI らしさのルールを全部、点、止めるとき
+npx chaffjs test article.rewritten.md --checks ai-tells --dry-run           # 2. 読まないとわからない目印を問う
+npx chaffjs fix-plan article.rewritten.md --all-ai-signs --before article.md --json  # 3. 書き直しを元と比べる
+npx chaffjs compare article.md article.rewritten.md                          # 4. 事実が落ちていないか、足されていないか
+```
+
+1. `--all-ai-signs` は、ジャンルが止めているものや対象にしていないものも含めて、AI らしさのルールを全部動かします。
+   計画には `aiScore`（`ai-score` の点）、`aiRules`（指摘のある AI らしさのルール）、`stop`（止めるとき）が加わります。
+   計画の直し方で、`rules` のどのルールの指摘も直します。AI らしさ以外のルールも直し、書き直しで悪くしません。
+2. `--checks ai-tells` は、ルールでは見えない目印を問います。作った具体、抽象的な書き出し、誰も言っていないことの打ち消し、
+   教訓で締める結び、課題を裏返しただけの効果の一覧、言い換えただけの繰り返し、大きく言いすぎた意味、どこにでも書ける内容、
+   相手の得にすり替えた頼みごと、同じものの言い換えです。
+   `--dry-run` で送るものを見てから、API key と書き手の了承があるときだけ送ります。送らないときは、書き直す AI が自分で読んで確かめます。
+   作ったように見える具体は書き手への問いです。「［105cm］くらい」のように印を付けて残し、確かめるか消すかを書き手に聞きます。
+3. `--before` は、元の文書より指摘が増えたルールを全部挙げます（`since.risen`）。
+4. 次のすべてが成り立つまで 2 から繰り返します。3 回までで、残ったものは理由と一緒に書き出します。
+   - `aiRules` が空。
+   - `aiScore.level` が `low`。短くて点が付かない文書は、ルールの指摘だけで決めます。
+   - `since.risen` が空。
+   - `compare` が通る。
+   - `ai-tells` のどの問いにも当てはまらない。
+
+書き手にしか埋められない空欄（［会社名］）と、書き手にしか確かめられない具体は、繰り返しても消えません。残ったものとして書き手に渡します。
+
 ## 3 つの直し方
 
 | 直し方 | 深さ | 直すもの | 向いているとき |
@@ -313,6 +342,7 @@ npx chaffjs compare old.md new.md --distinct --allow-dropped heading --allow-add
 ## 機械では見つけられない形
 
 次の形は、chaff が機械では見つけられません。どの直し方でも、読んで確かめます。
+`npx chaffjs test <file> --checks ai-tells` は、その一部を問います（[AI らしさを全部消す](#ai-らしさを全部消す)）。
 
 | 形 | 読んで確かめること |
 | --- | --- |

@@ -161,7 +161,11 @@ describe("the ai-tells checks chaff ships", () => {
     const ids = [...new Set(checks.map((check) => check.id))];
     ids.forEach((id) => {
       const languages = checks.filter((check) => check.id === id).flatMap((check) => check.languages ?? []);
-      assert.deepEqual(languages.toSorted(), ["en", "ja"], id);
+      assert.deepEqual(
+        languages.toSorted((left, right) => left.localeCompare(right)),
+        ["en", "ja"],
+        id,
+      );
     });
   });
 

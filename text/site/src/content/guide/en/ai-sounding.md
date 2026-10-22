@@ -168,6 +168,36 @@ Phrases people already wrote as often before (解像度を上げる, 腹落ち) 
 
 The [tech article example](./ai-sounding-examples#a-bold-rewrite-of-a-tech-article) ends with a screen.
 
+## Removing every AI tell
+
+When the request is to remove all of it, add `--all-ai-signs` to the plan and repeat until it says stop.
+
+```bash
+npx chaffjs fix-plan article.md --all-ai-signs --json                              # 1. every AI-likeness rule, the score, when to stop
+npx chaffjs test article.rewritten.md --checks ai-tells --dry-run                  # 2. the tells only a reader can judge
+npx chaffjs fix-plan article.rewritten.md --all-ai-signs --before article.md --json  # 3. the rewrite against the original
+npx chaffjs compare article.md article.rewritten.md                                 # 4. no fact dropped or added
+```
+
+1. `--all-ai-signs` runs every AI-likeness rule, also those the genre turns off or leaves out.
+   The plan then carries `aiScore` (the `ai-score` level), `aiRules` (the AI-likeness rules with findings) and `stop` (when to stop).
+   Rewrite in the plan's way and fix every spot of every rule in `rules`, the other rules too, so the rewrite leaves nothing worse.
+2. `--checks ai-tells` asks about the tells no rule can see: invented specifics, an abstract opening, a denial of what nobody said,
+   a moral at the end, a benefits list that mirrors the problems, a claim restated, inflated significance, generic content,
+   a request recast as the reader's benefit, the same thing renamed.
+   Look at `--dry-run` first, and send only with an API key and the writer's yes. Without them, the AI that rewrites reads the passages itself.
+   A specific that looks invented is a question for the writer: keep it marked, "[on a five-hour flight]", and ask whether to confirm or cut it.
+3. `--before` lists every rule with more findings than in the original (`since.risen`).
+4. Repeat from 2 until all of these hold, three passes at most, and list what is left with the reason:
+   - `aiRules` is empty.
+   - `aiScore.level` is `low`. A document too short to score is decided by the rules' findings alone.
+   - `since.risen` is empty.
+   - `compare` passes.
+   - None of the `ai-tells` questions fits.
+
+A blank only the writer can fill ([Client Name]) and a specific only the writer can confirm do not go away by repeating.
+Hand them to the writer as what is left.
+
 ## Three ways to fix it
 
 | Way | Depth | What it changes | When to use it |
@@ -313,6 +343,7 @@ npx chaffjs compare old.md new.md --distinct --allow-dropped heading --allow-add
 ## What chaff cannot see
 
 chaff cannot find these shapes by machine. Check them by reading, whichever way you rewrite.
+`npx chaffjs test <file> --checks ai-tells` asks about some of them ([Removing every AI tell](#removing-every-ai-tell)).
 
 | Shape | What to look for |
 | --- | --- |

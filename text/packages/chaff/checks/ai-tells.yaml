@@ -88,7 +88,7 @@ checks:
   - id: restated-claim
     languages: en
     name: No claim restated in other words
-    look_at: "\"In other words\" \"Put simply\" \"That is,\" \"This means\" \"In short\""
+    look_at: '"In other words" "Put simply" "That is," "This means" "In short"'
     check: |
       The sentence adds something new to what came before it (a reason, an example, a figure, a condition).
       It is not the previous claim said again in other words.
@@ -134,7 +134,7 @@ checks:
   - id: recipient-benefit
     languages: en
     name: No request recast as the reader's benefit
-    look_at: "\"for you\" \"get the most out of\" \"benefit you\" \"valuable for\""
+    look_at: '"for you" "get the most out of" "benefit you" "valuable for"'
     check: |
       A request or notice is not recast as the reader's own benefit ("so you can get the most out of the session").
     how_to_fix: Say plainly what you are asking for.

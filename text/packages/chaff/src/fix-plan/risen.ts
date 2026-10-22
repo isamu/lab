@@ -9,7 +9,5 @@ const countsOf = (findings: readonly Pick<Finding, "rule">[]): Map<string, numbe
 /** Every rule whose findings rose from the original to the rewrite, in the order the rewrite's findings name them. */
 export const risenRules = (before: readonly Pick<Finding, "rule">[], after: readonly Pick<Finding, "rule">[]): RisenRule[] => {
   const was = countsOf(before);
-  return [...countsOf(after)]
-    .map(([rule, count]) => ({ rule, before: was.get(rule) ?? 0, after: count }))
-    .filter((entry) => entry.after > entry.before);
+  return [...countsOf(after)].map(([rule, count]) => ({ rule, before: was.get(rule) ?? 0, after: count })).filter((entry) => entry.after > entry.before);
 };

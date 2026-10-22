@@ -62,7 +62,8 @@ export type FixPlanText = {
 
 export const FIX_PLAN_TEXT: Texts<FixPlanText> = {
   ja: {
-    usage: "使い方: chaff fix-plan <file> [--depth light|structure|register] [--all-ai-signs] [--before <元の文書>] [--experimental] [--genre <ジャンル>] [--no-guide] [--json]",
+    usage:
+      "使い方: chaff fix-plan <file> [--depth light|structure|register] [--all-ai-signs] [--before <元の文書>] [--experimental] [--genre <ジャンル>] [--no-guide] [--json]",
     notFound: (path) => `${path} がありません。`,
     title: (path) => `直す計画: ${path}`,
     about: (language, genre) => `言語 ${language}、ジャンル ${genre}`,
@@ -129,10 +130,9 @@ export const FIX_PLAN_TEXT: Texts<FixPlanText> = {
     saveAs: (path) => `書き直したものを ${path} に保存して、次を実行します。`,
     checksNote:
       "1 つめは書き直した文書の指摘、2 つめは事実が落ちていないか・足されていないか、3 つめは構成の変化です。数は chaff の出力から取り、形容詞で言わないでください。",
-    loopConstraint:
-      "下の「止めるとき」がすべて満たされるまで、書き直しと確かめを繰り返す（3 回まで）。3 回で残ったものは、残した理由と一緒に書き出す。",
+    loopConstraint: "下の「止めるとき」がすべて満たされるまで、書き直しと確かめを繰り返す（3 回まで）。3 回で残ったものは、残した理由と一緒に書き出す。",
     aiScoreHeading: "AI らしさの点",
-    aiScoreLine: (level, signs, compared, shown) => `${level}（目印 ${String(signs)} / ${String(compared)}）${shown === "" ? "" : `: ${shown}`}`,
+    aiScoreLine: (level, signs, compared, shown) => `${level}（目印 ${String(signs)} / ${String(compared)}）${shown === "" ? "" : ": " + shown}`,
     notScoredLine: (reason) => `点は付きません（${reason}）。ルールの指摘だけで判断します。`,
     aiRulesLine: (rules) => (rules === "" ? "指摘の残る AI らしさのルール: なし" : `指摘の残る AI らしさのルール: ${rules}`),
     sinceHeading: (path) => `元の文書 ${path} と比べて`,
@@ -150,7 +150,8 @@ export const FIX_PLAN_TEXT: Texts<FixPlanText> = {
     ],
   },
   en: {
-    usage: "usage: chaff fix-plan <file> [--depth light|structure|register] [--all-ai-signs] [--before <original>] [--experimental] [--genre <genre>] [--no-guide] [--json]",
+    usage:
+      "usage: chaff fix-plan <file> [--depth light|structure|register] [--all-ai-signs] [--before <original>] [--experimental] [--genre <genre>] [--no-guide] [--json]",
     notFound: (path) => `${path} does not exist.`,
     title: (path) => `Fix plan: ${path}`,
     about: (language, genre) => `language ${language}, genre ${genre}`,
@@ -216,7 +217,7 @@ export const FIX_PLAN_TEXT: Texts<FixPlanText> = {
     loopConstraint:
       'Rewrite and check again until every line of "When to stop" below holds, at most three passes. List what is left after the third, with the reason it stays.',
     aiScoreHeading: "AI-likeness score",
-    aiScoreLine: (level, signs, compared, shown) => `${level} (${String(signs)} of ${String(compared)} signs)${shown === "" ? "" : `: ${shown}`}`,
+    aiScoreLine: (level, signs, compared, shown) => `${level} (${String(signs)} of ${String(compared)} signs)${shown === "" ? "" : ": " + shown}`,
     notScoredLine: (reason) => `Not scored (${reason}). The rules' findings decide alone.`,
     aiRulesLine: (rules) => (rules === "" ? "AI-likeness rules with findings left: none" : `AI-likeness rules with findings left: ${rules}`),
     sinceHeading: (path) => `Against the original, ${path}`,

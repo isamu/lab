@@ -146,14 +146,22 @@ const levelText = (score: AiScoreSummary | null): string => score?.level ?? scor
 const aiScoreLines = (plan: FixPlan, text: FixPlanText): string[] =>
   plan.aiScore === null
     ? []
-    : ["", `## ${text.aiScoreHeading}`, "", ...bullets([scoreText(plan.aiScore, text), text.aiRulesLine(plan.aiRules.map((rule) => `\`${rule}\``).join(", "))])];
+    : [
+        "",
+        `## ${text.aiScoreHeading}`,
+        "",
+        ...bullets([scoreText(plan.aiScore, text), text.aiRulesLine(plan.aiRules.map((rule) => `\`${rule}\``).join(", "))]),
+      ];
 
 /** What the rewrite changed against --before's original: the score before and after, and every rule whose findings rose. */
 const sinceLines = (plan: FixPlan, text: FixPlanText): string[] => {
   const { since } = plan;
   if (since === null) return [];
   const score = plan.aiScore === null ? [] : [text.sinceScore(levelText(since.aiScore), levelText(plan.aiScore)), ""];
-  const risen = since.risen.length === 0 ? [text.noneRisen] : [text.risenLead, "", ...bullets(since.risen.map((rule) => `\`${rule.rule}\`: ${text.risenLine(rule.before, rule.after)}`))];
+  const risen =
+    since.risen.length === 0
+      ? [text.noneRisen]
+      : [text.risenLead, "", ...bullets(since.risen.map((rule) => `\`${rule.rule}\`: ${text.risenLine(rule.before, rule.after)}`))];
   return ["", `## ${text.sinceHeading(since.path)}`, "", ...score, ...risen];
 };
 

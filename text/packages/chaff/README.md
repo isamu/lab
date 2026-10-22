@@ -156,6 +156,18 @@ each one, and the checks to run afterwards. `--depth` sets how far the rewrite m
 One of the checks is `npx chaffjs compare article.md after.md`: it fails when a fact was dropped or added, and lists
 a name whose spelling the rewrite corrected (Borrowmoney → BorrowMoney) as respelled, not as a fact lost.
 
+To remove every AI tell, loop on one command:
+
+```bash
+npx chaffjs fix-plan article.md --all-ai-signs --json                              # every AI-likeness rule, the ai-score, when to stop
+npx chaffjs fix-plan after.md --all-ai-signs --before article.md --json            # the rewrite: what is left, and which rules it raised
+npx chaffjs test after.md --checks ai-tells --dry-run                              # the tells only a reader can judge (invented specifics, …)
+```
+
+`--all-ai-signs` runs every AI-likeness rule, also those the genre turns off, and adds the `ai-score` level and the
+stop conditions. `--before` lists every rule with more findings than in the original. `--checks ai-tells` asks the
+questions chaff ships for the tells no rule can see.
+
 ## AI score
 
 ```bash
