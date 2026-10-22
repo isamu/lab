@@ -229,7 +229,7 @@ repeats the body. The writer usually wants the structure changed, not only the s
 **Bold** (section by section, outline kept):
 
 1. Run chaff and note the document-level signals: the `ai-generated-composite` inputs,
-   `bold-density`, `contrast-framing`, `stock-transition`, `sentence-rhythm`.
+   `bold-density`, `bold-emphasis`, `contrast-framing`, `stock-transition`, `sentence-rhythm`.
 2. Rewrite each section toward a human voice: less bold; one-line paragraphs and punchlines folded back into
    paragraphs; no "X ではありません。Y です" / "It's not X. It's Y" frames; lists turned back into sentences where the
    items connect; fewer em dashes; no announcing openers. Each paragraph carries one claim, joined to the last by a
@@ -295,7 +295,7 @@ repeats the body. The writer usually wants the structure changed, not only the s
      once.
 6. **Stop** when all of these hold, or after two full passes, whichever comes first:
    - `ai-generated-composite` does not fire;
-   - the density rules (`bold-density`, `contrast-framing`, `stock-transition`, `colon-lead-in`) are under their limits;
+   - the density rules (`bold-density`, `bold-emphasis`, `contrast-framing`, `stock-transition`, `colon-lead-in`) are under their limits;
    - `chaff outline <old> <new>` shows the new structure score under the plan's limit, with no ✗ left on the measures
      the plan listed as targets;
    - `compare` is clean, or every exclusion has a stated reason.

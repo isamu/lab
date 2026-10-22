@@ -70,4 +70,9 @@ Bring the key.
 
 Return the key.
 
+## Roles
+
+- **Chair**: Tanaka.
+- **Notes**: Suzuki.
+
 Subject: The weekly report on the budget, the hiring plan and the schedule
