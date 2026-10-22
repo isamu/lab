@@ -1,0 +1,35 @@
+# The sections of a textbook proposal or report outline. A heading counts for its group when it starts with the pattern
+# (case ignored). One or two are ordinary in a real proposal; ai-structure counts the outline when four groups appear.
+id: template-heading
+language: en
+entries:
+  - { pattern: executive summary, group: summary }
+  - { pattern: summary, group: summary }
+  - { pattern: overview, group: summary }
+  - { pattern: background, group: background }
+  - { pattern: current situation, group: background }
+  - { pattern: current state, group: background }
+  - { pattern: problem statement, group: background }
+  - { pattern: the problem, group: background }
+  - { pattern: proposed solution, group: proposal }
+  - { pattern: proposal, group: proposal }
+  - { pattern: our proposal, group: proposal }
+  - { pattern: recommendation, group: proposal }
+  - { pattern: recommendations, group: proposal }
+  - { pattern: expected benefits, group: benefits }
+  - { pattern: benefits, group: benefits }
+  - { pattern: expected outcomes, group: benefits }
+  - { pattern: expected impact, group: benefits }
+  - { pattern: costs, group: costs }
+  - { pattern: cost, group: costs }
+  - { pattern: budget, group: costs }
+  - { pattern: implementation, group: implementation }
+  - { pattern: implementation plan, group: implementation }
+  - { pattern: timeline, group: implementation }
+  - { pattern: rollout, group: implementation }
+  - { pattern: risks, group: risks }
+  - { pattern: risk, group: risks }
+  - { pattern: risks and mitigation, group: risks }
+  - { pattern: next steps, group: next }
+  - { pattern: conclusion, group: next }
+  - { pattern: conclusions, group: next }

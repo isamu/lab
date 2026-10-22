@@ -14,10 +14,13 @@ const STRUCTURE_RULE = "ai-structure";
 /** The genre group a genre's human shares are measured under: business for business/report. */
 export const genreGroupOf = (genre: string): string => genre.split("/")[0] ?? genre;
 
-/** The structure baseline is human articles: it is compared only in the genres ai-structure runs in. */
+/** Business runs ai-structure for its textbook outline, but the structure baseline is articles, not business documents. */
+const NOT_ARTICLES = "business";
+
+/** The structure baseline is human articles: it is compared only in the article genres ai-structure runs in. */
 const structureApplies = (rules: readonly RuleDefinition[], genre: string): boolean => {
   const rule = rules.find((entry) => entry.id === STRUCTURE_RULE);
-  return rule !== undefined && standingIn(rule, genre, presetLevels(genre)).kind === "on";
+  return rule !== undefined && genreGroupOf(genre) !== NOT_ARTICLES && standingIn(rule, genre, presetLevels(genre)).kind === "on";
 };
 
 type SignalResult = { readonly runs: SignalRun[]; readonly compositeFired: string[] };
