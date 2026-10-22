@@ -164,7 +164,8 @@ npx chaffjs ai-score article.md
 
 A quick AI-likeness reading: low, medium or high. It counts the signs of generated text that
 human documents of the same genre rarely show. It is not a verdict on whether AI wrote it, and
-it is not meant to be one.
+it is not meant to be one. Among the signs: `closing-exhortation`, a closing that cheers the reader on
+two or more times ("You've got this", 「ぜひ〜してみてください」).
 
 ## Grading a model's output
 

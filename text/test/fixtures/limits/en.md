@@ -66,6 +66,6 @@ Bring the key.
 
 ## ✅ After
 
-Return the key.
+Return the key. You've got this.
 
 Subject: The weekly report on the budget, the hiring plan and the schedule

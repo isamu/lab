@@ -1,0 +1,23 @@
+# 結びで読み手を励ます・請け合う文。group は closing-exhortation.ts の組み方（lead:<組> があり、文が end:<組> で終わる）。
+# 「ぜひご検討ください」はビジネス文の普通の結びなので、ぜひの後ろは「〜てみてください」「〜しましょう」だけを数える。
+id: closing-exhortation
+language: ja
+entries:
+  - pattern: てみてほしい
+  - pattern: でみてほしい
+  - pattern: ぜひ
+    group: lead:zehi
+  - pattern: てみてください
+    group: end:zehi
+  - pattern: でみてください
+    group: end:zehi
+  - pattern: ましょう
+    group: end:zehi
+  - pattern: きっと
+    group: lead:kitto
+  - pattern: はず
+    group: end:kitto
+  - pattern: はずだ
+    group: end:kitto
+  - pattern: はずです
+    group: end:kitto

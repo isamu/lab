@@ -129,6 +129,7 @@ Legal documents, manuals, literature and transcripts are written differently, so
 | `emoji-heading` | Headings with an emoji in them, one after another ("## 🚀 Getting started") |
 | `bold-label-list` | Many list items that open with a bold label and a colon ("- **Speed**: ...") (Japanese documents only) |
 | `assistant-residue` | What is left of a chat reply ("I hope this helps", "As of my last knowledge update") |
+| `closing-exhortation` | A closing that cheers the reader on or promises the outcome, two or more times ("You've got this", "Happy baking!") |
 | `chat-citation-residue` | Marks a pasted chat answer leaves: links ending in "?utm_source=chatgpt.com", "oaicite" |
 | `closing-cliche` | A stock closing ("In conclusion", "I hope this helps") |
 | `bold-density` | Too much bold |
