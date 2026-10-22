@@ -117,8 +117,9 @@ tell which is right, leave both and ask.
   A file's front matter `genre:` (or `type:`) sets that one file, when neither `genre:` nor a matching `by_path`
   entry does. Strongest first: `--genre` for one run, then `by_path`, `genre:`, front matter, the path, the content,
   and `blog/tech`. `rules:` wins over the genre's preset.
-- `profile:` names a bundled kind of document with fixed conventions (`statute`). Leave it out: the genre or the
-  content chooses it, and the first line of `npx chaffjs tree` shows the choice. `none` stops the choice.
+- `profile:` names a bundled kind of document with fixed conventions: `statute`, `listing`, `property-sale`,
+  `verse` (a Japanese poem: each line ends a sentence) or `play` (a Japanese play: stage directions in （） are split
+  from the spoken line). Leave it out: the genre or the content chooses it, and the first line of `npx chaffjs tree` shows the choice. `none` stops the choice.
 - `names:` lists the team's names (organisations, products), each read as one name. `include:` adds files besides
   Markdown when a folder is checked (`include: ["*.yaml"]`).
 

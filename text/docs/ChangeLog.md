@@ -2,6 +2,76 @@
 
 Newest first.
 
+## 0.38.0 — 2026-10-22
+
+Most of this release again comes from judging real documents in isamu/chaff-corpus: US statutes and court opinions,
+Federal Register notices, RFCs, Diet records, newsletters, poems and plays, and HTML pages. False positives found there
+are fixed rule by rule. Two bundled profiles read Japanese verse and plays, the AI-likeness checks gain two signals, and
+rules are placed by judged precision without being hidden by their own offs. There are no new rules.
+
+### AI-likeness
+
+- sentence-rhythm joins the ai-tells group, with a level measured for Japanese blogs (#1931).
+- unfilled-placeholder reports a 〇〇 left where a Japanese business letter needs a name, a sum or a date (〇〇様,
+  株式会社〇〇, 〇万円) (#1928).
+
+### Profiles and sentences
+
+- New profiles: `verse` ends a Japanese poem's sentences at its line ends (#1722), and `play` splits a stage direction
+  in （） from the spoken line (#1726). `literature/poetry` and `literature/play` choose them.
+- Japanese sentences end after a quotation closed at the line end (#1551), around a line that stands as one unit (a
+  URL, a contact field, a bracketed label) (#1686), and before a ※ note line (#1724).
+- English sentences: an initial before a sentence-start or lower-case word, initials after by or and, U.S. and name
+  abbreviations (Jas., Wm.) before a name (#1637, #1744, #1753, #1892).
+
+### Rules
+
+- Catches more: agreement-slip reports two determiners in a row (the some roads) (#1654); bracket-width-consistency
+  compares square brackets too (#1902).
+- Placement: rules are placed by judged precision, and `yarn rules:precision` measures without the offs it wrote
+  (`CHAFF_IGNORE_MEASURED_OFFS=1`); a rule file's `precision_hold` keeps a group on while a narrowing fix is due
+  (#1747). one-sentence-paragraph-run is off for speech/transcript (#1678) and demonstrative-opener-run for literature
+  (#1707).
+- Fewer false findings on real documents:
+  - Japanese wording: orthographic-variant (#1561, #1640, #1680, #1704, #1745, #1893, #1924), max-kanji-continuous
+    (#1539, #1638, #1706, #1888), no-mixed-desumasu (#1543, #1673, #1755), adversative-ga-repeat (#1565, #1694),
+    humble-for-others (#1566), empty-intensifier (#1548), doubled-word (#1556, #1742), no-doubled-joshi (#1643),
+    teki-overuse (#1657), colloquial-opener (#1647), comparative-without-baseline (#1649, #1692, #1912),
+    topic-predicate-distance (#1716, #1736), demonstrative-opener-run (#1718, #1737), tari-unpaired (#1725, #1915),
+    stray-space (#1689), kutoten-consistency (#1690), bracket-nesting (#1676, #1898), fullwidth-alnum-consistency (#1562,
+    #1571), max-ten (#1749), taigen-dome-in-prose (#1682), ngram-repetition (#1564), change-rate-mismatch (#1693),
+    doubled-punctuation (#1895), unqualified-superlative (#1721), email-greeting-closing reads a newsletter issue (#1685,
+    #1899).
+  - Lists, headings and tables: one-sentence-paragraph-run (#1547, #1751), list-item-form-mix (#1552, #1727, #1752),
+    missing-final-period (#1695, #1914), heading-end-punctuation-mix (#1650), heading-numbering-mix (#1913),
+    colon-lead-in (#1900), title-case-consistency (#1728), title-length (#1631), empty-table-cell (#1733), no-em-dash
+    (#1732).
+  - Definitions, references and numbering: defined-term-form (#1553), requirement-smell (#1555, #1923),
+    use-before-definition (#1642, #1746), unused-definition (#1648, #1710, #1731), duplicate-definition (#1911),
+    undefined-term (#1920), defined-name-repeated (#1925), announced-count-mismatch (#1926), dangling-reference reads US
+    code and Public Law citations (#1655, #1671, #1674, #1691, #1708, #1908), numbering-gap (#1645, #1677, #1729, #1921),
+    citation-reference-mismatch (#1659, #1906), figure-reference-order (#1660, #1907), broken-link (#1662),
+    link-text-url-mismatch (#1559), request-without-deadline (#1666), return-type-mismatch (#1894).
+  - English wording: undefined-acronym (#1550, #1634, #1683, #1897, #1917, #1922), acronym-expansion-conflict (#1675),
+    oxford-comma-consistency (#1560, #1719, #1741), which-that-consistency (#1653), unknown-word (#1696, #1701, #1909),
+    name-variant (#1665, #1702), agreement-slip (#1700), article-sound (#1705, #1896), numeral-sentence-start (#1699),
+    sentence-initial-conjunction-run (#1651), wordy-phrase (#1646), weasel-word (#1549), hyphen-as-dash (#1652, #1712),
+    unrendered-emphasis (#1681), max-sentence-length (#1639, #1684, #1901), max-paragraph-length (#1635),
+    number-style-consistency (#1919).
+  - Dates: date-without-year (#1554, #1687, #1698, #1910), date-weekday-mismatch (#1698), relative-date-mismatch
+    (#1644).
+
+### HTML, compare and fix-plan
+
+- HTML pages: spaces around tags, formulas, empty-looking numbered sections, table header rows and captions, footnote
+  marks, section links, accordion titles and script-filled boxes are read as the page shows them (#1658, #1663, #1667,
+  #1670, #1711, #1713, #1714, #1743).
+- compare: a name the rewrite respelled is reported as respelled, not dropped and added (#1568), and a quotation opened
+  with the closing mark is a quotation (#1570).
+- fix-plan: nominalization's rewrite attaches する to the noun (#1632), and list-item-form-mix's keeps an item's force
+  (#1633).
+- Corpus: 青空文庫 texts are stored without transcriber notes (#1572), and Diet records drop divider lines (#1679).
+
 ## 0.37.0 — 2026-10-19
 
 This release comes from judging more real documents in isamu/chaff-corpus: Cabinet Office press conferences, FSA
