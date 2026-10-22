@@ -1,6 +1,7 @@
 import type { StructureNode } from "../plugin.ts";
 import { writtenReading } from "./written-resolve.ts";
 import { partAt } from "./attached-parts.ts";
+import { nameBeforeDefinition } from "./restated-name.ts";
 import { namedTargets, pointsToNamedSection } from "./section-names.ts";
 import { listedTags } from "./listed-tags.ts";
 import { namesAbsentUnit, withinAbsentUnit } from "./unit-word.ts";
@@ -219,8 +220,10 @@ const definitionsInOrder = (tree: StructureNode): Definition[] => {
  * 同じ語の二度目以降の定義。どちらが正しいかは決めず、両方の場所を示す。
  * 範囲を限った定義（この条において「X」とは）は、同じ条の中でだけ比べる。別の条で定義し直すのは正しい書き方。
  * 添付した文書（partStarts から始まる Exhibit A など）は別の文書なので、その中の定義はその中でだけ比べる。
+ * 同じ名前の後ろの括弧で同じ語を定義し直したもの（件名と本文の Financial Crimes Enforcement Network ("FinCEN")）は、
+ * 一つの定義を書き直しただけで食い違えないので言わない。名前は source から読む。
  */
-export const duplicateDefinitions = (tree: StructureNode, partStarts: readonly number[] = []): StructureIssue[] => {
+export const duplicateDefinitions = (tree: StructureNode, partStarts: readonly number[] = [], source = ""): StructureIssue[] => {
   const first = new Map<string, StructureNode>();
   return definitionsInOrder(tree).flatMap(({ node, article }) => {
     const term = textOf(node, "term");
@@ -232,6 +235,8 @@ export const duplicateDefinitions = (tree: StructureNode, partStarts: readonly n
       first.set(key, node);
       return [];
     }
+    const name = nameBeforeDefinition(source, node);
+    if (name !== undefined && name === nameBeforeDefinition(source, earlier)) return [];
     return [{ offset: node.span.start, values: { term, first: earlier.line } }];
   });
 };

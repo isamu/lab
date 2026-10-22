@@ -83,7 +83,7 @@ describe("duplicate-definition: an attached instrument", () => {
       "",
     ];
     assert.deepEqual(duplicates(form.join("\n")), []);
-    const twice = [...form, 'I will not work for Example Corp. (the "Company") again.', ""];
+    const twice = [...form, 'I will not work for Example Holdings (the "Company") again.', ""];
     assert.deepEqual(duplicates(twice.join("\n")), ['"Company" is also defined on line 10']);
   });
 
