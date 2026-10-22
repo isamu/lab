@@ -2,7 +2,7 @@
 
 Alice met Bob in London with Carol from Paris and Dave from Berlin.
 
-They agreed on the plan below.
+They agreed on the plan below. I hope this email finds you well. I apologize for any inconvenience.
 
 ## Summary
 
@@ -60,6 +60,9 @@ The plan was very good and very clear, and the team was very busy.
 
 So, the plan holds. So, we ship.
 
+Most people skip the check. Nobody reads the log. Everyone pays for it later.
+Is the plan perfect? No. The result? Faster builds.
+
 ## 🚀 Before
 
 Bring the key.
@@ -67,5 +70,10 @@ Bring the key.
 ## ✅ After
 
 Return the key.
+
+## Roles
+
+- **Chair**: Tanaka.
+- **Notes**: Suzuki.
 
 Subject: The weekly report on the budget, the hiring plan and the schedule

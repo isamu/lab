@@ -125,13 +125,17 @@ Claude Code の skill（`npx chaffjs skill`）は、指摘より先に指針を�
 | `contrast-framing` | 「単なる X ではなく Y」「X ではありません。Y です」の対比の枠の重なり |
 | `stock-transition` | 「さらに、」「加えて、」で始まる文の密度 |
 | `announcing-opener` | 「重要なのは、」「ポイントは、」「正直に言うと、」で始まる文の重なり |
+| `over-general-claim` | 「most people」「nobody」「everyone」のように人を大きく括る一般論の重なり（英語のブログとビジネス文書だけ） |
+| `q-fragment-answer` | 「Is it perfect? No.」「The result? Faster builds.」のように、自分で問うてすぐ断片で答える所の重なり（英語の文書だけ） |
 | `colon-lead-in` | 「以下の通りです：」のように、コロンで箇条書きへ渡す文の密度 |
 | `emoji-heading` | 「## 🚀 はじめに」のように、絵文字の付いた見出しが続く所 |
-| `bold-label-list` | 「- **速さ**：〜」のように、太字の札とコロンで始まる項目の多さ（日本語の文書だけ） |
+| `bold-label-list` | 「- **速さ**：〜」のように、太字の札とコロンで始まる項目の多さ |
 | `assistant-residue` | 「お役に立てれば幸いです」のような、チャットの返事の名残 |
+| `email-stock-courtesy` | 「I hope this email finds you well」「I apologize for any inconvenience」のような英文メールの決まり文句が、一通のメールに 2 つ以上（英語の文書だけ） |
 | `chat-citation-residue` | 「?utm_source=chatgpt.com」の付いたリンクや「oaicite」のような、チャットの答えを貼ったときに残る印 |
 | `closing-cliche` | 「いかがでしたでしょうか」で締める終わり方 |
 | `bold-density` | 太字の多さ |
+| `bold-emphasis` | 文の途中の太字が文書じゅうに散っている所（箇条書きの頭の太字の札は `bold-label-list` が数えます） |
 | `no-em-dash` | ダッシュ（——）の多さ |
 | `sentence-rhythm` | 文の長さが揃いすぎている所 |
 | `rule-of-three` | 箇条書きがどれも 3 項目の所 |
