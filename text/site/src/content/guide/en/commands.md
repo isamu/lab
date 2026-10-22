@@ -543,6 +543,7 @@ passages. `risk-disclosure` does not even ask when a heading already names the r
 | `risk-disclosure` | whether a proposal states its risks | nothing, when a heading names a risk section |
 | `empty-conclusion` | whether the closing only summarises the body | only when the last section has no number, code or link the body did not have |
 | `unsourced-number` | whether a number claiming an effect has a source | only when a number and an effect word share a sentence with no source |
+| `generic-opening` | whether the opening starts from a generic problem rather than the concrete background (who, what was built, what happened) | the first three sentences only, and nothing when the first sentence states a number |
 
 The same question asked twice is answered from `.chaff-cache/`, so running it on every CI build is not billed again.
 
@@ -551,13 +552,14 @@ The same question asked twice is answered from `.chaff-cache/`, so running it on
 ```
 $ npx chaffjs test proposal.md --genre business/proposal --dry-run
 …
-proposal.md   sends 2 passages out of 4 sentences (the API was not called)
+proposal.md   sends 3 passages out of 4 sentences (the API was not called)
 
       1 to send  Empty conclusion  (narrowed by machine)
+      1 to send  Opening on a generic problem  (narrowed by machine)
       1 to send  No risk disclosed  (narrowed by machine)
       0 to send  Number without a source  (narrowed by machine)
 …
-  2 passages in all would be sent. With --dry-run the API was not called.
+  3 passages in all would be sent. With --dry-run the API was not called.
   Sent to: anthropic / claude-opus-5 (no credentials)
 ```
 
