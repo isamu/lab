@@ -142,8 +142,25 @@ describe("bold-label-list", () => {
     assert.ok(!idsFor(`# 仕様\n\n${labelledList(8)}\n`, ja, "technical/spec").includes("bold-label-list"));
   });
 
-  it("valid: an English document is not checked", () => {
-    const list = Array.from({ length: 8 }, (_unused, index) => `- **Item ${index + 1}**: what it does.`).join("\n");
-    assert.ok(!idsFor(`# Post\n\n${list}\n`, en).includes("bold-label-list"));
+  const englishList = (count: number): string => Array.from({ length: count }, (_unused, index) => `- **Item ${index + 1}**: what it does.`).join("\n");
+
+  it("invalid: an English list of eight bold-label items is reported", () => {
+    assert.ok(idsFor(`# Post\n\n${englishList(8)}\n`, en).includes("bold-label-list"));
+  });
+
+  it("valid: four English bold-label items stay under the normal level", () => {
+    assert.ok(!idsFor(`# Post\n\n${englishList(4)}\n`, en).includes("bold-label-list"));
+  });
+
+  it("valid: English items labelled without bold, or in code, are not counted", () => {
+    const plain = Array.from({ length: 8 }, (_unused, index) => `- Item ${index + 1}: what it does.`).join("\n");
+    const options = Array.from({ length: 8 }, (_unused, index) => `- **\`--option-${index}\`**: what it does.`).join("\n");
+    assert.ok(!idsFor(`# Post\n\n${plain}\n`, en).includes("bold-label-list"));
+    assert.ok(!idsFor(`# Post\n\n${options}\n`, en).includes("bold-label-list"));
+  });
+
+  it("valid: the labelled fields at the head of English meeting notes are their form", () => {
+    const fields = ["Date", "Place", "Present", "Chair", "Notes", "Next meeting"].map((field) => `- **${field}**: to be decided.`).join("\n");
+    assert.ok(!idsFor(`# Minutes\n\n${fields}\n`, en, "business/meeting-notes").includes("bold-label-list"));
   });
 });

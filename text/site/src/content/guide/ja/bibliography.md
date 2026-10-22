@@ -256,7 +256,7 @@ chaff はこれをもとに言い回しや書式を指しますが、「AI が�
   - 載った所：arXiv（査読前）。
   - 分かったこと：人の評価者も AI の評価者も、箇条書き、太字、絵文字、長い答えを、中身と関係なく高く評価しがちでした。
     モデルがそうした書式を多く使う理由の一つです。
-  - chaff では：[`bold-density`](../../rules/bold-density/)、[`emoji-density`](../../rules/emoji-density/)、
+  - chaff では：[`bold-density`](../../rules/bold-density/)、[`bold-emphasis`](../../rules/bold-emphasis/)、[`emoji-density`](../../rules/emoji-density/)、
     `rule-of-three` は、この偏りが文章に出た所を指します。
 - <a id="freeburg-2026"></a>**Freeburg（2026）** [arxiv.org](https://arxiv.org/abs/2603.27006)
   - The Last Fingerprint: How Markdown Training Shapes LLM Prose

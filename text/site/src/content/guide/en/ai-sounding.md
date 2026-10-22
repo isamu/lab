@@ -127,11 +127,12 @@ Legal documents, manuals, literature and transcripts are written differently, so
 | `announcing-opener` | Several sentences opening with an announcement ("The key point is", "Here's the thing", "Honestly,") |
 | `colon-lead-in` | Too many sentences ending in a colon that hand off to a list (Japanese documents only) |
 | `emoji-heading` | Headings with an emoji in them, one after another ("## 🚀 Getting started") |
-| `bold-label-list` | Many list items that open with a bold label and a colon ("- **Speed**: ...") (Japanese documents only) |
+| `bold-label-list` | Many list items that open with a bold label and a colon ("- **Speed**: ...") |
 | `assistant-residue` | What is left of a chat reply ("I hope this helps", "As of my last knowledge update") |
 | `chat-citation-residue` | Marks a pasted chat answer leaves: links ending in "?utm_source=chatgpt.com", "oaicite" |
 | `closing-cliche` | A stock closing ("In conclusion", "I hope this helps") |
 | `bold-density` | Too much bold |
+| `bold-emphasis` | Bold phrases scattered mid-sentence through the whole text (labels opening list items are left to `bold-label-list`) |
 | `no-em-dash` | Too many em dashes |
 | `sentence-rhythm` | Sentences that are all about the same length |
 | `rule-of-three` | Lists that almost all have three items |

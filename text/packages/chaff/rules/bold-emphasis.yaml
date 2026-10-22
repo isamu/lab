@@ -1,0 +1,108 @@
+id: bold-emphasis
+layer: L1
+status: stable
+how_to_find: bold-emphasis
+requires: [markdown]
+severity: info
+
+name:
+  ja: 太字の強調が文書じゅうに散っている
+  en: Bold emphasis scattered through the text
+
+why:
+  ja: 文の途中の語句を、段落ごとに太字にする形です。人の書く文書は、太字を期限や禁止のような見落とすと困る所に一つ二つ使うだけで、使わない文書がほとんどです。文書じゅうに散ると、どれが大事なのか分からなくなります。生成文によく見られる形です。
+  en: Words and phrases set in bold mid-sentence, paragraph after paragraph. Human documents mostly use no bold at all, or keep it for the one or two things a reader must not miss, such as a deadline. Scattered through the text, bold stops marking anything. A shape common in generated text.
+
+message:
+  ja: 太字の強調が 1000 字あたり {density} 箇所あります（{limit} 箇所まで）
+  en: "{count} bold {count|span|spans} of emphasis: {density} per 1000 words (limit {limit})"
+
+how_to_fix:
+  ja: 太字をいったん全部外し、見落とすと困る所だけを一つ二つ太字に戻してください。
+  en: Unbold everything, then bold again only the one or two places a reader must not miss.
+
+# 文書全体の 1000 語（日本語は 1000 字）あたりの数。箇条書きの太字の札は bold-label-list が数えるので引く。
+levels:
+  ja: { strict: 6, normal: 10, relaxed: 15 }
+  en: { strict: 3, normal: 6, relaxed: 10 }
+
+# A README, a help page or a set of minutes bolds its feature names and fields as its layout.
+use_for: [blog, business]
+off_for:
+  business/meeting-notes: "Minutes bold their fields (Link:, Attendees:) before each item: that is their form, not emphasis."
+sources: [zhang-2024]
+
+group: ai-tells
+summary:
+  ja: 文の途中の太字が文書じゅうに散り、どこが大事なのか分からなくなった所
+  en: Bold phrases scattered mid-sentence through the whole text
+example:
+  en:
+    pad: true
+    config: { genre: blog/tech }
+    before: |
+      # Backing up your photos
+
+      A backup is **only useful** if you can restore it. Keep **at least two copies**, and put one of them **somewhere else**.
+
+      Test a restore **once a month**, so you find out before you need it.
+    after: |
+      # Backing up your photos
+
+      A backup is only useful if you can restore it. Keep at least two copies, and put one of them somewhere else.
+
+      Test a restore **once a month**, so you find out before you need it.
+  ja:
+    pad: true
+    config: { genre: blog/tech }
+    before: |
+      # 写真のバックアップ
+
+      バックアップは、**戻せて初めて**役に立ちます。**少なくとも二つ**の写しを作り、一つは**別の場所**に置いてください。
+
+      写しは**自動で**取るようにし、**手作業に頼らない**ようにします。外付けの機器は**一年に一度**は買い替えを考えます。
+
+      戻せるかどうかは**月に一度**確かめ、**困る前に**気付けるようにします。
+    after: |
+      # 写真のバックアップ
+
+      バックアップは、戻せて初めて役に立ちます。少なくとも二つの写しを作り、一つは別の場所に置いてください。
+
+      写しは自動で取るようにし、手作業に頼らないようにします。外付けの機器は一年に一度は買い替えを考えます。
+
+      戻せるかどうかは**月に一度**確かめ、困る前に気付けるようにします。
+
+not_flagged:
+  ja: 太字が 2 つまでの文書と、短い文書は測りません。箇条書きの頭の太字の札（「- **速さ**：」）は bold-label-list が数えるので、ここでは数えません。表のセルと見出しの中の太字も数えません。ブログとビジネス文書だけを見ます。項目の名前を太字にする議事録は見ません。
+  en: A document with two bold spans or fewer, and a short document, are not measured. A bold label opening a list item ("- **Speed**:") is bold-label-list's to count and is not counted here, nor is bold inside a table cell or a heading. Only blogs and business documents are checked, and meeting notes, which bold their fields, are not.
+level_meaning:
+  ja: 太字の強調が 1000 字あたり {limit} 箇所まで
+  en: up to {limit} bold spans of emphasis per 1000 words
+rewrite:
+  depth: light
+  ja:
+    direction: 太字をいったん全部外し、見落とすと困る所（期限、禁止、金額）だけを一つ二つ太字に戻してください。
+    pairs:
+      - before: "バックアップは、**戻せて初めて**役に立ちます。"
+        after: バックアップは、戻せて初めて役に立ちます。
+      - before: "申請は**金曜日**までに**必ず**出してください。"
+        after: 申請は**金曜日まで**に出してください。
+    keep:
+      - 文の中身
+      - 見落とすと困る一か所の強調
+    avoid:
+      - 太字の代わりに「」や記号、絵文字で強める
+      - 太字を外したぶん、強める語を足す
+  en:
+    direction: Unbold everything, then bold again only the one or two places a reader must not miss (a deadline, a prohibition, an amount).
+    pairs:
+      - before: "A backup is **only useful** if you can restore it."
+        after: A backup is only useful if you can restore it.
+      - before: "Submit the form by **Friday** without **fail**."
+        after: Submit the form by **Friday**.
+    keep:
+      - what the sentences say
+      - one emphasis on what must not be missed
+    avoid:
+      - emphasising with quotes, capitals or emoji instead
+      - adding intensifiers to make up for the removed bold
