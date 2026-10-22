@@ -1,0 +1,62 @@
+id: email-stock-courtesy
+layer: L2
+status: stable
+how_to_find: phrase-match
+word_list: email-stock-courtesy
+uses: [pos]
+languages: [en]
+severity: info
+
+name:
+  ja: メールの定型の気づかいが重なっている
+  en: Stock email courtesies piled up
+
+why:
+  ja: 「I hope this email finds you well」「I apologize for any inconvenience」「Please don't hesitate」は、どれも 1 つなら普通の礼儀です。短いメールに 2 つ 3 つ重なると、用件より決まり文句が目に付き、生成した下書きに見えます。日本語の「ご理解とご協力のほど」は普通のビジネス文なので、この rule は英語だけです。
+  en: '"I hope this email finds you well", "I apologize for any inconvenience" and "Please don''t hesitate" are each ordinary politeness. Two or three in one short email crowd out the request, and the email reads like a generated draft.'
+
+message:
+  ja: 「{matched}」など、メールの定型の気づかいが {count} 文にあります（{limit} 文から）
+  en: '"{matched}" and other stock courtesies in {count} sentences ({limit} needed)'
+
+how_to_fix:
+  ja: 一番伝えたい気づかいを 1 つ残し、ほかは用件か具体的な一言（日時、相手がすること）に替えてください。
+  en: Keep the one courtesy you mean most. Replace the others with the request itself or a specific line (a date, what the reader should do).
+
+# 指摘に要る文の数。1 つは普通の礼儀なので 2 つから。
+levels: { strict: 2, normal: 2, relaxed: 3 }
+
+use_for: [business, technical/readme, blog, legal, docs, academic, literature, speech]
+off_for:
+  technical/readme: "Stock email courtesies are counted in emails only."
+  blog/tech: "Stock email courtesies are counted in emails only."
+  blog/essay: "Stock email courtesies are counted in emails only."
+  blog/owned-media: "Stock email courtesies are counted in emails only."
+  business/proposal: "Stock email courtesies are counted in emails only: a proposal may close with one offer to discuss."
+  business/report: 'Stock email courtesies are counted in emails only: a handbook or report says "feel free to" as plain advice.'
+  business/press-release: "Stock email courtesies are counted in emails only."
+  business/meeting-notes: "Stock email courtesies are counted in emails only."
+  legal: "Stock email courtesies are counted in emails only."
+  docs: "Stock email courtesies are counted in emails only: a help page invites the reader to get in touch."
+  academic/paper: "Stock email courtesies are counted in emails only."
+  literature: "Stock email courtesies are counted in emails only."
+  speech: "Stock email courtesies are counted in emails only."
+
+group: ai-tells
+summary:
+  ja: 「I hope this email finds you well」のような英文メールの決まり文句が重なった所
+  en: Stock email courtesies ("I hope this email finds you well") piled up
+example:
+  en:
+    config: { genre: business/email }
+    before: |
+      I hope this email finds you well. Could we move Thursday's call to next week? I apologize for any inconvenience this may cause.
+    after: |
+      Could we move Thursday's call to next week? The draft needs two more days, and Tuesday or Wednesday afternoon would work for us.
+
+not_flagged:
+  ja: 1 つだけの気づかい、メール以外の文書（手引きの「feel free to」など）、日本語の文書は言いません。「reach out」「if you have any questions」は人の報告書や募集にも多いので数えません。
+  en: A single courtesy, documents other than emails (a handbook's "feel free to"), and Japanese documents are not reported. "Reach out" and "if you have any questions" are not counted; human reports and job notices use them as much.
+level_meaning:
+  ja: 定型の気づかいが {limit} 文にあれば指摘
+  en: reported once {limit} sentences hold a stock courtesy

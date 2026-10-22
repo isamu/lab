@@ -22,7 +22,7 @@ how_to_fix:
 
 levels: { strict: 50, normal: 70, relaxed: 90 }
 
-use_for: [technical/readme, blog, legal, docs, academic, literature, speech]
+use_for: [technical/readme, blog, business, legal, docs, academic, literature, speech]
 off_for:
   legal: "Legal drafting repeats its terms and its sentence heads on purpose, puts the actor in the passive (shall be deemed), and joins long noun compounds (個人情報取扱事業者). This rule would only flag the form."
   docs: "A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up."
@@ -122,8 +122,8 @@ example:
       - No review
 
 not_flagged:
-  ja: 箇条書きが 3 つより少ない文書は見ません。ビジネス文書と仕様書（technical/spec）のジャンルでは見ません。
-  en: Documents with fewer than three lists are not checked. Business and specification (technical/spec) genres do not run this rule.
+  ja: 箇条書きが 3 つより少ない文書は見ません。仕様書（technical/spec）のジャンルでは見ません。文の中に並べた 3 つの語（「速く、安く、確実に」）は数えません。人の文書のほうが多く書くからです。
+  en: Documents with fewer than three lists are not checked. Specification (technical/spec) genres do not run this rule. Three words listed inside a sentence (fast, cheap and reliable) are not counted, since human documents write them more often.
 level_meaning:
   ja: 3 項目の箇条書きの割合 {limit}% まで
   en: up to {limit}% of lists with exactly three items

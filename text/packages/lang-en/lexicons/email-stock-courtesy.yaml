@@ -1,0 +1,29 @@
+# Stock courtesies of a business email. One is ordinary politeness; a stack of them in one short email is what a
+# reader notices. Counted per sentence. Only email-like forms: "reach out" and "if you have any questions" are left
+# out, human reports and job notices in the corpus use them.
+id: email-stock-courtesy
+language: en
+entries:
+  - pattern: hope you're having a good week
+  - pattern: hope you're having a great week
+  - pattern: hope you are having a good week
+  - pattern: hope you are having a great week
+  - pattern: hope you're having a good day
+  - pattern: hope you're having a great day
+  - pattern: hope this email finds you well
+  - pattern: hope this message finds you well
+  - pattern: hope this finds you well
+  - pattern: apologize for any inconvenience
+  - pattern: apologise for any inconvenience
+  - pattern: apologies for any inconvenience
+  - pattern: appreciate your flexibility
+  - pattern: appreciate your patience
+  - pattern: appreciate your understanding
+  - pattern: feel free to
+  - pattern: happy to discuss
+  - pattern: happy to talk it through
+  - pattern: happy to answer any questions
+  - pattern: please don't hesitate
+  - pattern: please do not hesitate
+  - pattern: let me know what works best
+  - pattern: do my best to accommodate

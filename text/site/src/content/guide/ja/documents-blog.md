@@ -102,11 +102,9 @@ kiji.md   blog/tech · 日本語   ジャンルは --genre から
                   padded-intro
   3:1     warning 文の長さのばらつきが 35%（36% 以上ほしい）
                   sentence-rhythm
-  9:1     info    「単なる」など、対比の枠が 1000 字あたり 3.8 個あります（1.5 個まで）
-                  contrast-framing
   11:1    info    「正直に言うと」など、予告で始まる文が 3 個あります（3 個から）
                   announcing-opener
-  11:1    warning 「section-length-uniformity、sentence-rhythm、padded-intro、closing-cliche、contrast-framing、announcing-opener、colon-lead-in」が同じ文書にそろっています（7 種、3 種から）
+  11:1    warning 「section-length-uniformity、sentence-rhythm、padded-intro、closing-cliche、announcing-opener、colon-lead-in」が同じ文書にそろっています（6 種、3 種から）
                   ai-generated-composite
   15:1    info    「ポイントは」など、予告で始まる文が 3 個あります（3 個から）
                   announcing-opener
@@ -124,8 +122,6 @@ kiji.md   blog/tech · 日本語   ジャンルは --genre から
                   announced-count-mismatch
   33:46   warning リンク「[ビルド時間の記録](#ビルド時間の記録)」が指す「#ビルド時間の記録」の見出しがこの文書にありません
                   broken-link
-  37:22   info    「だけでなく」など、対比の枠が 1000 字あたり 3.8 個あります（1.5 個まで）
-                  contrast-framing
   39:1    warning 「いかがでしたでしょうか」で締めています
                   closing-cliche
   39:13   warning 「お役に立てれば幸いです」で締めています
@@ -159,7 +155,7 @@ $ npx chaffjs kiji.md --genre blog/tech
   - 試してうまくいかなかったこと、制約、前提を書いているか
   - 結びが本文の言い直しではなく、次に読むもの・試すものを示しているか
 
-  このジャンルで特に効く rule: closing-cliche, empty-conclusion, padded-intro, paragraph-length-variance, quote-without-source, rule-of-three, section-length-uniformity, sentence-rhythm
+  このジャンルで特に効く rule: closing-cliche, empty-conclusion, padded-intro, paragraph-length-variance, quote-without-source, section-length-uniformity, sentence-rhythm
   chaff.yaml の guide: で書き換えられます。出さないときは --no-guide。
 
 ════════════════════════════════════════════════════════════
@@ -178,7 +174,6 @@ kiji.md   blog/tech · 日本語   ジャンルは --genre から
 | 行 | 指摘 | 意味 | 直しかた |
 | --- | --- | --- | --- |
 | 3 | `padded-intro` | 「近年、」は、どの記事にも書ける書き出しです | 何に困っていたかから書き始めます。「CI のビルドに毎回 9 分かかっていました」 |
-| 9、37 | `contrast-framing` | 「単なる X ではありません」と、誰も言っていないことを打ち消しています | 打ち消しを消し、言いたいことだけを書きます |
 | 11、15、23 | `announcing-opener` | 「正直に言うと」「ポイントは」「重要なのは」と、予告で文を始めています | 予告を消し、中身から書き始めます |
 | 17、27 | `colon-lead-in` | 「次の通りです：」と、コロンで箇条書きへ渡す文が続いています | 箇条書きの項目がつながっているなら、文に戻してつながりを書きます |
 | 20 | `latin-spacing` | ほかは「9 分」と空けているのに、「1行」だけ詰めています | 「1 行」と空けて、記事の中で揃えます |

@@ -1,0 +1,69 @@
+id: q-fragment-answer
+layer: L2
+status: stable
+how_to_find: q-fragment-answer
+requires: [pos]
+languages: [en]
+severity: info
+
+name:
+  ja: 自分で問うて断片で答える所が多い
+  en: Questions answered with a fragment
+
+why:
+  ja: "「Is it perfect? No.」「The result? Faster builds.」のように、書き手が自分で問いを立て、すぐ後ろで動詞の無い数語で答える書き方は、一つなら語りに弾みを付けます。重なると、普通に言えば済む文を問いと答えに割った芝居に見えます。生成文によく見られる癖として知られています。"
+  en: '"Is it perfect? No." and "The result? Faster builds." ask a question and answer it at once with a few words and no verb. Once, it adds pace. Repeated, plain statements turn into a staged question and answer, a habit well known in generated text.'
+
+message:
+  ja: 「{matched}」など、自分で問うて断片で答える所が {count} 個あります（{limit} 個から）
+  en: '"{matched}" and other fragment answers to your own question: {count} ({limit} needed)'
+
+how_to_fix:
+  ja: 問いと答えを一つの普通の文にしてください（The result? Faster builds. → The change made builds faster.）。
+  en: Merge the question and its answer into one plain sentence ("The result? Faster builds." becomes "The change made builds faster.").
+
+# 指摘に要る数。長さで割らない：一つは語り口で、二つ目から癖に見える。
+levels: { strict: 2, normal: 2, relaxed: 3 }
+
+use_for: [blog, business, legal, docs, academic, literature, speech]
+off_for:
+  legal: "Legal drafting repeats its terms and its sentence heads on purpose, puts the actor in the passive (shall be deemed), and joins long noun compounds (個人情報取扱事業者). This rule would only flag the form."
+  docs: "A help page asks the reader's question in a heading or a line and answers it as briefly as it can."
+  academic: "A paper poses its research questions and may answer them in a phrase; that is its form."
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+  speech: "A speaker asks the audience and answers in a word; that is how speech is spoken."
+
+group: ai-tells
+summary:
+  ja: 「Is it perfect? No.」のように、自分で問うて断片で答える所が重なっている所
+  en: Questions the writer answers at once with a fragment ("Is it perfect? No.")
+example:
+  en:
+    before: |
+      Is it perfect? No. The result? Faster builds and fewer late nights.
+    after: |
+      It is not perfect, but builds are faster and we work fewer late nights.
+
+not_flagged:
+  ja: 一つだけの問いと答え、動詞のある答え（「Feeling stuck? That's normal.」）、括弧や引用符で始まる答え、問いが続く所、続く文が別の段落にある所は言いません。英語の文書だけを見ます。
+  en: A single question and answer, an answer with a verb ("Feeling stuck? That's normal."), an answer in brackets or quotes, a question followed by another question, and an answer in the next paragraph are not reported.
+level_meaning:
+  ja: 自分で問うて断片で答える所が {limit} 個あれば指摘
+  en: reported once {limit} questions are answered with a fragment
+rewrite:
+  depth: light
+  en:
+    direction: Turn each question and its fragment answer into one plain statement. Keep a question only where the reader really would ask it.
+    pairs:
+      - before: Is it perfect? No.
+        after: It is not perfect.
+      - before: The result? Faster builds.
+        after: Builds got faster.
+      - before: Who has time for this? Not many of us.
+        after: Few of us have time for this.
+    keep:
+      - what the answer says
+      - a question the reader would really ask, answered in a full sentence
+    avoid:
+      - swapping the fragment for an answer with a verb but keeping the staged question
+      - adding emphasis ("Absolutely not.") to make up for the cut question

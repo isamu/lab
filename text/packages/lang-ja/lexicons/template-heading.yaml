@@ -1,0 +1,32 @@
+# 教科書どおりの提案書・報告書の節。見出しがこの語で始まれば、その組に数えます。本物の提案書にも 1 つ 2 つはあるので、
+# ai-structure は 4 つの組がそろったときに定型の構成として数えます。
+id: template-heading
+language: ja
+entries:
+  - { pattern: 概要, group: summary }
+  - { pattern: 要旨, group: summary }
+  - { pattern: 背景, group: background }
+  - { pattern: 提案の背景, group: background }
+  - { pattern: 現状, group: background }
+  - { pattern: 現状と課題, group: background }
+  - { pattern: 現状の課題, group: background }
+  - { pattern: 提案, group: proposal }
+  - { pattern: 提案内容, group: proposal }
+  - { pattern: 解決策, group: proposal }
+  - { pattern: 期待される効果, group: benefits }
+  - { pattern: 導入効果, group: benefits }
+  - { pattern: 効果, group: benefits }
+  - { pattern: 費用, group: costs }
+  - { pattern: コスト, group: costs }
+  - { pattern: 予算, group: costs }
+  - { pattern: スケジュール, group: implementation }
+  - { pattern: 導入スケジュール, group: implementation }
+  - { pattern: 実施計画, group: implementation }
+  - { pattern: 導入計画, group: implementation }
+  - { pattern: リスク, group: risks }
+  - { pattern: リスクと対策, group: risks }
+  - { pattern: 懸念点, group: risks }
+  - { pattern: 今後の進め方, group: next }
+  - { pattern: 今後の対応, group: next }
+  - { pattern: 今後の予定, group: next }
+  - { pattern: まとめ, group: next }

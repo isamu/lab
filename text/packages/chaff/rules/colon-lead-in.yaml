@@ -2,9 +2,6 @@ id: colon-lead-in
 layer: L1
 status: stable
 how_to_find: colon-lead-in
-# English human writing hands off to a list after a colon as a matter of course: two in a short self-written English
-# document already passed any limit that the generated-style samples reached. Japanese only until a limit separates them.
-languages: [ja]
 severity: info
 
 name:
@@ -17,14 +14,17 @@ why:
 
 message:
   ja: コロンで箇条書きへ渡す文が 1000 字あたり {density} 個あります（{limit} 個まで）
-  en: "{density} colon lead-ins to lists per 1000 characters (limit {limit})"
+  en: "{density} colon lead-ins to lists per 1000 words (limit {limit})"
 
 how_to_fix:
   ja: 箇条書きの一部を文に戻し、項目どうしがどう繋がるのかを書いてください。手順や部品の一覧のように、本当に並べるものはそのままでかまいません。
   en: Turn some of the lists back into sentences and say how the items connect. Real lists (steps, parts) can stay.
 
-# 1000 字あたりの数。2 つより少なければ言わない（ai-phrasing.ts の PILE）。
-levels: { strict: 1, normal: 2, relaxed: 4 }
+# 1000 字（英語は 1000 語）あたりの数。2 つより少なければ言わない（ai-phrasing.ts の PILE）。
+# 英語の人の文書はコロンから箇条書きへよく渡すので、英語の上限は高い。
+levels:
+  ja: { strict: 1, normal: 2, relaxed: 4 }
+  en: { strict: 3, normal: 4, relaxed: 6 }
 
 use_for: [technical/readme, blog, business, legal, docs, academic, literature, speech]
 off_for:
@@ -55,13 +55,30 @@ example:
 
       - 鍵
       - 地図
+  en:
+    pad: true
+    before: |
+      Here's what to bring:
+
+      - A key
+      - A map
+
+      Here's how the day goes:
+
+      - Meet at the station
+      - Set off
+    after: |
+      Bring the key and a map. We meet at the station and set off from there.
+
+      - A key
+      - A map
 
 not_flagged:
-  ja: 1 つだけのコロンの前置きと、コロンで終わらない前置き（「次のとおりとする。」）は数えません。項目ごとに同じ名詞の札（太字の「参考:」）を置く形は、項目の欄の名前なので数えません。説明書・法務・仕様書（technical/spec）のジャンルでは見ません。短い文書は測りません。英語の文書は、人もよくこの形で書くので見ません。日本語の文書の中の英文（Examples include:）も数えません。
-  en: A single colon lead-in, and a lead-in that does not end in a colon, are not counted. Nor is the same noun label repeated before each entry's list (a bold 参考:), which names a field of the entry. Documentation, legal and specification (technical/spec) genres do not run this rule. Short documents are not measured. Japanese documents only, and in them only Japanese sentences; an English sentence inside (Examples include:) is not counted.
+  ja: 1 つだけのコロンの前置きと、コロンで終わらない前置き（「次のとおりとする。」）は数えません。項目ごとに同じ名詞の札（太字の「参考:」）を置く形は、項目の欄の名前なので数えません。説明書・法務・仕様書（technical/spec）のジャンルでは見ません。短い文書は測りません。英語の文書は、人もコロンから箇条書きへよく渡すので、上限を高くしています。日本語の文書の中の英文（Examples include:）は数えません。
+  en: A single colon lead-in, and a lead-in that does not end in a colon, are not counted. Nor is the same noun label repeated before each entry's list (a bold 参考:), which names a field of the entry. Documentation, legal and specification (technical/spec) genres do not run this rule. Short documents are not measured. English writers hand off to a list after a colon often, so the English limit is higher. In a Japanese document, an English sentence inside (Examples include:) is not counted.
 level_meaning:
   ja: コロンで箇条書きへ渡す文が 1000 字あたり {limit} 個まで
-  en: "colon lead-ins to lists: up to {limit} per 1000 characters"
+  en: "colon lead-ins to lists: up to {limit} per 1000 words"
 rewrite:
   depth: structure
   ja:
@@ -87,3 +104,26 @@ rewrite:
     avoid:
       - 長い箇条書きを一つの長い文に詰める
       - 項目の間に、書き手が書いていない因果を足す
+  en:
+    direction: Of the lists a colon hands over to, turn back into sentences the ones with two or three items that connect. Steps and parts lists stay lists.
+    pairs:
+      - before: |
+          Here's how long we keep it:
+
+          - 30 days
+          - Deleted after that
+        after: |
+          We keep it for 30 days and delete it after that.
+      - before: |
+          The benefits are:
+
+          - Fast
+          - Cheap
+        after: |
+          It is fast and cheap.
+    keep:
+      - what the items say, and how many
+      - the order of steps
+    avoid:
+      - packing a long list into one long sentence
+      - adding causes between the items that the writer did not state
