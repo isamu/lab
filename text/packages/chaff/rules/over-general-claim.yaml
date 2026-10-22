@@ -1,0 +1,73 @@
+id: over-general-claim
+layer: L2
+status: stable
+how_to_find: over-general-claim
+word_list: over-general-claim
+# weasel-word が言う文（most people agree、everyone knows）は数えない。同じ文を二つの rule で言わない。
+extra_word_lists: [weasel-word]
+uses: [pos]
+languages: [en]
+severity: info
+
+name:
+  ja: 「たいていの人は」と大きく括る言い方が多い
+  en: Too many sweeping claims about people
+
+why:
+  ja: "most people、nobody、everyone、for most of us（「たいていの人は」「誰も〜ない」「誰もが」）は、一つなら話を短くします。重なると、文書が人について確かめていない一般論を重ね、読み手は「本当に誰も？」と引っかかります。生成文によく見られる癖として知られています。"
+  en: '"Most people", "nobody", "everyone" and "for most of us" shorten a point when used once. Piled up, the document keeps making claims about people in general that it never checks, and the reader stops to ask "nobody at all?". A habit well known in generated text.'
+
+message:
+  ja: 「{matched}」など、大きく括る言い方が 1000 語あたり {density} 個あります（{limit} 個まで）
+  en: '"{matched}" and other sweeping claims: {density} per 1000 words (limit {limit})'
+
+how_to_fix:
+  ja: 誰の話かを狭めてください（自分のチーム、調べた 30 人、この製品を使う人）。数があるなら数を書いてください。
+  en: Narrow who you mean (your team, the 30 people you asked, the people who use this product). If you have a number, give it.
+
+# 1000 語あたりの数。二種類以上を三つ以上使った文書だけを測る。
+levels: { strict: 2, normal: 3, relaxed: 5 }
+
+use_for: [blog, business, legal, docs, academic, literature, speech]
+off_for:
+  legal: "Legal drafting states who a duty binds (anyone who, no one) on purpose; that is its form, not a sweeping claim."
+  docs: "A help page speaks to everyone who uses the product and says what anyone who does X should do; that is its audience, not a sweeping claim."
+  academic: "A paper's claims about people are bounded by its data and its citations; this count cannot tell those from sweeping ones."
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+  speech: "A speaker addresses everyone in the room and speaks to the audience in general; that is how speech is spoken."
+
+group: ai-tells
+summary:
+  ja: 「most people」「nobody」のように人を大きく括る一般論が重なっている所
+  en: Sweeping claims about people ("most people", "nobody") piled up
+example:
+  en:
+    pad: true
+    before: |
+      Most people never back up their photos. Nobody thinks about it until a phone breaks, and everyone regrets it.
+    after: |
+      Of the twelve people on our team, nine had no backup of their phone photos when we asked last month.
+
+not_flagged:
+  ja: 一つ二つの「everyone」、「everyone」だけを繰り返す文書（チームの全員）、weasel-word が言う「most people agree」「everyone knows」は言いません。英語の文書だけを見ます。短い文書は測りません。
+  en: One or two uses, a document that only repeats "everyone" (the whole team), and "most people agree" or "everyone knows", which weasel-word reports, are not reported. Short documents are not measured.
+level_meaning:
+  ja: 1000 語あたり {limit} 個まで
+  en: up to {limit} sweeping claims per 1000 words
+rewrite:
+  depth: light
+  en:
+    direction: Replace each sweeping claim with the people you actually mean, or with what you know about them. Delete the ones you cannot narrow.
+    pairs:
+      - before: Most people never back up their photos.
+        after: Nine of the twelve people we asked had no backup of their photos.
+      - before: Nobody reads the terms of service.
+        after: Few of our users open the terms page; it had 40 visits last month.
+      - before: For most of us, the morning is the best time to focus.
+        after: I focus best in the morning.
+    keep:
+      - a claim the document backs with a number or a source
+      - '"everyone" meaning everyone on a named team'
+    avoid:
+      - swapping "most people" for "many people" or "a lot of us", which keeps the sweep
+      - inventing a number or a survey to back the claim

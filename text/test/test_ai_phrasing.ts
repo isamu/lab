@@ -22,6 +22,8 @@ const idsFor = (source: string, adapter: LanguageAdapter, genre = "blog/tech"): 
 /** Density rules do not measure short documents. Plain filler to pass the floor. */
 const BULK_EN = "We shipped the release and reported the numbers to the team. ".repeat(40);
 const BULK_JA = "本日の連絡です。今日も順調に進めます。明日も続けます。".repeat(20);
+/** contrast-framing counts a share of sentences: plain filler in fewer, longer sentences, to pass the floor without diluting the share. */
+const LONG_JA = "本日の連絡事項として、来週の作業の予定と担当者の割り当てをお知らせします。".repeat(14);
 
 const NEW_LEXICONS = ["contrast-frame", "contrast-lead", "contrast-turn", "stock-transition", "assistant-residue", "placeholder-word"];
 
@@ -179,11 +181,11 @@ describe("contrast-framing", () => {
 
   it("invalid: 「ではありません。むしろ」で打ち消しを返す形が重なる", () => {
     const framed = "これは道具ではありません。むしろ仲間です。".repeat(3);
-    assert.ok(idsFor(`# 記事\n\n${framed}${BULK_JA}`, ja).includes("contrast-framing"));
+    assert.ok(idsFor(`# 記事\n\n${framed}${LONG_JA}`, ja).includes("contrast-framing"));
   });
 
   it("invalid: 「単なる X ではなく」が重なる", () => {
-    assert.ok(idsFor(`# 記事\n\n${"これは単なる道具ではなく、仲間です。".repeat(3)}${BULK_JA}`, ja).includes("contrast-framing"));
+    assert.ok(idsFor(`# 記事\n\n${"これは単なる道具ではなく、仲間です。".repeat(3)}${LONG_JA}`, ja).includes("contrast-framing"));
   });
 
   it("valid: 「A ではなく B」だけの文は枠ではない", () => {

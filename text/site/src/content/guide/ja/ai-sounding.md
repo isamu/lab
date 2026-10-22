@@ -122,16 +122,21 @@ Claude Code の skill（`npx chaffjs skill`）は、指摘より先に指針を�
 | ルール | 見つけるもの |
 | --- | --- |
 | `ai-tell` | 生成文に多い言い回しの重なり（「重要な役割を果たす」「静かに壊れる」「時間を溶かす」） |
-| `contrast-framing` | 「単なる X ではなく Y」「X ではありません。Y です」の対比の枠の重なり |
+| `contrast-framing` | 「単なる X ではなく Y」「X ではありません。Y です」「X ではなく、Y です。」の対比の枠で書いた文の割合が多い所 |
 | `stock-transition` | 「さらに、」「加えて、」で始まる文の密度 |
 | `announcing-opener` | 「重要なのは、」「ポイントは、」「正直に言うと、」で始まる文の重なり |
+| `over-general-claim` | 「most people」「nobody」「everyone」のように人を大きく括る一般論の重なり（英語のブログとビジネス文書だけ） |
+| `q-fragment-answer` | 「Is it perfect? No.」「The result? Faster builds.」のように、自分で問うてすぐ断片で答える所の重なり（英語の文書だけ） |
 | `colon-lead-in` | 「以下の通りです：」のように、コロンで箇条書きへ渡す文の密度 |
 | `emoji-heading` | 「## 🚀 はじめに」のように、絵文字の付いた見出しが続く所 |
-| `bold-label-list` | 「- **速さ**：〜」のように、太字の札とコロンで始まる項目の多さ（日本語の文書だけ） |
+| `bold-label-list` | 「- **速さ**：〜」のように、太字の札とコロンで始まる項目の多さ |
 | `assistant-residue` | 「お役に立てれば幸いです」のような、チャットの返事の名残 |
+| `email-stock-courtesy` | 「I hope this email finds you well」「I apologize for any inconvenience」のような英文メールの決まり文句が、一通のメールに 2 つ以上（英語の文書だけ） |
+| `closing-exhortation` | 「ぜひ〜してみてください」「きっと〜はずです」のように、結びで読み手を励ます・請け合う文が 2 つ以上 |
 | `chat-citation-residue` | 「?utm_source=chatgpt.com」の付いたリンクや「oaicite」のような、チャットの答えを貼ったときに残る印 |
 | `closing-cliche` | 「いかがでしたでしょうか」で締める終わり方 |
 | `bold-density` | 太字の多さ |
+| `bold-emphasis` | 文の途中の太字が文書じゅうに散っている所（箇条書きの頭の太字の札は `bold-label-list` が数えます） |
 | `no-em-dash` | ダッシュ（——）の多さ |
 | `sentence-rhythm` | 文の長さが揃いすぎている所 |
 | `rule-of-three` | 箇条書きがどれも 3 項目の所 |
@@ -301,7 +306,7 @@ npx chaffjs compare old.md new.md --distinct --allow-dropped heading --allow-add
 
 6. 次のどれもが成り立ったら止めます。全面書き直しは 2 回までにします。
    - `ai-generated-composite` が出ない
-   - 密度のルール（`bold-density`、`contrast-framing`、`stock-transition`、`colon-lead-in`）が上限より下にある
+   - 密度のルール（`bold-density`、`stock-transition`、`colon-lead-in`）と、対比の枠の文の割合（`contrast-framing`）が上限より下にある
    - `compare` が通るか、外したものすべてに理由が書いてある
    - `chaff outline old.md new.md` で、書き直した後の構成の AI らしさが計画の上限より下にあり、計画が目標に挙げた項目に ✗ が残っていない
 7. 書き直した文章、何をなぜ変えたのかの短い一覧、前と後の特徴と形の表を見せます。表の数は chaff の出力から取ります。

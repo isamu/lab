@@ -175,7 +175,10 @@ Use this section when asked to make a text sound less generated: 「AIっぽさ�
 書き直して」, "make this sound human", "this reads like AI wrote it".
 
 chaff marks the shapes common in generated text (group "Signs of generated text" in `npx chaffjs rules`: `ai-tell`,
-`contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in` (Japanese only), `assistant-residue`, and the signals
+`contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in` (Japanese only), `over-general-claim` (English only),
+`q-fragment-answer` (English only), `assistant-residue`, `email-stock-courtesy` (English emails: stacked "I hope this email finds
+you well"-type courtesies), `closing-exhortation` (a closing that cheers the reader on: 「ぜひ〜してみてください」,
+"You've got this"), and the signals
 `ai-generated-composite` reads, among others). Most of them do not run in `technical/spec` or in the legal, docs, literature and
 speech genres; `assistant-residue` (words left from a pasted chat reply) runs in almost every genre. `npx chaffjs rules --json`
 says per rule and genre. None of them says the text was generated. chaff never rewrites; the rewriting is yours.
@@ -228,7 +231,7 @@ repeats the body. The writer usually wants the structure changed, not only the s
 **Bold** (section by section, outline kept):
 
 1. Run chaff and note the document-level signals: the `ai-generated-composite` inputs,
-   `bold-density`, `contrast-framing`, `stock-transition`, `sentence-rhythm`.
+   `bold-density`, `bold-emphasis`, `contrast-framing`, `stock-transition`, `sentence-rhythm`.
 2. Rewrite each section toward a human voice: less bold; one-line paragraphs and punchlines folded back into
    paragraphs; no "X ではありません。Y です" / "It's not X. It's Y" frames; lists turned back into sentences where the
    items connect; fewer em dashes; no announcing openers. Each paragraph carries one claim, joined to the last by a
@@ -294,7 +297,7 @@ repeats the body. The writer usually wants the structure changed, not only the s
      once.
 6. **Stop** when all of these hold, or after two full passes, whichever comes first:
    - `ai-generated-composite` does not fire;
-   - the density rules (`bold-density`, `contrast-framing`, `stock-transition`, `colon-lead-in`) are under their limits;
+   - the density rules (`bold-density`, `bold-emphasis`, `stock-transition`, `colon-lead-in`) and the share of contrast frames (`contrast-framing`) are under their limits;
    - `chaff outline <old> <new>` shows the new structure score under the plan's limit, with no ✗ left on the measures
      the plan listed as targets;
    - `compare` is clean, or every exclusion has a stated reason.
