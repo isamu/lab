@@ -6742,6 +6742,44 @@
         "falseAlarms": 0
       }
     },
+    "over-general-claim": {
+      "groups": {
+        "academic": {
+          "documents": 5,
+          "fired": 0
+        },
+        "blog": {
+          "documents": 9,
+          "fired": 0
+        },
+        "business": {
+          "documents": 41,
+          "fired": 0
+        },
+        "docs": {
+          "documents": 11,
+          "fired": 0
+        },
+        "legal": {
+          "documents": 14,
+          "fired": 0
+        },
+        "literature": {
+          "documents": 9,
+          "fired": 0
+        },
+        "speech": {
+          "documents": 3,
+          "fired": 0
+        }
+      },
+      "aiBench": {
+        "hits": 0,
+        "samples": 6,
+        "falseAlarms": 0,
+        "cleanSamples": 12
+      }
+    },
     "oxford-comma-consistency": {
       "groups": {
         "academic": {
