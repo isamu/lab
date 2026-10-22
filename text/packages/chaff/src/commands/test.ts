@@ -72,6 +72,9 @@ const TEXT: Texts<{
 
 const DIVIDER = "─".repeat(60);
 
+/** --checks's value; "--checks --dry-run" names no checks, since --dry-run is an option, not a set. */
+const checksNamed = (next: string | undefined): string => (next === undefined || next.startsWith("--") ? "" : next);
+
 export type TestContext = {
   readonly config: Config;
   readonly resolveGenre: (path: string, source: string, config: Config) => { genre: string; from: string };
@@ -169,7 +172,7 @@ export const runTest = async (targets: readonly string[], argv: readonly string[
   // 鍵の置き場所で「設定したのに効かない」を起こさせない。シェルの環境変数のほうが勝つ。
   const envFile = loadEnvFile(process.cwd());
   const at = argv.indexOf("--checks");
-  const given = at === -1 ? undefined : (argv[at + 1] ?? "");
+  const given = at === -1 ? undefined : checksNamed(argv[at + 1]);
   const checksPath = checksPathOf(given, process.cwd(), join(PACKAGE_DIR, BUNDLED_CHECKS_DIR));
   // checks.yaml is optional; a set named on the command line that is not there is a mistake to say.
   if (given !== undefined && !existsSync(checksPath)) {

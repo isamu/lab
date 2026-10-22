@@ -80,8 +80,10 @@ const sinceFor = async (
   after: PlanRead,
   context: FixPlanContext,
 ): Promise<{ readonly since: SincePlan | undefined } | { readonly problem: string | undefined }> => {
+  if (!argv.includes("--before")) return { since: undefined };
   const path = context.flag(argv, "--before");
-  if (path === undefined) return { since: undefined };
+  // "--before --json" names no original; reading --json as a file name would report the wrong problem.
+  if (path === undefined || path.startsWith("--")) return { problem: FIX_PLAN_TEXT[context.ui ?? "ja"].usage };
   if (!existsSync(path)) return { problem: FIX_PLAN_TEXT[context.ui ?? "ja"].notFound(path) };
   const since = await sinceOf(path, after, argv, context);
   return since === undefined ? { problem: undefined } : { since };

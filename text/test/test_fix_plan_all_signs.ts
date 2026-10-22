@@ -129,6 +129,12 @@ describe("fix-plan --all-ai-signs on a document", () => {
     assert.equal(run.code, 1);
     assert.match(run.err, /gone\.md/u);
   });
+
+  it("gives the usage when --before names no file, instead of reading the next option as one", async () => {
+    const run = await runCli({ "report.md": REPORT }, ["fix-plan", "report.md", "--before", "--json"], "en_US.UTF-8");
+    assert.equal(run.code, 1);
+    assert.match(run.err, /usage: chaff fix-plan/u);
+  });
 });
 
 describe("chaff test --checks — which checks file is read", () => {
@@ -150,6 +156,12 @@ describe("chaff test --checks — which checks file is read", () => {
     const run = await runCli({ "a.md": "# A\n\nText.\n" }, ["test", "a.md", "--checks", "no-such-set", "--dry-run"], "en_US.UTF-8");
     assert.equal(run.code, 1);
     assert.match(run.err, /no-such-set/u);
+  });
+
+  it("does not read the next option as the set's name", async () => {
+    const run = await runCli({ "a.md": "# A\n\nText.\n" }, ["test", "a.md", "--checks", "--dry-run"], "en_US.UTF-8");
+    assert.equal(run.code, 1);
+    assert.doesNotMatch(run.err, /--checks --dry-run/u);
   });
 });
 
