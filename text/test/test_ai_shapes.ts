@@ -107,7 +107,7 @@ describe("announcing-opener", () => {
   const EN_THREE = "The key point is the settings. Here's the thing: logs matter. Honestly, the manual is old.";
 
   const OPENERS: ReadonlyArray<readonly [LanguageAdapter, readonly string[]]> = [
-    [ja, ["重要なのは", "ポイントは", "正直に言うと", "注目すべきは", "注目すべき点は", "ここで注目すべきは"]],
+    [ja, ["重要なのは", "ポイントは", "正直に言うと", "注目すべきは", "注目すべき点は", "ここで注目すべきは", "ここで注目したいのは", "注目したいのは", "正直なところ", "正直、"]],
     [
       en,
       [
@@ -125,6 +125,13 @@ describe("announcing-opener", () => {
         "The short answer is",
         "The real question is",
         "It's worth noting",
+        "The good news is",
+        "What surprised me most was",
+        "What surprised me was",
+        "The honest answer is",
+        "In this guide, we'll",
+        "In this guide, we will",
+        "And honestly",
       ],
     ],
   ];
@@ -151,6 +158,13 @@ describe("announcing-opener", () => {
     const two = "重要なのは、設定です。ポイントは、ログです。";
     assert.ok(!idsFor(`# 記事\n\n${two}`, ja).includes("announcing-opener"));
     assert.ok(strictRules(`# 記事\n\n${two}`, ja).includes("announcing-opener"));
+  });
+
+  it("counts a guide's stock openers, and not the same words inside a sentence", () => {
+    const guide = "The good news is that backups are cheap now. In this guide, we'll set one up. What surprised me most was the speed.";
+    assert.ok(idsFor(`# Post\n\n${guide}`, en).includes("announcing-opener"));
+    const inside = "We heard the good news is out. A reader asked what surprised me most was it the price. I wrote it in this guide, we'll see.";
+    assert.ok(!strictRules(`# Post\n\n${inside}`, en).includes("announcing-opener"));
   });
 
   it("counts only the start of a sentence, not 「このポイントは」 inside one", () => {
