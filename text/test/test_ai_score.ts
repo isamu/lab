@@ -239,7 +239,7 @@ describe("aiScoreOfDocument on written samples", () => {
 
   it("leaves out the signals of the other language", async () => {
     const score = await scoreOf(en, "en-plain.md");
-    assert.ok(!score.signals.some((signal) => signal.rule === "colon-lead-in"));
+    assert.ok(!score.signals.some((signal) => signal.rule === "translationese-density"));
   });
 
   it("does not compare the structure where the human articles are not its baseline", async () => {

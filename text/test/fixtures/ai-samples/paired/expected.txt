@@ -42,7 +42,7 @@ bold-label-list            0/3          0/3              0/3                  3/
 chat-citation-residue      0/3          0/3              0/3                  0/74
 closing-cliche             1/3          0/3              0/3                  0/74
 closing-exhortation        0/3          0/3              0/3                  0/74
-colon-lead-in              0/3          0/3              0/3                  0/74
+colon-lead-in              2/3          0/3              0/3                  4/74
 contrast-framing           1/3          0/3              0/3                  0/74
 email-stock-courtesy       0/3          0/3              0/3                  0/74
 emoji-density              0/3          0/3              0/3                  0/74

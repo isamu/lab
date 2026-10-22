@@ -69,6 +69,18 @@ Is the plan perfect? No. The result? Faster builds.
 - **Chair**: Tanaka.
 - **Notes**: Suzuki.
 
+## Packing
+
+Bring these things:
+
+- A key
+- A map
+
+The day goes like this:
+
+- Meet
+- Leave
+
 ## 🚀 Before
 
 Bring the key.
