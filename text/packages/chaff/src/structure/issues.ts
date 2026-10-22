@@ -115,6 +115,24 @@ const citesOtherDocument =
 const numbering = (node: StructureNode): unknown => node.attrs["numbering"];
 
 /**
+ * The numberings the document's own units are written with (Article, Section). A paper heads its units with bare
+ * numbers ("## 2 Methods"); its own numbering is then one whose references mostly resolve ("Section 2"), so an
+ * "Article 14" it also names as another document's, with most of its kind pointing nowhere here, is that document's.
+ */
+const ownNumberings = (nodes: readonly StructureNode[], resolvesHere: (node: StructureNode) => boolean): ReadonlySet<unknown> => {
+  const worded = nodes.flatMap((node) => (node.kind === "article" && node.numbering !== undefined ? [node.numbering] : []));
+  if (worded.length > 0) return new Set(worded);
+  const references = nodes.filter((node) => node.kind === "reference" && typeof numbering(node) === "string");
+  const kinds = [...new Set(references.map(numbering))];
+  return new Set(
+    kinds.filter((kind) => {
+      const ofKind = references.filter((node) => numbering(node) === kind);
+      return ofKind.filter(resolvesHere).length * 2 > ofKind.length;
+    }),
+  );
+};
+
+/**
  * 参照の番地が木に無い。他の文書の名前が付いた参照（民法第709条、Section 9 of the Master Agreement）は引かない。
  * 条を 1 つも持たない文書も見ない。他の文書を指しているだけかもしれない。
  */
@@ -127,13 +145,13 @@ export const danglingReferences = (tree: StructureNode, source: string, nameNoun
   const addresses = new Set(nodes.filter((node) => NUMBERED.has(node.kind)).flatMap(keysOf));
   // Section で組んだ法令が "Articles 13 to 21 of the UK GDPR" と別の文書の Article を名指ししていれば、名の無い "Article 6(3)" もそちら。
   // 名指しがあれば、名の無い "Article 9" が書き間違いか向こうの条かは区別できないので黙る。名指しが無い文書では報告する。
-  const numberings = new Set(nodes.flatMap((node) => (node.kind === "article" && node.numbering !== undefined ? [node.numbering] : [])));
+  const chapters = chaptersOf(nodes);
+  const numberings = ownNumberings(nodes, (node) => !citesOther(node) && resolves(node, addresses, chapters));
   const citedElsewhere = new Set(nodes.filter((node) => node.kind === "reference" && citesOther(node)).map(numbering));
   const otherNumbering = (node: StructureNode): boolean =>
     numberings.size > 0 && typeof numbering(node) === "string" && !numberings.has(String(numbering(node))) && citedElsewhere.has(numbering(node));
   const articleLabels = nodes.filter((node) => node.kind === "article").map((node) => textOf(node, "label"));
   const unitLabels = nodes.filter((node) => NUMBERED.has(node.kind)).map((node) => textOf(node, "label"));
-  const chapters = chaptersOf(nodes);
   const elsewhere = elsewhereReferences(nodes, source);
   const quoted = referencesInCitedDocuments(tree);
   const references = nodes.filter((node) => node.kind === "reference");

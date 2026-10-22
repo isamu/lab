@@ -1,0 +1,28 @@
+# Lower-case words inside a cited name: a surname's particle (Santoni de Sio, Van de Poel) or the joining words of an
+# organisation (Council of the European Union, group organisation). A citation's name may hold them.
+id: citation-name-connector
+language: en
+entries:
+  - pattern: de
+  - pattern: del
+  - pattern: della
+  - pattern: der
+  - pattern: den
+  - pattern: des
+  - pattern: di
+  - pattern: da
+  - pattern: du
+  - pattern: dos
+  - pattern: das
+  - pattern: la
+  - pattern: le
+  - pattern: van
+  - pattern: von
+  - pattern: ten
+  - pattern: ter
+  - pattern: of
+    group: organisation
+  - pattern: the
+    group: organisation
+  - pattern: for
+    group: organisation
