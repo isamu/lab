@@ -102,3 +102,33 @@ describe("sentence-rhythm on changelogs and lists", () => {
     assert.ok(fires(ja, `${evenSentences(6, 40)}\n\n${evenSentences(6, 40)}\n`));
   });
 });
+
+// Japanese blog prose is held to a higher spread than English: generated Japanese sits just under the human low end.
+const sizedSentences = (sizes: readonly number[], letter: string, stop: string): string =>
+  Array.from({ length: 4 }, () => sizes.map((size) => `${letter.repeat(size)}${stop}`).join(" ")).join(" ");
+const firesIn = (adapter: LanguageAdapter, source: string, genre: string): boolean => firedRules(adapter, source, genre).includes(RULE);
+
+describe("sentence-rhythm: levels by language and genre", () => {
+  const evenJa = sizedSentences([19, 30, 44], "あ", "。");
+  const borderJa = sizedSentences([18, 30, 45], "あ", "。");
+  const variedJa = sizedSentences([8, 30, 70], "あ", "。");
+
+  it("invalid: Japanese blog prose with a spread just under the human low end is reported", () => {
+    assert.ok(firesIn(ja, evenJa, "blog/essay"));
+    assert.ok(firesIn(ja, evenJa, "blog/tech"));
+    assert.ok(firesIn(ja, borderJa, "blog/owned-media"));
+  });
+  it("valid: outside a blog, Japanese keeps the general level", () => {
+    assert.ok(!firesIn(ja, borderJa, "technical/readme"));
+    assert.ok(!firesIn(ja, evenJa, "business/report"));
+  });
+  it("valid: Japanese blog prose that varies its length is not reported", () => {
+    assert.ok(!firesIn(ja, variedJa, "blog/essay"));
+  });
+  it("valid: the same spread in an English blog is not reported, where human prose runs that even", () => {
+    assert.ok(!firesIn(en, sizedSentences([19, 30, 44], "x", "."), "blog/essay"));
+  });
+  it("invalid: English blog prose that is evener still is reported, as before", () => {
+    assert.ok(firesIn(en, sizedSentences([25, 30, 36], "x", "."), "blog/essay"));
+  });
+});
