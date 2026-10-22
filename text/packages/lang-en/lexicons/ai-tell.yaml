@@ -117,3 +117,41 @@ entries:
     weight: 0.8
   - pattern: despite these challenges
     weight: 0.7
+  # Style words by model era (Kobak 2025, Liang 2024, Reinhart 2025, Wikipedia's lists), kept only where the human blog
+  # and business documents of the corpus have none. Words common in human business text stay out: ensure, essential,
+  # effective, significant, key, enhance, leverage, robust, comprehensive, prioritize, steady, practical; and
+  # interplay, a plain word in science abstracts.
+  # A word written alone does not match its inflections, so the forms are listed.
+  - pattern: delves
+    weight: 0.6
+  - pattern: delving
+    weight: 0.6
+  - pattern: delved
+    weight: 0.5
+  - pattern: garners
+    weight: 0.5
+  - pattern: garnering
+    weight: 0.5
+  - pattern: commendable
+    weight: 0.5
+  - pattern: laudable
+    weight: 0.5
+  - pattern: cogent
+    weight: 0.4
+  - pattern: lucidly
+    weight: 0.4
+  - pattern: aptly
+    weight: 0.4
+  - pattern: methodically
+    weight: 0.4
+  - pattern: camaraderie
+    weight: 0.5
+  - pattern: quietly
+    weight: 0.3
+  # Honesty markers inside a sentence; the sentence-opening ones are announcing-opener's.
+  - pattern: if I'm being honest
+    weight: 0.5
+  - pattern: if I'm honest
+    weight: 0.5
+  - pattern: my honest take
+    weight: 0.5
