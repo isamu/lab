@@ -856,7 +856,7 @@ detector は core が持ち、語彙表を adapter から取る。新しい言�
 | `cross-doc-term-variant` ✅ | ファイルによって違う書き方の語（語末の「ー」、英米の綴り、ハイフンの有無）。使うファイルの少ないほうを指摘（ファイルが二つ以上のときだけ） | 両方 | warning |
 | `repeated-conjunction` ✅ | 段落先頭の語彙照合 | 両方 | warning |
 | `ai-tell` ✅ | weighted phrase-match | blog | info |
-| `contrast-framing` ✅ | 対比の枠（frame の語、または打ち消しとそれを返す語）の密度 | blog | info |
+| `contrast-framing` ✅ | 対比の枠（frame の語、または打ち消しとそれを返す語）で書いた文の割合 | blog | info |
 | `stock-transition` ✅ | 文頭の決まった接ぎの密度 | blog | info |
 | `assistant-residue` ✅ | weighted phrase-match（会話の返事の名残。重み 1 は 1 つで、0.5 は 2 つで届く） | 両方 | warning |
 | `unfilled-placeholder` ✅ | 括弧の中が雛形の語（[Your Name]、【会社名】）の空欄 | 両方 | warning |

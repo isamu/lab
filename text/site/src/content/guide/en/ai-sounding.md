@@ -122,7 +122,7 @@ Legal documents, manuals, literature and transcripts are written differently, so
 | Rule | What it finds |
 | --- | --- |
 | `ai-tell` | Phrases common in generated text piling up ("plays a crucial role", "delve into") |
-| `contrast-framing` | Contrast frames piling up ("not just X, but Y", "It's not X. It's Y") |
+| `contrast-framing` | Too large a share of sentences in contrast frames ("not just X, but Y", "It wasn't X. It was Y", "It's not about X. It's about Y") |
 | `stock-transition` | Too many sentences opening with "Moreover" or "Additionally" |
 | `announcing-opener` | Several sentences opening with an announcement ("The key point is", "Here's the thing", "Honestly,") |
 | `over-general-claim` | Sweeping claims about people ("most people", "nobody", "everyone") piling up (English blogs and business documents only) |
@@ -305,7 +305,7 @@ npx chaffjs compare old.md new.md --distinct --allow-dropped heading --allow-add
 
 6. Stop when all of these hold. Two full passes at most.
    - `ai-generated-composite` does not fire.
-   - The density rules (`bold-density`, `contrast-framing`, `stock-transition`, `colon-lead-in`) are under their limits.
+   - The density rules (`bold-density`, `stock-transition`, `colon-lead-in`) and the share of contrast frames (`contrast-framing`) are under their limits.
    - `compare` passes, or every exclusion has a reason.
    - `chaff outline old.md new.md` shows the new structure score under the plan's limit, with no ✗ left on the measures the plan listed as targets.
 7. Show the new text, a short list of what changed and why, and a table of the signals and the shape before and after. Take the numbers from chaff's output.

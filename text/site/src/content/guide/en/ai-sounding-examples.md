@@ -263,6 +263,8 @@ ai.md   blog/tech · English   genre from --genre
                   bold-emphasis
   7:49    info    18 -ly adverbs per 1000 words (limit 15)
                   adverb-overuse
+  9:1     info    "wasn't" and other contrast frames: 10% of sentences (limit 6%)
+                  contrast-framing
   11:1    info    "To be honest," and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
   11:1    warning "closing-cliche, contrast-framing, announcing-opener" occur together in this document (3 signals, 3 needed)
@@ -271,9 +273,9 @@ ai.md   blog/tech · English   genre from --genre
                   announcing-opener
   27:1    info    "What's important is" and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
-  37:51   info    "not only" and other contrast frames: 7.2 per 1000 words (limit 3)
+  37:51   info    "not only" and other contrast frames: 10% of sentences (limit 6%)
                   contrast-framing
-  45:1    info    "not just" and other contrast frames: 7.2 per 1000 words (limit 3)
+  45:1    info    "not just" and other contrast frames: 10% of sentences (limit 6%)
                   contrast-framing
   47:1    warning Closes with "hope this helps"
                   closing-cliche
@@ -379,7 +381,7 @@ Wording and shape
   ✗ Too many sentences that announce before they say: 3  in 0 of 23 human-written documents (Blog)
   ✗ Bold emphasis scattered through the text: 1  in 0 of 23 human-written documents (Blog)
   ✗ Cliched closing: 1  in 0 of 23 human-written documents (Blog)
-  ✗ Too many contrast frames: 2  in 0 of 23 human-written documents (Blog)
+  ✗ Too many contrast frames: 3  in 0 of 23 human-written documents (Blog)
   ✗ Several signals of generated text together: 3 of its signals (Cliched closing, Too many contrast frames, Too many sentences that announce before they say); from 2, its strict level, that is one more sign
   · the other 16 did not show
   not compared (no human baseline): Stock email courtesies piled up, Too many sweeping claims about people, Questions answered with a fragment

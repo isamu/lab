@@ -1961,7 +1961,7 @@
         }
       },
       "aiBench": {
-        "hits": 4,
+        "hits": 2,
         "samples": 6,
         "falseAlarms": 0,
         "cleanSamples": 12

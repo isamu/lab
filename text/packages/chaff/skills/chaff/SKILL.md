@@ -296,7 +296,7 @@ repeats the body. The writer usually wants the structure changed, not only the s
      once.
 6. **Stop** when all of these hold, or after two full passes, whichever comes first:
    - `ai-generated-composite` does not fire;
-   - the density rules (`bold-density`, `bold-emphasis`, `contrast-framing`, `stock-transition`, `colon-lead-in`) are under their limits;
+   - the density rules (`bold-density`, `bold-emphasis`, `stock-transition`, `colon-lead-in`) and the share of contrast frames (`contrast-framing`) are under their limits;
    - `chaff outline <old> <new>` shows the new structure score under the plan's limit, with no ✗ left on the measures
      the plan listed as targets;
    - `compare` is clean, or every exclusion has a stated reason.
