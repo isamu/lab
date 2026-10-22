@@ -3460,6 +3460,14 @@
         "falseAlarms": 0
       }
     },
+    "email-stock-courtesy": {
+      "groups": {
+        "business": {
+          "documents": 4,
+          "fired": 0
+        }
+      }
+    },
     "email-subject-length": {
       "groups": {
         "academic": {
