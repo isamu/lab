@@ -178,7 +178,8 @@ chaff marks the shapes common in generated text (group "Signs of generated text"
 `contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in`, `over-general-claim` (English only),
 `q-fragment-answer` (English only), `assistant-residue`, `email-stock-courtesy` (English emails: stacked "I hope this email finds
 you well"-type courtesies), `closing-exhortation` (a closing that cheers the reader on: 「ぜひ〜してみてください」,
-"You've got this"), and the signals
+"You've got this"), `unprompted-denial` (sentences that deny a premise nobody stated: 「〜の話ではありません」,
+"This isn't about tooling."), and the signals
 `ai-generated-composite` reads, among others). Most of them do not run in `technical/spec` or in the legal, docs, literature and
 speech genres; `assistant-residue` (words left from a pasted chat reply) runs in almost every genre. `npx chaffjs rules --json`
 says per rule and genre. None of them says the text was generated. chaff never rewrites; the rewriting is yours.

@@ -28,6 +28,7 @@ sentence-rhythm            0/3          0/3              0/3                  0/
 stock-transition           0/3          0/3              0/3                  0/63
 translationese-density     0/3          0/3              0/3                  0/63
 unfilled-placeholder       0/3          0/3              0/3                  0/63
+unprompted-denial          0/3          0/3              0/3                  0/63
 
 ## en
 rule                       hits (b) ai  false (a) human  false (c) rewritten  false corpus
@@ -59,3 +60,4 @@ sentence-rhythm            0/3          0/3              0/3                  1/
 stock-transition           1/3          0/3              0/3                  0/74
 translationese-density     0/3          0/3              0/3                  0/74
 unfilled-placeholder       0/3          0/3              0/3                  0/74
+unprompted-denial          0/3          0/3              0/3                  0/74
