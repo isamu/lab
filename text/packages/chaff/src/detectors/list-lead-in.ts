@@ -52,6 +52,20 @@ const fieldLabels = (leadIns: readonly Sentence[]): ReadonlySet<string> => {
   return new Set([...counts].filter(([words, count]) => count > 1 && isNounLabel(words)).map(([words]) => words));
 };
 
+/** A line that is only a bold label (**Pros:**, **参考**:), and the label inside the bold marks. */
+const BOLD_LINE = /^(?:\*\*|__)(?<label>[^*_\n]+)(?:\*\*|__)[:：]?$/u;
+
+const lineAround = (source: string, sentence: Sentence): string => {
+  const end = source.indexOf("\n", sentence.span.end);
+  return source.slice(source.lastIndexOf("\n", sentence.span.start - 1) + 1, end === -1 ? source.length : end);
+};
+
+/** A bold noun label on a line of its own names the list under it, as a heading does (**Pros:** then **Cons:**). */
+const isBoldNounLabel = (sentence: Sentence, source: string): boolean => {
+  const label = BOLD_LINE.exec(lineAround(source, sentence).trim())?.groups?.["label"];
+  return label !== undefined && isNounLabel(labelWords(label));
+};
+
 /**
  * Prose sentences ending in a colon that hand the reader straight to a list (「以下の通りです：」, "Here's what you need:").
  * An item of a list is not prose: 「例: `code`」 ends in a colon once its code is masked, and it leads nowhere.
@@ -62,5 +76,5 @@ export const colonLeadIns = (sentences: readonly Sentence[], lists: readonly Bul
     return before !== undefined && endsWithColon(before.text) && !insideAny(listSpans, before.span.start) ? [before] : [];
   });
   const fields = fieldLabels(leadIns);
-  return leadIns.filter((sentence) => !fields.has(labelWords(sentence.text)));
+  return leadIns.filter((sentence) => !fields.has(labelWords(sentence.text)) && !isBoldNounLabel(sentence, source));
 };
