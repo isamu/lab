@@ -259,7 +259,7 @@ $ npx chaffjs ai.md --genre blog/tech --compact
 
 ai.md   blog/tech · English   genre from --genre
 
-  7:1     info    5 bold spans of emphasis: 17.9 per 1000 words (limit 6)
+  7:1     info    3 bold spans of emphasis: 10.8 per 1000 words (limit 4)
                   bold-emphasis
   7:49    info    18 -ly adverbs per 1000 words (limit 15)
                   adverb-overuse
