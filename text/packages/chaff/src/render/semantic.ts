@@ -1,5 +1,5 @@
 import type { Finding, RuleDefinition } from "../plugin.ts";
-import type { UserCheck } from "../checks.ts";
+import { checkAppliesTo, type UserCheck } from "../checks.ts";
 import type { Narrowing } from "../look-at.ts";
 import type { Job as Plan, SemanticResult } from "../run-semantic.ts";
 import { uiLanguageOf, type Texts, type UiLanguage } from "../ui.ts";
@@ -116,7 +116,7 @@ type Named = { readonly name: string; readonly howToFix: string };
 const nameOf = (rule: string, rules: readonly RuleDefinition[], checks: readonly UserCheck[], language: string): Named => {
   const built = rules.find((entry) => entry.id === rule);
   if (built !== undefined) return { name: localized(built.name, language), howToFix: localized(built.how_to_fix, language) };
-  const user = checks.find((entry) => entry.id === rule);
+  const user = checks.find((entry) => entry.id === rule && checkAppliesTo(entry, language));
   return { name: user?.name ?? rule, howToFix: user?.how_to_fix ?? "" };
 };
 

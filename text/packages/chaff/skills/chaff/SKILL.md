@@ -204,6 +204,33 @@ says. Apply each rule's direction at its spots. Where a fix needs a specific the
 ask. Save the result under the name the plan gives, run its check commands, and report the mode and the checks'
 output. The mode steps below say the rest.
 
+**When the request is to remove all of it** (「AI臭さを全部消して」「AIっぽさを完全になくして」, "remove every AI tell"),
+run the plan with `--all-ai-signs` and loop until it says stop:
+
+1. `npx chaffjs fix-plan <file> --all-ai-signs --json` (with the genre's `--genre`). It runs every AI-likeness rule,
+   also those the genre turns off or leaves out, and adds `aiScore` (the `ai-score` level and its signs), `aiRules`
+   (the AI-likeness rules with findings) and `stop` (when to stop). `npx chaffjs facts <file> --json` is the inventory
+   of facts to keep.
+2. Rewrite in the mode the plan recommends (Full for a blog post or an essay, or when `ai-generated-composite` fires).
+   Fix every spot of every rule in `rules`, by its direction: the AI-likeness ones and the others, so the rewrite
+   leaves nothing worse.
+3. Check the tells only a reader can see. `npx chaffjs test <rewritten> --checks ai-tells --dry-run` lists the
+   questions and the passages each would be asked about: invented specifics, an abstract opening, a denial of what
+   nobody said, a moral at the end, a benefits list that mirrors the problems, a claim restated, inflated significance,
+   generic content, a request recast as the reader's benefit, the same thing renamed. Run it without `--dry-run` only
+   with an API key and the person's yes (the passages leave the machine). Otherwise read the passages yourself against
+   each question. A specific that looks invented (in the original or in your draft) is a question for the writer:
+   keep it marked, 「［105cm］くらい」 / "[on a five-hour flight]", and ask them to confirm or cut it; never replace it
+   with another invented one. Reread your own draft for wording that changes a claim; `compare` sees facts, not claims.
+4. Run the plan's checks: `npx chaffjs fix-plan <rewritten> --all-ai-signs --before <file> --json` and
+   `npx chaffjs compare <file> <rewritten>` (`--distinct --allow-dropped heading --allow-added heading` after a Full
+   rewrite).
+5. Repeat from 2 until every line of `stop` holds: `aiRules` is empty; `aiScore.level` is `low`, or the document is too
+   short to score; `since.risen` is empty (no rule has more findings than in the original); `compare` passes; none of
+   the ai-tells questions fits. Three passes at most. List what is left after the third with the reason (a placeholder
+   only the writer can fill, a word that is right in context).
+6. Report a table from chaff's output, before and after: `aiRules`, the score, `since.risen`, `compare`.
+
 Pick one of three modes and say which.
 
 | Mode | Changes | Pick it when |
@@ -325,7 +352,7 @@ In every mode:
 - Never add facts, people, numbers or causes the original does not have.
 - Keep a domain term a word rule trips when it is right in context.
 - Prefer a direct statement over a negated contrast. Say who does what.
-- Never loop just to silence a warning; two passes at most, and list what is left with the reason.
+- Never loop just to silence a warning; two passes at most (three with `--all-ai-signs`), and list what is left with the reason.
 - Per genre: in a tech article, replace metaphors ("静かに壊れる", "silently fails") with what happens and keep steps
   and commands as lists; in a business document, put the conclusion and who does what first and keep tables and
   figures; in an essay, fold punchlines back in and replace big words ("真理", "new possibilities") with the scene.

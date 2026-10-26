@@ -205,6 +205,17 @@ npx chaffjs compare article.md after.md            書き直しで事実（数�
 
 `compare` は、名前の綴りを直した所（Borrowmoney → BorrowMoney）を、落ちた事実ではなく綴りの直しとして出します。
 
+AI らしさを全部消すときは、次を繰り返します。
+
+```bash
+npx chaffjs fix-plan article.md --all-ai-signs --json                       AI らしさのルールを全部動かし、点と止めるときを添える
+npx chaffjs fix-plan after.md --all-ai-signs --before article.md --json     書き直しに残ったものと、元より指摘が増えたルール
+npx chaffjs test after.md --checks ai-tells --dry-run                       読まないとわからない目印（作った具体など）を問う
+```
+
+`--all-ai-signs` は、ジャンルが止めているものも含めて AI らしさのルールを全部動かし、`ai-score` の点と止めるときを計画に足します。
+`--before` は、元の文書より指摘が増えたルールを全部挙げます。`--checks ai-tells` は、ルールでは見えない目印について chaff が同梱する問いを聞きます。
+
 深さは `light`（語と文）、`structure`（節・見出し・段落の組み替えまで）、`register`（文体の変換まで）の 3 つで、深いものは浅いものを含みます。
 決めた深さより深いルールの指摘は、名前と箇所の数だけが計画に載ります。毎回同じ深さにするなら `chaff.yaml` に `fix_plan: { depth: light }` と書きます。
 深さを決めなければ、chaff が直し方を勧め、その深さを計画に書きます。
@@ -321,7 +332,9 @@ and `npx chaffjs plugin-test` checks each of its rules on the rule's own example
 
 **Fix plans.** `npx chaffjs fix-plan article.md` is a plan for whoever rewrites the file, a person or an AI: findings by
 rule, how to rewrite each, and the checks to run after. `--depth light|structure|register` (or `fix_plan: { depth }`
-in `chaff.yaml`) sets how deep the rewrite may go.
+in `chaff.yaml`) sets how deep the rewrite may go. To remove every AI tell, `--all-ai-signs` runs every AI-likeness
+rule (also those the genre turns off) and adds the `ai-score` level and when to stop; `--before <original>` lists every
+rule the rewrite raised; `npx chaffjs test <file> --checks ai-tells` asks about the tells no rule can see.
 
 **AI score.** `chaff ai-score <file>` — a quick AI-likeness score (low, medium, high): counts the signs of generated
 text that human documents of the same genre rarely show. It is not a verdict on whether AI wrote it. One sign is
