@@ -1,10 +1,8 @@
 18f-engineering-code-review  2
-18f-handbook-projects-in-distress  1
 18f-handbook-travel-faq  1
 aoml-hurricane-faq  3
 da-annual-report-2024  1
 da-area-data-map-format  3
-da-recruitment-office-visit  3
 dailymed-advil-otc-label  4
 genai-web-procedure  3
 gitlab-jd-instructional-designer  2
@@ -16,8 +14,6 @@ koenote-requirements  7
 mhlw-pubcomment-rodohoken  1
 moriguchi-satsuki-gakuen-ijime-houshin  1
 neeview-changelog-ja  11
-nsf-19-582-reu-solicitation  1
-nstac-microdata-forum  3
 nttcom-onboarding-week1  1
 readygov-power-outages  1
 usajobs-va-it-specialist-customer-support  3
