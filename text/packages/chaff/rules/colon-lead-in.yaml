@@ -58,8 +58,13 @@ example:
 
       - 集合
       - 出発
+
+      片付けは次の通りです：
+
+      - 鍵を返す
+      - 掃除
     after: |
-      鍵と地図を用意してください。当日は駅に集合してから出発します。
+      鍵と地図を用意してください。当日は駅に集合してから出発し、終わったら鍵を返して掃除します。
 
       - 鍵
       - 地図
@@ -75,8 +80,13 @@ example:
 
       - Meet at the station
       - Set off
+
+      Here's how we wrap up:
+
+      - Return the key
+      - Tidy up
     after: |
-      Bring the key and a map. We meet at the station and set off from there.
+      Bring the key and a map. We meet at the station and set off from there, and at the end we return the key and tidy up.
 
       - A key
       - A map
