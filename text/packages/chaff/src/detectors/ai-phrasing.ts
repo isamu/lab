@@ -44,6 +44,7 @@ const contrastWordsOf = (doc: ProseDocument, frames: Lexicon): ContrastWords => 
   frames,
   leads: doc.lexicons["contrast-lead"] ?? [],
   turns: doc.lexicons["contrast-turn"] ?? [],
+  amounts: doc.lexicons["contrast-amount"] ?? [],
 });
 
 /** 対比の枠は、一つ二つなら論点の整理。三つ目から数える。 */

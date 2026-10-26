@@ -4,7 +4,8 @@ status: stable
 how_to_find: contrast-framing
 word_list: contrast-frame
 # 打ち消し（it's not）と、それを返す語（it's、but）。後ろに返しが来たときだけ対比の枠になる。
-extra_word_lists: [contrast-lead, contrast-turn]
+# contrast-amount は枠の隣で量を言う語（not just one）。量を言う枠は X を打ち消していない。
+extra_word_lists: [contrast-lead, contrast-turn, contrast-amount]
 uses: [pos]
 severity: info
 
@@ -53,8 +54,8 @@ example:
       This tool cut the time to draft a quote by ten minutes.
 
 not_flagged:
-  ja: 一つ二つの対比、打ち消しを返していない「単なる」（「単なる設定ミスです」）、読点の無い「A ではなく B」やますで閉じる文（「紙ではなく、画面で確認します」）、続けて並べた打ち消し（「まだです。まだ試していません。」）は指しません。短い文書は測りません。
-  en: One or two contrasts, a denial nobody answers ("I don't know. We will see."), a denial followed by another ("It wasn't ready. It wasn't tested."), and a denial answered later in the same sentence by "it" or "they" are not reported. Short documents are not measured.
+  ja: 一つ二つの対比、打ち消しを返していない「単なる」（「単なる設定ミスです」）、読点の無い「A ではなく B」やますで閉じる文（「紙ではなく、画面で確認します」）、続けて並べた打ち消し（「まだです。まだ試していません。」）、量を言う枠（「一杯だけでなく、二杯目も」）は指しません。短い文書は測りません。
+  en: One or two contrasts, a denial nobody answers ("I don't know. We will see."), a denial followed by another ("It wasn't ready. It wasn't tested."), a denial answered later in the same sentence by "it" or "they", a plain denial followed by a concession or a remark ("I don't always. But it takes ten minutes.", "That's more than I expected."), and a frame that counts an amount ("not just one coffee") are not reported. Short documents are not measured.
 level_meaning:
   ja: 対比の枠で書いた文が {limit}% まで
   en: up to {limit}% of sentences in contrast frames

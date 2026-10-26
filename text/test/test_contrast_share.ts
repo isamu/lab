@@ -15,7 +15,12 @@ const RULE = "contrast-framing";
 
 const framed = (adapter: LanguageAdapter, text: string): string[] => {
   const doc = buildDocument("t.md", text, adapter);
-  const words = { frames: doc.lexicons["contrast-frame"] ?? [], leads: doc.lexicons["contrast-lead"] ?? [], turns: doc.lexicons["contrast-turn"] ?? [] };
+  const words = {
+    frames: doc.lexicons["contrast-frame"] ?? [],
+    leads: doc.lexicons["contrast-lead"] ?? [],
+    turns: doc.lexicons["contrast-turn"] ?? [],
+    amounts: doc.lexicons["contrast-amount"] ?? [],
+  };
   return contrastSentences(doc.sentences, words).map((sentence) => sentence.text.trim());
 };
 
@@ -49,6 +54,43 @@ describe("contrast frames across two sentences (en)", () => {
     assert.deepEqual(framed(en, "It's not really about time. It's about which minutes I keep."), ["It's not really about time."]);
     assert.deepEqual(framed(en, "The talk was not really about tools, it's about habits."), ["The talk was not really about tools, it's about habits."]);
     assert.deepEqual(framed(en, "Not because it is cheap. It's because it works."), ["Not because it is cheap."]);
+  });
+});
+
+describe("what does not answer a bare denial (en)", () => {
+  it("does not count a concession opened by But after the denial", () => {
+    assert.deepEqual(framed(en, "Who has time for this? Fair. I don't always. But it takes ten minutes a day."), []);
+    assert.deepEqual(framed(en, "We didn't finish the audit. But the team will close it next week."), []);
+  });
+
+  it("does not count a narrated negative followed by a remark on the whole sentence", () => {
+    assert.deepEqual(framed(en, "When I didn't come in for a week, the owner called me. That's more than my bank does."), []);
+    assert.deepEqual(framed(en, "The parcel didn't arrive on Monday. This is the third time this month."), []);
+  });
+
+  it("still counts a bare denial answered by it or they, whatever verb follows", () => {
+    assert.deepEqual(framed(en, "Working from home doesn't make me faster. It makes me calmer."), ["Working from home doesn't make me faster."]);
+    assert.deepEqual(framed(en, "Guests don't really come for the food. They're here for the table."), ["Guests don't really come for the food."]);
+  });
+
+  it("still counts a full denial answered by But in the next sentence", () => {
+    assert.deepEqual(framed(en, "It's not a tool. But a partner for the team."), ["It's not a tool."]);
+  });
+});
+
+describe("a frame that measures an amount", () => {
+  it("does not count not just one, or not only twice (more than one, not a reframe)", () => {
+    assert.deepEqual(framed(en, "Buy something every couple of hours. Not just one coffee for the whole day."), []);
+    assert.deepEqual(framed(en, "We checked the meter not only twice but every hour."), []);
+    assert.deepEqual(framed(en, "Order not just 2 rolls but a whole tray."), []);
+    assert.deepEqual(framed(ja, "一杯だけでなく、二杯目も頼んでください。"), []);
+    assert.deepEqual(framed(ja, "1回だけでなく、毎週確認します。"), []);
+  });
+
+  it("still counts the same frame before a thing, not an amount", () => {
+    assert.deepEqual(framed(en, "Not just a coffee shop. A second office."), ["Not just a coffee shop."]);
+    assert.deepEqual(framed(en, "This is not only someone's tool but a culture."), ["This is not only someone's tool but a culture."]);
+    assert.deepEqual(framed(ja, "道具だけでなく、文化も届けます。"), ["道具だけでなく、文化も届けます。"]);
   });
 });
 
