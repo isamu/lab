@@ -13,7 +13,7 @@ chrome-blog-pwa-origin-migration-ja  1
 cisa-scuba-teams  2
 cloudgov-security-ir-guide  3
 crs-r47235-budget-timeline  11
-crs-r47585-subcontracting  19
+crs-r47585-subcontracting  18
 crs-rl32781-salt  14
 da-agile-review-4  2
 da-ai-advisory-board-1  2
