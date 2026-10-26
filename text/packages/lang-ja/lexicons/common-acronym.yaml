@@ -101,9 +101,7 @@ entries:
   - pattern: ROM
   - pattern: LED
   - pattern: VIP
-  - pattern: KPI
   - pattern: PTA
-  - pattern: UNESCO
   # 略語としてではなく名前として読む語（どのリポジトリにもあるファイルの名前、ライセンスの名前）と、日本語の日常の外来語（NPO、NGO）。
   - pattern: README
   - pattern: MIT
@@ -114,10 +112,7 @@ entries:
   - pattern: Q&A
   - pattern: R&D
   - pattern: M&A
-  # 日本語の日常の語として書く略語（WEBサイト、文科省HP、ICカード、教育DX）と、日常の名前として読む会社（JR、NTT）。
+  # 日本語の日常の語として書く略語（WEBサイト、文科省HP、ICカード）。
   - pattern: WEB
   - pattern: HP
   - pattern: IC
-  - pattern: DX
-  - pattern: JR
-  - pattern: NTT

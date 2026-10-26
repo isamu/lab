@@ -107,9 +107,7 @@ entries:
   - pattern: VIP
   - pattern: RV
   - pattern: TBA
-  - pattern: KPI
   - pattern: PTA
-  - pattern: UNESCO
   # Names a reader knows as names, not as acronyms to spell out: the file every repository opens with, and a licence.
   - pattern: README
   - pattern: MIT

@@ -58,6 +58,10 @@ levels: { strict: 1, normal: 3, relaxed: 6 }
 # 技術文書の読み手は、分野の略語を知っている。既定の数では group の文書の過半に出たので、測って上げた（spec §21.1）。
 by_genre:
   technical: { strict: 3, normal: 5, relaxed: 8 }
+  # 業務文書と講演と FAQ は、名前や通じる略語を数えなくなってから judged corpus で測り直して下げた。上げたままだと、説明のない略語の正しい指摘を落とす。
+  business: { strict: 1, normal: 2, relaxed: 5 }
+  speech: { strict: 1, normal: 2, relaxed: 5 }
+  docs/faq: { strict: 1, normal: 1, relaxed: 3 }
 
 use_for: [business, technical, legal, docs, academic, literature, speech]
 off_for:
