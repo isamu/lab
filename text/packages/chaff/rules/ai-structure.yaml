@@ -10,8 +10,8 @@ name:
   en: The outline is unlike human articles
 
 why:
-  ja: 生成した記事は、文より先に構成に形が出ます。一段落ごとの見出し、3 つに分けた小見出し、太字の札の箇条書き、同じ長さの節、本文を言い直すまとめです。どれも 1 つなら人の記事にもあります。chaff は見出しの多さや節の長さのばらつきなどの項目を、生成 AI が広まる前の人の記事と比べ、人の記事の 9 割を超えた項目がいくつそろったかを数えます。**これでも「AI が書いた」とは言えません。** 構成を見直す目印です。
-  en: Generated articles show their shape in the outline before the sentences, with a heading every paragraph, headings split into three, bold-label lists, sections of one size, and a closing that restates the body. Each of these turns up in human articles too. chaff compares measures such as heading density and section length variation with articles written before generated text was common, and counts how many lie past 90% of those articles. **Even then it does not say the text was generated.** It marks an outline to rethink.
+  ja: 生成した記事は、文より先に構成に形が出ます。一段落ごとの見出し、3 つに分けた小見出し、太字の札の箇条書き、同じ長さの節、本文を言い直すまとめです。どれも 1 つなら人の記事にもあります。chaff は見出しの多さや節の長さのばらつきなどの項目を、生成 AI が広まる前の人の記事と比べ、人の記事の 9 割を超えた項目がいくつそろったかを数えます。提案書や報告書が「背景」「提案」「期待される効果」「費用」「リスクと対策」のような教科書どおりの見出しを 4 種類以上並べていれば、それも 1 項目に数えます。**これでも「AI が書いた」とは言えません。** 構成を見直す目印です。
+  en: Generated articles show their shape in the outline before the sentences, with a heading every paragraph, headings split into three, bold-label lists, sections of one size, and a closing that restates the body. Each of these turns up in human articles too. chaff compares measures such as heading density and section length variation with articles written before generated text was common, and counts how many lie past 90% of those articles. A proposal or report whose headings run through four or more sections of the textbook outline (Summary, Current Situation, Proposed Solution, Expected Benefits, Costs, Risks and Mitigation…) counts as one more. **Even then it does not say the text was generated.** It marks an outline to rethink.
 
 message:
   ja: 構成の {count} 項目が、人の記事の 9 割を超えています（{limit} 項目から）。{word}
@@ -24,8 +24,9 @@ how_to_fix:
 # 人の記事の 9 割を超えた項目が何個そろったら出すか。人の記事で何個そろうかは scripts/structure-baseline.ts --values で数え直せる。
 levels: { strict: 2, normal: 3, relaxed: 4 }
 
-# 基準にした人の記事はブログ。ビジネス文書は見ない。法務・説明書・論文・話し言葉は見出しの立て方がもともと違うので、off_for で止める。
-use_for: [blog, legal, docs, academic, literature, speech]
+# 基準にした人の記事はブログ。ビジネス文書は、教科書どおりの提案書の見出し（語彙表 template-heading）も 1 項目に数えて見る。
+# 法務・説明書・論文・話し言葉は見出しの立て方がもともと違うので、off_for で止める。
+use_for: [blog, business, legal, docs, academic, literature, speech]
 off_for:
   legal: "Legal drafting repeats its terms and its sentence heads on purpose, puts the actor in the passive (shall be deemed), and joins long noun compounds (個人情報取扱事業者). This rule would only flag the form."
   docs: "A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up."
@@ -129,8 +130,8 @@ example:
       So we chose topics from the week's work, cut each slot to five minutes and kept notes. What kept it going was the format, not willpower.
 
 not_flagged:
-  ja: 見出しの無い文書は見ません。項目ごとに、測るのに足りない文書（短い文書、節や箇条書きの少ない文書）はその項目を数えません。基準の人の記事がブログなので、ビジネス文書・法務・説明書・論文・話し言葉のジャンルでは見ません（`chaff outline` と `chaff fix-plan` は、どのジャンルでも構成を測ります）。
-  en: A document without headings is not checked. A measure the document is too small for (a short text, few sections or lists) is not counted. The baseline is blog articles, so business, legal, documentation, academic and speech genres do not run this rule (`chaff outline` and `chaff fix-plan` measure the structure in any genre).
+  ja: 見出しの無い文書は見ません。項目ごとに、測るのに足りない文書（短い文書、節や箇条書きの少ない文書）はその項目を数えません。定型の見出しは、4 種類に届かなければ数えません（本物の提案書にも 1 つ 2 つはあります）。法務・説明書・論文・話し言葉のジャンルでは見ません（`chaff outline` と `chaff fix-plan` は、どのジャンルでも構成を測ります。定型の見出しはこの rule だけが数えます）。
+  en: A document without headings is not checked. A measure the document is too small for (a short text, few sections or lists) is not counted. Template headings count only when four or more sections of the textbook outline stand as headings; a real proposal has one or two. Legal, documentation, academic and speech genres do not run this rule (`chaff outline` and `chaff fix-plan` measure the structure in any genre; only this rule counts the template headings).
 level_meaning:
   ja: 人の記事の 9 割を超えた項目が {limit} 個そろえば指摘
   en: reported once {limit} measures lie past 90% of human articles

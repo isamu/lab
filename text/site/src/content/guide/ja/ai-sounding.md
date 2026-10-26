@@ -65,7 +65,7 @@ chaff が機械で見つけた箇所と、それぞれの直す方向です。ch
 - 試してうまくいかなかったこと、制約、前提を書いているか
 - 結びが本文の言い直しではなく、次に読むもの・試すものを示しているか
 
-このジャンルで特に効く rule: `closing-cliche`, `empty-conclusion`, `padded-intro`, `paragraph-length-variance`, `quote-without-source`, `rule-of-three`, `section-length-uniformity`, `sentence-rhythm`
+このジャンルで特に効く rule: `closing-cliche`, `empty-conclusion`, `padded-intro`, `paragraph-length-variance`, `quote-without-source`, `section-length-uniformity`, `sentence-rhythm`
 
 …
 ```
@@ -98,7 +98,6 @@ $ npx chaffjs rules --json --genre blog/tech
       "padded-intro",
       "paragraph-length-variance",
       "quote-without-source",
-      "rule-of-three",
       "section-length-uniformity",
       "sentence-rhythm"
     ],
@@ -127,7 +126,7 @@ Claude Code の skill（`npx chaffjs skill`）は、指摘より先に指針を�
 | `announcing-opener` | 「重要なのは、」「ポイントは、」「正直に言うと、」で始まる文の重なり |
 | `over-general-claim` | 「most people」「nobody」「everyone」のように人を大きく括る一般論の重なり（英語のブログとビジネス文書だけ） |
 | `q-fragment-answer` | 「Is it perfect? No.」「The result? Faster builds.」のように、自分で問うてすぐ断片で答える所の重なり（英語の文書だけ） |
-| `colon-lead-in` | 「以下の通りです：」のように、コロンで箇条書きへ渡す文の密度 |
+| `colon-lead-in` | 「以下の通りです：」のように、コロンで箇条書きへ渡す文の密度（英語は上限を高くしています） |
 | `emoji-heading` | 「## 🚀 はじめに」のように、絵文字の付いた見出しが続く所 |
 | `bold-label-list` | 「- **速さ**：〜」のように、太字の札とコロンで始まる項目の多さ |
 | `assistant-residue` | 「お役に立てれば幸いです」のような、チャットの返事の名残 |
@@ -142,7 +141,7 @@ Claude Code の skill（`npx chaffjs skill`）は、指摘より先に指針を�
 | `rule-of-three` | 箇条書きがどれも 3 項目の所 |
 | `section-length-uniformity` | どの節もほぼ同じ長さに埋めてあり、ひな形を埋めたように見える所 |
 | `paragraph-length-variance` | どの段落もほぼ同じ長さで、型に流しこんだように見える所 |
-| `ai-structure` | 構成の項目（見出しの多さ、3 つに分けた小見出し、太字の札、節の長さの揃い方、本文を言い直すまとめなど）のいくつもが、人の記事の 9 割を超えた文書。ブログとエッセイだけで見ます |
+| `ai-structure` | 構成の項目（見出しの多さ、3 つに分けた小見出し、太字の札、節の長さの揃い方、本文を言い直すまとめなど）のいくつもが、人の記事の 9 割を超えた文書。ビジネス文書では、教科書どおりの提案書の見出し（背景、現状と課題、提案内容、期待される効果、費用、リスクと対策…）も 1 項目に数えます |
 | `ai-generated-composite` | 次の特徴のうち 3 つ以上がそろった文書：`ai-tell`、`contrast-framing`、`stock-transition`、`announcing-opener`、`colon-lead-in`、`assistant-residue`、`closing-cliche`、`padded-intro`、`no-em-dash`、`sentence-rhythm`、`rule-of-three`、`section-length-uniformity`、`ai-structure`（`bold-density` は数えません） |
 
 どのルールも、それだけで「AI が書いた」とは言いません。人も書く形です。

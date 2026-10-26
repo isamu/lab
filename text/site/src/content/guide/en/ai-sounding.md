@@ -65,7 +65,7 @@ What a good document of this genre does. Rewrite toward it, and check the result
 - Does it say what was tried and failed, the limits, and the assumptions?
 - Does the ending point to what to read or try next, rather than restate the body?
 
-Rules that matter most for this genre: `closing-cliche`, `empty-conclusion`, `padded-intro`, `paragraph-length-variance`, `quote-without-source`, `rule-of-three`, `section-length-uniformity`, `sentence-rhythm`
+Rules that matter most for this genre: `closing-cliche`, `empty-conclusion`, `padded-intro`, `paragraph-length-variance`, `quote-without-source`, `section-length-uniformity`, `sentence-rhythm`
 
 …
 ```
@@ -98,7 +98,6 @@ $ npx chaffjs rules --json --genre blog/tech
       "padded-intro",
       "paragraph-length-variance",
       "quote-without-source",
-      "rule-of-three",
       "section-length-uniformity",
       "sentence-rhythm"
     ],
@@ -127,7 +126,7 @@ Legal documents, manuals, literature and transcripts are written differently, so
 | `announcing-opener` | Several sentences opening with an announcement ("The key point is", "Here's the thing", "Honestly,") |
 | `over-general-claim` | Sweeping claims about people ("most people", "nobody", "everyone") piling up (English blogs and business documents only) |
 | `q-fragment-answer` | Questions the writer answers at once with a fragment, more than once ("Is it perfect? No.", "The result? Faster builds.") (English only) |
-| `colon-lead-in` | Too many sentences ending in a colon that hand off to a list (Japanese documents only) |
+| `colon-lead-in` | Too many sentences ending in a colon that hand off to a list (in English, with a higher limit) |
 | `emoji-heading` | Headings with an emoji in them, one after another ("## 🚀 Getting started") |
 | `bold-label-list` | Many list items that open with a bold label and a colon ("- **Speed**: ...") |
 | `assistant-residue` | What is left of a chat reply ("I hope this helps", "As of my last knowledge update") |
@@ -142,7 +141,7 @@ Legal documents, manuals, literature and transcripts are written differently, so
 | `rule-of-three` | Lists that almost all have three items |
 | `section-length-uniformity` | Every section filled to the same size, which is what a template does |
 | `paragraph-length-variance` | Paragraphs all of about the same length, as if poured into a mould |
-| `ai-structure` | An outline past 90% of human articles on several structure measures at once (heading density, headings split into three, bold labels, uniform sections, a closing that restates). Blog and essay genres only |
+| `ai-structure` | An outline past 90% of human articles on several structure measures at once (heading density, headings split into three, bold labels, uniform sections, a closing that restates). In business documents, the textbook proposal outline (Summary, Current Situation, Proposed Solution, Expected Benefits, Costs, Risks and Mitigation…) counts as one more |
 | `ai-generated-composite` | Three or more of these in one document: `ai-tell`, `contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in`, `assistant-residue`, `closing-cliche`, `padded-intro`, `no-em-dash`, `sentence-rhythm`, `rule-of-three`, `section-length-uniformity`, `ai-structure` (`bold-density` is not counted) |
 
 None of these rules says the text was generated. People write every one of these shapes.
