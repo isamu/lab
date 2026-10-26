@@ -255,7 +255,7 @@ Several of them also show how often human writing is mistaken for generated text
   - Appeared in: arXiv (not peer reviewed).
   - Found: Human raters and AI judges alike favour lists, bold text, emojis and long answers, whatever the content.
     That is one reason models use these formats so much.
-  - In chaff: [`bold-density`](../../rules/bold-density/), [`emoji-density`](../../rules/emoji-density/) and
+  - In chaff: [`bold-density`](../../rules/bold-density/), [`bold-emphasis`](../../rules/bold-emphasis/), [`emoji-density`](../../rules/emoji-density/) and
     `rule-of-three` point at the places where this bias shows in a text.
 - <a id="freeburg-2026"></a>**Freeburg (2026)** [arxiv.org](https://arxiv.org/abs/2603.27006)
   - The Last Fingerprint: How Markdown Training Shapes LLM Prose

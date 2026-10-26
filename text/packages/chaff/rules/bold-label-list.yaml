@@ -3,9 +3,6 @@ layer: L1
 status: stable
 how_to_find: bold-label-list
 requires: [markdown]
-# English human writing (handbooks, minutes, policies, changelogs) labels list items in bold as a matter of course: the
-# committed English corpus already passes the limit in documents no model wrote. Japanese only until a limit separates them.
-languages: [ja]
 severity: info
 
 name:
@@ -57,10 +54,25 @@ example:
 
       一覧は 1 秒で出るようになり、数え間違いも減りました。
       月の費用は下がり、権限も細かく分けられます。
+  en:
+    config: { genre: blog/tech }
+    before: |
+      # Our new stock system
+
+      - **Speed**: the list loads in a second.
+      - **Accuracy**: fewer counting mistakes.
+      - **Cost**: the monthly bill is lower.
+      - **Ease of use**: the screens are clearer.
+      - **Security**: permissions can be split finely.
+    after: |
+      # Our new stock system
+
+      The list now loads in a second, and we make fewer counting mistakes.
+      The monthly bill is lower, and permissions can be split finely.
 
 not_flagged:
-  ja: 札がコードだけの項目（`--flag` の説明のような、設定や引数の一覧）は数えません。札の後ろにコロンが無い項目と、コロンの後ろに何も無い項目も数えません。仕様書（technical/spec）・法務・説明書・論文・文学のジャンルでは見ません。英語の文書は、人もよくこの形で書くので見ません。
-  en: An item whose label is only code (a list of options or fields) is not counted, nor is one without a colon after the label or without text after the colon. Specification (technical/spec), legal, documentation, academic and literary genres do not run this rule. Japanese documents only; English writers use this shape as a matter of course.
+  ja: 札がコードだけの項目（`--flag` の説明のような、設定や引数の一覧）は数えません。札の後ろにコロンが無い項目と、コロンの後ろに何も無い項目も数えません。仕様書（technical/spec）・法務・説明書・論文・文学のジャンルでは見ません。
+  en: An item whose label is only code (a list of options or fields) is not counted, nor is one without a colon after the label or without text after the colon. Specification (technical/spec), legal, documentation, academic and literary genres do not run this rule.
 level_meaning:
   ja: 太字の札で始まる項目が {limit} 個あれば指摘
   en: reported once {limit} list items open with a bold label
@@ -87,3 +99,24 @@ rewrite:
       - 札を消しただけで、同じ並びの短い箇条書きを残す
       - 太字の札を、見出しのような一文に置き換える
       - 項目の間に、書き手が書いていない因果を足す
+  en:
+    direction: Drop the bold labels and turn the items back into sentences. Put the label's words into the sentence, and say how the items relate (a reason, an order, which matters more). Keep a glossary as a list, where each label is the term being defined.
+    pairs:
+      - before: |
+          - **Speed**: the list loads in a second.
+          - **Accuracy**: fewer counting mistakes.
+        after: |
+          The list now loads in a second, and we make fewer counting mistakes.
+      - before: |
+          - **Cause**: the config files were read in a new order.
+          - **Fix**: we pinned the order.
+        after: |
+          The config files were being read in a new order, so we pinned it.
+    keep:
+      - what each item says, and its numbers
+      - the order of steps
+      - a glossary's terms and definitions
+    avoid:
+      - dropping the labels but keeping the same short list
+      - replacing a bold label with a heading-like sentence
+      - adding causes between the items that the writer did not state
