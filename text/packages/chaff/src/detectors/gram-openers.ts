@@ -45,6 +45,62 @@ const leadsIntoList = (section: Pick<Section, "depth" | "sentences">, source: st
   return LIST_OR_TABLE_NEXT.test(source.slice(first.span.end, first.span.end + LOOKAHEAD)) ? [first] : [];
 };
 
+/**
+ * 識別子だけの見出し（`max-age`、【dict1】、[draft]）。参照の項目の名前で、節は一つの項目の説明。
+ * 括弧の中が言葉の札（【アドバイス等】）なら、相談事例ごとに繰り返す欄の名前で、項目の名前ではない。
+ */
+const IDENTIFIER_HEADING = /^(?:`[^`]+`|【[\w.:/-]+】|\[[\w.:/-]+\])$/u;
+
+/** 定義の並びの説明（「- : …」「: …」）。Markdown の定義の書き方で、項目の名前の下の行が「: 」で始まる。 */
+const DEFINITION_LINE = /(?:^|\n)[ \t]*(?:[-*+][ \t]+)?:[ \t]*$/u;
+const DEFINITION_REACH = 12;
+
+const opensDefinition = (sentence: Sentence, source: string): boolean =>
+  /^\s*:\s/u.test(sentence.text) || DEFINITION_LINE.test(source.slice(Math.max(0, sentence.span.start - DEFINITION_REACH), sentence.span.start));
+
+const BLANK_LINE = /\n[ \t]*\n/u;
+
+/** first から始まる段落（空行まで）の文。 */
+const paragraphFrom = (sentences: readonly Sentence[], first: Sentence, source: string): Sentence[] => {
+  const blank = source.slice(first.span.start).search(BLANK_LINE);
+  const end = blank === -1 ? source.length : first.span.start + blank;
+  return sentences.filter((sentence) => sentence.span.start >= first.span.start && sentence.span.start < end);
+};
+
+/**
+ * 参照の項目の説明の段落: 識別子だけの見出しの節の最初の段落と、定義の並びの説明の段落。参照の項目は同じ枠で書く
+ * （…ことを示します、…の有効なソースを指定します、…は冗長な表現です。…を省き簡潔な表現にすると…）。並んだ項目のどれも同じ書き方なのは
+ * 書式で、読み手は項目を一つずつ引く。
+ */
+export const entryOpeners = (sections: readonly Pick<Section, "heading" | "sentences">[], source: string): Sentence[] =>
+  sections.flatMap((section) => {
+    const first = section.sentences[0];
+    const starts = [
+      ...(first !== undefined && IDENTIFIER_HEADING.test(section.heading.trim()) ? [first] : []),
+      ...section.sentences.filter((sentence) => opensDefinition(sentence, source)),
+    ];
+    return starts.flatMap((start) => paragraphFrom(section.sentences, start, source));
+  });
+
+const FRAGMENT_END = /[\p{P}\p{S}]\s*$/u;
+const NOUN_END = new Set(["NOUN", "PROPN", "NUM"]);
+const LINE_END_NEXT = /^[ \t]*(?:\n|$)/u;
+
+/**
+ * 句点の無い、名詞で終わる一行（「e-Govアカウント仮登録入力画面で入力されたメールアドレス」）。文ではなく、表の欄や項目の名前。
+ * 変換が表を段落に崩しても、欄の値は行ごとに同じ言い回しを持つ。品詞が無ければ見分けない。
+ */
+export const nounFragments = (sentences: readonly Sentence[], source: string): Sentence[] =>
+  sentences.filter((sentence) => {
+    const last = sentence.tokens?.filter((token) => token.pos !== "PUNCT" && token.pos !== "SYM").at(-1);
+    return (
+      last !== undefined &&
+      NOUN_END.has(last.pos) &&
+      !FRAGMENT_END.test(sentence.text) &&
+      LINE_END_NEXT.test(source.slice(sentence.span.end, sentence.span.end + LOOKAHEAD))
+    );
+  });
+
 /** 節のひな形の文: 一覧を導く節の最初の文と、項目ごとの見出し（itemTitles）。 */
 export const sectionOpeners = (sections: readonly Pick<Section, "depth" | "sentences">[], source: string): Set<Sentence> =>
   new Set(sections.flatMap((section) => [...leadsIntoList(section, source), ...itemTitles(section.sentences, source)]));

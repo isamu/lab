@@ -1,8 +1,5 @@
 import { proseText } from "../measure.ts";
 import { dateSpans, wordsOf } from "./structure.ts";
-import { compacted, linkedIn, placeAt } from "./gram-place.ts";
-import { charWindows, wordWindows } from "./gram-windows.ts";
-import { fixedEndingSpans, furnitureMask, isFurniture } from "./gram-furniture.ts";
 import { lexiconNotationOf, sourceNotAcronymSpans, unreportedAcronymSpans, type NotAcronymSpans } from "./acronym-context.ts";
 import { abbreviates, expansionAt, termEntryAcronyms, type DefinitionWords, type ExpandedAt } from "./acronym-expansion.ts";
 import { isExplained } from "./acronym-compound.ts";
@@ -15,10 +12,7 @@ import { evidenceSpans, hasNumeral, isClaim, isLabelOnly, startsWithin, type Adv
 import { letteredIndexEntries } from "./lettered-index.ts";
 import { knownByDocument } from "./acronym-known.ts";
 import { glossedAcronyms, headingsSpellingOut } from "./acronym-gloss.ts";
-import { hasPredicateIn } from "./gram-predicate.ts";
-import { gramPassagesOf } from "./gram-passages.ts";
-import { sectionOpeners } from "./gram-openers.ts";
-import { nameSpans, touchesAny } from "../team-names.ts";
+import { nameSpans } from "../team-names.ts";
 import { DASH, introducesList } from "./lead-in-dash.ts";
 import type { Detector, Finding, ProseDocument, Section, Sentence } from "../plugin.ts";
 
@@ -61,121 +55,6 @@ export const emojiDensity: Detector = (doc, options): Finding[] => {
       column: 0,
       quote: first.sentence.text.trim(),
       values: { count: hits.length, density: rate, limit: options.limit, offset: first.offset },
-    },
-  ];
-};
-
-/**
- * 同じ言い回しの繰り返し。文字の並びで見るので、adapter の語の区切り（wordSplit）が要らない。英語の窓は空白で語の切れ目にそろえる。
- * spec §10 が n-gram を選んだのはこのためで、新しい言語でそのまま動く。
- */
-/**
- * 窓の幅は単位で分ける。同じ 8 文字でも、日本語では 4〜5 形態素だが英語では 1 語半にしかならない。
- * 英語の窓は語の切れ目にそろえ、18 文字に届くまで語を足す。文字で切ると " generat" のような語の断片が上位に来る。
- * 18 は、文字で切っていた頃の 20 文字の窓から前後の空白を除いた長さ（" juxtaposed to said "）。
- */
-const GRAM = { char: 8, word: 18 };
-
-const windowsOf = (text: string, unit: ProseDocument["lengthUnit"]): Span[] => (unit === "char" ? charWindows(text, GRAM.char) : wordWindows(text, GRAM.word));
-
-/**
- * 名前ではなく言い回しだけを数える。実文書で測ったら、上位は
- * 「AGENTS.m」「シンギュラリティ」のような固有名詞と識別子だった。名前は繰り返して当たり前。
- *
- * 言い回しは、その言語の「つなぎの материал」を含む。日本語ならひらがな、英語なら語の切れ目。
- * どちらを見るかは adapter が宣言する単位で決める。ひらがなを持たない char 単位の言語が
- * 来たら、この見分けは効かなくなる（そのときは adapter 側に判定を移す）。
- */
-/**
- * つなぎが 1 つでは足りない。「detectorは」は用語に助詞が 1 つ付いただけで、
- * 繰り返して当たり前の**用語**であって言い回しではない。
- * 実文書で測ると、本物の言い回しはひらがなを 7 つ前後含み、用語＋助詞は 1〜2 だった。
- */
-const CONNECTIVE = { char: /[ぁ-ゖ].*[ぁ-ゖ].*[ぁ-ゖ]/u, word: /\S \S.*\S \S/u };
-
-const isPhrasing = (gram: string, unit: ProseDocument["lengthUnit"]): boolean => CONNECTIVE[unit].test(gram);
-
-/** 語句が最初に数えられた所。書かれたままの語句と、文と、文の中の範囲（sentence.text の位置）。 */
-type FirstSeen = { readonly gram: string; readonly sentence: Sentence; readonly place: Span };
-
-type Tally = { readonly counts: Map<string, number>; readonly first: Map<string, FirstSeen> };
-
-/** 英語は大文字と小文字を区別せずに数える。文頭の "Proposals submitted via" も文中の "proposals submitted via" も同じ言い回し。 */
-const keyOf = (gram: string, unit: ProseDocument["lengthUnit"]): string => (unit === "word" ? gram.toLowerCase() : gram);
-
-const namesOf = (doc: ProseDocument): readonly string[] =>
-  doc.lengthUnit === "char" ? (doc.names ?? []).map((name) => name.replace(/\s+/gu, "")) : (doc.names ?? []);
-
-/** 語彙表 ngram-fixed-ending: 項目ごとに同じ形で結ぶ書式の結び（〜ものとすること。）。 */
-const fixedEndingsOf = (doc: ProseDocument): string[] => (doc.lexicons["ngram-fixed-ending"] ?? []).map((entry) => entry.pattern);
-
-/**
- * 文をまたいで数えない。文の終わりと次の文の始まりが繋がると、固有名詞が言い回しに見える。
- * 並べた名前にかかる語句も数えない。名前が繰り返されれば、その前後（「the …」）も一緒に繰り返されるのは当たり前。
- * 一覧の飾り（gram-furniture.ts）も数えない。項目ごとに繰り返すのはひな形で、書き手ではない。
- */
-const tallySentence = (doc: ProseDocument, sentence: Sentence, tally: Tally): void => {
-  const source = compacted(sentence.text, doc.lengthUnit);
-  const named = nameSpans(source.text, namesOf(doc));
-  const mask = furnitureMask(source.text, linkedIn(doc, sentence, source));
-  fixedEndingSpans(source.text, fixedEndingsOf(doc)).forEach((span) => mask.fill(true, span.start, span.end));
-  windowsOf(source.text, doc.lengthUnit)
-    .filter((window) => !touchesAny(named, window.start, window.end) && !isFurniture(source.text, mask, window))
-    .forEach((window) => {
-      const gram = source.text.slice(window.start, window.end);
-      const key = keyOf(gram, doc.lengthUnit);
-      tally.counts.set(key, (tally.counts.get(key) ?? 0) + 1);
-      const place = placeAt(source, window);
-      if (!tally.first.has(key) && place !== undefined) tally.first.set(key, { gram, sentence, place });
-    });
-};
-
-const gramsOf = (doc: ProseDocument, sentences: readonly Sentence[]): Tally => {
-  const tally: Tally = { counts: new Map(), first: new Map() };
-  sentences.forEach((sentence) => tallySentence(doc, sentence, tally));
-  return tally;
-};
-
-type Repeat = { readonly key: string; readonly count: number; readonly at: FirstSeen | undefined };
-
-/** 範囲（gram-passages.ts）ごとに数える。よくある質問の別々の答えは別の範囲。節の最初の文にだけ出るものは節のひな形（gram-openers.ts）。 */
-const repeatsOf = (doc: ProseDocument, limit: number, openers = sectionOpeners(doc.sections, doc.source)): Repeat[] =>
-  gramPassagesOf(doc.sections).flatMap((sentences) => {
-    const tally = gramsOf(doc, sentences);
-    const opening = gramsOf(
-      doc,
-      sentences.filter((sentence) => openers.has(sentence)),
-    ).counts;
-    return [...tally.counts.entries()]
-      .filter(([key, count]) => count > limit && isPhrasing(key, doc.lengthUnit) && (opening.get(key) ?? 0) < count)
-      .map(([key, count]) => ({ key, count, at: tally.first.get(key) }));
-  });
-
-/**
- * 語句が文の中で占める範囲に、述語になる動詞か助動詞があるか（gram-predicate.ts）。
- * 品詞が無ければ見分けられないので、これまでどおり言い回しとして数える。
- */
-const hasPredicate = (at: FirstSeen | undefined, unit: ProseDocument["lengthUnit"]): boolean => {
-  if (at?.sentence.tokens === undefined) return true;
-  const start = at.sentence.span.start;
-  return hasPredicateIn(at.sentence.tokens, { start: start + at.place.start, end: start + at.place.end }, unit);
-};
-
-export const ngramRepetition: Detector = (doc, options): Finding[] => {
-  if (wordsOf(doc) < MIN_DOCUMENT_LENGTH[doc.lengthUnit]) return [];
-  const worst = repeatsOf(doc, options.limit)
-    .toSorted((left, right) => right.count - left.count)
-    .find(({ at }) => hasPredicate(at, doc.lengthUnit));
-  if (worst === undefined) return [];
-  const at = worst.at?.sentence;
-  return [
-    {
-      rule: "ngram-repetition",
-      severity: "info",
-      line: 0,
-      column: 0,
-      quote: at?.text.trim() ?? worst.key,
-      values: { word: worst.at?.gram ?? worst.key, count: worst.count, limit: options.limit, offset: at?.span.start ?? 0 },
     },
   ];
 };

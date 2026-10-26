@@ -26,14 +26,27 @@ const inCoordinatedNoun = (tokens: readonly Token[], index: number, unit: Length
   !isDependentNoun(tokens[index + 1]);
 
 /**
+ * 英語の大文字だけの語（AI、API）は略語の名前。解析器が動詞と読んでも（AI を ain't の ai と読む）述語ではない。
+ * 強調と分かった普通の語（NEVER、START）は除く。
+ */
+const ACRONYM = /^\p{Lu}[\p{Lu}\p{N}]+s?$/u;
+
+const acronymAt = (tokens: readonly Token[], index: number, unit: LengthUnit): boolean => {
+  const token = tokens[index];
+  return unit === "word" && token !== undefined && ACRONYM.test(token.surface) && token.features?.["Emph"] !== "Yes";
+};
+
+/**
  * 英語で名詞のすぐ前の動詞は、名詞を飾る語（形容詞を挟んでも同じ）（the upcoming fiscal year、the Disclosing Party、the borrow checker）で、
  * 述語ではない。日本語の名詞の前の動詞（〜にあるコンポーネント）は言い回しの一部になるので、接続詞の後ろの用語の中（inCoordinatedNoun）だけを外す。
  */
 const modifiesNoun = (tokens: readonly Token[], index: number, unit: LengthUnit): boolean =>
-  (unit === "word" && tokens[index]?.pos === "VERB" && NOUNS.has(tokens[index + 1]?.pos ?? "")) || inCoordinatedNoun(tokens, index, unit);
+  (unit === "word" && tokens[index]?.pos === "VERB" && (NOUNS.has(tokens[index + 1]?.pos ?? "") || acronymAt(tokens, index + 1, unit))) ||
+  inCoordinatedNoun(tokens, index, unit);
 
-/** 英語で大文字の名前の一部になった動詞（Procedures Guide、the Location Object）も、述語ではない。 */
-const namePartAt = (tokens: readonly Token[], index: number, unit: LengthUnit): boolean => unit === "word" && isNamePart(tokens, index);
+/** 英語で大文字の名前の一部になった動詞（Procedures Guide、the Location Object）と略語（AI）も、述語ではない。 */
+const namePartAt = (tokens: readonly Token[], index: number, unit: LengthUnit): boolean =>
+  unit === "word" && (isNamePart(tokens, index) || acronymAt(tokens, index, unit));
 
 const isName = (tokens: readonly Token[], index: number, unit: LengthUnit): boolean => {
   const token = tokens[index];
