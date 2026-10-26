@@ -29,7 +29,21 @@ const numberOf = (text: string | undefined): string | undefined => {
 const titleOf = (rest: string): string | undefined => {
   const trimmed = rest.replace(/^[.:\-–—\s]+/u, "").trim();
   if (trimmed !== "" && /^\p{Ll}/u.test(trimmed)) return undefined;
+  if (citesInSentence(rest)) return undefined;
   return trimmed;
+};
+
+/** "(c) is brief", "(a) of the Act, 50 U.S.C.", "(15 USCA § 46), among other things": subdivisions or a bracketed citation. */
+const LEADING_BRACKETS = /^(?:\s*\([^()]{1,40}\))+/u;
+
+/**
+ * An opinion's paragraph or footnote that opens with a citation ("§ 331, 7 U.S.C. § 1331.", "Section 9(c) is brief…")
+ * cites another Act's section: a comma, or a lowercase word, right after the number and its bracketed parts. A heading's
+ * title follows its number without one ("Section 5 (Reserved).", "§ 3(a) Definitions").
+ */
+const citesInSentence = (rest: string): boolean => {
+  const after = rest.replace(LEADING_BRACKETS, "").trimStart();
+  return after.startsWith(",") || (after !== rest.trimStart() && /^\p{Ll}/u.test(after));
 };
 
 const ARTICLE = /^\s{0,3}(?:ARTICLE|Article)\s+(?<n>\d{1,3}|[IVXLC]{1,7})\b(?<rest>.*)$/u;
