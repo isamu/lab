@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { firedRules } from "./rule-run.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { sweepingSentences } from "../packages/chaff/src/detectors/over-general-claim.ts";
+import { tokenizedLexicons } from "../packages/chaff/src/lexicon-tokens.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 
@@ -78,7 +79,49 @@ describe("over-general-claim", () => {
     const found = sweepingSentences(doc, en.lexicons[RULE] ?? []);
     assert.deepEqual(
       found.map((entry) => entry.phrases),
-      [["nobody", "nobody"], ["for most of us"], ["for most households", "anyone who"]],
+      [["nobody", "nobody"], ["most of us"], ["for most households", "anyone who"]],
     );
+  });
+
+  const phrasesOf = (text: string): (readonly string[])[] =>
+    sweepingSentences(buildDocument("t.md", text, en), tokenizedLexicons(en.lexicons, en)[RULE] ?? []).map((entry) => entry.phrases);
+
+  it("does not count everyone, anyone who or nobody when a group is named in the same or the previous sentence", () => {
+    assert.deepEqual(phrasesOf("The design team met on Monday. Everyone brings one idea to the review."), []);
+    assert.deepEqual(phrasesOf("Anyone who is on leave tells the rest of the team first."), []);
+    assert.deepEqual(phrasesOf("Our family shares one drive. It keeps a copy for everyone."), []);
+    assert.deepEqual(phrasesOf("All of you have the link now. Nobody needs to ask for access."), []);
+    assert.deepEqual(phrasesOf("Everyone on the call voted for Friday."), []);
+    assert.deepEqual(phrasesOf("Everyone here gets a badge at the door."), []);
+  });
+
+  it("does not count them when a past-tense verb reports what one group did", () => {
+    assert.deepEqual(phrasesOf("The disk filled up overnight and nobody noticed it."), []);
+    assert.deepEqual(phrasesOf("Thanks to everyone who stayed late on Friday."), []);
+  });
+
+  it("still counts them when no group is named nearby, or the verb is in the present", () => {
+    assert.deepEqual(phrasesOf("Nobody can remember fifty passwords. Everyone reuses a few of them."), [["nobody"], ["everyone"]]);
+    assert.deepEqual(phrasesOf("Anyone who has tried it knows the feeling."), [["anyone who"]]);
+    assert.deepEqual(phrasesOf("Nobody wants to lose the family photos."), [["nobody"]]);
+    assert.deepEqual(phrasesOf("Anyone who asks the office manager gets a key."), [["anyone who"]]);
+    assert.deepEqual(phrasesOf("Nobody's reading the manual."), [["nobody"]]);
+  });
+
+  it("always counts most people and most of us, even next to a group", () => {
+    assert.deepEqual(phrasesOf("Our team tried it. Most people never back up their photos."), [["most people"]]);
+    assert.deepEqual(phrasesOf("Compare it to what most of us are doing now."), [["most of us"]]);
+  });
+
+  it("counts many people only as the subject of a verb", () => {
+    assert.deepEqual(phrasesOf("Yet many people keep every photo on one phone."), [["many people"]]);
+    assert.deepEqual(phrasesOf("You may not see many people on the trail."), []);
+    assert.deepEqual(phrasesOf("The park was shaped by the many people connected to it."), []);
+  });
+
+  it("does not report a team update whose nobody and everyone are the team", () => {
+    const update =
+      "Hi team, the build server ran out of disk on Monday. Nobody noticed it until the deploy failed. Thanks to everyone who stayed late to fix it. Most people were offline by then. ";
+    assert.ok(!fires(`${update}${filler(20)}`, "business/report"));
   });
 });
