@@ -224,8 +224,21 @@ describe("colonLeadIns", () => {
     assert.deepEqual(leadInsOf("# Title\n\nHere's what you need:\n\n- A key\n", en), ["Here's what you need:"]);
   });
 
-  it("finds a bold label ending in a colon", () => {
-    assert.equal(leadInsOf("# 題\n\n**準備**:\n\n- 鍵\n").length, 1);
+  it("finds a bold lead-in sentence ending in a colon", () => {
+    assert.equal(leadInsOf("# 題\n\n**準備は次の通りです**:\n\n- 鍵\n").length, 1);
+    assert.equal(leadInsOf("# Title\n\n**Key features of the new app include:**\n\n- Sync\n", en).length, 1);
+  });
+
+  // 自作の文。太字の名詞の札が一行に立つ形は、その下の箇条書きの名前で、見出しと同じ。箇条書きへ渡す文ではない。
+  it("does not count a bold noun label on a line of its own, which names the list as a heading does", () => {
+    assert.deepEqual(leadInsOf("# Review\n\n**Pros:**\n- Light\n- Quiet\n\n**Cons:**\n- Pricey\n", en), []);
+    assert.deepEqual(leadInsOf("# Review\n\n**Pros**:\n\n- Light\n", en), []);
+    assert.deepEqual(leadInsOf("# 題\n\n**メリット：**\n\n- 軽い\n\n**準備**:\n\n- 鍵\n"), []);
+  });
+
+  it("still counts a plain label, and a bold label that is part of a longer line", () => {
+    assert.equal(leadInsOf("# Review\n\nPros:\n\n- Light\n", en).length, 1);
+    assert.equal(leadInsOf("# 題\n\n準備**:**\n\n- 鍵\n").length, 1);
   });
 
   it("does not count a lead-in that does not end in a colon", () => {
@@ -245,9 +258,9 @@ describe("colonLeadIns", () => {
     ["***", "___", "---"].forEach((rule) => assert.deepEqual(leadInsOf(`# 題\n\n準備：\n\n${rule}\n\n- 鍵\n`), [], rule));
   });
 
-  it("finds a bold label whose colon is inside or outside the bold", () => {
-    assert.equal(leadInsOf("# 題\n\n**準備:**\n\n- 鍵\n").length, 1);
-    assert.equal(leadInsOf("# 題\n\n準備**:**\n\n- 鍵\n").length, 1);
+  it("finds a bold lead-in sentence whose colon is inside or outside the bold", () => {
+    assert.equal(leadInsOf("# 題\n\n**準備は次の通りです:**\n\n- 鍵\n").length, 1);
+    assert.equal(leadInsOf("# 題\n\n**準備は次の通りです**:\n\n- 鍵\n").length, 1);
   });
 
   it("finds a lead-in with no blank line before its list", () => {
@@ -270,7 +283,7 @@ describe("colonLeadIns", () => {
   });
 
   it("still counts a label used once, a repeated sentence, and different labels", () => {
-    assert.equal(leadInsOf(`# 題\n\n**参考:**\n\n- <https://example.com/1>\n\n**注意:**\n\n- 鍵\n`).length, 2);
+    assert.equal(leadInsOf(`# 題\n\n参考:\n\n- <https://example.com/1>\n\n注意:\n\n- 鍵\n`).length, 2);
     assert.equal(leadInsOf(`# 題\n\n${entries("主な点は次の通りです：")}`).length, 3);
     assert.equal(leadInsOf(`# 題\n\n${entries("**使い方:**")}`).length, 3);
     assert.equal(leadInsOf(`# 題\n\n${entries("⚠️:")}`).length, 3);
@@ -283,31 +296,48 @@ describe("colonLeadIns", () => {
 });
 
 describe("colon-lead-in", () => {
-  const twoLeadIns = (bulk: string, first: string, second: string): string => `# 記事\n\n${bulk}\n\n${first}\n\n- 一\n- 二\n\n${second}\n\n- 三\n- 四\n`;
+  /** 節ごとに一つ、コロンで箇条書きへ渡す文を置く。 */
+  const sectioned = (leadIns: readonly string[]): string => leadIns.map((leadIn, index) => `## 節${String(index + 1)}\n\n${leadIn}\n\n- 一\n- 二\n`).join("\n");
+  const DENSE_JA = `# 記事\n\n${BULK_JA.slice(0, 520)}\n\n${sectioned(["準備は次の通りです：", "流れは次の通りです：", "片付けは次の通りです："])}`;
 
-  it("fires on colon lead-ins piling up in a long document", () => {
-    const dense = `# 記事\n\n${BULK_JA.slice(0, 520)}\n\n準備：\n\n- 鍵\n- 地図\n\n流れ：\n\n- 集合\n- 出発\n\n片付け：\n\n- 掃除\n`;
-    assert.ok(idsFor(dense, ja).includes("colon-lead-in"));
+  it("fires on colon lead-ins piling up section after section in a long document", () => {
+    assert.ok(idsFor(DENSE_JA, ja).includes("colon-lead-in"));
+  });
+
+  // 自作の文。短いハウツーの手順の前置き二つ（do it in this order:）や、一つの節に並べた事実の一覧は、節ごとに続く形ではない。
+  it("does not fire on lead-ins in fewer than three sections, however dense", () => {
+    const twoSections = `# 記事\n\n${BULK_JA.slice(0, 520)}\n\n${sectioned(["準備は次の通りです：", "流れは次の通りです："])}`;
+    assert.ok(!idsFor(twoSections, ja).includes("colon-lead-in"));
+    const threeInTwo = `${twoSections}\n片付けは次の通りです：\n\n- 掃除\n`;
+    assert.ok(!idsFor(threeInTwo, ja).includes("colon-lead-in"));
+    const howTo = `# Fixing the printer\n\n${BULK_EN.split(" ").slice(0, 300).join(" ")}\n\n## 1. Restart\n\nDo it in this order:\n\n1. Turn off the printer.\n2. Restart the router.\n\n## 2. Set it up again\n\nIf that fails, go through the setup again:\n\n- Pick your network.\n- Enter the password.\n`;
+    assert.ok(!idsFor(howTo, en).includes("colon-lead-in"));
+  });
+
+  it("counts each lead-in on its own in a document without headings", () => {
+    const flat = `${BULK_JA.slice(0, 520)}\n\n準備は次の通りです：\n\n- 鍵\n\n流れは次の通りです：\n\n- 集合\n\n片付けは次の通りです：\n\n- 掃除\n`;
+    assert.ok(idsFor(flat, ja).includes("colon-lead-in"));
   });
 
   it("does not fire on one lead-in, nor on a short document", () => {
     assert.ok(!idsFor(`# 記事\n\n${BULK_JA}\n\n準備：\n\n- 鍵\n`, ja).includes("colon-lead-in"));
-    assert.ok(!idsFor("# 記事\n\n準備：\n\n- 鍵\n\n流れ：\n\n- 集合\n", ja).includes("colon-lead-in"));
+    assert.ok(!idsFor(`# 記事\n\n${sectioned(["準備：", "流れ：", "片付け："])}`, ja).includes("colon-lead-in"));
   });
 
   it("does not fire when the lead-ins are spread over a long document", () => {
-    assert.ok(!idsFor(twoLeadIns(`${BULK_JA}${BULK_JA}`, "準備は次の通りです：", "流れは次の通りです："), ja).includes("colon-lead-in"));
+    const spread = `# 記事\n\n${BULK_JA}${BULK_JA}${BULK_JA}\n\n${sectioned(["準備は次の通りです：", "流れは次の通りです：", "片付けは次の通りです："])}`;
+    assert.ok(!idsFor(spread, ja).includes("colon-lead-in"));
   });
 
   it("does not run in manuals, legal text or literature, where lists after a colon are the form", () => {
-    const dense = `# 記事\n\n${BULK_JA.slice(0, 520)}\n\n準備：\n\n- 鍵\n\n流れ：\n\n- 集合\n\n片付け：\n\n- 掃除\n`;
-    ["docs/manual", "legal/contract", "literature/essay"].forEach((genre) => assert.ok(!idsFor(dense, ja, genre).includes("colon-lead-in"), genre));
+    ["docs/manual", "legal/contract", "literature/essay"].forEach((genre) => assert.ok(!idsFor(DENSE_JA, ja, genre).includes("colon-lead-in"), genre));
   });
 
   // 自作の文。#434: 和文の中の英文のコロンは、英語のふつうの書き方なので数えない。
   it("does not count English sentences inside a Japanese document", () => {
-    const pairs = (lead: (index: number) => string): string => [0, 1, 2, 3, 4, 5].map((index) => `${lead(index)}\n\n- one\n- two\n`).join("\n");
-    const bulk = `# 記事\n\n${BULK_JA}\n\n## 例\n\n`;
+    const pairs = (lead: (index: number) => string): string =>
+      [0, 1, 2, 3, 4, 5].map((index) => `## 例 ${String(index)}\n\n${lead(index)}\n\n- one\n- two\n`).join("\n");
+    const bulk = `# 記事\n\n${BULK_JA}\n\n`;
     const english = bulk + pairs((index) => "Example set " + String(index) + " includes:");
     const japanese = bulk + pairs((index) => String(index) + "番目の例は次のとおりです：");
     assert.ok(!idsFor(english, ja).includes("colon-lead-in"));
@@ -317,7 +347,9 @@ describe("colon-lead-in", () => {
   // English writers hand off to a list after a colon often, so the English limit (per 1000 words) is higher.
   const englishLeadIns = (bulkWords: number, count: number): string => {
     const bulk = `${BULK_EN}${BULK_EN}`.split(" ").slice(0, bulkWords).join(" ");
-    const lists = Array.from({ length: count }, (_unused, index) => `Step ${String(index + 1)} needs these things:\n\n- A key\n- A map\n`).join("\n");
+    const lists = Array.from({ length: count }, (_unused, index) => `## Step ${String(index + 1)}\n\nThis step needs these things:\n\n- A key\n- A map\n`).join(
+      "\n",
+    );
     return `# Post\n\n${bulk}\n\n${lists}`;
   };
 
@@ -331,7 +363,9 @@ describe("colon-lead-in", () => {
   });
 
   it("still counts an English lead-in sentence repeated before each list", () => {
-    const repeated = Array.from({ length: 3 }, () => "Here's what you need to bring:\n\n- A key\n- A map\n").join("\n");
+    const repeated = Array.from({ length: 3 }, (_unused, index) => `## Day ${String(index + 1)}\n\nHere's what you need to bring:\n\n- A key\n- A map\n`).join(
+      "\n",
+    );
     assert.ok(idsFor(`# Post\n\n${BULK_EN.split(" ").slice(0, 240).join(" ")}\n\n${repeated}`, en).includes("colon-lead-in"));
   });
 
@@ -345,8 +379,8 @@ describe("colon-lead-in", () => {
 
 describe("ai-generated-composite reads the new rules", () => {
   it("names announcing-opener and colon-lead-in among the signals it found", () => {
-    const source = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "fixtures", "ai-samples", "paired", "ja", "tech", "ai.md"), "utf8");
-    const composite = runRules(buildDocument("ai.md", source, ja), loadRules("ja"), {}, true, "blog/tech").findings.find(
+    const source = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "fixtures", "ai-samples", "paired", "ja", "business", "ai.md"), "utf8");
+    const composite = runRules(buildDocument("ai.md", source, ja), loadRules("ja"), {}, true, "business/report").findings.find(
       (finding) => finding.rule === "ai-generated-composite",
     );
     const signals = String(composite?.values["word"] ?? "");

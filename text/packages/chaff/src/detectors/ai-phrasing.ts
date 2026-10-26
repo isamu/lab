@@ -4,7 +4,6 @@ import { MIN_DOCUMENT_LENGTH } from "./signals.ts";
 import { entryIn, entryOpens } from "./lexicon-match.ts";
 import { contrastSentences, type ContrastWords } from "./contrast-frame.ts";
 import { placeholderSpans } from "./placeholder-text.ts";
-import { colonLeadIns } from "./list-lead-in.ts";
 import { followsInlineCode } from "./code-before.ts";
 import { isSentenceTail } from "./opener-tail.ts";
 
@@ -92,16 +91,6 @@ export const openerPile: Detector = (doc, options): Finding[] => {
   // A sentence that opens with inline code (`explain` でも) opens with the code, not with the word after it.
   const hits = openerHits(doc, options.lexicon ?? []).filter((hit) => !followsInlineCode(doc.source, doc.prose, firstWordAt(hit.sentence)) && !opensTail(hit));
   return hits.length === 0 || hits.length < options.limit ? [] : hits.map((hit) => findingOf(hit, { count: hits.length, limit: options.limit }));
-};
-
-/**
- * コロンで箇条書きへ渡す文（以下の通りです：）。1 つなら案内だが、節ごとに続くと説明が箇条書きの前置きだけになる。
- * 数えるのは文書の言語の文だけ。和文の中の英文（Examples include:）は、英語ではふつうの書き方なので数えない。
- */
-export const colonLeadIn: Detector = (doc, options): Finding[] => {
-  const inDocumentLanguage = doc.sentences.filter((sentence) => sentence.embeddedLanguage === undefined);
-  const hits = colonLeadIns(inDocumentLanguage, doc.lists, doc.listSpans, doc.source).map((sentence) => ({ sentence, matched: sentence.text.trim() }));
-  return densityFindings(doc, hits, options.limit);
 };
 
 const distinct = (lexicon: Lexicon): LexiconEntry[] => [...new Map(lexicon.map((entry) => [entry.pattern.toLowerCase(), entry])).values()];
