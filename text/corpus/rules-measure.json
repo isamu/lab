@@ -4250,6 +4250,9 @@
         "falseAlarms": 0
       }
     },
+    "generic-opening": {
+      "groups": {}
+    },
     "gpa-mismatch": {
       "groups": {
         "academic": {

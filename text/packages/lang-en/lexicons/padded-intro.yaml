@@ -6,3 +6,17 @@ entries:
   - pattern: has gained significant attention
   - pattern: is becoming increasingly important
   - pattern: have you ever wondered
+  # A problem every team or company could name, used as the way in.
+  - pattern: many teams struggle
+  - pattern: many organizations struggle
+  - pattern: many organisations struggle
+  - pattern: many companies struggle
+  - pattern: many businesses struggle
+  - pattern: as organizations increasingly
+  - pattern: as organisations increasingly
+  - pattern: as businesses increasingly
+  - pattern: as companies increasingly
+  - pattern: in today's digital
+  - pattern: in today's world
+  - pattern: in an ever-changing
+  - pattern: it's no secret
