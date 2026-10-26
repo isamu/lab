@@ -179,8 +179,9 @@ A quick AI-likeness reading: low, medium or high. It counts the signs of generat
 human documents of the same genre rarely show. It is not a verdict on whether AI wrote it, and
 it is not meant to be one. Among the signs: `email-stock-courtesy`, two or more stock email courtesies
 ("I hope this email finds you well", "I apologize for any inconvenience") in one English email; `closing-exhortation`, a closing that cheers
-the reader on two or more times ("You've got this", 「ぜひ〜してみてください」); and `cold-open`, an opening that piles a bare wish, a word of
-the previous sentence repeated in quotes, and a teaser ("Sounds simple. It isn't.") before any situation or example.
+the reader on two or more times ("You've got this", 「ぜひ〜してみてください」); `cold-open`, an opening that piles a bare wish, a word of
+the previous sentence repeated in quotes, and a teaser ("Sounds simple. It isn't.") before any situation or example; and
+`unprompted-denial`, many sentences that deny a premise nobody stated ("This isn't about tooling.", 「〜の話ではありません」).
 
 ## Grading a model's output
 

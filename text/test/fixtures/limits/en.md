@@ -4,6 +4,8 @@ Alice met Bob in London with Carol from Paris and Dave from Berlin.
 
 They agreed on the plan below. Easier said than done. I hope this email finds you well. I apologize for any inconvenience.
 
+This isn't about tooling. That's not the point of the review. It's not a question of budget.
+
 ## Summary
 
 There is a need to review the budget. There is a plan to hire two people. There is a risk in the schedule. There is a gap in the testing.

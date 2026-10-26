@@ -123,6 +123,7 @@ Claude Code の skill（`npx chaffjs skill`）は、指摘より先に指針を�
 | --- | --- |
 | `ai-tell` | 生成文に多い言い回しの重なり（「重要な役割を果たす」「静かに壊れる」「時間を溶かす」） |
 | `contrast-framing` | 「単なる X ではなく Y」「X ではありません。Y です」「X ではなく、Y です。」の対比の枠で書いた文の割合が多い所 |
+| `unprompted-denial` | 「〜の話ではありません」「〜の材料になりません」のように、誰も言っていない前提を打ち消して終わり、何であるかを言わない文の割合が多い所 |
 | `stock-transition` | 「さらに、」「加えて、」で始まる文の密度 |
 | `announcing-opener` | 「重要なのは、」「ポイントは、」「正直に言うと、」で始まる文の重なり |
 | `over-general-claim` | 「most people」「nobody」「everyone」のように人を大きく括る一般論の重なり（英語のブログとビジネス文書だけ） |

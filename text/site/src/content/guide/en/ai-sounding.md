@@ -123,6 +123,7 @@ Legal documents, manuals, literature and transcripts are written differently, so
 | --- | --- |
 | `ai-tell` | Phrases common in generated text piling up ("plays a crucial role", "delve into") |
 | `contrast-framing` | Too large a share of sentences in contrast frames ("not just X, but Y", "It wasn't X. It was Y", "It's not about X. It's about Y") |
+| `unprompted-denial` | Too large a share of sentences that deny a premise nobody stated, with nothing said in its place ("This isn't about tooling.", "That's not the point.") |
 | `stock-transition` | Too many sentences opening with "Moreover" or "Additionally" |
 | `announcing-opener` | Several sentences opening with an announcement ("The key point is", "Here's the thing", "Honestly,") |
 | `over-general-claim` | Sweeping claims about people ("most people", "nobody", "everyone") piling up (English blogs and business documents only) |
