@@ -10,6 +10,7 @@ There is a need to review the budget. There is a plan to hire two people. There 
 It is clear that the team needs more time. It is obvious that the release will slip.
 In today's fast-paced world, we must delve into the tapestry of our processes; it's not just a tool, it plays a crucial role.
 This is not only a report but also a plan. As of my last knowledge update, the venue was fixed.
+The delay wasn't the budget. It was the vendor.
 The team quickly and quietly reviewed the plan — then happily and eagerly approved it — and finally, rapidly and carefully, shipped it.
 Arguably, it seems the plan works. It may possibly be late. It could be fine, to some extent, in some cases.
 Sorry to bother you, but if you don't mind, I just wanted to ask. I was wondering if you could check it 😀.
@@ -63,17 +64,17 @@ So, the plan holds. So, we ship.
 Most people skip the check. Nobody reads the log. Everyone pays for it later.
 Is the plan perfect? No. The result? Faster builds.
 
+## Roles
+
+- **Chair**: Tanaka.
+- **Notes**: Suzuki.
+
 ## 🚀 Before
 
 Bring the key.
 
 ## ✅ After
 
-Return the key.
-
-## Roles
-
-- **Chair**: Tanaka.
-- **Notes**: Suzuki.
+Return the key. You've got this.
 
 Subject: The weekly report on the budget, the hiring plan and the schedule
