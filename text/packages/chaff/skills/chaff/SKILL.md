@@ -176,7 +176,7 @@ Use this section when asked to make a text sound less generated: 「AIっぽさ�
 書き直して」, "make this sound human", "this reads like AI wrote it".
 
 chaff marks the shapes common in generated text (group "Signs of generated text" in `npx chaffjs rules`: `ai-tell`,
-`contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in` (Japanese only), `over-general-claim` (English only),
+`contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in`, `over-general-claim` (English only),
 `q-fragment-answer` (English only), `assistant-residue`, `email-stock-courtesy` (English emails: stacked "I hope this email finds
 you well"-type courtesies), `closing-exhortation` (a closing that cheers the reader on: 「ぜひ〜してみてください」,
 "You've got this"), and the signals
@@ -257,6 +257,8 @@ repeats the body. The writer usually wants the structure changed, not only the s
    - merge thin sections and split overloaded ones, so a section is a real unit, not one heading per paragraph;
    - cut sections that only restate, the closing まとめ / "Conclusion" included;
    - drop a heading that wraps a single paragraph;
+   - in a proposal or report, name sections after their content rather than the textbook outline (Summary, Current
+     Situation, Proposed Solution, Expected Benefits, Costs, Risks and Mitigation): `ai-structure` counts that outline;
    - turn a list-of-points section into a narrative with one through-line;
    - no symmetric three-point sections unless the content really has three parts;
    - move the writer's concrete experience to where it carries the argument;

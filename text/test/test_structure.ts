@@ -120,6 +120,16 @@ describe("rule-of-three", () => {
     assert.ok(!idsFor(`# 見出し\n\n${blocks}`).includes("rule-of-three"));
   });
 
+  it("invalid: ビジネス文書でも、箇条書きが全部 3 項目なら指摘する", () => {
+    const blocks = Array.from({ length: 3 }, (_, index) => `要因${String(index)}です。\n\n- 人\n- 物\n- 金`).join("\n\n");
+    assert.ok(idsFor(`# 報告\n\n${blocks}`, "business/report").includes("rule-of-three"));
+  });
+
+  it("valid: ビジネス文書で項目の数がばらばらなら指摘しない", () => {
+    const blocks = ["説明です。\n\n- あ\n- い", "説明です。\n\n- あ\n- い\n- う", "説明です。\n\n- あ\n- い\n- う\n- え\n- お"].join("\n\n");
+    assert.ok(!idsFor(`# 報告\n\n${blocks}`, "business/report").includes("rule-of-three"));
+  });
+
   it("箇条書きが 3 個未満なら測らない。割合が暴れるため", () => {
     assert.ok(!idsFor("# 見出し\n\n説明です。\n\n- あ\n- い\n- う").includes("rule-of-three"));
   });
