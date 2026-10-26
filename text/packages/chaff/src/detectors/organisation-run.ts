@@ -49,11 +49,23 @@ const properLength = (run: readonly Token[]): number => {
   return run.slice(0, stretch).some((token) => token.pos === "PROPN") ? stretch : 0;
 };
 
-/** 1 つの区切り（総務課、産業技術総合研究所）か。組織の語で閉じ、その前に 2 字以上の語があり、数を含まない。 */
+const isOrdinalPrefix = (token: Token | undefined): boolean => token?.pos === "ADJ" && token.features?.["Bound"] === "Yes";
+
+/** 頭の「第」と数（第三担当の「第三」、第一原子力発電所の「第一」）の語数。無ければ 0。 */
+const ordinalLength = (part: readonly Token[]): number => {
+  if (!isOrdinalPrefix(part[0])) return 0;
+  const digits = part.slice(1).findIndex((token) => !isNumber(token));
+  return digits > 0 ? 1 + digits : 0;
+};
+
+/**
+ * 1 つの区切り（総務課、産業技術総合研究所、第三担当）か。組織の語で閉じ、その前に 2 字以上の語があり、
+ * 数を含まない。頭の序数（第三担当の「第三」）だけは、同じ種類の単位の何番目かを言う名前の一部。
+ */
 const isSegment = (part: readonly Token[], units: readonly string[]): boolean => {
   const text = [...surfaceOf(part)];
   const closing = units.filter((unit) => text.join("").endsWith(unit));
-  return !part.some(isNumber) && closing.some((unit) => text.length - [...unit].length >= MIN_BODY_LENGTH);
+  return !part.slice(ordinalLength(part)).some(isNumber) && closing.some((unit) => text.length - [...unit].length >= MIN_BODY_LENGTH);
 };
 
 /**
@@ -100,4 +112,16 @@ export const isOrganisationRun = (tokens: readonly Token[], covering: readonly n
   const head = form > 0 ? form : properLength(run);
   const segments = segmentCount(run.slice(head), words.units);
   return head > 0 || formBefore ? segments >= 1 : segments >= 2;
+};
+
+/**
+ * 連なりの語（covering）が、中黒の後ろへ続いて組織の語で閉じる名前（中央環境審議会地球環境部会気候変動影響評価・適応小委員会）の前半か。
+ * 前半は、法人格か地名・固有名詞で始まるか、組織の語で閉じる区切りで始まるか、前に法人格か組織の区切りが立つ（formBefore）。
+ * 名前が中黒の後ろで閉じるかは呼び出し側が決める。
+ */
+export const isOrganisationHead = (tokens: readonly Token[], covering: readonly number[], words: OrganisationWords, formBefore = false): boolean => {
+  const run = contiguous(tokens, covering);
+  if (run === undefined || run.length === 0) return false;
+  if (formBefore || formLength(run, new Set(words.forms)) > 0 || properLength(run) > 0) return true;
+  return run.some((_, at) => at > 0 && segmentCount(run.slice(0, at), words.units) >= 1);
 };
