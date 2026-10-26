@@ -6,12 +6,12 @@ import {
   firstMention,
   frameSlips,
   greetingLineCount,
-  lineHas,
   ownText,
   showsAttachment,
   signingLines,
   withoutReplyMarks,
 } from "../packages/chaff/src/detectors/email-letter.ts";
+import { lineHas } from "../packages/chaff/src/detectors/email-frame-words.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
