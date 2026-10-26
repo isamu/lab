@@ -47,8 +47,8 @@ const contrastWordsOf = (doc: ProseDocument, frames: Lexicon): ContrastWords => 
   amounts: doc.lexicons["contrast-amount"] ?? [],
 });
 
-/** 対比の枠は、一つ二つなら論点の整理。三つ目から数える。 */
-const MIN_CONTRASTS = 3;
+/** 対比の枠は、一つなら論点の整理。二つ目から数える（割合の上限が、長い文書の二つを落とす）。 */
+const MIN_CONTRASTS = 2;
 const PERCENT = 100;
 
 /** 文書の言語の文のうち、対比の枠で書いた文の割合（百分率、小数 1 桁）。文の長さが言語で違っても同じ物差しで比べられる。 */

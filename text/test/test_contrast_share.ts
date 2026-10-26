@@ -118,9 +118,18 @@ describe("contrast-framing counts a share of sentences", () => {
     assert.ok(!firedRules(en, `# Post\n\n${three}${fillerEn(80)}`, "blog/tech").includes(RULE));
   });
 
-  it("does not report two frames, however short the document", () => {
+  it("reports two frames in a short document, and never a single frame", () => {
     const two = "It's not a tool. It's a partner. People don't come for the food. They come for the table. ";
-    assert.ok(!firedRules(en, `# Post\n\n${two}${fillerEn(20)}`, "blog/tech").includes(RULE));
+    assert.ok(firedRules(en, `# Post\n\n${two}${fillerEn(20)}`, "blog/tech").includes(RULE));
+    const one = "It's not a tool. It's a partner. ";
+    assert.ok(!firedRules(en, `# Post\n\n${one}${fillerEn(16)}`, "blog/tech").includes(RULE));
+  });
+
+  it("holds an essay to a lower share than a tech post", () => {
+    // Four sentences hold the two frames; with 36 more the share is 5.0%: past the essay limit, under the default.
+    const two = "It's not a tool. It's a partner. People don't come for the food. They come for the table. ";
+    assert.ok(firedRules(en, `# Post\n\n${two}${fillerEn(36)}`, "blog/essay").includes(RULE));
+    assert.ok(!firedRules(en, `# Post\n\n${two}${fillerEn(36)}`, "blog/tech").includes(RULE));
   });
 
   it("reports 「ではなく、〜です。」 three times in a short Japanese document", () => {
