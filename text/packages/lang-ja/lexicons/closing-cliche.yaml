@@ -1,4 +1,4 @@
-# 定型の結び。読者に何も残さない締め。
+# 定型の結び。読者に何も残さない締め。group は detectors/closing-cliche.ts の頭を参照。
 id: closing-cliche
 language: ja
 entries:
@@ -10,3 +10,24 @@ entries:
   - pattern: ぜひ試してみてください
   - pattern: いかがでしたでしょうか
   - pattern: お役に立てれば幸いです
+  # 「参考になればうれしいです」「お役に立てればと思います」。上の語が先に当たれば、指摘はその語で言う。
+  - pattern: 参考になれば
+  - pattern: お役に立てれば
+  # 読み手への願い・励ましで文書を終える。本文の途中なら普通の勧めなので、最後の段落だけ。
+  - pattern: てみてほしい
+    group: last
+  - pattern: でみてほしい
+    group: last
+  - pattern: 楽しんでください
+    group: last
+  - pattern: お楽しみください
+    group: last
+  - pattern: ましょう！
+    group: last
+  - pattern: ましょう!
+    group: last
+  # 「気軽に聞いてみてください」「お気軽にお問い合わせください」
+  - pattern: 気軽に
+    group: lead:kigaru
+  - pattern: ください
+    group: end:kigaru
