@@ -3,6 +3,7 @@ import { quotedIn } from "../quoted-span.ts";
 import { followsInlineCode } from "./code-before.ts";
 import { followsTwoExamples } from "./example-baseline.ts";
 import { isNamedStep, plainStepKeys } from "./graded-step.ts";
+import { comparesComparatives, comparesKinds, followsCause, madeComparative, opensWithCause, withoutNegation } from "./comparative-context.ts";
 
 /**
  * 比べる相手の無い比較（より良い結果、さらに高速に、The new engine is faster.）。何より良いのか、何より速いのかが書かれていない。
@@ -14,6 +15,8 @@ import { isNamedStep, plainStepKeys } from "./graded-step.ts";
  * intent は比べた語より後ろで、比較を願いや目的の中に置く語（より広く進めたい、より円滑にするためには）。比べる相手は今の状態。
  * phrase は比べた形で終わる決まった言い方（to be more precise）。前の言葉を言い直すだけで、何も比べていない。
  * pointer は文の頭で、いま見せた例を指す語（This is much better!）。二つのコードの例のすぐ後ろなら、相手は前の例。
+ * cause は比べた形より前で、比較が何の結果か、何に対してかを言う語（これにより、…できるため、…, but）。opener は文の頭で同じことをする語（As …, By …）。
+ * 英語の aim は比べた形の少し前で、今の状態から変えると言う動詞（to make results more predictable、do better）。
  * 同じ文か前の二文に相手を言う語があれば、相手は書いてある。
  */
 
@@ -29,9 +32,12 @@ export type ComparativeLists = {
   readonly intents: ReadonlySet<string>;
   readonly phrases: readonly string[];
   readonly pointers: ReadonlySet<string>;
+  readonly causes: ReadonlySet<string>;
+  readonly openers: ReadonlySet<string>;
 };
 
-export type BareComparative = { readonly first: Token; readonly last: Token };
+/** head は英語の比べた形の前の述語（is faster の is）。 */
+export type BareComparative = { readonly first: Token; readonly last: Token; readonly head?: Token };
 
 /** 前に立てば、比べた形が述語として読める語の品詞（is faster、runs faster）。 */
 const PREDICATE_HEAD = new Set(["VERB", "AUX"]);
@@ -85,10 +91,25 @@ const endsInAim = (tokens: readonly Token[], at: number, aims: ReadonlySet<strin
   return end > at && aims.has(tokens[end]?.surface ?? "");
 };
 
-/** 程度を言う語（at）の後ろが、今より良くする目当てか（より良い社会、より豊かな暮らし、より良いものにする）。 */
+/** 名詞の並びの中の語か。名詞の前に付いた形容詞（多文化の「多」）も並びの一部。 */
+const inNounPhrase = (tokens: readonly Token[], at: number): boolean =>
+  tokens[at]?.pos === "NOUN" || (tokens[at]?.pos === "ADJ" && tokens[at + 1]?.pos === "NOUN");
+
+/** 名詞の並びに「の」と目当ての語が続くか（より良い多文化共生の実現）。比べた語は、その目当ての中の語。 */
+const aimAfterOf = (tokens: readonly Token[], at: number, aims: ReadonlySet<string>): boolean => {
+  const length = tokens.slice(at).findIndex((_, index) => !inNounPhrase(tokens, at + index));
+  const of = at + (length === -1 ? tokens.length - at : length);
+  return length > 0 && tokens[of]?.surface === "の" && runsFrom(tokens, of + 1).some(({ run }) => aims.has(run));
+};
+
+/** 程度を言う語（at）の後ろが、今より良くする目当てか（より良い社会、より豊かな暮らし、より良いものにする、より良い共生の実現）。 */
 const namesAim = (tokens: readonly Token[], at: number, aims: ReadonlySet<string>): boolean => {
   const next = tokens[at]?.pos === "NOUN" && ADJECTIVAL_TAIL.has(tokens[at + 1]?.surface ?? "") ? at + 2 : at + 1;
-  return runsFrom(tokens, next).some(({ run, after }) => aims.has(run) && !headsCompound(tokens, after)) || endsInAim(tokens, next, aims);
+  return (
+    runsFrom(tokens, next).some(({ run, after }) => aims.has(run) && !headsCompound(tokens, after)) ||
+    endsInAim(tokens, next, aims) ||
+    aimAfterOf(tokens, next, aims)
+  );
 };
 
 /** 日本語: 副詞の「より」「さらに」の直後の、程度を言える語。比較の決まった言い方（より多くの）と、今より良くする目当て（より良い社会）は除く。 */
@@ -126,13 +147,15 @@ const predicateAt = (tokens: readonly Token[], at: number, lists: ComparativeLis
   const first = tokens[start] ?? word;
   const adverbs = tokens.slice(Math.max(0, start - MAX_ADVERBS), start).reverse();
   const skipped = adverbs.findIndex((token) => token.pos !== "ADV");
-  const head = tokens[start - 1 - (skipped === -1 ? adverbs.length : skipped)];
-  return head !== undefined && (PREDICATE_HEAD.has(head.pos) || isThirdPersonVerb(head)) ? { first, last: word } : undefined;
+  const headAt = start - 1 - (skipped === -1 ? adverbs.length : skipped);
+  const head = tokens[headAt];
+  if (head === undefined || !(PREDICATE_HEAD.has(head.pos) || isThirdPersonVerb(head))) return undefined;
+  return comparesComparatives(tokens, headAt, new Set([...lists.comparatives, ...lists.more])) ? undefined : { first, last: word, head };
 };
 
 /** 比べた形より前に、条件か仮定を言う語があるか。並べる「と」（A と B）は条件でない。 */
 const isConditional = (tokens: readonly Token[], found: BareComparative, conditions: ReadonlySet<string>): boolean =>
-  tokens.some((token) => token.span.start < found.first.span.start && token.pos !== "CCONJ" && conditions.has(lower(token)));
+  tokens.some((token) => token.span.start < found.first.span.start && token.pos !== "CCONJ" && conditions.has(withoutNegation(lower(token))));
 
 /** 比べた形のすぐ前が、いま述べたものを越えると言う語か（performed even better）。 */
 const goesBeyond = (tokens: readonly Token[], found: BareComparative, beyond: ReadonlySet<string>): boolean => {
@@ -175,7 +198,9 @@ export const bareComparativesIn = (tokens: readonly Token[], lists: ComparativeL
         !isConditional(tokens, found, lists.conditions) &&
         !goesBeyond(tokens, found, lists.beyond) &&
         !isIntended(tokens, found, lists.intents) &&
-        !endsSetPhrase(tokens, found, lists.phrases),
+        !endsSetPhrase(tokens, found, lists.phrases) &&
+        !followsCause(tokens, found.first, lists.causes) &&
+        !(found.head !== undefined && madeComparative(tokens, found.first, lists.aims)),
     );
 
 /**
@@ -186,14 +211,13 @@ const isBaselineWord = (token: Token, baselines: readonly string[]): boolean => 
   return baselines.some((baseline) => surface === baseline || lemma === baseline || ([...baseline].length === 1 && surface.startsWith(baseline)));
 };
 
-/** 相手を言う語が、続く語に分かれて書かれているか（これ・まで、で・は・なく）。 */
+/** 相手を言う語が、続く語に分かれて書かれているか（これ・まで、で・は・なく、that follows）。語を詰めても、空白でつないでも照らす。 */
 const MAX_BASELINE_TOKENS = 3;
+const runsJoinedBy = (surfaces: readonly string[], glue: string): string[] =>
+  surfaces.reduce<string[]>((runs, surface) => [...runs, runs.length === 0 ? surface : `${runs.at(-1) ?? ""}${glue}${surface}`], []).slice(1);
 const isSplitBaseline = (tokens: readonly Token[], at: number, baselines: readonly string[]): boolean => {
-  const joined = tokens
-    .slice(at, at + MAX_BASELINE_TOKENS)
-    .map((token) => token.surface.toLowerCase())
-    .reduce<string[]>((runs, surface) => [...runs, `${runs.at(-1) ?? ""}${surface}`], []);
-  return joined.slice(1).some((run) => baselines.includes(run));
+  const surfaces = tokens.slice(at, at + MAX_BASELINE_TOKENS).map((token) => token.surface.toLowerCase());
+  return [...runsJoinedBy(surfaces, ""), ...runsJoinedBy(surfaces, " ")].some((run) => baselines.includes(run));
 };
 
 /** 文の中に、比べる相手を言う語か、相手を受ける助詞の「より」（従来より）があるか。 */
@@ -219,6 +243,8 @@ export const listsOf = (lexicon: Lexicon): ComparativeLists => ({
   intents: new Set(groupOf(lexicon, "intent")),
   phrases: groupOf(lexicon, "phrase"),
   pointers: new Set(groupOf(lexicon, "pointer")),
+  causes: new Set(groupOf(lexicon, "cause")),
+  openers: new Set(groupOf(lexicon, "opener")),
 });
 
 /** 鉤括弧の中の比較（「給与所得の確定申告がさらに簡単に！」ページ）は題や語を挙げたもので、書き手の比較ではない。 */
@@ -244,9 +270,11 @@ export const bareComparative: Detector = (doc): Finding[] => {
     const nearby = doc.sentences.slice(Math.max(0, at - BASELINE_REACH), at + 1);
     if (sentence.embeddedLanguage !== undefined || nearby.some((near) => namesBaseline(near, lists.baselines))) return [];
     if (pointsAtExample(sentence, lists.pointers) && followsTwoExamples(doc.source, spans, at)) return [];
+    if (opensWithCause(sentence.tokens ?? [], lists.openers)) return [];
     const quoted = quotedIn(sentence);
     return bareComparativesIn(sentence.tokens ?? [], lists)
       .filter((found) => !quoted.some((span) => insideSpan(found, span)) && !isThanAfterCode(doc, found))
+      .filter((found) => !comparesKinds(doc.sentences[at - 1]?.tokens ?? [], sentence.tokens ?? [], found.head))
       .filter((found) => !lists.markers.has(found.first.surface) || !isNamedStep(sentence.tokens ?? [], found.last, steps))
       .map((found) => ({
         rule: "",

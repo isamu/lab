@@ -11,6 +11,14 @@
 # the words before it and compares nothing. Matched on the words up to the comparative, joined by spaces.
 # pointer: a word opening the sentence that points at the example just shown ("This is much better!"); right after two
 # code examples, the baseline is the first one.
+# cause: a word after another word and before the comparative that sets the clause before it against the comparison
+# ("Print statements work, but a real debugger is better"); that clause is the baseline.
+# opener: a word opening the sentence that puts the comparison after a change or a topic it names ("As the application
+# divides into services, the project can move faster"; "By pairing the data with research, …"; "As to the codes, the
+# question is more fundamental"). The baseline is the state before that change, or the topic before.
+# aim: a verb shortly before the comparative that makes it a change from the present ("to make results more
+# predictable", "We can do better"). The baseline is the present state, as in Japanese より良くする.
+# A baseline of several words ("that follows") is matched on the words joined by a space.
 id: comparative-baseline
 language: en
 entries:
@@ -39,6 +47,12 @@ entries:
   - { pattern: versus, group: baseline }
   - { pattern: vs, group: baseline }
   - { pattern: whereas, group: baseline }
+  - { pattern: that follows, group: baseline }
+  - { pattern: but, group: cause }
+  - { pattern: as, group: opener }
+  - { pattern: by, group: opener }
+  - { pattern: make, group: aim }
+  - { pattern: do, group: aim }
   - { pattern: even, group: beyond }
   - { pattern: still, group: beyond }
   - { pattern: if, group: condition }
