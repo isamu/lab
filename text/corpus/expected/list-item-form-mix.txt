@@ -3,7 +3,7 @@
 aoml-hurricane-faq  3
 da-annual-report-2024  1
 da-area-data-map-format  3
-dailymed-advil-otc-label  4
+dailymed-advil-otc-label  1
 genai-web-procedure  3
 gitlab-jd-instructional-designer  2
 gitlab-meetings  1
@@ -13,9 +13,8 @@ jma-tokubetsu-keiho  1
 koenote-requirements  7
 mhlw-pubcomment-rodohoken  1
 moriguchi-satsuki-gakuen-ijime-houshin  1
-neeview-changelog-ja  11
+neeview-changelog-ja  9
 nttcom-onboarding-week1  1
 readygov-power-outages  1
 usajobs-va-it-specialist-customer-support  3
 wikivoyage-ja-shikoku-henro  1
-wikivoyage-ja-shimoda  1
