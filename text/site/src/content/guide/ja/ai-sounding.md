@@ -143,7 +143,7 @@ Claude Code の skill（`npx chaffjs skill`）は、指摘より先に指針を�
 | `section-length-uniformity` | どの節もほぼ同じ長さに埋めてあり、ひな形を埋めたように見える所 |
 | `paragraph-length-variance` | どの段落もほぼ同じ長さで、型に流しこんだように見える所 |
 | `ai-structure` | 構成の項目（見出しの多さ、3 つに分けた小見出し、太字の札、節の長さの揃い方、本文を言い直すまとめなど）のいくつもが、人の記事の 9 割を超えた文書。ビジネス文書では、教科書どおりの提案書の見出し（背景、現状と課題、提案内容、期待される効果、費用、リスクと対策…）も 1 項目に数えます |
-| `ai-generated-composite` | 次の特徴のうち 3 つ以上がそろった文書：`ai-tell`、`contrast-framing`、`stock-transition`、`announcing-opener`、`colon-lead-in`、`assistant-residue`、`closing-cliche`、`padded-intro`、`no-em-dash`、`sentence-rhythm`、`rule-of-three`、`section-length-uniformity`、`ai-structure`（`bold-density` は数えません） |
+| `ai-generated-composite` | 次の特徴のうち 3 つ以上がそろった文書：`ai-tell`、`contrast-framing`、`stock-transition`、`announcing-opener`、`colon-lead-in`、`assistant-residue`、`closing-cliche`、`padded-intro`、`no-em-dash`、`sentence-rhythm`、`rule-of-three`、`section-length-uniformity`、`ai-structure`、`over-general-claim`、`q-fragment-answer`、`closing-exhortation`、`unfilled-placeholder`、`bold-emphasis`（`bold-density` と `bold-label-list` は数えません。太字の札は `ai-structure` が測っています） |
 
 どのルールも、それだけで「AI が書いた」とは言いません。人も書く形です。
 重なったときに、読み返す場所の目印になります。
@@ -161,7 +161,7 @@ Claude Code の skill（`npx chaffjs skill`）は、指摘より先に指針を�
 - 目印は、上のルールが出した指摘と、`chaff outline` の構成の項目です。人の文書の 9 割に出ないものだけを数えます。
 - 人の文書は、corpus の人の文書（ブログ、技術文書、ビジネス文書などのジャンルごと）と、生成 AI が広まる前の技術記事です。どちらも chaff と一緒に置いてある数で比べます。
 - 目印が 3 つから「中」、5 つから「高」です。`ai-generated-composite` が出る数と、その relaxed の段階と同じです。
-- `ai-generated-composite` が読むルールのうち 2 つ以上が同じ文書に出たとき（その strict の段階）は、目印をもう 1 つ数えます。corpus の人の文書には、2 つがそろって出るものがありません（`yarn ai-score:corpus --all` で数えられます）。
+- `ai-generated-composite` が読むルールのうち 2 つ以上が同じ文書に出たとき（その strict の段階）は、目印をもう 1 つ数えます。corpus の人の文書で 2 つがそろって出るものはまれです（`yarn ai-score:corpus --all --verbose` がその文書を挙げます）。
 - 構成の項目と、同じ形を見るルール（節の長さの揃い方と `section-length-uniformity` など）がどちらも出たときは、1 つに数えます。
 - 短すぎる文書（日本語 500 字、英語 200 語より短い）と、人の文書の基準が足りないジャンル（学術、話し言葉）では、段階を出さずに理由を言います。
 - ふだんの `npx chaffjs <file>` も、報告の最後に 1 行で段階を出します。`chaff grade` は出力ごとの結果に `aiScore` を入れます（[AI の評価に使う](./ai-evals)）。
