@@ -1,5 +1,6 @@
 # 最上級を含むが、何かが一番だと言ってはいない決まった言い方。最上級がこの中にあれば unqualified-superlative は指さない。
 # 職名・機関名（最高裁判所・最高経営責任者）は名前。「最も近い」「最も遠い」は書いている場所からの距離。
+# 「最も重要なことは」「最も大切なのは」は、書き手が自分の話のうち何を先に言うかを示す言い方。
 id: superlative-phrase
 language: ja
 entries:
@@ -11,3 +12,7 @@ entries:
   - pattern: 最高経営責任者
   - pattern: 最も近い
   - pattern: 最も遠い
+  - pattern: 最も重要なこと
+  - pattern: 最も重要なのは
+  - pattern: 最も大切なこと
+  - pattern: 最も大切なのは

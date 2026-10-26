@@ -2,4 +2,3 @@ arxiv-astro-ph-new-2025-01-03  2
 gitlab-values  10
 govuk-guidance-academy-senior-pay  3
 qiita-jnchito-good-sample-code  3
-wikivoyage-loop-art-tour  2

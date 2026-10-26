@@ -132,7 +132,7 @@ describe("superlative-scope の語彙表", () => {
       markers.after.map((entry) => entry.pattern),
       ["in"],
     );
-    assert.deepEqual(scopeMarkersOf([]), { before: [], after: [] });
+    assert.deepEqual(scopeMarkersOf([]), { before: [], after: [], purposes: [], realms: [] });
   });
 });
 
@@ -149,7 +149,7 @@ describe("superlative-scope: 語の並びの端", () => {
   });
 
   it("範囲の語の語彙表が空なら、複合語だけを読む", () => {
-    const none: ScopeMarkers = { before: [], after: [] };
+    const none: ScopeMarkers = scopeMarkersOf([]);
     const named = tokensOf(ja, "日本で最も有名な寺です。");
     const at = named.findIndex((token) => token.surface === "最も");
     assert.equal(scoped(named, { start: at, end: at + 1 }, none), false);
