@@ -3,6 +3,7 @@ layer: L3
 status: stable
 how_to_find: topic-predicate-distance
 requires: [pos]
+extra_word_lists: [topic-clause-close, statute-article-opener]
 languages: [ja]
 severity: info
 
@@ -44,8 +45,8 @@ example:
       来週は、新しい担当者の紹介、先月から続く予算の見直し、春の本社移転の準備、秋の採用計画の確認、年末の懇親会の段取りを話し合います。そのため定例会議は二時間に延長します。
 
 not_flagged:
-  ja: 主題（名詞＋は）の無い文、鉤括弧で引いたものの中、上限までの距離は見ません。主題の述語が先の節で閉じる文（「この計画は簡単ではありませんが、…」「〜であって、…」、後ろの節に別の主語がある「〜ではなく、」「〜であるため、」、読点を挟まない「〜は〜で、」「〜であるならば、」「〜にあるところ、」「〜ており、」、受け身で伝える引用「〜だと言われているが」）は、その節の終わりまでを数えます。時や場面を言う「は」（今夜は、当日は、〜ときは）の後ろに別の主題があれば、その主題から数えます。英語の文書には使いません。
-  en: Sentences with no topic (noun + は), quotations in 「」, and distances up to the limit are not counted. When the topic gets its own predicate in an earlier clause (〜ではありませんが, 〜であって; 〜ではなく, 〜であるため, 〜は〜で with no comma between, 〜であるならば, 〜にあるところ or 〜ており followed by a clause with its own subject; a passive report 〜だと言われているが), the count stops at that clause's end. When a は that sets the time or the case (今夜は, 当日は, 〜ときは) is followed by another topic, the count starts from that topic. Not used on English documents.
+  ja: 主題（名詞＋は）の無い文、鉤括弧で引いたものの中、上限までの距離は見ません。主題の述語が先の節で閉じる文（「この計画は簡単ではありませんが、…」「〜であって、…」、後ろの節に別の主語がある「〜ではなく、」「〜であるため、」、読点を挟まない「〜は〜で、」「〜であるならば、」「〜にあるところ、」「〜ており、」、受け身で伝える引用「〜だと言われているが」、主題からそこまでに別の主語が無い「〜ことから、」「〜つつ、」「〜としても、」「〜こととし、」（語は語彙表 topic-clause-close）、述語の後ろに丸数字の番号（③）が来て一行に詰まった箇条の次の項目が始まるところ）は、その節の終わりまでを数えます。後ろの節の主語には「〜のほとんどは」も数えます。時や場面を言う「は」（今夜は、当日は、〜ときは）の後ろに別の主題があれば、その主題から数えます。法令でも契約でもない文書が条文をそのまま載せた文（「第7条 …」、形は語彙表 statute-article-opener）は、書き手が直せる文ではないので数えません。英語の文書には使いません。
+  en: Sentences with no topic (noun + は), quotations in 「」, and distances up to the limit are not counted. When the topic gets its own predicate in an earlier clause (〜ではありませんが, 〜であって; 〜ではなく, 〜であるため, 〜は〜で with no comma between, 〜であるならば, 〜にあるところ or 〜ており followed by a clause with its own subject; a passive report 〜だと言われているが; 〜ことから, 〜つつ, 〜としても or 〜こととし with no other subject between the topic and it, from the topic-clause-close word list; a circled number (③) after a predicate, where a list run into one line starts its next item), the count stops at that clause's end. A later clause's subject may be a part, as in 〜のほとんどは. When a は that sets the time or the case (今夜は, 当日は, 〜ときは) is followed by another topic, the count starts from that topic. An article of a statute that a document of another kind quotes as it stands (第7条 …, the forms in the statute-article-opener word list) is not the writer's sentence and is not counted. Not used on English documents.
 level_meaning:
   ja: 主題から述語まで {limit} 字まで
   en: up to {limit} characters between the topic and the predicate
