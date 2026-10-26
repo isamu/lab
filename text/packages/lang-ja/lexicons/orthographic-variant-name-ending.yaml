@@ -1,0 +1,10 @@
+# 施設や組織の名前を閉じる語（こども動物園、福島復興浜通りセンター、こども家庭庁）。名前は決まった書き方を持つので、
+# orthographic-variant は、この語で終わる名詞の連なりの中の語（こども、浜通り）を、地の文の同じ語（子ども、通り）と比べない。
+# 連なりの最後の語がこの語で終わり、その前に語があるときに名前と読む。
+id: orthographic-variant-name-ending
+language: ja
+entries:
+  - pattern: 園
+  - pattern: 館
+  - pattern: センター
+  - pattern: 庁

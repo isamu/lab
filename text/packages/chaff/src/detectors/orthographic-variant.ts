@@ -1,17 +1,11 @@
-import type { Detector, Finding, ProseDocument, Sentence, Span, TableCell, Token } from "../plugin.ts";
-import { externalLinkTitleSpans } from "../link-title.ts";
+import type { Detector, Finding, Sentence, Span, TableCell, Token } from "../plugin.ts";
 import { groupBy, oddSpellings, type KeyedWord, type OddSpelling } from "../spelling-variants.ts";
 import { dropsOkurigana, kanjiKeyAmong, katakanaKey, lemmaReading } from "../kana-spelling.ts";
 import { isKatakanaWord, stemOf } from "../long-vowel.ts";
 import { withNounsAfterParticles } from "../nominal-stem.ts";
-import { QUOTATION_MARKS, isWithinAny, quotedSpans } from "../quoted-span.ts";
-import { singleQuotedSpans } from "../single-quoted-span.ts";
-import { nameSpans, touchesAny } from "../team-names.ts";
-import { furiganaSpans } from "../furigana.ts";
-import { contactEntrySpans } from "../contact-entry.ts";
+import { isWithinAny } from "../quoted-span.ts";
 import { withCutNounsJoined } from "../split-noun.ts";
-import { japaneseCompanyNameSpans } from "../company-name-run.ts";
-import { acronymsIn, isCapitalsNotSpelling } from "../capitals-with-small.ts";
+import { acronymsIn, isCapitalsNotSpelling, isNameInCapitals } from "../capitals-with-small.ts";
 import { isPartOfAddress } from "./address-word.ts";
 import { isInCapitalsPassage } from "../capitals-passage.ts";
 import { withoutCoinedNames } from "../coined-hyphen-name.ts";
@@ -19,10 +13,21 @@ import { wholeWordRuns, type WholeWordRun } from "../whole-word-runs.ts";
 import { entriesForGenre } from "../lexicon-genres.ts";
 import { asNounWhereNominal, documentNounKeys } from "../nominal-stem.ts";
 import { isCompoundHead } from "../compound-head.ts";
-import { leadingLabelSpans } from "../leading-label.ts";
 import { voiceAt, voiceStarts } from "../voice-parts.ts";
-import { isCopulaReadAsVerb, isCutFromKatakana, isNumeral, isTouching, isWrittenOntoWord, useOf, type InContext, type Uses } from "../word-use.ts";
-import { mentionedSpellingSpans } from "../spelling-mention.ts";
+import {
+  isCopulaReadAsVerb,
+  isCutFromKatakana,
+  isNumeral,
+  isPieceOfKatakanaRun,
+  isTouching,
+  isWrittenOntoWord,
+  useOf,
+  type InContext,
+  type Uses,
+} from "../word-use.ts";
+import { titleCaseNameRuns } from "../title-case-name.ts";
+import { withoutQuotedSpellings, type Quoted } from "../quoted-spelling.ts";
+import { citedSpans, isOpenIn, namesOf, patternsOf, type IsOpen, type Names } from "./orthographic-variant-open.ts";
 
 /**
  * A word found in the document: where it is, which sentence it is in, its key and spelling, how it is written when that differs, and
@@ -35,9 +40,11 @@ type Placed = KeyedWord & {
   readonly compoundHead?: boolean;
   /** Where a run of words ends (タイヤレバー). */
   readonly end?: number;
+  /** Whether a Latin word stands in a name of capitalised words (the Interagency Group) or in a cited work. */
+  readonly quoted?: Quoted | undefined;
+  /** The name a word stands in, as written. */
+  readonly name?: string | undefined;
 };
-
-type IsOpen = (start: number, end: number) => boolean;
 
 /** Parts of speech that carry a word of their own. Particles and endings are written one way by the grammar. */
 const CONTENT = new Set(["NOUN", "VERB", "ADJ", "ADV", "PRON", "CCONJ", "DET"]);
@@ -50,7 +57,6 @@ const MIN_LATIN_KEY = 3;
 
 /** Lexicons: readings and spellings whose kanji and kana forms mean different things (成る and なる, 者 and もの), and adverbs hiragana-fukushi reads. */
 const DISTINCT = "orthographic-variant-distinct";
-const SPELLING_MENTION = "spelling-mention";
 const FUKUSHI = "hiragana-fukushi";
 /** Lexicon: idioms written as noun, particle and verb (気をつける). The verb there is compared apart from the verb on its own. */
 const IDIOM = "orthographic-variant-idiom";
@@ -78,48 +84,12 @@ const PHRASE_SUFFIX = "orthographic-variant-phrase-suffix";
  * spelling is not compared with that reading's kana. Read the other way (行っ as 行う), it is compared as usual.
  */
 const TWO_READINGS = "orthographic-variant-two-readings";
-
-const patternsOf = (doc: ProseDocument, id: string, genre: string | undefined): string[] =>
-  entriesForGenre(doc.lexicons[id] ?? [], genre).map((entry) => entry.pattern);
-
-/**
- * The team's names, the company forms (株式会社, ㈱) a registered company name is written next to, and the links that quote an
- * outside page's title (link-title.ts), placed in the source.
- */
-type Names = {
-  readonly team: readonly string[];
-  readonly companyForms: readonly string[];
-  readonly linkTitles: readonly Span[];
-  /** Quotations in single quotation marks (an opinion quoting a statute), placed in the source: they can span sentences. */
-  readonly singleQuoted: readonly Span[];
-  /** Phrases that say a word is also spelled another way (とも書く): the bracketed words before them are spellings mentioned. */
-  readonly mentions: readonly string[];
-};
-
-/** Spans placed in the source, placed in a sentence's text instead. */
-const inSentence = (sentence: Sentence, spans: readonly Span[]): Span[] =>
-  spans.map((span) => ({ start: span.start - sentence.span.start, end: span.end - sentence.span.start }));
-
-/**
- * Whether a stretch of the sentence is outside a quotation, the team's names, a company's name (関東珪曹硝子㈱), a reading in
- * brackets (HTTP（えいちてぃーてぃーぴー）), a label opening the sentence (（答）), a spelling mentioned (（曇）とも書く) and a
- * contact's name beside its phone number: the first three and the last keep their own spelling, a reading is not a spelling at
- * all, a label is a fixed short form, and a mention is the subject.
- */
-const isOpenIn = (sentence: Sentence, names: Names): IsOpen => {
-  const closed = [
-    ...quotedSpans(sentence.text, QUOTATION_MARKS),
-    ...furiganaSpans(sentence.text),
-    ...contactEntrySpans(sentence.text),
-    ...japaneseCompanyNameSpans(sentence.text, names.companyForms),
-    ...inSentence(sentence, names.linkTitles),
-    ...inSentence(sentence, names.singleQuoted),
-    ...leadingLabelSpans(sentence.text),
-    ...mentionedSpellingSpans(sentence.text, names.mentions),
-  ];
-  const named = nameSpans(sentence.text, names.team);
-  return (start, end) => !isWithinAny(closed, { start, end }) && !touchesAny(named, start, end);
-};
+/** Lexicon: verbs whose て-form after を or で, with no verb after it, is 以て (決意をもって). Compared apart from the verb. */
+const MEANS = "orthographic-variant-means";
+/** Lexicon: the humble する (いたす), a helper after と (議題といたします) as it is written onto a noun. */
+const LIGHT_VERB = "orthographic-variant-light-verb";
+/** Lexicon shared with other rules: the small words inside a capitalised name (of, and). */
+const NAME_JOINER = "name-joiner";
 
 type Skips = Uses & {
   readonly skip: ReadonlySet<string>;
@@ -142,6 +112,9 @@ const readsTwoWays = ({ token, following }: InContext, reading: string, twoReadi
   return (twoReadings.get(token.surface) ?? withNext) === reading;
 };
 
+/** A piece the tokenizer cut from a word (ラオ|カイ, 誂ら|え), a pronoun's kana (私みたような) or a numeral (三十の三). */
+const isNotAWordOfItsOwn = (word: InContext): boolean => isPieceOfKatakanaRun(word) || isNumeral(word.token) || isWrittenOntoWord(word);
+
 const readingKeyOf = (word: InContext, skips: Skips): string | undefined => {
   const { skip } = skips;
   const { token } = word;
@@ -150,8 +123,7 @@ const readingKeyOf = (word: InContext, skips: Skips): string | undefined => {
   if (isOutsideComparative(word, skips.comparative)) return undefined;
   const reading = lemmaReading(token.surface, lemma, token.reading);
   if (reading === undefined || [...reading].length < MIN_READING || skip.has(reading) || isCutFromKatakana(word) || isCopulaReadAsVerb(word)) return undefined;
-  if (readsTwoWays(word, reading, skips.twoReadings)) return undefined;
-  if (isNumeral(token) || isWrittenOntoWord(word)) return undefined;
+  if (readsTwoWays(word, reading, skips.twoReadings) || isNotAWordOfItsOwn(word)) return undefined;
   return `${token.pos}|${useOf(word, skips)}|${reading}`;
 };
 
@@ -196,8 +168,14 @@ const readingWords = (sentence: Sentence, isOpen: IsOpen, skips: Skips): Placed[
  * Same reading is not yet same word: 書く and 描く are both カク. Spellings meet only when they keep the same kanji (引っ越し, 引越し)
  * or one is all kana. A kana spelling joins the kanji one only when the reading has a single kanji spelling in the document;
  * with two (橋 and 箸 beside はし) it cannot say which, and is left out. Official Japanese drops okurigana at the head of a compound
- * (取扱事業者 beside 個人情報の取扱い), so where the document writes a word both ways, its compound heads are compared apart.
+ * (取扱事業者 beside 個人情報の取扱い), so where the document writes a word both ways, its compound heads are compared apart. A head of
+ * one kanji without its okurigana (曇 of 曇雨天, beside 曇り) is a Sino-Japanese element of the compound and is not compared at all.
  */
+const ONE_KANJI = /^\p{Script=Han}$/u;
+
+const isOneKanjiElement = (word: Placed, spellings: readonly string[]): boolean =>
+  word.compoundHead === true && ONE_KANJI.test(word.spelling) && dropsOkurigana(word.spelling, spellings);
+
 const byKanji = (words: readonly Placed[]): Placed[] =>
   [...groupBy(words, (word) => word.key).values()].flatMap((group) => {
     const spellings = [...new Set(group.map((word) => word.spelling))];
@@ -206,7 +184,7 @@ const byKanji = (words: readonly Placed[]): Placed[] =>
     const apart = spellings.some((spelling) => dropsOkurigana(spelling, spellings)) ? "|compound" : "";
     return group.flatMap((word): Placed[] => {
       const own = skeletonOf(word.spelling);
-      if (own === "" && skeletons.length > 1) return [];
+      if ((own === "" && skeletons.length > 1) || isOneKanjiElement(word, spellings)) return [];
       const use = word.compoundHead === true ? apart : "";
       return [{ ...word, key: `${word.key}|${own === "" ? (skeletons[0] ?? "") : own}${use}` }];
     });
@@ -259,6 +237,12 @@ const katakanaRunWords = (sentence: Sentence, isOpen: IsOpen): Placed[] =>
 /** Whether a run holds a place another key already points at: the word inside it is said, not the run around it. */
 const coversOffset = (run: Placed, offset: number): boolean => offset >= run.offset && offset < (run.end ?? run.offset + 1);
 
+const HASHTAG_MARK = "#";
+const WORD_CHARACTER = /[\p{L}\p{N}_]/u;
+
+/** A word written as a hashtag (#vimconf): spelled as the service matches it, like an address. */
+const isHashtag = (text: string, start: number): boolean => text.charAt(start - 1) === HASHTAG_MARK && !WORD_CHARACTER.test(text.charAt(start - 2));
+
 const LATIN_WORD = /[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*/gu;
 const LOWER = /\p{Ll}/u;
 
@@ -277,15 +261,25 @@ const latinSpelling = (word: string): string =>
  * emphasis or an acronym, not a spelling of the word, and is left out; so are a name in capitals with an ending (SENDs) and
  * the letters of an acronym of the sentence picked out (CLImatology for CLIPER).
  */
-const latinWords = (sentence: Sentence, isOpen: IsOpen, skip: ReadonlySet<string>): Placed[] => {
-  const acronyms = acronymsIn(sentence.text);
-  return [...sentence.text.matchAll(LATIN_WORD)].flatMap((match): Placed[] => {
+const latinWords = ({ sentence, isOpen, cited }: Place, skip: ReadonlySet<string>, joiners: readonly string[]): Placed[] => {
+  const { text } = sentence;
+  const acronyms = acronymsIn(text);
+  const names = titleCaseNameRuns(text, joiners);
+  const quotedAt = (start: number, end: number): Pick<Placed, "quoted" | "name"> => {
+    if (isWithinAny(cited, { start, end })) return { quoted: "cited" };
+    const run = names.find(({ name }) => name.start <= start && end <= name.end);
+    if (run === undefined) return {};
+    const name = text.slice(run.name.start, run.name.end);
+    return run.quoted !== undefined && isWithinAny([run.quoted], { start, end }) ? { quoted: "name", name } : { name };
+  };
+  return [...text.matchAll(LATIN_WORD)].flatMap((match): Placed[] => {
     const word = match[0];
     const plain = word.toLowerCase().replaceAll("-", "");
-    const end = match.index + word.length;
+    const [start, end] = [match.index, match.index + word.length];
     if (plain.length < MIN_LATIN_KEY || !LOWER.test(word) || isCapitalsNotSpelling(word, acronyms) || skip.has(word.toLowerCase())) return [];
-    if (isPartOfAddress(sentence.text, match.index, end) || !isOpen(match.index, end) || isInCapitalsPassage(sentence.text, match.index, end)) return [];
-    return [{ key: `latin|${plain}`, spelling: latinSpelling(word), shown: word, sentence, offset: sentence.span.start + match.index }];
+    if (isPartOfAddress(text, start, end) || isHashtag(text, start) || !isOpen(start, end) || isInCapitalsPassage(text, start, end)) return [];
+    if (isNameInCapitals(text, start, word)) return [];
+    return [{ key: `latin|${plain}`, spelling: latinSpelling(word), shown: word, sentence, offset: sentence.span.start + start, ...quotedAt(start, end) }];
   });
 };
 
@@ -305,7 +299,11 @@ const findingOf = (words: readonly Placed[], odd: OddSpelling<Placed>): Finding 
 /** A cell that is one Latin word in lower case (openapi, contentType): a field name or a value, spelled by the data and not by the writer. */
 const DATA_KEY_CELL = /^\p{Ll}[A-Za-z0-9]*$/u;
 
-type Place = { readonly sentence: Sentence; readonly isOpen: IsOpen; readonly readsLatin: boolean };
+/** A sentence or a table cell, where its words are the writer's, whether its Latin words are read, and its cited works. */
+type Place = { readonly sentence: Sentence; readonly isOpen: IsOpen; readonly readsLatin: boolean; readonly cited: readonly Span[] };
+
+/** What the words of a document are read with besides the lexicons of uses: the dictionary, and the small words inside a name (of). */
+type Reading = { readonly isWord: (word: string) => boolean; readonly nameJoiners: readonly string[] };
 
 /** A link's brackets and where it goes (`[`, `](#contentType)`, `][ref]`). The prose hides them outside tables; a cell keeps the Markdown as written. */
 const LINK_CHROME = /\]\([^)]*\)|\]\[[^\]]*\]|\[/gu;
@@ -316,16 +314,19 @@ const withoutLinkChrome = (text: string): string => text.replaceAll(LINK_CHROME,
 const cellPlace = (cell: TableCell, names: Names): Place => {
   const text = withoutLinkChrome(cell.text);
   const sentence: Sentence = { span: { start: cell.start, end: cell.end }, text, tokens: cell.tokens ?? [] };
-  return { sentence, isOpen: isOpenIn(sentence, names), readsLatin: !DATA_KEY_CELL.test(text.trim()) };
+  return { sentence, isOpen: isOpenIn(sentence, names), readsLatin: !DATA_KEY_CELL.test(text.trim()), cited: citedSpans(sentence, names) };
 };
 
 /** The odd spellings among places that speak in one voice. */
-const findingsIn = (placed: readonly Place[], skips: Skips, isWord: (word: string) => boolean, limit: number): Finding[] => {
+const findingsIn = (placed: readonly Place[], skips: Skips, { isWord, nameJoiners }: Reading, limit: number): Finding[] => {
   const reading = byKanji(placed.flatMap(({ sentence, isOpen }) => readingWords(withCutNounsJoined(sentence, skips.nouns), isOpen, skips)));
   const katakana = placed.flatMap(({ sentence, isOpen }) => katakanaWords(sentence, isOpen));
   const runs = placed.flatMap(({ sentence, isOpen }) => katakanaRunWords(sentence, isOpen));
-  const latin = withoutCoinedNames(
-    placed.flatMap(({ sentence, isOpen, readsLatin }) => (readsLatin ? latinWords(sentence, isOpen, skips.skip) : [])),
+  const latin = withoutQuotedSpellings(
+    withoutCoinedNames(
+      placed.flatMap((place) => (place.readsLatin ? latinWords(place, skips.skip, nameJoiners) : [])),
+      isWord,
+    ),
     isWord,
   );
   const odd = [reading, katakana, latin].flatMap((words) => oddSpellings(words, limit));
@@ -341,15 +342,9 @@ const findingsIn = (placed: readonly Place[], skips: Skips, isWord: (word: strin
  * document writes less is pointed at. No way is called right; limit is the largest share, in percent, the minority may have.
  */
 export const orthographicVariant: Detector = (doc, options): Finding[] => {
-  const names: Names = {
-    team: doc.names ?? [],
-    companyForms: (doc.lexicons["company-form"] ?? []).map((entry) => entry.pattern),
-    linkTitles: externalLinkTitleSpans(doc.source, doc.links),
-    singleQuoted: singleQuotedSpans(doc.source),
-    mentions: (doc.lexicons[SPELLING_MENTION] ?? []).map((entry) => entry.pattern),
-  };
+  const names = namesOf(doc, options.genre);
   const placed: Place[] = [
-    ...doc.sentences.map((sentence) => ({ sentence, isOpen: isOpenIn(sentence, names), readsLatin: true })),
+    ...doc.sentences.map((sentence) => ({ sentence, isOpen: isOpenIn(sentence, names), readsLatin: true, cited: citedSpans(sentence, names) })),
     ...(doc.tableCells?.() ?? []).map((cell) => cellPlace(cell, names)),
   ];
   const phraseSuffixes = new Set(patternsOf(doc, PHRASE_SUFFIX, options.genre));
@@ -359,6 +354,8 @@ export const orthographicVariant: Detector = (doc, options): Finding[] => {
     conjunctions: new Set(patternsOf(doc, CONJUNCTION, options.genre)),
     judging: new Set(patternsOf(doc, JUDGING, options.genre)),
     senses: new Set(patternsOf(doc, SENSE, options.genre)),
+    means: new Set(patternsOf(doc, MEANS, options.genre)),
+    lightVerbs: new Set(patternsOf(doc, LIGHT_VERB, options.genre)),
     comparative: new Set(patternsOf(doc, COMPARATIVE, options.genre)),
     wholeWords: new Map((doc.lexicons[WHOLE_WORD] ?? []).map((entry) => [entry.pattern, entry.group ?? entry.pattern])),
     phraseSuffixes,
@@ -369,11 +366,14 @@ export const orthographicVariant: Detector = (doc, options): Finding[] => {
     ),
   };
   const dictionary = doc.dictionary?.();
-  const isWord = (word: string): boolean => dictionary?.has(word) ?? true;
+  const reading: Reading = {
+    isWord: (word: string): boolean => dictionary?.has(word) ?? true,
+    nameJoiners: (doc.lexicons[NAME_JOINER] ?? []).map((entry) => entry.pattern),
+  };
   const starts = voiceStarts(
     doc.sentences,
     patternsOf(doc, VOICE, options.genre).map((pattern) => new RegExp(pattern, "u")),
   );
   const voices = groupBy(placed, ({ sentence }) => String(voiceAt(starts, sentence.span.start)));
-  return [...voices.values()].flatMap((voice) => findingsIn(voice, skips, isWord, options.limit));
+  return [...voices.values()].flatMap((voice) => findingsIn(voice, skips, reading, options.limit));
 };

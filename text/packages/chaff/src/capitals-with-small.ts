@@ -21,3 +21,19 @@ const isPickedOut = (word: string, acronyms: readonly string[]): boolean => {
  * as written: leaving it out for one part would hide a variant in another (GitHub-SENDs, Github-SENDs).
  */
 export const isCapitalsNotSpelling = (word: string, acronyms: readonly string[]): boolean => CAPITALS_WITH_ENDING.test(word) || isPickedOut(word, acronyms);
+
+/** A surname in capitals after its prefix in small letters (McCAUL, DesJARLAIS, MacARTHUR): one capital, a short prefix, capitals. */
+const CAPITALS_AFTER_PREFIX = /^\p{Lu}\p{Ll}{1,3}\p{Lu}{2,}$/u;
+const NAME_PART = /\p{L}+\.?/gu;
+const INITIAL = /^\p{Lu}\.$/u;
+const CAPITALS_WORD = /^\p{Lu}{2,}$/u;
+
+/**
+ * Whether a word at `start` in text is a surname set in capitals after a given name in capitals (MICHAEL T. McCAUL, SCOTT
+ * DesJARLAIS): a roster's capitals, not another spelling of McCaul. An initial between the two (T.) is passed over.
+ */
+export const isNameInCapitals = (text: string, start: number, word: string): boolean => {
+  if (!CAPITALS_AFTER_PREFIX.test(word)) return false;
+  const before = [...text.slice(0, start).matchAll(NAME_PART)].map((match) => match[0]).filter((part) => !INITIAL.test(part));
+  return CAPITALS_WORD.test(before.at(-1) ?? "");
+};
