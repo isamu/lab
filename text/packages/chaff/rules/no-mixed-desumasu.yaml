@@ -3,7 +3,20 @@ layer: L3
 status: stable
 how_to_find: sentence-ending
 word_list: polite-ending
-extra_word_lists: [neutral-ending, neutral-request, notice-phrase, asker-heading, licence-word]
+extra_word_lists:
+  [
+    neutral-ending,
+    neutral-request,
+    neutral-wish,
+    notice-phrase,
+    asker-heading,
+    licence-word,
+    set-polite-phrase,
+    contact-line-opener,
+    declaration-particle,
+    takeup-opener,
+    quote-label,
+  ]
 requires: [pos]
 languages: [ja]
 severity: info
@@ -51,8 +64,8 @@ example:
       新しい料金は来月から始まります。請求書の形式も変わります。支払いの期限は月末です。古い料金は三月で終わります。
 
 not_flagged:
-  ja: どちらの調子が正しいかは決めません。多いほうに揃っていない、少ないほうの文だけを指します。本文と箇条書きは別々に数えます。箇条書きの中の少ないほうが文書全体では多いほうなら、その文は指しません。項目や段落の頭の太字の札（「- **速く書ける。** 説明です。」の「速く書ける。」）は見出しと同じく文に数えません。免責や変更の予告を書いた段落（「…ご了承ください。」）が、2 文以上すべて文書の多いほうと違う同じ調子でそろっているときも、本文とは別の決まり文句として数えません。読み手の相談や質問を載せる節（見出しが「【相談事例等】」「ご質問内容」）の文も、尋ねた人の言葉のままなので数えません。文書の最後に掲載先が付けた利用条件の断り書き（ライセンスの名前と条件の URL を書いた短い段落）も数えません。
-  en: Neither register is called right; only the sentences in the minority are pointed at. The body and each list are counted apart, and a sentence in a list's minority is left alone when its register is the document's majority. A bold label that opens an item or a paragraph and is followed by more text on its line is a heading, not a sentence. A paragraph of disclaimer or notice wording (…ご了承ください。) whose two or more sentences all share the register the rest of the document does not use is boilerplate in its own voice and is not counted. Nor are the sentences of a section whose heading names what a reader asked (【相談事例等】, ご質問内容), since they quote the asker in their own words. Nor is a licence notice the publisher appends at the end (a short closing paragraph that names a licence and links to its terms).
+  ja: どちらの調子が正しいかは決めません。多いほうに揃っていない、少ないほうの文だけを指します。本文と箇条書きは別々に数えます。箇条書きの中の少ないほうが文書全体では多いほうなら、その文は指しません。項目や段落の頭の太字の札（「- **速く書ける。** 説明です。」の「速く書ける。」）は見出しと同じく文に数えません。免責や変更の予告を書いた段落（「…ご了承ください。」）が、2 文以上すべて文書の多いほうと違う同じ調子でそろっているときも、本文とは別の決まり文句として数えません。読み手の相談や質問を載せる節（見出しが「【相談事例等】」「ご質問内容」）の文も、尋ねた人の言葉のままなので数えません。文書の最後に掲載先が付けた利用条件の断り書き（ライセンスの名前と条件の URL を書いた短い段落）も数えません。札を付けて引いた言葉（「例：」「Q:」で始まる文、「用例」だけの段落の下の段落）、「■ 調査目的」のような印付きの札の行の下の記入欄の値、〒や「電話：」の行がある問い合わせ先の段落、一つの文の中に「？」で並べて引いた問い（…一覧か？順序付きか？などです。）も数えません。数えたうえで指さないのは、丁寧な形でしか言わない挨拶（お疲れ様でした。）、相手への願い（信じてほしい。）、条件だけで問う文（…だったら？）、演説で主語を言わずに決意を言い切る文（戦争の惨禍を、二度と繰り返さない。）、次の文が「そんな」「こんな」で受ける場面の書き出し（PDFが送れない。そんなときは…）です。
+  en: Neither register is called right; only the sentences in the minority are pointed at. The body and each list are counted apart, and a sentence in a list's minority is left alone when its register is the document's majority. A bold label that opens an item or a paragraph and is followed by more text on its line is a heading, not a sentence. A paragraph of disclaimer or notice wording (…ご了承ください。) whose two or more sentences all share the register the rest of the document does not use is boilerplate in its own voice and is not counted. Nor are the sentences of a section whose heading names what a reader asked (【相談事例等】, ご質問内容), since they quote the asker in their own words. Nor is a licence notice the publisher appends at the end (a short closing paragraph that names a licence and links to its terms). Nor are words quoted under a label (a sentence opening with 例： or Q:, the paragraph under a lone 用例), the value under a marked field label (■ 調査目的), a contact block (a paragraph with a 〒 or 電話： line), or questions run together inside one sentence (…一覧か？順序付きか？などです。). Counted but never pointed at are a greeting said only politely (お疲れ様でした。), a wish to others (信じてほしい。), a question that gives only a condition (…だったら？), a speaker declaring a resolve without a subject in a speech (戦争の惨禍を、二度と繰り返さない。), and a scene-setting opener the next sentence takes up with そんな or こんな.
 level_meaning:
   ja: 少ないほうの調子の文が {limit} 文以下のとき、それを指摘
   en: reported when the minority register has {limit} sentences or fewer
