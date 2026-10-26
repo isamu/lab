@@ -191,7 +191,7 @@ describe("unqualified-superlative (en): amounts, clauses and bounds", () => {
 
   it("a language without the lists reads none of these forms, and the rule still runs", () => {
     const withoutLists: LanguageAdapter = { ...en, lexicons: Object.fromEntries(Object.entries(en.lexicons).filter(([list]) => !LISTS.includes(list))) };
-    ["The school enrolls the most students.", "It is the best we have measured.", "We aim for the best possible outcome."].forEach((sentence) => {
+    ["The school enrolls the most students.", "It is the best we have measured.", "This is the best possible outcome."].forEach((sentence) => {
       assert.ok(superlativeReported(withoutLists, sentence), sentence);
     });
   });

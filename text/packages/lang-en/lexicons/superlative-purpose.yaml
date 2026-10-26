@@ -1,0 +1,7 @@
+# Words after a superlative's noun that name its set only when a gerund follows: "the most important tool for creating
+# the culture" (tools for creating it), "the most prominent intervention for combating misinformation". "For" with a
+# noun ("the best opportunity for government") names who gains, not a set.
+id: superlative-purpose
+language: en
+entries:
+  - pattern: for
