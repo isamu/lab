@@ -177,8 +177,8 @@ Use this section when asked to make a text sound less generated: 「AIっぽさ�
 
 chaff marks the shapes common in generated text (group "Signs of generated text" in `npx chaffjs rules`: `ai-tell`,
 `contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in` (Japanese only), `over-general-claim` (English only),
-`q-fragment-answer` (English
-only), `assistant-residue`, and the signals
+`q-fragment-answer` (English only), `assistant-residue`, `email-stock-courtesy` (English emails: stacked "I hope this email finds
+you well"-type courtesies), and the signals
 `ai-generated-composite` reads, among others). Most of them do not run in `technical/spec` or in the legal, docs, literature and
 speech genres; `assistant-residue` (words left from a pasted chat reply) runs in almost every genre. `npx chaffjs rules --json`
 says per rule and genre. None of them says the text was generated. chaff never rewrites; the rewriting is yours.
