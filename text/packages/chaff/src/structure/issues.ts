@@ -8,6 +8,7 @@ import { namesAbsentUnit, withinAbsentUnit } from "./unit-word.ts";
 import { isListedParagraph, listedParagraphsByArticle } from "./listed-paragraph.ts";
 import { referencesInCitedDocuments } from "./cited-document-section.ts";
 import { citedElsewhereReader } from "./cited-elsewhere.ts";
+import { referenceListSpans } from "../reference-lists.ts";
 
 // 木だけで決まる誤り。参照先が無い、番号が飛ぶ・重なる、同じ語を二度定義する。
 // 意味の食い違いは判定しない。書いてあることから機械で決まるものだけを出す。
@@ -137,7 +138,12 @@ const ownNumberings = (nodes: readonly StructureNode[], resolvesHere: (node: Str
  * 参照の番地が木に無い。他の文書の名前が付いた参照（民法第709条、Section 9 of the Master Agreement）は引かない。
  * 条を 1 つも持たない文書も見ない。他の文書を指しているだけかもしれない。
  */
-export const danglingReferences = (tree: StructureNode, source: string, nameNouns: readonly string[] = []): StructureIssue[] => {
+export const danglingReferences = (
+  tree: StructureNode,
+  source: string,
+  nameNouns: readonly string[] = [],
+  referenceListHeadings: readonly string[] = [],
+): StructureIssue[] => {
   const nodes = inDocumentOrder(tree);
   // 参照は条を指す。条を一つも持たない文書（契約書に付ける承諾書のひな形など）の「契約書第6条」は、別の文書の条。
   if (!nodes.some((node) => node.kind === "article")) return [];
@@ -167,7 +173,10 @@ export const danglingReferences = (tree: StructureNode, source: string, nameNoun
   // 平文の契約は見出しを「9. Indemnification.」と本文の形で書き、木はそれを番地にしない。残った参照があるときだけ読む。
   const written = unresolved.length === 0 ? undefined : writtenReading(nodes, source);
   const writtenAddresses = new Set(written?.addresses);
+  // 文献一覧の項目は他の著作を引く。そこの "pp. Article 81" は雑誌の論文番号で、この文書の条ではない。
+  const lists = unresolved.length === 0 ? [] : referenceListSpans(source, referenceListHeadings);
   return unresolved
+    .filter((node) => !lists.some((span) => span.start <= node.span.start && node.span.start < span.end))
     .filter((node) => !isListedParagraph(textOf(node, "target"), listed))
     .filter((node) => !writtenAddresses.has(textOf(node, "target")) && written?.subdivision(node) !== true)
     .map((node) => ({ offset: node.span.start, values: { label: textOf(node, "label"), target: textOf(node, "target") } }));
