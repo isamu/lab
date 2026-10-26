@@ -13,6 +13,7 @@ import { referenceListSpans } from "../reference-lists.ts";
 import { linkTitleSpans } from "./acronym-link.ts";
 import { citationNoteSpans } from "./citation-note.ts";
 import { documentCitationSpans } from "./case-citation.ts";
+import { referenceEntrySpans } from "./reference-entry.ts";
 
 /**
  * 大文字の語が略語ではなく、決まった書き方の一部として読める所（3:30 PM、1pm ET、USD 1,000、Kansas City, MO 64108、Fort Lauderdale FL 33304）。
@@ -173,7 +174,8 @@ export const sourceNotAcronymSpans = (source: string, wordsOf: (id: string) => s
 ];
 
 /**
- * 数には入れるが指さない略語の範囲。リンク先の題名、文献を引いて始まる注、判例の引用の当事者・裁判所・事件番号は、書き手が直せない。
+ * 数には入れるが指さない略語の範囲。リンク先の題名、文献を引いて始まる注、判例の引用の当事者・裁判所・事件番号、
+ * 角括弧の見出しで始まる文献の項目（[FETCH]    WHATWG, "Fetch"）は、書き手が直せない。
  */
 export const unreportedAcronymSpans = (
   source: string,
@@ -184,4 +186,5 @@ export const unreportedAcronymSpans = (
   ...linkTitleSpans(source, links),
   ...citationNoteSpans(source, sentences, wordsOf("citation-author-joiner")),
   ...documentCitationSpans(sentences, source, wordsOf("case-party-joiner")),
+  ...referenceEntrySpans(source),
 ];

@@ -14,7 +14,7 @@ import { conjugatedForms } from "./conjugated-form.ts";
 import { evidenceSpans, hasNumeral, isClaim, isLabelOnly, startsWithin, type AdviceWords } from "./concrete-evidence.ts";
 import { letteredIndexEntries } from "./lettered-index.ts";
 import { knownByDocument } from "./acronym-known.ts";
-import { glossedAcronyms, headingsSpellingOut } from "./acronym-gloss.ts";
+import { explainedInText, headingsSpellingOut } from "./acronym-gloss.ts";
 import { hasPredicateIn } from "./gram-predicate.ts";
 import { gramPassagesOf } from "./gram-passages.ts";
 import { sectionOpeners } from "./gram-openers.ts";
@@ -342,8 +342,9 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
     doc.sentences.map((sentence) => sentence.text),
     patternsOf(doc, "abbreviation-mention"),
   );
-  // 略語のすぐ後ろのダッシュで挟んだ同格（the VIX—a measure of …—）も、略語の説明と読む。
-  const entries = new Set([...termEntryAcronyms(doc.source), ...stated, ...linkedListTerms(doc.source), ...spelled, ...glossedAcronyms(body)]);
+  // 略語のすぐ後ろのダッシュで挟んだ同格（the VIX—a measure of …—）、同じ文の前に書いた名前（Small Business Administration … SBA）、
+  // 2 つ以上の番号で引く続き物の名前（BCP 78、BCP 14）も、略語の説明と読む。
+  const entries = new Set([...termEntryAcronyms(doc.source), ...stated, ...linkedListTerms(doc.source), ...spelled, ...explainedInText(body, doc.sentences)]);
   const headings = doc.sections.map((section) => section.heading);
   // 見出しが略語の名前を書き出していれば（## Federal Open Market Committee の下の FOMC）、説明済み。
   const spelledInHeading = headingsSpellingOut(headings);
