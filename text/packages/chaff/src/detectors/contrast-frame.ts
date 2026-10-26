@@ -7,9 +7,11 @@ import { comparableText, comparableWords, entryCloses, entryIn, entryOpens, entr
  * leads は打ち消し（it's not、単なる）で、turns（it's、but、ではなく）が後ろに来たときだけ枠になる。同じ文の後ろか、次の文の頭。
  * 打ち消しの頭に立つ返しの語（It's not ready. It's not tested. の 2 つ目の It's）は返しではなく、次の打ち消し。
  * 語の組（group）で返し方を絞る。across の打ち消し（don't、wasn't）は次の文の頭でしか返らず、その文に打ち消しがあれば返っていない。
- * across の返し（It、They）は次の文の頭でしか返しにならない。closing の打ち消し（はなく、）は、同じ文が closing の返し（です、だ）で閉じたときだけ枠。
+ * across の打ち消しを返すのは、次の文の頭の across の主語（It、They）だけ。But（I don't always. But …）は譲歩、That's は前の文全体への言葉で、
+ * 打ち消した X の代わりを言っていない。closing の打ち消し（はなく、）は、同じ文が closing の返し（です、だ）で閉じたときだけ枠。
+ * amounts は、枠の語の隣（position の側）で量を言う語（not just one、一杯だけでなく）。「一つより多い」で、X を打ち消していない。
  */
-export type ContrastWords = { readonly frames: Lexicon; readonly leads: Lexicon; readonly turns: Lexicon };
+export type ContrastWords = { readonly frames: Lexicon; readonly leads: Lexicon; readonly turns: Lexicon; readonly amounts?: Lexicon };
 
 const ACROSS = "across";
 const CLOSING = "closing";
@@ -61,11 +63,32 @@ const opensWithWord = (sentence: Sentence, entry: LexiconEntry): boolean => {
   return !LETTER.test(comparableText(sentence).charAt(comparableWords(entry.pattern).length));
 };
 
-/** 次の文が返しの語（across の It、They も）で始まり、どこにも打ち消しが無いか（It wasn't the plan. It was luck.）。 */
-const nextAffirms = (next: Sentence | undefined, words: ContrastWords): boolean => {
-  if (next === undefined) return false;
-  const openers = [...plainOf(words.turns), ...groupOf(words.turns, ACROSS)];
-  return openers.some((turn) => opensWithWord(next, turn)) && !words.leads.some((lead) => entryIn(next, lead));
+/** 次の文が across の主語（It、They）で始まり、どこにも打ち消しが無いか（It wasn't the plan. It was luck.）。 */
+const nextAffirms = (next: Sentence | undefined, words: ContrastWords): boolean =>
+  next !== undefined && groupOf(words.turns, ACROSS).some((turn) => opensWithWord(next, turn)) && !words.leads.some((lead) => entryIn(next, lead));
+
+const AFTER = "after";
+const DIGIT_AFTER = /^\p{Nd}/u;
+/** 数字と、続く助数詞一字（1回、2つ）。 */
+const DIGIT_BEFORE = /\p{Nd}\p{L}?$/u;
+
+/** 枠の語（range）の隣で量を言っているか。position が after なら後ろ（not just one）、ほかは前（一杯だけでなく）。数字も量。 */
+const measuresAmount = (text: string, range: Range, amounts: Lexicon): boolean => {
+  const after = text.slice(range.end).trimStart();
+  const before = text.slice(0, range.start).trimEnd();
+  return amounts.some((amount) => {
+    const word = lowered(amount);
+    if (amount.position !== AFTER) return before.endsWith(word) || DIGIT_BEFORE.test(before);
+    return (after.startsWith(word) && !LETTER.test(after.charAt(word.length))) || DIGIT_AFTER.test(after);
+  });
+};
+
+/** 枠の語が、量を言っていない所に一度でもあるか。文字列の上で位置を言えないときは枠のまま。 */
+const framesIn = (sentence: Sentence, frame: LexiconEntry, amounts: Lexicon): boolean => {
+  if (!entryIn(sentence, frame)) return false;
+  const text = comparableText(sentence);
+  const ranges = rangesOf(text, lowered(frame));
+  return ranges.length === 0 || ranges.some((range) => !measuresAmount(text, range, amounts));
 };
 
 const closesWithTurn = (sentence: Sentence, words: ContrastWords): boolean => groupOf(words.turns, CLOSING).some((turn) => entryCloses(sentence, turn));
@@ -84,4 +107,6 @@ const answered = (sentence: Sentence, next: Sentence | undefined, words: Contras
  * 2 文にまたがる枠も 1 つと数える。返しの文は数えない。
  */
 export const contrastSentences = (sentences: readonly Sentence[], words: ContrastWords): Sentence[] =>
-  sentences.filter((sentence, index) => words.frames.some((frame) => entryIn(sentence, frame)) || answered(sentence, sentences[index + 1], words));
+  sentences.filter(
+    (sentence, index) => words.frames.some((frame) => framesIn(sentence, frame, words.amounts ?? [])) || answered(sentence, sentences[index + 1], words),
+  );
