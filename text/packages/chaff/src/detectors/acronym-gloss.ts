@@ -40,7 +40,7 @@ const MAX_SPELLED = 10;
 const NAME_WORD = /^\p{Lu}[\p{L}'’.-]*$/u;
 /** Marks before a word that are not part of it, and that open a new phrase: brackets and quotes. */
 const OPENING_MARKS = /^[([“‘"']+/u;
-const CLOSING_MARKS: ReadonlySet<string> = new Set([...")]”’\"',.;:!?"]);
+const CLOSING_MARKS: ReadonlySet<string> = new Set(")]”’\"',.;:!?");
 
 const withoutClosingMarks = (word: string): string => {
   const characters = [...word];
