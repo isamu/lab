@@ -1,13 +1,19 @@
 // 辞書に無い語と、一字違いの言い直し。純粋な関数だけを置く。辞書と、語尾・接頭辞の知識は言語パッケージが渡す。
 
 /** 語尾の置き換え 1 つ。suffix を外して replacement を足すと辞書の語（carried → carry）。 */
-export type Suffix = { readonly suffix: string; readonly replacement: string };
+export type Suffix = { readonly suffix: string; readonly replacement: string; readonly inflection?: boolean };
 
 /**
  * 語を辞書で引くのに要るもの。words は語の集まりの並び（辞書と、語彙表やチームの足した語）で、どれかにあれば載っている語。
  * 大きい辞書を文書ごとに写さないよう、集まりは足し合わせずに並べる。suffixes は語尾、prefixes は接頭辞。
  */
-export type Speller = { readonly words: ReadonlyArray<ReadonlySet<string>>; readonly suffixes: readonly Suffix[]; readonly prefixes: readonly string[] };
+export type Speller = {
+  readonly words: ReadonlyArray<ReadonlySet<string>>;
+  readonly suffixes: readonly Suffix[];
+  readonly prefixes: readonly string[];
+  /** 語尾を取らない語（those、which）。thoses を those + s と読まない。 */
+  readonly uninflected?: ReadonlySet<string>;
+};
 
 const inLists = (word: string, speller: Speller): boolean => speller.words.some((list) => list.has(word));
 
@@ -15,7 +21,7 @@ const inLists = (word: string, speller: Speller): boolean => speller.words.some(
 const MIN_STEM = 2;
 
 /** 語尾を外した語幹。外した後ろに同じ子音が二つ並べば一つ減らした形も（stopped → stopp → stop）。 */
-const stemsOf = (word: string, suffixes: readonly Suffix[]): string[] =>
+const endingStemsOf = (word: string, suffixes: readonly Suffix[]): string[] =>
   suffixes.flatMap(({ suffix, replacement }) => {
     if (!word.endsWith(suffix) || word.length - suffix.length < MIN_STEM) return [];
     const stem = word.slice(0, word.length - suffix.length);
@@ -23,13 +29,36 @@ const stemsOf = (word: string, suffixes: readonly Suffix[]): string[] =>
     return [`${stem}${replacement}`, ...doubled];
   });
 
-const isListed = (word: string, speller: Speller): boolean => inLists(word, speller) || stemsOf(word, speller.suffixes).some((stem) => inLists(stem, speller));
+/** 語尾を外した語幹のうち、語尾を取らない語（those）でないもの。 */
+export const stemsOf = (word: string, speller: Speller): string[] =>
+  endingStemsOf(word, speller.suffixes).filter((stem) => speller.uninflected?.has(stem) !== true);
+
+const isListed = (word: string, speller: Speller): boolean => inLists(word, speller) || stemsOf(word, speller).some((stem) => inLists(stem, speller));
 
 const isPrefixed = (word: string, speller: Speller): boolean =>
   speller.prefixes.some((prefix) => word.startsWith(prefix) && word.length - prefix.length >= MIN_STEM && isListed(word.slice(prefix.length), speller));
 
 /** 辞書の語か。そのままか、語尾を外すか、接頭辞を一つ外して（語尾も外して）辞書にあれば知っている語。 */
 export const isKnownWord = (word: string, speller: Speller): boolean => isListed(word, speller) || isPrefixed(word, speller);
+
+/** 内側の語尾を外した後に残す字の数。短い語幹は辞書の略語に当たりやすい（thier を thy + er、その thy を th + y と読まない）。 */
+const MIN_INNER_STEM = 4;
+
+/** 派生の語尾（-ise、-ness）を外した語幹。重ねた子音は戻さない（visuallize を visual + ize と読まない）。 */
+const derivedStemsOf = (word: string, speller: Speller): string[] =>
+  speller.suffixes
+    .filter(({ suffix, inflection }) => inflection !== true && word.endsWith(suffix) && word.length - suffix.length >= MIN_INNER_STEM)
+    .map(({ suffix, replacement }) => `${word.slice(0, word.length - suffix.length)}${replacement}`);
+
+/**
+ * 派生した語に活用の語尾を付けた語（operationalises は operationalise + s、その operationalise は operational + ise）。
+ * 外側は活用の語尾（-s、-ed）、内側は派生の語尾だけで、活用の語尾の上に語尾は重ならない（oversers は overs + ers でない）。
+ */
+export const hasTwoEndings = (word: string, speller: Speller): boolean =>
+  endingStemsOf(
+    word,
+    speller.suffixes.filter(({ inflection }) => inflection === true),
+  ).some((stem) => derivedStemsOf(stem, speller).some((inner) => inLists(inner, speller)));
 
 const LETTERS = [..."abcdefghijklmnopqrstuvwxyz"];
 
@@ -61,12 +90,13 @@ export type CheckedWord = { readonly offset: number; readonly word: string };
 /**
  * 確かめる語。小文字だけで書いた英字の語で、ほかの語・番号・記号に続かないもの。大文字を含む語（固有名詞、略語、文頭の語）、
  * 数字や下線を含む語、アポストロフィとハイフンの前後（don't、co-operate）、文字参照（&mdash;）、ファイル名やドメインの一部（index.html の index）、
- * URL とメールの中、maxLength より長い字の並び（符号化したデータ）は見ない。
+ * URL とメールの中、maxLength より長い字の並び（符号化したデータ）は見ない。角括弧の字を続けた語（引用を変えた handl[e]）、
+ * 括弧の字を挟んで続く語（neuro(a)typicality）、= が続く語（式を地の文に書いた nboot=2,000 の変数の名）も語の一部なので見ない。
  */
-const WORD = /(?<![\p{L}\p{N}_./@#&'’\\-])[a-z]+(?![\p{L}\p{N}_/@'’-]|\.[\p{L}\p{N}])/gu;
+const WORD = /(?<![\p{L}\p{N}_./@#&'’\\-])[a-z]+(?![\p{L}\p{N}_/@'’=-]|\.[\p{L}\p{N}]|\[\p{L}|\(\p{L}+\)\p{L})/gu;
 /** 空白で区切った一続きの字。URL（://）、www. で始まるもの、メール（@）は丸ごと語として読まない。 */
 const CHUNK = /\S+/gu;
-const isAddress = (chunk: string): boolean => chunk.includes("://") || chunk.includes("@") || chunk.startsWith("www.");
+export const isAddress = (chunk: string): boolean => chunk.includes("://") || chunk.includes("@") || chunk.startsWith("www.");
 
 const addressSpans = (text: string): Array<readonly [number, number]> =>
   [...text.matchAll(CHUNK)].filter((match) => isAddress(match[0])).map((match) => [match.index, match.index + match[0].length]);
