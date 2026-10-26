@@ -132,6 +132,7 @@ Claude Code の skill（`npx chaffjs skill`）は、指摘より先に指針を�
 | `assistant-residue` | 「お役に立てれば幸いです」のような、チャットの返事の名残 |
 | `email-stock-courtesy` | 「I hope this email finds you well」「I apologize for any inconvenience」のような英文メールの決まり文句が、一通のメールに 2 つ以上（英語の文書だけ） |
 | `closing-exhortation` | 「ぜひ〜してみてください」「きっと〜はずです」のように、結びで読み手を励ます・請け合う文が 2 つ以上 |
+| `cold-open` | 状況も例もないまま、短い願い（「〜に任せたい。」）、前の文の語の引き直し（この「だいたい」が）、難所の予告（「それだけのことに見えて」）が重なる書き出し |
 | `chat-citation-residue` | 「?utm_source=chatgpt.com」の付いたリンクや「oaicite」のような、チャットの答えを貼ったときに残る印 |
 | `closing-cliche` | 「いかがでしたでしょうか」で締める終わり方 |
 | `bold-density` | 太字の多さ |

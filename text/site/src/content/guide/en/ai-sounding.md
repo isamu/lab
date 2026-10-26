@@ -132,6 +132,7 @@ Legal documents, manuals, literature and transcripts are written differently, so
 | `assistant-residue` | What is left of a chat reply ("I hope this helps", "As of my last knowledge update") |
 | `email-stock-courtesy` | Two or more stock email courtesies in one email ("I hope this email finds you well", "I apologize for any inconvenience") (English documents only) |
 | `closing-exhortation` | A closing that cheers the reader on or promises the outcome, two or more times ("You've got this", "Happy baking!") |
+| `cold-open` | An opening with no situation or example that piles a bare wish ("You want to ..."), a word of the previous sentence repeated in quotes ("That 'almost' is the problem") and a teaser ("Sounds simple. It isn't.") |
 | `chat-citation-residue` | Marks a pasted chat answer leaves: links ending in "?utm_source=chatgpt.com", "oaicite" |
 | `closing-cliche` | A stock closing ("In conclusion", "I hope this helps") |
 | `bold-density` | Too much bold |
