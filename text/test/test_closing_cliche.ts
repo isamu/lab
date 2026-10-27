@@ -30,6 +30,18 @@ describe("closing-cliche: 最後の段落でだけ定型になる言い回し", 
     assert.ok(flagged("# 手順\n\n設定を保存します。\n\n## まとめ\n\n毎朝、最初に予定を確かめる習慣をつけましょう！\n"));
   });
 
+  it("invalid: 「まずは〜試してみてください」と試すよう勧めて締める", () => {
+    assert.deepEqual(matchedFor("# 通知\n\n通知は三種類あります。\n\n## まとめ\n\nまずは基本の設定から試してみてください。それだけでも静かになります。\n"), [
+      "試してみてください",
+    ]);
+    assert.ok(flagged("# 通知\n\n通知は三種類あります。\n\n## まとめ\n\n気になった設定から、ひとつずつやってみてください。\n"));
+  });
+
+  it("valid: 本文の途中の「試してみてください」は手順の勧めで、結びではない", () => {
+    const body = "# 通知\n\n## 設定\n\n先に通知の設定を試してみてください。\n\n通知は三種類あります。\n\n件数は右上に出ます。\n\n既読にすると消えます。\n";
+    assert.ok(!flagged(body));
+  });
+
   it("valid: 最後の段落の具体的な指示は結びの定型ではない", () => {
     assert.ok(!flagged("# 手順\n\n設定を保存します。\n\n## まとめ\n\n落ちたテストは、まず落ちた時刻を並べてみてください。\n"));
     assert.ok(!flagged("# 手順\n\n設定を保存します。\n\n## まとめ\n\n保存の前に、必ず差分を確かめましょう。\n"));
@@ -87,6 +99,16 @@ describe("closing-cliche: English closings", () => {
 
   it("invalid: ends on 'and go from there'", () => {
     assert.ok(flagged("# Formulas\n\nSUMIF adds the matching rows.\n\nPick one formula, try it on a copy, and go from there.\n", en));
+  });
+
+  it("invalid: ends on 'give it a try'", () => {
+    assert.ok(flagged("# Filters\n\nA filter moves mail into a folder.\n\n## Wrapping up\n\nSet up one filter this week and give it a try.\n", en));
+  });
+
+  it("valid: 'give it a try' in the body is an ordinary suggestion", () => {
+    const body =
+      "# Filters\n\n## Start\n\nMake one filter and give it a try.\n\nA filter moves mail into a folder.\n\nThe folder keeps a count.\n\nThe count resets each week.\n\nOld mail stays where it was.\n";
+    assert.ok(!flagged(body, en));
   });
 
   it("valid: 'go from there' in the body is an ordinary phrase", () => {

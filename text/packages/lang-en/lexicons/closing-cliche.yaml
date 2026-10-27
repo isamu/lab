@@ -12,6 +12,8 @@ entries:
   # Ordinary in the body; as the last line it is the stock send-off.
   - pattern: and go from there
     group: last
+  - pattern: give it a try
+    group: last
   # A short line such as "Happy brewing!" or "Happy baking!" as the last paragraph.
   - pattern: Happy
     group: signoff
