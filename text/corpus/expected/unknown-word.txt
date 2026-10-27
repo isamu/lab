@@ -1,10 +1,10 @@
 18f-blog-oracle-databases  1
 18f-handbook-travel-faq  1
-aoml-hurricane-faq  13
+aoml-hurricane-faq  12
 arxiv-2609-38203-abs-verbal-fluency  1
 arxiv-2609-38219-abs-tamazight-speech  3
-arxiv-astro-ph-new-2025-01-03  12
-asf-board-minutes-2025-01  11
+arxiv-astro-ph-new-2025-01-03  11
+asf-board-minutes-2025-01  10
 automattic-offer-letter-us  1
 cloudgov-changelog-2023-11-27  1
 dailymed-advil-otc-label  1
@@ -17,9 +17,9 @@ nodejs-tsc-minutes-2026-05-06  3
 nws-glossary-a  4
 python-code-quality-list-2016-03  1
 rust-lang-minutes-2022-11-22  1
-rust-rfc-2094-nll  4
+rust-rfc-2094-nll  3
 typescript-5-4-release-notes  1
 us-4683202-nucleic-acid-amplification  7
 us-6004596-crustless-sandwich  1
 vite-plugin-legacy-changelog  2
-wikivoyage-belgian-coast-tram  3
+wikivoyage-belgian-coast-tram  2

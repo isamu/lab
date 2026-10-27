@@ -1,4 +1,5 @@
 import { existsSync } from "node:fs";
+import { isAbsolute, join } from "node:path";
 import { readYamlFile } from "./config/yaml-file.ts";
 import type { Level, Severity } from "./plugin.ts";
 
@@ -17,6 +18,27 @@ export type UserCheck = {
   readonly level: Level;
   readonly how_to_fix: string;
   readonly source: string;
+  /** The document languages the check is asked for; undefined asks it for every language. */
+  readonly languages?: readonly string[];
+};
+
+/** Whether a check is asked for a document in this language. */
+export const checkAppliesTo = (check: Pick<UserCheck, "languages">, language: string): boolean =>
+  check.languages === undefined || check.languages.includes(language);
+
+/** The folder of the check sets chaff ships (`--checks ai-tells`). */
+export const BUNDLED_CHECKS_DIR = "checks";
+
+const YAML_FILE = /\.ya?ml$/u;
+
+/**
+ * The checks file to read: checks.yaml in the folder without --checks; the path given when it names a file
+ * (a separator or a .yaml ending); otherwise the set of that name chaff ships. Pure: the caller joins the folders.
+ */
+export const checksPathOf = (given: string | undefined, cwd: string, bundledDir: string): string => {
+  if (given === undefined) return join(cwd, CHECKS_FILE);
+  if (given.includes("/") || given.includes("\\") || YAML_FILE.test(given)) return isAbsolute(given) ? given : join(cwd, given);
+  return join(bundledDir, `${given}.yaml`);
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
@@ -47,8 +69,10 @@ const toCheck = (raw: unknown, index: number, source: string): UserCheck | undef
   const name = str(raw["name"]);
   const check = str(raw["check"]);
   if (name === undefined || check === undefined) return undefined;
+  const id = str(raw["id"]);
   return {
-    id: idOf(name, index),
+    // A shipped set names its checks, so a check keeps one id in both of its languages.
+    id: idOf(id ?? name, index),
     name,
     use_for: useForOf(raw["use_for"]),
     check,
@@ -56,7 +80,14 @@ const toCheck = (raw: unknown, index: number, source: string): UserCheck | undef
     level: asLevel(raw["level"]),
     how_to_fix: str(raw["how_to_fix"]) ?? "",
     source,
+    ...languagesOf(raw["languages"]),
   };
+};
+
+/** languages は 1 つでも配列でも書ける。書かなければどの言語にも聞く。 */
+const languagesOf = (value: unknown): Pick<UserCheck, "languages"> => {
+  if (typeof value === "string") return { languages: [value] };
+  return Array.isArray(value) ? { languages: value.map((entry) => String(entry)) } : {};
 };
 
 export const loadChecks = (path: string): UserCheck[] => {

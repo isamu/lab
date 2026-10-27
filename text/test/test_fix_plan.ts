@@ -167,13 +167,15 @@ describe("fix-plan — the plan for a document", () => {
     );
   });
 
-  it("recommends by genre and by what fires: full for a blog post, bold or light for a report", async () => {
-    assert.equal((await planOf("ja-before.md")).mode.reason, "genre");
-    // As a report, the English draft keeps two document-wide signals (ai-tell, padded-intro); the Japanese one keeps only ai-tell.
+  it("recommends by genre and by what fires: full for a blog post, bold for a report", async () => {
+    // The Japanese draft opens with 「現代社会において」, so padded-intro joins ai-tell and closing-cliche and the composite fires first.
+    const blog = (await planOf("ja-before.md")).mode;
+    assert.equal(`${blog.mode}/${blog.reason}`, "full/composite");
+    // As a report, both drafts keep two document-wide signals (ai-tell, padded-intro).
     const report = await planOf("en-before.md", ["--experimental", "--genre", "business/report"]);
     assert.equal(`${report.mode.mode}/${report.mode.reason}`, "bold/signals");
     const japaneseReport = await planOf("ja-before.md", ["--experimental", "--genre", "business/report"]);
-    assert.equal(`${japaneseReport.mode.mode}/${japaneseReport.mode.reason}`, "light/spots");
+    assert.equal(`${japaneseReport.mode.mode}/${japaneseReport.mode.reason}`, "bold/signals");
     assert.ok(
       report.checks.every((check) => !check.includes("--distinct")),
       "only a full rewrite compares as sets",

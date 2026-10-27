@@ -1,4 +1,4 @@
-import { describe, it } from "node:test";
+import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
@@ -92,6 +92,9 @@ describe("no-em-dash", () => {
 
 describe("the composite on an English document", () => {
   const RULES_EN = loadRules("en");
+  before(async () => {
+    await en.prepare?.({ pos: true });
+  });
   const LISTS = [
     "It does three things.\n\n- fast\n- cheap\n- strong",
     "It has three uses.\n\n- read\n- write\n- fix",
@@ -106,6 +109,30 @@ describe("the composite on an English document", () => {
     "",
     "In conclusion, it plays a crucial role. Hope this helps, and thanks for reading.",
   ].join("\n");
+
+  const signalsOf = (source: string, genre = "blog/tech"): string[] => {
+    const found = runRules(buildDocument("t.md", source, en), RULES_EN, {}, true, genre).findings.find((finding) => finding.rule === "ai-generated-composite");
+    return found === undefined ? [] : String(found.values["word"]).split(", ");
+  };
+  const FILLER = "We shipped the release and reported the numbers to the team. ".repeat(20);
+  const SWEEPING = "Most people never back up their photos. Nobody thinks about it until a phone breaks. Then everyone wishes they had a copy.";
+  const FRAGMENTS = "Is the new setup perfect? No. It still drops a file now and then. The result? Faster builds and fewer late nights.";
+  const BOLD = Array.from({ length: 4 }, (_unused, index) => `Step ${String(index + 1)} is **really important** for the result.`).join(" ");
+
+  it("reads sweeping claims, fragment answers and scattered bold as three signals", () => {
+    const post = ["# Backups", "", SWEEPING, "", FRAGMENTS, "", BOLD, "", FILLER].join("\n");
+    assert.deepEqual(
+      signalsOf(post).toSorted((left, right) => left.localeCompare(right, "en")),
+      ["bold-emphasis", "over-general-claim", "q-fragment-answer"],
+    );
+  });
+
+  it("does not read bold labels on list items: ai-structure already measures that shape", () => {
+    const labels = Array.from({ length: 6 }, (_unused, index) => `- **Point ${String(index + 1)}**: what the team checks that week.`).join("\n");
+    const post = ["# Backups", "", SWEEPING, "", BOLD, "", labels, "", FILLER].join("\n");
+    assert.ok(!signalsOf(post).includes("bold-label-list"));
+    assert.ok(!RULES_EN.find((rule) => rule.id === "ai-generated-composite")?.from.includes("bold-label-list"));
+  });
 
   it("names the signals with a comma, not 「、」", () => {
     const found = runRules(buildDocument("t.md", ENGLISH, en), RULES_EN, {}, true, "blog/tech").findings.find(
