@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { superlativeReported } from "./rule-run.ts";
+import { firedRules, superlativeReported } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 
@@ -62,6 +62,30 @@ describe("unqualified-superlative: what is sought or chosen", () => {
   });
 });
 
+describe("unqualified-superlative: ranking the parts of a whole, and an order of work", () => {
+  it("does not report a superlative whose noun names a part, nor one after start with", () => {
+    quiet(en, [
+      "The customer is the most important role, and demands preparation.",
+      "We can trust the body of the formula to be the most important part.",
+      "Start with the most important tasks.",
+    ]);
+  });
+
+  it("still reports a superlative whose noun is not a part", () => {
+    reported(en, ["The customer is the most important person.", "Start the day with confidence: ours is the best service."]);
+  });
+});
+
+describe("unqualified-superlative: a clause of a pronoun and one word after the noun", () => {
+  it("reads the files you own as restricting the set", () => {
+    quiet(en, ["Your photos are some of the most irreplaceable files you own.", "These are the best tools we own."]);
+  });
+
+  it("does not read a pronoun that opens the next clause", () => {
+    reported(en, ["These are the best tools, we promise.", "These are the best tools. We promise."]);
+  });
+});
+
 describe("unqualified-superlative: a predicate that points at one of a set", () => {
   it("does not report a superlative subject whose predicate says which one", () => {
     quiet(en, ["The best backup plan is the one you will actually keep, so start simple.", "The most important divergence is the second."]);
@@ -112,5 +136,18 @@ describe("unqualified-superlative: set phrases", () => {
   it("still reports the same words outside the phrase", () => {
     reported(en, ["Our team does the most innovative work."]);
     reported(ja, ["最も重要な製品です。"]);
+  });
+});
+
+describe("unqualified-superlative: the limit in English tech blogs", () => {
+  const one = (sentence: string): string => `# Notes\n\nWe tried several setups this year.\n\n${sentence}\n`;
+
+  it("reports the one bare claim of an English tech blog post", () => {
+    assert.ok(firedRules(en, one("The best way to scale is to start small."), "blog/tech").includes("unqualified-superlative"));
+  });
+
+  it("needs two claims in other genres and in Japanese tech blogs", () => {
+    assert.ok(!firedRules(en, one("The best way to scale is to start small."), "business/report").includes("unqualified-superlative"));
+    assert.ok(!firedRules(ja, "# メモ\n\n今年はいくつか試しました。\n\nこの方法が最も効果的です。\n", "blog/tech").includes("unqualified-superlative"));
   });
 });

@@ -27,6 +27,16 @@ const verbAfterSubject = (tokens: readonly Token[], at: number, subjects: Lexico
   return isVerbal(tokens[phraseEnd(tokens, at)]);
 };
 
+/**
+ * 代名詞の後ろの一語で節が終わる（the files you own.）。品詞の読みが own を形容詞とすることがあるので、品詞でなく
+ * 節の終わりで読む。代名詞と一語だけの節は、名詞句を限る節のほかにない。
+ */
+const closingWord = (tokens: readonly Token[], at: number): boolean => {
+  const word = tokens[at];
+  const next = tokens[at + 1];
+  return word !== undefined && word.pos !== "PUNCT" && (next === undefined || next.pos === "PUNCT");
+};
+
 const isArticle = (token: Token | undefined): boolean => token?.features?.["PronType"] === "Art";
 
 /**
@@ -34,7 +44,7 @@ const isArticle = (token: Token | undefined): boolean => token?.features?.["Pron
  * each・all のような限定詞（The best teams all adapt）や、冠詞の無い名詞（The best teams adapt）は節の始まりと読まない。
  */
 const contactClause = (tokens: readonly Token[], at: number, subjects: Lexicon): boolean => {
-  if (isWord(tokens[at], subjects)) return isVerbal(tokens[at + 1]);
+  if (isWord(tokens[at], subjects)) return isVerbal(tokens[at + 1]) || closingWord(tokens, at + 1);
   return isArticle(tokens[at]) && isVerbal(tokens[phraseEnd(tokens, at + 1)]);
 };
 
@@ -64,10 +74,19 @@ const participle = (tokens: readonly Token[], range: TokenRange, at: number): bo
 const bounded = (tokens: readonly Token[], range: TokenRange, at: number, bounds: Lexicon): boolean =>
   isWord(tokens[range.end], bounds) || isWord(tokens[at], bounds);
 
+/**
+ * 修飾の語の並びが動詞で終わって、その後ろに代名詞の主語が来る（the most irreplaceable files you own）。修飾の動詞の後ろには
+ * 名詞が要るので、終わりの「動詞」は名詞を動詞と読んだもの。分詞（the most watched）は Part なので除く。
+ */
+const headReadAsVerb = (tokens: readonly Token[], range: TokenRange, at: number, subjects: Lexicon): boolean => {
+  const last = tokens[at - 1];
+  return at > range.end && last?.pos === "VERB" && last.features?.["VerbForm"] !== "Part" && isWord(tokens[at], subjects);
+};
+
 /** 修飾の語は名詞の前に来るので、句の後ろで止まった分詞は名詞の後ろにある。 */
 const clauseOrParticiple = (tokens: readonly Token[], range: TokenRange, at: number, restrictors: Restrictors): boolean => {
   const last = tokens[at - 1];
-  const endsPhrase = at === range.end || (last !== undefined && PHRASE_END.has(last.pos));
+  const endsPhrase = at === range.end || (last !== undefined && (PHRASE_END.has(last.pos) || headReadAsVerb(tokens, range, at, restrictors.subjects)));
   return (endsPhrase && clause(tokens, at, restrictors)) || participle(tokens, range, at);
 };
 
