@@ -18,9 +18,9 @@ const kindOf = (run: string): AlnumKind => {
   return single ? "digit" : "digits";
 };
 
-/** 項目の番号の並び（行の頭や括弧の後ろの「１．」「（１）」「1)」）。項目の印で、本文の数ではない。 */
+/** 項目の番号の並び（行の頭や括弧の後ろの「１．」「（１）」「1)」、有価証券報告書の項目「４【経営者による…】」）。項目の印で、本文の数ではない。 */
 const LABEL_BEFORE = /(?:^|[\s、，,（(［[])$/u;
-const LABEL_AFTER = /^[．.）)］\]]/u;
+const LABEL_AFTER = /^[．.）)］\]【]/u;
 const LABEL_REACH = 1;
 
 /** 注の印（「※１」「（※３）」）。注どうしで決まった書き方をする。 */
@@ -103,7 +103,7 @@ const KINDS: readonly AlnumKind[] = ["letter", "letters", "digit", "digits"];
 
 /** 半角の英数字を全角に（NFKC の逆）。 */
 const FULLWIDTH_OFFSET = 0xfee0;
-const toFullwidth = (text: string): string => text.replace(/[A-Za-z0-9./]/gu, (char) => String.fromCodePoint((char.codePointAt(0) ?? 0) + FULLWIDTH_OFFSET));
+const toFullwidth = (text: string): string => text.replace(/[A-Za-z0-9./,]/gu, (char) => String.fromCodePoint((char.codePointAt(0) ?? 0) + FULLWIDTH_OFFSET));
 
 /** 同じ並びの、もう一方の幅の書き方。 */
 const otherWidth = (run: AlnumRun): string => (run.fullwidth ? run.written.normalize("NFKC") : toFullwidth(run.written));
@@ -126,6 +126,23 @@ const datelineOf = (doc: ProseDocument): Span | undefined => {
   const first = doc.paragraphs[0];
   return first !== undefined && DATELINE.test(doc.source.slice(first.span.start, first.span.end).trim()) ? first.span : undefined;
 };
+
+/** 多いほうの英字の語が何種類あれば、文書の書き方と見るか。ＢＡＲ を二度書いただけなら、それはその語の書き方。 */
+const HABIT_WORDS = 2;
+
+const wordOf = (run: AlnumRun): string => run.written.normalize("NFKC").toUpperCase();
+
+/**
+ * 英字の語の少ないほうを、文書の書き方からはずれたと言えるか。多いほうが二種類以上の語か、少ないほうと同じ語（URL と ＵＲＬ）のとき。
+ * 全角の ＢＡＲ だけの文書の DELICATE は、別の語を別の書き方で書いただけ。
+ */
+const departsFromHabit =
+  (ofKind: readonly Located[], odd: readonly Located[]) =>
+  ({ run }: Located): boolean => {
+    if (run.kind !== "letters") return true;
+    const usual = new Set(ofKind.filter((entry) => !odd.includes(entry)).map((entry) => wordOf(entry.run)));
+    return usual.size >= HABIT_WORDS || usual.has(wordOf(run));
+  };
 
 const findingOf = ({ sentence, run }: Located, count: number, of: number, limit: number): Finding => ({
   rule: "",
@@ -151,6 +168,9 @@ export const fullwidthAlnum: Detector = (doc, options): Finding[] => {
   return KINDS.flatMap((kind) => {
     const ofKind = located.filter(({ run }) => run.kind === kind);
     const odd = minorityWithin(ofKind, ({ run }) => run.fullwidth, options.limit);
-    return odd.filter(({ run }) => !isHalfwidthEnglishWord(run)).map((entry) => findingOf(entry, odd.length, ofKind.length, options.limit));
+    return odd
+      .filter(({ run }) => !isHalfwidthEnglishWord(run))
+      .filter(departsFromHabit(ofKind, odd))
+      .map((entry) => findingOf(entry, odd.length, ofKind.length, options.limit));
   });
 };
