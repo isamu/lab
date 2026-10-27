@@ -104,11 +104,11 @@ const gramsOf = (context: Context, sentences: readonly Sentence[]): Tally => {
 };
 
 /**
- * ひな形の文。節ごとの書き出し（gram-openers.ts）、参照の項目の最初の文（`max-age` の節、定義の並びの「: 」）、
- * 句点の無い名詞で終わる一行（表の欄、項目の名前）。ここに出るのは書式の繰り返しで、ここに出たぶんは数えない。
+ * ひな形の文: 参照の項目の説明の段落（`max-age` の節、定義の並びの「: 」）と、句点の無い名詞で終わる一行（表の欄、項目の名前）。
+ * ここに出るのは書式の繰り返しで、ここに出たぶんは数えない。
  */
 const templatesOf = (doc: ProseDocument): ReadonlySet<Sentence> =>
-  new Set([...sectionOpeners(doc.sections, doc.source), ...entryOpeners(doc.sections, doc.source), ...nounFragments(doc.sentences, doc.source)]);
+  new Set([...entryOpeners(doc.sections, doc.source), ...nounFragments(doc.sentences, doc.source)]);
 
 /** 文書の題（一番上の見出し）。題にある言い回しは文書の主題で、繰り返して当たり前（CCライセンスを付与する際の…）。 */
 const titleOf = (doc: ProseDocument): string =>
@@ -122,15 +122,20 @@ const titleOf = (doc: ProseDocument): string =>
 
 type Repeat = { readonly key: string; readonly occurrences: readonly Occurrence[] };
 
-/** 範囲（gram-passages.ts）ごとに数える。よくある質問の別々の答えは別の範囲。 */
+/**
+ * 範囲（gram-passages.ts）ごとに数える。よくある質問の別々の答えは別の範囲。節の最初の文（gram-openers.ts）にだけ出るものは節のひな形。
+ * 節の書き出しは書き手の地の文でもあるので、ほかの所にも出れば書き出しのぶんも数える（節ごとの口癖）。
+ */
 const repeatsOf = (doc: ProseDocument, limit: number): Repeat[] => {
   const context = { doc, names: namesOf(doc), endings: fixedEndingsOf(doc) };
   const templates = templatesOf(doc);
+  const openers = sectionOpeners(doc.sections, doc.source);
   const title = titleOf(doc);
   return gramPassagesOf(doc.sections).flatMap((sentences) =>
     [...gramsOf(context, sentences).entries()].flatMap(([key, all]) => {
       const occurrences = all.filter((occurrence) => !templates.has(occurrence.sentence));
-      return occurrences.length > limit && isPhrasing(key, doc.lengthUnit) && !title.includes(key) ? [{ key, occurrences }] : [];
+      const opensEverySection = occurrences.every((occurrence) => openers.has(occurrence.sentence));
+      return occurrences.length > limit && isPhrasing(key, doc.lengthUnit) && !title.includes(key) && !opensEverySection ? [{ key, occurrences }] : [];
     }),
   );
 };

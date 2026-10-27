@@ -60,7 +60,14 @@ describe("ngram-repetition: a reference page's entries", () => {
   });
 
   it("still counts it under a bracketed label that each case repeats (【アドバイス等】)", () => {
-    assert.notEqual(worst(ja, entries(() => "【アドバイス等】"), "technical/spec"), undefined);
+    assert.notEqual(
+      worst(
+        ja,
+        entries(() => "【アドバイス等】"),
+        "technical/spec",
+      ),
+      undefined,
+    );
   });
 
   it("still counts it under headings written as prose", () => {
@@ -166,7 +173,7 @@ describe("ngram-repetition: English field labels and acronyms", () => {
   it("does not count a field label a converter kept on each reference", () => {
     const references = Array.from(
       { length: 8 },
-      (_, index) => `- Author ${String(index)}. A study of things. External Links: Document Cited by: footnote ${String(index)}.`,
+      (_, index) => `- Author ${String(index)}. A study of things ${String(index)}.\n\n  Cited by: footnote ${String(index + 1)}.`,
     ).join("\n");
     assert.equal(worst(en, `# Paper\n\n${EN_FILLER}\n\n${references}\n`, "academic/paper"), undefined);
   });
