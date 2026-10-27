@@ -1,0 +1,9 @@
+# 大文字で終わる製品の名前（Adobe Acrobat Reader DC）。大文字は製品の名前の中の版の名前で、書き手が展開する略語ではない。
+# 名前のまま字面どおりに照らすので、DC だけなら略語のまま。
+id: product-name
+language: ja
+entries:
+  - pattern: Acrobat Reader DC
+  - pattern: Acrobat Pro DC
+  - pattern: Acrobat Standard DC
+  - pattern: Acrobat DC

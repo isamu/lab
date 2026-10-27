@@ -109,6 +109,49 @@ export const spelledInSentence = (sentences: readonly string[]): ReadonlySet<str
   return spelledFirst;
 };
 
-/** The acronyms the text explains without brackets: glossed between dashes, named earlier in the sentence, or a series cited by number. */
-export const explainedInText = (body: string, sentences: readonly { readonly text: string }[]): ReadonlySet<string> =>
-  new Set([...glossedAcronyms(body), ...spelledInSentence(sentences.map((sentence) => sentence.text)), ...numberedSeries(body)]);
+/** An acronym, and the noun after it when it is used as a modifier ("IR plans"). */
+const MODIFIER_ACRONYM = /(?<![\p{L}\p{N}_&])(?<acronym>[A-Z]{2,10})(?![\p{L}\p{N}_&])(?:\s+(?<noun>\p{Ll}+))?/gu;
+
+/** A noun without its plural ending: "plans" and "plan" are one noun. */
+const singularOf = (word: string): string => word.toLowerCase().replace(/(?:es|s)$/u, "");
+
+/** Whether the words before index, ending with the noun, spell the acronym in lower case ("incident response plan" → IR plan). */
+const spellsBeforeNoun = (words: readonly string[], index: number, acronym: string, noun: string): boolean => {
+  const name = words.slice(index - acronym.length, index);
+  return (
+    name.length === acronym.length &&
+    name.every((word) => /^\p{Ll}+$/u.test(word)) &&
+    name.map((word) => word.charAt(0)).join("") === acronym.toLowerCase() &&
+    singularOf(words[index] ?? "") === singularOf(noun)
+  );
+};
+
+/**
+ * Acronyms written out in lower case earlier in the same sentence, before the same noun ("Have an incident response plan
+ * and use it: … exercise IR plans"). The repeated noun ties the two: two letters alone are spelled by chance too often.
+ */
+export const spelledBeforeSameNoun = (sentences: readonly string[]): ReadonlySet<string> => {
+  const seen = new Set<string>();
+  const spelled = new Set<string>();
+  sentences.forEach((sentence) => {
+    [...sentence.matchAll(MODIFIER_ACRONYM)].forEach((match) => {
+      const acronym = match.groups?.["acronym"] ?? "";
+      const noun = match.groups?.["noun"];
+      if (seen.has(acronym)) return;
+      seen.add(acronym);
+      if (noun === undefined) return;
+      const words = sentenceWords(sentence.slice(0, match.index)).map((word) => word.core);
+      if (words.some((_, index) => spellsBeforeNoun(words, index, acronym, noun))) spelled.add(acronym);
+    });
+  });
+  return spelled;
+};
+
+/**
+ * The acronyms the text explains without brackets: glossed between dashes, named earlier in the sentence (capitalised, or in
+ * lower case before the same noun), or a series cited by number.
+ */
+export const explainedInText = (body: string, sentences: readonly { readonly text: string }[]): ReadonlySet<string> => {
+  const texts = sentences.map((sentence) => sentence.text);
+  return new Set([...glossedAcronyms(body), ...spelledInSentence(texts), ...spelledBeforeSameNoun(texts), ...numberedSeries(body)]);
+};

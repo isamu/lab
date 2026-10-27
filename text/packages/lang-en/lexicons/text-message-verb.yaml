@@ -1,0 +1,11 @@
+# Verbs that send a keyword by text message (text GNPCGS to 333111). The capitals between the verb and the short code are
+# a keyword to type as it stands, not an acronym to spell out. Matched as written, in any case.
+id: text-message-verb
+language: en
+entries:
+  - pattern: text
+  - pattern: texts
+  - pattern: texting
+  - pattern: txt
+  - pattern: reply
+  - pattern: replying

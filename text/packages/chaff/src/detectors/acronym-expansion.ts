@@ -13,6 +13,7 @@ import { escapeRegExp } from "../orthography.ts";
  *   人事部（以下「HR」という。）      括弧の中が定義の語と略語だけ
  *   overnight reverse repurchase agreement (ON RRP)  括弧の中が空白で繋いだ略語だけで、前の名前から文字が順に拾える
  *   Partnership On Wide Energy and Resources Resilience Asia (POWERR Asia)  括弧の中が略語と添えた語で、前の名前の頭文字と揃う
+ *   Regional Alliances and Multistakeholder Partnerships to Stimulate … (RAMPS program)  括弧の中が略語と小文字の語で、前の名前の頭の頭文字と揃う
  *   End User Technical Advisory Board (“End User TAB”)  括弧の中が名前の頭の語と略語で、前の名前の頭文字と揃う
  *   Special Interest Groups, or SIGs  名前の後ろの読点と言い換えの語（語彙表の definition-alternative）の後ろで、名前の頭文字と揃う
  *   Department of Health and Human Services (HHS or the Department)  括弧の最初の項目が略語で、言い換えの語の後ろに別の呼び名を添え、直前の語の頭文字と揃う
@@ -201,6 +202,30 @@ const isQualifiedAt = (body: string, acronym: string, at: number): boolean => {
   return spellsOut(name.endsWith(words) ? name.slice(0, -words.length) : name, acronym);
 };
 
+/** 括弧の中で略語に添えた、小文字の 1、2 語（(RAMPS program)）と、閉じる括弧。 */
+const LOWER_QUALIFIER = new RegExp(String.raw`^(?: \p{Ll}+){1,2}${WRAP}[)）]`, "u");
+
+/** 名前の頭から拾う略語の文字数の下限。2 字は名前の途中の頭文字にたまたま揃いやすい。 */
+const MIN_HEAD_LETTERS = 3;
+
+/**
+ * 括弧の中が略語と、それが何かを言う小文字の語だけの形（Regional Alliances and Multistakeholder Partnerships to Stimulate
+ * Cybersecurity Education and Workforce Development (RAMPS program)）。略語は名前の頭の部分だけを縮めることがあるので、前の名前の
+ * 大文字で始まる語の頭文字の中に、略語の文字が続けて現れるときだけ展開と見なす。
+ */
+const isLowerQualifiedAt = (body: string, acronym: string, at: number): boolean => {
+  const letters = lettersOf(acronym);
+  if (letters.length < MIN_HEAD_LETTERS || !OPENED.test(body.slice(Math.max(0, at - NEAR), at))) return false;
+  if (!LOWER_QUALIFIER.test(body.slice(at + acronym.length, at + acronym.length + DEFINITION_REACH))) return false;
+  const words = body
+    .slice(0, at)
+    .replace(ANY_OPENED, "")
+    .trim()
+    .split(/\s+/u)
+    .slice(-letters.length * 3);
+  return initialsOf(words).includes(letters);
+};
+
 /** 括弧の中で略語の前に置いた、大文字で始まる語（(“End User TAB”) の End User）。 */
 const PREFIX = new RegExp(String.raw`[(（]${WRAP}(?<words>(?:[A-Z][a-z]+ )+)$`, "u");
 
@@ -239,6 +264,7 @@ const isBracketedAt = (body: string, acronym: string, at: number): boolean => {
     isNamedBeforeAt(body, acronym, at) ||
     isJointBracketedAt(body, acronym, at) ||
     isQualifiedAt(body, acronym, at) ||
+    isLowerQualifiedAt(body, acronym, at) ||
     isPrefixedAt(body, acronym, at) ||
     isSuffixedAt(body, acronym, at)
   );

@@ -1,7 +1,7 @@
 import { ROMAN_NUMERAL, romanRangeOf } from "./roman-numeral.ts";
 import { citationKeySpans } from "./citation-key.ts";
 import { dottedNameSpans } from "./dotted-name.ts";
-import { letterJoinedNameSpans } from "./letter-joined-name.ts";
+import { capitalJoinedNameSpans, letterJoinedNameSpans } from "./letter-joined-name.ts";
 import { loneNumeralSpans, nameNumeralSpans } from "./name-numeral.ts";
 import { placeholderSpans } from "./placeholder.ts";
 import { numeralWordSpans } from "./numeral-word.ts";
@@ -14,6 +14,7 @@ import { linkTitleSpans } from "./acronym-link.ts";
 import { citationNoteSpans } from "./citation-note.ts";
 import { documentCitationSpans } from "./case-citation.ts";
 import { referenceEntrySpans } from "./reference-entry.ts";
+import { chatLogSpans } from "./chat-log-line.ts";
 
 /**
  * 大文字の語が略語ではなく、決まった書き方の一部として読める所（3:30 PM、1pm ET、USD 1,000、Kansas City, MO 64108、Fort Lauderdale FL 33304）。
@@ -40,6 +41,8 @@ export type NotationWords = {
   readonly titles: readonly string[];
   /** 日付・時刻の数字の後ろに書く単位（年、月、日、時、分）。その前の同じ大文字の繰り返し（YY年）は書式の置き場所。 */
   readonly dateTimeUnits: readonly string[];
+  /** ショートメッセージでキーワードを送る動詞（text GNPCGS to 333111 の text）。 */
+  readonly textMessageVerbs?: readonly string[];
 };
 
 const MINUTES = String.raw`:[0-5]\d`;
@@ -97,6 +100,13 @@ const titledName = (titles: string): readonly RegExp[] => [
 const placeAndState = (states: string): RegExp =>
   new RegExp(String.raw`(?<=\p{Lu}\p{Ll}[\p{L}'’.-]*,\s+)${states}(?=[ \t]*(?:\r?\n|$)|[,.;:)\]!?]|\s+\p{Ll})`, "gu");
 
+/**
+ * ショートメッセージで送るキーワード（texting GNPCGS to 333111）。動詞と短い番号の間の大文字は、そのまま打ち込む文字列。
+ * 番号は短縮番号の桁（4 から 6 桁）で、動詞の無い「GDP to 3000」は略語のまま数える。
+ */
+const textMessageKeyword = (verbs: readonly string[]): RegExp =>
+  new RegExp(String.raw`(?<![\p{L}\p{N}_])${oneOf(verbs)}\s+["“']?[A-Z][A-Z0-9]+["”']?\s+to\s+\d{4,6}(?!\d)`, "giu");
+
 /** メールアドレス（OASH-RFI@hhs.gov）。@ の前の大文字は宛先の名前で、略語ではない。 */
 const EMAIL_ADDRESS = /(?<![\p{L}\p{N}._%+-])[\p{L}\p{N}._%+-]+@[\p{L}\p{N}-]+(?:\.[\p{L}\p{N}-]+)+/gu;
 
@@ -113,6 +123,7 @@ const patternsOf = (words: NotationWords): readonly RegExp[] => [
   new RegExp(String.raw`(?<![\p{L}\p{N}_])${oneOf(words.honorifics)}\s+${SURNAME_IN_CAPITALS}`, "gu"),
   capitalHonorific(words.honorifics),
   ...titledName(oneOf(words.titles)),
+  textMessageKeyword(words.textMessageVerbs ?? []),
   EMAIL_ADDRESS,
 ];
 
@@ -129,6 +140,7 @@ export const notAcronymSpansOf = (words: NotationWords): NotAcronymSpans => {
     ...citationKeySpans(text),
     ...dottedNameSpans(text),
     ...letterJoinedNameSpans(text),
+    ...capitalJoinedNameSpans(text),
     ...nameNumeralSpans(text),
     ...loneNumeralSpans(text),
     ...seriesLabelSpans(text),
@@ -152,6 +164,7 @@ export const lexiconNotationOf = (wordsOf: (id: string) => string[]): NotAcronym
     honorifics: wordsOf("honorific"),
     titles: wordsOf("name-title"),
     dateTimeUnits: wordsOf("date-time-unit"),
+    textMessageVerbs: wordsOf("text-message-verb"),
   });
   const names = nameSpansOf({
     legalForms: wordsOf("legal-form"),
@@ -162,6 +175,7 @@ export const lexiconNotationOf = (wordsOf: (id: string) => string[]): NotAcronym
     namePrefixes: wordsOf("name-prefix"),
     streetSuffixes: wordsOf("street-suffix"),
     capitalPhrases: wordsOf("capital-phrase"),
+    productNames: wordsOf("product-name"),
   });
   return (text) => [...notation(text), ...names(text)];
 };
@@ -175,7 +189,7 @@ export const sourceNotAcronymSpans = (source: string, wordsOf: (id: string) => s
 
 /**
  * 数には入れるが指さない略語の範囲。リンク先の題名、文献を引いて始まる注、判例の引用の当事者・裁判所・事件番号、
- * 角括弧の見出しで始まる文献の項目（[FETCH]    WHATWG, "Fetch"）は、書き手が直せない。
+ * 角括弧の見出しで始まる文献の項目（[FETCH]    WHATWG, "Fetch"）、貼り付けたチャットの発言（<jinxer-wm> FIRING: …）は、書き手が直せない。
  */
 export const unreportedAcronymSpans = (
   source: string,
@@ -187,4 +201,5 @@ export const unreportedAcronymSpans = (
   ...citationNoteSpans(source, sentences, wordsOf("citation-author-joiner")),
   ...documentCitationSpans(sentences, source, wordsOf("case-party-joiner")),
   ...referenceEntrySpans(source),
+  ...chatLogSpans(source),
 ];

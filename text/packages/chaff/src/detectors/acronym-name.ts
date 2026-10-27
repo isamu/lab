@@ -26,6 +26,8 @@ export type NameWords = {
   readonly streetSuffixes: readonly string[];
   /** 大文字で書く決まり文句（NOW, THEREFORE、AND/OR）。句のままでだけ外す。OR だけなら Oregon でもある。 */
   readonly capitalPhrases: readonly string[];
+  /** 大文字で終わる製品の名前（Acrobat Reader DC）。名前のまま書いたときだけ外す。DC だけなら略語。 */
+  readonly productNames?: readonly string[];
 };
 
 const EDGE_BEFORE = String.raw`(?<![\p{L}\p{N}_&])`;
@@ -136,6 +138,10 @@ export const streetSuffixSpans = (text: string, suffixes: readonly string[]): Sp
 export const capitalPhraseSpans = (text: string, phrases: readonly string[]): Span[] =>
   phrases.length === 0 ? [] : spansOf(text, new RegExp(`${EDGE_BEFORE}${oneOf(phrases)}${EDGE_AFTER}`, "gu"));
 
+/** 大文字で終わる製品の名前（Adobe Acrobat Reader DC）。日本語の文では仮名が続く（Reader DCのダウンロード）ので、英字と数字だけを語の続きと見る。 */
+export const productNameSpans = (text: string, names: readonly string[]): Span[] =>
+  names.length === 0 ? [] : spansOf(text, new RegExp(String.raw`(?<![A-Za-z0-9_&])${oneOf(names)}(?![A-Za-z0-9_&])`, "gu"));
+
 /** 文の中で、名前の部品と決まり文句として略語から外す大文字を含む範囲。語彙表から一度だけ組み立てて、文ごとに呼ぶ。 */
 export const nameSpansOf =
   (words: NameWords) =>
@@ -149,4 +155,5 @@ export const nameSpansOf =
     ...namePrefixSpans(text, words.namePrefixes),
     ...streetSuffixSpans(text, words.streetSuffixes),
     ...capitalPhraseSpans(text, words.capitalPhrases),
+    ...productNameSpans(text, words.productNames ?? []),
   ];
