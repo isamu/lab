@@ -6,6 +6,7 @@ import { isQuotedAt } from "./bold-label.ts";
 import { endsAsHeadline, markOrSkipped, withoutFootnoteReference, withoutTrailingMarks } from "./list-item-ending.ts";
 import type { BulletList, Detector, Finding, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 import { isLinkLabel } from "./link-label.ts";
+import { itemLayout } from "./list-layout.ts";
 
 /** What an item is made of: a phrase or a sentence (ending), and the word it opens with (head, English only). */
 export type Axis = "ending" | "head";
@@ -32,7 +33,7 @@ const isFiniteVerb = (token: Token): boolean => (token.pos === "VERB" || token.p
 const withoutClosingAside = (tokens: readonly Token[]): readonly Token[] => {
   const last = tokens.findLastIndex((token) => !SKIPPED_AT_END.has(token.pos) || CLOSING_BRACKETS.has(token.surface));
   if (last === -1 || !CLOSING_BRACKETS.has(tokens[last]?.surface ?? "")) return tokens;
-  const open = tokens.findLastIndex((token, index) => index < last && OPENING_BRACKETS.has(token.surface));
+  const open = tokens.findLastIndex((token, index) => index < last && OPENING_BRACKETS.has(token.surface.charAt(0)));
   return open <= 0 ? tokens : tokens.slice(0, open);
 };
 
@@ -80,9 +81,36 @@ const japaneseSentenceEnding = (sentence: Sentence | undefined, headlineEndings:
   return PREDICATE.has(last.pos) ? "sentence" : undefined;
 };
 
-/** Japanese: an item of several sentences is a sentence (ownEnding aside); one sentence is read by its ending. */
+const NAME_PARTS = new Set(["NOUN", "PROPN", "NUM", ...SKIPPED_AT_END]);
+const MIN_NAME_WORDS = 2;
+
+/**
+ * Nouns alone, with no particle or verb between them (消費者庁リコール情報サイト, 記載例（手続補正書）, 聖地巡礼/ラブライブ!シリーズ): the
+ * name of a page, a form or a work, as a link's words are. It reads as a phrase, but its form is not the writer's to align.
+ */
+const isName = (item: readonly Token[]): boolean => {
+  const tokens = withoutClosingAside(item);
+  const words = tokens.filter((token) => !SKIPPED_AT_END.has(token.pos));
+  // A verbal noun last (各種ライブラリ更新, 不具合修正) names an act done: a phrase.
+  const act = words.at(-1)?.features?.["VerbForm"] === "Vnoun";
+  return words.length >= MIN_NAME_WORDS && !act && tokens.every((token) => NAME_PARTS.has(token.pos));
+};
+
+/** The form of an item that is a name: counted with the phrases, never reported. */
+export const NAME = "name";
+
+/** A sentence that ends at a mark a name may hold (ラブライブ!), not at a full stop. */
+const splitInName = (sentence: Sentence): boolean => /[!?！？]$/u.test(sentence.text.trim());
+
+/**
+ * Japanese: an item that is a name is a name; one that opens with a name and goes on in sentences (a term and its gloss,
+ * ステータスメッセージ。ステータスコードの…; an author and a title) is neither form; else an item of several sentences is a
+ * sentence (ownEnding aside), and one sentence is read by its ending.
+ */
 const japaneseEnding = (item: readonly Sentence[], headlineEndings: ReadonlySet<string>): string | undefined => {
   const sentences = ownEnding(item);
+  if (isName(item.flatMap((sentence) => sentence.tokens ?? [])) && item.slice(0, -1).every(splitInName)) return NAME;
+  if (isName(item[0]?.tokens ?? [])) return undefined;
   return sentences.length > 1 ? "sentence" : japaneseSentenceEnding(sentences[0], headlineEndings);
 };
 
@@ -155,9 +183,20 @@ export type HeadContext = {
   readonly nounsInList: ReadonlySet<string>;
   /** Words that end a Japanese item as a headline does after a noun (翻訳あり), from headline-ending. */
   readonly headlineEndings: ReadonlySet<string>;
+  /** Pronouns that open a clause (you, we), from subject-pronoun. */
+  readonly subjectPronouns: ReadonlySet<string>;
+  /** Words that open a prohibition before a noun (No calls), from prohibition-opener. */
+  readonly prohibitionOpeners: ReadonlySet<string>;
 };
 
-export const NO_HEAD_CONTEXT: HeadContext = { instructionVerbs: new Set(), verbOrAdjective: new Set(), nounsInList: new Set(), headlineEndings: new Set() };
+export const NO_HEAD_CONTEXT: HeadContext = {
+  instructionVerbs: new Set(),
+  verbOrAdjective: new Set(),
+  nounsInList: new Set(),
+  headlineEndings: new Set(),
+  subjectPronouns: new Set(),
+  prohibitionOpeners: new Set(),
+};
 
 type HeadReading = "verb" | "noun" | "unjudged" | undefined;
 
@@ -213,16 +252,72 @@ const nounElsewhereInList: HeadReader = (tokens, at, context) => {
   return first?.pos === "VERB" && context.nounsInList.has(first.lemma ?? "") && !opensObject(tokens[at + 1]) ? "unjudged" : undefined;
 };
 
-const HEAD_READERS: readonly HeadReader[] = [subjectContraction, verbOrAdjective, instructionVerb, seriesOfVerbs, nextWord, nounElsewhereInList];
+/** No calls, No food in the lab: a prohibition, as much a rule as "Never feed animals". Neither form. */
+const prohibition: HeadReader = (tokens, at, context) => (context.prohibitionOpeners.has(tokens[at]?.surface.toLowerCase() ?? "") ? "unjudged" : undefined);
+
+const HYPHEN = new Set(["-", "‐"]);
+
+/**
+ * Two words joined by a hyphen at the head: before a noun, a compound adjective (Run-on sentences, Self-managed
+ * installs); before "the", "a" or "your", a compound verb (Double-click the icon). Otherwise either.
+ */
+const hyphenCompound: HeadReader = (tokens, at) => {
+  const [first, hyphen, second, after] = [tokens[at], tokens[at + 1], tokens[at + 2], tokens[at + 3]];
+  if (first === undefined || hyphen === undefined || second === undefined || !HYPHEN.has(hyphen.surface)) return undefined;
+  if (first.span.end !== hyphen.span.start || hyphen.span.end !== second.span.start) return undefined;
+  if (opensObject(after)) return "verb";
+  return after?.pos === "NOUN" ? "noun" : "unjudged";
+};
+
+const HEAD_READERS: readonly HeadReader[] = [
+  subjectContraction,
+  prohibition,
+  hyphenCompound,
+  verbOrAdjective,
+  instructionVerb,
+  seriesOfVerbs,
+  nextWord,
+  nounElsewhereInList,
+];
+
+const headAt = (tokens: readonly Token[], at: number, context: HeadContext): string | undefined => {
+  const first = tokens[at];
+  if (first === undefined) return undefined;
+  const reading = HEAD_READERS.reduce<HeadReading>((found, reader) => found ?? reader(tokens, at, context), undefined);
+  if (reading === undefined) return headFromTag(first);
+  return reading === "unjudged" ? undefined : reading;
+};
+
+/** A subject pronoun as written in running text: "IT" in capitals is an acronym (IT issues), "I" is the pronoun. */
+const isSubjectPronoun = (token: Token, context: HeadContext): boolean =>
+  context.subjectPronouns.has(token.surface.toLowerCase()) && (token.surface.length === 1 || token.surface !== token.surface.toUpperCase());
+
+/**
+ * Where an instruction starts after an opening clause with its own subject and verb, closed by a comma: "Next time you
+ * log in, let the manager save it" opens, as an item, with "let". -1 when there is no such opener.
+ */
+const instructionAfterOpener = (tokens: readonly Token[], at: number, context: HeadContext): number => {
+  const comma = tokens.findIndex((token, index) => index > at && token.surface === ",");
+  const verbFollows = (index: number): boolean => {
+    const next = tokens[index + 1];
+    return next !== undefined && isFiniteVerb(next);
+  };
+  const first = tokens[at];
+  // An item that opens with a subject or a verb (We do X when we …, get …) opens with its main clause.
+  const opensMain = first === undefined || isSubjectPronoun(first, context) || isFiniteVerb(first);
+  const clause = !opensMain && tokens.some((token, index) => index > at && index < comma && isSubjectPronoun(token, context) && verbFollows(index));
+  return clause && headAt(tokens, comma + 1, context) === "verb" ? comma + 1 : -1;
+};
+
+/** A question (Do you have …?, What is …?) opens with its question form, neither an instruction nor a noun phrase. */
+const isQuestion = (sentence: Sentence | undefined): boolean => /\?["'”’)]*$/u.test(sentence?.text.trim() ?? "");
 
 const englishHead = (sentences: readonly Sentence[], context: HeadContext): string | undefined => {
   const tokens = sentences[0]?.tokens ?? [];
   const at = tokens.findIndex((token) => !SKIPPED_AT_END.has(token.pos));
-  const first = tokens[at];
-  if (at === -1 || first === undefined || isTitleCase(sentences[0]?.text ?? "")) return undefined;
-  const reading = HEAD_READERS.reduce<HeadReading>((found, reader) => found ?? reader(tokens, at, context), undefined);
-  if (reading === undefined) return headFromTag(first);
-  return reading === "unjudged" ? undefined : reading;
+  if (at === -1 || isTitleCase(sentences[0]?.text ?? "") || isQuestion(sentences[0])) return undefined;
+  const instruction = instructionAfterOpener(tokens, at, context);
+  return headAt(tokens, instruction === -1 ? at : instruction, context);
 };
 
 /** An item's form on an axis, or undefined when its words do not tell. Japanese items have no head axis (the verb comes last). */
@@ -325,6 +420,8 @@ const headContext = (doc: ProseDocument, items: readonly (readonly Sentence[])[]
   instructionVerbs: wordsOf(doc, "instruction-verb"),
   verbOrAdjective: wordsOf(doc, "verb-or-adjective"),
   headlineEndings: wordsOf(doc, "headline-ending"),
+  subjectPronouns: wordsOf(doc, "subject-pronoun"),
+  prohibitionOpeners: wordsOf(doc, "prohibition-opener"),
   nounsInList: new Set(
     items.flatMap((sentences) =>
       sentences.flatMap((sentence) => (sentence.tokens ?? []).flatMap((token) => (token.pos === "NOUN" && token.lemma !== undefined ? [token.lemma] : []))),
@@ -333,15 +430,24 @@ const headContext = (doc: ProseDocument, items: readonly (readonly Sentence[])[]
 });
 
 const listFindings = (doc: ProseDocument, list: BulletList, limit: number): Finding[] => {
+  const layout = itemLayout(doc.source, list.itemSpans);
+  return layout.groups.flatMap((spans) => groupFindings(doc, spans, layout.heads, limit));
+};
+
+/** A phrase heading a run of items (- 使用する際の注意ポイント): the heading of a flattened nested list, not one of its items. */
+const isGroupLabel = (sentences: readonly Sentence[], language: string): boolean =>
+  [FORMS.ending[0], NAME].includes(formOf("ending", sentences, language) ?? "");
+
+const groupFindings = (doc: ProseDocument, itemSpans: readonly Span[], heads: readonly Span[], limit: number): Finding[] => {
   const noteLeads = (doc.lexicons["list-note-lead"] ?? []).map((entry) => entry.pattern);
   const linkEndings = (doc.lexicons["link-label-ending"] ?? []).map((entry) => entry.pattern);
-  const sentencesOf = list.itemSpans.map((span) => ownSentences(doc, span, noteLeads));
+  const sentencesOf = itemSpans.map((span) => ownSentences(doc, span, noteLeads));
   if (sentencesOf.some(runsOn)) return [];
   const judged = sentencesOf.filter((sentences, index) => {
-    const span = list.itemSpans[index];
+    const span = itemSpans[index];
     if (span === undefined) return false;
     const written = doc.source.slice(span.start, sentences.at(-1)?.span.end ?? span.end);
-    return isJudged(written, sentences) && !isLinkLabel(written, linkEndings);
+    return isJudged(written, sentences) && !isLinkLabel(written, linkEndings) && !(heads.includes(span) && isGroupLabel(sentences, doc.language));
   });
   const context = headContext(doc, judged);
   return axesOf(judged).flatMap((axis) => {
@@ -349,8 +455,8 @@ const listFindings = (doc: ProseDocument, list: BulletList, limit: number): Find
       const form = formOf(axis, sentences, doc.language, context);
       return form === undefined ? [] : [{ sentences, form }];
     });
-    const odd = minorityWithin(items, (item) => item.form === FORMS[axis][0], limit);
-    return odd.map((item) => findingOf(axis, item, odd.length, items.length, limit));
+    const odd = minorityWithin(items, (item) => (item.form === NAME ? FORMS.ending[0] : item.form) === FORMS[axis][0], limit);
+    return odd.filter((item) => item.form !== NAME).map((item) => findingOf(axis, item, odd.length, items.length, limit));
   });
 };
 

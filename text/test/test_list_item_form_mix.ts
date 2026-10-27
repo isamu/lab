@@ -1,12 +1,13 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { formOf, itemOwnEnd, itemSentences, NO_HEAD_CONTEXT } from "../packages/chaff/src/detectors/list-parallel.ts";
+import { itemLayout } from "../packages/chaff/src/detectors/list-layout.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import type { Finding, LanguageAdapter } from "../packages/chaff/src/plugin.ts";
+import type { Finding, LanguageAdapter, Span } from "../packages/chaff/src/plugin.ts";
 
 // list-item-form-mix: one list whose items do not share a form. Every example is self-written, or shortened from 政府広報オンライン
 // (https://www.gov-online.go.jp/, PDL-1.0) where noted.
@@ -53,7 +54,8 @@ describe("formOf: how an item ends (Japanese)", () => {
     ["大丈夫", "phrase"],
     ["書類を出すこと。期限を守ること。", "sentence"],
     ["手数料の支払い", "phrase"],
-    ["健康診断書（3か月以内に受診したものに限る）", "phrase"],
+    ["健康診断書（3か月以内に受診したものに限る）", "name"],
+    ["健康診断書の写し（3か月以内に受診したものに限る）", "phrase"],
     ["書類を出す（郵送でもよい）", "sentence"],
     ["東京や大阪など", undefined],
   ];
@@ -426,4 +428,127 @@ describe("list-item-form-mix: a title split by its own mark, and items that are 
     assert.deepEqual(flagged(en, list("Install the command-line tool", "Create an account on the website", "The configuration file in your home folder")), [
       "head-noun:The configuration file in your home folder",
     ]));
+});
+
+describe("list-item-form-mix: names, glossed terms and flattened groups (ja)", () => {
+  it("counts a name (a page or a form, nouns alone) with the phrases but never reports it", () => {
+    const steps = ["申請書を窓口で受け取る", "必要事項を書き込んで提出する", "控えを大切に保管する"];
+    assert.deepEqual(flagged(ja, list(...steps.slice(0, 2), "申請書様式（市ホームページ）", ...steps.slice(2))), []);
+    assert.deepEqual(flagged(ja, list(...steps, "市民課の窓口案内")), ["ending-phrase:市民課の窓口案内"]);
+  });
+
+  it("still reports a compound that ends in a verbal noun (各種ライブラリ更新): an act, not a name", () =>
+    assert.deepEqual(flagged(ja, list("画面の表示を速くした", "設定を保存できるようにした", "検索の結果を並べ替えられるようにした", "各種ライブラリ更新")), [
+      "ending-phrase:各種ライブラリ更新",
+    ]));
+
+  it("does not read a term followed by its gloss as a sentence", () => {
+    const parts = ["使う言葉の取り決め。", "送り手の名前。", "受け手の名前。"];
+    assert.deepEqual(flagged(ja, list(...parts, "本文長。本文が何文字あるかを示します。")), []);
+    assert.deepEqual(flagged(ja, list(...parts, "本文が何文字あるかを示します。")), ["ending-sentence:本文が何文字あるかを示します。"]);
+  });
+
+  it("compares the steps under each label of a flattened nested list, and not the labels", () => {
+    const grouped = [
+      "# 題",
+      "",
+      "- 台所での注意",
+      "",
+      "- 火を使うときはそばを離れない",
+      "- 鍋の取っ手を内側に向けておく",
+      "- 包丁は使ったらすぐにしまう",
+      "",
+      "- 浴室での注意",
+      "",
+      "- 入浴の前に浴室を暖めておく",
+      "- 湯の温度を手で確かめる",
+      "- 床が濡れていたら拭いておく",
+      "",
+    ].join("\n");
+    assert.deepEqual(flagged(ja, grouped), []);
+    assert.deepEqual(flagged(ja, grouped.replace("- 湯の温度を手で確かめる", "- 湯の温度の確認")), ["ending-phrase:湯の温度の確認"]);
+  });
+
+  it("still compares the whole list when only one lone item leads into a run", () => {
+    const leadIn = [
+      "# 題",
+      "",
+      "- 荷物は必ず手元に置くこと。機内での決まりは次のとおりです。",
+      "",
+      "- 座席での充電は禁止",
+      "- 通路に荷物を置かない",
+      "",
+      "- 離着陸の間は電源を切ってください。",
+      "- 非常口の前には荷物を置かないでください。",
+      "- 棚に入れる荷物は一人一つまでです。",
+      "",
+    ].join("\n");
+    assert.deepEqual(flagged(ja, leadIn), ["ending-phrase:座席での充電は禁止"]);
+  });
+});
+
+describe("itemLayout: groups and heads from the blank lines between items", () => {
+  const spansOf = (source: string): Span[] => buildDocument("t.md", source, en).lists[0]?.itemSpans.slice() ?? [];
+  const texts = (source: string, spans: readonly Span[]): string[] => spans.map((span) => source.slice(span.start, span.end).trim());
+
+  it("splits at two or more lone items before a run", () => {
+    const source = "- Kitchen\n\n- one\n- two\n\n- Bathroom\n\n- three\n- four\n";
+    const layout = itemLayout(source, spansOf(source));
+    assert.deepEqual(
+      layout.groups.map((group) => texts(source, group)),
+      [
+        ["- one", "- two"],
+        ["- three", "- four"],
+      ],
+    );
+    assert.deepEqual(texts(source, layout.heads), ["- Kitchen", "- Bathroom"]);
+  });
+
+  it("keeps a tight list, a loose list and a list with one lead-in whole", () => {
+    ["- a\n- b\n- c\n", "- a\n\n- b\n\n- c\n", "- lead\n\n- a\n- b\n\n- c\n"].forEach((source) => {
+      const spans = spansOf(source);
+      assert.deepEqual(itemLayout(source, spans).groups, [spans]);
+    });
+  });
+});
+
+describe("list-item-form-mix: openings that are neither form (en)", () => {
+  const rules = ["Buy something every couple of hours.", "Give up the big table.", "Leave during the lunch rush."];
+
+  it("does not read a prohibition (No calls.) as a noun phrase", () => {
+    assert.deepEqual(flagged(en, list(...rules, "No calls.")), []);
+    assert.deepEqual(flagged(en, list(...rules, "The calls go outside.")), ["head-noun:The calls go outside."]);
+  });
+
+  it("reads an instruction after an opening clause with its own subject (Next time you …, let …)", () => {
+    const steps = ["Pick one app and install it.", "Choose a strong master password.", "Start with your email account."];
+    assert.deepEqual(flagged(en, list(...steps, "Next time you sign in, let the app save the password.")), []);
+    assert.deepEqual(flagged(en, list(...steps, "Next time you sign in, the app will offer to save it.")), [
+      "head-noun:Next time you sign in, the app will offer to save it.",
+    ]);
+  });
+
+  it("does not take a clause after the main verb for an opener (We show X when we …, get …)", () =>
+    assert.deepEqual(
+      flagged(
+        en,
+        list(
+          "We show care when we listen first.",
+          "We show trust when we share our plans.",
+          "We show speed when we ship the smallest useful thing, get feedback and improve it.",
+        ),
+      ),
+      [],
+    ));
+
+  it("does not read the opening word of a question", () => {
+    assert.deepEqual(flagged(en, list("What training do crews need?", "Which records are kept today?", "Do you have any other comments?")), []);
+    assert.deepEqual(flagged(en, list("Faster downloads", "Smaller files", "Review the settings page")), ["head-verb:Review the settings page"]);
+  });
+
+  it("reads a hyphenated head before a noun as a compound adjective, and before an object as a verb", () => {
+    const avoid = ["Passive voice", "Technical jargon and unfamiliar terms", "References to shape or color"];
+    assert.deepEqual(flagged(en, list(...avoid, "Run-on sentences and long paragraphs")), []);
+    assert.deepEqual(flagged(en, list(...avoid, "Double-click the icon to open it")), ["head-verb:Double-click the icon to open it"]);
+  });
 });

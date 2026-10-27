@@ -11,7 +11,8 @@ const KINDS: readonly Kind[] = [
   { id: "period", usual: "。", western: "．" },
 ];
 
-const MARKS = /[、，。．]/gu;
+/** 日本語の語と語の間の半角の「,」（自家用自動車,社用車）も、読点を「，」の側で書いたものと数える。 */
+const MARKS = /[、，。．]|(?<=[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ー]),(?=[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ー])/gu;
 
 const DIGIT = /[\d０-９]/u;
 
@@ -95,6 +96,25 @@ const isItemReference = ({ text, at }: Place): boolean => DIGIT.test(text.charAt
 
 const isInsideNumber = (text: string, at: number): boolean => DIGIT.test(text.charAt(at - 1)) && DIGIT.test(text.charAt(at + 1));
 
+/**
+ * 符号（特許の図の符号や記号）。数字に一、二文字の英字を添えたもの（３０ａ、１１ｅ、Ｓ１）か、一、二文字の英字だけ（ａ、ｂ）。
+ * 「Word，Excel」のような語は符号ではない。
+ */
+const SIGN = /^(?:[A-Za-zＡ-Ｚａ-ｚ]{0,2}[\d０-９]{1,4}[A-Za-zＡ-Ｚａ-ｚ]{0,2}|[A-Za-zＡ-Ｚａ-ｚ]{1,2})$/u;
+const SIGN_BEFORE = /(?:^|[^\dA-Za-z０-９Ａ-Ｚａ-ｚ])([\dA-Za-z０-９Ａ-Ｚａ-ｚ]+)(?:[（(][^（）()]{0,20}[）)])?$/u;
+const SIGN_AFTER = /^([\dA-Za-z０-９Ａ-Ｚａ-ｚ]+)(?![\dA-Za-z０-９Ａ-Ｚａ-ｚ])/u;
+const SIGN_REACH = 32;
+
+/**
+ * 符号を並べる「，」（側壁９ｃ，９ｃ間、ａ，ｂ，ｃ、端部１１ｃ（引き出し口側），１１ｄ）。特許の公報は本文を「、」で書き、
+ * 符号の並びだけを「，」で区切る。前の符号の後ろに括弧の添え書きがあってもよい。
+ */
+const isBetweenSigns = (text: string, at: number): boolean => {
+  const before = SIGN_BEFORE.exec(text.slice(Math.max(0, at - SIGN_REACH), at))?.[1];
+  const after = SIGN_AFTER.exec(text.slice(at + 1, at + 1 + SIGN_REACH))?.[1];
+  return before !== undefined && after !== undefined && SIGN.test(before) && SIGN.test(after);
+};
+
 const isLabelPeriod = (place: Place, kana: ReadonlySet<string>): boolean => {
   const { text, at } = place;
   const beforeNumber = text.slice(Math.max(0, at - LIST_NUMBER_REACH), at);
@@ -116,7 +136,7 @@ const isLabelPeriod = (place: Place, kana: ReadonlySet<string>): boolean => {
  */
 const isNotPunctuation = (place: Place, mark: string, kana: ReadonlySet<string>): boolean => {
   if (mark === "．") return isInsideNumber(place.text, place.at) || isLabelPeriod(place, kana);
-  if (mark === "，") return isInsideNumber(place.text, place.at);
+  if (mark === "，") return isInsideNumber(place.text, place.at) || isBetweenSigns(place.text, place.at);
   return false;
 };
 
@@ -135,8 +155,8 @@ export const marksIn = (sentence: Sentence, source: string, exceptions: MarkExce
     })
     .filter((match) => !isWithinAny(skipped, { start: match.index, end: match.index }))
     .map((match) => {
-      const western = match[0] === "，" || match[0] === "．";
-      const kind = match[0] === "、" || match[0] === "，" ? "comma" : "period";
+      const western = match[0] !== "、" && match[0] !== "。";
+      const kind = match[0] === "、" || match[0] === "，" || match[0] === "," ? "comma" : "period";
       return { kind, western, mark: match[0], offset: sentence.span.start + match.index };
     });
 };
