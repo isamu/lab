@@ -4,6 +4,8 @@
 # 同じ shard の中で PR の chaff と base（PR の向き先）の chaff を同じ文書に走らせ、差だけを出す。
 # main にもう入っていてまだ公開していない修正は両方に出るので、この PR のものとしては数えない。
 # 再配布できない文書は shard の中で一度だけ取りに行き、.cache を二つの実行で使い回す（artifact には載せない）。
+# 時間のほとんどは chaff を文書ごとに二度走らせる分（文書の取得と install・build は小さい）。
+# 遅い shard が timeout に近づいたら、timeout を延ばさず SHARD_COUNT と matrix を増やす。
 name: chaff corpus check
 
 on:
@@ -20,7 +22,7 @@ concurrency:
 
 env:
   # matrix の shard と揃える。matrix は env から作れない。
-  SHARD_COUNT: "5"
+  SHARD_COUNT: "12"
 
 jobs:
   run:
@@ -31,7 +33,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5]
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     steps:
       - name: checkout this PR
         uses: actions/checkout@v7
@@ -54,14 +56,11 @@ jobs:
           path: corpus
           persist-credentials: false
 
+      # yarn の cache は付けない。PR の ref に保存した cache は他の PR から読めず、PR ごとに大きな entry が積もって
+      # main の chaff-ci が保存する node_modules の cache を追い出す。cache がなくても install は短い。
       - uses: actions/setup-node@v7
         with:
           node-version: "24"
-          cache: yarn
-          cache-dependency-path: |
-            pr/text/yarn.lock
-            base/text/yarn.lock
-            corpus/yarn.lock
 
       - name: build both chaffs
         run: |
@@ -74,18 +73,37 @@ jobs:
         working-directory: corpus
         run: yarn install --frozen-lockfile
 
+      # 再配布できない文書の取得分を shard ごとに残す。key は文書の sha256 から作るので、文書が変われば新しい cache になる
+      # （run.ts は sha256 が合う cache しか使わない）。isamu/chaff-corpus の check.yml と同じ作り。
+      - name: key the fetched texts
+        id: texts
+        working-directory: corpus
+        run: |
+          key=$(grep -rl --include='*.yaml' '^redistribute: false' docs | LC_ALL=C sort | xargs grep -h '^sha256:' | sha256sum | cut -c1-16)
+          echo "key=$key" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v6
+        with:
+          path: corpus/.cache
+          key: chaff-corpus-texts-${{ env.SHARD_COUNT }}-${{ matrix.shard }}-${{ steps.texts.outputs.key }}
+          restore-keys: chaff-corpus-texts-${{ env.SHARD_COUNT }}-${{ matrix.shard }}-
+
       - name: run the corpus with both chaffs
         working-directory: corpus
         env:
           SHARD: ${{ matrix.shard }}
         run: |
           set -uo pipefail
-          only=$(find docs -name '*.yaml' | LC_ALL=C sort | awk -v k="$SHARD" -v n="$SHARD_COUNT" 'NR % n == k % n' | xargs -n1 basename -s .yaml | paste -sd, -)
           mkdir -p ../reports
           # PR を先に走らせて取得した文書を .cache に置き、base はそれを読む。exit 1（失敗や後退）も報告の材料なので止めない。
           # GITHUB_STEP_SUMMARY を空にして、runner が shard ごとの全体の表を summary に書かないようにする。
-          GITHUB_STEP_SUMMARY='' node scripts/run.ts --chaff ../pr/text --only "$only" --jobs 4 > "../reports/pr-$SHARD.md" || true
-          GITHUB_STEP_SUMMARY='' node scripts/run.ts --chaff ../base/text --only "$only" --jobs 4 --offline > "../reports/base-$SHARD.md" || true
+          # --shard は文書の大きさで重みを付けて分けるので、shard の所要時間がそろう。PR と base は同じ corpus から同じ分け方になる。
+          start=$SECONDS
+          GITHUB_STEP_SUMMARY='' node scripts/run.ts --chaff ../pr/text --shard "$SHARD/$SHARD_COUNT" --jobs 4 > "../reports/pr-$SHARD.md" || true
+          echo "shard $SHARD: the run with the PR chaff took $((SECONDS - start))s"
+          start=$SECONDS
+          GITHUB_STEP_SUMMARY='' node scripts/run.ts --chaff ../base/text --shard "$SHARD/$SHARD_COUNT" --jobs 4 --offline > "../reports/base-$SHARD.md" || true
+          echo "shard $SHARD: the run with the base chaff took $((SECONDS - start))s"
           # 片方でも chaff が動かなければ、差を取ると全部が差に見える。その shard は比べずに理由だけ残す。
           for side in pr base; do
             if ! head -n 1 "../reports/$side-$SHARD.md" | grep -q '^# chaff-corpus:'; then
