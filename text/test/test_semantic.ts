@@ -142,8 +142,8 @@ describe("checks.yaml", () => {
 describe("L4 の rule 定義", () => {
   const l4 = loadRules("ja").filter((rule) => rule.layer === "L4");
 
-  it("3 本ある", () => {
-    assert.equal(l4.length, 3);
+  it("4 本ある", () => {
+    assert.equal(l4.length, 4);
   });
 
   it("すべて what_to_check を持つ", () => {

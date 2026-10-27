@@ -32,11 +32,11 @@ The list `npx chaffjs --help` prints, as a table.
 | `npx chaffjs facts <file>` | Lists the facts `compare` checks, as an inventory to keep before a rewrite |
 | `npx chaffjs ai-score <file>...` | A quick AI-likeness score, low, medium or high: signs common in generated text, compared with human documents of the genre. Not a verdict on whether AI wrote it |
 | `npx chaffjs outline <file> [<after>]` | Shows the outline, measures its shape (headings, average section length, text in lists, bold) and scores its structure against human articles; two files side by side |
-| `npx chaffjs fix-plan <file>` | Prints a plan for whoever rewrites the file: the findings by rule, how to rewrite each, and the checks to run after. `--json` gives it as JSON, `--depth` sets how deep the rewrite may go |
+| `npx chaffjs fix-plan <file>` | Prints a plan for whoever rewrites the file: the findings by rule, how to rewrite each, and the checks to run after. `--json` gives it as JSON, `--depth` sets how deep the rewrite may go, `--all-ai-signs` runs every AI-likeness rule and says when to stop, `--before <original>` lists what the rewrite raised |
 | `npx chaffjs grade <items.jsonl>` | Grades a JSONL file of model outputs: finding rates, facts, quotations, pass or fail. Sends nothing. `--out <results.jsonl>` writes one result per output, `--json` prints the summary as JSON |
 | `npx chaffjs skill` | Installs the Claude Code skill |
 | `npx chaffjs feedback <file> --rule <rule>` | Drafts a report of a wrong or missed finding |
-| `npx chaffjs test <file\|dir>...` | Also runs the checks that read meaning. Needs an API key |
+| `npx chaffjs test <file\|dir>...` | Also runs the checks that read meaning. Needs an API key. `--checks ai-tells` asks the AI-likeness questions chaff ships |
 | `npx chaffjs eval <dir>` | Re-measures the limits on your own documents |
 
 These options go with a check.
@@ -491,8 +491,8 @@ Three signs make "medium" and five make "high". It does not say whether AI wrote
 <!-- chaff-screen: rewrite -->
 ```
 $ npx chaffjs ai-score before.md after.md --compact
-before.md: ai-score high 7/29 announcing-opener bold-emphasis closing-cliche colon-lead-in contrast-framing structure:bold-labels ai-generated-composite:strict
-after.md: ai-score low 1/28 structure:short-sections
+before.md: ai-score high 7/31 announcing-opener bold-emphasis closing-cliche colon-lead-in contrast-framing structure:bold-labels ai-generated-composite:strict
+after.md: ai-score low 1/30 structure:short-sections
 ```
 
 `before.md` and `after.md` are the articles the outline was measured on above. Each file gets one line: the level, the signs out of those compared, and the signs that counted.
@@ -526,6 +526,18 @@ It ends with the `chaff`, `compare` and `outline` commands to run on the rewrite
 The same file gives the same plan every time, and nothing is sent anywhere.
 The page [Making AI-sounding text sound human](./ai-sounding) has an example that goes from the plan to the checks.
 
+Two options turn the plan into a loop that removes every AI tell ([the loop](./ai-sounding#removing-every-ai-tell)):
+
+```bash
+npx chaffjs fix-plan article.md --all-ai-signs --json                    # every AI-likeness rule, the ai-score, when to stop
+npx chaffjs fix-plan after.md --all-ai-signs --before article.md --json  # the rewrite against the original
+```
+
+`--all-ai-signs` runs every AI-likeness rule, also those the genre turns off or leaves out, at the levels `ai-score`
+measures at. The plan then carries `aiScore` (the level and the signs), `aiRules` (the AI-likeness rules with findings)
+and `stop` (when to stop), and its last constraint loops until `stop` holds, three passes at most.
+`--before <original>` adds `since`: the original's score, and every rule, of any kind, with more findings than in the original.
+
 ## Checks that read meaning
 
 `chaff test` has an AI read what a machine cannot judge. It needs an API key. Without one it runs the machine
@@ -543,21 +555,29 @@ passages. `risk-disclosure` does not even ask when a heading already names the r
 | `risk-disclosure` | whether a proposal states its risks | nothing, when a heading names a risk section |
 | `empty-conclusion` | whether the closing only summarises the body | only when the last section has no number, code or link the body did not have |
 | `unsourced-number` | whether a number claiming an effect has a source | only when a number and an effect word share a sentence with no source |
+| `generic-opening` | whether the opening starts from a generic problem rather than the concrete background (who, what was built, what happened) | the first three sentences only, and nothing when the first sentence states a number |
 
 The same question asked twice is answered from `.chaff-cache/`, so running it on every CI build is not billed again.
+
+`--checks <file>` reads the team's checks from another file than `checks.yaml`. `--checks ai-tells` asks the
+questions chaff ships about the AI tells no rule can see: invented specifics, an abstract opening, a denial of what
+nobody said, a moral at the end, a benefits list that mirrors the problems, a claim restated, inflated significance,
+generic content, a request recast as the reader's benefit, the same thing renamed. Each is asked in the document's
+language; a check in a checks file may say which languages it is for with `languages:`.
 
 `--dry-run` shows what would be sent, without an API key and without calling the API:
 
 ```
 $ npx chaffjs test proposal.md --genre business/proposal --dry-run
 …
-proposal.md   sends 2 passages out of 4 sentences (the API was not called)
+proposal.md   sends 3 passages out of 4 sentences (the API was not called)
 
       1 to send  Empty conclusion  (narrowed by machine)
+      1 to send  Opening on a generic problem  (narrowed by machine)
       1 to send  No risk disclosed  (narrowed by machine)
       0 to send  Number without a source  (narrowed by machine)
 …
-  2 passages in all would be sent. With --dry-run the API was not called.
+  3 passages in all would be sent. With --dry-run the API was not called.
   Sent to: anthropic / claude-opus-5 (no credentials)
 ```
 
