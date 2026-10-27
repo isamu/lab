@@ -6,6 +6,7 @@ import { capitalisedGuessedVerbsAsNames, isOrdinaryWord, lowercasedAt, properNou
 import { isStativeParticiple, stativeVocabulary } from "./stative-participle.ts";
 import { isCapitalisedOrdinaryWord, isEmphasisedAdverb, isEmphasisedWord, isHyphenated, standsAlone } from "./emphasis.ts";
 import { gerundFeatures } from "./gerund.ts";
+import { namesReadAsVerbs, rereadAsNames, type NameReadings } from "./names-read-as-verbs.ts";
 import { winkLexiconWords, winkPosTagger, winkWordNet } from "./wink-modules.ts";
 
 /** wink は CommonJS で、辞書を同期に持つ。初期化は 130 ms ほど。 */
@@ -164,6 +165,12 @@ const OBJECT_OR_POSSESSIVE = wordsOf("object-or-possessive");
 
 const POSSESSIVE_TAG = new Set(["PRP$", "WP$"]);
 
+const NAME_READINGS: NameReadings = {
+  contractionHeads: wordsOf("contraction-head"),
+  opensNounPhrase: (word) =>
+    ARTICLES.has(word.value.toLowerCase()) || word.pos === "POS" || (word.pos === "PRP$" && !OBJECT_OR_POSSESSIVE.has(word.value.toLowerCase())),
+};
+
 type Features = { features?: Readonly<Record<string, string>> };
 
 /** 冠詞（PronType=Art）と所有の語（Poss=Yes）は、名詞の前に一つしか立たない。二つ並ぶ our the platform は書き損じ。 */
@@ -306,10 +313,35 @@ const withSentenceInitialCase = (tagger: Tagger, text: string, entries: readonly
   return lowered === undefined ? entries : rereadAt(entries, at, tagged(tagger, lowered));
 };
 
+/** A word the tagger's vocabulary does not hold. The tagger reads such capitals as a name, as it reads UN. */
+const UNKNOWN_NAME = "XQZ";
+
+/** text with each word at positions replaced by UNKNOWN_NAME, found in order as locate finds them. */
+const withUnknownNamesAt = (text: string, entries: readonly Tagged[], positions: readonly number[]): string => {
+  const parts: string[] = [];
+  let cursor = 0;
+  entries.forEach((entry, at) => {
+    const start = text.indexOf(entry.value, cursor);
+    if (start === -1) return;
+    parts.push(text.slice(cursor, start), positions.includes(at) ? UNKNOWN_NAME : entry.value);
+    cursor = start + entry.value.length;
+  });
+  parts.push(text.slice(cursor));
+  return parts.join("");
+};
+
+/** Names the tagger read as a verb or a pronoun (AI, the US): the sentence is read again with a name the tagger does not know in their place. */
+const withNamesReread = (tagger: Tagger, text: string, entries: readonly Tagged[]): readonly Tagged[] => {
+  const positions = namesReadAsVerbs(entries, NAME_READINGS);
+  if (positions.length === 0) return entries;
+  return rereadAsNames(entries, tagged(tagger, withUnknownNamesAt(text, entries, positions)), positions, UNKNOWN_NAME);
+};
+
 export const tokenize = (text: string): Token[] | undefined => {
   const tagger = state.ready;
   if (tagger === undefined) return undefined;
   // 語は解析させた字（don't）で返す。語彙表の語と同じ字で比べられる。span は本文を指したまま。
   const words = straightApostrophes(blankLongRuns(text, RUN_LIMIT));
-  return locate(words, capitalisedGuessedVerbsAsNames(withSentenceInitialCase(tagger, words, tagged(tagger, words)), state.vocabulary, state.senses));
+  const read = withNamesReread(tagger, words, tagged(tagger, words));
+  return locate(words, capitalisedGuessedVerbsAsNames(withSentenceInitialCase(tagger, words, read), state.vocabulary, state.senses));
 };
