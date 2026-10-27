@@ -2,6 +2,65 @@
 
 Newest first.
 
+## 0.39.0 — 2026-10-28
+
+This release deepens the AI-likeness checks. Four new rules report shapes common in generated text, the composite
+reads more signals and needs only two in a blog post, and `fix-plan --all-ai-signs` with `chaff test --checks ai-tells`
+makes "remove every AI tell" a loop a machine can check. The rest again comes from judging real documents in
+isamu/chaff-corpus: US court opinions, the Code of Federal Regulations, Federal Register pages, Japanese statutes and
+securities reports, interviews, blogs and emails. False positives found there are fixed rule by rule.
+
+### New rules
+
+- email-stock-courtesy reports stacked stock courtesies in an English email ("I hope this email finds you well")
+  (#1932).
+- closing-exhortation reports a closing that cheers the reader on (「ぜひ〜してみてください」, "You've got this")
+  (#1943).
+- cold-open reports an opening that piles a bare wish, a quoted echo of the previous sentence and a teaser (#2099).
+- unprompted-denial reports sentences that deny a premise nobody stated (「〜の話ではありません」, "This isn't about
+  tooling.") (#2103).
+
+### AI-likeness
+
+- ai-generated-composite reads five more AI-tells signals (over-general-claim, q-fragment-answer, closing-exhortation,
+  unfilled-placeholder, bold-emphasis) (#2100), and reports two signals together in a blog post (#2143).
+- ai-tell gains era words, honesty markers and Japanese closings and metaphors that human documents lack (#1939);
+  announcing-opener counts guide openers and honesty markers (#1936); contrast-framing reads wider frames and counts a
+  share of sentences (#1941); ai-structure counts the textbook proposal outline in business documents (#1942);
+  rule-of-three runs in business documents (#1944); colon-lead-in checks English too, at its own higher limit (#2096);
+  closing-cliche catches send-offs in the last paragraph (#2129).
+- padded-intro knows generic-problem openers, and `chaff test` gains the `generic-opening` question (#2102).
+- Fewer false findings: ai-tell holds honesty inside a Japanese sentence and drops the phrases human blog and business
+  documents use as much (#2135, #2139); contrast-framing drops three false-positive shapes and re-places its floor by
+  measurement (#2128); colon-lead-in counts lead-ins section after section, not bold noun labels (#2130); rule-of-three
+  (#2154), bold-emphasis (#2111), over-general-claim (#2112), unqualified-superlative, with its minimum placed by
+  measurement (#2116, #2132), section-length-uniformity (#2157), no-em-dash (#2153), preamble-length (#2160).
+
+### fix-plan and chaff test
+
+- `fix-plan --all-ai-signs` runs every AI-likeness rule, also those the genre turns off, and adds the `ai-score` level
+  and when to stop; `--before <original>` lists every rule the rewrite raised; `chaff test --checks ai-tells` asks the
+  bundled questions about the tells only a reader can judge (#2101).
+
+### Rules
+
+- Fewer false findings on real documents:
+  - Japanese wording: max-kanji-continuous (#2105, #2146), no-mixed-desumasu (#2118, #2159), orthographic-variant
+    (#2121), kutoten-consistency (#2125), comparative-without-baseline (#2133), topic-predicate-distance (#2134, #2144),
+    no-doubled-joshi (#2165), fullwidth-alnum-consistency (#2162), ngram-repetition (#2136, #2155).
+  - Lists, headings and sections: list-item-form-mix (#2126), duplicate-heading (#2122), heading-level-skip (#2124),
+    heading-numbering-mix (#2150), max-sentence-length (#2119).
+  - References and names: dangling-reference reads other works' units in opinions, reference lists and excerpts
+    (#2115); name-variant (#2151); proper-noun-density (#2145); concrete-evidence-density (#2148).
+  - English wording: undefined-acronym, with its limit re-measured (#2109, #2156, #2161), unknown-word (#2110, #2158),
+    all-caps-shouting (#2106), oxford-comma-consistency (#2147), hyphen-as-dash (#2163), email-greeting-closing
+    (#2107); lang-en reads AI, the US and other names as names, not verbs (#2140).
+
+### HTML and tools
+
+- HTML pages: a help box shown on hover (federalregister.gov Document Headings) is dropped (#2114).
+- The corpus check finishes within its timeout (#2138).
+
 ## 0.38.0 — 2026-10-22
 
 Most of this release again comes from judging real documents in isamu/chaff-corpus: US statutes and court opinions,
