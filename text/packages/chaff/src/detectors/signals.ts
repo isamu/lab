@@ -1,6 +1,7 @@
 import { proseText } from "../measure.ts";
 import { dateSpans, wordsOf } from "./structure.ts";
 import { lexiconNotationOf, sourceNotAcronymSpans, unreportedAcronymSpans, type NotAcronymSpans } from "./acronym-context.ts";
+import { titledCodeSpans } from "./titled-code-citation.ts";
 import { abbreviates, expansionAt, termEntryAcronyms, type DefinitionWords, type ExpandedAt } from "./acronym-expansion.ts";
 import { isExplained } from "./acronym-compound.ts";
 import { statedAcronyms } from "./acronym-definition.ts";
@@ -11,7 +12,7 @@ import { conjugatedForms } from "./conjugated-form.ts";
 import { knownByDocument } from "./acronym-known.ts";
 import { explainedInText, headingsSpellingOut } from "./acronym-gloss.ts";
 import { nameSpans } from "../team-names.ts";
-import { DASH, introducesList } from "./lead-in-dash.ts";
+import { DASH, introducesList, opensLine } from "./lead-in-dash.ts";
 import type { Detector, Finding, ProseDocument, Sentence } from "../plugin.ts";
 
 const PER = 1000;
@@ -238,10 +239,10 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
     explained.set(word, known);
     return known;
   };
-  const counted = outsideSpans(
-    acronymsOf(doc, notationOf(doc)),
-    sourceNotAcronymSpans(doc.source, (id) => patternsOf(doc, id)),
-  );
+  const counted = outsideSpans(acronymsOf(doc, notationOf(doc)), [
+    ...sourceNotAcronymSpans(doc.source, (id) => patternsOf(doc, id)),
+    ...titledCodeSpans(doc.source, patternsOf(doc, "citation-series")),
+  ]);
   const hits = outsideSpans(
     counted,
     unreportedAcronymSpans(doc.source, doc.sentences, doc.links, (id) => patternsOf(doc, id)),
@@ -267,7 +268,7 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
  * 日本語の組版ではそもそも扱いが難しい。どちらが正しいかは severity の言語別指定で分ける。spec §12.4。
  */
 export const dashDensity: Detector = (doc, options): Finding[] => {
-  const hits = findIn(doc, DASH).filter((hit) => !introducesList(doc.source, hit.offset));
+  const hits = findIn(doc, DASH).filter((hit) => !introducesList(doc.source, hit.offset) && !opensLine(doc.source, hit.offset));
   const first = hits[0];
   const rate = density(doc, hits.length);
   if (wordsOf(doc) < MIN_DOCUMENT_LENGTH[doc.lengthUnit] || first === undefined || rate <= options.limit) return [];

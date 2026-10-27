@@ -35,8 +35,29 @@ export const isDeclaration = (sentence: Sentence, ending: readonly Token[], part
   return ending.some((token) => token.pos === "VERB") && hasParticle(tokens, objects) && !hasParticle(tokens, subjects);
 };
 
-/** The next sentence of the same paragraph opens with a word that takes up the scene this one set (…送れない。そんなときの…). */
+/** The most tokens an opener in takeup-opener spans (これ/だけ). */
+const OPENER_TOKENS_MAX = 3;
+
+/** The words a sentence opens with, as whole tokens: そんな, then これ, これだけ, これだけで for これ/だけ/で. */
+const openingWords = (tokens: readonly Token[]): Set<string> =>
+  new Set(
+    tokens.map((_, index) =>
+      tokens
+        .slice(0, index + 1)
+        .map((token) => token.surface)
+        .join(""),
+    ),
+  );
+
+/** The next sentence of the same paragraph opens with words that take up the scene or act this one set (…送れない。そんなときの…, …と書いて送る。これだけで…). */
 export const isTakenUp = (next: Sentence | undefined, between: string, openers: readonly LexiconEntry[]): boolean => {
-  const first = next?.tokens?.[0]?.surface;
-  return first !== undefined && between.trim() === "" && !between.includes("\n") && openers.some((opener) => opener.pattern === first);
+  const tokens = next?.tokens ?? [];
+  if (tokens.length === 0 || between.trim() !== "" || between.includes("\n")) return false;
+  const opening = openingWords(tokens.slice(0, OPENER_TOKENS_MAX));
+  return openers.some((opener) => opening.has(opener.pattern));
 };
+
+const EXCLAMATION = /[！!][\s」』）)]*$/u;
+
+/** A sentence closed by an exclamation mark (わかるかっ！！！): a cry in the writer's voice, said plainly in either register. */
+export const isExclamation = (sentence: Sentence): boolean => EXCLAMATION.test(sentence.text);

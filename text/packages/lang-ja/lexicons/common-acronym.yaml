@@ -56,6 +56,11 @@ entries:
   - pattern: JPEG
   - pattern: GIF
   - pattern: SVG
+  # 文書の形式の名前。PDF や CSV と同じく、ダウンロードの一覧（DOCX形式）で説明なしに書く。DOC と PPT は別の略語にもなるので入れない。
+  - pattern: DOCX
+  - pattern: XLSX
+  - pattern: PPTX
+  - pattern: XLS
   - pattern: QR
   - pattern: GPS
   - pattern: SNS

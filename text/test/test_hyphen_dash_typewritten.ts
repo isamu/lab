@@ -32,8 +32,9 @@ describe("hyphen-as-dash: a typewritten document", () => {
     assert.deepEqual(findingsOf(SPACED, "a.txt"), []);
   });
 
+  // The quoted title ("Notes - Living Standard") is copied as published, so only the sentence's own hyphen is reported.
   it("the same text as Markdown, or with a curly quote, is still read", () => {
-    assert.equal(findingsOf(SPACED, "a.md").length, 2);
-    assert.equal(findingsOf(`${SPACED}\n   The “notes” stay.\n`, "a.txt").length, 2);
+    assert.deepEqual(findingsOf(SPACED, "a.md"), ['"-" stands in for a dash']);
+    assert.deepEqual(findingsOf(`${SPACED}\n   The “notes” stay.\n`, "a.txt"), ['"-" stands in for a dash']);
   });
 });

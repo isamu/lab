@@ -1,0 +1,11 @@
+# ショートメッセージでキーワードを送る動詞（text GNPCGS to 333111）。動詞と短い番号の間の大文字は、そのまま打ち込む
+# キーワードで、展開を待つ略語ではない。英文の案内をそのまま載せた文書のために、英語の動詞を置く。大小を問わずに照らす。
+id: text-message-verb
+language: ja
+entries:
+  - pattern: text
+  - pattern: texts
+  - pattern: texting
+  - pattern: txt
+  - pattern: reply
+  - pattern: replying

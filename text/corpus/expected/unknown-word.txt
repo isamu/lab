@@ -1,9 +1,9 @@
 18f-blog-oracle-databases  1
 18f-handbook-travel-faq  1
-aoml-hurricane-faq  12
+aoml-hurricane-faq  11
 arxiv-2609-38203-abs-verbal-fluency  1
 arxiv-2609-38219-abs-tamazight-speech  3
-arxiv-astro-ph-new-2025-01-03  11
+arxiv-astro-ph-new-2025-01-03  10
 asf-board-minutes-2025-01  10
 automattic-offer-letter-us  1
 cloudgov-changelog-2023-11-27  1
@@ -11,7 +11,6 @@ dailymed-advil-otc-label  1
 fac-adr-0016-file-uploads  1
 gitlab-meetings  1
 ietf-draft-httpapi-ratelimit-headers-10  2
-kep-2214-indexed-job  1
 maff-kyodo-ryori-okaisan-en  1
 nodejs-tsc-minutes-2026-05-06  3
 nws-glossary-a  4

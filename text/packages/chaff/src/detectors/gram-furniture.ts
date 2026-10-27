@@ -50,3 +50,76 @@ export const isFurniture = (text: string, mask: readonly boolean[], window: Span
   const marked = visible.filter((index) => mask[index] === true);
   return visible.length > 0 && marked.length * 2 > visible.length;
 };
+
+/** 引いた題の後ろの結びとして読む長さ（を確認してください。は 10 文字）。これより長ければ、題の後ろに書き手の文が続いている。 */
+const QUOTE_CLOSING_MAX = 12;
+/**
+ * 題を受ける格助詞（を、が、に、で、へ）一つと、述語だけ。助詞が無ければ引いた語が述語の一部（「実行」してまいります）で、
+ * 二つ目の助詞があれば書き手が別のことを足している（「…支援」に力を尽くしてまいります）。
+ */
+const QUOTE_CLOSING = new RegExp(String.raw`[」』]([をがにでへ][^「」『』、，。．をがにでへ]{1,${String(QUOTE_CLOSING_MAX - 1)}}[。．]?)\s*$`, "u");
+
+const closingAfterQuote = (text: string): Span | undefined => {
+  const match = QUOTE_CLOSING.exec(text);
+  return match === null ? undefined : { start: match.index + 1, end: match.index + match[0].length };
+};
+
+const closingTextOf = (text: string): string | undefined => {
+  const span = closingAfterQuote(text);
+  return span === undefined ? undefined : text.slice(span.start, span.end).trimEnd();
+};
+
+/**
+ * 文書が参照の書式として使う結び: 引いた題の直後で結ぶことが、その結びで終わる文の過半である結び（詳しくは「…」を確認してください。）。
+ * 引いた名前の後ろにたまたま来た書き手の結び（「生涯活躍のまち」を推進している。のほかは整備を推進している。）は、ほとんどが題の後ろではない。
+ */
+export const referenceClosings = (texts: readonly string[]): ReadonlySet<string> => {
+  const afterQuote = texts.flatMap((text) => closingTextOf(text) ?? []);
+  return new Set(
+    [...new Set(afterQuote)].filter((closing) => {
+      const quoted = afterQuote.filter((each) => each === closing).length;
+      const ending = texts.filter((text) => text.trimEnd().endsWith(closing)).length;
+      return quoted * 2 > ending;
+    }),
+  );
+};
+
+/**
+ * 引いた題で終わる文の結び（詳しくは「入力可能な文字」を確認してください。）の範囲。手引きは別のページを指すたびに同じ結びで指す。
+ * closings（referenceClosings）にある結びだけを、参照の書式として数えない。
+ */
+export const quotedClosingSpans = (text: string, closings: ReadonlySet<string>): Span[] => {
+  const span = closingAfterQuote(text);
+  const closing = closingTextOf(text);
+  return span !== undefined && closing !== undefined && closings.has(closing) ? [span] : [];
+};
+
+/** 文書の中の番号の付いた部分を指す語（Section 3.1 の Section）。 */
+const PART_LABELS = new Set([
+  "section",
+  "sections",
+  "table",
+  "tables",
+  "figure",
+  "figures",
+  "fig.",
+  "chapter",
+  "chapters",
+  "appendix",
+  "appendices",
+  "annex",
+  "part",
+  "parts",
+]);
+
+/** 語と、その後ろの番号（3.1、2b、B）。語が PART_LABELS にあれば文書の部分を指す名前。 */
+const LABEL_AND_NUMBER = /\b([A-Z][a-z]+\.?)\s+(?:\d+(?:\.\d+)*[a-z]?|[A-Z])\b/gu;
+/** 表2、図1-3、第3章、第2節。 */
+const JA_PART_REFERENCE = /[表図][\d０-９]+(?:[-－.．][\d０-９]+)*|第[\d０-９一二三四五六七八九十]+[章節]/gu;
+
+/**
+ * 文書の部分を指す名前（Section 3.1、Table 2、Appendix B、表2、第3章）の範囲。名前と同じく、それにかかる語句
+ * （the mechanism families set out in Section 3.1）は参照の書式で、数えない。
+ */
+export const partReferenceSpans = (text: string, unit: LengthUnit): Span[] =>
+  unit === "word" ? spansOf(text, LABEL_AND_NUMBER, (match) => PART_LABELS.has((match[1] ?? "").toLowerCase())) : spansOf(text, JA_PART_REFERENCE, () => true);

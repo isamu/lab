@@ -6,6 +6,11 @@
 const HALF_NUMBER = String.raw`(?<![\d./])\d+[./]\d+(?!\d|[./]\d)[A-Za-z]*`;
 const FULL_NUMBER = String.raw`(?<![０-９．／])[０-９]+[．／][０-９]+(?![０-９]|[．／][０-９])[Ａ-Ｚａ-ｚ]*`;
 
-export const ALNUM_RUN = new RegExp(String.raw`${HALF_NUMBER}|${FULL_NUMBER}|[A-Za-z0-9Ａ-Ｚａ-ｚ０-９]+`, "gu");
-export const FULLWIDTH = /^[Ａ-Ｚａ-ｚ０-９]+(?:[．／][０-９]+[Ａ-Ｚａ-ｚ]*)?$/u;
-export const HALFWIDTH = /^[A-Za-z0-9]+(?:[./]\d+[A-Za-z]*)?$/u;
+/** 三桁ごとに区切った数（5,500、１，２００．５）。5,500 の 5 は一桁の数ではない。 */
+const HALF_GROUPED = String.raw`(?<![\d,.])\d{1,3}(?:,\d{3})+(?:\.\d+)?(?![\d,]|\.\d)[A-Za-z]*`;
+const FULL_GROUPED = String.raw`(?<![０-９，,．])[０-９]{1,3}(?:[，,][０-９]{3})+(?:．[０-９]+)?(?![０-９，,]|．[０-９])[Ａ-Ｚａ-ｚ]*`;
+
+export const ALNUM_RUN = new RegExp(String.raw`${HALF_GROUPED}|${FULL_GROUPED}|${HALF_NUMBER}|${FULL_NUMBER}|[A-Za-z0-9Ａ-Ｚａ-ｚ０-９]+`, "gu");
+/** 並び（ALNUM_RUN が切り出したもの）が一つの幅だけで書かれているか。区切りの点・斜線・コンマは数字の間にしか来ない。 */
+export const FULLWIDTH = /^[Ａ-Ｚａ-ｚ０-９][Ａ-Ｚａ-ｚ０-９．／，,]*$/u;
+export const HALFWIDTH = /^[A-Za-z0-9][A-Za-z0-9./,]*$/u;

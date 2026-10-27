@@ -19,11 +19,14 @@ const EXPLAINED: readonly Case[] = [
   ["添えた語が名前に無い", "It joined the Zero Emission Community (ZEC Initiative) last year.", "ZEC"],
   ["添えた語が 2 語", "The Clean Water Fund Pacific Islands (CWF Pacific Islands) opened.", "CWF"],
   ["引用符に包む", "The Clean Water Fund (“CWF Asia”) opened.", "CWF"],
+  ["添えた語が小文字", "The Clean Water Fund (CWF data) opened.", "CWF"],
+  ["小文字の語を添え、名前の頭だけを縮める", "They lead Regional Alliances to Stimulate Education (RAS program) work.", "RAS"],
 ];
 
 const REPORTED: readonly Case[] = [
   ["名前の頭文字が揃わない", "The Goddard Space Flight Center (NASA Goddard) hosted it.", "NASA"],
-  ["添えた語が小文字", "The Clean Water Fund (CWF data) opened.", "CWF"],
+  ["添えた語が小文字で、名前の頭文字が揃わない", "The Clean Water Fund (CWX data) opened.", "CWX"],
+  ["添えた語が小文字の 2 字の略語", "The Water Fund (WF data) opened.", "WF"],
   ["添えた語の後ろに数字", "The regulation on data (GDPR Article 5) applies.", "GDPR"],
   ["括弧が閉じない", "The Clean Water Fund (CWF Asia and more", "CWF"],
   ["括弧が開いていない", "The Clean Water Fund CWF Asia) opened.", "CWF"],

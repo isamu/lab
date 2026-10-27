@@ -84,19 +84,49 @@ const OBJECT_START = new Set(["DET", "PRON", "NUM"]);
  * 英語で、窓の最後の名詞の形の動詞の前が名詞と形容詞だけ（先頭の冠詞は許す）で、後ろに目的語が続かなければ、動詞は名詞の続きの
  * 読み違い（the federal funds rate の rate、small business subcontracting）。窓の中に機能語があれば言い回し（your contract says）。
  */
-const endsNounCompound = (tokens: readonly Token[], index: number, window: Span, unit: LengthUnit): boolean => {
-  const verb = tokens[index];
-  if (unit !== "word" || verb?.pos !== "VERB" || !isNounShaped(verb) || OBJECT_START.has(tokens[index + 1]?.pos ?? "")) return false;
+/** 窓の最後の語が index で、その前が名詞と形容詞だけの用語（先頭の冠詞は許す）か。 */
+const closesTerm = (tokens: readonly Token[], index: number, window: Span): boolean => {
   const touched = tokens.flatMap((token, at) => (overlaps(token, window) ? [at] : []));
   if (touched.at(-1) !== index) return false;
   const before = touched.slice(0, -1).filter((at, order) => !(order === 0 && tokens[at]?.pos === "DET"));
   return before.length >= MIN_COMPOUND_WORDS && before.every((at) => COMPOUND_POS.has(tokens[at]?.pos ?? ""));
 };
 
+const endsNounCompound = (tokens: readonly Token[], index: number, window: Span, unit: LengthUnit): boolean => {
+  const verb = tokens[index];
+  if (unit !== "word" || verb?.pos !== "VERB" || !isNounShaped(verb) || OBJECT_START.has(tokens[index + 1]?.pos ?? "")) return false;
+  return closesTerm(tokens, index, window);
+};
+
+const BE = new Set(["be", "is", "are", "was", "were"]);
+
+/**
+ * 英語で、用語のすぐ後ろの be で窓が終わる（the anticipatory mode is）。繰り返しているのは主語の用語で、be はその後ろに何を言うかの
+ * 入り口にすぎない。言い回しなら be の後ろまで同じになる。
+ */
+const copulaAfterTerm = (tokens: readonly Token[], index: number, window: Span, unit: LengthUnit): boolean => {
+  const token = tokens[index];
+  return unit === "word" && token !== undefined && BE.has(token.lemma ?? token.surface.toLowerCase()) && closesTerm(tokens, index, window);
+};
+
+/** 名詞の入る所の始まり: 前置詞と接続詞（of、that、because）、限定詞、what、読点でない句読点（: の後ろ）。 */
+const NOUN_SLOT_OPENERS = new Set(["ADP", "SCONJ", "DET", "PRON"]);
+
+const opensNounSlot = (token: Token | undefined): boolean =>
+  token !== undefined && (NOUN_SLOT_OPENERS.has(token.pos) || (token.pos === "PUNCT" && token.surface !== ","));
+
+/**
+ * 英語で、名詞の入る所に置いた -ing 形（what occupying the anticipatory mode requires、: occupying the … is）は行為の名前で、
+ * 文書の用語として繰り返す。述語ではない。文頭と読点の後ろの -ing 形は分詞の節（Using the form, send …）と見分けられないので外さない。
+ */
+const gerundAsNoun = (tokens: readonly Token[], index: number, unit: LengthUnit): boolean =>
+  unit === "word" && tokens[index]?.features?.["VerbForm"] === "Ger" && opensNounSlot(tokens[index - 1]);
+
 const countsAsPredicate = (tokens: readonly Token[], index: number, window: Span, unit: LengthUnit): boolean => {
   const token = tokens[index];
   if (token === undefined || !PREDICATE_POS.has(token.pos) || !overlaps(token, window)) return false;
   if (modifiesNoun(tokens, index, unit) || namePartAt(tokens, index, unit) || endsNounCompound(tokens, index, window, unit)) return false;
+  if (gerundAsNoun(tokens, index, unit) || copulaAfterTerm(tokens, index, window, unit)) return false;
   return !isCut(token, window) || !onlyNamesBeside(tokens, index, window, unit);
 };
 

@@ -218,7 +218,7 @@ describe("L3 日本語", () => {
 
     it("invalid: 「！」「？」の後が助詞で始まらなければ、そこで文は終わる", () => {
       assert.ok(idsFor("運用を始める。日報を導入しませんか？ 手順を作る。効果を測る。").includes("no-mixed-desumasu"));
-      assert.ok(idsFor("運用を始めます。徹夜で作っていた！手順を作ります。効果を測ります。").includes("no-mixed-desumasu"));
+      assert.ok(idsFor("運用を始める。準備が整いました！手順を作る。効果を測る。").includes("no-mixed-desumasu"));
     });
 
     it("invalid: 述語で終わる文は、名詞が挟まっても調子を持つ（〜である・〜だ）", () => {
