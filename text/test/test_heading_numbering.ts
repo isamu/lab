@@ -19,8 +19,8 @@ const mixed = (headings: readonly string[], adapter = ja, path = "a.md"): readon
 
 describe("heading-numbering-mix: 兄弟の見出しの番号の付け方", () => {
   it("番号の付いた兄弟の中の、番号の無い見出し", () => {
-    assert.deepEqual(mixed(["## 1. 概要", "## 2. 手順", "## まとめ"]), [
-      "見出し「まとめ」だけ番号がありません（兄弟の見出しは「1. 概要」など 2 個が番号付き）",
+    assert.deepEqual(mixed(["## 1. 概要", "## 手順", "## 3. まとめ"]), [
+      "見出し「手順」だけ番号がありません（兄弟の見出しは「1. 概要」など 2 個が番号付き）",
     ]);
   });
 
@@ -39,7 +39,7 @@ describe("heading-numbering-mix: 兄弟の見出しの番号の付け方", () =>
     assert.deepEqual(mixed(["## Background", "## Plan", "## Appendix A"], en), []);
     assert.deepEqual(mixed(["## 1. 概要", "## まとめ"]), []);
     assert.deepEqual(mixed(["## 1. 概要", "## 2. 手順", "## まとめ", "## 補足"]), []);
-    assert.deepEqual(mixed(["## 1. 概要", "### 1.1 背景", "### 1.2 目的", "### 補足", "## 2. 手順", "## 3. 結果"]), [
+    assert.deepEqual(mixed(["## 1. 概要", "### 1.1 背景", "### 補足", "### 1.3 目的", "## 2. 手順", "## 3. 結果"]), [
       "見出し「補足」だけ番号がありません（兄弟の見出しは「1.1 背景」など 2 個が番号付き）",
     ]);
   });
@@ -64,31 +64,32 @@ describe("heading-numbering-mix: 兄弟の見出しの番号の付け方", () =>
     assert.deepEqual(mixed(["## Notice", "## 1.1 Scope", "## 1.2 Terms"], en), []);
   });
 
-  it("番号が 1 から始まらないとき、番号付きが一つだけのとき、番号の後ろの見出しは言う", () => {
+  it("番号が 1 から始まらないとき、番号付きが一つだけのときは、前後の番号の無い見出しも言う", () => {
     assert.deepEqual(mixed(["## Overview", "## 2. Steps", "## 3. Results"], en), [
       'The heading "Overview" has no number, while 2 of its siblings do ("2. Steps")',
     ]);
     assert.deepEqual(mixed(["## 背景", "## 方針", "## 1. 手順", "## 課題"]), [
       "見出し「1. 手順」だけ番号があります（兄弟の見出しは「背景」など 3 個が番号なし）",
     ]);
-    assert.deepEqual(mixed(["## Applies to England", "## 1. Before you start", "## 2. Looking", "## Summary"], en), [
-      'The heading "Summary" has no number, while 2 of its siblings do ("1. Before you start")',
+    assert.deepEqual(mixed(["## 2. Steps", "## 3. Results", "## Summary"], en), [
+      'The heading "Summary" has no number, while 2 of its siblings do ("2. Steps")',
     ]);
   });
 
   it("HMRC の通知の末尾の決まった見出しは前後の見出しとして比べない", () => {
     const back = ["## Your rights and obligations", "## Help us improve this notice", "## Putting things right", "## How HMRC uses your information"];
-    assert.deepEqual(mixed(["## 1. Overview", "## 2. Issuing invoices", "## 3. Contents", ...back], en), []);
-    assert.deepEqual(mixed(["## 1. Overview", "## 2. Issuing invoices", "## 3. Contents", "## How we use your information"], en), []);
-    assert.deepEqual(mixed(["## 1. Overview", "## 2. Issuing invoices", "## 3. Contents", "## Your rights"], en).length, 1);
+    assert.deepEqual(mixed(["## 1. Overview", ...back, "## 2. Issuing invoices", "## 3. Contents"], en), []);
+    assert.deepEqual(mixed(["## 1. Overview", "## How we use your information", "## 2. Issuing invoices", "## 3. Contents"], en), []);
+    assert.deepEqual(mixed(["## 1. Overview", "## Your rights", "## 2. Issuing invoices", "## 3. Contents"], en).length, 1);
   });
 
   it("連絡先の語を含むだけの見出しは前後の見出しにしない", () => {
-    assert.equal(mixed(["## 1．概要", "## 2．日程", "## 照会先の一覧と役割"]).length, 1);
-    assert.deepEqual(mixed(["## 1. 概要", "## 2. 日程", "## 担当部署の役割"]), [
+    assert.equal(mixed(["## 1．概要", "## 照会先の一覧と役割", "## 3．日程"]).length, 1);
+    assert.deepEqual(mixed(["## 1. 概要", "## 担当部署の役割", "## 3. 日程"]), [
       "見出し「担当部署の役割」だけ番号がありません（兄弟の見出しは「1. 概要」など 2 個が番号付き）",
     ]);
-    assert.deepEqual(mixed(["## 1. Overview", "## 2. Schedule", "## Contacting the vendor"], en).length, 1);
+    assert.deepEqual(mixed(["## 1. Overview", "## Contacting the vendor", "## 3. Schedule"], en).length, 1);
+    assert.deepEqual(mixed(["## 1. 概要", "## お問い合わせ先", "## 2. 日程", "## 3. 費用"]), []);
   });
 
   it("番号のすぐ後ろがコードや鉤括弧の見出しも、番号付きと読む", () => {
@@ -97,7 +98,7 @@ describe("heading-numbering-mix: 兄弟の見出しの番号の付け方", () =>
     assert.deepEqual(mixed(["## 背景", "## 2. `check()`", "## 課題"]), [
       "見出し「2. `check()`」だけ番号があります（兄弟の見出しは「背景」など 2 個が番号なし）",
     ]);
-    assert.deepEqual(mixed(["## 1. 背景", "## 2. 方針", "## `check()`"]), [
+    assert.deepEqual(mixed(["## 1. 背景", "## `check()`", "## 3. 方針"]), [
       "見出し「`check()`」だけ番号がありません（兄弟の見出しは「1. 背景」など 2 個が番号付き）",
     ]);
   });
@@ -112,14 +113,14 @@ describe("heading-numbering-mix: 兄弟の見出しの番号の付け方", () =>
   });
 
   it("区切りの名前の番号（Chapter、Part、Step、第1章）は番号と読み、期間の名前の隣の番号付きの見出しは言う", () => {
-    assert.deepEqual(mixed(["## Part 1 Basics", "## Part 2 Practice", "## Summary"], en), [
-      'The heading "Summary" has no number, while 2 of its siblings do ("Part 1 Basics")',
+    assert.deepEqual(mixed(["## Part 1 Basics", "## Practice", "## Part 3 Review"], en), [
+      'The heading "Practice" has no number, while 2 of its siblings do ("Part 1 Basics")',
     ]);
-    assert.deepEqual(mixed(["## Step 1 Install", "## Step 2 Configure", "## Troubleshooting"], en), [
-      'The heading "Troubleshooting" has no number, while 2 of its siblings do ("Step 1 Install")',
+    assert.deepEqual(mixed(["## Step 1 Install", "## Configure", "## Step 3 Run"], en), [
+      'The heading "Configure" has no number, while 2 of its siblings do ("Step 1 Install")',
     ]);
-    assert.deepEqual(mixed(["## 第1章 背景", "## 第2章 方針", "## まとめ"]), [
-      "見出し「まとめ」だけ番号がありません（兄弟の見出しは「第1章 背景」など 2 個が番号付き）",
+    assert.deepEqual(mixed(["## 第1章 背景", "## 方針", "## 第3章 まとめ"]), [
+      "見出し「方針」だけ番号がありません（兄弟の見出しは「第1章 背景」など 2 個が番号付き）",
     ]);
     assert.deepEqual(mixed(["## Week 1", "## Week 2", "## 3. Pay summary"], en), [
       'The heading "3. Pay summary" is numbered, while 2 of its siblings are not ("Week 1")',
@@ -131,11 +132,56 @@ describe("heading-numbering-mix: 兄弟の見出しの番号の付け方", () =>
   });
 
   it("English, and a document that is not Markdown", () => {
-    assert.deepEqual(mixed(["## Chapter 1 Background", "## Chapter 2 Plan", "## Summary"], en), [
-      'The heading "Summary" has no number, while 2 of its siblings do ("Chapter 1 Background")',
+    assert.deepEqual(mixed(["## Chapter 1 Background", "## Plan", "## Chapter 3 Summary"], en), [
+      'The heading "Plan" has no number, while 2 of its siblings do ("Chapter 1 Background")',
     ]);
     assert.deepEqual(mixed(["## Background", "## Plan", "## References"], en), []);
-    assert.deepEqual(mixed(["## 1. Overview", "## 2. Steps", "## Summary"], en, "a.txt"), []);
+    assert.deepEqual(mixed(["## 1. Overview", "## Steps", "## 3. Summary"], en, "a.txt"), []);
+  });
+});
+
+describe("heading-numbering-mix: what lies outside the numbered run, and numbers at another level", () => {
+  it("unnumbered headings after a run that opens at 1 close the document and are not reported", () => {
+    assert.deepEqual(mixed(["## 1. 通知を絞る", "## 2. ミュートする", "## 3. 一時停止する", "## まとめ"]), []);
+    assert.deepEqual(mixed(["## 1. 先週の進捗", "## 2. 議題", "## 3. 決定事項", "## 次回"]), []);
+    assert.deepEqual(mixed(["## 1. 概要", "## 2. 手順", "## 決定事項", "## 次回までの宿題"]), []);
+    assert.deepEqual(mixed(["## 1. Restart everything", "## 2. Check the network", "## 3. Add the printer again", "## Still not working?"], en), []);
+    assert.deepEqual(mixed(["## Step 1: Sort the old mail", "## Step 2: Unsubscribe", "## Step 3: Add filters", "## Keeping it tidy"], en), []);
+    assert.deepEqual(mixed(["## Applies to England", "## 1. Before you start", "## 2. Looking", "## Summary"], en), []);
+  });
+
+  it("an unnumbered heading inside the run, and one after a run that does not open at 1, are still reported", () => {
+    assert.deepEqual(mixed(["## 1. 通知を絞る", "## ミュートする", "## 3. 一時停止する", "## まとめ"]), [
+      "見出し「ミュートする」だけ番号がありません（兄弟の見出しは「1. 通知を絞る」など 2 個が番号付き）",
+    ]);
+    assert.deepEqual(mixed(["## 2. 手順", "## 3. 結果", "## まとめ"]), [
+      "見出し「まとめ」だけ番号がありません（兄弟の見出しは「2. 手順」など 2 個が番号付き）",
+    ]);
+  });
+
+  it("sections and subsections a page put at one depth (1. beside 1.1, 1. beside a (1) that restarts) are compared level by level", () => {
+    assert.deepEqual(mixed(["#### 1. はじめに", "#### 1.1 概要", "#### 1.2 図書館と許諾", "#### 2. 留意事項", "#### 2.1 取り消せない", "#### 3. おわりに"]), []);
+    assert.deepEqual(
+      mixed(["#### はじめに", "#### 1. 査読とは", "#### (1) 時間", "#### (2) 質", "#### 2. 定義", "#### 3. 現状", "#### (1) 解決するか", "#### (2) なぜ閉じるか"]),
+      [],
+    );
+  });
+
+  it("a second style at the same level that does not restart is still reported", () => {
+    assert.deepEqual(mixed(["## 1. 背景", "## 2. 方針", "## (3) 課題", "## 4. 日程"]), [
+      "見出し「(3) 課題」の番号の書き方が、兄弟の見出し（「1. 背景」など 3 個）と違います",
+    ]);
+  });
+
+  it("a number followed by a counted word (5. 11月の取り組み) is a heading number", () => {
+    assert.deepEqual(mixed(["## 1. 概要", "## 2. 実績", "## 3. 課題", "## 4. 11月の取り組み"]), []);
+    assert.equal(numberingStyleOf("5. 11月の取り組み", []), "dot");
+  });
+
+  it("a figure or table title made a heading (図　データモデル、表1 費用) is not a section", () => {
+    assert.deepEqual(mixed(["#### 1. はじめに", "#### 2. 背景", "#### 図　データモデル", "#### 3. 実装"]), []);
+    assert.deepEqual(mixed(["#### 1. はじめに", "#### 2. 背景", "#### 表1 費用", "#### 3. 実装"]), []);
+    assert.equal(mixed(["#### 1. はじめに", "#### 2. 背景", "#### 図書館の役割", "#### 4. 実装"]).length, 1);
   });
 });
 
@@ -321,8 +367,8 @@ describe("heading-numbering-mix: a letter every sibling repeats (Q.) is a mark, 
   });
 
   it("letters that advance (A. B. C.) are a numbering, and an unnumbered sibling is still reported", () => {
-    assert.deepEqual(mixed(["## A. 背景", "## B. 方針", "## まとめ"]), [
-      "見出し「まとめ」だけ番号がありません（兄弟の見出しは「A. 背景」など 2 個が番号付き）",
+    assert.deepEqual(mixed(["## A. 背景", "## 方針", "## C. まとめ"]), [
+      "見出し「方針」だけ番号がありません（兄弟の見出しは「A. 背景」など 2 個が番号付き）",
     ]);
   });
 

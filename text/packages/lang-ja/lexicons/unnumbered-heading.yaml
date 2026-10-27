@@ -44,3 +44,6 @@ entries:
   - pattern: 序文
   - pattern: References
   - pattern: Abstract
+  # 見出しにした図と表の題（「図　データモデル」「表1 費用」）。本文の節ではないので番号の並びに入らない。
+  - pattern: 図
+  - pattern: 表

@@ -11,8 +11,11 @@ const ARABIC = "[0-9０-９]+";
 const KANJI = "[一二三四五六七八九十百]+";
 const ROMAN = "[IVXⅠ-Ⅻ]+";
 
-/** 番号の後ろに続く見出しの言葉の頭。字か、コードや引用の開き（`check()`、「概要」）で始まる。「8.2.3 (2026-08-06)」の版や「3 reasons」の数量は番号と読まない。 */
-const WORDS_FOLLOW = '(?=\\s*[\\p{L}`「『“"])';
+/**
+ * 番号の後ろに続く見出しの言葉の頭。字か、コードや引用の開き（`check()`、「概要」）か、字の付いた数（「5. 11月の取り組み」の 11月）で始まる。
+ * 「8.2.3 (2026-08-06)」の版や「3 reasons」の数量は番号と読まない。
+ */
+const WORDS_FOLLOW = '(?=\\s*(?:[\\p{L}`「『“"]|[0-9０-９]+\\p{L}))';
 
 /**
  * 字だけで決まる書き方。上から順に試す。ラテン文字一字とローマ数字（A. と II.）は同じ書き方とする。どちらも番号の後ろに言葉が続くときだけ。
@@ -108,14 +111,19 @@ const minorityBy = (members: readonly number[], keyOf: (at: number) => string): 
 const minoritiesOf = (split: Split | undefined, kind: NumberingMinority["kind"]): NumberingMinority[] =>
   split === undefined ? [] : split.minority.map((at) => ({ at, kind, majority: split.majority, count: split.count, example: split.example }));
 
-/** 番号の並びの最初の兄弟が 1 から始まるとき、その前の番号の無い兄弟（文書の題、「Applies to England」）は並びの外。番号付きの兄弟が二つ以上あるときだけ。 */
+/** 番号付きの兄弟がこれだけあり、最初の番号が 1 のときだけ、番号の無い兄弟を並びの外と読む。 */
 const MIN_NUMBERED_RUN = 2;
 
-const leadingFrontMatter = (members: readonly number[], headings: readonly NumberedHeading[]): ReadonlySet<number> => {
+/**
+ * 1 から始まる番号の並びの前と後ろの、番号の無い兄弟（文書の題、「Applies to England」、締めの「まとめ」「Still not working?」）は並びの外。
+ * 並びの途中の番号の無い見出しだけが、番号を落とした見出しと読める。
+ */
+const outsideTheRun = (members: readonly number[], headings: readonly NumberedHeading[]): ReadonlySet<number> => {
   const numbered = members.filter((at) => (headings[at]?.style ?? UNNUMBERED) !== UNNUMBERED);
   const first = numbered[0];
-  if (first === undefined || numbered.length < MIN_NUMBERED_RUN || headings[first]?.opens !== true) return new Set();
-  return new Set(members.filter((at) => at < first));
+  const last = numbered.at(-1);
+  if (first === undefined || last === undefined || numbered.length < MIN_NUMBERED_RUN || headings[first]?.opens !== true) return new Set();
+  return new Set(members.filter((at) => at < first || at > last));
 };
 
 /** 同じ字を付けた兄弟がこれだけあれば、その字は番号でなく印。 */
@@ -131,15 +139,41 @@ const prefixLetters = (members: readonly number[], headings: readonly NumberedHe
   return letters.length >= MIN_REPEATED_LETTERS && marks.size === 1 && !marks.has(undefined) ? new Set(letters) : new Set();
 };
 
+/** 番号の段（「1.」は 1 段、「1.1」は 2 段）。番号の中の算用数字の数で、数の無い番号（A.、第一章）は 1 段。 */
+const ARABIC_RUN = /[0-9０-９]+/gu;
+const levelOf = (heading: NumberedHeading | undefined): number => Math.max(1, heading?.mark?.match(ARABIC_RUN)?.length ?? 0);
+
+/** 兄弟の中で 1 からこれだけ始め直す書き方は、別の書き方の番号の下の小見出しの番号（「1.」の下の「(1)」「(2)」、「2.」の下でまた「(1)」）。 */
+const MIN_RESTARTS = 2;
+
+const restartingStyles = (numbered: readonly number[], headings: readonly NumberedHeading[], styleOf: (at: number) => string): ReadonlySet<string> => {
+  const restarts = new Map<string, number>();
+  numbered.filter((at) => headings[at]?.opens === true).forEach((at) => restarts.set(styleOf(at), (restarts.get(styleOf(at)) ?? 0) + 1));
+  return new Set([...restarts].filter(([, count]) => count >= MIN_RESTARTS).map(([style]) => style));
+};
+
+/**
+ * 番号の書き方を比べる組。ページが段の違う番号（「1.」と「1.1」、「1.」と「(1)」）を同じ深さの見出しにしたときは、段ごとに分けて比べる。
+ * 段は番号の数の数（1.1 は 2 段）と、兄弟の中で 1 から始め直す書き方（小見出しの番号）で見分ける。
+ */
+const styleGroups = (numbered: readonly number[], headings: readonly NumberedHeading[], styleOf: (at: number) => string): number[][] => {
+  const nested = restartingStyles(numbered, headings, styleOf);
+  const compared = nested.size === new Set(numbered.map(styleOf)).size ? numbered : numbered.filter((at) => !nested.has(styleOf(at)));
+  const levels = new Map<number, number[]>();
+  compared.forEach((at) => levels.set(levelOf(headings[at]), [...(levels.get(levelOf(headings[at])) ?? []), at]));
+  return [...levels.values()];
+};
+
 /**
  * 兄弟の見出しのうち、少ないほうの書き方のもの。先に番号の有無を比べ（「1. 概要」「2. 手順」「まとめ」の「まとめ」）、
- * 番号の付いた見出しのあいだで書き方を比べる（「1.」「2.」「3）」の「3）」）。同じ数なら言わない（二つだけの兄弟は必ず同じ数か一つの書き方）。前後の見出し（目次・参考文献）と、1 から始まる番号の前の見出しは数えない。
+ * 番号の付いた見出しのあいだで、段ごとに書き方を比べる（「1.」「2.」「3）」の「3）」）。同じ数なら言わない（二つだけの兄弟は必ず同じ数か一つの書き方）。
+ * 前後の見出し（目次・参考文献）と、1 から始まる番号の並びの前と後ろの見出しは数えない。
  */
 export const numberingMinorities = (headings: readonly NumberedHeading[]): NumberingMinority[] =>
   siblingGroups(headings).flatMap((group) => {
     const listed = group.filter((at) => headings[at]?.skipped !== true);
-    const front = leadingFrontMatter(listed, headings);
-    const members = listed.filter((at) => !front.has(at));
+    const outside = outsideTheRun(listed, headings);
+    const members = listed.filter((at) => !outside.has(at));
     const prefixed = prefixLetters(members, headings);
     const styleOf = (at: number): string => (prefixed.has(at) ? UNNUMBERED : (headings[at]?.style ?? UNNUMBERED));
     const numbered = members.filter((at) => styleOf(at) !== UNNUMBERED);
@@ -148,6 +182,6 @@ export const numberingMinorities = (headings: readonly NumberedHeading[]): Numbe
         minorityBy(members, (at) => (styleOf(at) === UNNUMBERED ? UNNUMBERED : "numbered")),
         "numbered",
       ),
-      ...minoritiesOf(minorityBy(numbered, styleOf), "style"),
+      ...styleGroups(numbered, headings, styleOf).flatMap((level) => minoritiesOf(minorityBy(level, styleOf), "style")),
     ];
   });
