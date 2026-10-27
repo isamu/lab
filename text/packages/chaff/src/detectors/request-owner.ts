@@ -20,6 +20,7 @@ export const REQUEST_LEXICONS = {
   contact: "request-contact",
   prohibition: "request-prohibition",
   deadlineSection: "request-deadline-section",
+  noDeadlineTitle: "request-no-deadline-title",
 } as const;
 
 type Words = Readonly<Record<keyof typeof REQUEST_LEXICONS, readonly string[]>>;
@@ -42,6 +43,7 @@ const wordsOf = (doc: ProseDocument): Words => ({
   contact: patternsOf(doc.lexicons[REQUEST_LEXICONS.contact]),
   prohibition: patternsOf(doc.lexicons[REQUEST_LEXICONS.prohibition]),
   deadlineSection: patternsOf(doc.lexicons[REQUEST_LEXICONS.deadlineSection]),
+  noDeadlineTitle: patternsOf(doc.lexicons[REQUEST_LEXICONS.noDeadlineTitle]),
 });
 
 /** How far apart, in characters, the action word and the request ending may be: the action must be what is requested. */
@@ -228,26 +230,47 @@ const statesDeadline = (source: string, sentence: Sentence, words: Words, dates:
 };
 
 /**
- * Where a section headed only by a deadline-section word (a notice's "DATES:", "2. Deadline") states a date with a
- * deadline word: the document gives its deadline once there, for the requests that follow it. Undefined without one.
+ * The section headed only by a deadline-section word (a notice's "DATES:", "2. Deadline") that states a date with a
+ * deadline word: the document gives its deadline once there. -1 without one.
  */
-const documentDeadlineAt = (source: string, sections: readonly Section[], words: Words, dates: readonly Span[]): number | undefined =>
-  sections.find(
+const documentDeadlineSection = (source: string, sections: readonly Section[], words: Words, dates: readonly Span[]): number =>
+  sections.findIndex(
     (section) =>
       words.deadlineSection.includes(withoutHeadingEnd(comparableWords(section.unlabeledHeading ?? section.heading)).trim()) &&
       section.sentences.some((sentence) => statesDeadline(source, sentence, words, dates)),
-  )?.span.start;
+  );
+
+/**
+ * Whether the deadline section at index covers the offset: everything after it, and a section before it at its own level
+ * under the same heading (a proposal's 結論 asks, its 判断の期限 says by when). Text before the sections, or under another
+ * heading, is not covered.
+ */
+const coveredByDeadline = (sections: readonly Section[], deadline: number, offset: number): boolean => {
+  const section = sections[deadline];
+  if (section === undefined) return false;
+  if (offset > section.span.start) return true;
+  const own = sections.findLastIndex((candidate) => candidate.span.start <= offset);
+  const between = sections.slice(own + 1, deadline);
+  return own >= 0 && sections[own]?.depth === section.depth && section.depth > 0 && between.every((other) => other.depth >= section.depth);
+};
+
+/** A document whose title names a kind that asks without a deadline by its nature (a 諮問 asks a council to deliberate). */
+const asksWithoutDeadline = (sections: readonly Section[], words: Words): boolean => {
+  const title = sections.find((section) => section.depth > 0)?.heading;
+  return title !== undefined && containsAny(title, words.noDeadlineTitle);
+};
 
 /**
  * The request sentences with neither a deadline nor a person in them, in the sentence after (same paragraph or item), in a
- * heading above, or in a deadline section before them.
+ * heading above, or in a deadline section that covers them; none in a document that asks without a deadline by its kind.
  */
 export const ownerlessRequests = (doc: ProseDocument): Sentence[] => {
   const words = wordsOf(doc);
   const dates = dateSpans(doc.structure);
-  const deadlineAt = documentDeadlineAt(doc.source, doc.sections, words, dates) ?? Number.POSITIVE_INFINITY;
+  if (asksWithoutDeadline(doc.sections, words)) return [];
+  const deadline = documentDeadlineSection(doc.source, doc.sections, words, dates);
   return doc.sentences.filter((sentence, index) => {
-    if (sentence.span.start > deadlineAt) return false;
+    if (coveredByDeadline(doc.sections, deadline, sentence.span.start)) return false;
     if (!isRequest(proseText(sentence), words) || saysWhenOrWho(sentence, words, dates, true)) return false;
     if (notesContactLine(doc.source, doc.sentences[index - 1], sentence, words)) return false;
     const next = doc.sentences[index + 1];

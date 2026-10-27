@@ -10,3 +10,5 @@ entries:
   - pattern: 提出期限
   - pattern: 応募期限
   - pattern: 募集期間
+  - pattern: 判断の期限
+  - pattern: 回答期限
