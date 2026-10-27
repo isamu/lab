@@ -98,7 +98,7 @@ article.md   blog/tech · English   genre from --genre
 
   1:71    info    Section length varies by only 25% (want at least 35%)
                   section-length-uniformity
-  3:1     info    "delve into, in today's fast-paced world, it's not just, quietly" appear together (score 28, limit 18)
+  3:1     info    "delve into, in today's fast-paced world, it's not just, quietly" appear together (score 25, limit 18)
                   ai-tell
   3:1     warning "in today's fast-paced world" is an opening that fits any article
                   padded-intro

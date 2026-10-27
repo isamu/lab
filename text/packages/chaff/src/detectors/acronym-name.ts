@@ -93,14 +93,25 @@ const CURRENCY_PREFIX = new RegExp(String.raw`${EDGE_BEFORE}\p{Lu}{1,3}(?=[$€�
 
 export const currencySymbolSpans = (text: string): Span[] => spansOf(text, CURRENCY_PREFIX);
 
+/** 登録商標や商標の印のすぐ前の大文字（Acrobat DC®、XYZ™）。製品の名前の部品で、略語ではない。 */
+const TRADEMARKED = new RegExp(String.raw`${EDGE_BEFORE}\p{Lu}{2,}(?=[®™])`, "gu");
+
+export const trademarkSpans = (text: string): Span[] => spansOf(text, TRADEMARKED);
+
 /**
- * 引用の形の中の、法令の名前（45 CFR Parts 160、CFR §164.524、21 USC §301、22 CCR §§ 12701、94/820/EC）。後ろに条（§、Part、
- * 番号）があるか、/ で繋いだ番号の後ろのときだけ。法令集そのものを言う所（the CFR title、the 2 CFR export）は略語のまま数える。
+ * 引用の形の中の、法令の名前（45 CFR Parts 160、CFR §164.524、21 USC §301、44 USC. 3502、22 CCR §§ 12701、94/820/EC）。後ろに条（§、Part、
+ * 番号）があるか、/ で繋いだ番号の後ろのときだけ。名前の後ろの点（USC.）は略しの印で、条の前に書いてもよい。§ の前には大文字で始まる
+ * 1 語を挟んでもよい（15 USCA Appendix § 12）。巻の番号の後ろで点で終わる名前（See 44 USC. 3502）も引用で、文を分ける読み手は
+ * 点の後ろの条を次の文に送る。法令集そのものを言う所（the CFR title、the 2 CFR export）は略語のまま数える。
  */
 export const citationSpans = (text: string, series: readonly string[]): Span[] => {
   if (series.length === 0) return [];
   const name = oneOf(series);
-  return spansOf(text, new RegExp(String.raw`(?<=\d/)${name}${EDGE_AFTER}|${EDGE_BEFORE}${name}(?=[ \t]*(?:§|[Pp]arts?[ \t]+\d|\d))`, "gu"));
+  const section = String.raw`(?:\p{Lu}\p{L}*\.?[ \t]+)?§`;
+  return spansOf(
+    text,
+    new RegExp(String.raw`(?<=\d/)${name}${EDGE_AFTER}|${EDGE_BEFORE}${name}(?=\.?[ \t]*(?:${section}|[Pp]arts?[ \t]+\d|\d))|(?<=\d[ \t]+)${name}(?=\.)`, "gu"),
+  );
 };
 
 /** 運送会社の名前。同じ文に 2 社以上を並べた所（Federal Express, UPS, DHL）だけ、どれも名前と読む。1 社だけの UPS は電源装置でもある。 */
@@ -132,6 +143,7 @@ export const nameSpansOf =
     ...companyNameSpans(text, words.legalForms, words.determiners),
     ...japaneseCompanyNameSpans(text, words.companyForms),
     ...currencySymbolSpans(text),
+    ...trademarkSpans(text),
     ...citationSpans(text, words.citationSeries),
     ...carrierListSpans(text, words.carriers),
     ...namePrefixSpans(text, words.namePrefixes),
