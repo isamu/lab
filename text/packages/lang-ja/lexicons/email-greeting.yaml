@@ -2,9 +2,19 @@
 # 英語の語（Dear など）は行の頭にあるときだけ数える。
 # 申し込みや注文の確認メールは「このたびは…ありがとうございます」と書き出す。「このたびは」を挨拶として数える。
 # 「ありがとうございます」だけは数えない。結びにも使い、本文の礼（先日は…ありがとうございました）とも区別できない。
+# 同僚あてには「お疲れさま。」と短く書き出す。返事が遅れたときは、挨拶の代わりにそのお詫びで書き出す。
 id: email-greeting
 language: ja
 entries:
+  - pattern: お疲れさま
+  - pattern: お疲れ様
+  - pattern: おつかれさま
+  - pattern: 返信が遅くなり
+  - pattern: 返信が遅くなっ
+  - pattern: 返信がすっかり遅くなっ
+  - pattern: 返信が大変遅くなり
+  - pattern: 連絡が遅くなり
+  - pattern: 連絡が遅くなっ
   - pattern: お世話になっております
   - pattern: お世話になっています
   - pattern: お世話になります
@@ -19,9 +29,6 @@ entries:
   - pattern: 突然のメール
   - pattern: ご無沙汰しております
   - pattern: こんにちは
-  - pattern: お疲れ様です
-  - pattern: お疲れさまです
-  - pattern: おつかれさまです
   - pattern: 平素より
   - pattern: 平素は
   - pattern: いつもありがとうございます
