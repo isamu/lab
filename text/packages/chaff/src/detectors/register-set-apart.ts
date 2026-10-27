@@ -3,7 +3,8 @@ import type { LexiconEntry, Paragraph, Sentence, Span } from "../plugin.ts";
 
 // Sentences that are not the writer's running prose and so are not compared for register: wording quoted under a label
 // (例：…, Q: …, a paragraph under a lone 用例), the value of a field set out under a marked label line (■ 調査目的\n…) and a contact
-// block (a paragraph with a 〒 or 電話： line). Pure.
+// block (a paragraph with a 〒 or 電話： line). A note on a ※ line and a cell of a table laid out as lines are set apart too, but
+// stay counted: only some of a table's cells take the shape, and dropping those would leave the rest a smaller minority. Pure.
 
 /** A label, a number after it (Q1, 例2), then the mark that ends it. */
 const labelPattern = (labels: readonly LexiconEntry[]): RegExp | undefined =>
@@ -75,4 +76,49 @@ export const fieldValueSentences = (sentences: readonly Sentence[], source: stri
     return start === undefined ? [] : [{ start, end: block.end }];
   });
   return new Set(sentences.filter((sentence) => values.some((value) => sentence.span.start >= value.start && sentence.span.start < value.end)));
+};
+
+/** A line that opens with a reference mark (※PDFファイルが開けない…): a note set beside the text. */
+const NOTE_LINE = /^[ \t\u3000]*※/u;
+
+const lineStartOf = (source: string, offset: number): number => source.lastIndexOf("\n", offset - 1) + 1;
+
+/**
+ * The sentences on a line that opens with ※. A note (※…の場合はこちらをご覧ください。) is the page's aside to the reader, written in
+ * its own register whatever the text around it uses.
+ */
+export const referenceNoteSentences = (sentences: readonly Sentence[], source: string): Set<Sentence> =>
+  new Set(sentences.filter((sentence) => NOTE_LINE.test(source.slice(lineStartOf(source, sentence.span.start), sentence.span.end))));
+
+/** A line that ends as a sentence does. */
+const CLOSED_LINE = /[。．.!?！？][\s」』）)]*$/u;
+
+/** A heading or a comment line, which a table's cells are not. */
+const MARKUP_LINE = /^[ \t\u3000]*(?:#|<!--)/u;
+
+/** A block of lines none of which ends as a sentence: a table's cell or a list of conditions, set out as their own lines. */
+const isFragmentBlock = (source: string, block: Span): boolean => {
+  const lines = source
+    .slice(block.start, block.end)
+    .split("\n")
+    .filter((line) => line.trim() !== "");
+  return lines.length > 0 && lines.every((line) => !CLOSED_LINE.test(line.trim()) && !MARKUP_LINE.test(line));
+};
+
+/** How many fragment blocks must stand on each side of a block for it to read as one cell of a table laid out as lines. */
+const CELL_NEIGHBOURS = 2;
+
+const isAmongFragments = (source: string, blocks: readonly Span[], index: number): boolean => {
+  const sides = [blocks.slice(Math.max(0, index - CELL_NEIGHBOURS), index), blocks.slice(index + 1, index + 1 + CELL_NEIGHBOURS)];
+  return sides.every((side) => side.length === CELL_NEIGHBOURS && side.every((block) => isFragmentBlock(source, block)));
+};
+
+/**
+ * The sentences of a block that stands between runs of fragment blocks: a table copied from a page, its cells one per block
+ * (電池の種類 / 受託要件 / 制限なし。ただし…場合がある。). A cell is written as tables write it, whatever the text around the table.
+ */
+export const tableCellSentences = (sentences: readonly Sentence[], source: string): Set<Sentence> => {
+  const blocks = blocksOf(source).filter((block) => source.slice(block.start, block.end).trim() !== "");
+  const cells = blocks.filter((_, index) => isAmongFragments(source, blocks, index));
+  return new Set(sentences.filter((sentence) => cells.some((cell) => sentence.span.start >= cell.start && sentence.span.start < cell.end)));
 };
