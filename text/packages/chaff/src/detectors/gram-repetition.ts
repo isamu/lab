@@ -2,10 +2,10 @@ import { wordsOf } from "./structure.ts";
 import { MIN_DOCUMENT_LENGTH } from "./signals.ts";
 import { compacted, linkedIn, placeAt } from "./gram-place.ts";
 import { charWindows, wordWindows } from "./gram-windows.ts";
-import { fieldLabelSpans, fixedEndingSpans, furnitureMask, isFurniture, quotedSpans } from "./gram-furniture.ts";
+import { fieldLabelSpans, fixedEndingSpans, furnitureMask, isFurniture, partReferenceSpans, quotedClosingSpans, quotedSpans } from "./gram-furniture.ts";
 import { hasPredicateIn } from "./gram-predicate.ts";
 import { gramPassagesOf } from "./gram-passages.ts";
-import { entryOpeners, nounFragments, sectionOpeners } from "./gram-openers.ts";
+import { entryOpeners, nounFragments, rowEndCells, sectionOpeners } from "./gram-openers.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
 import type { Detector, Finding, LengthUnit, ProseDocument, Sentence, Span, StructureNode } from "../plugin.ts";
 
@@ -66,9 +66,10 @@ type Context = { readonly doc: ProseDocument; readonly names: readonly string[];
 
 /** 数えない範囲: 名前（触れる窓を外す）と、飾り（過半を覆う窓を外す）。 */
 const excludedIn = (context: Context, sentence: Sentence, text: string, source: ReturnType<typeof compacted>): { named: Span[]; mask: boolean[] } => {
-  const named = [...nameSpans(text, context.names), ...fieldLabelSpans(text, context.doc.lengthUnit)];
+  const unit = context.doc.lengthUnit;
+  const named = [...nameSpans(text, context.names), ...fieldLabelSpans(text, unit), ...partReferenceSpans(text, unit)];
   const mask = furnitureMask(text, linkedIn(context.doc, sentence, source));
-  [...fixedEndingSpans(text, context.endings), ...quotedSpans(text)].forEach((span) => mask.fill(true, span.start, span.end));
+  [...fixedEndingSpans(text, context.endings), ...quotedSpans(text), ...quotedClosingSpans(text)].forEach((span) => mask.fill(true, span.start, span.end));
   return { named, mask };
 };
 
@@ -104,11 +105,14 @@ const gramsOf = (context: Context, sentences: readonly Sentence[]): Tally => {
 };
 
 /**
- * ひな形の文: 参照の項目の説明の段落（`max-age` の節、定義の並びの「: 」）と、句点の無い名詞で終わる一行（表の欄、項目の名前）。
+ * ひな形の文: 参照の項目の説明の段落（`max-age` の節、定義の並びの「: 」）と、句点の無い名詞で終わる一行（表の欄、項目の名前）と、その欄が
+ * 2 つ続いた後ろの一行の文（表の行の最後の欄）。
  * ここに出るのは書式の繰り返しで、ここに出たぶんは数えない。
  */
-const templatesOf = (doc: ProseDocument): ReadonlySet<Sentence> =>
-  new Set([...entryOpeners(doc.sections, doc.source), ...nounFragments(doc.sentences, doc.source)]);
+const templatesOf = (doc: ProseDocument): ReadonlySet<Sentence> => {
+  const fragments = new Set(nounFragments(doc.sentences, doc.source));
+  return new Set([...entryOpeners(doc.sections, doc.source), ...fragments, ...rowEndCells(doc.sentences, fragments, doc.source)]);
+};
 
 /** 文書の題（一番上の見出し）。題にある言い回しは文書の主題で、繰り返して当たり前（CCライセンスを付与する際の…）。 */
 const titleOf = (doc: ProseDocument): string =>

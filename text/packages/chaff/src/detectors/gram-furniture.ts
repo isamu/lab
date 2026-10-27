@@ -50,3 +50,50 @@ export const isFurniture = (text: string, mask: readonly boolean[], window: Span
   const marked = visible.filter((index) => mask[index] === true);
   return visible.length > 0 && marked.length * 2 > visible.length;
 };
+
+/** 引いた題の後ろの結びとして読む長さ（を確認してください。は 10 文字）。これより長ければ、題の後ろに書き手の文が続いている。 */
+const QUOTE_CLOSING_MAX = 12;
+/**
+ * 題を受ける格助詞（を、が、に、で、へ）一つと、述語だけ。助詞が無ければ引いた語が述語の一部（「実行」してまいります）で、
+ * 二つ目の助詞があれば書き手が別のことを足している（「…支援」に力を尽くしてまいります）。
+ */
+const QUOTE_CLOSING = new RegExp(String.raw`[」』]([をがにでへ][^「」『』、，。．をがにでへ]{1,${String(QUOTE_CLOSING_MAX - 1)}}[。．]?)\s*$`, "u");
+
+/**
+ * 引いた題で終わる文の結び（詳しくは「入力可能な文字」を確認してください。、「一時保存」をクリックします。）の範囲。手引きは別のページや
+ * 画面の部品を指すたびに同じ結びで指す。指す先が違えば、繰り返しているのは参照の書式で、書き手の言い回しではない。
+ */
+export const quotedClosingSpans = (text: string): Span[] => {
+  const match = QUOTE_CLOSING.exec(text);
+  return match === null ? [] : [{ start: match.index + 1, end: match.index + match[0].length }];
+};
+
+/** 文書の中の番号の付いた部分を指す語（Section 3.1 の Section）。 */
+const PART_LABELS = new Set([
+  "section",
+  "sections",
+  "table",
+  "tables",
+  "figure",
+  "figures",
+  "fig.",
+  "chapter",
+  "chapters",
+  "appendix",
+  "appendices",
+  "annex",
+  "part",
+  "parts",
+]);
+
+/** 語と、その後ろの番号（3.1、2b、B）。語が PART_LABELS にあれば文書の部分を指す名前。 */
+const LABEL_AND_NUMBER = /\b([A-Z][a-z]+\.?)\s+(?:\d+(?:\.\d+)*[a-z]?|[A-Z])\b/gu;
+/** 表2、図1-3、第3章、第2節。 */
+const JA_PART_REFERENCE = /[表図][\d０-９]+(?:[-－.．][\d０-９]+)*|第[\d０-９一二三四五六七八九十]+[章節]/gu;
+
+/**
+ * 文書の部分を指す名前（Section 3.1、Table 2、Appendix B、表2、第3章）の範囲。名前と同じく、それにかかる語句
+ * （the mechanism families set out in Section 3.1）は参照の書式で、数えない。
+ */
+export const partReferenceSpans = (text: string, unit: LengthUnit): Span[] =>
+  unit === "word" ? spansOf(text, LABEL_AND_NUMBER, (match) => PART_LABELS.has((match[1] ?? "").toLowerCase())) : spansOf(text, JA_PART_REFERENCE, () => true);
