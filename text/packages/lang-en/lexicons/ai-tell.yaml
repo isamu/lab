@@ -155,3 +155,8 @@ entries:
     weight: 0.5
   - pattern: my honest take
     weight: 0.5
+  # Stock phrases of a generated how-to guide, in no human document of the corpus.
+  - pattern: the golden rule of
+    weight: 0.3
+  - pattern: a powerful solution
+    weight: 0.4

@@ -1,4 +1,3 @@
-aoml-hurricane-faq  1
 arxiv-astro-ph-new-2025-01-03  1
 asf-board-minutes-2025-01  1
 cisa-scuba-teams  1
@@ -19,8 +18,6 @@ mext-heatstroke-after-holidays  1
 mhlw-icd-committee-26-minutes  1
 neeview-changelog-ja  1
 nsf-19-582-reu-solicitation  1
-nstac-microdata-forum  1
-nta-taxanswer-1120  1
 openapi-spec-3-1-0  1
 qiita-jnchito-good-sample-code  1
 react-ja-thinking  1
