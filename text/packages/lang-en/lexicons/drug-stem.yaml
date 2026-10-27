@@ -1,0 +1,48 @@
+# Stems of drugs' international non-proprietary names (the WHO's INN stems): a word ending in one is a drug's name
+# (paroxetine by -oxetine, as fluoxetine; valsartan by -sartan), not a slip. unknown-word does not report such a word
+# when at least three letters stand before the stem. Only stems no ordinary English word ends in are listed.
+id: drug-stem
+language: en
+entries:
+  - pattern: afil
+  - pattern: azepam
+  - pattern: azepine
+  - pattern: azolam
+  - pattern: azoline
+  - pattern: azosin
+  - pattern: barbital
+  - pattern: caine
+  - pattern: ciclovir
+  - pattern: cillin
+  - pattern: conazole
+  - pattern: cycline
+  - pattern: dipine
+  - pattern: dronate
+  - pattern: floxacin
+  - pattern: gliflozin
+  - pattern: gliptin
+  - pattern: glutide
+  - pattern: lukast
+  - pattern: mycin
+  - pattern: navir
+  - pattern: olol
+  - pattern: oxetine
+  - pattern: parin
+  - pattern: peridol
+  - pattern: pramine
+  - pattern: prazole
+  - pattern: previr
+  - pattern: profen
+  - pattern: sartan
+  - pattern: semide
+  - pattern: setron
+  - pattern: tadine
+  - pattern: tegravir
+  - pattern: thiazide
+  - pattern: tidine
+  - pattern: tinib
+  - pattern: triptan
+  - pattern: triptyline
+  - pattern: umab
+  - pattern: vastatin
+  - pattern: ximab

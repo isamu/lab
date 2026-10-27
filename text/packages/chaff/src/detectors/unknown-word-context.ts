@@ -2,6 +2,29 @@
 // writer means as written, not a slip. Pure functions over the Markdown source and an offset into it.
 import { isAddress, isKnownWord, stemsOf, type CheckedWord, type Speller } from "../spelling.ts";
 
+/** Each half of a closed compound keeps this many letters: a shorter half (open + end, pip + line) is more often a slip at the joint. */
+const MIN_COMPOUND_PART = 4;
+
+/**
+ * Two dictionary words of four letters or more written as one (crowdwork, crowdworkers): a closed compound, not a slip. The
+ * head is a word as listed and the tail takes only an inflection: a prefix or a derived ending on a half (misre + presenation)
+ * reads too many slips as words.
+ */
+export const isClosedCompound = (word: string, speller: Speller): boolean => {
+  const listed: Speller = { ...speller, suffixes: [], prefixes: [] };
+  const inflected: Speller = { ...listed, suffixes: speller.suffixes.filter(({ inflection }) => inflection === true) };
+  return [...Array(Math.max(0, word.length - 2 * MIN_COMPOUND_PART + 1)).keys()]
+    .map((index) => index + MIN_COMPOUND_PART)
+    .some((split) => isKnownWord(word.slice(0, split), listed) && isKnownWord(word.slice(split), inflected));
+};
+
+/** Letters a name keeps before its drug stem: fewer, and the word is too short to be read as a drug by its ending alone. */
+const MIN_DRUG_HEAD = 3;
+
+/** A drug's international name, read by its stem (paroxetine by -oxetine, as fluoxetine): stems from the drug-stem lexicon. */
+export const hasDrugStem = (word: string, stems: readonly string[]): boolean =>
+  stems.some((stem) => word.endsWith(stem) && word.length >= stem.length + MIN_DRUG_HEAD);
+
 /** How far back or ahead to look for a neighbouring word or a search stem. */
 const NEIGHBOUR_REACH = 40;
 
