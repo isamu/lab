@@ -7542,19 +7542,19 @@
       "groups": {
         "academic": {
           "documents": 10,
-          "fired": 7
+          "fired": 1
         },
         "blog": {
           "documents": 23,
-          "fired": 2
+          "fired": 0
         },
         "business": {
           "documents": 80,
-          "fired": 3
+          "fired": 0
         },
         "docs": {
           "documents": 21,
-          "fired": 1
+          "fired": 0
         },
         "legal": {
           "documents": 35,
