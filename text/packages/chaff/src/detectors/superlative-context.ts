@@ -10,6 +10,8 @@ export type Context = {
   readonly referents: Lexicon;
   /** 誰にとっての最もなのかを言う語（にとって）。 */
   readonly viewpoints: Lexicon;
+  /** 全体の部分を言う名詞（part・role・step）。 */
+  readonly parts: Lexicon;
 };
 
 /** 語彙表の語が最上級まで届く語の数。これより離れた動詞は、間に別の目的語や節がある。 */
@@ -30,6 +32,7 @@ export const contextOf = (lexicons: Readonly<Record<string, Lexicon>>): Context 
   goals: lexicons["superlative-goal"] ?? [],
   referents: lexicons["superlative-referent"] ?? [],
   viewpoints: lexicons["superlative-viewpoint"] ?? [],
+  parts: lexicons["superlative-part"] ?? [],
 });
 
 const isPunct = (token: Token | undefined): boolean => token === undefined || token.pos === "PUNCT";
@@ -60,13 +63,24 @@ const isWord = (token: Token | undefined, words: Lexicon): boolean =>
 
 const VERBAL = new Set(["VERB", "AUX"]);
 
+const isVerbal = (token: Token | undefined): boolean => VERBAL.has(token?.pos ?? "");
+
+/**
+ * 名詞句の後ろの述語の動詞。数（the best one is）の後ろの動詞は修飾として句に読み込まれるので、句の最後の語も見る。
+ */
+const verbAt = (tokens: readonly Token[], range: TokenRange, end: number): number | undefined => {
+  if (isVerbal(tokens[end])) return end;
+  return end - 1 > range.end && isVerbal(tokens[end - 1]) ? end - 1 : undefined;
+};
+
 /**
  * 最上級の名詞句が主語で、述語がどれかを指しているか（The best plan is the one you keep・The most important divergence is
  * the second）。どれが一番なのかを決める言い方で、一番だという主張ではない。
  */
 export const pointsAtReferent = (tokens: readonly Token[], range: TokenRange, referents: Lexicon): boolean => {
-  const at = phraseEnd(tokens, range.end);
-  if (!VERBAL.has(tokens[at]?.pos ?? "")) return false;
+  const end = phraseEnd(tokens, range.end);
+  const at = verbAt(tokens, range, end);
+  if (at === undefined) return false;
   const next = tokens[at + 1]?.pos === "DET" ? at + 2 : at + 1;
   return isWord(tokens[next], referents);
 };
@@ -74,3 +88,12 @@ export const pointsAtReferent = (tokens: readonly Token[], range: TokenRange, re
 /** 誰にとっての最もなのかが、同じ節の最上級より前にあるか（俺にとって今日は最高の日だ）。 */
 export const viewpointBefore = (tokens: readonly Token[], range: TokenRange, viewpoints: Lexicon): boolean =>
   viewpoints.some((entry) => endsBefore(tokens, range, entry, range.start));
+
+/**
+ * 最上級の名詞が全体の部分を言うか（the most important part・the most important role）。比べているのは、文章が述べている
+ * 全体の部分どうしで、世の中のものと比べた主張ではない。名詞は最上級の修飾の後ろに来る（英語）。
+ */
+export const ranksParts = (tokens: readonly Token[], range: TokenRange, parts: Lexicon): boolean => {
+  const at = phraseEnd(tokens, range.end);
+  return at > range.end && isWord(tokens[at - 1], parts);
+};
