@@ -28,7 +28,7 @@ chaff は、読み手を待たせる書き出しや、生成文によく出る�
 | `announcing-opener` | 「ポイントは、」のような予告で始まる文の重なり | いつも（info） |
 | `contrast-framing` | 「単なる X ではなく」のような対比の重なり | いつも（info） |
 | `colon-lead-in` | コロンで箇条書きへ渡す文の多さ | いつも（info） |
-| `ai-generated-composite` | 生成文の形が、一つの記事に 2 種以上そろったこと | いつも |
+| `ai-generated-composite` | 生成文の形が、一つの記事に 3 種以上そろったこと | いつも |
 | `announced-count-mismatch` | 予告した数と、箇条書きの数の食い違い | いつも |
 | `broken-link` | 記事の中に無い見出しへのリンク | いつも |
 | `quote-without-source` | 人の言葉として引いたのに、段落に出典が無い引用 | いつも（info） |
@@ -102,26 +102,26 @@ kiji.md   blog/tech · 日本語   ジャンルは --genre から
                   padded-intro
   3:1     warning 文の長さのばらつきが 35%（36% 以上ほしい）
                   sentence-rhythm
+  9:1     info    「単なる」など、対比の枠で書いた文が 8.3% あります（6% まで）
+                  contrast-framing
   11:1    info    「正直に言うと」など、予告で始まる文が 3 個あります（3 個から）
                   announcing-opener
-  11:1    warning 「section-length-uniformity、sentence-rhythm、padded-intro、closing-cliche、announcing-opener、colon-lead-in」が同じ文書にそろっています（6 種、2 種から）
+  11:1    warning 「section-length-uniformity、sentence-rhythm、padded-intro、closing-cliche、contrast-framing、announcing-opener」が同じ文書にそろっています（6 種、2 種から）
                   ai-generated-composite
   15:1    info    「ポイントは」など、予告で始まる文が 3 個あります（3 個から）
                   announcing-opener
-  17:1    info    コロンで箇条書きへ渡す文が 1000 字あたり 3.8 個あります（2 個まで）
-                  colon-lead-in
   20:12   info    日本語と後ろの数字のあいだを詰めています（この文書はふつう空ける。5 箇所のうち 1 箇所が違う）
                   latin-spacing
   20:13   info    日本語と前の数字のあいだを詰めています（この文書はふつう空ける。5 箇所のうち 1 箇所が違う）
                   latin-spacing
   23:1    info    「重要なのは」など、予告で始まる文が 3 個あります（3 個から）
                   announcing-opener
-  27:1    info    コロンで箇条書きへ渡す文が 1000 字あたり 3.8 個あります（2 個まで）
-                  colon-lead-in
   27:11   warning 「2 つ」と予告していますが、すぐ下の箇条書きは3項目です
                   announced-count-mismatch
   33:46   warning リンク「[ビルド時間の記録](#ビルド時間の記録)」が指す「#ビルド時間の記録」の見出しがこの文書にありません
                   broken-link
+  37:22   info    「だけでなく」など、対比の枠で書いた文が 8.3% あります（6% まで）
+                  contrast-framing
   39:1    warning 「いかがでしたでしょうか」で締めています
                   closing-cliche
   39:13   warning 「お役に立てれば幸いです」で締めています
@@ -174,8 +174,8 @@ kiji.md   blog/tech · 日本語   ジャンルは --genre から
 | 行 | 指摘 | 意味 | 直しかた |
 | --- | --- | --- | --- |
 | 3 | `padded-intro` | 「近年、」は、どの記事にも書ける書き出しです | 何に困っていたかから書き始めます。「CI のビルドに毎回 9 分かかっていました」 |
+| 9、37 | `contrast-framing` | 「単なる待ち時間ではありません」「単に速くなっただけでなく」と、誰も言っていないことを打ち消す対比が重なっています | 打ち消した側を消し、言いたいことだけを書きます。「ビルドは 9 分から 2 分になりました」 |
 | 11、15、23 | `announcing-opener` | 「正直に言うと」「ポイントは」「重要なのは」と、予告で文を始めています | 予告を消し、中身から書き始めます |
-| 17、27 | `colon-lead-in` | 「次の通りです：」と、コロンで箇条書きへ渡す文が続いています | 箇条書きの項目がつながっているなら、文に戻してつながりを書きます |
 | 20 | `latin-spacing` | ほかは「9 分」と空けているのに、「1行」だけ詰めています | 「1 行」と空けて、記事の中で揃えます |
 | 27 | `announced-count-mismatch` | 「2 つ」と書いたのに、箇条書きは 3 つあります | 数か箇条書きの、違うほうを直します |
 | 33 | `broken-link` | 「ビルド時間の記録」という見出しが、記事にありません | 見出しを足すか、リンクを外します |

@@ -1,0 +1,32 @@
+# Verbs that take a superlative as what is sought or chosen, not as what is claimed: "to achieve the best results",
+# "before deciding the best way", "identify which font was the most legible". They stand before the superlative, at most
+# a few words away in the same clause. unqualified-superlative does not report a superlative they govern.
+id: superlative-goal
+language: en
+entries:
+  - pattern: achieve
+    position: before
+  - pattern: attain
+    position: before
+  - pattern: reach
+    position: before
+  - pattern: come to
+    position: before
+  - pattern: arrive at
+    position: before
+  - pattern: aim for
+    position: before
+  - pattern: strive for
+    position: before
+  - pattern: decide
+    position: before
+  - pattern: determine
+    position: before
+  - pattern: choose
+    position: before
+  - pattern: select
+    position: before
+  - pattern: pick
+    position: before
+  - pattern: identify
+    position: before

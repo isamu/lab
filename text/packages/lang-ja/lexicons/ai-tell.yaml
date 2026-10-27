@@ -1,18 +1,18 @@
 # AI 生成の signal。1 つでは何も言えないので重みを足し合わせる。
 # 単独で「AI が書いた」とは言わない。spec §20.2。
+# 同じ言語・ジャンル（ブログ、ビジネス）の人の文書が生成文と同じかそれ以上に使う言い回しは、人の文書の点を上げるだけなので置かない。
+# 人の文書 2 本以上で外したもの: することが重要です、することが大切です、重要な役割を果たす、最大限に引き出す、多角的な、包括的な。
+# 人の文書 1 本にあったものは重みを半分にしてある。
 id: ai-tell
 language: ja
 entries:
   - pattern: 現代社会において
-    weight: 0.9
+    weight: 0.5
     rewrite: 消して、本題から書く
   - pattern: 急速に変化する
     weight: 0.7
-  - pattern: 重要な役割を果たす
-    weight: 0.8
-    rewrite: 何をするのかを書く（「発注の判断に使う」）
   - pattern: と言えるでしょう
-    weight: 0.6
+    weight: 0.3
     rewrite: 言い切れるなら「です」。言い切れないなら、何が分かれば言えるのかを書く
   - pattern: 様々な要因が
     weight: 0.6
@@ -24,7 +24,7 @@ entries:
   - pattern: ぜひ参考にしてみてください
     weight: 0.7
   - pattern: といえるでしょう
-    weight: 0.6
+    weight: 0.3
     rewrite: 言い切れるなら「です」。言い切れないなら、何が分かれば言えるのかを書く
   - pattern: と言えるのではないでしょうか
     weight: 0.7
@@ -41,7 +41,7 @@ entries:
   - pattern: 一翼を担う
     weight: 0.6
   - pattern: 鍵となる
-    weight: 0.5
+    weight: 0.3
     rewrite: 何を決めるのかを書く
   - pattern: 鍵を握る
     weight: 0.5
@@ -59,15 +59,11 @@ entries:
   - pattern: 新たな可能性を切り開く
     weight: 0.8
   - pattern: 多岐にわたる
-    weight: 0.4
+    weight: 0.2
   - pattern: 私たちの生活に欠かせない
     weight: 0.7
   - pattern: 本記事では
-    weight: 0.4
-  - pattern: することが重要です
-    weight: 0.4
-  - pattern: することが大切です
-    weight: 0.4
+    weight: 0.2
   # 技術文の比喩の動詞と、英語の直訳（silently fails）。生成 AI 以前の技術記事ではほとんど使われず、その後に増えた言い回し。
   # 1 つなら人も書くので重みは低い。
   - pattern: 地味に効く
@@ -107,21 +103,15 @@ entries:
     weight: 0.4
   # 2016〜2021 年の Qiita の記事ではほとんど使われず、2025〜2026 年の記事で目立って増えた言い回し。1 つなら人も書くので重みは低い。
   - pattern: 浮き彫りになる
-    weight: 0.4
-  - pattern: 最大限に引き出す
-    weight: 0.4
+    weight: 0.2
   - pattern: 真価を発揮する
     weight: 0.4
   - pattern: 強力な武器
     weight: 0.4
   - pattern: ステップバイステップ
     weight: 0.3
-  - pattern: 多角的な
-    weight: 0.3
-  - pattern: 包括的な
-    weight: 0.3
   - pattern: シームレスに
-    weight: 0.3
+    weight: 0.2
   - pattern: 大幅に向上する
     weight: 0.3
   # 生成文の言い回し。chaff-corpus の 100 本の生成文と同じジャンルの人の文書で比べて、人の側が 0 だったもの。
@@ -133,7 +123,7 @@ entries:
   - pattern: 見ていきましょう
     weight: 0.4
   - pattern: 橋渡し
-    weight: 0.3
+    weight: 0.2
   - pattern: 刺さる
     weight: 0.3
   - pattern: 地味だけど

@@ -49,8 +49,8 @@ example:
       Of the twelve people on our team, nine had no backup of their phone photos when we asked last month.
 
 not_flagged:
-  ja: 一つ二つの「everyone」、「everyone」だけを繰り返す文書（チームの全員）、weasel-word が言う「most people agree」「everyone knows」は言いません。英語の文書だけを見ます。短い文書は測りません。
-  en: One or two uses, a document that only repeats "everyone" (the whole team), and "most people agree" or "everyone knows", which weasel-word reports, are not reported. Short documents are not measured.
+  ja: 一つ二つの「everyone」、「everyone」だけを繰り返す文書（チームの全員）、weasel-word が言う「most people agree」「everyone knows」は言いません。誰のことかが決まっている「everyone」「anyone who」「nobody」は数えません（同じ文か前の文がチームや家族を名指す、everyone here、nobody caught it のように過去の一度の出来事を言う）。英語の文書だけを見ます。短い文書は測りません。
+  en: One or two uses, a document that only repeats "everyone" (the whole team), and "most people agree" or "everyone knows", which weasel-word reports, are not reported. "Everyone", "anyone who" and "nobody" are not counted when the text says who they are (a team or a family named in the same or the previous sentence, "everyone here", or a past event such as "nobody caught it"). Short documents are not measured.
 level_meaning:
   ja: 1000 語あたり {limit} 個まで
   en: up to {limit} sweeping claims per 1000 words

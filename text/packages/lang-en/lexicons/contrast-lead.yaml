@@ -1,6 +1,7 @@
 # A denial that frames a contrast only when a turn (contrast-turn) answers it: "It's not a perk. It's a necessity."
-# Group across: a bare denial that frames a contrast only when the next sentence opens with a turn and denies nothing
-# ("What surprised me wasn't the food. It was the evenings."); a turn later in the same sentence does not answer it.
+# Group across: a bare denial that frames a contrast only when the next sentence opens with an across turn (It, They)
+# and denies nothing ("What surprised me wasn't the food. It was the evenings."); a turn later in the same sentence,
+# a concession ("I don't always. But ...") or a remark on the whole sentence ("That's more than ...") does not answer it.
 id: contrast-lead
 language: en
 entries:

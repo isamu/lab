@@ -89,3 +89,36 @@ describe("ai-tell: stock phrases of a generated guide (en)", () => {
     assert.deepEqual(aiTell("# Backups\n\nKeep three copies: the golden rule of backups.\n", en, "blog/tech"), []);
   });
 });
+
+/** The score ai-tell gives a source when any score is reported (limit 0); 0 when nothing in it is listed. */
+const scoreAtAnyScore = (source: string, adapter: LanguageAdapter): number =>
+  runRules(buildDocument("t.md", source, adapter), loadRules(adapter.id), {}, true, "blog/essay", { "ai-tell": 0 })
+    .findings.filter((finding) => finding.rule === "ai-tell")
+    .map((finding) => Number(finding.values["density"]))
+    .reduce((sum, density) => sum + density, 0);
+
+describe("ai-tell: phrases human blog and business documents use as much as generated ones", () => {
+  it("does not count the ones several human documents use (ja)", () => {
+    const source =
+      "# 報告\n\n記録を残すことが大切です。毎朝確かめることが重要です。倉庫は物流で重要な役割を果たす。包括的な点検と多角的な検討で、設備の力を最大限に引き出す。\n";
+    assert.deepEqual(phrasesAtAnyScore(source, ja), []);
+  });
+
+  it("does not count the ones several human documents use (en)", () => {
+    const source =
+      "# Report\n\nThe tapestry in the lobby showcases local work. The data underscores the point. The shop sits in the heart of the town and the update went seamlessly.\n";
+    assert.deepEqual(phrasesAtAnyScore(source, en), []);
+  });
+
+  it("counts a phrase one human document used at half its old weight", () => {
+    assert.equal(scoreAtAnyScore("# 記事\n\n現代社会において、紙の地図はまだ使われる。\n", ja), 5);
+    assert.equal(scoreAtAnyScore("# Notes\n\nThe market is a vibrant place.\n", en), 3);
+  });
+
+  it("still reports the phrases no human document uses, piled up", () => {
+    const jaSource = "# 記事\n\n現代社会において、データは大きな可能性を秘めていると言えるのではないでしょうか。\n";
+    assert.equal(aiTell(jaSource, ja).length, 1);
+    const enSource = "# Notes\n\nIn today's fast-paced world, data plays a crucial role. Let us delve into why.\n";
+    assert.equal(aiTell(enSource, en).length, 1);
+  });
+});

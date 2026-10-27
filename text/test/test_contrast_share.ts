@@ -15,7 +15,12 @@ const RULE = "contrast-framing";
 
 const framed = (adapter: LanguageAdapter, text: string): string[] => {
   const doc = buildDocument("t.md", text, adapter);
-  const words = { frames: doc.lexicons["contrast-frame"] ?? [], leads: doc.lexicons["contrast-lead"] ?? [], turns: doc.lexicons["contrast-turn"] ?? [] };
+  const words = {
+    frames: doc.lexicons["contrast-frame"] ?? [],
+    leads: doc.lexicons["contrast-lead"] ?? [],
+    turns: doc.lexicons["contrast-turn"] ?? [],
+    amounts: doc.lexicons["contrast-amount"] ?? [],
+  };
   return contrastSentences(doc.sentences, words).map((sentence) => sentence.text.trim());
 };
 
@@ -52,6 +57,43 @@ describe("contrast frames across two sentences (en)", () => {
   });
 });
 
+describe("what does not answer a bare denial (en)", () => {
+  it("does not count a concession opened by But after the denial", () => {
+    assert.deepEqual(framed(en, "Who has time for this? Fair. I don't always. But it takes ten minutes a day."), []);
+    assert.deepEqual(framed(en, "We didn't finish the audit. But the team will close it next week."), []);
+  });
+
+  it("does not count a narrated negative followed by a remark on the whole sentence", () => {
+    assert.deepEqual(framed(en, "When I didn't come in for a week, the owner called me. That's more than my bank does."), []);
+    assert.deepEqual(framed(en, "The parcel didn't arrive on Monday. This is the third time this month."), []);
+  });
+
+  it("still counts a bare denial answered by it or they, whatever verb follows", () => {
+    assert.deepEqual(framed(en, "Working from home doesn't make me faster. It makes me calmer."), ["Working from home doesn't make me faster."]);
+    assert.deepEqual(framed(en, "Guests don't really come for the food. They're here for the table."), ["Guests don't really come for the food."]);
+  });
+
+  it("still counts a full denial answered by But in the next sentence", () => {
+    assert.deepEqual(framed(en, "It's not a tool. But a partner for the team."), ["It's not a tool."]);
+  });
+});
+
+describe("a frame that measures an amount", () => {
+  it("does not count not just one, or not only twice (more than one, not a reframe)", () => {
+    assert.deepEqual(framed(en, "Buy something every couple of hours. Not just one coffee for the whole day."), []);
+    assert.deepEqual(framed(en, "We checked the meter not only twice but every hour."), []);
+    assert.deepEqual(framed(en, "Order not just 2 rolls but a whole tray."), []);
+    assert.deepEqual(framed(ja, "一杯だけでなく、二杯目も頼んでください。"), []);
+    assert.deepEqual(framed(ja, "1回だけでなく、毎週確認します。"), []);
+  });
+
+  it("still counts the same frame before a thing, not an amount", () => {
+    assert.deepEqual(framed(en, "Not just a coffee shop. A second office."), ["Not just a coffee shop."]);
+    assert.deepEqual(framed(en, "This is not only someone's tool but a culture."), ["This is not only someone's tool but a culture."]);
+    assert.deepEqual(framed(ja, "道具だけでなく、文化も届けます。"), ["道具だけでなく、文化も届けます。"]);
+  });
+});
+
 describe("「ではなく、〜です。」(ja)", () => {
   it("counts a sentence that closes with です or だ after ではなく、", () => {
     assert.deepEqual(framed(ja, "問題は道具ではなく、運用です。"), ["問題は道具ではなく、運用です。"]);
@@ -76,9 +118,18 @@ describe("contrast-framing counts a share of sentences", () => {
     assert.ok(!firedRules(en, `# Post\n\n${three}${fillerEn(80)}`, "blog/tech").includes(RULE));
   });
 
-  it("does not report two frames, however short the document", () => {
+  it("reports two frames in a short document, and never a single frame", () => {
     const two = "It's not a tool. It's a partner. People don't come for the food. They come for the table. ";
-    assert.ok(!firedRules(en, `# Post\n\n${two}${fillerEn(20)}`, "blog/tech").includes(RULE));
+    assert.ok(firedRules(en, `# Post\n\n${two}${fillerEn(20)}`, "blog/tech").includes(RULE));
+    const one = "It's not a tool. It's a partner. ";
+    assert.ok(!firedRules(en, `# Post\n\n${one}${fillerEn(16)}`, "blog/tech").includes(RULE));
+  });
+
+  it("holds an essay to a lower share than a tech post", () => {
+    // Four sentences hold the two frames; with 36 more the share is 5.0%: past the essay limit, under the default.
+    const two = "It's not a tool. It's a partner. People don't come for the food. They come for the table. ";
+    assert.ok(firedRules(en, `# Post\n\n${two}${fillerEn(36)}`, "blog/essay").includes(RULE));
+    assert.ok(!firedRules(en, `# Post\n\n${two}${fillerEn(36)}`, "blog/tech").includes(RULE));
   });
 
   it("reports 「ではなく、〜です。」 three times in a short Japanese document", () => {

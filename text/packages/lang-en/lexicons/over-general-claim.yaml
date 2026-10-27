@@ -1,11 +1,62 @@
 # Sweeping claims about people in general: what most people do, what nobody does. Read by over-general-claim, which
 # counts them per length of the document; one is ordinary. "Most people agree" and "everyone knows" are weasel-word's.
+#
+# general: names people at large, always counted.
+# subject: counted only as the subject of a verb (many people keep ...), not as a count of people (see many people).
+# who: counted unless the text says which people it means (bounded): a group named in the same or the previous
+#   sentence (group-noun, addressee), a word right after it (right-after: everyone here), or a past-tense verb
+#   right after it, which reports what one group did once (nobody caught it, everyone who jumped in).
+# present-form: the present forms of be, have and do; the past-tense check reads them as present.
+# relative: the pronoun the past-tense check steps over (everyone who jumped in).
 id: over-general-claim
 language: en
 entries:
-  - pattern: most people
-  - pattern: for most of us
-  - pattern: for most households
-  - pattern: nobody
-  - pattern: everyone
-  - pattern: anyone who
+  - { pattern: most people, group: general }
+  - { pattern: most of us, group: general }
+  - { pattern: for most households, group: general }
+  - { pattern: many people, group: subject }
+  - { pattern: nobody, group: who }
+  - { pattern: everyone, group: who }
+  - { pattern: anyone who, group: who }
+
+  - { pattern: team, group: group-noun }
+  - { pattern: teams, group: group-noun }
+  - { pattern: family, group: group-noun }
+  - { pattern: families, group: group-noun }
+  - { pattern: household, group: group-noun }
+  - { pattern: members, group: group-noun }
+  - { pattern: staff, group: group-noun }
+  - { pattern: colleagues, group: group-noun }
+  - { pattern: coworkers, group: group-noun }
+  - { pattern: co-workers, group: group-noun }
+  - { pattern: employees, group: group-noun }
+  - { pattern: crew, group: group-noun }
+  - { pattern: class, group: group-noun }
+  - { pattern: committee, group: group-noun }
+  - { pattern: department, group: group-noun }
+  - { pattern: office, group: group-noun }
+  - { pattern: guests, group: group-noun }
+  - { pattern: attendees, group: group-noun }
+  - { pattern: participants, group: group-noun }
+  - { pattern: call, group: group-noun }
+  - { pattern: meeting, group: group-noun }
+  - { pattern: room, group: group-noun }
+
+  - { pattern: all of you, group: addressee }
+  - { pattern: you all, group: addressee }
+
+  - { pattern: here, group: right-after }
+  - { pattern: present, group: right-after }
+
+  - { pattern: is, group: present-form }
+  - { pattern: are, group: present-form }
+  - { pattern: am, group: present-form }
+  - { pattern: has, group: present-form }
+  - { pattern: does, group: present-form }
+  - { pattern: "'s", group: present-form }
+  - { pattern: "'re", group: present-form }
+  - { pattern: "'m", group: present-form }
+  - { pattern: "'ve", group: present-form }
+
+  - { pattern: who, group: relative }
+  - { pattern: that, group: relative }

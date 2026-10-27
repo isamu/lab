@@ -53,7 +53,9 @@ const findingsOf =
         }));
 
 export const danglingReference: Detector = (doc, options) =>
-  findingsOf("dangling-reference", (tree, source) => danglingReferences(tree, source, patternsOf(doc, "section-name-noun")))(doc, options);
+  findingsOf("dangling-reference", (tree, source) =>
+    danglingReferences(tree, source, patternsOf(doc, "section-name-noun"), patternsOf(doc, "reference-list-heading")),
+  )(doc, options);
 /** Markdown の HTML ブロックの中の条は木に入らない。そこを挟んだ抜けは、見えなかった番号かもしれない。 */
 const structureNumberingGap: Detector = (doc, options) =>
   findingsOf("numbering-gap", (tree, source) => numberingBreaks(tree, ...numberingReadings(doc, source)))(doc, options);

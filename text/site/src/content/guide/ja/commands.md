@@ -476,7 +476,7 @@ after.md の構成: 見出し 5、節の平均 101 字、箇条書き 0%、太�
 <!-- chaff-screen: rewrite -->
 ```
 $ npx chaffjs ai-score before.md after.md --compact
-before.md: ai-score high 7/32 ai-tell announcing-opener closing-cliche colon-lead-in contrast-framing structure:bold-labels ai-generated-composite:strict
+before.md: ai-score high 6/32 ai-tell announcing-opener closing-cliche contrast-framing structure:bold-labels ai-generated-composite:strict
 after.md: ai-score low 1/31 section-length-uniformity
 ```
 
