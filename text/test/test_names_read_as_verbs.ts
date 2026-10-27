@@ -4,6 +4,7 @@ import { namesReadAsVerbs, rereadAsNames, type NameReadings } from "../packages/
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { Token } from "../packages/chaff/src/plugin.ts";
+import { firedRules } from "./rule-run.ts";
 
 // 小文字の綴りが動詞や代名詞である名前（AI、the US）を、解析器が動詞と読まないようにする。例文はすべて自作。
 
@@ -114,5 +115,14 @@ describe("英語の文書で、名前は動詞と読まない", () => {
     assert.equal(tagOf("That IS correct.", "IS"), "VERB");
     assert.equal(tagOf("The team is ready.", "is"), "VERB");
     assert.equal(tagOf("Send us the report.", "us"), "PRON");
+  });
+
+  // SHA は shall の縮約（sha|n't）の前半と同じ綴りで、動詞と読まれていた間は article-sound に見えていなかった。
+  it("名前と読んだ語の冠詞は article-sound が確かめる（SHA は両様に読むので a も an も通り、a AI assistant は報告）", () => {
+    const articleSound = (source: string): number => firedRules(en, source).filter((rule) => rule === "article-sound").length;
+    assert.equal(articleSound("We store a SHA-256 hash of each file."), 0);
+    assert.equal(articleSound("We store an SHA-1 hash of each file."), 0);
+    assert.equal(articleSound("We built an AI assistant for the team."), 0);
+    assert.equal(articleSound("We built a AI assistant for the team."), 1);
   });
 });
