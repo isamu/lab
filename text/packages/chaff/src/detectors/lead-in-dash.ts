@@ -41,3 +41,14 @@ export const introducesList = (source: string, offset: number): boolean => {
   const next = nextWrittenLine(source, end + 1);
   return next !== undefined && isListItem(next);
 };
+
+const LINE_OPENING = /^[ \t\u3000—―–]*$/u;
+
+/**
+ * "――今後の目標を教えてください。" (an interviewer's turn), "— Nina" (a sign-off) and "――――" (a rule across the page):
+ * a dash with only blanks and dashes before it on its line marks who speaks or where a block ends. It sets off no words.
+ */
+export const opensLine = (source: string, offset: number): boolean => {
+  const start = source.lastIndexOf("\n", offset - 1) + 1;
+  return LINE_OPENING.test(source.slice(start, offset));
+};
