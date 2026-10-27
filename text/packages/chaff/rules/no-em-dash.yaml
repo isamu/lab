@@ -13,8 +13,8 @@ name:
   en: Too many dashes
 
 why:
-  ja: 日本語の組版でダッシュは扱いが難しく、環境によって長さも見えかたも変わります。読点や括弧で書けることが多いです。数字のあいだで範囲を示すダッシュ（45–58、10:00–10:15）は数えません。段落の終わりに置いて次の箇条を導くダッシュ（コロンと同じ働き）も数えません。
-  en: In English a dash is a legitimate tool, and a heavy hand with it is also one of the better-known marks of generated text. On its own it says little; it counts toward the composite signal. An en dash between two numbers (45–58, 10:00–10:15) marks a range and is not counted. Nor is a dash that ends a paragraph and introduces the list below it, as a colon would.
+  ja: 日本語の組版でダッシュは扱いが難しく、環境によって長さも見えかたも変わります。読点や括弧で書けることが多いです。数字のあいだで範囲を示すダッシュ（45–58、10:00–10:15）は数えません。段落の終わりに置いて次の箇条を導くダッシュ（コロンと同じ働き）も数えません。行の頭に置くダッシュ（インタビューで聞き手の発言を示す「――」、署名の前の「— 名前」、区切りの線）も、語を挟むものではないので数えません。
+  en: "In English a dash is a legitimate tool, and a heavy hand with it is also one of the better-known marks of generated text. On its own it says little; it counts toward the composite signal. An en dash between two numbers (45–58, 10:00–10:15) marks a range and is not counted. Nor is a dash that ends a paragraph and introduces the list below it, as a colon would, or one that opens its line (an interviewer's turn marked ――, a sign-off such as — Nina, a rule drawn across the page): it sets off no words."
 
 message:
   ja: 1000 字あたり {density} 個のダッシュがあります（{limit} 個まで）
