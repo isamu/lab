@@ -106,3 +106,43 @@ export const isClaim = (sentence: Pick<Sentence, "text" | "tokens">, language: s
   !opensWith(sentence.text, words.openers) &&
   !endsWith(sentence.text, words.endings) &&
   !opensWithVerb(sentence.tokens ?? [], language);
+
+/**
+ * 見込み・あるべき姿・書き手の予定を述べる言い方。英語は文のどこかの語（may, should, we will）、日本語は文末（〜が期待される、〜すべきである）。
+ * どちらの言語の語彙表も、その言語の文書にしか無い。
+ */
+export type IntentWords = { readonly phrases: readonly string[]; readonly endings: readonly string[] };
+
+/** 語の並びとして比べる形。字とアポストロフィ以外を空白に畳んで、両端に空白を置く。 */
+const wordRun = (text: string): string =>
+  ` ${text
+    .replace(/’/gu, "'")
+    .replace(/[^\p{L}']+/gu, " ")
+    .trim()} `;
+
+/** 文頭の大文字だけを小文字に戻す。文の途中の大文字の語（in May）は、助動詞と別の語。 */
+const withLowerHead = (text: string): string => {
+  const trimmed = text.trimStart();
+  return `${trimmed.charAt(0).toLowerCase()}${trimmed.slice(1)}`;
+};
+
+const containsPhrase = (text: string, phrases: readonly string[]): boolean => {
+  const words = wordRun(withLowerHead(text));
+  return phrases.some((phrase) => words.includes(wordRun(phrase.toLowerCase())));
+};
+
+/** 事実でなく、起こりうること・すべきこと・書き手のする予定を述べた文（リスクと対策、提言、答申の方針）。裏づけの数字を求める主張ではない。 */
+export const statesIntent = (sentence: Pick<Sentence, "text">, words: IntentWords): boolean =>
+  containsPhrase(sentence.text, words.phrases) || endsWith(sentence.text, words.endings);
+
+/** 比べる形。前後の空白と、文末の句点・コロンを除き、小文字にする。 */
+const bareLine = (text: string): string =>
+  withoutTail(text, new Set([...TERMINALS, ":", "："]))
+    .trim()
+    .toLowerCase();
+
+/** 変換で残ったサイトの案内（ページの先頭です。本文）。文書の本文ではない。 */
+export const isNavigationLine = (sentence: Pick<Sentence, "text">, lines: readonly string[]): boolean => lines.includes(bareLine(sentence.text));
+
+/** 条件を並べる節の見出し（Requirements、応募資格）。並ぶのは条件で、裏づけを求める主張ではない。 */
+export const isConditionHeading = (heading: string, headings: readonly string[]): boolean => headings.includes(bareLine(heading));
