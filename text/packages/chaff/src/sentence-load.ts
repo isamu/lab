@@ -1,7 +1,7 @@
 // How much one sentence asks the reader to hold at once: brackets inside brackets, clauses chained one after another, and how
 // far the topic stands from the end where its predicate is. Pure: a sentence's text and tokens come in, numbers go out.
 import type { Token } from "./plugin.ts";
-import { topicClauseEnd } from "./topic-clause.ts";
+import { topicClauseEnd, type TopicClauseWords } from "./topic-clause.ts";
 
 /**
  * Opening brackets and the mark that closes each. Quotation marks that open and close with the same character are left out, and
@@ -117,9 +117,11 @@ const firstTopic = (tokens: readonly Token[]): number => {
  * undefined when the sentence has no topic. The distance is the reader's wait: everything between has to be held before the
  * topic is said to do anything.
  */
-export const topicDistance = (tokens: readonly Token[]): number | undefined => {
+export const topicDistance = (tokens: readonly Token[], words?: TopicClauseWords): number | undefined => {
   const topic = firstTopic(tokens);
   const last = tokens.findLastIndex((token) => !TRAILING.has(token.pos));
   if (topic === -1 || last <= topic) return undefined;
-  return tokens.slice(topic + 1, topicClauseEnd(tokens, topic, last) ?? last).reduce((sum, token) => sum + [...token.surface.replace(/\s/gu, "")].length, 0);
+  return tokens
+    .slice(topic + 1, topicClauseEnd(tokens, topic, last, words) ?? last)
+    .reduce((sum, token) => sum + [...token.surface.replace(/\s/gu, "")].length, 0);
 };
