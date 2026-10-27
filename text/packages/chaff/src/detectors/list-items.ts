@@ -18,12 +18,14 @@ import { lowerBound, type TokenRange } from "./token-column.ts";
 // に答えるための表を足していく。and / or のたびに作るのは、まだ閉じていない最後の 1、2 項目だけ。
 
 /** 項目ごとに一度だけ答えを覚えておく問い。 */
-export type Flag = "closed" | "example" | "participle" | "verbalShape" | "hasVerb" | "isClause" | "prepositionalTail" | "notNounHead" | "notProperNounHead";
+export type Flag =
+  "closed" | "turn" | "example" | "participle" | "verbalShape" | "hasVerb" | "isClause" | "prepositionalTail" | "notNounHead" | "notProperNounHead";
 
 type FlagTest = (scope: ItemScope, item: TokenRange) => boolean;
 
 export const FLAG_TESTS: Readonly<Record<Flag, FlagTest>> = {
   closed: (scope, item) => isListConjunction(openingOf(scope, item)),
+  turn: (scope, item) => scope.sentence.words.clauseConjunction?.has(openingOf(scope, item)?.surface.toLowerCase() ?? "") ?? false,
   example: (scope, item) => exampleEnd(scope, item) !== -1,
   participle: (scope, item) => participleOpening(scope, item) !== undefined,
   verbalShape: (scope, item) => VERBAL.has(shapeOf(scope, item) ?? ""),
@@ -40,6 +42,7 @@ type PerFlag<T> = Record<Flag, T>;
 
 const perFlag = <T>(make: () => T): PerFlag<T> => ({
   closed: make(),
+  turn: make(),
   example: make(),
   participle: make(),
   verbalShape: make(),

@@ -1,0 +1,8 @@
+# The indefinite articles. "a simple" or "a flexible" with nothing after the adjective cannot stand as an item: the
+# adjective waits for the noun after the comma or the and ("A simple, minimalist palette" / "Neat, a flexible and
+# lightweight Sass grid"). "the disabled" can (the disabled, elderly residents, and veterans). Read by oxford-comma-consistency.
+id: indefinite-article
+language: en
+entries:
+  - pattern: a
+  - pattern: an

@@ -1,5 +1,6 @@
 import type { Detector, Finding, Lexicon, Token } from "../plugin.ts";
 import {
+  commaBefore,
   contentCount,
   exampleEnd,
   firstAt,
@@ -11,6 +12,8 @@ import {
   hasListConjunction,
   hasParticiple,
   hasVerb,
+  endsWithPreposition,
+  hasNonAdverbContent,
   isClause,
   isModifiedNoun,
   isModifier,
@@ -19,11 +22,11 @@ import {
   itemAfter,
   lastContent,
   lastNoun,
-  leadShape,
   openingKind,
   openingOf,
   participleOpening,
   shapeOf,
+  shapeOfHead,
 } from "./list-item.ts";
 import { listReader, type ItemList } from "./list-items.ts";
 import { APPOSITIVE_ANCHOR, isListConjunction, listSentenceOf, NOMINAL, VERBAL, type ItemScope, type ListWords } from "./list-sentence.ts";
@@ -50,10 +53,11 @@ import { followsPostcode } from "./postcode-end.ts";
 import { withoutCoordinateAdjective } from "./coordinate-adjective.ts";
 import { dashBreaks } from "./dash-break.ts";
 import { namesDivision, qualifiesPrevious } from "./list-comma-aside.ts";
+import { inExcerpt } from "./quoted-excerpt.ts";
+import { listContinues, walker, type Walk } from "./list-run.ts";
+import { joinsUnfinished, repeatsConjunction } from "./list-joint.ts";
 
 const EMPTY: TokenRange = { start: 0, end: 0 };
-
-const commaBefore = (scope: ItemScope, at: number): boolean => scope.sentence.tokens[at - 1]?.surface === ",";
 
 /**
  * 導入の句（After the review, / If it fails, / Finally, / To test it, / Based on the review,）は並列の項目ではない。
@@ -66,10 +70,14 @@ const LEAD_POS = new Set(["ADP", "SCONJ", "ADV", "PART"]);
 
 const isSequenceWord = (scope: ItemScope, token: Token | undefined): boolean => scope.sentence.words.sequence?.has(token?.surface.toLowerCase() ?? "") ?? false;
 
+/** 順番の語か、前の文とつなぐ語（However,）。どちらも文頭の導入で、並びの項目ではない。 */
+const isOpenerWord = (scope: ItemScope, token: Token | undefined): boolean =>
+  isSequenceWord(scope, token) || (scope.sentence.words.connective?.has(token?.surface.toLowerCase() ?? "") ?? false);
+
 const SENTENCE_MARKS = new Set(["PUNCT", "SYM"]);
 
 /**
- * 順番の語と読点（First, / Next,）で始まる最初の項目から、その語を外した並び。解析器は First を形容詞と読み、読点で項目を切らないことがある。
+ * 順番の語やつなぎの語と読点（First, / Next, / However,）で始まる最初の項目から、その語を外した並び。解析器は First を形容詞と読み、読点で項目を切らないことがある。
  * 文頭の語だけ。文の途中の first は項目のことがある（We support first, fallback, and legacy modes）。
  * 次の項目も順番の語なら、順番の語の並び（first, second and third）なので外さない。
  */
@@ -80,7 +88,7 @@ const withoutSequenceWord = (view: View): View | undefined => {
   const at = firstAt(scope, "open", first.item);
   const { tokens } = scope.sentence;
   const opensSentence = tokens.slice(0, at).every((token) => SENTENCE_MARKS.has(token.pos));
-  if (!opensSentence || !isSequenceWord(scope, tokens[at]) || tokens[at + 1]?.surface !== "," || isSequenceWord(scope, openingOf(scope, second.item)))
+  if (!opensSentence || !isOpenerWord(scope, tokens[at]) || tokens[at + 1]?.surface !== "," || isSequenceWord(scope, openingOf(scope, second.item)))
     return undefined;
   const rest = { start: at + 2, end: first.item.end };
   return hasContent(scope, rest) ? { ...withoutFirst(view), pre: rest } : withoutFirst(view);
@@ -110,13 +118,39 @@ const afterClosedList = (view: View): View => {
   const body = { start: conjunction === -1 ? closing.item.start : conjunction + 1, end: closing.item.end };
   const head = firstAt(scope, "content", body);
   const rest = VERBAL.has(scope.sentence.tokens[head]?.pos ?? "") ? { start: head + 1, end: body.end } : body;
-  return hasContent(scope, rest) ? { ...after(view, closing), pre: rest } : withoutLead(after(view, closing));
+  return isItem(scope, rest) ? { ...after(view, closing), pre: rest } : withoutLead(after(view, closing));
+};
+
+/**
+ * 項目として立つ切れ端か。副詞だけ（does not の not）や、目的語を後ろに残した前置詞で終わるもの（or impose conditions upon,
+ * certain transmittals / directly related to, and necessary for, the licensing）は、読点の後ろへ続く句の頭で、項目ではない。
+ */
+const isItem = (scope: ItemScope, rest: TokenRange): boolean => hasNonAdverbContent(scope, rest) && !endsWithPreposition(scope, rest);
+
+/**
+ * 節だけをつなぐ接続詞（but / yet）で始まる項目があれば、そこまでは節の並びで、項目の並びは後ろから
+ * （If you need help with something, but it's not a priority right now, add it to the backlog and bring it up は並びではない）。
+ * 節の最後の語が次の項目の頭と同じ品詞なら、その語が並びの最初の項目（but other teams may use JIRA, waffle.io, or another
+ * system / but your system for issuing, receiving and storing invoices）なので、切らない。目的語を待つ語で終われば節ではない
+ * （including, but not limited to, BB, Pellet and Paint Guns）。
+ */
+const afterClauseTurn = (view: View, afterItem: TokenRange): View => {
+  const turn = findLast(view, "turn");
+  if (turn === undefined) return view;
+  const { scope } = view.list;
+  const rest = after(view, turn);
+  const next = firstOf(rest)?.item ?? afterItem;
+  const carriesFirstItem = shapeOfHead(lastContent(scope, turn.item)) === shapeOf(scope, next);
+  return carriesFirstItem || endsWithPreposition(scope, turn.item) ? view : rest;
 };
 
 const opensAsNoun = (scope: ItemScope, item: TokenRange): boolean => {
   const opening = openingOf(scope, item);
   return opening !== undefined && (opening.pos === "DET" || NOMINAL.has(opening.pos));
 };
+
+/** 項目が読点で閉じず、節の終わり（文の終わりか ; : —）まで続く。 */
+const runsToClauseEnd = (scope: ItemScope, item: TokenRange): boolean => scope.sentence.tokens[item.end]?.surface !== ",";
 
 const opensAsPredicate = (scope: ItemScope, item: TokenRange): boolean => {
   const opening = openingOf(scope, item);
@@ -129,13 +163,19 @@ const opensAsPredicate = (scope: ItemScope, item: TokenRange): boolean => {
  * 並びがあるなら句の後ろから（are excluded and are not authorized は 2 つ）。例の中の分詞（connected）は名詞にかかる語で、
  * 述語と同じ形と読まない。句の前は並びの最初の項目で、名詞の句（主語）。動詞で始まれば述語の並びの項目
  * （Review backups, such as daily snapshots, update indexes and archive logs は 3 つ）。
+ * 解析器が述語の動詞を名詞と読んでも（Financial institutions, including CDFIs, support housing through lending and investment の
+ * support）、動詞の無い主語のあとの句で、句の後ろの項目が前置詞を連れ、and / or の後ろが読点で閉じずに節の終わりまで続けば、
+ * and / or は述語の中で前置詞の目的語を結ぶ。句の中の並びなら、述語の前で句を閉じる読点がある。主語だけの断片の終わりの例の並び
+ * （Full details of the parameters, including meaning, data type and any other constraints.）は前置詞を連れないので並びのまま。
  */
-const isAsideBeforePredicate = (view: View, phrase: Member, examples: TokenRange): boolean => {
+const isAsideBeforePredicate = (view: View, phrase: Member, examples: TokenRange, afterItem: TokenRange): boolean => {
   const { scope } = view.list;
   const [subject, next] = [firstOf(view), firstOf(after(view, phrase))];
   if (subject === undefined || next === undefined || subject.j !== phrase.j - 1) return false;
   const opensPhrase = (scope.sentence.exampleEnds[phrase.item.start]?.length ?? 0) > 0;
-  return opensPhrase && opensAsNoun(scope, subject.item) && opensAsNoun(scope, examples) && opensAsPredicate(scope, next.item);
+  const objectsInPredicate = !hasVerb(scope, subject.item) && hasAdposition(scope, next.item) && runsToClauseEnd(scope, afterItem);
+  const predicate = opensAsPredicate(scope, next.item) || objectsInPredicate;
+  return opensPhrase && opensAsNoun(scope, subject.item) && opensAsNoun(scope, examples) && predicate;
 };
 
 /**
@@ -144,14 +184,14 @@ const isAsideBeforePredicate = (view: View, phrase: Member, examples: TokenRange
  * adopting ... / (e.g., by location, contract type, or contract preference)）。句の中に and / or があれば句はもう閉じていて、
  * 句ごと 1 つの項目（apples, oranges such as navels and mandarins, and pears）。
  */
-const fromExample = (view: View): View => {
+const fromExample = (view: View, afterItem: TokenRange): View => {
   const phrase = findLast(view, "example");
   if (phrase === undefined) return view;
   const { scope } = view.list;
   const examples = { start: exampleEnd(scope, phrase.item), end: phrase.item.end };
   if (hasListConjunction(scope, examples)) return view;
   const rest = after(view, phrase);
-  if (isAsideBeforePredicate(view, phrase, examples)) return rest;
+  if (isAsideBeforePredicate(view, phrase, examples, afterItem)) return rest;
   const inPhrase = contentOnlyWith(rest, examples);
   return sameShapes(inPhrase) ? inPhrase : view;
 };
@@ -207,18 +247,6 @@ const isAppositive = (scope: ItemScope, at: number, view: View, afterItem: Token
   const joinsClause = isListConjunction(scope.sentence.tokens[end + 1]);
   const closed = scope.sentence.tokens[end]?.surface === "," && scope.sentence.depths[end] === scope.sentence.depths[at] && !joinsClause;
   return closed && APPOSITIVE_ANCHOR.has(lastContent(scope, anchor.item)?.pos ?? "") && !hasVerb(scope, head.item) && !hasVerb(scope, afterItem);
-};
-
-/**
- * and の後ろの項目に読点と、同じ形の項目を連れた and / or が続くなら、この and は項目の中にある（searches and seizures, and
- * the Eighth's ban）。頭の形か、節かどうかが違えば別の節をつなぐ and で、この and までが並び（apples, pears and plums, and went home / and figs fell）。
- */
-const listContinues = (scope: ItemScope, afterItem: TokenRange): boolean => {
-  const next = afterItem.end;
-  if (scope.sentence.tokens[next]?.surface !== "," || !isListConjunction(scope.sentence.tokens[next + 1])) return false;
-  const following = itemAfter(scope, next + 1);
-  const shape = leadShape(scope, following);
-  return shape !== undefined && shape === leadShape(scope, afterItem) && isClause(scope, following) === isClause(scope, afterItem);
 };
 
 /**
@@ -280,7 +308,11 @@ const joinsObjects = (scope: ItemScope, at: number, view: View, afterItem: Token
 
 /** and / or が並びの最後の継ぎ目ではなく、最後の項目の中にある。 */
 const insideLastItem = (scope: ItemScope, at: number, view: View, afterItem: TokenRange): boolean =>
-  pairsInLastItem(scope, at, view, afterItem) || sharesNoun(scope, at, view, afterItem) || joinsObjects(scope, at, view, afterItem);
+  pairsInLastItem(scope, at, view, afterItem) ||
+  sharesNoun(scope, at, view, afterItem) ||
+  joinsObjects(scope, at, view, afterItem) ||
+  joinsUnfinished(scope, at, view, afterItem) ||
+  repeatsConjunction(scope, at, view, afterItem);
 
 /**
  * 節を並べるなら、どの項目も節。Additionally, others can learn, and the mistake is rarer. の Additionally は項目ではなく、
@@ -309,12 +341,13 @@ const opensContrast = (scope: ItemScope, item: TokenRange): boolean => CONTRAST.
  * （We tested it, and the team shipped it.）は、Oxford comma を打つかどうかの選択を見せない。
  * 題名の読点は題名を付けた人のもの。書き手の流儀の票にしない。
  */
-const listAt = (list: ItemList, at: number): boolean | undefined => {
+const listAt = (list: ItemList, at: number, walk: Walk): boolean | undefined => {
   const { scope } = list;
   if (closesExampleAside(wholeList(list), at)) return undefined;
   const afterItem = itemAfter(scope, at);
-  const items = fromParticiplePhrase(fromExample(afterClosedList(withoutLead(withoutCoordinateAdjective(wholeList(list))))), afterItem);
-  if (listContinues(scope, afterItem) || isAppositive(scope, at, items, afterItem) || insideLastItem(scope, at, items, afterItem)) return undefined;
+  const opened = afterClosedList(withoutLead(afterClauseTurn(withoutCoordinateAdjective(wholeList(list)), afterItem)));
+  const items = fromParticiplePhrase(fromExample(opened, afterItem), afterItem);
+  if (listContinues(scope, afterItem, walk) || isAppositive(scope, at, items, afterItem) || insideLastItem(scope, at, items, afterItem)) return undefined;
   if (namesDivision(items) || qualifiesPrevious(items)) return undefined;
   const last = lastOf(items);
   if (last !== undefined && opensContrast(scope, last.item)) return undefined;
@@ -334,12 +367,14 @@ export const listVerdicts = (tokens: readonly Token[], words: ListWords, source:
   const sentence = listSentenceOf(tokens, words, source);
   const readItems = listReader(sentence);
   const breaks = dashBreaks(tokens, source);
+  const excerpt = inExcerpt(tokens, source, words.elision ?? []);
+  const walk = walker();
   return tokens.flatMap((token, at) => {
     if (!isJudgedConjunction(token, at)) return [];
     // 郵便番号で終わる住所のあとの and / or は、住所の行を区切る読点のあと。並びの読点ではない。
     // 最後の読点のあとに前後を空けたダッシュがあれば（Washington, DC – The …）、読点はダッシュの前で閉じた日付行や見出しのもの。
-    const notList = sentence.inCitedTitle(at) || followsPostcode(source, token.span.start) || breaks[at] === true;
-    return [notList ? undefined : listAt(readItems(at), at)];
+    const notList = sentence.inCitedTitle(at) || excerpt(at) || followsPostcode(source, token.span.start) || breaks[at] === true;
+    return [notList ? undefined : listAt(readItems(at), at, walk)];
   });
 };
 
@@ -363,6 +398,11 @@ export const oxfordComma: Detector = (doc, options): Finding[] => {
     titleCue: (doc.lexicons["title-cue"] ?? []).map((entry) => entry.pattern),
     sequence: patternsOf(doc.lexicons["sequence-opener"]),
     unit: patternsOf(doc.lexicons["enclosing-unit"]),
+    connective: patternsOf(doc.lexicons["connective-opener"]),
+    clauseConjunction: patternsOf(doc.lexicons["clause-conjunction"]),
+    indefinite: patternsOf(doc.lexicons["indefinite-article"]),
+    elision: (doc.lexicons["elision-mark"] ?? []).map((entry) => entry.pattern),
+    openListEnd: patternsOf(doc.lexicons["open-list-end"]),
   };
   const judged = doc.sentences.flatMap((sentence) => {
     const oxford = oxfordIn(sentence.tokens ?? [], words, doc.source);
