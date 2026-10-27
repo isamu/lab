@@ -1,0 +1,16 @@
+# 引いた言葉の前に置く札。no-mixed-desumasu が、札で始まる文（例：〜を記載する。Q: なんで古臭いの？）と、
+# 札だけの段落（用例）のすぐ後ろの段落を、書き手の地の文ではなく引いた言葉として、文末の調子に数えない。
+# 書き方の例は書かれる側の調子で、読み手の問いは尋ねた人の口調で書く。文の頭の札の後ろには「：」「:」「)」「）」が来る。
+id: quote-label
+language: ja
+entries:
+  - pattern: 例
+  - pattern: 用例
+  - pattern: 文例
+  - pattern: 例文
+  - pattern: 記載例
+  - pattern: 記入例
+  - pattern: 使用例
+  - pattern: 回答例
+  - pattern: Q
+  - pattern: Ｑ

@@ -10,3 +10,14 @@ entries:
   - pattern: 方も多いのではないでしょうか
   - pattern: ではないでしょうか
   - pattern: 皆さんは
+  # どの企業・どの読者にも当てはまる問題から始める書き出し。
+  - pattern: 課題を抱えて
+  - pattern: 課題を抱える
+  - pattern: 悩んでいませんか
+  - pattern: お悩みではありませんか
+  - pattern: 困っていませんか
+  - pattern: 多くの企業が
+  - pattern: 現代のビジネスにおいて
+  - pattern: 現代社会において
+  - pattern: 変化の激しい
+  - pattern: 目まぐるしく変化

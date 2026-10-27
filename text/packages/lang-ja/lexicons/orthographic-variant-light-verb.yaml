@@ -1,0 +1,8 @@
+# 「する」をへりくだって言う動詞。名詞に続けて書けば（開会いたします）解析器が補助の語と読むが、引用の「と」の後
+# （議題といたします、ことといたします）は読まない。orthographic-variant は「と」の後のこの動詞も補助の語として比べ、
+# 本来の動詞（思いを致す、力を致す）とは別にする。辞書の形で、漢字とかなの両方を挙げる。
+id: orthographic-variant-light-verb
+language: ja
+entries:
+  - pattern: いたす
+  - pattern: 致す

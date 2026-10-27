@@ -19,6 +19,11 @@ from:
   - announcing-opener
   - colon-lead-in
   - ai-structure
+  - over-general-claim
+  - q-fragment-answer
+  - closing-exhortation
+  - unfilled-placeholder
+  - bold-emphasis
 
 name:
   ja: 生成文の特徴がそろっている

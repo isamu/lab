@@ -1,4 +1,4 @@
-import type { Span } from "../plugin.ts";
+import type { LengthUnit, Span } from "../plugin.ts";
 
 // ひな形が項目ごとに繰り返す飾り（一覧の札、リンクの文字、記号の並び）。書き手の言い回しではない。
 
@@ -30,6 +30,19 @@ export const fixedEndingSpans = (text: string, endings: readonly string[]): Span
   const end = text.trimEnd().length;
   return endings.filter((ending) => ending !== "" && text.slice(0, end).endsWith(ending)).map((ending) => ({ start: end - ending.length, end }));
 };
+
+/** かぎ括弧の中（「国家公務員法等の一部を改正する法律」『…』）。引いた題や言葉で、書き手の言い回しではない。 */
+const QUOTED = /「[^「」]*」|『[^『』]*』/gu;
+
+export const quotedSpans = (text: string): Span[] => spansOf(text, QUOTED, () => true);
+
+/**
+ * 欄の名前（Cited by: footnote 2、External Links: Document）。大文字で始まる 1〜2 語にコロンが付き、後ろに値が続く。
+ * 変換が残した書式や書類の欄で、項目ごとに繰り返す。Follow these guidelines: のような 3 語以上の導入は欄ではない。
+ */
+const FIELD_LABEL = /(?<![\p{L}\p{N}])\p{Lu}\p{L}*(?: \p{L}+)?:(?= \S)/gu;
+
+export const fieldLabelSpans = (text: string, unit: LengthUnit): Span[] => (unit === "word" ? spansOf(text, FIELD_LABEL, () => true) : []);
 
 /** 窓の中の空白でない文字の過半が飾りなら、その出現は飾り。 */
 export const isFurniture = (text: string, mask: readonly boolean[], window: Span): boolean => {

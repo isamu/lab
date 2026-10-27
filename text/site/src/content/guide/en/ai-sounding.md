@@ -65,7 +65,7 @@ What a good document of this genre does. Rewrite toward it, and check the result
 - Does it say what was tried and failed, the limits, and the assumptions?
 - Does the ending point to what to read or try next, rather than restate the body?
 
-Rules that matter most for this genre: `closing-cliche`, `empty-conclusion`, `padded-intro`, `paragraph-length-variance`, `quote-without-source`, `section-length-uniformity`, `sentence-rhythm`
+Rules that matter most for this genre: `closing-cliche`, `empty-conclusion`, `generic-opening`, `padded-intro`, `paragraph-length-variance`, `quote-without-source`, `section-length-uniformity`, `sentence-rhythm`
 
 …
 ```
@@ -95,6 +95,7 @@ $ npx chaffjs rules --json --genre blog/tech
     "rules": [
       "closing-cliche",
       "empty-conclusion",
+      "generic-opening",
       "padded-intro",
       "paragraph-length-variance",
       "quote-without-source",
@@ -122,6 +123,7 @@ Legal documents, manuals, literature and transcripts are written differently, so
 | --- | --- |
 | `ai-tell` | Phrases common in generated text piling up ("plays a crucial role", "delve into") |
 | `contrast-framing` | Too large a share of sentences in contrast frames ("not just X, but Y", "It wasn't X. It was Y", "It's not about X. It's about Y") |
+| `unprompted-denial` | Too large a share of sentences that deny a premise nobody stated, with nothing said in its place ("This isn't about tooling.", "That's not the point.") |
 | `stock-transition` | Too many sentences opening with "Moreover" or "Additionally" |
 | `announcing-opener` | Several sentences opening with an announcement ("The key point is", "Here's the thing", "Honestly,") |
 | `over-general-claim` | Sweeping claims about people ("most people", "nobody", "everyone") piling up (English blogs and business documents only) |
@@ -132,6 +134,7 @@ Legal documents, manuals, literature and transcripts are written differently, so
 | `assistant-residue` | What is left of a chat reply ("I hope this helps", "As of my last knowledge update") |
 | `email-stock-courtesy` | Two or more stock email courtesies in one email ("I hope this email finds you well", "I apologize for any inconvenience") (English documents only) |
 | `closing-exhortation` | A closing that cheers the reader on or promises the outcome, two or more times ("You've got this", "Happy baking!") |
+| `cold-open` | An opening with no situation or example that piles a bare wish ("You want to ..."), a word of the previous sentence repeated in quotes ("That 'almost' is the problem") and a teaser ("Sounds simple. It isn't.") |
 | `chat-citation-residue` | Marks a pasted chat answer leaves: links ending in "?utm_source=chatgpt.com", "oaicite" |
 | `closing-cliche` | A stock closing ("In conclusion", "I hope this helps") |
 | `bold-density` | Too much bold |
@@ -142,7 +145,7 @@ Legal documents, manuals, literature and transcripts are written differently, so
 | `section-length-uniformity` | Every section filled to the same size, which is what a template does |
 | `paragraph-length-variance` | Paragraphs all of about the same length, as if poured into a mould |
 | `ai-structure` | An outline past 90% of human articles on several structure measures at once (heading density, headings split into three, bold labels, uniform sections, a closing that restates). In business documents, the textbook proposal outline (Summary, Current Situation, Proposed Solution, Expected Benefits, Costs, Risks and Mitigation…) counts as one more |
-| `ai-generated-composite` | Three or more of these in one document (two in a blog post): `ai-tell`, `contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in`, `assistant-residue`, `closing-cliche`, `padded-intro`, `no-em-dash`, `sentence-rhythm`, `rule-of-three`, `section-length-uniformity`, `ai-structure` (`bold-density` is not counted) |
+| `ai-generated-composite` | Three or more of these in one document (two in a blog post): `ai-tell`, `contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in`, `assistant-residue`, `closing-cliche`, `padded-intro`, `no-em-dash`, `sentence-rhythm`, `rule-of-three`, `section-length-uniformity`, `ai-structure`, `over-general-claim`, `q-fragment-answer`, `closing-exhortation`, `unfilled-placeholder`, `bold-emphasis` (`bold-density` and `bold-label-list` are not counted; `ai-structure` already measures bold labels) |
 
 None of these rules says the text was generated. People write every one of these shapes.
 Piled up, they mark a place to reread.
@@ -161,12 +164,42 @@ Phrases people already wrote as often before (解像度を上げる, 腹落ち) 
 - The signs are the findings of the rules above and the structure measures of `chaff outline`. Only those that 90% of human documents do not show count.
 - The human documents are the corpus's human documents, by genre group (blog, technical, business and so on), and technical articles written before generative AI. Both are numbers shipped with chaff.
 - Three signs make "medium" and five make "high": the number `ai-generated-composite` reports at, and its relaxed level.
-- Two or more of the rules `ai-generated-composite` reads showing in one document (its strict level) count as one more sign. No human document in the corpus shows two of them together; `yarn ai-score:corpus --all` counts them.
+- Two or more of the rules `ai-generated-composite` reads showing in one document (its strict level) count as one more sign. Human documents in the corpus rarely show two of them together; `yarn ai-score:corpus --all --verbose` lists the ones that do.
 - A structure measure and the rule that reads the same shape (section length variation and `section-length-uniformity`, for one) count once when both show.
 - A document that is too short (under 500 characters in Japanese, 200 words in English), or in a genre without enough human documents (academic, speech), gets no level and the reason instead.
 - A plain `npx chaffjs <file>` also ends its report with the level on one line, and `chaff grade` puts `aiScore` in each output's result ([Using chaff for AI evals](./ai-evals)).
 
 The [tech article example](./ai-sounding-examples#a-bold-rewrite-of-a-tech-article) ends with a screen.
+
+## Removing every AI tell
+
+When the request is to remove all of it, add `--all-ai-signs` to the plan and repeat until it says stop.
+
+```bash
+npx chaffjs fix-plan article.md --all-ai-signs --json                              # 1. every AI-likeness rule, the score, when to stop
+npx chaffjs test article.rewritten.md --checks ai-tells --dry-run                  # 2. the tells only a reader can judge
+npx chaffjs fix-plan article.rewritten.md --all-ai-signs --before article.md --json  # 3. the rewrite against the original
+npx chaffjs compare article.md article.rewritten.md                                 # 4. no fact dropped or added
+```
+
+1. `--all-ai-signs` runs every AI-likeness rule, also those the genre turns off or leaves out.
+   The plan then carries `aiScore` (the `ai-score` level), `aiRules` (the AI-likeness rules with findings) and `stop` (when to stop).
+   Rewrite in the plan's way and fix every spot of every rule in `rules`, the other rules too, so the rewrite leaves nothing worse.
+2. `--checks ai-tells` asks about the tells no rule can see: invented specifics, an abstract opening, a denial of what nobody said,
+   a moral at the end, a benefits list that mirrors the problems, a claim restated, inflated significance, generic content,
+   a request recast as the reader's benefit, the same thing renamed.
+   Look at `--dry-run` first, and send only with an API key and the writer's yes. Without them, the AI that rewrites reads the passages itself.
+   A specific that looks invented is a question for the writer: keep it marked, "[on a five-hour flight]", and ask whether to confirm or cut it.
+3. `--before` lists every rule with more findings than in the original (`since.risen`).
+4. Repeat from 2 until all of these hold, three passes at most, and list what is left with the reason:
+   - `aiRules` is empty.
+   - `aiScore.level` is `low`. A document too short to score is decided by the rules' findings alone.
+   - `since.risen` is empty.
+   - `compare` passes.
+   - None of the `ai-tells` questions fits.
+
+A blank only the writer can fill ([Client Name]) and a specific only the writer can confirm do not go away by repeating.
+Hand them to the writer as what is left.
 
 ## Three ways to fix it
 
@@ -313,6 +346,7 @@ npx chaffjs compare old.md new.md --distinct --allow-dropped heading --allow-add
 ## What chaff cannot see
 
 chaff cannot find these shapes by machine. Check them by reading, whichever way you rewrite.
+`npx chaffjs test <file> --checks ai-tells` asks about some of them ([Removing every AI tell](#removing-every-ai-tell)).
 
 | Shape | What to look for |
 | --- | --- |

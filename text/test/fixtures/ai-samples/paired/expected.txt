@@ -11,6 +11,7 @@ bold-label-list            0/3          0/3              0/3                  0/
 chat-citation-residue      0/3          0/3              0/3                  0/63
 closing-cliche             1/3          0/3              0/3                  0/63
 closing-exhortation        0/3          0/3              0/3                  0/63
+cold-open                  0/3          0/3              0/3                  0/63
 colon-lead-in              2/3          0/3              0/3                  0/63
 contrast-framing           1/3          0/3              0/3                  0/63
 email-stock-courtesy       0/3          0/3              0/3                  0/63
@@ -19,7 +20,7 @@ emoji-heading              0/3          0/3              0/3                  0/
 figurative-density         0/3          0/3              0/3                  0/63
 no-em-dash                 0/3          0/3              0/3                  0/63
 over-general-claim         0/3          0/3              0/3                  0/63
-padded-intro               0/3          0/3              0/3                  0/63
+padded-intro               1/3          0/3              0/3                  0/63
 paragraph-length-variance  0/3          0/3              0/3                  0/63
 q-fragment-answer          0/3          0/3              0/3                  0/63
 rule-of-three              1/3          0/3              0/3                  0/63
@@ -28,6 +29,7 @@ sentence-rhythm            0/3          0/3              0/3                  0/
 stock-transition           0/3          0/3              0/3                  0/63
 translationese-density     0/3          0/3              0/3                  0/63
 unfilled-placeholder       0/3          0/3              0/3                  0/63
+unprompted-denial          0/3          0/3              0/3                  0/63
 
 ## en
 rule                       hits (b) ai  false (a) human  false (c) rewritten  false corpus
@@ -37,11 +39,12 @@ ai-tell                    1/3          0/3              0/3                  0/
 announcing-opener          3/3          0/3              0/3                  0/74
 assistant-residue          0/3          0/3              0/3                  0/74
 bold-density               0/3          0/3              0/3                  1/74
-bold-emphasis              1/3          0/3              0/3                  1/74
+bold-emphasis              1/3          0/3              0/3                  0/74
 bold-label-list            0/3          0/3              0/3                  3/74
 chat-citation-residue      0/3          0/3              0/3                  0/74
 closing-cliche             1/3          0/3              0/3                  0/74
 closing-exhortation        0/3          0/3              0/3                  0/74
+cold-open                  0/3          0/3              0/3                  0/74
 colon-lead-in              2/3          0/3              0/3                  4/74
 contrast-framing           1/3          0/3              0/3                  0/74
 email-stock-courtesy       0/3          0/3              0/3                  0/74
@@ -59,3 +62,4 @@ sentence-rhythm            0/3          0/3              0/3                  1/
 stock-transition           1/3          0/3              0/3                  0/74
 translationese-density     0/3          0/3              0/3                  0/74
 unfilled-placeholder       0/3          0/3              0/3                  0/74
+unprompted-denial          0/3          0/3              0/3                  0/74

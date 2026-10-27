@@ -2,7 +2,7 @@ import type { Detector, Finding, Sentence, Token } from "../plugin.ts";
 import { proseText } from "../measure.ts";
 import { quotedSpans } from "../quoted-span.ts";
 import { literalCues, withoutLiteralQuotes } from "../literal-quote.ts";
-import { bracketDepth, clauseCount, topicDistance } from "../sentence-load.ts";
+import { bracketDepth, clauseCount } from "../sentence-load.ts";
 import { withoutWordBrackets } from "../bracket-annotation.ts";
 
 const findingOf = (sentence: Sentence, count: number, limit: number): Finding => ({
@@ -15,7 +15,7 @@ const findingOf = (sentence: Sentence, count: number, limit: number): Finding =>
 });
 
 /** Each sentence whose measure is over the limit. A sentence the measure cannot read (undefined) is left alone. */
-const overLimit =
+export const overLimit =
   (measure: (sentence: Sentence) => number | undefined): Detector =>
   (doc, options): Finding[] =>
     doc.sentences.flatMap((sentence) => {
@@ -31,7 +31,7 @@ const quotedMask = (text: string): Uint8Array => {
 };
 
 /** The sentence's tokens outside quotations in 「」『』: a quoted title or remark is one noun to the sentence, whatever it holds. */
-const ownTokens = (sentence: Sentence): Token[] => {
+export const ownTokens = (sentence: Sentence): Token[] => {
   const mask = quotedMask(sentence.text);
   const inQuote = (token: Token): boolean => mask[token.span.start - sentence.span.start] === 1 && mask[token.span.end - 1 - sentence.span.start] === 1;
   return (sentence.tokens ?? []).filter((token) => !inQuote(token));
@@ -51,6 +51,3 @@ export const bracketNesting: Detector = (doc, options) => {
 
 /** Clauses chained in one sentence (調べて、まとめ、報告したが、返事がないので、…). Needs the language's tokens. */
 export const clauseChain: Detector = overLimit((sentence) => (sentence.tokens === undefined ? undefined : clauseCount(ownTokens(sentence))));
-
-/** The distance from the sentence's topic (〜は) to the end, where its predicate is. Needs the language's tokens. */
-export const topicPredicateDistance: Detector = overLimit((sentence) => (sentence.tokens === undefined ? undefined : topicDistance(ownTokens(sentence))));

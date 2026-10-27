@@ -247,6 +247,8 @@ export type Section = {
   readonly sentences: readonly Sentence[];
   /** この節に含まれる強調（Markdown の ** **）の数。 */
   readonly strongCount: number;
+  /** その強調の範囲（`**` を含む、source の上）。buildDocument は必ず入れる。 */
+  readonly strongs?: readonly Span[];
   /** 見出し直後の最初の文。heading-echo が見る。 */
   readonly firstSentence: Sentence | undefined;
 };
