@@ -100,14 +100,21 @@ const titleWords = (rest: string): string[] => {
 /** Labels the reference did not take into its address: the "(E)" of "section 552(a)(6)(E) of title 5". */
 const UNREAD_LABELS = /^(?:\([A-Za-z0-9]{1,4}\))+/u;
 
+/**
+ * "chapter 15 (§401 et seq.) of Title 50": the sections from this one on, glossing the unit before the bracket, which the
+ * name after the bracket governs.
+ */
+const RUN_ON = /^ et seq\.\)?/u;
+
 /** What follows the "of" after a reference and its list, or undefined when no "of" follows. */
 const afterOf = (text: string, end: number): string | undefined => {
   const rest = text.slice(end, end + 200);
   const unread = UNREAD_LABELS.exec(rest)?.[0].length ?? 0;
   const afterList = unread + listEnd(rest.slice(unread));
   const afterGloss = afterList + (GLOSS.exec(rest.slice(afterList))?.[0].length ?? 0);
-  const of = OF.exec(rest.slice(afterGloss));
-  return of === null ? undefined : rest.slice(afterGloss + of[0].length);
+  const afterRun = afterGloss + (RUN_ON.exec(rest.slice(afterGloss))?.[0].length ?? 0);
+  const of = OF.exec(rest.slice(afterRun));
+  return of === null ? undefined : rest.slice(afterRun + of[0].length);
 };
 
 /**

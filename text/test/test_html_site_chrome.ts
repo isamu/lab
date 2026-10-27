@@ -87,6 +87,26 @@ describe("withoutSiteChrome, through htmlToMarkdown", () => {
     assert.equal(htmlToMarkdown(page(`<header><h2>Site navigation</h2><h3>Home.</h3><h3>News.</h3></header>`)), BODY);
   });
 
+  it("drops a help box shown on hover, and keeps the notice's own heading block beside it", () => {
+    const help =
+      `<div class="fr-seal-block with-hover"><div class="fr-seal-content"><span class="h6">Document Headings</span>` +
+      `<div class="fr-seal-meta"><p>Headings may contain the following:</p><ol><li>the CFR title and part</li><li>the RIN of the action</li></ol>` +
+      `<p>See the <a href="/handbook">Handbook</a> for more details.</p></div></div></div>`;
+    const headings = `<div class="document-headings">${help}<div class="content-block"><h6>Example Agency</h6><ol><li>[Docket No. 26-01]</li></ol></div></div>`;
+    const converted = htmlToMarkdown(page(headings));
+    assert.doesNotMatch(converted, /Document Headings|CFR|RIN|Handbook/u);
+    assert.match(converted, /Example Agency/u);
+    assert.match(converted, /\[Docket No\. 26-01\]/u);
+    assert.match(converted, /The office opens at nine\./u);
+    assert.equal(htmlToMarkdown(page(`<span class="tooltip">Opens a new window</span>`)), BODY);
+  });
+
+  it("keeps a hover-named block that holds prose, and the word a tooltip explains", () => {
+    const card = `<div class="with-hover"><p>The office moved in May. Visitors use the north door.</p></div>`;
+    assert.match(htmlToMarkdown(page("", card)), /Visitors use the north door\./u);
+    assert.match(htmlToMarkdown(page("", `<p>File by <abbr class="has-tooltip">EOD</abbr> Friday.</p>`)), /File by EOD Friday\./u);
+  });
+
   it("leaves markup without chrome as it is", () => {
     const html = `<div class="content"><p>Text.</p></div>`;
     assert.equal(withoutSiteChrome(html), html);

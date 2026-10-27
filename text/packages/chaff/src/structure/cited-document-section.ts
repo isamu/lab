@@ -5,9 +5,24 @@ import type { StructureNode } from "../plugin.ts";
 /** heading: いちばん近い見出しの節の言葉。inArticle: 条の中か。 */
 type Visit = { readonly node: StructureNode; readonly heading: string | undefined; readonly inArticle: boolean };
 
+/** 見出しが名前の後ろに添えた略称や注記（「…特例に関する法律（特例法）」「…手数料令（手数料令）＜抜粋＞」）の括弧。名前ではない。 */
+const GLOSS_OPENERS: Readonly<Record<string, string>> = { "）": "（", ")": "(", "＞": "＜", ">": "<" };
+const MAX_GLOSS_LENGTH = 30;
+
+/** 末尾の括弧書きを外から一つずつ外す。中に同じ括弧を含むものは外さない。 */
+const withoutGlosses = (heading: string): string => {
+  let name = heading.trim();
+  for (;;) {
+    const opener = GLOSS_OPENERS[name.at(-1) ?? ""];
+    const at = opener === undefined ? -1 : name.lastIndexOf(opener);
+    if (at <= 0 || name.length - at > MAX_GLOSS_LENGTH) return name;
+    name = name.slice(0, at).trimEnd();
+  }
+};
+
 /** 見出しの言葉。文書の最初の見出しは文書自身の題（「# 就業規則」）なので、他の文書の名前として読まない。 */
 const headingOf = (node: StructureNode, title: StructureNode | undefined): string | undefined =>
-  node === title ? undefined : String(node.attrs["heading"] ?? "").trim();
+  node === title ? undefined : withoutGlosses(String(node.attrs["heading"] ?? ""));
 
 const documentsCited = (nodes: readonly StructureNode[]): ReadonlySet<string> =>
   new Set(nodes.flatMap((node) => (node.kind === "reference" && typeof node.attrs["document"] === "string" ? [node.attrs["document"]] : [])));

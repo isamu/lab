@@ -12,6 +12,7 @@ import { restricted, type Restrictors } from "./superlative-clause.ts";
 import { stackedHedges, type StackedHedge } from "./stacked-hedge.ts";
 import { comparisonMarkersOf, counterpartBefore, onlyQuoted, quotedRange, type ComparisonMarkers } from "./superlative-comparison.ts";
 import { inPhrase, ownedBefore } from "./superlative-phrase.ts";
+import { asked, contextOf, pointsAtReferent, sought, viewpointBefore, type Context } from "./superlative-context.ts";
 
 const PER = 1000;
 
@@ -128,11 +129,12 @@ type Qualifiers = {
   readonly restrictors: Restrictors;
   readonly phrases: Lexicon;
   readonly owners: Lexicon;
+  readonly context: Context;
 };
 
 const qualifiersOf = (doc: ProseDocument): Qualifiers => ({
   comparison: comparisonMarkersOf(doc.lexicons["comparison-marker"] ?? []),
-  scope: scopeMarkersOf(doc.lexicons["superlative-scope"] ?? []),
+  scope: scopeMarkersOf(doc.lexicons["superlative-scope"] ?? [], doc.lexicons["superlative-purpose"], doc.lexicons["superlative-realm"]),
   quantityNouns: doc.lexicons["quantity-noun"] ?? [],
   suffixes: doc.lexicons["superlative-suffix"] ?? [],
   amounts: doc.lexicons["superlative-amount"] ?? [],
@@ -143,6 +145,7 @@ const qualifiersOf = (doc: ProseDocument): Qualifiers => ({
   },
   phrases: doc.lexicons["superlative-phrase"] ?? [],
   owners: doc.lexicons["superlative-owner"] ?? [],
+  context: contextOf(doc.lexicons),
 });
 
 /** 範囲・持ち主・節・分詞・形容詞・すぐ前の相手のどれかが最上級を限っているか、最上級が量か名前を言っているか。 */
@@ -150,6 +153,8 @@ const qualifiedAt = (tokens: readonly Token[], range: TokenRange, qualifiers: Qu
   counterpartBefore(tokens, range, qualifiers.comparison.before) ||
   scoped(tokens, range, qualifiers.scope) ||
   ownedBefore(tokens, range, qualifiers.owners) ||
+  viewpointBefore(tokens, range, qualifiers.context.viewpoints) ||
+  pointsAtReferent(tokens, range, qualifiers.context.referents) ||
   restricted(tokens, range, qualifiers.restrictors) ||
   namesQuantity(tokens, range, qualifiers.quantityNouns) ||
   makesWord(tokens, range, qualifiers.suffixes) ||
@@ -161,12 +166,19 @@ const everyQualified = (sentence: Sentence, entry: LexiconEntry, qualifiers: Qua
   const ranges = entryRanges(sentence, entry);
   return (
     ranges.length > 0 &&
-    ranges.every((range) => quotedRange(sentence, range) || inPhrase(tokens, range, qualifiers.phrases) || qualifiedAt(tokens, range, qualifiers))
+    ranges.every(
+      (range) =>
+        quotedRange(sentence, range) ||
+        inPhrase(tokens, range, qualifiers.phrases) ||
+        sought(sentence, range, qualifiers.context.goals) ||
+        qualifiedAt(tokens, range, qualifiers),
+    )
   );
 };
 
 const qualified = (sentence: Sentence, entry: LexiconEntry, qualifiers: Qualifiers): boolean =>
   DIGIT.test(sentence.text) ||
+  asked(sentence) ||
   onlyQuoted(sentence, entry) ||
   qualifiers.comparison.anywhere.some((marker) => entryIn(sentence, marker)) ||
   everyQualified(sentence, entry, qualifiers);
