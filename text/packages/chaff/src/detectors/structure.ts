@@ -1,11 +1,12 @@
 import { charLength, lengthOf, proseText } from "../measure.ts";
 import { contractionExtraWords } from "../contraction-words.ts";
-import type { BulletList, Detector, DetectorOptions, Finding, LengthUnit, Paragraph, ProseDocument, Section, Sentence, Span } from "../plugin.ts";
+import type { Detector, DetectorOptions, Finding, LengthUnit, Paragraph, ProseDocument, Section, Sentence, Span } from "../plugin.ts";
 import { dateStampIndexes, stampCandidates } from "../date-stamp.ts";
 import { inDocumentOrder } from "../structure/issues.ts";
 import { preambleParagraphs } from "../preamble-paragraphs.ts";
 import { isTooLongParagraph } from "../paragraph-length.ts";
 import { bodySectionOf } from "../body-section.ts";
+import { threeShare } from "../rule-of-three.ts";
 
 /**
  * ばらつきは変動係数（標準偏差 ÷ 平均）で測る。
@@ -103,22 +104,18 @@ export const sectionUniformity: Detector = (doc, options): Finding[] => {
  * 3 項目の箇条書きばかりになっている。
  * 3 つ並べると収まりがよいので、言いたいことが 2 つでも 4 つでも 3 つにされる。
  */
-const isThree = (list: BulletList): boolean => list.items.length === 3;
-
 export const ruleOfThree: Detector = (doc, options): Finding[] => {
-  const lists = doc.lists;
-  const threes = lists.filter(isThree);
-  const share = lists.length === 0 ? 0 : Math.round((threes.length / lists.length) * PERCENT);
-  const first = threes[0];
-  if (lists.length < 3 || first === undefined || share <= options.limit) return [];
+  const openWords = (doc.lexicons["list-continues"] ?? []).map((entry) => entry.pattern);
+  const found = threeShare(doc.source, doc.lists, openWords, options.limit);
+  if (found === undefined) return [];
   return [
     {
       rule: "rule-of-three",
       severity: "info",
       line: 0,
       column: 0,
-      quote: doc.source.slice(first.span.start, first.span.start + 80).trim(),
-      values: { count: threes.length, total: lists.length, share, limit: options.limit, offset: first.span.start },
+      quote: doc.source.slice(found.first.span.start, found.first.span.start + 80).trim(),
+      values: { count: found.count, total: found.total, share: found.share, limit: options.limit, offset: found.first.span.start },
     },
   ];
 };
