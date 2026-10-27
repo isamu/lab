@@ -35,12 +35,12 @@ sources: [kobak-2025, liang-2024, juzek-ward-2025]
 
 group: ai-tells
 summary:
-  ja: 「重要な役割を果たす」「と言えるでしょう」のような、生成された文章にありがちな言い回しが重なった所
+  ja: 「大きな可能性を秘める」「と言えるでしょう」のような、生成された文章にありがちな言い回しが重なった所
   en: Phrases common in generated text ("delve into", "plays a crucial role") piled up
 example:
   ja:
     before: |
-      現代社会において、データは重要な役割を果たすと言えるでしょう。
+      現代社会において、データは大きな可能性を秘めていると言えるのではないでしょうか。
     after: |
       当社では、在庫の数を毎朝データで確かめてから発注しています。
   en:
@@ -60,7 +60,7 @@ rewrite:
   ja:
     direction: 決まった言い回しを、その文が実際に言っている中身（誰が、何を、どれだけ）に置き換えてください。中身の無い文は消してください。
     pairs:
-      - before: 現代社会において、在庫データは発注の判断で重要な役割を果たしています。
+      - before: 現代社会において、在庫データは発注の判断で重要な役割を担っています。
         after: 発注は在庫データを見て決めています。
       - before: 原因の調査に三日間、時間を溶かしました。
         after: 原因の調査に三日かかりました。
@@ -71,7 +71,7 @@ rewrite:
       - 書き手の確かさ（言い切りか、推量か）
     avoid:
       - 書き手が書いていない例や数字を作る
-      - 決まり文句を別の決まり文句に替える（「重要な役割を果たす」を「欠かせない存在だ」に）
+      - 決まり文句を別の決まり文句に替える（「重要な役割を担う」を「欠かせない存在だ」に）
       - どの段落も同じ形に書き揃える
   en:
     direction: Replace the stock phrase with what the sentence actually claims, who does what and how much. If nothing is claimed, delete the sentence.
