@@ -1,6 +1,7 @@
 import { proseText } from "../measure.ts";
 import { dateSpans, wordsOf } from "./structure.ts";
 import { lexiconNotationOf, sourceNotAcronymSpans, unreportedAcronymSpans, type NotAcronymSpans } from "./acronym-context.ts";
+import { titledCodeSpans } from "./titled-code-citation.ts";
 import { abbreviates, expansionAt, termEntryAcronyms, type DefinitionWords, type ExpandedAt } from "./acronym-expansion.ts";
 import { isExplained } from "./acronym-compound.ts";
 import { statedAcronyms } from "./acronym-definition.ts";
@@ -238,10 +239,10 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
     explained.set(word, known);
     return known;
   };
-  const counted = outsideSpans(
-    acronymsOf(doc, notationOf(doc)),
-    sourceNotAcronymSpans(doc.source, (id) => patternsOf(doc, id)),
-  );
+  const counted = outsideSpans(acronymsOf(doc, notationOf(doc)), [
+    ...sourceNotAcronymSpans(doc.source, (id) => patternsOf(doc, id)),
+    ...titledCodeSpans(doc.source, patternsOf(doc, "citation-series")),
+  ]);
   const hits = outsideSpans(
     counted,
     unreportedAcronymSpans(doc.source, doc.sentences, doc.links, (id) => patternsOf(doc, id)),
