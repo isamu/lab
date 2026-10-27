@@ -54,6 +54,21 @@ const EXCLAIMED = /[！？!?]$/u;
 export const continuesInto = (sentence: Sentence, next: Sentence | undefined): boolean =>
   EXCLAIMED.test(sentence.text) && next !== undefined && next.span.start === sentence.span.end && next.tokens?.[0]?.pos === "ADP";
 
+/** 「！」「？」で切れて、間を置かずに次の文が続くか。 */
+const touches = (sentence: Sentence, next: Sentence | undefined): next is Sentence =>
+  EXCLAIMED.test(sentence.text) && next !== undefined && next.span.start === sentence.span.end;
+
+/**
+ * sentences[index] から「！」「？」で切れた文が間を置かずに並び、その並びが助詞で始まる文へ続くか。
+ * 「これはリストか？順序付きか？…持つべきか？などです。」の問いの並びは、全体で一つの文の中に引いた問いで、どの問いも書き手の文末ではない。
+ */
+export const continuesThrough = (sentences: readonly Sentence[], index: number): boolean => {
+  const sentence = sentences[index];
+  const next = sentences[index + 1];
+  if (sentence === undefined || !touches(sentence, next)) return false;
+  return continuesInto(sentence, next) || continuesThrough(sentences, index + 1);
+};
+
 /** 位置 offset を含む一番外側の箇条書きの始まり。本文なら undefined。入れ子の項目は外側の箇条書きと一緒に見る。 */
 export const outermostList = (offset: number, lists: readonly Span[]): number | undefined =>
   lists

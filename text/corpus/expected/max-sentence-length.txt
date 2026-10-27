@@ -13,7 +13,7 @@ chrome-blog-pwa-origin-migration-ja  1
 cisa-scuba-teams  2
 cloudgov-security-ir-guide  3
 crs-r47235-budget-timeline  11
-crs-r47585-subcontracting  19
+crs-r47585-subcontracting  18
 crs-rl32781-salt  14
 da-agile-review-4  2
 da-ai-advisory-board-1  2
@@ -55,7 +55,7 @@ openapi-spec-3-1-0  2
 python-code-quality-list-2016-03  23
 rfc3693-geopriv-requirements  19
 rfc9293-tcp  50
-rfc9457  8
+rfc9457  7
 rust-rfc-2094-nll  12
 soumu-kokumin-cyber-phishing  1
 soumu-wp-r06-ai-rules-japan  2
