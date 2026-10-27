@@ -19,9 +19,30 @@ const ENCLOSING_BREAK: ReadonlySet<string> = new Set(["—", ";"]);
 /** 位置 end の記号が、and / or と同じ深さの読点か。 */
 const levelComma = (scope: ItemScope, end: number): boolean => scope.sentence.tokens[end]?.surface === "," && scope.sentence.depths[end] === scope.level;
 
-/** 読点のあとに、頭の形が shape の and / or の項目が来るか。and / or が来なければ undefined。 */
-const conjunctionAfter = (scope: ItemScope, end: number, shape: string): boolean | undefined =>
-  isListConjunction(scope.sentence.tokens[end + 1]) ? leadShape(scope, itemAfter(scope, end + 1)) === shape : undefined;
+/** 項目の語を小文字でつないだもの。読点や引用符は除く。 */
+const wordsOf = (scope: ItemScope, item: TokenRange): string =>
+  scope.sentence.tokens
+    .slice(item.start, item.end)
+    .filter((token) => token.pos !== "PUNCT" && token.pos !== "X")
+    .map((token) => token.surface.toLowerCase())
+    .join(" ");
+
+/** 並びの残りを言う語だけの項目（and so forth / or the like）。 */
+const endsOpenList = (scope: ItemScope, item: TokenRange): boolean => scope.sentence.words.openListEnd?.has(wordsOf(scope, item)) ?? false;
+
+/**
+ * 読点のあとに、頭の形が shape の and / or の項目か、並びの残りを言う語（and so forth）が来るか。and / or が来なければ undefined。
+ */
+const conjunctionAfter = (scope: ItemScope, end: number, shape: string): boolean | undefined => {
+  if (!isListConjunction(scope.sentence.tokens[end + 1])) return undefined;
+  const following = itemAfter(scope, end + 1);
+  return leadShape(scope, following) === shape || endsOpenList(scope, following);
+};
+
+const QUOTE_MARKS: ReadonlySet<string> = new Set(['"', "“", "”", "'", "‘", "’"]);
+
+/** 読点の後ろの項目が引用符で始まる。引用した題名の始まりで、並びの続きではない（Bundick, Cairó, and Petrosky-Nadeau (2025), "Labor Market Dynamics, …）。 */
+const opensQuotation = (scope: ItemScope, comma: number): boolean => QUOTE_MARKS.has(scope.sentence.tokens[comma + 1]?.surface ?? "");
 
 /** 読点 start から、頭の形が shape で動詞の無い項目を 1 つ以上読み進めた先の答え。 */
 export type Walk = (scope: ItemScope, start: number, shape: string) => boolean;
@@ -39,7 +60,7 @@ export const walker = (): Walk => {
       passed.push(end);
       answer = known.get(keyOf(scope, end, shape));
       if (answer !== undefined) break;
-      if (leadShape(scope, next) !== shape || hasVerb(scope, next)) answer = false;
+      if (leadShape(scope, next) !== shape || hasVerb(scope, next) || opensQuotation(scope, end)) answer = false;
       else if (!levelComma(scope, next.end)) answer = ENCLOSING_BREAK.has(scope.sentence.tokens[next.end]?.surface ?? "");
       else answer = conjunctionAfter(scope, next.end, shape);
       end = next.end;
@@ -59,6 +80,7 @@ export const listContinues = (scope: ItemScope, afterItem: TokenRange, walk: Wal
   const shape = leadShape(scope, afterItem);
   if (shape === undefined || !levelComma(scope, afterItem.end)) return false;
   const following = conjunctionAfter(scope, afterItem.end, shape);
-  if (following !== undefined) return following && isClause(scope, itemAfter(scope, afterItem.end + 1)) === isClause(scope, afterItem);
+  const next = itemAfter(scope, afterItem.end + 1);
+  if (following !== undefined) return following && (endsOpenList(scope, next) || isClause(scope, next) === isClause(scope, afterItem));
   return !hasAdposition(scope, afterItem) && !hasVerb(scope, afterItem) && walk(scope, afterItem.end, shape);
 };

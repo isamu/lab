@@ -311,7 +311,7 @@ const insideLastItem = (scope: ItemScope, at: number, view: View, afterItem: Tok
   pairsInLastItem(scope, at, view, afterItem) ||
   sharesNoun(scope, at, view, afterItem) ||
   joinsObjects(scope, at, view, afterItem) ||
-  joinsUnfinished(scope, at, view) ||
+  joinsUnfinished(scope, at, view, afterItem) ||
   repeatsConjunction(scope, at, view, afterItem);
 
 /**
@@ -402,6 +402,7 @@ export const oxfordComma: Detector = (doc, options): Finding[] => {
     clauseConjunction: patternsOf(doc.lexicons["clause-conjunction"]),
     indefinite: patternsOf(doc.lexicons["indefinite-article"]),
     elision: (doc.lexicons["elision-mark"] ?? []).map((entry) => entry.pattern),
+    openListEnd: patternsOf(doc.lexicons["open-list-end"]),
   };
   const judged = doc.sentences.flatMap((sentence) => {
     const oxford = oxfordIn(sentence.tokens ?? [], words, doc.source);

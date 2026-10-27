@@ -7,12 +7,13 @@ import type { TokenRange } from "./token-column.ts";
 
 /**
  * 最後の項目がまだ閉じていない語だけなら、and / or はその語と後ろの語を結び、後ろの名詞や目的語を共有する。前置詞だけ
- * （on or before Jan 23/58）か、不定冠詞と形容詞だけ（Neat, a flexible and lightweight Sass grid）。
+ * （on or before Jan 23/58）か、不定冠詞と形容詞だけ（Neat, a flexible and lightweight Sass grid）。and / or の後ろが前置詞だけでも、
+ * 2 つの小辞を結んでいる（drive in and out）。
  */
-export const joinsUnfinished = (scope: ItemScope, at: number, view: View): boolean => {
+export const joinsUnfinished = (scope: ItemScope, at: number, view: View, afterItem: TokenRange): boolean => {
   const last = lastOf(view);
   if (last === undefined || commaBefore(scope, at)) return false;
-  return isBarePreposition(scope, last.item) || isBareIndefiniteModifier(scope, last.item);
+  return isBarePreposition(scope, last.item) || isBareIndefiniteModifier(scope, last.item) || isBarePreposition(scope, afterItem);
 };
 
 /** 項目の最初（fromEnd なら最後）の接続詞が、and / or と同じ深さの同じ語ならその位置。でなければ -1。 */

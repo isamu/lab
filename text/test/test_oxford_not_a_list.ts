@@ -54,6 +54,22 @@ describe("oxford-comma-consistency: what is not a list", () => {
     assert.equal(reportedWith("We fund rent, zoning, outreach and counseling, all four programs."), true);
   });
 
+  it("reads the list as going on to the words that stand for its rest", () => {
+    const wiredata = "Brokers want data on properties—address, the age of the property, the number and type of rooms, and so forth—from the towns.";
+    assert.equal(reportedWith(wiredata), false);
+    assert.equal(reportedWith("We sell posters, cards and calendars, and so on."), false);
+  });
+
+  it("does not walk from a list of authors into the quoted title after it", () => {
+    const powell =
+      'See Brent Bundick, Isabel Cairó, and Nicolas Petrosky-Nadeau (2025), "Labor Market Dynamics, Monetary Policy Tradeoffs, and a Shortfalls Approach," Finance and Economics Discussion Series.';
+    assert.equal(reportedWithout(powell), true);
+  });
+
+  it("reads two particles joined after a verb as one item", () => {
+    assert.equal(reportedWith("We leave the gates open at night, so you are welcome to drive in and out."), false);
+  });
+
   it("does not take two lists for one when the and's item is long", () => {
     const sentence = "The account turns the duties of loyalty, care, good faith and candour into criteria governing optimisation, monitoring, and disclosure.";
     assert.equal(reportedWith(sentence), true);

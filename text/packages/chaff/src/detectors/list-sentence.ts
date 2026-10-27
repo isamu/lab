@@ -26,6 +26,8 @@ export type ListWords = {
   readonly indefinite?: ReadonlySet<string>;
   /** 引用の中の省略の印（... / * * *）。省略を示す引用はほかの文書の抜き書き。 */
   readonly elision?: readonly string[];
+  /** 並びの残りを言う語（so forth / the like）。and so forth の前まで並びが続く。 */
+  readonly openListEnd?: ReadonlySet<string>;
 };
 
 const LIST_CONJUNCTION: ReadonlySet<string> = new Set(["and", "or"]);
