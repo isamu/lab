@@ -3,7 +3,15 @@ import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { hasTwoEndings, isKnownWord, type Speller } from "../packages/chaff/src/spelling.ts";
-import { addressWordsOf, besideForeignWord, inSearchTermList, isMention, usedOnce } from "../packages/chaff/src/detectors/unknown-word-context.ts";
+import {
+  addressWordsOf,
+  besideForeignWord,
+  hasDrugStem,
+  inSearchTermList,
+  isClosedCompound,
+  isMention,
+  usedOnce,
+} from "../packages/chaff/src/detectors/unknown-word-context.ts";
 
 // unknown-word on the shapes of words that are not slips: a word built from dictionary words, a word the document uses in
 // another form, a name in quotes, brackets or an address, a list of search terms, a foreign phrase. The excerpts are US
@@ -35,6 +43,18 @@ describe("unknown-word: words built from dictionary words", () => {
     assert.deepEqual(unknown("Select the table in the toolbar and choose a style."), []);
     assert.deepEqual(unknown("We opened ten issues last month and openend five more."), [typo("openend", "opened")]);
     assert.deepEqual(unknown("The pipline restarted."), [typo("pipline", "pipeline")]);
+  });
+
+  it("two words of four letters or more written as one are a closed compound, but a slip inside one half is still reported", () => {
+    assert.deepEqual(unknown("Platform crowdwork pays by the task, and the crowdworkers rate the answers."), []);
+    assert.deepEqual(unknown("The award went to the best teamwrok of the year."), [typo("teamwrok", "teamwork")]);
+    assert.deepEqual(unknown("It has been held to apply to misappropriation as well as misrepresenation."), [typo("misrepresenation", "misrepresentation")]);
+  });
+
+  it("a drug's name is read by its international stem, but a slip in the stem is still reported", () => {
+    assert.deepEqual(unknown("Any medications (e.g., paroxetine, sertraline) taken in the past month should be listed."), []);
+    assert.deepEqual(unknown("The patients were given telmisartan daily."), []);
+    assert.deepEqual(unknown("Take ibuprofin with food."), [typo("ibuprofin", "ibuprofen")]);
   });
 
   it("a word the document also writes with another ending is its own term, but a known word's odd stem is not", () => {
@@ -103,6 +123,24 @@ describe("unknown-word context: the pieces", () => {
       ["operationalises", "operationalise", "operationalss", "thier", "toolss", "", "s"].map((word) => hasTwoEndings(word, speller)),
       [true, false, false, false, false, false, false],
     );
+  });
+
+  it("isClosedCompound: two listed words of four letters or more, the second inflected but neither prefixed nor derived", () => {
+    const compounds: Speller = { ...speller, words: [new Set(["crowd", "work", "open", "end", "pipe", "line", "operational"])], prefixes: ["re"] };
+    assert.deepEqual(
+      ["crowdwork", "crowdworks", "pipeline", "openend", "crowdwrok", "crowdrework", "workoperationalise", "crowd", "", "s"].map((word) =>
+        isClosedCompound(word, compounds),
+      ),
+      [true, true, true, false, false, false, false, false, false, false],
+    );
+  });
+
+  it("hasDrugStem: a stem with three letters or more before it", () => {
+    assert.deepEqual(
+      ["paroxetine", "oxetine", "abolol", "abcolol", "parox", ""].map((word) => hasDrugStem(word, ["oxetine", "olol"])),
+      [true, false, false, true, false, false],
+    );
+    assert.equal(hasDrugStem("paroxetine", []), false);
   });
 
   it("an uninflected word takes no ending", () => {
