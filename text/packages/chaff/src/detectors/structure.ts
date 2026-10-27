@@ -7,6 +7,7 @@ import { preambleParagraphs } from "../preamble-paragraphs.ts";
 import { isTooLongParagraph } from "../paragraph-length.ts";
 import { bodySectionOf } from "../body-section.ts";
 import { threeShare } from "../rule-of-three.ts";
+import { isInterview, sectionLevels } from "../section-levels.ts";
 
 /**
  * ばらつきは変動係数（標準偏差 ÷ 平均）で測る。
@@ -92,12 +93,26 @@ export const paragraphVariance: Detector = (doc, options): Finding[] => {
 
 const sectionChars = (section: Section): number => section.sentences.reduce((sum, sentence) => sum + charLength(sentence), 0);
 
-/** 節の長さが揃いすぎている。見出しごとに機械的に埋めた文書で起きる。 */
+const isEven = (lengths: readonly number[], least: number, limit: number): boolean => {
+  const cv = lengths.length < least ? undefined : coefficientOfVariation(lengths);
+  return cv !== undefined && asPercent(cv) < limit;
+};
+
+/**
+ * 節の長さが揃いすぎている。見出しごとに機械的に埋めた文書で起きる。
+ * 節を一つずつ数えて揃っていても、読み手が並べて比べる節（小見出しを含めた節どうし、まとめ見出しの下の小見出しどうし）でも
+ * 揃っていなければ指摘しない。短い小見出しが 4 つあるだけで、揃った節が 4 つあるように見えるから。
+ */
 export const sectionUniformity: Detector = (doc, options): Finding[] => {
+  const marks = (doc.lexicons["interviewer-mark"] ?? []).map((entry) => entry.pattern);
+  const starts = doc.paragraphs.map((paragraph) => paragraph.span.start);
+  if (isInterview(doc.source, doc.sections, starts, marks)) return [];
+  const least = minimumCount(options, "min_sections", DEFAULT_MIN_SECTIONS);
   const lengths = doc.sections.map(sectionChars).filter((length) => length > 0);
   const first = doc.sections[0];
-  if (first === undefined || lengths.length < minimumCount(options, "min_sections", DEFAULT_MIN_SECTIONS)) return [];
-  return uniformity(doc, lengths, first.span, options.limit, "section-length-uniformity");
+  if (first === undefined || lengths.length < least) return [];
+  const compared = sectionLevels(doc.sections, sectionChars).some((level) => isEven(level.lengths, least, options.limit));
+  return compared ? uniformity(doc, lengths, first.span, options.limit, "section-length-uniformity") : [];
 };
 
 /**
