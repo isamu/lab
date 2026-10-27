@@ -94,15 +94,41 @@ const isObserved = (previous: Token | undefined, following: readonly Token[] | u
 const isJudgingUse = ({ token, previous, before, following }: InContext, judging: ReadonlySet<string>): boolean =>
   token.pos === "VERB" && judging.has(token.lemma ?? "") && (followsQuotative(previous, before) || isObserved(previous, following));
 
+/** The particle 以て follows where 持つ never does: 〜でもって. */
+const MEANS_PARTICLE = "で";
+const VERB_LIKE = new Set(["VERB", "AUX"]);
+
 /**
- * The lexicons that set a word's use apart: idioms (気をつける), conjunctions (あわせて、), judging (〜とみられる) and katakana
- * spellings that name a sense of their own (モノ for goods).
+ * A listed verb's て-form after で with no verb after it (電子でもって申請する): 以て, "by means of", which 持つ never is after
+ * で (手で持って運ぶ has its verb after it). After を the two read alike (決意をもって, 信念を持って), and are compared as one word.
+ */
+const isMeansUse = ({ token, previous, following }: InContext, means: ReadonlySet<string>): boolean =>
+  token.pos === "VERB" &&
+  means.has(token.lemma ?? "") &&
+  previous?.pos === "ADP" &&
+  previous.surface === MEANS_PARTICLE &&
+  TE.has(following?.[0]?.surface ?? "") &&
+  following?.[1] !== undefined &&
+  !VERB_LIKE.has(following[1].pos);
+
+/**
+ * A listed light verb after the quotative と (議題といたします): the humble する, as it is written onto a noun (開会いたします),
+ * where the tokenizer marks it bound. The full verb takes を (思いを致す).
+ */
+const isLightVerbAfterQuotative = ({ token, previous }: InContext, lightVerbs: ReadonlySet<string>): boolean =>
+  token.pos === "VERB" && lightVerbs.has(token.lemma ?? "") && previous?.pos === "ADP" && previous.surface === QUOTATIVE;
+
+/**
+ * The lexicons that set a word's use apart: idioms (気をつける), conjunctions (あわせて、), judging (〜とみられる), katakana
+ * spellings that name a sense of their own (モノ for goods), 以て (〜でもって) and light verbs (〜といたします).
  */
 export type Uses = {
   readonly idioms: ReadonlySet<string>;
   readonly conjunctions: ReadonlySet<string>;
   readonly judging: ReadonlySet<string>;
   readonly senses: ReadonlySet<string>;
+  readonly means: ReadonlySet<string>;
+  readonly lightVerbs: ReadonlySet<string>;
 };
 
 /** A verb written straight onto the verb after it (出来上る, 書き込む): the head of a compound verb, which keeps the compound's spelling. */
@@ -111,22 +137,33 @@ const isCompoundVerbHead = ({ token, following }: InContext): boolean => {
   return token.pos === "VERB" && next?.pos === "VERB" && isTouching(token, next);
 };
 
+/** A verb written straight onto the verb before it (貼り付ける, 書き込む): the tail of a compound verb, not the verb alone (番号をつける). */
+const isCompoundVerbTail = ({ token, previous }: InContext): boolean => token.pos === "VERB" && previous?.pos === "VERB" && isTouching(previous, token);
+
+/** A word used freely, or as a helper: a bound noun after a word is a suffix, and anything else bound a helper. */
+const helperUseOf = (word: InContext, lightVerbs: ReadonlySet<string>): string => {
+  if (!isHelper(word) && !isLightVerbAfterQuotative(word, lightVerbs)) return "free";
+  return word.token.pos === "NOUN" && word.token.features?.["NounType"] !== "Dependent" ? "suffix" : "bound";
+};
+
 /**
  * A helper verb or a dependent noun (見て下さい, その事) is written kana by many guides while the full word keeps its kanji (資料を下さい).
  * The two uses are compared apart, so a document that follows that convention is consistent. A suffix (業務用, 全員ぶん) is a third use:
  * it is not the dependent noun of the same reading (このように). The verb of an idiom (気をつける) is a fourth, and a
  * conjunction (あわせて、, さらに、) a fifth, a verb of judging (〜とみられる) a sixth, a katakana spelling with a sense of its own (モノ)
- * a seventh and the head of a compound verb (出来上る) an eighth.
+ * a seventh, the head of a compound verb (出来上る) an eighth, its tail (貼り付ける) a ninth and 以て (〜でもって) a tenth. A light verb
+ * after と (議題といたします) is a helper.
  */
-export const useOf = (word: InContext, { idioms, conjunctions, judging, senses }: Uses): string => {
+export const useOf = (word: InContext, { idioms, conjunctions, judging, senses, means, lightVerbs }: Uses): string => {
   if (isIdiomVerb(word, idioms)) return "idiom";
+  if (isMeansUse(word, means)) return "means";
   if (isConjunctionUse(word, conjunctions)) return "conjunction";
   if (isJudgingUse(word, judging)) return "judging";
   if (senses.has(word.token.surface)) return "sense";
   if (isCompoundVerbHead(word)) return "compound-verb";
+  if (isCompoundVerbTail(word)) return "compound-tail";
   if (isKanaSuffix(word)) return "suffix";
-  if (!isHelper(word)) return "free";
-  return word.token.pos === "NOUN" && word.token.features?.["NounType"] !== "Dependent" ? "suffix" : "bound";
+  return helperUseOf(word, lightVerbs);
 };
 
 /** One katakana and then kana that is not katakana (スる): no verb stem is one katakana long, as サボる and ググる are two. */
@@ -136,6 +173,20 @@ const KATAKANA_END = /\p{Script=Katakana}$/u;
 /** A piece the tokenizer cut out of a katakana run (ミスっ read as ミ and スる): not a word of its own. */
 export const isCutFromKatakana = ({ token, previous }: InContext): boolean =>
   ONE_KATAKANA_HEAD.test(token.surface) && token.surface.length > 1 && isTouching(previous, token) && KATAKANA_END.test(previous?.surface ?? "");
+
+const KATAKANA_ONLY = /^[\p{Script=Katakana}ー]+$/u;
+
+const isKatakanaToken = (token: Token | undefined): boolean => token !== undefined && KATAKANA_ONLY.test(token.surface);
+
+/**
+ * A katakana word the tokenizer cut out of a longer katakana run (カイ of ラオカイ): a piece of a foreign name, whose sound
+ * meets a kanji word of the same reading (峡) by chance.
+ */
+export const isPieceOfKatakanaRun = ({ token, previous, following }: InContext): boolean => {
+  const next = following?.[0];
+  if (!isKatakanaToken(token)) return false;
+  return (isKatakanaToken(previous) && isTouching(previous, token)) || (next !== undefined && isKatakanaToken(next) && isTouching(token, next));
+};
 
 /**
  * で read as the verb 出る right after a word with no particle between (JSON でない): the copula's で, which the tokenizer

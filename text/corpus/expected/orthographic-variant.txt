@@ -1,7 +1,7 @@
 18f-handbook-one-on-ones  1
 18f-handbook-projects-in-distress  1
-aoml-hurricane-faq  11
-arxiv-astro-ph-new-2025-01-03  8
+aoml-hurricane-faq  12
+arxiv-astro-ph-new-2025-01-03  3
 asf-board-minutes-2025-01  10
 cc-by-4-legalcode-ja  3
 cloudgov-security-ir-guide  1
@@ -29,10 +29,9 @@ jma-faq-typhoon  1
 jma-yougo-kaze  1
 jp-2011-056072-seiu-kenyo-gasa  5
 jstage-jniph-74-1-2-rehabilitation  2
-jstage-jniph-74-2-119-wbgt  1
 kantei-221-shisei-hoshin  5
 kantei-unga81-general-debate-speech  1
-kokkai-217-sangiin-shohisha-7  21
+kokkai-217-sangiin-shohisha-7  19
 maff-kyodo-ryori-okaisan-ja  1
 mdn-using-fetch-ja  1
 mext-heatstroke-after-holidays  5
