@@ -331,10 +331,10 @@ describe("proper-noun-density の英語の上限は、人の書いた文書の�
     "Nobody asked for more time.",
   ];
   const repeated = (sentences: readonly string[]): string => Array.from({ length: 8 }, () => sentences.join(" ")).join("\n\n");
-  // 名前の文 1 つに名前の無い文 4 つ。人の書いた報告書ではふつうの多さ（コーパスの中ほど）。
+  // 名前の文 1 つに名前の無い文 4 つ。人の書いた報告書にもある多さで、strict の上限の下。
   const REPORT = repeated([NAMED_SENTENCE, ...PLAIN_SENTENCES]);
-  // 名前の文 1 つに短い名前の無い文 3 つ。strict と normal の上限のあいだ。
-  const NAME_HEAVY = repeated([NAMED_SENTENCE, PLAIN_SENTENCES[0] ?? "", PLAIN_SENTENCES[1] ?? "", "Everyone left with a clear list."]);
+  // 名前の文 1 つに短い名前の無い文 2 つ。strict と normal の上限のあいだ。
+  const NAME_HEAVY = repeated([NAMED_SENTENCE, PLAIN_SENTENCES[0] ?? "", "Everyone left with a clear list."]);
   // 名前ばかりの文章（著者の並んだ抄録のページ）。
   const NAMES = Array.from({ length: 20 }, () => "Alice Moreno met Bob Tanaka in Chicago. Kubernetes runs on Azure and Google Cloud.").join("\n\n");
 
