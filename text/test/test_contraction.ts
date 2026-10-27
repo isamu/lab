@@ -184,6 +184,79 @@ describe("contraction-consistency", () => {
       const source = "# Notes\n\nWe do not ship on Fridays. We do not ship at night.\n\nThe sign read “we don't open on Sundays at all”.";
       assert.deepEqual(matchedFor(source), ["don't"]);
     });
+
+    it("valid: 引用の中の一重引用符の札（‘Tweet doesn’t need a note’）も数えない", () => {
+      // arxiv-2610-17068-fact-check-true の形。
+      const source =
+        "# Notes\n\nThe score does not change. The label does not change.\n\nX removed them after such notes “were often rated as ‘Unhelpful - Tweet doesn’t need a note’ ” by raters.";
+      assert.deepEqual(matchedFor(source), []);
+    });
+
+    it("invalid: 入れ子でない引用の中の語は、これまでどおり数える", () => {
+      const source = "# Notes\n\nThe score does not change. The label does not change.\n\nRaters wrote “the tweet doesn’t need a note at all” often.";
+      assert.deepEqual(matchedFor(source), ["doesn't"]);
+    });
+  });
+
+  describe("一語だけ強調した語は、強勢のために選んだ形", () => {
+    it("valid: does **not** の長い形は数えない", () => {
+      // ts-handbook-more-on-functions の形。not を強めるために分けて書く。短縮形は強勢を持てない。
+      const source =
+        "# Functions\n\nThe call doesn't return. The type doesn't change.\n\nA `void` type does **not** force functions to **not** return something.";
+      assert.deepEqual(matchedFor(source), []);
+    });
+
+    it("invalid: 強調した形も、どちらが多いかを数えるときは数える", () => {
+      // openapi-spec-3-1-0 の形。*cannot* も cannot と書く文書の 1 回。
+      const source = "# Schemas\n\nThis object cannot be extended. Inline schemas *cannot* be used here.\n\nThe viewer can't access the documentation.";
+      assert.deepEqual(matchedFor(source), ["can't"]);
+    });
+
+    it("invalid: 何語にもわたる強調（太字の札、斜体の注）は地の文として数える", () => {
+      // gc-guide-publishing-open-source-code・tts-vulnerability-disclosure-policy の形。
+      const source =
+        "# Formulas\n\n*The licence is not a commitment to future versions.*\n\nThe sheet isn't sorted. The formula isn't rounded. **This test is not authorized:**";
+      assert.deepEqual(matchedFor(source), []);
+      const minority =
+        "# Formulas\n\n*The licence is not a commitment to future versions.*\n\nThe sheet isn't sorted. The formula isn't rounded. The list isn't long.";
+      assert.deepEqual(matchedFor(minority), ["is not"]);
+    });
+
+    it("invalid: 強調の外の長い形は、これまでどおり指す", () => {
+      const source = "# Functions\n\nThe call doesn't return. The type doesn't change.\n\nThe **checker** does not run here.";
+      assert.deepEqual(matchedFor(source), ["does not"]);
+    });
+
+    it("invalid: コードの中の * は強調の印ではない", () => {
+      const source = "# Functions\n\nThe call doesn't return. The type doesn't change.\n\nUse `a*b` when it does not fit, and `c*d` otherwise.";
+      assert.deepEqual(matchedFor(source), ["does not"]);
+    });
+  });
+
+  describe("語を比べる文と、語の一覧", () => {
+    it("valid: 対の 2 つの形を並べた文は、語を挙げていて使っていない", () => {
+      // govuk-style-guide-a-to-z の形。
+      const source = "# Style\n\nYou can’t file late. You can’t file twice.\n\nUse cannot, instead of can’t.";
+      assert.deepEqual(matchedFor(source), []);
+    });
+
+    it("invalid: 両方の形を文の中で使う文は、これまでどおり数えて指す", () => {
+      // 18f-handbook-one-on-ones の形。
+      const source = "# Meetings\n\nIt's fine to move them. It's rare to skip one.\n\nIt is important -- it's the most important -- so keep it.";
+      assert.deepEqual(matchedFor(source), ["it is"]);
+    });
+
+    it("valid: 検索語の一覧の短縮形は数えない", () => {
+      // arxiv-2609-05432-companion-ai-ethics の形。付録のキーワード一覧。
+      const source =
+        "# Method\n\nThe app did not respond. The model did not recall it.\n\n(i) Memory (k3=55): forgot, forgotten, forgets, doesn't remember, didn't remember, didnt remember, can't remember, no memory, short memory.";
+      assert.deepEqual(matchedFor(source), []);
+    });
+
+    it("invalid: 読点で区切った短い句の少ない文は、地の文として数える", () => {
+      const source = "# Method\n\nThe app did not respond. The model did not recall it.\n\nWe tried, we waited, and it didn't load.";
+      assert.deepEqual(matchedFor(source), ["didn't"]);
+    });
   });
 
   it("日本語では動かさない。表記ゆれは別の話", () => {
