@@ -150,6 +150,31 @@ const subjectBetween = (tokens: readonly Token[], from: number, to: number): boo
       at > from && at < to && (isParticle(token, "は") || isParticle(token, "が")) && (NOMINAL.has(tokens[at - 1]?.pos ?? "") || headsSubject(tokens, at)),
   );
 
+const isPoliteMasu = (token: Token | undefined): boolean => token?.pos === "AUX" && token.lemma === "ます";
+
+/** 〜ておりますが / 〜しましたが: a polite predicate and the contrastive が. */
+const isPoliteGa = (tokens: readonly Token[], at: number): boolean => {
+  if (tokens[at]?.surface !== "が" || tokens[at]?.pos !== "SCONJ") return false;
+  const before = tokens[at - 1];
+  return isPoliteMasu(before) || (before?.pos === "AUX" && before.surface === "た" && isPoliteMasu(tokens[at - 2]));
+};
+
+const ownGaSubjectBetween = (tokens: readonly Token[], from: number, to: number): boolean =>
+  tokens.some((token, at) => at > from && at < to && isParticle(token, "が") && headsSubject(tokens, at));
+
+/**
+ * 当社は…を営んでおりますが、…の重要性が乏しいため、…の記載は行っておりません: after 〜ますが、 the words up to the next comma
+ * say something of a subject of their own (が) and a new topic takes what comes after, so the predicate before が was the
+ * topic's, when no other subject stands between the topic and it (需要の停滞がありましたが is not). A topic straight after the
+ * comma (〜ましたが、Bは…) or no subject of its own there is read to the end.
+ */
+const closesWithPoliteGa = (tokens: readonly Token[], topic: number, at: number, last: number): boolean => {
+  if (!isPoliteGa(tokens, at) || !isComma(tokens[at + 1]) || subjectBetween(tokens, topic, at)) return false;
+  const comma = tokens.findIndex((token, index) => index > at + 1 && index < last && isComma(token));
+  const clauseEnd = comma === -1 ? last : comma;
+  return ownGaSubjectBetween(tokens, at + 1, clauseEnd) && newTopicAfter(tokens, clauseEnd, last);
+};
+
 /**
  * 学校は地域の核となることから、…: a closer after a predicate, then a comma, with no subject of its own
  * between the topic and it. That predicate is the topic's; what follows is said of something else, or by the writer. A topic set
@@ -186,6 +211,7 @@ export const topicClauseEnd = (tokens: readonly Token[], topic: number, last: nu
     closesSurely(tokens, at, last) ||
     (closesIfNewSubject(tokens, at) && subject > at) ||
     closesFirstClauseWithNoun(tokens, topic, at, last) ||
+    closesWithPoliteGa(tokens, topic, at, last) ||
     closesAfterPredicate(tokens, topic, at, words) ||
     closesWithItemMark(tokens, at);
   const end = tokens.findIndex((_, at) => at > topic && at < last && closes(at));

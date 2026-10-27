@@ -1,6 +1,5 @@
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { cuedNamesIn, mentionsIn, nameVariants, suffixedNamesIn, type NameMention, type VariantChars } from "../name-variants.ts";
-import type { WordUse } from "../name-end-letter.ts";
 import { withKnownNeighbours } from "../name-neighbours.ts";
 import type { SpellingInput } from "../name-spelling-chars.ts";
 import { lookalikeSlipsIn, type LookalikeChars } from "../name-lookalike-chars.ts";
@@ -27,6 +26,9 @@ import { isGroupPairOf, notDefinedTerms, outsideCapitals, sentenceIndexOf, withG
 import { isDictionaryPair } from "../name-word-form.ts";
 import { spellerOf } from "./unknown-word.ts";
 import { notAnotherAuthorIn } from "./name-variant-reference-list.ts";
+import { titleFindingsOf, twoThingsIn } from "./name-variant-two-things.ts";
+import { isSetInCapitals } from "../name-variant-shapes.ts";
+import { wordUseOf } from "../name-word-use.ts";
 
 // 人の名前と読ませる敬称（様、さん）は語彙表 person-suffix、人を指す前置き（担当の）は person-lead、名前のすぐ後ろに来る語
 // （です、まで）は name-particle、字体の違う同じ字（斎・斉・齋）は name-variant-char が組（group）ごとに言う。
@@ -297,7 +299,10 @@ const nameMentionsOf = (doc: ProseDocument, prose: string, chars: VariantChars):
   const outside = joined.filter(
     (mention) => !spaced.some((name) => name.offset < mention.offset + mention.surface.length && mention.offset < name.offset + name.surface.length),
   );
-  return outsideCapitals(prose, withKnownNeighbours([...outside, ...spaced], prose)).toSorted((left, right) => left.offset - right.offset);
+  const prefixes = patternsOf(doc, "name-capitals-prefix");
+  return outsideCapitals(prose, withKnownNeighbours([...outside, ...spaced], prose))
+    .filter((mention) => !isSetInCapitals(mention.surface, prefixes))
+    .toSorted((left, right) => left.offset - right.offset);
 };
 
 /** 人の名前で形の似た別の字（太 と 大）は語彙表 name-lookalike-char が組（group）ごとに言う。 */
@@ -349,21 +354,6 @@ const labelledNamesOf = (doc: ProseDocument, mentions: readonly NameMention[]): 
   );
 };
 
-const LATIN_WORD = /^[A-Za-z]+$/u;
-const LOWERCASE_WORD = /^[a-z]+$/u;
-
-/** 文書が小文字で書くか、品詞解析が普通名詞と読む英字の語（文頭の Hurricane）。 */
-const isCommonToken = (token: Token): boolean => LOWERCASE_WORD.test(token.surface) || (token.pos === "NOUN" && LATIN_WORD.test(token.surface));
-
-/** 文書での英字の語の使い方。名前と読んだ語のうち小文字で書けばふつうの語と、普通名詞として書いた語。 */
-const wordUseOf = (doc: ProseDocument): WordUse => {
-  const tokens = tokensOf(doc);
-  return {
-    ordinary: new Set(tokens.flatMap((token) => (isOrdinaryToken(token) ? [token.surface.toLowerCase()] : []))),
-    common: new Set(tokens.flatMap((token) => (isCommonToken(token) ? [token.surface.toLowerCase()] : []))),
-  };
-};
-
 /** 同じ名前を、文書の中で少しだけ違う形に書いた所（GitHub と Github、山田太郎 と 山田太朗）。少ないほうを指す。 */
 export const nameVariant: Detector = (doc): Finding[] => {
   const prose = doc.prose ?? doc.source;
@@ -374,7 +364,8 @@ export const nameVariant: Detector = (doc): Finding[] => {
     companies,
     companyFormsOf(doc).map((form) => form.pattern),
   );
-  const variants = nameVariants(mentions, chars, spellingInputOf(doc), wordUseOf(doc))
+  const use = wordUseOf(tokensOf(doc));
+  const variants = nameVariants(mentions, chars, spellingInputOf(doc), use)
     .map(({ mention, usual, kind }): Reported => ({ offset: mention.offset, name: mention.surface, usual, kind }))
     .filter((found) => notSpacingOnly(found) && !inGroup(found));
   const lookalikes = lookalikeSlipsIn(mentions, lookalikeCharsOf(doc)).map(({ mention, usual }) => ({
@@ -390,10 +381,14 @@ export const nameVariant: Detector = (doc): Finding[] => {
   const withProducts = [...withPlaces, ...productFindings(doc, prose, withPlaces)];
   const withOrder = [...withProducts, ...orderFindings(doc, prose, withProducts)];
   const codes = modelCodeFindings(doc, prose).filter((code) => !overlapsAny(withOrder, code.offset, code.name.length));
+  const withCodes = [...withOrder, ...codes];
+  const titles = titleFindingsOf(prose, patternsOf(doc, "name-title-head")).filter((title) => !overlapsAny(withCodes, title.offset, title.name.length));
   const dictionary = doc.dictionary?.();
   const speller = dictionary === undefined ? undefined : spellerOf(doc, dictionary);
-  return [...withOrder, ...codes]
+  const isTwoThings = twoThingsIn(doc, tokensOf(doc), speller, use.ordinary);
+  return [...withCodes, ...titles]
     .filter(({ name, usual }) => speller === undefined || !isDictionaryPair(name, usual, speller))
+    .filter((found) => !isTwoThings(found))
     .filter(notAnotherAuthorIn(doc))
     .toSorted((left, right) => left.offset - right.offset)
     .map(({ offset, name, usual, kind }) => ({

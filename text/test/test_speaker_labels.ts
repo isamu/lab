@@ -310,10 +310,8 @@ describe("話し手の名前は文でも本文でもない", () => {
   });
 
   it("会議録の形: 括弧の中の氏名を固有名詞として数えない（proper-noun-density）", () => {
-    const turns = Array.from({ length: 20 }, (_, index) =>
-      index % 2 === 0
-        ? `○委員長（山田太郎君）\u3000本日の議題${String(index)}について、資料に基づき御説明をお願いいたします。`
-        : `○参考人（佐藤花子君）\u3000議題${String(index)}について、お手元の資料に沿って御説明いたします。`,
+    const turns = Array.from({ length: 40 }, (_, index) =>
+      index % 2 === 0 ? "○委員長（山田太郎君）\u3000始めます。" : "○参考人（佐藤花子君）\u3000話します。",
     );
     const source = lines(...turns);
     assert.ok(!findingsOf(source, ja).includes("proper-noun-density"));

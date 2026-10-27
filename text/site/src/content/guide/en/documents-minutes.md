@@ -94,12 +94,8 @@ minutes.md   business/meeting-notes · English   genre from --genre
                   date-weekday-mismatch
   18:1    error   "4" follows "2" (expected number 3)
                   numbering-gap
-  22:1    info    The heading "Decisions" has no number, while 3 of its siblings do ("1. Actions from last week")
-                  heading-numbering-mix
   24:23   warning "three points" is announced, but the number of items in the list below is 2
                   announced-count-mismatch
-  29:1    info    The heading "Actions" has no number, while 3 of its siblings do ("1. Actions from last week")
-                  heading-numbering-mix
 
 {counts}
 ```
@@ -143,7 +139,6 @@ A team changes the lines with `guide:` in `chaff.yaml` ([Changing the genre's gu
 | --- | --- | --- | --- |
 | 3 | `date-weekday-mismatch` | October 7, 2026 is a Wednesday | Fix the weekday. If the meeting was on Tuesday, fix the date |
 | 18 | `numbering-gap` | Item 2 is followed by item 4 | Renumber to 3, or add the missing item 3 |
-| 22, 29 | `heading-numbering-mix` | "Decisions" and "Actions" have no number, while the agenda headings beside them do | Number them too, or put them at a different heading level from the numbered agenda items |
 | 24 | `announced-count-mismatch` | It says "three points", but there are two | Add the missing decision, or say "two points" |
 
 "It was decided" and "may be moved" do not say who decided or who moves it. This genre leaves passives alone, so a person reads for them.

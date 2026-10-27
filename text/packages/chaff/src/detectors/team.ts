@@ -1,9 +1,6 @@
-import { proseText } from "../measure.ts";
 import { joinWords } from "./word-list.ts";
-import { wordsOf } from "./structure.ts";
-import { nameSpans } from "../team-names.ts";
 import { conjugatedSpans } from "./conjugated-entry.ts";
-import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
+import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence } from "../plugin.ts";
 
 /**
  * チームの言葉。社内でしか通じない語を、チームが chaff.yaml に自分で並べる。
@@ -74,52 +71,6 @@ export const requiredSections: Detector = (doc, options): Finding[] => {
         .filter((heading) => heading.length > 0)
         .join(" / "),
       values: { word: joinWords(missing, doc.language), count: missing.length, limit: options.limit, offset: 0 },
-    },
-  ];
-};
-
-const PER = 1000;
-
-/** 密度を見る rule は短い文書を測らない。単位は言語で違うので床も分ける。 */
-const FLOOR = { word: 200, char: 500 };
-
-const isProperNoun = (token: Token): boolean => token.pos === "PROPN";
-
-/**
- * 固有名詞の密度。製品名・社名・人名が続くと、知らない読者は文の骨組みを見失う。
- *
- * spec は未知語率としていたが、**品詞解析があれば PROPN を数えるだけで足りる**。
- * 辞書を別に持つ必要はない。
- */
-const within = (spans: readonly Span[], token: Token): Span | undefined => spans.find((span) => token.span.start >= span.start && token.span.end <= span.end);
-
-/** 並べた名前は、何語に割れても 1 つの固有名詞（Bank of England は 2 つでなく 1 つ）。名前の中の 2 語目からを落とす。 */
-const properNounsOf = (sentence: Sentence, names: readonly string[]): Token[] => {
-  const named = nameSpans(sentence.text, names).map((span) => ({ start: sentence.span.start + span.start, end: sentence.span.start + span.end }));
-  const counted = new Set<Span>();
-  return (sentence.tokens ?? []).filter(isProperNoun).filter((token) => {
-    const name = within(named, token);
-    if (name === undefined) return true;
-    if (counted.has(name)) return false;
-    counted.add(name);
-    return true;
-  });
-};
-
-export const properNounDensity: Detector = (doc, options): Finding[] => {
-  const hits = doc.sentences.flatMap((sentence) => properNounsOf(sentence, doc.names ?? []).map((token) => ({ sentence, token })));
-  const length = wordsOf(doc);
-  const rate = length === 0 ? 0 : Math.round((hits.length / length) * PER);
-  const first = hits[0];
-  if (length < FLOOR[doc.lengthUnit] || first === undefined || rate <= options.limit) return [];
-  return [
-    {
-      rule: "proper-noun-density",
-      severity: "info",
-      line: 0,
-      column: 0,
-      quote: proseText(first.sentence),
-      values: { count: hits.length, density: rate, limit: options.limit, offset: first.token.span.start },
     },
   ];
 };

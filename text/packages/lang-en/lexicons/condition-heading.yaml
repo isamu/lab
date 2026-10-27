@@ -1,0 +1,21 @@
+# Headings of a section that lists conditions (what a candidate must have, what a role does, who may apply) rather than
+# claims. "Experience with Docker" or "Dependency updates" states a condition; no figure is missing from it.
+# concrete-evidence-density does not check such a section. Compared with the whole heading, in lower case, without a
+# trailing colon.
+id: condition-heading
+language: en
+entries:
+  - pattern: requirements
+  - pattern: minimum requirements
+  - pattern: qualifications
+  - pattern: minimum qualifications
+  - pattern: preferred qualifications
+  - pattern: required qualifications
+  - pattern: responsibilities
+  - pattern: key responsibilities
+  - pattern: duties
+  - pattern: nice-to-haves
+  - pattern: nice to have
+  - pattern: nice to haves
+  - pattern: eligibility
+  - pattern: who can apply

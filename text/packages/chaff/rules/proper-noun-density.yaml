@@ -3,6 +3,8 @@ layer: L3
 status: stable
 how_to_find: proper-noun-density
 requires: [pos]
+# The months, weekdays and era names a reader already knows are not counted (lexicon everyday-name).
+extra_word_lists: [everyday-name]
 # chaff.yaml の names に並べた名前は、何語に割れても 1 つと数える。名前そのものは数える（読み手が知らないことは変わらない）。
 severity: info
 
@@ -22,11 +24,12 @@ how_to_fix:
   ja: 2 度目からは「その製品」「そのチーム」のように受けてください。初出で何者かを一言添えると、知らない人も読めます。
   en: After first use, refer back to it. One phrase saying what it is lets a stranger keep reading.
 
-# 英語は 1000 語あたり。英語の人の書いた文書（コーパスと Project Gutenberg の小説・随筆）で測ると、名前の多さの分布の
-# 95 パーセンタイルあたりに normal を置く。測り方とその値は PR に残した（数字はここに書かない）。
+# 英語は 1000 語あたり、日本語は 1000 字あたり、名前の数で。判定済みのコーパス（isamu/chaff-corpus）で測ると、人の書いた文書の
+# 上の方は名前が中身の文書（当局の書簡、旅程の記事、会議録）で、どれも誤検出と判定された。normal はそれらの上に、strict は
+# 分布の 95 パーセンタイルあたりに置く。測り方とその値は PR に残した（数字はここに書かない）。
 levels:
-  ja: { strict: 20, normal: 40, relaxed: 80 }
-  en: { strict: 150, normal: 200, relaxed: 260 }
+  ja: { strict: 20, normal: 55, relaxed: 80 }
+  en: { strict: 130, normal: 190, relaxed: 260 }
 
 use_for: [blog, business, technical, legal, docs, academic, literature, speech]
 off_for:
@@ -35,7 +38,7 @@ off_for:
   academic: "Science writes in the passive, hedges its claims on purpose (may, suggest) and cites numbers as its evidence."
   literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
   speech: "A speech opens with greetings and closes with thanks: that is its form, not padding."
-  business/press-release: "A release names the agency, the people quoted, the mission and the place: that is its news, not a crowd of names to thin out. Every English release in the corpus (GSA, NASA, NOAA) is over the limit."
+  business/press-release: "A release names the agency, the people quoted, the mission and the place: that is its news, not a crowd of names to thin out."
 
 group: readability
 summary:
@@ -56,14 +59,18 @@ example:
       Alice Moreno and Bob Tanaka from Contoso met Carol Diaz from Fabrikam in Seattle, then flew with Dave Okafor from Northwind to Boston to see Erin Walsh at Tailspin and Frank Liu at Litware.
       In Chicago, Grace Kim of Proseware and Henry Park of Wingtip joined Ivan Petrov of Adatum, and Julia Rossi of Contoso brought Kevin Shah of Fabrikam.
       From Denver, Laura Chen of Northwind and Mark Evans of Tailspin called Nina Alvarez of Litware, Oscar Grant of Proseware and Paula Novak of Wingtip.
+      On Friday, Quinn Baker of Adatum flew from Denver to Austin with Rosa Mendes of Northwind, Sam Ortiz of Contoso and Tara Singh of Fabrikam.
+      That evening, Uma Reddy of Litware and Victor Hale of Wingtip met Wendy Cho of Proseware and Xavier Ruiz of Tailspin in Austin.
     after: |
       Two of our sales team met three customers on the West Coast, then flew to Boston to meet two more.
       In Chicago, three partners joined them, and our account lead brought a fourth.
       From Denver, two of the team called the remaining customers.
+      On Friday, four of them flew on to the last customer.
+      That evening, four more customers joined them.
 
 not_flagged:
-  ja: chaff.yaml の names に書いた名前は、何語に分かれても 1 つと数えます。短い文書（日本語 500 字、英語 200 語より短いもの）は測りません。
-  en: A name listed under names in chaff.yaml counts as one, however many words it has. Short documents (under 200 words) are not measured.
+  ja: 名前は語の数でなく名前の数で数えます。続けて書いた名前の語（Federal Reserve System、赤堀 政明）、すぐ後ろの括弧の略称（(OCC)）、引用符で囲んだ題名は 1 つです。chaff.yaml の names に書いた名前も、何語に分かれても 1 つです。文の形をしていない行（レターヘッド、出席者の名簿、署名、題名の並び）と、月・曜日・元号は数えません。短い文書（日本語 500 字、英語 200 語より短いもの）は測りません。
+  en: A name counts once, not once per word. Name words written together (Federal Reserve System), a short form in brackets right after a name ((OCC)), a quoted title, and a name listed under names in chaff.yaml each count as one. Lines that are not sentences (a letterhead, a list of attendees, a signature, a list of titles) and the months, weekdays and era names are not counted. Short documents (under 200 words) are not measured.
 level_meaning:
   ja: 1000 字あたり固有名詞 {limit} 個まで
   en: up to {limit} proper nouns per 1000 words

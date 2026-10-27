@@ -10,8 +10,8 @@ name:
   en: Heading numbering mixed
 
 why:
-  ja: 「1. 概要」「2. 手順」と番号を付けた見出しの隣に番号の無い「まとめ」があったり、「1.」「2.」の隣に「3）」や「第4章」があったりすると、読み手は番号の無い見出しが別の扱いなのか、番号が抜けたのか迷います。目次や参照（「3 章で述べた」）とも合わなくなります。どちらの付け方が正しいかは決めず、同じ親の下の同じ深さの見出し（兄弟）のうち少ないほうを指します。番号を持つ語（第1章、Chapter 1）と、番号を付けないのがふつうの前後の見出し（目次、参考文献）は言語ごとの語彙表にあります。
-  en: A numbered "1. Overview" and "2. Steps" next to an unnumbered "Summary", or "1." and "2." next to "3)" or "Chapter 4", leave the reader unsure whether the odd one is meant to be different or lost its number, and the numbers stop matching the table of contents and cross-references. chaff does not pick a style; among headings with the same parent and depth (siblings) it points at the minority. Words that carry a number (Chapter 1, 第1章) and front and back matter that is never numbered (Contents, References) are in each language's lexicon.
+  ja: 「1. 概要」「3. 費用」と番号を付けた見出しのあいだに番号の無い「手順」があったり、「1.」「2.」の隣に「3）」や「第4章」があったりすると、読み手は番号の無い見出しが別の扱いなのか、番号が抜けたのか迷います。目次や参照（「3 章で述べた」）とも合わなくなります。どちらの付け方が正しいかは決めず、同じ親の下の同じ深さの見出し（兄弟）のうち少ないほうを指します。番号を持つ語（第1章、Chapter 1）と、番号を付けないのがふつうの前後の見出し（目次、参考文献）は言語ごとの語彙表にあります。
+  en: An unnumbered "Steps" between a numbered "1. Overview" and "3. Costs", or "1." and "2." next to "3)" or "Chapter 4", leave the reader unsure whether the odd one is meant to be different or lost its number, and the numbers stop matching the table of contents and cross-references. chaff does not pick a style; among headings with the same parent and depth (siblings) it points at the minority. Words that carry a number (Chapter 1, 第1章) and front and back matter that is never numbered (Contents, References) are in each language's lexicon.
 
 message:
   ja: 見出し「{heading}」の番号の付け方が、兄弟の見出し（「{example}」など {count} 個）と違います
@@ -48,8 +48,8 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 
 group: structure
 summary:
-  ja: 「1. 概要」「2. 手順」「まとめ」や「1.」「2.」「3）」のように、兄弟の見出しで番号の付け方が混ざっている所
-  en: 'Sibling headings numbered in mixed ways: "1. Overview", "2. Steps", "Summary"'
+  ja: 「1. 概要」「手順」「3. 費用」や「1.」「2.」「3）」のように、兄弟の見出しで番号の付け方が混ざっている所
+  en: 'Sibling headings numbered in mixed ways: "1. Overview", "Steps", "3. Costs"'
 example:
   ja:
     before: |
@@ -59,13 +59,13 @@ example:
 
       概要です。
 
-      ## 2. 手順
+      ## 手順
 
       手順です。
 
-      ## まとめ
+      ## 3. 費用
 
-      まとめです。
+      費用です。
     after: |
       # 報告
 
@@ -77,9 +77,9 @@ example:
 
       手順です。
 
-      ## 3. まとめ
+      ## 3. 費用
 
-      まとめです。
+      費用です。
   en:
     before: |
       # Report
@@ -88,13 +88,13 @@ example:
 
       The overview.
 
-      ## 2. Steps
+      ## Steps
 
       The steps.
 
-      ## Summary
+      ## 3. Costs
 
-      The summary.
+      The costs.
     after: |
       # Report
 
@@ -106,20 +106,20 @@ example:
 
       The steps.
 
-      ## 3. Summary
+      ## 3. Costs
 
-      The summary.
+      The costs.
 
 not_flagged:
-  ja: 兄弟が三つ未満の所、少ないほうと多いほうが同じ数の所、深さや親の違う見出しどうし（「1.」の下の「1.1」）は比べません。前後の見出し（目次、参考文献、付録、末尾の「担当」「お問い合わせ先」）と、1 から始まる番号の前に置いた番号の無い見出し（文書の題、「はじめに」）は兄弟に数えません。見出しの頭の数でも、区切りの記号の無い数（「2026年の計画」「3つの理由」）は番号と読みません。期間や催しを名指す番号（「第1週」「1日目」「第3回」「Week 1」）も番号と読みません。兄弟がみな同じ字を頭に付けた見出し（「Q. 〜」「Q. 2.0 と同じ挙動にするには?」）の字は、質問の印で番号ではありません。
-  en: Fewer than three siblings, a tie between the two sides, and headings at different depths or under different parents ("1." and "1.1") are not compared. Front and back matter (Contents, References, Appendix, a closing Contact), and unnumbered headings placed before a numbering that starts at 1 (the page title, "Applies to England"), are not counted among the siblings. A number at the head of a heading without a separator ("2026 roadmap", "3 reasons") is not read as a heading number. Nor is a number that names a period or an event ("Week 1", "Day 2", "Phase 3", "第3回"). A letter that every sibling repeats ("Q. Why …?", "Q. 2.0 behaviour, how?") marks a question, and is not a number.
+  ja: 兄弟が三つ未満の所、少ないほうと多いほうが同じ数の所、深さや親の違う見出しどうし（「1.」の下の「1.1」）は比べません。前後の見出し（目次、参考文献、付録、末尾の「担当」「お問い合わせ先」）、見出しにした図と表の題（「図　データモデル」）、1 から始まる番号の並びの前と後ろに置いた番号の無い見出し（文書の題、「はじめに」、締めの「まとめ」「次回」）は兄弟に数えません。言うのは、番号の並びの途中で番号の無い見出しです。ページが段の違う番号（「1.」と「1.1」、「1.」の下で始め直す「(1)」）を同じ深さの見出しにしたときは、段ごとに比べます。見出しの頭の数でも、区切りの記号の無い数（「2026年の計画」「3つの理由」）は番号と読みません。期間や催しを名指す番号（「第1週」「1日目」「第3回」「Week 1」）も番号と読みません。兄弟がみな同じ字を頭に付けた見出し（「Q. 〜」「Q. 2.0 と同じ挙動にするには?」）の字は、質問の印で番号ではありません。
+  en: Fewer than three siblings, a tie between the two sides, and headings at different depths or under different parents ("1." and "1.1") are not compared. Front and back matter (Contents, References, Appendix, a closing Contact), and unnumbered headings placed before or after a numbering that starts at 1 (the page title, "Applies to England", a closing "Still not working?"), are not counted among the siblings; only an unnumbered heading inside the numbered run is reported. When a page puts numbers of different levels at one heading depth ("1." beside "1.1", or a "(1)" that restarts under each "1."), each level is compared on its own. A number at the head of a heading without a separator ("2026 roadmap", "3 reasons") is not read as a heading number. Nor is a number that names a period or an event ("Week 1", "Day 2", "Phase 3", "第3回"). A letter that every sibling repeats ("Q. Why …?", "Q. 2.0 behaviour, how?") marks a question, and is not a number.
 rewrite:
   depth: light
   ja:
     direction: 兄弟の見出しで、多いほうの番号の付け方に揃えてください。番号の無い見出しに番号を足すか、番号の書き方（1. と 1））を一つにします。見出しの言葉は変えません。
     pairs:
-      - before: 「## 1. 概要」「## 2. 手順」「## まとめ」
-        after: 「## 1. 概要」「## 2. 手順」「## 3. まとめ」
+      - before: 「## 1. 概要」「## 手順」「## 3. 費用」
+        after: 「## 1. 概要」「## 2. 手順」「## 3. 費用」
       - before: 「## 1. 背景」「## 2. 方針」「## 3）課題」
         after: 「## 1. 背景」「## 2. 方針」「## 3. 課題」
     keep:
@@ -130,8 +130,8 @@ rewrite:
   en:
     direction: Number the sibling headings the way most of them are numbered. Add the missing number, or write every number in one style ("1." or "1)"). Keep the heading text.
     pairs:
-      - before: '"## 1. Overview", "## 2. Steps", "## Summary"'
-        after: '"## 1. Overview", "## 2. Steps", "## 3. Summary"'
+      - before: '"## 1. Overview", "## Steps", "## 3. Costs"'
+        after: '"## 1. Overview", "## 2. Steps", "## 3. Costs"'
       - before: '"## 1. Background", "## 2. Plan", "## 3) Risks"'
         after: '"## 1. Background", "## 2. Plan", "## 3. Risks"'
     keep:

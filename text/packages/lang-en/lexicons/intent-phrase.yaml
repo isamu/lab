@@ -1,0 +1,21 @@
+# Words that make a sentence state a possibility, an obligation or the writer's own plan rather than a fact (Team members
+# may continue; We will migrate; We recommend approving). A risk, a mitigation or a recommendation is written this way and
+# asks for no figure behind it. concrete-evidence-density does not count such a sentence as a claim. Matched as whole
+# words in lower case anywhere in the sentence. "will" counts only after "we": "This will save time" is a claim.
+id: intent-phrase
+language: en
+entries:
+  - pattern: may
+  - pattern: might
+  - pattern: would
+  - pattern: should
+  - pattern: must
+  - pattern: ought to
+  - pattern: need to
+  - pattern: needs to
+  - pattern: we will
+  - pattern: we'll
+  - pattern: we shall
+  - pattern: we recommend
+  - pattern: we propose
+  - pattern: we suggest

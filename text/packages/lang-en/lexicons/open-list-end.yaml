@@ -1,0 +1,10 @@
+# Words that stand for the rest of a list after its last and / or ("the number and type of rooms, and so forth"). The
+# list goes on to them, so an and / or in the item before is inside that item. Read by oxford-comma-consistency.
+id: open-list-end
+language: en
+entries:
+  - pattern: so forth
+  - pattern: so on
+  - pattern: the like
+  - pattern: the rest
+  - pattern: etc

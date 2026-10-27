@@ -1,4 +1,4 @@
-import type { Token } from "../plugin.ts";
+import type { Span, Token } from "../plugin.ts";
 import { quotedSpans } from "../quoted-span.ts";
 
 /** 題の付いたものの名前を閉じる語（語彙表 title-ending: 〜要綱、〜試験、〜事業、〜法）。 */
@@ -22,11 +22,16 @@ const surfaceOf = (tokens: readonly Token[]): string => tokens.map((token) => to
  * 連なりの語（run: 隙間なく並ぶ語）が、題の名前を閉じる語で終わるか。閉じる語は語の切れ目で始まる
  * （地方自治法の「法」は語、解決方法の「法」は方法の一部）。閉じる語の前に 2 字以上の語が要る。
  */
-export const endsInTitle = (run: readonly Token[], words: TitleWords): boolean =>
-  run.some((_, at) => {
-    const tail = surfaceOf(run.slice(at));
-    return words.endings.includes(tail) && [...surfaceOf(run.slice(0, at))].length >= MIN_BODY_LENGTH;
+export const endsInTitle = (run: readonly Token[], words: TitleWords): boolean => titleBody(run, words) !== undefined;
+
+/** endsInTitle のときの、閉じる語の前の字（愛玩動物看護師法の「愛玩動物看護師」）。閉じなければ undefined。 */
+export const titleBody = (run: readonly Token[], words: TitleWords): string | undefined => {
+  const at = run.findIndex((_, index) => {
+    const tail = surfaceOf(run.slice(index));
+    return words.endings.includes(tail) && [...surfaceOf(run.slice(0, index))].length >= MIN_BODY_LENGTH;
   });
+  return at < 0 ? undefined : surfaceOf(run.slice(0, at));
+};
 
 /**
  * 文（text）の start から end までの連なりが、題の名前の置き方をしているか。
@@ -55,3 +60,15 @@ export const repeatedRuns = (runs: readonly string[]): Set<string> => {
   const counts = runs.reduce((seen, run) => seen.set(run, (seen.get(run) ?? 0) + 1), new Map<string, number>());
   return new Set([...counts].flatMap(([run, count]) => (count >= MIN_REPEATS ? [run] : [])));
 };
+
+/**
+ * 連なりを含む括弧（brackets: 中身の範囲、文書全体の座標）のどれかが、法令の題（「〜に関する法律」、（〜法））か。
+ * 中身の語（tokens のうち括弧の中のもの）が法令の名前を閉じる語（fixedName）で終われば題。題は、中の語ごと変えられない名前。
+ */
+export const inStatuteTitle = (tokens: readonly Token[], brackets: readonly Span[], fixedName: TitleWords): boolean =>
+  brackets.some((bracket) =>
+    endsInTitle(
+      tokens.filter((token) => bracket.start <= token.span.start && token.span.end <= bracket.end),
+      fixedName,
+    ),
+  );

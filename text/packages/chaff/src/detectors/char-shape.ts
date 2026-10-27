@@ -3,20 +3,30 @@ import { compacted } from "./gram-place.ts";
 import { leadingCounter, trailingPrefix } from "./counter-edge.ts";
 import { trailingAddressee, type AddresseeSuffix } from "./addressee-edge.ts";
 import { leadingPrefix, trailingTitle, type AddresseeWords } from "./addressee-title-edge.ts";
-import { followsForm, followsUnit, holdsName, isListItem, leadingDate, leadingOrdinal, leadingReference, type Edge } from "./kanji-name-edge.ts";
+import {
+  followsForm,
+  followsUnit,
+  holdsName,
+  isListItem,
+  leadingDate,
+  leadingOrdinal,
+  leadingReference,
+  trailingConjunction,
+  type Edge,
+} from "./kanji-name-edge.ts";
 import { isNameList } from "./name-list-sentence.ts";
 import { maskAddresses } from "../address-chain.ts";
 import { isAddressRun } from "./place-run.ts";
 import { isOneName } from "./name-run.ts";
 import { isOrganisationHead, isOrganisationRun, type OrganisationWords } from "./organisation-run.ts";
-import { endsInTitle, isTitlePosition, isTitledName, repeatedRuns, type TitleWords } from "./titled-run.ts";
+import { endsInTitle, inStatuteTitle, isTitlePosition, isTitledName, repeatedRuns, titleBody, type TitleWords } from "./titled-run.ts";
 import { proseText } from "../measure.ts";
 import { parallelDotCount } from "./middle-dot.ts";
 import { maskSpans } from "../mask.ts";
 import { quotedSpans } from "../quoted-span.ts";
 import { nameSpans } from "../team-names.ts";
 import { isIn } from "../lexicon-genres.ts";
-import { standaloneNames, unknownPieces } from "./kanji-run-pieces.ts";
+import { isTitledPerson, standaloneNames, unknownPieces } from "./kanji-run-pieces.ts";
 
 /**
  * 文字の並びを見る検出。漢字の連なりが住所か名前かだけは、形態素解析の固有名詞と数で決める。
@@ -43,12 +53,16 @@ type KanjiRun = {
   readonly alone: boolean;
   /** 名前の並び（区長、副区長、…選挙管理委員会事務局長）の、「、」で区切った 1 項目がこの連なりだけ。 */
   readonly listItem: boolean;
+  /** 連なりを中に含む括弧（ENCLOSING_MARKS）の中身の、文書全体の座標での範囲。 */
+  readonly brackets: readonly Span[];
 };
 
 const SPACE = /\s/gu;
 
-/** 名前を囲む括弧。鉤括弧と、見出しや分類の名前を囲む隅付き括弧（【浪速区役所公募型比較見積】）。 */
-const NAME_MARKS = { "「": "」", "『": "』", "【": "】" };
+/** 名前を囲む括弧。鉤括弧と、見出しや分類の名前を囲む隅付き括弧（【浪速区役所公募型比較見積】）と、欄の名前を囲む角括弧（［当事者系審判請求人］）。 */
+const NAME_MARKS = { "「": "」", "『": "』", "【": "】", "［": "］" };
+/** 法令の題（〜に関する法律）を囲む括弧。題の中の連なりは、題の一部。 */
+const ENCLOSING_MARKS = { "「": "」", "『": "』", "（": "）", "(": ")" };
 
 /**
  * 同じ連なりが文に二度出ても、それぞれの位置で読む。proseText は空白を詰めたり除いたりするだけなので、
@@ -73,12 +87,26 @@ const runsOf = (sentence: Sentence, profile: DocumentProfile | undefined, names:
     const before = prose.slice(0, match.index).replace(SPACE, "").length;
     const [start, last] = [printed[before], printed[before + match[0].length - 1]];
     if (start === undefined || last === undefined)
-      return { text: match[0], span: undefined, quoted: false, placed: false, after: undefined, before: "", next: "", alone: false, listItem: false };
+      return {
+        text: match[0],
+        span: undefined,
+        quoted: false,
+        placed: false,
+        after: undefined,
+        before: "",
+        next: "",
+        alone: false,
+        listItem: false,
+        brackets: [],
+      };
     const span = { start: sentence.span.start + start, end: sentence.span.start + last + 1 };
     const after = sentence.text.slice(0, start).trim() === "" ? sentence.text.slice(last + 1) : undefined;
     const quoted = fillsQuote(sentence, start, last + 1);
     const alone = sentence.text.slice(0, start).trim() === "" && sentence.text.slice(last + 1).trim() === "";
     const listItem = nameList && isListItem(sentence.text, start, last + 1);
+    const brackets = quotedSpans(sentence.text, ENCLOSING_MARKS)
+      .filter((bracket) => bracket.start <= start && last < bracket.end)
+      .map((bracket) => ({ start: sentence.span.start + bracket.start, end: sentence.span.start + bracket.end }));
     return {
       text: match[0],
       span,
@@ -89,6 +117,7 @@ const runsOf = (sentence: Sentence, profile: DocumentProfile | undefined, names:
       next: sentence.text.slice(last + 1),
       alone,
       listItem,
+      brackets,
     };
   });
 };
@@ -124,8 +153,10 @@ type RunContext = {
   readonly titled: readonly string[];
   /** 文書の文の中に二度以上出る連なり（repeatedRuns）。題を閉じる語で終われば、書き手が名前として使い回している。 */
   readonly repeated: ReadonlySet<string>;
-  /** 文書がほかで単独の連なりとして使う組織の名前（standaloneNames: 安全保障理事会）。 */
+  /** 文書がほかで単独の連なりとして使う組織の名前（standaloneNames: 安全保障理事会）と法令の名前とその名の元の語（statuteTerms）。 */
   readonly terms: ReadonlySet<string>;
+  /** 文書のどこかで、括弧の中身がまるごとその連なりである名前（「署名用電子証明書確認画面」）。 */
+  readonly presented: ReadonlySet<string>;
   /** 見出し語の行（文がその連なりだけ）を数えない文書か（用語集）。 */
   readonly headwords: boolean;
   /** 知っている語の語数の上限: 知っている語の字数の上限（一字一語のときの語数）。 */
@@ -181,7 +212,9 @@ const tailOf = (tokens: readonly Token[], run: KanjiRun, span: Span, words: Name
   const prefix = trailingPrefix(tokens, span.end, run.text);
   const suffix =
     prefix === undefined
-      ? (trailingAddressee(tokens, span.end, run.text, words.addressee) ?? trailingAddressee(tokens, span.end, run.text, words.listSuffixes))
+      ? (trailingConjunction(tokens, span.start, span.end, run.text) ??
+        trailingAddressee(tokens, span.end, run.text, words.addressee) ??
+        trailingAddressee(tokens, span.end, run.text, words.listSuffixes))
       : { surface: prefix.surface, start: prefix.span.start };
   const title = isNamedEntry(run, words) ? trailingTitle(run.text.slice(0, run.text.length - (suffix?.surface.length ?? 0)), words.addressees) : undefined;
   if (title === undefined) return suffix;
@@ -198,7 +231,9 @@ const headOf = (tokens: readonly Token[], run: KanjiRun, span: Span, name: strin
   const prefix = leadingPrefix(tokens, span.start, name, words.addressees);
   if (prefix !== undefined) return { head: prefix, prefix };
   const reference =
-    leadingReference(tokens, span.start, name, words.references) ?? leadingOrdinal(tokens, span.start, name) ?? leadingDate(tokens, span.start, name);
+    leadingReference(tokens, span.start, name, words.references) ??
+    leadingOrdinal(tokens, span.start, name) ??
+    leadingDate(tokens, span.start, name, run.before);
   return reference === undefined ? {} : { head: reference };
 };
 
@@ -219,6 +254,7 @@ const measuredRun = (tokens: readonly Token[] | undefined, run: KanjiRun, contex
   if (run.quoted || (context.headwords && run.alone)) return "";
   if (tokens === undefined || run.span === undefined) return run.text;
   const { rest, text, keptHead } = measuredOf(tokens, run, run.span, context.words);
+  if (context.presented.has(text) || inStatuteTitle(tokens, run.brackets, context.words.fixedName)) return "";
   const organisation = context.words.organisation;
   const formBefore = rest.start === run.span.start && (followsForm(run.before, organisation.forms) || followsUnit(run.before, organisation.units));
   if (isPlaceName(tokens, rest, context.words, formBefore) || isTitle(tokens, rest, text, run.placed, context)) return "";
@@ -231,19 +267,23 @@ const surfaceWithin = (token: Token, span: Span): string =>
   token.surface.slice(Math.max(0, span.start - token.span.start), Math.max(0, span.end - token.span.start));
 
 /**
- * 連なりの、知っている語（文書がほかで単独で使う組織の名前、連なりを閉じる決まった語）を外した残りのうち、最も長いもの。
+ * 連なりの、知っている語（文書がほかで単独で使う組織の名前と法令の名前、連なりを閉じる決まった語、職名の前後の人の名前）を外した残りのうち、最も長いもの。
  * 安全保障理事会常任理事国は（安全保障理事会を単独で使う文書なら）「常任理事国」、日本国内閣総理大臣は「日本国」を数える。
  * 名前に普通の語が続く連なり（日本弁護士連合会臨時総会決議）は、名前がその文書で単独で使われていなければ、まるごと数える。
  */
 const longestUnknown = (tokens: readonly Token[], rest: Span, keptHead: string, context: RunContext): string => {
-  const covering = coveringOf(tokens, rest);
-  const words = covering.flatMap((index) => tokens.slice(index, index + 1).map((token) => surfaceWithin(token, rest)));
+  const runTokens = coveringOf(tokens, rest).flatMap((index) => tokens.slice(index, index + 1));
+  const words = runTokens.map((token) => surfaceWithin(token, rest));
   const whole = words.join("");
   // A run as long as the text holds no known word; reading it word by word would take a pass per word.
   if (![...context.terms, ...context.words.knownWords].some((known) => whole.includes(known))) return keptHead + whole;
   const isKnown = (start: number, end: number): boolean => {
     const piece = words.slice(start, end).join("");
-    return context.terms.has(piece) || (end === words.length && context.words.knownWords.has(piece));
+    return (
+      context.terms.has(piece) ||
+      (end === words.length && context.words.knownWords.has(piece)) ||
+      isTitledPerson(runTokens, words, { start, end }, context.words.knownWords, context.maxKnownWords)
+    );
   };
   return unknownPieces(words, context.maxKnownWords, isKnown)
     .map((piece) => (piece.first ? keptHead + piece.text : piece.text))
@@ -259,21 +299,38 @@ const longestKanji = (sentence: Sentence, context: RunContext): string =>
 const headingRuns = (doc: ProseDocument): string[] =>
   (doc.markup?.headings ?? []).flatMap((heading) => [...heading.text.matchAll(KANJI_RUN)].map((match) => match[0]));
 
+/** 文書の文の中の漢字の連なりと、その文の語。 */
+type DocumentRun = { readonly run: KanjiRun; readonly tokens: readonly Token[] | undefined };
+
+const documentRuns = (doc: ProseDocument, profile: DocumentProfile | undefined, names: readonly string[]): DocumentRun[] =>
+  doc.sentences.flatMap((sentence) => runsOf(sentence, profile, names).map((run) => ({ run, tokens: sentence.tokens })));
+
 /**
  * 文書の中で題として置かれた漢字の連なり: 題の置き方をした文の中の連なりと、見出しの中の連なり。
  * 同じ名前を文の中で使えば（認定職業訓練実施奨励金の支給額）、それも題の名前と読む。
  */
-const titledNames = (doc: ProseDocument, profile: DocumentProfile | undefined, names: readonly string[]): string[] => [
-  ...doc.sentences.flatMap((sentence) => runsOf(sentence, profile, names).flatMap((run) => (run.placed ? [run.text] : []))),
+const titledNames = (doc: ProseDocument, runs: readonly DocumentRun[]): string[] => [
+  ...runs.flatMap(({ run }) => (run.placed ? [run.text] : [])),
   ...headingRuns(doc),
 ];
 
 /** 割る手がかりにする、文書が単独で使う名前の最短の字数。短い名前（事務局、理事会）は普通の語の一部にもなる。 */
 const MIN_TERM_LENGTH = 6;
 
-/** 文の中の漢字の連なり。 */
-const sentenceRuns = (doc: ProseDocument, profile: DocumentProfile | undefined, names: readonly string[]): string[] =>
-  doc.sentences.flatMap((sentence) => runsOf(sentence, profile, names).map((run) => run.text));
+/**
+ * 文書が単独の連なりとして使う法令・制度の名前（政治資金規正法）と、その名前の元の語（愛玩動物看護師法の「愛玩動物看護師」）のうち、
+ * 字数が MIN_TERM_LENGTH から上限（max）までのもの。法令が名に取った語は、読み手がその法令の名前から知っている語。
+ */
+const statuteTerms = (runs: readonly DocumentRun[], fixedName: TitleWords, max: number): string[] =>
+  runs.flatMap(({ run, tokens }) => {
+    if (tokens === undefined || run.span === undefined) return [];
+    const body = titleBody(
+      coveringOf(tokens, run.span).flatMap((index) => tokens.slice(index, index + 1)),
+      fixedName,
+    );
+    const terms = body === undefined ? [] : [run.text, body];
+    return terms.filter((term) => [...term].length >= MIN_TERM_LENGTH && [...term].length <= max);
+  });
 
 /** 文書の genre が、rule の headword_genres（見出し語の行を数えない genre: 用語集）にあるか。 */
 const isHeadwordGenre = (options: DetectorOptions): boolean => {
@@ -282,11 +339,7 @@ const isHeadwordGenre = (options: DetectorOptions): boolean => {
   return genre !== undefined && Array.isArray(genres) && genres.some((target: string) => isIn(genre, target));
 };
 
-/**
- * 漢字が続くと、どこで語が切れるのか読み手が探すことになる。
- * 「情報処理推進機構認定試験」は 12 字。ひらがなを 1 つ挟むだけで読める。
- */
-export const kanjiRun: Detector = (doc, options): Finding[] => {
+const nameWordsOf = (doc: ProseDocument): NameWords => {
   const patterns = (id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
   const organisation: OrganisationWords = {
     forms: patterns("organisation-form"),
@@ -305,18 +358,36 @@ export const kanjiRun: Detector = (doc, options): Finding[] => {
     listSuffixes: patterns("list-suffix"),
     knownWords: new Set(patterns("kanji-known-word")),
   };
+  return words;
+};
+
+const contextOf = (doc: ProseDocument, options: DetectorOptions): RunContext => {
+  const words = nameWordsOf(doc);
   const names = doc.names ?? [];
-  const inSentences = sentenceRuns(doc, doc.profile, names);
-  const context: RunContext = {
+  const runs = documentRuns(doc, doc.profile, names);
+  const inSentences = runs.map(({ run }) => run.text);
+  return {
     profile: doc.profile,
     names,
     words,
-    titled: titledNames(doc, doc.profile, names),
+    titled: titledNames(doc, runs),
     repeated: repeatedRuns(inSentences),
-    terms: standaloneNames([...inSentences, ...headingRuns(doc)], MIN_TERM_LENGTH, options.limit, organisation.units),
+    terms: new Set([
+      ...standaloneNames([...inSentences, ...headingRuns(doc)], MIN_TERM_LENGTH, options.limit, words.organisation.units),
+      ...statuteTerms(runs, words.fixedName, options.limit),
+    ]),
+    presented: new Set(runs.flatMap(({ run }) => (run.quoted ? [run.text] : []))),
     headwords: isHeadwordGenre(options),
     maxKnownWords: Math.max(options.limit, ...[...words.knownWords].map((word) => [...word].length)),
   };
+};
+
+/**
+ * 漢字が続くと、どこで語が切れるのか読み手が探すことになる。
+ * 「情報処理推進機構認定試験」は 12 字。ひらがなを 1 つ挟むだけで読める。
+ */
+export const kanjiRun: Detector = (doc, options): Finding[] => {
+  const context = contextOf(doc, options);
   return doc.sentences
     .map((sentence) => ({ sentence, run: longestKanji(sentence, context) }))
     .filter(({ run }) => run.length > options.limit)

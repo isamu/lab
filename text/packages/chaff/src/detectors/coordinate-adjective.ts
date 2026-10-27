@@ -1,6 +1,7 @@
 import type { Token } from "../plugin.ts";
 import type { TokenRange } from "./token-column.ts";
 import { firstOf, secondOf, withoutFirst, type View } from "./list-view.ts";
+import { isBareIndefiniteModifier } from "./list-item.ts";
 
 // Coordinate adjectives before one noun (long-term, strategic collaboration): the comma between them is not a list comma,
 // and the first adjective is not an item. Pure.
@@ -30,12 +31,13 @@ export const opensWithModifiedNoun = (words: readonly Token[]): boolean => MODIF
 
 /**
  * The list without its first item when that item is the first of two coordinate adjectives on the second item's noun
- * (… from CISA's long-term, strategic collaboration with A and B: the and joins two items, not three).
+ * (… from CISA's long-term, strategic collaboration with A and B: the and joins two items, not three), or an indefinite
+ * article with adjectives only (A simple, minimalist palette of cool blue and gray), which no noun has closed yet.
  */
 export const withoutCoordinateAdjective = (view: View): View => {
   const [first, second] = [firstOf(view), secondOf(view)];
   if (first === undefined || second === undefined) return view;
   const { tokens } = view.list.scope.sentence;
   const coordinate = endsWithModifier(wordsOf(tokens, first.item)) && opensWithModifiedNoun(wordsOf(tokens, second.item));
-  return coordinate ? withoutFirst(view) : view;
+  return coordinate || isBareIndefiniteModifier(view.list.scope, first.item) ? withoutFirst(view) : view;
 };
