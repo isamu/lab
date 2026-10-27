@@ -197,7 +197,8 @@ describe("undefined-acronym", () => {
     "TIP",
   ].forEach((acronym) => {
     it(`よく知られた略語 ${acronym} は数えない`, () => {
-      assert.ok(!idsFor(`# 連絡\n\nSRE と SLO と ${acronym} を確かめます。${BULK}`).includes("undefined-acronym"));
+      // 業務文書は説明のない略語 2 つで指す。通じる略語を数えれば SRE と並んで届く。
+      assert.ok(!idsFor(`# 連絡\n\nSRE と ${acronym} を確かめます。${BULK}`).includes("undefined-acronym"));
     });
   });
 
