@@ -19,9 +19,7 @@ const mixed = (headings: readonly string[], adapter = ja, path = "a.md"): readon
 
 describe("heading-numbering-mix: 兄弟の見出しの番号の付け方", () => {
   it("番号の付いた兄弟の中の、番号の無い見出し", () => {
-    assert.deepEqual(mixed(["## 1. 概要", "## 手順", "## 3. まとめ"]), [
-      "見出し「手順」だけ番号がありません（兄弟の見出しは「1. 概要」など 2 個が番号付き）",
-    ]);
+    assert.deepEqual(mixed(["## 1. 概要", "## 手順", "## 3. まとめ"]), ["見出し「手順」だけ番号がありません（兄弟の見出しは「1. 概要」など 2 個が番号付き）"]);
   });
 
   it("番号の無い兄弟の中の、番号の付いた見出し", () => {
@@ -160,9 +158,21 @@ describe("heading-numbering-mix: what lies outside the numbered run, and numbers
   });
 
   it("sections and subsections a page put at one depth (1. beside 1.1, 1. beside a (1) that restarts) are compared level by level", () => {
-    assert.deepEqual(mixed(["#### 1. はじめに", "#### 1.1 概要", "#### 1.2 図書館と許諾", "#### 2. 留意事項", "#### 2.1 取り消せない", "#### 3. おわりに"]), []);
     assert.deepEqual(
-      mixed(["#### はじめに", "#### 1. 査読とは", "#### (1) 時間", "#### (2) 質", "#### 2. 定義", "#### 3. 現状", "#### (1) 解決するか", "#### (2) なぜ閉じるか"]),
+      mixed(["#### 1. はじめに", "#### 1.1 概要", "#### 1.2 図書館と許諾", "#### 2. 留意事項", "#### 2.1 取り消せない", "#### 3. おわりに"]),
+      [],
+    );
+    assert.deepEqual(
+      mixed([
+        "#### はじめに",
+        "#### 1. 査読とは",
+        "#### (1) 時間",
+        "#### (2) 質",
+        "#### 2. 定義",
+        "#### 3. 現状",
+        "#### (1) 解決するか",
+        "#### (2) なぜ閉じるか",
+      ]),
       [],
     );
   });
@@ -367,9 +377,7 @@ describe("heading-numbering-mix: a letter every sibling repeats (Q.) is a mark, 
   });
 
   it("letters that advance (A. B. C.) are a numbering, and an unnumbered sibling is still reported", () => {
-    assert.deepEqual(mixed(["## A. 背景", "## 方針", "## C. まとめ"]), [
-      "見出し「方針」だけ番号がありません（兄弟の見出しは「A. 背景」など 2 個が番号付き）",
-    ]);
+    assert.deepEqual(mixed(["## A. 背景", "## 方針", "## C. まとめ"]), ["見出し「方針」だけ番号がありません（兄弟の見出しは「A. 背景」など 2 個が番号付き）"]);
   });
 
   it("a single letter heading is not a repeated mark", () => {
