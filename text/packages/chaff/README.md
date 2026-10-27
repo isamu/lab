@@ -15,7 +15,8 @@ rewrites your text**. Every command returns an exit code, so it runs in CI on ev
 a draft and see what comes back, with nothing to install.
 
 **Inside a coding agent:** `/plugin marketplace add isamu/lab`, then `/plugin install chaff@lab`.
-The bundled skill picks the genre, runs chaff, and reads each finding back to you. It changes no text
+Without the plugin, `npx skills add isamu/lab --skill chaff` installs the same skill.
+It picks the genre, runs chaff, and reads each finding back to you. It changes no text
 on its own.
 
 ## First run
