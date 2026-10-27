@@ -3,12 +3,12 @@ import { compacted } from "./gram-place.ts";
 import { leadingCounter, trailingPrefix } from "./counter-edge.ts";
 import { trailingAddressee, type AddresseeSuffix } from "./addressee-edge.ts";
 import { leadingPrefix, trailingTitle, type AddresseeWords } from "./addressee-title-edge.ts";
-import { followsForm, followsUnit, holdsName, isListItem, leadingOrdinal, leadingReference, type Edge } from "./kanji-name-edge.ts";
+import { followsForm, followsUnit, holdsName, isListItem, leadingDate, leadingOrdinal, leadingReference, type Edge } from "./kanji-name-edge.ts";
 import { isNameList } from "./name-list-sentence.ts";
 import { maskAddresses } from "../address-chain.ts";
 import { isAddressRun } from "./place-run.ts";
 import { isOneName } from "./name-run.ts";
-import { isOrganisationRun, type OrganisationWords } from "./organisation-run.ts";
+import { isOrganisationHead, isOrganisationRun, type OrganisationWords } from "./organisation-run.ts";
 import { endsInTitle, isTitlePosition, isTitledName, repeatedRuns, type TitleWords } from "./titled-run.ts";
 import { proseText } from "../measure.ts";
 import { parallelDotCount } from "./middle-dot.ts";
@@ -37,6 +37,8 @@ type KanjiRun = {
   readonly placed: boolean;
   readonly after: string | undefined;
   readonly before: string;
+  /** 連なりの後ろから文の終わりまでの文字（中黒の後ろへ続く名前の「・適応小委員会」）。 */
+  readonly next: string;
   /** 文がこの連なりだけ（用語集の見出し語の行）。 */
   readonly alone: boolean;
   /** 名前の並び（区長、副区長、…選挙管理委員会事務局長）の、「、」で区切った 1 項目がこの連なりだけ。 */
@@ -71,7 +73,7 @@ const runsOf = (sentence: Sentence, profile: DocumentProfile | undefined, names:
     const before = prose.slice(0, match.index).replace(SPACE, "").length;
     const [start, last] = [printed[before], printed[before + match[0].length - 1]];
     if (start === undefined || last === undefined)
-      return { text: match[0], span: undefined, quoted: false, placed: false, after: undefined, before: "", alone: false, listItem: false };
+      return { text: match[0], span: undefined, quoted: false, placed: false, after: undefined, before: "", next: "", alone: false, listItem: false };
     const span = { start: sentence.span.start + start, end: sentence.span.start + last + 1 };
     const after = sentence.text.slice(0, start).trim() === "" ? sentence.text.slice(last + 1) : undefined;
     const quoted = fillsQuote(sentence, start, last + 1);
@@ -84,6 +86,7 @@ const runsOf = (sentence: Sentence, profile: DocumentProfile | undefined, names:
       placed: isTitlePosition(sentence.text, start, last + 1),
       after,
       before: sentence.text.slice(0, start),
+      next: sentence.text.slice(last + 1),
       alone,
       listItem,
     };
@@ -141,6 +144,19 @@ const isPlaceName = (tokens: readonly Token[], span: Span, words: NameWords, for
   return isAddressRun(tokens, covering, words.topUnits) || isOneName(tokens, covering) || isOrganisationRun(tokens, covering, words.organisation, formBefore);
 };
 
+/** 連なりのすぐ後ろの、中黒で続く語の並び（・適応小委員会、・学位授与機構）。 */
+const DOTTED_TAIL = /^(?:・[一-鿿ァ-ヶー]+)+/u;
+
+/** 連なりの後ろ（next）が中黒で続き、最後の語が組織の語で閉じるか（社会保障審議会企業年金・個人年金部会の「・個人年金部会」）。 */
+const closesAfterDot = (next: string, units: readonly string[]): boolean => {
+  const last = DOTTED_TAIL.exec(next)?.[0].split("・").at(-1);
+  return last !== undefined && units.some((unit) => last.endsWith(unit));
+};
+
+/** 中黒の後ろで閉じる組織の名前の前半（独立行政法人大学改革支援・学位授与機構の「独立行政法人大学改革支援」）。 */
+const isDottedName = (tokens: readonly Token[], span: Span, run: KanjiRun, organisation: OrganisationWords, formBefore: boolean): boolean =>
+  closesAfterDot(run.next, organisation.units) && isOrganisationHead(tokens, coveringOf(tokens, span), organisation, formBefore);
+
 /**
  * 題の名前か。法令・制度・給付の名前（住民基本台帳法施行令）はそれを閉じる語で終わるだけで名前。題を閉じる語
  * （大阪市鶴見区役所公募型比較見積実施要綱、自衛隊高級幹部会同）は、ここか文書のほかの所で題として置かれているか、文書が同じ連なりを繰り返している。
@@ -175,13 +191,14 @@ const tailOf = (tokens: readonly Token[], run: KanjiRun, span: Span, words: Name
 /** 外す語を外した残り。頭の「各」は、宛名の行でなければ、残りが名前と決まったときだけ外す（呼び出し側が戻す）。 */
 type Measured = { readonly rest: Span; readonly text: string; readonly keptHead: string };
 
-/** 頭の外す語: 数に付いた助数詞、宛名の「各」、前に書いたものを指す語（上記）の順に、最初に当たったもの。prefix は「各」のとき。 */
+/** 頭の外す語: 数に付いた助数詞、宛名の「各」、前に書いたものを指す語（上記）か代の序数か漢数字の日付の順に、最初に当たったもの。prefix は「各」のとき。 */
 const headOf = (tokens: readonly Token[], run: KanjiRun, span: Span, name: string, words: NameWords): { head?: Edge; prefix?: Token } => {
   const counter = leadingCounter(tokens, span.start, run.text, words.positional);
   if (counter !== undefined) return { head: counter };
   const prefix = leadingPrefix(tokens, span.start, name, words.addressees);
   if (prefix !== undefined) return { head: prefix, prefix };
-  const reference = leadingReference(tokens, span.start, name, words.references) ?? leadingOrdinal(tokens, span.start, name);
+  const reference =
+    leadingReference(tokens, span.start, name, words.references) ?? leadingOrdinal(tokens, span.start, name) ?? leadingDate(tokens, span.start, name);
   return reference === undefined ? {} : { head: reference };
 };
 
@@ -205,6 +222,7 @@ const measuredRun = (tokens: readonly Token[] | undefined, run: KanjiRun, contex
   const organisation = context.words.organisation;
   const formBefore = rest.start === run.span.start && (followsForm(run.before, organisation.forms) || followsUnit(run.before, organisation.units));
   if (isPlaceName(tokens, rest, context.words, formBefore) || isTitle(tokens, rest, text, run.placed, context)) return "";
+  if (rest.end === run.span.end && isDottedName(tokens, rest, run, organisation, formBefore)) return "";
   return longestUnknown(tokens, rest, keptHead, context);
 };
 

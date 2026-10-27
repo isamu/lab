@@ -45,6 +45,7 @@ entries:
   - pattern: 役所
   - pattern: 役場
   - pattern: 製作所
+  - pattern: 発電所
   - pattern: 裁判所
   - pattern: 保健所
   - pattern: 検疫所
