@@ -26,8 +26,3 @@ entries:
   - pattern: "AB"
   - pattern: "ASA"
   - pattern: "OYJ"
-  # The same forms as a name writes them in running text (GT Interactive Software Corp.).
-  - pattern: "Corp"
-  - pattern: "Corporation"
-  - pattern: "Inc"
-  - pattern: "Ltd"

@@ -8,8 +8,8 @@ import { spelledInSentence } from "../packages/chaff/src/detectors/acronym-gloss
 import { referenceEntrySpans } from "../packages/chaff/src/detectors/reference-entry.ts";
 
 // undefined-acronym and capitals the reader does not need spelled out: a series cited by several numbers, a name written out
-// earlier in the same sentence, an entry of a bracket-keyed reference list, a judge's surname after his title, a company's
-// name with its legal form, a trademark, a citation of a code. The excerpts are from US federal documents (public domain:
+// earlier in the same sentence, an entry of a bracket-keyed reference list, a judge's surname after his title, a
+// trademark, a citation of a code. An organisation's name stays reported: a team lists it under names. The excerpts are from US federal documents (public domain:
 // Federal Reserve notes, an RFC's reference list, a FEMA citation, a Supreme Court opinion) or self-written.
 
 const doc = (...body: string[]): string => ["# Notes", "", ...body, "", "The SRE joins the call."].join("\n");
@@ -119,10 +119,9 @@ describe("undefined-acronym: series, spelled names, reference entries, judges, c
     assert.deepEqual(reportedAcronyms(en, doc("WHATWG publishes the Fetch standard.")), ["WHATWG", "SRE"]);
   });
 
-  it("valid: a judge's surname after his title, a company's name with its form, a trademark, a code cited by section", () => {
+  it("valid: a judge's surname after his title, a trademark, a code cited by section", () => {
     const opinion = "Mr. Justice BULLER, in the case of the King v. Pasmore, agreed, and Lord KENYON says so, as did Lord HOLT.";
     assert.deepEqual(reportedAcronyms(en, doc(opinion)), ["SRE"]);
-    assert.deepEqual(reportedAcronyms(en, doc("FormGen Inc. and GT Interactive Software Corp. own the rights.")), ["SRE"]);
     assert.deepEqual(reportedAcronyms(en, doc("Use Adobe® Acrobat DC® to add structure.")), ["SRE"]);
     assert.deepEqual(reportedAcronyms(en, doc("See 44 USC. 3502 (20).")), ["SRE"]);
     assert.deepEqual(reportedAcronyms(en, doc("The President, by Executive Order No. 6199 (15 USCA § 709 note), and (15 USCA Appendix § 12), acted.")), [
@@ -130,15 +129,15 @@ describe("undefined-acronym: series, spelled names, reference entries, judges, c
     ]);
   });
 
-  it("invalid: the same capitals without the title, the form or the mark", () => {
+  it("invalid: the same capitals without the title or the mark", () => {
     assert.deepEqual(reportedAcronyms(en, doc("The HOLT team reviews it.")), ["HOLT", "SRE"]);
     assert.deepEqual(reportedAcronyms(en, doc("The GT team owns the rights.")), ["GT", "SRE"]);
     assert.deepEqual(reportedAcronyms(en, doc("Use DC power here.")), ["DC", "SRE"]);
     assert.deepEqual(reportedAcronyms(en, doc("The USCA team met.")), ["USCA", "SRE"]);
   });
 
-  it("日本語: 漢字を挟んで会社の形が続く英字は会社の名前。続かなければ略語", () => {
-    assert.deepEqual(reportedAcronyms(ja, "# 連絡\n\nサイエンスアゴラ2025運営事務局（TSP太陽（株）内）。SREが対応する。\n"), ["SRE"]);
-    assert.deepEqual(reportedAcronyms(ja, "# 連絡\n\nTSP太陽の運用。SREが対応する。\n"), ["TSP", "SRE"]);
+  it("invalid: an organisation's acronym inside its name stays reported: readers list such names under names in chaff.yaml", () => {
+    assert.deepEqual(reportedAcronyms(en, doc("FormGen Inc. and GT Interactive Software Corp. own the rights.")), ["GT", "SRE"]);
+    assert.deepEqual(reportedAcronyms(ja, "# 連絡\n\nサイエンスアゴラ2025運営事務局（TSP太陽（株）内）。SREが対応する。\n"), ["TSP", "SRE"]);
   });
 });

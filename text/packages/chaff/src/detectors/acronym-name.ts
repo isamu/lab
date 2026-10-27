@@ -68,15 +68,15 @@ export const companyNameSpans = (text: string, forms: readonly string[], determi
   return [...names.map((match) => ({ start: match.index, end: match.index + match[0].length })), ...spansOf(text, bracketed)];
 };
 
-/** 日本の会社の名前の英字の語（ADEKA、DOWA）。英字の語と形のあいだに書く名前の続きの片仮名と漢字（DOWAホールディングス㈱ の ホールディングス、TSP太陽（株） の 太陽）。 */
+/** 日本の会社の名前の英字の語（ADEKA、DOWA）。英字の語と形のあいだに書く名前の続きの片仮名（DOWAホールディングス㈱ の ホールディングス）。 */
 const LATIN_NAME = "[A-Za-zＡ-Ｚａ-ｚ][A-Za-zＡ-Ｚａ-ｚ0-9０-９&＆]*";
-const NAME_TAIL = "[ァ-ヺー・\\p{Script=Han}々]*";
+const KATAKANA_TAIL = "[ァ-ヺー・]*";
 
 /** 英字だけの形（英語の Ltd）は英字の語に続けて書かれず、続いて見えれば語の一部。漢字か片仮名を含む形だけを読む。 */
 const NOT_LATIN = /[^\p{Script=Latin}\p{P}\s]/u;
 
 /**
- * 日本の会社の形のすぐ後ろの英字の語（㈱ADEKA、株式会社ADEKA）と、片仮名か漢字を挟んですぐ前の英字の語（ADEKA株式会社、
+ * 日本の会社の形のすぐ後ろの英字の語（㈱ADEKA、株式会社ADEKA）と、片仮名を挟んですぐ前の英字の語（ADEKA株式会社、
  * DOWAホールディングス㈱）。名前の英字で、説明を待つ略語ではない。範囲は英字の語だけ。
  */
 export const japaneseCompanyNameSpans = (text: string, forms: readonly string[]): Span[] => {
@@ -84,7 +84,7 @@ export const japaneseCompanyNameSpans = (text: string, forms: readonly string[])
   if (japanese.length === 0) return [];
   const form = oneOf(japanese);
   const after = new RegExp(`(?<=${form})${LATIN_NAME}`, "gu");
-  const before = new RegExp(`(?<![A-Za-zＡ-Ｚａ-ｚ])${LATIN_NAME}(?=${NAME_TAIL}${form})`, "gu");
+  const before = new RegExp(`(?<![A-Za-zＡ-Ｚａ-ｚ])${LATIN_NAME}(?=${KATAKANA_TAIL}${form})`, "gu");
   return [...spansOf(text, after), ...spansOf(text, before)];
 };
 
