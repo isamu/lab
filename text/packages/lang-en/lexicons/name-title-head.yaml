@@ -1,0 +1,23 @@
+# The last word of the title of a law or a body (the National Industrial Recovery Act, the Federal Trade Commission).
+# name-variant reads three or more capitalised words ending in one of these as a title, and reports a title written once
+# that is a repeated title with one word one letter away ("National Industrial Recover Act"). Matched as written.
+id: name-title-head
+language: en
+entries:
+  - pattern: Act
+  - pattern: Code
+  - pattern: Statute
+  - pattern: Treaty
+  - pattern: Convention
+  - pattern: Regulation
+  - pattern: Directive
+  - pattern: Commission
+  - pattern: Administration
+  - pattern: Agency
+  - pattern: Authority
+  - pattern: Board
+  - pattern: Bureau
+  - pattern: Committee
+  - pattern: Council
+  - pattern: Department
+  - pattern: Office

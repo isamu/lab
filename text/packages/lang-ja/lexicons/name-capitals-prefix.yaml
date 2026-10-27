@@ -1,0 +1,15 @@
+# 名簿が名前を大文字で組むときに、小文字のまま残す姓の頭（McCaul を McCAUL、DesJarlais を DesJARLAIS）。どの語も大文字か、
+# この頭の後ろが三字以上の大文字の名前を、大文字で組んだ名前と読み、ACME INC と同じく比べない（name-variant）。日本語の文書の
+# 英字の名前にも使う。語の頭で、書いたまま照らす。
+id: name-capitals-prefix
+language: ja
+entries:
+  - pattern: Mc
+  - pattern: Mac
+  - pattern: De
+  - pattern: Des
+  - pattern: Del
+  - pattern: Di
+  - pattern: Du
+  - pattern: La
+  - pattern: Le
