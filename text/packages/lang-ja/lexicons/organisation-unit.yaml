@@ -69,3 +69,8 @@ entries:
   - pattern: 銀行
   - pattern: 支店
   - pattern: センター
+  # 大学や研究機関の中の拠点（東京大学人文情報学拠点）と、自衛隊とその中の部隊と基地（航空自衛隊輸送機部隊、航空自衛隊小牧基地）。
+  - pattern: 拠点
+  - pattern: 自衛隊
+  - pattern: 部隊
+  - pattern: 基地
