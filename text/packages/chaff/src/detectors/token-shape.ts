@@ -6,6 +6,7 @@ import type { Detector, Finding, Span, Token } from "../plugin.ts";
 import { countedTokens, uncountedWordsOf, type UncountedWords } from "../uncounted-particles.ts";
 import { honorificGroupParticles } from "../honorific-group.ts";
 import { noteSentences } from "../note-paragraphs.ts";
+import { documentNameSpans } from "./particle-run-names.ts";
 
 /**
  * 文末が名詞で終わる（体言止め）。箇条書きでは普通だが、本文では文が途中で切れて読める。
@@ -64,6 +65,12 @@ const PARTICLE = new Set(["ADP", "SCONJ", "PART", "CCONJ"]);
 
 const BREAK: Run = { surface: "", tokens: [] };
 
+/** 括弧だけの語。解析器が括弧の続き（「分析】(1)経営成績」の「】(」）を名詞と読んでも、句読点と同じく句を閉じる。％や半角の･は句を閉じない。 */
+const BRACKETS_ONLY = /^[\p{Ps}\p{Pe}]+$/u;
+
+const breaksRun = (token: Token, breaks: readonly string[]): boolean =>
+  token.pos === "PUNCT" || PARTICLE.has(token.pos) || breaks.includes(token.surface) || BRACKETS_ONLY.test(token.surface);
+
 /**
  * 名詞は連なりの中身なので飛ばす。読点と、語彙表に無い助詞は連なりを切る。
  * 「弊社のAはBの」を 2 回続いたと数えないため。「は」でいちど句が閉じている。
@@ -76,7 +83,7 @@ const runsOf = (tokens: readonly Token[], nesting: readonly string[], breaks: re
   tokens.reduce<Run[]>((acc, token) => {
     if (isWithinAny(quoted, token.span)) return acc;
     if (nesting.includes(token.surface)) return extend(acc, token);
-    if (token.pos === "PUNCT" || PARTICLE.has(token.pos) || breaks.includes(token.surface)) acc.push(BREAK);
+    if (breaksRun(token, breaks)) acc.push(BREAK);
     return acc;
   }, []);
 
@@ -99,16 +106,21 @@ export const doubledParticle: Detector = (doc, options): Finding[] => {
   const breaks = (doc.lexicons[RUN_BREAK_LEXICON] ?? []).map((entry) => entry.pattern);
   const numbering = uncountedWordsOf(doc.lexicons, nesting);
   const groups = (doc.lexicons[HONORIFIC_GROUP_LEXICON] ?? []).map((entry) => entry.pattern);
-  return doc.sentences.flatMap((sentence) =>
-    runsOf(chainTokens(sentence.tokens ?? [], numbering, groups), nesting, breaks, [...quotedIn(sentence), ...titles])
-      .filter((run) => run.tokens.length > options.limit)
-      .map((run) => ({
-        rule: "no-doubled-joshi",
-        severity: "warning" as const,
-        line: 0,
-        column: 0,
-        quote: sentence.text.trim(),
-        values: { word: run.surface, count: run.tokens.length, limit: options.limit, offset: run.tokens[0]?.span.start ?? sentence.span.start },
-      })),
-  );
+  const prose = doc.prose ?? doc.source;
+  return doc.sentences.flatMap((sentence) => {
+    const tokens = chainTokens(sentence.tokens ?? [], numbering, groups);
+    const quoted = [...quotedIn(sentence), ...titles];
+    const longRuns = (skipped: readonly Span[]): Run[] => runsOf(tokens, nesting, breaks, skipped).filter((run) => run.tokens.length > options.limit);
+    const found = longRuns(quoted);
+    // 文書の名前を読むのは長い連なりのある文だけ。名前は位置ごとに読むので、全部の文で読むと遅い。
+    const runs = found.length === 0 ? found : longRuns([...quoted, ...documentNameSpans(prose, sentence.span, doc.namedDocument)]);
+    return runs.map((run) => ({
+      rule: "no-doubled-joshi",
+      severity: "warning" as const,
+      line: 0,
+      column: 0,
+      quote: sentence.text.trim(),
+      values: { word: run.surface, count: run.tokens.length, limit: options.limit, offset: run.tokens[0]?.span.start ?? sentence.span.start },
+    }));
+  });
 };
