@@ -1,3 +1,6 @@
+import type { Span, Token } from "../plugin.ts";
+import { isFullName } from "./name-run.ts";
+
 /**
  * 漢字の連なりを、読み手がもう知っている語（組織の名前、文書がほかで単独で使う組織の名前、決まった語）で割った残り。
  * 知っている語は、連なりの中でも語の切れ目を見せる。残りのそれぞれが、読み手が切れ目を探す長さ。
@@ -58,3 +61,26 @@ export const standaloneNames = (runs: readonly string[], min: number, max: numbe
       return length >= min && length <= max && units.some((unit) => run.endsWith(unit) && length - [...unit].length >= MIN_BODY_LENGTH);
     }),
   );
+
+/** words の [from, to) が決まった語（内閣総理大臣）か。 */
+const isKnownWordAt = (words: readonly string[], from: number, to: number, knownWords: ReadonlySet<string>): boolean =>
+  from >= 0 && to <= words.length && knownWords.has(words.slice(from, to).join(""));
+
+/**
+ * 連なりの語（runTokens、その字が words）の piece が、決まった職名（knownWords: 内閣総理大臣）のすぐ前かすぐ後ろに立つ人の姓と名
+ * （小泉純一郎内閣総理大臣、内閣総理大臣石破茂）か。職名は maxWords 語まで。人の名前と職名の組は、読み手が切れ目を知っている。
+ * 職名の無い名前の並び（田中一郎山田花子）は割らない。
+ */
+export const isTitledPerson = (
+  runTokens: readonly Token[],
+  words: readonly string[],
+  piece: Span,
+  knownWords: ReadonlySet<string>,
+  maxWords: number,
+): boolean => {
+  if (!isFullName(runTokens.slice(piece.start, piece.end))) return false;
+  const lengths = Array.from({ length: maxWords }, (_, offset) => offset + 1);
+  return lengths.some(
+    (length) => isKnownWordAt(words, piece.end, piece.end + length, knownWords) || isKnownWordAt(words, piece.start - length, piece.start, knownWords),
+  );
+};
