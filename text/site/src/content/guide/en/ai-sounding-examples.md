@@ -60,7 +60,7 @@ Rewrite depth: structure (sections, headings and paragraphs are reorganised).
 
 ## Document-level signals
 
-- `ai-generated-composite`: "ai-tell, padded-intro, closing-cliche" occur together in this document (3 signals, 3 needed)
+- `ai-generated-composite`: "ai-tell, padded-intro, closing-cliche" occur together in this document (3 signals, 2 needed)
 - `ai-tell`: "delve into, in today's fast-paced world, plays a crucial role, a testament to, meticulously" appear together (score 39, limit 18)
 - `padded-intro`: "in today's fast-paced world" is an opening that fits any article
 - `closing-cliche`: Closes with "in conclusion"
@@ -267,7 +267,7 @@ ai.md   blog/tech · English   genre from --genre
                   contrast-framing
   11:1    info    "To be honest," and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
-  11:1    warning "closing-cliche, contrast-framing, announcing-opener, colon-lead-in" occur together in this document (4 signals, 3 needed)
+  11:1    warning "closing-cliche, contrast-framing, announcing-opener, colon-lead-in" occur together in this document (4 signals, 2 needed)
                   ai-generated-composite
   17:1    info    "The key point is" and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
@@ -467,7 +467,7 @@ demo.md   blog/tech · English   genre from --genre
                   section-length-uniformity
   5:1     info    4 structure measures lie past 90% of human articles (3 needed): sections of one or two paragraphs, headings in a stock form, introduction / conclusion headings, list items opening with a bold label
                   ai-structure
-  5:1     warning "section-length-uniformity, padded-intro, closing-cliche, ai-structure" occur together in this document (4 signals, 3 needed)
+  5:1     warning "section-length-uniformity, padded-intro, closing-cliche, ai-structure" occur together in this document (4 signals, 2 needed)
                   ai-generated-composite
   7:1     warning "in today's fast-paced world" is an opening that fits any article
                   padded-intro

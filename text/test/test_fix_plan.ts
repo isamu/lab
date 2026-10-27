@@ -168,7 +168,8 @@ describe("fix-plan — the plan for a document", () => {
   });
 
   it("recommends by genre and by what fires: full for a blog post, bold or light for a report", async () => {
-    assert.equal((await planOf("ja-before.md")).mode.reason, "genre");
+    const blogPost = await planOf("ja-before.md");
+    assert.equal(`${blogPost.mode.mode}/${blogPost.mode.reason}`, "full/composite");
     // As a report, the English draft keeps two document-wide signals (ai-tell, padded-intro); the Japanese one keeps only ai-tell.
     const report = await planOf("en-before.md", ["--experimental", "--genre", "business/report"]);
     assert.equal(`${report.mode.mode}/${report.mode.reason}`, "bold/signals");

@@ -326,7 +326,7 @@
         }
       },
       "aiBench": {
-        "hits": 4,
+        "hits": 6,
         "samples": 6,
         "falseAlarms": 0,
         "cleanSamples": 12
