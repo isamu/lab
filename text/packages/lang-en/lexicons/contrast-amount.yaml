@@ -1,0 +1,13 @@
+# Words that, right after a contrast frame, make it say an amount ("not just one coffee": more than one), not knock down
+# an X nobody said. Position after: the word stands after the frame. A numeral (not just 2 rolls) is an amount anyway.
+id: contrast-amount
+language: en
+entries:
+  - { pattern: one, position: after }
+  - { pattern: once, position: after }
+  - { pattern: two, position: after }
+  - { pattern: twice, position: after }
+  - { pattern: three, position: after }
+  - { pattern: a few, position: after }
+  - { pattern: a couple, position: after }
+  - { pattern: a single, position: after }
