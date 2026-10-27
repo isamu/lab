@@ -1,0 +1,33 @@
+# 事実ではなく、あるべき姿・見込み・提言を述べる文の終わり（〜が期待される、〜すべきである、〜と考えられる）。
+# 答申や計画の方針の節はこう終わる文で埋まり、裏づけの数字を求める主張ではない。concrete-evidence-density は、こう終わる文を主張に数えない。
+# 「重要である」「大切である」は「こと」を前に付けた形（〜することが重要である）だけを載せる。「〜が重要です」で終わる文は価値の主張。
+# 文末の句点や括弧を除いた終わりと比べる。
+id: intent-ending
+language: ja
+entries:
+  - pattern: 期待される
+  - pattern: 期待されます
+  - pattern: 望まれる
+  - pattern: 望まれます
+  - pattern: 望ましい
+  - pattern: 望ましいです
+  - pattern: 求められる
+  - pattern: 求められます
+  - pattern: べきである
+  - pattern: べきです
+  - pattern: べきだ
+  - pattern: 必要がある
+  - pattern: 必要があります
+  - pattern: 必要である
+  - pattern: 必要です
+  - pattern: と考える
+  - pattern: と考えます
+  - pattern: 考えられる
+  - pattern: 考えられます
+  - pattern: てはならない
+  - pattern: なければならない
+  - pattern: ことが重要である
+  - pattern: ことが重要です
+  - pattern: ことが大切である
+  - pattern: ことが大切です
+  - pattern: ことが肝要である
