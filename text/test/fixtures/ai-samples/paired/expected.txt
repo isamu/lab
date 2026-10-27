@@ -1,6 +1,6 @@
 ## ja
 rule                       hits (b) ai  false (a) human  false (c) rewritten  false corpus
-ai-generated-composite     2/3          0/3              0/3                  0/63
+ai-generated-composite     3/3          0/3              0/3                  0/63
 ai-structure               1/3          0/3              0/3                  0/63
 ai-tell                    2/3          0/3              0/3                  0/63
 announcing-opener          3/3          0/3              0/3                  0/63

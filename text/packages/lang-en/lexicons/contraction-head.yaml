@@ -1,0 +1,10 @@
+# The first halves the tagger splits off a negative contraction: ai|n't, ca|n't, wo|n't, sha|n't. The tagger's
+# vocabulary holds them as a verb or a modal, so it reads them so everywhere, and "AI" (ai), "CA" (ca) become "be" and
+# "can". Without "n't" right after, they are not the contraction, and the adapter reads them as names.
+id: contraction-head
+language: en
+entries:
+  - pattern: ai
+  - pattern: ca
+  - pattern: wo
+  - pattern: sha

@@ -60,7 +60,7 @@ Rewrite depth: structure (sections, headings and paragraphs are reorganised).
 
 ## Document-level signals
 
-- `ai-generated-composite`: "ai-tell, padded-intro, closing-cliche" occur together in this document (3 signals, 3 needed)
+- `ai-generated-composite`: "ai-tell, padded-intro, closing-cliche" occur together in this document (3 signals, 2 needed)
 - `ai-tell`: "delve into, in today's fast-paced world, plays a crucial role, a testament to, meticulously" appear together (score 39, limit 18)
 - `padded-intro`: "in today's fast-paced world" is an opening that fits any article
 - `closing-cliche`: Closes with "in conclusion"
@@ -113,6 +113,62 @@ after:
   "delve into, in today's fast-paced world, plays a crucial role, a testament to, meticulously" appear together (score 39, limit 18)
 
 …
+
+**Direction**: Delete the opening that fits any document ("In recent years, X has gained attention") and start from the situation or the claim only this piece has. If the body has none, ask the writer.
+
+**Keep**
+
+- the situation and claim only this piece has
+
+**Avoid**
+
+- swapping the opening for another generality ("X is now essential")
+- inventing a scene or an anecdote that is not in the body
+
+**Example**
+
+before:
+
+> In recent years, generative AI has gained attention. This article shows how we use it internally.
+
+after:
+
+> This article shows how we use generative AI internally.
+
+**Spots**
+
+- line 3: "In today's fast-paced world, build speed plays a crucial role in how a team ships."
+  "in today's fast-paced world" is an opening that fits any article
+
+### `closing-cliche` Cliched closing
+
+**Direction**: Delete the stock closing. If the piece already ends on its conclusion, stop there; if not, state in one sentence the one thing from the body the reader should take away.
+
+**Keep**
+
+- the conclusion the body reached
+
+**Avoid**
+
+- adding a conclusion or a call to action that is not in the body
+- swapping "Hope this helps" for "Give it a try"
+
+**Example**
+
+before:
+
+> The setting lives in one place on the admin page. Hope this helps!
+
+after:
+
+> The setting lives in one place on the admin page.
+
+**Spots**
+
+- line 11: "In conclusion, the shared cache is a testament to what careful engineering can achieve."
+  Closes with "in conclusion"
+- line 11: "I hope this helps!"
+  Closes with "hope this helps"
 
 {not-run}
 
@@ -267,7 +323,7 @@ ai.md   blog/tech · English   genre from --genre
                   contrast-framing
   11:1    info    "To be honest," and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
-  11:1    warning "closing-cliche, contrast-framing, announcing-opener, bold-emphasis" occur together in this document (4 signals, 3 needed)
+  11:1    warning "closing-cliche, contrast-framing, announcing-opener, bold-emphasis" occur together in this document (4 signals, 2 needed)
                   ai-generated-composite
   17:1    info    "The key point is" and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
@@ -462,7 +518,7 @@ demo.md   blog/tech · English   genre from --genre
                   section-length-uniformity
   5:1     info    4 structure measures lie past 90% of human articles (3 needed): sections of one or two paragraphs, headings in a stock form, introduction / conclusion headings, list items opening with a bold label
                   ai-structure
-  5:1     warning "section-length-uniformity, padded-intro, closing-cliche, ai-structure" occur together in this document (4 signals, 3 needed)
+  5:1     warning "section-length-uniformity, padded-intro, closing-cliche, ai-structure" occur together in this document (4 signals, 2 needed)
                   ai-generated-composite
   7:1     warning "in today's fast-paced world" is an opening that fits any article
                   padded-intro

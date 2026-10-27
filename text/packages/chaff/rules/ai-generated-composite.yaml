@@ -30,8 +30,8 @@ name:
   en: Several signals of generated text together
 
 why:
-  ja: ここに挙げた特徴は、どれも 1 つでは普通の文章に出ます。同じ文書で 3 つ以上そろったときだけ意味を持ちます。**これでも「AI が書いた」とは言えません。** 読み直す場所の目印です。
-  en: Each of these appears in ordinary writing on its own. Only three or more in one document mean anything. **Even then it does not say the text was generated.** It marks a place to reread.
+  ja: ここに挙げた特徴は、どれも 1 つでは普通の文章に出ます。同じ文書で 3 つ以上（ブログの記事では 2 つ以上）そろったときだけ意味を持ちます。**これでも「AI が書いた」とは言えません。** 読み直す場所の目印です。
+  en: Each of these appears in ordinary writing on its own. Only three or more in one document (two in a blog post) mean anything. **Even then it does not say the text was generated.** It marks a place to reread.
 
 message:
   ja: 「{word}」が同じ文書にそろっています（{count} 種、{limit} 種から）
@@ -43,6 +43,9 @@ how_to_fix:
 
 # 何種そろったら出すか。spec §20.2 は 3。
 levels: { strict: 2, normal: 3, relaxed: 5 }
+# ブログでは 2 種で、生成した記事の多くに届き、人の記事にはほぼ出ない（判定済み corpus で測った段）。
+by_genre:
+  blog: { strict: 2, normal: 2, relaxed: 3 }
 
 use_for: [technical/readme, blog, business, legal, docs, academic, literature, speech]
 off_for:

@@ -154,7 +154,7 @@ prompt-b.md   blog/tech · 日本語   ジャンルは既定から
                   ai-tell
   3:1     warning 「近年」は、どの記事にも当てはまる書き出しです
                   padded-intro
-  3:1     warning 「ai-tell、padded-intro、closing-cliche」が同じ文書にそろっています（3 種、3 種から）
+  3:1     warning 「ai-tell、padded-intro、closing-cliche」が同じ文書にそろっています（3 種、2 種から）
                   ai-generated-composite
   12:1    warning 「いかがでしたか」で締めています
                   closing-cliche

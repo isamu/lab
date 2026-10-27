@@ -157,7 +157,7 @@ prompt-b.md   blog/tech · English   genre from the default
                   ai-tell
   3:1     warning "in today's fast-paced world" is an opening that fits any article
                   padded-intro
-  3:1     warning "ai-tell, padded-intro, closing-cliche" occur together in this document (3 signals, 3 needed)
+  3:1     warning "ai-tell, padded-intro, closing-cliche" occur together in this document (3 signals, 2 needed)
                   ai-generated-composite
   12:1    warning Closes with "in conclusion"
                   closing-cliche

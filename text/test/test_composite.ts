@@ -58,6 +58,28 @@ describe("複合シグナル", () => {
     assert.ok(!result.skipped.some((entry) => entry.rule === "ai-generated-composite"));
   });
 
+  describe("ブログは 2 種で出す", () => {
+    /** padded-intro と rule-of-three の 2 種だけが出る文書。 */
+    const TWO = ["# はじめに", "", "近年、この分野は急速に変化する状況にあります。", "", THREES].join("\n");
+    const compositeIn = (genre: string): boolean =>
+      runRules(buildDocument("t.md", TWO, ja), RULES, {}, true, genre).findings.some((finding) => finding.rule === "ai-generated-composite");
+
+    it("invalid: ブログの記事なら 2 種で出す", () => {
+      assert.ok(compositeIn("blog/tech"));
+      assert.ok(compositeIn("blog/essay"));
+    });
+
+    it("valid: ほかのジャンルでは 2 種では出さない（3 種から）", () => {
+      assert.ok(!compositeIn("business/report"));
+    });
+
+    it("valid: ブログでも 1 種では出さない", () => {
+      const one = ["# はじめに", "", "近年、この分野は急速に変化する状況にあります。中身はこうです。"].join("\n");
+      const ids = runRules(buildDocument("t.md", one, ja), RULES, {}, true, "blog/tech").findings.map((finding) => finding.rule);
+      assert.ok(ids.includes("padded-intro") && !ids.includes("ai-generated-composite"));
+    });
+  });
+
   it("設定で止められる", () => {
     const result = runRules(buildDocument("t.md", MANY, ja), RULES, { "ai-generated-composite": "off" }, true, "blog/tech");
     assert.ok(!result.findings.some((finding) => finding.rule === "ai-generated-composite"));
@@ -109,6 +131,14 @@ describe("the composite on an English document", () => {
     "",
     "In conclusion, it plays a crucial role. Hope this helps, and thanks for reading.",
   ].join("\n");
+
+  it("fires on two signals in a blog post, and needs three in a report", () => {
+    const two = ["# Introduction", "", "In today's fast-paced world, this field has gained significant attention.", "", LISTS].join("\n");
+    const compositeIn = (genre: string): boolean =>
+      runRules(buildDocument("t.md", two, en), RULES_EN, {}, true, genre).findings.some((finding) => finding.rule === "ai-generated-composite");
+    assert.ok(compositeIn("blog/tech"));
+    assert.ok(!compositeIn("business/report"));
+  });
 
   const signalsOf = (source: string, genre = "blog/tech"): string[] => {
     const found = runRules(buildDocument("t.md", source, en), RULES_EN, {}, true, genre).findings.find((finding) => finding.rule === "ai-generated-composite");
