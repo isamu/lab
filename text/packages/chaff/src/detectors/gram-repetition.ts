@@ -2,7 +2,16 @@ import { wordsOf } from "./structure.ts";
 import { MIN_DOCUMENT_LENGTH } from "./signals.ts";
 import { compacted, linkedIn, placeAt } from "./gram-place.ts";
 import { charWindows, wordWindows } from "./gram-windows.ts";
-import { fieldLabelSpans, fixedEndingSpans, furnitureMask, isFurniture, partReferenceSpans, quotedClosingSpans, quotedSpans } from "./gram-furniture.ts";
+import {
+  fieldLabelSpans,
+  fixedEndingSpans,
+  furnitureMask,
+  isFurniture,
+  partReferenceSpans,
+  quotedClosingSpans,
+  quotedSpans,
+  referenceClosings,
+} from "./gram-furniture.ts";
 import { hasPredicateIn } from "./gram-predicate.ts";
 import { gramPassagesOf } from "./gram-passages.ts";
 import { entryOpeners, nounFragments, rowEndCells, sectionOpeners } from "./gram-openers.ts";
@@ -62,14 +71,21 @@ type Occurrence = { readonly gram: string; readonly sentence: Sentence; readonly
 
 type Tally = Map<string, Occurrence[]>;
 
-type Context = { readonly doc: ProseDocument; readonly names: readonly string[]; readonly endings: readonly string[] };
+type Context = {
+  readonly doc: ProseDocument;
+  readonly names: readonly string[];
+  readonly endings: readonly string[];
+  readonly closings: ReadonlySet<string>;
+};
 
 /** 数えない範囲: 名前（触れる窓を外す）と、飾り（過半を覆う窓を外す）。 */
 const excludedIn = (context: Context, sentence: Sentence, text: string, source: ReturnType<typeof compacted>): { named: Span[]; mask: boolean[] } => {
   const unit = context.doc.lengthUnit;
   const named = [...nameSpans(text, context.names), ...fieldLabelSpans(text, unit), ...partReferenceSpans(text, unit)];
   const mask = furnitureMask(text, linkedIn(context.doc, sentence, source));
-  [...fixedEndingSpans(text, context.endings), ...quotedSpans(text), ...quotedClosingSpans(text)].forEach((span) => mask.fill(true, span.start, span.end));
+  [...fixedEndingSpans(text, context.endings), ...quotedSpans(text), ...quotedClosingSpans(text, context.closings)].forEach((span) =>
+    mask.fill(true, span.start, span.end),
+  );
   return { named, mask };
 };
 
@@ -131,7 +147,8 @@ type Repeat = { readonly key: string; readonly occurrences: readonly Occurrence[
  * 節の書き出しは書き手の地の文でもあるので、ほかの所にも出れば書き出しのぶんも数える（節ごとの口癖）。
  */
 const repeatsOf = (doc: ProseDocument, limit: number): Repeat[] => {
-  const context = { doc, names: namesOf(doc), endings: fixedEndingsOf(doc) };
+  const closings = referenceClosings(doc.sentences.map((sentence) => compacted(sentence.text, doc.lengthUnit).text));
+  const context = { doc, names: namesOf(doc), endings: fixedEndingsOf(doc), closings };
   const templates = templatesOf(doc);
   const openers = sectionOpeners(doc.sections, doc.source);
   const title = titleOf(doc);

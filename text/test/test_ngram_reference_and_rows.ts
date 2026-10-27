@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
-import { partReferenceSpans, quotedClosingSpans } from "../packages/chaff/src/detectors/gram-furniture.ts";
+import { partReferenceSpans, quotedClosingSpans, referenceClosings } from "../packages/chaff/src/detectors/gram-furniture.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
@@ -89,14 +89,34 @@ describe("ngram-repetition: a cross-reference line in a manual", () => {
     );
   });
 
+  it("still counts a closing the writer uses after a quoted name now and then", () => {
+    const measures = ["「ふれあいの町」", "「地域の見守り」", "公園の整備", "駅のバリアフリー化", "施設の改修", "相談窓口の拡充"];
+    const report = [
+      `# 生活環境の取組\n\n${JA_FILLER}`,
+      ...measures.map((measure, index) => `## 施策${String(index + 1)}\n\n${STEPS[index] ?? ""}${measure}を推進している。`),
+    ].join("\n\n");
+    assert.notEqual(worst(ja, report), undefined);
+  });
+
   it("reads a short closing after a quote, and nothing longer", () => {
-    assert.deepEqual(quotedClosingSpans("詳しくは「入力できる文字」を確認してください。"), [{ start: 13, end: 23 }]);
-    assert.deepEqual(quotedClosingSpans("「保存」をクリックして、次の画面に進んでください。"), []);
-    assert.deepEqual(quotedClosingSpans("「保存」をクリックして申請書の入力画面に進んでください。"), []);
-    assert.deepEqual(quotedClosingSpans("責任を持って「実行」してまいります。"), []);
-    assert.deepEqual(quotedClosingSpans("「生活の支援」に力を尽くしてまいります。"), []);
-    assert.deepEqual(quotedClosingSpans("確認してください。"), []);
-    assert.deepEqual(quotedClosingSpans(""), []);
+    const closings = new Set(["を確認してください。"]);
+    assert.deepEqual(quotedClosingSpans("詳しくは「入力できる文字」を確認してください。", closings), [{ start: 13, end: 23 }]);
+    assert.deepEqual(quotedClosingSpans("詳しくは「入力できる文字」をご覧ください。", closings), []);
+    assert.deepEqual(quotedClosingSpans("「保存」をクリックして、次の画面に進んでください。", closings), []);
+    assert.deepEqual(quotedClosingSpans("「保存」をクリックして申請書の入力画面に進んでください。", closings), []);
+    assert.deepEqual(quotedClosingSpans("責任を持って「実行」してまいります。", closings), []);
+    assert.deepEqual(quotedClosingSpans("「生活の支援」に力を尽くしてまいります。", closings), []);
+    assert.deepEqual(quotedClosingSpans("確認してください。", closings), []);
+    assert.deepEqual(quotedClosingSpans("", closings), []);
+  });
+
+  it("takes a closing as the document's reference form only when most sentences ending in it follow a quote", () => {
+    const pages = ["「書き方」を確認してください。", "「入れ方」を確認してください。", "中身を確認してください。"];
+    assert.deepEqual([...referenceClosings(pages)], ["を確認してください。"]);
+    const measures = ["「見守り」を推進している。", "整備を推進している。", "改修を推進している。"];
+    assert.deepEqual([...referenceClosings(measures)], []);
+    assert.deepEqual([...referenceClosings([])], []);
+    assert.deepEqual([...referenceClosings(["", "。"])], []);
   });
 });
 
