@@ -9,6 +9,7 @@ import { bracketPlaceholderSpans, capitalLineSpans, captionsOf, isCaptionAt, isW
 import { lineStarts } from "../position.ts";
 import { isTypewritten } from "./typewritten.ts";
 import { divisionLabelPattern, isDivisionSeparator } from "./division-label-separator.ts";
+import { isInCopiedText } from "./hyphen-copied-text.ts";
 
 /** The letters a mark must touch to count as part of the document's text, by language. */
 const SCRIPT: Readonly<Record<string, RegExp>> = {
@@ -257,7 +258,9 @@ export const hyphenDash: Detector = (doc, options): Finding[] => {
   const setsDashes = sentences.some((sentence) => TRUE_DASH.test(sentence.text));
   const divisionLabel = divisionLabelPattern((doc.lexicons["numbered-division"] ?? []).map((entry) => entry.pattern));
   return reportFrom(
-    hitsOf(sentences, HYPHEN_DASH).filter((hit) => !isTypedDash(hit, setsDashes) && !isDivisionSeparator(doc.source, hit.offset, divisionLabel)),
+    hitsOf(sentences, HYPHEN_DASH).filter(
+      (hit) => !isTypedDash(hit, setsDashes) && !isDivisionSeparator(doc.source, hit.offset, divisionLabel) && !isInCopiedText(doc.source, hit.offset),
+    ),
     options.limit,
   );
 };
