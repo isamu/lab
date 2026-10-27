@@ -1,0 +1,16 @@
+# 連絡先の行の頭に来る印と札（〒173-8501、電話：03-…、FAX 03-…）。no-mixed-desumasu が、この行のある段落を
+# ページの問い合わせ先の欄として、本文と文末の調子を比べない（欄の「…へのお問い合わせは専用フォームをご利用ください。」）。
+# 札は、後ろに「：」「:」か数字が続くときだけ。
+id: contact-line-opener
+language: ja
+entries:
+  - pattern: 〒
+  - pattern: 電話
+  - pattern: TEL
+  - pattern: Tel
+  - pattern: FAX
+  - pattern: Fax
+  - pattern: ファクス
+  - pattern: ファックス
+  - pattern: メール
+  - pattern: E-mail

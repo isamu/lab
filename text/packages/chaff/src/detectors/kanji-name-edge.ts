@@ -77,3 +77,18 @@ export const leadingOrdinal = (tokens: readonly Token[], start: number, name: st
   const end = start + surface.length;
   return tokens.some((token) => token.span.end === end) ? { surface, span: { start, end } } : undefined;
 };
+
+/** 漢数字で書いた月と日までの日付（令和七年六月二十三日、十一月二十五日）。年だけ（令和七年度）は語の一部になるので読まない。 */
+const KANJI_DATE = /^(?:(?:明治|大正|昭和|平成|令和)?[〇一二三四五六七八九十百千元]+年)?[一二三四五六七八九十]+月[一二三十]*[一二三四五六七八九十]日/u;
+
+/**
+ * 連なり（文書全体の座標で start から始まる）の頭の、漢数字で書いた日付（大正三年十一月二十五日学習院輔仁会の「大正三年十一月二十五日」）。
+ * 算用数字の日付（7月1日）が連なりを切るのと同じく、日付は後ろの名前の一部ではない。連なりがまるごと日付（署名の日付の行）でもよい。
+ * 日付が解析の語の切れ目で終わるときだけ。
+ */
+export const leadingDate = (tokens: readonly Token[], start: number, name: string): Edge | undefined => {
+  const surface = KANJI_DATE.exec(name)?.[0];
+  if (surface === undefined) return undefined;
+  const end = start + surface.length;
+  return tokens.some((token) => token.span.end === end) ? { surface, span: { start, end } } : undefined;
+};

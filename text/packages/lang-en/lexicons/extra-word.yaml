@@ -1,7 +1,8 @@
 # Words in everyday technical and business writing that WordNet does not list. unknown-word reads them as known, with
 # their endings: function words WordNet leaves out (cannot, wherein, albeit, whilst), Latin phrases in English text
 # (a priori, in forma pauperis, de minimis), the legal words of contracts (thereunder, herefrom, monies, pendency,
-# cedent, telecopy) and newer coinages (onboard, roadmap, phishing, vishing, ransomware). A team adds its own words
+# cedent, telecopy), newer coinages (onboard, roadmap, phishing, vishing, ransomware, agentic, toolbar) and everyday
+# words WordNet missed (amidst, ahold, barista, grift). A team adds its own words
 # under names in chaff.yaml; this list is only for words any document may use.
 id: extra-word
 language: en
@@ -10,9 +11,12 @@ entries:
   - pattern: accessibility
   - pattern: admin
   - pattern: adware
+  - pattern: agentic
+  - pattern: ahold
   - pattern: albeit
   - pattern: alia
   - pattern: alterius
+  - pattern: amidst
   - pattern: amotion
   - pattern: api
   - pattern: app
@@ -23,6 +27,7 @@ entries:
   - pattern: backend
   - pattern: backlog
   - pattern: backslash
+  - pattern: barista
   - pattern: biometric
   - pattern: blog
   - pattern: bona
@@ -63,8 +68,10 @@ entries:
   - pattern: devops
   - pattern: dialog
   - pattern: distributee
+  - pattern: distro
   - pattern: dogfood
   - pattern: doozy
+  - pattern: dox
   - pattern: dropdown
   - pattern: ebook
   - pattern: ecommerce
@@ -90,6 +97,7 @@ entries:
   - pattern: generis
   - pattern: geospatial
   - pattern: github
+  - pattern: grift
   - pattern: hardcode
   - pattern: hardcoded
   - pattern: hashtag
@@ -115,6 +123,7 @@ entries:
   - pattern: interoperable
   - pattern: json
   - pattern: keylogger
+  - pattern: lakehouse
   - pattern: lest
   - pattern: licensor
   - pattern: lifecycle
@@ -129,11 +138,13 @@ entries:
   - pattern: metadata
   - pattern: middleware
   - pattern: minimis
+  - pattern: mockup
   - pattern: modulo
   - pattern: monies
   - pattern: multi
   - pattern: multiplet
   - pattern: mutex
+  - pattern: mythos
   - pattern: namespace
   - pattern: npm
   - pattern: obligee
@@ -203,6 +214,7 @@ entries:
   - pattern: sublicensee
   - pattern: subproject
   - pattern: sustainably
+  - pattern: synch
   - pattern: syntax
   - pattern: tanto
   - pattern: telecopy
@@ -213,6 +225,7 @@ entries:
   - pattern: timeline
   - pattern: timestamp
   - pattern: timezone
+  - pattern: toolbar
   - pattern: toolchain
   - pattern: toolkit
   - pattern: tooltip
@@ -221,6 +234,7 @@ entries:
   - pattern: tuple
   - pattern: typo
   - pattern: unius
+  - pattern: upsert
   - pattern: upskill
   - pattern: upwelling
   - pattern: url

@@ -1,4 +1,4 @@
-import { severityOf, type UserCheck } from "./checks.ts";
+import { checkAppliesTo, severityOf, type UserCheck } from "./checks.ts";
 import { ask, type JudgeOptions } from "./judge.ts";
 import { FILTERS, type Candidate } from "./semantic.ts";
 import { narrow, type Narrowing } from "./look-at.ts";
@@ -71,7 +71,7 @@ const builtInJobs = (doc: ProseDocument, rules: readonly RuleDefinition[], setti
 
 const userJobs = (doc: ProseDocument, checks: readonly UserCheck[], genre: string): Job[] =>
   checks
-    .filter((check) => check.level !== "off" && check.use_for.some((target) => genre.startsWith(target)))
+    .filter((check) => check.level !== "off" && check.use_for.some((target) => genre.startsWith(target)) && checkAppliesTo(check, doc.language))
     .map((check) => {
       // look_at の括弧の中を取り出して絞り込む。取り出せなければ文書全体。spec §14。
       const { candidates, narrowing } = narrow(doc, check.look_at, FILTERS["whole-document"] ?? (() => []));
