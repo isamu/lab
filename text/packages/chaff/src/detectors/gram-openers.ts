@@ -104,3 +104,18 @@ export const nounFragments = (sentences: readonly Sentence[], source: string): S
 /** 節のひな形の文: 一覧を導く節の最初の文と、項目ごとの見出し（itemTitles）。 */
 export const sectionOpeners = (sections: readonly Pick<Section, "depth" | "sentences">[], source: string): Set<Sentence> =>
   new Set(sections.flatMap((section) => [...leadsIntoList(section, source), ...itemTitles(section.sentences, source)]));
+
+/** 表の一行の前の欄の数。2 つ続けば欄の並び（件名、送信先）で、名前の一行に本文が続く小見出しの形とは違う。 */
+const CELLS_BEFORE = 2;
+
+/**
+ * 句点の無い名詞の一行（nounFragments）が 2 つ続いた直後の、一行の文（「…が完了した旨を通知する。」）。表を段落に崩すと、
+ * 行の最後の欄（目的、説明）は文になっても、行ごとに同じ枠で書く欄の値。
+ */
+export const rowEndCells = (sentences: readonly Sentence[], fragments: ReadonlySet<Sentence>, source: string): Sentence[] =>
+  sentences.filter(
+    (sentence, index) =>
+      index >= CELLS_BEFORE &&
+      sentences.slice(index - CELLS_BEFORE, index).every((cell) => fragments.has(cell)) &&
+      LINE_END_NEXT.test(source.slice(sentence.span.end, sentence.span.end + LOOKAHEAD)),
+  );
