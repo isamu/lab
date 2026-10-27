@@ -1,0 +1,9 @@
+# Product names that end in capitals (Adobe Acrobat Reader DC). The capitals are the edition's name inside the product's,
+# not an acronym the writer spells out. Only the whole name is matched, as written: DC alone stays an acronym.
+id: product-name
+language: en
+entries:
+  - pattern: Acrobat Reader DC
+  - pattern: Acrobat Pro DC
+  - pattern: Acrobat Standard DC
+  - pattern: Acrobat DC

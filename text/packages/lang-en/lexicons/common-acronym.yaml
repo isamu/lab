@@ -58,10 +58,16 @@ entries:
   - pattern: WAV
   - pattern: MOV
   - pattern: SVG
+  # Office file formats, written without explanation in download lists (DOCX, 44 KB) as PDF and CSV are. DOC and PPT are other acronyms too, so they are left out.
+  - pattern: DOCX
+  - pattern: XLSX
+  - pattern: PPTX
+  - pattern: XLS
   - pattern: QR
   - pattern: GPS
   - pattern: SNS
   - pattern: TV
+  - pattern: BB # the gun and its shot (BB guns), an everyday word
   - pattern: KB
   - pattern: MB
   - pattern: GB
