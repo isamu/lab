@@ -1,0 +1,22 @@
+# Function words that take no ending (word-suffix): a determiner, a pronoun or a conjunction never has a plural or a
+# past. unknown-word does not read "thoses" as "those" + s, so the slip is reported. Only closed-class words are listed;
+# a word that does take an ending in some use (a noun, a verb) never belongs here.
+id: uninflected-word
+language: en
+entries:
+  - pattern: although
+  - pattern: because
+  - pattern: these
+  - pattern: those
+  - pattern: their
+  - pattern: there
+  - pattern: thus
+  - pattern: unless
+  - pattern: where
+  - pattern: whether
+  - pattern: which
+  - pattern: whom
+  - pattern: whose
+  - pattern: would
+  - pattern: could
+  - pattern: should
