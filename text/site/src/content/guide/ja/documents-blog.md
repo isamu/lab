@@ -28,7 +28,7 @@ chaff は、読み手を待たせる書き出しや、生成文によく出る�
 | `announcing-opener` | 「ポイントは、」のような予告で始まる文の重なり | いつも（info） |
 | `contrast-framing` | 「単なる X ではなく」のような対比の重なり | いつも（info） |
 | `colon-lead-in` | コロンで箇条書きへ渡す文の多さ | いつも（info） |
-| `ai-generated-composite` | 生成文の形が、一つの記事に 3 種以上そろったこと | いつも |
+| `ai-generated-composite` | 生成文の形が、一つの記事に 2 種以上そろったこと | いつも |
 | `announced-count-mismatch` | 予告した数と、箇条書きの数の食い違い | いつも |
 | `broken-link` | 記事の中に無い見出しへのリンク | いつも |
 | `quote-without-source` | 人の言葉として引いたのに、段落に出典が無い引用 | いつも（info） |
@@ -104,7 +104,7 @@ kiji.md   blog/tech · 日本語   ジャンルは --genre から
                   sentence-rhythm
   11:1    info    「正直に言うと」など、予告で始まる文が 3 個あります（3 個から）
                   announcing-opener
-  11:1    warning 「section-length-uniformity、sentence-rhythm、padded-intro、closing-cliche、announcing-opener、colon-lead-in」が同じ文書にそろっています（6 種、3 種から）
+  11:1    warning 「section-length-uniformity、sentence-rhythm、padded-intro、closing-cliche、announcing-opener、colon-lead-in」が同じ文書にそろっています（6 種、2 種から）
                   ai-generated-composite
   15:1    info    「ポイントは」など、予告で始まる文が 3 個あります（3 個から）
                   announcing-opener

@@ -27,7 +27,7 @@ These are the main rules for this genre.
 | `closing-cliche` | A stock closing | Always |
 | `ai-tell` | Phrases common in generated text ("delve into") piling up | Always (info) |
 | `announcing-opener` | Sentences opening with "The key point is" and the like, piling up | Always (info) |
-| `ai-generated-composite` | Three or more signals of generated text in one article | Always |
+| `ai-generated-composite` | Two or more signals of generated text in one article | Always |
 | `contraction-consistency` | "isn't" and "is not" mixed in one article | Always (info) |
 | `title-case-consistency` | Headings that mix Title Case and sentence case | Always (info) |
 | `announced-count-mismatch` | A count announced that differs from the list below it | Always |
@@ -102,7 +102,7 @@ article.md   blog/tech · English   genre from --genre
                   ai-tell
   3:1     warning "in today's fast-paced world" is an opening that fits any article
                   padded-intro
-  3:1     warning "ai-tell, section-length-uniformity, padded-intro, closing-cliche, announcing-opener" occur together in this document (5 signals, 3 needed)
+  3:1     warning "ai-tell, section-length-uniformity, padded-intro, closing-cliche, announcing-opener" occur together in this document (5 signals, 2 needed)
                   ai-generated-composite
   11:1    info    "Honestly," and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
