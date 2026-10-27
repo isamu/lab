@@ -1,7 +1,7 @@
 18f-handbook-travel-faq  1
-aoml-hurricane-faq  10
+aoml-hurricane-faq  8
 arxiv-astro-ph-new-2025-01-03  3
-asf-board-minutes-2025-01  8
+asf-board-minutes-2025-01  6
 automattic-privacy-policy  1
 bonterms-cloud-terms  1
 cloudgov-security-ir-guide  1

@@ -1,3 +1,2 @@
 18f-blog-oracle-databases  1
 da-machine-readability-ai-configuration  1
-react-ja-thinking  1

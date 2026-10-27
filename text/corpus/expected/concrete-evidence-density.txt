@@ -3,7 +3,7 @@ cloudgov-security-ir-guide  3
 da-annual-report-2024  3
 etax-oshirase-mail-templates  57
 ftc-phishing-scams  3
-gitlab-values  25
+gitlab-values  21
 govuk-cddo-roadmap-2022-2025  3
 govuk-guidance-academy-senior-pay  12
 govuk-incident-safe-browsing  4
@@ -11,7 +11,7 @@ govuk-style-guide-a-to-z  4
 herp-da-data-product-manager  3
 moriguchi-satsuki-gakuen-ijime-houshin  7
 nsf-19-582-reu-solicitation  3
-nttcom-onboarding-week1  6
+nttcom-onboarding-week1  5
 tcu-rishu-toroku-2026-kouki  5
 usajobs-va-it-specialist-customer-support  5
 wikipedia-en-markdown  5
