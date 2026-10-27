@@ -1,0 +1,16 @@
+# Surname prefixes a roster keeps in small letters when it sets a name in capitals: the Congressional Record writes
+# McCaul as McCAUL and DesJarlais as DesJARLAIS. name-variant reads a name whose every word is in capitals, or in three or
+# more capitals after one of these, as set in capitals, and leaves it out as it leaves ACME INC. Matched as written, at the
+# start of a word.
+id: name-capitals-prefix
+language: en
+entries:
+  - pattern: Mc
+  - pattern: Mac
+  - pattern: De
+  - pattern: Des
+  - pattern: Del
+  - pattern: Di
+  - pattern: Du
+  - pattern: La
+  - pattern: Le

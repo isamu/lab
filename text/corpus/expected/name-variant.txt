@@ -9,8 +9,8 @@ crec-2024-03-07-s2256-reca  1
 crs-r47585-subcontracting  1
 crs-rl32781-salt  1
 govuk-style-guide-a-to-z  2
-gutenberg-great-expectations  6
-gutenberg-whitman-leaves-of-grass  7
+gutenberg-great-expectations  5
+gutenberg-whitman-leaves-of-grass  5
 ietf-draft-httpapi-ratelimit-headers-10  3
 jstage-jniph-74-1-2-rehabilitation  2
 jstage-jniph-74-2-157-heat-policy  1

@@ -1,0 +1,10 @@
+# Words that point from one thing to another. Two names with the same two sides in the two orders around one of these
+# ("ASCII to binary" and "binary to ASCII") are a direction and its inverse, not one name in two orders (name-variant).
+# A word in letters is matched between spaces.
+id: name-direction-word
+language: en
+entries:
+  - pattern: to
+  - pattern: into
+  - pattern: →
+  - pattern: "->"

@@ -1,0 +1,8 @@
+# 一つのものから別のものへの向きを言う語。この語を挟んで同じ二つを逆の順に並べた名前（ASCIIからバイナリ と バイナリからASCII）は、
+# ある向きとその逆で、一つの名前の語の順の違いではない（name-variant）。
+id: name-direction-word
+language: ja
+entries:
+  - pattern: から
+  - pattern: →
+  - pattern: "->"

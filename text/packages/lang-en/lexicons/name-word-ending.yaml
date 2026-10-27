@@ -1,0 +1,10 @@
+# Last letters that make another form of a word in place of another (pattern in place of instead_of): the people of a
+# place (Texan for Texas, Kansan for Kansas) and a Latin case beside the English plural (Romano beside Romans). name-variant
+# does not read two one-word names that differ only in such a last letter as one name written two ways.
+id: name-word-ending
+language: en
+entries:
+  - pattern: n
+    instead_of: s
+  - pattern: o
+    instead_of: s
