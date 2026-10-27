@@ -18,6 +18,14 @@ export type ListWords = {
   readonly sequence?: ReadonlySet<string>;
   /** 番号を付けて呼ぶ法典の区分（title, chapter）。Title 44, Public Printing and Documents の読点は区分の名前を続ける読点。 */
   readonly unit?: ReadonlySet<string>;
+  /** 文頭で前の文とつなぐ一語（However, / Therefore,）。順番の語と同じく導入の語。 */
+  readonly connective?: ReadonlySet<string>;
+  /** 節だけをつなぐ接続詞（but / yet）。これで始まる項目は並びの項目ではなく、並びはその後ろから。 */
+  readonly clauseConjunction?: ReadonlySet<string>;
+  /** 不定冠詞（a / an）。冠詞と形容詞だけの項目（a simple）は、次の名詞にかかる語。 */
+  readonly indefinite?: ReadonlySet<string>;
+  /** 引用の中の省略の印（... / * * *）。省略を示す引用はほかの文書の抜き書き。 */
+  readonly elision?: readonly string[];
 };
 
 const LIST_CONJUNCTION: ReadonlySet<string> = new Set(["and", "or"]);
@@ -116,6 +124,7 @@ const columnsOf = (tokens: readonly Token[], depths: readonly number[]) => {
     verbal: of((token) => VERBAL.has(token.pos)),
     adposition: of((token) => token.pos === "ADP"),
     determiner: of((token) => token.pos === "DET"),
+    adjective: of((token) => token.pos === "ADJ"),
     conjunction: of((token) => LIST_CONJUNCTION.has(token.surface.toLowerCase())),
     gerund: of((token) => verbFormOf(token) === "Ger"),
     participle: of((token) => verbFormOf(token) === "Part"),

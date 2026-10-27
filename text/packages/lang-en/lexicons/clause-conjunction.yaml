@@ -1,0 +1,7 @@
+# Conjunctions that join clauses, never the items of a list ("If you need help with something, but it's not a priority
+# right now, add it to the backlog and bring it up"). oxford-comma-consistency starts a list after the item one opens.
+id: clause-conjunction
+language: en
+entries:
+  - pattern: but
+  - pattern: yet
