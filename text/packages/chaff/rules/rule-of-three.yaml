@@ -122,8 +122,8 @@ example:
       - No review
 
 not_flagged:
-  ja: 箇条書きが 3 つより少ない文書は見ません。仕様書（technical/spec）のジャンルでは見ません。文の中に並べた 3 つの語（「速く、安く、確実に」）は数えません。人の文書のほうが多く書くからです。
-  en: Documents with fewer than three lists are not checked. Specification (technical/spec) genres do not run this rule. Three words listed inside a sentence (fast, cheap and reliable) are not counted, since human documents write them more often.
+  ja: 箇条書きが 3 つより少ない文書は見ません。5 つより少なければ、1 つで割合が大きく動くので、全部が 3 項目のときだけ指摘します。すぐ下の行が「など」で始まる箇条書きは、書いた 3 つのほかにもあると言っているので、3 項目とは数えません。仕様書（technical/spec）のジャンルでは見ません。文の中に並べた 3 つの語（「速く、安く、確実に」）は数えません。人の文書のほうが多く書くからです。
+  en: "Documents with fewer than three lists are not checked. With fewer than five, one list moves the share a long way, so only a document whose every list has three items is reported. A list followed by a line opening with etc. or and so on says there are more than the three written, and is not counted as three. Specification (technical/spec) genres do not run this rule. Three words listed inside a sentence (fast, cheap and reliable) are not counted, since human documents write them more often."
 level_meaning:
   ja: 3 項目の箇条書きの割合 {limit}% まで
   en: up to {limit}% of lists with exactly three items

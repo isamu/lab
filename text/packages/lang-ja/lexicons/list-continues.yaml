@@ -1,0 +1,7 @@
+# 箇条書きのすぐ下の行の頭に置いて、並べた項目のほかにもまだあると言う語（「- 生ゴミを放置しない」の下の「など、〜」）。
+# rule-of-three は、この語が続く箇条書きをちょうど 3 項目とは数えません。
+id: list-continues
+language: ja
+entries:
+  - pattern: など
+  - pattern: 等
