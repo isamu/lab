@@ -42,8 +42,34 @@ describe("emphasisSpanCount: bold in the prose, less the labels", () => {
   it("leaves out bold in headings and tables", () => assert.equal(countOf("# T **x**\n\n| a | **b** |\n|---|---|\n| 1 | 2 |\n\nText.\n"), 0));
   it("is zero without bold", () => assert.equal(countOf("# T\n\nPlain text.\n"), 0));
   it("leaves out a list item labelled in bold code", () => assert.equal(countOf("# T\n\n- **`--flag`**: what it does.\n- **`--other`**: more.\n"), 0));
-  it("keeps a bold lead without a colon: emphasis, not a label", () =>
-    assert.equal(countOf("# T\n\n- **Same pay.** No cut.\n- **Fridays off.** For all.\n"), 2));
+  it("leaves out a bold lead sentence opening a list item, full stop inside the bold", () =>
+    assert.equal(countOf("# T\n\n- **Same pay.** No cut.\n- **Fridays off** for all.\n1. **Turn it on** first.\n"), 0));
+});
+
+describe("emphasisSpanCount: bold that labels, heads or names is not emphasis", () => {
+  const countOf = (source: string): number => emphasisSpanCount(buildDocument("t.md", source, en));
+
+  it("leaves out a paragraph opening with a bold label, the colon inside or outside", () =>
+    assert.equal(countOf("# T\n\n**Sales rose each month**: from 10 to 14.\n\n**Note:** the figures are rounded.\n"), 0));
+  it("leaves out the header fields of a memo, one per line", () =>
+    assert.equal(countOf("# Memo\n\n**From:** Ann Lee, Support\n**To:** Team leads\n**Date:** May 2\n\nWe ask for a budget.\n"), 0));
+  it("leaves out run-in headings standing alone, and a bold dateline", () =>
+    assert.equal(countOf("# T\n\n**Pros:**\n\n- Light.\n\n**About the company**\n\nWe sell seeds.\n\n**DENVER, May 2** — Seeds today said it grew.\n"), 0));
+  it("leaves out a bold instruction opening each paragraph", () =>
+    assert.equal(countOf("# T\n\n**Use a lamp.** It helps.\n\n**Sit back a little**, so the frame fits.\n"), 0));
+  it("leaves out the names of buttons and settings mid-sentence", () =>
+    assert.equal(countOf("# T\n\nOpen the menu and click **Add Printer**, or look for **Network** in the list, then press **WPS**.\n"), 0));
+  it("leaves out a bold opening a quoted list item", () => assert.equal(countOf("# T\n\n> - **Speed**: fast.\n"), 0));
+
+  it("still counts lower-case bold mid-sentence, in a list item too", () =>
+    assert.equal(countOf("# T\n\n- It **remembers** your passwords.\n- It **fills them in** for you.\n\nKeep **two copies** of it.\n"), 3));
+  it("still counts a bold that starts a sentence inside a paragraph", () =>
+    assert.equal(countOf("# T\n\nThe backup ran. **Always test it** before you need it.\n"), 1));
+  it("still counts a bold on a hard-wrapped line in the middle of a sentence", () =>
+    assert.equal(countOf("# T\n\nA backup is useful only if\n**you can restore it** later.\n"), 1));
+  it("still counts a lower-case bold after a colon", () => assert.equal(countOf("# T\n\nThe rule of backups: **three copies**.\n"), 1));
+  it("counts Japanese bold mid-sentence and leaves out a Japanese label", () =>
+    assert.equal(emphasisSpanCount(buildDocument("t.md", "# T\n\n- **速さ**：速い。\n\n写しは**自動で**取り、**別の場所**に置きます。\n", ja)), 2));
 });
 
 describe("bold-emphasis", () => {
@@ -77,6 +103,18 @@ describe("bold-emphasis", () => {
   it("valid: bold labels opening list items are bold-label-list's to count", () => {
     const labels = Array.from({ length: 6 }, (_unused, index) => `- **Item ${index + 1}**: what it does.`).join("\n");
     assert.ok(!fires(`# Post\n\n${labels}\n\n${PLAIN_EN}\n`, en));
+  });
+
+  it("valid: lead sentences, fields and button names are not emphasis", () => {
+    const leads = Array.from({ length: 6 }, (_unused, index) => `- **Tip ${index + 1} keeps it short.** Then say why.`).join("\n");
+    const fields = "**From:** Ann Lee\n**To:** Team leads\n**Date:** May 2";
+    const buttons = "Then click **Archive**, or **Move to Folder** in the menu.";
+    assert.ok(!fires(`# Post\n\n${fields}\n\n${leads}\n\n${buttons}\n\n${PLAIN_EN}\n`, en));
+  });
+
+  it("invalid: mid-sentence bold still fires beside lead sentences", () => {
+    const leads = Array.from({ length: 6 }, (_unused, index) => `- **Tip ${index + 1} keeps it short.** Then say why.`).join("\n");
+    assert.ok(fires(`# Post\n\n${leads}\n\n${emphasised(4)}\n\n${PLAIN_EN}\n`, en));
   });
 
   it("valid: bold in a table is a label, not emphasis", () => {

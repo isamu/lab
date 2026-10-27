@@ -1,0 +1,95 @@
+id: cold-open
+layer: L2
+status: stable
+how_to_find: cold-open
+word_list: cold-open
+uses: [pos]
+severity: info
+
+name:
+  ja: 状況も例もなく始まる書き出し
+  en: An opening with no situation and no example
+
+why:
+  ja: 生成した記事は、誰がどんな場面で困っているかを言う前に、短い願い（「〜に任せたい。」）で始め、前の文の語を「この「だいたい」が」と引き直し、「それだけのことに見えて、ここが一番難しい」と予告しがちです。人の書き手は、具体的な場面や例から始めて、問題を読み手に見せます。形 1 つなら人も書きますが、書き出しで重なると、読み手は台本を読まされていると感じます。
+  en: 'A generated article tends to open with a short wish ("You want to cut costs.") before saying who needs it and where, to repeat a word of the previous sentence in quotes ("That ''almost'' is the problem."), and to tease the hard part ("Sounds simple. It isn''t."). A human writer starts from a concrete situation or example that shows the problem. One of these is ordinary; together in the opening they read like a script.'
+
+message:
+  ja: 書き出しに「{matched}」など、状況も例もない形が {count} つ重なっています（{limit} つから）
+  en: '"{matched}" and other shapes of an opening with no situation or example: {count} in the opening ({limit} needed)'
+
+how_to_fix:
+  ja: 書き出しを、具体的な場面か例（いつ、誰が、何をして、どうなったか）から始めてください。予告と引き直しは消し、難しさは中身で見せてください。
+  en: Open with a concrete situation or example (when, who, what they did, what happened). Delete the teaser and the repeated quote, and show the difficulty in the content.
+
+# 書き出しに要る形の数。形は 3 つ（短い願いで始まる、前の文の語を引き直す、難所を予告する）。
+levels: { strict: 2, normal: 2, relaxed: 3 }
+
+use_for: [technical/readme, blog, business, legal, docs, academic, literature, speech]
+off_for:
+  legal: "Legal drafting repeats its terms and its sentence heads on purpose, puts the actor in the passive (shall be deemed), and joins long noun compounds (個人情報取扱事業者). This rule would only flag the form."
+  docs: "A help page opens with what the reader wants to do (You want to ...) and states no claims to back up."
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+  speech: "A speech opens with greetings and closes with thanks: that is its form, not padding."
+
+group: ai-tells
+summary:
+  ja: 短い願い・語の引き直し・難所の予告が重なる書き出し
+  en: An opening that piles a bare wish, a quoted echo and a teaser
+example:
+  ja:
+    before: |
+      問い合わせの窓口を一本にしたい。
+
+      総務と経理に、似た質問が別々に届きます。この「似た質問」が厄介です。まとめれば済む話に見えて、ここが一番難しいところです。
+    after: |
+      先月、経費の締め日を尋ねる質問が、総務に 12 件、経理に 9 件届きました。答えは二通りあり、片方は古い締め日でした。
+
+      窓口を一本にしたいのは、こうした食い違いをなくすためです。
+  en:
+    before: |
+      You want to move the job to a cheaper model.
+
+      You switch, and it almost works. That ‘almost’ is the problem. Sounds simple to test. It isn't.
+    after: |
+      Last month we moved our ticket summaries to a model costing a tenth as much. Of 400 summaries, 31 dropped the customer's order number.
+
+      We had no way to tell whether the old model would have kept them.
+not_flagged:
+  ja: 形が 1 つだけの書き出し（提案の「〜を導入したい。」、定義を言い直す「この「X」は」）と、書き出しより後ろの文は言いません。
+  en: An opening with only one of the shapes (a proposal's "We want to ..."), and sentences after the opening, are not reported.
+level_meaning:
+  ja: 書き出しに形が {limit} つあれば指摘
+  en: reported once {limit} of the shapes appear in the opening
+rewrite:
+  depth: structure
+  ja:
+    direction: 書き出しを、具体的な場面か例から始め直してください。短い願い、語の引き直し、難所の予告は消してください。
+    pairs:
+      - before: 同じ仕事を、安いモデルに任せたい。
+        after: 先月、要約の仕事を値段が 10 分の 1 のモデルに移しました。
+      - before: この「だいたい」が困ります。
+        after: 400 件のうち 31 件で、注文番号が抜けていました。
+      - before: それだけのことに見えて、ここが一番難しいところです。
+        after: 問題集は、まだ 1 問も作っていませんでした。
+    keep:
+      - 書き手が伝えたい問題そのもの
+      - 文書に出てくる数字と固有名詞
+    avoid:
+      - 書いていない出来事や数字を足す
+      - 予告を別の予告（「実はここからが本題です」）に替える
+  en:
+    direction: Start the opening again from a concrete situation or example. Delete the bare wish, the repeated quote and the teaser.
+    pairs:
+      - before: You want to move the job to a cheaper model.
+        after: Last month we moved our summaries to a model costing a tenth as much.
+      - before: That ‘almost’ is the problem.
+        after: Of 400 summaries, 31 dropped the order number.
+      - before: Sounds simple. It isn't.
+        after: We had not written a single test case yet.
+    keep:
+      - the problem the writer wants to show
+      - the numbers and names already in the document
+    avoid:
+      - adding events or numbers the document does not state
+      - swapping the teaser for another one ("Here's where it gets interesting")

@@ -1,9 +1,10 @@
 // A work email or letter's own parts: a greeting and a closing, a subject line, and an attachment the text mentions.
 // Pure. The words (お世話になっております, Dear, Best regards, 件名, attached) come from the language's email-greeting,
-// email-closing, email-sentence-end, memo-header-label, notice-header, newsletter-issue, email-subject-field, attachment-mention, attachment-not-mention and attachment-line lexicons. The
+// email-closing, email-salutation-end, email-sentence-end, memo-header-label, notice-header, newsletter-issue, email-subject-field, attachment-mention, attachment-not-mention and attachment-line lexicons. The
 // header and the signature are masked in doc.prose; a quoted reply is someone else's words and is left out.
 import { escapeRegExp } from "../orthography.ts";
 import { quoteAt } from "./structure-tree.ts";
+import { closingIn, isSalutation, lineHas } from "./email-frame-words.ts";
 import { isNoticeHead, noticeWordsOf } from "../notice-header.ts";
 import { isHeadingLine, isIssueHead, issueWordsOf } from "../newsletter-issue.ts";
 import type { Detector, Finding, ProseDocument, Span } from "../plugin.ts";
@@ -20,21 +21,7 @@ export type BodyLine = { readonly start: number; readonly text: string; readonly
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
 
-const LATIN_START = /^[A-Za-z]/u;
 const LETTER = /\p{L}/u;
-
-/**
- * Whether a line holds one of the words. A Latin word opens the line (Dear, Best regards) and is followed by no letter,
- * so "Hi" does not match "History"; a Japanese word may stand anywhere in it (いつもお世話になっております).
- */
-export const lineHas = (line: string, words: readonly string[]): boolean => {
-  const trimmed = line.trim();
-  const folded = trimmed.toLowerCase();
-  return words.some((word) => {
-    if (!LATIN_START.test(word)) return trimmed.includes(word);
-    return folded.startsWith(word.toLowerCase()) && !LETTER.test(trimmed.charAt(word.length));
-  });
-};
 
 /**
  * Whether each offset, asked in rising order, is inside one of the spans (sorted by start). One pass over the spans for
@@ -161,14 +148,18 @@ export const frameSlips = (
   closings: readonly string[],
   sentenceEnds: readonly string[],
   signings: readonly number[] = [],
+  salutationEnds: readonly string[] = [],
 ): FrameSlip[] => {
   const first = lines[0];
   const last = lines.at(-1);
   if (first === undefined || last === undefined) return [];
-  const greeted = lines.slice(0, greetingLineCount(lines, sentenceEnds)).some((line) => lineHas(line.text, greetings));
+  const greeted =
+    isSalutation(first.text, salutationEnds, sentenceEnds) ||
+    lines.slice(0, greetingLineCount(lines, sentenceEnds)).some((line) => lineHas(line.text, greetings));
   const parts = partsOf(lines);
   const closed = parts.some(
-    (part, index) => part.slice(-CLOSING_LINES).some((line) => lineHas(line.text, closings)) || signedOff(part, parts[index + 1]?.[0], signings),
+    (part, index) =>
+      part.slice(-CLOSING_LINES).some((line) => closingIn(line.text, closings, sentenceEnds)) || signedOff(part, parts[index + 1]?.[0], signings),
   );
   return [
     ...(greeted ? [] : [{ variant: "greeting" as const, offset: first.start }]),
@@ -209,11 +200,13 @@ export const isMemo = (source: string, labels: readonly string[], sentenceEnds: 
 
 /**
  * The source's lines before the first sentence (the first lines, when no line ends one), past blank lines and a quoted reply.
- * A heading is a title, not a sentence, even when it ends in an exclamation mark (# Vol.12 転落に注意!).
+ * A heading is a title, not a sentence, even when it ends in an exclamation mark (# Vol.12 転落に注意!); a header field is
+ * the header's, even when its value ends one (Withdrawn: On 21 August the letter was withdrawn.).
  */
 export const headLines = (source: string, sentenceEnds: readonly string[]): string[] => {
   const lines = source.split("\n").filter((line) => line.trim() !== "" && !line.trimStart().startsWith(">"));
-  const firstSentence = lines.findIndex((line) => !isHeadingLine(line) && endsSentence(line, sentenceEnds));
+  const isSentence = (line: string): boolean => !isHeadingLine(line) && fieldOf(line.trim()) === undefined && endsSentence(line, sentenceEnds);
+  const firstSentence = lines.findIndex(isSentence);
   return lines.slice(0, firstSentence === -1 ? HEADER_LINES : firstSentence);
 };
 
@@ -230,7 +223,9 @@ const frameSlipsOf = (doc: ProseDocument): FrameSlip[] => {
   const sentenceEnds = patternsOf(doc, "email-sentence-end");
   if (takesNoFrame(doc, sentenceEnds)) return [];
   const lines = bodyLines(doc.source, doc.prose ?? doc.source, doc.replyQuotes ?? []);
-  return frameSlips(lines, patternsOf(doc, "email-greeting"), patternsOf(doc, "email-closing"), sentenceEnds, signingLines(doc.source, doc.replyQuotes ?? []));
+  const signings = signingLines(doc.source, doc.replyQuotes ?? []);
+  const words = (id: string): string[] => patternsOf(doc, id);
+  return frameSlips(lines, words("email-greeting"), words("email-closing"), sentenceEnds, signings, words("email-salutation-end"));
 };
 
 export const emailFrame: Detector = (doc): Finding[] =>

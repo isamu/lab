@@ -1,0 +1,14 @@
+# no-mixed-desumasu が、演説の中の決意の言い切り（戦争の惨禍を、二度と繰り返さない。負担軽減を、目に見える形で実現する。）を
+# 指さないための助詞。group object の助詞を含み、group subject の助詞を含まず（主語を言わない）、常体の現在形の動詞で終わる文は、
+# 話し手が自分の決意を言い切る形で、ですます調の演説でも意図して使う。数には入れる。
+# object の助詞に genres があるので、その文書だけ。主語を言う文（諸官は任務を遂行する。警備行動が発令される。）は今までどおり指す。
+id: declaration-particle
+language: ja
+entries:
+  - pattern: を
+    group: object
+    genres: [speech]
+  - pattern: は
+    group: subject
+  - pattern: が
+    group: subject

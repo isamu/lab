@@ -1,3 +1,4 @@
+# A stock closing that leaves the reader nothing. The groups are explained at the top of detectors/closing-cliche.ts.
 id: closing-cliche
 language: en
 entries:
@@ -6,3 +7,11 @@ entries:
   - pattern: hope this helps
   - pattern: thanks for reading
   - pattern: happy coding
+  - pattern: future self will thank you
+  - pattern: future you will thank you
+  # Ordinary in the body; as the last line it is the stock send-off.
+  - pattern: and go from there
+    group: last
+  # A short line such as "Happy brewing!" or "Happy baking!" as the last paragraph.
+  - pattern: Happy
+    group: signoff

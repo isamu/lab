@@ -6,7 +6,9 @@ import { guessLanguage } from "../detect.ts";
 import { collectTargets, readDocumentFile } from "../files.ts";
 import { loadRules } from "../rule-load.ts";
 import { counted } from "../render/plural.ts";
-import { CHECKS_FILE, loadChecks, type UserCheck } from "../checks.ts";
+import { existsSync } from "node:fs";
+import { BUNDLED_CHECKS_DIR, checksPathOf, loadChecks, type UserCheck } from "../checks.ts";
+import { PACKAGE_DIR } from "../package-files.ts";
 import { CACHE_DIR, credentialHint, describeFailure, hasCredentials, type JudgeOptions } from "../judge.ts";
 import { ENV_FILE, loadEnvFile } from "../env.ts";
 import { planSemantic, runSemantic, semanticNeeds } from "../run-semantic.ts";
@@ -32,6 +34,7 @@ const TEXT: Texts<{
   readonly noCause: string;
   readonly tally: (machine: number, ai: number) => string;
   readonly untouched: string;
+  readonly noChecks: (given: string, path: string) => string;
 }> = {
   ja: {
     total: (total) => `  合計 ${total} 箇所を送ります。--dry-run なので API は呼んでいません。`,
@@ -47,6 +50,7 @@ const TEXT: Texts<{
     noCause: "原因は返ってきませんでした",
     tally: (machine, ai) => `  機械 ${machine} 件 / AI ${ai} 件`,
     untouched: "  文章は書き換えていません。直すのは書いた人です。",
+    noChecks: (given, path) => `chaff: --checks ${given} の検査が見つかりません（${path}）。同梱の組は ai-tells です。`,
   },
   en: {
     total: (total) => `  ${counted(total, "passage")} in all would be sent. With --dry-run the API was not called.`,
@@ -62,10 +66,14 @@ const TEXT: Texts<{
     noCause: "No reason was given.",
     tally: (machine, ai) => `  ${machine} by machine / ${ai} by AI`,
     untouched: "  The text was not changed. Fixing it is the writer's job.",
+    noChecks: (given, path) => `chaff: there are no checks for --checks ${given} (${path}). The set chaff ships is ai-tells.`,
   },
 };
 
 const DIVIDER = "─".repeat(60);
+
+/** --checks's value; "--checks --dry-run" names no checks, since --dry-run is an option, not a set. */
+const checksNamed = (next: string | undefined): string => (next === undefined || next.startsWith("--") ? "" : next);
 
 export type TestContext = {
   readonly config: Config;
@@ -163,7 +171,15 @@ export const runTest = async (targets: readonly string[], argv: readonly string[
   const { config, resolveGenre, inspect } = context;
   // 鍵の置き場所で「設定したのに効かない」を起こさせない。シェルの環境変数のほうが勝つ。
   const envFile = loadEnvFile(process.cwd());
-  const checks = loadChecks(join(process.cwd(), CHECKS_FILE));
+  const at = argv.indexOf("--checks");
+  const given = at === -1 ? undefined : checksNamed(argv[at + 1]);
+  const checksPath = checksPathOf(given, process.cwd(), join(PACKAGE_DIR, BUNDLED_CHECKS_DIR));
+  // checks.yaml is optional; a set named on the command line that is not there is a mistake to say.
+  if (given !== undefined && !existsSync(checksPath)) {
+    console.error(TEXT[context.ui].noChecks(given, checksPath));
+    return 1;
+  }
+  const checks = loadChecks(checksPath);
   const results = await Promise.all(paths.map((path) => inspect(path, config, argv)));
   results.forEach((result) => {
     console.log(result.text.replace(/\n/u, `\n${machineBanner(result.language).join("\n")}`));

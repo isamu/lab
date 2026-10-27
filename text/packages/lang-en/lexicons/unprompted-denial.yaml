@@ -1,0 +1,113 @@
+# A sentence that denies a premise nobody stated ("This isn't about tooling.", "That's not the point."). Groups as
+# unprompted-denial.ts reads them:
+#   open     the sentence opens with it, and the next word is a follow word: a denial of what something is
+#   follow   the word after open ("about", "a", "the", "what"); "It's not ready." negates a fact and is not counted
+#   basis    a reason in the same sentence: the denial states a fact
+#   premise  in the previous sentence: the denial answers something the text said ("You might think ...")
+id: unprompted-denial
+language: en
+entries:
+  - pattern: this isn't
+    group: open
+  - pattern: this is not
+    group: open
+  - pattern: that's not
+    group: open
+  - pattern: that is not
+    group: open
+  - pattern: that isn't
+    group: open
+  - pattern: it's not
+    group: open
+  - pattern: it is not
+    group: open
+  - pattern: it isn't
+    group: open
+  - pattern: these aren't
+    group: open
+  - pattern: these are not
+    group: open
+  - pattern: those aren't
+    group: open
+  - pattern: those are not
+    group: open
+  - pattern: the point isn't
+    group: open
+  - pattern: the point is not
+    group: open
+  - pattern: the goal isn't
+    group: open
+  - pattern: the goal is not
+    group: open
+  - pattern: the problem isn't
+    group: open
+  - pattern: the problem is not
+    group: open
+  - pattern: the question isn't
+    group: open
+  - pattern: the question is not
+    group: open
+  - pattern: the answer isn't
+    group: open
+  - pattern: the answer is not
+    group: open
+  - pattern: about
+    group: follow
+  - pattern: a
+    group: follow
+  - pattern: an
+    group: follow
+  - pattern: the
+    group: follow
+  - pattern: just
+    group: follow
+  - pattern: only
+    group: follow
+  - pattern: what
+    group: follow
+  - pattern: why
+    group: follow
+  - pattern: how
+    group: follow
+  - pattern: where
+    group: follow
+  - pattern: who
+    group: follow
+  - pattern: my
+    group: follow
+  - pattern: your
+    group: follow
+  - pattern: our
+    group: follow
+  - pattern: their
+    group: follow
+  - pattern: something
+    group: follow
+  - pattern: really
+    group: follow
+  - pattern: simply
+    group: follow
+  - pattern: merely
+    group: follow
+  - pattern: because
+    group: basis
+  - pattern: since
+    group: basis
+  - pattern: due to
+    group: basis
+  - pattern: you might think
+    group: premise
+  - pattern: you may think
+    group: premise
+  - pattern: people think
+    group: premise
+  - pattern: some say
+    group: premise
+  - pattern: it's tempting
+    group: premise
+  - pattern: assume
+    group: premise
+  - pattern: myth
+    group: premise
+  - pattern: misconception
+    group: premise

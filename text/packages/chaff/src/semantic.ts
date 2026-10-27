@@ -1,5 +1,7 @@
 import { calendarUnitsOf } from "./calendar-number.ts";
 import { closingAndEarlier, newNumbers } from "./closing-numbers.ts";
+import { openingProse, opensWithNumber } from "./opening-passage.ts";
+import { proseText } from "./measure.ts";
 import type { ProseDocument, Section } from "./plugin.ts";
 
 /**
@@ -68,6 +70,17 @@ export const unsourcedNumber: Filter = (doc) =>
     .filter((sentence) => NUMBER.test(sentence.text) && EFFECT.test(sentence.text) && !hasEvidence(sentence.text))
     .map((sentence) => ({ text: sentence.text.trim(), offset: sentence.span.start }));
 
+const OPENING_MAX_CHARS = 1000;
+
+/** 書き出しの数文だけを渡す。最初の文が数を言うなら、具体から始まっているので問い合わせない。 */
+export const genericOpening: Filter = (doc) => {
+  const opening = openingProse(doc);
+  const first = opening[0];
+  if (first === undefined || opensWithNumber(opening)) return [];
+  const text = opening.map(proseText).join(doc.lengthUnit === "char" ? "" : " ");
+  return [{ text: text.slice(0, OPENING_MAX_CHARS), offset: first.span.start }];
+};
+
 /** 利用者が checks.yaml に書いた検査の既定。絞り込みを書かなければ文書全体。 */
 export const wholeDocument: Filter = (doc) => {
   const body = doc.sentences.map((sentence) => sentence.text.trim()).join("");
@@ -78,5 +91,6 @@ export const FILTERS: Readonly<Record<string, Filter>> = {
   "risk-disclosure": riskDisclosure,
   "empty-conclusion": emptyConclusion,
   "unsourced-number": unsourcedNumber,
+  "generic-opening": genericOpening,
   "whole-document": wholeDocument,
 };

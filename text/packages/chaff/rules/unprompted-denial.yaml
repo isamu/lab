@@ -1,0 +1,88 @@
+id: unprompted-denial
+layer: L2
+status: stable
+how_to_find: unprompted-denial
+word_list: unprompted-denial
+# 対比の枠（contrast-framing が数える文）は、打ち消しの隣に言い直しがあるので数えない。
+extra_word_lists: [contrast-frame, contrast-lead, contrast-turn]
+uses: [pos]
+severity: info
+
+name:
+  ja: 誰も言っていない前提の打ち消しが多い
+  en: Too many denials of a premise nobody stated
+
+why:
+  ja: 「〜の話ではありません」「〜の材料になりません」で終わる文は、読み手が持っていない思い込みを打ち消します。言いたいこと（何であるか）は書かれないまま残ります。1 つ 2 つなら論の運びですが、重なると生成文によくある書き方に見えます。
+  en: '"This isn''t about tooling." "That''s not the point." Such a sentence knocks down a belief the reader never held, and what the thing is goes unsaid. One or two move an argument along; piled up, they read like generated text.'
+
+message:
+  ja: 「{matched}」など、誰も言っていない前提を打ち消して終わる文が {share}% あります（{limit}% まで）
+  en: '"{matched}" and other denials of a premise nobody stated: {share}% of sentences (limit {limit}%)'
+
+how_to_fix:
+  ja: 打ち消しをやめて、それが何であるかを直接書いてください（「パラメータは、モデルの中にある重みの数です」）。
+  en: Drop the denial and say what the thing is ("Parameters are the number of weights inside the model.").
+
+# 文書の文のうち、前提を打ち消して終わる文の割合（%）。そういう文が三つ以上ある文書だけを測る。
+levels: { strict: 2, normal: 3, relaxed: 5 }
+
+use_for: [technical/readme, blog, business, legal, docs, academic, literature, speech]
+off_for:
+  legal: "Legal drafting repeats its terms and its sentence heads on purpose, puts the actor in the passive (shall be deemed), and joins long noun compounds (個人情報取扱事業者). This rule would only flag the form."
+  docs: "A help page repeats its heading in its first line (To upload a file, ...) and states no claims to back up."
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+  speech: "A speech opens with greetings and closes with thanks: that is its form, not padding."
+
+group: ai-tells
+summary:
+  ja: 「〜の話ではありません」のように、誰も言っていない前提を打ち消して終わる文
+  en: Sentences that deny a premise nobody stated ("This isn't about tooling.")
+example:
+  ja:
+    pad: true
+    before: |
+      パラメータは、学習の設定の話ではありません。数字が大きいことは、賢さの保証になりません。ここで言いたいのは、道具選びの話ではありません。
+    after: |
+      パラメータは、モデルの中にある重みの数です。数字が大きいモデルほど、計算に時間がかかります。
+  en:
+    pad: true
+    before: |
+      This isn't about tooling. That's not the point of the review. It's not a question of budget either.
+    after: |
+      The review found two steps that nobody owned. We gave each one an owner.
+
+not_flagged:
+  ja: 一つ二つの打ち消し、理由を添えた打ち消し（「〜のため、対象ではありません」）、前の文の問いや「〜と思うかもしれません」に答える打ち消し、「だけではない」「すべきではない」「簡単ではない」、言い直しが隣にある対比の枠（contrast-framing が数えます）は指しません。短い文書は測りません。
+  en: One or two denials, a denial with its reason ("because ..."), a denial answering the previous sentence's question or "You might think ...", a negated fact ("It's not ready."), and a denial answered by its restatement (contrast-framing counts those) are not reported. Short documents are not measured.
+level_meaning:
+  ja: 前提を打ち消して終わる文が {limit}% まで
+  en: up to {limit}% of sentences deny a premise nobody stated
+rewrite:
+  depth: light
+  ja:
+    direction: 打ち消しを消し、それが何であるかを普通の文で書いてください。打ち消す相手が誰かの実際の誤解なら、その誤解を書いたうえで一度だけ打ち消してください。
+    pairs:
+      - before: パラメータは、学習時の設定の話ではありません。
+        after: パラメータは、モデルの中にある重みの数です。
+      - before: 全員が正解する問題は、モデルを分ける材料になりません。
+        after: モデルを分けるのは、正解した人数が割れる問題です。
+    keep:
+      - 言いたいこと（それが何であるか）
+      - 誰かが実際に言ったことへの反論
+    avoid:
+      - 打ち消しを「〜というより」に替えて、同じ打ち消しを残す
+      - 書き手が言っていない主張を足す
+  en:
+    direction: Delete the denial and say what the thing is in a plain sentence. If the denied belief is one someone actually holds, name it and answer it once.
+    pairs:
+      - before: This isn't about tooling.
+        after: This is about who reviews each change.
+      - before: That's not the point.
+        after: The point is that the test runs on every commit.
+    keep:
+      - what the thing is
+      - an answer to something someone actually said
+    avoid:
+      - swapping the denial for "less X than Y", which keeps it
+      - adding a claim the writer did not make

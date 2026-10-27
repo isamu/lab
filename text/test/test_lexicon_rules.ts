@@ -53,6 +53,22 @@ describe("padded-intro", () => {
   it("英語でも同じ rule が動く", () => {
     assert.ok(idsFor("In today's fast-paced world, teams ship faster.", en).includes("padded-intro"));
   });
+
+  it("invalid: どの企業にも当てはまる問題から始める書き出しを指摘する", () => {
+    [
+      "多くの企業が、社内の問い合わせ対応に課題を抱えています。本記事で解決策を紹介します。",
+      "請求書の処理に悩んでいませんか。本記事で解決策を紹介します。",
+    ].forEach((source) => assert.ok(idsFor(source).includes("padded-intro"), source));
+    ["Many teams struggle with internal support requests. This post shows a fix.", "As organizations increasingly adopt chat tools, noise grows."].forEach(
+      (source) => assert.ok(idsFor(source, en).includes("padded-intro"), source),
+    );
+  });
+
+  it("valid: 自分たちの課題を具体に書いた書き出しは指摘しない", () => {
+    // 誤検知しやすい正常な文章。「課題」「struggle」は、誰の話かが書いてあれば一般論ではない。
+    assert.ok(!idsFor("総務の 3 人で受けていた問い合わせが、先月から倍になりました。課題は夜間の対応です。").includes("padded-intro"));
+    assert.ok(!idsFor("Our team struggled with support requests last spring. We put a bot in front of them.", en).includes("padded-intro"));
+  });
 });
 
 describe("closing-cliche", () => {

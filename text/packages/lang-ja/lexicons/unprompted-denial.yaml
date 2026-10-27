@@ -1,0 +1,99 @@
+# 誰も言っていない前提を打ち消して終わる文。group は unprompted-denial.ts の読み方:
+#   end      文がこの語で閉じれば打ち消し（〜の話ではありません、〜材料になりません、〜の余地がありません）
+#   exempt   end の直前にあれば数えない語。「だけではない」は足し算、「べきではない」は禁止、「簡単ではない」は評価、
+#            「この限りではない」は決まった言い回しで、前提の打ち消しではない
+#   basis    同じ文にあれば数えない語。理由を添えた打ち消しは事実を言っている
+#   reason   文がこの語で閉じれば、basis を見ない。「性能が同じだから並ぶのではありません」は理由そのものを打ち消している
+#   premise  前の文にあれば数えない語。打ち消す相手（〜と思うかもしれません）が文書の中にある
+#   question 前の文がこの語で閉じれば数えない（問いに答える打ち消し）
+id: unprompted-denial
+language: ja
+entries:
+  - pattern: ではありません
+    group: end
+  - pattern: ではない
+    group: end
+  - pattern: じゃありません
+    group: end
+  - pattern: じゃない
+    group: end
+  - pattern: ではないのです
+    group: end
+  - pattern: ではないんです
+    group: end
+  - pattern: になりません
+    group: end
+  - pattern: にはなりません
+    group: end
+  - pattern: にならない
+    group: end
+  - pattern: にはならない
+    group: end
+  - pattern: 余地がありません
+    group: end
+  - pattern: 余地はありません
+    group: end
+  - pattern: 余地がない
+    group: end
+  - pattern: 余地はない
+    group: end
+  - pattern: だけ
+    group: exempt
+  - pattern: ばかり
+    group: exempt
+  - pattern: のみ
+    group: exempt
+  - pattern: べき
+    group: exempt
+  - pattern: 簡単
+    group: exempt
+  - pattern: 容易
+    group: exempt
+  - pattern: 明確
+    group: exempt
+  - pattern: 適切
+    group: exempt
+  - pattern: 十分
+    group: exempt
+  - pattern: 過言
+    group: exempt
+  - pattern: ゼロ
+    group: exempt
+  - pattern: 限り
+    group: exempt
+  - pattern: ので
+    group: basis
+  - pattern: ため
+    group: basis
+  - pattern: から
+    group: basis
+  - pattern: により
+    group: basis
+  - pattern: によって
+    group: basis
+  - pattern: 以上、
+    group: basis
+  - pattern: のではありません
+    group: reason
+  - pattern: のではない
+    group: reason
+  - pattern: と思う
+    group: premise
+  - pattern: と思わ
+    group: premise
+  - pattern: と思い
+    group: premise
+  - pattern: と考え
+    group: premise
+  - pattern: と言われ
+    group: premise
+  - pattern: といわれ
+    group: premise
+  - pattern: かもしれ
+    group: premise
+  - pattern: と感じ
+    group: premise
+  - pattern: と誤解
+    group: premise
+  - pattern: か
+    group: question
