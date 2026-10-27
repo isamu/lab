@@ -41,8 +41,15 @@ export const scopeWordsOf = (entries: readonly LexiconEntry[]): ScopeWords => ({
 /** Whether an entry is one of the scope cues rather than an open-end word. */
 export const isScopeCue = (entry: LexiconEntry): boolean => SCOPE_GROUPS.has(entry.group ?? "");
 
+/** Only marks from here to the end of the sentence. */
+const closesSentence = (tokens: readonly Token[], index: number): boolean => tokens.slice(index).every((token) => token.pos === PUNCT);
+
+/** A cue with position after counts only where it closes the sentence (使用しないこと。, not 不備がないことを確認する). */
 const startsAt = (tokens: readonly Token[], entries: readonly LexiconEntry[], index: number): boolean =>
-  entries.some((entry) => entryEndsAt(tokens, entry, index + (entry.tokens?.length ?? 0)));
+  entries.some((entry) => {
+    const end = index + (entry.tokens?.length ?? 0);
+    return entryEndsAt(tokens, entry, end) && (entry.position !== "after" || closesSentence(tokens, end));
+  });
 
 /** A comma right after a predicate closes the clause the list stands in (消去し、). */
 const closesClause = (tokens: readonly Token[], index: number): boolean => tokens[index]?.pos === PUNCT && PREDICATE_POS.has(tokens[index - 1]?.pos ?? "");
