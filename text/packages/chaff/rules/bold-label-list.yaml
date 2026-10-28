@@ -36,8 +36,8 @@ sources: [zhang-2024]
 
 group: ai-tells
 summary:
-  ja: 「- **速さ**：〜」「- **情報が古くなる。** 〜」のように、太字の札か太字の一文で始まる項目が並び、説明が札の続きだけになっている所
-  en: List items, one after another, that open with a bold label and a colon, or with a bold lead sentence
+  ja: 太字の札（**速さ**：）や太字の一文で始まる項目が続く箇条書き
+  en: List items in a row that open with a bold label or a bold lead sentence
 example:
   ja:
     config: { genre: blog/tech }
