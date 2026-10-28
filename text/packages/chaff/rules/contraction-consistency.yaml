@@ -3,6 +3,8 @@ layer: L2
 status: stable
 how_to_find: contraction-mix
 word_list: contraction
+extra_word_lists: [notice-phrase, contraction-term, warning-label]
+uses: [pos]
 languages: [en]
 severity: info
 
@@ -42,8 +44,8 @@ example:
       We don't store your password. We don't read your messages. We don't share your data. We don't sell your address.
 
 not_flagged:
-  ja: 短縮形を使うかどうかは決めません。比べるのは同じ語の 2 つの形（「you're」と「you are」）だけで、別の語どうしは比べません。「you're」と書き、否定は「do not」と書く文書は揃っています。同じ語の 2 つの形が同じ回数なら、少ないほうが無いので指しません。引用符で挙げた短い語句（"Do Not Disturb"、‘we’re going to x’）と引用の中の引用は、名前か人の言葉なので数えません。一語だけ強調した語（does **not**）は強勢のために選んだ形、同じ語の 2 つの形を並べた文（Use cannot, instead of can’t.）と語を読点で長く並べた一覧（検索語の一覧）は語を挙げているだけなので、どちらも数えません。
-  en: Whether to use contractions is not decided. Only the two forms of the same word are compared ("you're" with "you are"), never different words, so a document that writes "you're" but keeps "do not" in full is consistent. When both forms of a word appear as often, there is no minority and nothing is pointed at. A short phrase in quotation marks ("Do Not Disturb", ‘we’re going to x’) and a quotation inside another quotation are a name or someone else's words and are not counted. A word emphasised alone (does **not**) is chosen for stress, and a sentence naming both forms of a word (Use cannot, instead of can’t.) or a long comma-separated list of terms (search keywords) only names the words; none of them is counted.
+  ja: 短縮形を使うかどうかは決めません。比べるのは同じ語の 2 つの形（「you're」と「you are」）だけで、別の語どうしは比べません。「you're」と書き、否定は「do not」と書く文書は揃っています。同じ語の 2 つの形が同じ回数なら、少ないほうが無いので指しません。引用符で挙げた短い語句（"Do Not Disturb"、‘we’re going to x’）と引用の中の引用は、名前か人の言葉なので数えません。一語だけ強調した語（does **not**）は強勢のために選んだ形、同じ語の 2 つの形を並べた文（Use cannot, instead of can’t.）と語を読点で長く並べた一覧（検索語の一覧）は語を挙げているだけなので、どちらも数えません。掲載元が付けた断り書きの段落（does not constitute or imply its endorsement…）と、短縮形について述べる文（Avoid negative contractions like can’t.）も数えません。警告の中の長い形（「Warning」で始まる段落や、題が Warning の札の中の Do not run this…）は強めるために選んだ形なので、数えますが指しません。
+  en: Whether to use contractions is not decided. Only the two forms of the same word are compared ("you're" with "you are"), never different words, so a document that writes "you're" but keeps "do not" in full is consistent. When both forms of a word appear as often, there is no minority and nothing is pointed at. A short phrase in quotation marks ("Do Not Disturb", ‘we’re going to x’) and a quotation inside another quotation are a name or someone else's words and are not counted. A word emphasised alone (does **not**) is chosen for stress, and a sentence naming both forms of a word (Use cannot, instead of can’t.) or a long comma-separated list of terms (search keywords) only names the words; none of them is counted. Nor are a disclaimer paragraph the publisher appends (does not constitute or imply its endorsement…) and a sentence about contractions (Avoid negative contractions like can't.). A full form in a warning (Do not run this… in a paragraph opening with Warning, or in a box titled Warning) is chosen for stress, so it is counted but never pointed at.
 level_meaning:
   ja: 同じ語の少ないほうの書き方が {limit} 箇所以下のとき指摘
   en: reported when the minority form of a word appears {limit} times or fewer

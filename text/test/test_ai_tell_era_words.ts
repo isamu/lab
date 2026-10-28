@@ -138,3 +138,18 @@ describe("ai-tell: one heavier phrase is enough in a blog post", () => {
     assert.deepEqual(aiTell(post, en, "business/report"), []);
   });
 });
+
+describe("ai-tell: a title phrase counts only in a heading (ja)", () => {
+  it("reports わかりやすく解説 alone in the title of a blog post", () => {
+    const source = "# 【初心者向け】Gitの使い方をわかりやすく解説\n\nGitはファイルの変更を記録する道具です。\n";
+    const [finding] = aiTell(source, ja, "blog/tech");
+    assert.equal(String(finding?.values["word"]), "わかりやすく解説");
+    assert.equal(finding?.line, 1);
+    assert.equal(aiTell("# 手順\n\n## 設定を分かりやすく解説\n\n設定は一つだけです。\n", ja, "blog/tech").length, 1);
+  });
+
+  it("leaves the same words in a body sentence, as a newsletter writes them", () => {
+    const source = "# 今月の話題\n\n今月号では、新しい制度の要点をわかりやすく解説します。分かりやすく解説した動画もあります。\n";
+    assert.deepEqual(phrasesAtAnyScore(source, ja), []);
+  });
+});

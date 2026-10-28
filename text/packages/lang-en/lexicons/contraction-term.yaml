@@ -1,0 +1,7 @@
+# Words that name contractions themselves. A sentence holding one talks about the forms (Avoid negative contractions like
+# can't and don't.), so contraction-consistency neither counts nor points at the forms in it.
+id: contraction-term
+language: en
+entries:
+  - pattern: contraction
+  - pattern: contractions

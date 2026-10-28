@@ -75,6 +75,8 @@ export type LexiconEntry = {
   readonly first_year?: number | undefined;
   /** The genres or groups the entry holds in (legal, blog/tech). Without them, every genre. A detector reads them with entriesForGenre. */
   readonly genres?: readonly string[] | undefined;
+  /** The entry counts only in a heading: a title phrase that body text uses plainly. A detector that reads headings honours it. */
+  readonly heading_only?: boolean | undefined;
   /** pattern を adapter が語に分けたもの。品詞が読めるときだけ core が入れる。語彙表を書く側は書かない。 */
   readonly tokens?: readonly Token[] | undefined;
 };

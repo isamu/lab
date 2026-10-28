@@ -2,7 +2,7 @@ import { joinWords } from "./word-list.ts";
 import { wordsOf } from "./structure.ts";
 import type { Detector, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 import { entryIn, entryOpens, entryRanges, type TokenRange } from "./lexicon-match.ts";
-import { sentencesWithHeadings } from "./heading-sentences.ts";
+import { headingSentences, sentencesWithHeadings } from "./heading-sentences.ts";
 import { scoped, scopeMarkersOf, type ScopeMarkers } from "./superlative-scope.ts";
 import { makesWord, namesQuantity } from "./superlative-name.ts";
 import { namesAmount } from "./superlative-amount.ts";
@@ -261,9 +261,12 @@ const writtenIn = (sentence: Sentence, entry: LexiconEntry): boolean =>
 export const aiTell: Detector = (doc, options): Finding[] => {
   const entries = [...new Map((options.lexicon ?? []).map((entry) => [entry.pattern.toLowerCase(), entry])).values()];
   const sentences = sentencesWithHeadings(doc);
-  const found = entries.filter((entry) => sentences.some((sentence) => writtenIn(sentence, entry)));
+  const headings = new Set(headingSentences(doc).map((heading) => heading.span.start));
+  const counts = (sentence: Sentence, entry: LexiconEntry): boolean =>
+    (entry.heading_only !== true || headings.has(sentence.span.start)) && writtenIn(sentence, entry);
+  const found = entries.filter((entry) => sentences.some((sentence) => counts(sentence, entry)));
   const score = Math.round(found.reduce((sum, entry) => sum + (entry.weight ?? 1), 0) * 10);
-  const first = sentences.find((sentence) => found.some((entry) => writtenIn(sentence, entry)));
+  const first = sentences.find((sentence) => found.some((entry) => counts(sentence, entry)));
   if (first === undefined || score <= options.limit) return [];
   return [
     {
