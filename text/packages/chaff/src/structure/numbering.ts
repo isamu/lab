@@ -3,6 +3,7 @@ import { inDocumentOrder, type StructureIssue } from "./issues.ts";
 import { numbersQuotedInside } from "./quoted-number.ts";
 import { isVersionHistory } from "./version-order.ts";
 import { withRepeatsNamed } from "./repeated-number.ts";
+import { labelWrittenBetween } from "./unread-label.ts";
 
 const labelOf = (node: StructureNode): string => String(node.attrs["label"] ?? node.address);
 
@@ -16,6 +17,14 @@ type Ordered = { readonly node: StructureNode; readonly ordinal: number; readonl
 export type ClauseReadings = { readonly isAlternative: (node: StructureNode) => boolean; readonly restarts: readonly number[] };
 
 const NO_CLAUSES: ClauseReadings = { isAlternative: () => false, restarts: [] };
+
+/**
+ * What a skip is checked against besides the tree. source: the text, for labels set out that the tree did not read
+ * (unread-label.ts). isPartialHeading: a heading saying what is under it is only some (抜粋, excerpt), where numbers skip by choice.
+ */
+export type SkipReadings = { readonly source: string; readonly isPartialHeading: (heading: string) => boolean };
+
+const NO_SKIPS: SkipReadings = { source: "", isPartialHeading: () => false };
 
 const OPENING_BRACKET = /^[([{〔【〈《]/u;
 
@@ -74,7 +83,7 @@ const unreadBetween = (unread: readonly Span[], previous: Ordered, current: Orde
  * あいだに読めなかった範囲（unread）があれば、抜けた番号はそこにあるかもしれないので言わない。重なりは言う。
  */
 const breaksIn =
-  (unread: readonly Span[], restarts: readonly Span[]) =>
+  (unread: readonly Span[], restarts: readonly Span[], isSkipAllowed: (previous: Ordered, current: Ordered) => boolean) =>
   (sequence: readonly Ordered[]): StructureIssue[] =>
     sequence.flatMap((current, index) => {
       const previous = sequence[index - 1];
@@ -84,6 +93,7 @@ const breaksIn =
       if (unreadBetween(restarts, previous, current)) return [];
       if (current.ordinal > previous.last + 1 && unreadBetween(unread, previous, current)) return [];
       if (current.ordinal > previous.last + 1 && current.ordinal <= previous.last + 1 + current.sideSteps) return [];
+      if (current.ordinal > previous.last + 1 && isSkipAllowed(previous, current)) return [];
       return [
         {
           offset: current.node.span.start,
@@ -91,6 +101,32 @@ const breaksIn =
         },
       ];
     });
+
+/** 抜粋と書いた見出し（## 根拠条文の抜粋）の下の節点。そこの番号は選んで引いたので、飛んでよい。 */
+const underPartialHeadings = (tree: StructureNode, isPartialHeading: (heading: string) => boolean): Set<StructureNode> => {
+  const under = new Set<StructureNode>();
+  const pending: [StructureNode, boolean][] = [[tree, false]];
+  while (pending.length > 0) {
+    const [node, inherited] = pending.pop() ?? [tree, false];
+    const heading = node.attrs["heading"];
+    const partial = inherited || (node.kind === "section" && typeof heading === "string" && isPartialHeading(heading));
+    if (partial) under.add(node);
+    node.children.forEach((child) => pending.push([child, partial]));
+  }
+  return under;
+};
+
+/** 並びの始まりの番号。番号は 1 から振る（法令の項は 2 から）。 */
+const LAST_START = 2;
+
+/**
+ * 番号が一つしかなく、それが並びの始まりでない並び（用語集の見出し Section 508 Program、Section 508 Program Manager）は
+ * 名前で、番号の並びではない。法令の「２」「2」と続く項（第 1 項は番号が無い）は重なり。
+ */
+const isOneNumber = (sequence: readonly Ordered[]): boolean => {
+  const [first] = sequence;
+  return first !== undefined && sequence.length > 1 && first.ordinal > LAST_START && sequence.every((ordered) => ordered.ordinal === first.ordinal);
+};
 
 /**
  * 番号の抜けと重なり。比べるのは同じ親の子どうしだけ。英米の法令は章ごとに Section 101、201 と百の位を変えるので、
@@ -102,18 +138,29 @@ const breaksIn =
  * unread は、読み手には見えるが木に入らない範囲（Markdown の HTML ブロックの中の文字）を、始まりの順に並べたもの。
  * isSideStep は、番号の代わりに「and」と書いた手順（前の手順と並べて行う）。その数だけ、次の番号は飛んでよい。
  * clauses は、別案の条（並びに入れない）と、番号を空けた条の位置（そこから振り直す）。
+ * skips は、抜けを言わない場合: 抜けた番号を木が読まずに本文に書いてある（(e) の前の行末の (d)）か、抜粋と書いた見出しの下。
  */
 export const numberingBreaks = (
   tree: StructureNode,
   unread: readonly Span[] = [],
   isSideStep: (node: StructureNode) => boolean = () => false,
   clauses: ClauseReadings = NO_CLAUSES,
+  skips: SkipReadings = NO_SKIPS,
 ): StructureIssue[] => {
   const quoting = numbersQuotedInside(tree);
   const restarts = clauses.restarts.map((start) => ({ start, end: start }));
+  const partial = underPartialHeadings(tree, skips.isPartialHeading);
+  const spanOf = (ordered: Ordered): { label: string; ordinal: number; start: number; last: number } => ({
+    label: labelOf(ordered.node),
+    ordinal: ordered.ordinal,
+    start: ordered.node.span.start,
+    last: ordered.last,
+  });
+  const isSkipAllowed = (previous: Ordered, current: Ordered): boolean =>
+    partial.has(current.node) || labelWrittenBetween(skips.source, spanOf(previous), spanOf(current));
   const breaks = inDocumentOrder(tree)
     .flatMap((parent) => sequencesOf(parent, quoting, isSideStep, clauses))
-    .filter((sequence) => !isVersionHistory(sequence.map((ordered) => labelOf(ordered.node))))
-    .flatMap(breaksIn(unread, restarts));
+    .filter((sequence) => !isVersionHistory(sequence.map((ordered) => labelOf(ordered.node))) && !isOneNumber(sequence))
+    .flatMap(breaksIn(unread, restarts, isSkipAllowed));
   return withRepeatsNamed(tree, quoting, breaks, unread);
 };
