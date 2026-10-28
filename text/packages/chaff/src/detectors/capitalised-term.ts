@@ -73,26 +73,51 @@ const formsOf = (term: string): string[] => {
   return lasts.map((form) => (head === "" ? form : `${head} ${form}`));
 };
 
+/** Whether two tokens are next to each other in a run: at most one character apart, or only spaces apart on one line (Normal Business       Hours). */
+type Near = (left: Token, right: Token) => boolean;
+
+const nearIn =
+  (source: string): Near =>
+  (left, right) =>
+    adjacent(left, right) || /^[ \t]+$/u.test(source.slice(left.span.end, right.span.start));
+
 /** How many tokens the capitalised run starting at index takes: words that continue it, and a joiner or hyphen between two. */
-const runLength = (tokens: readonly Token[], index: number, joiners: ReadonlySet<string>): number => {
+const runLength = (tokens: readonly Token[], index: number, joiners: ReadonlySet<string>, near: Near): number => {
   const word = tokens[index];
   const next = tokens[index + 1];
   const after = tokens[index + 2];
-  if (next === undefined || word === undefined || !adjacent(word, next)) return 1;
-  if (continues(next)) return 1 + runLength(tokens, index + 1, joiners);
+  if (next === undefined || word === undefined || !near(word, next)) return 1;
+  if (continues(next)) return 1 + runLength(tokens, index + 1, joiners, near);
   const hyphened = next.surface === HYPHEN && touching(word, next) && after !== undefined && touching(next, after);
-  const joined = hyphened || (joiners.has(next.surface) && after !== undefined && adjacent(next, after));
-  return joined && continues(after) ? 2 + runLength(tokens, index + 2, joiners) : 1;
+  const joined = hyphened || (joiners.has(next.surface) && after !== undefined && near(next, after));
+  return joined && continues(after) ? 2 + runLength(tokens, index + 2, joiners, near) : 1;
 };
 
 type Run = { readonly start: number; readonly end: number };
 
 /** The capitalised runs of one sentence, as [start, end) token indexes; a run never starts inside the one before. */
-const runsOf = (tokens: readonly Token[], joiners: ReadonlySet<string>): Run[] =>
+const runsOf = (tokens: readonly Token[], joiners: ReadonlySet<string>, near: Near): Run[] =>
   tokens.reduce<Run[]>((runs, token, index) => {
     if ((runs.at(-1)?.end ?? 0) > index || !isCapitalised(token)) return runs;
-    return [...runs, { start: index, end: index + runLength(tokens, index, joiners) }];
+    return [...runs, { start: index, end: index + runLength(tokens, index, joiners, near) }];
   }, []);
+
+/** Marks that glue a word to the next with no space (Borrowmoney.com, Leased/rent): one written form, not a term. */
+const WORD_GLUE = new Set([".", "/"]);
+const LETTER_START = /^\p{L}/u;
+
+/**
+ * The run is not written as a term: its last word is glued to more letters (a web address, a slash pair), or a small
+ * word inside it is capitalised too (Maintenance And Deployment), which is capitalising every word, not naming a term.
+ */
+const notWrittenAsTerm = (tokens: readonly Token[], start: number, end: number, small: ReadonlySet<string>): boolean => {
+  const last = tokens[end - 1];
+  const glue = tokens[end];
+  const more = tokens[end + 1];
+  const glued = last !== undefined && glue !== undefined && more !== undefined && WORD_GLUE.has(glue.surface) && touching(last, glue) && touching(glue, more);
+  if (glued && LETTER_START.test(more.surface)) return true;
+  return tokens.slice(start + 1, end - 1).some((token) => isCapitalised(token) && small.has(token.surface.toLowerCase()));
+};
 
 const inside = (offset: number, spans: readonly Span[]): boolean => spans.some((span) => span.start <= offset && offset < span.end);
 
@@ -273,18 +298,20 @@ export const capitalisedTerms = (input: CapitalisedInput): CapitalisedTerm[] => 
   const defining = input.defined.filter((definition) => definition.bare !== true && DEFINED_FORM.test(definition.term));
   if (defining.length < MIN_DEFINED) return [];
   const joiners = new Set(input.words.joiners);
+  const small = new Set([...input.words.joiners, ...input.words.articles].map((word) => word.toLowerCase()));
+  const near = nearIn(input.source);
   const isName = nameCues(input, joiners);
   const divisions = new Set(input.words.divisions.flatMap(formsOf));
   const known = new Set([...input.defined.map((definition) => definition.term), ...input.named, ...input.words.names].flatMap(formsOf));
   const isKnown = (term: string): boolean => partsOf(term).some((part) => formsOf(part).some((form) => known.has(form)));
   const uses = input.sentences.flatMap((tokens) =>
-    runsOf(tokens, joiners).flatMap(({ start, end }): CapitalisedTerm[] => {
+    runsOf(tokens, joiners, near).flatMap(({ start, end }): CapitalisedTerm[] => {
       const first = tokens[start];
       const last = tokens[end - 1];
       if (first === undefined || last === undefined || !placedLikeATerm(tokens[start - 1], tokens[end])) return [];
       if (inside(first.span.start, input.marked) || formsOf(first.surface).some((form) => divisions.has(form))) return [];
       const term = input.source.slice(first.span.start, last.span.end);
-      if (isKnown(term) || isName(tokens, start, end, term)) return [];
+      if (isKnown(term) || isName(tokens, start, end, term) || notWrittenAsTerm(tokens, start, end, small)) return [];
       return writtenInLowerCase(input.readable, term) ? [] : [{ offset: first.span.start, term }];
     }),
   );
