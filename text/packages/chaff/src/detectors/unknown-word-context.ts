@@ -110,3 +110,20 @@ export const usedOnce = (words: readonly CheckedWord[], speller: Speller): Check
   const shared = countsOf([...families.values()].flat());
   return words.filter(({ word }) => uses.get(word) === 1 && (families.get(word) ?? []).every((key) => shared.get(key) === 1));
 };
+
+/** A release number of three parts or more (1.21.5, v2.0.1), after spaces. */
+const VERSION_AFTER = /^[ \t]+v?\d+\.\d+\.\d+/u;
+
+/** The word names what a release number follows (golang 1.21.5): a product or a tool, written as its makers write it. */
+export const beforeVersion = (source: string, offset: number, word: string): boolean => VERSION_AFTER.test(source.slice(offset + word.length));
+
+/** Two words of one length that differ in one letter only. */
+const oneLetterApart = (left: string, right: string): boolean =>
+  left.length === right.length && [...left].filter((letter, index) => letter !== right.charAt(index)).length === 1;
+
+/**
+ * Another word of the document, itself not in the dictionary, one letter from this one (pthread and bthread): a family of
+ * names built on one scheme. A slip is one letter from a word the dictionary knows, and two slips seldom make such a pair.
+ */
+export const hasSiblingName = (word: string, unknownWords: ReadonlySet<string>): boolean =>
+  [...unknownWords].some((other) => other !== word && oneLetterApart(word, other));

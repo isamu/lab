@@ -6,7 +6,9 @@ import { hasTwoEndings, isKnownWord, type Speller } from "../packages/chaff/src/
 import {
   addressWordsOf,
   besideForeignWord,
+  beforeVersion,
   hasDrugStem,
+  hasSiblingName,
   inSearchTermList,
   isClosedCompound,
   isMention,
@@ -103,6 +105,18 @@ describe("unknown-word: words whose place makes them a name or a term", () => {
     assert.deepEqual(unknown("Harassment based on neuro(a)typicality is not allowed."), []);
     assert.deepEqual(unknown("Bootstrap intervals (nboot=2,000; seed 42)."), []);
   });
+
+  it("a word before a release number names a product, but the same word elsewhere is still reported", () => {
+    assert.deepEqual(unknown("- Upgraded to golang 1.21.5"), []);
+    assert.deepEqual(unknown("- Upgraded the service to golang today."), [typo("golang", "golan")]);
+    assert.deepEqual(unknown("- Upgraded to golang 1.21"), [typo("golang", "golan")]);
+  });
+
+  it("two words not in the dictionary one letter apart are names on one scheme, but a lone slip is still reported", () => {
+    assert.deepEqual(unknown("- Support pthread mode for the queue.\n- Write to the socket in a background bthread."), []);
+    assert.deepEqual(unknown("- Write to the socket in a background bthread."), [typo("bthread", "thread")]);
+    assert.deepEqual(unknown("The report is attched, and the pipline restarted."), [typo("attched", "attached"), typo("pipline", "pipeline")]);
+  });
 });
 
 describe("unknown-word context: the pieces", () => {
@@ -187,6 +201,21 @@ describe("unknown-word context: the pieces", () => {
     assert.ok(!besideForeignWord("old black noire for", 10, "noire"));
     assert.ok(!besideForeignWord("“noire”", 1, "noire"));
     assert.ok(!besideForeignWord("noire", 0, "noire"));
+  });
+
+  it("beforeVersion: spaces and a release number of three parts after the word", () => {
+    assert.ok(beforeVersion("golang 1.21.5", 0, "golang"));
+    assert.ok(beforeVersion("to golang v2.0.1.", 3, "golang"));
+    assert.ok(!beforeVersion("golang 1.21", 0, "golang"));
+    assert.ok(!beforeVersion("golang1.21.5", 0, "golang"));
+    assert.ok(!beforeVersion("golang", 0, "golang"));
+  });
+
+  it("hasSiblingName: another unknown word of the same length one letter apart", () => {
+    assert.ok(hasSiblingName("bthread", new Set(["pthread", "bthread"])));
+    assert.ok(!hasSiblingName("bthread", new Set(["bthread"])));
+    assert.ok(!hasSiblingName("bthread", new Set(["bthreads", "xthrexd"])));
+    assert.ok(!hasSiblingName("", new Set([""])));
   });
 
   it("addressWordsOf: the letters of URLs and email addresses", () => {
