@@ -45,26 +45,41 @@ const MAX_LABEL_WORDS = 3;
 const CLAUSE_POS: ReadonlySet<string> = new Set(["VERB", "AUX", "PRON", "SCONJ"]);
 const NAME_POS: ReadonlySet<string> = new Set(["NOUN", "PROPN"]);
 
+/** A verb right after a preposition is a gerund inside the phrase (Guidelines for addressing …), not the verb of a clause. */
+const makesClause = (pos: string, before: string | undefined): boolean => CLAUSE_POS.has(pos) && !(pos === "VERB" && before === "ADP");
+
 /** A noun phrase of any length, read from the adapter's parts of speech. Without them, only the short label counts. */
 const isNounPhrase = (sentence: Sentence): boolean => {
   const tokens = sentence.tokens ?? [];
-  return tokens.some((token) => NAME_POS.has(token.pos)) && !tokens.some((token) => CLAUSE_POS.has(token.pos));
+  return tokens.some((token) => NAME_POS.has(token.pos)) && !tokens.some((token, index) => makesClause(token.pos, tokens[index - 1]?.pos));
 };
 
 const isNounLabel = (words: string, sentence: Sentence): boolean =>
   NOUN_LABEL.test(words) && (words.split(/\s+/u).length <= MAX_LABEL_WORDS || isNounPhrase(sentence));
 
+/** A template keeps at least this many words fixed around its entry's name; fewer, and two different labels only look alike. */
+const MIN_FIXED_WORDS = 3;
+
+/** One label of a template that carries its entry's name: the same words but one (Guidelines for addressing High-sev / Low-sev issues). */
+const sameButOneWord = (left: string, right: string): boolean => {
+  const leftWords = left.split(/\s+/u);
+  const rightWords = right.split(/\s+/u);
+  const differing = leftWords.filter((word, index) => word !== rightWords[index]).length;
+  return leftWords.length === rightWords.length && differing === 1 && leftWords.length - differing >= MIN_FIXED_WORDS;
+};
+
+const sameTemplate = (left: string, right: string): boolean => left === right || sameButOneWord(left, right);
+
 /**
- * A field of an entry's template: the same noun label before the list of each entry (**参考:** before each entry's link).
+ * A field of an entry's template: the same noun label before the list of each entry (**参考:** before each entry's link),
+ * or the same label with the entry's name in it (Guidelines for addressing High-sev issues: in each severity's section).
  * It names the field the way a table's column does; it does not lead into anything.
  */
 const fieldLabels = (leadIns: readonly Sentence[]): ReadonlySet<string> => {
-  const usesByLabel = leadIns.reduce((tally, sentence) => {
-    const words = labelWords(sentence.text);
-    return tally.set(words, [...(tally.get(words) ?? []), sentence]);
-  }, new Map<string, readonly Sentence[]>());
-  const isField = (words: string, [first, ...rest]: readonly Sentence[]): boolean => first !== undefined && rest.length > 0 && isNounLabel(words, first);
-  return new Set([...usesByLabel].filter(([words, uses]) => isField(words, uses)).map(([words]) => words));
+  const labels = leadIns.map((sentence) => ({ words: labelWords(sentence.text), sentence }));
+  const isField = ({ words, sentence }: (typeof labels)[number], index: number): boolean =>
+    labels.some((other, otherIndex) => otherIndex !== index && sameTemplate(words, other.words)) && isNounLabel(words, sentence);
+  return new Set(labels.filter(isField).map(({ words }) => words));
 };
 
 /** A line that is only a bold label (**Pros:**, **参考**:), and the label inside the bold marks. */
