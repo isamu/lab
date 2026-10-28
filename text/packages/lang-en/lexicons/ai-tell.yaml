@@ -139,13 +139,7 @@ entries:
     weight: 0.5
   - pattern: quietly
     weight: 0.3
-  # Honesty markers inside a sentence; the sentence-opening ones are announcing-opener's.
-  - pattern: if I'm being honest
-    weight: 0.5
-  - pattern: if I'm honest
-    weight: 0.5
-  - pattern: my honest take
-    weight: 0.5
+  # Honesty markers (if I'm being honest, my honest take) are honesty-marker's, which reports one alone.
   # Stock phrases of a generated how-to guide, in no human document of the corpus.
   - pattern: the golden rule of
     weight: 0.3

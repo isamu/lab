@@ -430,7 +430,7 @@ The quick AI-likeness score (`ai-score`) compares the article before and after.
 $ npx chaffjs ai-score ai.md rewritten.md --genre blog/tech
 ai.md
 AI-likeness: high (more signs than human-written documents (Blog))
-  6 signs (of 31 compared, ones 90% of human documents do not show); medium from 3, high from 5
+  6 signs (of 32 compared, ones 90% of human documents do not show); medium from 3, high from 5
   Not a verdict on whether AI wrote it: how many signs common in generated text show, compared with human documents.
 
 Wording and shape
@@ -439,7 +439,7 @@ Wording and shape
   ✗ Cliched closing: 1  in 0 of 23 human-written documents (Blog)
   ✗ Too many contrast frames: 3  in 0 of 23 human-written documents (Blog)
   ✗ Several signals of generated text together: 4 of its signals (Cliched closing, Too many contrast frames, Too many sentences that announce before they say, Bold emphasis scattered through the text); from 2, its strict level, that is one more sign
-  · the other 20 did not show
+  · the other 21 did not show
   not compared (no human baseline): Stock email courtesies piled up, Too many sweeping claims about people, Questions answered with a fragment
 
 Structure (against human articles)
@@ -448,11 +448,11 @@ Structure (against human articles)
 
 rewritten.md
 AI-likeness: low (about as many signs as human-written documents (Blog))
-  1 sign (of 30 compared, ones 90% of human documents do not show); medium from 3, high from 5
+  1 sign (of 31 compared, ones 90% of human documents do not show); medium from 3, high from 5
   Not a verdict on whether AI wrote it: how many signs common in generated text show, compared with human documents.
 
 Wording and shape
-  · the other 24 did not show
+  · the other 25 did not show
   not compared (no human baseline): Stock email courtesies piled up, Too many sweeping claims about people, Questions answered with a fragment
 
 Structure (against human articles)

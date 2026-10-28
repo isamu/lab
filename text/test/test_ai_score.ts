@@ -256,7 +256,7 @@ describe("aiScoreOfDocument on written samples", () => {
     assert.equal(score.notScored?.reason, "too-short");
   });
 
-  it("reads the paired generated-style essays as medium through the together sign, and their human pairs as low", async () => {
+  it("reads the paired generated-style essays as medium or above through the together sign, and their human pairs as low", async () => {
     await ja.prepare?.({ pos: true });
     await en.prepare?.({ pos: true });
     const essay = (adapter: LanguageAdapter, variant: string) => {
@@ -265,7 +265,7 @@ describe("aiScoreOfDocument on written samples", () => {
     };
     [ja, en].forEach((adapter) => {
       const generated = essay(adapter, "ai");
-      assert.equal(generated.level, "medium", adapter.id);
+      assert.ok(generated.level === "medium" || generated.level === "high", adapter.id);
       assert.equal(generated.together.counted, true, adapter.id);
       ["human", "rewritten"].forEach((variant) => {
         const score = essay(adapter, variant);

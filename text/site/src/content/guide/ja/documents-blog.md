@@ -106,7 +106,9 @@ kiji.md   blog/tech · 日本語   ジャンルは --genre から
                   contrast-framing
   11:1    info    「正直に言うと」など、予告で始まる文が 3 個あります（3 個から）
                   announcing-opener
-  11:1    warning 「section-length-uniformity、sentence-rhythm、padded-intro、closing-cliche、contrast-framing、announcing-opener」が同じ文書にそろっています（6 種、2 種から）
+  11:1    info    「正直に言うと」と前置きしています
+                  honesty-marker
+  11:1    warning 「honesty-marker、section-length-uniformity、sentence-rhythm、padded-intro、closing-cliche、contrast-framing、announcing-opener」が同じ文書にそろっています（7 種、2 種から）
                   ai-generated-composite
   15:1    info    「ポイントは」など、予告で始まる文が 3 個あります（3 個から）
                   announcing-opener
