@@ -68,7 +68,7 @@ const lineBlocks = (doc: ProseDocument, text: string, frames: readonly OrdinalFr
 const LINES_ABOVE = 3;
 const LATIN_WORD = /^[A-Za-z][A-Za-z ]*$/u;
 
-const markerTest = (marker: string): ((text: string) => boolean) => {
+export const markerTest = (marker: string): ((text: string) => boolean) => {
   if (!LATIN_WORD.test(marker)) return (text) => text.includes(marker);
   const word = new RegExp(String.raw`(?<![A-Za-z])${marker}(?![A-Za-z])`, "iu");
   return (text) => word.test(text);
