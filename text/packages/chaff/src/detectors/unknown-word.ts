@@ -6,6 +6,7 @@ import { quoteAt } from "./structure-tree.ts";
 import {
   addressWordsOf,
   beforeVersion,
+  beforeVolume,
   besideForeignWord,
   hasDrugStem,
   hasSiblingName,
@@ -53,9 +54,16 @@ export const codeWordsOf = (source: string): Set<string> => {
 /** 辞書の語か、派生した語に活用の語尾を付けた語（operationalises、rightsized）か、四字以上の辞書の語二つを続けた語（crowdwork）。 */
 const isFormedWord = (word: string, speller: Speller): boolean => isKnownWord(word, speller) || hasTwoEndings(word, speller) || isClosedCompound(word, speller);
 
-/** 置かれた場所から、名前や用語と分かる語。名指した語（"mailto"、(jchaplin)）、検索語の並び（vaccin*）、外国語の句（bête noire）、版の番号の前（golang 1.21.5）。 */
+/**
+ * 置かれた場所から、名前や用語と分かる語。名指した語（"mailto"、(jchaplin)）、検索語の並び（vaccin*）、外国語の句（bête noire）、
+ * 版の番号の前（golang 1.21.5）、誌の巻と号の前（Biochemia medica 22 (3)）。
+ */
 const isTermByPlace = (source: string, offset: number, word: string): boolean =>
-  isMention(source, offset, word) || inSearchTermList(source, offset) || besideForeignWord(source, offset, word) || beforeVersion(source, offset, word);
+  isMention(source, offset, word) ||
+  inSearchTermList(source, offset) ||
+  besideForeignWord(source, offset, word) ||
+  beforeVersion(source, offset, word) ||
+  beforeVolume(source, offset, word);
 
 /**
  * 辞書に無い英語の語で、一字違いの辞書の語があるもの（recieve → receive）。辞書は adapter が持ち、無い言語では動かない。

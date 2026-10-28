@@ -1,0 +1,7 @@
+# Conjunctions a form or a page writes in capitals at the head of a line (OR, Skip to the topics …; an OR alone between two
+# options). Each is also an acronym (OR: Oregon, operating room), so undefined-acronym leaves it out only there: at the
+# head of a line, before a comma and a capitalised word, or alone on its line. Matched as written.
+id: opening-conjunction
+language: en
+entries:
+  - pattern: "OR"

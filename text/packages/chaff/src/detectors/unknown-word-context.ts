@@ -117,6 +117,12 @@ const VERSION_AFTER = /^[ \t]+v?\d+\.\d+\.\d+/u;
 /** The word names what a release number follows (golang 1.21.5): a product or a tool, written as its makers write it. */
 export const beforeVersion = (source: string, offset: number, word: string): boolean => VERSION_AFTER.test(source.slice(offset + word.length));
 
+/** A journal's volume and issue (22 (3), 5(2)), after spaces. */
+const VOLUME_AFTER = /^[ \t]+\d+[ \t]*\(\d+\)/u;
+
+/** The word ends a journal's title before its volume and issue (Biochemia medica 22 (3)): the title as the journal writes it, often Latin. */
+export const beforeVolume = (source: string, offset: number, word: string): boolean => VOLUME_AFTER.test(source.slice(offset + word.length));
+
 /** Two words of one length that differ in one letter only. */
 const oneLetterApart = (left: string, right: string): boolean =>
   left.length === right.length && [...left].filter((letter, index) => letter !== right.charAt(index)).length === 1;
