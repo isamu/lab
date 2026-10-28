@@ -22,6 +22,11 @@ entries:
     group: last
   - pattern: お楽しみください
     group: last
+  # 「まずは〜から試してみてください」。ぜひが無くても、試すよう勧めて終えるのは結びの定型。具体的な指示（並べてみてください）は当たらない。
+  - pattern: 試してみてください
+    group: last
+  - pattern: やってみてください
+    group: last
   - pattern: ましょう！
     group: last
   - pattern: ましょう!
