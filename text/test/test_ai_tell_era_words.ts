@@ -24,7 +24,7 @@ const phrasesAtAnyScore = (source: string, adapter: LanguageAdapter): string[] =
     .findings.filter((finding) => finding.rule === "ai-tell")
     .map((finding) => String(finding.values["word"]));
 
-describe("ai-tell: era words and honesty markers (en)", () => {
+describe("ai-tell: era words (en)", () => {
   it("reports several of them in one post", () => {
     const source =
       "# Notes\n\nThe essay delves into the garden. Garnering praise is not the goal. The effort was commendable, if I'm being honest. The camaraderie lasted.\n";
@@ -61,12 +61,11 @@ describe("ai-tell: closings, set metaphors and calques (ja)", () => {
   });
 });
 
-describe("ai-tell: honesty inside a sentence, a request recast as a benefit (ja)", () => {
-  it("adds 正直 after a comma and にとっても有意義 to the other phrases", () => {
+describe("ai-tell: a request recast as a benefit (ja); honesty markers are honesty-marker's", () => {
+  it("adds にとっても有意義 to the other phrases", () => {
     const source =
-      "# 件名\n\nご提案をいただき、正直かなり迷いました。延期すれば、皆様にとっても有意義な場になります。この言葉は刺さりました。順に見ていきましょう。理解が深まります。工場との橋渡しもします。\n";
+      "# 件名\n\nご提案は大きな可能性を秘めています。延期すれば、皆様にとっても有意義な場になります。この言葉は刺さりました。順に見ていきましょう。理解が深まります。工場との橋渡しもします。\n";
     const [finding] = aiTell(source, ja, "business/email");
-    assert.match(String(finding?.values["word"]), /、正直/u);
     assert.match(String(finding?.values["word"]), /にとっても有意義/u);
   });
 
@@ -79,7 +78,7 @@ describe("ai-tell: honesty inside a sentence, a request recast as a benefit (ja)
 describe("ai-tell: stock phrases of a generated guide (en)", () => {
   it("adds the golden rule of and a powerful solution to the other phrases", () => {
     const source =
-      "# Backups\n\nFirst, the golden rule of backups. A NAS is a powerful solution for families. The setup is commendable, if I'm being honest. It delves into the details.\n";
+      "# Backups\n\nFirst, the golden rule of backups. A NAS is a powerful solution for families. The setup is commendable and aptly named. It delves into the details.\n";
     const [finding] = aiTell(source, en, "blog/tech");
     assert.match(String(finding?.values["word"]), /the golden rule of/u);
     assert.match(String(finding?.values["word"]), /a powerful solution/u);

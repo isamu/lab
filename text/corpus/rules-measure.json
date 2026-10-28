@@ -4613,6 +4613,18 @@
         "falseAlarms": 0
       }
     },
+    "honesty-marker": {
+      "groups": {
+        "blog": {
+          "documents": 23,
+          "fired": 0
+        },
+        "business": {
+          "documents": 80,
+          "fired": 0
+        }
+      }
+    },
     "humble-for-others": {
       "groups": {
         "academic": {

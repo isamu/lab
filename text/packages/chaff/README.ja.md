@@ -230,7 +230,7 @@ npx chaffjs ai-score article.md                  低・中・高と、出てい�
 npx chaffjs ai-score article.md --format json    同じものを JSON で
 ```
 
-短すぎる文書は測らず、そう言います。目印の一つが `email-stock-courtesy` で、英文のメールに「I hope this email finds you well」「I apologize for any inconvenience」のような決まり文句が 2 つ以上重なった所を言います。もう一つの例が `closing-exhortation` で、「ぜひ〜してみてください」「きっと〜はずです」のように結びで読み手を励ます文が 2 つ以上重なった所を言います。`cold-open` は、状況も例もないまま、短い願い（「〜に任せたい。」）、前の文の語の引き直し（この「だいたい」が）、難所の予告（「それだけのことに見えて」）が書き出しに重なった所を言います。`unprompted-denial` は、「〜の話ではありません」「〜の材料になりません」のように、誰も言っていない前提を打ち消して終わる文が多い所を言います。
+短すぎる文書は測らず、そう言います。目印の一つが `email-stock-courtesy` で、英文のメールに「I hope this email finds you well」「I apologize for any inconvenience」のような決まり文句が 2 つ以上重なった所を言います。`honesty-marker` は、「正直、」「正直に言うと」「if I'm being honest」のように本音だと前置きする言い回しを、ブログと業務文書では 1 つでも言います。もう一つの例が `closing-exhortation` で、「ぜひ〜してみてください」「きっと〜はずです」のように結びで読み手を励ます文が 2 つ以上重なった所を言います。`cold-open` は、状況も例もないまま、短い願い（「〜に任せたい。」）、前の文の語の引き直し（この「だいたい」が）、難所の予告（「それだけのことに見えて」）が書き出しに重なった所を言います。`unprompted-denial` は、「〜の話ではありません」「〜の材料になりません」のように、誰も言っていない前提を打ち消して終わる文が多い所を言います。
 
 ## AI の評価に使う（chaff grade）
 
@@ -338,7 +338,8 @@ rule the rewrite raised; `npx chaffjs test <file> --checks ai-tells` asks about 
 
 **AI score.** `chaff ai-score <file>` — a quick AI-likeness score (low, medium, high): counts the signs of generated
 text that human documents of the same genre rarely show. It is not a verdict on whether AI wrote it. One sign is
-`email-stock-courtesy`: two or more stock email courtesies in one English email.
+`email-stock-courtesy`: two or more stock email courtesies in one English email. `honesty-marker`: a sentence flagged as
+candid ("Honestly,", 「正直、」), reported alone in blog posts and business documents.
 `closing-exhortation`: a closing that cheers the reader on two or more times. `unprompted-denial`: many sentences that
 deny a premise nobody stated ("This isn't about tooling.").
 

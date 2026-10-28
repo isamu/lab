@@ -133,6 +133,7 @@ Claude Code の skill（`npx chaffjs skill`）は、指摘より先に指針を�
 | `bold-label-list` | 「- **速さ**：〜」のように、太字の札とコロンで始まる項目の多さ |
 | `assistant-residue` | 「お役に立てれば幸いです」のような、チャットの返事の名残 |
 | `email-stock-courtesy` | 「I hope this email finds you well」「I apologize for any inconvenience」のような英文メールの決まり文句が、一通のメールに 2 つ以上（英語の文書だけ） |
+| `honesty-marker` | 「正直、」「正直に言うと」のように本音だと前置きする言い回し。1 つでも言う（ブログと業務文書だけ） |
 | `closing-exhortation` | 「ぜひ〜してみてください」「きっと〜はずです」のように、結びで読み手を励ます・請け合う文が 2 つ以上 |
 | `cold-open` | 状況も例もないまま、短い願い（「〜に任せたい。」）、前の文の語の引き直し（この「だいたい」が）、難所の予告（「それだけのことに見えて」）が重なる書き出し |
 | `chat-citation-residue` | 「?utm_source=chatgpt.com」の付いたリンクや「oaicite」のような、チャットの答えを貼ったときに残る印 |
@@ -145,7 +146,7 @@ Claude Code の skill（`npx chaffjs skill`）は、指摘より先に指針を�
 | `section-length-uniformity` | どの節もほぼ同じ長さに埋めてあり、ひな形を埋めたように見える所 |
 | `paragraph-length-variance` | どの段落もほぼ同じ長さで、型に流しこんだように見える所 |
 | `ai-structure` | 構成の項目（見出しの多さ、3 つに分けた小見出し、太字の札、節の長さの揃い方、本文を言い直すまとめなど）のいくつもが、人の記事の 9 割を超えた文書。ビジネス文書では、教科書どおりの提案書の見出し（背景、現状と課題、提案内容、期待される効果、費用、リスクと対策…）も 1 項目に数えます |
-| `ai-generated-composite` | 次の特徴のうち 3 つ以上（ブログの記事では 2 つ以上）がそろった文書：`ai-tell`、`contrast-framing`、`stock-transition`、`announcing-opener`、`colon-lead-in`、`assistant-residue`、`closing-cliche`、`padded-intro`、`no-em-dash`、`sentence-rhythm`、`rule-of-three`、`section-length-uniformity`、`ai-structure`、`over-general-claim`、`q-fragment-answer`、`closing-exhortation`、`unfilled-placeholder`、`bold-emphasis`（`bold-density` と `bold-label-list` は数えません。太字の札は `ai-structure` が測っています） |
+| `ai-generated-composite` | 次の特徴のうち 3 つ以上（ブログの記事では 2 つ以上）がそろった文書：`ai-tell`、`honesty-marker`、`contrast-framing`、`stock-transition`、`announcing-opener`、`colon-lead-in`、`assistant-residue`、`closing-cliche`、`padded-intro`、`no-em-dash`、`sentence-rhythm`、`rule-of-three`、`section-length-uniformity`、`ai-structure`、`over-general-claim`、`q-fragment-answer`、`closing-exhortation`、`unfilled-placeholder`、`bold-emphasis`（`bold-density` と `bold-label-list` は数えません。太字の札は `ai-structure` が測っています） |
 
 どのルールも、それだけで「AI が書いた」とは言いません。人も書く形です。
 重なったときに、読み返す場所の目印になります。

@@ -160,6 +160,7 @@ export const HUMAN_SHARES: HumanShares = {
     speech: { documents: 7, fired: 0 },
     technical: { documents: 49, fired: 0 },
   },
+  "honesty-marker": { blog: { documents: 23, fired: 0 }, business: { documents: 80, fired: 0 } },
   "no-em-dash": {
     academic: { documents: 10, fired: 0 },
     blog: { documents: 23, fired: 0 },
