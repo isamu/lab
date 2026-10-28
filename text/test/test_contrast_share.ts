@@ -46,9 +46,7 @@ describe("contrast frames across two sentences (en)", () => {
   });
 
   it("counts a written-out denial (is not, does not) answered by the next sentence, as the contracted one", () => {
-    assert.deepEqual(framed(en, "The plan is not to cut the budget. It is to spend it on fewer things."), [
-      "The plan is not to cut the budget.",
-    ]);
+    assert.deepEqual(framed(en, "The plan is not to cut the budget. It is to spend it on fewer things."), ["The plan is not to cut the budget."]);
     assert.deepEqual(framed(en, "Hiring does not end at the offer. It starts the team's first month."), ["Hiring does not end at the offer."]);
     assert.deepEqual(framed(en, "Visitors do not come for the shop. They come for the garden."), ["Visitors do not come for the shop."]);
   });
