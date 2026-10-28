@@ -3,7 +3,17 @@ import { hasTwoEndings, isKnownWord, isSplitWord, suggestionFor, wordsToCheck, t
 import { parse } from "../markdown-read.ts";
 import { eachPreOrder } from "../tree-walk.ts";
 import { quoteAt } from "./structure-tree.ts";
-import { addressWordsOf, besideForeignWord, hasDrugStem, inSearchTermList, isClosedCompound, isMention, usedOnce } from "./unknown-word-context.ts";
+import {
+  addressWordsOf,
+  beforeVersion,
+  besideForeignWord,
+  hasDrugStem,
+  hasSiblingName,
+  inSearchTermList,
+  isClosedCompound,
+  isMention,
+  usedOnce,
+} from "./unknown-word-context.ts";
 
 /** これより短い語は見ない。短い語は一字違いの語が多すぎて言い直しが決まらず（tost は test か toast か）、略した語（impl）も多い。 */
 const MIN_LENGTH = 5;
@@ -43,9 +53,9 @@ export const codeWordsOf = (source: string): Set<string> => {
 /** 辞書の語か、派生した語に活用の語尾を付けた語（operationalises、rightsized）か、四字以上の辞書の語二つを続けた語（crowdwork）。 */
 const isFormedWord = (word: string, speller: Speller): boolean => isKnownWord(word, speller) || hasTwoEndings(word, speller) || isClosedCompound(word, speller);
 
-/** 置かれた場所から、名前や用語と分かる語。名指した語（"mailto"、(jchaplin)）、検索語の並び（vaccin*）、外国語の句（bête noire）。 */
+/** 置かれた場所から、名前や用語と分かる語。名指した語（"mailto"、(jchaplin)）、検索語の並び（vaccin*）、外国語の句（bête noire）、版の番号の前（golang 1.21.5）。 */
 const isTermByPlace = (source: string, offset: number, word: string): boolean =>
-  isMention(source, offset, word) || inSearchTermList(source, offset) || besideForeignWord(source, offset, word);
+  isMention(source, offset, word) || inSearchTermList(source, offset) || besideForeignWord(source, offset, word) || beforeVersion(source, offset, word);
 
 /**
  * 辞書に無い英語の語で、一字違いの辞書の語があるもの（recieve → receive）。辞書は adapter が持ち、無い言語では動かない。
@@ -59,8 +69,9 @@ export const unknownWord: Detector = (doc): Finding[] => {
   const drugStems = patternsOf(doc, "drug-stem");
   const words = wordsToCheck(doc.prose ?? doc.source, MIN_LENGTH, MAX_LENGTH).filter(({ offset }) => !isSplitWord(doc.source, offset));
   const used = new Set(words.map(({ word }) => word).filter((word) => isKnownWord(word, speller)));
+  const unformed = new Set(words.map(({ word }) => word).filter((word) => !known.has(word) && !isFormedWord(word, speller)));
   return usedOnce(words, speller).flatMap(({ offset, word }) => {
-    if (known.has(word) || isFormedWord(word, speller) || hasDrugStem(word, drugStems) || isTermByPlace(doc.source, offset, word)) return [];
+    if (!unformed.has(word) || hasDrugStem(word, drugStems) || hasSiblingName(word, unformed) || isTermByPlace(doc.source, offset, word)) return [];
     const suggestion = suggestionFor(word, speller, used);
     if (suggestion === undefined) return [];
     return [{ rule: "", severity: "warning", line: 0, column: 0, quote: quoteAt(doc.source, offset), values: { word, suggestion, offset } }];
