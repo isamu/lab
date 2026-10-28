@@ -131,16 +131,22 @@ describe("a citation string in a footnote", () => {
     assert.deepEqual(enFindings(`1. ${legal}\n\n2. ${series}`, EMAIL), []);
   });
 
-  it("still measures a signal followed by the writer's words, one title, or a section sign with nothing more", () => {
+  it("still measures a signal followed by the writer's words, or a section sign with nothing more", () => {
     const prose = [
-      "See also letter 05-9, “Questions About the Lending Program,” for guidance on common questions regarding how small banks should report loans to farms.",
-      "See River Towns Lending Program Expanded to Three More Counties and Five More Small Banks across the Northern Part of the State in the Spring.",
+      "See also letter 05-9, “Questions About the Lending Program,” for guidance on common questions regarding how small banks should report their loans to farms and ranches.",
       "See § 5 of the lease for the list of everything the tenant must clean, mend or replace before handing back the keys at the end of the lease.",
       "Please see the attached schedule; it lists every room we booked for the training and the times each one is free.",
     ];
     prose.forEach((text) => assert.equal(isCitationString(text, SIGNALS), false, text));
     assert.equal(isCitationString(legal, []), false);
     assert.equal(enFindings(prose.join("\n\n"), EMAIL).length, prose.length);
+  });
+
+  it("measures one cited title after a signal without the title's words", () => {
+    const title =
+      "See River Towns Lending Program Expanded to Three More Counties and Five More Small Banks across the Northern Part of the State in the Spring.";
+    assert.equal(isCitationString(title, SIGNALS), false);
+    assert.deepEqual(enFindings(title, EMAIL), []);
   });
 });
 
@@ -162,5 +168,12 @@ describe("a title line with a remark, and a reference line", () => {
     assert.equal(remarkAfterTitle(prose[0] ?? ""), undefined);
     assert.equal(isReferenceLine(prose[1] ?? ""), false);
     assert.equal(enFindings(prose.join("\n\n"), EMAIL).length, prose.length);
+  });
+
+  it("measures one cited title after a signal without the title's words", () => {
+    const title =
+      "See River Towns Lending Program Expanded to Three More Counties and Five More Small Banks across the Northern Part of the State in the Spring.";
+    assert.equal(isCitationString(title, SIGNALS), false);
+    assert.deepEqual(enFindings(title, EMAIL), []);
   });
 });
