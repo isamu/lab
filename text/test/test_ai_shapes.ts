@@ -77,8 +77,8 @@ describe("ai-tell (ja): metaphors and calques of technical prose", () => {
       assert.ok(entryIn(sentenceOf(ja, sentence), tokenized(ja, pattern)));
     });
 
-    it(`「${pattern}」 alone, even repeated, stays under the limit`, () => {
-      assert.ok(!idsFor(`# 記事\n\n${sentence.repeat(3)}${BULK_JA}`, ja).includes("ai-tell"));
+    it(`「${pattern}」 alone, even repeated, stays under the limit outside blogs`, () => {
+      assert.ok(!idsFor(`# 記事\n\n${sentence.repeat(3)}${BULK_JA}`, ja, "business/report").includes("ai-tell"));
     });
   });
 
@@ -87,11 +87,12 @@ describe("ai-tell (ja): metaphors and calques of technical prose", () => {
     assert.ok(!entryIn(sentenceOf(ja, "彼は黙って席を立ち、無視されたと感じた。"), tokenized(ja, "黙って無視される")));
   });
 
-  it("a single metaphor does not fire ai-tell; several together do", () => {
-    assert.ok(!idsFor(`# 記事\n\nこの設定は地味に効きます。${BULK_JA}`, ja).includes("ai-tell"));
+  it("outside blogs, a single metaphor does not fire ai-tell; several together do", () => {
+    const report = "business/report";
+    assert.ok(!idsFor(`# 記事\n\nこの設定は地味に効きます。${BULK_JA}`, ja, report).includes("ai-tell"));
     const four = "テストは静かに壊れていました。引数は黙って無視されます。調査で時間を溶かしました。警告を一つずつ潰していきます。";
-    assert.ok(!idsFor(`# 記事\n\n${four}${BULK_JA}`, ja).includes("ai-tell"));
-    assert.ok(idsFor(`# 記事\n\n${four}この差が後から効いてきます。${BULK_JA}`, ja).includes("ai-tell"));
+    assert.ok(!idsFor(`# 記事\n\n${four}${BULK_JA}`, ja, report).includes("ai-tell"));
+    assert.ok(idsFor(`# 記事\n\n${four}この差が後から効いてきます。${BULK_JA}`, ja, report).includes("ai-tell"));
   });
 
   it("keeps out what people wrote as much before generated text (解像度, 腹落ち, 肌感, 側に倒す, 真理)", () => {

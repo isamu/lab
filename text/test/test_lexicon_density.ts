@@ -125,9 +125,9 @@ describe("L2 の語彙表と密度", () => {
       assert.ok(idsFor(source, ja, "blog/tech").includes("ai-tell"));
     });
 
-    it("valid: 1 つでは何も言わない", () => {
-      // 単独では普通の日本語。重なったときだけ意味がある。
-      assert.ok(!idsFor("# 記事\n\n現代社会において、この仕組みは動いています。", ja, "blog/tech").includes("ai-tell"));
+    it("valid: ブログ以外では 1 つでは何も言わない", () => {
+      // 単独では普通の日本語。重なったときだけ意味がある（ブログは段が低い）。
+      assert.ok(!idsFor("# 記事\n\n現代社会において、この仕組みは動いています。", ja, "business/report").includes("ai-tell"));
     });
 
     it("valid: 引用符の中だけの語は、例に挙げた語で数えない（#621）", () => {

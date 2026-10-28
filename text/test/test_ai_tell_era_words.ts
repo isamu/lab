@@ -122,3 +122,20 @@ describe("ai-tell: phrases human blog and business documents use as much as gene
     assert.equal(aiTell(enSource, en).length, 1);
   });
 });
+
+describe("ai-tell: one heavier phrase is enough in a blog post", () => {
+  const post = "# Gardens\n\nThe essay delves into my father's garden and what grew there.\n";
+
+  it("reports a phrase of weight 0.5 alone in a blog post", () => {
+    assert.equal(aiTell(post, en, "blog/essay").length, 1);
+    assert.equal(aiTell("# 地図\n\n現代社会において、紙の地図はまだ使われる。\n", ja, "blog/essay").length, 1);
+  });
+
+  it("leaves a lighter phrase alone in a blog post", () => {
+    assert.deepEqual(aiTell("# Notes\n\nThe door closed quietly.\n", en, "blog/tech"), []);
+  });
+
+  it("still needs the pile-up outside blogs", () => {
+    assert.deepEqual(aiTell(post, en, "business/report"), []);
+  });
+});
