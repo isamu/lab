@@ -2,6 +2,7 @@ import type { Detector, DetectorOptions, Finding, Lexicon, LexiconEntry, ProseDo
 import { entryEnds, entryIn } from "./lexicon-match.ts";
 import { mentionCuesOf, onlyMentioned } from "./mentioned-phrase.ts";
 import { closingSentences } from "../closing-paragraph.ts";
+import { quotedPattern } from "./quoted-pattern.ts";
 
 /** 冒頭は先頭 2 段落ぶん。「どの記事にも当てはまる書き出し」は冒頭にあるときだけ問題。 */
 const OPENING_SENTENCES = 4;
@@ -24,7 +25,7 @@ type IsUsed = (sentence: Sentence, entry: LexiconEntry) => boolean;
 const hitsIn = (sentences: readonly Sentence[], lexicon: Lexicon, isUsed: IsUsed = () => true): Hit[] =>
   sentences.flatMap((sentence) => {
     const matched = lexicon.find((entry) => entryIn(sentence, entry) && isUsed(sentence, entry));
-    return matched === undefined ? [] : [{ sentence, matched: matched.pattern }];
+    return matched === undefined ? [] : [{ sentence, matched: quotedPattern(matched.pattern) }];
   });
 
 const findingsOf = (hits: readonly Hit[], limit: number, count = hits.length): Finding[] =>
@@ -74,7 +75,7 @@ const usesIn = (sentence: Sentence, lexicon: Lexicon): Uses | undefined => {
   const found = lexicon.map((entry) => ({ entry, ends: entryEnds(sentence, entry) })).filter(({ ends }) => ends.length > 0);
   const first = found.toSorted((a, b) => Math.min(...a.ends) - Math.min(...b.ends))[0];
   if (first === undefined) return undefined;
-  return { sentence, matched: first.entry.pattern, count: new Set(found.flatMap(({ ends }) => ends)).size };
+  return { sentence, matched: quotedPattern(first.entry.pattern), count: new Set(found.flatMap(({ ends }) => ends)).size };
 };
 
 /**

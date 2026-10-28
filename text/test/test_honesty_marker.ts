@@ -28,13 +28,13 @@ const matched = (source: string, adapter: LanguageAdapter, genre = "blog/essay")
 describe("honesty-marker (en)", () => {
   it("reports one marker alone in a blog post", () => {
     assert.deepEqual(matched("# Letters\n\nI still write letters, if I'm honest. Not because email is bad.\n", en), ["if I'm honest"]);
-    assert.deepEqual(matched("# Cafés\n\nAnd honestly? The barista knows my order.\n", en), ["honestly?"]);
+    assert.deepEqual(matched("# Cafés\n\nAnd honestly? The barista knows my order.\n", en), ["honestly"]);
     assert.deepEqual(matched("# Editors\n\nNotes, even grocery lists, if I'm being honest.\n", en, "blog/tech"), ["if I'm being honest"]);
     assert.deepEqual(matched("# Headphones\n\nHere's my honest take on what they get right.\n", en), ["my honest take"]);
   });
 
   it("reports it in a business document", () => {
-    assert.deepEqual(matched("# Offer\n\nHonestly, we were torn about the proposal.\n", en, "business/email"), ["honestly,"]);
+    assert.deepEqual(matched("# Offer\n\nHonestly, we were torn about the proposal.\n", en, "business/email"), ["honestly"]);
   });
 
   it("leaves honestly as a manner adverb, and the word only named", () => {
@@ -51,13 +51,14 @@ describe("honesty-marker (en)", () => {
 
 describe("honesty-marker (ja)", () => {
   it("reports one marker alone in a blog post", () => {
-    assert.deepEqual(matched("# 散歩\n\n最初の1週間は、正直つらかった。\n", ja), ["、正直"]);
+    assert.deepEqual(matched("# 散歩\n\n最初の1週間は、正直つらかった。\n", ja), ["正直"]);
     assert.deepEqual(matched("# 仕事\n\n正直に言うと、途中でわからなくなっていた。\n", ja), ["正直に言うと"]);
-    assert.deepEqual(matched("# 町\n\n最初は、正直なところ少し重たく感じていた。\n", ja), ["、正直"]);
+    assert.deepEqual(matched("# 朝\n\n正直、最初は迷った。\n", ja), ["正直"]);
+    assert.deepEqual(matched("# 町\n\n最初は、正直なところ少し重たく感じていた。\n", ja), ["正直"]);
   });
 
   it("reports it in a business email", () => {
-    assert.deepEqual(matched("# ご提案の件\n\nご提案には、正直かなり迷いました。\n", ja, "business/email"), ["、正直"]);
+    assert.deepEqual(matched("# ご提案の件\n\nご提案には、正直かなり迷いました。\n", ja, "business/email"), ["正直"]);
   });
 
   it("leaves 正直 as a trait, and 正直なところ opening a sentence (people write it too)", () => {
