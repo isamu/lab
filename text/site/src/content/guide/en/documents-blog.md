@@ -106,7 +106,7 @@ article.md   blog/tech · English   genre from --genre
                   ai-generated-composite
   11:1    info    "Honestly," and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
-  11:1    info    "honestly," flags this sentence as candid
+  11:1    info    "honestly" flags this sentence as candid
                   honesty-marker
   15:1    info    "The key point is" and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
