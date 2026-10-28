@@ -16,8 +16,6 @@ type SentenceWords = {
   readonly markers: RegExp | undefined;
   readonly citationSignals: readonly string[];
   readonly listItems: readonly { readonly start: number; readonly end: number }[];
-  /** Text reproduced word for word from another document (reproduced-text.ts). */
-  readonly reproduced: readonly { readonly start: number; readonly end: number }[];
 };
 
 /**
@@ -42,10 +40,8 @@ const longestQuotedPart = (text: string, size: number, markers: RegExp | undefin
  * 文書と違う言語の文（和文の中の英文）は、その言語の単位と上限で測る。rule がその言語の段を持たなければ文書のもので。
  * 印刷版のページの印（( printed page 52044)）は文の言葉ではないので数えない。
  * 脚注の文献の記載（著者 (2025), "題," …）も書き手の文ではないので、その前に書き手が置いた言葉（For example, see …）だけを測る。
- * 他の文書から引き写した文（見出しが名前を挙げた法律の条、「reads as follows:」の後の段落）は書き手の文ではないので測らない（reproduced-text.ts）。
  */
 const measureOf = (sentence: Sentence, unit: LengthUnit, options: DetectorOptions, words: SentenceWords): Measure => {
-  if (isReproduced(sentence.span, words.reproduced)) return { size: 0, limit: options.limit };
   const lead = citationLead(proseText(sentence), words.citationSignals);
   if (lead !== undefined) return { size: sizeOf(lead, unit), limit: options.limit };
   const embedded = sentence.embeddedLanguage;
@@ -82,16 +78,22 @@ export const sentenceLength: Detector = (doc, options): Finding[] => {
     markers: pageMarkerPattern((options.lexicon ?? []).map((entry) => entry.pattern)),
     citationSignals: (doc.lexicons["citation-signal"] ?? []).map((entry) => entry.pattern),
     listItems: doc.lists.flatMap((list) => list.itemSpans),
-    reproduced: reproducedSpans(
-      doc.structure,
-      doc.paragraphs,
-      doc.source,
-      (doc.lexicons["verbatim-lead"] ?? []).map((entry) => entry.pattern),
-    ),
   };
-  return doc.sentences
+  const long = doc.sentences
     .map((sentence) => ({ sentence, measure: measureOf(sentence, doc.lengthUnit, options, words) }))
-    .filter(({ sentence, measure }) => measure.size > measure.limit && !isNameList(proseText(sentence)))
+    .filter(({ sentence, measure }) => measure.size > measure.limit && !isNameList(proseText(sentence)));
+  // 他の文書から引き写した文（法律の条、「reads as follows:」の後の段落）は書き手の文ではない。探すのに文書の木を組むので、長い文があるときだけ。
+  const reproduced =
+    long.length === 0
+      ? []
+      : reproducedSpans(
+          doc.structure,
+          doc.paragraphs,
+          doc.source,
+          (doc.lexicons["verbatim-lead"] ?? []).map((entry) => entry.pattern),
+        );
+  return long
+    .filter(({ sentence }) => !isReproduced(sentence.span, reproduced))
     .map(({ sentence, measure }) => ({
       rule: "max-sentence-length",
       severity: "warning",
