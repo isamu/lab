@@ -45,6 +45,12 @@ describe("絞り込み: empty-conclusion", () => {
     assert.deepEqual(emptyConclusion(doc("# 題\n\n本文。\n\n## まとめ\n\n`chaff lint` を回してください。")), []);
   });
 
+  it("本文のコマンドを並べ直すだけの結びは問い合わせる", () => {
+    const source = "# 題\n\n次のコマンドで作ります。\n\n```bash\npython -m venv .venv\n```\n\n## まとめ\n\n- `python -m venv .venv` で作成する\n";
+    assert.equal(emptyConclusion(doc(source)).length, 1);
+    assert.deepEqual(emptyConclusion(doc(source.replace("- `python -m venv .venv` で作成する", "- `pip install -r requirements.txt` で戻せる"))), []);
+  });
+
   it("本文の数と題の月を繰り返すだけの結びは問い合わせる", async () => {
     await ja.prepare?.({ pos: true });
     const source = "# 9月の報告\n\n9月の問い合わせは 412 件でした。\n\n## まとめ\n\n以上のように、9月は 412 件でした。今後も改善に努めます。\n";
