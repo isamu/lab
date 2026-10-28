@@ -19,7 +19,7 @@ github-terms-of-service  5
 gitlab-meetings  5
 gitlab-values  3
 govuk-cddo-roadmap-2022-2025  1
-govuk-style-guide-a-to-z  3
+govuk-style-guide-a-to-z  2
 irs-online-account-faq  6
 k8s-overview-en  1
 kep-2214-indexed-job  5
