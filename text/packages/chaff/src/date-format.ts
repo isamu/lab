@@ -1,6 +1,8 @@
 // 日付の書き方（2026-10-02、2026年10月2日、Oct 2, 2026）を読む。純粋な関数だけを置く。
 // 月の名前と元号は言語パッケージの語彙表が渡す。年・月・日のそろった日付だけを読む（年だけ、月日だけは書き方を比べられない）。
 
+import type { Span } from "./plugin.ts";
+
 /** 見つけた日付 1 つ。offset は渡した文字列の中の位置、style は書き方の名前。 */
 export type WrittenDate = { readonly offset: number; readonly written: string; readonly style: string };
 
@@ -123,8 +125,8 @@ const withoutGap = (text: string): string => {
   return chars.slice(0, chars.findLastIndex((char) => !STAMP_GAP.test(char)) + 1).join("");
 };
 
-/** 刻印のラベルの前に来てよい字。行の頭か、ページの部品を区切る空白と縦線（ページID：0014616 更新日：）。 */
-const STAMP_LEAD = /[\s|｜]/u;
+/** 刻印のラベルの前に来てよい字。行の頭か、ページの部品を区切る空白と縦線（ページID：0014616 更新日：）と、刻印を囲む開き括弧（［更新日 2021年10月1日]）。 */
+const STAMP_LEAD = /[\s|｜[［【(（]/u;
 
 /**
  * text が刻印のラベル word で終わり、ラベルが行の頭か区切りの後ろから始まる。文の中の語（この日付は公開：、The date:、
@@ -145,18 +147,63 @@ export const stampedDate = (text: string, offset: number, stampLabels: readonly 
   return stampLabels.some((label) => endsWithLabel(before, label));
 };
 
-type DateGroup = "head" | "body" | "stamp";
+/** 見出しの行。 */
+const HEADING_LINE = /^ {0,3}#{1,6}(?:\s|$)/u;
+/** 日付を除いた行に残ってよいもの: 空白と強調の印。 */
+const DATE_ONLY_REST = /^[\s*_]*$/u;
 
-const groupOf = (text: string, date: WrittenDate, stampLabels: readonly string[]): DateGroup => {
-  if (stampedDate(text, date.offset, stampLabels)) return "stamp";
+const lineAround = (text: string, offset: number): Span => {
+  const end = text.indexOf("\n", offset);
+  return { start: text.lastIndexOf("\n", offset - 1) + 1, end: end === -1 ? text.length : end };
+};
+
+/**
+ * 文書の頭（空行と見出しのほかに何も無い所）の、日付だけの行。題のすぐ下に CMS が付けるページの日付（# 講師募集 / 2026年10月7日）で、
+ * 書いた人が本文で選んだ書き方（令和8年…）とは別のもの。source は記法を覆う前の文書で、位置は text と同じ。
+ */
+export const headerDate = (source: string, date: WrittenDate): boolean => {
+  const line = lineAround(source, date.offset);
+  const rest = source.slice(line.start, date.offset) + source.slice(date.offset + date.written.length, line.end);
+  if (!DATE_ONLY_REST.test(rest)) return false;
+  return source
+    .slice(0, line.start)
+    .split("\n")
+    .every((above) => above.trim() === "" || HEADING_LINE.test(above));
+};
+
+/** 括弧一つで行の全部を囲んだ行（［受理：2020-11-18］、［更新日 2021年10月1日]）。 */
+const BRACKETED_LINE = /^\s*[[［【(（][^\]］】)）\n]*[\]］】)）]\s*$/u;
+
+/** 日付が、括弧一つで囲んだ行の中にある。論文の受理日や頁の更新日を付け足した刻印で、本文の日付の書き方とは別のもの。 */
+export const bracketedDate = (text: string, date: WrittenDate): boolean => {
+  const line = lineAround(text, date.offset);
+  return BRACKETED_LINE.test(text.slice(line.start, line.end));
+};
+
+/**
+ * 日付の置き場所の手がかり。stampLabels は刻印のラベル（語彙表 date-stamp-label）、cited は文献一覧と注の並びの範囲、
+ * source は記法を覆う前の文書（文書の頭の日付の行を見分ける）。
+ */
+export type DatePlaces = { readonly stampLabels?: readonly string[]; readonly cited?: readonly Span[]; readonly source?: string };
+
+type DateGroup = "head" | "body" | "stamp" | "cited";
+
+const isWithin = (spans: readonly Span[], offset: number): boolean => spans.some((span) => offset >= span.start && offset < span.end);
+
+const groupOf = (text: string, date: WrittenDate, places: DatePlaces): DateGroup => {
+  if (isWithin(places.cited ?? [], date.offset)) return "cited";
+  if (stampedDate(text, date.offset, places.stampLabels ?? []) || bracketedDate(text, date)) return "stamp";
+  if (places.source !== undefined && headerDate(places.source, date)) return "stamp";
   return opensLine(text, date.offset) ? "head" : "body";
 };
 
+/** 比べる組。文献一覧と注の日付（cited）は比べない。題の中の日付は引いた文書の書き方で、参照日は文献の書き方の決まりに従う。 */
 const GROUP_ORDER: readonly DateGroup[] = ["head", "body", "stamp"];
 
 /**
  * 行の頭の日付と、文の中の日付と、更新日・公開日の刻印の日付を分ける。予定表を 2026-10-16 で並べ、文では 14 October 2026 と
  * 書くのは使い分けで、混ざりではない。刻印のラベルは言語パッケージの語彙表（date-stamp-label）が渡す。書き方はそれぞれの組の中でだけ比べる。
+ * 文献一覧と注の並びの中の日付は、どの組にも入れない。
  */
-export const dateGroups = (text: string, dates: readonly WrittenDate[], stampLabels: readonly string[] = []): WrittenDate[][] =>
-  GROUP_ORDER.map((group) => dates.filter((date) => groupOf(text, date, stampLabels) === group)).filter((group) => group.length > 0);
+export const dateGroups = (text: string, dates: readonly WrittenDate[], places: DatePlaces = {}): WrittenDate[][] =>
+  GROUP_ORDER.map((group) => dates.filter((date) => groupOf(text, date, places) === group)).filter((group) => group.length > 0);

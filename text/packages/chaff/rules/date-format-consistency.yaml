@@ -53,8 +53,8 @@ example:
       Registration opens on October 2, 2026 and closes on October 9, 2026. Results are sent on October 16, 2026.
 
 not_flagged:
-  ja: 年だけ、月日だけの日付、URL や版の中の数（/2026/10/02/、1.2026.10）、コードの中の日付は比べません。少ないほうが全体の三分の一を超える文書は、二つの書き方を使い分けている（表は 2026-10-02、本文は 2026年10月2日）と読んで指しません。いちばん多い書き方が同じ数で並ぶときも指しません。
-  en: Year-only and month-day dates, numbers inside URLs and versions (/2026/10/02/, 1.2026.10), and dates in code are not compared. When the minority is more than a third of the dates, the document is taken to use two styles on purpose (ISO in tables, long dates in prose) and nothing is reported, nor when the two commonest styles are tied.
+  ja: 年だけ、月日だけの日付、URL や版の中の数（/2026/10/02/、1.2026.10）、コードの中の日付は比べません。文献一覧と番号の付いた注の並びの中の日付（引いた文書の題の中の日付、参照日）も比べません。ページの更新日の刻印（［更新日 2021年10月1日］）と、題のすぐ下の日付だけの行は、本文とは別に比べます。少ないほうが全体の三分の一を超える文書は、二つの書き方を使い分けている（表は 2026-10-02、本文は 2026年10月2日）と読んで指しません。いちばん多い書き方が同じ数で並ぶときも指しません。
+  en: Year-only and month-day dates, numbers inside URLs and versions (/2026/10/02/, 1.2026.10), and dates in code are not compared, nor are dates in a reference list or a run of numbered notes (dates in cited titles, access dates). A page's update stamp ([Updated 2021-10-01]) and a line holding only a date right under the title are compared apart from the body. When the minority is more than a third of the dates, the document is taken to use two styles on purpose (ISO in tables, long dates in prose) and nothing is reported, nor when the two commonest styles are tied.
 level_meaning:
   ja: 少ないほうの書き方の日付が全体の {limit}% 以下なら指摘
   en: reported while the minority style is {limit}% of the dates or less
