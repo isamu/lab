@@ -23,20 +23,45 @@ const isLabelLine = (line: string): boolean => {
   return text.startsWith("#") || ("【〔［[（(".includes(text.charAt(0)) && "】〕］]）)".includes(text.charAt(text.length - 1)));
 };
 
+/** A division whose heading, or the label line just before it, the test names. */
+const divisionNamedBy =
+  (source: string, names: (text: string) => boolean): ((node: StructureNode) => boolean) =>
+  (node) => {
+    const heading = node.attrs["heading"];
+    if (typeof heading === "string" && names(heading)) return true;
+    const label = previousLineOf(source, node.span.start);
+    return isLabelLine(label) && names(label);
+  };
+
 /**
  * A division its heading, or the label line just before it (【18条変更オプション条項：知財調停】), names as an alternative
  * (alternative-clause-label).
  */
 export const alternativeReader = (source: string, labels: readonly string[]): ((node: StructureNode) => boolean) => {
   const words = labels.filter((label) => label !== "");
-  const names = (text: string): boolean => words.some((word) => text.includes(word));
-  return (node) => {
-    const heading = node.attrs["heading"];
-    if (typeof heading === "string" && names(heading)) return true;
-    const label = previousLineOf(source, node.span.start);
-    return isLabelLine(label) && names(label);
-  };
+  return divisionNamedBy(source, (text) => words.some((word) => text.includes(word)));
 };
+
+/** One number or letter after the word (オプション2, Option B), not the first of a range or a list (オプション1～3, Options 1 and 2). */
+const ONE_CHOICE = /^\s?(?:[0-9０-９]+|[A-ZＡ-Ｚ])(?![0-9０-９A-Za-zＡ-Ｚ])(?!\s*(?:[～〜~\-–—‐・、,，&＆]|to\b|and\b|or\b))/u;
+
+/** The text names one choice among numbered ones: an option word (option-choice-label) followed by its number or letter. */
+export const namesOneChoice = (text: string, words: readonly string[]): boolean =>
+  words
+    .filter((word) => word !== "")
+    .some((word) =>
+      text
+        .split(word)
+        .slice(1)
+        .some((after) => ONE_CHOICE.test(after)),
+    );
+
+/**
+ * A division its heading or label line names as one of numbered choices (第1条（オプション2：…）, "Option B"): only one of
+ * them stays in the signed text (option-choice-label).
+ */
+export const choiceReader = (source: string, words: readonly string[]): ((node: StructureNode) => boolean) =>
+  divisionNamedBy(source, (text) => namesOneChoice(text, words));
 
 /** Where a line starts with a division whose number is left blank (placeholder-division: 第●条): a new run of numbers. */
 export const placeholderStarts = (source: string, patterns: readonly string[]): number[] => {
