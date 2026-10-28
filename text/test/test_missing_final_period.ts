@@ -94,6 +94,28 @@ describe("missing-final-period: 「。」で終わらない段落", () => {
     ]);
   });
 
+  it("繰り返す型に置いた一行（見出しの下の要約、語と説明の語、続けて書いた項目）は、どれも「。」が無ければ数えない", () => {
+    // 「。」で閉じた段落を多めに置き、閉じていない二つが少ないほうに入るようにする。
+    const prose = [...CLOSED, ...CLOSED].join("\n\n");
+    const summaries = ["窓口で申請の書類をまとめて受け付ける", "書類の中身を担当者が一つずつ確かめる", "審査の結果を後日郵送でお知らせする"];
+    const step = (line: string, index: number): string => ["## 手順" + String(index + 1), line, "### 例", "- 窓口"].join("\n\n");
+    const underHeadings = (lines: readonly string[]): string => ["# 手続き", prose, ...lines.map(step)].join("\n\n") + "\n";
+    assert.deepEqual(findingsOf(underHeadings(summaries)), []);
+    // 一つでも「。」で閉じた要約があれば型ではなく、閉じていないほうを数える。二つしか無ければ型と見ない。
+    assert.equal(findingsOf(underHeadings([...summaries.slice(0, 2), `${summaries[2]}。`])).length, 2);
+    assert.equal(findingsOf(underHeadings(summaries.slice(0, 2))).length, 2);
+
+    const terms = ["住所が変わって手続きが分からない", "書類を書くのがむずかしいと感じる", "窓口に行く時間がなかなか取れない"];
+    const explained = terms.flatMap((term) => [term, "担当者が電話で手続きを一緒に確かめます。"]);
+    assert.deepEqual(findingsOf(documentWith(...CLOSED, ...explained)), []);
+    assert.equal(findingsOf(documentWith(...CLOSED, ...explained.slice(0, 4))).length, 2);
+
+    const items = ["（1）窓口で申請の書類を受け付けます", "（2）書類の中身を担当者が確かめます", "（3）審査の結果を郵送でお知らせします"];
+    assert.deepEqual(findingsOf(`${prose}\n\n${items.join("\n")}\n`), []);
+    const closedLast = [...items.slice(0, 2), items[2] + "。"].join("\n");
+    assert.equal(findingsOf(`${prose}\n\n${closedLast}\n`).length, 2);
+  });
+
   it("「。」で終わらない段落の多い文書と、混ざりすぎた文書は指さない", () => {
     assert.deepEqual(findingsOf("審査の結果は郵送でお知らせしました\n\n詳しい手順は担当者から説明します\n\n申請は市役所の窓口で受け付けます。\n"), []);
     assert.deepEqual(findingsOf(documentWith("審査の結果は郵送でお知らせしました", "詳しい手順は担当者から説明します")), []);
