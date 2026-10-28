@@ -43,6 +43,8 @@ export type NotationWords = {
   readonly dateTimeUnits: readonly string[];
   /** ショートメッセージでキーワードを送る動詞（text GNPCGS to 333111 の text）。 */
   readonly textMessageVerbs?: readonly string[];
+  /** 行の頭に大文字で書く接続詞（OR, Skip to …）。略語でもある語（OR は Oregon）なので、行の頭で読点と名前の形か行の終わりが続くときだけ。 */
+  readonly openingConjunctions?: readonly string[];
 };
 
 const MINUTES = String.raw`:[0-5]\d`;
@@ -107,6 +109,13 @@ const placeAndState = (states: string): RegExp =>
 const textMessageKeyword = (verbs: readonly string[]): RegExp =>
   new RegExp(String.raw`(?<![\p{L}\p{N}_])${oneOf(verbs)}\s+["“']?[A-Z][A-Z0-9]+["”']?\s+to\s+\d{4,6}(?!\d)`, "giu");
 
+/**
+ * 行の頭に大文字で書いた接続詞（OR, Skip to the topics …、選択肢の間に一行で置いた OR）。読点の後ろに頭だけ大文字の語が続くか、
+ * その行がそこで終わるときだけ。州の並び（OR, WA and ID）や文の途中の OR（the OR staff）は略語のまま数える。
+ */
+const openingConjunction = (words: readonly string[]): RegExp =>
+  new RegExp(String.raw`(?<=(?:^|\n)[ \t]*)${oneOf(words)}(?=,[ \t]+\p{Lu}\p{Ll}|[ \t]*(?:\r?\n|$))`, "gu");
+
 /** メールアドレス（OASH-RFI@hhs.gov）。@ の前の大文字は宛先の名前で、略語ではない。 */
 const EMAIL_ADDRESS = /(?<![\p{L}\p{N}._%+-])[\p{L}\p{N}._%+-]+@[\p{L}\p{N}-]+(?:\.[\p{L}\p{N}-]+)+/gu;
 
@@ -124,6 +133,7 @@ const patternsOf = (words: NotationWords): readonly RegExp[] => [
   capitalHonorific(words.honorifics),
   ...titledName(oneOf(words.titles)),
   textMessageKeyword(words.textMessageVerbs ?? []),
+  openingConjunction(words.openingConjunctions ?? []),
   EMAIL_ADDRESS,
 ];
 
@@ -165,6 +175,7 @@ export const lexiconNotationOf = (wordsOf: (id: string) => string[]): NotAcronym
     titles: wordsOf("name-title"),
     dateTimeUnits: wordsOf("date-time-unit"),
     textMessageVerbs: wordsOf("text-message-verb"),
+    openingConjunctions: wordsOf("opening-conjunction"),
   });
   const names = nameSpansOf({
     legalForms: wordsOf("legal-form"),
