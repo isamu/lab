@@ -553,7 +553,7 @@ passages. `risk-disclosure` does not even ask when a heading already names the r
 | Rule | What it looks at | Narrowed to |
 | --- | --- | --- |
 | `risk-disclosure` | whether a proposal states its risks | nothing, when a heading names a risk section |
-| `empty-conclusion` | whether the closing only summarises the body | only when the last section has no number, code or link the body did not have |
+| `empty-conclusion` | whether the closing only summarises the body | only when the last section has no number, code or link the body did not have (a references section of linked items is not sent) |
 | `unsourced-number` | whether a number claiming an effect has a source | only when a number and an effect word share a sentence with no source |
 | `generic-opening` | whether the opening starts from a generic problem rather than the concrete background (who, what was built, what happened) | the first three sentences only, and nothing when the first sentence states a number |
 
