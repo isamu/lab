@@ -18,6 +18,7 @@ import { citationLead } from "./citation-sentence.ts";
 import { acronymExpansionSpans } from "../acronym-expansion.ts";
 import { nameEndingRuns, namesWrittenOneWay } from "../name-ending-run.ts";
 import { entriesForGenre } from "../lexicon-genres.ts";
+import { echoesQuotation, quotationsIn } from "../quote-echo.ts";
 
 export type IsOpen = (start: number, end: number) => boolean;
 
@@ -56,6 +57,8 @@ export type Names = {
   readonly nameEndings: readonly string[];
   /** The facilities' and organisations' names the document writes one way only (こども動物園). */
   readonly oneWayNames: ReadonlySet<string>;
+  /** What the document quotes, every quotation's inside: a phrase the writer repeats from one keeps its spelling. */
+  readonly quotations: readonly string[];
 };
 
 export const namesOf = (doc: ProseDocument, genre: string | undefined): Names => ({
@@ -70,6 +73,7 @@ export const namesOf = (doc: ProseDocument, genre: string | undefined): Names =>
   oneWayNames: namesWrittenOneWay(
     [...doc.sentences, ...(doc.tableCells?.() ?? [])].flatMap(({ tokens }) => nameEndingRuns(tokens ?? [], patternsOf(doc, NAME_ENDING, genre))),
   ),
+  quotations: doc.sentences.flatMap(({ text }) => quotationsIn(text, quotedSpans(text, QUOTATION_MARKS))),
 });
 
 /** Spans placed in the source, placed in a sentence's text instead. */
@@ -99,8 +103,8 @@ const ownSpellingSpans = (sentence: Sentence, names: Names): Span[] => [
 /**
  * Whether a stretch of the sentence is outside a quotation, the team's names, a company's name (関東珪曹硝子㈱), a reading in
  * brackets (HTTP（えいちてぃーてぃーぴー）), a label opening the sentence (（答）), a spelling mentioned (（曇）とも書く), a
- * contact's name beside its phone number and what keeps a spelling of its own: a reading is not a spelling at all, a label is a
- * fixed short form, a mention is the subject, and the rest keep their own spelling.
+ * contact's name beside its phone number, what keeps a spelling of its own and a phrase repeated from a quotation: a reading is
+ * not a spelling at all, a label is a fixed short form, a mention is the subject, and the rest keep their own spelling.
  */
 export const isOpenIn = (sentence: Sentence, names: Names): IsOpen => {
   const closed = [
@@ -115,5 +119,6 @@ export const isOpenIn = (sentence: Sentence, names: Names): IsOpen => {
     ...ownSpellingSpans(sentence, names),
   ];
   const named = nameSpans(sentence.text, names.team);
-  return (start, end) => !isWithinAny(closed, { start, end }) && !touchesAny(named, start, end);
+  return (start, end) =>
+    !isWithinAny(closed, { start, end }) && !touchesAny(named, start, end) && !echoesQuotation(sentence.text, { start, end }, names.quotations);
 };

@@ -1,7 +1,6 @@
 import type { Detector, Finding, ProseDocument, StructureNode } from "../plugin.ts";
-import { danglingReferences, duplicateDefinitions, inDocumentOrder, type StructureIssue } from "../structure/issues.ts";
+import { danglingReferences, inDocumentOrder, type StructureIssue } from "../structure/issues.ts";
 import { numberingBreaks } from "../structure/numbering.ts";
-import { attachedPartStarts } from "../structure/attached-parts.ts";
 import { numberingReadings } from "./numbering-readings.ts";
 import { listsNumberBreaks } from "../structure/list-numbering.ts";
 import { weekdayMismatches } from "../structure/weekday.ts";
@@ -38,7 +37,7 @@ export const quoteAt = (source: string, offset: number): string => {
     .trim();
 };
 
-const findingsOf =
+export const findingsOf =
   (rule: string, issuesOf: (tree: NonNullable<ProseDocument["structure"]>, source: string) => StructureIssue[]): Detector =>
   (doc): Finding[] =>
     doc.structure === undefined
@@ -95,11 +94,6 @@ export const numberingGap: Detector = (doc, options): Finding[] => {
     (left, right) => Number(left.values["offset"]) - Number(right.values["offset"]),
   );
 };
-export const duplicateDefinition: Detector = (doc, options) => {
-  const labels = patternsOf(doc, "attached-instrument-label");
-  return findingsOf("duplicate-definition", (tree, source) => duplicateDefinitions(tree, attachedPartStarts(source, labels), source))(doc, options);
-};
-
 /** 曜日の名前は言語パッケージの語彙表（weekday、日曜日から順）から取る。無ければ番号のまま。 */
 const dayName = (doc: ProseDocument, day: unknown): string => {
   const index = Number(day);

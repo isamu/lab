@@ -1,0 +1,8 @@
+# 助詞を挟んで一語のように読む決まった言い回し（絶滅のおそれのある種の「おそれのある」）。no-doubled-joshi は、この中の「の」を
+# 入れ子の「の」と数えない。前の語、助詞、後ろの語の辞書の形をつなげて書く。
+id: particle-run-set-phrase
+language: ja
+entries:
+  - pattern: おそれのある
+  - pattern: 恐れのある
+  - pattern: 虞のある

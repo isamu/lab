@@ -11,7 +11,7 @@ kantei-unga81-general-debate-speech  2
 kimino-mayor-2022-09  1
 mdn-using-fetch-ja  1
 mhlw-icd-committee-26-minutes  4
-mhlw-norovirus-qa  3
+mhlw-norovirus-qa  2
 mhlw-pubcomment-rodohoken  1
 mlit-press-planned-suspension  2
 moriguchi-satsuki-gakuen-ijime-houshin  1

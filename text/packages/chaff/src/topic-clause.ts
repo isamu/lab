@@ -162,14 +162,28 @@ const isPoliteGa = (tokens: readonly Token[], at: number): boolean => {
 const ownGaSubjectBetween = (tokens: readonly Token[], from: number, to: number): boolean =>
   tokens.some((token, at) => at > from && at < to && isParticle(token, "が") && headsSubject(tokens, at));
 
+/** A word of a name (赤澤, 大臣), not a noun that sets the time or the case (今後, 当日). */
+const isNameWord = (token: Token): boolean => NOMINAL.has(token.pos) && token.features?.["Adverbial"] !== "Yes";
+
+/**
+ * 石破総理大臣は…明らかにしましたが、赤澤大臣は…どう考えているか: a name and は straight after the comma is a topic of its own
+ * that the rest of the sentence is said of, when no subject of its own (が) follows it. A phrase before は (〜した行為は) is not one.
+ */
+const newNameTopicRunsToEnd = (tokens: readonly Token[], comma: number, last: number): boolean => {
+  const topic = tokens.findIndex((token, index) => index > comma && !isNameWord(token));
+  const wa = tokens[topic];
+  return topic > comma + 1 && wa !== undefined && isParticle(wa, "は") && lastOwnSubject(tokens, last) <= topic;
+};
+
 /**
  * 当社は…を営んでおりますが、…の重要性が乏しいため、…の記載は行っておりません: after 〜ますが、 the words up to the next comma
  * say something of a subject of their own (が) and a new topic takes what comes after, so the predicate before が was the
- * topic's, when no other subject stands between the topic and it (需要の停滞がありましたが is not). A topic straight after the
- * comma (〜ましたが、Bは…) or no subject of its own there is read to the end.
+ * topic's, when no other subject stands between the topic and it (需要の停滞がありましたが is not). A clause with no subject of
+ * its own there is read to the end, unless a name stands as a new topic straight after the comma (〜ましたが、B大臣は…).
  */
 const closesWithPoliteGa = (tokens: readonly Token[], topic: number, at: number, last: number): boolean => {
   if (!isPoliteGa(tokens, at) || !isComma(tokens[at + 1]) || subjectBetween(tokens, topic, at)) return false;
+  if (newNameTopicRunsToEnd(tokens, at + 1, last)) return true;
   const comma = tokens.findIndex((token, index) => index > at + 1 && index < last && isComma(token));
   const clauseEnd = comma === -1 ? last : comma;
   return ownGaSubjectBetween(tokens, at + 1, clauseEnd) && newTopicAfter(tokens, clauseEnd, last);

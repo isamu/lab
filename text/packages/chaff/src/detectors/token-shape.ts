@@ -5,6 +5,7 @@ import { externalLinkTitleSpans } from "../link-title.ts";
 import type { Detector, Finding, Span, Token } from "../plugin.ts";
 import { countedTokens, uncountedWordsOf, type UncountedWords } from "../uncounted-particles.ts";
 import { honorificGroupParticles } from "../honorific-group.ts";
+import { setPhraseParticles } from "../set-phrase-particles.ts";
 import { noteSentences } from "../note-paragraphs.ts";
 import { documentNameSpans } from "./particle-run-names.ts";
 
@@ -93,11 +94,17 @@ const RUN_BREAK_LEXICON = "particle-run-break";
 /** 人の集まりを敬って呼ぶ語（国民の皆様の「皆様」）。直前の助詞は呼び方の一部で、入れ子の輪に数えない。 */
 const HONORIFIC_GROUP_LEXICON = "honorific-group";
 
-/** 数えない助詞（番号をつなぐ「の」と、敬って呼ぶ語の前の「の」）を除いた語。 */
-const chainTokens = (tokens: readonly Token[], numbering: UncountedWords, groups: readonly string[]): readonly Token[] => {
-  const honorific = honorificGroupParticles(tokens, numbering.particles, groups);
+/** 助詞を挟んで一語のように読む決まった言い回し（おそれのある）。中の助詞は入れ子の輪に数えない。 */
+const SET_PHRASE_LEXICON = "particle-run-set-phrase";
+
+/** 敬って呼ぶ語（皆様）と決まった言い回し（おそれのある）。 */
+type Phrases = { readonly groups: readonly string[]; readonly setPhrases: readonly string[] };
+
+/** 数えない助詞（番号をつなぐ「の」、敬って呼ぶ語の前の「の」、決まった言い回しの中の「の」）を除いた語。 */
+const chainTokens = (tokens: readonly Token[], numbering: UncountedWords, { groups, setPhrases }: Phrases): readonly Token[] => {
+  const uncounted = new Set([...honorificGroupParticles(tokens, numbering.particles, groups), ...setPhraseParticles(tokens, numbering.particles, setPhrases)]);
   const counted = countedTokens(tokens, numbering);
-  return honorific.size === 0 ? counted : counted.filter((token) => !honorific.has(token));
+  return uncounted.size === 0 ? counted : counted.filter((token) => !uncounted.has(token));
 };
 
 export const doubledParticle: Detector = (doc, options): Finding[] => {
@@ -105,10 +112,13 @@ export const doubledParticle: Detector = (doc, options): Finding[] => {
   const titles = externalLinkTitleSpans(doc.source, doc.links);
   const breaks = (doc.lexicons[RUN_BREAK_LEXICON] ?? []).map((entry) => entry.pattern);
   const numbering = uncountedWordsOf(doc.lexicons, nesting);
-  const groups = (doc.lexicons[HONORIFIC_GROUP_LEXICON] ?? []).map((entry) => entry.pattern);
+  const phrases: Phrases = {
+    groups: (doc.lexicons[HONORIFIC_GROUP_LEXICON] ?? []).map((entry) => entry.pattern),
+    setPhrases: (doc.lexicons[SET_PHRASE_LEXICON] ?? []).map((entry) => entry.pattern),
+  };
   const prose = doc.prose ?? doc.source;
   return doc.sentences.flatMap((sentence) => {
-    const tokens = chainTokens(sentence.tokens ?? [], numbering, groups);
+    const tokens = chainTokens(sentence.tokens ?? [], numbering, phrases);
     const quoted = [...quotedIn(sentence), ...titles];
     const longRuns = (skipped: readonly Span[]): Run[] => runsOf(tokens, nesting, breaks, skipped).filter((run) => run.tokens.length > options.limit);
     const found = longRuns(quoted);
