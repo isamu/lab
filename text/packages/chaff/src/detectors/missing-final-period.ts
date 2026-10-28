@@ -1,5 +1,6 @@
 import type { Detector, Finding, LexiconEntry, Paragraph, ProseDocument, Token } from "../plugin.ts";
 import { formMinority } from "./form-minority.ts";
+import { captionParagraphs, slotParagraphs } from "./final-period-captions.ts";
 
 // A paragraph whose last sentence stops without its closing mark, in a document whose other paragraphs end with one. It
 // takes no side: a document that ends none of its paragraphs with the mark (slides, labels) is not reported. The marks
@@ -78,6 +79,12 @@ const isTerm = (body: string, marks: PeriodMarks): boolean =>
 const isDescription = (text: string, paragraph: Paragraph, marks: PeriodMarks, previous: Paragraph | undefined): boolean =>
   DESCRIPTION.test(bodyOf(text, paragraph)) && previous !== undefined && isTerm(bodyOf(text, previous), marks);
 
+/** The last line written under a short caption line in the same paragraph (乾式バッテリー / 約7割の車いすに使われている): a name and its note, as in a table cell. */
+const isUnderCaption = (body: string, marks: PeriodMarks): boolean => {
+  const caption = body.split("\n").at(-2)?.trim();
+  return caption !== undefined && Array.from(caption).length < MIN_SENTENCE_CHARS && !isClosed(caption, marks.ends);
+};
+
 /** How a paragraph ends, or undefined when its last line is not a sentence (a label, a lead-in, a note, a laid-out row). */
 export const paragraphEnd = (text: string, paragraph: Paragraph, marks: PeriodMarks, next?: Paragraph, previous?: Paragraph): ParagraphEnd | undefined => {
   if (isDescription(text, paragraph, marks, previous)) return undefined;
@@ -86,7 +93,7 @@ export const paragraphEnd = (text: string, paragraph: Paragraph, marks: PeriodMa
   if (Array.from(last).length < MIN_SENTENCE_CHARS || LEAD_IN.test(last)) return undefined;
   const offset = paragraph.span.start + body.length - 1;
   const after = next === undefined ? undefined : text.slice(next.span.start, next.span.end);
-  if (isAside(last, marks) || isRunInHeading(body, after, marks)) return undefined;
+  if (isAside(last, marks) || isRunInHeading(body, after, marks) || isUnderCaption(body, marks)) return undefined;
   if (isClosed(last, marks.ends)) return { offset, form: "closed", text: last };
   // A closing parenthetical after the sentence (〜します（別紙を参照する）) is not where the period goes.
   return !CLOSERS.includes(last.at(-1) ?? "\0") && endsInPredicate(paragraph) ? { offset, form: "open", text: last } : undefined;
@@ -102,7 +109,14 @@ const marksOf = (lexicon: readonly LexiconEntry[]): PeriodMarks => ({
 export const missingFinalPeriod: Detector = (doc: ProseDocument, options): Finding[] => {
   const text = doc.prose ?? doc.source;
   const marks = marksOf(doc.lexicons["final-period"] ?? []);
-  const ends = doc.paragraphs.flatMap((paragraph, index) => paragraphEnd(text, paragraph, marks, doc.paragraphs[index + 1], doc.paragraphs[index - 1]) ?? []);
+  const captions = captionParagraphs(
+    text,
+    doc.sections,
+    slotParagraphs(text, doc.paragraphs, (line) => isClosed(line, marks.ends)),
+  );
+  const ends = doc.paragraphs.flatMap((paragraph, index) =>
+    captions.has(index) ? [] : (paragraphEnd(text, paragraph, marks, doc.paragraphs[index + 1], doc.paragraphs[index - 1]) ?? []),
+  );
   const minority = formMinority(ends, options.limit);
   if (minority === undefined || minority.usual.form !== "closed") return [];
   return minority.odd.map((end) => ({
