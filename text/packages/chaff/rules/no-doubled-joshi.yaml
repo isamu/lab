@@ -42,8 +42,8 @@ example:
     after: 本社営業部にある第二課の方針を確認しました。
 
 not_flagged:
-  ja: 読点で区切った並び、＝・：・→ で区切った句、「」や『』の中の題名や引用、行の頭のリンクで引いた外のページの題名、文の中に書いた法律の題名（障害者等の移動等の円滑化の促進に関する法律）は数えません。括弧（】や )）は、解析器が次の語とつなげて読んでも連なりを切ります。人の集まりを敬って呼ぶ語の前の「の」も、その呼び方が「の」で次の語に係るとき（国民の皆様の期待、被災者の方々の暮らし）は一つの呼び方の中なので数えません。
-  en: Items separated by commas, phrases separated by =, a colon or an arrow, titles or quotations inside 「」 or 『』, the title of an outside page quoted by a link at a line's head, the title of a law written in the sentence (障害者等の移動等の円滑化の促進に関する法律), and the の before an honorific for a group of people when that form of address goes on with の (国民の皆様の期待, 被災者の方々の暮らし), are not counted. A bracket (】 or ")") ends the run even when the parser joins it to the next word.
+  ja: 読点で区切った並び、＝・：・→ で区切った句、「」や『』の中の題名や引用、行の頭のリンクで引いた外のページの題名、文の中に書いた法律の題名（障害者等の移動等の円滑化の促進に関する法律）は数えません。括弧（】や )）は、解析器が次の語とつなげて読んでも連なりを切ります。人の集まりを敬って呼ぶ語の前の「の」も、その呼び方が「の」で次の語に係るとき（国民の皆様の期待、被災者の方々の暮らし）は一つの呼び方の中なので数えません。決まった言い回しの中の「の」（絶滅のおそれのある種の「おそれのある」）も、一語のように読むので数えません。
+  en: Items separated by commas, phrases separated by =, a colon or an arrow, titles or quotations inside 「」 or 『』, the title of an outside page quoted by a link at a line's head, the title of a law written in the sentence (障害者等の移動等の円滑化の促進に関する法律), and the の before an honorific for a group of people when that form of address goes on with の (国民の皆様の期待, 被災者の方々の暮らし), are not counted. Nor is the の inside a set phrase read as one word (おそれのある, "at risk of", in 絶滅のおそれのある種). A bracket (】 or ")") ends the run even when the parser joins it to the next word.
 level_meaning:
   ja: 同じ助詞の連続 {limit} 回まで
   en: up to {limit} of the same particle in a row
