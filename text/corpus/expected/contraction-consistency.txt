@@ -1,4 +1,4 @@
-18f-blog-oracle-databases  5
+18f-blog-oracle-databases  4
 18f-engineering-code-review  2
 18f-handbook-one-on-ones  3
 18f-handbook-projects-in-distress  3
@@ -19,7 +19,7 @@ github-terms-of-service  5
 gitlab-meetings  5
 gitlab-values  3
 govuk-cddo-roadmap-2022-2025  1
-govuk-style-guide-a-to-z  2
+govuk-style-guide-a-to-z  1
 irs-online-account-faq  6
 k8s-overview-en  1
 kep-2214-indexed-job  5

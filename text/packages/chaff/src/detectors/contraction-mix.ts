@@ -1,6 +1,7 @@
 import { pairMinority, type PairUses } from "./contraction-minority.ts";
 import { blankRanges, isTermList, withoutMentions } from "./contraction-mention.ts";
 import { stressedWords } from "./contraction-emphasis.ts";
+import { noticeSentences, talksAboutContractions, warningSentences } from "./contraction-set-apart.ts";
 import { escapeRegExp, straightApostrophes } from "../orthography.ts";
 import type { Detector, Finding, ProseDocument, Sentence, Span } from "../plugin.ts";
 
@@ -72,13 +73,22 @@ const emphasisOf = (doc: ProseDocument): readonly Span[] => (doc.prose === undef
 
 export const contractionMix: Detector = (doc, options): Finding[] => {
   const stressed = emphasisOf(doc);
+  const notices = noticeSentences(doc.paragraphs, doc.lexicons["notice-phrase"] ?? []);
+  const terms = doc.lexicons["contraction-term"] ?? [];
+  const warnings = warningSentences(
+    doc.paragraphs,
+    doc.source,
+    (doc.lexicons["warning-label"] ?? []).map((entry) => entry.pattern),
+  );
+  const isWriters = (sentence: Sentence): boolean => !notices.has(sentence) && !talksAboutContractions(sentence, terms);
   // 文ごとに数える。文をつないで数えると、箇条書きの「What we do」と次の項目「not every…」が「do not」と数えられる。
-  const texts = doc.sentences.map((sentence) => comparableText(sentence.text));
+  const texts = doc.sentences.map((sentence) => (isWriters(sentence) ? comparableText(sentence.text) : ""));
   const mixed = (options.lexicon ?? []).flatMap((entry) => {
     const pair = entry.instead_of === undefined ? undefined : mixedPair(texts, { short: entry.pattern.toLowerCase(), long: entry.instead_of.toLowerCase() });
     return pair === undefined || pair.count > options.limit ? [] : [pair];
   });
   const hits = doc.sentences.flatMap((sentence) => {
+    if (!isWriters(sentence) || warnings.has(sentence)) return [];
     const pointable = pointableText(sentence, stressed);
     const pair = mixed.find((candidate) => usesMinority(pointable, candidate));
     return pair === undefined ? [] : [{ sentence, pair }];
