@@ -2,7 +2,7 @@ import type { Detector, DetectorOptions, Finding, Lexicon, ProseDocument, Senten
 import { escapeRegExp } from "../orthography.ts";
 import { isWithinAny, quotedIn } from "../quoted-span.ts";
 import { entryOpens } from "./lexicon-match.ts";
-import { laterAlternatives } from "../alternative-words.ts";
+import { laterAlternatives, laterJoined } from "../alternative-words.ts";
 import { isContrastiveGa } from "./adversative-ga.ts";
 
 type TokenTest = (token: Token, at: number, tokens: readonly Token[]) => boolean;
@@ -45,25 +45,45 @@ const sentencesOver = (doc: ProseDocument, limit: number, test: TokenTest, fixed
     return counted.length > limit ? [findingOf(sentence, counted, limit)] : [];
   });
 
+/** The counted words that only repeat the point of the one before: a later option of a choice, a later half of a joined pair. */
+const laterOfOnePoint = (tokens: readonly Token[], counted: readonly number[]): ReadonlySet<number> =>
+  new Set([...laterAlternatives(tokens, counted), ...laterJoined(tokens, counted)]);
+
+/** A mark that opens an item with a circled number (③): an item of a list written inside the sentence. */
+const CIRCLED_ITEM = /^[①-⒇❶-❿]/u;
+
+/** The counted tokens of the sentence's largest part, the sentence cut before each circled item mark (①Credit：…、②…). */
+const largestItem = (sentence: Sentence, counted: readonly Token[]): readonly Token[] => {
+  const marks = (sentence.tokens ?? []).filter((token) => CIRCLED_ITEM.test(token.surface)).map((token) => token.span.start);
+  const itemOf = (token: Token): number => marks.filter((start) => start <= token.span.start).length;
+  const items = counted.reduce((byItem, token) => byItem.set(itemOf(token), [...(byItem.get(itemOf(token)) ?? []), token]), new Map<number, Token[]>());
+  return [...items.values()].reduce<readonly Token[]>((largest, item) => (item.length > largest.length ? item : largest), []);
+};
+
 /**
  * A sentence holding more than limit tokens written as one of the lexicon's words (the suffix 的). The options of one choice
- * (連続的か断続的か、一時的) count once: they name one point, the kinds a thing may be.
+ * (連続的か断続的か、一時的) and a joined pair (信仰的主観的) count once: each names one point. A list written inside the sentence
+ * (①…、②…) is counted item by item, as each item is a point of its own.
  */
 export const sentenceWordCount: Detector = (doc, options): Finding[] => {
   const words = wordsOf(options.lexicon);
-  const alternatives = new WeakMap<readonly Token[], ReadonlySet<number>>();
+  const onePoint = new WeakMap<readonly Token[], ReadonlySet<number>>();
   const laterOf = (tokens: readonly Token[]): ReadonlySet<number> => {
-    const known = alternatives.get(tokens);
+    const known = onePoint.get(tokens);
     if (known !== undefined) return known;
-    const found = laterAlternatives(
+    const found = laterOfOnePoint(
       tokens,
       tokens.flatMap((token, at) => (words.has(token.surface) ? [at] : [])),
     );
-    alternatives.set(tokens, found);
+    onePoint.set(tokens, found);
     return found;
   };
   const isCounted: TokenTest = (token, at, tokens) => words.has(token.surface) && !laterOf(tokens).has(at);
-  return sentencesOver(doc, options.limit, isCounted, doc.lexicons[FIXED_TERM_LEXICON] ?? []);
+  const fixedTerms = doc.lexicons[FIXED_TERM_LEXICON] ?? [];
+  return doc.sentences.flatMap((sentence) => {
+    const counted = largestItem(sentence, countedTokens(sentence, isCounted, fixedTerms));
+    return counted.length > options.limit ? [findingOf(sentence, counted, options.limit)] : [];
+  });
 };
 
 const NOMINAL: ReadonlySet<string> = new Set(["NOUN", "PROPN", "NUM"]);

@@ -18,3 +18,18 @@ export const laterAlternatives = (tokens: readonly Token[], counted: readonly nu
       return tokens.slice(previous + 2, at).every(isSkippable);
     }),
   );
+
+const isJoiningNoun = (token: Token): boolean => token.pos === "NOUN" || token.pos === "PROPN";
+
+/**
+ * Of the counted tokens, those written straight onto the one before with only nouns between (信仰的主観的, 時間的空間的,
+ * 気候学的地理学的): the pair names one combined quality, so only the first counts. A particle, a comma or な between them
+ * (効果的かつ効率的, 経済的、社会的) keeps them two.
+ */
+export const laterJoined = (tokens: readonly Token[], counted: readonly number[]): ReadonlySet<number> =>
+  new Set(
+    counted.filter((at, k) => {
+      const previous = counted[k - 1];
+      return previous !== undefined && at - previous > 1 && tokens.slice(previous + 1, at).every(isJoiningNoun);
+    }),
+  );
