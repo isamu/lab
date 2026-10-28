@@ -3,6 +3,7 @@ import { enumeratedRuns, enumeratorStarts, numberedStarts } from "./enumerated-r
 import { continuesThrough, groupOf, majorityOf, registerOf, slipsOf, type Register } from "./register.ts";
 import { isRunInLabel } from "./run-in-label.ts";
 import { noticeSentences } from "./notice-paragraph.ts";
+import { separatePartSentences } from "./register-separate-part.ts";
 import { askerSentences } from "./asker-voice.ts";
 import { licenceNoticeSentences } from "./licence-notice.ts";
 import { chronologyRows } from "../chronology-rows.ts";
@@ -24,6 +25,7 @@ import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span, To
  * 文書の最後に掲載先が付けた利用条件の断り書き（…ライセンスの下に提供されています。）も数えない（licence-notice.ts）。
  * 札を付けて引いた言葉（例：…。Q: …？）、印を付けた札の行の下の記入欄の値（■ 調査目的\n…とする。）、
  * 〒や電話の行のある問い合わせ先の段落も数えない（register-set-apart.ts）。
+ * 一番上の見出しで分けた部分のうち、2 文以上がみな文書の多いほうと違う同じ調子のものは、別の文書として数えない（register-separate-part.ts）。
  */
 /**
  * quiet: 常体と読めるが、願い・問い・言いさしの形（register-neutral-shape.ts）の文。どちらの調子の文書にも現れるので指さない。
@@ -120,8 +122,10 @@ export const judgedSentences = (doc: ProseDocument, polite: readonly LexiconEntr
   });
   const registers = new Map(all.map((entry) => [entry.sentence, entry.register]));
   const majority = majorityOf(all.map((entry) => ({ register: entry.register, group: undefined })));
-  const notices = noticeSentences(doc.paragraphs, doc.lexicons["notice-phrase"] ?? [], (sentence) => registers.get(sentence), majority);
-  const found = all.filter((entry) => !notices.has(entry.sentence));
+  const registerAt = (sentence: Sentence): Register | undefined => registers.get(sentence);
+  const notices = noticeSentences(doc.paragraphs, doc.lexicons["notice-phrase"] ?? [], registerAt, majority);
+  const parts = separatePartSentences(doc.sections, registerAt, majority);
+  const found = all.filter((entry) => !notices.has(entry.sentence) && !parts.has(entry.sentence));
   const runs = runsOf(
     doc,
     found.map((entry) => entry.register),
