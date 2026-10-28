@@ -25,6 +25,7 @@ const toEntry = (raw: unknown): LexiconEntry | undefined => {
     rewrite: typeof rewrite === "string" ? rewrite : undefined,
     ...(typeof group === "string" ? { group } : {}),
     ...(isStringList(genres) ? { genres } : {}),
+    ...(raw["heading_only"] === true ? { heading_only: true } : {}),
   };
 };
 
