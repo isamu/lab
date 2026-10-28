@@ -161,6 +161,9 @@ export const isNameSeparator = (text: string, boundary: Boundary, tokens: readon
   if (tokens === undefined || boundary.kind !== "letter" || !boundary.spaced) return false;
   const before = { start: wordStart(text, boundary.offset), end: boundary.offset };
   const after = { start: boundary.offset + 1, end: wordEnd(text, boundary.offset + 1) };
+  const line = lineAround(text, boundary.offset);
   const isName = (span: Span): boolean => isOrganizationName(text.slice(span.start, span.end), tokensIn(tokens, span, base), words);
-  return isName(before) && isName(after) && isNameLine(tokensIn(tokens, lineAround(text, boundary.offset), base));
+  // 後ろの名前が空白を含むこともある（初等中等教育局 GIGA StuDX（ギガ スタディーエックス）推進チーム）。行の残りが一つの名前なら区切り。
+  const restOfLine = { start: after.start, end: line.end };
+  return isName(before) && (isName(after) || isName(restOfLine)) && isNameLine(tokensIn(tokens, line, base));
 };

@@ -52,9 +52,12 @@ const MIN_GLUED_DATES = 3;
 
 const nonEmpty = (parts: readonly string[]): string[] => parts.map((part) => part.trim()).filter((part) => part !== "");
 
+/** Whether the text holds cells of numbers a converter ran together (39,0439,677). */
+export const hasGluedNumbers = (text: string): boolean => GLUED_NUMBER.test(text);
+
 /** The cells of a table a converter flattened into one sentence, cut at the glued numbers or at each row's date. */
 export const flattenedTableParts = (text: string): readonly string[] | undefined => {
-  if (GLUED_NUMBER.test(text)) return nonEmpty(text.replace(NUMBER_RUN, (run) => (GLUED_NUMBER.test(run) ? CUT : run)).split(CUT));
+  if (hasGluedNumbers(text)) return nonEmpty(text.replace(NUMBER_RUN, (run) => (GLUED_NUMBER.test(run) ? CUT : run)).split(CUT));
   const rows = text.split(GLUED_DATE);
   return rows.length > MIN_GLUED_DATES ? nonEmpty(rows) : undefined;
 };
