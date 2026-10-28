@@ -1,0 +1,28 @@
+# データベースの文書の地の文に大文字で書く SQL（ISO/IEC 9075）のキーワード（VIEW、WHERE 句）。略語ではなく語なので、展開するものが無い。
+# DELETE は http-method にある。字面どおりに照らす。
+id: sql-keyword
+language: ja
+entries:
+  - pattern: SELECT
+  - pattern: INSERT
+  - pattern: UPDATE
+  - pattern: MERGE
+  - pattern: CREATE
+  - pattern: ALTER
+  - pattern: DROP
+  - pattern: TRUNCATE
+  - pattern: VIEW
+  - pattern: TABLE
+  - pattern: INDEX
+  - pattern: JOIN
+  - pattern: WHERE
+  - pattern: FROM
+  - pattern: UNION
+  - pattern: HAVING
+  - pattern: COMMIT
+  - pattern: ROLLBACK
+  - pattern: GRANT
+  - pattern: REVOKE
+  - pattern: SCHEMA
+  - pattern: CURSOR
+  - pattern: TRIGGER

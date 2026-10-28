@@ -18,7 +18,7 @@ da-ai-advisory-board-1  10
 da-annual-report-2024  2
 da-priority-policy-program  3
 da-service-design-guidelines-2  4
-ecfr-16-cfr-310-telemarketing  5
+ecfr-16-cfr-310-telemarketing  4
 fed-powell-2025-08-22-framework-review  1
 github-general-privacy-statement  4
 gitlab-meetings  7

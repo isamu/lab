@@ -134,6 +134,24 @@ export const streetSuffixSpans = (text: string, suffixes: readonly string[]): Sp
     ? []
     : spansOf(text, new RegExp(String.raw`(?<=${EDGE_BEFORE}\d+[A-Z]?[ \t]+(?:\p{Lu}\p{Ll}[\p{L}'’.-]*[ \t]+){1,3})${oneOf(suffixes)}${EDGE_AFTER}`, "gu"));
 
+/** 通りの種類は、語彙表の大文字の書き方と頭だけ大文字の書き方（DR と Dr）、略さずに書いた語（Road）。 */
+const streetTypesOf = (suffixes: readonly string[]): string[] =>
+  suffixes.flatMap((suffix) => [suffix, `${suffix.slice(0, 1)}${suffix.slice(1).toLowerCase()}`]);
+
+/** 番地から州と郵便番号までの、一行の所在地の長さの上限。 */
+const MAX_ADDRESS_TAIL = 80;
+
+/**
+ * 番地・通り・市・州と郵便番号まで揃った一行の所在地（1600 Clifton Rd. NE, MS H21-8, Atlanta, GA 30329）。その中の大文字
+ * （通りの方角 NE、局内の宛先 MS）は所在地の部品で、略語ではない。州と郵便番号で終わらないもの（3 AI CT）は所在地と読まない。
+ */
+export const postalAddressSpans = (text: string, suffixes: readonly string[], states: readonly string[]): Span[] => {
+  if (suffixes.length === 0 || states.length === 0) return [];
+  const street = String.raw`${EDGE_BEFORE}\d+[A-Z]?[ \t]+(?:\p{Lu}\p{Ll}[\p{L}'’.-]*[ \t]+){1,3}(?:${oneOf(streetTypesOf(suffixes))}\.?|\p{Lu}\p{Ll}+)(?=[ \t,])`;
+  const city = String.raw`,[ \t]+\p{Lu}[\p{L}'’.-]*(?:[ \t]+\p{Lu}[\p{L}'’.-]*){0,2},[ \t]+${oneOf(states)}[ \t]+\d{5}(?:-\d{4})?(?!\d)`;
+  return spansOf(text, new RegExp(`${street}[^\n]{0,${MAX_ADDRESS_TAIL}}?${city}`, "gu"));
+};
+
 /** 大文字で書く決まり文句（NOW, THEREFORE、AND/OR）。 */
 export const capitalPhraseSpans = (text: string, phrases: readonly string[]): Span[] =>
   phrases.length === 0 ? [] : spansOf(text, new RegExp(`${EDGE_BEFORE}${oneOf(phrases)}${EDGE_AFTER}`, "gu"));

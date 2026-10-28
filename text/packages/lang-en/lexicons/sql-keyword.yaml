@@ -1,0 +1,28 @@
+# Keywords of SQL (ISO/IEC 9075) written in capitals in the prose of a database document (a VIEW, the WHERE clause). They are
+# words, not abbreviations, so there is nothing to expand. DELETE is in http-method. Matched as written.
+id: sql-keyword
+language: en
+entries:
+  - pattern: SELECT
+  - pattern: INSERT
+  - pattern: UPDATE
+  - pattern: MERGE
+  - pattern: CREATE
+  - pattern: ALTER
+  - pattern: DROP
+  - pattern: TRUNCATE
+  - pattern: VIEW
+  - pattern: TABLE
+  - pattern: INDEX
+  - pattern: JOIN
+  - pattern: WHERE
+  - pattern: FROM
+  - pattern: UNION
+  - pattern: HAVING
+  - pattern: COMMIT
+  - pattern: ROLLBACK
+  - pattern: GRANT
+  - pattern: REVOKE
+  - pattern: SCHEMA
+  - pattern: CURSOR
+  - pattern: TRIGGER
