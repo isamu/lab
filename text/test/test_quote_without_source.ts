@@ -52,6 +52,26 @@ describe("quote-without-source: 人の言葉として引いた文に出典がな
     assert.equal(findingsOf("山田氏によれば「道具はあくまで人が使うものにすぎない」と言う方が適切だという。\n").length, 1);
   });
 
+  it("書き手が作った例、言われる側の言葉、物に書かれた言葉、一語の値は人の言葉として引いていない", () => {
+    assert.deepEqual(findingsOf("たとえば「来週の会議で予算の配分を決める」と書いて送る。\n"), []);
+    assert.deepEqual(findingsOf('For instance, a new user says, "the setup screen never loads for me."\n', en), []);
+    assert.deepEqual(findingsOf("「画面の容量がいっぱいになりました」と言われて、写真が保存できない。\n"), []);
+    assert.deepEqual(findingsOf('At the corner there was a sign that said "KEEP LEFT AT ALL TIMES."\n', en), []);
+    assert.deepEqual(findingsOf('The reviewer says the label must be "partially_supported" in that case.\n', en), []);
+    // 例の語が無い、言われている（そう言われる）、人が言った、空白を含む英語の引用は、これまでどおり人の言葉として指す。
+    assert.equal(findingsOf("ある研究者は「来週の会議で予算の配分を決める」と書いている。\n").length, 1);
+    assert.equal(findingsOf("「画面の容量がいっぱいになると遅くなる」と言われている。\n").length, 1);
+    assert.equal(findingsOf('A neighbour said "keep left at all times, even at night."\n', en).length, 1);
+    assert.equal(findingsOf('The reviewer says the label must be "partially supported here".\n', en).length, 1);
+  });
+
+  it("出典を書いた行と空行をはさまずに続く行の引用は、その出典の引用", () => {
+    const reference = "(3) 架空の研究所. 架空の報告書. 2025, 3p.\nhttps://example.com/report.pdf";
+    const quote = "p. 1でも、「遅れているプロジェクトに人を足すと、さらに遅れる」と述べられている。";
+    assert.deepEqual(findingsOf(`${reference}\n${quote}\n`), []);
+    assert.equal(findingsOf(`${reference}\n\n${quote}\n`).length, 1);
+  });
+
   it("記事と論文では既定で動き、組織の記事、報告、仕様、手順書、契約、小説、話し言葉のジャンルでは止まっている", () => {
     const quote = "ある研究者は「遅れているプロジェクトに人を足すと、さらに遅れる」と述べている。\n";
     ["blog/tech", "blog/essay", "academic/paper"].forEach((genre) => assert.ok(firedRules(ja, quote, genre).includes(RULE), genre));
@@ -103,7 +123,7 @@ describe("unsourcedQuotes", () => {
   });
 
   it("大文字小文字を問わず、位置は文のままで数える（İ は小文字にすると二字になる）", () => {
-    assert.equal(unsourcedQuotes([paragraph('"İaaaaaaaaa," SAID Brooks.')], cues).length, 1);
+    assert.equal(unsourcedQuotes([paragraph('"İaaaa aaaaa," SAID Brooks.')], cues).length, 1);
   });
 
   it("英語の言い回しは、長い語の一部では当てない", () => {

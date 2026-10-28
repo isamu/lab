@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { citationLead, isCitationSentence } from "../packages/chaff/src/detectors/citation-sentence.ts";
+import { wordsAroundCitation } from "../packages/chaff/src/detectors/citation-string.ts";
 
 // max-sentence-length and a footnote that is a bibliographic citation (authors, year, title, publisher). The citation is a
 // reference, not the writer's sentence, so its length is not measured. Every citation here is self-written.
@@ -89,5 +90,48 @@ describe("max-sentence-length and citations in footnotes", () => {
       "A recent paper by Rivers and others discusses the cost of land, the wages of builders, the price of timber, and the time a permit takes in each of the towns";
     assert.deepEqual(findingsOf(`1. ${lead}; ${QUOTED_TITLE}`), ["This sentence runs 31 words (limit 25)"]);
     assert.deepEqual(findingsOf(`1. For example, ${QUOTED_TITLE}`), []);
+  });
+});
+
+// A footnote that opens with a signal and names what it cites: an Act, a quoted title, an agency's declarations, a code
+// section. The names are the cited documents', not the writer's; the signal and the writer's words around them are measured.
+const NAMED_ACT = "See Rural Lending Fairness and Small Town Housing Improvement Act of 2009 (RLF Act), Pub.";
+const QUOTED_LETTER =
+  "See also Letter 07-3, “Questions and Answers about the Rules for Small Lenders in Rural Counties and Towns,” for guidance on common questions about the rules.";
+const DECLARATIONS =
+  "See the State Emergency Housing Office’s (SEHO) relevant storm declarations: Northern Plains Winter Storm Clara (DR 1201), and Coastal Counties Spring Flood Event (DR 1202), Return to text.";
+const CODE_PART = 'See "Interagency Guidelines on Small Lender Standards for Rural Housing Loans," 12 CFR part 99, Appendix B-1, sections II.C and D.';
+const OWN_WORDS =
+  "See the attached form for the steps you must take before the end of the month if you want your claim to be paid in full and on time this year.";
+const EMAIL = "business/email";
+const emailFindings = (source: string): readonly string[] => namedRuleRun(RULE, `${source}\n`, en, "a.md", EMAIL).findings;
+
+describe("a footnote that opens with a signal and names what it cites", () => {
+  const SIGNALS = ["see", "see also", "cf."];
+
+  it("keeps the signal and the writer's words, without the cited names, titles and parentheses of codes", () => {
+    assert.equal(wordsAroundCitation(NAMED_ACT, SIGNALS)?.split(/\s+/u).filter(Boolean).join(" "), "See , Pub.");
+    assert.equal(
+      wordsAroundCitation(QUOTED_LETTER, SIGNALS)?.split(/\s+/u).filter(Boolean).join(" "),
+      "See also Letter 07-3, for guidance on common questions about the rules.",
+    );
+    assert.equal(wordsAroundCitation(OWN_WORDS, SIGNALS)?.replace(/\s+/gu, " ").trim(), OWN_WORDS);
+  });
+
+  it("is undefined when the text does not open with a signal", () => {
+    assert.equal(wordsAroundCitation("The Rural Lending Fairness Act of 2009 applies.", SIGNALS), undefined);
+    assert.equal(wordsAroundCitation("Seeing the Rural Lending Fairness Act of 2009 applies.", SIGNALS), undefined);
+    assert.equal(wordsAroundCitation(NAMED_ACT, []), undefined);
+  });
+
+  it("does not report such a footnote", () => {
+    const footnotes = [NAMED_ACT.replace(/, Pub\.$/u, "."), QUOTED_LETTER, DECLARATIONS, CODE_PART].map((text, at) => `${at + 1}. ${text}`).join("\n\n");
+    assert.deepEqual(emailFindings(`# Notes\n\n${footnotes}`), []);
+  });
+
+  it("still reports a footnote whose own words run long after the signal", () => {
+    assert.deepEqual(emailFindings(`# Notes\n\n1. ${OWN_WORDS}`), ["This sentence runs 31 words (limit 18)"]);
+    const longAround = `See also Letter 07-3, “Questions and Answers,” which the office sent to every lender last spring and which explains what a lender must do before it closes a loan in a small town.`;
+    assert.equal(emailFindings(`# Notes\n\n1. ${longAround}`).length, 1);
   });
 });

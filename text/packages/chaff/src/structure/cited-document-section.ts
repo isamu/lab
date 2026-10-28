@@ -55,3 +55,11 @@ export const referencesInCitedDocuments = (tree: StructureNode): ReadonlySet<Str
   const quoted = visits.filter((visit) => visit.node.kind === "reference" && visit.inArticle && visit.heading !== undefined && cited.has(visit.heading));
   return new Set(quoted.map((visit) => visit.node));
 };
+
+/** 見出しが他の文書の名前そのもので、その名前を文書がほかで他の文書として引いている節に引き写した条。Pure. */
+export const articlesInCitedDocuments = (tree: StructureNode): readonly StructureNode[] => {
+  const visits = visitsOf(tree);
+  const cited = documentsCited(visits.map((visit) => visit.node));
+  if (cited.size === 0) return [];
+  return visits.filter((visit) => visit.node.kind === "article" && visit.heading !== undefined && cited.has(visit.heading)).map((visit) => visit.node);
+};

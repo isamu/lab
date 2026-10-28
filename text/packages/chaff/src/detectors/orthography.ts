@@ -3,13 +3,14 @@ import { conjugatedStartsOutside } from "./conjugated-entry.ts";
 import { calendarRuns, calendarUnitsOf, type CalendarUnits } from "../calendar-number.ts";
 import { escapeRegExp, latinBoundaries, occurrencesOutside, type Boundary, type SpacingKind } from "../orthography.ts";
 import { minorityReport, withoutSideOnTie } from "../spacing-minority.ts";
-import { isWithinAny, quotedSpans } from "../quoted-span.ts";
+import { isWithinAny, QUOTATION_MARKS, quotedSpans } from "../quoted-span.ts";
 import { digitRunAround, endsWithDivisionLabel, isNumberName, sequenceLabelStarts, type NameContext } from "../number-name.ts";
 import { isSpacedLocationPart, type FloorWords } from "../location-part.ts";
 import { isFieldSeparator, isNameSeparator, type OrganizationWords } from "../name-separator.ts";
 import { addressSpans, clockTimeSpans, identifierSpans, isInsideSpan } from "../spacing-code.ts";
 import { followsHandle, isBoundSuffix, isJoinerSpace } from "../latin-word-boundary.ts";
 import { licenceNoticeSentences } from "./licence-notice.ts";
+import { followsCaptionLabel, isCitedEntryLine, isNumberTableBoundary, lineAt } from "../latin-spacing-source.ts";
 
 /** 書いた形の出現に、動詞の活用した形（行う → 行います）を足したもの。同じ位置は一度だけ。 */
 const avoidedStarts = (sentence: Sentence, entry: LexiconEntry, use: string): number[] => {
@@ -59,6 +60,8 @@ type NumberContext = NameContext & {
   readonly organizations: OrganizationWords;
   /** 日本語の句をつなぐ英語の語（or、vs.）と、英字の語に付ける接尾の語（版、化）。 */
   readonly latinWords: { readonly joiners: ReadonlySet<string>; readonly boundSuffixes: ReadonlySet<string> };
+  /** 図表の札（表、図）。行の頭にこれだけを書いた後ろの空白は、札と題の区切り。 */
+  readonly captionLabels: ReadonlySet<string>;
 };
 
 /** 文頭の項目の番号の後ろと見る境目の位置の上限。番号は短く文の頭にあるので、これより後ろの境目は番号の後ろではない。長い文で文頭からの切り出しを繰り返さない。 */
@@ -107,7 +110,10 @@ type SentenceCodes = {
  */
 /** 項目の番号・識別子・チャンネルや宛先の名前（#pj_oss-team）の端の境目。どれも名前や番号を閉じる空白で、空け方の好みではない。 */
 const closesName = (sentence: Sentence, boundary: Boundary, context: NumberContext, codes: SentenceCodes): boolean =>
-  followsItemNumber(sentence.text, boundary, context.itemNumbers) || besideSpan(codes.identifiers, boundary) || followsHandle(sentence.text, boundary);
+  followsItemNumber(sentence.text, boundary, context.itemNumbers) ||
+  followsCaptionLabel(sentence.text, boundary, context.captionLabels) ||
+  besideSpan(codes.identifiers, boundary) ||
+  followsHandle(sentence.text, boundary);
 
 const isCounted = (sentence: Sentence, boundary: Boundary, context: NumberContext, codes: SentenceCodes): boolean => {
   if (closesName(sentence, boundary, context, codes)) return false;
@@ -194,22 +200,29 @@ export const latinSpacing: Detector = (doc, options): Finding[] => {
     floors: { units: patternsOf(doc, "floor-unit"), levels: patternsOf(doc, "floor-level") },
     organizations: { units: patternsOf(doc, "organization-unit"), forms: patternList(doc, "company-form") },
     latinWords: { joiners: patternsOf(doc, "latin-joiner"), boundSuffixes: patternsOf(doc, "latin-bound-suffix") },
+    captionLabels: patternsOf(doc, "figure-label"),
   };
   // 文書の最後の利用条件の断り書き（クリエイティブ・コモンズ 表示 4.0 国際）は、掲載先の書き方で書き手の空け方ではない。
   const licence = licenceNoticeSentences(doc, doc.lexicons["licence-word"] ?? []);
   const located: Located[] = doc.sentences.flatMap((sentence) => {
     if (licence.has(sentence)) return [];
-    const quoted = quotedSpans(sentence.text);
+    // 「」『』のほか、“”で引いた題名（“パブリック・ドメイン・マーク 1.0 全世界コモンズ証”）も元の書き方。
+    const quoted = quotedSpans(sentence.text, QUOTATION_MARKS);
     const codes = {
       calendar: calendarStarts(sentence, context.calendar),
       clockTimes: clockTimeSpans(sentence.text),
       addresses: addressSpans(sentence.text),
       identifiers: identifierSpans(sentence.text),
     };
-    return latinBoundaries(sentence.text, doc.source.slice(sentence.span.start, sentence.span.end))
-      .filter((boundary) => !isQuoted(quoted, boundary) && !isInsideLink(doc.links, sentence.span.start + boundary.offset))
-      .filter((boundary) => isCounted(sentence, boundary, context, codes))
-      .map((boundary) => ({ sentence, ...boundary }));
+    return (
+      latinBoundaries(sentence.text, doc.source.slice(sentence.span.start, sentence.span.end))
+        .filter((boundary) => !isQuoted(quoted, boundary) && !isInsideLink(doc.links, sentence.span.start + boundary.offset))
+        .filter((boundary) => !isCitedEntryLine(lineAt(doc.source, sentence.span.start + boundary.offset)))
+        // 変換で一続きになった数の表の、升の区切りの空白。
+        .filter((boundary) => !isNumberTableBoundary(sentence.text, boundary))
+        .filter((boundary) => isCounted(sentence, boundary, context, codes))
+        .map((boundary) => ({ sentence, ...boundary }))
+    );
   });
   return KINDS.flatMap((kind) =>
     findingsOf(

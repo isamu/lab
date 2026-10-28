@@ -1,0 +1,9 @@
+# 次の段落が他の文書の文をそのまま写したものだと言う前置きの言葉（「同条は次のように規定している：」）。前置きはコロンで終わる。
+# max-sentence-length はその次の段落を測らない。前置きのどこにあってもよい。
+id: verbatim-lead
+language: ja
+entries:
+  - pattern: 次のように規定
+  - pattern: 次のとおり規定
+  - pattern: 以下のように規定
+  - pattern: 以下のとおり規定

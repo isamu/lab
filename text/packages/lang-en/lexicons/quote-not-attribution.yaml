@@ -1,0 +1,13 @@
+# Shapes in which a word of quote-attribution does not give the quoted words to someone. quote-without-source reads it.
+#   example  a word before the quotation, in the same sentence, that opens an example (For instance, a user says "…").
+#            The writer made the words up to illustrate.
+#   thing    a word right before the cue that makes its subject a thing (a sign that said "…", a note which read "…"):
+#            the words are written on it, and there is nobody to cite.
+id: quote-not-attribution
+language: en
+entries:
+  - { pattern: for example, group: example }
+  - { pattern: for instance, group: example }
+  - { pattern: e.g., group: example }
+  - { pattern: that, group: thing }
+  - { pattern: which, group: thing }

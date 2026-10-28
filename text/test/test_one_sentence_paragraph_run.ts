@@ -110,8 +110,9 @@ describe("one-sentence-paragraph-run: 印で始まる段落は手で印を付け
 });
 
 describe("one-sentence-paragraph-run: a reference list's entries are a list", () => {
+  const AUTHORS = ["Hart and Reed", "Moss", "Lane and Pike", "Ford", "Shaw and Tate"];
   const entries = (label: (at: number) => string): string =>
-    Array.from({ length: 5 }, (_unused, at) => `${label(at)}Hart and Reed, "Tides of the North Sea ${String(at + 1)}", 2001.`).join("\n\n");
+    Array.from({ length: 5 }, (_unused, at) => `${label(at)}${AUTHORS[at] ?? ""}, "Tides of the North Sea ${String(at + 1)}", 2001.`).join("\n\n");
   const labelled = entries((at) => `   [${String(at + 1)}]        `);
   const keyed = entries((at) => `   [KEY${String(at + 1)}]   `);
 
@@ -152,5 +153,49 @@ describe("one-sentence-paragraph-run: a reference list's entries are a list", ()
       oneSentenceRuns(doc.source, doc.paragraphs, []).map((run) => run.length),
       [2],
     );
+  });
+});
+
+describe("one-sentence-paragraph-run: numbered items and the items of a lead-in", () => {
+  const steps = ["Open the form.", "Fill in your name.", "Add the date.", "Sign the last page.", "Send it to the office."];
+
+  it("paragraphs that open with an enumerator ((1), （2）, (iii), ①) are items, not counted", () => {
+    const glossary = Array.from({ length: 5 }, (_unused, at) => `（${String(at + 1)}）用語${String(at + 1)}……帳簿に書く金額のことである。`).join("\n\n");
+    assert.deepEqual(findingsOf(`${glossary}\n`), []);
+    const roman = ["i", "ii", "iii", "iv", "v"].map((numeral, at) => `(${numeral}) Group ${String(at + 1)}: red, blue, green.`).join("\n\n");
+    assert.deepEqual(findingsOf(`${roman}\n`, en), []);
+    const circled = ["①", "②", "③", "④", "⑤"].map((mark) => `${mark}申込書を窓口に出してください。`).join("\n\n");
+    assert.deepEqual(findingsOf(`${circled}\n`), []);
+  });
+
+  it("an enumerator inside the sentence, not at its head, does not make an item", () => {
+    const prose = Array.from({ length: 5 }, (_unused, at) => `Step ${String(at + 1)} follows rule (a) of the guide.`).join("\n\n");
+    assert.deepEqual(findingsOf(`${prose}\n`, en), ["5 one-sentence paragraphs in a row (limit 4)"]);
+  });
+
+  it("the paragraphs after a lead-in ending with a colon are its items, an item of two sentences included", () => {
+    assert.deepEqual(findingsOf(`Follow these steps:\n\n${steps.join("\n\n")}\n`, en), []);
+    const withNote = [...steps.slice(0, 2), "Keep a copy. (Note: the office keeps one too.)", ...steps.slice(2)].join("\n\n");
+    assert.deepEqual(findingsOf(`Follow these steps:\n\n${withNote}\n`, en), []);
+    assert.deepEqual(findingsOf(`次のとおり進めてください：\n\n${paragraphs(5)}\n`), []);
+  });
+
+  it("without a lead-in, after a heading, or once a paragraph of prose closes the items, the run counts", () => {
+    assert.deepEqual(findingsOf(`${steps.join("\n\n")}\n`, en), ["5 one-sentence paragraphs in a row (limit 4)"]);
+    assert.deepEqual(findingsOf(`Follow these steps:\n\n## Steps\n\n${steps.join("\n\n")}\n`, en), ["5 one-sentence paragraphs in a row (limit 4)"]);
+    const prose = "The form is new this year. It replaces the old one. The office explains why on its page.";
+    assert.deepEqual(findingsOf(`Follow these steps:\n\n${prose}\n\n${steps.join("\n\n")}\n`, en), ["5 one-sentence paragraphs in a row (limit 4)"]);
+  });
+
+  it("a run whose paragraphs all open with the same words is a list of parallel entries", () => {
+    const guides = ["renting", "letting", "leasing", "buying", "selling"].map((topic) => `The council's guide to ${topic} explains the steps.`);
+    assert.deepEqual(findingsOf(`${guides.join("\n\n")}\n`, en), []);
+  });
+
+  it("paragraphs that share fewer opening words, or one paragraph breaking the frame, still count", () => {
+    const twoWords = ["explains", "lists", "names", "keeps", "posts"].map((verb) => `The council ${verb} the steps on its page.`);
+    assert.deepEqual(findingsOf(`${twoWords.join("\n\n")}\n`, en), ["5 one-sentence paragraphs in a row (limit 4)"]);
+    const frames = ["renting", "letting", "leasing", "buying"].map((topic) => `The council's guide to ${topic} explains the steps.`);
+    assert.deepEqual(findingsOf(`${[...frames, "A new guide comes out in May."].join("\n\n")}\n`, en), ["5 one-sentence paragraphs in a row (limit 4)"]);
   });
 });
