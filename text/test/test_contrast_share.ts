@@ -45,6 +45,21 @@ describe("contrast frames across two sentences (en)", () => {
     assert.deepEqual(framed(en, "They didn't say why they left."), []);
   });
 
+  it("counts a written-out denial (is not, does not) answered by the next sentence, as the contracted one", () => {
+    assert.deepEqual(framed(en, "The plan is not to cut the budget. It is to spend it on fewer things."), [
+      "The plan is not to cut the budget.",
+    ]);
+    assert.deepEqual(framed(en, "Hiring does not end at the offer. It starts the team's first month."), ["Hiring does not end at the offer."]);
+    assert.deepEqual(framed(en, "Visitors do not come for the shop. They come for the garden."), ["Visitors do not come for the shop."]);
+  });
+
+  it("does not count a written-out denial answered inside its own sentence, followed by another denial, or by a concession", () => {
+    assert.deepEqual(framed(en, "The review does not replace testing; it adds to it."), []);
+    assert.deepEqual(framed(en, "The build was not ready. It was not tested either."), []);
+    assert.deepEqual(framed(en, "The office is not open on Sundays. But the phone line is."), []);
+    assert.deepEqual(framed(en, "The parcel did not arrive on Monday. We called the depot."), []);
+  });
+
   it("does not count a next sentence that denies again, or opens with something else", () => {
     assert.deepEqual(framed(en, "It wasn't ready. It wasn't tested either."), []);
     assert.deepEqual(framed(en, "The build didn't pass. We fixed it on Monday."), []);
