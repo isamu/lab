@@ -121,7 +121,7 @@ Legal documents, manuals, literature and transcripts are written differently, so
 
 | Rule | What it finds |
 | --- | --- |
-| `ai-tell` | Phrases common in generated text piling up ("plays a crucial role", "delve into") |
+| `ai-tell` | Phrases common in generated text piling up ("plays a crucial role", "delve into"); in a blog post, one of the heavier ones is enough |
 | `contrast-framing` | Too large a share of sentences in contrast frames ("not just X, but Y", "It wasn't X. It was Y", "It's not about X. It's about Y") |
 | `unprompted-denial` | Too large a share of sentences that deny a premise nobody stated, with nothing said in its place ("This isn't about tooling.", "That's not the point.") |
 | `stock-transition` | Too many sentences opening with "Moreover" or "Additionally" |

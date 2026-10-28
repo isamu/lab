@@ -153,7 +153,7 @@ $ npx chaffjs prompt-b.md --compact
 
 prompt-b.md   blog/tech · English   genre from the default
 
-  3:1     info    "delve into, in today's fast-paced world, plays a crucial role, a testament to, meticulously" appear together (score 39, limit 18)
+  3:1     info    "delve into, in today's fast-paced world, plays a crucial role, a testament to, meticulously" appear together (score 39, limit 4)
                   ai-tell
   3:1     warning "in today's fast-paced world" is an opening that fits any article
                   padded-intro

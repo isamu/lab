@@ -488,7 +488,7 @@ $ npx chaffjs prompt-b.md --compact --sarif out/prompt-b.sarif
 
 prompt-b.md   blog/tech · 日本語   ジャンルは既定から
 
-  3:1     info    「と言えるでしょう、深く掘り下げる、重要な役割を担う、本記事では、地味に効く」が揃っています（点 22、18 まで）
+  3:1     info    「と言えるでしょう、深く掘り下げる、重要な役割を担う、本記事では、地味に効く」が揃っています（点 22、4 まで）
                   ai-tell
 …
 ```

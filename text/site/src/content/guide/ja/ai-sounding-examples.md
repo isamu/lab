@@ -61,7 +61,7 @@ ai-generated-composite が出ています。文の言い回しを直しても、
 ## 文書全体の目印
 
 - `ai-generated-composite`: 「ai-tell、padded-intro、closing-cliche」が同じ文書にそろっています（3 種、2 種から）
-- `ai-tell`: 「現代社会において、と言えるでしょう、深く掘り下げる、本記事では、地味に効く、時間を溶かす、静かに壊れる」が揃っています（点 30、18 まで）
+- `ai-tell`: 「現代社会において、と言えるでしょう、深く掘り下げる、本記事では、地味に効く、時間を溶かす、静かに壊れる」が揃っています（点 30、4 まで）
 - `padded-intro`: 「現代社会において」は、どの記事にも当てはまる書き出しです
 - `closing-cliche`: 「いかがでしたか」で締めています
 - 構成: 見出し 1、節の平均 434 字、箇条書き 0%、太字 0
@@ -111,7 +111,7 @@ ai-generated-composite が出ています。文の言い回しを直しても、
 **見つけた箇所**
 
 - 3 行目: 「現代社会において、夜間バッチは業務を支える重要な役割を果たすと言えるでしょう。」
-  「現代社会において、と言えるでしょう、深く掘り下げる、本記事では、地味に効く、時間を溶かす、静かに壊れる」が揃っています（点 30、18 まで）
+  「現代社会において、と言えるでしょう、深く掘り下げる、本記事では、地味に効く、時間を溶かす、静かに壊れる」が揃っています（点 30、4 まで）
 
 …
 
@@ -331,7 +331,7 @@ $ npx chaffjs ai.md --genre blog/tech --compact
 
 ai.md   blog/tech · 日本語   ジャンルは --genre から
 
-  3:1     info    「詳しく解説していきます、鍵となる、本記事では、地味に効く、効いてくる、時間を溶かす、一つずつ潰す、静かに壊れる、黙って無視される」が揃っています（点 35、18 まで）
+  3:1     info    「詳しく解説していきます、鍵となる、本記事では、地味に効く、効いてくる、時間を溶かす、一つずつ潰す、静かに壊れる、黙って無視される」が揃っています（点 35、4 まで）
                   ai-tell
   3:1     warning 「ai-tell、closing-cliche、contrast-framing、announcing-opener」が同じ文書にそろっています（4 種、2 種から）
                   ai-generated-composite
@@ -566,9 +566,11 @@ $ npx chaffjs study.md --genre blog/tech --compact
 
 study.md   blog/tech · 日本語   ジャンルは --genre から
 
+  3:1     info    「詳しく解説していきます、本記事では」が揃っています（点 8、4 まで）
+                  ai-tell
   5:1     info    構成の 3 項目が、人の記事の 9 割を超えています（3 項目から）。見出しの多さ、3 つの小見出しに分けた見出し、太字の見出しで始まる項目
                   ai-structure
-  5:1     warning 「closing-cliche、contrast-framing、announcing-opener、ai-structure」が同じ文書にそろっています（4 種、2 種から）
+  5:1     warning 「ai-tell、closing-cliche、contrast-framing、announcing-opener、ai-structure」が同じ文書にそろっています（5 種、2 種から）
                   ai-generated-composite
   7:1     warning 「非常に重要」は、中身を言わずに強調だけしています
                   empty-intensifier

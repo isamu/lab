@@ -60,7 +60,7 @@ describe("複合シグナル", () => {
 
   describe("ブログは 2 種で出す", () => {
     /** padded-intro と rule-of-three の 2 種だけが出る文書。 */
-    const TWO = ["# はじめに", "", "近年、この分野は急速に変化する状況にあります。", "", THREES].join("\n");
+    const TWO = ["# はじめに", "", "近年、この分野は注目を集めています。", "", THREES].join("\n");
     const compositeIn = (genre: string): boolean =>
       runRules(buildDocument("t.md", TWO, ja), RULES, {}, true, genre).findings.some((finding) => finding.rule === "ai-generated-composite");
 
@@ -74,7 +74,7 @@ describe("複合シグナル", () => {
     });
 
     it("valid: ブログでも 1 種では出さない", () => {
-      const one = ["# はじめに", "", "近年、この分野は急速に変化する状況にあります。中身はこうです。"].join("\n");
+      const one = ["# はじめに", "", "近年、この分野は注目を集めています。中身はこうです。"].join("\n");
       const ids = runRules(buildDocument("t.md", one, ja), RULES, {}, true, "blog/tech").findings.map((finding) => finding.rule);
       assert.ok(ids.includes("padded-intro") && !ids.includes("ai-generated-composite"));
     });
