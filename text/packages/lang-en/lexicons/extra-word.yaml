@@ -90,6 +90,7 @@ entries:
   - pattern: fieri
   - pattern: filename
   - pattern: flatu
+  - pattern: flyout
   - pattern: forma
   - pattern: franchisee
   - pattern: franchisor

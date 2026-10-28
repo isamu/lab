@@ -7,6 +7,7 @@ import {
   addressWordsOf,
   besideForeignWord,
   beforeVersion,
+  beforeVolume,
   hasDrugStem,
   hasSiblingName,
   inSearchTermList,
@@ -112,6 +113,18 @@ describe("unknown-word: words whose place makes them a name or a term", () => {
     assert.deepEqual(unknown("- Upgraded to golang 1.21"), [typo("golang", "golan")]);
   });
 
+  it("a word before a journal's volume and issue ends the journal's title, but the same word elsewhere is still reported", () => {
+    assert.deepEqual(unknown("- M. L. McHugh. Interrater reliability: the kappa statistic. Biochemia medica 22 (3), pp. 276–282."), []);
+    assert.deepEqual(unknown("- M. L. McHugh. Interrater reliability. Biochemia medica 22(3): 276–282."), []);
+    assert.deepEqual(unknown("The statistic is used in medica research."), [typo("medica", "medina")]);
+    assert.deepEqual(unknown("- Biochemia medica 22, pp. 276–282."), [typo("medica", "medina")]);
+  });
+
+  it("flyout, a fleet's planned production or a caught fly ball, is a known word", () => {
+    assert.deepEqual(unknown("The flyout of the bomber fleet is on schedule."), []);
+    assert.deepEqual(unknown("The flyuot of the bomber fleet is on schedule."), [typo("flyuot", "flyout")]);
+  });
+
   it("two words not in the dictionary one letter apart are names on one scheme, but a lone slip is still reported", () => {
     assert.deepEqual(unknown("- Support pthread mode for the queue.\n- Write to the socket in a background bthread."), []);
     assert.deepEqual(unknown("- Write to the socket in a background bthread."), [typo("bthread", "thread")]);
@@ -209,6 +222,15 @@ describe("unknown-word context: the pieces", () => {
     assert.ok(!beforeVersion("golang 1.21", 0, "golang"));
     assert.ok(!beforeVersion("golang1.21.5", 0, "golang"));
     assert.ok(!beforeVersion("golang", 0, "golang"));
+  });
+
+  it("beforeVolume: spaces, a volume and an issue in brackets after the word", () => {
+    assert.ok(beforeVolume("medica 22 (3), pp. 1", 0, "medica"));
+    assert.ok(beforeVolume("medica 5(2)", 0, "medica"));
+    assert.ok(!beforeVolume("medica 22, pp. 1", 0, "medica"));
+    assert.ok(!beforeVolume("medica22 (3)", 0, "medica"));
+    assert.ok(!beforeVolume("medica (3)", 0, "medica"));
+    assert.ok(!beforeVolume("medica", 0, "medica"));
   });
 
   it("hasSiblingName: another unknown word of the same length one letter apart", () => {
