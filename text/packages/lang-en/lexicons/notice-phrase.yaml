@@ -1,0 +1,10 @@
+# Disclaimer wording a publisher appends to every page (non-endorsement, external links). contraction-consistency does not
+# count the forms of a paragraph that holds one: the wording is the publisher's, fixed, not the writer's register.
+id: notice-phrase
+language: en
+entries:
+  - pattern: does not constitute or imply
+  - pattern: does not constitute an endorsement
+  - pattern: does not constitute endorsement
+  - pattern: neither endorses nor guarantees
+  - pattern: does not endorse any

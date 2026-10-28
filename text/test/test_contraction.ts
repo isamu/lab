@@ -259,6 +259,57 @@ describe("contraction-consistency", () => {
     });
   });
 
+  describe("書き手の文体を語らない文", () => {
+    it("valid: 掲載元の断り書きの段落の形は数えない", () => {
+      // 18f-blog-fearless-spreadsheet-formulas の形。本文は doesn't、GSA の断り書きだけ does not。
+      const source =
+        "# Formulas\n\n_Reference to any non-federal entity does not constitute or imply its endorsement, recommendation, or favoring by GSA._\n\nThe sheet doesn't sort. The formula doesn't round.";
+      assert.deepEqual(matchedFor(source), []);
+    });
+
+    it("valid: 断り書きの段落の中の別の文も数えない", () => {
+      // 18f-blog-back-to-basics-age-of-ai の形。外部リンクの断り書きの脚注。
+      const source =
+        "# AI\n\nIf you're in government, join us. If you're a professional, apply.\n\nWe provide these links as a public service only; GSA neither endorses nor guarantees in any way the external organizations. When you select a link to an outside website, you are leaving the GSA.gov site.";
+      assert.deepEqual(matchedFor(source), []);
+    });
+
+    it("invalid: 断りの語の無い段落の少ない形は、これまでどおり指す", () => {
+      const source = "# Formulas\n\nThe sheet doesn't sort. The formula doesn't round.\n\nThe chart does not constitute a report.";
+      assert.deepEqual(matchedFor(source), ["does not"]);
+    });
+
+    it("valid: 短縮形について述べる文の形は数えない", () => {
+      // govuk-style-guide-a-to-z の形。
+      const source = "# Style\n\nYou do not need to sign. You do not need to pay.\n\nAvoid negative contractions like can’t and don’t.";
+      assert.deepEqual(matchedFor(source), []);
+    });
+
+    it("valid: 警告の中の長い形は、強めるための形なので指さない", () => {
+      // k8s-hello-minikube-en の形。Hugo の alert。
+      const source =
+        '# Run\n\nDon\'t edit the file. Don\'t restart the node.\n\n{{< alert color="danger" title="Warning" >}}\nThe endpoint is dangerous. Do not run this on a production cluster.\n{{< /alert >}}';
+      assert.deepEqual(matchedFor(source), []);
+    });
+
+    it("valid: 「Warning:」で始まる段落と :::caution も警告", () => {
+      const label = "# Run\n\nDon't edit the file. Don't restart the node.\n\nWarning: Do not run this on a production cluster.";
+      assert.deepEqual(matchedFor(label), []);
+      const admonition = "# Run\n\nDon't edit the file. Don't restart the node.\n\n:::caution\nDo not run this on a production cluster.\n:::";
+      assert.deepEqual(matchedFor(admonition), []);
+    });
+
+    it("invalid: 警告でない札（note）の中の少ない形は、これまでどおり指す", () => {
+      const source = "# Run\n\nDon't edit the file. Don't restart the node.\n\n{{< note >}}\nDo not run this on a production cluster.\n{{< /note >}}";
+      assert.deepEqual(matchedFor(source), ["do not"]);
+    });
+
+    it("invalid: 警告の中の形も、どちらが多いかを数えるときは数える", () => {
+      const source = "# Run\n\nDo not edit the file. Do not restart the node.\n\nWarning: Do not run this. Do not open it.\n\nDon't skip the check.";
+      assert.deepEqual(matchedFor(source), ["don't"]);
+    });
+  });
+
   it("日本語では動かさない。表記ゆれは別の話", () => {
     const result = runRules(buildDocument("t.md", "これは文です。", ja), loadRules("ja"), {}, true, "blog/tech");
     assert.ok(result.skipped.some((entry) => entry.rule === "contraction-consistency"));
