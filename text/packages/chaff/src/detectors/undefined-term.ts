@@ -49,6 +49,8 @@ export type TermWords = {
   readonly named: readonly string[];
   /** What turns a term into another one (本報告書等 after 本報告書): a group the document has to define on its own. */
   readonly groupSuffixes: readonly string[];
+  /** The document takes the definitions of another one (本共同研究開発契約において定義した用語…同契約内の定義に従う). */
+  readonly inheritsDefinitions?: boolean;
 };
 
 const QUOTED = /[「『“"](?<term>[^「」『』“”"\n]{1,40})[」』”"]/gu;
@@ -84,17 +86,37 @@ const knownForms = (defined: readonly string[], groups: TermWords["prefixGroups"
   ...defined.flatMap((term) => prefixVariants(term, groups)),
 ];
 
+/** Every character of the shorter one, in order, in the longer one (本学習モデル in 本学習済みモデル). */
+const isSubsequence = (shorter: string, longer: string): boolean => {
+  const chars = Array.from(longer);
+  let at = 0;
+  return Array.from(shorter).every((char) => {
+    const found = chars.indexOf(char, at);
+    at = found + 1;
+    return found !== -1;
+  });
+};
+
+/** A slip for another term: the same prefix, its characters a part of the other's, and not the other's start (本学習モデル for 本学習済みモデル). */
+const isSlipOf = (term: string, other: string, prefix: string): boolean =>
+  other.startsWith(prefix) && other.length > term.length && !other.startsWith(term) && isSubsequence(term, other);
+
 /**
  * The first use of each term written with the document's prefix and defined nowhere, when the document defines at
  * least one term with that prefix (else the prefix is not its way of naming terms). A use that starts with a known
  * form (本サービス上 where 本サービス is defined) is that term, unless the rest is a group's mark (本サービス等).
+ * A name of a document (本共同開発契約) is left like the document's name for itself, unless it is a slip for a defined term
+ * (本共同研究開発契約). A document that takes the definitions of another one has terms defined there: only a slip for
+ * another of its terms (本学習モデル beside 本学習済みモデル) is reported then.
  */
 export const undefinedTerms = (source: string, sentences: readonly (readonly Token[])[], defined: readonly string[], words: TermWords): UndefinedTerm[] => {
   const prefixes = words.prefixes.filter((prefix) => prefix !== "");
   if (!defined.some((term) => hasPrefix(term, prefixes))) return [];
+  const selfNouns = words.selfNouns.filter((noun) => noun !== "");
   const isSelf = (term: string, prefix: string): boolean => {
     const rest = term.slice(prefix.length);
-    return words.selfNouns.some((noun) => noun !== "" && (rest.startsWith(noun) || rest.endsWith(noun)));
+    if (!selfNouns.some((noun) => rest.startsWith(noun) || rest.endsWith(noun))) return false;
+    return selfNouns.includes(rest) || !defined.some((other) => isSlipOf(term, other, prefix));
   };
   const runs = sentences.flatMap((tokens) =>
     tokens.flatMap((token, index) => {
@@ -106,8 +128,10 @@ export const undefinedTerms = (source: string, sentences: readonly (readonly Tok
   // A name that does not start a run of nouns (② 本研究の具体的な遂行方法) is an item of a list, not a term.
   const named = words.named.filter((term) => runs.some((run) => run.term.startsWith(term)));
   const known = knownForms([...defined, ...named], words.prefixGroups);
+  const terms = [...defined, ...runs.map((run) => run.term)];
   const uses = runs
     .filter((run) => !isSelf(run.term, run.prefix) && !words.isQuoted(run.term) && !isKnownUse(run.term, known, words.groupSuffixes))
+    .filter((run) => words.inheritsDefinitions !== true || terms.some((other) => isSlipOf(run.term, other, run.prefix)))
     .map((run) => ({ offset: run.offset, term: run.term }));
   return uses.filter((use, index) => uses.findIndex((other) => other.term === use.term) === index);
 };
@@ -167,6 +191,7 @@ export const undefinedTerm: Detector = (doc): Finding[] => {
     isQuoted: (term) => QUOTE_PAIRS.some(([open, close]) => doc.source.includes(`${open}${term}${close}`)),
     named: namedTerms(doc.source, prefixes),
     groupSuffixes: patternsOf(doc, "defined-term-group-suffix"),
+    inheritsDefinitions: patternsOf(doc, "definitions-inherited").some((phrase) => phrase !== "" && doc.source.includes(phrase)),
   });
   return [...prefixed, ...capitalisedUses(doc, sentences, definitions)].map((use) => findingOf(doc, use));
 };
