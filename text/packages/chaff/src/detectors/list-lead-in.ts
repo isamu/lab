@@ -1,6 +1,7 @@
 import type { BulletList, Detector, DetectorOptions, Finding, ProseDocument, Sentence, Span } from "../plugin.ts";
 import { densityFindings } from "./ai-phrasing.ts";
 import { endsWithColon } from "./lead-in.ts";
+import { isMarkdownPath } from "../structure/markdown-path.ts";
 
 /** Between a lead-in and its list: only blank space. A thematic break (`***`) separates them; bold marks sit inside the sentence. */
 const ONLY_BLANKS = /^\s*$/u;
@@ -37,20 +38,33 @@ const labelWords = (text: string): string => {
 /** A noun with no kana inflection (参考, 注意点): a name, not a sentence (以下の通りです) and not a lone symbol (⚠️). */
 const NOUN_LABEL = /^(?=.*\p{L})[^\p{Script=Hiragana}]+$/u;
 
-/** An English label is a name of a word or three (See also, Pros); past that it is a sentence (Here's what you need). */
+/** A label of a word or three is a name (See also, Pros) whatever its parts of speech. */
 const MAX_LABEL_WORDS = 3;
 
-const isNounLabel = (words: string): boolean => NOUN_LABEL.test(words) && words.split(/\s+/u).length <= MAX_LABEL_WORDS;
+/** A verb or a pronoun makes a clause: Here's what you need is a sentence, Community changes, past quarter a name. */
+const CLAUSE_POS: ReadonlySet<string> = new Set(["VERB", "AUX", "PRON", "SCONJ"]);
+const NAME_POS: ReadonlySet<string> = new Set(["NOUN", "PROPN"]);
+
+/** A noun phrase of any length, read from the adapter's parts of speech. Without them, only the short label counts. */
+const isNounPhrase = (sentence: Sentence): boolean => {
+  const tokens = sentence.tokens ?? [];
+  return tokens.some((token) => NAME_POS.has(token.pos)) && !tokens.some((token) => CLAUSE_POS.has(token.pos));
+};
+
+const isNounLabel = (words: string, sentence: Sentence): boolean =>
+  NOUN_LABEL.test(words) && (words.split(/\s+/u).length <= MAX_LABEL_WORDS || isNounPhrase(sentence));
 
 /**
  * A field of an entry's template: the same noun label before the list of each entry (**参考:** before each entry's link).
  * It names the field the way a table's column does; it does not lead into anything.
  */
 const fieldLabels = (leadIns: readonly Sentence[]): ReadonlySet<string> => {
-  const counts = leadIns
-    .map((sentence) => labelWords(sentence.text))
-    .reduce((tally, words) => tally.set(words, (tally.get(words) ?? 0) + 1), new Map<string, number>());
-  return new Set([...counts].filter(([words, count]) => count > 1 && isNounLabel(words)).map(([words]) => words));
+  const usesByLabel = leadIns.reduce((tally, sentence) => {
+    const words = labelWords(sentence.text);
+    return tally.set(words, [...(tally.get(words) ?? []), sentence]);
+  }, new Map<string, readonly Sentence[]>());
+  const isField = (words: string, [first, ...rest]: readonly Sentence[]): boolean => first !== undefined && rest.length > 0 && isNounLabel(words, first);
+  return new Set([...usesByLabel].filter(([words, uses]) => isField(words, uses)).map(([words]) => words));
 };
 
 /** A line that is only a bold label (**Pros:**, **参考**:), and the label inside the bold marks. */
@@ -64,20 +78,31 @@ const lineAround = (source: string, sentence: Sentence): string => {
 /** A bold noun label on a line of its own names the list under it, as a heading does (**Pros:** then **Cons:**). */
 const isBoldNounLabel = (sentence: Sentence, source: string): boolean => {
   const label = BOLD_LINE.exec(lineAround(source, sentence).trim())?.groups?.["label"];
-  return label !== undefined && isNounLabel(labelWords(label));
+  return label !== undefined && isNounLabel(labelWords(label), sentence);
 };
+
+/** Plain text cannot write bold, so there a noun label alone on its line is the heading of its list (Releases:, New Features:). */
+const isPlainNounLabel = (sentence: Sentence, source: string): boolean =>
+  lineAround(source, sentence).trim() === sentence.text.trim() && isNounLabel(labelWords(sentence.text), sentence);
 
 /**
  * Prose sentences ending in a colon that hand the reader straight to a list (「以下の通りです：」, "Here's what you need:").
  * An item of a list is not prose: 「例: `code`」 ends in a colon once its code is masked, and it leads nowhere.
  */
-export const colonLeadIns = (sentences: readonly Sentence[], lists: readonly BulletList[], listSpans: readonly Span[], source: string): Sentence[] => {
+export const colonLeadIns = (
+  sentences: readonly Sentence[],
+  lists: readonly BulletList[],
+  listSpans: readonly Span[],
+  source: string,
+  markdown = true,
+): Sentence[] => {
   const leadIns = lists.flatMap((list) => {
     const before = sentenceRightBefore(sentences, list, source);
     return before !== undefined && endsWithColon(before.text) && !insideAny(listSpans, before.span.start) ? [before] : [];
   });
   const fields = fieldLabels(leadIns);
-  return leadIns.filter((sentence) => !fields.has(labelWords(sentence.text)) && !isBoldNounLabel(sentence, source));
+  const namesItsList = (sentence: Sentence): boolean => (markdown ? isBoldNounLabel(sentence, source) : isPlainNounLabel(sentence, source));
+  return leadIns.filter((sentence) => !fields.has(labelWords(sentence.text)) && !namesItsList(sentence));
 };
 
 /** Lead-ins in one or two sections are a how-to's procedure or a pair of lists; the rule's why is section after section. */
@@ -101,7 +126,7 @@ const sectionsHolding = (doc: ProseDocument, leadIns: readonly Sentence[]): numb
  */
 export const colonLeadIn: Detector = (doc, options): Finding[] => {
   const inDocumentLanguage = doc.sentences.filter((sentence) => sentence.embeddedLanguage === undefined);
-  const leadIns = colonLeadIns(inDocumentLanguage, doc.lists, doc.listSpans, doc.source);
+  const leadIns = colonLeadIns(inDocumentLanguage, doc.lists, doc.listSpans, doc.source, isMarkdownPath(doc.path));
   if (sectionsHolding(doc, leadIns) < minSections(options)) return [];
   const hits = leadIns.map((sentence) => ({ sentence, matched: sentence.text.trim() }));
   return densityFindings(doc, hits, options.limit);

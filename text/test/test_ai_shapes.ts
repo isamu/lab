@@ -293,6 +293,41 @@ describe("colonLeadIns", () => {
   it("returns nothing for a document without lists", () => {
     assert.deepEqual(leadInsOf("# 題\n\n次の通りです：\n"), []);
   });
+
+  // Self-written report entries. A template's field label can run past three words; it is still a noun phrase, not a sentence.
+  const reports = (label: string): string =>
+    ["Alpha", "Beta", "Gamma"].map((name) => `## ${name}\n\nThe ${name} team reported on time.\n\n${label}\n\n- One new member\n- Two releases\n`).join("\n");
+
+  it("does not count a longer noun label repeated before each entry's list", () => {
+    assert.deepEqual(leadInsOf(`# Reports\n\n${reports("Community changes, past quarter:")}`, en), []);
+    assert.deepEqual(leadInsOf(`# Reports\n\n${reports("Issues for the board this month:")}`, en), []);
+  });
+
+  it("still counts a longer repeated label that is a sentence, and a longer noun label used once", () => {
+    assert.equal(leadInsOf(`# Reports\n\n${reports("Here is what changed this quarter:")}`, en).length, 3);
+    assert.equal(leadInsOf(`# Reports\n\n${reports("Key features of the release include:")}`, en).length, 3);
+    assert.equal(leadInsOf("# Report\n\nCommunity changes, past quarter:\n\n- One new member\n", en).length, 1);
+  });
+
+  /** The same source read as plain text (.txt), where bold cannot be written. */
+  const plainLeadInsOf = (source: string, adapter: LanguageAdapter = ja): string[] => {
+    const doc = buildDocument("t.txt", source, adapter);
+    return colonLeadIns(doc.sentences, doc.lists, doc.listSpans, doc.source, false).map((sentence) => sentence.text.trim());
+  };
+
+  // Self-written plain-text report. A noun label on a line of its own is the heading of its list, as **Releases:** is in Markdown.
+  it("does not count a noun label alone on its line in plain text", () => {
+    const report = "Status report\n\nReleases:\n  - 2.1.0 in May\n  - 2.2.0 in June\n\nNew Features:\n  - Search\n\nRecent releases and changes:\n  - Sync\n";
+    assert.equal(leadInsOf(report, en).length, 3);
+    assert.deepEqual(plainLeadInsOf(report, en), []);
+    assert.deepEqual(plainLeadInsOf("報告\n\n参考：\n- 鍵\n", ja), []);
+  });
+
+  it("still counts a lead-in sentence in plain text, and a label that shares its line", () => {
+    assert.deepEqual(plainLeadInsOf("Status report\n\nHere is what you need:\n  - A key\n", en), ["Here is what you need:"]);
+    assert.deepEqual(plainLeadInsOf("Status report\n\nThis quarter went well. Releases:\n  - 2.1.0\n", en), ["Releases:"]);
+    assert.deepEqual(plainLeadInsOf("報告\n\n準備は次の通りです：\n- 鍵\n", ja), ["準備は次の通りです："]);
+  });
 });
 
 describe("colon-lead-in", () => {
