@@ -2,6 +2,42 @@
 
 Newest first.
 
+## 0.40.0 — 2026-10-29
+
+This release continues the AI-likeness work: a new rule for honesty markers, ai-tell reads headings and reports one
+heavier phrase in a blog post, and bold-label-list counts bold lead sentences. The rest comes from judging real
+documents in isamu/chaff-corpus, rule by rule.
+
+### New rules
+
+- honesty-marker reports one honesty marker (「正直、」, "Honestly,") in a blog post or business document; the
+  composite reads it as a signal (#2197).
+
+### AI-likeness
+
+- ai-tell reports one heavier phrase in a blog post (#2190) and reads headings and titles (#2193).
+- bold-label-list counts list items that open with a bold lead sentence, not only a bold label and colon (#2196).
+- contrast-framing counts a written-out denial (is not, does not) as the contracted one (#2187).
+- closing-cliche reads "try it" send-offs in the last paragraph (#2174); empty-conclusion sends a closing that only
+  repeats the body's code to `chaff test` (#2188).
+- unfilled-placeholder reads blanks in table cells, field values, addresses and phone numbers (#2191), and reports one
+  blank once (#2201).
+
+### Rules
+
+- Fewer false findings on real documents:
+  - Structure: duplicate-definition leaves out a definition in a clause the signer chooses (#2202); numbering-gap
+    leaves a skip where the text writes the number, quotes an excerpt or repeats a name (#2203); undefined-term reads
+    inherited definitions and capitalised words not written as terms, and reports a slip in a document's name (#2207).
+  - Japanese wording: topic-predicate-distance (#2205), no-doubled-joshi (#2206), orthographic-variant (#2208),
+    teki-overuse (#2209), nominalization (#2210), no-mixed-desumasu (#2194), request-without-deadline (#2175),
+    requirement-smell (#2173).
+  - Lists, paragraphs and sentences: colon-lead-in (#2178, #2189), max-paragraph-length (#2177), one-sentence-paragraph-run
+    (#2184), missing-final-period (#2180), max-sentence-length (#2181).
+  - English wording and references: contraction-consistency (#2164), spelling-consistency (#2179), latin-spacing
+    (#2185), undefined-acronym (#2195), unknown-word (#2192), quote-without-source (#2182), date-format-consistency
+    (#2176).
+
 ## 0.39.0 — 2026-10-28
 
 This release deepens the AI-likeness checks. Four new rules report shapes common in generated text, the composite
