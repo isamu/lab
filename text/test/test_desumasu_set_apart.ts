@@ -73,6 +73,12 @@ describe("no-mixed-desumasu: 意図した声の形", () => {
   it("である調の文書の、丁寧にしか言わない挨拶を指さない", () =>
     assert.deepEqual(findingsOf(`# 報告\n\n${plain}農業まつり、お疲れ様でした。\n`, "business/meeting-notes"), []));
 
+  it("である調の文書の、結びの「お願いします」を指さない", () => {
+    // ai-ja-proposal-event-sponsor の形。である調の稟議の、承認を頼む一文。
+    assert.deepEqual(findingsOf(`# 協賛について\n\n${plain}協賛金30万円で協賛したい。承認をお願いします。\n`, "business/proposal"), []);
+    assert.deepEqual(findingsOf(`# 報告\n\n${plain}よろしくお願いいたします。\n`, "business/email"), []);
+  });
+
   it("挨拶でない丁寧な文と、本文の中の依頼は今までどおり指す", () => {
     assert.equal(findingsOf(`# 概要\n\n${plain}詳しい資料はこちらにあります。\n`).length, 1);
     assert.equal(findingsOf(`# 概要\n\n${plain}詳しくは、こちらをご覧ください。\n`).length, 1);
