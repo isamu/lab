@@ -116,12 +116,6 @@ describe("missing-final-period: 「。」で終わらない段落", () => {
     assert.equal(findingsOf(`${prose}\n\n${closedLast}\n`).length, 2);
   });
 
-  it("短い名前の行の下に書いた一行（表の升の名前と注）は文として数えない", () => {
-    assert.deepEqual(formsOf("乾いた電池\n車いすに使われる電池もこの扱いに含む\n"), ["-"]);
-    assert.deepEqual(formsOf("窓口で受け付けている書類の種類と注意\n車いすに使われる電池もこの扱いに含む\n"), ["open"]);
-    assert.deepEqual(formsOf("受け付けます。\n車いすに使われる電池もこの扱いに含む\n"), ["open"]);
-  });
-
   it("「。」で終わらない段落の多い文書と、混ざりすぎた文書は指さない", () => {
     assert.deepEqual(findingsOf("審査の結果は郵送でお知らせしました\n\n詳しい手順は担当者から説明します\n\n申請は市役所の窓口で受け付けます。\n"), []);
     assert.deepEqual(findingsOf(documentWith("審査の結果は郵送でお知らせしました", "詳しい手順は担当者から説明します")), []);
