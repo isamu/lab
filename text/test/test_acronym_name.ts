@@ -8,6 +8,7 @@ import {
   companyNameSpans,
   currencySymbolSpans,
   namePrefixSpans,
+  postalAddressSpans,
   streetSuffixSpans,
 } from "../packages/chaff/src/detectors/acronym-name.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
@@ -137,6 +138,23 @@ cases(
   ],
 );
 
+// 自作の所在地。番地から州と郵便番号まで揃った一行の中の大文字（通りの方角、局内の宛先）は所在地の部品。
+cases(
+  "postalAddressSpans",
+  (text) => postalAddressSpans(text, words("street-suffix"), words("us-state-code")),
+  [
+    ["通りの方角と局内の宛先", "Mail: 1600 Elm Rd. NE, MS K12-3, Springfield, GA 30329", ["NE", "MS", "GA"]],
+    ["略さずに書いた通りの種類", "Centers for Disease Control, 1600 Elm Road NE, MS K12-3, Springfield, GA 30329.", ["NE", "MS", "GA"]],
+    ["大文字の通りの種類と方角", "at 42 Lake View DR SW, Fort Lauderdale, FL 33304-1234.", ["DR", "SW", "FL"]],
+  ],
+  [
+    ["州と郵便番号で終わらない", "1600 Elm Rd. NE, MS K12-3, Springfield"],
+    ["通りの名前と種類が一語だけ", "1600 Elm NE, MS K12-3, Springfield, GA 30329"],
+    ["番地が無い", "Elm Rd. NE, MS K12-3, Springfield, GA 30329"],
+    ["行をまたぐ", "1600 Elm Rd.\nNE, MS K12-3, Springfield, GA 30329"],
+  ],
+);
+
 cases(
   "capitalPhraseSpans",
   (text) => capitalPhraseSpans(text, words("capital-phrase")),
@@ -157,6 +175,8 @@ describe("語彙表が空", () => {
     assert.deepEqual(carrierListSpans("UPS, DHL", []), []);
     assert.deepEqual(namePrefixSpans("HM Treasury", []), []);
     assert.deepEqual(streetSuffixSpans("512 Bayshore DR", []), []);
+    assert.deepEqual(postalAddressSpans("1600 Elm Rd. NE, Springfield, GA 30329", [], words("us-state-code")), []);
+    assert.deepEqual(postalAddressSpans("1600 Elm Rd. NE, Springfield, GA 30329", words("street-suffix"), []), []);
     assert.deepEqual(capitalPhraseSpans("AND/OR", []), []);
   });
 
@@ -177,6 +197,12 @@ describe("undefined-acronym と名前の部品", () => {
       "The SRE team owns the plan.",
     ].join("\n\n");
     assert.deepEqual(reportedAcronyms(en, source, "legal/contract"), ["SRE"]);
+  });
+
+  it("en: 所在地の中の方角と局内の宛先は数えず、所在地の外の同じ大文字は数える", () => {
+    const address = "Send comments by mail to the Office of Data, 1600 Elm Rd. NE, MS K12-3, Springfield, GA 30329.";
+    assert.deepEqual(reportedAcronyms(en, address), []);
+    assert.deepEqual(reportedAcronyms(en, `${address}\n\nThe NE region and the MS team reply.`), ["NE", "MS"]);
   });
 
   it("en: 引用の形でない法令集の名前は数える", () => {

@@ -7,7 +7,7 @@ import { isExplained } from "./acronym-compound.ts";
 import { statedAcronyms } from "./acronym-definition.ts";
 import { isBracketed, isInHeading, isNamePart } from "./acronym-lone.ts";
 import { linkedListTerms } from "./acronym-link.ts";
-import { caseVariantsIn, spelledOutAcronyms } from "./acronym-mention.ts";
+import { caseVariantsIn, spelledOutAcronyms, writtenAsWordIn } from "./acronym-mention.ts";
 import { conjugatedForms } from "./conjugated-form.ts";
 import { knownByDocument } from "./acronym-known.ts";
 import { explainedInText, headingsSpellingOut } from "./acronym-gloss.ts";
@@ -204,12 +204,12 @@ const isNamePartAt = (acronym: string, hit: Hit): boolean => {
  */
 export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   const body = bodyOf(doc);
-  // HTTP のメソッド名（GET）は略語ではなく、税の名前（VAT、GST）は読み手が名前として知るので、通じる略語と同じく展開を求めない。
+  // HTTP のメソッド名（GET）と SQL のキーワード（VIEW）は略語ではなく、税の名前（VAT、GST）は読み手が名前として知るので、通じる略語と同じく展開を求めない。
   // 並べた名前（JAXA）も、繋いだ略語（JAXA-ISAS）の片割れとして説明済みに数える。
   // 文書が自分で知らせた語（select を書いた文書の SELECT、リンクで引いた講演の場 [Jane Roe, FOSDEM 2024](…)）も同じ。
   const common = new Set([
     ...(options.lexicon ?? []).map((entry) => entry.pattern),
-    ...knownByDocument(doc.source, doc.links).concat(patternsOf(doc, "http-method"), patternsOf(doc, "tax-code")),
+    ...knownByDocument(doc.source, doc.links).concat(patternsOf(doc, "http-method"), patternsOf(doc, "sql-keyword"), patternsOf(doc, "tax-code")),
     ...(doc.names ?? []),
   ]);
   const expandedAt = expansionAt(definitionWordsOf(doc));
@@ -233,9 +233,12 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
     isExpanded(body, word, expandedAt) ||
     headings.some((heading) => expandsInHeading(heading, word, expandedAt));
   // 大文字の違うだけの書き方（TCoP と TCOP）は同じ略語と読む。どちらかで説明してあれば説明済み。
+  // 文の中で頭だけ大文字の語に書いた名前（a hotel / Airbnb）を大文字で書いた AIRBNB は、語を大きく書いただけで略語ではない。
+  const wholeText = [body, ...headings].join("\n");
   const explained = new Map<string, boolean>();
   const explainedAlone = (word: string): boolean => {
-    const known = explained.get(word) ?? (explainedAsWritten(word) || caseVariantsIn([body, ...headings].join("\n"), word).some(explainedAsWritten));
+    const known =
+      explained.get(word) ?? (explainedAsWritten(word) || writtenAsWordIn(wholeText, word) || caseVariantsIn(wholeText, word).some(explainedAsWritten));
     explained.set(word, known);
     return known;
   };

@@ -1,7 +1,7 @@
 import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { reportedAcronyms } from "./rule-run.ts";
-import { caseVariantsIn, spelledOutAcronyms } from "../packages/chaff/src/detectors/acronym-mention.ts";
+import { caseVariantsIn, spelledOutAcronyms, writtenAsWordIn } from "../packages/chaff/src/detectors/acronym-mention.ts";
 import { linkedListTerms } from "../packages/chaff/src/detectors/acronym-link.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
@@ -29,6 +29,29 @@ describe("undefined-acronym: the same acronym in other capitals", () => {
     assert.deepEqual(caseVariantsIn("the SdCode list, the SDCODE notes, Sdcode, sdcode, SdCodes", "SDCODE"), ["SdCode"]);
     assert.deepEqual(caseVariantsIn("only SDCODE here", "SDCODE"), []);
     assert.deepEqual(caseVariantsIn("", "SDCODE"), []);
+  });
+});
+
+describe("undefined-acronym: a name in capitals that the text also writes as a word", () => {
+  it("does not report capitals the text writes elsewhere as a word inside a sentence", () => {
+    assert.deepEqual(reportedAcronyms(en, "Book a hotel or a Zorbex flat.\n\nThe ZORBEX rules apply to the stay.\n"), []);
+  });
+
+  it("still reports them when the word only opens a sentence or a line, or the capitals are short", () => {
+    assert.deepEqual(reportedAcronyms(en, "Zorbex is fine.\n\nThe ZORBEX rules apply to the stay.\n"), ["ZORBEX"]);
+    assert.deepEqual(reportedAcronyms(en, "- Zorbex\n\nThe ZORBEX rules apply to the stay.\n"), ["ZORBEX"]);
+    assert.deepEqual(reportedAcronyms(en, "Ask the team, Ops is busy.\n\nThe OPS rota is new.\n"), ["OPS"]);
+  });
+
+  it("writtenAsWordIn: a word with only its first letter a capital, after a word, a number, a comma or a slash", () => {
+    assert.ok(writtenAsWordIn("a hotel / Zorbex flat", "ZORBEX"));
+    assert.ok(writtenAsWordIn("rooms on Zorbex, too", "ZORBEX"));
+    assert.ok(!writtenAsWordIn("Zorbex first. Then", "ZORBEX"));
+    assert.ok(!writtenAsWordIn("a ZorBex flat and zorbex", "ZORBEX"));
+    assert.ok(!writtenAsWordIn("a Zorbexs flat", "ZORBEX"));
+    assert.ok(!writtenAsWordIn("the team, Ops", "OPS"));
+    assert.ok(!writtenAsWordIn("", "ZORBEX"));
+    assert.ok(!writtenAsWordIn("a Zor-bex flat", "ZOR-BEX"));
   });
 });
 

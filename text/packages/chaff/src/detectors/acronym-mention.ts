@@ -42,3 +42,20 @@ export const caseVariantsIn = (text: string, acronym: string): string[] => {
   const variants = [...text.matchAll(written)].map((match) => match[0]);
   return [...new Set(variants)].filter((variant) => variant !== acronym && (variant.match(CAPITAL) ?? []).length >= MIN_CAPITALS);
 };
+
+/** A name in capitals that the text also writes as a word is that word set in capitals; short capitals (IT, It) are left alone. */
+const MIN_WORD_LETTERS = 4;
+/** Before a word inside a sentence: a lower-case word, a number, a comma or a slash, not a sentence's or a line's start (Its, It). */
+const INSIDE_SENTENCE = /(?:[\p{Ll}\p{N},;&)][ \t]+|[/(][ \t]*)$/u;
+const LOOK_BEHIND = 4;
+
+/**
+ * Whether the text writes the acronym's letters as a word with only its first letter a capital, inside a sentence (AIRBNB
+ * beside "a hotel / Airbnb"). The capitals are then the name written loud, not an acronym with an expansion.
+ */
+export const writtenAsWordIn = (text: string, acronym: string): boolean => {
+  if (!/^\p{Lu}+$/u.test(acronym) || Array.from(acronym).length < MIN_WORD_LETTERS) return false;
+  const word = `${acronym.slice(0, 1)}${acronym.slice(1).toLowerCase()}`;
+  const written = new RegExp(String.raw`(?<![\p{L}\p{N}])${escapeRegExp(word)}(?![\p{L}\p{N}])`, "gu");
+  return [...text.matchAll(written)].some((match) => INSIDE_SENTENCE.test(text.slice(Math.max(0, match.index - LOOK_BEHIND), match.index)));
+};
