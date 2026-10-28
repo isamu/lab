@@ -2,8 +2,8 @@
 18f-handbook-projects-in-distress  5
 18f-handbook-travel  4
 18f-handbook-travel-faq  13
-aoml-hurricane-faq  53
-asf-board-minutes-2025-01  93
+aoml-hurricane-faq  52
+asf-board-minutes-2025-01  90
 automattic-privacy-policy  8
 bls-glossary  4
 bonterms-cloud-terms  2
@@ -44,7 +44,7 @@ nstac-microdata-forum  3
 nttcom-onboarding-week1  3
 nws-glossary-a  9
 rfc3693-geopriv-requirements  13
-rfc9293-tcp  27
+rfc9293-tcp  26
 rfc9457  3
 rust-lang-minutes-2022-11-22  3
 rust-rfc-2094-nll  8
