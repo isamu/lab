@@ -1,6 +1,6 @@
 18f-blog-oracle-databases  1
 18f-handbook-travel-faq  1
-aoml-hurricane-faq  11
+aoml-hurricane-faq  10
 arxiv-2609-38203-abs-verbal-fluency  1
 arxiv-2609-38219-abs-tamazight-speech  3
 arxiv-astro-ph-new-2025-01-03  10

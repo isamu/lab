@@ -223,6 +223,26 @@ describe("templateSections: where a template heading reaches", () => {
   });
 });
 
+describe("unfilled-placeholder in a table", () => {
+  const table = ["# Status", "", "| Issue | Owner |", "| --- | --- |", "| Docs are late | [Name] |", "| Tests are slow | Dana |", ""].join("\n");
+
+  it("reports a blank left in a cell", () => {
+    assert.deepEqual(
+      findings(table, en).map((finding) => finding.line),
+      [5],
+    );
+  });
+
+  it("leaves a cell whose text only looks like a blank alone", () => {
+    assert.deepEqual(findings(table.replace("[Name]", "[the docs](https://example.com/docs)"), en), []);
+    assert.deepEqual(findings(table.replace("[Name]", "a todo app"), en), []);
+  });
+
+  it("leaves a blank in a table under a template heading alone", () => {
+    assert.deepEqual(findings(table.replace("# Status", "# Status template"), en), []);
+  });
+});
+
 describe("unfilled-placeholder in a template", () => {
   it("leaves the blanks under a Template heading alone", () => {
     const source = [
@@ -320,6 +340,15 @@ describe("placeholderSpans: blank marks (〇〇) where a letter needs a name, a 
     ["株式会社△△の山田です。", ["△△"], "a triangle blank"],
     ["〇万円程度を想定しています。", ["〇万円"], "a sum at the head of a line"],
     ["〇月〇日に開きます。", ["〇月", "〇日"], "a date at the head of a line"],
+    ["所属：営業部　氏名：〇〇", ["〇〇"], "a field whose value is the blank"],
+    ["報告者：〇〇", ["〇〇"], "a field at the head of a line"],
+    ["総務部長 〇〇", ["〇〇"], "a name after a title and a space"],
+    ["代表取締役 〇〇 〇〇", ["〇〇", "〇〇"], "a family and a given name after a title"],
+    ["新電話番号：03-〇〇〇〇-〇〇〇〇", ["〇〇〇〇", "〇〇〇〇"], "the groups of a phone number"],
+    ["〒〇〇〇-〇〇〇〇　東京都〇〇区", ["〇〇〇", "〇〇〇〇", "〇〇区"], "a postcode and a ward"],
+    ["〇丁目〇番〇号 〇〇ビル5階", ["〇丁目", "〇番", "〇号", "〇〇ビル"], "a street number and a building"],
+    ["〇〇大学 経営学部", ["〇〇大学"], "a university"],
+    ["本社のある〇〇市で開く大会です。", ["〇〇市"], "a city"],
   ];
   blanks.forEach(([text, expected, label]) => {
     it(`finds ${label}`, () => {
@@ -335,6 +364,9 @@ describe("placeholderSpans: blank marks (〇〇) where a letter needs a name, a 
     ["二〇二六年一〇月一日に開きます。", "a kanji numeral zero"],
     ["○　注意事項", "a bullet before a heading word"],
     ["○様式は別紙のとおり", "one mark is a bullet, not a name"],
+    ["名前は〇〇で、あとで決めます。", "a blank mid-sentence with no field before it"],
+    ["〇〇 の後ろに説明を書きます。", "a blank before more text on its line"],
+    ["期限：〇〇までに決める", "a field whose value goes on after the blank"],
   ];
   examples.forEach(([text, label]) => {
     it(`does not find ${label}`, () => {
@@ -364,6 +396,16 @@ describe("unfilled-placeholder: a blank mark in a letter, and the same mark as a
     assert.deepEqual(findingsIn(letter, "blog/tech"), []);
     assert.deepEqual(findingsIn("出典を記載し、○○株式会社作成などと明記してください。\n", "legal/contract"), []);
     assert.deepEqual(findingsIn("申請書には「○○株式会社」のように正式な名前を書きます。\n", "docs/manual"), []);
+  });
+
+  it("reports a blank left in a table cell, and leaves a filled table alone", () => {
+    const table = ["# 出張報告", "", "| 作業 | 担当 |", "| --- | --- |", "| 見積もりの確認 | 〇〇 |", "| 回答 | 山田 |", ""].join("\n");
+    assert.deepEqual(
+      findingsIn(table, "business/report").map((finding) => finding.line),
+      [5],
+    );
+    assert.deepEqual(findingsIn(table.replace("〇〇", "佐藤"), "business/report"), []);
+    assert.deepEqual(findingsIn(table, "blog/tech"), []);
   });
 
   it("leaves a business document whose blanks are filled alone", () => {

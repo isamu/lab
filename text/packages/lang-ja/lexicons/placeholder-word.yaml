@@ -59,6 +59,28 @@ entries:
   - pattern: 課
     group: blank-suffix
     genres: [business]
+  # 所在の名前（〇〇市、〇〇区、〇〇ビル、〇〇大学）。住所や宛先に残った伏せ字。
+  - pattern: 大学
+    group: blank-suffix
+    genres: [business]
+  - pattern: ビル
+    group: blank-suffix
+    genres: [business]
+  - pattern: 市
+    group: blank-suffix
+    genres: [business]
+  - pattern: 区
+    group: blank-suffix
+    genres: [business]
+  - pattern: 町
+    group: blank-suffix
+    genres: [business]
+  - pattern: 村
+    group: blank-suffix
+    genres: [business]
+  - pattern: 県
+    group: blank-suffix
+    genres: [business]
   # 前に付く語（株式会社〇〇、総務部の〇〇、署名の「営業部　〇〇」）。
   - pattern: 株式会社
     group: blank-prefix
@@ -98,6 +120,16 @@ entries:
     group: blank-unit
     genres: [business]
   - pattern: 日
+    group: blank-unit
+    genres: [business]
+  # 番地（〇丁目〇番〇号）。
+  - pattern: 丁目
+    group: blank-unit
+    genres: [business]
+  - pattern: 番
+    group: blank-unit
+    genres: [business]
+  - pattern: 号
     group: blank-unit
     genres: [business]
   # group: template — 見出しにあれば、その節が雛形だと言う語（「## 雛形」「# 記入例」）。

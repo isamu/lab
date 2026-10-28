@@ -6,7 +6,7 @@ import { loneNumeralSpans, nameNumeralSpans } from "./name-numeral.ts";
 import { placeholderSpans } from "./placeholder.ts";
 import { numeralWordSpans } from "./numeral-word.ts";
 import { seriesLabelSpans } from "./series-label.ts";
-import { nameSpansOf, oneOf } from "./acronym-name.ts";
+import { nameSpansOf, oneOf, postalAddressSpans } from "./acronym-name.ts";
 import { grammarSpans } from "./abnf-grammar.ts";
 import { outlineLabelSpans } from "./outline-label.ts";
 import { referenceListSpans } from "../reference-lists.ts";
@@ -180,8 +180,9 @@ export const lexiconNotationOf = (wordsOf: (id: string) => string[]): NotAcronym
   return (text) => [...notation(text), ...names(text)];
 };
 
-/** 文書全体で読む、略語として数えない範囲。文献一覧の誌名や会議名、番号の付いた区切りの見出し、ABNF の文法。 */
+/** 文書全体で読む、略語として数えない範囲。文献一覧の誌名や会議名、番号の付いた区切りの見出し、ABNF の文法、文に切れ目の入る所在地（Rd. NE）。 */
 export const sourceNotAcronymSpans = (source: string, wordsOf: (id: string) => string[]): Span[] => [
+  ...postalAddressSpans(source, wordsOf("street-suffix"), wordsOf("us-state-code")),
   ...referenceListSpans(source, wordsOf("reference-list-heading")),
   ...outlineLabelSpans(source, wordsOf("numbered-division")),
   ...grammarSpans(source),

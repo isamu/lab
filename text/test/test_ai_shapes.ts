@@ -290,6 +290,19 @@ describe("colonLeadIns", () => {
     assert.equal(leadInsOf(`# 題\n\n参_考:\n\n- 鍵\n\n参考:\n\n- 地図\n`).length, 2);
   });
 
+  // Self-written API reference. A list whose every item opens with a code span names values or members: a parts list.
+  it("does not count a lead-in to a list of values, each item opening with a code span", () => {
+    const values = "# Requests\n\nThe mode option takes one of these values:\n\n- `omit`: never send credentials.\n- `include`: always send them.\n";
+    assert.deepEqual(leadInsOf(values, en), []);
+    assert.deepEqual(leadInsOf("# 題\n\n使える値は次の通りです：\n\n1. **`low`**: 遅い\n2. **`high`**: 速い\n"), []);
+  });
+
+  it("still counts a lead-in to a list where some items do not open with code, or to a single code item", () => {
+    assert.equal(leadInsOf("# Requests\n\nHere's what you need:\n\n- `omit`, for no credentials\n- A key\n", en).length, 1);
+    assert.equal(leadInsOf("# Requests\n\nHere's what you need:\n\n- A key with `omit` set\n- A map\n", en).length, 1);
+    assert.equal(leadInsOf("# Requests\n\nHere's what you need:\n\n- `omit`\n", en).length, 1);
+  });
+
   it("returns nothing for a document without lists", () => {
     assert.deepEqual(leadInsOf("# 題\n\n次の通りです：\n"), []);
   });

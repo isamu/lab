@@ -1,5 +1,6 @@
 import { calendarUnitsOf } from "./calendar-number.ts";
 import { closingAndEarlier, newNumbers } from "./closing-numbers.ts";
+import { hasNewCodeOrLink, isLinkList } from "./closing-code.ts";
 import { openingProse, opensWithNumber } from "./opening-passage.ts";
 import { proseText } from "./measure.ts";
 import type { ProseDocument, Section } from "./plugin.ts";
@@ -31,8 +32,6 @@ export const riskDisclosure: Filter = (doc) => {
   return [{ text: body.slice(0, 4000), offset: doc.sentences[0]?.span.start ?? 0 }];
 };
 
-const EVIDENCE = /`|https?:\/\//u;
-
 /** 結びに、前に書いていない数があるか。本文の数を繰り返すだけ（「以上のように、9月は…」）なら具体物ではない。 */
 const hasNewNumber = (doc: ProseDocument, last: Section): boolean => {
   const { closing, earlier } = closingAndEarlier(doc, last);
@@ -47,7 +46,7 @@ export const emptyConclusion: Filter = (doc) => {
   const last = doc.sections.at(-1);
   if (last === undefined || last.sentences.length === 0) return [];
   const text = sectionText(doc, last);
-  if (EVIDENCE.test(text) || hasNewNumber(doc, last)) return [];
+  if (isLinkList(text) || hasNewCodeOrLink(text, doc.source.slice(0, last.span.start)) || hasNewNumber(doc, last)) return [];
   return [{ text: text.slice(0, 2000), offset: last.sentences[0]?.span.start ?? last.span.start }];
 };
 

@@ -85,6 +85,14 @@ const isBoldNounLabel = (sentence: Sentence, source: string): boolean => {
 const isPlainNounLabel = (sentence: Sentence, source: string): boolean =>
   lineAround(source, sentence).trim() === sentence.text.trim() && isNounLabel(labelWords(sentence.text), sentence);
 
+/** An item's list marker and any emphasis before its first word (- **, 1. ). */
+const ITEM_HEAD = /^\s*(?:[-*+]|\d+[.)])\s+(?:\*\*|__|\*|_)?/u;
+
+const opensWithCode = (source: string, item: Span): boolean => source.slice(item.start, item.end).replace(ITEM_HEAD, "").startsWith("`");
+
+/** A list whose every item opens with a code span names values, options or members (`omit`: never send …): a parts list, which can stay. */
+const isValueList = (list: BulletList, source: string): boolean => list.itemSpans.length > 1 && list.itemSpans.every((item) => opensWithCode(source, item));
+
 /**
  * Prose sentences ending in a colon that hand the reader straight to a list (「以下の通りです：」, "Here's what you need:").
  * An item of a list is not prose: 「例: `code`」 ends in a colon once its code is masked, and it leads nowhere.
@@ -97,6 +105,7 @@ export const colonLeadIns = (
   markdown = true,
 ): Sentence[] => {
   const leadIns = lists.flatMap((list) => {
+    if (isValueList(list, source)) return [];
     const before = sentenceRightBefore(sentences, list, source);
     return before !== undefined && endsWithColon(before.text) && !insideAny(listSpans, before.span.start) ? [before] : [];
   });
