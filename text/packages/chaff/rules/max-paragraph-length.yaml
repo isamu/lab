@@ -71,8 +71,8 @@ example:
       Next term we will review the evening range and hand out subscription leaflets in store.
 
 not_flagged:
-  ja: 文の数が多くても、短い文を重ねただけの段落（普通の長さの文を上限の数だけ並べたより短いもの）は指しません。
-  en: A paragraph of many short sentences is not reported, as long as it is shorter than that many sentences of ordinary length.
+  ja: 文の数が多くても、短い文を重ねただけの段落（普通の長さの文を上限の数だけ並べたより短いもの）は指しません。【０００１】や【従来の技術】のような【】のラベルだけの行は段落の切れ目と読みます。番号付きの見出しに改行なしで本文が続く段落（２【沿革】1893年…、改行の落ちた写し）は、段落の切れ目が分からないので測りません。
+  en: A paragraph of many short sentences is not reported, as long as it is shorter than that many sentences of ordinary length. A line holding only a 【】 label (a Japanese paragraph number or heading, 【０００１】) ends a paragraph, and a paragraph whose numbered 【】 heading runs straight into its body (a copy that lost its line breaks) is not measured, since where its paragraphs end is unknown.
 level_meaning:
   ja: 一つの段落に {limit} 文まで
   en: up to {limit} sentences in a paragraph
