@@ -2,6 +2,7 @@ import { joinWords } from "./word-list.ts";
 import { wordsOf } from "./structure.ts";
 import type { Detector, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 import { entryIn, entryOpens, entryRanges, type TokenRange } from "./lexicon-match.ts";
+import { sentencesWithHeadings } from "./heading-sentences.ts";
 import { scoped, scopeMarkersOf, type ScopeMarkers } from "./superlative-scope.ts";
 import { makesWord, namesQuantity } from "./superlative-name.ts";
 import { namesAmount } from "./superlative-amount.ts";
@@ -254,14 +255,15 @@ const writtenIn = (sentence: Sentence, entry: LexiconEntry): boolean =>
     : entryRanges(sentence, entry).some((range) => !quotedRange(sentence, range));
 
 /**
- * AI 生成の signal。1 つでは何も言えないので、重みを足し合わせて文書の点にする。
+ * AI 生成の signal。1 つでは何も言えないので、重みを足し合わせて文書の点にする。見出しも読む（「〜をわかりやすく解説」のような題）。
  * 単独で断じない。§20.2 の複合シグナルの入口で、これだけで「AI が書いた」とは言わない。
  */
 export const aiTell: Detector = (doc, options): Finding[] => {
   const entries = [...new Map((options.lexicon ?? []).map((entry) => [entry.pattern.toLowerCase(), entry])).values()];
-  const found = entries.filter((entry) => doc.sentences.some((sentence) => writtenIn(sentence, entry)));
+  const sentences = sentencesWithHeadings(doc);
+  const found = entries.filter((entry) => sentences.some((sentence) => writtenIn(sentence, entry)));
   const score = Math.round(found.reduce((sum, entry) => sum + (entry.weight ?? 1), 0) * 10);
-  const first = doc.sentences.find((sentence) => found.some((entry) => writtenIn(sentence, entry)));
+  const first = sentences.find((sentence) => found.some((entry) => writtenIn(sentence, entry)));
   if (first === undefined || score <= options.limit) return [];
   return [
     {

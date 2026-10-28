@@ -249,7 +249,7 @@ Several of them also show how often human writing is mistaken for generated text
   - Monitoring AI-Modified Content at Scale: A Case Study on the Impact of ChatGPT on AI Conference Peer Reviews
   - Appeared in: ICML 2024.
   - Found: In conference peer reviews, adjectives such as "commendable", "meticulous" and "intricate" rose sharply.
-  - In chaff: supports `ai-tell`, and is why it speaks only when such words pile up, never at one word.
+  - In chaff: supports `ai-tell`, and is why it speaks only when such words pile up (in a blog post, one of the heavier phrases, which human posts rarely use, is enough).
 - <a id="zhang-2024"></a>**Zhang et al. (2024)** [arxiv.org](https://arxiv.org/abs/2409.11704)
   - From Lists to Emojis: How Format Bias Affects Model Alignment
   - Appeared in: arXiv (not peer reviewed).

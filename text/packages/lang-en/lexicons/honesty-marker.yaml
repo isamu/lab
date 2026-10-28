@@ -1,0 +1,14 @@
+# Markers that flag one sentence as candid. Generated posts and emails asked to sound natural use one; human blog
+# and business documents of the corpus have none. "Honestly" alone is also a manner adverb (live honestly), so only
+# its marker forms are listed: set off by a comma or a question mark, or after "and".
+id: honesty-marker
+language: en
+entries:
+  - pattern: honestly,
+  - pattern: honestly?
+  - pattern: and honestly
+  - pattern: if I'm honest
+  - pattern: if I'm being honest
+  - pattern: if I am honest
+  - pattern: if I am being honest
+  - pattern: my honest take

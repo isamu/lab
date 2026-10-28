@@ -98,14 +98,16 @@ article.md   blog/tech · English   genre from --genre
 
   1:71    info    Section length varies by only 25% (want at least 35%)
                   section-length-uniformity
-  3:1     info    "delve into, in today's fast-paced world, it's not just, quietly" appear together (score 25, limit 18)
+  3:1     info    "delve into, in today's fast-paced world, it's not just, quietly" appear together (score 25, limit 4)
                   ai-tell
   3:1     warning "in today's fast-paced world" is an opening that fits any article
                   padded-intro
-  3:1     warning "ai-tell, section-length-uniformity, padded-intro, closing-cliche, announcing-opener" occur together in this document (5 signals, 2 needed)
+  3:1     warning "ai-tell, honesty-marker, section-length-uniformity, padded-intro, closing-cliche, announcing-opener" occur together in this document (6 signals, 2 needed)
                   ai-generated-composite
   11:1    info    "Honestly," and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
+  11:1    info    "honestly," flags this sentence as candid
+                  honesty-marker
   15:1    info    "The key point is" and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
   23:1    info    "What's important is" and other announcing openers start 3 sentences (3 needed)

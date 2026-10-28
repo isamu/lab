@@ -1,0 +1,84 @@
+id: honesty-marker
+layer: L2
+status: stable
+how_to_find: phrase-in-use
+word_list: honesty-marker
+extra_word_lists: [mention-cue]
+requires: [pos]
+languages: [ja, en]
+severity: info
+
+name:
+  ja: 「正直」と前置きする
+  en: An honesty marker
+
+why:
+  ja: 「正直、」「正直に言うと」と前置きすると、その文だけが本音に見え、ほかの文は本音ではなかったのかと読めます。人のブログや業務文書にはほとんど出ず、「自然に書いて」と頼んだ生成文が、人らしく見せるために 1 つ入れることの多い言い回しです。1 つでも言いますが、生成だとは言いません。
+  en: '"Honestly,", "if I''m being honest" and "my honest take" flag one sentence as candid, which leaves the reader wondering about the rest. Human blog posts and business documents rarely use them; generated text asked to sound natural often adds one to sound human. One is reported, and that alone does not say the text was generated.'
+
+message:
+  ja: 「{matched}」と前置きしています
+  en: '"{matched}" flags this sentence as candid'
+
+how_to_fix:
+  ja: 前置きを消して、そのまま言ってください（正直かなり迷いました → かなり迷いました）。
+  en: Drop the marker and say it plainly ("Honestly, it was hard" → "It was hard").
+
+levels: { strict: 1, normal: 1, relaxed: 2 }
+
+use_for: [blog, business, legal, docs, academic, literature, speech]
+off_for:
+  legal: "A statute or contract states obligations, not the writer's candour."
+  docs: "A help page states how things work; a candour marker there is rare and not a sign of generation."
+  academic: 'A paper may say "to be honest about the limits" as part of its argument; the marker is not reported there.'
+  literature: "Length, rhythm, repetition and register are the author's choices in literature, and dialogue mixes styles. Only what one work can hold itself to runs: consistent spacing and commas, and numbering without gaps."
+  speech: 'A speaker says "honestly" aloud as part of their own voice.'
+
+group: ai-tells
+summary:
+  ja: 「正直、」「正直に言うと」のように、本音だと前置きする言い回し
+  en: A sentence flagged as candid ("honestly", "if I'm being honest")
+example:
+  ja:
+    config: { genre: blog/essay }
+    before: |
+      最初の 1 週間は、正直つらかった。
+    after: |
+      最初の 1 週間はつらかった。
+  en:
+    config: { genre: blog/essay }
+    before: |
+      I still write letters, if I'm honest. Not because I think email is bad.
+    after: |
+      I still write letters. Not because I think email is bad.
+
+not_flagged:
+  ja: ブログと業務文書だけを見ます。論文、法令、文学、講演の書き起こしなどは対象にしません。人柄の「正直な人」「正直者」は前置きではないので数えません（読点の後の「、正直な人」は数えます）。文頭の「正直、」が 3 つ以上重なれば announcing-opener も言います。言葉として名指しているだけのもの（「正直」という言葉）も指しません。文頭の「正直なところ、」は人の文章にもあるので数えません（読点の後の「、正直なところ」は数えます）。
+  en: Only blog posts and business documents are checked; papers, statutes, literature and transcripts are not. "Honestly" as manner ("live honestly") is not a marker and is not listed. A piling-up of sentence openers, "Honestly," among them, is announcing-opener's. A marker only named as a term (the word "honestly") is not reported.
+level_meaning:
+  ja: 前置きが {limit} 箇所あれば指摘
+  en: reported once there are {limit}
+rewrite:
+  depth: light
+  ja:
+    direction: 「正直」の前置きを消して、文をそのまま言い切ってください。
+    pairs:
+      - before: ご提案には、正直かなり迷いました。
+        after: ご提案には、かなり迷いました。
+      - before: 正直に言うと、最初は重たく感じていた。
+        after: 最初は重たく感じていた。
+    keep:
+      - 書き手の確かさ（言い切りか、推量か）
+    avoid:
+      - 前置きを別の前置き（実は、本当のところ）に替える
+  en:
+    direction: Drop the honesty marker and state the sentence plainly.
+    pairs:
+      - before: Honestly, the setup took an hour.
+        after: The setup took an hour.
+      - before: Here's my honest take on the headphones.
+        after: Here is what I think of the headphones.
+    keep:
+      - the writer's certainty (stated or hedged)
+    avoid:
+      - swapping the marker for another ("to tell the truth", "frankly")

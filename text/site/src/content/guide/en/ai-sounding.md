@@ -121,7 +121,7 @@ Legal documents, manuals, literature and transcripts are written differently, so
 
 | Rule | What it finds |
 | --- | --- |
-| `ai-tell` | Phrases common in generated text piling up ("plays a crucial role", "delve into") |
+| `ai-tell` | Phrases common in generated text piling up ("plays a crucial role", "delve into"); in a blog post, one of the heavier ones is enough |
 | `contrast-framing` | Too large a share of sentences in contrast frames ("not just X, but Y", "It wasn't X. It was Y", "It's not about X. It's about Y") |
 | `unprompted-denial` | Too large a share of sentences that deny a premise nobody stated, with nothing said in its place ("This isn't about tooling.", "That's not the point.") |
 | `stock-transition` | Too many sentences opening with "Moreover" or "Additionally" |
@@ -133,6 +133,7 @@ Legal documents, manuals, literature and transcripts are written differently, so
 | `bold-label-list` | Many list items that open with a bold label and a colon ("- **Speed**: ...") |
 | `assistant-residue` | What is left of a chat reply ("I hope this helps", "As of my last knowledge update") |
 | `email-stock-courtesy` | Two or more stock email courtesies in one email ("I hope this email finds you well", "I apologize for any inconvenience") (English documents only) |
+| `honesty-marker` | A sentence flagged as candid ("Honestly,", "if I'm being honest", "my honest take"); one is reported (blog posts and business documents only) |
 | `closing-exhortation` | A closing that cheers the reader on or promises the outcome, two or more times ("You've got this", "Happy baking!") |
 | `cold-open` | An opening with no situation or example that piles a bare wish ("You want to ..."), a word of the previous sentence repeated in quotes ("That 'almost' is the problem") and a teaser ("Sounds simple. It isn't.") |
 | `chat-citation-residue` | Marks a pasted chat answer leaves: links ending in "?utm_source=chatgpt.com", "oaicite" |
@@ -145,7 +146,7 @@ Legal documents, manuals, literature and transcripts are written differently, so
 | `section-length-uniformity` | Every section filled to the same size, which is what a template does |
 | `paragraph-length-variance` | Paragraphs all of about the same length, as if poured into a mould |
 | `ai-structure` | An outline past 90% of human articles on several structure measures at once (heading density, headings split into three, bold labels, uniform sections, a closing that restates). In business documents, the textbook proposal outline (Summary, Current Situation, Proposed Solution, Expected Benefits, Costs, Risks and Mitigation…) counts as one more |
-| `ai-generated-composite` | Three or more of these in one document (two in a blog post): `ai-tell`, `contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in`, `assistant-residue`, `closing-cliche`, `padded-intro`, `no-em-dash`, `sentence-rhythm`, `rule-of-three`, `section-length-uniformity`, `ai-structure`, `over-general-claim`, `q-fragment-answer`, `closing-exhortation`, `unfilled-placeholder`, `bold-emphasis` (`bold-density` and `bold-label-list` are not counted; `ai-structure` already measures bold labels) |
+| `ai-generated-composite` | Three or more of these in one document (two in a blog post): `ai-tell`, `honesty-marker`, `contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in`, `assistant-residue`, `closing-cliche`, `padded-intro`, `no-em-dash`, `sentence-rhythm`, `rule-of-three`, `section-length-uniformity`, `ai-structure`, `over-general-claim`, `q-fragment-answer`, `closing-exhortation`, `unfilled-placeholder`, `bold-emphasis` (`bold-density` and `bold-label-list` are not counted; `ai-structure` already measures bold labels) |
 
 None of these rules says the text was generated. People write every one of these shapes.
 Piled up, they mark a place to reread.

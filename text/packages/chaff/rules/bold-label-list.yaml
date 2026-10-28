@@ -10,8 +10,8 @@ name:
   en: Too many list items led by a bold label
 
 why:
-  ja: 「- **速さ**：〜」のように、項目ごとに太字の札とコロンを置いて説明を続ける形です。札が並ぶと、どの項目も同じ重さの見出しに見え、項目どうしの繋がりは書かれません。生成文によく見られる形です。
-  en: 'An item that opens with a bold label and a colon ("- **Speed**: ..."), item after item. The labels make every item look like a heading of equal weight, and the links between the items go unwritten. A shape common in generated text.'
+  ja: 「- **速さ**：〜」のように、項目ごとに太字の札とコロンを置いて説明を続ける形です。「- **情報が古くなる。** 〜」のように、太字の一文で始めて説明を続ける形も同じです。札が並ぶと、どの項目も同じ重さの見出しに見え、項目どうしの繋がりは書かれません。生成文によく見られる形です。
+  en: 'An item that opens with a bold label and a colon ("- **Speed**: ..."), or with a bold lead sentence ("- **Information gets out of date.** ..."), item after item. The labels make every item look like a heading of equal weight, and the links between the items go unwritten. A shape common in generated text.'
 
 message:
   ja: 「{label}」など、太字の札で始まる項目が {count} 個あります（{limit} 個から）
@@ -36,8 +36,8 @@ sources: [zhang-2024]
 
 group: ai-tells
 summary:
-  ja: 「- **速さ**：〜」のように、太字の札とコロンで始まる項目が並び、説明が札の続きだけになっている所
-  en: List items, one after another, that open with a bold label and a colon
+  ja: 太字の札（**速さ**：）や太字の一文で始まる項目が続く箇条書き
+  en: List items in a row that open with a bold label or a bold lead sentence
 example:
   ja:
     config: { genre: blog/tech }
@@ -71,8 +71,8 @@ example:
       The monthly bill is lower, and permissions can be split finely.
 
 not_flagged:
-  ja: 札がコードだけの項目（`--flag` の説明のような、設定や引数の一覧）は数えません。札の後ろにコロンが無い項目と、コロンの後ろに何も無い項目も数えません。仕様書（technical/spec）・法務・説明書・論文・文学のジャンルでは見ません。
-  en: An item whose label is only code (a list of options or fields) is not counted, nor is one without a colon after the label or without text after the colon. Specification (technical/spec), legal, documentation, academic and literary genres do not run this rule.
+  ja: 札がコードだけの項目（`--flag` の説明のような、設定や引数の一覧）は数えません。札の後ろにコロンも句点も無い項目（太字が文の頭の語だけのもの）と、その後ろに何も無い項目も数えません。仕様書（technical/spec）・法務・説明書・論文・文学のジャンルでは見ません。
+  en: An item whose label is only code (a list of options or fields) is not counted, nor is one whose bold ends in neither a colon nor a full stop (a bold opening word of a sentence), or that has no text after it. Specification (technical/spec), legal, documentation, academic and literary genres do not run this rule.
 level_meaning:
   ja: 太字の札で始まる項目が {limit} 個あれば指摘
   en: reported once {limit} list items open with a bold label

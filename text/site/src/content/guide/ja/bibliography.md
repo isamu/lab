@@ -250,7 +250,7 @@ chaff はこれをもとに言い回しや書式を指しますが、「AI が�
   - Monitoring AI-Modified Content at Scale: A Case Study on the Impact of ChatGPT on AI Conference Peer Reviews
   - 載った所：ICML 2024。
   - 分かったこと：学会の査読の文章で、commendable、meticulous、intricate などの形容詞が大きく増えました。
-  - chaff では：`ai-tell` の裏付けです。1 語だけでは言わず、重なったときに言う理由でもあります。
+  - chaff では：`ai-tell` の裏付けです。1 語だけでは言わず、重なったときに言う理由でもあります（ブログでは、人の記事にほぼ出ない重い言い回しなら 1 つでも言います）。
 - <a id="zhang-2024"></a>**Zhang ほか（2024）** [arxiv.org](https://arxiv.org/abs/2409.11704)
   - From Lists to Emojis: How Format Bias Affects Model Alignment
   - 載った所：arXiv（査読前）。

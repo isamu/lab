@@ -11,8 +11,8 @@ name:
   en: Phrasing common in generated text
 
 why:
-  ja: どれも単独では普通の日本語です。重なったときだけ意味があるので、重みを足し合わせて出しています。これだけで「AI が書いた」とは言えません。
-  en: Each is ordinary on its own. Only the pile-up means anything, so the weights are summed. This alone never says the text was generated.
+  ja: どれも単独では普通の日本語です。重なったときだけ意味があるので、重みを足し合わせて出しています（ブログでは、人の記事にほぼ出ない重い言い回しなら 1 つでも出します）。これだけで「AI が書いた」とは言えません。
+  en: Each is ordinary on its own. Only the pile-up means anything, so the weights are summed (in a blog post, one of the heavier phrases, which human posts rarely use, is enough). This alone never says the text was generated.
 
 message:
   ja: 「{word}」が揃っています（点 {density}、{limit} まで）
@@ -24,6 +24,10 @@ how_to_fix:
 
 # 重みの合計を 10 倍した点。0.9 の言い回しが 2 つで 18。
 levels: { strict: 10, normal: 18, relaxed: 30 }
+# ブログでは、生成した記事でも決まり文句は 1 つ 2 つしか出ないことが多く、上の段では届かない。重み 0.5 の言い回し 1 つから言う
+# （判定済み corpus と lab の corpus で測った段。人のブログにはほぼ出ない）。
+by_genre:
+  blog: { strict: 4, normal: 4, relaxed: 10 }
 
 use_for: [technical/readme, blog, business, legal, docs, academic, literature, speech]
 off_for:

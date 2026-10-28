@@ -476,8 +476,8 @@ after.md の構成: 見出し 5、節の平均 101 字、箇条書き 0%、太�
 <!-- chaff-screen: rewrite -->
 ```
 $ npx chaffjs ai-score before.md after.md --compact
-before.md: ai-score high 6/32 ai-tell announcing-opener closing-cliche contrast-framing structure:bold-labels ai-generated-composite:strict
-after.md: ai-score low 1/31 section-length-uniformity
+before.md: ai-score high 7/33 ai-tell announcing-opener closing-cliche contrast-framing honesty-marker structure:bold-labels ai-generated-composite:strict
+after.md: ai-score low 1/32 section-length-uniformity
 ```
 
 上の `before.md` と `after.md` は、前の節で構成を測った記事です。1 ファイル 1 行で、段階、目印の数と比べた項目の数、数えた目印を出します。

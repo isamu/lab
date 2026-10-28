@@ -491,8 +491,8 @@ Three signs make "medium" and five make "high". It does not say whether AI wrote
 <!-- chaff-screen: rewrite -->
 ```
 $ npx chaffjs ai-score before.md after.md --compact
-before.md: ai-score high 6/31 announcing-opener bold-emphasis closing-cliche contrast-framing structure:bold-labels ai-generated-composite:strict
-after.md: ai-score low 1/30 structure:short-sections
+before.md: ai-score high 7/32 ai-tell announcing-opener bold-emphasis closing-cliche contrast-framing structure:bold-labels ai-generated-composite:strict
+after.md: ai-score low 1/31 structure:short-sections
 ```
 
 `before.md` and `after.md` are the articles the outline was measured on above. Each file gets one line: the level, the signs out of those compared, and the signs that counted.
@@ -553,7 +553,7 @@ passages. `risk-disclosure` does not even ask when a heading already names the r
 | Rule | What it looks at | Narrowed to |
 | --- | --- | --- |
 | `risk-disclosure` | whether a proposal states its risks | nothing, when a heading names a risk section |
-| `empty-conclusion` | whether the closing only summarises the body | only when the last section has no number, code or link the body did not have (a references section of linked items is not sent) |
+| `empty-conclusion` | whether the closing only summarises the body | only when the last section has no number, code or link the body did not have |
 | `unsourced-number` | whether a number claiming an effect has a source | only when a number and an effect word share a sentence with no source |
 | `generic-opening` | whether the opening starts from a generic problem rather than the concrete background (who, what was built, what happened) | the first three sentences only, and nothing when the first sentence states a number |
 

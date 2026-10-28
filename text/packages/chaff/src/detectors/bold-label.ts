@@ -32,16 +32,32 @@ export const opensWithBoldLabel = (item: string): boolean => BOLD_LABEL.test(ite
 /** Whether the line holding `offset` is quoted (`> - **a**：…`): someone else's words, not the writer's to fix. */
 export const isQuotedAt = (source: string, offset: number): boolean => source.slice(source.lastIndexOf("\n", offset - 1) + 1, offset).includes(">");
 
-/** The list items, in document order, that open with a bold label and are not quoted. */
-export const boldLabelItems = (doc: ProseDocument): Span[] =>
+/** A bold run longer than this is a paragraph in bold, not a lead sentence. */
+const MAX_LEAD_CHARS = 80;
+
+/** `**Label.** text`: a bold lead sentence, its stop inside the bold, then the item goes on. The same label, closed by a stop instead of a colon. */
+const BOLD_LEAD = new RegExp(String.raw`^(\*\*|__)(?!\s)((?:(?!\1)[^\n]){1,${MAX_LEAD_CHARS}}?[.!?。！？])\1[ \t]*\S`, "u");
+
+/** The lead sentence a list item opens with in bold, its stop left off, or undefined. `item` is the item as written, marker and all. */
+export const boldLeadOf = (item: string): string | undefined =>
+  BOLD_LEAD.exec(item.replace(ITEM_MARKER, "").replace(TASK_BOX, ""))?.[2]
+    ?.trim()
+    .replace(/[.!?。！？]$/u, "");
+
+const labelOrLeadOf = (item: string): string | undefined => boldLabelOf(item) ?? boldLeadOf(item);
+
+const unquotedItems = (doc: ProseDocument, opens: (item: string) => string | undefined): Span[] =>
   doc.lists
     .flatMap((list) => list.itemSpans)
-    .filter((span) => !isQuotedAt(doc.source, span.start) && boldLabelOf(doc.source.slice(span.start, span.end)) !== undefined)
+    .filter((span) => !isQuotedAt(doc.source, span.start) && opens(doc.source.slice(span.start, span.end)) !== undefined)
     .toSorted((left, right) => left.start - right.start);
 
-/** A count, not a density: a person writes one or two labels even in a long article. */
+/** The list items, in document order, that open with a bold label and are not quoted. */
+export const boldLabelItems = (doc: ProseDocument): Span[] => unquotedItems(doc, boldLabelOf);
+
+/** A count, not a density: a person writes one or two labels even in a long article. A bold lead sentence counts as a label. */
 export const boldLabelList: Detector = (doc, options): Finding[] => {
-  const items = boldLabelItems(doc);
+  const items = unquotedItems(doc, labelOrLeadOf);
   const first = items[0];
   if (first === undefined || items.length < options.limit) return [];
   const written = doc.source.slice(first.start, first.end);
@@ -52,7 +68,7 @@ export const boldLabelList: Detector = (doc, options): Finding[] => {
       line: 0,
       column: 0,
       quote: (written.split("\n")[0] ?? "").trim(),
-      values: { label: boldLabelOf(written) ?? "", count: items.length, limit: options.limit, offset: first.start },
+      values: { label: labelOrLeadOf(written) ?? "", count: items.length, limit: options.limit, offset: first.start },
     },
   ];
 };

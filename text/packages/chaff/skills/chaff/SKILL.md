@@ -179,7 +179,8 @@ Use this section when asked to make a text sound less generated: 「AIっぽさ�
 chaff marks the shapes common in generated text (group "Signs of generated text" in `npx chaffjs rules`: `ai-tell`,
 `contrast-framing`, `stock-transition`, `announcing-opener`, `colon-lead-in`, `over-general-claim` (English only),
 `q-fragment-answer` (English only), `assistant-residue`, `email-stock-courtesy` (English emails: stacked "I hope this email finds
-you well"-type courtesies), `closing-exhortation` (a closing that cheers the reader on: 「ぜひ〜してみてください」,
+you well"-type courtesies), `honesty-marker` ("Honestly,", 「正直、」: one is reported in blog posts and business documents),
+`closing-exhortation` (a closing that cheers the reader on: 「ぜひ〜してみてください」,
 "You've got this"), `cold-open` (an opening that piles a bare wish, a quoted echo of the previous sentence and a teaser),
 `unprompted-denial` (sentences that deny a premise nobody stated: 「〜の話ではありません」, "This isn't about tooling."), and the signals
 `ai-generated-composite` reads, among others). Most of them do not run in `technical/spec` or in the legal, docs, literature and
