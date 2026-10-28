@@ -55,7 +55,10 @@ describe("nominalization (ja): a verbal noun carried by を行う / を実施す
   });
 
   it("the same carrying verbs after another verbal noun are still counted (指導を行う, 調査を実施する)", () => {
-    assert.deepEqual(hidden("夜間に学生の指導を行う。将来の野生復帰を想定した生息状況の調査を実施する。", ja), ["指導を行う→指導する", "調査を実施する→調査する"]);
+    assert.deepEqual(hidden("夜間に学生の指導を行う。将来の野生復帰を想定した生息状況の調査を実施する。", ja), [
+      "指導を行う→指導する",
+      "調査を実施する→調査する",
+    ]);
   });
 
   it("〜をする is ordinary and not counted", () => {
