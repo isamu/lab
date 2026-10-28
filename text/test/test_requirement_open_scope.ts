@@ -65,9 +65,37 @@ describe("requirement-smell: a list a condition, a permission or a prohibition h
     assert.deepEqual(found("受託者は、写真等を提出しなければならないものとする。", ja), ["open-end:等"]);
   });
 
+  it("a sentence closed by a negation (しないこと, ではないこと) forbids or denies: its list is open on purpose", () => {
+    assert.deepEqual(found("受託者は、写真、動画等を第三者に渡さないこと。", ja), []);
+    assert.deepEqual(found("提出した写真等が他人の権利を侵すものではないこと。", ja), []);
+  });
+
+  it("a negation inside the sentence does not close it: the list stays in the duty", () => {
+    assert.deepEqual(found("受託者は、写真等に傷がないことを確かめること。", ja), ["open-end:等"]);
+  });
+
+  it("a sentence that says who holds a right (帰属する, 留保される) is open on purpose, like a right granted", () => {
+    assert.deepEqual(found("写真、動画等の著作権は、撮影した会員に留保されるものとします。", ja), []);
+    assert.deepEqual(found("写真等の権利は、それを撮った者に帰属するものとする。", ja), []);
+  });
+
+  it("a list a pointing word opens (当該, 前記) names one given before, and is not reported again", () => {
+    assert.deepEqual(found("写真、動画等を受け取った場合、受託者は当該写真、動画等を保管するものとする。", ja), []);
+    assert.deepEqual(found("受託者は、前記写真等を保管するものとする。", ja), []);
+    assert.deepEqual(found("受託者は、写真、当該動画等を保管するものとする。", ja), ["open-end:等"]);
+  });
+
+  it("the items under a lead that forbids them are open on purpose; under a duty they are not", () => {
+    assert.deepEqual(found("会員は、次の行為をしてはならない。\n\n1. 写真等を無断で複製すること\n2. 機器などに負担をかけること", ja), []);
+    assert.deepEqual(found("会員は、次の行為をしてはならない。\n①写真等を無断で複製すること\n②機器などに負担をかけること", ja), []);
+    assert.deepEqual(found("会員は、次の事項を守らなければならない。\n\n1. 写真等を保管すること", ja), ["open-end:等"]);
+    assert.deepEqual(found("会員は、次の行為をしてはならない。\n\n説明を読むこと。\n\n1. 写真等を保管すること", ja), ["open-end:等"]);
+  });
+
   it("the scope cues are no smell words themselves", () => {
     assert.deepEqual(found("受託者は、故障した場合は報告しなければならない。", ja), []);
     assert.deepEqual(found("受託者は、写真を削除してはならない。", ja), []);
+    assert.deepEqual(found("受託者は、当該写真を保管するものとする。", ja), []);
   });
 });
 
@@ -156,6 +184,26 @@ describe("openOnPurpose", () => {
     assert.equal(openOnPurpose(afterVerb, open, words), true);
     assert.equal(openOnPurpose(afterNoun, open, words), false);
     assert.equal(openOnPurpose(closed, open, words), false);
+  });
+
+  it("a cue with position after counts only where it closes the sentence", () => {
+    const negation = scopeWordsOf([{ ...entry("ないこと", "scope-prohibition", [token("ない", "AUX"), token("こと", "NOUN")]), position: "after" }]);
+    const closing = at([
+      ["写真", "NOUN"],
+      ["等", "NOUN"],
+      ["ない", "AUX"],
+      ["こと", "NOUN"],
+      ["。", "PUNCT"],
+    ]);
+    const inside = at([
+      ["写真", "NOUN"],
+      ["等", "NOUN"],
+      ["ない", "AUX"],
+      ["こと", "NOUN"],
+      ["を", "ADP"],
+    ]);
+    assert.equal(openOnPurpose(closing, open, negation), true);
+    assert.equal(openOnPurpose(inside, open, negation), false);
   });
 
   it("a cue whose tokens run past the end of the sentence does not match", () => {

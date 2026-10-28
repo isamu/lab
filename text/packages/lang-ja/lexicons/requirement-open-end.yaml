@@ -22,6 +22,11 @@ entries:
   - { pattern: てはならない, group: scope-prohibition }
   - { pattern: てはなりません, group: scope-prohibition }
   - { pattern: ないものとする, group: scope-prohibition }
+  # 文を閉じる「ないこと」（使用しないこと。違反するものではないこと。）は禁止か否定。文の途中（不備がないことを確認する）は数えない。
+  - { pattern: ないこと, group: scope-prohibition, position: after }
+  # 権利が誰のものかを定める文（著作権は…に留保されるものとします、発明等をなした当事者に帰属するものとする）も、与える権利と同じ。
+  - { pattern: 帰属するものとする, group: scope-permission }
+  - { pattern: 留保されるものとする, group: scope-permission }
   - { pattern: 場合, group: scope-condition }
   - { pattern: 際, group: scope-condition }
   - { pattern: とき, group: scope-condition }
@@ -33,3 +38,7 @@ entries:
   - { pattern: 義務, group: scope-nominal }
   - { pattern: 責任, group: scope-nominal }
   - { pattern: 必要, group: scope-nominal }
+  # group: list-anaphor は、前に挙げた一覧を指し直す語（当該改良、改善等）。一覧が開いているなら、挙げたところで指す。
+  - { pattern: 当該, group: list-anaphor }
+  - { pattern: 前記, group: list-anaphor }
+  - { pattern: 上記, group: list-anaphor }
