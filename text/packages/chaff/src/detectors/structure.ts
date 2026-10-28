@@ -4,7 +4,7 @@ import type { Detector, DetectorOptions, Finding, LengthUnit, Paragraph, ProseDo
 import { dateStampIndexes, stampCandidates } from "../date-stamp.ts";
 import { inDocumentOrder } from "../structure/issues.ts";
 import { preambleParagraphs } from "../preamble-paragraphs.ts";
-import { isTooLongParagraph } from "../paragraph-length.ts";
+import { isTooLongParagraph, labelledBlocks, opensWithFusedHeading } from "../paragraph-length.ts";
 import { bodySectionOf } from "../body-section.ts";
 import { threeShare } from "../rule-of-three.ts";
 import { isInterview, sectionLevels } from "../section-levels.ts";
@@ -62,23 +62,39 @@ const uniformity = (doc: ProseDocument, values: readonly number[], span: { start
 const sentenceSize = (sentence: Sentence, unit: LengthUnit): number =>
   lengthOf(sentence, unit) + (unit === "word" ? contractionExtraWords(proseText(sentence)) : 0);
 
+type Block = { readonly start: number; readonly sentences: readonly Sentence[] };
+
+/**
+ * 段落の中の、長さを測る文の組と、その頭の位置（最初の組は段落の頭）。見出しが本文に溶けた段落（改行の落ちた文書）は測らない。
+ * 【】の見出しや段落番号だけの行で段落を割る。
+ */
+const measuredBlocks = (doc: ProseDocument, paragraph: Paragraph): Block[] => {
+  const text = doc.source.slice(paragraph.span.start, paragraph.span.end);
+  if (opensWithFusedHeading(text)) return [];
+  return labelledBlocks(text, paragraph.span.start, paragraph.sentences).map((sentences, index) => ({
+    start: index === 0 ? paragraph.span.start : (sentences[0]?.span.start ?? paragraph.span.start),
+    sentences,
+  }));
+};
+
 /** 1 段落に文を詰めすぎると、読み手はどこで息継ぎしていいか分からなくなる。 */
 export const paragraphLength: Detector = (doc, options): Finding[] =>
   doc.paragraphs
-    .filter((paragraph) =>
+    .flatMap((paragraph) => measuredBlocks(doc, paragraph))
+    .filter((block) =>
       isTooLongParagraph(
-        paragraph.sentences.map((sentence) => sentenceSize(sentence, doc.lengthUnit)),
+        block.sentences.map((sentence) => sentenceSize(sentence, doc.lengthUnit)),
         options.limit,
         options.fullSentence,
       ),
     )
-    .map((paragraph) => ({
+    .map((block) => ({
       rule: "max-paragraph-length",
       severity: "warning",
       line: 0,
       column: 0,
-      quote: doc.source.slice(paragraph.span.start, paragraph.span.start + 80).trim(),
-      values: { count: paragraph.sentences.length, limit: options.limit, offset: paragraph.span.start },
+      quote: doc.source.slice(block.start, block.start + 80).trim(),
+      values: { count: block.sentences.length, limit: options.limit, offset: block.start },
     }));
 
 const charsOf = (paragraph: Paragraph): number => paragraph.sentences.reduce((sum, sentence) => sum + charLength(sentence), 0);
