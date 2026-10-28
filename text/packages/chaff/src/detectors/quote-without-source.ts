@@ -6,7 +6,7 @@
 import { QUOTATION_MARKS, quotedSpans } from "../quoted-span.ts";
 import { readMarkdown } from "../markdown-read.ts";
 import { blockQuotations, type BlockQuotation } from "./block-quotation.ts";
-import type { Detector, Finding, LexiconEntry, ProseDocument } from "../plugin.ts";
+import type { Detector, Finding, LexiconEntry, Paragraph, ProseDocument } from "../plugin.ts";
 
 export type QuoteText = { readonly start: number; readonly text: string };
 
@@ -56,8 +56,11 @@ const cueStarts = (text: string, cue: string): number[] => {
 
 type Quoted = { readonly start: number; readonly end: number };
 
-/** The word lists the rule reads: quote-attribution, and quote-advice (「…」と述べる方が: a wording suggested, not quoted). */
-export type QuoteWords = { readonly cues: readonly LexiconEntry[]; readonly advice?: readonly LexiconEntry[] };
+/**
+ * The word lists the rule reads: quote-attribution, quote-advice (「…」と述べる方が: a wording suggested, not quoted), and
+ * quote-not-attribution (an example made up by the writer, words received, words written on a thing).
+ */
+export type QuoteWords = { readonly cues: readonly LexiconEntry[]; readonly advice?: readonly LexiconEntry[]; readonly not?: readonly LexiconEntry[] };
 
 const patternsIn = (entries: readonly LexiconEntry[], group: string): string[] =>
   entries.filter((entry) => entry.group === group && entry.pattern !== "").map((entry) => entry.pattern);
@@ -72,12 +75,27 @@ const isAdvice = (text: string, quoted: Quoted, advice: readonly LexiconEntry[])
   return patternsIn(advice, "say").some((say) => text.startsWith(say, after) && tails.some((tail) => text.startsWith(tail, after + say.length)));
 };
 
+/** A word of the group stands in the text (an English one as a whole word, ignoring case). */
+const standsIn = (text: string, entries: readonly LexiconEntry[], group: string): boolean =>
+  patternsIn(entries, group).some((word) => cueStarts(text, word).length > 0);
+
+/** Words received rather than quoted, right after the closing mark: 「…」と言われて、送れない. */
+const isReceived = (text: string, quoted: Quoted, not: readonly LexiconEntry[]): boolean =>
+  patternsIn(not, "received").some((tail) => text.startsWith(tail, quoted.end + 1));
+
+/** The cue's subject is a thing, by the word right before it: a sign that said "…". */
+const THING_GAP = /^\s+$/u;
+const saidByThing = (text: string, at: number, not: readonly LexiconEntry[]): boolean =>
+  patternsIn(not, "thing").some((word) => cueStarts(text.slice(0, at), word).some((start) => THING_GAP.test(text.slice(start + word.length, at))));
+
 /** A cue just before the quotation's opening mark, or just after its closing mark. position says which side it may stand on. */
 /** Advice after the quotation silences only the cue after it: 山田氏によれば「…」と言う方が適切だ still gives the words to someone. */
-const isAttributed = (text: string, quoted: Quoted, { cues, advice = [] }: QuoteWords): boolean => {
-  const advised = isAdvice(text, quoted, advice);
+const isAttributed = (text: string, quoted: Quoted, { cues, advice = [], not = [] }: QuoteWords): boolean => {
+  if (standsIn(text.slice(0, quoted.start), not, "example")) return false;
+  const advised = isAdvice(text, quoted, advice) || isReceived(text, quoted, not);
   return cues.some((cue) =>
     cueStarts(text, cue.pattern).some((at) => {
+      if (saidByThing(text, at, not)) return false;
       const before = cue.position !== "after" && at + cue.pattern.length <= quoted.start - 1 && at + cue.pattern.length >= quoted.start - 1 - CUE_REACH_BEFORE;
       const after = !advised && cue.position !== "before" && at >= quoted.end + 1 && at <= quoted.end + 1 + CUE_REACH_AFTER;
       return before || after;
@@ -85,17 +103,27 @@ const isAttributed = (text: string, quoted: Quoted, { cues, advice = [] }: Quote
   );
 };
 
+/** A Latin-script quotation with no space in it is one word, a term or a value ("core_claim_false"), not someone's words. */
+const isOneWord = (quote: string): boolean => LATIN.test(quote) && !/\s/u.test(quote);
+
+const isWords = (quote: string): boolean => [...quote].length >= MIN_QUOTE_CHARS && !isOneWord(quote);
+
 const quotesIn = (sentence: QuoteText, words: QuoteWords): UnsourcedQuote[] => {
   return quotedSpans(sentence.text, QUOTATION_MARKS)
-    .filter((span) => [...sentence.text.slice(span.start, span.end).trim()].length >= MIN_QUOTE_CHARS && isAttributed(sentence.text, span, words))
+    .filter((span) => isWords(sentence.text.slice(span.start, span.end).trim()) && isAttributed(sentence.text, span, words))
     .map((span) => ({ offset: sentence.start + span.start, quote: sentence.text.slice(span.start, span.end).trim() }));
 };
 
 /** Each quotation given to someone, in a paragraph that names no source. cues: the word list quote-attribution. */
-export const unsourcedQuotes = (paragraphs: readonly QuoteParagraph[], cues: readonly LexiconEntry[], advice: readonly LexiconEntry[] = []): UnsourcedQuote[] =>
+export const unsourcedQuotes = (
+  paragraphs: readonly QuoteParagraph[],
+  cues: readonly LexiconEntry[],
+  advice: readonly LexiconEntry[] = [],
+  not: readonly LexiconEntry[] = [],
+): UnsourcedQuote[] =>
   paragraphs
     .filter((paragraph) => !namesSource(paragraph.source))
-    .flatMap((paragraph) => paragraph.sentences.flatMap((sentence) => quotesIn(sentence, { cues, advice })));
+    .flatMap((paragraph) => paragraph.sentences.flatMap((sentence) => quotesIn(sentence, { cues, advice, not })));
 
 /** Each block quotation given to someone by a dash line (— Name) with no source in it or on that line. */
 export const unsourcedBlockQuotes = (quotations: readonly BlockQuotation[]): UnsourcedQuote[] =>
@@ -112,14 +140,28 @@ const blockQuotesOf = (doc: ProseDocument): UnsourcedQuote[] => {
   return unsourcedBlockQuotes(blockQuotations(readMarkdown(doc.source).root, doc.source));
 };
 
+/**
+ * The lines written together with a paragraph, with no blank line between: a note's quotation and the reference on the line
+ * above it are one block, and a source named there is named for the quotation.
+ */
+const blockAround = (doc: ProseDocument, index: number): string => {
+  const joined = (left: Paragraph | undefined, right: Paragraph | undefined): boolean =>
+    left !== undefined && right !== undefined && !doc.source.slice(left.span.end, right.span.start).includes("\n\n");
+  const first = doc.paragraphs.slice(0, index + 1).findLastIndex((paragraph, at) => !joined(doc.paragraphs[at - 1], paragraph));
+  const after = doc.paragraphs.slice(index).findIndex((paragraph, offset) => !joined(paragraph, doc.paragraphs[index + offset + 1]));
+  const last = doc.paragraphs[index + after] ?? doc.paragraphs[index];
+  return doc.source.slice(doc.paragraphs[first]?.span.start ?? 0, last?.span.end ?? 0);
+};
+
 const paragraphQuotesOf = (doc: ProseDocument): UnsourcedQuote[] =>
   unsourcedQuotes(
-    doc.paragraphs.map((paragraph) => ({
-      source: doc.source.slice(paragraph.span.start, paragraph.span.end),
+    doc.paragraphs.map((paragraph, index) => ({
+      source: blockAround(doc, index),
       sentences: paragraph.sentences.map((sentence) => ({ start: sentence.span.start, text: sentence.text })),
     })),
     doc.lexicons["quote-attribution"] ?? [],
     doc.lexicons["quote-advice"] ?? [],
+    doc.lexicons["quote-not-attribution"] ?? [],
   );
 
 /** Every quotation in the document given to someone with no source, in document order: what the rule and `cite --scaffold` list. */

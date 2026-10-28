@@ -1,0 +1,13 @@
+# 誰かに帰する言い回し（quote-attribution）に当たっても、引いた言葉を誰かの言葉として示していない形。quote-without-source が読む。
+#   example   同じ文で引用より前に置いた、例を示す語（たとえば「…」と書いて送る）。引いたのは書き手が作った例。
+#   received  閉じ括弧のすぐ後ろに続く、言われる側の言い方（「…」と言われて、送れない）。読み手や書き手が受けた言葉で、引いた出典ではない。
+#             「…」と言われている（そう言われる）は人の言葉を引いているので、ここには入れない。
+id: quote-not-attribution
+language: ja
+entries:
+  - { pattern: たとえば, group: example }
+  - { pattern: 例えば, group: example }
+  - { pattern: と言われて、, group: received }
+  - { pattern: と言われても, group: received }
+  - { pattern: と言われたら, group: received }
+  - { pattern: と言われると, group: received }
