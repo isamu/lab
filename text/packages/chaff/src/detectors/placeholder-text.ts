@@ -1,4 +1,5 @@
 import type { Lexicon } from "../plugin.ts";
+import { joinedBlanks } from "./blank-runs.ts";
 
 type Span = { readonly start: number; readonly end: number };
 
@@ -148,10 +149,13 @@ const blankSpanAt = (text: string, match: RegExpExecArray, words: BlankWords): S
 const blankMarkSpans = (text: string, words: BlankWords): Span[] =>
   words.suffixes.length + words.prefixes.length + words.units.length === 0
     ? []
-    : [...text.matchAll(BLANK_MARKS)].flatMap((match) => {
-        const span = blankSpanAt(text, match, words);
-        return span === undefined ? [] : [span];
-      });
+    : joinedBlanks(
+        text,
+        [...text.matchAll(BLANK_MARKS)].flatMap((match) => {
+          const span = blankSpanAt(text, match, words);
+          return span === undefined ? [] : [span];
+        }),
+      );
 
 /** 文の中の、埋め忘れた雛形の空欄（[Your Name]、【会社名】、（ここに会社名を書く）、TBD: …、〇〇様）の範囲。words は placeholder-word の語彙表。 */
 export const placeholderSpans = (text: string, words: Lexicon): Span[] => {
