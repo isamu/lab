@@ -7,7 +7,7 @@ const MARK = /[○〇◯△]/u;
 
 /** How far the joiner characters reach from `from` in one direction, ending on a blank mark (〇〇区〇〇 takes in the last 〇〇). */
 const reach = (text: string, from: number, step: 1 | -1): number => {
-  const chars = step === 1 ? [...text.slice(from)] : [...text.slice(0, from)].reverse();
+  const chars = step === 1 ? Array.from(text.slice(from)) : Array.from(text.slice(0, from)).reverse();
   const run = chars.findIndex((char) => !JOINER_CHAR.test(char));
   const within = (run === -1 ? chars : chars.slice(0, run)).map((char) => char.length);
   const lastMark = (run === -1 ? chars : chars.slice(0, run)).findLastIndex((char) => MARK.test(char));
