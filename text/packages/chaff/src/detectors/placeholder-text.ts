@@ -110,6 +110,18 @@ const endsWithAny = (text: string, words: Lexicon): boolean => words.some((word)
 
 type BlankWords = { readonly suffixes: Lexicon; readonly prefixes: Lexicon; readonly units: Lexicon };
 
+/** 行の残りが空白と伏せ字だけか（「代表取締役 〇〇 〇〇」の姓の後ろ）。 */
+const ONLY_BLANKS = /^[\s○〇◯△]*$/u;
+/** 項目名のコロンか空白の後ろ（「氏名：〇〇」「総務部長 〇〇」）。行の終わりまで伏せ字なら、その値が空欄。 */
+const VALUE_SEPARATOR = /[\s:：]$/u;
+/** 番号の組を繋ぐハイフン（〒〇〇〇-〇〇〇〇、03-〇〇〇〇-〇〇〇〇）。伏せ字がその一組なら、番号の空欄。 */
+const NUMBER_JOIN_BEFORE = /[-‐－][\d○〇◯]*$/u;
+const NUMBER_JOIN_AFTER = /^[-‐－]/u;
+
+/** 名前の長さの伏せ字が、行の終わりまで続く値か、番号の一組か。 */
+const isValueOrNumberBlank = (lineBefore: string, lineAfter: string): boolean =>
+  (VALUE_SEPARATOR.test(lineBefore) && ONLY_BLANKS.test(lineAfter)) || NUMBER_JOIN_BEFORE.test(lineBefore) || NUMBER_JOIN_AFTER.test(lineAfter);
+
 /** 記号の並びが空欄の位置にあるか。あれば、空欄として言う範囲（後ろに付いた語まで）。 */
 const blankSpanAt = (text: string, match: RegExpExecArray, words: BlankWords): Span | undefined => {
   const start = match.index;
@@ -122,6 +134,7 @@ const blankSpanAt = (text: string, match: RegExpExecArray, words: BlankWords): S
     if (suffix !== undefined) return { start, end: end + suffix.pattern.length };
     if (endsWithAny(before.trimEnd(), words.prefixes)) return { start, end };
     if (atLineHead(before) && lineAfter.trim() === "") return { start, end };
+    if (isValueOrNumberBlank(before.split("\n").at(-1) ?? "", lineAfter)) return { start, end };
   }
   const unit = startsWithAny(after, words.units);
   if (unit === undefined || NUMERAL_BEFORE.test(before)) return undefined;
