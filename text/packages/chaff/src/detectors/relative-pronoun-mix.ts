@@ -39,16 +39,18 @@ const opensRelative = (noun: Token | undefined, verb: Token | undefined, next: T
 
 /** which / that の後ろの、副詞を飛ばした最初の語（the file which usually stores の stores）。 */
 const verbAfter = (tokens: readonly Token[], at: number): number => {
-  const found = tokens.findIndex((token, index) => index > at && token.pos !== "ADV");
-  return found === -1 ? tokens.length : found;
+  let next = at + 1;
+  while (tokens[next]?.pos === "ADV") next += 1;
+  return next;
 };
 
 /** 語彙表の組（which / that）で、tokens の中の限定の関係節の頭。 */
 export const relativeUses = (tokens: readonly Token[], kinds: Lexicon): RelativeUse[] =>
   tokens.flatMap((word, at) => {
     const entry = kinds.find((candidate) => candidate.pattern.toLowerCase() === word.surface.toLowerCase());
+    if (entry?.group === undefined) return [];
     const verb = verbAfter(tokens, at);
-    if (entry?.group === undefined || !opensRelative(tokens[at - 1], tokens[verb], tokens[verb + 1])) return [];
+    if (!opensRelative(tokens[at - 1], tokens[verb], tokens[verb + 1])) return [];
     return [{ word, kind: entry.group }];
   });
 

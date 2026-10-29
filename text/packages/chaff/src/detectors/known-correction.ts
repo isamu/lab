@@ -45,16 +45,23 @@ const tokenHits = (sentence: Sentence, pair: Pair, source: string): Hit[] => {
 };
 
 /** 字の並びで当たった所のうち、両端が文の語の切れ目にあるもの。語彙表の語を解析器が文の中と違う切り方にした（「ますす」）ときの拾い直し。 */
-const alignedTextHits = (sentence: Sentence, pair: Pair): Hit[] => {
+const alignedTextHits = (sentence: Sentence, pair: Pair, edges: WordEdges): Hit[] =>
+  textHits(sentence, pair).filter((hit) => edges.starts.has(hit.offset) && edges.ends.has(hit.offset + pair.wrong.length));
+
+/** 文の語の始まりと終わり。組ごとに作り直すと、組の数と文の長さの積になる。 */
+type WordEdges = { readonly starts: ReadonlySet<number>; readonly ends: ReadonlySet<number> };
+
+const edgesOf = (sentence: Sentence): WordEdges => {
   const tokens = sentence.tokens ?? [];
-  const starts = new Set(tokens.map((token) => token.span.start));
-  const ends = new Set(tokens.map((token) => token.span.end));
-  return textHits(sentence, pair).filter((hit) => starts.has(hit.offset) && ends.has(hit.offset + pair.wrong.length));
+  return { starts: new Set(tokens.map((token) => token.span.start)), ends: new Set(tokens.map((token) => token.span.end)) };
 };
 
-const hitsIn = (sentence: Sentence, pair: Pair, source: string): Hit[] => {
-  if (sentence.tokens === undefined || (pair.entry.tokens?.length ?? 0) === 0) return textHits(sentence, pair);
-  return [...tokenHits(sentence, pair, source), ...alignedTextHits(sentence, pair)];
+const hitsIn = (sentence: Sentence, pairs: readonly Pair[], source: string): Hit[] => {
+  const edges = edgesOf(sentence);
+  return pairs.flatMap((pair) => {
+    if (sentence.tokens === undefined || (pair.entry.tokens?.length ?? 0) === 0) return textHits(sentence, pair);
+    return [...tokenHits(sentence, pair, source), ...alignedTextHits(sentence, pair, edges)];
+  });
 };
 
 /** チームが names に並べた名前の中の字（「黒ひげ危機一発」の「危機一発」）は、その字のまま正しい。 */
@@ -75,7 +82,7 @@ const firstAtEachOffset = (hits: readonly Hit[]): Hit[] => hits.filter((hit, at)
  */
 export const knownCorrection: Detector = (doc, options): Finding[] => {
   const pairs = pairsOf(options.lexicon ?? []);
-  const hits = doc.sentences.flatMap((sentence) => pairs.flatMap((pair) => hitsIn(sentence, pair, doc.source)));
+  const hits = doc.sentences.flatMap((sentence) => hitsIn(sentence, pairs, doc.source));
   return firstAtEachOffset(hits.toSorted((left, right) => left.offset - right.offset))
     .filter((hit) => !isInTeamName(doc, hit))
     .map((hit) => ({
