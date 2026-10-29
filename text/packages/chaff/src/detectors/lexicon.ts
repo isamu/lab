@@ -1,4 +1,5 @@
 import { joinWords } from "./word-list.ts";
+import { densestStretch } from "./densest-stretch.ts";
 import { wordsOf } from "./structure.ts";
 import type { Detector, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 import { entryIn, entryOpens, entryRanges, type TokenRange } from "./lexicon-match.ts";
@@ -255,8 +256,14 @@ const writtenIn = (sentence: Sentence, entry: LexiconEntry): boolean =>
     : entryRanges(sentence, entry).some((range) => !quotedRange(sentence, range));
 
 /**
- * AI 生成の signal。1 つでは何も言えないので、重みを足し合わせて文書の点にする。見出しも読む（「〜をわかりやすく解説」のような題）。
- * 単独で断じない。§20.2 の複合シグナルの入口で、これだけで「AI が書いた」とは言わない。
+ * How many sentences one pile-up may span. Generated articles fit inside it whole; a long text (a listing of many authors'
+ * abstracts, a novel) gathers one phrase here and one there, and only a stretch of it is scored.
+ */
+const AI_TELL_STRETCH = 100;
+
+/**
+ * AI 生成の signal。1 つでは何も言えないので、重みを足し合わせて点にする。見出しも読む（「〜をわかりやすく解説」のような題）。
+ * 点は AI_TELL_STRETCH 文の中で最も重なった所のもの。単独で断じない。§20.2 の複合シグナルの入口で、これだけで「AI が書いた」とは言わない。
  */
 export const aiTell: Detector = (doc, options): Finding[] => {
   const entries = [...new Map((options.lexicon ?? []).map((entry) => [entry.pattern.toLowerCase(), entry])).values()];
@@ -264,9 +271,11 @@ export const aiTell: Detector = (doc, options): Finding[] => {
   const headings = new Set(headingSentences(doc).map((heading) => heading.span.start));
   const counts = (sentence: Sentence, entry: LexiconEntry): boolean =>
     (entry.heading_only !== true || headings.has(sentence.span.start)) && writtenIn(sentence, entry);
-  const found = entries.filter((entry) => sentences.some((sentence) => counts(sentence, entry)));
+  const hitsPerSentence = sentences.map((sentence) => entries.filter((entry) => counts(sentence, entry)));
+  const stretch = densestStretch(hitsPerSentence, AI_TELL_STRETCH, (entry) => entry.weight ?? 1);
+  const found = entries.filter((entry) => stretch?.keys.has(entry) === true);
   const score = Math.round(found.reduce((sum, entry) => sum + (entry.weight ?? 1), 0) * 10);
-  const first = sentences.find((sentence) => found.some((entry) => counts(sentence, entry)));
+  const first = stretch === undefined ? undefined : sentences[stretch.first];
   if (first === undefined || score <= options.limit) return [];
   return [
     {

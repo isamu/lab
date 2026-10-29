@@ -54,8 +54,8 @@ example:
       We check stock levels every morning before placing orders.
 
 not_flagged:
-  ja: どの言い回しも、一つだけなら普通の文章にあります。重みの合計が上限を超えるまでは何も言いません。これだけで生成された文章だとは言いません。
-  en: Each phrase is ordinary on its own; nothing is said until the weights add up past the limit. This alone never says the text was generated.
+  ja: どの言い回しも、一つだけなら普通の文章にあります。重みの合計が上限を超えるまでは何も言いません。長い文書（多くの著者の要旨を並べた一覧、長編）では、離れた所に一つずつある言い回しを足しません。言い回しが最も重なった一続きの所だけを数えます。これだけで生成された文章だとは言いません。
+  en: Each phrase is ordinary on its own; nothing is said until the weights add up past the limit. In a long document (a listing of many authors' abstracts, a novel) phrases far apart are not added up; only the stretch where they pile up most is scored. This alone never says the text was generated.
 level_meaning:
   ja: 言い回しの重みの合計が {limit} 点まで
   en: up to a score of {limit}
