@@ -59,22 +59,36 @@ const QUOTE_CLOSING_MAX = 12;
  */
 const QUOTE_CLOSING = new RegExp(String.raw`[」』]([をがにでへ][^「」『』、，。．をがにでへ]{1,${String(QUOTE_CLOSING_MAX - 1)}}[。．]?)\s*$`, "u");
 
-const closingAfterQuote = (text: string): Span | undefined => {
-  const match = QUOTE_CLOSING.exec(text);
-  return match === null ? undefined : { start: match.index + 1, end: match.index + match[0].length };
+/** リンクの文字のすぐ後ろの結び（[ノンス](…)を参照してください。）。題を受ける助詞と述語だけなのは引いた題の後ろと同じ。 */
+const LINK_CLOSING = new RegExp(String.raw`[をがにでへ][^「」『』、，。．をがにでへ]{1,${String(QUOTE_CLOSING_MAX - 1)}}[。．]?\s*$`, "u");
+
+/** 文の中の位置がリンクの文字か。リンクの無い文は、どの位置もリンクではない。 */
+export type Linked = (index: number) => boolean;
+
+const NOT_LINKED: Linked = () => false;
+
+/** 引いた題か、リンクの文字の直後で結ぶ範囲。手引きや参照のページは、別のページを指すたびに同じ結びで指す。 */
+const closingAfterReference = (text: string, linked: Linked): Span | undefined => {
+  const quoted = QUOTE_CLOSING.exec(text);
+  if (quoted !== null) return { start: quoted.index + 1, end: quoted.index + quoted[0].length };
+  const afterLink = LINK_CLOSING.exec(text);
+  return afterLink !== null && afterLink.index > 0 && linked(afterLink.index - 1)
+    ? { start: afterLink.index, end: afterLink.index + afterLink[0].length }
+    : undefined;
 };
 
-const closingTextOf = (text: string): string | undefined => {
-  const span = closingAfterQuote(text);
+const closingTextOf = (text: string, linked: Linked): string | undefined => {
+  const span = closingAfterReference(text, linked);
   return span === undefined ? undefined : text.slice(span.start, span.end).trimEnd();
 };
 
 /**
- * 文書が参照の書式として使う結び: 引いた題の直後で結ぶことが、その結びで終わる文の過半である結び（詳しくは「…」を確認してください。）。
- * 引いた名前の後ろにたまたま来た書き手の結び（「生涯活躍のまち」を推進している。のほかは整備を推進している。）は、ほとんどが題の後ろではない。
+ * 文書が参照の書式として使う結び: 引いた題かリンクの直後で結ぶことが、その結びで終わる文の過半である結び（詳しくは「…」を確認してください。
+ * 詳しくは[…](…)を参照してください。）。引いた名前の後ろにたまたま来た書き手の結び（「生涯活躍のまち」を推進している。のほかは整備を
+ * 推進している。）は、ほとんどが題の後ろではない。linked は texts と同じ順の、文ごとのリンクの位置。
  */
-export const referenceClosings = (texts: readonly string[]): ReadonlySet<string> => {
-  const afterQuote = texts.flatMap((text) => closingTextOf(text) ?? []);
+export const referenceClosings = (texts: readonly string[], linked: readonly Linked[] = []): ReadonlySet<string> => {
+  const afterQuote = texts.flatMap((text, index) => closingTextOf(text, linked[index] ?? NOT_LINKED) ?? []);
   return new Set(
     [...new Set(afterQuote)].filter((closing) => {
       const quoted = afterQuote.filter((each) => each === closing).length;
@@ -85,12 +99,12 @@ export const referenceClosings = (texts: readonly string[]): ReadonlySet<string>
 };
 
 /**
- * 引いた題で終わる文の結び（詳しくは「入力可能な文字」を確認してください。）の範囲。手引きは別のページを指すたびに同じ結びで指す。
+ * 引いた題かリンクで終わる文の結び（詳しくは「入力可能な文字」を確認してください。）の範囲。
  * closings（referenceClosings）にある結びだけを、参照の書式として数えない。
  */
-export const quotedClosingSpans = (text: string, closings: ReadonlySet<string>): Span[] => {
-  const span = closingAfterQuote(text);
-  const closing = closingTextOf(text);
+export const quotedClosingSpans = (text: string, closings: ReadonlySet<string>, linked: Linked = NOT_LINKED): Span[] => {
+  const span = closingAfterReference(text, linked);
+  const closing = closingTextOf(text, linked);
   return span !== undefined && closing !== undefined && closings.has(closing) ? [span] : [];
 };
 

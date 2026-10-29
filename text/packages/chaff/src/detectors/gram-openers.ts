@@ -55,8 +55,13 @@ const IDENTIFIER_HEADING = /^(?:`[^`]+`|【[\w.:/-]+】|\[[\w.:/-]+\])$/u;
 const DEFINITION_LINE = /(?:^|\n)[ \t]*(?:[-*+][ \t]+)?:[ \t]*$/u;
 const DEFINITION_REACH = 12;
 
+/** 平文の仕様書の定義の並び（「   qu:  The OPTIONAL "qu" parameter …」）。行の頭の短い名前とコロンのあとに空白が 2 つ以上続く。 */
+const PLAIN_DEFINITION = /^\s*[\p{L}\p{N}_.-]{1,24}:[ \t]{2,}\S/u;
+
 const opensDefinition = (sentence: Sentence, source: string): boolean =>
-  /^\s*:\s/u.test(sentence.text) || DEFINITION_LINE.test(source.slice(Math.max(0, sentence.span.start - DEFINITION_REACH), sentence.span.start));
+  /^\s*:\s/u.test(sentence.text) ||
+  PLAIN_DEFINITION.test(sentence.text) ||
+  DEFINITION_LINE.test(source.slice(Math.max(0, sentence.span.start - DEFINITION_REACH), sentence.span.start));
 
 const BLANK_LINE = /\n[ \t]*\n/u;
 
@@ -119,3 +124,44 @@ export const rowEndCells = (sentences: readonly Sentence[], fragments: ReadonlyS
       sentences.slice(index - CELLS_BEFORE, index).every((cell) => fragments.has(cell)) &&
       LINE_END_NEXT.test(source.slice(sentence.span.end, sentence.span.end + LOOKAHEAD)),
   );
+
+const LABEL_END = /[:：]\s*$/u;
+const LINE_START_BEFORE = /(?:^|\n)[ \t]*$/u;
+
+/**
+ * 一行を占め、コロンで終わり、文書の中にまったく同じ形で 2 度以上出る文（The following rule has the force of law:）。後ろの枠や
+ * 一覧に付ける札で、項目ごとに同じ札を付けるのは書式。言い回しを変えた導入（When you join a meeting, follow these guidelines:）は札ではない。
+ */
+export const labelLines = (sentences: readonly Sentence[], source: string): Sentence[] => {
+  const lines = sentences.filter(
+    (sentence) =>
+      LABEL_END.test(sentence.text) &&
+      LINE_START_BEFORE.test(source.slice(Math.max(0, sentence.span.start - LINE_START_REACH), sentence.span.start)) &&
+      LINE_END_NEXT.test(source.slice(sentence.span.end, sentence.span.end + LOOKAHEAD)),
+  );
+  const counts = new Map<string, number>();
+  lines.forEach((line) => counts.set(line.text.trim(), (counts.get(line.text.trim()) ?? 0) + 1));
+  return lines.filter((line) => (counts.get(line.text.trim()) ?? 0) > 1);
+};
+
+/** 数字を伏せた形。数字だけが違う文は、同じ書式に数を入れたもの。 */
+const DIGITS = /[\d０-９]+/gu;
+const HAS_DIGIT = /[\d０-９]/u;
+
+/** 文の中の行（変換が報告の欄を一つの文につないでも、欄は行ごとに分かれている）。 */
+const linesOf = (sentence: Sentence): string[] =>
+  sentence.text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => HAS_DIGIT.test(line));
+
+/**
+ * 数字だけが違う行が 2 度以上あり、入った数が違うもの（There are currently 17 committers and 17 PMC members in this project.）を持つ文。
+ * 報告の書式を機械が埋めた欄で、書き手の言い回しではない。まったく同じ文の繰り返し（同じ説明を項目ごとに写したもの）は書式ではない。
+ */
+export const filledForms = (sentences: readonly Sentence[]): Sentence[] => {
+  const formOf = (line: string): string => line.replace(DIGITS, "0");
+  const fillings = new Map<string, Set<string>>();
+  sentences.flatMap(linesOf).forEach((line) => fillings.set(formOf(line), (fillings.get(formOf(line)) ?? new Set()).add(line)));
+  return sentences.filter((sentence) => linesOf(sentence).some((line) => (fillings.get(formOf(line))?.size ?? 0) > 1));
+};
