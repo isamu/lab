@@ -2,6 +2,38 @@
 
 Newest first.
 
+## 0.41.0 — 2026-10-29
+
+This release makes the AI-likeness checks more exact on long and structured human documents, and fixes false
+positives found by judging the 0.40.0 findings in isamu/chaff-corpus.
+
+### AI-likeness
+
+- ai-tell scores the densest stretch of consecutive sentences instead of the whole document, so a long human text no
+  longer adds up a score by its length (#2241); わかりやすく解説 counts only in a title or heading (#2213).
+- ai-generated-composite no longer counts one shape twice: ai-structure counts only while it reaches its limit without
+  the measures whose own rule also fired (#2234).
+- ai-structure leaves questions under an FAQ heading out of its stock-heading measure (#2242).
+- honesty-marker quotes the marker itself, without the comma or question mark around it (#2221).
+- contrast-framing needs more than one frame per 1000 words or characters beside its share (#2237).
+- colon-lead-in reads field labels that differ in one word as one template (#2214).
+
+### Rules
+
+- Fewer false findings on real documents:
+  - English: contraction-consistency leaves out publisher disclaimers and sentences about contractions, and does not
+    point at warnings (#2212); undefined-acronym reads letter-series numbers, a time zone after a clock time, a phone
+    label, social handles, names in 『』, reference-entry labels, citation-series names and full-width expansions
+    (#2218, #2235); unknown-word (#2219); oxford-comma-consistency (#2236); ngram-repetition (#2238);
+    unqualified-superlative (#2243).
+  - Japanese: no-mixed-desumasu reads お願いします as a set phrase (#2215); fullwidth-alnum-consistency (#2244) and
+    no-doubled-joshi (#2245) read tables whose cells the text runs together.
+
+### Speed
+
+- doubled-word, known-correction and which-that-consistency no longer repeat work per pair or per word in a very long
+  sentence (#2239).
+
 ## 0.40.0 — 2026-10-29
 
 This release continues the AI-likeness work: a new rule for honesty markers, ai-tell reads headings and reports one
