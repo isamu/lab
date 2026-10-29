@@ -8,6 +8,7 @@ import { honorificGroupParticles } from "../honorific-group.ts";
 import { setPhraseParticles } from "../set-phrase-particles.ts";
 import { noteSentences } from "../note-paragraphs.ts";
 import { documentNameSpans } from "./particle-run-names.ts";
+import { isFlattenedTable } from "./sentence-parts.ts";
 
 /**
  * 文末が名詞で終わる（体言止め）。箇条書きでは普通だが、本文では文が途中で切れて読める。
@@ -117,20 +118,23 @@ export const doubledParticle: Detector = (doc, options): Finding[] => {
     setPhrases: (doc.lexicons[SET_PHRASE_LEXICON] ?? []).map((entry) => entry.pattern),
   };
   const prose = doc.prose ?? doc.source;
-  return doc.sentences.flatMap((sentence) => {
-    const tokens = chainTokens(sentence.tokens ?? [], numbering, phrases);
-    const quoted = [...quotedIn(sentence), ...titles];
-    const longRuns = (skipped: readonly Span[]): Run[] => runsOf(tokens, nesting, breaks, skipped).filter((run) => run.tokens.length > options.limit);
-    const found = longRuns(quoted);
-    // 文書の名前を読むのは長い連なりのある文だけ。名前は位置ごとに読むので、全部の文で読むと遅い。
-    const runs = found.length === 0 ? found : longRuns([...quoted, ...documentNameSpans(prose, sentence.span, doc.namedDocument)]);
-    return runs.map((run) => ({
-      rule: "no-doubled-joshi",
-      severity: "warning" as const,
-      line: 0,
-      column: 0,
-      quote: sentence.text.trim(),
-      values: { word: run.surface, count: run.tokens.length, limit: options.limit, offset: run.tokens[0]?.span.start ?? sentence.span.start },
-    }));
-  });
+  // 平らにした表の文は、見出しのセル（役員の兼任等・営業上の取引・設備の賃貸借）の切れ目が見えず、別のセルの「の」が一つの連なりに見える。
+  return doc.sentences
+    .filter((sentence) => !isFlattenedTable(sentence.text))
+    .flatMap((sentence) => {
+      const tokens = chainTokens(sentence.tokens ?? [], numbering, phrases);
+      const quoted = [...quotedIn(sentence), ...titles];
+      const longRuns = (skipped: readonly Span[]): Run[] => runsOf(tokens, nesting, breaks, skipped).filter((run) => run.tokens.length > options.limit);
+      const found = longRuns(quoted);
+      // 文書の名前を読むのは長い連なりのある文だけ。名前は位置ごとに読むので、全部の文で読むと遅い。
+      const runs = found.length === 0 ? found : longRuns([...quoted, ...documentNameSpans(prose, sentence.span, doc.namedDocument)]);
+      return runs.map((run) => ({
+        rule: "no-doubled-joshi",
+        severity: "warning" as const,
+        line: 0,
+        column: 0,
+        quote: sentence.text.trim(),
+        values: { word: run.surface, count: run.tokens.length, limit: options.limit, offset: run.tokens[0]?.span.start ?? sentence.span.start },
+      }));
+    });
 };

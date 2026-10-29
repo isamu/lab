@@ -77,3 +77,12 @@ export const colonQuotationParts = (text: string): readonly string[] | undefined
   if (quotes.length === 0) return undefined;
   return nonEmpty([text.replace(COLON_QUOTATION, ":"), ...quotes]);
 };
+
+/** A header cell closed by its unit in brackets (所有割合(％), 従業員数（人）, 資本金(百万円)). */
+const UNIT_HEADER = /[（(](?:％|%|人|名|株|件|台|社|円|千円|百万円)[）)]/gu;
+/** Fewer unit headers than this are a sentence that names a unit or two, not a table's header row. */
+const MIN_UNIT_HEADERS = 3;
+
+/** Whether a sentence is a table a converter flattened: glued numbers, rows opened by dates, or a header row of cells closed by units. */
+export const isFlattenedTable = (text: string): boolean =>
+  flattenedTableParts(text) !== undefined || (text.match(UNIT_HEADER)?.length ?? 0) >= MIN_UNIT_HEADERS;
