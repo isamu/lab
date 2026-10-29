@@ -5,6 +5,7 @@ import { boldLabelItems } from "../detectors/bold-label.ts";
 import { MIN_DOCUMENT_LENGTH } from "../detectors/signals.ts";
 import { bookendOf, headingFormOf, headingWords, proConPairs } from "./heading-words.ts";
 import { restatementPercent } from "./restatement.ts";
+import { underFaq } from "./faq-sections.ts";
 
 /** The structure measures, in the order they are shown. */
 export const FEATURE_IDS = [
@@ -116,9 +117,10 @@ const mostCommon = (forms: readonly string[]): string | undefined => {
   return [...counts.entries()].toSorted((left, right) => right[1] - left[1])[0]?.[0];
 };
 
-const headingForms = (doc: ProseDocument, words: readonly string[]): FeatureValue => {
+const headingForms = (doc: ProseDocument, headed: readonly Section[], words: readonly string[]): FeatureValue => {
   const bookends = lexiconOf(doc, "bookend-heading");
-  const body = words.filter((heading) => bookendOf(heading, bookends) === undefined);
+  const asked = underFaq(headed, lexiconOf(doc, "faq-heading"));
+  const body = words.filter((heading, index) => asked[index] !== true && bookendOf(heading, bookends) === undefined);
   if (body.length < MIN_HEADINGS) return notMeasured("heading-forms", "too-few-headings");
   const forms = body.flatMap((heading) => headingFormOf(heading, lexiconOf(doc, "heading-form"))?.pattern ?? []);
   return measured("heading-forms", percentOf(forms.length, body.length), mostCommon(forms));
@@ -177,7 +179,7 @@ export const structureFeaturesOf = (doc: ProseDocument): FeatureValue[] => {
     headingDensity(doc, headed),
     shortSections(doc, headed),
     sectionUniformity(doc),
-    headingForms(doc, words),
+    headingForms(doc, headed, words),
     threeSubsections(headed),
     bookends(doc, words),
     closingRestatement(doc, headed),
