@@ -3,6 +3,7 @@ import { minorityWithin } from "../orthography.ts";
 import { QUOTATION_MARKS, isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { isCitation } from "./kutoten-consistency.ts";
 import { ALNUM_RUN, FULLWIDTH, HALFWIDTH } from "./alnum-number.ts";
+import { gluedNumberSpans } from "./sentence-parts.ts";
 
 const LETTER = /[A-Za-zＡ-Ｚａ-ｚ]/u;
 
@@ -79,7 +80,14 @@ const continuesVersion = (text: string, start: number, run: string): boolean =>
 
 const isListItemNumber = (source: string, offset: number): boolean => LIST_ITEM_HEAD.test(source.slice(source.lastIndexOf("\n", offset - 1) + 1, offset));
 
-export type AlnumRun = { readonly kind: AlnumKind; readonly fullwidth: boolean; readonly written: string; readonly offset: number };
+export type AlnumRun = {
+  readonly kind: AlnumKind;
+  readonly fullwidth: boolean;
+  readonly written: string;
+  readonly offset: number;
+  /** 表のセルを続けてしまった数字（8,457 と 95.7 の 8,45795.7）の中。幅は書き手のものだが、セルの切れ目が分からず桁の数は当てにならない。 */
+  readonly glued: boolean;
+};
 
 /**
  * 文の中の英字・数字の並び。全角と半角が混ざった並び、鉤括弧で引いたものの中、項目と注の番号、箇条書きの頭の番号、版の番号の続き（TLS1.2 の 2）は数えない。
@@ -87,6 +95,7 @@ export type AlnumRun = { readonly kind: AlnumKind; readonly fullwidth: boolean; 
  */
 export const alnumRunsIn = (sentence: Sentence, source: string): AlnumRun[] => {
   const quoted: readonly Span[] = quotedSpans(sentence.text, QUOTATION_MARKS);
+  const glued = gluedNumberSpans(sentence.text);
   return [...sentence.text.matchAll(ALNUM_RUN)]
     .filter((match) => FULLWIDTH.test(match[0]) || HALFWIDTH.test(match[0]))
     .filter((match) => !isWithinAny(quoted, { start: match.index, end: match.index + match[0].length }))
@@ -96,7 +105,13 @@ export const alnumRunsIn = (sentence: Sentence, source: string): AlnumRun[] => {
     .filter((match) => !isInApostropheWord(sentence.text, match.index, match.index + match[0].length))
     .filter((match) => !isNumberLabel(sentence.text, match.index + match[0].length, match[0]))
     .filter((match) => !continuesVersion(sentence.text, match.index, match[0]))
-    .map((match) => ({ kind: kindOf(match[0]), fullwidth: FULLWIDTH.test(match[0]), written: match[0], offset: sentence.span.start + match.index }));
+    .map((match) => ({
+      kind: kindOf(match[0]),
+      fullwidth: FULLWIDTH.test(match[0]),
+      written: match[0],
+      offset: sentence.span.start + match.index,
+      glued: isWithinAny(glued, { start: match.index, end: match.index + match[0].length }),
+    }));
 };
 
 const KINDS: readonly AlnumKind[] = ["letter", "letters", "digit", "digits"];
@@ -157,6 +172,7 @@ const findingOf = ({ sentence, run }: Located, count: number, of: number, limit:
 /**
  * 英字・数字を全角で書くか半角で書くか。組（英字一字・英字の語・数字一字・数字の並び）ごとに、文書の中で少ないほうを指摘する。
  * 少ないほうが組の limit パーセントを超えるほど多いなら、文書が使い分けている（数え方の語や見出しの書き方）と見て言わない。
+ * 表のセルを続けてしまった数字の中の並びは、書き方の票には入れるが、少ないほうとしては指摘しない（8,45795.7 の 8 は一桁の数ではない）。
  * どちらが正しいかは決めない。
  */
 export const fullwidthAlnum: Detector = (doc, options): Finding[] => {
@@ -169,7 +185,7 @@ export const fullwidthAlnum: Detector = (doc, options): Finding[] => {
     const ofKind = located.filter(({ run }) => run.kind === kind);
     const odd = minorityWithin(ofKind, ({ run }) => run.fullwidth, options.limit);
     return odd
-      .filter(({ run }) => !isHalfwidthEnglishWord(run))
+      .filter(({ run }) => !isHalfwidthEnglishWord(run) && !run.glued)
       .filter(departsFromHabit(ofKind, odd))
       .map((entry) => findingOf(entry, odd.length, ofKind.length, options.limit));
   });
