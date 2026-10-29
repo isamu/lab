@@ -155,13 +155,20 @@ const linesOf = (sentence: Sentence): string[] =>
     .map((line) => line.trim())
     .filter((line) => HAS_DIGIT.test(line));
 
+/** 文が行を独り占めしているか（行の頭か箇条書きの印の後ろから始まり、行の終わりで終わる）。段落の中の文は欄ではない。 */
+const ownsLines = (sentence: Sentence, source: string): boolean =>
+  LINE_START.test(source.slice(Math.max(0, sentence.span.start - LINE_START_REACH), sentence.span.start)) &&
+  LINE_END_NEXT.test(source.slice(sentence.span.end, sentence.span.end + LOOKAHEAD));
+
 /**
- * 数字だけが違う行が 2 度以上あり、入った数が違うもの（There are currently 17 committers and 17 PMC members in this project.）を持つ文。
- * 報告の書式を機械が埋めた欄で、書き手の言い回しではない。まったく同じ文の繰り返し（同じ説明を項目ごとに写したもの）は書式ではない。
+ * 行を独り占めし、数字だけが違う行が 2 度以上あって入った数が違うもの（There are currently 17 committers and 17 PMC members in this
+ * project.）。報告の書式を機械が埋めた欄で、書き手の言い回しではない。まったく同じ文の繰り返し（同じ説明を項目ごとに写したもの）と、
+ * 段落の中で数だけ替えて言い直す文（In case 3, we will look into it again.）は書式ではない。
  */
-export const filledForms = (sentences: readonly Sentence[]): Sentence[] => {
+export const filledForms = (sentences: readonly Sentence[], source: string): Sentence[] => {
   const formOf = (line: string): string => line.replace(DIGITS, "0");
   const fillings = new Map<string, Set<string>>();
-  sentences.flatMap(linesOf).forEach((line) => fillings.set(formOf(line), (fillings.get(formOf(line)) ?? new Set()).add(line)));
-  return sentences.filter((sentence) => linesOf(sentence).some((line) => (fillings.get(formOf(line))?.size ?? 0) > 1));
+  const owning = sentences.filter((sentence) => ownsLines(sentence, source));
+  owning.flatMap(linesOf).forEach((line) => fillings.set(formOf(line), (fillings.get(formOf(line)) ?? new Set()).add(line)));
+  return owning.filter((sentence) => linesOf(sentence).some((line) => (fillings.get(formOf(line))?.size ?? 0) > 1));
 };

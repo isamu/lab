@@ -133,7 +133,7 @@ const templatesOf = (doc: ProseDocument): ReadonlySet<Sentence> => {
     ...fragments,
     ...rowEndCells(doc.sentences, fragments, doc.source),
     ...labelLines(doc.sentences, doc.source),
-    ...filledForms(doc.sentences),
+    ...filledForms(doc.sentences, doc.source),
   ]);
 };
 
