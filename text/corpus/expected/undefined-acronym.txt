@@ -7,7 +7,6 @@ asf-board-minutes-2025-01  90
 automattic-privacy-policy  8
 bls-glossary  4
 bonterms-cloud-terms  2
-cfpb-blog-imposter-scams  2
 cisa-scuba-teams  5
 cloudgov-security-ir-guide  9
 commonpaper-csa  5
@@ -18,7 +17,7 @@ da-ai-advisory-board-1  10
 da-annual-report-2024  2
 da-priority-policy-program  3
 da-service-design-guidelines-2  4
-ecfr-16-cfr-310-telemarketing  4
+ecfr-16-cfr-310-telemarketing  3
 fed-powell-2025-08-22-framework-review  1
 github-general-privacy-statement  4
 gitlab-meetings  7
@@ -27,7 +26,6 @@ go-1-23-release-notes  9
 govuk-cddo-roadmap-2022-2025  8
 govuk-incident-safe-browsing  3
 govuk-style-guide-a-to-z  25
-gsa-press-pif-2026  2
 ietf-draft-httpapi-ratelimit-headers-10  5
 irs-online-account-faq  5
 kep-2214-indexed-job  5
@@ -36,7 +34,7 @@ koenote-requirements  6
 mhlw-icd-committee-26-minutes  3
 mhlw-kokuji-h18-107-keiji-jiko  4
 mhlw-norovirus-qa  5
-nasa-advisory-crew-13-coverage  6
+nasa-advisory-crew-13-coverage  5
 neeview-changelog-ja  17
 noaa-press-flood-mapping  3
 nodejs-tsc-minutes-2026-05-06  5

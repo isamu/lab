@@ -45,6 +45,8 @@ export type NotationWords = {
   readonly textMessageVerbs?: readonly string[];
   /** 行の頭に大文字で書く接続詞（OR, Skip to …）。略語でもある語（OR は Oregon）なので、行の頭で読点と名前の形か行の終わりが続くときだけ。 */
   readonly openingConjunctions?: readonly string[];
+  /** 電話番号の前に置く語（TEL、FAX）。大文字で書いた形だけを、番号のすぐ前でだけ外す。 */
+  readonly phoneLabels?: readonly string[];
 };
 
 const MINUTES = String.raw`:[0-5]\d`;
@@ -119,6 +121,35 @@ const openingConjunction = (words: readonly string[]): RegExp =>
 /** メールアドレス（OASH-RFI@hhs.gov）。@ の前の大文字は宛先の名前で、略語ではない。 */
 const EMAIL_ADDRESS = /(?<![\p{L}\p{N}._%+-])[\p{L}\p{N}._%+-]+@[\p{L}\p{N}-]+(?:\.[\p{L}\p{N}-]+)+/gu;
 
+/** SNS のアカウント名（follow us at @USGSA）。@ のすぐ後ろの大文字はアカウントの綴りで、略語ではない。 */
+const SOCIAL_HANDLE = /(?<![\p{L}\p{N}_.%+-])[@＠]\w+/gu;
+
+/** 『』で囲んだ大文字だけの名前（中期計画『SHIFT』）。日本語の文が計画や作品の名前に付ける括弧で、中身は名前。 */
+const HOOKED_NAME = /『[A-Z][A-Z0-9&.・ -]*』/gu;
+
+/** 電話番号の桁。全角の数字と区切り、雛形の伏せ字（03-〇〇〇〇-〇〇〇〇）も数える。 */
+const PHONE_DIGIT = String.raw`[\d０-９〇○]`;
+const PHONE_CHARACTER = String.raw`[\d０-９〇○()（）+＋\-‐－ー.\s]`;
+const MIN_PHONE_DIGITS = 7;
+const DIGIT = new RegExp(PHONE_DIGIT, "gu");
+
+/**
+ * 電話番号の前の大文字の札（TEL  03-3222-1061、FAX: (202) 555-0100）。札は語彙表 phone-label の語を大文字にした形で、
+ * すぐ後ろに 7 桁以上の番号が続くときだけ外す。番号の無い TEL や FAX（the FAX machine）は略語のまま数える。
+ */
+const phoneLabelSpans = (labels: readonly string[]): ((text: string) => Span[]) => {
+  const capitals = [...new Set(labels.filter((label) => /^[A-Za-z]{2,6}$/u.test(label)).map((label) => label.toUpperCase()))];
+  if (capitals.length === 0) return () => [];
+  const pattern = new RegExp(
+    String.raw`(?<![\p{L}\p{N}_])${oneOf(capitals)}[ \t]*[.:：]?[ \t\u3000]*(?<number>[(（+＋]?${PHONE_DIGIT}${PHONE_CHARACTER}*${PHONE_DIGIT})`,
+    "gu",
+  );
+  return (text) =>
+    [...text.matchAll(pattern)]
+      .filter((match) => ((match.groups?.["number"] ?? "").match(DIGIT) ?? []).length >= MIN_PHONE_DIGITS)
+      .map((match) => ({ start: match.index, end: match.index + match[0].length }));
+};
+
 // 強調の記号は空白に置き換えてある（**3:30** PM）ので、部品の間の空白は数を問わない。
 const patternsOf = (words: NotationWords): readonly RegExp[] => [
   new RegExp(String.raw`${CLOCK_12}\s*${oneOf(words.meridiem)}`, "gu"),
@@ -135,6 +166,8 @@ const patternsOf = (words: NotationWords): readonly RegExp[] => [
   textMessageKeyword(words.textMessageVerbs ?? []),
   openingConjunction(words.openingConjunctions ?? []),
   EMAIL_ADDRESS,
+  SOCIAL_HANDLE,
+  HOOKED_NAME,
 ];
 
 export type NotAcronymSpans = (text: string) => Span[];
@@ -145,7 +178,9 @@ export type NotAcronymSpans = (text: string) => Span[];
  */
 export const notAcronymSpansOf = (words: NotationWords): NotAcronymSpans => {
   const patterns = patternsOf(words);
+  const phoneLabels = phoneLabelSpans(words.phoneLabels ?? []);
   return (text) => [
+    ...phoneLabels(text),
     ...patterns.flatMap((pattern) => [...text.matchAll(pattern)].map((match) => ({ start: match.index, end: match.index + match[0].length }))),
     ...citationKeySpans(text),
     ...dottedNameSpans(text),
@@ -176,6 +211,7 @@ export const lexiconNotationOf = (wordsOf: (id: string) => string[]): NotAcronym
     dateTimeUnits: wordsOf("date-time-unit"),
     textMessageVerbs: wordsOf("text-message-verb"),
     openingConjunctions: wordsOf("opening-conjunction"),
+    phoneLabels: wordsOf("phone-label"),
   });
   const names = nameSpansOf({
     legalForms: wordsOf("legal-form"),
@@ -191,12 +227,23 @@ export const lexiconNotationOf = (wordsOf: (id: string) => string[]): NotAcronym
   return (text) => [...notation(text), ...names(text)];
 };
 
+/**
+ * 午前・午後の点の後ろで文が切れた時刻と時間帯（between 8 a.m. and 8 p.m. ET, Monday …）。文分けは p.m. の点で文を切るので、
+ * 時間帯は次の文の頭に来る。文の中で見る組み立てと同じものを、文書の上で見る。強調の記号（**8 p.m.** ET）も挟んでよい。
+ */
+const clockZoneSpans = (source: string, timeZones: readonly string[]): Span[] => {
+  if (timeZones.length === 0) return [];
+  const pattern = new RegExp(String.raw`${CLOCK_12}\s*${ANY_MERIDIEM}[\s*_]*${oneOf(timeZones)}(?![\p{L}\p{N}_&])`, "gu");
+  return [...source.matchAll(pattern)].map((match) => ({ start: match.index, end: match.index + match[0].length }));
+};
+
 /** 文書全体で読む、略語として数えない範囲。文献一覧の誌名や会議名、番号の付いた区切りの見出し、ABNF の文法、文に切れ目の入る所在地（Rd. NE）。 */
 export const sourceNotAcronymSpans = (source: string, wordsOf: (id: string) => string[]): Span[] => [
   ...postalAddressSpans(source, wordsOf("street-suffix"), wordsOf("us-state-code")),
   ...referenceListSpans(source, wordsOf("reference-list-heading")),
   ...outlineLabelSpans(source, wordsOf("numbered-division")),
   ...grammarSpans(source),
+  ...clockZoneSpans(source, wordsOf("time-zone")),
 ];
 
 /**

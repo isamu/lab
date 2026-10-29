@@ -8,7 +8,7 @@
 type Span = { readonly start: number; readonly end: number };
 
 /** A label in square brackets opening a line, then a wide gap: two spaces or a tab. A link definition ([x]: url) has a colon. */
-const ENTRY_START = /^(?<indent>[ \t]*)\[[A-Za-z0-9][\w.:+-]*\](?: {2,}|\t)\S/u;
+const ENTRY_START = /^(?<indent>[ \t]*)\[(?<label>[A-Za-z0-9][\w.:+-]*)\](?: {2,}|\t)\S/u;
 
 type Line = { readonly text: string; readonly start: number };
 
@@ -40,3 +40,10 @@ export const referenceEntrySpans = (source: string): Span[] => {
     return [{ start: line.start, end: last.start + last.text.length }];
   });
 };
+
+/**
+ * The labels of the entries ([UNIX]    The Open Group, "The Single UNIX Specification"). The entry says what the label names,
+ * so the label written in prose (a UNIX timestamp) is explained by it.
+ */
+export const referenceEntryLabels = (source: string): ReadonlySet<string> =>
+  new Set(linesOf(source).flatMap((line) => ENTRY_START.exec(line.text)?.groups?.["label"] ?? []));

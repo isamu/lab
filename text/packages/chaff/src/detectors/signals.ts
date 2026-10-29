@@ -7,6 +7,9 @@ import { isExplained } from "./acronym-compound.ts";
 import { statedAcronyms } from "./acronym-definition.ts";
 import { isBracketed, isInHeading, isNamePart } from "./acronym-lone.ts";
 import { linkedListTerms } from "./acronym-link.ts";
+import { headingSeries } from "./acronym-series.ts";
+import { citationSpans } from "./acronym-name.ts";
+import { referenceEntryLabels } from "./reference-entry.ts";
 import { caseVariantsIn, spelledOutAcronyms, writtenAsWordIn } from "./acronym-mention.ts";
 import { conjugatedForms } from "./conjugated-form.ts";
 import { knownByDocument } from "./acronym-known.ts";
@@ -24,6 +27,11 @@ const PER = 1000;
 export const MIN_DOCUMENT_LENGTH = { word: 200, char: 500 };
 
 const bodyOf = (doc: ProseDocument): string => doc.sentences.map(proseText).join(" ");
+
+/** 全角の英数字を半角に（ＩＣＯ（Initial Coin Offering）の ＩＣＯ を ICO と読む）。1 文字ずつ置き換えるので位置は変わらない。 */
+const FULL_WIDTH_ALNUM = /[Ａ-Ｚａ-ｚ０-９]/gu;
+const FULL_WIDTH_OFFSET = 0xfee0;
+const halfWidth = (text: string): string => text.replaceAll(FULL_WIDTH_ALNUM, (character) => String.fromCharCode(character.charCodeAt(0) - FULL_WIDTH_OFFSET));
 
 type Hit = { readonly sentence: Sentence; readonly offset: number };
 
@@ -175,6 +183,13 @@ const expandsInHeading = (heading: string, acronym: string, expandedAt: Expanded
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
 
+/**
+ * 法令集の名前（CFR）を、この文書が引用の形（12 CFR 1005.20）で書いているなら、引用の外（the List of CFR Sections Affected）でも
+ * 読み手の知る名前と読む。引用の形で書いていない文書の CFR は略語のまま数える。
+ */
+const citedSeriesOf = (doc: ProseDocument, body: string): string[] =>
+  patternsOf(doc, "citation-series").filter((series) => citationSpans(body, [series]).length > 0 || titledCodeSpans(body, [series]).length > 0);
+
 const notationOf = (doc: ProseDocument): NotAcronymSpans => lexiconNotationOf((id) => patternsOf(doc, id));
 
 /** 定義の語。定義の動詞は、語彙表の形（という）と、この文書で活用して書かれた形（といいます）の両方で照らす。 */
@@ -203,7 +218,7 @@ const isNamePartAt = (acronym: string, hit: Hit): boolean => {
  * 書き手が展開する文書では、展開の抜けは抜けとして読める。名前の一部の略語（SRI International）は、そのときも指さない。
  */
 export const undefinedAcronym: Detector = (doc, options): Finding[] => {
-  const body = bodyOf(doc);
+  const body = halfWidth(bodyOf(doc));
   // HTTP のメソッド名（GET）と SQL のキーワード（VIEW）は略語ではなく、税の名前（VAT、GST）は読み手が名前として知るので、通じる略語と同じく展開を求めない。
   // 並べた名前（JAXA）も、繋いだ略語（JAXA-ISAS）の片割れとして説明済みに数える。
   // 文書が自分で知らせた語（select を書いた文書の SELECT、リンクで引いた講演の場 [Jane Roe, FOSDEM 2024](…)）も同じ。
@@ -211,6 +226,7 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
     ...(options.lexicon ?? []).map((entry) => entry.pattern),
     ...knownByDocument(doc.source, doc.links).concat(patternsOf(doc, "http-method"), patternsOf(doc, "sql-keyword"), patternsOf(doc, "tax-code")),
     ...(doc.names ?? []),
+    ...citedSeriesOf(doc, body),
   ]);
   const expandedAt = expansionAt(definitionWordsOf(doc));
   const stated = statedAcronyms(doc.source, { statements: patternsOf(doc, "definition-statement"), markers: patternsOf(doc, "definition-marker") });
@@ -222,8 +238,17 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   );
   // 略語のすぐ後ろのダッシュで挟んだ同格（the VIX—a measure of …—）、同じ文の前に書いた名前（Small Business Administration … SBA）、
   // 2 つ以上の番号で引く続き物の名前（BCP 78、BCP 14）も、略語の説明と読む。
-  const entries = new Set([...termEntryAcronyms(doc.source), ...stated, ...linkedListTerms(doc.source), ...spelled, ...explainedInText(body, doc.sentences)]);
-  const headings = doc.sections.map((section) => section.heading);
+  // 文献一覧の見出し語（[UNIX]    The Open Group, "The Single UNIX Specification"）と、見出しに番号で立てた書簡の続き物（### SR 26-8: …）も。
+  const headings = doc.sections.map((section) => halfWidth(section.heading));
+  const entries = new Set([
+    ...termEntryAcronyms(doc.source),
+    ...stated,
+    ...linkedListTerms(doc.source),
+    ...spelled,
+    ...explainedInText(body, doc.sentences),
+    ...referenceEntryLabels(doc.source),
+    ...headingSeries(headings),
+  ]);
   // 見出しが略語の名前を書き出していれば（## Federal Open Market Committee の下の FOMC）、説明済み。
   const spelledInHeading = headingsSpellingOut(headings);
   const explainedAsWritten = (word: string): boolean =>
