@@ -3,6 +3,8 @@
 // a converter ran together (…設立1945年７月日染興業…, 39,0439,677…), and a quotation the writer introduces with a colon.
 // Each is measured part by part, or not at all. Pure: the text in, the parts out.
 
+import type { Span } from "../plugin.ts";
+
 const LINE_BREAK = /\n/u;
 /** A sentence's end on a line: a stop, then any closing quotes or brackets. */
 const LINE_ENDS_SENTENCE = /[.?!。？！][\s"'”’)\]）」』]*$/u;
@@ -54,6 +56,10 @@ const nonEmpty = (parts: readonly string[]): string[] => parts.map((part) => par
 
 /** Whether the text holds cells of numbers a converter ran together (39,0439,677). */
 export const hasGluedNumbers = (text: string): boolean => GLUED_NUMBER.test(text);
+
+/** Where the text holds numbers of several cells run together (8,45795.7 for 8,457 and 95.7): no digit in them can be read as one number. */
+export const gluedNumberSpans = (text: string): Span[] =>
+  [...text.matchAll(NUMBER_RUN)].filter((run) => GLUED_NUMBER.test(run[0])).map((run) => ({ start: run.index, end: run.index + run[0].length }));
 
 /** The cells of a table a converter flattened into one sentence, cut at the glued numbers or at each row's date. */
 export const flattenedTableParts = (text: string): readonly string[] | undefined => {
