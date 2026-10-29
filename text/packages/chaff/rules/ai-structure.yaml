@@ -130,8 +130,8 @@ example:
       So we chose topics from the week's work, cut each slot to five minutes and kept notes. What kept it going was the format, not willpower.
 
 not_flagged:
-  ja: 見出しの無い文書は見ません。項目ごとに、測るのに足りない文書（短い文書、節や箇条書きの少ない文書）はその項目を数えません。定型の見出しは、4 種類に届かなければ数えません（本物の提案書にも 1 つ 2 つはあります）。法務・説明書・論文・話し言葉のジャンルでは見ません（`chaff outline` と `chaff fix-plan` は、どのジャンルでも構成を測ります。定型の見出しはこの rule だけが数えます）。
-  en: A document without headings is not checked. A measure the document is too small for (a short text, few sections or lists) is not counted. Template headings count only when four or more sections of the textbook outline stand as headings; a real proposal has one or two. Legal, documentation, academic and speech genres do not run this rule (`chaff outline` and `chaff fix-plan` measure the structure in any genre; only this rule counts the template headings).
+  ja: 見出しの無い文書は見ません。項目ごとに、測るのに足りない文書（短い文書、節や箇条書きの少ない文書）はその項目を数えません。定型の見出しは、4 種類に届かなければ数えません（本物の提案書にも 1 つ 2 つはあります）。「よくある質問」「FAQ」の見出しの下の見出しは読み手の問いなので、決まった形の見出し（〜とは）に数えません。法務・説明書・論文・話し言葉のジャンルでは見ません（`chaff outline` と `chaff fix-plan` は、どのジャンルでも構成を測ります。定型の見出しはこの rule だけが数えます）。
+  en: A document without headings is not checked. A measure the document is too small for (a short text, few sections or lists) is not counted. Template headings count only when four or more sections of the textbook outline stand as headings; a real proposal has one or two. The headings under an FAQ heading are the readers' questions, so they are not counted as headings in a stock form ("What is …"). Legal, documentation, academic and speech genres do not run this rule (`chaff outline` and `chaff fix-plan` measure the structure in any genre; only this rule counts the template headings).
 level_meaning:
   ja: 人の記事の 9 割を超えた項目が {limit} 個そろえば指摘
   en: reported once {limit} measures lie past 90% of human articles
