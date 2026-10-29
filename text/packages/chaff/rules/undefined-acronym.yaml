@@ -37,6 +37,7 @@ extra_word_lists:
     text-message-verb,
     opening-conjunction,
     product-name,
+    phone-label,
   ]
 uses: [pos]
 severity: info
