@@ -19,6 +19,7 @@ import { PatternTimeout } from "./custom/pattern-timeout.ts";
 import { PluginRuleFailure } from "./extension/module-detector.ts";
 import { failureReason } from "./extension/failure-text.ts";
 import { tagCoverage } from "./tag-coverage.ts";
+import { compositeSignals } from "./composite-signals.ts";
 
 export type Skipped = {
   readonly rule: string;
@@ -210,9 +211,10 @@ export const place = (starts: readonly number[], finding: Finding): Finding => {
  * まとめるために消すと本物の指摘が見えなくなる。
  */
 const compositeOf = (rule: RuleDefinition, found: readonly Finding[], limit: number, starts: readonly number[], language: string): Finding[] => {
-  const fired = rule.from.filter((id) => found.some((finding) => finding.rule === id));
+  const fired = compositeSignals(rule.from, found);
   if (fired.length < limit) return [];
-  const first = found.find((finding) => fired.includes(finding.rule));
+  // 数えなかった signal も含めて、最初に出た所に置く。同じ形を 1 種に数えても、指摘の位置は動かない。
+  const first = found.find((finding) => rule.from.includes(finding.rule));
   return [
     place(starts, {
       rule: rule.id,

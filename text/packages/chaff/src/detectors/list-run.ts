@@ -1,6 +1,6 @@
 // Whether a list goes on past an and / or. Then that and / or is inside an item, not the list's last joint, and it casts no
 // vote on the serial comma. Pure.
-import { hasAdposition, hasVerb, isClause, itemAfter, leadShape } from "./list-item.ts";
+import { hasAdposition, hasVerb, isClause, itemAfter, leadShape, openingOf } from "./list-item.ts";
 import { isListConjunction, type ItemScope } from "./list-sentence.ts";
 import type { TokenRange } from "./token-column.ts";
 
@@ -31,12 +31,26 @@ const wordsOf = (scope: ItemScope, item: TokenRange): string =>
 const endsOpenList = (scope: ItemScope, item: TokenRange): boolean => scope.sentence.words.openListEnd?.has(wordsOf(scope, item)) ?? false;
 
 /**
+ * and / or の項目が、並びの前で使った前置詞をもう一度置いてから、shape の項目を続けるか（filled at the West Station, Indian Cove,
+ * Black Rock and Cottonwood campgrounds, and at Park Headquarters）。前置詞を言い直しただけで、同じ並びの最後の項目。
+ * 動詞を連れれば節の頭（and at night we slept）。
+ */
+const repeatsPreposition = (scope: ItemScope, item: TokenRange, shape: string): boolean => {
+  const opening = openingOf(scope, item);
+  if (opening?.pos !== "ADP" || hasVerb(scope, item)) return false;
+  const at = scope.sentence.tokens.indexOf(opening);
+  const surface = opening.surface.toLowerCase();
+  const usedBefore = scope.sentence.tokens.slice(0, at).some((token) => token.pos === "ADP" && token.surface.toLowerCase() === surface);
+  return usedBefore && leadShape(scope, { start: at + 1, end: item.end }) === shape;
+};
+
+/**
  * 読点のあとに、頭の形が shape の and / or の項目か、並びの残りを言う語（and so forth）が来るか。and / or が来なければ undefined。
  */
 const conjunctionAfter = (scope: ItemScope, end: number, shape: string): boolean | undefined => {
   if (!isListConjunction(scope.sentence.tokens[end + 1])) return undefined;
   const following = itemAfter(scope, end + 1);
-  return leadShape(scope, following) === shape || endsOpenList(scope, following);
+  return leadShape(scope, following) === shape || endsOpenList(scope, following) || repeatsPreposition(scope, following, shape);
 };
 
 const QUOTE_MARKS: ReadonlySet<string> = new Set(['"', "“", "”", "'", "‘", "’"]);

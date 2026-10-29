@@ -14,7 +14,7 @@ import {
 } from "./gram-furniture.ts";
 import { hasPredicateIn } from "./gram-predicate.ts";
 import { gramPassagesOf } from "./gram-passages.ts";
-import { entryOpeners, nounFragments, rowEndCells, sectionOpeners } from "./gram-openers.ts";
+import { entryOpeners, filledForms, labelLines, nounFragments, rowEndCells, sectionOpeners } from "./gram-openers.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
 import type { Detector, Finding, LengthUnit, ProseDocument, Sentence, Span, StructureNode } from "../plugin.ts";
 
@@ -82,8 +82,9 @@ type Context = {
 const excludedIn = (context: Context, sentence: Sentence, text: string, source: ReturnType<typeof compacted>): { named: Span[]; mask: boolean[] } => {
   const unit = context.doc.lengthUnit;
   const named = [...nameSpans(text, context.names), ...fieldLabelSpans(text, unit), ...partReferenceSpans(text, unit)];
-  const mask = furnitureMask(text, linkedIn(context.doc, sentence, source));
-  [...fixedEndingSpans(text, context.endings), ...quotedSpans(text), ...quotedClosingSpans(text, context.closings)].forEach((span) =>
+  const linked = linkedIn(context.doc, sentence, source);
+  const mask = furnitureMask(text, linked);
+  [...fixedEndingSpans(text, context.endings), ...quotedSpans(text), ...quotedClosingSpans(text, context.closings, linked)].forEach((span) =>
     mask.fill(true, span.start, span.end),
   );
   return { named, mask };
@@ -127,14 +128,23 @@ const gramsOf = (context: Context, sentences: readonly Sentence[]): Tally => {
  */
 const templatesOf = (doc: ProseDocument): ReadonlySet<Sentence> => {
   const fragments = new Set(nounFragments(doc.sentences, doc.source));
-  return new Set([...entryOpeners(doc.sections, doc.source), ...fragments, ...rowEndCells(doc.sentences, fragments, doc.source)]);
+  return new Set([
+    ...entryOpeners(doc.sections, doc.source),
+    ...fragments,
+    ...rowEndCells(doc.sentences, fragments, doc.source),
+    ...labelLines(doc.sentences, doc.source),
+    ...filledForms(doc.sentences, doc.source),
+  ]);
 };
 
-/** 文書の題（一番上の見出し）。題にある言い回しは文書の主題で、繰り返して当たり前（CCライセンスを付与する際の…）。 */
+/**
+ * 文書の題と見出し。題や見出しにある言い回しは文書の主題で、繰り返して当たり前（CCライセンスを付与する際の…、題を小見出しに置いた
+ * Guidance on Lending to Individuals Not Legally Authorized to Work、節の名前の 高度専門職業人養成に特化した新たな大学院制度）。
+ */
 const titleOf = (doc: ProseDocument): string =>
   keyOf(
     doc.sections
-      .filter((section) => section.depth === 1)
+      .filter((section) => section.depth >= 1)
       .map((section) => compacted(section.heading, doc.lengthUnit).text)
       .join("\n"),
     doc.lengthUnit,
@@ -147,7 +157,11 @@ type Repeat = { readonly key: string; readonly occurrences: readonly Occurrence[
  * 節の書き出しは書き手の地の文でもあるので、ほかの所にも出れば書き出しのぶんも数える（節ごとの口癖）。
  */
 const repeatsOf = (doc: ProseDocument, limit: number): Repeat[] => {
-  const closings = referenceClosings(doc.sentences.map((sentence) => compacted(sentence.text, doc.lengthUnit).text));
+  const sources = doc.sentences.map((sentence) => compacted(sentence.text, doc.lengthUnit));
+  const closings = referenceClosings(
+    sources.map((source) => source.text),
+    doc.sentences.map((sentence, index) => linkedIn(doc, sentence, sources[index] ?? compacted(sentence.text, doc.lengthUnit))),
+  );
   const context = { doc, names: namesOf(doc), endings: fixedEndingsOf(doc), closings };
   const templates = templatesOf(doc);
   const openers = sectionOpeners(doc.sections, doc.source);
