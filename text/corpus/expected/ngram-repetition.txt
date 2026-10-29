@@ -4,7 +4,6 @@ cisa-scuba-teams  1
 crs-r47235-budget-timeline  1
 crs-rl32781-salt  1
 da-annual-report-2024  1
-da-gss-incident  1
 etax-oshirase-mail-templates  1
 fomc-minutes-2025-07  1
 govuk-cddo-roadmap-2022-2025  1
@@ -26,7 +25,6 @@ ruby-3-4-0-released-ja  1
 textlint-preset-ja-technical-writing-readme  1
 usajobs-va-it-specialist-customer-support  1
 utelecon-account-leave  1
-vite-plugin-legacy-changelog  1
 w3c-secure-contexts  1
 zenn-kaityo256-happy-presentation  1
 zenn-kaityo256-what-is-linker  1
