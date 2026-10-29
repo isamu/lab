@@ -150,6 +150,17 @@ describe("contrast-framing counts a share of sentences", () => {
     assert.ok(firedRules(ja, `# 記事\n\n${frames}${fillerJa(14)}`, "blog/tech").includes(RULE));
   });
 
+  it("does not report two frames in long sentences, one per thousand characters or fewer, and still reports them in short ones", () => {
+    // Two additive frames in a policy section of long sentences: a high share of few sentences, spread over the text.
+    const additive =
+      "当社は単なる機械の貸し出しにとどまらず、保守の相談まで一括して引き受ける体制を目指します。国内だけでなく海外の拠点にも同じ仕組みを広げてまいります。";
+    const longSentence =
+      "本年度の事業計画では、各地域の営業所における人員の配置と設備の更新を段階的に進め、顧客からの問い合わせに迅速に対応できる体制を整えるとともに、業務の手順を見直して費用の削減に取り組んでまいります。";
+    assert.equal(framed(ja, additive).length, 2);
+    assert.ok(!firedRules(ja, `# 方針\n\n${additive}${longSentence.repeat(24)}`, "business/report").includes(RULE));
+    assert.ok(firedRules(ja, `# 方針\n\n${additive}${fillerJa(16)}`, "business/report").includes(RULE));
+  });
+
   it("reports a share just past the limit, and not one at the limit", () => {
     // Six sentences hold the three frames; with 44 more the share is 6.0% (the normal limit), with 43 it is 6.1%.
     assert.ok(!firedRules(en, `# Post\n\n${three}${fillerEn(44)}`, "blog/tech").includes(RULE));

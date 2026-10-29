@@ -48,6 +48,11 @@ const contrastWordsOf = (doc: ProseDocument, frames: Lexicon): ContrastWords => 
 
 /** 対比の枠は、一つなら論点の整理。二つ目から数える（割合の上限が、長い文書の二つを落とす）。 */
 const MIN_CONTRASTS = 2;
+/**
+ * 枠が 1000 語（日本語は 1000 字）に 1 つ以下なら重なっていない。文の長い文書（有価証券報告書の方針の節）は文の数が少なく、
+ * 離れた二つの枠でも割合が上限を超える。生成文は短い文書に二つ三つを詰める。
+ */
+const MIN_CONTRAST_DENSITY = 1;
 const PERCENT = 100;
 
 /** 文書の言語の文のうち、対比の枠で書いた文の割合（百分率、小数 1 桁）。文の長さが言語で違っても同じ物差しで比べられる。 */
@@ -62,7 +67,8 @@ export const contrastFraming: Detector = (doc, options): Finding[] => {
   const hits = contrastSentences(doc.sentences, words)
     .filter((sentence) => sentence.embeddedLanguage === undefined)
     .map((sentence) => ({ sentence, matched: (firstIn(sentence, words.frames) ?? firstIn(sentence, words.leads))?.pattern ?? "" }));
-  if (hits.length < MIN_CONTRASTS || wordsOf(doc) < MIN_DOCUMENT_LENGTH[doc.lengthUnit]) return [];
+  const length = wordsOf(doc);
+  if (hits.length < MIN_CONTRASTS || length < MIN_DOCUMENT_LENGTH[doc.lengthUnit] || hits.length * PER <= length * MIN_CONTRAST_DENSITY) return [];
   const share = contrastShare(doc, hits.length);
   return share <= options.limit ? [] : hits.map((hit) => findingOf(hit, { count: hits.length, share, limit: options.limit }));
 };
