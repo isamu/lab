@@ -56,6 +56,7 @@ import { namesDivision, qualifiesPrevious } from "./list-comma-aside.ts";
 import { inExcerpt } from "./quoted-excerpt.ts";
 import { listContinues, walker, type Walk } from "./list-run.ts";
 import { joinsUnfinished, repeatsConjunction } from "./list-joint.ts";
+import { insideSentenceCaseTitle } from "./title-list.ts";
 
 const EMPTY: TokenRange = { start: 0, end: 0 };
 
@@ -119,6 +120,19 @@ const afterClosedList = (view: View): View => {
   const head = firstAt(scope, "content", body);
   const rest = VERBAL.has(scope.sentence.tokens[head]?.pos ?? "") ? { start: head + 1, end: body.end } : body;
   return isItem(scope, rest) ? { ...after(view, closing), pre: rest } : withoutLead(after(view, closing));
+};
+
+/**
+ * 動詞で終わる最初の項目のすぐ後ろの、前置詞で始まる項目は、動詞と目的語のあいだに読点で挟んだ句（if it received, at its most
+ * recent examination, a rating of "1" or "2" and it satisfies）。動詞も句も並びの項目ではなく、並びがあるなら句の後ろの目的語から。
+ * 句の後ろも前置詞で始まれば、前置詞の句の並び（collected, in batches, in files, and in tables）なので外さない。
+ */
+const afterVerbAside = (view: View): View => {
+  const { scope } = view.list;
+  const [verb, aside] = [firstOf(view), secondOf(view)];
+  if (verb === undefined || aside === undefined || lastContent(scope, verb.item)?.pos !== "VERB" || openingOf(scope, aside.item)?.pos !== "ADP") return view;
+  const object = firstOf(after(view, aside));
+  return object !== undefined && opensAsNoun(scope, object.item) ? after(view, aside) : view;
 };
 
 /**
@@ -345,7 +359,7 @@ const listAt = (list: ItemList, at: number, walk: Walk): boolean | undefined => 
   const { scope } = list;
   if (closesExampleAside(wholeList(list), at)) return undefined;
   const afterItem = itemAfter(scope, at);
-  const opened = afterClosedList(withoutLead(afterClauseTurn(withoutCoordinateAdjective(wholeList(list)), afterItem)));
+  const opened = afterClosedList(withoutLead(afterVerbAside(afterClauseTurn(withoutCoordinateAdjective(wholeList(list)), afterItem))));
   const items = fromParticiplePhrase(fromExample(opened, afterItem), afterItem);
   if (listContinues(scope, afterItem, walk) || isAppositive(scope, at, items, afterItem) || insideLastItem(scope, at, items, afterItem)) return undefined;
   if (namesDivision(items) || qualifiesPrevious(items)) return undefined;
@@ -368,12 +382,13 @@ export const listVerdicts = (tokens: readonly Token[], words: ListWords, source:
   const readItems = listReader(sentence);
   const breaks = dashBreaks(tokens, source);
   const excerpt = inExcerpt(tokens, source, words.elision ?? []);
+  const inTitle = insideSentenceCaseTitle(tokens);
   const walk = walker();
   return tokens.flatMap((token, at) => {
     if (!isJudgedConjunction(token, at)) return [];
     // 郵便番号で終わる住所のあとの and / or は、住所の行を区切る読点のあと。並びの読点ではない。
     // 最後の読点のあとに前後を空けたダッシュがあれば（Washington, DC – The …）、読点はダッシュの前で閉じた日付行や見出しのもの。
-    const notList = sentence.inCitedTitle(at) || excerpt(at) || followsPostcode(source, token.span.start) || breaks[at] === true;
+    const notList = sentence.inCitedTitle(at) || inTitle(at) || excerpt(at) || followsPostcode(source, token.span.start) || breaks[at] === true;
     return [notList ? undefined : listAt(readItems(at), at, walk)];
   });
 };
