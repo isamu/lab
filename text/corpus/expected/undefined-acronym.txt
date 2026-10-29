@@ -26,7 +26,6 @@ go-1-23-release-notes  9
 govuk-cddo-roadmap-2022-2025  8
 govuk-incident-safe-browsing  3
 govuk-style-guide-a-to-z  25
-ietf-draft-httpapi-ratelimit-headers-10  5
 irs-online-account-faq  5
 kep-2214-indexed-job  5
 kobayashi-press-hananoa-2026-02  2
@@ -41,12 +40,11 @@ nodejs-tsc-minutes-2026-05-06  5
 nstac-microdata-forum  3
 nttcom-onboarding-week1  3
 nws-glossary-a  9
-rfc3693-geopriv-requirements  13
+rfc3693-geopriv-requirements  12
 rfc9293-tcp  26
 rfc9457  3
 rust-lang-minutes-2022-11-22  3
 rust-rfc-2094-nll  8
-soumu-wp-r06-ai-booms  3
 soumu-wp-r06-misinformation  9
 tc39-agenda-2026-07  2
 us-4683202-nucleic-acid-amplification  15

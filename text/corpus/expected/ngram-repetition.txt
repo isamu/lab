@@ -9,7 +9,6 @@ fomc-minutes-2025-07  1
 govuk-cddo-roadmap-2022-2025  1
 govuk-guidance-academy-senior-pay  1
 govuk-style-guide-a-to-z  1
-ietf-draft-httpapi-ratelimit-headers-10  1
 k8s-overview-ja  1
 kantei-221-shisei-hoshin  1
 mdn-using-fetch-ja  1

@@ -6,7 +6,7 @@ govuk-style-guide-a-to-z  2
 gsa-press-pif-2026  2
 k8s-overview-en  1
 kantei-unga81-general-debate-speech-en  2
-loc-signal-new-online-2026-07  2
+loc-signal-new-online-2026-07  1
 maff-kyodo-ryori-okaisan-en  1
 nasa-advisory-crew-13-coverage  1
 nasa-press-prima-new-mission-class  1
