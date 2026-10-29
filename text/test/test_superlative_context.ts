@@ -91,8 +91,20 @@ describe("unqualified-superlative: a predicate that points at one of a set", () 
     quiet(en, ["The best backup plan is the one you will actually keep, so start simple.", "The most important divergence is the second."]);
   });
 
+  it("does not report a superlative subject the predicate puts first in an order (CISA)", () => {
+    quiet(en, [
+      "This more aggressive tiering of vulnerabilities ensures that the most critical vulnerabilities are addressed first, and more quickly.",
+      "The most severe findings should be fixed first.",
+    ]);
+  });
+
   it("still reports a superlative subject with a claim for its predicate", () => {
-    reported(en, ["The best content is conversational.", "The best way to build big is to start small."]);
+    reported(en, [
+      "The best content is conversational.",
+      "The best way to build big is to start small.",
+      "The most critical vulnerabilities are addressed quickly.",
+      "The best tools are made by small teams.",
+    ]);
   });
 });
 

@@ -73,15 +73,23 @@ const verbAt = (tokens: readonly Token[], range: TokenRange, end: number): numbe
   return end - 1 > range.end && isVerbal(tokens[end - 1]) ? end - 1 : undefined;
 };
 
+/** The first token after the verb at `at` and the auxiliaries and verbs that follow it (are addressed, should be fixed). */
+const pastVerbs = (tokens: readonly Token[], at: number): number => {
+  const rest = tokens.slice(at + 1).findIndex((token) => !isVerbal(token));
+  return rest < 0 ? tokens.length : at + 1 + rest;
+};
+
 /**
  * 最上級の名詞句が主語で、述語がどれかを指しているか（The best plan is the one you keep・The most important divergence is
- * the second）。どれが一番なのかを決める言い方で、一番だという主張ではない。
+ * the second）、順番のどこに来るかを言うか（the most critical vulnerabilities are addressed first）。どれが一番なのかを決める
+ * 言い方で、一番だという主張ではない。
  */
 export const pointsAtReferent = (tokens: readonly Token[], range: TokenRange, referents: Lexicon): boolean => {
   const end = phraseEnd(tokens, range.end);
   const at = verbAt(tokens, range, end);
   if (at === undefined) return false;
-  const next = tokens[at + 1]?.pos === "DET" ? at + 2 : at + 1;
+  const object = pastVerbs(tokens, at);
+  const next = tokens[object]?.pos === "DET" ? object + 1 : object;
   return isWord(tokens[next], referents);
 };
 
