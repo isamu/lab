@@ -54,6 +54,11 @@ describe("ai-structure", () => {
     assert.equal(finding?.line, 3);
   });
 
+  it("names the rules that read the same shapes as its measures, so the composite counts each shape once", () => {
+    const [finding] = ofRule(run(ja, SPLIT, { "ai-structure": "strict" }), "ai-structure");
+    assert.equal(finding?.values["same_shape_rules"], "bold-label-list");
+  });
+
   it("stays quiet below the count: two measures do not reach the normal level", () => {
     assert.deepEqual(ofRule(run(ja, SPLIT, {}), "ai-structure"), []);
   });

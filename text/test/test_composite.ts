@@ -6,6 +6,7 @@ import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { Finding } from "../packages/chaff/src/plugin.ts";
+import { compositeSignals, SAME_SHAPE_VALUE } from "../packages/chaff/src/composite-signals.ts";
 
 const RULES = loadRules("ja");
 
@@ -170,5 +171,43 @@ describe("the composite on an English document", () => {
     );
     const word = String(found?.values["word"] ?? "");
     assert.ok(word.includes(", ") && !word.includes("、"), word);
+  });
+});
+
+describe("one sign counts once in the composite", () => {
+  const FROM = ["rule-of-three", "section-length-uniformity", "colon-lead-in", "ai-structure"];
+  const finding = (rule: string, values: Finding["values"] = {}): Finding => ({ rule, severity: "info", line: 1, column: 1, quote: "", values });
+  /** ai-structure past its limit of 3 on section length variation, sections of one or two paragraphs and bold labels. */
+  const structure = (count: number, sameShape: string): Finding => finding("ai-structure", { count, limit: 3, [SAME_SHAPE_VALUE]: sameShape });
+
+  it("invalid: ai-structure counts when enough of its measures are its own", () => {
+    const found = [finding("section-length-uniformity"), structure(4, "section-length-uniformity")];
+    assert.deepEqual(compositeSignals(FROM, found), ["section-length-uniformity", "ai-structure"]);
+  });
+
+  it("valid: ai-structure does not count again a shape its twin rule already counted", () => {
+    const found = [finding("section-length-uniformity"), structure(3, "section-length-uniformity")];
+    assert.deepEqual(compositeSignals(FROM, found), ["section-length-uniformity"]);
+  });
+
+  it("takes out every twin that fired, and only those", () => {
+    const both = "section-length-uniformity,rule-of-three";
+    assert.deepEqual(compositeSignals(FROM, [finding("rule-of-three"), finding("section-length-uniformity"), structure(4, both)]), [
+      "rule-of-three",
+      "section-length-uniformity",
+    ]);
+    assert.deepEqual(compositeSignals(FROM, [finding("rule-of-three"), structure(4, both)]), ["rule-of-three", "ai-structure"]);
+  });
+
+  it("does not take out a twin that is not one of the composite's signals", () => {
+    assert.deepEqual(compositeSignals(FROM, [finding("bold-label-list"), structure(3, "bold-label-list")]), ["ai-structure"]);
+  });
+
+  it("counts a finding with no twins, an empty list or no numbers as it is", () => {
+    assert.deepEqual(compositeSignals(FROM, [finding("colon-lead-in"), structure(3, "")]), ["colon-lead-in", "ai-structure"]);
+    const unnumbered = finding("ai-structure", { [SAME_SHAPE_VALUE]: "colon-lead-in" });
+    assert.deepEqual(compositeSignals(FROM, [finding("colon-lead-in"), unnumbered]), ["colon-lead-in", "ai-structure"]);
+    assert.deepEqual(compositeSignals(FROM, []), []);
+    assert.deepEqual(compositeSignals([], [finding("colon-lead-in")]), []);
   });
 });

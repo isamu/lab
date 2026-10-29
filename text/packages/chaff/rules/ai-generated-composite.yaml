@@ -146,8 +146,8 @@ example:
       - No review
 
 not_flagged:
-  ja: 特徴が一つだけなら何も言いません。そろっても、生成された文章だとは言いません。読み返す場所の目印です。
-  en: One signal alone says nothing. Even several together do not say the text was generated; they mark a place to reread.
+  ja: 特徴が一つだけなら何も言いません。同じ形を二つの rule が測るとき（節の長さのばらつきは ai-structure と section-length-uniformity の両方が見ます）は、1 種として数えます。そろっても、生成された文章だとは言いません。読み返す場所の目印です。
+  en: One signal alone says nothing. A shape two rules measure (section length variation, read by both ai-structure and section-length-uniformity) counts as one signal. Even several together do not say the text was generated; they mark a place to reread.
 level_meaning:
   ja: 特徴が {limit} 種そろえば指摘
   en: reported once {limit} signals occur together
