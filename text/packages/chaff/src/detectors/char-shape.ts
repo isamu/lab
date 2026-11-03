@@ -1,6 +1,6 @@
 import type { Detector, DetectorOptions, DocumentProfile, Finding, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 import { compacted } from "./gram-place.ts";
-import { leadingCounter, trailingPrefix } from "./counter-edge.ts";
+import { leadingCounter, trailingOrdinals, trailingPrefix } from "./counter-edge.ts";
 import { trailingAddressee, type AddresseeSuffix } from "./addressee-edge.ts";
 import { leadingPrefix, trailingTitle, type AddresseeWords } from "./addressee-title-edge.ts";
 import {
@@ -207,12 +207,13 @@ const isAddresseeLine = (run: KanjiRun, words: NameWords): boolean => {
 /** 宛名の行か、名前の並びの 1 項目。どちらも役職を付けた名前を 1 つずつ並べたもので、尻の役職は名前の外。 */
 const isNamedEntry = (run: KanjiRun, words: NameWords): boolean => run.listItem || isAddresseeLine(run, words);
 
-/** 尻の外す語: 数に付く接頭の語か宛先に付く語と、宛名の行ならその前の役職（日本博物館協会会長殿の「会長殿」）。 */
+/** 尻の外す語: 数に付く接頭の語か条や項の番号か宛先に付く語と、宛名の行ならその前の役職（日本博物館協会会長殿の「会長殿」）。 */
 const tailOf = (tokens: readonly Token[], run: KanjiRun, span: Span, words: NameWords): Tail | undefined => {
   const prefix = trailingPrefix(tokens, span.end, run.text);
   const suffix =
     prefix === undefined
-      ? (trailingConjunction(tokens, span.start, span.end, run.text) ??
+      ? (trailingOrdinals(tokens, span, run.text) ??
+        trailingConjunction(tokens, span.start, span.end, run.text) ??
         trailingAddressee(tokens, span.end, run.text, words.addressee) ??
         trailingAddressee(tokens, span.end, run.text, words.listSuffixes))
       : { surface: prefix.surface, start: prefix.span.start };
