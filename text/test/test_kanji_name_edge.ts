@@ -102,7 +102,7 @@ describe("max-kanji-continuous: 名前と指す語", () => {
 
   it("invalid: 序数や「等」を外しても長い連なりは数える", () => {
     assert.deepEqual(kanjiWords("初代地方創生推進交付金担当になった。\n"), ["地方創生推進交付金担当"]);
-    assert.deepEqual(kanjiWords("防衛関係施設周辺区域等を調べる。\n"), ["防衛関係施設周辺区域"]);
+    assert.deepEqual(kanjiWords("防衛関係施設周辺地域等を調べる。\n"), ["防衛関係施設周辺地域"]);
   });
 
   it("invalid: 法人格が前に無い一つの区切り、平仮名を含む括弧の中、指す語を外しても長い連なりは数える", () => {
