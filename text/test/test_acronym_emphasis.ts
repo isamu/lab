@@ -42,6 +42,24 @@ describe("undefined-acronym: 大文字で強調した副詞", () => {
   });
 });
 
+// 間投詞としてしか引けない語（hey、huh）は何も名指さない。製品の名前を大文字で書いた HEY も、展開を待つ略語ではない。
+// 2 文字の間投詞は略語であることが多い（HA の high availability、OH の Ohio）ので数える。
+describe("undefined-acronym: 大文字で書いた間投詞", () => {
+  [
+    ["That includes Basecamp, HEY, Highrise and Campfire. The SRE joins.", ["SRE"]],
+    ["HUH, the tool said. The SRE joins.", ["SRE"]],
+  ].forEach(([body, expected]) => {
+    it(`数えない: ${String(body)}`, () => assert.deepEqual(acronymsIn(String(body)), expected));
+  });
+
+  [
+    ["Run the HA cluster in OH this year.", ["HA", "OH"]],
+    ["The HEX key and the HEY service.", ["HEX"]],
+  ].forEach(([body, expected]) => {
+    it(`数える: ${String(body)}`, () => assert.deepEqual(acronymsIn(String(body)), expected));
+  });
+});
+
 describe("undefined-acronym: 文の中で前置詞・接続詞・数詞・代名詞・動詞として読める大文字の語", () => {
   [
     ["The state AFTER the departure is shown. The SRE joins.", ["SRE"]],

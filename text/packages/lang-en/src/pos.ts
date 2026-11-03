@@ -4,7 +4,7 @@ import { loadLexicons } from "./lexicons.ts";
 import { blankLongRuns } from "./long-runs.ts";
 import { capitalisedGuessedVerbsAsNames, isOrdinaryWord, lowercasedAt, properNounChecked, rereadAt, sentenceInitialCommonWord } from "./proper-noun.ts";
 import { isStativeParticiple, stativeVocabulary } from "./stative-participle.ts";
-import { isCapitalisedOrdinaryWord, isEmphasisedAdverb, isEmphasisedWord, isHyphenated, standsAlone } from "./emphasis.ts";
+import { isCapitalisedInterjection, isCapitalisedOrdinaryWord, isEmphasisedAdverb, isEmphasisedWord, isHyphenated, standsAlone } from "./emphasis.ts";
 import { gerundFeatures } from "./gerund.ts";
 import { namesReadAsVerbs, rereadAsNames, type NameReadings } from "./names-read-as-verbs.ts";
 import { winkLexiconWords, winkPosTagger, winkWordNet } from "./wink-modules.ts";
@@ -258,12 +258,14 @@ export const prepare = (): void => {
 export const isReady = (): boolean => state.ready !== undefined;
 
 /**
- * 大文字で強調した副詞（NEVER）は、解析器が名前と付けても副詞。文の中で前置詞や動詞として読めた語（AFTER the departure、
+ * 大文字で強調した副詞（NEVER）は、解析器が名前と付けても副詞。間投詞としてしか引けない 3 文字以上の語（HEY）は間投詞。文の中で前置詞や動詞として読めた語（AFTER the departure、
  * a hurricane DID form）と、語彙が普通の語として知る 4 文字以上の語（START、RETURN）は、解析器の読みのまま。どれも Emph=Yes で、
  * 略語ではないと detector に伝える。
  */
 const withEmphasis = (token: Token, text: string, tagged: readonly Tagged[], at: number): Token => {
   if (isEmphasisedAdverb(token.surface, state.vocabulary)) return { ...token, pos: "ADV", lemma: token.surface.toLowerCase(), features: { Emph: "Yes" } };
+  if (isCapitalisedInterjection(token.surface, state.vocabulary))
+    return { ...token, pos: "INTJ", lemma: token.surface.toLowerCase(), features: { Emph: "Yes" } };
   const ordinary = isCapitalisedOrdinaryWord(token.surface, state.vocabulary) && !isHyphenated(text, token.span);
   const readAsWord = ordinary || (standsAlone(text, token.span) && isEmphasisedWord(tagged, at, state.vocabulary));
   if (!readAsWord) return token;
