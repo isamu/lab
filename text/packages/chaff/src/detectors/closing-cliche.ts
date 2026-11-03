@@ -1,5 +1,6 @@
 import type { Detector, Finding, LexiconEntry, Paragraph, Sentence } from "../plugin.ts";
 import { closingSentences } from "../closing-paragraph.ts";
+import { entriesForGenre } from "../lexicon-genres.ts";
 import { exhortationIn, exhortationWords } from "./closing-exhortation.ts";
 import { comparableText, entryIn, entryOpens } from "./lexicon-match.ts";
 
@@ -61,7 +62,11 @@ export const closingClicheWords = (lexicon: readonly LexiconEntry[]): Words => (
 
 /** 結び（最後の節の終わりの段落）の定型の言い回し。limit は指摘に要る文の数。 */
 export const closingCliche: Detector = (doc, options): Finding[] => {
-  const hits = closingClicheHits(closingSentences(doc.sections, doc.paragraphs), doc.paragraphs, closingClicheWords(options.lexicon ?? []));
+  const hits = closingClicheHits(
+    closingSentences(doc.sections, doc.paragraphs),
+    doc.paragraphs,
+    closingClicheWords(entriesForGenre(options.lexicon ?? [], options.genre)),
+  );
   if (hits.length < options.limit) return [];
   return hits.map((hit) => ({
     rule: "",

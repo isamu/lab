@@ -120,6 +120,8 @@ email.md   business/email · English   genre from --genre
                   unfilled-placeholder
   17:1    info    "please don't hesitate" and other stock courtesies in 2 sentences (2 needed)
                   email-stock-courtesy
+  17:74   warning Closes with "hope this helps"
+                  closing-cliche
 
 {counts}
 ```
@@ -146,7 +148,7 @@ Guide: Email and letter (business/email)
   - Is everything said to be attached actually attached?
   - Are the greeting, the closing and the signature in place?
 
-  Rules that matter most for this genre: attachment-not-attached, concrete-evidence-density, cushion-phrase-density, email-greeting-closing, email-stock-courtesy, email-subject-length, request-without-deadline, risk-disclosure, unsourced-number
+  Rules that matter most for this genre: attachment-not-attached, closing-cliche, concrete-evidence-density, cushion-phrase-density, email-greeting-closing, email-stock-courtesy, email-subject-length, request-without-deadline, risk-disclosure, unsourced-number
   Change it with guide: in chaff.yaml; leave it out with --no-guide.
 
 ════════════════════════════════════════════════════════════
