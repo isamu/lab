@@ -156,7 +156,7 @@ describe("contraction-consistency", () => {
     });
   });
 
-  describe("引用符で挙げた短い語句は、使ったのではなく名前か例", () => {
+  describe("引用符の中の形は、書き手が変えられないので指さない", () => {
     it('valid: 機能の名前（"Do Not Disturb"）は do not に数えない', () => {
       // gitlab-time-away-philosophy の形。本文は don't で揃い、設定の名前だけが Do Not。
       const source = "# Away\n\nDon't check email. Don't join calls.\n\n- Sets your status and turns on \"Do Not Disturb\" settings.";
@@ -175,14 +175,29 @@ describe("contraction-consistency", () => {
       assert.deepEqual(matchedFor(source), ["do not"]);
     });
 
-    it("invalid: 話した言葉の引用（句読点を持つ）は文書の言葉として数える", () => {
+    it("valid: 話した言葉の引用（句読点を持つ）は話し手の言葉で、指さない", () => {
       const source = '# Notes\n\nWe do not ship on Fridays. We do not ship at night.\n\n"We don\'t know yet," she said.';
-      assert.deepEqual(matchedFor(source), ["don't"]);
+      assert.deepEqual(matchedFor(source), []);
     });
 
-    it("invalid: 5 語以上の引用は語句ではなく文として数える", () => {
-      const source = "# Notes\n\nWe do not ship on Fridays. We do not ship at night.\n\nThe sign read “we don't open on Sundays at all”.";
-      assert.deepEqual(matchedFor(source), ["don't"]);
+    it("valid: 引いた標語の文（5 語以上）も、書き手が変えられない言葉", () => {
+      // pluralistic-2026-10-13-bundestrojaner の形。本文は can't で揃い、引いた標語だけが cannot。
+      const source = "# Locks\n\nYou can't fix it. We can't wait.\n\nThe argument is a tautology: \"You cannot make a lock safer by giving out its key.\"";
+      assert.deepEqual(matchedFor(source), []);
+    });
+
+    it("valid: 引いた回答の選択肢（ダッシュを含む）も指さない", () => {
+      // arxiv-2610-12701-annotator-lived-experience の形。本文は do not で揃い、回答の文言だけが don’t。
+      const source =
+        "# Results\n\nThe gap does not shrink. We do not weight it. We do not drop it.\n\n“No one — I don’t see a target here” fell from 15% to 9%.";
+      assert.deepEqual(matchedFor(source), []);
+    });
+
+    it("invalid: 引用の中の形も、どちらが多いかを数えるときは数える", () => {
+      // nodejs-governance の形。書き手が例として書いた文言の don't も数え、地の文の Do not を指す。
+      const source =
+        '# Nominations\n\nPost a comment, e.g. "I will open the issue if I don\'t hear any objections this week". Say "I don\'t think this should pass" when you object.\n\nDo not skip those steps.';
+      assert.deepEqual(matchedFor(source), ["do not"]);
     });
 
     it("valid: 引用の中の一重引用符の札（‘Tweet doesn’t need a note’）も数えない", () => {
@@ -192,8 +207,8 @@ describe("contraction-consistency", () => {
       assert.deepEqual(matchedFor(source), []);
     });
 
-    it("invalid: 入れ子でない引用の中の語は、これまでどおり数える", () => {
-      const source = "# Notes\n\nThe score does not change. The label does not change.\n\nRaters wrote “the tweet doesn’t need a note at all” often.";
+    it("invalid: 引用符が閉じなければ、その後ろはこれまでどおり数えて指す", () => {
+      const source = "# Notes\n\nThe score does not change. The label does not change.\n\nRaters wrote “the tweet doesn’t need a note at all.";
       assert.deepEqual(matchedFor(source), ["doesn't"]);
     });
   });
