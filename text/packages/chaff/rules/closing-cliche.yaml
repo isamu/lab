@@ -62,7 +62,7 @@ example:
       Changing one line of the settings made the build twice as fast. Next, we will try running the tests in parallel.
 
 not_flagged:
-  ja: 最後の節の、終わりの四段落だけを見ます。見出しの無い文書でも同じです。文書の最初の段落と、それより前の本文の「まとめると」は普通のつなぎなので指しません。箇条書きの中も見ません。「〜してみてほしい」「試してみてください」「楽しんでください！」のような読み手への願いは、最後の段落にあるときだけ指します。本文の途中なら普通の勧めです。メールと提案書の結びも見ます。英語の「Thank you for your prompt attention to this matter」のような手紙の定型の結びも指し、「Wishing you ...!」のような弾んだ願いはメールでだけ指します。「いかがでしょうか」は記事でだけ指します。メールでは都合を聞き、提案書では勧めを言う普通の文です。報告書やお知らせは見ません。
+  ja: 最後の節の、終わりの四段落だけを見ます。見出しの無い文書でも同じです。文書の最初の段落と、それより前の本文の「まとめると」は普通のつなぎなので指しません。箇条書きの中も見ません。「〜してみてほしい」「試してみてください」「楽しんでください！」のような読み手への願いは、最後の段落にあるときだけ指します。本文の途中なら普通の勧めです。メールと提案書の結びも見ます。英語の「Thank you for your prompt attention to this matter」のような手紙の定型の結びも指し、「Wishing you ...!」のような弾んだ願いはメールでだけ指します。「いかがでしょうか」「参考になれば幸いです」「お気軽に〜ください」は記事でだけ指します。メールや提案書では都合を聞き、資料を添え、問い合わせ先を言う普通の文です。報告書やお知らせは見ません。
   en: Only the last four paragraphs of the last section are checked, with or without headings; the document's first paragraph and "to sum up" earlier in the text are ordinary links and are not reported. List items are not checked. A send-off such as "Happy brewing!", "give it a try" or "and go from there" counts only in the last paragraph; earlier it is ordinary text. In emails and proposals the stock last line of a letter ("Thank you for your prompt attention to this matter") is read too, and a chirpy wish ("Wishing you all ...!", "enjoy the long weekend!") in emails only; reports and notices are not checked.
 level_meaning:
   ja: 当てはまる結びが {limit} 箇所あれば指摘

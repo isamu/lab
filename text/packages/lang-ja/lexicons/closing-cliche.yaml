@@ -8,13 +8,18 @@ entries:
     genres: [blog]
   - pattern: まとめると
   - pattern: 最後までお読みいただく
+  # 資料を送るメールでは普通の結び（ご参考になれば幸いです）。この四つは記事でだけ数える。
   - pattern: 参考になれば幸いです
+    genres: [blog]
   - pattern: ぜひ試してみてください
   - pattern: いかがでしたでしょうか
   - pattern: お役に立てれば幸いです
+    genres: [blog]
   # 「参考になればうれしいです」「お役に立てればと思います」。上の語が先に当たれば、指摘はその語で言う。
   - pattern: 参考になれば
+    genres: [blog]
   - pattern: お役に立てれば
+    genres: [blog]
   # 読み手への願い・励ましで文書を終える。本文の途中なら普通の勧めなので、最後の段落だけ。
   - pattern: てみてほしい
     group: last
@@ -34,7 +39,9 @@ entries:
   - pattern: ましょう!
     group: last
   # 「気軽に聞いてみてください」「お気軽にお問い合わせください」
+  # メールでは問い合わせ先を言う普通の結び（お気軽にお問い合わせください）。記事でだけ数える。
   - pattern: 気軽に
     group: lead:kigaru
+    genres: [blog]
   - pattern: ください
     group: end:kigaru

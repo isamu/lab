@@ -159,3 +159,15 @@ describe("closing-cliche: 「いかがでしょうか」は記事の結びでだ
     assert.ok(flagged("# 朝の散歩\n\n朝に歩くと頭が冴えます。\n\nみなさんも明日から始めてみてはいかがでしょうか。\n"));
   });
 });
+
+describe("closing-cliche: 仕事のメールの普通の結び", () => {
+  it("valid: 「ご参考になれば幸いです」「お気軽にお問い合わせください」はメールでは指さない", () => {
+    const mail = "山田様\n\n見積書を添付いたします。\n\nご参考になれば幸いです。ご不明な点は、お気軽にお問い合わせください。\n\n佐藤\n";
+    assert.ok(!flagged(mail, ja, "business/email"));
+  });
+
+  it("invalid: 記事の結びでは今までどおり指す", () => {
+    assert.ok(flagged("# 見積の書き方\n\n項目は三つです。\n\nご参考になれば幸いです。\n"));
+    assert.ok(flagged("# 見積の書き方\n\n項目は三つです。\n\nわからないことは気軽に聞いてください。\n"));
+  });
+});
