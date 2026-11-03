@@ -34,6 +34,15 @@ describe("cliche: a worn phrase", () => {
     assert.deepEqual(findingsOf("The front wheel was replaced. Normal reviews resume on Monday."), []);
   });
 
+  it("reports the worn quips of generated advice, and not the same words in an instruction", () => {
+    assert.deepEqual(findingsOf("Honestly, the best one is the one you’ll actually use."), ['"is the one you\'ll actually use" is a cliché']);
+    assert.deepEqual(findingsOf("The best backup plan is the one you'll actually stick with, so start simple."), [
+      '"is the one you\'ll actually stick with" is a cliché',
+    ]);
+    assert.deepEqual(findingsOf("Fridays go to meetings that could probably have been an email."), ['"could probably have been an email" is a cliché']);
+    assert.deepEqual(findingsOf("Delete every profile except the one you actually use. The alert was sent as an email."), []);
+  });
+
   it("every lexicon phrase is found in a sentence", () => {
     const lexicon = en.lexicons[RULE] ?? [];
     assert.ok(lexicon.length > 0);
