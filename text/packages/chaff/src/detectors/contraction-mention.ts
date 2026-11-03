@@ -4,8 +4,9 @@ import type { Span } from "../plugin.ts";
 
 // A short phrase in quotation marks ("Do Not Disturb", ‘we’re going to x’) is a name or an example: the form is mentioned,
 // not used, so it says nothing about the document's register. Spoken words carry punctuation ("We don't know," she
-// said) and stay, unless they are quoted inside another quotation (a platform's label in a quoted sentence), which is
-// someone else's wording twice over. The text must already have straight apostrophes, so a ’ left in it closes a quotation.
+// said) are counted, unless they are quoted inside another quotation (a platform's label in a quoted sentence), which is
+// someone else's wording twice over. No form inside quotation marks is pointed at: the writer cannot change a quotation.
+// The text must already have straight apostrophes, so a ’ left in it closes a quotation.
 
 const MENTION_MARKS: Readonly<Record<string, string>> = { "“": "”", '"': '"', "‘": "’" };
 /** More words than this in quotation marks is a quoted sentence, not a phrase named as an example. */
@@ -35,6 +36,9 @@ export const withoutMentions = (text: string): string => {
     quoted.filter((span) => isMention(text.slice(span.start, span.end)) || isNested(span, quoted)),
   );
 };
+
+/** The text with everything in quotation marks blanked out. */
+export const withoutQuotations = (text: string): string => blankSpans(text, quotedSpans(text, MENTION_MARKS));
 
 /**
  * The text (which starts at offset in the document) with the document ranges that fall in it blanked out.

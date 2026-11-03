@@ -1,5 +1,5 @@
 import { pairMinority, type PairUses } from "./contraction-minority.ts";
-import { blankRanges, isTermList, withoutMentions } from "./contraction-mention.ts";
+import { blankRanges, isTermList, withoutMentions, withoutQuotations } from "./contraction-mention.ts";
 import { stressedWords } from "./contraction-emphasis.ts";
 import { noticeSentences, talksAboutContractions, warningSentences } from "./contraction-set-apart.ts";
 import { escapeRegExp, straightApostrophes } from "../orthography.ts";
@@ -36,9 +36,11 @@ const comparableText = (text: string): string => {
 
 /**
  * 指してよい字。一語だけ強調した形（does **not**）は強勢のために選んだ形なので指さない。
- * 書き手がその形を書いたことには変わりないので、どちらが多いかを数えるときは数える。
+ * 引用符の中の形（引いた標語、回答の文言、人の言葉）は書き手が変えられないので指さない。
+ * どちらも、どちらが多いかを数えるときは数える。
  */
-const pointableText = (sentence: Sentence, stressed: readonly Span[]): string => comparableText(blankRanges(sentence.text, sentence.span.start, stressed));
+const pointableText = (sentence: Sentence, stressed: readonly Span[]): string =>
+  comparableText(withoutQuotations(straightApostrophes(blankRanges(sentence.text, sentence.span.start, stressed))));
 
 /** 語のすぐ後ろが句読点か文の終わり。名前として挙げた語（"Use cannot, instead of can't."）はそう並ぶ。 */
 const bareUses = (text: string, word: string): number => [...text.matchAll(new RegExp(`\\b${escapeRegExp(word)}\\b(?=\\s*(?:\\p{P}|$))`, "gu"))].length;
