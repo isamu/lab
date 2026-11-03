@@ -6,6 +6,8 @@ entries:
   - pattern: has gained significant attention
   - pattern: is becoming increasingly important
   - pattern: have you ever wondered
+  # A reader-address hook after a scene the reader is assumed to share (the "Have you ever" family).
+  - pattern: sound familiar?
   # A problem every team or company could name, used as the way in.
   - pattern: many teams struggle
   - pattern: many organizations struggle

@@ -54,6 +54,11 @@ describe("padded-intro", () => {
     assert.ok(idsFor("In today's fast-paced world, teams ship faster.", en).includes("padded-intro"));
   });
 
+  it("invalid: a reader-address hook ('Sound familiar?') in the opening", () => {
+    const source = "You open the app. Nothing loads. The spinner keeps turning. Sound familiar? Here is the fix.";
+    assert.ok(idsFor(source, en).includes("padded-intro"));
+  });
+
   it("invalid: どの企業にも当てはまる問題から始める書き出しを指摘する", () => {
     [
       "多くの企業が、社内の問い合わせ対応に課題を抱えています。本記事で解決策を紹介します。",
