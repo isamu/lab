@@ -25,6 +25,28 @@ const inCoordinatedNoun = (tokens: readonly Token[], index: number, unit: Length
   NOUNS.has(tokens[index + 1]?.pos ?? "") &&
   !isDependentNoun(tokens[index + 1]);
 
+/** 名詞を並べる中黒（資質・能力）。半角（･）も同じ。 */
+const NAKAGURO = new Set(["・", "･"]);
+
+/** index から助動詞を飛ばした先（育成すべき の す から 資質）。 */
+const afterAuxiliaries = (tokens: readonly Token[], index: number): number =>
+  tokens[index + 1]?.pos === "AUX" ? afterAuxiliaries(tokens, index + 1) : index + 1;
+
+/**
+ * 日本語で、中黒で並べた名詞（資質・能力）を飾る動詞と助動詞（育成すべき資質・能力）。名詞を中黒で並べた語は文書の決まった用語で、
+ * それを飾る節も用語の一部として繰り返される。中黒の無い名詞の前の動詞（〜の中にあるコンポーネント）は言い回しの一部のまま。
+ */
+const modifiesNounPair = (tokens: readonly Token[], index: number, unit: LengthUnit): boolean => {
+  if (unit !== "char" || !PREDICATE_POS.has(tokens[index]?.pos ?? "")) return false;
+  const head = afterAuxiliaries(tokens, index);
+  return (
+    NOUNS.has(tokens[head]?.pos ?? "") &&
+    !isDependentNoun(tokens[head]) &&
+    NAKAGURO.has(tokens[head + 1]?.surface ?? "") &&
+    NOUNS.has(tokens[head + 2]?.pos ?? "")
+  );
+};
+
 /**
  * 英語の大文字だけの語（AI、API）は略語の名前。解析器が動詞と読んでも（AI を ain't の ai と読む）述語ではない。
  * 強調と分かった普通の語（NEVER、START）は除く。
@@ -42,7 +64,8 @@ const acronymAt = (tokens: readonly Token[], index: number, unit: LengthUnit): b
  */
 const modifiesNoun = (tokens: readonly Token[], index: number, unit: LengthUnit): boolean =>
   (unit === "word" && tokens[index]?.pos === "VERB" && (NOUNS.has(tokens[index + 1]?.pos ?? "") || acronymAt(tokens, index + 1, unit))) ||
-  inCoordinatedNoun(tokens, index, unit);
+  inCoordinatedNoun(tokens, index, unit) ||
+  modifiesNounPair(tokens, index, unit);
 
 /** 英語で大文字の名前の一部になった動詞（Procedures Guide、the Location Object）と略語（AI）も、述語ではない。 */
 const namePartAt = (tokens: readonly Token[], index: number, unit: LengthUnit): boolean =>
