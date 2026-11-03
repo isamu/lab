@@ -1,6 +1,7 @@
-import type { BulletList, Detector, DetectorOptions, Finding, ProseDocument, Sentence, Span } from "../plugin.ts";
+import type { BulletList, Detector, DetectorOptions, Finding, LexiconEntry, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 import { densityFindings } from "./ai-phrasing.ts";
 import { endsWithColon } from "./lead-in.ts";
+import { comparableText, comparableWords, entryIn, entryRanges } from "./lexicon-match.ts";
 import { isMarkdownPath } from "../structure/markdown-path.ts";
 
 /** Between a lead-in and its list: only blank space. A thematic break (`***`) separates them; bold marks sit inside the sentence. */
@@ -108,6 +109,36 @@ const opensWithCode = (source: string, item: Span): boolean => source.slice(item
 /** A list whose every item opens with a code span names values, options or members (`omit`: never send …): a parts list, which can stay. */
 const isValueList = (list: BulletList, source: string): boolean => list.itemSpans.length > 1 && list.itemSpans.every((item) => opensWithCode(source, item));
 
+/** The language's words of a duty (should, must, なければならない), from the lead-in-duty lexicon. */
+const DUTY_LEXICON = "lead-in-duty";
+
+/** A pronoun right after another word opens a clause inside the lead-in (Questions you should ask:, what you must know:). */
+const opensInnerClause = (tokens: readonly Token[], index: number): boolean =>
+  tokens[index - 1]?.pos === "PRON" && tokens[index - 2] !== undefined && tokens[index - 2]?.pos !== "PUNCT";
+
+/** The duty word as the lead-in's own verb (the lead should:), not inside a clause that names the list (Questions you should ask:). */
+const dutyAsVerb = (sentence: Sentence, entry: LexiconEntry): boolean => {
+  const tokens = sentence.tokens;
+  if (tokens === undefined || tokens.length === 0) return entryIn(sentence, entry);
+  return entryRanges(sentence, entry).some((range) => !opensInnerClause(tokens, range.start));
+};
+
+/** The lead-in without its colon and bold marks at the end. */
+const withoutColon = (text: string): string => {
+  const chars = Array.from(text);
+  return chars.slice(0, chars.findLastIndex((char) => !LABEL_END.test(char)) + 1).join("");
+};
+
+/** The duty at the lead-in's end, where a predicate-final language puts it (行わなければならない：). */
+const closesLeadIn = (sentence: Sentence, entry: LexiconEntry): boolean => withoutColon(comparableText(sentence)).endsWith(comparableWords(entry.pattern));
+
+/**
+ * A lead-in that states a duty (the lead should:, Each entry must include:) hands over what has to be done or contained:
+ * the steps or parts of a procedure, a real list that can stay. A word with position: after counts only at the lead-in's end.
+ */
+const statesDuty = (sentence: Sentence, duties: readonly LexiconEntry[]): boolean =>
+  duties.some((entry) => (entry.position === "after" ? closesLeadIn(sentence, entry) : dutyAsVerb(sentence, entry)));
+
 /**
  * Prose sentences ending in a colon that hand the reader straight to a list (「以下の通りです：」, "Here's what you need:").
  * An item of a list is not prose: 「例: `code`」 ends in a colon once its code is masked, and it leads nowhere.
@@ -118,6 +149,7 @@ export const colonLeadIns = (
   listSpans: readonly Span[],
   source: string,
   markdown = true,
+  duties: readonly LexiconEntry[] = [],
 ): Sentence[] => {
   const leadIns = lists.flatMap((list) => {
     if (isValueList(list, source)) return [];
@@ -126,7 +158,7 @@ export const colonLeadIns = (
   });
   const fields = fieldLabels(leadIns);
   const namesItsList = (sentence: Sentence): boolean => (markdown ? isBoldNounLabel(sentence, source) : isPlainNounLabel(sentence, source));
-  return leadIns.filter((sentence) => !fields.has(labelWords(sentence.text)) && !namesItsList(sentence));
+  return leadIns.filter((sentence) => !fields.has(labelWords(sentence.text)) && !namesItsList(sentence) && !statesDuty(sentence, duties));
 };
 
 /** Lead-ins in one or two sections are a how-to's procedure or a pair of lists; the rule's why is section after section. */
@@ -150,7 +182,8 @@ const sectionsHolding = (doc: ProseDocument, leadIns: readonly Sentence[]): numb
  */
 export const colonLeadIn: Detector = (doc, options): Finding[] => {
   const inDocumentLanguage = doc.sentences.filter((sentence) => sentence.embeddedLanguage === undefined);
-  const leadIns = colonLeadIns(inDocumentLanguage, doc.lists, doc.listSpans, doc.source, isMarkdownPath(doc.path));
+  const duties = doc.lexicons[DUTY_LEXICON] ?? [];
+  const leadIns = colonLeadIns(inDocumentLanguage, doc.lists, doc.listSpans, doc.source, isMarkdownPath(doc.path), duties);
   if (sectionsHolding(doc, leadIns) < minSections(options)) return [];
   const hits = leadIns.map((sentence) => ({ sentence, matched: sentence.text.trim() }));
   return densityFindings(doc, hits, options.limit);

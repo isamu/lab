@@ -46,7 +46,7 @@ chat-citation-residue      0/3          0/3              0/3                  0/
 closing-cliche             1/3          0/3              0/3                  0/74
 closing-exhortation        0/3          0/3              0/3                  0/74
 cold-open                  0/3          0/3              0/3                  0/74
-colon-lead-in              1/3          0/3              0/3                  2/74
+colon-lead-in              1/3          0/3              0/3                  1/74
 contrast-framing           3/3          0/3              0/3                  0/74
 email-stock-courtesy       0/3          0/3              0/3                  0/74
 emoji-density              0/3          0/3              0/3                  0/74
