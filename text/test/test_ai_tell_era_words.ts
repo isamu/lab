@@ -61,6 +61,18 @@ describe("ai-tell: closings, set metaphors and calques (ja)", () => {
   });
 });
 
+describe("ai-tell: the colloquial praise of a generated post (ja)", () => {
+  it("reports one 刺さる or 地味だけど in a blog post", () => {
+    assert.equal(aiTell("# 読書\n\n会議を減らしたい人には刺さる一冊でした。\n", ja).length, 1);
+    assert.equal(aiTell("# 新人のころ\n\nその一言が、かえって胸に刺さった。\n", ja).length, 1);
+    assert.equal(aiTell("# バックアップ\n\n設定の確認は地味だけど大事です。\n", ja, "blog/tech").length, 1);
+  });
+
+  it("leaves one of them alone in a report", () => {
+    assert.deepEqual(aiTell("# 報告\n\nこの説明は来場者に刺さりました。\n", ja, "business/report"), []);
+  });
+});
+
 describe("ai-tell: a request recast as a benefit (ja); honesty markers are honesty-marker's", () => {
   it("adds にとっても有意義 to the other phrases", () => {
     const source =
