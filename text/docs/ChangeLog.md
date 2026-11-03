@@ -2,6 +2,37 @@
 
 Newest first.
 
+## 0.42.0 — 2026-11-04
+
+This release catches more of the stock phrasing in AI-written emails, proposals and advice, and fixes false positives
+found by judging the 0.41.0 findings in isamu/chaff-corpus.
+
+### AI-likeness
+
+- closing-cliche runs on emails and proposals and reads their stock last lines ("Thank you for your prompt attention to
+  this matter", "We would welcome any feedback"); its entries can apply per genre, and the ordinary lines of Japanese
+  work mail stay limited to blog posts (#2264).
+- cliche reads the quips of AI-written advice: "the one you'll actually use", "could have been an email" (#2262).
+- padded-intro reports "The good news is" and a "Sound familiar?" hook in an English opening (#2259, #2260).
+- rule-of-three measures a document with two lists of three (#2263).
+- ai-structure counts a textbook outline that is the whole outline as one more measure (#2261).
+- ai-tell reports a single 刺さる or 地味だけど in a Japanese blog post (#2268).
+- colon-lead-in does not count a lead-in whose own verb states a duty (should, must; なければならない) (#2271).
+
+### Rules
+
+- Fewer false findings on real documents:
+  - max-kanji-continuous skips bibliographic entries in notes (#2248), drops provision numbers after a statute name
+    (#2251), splits a run at a 等 in its middle (#2267), and reads funds, designated zones and memorial ceremonies as
+    names (#2269).
+  - ngram-repetition does not count a phrase spread thin across a long document (#2252), a heading's phrase used as
+    the subject (#2254), the step wording after a bracketed screen label (#2255), or a clause modifying a nakaguro noun
+    pair (#2256).
+  - undefined-acronym leaves out capitals written only as a kind of file (#2249) and capitals known only as an
+    interjection (HEY) (#2250).
+  - contraction-consistency does not point into a quotation (#2253).
+  - topic-predicate-distance stops a cleft topic inside a という noun phrase (#2266).
+
 ## 0.41.0 — 2026-10-29
 
 This release makes the AI-likeness checks more exact on long and structured human documents, and fixes false
