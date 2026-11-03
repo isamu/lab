@@ -15,6 +15,7 @@ import {
 import { hasPredicateIn } from "./gram-predicate.ts";
 import { gramPassagesOf } from "./gram-passages.ts";
 import { narrowestStretch, sentencePositions } from "./gram-spread.ts";
+import { namedByHeading } from "./gram-heading.ts";
 import { entryOpeners, filledForms, labelLines, nounFragments, rowEndCells, sectionOpeners } from "./gram-openers.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
 import type { Detector, Finding, LengthUnit, ProseDocument, Sentence, Span, StructureNode } from "../plugin.ts";
@@ -188,7 +189,7 @@ const repeatsOf = (doc: ProseDocument, limit: number): Repeat[] => {
     [...gramsOf(context, sentences).entries()].flatMap(([key, all]) => {
       const occurrences = all.filter((occurrence) => !templates.has(occurrence.sentence));
       const opensEverySection = occurrences.every((occurrence) => openers.has(occurrence.sentence));
-      const counted = occurrences.length > limit && isPhrasing(key, doc.lengthUnit) && !title.includes(key) && !opensEverySection;
+      const counted = occurrences.length > limit && isPhrasing(key, doc.lengthUnit) && !namedByHeading(key, title, doc.lengthUnit) && !opensEverySection;
       return counted && !spreadThin(occurrences, positions, limit, doc.lengthUnit) ? [{ key, occurrences }] : [];
     }),
   );
