@@ -3,7 +3,9 @@ id: closing-cliche
 language: ja
 entries:
   - pattern: いかがでしたか
+  # メールでは日程を聞き（ご都合はいかがでしょうか）、提案書では勧めを言う（導入してはいかがでしょうか）。記事でだけ定型の結び。
   - pattern: いかがでしょうか
+    genres: [blog]
   - pattern: まとめると
   - pattern: 最後までお読みいただく
   - pattern: 参考になれば幸いです
