@@ -1,0 +1,7 @@
+# Nouns that name a file. Capitals a document writes only right before one of them (the MAP files, each MAP file) name a
+# kind of file by its extension, and undefined-acronym does not ask to spell them out. Matched in any case.
+id: file-noun
+language: en
+entries:
+  - pattern: "file"
+  - pattern: "files"
