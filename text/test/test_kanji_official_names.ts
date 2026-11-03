@@ -89,7 +89,7 @@ describe("max-kanji-continuous: 文書が名前として示した連なり", () 
   });
 
   it("invalid: 法令の題でない括弧の中の連なりは数える", () => {
-    assert.deepEqual(kanjiWords("報告（民間教育保育等事業者による届出の件数）を見る。"), ["民間教育保育等事業者"]);
+    assert.deepEqual(kanjiWords("報告（民間教育保育施設事業者による届出の件数）を見る。"), ["民間教育保育施設事業者"]);
   });
 });
 

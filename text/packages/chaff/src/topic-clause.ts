@@ -215,6 +215,29 @@ const closesWithItemMark = (tokens: readonly Token[], at: number): boolean => {
   return next !== -1 && CIRCLED.test(tokens[next]?.surface ?? "");
 };
 
+/** A copula, past or not, just before at: 日本であった, 日本だ, 日本です. */
+const copulaEndsBefore = (tokens: readonly Token[], at: number): boolean => {
+  const end = tokens[at - 1]?.surface === "た" && tokens[at - 1]?.pos === "AUX" ? at - 1 : at;
+  const before = tokens[end - 1];
+  return copulaBefore(tokens, end) || (before?.surface === "だ" && before.lemma === "だ");
+};
+
+/** The nominaliser の a cleft's topic stands on (来てほしいのは). */
+const isCleftTopic = (tokens: readonly Token[], topic: number): boolean =>
+  tokens[topic - 1]?.surface === "の" && tokens[topic - 1]?.features?.["NounType"] === "Dependent";
+
+/**
+ * 来てほしいのは…日本であったというような調査の結果、…: a cleft whose focus the copula names, with no subject of its own between,
+ * inside a clause that という makes a noun's content, and that noun phrase ends at a comma. The cleft is said within the
+ * phrase; the rest of the sentence is about something else. という followed by a comma (〜であるという、…考えです) goes on.
+ */
+const closesCleftInNounPhrase = (tokens: readonly Token[], topic: number, at: number, last: number): boolean => {
+  if (tokens[at]?.surface !== "という" || !isCleftTopic(tokens, topic) || !copulaEndsBefore(tokens, at)) return false;
+  if (subjectBetween(tokens, topic, at)) return false;
+  const comma = tokens.findIndex((token, index) => index > at && index < last && isComma(token));
+  return comma > at + 1 && isOwnNoun(tokens[comma - 1]);
+};
+
 /**
  * The index of the word that ends the topic's own clause, between the topic and the sentence's last word, or undefined when the
  * topic's predicate is the one the sentence ends on.
@@ -227,7 +250,8 @@ export const topicClauseEnd = (tokens: readonly Token[], topic: number, last: nu
     closesFirstClauseWithNoun(tokens, topic, at, last) ||
     closesWithPoliteGa(tokens, topic, at, last) ||
     closesAfterPredicate(tokens, topic, at, words) ||
-    closesWithItemMark(tokens, at);
+    closesWithItemMark(tokens, at) ||
+    closesCleftInNounPhrase(tokens, topic, at, last);
   const end = tokens.findIndex((_, at) => at > topic && at < last && closes(at));
   return end === -1 ? undefined : end;
 };
