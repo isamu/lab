@@ -69,6 +69,11 @@ describe("padded-intro", () => {
     assert.ok(!idsFor("総務の 3 人で受けていた問い合わせが、先月から倍になりました。課題は夜間の対応です。").includes("padded-intro"));
     assert.ok(!idsFor("Our team struggled with support requests last spring. We put a bot in front of them.", en).includes("padded-intro"));
   });
+
+  it("invalid: a reader-address hook ('Sound familiar?') in the opening", () => {
+    const source = "You open the app. Nothing loads. The spinner keeps turning. Sound familiar? Here is the fix.";
+    assert.ok(idsFor(source, en).includes("padded-intro"));
+  });
 });
 
 describe("closing-cliche", () => {

@@ -20,3 +20,5 @@ entries:
   - pattern: in today's world
   - pattern: in an ever-changing
   - pattern: it's no secret
+  # A reader-address hook after a scene the reader is assumed to share (the "Have you ever" family).
+  - pattern: sound familiar?
