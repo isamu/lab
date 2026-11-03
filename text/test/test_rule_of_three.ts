@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { firedRules } from "./rule-run.ts";
-import { continuesBeyond, MIN_LISTS_FOR_SHARE, threeShare } from "../packages/chaff/src/rule-of-three.ts";
+import { continuesBeyond, firstProseOffset, MIN_LISTS_FOR_SHARE, threeShare } from "../packages/chaff/src/rule-of-three.ts";
 import type { BulletList } from "../packages/chaff/src/plugin.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
@@ -39,8 +39,13 @@ describe("threeShare", () => {
     assert.equal(threeShare("", lists(3, 3, 3, 2, 2), [], 50)?.share, 60);
   });
 
-  it("does not measure fewer than three lists, or none of three", () => {
-    [lists(), lists(3), lists(3, 3), lists(2, 4, 5)].forEach((found) => assert.equal(threeShare("", found, [], 70), undefined));
+  it("reports two lists when both have three items", () => {
+    assert.equal(threeShare("", lists(3, 3), [], 70)?.count, 2);
+    assert.equal(threeShare("", lists(3, 4), [], 70), undefined);
+  });
+
+  it("does not measure a single list, or none of three", () => {
+    [lists(), lists(3), lists(2, 4, 5)].forEach((found) => assert.equal(threeShare("", found, [], 70), undefined));
   });
 });
 
@@ -86,5 +91,54 @@ describe("rule-of-three: few lists and lists that go on", () => {
     const source = `# Stock\n\n${[...blocks, "Tools:\n\n- Pen\n- Paper"].join("\n\n")}`;
     assert.equal(firedRules(en, source, "blog/tech").includes("rule-of-three"), true);
     assert.equal(firedRules(en, source.replace("That is all.", "etc."), "blog/tech").includes("rule-of-three"), false);
+  });
+});
+
+// A generated report closes with two lists, three factors and three recommendations: the whole document comes in threes,
+// though it has only two lists. Self-written text.
+describe("rule-of-three: a report with two lists", () => {
+  const report = (recommendations: string): string =>
+    [
+      "# Quarterly report",
+      "## Response time",
+      "Response time improved. Several factors contributed:",
+      "- **Triage:** tickets are routed by category.\n- **Coverage:** an evening shift was added.\n- **Templates:** common answers are saved.",
+      "## Recommendations",
+      recommendations,
+    ].join("\n\n");
+
+  it("invalid: both lists have three items", () => {
+    const three = "1. Plan releases with support.\n2. Show a status banner.\n3. Watch satisfaction.";
+    assert.equal(firedRules(en, report(three), "business/report").includes("rule-of-three"), true);
+  });
+
+  it("valid: one of the two lists has four items", () => {
+    const four = "1. Plan releases with support.\n2. Show a status banner.\n3. Watch satisfaction.\n4. Hire one more agent.";
+    assert.equal(firedRules(en, report(four), "business/report").includes("rule-of-three"), false);
+  });
+});
+
+// A news page opens with a box of three key points under its title and date, set by the site's template; with one more
+// list of three in the body, the page has two lists of three without anyone padding them. Self-written text.
+describe("rule-of-three: a key-points box before the body", () => {
+  const box = "- The agency updated its guidance.\n- Tokens are a target for attackers.\n- The draft drew public comment.";
+  const body =
+    "The guidance covers sign-in tokens. Among the changes are:\n\n- Less prescriptive key rules.\n- Notes on new standards.\n- More options for revocation.";
+  const page = (top: string): string => ["# Agency finalizes token guidance", "September 15, 2026", "## Share", top, body].join("\n\n");
+
+  it("valid: the box above the first sentence is not counted", () => {
+    assert.equal(firedRules(en, page(box), "business/press-release").includes("rule-of-three"), false);
+  });
+
+  it("invalid: the same list after a sentence of the body is counted", () => {
+    assert.equal(firedRules(en, page(`Here is the summary.\n\n${box}`), "business/press-release").includes("rule-of-three"), true);
+  });
+
+  it("firstProseOffset skips headings, dates, list items and table rows", () => {
+    const source = "# Title\n\nMay 1, 2026\n\n- An item.\n| a | b |\n\nThe body starts here.";
+    assert.equal(firstProseOffset(source), source.indexOf("The body"));
+    assert.equal(firstProseOffset("# Title\n\n- An item."), "# Title\n\n- An item.".length);
+    assert.equal(firstProseOffset("本文です。\r\n- 項目"), 0);
+    assert.equal(firstProseOffset(""), 0);
   });
 });

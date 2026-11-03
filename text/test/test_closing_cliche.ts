@@ -117,3 +117,57 @@ describe("closing-cliche: English closings", () => {
     assert.ok(!flagged(body, en));
   });
 });
+
+describe("closing-cliche: the stock last line of an email or a proposal", () => {
+  it("invalid: a letter that closes on 'prompt attention to this matter'", () => {
+    const mail = "Dear Mr Lee,\n\nInvoice 1042 is now 30 days overdue.\n\nThank you for your prompt attention to this matter.\n\nBest regards,\nAnna\n";
+    assert.deepEqual(matchedFor(mail, en, "business/email"), ["prompt attention to this matter"]);
+  });
+
+  it("invalid: a proposal that closes on 'We would welcome any feedback'", () => {
+    const proposal = "# Weekly update\n\nWe suggest a weekly update in place of the monthly newsletter.\n\nWe would welcome any feedback on this proposal.\n";
+    assert.deepEqual(matchedFor(proposal, en, "business/proposal"), ["would welcome any feedback"]);
+  });
+
+  it("invalid: an email that closes on a chirpy wish", () => {
+    const wish = "Hi all,\n\nThe office closes at noon on Friday.\n\nWishing you all a restful and happy holiday season!\n\nBest,\nKaren\n";
+    const enjoy = "Hi all,\n\nThe office closes at noon on Friday.\n\nThanks, and enjoy the long weekend!\n\nBest,\nKaren\n";
+    assert.deepEqual(matchedFor(wish, en, "business/email"), ["Wishing"]);
+    assert.deepEqual(matchedFor(enjoy, en, "business/email"), ["enjoy"]);
+  });
+
+  it("valid: the same wish outside an email, and a plain closing in one", () => {
+    const post = "# The trail\n\nThe trail opens in May.\n\nMountaineering is welcome, but not required to enjoy the wilderness!\n";
+    const plain =
+      "Hi all,\n\nThe office closes at noon on Friday. Enjoy the quiet floor while it lasts.\n\nThe doors open again on Monday at eight.\n\nBest,\nKaren\n";
+    assert.ok(!flagged(post, en, "blog/owned-media"));
+    assert.ok(!flagged(plain, en, "business/email"));
+  });
+
+  it("valid: a business report is not read", () => {
+    assert.ok(!flagged("# Q3\n\nSales rose in every region.\n\nThank you for your prompt attention to this matter.\n", en, "business/report"));
+  });
+});
+
+describe("closing-cliche: 「いかがでしょうか」は記事の結びでだけ", () => {
+  it("valid: メールで都合を聞く、提案書で勧める「いかがでしょうか」", () => {
+    assert.ok(!flagged("山田様\n\n打ち合わせの日程の件です。\n\n来週の火曜日の午後はいかがでしょうか。\n\n佐藤\n", ja, "business/email"));
+    assert.ok(!flagged("# 提案\n\n紙の申請は月に二百件あります。\n\n## 結論\n\n申請をフォームに移してはいかがでしょうか。\n", ja, "business/proposal"));
+  });
+
+  it("invalid: 記事の結びの「いかがでしょうか」", () => {
+    assert.ok(flagged("# 朝の散歩\n\n朝に歩くと頭が冴えます。\n\nみなさんも明日から始めてみてはいかがでしょうか。\n"));
+  });
+});
+
+describe("closing-cliche: 仕事のメールの普通の結び", () => {
+  it("valid: 「ご参考になれば幸いです」「お気軽にお問い合わせください」はメールでは指さない", () => {
+    const mail = "山田様\n\n見積書を添付いたします。\n\nご参考になれば幸いです。ご不明な点は、お気軽にお問い合わせください。\n\n佐藤\n";
+    assert.ok(!flagged(mail, ja, "business/email"));
+  });
+
+  it("invalid: 記事の結びでは今までどおり指す", () => {
+    assert.ok(flagged("# 見積の書き方\n\n項目は三つです。\n\nご参考になれば幸いです。\n"));
+    assert.ok(flagged("# 見積の書き方\n\n項目は三つです。\n\nわからないことは気軽に聞いてください。\n"));
+  });
+});

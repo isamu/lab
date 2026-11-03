@@ -134,3 +134,19 @@ entries:
     rewrite: say what changed
   - pattern: light at the end of the tunnel
     rewrite: say when it ends
+  # "The best camera is the one you have with you", worn down to a closing line. "is the" keeps "delete every file
+  # except the one you actually use" out.
+  - pattern: is the one you'll actually use
+    rewrite: say which one fits the reader, and why
+  - pattern: is the one you will actually use
+    rewrite: say which one fits the reader, and why
+  - pattern: is the one you actually use
+    rewrite: say which one fits the reader, and why
+  - pattern: is the one you'll actually stick with
+    rewrite: say which one fits the reader, and why
+  - pattern: is the one you actually stick with
+    rewrite: say which one fits the reader, and why
+  - pattern: could have been an email
+    rewrite: name the meetings, and what replaces them
+  - pattern: could probably have been an email
+    rewrite: name the meetings, and what replaces them

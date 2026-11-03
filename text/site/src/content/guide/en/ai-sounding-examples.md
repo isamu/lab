@@ -317,7 +317,7 @@ ai.md   blog/tech · English   genre from --genre
 
   3:1     info    "delve into, quietly" appear together (score 12, limit 4)
                   ai-tell
-  3:1     warning "ai-tell, closing-cliche, contrast-framing, announcing-opener, bold-emphasis" occur together in this document (5 signals, 2 needed)
+  3:1     warning "ai-tell, rule-of-three, closing-cliche, contrast-framing, announcing-opener, bold-emphasis" occur together in this document (6 signals, 2 needed)
                   ai-generated-composite
   7:1     info    3 bold spans of emphasis: 10.8 per 1000 words (limit 4)
                   bold-emphasis
@@ -329,6 +329,8 @@ ai.md   blog/tech · English   genre from --genre
                   announcing-opener
   17:1    info    "The key point is" and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
+  21:1    info    2 of 2 lists have exactly three items (70% allowed)
+                  rule-of-three
   27:1    info    "What's important is" and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
   37:51   info    "not only" and other contrast frames: 10% of sentences (limit 6%)
@@ -432,7 +434,7 @@ The quick AI-likeness score (`ai-score`) compares the article before and after.
 $ npx chaffjs ai-score ai.md rewritten.md --genre blog/tech
 ai.md
 AI-likeness: high (more signs than human-written documents (Blog))
-  7 signs (of 32 compared, ones 90% of human documents do not show); medium from 3, high from 5
+  8 signs (of 32 compared, ones 90% of human documents do not show); medium from 3, high from 5
   Not a verdict on whether AI wrote it: how many signs common in generated text show, compared with human documents.
 
 Wording and shape
@@ -441,8 +443,9 @@ Wording and shape
   ✗ Bold emphasis scattered through the text: 1  in 0 of 23 human-written documents (Blog)
   ✗ Cliched closing: 1  in 0 of 23 human-written documents (Blog)
   ✗ Too many contrast frames: 3  in 0 of 23 human-written documents (Blog)
-  ✗ Several signals of generated text together: 5 of its signals (Phrasing common in generated text, Cliched closing, Too many contrast frames, Too many sentences that announce before they say, Bold emphasis scattered through the text); from 2, its strict level, that is one more sign
-  · the other 20 did not show
+  ✗ Everything comes in threes: 1  in 0 of 23 human-written documents (Blog)
+  ✗ Several signals of generated text together: 6 of its signals (Phrasing common in generated text, Everything comes in threes, Cliched closing, Too many contrast frames, Too many sentences that announce before they say, Bold emphasis scattered through the text); from 2, its strict level, that is one more sign
+  · the other 19 did not show
   not compared (no human baseline): Stock email courtesies piled up, Too many sweeping claims about people, Questions answered with a fragment
 
 Structure (against human articles)
