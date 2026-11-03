@@ -11,6 +11,7 @@ import {
   quotedClosingSpans,
   quotedSpans,
   referenceClosings,
+  screenLabelSpans,
 } from "./gram-furniture.ts";
 import { hasPredicateIn } from "./gram-predicate.ts";
 import { gramPassagesOf } from "./gram-passages.ts";
@@ -83,7 +84,7 @@ type Context = {
 /** 数えない範囲: 名前（触れる窓を外す）と、飾り（過半を覆う窓を外す）。 */
 const excludedIn = (context: Context, sentence: Sentence, text: string, source: ReturnType<typeof compacted>): { named: Span[]; mask: boolean[] } => {
   const unit = context.doc.lengthUnit;
-  const named = [...nameSpans(text, context.names), ...fieldLabelSpans(text, unit), ...partReferenceSpans(text, unit)];
+  const named = [...nameSpans(text, context.names), ...fieldLabelSpans(text, unit), ...partReferenceSpans(text, unit), ...screenLabelSpans(text, unit)];
   const linked = linkedIn(context.doc, sentence, source);
   const mask = furnitureMask(text, linked);
   [...fixedEndingSpans(text, context.endings), ...quotedSpans(text), ...quotedClosingSpans(text, context.closings, linked)].forEach((span) =>
