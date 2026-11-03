@@ -84,3 +84,13 @@ export const isTitledPerson = (
     (length) => isKnownWordAt(words, piece.end, piece.end + length, knownWords) || isKnownWordAt(words, piece.start - length, piece.start, knownWords),
   );
 };
+
+/** words の index の語が、連なりの頭でも尻でもない、並べた物の後ろに付く語（高齢運転者等専用駐車区間の「等」）か。語の終わりを見せる。 */
+export const isInnerSuffix = (words: readonly string[], index: number, suffixes: readonly string[]): boolean =>
+  index > 0 && index < words.length - 1 && suffixes.includes(words[index] ?? "");
+
+/** 連なりの語（words）が、知っている語（known）か中ほどの並べた物の後ろに付く語（suffixes）を含むか。含まなければ、連なりをまるごと数える。 */
+export const holdsKnown = (words: readonly string[], known: readonly string[], suffixes: readonly string[]): boolean => {
+  const whole = words.join("");
+  return known.some((word) => whole.includes(word)) || words.some((_, index) => isInnerSuffix(words, index, suffixes));
+};
