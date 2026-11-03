@@ -10,7 +10,6 @@ asf-board-minutes-2025-01  2
 automattic-offer-letter-us  1
 automattic-privacy-policy  4
 cloudgov-security-ir-guide  1
-crs-r47585-subcontracting  1
 docusaurus-admonitions-mdx  1
 eip-1559-fee-market  1
 ghdocs-basic-writing-and-formatting  2

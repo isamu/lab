@@ -1,6 +1,6 @@
 import type { Detector, DetectorOptions, DocumentProfile, Finding, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 import { compacted } from "./gram-place.ts";
-import { leadingCounter, trailingPrefix } from "./counter-edge.ts";
+import { leadingCounter, trailingOrdinals, trailingPrefix } from "./counter-edge.ts";
 import { trailingAddressee, type AddresseeSuffix } from "./addressee-edge.ts";
 import { leadingPrefix, trailingTitle, type AddresseeWords } from "./addressee-title-edge.ts";
 import {
@@ -27,6 +27,7 @@ import { quotedSpans } from "../quoted-span.ts";
 import { nameSpans } from "../team-names.ts";
 import { isIn } from "../lexicon-genres.ts";
 import { isTitledPerson, standaloneNames, unknownPieces } from "./kanji-run-pieces.ts";
+import { isBibliographyEntry } from "./bibliography-entry.ts";
 
 /**
  * 文字の並びを見る検出。漢字の連なりが住所か名前かだけは、形態素解析の固有名詞と数で決める。
@@ -207,12 +208,13 @@ const isAddresseeLine = (run: KanjiRun, words: NameWords): boolean => {
 /** 宛名の行か、名前の並びの 1 項目。どちらも役職を付けた名前を 1 つずつ並べたもので、尻の役職は名前の外。 */
 const isNamedEntry = (run: KanjiRun, words: NameWords): boolean => run.listItem || isAddresseeLine(run, words);
 
-/** 尻の外す語: 数に付く接頭の語か宛先に付く語と、宛名の行ならその前の役職（日本博物館協会会長殿の「会長殿」）。 */
+/** 尻の外す語: 数に付く接頭の語か条や項の番号か宛先に付く語と、宛名の行ならその前の役職（日本博物館協会会長殿の「会長殿」）。 */
 const tailOf = (tokens: readonly Token[], run: KanjiRun, span: Span, words: NameWords): Tail | undefined => {
   const prefix = trailingPrefix(tokens, span.end, run.text);
   const suffix =
     prefix === undefined
-      ? (trailingConjunction(tokens, span.start, span.end, run.text) ??
+      ? (trailingOrdinals(tokens, span, run.text) ??
+        trailingConjunction(tokens, span.start, span.end, run.text) ??
         trailingAddressee(tokens, span.end, run.text, words.addressee) ??
         trailingAddressee(tokens, span.end, run.text, words.listSuffixes))
       : { surface: prefix.surface, start: prefix.span.start };
@@ -385,10 +387,12 @@ const contextOf = (doc: ProseDocument, options: DetectorOptions): RunContext => 
 /**
  * 漢字が続くと、どこで語が切れるのか読み手が探すことになる。
  * 「情報処理推進機構認定試験」は 12 字。ひらがなを 1 つ挟むだけで読める。
+ * 文献の記述（著者. 題. 出版者, 2025.）の連なりは、引いた文献の題や名前で、書き手が割れないので数えない。
  */
 export const kanjiRun: Detector = (doc, options): Finding[] => {
   const context = contextOf(doc, options);
   return doc.sentences
+    .filter((sentence) => !isBibliographyEntry(sentence.text))
     .map((sentence) => ({ sentence, run: longestKanji(sentence, context) }))
     .filter(({ run }) => run.length > options.limit)
     .map(({ sentence, run }) => ({

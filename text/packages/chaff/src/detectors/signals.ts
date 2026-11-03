@@ -14,6 +14,7 @@ import { caseVariantsIn, spelledOutAcronyms, writtenAsWordIn } from "./acronym-m
 import { conjugatedForms } from "./conjugated-form.ts";
 import { knownByDocument } from "./acronym-known.ts";
 import { explainedInText, headingsSpellingOut } from "./acronym-gloss.ts";
+import { fileTypeNames, type AcronymUse } from "./acronym-file-type.ts";
 import { nameSpans } from "../team-names.ts";
 import { DASH, introducesList, opensLine } from "./lead-in-dash.ts";
 import type { Detector, Finding, ProseDocument, Sentence } from "../plugin.ts";
@@ -150,6 +151,14 @@ const acronymsOf = (doc: ProseDocument, notation: NotAcronymSpans): AcronymHit[]
       .filter(({ hit }) => !isEmphasised(hit.sentence, hit.offset));
   });
 
+/** 略語のすぐ前と後ろの文字列と、後ろに始まる語の品詞。 */
+const fileUseOf = ({ word, hit }: AcronymHit): AcronymUse => {
+  const start = hit.offset - hit.sentence.span.start;
+  const next = (hit.sentence.tokens ?? []).find((token) => token.span.start >= hit.offset + word.length);
+  const { text } = hit.sentence;
+  return { word, preceding: text.slice(Math.max(0, start - 2), start), following: text.slice(start + word.length), nextPos: next?.pos };
+};
+
 /** 略語ごとの、最初に現れた所。 */
 const firstHits = (hits: readonly AcronymHit[]): Map<string, Hit> => {
   const seen = new Map<string, Hit>();
@@ -199,6 +208,13 @@ const definitionWordsOf = (doc: ProseDocument): DefinitionWords => {
   return { markers: patternsOf(doc, "definition-marker"), verbs: [...verbs, ...conjugatedForms(doc.sentences, verbs)], alternatives };
 };
 
+/** 数える略語のすべての所。文書全体で読む書き方の範囲（所在地、文献一覧）と、編と区分で引く法令集（21 CFR subpart J）の中は外す。 */
+const countedHitsOf = (doc: ProseDocument): AcronymHit[] =>
+  outsideSpans(acronymsOf(doc, notationOf(doc)), [
+    ...sourceNotAcronymSpans(doc.source, (id) => patternsOf(doc, id)),
+    ...titledCodeSpans(doc.source, patternsOf(doc, "citation-series")),
+  ]);
+
 const acronymFinding = (acronym: string, hit: Hit, count: number, limit: number): Finding => ({
   rule: "undefined-acronym",
   severity: "info",
@@ -240,7 +256,10 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
   // 2 つ以上の番号で引く続き物の名前（BCP 78、BCP 14）も、略語の説明と読む。
   // 文献一覧の見出し語（[UNIX]    The Open Group, "The Single UNIX Specification"）と、見出しに番号で立てた書簡の続き物（### SR 26-8: …）も。
   const headings = doc.sections.map((section) => halfWidth(section.heading));
+  const counted = countedHitsOf(doc);
+  // ファイルの種類の名前としてだけ書いた大文字（the MAP files、MAPファイル）も、展開を待つ略語ではない。
   const entries = new Set([
+    ...fileTypeNames(counted.map(fileUseOf), patternsOf(doc, "file-noun")),
     ...termEntryAcronyms(doc.source),
     ...stated,
     ...linkedListTerms(doc.source),
@@ -267,10 +286,6 @@ export const undefinedAcronym: Detector = (doc, options): Finding[] => {
     explained.set(word, known);
     return known;
   };
-  const counted = outsideSpans(acronymsOf(doc, notationOf(doc)), [
-    ...sourceNotAcronymSpans(doc.source, (id) => patternsOf(doc, id)),
-    ...titledCodeSpans(doc.source, patternsOf(doc, "citation-series")),
-  ]);
   const hits = outsideSpans(
     counted,
     unreportedAcronymSpans(doc.source, doc.sentences, doc.links, (id) => patternsOf(doc, id)),

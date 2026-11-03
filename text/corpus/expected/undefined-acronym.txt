@@ -34,7 +34,7 @@ mhlw-icd-committee-26-minutes  3
 mhlw-kokuji-h18-107-keiji-jiko  4
 mhlw-norovirus-qa  5
 nasa-advisory-crew-13-coverage  5
-neeview-changelog-ja  17
+neeview-changelog-ja  16
 noaa-press-flood-mapping  3
 nodejs-tsc-minutes-2026-05-06  5
 nstac-microdata-forum  3

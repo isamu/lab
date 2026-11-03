@@ -379,7 +379,7 @@ describe("undefined-acronym: 略語でない大文字を数えない（コーパ
     });
 
     it("invalid: 数の隣でも CAD は computer-aided design と読めるので数える", () => {
-      assert.deepEqual(acronymsIn("# Drawings\n\nSend 3 CAD files."), ["CAD"]);
+      assert.deepEqual(acronymsIn("# Drawings\n\nSend 3 CAD drawings."), ["CAD"]);
     });
 
     it("invalid: 金額の隣でない通貨コードと、一覧に無い通貨コードは数える", () => {

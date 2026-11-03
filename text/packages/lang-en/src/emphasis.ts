@@ -5,6 +5,7 @@ const CAPITALS = /^\p{Lu}{2,}$/u;
 const LOWERCASE = /\p{Ll}/u;
 
 const ADVERB_TAGS: ReadonlySet<string> = new Set(["RB", "RBR", "RBS"]);
+const INTERJECTION_TAG = "UH";
 
 /**
  * Penn tags of closed word classes: preposition, conjunction, determiner, numeral, pronoun, particle, modal. An acronym names a
@@ -31,6 +32,20 @@ export const isEmphasisedAdverb = (surface: string, tagsOf: TagsOf): boolean => 
   if (!CAPITALS.test(surface)) return false;
   const tags = tagsOf(surface.toLowerCase()) ?? [];
   return tags.length > 0 && tags.every((tag) => ADVERB_TAGS.has(tag));
+};
+
+/** Two-letter interjections are acronyms too often (HA high availability, OH Ohio, UH a university). */
+const INTERJECTION_MIN_LENGTH = 3;
+
+/**
+ * The dictionary knows the lower-case word as an interjection, and otherwise only as an adverb (hey, huh, yes). Like an
+ * adverb, an interjection names nothing, so the capitals (HEY the mail service) are a name or a word written loud, not an
+ * acronym to spell out.
+ */
+export const isCapitalisedInterjection = (surface: string, tagsOf: TagsOf): boolean => {
+  if (!CAPITALS.test(surface) || [...surface].length < INTERJECTION_MIN_LENGTH) return false;
+  const tags = tagsOf(surface.toLowerCase()) ?? [];
+  return tags.includes(INTERJECTION_TAG) && tags.every((tag) => tag === INTERJECTION_TAG || ADVERB_TAGS.has(tag));
 };
 
 /** Shorter capitals that spell a word are acronyms too often (PIE, GUT, JAR, TAP): only words this long are read from the vocabulary alone. */
