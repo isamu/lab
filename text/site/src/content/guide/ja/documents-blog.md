@@ -104,7 +104,7 @@ kiji.md   blog/tech · 日本語   ジャンルは --genre から
                   sentence-rhythm
   3:32    info    「詳しく解説していきます、本記事では、黙って捨てられる」が揃っています（点 13、4 まで）
                   ai-tell
-  3:32    warning 「ai-tell、honesty-marker、section-length-uniformity、sentence-rhythm、padded-intro、closing-cliche、contrast-framing、announcing-opener」が同じ文書にそろっています（8 種、2 種から）
+  3:32    warning 「ai-tell、honesty-marker、rule-of-three、section-length-uniformity、sentence-rhythm、padded-intro、closing-cliche、contrast-framing、announcing-opener」が同じ文書にそろっています（9 種、2 種から）
                   ai-generated-composite
   9:1     info    「単なる」など、対比の枠で書いた文が 8.3% あります（6% まで）
                   contrast-framing
@@ -114,6 +114,8 @@ kiji.md   blog/tech · 日本語   ジャンルは --genre から
                   honesty-marker
   15:1    info    「ポイントは」など、予告で始まる文が 3 個あります（3 個から）
                   announcing-opener
+  19:1    info    箇条書き 2 個のうち 2 個が 3 項目です（70% まで）
+                  rule-of-three
   20:12   info    日本語と後ろの数字のあいだを詰めています（この文書はふつう空ける。5 箇所のうち 1 箇所が違う）
                   latin-spacing
   20:13   info    日本語と前の数字のあいだを詰めています（この文書はふつう空ける。5 箇所のうち 1 箇所が違う）

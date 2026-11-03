@@ -333,7 +333,7 @@ ai.md   blog/tech · 日本語   ジャンルは --genre から
 
   3:1     info    「詳しく解説していきます、鍵となる、本記事では、地味に効く、効いてくる、時間を溶かす、一つずつ潰す、静かに壊れる、黙って無視される」が揃っています（点 35、4 まで）
                   ai-tell
-  3:1     warning 「ai-tell、honesty-marker、closing-cliche、contrast-framing、announcing-opener」が同じ文書にそろっています（5 種、2 種から）
+  3:1     warning 「ai-tell、honesty-marker、rule-of-three、closing-cliche、contrast-framing、announcing-opener」が同じ文書にそろっています（6 種、2 種から）
                   ai-generated-composite
   9:1     info    「単なる」など、対比の枠で書いた文が 10.3% あります（6% まで）
                   contrast-framing
@@ -343,6 +343,8 @@ ai.md   blog/tech · 日本語   ジャンルは --genre から
                   honesty-marker
   17:1    info    「ポイントは」など、予告で始まる文が 3 個あります（3 個から）
                   announcing-opener
+  21:1    info    箇条書き 2 個のうち 2 個が 3 項目です（70% まで）
+                  rule-of-three
   27:1    info    「重要なのは」など、予告で始まる文が 3 個あります（3 個から）
                   announcing-opener
   37:25   info    「だけでなく」など、対比の枠で書いた文が 10.3% あります（6% まで）
@@ -451,7 +453,7 @@ AI らしさの簡易判定（`ai-score`）で、書き直す前と後を比べ�
 $ npx chaffjs ai-score ai.md rewritten.md --genre blog/tech
 ai.md
 AI らしさ: 高（人が書いた文書（ブログ）と比べて目印が多い）
-  目印 7 個（比べた 33 項目のうち、人の文書の 9 割には出ないもの）。中は 3 個から、高は 5 個から
+  目印 8 個（比べた 33 項目のうち、人の文書の 9 割には出ないもの）。中は 3 個から、高は 5 個から
   ※ 書いたのが AI かどうかの判定ではありません。生成文に多い目印が、人の文書と比べてどれだけ出ているかです。
 
 言い回しと形
@@ -460,8 +462,9 @@ AI らしさ: 高（人が書いた文書（ブログ）と比べて目印が多
   ✗ 定型の結び: 2 件  人が書いた文書（ブログ）23 本のうち 0 本
   ✗ 対比の枠が多い: 3 件  人が書いた文書（ブログ）23 本のうち 0 本
   ✗ 「正直」と前置きする: 1 件  人が書いた文書（ブログ）23 本のうち 0 本
-  ✗ 生成文の特徴がそろっている: 5 種（生成文にありがちな言い回し、「正直」と前置きする、定型の結び、対比の枠が多い、予告で始まる文が多い）。厳しめの段階の 2 種から、目印 1 個に数えます
-  · ほかの 21 項目は出ていません
+  ✗ 3 項目の箇条書きばかり: 1 件  人が書いた文書（ブログ）23 本のうち 0 本
+  ✗ 生成文の特徴がそろっている: 6 種（生成文にありがちな言い回し、「正直」と前置きする、3 項目の箇条書きばかり、定型の結び、対比の枠が多い、予告で始まる文が多い）。厳しめの段階の 2 種から、目印 1 個に数えます
+  · ほかの 20 項目は出ていません
 
 構成（人の記事と比べて）
   ✗ 太字の見出しで始まる項目: 3 項目  人の記事の 95% より多い
@@ -573,12 +576,14 @@ study.md   blog/tech · 日本語   ジャンルは --genre から
                   ai-tell
   5:1     info    構成の 3 項目が、人の記事の 9 割を超えています（3 項目から）。見出しの多さ、3 つの小見出しに分けた見出し、太字の見出しで始まる項目
                   ai-structure
-  5:1     warning 「ai-tell、honesty-marker、closing-cliche、contrast-framing、announcing-opener、ai-structure」が同じ文書にそろっています（6 種、2 種から）
+  5:1     warning 「ai-tell、honesty-marker、rule-of-three、closing-cliche、contrast-framing、announcing-opener、ai-structure」が同じ文書にそろっています（7 種、2 種から）
                   ai-generated-composite
   7:1     warning 「非常に重要」は、中身を言わずに強調だけしています
                   empty-intensifier
   15:1    info    「頻度」など、太字の札で始まる項目が 6 個あります（5 個から）
                   bold-label-list
+  15:1    info    箇条書き 2 個のうち 2 個が 3 項目です（70% まで）
+                  rule-of-three
   23:26   info    「単なる」など、対比の枠で書いた文が 8.8% あります（6% まで）
                   contrast-framing
   35:1    info    「ポイントは」など、予告で始まる文が 3 個あります（3 個から）
@@ -795,8 +800,8 @@ i 書き方だけ変わった事実 3 件
 
 | 測ったもの | 前 | 後 |
 | --- | --- | --- |
-| 指摘 | 13 件 | 0 件 |
-| `ai-generated-composite` | 5 種がそろう | 出ない |
+| 指摘 | 14 件 | 0 件 |
+| `ai-generated-composite` | 7 種がそろう | 出ない |
 | 構成の AI らしさ（`chaff outline`） | 3（見出しの多さ、3 つに分けた小見出し、太字の札） | 0 |
 | 見出し | 14 | 3 |
 | 節の平均 | 67 字 | 187 字 |

@@ -4,13 +4,15 @@ import type { BulletList } from "./plugin.ts";
  * rule-of-three の数え方。箇条書きのうち、ちょうど 3 項目のものがどれだけあるか。
  * すぐ下の行が「など」「etc.」で始まる箇条書きは、書いた 3 つより多くあると書き手が言っている。ちょうど 3 項目とは数えない。
  * 箇条書きが少ないと、1 つで割合が大きく動く（4 つなら 25 ポイント）。そのときは全部が 3 項目のときだけ報告する。
+ * 2 つでも測る。生成文の報告書は「要因 3 つ」「提言 3 つ」の 2 つの箇条書きで終わることが多く、人の文書で 2 つとも 3 項目は少ない。
+ * 本文の最初の文より前の箇条書き（題・日付・見出しのすぐ下の要点や概要）は数えない。項目の数はサイトの型が決めている。
  */
 export type ThreeShare = { readonly count: number; readonly total: number; readonly share: number; readonly first: BulletList };
 
 const PERCENT = 100;
 const THREE = 3;
 /** これより少ない箇条書きは測らない。 */
-const MIN_LISTS = 3;
+const MIN_LISTS = 2;
 /** これより少ない箇条書きでは、割合では判断せず、全部が 3 項目のときだけ報告する。 */
 export const MIN_LISTS_FOR_SHARE = 5;
 
@@ -36,11 +38,23 @@ export const continuesBeyond = (source: string, list: BulletList, openWords: rea
   return openWords.some((word) => startsWithWord(next, word));
 };
 
+/** 見出し・箇条書きの項目・表の行。本文の文ではない。 */
+const NOT_PROSE_LINE = /^\s*(?:#{1,6}\s|[=-]{3,}\s*$|(?:[-*+]|\d+[.)])\s|\|)/u;
+/** 文の終わり（句点・ピリオド・コロン）で閉じる行。閉じ括弧や強調の記号が後ろに付いてもよい。 */
+const SENTENCE_END = /[.。!?！？:：][\s"'”’」』)）*_]*$/u;
+
+const isProseLine = (line: string): boolean => !NOT_PROSE_LINE.test(line) && SENTENCE_END.test(line.trim());
+
+/** 本文の最初の文がある行の頭。それより前は題・日付・見出しだけ。文が無ければ文書の終わり。 */
+export const firstProseOffset = (source: string): number => [...source.matchAll(/^.*$/gmu)].find(([line]) => isProseLine(line))?.index ?? source.length;
+
 const isExactlyThree = (source: string, list: BulletList, openWords: readonly string[]): boolean =>
   list.items.length === THREE && !continuesBeyond(source, list, openWords);
 
 /** 報告するときの数。報告しないときは undefined。 */
-export const threeShare = (source: string, lists: readonly BulletList[], openWords: readonly string[], limit: number): ThreeShare | undefined => {
+export const threeShare = (source: string, allLists: readonly BulletList[], openWords: readonly string[], limit: number): ThreeShare | undefined => {
+  const bodyStart = firstProseOffset(source);
+  const lists = allLists.filter((list) => list.span.start >= bodyStart);
   const threes = lists.filter((list) => isExactlyThree(source, list, openWords));
   const first = threes[0];
   if (lists.length < MIN_LISTS || first === undefined) return undefined;
