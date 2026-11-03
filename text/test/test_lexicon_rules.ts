@@ -69,6 +69,20 @@ describe("padded-intro", () => {
     assert.ok(!idsFor("総務の 3 人で受けていた問い合わせが、先月から倍になりました。課題は夜間の対応です。").includes("padded-intro"));
     assert.ok(!idsFor("Our team struggled with support requests last spring. We put a bot in front of them.", en).includes("padded-intro"));
   });
+
+  it("invalid: a problem followed by 'The good news is' in the opening", () => {
+    [
+      "If your desk is buried in paper, you're not alone. The good news is that you can clear it in an afternoon.",
+      "Your notes are scattered across three apps. The good news is, one folder fixes that.",
+    ].forEach((source) => assert.ok(idsFor(source, en).includes("padded-intro"), source));
+  });
+
+  it("valid: 'The good news is' past the opening is not reported", () => {
+    // A human post may turn to good news after setting out its own problem in several sentences.
+    const body =
+      "Our build took forty minutes last spring. We split the test suite in two. The slow half ran overnight. Nobody liked the wait. The good news is that the split held.";
+    assert.ok(!idsFor(body, en).includes("padded-intro"));
+  });
 });
 
 describe("closing-cliche", () => {
