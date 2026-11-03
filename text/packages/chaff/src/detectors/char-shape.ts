@@ -27,6 +27,7 @@ import { quotedSpans } from "../quoted-span.ts";
 import { nameSpans } from "../team-names.ts";
 import { isIn } from "../lexicon-genres.ts";
 import { isTitledPerson, standaloneNames, unknownPieces } from "./kanji-run-pieces.ts";
+import { isBibliographyEntry } from "./bibliography-entry.ts";
 
 /**
  * 文字の並びを見る検出。漢字の連なりが住所か名前かだけは、形態素解析の固有名詞と数で決める。
@@ -385,10 +386,12 @@ const contextOf = (doc: ProseDocument, options: DetectorOptions): RunContext => 
 /**
  * 漢字が続くと、どこで語が切れるのか読み手が探すことになる。
  * 「情報処理推進機構認定試験」は 12 字。ひらがなを 1 つ挟むだけで読める。
+ * 文献の記述（著者. 題. 出版者, 2025.）の連なりは、引いた文献の題や名前で、書き手が割れないので数えない。
  */
 export const kanjiRun: Detector = (doc, options): Finding[] => {
   const context = contextOf(doc, options);
   return doc.sentences
+    .filter((sentence) => !isBibliographyEntry(sentence.text))
     .map((sentence) => ({ sentence, run: longestKanji(sentence, context) }))
     .filter(({ run }) => run.length > options.limit)
     .map(({ sentence, run }) => ({
