@@ -65,3 +65,38 @@ export const trailingPrefix = (tokens: readonly Token[], end: number, run: strin
   if (prefix === undefined || !isPrefix(prefix) || !isNumber(wordAfter(tokens, at))) return undefined;
   return run.endsWith(prefix.surface) ? prefix : undefined;
 };
+
+const isBound = (token: Token | undefined): boolean => token?.features?.["Bound"] === "Yes" && !isPrefix(token);
+
+/** 語の並び run の、end（添字、含まない）で終わる序数の項（第三十条、第二項）の頭の添字。項でなければ undefined。 */
+const ordinalGroupStart = (run: readonly Token[], end: number): number | undefined => {
+  if (!isBound(run[end - 1])) return undefined;
+  const numbersStart = run.slice(0, end - 1).findLastIndex((token) => !isNumber(token)) + 1;
+  const prefixAt = numbersStart - 1;
+  return numbersStart < end - 1 && isPrefix(run[prefixAt]) ? prefixAt : undefined;
+};
+
+/** 語の並び run の尻の、序数の項の並びの頭の添字。項が無ければ run.length。 */
+const ordinalChainStart = (run: readonly Token[], end: number = run.length): number => {
+  const start = ordinalGroupStart(run, end);
+  return start === undefined ? end : ordinalChainStart(run, start);
+};
+
+/**
+ * 漢字の連なり run（文書全体の座標で span）の尻の、序数の項の並び（学校教育法第三十条第二項の「第三十条第二項」）。条や項の番号は
+ * 前の名前を指す番号で、前の複合語の一部ではない。項の前に名前が残るときだけ。そうでなければ undefined。
+ */
+export const trailingOrdinals = (
+  tokens: readonly Token[],
+  span: { readonly start: number; readonly end: number },
+  run: string,
+): { readonly surface: string; readonly start: number } | undefined => {
+  const words = tokens.filter((token) => token.span.start < span.end && span.start < token.span.end);
+  const start = ordinalChainStart(words);
+  const first = words[start];
+  if (start === 0 || first === undefined) return undefined;
+  const chain = words.slice(start);
+  const joined = chain.every((token, at) => at === 0 || chain[at - 1]?.span.end === token.span.start);
+  const surface = chain.map((token) => token.surface).join("");
+  return joined && run.endsWith(surface) ? { surface, start: first.span.start } : undefined;
+};
