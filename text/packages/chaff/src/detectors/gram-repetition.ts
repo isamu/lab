@@ -14,6 +14,7 @@ import {
 } from "./gram-furniture.ts";
 import { hasPredicateIn } from "./gram-predicate.ts";
 import { gramPassagesOf } from "./gram-passages.ts";
+import { narrowestStretch, sentencePositions } from "./gram-spread.ts";
 import { entryOpeners, filledForms, labelLines, nounFragments, rowEndCells, sectionOpeners } from "./gram-openers.ts";
 import { nameSpans, touchesAny } from "../team-names.ts";
 import type { Detector, Finding, LengthUnit, ProseDocument, Sentence, Span, StructureNode } from "../plugin.ts";
@@ -153,6 +154,22 @@ const titleOf = (doc: ProseDocument): string =>
 type Repeat = { readonly key: string; readonly occurrences: readonly Occurrence[] };
 
 /**
+ * 上限を超える数の出現が収まる一番短い範囲が、これより長ければ数えない（文書の長さの単位）。読み手が前の出現を覚えているうちに次が
+ * 来ないので、言い直しとは読まれない。長い報告や論文が、測る出来事や量の名前（adopted a budget resolution、posts Grok judged true）を
+ * 節をまたいで使うのはこれ。値は chaff-corpus の判定済みの指摘で、正しい指摘の範囲より上、誤検知の範囲より下に置いた。
+ * 日本語の値は英語の値を MIN_DOCUMENT_LENGTH と同じ比で置き換えた。
+ */
+const READING_SPAN = { word: 4000, char: 10000 };
+
+const spreadThin = (occurrences: readonly Occurrence[], positions: ReadonlyMap<Sentence, number>, limit: number, unit: LengthUnit): boolean => {
+  const stretch = narrowestStretch(
+    occurrences.map((occurrence) => positions.get(occurrence.sentence) ?? 0),
+    limit + 1,
+  );
+  return stretch !== undefined && stretch > READING_SPAN[unit];
+};
+
+/**
  * 範囲（gram-passages.ts）ごとに数える。よくある質問の別々の答えは別の範囲。節の最初の文（gram-openers.ts）にだけ出るものは節のひな形。
  * 節の書き出しは書き手の地の文でもあるので、ほかの所にも出れば書き出しのぶんも数える（節ごとの口癖）。
  */
@@ -166,11 +183,13 @@ const repeatsOf = (doc: ProseDocument, limit: number): Repeat[] => {
   const templates = templatesOf(doc);
   const openers = sectionOpeners(doc.sections, doc.source);
   const title = titleOf(doc);
+  const positions = sentencePositions(doc.sentences, doc.lengthUnit);
   return gramPassagesOf(doc.sections).flatMap((sentences) =>
     [...gramsOf(context, sentences).entries()].flatMap(([key, all]) => {
       const occurrences = all.filter((occurrence) => !templates.has(occurrence.sentence));
       const opensEverySection = occurrences.every((occurrence) => openers.has(occurrence.sentence));
-      return occurrences.length > limit && isPhrasing(key, doc.lengthUnit) && !title.includes(key) && !opensEverySection ? [{ key, occurrences }] : [];
+      const counted = occurrences.length > limit && isPhrasing(key, doc.lengthUnit) && !title.includes(key) && !opensEverySection;
+      return counted && !spreadThin(occurrences, positions, limit, doc.lengthUnit) ? [{ key, occurrences }] : [];
     }),
   );
 };
