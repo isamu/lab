@@ -137,3 +137,12 @@ const JA_PART_REFERENCE = /[表図][\d０-９]+(?:[-－.．][\d０-９]+)*|第[\
  */
 export const partReferenceSpans = (text: string, unit: LengthUnit): Span[] =>
   unit === "word" ? spansOf(text, LABEL_AND_NUMBER, (match) => PART_LABELS.has((match[1] ?? "").toLowerCase())) : spansOf(text, JA_PART_REFERENCE, () => true);
+
+/**
+ * 角括弧でくくった画面の部品の名前（[許可]、［ブックマーク］、[内容を確認]リンク）と、それに付く助詞一つの範囲。画面の手引きは手順ごとに
+ * 違う部品を指して同じ形で書く（[…]をクリックすると）。名前にかかる語句と同じく、部品の名前に付いた所からの語句は数えない。
+ * 後ろの片仮名の語（ボタン、リンク）も名前に入れる。
+ */
+const SCREEN_LABEL = /[[［【][^[\]［］【】]+[\]］】][\p{Script=Katakana}ー]*[をがにでへ]/gu;
+
+export const screenLabelSpans = (text: string, unit: LengthUnit): Span[] => (unit === "char" ? spansOf(text, SCREEN_LABEL, () => true) : []);
