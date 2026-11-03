@@ -102,7 +102,7 @@ article.md   blog/tech · English   genre from --genre
                   ai-tell
   3:1     warning "in today's fast-paced world" is an opening that fits any article
                   padded-intro
-  3:1     warning "ai-tell, honesty-marker, section-length-uniformity, padded-intro, closing-cliche, announcing-opener" occur together in this document (6 signals, 2 needed)
+  3:1     warning "ai-tell, honesty-marker, rule-of-three, section-length-uniformity, padded-intro, closing-cliche, announcing-opener" occur together in this document (7 signals, 2 needed)
                   ai-generated-composite
   11:1    info    "Honestly," and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
@@ -110,6 +110,8 @@ article.md   blog/tech · English   genre from --genre
                   honesty-marker
   15:1    info    "The key point is" and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
+  19:1    info    2 of 2 lists have exactly three items (70% allowed)
+                  rule-of-three
   23:1    info    "What's important is" and other announcing openers start 3 sentences (3 needed)
                   announcing-opener
   23:68   info    "it is" is written "it's" elsewhere in the document
