@@ -32,3 +32,15 @@ export const templateSectionsOf = (headings: readonly string[], lexicon: Lexicon
 
 /** Whether the outline is the template: enough of its sections stand as headings. */
 export const isTemplateOutline = (sections: readonly string[]): boolean => sections.length >= TEMPLATE_SECTIONS;
+
+/**
+ * The share of the headings that must be template sections before the template is the whole outline. A real proposal
+ * that uses the template's sections keeps them among headings of its own; a generated one has little else.
+ */
+export const WHOLE_TEMPLATE_SHARE = 0.75;
+
+/** Whether the template outline is the whole outline: nearly every heading is one of its sections, the writer's own words nearly absent. */
+export const isWholeTemplateOutline = (headings: readonly string[], lexicon: Lexicon): boolean => {
+  const inTemplate = headings.filter((words) => sectionOf(words, lexicon) !== undefined).length;
+  return isTemplateOutline(templateSectionsOf(headings, lexicon)) && inTemplate >= headings.length * WHOLE_TEMPLATE_SHARE;
+};
