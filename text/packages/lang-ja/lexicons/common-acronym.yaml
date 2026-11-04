@@ -117,7 +117,8 @@ entries:
   - pattern: Q&A
   - pattern: R&D
   - pattern: M&A
-  # 日本語の日常の語として書く略語（WEBサイト、文科省HP、ICカード）。
+  # 日本語の日常の語として書く略語（WEBサイト、文科省HP、ICカード、テレビCM）。
   - pattern: WEB
   - pattern: HP
   - pattern: IC
+  - pattern: CM
