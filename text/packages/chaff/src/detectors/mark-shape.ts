@@ -4,6 +4,7 @@ import { isConventionalPhrase } from "./caps-phrase.ts";
 import { minorityReport } from "../spacing-minority.ts";
 import { externalLinkTitleSpans } from "../link-title.ts";
 import { formulaBracketSpans } from "../formula-brackets.ts";
+import { ownTitleQuoteSpans } from "../own-title-quote.ts";
 import { isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { bracketPlaceholderSpans, capitalLineSpans, captionsOf, isCaptionAt, isWithinSorted } from "./caps-caption.ts";
 import { lineStarts } from "../position.ts";
@@ -191,9 +192,10 @@ const withNoteKind = (mark: Mark, notes: ReadonlySet<number>): Mark =>
 export const markConsistency: Detector = (doc, options): Finding[] => {
   const script = SCRIPT[doc.language];
   if (script === undefined) return [];
-  // A link that quotes an outside page's title keeps that page's marks ((コンテキスト内) in a WCAG title).
-  const titles = externalLinkTitleSpans(doc.source, doc.links);
   const forms = formsOf(options.lexicon ?? []);
+  // A link that quotes an outside page's title keeps that page's marks ((コンテキスト内) in a WCAG title), and a quotation
+  // of the document's own heading keeps the heading's.
+  const titles = [...externalLinkTitleSpans(doc.source, doc.links), ...ownTitleQuoteSpans(doc.source, doc.markup?.headings ?? [], new Set(forms.keys()))];
   const enumerators = enumeratorBracketOffsets(doc.source);
   const doubled = doubledParenOffsets(doc.source);
   const notes = noteMarkerOffsets(doc.source);
