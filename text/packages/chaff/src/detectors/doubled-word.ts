@@ -2,6 +2,7 @@ import type { Detector, Finding, Lexicon, Sentence, Span, Token } from "../plugi
 import { citedNamesOf, endsCitedName } from "./cited-name.ts";
 import { doubledAcrossAside } from "./doubled-across-aside.ts";
 import { furiganaSpans } from "../furigana.ts";
+import { isFlattenedTable } from "./sentence-parts.ts";
 
 /**
  * 語を書き損じて二度書いた（the the / 資料をを）。消し忘れと、書き換えの途中で残った語（our the platform）の二つ。
@@ -170,6 +171,9 @@ const FIXED_PHRASE = "fixed-phrase";
 const inReading = (sentence: Sentence, readings: readonly Span[], doubled: Doubled): boolean =>
   readings.some((span) => sentence.span.start + span.start <= doubled.first.span.start && doubled.second.span.end <= sentence.span.start + span.end);
 
+/** 変換で潰れた表の文では、名詞の重なりは隣り合った二つのセル（株主資本｜資本金）。付属語の重なり（をを）は書き損じのまま。 */
+const isCellBoundary = (tableLike: boolean, doubled: Doubled): boolean => tableLike && doubled.first.pos === "NOUN" && doubled.second.pos === "NOUN";
+
 export const doubledWord: Detector = (doc, options): Finding[] => {
   const spaced = doc.lengthUnit === "word";
   const allowed = options.lexicon ?? [];
@@ -179,8 +183,12 @@ export const doubledWord: Detector = (doc, options): Finding[] => {
   return doc.sentences.flatMap((sentence) => {
     // The readings are found once per sentence: once per doubled pair costs the pairs times the sentence's length.
     const readings = furiganaSpans(sentence.text);
+    const tableLike = isFlattenedTable(sentence.text);
     return [...doubledIn(doc.source, sentence.tokens ?? [], spaced, allowed, phrases), ...(spaced ? [] : doubledAcrossAside(doc.source, sentence.tokens ?? []))]
-      .filter((doubled) => !endsCitedName(doubled.first, doubled.second, cited, kinds) && !inReading(sentence, readings, doubled))
+      .filter(
+        (doubled) =>
+          !endsCitedName(doubled.first, doubled.second, cited, kinds) && !inReading(sentence, readings, doubled) && !isCellBoundary(tableLike, doubled),
+      )
       .map((doubled) => findingOf(sentence, doubled, spaced));
   });
 };
