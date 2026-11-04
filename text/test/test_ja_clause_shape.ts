@@ -4,6 +4,7 @@ import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { endingOf, endingRuns } from "../packages/chaff/src/detectors/clause-shape.ts";
+import { beatsOf, closingPhraseOf } from "../packages/chaff/src/detectors/ending-refrain.ts";
 
 // 文の形を語から読む rule（repeated-sentence-ending, tari-unpaired, adverb-without-negation, yori-as-from,
 // colloquial-opener）。例文はすべて自作。
@@ -51,6 +52,23 @@ describe("repeated-sentence-ending", () => {
     assert.deepEqual(findingsOf(RULE, "この機能は必要です。設定も簡単です。\n\n費用も無料です。\n"), []);
   });
 
+  it("前の語まで同じ文末を二文重ねただけなら、ふつうに数える", () => {
+    assert.deepEqual(findingsOf(RULE, "火事はどこでも起きることがあります。台所の火事もあります。寝室の火事もあります。\n"), [
+      "「〜あります」で終わる文が 3 文続いています（2 文まで）",
+    ]);
+  });
+
+  it("前の語まで同じ文末を三文以上重ねた繰り返しは一つと数える", () => {
+    assert.deepEqual(findingsOf(RULE, "最初の家は古い家でした。次の家も古い家でした。その次も古い家でした。\n"), []);
+    assert.deepEqual(findingsOf(RULE, "北の町には医師がいます。南の町にも医師がいます。西の町にも医師がいます。人々の暮らしを支えています。\n"), []);
+    assert.deepEqual(findingsOf(RULE, "建物は定額法を採用しております。機械は定率法を採用しております。車両も定率法を採用しております。\n"), [
+      "「〜おります」で終わる文が 3 文続いています（2 文まで）",
+    ]);
+    assert.deepEqual(findingsOf(RULE, "北の町には医師が必要です。南の町には看護師が必要です。西の町には薬剤師が必要です。\n"), [
+      "「〜です」で終わる文が 3 文続いています（2 文まで）",
+    ]);
+  });
+
   it("体言止めは比べず、続きを切る", () => {
     assert.deepEqual(findingsOf(RULE, "この機能は必要です。設定も簡単です。手順の確認。費用も無料です。\n"), []);
   });
@@ -63,6 +81,34 @@ describe("endingRuns", () => {
       endingRuns(sentences).map((run) => run.length),
       [1],
     );
+  });
+});
+
+describe("closingPhraseOf / beatsOf", () => {
+  const sentencesOf = (text: string) => buildDocument("a.md", text, ja).sentences;
+
+  it("述語の前の内容語から文末まで", () => {
+    assert.deepEqual(sentencesOf("古い家でした。医師がいます。資料を確認しました。").map(closingPhraseOf), ["古い家でした", "医師がいます", undefined]);
+  });
+
+  it("助動詞で終わらない文には無い", () => {
+    assert.deepEqual(sentencesOf("手順の確認。").map(closingPhraseOf), [undefined]);
+  });
+
+  it("て形・付属の語・行いの名詞（補助、採用）の述語には無い。報告が同じ行いを書き並べるのは単調な続き", () => {
+    assert.deepEqual(sentencesOf("定額法を採用しております。送ることもできます。損害がないのです。補助を行った。").map(closingPhraseOf), [
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ]);
+  });
+
+  it("同じ締めの句が三文以上続けば一拍、二文なら二拍", () => {
+    assert.equal(beatsOf(sentencesOf("古い家でした。古い家でした。古い家でした。新しい家でした。")), 2);
+    assert.equal(beatsOf(sentencesOf("古い家でした。古い家でした。新しい家でした。")), 3);
+    assert.equal(beatsOf(sentencesOf("必要です。重要です。")), 2);
+    assert.equal(beatsOf([]), 0);
   });
 });
 
