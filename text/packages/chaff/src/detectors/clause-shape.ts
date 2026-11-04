@@ -1,6 +1,7 @@
 import type { Detector, DetectorOptions, Finding, Lexicon, ProseDocument, Sentence, Token } from "../plugin.ts";
 import { isWithinAny, quotedIn } from "../quoted-span.ts";
 import { definitionWordsOf, isParallelDefinition } from "./parallel-definition.ts";
+import { beatsOf } from "./ending-refrain.ts";
 
 // The shape of a clause read from its words: how it ends, a paired word left alone, an adverb that needs a
 // negation, a particle used where another one belongs. Every word comes from a lexicon; this file knows parts of speech.
@@ -75,20 +76,17 @@ const runFinding = (run: readonly Ended[], limit: number): Finding => {
   };
 };
 
-/** More than limit sentences in a row within one paragraph that end with the same words, unless they define different terms in one frame. */
+/**
+ * More than limit sentences in a row within one paragraph that end with the same words, unless they define different terms in one
+ * frame. A refrain (いい船でした。…いい船でした。) counts once.
+ */
 export const endingRun: Detector = (doc, options): Finding[] => {
   const words = definitionWordsOf(options.lexicon);
   return doc.paragraphs.flatMap((paragraph) =>
     endingRuns(paragraph.sentences)
-      .filter(
-        (run) =>
-          run.length > options.limit &&
-          !isParallelDefinition(
-            run.map(({ sentence }) => sentence),
-            words,
-          ),
-      )
-      .map((run) => runFinding(run, options.limit)),
+      .map((run) => ({ run, sentences: run.map(({ sentence }) => sentence) }))
+      .filter(({ sentences }) => beatsOf(sentences, patternsOf(options.lexicon, "being")) > options.limit && !isParallelDefinition(sentences, words))
+      .map(({ run }) => runFinding(run, options.limit)),
   );
 };
 
