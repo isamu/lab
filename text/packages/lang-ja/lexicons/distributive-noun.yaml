@@ -25,6 +25,7 @@ entries:
   - pattern: 場所
   - pattern: 時代
   - pattern: 時期
+  - pattern: 時点
   - pattern: 年度
   - pattern: 世代
   - pattern: 季節
