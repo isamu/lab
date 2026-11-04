@@ -199,7 +199,7 @@ describe("house styles", () => {
     });
 
     it("style: koyobun reports です・ます mixed with である, and コンピュータ without its ー", async () => {
-      const source = "# 報告\n\n新しいコンピュータを買いました。古い機械は来月捨てる。\n";
+      const source = "# 報告\n\n新しいコンピュータを買いました。明日届きます。古い機械は来月捨てる。\n";
       const run = await runCli({ "chaff.yaml": "language: ja\nstyle: koyobun\n", "a.md": source }, ["a.md", "--compact"]);
       assert.match(run.out, /no-mixed-desumasu/u);
       assert.match(run.out, /「コンピュータ」は語末の「ー」を付けて「コンピューター」と書きます/u);
