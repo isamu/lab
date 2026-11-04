@@ -1,0 +1,17 @@
+# Words that talk about the characters themselves (the decomposed form, a Kangxi radical, NFD). lookalike-character reads a
+# look-alike on the same line as one of these, or on the line just before or after, as an example shown on purpose, not a
+# slip. Matched without regard to case.
+id: lookalike-mention
+language: en
+entries:
+  - pattern: combining mark
+  - pattern: combining character
+  - pattern: decomposed
+  - pattern: precomposed
+  - pattern: Kangxi
+  - pattern: compatibility ideograph
+  - pattern: dakuten
+  - pattern: NFC
+  - pattern: NFD
+  - pattern: NFKC
+  - pattern: NFKD

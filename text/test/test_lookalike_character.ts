@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { lookalikesIn } from "../packages/chaff/src/detectors/lookalike-character.ts";
+import { isShownExample, lookalikesIn } from "../packages/chaff/src/detectors/lookalike-character.ts";
 
 // 見た目が同じで別の字（lookalike-character）。例文はすべて自作。字は \u で書き、エディタで化けないようにする。
 
@@ -13,6 +13,7 @@ const COMPAT_MUSIC = "\uF914";
 const COMBINING_VOICED = "\u3099";
 const SPACING_VOICED = "\u309B";
 const COMBINING_ACUTE = "\u0301";
+const SPACING_SEMI_VOICED = "\u309C";
 
 const findingsOf = (source: string, adapter = ja): readonly string[] => namedRuleRun(RULE, `${source}\n`, adapter).findings;
 
@@ -48,6 +49,32 @@ describe("lookalike-character: 見た目が同じで別の字", () => {
     assert.deepEqual(lookalikesIn("髙﨑"), []);
     assert.deepEqual(lookalikesIn("👍️"), []);
     assert.deepEqual(lookalikesIn(""), []);
+  });
+
+  it("字そのものを話題にした行（濁点・NFD・部首を名指す）の例は言わない", () => {
+    assert.deepEqual(findingsOf(`- ホ${SPACING_SEMI_VOICED}ケット エンシ${SPACING_VOICED}ン のような、コピーで出る濁点のチェック`), []);
+    assert.deepEqual(
+      findingsOf(`\`\`\`js\n// ホ${SPACING_SEMI_VOICED}ケット エンシ${SPACING_VOICED}ン\n// のような、コピーで出る濁点のチェック\n"no-nfd": true\n\`\`\``),
+      [],
+    );
+    assert.deepEqual(findingsOf(`部首の字 ${KANGXI_MOUNTAIN} は検索に掛かりません。`), []);
+    assert.deepEqual(findingsOf(`Text pasted from a Mac may hold cafe${COMBINING_ACUTE}, the nfd form.`, en), []);
+  });
+
+  it("話題の語が離れた行にあれば、例ではなく打ち間違いとして言う", () => {
+    assert.equal(findingsOf(`濁点の説明です。\n\n次の行です。\n\nか${SPACING_VOICED}いしゃに送ります。`).length, 1);
+    assert.equal(findingsOf(`Send it to the cafe${COMBINING_ACUTE} office.\n\nThe menu is attached.\n\nWe avoid decomposed letters.`, en).length, 1);
+  });
+
+  it("isShownExample: 前・同じ・後ろの行だけを見る。文書の端の行、空の語彙", () => {
+    const text = "a\nNFD here\nX\nb\nc";
+    const x = { start: text.indexOf("X"), end: text.indexOf("X") + 1 };
+    assert.equal(isShownExample(text, x, ["nfd"]), true);
+    assert.equal(isShownExample(text, x, ["c"]), false);
+    assert.equal(isShownExample("X", { start: 0, end: 1 }, ["x"]), true);
+    assert.equal(isShownExample("X\nnfd", { start: 0, end: 1 }, ["NFD"]), true);
+    assert.equal(isShownExample("nfd\nX", { start: 4, end: 5 }, ["NFD"]), true);
+    assert.equal(isShownExample(text, x, []), false);
   });
 
   it("互換漢字の補助面も読み、位置は UTF-16 で数える", () => {
