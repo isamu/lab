@@ -1,0 +1,15 @@
+# 字そのものを話題にする語（「ホ゜ケット のような、コピペで発生する濁点のチェック」）。lookalike-character は、この語が同じ行か
+# すぐ前・すぐ後ろの行にある字を、打ち間違いではなく見せるために書いた例と読む。大文字と小文字を区別しない。
+id: lookalike-mention
+language: ja
+entries:
+  - pattern: 濁点
+  - pattern: 半濁点
+  - pattern: 結合文字
+  - pattern: 合成文字
+  - pattern: 部首
+  - pattern: 互換漢字
+  - pattern: NFC
+  - pattern: NFD
+  - pattern: NFKC
+  - pattern: NFKD

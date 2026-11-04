@@ -53,8 +53,8 @@ example:
       Send the form to the café office.
 
 not_flagged:
-  ja: 一字にまとまる形の無い組み合わせ（字に付いた異体字の指定、合成済みの形の無いアクセント）と、Unicode が別の字として持つ互換漢字（﨑 など）は指しません。
-  en: Combinations with no single precomposed form (a variation selector after a character, an accent with no precomposed letter) and compatibility ideographs that Unicode keeps as their own characters (﨑) are not reported.
+  ja: 一字にまとまる形の無い組み合わせ（字に付いた異体字の指定、合成済みの形の無いアクセント）と、Unicode が別の字として持つ互換漢字（﨑 など）は指しません。字そのものを話題にした語（濁点、部首、NFD など）が同じ行かすぐ前・すぐ後ろの行にある字（「ホ゜ケット のような、コピペで出る濁点のチェック」）は、見せるために書いた例なので指しません。
+  en: Combinations with no single precomposed form (a variation selector after a character, an accent with no precomposed letter) and compatibility ideographs that Unicode keeps as their own characters (﨑) are not reported. Nor is a look-alike on a line that talks about such characters (decomposed, Kangxi, NFD), or on the line just before or after one, as it is an example shown on purpose.
 sources: [textlint-ja-presets]
 rewrite:
   depth: light
