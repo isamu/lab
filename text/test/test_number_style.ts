@@ -164,6 +164,12 @@ describe("number-style-consistency: the minority style in a document", () => {
   it("does not count a number that names a group (Grade 5 students) among spelled-out counts", () =>
     assert.deepEqual(flagged(en, "# Camp\n\nOur Grade 5 students will spend two days at the camp with three teachers and four parents.\n"), []));
 
+  it("does not count a section number after a section sign (§4 flags) among spelled-out counts", () =>
+    assert.deepEqual(flagged(en, "# Plan\n\nWe set out two rules and three duties here, and §4 flags four questions for later.\n"), []));
+
+  it("does not count nights, a measure of a stay, among spelled-out counts", () =>
+    assert.deepEqual(flagged(en, "# Trip\n\nWe met two clients and three partners. Hotel (2 nights) $410, paid in four parts.\n"), []));
+
   it("still reports a digit count beside a named group", () =>
     assert.deepEqual(flagged(en, "# Camp\n\nOur Grade 5 students will bring two bags and three hats. Each class also brings 4 tents.\n"), ["count-small:4"]));
 
