@@ -69,6 +69,11 @@ describe("repeated-sentence-ending", () => {
     ]);
   });
 
+  it("一つの文の中に「？」で並べた問いは書き手の文末ではないので比べない", () => {
+    assert.deepEqual(findingsOf(RULE, "迷ったら自分に問います。たとえば、これは表か？行の並びか？列の名前か？などです。\n"), []);
+    assert.deepEqual(findingsOf(RULE, "これは表か。行の並びか。列の名前か。\n"), ["「〜か」で終わる文が 3 文続いています（2 文まで）"]);
+  });
+
   it("体言止めは比べず、続きを切る", () => {
     assert.deepEqual(findingsOf(RULE, "この機能は必要です。設定も簡単です。手順の確認。費用も無料です。\n"), []);
   });
