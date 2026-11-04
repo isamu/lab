@@ -28,7 +28,6 @@ govuk-incident-safe-browsing  3
 govuk-style-guide-a-to-z  25
 irs-online-account-faq  5
 kep-2214-indexed-job  5
-kobayashi-press-hananoa-2026-02  2
 koenote-requirements  6
 mhlw-icd-committee-26-minutes  3
 mhlw-kokuji-h18-107-keiji-jiko  4
