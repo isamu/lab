@@ -13,6 +13,7 @@ import {
   inSearchTermList,
   isClosedCompound,
   isMention,
+  isNceSpelling,
   usedOnce,
 } from "./unknown-word-context.ts";
 
@@ -51,8 +52,9 @@ export const codeWordsOf = (source: string): Set<string> => {
   return words;
 };
 
-/** 辞書の語か、派生した語に活用の語尾を付けた語（operationalises、rightsized）か、四字以上の辞書の語二つを続けた語（crowdwork）。 */
-const isFormedWord = (word: string, speller: Speller): boolean => isKnownWord(word, speller) || hasTwoEndings(word, speller) || isClosedCompound(word, speller);
+/** 辞書の語か、派生した語に活用の語尾を付けた語（operationalises、rightsized）か、四字以上の辞書の語二つを続けた語（crowdwork）か、-nse の語の -nce の綴り（recompence）。 */
+const isFormedWord = (word: string, speller: Speller): boolean =>
+  isKnownWord(word, speller) || hasTwoEndings(word, speller) || isClosedCompound(word, speller) || isNceSpelling(word, speller);
 
 /**
  * 置かれた場所から、名前や用語と分かる語。名指した語（"mailto"、(jchaplin)）、検索語の並び（vaccin*）、外国語の句（bête noire）、

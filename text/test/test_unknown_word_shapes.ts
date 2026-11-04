@@ -13,6 +13,7 @@ import {
   inSearchTermList,
   isClosedCompound,
   isMention,
+  isNceSpelling,
   usedOnce,
 } from "../packages/chaff/src/detectors/unknown-word-context.ts";
 
@@ -63,6 +64,12 @@ describe("unknown-word: words built from dictionary words", () => {
   it("a word the document also writes with another ending is its own term, but a known word's odd stem is not", () => {
     assert.deepEqual(unknown("The review aims to help rightsize the plan. We need to have this rightsized soon."), []);
     assert.deepEqual(unknown("We refactored the parser and will refactore the module."), [typo("refactore", "refactored")]);
+  });
+
+  it("an -nce spelling of an -nse word is the older or British spelling, but a slip beside the -nce is still reported", () => {
+    assert.deepEqual(unknown("In a suit brought against a charitable corporation, for a recompence for services performed."), []);
+    assert.deepEqual(unknown("The roads were kept at the common expence."), []);
+    assert.deepEqual(unknown("In a suit for a recompnse for services performed."), [typo("recompnse", "recompense")]);
   });
 
   it("a function word takes no ending, so a slip on one is reported", () => {
@@ -159,6 +166,14 @@ describe("unknown-word context: the pieces", () => {
         isClosedCompound(word, compounds),
       ),
       [true, true, true, false, false, false, false, false, false, false],
+    );
+  });
+
+  it("isNceSpelling: -nce where the listed word has -nse, with its endings", () => {
+    const nse: Speller = { ...speller, words: [new Set(["recompense", "expense"])] };
+    assert.deepEqual(
+      ["recompence", "expences", "recompense", "recompemce", "nce", "", "fence"].map((word) => isNceSpelling(word, nse)),
+      [true, true, false, false, false, false, false],
     );
   });
 
