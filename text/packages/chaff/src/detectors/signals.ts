@@ -89,15 +89,18 @@ const ACRONYM = new RegExp(String.raw`${EDGE_BEFORE}${ACRONYM_PART}(?:-${ACRONYM
  * 強調は読点や括弧をまたいで続くので（THE AUTHOR, THE COMPANY (IF ANY)）、そういう続きを含む
  * 「大文字以外の文字を含まない一続き」を丸ごと強調と見なす。小文字の語が挟まれば切れるので、
  * 「SRE, SLO, MTTR」のような略語の並びは残る。引用符に包まれた大文字の句（“AS IS”）も強調。
- * 2 語でも、片方が略語にしては長い語なら強調（BILLING CODE）。略語 2 つの並び（NIST SP）は残る。
+ * 2 語でも、片方が略語にしては長い語なら強調（BILLING CODE）。どちらも 5 字以上の 2 語（MIRAI SCHOOL、UNITED STATES）は
+ * 大文字で書いた名前や語で、略語がそう並ぶことはない。略語 2 つの並び（NIST SP、FEMA NFIP）は残る。
  */
 const CAPS_WORD = String.raw`[A-Z]+(?:&[A-Z]+)*`;
 const LONG_CAPS_WORD = String.raw`[A-Z]{${ACRONYM_MAX + 1},}`;
+const WORD_PAIR_MIN = 5;
+const WORD_PAIR_PART = String.raw`[A-Z]{${WORD_PAIR_MIN},}`;
 const CAPS_GAP = String.raw`[\s"“”'‘’]+`;
 const SHOUTED_RUN = new RegExp(String.raw`${EDGE_BEFORE}${CAPS_WORD}(?:${CAPS_GAP}${CAPS_WORD}){2,}${EDGE_AFTER}`, "u");
 /** 2 語の強調は、その 2 語だけを外す。続きまで外すと、区切りの後ろの略語（NEW GUIDELINES: SRE）まで消える。 */
 const SHOUTED_PAIR = new RegExp(
-  String.raw`${EDGE_BEFORE}(?:${LONG_CAPS_WORD}${CAPS_GAP}${CAPS_WORD}|${CAPS_WORD}${CAPS_GAP}${LONG_CAPS_WORD})${EDGE_AFTER}`,
+  String.raw`${EDGE_BEFORE}(?:${LONG_CAPS_WORD}${CAPS_GAP}${CAPS_WORD}|${CAPS_WORD}${CAPS_GAP}${LONG_CAPS_WORD}|${WORD_PAIR_PART}${CAPS_GAP}${WORD_PAIR_PART})${EDGE_AFTER}`,
   "gu",
 );
 const UNCASED_STRETCH = /(?:[A-Z]|\P{L})+/gu;
