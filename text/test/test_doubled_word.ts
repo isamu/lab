@@ -515,6 +515,13 @@ describe("doubled-word — 日本語", () => {
     valid.forEach((text) => assert.deepEqual(findingsOf(text, ja, "ja"), [], text));
   });
 
+  it("valid: 名詞を丸ごと重ねて「と」で受け、述語が続く形は口にした言葉の引用。並べた名詞は数える", () => {
+    const valid = ["国家国家と騒ぎ廻る必要はありません。", "国家国家と云って何でも決めます。", "仕事仕事と言って休みません。", "お金お金と騒ぐ人です。"];
+    valid.forEach((text) => assert.deepEqual(findingsOf(text, ja, "ja"), [], text));
+    assert.deepEqual(findingsOf("資料資料と書類を送ります。", ja, "ja"), ["1:3 資料資料"]);
+    assert.deepEqual(findingsOf("国家国家国家と騒ぎます。", ja, "ja"), ["1:3 国家国家", "1:5 国家国家"]);
+  });
+
   it("invalid: 重ね言葉と同じ形でも書き損じは数える", () => {
     assert.deepEqual(findingsOf("昨日行ったたので疲れた。", ja, "ja"), ["1:6 たた"]);
   });
