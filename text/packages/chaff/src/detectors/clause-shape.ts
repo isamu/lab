@@ -1,6 +1,8 @@
 import type { Detector, DetectorOptions, Finding, Lexicon, ProseDocument, Sentence, Token } from "../plugin.ts";
 import { isWithinAny, quotedIn } from "../quoted-span.ts";
 import { definitionWordsOf, isParallelDefinition } from "./parallel-definition.ts";
+import { continuesThrough } from "./register.ts";
+import { beatsOf } from "./ending-refrain.ts";
 
 // The shape of a clause read from its words: how it ends, a paired word left alone, an adverb that needs a
 // negation, a particle used where another one belongs. Every word comes from a lexicon; this file knows parts of speech.
@@ -52,10 +54,13 @@ export const endingOf = (sentence: Sentence): string | undefined => {
 
 type Ended = { readonly sentence: Sentence; readonly ending: string | undefined };
 
-/** Runs of consecutive sentences with the same ending. A sentence with no ending to compare closes a run. */
+/**
+ * Runs of consecutive sentences with the same ending. A sentence with no ending to compare closes a run, and so does a
+ * question run together with the next one inside a single sentence (これはリストか？順序付きか？などです。): it is not the writer's ending.
+ */
 export const endingRuns = (sentences: readonly Sentence[]): Ended[][] =>
   sentences
-    .map((sentence) => ({ sentence, ending: endingOf(sentence) }))
+    .map((sentence, index) => ({ sentence, ending: continuesThrough(sentences, index) ? undefined : endingOf(sentence) }))
     .reduce<Ended[][]>((runs, ended) => {
       const last = runs.at(-1) ?? [];
       const continues = ended.ending !== undefined && last[0]?.ending === ended.ending;
@@ -75,20 +80,17 @@ const runFinding = (run: readonly Ended[], limit: number): Finding => {
   };
 };
 
-/** More than limit sentences in a row within one paragraph that end with the same words, unless they define different terms in one frame. */
+/**
+ * More than limit sentences in a row within one paragraph that end with the same words, unless they define different terms in one
+ * frame. A refrain (いい船でした。…いい船でした。) counts once.
+ */
 export const endingRun: Detector = (doc, options): Finding[] => {
   const words = definitionWordsOf(options.lexicon);
   return doc.paragraphs.flatMap((paragraph) =>
     endingRuns(paragraph.sentences)
-      .filter(
-        (run) =>
-          run.length > options.limit &&
-          !isParallelDefinition(
-            run.map(({ sentence }) => sentence),
-            words,
-          ),
-      )
-      .map((run) => runFinding(run, options.limit)),
+      .map((run) => ({ run, sentences: run.map(({ sentence }) => sentence) }))
+      .filter(({ sentences }) => beatsOf(sentences, patternsOf(options.lexicon, "being")) > options.limit && !isParallelDefinition(sentences, words))
+      .map(({ run }) => runFinding(run, options.limit)),
   );
 };
 

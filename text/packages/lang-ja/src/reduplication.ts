@@ -311,6 +311,37 @@ export const isKanaRepeat = (words: readonly Inflection[], index: number): boole
   );
 };
 
+const QUOTE_MARK = "と";
+
+/** 「と」の後ろに述語が来る。動詞か、動詞の付いた名詞（騒ぎ廻る の 騒ぎ。解析器は連用形の名詞に読む）。 */
+const opensPredicate = (word: Inflection | undefined, next: Inflection | undefined): boolean =>
+  word !== undefined && (word.pos === "動詞" || (word.pos === "名詞" && next !== undefined && next.pos === "動詞" && touches(word, next)));
+
+/**
+ * 名詞を丸ごと重ねて「と」で受け、言う・騒ぐと続ける形（国家国家と騒ぐ・仕事仕事と言う）は、口にした言葉の引用で、重ねたのは話し手。
+ * 解析器はこの「と」を並立助詞にも読むので、助詞の種類ではなく後ろに述語が来ることで見分ける。並べた名詞（資料資料と書類を）は書き損じのまま。
+ */
+export const isQuotedChant = (words: readonly Inflection[], index: number): boolean => {
+  const [before, first, second, mark] = [words[index - 2], words[index - 1], words[index], words[index + 1]];
+  return (
+    first !== undefined &&
+    second !== undefined &&
+    mark !== undefined &&
+    isContentNoun(first) &&
+    isContentNoun(second) &&
+    sameAndTouching(first, second) &&
+    !sameAndTouching(before, first) &&
+    mark.pos === "助詞" &&
+    mark.surface === QUOTE_MARK &&
+    touches(second, mark) &&
+    opensPredicate(words[index + 2], words[index + 3])
+  );
+};
+
 /** 活用した語・仮名の語・内容語の重なりか、一字の仮名の三つ以上の並び。pos.ts が二つ目に Echo=Rdp を付ける。 */
 export const isEchoAt = (words: readonly Inflection[], index: number, kanjiNouns: ReadonlySet<string>): boolean =>
-  isInflectedEcho(words, index) || isKanaEcho(words, index) || isWholeWordEcho(words, index, kanjiNouns) || isKanaRepeat(words, index);
+  isInflectedEcho(words, index) ||
+  isKanaEcho(words, index) ||
+  isWholeWordEcho(words, index, kanjiNouns) ||
+  isKanaRepeat(words, index) ||
+  isQuotedChant(words, index);

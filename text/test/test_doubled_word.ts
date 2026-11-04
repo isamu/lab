@@ -403,6 +403,13 @@ describe("doubled-word — 日本語", () => {
     assert.deepEqual(findingsOf("早め早め早めに動きます。", ja, "ja"), ["1:5 早め早め"]);
   });
 
+  it("valid: 変換で潰れた表の文の名詞の重なりは、隣り合った二つのセル。付属語の重なりは数える", () => {
+    assert.deepEqual(findingsOf("株主資本資本金資本剰余金株主資本合計当期首残高1,2003,4005,600△10。", ja, "ja"), []);
+    assert.deepEqual(findingsOf("事業所名従業員数（人）建物（百万円）土地（百万円）本社管理管理業務1,2003,40012。", ja, "ja"), []);
+    assert.deepEqual(findingsOf("株主資本資本金の表をを当期首残高1,2003,4005,600で示す。", ja, "ja"), ["1:11 をを"]);
+    assert.deepEqual(findingsOf("株主資本資本金が増えました。", ja, "ja"), ["1:5 資本資本"]);
+  });
+
   it("invalid: 書き損じの漢語の名詞が三つ続けば、どちらの重なりも出す", () => {
     assert.deepEqual(findingsOf("資料資料資料が届きました。", ja, "ja"), ["1:3 資料資料", "1:5 資料資料"]);
     assert.deepEqual(findingsOf("個人個人個人を集めます。", ja, "ja"), ["1:5 個人個人"]);
@@ -446,6 +453,7 @@ describe("doubled-word — 日本語", () => {
       "めでたしめでたし。",
       "またまた基礎の話です。",
       "これは私の研究です、えへへ。",
+      "是非是非、一度お越しください。",
     ];
     valid.forEach((text) => assert.deepEqual(findingsOf(text, ja, "ja"), [], text));
   });
@@ -490,6 +498,8 @@ describe("doubled-word — 日本語", () => {
       "会社会社で判断が異なります。",
       "部署部署の事情によって変わります。",
       "地域地域によって違います。",
+      "その時点時点の「正確さ」に留意します。",
+      "時点時点で見直します。",
       "会社会社により条件が異なります。",
       "会社会社による違いがあります。",
     ];
@@ -506,6 +516,13 @@ describe("doubled-word — 日本語", () => {
       "がんがん進めてください。",
     ];
     valid.forEach((text) => assert.deepEqual(findingsOf(text, ja, "ja"), [], text));
+  });
+
+  it("valid: 名詞を丸ごと重ねて「と」で受け、述語が続く形は口にした言葉の引用。並べた名詞は数える", () => {
+    const valid = ["国家国家と騒ぎ廻る必要はありません。", "国家国家と云って何でも決めます。", "仕事仕事と言って休みません。", "お金お金と騒ぐ人です。"];
+    valid.forEach((text) => assert.deepEqual(findingsOf(text, ja, "ja"), [], text));
+    assert.deepEqual(findingsOf("資料資料と書類を送ります。", ja, "ja"), ["1:3 資料資料"]);
+    assert.deepEqual(findingsOf("国家国家国家と騒ぎます。", ja, "ja"), ["1:3 国家国家", "1:5 国家国家"]);
   });
 
   it("invalid: 重ね言葉と同じ形でも書き損じは数える", () => {

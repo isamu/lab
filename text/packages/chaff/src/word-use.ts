@@ -140,9 +140,18 @@ const isCompoundVerbHead = ({ token, following }: InContext): boolean => {
 /** A verb written straight onto the verb before it (貼り付ける, 書き込む): the tail of a compound verb, not the verb alone (番号をつける). */
 const isCompoundVerbTail = ({ token, previous }: InContext): boolean => token.pos === "VERB" && previous?.pos === "VERB" && isTouching(previous, token);
 
+/**
+ * A noun joined by や or と to a noun after it (物やサービス): it names a thing alongside the other, as the full noun does, even
+ * where the tokenizer reads it as the dependent noun (延長するもの).
+ */
+const isCoordinatedThing = ({ token, following }: InContext): boolean => {
+  const [joiner, partner] = following ?? [];
+  return token.pos === "NOUN" && joiner?.pos === "CCONJ" && partner?.pos === "NOUN" && partner.features?.["NounType"] !== "Dependent";
+};
+
 /** A word used freely, or as a helper: a bound noun after a word is a suffix, and anything else bound a helper. */
 const helperUseOf = (word: InContext, lightVerbs: ReadonlySet<string>): string => {
-  if (!isHelper(word) && !isLightVerbAfterQuotative(word, lightVerbs)) return "free";
+  if ((!isHelper(word) && !isLightVerbAfterQuotative(word, lightVerbs)) || isCoordinatedThing(word)) return "free";
   return word.token.pos === "NOUN" && word.token.features?.["NounType"] !== "Dependent" ? "suffix" : "bound";
 };
 
