@@ -94,11 +94,14 @@ export const majorityOf = (judged: readonly Judged[]): Register | undefined => {
   return difference > 0 ? "polite" : "plain";
 };
 
-/** 少ないほう。同数なら文書全体で少ないほう、それも同数なら丁寧体。 */
-const minorityOf = (group: readonly Judged[], whole: readonly Judged[]): Register => {
-  const majority = majorityOf(group);
-  if (majority !== undefined) return majority === "polite" ? "plain" : "polite";
-  return countIn(whole, "polite") <= countIn(whole, "plain") ? "polite" : "plain";
+/**
+ * 少ないほう。同数なら文書全体で少ないほう。文書全体でも同数なら、揃える先の多いほうが無いので undefined（どちらも指さない）。
+ * 半々に書いた文書（くだけたメールの「お願いしたい。…です。…助かる。…送ります。」）は、書き損じではなく混ぜた書き方。
+ */
+const minorityOf = (group: readonly Judged[], whole: readonly Judged[]): Register | undefined => {
+  const majority = majorityOf(group) ?? majorityOf(whole);
+  if (majority === undefined) return undefined;
+  return majority === "polite" ? "plain" : "polite";
 };
 
 /**
@@ -111,7 +114,7 @@ export const followsDocument = (group: number | undefined, minority: Register, w
 const slipsInGroup = <T extends Judged>(judged: readonly T[], group: number | undefined, limit: number): Slip<T>[] => {
   const members = judged.filter((entry) => entry.group === group);
   const minority = minorityOf(members, judged);
-  if (followsDocument(group, minority, judged)) return [];
+  if (minority === undefined || followsDocument(group, minority, judged)) return [];
   const slips = members.filter((entry) => entry.register === minority);
   // 片方しか無ければ揃っている。少数派が閾値を超えて多ければ、混在ではなく別の文体。
   if (slips.length === 0 || slips.length > limit) return [];
