@@ -46,8 +46,8 @@ example:
       She hurried to the room and eased the door open. He needed the report and demanded it.
 
 not_flagged:
-  ja: 短い文書（200 語より短いもの）は測りません。
-  en: Documents under 200 words are not measured.
+  ja: 短い文書（200 語より短いもの）は測りません。文の途中の頭だけ大文字の -ly の語（July、Kelly）は名前か題の語なので数えません。
+  en: Documents under 200 words are not measured. A capitalised -ly word in mid-sentence (July, Kelly) is a name or a word of a title, and is not counted.
 level_meaning:
   ja: 1000 語あたり -ly 副詞 {limit} 個まで
   en: up to {limit} -ly adverbs per 1000 words
