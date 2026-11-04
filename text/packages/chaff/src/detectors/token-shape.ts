@@ -8,6 +8,7 @@ import { honorificGroupParticles } from "../honorific-group.ts";
 import { setPhraseParticles } from "../set-phrase-particles.ts";
 import { noteSentences } from "../note-paragraphs.ts";
 import { documentNameSpans } from "./particle-run-names.ts";
+import { namedLongForms } from "./particle-run-long-forms.ts";
 import { isFlattenedTable } from "./sentence-parts.ts";
 
 /**
@@ -89,6 +90,9 @@ const runsOf = (tokens: readonly Token[], nesting: readonly string[], breaks: re
     return acc;
   }, []);
 
+/** 括弧の中で、前の語句に短い呼び名を付ける語（以下「…」という）。前の語句は名前なので、題名と同じく中の助詞を数えない。 */
+const NAMING_LEXICON = "definition-marker";
+
 /** 句と句の間の記号（制限=タグの制限、A→B）。半角の = や : は名詞として読まれ、句読点のようには切れない。 */
 const RUN_BREAK_LEXICON = "particle-run-break";
 
@@ -118,12 +122,18 @@ export const doubledParticle: Detector = (doc, options): Finding[] => {
     setPhrases: (doc.lexicons[SET_PHRASE_LEXICON] ?? []).map((entry) => entry.pattern),
   };
   const prose = doc.prose ?? doc.source;
+  const namingMarkers = (doc.lexicons[NAMING_LEXICON] ?? []).map((entry) => entry.pattern);
+  const continuesName = (token: Token): boolean => nesting.includes(token.surface) || !breaksRun(token, breaks);
   // 平らにした表の文は、見出しのセル（役員の兼任等・営業上の取引・設備の賃貸借）の切れ目が見えず、別のセルの「の」が一つの連なりに見える。
   return doc.sentences
     .filter((sentence) => !isFlattenedTable(sentence.text))
     .flatMap((sentence) => {
       const tokens = chainTokens(sentence.tokens ?? [], numbering, phrases);
-      const quoted = [...quotedIn(sentence), ...titles];
+      const quoted = [
+        ...quotedIn(sentence),
+        ...titles,
+        ...namedLongForms(sentence.text, sentence.span.start, sentence.tokens ?? [], namingMarkers, continuesName),
+      ];
       const longRuns = (skipped: readonly Span[]): Run[] => runsOf(tokens, nesting, breaks, skipped).filter((run) => run.tokens.length > options.limit);
       const found = longRuns(quoted);
       // 文書の名前を読むのは長い連なりのある文だけ。名前は位置ごとに読むので、全部の文で読むと遅い。
