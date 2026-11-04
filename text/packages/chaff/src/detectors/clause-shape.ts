@@ -85,7 +85,7 @@ export const endingRun: Detector = (doc, options): Finding[] => {
   return doc.paragraphs.flatMap((paragraph) =>
     endingRuns(paragraph.sentences)
       .map((run) => ({ run, sentences: run.map(({ sentence }) => sentence) }))
-      .filter(({ sentences }) => beatsOf(sentences) > options.limit && !isParallelDefinition(sentences, words))
+      .filter(({ sentences }) => beatsOf(sentences, patternsOf(options.lexicon, "being")) > options.limit && !isParallelDefinition(sentences, words))
       .map(({ run }) => runFinding(run, options.limit)),
   );
 };

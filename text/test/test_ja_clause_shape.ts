@@ -85,30 +85,35 @@ describe("endingRuns", () => {
 });
 
 describe("closingPhraseOf / beatsOf", () => {
+  const BEING: ReadonlySet<string> = new Set(["いる", "ある"]);
   const sentencesOf = (text: string) => buildDocument("a.md", text, ja).sentences;
 
   it("述語の前の内容語から文末まで", () => {
-    assert.deepEqual(sentencesOf("古い家でした。医師がいます。資料を確認しました。").map(closingPhraseOf), ["古い家でした", "医師がいます", undefined]);
+    assert.deepEqual(
+      sentencesOf("古い家でした。医師がいます。資料を確認しました。").map((sentence) => closingPhraseOf(sentence, BEING)),
+      ["古い家でした", "医師がいます", undefined],
+    );
   });
 
   it("助動詞で終わらない文には無い", () => {
-    assert.deepEqual(sentencesOf("手順の確認。").map(closingPhraseOf), [undefined]);
+    assert.deepEqual(
+      sentencesOf("手順の確認。").map((sentence) => closingPhraseOf(sentence, BEING)),
+      [undefined],
+    );
   });
 
   it("て形・付属の語・行いの名詞（補助、採用）の述語には無い。報告が同じ行いを書き並べるのは単調な続き", () => {
-    assert.deepEqual(sentencesOf("定額法を採用しております。送ることもできます。損害がないのです。補助を行った。").map(closingPhraseOf), [
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-    ]);
+    assert.deepEqual(
+      sentencesOf("定額法を採用しております。送ることもできます。損害がないのです。補助を行った。").map((sentence) => closingPhraseOf(sentence, BEING)),
+      [undefined, undefined, undefined, undefined],
+    );
   });
 
   it("同じ締めの句が三文以上続けば一拍、二文なら二拍", () => {
-    assert.equal(beatsOf(sentencesOf("古い家でした。古い家でした。古い家でした。新しい家でした。")), 2);
-    assert.equal(beatsOf(sentencesOf("古い家でした。古い家でした。新しい家でした。")), 3);
-    assert.equal(beatsOf(sentencesOf("必要です。重要です。")), 2);
-    assert.equal(beatsOf([]), 0);
+    assert.equal(beatsOf(sentencesOf("古い家でした。古い家でした。古い家でした。新しい家でした。"), BEING), 2);
+    assert.equal(beatsOf(sentencesOf("古い家でした。古い家でした。新しい家でした。"), BEING), 3);
+    assert.equal(beatsOf(sentencesOf("必要です。重要です。"), BEING), 2);
+    assert.equal(beatsOf([], BEING), 0);
   });
 });
 
