@@ -93,32 +93,49 @@ const minorityFindings = <T extends Sided>(items: readonly T[], limit: number, v
 const ownSentences = (doc: ProseDocument): readonly Sentence[] => doc.sentences.filter((sentence) => sentence.embeddedLanguage === undefined);
 
 /**
- * A bracketed item number opening a line ((1)開催趣旨, （ア）, (iv), a list bullet before it), both brackets of one width.
- * It numbers the line, a style of its own: the brackets of the prose around it may be written the other width. A
- * bracketed word at a line's head ((背景), (注)) is not a number, and an item number the prose refers to (次の(1)及び(2))
- * is written in the prose; both stay with the prose's brackets.
+ * A bracketed item number opening a line ((1)開催趣旨, （ア）, (iv), a list bullet before it), both brackets of one width,
+ * or a tag in Latin letters opening a line ([Web]登録完了のお知らせ, a subject line's prefix). It labels the line, a style of
+ * its own: the brackets of the prose around it may be written the other width. A bracketed word in Japanese at a line's head
+ * ((背景), (注)) is not a label of that kind, and an item number the prose refers to (次の(1)及び(2)) is written in the prose;
+ * both stay with the prose's brackets.
  */
 const LINE_HEAD = /^\s*(?:[-*+] +)?/u;
-const BRACKETED = /^([(（[［])([^)）\]］]{1,4})([)）\]］])/u;
+const BRACKETED = /^([(（[［])([^)）\]］]{1,12})([)）\]］])/u;
 const NUMBERING = /^(?:[0-9０-９]{1,3}|[一二三四五六七八九十]{1,3}|[A-Za-zＡ-Ｚａ-ｚァ-ヶぁ-んｦ-ﾝ])$/u;
 /** Roman numerals i to x, either case. */
 const ROMAN = /^(?:i{2,3}|iv|vi{1,3}|ix|I{2,3}|IV|VI{1,3}|IX)$/u;
+/** A word in Latin letters with a capital, digits, dots or hyphens after its first letter (Web, e-Gov); not a numeral (iiii). */
+const LATIN_TAG = /^(?=.*[A-Z])[A-Za-z][A-Za-z0-9.-]+$/u;
 const CLOSER_OF: Readonly<Record<string, string>> = { "(": ")", "（": "）", "[": "]", "［": "］" };
 
-const isItemNumber = (text: string): boolean => NUMBERING.test(text) || ROMAN.test(text);
+const isLineLabel = (text: string): boolean => NUMBERING.test(text) || ROMAN.test(text) || LATIN_TAG.test(text);
 
-/** The offsets in a line of its item number's opening and closing bracket, or none. */
+/** The offsets in a line of its label's opening and closing bracket, or none. */
 const enumeratorIn = (line: string): readonly number[] => {
   const head = LINE_HEAD.exec(line)?.[0].length ?? 0;
   const found = BRACKETED.exec(line.slice(head));
-  if (found === null || CLOSER_OF[found[1] ?? ""] !== found[3] || !isItemNumber(found[2] ?? "")) return [];
+  if (found === null || CLOSER_OF[found[1] ?? ""] !== found[3] || !isLineLabel(found[2] ?? "")) return [];
   return [head, head + found[0].length - 1];
 };
 
-/** The offsets in `source` of each line's item number's opening and closing bracket. */
+/**
+ * An item's address in the prose: a section's number and its item's bracketed number (上記4(2)で), as the lines number them.
+ * Not after a digit, a comma or a point, so a figure and its bracketed figure in a table (1,054(47)) is not one.
+ */
+const ITEM_ADDRESS = /(?<![0-9０-９,，.．])[0-9０-９]{1,2}(?:\([0-9０-９]{1,2}\)|（[0-9０-９]{1,2}）)(?=[\p{Script=Han}\p{Script=Hiragana}])/gu;
+
+const addressBrackets = (match: RegExpMatchArray & { index: number }): number[] => {
+  const end = match.index + match[0].length - 1;
+  return [match.index + match[0].search(/[(（]/u), end];
+};
+
+/** The offsets in `source` of each line's label's opening and closing bracket, and of the brackets of an item's address. */
 export const enumeratorBracketOffsets = (source: string): ReadonlySet<number> => {
   const starts = lineStarts(source);
-  return new Set(source.split("\n").flatMap((line, index) => enumeratorIn(line).map((at) => (starts[index] ?? 0) + at)));
+  return new Set([
+    ...source.split("\n").flatMap((line, index) => enumeratorIn(line).map((at) => (starts[index] ?? 0) + at)),
+    ...[...source.matchAll(ITEM_ADDRESS)].flatMap(addressBrackets),
+  ]);
 };
 
 /** Appended to a mark's kind for an item number's bracket. A lexicon's group, a word from YAML, never holds a NUL. */
