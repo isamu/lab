@@ -30,6 +30,16 @@ describe("L3 英語", () => {
       assert.ok(!idsFor(padded("The team hurried and delivered. We wrote the code and reviewed it.")).includes("adverb-overuse"));
     });
 
+    it("valid: 文の途中の頭だけ大文字の -ly の語（July、Kelly）は名前で、副詞に数えない", () => {
+      const source = "Sales rose in July. Costs fell in July. Kelly met Holly in July. Kelly wrote the July report and sent it to Holly.";
+      assert.ok(!idsFor(padded(source)).includes("adverb-overuse"));
+    });
+
+    it("invalid: 文頭の大文字の -ly 副詞と、全部大文字の -ly 副詞は数える", () => {
+      const source = "Finally, we shipped. Clearly, it worked. Honestly, we were lucky. Sadly, it broke. Luckily, we fixed it ONLY once QUICKLY.";
+      assert.ok(idsFor(padded(source)).includes("adverb-overuse"));
+    });
+
     it("短い文書は測らない。密度が暴れるため", () => {
       assert.ok(!idsFor("We moved quickly and carefully and thoroughly.").includes("adverb-overuse"));
     });

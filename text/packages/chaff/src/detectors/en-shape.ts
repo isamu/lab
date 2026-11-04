@@ -15,13 +15,27 @@ const wordsIn = (doc: ProseDocument): number => doc.sentences.reduce((sum, sente
 
 const isLyAdverb = (token: Token): boolean => token.pos === "ADV" && token.surface.toLowerCase().endsWith("ly");
 
+/** 頭だけ大文字の語。全部大文字（ONLY）は強調で、副詞のまま。 */
+const CAPITALISED = /^\p{Lu}\p{Ll}/u;
+
+const LETTER = /\p{L}/u;
+
+/**
+ * 文の途中の頭だけ大文字の -ly の語は、解析器が語尾で副詞と当てた名前（July、Kelly）か、題の語（Frequently Asked Questions）。
+ * どちらも動詞に畳める副詞ではない。
+ */
+const lyAdverbsOf = (tokens: readonly Token[]): Token[] => {
+  const first = tokens.findIndex((token) => LETTER.test(token.surface));
+  return tokens.filter((token, at) => isLyAdverb(token) && !(at > first && CAPITALISED.test(token.surface)));
+};
+
 /**
  * -ly 副詞は、動詞が弱いことの目印になる。「walked quickly」より「hurried」。
  * 1 つずつは正しいので、件数ではなく密度で見る（bold-density と同じ）。
  */
 export const adverbDensity: Detector = (doc, options): Finding[] => {
   const words = wordsIn(doc);
-  const hits = doc.sentences.flatMap((sentence) => (sentence.tokens ?? []).filter(isLyAdverb).map((token) => ({ sentence, token })));
+  const hits = doc.sentences.flatMap((sentence) => lyAdverbsOf(sentence.tokens ?? []).map((token) => ({ sentence, token })));
   const density = words === 0 ? 0 : Math.round((hits.length / words) * PER);
   const first = hits[0];
   if (words < MIN_WORDS || first === undefined || density <= options.limit) return [];
