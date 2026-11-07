@@ -279,6 +279,13 @@ describe("title-length: a title or heading too long to scan", () => {
     assert.equal(fired(en, `# Title\n\nText.\n\n${LONG_EN} (why?) and how\n\nText.\n`, "title-length"), 1);
   });
 
+  it("does not report a Japanese heading that asks with か, with or without 。", () => {
+    const asks = "### Q3：出願した後に、婚姻により氏名が変わりましたが、旧い氏を添えた氏名へ書類を直すことはできますか。";
+    assert.equal(fired(ja, `# 題\n\n本文です。\n\n${asks}\n\n本文です。\n`, "title-length"), 0);
+    assert.equal(fired(ja, `# 題\n\n本文です。\n\n${asks.replace(/。$/u, "")}\n\n本文です。\n`, "title-length"), 0);
+    assert.equal(fired(ja, `# 題\n\n本文です。\n\n${LONG_JA}を説明するいくつかの資料とそのほか\n\n本文です。\n`, "title-length"), 1);
+  });
+
   it("does not report a short heading", () => assert.equal(fired(ja, "# 在庫システム\n\n## 移行の手順\n\n本文です。\n", "title-length"), 0));
 
   it("does not count a number label at the head", () =>
