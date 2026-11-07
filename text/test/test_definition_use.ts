@@ -30,6 +30,13 @@ describe("unused-definition: 定義したのに使っていない語", () => {
     assert.deepEqual(unused('"Seller" means Harbour Ltd. The Seller\'s address is below.\n'), []);
   });
 
+  it("a use whose words are split by a run of spaces or a line break counts", () => {
+    const defined = '"Support Hours" means 9:00 to 17:00 on weekdays.';
+    assert.deepEqual(unused(`${defined} We answer calls during Support      Hours.\n`), []);
+    assert.deepEqual(unused(`${defined} We answer calls during Support\nHours.\n`), []);
+    assert.deepEqual(unused(`${defined} We answer calls during SupportHours.\n`), ['"Support Hours" is defined but never used']);
+  });
+
   it("a phrase led by a gerund is used when its verb is written in another form", () => {
     const defined = '"Filing a claim" means sending us the claim form.';
     assert.deepEqual(unused(`${defined} You may file a claim within 30 days.\n`), []);
