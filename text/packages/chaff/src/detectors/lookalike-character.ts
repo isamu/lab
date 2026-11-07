@@ -53,6 +53,32 @@ export const lookalikesIn = (source: string): Lookalike[] =>
     (left, right) => left.span.start - right.span.start,
   );
 
+/** Words naming the characters themselves (濁点, NFD, Kangxi). A look-alike next to one is an example shown on purpose. */
+const MENTION_LEXICON = "lookalike-mention";
+
+const lineStartBefore = (source: string, at: number): number => source.lastIndexOf("\n", at - 1) + 1;
+
+const lineEndAfter = (source: string, at: number): number => {
+  const end = source.indexOf("\n", at);
+  return end === -1 ? source.length : end;
+};
+
+/** The look-alike's line with the line before and the line after it: an example and its explanation may sit on neighbouring lines (a code comment). */
+const linesAround = (source: string, span: Span): string => {
+  const lineStart = lineStartBefore(source, span.start);
+  const lineEnd = lineEndAfter(source, span.end);
+  const start = lineStart === 0 ? 0 : lineStartBefore(source, lineStart - 1);
+  const end = lineEnd === source.length ? lineEnd : lineEndAfter(source, lineEnd + 1);
+  return source.slice(start, end).toLowerCase();
+};
+
+/** Whether a word that names these characters stands on or next to the look-alike's line (ホ゜ケット のような…濁点のチェック). */
+export const isShownExample = (source: string, span: Span, mentions: readonly string[]): boolean => {
+  if (mentions.length === 0) return false;
+  const around = linesAround(source, span);
+  return mentions.some((mention) => around.includes(mention.toLowerCase()));
+};
+
 const QUOTE_REACH = 20;
 
 const quoteOf = (source: string, span: Span): string =>
@@ -63,13 +89,17 @@ const quoteOf = (source: string, span: Span): string =>
 
 const codesOf = (text: string): string => Array.from(text).map(codePointName).join(" ");
 
-export const lookalikeCharacter: Detector = (doc): Finding[] =>
-  lookalikesIn(doc.source).map((lookalike) => ({
-    rule: "",
-    severity: "warning",
-    line: 0,
-    column: 0,
-    quote: quoteOf(doc.source, lookalike.span),
-    values: { written: lookalike.written, usual: lookalike.usual, code: codesOf(lookalike.written), offset: lookalike.span.start },
-    variant: lookalike.kind,
-  }));
+export const lookalikeCharacter: Detector = (doc): Finding[] => {
+  const mentions = (doc.lexicons[MENTION_LEXICON] ?? []).map((entry) => entry.pattern);
+  return lookalikesIn(doc.source)
+    .filter((lookalike) => !isShownExample(doc.source, lookalike.span, mentions))
+    .map((lookalike) => ({
+      rule: "",
+      severity: "warning",
+      line: 0,
+      column: 0,
+      quote: quoteOf(doc.source, lookalike.span),
+      values: { written: lookalike.written, usual: lookalike.usual, code: codesOf(lookalike.written), offset: lookalike.span.start },
+      variant: lookalike.kind,
+    }));
+};

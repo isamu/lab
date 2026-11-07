@@ -18,6 +18,15 @@ export const isClosedCompound = (word: string, speller: Speller): boolean => {
     .some((split) => isKnownWord(word.slice(0, split), listed) && isKnownWord(word.slice(split), inflected));
 };
 
+/**
+ * A word spelled -nce where the dictionary spells it -nse (recompence, expence, suspence): the older or British spelling of
+ * that word, as licence and defence are, not a slip.
+ */
+export const isNceSpelling = (word: string, speller: Speller): boolean => {
+  const at = word.lastIndexOf("nce");
+  return at > 0 && isKnownWord(`${word.slice(0, at)}nse${word.slice(at + "nce".length)}`, speller);
+};
+
 /** Letters a name keeps before its drug stem: fewer, and the word is too short to be read as a drug by its ending alone. */
 const MIN_DRUG_HEAD = 3;
 
