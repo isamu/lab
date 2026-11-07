@@ -30,6 +30,11 @@ describe("unused-definition: 定義したのに使っていない語", () => {
     assert.deepEqual(unused('"Seller" means Harbour Ltd. The Seller\'s address is below.\n'), []);
   });
 
+  it("a quoted meaning after means glosses a word, and defines no term", () => {
+    assert.deepEqual(unused('Here, somehow "local control" means "whatever the vendor allows". Nobody asked.\n'), []);
+    assert.deepEqual(unused('Here, "local control" means whatever the vendor allows. Nobody asked.\n'), ['"local control" is defined but never used']);
+  });
+
   it("a use whose words are split by a run of spaces or a line break counts", () => {
     const defined = '"Support Hours" means 9:00 to 17:00 on weekdays.';
     assert.deepEqual(unused(`${defined} We answer calls during Support      Hours.\n`), []);
