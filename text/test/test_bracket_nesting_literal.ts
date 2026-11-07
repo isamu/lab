@@ -57,3 +57,16 @@ describe("bracket-nesting and a literal string", () => {
     assert.equal(findingsOf("(The unnamed “Entry (Training (2026))” was rejected.)", en).length, 1);
   });
 });
+
+describe("bracket-nesting in literature", () => {
+  const speech = "“The note I left him said: “Go home [the crowd laughed] at once,” and that is all,” said the clerk.\n";
+  const deeper = "“‘The note said: “Go [now (at once [before noon])].”’” said the clerk.\n";
+  const of = (source: string, genre: string): readonly string[] => namedRuleRun("bracket-nesting", source, en, "a.md", genre).findings;
+
+  it("allows a speech that quotes a note with a stage direction inside, three deep", () => {
+    assert.deepEqual(of(speech, "literature/fiction"), []);
+    assert.deepEqual(of(speech, "business/report"), ["Brackets nested 3 deep (limit 2)"]);
+  });
+
+  it("still reports nesting deeper than a story's form", () => assert.deepEqual(of(deeper, "literature/fiction"), ["Brackets nested 5 deep (limit 3)"]));
+});
