@@ -9,6 +9,7 @@ import { setPhraseParticles } from "../set-phrase-particles.ts";
 import { noteSentences } from "../note-paragraphs.ts";
 import { documentNameSpans } from "./particle-run-names.ts";
 import { namedLongForms } from "./particle-run-long-forms.ts";
+import { quotedNameSpans, quotedNames } from "./particle-run-quoted-names.ts";
 import { isFlattenedTable } from "./sentence-parts.ts";
 
 /**
@@ -123,6 +124,7 @@ export const doubledParticle: Detector = (doc, options): Finding[] => {
   };
   const prose = doc.prose ?? doc.source;
   const namingMarkers = (doc.lexicons[NAMING_LEXICON] ?? []).map((entry) => entry.pattern);
+  const names = quotedNames(doc.source, nesting);
   const continuesName = (token: Token): boolean => nesting.includes(token.surface) || !breaksRun(token, breaks);
   // 平らにした表の文は、見出しのセル（役員の兼任等・営業上の取引・設備の賃貸借）の切れ目が見えず、別のセルの「の」が一つの連なりに見える。
   return doc.sentences
@@ -133,6 +135,7 @@ export const doubledParticle: Detector = (doc, options): Finding[] => {
         ...quotedIn(sentence),
         ...titles,
         ...namedLongForms(sentence.text, sentence.span.start, sentence.tokens ?? [], namingMarkers, continuesName),
+        ...quotedNameSpans(sentence.text, sentence.span.start, names),
       ];
       const longRuns = (skipped: readonly Span[]): Run[] => runsOf(tokens, nesting, breaks, skipped).filter((run) => run.tokens.length > options.limit);
       const found = longRuns(quoted);
