@@ -21,18 +21,31 @@ const PAST = new Set(["た", "だ"]);
 const hasParticle = (tokens: readonly Token[], particles: readonly LexiconEntry[]): boolean =>
   tokens.some((token) => token.pos === "ADP" && particles.some((particle) => particle.pattern === token.surface));
 
+/** The sentence ends in a forward-looking form from declaration-ending (…形にしていく。). */
+const endsInResolve = (sentence: Sentence, endings: readonly LexiconEntry[]): boolean => {
+  const text = withoutTrailingMarks(sentence.text);
+  return endings.some((ending) => text.endsWith(ending.pattern));
+};
+
 /**
  * A speaker's declaration (負担軽減を、目に見える形で実現する。二度と繰り返さない。): an object particle, no subject particle, and a
- * verb in the present at the end. particles is the declaration-particle word list already narrowed to the document's genre; without
- * an object particle for the genre the shape does not hold.
+ * verb in the present at the end. A sentence ending in a forward-looking form (現場の気づきを、幹部の皆さんが形にしていく。) declares even
+ * with its subject said. particles and endings are the declaration-particle and declaration-ending word lists already narrowed to the
+ * document's genre; without an object particle for the genre the shape does not hold.
  */
-export const isDeclaration = (sentence: Sentence, ending: readonly Token[], particles: readonly LexiconEntry[]): boolean => {
+export const isDeclaration = (
+  sentence: Sentence,
+  ending: readonly Token[],
+  particles: readonly LexiconEntry[],
+  endings: readonly LexiconEntry[] = [],
+): boolean => {
   const objects = particles.filter((particle) => particle.group === "object");
   const subjects = particles.filter((particle) => particle.group === "subject");
   const tokens = sentence.tokens ?? [];
   const last = ending.at(-1);
   if (objects.length === 0 || last === undefined || PAST.has(last.surface)) return false;
-  return ending.some((token) => token.pos === "VERB") && hasParticle(tokens, objects) && !hasParticle(tokens, subjects);
+  const subjectAllowed = !hasParticle(tokens, subjects) || endsInResolve(sentence, endings);
+  return ending.some((token) => token.pos === "VERB") && hasParticle(tokens, objects) && subjectAllowed;
 };
 
 /** The most tokens an opener in takeup-opener spans (これ/だけ). */

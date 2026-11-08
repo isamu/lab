@@ -38,7 +38,7 @@ import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span, To
 type Entry = { readonly sentence: Sentence; readonly register: Register; readonly group: number | undefined; readonly quiet: boolean };
 
 /** 文の調子と quiet を決める語彙表。polite は polite-ending、neutral は neutral-ending、requests は neutral-request、wishes は neutral-wish、
- * greetings は set-polite-phrase、declaration は declaration-particle を文書の genre で絞ったもの、openers は takeup-opener。 */
+ * greetings は set-polite-phrase、declaration と resolves は declaration-particle と declaration-ending を文書の genre で絞ったもの、openers は takeup-opener。 */
 type EndingWords = {
   readonly polite: readonly LexiconEntry[];
   readonly neutral: readonly LexiconEntry[];
@@ -46,6 +46,7 @@ type EndingWords = {
   readonly wishes: readonly LexiconEntry[];
   readonly greetings: readonly LexiconEntry[];
   readonly declaration: readonly LexiconEntry[];
+  readonly resolves: readonly LexiconEntry[];
   readonly openers: readonly LexiconEntry[];
 };
 
@@ -58,6 +59,7 @@ const endingWords = (doc: ProseDocument, polite: readonly LexiconEntry[], genre:
   wishes: doc.lexicons["neutral-wish"] ?? [],
   greetings: doc.lexicons["set-polite-phrase"] ?? [],
   declaration: entriesForGenre(doc.lexicons["declaration-particle"] ?? [], genre),
+  resolves: entriesForGenre(doc.lexicons["declaration-ending"] ?? [], genre),
   openers: doc.lexicons["takeup-opener"] ?? [],
 });
 
@@ -66,7 +68,7 @@ const isQuiet = (sentence: Sentence, ending: readonly Token[], register: Registe
   register === "polite"
     ? endsInSetGreeting(sentence, words.greetings)
     : isNeutralPlainShape(sentence, ending, words.requests, words.wishes) ||
-      isDeclaration(sentence, ending, words.declaration) ||
+      isDeclaration(sentence, ending, words.declaration, words.resolves) ||
       isExclamation(sentence) ||
       isTakenUp(next, between, words.openers);
 
