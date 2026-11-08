@@ -4,7 +4,7 @@ import { newContentMorphemes } from "./content-morphemes.ts";
 import { formValueTokens, isFormBlock } from "./form-line.ts";
 import { trigrams } from "./heading-overlap.ts";
 import { findingAt, writtenHeadings } from "./markup-finding.ts";
-import type { Detector, Finding, LengthUnit, MarkupHeading, Paragraph, ProseDocument, Section } from "../plugin.ts";
+import type { Detector, Finding, LengthUnit, MarkupHeading, Paragraph, ProseDocument, Section, Token } from "../plugin.ts";
 
 /** A title shorter than this many character trigrams matches any lead by chance. */
 const MIN_TITLE_GRAMS = 4;
@@ -99,6 +99,17 @@ const QUESTION_END = /[?？]["'”’)）」』]*$/u;
 
 export const isQuestionHeading = (heading: string): boolean => QUESTION_END.test(heading.trim());
 
+const TRAILING_MARKS: ReadonlySet<string> = new Set(["PUNCT", "SYM"]);
+
+/**
+ * A heading that ends on a particle closing a question (…補正することはできますか。): it asks as one ending in ？ does. The
+ * particles come from the language's question-particle word list; a language without one has none.
+ */
+export const endsWithQuestionParticle = (tokens: readonly Token[], particles: ReadonlySet<string>): boolean => {
+  const last = tokens.findLast((token) => !TRAILING_MARKS.has(token.pos));
+  return last?.pos === "PART" && particles.has(last.surface);
+};
+
 /** A series label in brackets at a heading's end, a number and a colon opening it ("(490: Employee travel)"): the manual's reference. */
 const SERIES_LABEL_END = /[(（]\p{N}+[:：][^()（）]*[)）]$/u;
 const QUOTED = /「[^「」]*」/gu;
@@ -140,18 +151,18 @@ const variantOf = (heading: MarkupHeading, title: MarkupHeading | undefined): st
   return heading === title ? "title" : undefined;
 };
 
-/** The heading's words without a number label at its head (Chapter 2, 1.), from the section the heading opens. */
-const unlabeledOf = (doc: ProseDocument, heading: MarkupHeading): string =>
-  doc.sections.find((section) => section.span.start === heading.end)?.unlabeledHeading ?? heading.text;
+const sectionOf = (doc: ProseDocument, heading: MarkupHeading): Section | undefined => doc.sections.find((section) => section.span.start === heading.end);
 
 /** Each title or heading longer than the limit. The first top-level heading is the title; every other is a heading. */
 export const titleLength: Detector = (doc, options): Finding[] => {
   const headings = writtenHeadings(doc);
   const title = headings.find((heading) => heading.depth === 1);
   const citedTitleActions = (doc.lexicons["cited-title-action"] ?? []).map((entry) => entry.pattern);
+  const questionParticles = new Set((doc.lexicons["question-particle"] ?? []).map((entry) => entry.pattern));
   return headings
-    .map((heading) => ({ heading, words: unlabeledOf(doc, heading) }))
-    .filter(({ words }) => !isParagraphHeading(words) && !isQuestionHeading(words))
+    .map((heading) => ({ heading, section: sectionOf(doc, heading) }))
+    .map(({ heading, section }) => ({ heading, words: section?.unlabeledHeading ?? heading.text, tokens: section?.headingTokens ?? [] }))
+    .filter(({ words, tokens }) => !isParagraphHeading(words) && !isQuestionHeading(words) && !endsWithQuestionParticle(tokens, questionParticles))
     .map(({ heading, words }) => ({ heading, count: headingLength(ownWordsOf(words, citedTitleActions), doc.lengthUnit) }))
     .filter(({ count }) => count > options.limit)
     .map(({ heading, count }) => ({
