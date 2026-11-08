@@ -3,7 +3,7 @@ import { enumeratedRuns, enumeratorStarts, numberedStarts } from "./enumerated-r
 import { continuesThrough, groupOf, majorityOf, registerOf, slipsOf, type Register } from "./register.ts";
 import { isRunInLabel } from "./run-in-label.ts";
 import { noticeSentences } from "./notice-paragraph.ts";
-import { separatePartSentences } from "./register-separate-part.ts";
+import { separatePartSentences, trailingPartSentences } from "./register-separate-part.ts";
 import { askerSentences } from "./asker-voice.ts";
 import { licenceNoticeSentences } from "./licence-notice.ts";
 import { chronologyRows } from "../chronology-rows.ts";
@@ -26,6 +26,7 @@ import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span, To
  * 札を付けて引いた言葉（例：…。Q: …？）、印を付けた札の行の下の記入欄の値（■ 調査目的\n…とする。）、
  * 〒や電話の行のある問い合わせ先の段落も数えない（register-set-apart.ts）。
  * 一番上の見出しで分けた部分のうち、2 文以上がみな文書の多いほうと違う同じ調子のものは、別の文書として数えない（register-separate-part.ts）。
+ * 多いほうの最後の文より後ろの 2 文以上が、みな前に無い違う同じ調子で、間に調子を持たない行（リンクの並び）を挟むものも、ページの注記として数えない。
  */
 /**
  * quiet: 常体と読めるが、願い・問い・言いさしの形（register-neutral-shape.ts）の文。どちらの調子の文書にも現れるので指さない。
@@ -37,7 +38,7 @@ import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span, To
 type Entry = { readonly sentence: Sentence; readonly register: Register; readonly group: number | undefined; readonly quiet: boolean };
 
 /** 文の調子と quiet を決める語彙表。polite は polite-ending、neutral は neutral-ending、requests は neutral-request、wishes は neutral-wish、
- * greetings は set-polite-phrase、declaration は declaration-particle を文書の genre で絞ったもの、openers は takeup-opener。 */
+ * greetings は set-polite-phrase、declaration と resolves は declaration-particle と declaration-ending を文書の genre で絞ったもの、openers は takeup-opener。 */
 type EndingWords = {
   readonly polite: readonly LexiconEntry[];
   readonly neutral: readonly LexiconEntry[];
@@ -45,6 +46,7 @@ type EndingWords = {
   readonly wishes: readonly LexiconEntry[];
   readonly greetings: readonly LexiconEntry[];
   readonly declaration: readonly LexiconEntry[];
+  readonly resolves: readonly LexiconEntry[];
   readonly openers: readonly LexiconEntry[];
 };
 
@@ -57,6 +59,7 @@ const endingWords = (doc: ProseDocument, polite: readonly LexiconEntry[], genre:
   wishes: doc.lexicons["neutral-wish"] ?? [],
   greetings: doc.lexicons["set-polite-phrase"] ?? [],
   declaration: entriesForGenre(doc.lexicons["declaration-particle"] ?? [], genre),
+  resolves: entriesForGenre(doc.lexicons["declaration-ending"] ?? [], genre),
   openers: doc.lexicons["takeup-opener"] ?? [],
 });
 
@@ -65,7 +68,7 @@ const isQuiet = (sentence: Sentence, ending: readonly Token[], register: Registe
   register === "polite"
     ? endsInSetGreeting(sentence, words.greetings)
     : isNeutralPlainShape(sentence, ending, words.requests, words.wishes) ||
-      isDeclaration(sentence, ending, words.declaration) ||
+      isDeclaration(sentence, ending, words.declaration, words.resolves) ||
       isExclamation(sentence) ||
       isTakenUp(next, between, words.openers);
 
@@ -124,7 +127,10 @@ export const judgedSentences = (doc: ProseDocument, polite: readonly LexiconEntr
   const majority = majorityOf(all.map((entry) => ({ register: entry.register, group: undefined })));
   const registerAt = (sentence: Sentence): Register | undefined => registers.get(sentence);
   const notices = noticeSentences(doc.paragraphs, doc.lexicons["notice-phrase"] ?? [], registerAt, majority);
-  const parts = separatePartSentences(doc.sections, registerAt, majority);
+  const parts = new Set([
+    ...separatePartSentences(doc.sections, registerAt, majority),
+    ...trailingPartSentences(doc.sentences, doc.paragraphs, registerAt, majority),
+  ]);
   const found = all.filter((entry) => !notices.has(entry.sentence) && !parts.has(entry.sentence));
   const runs = runsOf(
     doc,

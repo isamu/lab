@@ -972,3 +972,50 @@ describe("fact-conflict: worked examples and side-by-side tables", () => {
     assert.equal(columnGroupWidth([]), undefined);
   });
 });
+
+describe("fact-conflict: a calendar era year, a record field inside list items, and two rows of one name", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+    await en.prepare?.({ pos: true });
+  });
+
+  it("a year after an era name (平成29年) is a date, not a retention length", () => {
+    const law = (year: string): string[] =>
+      conflictJa(
+        `野生動植物の種の保存に関する法律の一部を改正する法律（${year}法律第51号）では、制度が改められました。`,
+        "",
+        "改正法の施行から5年を経過したことを踏まえ、野生動植物の種の保存に関する法律の施行状況を評価しました。",
+      );
+    assert.deepEqual(law("平成29年"), []);
+    assert.deepEqual(law("平成 29年"), []);
+    assert.deepEqual(conflictJa("個人情報を1年間保存します。", "", "個人情報は3年経過後に削除します。"), ["個人情報:3年≠1年間"]);
+  });
+
+  it("a label that every reference entry carries is a field of each entry, not one fact (en)", () => {
+    const entry = (name: string, links: string): string => `- ${name}. A study of reading. Journal 3 (2), pp. 1–9. External Links: ${links} Cited by: §1.`;
+    const references = conflictEn(
+      "## References",
+      "",
+      entry("Abe (2020)", "2006.01463, Document"),
+      entry("Bell (2021)", "Document"),
+      entry("Cole (2022)", "2105.27117, Link"),
+      entry("Dunn (2023)", "Document"),
+    );
+    assert.deepEqual(references, []);
+    assert.deepEqual(conflictEn("## Fees", "", "- Fee: $300", "- Venue: Hall A", "- Fee: $350"), ["Fee:$350≠$300"]);
+  });
+
+  it("two rows of one name that differ in another column are two rows, not one value twice (en)", () => {
+    const rows = (second: string): string[] =>
+      conflictEn(
+        "| Name | Status | Tier |",
+        "| --- | --- | --- |",
+        "| Require approvals | Enabled with at least 1 | 2 |",
+        "| Allow deletions | Disabled | 1 |",
+        `| Require approvals | ${second} | 4 |`,
+      );
+    assert.deepEqual(rows("Enabled with at least 2"), []);
+    assert.deepEqual(rows("Enabled with at least 1"), ["Require approvals Tier:4≠2"]);
+    assert.deepEqual(conflictEn("| Item | Amount |", "| --- | --- |", "| Deposit | $500 |", "| Rent | $1,200 |", "| Deposit | $600 |"), ["Deposit:$600≠$500"]);
+  });
+});
