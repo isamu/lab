@@ -251,6 +251,39 @@ describe("the structure measures of a document", () => {
     assert.equal(featuresOf(ja, "# 短い\n\n短い文書です。").get("heading-density")?.notMeasured, "too-short");
   });
 
+  it("reads bold Pros / Cons labels under the headings as a pro / con pair, standing alone or leading a line", () => {
+    const option = (name: string, pro: string, con: string): string[] => [`## ${name}`, "", `${name} keeps a copy.`, "", pro, "", con, ""];
+    const leading = lines("# Backups", "", ...option("Cloud", "**Pros:** Automatic.", "**Cons**: A monthly fee."), ...option("Disk", "Fast.", "Slow."));
+    assert.equal(valueOf(featuresOf(en, leading), "pro-con"), 1);
+    assert.equal(featuresOf(en, leading).get("pro-con")?.detail, "pros/cons");
+    const standing = lines(
+      "# イヤホン",
+      "",
+      "## 結論",
+      "",
+      "**メリット：**",
+      "",
+      "- 軽い",
+      "",
+      "**デメリット：**",
+      "",
+      "- 高い",
+      "",
+      "## 音",
+      "",
+      "低音が強い。",
+    );
+    assert.equal(valueOf(featuresOf(ja, standing), "pro-con"), 1);
+  });
+
+  it("does not read a bold label as a pro / con side unless the label is the side itself, or when it is quoted", () => {
+    const labelled = (pro: string, con: string): string => lines("# Backups", "", "## Cloud", "", pro, "", "## Disk", "", con);
+    assert.equal(valueOf(featuresOf(en, labelled("**Pros of the cloud:** Automatic.", "**Cons of the cloud:** A fee.")), "pro-con"), 0);
+    assert.equal(valueOf(featuresOf(en, labelled("**Pros:** Automatic.", "> **Cons:** A fee.")), "pro-con"), 0);
+    assert.equal(valueOf(featuresOf(en, labelled("**Pros:** Automatic.", "The cons are the fee.")), "pro-con"), 0);
+    assert.equal(valueOf(featuresOf(en, labelled("- **Pros:** Automatic.", "- **Cons:** A fee.")), "pro-con"), 1);
+  });
+
   it("measures headings per 1000 words, without the title", () => {
     const paragraph = "We count the stock on every shelf each morning and write the numbers down before anyone starts to pick orders.";
     const section = (heading: string): string => lines(`## ${heading}`, "", paragraph, "", paragraph);
