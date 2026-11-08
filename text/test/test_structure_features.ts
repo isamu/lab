@@ -99,6 +99,13 @@ describe("heading forms, bookends and pro / con pairs from the lexicons", () => 
     assert.equal(headingFormOf(headingWords("Keyboard shortcuts"), english), undefined);
   });
 
+  it("reads numbered options as a stock form, as it reads numbered steps, but not a heading about options", () => {
+    const english = en.lexicons["heading-form"] ?? [];
+    assert.equal(headingFormOf(headingWords("Option 2: An External Drive"), english)?.pattern, "option");
+    assert.equal(headingFormOf(headingWords("Options for a small office"), english), undefined);
+    assert.equal(headingFormOf(headingWords("Optional settings"), english), undefined);
+  });
+
   it("says which side a bookend stands on", () => {
     const bookends = ja.lexicons["bookend-heading"] ?? [];
     assert.equal(bookendOf("はじめに", bookends), "before");
