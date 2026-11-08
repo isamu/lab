@@ -67,6 +67,15 @@ describe("excessive-hedging: 1 つの文に逃げの表現を重ねる", () => {
       assert.deepEqual(stackedIn("# 報告\n\n設定を誤ると失敗する場合があると考えられます。\n"), []);
     });
 
+    it("valid: 「と思われている」はほかの人の見方で、書き手の逃げに重ねていない", () => {
+      assert.deepEqual(stackedIn("# 報告\n\n私は几帳面だと思われているかもしれませんが、実はそうでもありません。\n"), []);
+      assert.deepEqual(stackedIn("# 報告\n\nこの方式は古いと考えられていたかもしれません。\n"), []);
+    });
+
+    it("invalid: 書き手の「と思われます」は、「かもしれない」に重ねている", () => {
+      assert.equal(stackedIn("# 報告\n\n几帳面かもしれないと思われます。\n").length, 1);
+    });
+
     it("valid: 読点で切れた別の節の逃げは、同じ主張を二重にぼかしていない", () => {
       assert.deepEqual(stackedIn("# 報告\n\n漏えいした可能性がある情報が、悪用される可能性があります。\n"), []);
     });
@@ -111,6 +120,16 @@ describe("excessive-hedging: 1 つの文に逃げの表現を重ねる", () => {
 
     it("valid: hedges in two clauses joined by a conjunction do not stack", () => {
       assert.deepEqual(stackedIn("# Report\n\nThe fix could fail and it may be slow.\n", en), []);
+    });
+
+    it("valid: a modal inside a clause opened by a verb is what is known, not a second hedge", () => {
+      assert.deepEqual(stackedIn("# Report\n\nPerhaps you like knowing that you may not see anyone for days.\n", en), []);
+      assert.deepEqual(stackedIn("# Report\n\nApparently the team wondered whether the release might slip.\n", en), []);
+    });
+
+    it("invalid: the clause a hedge opens itself is the claim it hedges", () => {
+      assert.equal(stackedIn("# Report\n\nIt seems that the release could perhaps slip.\n", en).length, 1);
+      assert.equal(stackedIn("# Report\n\nPerhaps that may be true.\n", en).length, 1);
     });
 
     it("valid: a hedge inside a quotation is the speaker's", () => {
