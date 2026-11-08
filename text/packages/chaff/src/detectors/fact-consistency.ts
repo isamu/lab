@@ -11,6 +11,7 @@ import { partsAt, scopedFacts, type ScopedFact } from "../facts/fact-scope.ts";
 import { conditionPairConflicts, type ChangeSentence, type ChangeWords, type ConditionWord, type PairConflict, type WordAt } from "../facts/condition-pairs.ts";
 import { scopeConflicts, summaryConflicts, type FactConflict } from "../facts/fact-conflicts.ts";
 import { eventDateConflicts, type EventDateConflict, type EventWord } from "../facts/event-dates.ts";
+import { followsEra } from "../facts/era-year.ts";
 import { retentionConflicts, type LengthMark, type RetentionLength, type RetentionVerb, type RetentionWords } from "../facts/retention-periods.ts";
 import type { DurationUnit } from "../derived/date-arithmetic.ts";
 import { DURATION_LEXICONS, quantitiesOf, type Quantity } from "./derived-numbers.ts";
@@ -187,10 +188,12 @@ const endWithLongerUnit = (doc: ProseDocument, quantity: Quantity): number => {
   return unitStart + longer;
 };
 
+/** 元号の年（平成29年法律第51号 の 29年）は暦の年で、保存期間ではない。 */
 const retentionLengthsOf = (doc: ProseDocument, tree: StructureNode): RetentionLength[] =>
   quantitiesOf(tree, doc.source).flatMap((quantity) => {
     const unit = retentionUnitOf(doc, quantity.unit);
-    return unit === undefined ? [] : [{ start: quantity.start, end: endWithLongerUnit(doc, quantity), amount: quantity.amount, unit }];
+    if (unit === undefined || followsEra(doc.source, quantity.start, patternsOf(doc, "calendar-era"))) return [];
+    return [{ start: quantity.start, end: endWithLongerUnit(doc, quantity), amount: quantity.amount, unit }];
   });
 
 const retentionVerbsOf = (doc: ProseDocument): RetentionVerb[] =>
