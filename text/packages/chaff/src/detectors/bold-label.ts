@@ -26,6 +26,12 @@ export const boldLabelOf = (item: string): string | undefined => {
   return label === undefined || isCodeOnly(label) ? undefined : label;
 };
 
+/** `**Label:**` opening a paragraph, with text after it or standing alone over the list it introduces. */
+const STANDING_LABEL = new RegExp(String.raw`^(\*\*|__)(?!\s)((?:(?!\1)[^\n]){1,${MAX_LABEL_CHARS}}?)(?:\1[ \t]*[:：]|[:：]\1)`, "u");
+
+/** The bold label a paragraph or item opens with, whether text follows it on the line or not. */
+export const standingBoldLabelOf = (text: string): string | undefined => STANDING_LABEL.exec(text.replace(ITEM_MARKER, "").replace(TASK_BOX, ""))?.[2]?.trim();
+
 /** Whether an item opens with a bold label of any kind, code-only ones included: bold that labels rather than emphasises. */
 export const opensWithBoldLabel = (item: string): boolean => BOLD_LABEL.test(item.replace(ITEM_MARKER, "").replace(TASK_BOX, ""));
 
