@@ -104,6 +104,14 @@ describe("no-mixed-desumasu: 意図した声の形", () => {
     assert.equal(findingsOf(`# 式辞\n\n${address}戦争の惨禍を、二度と繰り返さなかった。\n`, "speech/address").length, 1);
   });
 
+  it("演説の、これから成し遂げることを主語ごと言い切る文（〜を…していく。）を指さない", () =>
+    assert.deepEqual(findingsOf(`# 訓示\n\n${address}現場の気づきを、幹部の皆さんが形にしていく。\n`, "speech/address"), []));
+
+  it("目的語の無い「〜ていく。」と、演説でない文書の同じ文は今までどおり指す", () => {
+    assert.equal(findingsOf(`# 訓示\n\n${address}地方の人口は減っていく。\n`, "speech/address").length, 1);
+    assert.equal(findingsOf(`# 報告\n\n${polite}現場の気づきを、担当者が形にしていく。\n`, "business/email").length, 1);
+  });
+
   it("次の文が「そんな」で受ける、場面を差し出す常体の書き出しを指さない", () =>
     assert.deepEqual(findingsOf(`# 対処法\n\nPDFが重くて送れない。そんなときの対処法を、手軽なものから順に書いていきます。${polite}\n`, "blog/tech"), []));
 
