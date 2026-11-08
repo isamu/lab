@@ -1,5 +1,6 @@
 # Weasel words: a claim credited to an unnamed crowd, or to research no one names. Read by weasel-word.
-# "studies show" followed by a citation is still reported: the sentence can name the study instead of leaning on it.
+# A phrase followed by a citation in its sentence ("previous studies showing … [11, 49]") names its source and is not
+# reported; nor is one inside a reference list's entry (a cited headline, "…, experts say").
 id: weasel-word
 language: en
 entries:
