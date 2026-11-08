@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { namedRuleRun } from "./rule-run.ts";
+import { firedRules, namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { usesBeforeDefinition, unusedDefinitions, usesOf, type DefinedTerm } from "../packages/chaff/src/structure/definition-use.ts";
@@ -28,6 +28,24 @@ describe("unused-definition: 定義したのに使っていない語", () => {
     assert.deepEqual(unused('"Seller" means Harbour Ltd. Both Sellers agree.\n'), []);
     assert.deepEqual(unused('"Policy" means an internal rule. Policies apply to staff.\n'), []);
     assert.deepEqual(unused('"Seller" means Harbour Ltd. The Seller\'s address is below.\n'), []);
+  });
+
+  it("a glossary, which defines terms for other documents, is not checked", () => {
+    const glossary = "# 用語\n\n「積雪なし」とは、地面に雪が全くない状態をいう。\n";
+    assert.ok(firedRules(ja, glossary, "docs/manual").includes("unused-definition"));
+    assert.ok(!firedRules(ja, glossary, "docs/glossary").includes("unused-definition"));
+  });
+
+  it("a quoted meaning after means glosses a word, and defines no term", () => {
+    assert.deepEqual(unused('Here, somehow "local control" means "whatever the vendor allows". Nobody asked.\n'), []);
+    assert.deepEqual(unused('Here, "local control" means whatever the vendor allows. Nobody asked.\n'), ['"local control" is defined but never used']);
+  });
+
+  it("a use whose words are split by a run of spaces or a line break counts", () => {
+    const defined = '"Support Hours" means 9:00 to 17:00 on weekdays.';
+    assert.deepEqual(unused(`${defined} We answer calls during Support      Hours.\n`), []);
+    assert.deepEqual(unused(`${defined} We answer calls during Support\nHours.\n`), []);
+    assert.deepEqual(unused(`${defined} We answer calls during SupportHours.\n`), ['"Support Hours" is defined but never used']);
   });
 
   it("a phrase led by a gerund is used when its verb is written in another form", () => {

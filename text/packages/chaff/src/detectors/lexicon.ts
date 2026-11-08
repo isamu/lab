@@ -110,6 +110,7 @@ export const hedging: Detector = (doc, options): Finding[] => {
     hedges: options.lexicon ?? [],
     frames: doc.lexicons["hedge-frame"] ?? [],
     scope: doc.lexicons["hedge-scope"] ?? [],
+    complements: doc.lexicons["hedge-complement"] ?? [],
   });
   const reported = new Set(stacked.map((entry) => entry.sentence.span.start));
   const density = hedgingDensity(doc, options).filter((finding) => !reported.has(Number(finding.values["offset"])));

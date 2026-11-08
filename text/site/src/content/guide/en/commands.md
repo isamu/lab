@@ -420,7 +420,7 @@ Where a value lies past 90% of them, it also gives the human median and that lin
 
 The measures are headings per 1000 words, sections of one or two paragraphs, section length variation and headings in a stock form.
 Then come headings split into three, introduction and conclusion headings, a closing that restates the body, and three-item lists.
-Last come bold-label list items, emoji headings, and paired pros and cons.
+Last come bold-label list items, emoji headings, and paired pros and cons (two headings, or bold labels such as **Pros:** and **Cons:**).
 
 The structure score is the count of ✗, out of the measures compared; nothing is weighted or hidden. A measure the document is too small for is listed as not measured, with the reason. The human percentiles are data, in `structure-baseline.yaml`.
 
