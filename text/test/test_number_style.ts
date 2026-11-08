@@ -1,6 +1,6 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
-import { minorityStyles, numberMarksIn, type NumberMark, type NumberWords } from "../packages/chaff/src/detectors/number-style.ts";
+import { minorityStyles, numberMarksIn, ownMarks, type NumberMark, type NumberWords } from "../packages/chaff/src/detectors/number-style.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
@@ -198,5 +198,40 @@ describe("number-style-consistency: the minority style in a document", () => {
     const source = "# 件数\n\n今月は 12件、先月は 9件、先々月は 7件でした。うち三件は同じ内容です。\n";
     assert.deepEqual(flagged(ja, source, "legal/contract"), []);
     assert.deepEqual(flagged(ja, source, "literature/fiction"), []);
+  });
+});
+
+describe("number-style-consistency: articles a document quotes", () => {
+  const fees = "# 手数料\n\n申請は 1件ごとに 2,400円、書面は 1枚ごとに 800円です。2件をまとめても 2,400円、3件なら 4,800円です。\n\n";
+  const order = "第5条　手数料の額は、一件につき二千四百円に書面一枚につき八百円とする。二件以上は合計額とする。\n";
+
+  it("leaves out the numbers of an article set out in a manual (a fee order quoted under its own heading)", () =>
+    assert.deepEqual(flagged(ja, `${fees}## 根拠条文（抜粋）\n\n${order}`, "docs/manual"), []));
+
+  it("still reports the same kanji counts written in the manual's own text", () =>
+    assert.deepEqual(flagged(ja, `${fees}## 補足\n\n手数料の額は、二千四百円に八百円を足した額です。\n`, "docs/manual"), ["count:二千四百円", "count:八百円"]));
+
+  it("compares the numbers of a document written in articles (work rules)", () => {
+    const rules =
+      "第1条　休暇は年 10日とする。\n\n第2条　申請は 3日前までとする。\n\n第3条　届出は 2回までとする。\n\n第4条　延長は 5回までとする。\n\n第5条　更新は三回までとする。\n";
+    assert.deepEqual(flagged(ja, rules, "docs/manual"), ["count:三回"]);
+  });
+});
+
+describe("ownMarks", () => {
+  const mark = (offset: number): NumberMark => ({ kind: "count", style: "digits", written: "3件", offset });
+  const article = [{ start: 100, end: 200 }];
+
+  it("drops the marks inside articles when most marks are outside", () =>
+    assert.deepEqual(ownMarks([mark(0), mark(10), mark(150)], article), [mark(0), mark(10)]));
+
+  it("keeps every mark when most are inside articles, or half are", () => {
+    assert.deepEqual(ownMarks([mark(0), mark(120), mark(150)], article), [mark(0), mark(120), mark(150)]);
+    assert.deepEqual(ownMarks([mark(0), mark(150)], article), [mark(0), mark(150)]);
+  });
+
+  it("keeps every mark without articles, and is empty for no marks", () => {
+    assert.deepEqual(ownMarks([mark(0), mark(150)], []), [mark(0), mark(150)]);
+    assert.deepEqual(ownMarks([], article), []);
   });
 });
