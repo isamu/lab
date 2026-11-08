@@ -4,7 +4,8 @@ status: stable
 how_to_find: hedging
 word_list: excessive-hedging
 # 1 つの文の重なりを数えるときの、それだけでは逃げていない包む言い方（「という状況です」、may）と、
-# 逃げの表現のうちどこで成り立つかを言うもの（「場合がある」、in some cases）。
+# 逃げの表現のうち書き手の確かさを下げないもの（「場合がある」、in some cases、「と思われている」）。
+# 英語だけの hedge-complement（knowing that の that）は、無ければ節を切らないだけなので宣言しない。
 extra_word_lists: [hedge-frame, hedge-scope]
 uses: [pos]
 severity: warning
