@@ -248,3 +248,25 @@ describe("number-without-unit: a piece count in a quantity column of hired perio
     assert.deepEqual(namedRuleRun("number-without-unit", weights, ja).findings, ["「5」に単位がありません（「数量」のほかの値には「kg」が付いています）"]);
   });
 });
+
+describe("number-without-unit: a row that measures a thing of its own", () => {
+  const metrics = (orders: string): string =>
+    `# Key numbers\n\n| Metric | Q2 | Q3 | Change |\n|---|---|---|---|\n| Visits | 41,000 | 48,600 | +18% |\n| Orders | ${orders} | −4% |\n| Conversion | 2.4% | 1.9% | −0.5 pts |\n| Mobile share | 61% | 66% | +5 pts |\n| Bounce rate | 40% | 38% | −2 pts |\n| Return rate | 12% | 11% | −1 pt |\n| Repeat rate | 30% | 32% | +2 pts |\n`;
+
+  it("valid: a count whose row is bare in the other period too, in a table of measures", () => {
+    assert.deepEqual(namedRuleRun("number-without-unit", metrics("985 | 946"), en).findings, []);
+    const ja2 = "# 主な数\n\n| 指標 | 前期 | 当期 |\n| --- | --- | --- |\n| 来場者 | 1,200 | 1,350 |\n| 満足度 | 82% | 85% |\n| 再来率 | 40% | 44% |\n";
+    assert.deepEqual(namedRuleRun("number-without-unit", ja2, ja).findings, []);
+  });
+
+  it("invalid: a bare value whose row carries the unit in the other column", () => {
+    assert.deepEqual(namedRuleRun("number-without-unit", metrics("985 | 946").replace("| 1.9% |", "| 1.9 |"), en).findings, [
+      '"1.9" has no unit (the other "Q3" values carry "%")',
+    ]);
+  });
+
+  it("invalid: a numbered column with no unit does not make the row a count", () => {
+    const numbered = "# Costs\n\n| No. | Item | Cost |\n| --- | --- | --- |\n| 1 | Design | $300 |\n| 2 | Build | 1,200 |\n| 3 | Test | $250 |\n";
+    assert.deepEqual(namedRuleRun("number-without-unit", numbered, en).findings, ['"1,200" has no unit (the other "Cost" values carry "$")']);
+  });
+});
