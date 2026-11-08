@@ -275,12 +275,16 @@ const isLawArticle = (node: StructureNode): boolean => node.kind === "article" &
 const lawArticleSpans = (doc: ProseDocument): Span[] =>
   doc.structure === undefined ? [] : inDocumentOrder(doc.structure).flatMap((node) => (isLawArticle(node) ? [node.span] : []));
 
+const isMixed = (marks: readonly NumberMark[]): boolean => new Set(marks.map((mark) => mark.style)).size > 1;
+
 /** For each kind of number, the marks written in the document's less common style. */
 export const numberStyleConsistency: Detector = (doc, options): Finding[] => {
   const words = wordsOf(doc);
   const written = doc.sentences
     .filter((sentence) => sentence.embeddedLanguage === undefined && !isCitation(sentence, doc.source))
     .flatMap((sentence) => numberMarksIn(sentence, words, doc.language, doc.source));
+  // doc.structure builds the tree when first read: a document with one style in every kind has nothing to report either way.
+  if (!KINDS.some((kind) => isMixed(written.filter((mark) => mark.kind === kind)))) return [];
   const marks = ownMarks(written, lawArticleSpans(doc));
   return KINDS.flatMap((kind) => {
     const ofKind = marks.filter((mark) => mark.kind === kind);
