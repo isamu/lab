@@ -211,6 +211,12 @@ describe("number-style-consistency: articles a document quotes", () => {
   it("still reports the same kanji counts written in the manual's own text", () =>
     assert.deepEqual(flagged(ja, `${fees}## 補足\n\n手数料の額は、二千四百円に八百円を足した額です。\n`, "docs/manual"), ["count:二千四百円", "count:八百円"]));
 
+  it("compares the numbers under numbered headings of the document's own outline (2.1 Results)", () => {
+    const paper =
+      "# Report\n\nTurnout was 40% last year, 38% the year before, 35% before that and 30% at first.\n\n## 1 Method\n\nWe count votes.\n\n## 2 Results\n\n### 2.1 Turnout\n\nTurnout rose 12% in March and fell 3 percent in May.\n";
+    assert.deepEqual(flagged(en, paper, "academic/paper"), ["percent:3 percent"]);
+  });
+
   it("compares the numbers of a document written in articles (work rules)", () => {
     const rules =
       "第1条　休暇は年 10日とする。\n\n第2条　申請は 3日前までとする。\n\n第3条　届出は 2回までとする。\n\n第4条　延長は 5回までとする。\n\n第5条　更新は三回までとする。\n";

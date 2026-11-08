@@ -5,7 +5,7 @@ import { escapeRegExp } from "../orthography.ts";
 import { QUOTATION_MARKS, isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { isCitation } from "./kutoten-consistency.ts";
 import { inDocumentOrder } from "../structure/issues.ts";
-import type { Detector, Finding, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
+import type { Detector, Finding, ProseDocument, Sentence, Span, StructureNode, Token } from "../plugin.ts";
 
 export type NumberKind = "count" | "grouping" | "percent" | "count-small" | "count-large";
 
@@ -267,8 +267,13 @@ export const ownMarks = (marks: readonly NumberMark[], articles: readonly Span[]
   return outside.length > marks.length - outside.length ? outside : marks;
 };
 
-const articleSpans = (doc: ProseDocument): Span[] =>
-  doc.structure === undefined ? [] : inDocumentOrder(doc.structure).flatMap((node) => (node.kind === "article" ? [node.span] : []));
+/** A numbered heading of the document's own outline (2.1 Corpus) is read as an article too; a law's article names its unit (第5条, Article 5). */
+const OUTLINE_NUMBER = /^[\d.]+$/u;
+
+const isLawArticle = (node: StructureNode): boolean => node.kind === "article" && !OUTLINE_NUMBER.test(String(node.attrs["label"] ?? ""));
+
+const lawArticleSpans = (doc: ProseDocument): Span[] =>
+  doc.structure === undefined ? [] : inDocumentOrder(doc.structure).flatMap((node) => (isLawArticle(node) ? [node.span] : []));
 
 /** For each kind of number, the marks written in the document's less common style. */
 export const numberStyleConsistency: Detector = (doc, options): Finding[] => {
@@ -276,7 +281,7 @@ export const numberStyleConsistency: Detector = (doc, options): Finding[] => {
   const written = doc.sentences
     .filter((sentence) => sentence.embeddedLanguage === undefined && !isCitation(sentence, doc.source))
     .flatMap((sentence) => numberMarksIn(sentence, words, doc.language, doc.source));
-  const marks = ownMarks(written, articleSpans(doc));
+  const marks = ownMarks(written, lawArticleSpans(doc));
   return KINDS.flatMap((kind) => {
     const ofKind = marks.filter((mark) => mark.kind === kind);
     const { odd, usual } = minorityStyles(ofKind, options.limit);
