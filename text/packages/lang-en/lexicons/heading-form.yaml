@@ -47,6 +47,8 @@ entries:
     position: before
   - pattern: step
     position: before
+  - pattern: option
+    position: before
   - pattern: matters
     position: after
   - pattern: explained
