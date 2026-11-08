@@ -1,4 +1,4 @@
-import type { Section, Sentence } from "../plugin.ts";
+import type { Paragraph, Section, Sentence } from "../plugin.ts";
 
 // A document that holds two texts under two top-level headings (a directive, then the agency's page about it) may write each in
 // its own register. A part whose sentences all share the register the rest of the document does not use is a text of its own,
@@ -40,3 +40,33 @@ export const separatePartSentences = <R>(
       return own ? sentences : [];
     }),
   );
+
+/** A paragraph that holds no sentence with a register: a line of links or labels (第1, 第2), as a page lays out under the text it carries. */
+const isRegisterless = <R>(paragraph: Paragraph, registerOf: (sentence: Sentence) => R | undefined): boolean =>
+  paragraph.sentences.length > 0 && paragraph.sentences.every((sentence) => registerOf(sentence) === undefined);
+
+/**
+ * The page's own note after the text it carries, without a heading of its own (a directive in である, then ※…ご覧ください。, a line of
+ * links, and なお、…ありません。): every counted sentence after the last one in the majority register, when they are MIN_SENTENCES or
+ * more, all in one other register that no sentence before them uses, and a paragraph among them holds no counted sentence. Without
+ * that line the end of the document is the text's own closing; sentences are the document's in order, lists included; with the other register used earlier too, the end is not a part of its
+ * own, and setting it apart would leave the earlier sentences a smaller minority to be pointed at.
+ */
+export const trailingPartSentences = <R>(
+  sentences: readonly Sentence[],
+  paragraphs: readonly Paragraph[],
+  registerOf: (sentence: Sentence) => R | undefined,
+  majority: R | undefined,
+): Set<Sentence> => {
+  const counted = sentences.filter((sentence) => registerOf(sentence) !== undefined);
+  const lastMajority = counted.findLastIndex((sentence) => registerOf(sentence) === majority);
+  if (majority === undefined || lastMajority < 0) return new Set();
+  const tail = counted.slice(lastMajority + 1);
+  const registers = tail.map(registerOf);
+  const before = counted.slice(0, lastMajority + 1);
+  const ownRegister =
+    tail.length >= MIN_SENTENCES && registers.every((register) => register === registers[0]) && before.every((sentence) => registerOf(sentence) === majority);
+  const after = counted[lastMajority]?.span.end ?? 0;
+  const setOff = paragraphs.some((paragraph) => paragraph.span.start >= after && isRegisterless(paragraph, registerOf));
+  return ownRegister && setOff ? new Set(tail) : new Set();
+};
