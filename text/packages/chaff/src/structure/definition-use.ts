@@ -61,13 +61,16 @@ const SINGLE_KANJI = /^\p{Script=Han}$/u;
 /** loose は最初の一字の大小を問わない（文頭の "Personal data"）。exact は書いたとおりだけ（"Access" は "early access" に当たらない）。 */
 type CaseMatch = "loose" | "exact";
 
+/** 語の間の空白は、続いた空白や改行でもよい（Normal Business\nHours、桁を揃えた写しの Normal Business      Hours）。 */
+const spacedLoosely = (escaped: string): string => escaped.replace(/ +/gu, String.raw`\s+`);
+
 /**
  * 語の現れを探す形。英字で始まる・終わる語は語の途中に当たらない（"Term" は "Terms" には当たり、"Termination" には当たらない）。
  * 複数形と所有の形（Services、Policies、Seller's）は同じ語の使用。
  */
 const termPattern = (term: string, caseMatch: CaseMatch): RegExp => {
   const first = term.charAt(0);
-  const rest = /\p{Ll}y$/u.test(term) ? `${escapeRegExp(term.slice(1, -1))}(?:y|ie)` : escapeRegExp(term.slice(1));
+  const rest = spacedLoosely(/\p{Ll}y$/u.test(term) ? `${escapeRegExp(term.slice(1, -1))}(?:y|ie)` : escapeRegExp(term.slice(1)));
   const caseless = caseMatch === "exact" || first.toUpperCase() === first.toLowerCase();
   const head = caseless ? escapeRegExp(first) : `[${escapeRegExp(first.toUpperCase())}${escapeRegExp(first.toLowerCase())}]`;
   if (SINGLE_KANJI.test(term)) return new RegExp(String.raw`(?<!\p{Script=Han})${head}`, "gu");

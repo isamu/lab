@@ -32,6 +32,12 @@ export const definitionScopeDepth = (text: string): number | undefined =>
 const POINTER = /^ has the meaning given (?:in|by)\b/u;
 const isPointer = (text: string, end: number): boolean => POINTER.test(text.slice(end - " has the meaning".length));
 
+/**
+ * "necessary" means "needful": a quoted meaning after means glosses what a word says or has come to say, in an argument
+ * about the word, and names no term for the text to use.
+ */
+const GLOSS = /^ ["“]/u;
+
 /** ("Seller") has no word that says it defines: the same parentheses quote an example ("silently fails"). */
 const BARE = /^\(["“]/u;
 
@@ -103,6 +109,7 @@ const patternDefinitions = (text: string): Mention[] =>
       const isBare = BARE.test(match[0]);
       if (term === undefined || (isBare && readsAsExample(term))) return [];
       const end = match.index + match[0].length;
+      if (GLOSS.test(text.slice(end))) return [];
       const inline = match[0].startsWith("(");
       const namesAParty = inline && APPLIES.test(text);
       const scope = isPointer(text, end) || namesAParty ? { scope: "local" } : {};
