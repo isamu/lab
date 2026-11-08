@@ -108,11 +108,11 @@ const OBJECT_START = new Set(["DET", "PRON", "NUM"]);
  * 読み違い（the federal funds rate の rate、small business subcontracting）。窓の中に機能語があれば言い回し（your contract says）。
  */
 /** 窓の最後の語が index で、その前が名詞と形容詞だけの用語（先頭の冠詞は許す）か。 */
-const closesTerm = (tokens: readonly Token[], index: number, window: Span): boolean => {
+const closesTerm = (tokens: readonly Token[], index: number, window: Span, minWords: number = MIN_COMPOUND_WORDS): boolean => {
   const touched = tokens.flatMap((token, at) => (overlaps(token, window) ? [at] : []));
   if (touched.at(-1) !== index) return false;
   const before = touched.slice(0, -1).filter((at, order) => !(order === 0 && tokens[at]?.pos === "DET"));
-  return before.length >= MIN_COMPOUND_WORDS && before.every((at) => COMPOUND_POS.has(tokens[at]?.pos ?? ""));
+  return before.length >= minWords && before.every((at) => COMPOUND_POS.has(tokens[at]?.pos ?? ""));
 };
 
 const endsNounCompound = (tokens: readonly Token[], index: number, window: Span, unit: LengthUnit): boolean => {
@@ -145,11 +145,22 @@ const opensNounSlot = (token: Token | undefined): boolean =>
 const gerundAsNoun = (tokens: readonly Token[], index: number, unit: LengthUnit): boolean =>
   unit === "word" && tokens[index]?.features?.["VerbForm"] === "Ger" && opensNounSlot(tokens[index - 1]);
 
+const MODALS = new Set(["can", "could", "may", "might", "must", "shall", "should", "will", "would"]);
+
+/**
+ * 英語で、名詞の主語のすぐ後ろの助動詞 should や must で窓が終わる（the Manager should）。窓にあるのは誰がするかだけで、何をするかは
+ * 窓の外で出てくるたびに違う。手順書は手順ごとに役割を名指しし、名指しを繰り返すから誰の務めかが正確に読める。代名詞の主語（you should）は外さない。
+ */
+const modalAfterSubject = (tokens: readonly Token[], index: number, window: Span, unit: LengthUnit): boolean => {
+  const token = tokens[index];
+  return unit === "word" && token?.pos === "AUX" && MODALS.has(token.lemma ?? token.surface.toLowerCase()) && closesTerm(tokens, index, window, 1);
+};
+
 const countsAsPredicate = (tokens: readonly Token[], index: number, window: Span, unit: LengthUnit): boolean => {
   const token = tokens[index];
   if (token === undefined || !PREDICATE_POS.has(token.pos) || !overlaps(token, window)) return false;
   if (modifiesNoun(tokens, index, unit) || namePartAt(tokens, index, unit) || endsNounCompound(tokens, index, window, unit)) return false;
-  if (gerundAsNoun(tokens, index, unit) || copulaAfterTerm(tokens, index, window, unit)) return false;
+  if (gerundAsNoun(tokens, index, unit) || copulaAfterTerm(tokens, index, window, unit) || modalAfterSubject(tokens, index, window, unit)) return false;
   return !isCut(token, window) || !onlyNamesBeside(tokens, index, window, unit);
 };
 
