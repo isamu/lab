@@ -138,6 +138,12 @@ another added. Headings are matched through a rephrasing; numbers are not.
 /plugin install chaff@lab
 ```
 
+Or, without the plugin:
+
+```bash
+npx skills add isamu/lab --skill chaff
+```
+
 Then ask it to check a document. The skill picks the genre for the kind of document, runs chaff
 and reads each finding back to you. It changes nothing on its own. Codex and Cursor load the same
 [`SKILL.md`](text/packages/chaff/skills/chaff/SKILL.md) directly.
