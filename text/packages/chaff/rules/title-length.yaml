@@ -69,6 +69,8 @@ example:
     config: { genre: blog/tech }
     before: |
       ## 2025年度から始まる新しい在庫管理システムへの移行に伴う各店舗での作業手順と注意点について
+
+      2025年度の移行で各店舗が行う作業と、注意する点をまとめます。
     after: |
       ## 在庫システムの移行手順
 
@@ -77,6 +79,8 @@ example:
     config: { genre: blog/tech }
     before: |
       ## What every store needs to do during the move to the new inventory system in the 2025 financial year
+
+      What every store does during the move in the 2025 financial year.
     after: |
       ## Moving to the new inventory system
 
