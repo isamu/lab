@@ -48,7 +48,7 @@ const isRegisterless = <R>(paragraph: Paragraph, registerOf: (sentence: Sentence
 /**
  * The page's own note after the text it carries, without a heading of its own (a directive in である, then ※…ご覧ください。, a line of
  * links, and なお、…ありません。): every counted sentence after the last one in the majority register, when they are MIN_SENTENCES or
- * more, all in one other register that no sentence before them uses, and a paragraph among them holds no counted sentence. Without
+ * more, all in one other register that no sentence before them uses, and a paragraph between the first and the last of them holds no counted sentence. Without
  * that line the end of the document is the text's own closing; sentences are the document's in order, lists included; with the other register used earlier too, the end is not a part of its
  * own, and setting it apart would leave the earlier sentences a smaller minority to be pointed at.
  */
@@ -66,7 +66,8 @@ export const trailingPartSentences = <R>(
   const before = counted.slice(0, lastMajority + 1);
   const ownRegister =
     tail.length >= MIN_SENTENCES && registers.every((register) => register === registers[0]) && before.every((sentence) => registerOf(sentence) === majority);
-  const after = counted[lastMajority]?.span.end ?? 0;
-  const setOff = paragraphs.some((paragraph) => paragraph.span.start >= after && isRegisterless(paragraph, registerOf));
+  const from = tail[0]?.span.end ?? 0;
+  const to = tail.at(-1)?.span.start ?? 0;
+  const setOff = paragraphs.some((paragraph) => paragraph.span.start >= from && paragraph.span.end <= to && isRegisterless(paragraph, registerOf));
   return ownRegister && setOff ? new Set(tail) : new Set();
 };
