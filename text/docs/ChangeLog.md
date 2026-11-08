@@ -2,6 +2,48 @@
 
 Newest first.
 
+## 0.43.0 — 2026-11-08
+
+This release reads two more shapes of AI-written structure and fixes false positives found by judging the 0.42.0
+findings in isamu/chaff-corpus.
+
+### AI-likeness
+
+- ai-structure reads bold Pros / Cons (メリット / デメリット) labels as a pros / cons pair (#2295) and numbered Option
+  headings as a stock heading form (#2296).
+- excessive-hedging does not stack a reported view (と思われている) or a modal inside a content clause on an earlier
+  hedge (#2294).
+- weasel-word leaves a phrase that names its source: an in-text citation, a reference entry, からは「…」 (#2298).
+- ngram-repetition does not count a role named before a modal ("the Manager should") (#2301).
+
+### Rules
+
+- Fewer false findings on real documents:
+  - doubled-word skips a doubled noun in a table a converter ran together (#2274), reads a noun said twice and quoted
+    with と as a chant (#2275), and accepts 時点時点 and 是非是非 (#2276).
+  - adverb-overuse does not count a capitalised -ly name in mid-sentence (July) (#2277).
+  - undefined-acronym reads two capitalised words of five letters or more as words (#2278) and CM (テレビCM) as an
+    everyday word (#2279).
+  - repeated-sentence-ending counts a refrain of the same closing phrase once (#2280) and skips questions run together
+    inside one sentence (#2283).
+  - no-mixed-desumasu points at neither register when a document has as many of each (#2281), sets apart a page's note
+    after the text it carries (#2306), and leaves a speech's 〜を…ていく declaration alone (#2307).
+  - bracket-width-consistency compares a Latin line tag and an item's address with the line labels (#2282) and leaves
+    out a self-citation of the document's own heading (#2286).
+  - number-style-consistency leaves out a section number after § and a count of nights (#2284), and the numbers of law
+    articles a document quotes (#2304).
+  - orthographic-variant compares a noun joined to another (物やサービス) apart from the dependent noun (#2285), and
+    決意をもって and 覚悟をもって as the attitude idiom (#2303).
+  - lookalike-character does not report an example shown next to words naming such characters (#2288).
+  - no-doubled-joshi reads a long name given a short one (以下「…」という) and a name quoted once and written again
+    bare as one noun (#2289, #2291).
+  - unknown-word accepts an -nce spelling of an -nse word (recompence) (#2290).
+  - unused-definition counts spaced uses, reads quoted glosses as glosses, and is off for glossaries (#2293).
+  - bracket-nesting allows three levels in literature (#2297).
+  - title-length reads a Japanese heading ending in か as a question (#2299).
+  - number-without-unit leaves a count whose row is bare in another column too (#2302).
+  - fact-conflict leaves reference-entry fields, era years and two rows of one name (#2305).
+
 ## 0.42.0 — 2026-11-04
 
 This release catches more of the stock phrasing in AI-written emails, proposals and advice, and fixes false positives
