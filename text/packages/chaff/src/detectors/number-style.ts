@@ -4,7 +4,8 @@
 import { escapeRegExp } from "../orthography.ts";
 import { QUOTATION_MARKS, isWithinAny, quotedSpans } from "../quoted-span.ts";
 import { isCitation } from "./kutoten-consistency.ts";
-import type { Detector, Finding, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
+import { inDocumentOrder } from "../structure/issues.ts";
+import type { Detector, Finding, ProseDocument, Sentence, Span, StructureNode, Token } from "../plugin.ts";
 
 export type NumberKind = "count" | "grouping" | "percent" | "count-small" | "count-large";
 
@@ -253,12 +254,34 @@ const findingOf = (mark: NumberMark, usual: NumberMark, count: number, of: numbe
   variant: mark.kind,
 });
 
+const isInArticle = (mark: NumberMark, articles: readonly Span[]): boolean =>
+  isWithinAny(articles, { start: mark.offset, end: mark.offset + mark.written.length });
+
+/**
+ * The marks of the document's own text. A document that is not a statute and sets out articles where most of its numbers are
+ * outside them (a manual quoting the order its fees rest on) quotes the law there, and the law keeps its own numerals
+ * (二千四百円). A document whose numbers are mostly inside its articles (work rules) is written in articles itself.
+ */
+export const ownMarks = (marks: readonly NumberMark[], articles: readonly Span[]): readonly NumberMark[] => {
+  const outside = marks.filter((mark) => !isInArticle(mark, articles));
+  return outside.length > marks.length - outside.length ? outside : marks;
+};
+
+/** A numbered heading of the document's own outline (2.1 Corpus) is read as an article too; a law's article names its unit (第5条, Article 5). */
+const OUTLINE_NUMBER = /^[\d.]+$/u;
+
+const isLawArticle = (node: StructureNode): boolean => node.kind === "article" && !OUTLINE_NUMBER.test(String(node.attrs["label"] ?? ""));
+
+const lawArticleSpans = (doc: ProseDocument): Span[] =>
+  doc.structure === undefined ? [] : inDocumentOrder(doc.structure).flatMap((node) => (isLawArticle(node) ? [node.span] : []));
+
 /** For each kind of number, the marks written in the document's less common style. */
 export const numberStyleConsistency: Detector = (doc, options): Finding[] => {
   const words = wordsOf(doc);
-  const marks = doc.sentences
+  const written = doc.sentences
     .filter((sentence) => sentence.embeddedLanguage === undefined && !isCitation(sentence, doc.source))
     .flatMap((sentence) => numberMarksIn(sentence, words, doc.language, doc.source));
+  const marks = ownMarks(written, lawArticleSpans(doc));
   return KINDS.flatMap((kind) => {
     const ofKind = marks.filter((mark) => mark.kind === kind);
     const { odd, usual } = minorityStyles(ofKind, options.limit);
