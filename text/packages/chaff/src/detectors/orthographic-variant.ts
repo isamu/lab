@@ -46,7 +46,7 @@ type Placed = KeyedWord & {
   readonly quoted?: Quoted | undefined;
   /** The name a word stands in, as written. */
   readonly name?: string | undefined;
-  /** A full verb read as a helper only for the て-form before it (並んで見た). */
+  /** A full verb read as a helper only for the て-form before it, whose verb takes no object (並んで見た). */
   readonly teFormOnly?: boolean;
   /** The verb whose て-form stands before it (まとめる in まとめてみる). */
   readonly teVerb?: string;
@@ -166,14 +166,24 @@ const readingWords = (sentence: Sentence, isOpen: IsOpen, skips: Skips): Placed[
       const local = token.span.start - sentence.span.start;
       if (key === undefined || token.lemma === undefined || !isOpen(local, local + token.surface.length)) return [];
       const compoundHead = isCompoundHead(token, tokens, at, skips.phraseSuffixes);
-      return [{ key, spelling: token.lemma, sentence, offset: token.span.start, compoundHead, ...teFormOf(word) }];
+      return [{ key, spelling: token.lemma, sentence, offset: token.span.start, compoundHead, ...teFormOf(word, tokens, at) }];
     }),
   ];
 };
 
-const teFormOf = (word: InContext): Pick<Placed, "teFormOnly" | "teVerb"> => {
+const OBJECT_PARTICLE = "を";
+
+/** The て-form verb takes an object (芽を残して置く): the verb after it has none of its own, and is the helper. */
+const teVerbHasObject = (word: InContext, tokens: readonly Token[], at: number): boolean => {
+  const teVerbAt = word.previous?.pos === "SCONJ" ? at - 2 : at - 1;
+  const particle = tokens[teVerbAt - 1];
+  return particle?.pos === "ADP" && particle.surface === OBJECT_PARTICLE;
+};
+
+const teFormOf = (word: InContext, tokens: readonly Token[], at: number): Pick<Placed, "teFormOnly" | "teVerb"> => {
   const teVerb = teFormVerbOf(word);
-  return { ...(isHelperByTeFormOnly(word) ? { teFormOnly: true } : {}), ...(teVerb === undefined ? {} : { teVerb }) };
+  const doubtful = isHelperByTeFormOnly(word) && !teVerbHasObject(word, tokens, at);
+  return { ...(doubtful ? { teFormOnly: true } : {}), ...(teVerb === undefined ? {} : { teVerb }) };
 };
 
 const BOUND_USE = "|bound|";
