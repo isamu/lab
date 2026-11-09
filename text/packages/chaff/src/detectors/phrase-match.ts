@@ -1,5 +1,5 @@
 import type { Detector, DetectorOptions, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence } from "../plugin.ts";
-import { entryEnds, entryIn } from "./lexicon-match.ts";
+import { entryEnds, entryIn, entryOpens } from "./lexicon-match.ts";
 import { externalLinkTitleSpans } from "../link-title.ts";
 import { mentionCuesOf, onlyInTitles, onlyMentioned } from "./mentioned-phrase.ts";
 import { closingSentences } from "../closing-paragraph.ts";
@@ -23,9 +23,12 @@ type Hit = { readonly sentence: Sentence; readonly matched: string };
 /** Whether the entry's words in the sentence count as a use. phrase-match counts every one. */
 type IsUsed = (sentence: Sentence, entry: LexiconEntry) => boolean;
 
+/** An entry marked opens counts only at the head of the sentence: 「近年、」 opens a stock opening, 「その後、近年の」 is a plain word. */
+const writtenIn = (sentence: Sentence, entry: LexiconEntry): boolean => (entry.opens === true ? entryOpens(sentence, entry) : entryIn(sentence, entry));
+
 const hitsIn = (sentences: readonly Sentence[], lexicon: Lexicon, isUsed: IsUsed = () => true): Hit[] =>
   sentences.flatMap((sentence) => {
-    const matched = lexicon.find((entry) => entryIn(sentence, entry) && isUsed(sentence, entry));
+    const matched = lexicon.find((entry) => writtenIn(sentence, entry) && isUsed(sentence, entry));
     return matched === undefined ? [] : [{ sentence, matched: quotedPattern(matched.pattern) }];
   });
 

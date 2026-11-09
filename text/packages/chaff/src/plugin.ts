@@ -77,6 +77,8 @@ export type LexiconEntry = {
   readonly genres?: readonly string[] | undefined;
   /** The entry counts only in a heading: a title phrase that body text uses plainly. A detector that reads headings honours it. */
   readonly heading_only?: boolean | undefined;
+  /** The entry counts only where it opens the sentence (近年、… but not その後、近年の…). phrase-match honours it. */
+  readonly opens?: boolean | undefined;
   /** pattern を adapter が語に分けたもの。品詞が読めるときだけ core が入れる。語彙表を書く側は書かない。 */
   readonly tokens?: readonly Token[] | undefined;
 };

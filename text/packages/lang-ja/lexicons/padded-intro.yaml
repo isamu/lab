@@ -2,8 +2,11 @@
 id: padded-intro
 language: ja
 entries:
+  # 文の頭でだけ書き出しの決まり文句。文の途中の「近年の災害」「近年は」は時を言う普通の語。
   - pattern: 近年
+    opens: true
   - pattern: 昨今
+    opens: true
   - pattern: 注目されています
   - pattern: 注目を集めています
   - pattern: 重要性が高まっています
