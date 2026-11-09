@@ -17,6 +17,7 @@ import { voiceAt, voiceStarts } from "../voice-parts.ts";
 import {
   isCopulaReadAsVerb,
   isCutFromKatakana,
+  isHelperByTeFormOnly,
   isNumeral,
   isPieceOfKatakanaRun,
   isTouching,
@@ -44,6 +45,8 @@ type Placed = KeyedWord & {
   readonly quoted?: Quoted | undefined;
   /** The name a word stands in, as written. */
   readonly name?: string | undefined;
+  /** A full verb read as a helper only for the て-form before it (並んで見た). */
+  readonly teFormOnly?: boolean;
 };
 
 /** Parts of speech that carry a word of their own. Particles and endings are written one way by the grammar. */
@@ -155,13 +158,33 @@ const readingWords = (sentence: Sentence, isOpen: IsOpen, skips: Skips): Placed[
       if (inRun.has(at)) return [];
       const next = tokens[at + 1];
       const token = asNounWhereNominal(written, next, skips.phraseSuffixes, skips.nouns);
-      const key = readingKeyOf({ token, previous: tokens[at - 1], before: tokens[at - 2], following: tokens.slice(at + 1, at + 3) }, skips);
+      const word = { token, previous: tokens[at - 1], before: tokens[at - 2], following: tokens.slice(at + 1, at + 3) };
+      const key = readingKeyOf(word, skips);
       const local = token.span.start - sentence.span.start;
       if (key === undefined || token.lemma === undefined || !isOpen(local, local + token.surface.length)) return [];
       const compoundHead = isCompoundHead(token, tokens, at, skips.phraseSuffixes);
-      return [{ key, spelling: token.lemma, sentence, offset: token.span.start, compoundHead }];
+      return [{ key, spelling: token.lemma, sentence, offset: token.span.start, compoundHead, ...(isHelperByTeFormOnly(word) ? { teFormOnly: true } : {}) }];
     }),
   ];
+};
+
+const BOUND_USE = "|bound|";
+const FREE_USE = "|free|";
+
+/**
+ * A verb after a て-form that may be the helper or the next act (並んで見た) is read as the full verb where the document writes
+ * the full verb that way and its sure helpers (投資してみる) the other way: the writer keeps the helper in kana on purpose.
+ */
+const withTeFormFullVerbs = (words: readonly Placed[]): Placed[] => {
+  const spellingsOf = (key: string, sure: boolean): Set<string> =>
+    new Set(words.filter((word) => word.key === key && (!sure || word.teFormOnly !== true)).map((word) => word.spelling));
+  return words.map((word) => {
+    if (word.teFormOnly !== true || !word.key.includes(BOUND_USE)) return word;
+    const freeKey = word.key.replace(BOUND_USE, FREE_USE);
+    const sureHelpers = spellingsOf(word.key, true);
+    const isFullVerbSpelling = spellingsOf(freeKey, false).has(word.spelling) && sureHelpers.size > 0 && !sureHelpers.has(word.spelling);
+    return isFullVerbSpelling ? { ...word, key: freeKey } : word;
+  });
 };
 
 /**
@@ -319,7 +342,9 @@ const cellPlace = (cell: TableCell, names: Names): Place => {
 
 /** The odd spellings among places that speak in one voice. */
 const findingsIn = (placed: readonly Place[], skips: Skips, { isWord, nameJoiners }: Reading, limit: number): Finding[] => {
-  const reading = byKanji(placed.flatMap(({ sentence, isOpen }) => readingWords(withCutNounsJoined(sentence, skips.nouns), isOpen, skips)));
+  const reading = byKanji(
+    withTeFormFullVerbs(placed.flatMap(({ sentence, isOpen }) => readingWords(withCutNounsJoined(sentence, skips.nouns), isOpen, skips))),
+  );
   const katakana = placed.flatMap(({ sentence, isOpen }) => katakanaWords(sentence, isOpen));
   const runs = placed.flatMap(({ sentence, isOpen }) => katakanaRunWords(sentence, isOpen));
   const latin = withoutQuotedSpellings(
