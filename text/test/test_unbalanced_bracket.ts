@@ -223,12 +223,14 @@ describe("unbalanced-bracket: the mouth of an emoticon is not a bracket", () => 
 
   it("a bracket after a colon inside a word still counts", () => {
     assert.deepEqual(findingsOf("The ratio, see note:) is fixed.\n\nThe list is final.\n", en), ['")" closes nothing that was opened']);
+    assert.deepEqual(findingsOf("Leave a space after the colon (:) between the two names.\n", en), []);
   });
 
   it("isEmoticonMouth", () => {
     assert.equal(isEmoticonMouth(':-)"', 2), true);
     assert.equal(isEmoticonMouth(" ;(", 2), true);
     assert.equal(isEmoticonMouth("note:)", 5), false);
+    assert.equal(isEmoticonMouth("(:)", 2), false);
     assert.equal(isEmoticonMouth("a)", 1), false);
     assert.equal(isEmoticonMouth("", 0), false);
   });

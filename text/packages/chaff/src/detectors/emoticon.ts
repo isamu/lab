@@ -3,8 +3,11 @@
  * text is the section, offset the bracket's position.
  */
 
-/** The eyes and an optional nose right before the mouth, at the start of a word: ":", ";" or "=", then "-" or "'". */
-const FACE_BEFORE = /(?:^|[\s"'“‘(])[:;=][-']?$/u;
+/**
+ * The eyes and an optional nose right before the mouth, at the start of a word or after an opening quote: ":", ";" or "=",
+ * then "-" or "'". Not after an opening bracket: "(:)" names the colon.
+ */
+const FACE_BEFORE = /(?:^|[\s"'“‘])[:;=][-']?$/u;
 
 /** After the mouth: the end, a space, a closing quote or punctuation. A letter or digit would make it part of a word. */
 const FACE_AFTER = /^(?:$|[\s"'”’),.;:!?])/u;
