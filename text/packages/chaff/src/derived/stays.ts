@@ -94,8 +94,11 @@ export const nightsDaysPairs = (
   });
 
 /** 日数が泊数より一つ多くない組。 */
+/** 「43 days and 43 nights」: 日数を先に書いて泊数と同じ数なら、昼も夜もずっとの意味で、泊まりの数ではない。 */
+const isDayAndNight = (pair: { nights: Count; days: Count }): boolean => pair.days.start < pair.nights.start && pair.days.amount === pair.nights.amount;
+
 export const nightsDaysMismatches = (pairs: readonly { nights: Count; days: Count }[]): NightsDaysMismatch[] =>
-  pairs.flatMap((pair) => (pair.days.amount === pair.nights.amount + 1 ? [] : [{ ...pair, expected: pair.nights.amount + 1 }]));
+  pairs.flatMap((pair) => (pair.days.amount === pair.nights.amount + 1 || isDayAndNight(pair) ? [] : [{ ...pair, expected: pair.nights.amount + 1 }]));
 
 const keyOf = (text: string): string => withoutEdgeMarks(text).normalize("NFKC").toLowerCase().replace(/\s+/gu, " ");
 
