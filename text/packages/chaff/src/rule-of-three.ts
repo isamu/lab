@@ -6,6 +6,7 @@ import type { BulletList } from "./plugin.ts";
  * 箇条書きが少ないと、1 つで割合が大きく動く（4 つなら 25 ポイント）。そのときは全部が 3 項目のときだけ報告する。
  * 2 つでも測る。生成文の報告書は「要因 3 つ」「提言 3 つ」の 2 つの箇条書きで終わることが多く、人の文書で 2 つとも 3 項目は少ない。
  * 本文の最初の文より前の箇条書き（題・日付・見出しのすぐ下の要点や概要）は数えない。項目の数はサイトの型が決めている。
+ * どの項目も「札：数」の内訳も、ちょうど 3 項目とは数えない。
  */
 export type ThreeShare = { readonly count: number; readonly total: number; readonly share: number; readonly first: BulletList };
 
@@ -48,8 +49,33 @@ const isProseLine = (line: string): boolean => !NOT_PROSE_LINE.test(line) && SEN
 /** 本文の最初の文がある行の頭。それより前は題・日付・見出しだけ。文が無ければ文書の終わり。 */
 export const firstProseOffset = (source: string): number => [...source.matchAll(/^.*$/gmu)].find(([line]) => isProseLine(line))?.index ?? source.length;
 
+const ITEM_MARKER = /^\s*(?:[-*+]|\d+[.)])\s+/u;
+const LABEL_COLON = /[:：]/u;
+const DIGIT = /[0-9０-９]/u;
+const EMPHASIS = /[*_]/u;
+/** 札と値の長さの上限。「執務エリアの通路沿い」「大きめを2鉢」は入り、文になった値は入らない。 */
+const MAX_LABEL = 20;
+const MAX_VALUE = 12;
+
+/** 太字でない短い札とコロン、その後ろに数字を含む短い値だけがある項目（「受付：大きめを2鉢」「Rent: $1,200」）。 */
+const isLabelledFigure = (item: string): boolean => {
+  const line = item.replace(ITEM_MARKER, "").split("\n")[0] ?? "";
+  const colon = line.search(LABEL_COLON);
+  const label = line.slice(0, colon);
+  const value = line.slice(colon + 1).trim();
+  return colon > 0 && label.length <= MAX_LABEL && !EMPHASIS.test(label) && value.length <= MAX_VALUE && DIGIT.test(value);
+};
+
+/**
+ * どの項目も「札：数」の箇条書き（置き場所ごとの鉢の数、費目ごとの金額）。数の内訳で、項目の数は中身が決めている。
+ * 札の側だけに数がある日程（「2026年12月：承認」）は内訳ではない。太字の札や、値が文になった項目（「**件数**：月平均 420 件届く」）は、
+ * 生成文が理由を 3 つに揃える形なので内訳と読まない。
+ */
+export const isFigureBreakdown = (source: string, list: BulletList): boolean =>
+  list.itemSpans.length > 0 && list.itemSpans.every((item) => isLabelledFigure(source.slice(item.start, item.end)));
+
 const isExactlyThree = (source: string, list: BulletList, openWords: readonly string[]): boolean =>
-  list.items.length === THREE && !continuesBeyond(source, list, openWords);
+  list.items.length === THREE && !continuesBeyond(source, list, openWords) && !isFigureBreakdown(source, list);
 
 /** 報告するときの数。報告しないときは undefined。 */
 export const threeShare = (source: string, allLists: readonly BulletList[], openWords: readonly string[], limit: number): ThreeShare | undefined => {
