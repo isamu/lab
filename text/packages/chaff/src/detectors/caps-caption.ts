@@ -157,3 +157,13 @@ export const bracketPlaceholderSpans = (source: string): Span[] =>
   [...source.matchAll(BRACKETS)]
     .filter((hit) => isCapitalPlaceholder(hit[0], source.slice(hit.index + hit[0].length, hit.index + hit[0].length + 1)))
     .map((hit) => ({ start: hit.index, end: hit.index + hit[0].length }));
+
+const OPENING_QUOTE = /["“‘']$/u;
+const CLOSING_QUOTE = /^[.,;:!?]?["”’']/u;
+
+/**
+ * A capital run that is a whole quotation (mark it “THIS DOCUMENT CONTAINS CONFIDENTIAL INFORMATION.”): the words a reader is to
+ * write or will see as they stand, quoted from a label or a sign, not the writer raising their voice.
+ */
+export const isWholeQuotation = (source: string, start: number, end: number): boolean =>
+  OPENING_QUOTE.test(source.slice(Math.max(0, start - 1), start)) && CLOSING_QUOTE.test(source.slice(end, end + 2));
