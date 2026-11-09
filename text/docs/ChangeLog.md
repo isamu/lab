@@ -2,6 +2,51 @@
 
 Newest first.
 
+## 0.44.0 — 2026-11-10
+
+This release catches more AI-written list and phrase shapes and fixes false positives found by judging the 0.43.0
+findings in isamu/chaff-corpus, many of them in model contracts and research papers.
+
+### AI-likeness
+
+- bold-label-list reports three list items that each open with a bold lead sentence (#2321).
+- ai-tell reports a single 橋渡し in a Japanese blog post (#2312).
+- padded-intro: a lexicon entry can count only where it opens the sentence (`opens: true`); 近年 and 昨今 are set so
+  (#2318).
+- rule-of-three does not count a list of short label：figure items (#2317).
+- bold-density does not count a bold run that is only a quotation or a code span (#2315).
+- cliche and honesty-marker skip a phrase whose every use is in the title of a reference-list link (#2316).
+- expletive-construction does not count an "It is" opening whose only "that" follows ", but" (#2319).
+
+### Rules
+
+- Contracts:
+  - obligation-without-deadline reads a time set in a paragraph the duty's article points at (前項, 本条第N項), and
+    を目途に (#2327).
+  - reference-title-mismatch reads a longer form of the document's own name and 同第N条 as pointing into another
+    document (#2330).
+  - defined-term-form reads the definition marker (以下本契約において同じ) as no added word (#2332).
+  - requirement-smell does not read 等 right after a defined term as an open list (#2334).
+  - request-without-deadline reads the decision date in a proposal's schedule section (#2311).
+- Fewer false findings on real documents:
+  - no-doubled-joshi reads a chain through a place word (ラックの下の段) as one place name (#2325).
+  - orthographic-variant reads a kanji verb after a て-form as the full verb where the document keeps helpers in kana
+    (#2326).
+  - number-style-consistency does not count a numeral that opens a longer word (二枚貝) (#2310).
+  - katakana-density does not count the katakana words of the document's title (#2314).
+  - all-caps-shouting skips a capital run that is a whole quotation (#2313).
+  - duration-mismatch reads "N days and N nights" as round the clock (#2322).
+  - reference-topic-missing reads a Latin link word only as a whole word (#2323).
+  - absolute-exception leaves an absolute word right after a negation (#2324).
+  - percent-sum-mismatch skips two percentages joined into a range or a change (#2328).
+  - unbalanced-bracket reads the mouth of an emoticon as no bracket (#2329).
+  - unqualified-superlative reads "the best-scoring one" as picking from a named set (#2331).
+  - max-paragraph-length skips a block whose line breaks were lost (#2336).
+  - redundant-expression skips a pair running into a hyphenated compound ("true fact-check") (#2337).
+- Fewer misses:
+  - agreement-slip catches a plural determiner after a preposition ("on these flagged post") (#2333).
+  - hyphen-as-dash finds a spaced hyphen beside a code span (#2335).
+
 ## 0.43.0 — 2026-11-08
 
 This release reads two more shapes of AI-written structure and fixes false positives found by judging the 0.42.0
