@@ -6,6 +6,7 @@ import { mergeSpans } from "../span-merge.ts";
 import { firstEndingAfter } from "../soft-break.ts";
 import { isLabelClose, isLabelInAside } from "./bracket-label.ts";
 import { isInchMark } from "./inch-mark.ts";
+import { isEmoticonMouth } from "./emoticon.ts";
 
 /**
  * 括弧の組。どの言語でも同じ字の決まりなので、語彙表ではなくここに置く。family は形（丸・角）で、全角と半角は同じ形の別の幅。
@@ -95,7 +96,7 @@ export const bracketProblems = (text: string): BracketProblem[] => {
   const heads = paragraphHeads(text);
   [...text.matchAll(MARKS)].forEach((match) => {
     const quoteOpen = scan.open.some((entry) => entry.bracket.family === "quote");
-    if (isInchMark(text, match.index, quoteOpen)) return;
+    if (isInchMark(text, match.index, quoteOpen) || isEmoticonMouth(text, match.index)) return;
     const opening = BY_OPEN.get(match[0]);
     const closing = BY_CLOSE.get(match[0]);
     if (opening !== undefined) openWith(scan, opening, match.index, heads.has(match.index));

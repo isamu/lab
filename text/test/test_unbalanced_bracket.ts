@@ -6,6 +6,7 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { bracketProblems, withRunOnRestored } from "../packages/chaff/src/detectors/unbalanced-bracket.ts";
 import { isLabelClose, isLabelInAside } from "../packages/chaff/src/detectors/bracket-label.ts";
 import { isInchMark } from "../packages/chaff/src/detectors/inch-mark.ts";
+import { isEmoticonMouth } from "../packages/chaff/src/detectors/emoticon.ts";
 
 // 括弧の組（unbalanced-bracket）。例文はすべて自作。
 
@@ -210,5 +211,25 @@ describe("isInchMark", () => {
     assert.equal(isInchMark("2.5 “Hg” hit", 4, false), false);
     assert.equal(isInchMark("2.5 (Hg", 4, false), false);
     assert.equal(isInchMark("", 0, false), false);
+  });
+});
+
+describe("unbalanced-bracket: the mouth of an emoticon is not a bracket", () => {
+  it("an emoticon quoted inside a parenthesis leaves the parenthesis whole", () => {
+    assert.deepEqual(findingsOf('It reads symbols (e.g., ":-)"), short forms (e.g., "LOL"), and slang.\n', en), []);
+    assert.deepEqual(findingsOf("She signed off with a wink ;) and left (for good).\n", en), []);
+    assert.deepEqual(findingsOf('A sad face (":(") is scored low.\n', en), []);
+  });
+
+  it("a bracket after a colon inside a word still counts", () => {
+    assert.deepEqual(findingsOf("The ratio, see note:) is fixed.\n\nThe list is final.\n", en), ['")" closes nothing that was opened']);
+  });
+
+  it("isEmoticonMouth", () => {
+    assert.equal(isEmoticonMouth(':-)"', 2), true);
+    assert.equal(isEmoticonMouth(" ;(", 2), true);
+    assert.equal(isEmoticonMouth("note:)", 5), false);
+    assert.equal(isEmoticonMouth("a)", 1), false);
+    assert.equal(isEmoticonMouth("", 0), false);
   });
 });
