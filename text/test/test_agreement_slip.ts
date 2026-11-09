@@ -257,6 +257,17 @@ describe("agreement-slip — 英語", () => {
     assert.deepEqual(findingsOf("We hope their will take the offer."), ["1:9 their will"]);
   });
 
+  it("invalid: after a preposition, these / those cannot be a subject, so a participle sits before the noun", () => {
+    assert.deepEqual(findingsOf("Contributors wrote notes on these flagged post as well."), ["1:29 these flagged post"]);
+    assert.deepEqual(findingsOf("We agreed on those revised plan at once."), ["1:14 those revised plan"]);
+  });
+
+  it("valid: these / those as a subject, or a plural noun after a preposition", () => {
+    assert.deepEqual(findingsOf("We asked whether these flagged the post."), []);
+    assert.deepEqual(findingsOf("Notes on these flagged posts were shown."), []);
+    assert.deepEqual(findingsOf("Of these, flagged post counts rose."), []);
+  });
+
   it("invalid: 限定詞と名詞の数の食い違い", () => {
     assert.deepEqual(findingsOf("We saw a changes in the log."), ["1:8 a changes"]);
     assert.deepEqual(findingsOf("An studies of this kind are rare."), ["1:1 An studies"]);
