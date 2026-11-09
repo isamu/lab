@@ -1,0 +1,18 @@
+# 置き場所を前の語との関係で言う語（ラックの下、棚の上）。no-doubled-joshi は、場所の名前がさらに「の」で次の語に係るとき
+# （ラックの下の段）、この語の直前の「の」を入れ子の「の」と数えない。「ラックの下」は「ラック下」と同じ一つの場所の名前。
+# 「中」は入れない。「修士課程の中の一類型」「同じ種類の中の」のように、場所でなく範囲を言って入れ子を深くすることが多い。
+id: particle-run-position
+language: ja
+entries:
+  - pattern: 上
+  - pattern: 下
+  - pattern: 横
+  - pattern: 隣
+  - pattern: 裏
+  - pattern: 奥
+  - pattern: 脇
+  - pattern: 手前
+  - pattern: 真上
+  - pattern: 真下
+  - pattern: 内側
+  - pattern: 外側
