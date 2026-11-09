@@ -4,7 +4,7 @@ import { chronologyRows } from "../chronology-rows.ts";
 import { externalLinkTitleSpans } from "../link-title.ts";
 import type { Detector, Finding, Span, Token } from "../plugin.ts";
 import { countedTokens, uncountedWordsOf, type UncountedWords } from "../uncounted-particles.ts";
-import { honorificGroupParticles } from "../honorific-group.ts";
+import { boundWordParticles } from "../bound-word-particles.ts";
 import { setPhraseParticles } from "../set-phrase-particles.ts";
 import { noteSentences } from "../note-paragraphs.ts";
 import { documentNameSpans } from "./particle-run-names.ts";
@@ -100,15 +100,18 @@ const RUN_BREAK_LEXICON = "particle-run-break";
 /** 人の集まりを敬って呼ぶ語（国民の皆様の「皆様」）。直前の助詞は呼び方の一部で、入れ子の輪に数えない。 */
 const HONORIFIC_GROUP_LEXICON = "honorific-group";
 
+/** 置き場所を言う語（ラックの下の「下」）。直前の助詞は「ラックの下」という一つの場所の名前の中にあり、入れ子の輪に数えない。 */
+const POSITION_LEXICON = "particle-run-position";
+
 /** 助詞を挟んで一語のように読む決まった言い回し（おそれのある）。中の助詞は入れ子の輪に数えない。 */
 const SET_PHRASE_LEXICON = "particle-run-set-phrase";
 
-/** 敬って呼ぶ語（皆様）と決まった言い回し（おそれのある）。 */
-type Phrases = { readonly groups: readonly string[]; readonly setPhrases: readonly string[] };
+/** 前の語と組んで一つの名前になる語（皆様、下）と決まった言い回し（おそれのある）。 */
+type Phrases = { readonly boundWords: readonly string[]; readonly setPhrases: readonly string[] };
 
-/** 数えない助詞（番号をつなぐ「の」、敬って呼ぶ語の前の「の」、決まった言い回しの中の「の」）を除いた語。 */
-const chainTokens = (tokens: readonly Token[], numbering: UncountedWords, { groups, setPhrases }: Phrases): readonly Token[] => {
-  const uncounted = new Set([...honorificGroupParticles(tokens, numbering.particles, groups), ...setPhraseParticles(tokens, numbering.particles, setPhrases)]);
+/** 数えない助詞（番号をつなぐ「の」、敬って呼ぶ語や置き場所を言う語の前の「の」、決まった言い回しの中の「の」）を除いた語。 */
+const chainTokens = (tokens: readonly Token[], numbering: UncountedWords, { boundWords, setPhrases }: Phrases): readonly Token[] => {
+  const uncounted = new Set([...boundWordParticles(tokens, numbering.particles, boundWords), ...setPhraseParticles(tokens, numbering.particles, setPhrases)]);
   const counted = countedTokens(tokens, numbering);
   return uncounted.size === 0 ? counted : counted.filter((token) => !uncounted.has(token));
 };
@@ -119,7 +122,7 @@ export const doubledParticle: Detector = (doc, options): Finding[] => {
   const breaks = (doc.lexicons[RUN_BREAK_LEXICON] ?? []).map((entry) => entry.pattern);
   const numbering = uncountedWordsOf(doc.lexicons, nesting);
   const phrases: Phrases = {
-    groups: (doc.lexicons[HONORIFIC_GROUP_LEXICON] ?? []).map((entry) => entry.pattern),
+    boundWords: [HONORIFIC_GROUP_LEXICON, POSITION_LEXICON].flatMap((id) => (doc.lexicons[id] ?? []).map((entry) => entry.pattern)),
     setPhrases: (doc.lexicons[SET_PHRASE_LEXICON] ?? []).map((entry) => entry.pattern),
   };
   const prose = doc.prose ?? doc.source;
