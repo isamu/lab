@@ -1,0 +1,27 @@
+# Prepositions that take a noun phrase as their object (agreement-slip). Right after one, "this", "these", "that" and
+# "those" cannot be the subject of a verb, so "on these flagged post" is a determiner, a participle and a noun. Words
+# the tagger also reads as a preposition but that open a clause ("whether", "if", "that", "as", "than", "like") are left
+# out. Matched as whole words.
+id: object-preposition
+language: en
+entries:
+  - pattern: about
+  - pattern: across
+  - pattern: against
+  - pattern: among
+  - pattern: at
+  - pattern: between
+  - pattern: by
+  - pattern: for
+  - pattern: from
+  - pattern: in
+  - pattern: into
+  - pattern: of
+  - pattern: on
+  - pattern: onto
+  - pattern: over
+  - pattern: through
+  - pattern: under
+  - pattern: with
+  - pattern: within
+  - pattern: without
