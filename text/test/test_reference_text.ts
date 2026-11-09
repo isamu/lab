@@ -151,6 +151,11 @@ describe("reference-topic-missing", () => {
     assert.deepEqual(topicEn("See Section 3 for the refund window."), ["Section 3:refund window≠Refunds"]);
   });
 
+  it("the link is a whole word: for in formulate or forms is no link", () => {
+    assert.deepEqual(topicEn("The rules of Section 2 formulate a research agenda."), []);
+    assert.deepEqual(topicEn("Section 2 forms the basis of the plan."), []);
+  });
+
   it("a word that fits any section is not a topic", () => {
     assert.deepEqual(topicEn("See Section 2 for details."), []);
     assert.deepEqual(topicEn("See Section 2 for more information."), []);

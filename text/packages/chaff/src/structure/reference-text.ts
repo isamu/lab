@@ -116,9 +116,13 @@ const EN_TOPIC = /^(?:the |a |an )?([a-z][a-z-]{2,}(?: [a-z][a-z-]{2,}){0,2})/iu
 const STEM = 5;
 const LATIN_TOPIC = /^[a-z -]+$/iu;
 
+/** The link starts the text as a whole word: "for" in "for pricing", not in "formulate". */
+const startsWithLink = (text: string, link: string): boolean =>
+  text.toLowerCase().startsWith(link.toLowerCase()) && !(LATIN_TOPIC.test(link) && LETTER.test(text.charAt(link.length)));
+
 const topicAfter = (source: string, end: number, links: readonly string[]): string | undefined => {
   const after = source.slice(end, end + 60);
-  const link = links.find((candidate) => after.replace(SPACE_BEFORE, "").toLowerCase().startsWith(candidate.toLowerCase()));
+  const link = links.find((candidate) => startsWithLink(after.replace(SPACE_BEFORE, ""), candidate));
   if (link === undefined) return undefined;
   const rest = after.replace(SPACE_BEFORE, "").slice(link.length).replace(SPACE_BEFORE, "");
   return JA_TOPIC.exec(rest)?.[0] ?? EN_TOPIC.exec(rest)?.[1];
