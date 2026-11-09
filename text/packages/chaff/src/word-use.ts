@@ -35,6 +35,19 @@ const negatesAfterTopic = ({ token, previous, before }: InContext): boolean =>
 
 const isHelper = (word: InContext): boolean => word.token.features?.["Bound"] === "Yes" || followsTeForm(word.previous) || negatesAfterTopic(word);
 
+/**
+ * A verb the tokenizer reads as a full verb, taken for a helper only because a て-form stands before it: 見た in 並んで見た is
+ * the next act, 見る in 書いて見る a helper, and the form cannot tell them apart.
+ */
+export const isHelperByTeFormOnly = (word: InContext): boolean =>
+  word.token.pos === "VERB" && word.token.features?.["Bound"] !== "Yes" && followsTeForm(word.previous);
+
+/** The verb whose て-form stands before the word (まとめる in まとめてみる), or undefined after no て-form. */
+export const teFormVerbOf = ({ previous, before }: InContext): string | undefined => {
+  if (!followsTeForm(previous)) return undefined;
+  return (previous?.pos === "SCONJ" ? before : previous)?.lemma;
+};
+
 export const isTouching = (left: Token | undefined, right: Token): boolean => left !== undefined && left.span.end === right.span.start;
 
 export const HIRAGANA_ONLY = /^[ぁ-ゖー]+$/u;
