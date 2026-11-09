@@ -70,6 +70,19 @@ describe("request-without-deadline: 期限も担当も無い依頼", () => {
     assert.deepEqual(findingsOf(en_, en, "business/proposal"), []);
   });
 
+  it("予定の節が決める日を書いていれば、結びの「ご検討ください」はその日を期限に持つ", () => {
+    const proposal = (heading: string, step: string): string =>
+      `## 提案\n\n手当を新設します。\n\n## ${heading}\n\n- 2026年12月：${step}\n- 2027年4月：支給開始\n\nご検討のほど、よろしくお願いいたします。`;
+    assert.deepEqual(findingsOf(proposal("6. 今後のスケジュール", "経営会議にて承認"), ja, "business/proposal"), []);
+    assert.deepEqual(findingsOf(proposal("6. 今後のスケジュール", "社内説明会"), ja, "business/proposal"), [MESSAGE_JA]);
+    assert.deepEqual(findingsOf(proposal("6. 期待される効果", "経営会議にて承認"), ja, "business/proposal"), [MESSAGE_JA]);
+    assert.deepEqual(findingsOf("## 提案\n\nご承認をお願いします。\n\n## 背景\n\n承認が要ります。", ja, "business/proposal"), [MESSAGE_JA]);
+    const en_ = (step: string): string =>
+      `## Proposal\n\nA new allowance.\n\n## Timeline\n\n- December 2026: ${step}\n- April 2027: first payment\n\nPlease review the proposal.`;
+    assert.deepEqual(findingsOf(en_("board approval"), en, "business/proposal"), []);
+    assert.deepEqual(findingsOf(en_("staff briefing"), en, "business/proposal"), [MESSAGE_EN]);
+  });
+
   it("参加を「検討して」と頼む文は誘い", () => {
     assert.deepEqual(findingsOf("まだの方も、ぜひ参加をご検討ください。"), []);
     assert.deepEqual(findingsOf("ご参加をご検討ください。"), []);

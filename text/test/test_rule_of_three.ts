@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { firedRules } from "./rule-run.ts";
-import { continuesBeyond, firstProseOffset, MIN_LISTS_FOR_SHARE, threeShare } from "../packages/chaff/src/rule-of-three.ts";
+import { continuesBeyond, firstProseOffset, isFigureBreakdown, MIN_LISTS_FOR_SHARE, threeShare } from "../packages/chaff/src/rule-of-three.ts";
 import type { BulletList } from "../packages/chaff/src/plugin.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
@@ -140,5 +140,56 @@ describe("rule-of-three: a key-points box before the body", () => {
     assert.equal(firstProseOffset("# Title\n\n- An item."), "# Title\n\n- An item.".length);
     assert.equal(firstProseOffset("本文です。\r\n- 項目"), 0);
     assert.equal(firstProseOffset(""), 0);
+  });
+});
+
+// A casual internal proposal has two lists of three: the vendor's services, and where the ten pots go (受付：大きめを2鉢,
+// 休憩スペース：3鉢, 通路沿い：5鉢). The second is a breakdown of a figure, its length set by the places, and was counted as a
+// list padded to three. Self-written text after that shape.
+describe("rule-of-three: a breakdown of figures", () => {
+  const breakdown = (items: readonly string[]): boolean => {
+    const source = items.join("\n");
+    const itemSpans = items.map((item) => ({ start: source.indexOf(item), end: source.indexOf(item) + item.length }));
+    return isFigureBreakdown(source, { span: { start: 0, end: source.length }, items: items.map((item) => item.length), itemSpans });
+  };
+
+  it("every item a label and a figure after it is a breakdown", () => {
+    [
+      ["- 受付：大きめを2鉢", "- 休憩スペース：3鉢", "- 通路沿い：5鉢"],
+      ["1. 本体：３万円", "2. 送料：1,000円"],
+      ["* Rent: $1,200", "* Power: $90"],
+    ].forEach((items) => assert.equal(breakdown(items), true, items.join(" / ")));
+  });
+
+  it("a schedule with the figure in its label, an item without a figure, a long lead-in or no items is not", () => {
+    [
+      ["- 2026年12月：経営会議にて承認", "- 2027年4月：支給開始"],
+      ["- 受付：大きめを2鉢", "- 休憩スペース：好きなもの"],
+      ["- 置く場所は次のとおりで、受付には大きめのものを置きます：2鉢"],
+      ["- 月1回、業者さんが来て水やりと状態チェック"],
+      ["- **件数**：月平均 420 件", "- **確認**：1 件 6 分"],
+      ["- 件数の多さ：紙の申請書が月平均 420 件届く", "- 差し戻し：申請の 18% が差し戻しになる"],
+      [],
+    ].forEach((items) => assert.equal(breakdown(items), false, items.join(" / ")));
+  });
+
+  const proposal = (placement: string): string =>
+    [
+      "# 植物の提案",
+      "レンタルがいいと思っています。",
+      "- 月1回、業者さんが来て水やりと状態チェック\n- 元気がなくなったら無料で交換\n- 置く場所に合わせて種類を選んでくれる",
+      "## 置く場所の案",
+      placement,
+    ].join("\n\n");
+
+  it("valid: a list of services and a breakdown of pots by place", () => {
+    assert.equal(firedRules(ja, proposal("- 受付：大きめを2鉢\n- 休憩スペース：3鉢\n- 通路沿い：5鉢"), "business/proposal").includes("rule-of-three"), false);
+  });
+
+  it("invalid: the same places without a figure", () => {
+    assert.equal(
+      firedRules(ja, proposal("- 受付：大きめのもの\n- 休憩スペース：小さめのもの\n- 通路沿い：細長いもの"), "business/proposal").includes("rule-of-three"),
+      true,
+    );
   });
 });

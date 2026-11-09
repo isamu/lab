@@ -65,6 +65,19 @@ describe("katakana-density: カタカナ語の多さ", () => {
     assert.deepEqual(katakanaDensity(doc, { limit: 55 }), []);
   });
 
+  it("題名のカタカナ語は文書の主題で、数えない", () => {
+    const manual = "アカウントを作り、メールアドレスを入れて、アカウントの登録を終えます。登録したアカウントでサービスに入ります。";
+    const titled = (title: string): string => `# ${title}\n\n${Array.from({ length: 10 }, () => manual).join("\n\n")}\n`;
+    assert.equal(findingsOf(titled("登録の手順")).length, 1);
+    assert.deepEqual(findingsOf(titled("アカウントの登録方法")), []);
+  });
+
+  it("題名に無いカタカナ語は数え、多い語に挙げる", () => {
+    const found = findingsOf(`# アジェンダの決め方\n\n${Array.from({ length: 8 }, () => HEAVY).join("\n\n")}\n`);
+    assert.equal(found.length, 1);
+    assert.match(found[0] ?? "", /多いのは「プロジェクト、スコープ、スケジュール」です$/u);
+  });
+
   it("多い語は回数の順、同じ回数なら先に出た順", () => {
     assert.deepEqual(mostFrequent(["ア", "イ", "イ", "ウ", "ウ", "エ"], 2), ["イ", "ウ"]);
     assert.deepEqual(mostFrequent([], 3), []);

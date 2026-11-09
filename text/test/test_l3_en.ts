@@ -61,6 +61,18 @@ describe("L3 英語", () => {
       const source = "It is raining. It is cold. It is late. It is quiet.";
       assert.ok(!idsFor(source).includes("expletive-construction"));
     });
+
+    it("valid: a that-clause after ', but' belongs to the next clause, not to the opening it", () => {
+      const source =
+        "It's not popular, but my view is that rules matter. It is late, but we know that it works. There is a plan. It was cold, but the team said that it would go.";
+      assert.ok(!idsFor(source).includes("expletive-construction"));
+    });
+
+    it("invalid: the that-clause before ', but' still counts", () => {
+      const source =
+        "It's true that rules matter, but we wait. It is clear that it works, but slowly. There is a plan. It was said that it would go, but it did not.";
+      assert.ok(idsFor(source).includes("expletive-construction"));
+    });
   });
 
   describe("sentence-initial-conjunction-run", () => {

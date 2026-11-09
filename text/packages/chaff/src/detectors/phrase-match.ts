@@ -1,6 +1,7 @@
 import type { Detector, DetectorOptions, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence } from "../plugin.ts";
-import { entryEnds, entryIn } from "./lexicon-match.ts";
-import { mentionCuesOf, onlyMentioned } from "./mentioned-phrase.ts";
+import { entryEnds, entryIn, entryOpens } from "./lexicon-match.ts";
+import { externalLinkTitleSpans } from "../link-title.ts";
+import { mentionCuesOf, onlyInTitles, onlyMentioned } from "./mentioned-phrase.ts";
 import { closingSentences } from "../closing-paragraph.ts";
 import { quotedPattern } from "./quoted-pattern.ts";
 
@@ -22,9 +23,12 @@ type Hit = { readonly sentence: Sentence; readonly matched: string };
 /** Whether the entry's words in the sentence count as a use. phrase-match counts every one. */
 type IsUsed = (sentence: Sentence, entry: LexiconEntry) => boolean;
 
+/** An entry marked opens counts only at the head of the sentence: 「近年、」 opens a stock opening, 「その後、近年の」 is a plain word. */
+const writtenIn = (sentence: Sentence, entry: LexiconEntry): boolean => (entry.opens === true ? entryOpens(sentence, entry) : entryIn(sentence, entry));
+
 const hitsIn = (sentences: readonly Sentence[], lexicon: Lexicon, isUsed: IsUsed = () => true): Hit[] =>
   sentences.flatMap((sentence) => {
-    const matched = lexicon.find((entry) => entryIn(sentence, entry) && isUsed(sentence, entry));
+    const matched = lexicon.find((entry) => writtenIn(sentence, entry) && isUsed(sentence, entry));
     return matched === undefined ? [] : [{ sentence, matched: quotedPattern(matched.pattern) }];
   });
 
@@ -58,10 +62,14 @@ export const phraseMatchWhere = (doc: ProseDocument, options: DetectorOptions, i
   return hits.length < options.limit ? [] : findingsOf(hits, options.limit);
 };
 
-/** phrase-match の、言葉として名指しただけの言い回し（the phrase "…", 「…」という言い方）を数えない版（mentioned-phrase.ts）。 */
+/**
+ * phrase-match の、言葉として名指しただけの言い回し（the phrase "…", 「…」という言い方）を数えない版（mentioned-phrase.ts）。
+ * 参考文献のリンクに写した外のページの題名（[文章の極意は…](https://…)）の言い回しも、書き手の言葉ではないので数えない。
+ */
 export const phraseInUse: Detector = (doc, options): Finding[] => {
   const cues = mentionCuesOf(doc.lexicons["mention-cue"] ?? []);
-  const hits = phraseHits(doc, options, (sentence, entry) => !onlyMentioned(sentence, entry, cues));
+  const titles = externalLinkTitleSpans(doc.source, doc.links);
+  const hits = phraseHits(doc, options, (sentence, entry) => !onlyMentioned(sentence, entry, cues) && !onlyInTitles(sentence, entry, titles));
   return hits.length < options.limit ? [] : findingsOf(hits, options.limit);
 };
 

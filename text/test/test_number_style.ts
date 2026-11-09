@@ -76,6 +76,11 @@ describe("numberMarksIn: Japanese", () => {
     ["3 人来ました。", ["count:digits:3 人"]],
     ["三　人が来ました。", ["count:kanji:三　人"]],
     ["3人事務員がいます。", ["count:digits:3人"]],
+    ["汚染された二枚貝があります。", []],
+    ["二枚舌を使う人です。", []],
+    ["三人称で書きます。", []],
+    ["三枚目の資料です。", ["count:kanji:三枚"]],
+    ["二枚の資料です。", ["count:kanji:二枚"]],
   ];
   cases.forEach(([sentence, marks]) => {
     it(`${sentence} → ${marks.join(", ") || "none"}`, () =>

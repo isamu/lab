@@ -50,6 +50,23 @@ describe("padded-intro", () => {
     assert.ok(!idsFor(body).includes("padded-intro"));
   });
 
+  it("valid: 冒頭でも、文の途中の「近年」「昨今」は時を言う普通の語", () => {
+    [
+      "指針を作った。その後、近年の災害の激甚化を踏まえて見直した。",
+      "作業中の熱中症が増えている。その背景には、近年の気候変動による気温の上昇がある。",
+      "こうした中で、市場環境としては、近年は気候変動の影響もあり需要が伸びた。",
+      "料金を改定します。人件費が昨今は上がり続けており、価格を見直しました。",
+    ].forEach((source) => assert.ok(!idsFor(source).includes("padded-intro"), source));
+  });
+
+  it("invalid: 文の頭の「近年」「昨今」は書き出しの決まり文句", () => {
+    [
+      "近年、クマの出没が増えています。対策を説明します。",
+      "近年では、在宅勤務が広がりました。本記事で紹介します。",
+      "昨今、働き方が変わりました。本記事で紹介します。",
+    ].forEach((source) => assert.ok(idsFor(source).includes("padded-intro"), source));
+  });
+
   it("英語でも同じ rule が動く", () => {
     assert.ok(idsFor("In today's fast-paced world, teams ship faster.", en).includes("padded-intro"));
   });

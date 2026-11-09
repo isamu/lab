@@ -63,12 +63,25 @@ const isBeforeLongerWord = (numeral: string, written: string, offset: number, to
   return word !== undefined && word.surface.length > counter.length;
 };
 
+/** The ordinal suffix (三枚目): a word the tokenizer joins to a count that is still a number of things. */
+const ORDINAL_SUFFIX = "目";
+
+/**
+ * A kanji numeral and counter that open a longer word (二枚貝, 二枚舌, 三人称): the tokenizer reads the whole as one noun, a name
+ * for a thing rather than a count of it, and digits could not be written there.
+ */
+const isInsideWord = (written: string, offset: number, tokens: readonly Token[]): boolean => {
+  const word = tokens.find((token) => token.span.start === offset);
+  if (word === undefined || word.surface.length <= written.length || !word.surface.startsWith(written)) return false;
+  return word.surface.slice(written.length) !== ORDINAL_SUFFIX;
+};
+
 const countMarks = (text: string, base: number, words: NumberWords, tokens: readonly Token[]): NumberMark[] => {
   const pattern = countPattern(words);
   if (pattern === undefined) return [];
   return [...text.matchAll(pattern)].flatMap((match): NumberMark[] => {
     const [written, digits, kanji] = match;
-    if (kanji !== undefined && isIdiomNumeral(kanji)) return [];
+    if (kanji !== undefined && (isIdiomNumeral(kanji) || isInsideWord(written, base + match.index, tokens))) return [];
     if (isBeforeLongerWord(digits ?? kanji ?? "", written, base + match.index, tokens)) return [];
     return [{ kind: "count", style: digits === undefined ? "kanji" : "digits", written, offset: base + match.index }];
   });
