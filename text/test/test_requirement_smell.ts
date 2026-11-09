@@ -111,6 +111,13 @@ describe("requirement-smell (ja)", () => {
     assert.deepEqual(found("監査等委員会は、報告を求めなければならない。", ja), ["open-end:等"]);
   });
 
+  it("等 right after a term the document defines widens the named thing and leaves no list open (秘密情報等)", () => {
+    const defined = "甲は、乙に開示した一切の情報（以下「秘密情報」という。）を定める。";
+    assert.deepEqual(found(`${defined}乙は、秘密情報等を役員に限り開示するものとし、秘密情報等を返還するものとする。`, ja, "legal/contract"), []);
+    assert.deepEqual(found(`${defined}乙は、秘密情報の写し等を返還するものとする。`, ja, "legal/contract"), ["open-end:等"]);
+    assert.deepEqual(found("乙は、秘密情報等を返還するものとする。", ja, "legal/contract"), ["open-end:等"]);
+  });
+
   it("等 after a name the document does not define still leaves the list open, beside one it does", () => {
     assert.deepEqual(found("委託先等（委託先及び再委託先をいう。）を定める。受託者は、ログ等を保存しなければならない。", ja), ["open-end:等"]);
     assert.deepEqual(found("受託者は、委託先等（委託先及び再委託先をいう。）及びログ等を管理しなければならない。", ja), ["open-end:等"]);
