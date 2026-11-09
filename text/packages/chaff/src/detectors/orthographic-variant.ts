@@ -17,9 +17,7 @@ import { voiceAt, voiceStarts } from "../voice-parts.ts";
 import {
   isCopulaReadAsVerb,
   isCutFromKatakana,
-  isHelperByTeFormOnly,
   isNumeral,
-  teFormVerbOf,
   isPieceOfKatakanaRun,
   isTouching,
   isWrittenOntoWord,
@@ -29,28 +27,26 @@ import {
 } from "../word-use.ts";
 import { titleCaseNameRuns } from "../title-case-name.ts";
 import { withoutQuotedSpellings, type Quoted } from "../quoted-spelling.ts";
+import { teFormOf, withTeFormFullVerbs, type TeForm } from "../te-form-helper.ts";
 import { citedSpans, isOpenIn, namesOf, patternsOf, type IsOpen, type Names } from "./orthographic-variant-open.ts";
 
 /**
  * A word found in the document: where it is, which sentence it is in, its key and spelling, how it is written when that differs, and
  * whether it is written onto the noun after it (取扱事業者).
  */
-type Placed = KeyedWord & {
-  readonly sentence: Sentence;
-  readonly offset: number;
-  readonly shown?: string;
-  readonly compoundHead?: boolean;
-  /** Where a run of words ends (タイヤレバー). */
-  readonly end?: number;
-  /** Whether a Latin word stands in a name of capitalised words (the Interagency Group) or in a cited work. */
-  readonly quoted?: Quoted | undefined;
-  /** The name a word stands in, as written. */
-  readonly name?: string | undefined;
-  /** A full verb read as a helper only for the て-form before it, whose verb takes no object (並んで見た). */
-  readonly teFormOnly?: boolean;
-  /** The verb whose て-form stands before it (まとめる in まとめてみる). */
-  readonly teVerb?: string;
-};
+type Placed = KeyedWord &
+  TeForm & {
+    readonly sentence: Sentence;
+    readonly offset: number;
+    readonly shown?: string;
+    readonly compoundHead?: boolean;
+    /** Where a run of words ends (タイヤレバー). */
+    readonly end?: number;
+    /** Whether a Latin word stands in a name of capitalised words (the Interagency Group) or in a cited work. */
+    readonly quoted?: Quoted | undefined;
+    /** The name a word stands in, as written. */
+    readonly name?: string | undefined;
+  };
 
 /** Parts of speech that carry a word of their own. Particles and endings are written one way by the grammar. */
 const CONTENT = new Set(["NOUN", "VERB", "ADJ", "ADV", "PRON", "CCONJ", "DET"]);
@@ -169,43 +165,6 @@ const readingWords = (sentence: Sentence, isOpen: IsOpen, skips: Skips): Placed[
       return [{ key, spelling: token.lemma, sentence, offset: token.span.start, compoundHead, ...teFormOf(word, tokens, at) }];
     }),
   ];
-};
-
-const OBJECT_PARTICLE = "を";
-
-/** The て-form verb takes an object (芽を残して置く): the verb after it has none of its own, and is the helper. */
-const teVerbHasObject = (word: InContext, tokens: readonly Token[], at: number): boolean => {
-  const teVerbAt = word.previous?.pos === "SCONJ" ? at - 2 : at - 1;
-  const particle = tokens[teVerbAt - 1];
-  return particle?.pos === "ADP" && particle.surface === OBJECT_PARTICLE;
-};
-
-const teFormOf = (word: InContext, tokens: readonly Token[], at: number): Pick<Placed, "teFormOnly" | "teVerb"> => {
-  const teVerb = teFormVerbOf(word);
-  const doubtful = isHelperByTeFormOnly(word) && !teVerbHasObject(word, tokens, at);
-  return { ...(doubtful ? { teFormOnly: true } : {}), ...(teVerb === undefined ? {} : { teVerb }) };
-};
-
-const BOUND_USE = "|bound|";
-const FREE_USE = "|free|";
-
-/**
- * A verb after a て-form that may be the helper or the next act (並んで見た) is read as the full verb where the document writes
- * the full verb that way and its sure helpers (投資してみる) the other way: the writer keeps the helper in kana on purpose. It stays
- * a helper where the same verb takes the sure helper elsewhere (まとめてみました beside まとめて見ました).
- */
-const withTeFormFullVerbs = (words: readonly Placed[]): Placed[] => {
-  const sureOf = (key: string): Placed[] => words.filter((word) => word.key === key && word.teFormOnly !== true);
-  const freeSpellingsOf = (key: string): Set<string> => new Set(words.filter((word) => word.key === key).map((word) => word.spelling));
-  return words.map((word) => {
-    if (word.teFormOnly !== true || !word.key.includes(BOUND_USE)) return word;
-    const freeKey = word.key.replace(BOUND_USE, FREE_USE);
-    const sure = sureOf(word.key);
-    const sureSpellings = new Set(sure.map((helper) => helper.spelling));
-    const helpsSameVerb = sure.some((helper) => helper.teVerb !== undefined && helper.teVerb === word.teVerb);
-    const isFullVerbSpelling = freeSpellingsOf(freeKey).has(word.spelling) && sure.length > 0 && !sureSpellings.has(word.spelling) && !helpsSameVerb;
-    return isFullVerbSpelling ? { ...word, key: freeKey } : word;
-  });
 };
 
 /**
