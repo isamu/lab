@@ -1,5 +1,6 @@
 import { charLength, proseText } from "../measure.ts";
 import type { Detector, Finding, Section } from "../plugin.ts";
+import { isQuotedMention } from "./bold-quoted.ts";
 
 /** これより短い節では密度が暴れる。43 字に 1 箇所で「1000 字あたり 23」になる。 */
 const MIN_CHARS = 200;
@@ -7,6 +8,10 @@ const MIN_CHARS = 200;
 const PER = 1000;
 
 const charsOf = (section: Section): number => section.sentences.reduce((sum, sentence) => sum + charLength(sentence), 0);
+
+/** The section's bold runs, less those that only quote words: a README bolds the part of an example sentence it talks about. */
+const boldsOf = (section: Section, source: string): number =>
+  section.strongs === undefined ? section.strongCount : section.strongs.filter((span) => !isQuotedMention(source, span)).length;
 
 /**
  * 節あたりの「密度」を見る。件数ではない。
@@ -18,11 +23,11 @@ const charsOf = (section: Section): number => section.sentences.reduce((sum, sen
  */
 export const countPerSection: Detector = (doc, options): Finding[] =>
   doc.sections
-    .map((section) => ({ section, chars: charsOf(section) }))
+    .map((section) => ({ section, chars: charsOf(section), bolds: boldsOf(section, doc.source) }))
     .filter(({ chars }) => chars >= MIN_CHARS)
-    .map(({ section, chars }) => ({ section, chars, density: Math.round((section.strongCount / chars) * PER) }))
+    .map(({ section, chars, bolds }) => ({ section, chars, bolds, density: Math.round((bolds / chars) * PER) }))
     .filter(({ density }) => density > options.limit)
-    .map(({ section, chars, density }) => ({
+    .map(({ section, chars, bolds, density }) => ({
       rule: "bold-density",
       severity: "warning",
       line: 0,
@@ -32,7 +37,7 @@ export const countPerSection: Detector = (doc, options): Finding[] =>
       values: {
         count: density,
         limit: options.limit,
-        bolds: section.strongCount,
+        bolds,
         chars,
         offset: section.firstSentence?.span.start ?? section.span.start,
       },
