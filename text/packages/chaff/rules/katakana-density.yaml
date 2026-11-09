@@ -2,7 +2,7 @@ id: katakana-density
 layer: L3
 status: stable
 how_to_find: katakana-density
-# Katakana runs are read from the characters, so the rule needs no morphology. chaff.yaml の names に並べた名前は数えない。
+# Katakana runs are read from the characters, so the rule needs no morphology. chaff.yaml の names に並べた名前と題名の語は数えない。
 languages: [ja]
 severity: info
 
@@ -72,8 +72,8 @@ example:
       営業の見込みの一覧は、毎週の報告で上の人に上げます。
 
 not_flagged:
-  ja: 短い文書は測りません。コードの中の語と、chaff.yaml の names に並べた名前は数えません。製品名も外来語と区別できないので数えますが、上限は人の書いた技術記事の多さに合わせてあり、普通の技術文書はたいてい収まります。
-  en: Short documents are not measured. Words in code and the names listed in chaff.yaml are not counted. Product names are counted, as they cannot be told apart, but the limit sits above most human-written technical articles.
+  ja: 短い文書は測りません。コードの中の語と、chaff.yaml の names に並べた名前と、題名（最初の大見出し）にあるカタカナ語は数えません。題名の語は文書の主題で（アカウントの登録方法を書いた手引きのアカウント）、言い換えられないからです。製品名も外来語と区別できないので数えますが、上限は人の書いた技術記事の多さに合わせてあり、普通の技術文書はたいてい収まります。
+  en: Short documents are not measured. Words in code, the names listed in chaff.yaml and the katakana words of the title (the first top-level heading) are not counted; the title names what the document is about (アカウント in a guide to registering an account), which cannot be said another way. Product names are counted, as they cannot be told apart, but the limit sits above most human-written technical articles.
 level_meaning:
   ja: カタカナ語が 1000 字あたり {limit} 語まで
   en: "katakana loanwords: up to {limit} per 1000 characters"

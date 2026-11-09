@@ -1,3 +1,2 @@
 genai-web-procedure  1
 soumu-kokumin-cyber-glossary-a  1
-soumu-kokumin-cyber-malware  1
