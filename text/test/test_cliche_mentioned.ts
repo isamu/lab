@@ -46,3 +46,19 @@ describe("cliche: a phrase named as a term (ja)", () => {
     assert.equal(findingsOf("この記事では、Git の基本を徹底解説します。").length, 1);
   });
 });
+
+describe("cliche: a phrase in the title of a linked page", () => {
+  const findingsOf = (source: string, adapter = ja): readonly string[] => namedRuleRun(RULE, `${source}\n`, adapter).findings;
+
+  it("does not report a phrase in a cited page's title, the link heading its line", () => {
+    assert.deepEqual(findingsOf("## 参考文献\n\n- [読みやすい文章の極意は語順にあり - 技術メモ](https://example.com/a)"), []);
+    assert.deepEqual(findingsOf("参考: [文章の極意](https://example.com/a)"), []);
+    assert.deepEqual(findingsOf("## Further reading\n\n- [The best of both worlds for build caches](https://example.com/b)", en), []);
+  });
+
+  it("still reports the phrase in the writer's own words around or beside a link", () => {
+    assert.equal(findingsOf("文章の極意は、[この記事](https://example.com/a)にまとめました。").length, 1);
+    assert.equal(findingsOf("- [文章の極意](./notes.md)").length, 1);
+    assert.equal(findingsOf("- [読みやすい文章](https://example.com/a) は文章の極意を教えてくれます。").length, 1);
+  });
+});
