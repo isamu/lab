@@ -29,6 +29,7 @@ const toEntry = (raw: unknown): LexiconEntry | undefined => {
     ...(isStringList(genres) ? { genres } : {}),
     ...(typeof firstYear === "number" ? { first_year: firstYear } : {}),
     ...(raw["heading_only"] === true ? { heading_only: true } : {}),
+    ...(raw["opens"] === true ? { opens: true } : {}),
   };
 };
 
