@@ -1,0 +1,8 @@
+# Words that stand in for a noun the text already named. A superlative whose noun is one of them picks a member of that
+# set ("ten topics ... the best-scoring one"), so it says what it is the most of. English only: the noun follows the
+# superlative's modifiers.
+id: superlative-pro-form
+language: en
+entries:
+  - pattern: one
+  - pattern: ones

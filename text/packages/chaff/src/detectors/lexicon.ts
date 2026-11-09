@@ -11,7 +11,7 @@ import { restricted, type Restrictors } from "./superlative-clause.ts";
 import { stackedHedges, type StackedHedge } from "./stacked-hedge.ts";
 import { comparisonMarkersOf, counterpartBefore, onlyQuoted, quotedRange, type ComparisonMarkers } from "./superlative-comparison.ts";
 import { inPhrase, ownedBefore } from "./superlative-phrase.ts";
-import { asked, contextOf, pointsAtReferent, ranksParts, sought, viewpointBefore, type Context } from "./superlative-context.ts";
+import { asked, contextOf, picksFromNamedSet, pointsAtReferent, ranksParts, sought, viewpointBefore, type Context } from "./superlative-context.ts";
 
 const PER = 1000;
 
@@ -156,6 +156,7 @@ const qualifiedAt = (tokens: readonly Token[], range: TokenRange, qualifiers: Qu
   viewpointBefore(tokens, range, qualifiers.context.viewpoints) ||
   pointsAtReferent(tokens, range, qualifiers.context.referents) ||
   ranksParts(tokens, range, qualifiers.context.parts) ||
+  picksFromNamedSet(tokens, range, qualifiers.context.proForms) ||
   restricted(tokens, range, qualifiers.restrictors) ||
   namesQuantity(tokens, range, qualifiers.quantityNouns) ||
   makesWord(tokens, range, qualifiers.suffixes) ||

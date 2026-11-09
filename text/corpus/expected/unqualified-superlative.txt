@@ -1,4 +1,4 @@
 arxiv-astro-ph-new-2025-01-03  2
-gitlab-values  10
+gitlab-values  9
 govuk-guidance-academy-senior-pay  3
 qiita-jnchito-good-sample-code  3
