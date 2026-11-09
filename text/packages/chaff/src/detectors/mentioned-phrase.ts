@@ -1,7 +1,7 @@
 // A phrase that is mentioned rather than used: named as a term (when saying "raise the bar", the phrase "low-hanging
 // fruit", 「徹底解説」という言い方). The writer is talking about the words, not leaning on them. The cue words come from the
 // language's mention-cue word list: group before stands right before the phrase, group after right after it. Pure.
-import type { LexiconEntry, Sentence, Token } from "../plugin.ts";
+import type { LexiconEntry, Sentence, Span, Token } from "../plugin.ts";
 import { entryEndsAt, entryRanges, type TokenRange } from "./lexicon-match.ts";
 
 const BEFORE = "before";
@@ -35,4 +35,16 @@ export const onlyMentioned = (sentence: Sentence, entry: LexiconEntry, cues: Men
   const tokens = sentence.tokens;
   const ranges = entryRanges(sentence, entry);
   return tokens !== undefined && ranges.length > 0 && ranges.every((range) => isMention(tokens, range, cues));
+};
+
+/** Whether every use of the entry in the sentence lies in a linked page's title: the other page's words, which the writer cites. */
+export const onlyInTitles = (sentence: Sentence, entry: LexiconEntry, titles: readonly Span[]): boolean => {
+  const tokens = sentence.tokens ?? [];
+  const ranges = entryRanges(sentence, entry);
+  const inTitle = (start: number, end: number): boolean => titles.some((title) => start >= title.start && end <= title.end);
+  return (
+    titles.length > 0 &&
+    ranges.length > 0 &&
+    ranges.every((range) => inTitle(tokens[range.start]?.span.start ?? -1, tokens[range.end - 1]?.span.end ?? Number.POSITIVE_INFINITY))
+  );
 };
