@@ -15,3 +15,6 @@ entries:
   - pattern: 事前に
   - pattern: あらかじめ
   - pattern: 予め
+  # 「締結日から2か月を目途に」の「目途に」は、起点からの期間を時の目安として決める。
+  - pattern: を目途に
+  - pattern: をめどに
