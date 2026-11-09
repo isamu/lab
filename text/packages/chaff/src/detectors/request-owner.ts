@@ -21,6 +21,7 @@ export const REQUEST_LEXICONS = {
   prohibition: "request-prohibition",
   deadlineSection: "request-deadline-section",
   noDeadlineTitle: "request-no-deadline-title",
+  decision: "request-decision",
 } as const;
 
 type Words = Readonly<Record<keyof typeof REQUEST_LEXICONS, readonly string[]>>;
@@ -44,6 +45,7 @@ const wordsOf = (doc: ProseDocument): Words => ({
   prohibition: patternsOf(doc.lexicons[REQUEST_LEXICONS.prohibition]),
   deadlineSection: patternsOf(doc.lexicons[REQUEST_LEXICONS.deadlineSection]),
   noDeadlineTitle: patternsOf(doc.lexicons[REQUEST_LEXICONS.noDeadlineTitle]),
+  decision: patternsOf(doc.lexicons[REQUEST_LEXICONS.decision]),
 });
 
 /** How far apart, in characters, the action word and the request ending may be: the action must be what is requested. */
@@ -224,14 +226,15 @@ const withoutDates = (source: string, span: Span, inside: readonly Span[]): stri
     source.slice(span.start, span.end),
   );
 
+/** A date with a deadline word, or with the decision step (a schedule's 「12月：経営会議にて承認」 says when the decision is made). */
 const statesDeadline = (source: string, sentence: Sentence, words: Words, dates: readonly Span[]): boolean => {
   const inside = datesInside(sentence.span, dates);
-  return inside.length > 0 && containsAny(withoutDates(source, sentence.span, inside), words.deadline);
+  return inside.length > 0 && containsAny(withoutDates(source, sentence.span, inside), [...words.deadline, ...words.decision]);
 };
 
 /**
- * The section headed only by a deadline-section word (a notice's "DATES:", "2. Deadline") that states a date with a
- * deadline word: the document gives its deadline once there. -1 without one.
+ * The section headed only by a deadline-section word (a notice's "DATES:", "2. Deadline", a proposal's schedule) that
+ * states a date with a deadline or decision word: the document gives its deadline once there. -1 without one.
  */
 const documentDeadlineSection = (source: string, sections: readonly Section[], words: Words, dates: readonly Span[]): number =>
   sections.findIndex(
