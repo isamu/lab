@@ -128,6 +128,12 @@ describe("absolute-exception, through the rule", () => {
     assert.deepEqual(findings(source, en), ['This says "always", but line 9 makes an exception ("except") for the same act']);
   });
 
+  it("leaves an absolute word right after a negation: not always admits exceptions", () => {
+    const source =
+      "# Expenses\n\n## 1. Receipts\n\nStaff must not always send the receipt for each expense to the finance team.\n\n## 2. Small expenses\n\nStaff need not send the receipt to the finance team for an expense under ten dollars, except for travel.\n";
+    assert.deepEqual(findings(source, en), []);
+  });
+
   it("reads an article nested in another as a unit of its own", () => {
     const source =
       "# Policy\n\n## 1. General\n\nStaff must always send the receipts to the finance team.\n\n### 1.1 Exception\n\nExcept for travel, staff send the receipts to the finance team later.\n";
