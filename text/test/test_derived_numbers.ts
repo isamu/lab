@@ -253,6 +253,13 @@ describe("duration-mismatch: nights of a stay", () => {
     assert.deepEqual(stayEn("A trip of 3 days and 1 night to York."), ["nights-days:3 days→2"]);
   });
 
+  it("as many days as nights, days first, is round the clock, not a stay (43 days and 43 nights)", () => {
+    assert.deepEqual(stayEn("We were shut down for 43 days and 43 nights."), []);
+    assert.deepEqual(stayEn("For three days and three nights the storm went on."), []);
+    assert.deepEqual(stayEn("A trip of 3 days and 4 nights to York."), ["nights-days:3 days→5"]);
+    assert.deepEqual(stayJa("京都・奈良 3泊3日の旅行です。"), ["nights-days:3日→4"]);
+  });
+
   it("nights and days written before their noun (a 2-night, 4-day tour)", () => {
     assert.deepEqual(stayEn("We run a 2-night, 4-day tour."), ["nights-days:4-day→3"]);
     assert.deepEqual(stayEn("We run a 2-night, 3-day tour."), []);
