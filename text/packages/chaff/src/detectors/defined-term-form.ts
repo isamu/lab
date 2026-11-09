@@ -186,7 +186,8 @@ const isOrdinaryPhraseAt = (doc: ProseDocument, offset: number, term: string, de
 /** The term written longer with a word of its definition (文書管理責任者, the Application), after the sentence that defines it. */
 const extendedFindings = (doc: ProseDocument, texts: readonly BodyText[], term: DefinedTerm, spans: readonly Span[], defined: readonly string[]): Finding[] => {
   const definition = definingSentence(doc, term.span)?.text ?? "";
-  const pointers = patternsOf(doc, "defined-term-pointer");
+  // A pointer (当該管理責任者) points at the term, and the definition's own marker (以下本契約において同じ) is no word of its meaning.
+  const pointers = [...patternsOf(doc, "defined-term-pointer"), ...patternsOf(doc, "definition-marker")];
   // Every sentence that defines the term (a second definition too) holds the long words it is defined from.
   const defining = spans.map((span) => definingSentence(doc, span)?.span ?? span);
   const definingEnd = definingSentenceEnd(doc, term.span);
