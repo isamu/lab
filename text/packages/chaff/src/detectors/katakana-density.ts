@@ -33,8 +33,23 @@ export const mostFrequent = (words: readonly string[], count: number): string[] 
     .map(([word]) => word);
 };
 
-const wordsOfDocument = (doc: ProseDocument): KatakanaWord[] =>
-  doc.sentences.flatMap((sentence) => katakanaWordsIn(sentence.text, doc.names ?? []).map((word) => ({ sentence, word })));
+/**
+ * The katakana words of the document's title: what the document is about (e-Govアカウントの登録方法). A manual on accounts
+ * cannot say アカウント another way, so the subject is not a loanword to trim.
+ */
+export const subjectWords = (doc: ProseDocument): ReadonlySet<string> => {
+  const title = doc.markup?.headings.find((heading) => heading.depth === 1)?.text ?? "";
+  return new Set(katakanaWordsIn(title, doc.names ?? []));
+};
+
+const wordsOfDocument = (doc: ProseDocument): KatakanaWord[] => {
+  const subject = subjectWords(doc);
+  return doc.sentences.flatMap((sentence) =>
+    katakanaWordsIn(sentence.text, doc.names ?? [])
+      .filter((word) => !subject.has(word))
+      .map((word) => ({ sentence, word })),
+  );
+};
 
 /**
  * Katakana loanwords per 1000 characters, over the whole document. Reported once, at the first sentence holding one, with the
