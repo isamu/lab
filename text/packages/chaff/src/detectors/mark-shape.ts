@@ -6,7 +6,7 @@ import { externalLinkTitleSpans } from "../link-title.ts";
 import { formulaBracketSpans } from "../formula-brackets.ts";
 import { ownTitleQuoteSpans } from "../own-title-quote.ts";
 import { isWithinAny, quotedSpans } from "../quoted-span.ts";
-import { bracketPlaceholderSpans, capitalLineSpans, captionsOf, isCaptionAt, isWithinSorted } from "./caps-caption.ts";
+import { bracketPlaceholderSpans, capitalLineSpans, captionsOf, isCaptionAt, isWholeQuotation, isWithinSorted } from "./caps-caption.ts";
 import { lineStarts } from "../position.ts";
 import { isTypewritten } from "./typewritten.ts";
 import { divisionLabelPattern, isDivisionSeparator } from "./division-label-separator.ts";
@@ -332,8 +332,8 @@ export const isShouting = (run: string, known: ReadonlySet<string>, conventional
 
 /**
  * Runs of three or more all-capital words that are ordinary words, not acronyms ("DO NOT DELETE THIS"), and not a
- * caption, a mention of one, a paragraph of capital lines that ends no sentence (a letterhead, a heading), a roster name, or a
- * placeholder in square brackets.
+ * caption, a mention of one, a paragraph of capital lines that ends no sentence (a letterhead, a heading), a roster name, a
+ * placeholder in square brackets, or a whole quotation.
  */
 export const capsShouting: Detector = (doc, options): Finding[] => {
   const known = lowerCaseWords(doc.prose ?? doc.source);
@@ -343,7 +343,13 @@ export const capsShouting: Detector = (doc, options): Finding[] => {
   const placeholders = bracketPlaceholderSpans(doc.source);
   const isCaptionOrLetterhead = (hit: Hit): boolean => {
     const span = { start: hit.offset, end: hit.offset + hit.matched.length };
-    return captions.has(hit.matched) || isCaptionAt(doc.source, span.start, span.end) || isWithinSorted(capitalLines, span) || isWithinAny(placeholders, span);
+    return (
+      captions.has(hit.matched) ||
+      isCaptionAt(doc.source, span.start, span.end) ||
+      isWithinSorted(capitalLines, span) ||
+      isWithinAny(placeholders, span) ||
+      isWholeQuotation(doc.source, span.start, span.end)
+    );
   };
   const hits = hitsOf(ownSentences(doc), CAPS_RUN).filter((hit) => isShouting(hit.matched, known, conventional) && !isCaptionOrLetterhead(hit));
   return reportFrom(hits, options.limit);
