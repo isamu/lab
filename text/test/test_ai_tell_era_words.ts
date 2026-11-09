@@ -71,6 +71,12 @@ describe("ai-tell: the colloquial praise of a generated post (ja)", () => {
   it("leaves one of them alone in a report", () => {
     assert.deepEqual(aiTell("# 報告\n\nこの説明は来場者に刺さりました。\n", ja, "business/report"), []);
   });
+
+  it("reports one 橋渡し in a blog post, heading or body, and leaves it alone in a report", () => {
+    assert.equal(aiTell("# 異動して\n\n## 工場との橋渡しも\n\n頼みごとはしやすいですね。\n", ja, "blog/owned-media").length, 1);
+    assert.equal(aiTell("# 異動して\n\n営業と工場の橋渡しをしています。\n", ja).length, 1);
+    assert.deepEqual(aiTell("# 報告\n\n両部署の橋渡しを担当しました。\n", ja, "business/report"), []);
+  });
 });
 
 describe("ai-tell: a request recast as a benefit (ja); honesty markers are honesty-marker's", () => {
