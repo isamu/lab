@@ -19,6 +19,7 @@ import {
   isCutFromKatakana,
   isHelperByTeFormOnly,
   isNumeral,
+  teFormVerbOf,
   isPieceOfKatakanaRun,
   isTouching,
   isWrittenOntoWord,
@@ -47,6 +48,8 @@ type Placed = KeyedWord & {
   readonly name?: string | undefined;
   /** A full verb read as a helper only for the て-form before it (並んで見た). */
   readonly teFormOnly?: boolean;
+  /** The verb whose て-form stands before it (まとめる in まとめてみる). */
+  readonly teVerb?: string;
 };
 
 /** Parts of speech that carry a word of their own. Particles and endings are written one way by the grammar. */
@@ -163,9 +166,14 @@ const readingWords = (sentence: Sentence, isOpen: IsOpen, skips: Skips): Placed[
       const local = token.span.start - sentence.span.start;
       if (key === undefined || token.lemma === undefined || !isOpen(local, local + token.surface.length)) return [];
       const compoundHead = isCompoundHead(token, tokens, at, skips.phraseSuffixes);
-      return [{ key, spelling: token.lemma, sentence, offset: token.span.start, compoundHead, ...(isHelperByTeFormOnly(word) ? { teFormOnly: true } : {}) }];
+      return [{ key, spelling: token.lemma, sentence, offset: token.span.start, compoundHead, ...teFormOf(word) }];
     }),
   ];
+};
+
+const teFormOf = (word: InContext): Pick<Placed, "teFormOnly" | "teVerb"> => {
+  const teVerb = teFormVerbOf(word);
+  return { ...(isHelperByTeFormOnly(word) ? { teFormOnly: true } : {}), ...(teVerb === undefined ? {} : { teVerb }) };
 };
 
 const BOUND_USE = "|bound|";
@@ -173,16 +181,19 @@ const FREE_USE = "|free|";
 
 /**
  * A verb after a て-form that may be the helper or the next act (並んで見た) is read as the full verb where the document writes
- * the full verb that way and its sure helpers (投資してみる) the other way: the writer keeps the helper in kana on purpose.
+ * the full verb that way and its sure helpers (投資してみる) the other way: the writer keeps the helper in kana on purpose. It stays
+ * a helper where the same verb takes the sure helper elsewhere (まとめてみました beside まとめて見ました).
  */
 const withTeFormFullVerbs = (words: readonly Placed[]): Placed[] => {
-  const spellingsOf = (key: string, sure: boolean): Set<string> =>
-    new Set(words.filter((word) => word.key === key && (!sure || word.teFormOnly !== true)).map((word) => word.spelling));
+  const sureOf = (key: string): Placed[] => words.filter((word) => word.key === key && word.teFormOnly !== true);
+  const freeSpellingsOf = (key: string): Set<string> => new Set(words.filter((word) => word.key === key).map((word) => word.spelling));
   return words.map((word) => {
     if (word.teFormOnly !== true || !word.key.includes(BOUND_USE)) return word;
     const freeKey = word.key.replace(BOUND_USE, FREE_USE);
-    const sureHelpers = spellingsOf(word.key, true);
-    const isFullVerbSpelling = spellingsOf(freeKey, false).has(word.spelling) && sureHelpers.size > 0 && !sureHelpers.has(word.spelling);
+    const sure = sureOf(word.key);
+    const sureSpellings = new Set(sure.map((helper) => helper.spelling));
+    const helpsSameVerb = sure.some((helper) => helper.teVerb !== undefined && helper.teVerb === word.teVerb);
+    const isFullVerbSpelling = freeSpellingsOf(freeKey).has(word.spelling) && sure.length > 0 && !sureSpellings.has(word.spelling) && !helpsSameVerb;
     return isFullVerbSpelling ? { ...word, key: freeKey } : word;
   });
 };
