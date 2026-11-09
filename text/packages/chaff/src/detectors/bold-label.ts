@@ -1,4 +1,4 @@
-import type { Detector, Finding, ProseDocument, Span } from "../plugin.ts";
+import type { Detector, DetectorOptions, Finding, ProseDocument, Span } from "../plugin.ts";
 
 /** A bold run longer than this is a bold sentence, not a label. */
 const MAX_LABEL_CHARS = 40;
@@ -61,11 +61,32 @@ const unquotedItems = (doc: ProseDocument, opens: (item: string) => string | und
 /** The list items, in document order, that open with a bold label and are not quoted. */
 export const boldLabelItems = (doc: ProseDocument): Span[] => unquotedItems(doc, boldLabelOf);
 
-/** A count, not a density: a person writes one or two labels even in a long article. A bold lead sentence counts as a label. */
+/** Bold lead sentences that report on their own (the rule's min_leads). */
+const DEFAULT_MIN_LEADS = 3;
+
+const minLeads = (options: DetectorOptions): number => {
+  const value = options.settings?.["min_leads"];
+  return typeof value === "number" ? value : DEFAULT_MIN_LEADS;
+};
+
+/** The count reported and the limit it reached: all the labelled items, or else the bold lead sentences alone, or undefined. */
+const reached = (items: readonly Span[], leads: number, options: DetectorOptions): { count: number; limit: number } | undefined => {
+  if (items.length >= options.limit) return { count: items.length, limit: options.limit };
+  const least = minLeads(options);
+  return leads >= least ? { count: leads, limit: least } : undefined;
+};
+
+/**
+ * A count, not a density: a person writes one or two labels even in a long article. A bold lead sentence counts as a label.
+ * Bold lead sentences (- **Check one result by hand.** …) report at fewer items than colon labels: human documents write a few
+ * colon labels for steps or fields (- **Gather input**: …), but rarely make a list of bold lead sentences.
+ */
 export const boldLabelList: Detector = (doc, options): Finding[] => {
   const items = unquotedItems(doc, labelOrLeadOf);
   const first = items[0];
-  if (first === undefined || items.length < options.limit) return [];
+  const leads = items.filter((span) => boldLabelOf(doc.source.slice(span.start, span.end)) === undefined).length;
+  const found = reached(items, leads, options);
+  if (first === undefined || found === undefined) return [];
   const written = doc.source.slice(first.start, first.end);
   return [
     {
@@ -74,7 +95,7 @@ export const boldLabelList: Detector = (doc, options): Finding[] => {
       line: 0,
       column: 0,
       quote: (written.split("\n")[0] ?? "").trim(),
-      values: { label: labelOrLeadOf(written) ?? "", count: items.length, limit: options.limit, offset: first.start },
+      values: { label: labelOrLeadOf(written) ?? "", count: found.count, limit: found.limit, offset: first.start },
     },
   ];
 };
