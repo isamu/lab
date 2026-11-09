@@ -260,6 +260,20 @@ const reportFrom = (hits: readonly Hit[], limit: number): Finding[] => (hits.len
 /** A spaced hyphen or a double hyphen between words, standing for a dash ("late - very late", "late--very late"). */
 const HYPHEN_DASH = /(?<=[\p{L},;)]) -{1,2} (?=[\p{L}(])|(?<=\p{L})--(?=\p{L})/gu;
 
+/** A spaced hyphen whose side is masked out of the sentence's text: a code span may stand there ("`float` - everything"). */
+const MASKED_SIDE_HYPHEN = /(?<=\s) -{1,2} (?=[\p{L}(])|(?<=[\p{L},;)]) -{1,2} (?=\s)/gu;
+const CODE_MARK = "`";
+
+/**
+ * A spaced hyphen between a code span and a word, either way round ("`float` - everything", "two properties - `x`"). Code
+ * is masked out of the text, so the code side reads as spaces; the source shows the code mark right beside the hyphen.
+ * Code on both sides ("`query` - `form`") is a mapping, not a dash.
+ */
+const besideCode = (source: string, hit: Hit): boolean => {
+  const end = hit.offset + hit.matched.length + 2;
+  return (source[hit.offset - 1] === CODE_MARK) !== (source[end] === CODE_MARK);
+};
+
 /** A dash set as a character (an em dash, an en dash). */
 const TRUE_DASH = /[—–]/u;
 const DOUBLE_HYPHEN = "--";
@@ -276,10 +290,11 @@ export const hyphenDash: Detector = (doc, options): Finding[] => {
   const sentences = ownSentences(doc);
   const setsDashes = sentences.some((sentence) => TRUE_DASH.test(sentence.text));
   const divisionLabel = divisionLabelPattern((doc.lexicons["numbered-division"] ?? []).map((entry) => entry.pattern));
+  const codeHits = hitsOf(sentences, MASKED_SIDE_HYPHEN).filter((hit) => besideCode(doc.source, hit));
   return reportFrom(
-    hitsOf(sentences, HYPHEN_DASH).filter(
-      (hit) => !isTypedDash(hit, setsDashes) && !isDivisionSeparator(doc.source, hit.offset, divisionLabel) && !isInCopiedText(doc.source, hit.offset),
-    ),
+    [...hitsOf(sentences, HYPHEN_DASH), ...codeHits]
+      .toSorted((left, right) => left.offset - right.offset)
+      .filter((hit) => !isTypedDash(hit, setsDashes) && !isDivisionSeparator(doc.source, hit.offset, divisionLabel) && !isInCopiedText(doc.source, hit.offset)),
     options.limit,
   );
 };
