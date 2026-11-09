@@ -54,6 +54,15 @@ export const adverbDensity: Detector = (doc, options): Finding[] => {
 const BE = new Set(["be", "is", "are", "was", "were"]);
 
 /**
+ * The words before ", but": "It's not fashionable these days, but my view is that …" is a concessive aside, and its
+ * that-clause belongs to the clause after but.
+ */
+export const beforeConcession = (tokens: readonly Token[]): readonly Token[] => {
+  const at = tokens.findIndex((token, index) => token.surface === "," && tokens[index + 1]?.surface.toLowerCase() === "but");
+  return at === -1 ? tokens : tokens.slice(0, at);
+};
+
+/**
  * There is / It is ... that は、主語を後ろへ押しやって誰が何をするのかを消す。
  * 「There is a need to review」は、誰が必要としているのかを言っていない。
  */
@@ -65,7 +74,7 @@ const expletiveAt = (tokens: readonly Token[]): Token | undefined => {
   const next = tokens.find((token) => token.span.start >= head.span.end && token.pos !== "PUNCT");
   if (next === undefined || !BE.has(next.lemma ?? next.surface.toLowerCase())) return undefined;
   // "it is" は "it is raining" のような正当な用法があるので、that 節を伴うときだけ数える。
-  if (lead === "it" && !tokens.some((token) => token.surface.toLowerCase() === "that")) return undefined;
+  if (lead === "it" && !beforeConcession(tokens).some((token) => token.surface.toLowerCase() === "that")) return undefined;
   return head;
 };
 
