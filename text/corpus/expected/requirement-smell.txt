@@ -4,4 +4,4 @@ denpa-shinsei-riyo-kiyaku  6
 github-general-privacy-statement  1
 openapi-spec-3-1-0  1
 rfc9457  1
-tokyoapp-service-terms  5
+tokyoapp-service-terms  3
