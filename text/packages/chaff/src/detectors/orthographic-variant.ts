@@ -27,24 +27,26 @@ import {
 } from "../word-use.ts";
 import { titleCaseNameRuns } from "../title-case-name.ts";
 import { withoutQuotedSpellings, type Quoted } from "../quoted-spelling.ts";
+import { teFormOf, withTeFormFullVerbs, type TeForm } from "../te-form-helper.ts";
 import { citedSpans, isOpenIn, namesOf, patternsOf, type IsOpen, type Names } from "./orthographic-variant-open.ts";
 
 /**
  * A word found in the document: where it is, which sentence it is in, its key and spelling, how it is written when that differs, and
  * whether it is written onto the noun after it (取扱事業者).
  */
-type Placed = KeyedWord & {
-  readonly sentence: Sentence;
-  readonly offset: number;
-  readonly shown?: string;
-  readonly compoundHead?: boolean;
-  /** Where a run of words ends (タイヤレバー). */
-  readonly end?: number;
-  /** Whether a Latin word stands in a name of capitalised words (the Interagency Group) or in a cited work. */
-  readonly quoted?: Quoted | undefined;
-  /** The name a word stands in, as written. */
-  readonly name?: string | undefined;
-};
+type Placed = KeyedWord &
+  TeForm & {
+    readonly sentence: Sentence;
+    readonly offset: number;
+    readonly shown?: string;
+    readonly compoundHead?: boolean;
+    /** Where a run of words ends (タイヤレバー). */
+    readonly end?: number;
+    /** Whether a Latin word stands in a name of capitalised words (the Interagency Group) or in a cited work. */
+    readonly quoted?: Quoted | undefined;
+    /** The name a word stands in, as written. */
+    readonly name?: string | undefined;
+  };
 
 /** Parts of speech that carry a word of their own. Particles and endings are written one way by the grammar. */
 const CONTENT = new Set(["NOUN", "VERB", "ADJ", "ADV", "PRON", "CCONJ", "DET"]);
@@ -155,11 +157,12 @@ const readingWords = (sentence: Sentence, isOpen: IsOpen, skips: Skips): Placed[
       if (inRun.has(at)) return [];
       const next = tokens[at + 1];
       const token = asNounWhereNominal(written, next, skips.phraseSuffixes, skips.nouns);
-      const key = readingKeyOf({ token, previous: tokens[at - 1], before: tokens[at - 2], following: tokens.slice(at + 1, at + 3) }, skips);
+      const word = { token, previous: tokens[at - 1], before: tokens[at - 2], following: tokens.slice(at + 1, at + 3) };
+      const key = readingKeyOf(word, skips);
       const local = token.span.start - sentence.span.start;
       if (key === undefined || token.lemma === undefined || !isOpen(local, local + token.surface.length)) return [];
       const compoundHead = isCompoundHead(token, tokens, at, skips.phraseSuffixes);
-      return [{ key, spelling: token.lemma, sentence, offset: token.span.start, compoundHead }];
+      return [{ key, spelling: token.lemma, sentence, offset: token.span.start, compoundHead, ...teFormOf(word, tokens, at) }];
     }),
   ];
 };
@@ -319,7 +322,9 @@ const cellPlace = (cell: TableCell, names: Names): Place => {
 
 /** The odd spellings among places that speak in one voice. */
 const findingsIn = (placed: readonly Place[], skips: Skips, { isWord, nameJoiners }: Reading, limit: number): Finding[] => {
-  const reading = byKanji(placed.flatMap(({ sentence, isOpen }) => readingWords(withCutNounsJoined(sentence, skips.nouns), isOpen, skips)));
+  const reading = byKanji(
+    withTeFormFullVerbs(placed.flatMap(({ sentence, isOpen }) => readingWords(withCutNounsJoined(sentence, skips.nouns), isOpen, skips))),
+  );
   const katakana = placed.flatMap(({ sentence, isOpen }) => katakanaWords(sentence, isOpen));
   const runs = placed.flatMap(({ sentence, isOpen }) => katakanaRunWords(sentence, isOpen));
   const latin = withoutQuotedSpellings(

@@ -2,6 +2,7 @@ import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { statesAmount, untimedDuties, type DutyWords } from "../packages/chaff/src/detectors/obligation-without-deadline.ts";
 import { actsTimedAt, unitAt } from "../packages/chaff/src/detectors/deadline-unit.ts";
+import { pointedParagraphs } from "../packages/chaff/src/detectors/paragraph-pointer.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
@@ -95,6 +96,31 @@ describe("obligation-without-deadline", () => {
     assert.deepEqual(wordsIn(ja, ja_(...otherAct)), ["支払"]);
     const delivery = ["3. The Customer shall pay the Fees.", "4. The Supplier shall ship the goods before the delivery date."];
     assert.deepEqual(wordsIn(en, en_(...delivery)), ["pay"]);
+  });
+
+  it("does not report a duty whose article times the same act in a paragraph one of the two points at (本条1項, 前項)", () => {
+    const article = [
+      "第3条（利用料）",
+      "　乙は、甲に対し、本サービスの対価として利用料を支払う。",
+      "",
+      "2　乙は、前項の利用料を、毎月末日から10日以内に支払うものとする。",
+      "",
+      "3　乙は前項の利用料を銀行振込の方法により支払う。",
+      "",
+    ];
+    assert.deepEqual(wordsIn(ja, ja_(...article)), []);
+    const byNumber = ["第3条（利用料）", "　乙は、甲に対し、利用料を支払う。", "", "2　乙は、本条1項の利用料を、毎月末日から10日以内に支払う。", ""];
+    assert.deepEqual(wordsIn(ja, ja_(...byNumber)), []);
+    const other = ["第3条（利用料）", "　乙は、甲に対し、利用料を支払う。", "", "2　乙は、毎月末日から10日以内に報告書を提出する。", ""];
+    assert.deepEqual(wordsIn(ja, ja_(...other)), ["支払"]);
+    const unpointed = ["第3条（報酬）", "　甲は、乙に対し、報酬を支払う。", "", "2　甲は、乙に対し、毎月末日から10日以内に手数料を支払う。", ""];
+    assert.deepEqual(wordsIn(ja, ja_(...unpointed)), ["支払"]);
+    const sameParagraph = ["第3条（通知）", "　甲は、速やかに乙に通知する。甲は、理由とともに相手方に通知するものとする。", ""];
+    assert.deepEqual(wordsIn(ja, ja_(...sameParagraph)), ["通知"]);
+  });
+
+  it("a period set as a target (2か月を目途に) times the duty in its sentence", () => {
+    assert.deepEqual(wordsIn(ja, ja_("第3条　乙は、本契約締結日から2か月を目途に、甲に対して、契約を締結するか否かを通知する。")), []);
   });
 
   it("does not run in a statute nor outside the legal genres", () => {
@@ -250,5 +276,16 @@ describe("unitAt and actsTimedAt", () => {
     assert.deepEqual(actsTimedAt(source, { articles: [], lists: [], paragraphs: [] }, 5, deadlines, holds), []);
     assert.deepEqual(actsTimedAt("", units, 5, deadlines, holds), []);
     assert.deepEqual(actsTimedAt(source, units, 5, [], holds), []);
+  });
+});
+
+describe("pointedParagraphs", () => {
+  const pointers = [{ pattern: "前項", group: "previous" }, { pattern: "本条…項" }, { pattern: "本条第…項" }];
+  it("reads the paragraph before and paragraphs by number, in half or full width", () => {
+    assert.deepEqual(pointedParagraphs("乙は前項の対価を支払う。", 4, pointers), [3]);
+    assert.deepEqual(pointedParagraphs("本条1項に定める対価", 3, pointers), [1]);
+    assert.deepEqual(pointedParagraphs("本条第２項の費用", 3, pointers), [2]);
+    assert.deepEqual(pointedParagraphs("乙は対価を支払う。", 3, pointers), []);
+    assert.deepEqual(pointedParagraphs("前項", 2, []), []);
   });
 });

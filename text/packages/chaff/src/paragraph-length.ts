@@ -19,6 +19,16 @@ const FUSED_HEADING = /^[ \t\u3000]*[0-9０-９①-⑳]{1,3}【[^】\n]+】[ \t\
 /** 段落の本文が、番号付きの見出しから改行なしで始まる。段落の切れ目が失われた文書で、長さを測っても書き手の段落ではない。 */
 export const opensWithFusedHeading = (text: string): boolean => FUSED_HEADING.test(text);
 
+/** A sentence end glued to the next sentence with no space ("speculate about it.Judge the claim"): a line break lost in copying. The next word ends in a space or a mark other than a period: "Cong.Rec." is an abbreviation. */
+const GLUED_SENTENCES = /(?<=\p{Ll}\p{Ll})[.!?](?=\p{Lu}\p{Ll}+[\s,;:])/gu;
+
+/** One glued pair is a typo; two or more mean the block's line breaks were lost, so its sentences were not one paragraph. */
+const MIN_GLUED = 2;
+
+/** 文の終わりと次の文の頭が空白なしでつながる所が二つ以上ある。改行が落ちた塊で、長さを測っても書き手の段落ではない。 */
+export const lostLineBreaks = (sentences: readonly { readonly text: string }[]): boolean =>
+  sentences.reduce((count, sentence) => count + [...sentence.text.matchAll(GLUED_SENTENCES)].length, 0) >= MIN_GLUED;
+
 /** 【】のラベルだけの文（【０００１】【技術分野】）。見出しで、文に数えない。 */
 const LABELS_ONLY = /^\s*(?:【[^】\n]+】\s*)+$/u;
 

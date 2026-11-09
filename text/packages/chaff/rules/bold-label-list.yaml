@@ -23,6 +23,13 @@ how_to_fix:
 
 # 指摘に要る項目の数。長さで割らない：人の記事は長くても 1 つ 2 つで、生成文は短くても並べる。
 levels: { strict: 3, normal: 5, relaxed: 8 }
+options:
+  min_leads:
+    kind: count
+    default: 3
+    about:
+      ja: 太字の一文で始まる項目（- **範囲を固定する。** 〜）だけで指摘する数。人の文書は手順や欄の名前に太字の札を 3 つ 4 つ並べることはあっても、太字の一文で始まる項目を並べることはほとんどありません
+      en: How many items opening with a bold lead sentence (- **Lock your ranges.** ...) report on their own. Human documents may give three or four steps or fields a bold label, but rarely make a list of bold lead sentences
 
 use_for: [technical/readme, blog, business, legal, docs, academic, literature, speech]
 off_for:
@@ -74,8 +81,8 @@ not_flagged:
   ja: 札がコードだけの項目（`--flag` の説明のような、設定や引数の一覧）は数えません。札の後ろにコロンも句点も無い項目（太字が文の頭の語だけのもの）と、その後ろに何も無い項目も数えません。仕様書（technical/spec）・法務・説明書・論文・文学のジャンルでは見ません。
   en: An item whose label is only code (a list of options or fields) is not counted, nor is one whose bold ends in neither a colon nor a full stop (a bold opening word of a sentence), or that has no text after it. Specification (technical/spec), legal, documentation, academic and literary genres do not run this rule.
 level_meaning:
-  ja: 太字の札で始まる項目が {limit} 個あれば指摘
-  en: reported once {limit} list items open with a bold label
+  ja: 太字の札で始まる項目が {limit} 個あれば指摘（太字の一文で始まる項目は min_leads の数から）
+  en: reported once {limit} list items open with a bold label (items opening with a bold lead sentence from min_leads)
 rewrite:
   depth: structure
   ja:

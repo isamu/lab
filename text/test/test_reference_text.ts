@@ -131,6 +131,35 @@ describe("reference-title-mismatch", () => {
 
   it("a reference to another document is not compared with this document's headings", () => {
     assert.deepEqual(titleJa("民法第2章（総則）に従います。"), []);
+    assert.deepEqual(titleJa("民法第1章（通則）、同第2章（総則）に従います。"), []);
+  });
+
+  it("a longer form of the document's own name is another document where the document calls itself by the short form", () => {
+    const contract = (preamble: string, reference: string): string[] =>
+      found(
+        "reference-title-mismatch",
+        [
+          "# 契約書",
+          "",
+          preamble,
+          "",
+          "第1条（目的）",
+          "取引を定める。",
+          "",
+          "第2条（秘密保持）",
+          "乙は秘密を守る。",
+          "",
+          "第3条（準用）",
+          `${reference}は準用する。`,
+        ].join("\n"),
+        ja,
+        "ja",
+      );
+    const both = "甲と乙は、先に結んだ基本契約（以下「本基本契約」という。）に基づき、この契約（以下「本契約」という。）を結ぶ。";
+    assert.deepEqual(contract(both, "本基本契約第2条（再委託）、同第1条（変更）"), []);
+    assert.deepEqual(contract(both, "本契約第2条（再委託）"), ["第2条:再委託≠秘密保持"]);
+    const longOnly = "甲と乙は、この利用契約（以下「本利用契約」という。）を結ぶ。";
+    assert.deepEqual(contract(longOnly, "本利用契約第2条（再委託）"), ["第2条:再委託≠秘密保持"]);
   });
 });
 
@@ -149,6 +178,11 @@ describe("reference-topic-missing", () => {
     const inside = ["# Terms", "", "## 1. Scope", "", "See Section 2 for user data.", "", "## 2. Safety", "", "The abuser metadata is kept."].join("\n");
     assert.deepEqual(found("reference-topic-missing", inside, en, "en"), ["Section 2:user data≠Safety"]);
     assert.deepEqual(topicEn("See Section 3 for the refund window."), ["Section 3:refund window≠Refunds"]);
+  });
+
+  it("the link is a whole word: for in formulate or forms is no link", () => {
+    assert.deepEqual(topicEn("The rules of Section 2 formulate a research agenda."), []);
+    assert.deepEqual(topicEn("Section 2 forms the basis of the plan."), []);
   });
 
   it("a word that fits any section is not a topic", () => {

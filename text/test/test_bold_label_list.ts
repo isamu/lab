@@ -1,7 +1,8 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { firedRules } from "./rule-run.ts";
-import { boldLabelOf, boldLeadOf, isQuotedAt } from "../packages/chaff/src/detectors/bold-label.ts";
+import { boldLabelList, boldLabelOf, boldLeadOf, isQuotedAt } from "../packages/chaff/src/detectors/bold-label.ts";
+import { buildDocument } from "../packages/chaff/src/document.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
@@ -199,8 +200,31 @@ describe("bold-label-list", () => {
     assert.ok(idsFor(`# Post\n\n${englishList(3)}\n\nBody text.\n\n${leadList(2)}\n`, en).includes("bold-label-list"));
   });
 
-  it("valid: four bold lead sentences stay under the normal level", () => {
-    assert.ok(!idsFor(`# Post\n\n${leadList(4)}\n`, en).includes("bold-label-list"));
+  it("invalid: three bold lead sentences report on their own, below the level for colon labels", () => {
+    const tips = [
+      "- **Lock your ranges.** Add dollar signs so the range stays put.",
+      "- **Check one result by hand.** Work out one answer yourself.",
+      "- **Keep your data tidy.** One kind of value in each column.",
+    ].join("\n");
+    assert.ok(idsFor(`# Post\n\n${tips}\n`, en).includes("bold-label-list"));
+    assert.ok(
+      idsFor(
+        `# 記事\n\n- **範囲を固定する。**ずれないようにします。\n- **一つは手で確かめる。**答えを自分で出します。\n- **表を整える。**列ごとに一種類にします。\n`,
+        ja,
+      ).includes("bold-label-list"),
+    );
+  });
+
+  it("valid: two bold lead sentences, or two with two colon labels, stay under", () => {
+    assert.ok(!idsFor(`# Post\n\n${leadList(2)}\n`, en).includes("bold-label-list"));
+    assert.ok(!idsFor(`# Post\n\n${englishList(2)}\n\nBody text.\n\n${leadList(2)}\n`, en).includes("bold-label-list"));
+  });
+
+  it("reads the lead count from the rule's min_leads option", () => {
+    const doc = buildDocument("t.md", `# Post\n\n${leadList(3)}\n`, en);
+    assert.equal(boldLabelList(doc, { limit: 5, settings: { min_leads: 4 } }).length, 0);
+    assert.deepEqual(boldLabelList(doc, { limit: 5 })[0]?.values, { label: "Step 1 matters", count: 3, limit: 3, offset: 8 });
+    assert.deepEqual(boldLabelList(doc, { limit: 3 })[0]?.values, { label: "Step 1 matters", count: 3, limit: 3, offset: 8 });
   });
 
   it("valid: items that only open with a bold word are not counted", () => {

@@ -1,6 +1,7 @@
 import type { LexiconEntry, ProseDocument, Sentence, Token } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { entryRanges, type TokenRange } from "./lexicon-match.ts";
+import { inDocumentOrder } from "../structure/issues.ts";
 
 // A word that leaves a list open (等, etc.) is also part of names a document gives itself: 「業務執行取締役等」,
 // 銀行等（…をいう。）, the head of a definition item (四の二 親会社等 …をいう。), and longer nouns built on them
@@ -43,7 +44,13 @@ type QuotedName = { readonly name: string; readonly at: readonly number[] };
  * The names a document gives that contain an open-end word: the ones it quotes, the ones it defines in an aside right
  * after them (whole, as written there), and the heads of its definition items (which may run on into the definition).
  */
-export type OpenEndNames = { readonly quoted: readonly QuotedName[]; readonly defined: ReadonlySet<string>; readonly heads: readonly string[] };
+export type OpenEndNames = {
+  readonly quoted: readonly QuotedName[];
+  readonly defined: ReadonlySet<string>;
+  readonly heads: readonly string[];
+  /** Every term the document defines (「秘密情報」): the word right after one (秘密情報等) widens a named thing, not an open list. */
+  readonly terms: ReadonlySet<string>;
+};
 
 const attached = (left: Token | undefined, right: Token | undefined): boolean =>
   left !== undefined && right !== undefined && left.span.end === right.span.start;
@@ -129,12 +136,19 @@ const quotedNames = (source: string, words: readonly LexiconEntry[]): QuotedName
     return at.length === 0 ? [] : [{ name, at }];
   });
 
+const definedTerms = (doc: ProseDocument): Set<string> =>
+  new Set(
+    doc.structure === undefined
+      ? []
+      : inDocumentOrder(doc.structure).flatMap((node) => (node.kind === "definition" && typeof node.attrs["term"] === "string" ? [node.attrs["term"]] : [])),
+  );
+
 /** The names a document gives that contain an open-end word. statements: the language's words of a definition (をいう, means). */
 export const openEndNames = (doc: ProseDocument, words: readonly LexiconEntry[], statements: readonly string[]): OpenEndNames => {
   const occurrences = doc.sentences.flatMap((sentence) => words.flatMap((word) => occurrencesIn(sentence, word)));
   const defined = occurrences.filter((occurrence) => definedInAside(doc.source, occurrence, statements)).map((occurrence) => nounOf(doc.source, occurrence));
   const heads = occurrences.filter((occurrence) => headsItem(doc.source, occurrence, statements)).map((occurrence) => nounOf(doc.source, occurrence));
-  return { quoted: quotedNames(doc.source, words), defined: new Set(defined), heads: [...new Set(heads)] };
+  return { quoted: quotedNames(doc.source, words), defined: new Set(defined), heads: [...new Set(heads)], terms: definedTerms(doc) };
 };
 
 /** Whether a quoted name holds this occurrence: the text around it reads the whole name (当該責任追及等 holds 「責任追及等」). */
@@ -152,8 +166,13 @@ const partsHoldingWord = (source: string, occurrence: Occurrence): string[] => {
   return starts.flatMap((start) => ends.map((end) => source.slice(start, end)));
 };
 
+/** Whether the word follows a defined term written whole (秘密情報等 where 「秘密情報」 is defined). */
+const followsTerm = (source: string, occurrence: Occurrence, terms: ReadonlySet<string>): boolean =>
+  occurrence.tokens.slice(occurrence.first, occurrence.range.start).some((token) => terms.has(source.slice(token.span.start, occurrence.start)));
+
 const isNamed = (source: string, occurrence: Occurrence, names: OpenEndNames): boolean =>
   inQuotedName(source, occurrence, names.quoted) ||
+  followsTerm(source, occurrence, names.terms) ||
   partsHoldingWord(source, occurrence).some((part) => names.defined.has(part) || names.heads.some((head) => head.startsWith(part)));
 
 /** Whether the words around an occurrence bound its list; range: the tokens the word covers. */

@@ -180,6 +180,20 @@ describe("defined-term-form: a term written longer with a word of its definition
     assert.equal(extendedAfter("the Application.", 4, "App", "the Pinecone Notes application (the App)"), "Application");
   });
 
+  it("does not read the definition's own marker (以下本契約において同じ) as a word added to the term", () => {
+    const source = [
+      "# 業務委託契約書",
+      "",
+      "甲と乙は、次のとおり契約（以下「本契約」という。）を締結する。",
+      "",
+      "第1条（著作権）",
+      "",
+      "成果物の著作権（著作権法第27条の権利を含む。以下本契約において同じ。）は、甲に帰属する。",
+      "",
+    ].join("\n");
+    assert.deepEqual(valuesOf(ja, "defined-term-form", source, "written"), []);
+  });
+
   it("does not report a pointing word, a short term, the long name, a plural, a lower-case term or another word", () => {
     const pointer = `${RULES_JA}\n## 第3条（保管）\n\n文書は、当該管理責任者が保管する。\n`;
     assert.deepEqual(valuesOf(ja, "defined-term-form", pointer, "written", "legal/statute"), []);

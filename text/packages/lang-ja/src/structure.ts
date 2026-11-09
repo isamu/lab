@@ -1,6 +1,6 @@
 import type { Mention, NumberedLine, NumberingContext, StructurePatterns } from "chaffjs/plugin";
 import { parseJapaneseNumber, toHalfWidth } from "./numbers.ts";
-import { citationVocabulary, citedDocument, namedDocument } from "./citation.ts";
+import { citationVocabulary, citedName, namedDocument, type CitedName } from "./citation.ts";
 import { loadLexicons } from "./lexicons.ts";
 import { countedAfter, dates, quantities } from "./quantities.ts";
 import { sectionReferences, sectionVocabulary } from "./section-reference.ts";
@@ -261,8 +261,8 @@ const PARENTHESES = /（[^（）()]*）|\([^（）()]*\)/gu;
 /** 閉じの括弧が、開いたままの最後の括弧と組になるか。 */
 const closes = (char: string, opened: string | undefined): boolean => opened !== undefined && OPENER_OF.get(char) === opened;
 
-/** 間の文字列が、接続の語・読点・項や号の断片・括弧書きだけでできているか。 */
-const isContinuation = (gap: string): boolean => gap.replace(PARENTHESES, "").replace(FRAGMENT, "").replace(CONNECTORS, "") === "";
+/** 間の文字列が、接続の語・読点・項や号の断片・括弧書きと、「民法第1条、同第2条」の「同」（前の参照と同じ文書）だけでできているか。 */
+const isContinuation = (gap: string): boolean => /^同?$/u.test(gap.replace(PARENTHESES, "").replace(FRAGMENT, "").replace(CONNECTORS, ""));
 
 /** 行を一度だけ読んで、位置ごとの括弧の深さを出す。参照ごとに行を読み直さない。 */
 const depthsOf = (text: string): Int32Array => {
@@ -352,17 +352,17 @@ const articlesOf = (text: string): Mention[] =>
 const references = (text: string): Mention[] => {
   const depths = depthsOf(text);
   // 括弧書きの中の参照（「（同法第五十九条において準用する場合を含む。）」）は、外の並びを切らない。並びは括弧の深さごとに持つ。
-  const chains = new Map<number, { readonly end: number; readonly document: string | undefined }>();
+  const chains = new Map<number, { readonly end: number; readonly named: CitedName | undefined }>();
   return [...articlesOf(text), ...sectionsOf(text)]
     .toSorted((left, right) => left.start - right.start)
     .map((mention) => {
       const depth = depths[mention.start] ?? 0;
       const previous = chains.get(depth);
       const inherited =
-        previous?.document !== undefined && isContinuation(withoutClosedParentheses(text.slice(previous.end, mention.start))) ? previous.document : undefined;
-      const document = citedDocument(text, mention.start, CITATION) ?? inherited;
-      chains.set(depth, { end: mention.end, document });
-      return document === undefined ? mention : { ...mention, attrs: { ...mention.attrs, document } };
+        previous?.named !== undefined && isContinuation(withoutClosedParentheses(text.slice(previous.end, mention.start))) ? previous.named : undefined;
+      const named = citedName(text, mention.start, CITATION) ?? inherited;
+      chains.set(depth, { end: mention.end, named });
+      return named === undefined ? mention : { ...mention, attrs: { ...mention.attrs, ...named } };
     });
 };
 

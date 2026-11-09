@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
-import { isTooLongParagraph, labelledBlocks, opensWithFusedHeading } from "../packages/chaff/src/paragraph-length.ts";
+import { isTooLongParagraph, labelledBlocks, lostLineBreaks, opensWithFusedHeading } from "../packages/chaff/src/paragraph-length.ts";
 import { contractionExtraWords } from "../packages/chaff/src/contraction-words.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
@@ -93,6 +93,40 @@ describe("max-paragraph-length (English)", () => {
 
   it("a team's lower limit reaches the short paragraph too", () => {
     assert.deepEqual(findingsOf(`# Spacewalks\n\n${NASA_AIRLOCK}\n`, en, "blog/owned-media", { [RULE]: 3 }), ["7"]);
+  });
+});
+
+describe("max-paragraph-length: a block whose line breaks were lost", () => {
+  const rules = (glue: string): string =>
+    [
+      "You sort the replies in the queue by tone.",
+      `Read the reply and the post it answers.${glue}Pick the tone that fits best.`,
+      "Use calm for a reply that states facts.",
+      "Use sharp for a reply that mocks or blames.",
+      `Use mixed when the reply does both.${glue}Use none when it has no tone at all.`,
+      "Do not guess at what the writer meant.",
+      "Give one label and nothing else.",
+      "Keep the label in lower case.",
+      "Skip replies that are only a link.",
+      "Mark replies in another language as foreign.",
+    ]
+      .map((sentence) => sentence.replace(/[.]$/u, ", and keep in mind that the team reads every label you give when it plans the next round of checks."))
+      .join(" ");
+
+  it("valid: two or more sentence ends glued to the next sentence mean the line breaks were lost", () => {
+    assert.deepEqual(findingsOf(`# Prompt\n\n${rules("")}\n`, en, "academic/paper"), []);
+  });
+
+  it("invalid: the same paragraph written with spaces is reported", () => {
+    assert.deepEqual(findingsOf(`# Prompt\n\n${rules(" ")}\n`, en, "academic/paper").length, 1);
+  });
+
+  it("lostLineBreaks needs two glued pairs; one is a typo", () => {
+    assert.equal(lostLineBreaks([{ text: "It ends here.Next one.And this.Again" }]), true);
+    assert.equal(lostLineBreaks([{ text: "It ends here.Next one starts." }]), false);
+    assert.equal(lostLineBreaks([{ text: "See U.S.Army and e.g.Smith." }]), false);
+    assert.equal(lostLineBreaks([{ text: "See Cong.Rec., April 9 and Cong.Rec., April 21." }]), false);
+    assert.equal(lostLineBreaks([]), false);
   });
 });
 

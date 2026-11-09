@@ -12,6 +12,8 @@ export type Context = {
   readonly viewpoints: Lexicon;
   /** 全体の部分を言う名詞（part・role・step）。 */
   readonly parts: Lexicon;
+  /** 前に名指した名詞の代わりに立つ語（one・ones）。 */
+  readonly proForms: Lexicon;
 };
 
 /** 語彙表の語が最上級まで届く語の数。これより離れた動詞は、間に別の目的語や節がある。 */
@@ -33,6 +35,7 @@ export const contextOf = (lexicons: Readonly<Record<string, Lexicon>>): Context 
   referents: lexicons["superlative-referent"] ?? [],
   viewpoints: lexicons["superlative-viewpoint"] ?? [],
   parts: lexicons["superlative-part"] ?? [],
+  proForms: lexicons["superlative-pro-form"] ?? [],
 });
 
 const isPunct = (token: Token | undefined): boolean => token === undefined || token.pos === "PUNCT";
@@ -104,4 +107,13 @@ export const viewpointBefore = (tokens: readonly Token[], range: TokenRange, vie
 export const ranksParts = (tokens: readonly Token[], range: TokenRange, parts: Lexicon): boolean => {
   const at = phraseEnd(tokens, range.end);
   return at > range.end && isWord(tokens[at - 1], parts);
+};
+
+/**
+ * 最上級の名詞が、前に名指した名詞の代わりの語か（ten topics … the best-scoring one）。比べている集まりは文章が先に
+ * 名指したもので、世の中のものと比べた主張ではない。名詞は最上級の修飾の後ろに来る（英語）。
+ */
+export const picksFromNamedSet = (tokens: readonly Token[], range: TokenRange, proForms: Lexicon): boolean => {
+  const at = phraseEnd(tokens, range.end);
+  return at > range.end && isWord(tokens[at - 1], proForms);
 };

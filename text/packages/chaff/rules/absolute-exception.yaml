@@ -3,7 +3,7 @@ layer: L3
 status: stable
 how_to_find: absolute-exception
 word_list: absolute-word
-extra_word_lists: [exception-marker, light-verb]
+extra_word_lists: [exception-marker, light-verb, negation-word]
 requires: [structure, pos]
 severity: warning
 
@@ -81,5 +81,5 @@ example:
       Staff need not send the receipt to the finance team for an expense under ten dollars, except for travel.
 
 not_flagged:
-  ja: 例外を言い切った文と同じ条や段落に書いた文（ただし書）、言い切った文そのものが例外を持つ文、言い切った文の中身の語を半分以上くり返さない例外は指摘しません。義務の語（しなければならない・してはならない）の無い言い切りと、鉤括弧の中の語も見ません。
-  en: An exception in the same article or paragraph (a proviso), an absolute rule that carries its own exception, and an exception that does not repeat most of the rule's content words are not reported. A statement with no obligation word (must, shall, must not) and words inside quotation marks are not read.
+  ja: 例外を言い切った文と同じ条や段落に書いた文（ただし書）、言い切った文そのものが例外を持つ文、言い切った文の中身の語を半分以上くり返さない例外は指摘しません。義務の語（しなければならない・してはならない）の無い言い切りと、鉤括弧の中の語も見ません。打ち消しのすぐ後ろの言い切りの語（not always）は例外を認める言い方なので見ません。
+  en: An exception in the same article or paragraph (a proviso), an absolute rule that carries its own exception, and an exception that does not repeat most of the rule's content words are not reported. A statement with no obligation word (must, shall, must not), words inside quotation marks, and an absolute word right after a negation ("not always", which admits exceptions) are not read.
