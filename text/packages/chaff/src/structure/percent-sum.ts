@@ -24,6 +24,8 @@ export type ShareWords = {
   readonly rests?: readonly string[];
   /** 値の動いた向きの語（伸び、grew）。その文の百分率は変化で、「その他」があっても内訳ではない。 */
   readonly changes?: readonly string[];
+  /** 二つの値を一つの範囲や変化につなぐ語と印（to, 〜）。つないだ二つの百分率は一つの割合の二つの値で、どちらが内訳の部分かは言えない。 */
+  readonly joiners?: readonly string[];
   readonly units: readonly string[];
   readonly totalLabels: readonly string[];
 };

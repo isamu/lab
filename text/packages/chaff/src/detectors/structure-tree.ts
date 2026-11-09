@@ -336,6 +336,7 @@ const shareWordsOf = (doc: ProseDocument): ShareWords => ({
   exceptions: (doc.lexicons["share-exception"] ?? []).map((entry) => entry.pattern),
   rests: (doc.lexicons["share-rest"] ?? []).map((entry) => entry.pattern),
   changes: (doc.lexicons["change-direction"] ?? []).map((entry) => entry.pattern),
+  joiners: [...(doc.lexicons["range-connector"] ?? []), ...(doc.lexicons["quantity-range-word"] ?? [])].map((entry) => entry.pattern),
   units: (doc.lexicons["percent-unit"] ?? []).map((entry) => entry.pattern),
   totalLabels: (doc.lexicons["total-label"] ?? []).map((entry) => entry.pattern),
 });
