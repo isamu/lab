@@ -1,7 +1,7 @@
 id: redundant-expression
 layer: L2
 status: stable
-how_to_find: phrase-match
+how_to_find: redundant-pair
 word_list: redundant-expression
 uses: [pos]
 severity: info
