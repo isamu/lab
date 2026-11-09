@@ -76,6 +76,19 @@ describe("unqualified-superlative: ranking the parts of a whole, and an order of
   });
 });
 
+describe("unqualified-superlative: one of a set the text already named", () => {
+  it("does not report a superlative whose noun is one or ones", () => {
+    quiet(en, [
+      "The classifier scores each post against the topic lists and assigns the best-scoring one.",
+      "We tried several shops and kept the cheapest ones.",
+    ]);
+  });
+
+  it("still reports a superlative whose noun is not one, or one used as a number before a noun", () => {
+    reported(en, ["The classifier assigns the best-scoring topic.", "Ours is the best one-stop service."]);
+  });
+});
+
 describe("unqualified-superlative: a clause of a pronoun and one word after the noun", () => {
   it("reads the files you own as restricting the set", () => {
     quiet(en, ["Your photos are some of the most irreplaceable files you own.", "These are the best tools we own."]);
