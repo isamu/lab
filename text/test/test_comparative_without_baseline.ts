@@ -109,6 +109,17 @@ describe("comparative-without-baseline: 比べる相手の無い比較", () => {
     assert.deepEqual(findingsOf("`COPY . .` を `RUN yarn install` より前に書いていた。", ja), []);
   });
 
+  it("層の位置を言う比較（より低い層）は、いま述べている層と比べている", () => {
+    assert.deepEqual(findingsOf("この方式は、より低い層で動作します。", ja), []);
+    assert.deepEqual(findingsOf("この方式は、より低い速度で動作します。", ja), ["「より低い」は、何と比べているかが書かれていません"]);
+  });
+
+  it("取り除いた・差し引いた数との比較は、取り除く前の数と比べている", () => {
+    assert.deepEqual(findingsOf("売上から季節の影響を取り除いた数で、景気の動きをより的確に把握できる。", ja), []);
+    assert.deepEqual(findingsOf("売上から経費を差し引いた額で、利益をより正確に知ることができる。", ja), []);
+    assert.deepEqual(findingsOf("新しい数で、景気の動きをより的確に把握できる。", ja), ["「より的確」は、何と比べているかが書かれていません"]);
+  });
+
   it("鉤括弧の中の比較は、題や語を挙げたもの", () => {
     assert.deepEqual(findingsOf("詳しくは「申告がさらに簡単に！」のページを見てください。", ja), []);
     assert.deepEqual(findingsOf("詳しくは、申告がさらに簡単になったことを見てください。", ja), ["「さらに簡単」は、何と比べているかが書かれていません"]);

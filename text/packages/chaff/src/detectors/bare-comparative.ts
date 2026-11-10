@@ -34,6 +34,7 @@ export type ComparativeLists = {
   readonly pointers: ReadonlySet<string>;
   readonly causes: ReadonlySet<string>;
   readonly openers: ReadonlySet<string>;
+  readonly layers: ReadonlySet<string>;
 };
 
 /** head は英語の比べた形の前の述語（is faster の is）。 */
@@ -102,9 +103,16 @@ const aimAfterOf = (tokens: readonly Token[], at: number, aims: ReadonlySet<stri
   return length > 0 && tokens[of]?.surface === "の" && runsFrom(tokens, of + 1).some(({ run }) => aims.has(run));
 };
 
+/** 程度を言う語（at）の後ろの語の位置。形容動詞の語幹なら、語尾（な、に）を飛ばす。 */
+const afterGradable = (tokens: readonly Token[], at: number): number =>
+  tokens[at]?.pos === "NOUN" && ADJECTIVAL_TAIL.has(tokens[at + 1]?.surface ?? "") ? at + 2 : at + 1;
+
+/** 程度を言う語（at）の後ろが、層の並びの中の位置を言う語か（より低い層）。相手は、いま述べている層。 */
+const namesLayer = (tokens: readonly Token[], at: number, layers: ReadonlySet<string>): boolean => layers.has(tokens[afterGradable(tokens, at)]?.surface ?? "");
+
 /** 程度を言う語（at）の後ろが、今より良くする目当てか（より良い社会、より豊かな暮らし、より良いものにする、より良い共生の実現）。 */
 const namesAim = (tokens: readonly Token[], at: number, aims: ReadonlySet<string>): boolean => {
-  const next = tokens[at]?.pos === "NOUN" && ADJECTIVAL_TAIL.has(tokens[at + 1]?.surface ?? "") ? at + 2 : at + 1;
+  const next = afterGradable(tokens, at);
   return (
     runsFrom(tokens, next).some(({ run, after }) => aims.has(run) && !headsCompound(tokens, after)) ||
     endsInAim(tokens, next, aims) ||
@@ -118,7 +126,8 @@ const markedAt = (tokens: readonly Token[], at: number, lists: ComparativeLists)
   if (marker?.pos !== "ADV" || !lists.markers.has(marker.surface) || word === undefined || lists.exempt.has(word.surface)) return undefined;
   const previous = tokens[at - 1];
   if (previous !== undefined && !OPENS_WORD.has(previous.pos)) return undefined;
-  return isGradable(tokens, at + 1) && !namesAim(tokens, at + 1, lists.aims) ? { first: marker, last: word } : undefined;
+  if (!isGradable(tokens, at + 1) || namesAim(tokens, at + 1, lists.aims) || namesLayer(tokens, at + 1, lists.layers)) return undefined;
+  return { first: marker, last: word };
 };
 
 /** 比べた形の後ろで節が終わるか。読点の後ろに形容詞が続けば、名詞の前に並べた修飾語（better, more predictable results）。 */
@@ -245,6 +254,7 @@ export const listsOf = (lexicon: Lexicon): ComparativeLists => ({
   pointers: new Set(groupOf(lexicon, "pointer")),
   causes: new Set(groupOf(lexicon, "cause")),
   openers: new Set(groupOf(lexicon, "opener")),
+  layers: new Set(groupOf(lexicon, "layer")),
 });
 
 /** 鉤括弧の中の比較（「給与所得の確定申告がさらに簡単に！」ページ）は題や語を挙げたもので、書き手の比較ではない。 */
