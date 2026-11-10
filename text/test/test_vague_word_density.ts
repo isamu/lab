@@ -53,6 +53,22 @@ describe("vague-word-density: あいまいな語が文書の長さに対して�
     assert.deepEqual(findingsOf(plainEn, en), []);
   });
 
+  it("目次の行は節の名前で、文として数えない", () => {
+    const body = `${PLAIN_JA.repeat(15)}障害は適宜報告し、必要に応じて連絡します。記録は適切に残し、なるべく早めにまとめます。\n`;
+    const toc = "# 方策\n\n## 目次\n\n- 1 学生が事情に応じて柔軟に履修する仕組み\n\n## 本文\n\n";
+    assert.equal(findingsOf(`${toc}${body}`).length, 2, findingsOf(`${toc}${body}`).join("\n"));
+    const asProse = `# 方策\n\n## 概要\n\n- 1 学生が事情に応じて柔軟に履修する仕組み\n\n## 本文\n\n`;
+    assert.equal(findingsOf(`${asProse}${body}`).length, 3);
+  });
+
+  it("reasonable accommodation is the name of a legal duty in any genre, and a bare reasonable is still counted", () => {
+    const vague = "Report incidents as needed and notify the appropriate people in a timely manner. Keep adequate records where possible.";
+    const named = `${PLAIN_EN.repeat(13)}${vague} Requests for reasonable accommodation go to the disability office.\n`;
+    assert.equal(findingsOf(named, en, "docs/manual").length, 2, findingsOf(named, en, "docs/manual").join("\n"));
+    const bare = `${PLAIN_EN.repeat(13)}${vague} Requests get a reasonable answer from the office.\n`;
+    assert.equal(findingsOf(bare, en, "docs/manual").length, 3);
+  });
+
   it("あいまいな語が無ければ何も言わない", () => {
     assert.deepEqual(findingsOf(`${PLAIN_JA.repeat(10)}\n`), []);
   });
