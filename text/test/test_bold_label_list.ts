@@ -242,4 +242,50 @@ describe("bold-label-list", () => {
     const fields = ["Date", "Place", "Present", "Chair", "Notes", "Next meeting"].map((field) => `- **${field}**: to be decided.`).join("\n");
     assert.ok(!idsFor(`# Minutes\n\n${fields}\n`, en, "business/meeting-notes").includes("bold-label-list"));
   });
+
+  const statementParagraphs = [
+    "**Sales rose every month**: 10 in May, 14 in June and 19 in July.",
+    "**Older readers rarely opened it**: most of them read the printed copy.",
+    "**Most questions were about refunds**: about half of the tickets asked how to get money back.",
+  ].join("\n\n");
+
+  it("invalid: three paragraphs that each open with a bold statement", () => {
+    assert.ok(idsFor(`# Report\n\n${statementParagraphs}\n`, en, "business/report").includes("bold-label-list"));
+    const doc = buildDocument("t.md", `# Report\n\n${statementParagraphs}\n`, en);
+    const [found] = boldLabelList(doc, { limit: 5 });
+    assert.equal(found?.variant, "paragraphs");
+    assert.deepEqual(found?.values, { label: "Sales rose every month", count: 3, limit: 3, offset: 10 });
+    assert.equal(boldLabelList(doc, { limit: 5, settings: { min_clause_paragraphs: 4 } }).length, 0);
+  });
+
+  it("invalid: bold statements closed by a stop count as well", () => {
+    const leads = ["**The queue moved faster.** Waits halved.", "**Nobody used the kiosk.** It sat idle.", "**Refunds took a week.** Customers wrote in."].join(
+      "\n\n",
+    );
+    assert.ok(idsFor(`# Report\n\n${leads}\n`, en, "business/report").includes("bold-label-list"));
+  });
+
+  it("valid: two bold statements stay under", () => {
+    const two = statementParagraphs.split("\n\n").slice(0, 2).join("\n\n");
+    assert.ok(!idsFor(`# Report\n\n${two}\n`, en, "business/report").includes("bold-label-list"));
+  });
+
+  it("valid: paragraphs run in with bold imperatives, terms or questions are a human head", () => {
+    const imperatives = ["Talk to your users", "Start small", "Know your values", "Write it down", "Share early"].map(
+      (head) => `**${head}:** Then the work goes on from there.`,
+    );
+    const terms = ["Work week", "Pay period", "Base schedule", "Leave balance"].map((head) => `**${head}**: the hours the office counts.`);
+    const questions = ["Who is my reader?", "What do they need?", "Where will they read it?"].map((head) => `**${head}** Think about it before you write.`);
+    [imperatives, terms, questions].forEach((paragraphs) => {
+      assert.ok(!idsFor(`# Post\n\n${paragraphs.join("\n\n")}\n`, en).includes("bold-label-list"));
+    });
+  });
+
+  it("valid: quoted bold statements are someone else's words", () => {
+    const quoted = statementParagraphs
+      .split("\n\n")
+      .map((paragraph) => `> ${paragraph}`)
+      .join("\n>\n");
+    assert.ok(!idsFor(`# Report\n\n${quoted}\n`, en, "business/report").includes("bold-label-list"));
+  });
 });
