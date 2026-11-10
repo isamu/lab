@@ -3,8 +3,8 @@
 // from the language package's cleft-frame lexicon, so a language without one has no clefts.
 import type { LexiconEntry, Span } from "../plugin.ts";
 
-const SENTENCE_END = new Set([..."。．.!?！？ \t\n\u3000"]);
-const FOCUS_START = new Set([..."、，, \t\n\u3000"]);
+const SENTENCE_END = new Set("。．.!?！？ \t\n\u3000");
+const FOCUS_START = new Set("、，, \t\n\u3000");
 
 const withoutTrailing = (text: string, marks: ReadonlySet<string>): string => {
   const chars = [...text];
