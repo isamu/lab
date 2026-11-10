@@ -2,11 +2,13 @@ import { hasParticle, isClosed, lastContent } from "../sentence-shape.ts";
 import { isWithinAny, quotedIn } from "../quoted-span.ts";
 import { chronologyRows } from "../chronology-rows.ts";
 import { externalLinkTitleSpans } from "../link-title.ts";
-import type { Detector, Finding, Span, Token } from "../plugin.ts";
+import type { Detector, Finding, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 import { countedTokens, uncountedWordsOf, type UncountedWords } from "../uncounted-particles.ts";
 import { boundWordParticles } from "../bound-word-particles.ts";
 import { setPhraseParticles } from "../set-phrase-particles.ts";
 import { noteSentences } from "../note-paragraphs.ts";
+import { labelledNoteSentences } from "../labelled-note-paragraphs.ts";
+import { listLeadSentences } from "../list-lead-sentence.ts";
 import { documentNameSpans } from "./particle-run-names.ts";
 import { namedLongForms } from "./particle-run-long-forms.ts";
 import { quotedNameSpans, quotedNames } from "./particle-run-quoted-names.ts";
@@ -24,11 +26,24 @@ const isDependent = (token: Token): boolean => token.features?.["NounType"] === 
 
 const inside = (span: Span, spans: readonly Span[]): boolean => spans.some((other) => span.start >= other.start && span.start < other.end);
 
+/** 表や図の注の段落の頭の語（（注1）の「注」）。 */
+const NOTE_LABEL_LEXICON = "note-paragraph-label";
+
+/** 名詞で止めるのが書き方の文: 年表の行、注や文献の一覧、（注1）で始まる表の注、箇条書きへ渡す文（以下のとおり説明。）。 */
+const clippedByForm = (doc: ProseDocument): ReadonlySet<Sentence> => {
+  const patterns = (id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
+  return new Set([
+    ...chronologyRows(doc),
+    ...noteSentences(doc.source, doc.paragraphs),
+    ...labelledNoteSentences(doc.source, doc.paragraphs, patterns(NOTE_LABEL_LEXICON), patterns("note-mark")),
+    ...listLeadSentences(doc.sentences, doc.lists, doc.source),
+  ]);
+};
+
 export const nounEnding: Detector = (doc, options): Finding[] => {
-  const rows = chronologyRows(doc);
-  const notes = noteSentences(doc.source, doc.paragraphs);
+  const clipped = clippedByForm(doc);
   const ended = doc.sentences.filter((sentence) => {
-    if (inside(sentence.span, doc.listSpans) || rows.has(sentence) || notes.has(sentence) || !isClosed(sentence) || !hasParticle(sentence)) return false;
+    if (inside(sentence.span, doc.listSpans) || clipped.has(sentence) || !isClosed(sentence) || !hasParticle(sentence)) return false;
     const last = lastContent(sentence);
     return last !== undefined && NOMINAL.has(last.pos) && !isDependent(last);
   });
