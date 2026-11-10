@@ -111,10 +111,33 @@ const isParallel = (source: string, run: readonly Paragraph[]): boolean => {
   return run.length > 1 && first !== undefined && first.split(" ").length === PARALLEL_WORDS && openings.every((opening) => opening === first);
 };
 
+/** How many opening words a key term set in bold may sit within (For **jury duty**, use …). */
+const KEY_TERM_WORDS = 6;
+
+/** A phrase set in bold, of a few words: **jury duty**, __vote__. */
+const BOLD_PHRASE = /(\*\*|__)(?=\S)[^*_\n]{1,60}?\S\1/u;
+
+const wordCount = (text: string): number => text.split(/\s+/u).filter((word) => word !== "").length;
+
+/** Whether a paragraph opens with a key term in bold, among its first words: an entry keyed by its subject. */
+const opensWithBoldKey = (source: string, paragraph: Paragraph): boolean => {
+  const text = source.slice(paragraph.span.start, paragraph.span.end).trim();
+  const match = BOLD_PHRASE.exec(text);
+  return match !== null && wordCount(text.slice(0, match.index)) < KEY_TERM_WORDS;
+};
+
+/**
+ * Whether most paragraphs of a run open with a key term in bold (For **religious observances**, …; For **jury duty**, …): one
+ * entry per case, a list in all but markup.
+ */
+const isKeyedByBold = (source: string, run: readonly Paragraph[]): boolean =>
+  run.filter((paragraph) => opensWithBoldKey(source, paragraph)).length * 2 > run.length;
+
 /**
  * Each run of adjacent one-sentence paragraphs, in document order, as the paragraphs it holds. A paragraph of two sentences or
  * more, a paragraph that does not end as a sentence, opens with an item mark or an enumerator, follows a lead-in as its item or
- * is a reference list's entry, or anything between two paragraphs, ends the run. A run of parallel entries is a list, not a run.
+ * is a reference list's entry, or anything between two paragraphs, ends the run. A run of parallel entries, or of entries keyed
+ * by a term in bold, is a list, not a run.
  */
 export const oneSentenceRuns = (source: string, paragraphs: readonly Paragraph[], referenceLists: readonly Span[] = []): Paragraph[][] => {
   const leadInItems = underLeadIn(source, paragraphs);
@@ -128,5 +151,5 @@ export const oneSentenceRuns = (source: string, paragraphs: readonly Paragraph[]
       else runs.push([paragraph]);
       return runs;
     }, [])
-    .filter((run) => !isParallel(source, run));
+    .filter((run) => !isParallel(source, run) && !isKeyedByBold(source, run));
 };
