@@ -1,0 +1,8 @@
+# ブロックの前置きで、続くブロックがコードではなくプログラムが出すものだと言う語（「次のように表示されます：」「出力：」）。
+# code-fence-language-mix は、そのブロックに言語名を求めない。ただの出力はどの言語でもない。
+id: output-lead-in
+language: ja
+entries:
+  - pattern: 表示され
+  - pattern: 出力
+  - pattern: 結果は次
