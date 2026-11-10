@@ -125,21 +125,17 @@ const enumeratorIn = (line: string): readonly number[] => {
  */
 const ITEM_ADDRESS = /(?<![0-9０-９,，.．])[0-9０-９]{1,2}(?:\([0-9０-９]{1,2}\)|（[0-9０-９]{1,2}）)(?=[\p{Script=Han}\p{Script=Hiragana}])/gu;
 
-/** A note's number cited in the prose (注(24)で示した), written as the notes' own labels are. */
-const NOTE_ADDRESS = /(?<=[注註])(?:\([0-9０-９]{1,3}\)|（[0-9０-９]{1,3}）)/gu;
-
 const addressBrackets = (match: RegExpMatchArray & { index: number }): number[] => {
   const end = match.index + match[0].length - 1;
   return [match.index + match[0].search(/[(（]/u), end];
 };
 
-/** The offsets in `source` of each line's label's opening and closing bracket, and of the brackets of an item's or a note's address. */
+/** The offsets in `source` of each line's label's opening and closing bracket, and of the brackets of an item's address. */
 export const enumeratorBracketOffsets = (source: string): ReadonlySet<number> => {
   const starts = lineStarts(source);
   return new Set([
     ...source.split("\n").flatMap((line, index) => enumeratorIn(line).map((at) => (starts[index] ?? 0) + at)),
     ...[...source.matchAll(ITEM_ADDRESS)].flatMap(addressBrackets),
-    ...[...source.matchAll(NOTE_ADDRESS)].flatMap(addressBrackets),
   ]);
 };
 
@@ -185,21 +181,20 @@ export const noteMarkerOffsets = (source: string): ReadonlySet<number> =>
 const NOTE_KIND = "\u0000note";
 
 /**
- * A file's size label after a link to it ((PDFファイル/333KB), （PDF：1.2MB）, (16KB)): a site's notation for its downloads,
- * not the prose's brackets. Its format word is optional; the size closes the bracket.
+ * A note's number cited in the prose (注(24)で示した): an author writes it as the notes' labels are, or as the prose's
+ * brackets are, and either is the document's own notation for it.
  */
-const FILE_SIZE = String.raw`[^()（）\n]{0,24}?[0-9０-９][0-9０-９.,．，]*\s?[KMGkＫＭＧｋ][BＢ]`;
-const FILE_SIZE_LABEL = new RegExp(String.raw`\(${FILE_SIZE}\)|（${FILE_SIZE}）`, "gu");
+const NOTE_ADDRESS = /(?<=[注註])(?:\([0-9０-９]{1,3}\)|（[0-9０-９]{1,3}）)/gu;
 
-/** The offsets in `source` of the brackets of every file size label. */
-export const fileSizeLabelOffsets = (source: string): ReadonlySet<number> =>
-  new Set([...source.matchAll(FILE_SIZE_LABEL)].flatMap((match) => [match.index, match.index + match[0].length - 1]));
+/** The offsets in `source` of the brackets of every note's cited number. */
+export const noteAddressOffsets = (source: string): ReadonlySet<number> =>
+  new Set([...source.matchAll(NOTE_ADDRESS)].flatMap((match) => [match.index, match.index + match[0].length - 1]));
 
-const FILE_SIZE_KIND = "\u0000filesize";
+const NOTE_ADDRESS_KIND = "\u0000noteaddress";
 
-/** A file size label's bracket is a kind of its own, compared only with the other size labels' brackets. */
-const withFileSizeKind = (mark: Mark, sizes: ReadonlySet<number>): Mark =>
-  sizes.has(mark.offset) ? { ...mark, form: { ...mark.form, kind: `${mark.form.kind}${FILE_SIZE_KIND}` } } : mark;
+/** A note's cited number is a kind of its own, compared only with the other cited note numbers. */
+const withNoteAddressKind = (mark: Mark, addresses: ReadonlySet<number>): Mark =>
+  addresses.has(mark.offset) ? { ...mark, form: { ...mark.form, kind: `${mark.form.kind}${NOTE_ADDRESS_KIND}` } } : mark;
 
 /** A note marker's bracket is a kind of its own, compared only with the other note markers' brackets. */
 const withNoteKind = (mark: Mark, notes: ReadonlySet<number>): Mark =>
@@ -220,10 +215,10 @@ export const markConsistency: Detector = (doc, options): Finding[] => {
   const enumerators = enumeratorBracketOffsets(doc.source);
   const doubled = doubledParenOffsets(doc.source);
   const notes = noteMarkerOffsets(doc.source);
-  const sizes = fileSizeLabelOffsets(doc.source);
+  const noteAddresses = noteAddressOffsets(doc.source);
   const marks = ownSentences(doc).flatMap((sentence) =>
     marksIn(doc.source, sentence, forms, script).map((mark) =>
-      withFileSizeKind(withNoteKind(withDoubledKind(withEnumeratorKind(mark, enumerators), doubled), notes), sizes),
+      withNoteAddressKind(withNoteKind(withDoubledKind(withEnumeratorKind(mark, enumerators), doubled), notes), noteAddresses),
     ),
   );
   const kinds = [...new Set(marks.map((mark) => mark.form.kind))];
