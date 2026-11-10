@@ -73,6 +73,15 @@ describe("formOf: how an item ends and opens (English)", () => {
     ["Smaller downloads", "phrase"],
     ["Running tests is easy", undefined],
     ["Fast startup.", undefined],
+    ["Text that is at least 11pt", "phrase"],
+    ["Black text on a white background to ensure contrast", "phrase"],
+    ["Bulleted or numbered lists using the list tools", "phrase"],
+    ["The server is down", undefined],
+    ["Fixed the broken link", undefined],
+    ["Authoring tools (e.g. Captivate, Go Animate, etc.)", undefined],
+    ["Staff who are assessed as ready are eligible", undefined],
+    ["Shelter – a charity who offer advice.", undefined],
+    ["The Law Society – to find a lawyer.", undefined],
   ];
   endings.forEach(([item, form]) => {
     it(`ending: ${item} → ${String(form)}`, () => assert.equal(formOfItem(en, "ending", item), form));
@@ -550,5 +559,32 @@ describe("list-item-form-mix: openings that are neither form (en)", () => {
     const avoid = ["Passive voice", "Technical jargon and unfamiliar terms", "References to shape or color"];
     assert.deepEqual(flagged(en, list(...avoid, "Run-on sentences and long paragraphs")), []);
     assert.deepEqual(flagged(en, list(...avoid, "Double-click the icon to open it")), ["head-verb:Double-click the icon to open it"]);
+  });
+
+  it("reads a noun phrase with a relative clause, an infinitive or a participle as a phrase, so the odd sentence is the one reported", () => {
+    const fonts = ["Standard sans-serif fonts such as Arial or Helvetica", "Text that is at least 11pt", "Black text on a white background to ensure contrast"];
+    assert.deepEqual(flagged(en, list(...fonts, "Bulleted lists using the list tools", "Text that is left aligned. Full justification should be avoided.")), [
+      "ending-sentence:Text that is left aligned.",
+    ]);
+  });
+
+  it("does not judge an item whose words go on into a link after its last sentence", () => {
+    const fields = ["Names of travellers\n  [What if this changes?](#changes)", "Start and end dates\n  [What if I am extending travel?](#extending)"];
+    assert.deepEqual(flagged(en, list(...fields, "Dates I am away\n  [What if I am staying longer?](#longer)", "A brief description of work to be done")), []);
+  });
+
+  it("does not judge an item wholly in bold, the label of the items after it", () =>
+    assert.deepEqual(
+      flagged(en, list("Ships the release on time.", "Writes the tests first.", "Reviews each change.", "**Nice to have**", "Knows the build tools well.")),
+      [],
+    ));
+
+  it("compares the items after one ending in a colon among themselves, as a nested list flattened into the outer one", () => {
+    const rules = [
+      "Staff on probation may not apply. A manager can make an exception.",
+      "Staff with a warning cannot apply.",
+      "Leave lasts six months. Exceptions to this:",
+    ];
+    assert.deepEqual(flagged(en, list(...rules, "Business needs (a new team)", "Transfers driven by the business", "Twelve months in the role")), []);
   });
 });
