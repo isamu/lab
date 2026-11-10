@@ -2,6 +2,44 @@
 
 Newest first.
 
+## 0.45.0 — 2026-11-11
+
+This release catches more AI-written bold labels, email courtesies and restated headings, and fixes false positives
+found by judging the 0.44.0 findings in isamu/chaff-corpus, many of them in court opinions, forms and literature.
+
+### AI-likeness
+
+- bold-label-list counts a run of paragraphs that each open with a bold statement (#2341).
+- heading-echo reads a Japanese cleft first sentence (〜のは、〜ことだ) by its focus (#2342).
+- email-stock-courtesy counts an offer of help and "for your convenience" (#2355).
+- paragraph-length-variance measures documents of nine paragraphs or more (#2344).
+- rule-of-three does not count a list whose every item is a paragraph (#2350).
+- emoji-density does not count an arrow between two words (#2356).
+
+### Rules
+
+- attachment-not-attached checks only a message as sent (one with a From, Date or Sent header); on a draft it is
+  listed as not run, with the reason (#2353).
+- lookalike-character reports a dash typed for the long-vowel mark between katakana (ニュ－ス) (#2359).
+- Fewer false findings on real documents:
+  - article-sound reads NAS as said as a word (#2340).
+  - teki-overuse is off for literature/essay (#2343).
+  - max-kanji-continuous reads a category named before として認定 and a one-line notice title as names (#2345).
+  - demonstrative-opener-run counts a chain of "It" once and skips more expletive openers (#2348).
+  - agreement-slip reads an -ics field noun (a conversational ethics) as either number (#2351).
+  - date-without-year reads a year written after a slash (Jan 23/58) (#2352).
+  - sentence-spacing-consistency skips pauses inside verse and the gap before a field label (#2361).
+  - adversative-ga-repeat skips a dialect topic, a taken-back word and 御承知かも知れませんが (#2347).
+  - dangling-reference reads a part of a unit cited to another document as that document's (#2349).
+  - unfilled-placeholder skips a form's field label, a fill line's caption and a blank inside a quoted example (#2354).
+  - bracket-width-consistency compares a cited note number (注(24)) apart from the prose (#2357).
+  - fullwidth-alnum-consistency counts a letter and a number in different widths (Q５) apart (#2358).
+  - use-before-definition skips a copied statute's definition, counts an introduction like a summary, and skips a
+    term after a longer name ending in it (#2360).
+  - repeated-sentence-ending starts a new run at a labelled list item (#2362).
+  - empty-section reads a same-depth heading numbered under a section (3. then 3.1) as its subsection (#2363).
+  - abstract-length asks no abstract of a paper whose sections are only an opening and a closing (#2364).
+
 ## 0.44.0 — 2026-11-10
 
 This release catches more AI-written list and phrase shapes and fixes false positives found by judging the 0.43.0
