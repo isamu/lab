@@ -38,7 +38,7 @@ const minimumCount = (options: DetectorOptions, name: string, fallback: number):
 };
 
 const DEFAULT_MIN_SECTIONS = 5;
-const DEFAULT_MIN_PARAGRAPHS = 6;
+const DEFAULT_MIN_PARAGRAPHS = 9;
 
 const uniformity = (doc: ProseDocument, values: readonly number[], span: { start: number }, limit: number, rule: string): Finding[] => {
   const cv = coefficientOfVariation(values);
