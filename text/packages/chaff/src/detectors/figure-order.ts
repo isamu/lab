@@ -42,7 +42,13 @@ export const outOfOrder = (references: readonly FigureMention[]): FigureOrderSli
 };
 
 /**
- * Each captioned figure first referred to only after a heading that follows its caption, and each captioned figure never
+ * How far before its first reference a figure may be captioned and still be where the typesetter put it: LaTeX floats a
+ * figure to the top of the page, or the page before, so it can land a heading ahead of the text that refers to it.
+ */
+const FLOAT_REACH_CHARS = 4000;
+
+/**
+ * Each captioned figure first referred to only after a heading that follows its caption, more than a page on, and each captioned figure never
  * referred to, when the document refers to another of its kind (so it is the kind of document that refers to its figures).
  */
 export const placementSlips = (
@@ -58,7 +64,7 @@ export const placementSlips = (
     const first = firstReference.get(caption.key);
     if (first === undefined) return referredKinds.has(caption.kind) ? [{ variant: "unreferenced", offset: caption.start, label: caption.written }] : [];
     const headingBetween = headingStarts.some((start) => caption.end < start && start < first.start);
-    return headingBetween ? [{ variant: "late", offset: first.start, label: first.written }] : [];
+    return headingBetween && first.start - caption.end > FLOAT_REACH_CHARS ? [{ variant: "late", offset: first.start, label: first.written }] : [];
   });
 };
 
