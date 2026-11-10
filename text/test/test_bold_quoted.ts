@@ -3,8 +3,10 @@ import assert from "node:assert/strict";
 import { firedRules } from "./rule-run.ts";
 import { isQuotedMention } from "../packages/chaff/src/detectors/bold-quoted.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
+import { adapter as en } from "../packages/lang-en/src/index.ts";
+import { isFieldLabel } from "../packages/chaff/src/detectors/bold-field-label.ts";
 
-// bold-density does not count a bold run that only quotes words. Every example is self-written.
+// bold-density does not count a bold run that only quotes words, nor a field label opening a line. Every example is self-written.
 
 const RULE = "bold-density";
 
@@ -69,5 +71,47 @@ describe("bold-density: quoted words in bold are mentions", () => {
       ).includes(RULE),
       true,
     );
+  });
+});
+
+describe("bold-density: a field label opening a line is a name, not emphasis", () => {
+  it("isFieldLabel: a short bold label with a colon at the start of a line", () => {
+    const at = (source: string): boolean => isFieldLabel(source, { start: source.indexOf("**"), end: source.indexOf("**", source.indexOf("**") + 2) + 2 });
+    assert.equal(at("**Date:** Tuesday"), true);
+    assert.equal(at("x\n**Also present**: Carla"), true);
+    assert.equal(at("**日時：** 11月10日"), true);
+    assert.equal(at("- **Date:** Tuesday"), false);
+    assert.equal(at("Send it by **Friday**: no later."), false);
+    assert.equal(at("**Carried unanimously.**"), false);
+    assert.equal(at("**Use headphones with a microphone and test them first:** it helps"), false);
+  });
+
+  it("does not report a minutes header of field labels, and still reports a list of bold labels", () => {
+    const header = [
+      "# Minutes",
+      "",
+      "**Riverside Food Bank**",
+      "**Date:** Tuesday, November 10, 2026",
+      "**Time:** 6:30 p.m.",
+      "**Location:** Community Center, Room B",
+      "",
+      "**Present:** Margaret Ellis (Chair), David Kim (Treasurer), Susan Patel (Secretary), Robert Hughes",
+      "**Absent:** Linda Fowler (excused)",
+      "**Also present:** Carla Nguyen, Executive Director",
+      "",
+      "## 1. Call to Order",
+      "",
+      "The Chair called the meeting to order at 6:32 p.m. A quorum was present.",
+      "",
+    ].join("\n");
+    assert.equal(firedRules(en, header, "business/meeting-notes").includes(RULE), false);
+    const list = header
+      .replaceAll("**Date:**", "- **Date:**")
+      .replaceAll("**Time:**", "- **Time:**")
+      .replaceAll("**Location:**", "- **Location:**")
+      .replaceAll("**Present:**", "- **Present:**")
+      .replaceAll("**Absent:**", "- **Absent:**")
+      .replaceAll("**Also present:**", "- **Also present:**");
+    assert.equal(firedRules(en, list, "business/meeting-notes").includes(RULE), true);
   });
 });
