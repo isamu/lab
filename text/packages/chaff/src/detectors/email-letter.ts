@@ -2,6 +2,7 @@
 // Pure. The words (お世話になっております, Dear, Best regards, 件名, attached) come from the language's email-greeting,
 // email-closing, email-salutation-end, email-sentence-end, memo-header-label, notice-header, newsletter-issue, email-subject-field, attachment-mention, attachment-not-mention and attachment-line lexicons. The
 // header and the signature are masked in doc.prose; a quoted reply is someone else's words and is left out.
+import { withoutReferenceSuffix } from "./email-subject-reference.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { quoteAt } from "./structure-tree.ts";
 import { closingIn, isSalutation, lineHas } from "./email-frame-words.ts";
@@ -333,7 +334,7 @@ export const emailSubject: Detector = (doc, options): Finding[] =>
     },
     doc.replyQuotes ?? [],
   ).flatMap((line): Finding[] => {
-    const length = [...line.subject].length;
+    const length = [...withoutReferenceSuffix(line.subject)].length;
     if (length > 0 && length <= options.limit) return [];
     return [
       {
