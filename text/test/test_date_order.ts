@@ -173,6 +173,51 @@ describe("date-order", () => {
     assert.deepEqual(found(table), ["April 15, 2026<May 1, 2026"]);
   });
 
+  it("an action table's deadline column lists each action's own date, in the order of the actions, not a schedule", () => {
+    const actions = (due: string): string =>
+      [
+        "# Actions",
+        "",
+        `| Action | Owner | ${due} | Status |`,
+        "|---|---|---|---|",
+        "| Fix the retry | Payments | 2026-11-06 | Open |",
+        "| Update the mock | Platform | 2026-11-13 | Open |",
+        "| Add an alert | SRE | 2026-11-10 | Open |",
+        "| Add a review | Leads | 2026-11-13 | Open |",
+      ].join("\n");
+    assert.deepEqual(found(actions("Due date")), []);
+    assert.deepEqual(found(actions("**Deadline**")), []);
+    assert.deepEqual(found(actions("Date")), ["November 13, 2026<November 6, 2026"]);
+  });
+
+  it("the Japanese deadline column (期限) is not a schedule either", () => {
+    const source = [
+      "# 宿題",
+      "",
+      "| 項目 | 担当 | 期限 |",
+      "|---|---|---|",
+      "| 見積 | 佐藤 | 2026年11月6日 |",
+      "| 発注 | 鈴木 | 2026年11月13日 |",
+      "| 検収 | 田中 | 2026年11月10日 |",
+      "| 支払 | 高橋 | 2026年11月13日 |",
+    ].join("\n");
+    assert.deepEqual(found(source, ja, "ja"), []);
+  });
+
+  it("a table that opens with the deadline column is sorted by it, and is read as a schedule", () => {
+    const source = [
+      "# 宿題",
+      "",
+      "| 期限 | 担当 | 内容 |",
+      "|---|---|---|",
+      "| 2026年11月6日 | 佐藤 | 見積 |",
+      "| 2026年11月13日 | 鈴木 | 発注 |",
+      "| 2026年11月10日 | 田中 | 検収 |",
+      "| 2026年11月20日 | 高橋 | 支払 |",
+    ].join("\n");
+    assert.deepEqual(found(source, ja, "ja").length, 1);
+  });
+
   it("a list sorted by name, not by date, is not a schedule: most of its dates are off the order", () => {
     const releases = [
       "# Releases",
