@@ -341,5 +341,8 @@ describe("abstract-length: an abstract over the limit, or none", () => {
     assert.deepEqual(variantsOf(en, "abstract-length", "# Naps\n\n## Introduction\n\nText.\n\n## Methods\n\nText.\n"), ["missing"]);
     assert.deepEqual(variantsOf(en, "abstract-length", "# Naps\n\n## Introduction\n\nText.\n\n## Budget\n\nText.\n"), []);
     assert.deepEqual(variantsOf(ja, "abstract-length", "# 昼寝\n\n## はじめに\n\n本文。\n\n## 方法\n\n本文。\n"), ["missing"]);
+    assert.deepEqual(variantsOf(ja, "abstract-length", "# 昼寝\n\n## はじめに\n\n本文。\n\n## 昼寝の歴史\n\n本文。\n\n## おわりに\n\n本文。\n"), []);
+    assert.deepEqual(variantsOf(en, "abstract-length", "# Naps\n\n## Introduction\n\nText.\n\n## History\n\nText.\n\n## Conclusion\n\nText.\n"), []);
+    assert.deepEqual(variantsOf(ja, "abstract-length", "# 昼寝\n\n## はじめに\n\n本文。\n\n## 結果\n\n本文。\n\n## おわりに\n\n本文。\n"), ["missing"]);
   });
 });
