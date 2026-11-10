@@ -1,6 +1,7 @@
 // The shape of a document's top: whether the lead says anything the title does not, and whether a title or heading
 // runs too long to scan. Pure; both read only the sections, paragraphs and tokens chaff has already built.
 import { newContentMorphemes } from "./content-morphemes.ts";
+import { isRecordingTitle } from "../recording-title.ts";
 import { formValueTokens, isFormBlock } from "./form-line.ts";
 import { trigrams } from "./heading-overlap.ts";
 import { findingAt, writtenHeadings } from "./markup-finding.ts";
@@ -162,7 +163,10 @@ export const titleLength: Detector = (doc, options): Finding[] => {
   return headings
     .map((heading) => ({ heading, section: sectionOf(doc, heading) }))
     .map(({ heading, section }) => ({ heading, words: section?.unlabeledHeading ?? heading.text, tokens: section?.headingTokens ?? [] }))
-    .filter(({ words, tokens }) => !isParagraphHeading(words) && !isQuestionHeading(words) && !endsWithQuestionParticle(tokens, questionParticles))
+    .filter(
+      ({ words, tokens }) =>
+        !isParagraphHeading(words) && !isQuestionHeading(words) && !endsWithQuestionParticle(tokens, questionParticles) && !isRecordingTitle(words),
+    )
     .map(({ heading, words }) => ({ heading, count: headingLength(ownWordsOf(words, citedTitleActions), doc.lengthUnit) }))
     .filter(({ count }) => count > options.limit)
     .map(({ heading, count }) => ({
