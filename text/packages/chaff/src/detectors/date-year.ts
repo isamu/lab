@@ -109,6 +109,9 @@ const lineStart = (source: string, offset: number): number => source.lastIndexOf
 
 const TABLE_ROW = /^\s*\|/u;
 
+/** A blank line: the dates on either side are in different paragraphs. */
+const PARAGRAPH_BREAK = /\n[ \t]*\n/u;
+
 const isTableRowAt = (source: string, offset: number): boolean => TABLE_ROW.test(source.slice(lineStart(source, offset), offset));
 
 const lineEnd = (source: string, offset: number): number => {
@@ -188,12 +191,20 @@ export const yearGaps = (
     if (previous !== undefined && opensSpan(previous, point, source, anyYear.joiners) && markedAnyYear(previous)) return true;
     return next !== undefined && opensSpan(point, next, source, anyYear.joiners) && hasYearWord(next, source, yearWords);
   };
+  // A yearly schedule told in one paragraph (a marketing year beginning July 1, proclaimed by May 15, … by June 10) keeps
+  // to any year: a yearless date after one that is any year's, with no dated date between, is any year's too.
+  const carriesAnyYear = (point: DatePoint): boolean => {
+    const previous = previousOf.get(point);
+    if (previous === undefined || !MONTH_DAY.test(previous.value) || PARAGRAPH_BREAK.test(source.slice(previous.end, point.offset))) return false;
+    return yearOfAny(previous) || carriesAnyYear(previous);
+  };
   // A recurring day or an example's date has no year to write, and is not the document's way of writing dates either.
   // A date that carries a dated account forward (On April 21, 1952, … on April 30 … May 3) takes that account's year. A
   // table cell is a record whose fields keep one format: a dated column with one year dropped is still a slip.
   const continuesRun = (point: DatePoint): boolean => !isTableRowAt(source, point.offset) && continuesDatedRun(point, (earlier) => previousOf.get(earlier));
   const yearless = points.filter(
-    (point) => MONTH_DAY.test(point.value) && !yearGiven(point, anchors, source, yearWords) && !yearOfAny(point) && !continuesRun(point),
+    (point) =>
+      MONTH_DAY.test(point.value) && !yearGiven(point, anchors, source, yearWords) && !yearOfAny(point) && !carriesAnyYear(point) && !continuesRun(point),
   );
   const span = spanOf(dated);
   const unclear = dated.length >= 2 && yearless.length < dated.length && span !== undefined && span.to > span.from;
