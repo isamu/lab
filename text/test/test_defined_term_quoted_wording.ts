@@ -59,3 +59,14 @@ describe("defined-term-form and quoted wording", () => {
     assert.deepEqual(findingsOf(`${DEFINED}\n\n本件土地は「宅地」に当たる。\n`), ["quoted"]);
   });
 });
+
+describe("defined-term-form and a definition of another instrument's term", () => {
+  it("does not take a provision's term that the text interprets as a term of its own", () => {
+    const borrowed = "憲法一九条にいう「良心の自由」とは、内心の自由をいう。\n\n新憲法は明文で「良心の自由」を保障した。\n";
+    assert.deepEqual(findingsOf(borrowed), []);
+  });
+
+  it("still reports the document's own term quoted again", () => {
+    assert.deepEqual(findingsOf("「良心の自由」とは、内心の自由をいう。\n\n新憲法は明文で「良心の自由」を保障した。\n"), ["quoted"]);
+  });
+});
