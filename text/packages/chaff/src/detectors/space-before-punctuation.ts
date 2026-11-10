@@ -1,4 +1,5 @@
-import type { Detector, Finding } from "../plugin.ts";
+import type { Detector, Finding, Span } from "../plugin.ts";
+import { referenceListSpans } from "../reference-lists.ts";
 import { quoteAround } from "./quote-around.ts";
 
 /**
@@ -14,15 +15,34 @@ const DOTS_REACH = 3;
 
 const isSpacedEllipsis = (text: string, space: number): boolean => SPACED_DOTS.test(text.slice(space + 1, space + 1 + DOTS_REACH));
 
+/** 文献一覧で、値を落とした欄の名前（"ISBN ,"）。大文字だけの名前のすぐ後ろが読点になるのは、文献の書式が空の値を埋めたところ。 */
+const EMPTY_FIELD_LABEL = /(?:^|[^\p{L}])\p{Lu}{2,}$/u;
+
+/** 欄の名前を探す字数。どの欄の名前よりも長い。 */
+const LABEL_REACH = 16;
+
+const isEmptyField = (text: string, space: number, references: readonly Span[]): boolean =>
+  text.charAt(space + 1) === "," &&
+  references.some((span) => span.start <= space && space < span.end) &&
+  EMPTY_FIELD_LABEL.test(text.slice(Math.max(0, space - LABEL_REACH), space));
+
 /**
  * 本文（prose）の中の、句読点の前の空白の位置。prose はコード・URL・強調の印を空白で覆うので、覆ってできた空白（"*word* ." の "*"）は
  * 書き手が打った空白ではない。source の同じ位置も空白のときだけ数える。
  */
-export const spacesBeforePunctuation = (prose: string, source: string): number[] =>
-  [...prose.matchAll(SPACED_MARK)].map((match) => match.index).filter((space) => source.charAt(space) === " " && !isSpacedEllipsis(prose, space));
+export const spacesBeforePunctuation = (prose: string, source: string, references: readonly Span[] = []): number[] =>
+  [...prose.matchAll(SPACED_MARK)]
+    .map((match) => match.index)
+    .filter((space) => source.charAt(space) === " " && !isSpacedEllipsis(prose, space) && !isEmptyField(prose, space, references));
+
+const referencesOf = (source: string, headingWords: readonly { readonly pattern: string }[] | undefined): Span[] =>
+  referenceListSpans(
+    source,
+    (headingWords ?? []).map((entry) => entry.pattern),
+  );
 
 export const spaceBeforePunctuation: Detector = (doc): Finding[] =>
-  spacesBeforePunctuation(doc.prose ?? doc.source, doc.source).map((space) => ({
+  spacesBeforePunctuation(doc.prose ?? doc.source, doc.source, referencesOf(doc.source, doc.lexicons["reference-list-heading"])).map((space) => ({
     rule: "",
     severity: "warning",
     line: 0,
