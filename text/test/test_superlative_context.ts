@@ -32,6 +32,21 @@ describe("unqualified-superlative: a question claims nothing", () => {
   });
 });
 
+describe("unqualified-superlative: a condition supposes, it does not claim", () => {
+  it("does not report a superlative inside a condition", () => {
+    quiet(en, [
+      "If spreadsheet formulas are the most prolific government code, and if people fear them, that cannot be good.",
+      "Suppose this is the best plan we have.",
+    ]);
+    quiet(ja, ["もし最も速い案が通るなら、来月には終わります。"]);
+  });
+
+  it("still reports a superlative past the condition's comma", () => {
+    reported(en, ["If you need help, our team is the best.", "Our tool is the best if you work alone."]);
+    reported(ja, ["もし通れば、この案が最も速いです。"]);
+  });
+});
+
 describe("unqualified-superlative: what is sought or chosen", () => {
   it("does not report a superlative a goal or choice verb governs", () => {
     quiet(en, [
