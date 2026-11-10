@@ -130,7 +130,7 @@ Claude Code の skill（`npx chaffjs skill`）は、指摘より先に指針を�
 | `q-fragment-answer` | 「Is it perfect? No.」「The result? Faster builds.」のように、自分で問うてすぐ断片で答える所の重なり（英語の文書だけ） |
 | `colon-lead-in` | 「以下の通りです：」のように、コロンで箇条書きへ渡す文の密度。3 つ以上の節に続くときだけ（英語は上限を高くしています） |
 | `emoji-heading` | 「## 🚀 はじめに」のように、絵文字の付いた見出しが続く所 |
-| `bold-label-list` | 「- **速さ**：〜」のように、太字の札とコロンで始まる項目の多さ |
+| `bold-label-list` | 「- **速さ**：〜」のように、太字の札とコロンで始まる項目の多さ。「**利用は毎週伸びた**：〜」と言い切りの太字で始まる段落が続く所も |
 | `assistant-residue` | 「お役に立てれば幸いです」のような、チャットの返事の名残 |
 | `email-stock-courtesy` | 「I hope this email finds you well」「I apologize for any inconvenience」のような英文メールの決まり文句が、一通のメールに 2 つ以上（英語の文書だけ） |
 | `honesty-marker` | 「正直、」「正直に言うと」のように本音だと前置きする言い回し。1 つでも言う（ブログと業務文書だけ） |
