@@ -40,6 +40,7 @@ describe("English dates", () => {
     ["The window is Mar 27 23:59 UTC, after the freeze.", ["03-27"]],
     ["Not a clock: Mar 27 99:99 2024 units.", ["03-27"]],
     ["A 12-hour time is no ctime: Mar 27 10:00 PM 2024 rows.", ["03-27"]],
+    ["The watch ran the night of March 5/6.", ["03-05"]],
   ];
   cases.forEach(([text, expected]) => {
     it(text, () => assert.deepEqual(dateOf(text), expected));
@@ -58,6 +59,8 @@ describe("English dates", () => {
     "Rule 3 May Apply",
     "At March 5:30 the line opens.",
     "Ship March 50 units.",
+    "To be paid on or before Jan 23/58. U.S. Grant",
+    "Received Dec 1/1857 at St. Louis.",
   ];
   negatives.forEach((text) => {
     it(`no date: ${text}`, () => assert.deepEqual(dateOf(text), []));
