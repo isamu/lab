@@ -8,6 +8,7 @@ import { askerSentences } from "./asker-voice.ts";
 import { licenceNoticeSentences } from "./licence-notice.ts";
 import { chronologyRows } from "../chronology-rows.ts";
 import { isNeutralPlainShape } from "./register-neutral-shape.ts";
+import { spokenAnswerSentences } from "./register-interview.ts";
 import { contactBlockSentences, fieldValueSentences, labelledQuoteSentences, referenceNoteSentences, tableCellSentences } from "./register-set-apart.ts";
 import { endsInSetGreeting, isDeclaration, isExclamation, isTakenUp } from "./register-voice.ts";
 import { entriesForGenre } from "../lexicon-genres.ts";
@@ -33,6 +34,7 @@ import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span, To
  * 丁寧な形でしか言わない挨拶（お疲れ様でした。）、演説の決意の言い切り（二度と繰り返さない。）、
  * 次の文が「そんな」「これだけ」で受ける場面の書き出し、「！」で終わる叫び（わかるかっ！）も quiet（register-voice.ts）。
  * ※で始まる行の注記と、行に並べ直した表のセル（制限なし。）は、どちらの調子でも quiet（register-set-apart.ts）。
+ * インタビューの答え（聞き手の「――」の後の段落）は話した言葉なので quiet（register-interview.ts）。
  * 数には入れる。数から外すと、常体を何度も使う文書（演説）で少数派が閾値を下回り、残りの常体の文が新たに指されてしまう。
  */
 type Entry = { readonly sentence: Sentence; readonly register: Register; readonly group: number | undefined; readonly quiet: boolean };
@@ -106,7 +108,14 @@ export const judgedSentences = (doc: ProseDocument, polite: readonly LexiconEntr
   const quoted = labelledQuoteSentences(doc.paragraphs, doc.source, doc.lexicons["quote-label"] ?? []);
   const fields = fieldValueSentences(doc.sentences, doc.source);
   const contact = contactBlockSentences(doc.sentences, doc.source, doc.lexicons["contact-line-opener"] ?? []);
-  const asides = new Set([...referenceNoteSentences(doc.sentences, doc.source), ...tableCellSentences(doc.sentences, doc.source)]);
+  const asides = new Set([
+    ...referenceNoteSentences(doc.sentences, doc.source),
+    ...tableCellSentences(doc.sentences, doc.source),
+    ...spokenAnswerSentences(
+      doc,
+      (doc.lexicons["interviewer-mark"] ?? []).map((entry) => entry.pattern),
+    ),
+  ]);
   const all = doc.sentences.flatMap((sentence, index): { sentence: Sentence; register: Register; quiet: boolean }[] => {
     if (
       !isClosed(sentence) ||
