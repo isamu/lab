@@ -370,6 +370,7 @@ const documentOf = (path: string, source: string, adapter: LanguageAdapter, team
     namedDocument: adapter.structure?.namedDocument,
     dictionary: adapter.dictionary,
     replyQuotes: emailLayout.replyQuotes,
+    sentMessage: emailLayout.sent,
     get markup(): Markup {
       return documentMarkup(root, source, markdown, [...emailLayout.replyQuotes, ...syntax]);
     },
