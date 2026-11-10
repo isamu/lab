@@ -2,10 +2,13 @@
 // a word inside a longer one ("timely" in "in a timely manner") is that longer word, and a word inside a term of art of the
 // document's genre ("reasonably" in a contract, "adequately compensate" as the test for an injunction) is not vague
 // there. The rule speaks once per sentence, about the document's density. Pure: the words come from the language's
-// lexicons vague-word and vague-word-term-of-art, the genre from the options.
+// lexicons vague-word and vague-word-term-of-art, the genre from the options. The lines of a table of contents are the
+// sections' names, not the writer's sentences, and are not read.
 import { entriesForGenre } from "../lexicon-genres.ts";
+import { contentsLineNumbers } from "../structure/contents-lines.ts";
+import { lineNumberAt, linesOf } from "../structure/lines.ts";
 import { escapeRegExp } from "../orthography.ts";
-import type { Detector, Finding, Lexicon, LexiconEntry, Sentence } from "../plugin.ts";
+import type { Detector, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence } from "../plugin.ts";
 import { comparableText, comparableWords, entryRanges } from "./lexicon-match.ts";
 import { rateOver } from "./lexicon.ts";
 import { specifiedByBracket } from "./bracket-specified.ts";
@@ -64,10 +67,20 @@ export const vagueWordsIn = (sentence: Sentence, vague: Lexicon, termsOfArt: Lex
 
 type SentenceHits = { readonly sentence: Sentence; readonly words: readonly string[] };
 
+/** The sentences on a line of a table of contents (the items under a 目次 / Contents heading). */
+const contentsSentences = (doc: ProseDocument): ReadonlySet<Sentence> => {
+  const lines = linesOf(doc.source);
+  const tocWords = (doc.lexicons["toc-heading"] ?? []).map((entry) => entry.pattern);
+  const numbers = contentsLineNumbers(lines, doc.markup?.headings ?? [], tocWords);
+  return new Set(doc.sentences.filter((sentence) => numbers.has(lineNumberAt(lines, sentence.span.start) ?? 0)));
+};
+
 export const vagueDensity: Detector = (doc, options): Finding[] => {
   const termsOfArt = entriesForGenre(doc.lexicons[TERMS_OF_ART] ?? [], options.genre);
   const nameMarkers = (doc.lexicons[NAME_MARKERS] ?? []).map((entry) => entry.pattern);
+  const contents = contentsSentences(doc);
   const hits: SentenceHits[] = doc.sentences
+    .filter((sentence) => !contents.has(sentence))
     .map((sentence) => ({ sentence, words: vagueWordsIn(sentence, options.lexicon ?? [], termsOfArt, nameMarkers) }))
     .filter((hit) => hit.words.length > 0);
   const count = hits.reduce((sum, hit) => sum + hit.words.length, 0);

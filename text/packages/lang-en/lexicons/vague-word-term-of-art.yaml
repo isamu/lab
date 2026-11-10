@@ -19,3 +19,6 @@ entries:
     genres: [legal]
   - pattern: adequate remedy
     genres: [legal]
+  # The employer's duty under the Rehabilitation Act and the ADA, a term of art wherever it is written.
+  - pattern: reasonable accommodation
+  - pattern: reasonable accommodations
