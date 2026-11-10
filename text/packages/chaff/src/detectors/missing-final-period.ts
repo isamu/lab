@@ -79,9 +79,19 @@ const isTerm = (body: string, marks: PeriodMarks): boolean =>
 const isDescription = (text: string, paragraph: Paragraph, marks: PeriodMarks, previous: Paragraph | undefined): boolean =>
   DESCRIPTION.test(bodyOf(text, paragraph)) && previous !== undefined && isTerm(bodyOf(text, previous), marks);
 
+/**
+ * A cell of a table laid out as paragraphs: a term line with its note under it (乾式バッテリー / …マンガンバッテリーも含む), right after
+ * another open one-line cell (ニッケル水素電池等). The note annotates the term, like the cell it came from.
+ */
+const isTermCell = (text: string, paragraph: Paragraph, marks: PeriodMarks, previous: Paragraph | undefined): boolean => {
+  const [first, ...rest] = bodyOf(text, paragraph).split("\n");
+  const cellBefore = previous === undefined ? "\n" : bodyOf(text, previous);
+  return rest.length > 0 && isTerm(first?.trim() ?? "", marks) && !cellBefore.includes("\n") && !isClosed(cellBefore, marks.ends);
+};
+
 /** How a paragraph ends, or undefined when its last line is not a sentence (a label, a lead-in, a note, a laid-out row). */
 export const paragraphEnd = (text: string, paragraph: Paragraph, marks: PeriodMarks, next?: Paragraph, previous?: Paragraph): ParagraphEnd | undefined => {
-  if (isDescription(text, paragraph, marks, previous)) return undefined;
+  if (isDescription(text, paragraph, marks, previous) || isTermCell(text, paragraph, marks, previous)) return undefined;
   const body = text.slice(paragraph.span.start, paragraph.span.end).trimEnd();
   const last = body.split("\n").at(-1)?.trim() ?? "";
   if (Array.from(last).length < MIN_SENTENCE_CHARS || LEAD_IN.test(last)) return undefined;
