@@ -1,4 +1,4 @@
-import type { Detector, DetectorOptions, Finding, ProseDocument, Span } from "../plugin.ts";
+import type { Detector, DetectorOptions, Finding, Paragraph, ProseDocument, Span, Token } from "../plugin.ts";
 
 /** A bold run longer than this is a bold sentence, not a label. */
 const MAX_LABEL_CHARS = 40;
@@ -64,9 +64,41 @@ export const boldLabelItems = (doc: ProseDocument): Span[] => unquotedItems(doc,
 /** Bold lead sentences that report on their own (the rule's min_leads). */
 const DEFAULT_MIN_LEADS = 3;
 
-const minLeads = (options: DetectorOptions): number => {
-  const value = options.settings?.["min_leads"];
-  return typeof value === "number" ? value : DEFAULT_MIN_LEADS;
+/** Paragraphs opened by a bold statement that report on their own (the rule's min_clause_paragraphs). */
+const DEFAULT_MIN_CLAUSE_PARAGRAPHS = 3;
+
+const countSetting = (options: DetectorOptions, name: string, fallback: number): number => {
+  const value = options.settings?.[name];
+  return typeof value === "number" ? value : fallback;
+};
+
+const minLeads = (options: DetectorOptions): number => countSetting(options, "min_leads", DEFAULT_MIN_LEADS);
+
+const VERBAL = new Set(["VERB", "AUX"]);
+
+/** Words that state something: a verb after a first word that is not one. An imperative (Talk to …), a term (Work schedule) or a gerund heading is not. */
+const isStatement = (tokens: readonly Token[]): boolean => {
+  const words = tokens.filter((token) => token.pos !== "PUNCT" && token.pos !== "SYM");
+  const head = words[0];
+  return head !== undefined && !VERBAL.has(head.pos) && words.slice(1).some((token) => VERBAL.has(token.pos));
+};
+
+/** The bold run a paragraph opens with, as a label or lead sentence, and where in the paragraph its words end. */
+const openingRunOf = (text: string): { words: string; end: number } | undefined => {
+  const match = BOLD_LABEL.exec(text) ?? BOLD_LEAD.exec(text);
+  const words = match?.[2];
+  if (match?.[1] === undefined || words === undefined || isCodeOnly(words.trim())) return undefined;
+  return { words: words.trim(), end: match[1].length + words.length };
+};
+
+/** The statement a paragraph opens with in bold (**Usage grew each week**: …), or undefined. A question (an FAQ's) is not a statement. */
+const boldStatementOf = (doc: ProseDocument, paragraph: Paragraph): string | undefined => {
+  const { start, end } = paragraph.span;
+  const run = isQuotedAt(doc.source, start) ? undefined : openingRunOf(doc.source.slice(start, end));
+  if (run === undefined || /[?？]$/u.test(run.words)) return undefined;
+  const runEnd = start + run.end;
+  const tokens = paragraph.sentences.flatMap((sentence) => sentence.tokens ?? []).filter((token) => token.span.start >= start && token.span.start < runEnd);
+  return isStatement(tokens) ? run.words.replace(/[.!。！]$/u, "") : undefined;
 };
 
 /** The count reported and the limit it reached: all the labelled items, or else the bold lead sentences alone, or undefined. */
@@ -74,6 +106,30 @@ const reached = (items: readonly Span[], leads: number, options: DetectorOptions
   if (items.length >= options.limit) return { count: items.length, limit: options.limit };
   const least = minLeads(options);
   return leads >= least ? { count: leads, limit: least } : undefined;
+};
+
+const finding = (doc: ProseDocument, span: Span, label: string, found: { count: number; limit: number }, variant?: string): Finding => ({
+  rule: "bold-label-list",
+  severity: "info",
+  line: 0,
+  column: 0,
+  quote: (doc.source.slice(span.start, span.end).split("\n")[0] ?? "").trim(),
+  values: { label, count: found.count, limit: found.limit, offset: span.start },
+  ...(variant === undefined ? {} : { variant }),
+});
+
+/**
+ * Paragraphs that each open with a bold statement (**Usage grew each week**: …): findings set as captions. Human run-in heads
+ * are terms, imperatives or questions (**Work schedule**:, **Talk to the people:**, **Who is my audience?**), and are not counted.
+ */
+const statementParagraphs = (doc: ProseDocument, options: DetectorOptions): Finding[] => {
+  const statements = doc.paragraphs.flatMap((paragraph) => {
+    const label = boldStatementOf(doc, paragraph);
+    return label === undefined ? [] : [{ span: paragraph.span, label }];
+  });
+  const first = statements[0];
+  const limit = countSetting(options, "min_clause_paragraphs", DEFAULT_MIN_CLAUSE_PARAGRAPHS);
+  return first === undefined || statements.length < limit ? [] : [finding(doc, first.span, first.label, { count: statements.length, limit }, "paragraphs")];
 };
 
 /**
@@ -86,16 +142,6 @@ export const boldLabelList: Detector = (doc, options): Finding[] => {
   const first = items[0];
   const leads = items.filter((span) => boldLabelOf(doc.source.slice(span.start, span.end)) === undefined).length;
   const found = reached(items, leads, options);
-  if (first === undefined || found === undefined) return [];
-  const written = doc.source.slice(first.start, first.end);
-  return [
-    {
-      rule: "bold-label-list",
-      severity: "info",
-      line: 0,
-      column: 0,
-      quote: (written.split("\n")[0] ?? "").trim(),
-      values: { label: labelOrLeadOf(written) ?? "", count: found.count, limit: found.limit, offset: first.start },
-    },
-  ];
+  if (first === undefined || found === undefined) return statementParagraphs(doc, options);
+  return [finding(doc, first, labelOrLeadOf(doc.source.slice(first.start, first.end)) ?? "", found)];
 };
