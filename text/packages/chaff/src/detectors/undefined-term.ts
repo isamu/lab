@@ -3,6 +3,7 @@
 // marks a word as one of its terms; a term with that prefix and no definition leaves the reader asking what it is.
 // Only the document's own references (本条, 本契約: self-reference-noun and document-kind) are left. Pure; the parts of
 // speech decide where a prefix is a prefix (本 in 本成果物) and not part of a word (本人, 本日).
+import { isRunTogether } from "./run-together.ts";
 import { definedTerms } from "../structure/definition-use.ts";
 import { prefixGroupsOf, prefixVariants } from "../structure/term-prefix.ts";
 import { quoteAt } from "./structure-tree.ts";
@@ -193,5 +194,8 @@ export const undefinedTerm: Detector = (doc): Finding[] => {
     groupSuffixes: patternsOf(doc, "defined-term-group-suffix"),
     inheritsDefinitions: patternsOf(doc, "definitions-inherited").some((phrase) => phrase !== "" && doc.source.includes(phrase)),
   });
-  return [...prefixed, ...capitalisedUses(doc, sentences, definitions)].map((use) => findingOf(doc, use));
+  const dictionary = doc.dictionary?.() ?? new Set<string>();
+  // A term holding a run-together word (Space Includingspecified Description) is text a conversion joined, not a term.
+  const capitalised = capitalisedUses(doc, sentences, definitions).filter((use) => !use.term.split(/\s+/u).some((word) => isRunTogether(word, dictionary)));
+  return [...prefixed, ...capitalised].map((use) => findingOf(doc, use));
 };
