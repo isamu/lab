@@ -196,7 +196,17 @@ export const openerRuns = (sentences: readonly Sentence[], lexicon: Lexicon, not
     )
     .filter((run) => run.length > 0);
 
-const runFinding = (run: readonly Opened[], options: DetectorOptions): Finding => {
+/** The opening words that, repeated at the head of the next sentence, carry the same subject on (It … It …). */
+export const CONTINUING_LEXICON = "demonstrative-continuing";
+
+/**
+ * How many sentences of the run send the reader back: a sentence opening with the same continuing word as the one before
+ * keeps that sentence's subject, so a chain of them counts once.
+ */
+const runCount = (run: readonly Opened[], continuing: ReadonlySet<string>): number =>
+  run.filter((opened, at) => !(opened.opener !== undefined && continuing.has(opened.opener) && run[at - 1]?.opener === opened.opener)).length;
+
+const runFinding = (run: readonly Opened[], count: number, options: DetectorOptions): Finding => {
   const first = run[0];
   return {
     rule: "",
@@ -204,7 +214,7 @@ const runFinding = (run: readonly Opened[], options: DetectorOptions): Finding =
     line: 0,
     column: 0,
     quote: run.map(({ sentence }) => sentence.text.trim()).join(""),
-    values: { word: first?.opener ?? "", count: run.length, limit: options.limit, offset: first?.sentence.span.start ?? 0 },
+    values: { word: first?.opener ?? "", count, limit: options.limit, offset: first?.sentence.span.start ?? 0 },
   };
 };
 
@@ -212,9 +222,11 @@ const runFinding = (run: readonly Opened[], options: DetectorOptions): Finding =
 export const openerRun: Detector = (doc, options): Finding[] => {
   const lexicon = options.lexicon ?? [];
   const notOpeners = doc.lexicons[NOT_OPENER_LEXICON] ?? [];
+  const continuing = new Set((doc.lexicons[CONTINUING_LEXICON] ?? []).map((entry) => entry.pattern));
   return doc.paragraphs.flatMap((paragraph) =>
     openerRuns(paragraph.sentences, lexicon, notOpeners)
-      .filter((run) => run.length > options.limit)
-      .map((run) => runFinding(run, options)),
+      .map((run) => ({ run, count: runCount(run, continuing) }))
+      .filter(({ count }) => count > options.limit)
+      .map(({ run, count }) => runFinding(run, count, options)),
   );
 };
