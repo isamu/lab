@@ -1,5 +1,6 @@
 import type { Detector, Finding, LexiconEntry } from "../plugin.ts";
 import { findingAt, writtenHeadings } from "./markup-finding.ts";
+import { isFrontOrBackMatter } from "../body-section.ts";
 import {
   numberingMinorities,
   numberingStyleOf,
@@ -12,15 +13,6 @@ import {
 
 const labelsOf = (entries: readonly LexiconEntry[]): NumberLabel[] =>
   entries.map((entry) => ({ word: entry.pattern, position: entry.position === "after" ? "after" : "before" }));
-
-/** 前後の見出しの語のあとに続いてよい区切りか番号（「付録: 用語」「Appendix A」「図1」）。 */
-const AFTER_MATTER = /^[\s:：、0-9０-９]/u;
-
-/** 番号を付けない前後の見出し（目次・参考文献・付録 A）か。言葉全体が語彙表の語か、語彙表の語に区切りが続くとき。 */
-const isFrontOrBackMatter = (text: string, words: readonly string[]): boolean => {
-  const lowered = text.trim().toLowerCase();
-  return words.some((word) => lowered === word || (lowered.startsWith(word) && AFTER_MATTER.test(lowered.slice(word.length))));
-};
 
 const variantOf = (minority: NumberingMinority): string => {
   if (minority.kind === "style") return "style";
