@@ -24,7 +24,7 @@ how_to_fix:
   ja: 強めを外して、何がどの程度なのかを書いてください（とても速い → 1 秒以内に開く、very important → critical）。
   en: Use a stronger word, or say what and how much ("very important" → "critical", "very fast" → "under a second"; とても速い → 1 秒以内に開く).
 
-levels: { strict: 1, normal: 2, relaxed: 4 }
+levels: { strict: 1, normal: 3, relaxed: 4 }
 
 use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 off_for:

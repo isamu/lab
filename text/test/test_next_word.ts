@@ -167,6 +167,12 @@ describe("very-adjective", () => {
     assert.equal(findingsOf(RULE, source).length, 3);
   });
 
+  it("two plain uses in a document of some length are ordinary, two in a short one are not", () => {
+    const longer = Array.from({ length: 80 }, (_unused, at) => `Item ${String(at + 1)} shipped on time and the team moved on.`).join(" ");
+    assert.deepEqual(findingsOf(RULE, `Cranes lift very large loads. The job took a very long time. ${longer}\n`), []);
+    assert.equal(findingsOf(RULE, `Cranes lift very large loads. The job took a very long time. ${padding}\n`).length, 2);
+  });
+
   it('"very" before an adverb or an excepted word is not counted', () => {
     const source = `It went very well and ran very smoothly. The very first step and the very same plan took very few hours. It was very \`not\` good. It was very \`not\` important. ${padding}\n`;
     assert.deepEqual(findingsOf(RULE, source), []);
