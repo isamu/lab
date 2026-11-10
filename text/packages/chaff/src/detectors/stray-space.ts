@@ -3,7 +3,7 @@ import { minorityStyle } from "../orthography.ts";
 import { isClosed } from "../sentence-shape.ts";
 import { phraseJoints, type Joint, type JointKind } from "../stray-space.ts";
 
-const KINDS: readonly JointKind[] = ["between-phrases", "inside-phrase"];
+const KINDS: readonly JointKind[] = ["between-phrases", "inside-phrase", "inside-word"];
 
 type Quoted = Joint & { readonly quote: string };
 

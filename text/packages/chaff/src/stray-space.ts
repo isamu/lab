@@ -3,8 +3,11 @@ import type { Sentence, Span, Token } from "./plugin.ts";
 import { isJapanese } from "./orthography.ts";
 import { isWithinAny, quotedIn } from "./quoted-span.ts";
 
-/** between-phrases は助詞の後ろ（文節の切れ目）、inside-phrase は文節を始められない語の前（助詞・助動詞・名詞に続く「する」）。 */
-export type JointKind = "between-phrases" | "inside-phrase";
+/**
+ * between-phrases は助詞の後ろ（文節の切れ目）、inside-phrase は文節を始められない語の前（助詞・助動詞・名詞に続く「する」）、
+ * inside-word は漢字の名詞を続けた一語の複合語の途中（関連 団体）。
+ */
+export type JointKind = "between-phrases" | "inside-phrase" | "inside-word";
 
 /** offset は前の語の終わり（文書の座標）。before / after は境目の両側の語。 */
 export type Joint = { readonly offset: number; readonly kind: JointKind; readonly spaced: boolean; readonly before: string; readonly after: string };
@@ -38,10 +41,30 @@ const isCutWord = ({ left, right, next }: Pair): boolean =>
   next.span.start === right.span.end &&
   isBound(next);
 
+const ALL_KANJI = /^\p{Script=Han}+$/u;
+
+/**
+ * 文の中で語を並べる区切り（、・）。この後ろから始まる名詞は文の中の語で、行の頭の札（第一条 ）や、流し込んだ小見出しの後ろ
+ * （為替変動による影響 当社グループは）ではない。
+ */
+const IN_RUNNING_TEXT = new Set(["、", "，", "・"]);
+
+const opensInRunningText = (previous: Token | undefined, left: Token): boolean =>
+  previous !== undefined && previous.span.end === left.span.start && IN_RUNNING_TEXT.has(previous.surface);
+
+/**
+ * 文の中で読点や中黒の後ろから始まる、漢字だけの普通名詞どうし（・関連 団体、、教育 映像）。漢字の名詞を続けた語は一語の複合語で、
+ * 途中で空ける書き方は無い。名前（赤坂 文弥）は固有名詞、片仮名の複合語（サムネイル キャッシュ）は空けて書くことがあり、行の頭の札
+ * （第一条 この法律は）や小見出しと本文のあいだは区切りなので、ここに入らない。
+ */
+const isKanjiCompound = ({ previous, left, right }: Pair): boolean =>
+  left.pos === "NOUN" && right.pos === "NOUN" && ALL_KANJI.test(left.surface) && ALL_KANJI.test(right.surface) && opensInRunningText(previous, left);
+
 const kindOf = (pair: Pair): JointKind | undefined => {
   const { left, right } = pair;
   if (isBound(right) || (right.lemma === LIGHT_VERB && left.pos === "NOUN") || isCutWord(pair)) return "inside-phrase";
-  // 名詞どうし（担当 田中、赤坂 文弥、フルデスクトップ モード）は名札・名前・複合語の書き方で、数えない。
+  if (isKanjiCompound(pair)) return "inside-word";
+  // ほかの名詞どうし（担当 田中、赤坂 文弥、フルデスクトップ モード）は名札・名前・複合語の書き方で、数えない。
   return PARTICLE.has(left.pos) ? "between-phrases" : undefined;
 };
 
@@ -53,13 +76,13 @@ const isLineHead = (text: string, at: number): boolean => text.slice(text.lastIn
 
 const isWord = (token: Token): boolean => token.surface.trim() !== "";
 
-/** 境目の両側の語と、右の語の次の語。 */
-type Pair = { readonly left: Token; readonly right: Token; readonly next: Token | undefined };
+/** 境目の両側の語と、右の語の次の語、左の語の前の語。 */
+type Pair = { readonly previous: Token | undefined; readonly left: Token; readonly right: Token; readonly next: Token | undefined };
 
 const pairsOf = (tokens: readonly Token[]): Pair[] =>
   tokens.filter(isWord).flatMap((right, index, words) => {
     const left = words[index - 1];
-    return left === undefined ? [] : [{ left, right, next: words[index + 1] }];
+    return left === undefined ? [] : [{ previous: words[index - 2], left, right, next: words[index + 1] }];
   });
 
 // 強調とリンクの括弧。読み手には見えない。
@@ -77,6 +100,13 @@ const spacing = (sentence: Sentence, written: string, pair: Pair): boolean | und
   return SPACES.test(gap) ? true : undefined;
 };
 
+/** A space between two Japanese characters. */
+const SPACE_IN_JAPANESE = /(?<=[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ー])[ \u3000]+(?=[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}])/gu;
+/** This many spaces between Japanese words in one sentence lay out items (a menu run into one line), not a compound with a slip. */
+const LAID_OUT_SPACES = 3;
+
+const isLaidOut = (written: string): boolean => (written.match(SPACE_IN_JAPANESE)?.length ?? 0) >= LAID_OUT_SPACES;
+
 const jointOf = (sentence: Sentence, written: string, quoted: readonly Span[], pair: Pair): Joint | undefined => {
   const { left, right } = pair;
   if (!isJapanese(left.surface.at(-1)) || !isJapanese(right.surface.at(0))) return undefined;
@@ -84,6 +114,7 @@ const jointOf = (sentence: Sentence, written: string, quoted: readonly Span[], p
   if (spaced === undefined || isWithinAny(quoted, { start: left.span.start, end: right.span.end })) return undefined;
   const kind = kindOf(pair);
   if (kind === undefined || (kind === "between-phrases" && isLineHead(sentence.text, left.span.start - sentence.span.start))) return undefined;
+  if (kind === "inside-word" && isLaidOut(written)) return undefined;
   return { offset: left.span.end, kind, spaced, before: left.surface, after: right.surface };
 };
 
