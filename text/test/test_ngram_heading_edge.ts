@@ -60,6 +60,12 @@ describe("namedByHeading", () => {
     assert.equal(namedByHeading("氏を併記した氏名", "旧氏を併記した場合", "char"), true);
   });
 
+  it("is true when a heading writes the key's content words as one compound (旧氏併記 for 旧氏を併記した氏)", () => {
+    assert.equal(namedByHeading("旧氏を併記した氏", "旧氏併記の運用について", "char"), true);
+    assert.equal(namedByHeading("記載してください", "記載の方法", "char"), false);
+    assert.equal(namedByHeading("旧氏を併記した氏", "旧氏の扱い\n併記の方法", "char"), false);
+  });
+
   it("is false when the run a heading holds is half the key or less", () => {
     assert.equal(namedByHeading("you can use it to create", "create a configmap", "word"), false);
     assert.equal(namedByHeading("記載してください", "記載の方法", "char"), false);
