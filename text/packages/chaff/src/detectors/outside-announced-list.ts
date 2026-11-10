@@ -6,7 +6,12 @@ import { quoteAt } from "./structure-tree.ts";
 /** 最初に挙げた一覧（対応 OS は Windows と macOS）に無い名前を、後の文が同じ語で言う所（Linux にも対応）。 */
 export const outsideAnnouncedList: Detector = (doc): Finding[] => {
   const lowered = (id: string): Set<string> => new Set((doc.lexicons[id] ?? []).map((entry) => entry.pattern.toLowerCase()));
-  const words = { frames: doc.lexicons["enumeration-frame"] ?? [], joiners: lowered("enumeration-joiner"), negations: lowered("enumeration-negation") };
+  const words = {
+    frames: doc.lexicons["enumeration-frame"] ?? [],
+    joiners: lowered("enumeration-joiner"),
+    negations: lowered("enumeration-negation"),
+    ordinals: lowered("ordinal-word"),
+  };
   const statements = doc.sentences.flatMap((sentence) => listStatementsIn(sentence, words, doc.source));
   const lines = linesOf(doc.source);
   return outsideMembers(statements).map(({ member, announced }) => ({
