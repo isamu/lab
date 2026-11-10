@@ -27,6 +27,7 @@ const wordsOf = (adapter: LanguageAdapter): NumberWords => {
     countWords: patterns("count-number"),
     figureNouns: patterns("figure-noun"),
     nameWords: patterns("number-name-word"),
+    nativeCounts: patterns("numeral-native-count"),
   };
 };
 
@@ -81,6 +82,13 @@ describe("numberMarksIn: Japanese", () => {
     ["三人称で書きます。", []],
     ["三枚目の資料です。", ["count:kanji:三枚"]],
     ["二枚の資料です。", ["count:kanji:二枚"]],
+    ["二通りの方法があります。", []],
+    ["四通りの方法があります。", ["count:kanji:四通り"]],
+    ["2通りの方法があります。", ["count:digits:2通り"]],
+    ["高さは約1500、3,000、9,000mとする。", ["grouping:plain:1500", "grouping:grouped:3,000", "grouping:grouped:9,000"]],
+    ["番号は 1500、3000 です。", []],
+    ["費用は約3000円です。", ["grouping:plain:3000"]],
+    ["番号はA3000円です。", []],
   ];
   cases.forEach(([sentence, marks]) => {
     it(`${sentence} → ${marks.join(", ") || "none"}`, () =>
