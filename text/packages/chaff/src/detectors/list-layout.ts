@@ -37,3 +37,20 @@ export const itemLayout = (source: string, spans: readonly Span[]): ItemLayout =
   const heads = spans.filter((_, index) => headsRun(index));
   return { groups: labels.length < MIN_GROUP_LABELS ? [spans] : labels.map(runAfter), heads };
 };
+
+/** An item that ends in a colon leads into the items after it. */
+const ITEM_LEAD_IN = /[:：]$/u;
+
+/**
+ * The items split after each item that ends in a colon (Exceptions to this:): the items after it are its own, a nested
+ * list flattened into the outer one, and are compared among themselves.
+ */
+export const splitAtLeadIns = (source: string, spans: readonly Span[]): Span[][] =>
+  spans.reduce<Span[][]>(
+    (groups, span) => {
+      groups.at(-1)?.push(span);
+      if (ITEM_LEAD_IN.test(source.slice(span.start, span.end).trim())) groups.push([]);
+      return groups;
+    },
+    [[]],
+  );

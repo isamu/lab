@@ -6,7 +6,8 @@ import { isQuotedAt } from "./bold-label.ts";
 import { endsAsHeadline, markOrSkipped, withoutFootnoteReference, withoutTrailingMarks } from "./list-item-ending.ts";
 import type { BulletList, Detector, Finding, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 import { isLinkLabel } from "./link-label.ts";
-import { itemLayout } from "./list-layout.ts";
+import { itemLayout, splitAtLeadIns } from "./list-layout.ts";
+import { closesAsSentence, isFiniteVerb, isNounPhraseWithVerbs, isPastForm, isVerb, NOMINAL, NOUN_HEAD, opensObject } from "./list-item-phrase.ts";
 
 /** What an item is made of: a phrase or a sentence (ending), and the word it opens with (head, English only). */
 export type Axis = "ending" | "head";
@@ -16,18 +17,12 @@ export const FORMS: Readonly<Record<Axis, readonly [string, string]>> = { ending
 
 const SKIPPED_AT_END = new Set(["PUNCT", "SYM", "X"]);
 const isMark = markOrSkipped(SKIPPED_AT_END);
-const NOMINAL = new Set(["NOUN", "PROPN", "NUM", "PRON"]);
 const PREDICATE = new Set(["VERB", "AUX", "ADJ"]);
-const NOUN_HEAD = new Set(["NOUN", "ADJ", "DET", "NUM", "PRON", "PROPN"]);
-const SENTENCE_END = /[.!?。．！？]["'”’)）」』]*$/u;
 const OPENING_BRACKETS = new Set(["(", "（", "[", "［", "【"]);
 const CLOSING_BRACKETS = new Set([")", "）", "]", "］", "】"]);
 
 /** A word the tagger only guessed at, or one that is also a verb (Design, Document): its form is not known. */
 const isUnsure = (token: Token | undefined): boolean => token?.features?.["Guess"] === "Yes" || token?.features?.["AlsoVerb"] === "Yes";
-
-/** A finite verb or auxiliary: an English item with one says something. A gerund or participle (Running, nested) does not. */
-const isFiniteVerb = (token: Token): boolean => (token.pos === "VERB" || token.pos === "AUX") && !["Ger", "Part"].includes(token.features?.["VerbForm"] ?? "");
 
 /** The tokens before a closing aside: 「健康診断書（3か月以内のもの）」 ends, for its form, at 健康診断書. */
 const withoutClosingAside = (tokens: readonly Token[]): readonly Token[] => {
@@ -114,15 +109,20 @@ const japaneseEnding = (item: readonly Sentence[], headlineEndings: ReadonlySet<
   return sentences.length > 1 ? "sentence" : japaneseSentenceEnding(sentences[0], headlineEndings);
 };
 
-/** English: a sentence closes with a full stop and has a finite verb; a phrase has neither, nor any verb at all. Anything between is not judged. */
+/**
+ * English: a sentence closes with a full stop and has a finite verb outside a noun phrase; a phrase has neither, nor any
+ * verb but those of its noun phrase. Anything between is not judged.
+ */
 const englishEnding = (item: readonly Sentence[]): string | undefined => {
   const sentences = ownEnding(item);
   const tokens = sentences.flatMap((sentence) => sentence.tokens ?? []);
   if (tokens.length === 0) return undefined;
-  const closed = SENTENCE_END.test(sentences.at(-1)?.text.trim() ?? "");
-  if (sentences.length > 1 || (closed && tokens.some(isFiniteVerb))) return "sentence";
-  const verbless = !tokens.some((token) => token.pos === "VERB" || token.pos === "AUX");
-  return !closed && verbless && !isUnsure(tokens[0]) ? "phrase" : undefined;
+  const closed = closesAsSentence(sentences.at(-1)?.text.trim() ?? "");
+  if (sentences.length > 1) return "sentence";
+  // A noun phrase with a stray full stop (Shelter – a charity who offer advice.) says nothing: neither form.
+  const nounPhrase = isNounPhraseWithVerbs(tokens);
+  if (closed) return tokens.some(isFiniteVerb) && !nounPhrase ? "sentence" : undefined;
+  return (nounPhrase || !tokens.some(isVerb)) && !isUnsure(tokens[0]) ? "phrase" : undefined;
 };
 
 /** English: the word an item opens with. Install and Running open with a verb; The, Fast and Docker with a noun phrase. */
@@ -136,9 +136,6 @@ const isTitleCase = (text: string): boolean =>
     .split(/\s+/u)
     .every((word) => TITLE_SMALL_WORDS.has(word) || /^\p{Lu}/u.test(word));
 
-/** A determiner that opens an object (the, a, your): no noun phrase goes on from its head with one. */
-const opensObject = (token: Token | undefined): boolean => token?.features?.["PronType"] === "Art" || token?.features?.["Poss"] === "Yes";
-
 const AFTER_ADJECTIVE = new Set(["ADP", "PART"]);
 
 /** A noun or adjective, or an ordinary word the tagger took for a name because it is capitalised (Toggle). */
@@ -148,16 +145,6 @@ const isNounOrAdjective = (token: Token): boolean =>
 /** A verb in the base form an instruction takes (describe), not a past or third-person form (described, describes). */
 const isBaseVerb = (token: Token | undefined): boolean =>
   token?.pos === "VERB" && token.features?.["VerbForm"] === undefined && token.lemma === token.surface.toLowerCase();
-
-/**
- * An -ed word the tagger left without VerbForm (decreased, agreed, unauthorized): like a participle, it may modify the noun
- * after it. Proceed and need end in -ed too but are their own base forms.
- */
-const isPastForm = (token: Token): boolean =>
-  token.pos === "VERB" &&
-  token.features?.["VerbForm"] === undefined &&
-  /ed$/iu.test(token.surface) &&
-  (token.lemma !== token.surface.toLowerCase() || !/eed$/iu.test(token.surface));
 
 /** An -s word read as a verb that the tagger could not take back to a base form (Revisions): a plural noun, misread. Discuss and Focus are verbs. */
 const isMisreadPlural = (token: Token): boolean =>
@@ -406,9 +393,15 @@ const MIN_WORDS = 2;
 const wordCount = (sentences: readonly Sentence[]): number =>
   sentences.flatMap((sentence) => sentence.tokens ?? []).filter((token) => !SKIPPED_AT_END.has(token.pos)).length;
 
+/** An item wholly in bold (**Nice to have**): the label of the items after it, not one of them. */
+const BOLD_LABEL = /^(\*\*|__)[^*_]+\1[:：]?$/u;
+const LIST_MARKER = /^\s*(?:\d+[.)]|[-*+])\s+/u;
+
+const isBoldLabel = (written: string): boolean => BOLD_LABEL.test(written.replace(LIST_MARKER, "").trim());
+
 const isJudged = (written: string, sentences: readonly Sentence[]): boolean => {
   const text = sentences.map((sentence) => sentence.text).join(" ");
-  return wordCount(sentences) >= MIN_WORDS && !LABELLED.test(text.trim()) && !CODE_OR_LINK.test(written);
+  return wordCount(sentences) >= MIN_WORDS && !LABELLED.test(text.trim()) && !CODE_OR_LINK.test(written) && !isBoldLabel(written);
 };
 
 const runsOn = (sentences: readonly Sentence[]): boolean => RUNNING_ON.test(sentences.at(-1)?.text.trim() ?? "");
@@ -431,7 +424,17 @@ const headContext = (doc: ProseDocument, items: readonly (readonly Sentence[])[]
 
 const listFindings = (doc: ProseDocument, list: BulletList, limit: number): Finding[] => {
   const layout = itemLayout(doc.source, list.itemSpans);
-  return layout.groups.flatMap((spans) => groupFindings(doc, spans, layout.heads, limit));
+  return layout.groups.flatMap((spans) => splitAtLeadIns(doc.source, spans).flatMap((group) => groupFindings(doc, group, layout.heads, limit)));
+};
+
+/**
+ * Where the item as written ends: past its last sentence, up to a list nested in it or a note line under it. A link after
+ * the last sentence (Names of travellers [What if this changes?](#…)) is the item's too.
+ */
+const writtenEnd = (doc: ProseDocument, item: Span, sentences: readonly Sentence[], noteLeads: readonly string[]): number => {
+  const nested = doc.lists.map((list) => list.span.start).filter((start) => start > item.start && start < item.end);
+  const end = Math.min(itemOwnEnd(doc.source, item, noteLeads), ...nested);
+  return Math.max(end, sentences.at(-1)?.span.end ?? end);
 };
 
 /** A phrase heading a run of items (- 使用する際の注意ポイント): the heading of a flattened nested list, not one of its items. */
@@ -446,7 +449,7 @@ const groupFindings = (doc: ProseDocument, itemSpans: readonly Span[], heads: re
   const judged = sentencesOf.filter((sentences, index) => {
     const span = itemSpans[index];
     if (span === undefined) return false;
-    const written = doc.source.slice(span.start, sentences.at(-1)?.span.end ?? span.end);
+    const written = doc.source.slice(span.start, writtenEnd(doc, span, sentences, noteLeads));
     return isJudged(written, sentences) && !isLinkLabel(written, linkEndings) && !(heads.includes(span) && isGroupLabel(sentences, doc.language));
   });
   const context = headContext(doc, judged);
