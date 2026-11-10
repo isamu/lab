@@ -57,6 +57,7 @@ import { inExcerpt } from "./quoted-excerpt.ts";
 import { listContinues, walker, type Walk } from "./list-run.ts";
 import { joinsUnfinished, repeatsConjunction } from "./list-joint.ts";
 import { insideSentenceCaseTitle } from "./title-list.ts";
+import { insideByline } from "./byline-list.ts";
 
 const EMPTY: TokenRange = { start: 0, end: 0 };
 
@@ -383,12 +384,13 @@ export const listVerdicts = (tokens: readonly Token[], words: ListWords, source:
   const breaks = dashBreaks(tokens, source);
   const excerpt = inExcerpt(tokens, source, words.elision ?? []);
   const inTitle = insideSentenceCaseTitle(tokens);
+  const inByline = insideByline(tokens);
   const walk = walker();
   return tokens.flatMap((token, at) => {
     if (!isJudgedConjunction(token, at)) return [];
     // 郵便番号で終わる住所のあとの and / or は、住所の行を区切る読点のあと。並びの読点ではない。
     // 最後の読点のあとに前後を空けたダッシュがあれば（Washington, DC – The …）、読点はダッシュの前で閉じた日付行や見出しのもの。
-    const notList = sentence.inCitedTitle(at) || inTitle(at) || excerpt(at) || followsPostcode(source, token.span.start) || breaks[at] === true;
+    const notList = sentence.inCitedTitle(at) || inTitle(at) || inByline(at) || excerpt(at) || followsPostcode(source, token.span.start) || breaks[at] === true;
     return [notList ? undefined : listAt(readItems(at), at, walk)];
   });
 };
