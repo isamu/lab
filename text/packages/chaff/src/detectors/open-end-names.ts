@@ -50,6 +50,8 @@ export type OpenEndNames = {
   readonly heads: readonly string[];
   /** Every term the document defines (「秘密情報」): the word right after one (秘密情報等) widens a named thing, not an open list. */
   readonly terms: ReadonlySet<string>;
+  /** The document's headings: a noun a heading names with the word (## 出願書類等の送付先) is the page's subject, not an open list. */
+  readonly headings: readonly string[];
 };
 
 const attached = (left: Token | undefined, right: Token | undefined): boolean =>
@@ -148,7 +150,8 @@ export const openEndNames = (doc: ProseDocument, words: readonly LexiconEntry[],
   const occurrences = doc.sentences.flatMap((sentence) => words.flatMap((word) => occurrencesIn(sentence, word)));
   const defined = occurrences.filter((occurrence) => definedInAside(doc.source, occurrence, statements)).map((occurrence) => nounOf(doc.source, occurrence));
   const heads = occurrences.filter((occurrence) => headsItem(doc.source, occurrence, statements)).map((occurrence) => nounOf(doc.source, occurrence));
-  return { quoted: quotedNames(doc.source, words), defined: new Set(defined), heads: [...new Set(heads)], terms: definedTerms(doc) };
+  const headings = doc.sections.map((section) => section.heading).filter((heading) => heading.trim() !== "");
+  return { quoted: quotedNames(doc.source, words), defined: new Set(defined), heads: [...new Set(heads)], terms: definedTerms(doc), headings };
 };
 
 /** Whether a quoted name holds this occurrence: the text around it reads the whole name (当該責任追及等 holds 「責任追及等」). */
@@ -170,8 +173,15 @@ const partsHoldingWord = (source: string, occurrence: Occurrence): string[] => {
 const followsTerm = (source: string, occurrence: Occurrence, terms: ReadonlySet<string>): boolean =>
   occurrence.tokens.slice(occurrence.first, occurrence.range.start).some((token) => terms.has(source.slice(token.span.start, occurrence.start)));
 
+/** Whether a heading writes the noun the word ends, whole from its first noun (出願書類等 in ## 出願書類等の送付先). */
+const namedByHeading = (source: string, occurrence: Occurrence, headings: readonly string[]): boolean => {
+  const noun = source.slice(startOf(occurrence, occurrence.first), occurrence.end);
+  return occurrence.first < occurrence.range.start && headings.some((heading) => heading.includes(noun));
+};
+
 const isNamed = (source: string, occurrence: Occurrence, names: OpenEndNames): boolean =>
   inQuotedName(source, occurrence, names.quoted) ||
+  namedByHeading(source, occurrence, names.headings) ||
   followsTerm(source, occurrence, names.terms) ||
   partsHoldingWord(source, occurrence).some((part) => names.defined.has(part) || names.heads.some((head) => head.startsWith(part)));
 
