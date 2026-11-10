@@ -45,3 +45,35 @@ entries:
     genres: [blog]
   - pattern: ください
     group: end:kigaru
+  # 結びの決まった請け合い（その思いに応えられるよう、しっかり考えてみます）。何をいつするかを言わずに頑張ると誓って終える。
+  # 「ご要望に沿えるよう、11月7日までに再見積もりします」のように中身のある約束は、終わりの語が違うので当たらない。
+  - pattern: 応えられるよう
+    group: lead:pledge
+  - pattern: 応えできるよう
+    group: lead:pledge
+  - pattern: 沿えるよう
+    group: lead:pledge
+  - pattern: 添えるよう
+    group: lead:pledge
+  - pattern: 考えてみます
+    group: end:pledge
+  - pattern: 努めます
+    group: end:pledge
+  - pattern: 努めてまいります
+    group: end:pledge
+  - pattern: 努めて参ります
+    group: end:pledge
+  - pattern: 頑張ります
+    group: end:pledge
+  - pattern: がんばります
+    group: end:pledge
+  - pattern: 精進します
+    group: end:pledge
+  - pattern: 精進してまいります
+    group: end:pledge
+  - pattern: 尽力します
+    group: end:pledge
+  - pattern: 尽力いたします
+    group: end:pledge
+  - pattern: 尽力してまいります
+    group: end:pledge
