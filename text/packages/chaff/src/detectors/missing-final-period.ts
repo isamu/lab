@@ -31,6 +31,8 @@ const DESCRIPTION = /^[：:](?![：:])/u;
 const LAYOUT = /[ \u3000]{2}/u;
 /** Fewer characters than this is a label or a caption, not a sentence. */
 const MIN_SENTENCE_CHARS = 15;
+/** A cell is short: a one-line paragraph this long or longer is a clause (…と認められた場合), not a cell before the term. A paragraph masked to nothing (a quotation) is no cell either. */
+const MAX_CELL_CHARS = MIN_SENTENCE_CHARS * 2;
 /** Words that end a clause: a verb, an adjective or an auxiliary in its dictionary form ends the sentence. */
 const PREDICATE: ReadonlySet<string> = new Set(["VERB", "ADJ", "AUX"]);
 
@@ -86,7 +88,8 @@ const isDescription = (text: string, paragraph: Paragraph, marks: PeriodMarks, p
 const isTermCell = (text: string, paragraph: Paragraph, marks: PeriodMarks, previous: Paragraph | undefined): boolean => {
   const [first, ...rest] = bodyOf(text, paragraph).split("\n");
   const cellBefore = previous === undefined ? "\n" : bodyOf(text, previous);
-  return rest.length > 0 && isTerm(first?.trim() ?? "", marks) && !cellBefore.includes("\n") && !isClosed(cellBefore, marks.ends);
+  const isCell = cellBefore !== "" && !cellBefore.includes("\n") && Array.from(cellBefore).length < MAX_CELL_CHARS && !isClosed(cellBefore, marks.ends);
+  return rest.length > 0 && isTerm(first?.trim() ?? "", marks) && isCell;
 };
 
 /** How a paragraph ends, or undefined when its last line is not a sentence (a label, a lead-in, a note, a laid-out row). */
