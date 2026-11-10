@@ -24,4 +24,18 @@ const longestNamedRun = (units: readonly string[], title: string, unit: LengthUn
  * 題と見出しにある句は文書の主題で、名前と同じく、それに付いた語句も数えない。title は見出しを並べた文字列。
  */
 export const namedByHeading = (key: string, title: string, unit: LengthUnit): boolean =>
-  title.includes(key) || longestNamedRun(unitsOf(key, unit), title, unit) * 2 > [...key].length;
+  title.includes(key) || longestNamedRun(unitsOf(key, unit), title, unit) * 2 > [...key].length || (unit === "char" && namesCompound(key, title));
+
+const KANA = /[ぁ-ゖ]/gu;
+/** A compound of two words at least (旧氏併記): one word of a heading (記載) is not the heading's subject. */
+const MIN_COMPOUND_CHARS = 4;
+
+/**
+ * Whether a heading writes the key's content words as one compound (旧氏併記 for 旧氏を併記した氏): the body spells the heading's
+ * subject out with its particles. Measured on the key without kana, the run must be a compound and more than half of it.
+ */
+const namesCompound = (key: string, title: string): boolean => {
+  const content = [...key.replace(KANA, "")];
+  const run = longestNamedRun(content, title, "char");
+  return run >= MIN_COMPOUND_CHARS && run * 2 > content.length;
+};
