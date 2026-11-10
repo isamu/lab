@@ -1,0 +1,7 @@
+# お知らせやメールの題を閉じる語。max-kanji-continuous は、一行が「〜の」とこの語で終わり、その行が文ではない（句点が無い）とき、
+# 「の」の前の漢字の連なりを、送り手が付けたままの題の名前と読んで数えない（[e-Gov]〜設定解除完了のお知らせ）。
+id: notice-title-ending
+language: ja
+entries:
+  - pattern: お知らせ
+  - pattern: ご案内

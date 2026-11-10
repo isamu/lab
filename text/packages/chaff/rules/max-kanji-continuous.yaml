@@ -17,6 +17,8 @@ uses: [pos]
 # 文書が単独で使う法令・制度の名前（政治資金規正法）と、法令が名に取った語（愛玩動物看護師法の「愛玩動物看護師」）は、連なりの中でも割る。
 # 職名（kanji-known-word）のすぐ前か後ろの人の姓と名も割る。元号の付いた年（令和元年）と、仮名へ続く接続の語の漢字（及び の「及」）は外す。
 # 連なりの中ほどの list-suffix（高齢運転者等専用駐車区間の「等」）は語の終わりを見せるので、そこでも割る。
+# すぐ後ろに designation-phrase（として認定）が続く連なりは、制度が決めた区分の名前なので数えない。
+# 句点の無い一行が「〜の」と notice-title-ending（お知らせ、ご案内）で終われば、「の」の前の連なりは送り手が付けた題の名前なので数えない。
 extra_word_lists:
   [
     prefecture-unit,
@@ -30,6 +32,8 @@ extra_word_lists:
     reference-prefix,
     list-suffix,
     kanji-known-word,
+    designation-phrase,
+    notice-title-ending,
   ]
 languages: [ja]
 severity: info
