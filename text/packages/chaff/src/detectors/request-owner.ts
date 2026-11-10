@@ -15,6 +15,7 @@ export const REQUEST_LEXICONS = {
   owner: "request-owner",
   pointer: "request-pointer",
   offer: "request-offer",
+  instruction: "request-instruction",
   timing: "request-timing",
   invitation: "request-invitation",
   contact: "request-contact",
@@ -39,6 +40,7 @@ const wordsOf = (doc: ProseDocument): Words => ({
   owner: patternsOf(doc.lexicons[REQUEST_LEXICONS.owner]),
   pointer: patternsOf(doc.lexicons[REQUEST_LEXICONS.pointer]),
   offer: patternsOf(doc.lexicons[REQUEST_LEXICONS.offer]),
+  instruction: patternsOf(doc.lexicons[REQUEST_LEXICONS.instruction]),
   timing: patternsOf(doc.lexicons[REQUEST_LEXICONS.timing]),
   invitation: patternsOf(doc.lexicons[REQUEST_LEXICONS.invitation]),
   contact: patternsOf(doc.lexicons[REQUEST_LEXICONS.contact]),
@@ -103,7 +105,8 @@ const isProhibition = (text: string, endings: readonly Place[], words: Words): b
 /**
  * A request for an action: an action word next to a request ending (「確認してください」「please send」), not a condition
  * (「ご不明な点があれば…ください」 is an offer), not an open offer to take the reader's questions (「ご質問はメールでお送りください」),
- * not a pointer to where to read more (「詳細は資料をご確認ください」), not what an invitation is for (「登録をしにお越しください」),
+ * not a pointer to where to read more (「詳細は資料をご確認ください」), not the writer asking how to do something
+ * (「返送の方法を教えてください」 "let me know how to send it back"), not what an invitation is for (「登録をしにお越しください」),
  * not a prohibition (「メールでは送らないでください」 "Please do not submit comments by email"),
  * and not the way to reach the writer on a contact line (「ファックス番号：… 送信後、ご連絡ください」).
  * The action has to be close to the ending, or a noun like 検討会 or 履修登録 earlier in the sentence would make one.
@@ -117,7 +120,7 @@ export const isRequest = (text: string, words: Words): boolean => {
       endings.some((ending) => gapBetween(action, ending) <= ACTION_REACH) && !invitations.some((invitation) => invitedTo(comparable, action, invitation)),
   );
   if (!asked || holdsContactLine(text, words) || isProhibition(text, endings, words)) return false;
-  return ![words.condition, words.offer, words.pointer].some((patterns) => containsAny(text, patterns));
+  return ![words.condition, words.offer, words.instruction, words.pointer].some((patterns) => containsAny(text, patterns));
 };
 
 const NAMED = new Set(["PROPN"]);
