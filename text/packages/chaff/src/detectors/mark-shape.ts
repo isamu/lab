@@ -11,6 +11,7 @@ import { lineStarts } from "../position.ts";
 import { isTypewritten } from "./typewritten.ts";
 import { divisionLabelPattern, isDivisionSeparator } from "./division-label-separator.ts";
 import { isInCopiedText } from "./hyphen-copied-text.ts";
+import { joinsNameSuffix } from "./hyphen-name-suffix.ts";
 import { verseBlockSpans } from "./verse-block.ts";
 
 /** The letters a mark must touch to count as part of the document's text, by language. */
@@ -321,7 +322,13 @@ export const hyphenDash: Detector = (doc, options): Finding[] => {
   return reportFrom(
     [...hitsOf(sentences, HYPHEN_DASH), ...codeHits]
       .toSorted((left, right) => left.offset - right.offset)
-      .filter((hit) => !isTypedDash(hit, setsDashes) && !isDivisionSeparator(doc.source, hit.offset, divisionLabel) && !isInCopiedText(doc.source, hit.offset)),
+      .filter(
+        (hit) =>
+          !isTypedDash(hit, setsDashes) &&
+          !isDivisionSeparator(doc.source, hit.offset, divisionLabel) &&
+          !isInCopiedText(doc.source, hit.offset) &&
+          !joinsNameSuffix(doc.source, hit.offset),
+      ),
     options.limit,
   );
 };

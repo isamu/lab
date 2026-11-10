@@ -1,6 +1,6 @@
 18f-handbook-one-on-ones  15
 18f-handbook-projects-in-distress  2
-18f-handbook-travel-faq  2
+18f-handbook-travel-faq  1
 arxiv-astro-ph-new-2025-01-03  27
 asf-board-minutes-2025-01  14
 cdc-co-poisoning-basics  2
@@ -9,12 +9,12 @@ cloudgov-security-ir-guide  2
 fac-adr-0016-file-uploads  1
 gitlab-meetings  2
 gitlab-values  3
-govuk-cddo-roadmap-2022-2025  11
+govuk-cddo-roadmap-2022-2025  10
 govuk-guidance-academy-senior-pay  1
 govuk-style-guide-a-to-z  27
 ietf-draft-httpapi-ratelimit-headers-10  3
 nsf-19-582-reu-solicitation  13
-nws-glossary-a  14
+nws-glossary-a  12
 nws-heat-wave-safety  1
 openapi-spec-3-1-0  6
 typescript-5-4-release-notes  1
