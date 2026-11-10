@@ -28,6 +28,14 @@ describe("numeral-sentence-start: 数字で始まる英語の文", () => {
     assert.equal(openingNumeral(""), undefined);
   });
 
+  it("計算の式の行（足して等しい）は文の頭の数ではない", () => {
+    assert.equal(openingNumeral("182 current hours \\+ 154 more hours accrued \\= 336 hours."), undefined);
+    assert.equal(openingNumeral("336 hours \\- 240 hour cap \\= 96 hours that would be lost."), undefined);
+    assert.equal(openingNumeral("12 boxes × 4 crates = 48 boxes in all."), undefined);
+    assert.equal(openingNumeral("12 boxes arrived, so the total is 12 + 4 boxes."), "12");
+    assert.equal(openingNumeral("20 people came, and the count = 20 now."), "20");
+  });
+
   it("番号に付ける略した語や、句点の無い行の後ろの数は文の頭ではない", () => {
     const labels = new Set(["vol", "no", "fig"]);
     const at = (source: string): boolean => followsSentenceEnd(source, source.length, labels);
