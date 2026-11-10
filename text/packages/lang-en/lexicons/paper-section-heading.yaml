@@ -1,9 +1,11 @@
-# Headings that name a section of a research paper. A paper with two or more of them is expected to open with an abstract.
+# Headings that name a section of a research paper. A paper with two or more of them, one not an opening or a closing
+# (group: bookend), is expected to open with an abstract; an essay has an introduction and a conclusion too.
 # Compared without case, numbers or colons.
 id: paper-section-heading
 language: en
 entries:
   - pattern: Introduction
+    group: bookend
   - pattern: Background
   - pattern: Related work
   - pattern: Method
@@ -14,5 +16,7 @@ entries:
   - pattern: Results
   - pattern: Discussion
   - pattern: Conclusion
+    group: bookend
   - pattern: Conclusions
+    group: bookend
   - pattern: Limitations
