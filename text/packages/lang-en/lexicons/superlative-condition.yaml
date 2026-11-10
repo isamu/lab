@@ -1,0 +1,10 @@
+# Words that open a condition: a superlative inside it is supposed, not claimed ("If spreadsheet formulas are the most
+# prolific government code, …"). They stand before the superlative in the same clause, no comma between.
+# unqualified-superlative does not report a superlative they open.
+id: superlative-condition
+language: en
+entries:
+  - pattern: if
+  - pattern: suppose
+  - pattern: supposing
+  - pattern: assuming

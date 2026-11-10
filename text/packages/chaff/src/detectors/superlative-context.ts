@@ -14,6 +14,8 @@ export type Context = {
   readonly parts: Lexicon;
   /** 前に名指した名詞の代わりに立つ語（one・ones）。 */
   readonly proForms: Lexicon;
+  /** 仮定を開く語（if・もし）。 */
+  readonly conditions: Lexicon;
 };
 
 /** 語彙表の語が最上級まで届く語の数。これより離れた動詞は、間に別の目的語や節がある。 */
@@ -36,6 +38,7 @@ export const contextOf = (lexicons: Readonly<Record<string, Lexicon>>): Context 
   viewpoints: lexicons["superlative-viewpoint"] ?? [],
   parts: lexicons["superlative-part"] ?? [],
   proForms: lexicons["superlative-pro-form"] ?? [],
+  conditions: lexicons["superlative-condition"] ?? [],
 });
 
 const isPunct = (token: Token | undefined): boolean => token === undefined || token.pos === "PUNCT";
@@ -60,6 +63,13 @@ export const sought = (sentence: Sentence, range: TokenRange, goals: Lexicon): b
   const tokens = sentence.tokens ?? [];
   return goals.some((entry) => (entry.position === "after" ? after(sentence, range, entry) : endsBefore(tokens, range, entry, GOAL_REACH)));
 };
+
+/**
+ * 最上級が、同じ節の前で開いた仮定の中にあるか（If spreadsheet formulas are the most prolific government code, …・もし最も速い
+ * 案が通るなら）。仮に置いたもので、何かが一番だという主張ではない。
+ */
+export const supposed = (tokens: readonly Token[], range: TokenRange, conditions: Lexicon): boolean =>
+  conditions.some((entry) => endsBefore(tokens, range, entry, range.start));
 
 const isWord = (token: Token | undefined, words: Lexicon): boolean =>
   token !== undefined && words.some((entry) => entry.pattern.toLowerCase() === token.surface.toLowerCase());
