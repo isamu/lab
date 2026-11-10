@@ -4,6 +4,7 @@ import { isWithinAny, quotedIn } from "../quoted-span.ts";
 import { entryOpens } from "./lexicon-match.ts";
 import { laterAlternatives, laterJoined } from "../alternative-words.ts";
 import { isContrastiveGa } from "./adversative-ga.ts";
+import { isFlattenedTable } from "./sentence-parts.ts";
 
 type TokenTest = (token: Token, at: number, tokens: readonly Token[]) => boolean;
 
@@ -63,7 +64,8 @@ const largestItem = (sentence: Sentence, counted: readonly Token[]): readonly To
 /**
  * A sentence holding more than limit tokens written as one of the lexicon's words (the suffix 的). The options of one choice
  * (連続的か断続的か、一時的) and a joined pair (信仰的主観的) count once: each names one point. A list written inside the sentence
- * (①…、②…) is counted item by item, as each item is a point of its own.
+ * (①…、②…) is counted item by item, as each item is a point of its own. A table a converter flattened into one sentence
+ * is cells, not the writer's sentence (the same 経常的 in each row).
  */
 export const sentenceWordCount: Detector = (doc, options): Finding[] => {
   const words = wordsOf(options.lexicon);
@@ -81,6 +83,7 @@ export const sentenceWordCount: Detector = (doc, options): Finding[] => {
   const isCounted: TokenTest = (token, at, tokens) => words.has(token.surface) && !laterOf(tokens).has(at);
   const fixedTerms = doc.lexicons[FIXED_TERM_LEXICON] ?? [];
   return doc.sentences.flatMap((sentence) => {
+    if (isFlattenedTable(sentence.text)) return [];
     const counted = largestItem(sentence, countedTokens(sentence, isCounted, fixedTerms));
     return counted.length > options.limit ? [findingOf(sentence, counted, options.limit)] : [];
   });

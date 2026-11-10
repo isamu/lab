@@ -83,6 +83,12 @@ const UNIT_HEADER = /[（(](?:％|%|人|名|株|件|台|社|円|千円|百万円
 /** Fewer unit headers than this are a sentence that names a unit or two, not a table's header row. */
 const MIN_UNIT_HEADERS = 3;
 
-/** Whether a sentence is a table a converter flattened: glued numbers, rows opened by dates, or a header row of cells closed by units. */
+/** Ditto marks in a row (―〃〃〃): cells that repeat the row above, which only a table has. */
+const DITTO_CELLS = /〃\s*〃/u;
+
+/**
+ * Whether a sentence is a table a converter flattened: glued numbers, rows opened by dates, a header row of cells closed by
+ * units, or ditto cells.
+ */
 export const isFlattenedTable = (text: string): boolean =>
-  flattenedTableParts(text) !== undefined || (text.match(UNIT_HEADER)?.length ?? 0) >= MIN_UNIT_HEADERS;
+  flattenedTableParts(text) !== undefined || (text.match(UNIT_HEADER)?.length ?? 0) >= MIN_UNIT_HEADERS || DITTO_CELLS.test(text);
