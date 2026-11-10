@@ -23,6 +23,10 @@ entries:
   - pattern: happy to discuss
   - pattern: happy to talk it through
   - pattern: happy to answer any questions
+  - pattern: happy to help
+  - pattern: glad to help
+  # "For your convenience, I've attached ...": an email's courtesy. A terms page's "for your convenience" is not an email.
+  - pattern: for your convenience
   - pattern: please don't hesitate
   - pattern: please do not hesitate
   - pattern: let me know what works best
