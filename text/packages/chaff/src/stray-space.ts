@@ -100,6 +100,13 @@ const spacing = (sentence: Sentence, written: string, pair: Pair): boolean | und
   return SPACES.test(gap) ? true : undefined;
 };
 
+/** A space between two Japanese characters. */
+const SPACE_IN_JAPANESE = /(?<=[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}ー])[ \u3000]+(?=[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}])/gu;
+/** This many spaces between Japanese words in one sentence lay out items (a menu run into one line), not a compound with a slip. */
+const LAID_OUT_SPACES = 3;
+
+const isLaidOut = (written: string): boolean => (written.match(SPACE_IN_JAPANESE)?.length ?? 0) >= LAID_OUT_SPACES;
+
 const jointOf = (sentence: Sentence, written: string, quoted: readonly Span[], pair: Pair): Joint | undefined => {
   const { left, right } = pair;
   if (!isJapanese(left.surface.at(-1)) || !isJapanese(right.surface.at(0))) return undefined;
@@ -107,6 +114,7 @@ const jointOf = (sentence: Sentence, written: string, quoted: readonly Span[], p
   if (spaced === undefined || isWithinAny(quoted, { start: left.span.start, end: right.span.end })) return undefined;
   const kind = kindOf(pair);
   if (kind === undefined || (kind === "between-phrases" && isLineHead(sentence.text, left.span.start - sentence.span.start))) return undefined;
+  if (kind === "inside-word" && isLaidOut(written)) return undefined;
   return { offset: left.span.end, kind, spaced, before: left.surface, after: right.surface };
 };
 
