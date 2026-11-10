@@ -43,7 +43,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 
 group: slips
 summary:
-  ja: 部首の字（⼈）、互換漢字、字と分かれた濁点（か＋゛）、長音の代わりのダッシュ（ニュ－ス）のような、ふつうの字と同じに見える別の字
+  ja: 部首の字（⼈）、互換漢字、分かれた濁点（か＋゛）、長音に見えるダッシュ（ニュ－ス）など、同じに見える別の字
   en: A character that looks like an ordinary one but is a different one
 example:
   ja:
