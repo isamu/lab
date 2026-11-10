@@ -125,6 +125,15 @@ describe("request-without-deadline: 期限も担当も無い依頼", () => {
     );
   });
 
+  it("書き手がやり方を尋ねる依頼は、答えが書き手の次の一手で、期限の要る仕事ではない", () => {
+    assert.deepEqual(findingsOf("Could you let me know how to send the boots back, and whether you will provide a label?", en), []);
+    assert.deepEqual(findingsOf("Please let me know where to send the signed form.", en), []);
+    assert.deepEqual(findingsOf("返送の方法を教えてください。"), []);
+    assert.deepEqual(findingsOf("Could you let me know whether you can attend?", en), [MESSAGE_EN]);
+    assert.deepEqual(findingsOf("Please send the setup guide.", en), [MESSAGE_EN]);
+    assert.deepEqual(findingsOf("ご都合を教えてください。"), [MESSAGE_JA]);
+  });
+
   it("読み手の質問を受け付けるのでない依頼は、申し出と読まずに言う", () => {
     assert.deepEqual(findingsOf("署名した同意書をお送りください。"), [MESSAGE_JA]);
     assert.deepEqual(findingsOf("質問票に記入してください。"), [MESSAGE_JA]);
