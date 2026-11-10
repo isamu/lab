@@ -7,8 +7,9 @@ import { codePointName } from "./invisible-character.ts";
  * compatibility: a CJK compatibility ideograph (or one of its supplement) that Unicode maps to a unified one (樂 U+F914 for 樂).
  * decomposed: a letter and a separate combining mark (か + U+3099 for が, e + U+0301 for é), from file names or text
  * copied on macOS. spacing-mark: kana followed by the spacing ゛ or ゜, typed in place of the combined letter.
+ * dash: a dash or minus between katakana (ニュ－ス, U+FF0D), typed in place of the long-vowel mark ー.
  */
-export type LookalikeKind = "radical" | "compatibility" | "decomposed" | "spacing-mark";
+export type LookalikeKind = "radical" | "compatibility" | "decomposed" | "spacing-mark" | "dash";
 
 export type Lookalike = { readonly span: Span; readonly kind: LookalikeKind; readonly written: string; readonly usual: string };
 
@@ -48,8 +49,24 @@ const spacingMarkLookalikes = (source: string): Lookalike[] =>
     return [{ span: { start: match.index, end: match.index + match[0].length }, kind: "spacing-mark", written: match[0], usual }];
   });
 
+const LONG_VOWEL = "ー";
+/**
+ * A dash, a minus or a box line after a katakana letter that can be lengthened and before another katakana letter. The
+ * half-width - is left out: between katakana it joins the parts of a template or a range (<アルゴリズム>-<ハッシュ>, ァ-ヶ).
+ */
+const DASH_FOR_LONG_VOWEL = /(?<=[ァ-ヂツ-ヲヴ-ヺ])[\u2010-\u2015\u2212\uFF0D\u2500\u2501](?=[ァ-ヺ])/gu;
+
+/** A dash typed in place of the long-vowel mark between katakana (ニュ－ス → ニュース). */
+const dashLookalikes = (source: string): Lookalike[] =>
+  [...source.matchAll(DASH_FOR_LONG_VOWEL)].map((match) => ({
+    span: { start: match.index, end: match.index + match[0].length },
+    kind: "dash",
+    written: match[0],
+    usual: LONG_VOWEL,
+  }));
+
 export const lookalikesIn = (source: string): Lookalike[] =>
-  [...singleLookalikes(source), ...decomposedLookalikes(source), ...spacingMarkLookalikes(source)].toSorted(
+  [...singleLookalikes(source), ...decomposedLookalikes(source), ...spacingMarkLookalikes(source), ...dashLookalikes(source)].toSorted(
     (left, right) => left.span.start - right.span.start,
   );
 
