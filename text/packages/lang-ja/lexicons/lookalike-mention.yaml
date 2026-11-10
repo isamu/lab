@@ -9,6 +9,7 @@ entries:
   - pattern: 合成文字
   - pattern: 部首
   - pattern: 互換漢字
+  - pattern: 長音
   - pattern: NFC
   - pattern: NFD
   - pattern: NFKC

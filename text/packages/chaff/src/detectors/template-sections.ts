@@ -11,7 +11,7 @@ const LATIN = /\p{Script=Latin}/u;
 /** Does the character beside a match end the word? A Latin edge needs a non-letter next to it; a CJK word stands anywhere. */
 const boundsWord = (edge: string, beside: string | undefined): boolean => !LATIN.test(edge) || beside === undefined || !/[\p{L}\p{N}]/u.test(beside);
 
-const holdsWordAt = (text: string, pattern: string, index: number): boolean =>
+export const holdsWordAt = (text: string, pattern: string, index: number): boolean =>
   boundsWord(pattern[0] ?? "", text[index - 1]) && boundsWord(pattern.at(-1) ?? "", text[index + pattern.length]);
 
 /** The heading names a template: one of the words appears in it as a whole word, in any case. */

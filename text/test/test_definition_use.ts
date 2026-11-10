@@ -402,7 +402,7 @@ describe("use-before-definition: contents, captions and longer names", () => {
   it("valid: entries of a contents list under a contents heading", () => {
     const source = "## 目次\n\n- 利用目的の特定と変更\n- 安全管理\n\n## 決めること\n\n事業者は、使う目的（以下「利用目的」という。）を決める。\n";
     assert.deepEqual(early(source, ja), []);
-    assert.deepEqual(early(source.replace("## 目次", "## はじめに"), ja), ["「利用目的」を、8 行目の定義より前で使っています"]);
+    assert.deepEqual(early(source.replace("## 目次", "## 経緯"), ja), ["「利用目的」を、8 行目の定義より前で使っています"]);
   });
 });
 

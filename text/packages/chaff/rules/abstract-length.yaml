@@ -101,8 +101,8 @@ example:
       Forty students learned a list of words.
 
 not_flagged:
-  ja: 要旨の有無は、「はじめに」「方法」「結果」「考察」のような論文の節の見出しが二つ以上ある文書だけで見ます。要旨に付けた札（要旨：、【要旨】）は数えません。論文のジャンルでだけ見ます。
-  en: 'Whether an abstract is present is checked only in a document with two or more headings that name a paper''s sections (Introduction, Methods, Results, Discussion). The label itself ("Abstract:") is not counted. Only the academic paper genre runs this rule.'
+  ja: 要旨の有無は、「はじめに」「方法」「結果」「考察」のような論文の節の見出しが二つ以上ある文書だけで見ます。その見出しが「はじめに」「おわりに」のような始めと終わりの節だけなら、要旨を持たない論説や解説として見ません。要旨に付けた札（要旨：、【要旨】）は数えません。論文のジャンルでだけ見ます。
+  en: 'Whether an abstract is present is checked only in a document with two or more headings that name a paper''s sections (Introduction, Methods, Results, Discussion); when they are only an opening and a closing (Introduction, Conclusion), the document is read as an essay or a review, which carries no abstract. The label itself ("Abstract:") is not counted. Only the academic paper genre runs this rule.'
 level_meaning:
   ja: 要旨 {limit} 字まで
   en: up to {limit} words in the abstract

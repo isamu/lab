@@ -30,6 +30,18 @@ describe("emoji-density", () => {
   it("短い文書は測らない。密度が暴れるため", () => {
     assert.ok(!idsFor("# 連絡\n\n🎉 進捗 🚀 順調 ✨ 期待。").includes("emoji-density"));
   });
+
+  // A how-to's menu paths (Settings → Printers → Remove) were counted as emoji. Self-written text.
+  const PATHS = "- Open Settings → Devices → Printers → your printer → Remove.\n".repeat(8);
+
+  it("valid: an arrow between two words marks a menu path", () => {
+    assert.ok(!idsFor(`# Fix\n\n${PATHS}\n${BULK_EN}`, "blog/tech", en).includes("emoji-density"));
+    assert.ok(!idsFor(`# 手順\n\n${"- 設定→デバイス→プリンター→削除の順に開きます。\n".repeat(8)}\n${BULK}`, "blog/tech").includes("emoji-density"));
+  });
+
+  it("invalid: an arrow opening each line is decoration", () => {
+    assert.ok(idsFor(`# Fix\n\n${"→ Open the settings.\n\n→ Remove the printer.\n\n".repeat(8)}${BULK_EN}`, "blog/tech", en).includes("emoji-density"));
+  });
 });
 
 describe("ngram-repetition", () => {

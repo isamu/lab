@@ -89,15 +89,36 @@ export type AlnumRun = {
   readonly glued: boolean;
 };
 
+type Piece = { readonly 0: string; readonly index: number };
+
+/** 一つの幅で書いた部分。 */
+const SAME_WIDTH = /[A-Za-z0-9]+|[Ａ-Ｚａ-ｚ０-９]+/gu;
+const ONE_LETTER = /^[A-Za-zＡ-Ｚａ-ｚ]$/u;
+const DIGITS = /^[0-9０-９]+$/u;
+
+/** 英字一字と数字の、幅の違う組（Q５、Ｈ30、６００w）か。 */
+const isLetterAndNumber = (parts: readonly Piece[]): boolean =>
+  parts.length === 2 && parts.some((part) => ONE_LETTER.test(part[0])) && parts.some((part) => DIGITS.test(part[0]));
+
 /**
- * 文の中の英字・数字の並び。全角と半角が混ざった並び、鉤括弧で引いたものの中、項目と注の番号、箇条書きの頭の番号、版の番号の続き（TLS1.2 の 2）は数えない。
- * offset は文書の中の位置。
+ * 並びを、一つの幅で書いた部分に分ける。英字一字と数字を違う幅で書いた並び（Q５、Ｈ30）は、英字と数字に分けてそれぞれの組で数える。
+ * 「一字の英字は全角、２桁以上は半角」の Ｈ30 は、Ｈ も 30 もその組の中でそろう。ほかの混ざった並び（ＩoＴ）は数えない。
+ */
+const widthPieces = (match: RegExpExecArray): Piece[] => {
+  if (FULLWIDTH.test(match[0]) || HALFWIDTH.test(match[0])) return [match];
+  const parts = [...match[0].matchAll(SAME_WIDTH)].map((part) => ({ 0: part[0], index: match.index + part.index }));
+  return isLetterAndNumber(parts) ? parts : [];
+};
+
+/**
+ * 文の中の英字・数字の並び。鉤括弧で引いたものの中、項目と注の番号、箇条書きの頭の番号、版の番号の続き（TLS1.2 の 2）は数えない。
+ * 英字一字と数字を違う幅で書いた並びは分ける。offset は文書の中の位置。
  */
 export const alnumRunsIn = (sentence: Sentence, source: string): AlnumRun[] => {
   const quoted: readonly Span[] = quotedSpans(sentence.text, QUOTATION_MARKS);
   const glued = gluedNumberSpans(sentence.text);
   return [...sentence.text.matchAll(ALNUM_RUN)]
-    .filter((match) => FULLWIDTH.test(match[0]) || HALFWIDTH.test(match[0]))
+    .flatMap(widthPieces)
     .filter((match) => !isWithinAny(quoted, { start: match.index, end: match.index + match[0].length }))
     .filter((match) => !isLabel(sentence.text, match.index, match.index + match[0].length))
     .filter((match) => !isListItemNumber(source, sentence.span.start + match.index))

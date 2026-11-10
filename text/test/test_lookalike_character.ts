@@ -14,6 +14,8 @@ const COMBINING_VOICED = "\u3099";
 const SPACING_VOICED = "\u309B";
 const COMBINING_ACUTE = "\u0301";
 const SPACING_SEMI_VOICED = "\u309C";
+const FULLWIDTH_HYPHEN = "\uFF0D";
+const MINUS = "\u2212";
 
 const findingsOf = (source: string, adapter = ja): readonly string[] => namedRuleRun(RULE, `${source}\n`, adapter).findings;
 
@@ -88,5 +90,35 @@ describe("lookalike-character: 見た目が同じで別の字", () => {
     const [found] = lookalikesIn(`山と${KANGXI_MOUNTAIN}`);
     assert.equal(found?.span.start, 2);
     assert.equal(found?.kind, "radical");
+  });
+});
+
+describe("lookalike-character: カタカナの長音の代わりのダッシュ", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+  });
+
+  it("カタカナに挟まれた全角ハイフンやマイナスを、長音の「ー」と一緒に言う", () => {
+    assert.deepEqual(findingsOf(`初中教育ニュ${FULLWIDTH_HYPHEN}スをお届けします。`), [
+      `「${FULLWIDTH_HYPHEN}」（U+FF0D）はダッシュの字です。カタカナの長音は「ー」と書きます`,
+    ]);
+    assert.deepEqual(
+      lookalikesIn(`メ${FULLWIDTH_HYPHEN}ルマガジンとグル${MINUS}プ`).map((found) => [found.kind, found.written, found.usual]),
+      [
+        ["dash", FULLWIDTH_HYPHEN, "ー"],
+        ["dash", MINUS, "ー"],
+      ],
+    );
+  });
+
+  it("半角のハイフン、仮名に挟まれないダッシュ、ン・ッの後、長音そのものは言わない", () => {
+    assert.deepEqual(lookalikesIn("<ハッシュアルゴリズム>-<ハッシュ値>、ァ-ヶ"), []);
+    assert.deepEqual(lookalikesIn(`5${FULLWIDTH_HYPHEN}1${FULLWIDTH_HYPHEN}1、ページ${FULLWIDTH_HYPHEN}3、A${FULLWIDTH_HYPHEN}ク`), []);
+    assert.deepEqual(lookalikesIn(`ロン${FULLWIDTH_HYPHEN}ドン、ザッ${FULLWIDTH_HYPHEN}ク`), []);
+    assert.deepEqual(lookalikesIn("ニュース、メールマガジン"), []);
+  });
+
+  it("長音を話題にした行の例は言わない", () => {
+    assert.deepEqual(findingsOf(`長音を ${FULLWIDTH_HYPHEN} で書いた「ニュ${FULLWIDTH_HYPHEN}ス」は検索に掛かりません。`), []);
   });
 });

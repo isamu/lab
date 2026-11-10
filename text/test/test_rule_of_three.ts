@@ -193,3 +193,26 @@ describe("rule-of-three: a breakdown of figures", () => {
     );
   });
 });
+
+// A team blog's tips: each list holds three tips, and each tip is a bold piece of advice the item then explains in a few
+// sentences. The count is the content; padding to three shows as a thin item of one or two sentences. Self-written text.
+describe("rule-of-three: tips written as paragraphs", () => {
+  const tip = (lead: string, extra: string): string => `- **${lead}.** ${extra} It takes a week to get used to it. After that, nobody asks.`;
+  const tips = (extra: string): string =>
+    [
+      "# Working with a new team",
+      "Here is what helped us in the first month.",
+      [tip("Ask which meetings matter", extra), tip("Use the team's tracker", extra), tip("Keep talking", extra)].join("\n"),
+      "And here is what helped once the work was under way.",
+      [tip("Start with the big tasks", extra), tip("Share drafts early", extra), tip("Leave some things unfinished", extra)].join("\n"),
+    ].join("\n\n");
+
+  it("valid: every tip is a short paragraph", () => {
+    assert.equal(firedRules(en, tips("Talk to your lead first."), "blog/tech").includes("rule-of-three"), false);
+  });
+
+  it("invalid: the same lists with one-line items", () => {
+    const thin = tips("").replaceAll(" It takes a week to get used to it. After that, nobody asks.", "");
+    assert.equal(firedRules(en, thin, "blog/tech").includes("rule-of-three"), true);
+  });
+});

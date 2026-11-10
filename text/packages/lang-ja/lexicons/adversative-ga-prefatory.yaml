@@ -25,3 +25,11 @@ entries:
   - pattern: の件ですが
   - pattern: の内容でありますが
   - pattern: の内容ですが
+  - pattern: 御承知かも知れませんが
+  - pattern: 御承知かもしれませんが
+  - pattern: ご承知かも知れませんが
+  - pattern: ご承知かもしれませんが
+  - pattern: 御存知かも知れませんが
+  - pattern: ご存知かもしれませんが
+  - pattern: ご存じかも知れませんが
+  - pattern: ご存じかもしれませんが

@@ -146,3 +146,10 @@ entries:
     group: template
   - pattern: 文例
     group: template
+  # group: example-lead — 書き方の例を示す行の書き出し。コロンと鉤括弧が続く（例：「【会社名】の田中です」）。その鉤括弧の中の空欄は、書き方を示したもの。
+  - pattern: 例
+    group: example-lead
+  - pattern: 良い例
+    group: example-lead
+  - pattern: 悪い例
+    group: example-lead

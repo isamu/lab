@@ -49,9 +49,19 @@ const density = (doc: ProseDocument, count: number): number => {
  * 件数ではなく密度で見る。長い文書ほど当たるのを避けるため（bold-density と同じ）。
  */
 const EMOJI = /\p{Extended_Pictographic}|[←-⇿☀-➿]/gu;
+const ARROW = /^[←-⇿]$/u;
+const WORD_END = /[\p{L}\p{N}*_)\]"'’”]$/u;
+const WORD_START = /^[\p{L}\p{N}*_(["'‘“]/u;
+
+/** 語と語の間の矢印（Settings → Printers、A→B）。メニューの道筋や流れを示す区切りで、飾りではない。行頭の矢印（→ 詳しくはこちら）は飾り。 */
+const isArrowBetween = (hit: Hit): boolean => {
+  const text = hit.sentence.text;
+  const at = hit.offset - hit.sentence.span.start;
+  return ARROW.test(text[at] ?? "") && WORD_END.test(text.slice(0, at).trimEnd()) && WORD_START.test(text.slice(at + 1).trimStart());
+};
 
 export const emojiDensity: Detector = (doc, options): Finding[] => {
-  const hits = findIn(doc, EMOJI);
+  const hits = findIn(doc, EMOJI).filter((hit) => !isArrowBetween(hit));
   const first = hits[0];
   const rate = density(doc, hits.length);
   if (wordsOf(doc) < MIN_DOCUMENT_LENGTH[doc.lengthUnit] || first === undefined || rate <= options.limit) return [];

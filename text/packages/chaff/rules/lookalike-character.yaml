@@ -9,8 +9,8 @@ name:
   en: Look-alike character
 
 why:
-  ja: 部首の字（⼈ U+2F08）や互換漢字は、ふつうの「人」と同じに見えて別の字です。濁点を別の字にした「か＋゛」（macOS のファイル名や、そこからコピーした文に多い）も、「が」と同じに見えて別の並びです。どれも検索、並べ替え、辞書引き、表記の照合から漏れ、読み手には直す所が見えません。PDF からのコピーや、入力の変換で入ります。コードの中も見ます。
-  en: "A Kangxi radical (⼈ U+2F08) looks like the ordinary 人 and is another character; so is a CJK compatibility ideograph. A letter written as a base and a separate combining mark (e + U+0301, common in macOS file names and text copied from them) looks like é and is another sequence. Search, sorting, dictionaries and spelling checks all miss them, and the reader cannot see what to fix. They come from PDF copies and input methods. Code is checked too."
+  ja: 部首の字（⼈ U+2F08）や互換漢字は、ふつうの「人」と同じに見えて別の字です。濁点を別の字にした「か＋゛」（macOS のファイル名や、そこからコピーした文に多い）も、「が」と同じに見えて別の並びです。カタカナの間の全角ハイフン「－」やマイナス「−」（ニュ－ス）も、長音の「ー」に見えて別の字です。どれも検索、並べ替え、辞書引き、表記の照合から漏れ、読み手には直す所が見えません。PDF からのコピーや、入力の変換で入ります。コードの中も見ます。
+  en: "A Kangxi radical (⼈ U+2F08) looks like the ordinary 人 and is another character; so is a CJK compatibility ideograph. A letter written as a base and a separate combining mark (e + U+0301, common in macOS file names and text copied from them) looks like é and is another sequence. A full-width hyphen or a minus between katakana (ニュ－ス) looks like the long-vowel mark ー and is another character. Search, sorting, dictionaries and spelling checks all miss them, and the reader cannot see what to fix. They come from PDF copies and input methods. Code is checked too."
 
 message:
   ja: 「{written}」（{code}）は「{usual}」と同じに見える別の字です
@@ -29,6 +29,9 @@ messages:
   spacing-mark:
     ja: 「{written}」は濁点・半濁点を別の字で書いています（{code}）。一字の「{usual}」と書きます
     en: '"{written}" writes the voicing mark as a separate character ({code}), not the single letter "{usual}"'
+  dash:
+    ja: 「{written}」（{code}）はダッシュの字です。カタカナの長音は「{usual}」と書きます
+    en: '"{written}" ({code}) is a dash, not the katakana long-vowel mark "{usual}"'
 
 how_to_fix:
   ja: その字を消して、ふつうの字を打ち直してください。文書全体を NFC に正規化しても直ります（部首の字は NFKC）。
@@ -40,7 +43,7 @@ use_for: [business, technical, blog, legal, docs, academic, literature, speech]
 
 group: slips
 summary:
-  ja: 部首の字（⼈）、互換漢字、字と分かれた濁点（か＋゛）のような、ふつうの字と同じに見える別の字
+  ja: 部首の字（⼈）、互換漢字、分かれた濁点（か＋゛）、長音に見えるダッシュ（ニュ－ス）など、同じに見える別の字
   en: A character that looks like an ordinary one but is a different one
 example:
   ja:
@@ -53,8 +56,8 @@ example:
       Send the form to the café office.
 
 not_flagged:
-  ja: 一字にまとまる形の無い組み合わせ（字に付いた異体字の指定、合成済みの形の無いアクセント）と、Unicode が別の字として持つ互換漢字（﨑 など）は指しません。字そのものを話題にした語（濁点、部首、NFD など）が同じ行かすぐ前・すぐ後ろの行にある字（「ホ゜ケット のような、コピペで出る濁点のチェック」）は、見せるために書いた例なので指しません。
-  en: Combinations with no single precomposed form (a variation selector after a character, an accent with no precomposed letter) and compatibility ideographs that Unicode keeps as their own characters (﨑) are not reported. Nor is a look-alike on a line that talks about such characters (decomposed, Kangxi, NFD), or on the line just before or after one, as it is an example shown on purpose.
+  ja: 一字にまとまる形の無い組み合わせ（字に付いた異体字の指定、合成済みの形の無いアクセント）と、Unicode が別の字として持つ互換漢字（﨑 など）は指しません。カタカナの間でも半角の「-」は、型や範囲をつなぐ字（<アルゴリズム>-<ハッシュ>、ァ-ヶ）なので指しません。字そのものを話題にした語（濁点、部首、長音、NFD など）が同じ行かすぐ前・すぐ後ろの行にある字（「ホ゜ケット のような、コピペで出る濁点のチェック」）は、見せるために書いた例なので指しません。
+  en: Combinations with no single precomposed form (a variation selector after a character, an accent with no precomposed letter) and compatibility ideographs that Unicode keeps as their own characters (﨑) are not reported. A half-width - between katakana joins the parts of a template or a range (<アルゴリズム>-<ハッシュ>, ァ-ヶ) and is not reported. Nor is a look-alike on a line that talks about such characters (decomposed, Kangxi, NFD), or on the line just before or after one, as it is an example shown on purpose.
 sources: [textlint-ja-presets]
 rewrite:
   depth: light

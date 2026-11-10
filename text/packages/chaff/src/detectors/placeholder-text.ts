@@ -87,7 +87,7 @@ const lineMarkerSpans = (text: string, markers: Lexicon, labels: Lexicon): Span[
   });
 
 /** Lexicon groups of placeholder-word for a run of blank marks (〇〇): the word after it, the word before it, and a unit after it. */
-const BLANK_SUFFIX = "blank-suffix";
+export const BLANK_SUFFIX = "blank-suffix";
 const BLANK_PREFIX = "blank-prefix";
 const BLANK_UNIT = "blank-unit";
 

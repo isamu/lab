@@ -181,6 +181,22 @@ export const noteMarkerOffsets = (source: string): ReadonlySet<number> =>
 
 const NOTE_KIND = "\u0000note";
 
+/**
+ * A note's number cited in the prose (注(24)で示した): an author writes it as the notes' labels are, or as the prose's
+ * brackets are, and either is the document's own notation for it.
+ */
+const NOTE_ADDRESS = /(?<=[注註])(?:\([0-9０-９]{1,3}\)|（[0-9０-９]{1,3}）)/gu;
+
+/** The offsets in `source` of the brackets of every note's cited number. */
+export const noteAddressOffsets = (source: string): ReadonlySet<number> =>
+  new Set([...source.matchAll(NOTE_ADDRESS)].flatMap((match) => [match.index, match.index + match[0].length - 1]));
+
+const NOTE_ADDRESS_KIND = "\u0000noteaddress";
+
+/** A note's cited number is a kind of its own, compared only with the other cited note numbers. */
+const withNoteAddressKind = (mark: Mark, addresses: ReadonlySet<number>): Mark =>
+  addresses.has(mark.offset) ? { ...mark, form: { ...mark.form, kind: `${mark.form.kind}${NOTE_ADDRESS_KIND}` } } : mark;
+
 /** A note marker's bracket is a kind of its own, compared only with the other note markers' brackets. */
 const withNoteKind = (mark: Mark, notes: ReadonlySet<number>): Mark =>
   notes.has(mark.offset) && !mark.form.kind.endsWith(ENUMERATOR_KIND) ? { ...mark, form: { ...mark.form, kind: `${mark.form.kind}${NOTE_KIND}` } } : mark;
@@ -200,8 +216,11 @@ export const markConsistency: Detector = (doc, options): Finding[] => {
   const enumerators = enumeratorBracketOffsets(doc.source);
   const doubled = doubledParenOffsets(doc.source);
   const notes = noteMarkerOffsets(doc.source);
+  const noteAddresses = noteAddressOffsets(doc.source);
   const marks = ownSentences(doc).flatMap((sentence) =>
-    marksIn(doc.source, sentence, forms, script).map((mark) => withNoteKind(withDoubledKind(withEnumeratorKind(mark, enumerators), doubled), notes)),
+    marksIn(doc.source, sentence, forms, script).map((mark) =>
+      withNoteAddressKind(withNoteKind(withDoubledKind(withEnumeratorKind(mark, enumerators), doubled), notes), noteAddresses),
+    ),
   );
   const kinds = [...new Set(marks.map((mark) => mark.form.kind))];
   return kinds.flatMap((kind) =>

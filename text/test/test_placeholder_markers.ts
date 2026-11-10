@@ -417,3 +417,42 @@ describe("unfilled-placeholder: a blank mark in a letter, and the same mark as a
     assert.deepEqual(findingsIn(filled, "business/email"), []);
   });
 });
+
+describe("unfilled-placeholder: a bracket that names a field or shows what to write", () => {
+  it("leaves a filing form's field label alone where the document fills it in, and the same label named in prose", () => {
+    const source = [
+      "# 願書の書き方",
+      "",
+      "願書の【氏名】に旧氏を併記した氏名を書いてください。",
+      "",
+      "【住所又は居所】　東京都千代田区一丁目",
+      "【氏名】　山田（佐藤）　花子",
+      "",
+    ].join("\n");
+    assert.deepEqual(findings(source, ja), []);
+  });
+
+  it("still reports a label the document never fills, and one left with a blank mark after it", () => {
+    assert.equal(findings("# ご案内\n\n【氏名】の田中です。\n", ja).length, 1);
+    const linesOf = (source: string): number[] => findings(source, ja).map((finding) => finding.line);
+    assert.ok(linesOf("# ご案内\n\n【氏名】の田中です。\n\n【氏名】　〇〇\n").includes(3));
+  });
+
+  it("leaves the caption of a form's fill line alone", () => {
+    const source = "# Certificate\n\nI will be employed by ______________  **[Name of New Employer]** and will work on new projects.\n";
+    assert.deepEqual(findings(source, en), []);
+    assert.deepEqual(findings("# Form\n\n[Your Name] ____________\n", en), []);
+  });
+
+  it("leaves a blank inside a quoted example alone", () => {
+    assert.deepEqual(findings('# Alt text\n\n- Helpful for larger charts: "See the link [insert link name] below the image."\n', en), []);
+    assert.deepEqual(findings("# Alt text\n\n- Example: “Write to [Your Name] for a copy.”\n", en), []);
+    assert.deepEqual(findings("# 書き方\n\n- 例：「【会社名】の田中です。」\n", ja), []);
+  });
+
+  it("still reports a blank in a quotation that is not offered as an example", () => {
+    assert.equal(findings('# News\n\n"[Insert quote]," said the chair.\n', en).length, 1);
+    assert.equal(findings('# News\n\nThe chair said: "[Insert quote]."\n', en).length, 1);
+    assert.equal(findings('# News\n\nExampleCorp said: "[Insert quote]."\n', en).length, 1);
+  });
+});

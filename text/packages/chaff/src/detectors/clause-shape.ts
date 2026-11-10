@@ -52,18 +52,29 @@ export const endingOf = (sentence: Sentence): string | undefined => {
   return [headToken !== undefined && VERBAL_POS.has(headToken.pos) ? headToken.surface : "", ...tail].join("");
 };
 
-type Ended = { readonly sentence: Sentence; readonly ending: string | undefined };
+type Ended = { readonly sentence: Sentence; readonly ending: string | undefined; readonly opensItem: boolean };
+
+/** A label at the head of a sentence: a bracketed name (［通信関連］, 【部品】) or a name with leader dots (化学品事業……). */
+const ITEM_LABEL = /^\s*(?:[［【[][^］】\]\n]{1,30}[］】\]]|[^\s。、]{1,20}[…‥]+)/u;
+
+/** The sentence opens an item of a list written as running text: a new entry, not the next sentence of the one before. */
+const opensItem = (sentence: Sentence): boolean => ITEM_LABEL.test(sentence.text);
 
 /**
  * Runs of consecutive sentences with the same ending. A sentence with no ending to compare closes a run, and so does a
  * question run together with the next one inside a single sentence (これはリストか？順序付きか？などです。): it is not the writer's ending.
+ * A sentence opening a labelled item (［通信関連］…) starts a new run: entries of a list end alike by design.
  */
 export const endingRuns = (sentences: readonly Sentence[]): Ended[][] =>
   sentences
-    .map((sentence, index) => ({ sentence, ending: continuesThrough(sentences, index) ? undefined : endingOf(sentence) }))
+    .map((sentence, index) => ({
+      sentence,
+      ending: continuesThrough(sentences, index) ? undefined : endingOf(sentence),
+      opensItem: opensItem(sentence),
+    }))
     .reduce<Ended[][]>((runs, ended) => {
       const last = runs.at(-1) ?? [];
-      const continues = ended.ending !== undefined && last[0]?.ending === ended.ending;
+      const continues = ended.ending !== undefined && !ended.opensItem && last[0]?.ending === ended.ending;
       return continues ? [...runs.slice(0, -1), [...last, ended]] : [...runs, [ended]];
     }, [])
     .filter((run) => run[0]?.ending !== undefined);

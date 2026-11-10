@@ -34,3 +34,28 @@ describe("dangling-reference: an address cited to another document once", () => 
     assert.equal(findingsOf(GUIDE.replace(" of the Rehabilitation Act", "")).length > 0, true);
   });
 });
+
+const NOTE = [
+  "Section 1. Scope",
+  "",
+  "This section applies to every agency.",
+  "",
+  "Section 2. Notes",
+  "",
+  "The reference is kept although §111(a)(1) of the Act of May 2, 1961 repealed it, since §111(c) of the Act provides that a reference to a provision repealed by §111(a) is read as one to the new provision.",
+  "",
+].join("\n");
+
+describe("dangling-reference: a part of a unit cited to another document", () => {
+  it("is that document's when the document has no unit of that number", () => {
+    assert.deepEqual(findingsOf(NOTE), []);
+  });
+
+  it("is still reported when the document has its own unit of that number", () => {
+    assert.equal(findingsOf(`${NOTE}Section 111. Forms\n\nUse the form.\n`).length, 1);
+  });
+
+  it("is still reported when no reference names the other document", () => {
+    assert.equal(findingsOf(NOTE.replaceAll(" of the Act of May 2, 1961", "").replaceAll(" of the Act", "")).length > 0, true);
+  });
+});
