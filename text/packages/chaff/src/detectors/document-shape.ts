@@ -1,6 +1,7 @@
 // The shape of a document's top: whether the lead says anything the title does not, and whether a title or heading
 // runs too long to scan. Pure; both read only the sections, paragraphs and tokens chaff has already built.
 import { newContentMorphemes } from "./content-morphemes.ts";
+import { isRecordingTitle } from "../recording-title.ts";
 import { formValueTokens, isFormBlock } from "./form-line.ts";
 import { trigrams } from "./heading-overlap.ts";
 import { findingAt, writtenHeadings } from "./markup-finding.ts";
@@ -100,11 +101,6 @@ const QUESTION_END = /[?？]["'”’)）」』]*$/u;
 export const isQuestionHeading = (heading: string): boolean => QUESTION_END.test(heading.trim());
 
 const TRAILING_MARKS: ReadonlySet<string> = new Set(["PUNCT", "SYM"]);
-
-/** A running time in brackets at the end (（3分00秒）, (12:30)): the heading is the title of a video or a recording, not the writer's to shorten. */
-const RUNNING_TIME_END = /[(（]\s*(?:[0-9０-９]+分(?:[0-9０-９]+秒)?|[0-9０-９]+秒|[0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?)\s*[)）]$/u;
-
-export const isRecordingTitle = (heading: string): boolean => RUNNING_TIME_END.test(heading.trim());
 
 /**
  * A heading that ends on a particle closing a question (…補正することはできますか。): it asks as one ending in ？ does. The

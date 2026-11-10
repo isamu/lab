@@ -5,6 +5,7 @@ import { isRunInLabel } from "./run-in-label.ts";
 import { noticeSentences } from "./notice-paragraph.ts";
 import { separatePartSentences, trailingPartSentences } from "./register-separate-part.ts";
 import { askerSentences } from "./asker-voice.ts";
+import { recordingCaptionSentences } from "../recording-title.ts";
 import { licenceNoticeSentences } from "./licence-notice.ts";
 import { chronologyRows } from "../chronology-rows.ts";
 import { isNeutralPlainShape } from "./register-neutral-shape.ts";
@@ -22,6 +23,7 @@ import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span, To
  * 年表の行（1921年信号装置の製作を開始する。）も、文書の文体と揃えない書き方なので数えない。
  * 断り書きの段落（…ご了承ください。）も、本文とは別の声で書く決まり文句なので数えない（notice-paragraph.ts）。
  * 読み手の相談や質問を載せる節（【相談事例等】）の文は尋ねた人の言葉のままなので数えない（asker-voice.ts）。
+ * 動画の題（…（3分00秒））の下の説明も、動画の言葉のままなので数えない（recording-title.ts）。
  * 文書の最後に掲載先が付けた利用条件の断り書き（…ライセンスの下に提供されています。）も数えない（licence-notice.ts）。
  * 札を付けて引いた言葉（例：…。Q: …？）、印を付けた札の行の下の記入欄の値（■ 調査目的\n…とする。）、
  * 〒や電話の行のある問い合わせ先の段落も数えない（register-set-apart.ts）。
@@ -101,7 +103,7 @@ export const judgedSentences = (doc: ProseDocument, polite: readonly LexiconEntr
   const words = endingWords(doc, polite, genre);
   const lists = doc.lists.map((list) => list.span);
   const rows = chronologyRows(doc);
-  const asked = askerSentences(doc.sections, doc.lexicons["asker-heading"] ?? []);
+  const asked = new Set([...askerSentences(doc.sections, doc.lexicons["asker-heading"] ?? []), ...recordingCaptionSentences(doc.sections)]);
   const licence = licenceNoticeSentences(doc, doc.lexicons["licence-word"] ?? []);
   const quoted = labelledQuoteSentences(doc.paragraphs, doc.source, doc.lexicons["quote-label"] ?? []);
   const fields = fieldValueSentences(doc.sentences, doc.source);
