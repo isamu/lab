@@ -7,6 +7,7 @@ import { weekdayMismatches } from "../structure/weekday.ts";
 import { revisionAnchors } from "./revision-date.ts";
 import { documentDateOf } from "./document-date.ts";
 import { dateOrderBreaks } from "../structure/date-order.ts";
+import { scheduledPoints } from "../structure/due-column.ts";
 import { totalMismatches, type Amount } from "../structure/total.ts";
 import { isListedTotal, isPeriodTotalLine, isTotalLikeLine, isTotalLine } from "../structure/total-line.ts";
 import { proseTotalMismatches } from "../structure/prose-total.ts";
@@ -174,15 +175,17 @@ export const datedPoints = (tree: NonNullable<ProseDocument["structure"]>): { of
 export const dateOrder: Detector = (doc): Finding[] =>
   doc.structure === undefined
     ? []
-    : dateOrderBreaks(doc.source, datedPoints(doc.structure), doc.markup?.headings ?? []).map((issue) => ({
-        rule: "date-order",
-        severity: "warning",
-        line: 0,
-        column: 0,
-        quote: quoteAt(doc.source, issue.offset),
-        values: { ...withReadableDates(issue.values, ["date", "previous", "next"], readableDates(doc)), offset: issue.offset },
-        ...("next" in issue.values ? { variant: "first" } : {}),
-      }));
+    : dateOrderBreaks(doc.source, scheduledPoints(doc.source, datedPoints(doc.structure), patternsOf(doc, "action-due-label")), doc.markup?.headings ?? []).map(
+        (issue) => ({
+          rule: "date-order",
+          severity: "warning",
+          line: 0,
+          column: 0,
+          quote: quoteAt(doc.source, issue.offset),
+          values: { ...withReadableDates(issue.values, ["date", "previous", "next"], readableDates(doc)), offset: issue.offset },
+          ...("next" in issue.values ? { variant: "first" } : {}),
+        }),
+      );
 
 /** 木の数量を、原文の位置と一緒に並べる。 */
 export const amountsOf = (tree: NonNullable<ProseDocument["structure"]>): Amount[] =>
