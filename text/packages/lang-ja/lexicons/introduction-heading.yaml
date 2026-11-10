@@ -1,0 +1,10 @@
+# 文書の頭に置く、はじめにの節の見出し（use-before-definition）。この節は後の本文が定義して述べることを先に名指すので、
+# 節の外で定義する語をここで使っても最初の使用に数えない。summary-heading と同じく、見出しがまるごと同じときだけ。
+id: introduction-heading
+language: ja
+entries:
+  - pattern: はじめに
+  - pattern: 序論
+  - pattern: 序文
+  - pattern: まえがき
+  - pattern: 前書き
