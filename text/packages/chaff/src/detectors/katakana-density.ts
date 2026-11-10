@@ -1,4 +1,5 @@
 import type { Detector, Finding, ProseDocument, Sentence } from "../plugin.ts";
+import { frontMatterValues } from "../front-matter.ts";
 import { proseText } from "../measure.ts";
 import { rateOver } from "./lexicon.ts";
 
@@ -33,14 +34,17 @@ export const mostFrequent = (words: readonly string[], count: number): string[] 
     .map(([word]) => word);
 };
 
+/** The document's titles: its first top-level heading, and the title its front matter gives (a site generator shows that one instead). */
+const titlesOf = (doc: ProseDocument): string[] => [
+  doc.markup?.headings.find((heading) => heading.depth === 1)?.text ?? "",
+  ...frontMatterValues(doc.source, "title"),
+];
+
 /**
  * The katakana words of the document's title: what the document is about (e-Govアカウントの登録方法). A manual on accounts
  * cannot say アカウント another way, so the subject is not a loanword to trim.
  */
-export const subjectWords = (doc: ProseDocument): ReadonlySet<string> => {
-  const title = doc.markup?.headings.find((heading) => heading.depth === 1)?.text ?? "";
-  return new Set(katakanaWordsIn(title, doc.names ?? []));
-};
+export const subjectWords = (doc: ProseDocument): ReadonlySet<string> => new Set(titlesOf(doc).flatMap((title) => katakanaWordsIn(title, doc.names ?? [])));
 
 const wordsOfDocument = (doc: ProseDocument): KatakanaWord[] => {
   const subject = subjectWords(doc);
