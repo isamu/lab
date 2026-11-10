@@ -135,6 +135,11 @@ describe("orthographic-variant: 別の語として挙げた書き方", () => {
     assert.deepEqual(findingsOf("# 演説\n\nモノとサービスを売る。もの作りを進める。ものの価値を上げる。ものを大切にする。ものを作る。\n"), []);
   });
 
+  it("断る言葉として書く「イヤ」を、地の文の「嫌」と比べない", () => {
+    const source = "# 手引き\n\n嫌だと言えない場面がある。\n\n- イヤな触られかたをされたら、「イヤだ」と言う。\n- イヤなことをされたら、すぐに相談する。\n";
+    assert.deepEqual(findingsOf(source), []);
+  });
+
   it("種類の名前のカタカナ（ネギ）とかなは今までどおり比べる", () => {
     assert.equal(findingsOf("# レシピ\n\nねぎを切る。ねぎを炒める。ねぎを盛る。ネギを添える。\n").length, 1);
   });
