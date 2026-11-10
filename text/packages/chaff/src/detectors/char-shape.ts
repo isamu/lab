@@ -21,13 +21,13 @@ import { isOneName } from "./name-run.ts";
 import { isOrganisationHead, isOrganisationRun, type OrganisationWords } from "./organisation-run.ts";
 import { endsInTitle, inStatuteTitle, isTitlePosition, isTitledName, repeatedRuns, titleBody, type TitleWords } from "./titled-run.ts";
 import { proseText } from "../measure.ts";
-import { parallelDotCount } from "./middle-dot.ts";
 import { maskSpans } from "../mask.ts";
 import { quotedSpans } from "../quoted-span.ts";
 import { nameSpans } from "../team-names.ts";
 import { isIn } from "../lexicon-genres.ts";
 import { holdsKnown, isInnerSuffix, isTitledPerson, standaloneNames, unknownPieces } from "./kanji-run-pieces.ts";
 import { isBibliographyEntry } from "./bibliography-entry.ts";
+import { isNamedByContext } from "./named-by-context.ts";
 
 /**
  * 文字の並びを見る検出。漢字の連なりが住所か名前かだけは、形態素解析の固有名詞と数で決める。
@@ -142,6 +142,10 @@ type NameWords = {
   readonly listSuffixes: readonly string[];
   /** 連なりを閉じる、読み手が一つの語と知っている長い語（内閣総理大臣、許可事業者）。その前で連なりを割る。 */
   readonly knownWords: ReadonlySet<string>;
+  /** 制度が区分に入れることを言う句（として認定）。連なりのすぐ後ろに続けば、連なりは区分の名前。 */
+  readonly designations: readonly string[];
+  /** お知らせやメールの題を閉じる語（お知らせ、ご案内）。 */
+  readonly noticeEndings: readonly string[];
 };
 
 type Tail = AddresseeSuffix;
@@ -253,7 +257,7 @@ const measuredOf = (tokens: readonly Token[], run: KanjiRun, span: Span, words: 
  * 住所か名前かは、それを外した残りで決める（1日日本銀行の「日本銀行」）。品詞が無ければ判定しない。
  */
 const measuredRun = (tokens: readonly Token[] | undefined, run: KanjiRun, context: RunContext): string => {
-  if (run.quoted || (context.headwords && run.alone)) return "";
+  if (run.quoted || (context.headwords && run.alone) || isNamedByContext(run, context.words)) return "";
   if (tokens === undefined || run.span === undefined) return run.text;
   const { rest, text, keptHead } = measuredOf(tokens, run, run.span, context.words);
   if (context.presented.has(text) || inStatuteTitle(tokens, run.brackets, context.words.fixedName)) return "";
@@ -361,6 +365,8 @@ const nameWordsOf = (doc: ProseDocument): NameWords => {
     references: patterns("reference-prefix"),
     listSuffixes: patterns("list-suffix"),
     knownWords: new Set(patterns("kanji-known-word")),
+    designations: patterns("designation-phrase"),
+    noticeEndings: patterns("notice-title-ending"),
   };
 };
 
@@ -403,25 +409,5 @@ export const kanjiRun: Detector = (doc, options): Finding[] => {
       column: 0,
       quote: sentence.text.trim(),
       values: { word: run, count: run.length, limit: options.limit, offset: sentence.span.start },
-    }));
-};
-
-/**
- * 中黒で並べると、どこまでが 1 つの項目か分からなくなる。
- * 「企画・開発・運用・保守体制」は、保守体制が 1 つなのか保守と体制なのか読めない。
- * 語彙表（nakaguro-word）の、中黒を含めて 1 語の語（キャッシュ・フロー）の中黒は並べていないので数えない。
- */
-export const middleDot: Detector = (doc, options): Finding[] => {
-  const words = (options.lexicon ?? []).map((entry) => entry.pattern).toSorted((left, right) => right.length - left.length);
-  return doc.sentences
-    .map((sentence) => ({ sentence, count: parallelDotCount(sentence.text, words) }))
-    .filter(({ count }) => count > options.limit)
-    .map(({ sentence, count }) => ({
-      rule: "no-nakaguro-parallel",
-      severity: "info",
-      line: 0,
-      column: 0,
-      quote: sentence.text.trim(),
-      values: { count, limit: options.limit, offset: sentence.span.start },
     }));
 };
