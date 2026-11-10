@@ -61,8 +61,8 @@ example:
       We will analyze the results and decide next week.
 
 not_flagged:
-  ja: 「する」を付けても動詞にならない名詞（イベントを行う）、「を実施する」が催す意味になる語（研修を実施する、授業を行う）や、「する」を付けた動詞が無いか別の意味になる語（施策を実施する、支援措置を実施する。語は語彙表 nominalization-event-noun）、「勉強をする」のような「〜をする」、文書の長さに対して少ないものは見ません。短すぎる文書も測りません。
-  en: Phrases not on chaff's list, and a document where they are few for its length, are not reported. Very short documents are not measured.
+  ja: 「する」を付けても動詞にならない名詞（イベントを行う）、「を実施する」が催す意味になる語（研修を実施する、授業を行う）や、「する」を付けた動詞が無いか別の意味になる語（施策を実施する、支援措置を実施する。語は語彙表 nominalization-event-noun）、「勉強をする」のような「〜をする」、文書の長さに対して少ないものは見ません。短すぎる文書も測りません。「する」を付けると主語が入れ替わる語（飼育下繁殖を実施する）と、括弧で短い呼び名を付けた長い名前の中（訓練を行う者（以下「訓練実施機関」という。））も数えません。
+  en: Phrases not on chaff's list, and a document where they are few for its length, are not reported. Very short documents are not measured. In Japanese, a noun whose する form changes who acts (繁殖を実施する) and the long name a bracket gives a short name to (訓練を行う者（以下「訓練実施機関」という。）) are not counted either.
 level_meaning:
   ja: 1000 字あたり「〜を実施する」のような名詞化した動詞 {limit} 個まで
   en: up to {limit} nominalized verbs ("make a decision") per 1000 words
