@@ -5,7 +5,7 @@ import { dateStampIndexes, stampCandidates } from "../date-stamp.ts";
 import { inDocumentOrder } from "../structure/issues.ts";
 import { preambleParagraphs } from "../preamble-paragraphs.ts";
 import { isTooLongParagraph, labelledBlocks, lostLineBreaks, opensWithFusedHeading } from "../paragraph-length.ts";
-import { bodySectionOf } from "../body-section.ts";
+import { bodySectionOf, hasOnlyMatterHeadings } from "../body-section.ts";
 import { threeShare } from "../rule-of-three.ts";
 import { isInterview, sectionLevels } from "../section-levels.ts";
 
@@ -171,10 +171,13 @@ const withoutDateStamps = (doc: ProseDocument, paragraphs: readonly Paragraph[])
 /**
  * 本題に入るまでが長い。業務文書では、読み手は結論を探しに来ている。
  * 「本題」は最初の中見出し。中見出しが無い文書では、rule が requires の headings で動かず、動かなかった理由が出る。
+ * 見出しが末尾の問い合わせ先や参考文献だけの文書（手紙の形の諮問）も、本題の見出しが無いので測らない。
  */
 export const preambleLength: Detector = (doc, options): Finding[] => {
   const body = bodySectionOf(doc.sections);
   if (body === undefined) return [];
+  const matter = (doc.lexicons["unnumbered-heading"] ?? []).map((entry) => entry.pattern.toLowerCase());
+  if (hasOnlyMatterHeadings(doc.sections, body, matter)) return [];
   const noteMarks = (doc.lexicons["note-mark"] ?? []).map((entry) => entry.pattern);
   const all = preambleParagraphs(doc.paragraphs, body.span.start, doc.source, noteMarks);
   if (all.length <= options.limit) return [];

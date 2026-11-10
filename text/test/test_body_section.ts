@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { bodySectionOf } from "../packages/chaff/src/body-section.ts";
+import { bodySectionOf, hasOnlyMatterHeadings } from "../packages/chaff/src/body-section.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
@@ -105,5 +105,30 @@ describe("preamble-length with top-level sections", () => {
 
   it("a title alone, with no heading below it, is still not measured and says so", () => {
     assert.ok(notRunPreamble("# Store plan\n\nOne.\n\nTwo.\n\nThree.\n\nFour."));
+  });
+});
+
+describe("hasOnlyMatterHeadings: a document whose headings are only front or back matter has no body heading", () => {
+  const matter = ["お問合せ先", "参考文献", "contact"];
+
+  it("is true when every heading from the body on, at its depth or above, is matter (a letter with a contact box)", () => {
+    const sections = [section(1, "諮問"), section(2, "お問合せ先"), section(3, "高等教育企画課")];
+    assert.equal(hasOnlyMatterHeadings(sections, sections[1] ?? section(2, ""), matter), true);
+  });
+
+  it("is false when a heading of the body's depth is not matter", () => {
+    const sections = [section(1, "Title"), section(2, "Decision"), section(2, "Contact")];
+    assert.equal(hasOnlyMatterHeadings(sections, sections[1] ?? section(2, ""), matter), false);
+  });
+
+  it("preamble-length does not measure a letter whose only heading is its contact box", () => {
+    const letter = [
+      "# Request",
+      ...Array.from({ length: 6 }, (_, at) => `Paragraph ${at + 1} of the request explains one more reason.`),
+      "## Contact",
+      "Policy Office, 555-0100.",
+    ].join("\n\n");
+    assert.equal(preambleFindings(letter), 0);
+    assert.equal(preambleFindings(letter.replace("## Contact", "## Decision")), 1);
   });
 });
