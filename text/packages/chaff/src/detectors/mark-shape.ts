@@ -1,6 +1,7 @@
 import type { Detector, Finding, Lexicon, ProseDocument, Sentence } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { isConventionalPhrase } from "./caps-phrase.ts";
+import { namesScreenLabel } from "./caps-screen-label.ts";
 import { minorityReport } from "../spacing-minority.ts";
 import { externalLinkTitleSpans } from "../link-title.ts";
 import { formulaBracketSpans } from "../formula-brackets.ts";
@@ -375,7 +376,7 @@ export const isShouting = (run: string, known: ReadonlySet<string>, conventional
 /**
  * Runs of three or more all-capital words that are ordinary words, not acronyms ("DO NOT DELETE THIS"), and not a
  * caption, a mention of one, a paragraph of capital lines that ends no sentence (a letterhead, a heading), a roster name, a
- * placeholder in square brackets, or a whole quotation.
+ * placeholder in square brackets, a whole quotation, or a label a sentence names as on a screen ("in SUBMIT TO APPROVER status").
  */
 export const capsShouting: Detector = (doc, options): Finding[] => {
   const known = lowerCaseWords(doc.prose ?? doc.source);
@@ -383,6 +384,7 @@ export const capsShouting: Detector = (doc, options): Finding[] => {
   const captions = captionsOf(doc.source);
   const capitalLines = capitalLineSpans(doc.source);
   const placeholders = bracketPlaceholderSpans(doc.source);
+  const screenNouns = new Set((doc.lexicons["screen-label-noun"] ?? []).map((entry) => entry.pattern));
   const isCaptionOrLetterhead = (hit: Hit): boolean => {
     const span = { start: hit.offset, end: hit.offset + hit.matched.length };
     return (
@@ -390,7 +392,8 @@ export const capsShouting: Detector = (doc, options): Finding[] => {
       isCaptionAt(doc.source, span.start, span.end) ||
       isWithinSorted(capitalLines, span) ||
       isWithinAny(placeholders, span) ||
-      isWholeQuotation(doc.source, span.start, span.end)
+      isWholeQuotation(doc.source, span.start, span.end) ||
+      namesScreenLabel(doc.source, span.start, span.end, screenNouns)
     );
   };
   const hits = hitsOf(ownSentences(doc), CAPS_RUN).filter((hit) => isShouting(hit.matched, known, conventional) && !isCaptionOrLetterhead(hit));
