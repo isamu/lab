@@ -10,9 +10,10 @@ jma-yougo-kaze  2
 jsprimer-loop  1
 mext-heatstroke-after-holidays  1
 mhlw-kikan-gyomu-shokuin-boshu  2
-mhlw-norovirus-qa  7
+mhlw-norovirus-qa  11
 mhlw-pubcomment-rodohoken  4
 ppc-guidelines-tsusoku  13
 saikosai-h26-09-02-nagano  3
+saitama-shokuiku-soboro-oyakodon  1
 tokyoapp-service-terms  7
 wikipedia-ja-talk-oden  1
