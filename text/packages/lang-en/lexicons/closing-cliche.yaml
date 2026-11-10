@@ -21,6 +21,11 @@ entries:
   # "happy to discuss" and "apologize for any inconvenience" are email-stock-courtesy's, which counts them stacked.
   - pattern: prompt attention to this matter
   - pattern: would welcome any feedback
+  # A proposal's last line offering to talk it over. In an email it is email-stock-courtesy's, which counts it stacked.
+  - pattern: happy to discuss any
+    genres: [business/proposal]
+  - pattern: happy to answer any
+    genres: [business/proposal]
   # A chirpy last wish in an email (Wishing you all a restful holiday season!, Thanks, and enjoy the long weekend!).
   # Only in emails: a blog's "enjoy the wilderness!" is its subject, not a send-off.
   - pattern: Wishing

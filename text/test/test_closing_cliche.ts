@@ -129,6 +129,14 @@ describe("closing-cliche: the stock last line of an email or a proposal", () => 
     assert.deepEqual(matchedFor(proposal, en, "business/proposal"), ["would welcome any feedback"]);
   });
 
+  it("invalid: a proposal that closes on an offer to discuss; an email leaves it to email-stock-courtesy", () => {
+    const proposal =
+      "# Shared tool\n\nWe recommend a six-week rollout.\n\n## Recommendation\n\nWe recommend approving the rollout. We would be happy to discuss any questions or adjustments to this plan.\n";
+    assert.deepEqual(matchedFor(proposal, en, "business/proposal"), ["happy to discuss any"]);
+    const mail = "Hi Sam,\n\nThe draft is attached.\n\nI'd be happy to discuss any questions.\n\nBest,\nAnna\n";
+    assert.ok(!flagged(mail, en, "business/email"));
+  });
+
   it("invalid: an email that closes on a chirpy wish", () => {
     const wish = "Hi all,\n\nThe office closes at noon on Friday.\n\nWishing you all a restful and happy holiday season!\n\nBest,\nKaren\n";
     const enjoy = "Hi all,\n\nThe office closes at noon on Friday.\n\nThanks, and enjoy the long weekend!\n\nBest,\nKaren\n";
