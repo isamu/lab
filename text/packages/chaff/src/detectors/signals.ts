@@ -51,7 +51,7 @@ const density = (doc: ProseDocument, count: number): number => {
 const EMOJI = /\p{Extended_Pictographic}|[←-⇿☀-➿]/gu;
 const ARROW = /^[←-⇿]$/u;
 const WORD_END = /[\p{L}\p{N}*_)\]"'’”]$/u;
-const WORD_START = /^[\p{L}\p{N}*_(\["'‘“]/u;
+const WORD_START = /^[\p{L}\p{N}*_(["'‘“]/u;
 
 /** 語と語の間の矢印（Settings → Printers、A→B）。メニューの道筋や流れを示す区切りで、飾りではない。行頭の矢印（→ 詳しくはこちら）は飾り。 */
 const isArrowBetween = (hit: Hit): boolean => {
