@@ -256,4 +256,12 @@ describe("colloquial-opener", () => {
     assert.deepEqual(findingsOf(RULE, "`explain` でも、数字の代わりに重さが出ます。\n"), []);
     assert.deepEqual(findingsOf(RULE, "`explain` を使います。でも、数字は出ません。\n"), ["「でも」で始まる文が 1 個あります（1 個から）"]);
   });
+
+  it("問いの見出しや「！」で砕けた口調を選んだ文書では、話し言葉の接続詞も口調に合う", () => {
+    const casual =
+      "# 休憩室に本棚を置きませんか？\n\n## なんで本棚？\n\n休憩室が少し寂しいです。なので、本棚がいいと思っています。\n\nぜひ相談させてください！\n";
+    assert.deepEqual(findingsOf(RULE, casual), []);
+    const oneMark = "# 休憩室の本棚について\n\n## 理由\n\n休憩室が少し寂しいです。なので、本棚がいいと思っています。\n\nぜひ相談させてください！\n";
+    assert.deepEqual(findingsOf(RULE, oneMark), ["「なので」で始まる文が 1 個あります（1 個から）"]);
+  });
 });
