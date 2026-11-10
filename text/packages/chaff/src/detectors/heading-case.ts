@@ -41,11 +41,17 @@ const TITLE_DEPTH = 1;
 const LEADING_LABEL = /^\s*\p{Lu}\p{Ll}+\s+(?:\d{1,3}(?:\.\d{1,3})*|[IVXLC]+)\s*[.:)\-\u2013\u2014]\s+/u;
 
 /**
+ * 見出しの頭の字や小さいローマ数字の札（a. / b) / iv. / (c)）。札は流儀によらず小文字か大文字のまま書くので、語に数えない。
+ * 字の後ろに「.」か「)」があるものだけ（A Guide も I Think も札ではない）。
+ */
+const LETTER_LABEL = /^\s*\(?(?:[A-Za-z]|[ivxlc]{2,6}|[IVXLC]{2,6})[.)]\s+/u;
+
+/**
  * 見出しが Title Case か。判定できなければ undefined。fixedCase は流儀によらず大文字で書く語（曜日・月の名）で、
  * どちらの流儀の証拠にもならないので数えない。
  */
 export const isTitleCase = (heading: string, fixedCase: ReadonlySet<string> = new Set()): boolean | undefined => {
-  const words = [...withoutCodeWords(straightApostrophes(heading.replace(LEADING_LABEL, ""))).matchAll(WORD)]
+  const words = [...withoutCodeWords(straightApostrophes(heading.replace(LEADING_LABEL, "").replace(LETTER_LABEL, ""))).matchAll(WORD)]
     .map((match) => match[0])
     .filter((word) => !MINOR_WORDS.has(word.toLowerCase()) && !ACRONYM.test(word) && !fixedCase.has(word));
   // 1 語の見出しは、どちらの流儀でも先頭が大文字になる。判定できない。

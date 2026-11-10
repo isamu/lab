@@ -289,6 +289,20 @@ describe("isTitleCase と番号の札・曜日と月の名", () => {
     assert.equal(isTitleCase("Day 1: Arrival"), undefined);
   });
 
+  it("頭の字やローマ数字の札（b. / iv) / (c)）は語に数えない", () => {
+    assert.equal(isTitleCase("b. Feasibility Feedback—Idle Capacity"), true);
+    assert.equal(isTitleCase("b. Feasibility feedback"), false);
+    assert.equal(isTitleCase("iv) Cost Considerations"), true);
+    assert.equal(isTitleCase("(c) Entity Overview"), true);
+    assert.equal(isTitleCase("A Guide to Billing"), true);
+    assert.equal(isTitleCase("e.g. a short guide"), false);
+  });
+
+  it("小文字の札の見出しは、Title Case の節のなかで少数派に数えない", () => {
+    const source = ["## a. Entity Overview\n\nText.", "## b. Feasibility Feedback—Idle Capacity\n\nText.", "## c. Cost Drivers\n\nText."].join("\n\n");
+    assert.deepEqual(quotesFor(source), []);
+  });
+
   it("番号の後ろに区切りの無い名前（Windows 11 Setup）は札ではない", () => {
     assert.equal(isTitleCase("Windows 11 Setup"), true);
     assert.equal(isTitleCase("Windows 11 setup"), false);
