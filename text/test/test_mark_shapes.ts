@@ -169,6 +169,33 @@ describe("sentence-spacing-consistency", () => {
     assert.deepEqual(findingsOf(RULE, "We met.  We talked.  See Req. 1.  We agreed.  Refs. [ISO99] apply.  We left.\n"), []);
     assert.deepEqual(findingsOf(RULE, "We met.  We talked.  We sat. (Briefly.)  We agreed.\n"), []);
   });
+
+  it("a pause inside a verse line is the stanza's layout, and prose wrapped in lower case is still read", () => {
+    const poem = [
+      "The night was cold.  The road was long,\nAnd still we walked\nUntil the dawn.\n",
+      "We passed the mill\nAnd crossed the stream\nWhere willows lean. We rest.\n",
+      "Who calls?  Not I.\nThe hills are dark\nAnd deep the vale.\n",
+      "So home at last\nWe came. We slept.\n",
+    ].join("\n");
+    assert.deepEqual(findingsOf(RULE, poem), []);
+    const prose = "We met in the hall and talked at length about the plan. Then\nwe left.  We came back the next day. We agreed on the\ncosts. We signed.\n";
+    assert.deepEqual(findingsOf(RULE, prose), ["2 spaces after this sentence, where the document usually leaves 1 (1 of 4)"]);
+  });
+
+  it("articles that open with a caption line are prose, not stanzas", () => {
+    const policy = [
+      "Article 1 Purpose\nThis policy sets out how staff use devices.\n",
+      "Article 2 Lending\nThe company lends devices. Staff use them for work.\n",
+      "Article 3 Care\nStaff look after a device.  Staff report a loss at once.\n",
+      "Article 4 Return\nStaff return every device. They leave it with IT.\n",
+    ].join("\n");
+    assert.deepEqual(findingsOf(RULE, policy), ["2 spaces after this sentence, where the document usually leaves 1 (1 of 3)"]);
+  });
+
+  it("two spaces before a field's label, as in an author block joined on one line, are not between sentences", () => {
+    const authors = "Jane Roe  Note: Both authors contributed equally.  Affiliation: Example University. We met. We talked. We left.\n";
+    assert.deepEqual(findingsOf(RULE, authors), []);
+  });
 });
 
 describe("hyphen-as-dash", () => {

@@ -43,8 +43,8 @@ example:
       We met. We talked. We agreed. We left.
 
 not_flagged:
-  ja: ピリオド・疑問符・感嘆符で終わる文と、同じ行で続く次の文のあいだだけを見ます。行末の空白（Markdown の改行）は見ません。
-  en: Only the space after a sentence ending in a period, question or exclamation mark, before the next sentence on the same line. Spaces at the end of a line (a Markdown line break) are not counted.
+  ja: ピリオド・疑問符・感嘆符で終わる文と、同じ行で続く次の文のあいだだけを見ます。行末の空白（Markdown の改行）は見ません。詩の連の中で一行に二つの文が並ぶときの間（I'm nobody!  Who are you?）と、著者欄のように項目名（Affiliation:）の前の空白も見ません。
+  en: Only the space after a sentence ending in a period, question or exclamation mark, before the next sentence on the same line. Spaces at the end of a line (a Markdown line break) are not counted, nor a pause inside a verse line of a poem ("I'm nobody!  Who are you?"), nor the space before a field's label ("Affiliation:") in an author block.
 level_meaning:
   ja: 少ないほうの空け方が {limit} 箇所あれば指摘
   en: reported once the less common spacing appears {limit} times
