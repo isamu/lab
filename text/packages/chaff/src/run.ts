@@ -103,11 +103,13 @@ const unreadOf = (doc: ProseDocument): Unread | undefined => {
 /** 見出しを読む rule の要求。表題より下の見出しが無い文書では、本題の前を測れない。0 件を「前置きが短い」に見せない。 */
 /** 記法を読む rule の要求（markdown）。.txt には見出しの記法も画像もリンクの記法も無いので、0 件を「問題なし」に見せない。 */
 /** documents: a rule that compares the documents of one run (cross-run.ts). Run on one document, it says so instead of finding nothing. */
-const DOCUMENT_NEEDS: ReadonlySet<string> = new Set(["headings", "markdown", "documents"]);
+/** sent-message: a rule that reads what a message carries (its attachments). A draft's are added when sending, out of the text's sight. */
+const DOCUMENT_NEEDS: ReadonlySet<string> = new Set(["headings", "markdown", "documents", "sent-message"]);
 
 const documentNeed = (rule: RuleDefinition, doc: ProseDocument): string | undefined => {
   if (rule.requires.includes("markdown") && !isMarkdownPath(doc.path)) return reasonsFor(doc).notMarkdown;
   if (rule.requires.includes("headings") && bodySectionOf(doc.sections) === undefined) return reasonsFor(doc).noHeadings;
+  if (rule.requires.includes("sent-message") && doc.sentMessage !== true) return reasonsFor(doc).draftMessage;
   if (!rule.requires.includes("documents")) return undefined;
   // Set aside only what the cross pass can run: a missing word list is said here, as for any rule.
   const absent = missingList(rule, doc.lexicons);

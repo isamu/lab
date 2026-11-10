@@ -381,6 +381,8 @@ export type ProseDocument = {
   readonly namedDocument?: DocumentNamer | undefined;
   /** メールの引用した返信（前置きの行と「> 」の行）。ほかの人の言葉なので、見出しにも木にも入れない。 */
   readonly replyQuotes?: readonly Span[] | undefined;
+  /** ヘッダーに書き手の打たない項目（From・Date）がある。送った・届いたメールで、下書きではない。下書きの添付は送るときに付くので本文から見えない。 */
+  readonly sentMessage?: boolean | undefined;
   /** 記法の手がかり（見出し・画像・リンク）。記法を読む rule だけが触れ、触れたときに作る。 */
   readonly markup?: Markup | undefined;
   /** adapter の綴りの辞書。持たない言語では無い。 */
