@@ -70,8 +70,8 @@ example:
       The old prices end in March.
 
 not_flagged:
-  ja: 接続詞で始まる段落が一つだけなら、流れをつなぐ普通の書き方なので指しません。
-  en: One paragraph opening with a connective is ordinary and is not reported.
+  ja: 接続詞で始まる段落が一つだけなら、流れをつなぐ普通の書き方なので指しません。段落の間に置いた図表の題（表2－2－1 …の概要）は本文の段落ではないので、並びを切りません。
+  en: One paragraph opening with a connective is ordinary and is not reported. A figure or table caption between the paragraphs (Table 2 …) is not a paragraph of the text and does not end the run.
 level_meaning:
   ja: 接続詞で始まる段落の連続 {limit} まで
   en: up to {limit} paragraphs in a row opening with a connective

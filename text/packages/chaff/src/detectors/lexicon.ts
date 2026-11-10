@@ -1,4 +1,6 @@
 import { joinWords } from "./word-list.ts";
+import { FIGURE_NUMBER } from "../figure-references.ts";
+import { escapeRegExp } from "../orthography.ts";
 import { densestStretch } from "./densest-stretch.ts";
 import { wordsOf } from "./structure.ts";
 import type { Detector, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
@@ -216,14 +218,28 @@ const openerOf = (doc: ProseDocument, lexicon: Lexicon): (string | undefined)[] 
     return head === undefined ? undefined : lexicon.find((entry) => entryOpens(head, entry))?.pattern;
   });
 
+/** 句点の無い一行の段落で、図・表の名前（語彙表 figure-label）と番号で始まるもの（表2－2－1 …の概要）。本文の間に置いた図表の題。 */
+const captionTest = (doc: ProseDocument): ((index: number) => boolean) => {
+  const labels = (doc.lexicons["figure-label"] ?? []).map((entry) => escapeRegExp(entry.pattern));
+  if (labels.length === 0) return () => false;
+  const caption = new RegExp(`^(?:${labels.join("|")})${FIGURE_NUMBER}[^\\n。．.]*$`, "u");
+  return (index) => {
+    const paragraph = doc.paragraphs[index];
+    return paragraph !== undefined && caption.test(doc.source.slice(paragraph.span.start, paragraph.span.end).trim());
+  };
+};
+
 /**
  * 段落が同じ接続詞で始まり続ける。1 つなら流れを作るが、続くとどの段落も
  * 前の段落の付け足しに見えて、話がどこへ向かっているのか分からなくなる。
+ * 段落の間に置いた図表の題（表2－2－1 …）は本文の段落ではないので、並びを切らない。
  */
 export const repeatedConjunction: Detector = (doc, options): Finding[] => {
   const openers = openerOf(doc, options.lexicon ?? []);
+  const isCaption = captionTest(doc);
   const runs = openers.reduce<{ runs: number[][]; current: number[] }>(
     (acc, opener, index) => {
+      if (opener === undefined && isCaption(index)) return acc;
       if (opener === undefined) return { runs: [...acc.runs, acc.current], current: [] };
       return { runs: acc.runs, current: [...acc.current, index] };
     },
