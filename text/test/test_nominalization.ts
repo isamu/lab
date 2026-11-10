@@ -54,6 +54,15 @@ describe("nominalization (ja): a verbal noun carried by を行う / を実施す
     assert.deepEqual(hidden("動物取扱業の適正化等の施策を実施した。福祉タクシーの導入等に対する支援措置を実施している。", ja), []);
   });
 
+  it("a noun whose する form changes who acts is not a hidden verb (繁殖を実施する is people breeding animals, 繁殖する the animals)", () => {
+    assert.deepEqual(hidden("野生復帰を想定した飼育下繁殖を実施するなど、保全を進めている。", ja), []);
+  });
+
+  it("a phrase that a naming aside names is the defined name's wording, not a hidden verb (訓練を行う者（以下「実施機関」という。）)", () => {
+    assert.deepEqual(hidden("大臣は、職業訓練を行う者（以下「実施機関」という。）の申請に基づき、認定する。", ja), []);
+    assert.deepEqual(hidden("大臣は、職業訓練を行う者の申請に基づき、認定する。", ja), ["訓練を行う→訓練する"]);
+  });
+
   it("the same carrying verbs after another verbal noun are still counted (指導を行う, 調査を実施する)", () => {
     assert.deepEqual(hidden("夜間に学生の指導を行う。将来の野生復帰を想定した生息状況の調査を実施する。", ja), [
       "指導を行う→指導する",
