@@ -101,6 +101,21 @@ describe("code-fence-language-mix: a block without a language among blocks with 
     assert.deepEqual(findingsOf(en, "code-fence-language-mix", doc(...tagged, fence("", "{year}-{month}-{day}"))), []);
   });
 
+  it("does not report a block of output after a lead-in that says so", () => {
+    const tagged = [fence("sql", "SELECT 1;"), fence("sql", "SELECT 2;")];
+    const expected = ["On day 3 we'd expect to see:", "", fence("", "visitors per day: 161 (adjusted from 171)")].join("\n");
+    assert.deepEqual(findingsOf(en, "code-fence-language-mix", doc(...tagged, expected)), []);
+    const japanese = ["次のように表示されます：", "", fence("", "合計: 161")].join("\n");
+    assert.deepEqual(findingsOf(ja, "code-fence-language-mix", doc(...tagged, japanese)), []);
+    const code = ["Run this to see the outputs:", "", fence("", "SELECT 3;")].join("\n");
+    assert.equal(findingsOf(en, "code-fence-language-mix", doc(...tagged, code)).length, 1);
+    const outputs = [1, 2, 3].map((index) => ["The output is:", "", fence("", `row ${String(index)}`)].join("\n"));
+    const message = ["If you see this message, try again:", "", fence("", "error: not available")].join("\n");
+    assert.deepEqual(findingsOf(en, "code-fence-language-mix", doc(...tagged, ...outputs, message)), []);
+    const noColon = ["The output follows.", "", fence("", "SELECT 3;")].join("\n");
+    assert.equal(findingsOf(en, "code-fence-language-mix", doc(...tagged, noColon)).length, 1);
+  });
+
   it("still reports an untagged block of code beside a template", () => {
     const tagged = [fence("json", '{ "version": "1.2.0" }'), fence("json", '{ "version": "2.0.0" }')];
     assert.equal(findingsOf(en, "code-fence-language-mix", doc(...tagged, fence("", "release <MAJOR>.<MINOR>"))).length, 1);
