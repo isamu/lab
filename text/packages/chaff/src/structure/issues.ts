@@ -163,7 +163,7 @@ export const danglingReferences = (
   const quoted = referencesInCitedDocuments(tree);
   const references = nodes.filter((node) => node.kind === "reference");
   const named = namedTargets(references, source, nameNouns);
-  const citedElsewhereToo = citedElsewhereReader(references, citesOther);
+  const citedElsewhereToo = citedElsewhereReader(references, citesOther, (address) => addresses.has(address));
   const unresolved = references
     .filter((node) => !citesOther(node) && !otherNumbering(node) && !pointsToNamedSection(node, named) && !citedElsewhereToo(node))
     .filter((node) => !namesAbsentUnit(node, articleLabels) && !withinAbsentUnit(node, unitLabels) && !elsewhere.has(node))
