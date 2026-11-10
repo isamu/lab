@@ -171,3 +171,17 @@ describe("closing-cliche: 仕事のメールの普通の結び", () => {
     assert.ok(flagged("# 見積の書き方\n\n項目は三つです。\n\nわからないことは気軽に聞いてください。\n"));
   });
 });
+
+describe("closing-cliche: 結びの決まった請け合い", () => {
+  it("invalid: 何をいつするかを言わずに頑張ると誓って終えるメール", () => {
+    const mail =
+      "山田様\n\n本日はありがとうございました。\n\n店を広げたいというお話が印象に残っています。その思いに応えられるよう、しっかり考えてみます。\n\n引き続きよろしくお願いいたします。\n\n佐藤\n";
+    assert.ok(flagged(mail, ja, "business/email"));
+    assert.ok(flagged("# 新人の一年\n\n一年が過ぎました。\n\nみなさんの期待に応えられるよう、頑張ります。\n"));
+  });
+
+  it("valid: 中身のある約束と、本文の途中の請け合い", () => {
+    const concrete = "山田様\n\nご要望を承りました。\n\nご要望に沿えるよう、11月7日までに見積もりを作り直します。\n\n佐藤\n";
+    assert.ok(!flagged(concrete, ja, "business/email"));
+  });
+});
