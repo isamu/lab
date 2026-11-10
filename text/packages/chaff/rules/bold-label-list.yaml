@@ -63,6 +63,8 @@ example:
     before: |
       # 新しい在庫システム
 
+      **新しいシステムが動き始めました。** 変わった点は次のとおりです。
+
       - **速さ**：一覧が 1 秒で出ます。
       - **正確さ**：数え間違いが減ります。
       - **安さ**：月の費用が下がります。
@@ -77,6 +79,8 @@ example:
     config: { genre: blog/tech }
     before: |
       # Our new stock system
+
+      **The new system is live.** Here is what changed.
 
       - **Speed**: the list loads in a second.
       - **Accuracy**: fewer counting mistakes.

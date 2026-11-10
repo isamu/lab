@@ -142,6 +142,7 @@ export const boldLabelList: Detector = (doc, options): Finding[] => {
   const first = items[0];
   const leads = items.filter((span) => boldLabelOf(doc.source.slice(span.start, span.end)) === undefined).length;
   const found = reached(items, leads, options);
-  if (first === undefined || found === undefined) return statementParagraphs(doc, options);
+  const paragraphs = statementParagraphs(doc, options);
+  if (first === undefined || found === undefined) return paragraphs;
   return [finding(doc, first, labelOrLeadOf(doc.source.slice(first.start, first.end)) ?? "", found)];
 };
