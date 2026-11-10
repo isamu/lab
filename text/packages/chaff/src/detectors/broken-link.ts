@@ -95,13 +95,34 @@ const imageAt = (source: string, start: number): boolean => {
  */
 export const siteDefinedImage = (source: string, start: number, label: string): boolean => label === "" && imageAt(source, start);
 
-export const unresolvedReferences = (source: string, markup: Markup): Span[] =>
-  markup.texts.flatMap((text) =>
+/**
+ * 正規表現の文字クラス（[A-Za-z0-9][\\w.-]*）。範囲（A-Z）と逃がし（\\.）と記号だけでできていて、範囲を一つは含む。
+ * 文の中にコードの印を付けずに書いた正規表現で、参照の記法ではない。
+ */
+const CHARACTER_CLASS = /^\^?(?:[A-Za-z0-9]-[A-Za-z0-9]|\\.|[^\sA-Za-z0-9\\])*[A-Za-z0-9]-[A-Za-z0-9](?:[A-Za-z0-9]-[A-Za-z0-9]|\\.|[^\sA-Za-z0-9\\])*$/u;
+
+/** mdBook の規則の印（r[type.trait-object]）だけの行。この印のある本は、印の名前で呼ぶ参照の定義を本全体に足す。 */
+const RULE_MARKER_LINE = /^r\[([a-z0-9_-]+(?:\.[a-z0-9_-]+)+)\]$/mu;
+
+/** 規則の印の形の名前（type.trait-object）。 */
+const RULE_ID = /^[a-z0-9_-]+(?:\.[a-z0-9_-]+)+$/u;
+
+/** 本が定義を足す名前: 規則の印を書いた本で、その印の形をした名前。 */
+const bookDefinedLabel = (source: string): ((label: string) => boolean) => {
+  const marked = RULE_MARKER_LINE.test(source);
+  return (label) => marked && RULE_ID.test(label);
+};
+
+export const unresolvedReferences = (source: string, markup: Markup): Span[] => {
+  const bookDefined = bookDefinedLabel(source);
+  return markup.texts.flatMap((text) =>
     [...source.slice(text.start, text.end).matchAll(REFERENCE_LIKE)]
       .filter((match) => !CITATION_NUMBERS.test(match[1] ?? "") && !siteDefinedImage(source, text.start + match.index, match[2] ?? ""))
+      .filter((match) => !CHARACTER_CLASS.test(match[1] ?? "") && !CHARACTER_CLASS.test(match[2] ?? "") && !bookDefined(match[2] ?? ""))
       .map((match) => ({ start: text.start + match.index, end: text.start + match.index + match[0].length }))
       .map((span) => (imageAt(source, span.start) ? { start: span.start - 1, end: span.end } : span)),
   );
+};
 
 const emptyLinks = (doc: ProseDocument, markup: Markup): Finding[] =>
   markup.links.filter((link) => link.destination.trim() === "").map((link) => findingAt(doc, link, { link: quoteOf(doc.source, link) }, "empty"));
