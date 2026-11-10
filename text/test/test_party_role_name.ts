@@ -51,6 +51,14 @@ describe("party-role-name", () => {
     assert.deepEqual(in_("Vendors' terms do not apply."), ["Vendor (we)"]);
   });
 
+  it("does not read a plural picked out of with 'of the' as a role word, but does read the singular there", () => {
+    const warranty = ["# Limited Warranty", "", 'Kestrel Devices Ltd. ("we") warrants the product for one year.', ""];
+    const in_ = (line: string): string[] => rolesIn(en, [...warranty, line, ""].join("\n"));
+    assert.deepEqual(in_("Each of the Providers providing clinical services holds a licence."), []);
+    assert.deepEqual(in_("None of the Customers has complained."), []);
+    assert.deepEqual(in_("The rights of the Customer survive."), ["Customer (we)"]);
+  });
+
   it("does not report a role word before or in the sentence that names the parties", () => {
     const sale = [
       "# 売買契約書",
