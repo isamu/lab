@@ -30,3 +30,21 @@ describe("teki-overuse: 随筆", () => {
     assert.deepEqual(tekiCounts(ESSAY, "business/report"), [3]);
   });
 });
+
+// 変換で一文に流れ込んだ表（自作）: 行ごとの同じ「経常的」と、前の行を繰り返す「〃」のセル。
+const FLATTENED_TABLE =
+  "会社名設備の内容投資予定金額(百万円)資金調達方法東西工業株式会社機器事業経常的更新1,251―自己資金部品事業経常的更新417―〃〃全社経常的更新919―〃〃\n";
+
+describe("teki-overuse: 平らにした表", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+  });
+
+  it("valid: 「〃」のセルが並ぶ表の行は、文として数えない", () => {
+    assert.deepEqual(tekiCounts(FLATTENED_TABLE, "business/report"), []);
+  });
+
+  it("invalid: 同じ「〜的」を並べた文は数える", () => {
+    assert.deepEqual(tekiCounts("機器は経常的に、部品も経常的に、全社でも経常的に更新します。\n", "business/report"), [3]);
+  });
+});
