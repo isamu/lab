@@ -32,6 +32,8 @@ describe("warning-without-action", () => {
     assert.deepEqual(found(manual("**警告**：作業中は電源を切らないこと。"), ja), []);
     assert.deepEqual(found(manual("> [!WARNING]", "> データが失われることがあります。"), ja), [3]);
     assert.deepEqual(found(manual("> [!WARNING]", "> 作業の前に、バックアップを取る必要があります。"), ja), []);
+    assert.deepEqual(found(manual("> [!WARNING]", "> 古い設定は避けるべきです。なぜなら、保護の多くが無意味になるからです。"), ja), []);
+    assert.deepEqual(found(manual("> [!WARNING]", "> 古い設定は、保護の多くを無意味にするべきではないと言われています。"), ja), [3]);
   });
 
   it("en: a warning that only names a risk, not one that gives an action", () => {
