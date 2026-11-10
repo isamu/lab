@@ -20,6 +20,8 @@ export type Reasons = {
   readonly noHeadings: string;
   readonly patternTimeout: (budgetMs: number) => string;
   readonly notMarkdown: string;
+  /** A rule that reads what a message carries, on a draft: its attachments are added when sending. */
+  readonly draftMessage: string;
   /** A rule that compares documents, in a run of one: it runs when chaff is given two or more files, or a folder. */
   readonly oneDocument: string;
 };
@@ -57,6 +59,7 @@ export const REASONS: Texts<Reasons> = {
     noHeadings: "表題より下の見出しが無いため",
     patternTimeout: (budgetMs) => `正規表現が ${String(budgetMs)} ms で終わらなかったため（chaff.yaml の pattern を単純にしてください）`,
     notMarkdown: "Markdown の文書ではないため",
+    draftMessage: "送る前の下書き（差出人や日時のヘッダーが無い）で、添付は送るときに付けるため本文からは見えないため",
     oneDocument: "比べるほかの文書が無いため（ファイルを二つ以上かフォルダを渡すと動きます）",
   },
   en: {
@@ -80,6 +83,7 @@ export const REASONS: Texts<Reasons> = {
     noHeadings: "the document has no headings below its title",
     patternTimeout: (budgetMs) => `the pattern did not finish within ${String(budgetMs)} ms (simplify the pattern in chaff.yaml)`,
     notMarkdown: "the document is not Markdown",
+    draftMessage: "the text is a draft (no From: or Date: header), and a draft's files are attached when sending, out of the text's sight",
     oneDocument: "it compares documents, and there is only one to compare (it runs when chaff is given two or more files, or a folder)",
   },
 };

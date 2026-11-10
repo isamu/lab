@@ -34,7 +34,7 @@ What it does not do is decided too.
 
 - It does not check names or addresses. Whether "Ms Yamada" is right is for the sender to check.
 - It does not check the weekday of a date when no date in the document gives a year, since the year is unknown. When one does, a date without its year is read in the year that puts it within five months of that dated date, and its weekday is checked.
-- It does not check whether the attachment is there. chaff reads only the text.
+- It does not check a draft's attachments: the files are added when sending, so the text never shows them. Only a message as sent, with a From: or Date: header, is checked for a mention of an attachment with none shown.
 - It does not decide whether the tone suits the reader. It marks where hedges pile up.
 
 ## Try it
@@ -114,8 +114,6 @@ email.md   business/email · English   genre from --genre
                   cushion-phrase-density
   13:11   error   October 10, 2026 is a Saturday, not a Friday
                   date-weekday-mismatch
-  15:1    warning An attachment is mentioned, but no attachment line or file name is shown
-                  attachment-not-attached
   15:91   warning "[Your Name]" was never filled in
                   unfilled-placeholder
   17:1    info    "please don't hesitate" and other stock courtesies in 2 sentences (2 needed)

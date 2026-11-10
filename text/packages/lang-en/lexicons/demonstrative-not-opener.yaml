@@ -106,6 +106,14 @@ entries:
   - pattern: it is noted
   - pattern: it was noted
   - pattern: it's worth
+  - pattern: it was not until
+  - pattern: it is not until
+  - pattern: it would seem
+  - pattern: it would appear
+  - pattern: it is to be noted
+  - pattern: it is also to be noted
+  - pattern: it is not clear
+  - pattern: it was not clear
   - pattern: that the
   - pattern: that a
   - pattern: that an

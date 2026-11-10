@@ -1,5 +1,7 @@
 # Nouns whose singular and plural are spelled alike, or that name one thing while ending in -s. The tagger may read
 # either number into them, so agreement-slip does not count them: "a series", "a means", "these staff", "this data".
+# A field named with -ics is one thing as a theory ("a conversational ethics", "a politics of care") and several as
+# principles ("these ethics").
 id: invariant-noun
 language: en
 entries:
@@ -24,3 +26,14 @@ entries:
   - pattern: aircraft
   - pattern: spacecraft
   - pattern: offspring
+  - pattern: ethics
+  - pattern: politics
+  - pattern: economics
+  - pattern: physics
+  - pattern: mechanics
+  - pattern: dynamics
+  - pattern: aesthetics
+  - pattern: semantics
+  - pattern: pragmatics
+  - pattern: poetics
+  - pattern: logistics

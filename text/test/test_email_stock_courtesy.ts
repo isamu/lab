@@ -47,6 +47,24 @@ describe("email-stock-courtesy", () => {
     assert.equal(findings(source).length, 2);
   });
 
+  it("counts an offer of help and a convenience as courtesies, beside the opener", () => {
+    const reminder = [
+      "Dear Ms Park,",
+      "",
+      "I hope this message finds you well.",
+      "",
+      "Invoice 12 was due on 1 October. For your convenience, the bank details are below.",
+      "",
+      "If anything is unclear, I'll be glad to help.",
+      "",
+    ].join("\n");
+    assert.deepEqual(
+      findings(reminder).map((finding) => finding.line),
+      [3, 5, 7],
+    );
+    assert.equal(findings("We would be happy to help with the move.\n\nI hope this finds you well.\n").length, 2);
+  });
+
   it("leaves one courtesy alone", () => {
     assert.deepEqual(findings("Hi Dana,\n\nI hope this email finds you well. The invoice for October is attached; it is due on 14 November.\n"), []);
   });

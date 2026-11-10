@@ -342,6 +342,9 @@ describe("email-subject-length: the subject line", () => {
 });
 
 describe("attachment-not-attached: an attachment mentioned and not shown", () => {
+  /** The message as sent: a header field the writer does not type (From, Date, 差出人) above the subject. */
+  const sent = (mail: string, field: string): string => `${field}: Ichiro <ichiro@example.com>\n${mail}`;
+
   it("finds the first mention, past the phrases that only look like one", () => {
     assert.equal(firstMention(linesIn("The panel is attached to the wall.\nI have attached the plan."), ["attached"], ["attached to"]), 35);
     assert.equal(firstMention(linesIn("添付はありません。"), ["添付"], ["添付はありません"]), undefined);
@@ -355,13 +358,25 @@ describe("attachment-not-attached: an attachment mentioned and not shown", () =>
     assert.ok(!showsAttachment("Attachments are welcome in replies.", ["Attachments"], ["pdf"], []));
   });
 
-  it("reports a mention with nothing attached, in both languages", () => {
-    assert.equal(findingsOf(ja, "attachment-not-attached", JA_MAIL.replace("日程をお知らせします。", "資料を添付します。")).length, 1);
-    assert.equal(findingsOf(en, "attachment-not-attached", EN_MAIL.replace("14:00.", "14:00. I have attached the plan.")).length, 1);
+  it("reports a mention with nothing attached in a sent message, in both languages", () => {
+    assert.equal(findingsOf(ja, "attachment-not-attached", sent(JA_MAIL.replace("日程をお知らせします。", "資料を添付します。"), "差出人")).length, 1);
+    assert.equal(findingsOf(en, "attachment-not-attached", sent(EN_MAIL.replace("14:00.", "14:00. I have attached the plan."), "From")).length, 1);
+    assert.equal(findingsOf(en, "attachment-not-attached", sent(EN_MAIL.replace("14:00.", "14:00. I have attached the plan."), "Date")).length, 1);
+  });
+
+  it("does not check a draft, whose files are attached when sending, and says why", () => {
+    const draft = EN_MAIL.replace("14:00.", "14:00. I have attached the plan.");
+    assert.deepEqual(findingsOf(en, "attachment-not-attached", draft), []);
+    assert.deepEqual(findingsOf(ja, "attachment-not-attached", JA_MAIL.replace("日程をお知らせします。", "資料を添付します。")), []);
+    assert.deepEqual(findingsOf(en, "attachment-not-attached", `To: Ann <ann@example.com>\n${draft}`), []);
+    const notRun = runRules(buildDocument("t.md", draft, en), loadRules("en"), {}, true, "business/email").skipped.find(
+      (skip) => skip.rule === "attachment-not-attached",
+    );
+    assert.match(notRun?.why ?? "", /draft/u);
   });
 
   it("does not take an old message's attachment in a quoted reply for this one's", () => {
-    const quoted = `${EN_MAIL.replace("14:00.", "14:00. I have attached the plan.")}\nOn Tue, Ann wrote:\n> Attachment: old.pdf\n> Thanks\n`;
+    const quoted = `${sent(EN_MAIL.replace("14:00.", "14:00. I have attached the plan."), "From")}\nOn Tue, Ann wrote:\n> Attachment: old.pdf\n> Thanks\n`;
     assert.equal(findingsOf(en, "attachment-not-attached", quoted).length, 1);
     assert.equal(ownText("ab\n> c.pdf\nd", []), "ab\nd");
     assert.equal(
@@ -374,8 +389,11 @@ describe("attachment-not-attached: an attachment mentioned and not shown", () =>
   });
 
   it("does not report a mention with the attachment listed", () => {
-    const listed = EN_MAIL.replace("14:00.", "14:00. I have attached the plan.\n\nAttachment: plan.pdf");
+    const listed = sent(EN_MAIL.replace("14:00.", "14:00. I have attached the plan.\n\nAttachment: plan.pdf"), "From");
     assert.deepEqual(findingsOf(en, "attachment-not-attached", listed), []);
-    assert.deepEqual(findingsOf(ja, "attachment-not-attached", JA_MAIL.replace("日程をお知らせします。", "資料（日程.xlsx）を添付します。")), []);
+    assert.deepEqual(
+      findingsOf(ja, "attachment-not-attached", sent(JA_MAIL.replace("日程をお知らせします。", "資料（日程.xlsx）を添付します。"), "差出人")),
+      [],
+    );
   });
 });

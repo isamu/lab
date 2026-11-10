@@ -117,6 +117,17 @@ const YEAR_OR_NUMBER_BEFORE = /\d,?\s*$/u;
 
 const isDay = (day: string): boolean => Number(day) >= 1 && Number(day) <= LAST_DAY;
 
+/**
+ * "Jan 23/58", "Dec 1/1857": the old short form with the year after a slash. Figures that cannot be a day are a year,
+ * so the date has one, though its century is not written; "March 5/6", a night across two days, stays yearless.
+ */
+const SLASHED_YEAR_REACH = 6;
+const SLASHED_YEAR = /^\/(?<y>\d{4}|\d{2})(?![\d/])/u;
+const slashedYear = (rest: string): boolean => {
+  const year = SLASHED_YEAR.exec(rest)?.groups?.["y"];
+  return year !== undefined && (year.length === 4 || !isDay(year));
+};
+
 /** "March 5" or "5 March" with no year → 03-05. */
 const monthDay = (text: string, at: number, end: number, month: number): Mention | undefined => {
   const after = DAY_AFTER.exec(text.slice(end, end + 8));
@@ -126,7 +137,7 @@ const monthDay = (text: string, at: number, end: number, month: number): Mention
   const start = before?.start ?? at;
   if (day === undefined || !isDay(day) || YEAR_OR_NUMBER_BEFORE.test(text.slice(Math.max(0, start - 6), start))) return undefined;
   const dateEnd = after === null ? end : end + after[0].length;
-  if (yearLater(text.slice(dateEnd, dateEnd + YEAR_LATER_REACH))) return undefined;
+  if (slashedYear(text.slice(dateEnd, dateEnd + SLASHED_YEAR_REACH)) || yearLater(text.slice(dateEnd, dateEnd + YEAR_LATER_REACH))) return undefined;
   return { start, end: dateEnd, attrs: { value: `${pad(String(month))}-${pad(day)}` } };
 };
 

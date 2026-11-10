@@ -11,6 +11,7 @@ import { lineStarts } from "../position.ts";
 import { isTypewritten } from "./typewritten.ts";
 import { divisionLabelPattern, isDivisionSeparator } from "./division-label-separator.ts";
 import { isInCopiedText } from "./hyphen-copied-text.ts";
+import { verseBlockSpans } from "./verse-block.ts";
 
 /** The letters a mark must touch to count as part of the document's text, by language. */
 const SCRIPT: Readonly<Record<string, RegExp>> = {
@@ -219,18 +220,25 @@ export const markConsistency: Detector = (doc, options): Finding[] => {
 const SENTENCE_END = /(?<![\p{L}\d.])\p{Ll}{2,}[.!?]["'”’)\]]?$/u;
 /** The next sentence starts with a capital, past an opening quote: not a citation ("[ISO99]") or an aside in brackets. */
 const SENTENCE_START = /^["'“‘]?\p{Lu}/u;
+/** "Affiliation: …", "Note: …": a field's label opens what follows, as in an author block joined into one line. */
+const FIELD_LABEL = /^\p{Lu}\p{Ll}+:\s/u;
 const ONE_SPACE = " ";
 const TWO_SPACES = "  ";
 
-/** The space between two sentences on one line, when the first ends with a period, question or exclamation mark. spaced is two spaces. */
-export const sentenceGaps = (doc: ProseDocument): Sided[] =>
-  ownSentences(doc).flatMap((sentence, at, sentences) => {
+/**
+ * The space between two sentences on one line, when the first ends with a period, question or exclamation mark. spaced is
+ * two spaces. A pause inside a verse line ("I'm nobody!  Who are you?") is the stanza's layout, not the prose's spacing.
+ */
+export const sentenceGaps = (doc: ProseDocument): Sided[] => {
+  const stanzas = verseBlockSpans(doc.source);
+  return ownSentences(doc).flatMap((sentence, at, sentences) => {
     const next = sentences[at + 1];
-    if (next === undefined || !SENTENCE_END.test(sentence.text) || !SENTENCE_START.test(next.text)) return [];
+    if (next === undefined || !SENTENCE_END.test(sentence.text) || !SENTENCE_START.test(next.text) || FIELD_LABEL.test(next.text)) return [];
     const gap = doc.source.slice(sentence.span.end, next.span.start);
-    if (gap !== ONE_SPACE && gap !== TWO_SPACES) return [];
+    if ((gap !== ONE_SPACE && gap !== TWO_SPACES) || isWithinSorted(stanzas, { start: sentence.span.end, end: next.span.start })) return [];
     return [{ sentence: next, spaced: gap === TWO_SPACES, offset: sentence.span.end }];
   });
+};
 
 /** One space between sentences and two, mixed in one document: the less common is reported. */
 export const sentenceSpacing: Detector = (doc, options): Finding[] =>
