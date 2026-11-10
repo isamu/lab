@@ -198,4 +198,28 @@ describe("one-sentence-paragraph-run: numbered items and the items of a lead-in"
     const frames = ["renting", "letting", "leasing", "buying"].map((topic) => `The council's guide to ${topic} explains the steps.`);
     assert.deepEqual(findingsOf(`${[...frames, "A new guide comes out in May."].join("\n\n")}\n`, en), ["5 one-sentence paragraphs in a row (limit 4)"]);
   });
+
+  it("a run whose paragraphs mostly open with a key term in bold is a list of entries, one per case", () => {
+    const cases = [
+      "For **travel**, you can book through the office page.",
+      "To [**vote**](#voting), you generally do so on your own time.",
+      "For **jury duty**, use the court leave form.",
+      "If the building is closed, you can work from home.",
+      "When going on **training**, you can use the training code.",
+    ];
+    assert.deepEqual(findingsOf(`${cases.join("\n\n")}\n`, en), []);
+  });
+
+  it("bold deep in the sentence, or in fewer than half the paragraphs, still counts", () => {
+    const late = ["Our", "Each", "This", "That", "Every"].map((opener) => `${opener} office keeps a copy of the new and **current** form today.`);
+    assert.deepEqual(findingsOf(`${late.join("\n\n")}\n`, en), ["5 one-sentence paragraphs in a row (limit 4)"]);
+    const few = [
+      "For **travel**, you can book through the office page.",
+      "For **jury duty**, use the court leave form.",
+      "The office is open on Monday.",
+      "Bring your badge to the desk.",
+      "Ask the clerk if you are unsure.",
+    ];
+    assert.deepEqual(findingsOf(`${few.join("\n\n")}\n`, en), ["5 one-sentence paragraphs in a row (limit 4)"]);
+  });
 });
