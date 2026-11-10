@@ -9,7 +9,7 @@ import { quoteAt } from "./structure-tree.ts";
 import { quotesWording, wordingCuesOf } from "./quoted-wording.ts";
 import { isPartOfAddress } from "./address-word.ts";
 import { exactOffsets, extendedAfter, extendedBefore } from "./term-extension.ts";
-import { headsKindPhrase, insideLongerTerm, isNamedAsTerm, isNarrowedUse } from "./ordinary-phrase.ts";
+import { headsKindPhrase, insideLongerTerm, isNamedAsTerm, isNarrowedUse, isPartitiveUse } from "./ordinary-phrase.ts";
 import { CLOSES_SENTENCE, isNameField, isSignatureLine, opensClosingBlock, SLACK } from "./name-field.ts";
 import type { Detector, Finding, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 
@@ -173,14 +173,19 @@ const quotedFindings = (doc: ProseDocument, term: DefinedTerm, uses: readonly nu
 
 /**
  * A lower-case use that is the ordinary word in a phrase of its own: inside another defined term (certificate of merger),
- * narrowed by the word before it (the common parent), or heading a kind of thing (certificates of deposit).
+ * narrowed by the word before it (the common parent), picked out of a kind (some of these terms), or heading a kind of
+ * thing (certificates of deposit).
  */
 const isOrdinaryPhraseAt = (doc: ProseDocument, offset: number, term: string, defined: readonly string[]): boolean => {
   if (insideLongerTerm(doc.source, offset, term, defined)) return true;
   const { tokens, at } = tokensAt(doc, offset);
   if (at === -1) return false;
   const last = tokens.findLastIndex((token) => token.span.start < offset + term.length);
-  return isNarrowedUse(tokens, at, patternsOf(doc, "defined-term-pointer")) || headsKindPhrase(tokens, last);
+  return (
+    isNarrowedUse(tokens, at, patternsOf(doc, "defined-term-pointer")) ||
+    isPartitiveUse(tokens, at, patternsOf(doc, "defined-term-partitive")) ||
+    headsKindPhrase(tokens, last)
+  );
 };
 
 /** The term written longer with a word of its definition (文書管理責任者, the Application), after the sentence that defines it. */
@@ -203,12 +208,23 @@ const extendedFindings = (doc: ProseDocument, texts: readonly BodyText[], term: 
     });
 };
 
+/**
+ * A definition that interprets another instrument's term (憲法一九条にいう「良心の自由」とは): the term is that instrument's
+ * wording, which the document goes on quoting as written, not a term of its own.
+ */
+const definesBorrowedWording = (doc: ProseDocument, spans: readonly Span[]): boolean => {
+  const wording = wordingCuesOf(doc.lexicons["quoted-wording-cue"] ?? []);
+  // A quoted definition's span runs from its opening quote to its closing one.
+  return spans.some((span) => OPENING_QUOTES.has(doc.source.charAt(span.start)) && quotesWording(doc.source, span.start, span.end - 1, wording));
+};
+
 export const definedTermForm: Detector = (doc, options): Finding[] => {
   if (doc.structure === undefined) return [];
   const texts = bodyOf(doc);
   const terms = definedTerms(doc.structure);
   const defined = terms.map((term) => term.term);
   return firstDefinitions(terms).flatMap(({ term, spans }) => {
+    if (definesBorrowedWording(doc, spans)) return [];
     const uses = usesOf(term.term, texts, spans, "loose");
     const definingEnd = definingSentenceEnd(doc, term.span);
     const quoted = quotedFindings(doc, term, uses, definingEnd);

@@ -56,8 +56,17 @@ const membersAt = (
     ? namesInOrder(tokens.slice(0, range.start).toReversed(), joiners, source).toReversed()
     : namesInOrder(tokens.slice(range.end), joiners, source);
 
-/** 一覧を読む言葉。frames は一覧を言う語、joiners は名前をつなぐ語、negations は打ち消しの語（小文字）。 */
-export type ListWords = { readonly frames: Lexicon; readonly joiners: ReadonlySet<string>; readonly negations: ReadonlySet<string> };
+/** 一覧を読む言葉。frames は一覧を言う語、joiners は名前をつなぐ語、negations は打ち消しの語、ordinals は序数の語（小文字）。 */
+export type ListWords = {
+  readonly frames: Lexicon;
+  readonly joiners: ReadonlySet<string>;
+  readonly negations: ReadonlySet<string>;
+  readonly ordinals?: ReadonlySet<string>;
+};
+
+/** 序数だけの名前（Fourteenth、Twenty-first）は数えた順番で、名前の一覧ではない（Fourteenth and Fifteenth Edition … Sixteenth Edition）。 */
+const isOrdinal = (member: ListMember, ordinals: ReadonlySet<string>): boolean =>
+  member.name.split(/[\s-]+/u).every((word) => ordinals.has(word.toLowerCase()));
 
 /** 打ち消した文（neither is available on Docker Hub、Linux には対応していません）は、一覧に足す名前ではなく、外す名前を言う。 */
 const isNegated = (tokens: readonly Token[], negations: ReadonlySet<string>): boolean =>
@@ -72,7 +81,7 @@ export const listStatementsIn = (sentence: Sentence, words: ListWords, source: s
     const group = entry.group;
     if (group === undefined) return [];
     return entryRanges(sentence, entry).flatMap((range) => {
-      const members = membersAt(tokens, entry, range, joiners, source);
+      const members = membersAt(tokens, entry, range, joiners, source).filter((member) => !isOrdinal(member, words.ordinals ?? new Set()));
       const offset = tokens[range.start]?.span.start ?? sentence.span.start;
       return members.length === 0 ? [] : [{ group, offset, members }];
     });

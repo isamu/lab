@@ -1,0 +1,7 @@
+# 仮定を開く語。その中の最上級は仮に置いたもので、言い切った主張ではない（「もし最も速い案が通るなら」）。最上級より前の、
+# 読点をはさまない同じ節に立つ。unqualified-superlative は、この語が開く最上級を指さない。
+id: superlative-condition
+language: ja
+entries:
+  - pattern: もし
+  - pattern: 仮に

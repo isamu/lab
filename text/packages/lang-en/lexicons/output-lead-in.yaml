@@ -1,0 +1,12 @@
+# Words of a lead-in that says the block after it is what a program shows, not code: "we'd expect to see:", "The output
+# is:". code-fence-language-mix does not ask such a block for a language: plain output is in none.
+id: output-lead-in
+language: en
+entries:
+  - pattern: expect to see
+  - pattern: you will see
+  - pattern: you'll see
+  - pattern: should see
+  - pattern: output
+  - pattern: prints
+  - pattern: displays

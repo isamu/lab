@@ -35,6 +35,13 @@ describe("space-before-punctuation: 句読点の前に空白がある", () => {
     assert.deepEqual(marksIn("He paused . . . and left. Goals . . . . . 4. Wait .. what"), []);
   });
 
+  it("文献一覧で値を落とした大文字の欄（ISBN ,）は見ず、本文と小文字の語は見る", () => {
+    const references =
+      "# Paper\n\nText.\n\n## References\n\n- Ge, L. Data literacy. New York, pp. 1–5. External Links: ISBN , Document\n- Ito, K. Breaks , revisited.\n";
+    assert.deepEqual(findingsOf(references), ['A space before ","']);
+    assert.deepEqual(findingsOf("# Paper\n\nWe asked the USA , and others.\n"), ['A space before ","']);
+  });
+
   it("次の語の頭の点（.NET、.5）", () => {
     assert.deepEqual(marksIn("We use .NET and a .5 mm pen."), []);
   });

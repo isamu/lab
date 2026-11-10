@@ -1,5 +1,5 @@
 import type { BodyText, DefinedTerm } from "./definition-use.ts";
-import { isGenericPlural } from "./generic-role.ts";
+import { isGenericPlural, isPartitivePlural } from "./generic-role.ts";
 
 /**
  * 当事者を、定めた呼び名でなく立場の語で書いた所（「乙」と定めたあとの「受託者」、the "Supplier" のあとの the Vendor）。
@@ -67,7 +67,8 @@ const englishRoleAt = (text: BodyText, at: number, role: string): boolean => {
   const before = text.text.slice(0, at);
   const after = text.text.slice(at + role.length);
   const bare = CLAUSE_START.test(before);
-  return ENGLISH_ENDING.test(after) && !isGenericPlural(bare, after) && (bare || ENGLISH_LEAD.test(before.slice(-LEAD_REACH)));
+  if (isGenericPlural(bare, after) || isPartitivePlural(before, after)) return false;
+  return ENGLISH_ENDING.test(after) && (bare || ENGLISH_LEAD.test(before.slice(-LEAD_REACH)));
 };
 
 const standsAlone = (source: string, text: BodyText, at: number, role: string): boolean => {

@@ -1,4 +1,5 @@
 import type { Detector, Finding, ProseDocument } from "../plugin.ts";
+import { spellsAcronym } from "./acronym-capitals.ts";
 import { cuedNamesIn, mentionsIn, nameVariants, suffixedNamesIn, type NameMention, type VariantChars } from "../name-variants.ts";
 import { withKnownNeighbours } from "../name-neighbours.ts";
 import type { SpellingInput } from "../name-spelling-chars.ts";
@@ -388,7 +389,7 @@ export const nameVariant: Detector = (doc): Finding[] => {
   const isTwoThings = twoThingsIn(doc, tokensOf(doc), speller, use.ordinary);
   return [...withCodes, ...titles]
     .filter(({ name, usual }) => speller === undefined || !isDictionaryPair(name, usual, speller))
-    .filter((found) => !isTwoThings(found))
+    .filter((found) => !isTwoThings(found) && !spellsAcronym(doc.source, found.offset, found.name))
     .filter(notAnotherAuthorIn(doc))
     .toSorted((left, right) => left.offset - right.offset)
     .map(({ offset, name, usual, kind }) => ({

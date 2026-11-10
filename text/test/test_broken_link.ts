@@ -127,6 +127,19 @@ describe("broken-link: 行き先の無いリンク", () => {
     assert.deepEqual(findingsOf("Earlier work [1][2] used A[i][j] and B[0][1].\n", en), []);
   });
 
+  it("正規表現の文字クラスは参照の記法ではない", () => {
+    assert.deepEqual(findingsOf("A name matches [A-Za-z0-9][A-Za-z0-9\\-\\+\\./]* in the check.\n", en), []);
+    assert.deepEqual(findingsOf("Digits [0-9][^a-z] follow.\n", en), []);
+    assert.deepEqual(findingsOf("See [e-mail][contact-us].\n", en).length, 1);
+  });
+
+  it("mdBook の規則の印のある本で、印の形の名前は本が定義を足す", () => {
+    const book = "r[glossary.ast]\n### Tree\n\nSee [trait objects][type.trait-object].\n";
+    assert.deepEqual(findingsOf(book, en), []);
+    assert.deepEqual(findingsOf("### Tree\n\nSee [trait objects][type.trait-object].\n", en).length, 1);
+    assert.deepEqual(findingsOf("r[glossary.ast]\n### Tree\n\nSee [trait objects][trait-object].\n", en).length, 1);
+  });
+
   it("逃がした括弧とコードの中は読まない", () => {
     assert.deepEqual(findingsOf("\\[a\\][b] と `[a][b]` と\n\n```\n[x]()\n```\n"), []);
   });

@@ -132,6 +132,14 @@ describe("no-lead: a lead that only restates the title", () => {
     assert.equal(fired(en, "# The new inventory system\n\nJane Smith\n\nThe body.\n", "no-lead"), 0);
   });
 
+  it("does not read a marker line under the title as the lead", () => {
+    assert.equal(
+      fired(en, "# Glossary\n\nr[glossary.ast]\n### Abstract syntax tree\n\nAn abstract syntax tree is a structure.\n", "no-lead", "docs/glossary"),
+      0,
+    );
+    assert.equal(fired(en, "# Glossary\n\nThis is the glossary.\n\n### Abstract syntax tree\n\nA tree.\n", "no-lead", "docs/glossary"), 1);
+  });
+
   it("does not run on a contract", () => assert.equal(fired(ja, "# 利用規約\n\nこの利用規約について定めます。\n", "no-lead", "legal/contract"), 0));
 });
 

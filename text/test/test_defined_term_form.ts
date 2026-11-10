@@ -2,7 +2,7 @@ import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { innerLowered, lowerCaseUses, nameBefore, quotedUses } from "../packages/chaff/src/detectors/defined-term-form.ts";
 import { extendedAfter, extendedBefore } from "../packages/chaff/src/detectors/term-extension.ts";
-import { headsKindPhrase, insideLongerTerm, isNamedAsTerm, isNarrowedUse } from "../packages/chaff/src/detectors/ordinary-phrase.ts";
+import { headsKindPhrase, insideLongerTerm, isNamedAsTerm, isNarrowedUse, isPartitiveUse } from "../packages/chaff/src/detectors/ordinary-phrase.ts";
 import { isSignatureLine, opensClosingBlock } from "../packages/chaff/src/detectors/name-field.ts";
 import { prefixGroupsOf, prefixVariants, variantUses } from "../packages/chaff/src/structure/term-prefix.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
@@ -617,6 +617,25 @@ describe("defined-term-form: an ordinary phrase that shares a word with a define
       ),
       false,
     );
+  });
+
+  it("does not report a term picked out of its kind (some of these terms), and still reports all of them", () => {
+    const head = ["# Terms", "", 'We may update these Terms of Service ("Terms") in the future. You accept the Terms by using the service.', ""];
+    const some = [...head, "Typically these changes clarify some of these terms by linking to a related policy.", ""];
+    assert.deepEqual(valuesOf(en, "defined-term-form", some.join("\n"), "term"), []);
+    const all = [...head, "You accept all of these terms by using the service.", ""];
+    assert.deepEqual(valuesOf(en, "defined-term-form", all.join("\n"), "term"), ["case Terms"]);
+  });
+
+  it("isPartitiveUse: a quantifier, of and a determiner before the use", () => {
+    const words = (quantifier: string, of = "of", determiner: readonly [string, string] = ["these", "DET"]): Token[] =>
+      tokensOf([[quantifier, "DET"], [of, "ADP"], determiner, ["terms", "NOUN"]]);
+    assert.equal(isPartitiveUse(words("Some"), 3, ["some", "many"]), true);
+    assert.equal(isPartitiveUse(words("all"), 3, ["some", "many"]), false);
+    assert.equal(isPartitiveUse(words("some", "for"), 3, ["some"]), false);
+    assert.equal(isPartitiveUse(words("some", "of", ["new", "ADJ"]), 3, ["some"]), false);
+    assert.equal(isPartitiveUse(words("some"), 1, ["some"]), false);
+    assert.equal(isPartitiveUse([], 0, ["some"]), false);
   });
 
   it("headsKindPhrase: of and a bare lower-case noun after the use", () => {

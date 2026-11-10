@@ -14,6 +14,8 @@ const BE = "be";
 const HAVE = "have";
 /** be の後ろで読点が来たら、it is … は挿入句（Testing the integration, it is worth noting, requires …）。 */
 const PARENTHETICAL_REACH = 4;
+/** 節を作らない動詞の形（-ing、分詞、不定詞）。 */
+const NON_FINITE = ["Ger", "Part", "Inf"];
 
 const lower = (token: Token | undefined): string => token?.surface.toLowerCase() ?? "";
 
@@ -33,6 +35,15 @@ const isBeAfter = (tokens: readonly Token[], at: number): boolean => {
   return (verb?.pos === "AUX" || lemmaOf(verb) === HAVE) && lemmaOf(tokens[at + 1]) === BE;
 };
 
+/**
+ * 読点より前に定形の動詞がある（Treating masculinity as a pathology isn’t progressivism, it’s prejudice）。-ing の句はその
+ * 動詞の主語で、前に置いた分詞の句ではない。
+ */
+const hasFiniteVerb = (tokens: readonly Token[], comma: number): boolean =>
+  tokens
+    .slice(1, comma)
+    .some((token) => (token.pos === "AUX" || [BE, HAVE].includes(lemmaOf(token))) && NON_FINITE.every((form) => token.features?.["VerbForm"] !== form));
+
 const isParenthetical = (tokens: readonly Token[], at: number): boolean => tokens.slice(at, at + PARENTHETICAL_REACH).some((token) => token.surface === ",");
 
 export const danglingOpenerIn = (
@@ -46,7 +57,7 @@ export const danglingOpenerIn = (
   const comma = tokens.findIndex((token, at) => at > 0 && token.surface === ",");
   const subject = tokens[comma + 1];
   if (comma === -1 || comma > MAX_OPENER_TOKENS || subject === undefined || !subjects.has(lower(subject)) || !isBeAfter(tokens, comma + 2)) return undefined;
-  if (isParenthetical(tokens, comma + 3)) return undefined;
+  if (isParenthetical(tokens, comma + 3) || hasFiniteVerb(tokens, comma)) return undefined;
   const last = tokens[comma - 1] ?? first;
   return { opener: source.slice(first.span.start, last.span.end), subject, offset: first.span.start };
 };

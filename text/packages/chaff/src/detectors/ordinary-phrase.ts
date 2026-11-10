@@ -21,6 +21,16 @@ export const isNarrowedUse = (tokens: readonly Token[], at: number, pointers: re
 };
 
 /**
+ * A partitive picks some out of the kind: "some of these terms", "many of the services". The defined term names one
+ * thing or one set, so items picked from it are the ordinary word.
+ */
+export const isPartitiveUse = (tokens: readonly Token[], at: number, quantifiers: readonly string[]): boolean => {
+  const [quantifier, of, determiner] = [tokens[at - 3], tokens[at - 2], tokens[at - 1]];
+  if (quantifier === undefined || of?.surface.toLowerCase() !== "of" || determiner?.pos !== "DET") return false;
+  return quantifiers.some((word) => word.toLowerCase() === quantifier.surface.toLowerCase());
+};
+
+/**
  * The use heads a phrase that names a kind of thing with "of" and a bare noun (certificates of deposit, letters of credit);
  * "of" followed by an article, a pronoun or a name (the certificate of the Company) is the defined thing again.
  * last is the index of the use's last token.

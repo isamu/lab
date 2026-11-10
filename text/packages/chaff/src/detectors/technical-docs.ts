@@ -7,6 +7,7 @@ import { opensAsNounPhrase } from "./nominal-step.ts";
 import { quoteAt } from "./structure-tree.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { isFormatTemplate } from "../format-template.ts";
+import { afterOutputLeadIn } from "./output-lead-in.ts";
 import type { Detector, Finding, ProseDocument, Span, Token } from "../plugin.ts";
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
@@ -37,11 +38,12 @@ export const untaggedFewer = (fences: readonly CodeFence[], limit: number): read
 };
 
 export const codeFenceLanguage: Detector = (doc, options): Finding[] => {
+  const outputWords = patternsOf(doc, "output-lead-in");
   const fences = codeFences(doc.source).filter(wantsLanguage);
   const tagged = fences.filter((fence) => fence.language !== "").length;
-  return untaggedFewer(fences, options.limit).map((fence) =>
-    finding(doc, "code-fence-language-mix", fence.start, { tagged, untagged: fences.length - tagged }),
-  );
+  // A block of plain output (after "we'd expect to see:") is in no language: it still counts, but is not pointed at.
+  const reported = untaggedFewer(fences, options.limit).filter((fence) => !afterOutputLeadIn(doc.source, fence.start, outputWords));
+  return reported.map((fence) => finding(doc, "code-fence-language-mix", fence.start, { tagged, untagged: fences.length - tagged }));
 };
 
 export type PromptStyle = "prompt" | "bare" | undefined;

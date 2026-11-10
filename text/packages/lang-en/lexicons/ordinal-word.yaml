@@ -1,0 +1,33 @@
+# The ordinal numbers written as words. outside-announced-list does not take a run of them as a name: "Fourteenth and
+# Fifteenth Edition … Sixteenth Edition" is an edition history counted on, not a list of named editions.
+id: ordinal-word
+language: en
+entries:
+  - pattern: first
+  - pattern: second
+  - pattern: third
+  - pattern: fourth
+  - pattern: fifth
+  - pattern: sixth
+  - pattern: seventh
+  - pattern: eighth
+  - pattern: ninth
+  - pattern: tenth
+  - pattern: eleventh
+  - pattern: twelfth
+  - pattern: thirteenth
+  - pattern: fourteenth
+  - pattern: fifteenth
+  - pattern: sixteenth
+  - pattern: seventeenth
+  - pattern: eighteenth
+  - pattern: nineteenth
+  - pattern: twentieth
+  - pattern: thirtieth
+  - pattern: fortieth
+  - pattern: fiftieth
+  - pattern: sixtieth
+  - pattern: seventieth
+  - pattern: eightieth
+  - pattern: ninetieth
+  - pattern: hundredth

@@ -11,7 +11,7 @@ import { restricted, type Restrictors } from "./superlative-clause.ts";
 import { stackedHedges, type StackedHedge } from "./stacked-hedge.ts";
 import { comparisonMarkersOf, counterpartBefore, onlyQuoted, quotedRange, type ComparisonMarkers } from "./superlative-comparison.ts";
 import { inPhrase, ownedBefore } from "./superlative-phrase.ts";
-import { asked, contextOf, picksFromNamedSet, pointsAtReferent, ranksParts, sought, viewpointBefore, type Context } from "./superlative-context.ts";
+import { asked, contextOf, picksFromNamedSet, pointsAtReferent, ranksParts, sought, supposed, viewpointBefore, type Context } from "./superlative-context.ts";
 
 const PER = 1000;
 
@@ -173,6 +173,7 @@ const everyQualified = (sentence: Sentence, entry: LexiconEntry, qualifiers: Qua
         quotedRange(sentence, range) ||
         inPhrase(tokens, range, qualifiers.phrases) ||
         sought(sentence, range, qualifiers.context.goals) ||
+        supposed(sentence.tokens ?? [], range, qualifiers.context.conditions) ||
         qualifiedAt(tokens, range, qualifiers),
     )
   );

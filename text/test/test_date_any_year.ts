@@ -322,3 +322,24 @@ describe("date-without-year: 休日と並ぶ年末年始の期間は言わない
     ]);
   });
 });
+
+describe("date-without-year: 一段落で語る毎年の日程", () => {
+  const EN_YEARS = "# Opinion\n\nThe Act was amended on May 26, 1941, and the case was argued on May 4, 1942.\n\n";
+
+  it("英語で、販売年度の日程の日付と、同じ段落で続く日付を言わない", () => {
+    const schedule =
+      "The Act provides that whenever the supply as of the beginning of any marketing year, beginning July 1, will exceed the normal need, the Secretary shall so proclaim not later than May 15 prior to the beginning of such marketing year. Between the proclamation and June 10, the Secretary must hold a referendum.\n";
+    assert.deepEqual(namedRuleRun("date-without-year", `${EN_YEARS}${schedule}`, en).findings, []);
+  });
+
+  it("段落が変わるか、年のある日付をはさめば、続く日付は言う", () => {
+    const schedule = "The marketing year begins July 1.\n\nThe farmers voted on May 31.\n";
+    assert.deepEqual(namedRuleRun("date-without-year", `${EN_YEARS}${schedule}`, en).findings, [
+      '"May 31" has no year, and the document\'s dates run from 1941 to 1942, so the year is unclear',
+    ]);
+    const dated = "The marketing year begins July 1. The board met on March 3, 1942.\nThe vote was held on January 10.\n";
+    assert.deepEqual(namedRuleRun("date-without-year", `${EN_YEARS}${dated}`, en).findings, [
+      '"January 10" has no year, and the document\'s dates run from 1941 to 1942, so the year is unclear',
+    ]);
+  });
+});

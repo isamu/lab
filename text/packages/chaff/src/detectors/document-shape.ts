@@ -17,10 +17,20 @@ const PERCENT = 100;
 /** The document's title: its first top-level heading, when it has words. */
 export const titleSectionOf = (doc: ProseDocument): Section | undefined => doc.sections.find((section) => section.depth === 1 && section.heading.trim() !== "");
 
-/** The paragraph right under the title, with nothing but blank lines between them. A list, a table or an image first is not a lead. */
+/** A marker a site's tooling reads, alone on its line (mdBook's rule identifier r[glossary.ast], {#anchor}): one run of marks and letters, no words. */
+const SPACE = /\s/u;
+const MARKER_BRACKET = /[[\]{}<>]/u;
+
+const isMarkerLine = (text: string): boolean => !SPACE.test(text) && MARKER_BRACKET.test(text);
+
+/**
+ * The paragraph right under the title, with nothing but blank lines between them. A list, a table or an image first is not
+ * a lead, and neither is a marker line.
+ */
 export const leadParagraphOf = (doc: ProseDocument, title: Section): Paragraph | undefined => {
   const first = doc.paragraphs.find((paragraph) => paragraph.span.start >= title.span.start && paragraph.span.start < title.span.end);
   if (first === undefined || first.sentences.length === 0) return undefined;
+  if (isMarkerLine(doc.source.slice(first.span.start, first.span.end).trim())) return undefined;
   return doc.source.slice(title.span.start, first.span.start).trim() === "" ? first : undefined;
 };
 

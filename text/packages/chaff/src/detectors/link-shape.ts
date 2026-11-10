@@ -30,17 +30,31 @@ const isFieldValue = (source: string, url: Span): boolean => {
   return isFieldValueUrl(source.slice(lineStart, url.start), source.slice(url.end, lineEnd === -1 ? source.length : lineEnd));
 };
 
+/** A placeholder the reader replaces: `<user_name>` right after the URL (where the URL stops), or `{repo}` inside it. */
+const PLACEHOLDER_AFTER = /^<[^\s<>]+>/u;
+const PLACEHOLDER_INSIDE = /\{[^\s{}]+\}/u;
+
+/** A URL template (`https://e.com/viewer/?uri=<platform>.com/<user>`): no worded link can stand for an address yet to be filled in. */
+const isTemplate = (source: string, url: Span): boolean =>
+  PLACEHOLDER_AFTER.test(source.slice(url.end)) || PLACEHOLDER_INSIDE.test(source.slice(url.start, url.end));
+
 /**
  * The bare URLs the reader sees as text (outside links, code and quotations). A URL in a table cell is a value the table lists
  * (an example request, a field's content), not a link the prose points to, so tables are left out, and so is a field's value
- * on its own line (`**Licence text** https://…`).
+ * on its own line (`**Licence text** https://…`), and so is a template with placeholders to fill in.
  */
 const bareUrlSpans = (source: string, markup: Markup): Span[] => {
   const tables = spansOfType(readMarkdown(source).root, "table");
   return markup.texts.flatMap((text) =>
     bareUrls(source.slice(text.start, text.end))
       .map((url) => ({ start: text.start + url.start, end: text.start + url.end }))
-      .filter((url) => !source.startsWith(FAILED_DESTINATION, url.start - FAILED_DESTINATION.length) && !inside(url, tables) && !isFieldValue(source, url)),
+      .filter(
+        (url) =>
+          !source.startsWith(FAILED_DESTINATION, url.start - FAILED_DESTINATION.length) &&
+          !inside(url, tables) &&
+          !isFieldValue(source, url) &&
+          !isTemplate(source, url),
+      ),
   );
 };
 
