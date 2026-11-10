@@ -104,6 +104,11 @@ describe("article-sound", () => {
     ]);
   });
 
+  it("a NAS is said as one syllable (nas), so it takes a; an NAS is the slip", () => {
+    assert.deepEqual(findingsOf(RULE, "Put the photos on a NAS at home.\n"), []);
+    assert.deepEqual(findingsOf(RULE, "Put the photos on an NAS at home.\n"), ['"an NAS" takes "a" before that sound']);
+  });
+
   it("initials joined by a slash may be read as the words they stand for (a N/I level), so either article is left alone", () => {
     // Micro Star v. FormGen Inc., 154 F.3d 1107 (9th Cir. 1998), a US court opinion in the public domain.
     assert.deepEqual(findingsOf(RULE, "The way a N/I level is played is described in a N/I MAP file. Mark it an N/A value.\n"), []);
