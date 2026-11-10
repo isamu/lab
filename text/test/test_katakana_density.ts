@@ -72,6 +72,14 @@ describe("katakana-density: カタカナ語の多さ", () => {
     assert.deepEqual(findingsOf(titled("アカウントの登録方法")), []);
   });
 
+  it("front matter の title も題名で、そのカタカナ語は数えない", () => {
+    const manual = "アカウントを作り、メールアドレスを入れて、アカウントの登録を終えます。登録したアカウントでサービスに入ります。";
+    const body = Array.from({ length: 10 }, () => manual).join("\n\n");
+    assert.equal(findingsOf(`---\ntitle: "登録の手順"\n---\n\n${body}\n`).length, 1);
+    assert.deepEqual(findingsOf(`---\ntitle: "アカウントの登録方法"\n---\n\n${body}\n`), []);
+    assert.deepEqual(findingsOf(`---\ntitle: Account (アカウント)\n---\n\n${body}\n`), []);
+  });
+
   it("題名に無いカタカナ語は数え、多い語に挙げる", () => {
     const found = findingsOf(`# アジェンダの決め方\n\n${Array.from({ length: 8 }, () => HEAVY).join("\n\n")}\n`);
     assert.equal(found.length, 1);

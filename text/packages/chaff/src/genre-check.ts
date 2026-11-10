@@ -1,4 +1,4 @@
-import { frontMatterValues } from "./genre.ts";
+import { frontMatterValues } from "./front-matter.ts";
 
 /** Where a genre was set: the command line, chaff.yaml's genre, or one of its by_path entries. */
 export type GenreSetting = "--genre" | "config" | "by_path";
