@@ -1,0 +1,20 @@
+# Nouns that name a thing on a screen or in a workflow by the label it shows: "in SUBMIT TO APPROVER status", "the SAVE AND
+# CLOSE button". all-caps-shouting does not report a capital run a sentence names that way: it quotes the label in the
+# capitals the screen shows, it does not raise its voice.
+id: screen-label-noun
+language: en
+entries:
+  - pattern: status
+  - pattern: button
+  - pattern: field
+  - pattern: tab
+  - pattern: menu
+  - pattern: screen
+  - pattern: option
+  - pattern: mode
+  - pattern: state
+  - pattern: stage
+  - pattern: column
+  - pattern: link
+  - pattern: box
+  - pattern: setting
