@@ -283,6 +283,8 @@ describe("agreement-slip — 英語", () => {
       "This changes everything.",
       "These help to fix the build.",
       "These data sets are a series of news reports.",
+      "Toward a conversational ethics of large language models.",
+      "She wrote a politics of care, and these ethics guide the team.",
       "A few days later, a number of users wrote in.",
       "The few who came stayed, and the same rule applies to the one road that is open.",
       "The Some Roads Act was passed, and all the roads reopened.",
