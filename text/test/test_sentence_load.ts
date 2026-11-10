@@ -76,6 +76,29 @@ describe("clauseCount: 節のつながり", () => {
     assert.equal(clauseCount(tokensOf("資料を調べている。")), 1);
     assert.equal(clauseCount(tokensOf("課長に読んでもらった。")), 1);
   });
+
+  // 例文はすべて自作。
+  it("読点で並べた名前の一覧（晴れ、曇り）は、動詞と読める語があっても節をつながない", () => {
+    assert.equal(clauseCount(tokensOf("快晴、晴れ、曇り、霧、雨、雪、あられ、雷。")), 1);
+    assert.equal(clauseCount(tokensOf("天気は、霧、晴れ、雪、雨、曇りのどれかで書きます。")), 1);
+  });
+
+  it("助詞の無い語が二つだけ、または名詞が半ばに届かない並びは、節として数える", () => {
+    assert.equal(clauseCount(tokensOf("資料を調べて、まとめ、報告した。")), 3);
+    assert.equal(clauseCount(tokensOf("会場で走り、跳び、泳ぎ、休んだ。")), 3);
+  });
+
+  it("同じ動詞を読点で続けた手順（著者を調べ、所属を調べ、）は一つの節", () => {
+    assert.equal(clauseCount(tokensOf("著者を調べ、所属を調べ、住所を調べ、手紙を送った。")), 2);
+    assert.equal(clauseCount(tokensOf("著者を調べ、所属を確かめ、住所を調べ、手紙を送った。")), 4);
+    // 名詞に付けた「し」は、名詞ごとに別の動詞（計画を作成し、事業を継続し）。
+    assert.equal(clauseCount(tokensOf("計画を作成し、事業を継続し、準備を行った。")), 3);
+    assert.equal(clauseCount(tokensOf("倉庫を点検し、工場を点検し、報告した。")), 2);
+    // 助動詞（ない）が同じでも、その前の動詞が違えば別の節。
+    assert.equal(clauseCount(tokensOf("雨が降らない、風も吹かない、静かな日だった。")), 3);
+    // 同じ動詞でも、打ち消し（とせず）と打ち消さない形（とし）は別の節。
+    assert.equal(clauseCount(tokensOf("面接は必須とせず、筆記のみを必須とし、結果を伝えた。")), 3);
+  });
 });
 
 describe("topicDistance: 主題から述語まで", () => {
