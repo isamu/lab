@@ -42,3 +42,25 @@ entries:
     group: template
   - pattern: model form
     group: template
+  # group: example-lead — a word that opens a line offering an example to copy, before a colon and a quotation
+  # ('Helpful: "See the link [insert link name] below the image"'). A blank inside that quotation shows what to write.
+  - pattern: example
+    group: example-lead
+  - pattern: examples
+    group: example-lead
+  - pattern: for example
+    group: example-lead
+  - pattern: e.g.
+    group: example-lead
+  - pattern: helpful
+    group: example-lead
+  - pattern: unhelpful
+    group: example-lead
+  - pattern: good
+    group: example-lead
+  - pattern: bad
+    group: example-lead
+  - pattern: correct
+    group: example-lead
+  - pattern: incorrect
+    group: example-lead
