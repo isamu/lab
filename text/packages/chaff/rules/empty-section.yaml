@@ -70,5 +70,5 @@ example:
       Fit the parts.
 
 not_flagged:
-  ja: すぐ後ろに深い見出しが来る節（小さな節に分けたもの）は指しません。Markdown の文書でだけ動きます。
-  en: A heading followed by a deeper heading (a section split into subsections) is not reported. It runs on Markdown only.
+  ja: すぐ後ろに深い見出しが来る節（小さな節に分けたもの）は指しません。同じ深さの見出しでも、番号が節の下の番号（3. の後の 3.1、4. の後の (1)）なら同じです。Markdown の文書でだけ動きます。
+  en: A heading followed by a deeper heading (a section split into subsections) is not reported, nor one followed by a heading of the same depth numbered under it (3. then 3.1, 4. then (1)). It runs on Markdown only.
