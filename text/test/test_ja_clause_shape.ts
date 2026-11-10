@@ -1,6 +1,6 @@
 import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { namedRuleRun } from "./rule-run.ts";
+import { firedRules, namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { endingOf, endingRuns } from "../packages/chaff/src/detectors/clause-shape.ts";
@@ -235,6 +235,12 @@ describe("yori-as-from", () => {
     assert.deepEqual(findingsOf(RULE, "本日より受付開始します。\n"), ["起点の「より」は「から」と書けます"]);
     assert.deepEqual(findingsOf(RULE, "4月より一般販売を開始します。\n"), ["起点の「より」は「から」と書けます"]);
     assert.deepEqual(findingsOf(RULE, "本日より受付開始。\n"), ["起点の「より」は「から」と書けます"]);
+  });
+
+  it("プレスリリースの決まった言い方（〜日より開始いたします）は指さない", () => {
+    const release = "新サービスを12月1日より開始いたします。\n";
+    assert.equal(firedRules(ja, release, "business/press-release").includes(RULE), false);
+    assert.equal(firedRules(ja, release, "business/report").includes(RULE), true);
   });
 });
 
