@@ -96,8 +96,6 @@ contract.md   blog/tech · English   genre from the default
 
   1:32    info    Section length varies by only 28% (want at least 35%)
                   section-length-uniformity
-  3:1     info    Paragraph length varies by only 28% (want at least 30%)
-                  paragraph-length-variance
   11:26   warning The period "November 1, 2026 through October 31, 2026" ends before it starts
                   date-range-reversed
   21:12   error   The total $800 is not the sum of its items ($700)

@@ -58,7 +58,7 @@ describe("max-paragraph-length", () => {
 
 describe("paragraph-length-variance", () => {
   it("invalid: 同じ長さの段落が並ぶ", () => {
-    assert.ok(idsFor(`# 見出し\n\n${Array(6).fill(SENTENCE).join("\n\n")}`).includes("paragraph-length-variance"));
+    assert.ok(idsFor(`# 見出し\n\n${Array(9).fill(SENTENCE).join("\n\n")}`).includes("paragraph-length-variance"));
   });
 
   it("valid: 長さが揺れていれば指摘しない", () => {
@@ -67,15 +67,23 @@ describe("paragraph-length-variance", () => {
   });
 
   // 段落が少ないと、変動係数は偶然で小さく出る。人の書いた記事で、指摘は段落の少ない文書に偏っていた。
-  it("valid: 段落が min_paragraphs（既定 6）より少なければ、揃っていても測らない", () => {
-    const five = `# 見出し\n\n${Array(5).fill(SENTENCE).join("\n\n")}`;
-    assert.ok(!idsFor(five).includes("paragraph-length-variance"));
-    assert.ok(idsWithOption(five, "paragraph-length-variance", { min_paragraphs: 5 }).includes("paragraph-length-variance"));
+  it("valid: 段落が min_paragraphs（既定 9）より少なければ、揃っていても測らない", () => {
+    const eight = `# 見出し\n\n${Array(8).fill(SENTENCE).join("\n\n")}`;
+    assert.ok(!idsFor(eight).includes("paragraph-length-variance"));
+    assert.ok(idsWithOption(eight, "paragraph-length-variance", { min_paragraphs: 8 }).includes("paragraph-length-variance"));
     assert.ok(
-      !idsWithOption(`# 見出し\n\n${Array(6).fill(SENTENCE).join("\n\n")}`, "paragraph-length-variance", { min_paragraphs: 7 }).includes(
+      !idsWithOption(`# 見出し\n\n${Array(9).fill(SENTENCE).join("\n\n")}`, "paragraph-length-variance", { min_paragraphs: 10 }).includes(
         "paragraph-length-variance",
       ),
     );
+  });
+
+  // 短いレビュー記事: 2 文と 4 文の段落が混じる 7 段落。変動係数は限度の少し下でも、読み手は揃いに気づかない。
+  it("valid: a short review post of seven paragraphs, slightly even, is not measured", () => {
+    const four = "電池は三週間ほどもちます。旅行に持って行っても困りませんでした。充電の線を忘れても平気です。それが一番ありがたい点です。";
+    const two = "画面は紙に近い見え方です。夜に読んでも目が疲れません。";
+    const review = [four, four, four, two, four, two, four].join("\n\n");
+    assert.ok(!idsFor(`# 二年使った読書端末\n\n${review}`, "blog/essay").includes("paragraph-length-variance"));
   });
 });
 
