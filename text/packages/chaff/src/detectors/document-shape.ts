@@ -101,6 +101,11 @@ export const isQuestionHeading = (heading: string): boolean => QUESTION_END.test
 
 const TRAILING_MARKS: ReadonlySet<string> = new Set(["PUNCT", "SYM"]);
 
+/** A running time in brackets at the end (（3分00秒）, (12:30)): the heading is the title of a video or a recording, not the writer's to shorten. */
+const RUNNING_TIME_END = /[(（]\s*(?:[0-9０-９]+分(?:[0-9０-９]+秒)?|[0-9０-９]+秒|[0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?)\s*[)）]$/u;
+
+export const isRecordingTitle = (heading: string): boolean => RUNNING_TIME_END.test(heading.trim());
+
 /**
  * A heading that ends on a particle closing a question (…補正することはできますか。): it asks as one ending in ？ does. The
  * particles come from the language's question-particle word list; a language without one has none.
@@ -162,7 +167,10 @@ export const titleLength: Detector = (doc, options): Finding[] => {
   return headings
     .map((heading) => ({ heading, section: sectionOf(doc, heading) }))
     .map(({ heading, section }) => ({ heading, words: section?.unlabeledHeading ?? heading.text, tokens: section?.headingTokens ?? [] }))
-    .filter(({ words, tokens }) => !isParagraphHeading(words) && !isQuestionHeading(words) && !endsWithQuestionParticle(tokens, questionParticles))
+    .filter(
+      ({ words, tokens }) =>
+        !isParagraphHeading(words) && !isQuestionHeading(words) && !endsWithQuestionParticle(tokens, questionParticles) && !isRecordingTitle(words),
+    )
     .map(({ heading, words }) => ({ heading, count: headingLength(ownWordsOf(words, citedTitleActions), doc.lengthUnit) }))
     .filter(({ count }) => count > options.limit)
     .map(({ heading, count }) => ({

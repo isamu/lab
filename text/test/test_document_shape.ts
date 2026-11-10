@@ -226,6 +226,13 @@ describe("title-length: a title or heading too long to scan", () => {
     );
   });
 
+  it("does not report the title of a video or a recording, which ends with its running time", () => {
+    const video = "### 守ろう心の健康～誰もが一人で悩みを抱えることのない地域の暮らしへ【字幕付】（3分00秒）";
+    assert.equal(fired(ja, `# 題\n\n本文です。\n\n${video}\n\n本文です。\n`, "title-length"), 0);
+    assert.equal(fired(ja, `# 題\n\n本文です。\n\n${video.replace("（3分00秒）", "（3回目）")}\n\n本文です。\n`, "title-length"), 1);
+    assert.equal(fired(en, `# Title\n\nText.\n\n${LONG_EN} (12:30)\n\nText.\n`, "title-length"), 0);
+  });
+
   it("reports a long English heading", () => assert.equal(fired(en, `# Title\n\nText.\n\n${LONG_EN}\n\nText.\n`, "title-length"), 1));
 
   it("names a long first top-level heading the title", () => {
