@@ -107,6 +107,20 @@ describe("repeated-sentence-head", () => {
   it("invalid: 地の文の段落の中なら、これまでどおり数える", () => {
     assert.ok(idsFor("- 項目。\n\nそしてこれは一です。そしてこれは二です。そしてこれは三です。そしてこれは四です。").includes("repeated-sentence-head"));
   });
+  it("見出しを挟めば切る（FAQ の答えごとに同じ書き出しで締める）", () => {
+    const answers = ["前置きです。そしてこれは一です。", "そしてこれは二です。", "そしてこれは三です。", "そしてこれは四です。"];
+    const source = answers.map((answer, at) => `## 問${String(at + 1)}\n\n${answer}`).join("\n\n");
+    assert.ok(!idsFor(source).includes("repeated-sentence-head"));
+    assert.ok(idsFor(answers.join("\n\n")).includes("repeated-sentence-head"));
+  });
+  it("一文だけの段落を同じ型で並べたもの（案内ごとに一段落）は項目の並びで、数えない", () => {
+    const source = ["そしてこれは一です。", "そしてこれは二です。", "そしてこれは三です。", "そしてこれは四です。"].join("\n\n");
+    assert.ok(!idsFor(source).includes("repeated-sentence-head"));
+  });
+  it("invalid: 段落をまたいでも、二文以上の段落が入れば数える", () => {
+    const source = ["そしてこれは一です。そしてこれは二です。", "そしてこれは三です。", "そしてこれは四です。"].join("\n\n");
+    assert.ok(idsFor(source).includes("repeated-sentence-head"));
+  });
 });
 
 describe("sentence-rhythm", () => {
