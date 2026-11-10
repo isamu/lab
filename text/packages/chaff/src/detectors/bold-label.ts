@@ -52,10 +52,47 @@ export const boldLeadOf = (item: string): string | undefined =>
 
 const labelOrLeadOf = (item: string): string | undefined => boldLabelOf(item) ?? boldLeadOf(item);
 
+const unquotedItemsOf = (doc: ProseDocument, spans: readonly Span[], opens: (item: string) => string | undefined): Span[] =>
+  spans.filter((span) => !isQuotedAt(doc.source, span.start) && opens(doc.source.slice(span.start, span.end)) !== undefined);
+
 const unquotedItems = (doc: ProseDocument, opens: (item: string) => string | undefined): Span[] =>
+  unquotedItemsOf(
+    doc,
+    doc.lists.flatMap((list) => list.itemSpans),
+    opens,
+  ).toSorted((left, right) => left.start - right.start);
+
+/**
+ * How long an item's text after its bold opening runs before it counts as a paragraph, in words or, for a language
+ * written without spaces, characters (the 2.5 characters a word that MIN_DOCUMENT_LENGTH uses).
+ */
+export const PARAGRAPH_ITEM_LENGTH = { word: 40, char: 100 };
+
+const OPENING_BOLD = /^(\*\*|__).*?\1/su;
+
+/** The length of an item's text after its marker and its bold opening, in the document's unit. */
+const explanationLength = (item: string, unit: "word" | "char"): number => {
+  const rest = item.replace(ITEM_MARKER, "").replace(TASK_BOX, "").replace(OPENING_BOLD, "").trim();
+  return unit === "char" ? rest.replace(/\s+/gu, "").length : rest.split(/\s+/u).filter((word) => /[\p{L}\p{N}]/u.test(word)).length;
+};
+
+const median = (values: readonly number[]): number => values.toSorted((left, right) => left - right)[Math.floor(values.length / 2)] ?? 0;
+
+/**
+ * Whether a list's bold-opened items each run a paragraph (- **Get feedback early.** and forty words more): a handbook's
+ * tips, the advice in bold and the item explaining it at length. Generated lists keep each item to a sentence or two.
+ */
+export const isParagraphList = (doc: ProseDocument, items: readonly Span[]): boolean =>
+  items.length > 0 &&
+  median(items.map((span) => explanationLength(doc.source.slice(span.start, span.end), doc.lengthUnit))) >= PARAGRAPH_ITEM_LENGTH[doc.lengthUnit];
+
+/** The bold-opened items of lists that are captions, not paragraphs, in document order. */
+const captionItems = (doc: ProseDocument, opens: (item: string) => string | undefined): Span[] =>
   doc.lists
-    .flatMap((list) => list.itemSpans)
-    .filter((span) => !isQuotedAt(doc.source, span.start) && opens(doc.source.slice(span.start, span.end)) !== undefined)
+    .flatMap((list) => {
+      const items = unquotedItemsOf(doc, list.itemSpans, opens);
+      return isParagraphList(doc, items) ? [] : items;
+    })
     .toSorted((left, right) => left.start - right.start);
 
 /** The list items, in document order, that open with a bold label and are not quoted. */
@@ -83,22 +120,45 @@ const isStatement = (tokens: readonly Token[]): boolean => {
   return head !== undefined && !VERBAL.has(head.pos) && words.slice(1).some((token) => VERBAL.has(token.pos));
 };
 
-/** The bold run a paragraph opens with, as a label or lead sentence, and where in the paragraph its words end. */
-const openingRunOf = (text: string): { words: string; end: number } | undefined => {
-  const match = BOLD_LABEL.exec(text) ?? BOLD_LEAD.exec(text);
-  const words = match?.[2];
-  if (match?.[1] === undefined || words === undefined || isCodeOnly(words.trim())) return undefined;
-  return { words: words.trim(), end: match[1].length + words.length };
+/**
+ * A whole instruction in bold, closed by its own stop (**Pick the quietest room you can.**): a verb in its plain form first
+ * and words after it. A run-in head closed by a colon (**Talk to the people:**) or a gerund (**Examining who is involved.**)
+ * is not one.
+ */
+const OBJECT_OPENERS = new Set(["DET", "PRON"]);
+
+/** The tagger reads an opening verb it also knows as a noun as a noun (Face the window); a determiner right after it says verb. */
+const readsAsVerb = (head: Token, next: Token | undefined): boolean =>
+  head.pos === "VERB" || (head.pos === "NOUN" && next !== undefined && OBJECT_OPENERS.has(next.pos));
+
+const isImperativeSentence = (tokens: readonly Token[]): boolean => {
+  const words = tokens.filter((token) => token.pos !== "PUNCT" && token.pos !== "SYM");
+  const head = words[0];
+  return head !== undefined && !/ing$/iu.test(head.surface) && readsAsVerb(head, words[1]);
 };
 
-/** The statement a paragraph opens with in bold (**Usage grew each week**: …), or undefined. A question (an FAQ's) is not a statement. */
+type OpeningRun = { readonly words: string; readonly end: number; readonly stopped: boolean };
+
+/** The bold run a paragraph opens with, as a label or lead sentence, where in the paragraph its words end, and whether a stop closes it. */
+const openingRunOf = (text: string): OpeningRun | undefined => {
+  const label = BOLD_LABEL.exec(text);
+  const match = label ?? BOLD_LEAD.exec(text);
+  const words = match?.[2];
+  if (match?.[1] === undefined || words === undefined || isCodeOnly(words.trim())) return undefined;
+  return { words: words.trim(), end: match[1].length + words.length, stopped: label === null };
+};
+
+/**
+ * The statement a paragraph opens with in bold (**Usage grew each week**: …), or a whole instruction closed by its stop
+ * (**Pick the quietest room you can.** …), or undefined. A question (an FAQ's) is not a statement.
+ */
 const boldStatementOf = (doc: ProseDocument, paragraph: Paragraph): string | undefined => {
   const { start, end } = paragraph.span;
   const run = isQuotedAt(doc.source, start) ? undefined : openingRunOf(doc.source.slice(start, end));
   if (run === undefined || /[?？]$/u.test(run.words)) return undefined;
   const runEnd = start + run.end;
   const tokens = paragraph.sentences.flatMap((sentence) => sentence.tokens ?? []).filter((token) => token.span.start >= start && token.span.start < runEnd);
-  return isStatement(tokens) ? run.words.replace(/[.!。！]$/u, "") : undefined;
+  return isStatement(tokens) || (run.stopped && isImperativeSentence(tokens)) ? run.words.replace(/[.!。！]$/u, "") : undefined;
 };
 
 /** The count reported and the limit it reached: all the labelled items, or else the bold lead sentences alone, or undefined. */
@@ -119,8 +179,9 @@ const finding = (doc: ProseDocument, span: Span, label: string, found: { count: 
 });
 
 /**
- * Paragraphs that each open with a bold statement (**Usage grew each week**: …): findings set as captions. Human run-in heads
- * are terms, imperatives or questions (**Work schedule**:, **Talk to the people:**, **Who is my audience?**), and are not counted.
+ * Paragraphs that each open with a bold statement (**Usage grew each week**: …) or a whole bold instruction (**Pick a quiet
+ * room.** …): findings or tips set as captions. Human run-in heads are terms, imperatives closed by a colon, gerunds or
+ * questions (**Work schedule**:, **Talk to the people:**, **Examining the risks.**, **Who is my audience?**), and are not counted.
  */
 const statementParagraphs = (doc: ProseDocument, options: DetectorOptions): Finding[] => {
   const statements = doc.paragraphs.flatMap((paragraph) => {
@@ -135,10 +196,11 @@ const statementParagraphs = (doc: ProseDocument, options: DetectorOptions): Find
 /**
  * A count, not a density: a person writes one or two labels even in a long article. A bold lead sentence counts as a label.
  * Bold lead sentences (- **Check one result by hand.** …) report at fewer items than colon labels: human documents write a few
- * colon labels for steps or fields (- **Gather input**: …), but rarely make a list of bold lead sentences.
+ * colon labels for steps or fields (- **Gather input**: …), but rarely make a list of bold lead sentences. A list whose items
+ * each run a paragraph after the bold is a handbook's tips and is not counted.
  */
 export const boldLabelList: Detector = (doc, options): Finding[] => {
-  const items = unquotedItems(doc, labelOrLeadOf);
+  const items = captionItems(doc, labelOrLeadOf);
   const first = items[0];
   const leads = items.filter((span) => boldLabelOf(doc.source.slice(span.start, span.end)) === undefined).length;
   const found = reached(items, leads, options);
