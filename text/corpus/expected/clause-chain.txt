@@ -10,6 +10,6 @@ ppc-guidelines-tsusoku  2
 saikosai-h18-09-14-bengoshi-chokai  1
 saikosai-h26-09-02-nagano  2
 soumu-kokumin-cyber-phishing  1
-soumu-wp-r06-misinformation  2
+soumu-wp-r06-misinformation  1
 wikipedia-ja-talk-oden  3
 zenn-kaityo256-happy-presentation  1

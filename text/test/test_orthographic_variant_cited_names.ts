@@ -72,6 +72,17 @@ describe("orthographic-variant: a capitalised name", () => {
     assert.equal(findingsOf(source).length, 1);
   });
 
+  it("a title in brackets after what it labels keeps its hyphens (Part Two (Vendor to Sub-Vendor))", () => {
+    const source =
+      "# Terms\n\nEach subvendor signs. A subvendor reports. The subvendor list is public. Part Two (Vendor to Sub-Vendor) applies to each subvendor.\n";
+    assert.deepEqual(findingsOf(source), []);
+  });
+
+  it("a bracketed aside in the writer's own words is still compared", () => {
+    const source = "# Terms\n\nEach subvendor signs. A subvendor reports. The subvendor list is public. Part Two applies (to each sub-vendor).\n";
+    assert.equal(findingsOf(source).length, 1);
+  });
+
   it("outside a name, the hyphen is still compared", () => {
     assert.equal(
       findingsOf("# Statute\n\nEach inter-agency memo is exempt. Interagency work is slow. Interagency groups meet often.\n", "legal/statute").length,

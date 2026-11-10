@@ -67,13 +67,79 @@ const endsClause = (token: Token, next: Token | undefined): boolean => {
 
 const TRAILING = new Set(["PUNCT", "SYM"]);
 
+/** Parts of speech that make a stretch between commas a phrase (著者を調べ) rather than a bare item of a list (晴れ). */
+const LINKING = new Set(["ADP", "SCONJ"]);
+const NAME = new Set(["NOUN", "PROPN"]);
+/** Fewer bare stretches than this in a row are clauses (調べて、まとめ、報告した), not a list of names. */
+const MIN_LIST_ITEMS = 3;
+
+/** The tokens between commas, each stretch in order; the commas themselves belong to none. */
+const stretchesOf = (tokens: readonly Token[]): Token[][] =>
+  tokens.reduce<Token[][]>(
+    (stretches, token) => {
+      if (COMMA.has(token.surface)) stretches.push([]);
+      else stretches.at(-1)?.push(token);
+      return stretches;
+    },
+    [[]],
+  );
+
+const isBare = (stretch: readonly Token[]): boolean => stretch.every((token) => !LINKING.has(token.pos));
+const isName = (stretch: readonly Token[]): boolean =>
+  stretch.some((token) => NAME.has(token.pos)) && stretch.every((token) => NAME.has(token.pos) || TRAILING.has(token.pos));
+
+/**
+ * The tokens of a list of names written with commas (快晴、晴れ、薄曇り、曇り、…): three or more stretches in a row with no particle,
+ * most of them plain nouns. A word of the list the tokenizer reads as a verb (晴れ, 曇り) names a thing; it ends no clause.
+ */
+const listedTokens = (tokens: readonly Token[]): ReadonlySet<Token> => {
+  const runs = stretchesOf(tokens).reduce<Token[][][]>(
+    (acc, stretch) => {
+      if (!isBare(stretch)) acc.push([]);
+      else acc.at(-1)?.push(stretch);
+      return acc;
+    },
+    [[]],
+  );
+  return new Set(runs.filter((run) => run.length >= MIN_LIST_ITEMS && run.filter(isName).length * 2 > run.length).flat(2));
+};
+
+const isCommaStop = (token: Token | undefined, next: Token | undefined): boolean =>
+  token !== undefined && PREDICATE.has(token.pos) && COMMA.has(next?.surface ?? "");
+
+/** The word a predicate ending at `at` is built on, past its auxiliaries (切らない is 切る, not ない). */
+const headOf = (tokens: readonly Token[], at: number): number => (at > 0 && tokens[at]?.pos === "AUX" ? headOf(tokens, at - 1) : at);
+
+/**
+ * The predicate as said: its head's dictionary form with the noun a verb is written on (作成し is 作成する, not する), and its
+ * auxiliaries (必須とせず says する and ず, 必須とし only する).
+ */
+const verbOf = (tokens: readonly Token[], at: number): string => {
+  const head = headOf(tokens, at);
+  const noun = tokens[head - 1];
+  const words = tokens.slice(head, at + 1).map((token) => token.lemma ?? token.surface);
+  return [tokens[head]?.pos === "VERB" && noun?.pos === "NOUN" ? noun.surface : "", ...words].join(" ");
+};
+
+/**
+ * Whether the clause end at `at` repeats the verb of the clause end before it, both stopped by a comma (著者を調べ、所属を調べ、…):
+ * the same step said of several things is one frame the reader holds once.
+ */
+const repeatsVerb = (tokens: readonly Token[], at: number, before: number | undefined): boolean => {
+  if (before === undefined || !isCommaStop(tokens[at], tokens[at + 1]) || !isCommaStop(tokens[before], tokens[before + 1])) return false;
+  return verbOf(tokens, at) === verbOf(tokens, before);
+};
+
 /**
  * The number of clauses the tokens chain: one more than the clause ends before the last word. A sentence of one predicate is
- * one, and a sentence that ends on a particle (返信して。) has not chained another clause by it.
+ * one, and a sentence that ends on a particle (返信して。) has not chained another clause by it. A word in a list of names, and
+ * a verb repeated clause after clause, end none.
  */
 export const clauseCount = (tokens: readonly Token[]): number => {
   const last = tokens.findLastIndex((token) => !TRAILING.has(token.pos));
-  return 1 + tokens.filter((token, at) => at < last && endsClause(token, tokens[at + 1])).length;
+  const listed = listedTokens(tokens);
+  const ends = tokens.flatMap((token, at) => (at < last && !listed.has(token) && endsClause(token, tokens[at + 1]) ? [at] : []));
+  return 1 + ends.filter((at, index) => !repeatsVerb(tokens, at, ends[index - 1])).length;
 };
 
 const TOPIC_BEFORE = new Set(["NOUN", "PRON", "PROPN"]);

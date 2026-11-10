@@ -3,25 +3,7 @@ import { densityFindings } from "./ai-phrasing.ts";
 import { endsWithColon } from "./lead-in.ts";
 import { comparableText, comparableWords, entryIn, entryRanges } from "./lexicon-match.ts";
 import { isMarkdownPath } from "../structure/markdown-path.ts";
-
-/** Between a lead-in and its list: only blank space. A thematic break (`***`) separates them; bold marks sit inside the sentence. */
-const ONLY_BLANKS = /^\s*$/u;
-
-/** How many sentences end at or before an offset. Sentences are in document order, so a binary search. */
-const countEndingBy = (sentences: readonly Sentence[], offset: number): number => {
-  const search = (low: number, high: number): number => {
-    if (low >= high) return low;
-    const middle = Math.floor((low + high) / 2);
-    return (sentences[middle]?.span.end ?? Infinity) <= offset ? search(middle + 1, high) : search(low, middle);
-  };
-  return search(0, sentences.length);
-};
-
-/** The sentence that ends last before the list starts, if nothing but blanks lies between them. */
-const sentenceRightBefore = (sentences: readonly Sentence[], list: BulletList, source: string): Sentence | undefined => {
-  const before = sentences[countEndingBy(sentences, list.span.start) - 1];
-  return before !== undefined && ONLY_BLANKS.test(source.slice(before.span.end, list.span.start)) ? before : undefined;
-};
+import { sentenceRightBefore } from "../list-lead-sentence.ts";
 
 const insideAny = (spans: readonly Span[], offset: number): boolean => spans.some((span) => span.start <= offset && offset < span.end);
 

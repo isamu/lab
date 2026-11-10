@@ -25,7 +25,7 @@ import {
   type InContext,
   type Uses,
 } from "../word-use.ts";
-import { titleCaseNameRuns } from "../title-case-name.ts";
+import { bracketedTitleRuns, titleCaseNameRuns } from "../title-case-name.ts";
 import { withoutQuotedSpellings, type Quoted } from "../quoted-spelling.ts";
 import { teFormOf, withTeFormFullVerbs, type TeForm } from "../te-form-helper.ts";
 import { citedSpans, isOpenIn, namesOf, patternsOf, type IsOpen, type Names } from "./orthographic-variant-open.ts";
@@ -267,7 +267,7 @@ const latinSpelling = (word: string): string =>
 const latinWords = ({ sentence, isOpen, cited }: Place, skip: ReadonlySet<string>, joiners: readonly string[]): Placed[] => {
   const { text } = sentence;
   const acronyms = acronymsIn(text);
-  const names = titleCaseNameRuns(text, joiners);
+  const names = [...bracketedTitleRuns(text), ...titleCaseNameRuns(text, joiners)];
   const quotedAt = (start: number, end: number): Pick<Placed, "quoted" | "name"> => {
     if (isWithinAny(cited, { start, end })) return { quoted: "cited" };
     const run = names.find(({ name }) => name.start <= start && end <= name.end);

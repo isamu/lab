@@ -2,7 +2,7 @@ import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { firedRules } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
-import { parallelDotCount } from "../packages/chaff/src/detectors/middle-dot.ts";
+import { isRunTogetherList, parallelDotCount } from "../packages/chaff/src/detectors/middle-dot.ts";
 
 // no-nakaguro-parallel: 行頭の「・」は箇条書きの印で、項目を並べる中黒ではない。例文は自作。
 
@@ -90,5 +90,30 @@ describe("no-nakaguro-parallel", () => {
 
   it("invalid: 地の文で中黒を並べすぎれば、これまでどおり指摘する", () => {
     assert.ok(idsFor("企画・開発・運用・保守、営業・販売・広報・総務の体制を見直します。").includes("no-nakaguro-parallel"));
+  });
+});
+
+// 一行一項目の箇条書きや年表を、変換が一続きにした文。例文は自作。
+describe("no-nakaguro-parallel: 一続きにされた箇条書きと表", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+  });
+
+  it("valid: 句の長さの項目を中黒でつないだ文は、箇条書きが行の切れ目を失ったもの", () => {
+    const list =
+      "今期の重点＜営業＞・地方の小さな店舗への訪問・新しい顧客の名簿の整備・古い契約の条件の見直し・展示会での商品の紹介・取引先との定期的な面談＜管理＞・経費の精算の手順の簡素化";
+    assert.ok(isRunTogetherList(list));
+    assert.ok(!firedRules(ja, `# 計画\n\n${list}\n`).includes("no-nakaguro-parallel"));
+  });
+
+  it("valid: 年の月で行が始まる年表を一続きにした文", () => {
+    const rows =
+      "沿革1950年４月東京都に会社・工場・倉庫を設立1960年５月大阪・名古屋・福岡に支店を開設1970年６月札幌・仙台・広島に営業所を開設1980年７月本社を移転";
+    assert.ok(!firedRules(ja, `# 沿革\n\n${rows}\n`).includes("no-nakaguro-parallel"));
+  });
+
+  it("invalid: 短い語の並びは、項目が多くても長さで除かない", () => {
+    assert.ok(!isRunTogetherList("企画・開発・運用・保守・営業・販売・広報の体制を見直します。"));
+    assert.ok(!isRunTogetherList("水・電力・通信等のライフラインの確保・復旧や、避難者・支援者の生活・活動環境の改善"));
   });
 });

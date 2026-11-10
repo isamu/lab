@@ -22,6 +22,8 @@ export type NumberWords = {
   readonly figureNouns: readonly string[];
   /** Words written before a number to name one of a series (Grade 5, Room 12): the number after one is not a count. */
   readonly nameWords: readonly string[];
+  /** Kanji counts read the native way (二通り, ふたとおり): written in kanji whatever the document's style for counts. */
+  readonly nativeCounts: readonly string[];
 };
 
 const alternation = (words: readonly string[]): string =>
@@ -81,7 +83,7 @@ const countMarks = (text: string, base: number, words: NumberWords, tokens: read
   if (pattern === undefined) return [];
   return [...text.matchAll(pattern)].flatMap((match): NumberMark[] => {
     const [written, digits, kanji] = match;
-    if (kanji !== undefined && (isIdiomNumeral(kanji) || isInsideWord(written, base + match.index, tokens))) return [];
+    if (kanji !== undefined && (isIdiomNumeral(kanji) || words.nativeCounts.includes(written) || isInsideWord(written, base + match.index, tokens))) return [];
     if (isBeforeLongerWord(digits ?? kanji ?? "", written, base + match.index, tokens)) return [];
     return [{ kind: "count", style: digits === undefined ? "kanji" : "digits", written, offset: base + match.index }];
   });
@@ -115,12 +117,20 @@ const isHexCode = (written: string, after: string): boolean => {
   return /^\d+$/u.test(written) && LETTER_THEN_DIGIT.test(tail) && written.length + tail.length >= HEX_CODE_MIN;
 };
 
+/** A word that says a quantity is about so much (約1500): a number right after it is a quantity, not part of a code. */
+const APPROXIMATELY = "約";
+
+const isOpenBefore = (text: string, index: number): boolean => {
+  const before = text.charAt(index - 1);
+  return before === APPROXIMATELY || !NOT_BEFORE.test(before);
+};
+
 /** Each number of four digits or more standing alone, grouped (1,000) or not (1000). */
 const bigNumbers = (text: string): DigitRun[] =>
   [...text.matchAll(DIGITS_AND_COMMAS)].flatMap((match): DigitRun[] => {
     const written = match[0];
     const after = text.slice(match.index + written.length);
-    const standsAlone = !NOT_BEFORE.test(text.charAt(match.index - 1)) && !NOT_AFTER.test(after.charAt(0)) && !isHexCode(written, after);
+    const standsAlone = isOpenBefore(text, match.index) && !NOT_AFTER.test(after.charAt(0)) && !isHexCode(written, after);
     return standsAlone && (GROUPED.test(written) || PLAIN_BIG.test(written)) ? [{ written, index: match.index }] : [];
   });
 
@@ -149,6 +159,17 @@ const countedAfter = (after: string, words: NumberWords): boolean => {
 /** What follows a quantity: a Japanese counter, or a word in lower case (10000 users). */
 const quantityAfter = (after: string, words: NumberWords): boolean => /^\s?[a-z]/u.test(after) || countedAfter(after, words);
 
+/** The numbers after this one in a list that shares one unit (約1500、3,000、9,000m): each item takes the unit written after the last. */
+const LIST_TAIL = /^(?:[、，]\s?約?[0-9０-９]+(?:[,，][0-9０-９]{3})*)+/u;
+
+const GROUPED_ITEM = /[0-9０-９][,，][0-9０-９]{3}/u;
+
+/** What follows a number, past the rest of the list it heads or stands in, and whether that list groups its digits (years never do). */
+const afterList = (after: string): { readonly rest: string; readonly beforeGrouped: boolean } => {
+  const tail = LIST_TAIL.exec(after)?.[0] ?? "";
+  return { rest: after.slice(tail.length), beforeGrouped: GROUPED_ITEM.test(tail) };
+};
+
 /** How far back to look for a currency sign or a label word. The sentence may start right after one (H.R. ends a sentence). */
 const BEFORE_REACH = 16;
 
@@ -156,11 +177,11 @@ const groupingMarks = (text: string, base: number, words: NumberWords, source: s
   bigNumbers(text).flatMap(({ written, index }): NumberMark[] => {
     const grouped = GROUPED.test(written);
     const before = source.slice(Math.max(0, base + index - BEFORE_REACH), base + index);
-    const after = text.slice(index + written.length);
+    const { rest: after, beforeGrouped } = afterList(text.slice(index + written.length));
     const currency = CURRENCY_BEFORE.test(before);
     if (!currency && !quantityAfter(after, words)) return [];
     if (!grouped && isLabelBefore(before)) return [];
-    if (!grouped && !currency && isYearLike(written) && !countedAfter(after, words)) return [];
+    if (!grouped && !currency && !beforeGrouped && isYearLike(written) && !countedAfter(after, words)) return [];
     return [{ kind: "grouping", style: grouped ? "grouped" : "plain", written, offset: base + index }];
   });
 
@@ -252,6 +273,7 @@ const wordsOf = (doc: ProseDocument): NumberWords => {
     countWords: patterns("count-number"),
     figureNouns: patterns("figure-noun"),
     nameWords: patterns("number-name-word"),
+    nativeCounts: patterns("numeral-native-count"),
   };
 };
 

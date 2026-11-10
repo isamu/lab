@@ -53,3 +53,22 @@ export const titleCaseNameRuns = (text: string, joiners: readonly string[]): Nam
       return name === undefined ? [] : [{ name, quoted: isName(named) ? spanOf(named) : undefined }];
     });
 };
+
+/** A bracketed title: capitalised words and small words between them, nothing else (Processor to Sub-Processor). */
+const BRACKETED = /\(([^()]+)\)/gu;
+const SMALL_WORD = /^\p{Ll}{1,3}$/u;
+
+const isTitleWords = (words: readonly string[]): boolean =>
+  words.filter((word) => CAPITALISED.test(word)).length >= MIN_NAME_WORDS && words.every((word) => CAPITALISED.test(word) || SMALL_WORD.test(word));
+
+/**
+ * Titles set in brackets after what they label (Module Three (Processor to Sub-Processor)): every word capitalised but the
+ * small ones between (to, of). The words are the title's, taken from where it is defined, so the run counts as a quoted name.
+ */
+export const bracketedTitleRuns = (text: string): NameRun[] =>
+  [...text.matchAll(BRACKETED)].flatMap((match) => {
+    const inner = match[1] ?? "";
+    const start = match.index + 1;
+    const span = { start, end: start + inner.length };
+    return isTitleWords(inner.split(" ")) ? [{ name: span, quoted: span }] : [];
+  });

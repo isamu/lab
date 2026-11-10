@@ -45,8 +45,8 @@ example:
       - 拠点: 東京、大阪、名古屋
 
 not_flagged:
-  ja: 行の頭の「・」は箇条書きの印なので数えません。
-  en: A 「・」 at the start of a line is a bullet and is not counted.
+  ja: 行の頭の「・」は箇条書きの印なので数えません。表や箇条書きを変換が一続きにした文（年表の行が年月でつながったもの、＜事業戦略＞・オーナーチェンジ物件への回帰・都市部シェア拡大・…のように句の長さの項目が並ぶもの）も、中黒が項目の印か語の切れ目か読めないので数えません。
+  en: A 「・」 at the start of a line is a bullet and is not counted. Nor is a table or a bullet list a converter ran into one sentence (rows of a chronology joined at their dates, or items as long as phrases joined by 「・」), where a dot cannot be told from an item's mark.
 level_meaning:
   ja: 一文に中黒 {limit} 個まで
   en: up to {limit} middle dots in a sentence

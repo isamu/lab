@@ -44,8 +44,8 @@ example:
       資料を調べて内容をまとめ、課長に報告しました。返事がないのでもう一度送ると、翌日に返事が来ました。修正を頼まれています。
 
 not_flagged:
-  ja: 補助動詞へのつなぎ（調べている、読んでもらう）、鉤括弧で引いたものの中、上限までの節は数えません。英語の文書には使いません。
-  en: Joins to a helper verb, anything quoted in 「」, and clauses up to the limit are not counted. Not used on English documents.
+  ja: 補助動詞へのつなぎ（調べている、読んでもらう）、鉤括弧で引いたものの中、上限までの節は数えません。読点で並べた名前の一覧の中の語（快晴、晴れ、曇り、…の「晴れ」）と、同じ述語を読点で続けた手順の二つ目から（著者を調べ、所属を調べ、の二つ目の「調べ」）も、節のつなぎ目に数えません。英語の文書には使いません。
+  en: Joins to a helper verb, anything quoted in 「」, and clauses up to the limit are not counted. Nor is a word inside a list of names written with commas (晴れ in 快晴、晴れ、曇り、…), or the same predicate repeated clause after clause after its first time (the second 調べ in 著者を調べ、所属を調べ、). Not used on English documents.
 level_meaning:
   ja: 一文の節 {limit} つまで
   en: up to {limit} clauses in one sentence
