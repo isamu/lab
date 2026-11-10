@@ -40,8 +40,8 @@ options:
     kind: count
     default: 3
     about:
-      ja: 言い切りの太字（述語のある文。**利用は毎週伸びた**：〜）で始まる段落だけで指摘する数。人の文書の段落の頭の太字は、語だけのもの（**勤務時間**：）、動詞で始まるもの（英語の命令形 **Talk to the people:**）、問い（**読み手は誰か？**）がほとんどで、これらは数えません。品詞が読めないときは段落を数えません
-      en: "How many paragraphs opening with a bold statement (a clause with its own subject and verb, **Usage grew each week**: ...) report on their own. A human run-in head is a term (**Work schedule**:), an imperative (**Talk to the people:**) or a question (**Who is my audience?**), none of which count. Without part-of-speech tags, paragraphs are not counted"
+      ja: 言い切りの太字（述語のある文。**利用は毎週伸びた**：〜）で始まる段落だけで指摘する数。句点で閉じた英語の命令の一文（**Pick the quietest room you can.** 〜）も数えます。人の文書の段落の頭の太字は、語だけのもの（**勤務時間**：）、コロンで閉じた動詞で始まるもの（英語の命令形 **Talk to the people:**）、動名詞（**Examining the risks.**）、問い（**読み手は誰か？**）がほとんどで、これらは数えません。品詞が読めないときは段落を数えません
+      en: "How many paragraphs opening with a bold statement (a clause with its own subject and verb, **Usage grew each week**: ...) report on their own. A whole English instruction closed by its own stop (**Pick the quietest room you can.** ...) counts too. A human run-in head is a term (**Work schedule**:), an imperative closed by a colon (**Talk to the people:**), a gerund (**Examining the risks.**) or a question (**Who is my audience?**), none of which count. Without part-of-speech tags, paragraphs are not counted"
 
 use_for: [technical/readme, blog, business, legal, docs, academic, literature, speech]
 off_for:
@@ -94,8 +94,8 @@ example:
       The monthly bill is lower, and permissions can be split finely.
 
 not_flagged:
-  ja: 札がコードだけの項目（`--flag` の説明のような、設定や引数の一覧）は数えません。段落は、太字が言い切りの文のときだけ数え、語だけの太字・動詞で始まる太字（英語の命令形）・問いは数えません。札の後ろにコロンも句点も無い項目（太字が文の頭の語だけのもの）と、その後ろに何も無い項目も数えません。仕様書（technical/spec）・法務・説明書・論文・文学のジャンルでは見ません。
-  en: An item whose label is only code (a list of options or fields) is not counted, nor is one whose bold ends in neither a colon nor a full stop (a bold opening word of a sentence), or that has no text after it. A paragraph counts only when its bold is a statement, not a term, an imperative or a question. Specification (technical/spec), legal, documentation, academic and literary genres do not run this rule.
+  ja: 札がコードだけの項目（`--flag` の説明のような、設定や引数の一覧）は数えません。段落は、太字が言い切りの文か、句点で閉じた英語の命令の一文（**Pick the quietest room you can.**）のときだけ数え、語だけの太字・コロンで閉じた英語の命令形の札（**Talk to the people:**）・動名詞・問いは数えません。札の後ろにコロンも句点も無い項目（太字が文の頭の語だけのもの）と、その後ろに何も無い項目も数えません。太字の後ろが一項目ずつ段落ほどの長さ（中ほどの項目で英語 40 語、日本語 100 字から）ある箇条書きは、太字の助言をそれぞれ長く説明する手引きの形なので数えません。仕様書（technical/spec）・法務・説明書・論文・文学のジャンルでは見ません。
+  en: An item whose label is only code (a list of options or fields) is not counted, nor is one whose bold ends in neither a colon nor a full stop (a bold opening word of a sentence), or that has no text after it. A list whose items each run a paragraph after the bold (the middle item 40 words or more, 100 characters in Japanese) is a handbook's tips, the advice in bold and the item explaining it, and is not counted. A paragraph counts only when its bold is a statement, or a whole English instruction closed by its own stop (**Pick the quietest room you can.**), not a term, an imperative run-in head closed by a colon (**Talk to the people:**), a gerund or a question. Specification (technical/spec), legal, documentation, academic and literary genres do not run this rule.
 level_meaning:
   ja: 太字の札で始まる項目が {limit} 個あれば指摘（太字の一文で始まる項目は min_leads、言い切りの太字で始まる段落は min_clause_paragraphs の数から）
   en: reported once {limit} list items open with a bold label (items opening with a bold lead sentence from min_leads, paragraphs opening with a bold statement from min_clause_paragraphs)

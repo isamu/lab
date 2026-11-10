@@ -215,6 +215,30 @@ describe("bold-label-list", () => {
     );
   });
 
+  it("valid: a tips list whose items each run a paragraph after the bold advice is a handbook's form; short items still count", () => {
+    const explanation = (topic: string): string =>
+      `Talk to the people around you about ${topic} before you start, and agree on who does what. Teams that skip this step tend to find out late that two people did the same work, or that nobody did it at all, and the time lost then is far more than the time a short talk would have taken at the start.`;
+    const tips = [
+      "Find out how best to take part.",
+      "Use your team's tracking tools.",
+      "Keep the conversation going.",
+      "Start with the most important tasks.",
+      "Get feedback early.",
+    ]
+      .map((lead) => `- **${lead}** ${explanation(lead.toLowerCase())}`)
+      .join("\n");
+    assert.ok(!idsFor(`# Post\n\n${tips}\n`, en).includes("bold-label-list"));
+    const short = ["Find out how best to take part.", "Use your team's tracking tools.", "Keep the conversation going."]
+      .map((lead) => `- **${lead}** Ask your lead which ones matter.`)
+      .join("\n");
+    assert.ok(idsFor(`# Post\n\n${short}\n\nMore text.\n\n${tips}\n`, en).includes("bold-label-list"));
+    const longJa = Array.from(
+      { length: 5 },
+      (_unused, index) => `- **手順${index + 1}を決める。**${"始める前に周りの人と誰が何をするかを話し合っておきます。".repeat(4)}`,
+    ).join("\n");
+    assert.ok(!idsFor(`# 記事\n\n${longJa}\n`, ja).includes("bold-label-list"));
+  });
+
   it("valid: two bold lead sentences, or two with two colon labels, stay under", () => {
     assert.ok(!idsFor(`# Post\n\n${leadList(2)}\n`, en).includes("bold-label-list"));
     assert.ok(!idsFor(`# Post\n\n${englishList(2)}\n\nBody text.\n\n${leadList(2)}\n`, en).includes("bold-label-list"));
@@ -279,6 +303,17 @@ describe("bold-label-list", () => {
     [imperatives, terms, questions].forEach((paragraphs) => {
       assert.ok(!idsFor(`# Post\n\n${paragraphs.join("\n\n")}\n`, en).includes("bold-label-list"));
     });
+  });
+
+  it("invalid: paragraphs that each open with a whole bold instruction closed by a stop; gerund leads stay a human head", () => {
+    const tips = ["Pick the quietest room you can.", "Face the window, not away from it.", "Raise the laptop to eye level."]
+      .map((lead) => `**${lead}** It makes the call easier for everyone.`)
+      .join("\n\n");
+    assert.ok(idsFor(`# Post\n\n${tips}\n`, en).includes("bold-label-list"));
+    const gerunds = ["Examining who is involved.", "Surfacing potential harms.", "Thinking beyond the current context."]
+      .map((lead) => `**${lead}** It is part of the work.`)
+      .join("\n\n");
+    assert.ok(!idsFor(`# Post\n\n${gerunds}\n`, en).includes("bold-label-list"));
   });
 
   it("valid: quoted bold statements are someone else's words", () => {
