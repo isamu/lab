@@ -137,7 +137,8 @@ export const sectionUniformity: Detector = (doc, options): Finding[] => {
  */
 export const ruleOfThree: Detector = (doc, options): Finding[] => {
   const openWords = (doc.lexicons["list-continues"] ?? []).map((entry) => entry.pattern);
-  const found = threeShare(doc.source, doc.lists, openWords, options.limit);
+  const sentenceStarts = doc.sentences.map((sentence) => sentence.span.start);
+  const found = threeShare(doc.source, doc.lists, openWords, options.limit, sentenceStarts);
   if (found === undefined) return [];
   return [
     {

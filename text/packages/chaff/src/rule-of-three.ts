@@ -6,7 +6,7 @@ import type { BulletList } from "./plugin.ts";
  * 箇条書きが少ないと、1 つで割合が大きく動く（4 つなら 25 ポイント）。そのときは全部が 3 項目のときだけ報告する。
  * 2 つでも測る。生成文の報告書は「要因 3 つ」「提言 3 つ」の 2 つの箇条書きで終わることが多く、人の文書で 2 つとも 3 項目は少ない。
  * 本文の最初の文より前の箇条書き（題・日付・見出しのすぐ下の要点や概要）は数えない。項目の数はサイトの型が決めている。
- * どの項目も「札：数」の内訳も、ちょうど 3 項目とは数えない。
+ * どの項目も「札：数」の内訳も、どの項目も 3 文以上ある箇条書きも、ちょうど 3 項目とは数えない。
  */
 export type ThreeShare = { readonly count: number; readonly total: number; readonly share: number; readonly first: BulletList };
 
@@ -74,14 +74,31 @@ const isLabelledFigure = (item: string): boolean => {
 export const isFigureBreakdown = (source: string, list: BulletList): boolean =>
   list.itemSpans.length > 0 && list.itemSpans.every((item) => isLabelledFigure(source.slice(item.start, item.end)));
 
-const isExactlyThree = (source: string, list: BulletList, openWords: readonly string[]): boolean =>
-  list.items.length === THREE && !continuesBeyond(source, list, openWords) && !isFigureBreakdown(source, list);
+/** 段落として書いた項目の文の数の下限。太字の見出しの文と、それを説く 2 文。 */
+const MIN_ITEM_SENTENCES = 3;
+
+/**
+ * どの項目も 3 文以上ある箇条書き（太字の助言と、それを説く数文）。項目ごとに段落を書いた心得の一覧で、数は中身が決めている。
+ * 数を合わせるために足した項目は、1 文か 2 文の薄いものになる。
+ */
+export const isParagraphItems = (list: BulletList, sentenceStarts: readonly number[]): boolean =>
+  list.itemSpans.length > 0 &&
+  list.itemSpans.every((item) => sentenceStarts.filter((start) => start >= item.start && start < item.end).length >= MIN_ITEM_SENTENCES);
+
+const isExactlyThree = (source: string, list: BulletList, openWords: readonly string[], sentenceStarts: readonly number[]): boolean =>
+  list.items.length === THREE && !continuesBeyond(source, list, openWords) && !isFigureBreakdown(source, list) && !isParagraphItems(list, sentenceStarts);
 
 /** 報告するときの数。報告しないときは undefined。 */
-export const threeShare = (source: string, allLists: readonly BulletList[], openWords: readonly string[], limit: number): ThreeShare | undefined => {
+export const threeShare = (
+  source: string,
+  allLists: readonly BulletList[],
+  openWords: readonly string[],
+  limit: number,
+  sentenceStarts: readonly number[] = [],
+): ThreeShare | undefined => {
   const bodyStart = firstProseOffset(source);
   const lists = allLists.filter((list) => list.span.start >= bodyStart);
-  const threes = lists.filter((list) => isExactlyThree(source, list, openWords));
+  const threes = lists.filter((list) => isExactlyThree(source, list, openWords, sentenceStarts));
   const first = threes[0];
   if (lists.length < MIN_LISTS || first === undefined) return undefined;
   const share = Math.round((threes.length / lists.length) * PERCENT);
