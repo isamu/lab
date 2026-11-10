@@ -40,8 +40,8 @@ example:
     after: Having reviewed the logs, we found that the job failed twice.
 
 not_flagged:
-  ja: 主語が人や物の名詞の文（Having reviewed the code, the team approved it.）、過去分詞で始めた句（Configured with SSO, it is ready.。it そのものを言うことが多い）、決まった言い方として読む句（Given、Based on、Generally speaking、Having said that）、挿入句の it is（Testing it, it is worth noting, requires …）、分詞の句が長く読点の位置が当てにならない文は指しません。英語の文だけを読みます。
-  en: 'A sentence whose subject is a person or a thing ("Having reviewed the code, the team approved it."), an opening past participle ("Configured with SSO, it is ready.", which usually describes "it" itself), openings read as fixed phrases ("Given", "Based on", "Generally speaking", "Having said that"), a parenthetical "it is" ("Testing it, it is worth noting, requires …"), and long openings where the comma cannot be trusted are not reported. Only English sentences are read.'
+  ja: 主語が人や物の名詞の文（Having reviewed the code, the team approved it.）、過去分詞で始めた句（Configured with SSO, it is ready.。it そのものを言うことが多い）、決まった言い方として読む句（Given、Based on、Generally speaking、Having said that）、挿入句の it is（Testing it, it is worth noting, requires …）、読点より前の動詞の主語になった -ing の句（Treating it as a flaw isn’t fair, it’s prejudice.）、分詞の句が長く読点の位置が当てにならない文は指しません。英語の文だけを読みます。
+  en: 'A sentence whose subject is a person or a thing ("Having reviewed the code, the team approved it."), an opening past participle ("Configured with SSO, it is ready.", which usually describes "it" itself), openings read as fixed phrases ("Given", "Based on", "Generally speaking", "Having said that"), a parenthetical "it is" ("Testing it, it is worth noting, requires …"), an -ing phrase that is the subject of a verb before the comma ("Treating it as a flaw isn’t fair, it’s prejudice."), and long openings where the comma cannot be trusted are not reported. Only English sentences are read.'
 
 rewrite:
   depth: light
