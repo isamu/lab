@@ -14,7 +14,7 @@ why:
   en: When the total of a quote or an invoice is not the sum of the amounts listed above it, the reader has to add them up again to find out which is right. It happens when a line is added or removed and the total is not updated. In a list or a table, a line starting with a total word (Total, Subtotal) is compared with the sum of the amounts in the same unit and column above it. A total with a word that the header of the table's first column, or of the column the total holds its number in, names ("Total deductions" under "Deduction", "Total credits earned" in the "Credits" column) is read as a total line too, and so is a total naming the span it covers ("Total for the year", "Year total", "Annual total"). Under a header that names nothing ("Item"), a "Total deductions" on the table's last row is read too, when no row above it is a total or a gross or net amount and the table has one column of amounts. A total written in a sentence, as contracts do ("$6,000 for hosting and $3,000 for support, for a total of $9,000", "$8 per month, made up of …", "a total of $12,000 — $5,000 for design and $6,000 for development"), is compared with the amounts in the same unit listed in that sentence, and with the amounts of the next sentence when it opens with a breakdown phrase ("This consists of …"). When there is more than one way to add them up, such as a grand total after a subtotal and tax, it is pointed out only when none of them matches.
 
 message:
-  ja: 合計「{written}」が、内訳の金額の和（{sum}）と合いません
+  ja: 合計「{written}」が、内訳の和（{sum}）と合いません
   en: "The total {written} is not the sum of its items ({sum})"
 
 how_to_fix:
