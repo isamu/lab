@@ -55,8 +55,8 @@ example:
       Send the form to HR. **The deadline is the end of the month, and late forms will not be accepted, whatever the reason.** The form is in the shared folder. You can print it and fill it in by hand, or type into it on screen and then print it. It needs your manager's signature, so give it to your manager at least three days before the deadline. If you have a question, call the HR desk between nine and five on a weekday.
 
 not_flagged:
-  ja: 200 字より短い節は、1 箇所で割合が跳ねるので測りません。
-  en: Sections under 200 characters are not measured, since one bold span would swing the rate.
+  ja: 200 字より短い節は、1 箇所で割合が跳ねるので測りません。行の頭に置いた短い項目名（**日時：**、**Date:**）は、続く値の名前で強調ではないので数えません。箇条書きの頭の太字の項目名は数えます。
+  en: Sections under 200 characters are not measured, since one bold span would swing the rate. A short field label opening a line (**Date:**, **Motion:**) names the value after it and is not emphasis, so it is not counted; a bold label opening a list item is.
 level_meaning:
   ja: 1000 字あたり太字 {limit} 箇所まで
   en: up to {limit} bold spans per 1000 characters
