@@ -48,3 +48,12 @@ export const labelledBlocks = <T extends Spanned>(text: string, start: number, s
     });
   return [...blocks.values()];
 };
+
+/**
+ * 段落のどの行にも文がちょうど一つで、改行をまたぐ文が無い（`<br>` で 1 文ごとに改行した挨拶）。書き手は文ごとに行を改めていて、
+ * 読み手は行ごとに息をつける。Markdown では一つの段落になるが、文を詰めた壁ではない。text は段落の文字列。
+ */
+export const isSentencePerLine = (text: string, sentences: readonly { readonly text: string }[]): boolean => {
+  const lines = text.split("\n").filter((line) => line.trim() !== "");
+  return lines.length > 1 && lines.length === sentences.length && sentences.every((sentence) => !sentence.text.trim().includes("\n"));
+};
