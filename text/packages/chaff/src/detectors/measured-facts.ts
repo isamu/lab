@@ -1,4 +1,4 @@
-import type { ProseDocument, StructureNode } from "../plugin.ts";
+import type { ProseDocument, Span, StructureNode } from "../plugin.ts";
 import { nameSpans } from "../compare/proper-nouns.ts";
 import { overlapsAny, spanIndex } from "../compare/spans.ts";
 import { factValues, type FactValue } from "../facts/fact-values.ts";
@@ -6,11 +6,14 @@ import { codeFences } from "./code-fences.ts";
 import { measuredValues, type Measured } from "../facts/measures.ts";
 import { measureUnitsOf } from "../facts/measure-units.ts";
 
-/** 文書の中の、単位の語彙表の単位が付いた量。コードの塊の中の量は、項目の値ではない。 */
-export const measuredOf = (doc: ProseDocument): Measured[] => {
+/** 値がコードの塊の外にあるか。コードの中の値（// @errors: 2345）は例の一部で、文書の項目の値ではない。 */
+export const outsideCode = (doc: ProseDocument): ((value: Span) => boolean) => {
   const fences = codeFences(doc.source);
-  return measuredValues(doc.source, measureUnitsOf(doc)).filter((value) => !fences.some((fence) => fence.start <= value.start && value.end <= fence.end));
+  return (value) => !fences.some((fence) => fence.start <= value.start && value.end <= fence.end);
 };
+
+/** 文書の中の、単位の語彙表の単位が付いた量。コードの塊の中の量は、項目の値ではない。 */
+export const measuredOf = (doc: ProseDocument): Measured[] => measuredValues(doc.source, measureUnitsOf(doc)).filter(outsideCode(doc));
 
 /** fact-conflict の値に、単位の付いた量を足す。量と重なる値（量の数だけを読んだもの）は量に置き換える。 */
 export const valuesWith = (tree: StructureNode, doc: ProseDocument, measured: readonly FactValue[]): FactValue[] => {

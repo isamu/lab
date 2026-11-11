@@ -16,7 +16,7 @@ import { retentionConflicts, type LengthMark, type RetentionLength, type Retenti
 import type { DurationUnit } from "../derived/date-arithmetic.ts";
 import { DURATION_LEXICONS, quantitiesOf, type Quantity } from "./derived-numbers.ts";
 import { quoteAt } from "./structure-tree.ts";
-import { measuredOf, valuesWith } from "./measured-facts.ts";
+import { measuredOf, outsideCode, valuesWith } from "./measured-facts.ts";
 import { durationValues, type DurationWord } from "../facts/duration-values.ts";
 import { overlapsAny, spanIndex } from "../compare/spans.ts";
 import { documentTermConflicts, isTermName, termHomes, type TermWord, type TermWords } from "../facts/document-terms.ts";
@@ -133,7 +133,10 @@ const readFacts = (doc: ProseDocument, tree: StructureNode): ScopedFact[] => {
     durationWordsOf(doc),
   );
   const taken = spanIndex([...ages, ...durations]);
-  const values = perUnitsOf(doc, valuesWith(tree, doc, [...measuredOf(doc).filter((value) => !overlapsAny(taken, value)), ...ages, ...durations]));
+  const values = perUnitsOf(
+    doc,
+    valuesWith(tree, doc, [...measuredOf(doc).filter((value) => !overlapsAny(taken, value)), ...ages, ...durations]).filter(outsideCode(doc)),
+  );
   const terms = termValues(doc.source, values, termValueWordsOf(doc));
   const termed = new Set(terms.map((fact) => fact.value.start));
   const labelled = labelledFacts(doc.source, values, { ...factWordsOf(doc), qualifiers: qualifierWordsOf(doc) }).filter(
