@@ -1,4 +1,5 @@
 import type { Detector, Finding, LengthUnit, Paragraph, Section, Sentence, Span } from "../plugin.ts";
+import { isFlattenedTableBlock } from "./sentence-parts.ts";
 
 const HEAD_CHARS = 6;
 const HEAD_WORDS = 3;
@@ -58,9 +59,16 @@ const standsAlone = (sentence: Sentence, paragraphs: readonly Paragraph[]): bool
  */
 const isEntryList = (run: Run, paragraphs: readonly Paragraph[]): boolean => run.members.every((sentence) => standsAlone(sentence, paragraphs));
 
+/** 連なりの最初の文を含む段落が、行の区切りの落ちた表（升の文字がつながった段落）か。行ごとに同じ升で始まるのは表の形。 */
+const inFlattenedTable = (run: Run, paragraphs: readonly Paragraph[], source: string): boolean => {
+  const start = run.members[0]?.span.start ?? -1;
+  const paragraph = paragraphs.find((candidate) => candidate.span.start <= start && start < candidate.span.end);
+  return paragraph !== undefined && isFlattenedTableBlock(source.slice(paragraph.span.start, paragraph.span.end));
+};
+
 export const repeatedHead: Detector = (doc, options): Finding[] =>
   runsOf(doc.sentences, doc.lengthUnit, doc.listSpans, doc.sections)
-    .filter((run) => run.members.length > options.limit && !isEntryList(run, doc.paragraphs))
+    .filter((run) => run.members.length > options.limit && !isEntryList(run, doc.paragraphs) && !inFlattenedTable(run, doc.paragraphs, doc.source))
     .map((run) => ({
       rule: "repeated-sentence-head",
       severity: "warning",
