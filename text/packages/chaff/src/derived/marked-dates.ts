@@ -59,3 +59,7 @@ export const markedPair = <T extends Span>(text: MarkText, sentence: Span, dates
   const [end] = ends;
   return starts.length === 1 && ends.length === 1 && start !== undefined && end !== undefined && start !== end ? [start, end] : undefined;
 };
+
+/** 二つの日付がどちらも始まりの印で、終わりの印が無い（new tenancies from 1 July 2020 and existing ones from 1 April 2021）: 二つの組の始まりで、期間の両端ではない。 */
+export const bothStarts = (text: MarkText, dates: readonly [Span, Span], length: Span): boolean =>
+  dates.every((date) => isStart(text, date)) && !dates.some((date) => isEnd(text, date, length));
