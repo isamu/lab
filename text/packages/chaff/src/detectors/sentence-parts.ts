@@ -92,3 +92,15 @@ const DITTO_CELLS = /〃\s*〃/u;
  */
 export const isFlattenedTable = (text: string): boolean =>
   flattenedTableParts(text) !== undefined || (text.match(UNIT_HEADER)?.length ?? 0) >= MIN_UNIT_HEADERS || DITTO_CELLS.test(text);
+
+/** A decimal cell run in between a bracketed cell and the next cell's word (（日本）100.0自動車関連): where one row's cells meet. */
+const GLUED_DECIMAL_CELL = /[)）]\d{1,3}\.\d+(?=\p{L})/gu;
+/** Fewer such joins than this are a version or a figure after a name (（RSL）1.0), not the rows of a table. */
+const MIN_GLUED_ROWS = 3;
+
+/**
+ * Whether a block of text (a paragraph) is a table a converter flattened: a flattened table by the sentence signals, or a
+ * decimal cell glued between a bracketed cell and the next cell in row after row. Its sentences are rows cut at the
+ * stops inside cells, not the writer's sentences.
+ */
+export const isFlattenedTableBlock = (text: string): boolean => isFlattenedTable(text) || (text.match(GLUED_DECIMAL_CELL)?.length ?? 0) >= MIN_GLUED_ROWS;
