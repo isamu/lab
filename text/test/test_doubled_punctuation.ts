@@ -84,6 +84,16 @@ describe("doubled-punctuation: 句読点が重なっている", () => {
     assert.deepEqual(runsOf("Command,,     7"), [",,"]);
   });
 
+  it("「。」で終わる書名の後ろの、書誌の区切りの点（SIST02）は数えない", () => {
+    assert.deepEqual(runsOf("山田花子. 図書館はなぜ静かなのか？その理由を考えた。. 図書館研究. 2020, 12(3), p. 1-9."), []);
+    assert.deepEqual(runsOf("山田花子. 静かな図書館！. 図書館研究. 2020."), []);
+  });
+
+  it("書誌でない行の「。.」は重なりとして数える", () => {
+    assert.deepEqual(runsOf("資料を送ります。. 明日届きます。"), ["。."]);
+    assert.deepEqual(runsOf("山田花子. 静かな図書館。. 本を読む人が増えた。"), ["。."]);
+  });
+
   it("空の文書", () => {
     assert.deepEqual(runsOf(""), []);
   });
