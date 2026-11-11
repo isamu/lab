@@ -38,6 +38,12 @@ describe("valueBelow: the subject on the line under its label", () => {
     assert.equal(below("Subject:\nQ3: budget review at 10:00"), "Q3: budget review at 10:00");
   });
 
+  it("takes a title that ends inside its own quotation marks (Revised “…!”)", () => {
+    assert.equal(below("SUBJECT:\n\nRevised “Parking Made Easy!”\n\nThe car park closes."), "Revised “Parking Made Easy!”");
+    assert.equal(below('SUBJECT:\n\nNew "Guide to Parking?"'), 'New "Guide to Parking?"');
+    assert.equal(below("Subject:\n\n“The car park closes on Monday.”"), "");
+  });
+
   it("leaves the subject empty when the next line is the body, a header field, a quote, or nothing", () => {
     assert.equal(below("Subject:\n\nDear Ann,"), "");
     assert.equal(below("Subject:\n\nThe car park closes on Monday."), "");

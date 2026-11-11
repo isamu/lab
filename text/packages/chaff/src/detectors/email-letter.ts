@@ -287,6 +287,20 @@ const isHeaderField = (line: string, headerFields: readonly string[]): boolean =
   return name !== undefined && headerFields.some((field) => field.toLowerCase() === name);
 };
 
+const QUOTE_OPENERS: Readonly<Record<string, string>> = { "”": "“", "’": "‘", '"': '"', "」": "「", "』": "『" };
+
+/**
+ * Whether the line ends with a quotation it opens after words of its own (Revised “Getting It Right!”): the stop belongs to
+ * the quoted title, not to a sentence of the line's.
+ */
+export const endsWithQuotedTitle = (line: string): boolean => {
+  const text = line.trimEnd();
+  const opener = QUOTE_OPENERS[text.at(-1) ?? ""];
+  if (opener === undefined) return false;
+  const opened = text.slice(0, -1).lastIndexOf(opener);
+  return opened > 0 && text.slice(0, opened).trim() !== "";
+};
+
 /**
  * The value under a subject label with nothing after its colon: the next line with text, as a form that sets the label and
  * the value in two columns reads once it is text ("SUBJECT:" over "Car park repairs"). A quoted line, a header field, a
@@ -294,8 +308,8 @@ const isHeaderField = (line: string, headerFields: readonly string[]): boolean =
  */
 export const valueBelow = (lines: readonly SourceLine[], index: number, vocabulary: SubjectVocabulary): string => {
   const text = nextText(lines, index);
-  const isBody =
-    text.startsWith(">") || isHeaderField(text, vocabulary.headerFields) || lineHas(text, vocabulary.greetings) || endsSentence(text, vocabulary.sentenceEnds);
+  const ends = endsSentence(text, vocabulary.sentenceEnds) && !endsWithQuotedTitle(text);
+  const isBody = text.startsWith(">") || isHeaderField(text, vocabulary.headerFields) || lineHas(text, vocabulary.greetings) || ends;
   return isBody ? "" : text;
 };
 
