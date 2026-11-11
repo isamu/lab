@@ -4,7 +4,7 @@ import type { Detector, DetectorOptions, Finding, LengthUnit, Paragraph, ProseDo
 import { dateStampIndexes, stampCandidates } from "../date-stamp.ts";
 import { inDocumentOrder } from "../structure/issues.ts";
 import { preambleParagraphs } from "../preamble-paragraphs.ts";
-import { isTooLongParagraph, labelledBlocks, lostLineBreaks, opensWithFusedHeading } from "../paragraph-length.ts";
+import { isSentencePerLine, isTooLongParagraph, labelledBlocks, lostLineBreaks, opensWithFusedHeading } from "../paragraph-length.ts";
 import { bodySectionOf, hasOnlyMatterHeadings } from "../body-section.ts";
 import { threeShare } from "../rule-of-three.ts";
 import { isInterview, sectionLevels } from "../section-levels.ts";
@@ -65,12 +65,13 @@ const sentenceSize = (sentence: Sentence, unit: LengthUnit): number =>
 type Block = { readonly start: number; readonly sentences: readonly Sentence[] };
 
 /**
- * 段落の中の、長さを測る文の組と、その頭の位置（最初の組は段落の頭）。見出しが本文に溶けた段落や、文どうしが空白なしでつながった段落（改行の落ちた文書）は測らない。
+ * 段落の中の、長さを測る文の組と、その頭の位置（最初の組は段落の頭）。見出しが本文に溶けた段落や、文どうしが空白なしでつながった段落（改行の落ちた文書）、
+ * 1 文ごとに行を改めた段落は測らない。
  * 【】の見出しや段落番号だけの行で段落を割る。
  */
 const measuredBlocks = (doc: ProseDocument, paragraph: Paragraph): Block[] => {
   const text = doc.source.slice(paragraph.span.start, paragraph.span.end);
-  if (opensWithFusedHeading(text) || lostLineBreaks(paragraph.sentences)) return [];
+  if (opensWithFusedHeading(text) || lostLineBreaks(paragraph.sentences) || isSentencePerLine(text, paragraph.sentences)) return [];
   return labelledBlocks(text, paragraph.span.start, paragraph.sentences).map((sentences, index) => ({
     start: index === 0 ? paragraph.span.start : (sentences[0]?.span.start ?? paragraph.span.start),
     sentences,
