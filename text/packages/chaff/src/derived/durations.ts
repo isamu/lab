@@ -1,7 +1,7 @@
 import type { Span } from "../plugin.ts";
 import { bySentence } from "./sentence-buckets.ts";
 import { calendarDateOf, dateOf, shifted, valueOf, type DurationUnit } from "./date-arithmetic.ts";
-import { markedPair, type MarkText } from "./marked-dates.ts";
+import { bothStarts, markedPair, type MarkText } from "./marked-dates.ts";
 
 /**
  * 始まりと期間と終わりを一つの文に書いたもの（「4月1日から3か月間（6月30日まで）」"for 3 months from April 1, 2026 (until
@@ -10,6 +10,7 @@ import { markedPair, type MarkText } from "./marked-dates.ts";
  * （4月16日）」）。どれとも合わないときだけ言う。
  * 文に期間がちょうど一つのときだけ読む。日付が三つ以上なら、始まりと終わりを語で印した組（「7月1日から」「（7月31日まで）」）だけを
  * 読む。印が無ければ、どの日付とどの期間が組なのか決まらない。
+ * 日付が二つでも、どちらも始まりの印（from、から）なら二つの組の始まりで、組にしない。
  * 範囲のすぐ後ろの括弧に書いた期間（「9月1日〜9月30日（30日間）」）は範囲そのものの長さで、期間が過ぎた日を終わりに書くことはない。
  */
 export type DatedValue = Span & { readonly value: string };
@@ -99,7 +100,7 @@ const reversed = ([start, end]: readonly [DatedValue, DatedValue]): boolean =>
 
 const pairOf = (sentence: Span, inDates: readonly DatedValue[], duration: Duration, text: MarkText): readonly [DatedValue, DatedValue] | undefined => {
   const [first, second] = inDates;
-  if (inDates.length === 2 && first !== undefined && second !== undefined) return [first, second];
+  if (inDates.length === 2 && first !== undefined && second !== undefined) return bothStarts(text, [first, second], duration) ? undefined : [first, second];
   const marked = inDates.length > 2 ? markedPair(text, sentence, inDates, duration) : undefined;
   return marked === undefined || reversed(marked) ? undefined : marked;
 };

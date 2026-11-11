@@ -58,6 +58,12 @@ describe("duration-mismatch", () => {
     assert.deepEqual(durationEn("The trial lasts 10 days, from May 1, 2026 to May 10, 2026."), []);
   });
 
+  it("two dates that both start something (from … and from …) are two starts, not a start and an end", () => {
+    assert.deepEqual(durationEn("Check the wiring every 5 years (for new homes from 1 July 2020 and older homes from 1 April 2021)."), []);
+    assert.deepEqual(durationJa("5年ごとに点検します（新しい住宅は2020年7月1日から、古い住宅は2021年4月1日から）。"), []);
+    assert.deepEqual(durationEn("The trial runs for 3 months from 1 April 2026 to 31 July 2026."), ["31 July 2026→30 June 2026"]);
+  });
+
   it("the computed end is written day first in a document that writes its dates day first (en)", () => {
     assert.deepEqual(durationEn("The trial runs for 3 months from 1 April 2026 (until 31 July 2026)."), ["31 July 2026→30 June 2026"]);
   });
