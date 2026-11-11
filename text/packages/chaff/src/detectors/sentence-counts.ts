@@ -5,6 +5,7 @@ import { entryOpens } from "./lexicon-match.ts";
 import { laterAlternatives, laterJoined } from "../alternative-words.ts";
 import { isContrastiveGa } from "./adversative-ga.ts";
 import { isFlattenedTable } from "./sentence-parts.ts";
+import { bareListCommas } from "./bare-word-list.ts";
 
 type TokenTest = (token: Token, at: number, tokens: readonly Token[]) => boolean;
 
@@ -148,10 +149,21 @@ export const separatesItems = (at: number, tokens: readonly Token[]): boolean =>
   return betweenQuotations(at, tokens) || (isNominal(itemEnd) && startsNoun(at, tokens, itemEnd));
 };
 
-/** A sentence cut by more than limit of the lexicon's commas (読点). Commas between listed nouns are not counted. */
+/**
+ * A sentence cut by more than limit of the lexicon's commas (読点). Commas between listed nouns, and between the short bare words
+ * of a list, are not counted. A table a converter flattened into one sentence is cells, not the writer's sentence.
+ */
 export const sentenceCommaCount: Detector = (doc, options): Finding[] => {
   const commas = wordsOf(options.lexicon);
-  return sentencesOver(doc, options.limit, (token, at, tokens) => commas.has(token.surface) && !separatesItems(at, tokens));
+  const isComma = (token: Token): boolean => commas.has(token.surface);
+  const listed = new WeakMap<readonly Token[], ReadonlySet<number>>();
+  const listedIn = (tokens: readonly Token[]): ReadonlySet<number> => {
+    const known = listed.get(tokens) ?? bareListCommas(tokens, isComma);
+    listed.set(tokens, known);
+    return known;
+  };
+  const counts: TokenTest = (token, at, tokens) => isComma(token) && !separatesItems(at, tokens) && !listedIn(tokens).has(at);
+  return sentencesOver({ ...doc, sentences: doc.sentences.filter((sentence) => !isFlattenedTable(sentence.text)) }, options.limit, counts);
 };
 
 const CONJUNCTIVE = "SCONJ";
