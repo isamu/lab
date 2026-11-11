@@ -21,3 +21,7 @@ export const valuesWith = (tree: StructureNode, doc: ProseDocument, measured: re
   const others = factValues(tree, doc.source, nameSpans(doc)).filter((value) => !overlapsAny(taken, value));
   return [...others, ...measured].toSorted((left, right) => left.start - right.start);
 };
+
+/** valuesWith の値のうち、コードの塊の外のもの。項目の値を読む rule は、例のコードの中の値を文書の値と比べない。 */
+export const valuesOutsideCode = (tree: StructureNode, doc: ProseDocument, measured: readonly FactValue[]): FactValue[] =>
+  valuesWith(tree, doc, measured).filter(outsideCode(doc));
