@@ -9,6 +9,7 @@ import { closingIn, isSalutation, lineHas } from "./email-frame-words.ts";
 import { isNoticeHead, noticeWordsOf } from "../notice-header.ts";
 import { isHeadingLine, isIssueHead, issueWordsOf } from "../newsletter-issue.ts";
 import type { Detector, Finding, ProseDocument, Span } from "../plugin.ts";
+import { endsWithQuotedTitle } from "./quoted-title-line.ts";
 
 /** A greeting comes before the body: past the subject, the addressee (株式会社… / 総務部 山田様) and the writer's name. */
 const GREETING_LINES = 5;
@@ -294,8 +295,8 @@ const isHeaderField = (line: string, headerFields: readonly string[]): boolean =
  */
 export const valueBelow = (lines: readonly SourceLine[], index: number, vocabulary: SubjectVocabulary): string => {
   const text = nextText(lines, index);
-  const isBody =
-    text.startsWith(">") || isHeaderField(text, vocabulary.headerFields) || lineHas(text, vocabulary.greetings) || endsSentence(text, vocabulary.sentenceEnds);
+  const ends = endsSentence(text, vocabulary.sentenceEnds) && !endsWithQuotedTitle(text);
+  const isBody = text.startsWith(">") || isHeaderField(text, vocabulary.headerFields) || lineHas(text, vocabulary.greetings) || ends;
   return isBody ? "" : text;
 };
 
