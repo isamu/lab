@@ -16,6 +16,7 @@ type Bracket = { readonly open: string; readonly close: string; readonly family:
 
 const BRACKETS: readonly Bracket[] = [
   { open: "「", close: "」", family: "kagi" },
+  { open: "｢", close: "｣", family: "kagi" },
   { open: "『", close: "』", family: "double-kagi" },
   { open: "（", close: "）", family: "round" },
   { open: "(", close: ")", family: "round" },
@@ -51,6 +52,12 @@ export type BracketProblem = {
 type Open = { readonly bracket: Bracket; readonly offset: number };
 type Scan = { readonly open: Open[]; readonly problems: BracketProblem[] };
 
+/** 半角の「｢｣」。幅の違いは hankaku-kana が指すので、全角と組んでも幅の違いとしては指さない。 */
+const HALFWIDTH_KAGI: ReadonlySet<string> = new Set(["｢", "｣"]);
+
+const isWidthSlip = (opened: Bracket, closing: Bracket): boolean =>
+  opened !== closing && !HALFWIDTH_KAGI.has(opened.open) && !HALFWIDTH_KAGI.has(closing.close);
+
 const unclosedOf = (entry: Open): BracketProblem => ({ kind: "unclosed", offset: entry.offset, mark: entry.bracket.open });
 
 const closeWith = (scan: Scan, text: string, bracket: Bracket, offset: number): void => {
@@ -69,7 +76,8 @@ const closeWith = (scan: Scan, text: string, bracket: Bracket, offset: number): 
     .slice(1)
     .filter((inner) => !(QUOTATIONS.has(bracket.family) && inner.offset === offset - 1))
     .forEach((inner) => scan.problems.push(unclosedOf(inner)));
-  if (opened !== undefined && opened.bracket !== bracket) scan.problems.push({ kind: "mismatch", offset, mark: bracket.close, partner: opened.bracket.open });
+  if (opened !== undefined && isWidthSlip(opened.bracket, bracket))
+    scan.problems.push({ kind: "mismatch", offset, mark: bracket.close, partner: opened.bracket.open });
 };
 
 /** 段落（空行で区切った塊）の最初の字。 */

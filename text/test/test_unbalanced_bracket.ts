@@ -234,4 +234,10 @@ describe("unbalanced-bracket: the mouth of an emoticon is not a bracket", () => 
     assert.equal(isEmoticonMouth("a)", 1), false);
     assert.equal(isEmoticonMouth("", 0), false);
   });
+
+  it("半角の「｢｣」も鉤括弧として組にし、全角との幅の違いは指さない", () => {
+    assert.deepEqual(findingsOf("子供たちの｢生きる力｣を育む。\n"), []);
+    assert.deepEqual(findingsOf("目標を，｢英語で何ができるか」という観点から示す。\n"), []);
+    assert.deepEqual(findingsOf("目標を，｢英語で何ができるかという観点から示す。\n"), ["「｢」が閉じていません"]);
+  });
 });
