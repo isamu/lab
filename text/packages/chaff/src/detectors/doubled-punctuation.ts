@@ -60,6 +60,30 @@ const marksInNames = ({ start, run }: DoubledMarks, names: readonly Span[]): num
   return [...run].filter((_, at) => near.some((name) => start + at >= name.start && start + at < name.end)).length;
 };
 
+/** 半角の点と空白: 書誌の要素の区切り（「佐藤翔. 」「LRG. 」「p. 136」）。 */
+const ELEMENT_SEPARATOR = /\. /gu;
+/** 書誌の行には、この数より多くの区切りの点がほかにもある（著者の後ろ、誌名の後ろ、ページの前）。 */
+const MIN_OTHER_SEPARATORS = 2;
+/** 和文の終わりの印（。？！）のすぐ後ろの区切りの点（「考えてみた。. LRG.」）。 */
+const STOP_THEN_SEPARATOR = /^[。？！]\.$/u;
+
+const lineAround = (text: string, offset: number): { readonly start: number; readonly text: string } => {
+  const start = text.lastIndexOf("\n", offset - 1) + 1;
+  const end = text.indexOf("\n", offset);
+  return { start, text: text.slice(start, end === -1 ? text.length : end) };
+};
+
+/**
+ * 「。」で終わる書名の後ろの、書誌の要素の区切りの点（佐藤翔. なぜ生まれたのか？その原因を考えてみた。. LRG. 2019, p. 1-9.）。
+ * 点の後ろが空白で、同じ行にほかの区切りの点が二つ以上あるときだけ（書誌の行）。
+ */
+const isCitationSeparator = (text: string, { start, run }: DoubledMarks): boolean => {
+  if (!STOP_THEN_SEPARATOR.test(run) || text.charAt(start + run.length) !== " ") return false;
+  const line = lineAround(text, start);
+  const dot = start + run.length - 1 - line.start;
+  return [...line.text.matchAll(ELEMENT_SEPARATOR)].filter((match) => match.index !== dot).length >= MIN_OTHER_SEPARATORS;
+};
+
 const isSlip = (text: string, found: DoubledMarks, names: readonly Span[]): boolean => {
   const { start, run } = found;
   return (
@@ -67,7 +91,8 @@ const isSlip = (text: string, found: DoubledMarks, names: readonly Span[]): bool
     !isDrawnOut(run) &&
     !isDrawnOutThenClosed(run) &&
     !AFTER_ABBREVIATION.test(run) &&
-    !isJoinedDots(text, start, run)
+    !isJoinedDots(text, start, run) &&
+    !isCitationSeparator(text, found)
   );
 };
 
