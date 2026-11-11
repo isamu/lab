@@ -130,7 +130,7 @@ Legal documents, manuals, literature and transcripts are written differently, so
 | `q-fragment-answer` | Questions the writer answers at once with a fragment, more than once ("Is it perfect? No.", "The result? Faster builds.") (English only) |
 | `colon-lead-in` | Too many sentences ending in a colon that hand off to a list, in three or more sections (in English, with a higher limit) |
 | `emoji-heading` | Headings with an emoji in them, one after another ("## 🚀 Getting started") |
-| `bold-label-list` | Many list items that open with a bold label and a colon ("- **Speed**: ..."), or paragraphs that each open with a bold statement ("**Usage grew each week**: ...") |
+| `bold-label-list` | Many list items that open with a bold label and a colon ("- **Speed**: ..."), or paragraphs that each open with a bold statement ("**Usage grew each week**: ...") or a whole bold instruction ("**Pick the quietest room you can.** ...") |
 | `assistant-residue` | What is left of a chat reply ("I hope this helps", "As of my last knowledge update") |
 | `email-stock-courtesy` | Two or more stock email courtesies in one email ("I hope this email finds you well", "I apologize for any inconvenience") (English documents only) |
 | `honesty-marker` | A sentence flagged as candid ("Honestly,", "if I'm being honest", "my honest take"); one is reported (blog posts and business documents only) |

@@ -1,0 +1,13 @@
+# 書き手がやり方を尋ねる依頼（「返送の方法を教えてください」）。答えは書き手の次の一手で、期限の要る仕事ではない。
+# 「ご都合を教えてください」のように相手の判断を尋ねるものは入れない。
+id: request-instruction
+language: ja
+entries:
+  - pattern: 方法を教えて
+  - pattern: 方法をお教え
+  - pattern: 手順を教えて
+  - pattern: 手順をお教え
+  - pattern: やり方を教えて
+  - pattern: 送り先を教えて
+  - pattern: 方法をお知らせ
+  - pattern: 方法をご連絡

@@ -50,10 +50,12 @@ describe("empty-intensifier and a stated purpose", () => {
     assert.deepEqual(findingsOf("店を長く続けるためには、地元の人手が不可欠です。"), []);
     assert.deepEqual(findingsOf("この部品は、毎日の配送に欠かせません。"), []);
     assert.deepEqual(findingsOf("そのための点検は欠かせません。"), []);
+    assert.deepEqual(findingsOf("けがをした子の心の回復には、周りの大人の支えが不可欠です。"), []);
   });
 
   it("still reports a bare necessity and the other phrases", () => {
     assert.equal(findingsOf("地元の人手が不可欠です。").length, 1);
+    assert.equal(findingsOf("この店には地元の人手が不可欠です。").length, 1);
     assert.equal(findingsOf("この判断は本当に欠かせません。").length, 1);
     assert.equal(findingsOf("店を長く続けるためには、品ぞろえが非常に重要です。").length, 1);
     assert.equal(findingsOf("言うまでもなく、店を続けるためには人手が要ります。").length, 1);

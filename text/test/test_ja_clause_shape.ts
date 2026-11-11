@@ -1,6 +1,6 @@
 import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { namedRuleRun } from "./rule-run.ts";
+import { firedRules, namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { endingOf, endingRuns } from "../packages/chaff/src/detectors/clause-shape.ts";
@@ -236,6 +236,12 @@ describe("yori-as-from", () => {
     assert.deepEqual(findingsOf(RULE, "4月より一般販売を開始します。\n"), ["起点の「より」は「から」と書けます"]);
     assert.deepEqual(findingsOf(RULE, "本日より受付開始。\n"), ["起点の「より」は「から」と書けます"]);
   });
+
+  it("プレスリリースの決まった言い方（〜日より開始いたします）は指さない", () => {
+    const release = "新サービスを12月1日より開始いたします。\n";
+    assert.equal(firedRules(ja, release, "business/press-release").includes(RULE), false);
+    assert.equal(firedRules(ja, release, "business/report").includes(RULE), true);
+  });
 });
 
 describe("colloquial-opener", () => {
@@ -255,5 +261,13 @@ describe("colloquial-opener", () => {
   it("インラインコードの後ろの「でも」は文の頭ではない", () => {
     assert.deepEqual(findingsOf(RULE, "`explain` でも、数字の代わりに重さが出ます。\n"), []);
     assert.deepEqual(findingsOf(RULE, "`explain` を使います。でも、数字は出ません。\n"), ["「でも」で始まる文が 1 個あります（1 個から）"]);
+  });
+
+  it("問いの見出しや「！」で砕けた口調を選んだ文書では、話し言葉の接続詞も口調に合う", () => {
+    const casual =
+      "# 休憩室に本棚を置きませんか？\n\n## なんで本棚？\n\n休憩室が少し寂しいです。なので、本棚がいいと思っています。\n\nぜひ相談させてください！\n";
+    assert.deepEqual(findingsOf(RULE, casual), []);
+    const oneMark = "# 休憩室の本棚について\n\n## 理由\n\n休憩室が少し寂しいです。なので、本棚がいいと思っています。\n\nぜひ相談させてください！\n";
+    assert.deepEqual(findingsOf(RULE, oneMark), ["「なので」で始まる文が 1 個あります（1 個から）"]);
   });
 });

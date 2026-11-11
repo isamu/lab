@@ -5,9 +5,11 @@ import { isRunInLabel } from "./run-in-label.ts";
 import { noticeSentences } from "./notice-paragraph.ts";
 import { separatePartSentences, trailingPartSentences } from "./register-separate-part.ts";
 import { askerSentences } from "./asker-voice.ts";
+import { recordingCaptionSentences } from "../recording-title.ts";
 import { licenceNoticeSentences } from "./licence-notice.ts";
 import { chronologyRows } from "../chronology-rows.ts";
 import { isNeutralPlainShape } from "./register-neutral-shape.ts";
+import { spokenAnswerSentences } from "./register-interview.ts";
 import { contactBlockSentences, fieldValueSentences, labelledQuoteSentences, referenceNoteSentences, tableCellSentences } from "./register-set-apart.ts";
 import { endsInSetGreeting, isDeclaration, isExclamation, isTakenUp } from "./register-voice.ts";
 import { entriesForGenre } from "../lexicon-genres.ts";
@@ -22,6 +24,7 @@ import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span, To
  * 年表の行（1921年信号装置の製作を開始する。）も、文書の文体と揃えない書き方なので数えない。
  * 断り書きの段落（…ご了承ください。）も、本文とは別の声で書く決まり文句なので数えない（notice-paragraph.ts）。
  * 読み手の相談や質問を載せる節（【相談事例等】）の文は尋ねた人の言葉のままなので数えない（asker-voice.ts）。
+ * 動画の題（…（3分00秒））の下の説明も、動画の言葉のままなので数えない（recording-title.ts）。
  * 文書の最後に掲載先が付けた利用条件の断り書き（…ライセンスの下に提供されています。）も数えない（licence-notice.ts）。
  * 札を付けて引いた言葉（例：…。Q: …？）、印を付けた札の行の下の記入欄の値（■ 調査目的\n…とする。）、
  * 〒や電話の行のある問い合わせ先の段落も数えない（register-set-apart.ts）。
@@ -33,6 +36,7 @@ import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span, To
  * 丁寧な形でしか言わない挨拶（お疲れ様でした。）、演説の決意の言い切り（二度と繰り返さない。）、
  * 次の文が「そんな」「これだけ」で受ける場面の書き出し、「！」で終わる叫び（わかるかっ！）も quiet（register-voice.ts）。
  * ※で始まる行の注記と、行に並べ直した表のセル（制限なし。）は、どちらの調子でも quiet（register-set-apart.ts）。
+ * インタビューの答え（聞き手の「――」の後の段落）は話した言葉なので quiet（register-interview.ts）。
  * 数には入れる。数から外すと、常体を何度も使う文書（演説）で少数派が閾値を下回り、残りの常体の文が新たに指されてしまう。
  */
 type Entry = { readonly sentence: Sentence; readonly register: Register; readonly group: number | undefined; readonly quiet: boolean };
@@ -101,12 +105,19 @@ export const judgedSentences = (doc: ProseDocument, polite: readonly LexiconEntr
   const words = endingWords(doc, polite, genre);
   const lists = doc.lists.map((list) => list.span);
   const rows = chronologyRows(doc);
-  const asked = askerSentences(doc.sections, doc.lexicons["asker-heading"] ?? []);
+  const asked = new Set([...askerSentences(doc.sections, doc.lexicons["asker-heading"] ?? []), ...recordingCaptionSentences(doc.sections)]);
   const licence = licenceNoticeSentences(doc, doc.lexicons["licence-word"] ?? []);
   const quoted = labelledQuoteSentences(doc.paragraphs, doc.source, doc.lexicons["quote-label"] ?? []);
   const fields = fieldValueSentences(doc.sentences, doc.source);
   const contact = contactBlockSentences(doc.sentences, doc.source, doc.lexicons["contact-line-opener"] ?? []);
-  const asides = new Set([...referenceNoteSentences(doc.sentences, doc.source), ...tableCellSentences(doc.sentences, doc.source)]);
+  const asides = new Set([
+    ...referenceNoteSentences(doc.sentences, doc.source),
+    ...tableCellSentences(doc.sentences, doc.source),
+    ...spokenAnswerSentences(
+      doc,
+      (doc.lexicons["interviewer-mark"] ?? []).map((entry) => entry.pattern),
+    ),
+  ]);
   const all = doc.sentences.flatMap((sentence, index): { sentence: Sentence; register: Register; quiet: boolean }[] => {
     if (
       !isClosed(sentence) ||

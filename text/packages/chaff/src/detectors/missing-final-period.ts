@@ -31,6 +31,8 @@ const DESCRIPTION = /^[：:](?![：:])/u;
 const LAYOUT = /[ \u3000]{2}/u;
 /** Fewer characters than this is a label or a caption, not a sentence. */
 const MIN_SENTENCE_CHARS = 15;
+/** A cell is short: a one-line paragraph this long or longer is a clause (…と認められた場合), not a cell before the term. A paragraph masked to nothing (a quotation) is no cell either. */
+const MAX_CELL_CHARS = MIN_SENTENCE_CHARS * 2;
 /** Words that end a clause: a verb, an adjective or an auxiliary in its dictionary form ends the sentence. */
 const PREDICATE: ReadonlySet<string> = new Set(["VERB", "ADJ", "AUX"]);
 
@@ -79,9 +81,20 @@ const isTerm = (body: string, marks: PeriodMarks): boolean =>
 const isDescription = (text: string, paragraph: Paragraph, marks: PeriodMarks, previous: Paragraph | undefined): boolean =>
   DESCRIPTION.test(bodyOf(text, paragraph)) && previous !== undefined && isTerm(bodyOf(text, previous), marks);
 
+/**
+ * A cell of a table laid out as paragraphs: a term line with its note under it (乾式バッテリー / …マンガンバッテリーも含む), right after
+ * another open one-line cell (ニッケル水素電池等). The note annotates the term, like the cell it came from.
+ */
+const isTermCell = (text: string, paragraph: Paragraph, marks: PeriodMarks, previous: Paragraph | undefined): boolean => {
+  const [first, ...rest] = bodyOf(text, paragraph).split("\n");
+  const cellBefore = previous === undefined ? "\n" : bodyOf(text, previous);
+  const isCell = cellBefore !== "" && !cellBefore.includes("\n") && Array.from(cellBefore).length < MAX_CELL_CHARS && !isClosed(cellBefore, marks.ends);
+  return rest.length > 0 && isTerm(first?.trim() ?? "", marks) && isCell;
+};
+
 /** How a paragraph ends, or undefined when its last line is not a sentence (a label, a lead-in, a note, a laid-out row). */
 export const paragraphEnd = (text: string, paragraph: Paragraph, marks: PeriodMarks, next?: Paragraph, previous?: Paragraph): ParagraphEnd | undefined => {
-  if (isDescription(text, paragraph, marks, previous)) return undefined;
+  if (isDescription(text, paragraph, marks, previous) || isTermCell(text, paragraph, marks, previous)) return undefined;
   const body = text.slice(paragraph.span.start, paragraph.span.end).trimEnd();
   const last = body.split("\n").at(-1)?.trim() ?? "";
   if (Array.from(last).length < MIN_SENTENCE_CHARS || LEAD_IN.test(last)) return undefined;

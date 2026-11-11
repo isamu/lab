@@ -1,7 +1,7 @@
 id: colloquial-opener
 layer: L2
 status: stable
-how_to_find: opener-pile
+how_to_find: colloquial-opener-pile
 word_list: colloquial-opener
 requires: [pos]
 languages: [ja]
@@ -42,8 +42,8 @@ example:
       在庫が足りません。そのため、出荷は来週になります。
 
 not_flagged:
-  ja: 文の途中の「〜なので」「〜でも」と、書き言葉の接続詞（そのため、しかし、したがって）は指しません。後ろが助動詞だけの文（改行で切れた前の文の終わりの「だからである。」）も、文を始める接続詞ではないので指しません。ブログ、文芸、話し言葉のジャンルでは動きません。
-  en: なので and でも inside a sentence, and written conjunctions (そのため, しかし), are not reported, nor is a "sentence" with only an auxiliary after the word (だからである。, the end of the previous sentence cut by a line break). Off for blogs, literature and speech.
+  ja: 文の途中の「〜なので」「〜でも」と、書き言葉の接続詞（そのため、しかし、したがって）は指しません。後ろが助動詞だけの文（改行で切れた前の文の終わりの「だからである。」）も、文を始める接続詞ではないので指しません。問いの見出し（なんで植物？）や「！」で終わる文が合わせて 2 つ以上あり、文書全体を砕けた口調で書いているときは、話し言葉の接続詞もその口調に合うので指しません。ブログ、文芸、話し言葉のジャンルでは動きません。
+  en: なので and でも inside a sentence, and written conjunctions (そのため, しかし), are not reported, nor is a "sentence" with only an auxiliary after the word (だからである。, the end of the previous sentence cut by a line break). A document written in a casual voice throughout, with two or more headings asked as questions or sentences ending in an exclamation mark, is not checked, as the spoken word fits the voice the writer chose. Off for blogs, literature and speech.
 level_meaning:
   ja: 話し言葉の接続詞で始まる文が {limit} 個あれば指摘
   en: reported from {limit} sentences opening with a spoken conjunction

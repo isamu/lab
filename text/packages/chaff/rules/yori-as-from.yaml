@@ -30,6 +30,7 @@ use_for: [business, technical, legal, docs, academic, literature, speech]
 off_for:
   literature: "Spoken 全然大丈夫, なので and より in a character's voice; classical verse has a たり that does not list."
   speech: "Spoken Japanese says 全然大丈夫, opens with なので and greets with より参りました."
+  business/press-release: "A press release announces a start in the trade's fixed wording (12月1日より提供を開始いたします); official style's から is not what its readers expect."
 sources: [koyobun-2022]
 
 group: wording

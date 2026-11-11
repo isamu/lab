@@ -1,6 +1,7 @@
 import { charLength, proseText } from "../measure.ts";
 import type { Detector, Finding, Section } from "../plugin.ts";
 import { isQuotedMention } from "./bold-quoted.ts";
+import { isFieldLabel } from "./bold-field-label.ts";
 
 /** これより短い節では密度が暴れる。43 字に 1 箇所で「1000 字あたり 23」になる。 */
 const MIN_CHARS = 200;
@@ -9,9 +10,12 @@ const PER = 1000;
 
 const charsOf = (section: Section): number => section.sentences.reduce((sum, sentence) => sum + charLength(sentence), 0);
 
-/** The section's bold runs, less those that only quote words: a README bolds the part of an example sentence it talks about. */
+/**
+ * The section's bold runs, less those that only quote words (a README bolds the part of an example sentence it talks about)
+ * and the field labels opening a line (**Date:** in a memo's header).
+ */
 const boldsOf = (section: Section, source: string): number =>
-  section.strongs === undefined ? section.strongCount : section.strongs.filter((span) => !isQuotedMention(source, span)).length;
+  section.strongs === undefined ? section.strongCount : section.strongs.filter((span) => !isQuotedMention(source, span) && !isFieldLabel(source, span)).length;
 
 /**
  * 節あたりの「密度」を見る。件数ではない。

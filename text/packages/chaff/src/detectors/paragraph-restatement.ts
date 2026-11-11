@@ -55,7 +55,21 @@ const findingOf = (paragraph: Paragraph, opener: string, share: number, limit: n
   };
 };
 
-/** Each paragraph that opens with a restating word and repeats at least limit percent of the previous paragraph's words. */
+/**
+ * Whether the sentences after the opener's sentence go on to something new: a summary that leads into the next step
+ * (このように、…状況となっていた。その一方で、…を確認した。) sums up on purpose. A one-sentence paragraph does not go on.
+ */
+const goesOn = (earlier: Paragraph, later: Paragraph, limit: number): boolean => {
+  const rest = later.sentences.slice(1).flatMap((sentence) => sentence.tokens ?? []);
+  if (rest.length === 0) return false;
+  const { share, words } = repeatedShare(tokensOf(earlier), rest);
+  return words >= MIN_CONTENT_WORDS && share < limit;
+};
+
+/**
+ * Each paragraph that opens with a restating word and repeats at least limit percent of the previous paragraph's words,
+ * unless its later sentences go on to something new.
+ */
 export const paragraphRestatement: Detector = (doc, options): Finding[] => {
   const openers = (doc.lexicons["restating-opener"] ?? []).map((entry) => entry.pattern);
   return doc.paragraphs.flatMap((later, index): Finding[] => {
@@ -63,6 +77,7 @@ export const paragraphRestatement: Detector = (doc, options): Finding[] => {
     const opener = openerOf(later.sentences[0]?.text ?? "", openers);
     if (earlier === undefined || opener === undefined || !isNextTo(doc, earlier, later)) return [];
     const { share, words } = repeatedShare(tokensOf(earlier), tokensAfterOpener(later, opener));
-    return words >= MIN_CONTENT_WORDS && share >= options.limit ? [findingOf(later, opener, share, options.limit)] : [];
+    const restates = words >= MIN_CONTENT_WORDS && share >= options.limit && !goesOn(earlier, later, options.limit);
+    return restates ? [findingOf(later, opener, share, options.limit)] : [];
   });
 };

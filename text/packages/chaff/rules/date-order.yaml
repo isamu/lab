@@ -62,5 +62,5 @@ example:
       - 10 April 2026: return
 
 not_flagged:
-  ja: その向きに沿う日付が半分以下の並びは、名前や版の順に並べた一覧として扱い、何も言いません。
-  en: A list where no more than half of the dates follow one direction is taken as sorted by something else, and nothing is said.
+  ja: その向きに沿う日付が半分以下の並びは、名前や版の順に並べた一覧として扱い、何も言いません。最初の列でない期限の列（| 項目 | 担当 | 期限 |）の日付は、宿題ごとの期限を宿題の順に並べたもので日程ではないので、並びに入れません。期限の列から始まる表は期限の順に並べたものとして読みます。
+  en: A list where no more than half of the dates follow one direction is taken as sorted by something else, and nothing is said. Dates in a deadline column after the first (| Action | Owner | Due date |) are each action's own deadline, listed in the order of the actions, not a schedule, and are left out; a table that opens with its deadline column is sorted by it and is read.

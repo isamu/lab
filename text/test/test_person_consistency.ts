@@ -187,6 +187,13 @@ describe("person-consistency, through the rule", () => {
     assert.deepEqual(findings("# 考え\n\n私はこう考えます。私は賛成です。私は反対しません。私たちは社会として選びます。\n", ja), []);
   });
 
+  it("does not count a self-reference set against another person in one sentence (僕は…、君は…)", () => {
+    const talk =
+      "# 講演\n\n私はこう考えます。私は賛成です。私は反対しません。私は迷いません。私は続けます。私は話します。私は待ちます。僕は左を向く、君は右を向いてもよいという自由です。\n";
+    assert.deepEqual(findings(talk, ja), []);
+    assert.equal(findings(talk.replace("君は右を向いても", "右を向いても"), ja).length, 1);
+  });
+
   it("does not count a quoted block or code", () => {
     const source =
       "# 窓口\n\n弊社は窓口を開きます。弊社の担当者が受け付けます。弊社は記録を保管します。弊社の外には出しません。\n\n> 私たちは記録を残します。\n\n`私たち`\n";

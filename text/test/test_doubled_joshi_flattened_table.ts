@@ -32,9 +32,12 @@ describe("no-doubled-joshi: a flattened table", () => {
 
 describe("isFlattenedTable", () => {
   it("a header row of three cells closed by units, or glued numbers", () => {
-    ["所有割合(％)被所有割合(％)当社役員(人)", "従業員数（人）平均年齢（歳）平均年間給与（千円）合計（千円）", "売上高8,45795.7合計307,81499.6"].forEach(
-      (text) => assert.equal(isFlattenedTable(text), true, text),
-    );
+    [
+      "所有割合(％)被所有割合(％)当社役員(人)",
+      "従業員数（人）平均年齢（歳）平均年間給与（千円）合計（千円）",
+      "売上高8,45795.7合計307,81499.6",
+      "部品事業経常的更新417―〃〃〃全社",
+    ].forEach((text) => assert.equal(isFlattenedTable(text), true, text));
   });
 
   it("a sentence with fewer unit headers, or none", () => {

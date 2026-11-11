@@ -1,6 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { valueBelow, type SubjectVocabulary } from "../packages/chaff/src/detectors/email-letter.ts";
+import { withoutReferenceSuffix } from "../packages/chaff/src/detectors/email-subject-reference.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
@@ -75,5 +76,23 @@ describe("email-subject-length with the subject under its label", () => {
       [],
     );
     assert.deepEqual(variantsOf(ja, "件名：\n\nいつもお世話になっております。月曜日から駐車場を閉鎖します。\n\nよろしくお願いいたします。\n"), ["empty"]);
+  });
+});
+
+describe("email-subject-length leaves a reference number in brackets at the end out of the count", () => {
+  const mail = (subject: string): string => [`件名：${subject}`, "", "山田様", "", "お世話になっております。", ""].join("\n");
+
+  it("does not count an order or ticket number in brackets at the end", () => {
+    assert.deepEqual(subjectFindings(ja, mail("【お詫び】ご注文商品の誤配送について（ご注文番号：A-20481）")), []);
+    assert.equal(withoutReferenceSuffix("Refund for the damaged chair (Order #58213)"), "Refund for the damaged chair");
+    assert.equal(withoutReferenceSuffix("請求書の再発行について（請求番号 2026103101）"), "請求書の再発行について");
+  });
+
+  it("still counts a date, a deadline or words in brackets, and a long subject before the number", () => {
+    assert.equal(withoutReferenceSuffix("共有フォルダの整理（11/14まで）"), "共有フォルダの整理（11/14まで）");
+    assert.equal(withoutReferenceSuffix("打ち合わせの日程（10月13日）"), "打ち合わせの日程（10月13日）");
+    assert.equal(withoutReferenceSuffix("Budget review (draft)"), "Budget review (draft)");
+    const long = "来週の火曜日に予定している会議室の予約サービスの導入に向けた打ち合わせの日程について（案件番号：PJ-1042）";
+    assert.equal(subjectFindings(ja, mail(long)).length, 1);
   });
 });
