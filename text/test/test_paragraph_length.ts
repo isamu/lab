@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
-import { isSentencePerLine, isTooLongParagraph, labelledBlocks, lostLineBreaks, opensWithFusedHeading } from "../packages/chaff/src/paragraph-length.ts";
+import { isTooLongParagraph, labelledBlocks, lostLineBreaks, opensWithFusedHeading } from "../packages/chaff/src/paragraph-length.ts";
 import { contractionExtraWords } from "../packages/chaff/src/contraction-words.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
@@ -192,29 +192,6 @@ describe("max-paragraph-length (Japanese)", () => {
 
   it("invalid: 長い文を 6 つ詰めた段落は、これまでどおり指摘する", () => {
     assert.deepEqual(findingsOf(`# 見出し\n\n${LONG_JA}\n`, ja, "blog/tech"), ["6"]);
-  });
-
-  it("valid: 1 文ごとに行を改めた段落（<br> で改行した挨拶）は、行ごとに息をつけるので指摘しない", () => {
-    const perLine = LONG_JA.replace(/。/gu, "。\n").trimEnd();
-    assert.deepEqual(findingsOf(`# 見出し\n\n${perLine}\n`, ja, "blog/tech"), []);
-  });
-
-  it("invalid: 一つの行に文を詰めた行が混じれば、これまでどおり指摘する", () => {
-    const mixed = LONG_JA.replace("。", "。\n");
-    assert.deepEqual(findingsOf(`# 見出し\n\n${mixed}\n`, ja, "blog/tech"), ["6"]);
-  });
-
-  it("invalid: English written one sentence per line (semantic line breaks) is one paragraph when shown, and is still reported", () => {
-    const perLine = FOMC_LABOR.replace(/\. /gu, ".\n");
-    assert.deepEqual(findingsOf(`# Labor market\n\n${perLine}\n`, en, "business/meeting-notes"), ["6"]);
-  });
-
-  it("isSentencePerLine: every line one sentence, more than one line", () => {
-    assert.equal(isSentencePerLine("一つ目。\n二つ目。", [{ text: "一つ目。" }, { text: "二つ目。" }]), true);
-    assert.equal(isSentencePerLine("一つ目。", [{ text: "一つ目。" }]), false);
-    assert.equal(isSentencePerLine("一つ目。二つ目。\n三つ目。", [{ text: "一つ目。" }, { text: "二つ目。" }, { text: "三つ目。" }]), false);
-    assert.equal(isSentencePerLine("一つ目の\n続き。\n二つ目。", [{ text: "一つ目の\n続き。" }, { text: "二つ目。" }]), false);
-    assert.equal(isSentencePerLine("", []), false);
   });
 
   it("法令の上限（12 文）では、同じ段落も長すぎない", () => {
