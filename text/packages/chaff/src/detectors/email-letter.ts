@@ -9,6 +9,7 @@ import { closingIn, isSalutation, lineHas } from "./email-frame-words.ts";
 import { isNoticeHead, noticeWordsOf } from "../notice-header.ts";
 import { isHeadingLine, isIssueHead, issueWordsOf } from "../newsletter-issue.ts";
 import type { Detector, Finding, ProseDocument, Span } from "../plugin.ts";
+import { endsWithQuotedTitle } from "./quoted-title-line.ts";
 
 /** A greeting comes before the body: past the subject, the addressee (株式会社… / 総務部 山田様) and the writer's name. */
 const GREETING_LINES = 5;
@@ -285,20 +286,6 @@ const nextText = (lines: readonly SourceLine[], index: number): string => {
 const isHeaderField = (line: string, headerFields: readonly string[]): boolean => {
   const name = fieldOf(line)?.name.toLowerCase();
   return name !== undefined && headerFields.some((field) => field.toLowerCase() === name);
-};
-
-const QUOTE_OPENERS: Readonly<Record<string, string>> = { "”": "“", "’": "‘", '"': '"', "」": "「", "』": "『" };
-
-/**
- * Whether the line ends with a quotation it opens after words of its own (Revised “Getting It Right!”): the stop belongs to
- * the quoted title, not to a sentence of the line's.
- */
-export const endsWithQuotedTitle = (line: string): boolean => {
-  const text = line.trimEnd();
-  const opener = QUOTE_OPENERS[text.at(-1) ?? ""];
-  if (opener === undefined) return false;
-  const opened = text.slice(0, -1).lastIndexOf(opener);
-  return opened > 0 && text.slice(0, opened).trim() !== "";
 };
 
 /**
