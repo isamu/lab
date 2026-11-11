@@ -12,7 +12,7 @@ name:
   en: Too many commas in one sentence
 
 why:
-  ja: 一文に読点（、）がいくつも入ると、文が細かく切れて、どこまでが一つのまとまりなのかを読み手が追えなくなります。読点が多いのは、たいてい一文に話を詰め込みすぎている印です。名詞を並べただけの読点（名前、会社名、連絡先）と、鉤括弧で引いたものの中は数えません。
+  ja: 一文に読点（、）がいくつも入ると、文が細かく切れて、どこまでが一つのまとまりなのかを読み手が追えなくなります。読点が多いのは、たいてい一文に話を詰め込みすぎている印です。名詞を並べただけの読点（名前、会社名、連絡先）と、鉤括弧で引いたものの中は数えません。短い語を読点で並べた列挙（快晴、晴れ、薄曇り、曇り、…）は、動詞と読まれる語が混じっても、多くが名詞なら数えません。改行の落ちた表（年月で始まる行が続く沿革）は文ではないので数えません。
   en: In Japanese, a sentence cut by many commas (、) leaves the reader unable to tell which pieces belong together. Many commas usually mean the sentence carries too much. Commas that only separate listed nouns (名前、会社名、連絡先) and commas inside 「」 quotations are not counted.
 
 message:
@@ -42,8 +42,8 @@ example:
       担当者が会議室で新人に資料を配布しました。続けて、内容を丁寧に説明しました。
 
 not_flagged:
-  ja: 数えるのは読点（、と，）だけです。名詞と名詞のあいだの読点（並べた項目）と、鉤括弧で引いたものの中は数えません。
-  en: Only 、 and ， are counted. Commas between two nouns (listed items) and commas inside 「」 quotations are not.
+  ja: 数えるのは読点（、と，）だけです。名詞と名詞のあいだの読点（並べた項目）と、鉤括弧で引いたものの中は数えません。短い語を読点で並べた列挙（快晴、晴れ、薄曇り、曇り、…）は、動詞と読まれる語が混じっても、多くが名詞なら数えません。改行の落ちた表（年月で始まる行が続く沿革）は文ではないので数えません。
+  en: Only 、 and ， are counted. Commas between two nouns (listed items) and commas inside 「」 quotations are not. Nor are the commas of a list of short bare words (快晴、晴れ、薄曇り、曇り、…) where most are nouns, even if the parser reads some as verbs, nor those of a table whose line breaks were lost (a chronology whose rows open with dates).
 level_meaning:
   ja: 一文の読点 {limit} 個まで
   en: up to {limit} commas in a sentence
