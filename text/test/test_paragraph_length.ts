@@ -204,6 +204,11 @@ describe("max-paragraph-length (Japanese)", () => {
     assert.deepEqual(findingsOf(`# 見出し\n\n${mixed}\n`, ja, "blog/tech"), ["6"]);
   });
 
+  it("invalid: English written one sentence per line (semantic line breaks) is one paragraph when shown, and is still reported", () => {
+    const perLine = FOMC_LABOR.replace(/\. /gu, ".\n");
+    assert.deepEqual(findingsOf(`# Labor market\n\n${perLine}\n`, en, "business/meeting-notes"), ["6"]);
+  });
+
   it("isSentencePerLine: every line one sentence, more than one line", () => {
     assert.equal(isSentencePerLine("一つ目。\n二つ目。", [{ text: "一つ目。" }, { text: "二つ目。" }]), true);
     assert.equal(isSentencePerLine("一つ目。", [{ text: "一つ目。" }]), false);
