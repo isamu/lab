@@ -1,6 +1,7 @@
-import type { Detector, Finding, Lexicon, ProseDocument, Sentence, Token } from "../plugin.ts";
+import type { Detector, Finding, Lexicon, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 import { entryRanges, type TokenRange } from "./lexicon-match.ts";
 import { rateOver } from "./lexicon.ts";
+import { namedLongForms } from "./particle-run-long-forms.ts";
 
 // A verb written as a noun and carried by another verb: 調査を実施した for 調査した, "make a decision" for "decide"
 // (the やさしい日本語 guideline; the Federal Plain Language Guidelines' hidden verbs; GOV.UK). Two shapes, each from a
@@ -13,6 +14,16 @@ const PHRASES = "nominalization-phrase";
 const LIGHT_VERBS = "nominalization-light-verb";
 /** Verbal nouns whose carrying verb means "hold" (研修を実施する is not 研修する): not hidden verbs. */
 const EVENT_NOUNS = "nominalization-event-noun";
+/** The words that open an aside giving a short name (以下「実施機関」という): the phrase before it is the name's wording. */
+const NAMING_MARKERS = "definition-marker";
+
+const isPunctuation = (token: Token): boolean => token.pos === "PUNCT";
+
+/** The phrases a naming aside names in the sentence, back to the clause's comma: quoted wording the writer cannot rephrase. */
+const namedPhrases = (sentence: Sentence, markers: readonly string[]): Span[] =>
+  markers.length === 0 ? [] : namedLongForms(sentence.text, sentence.span.start, sentence.tokens ?? [], markers, (token) => !isPunctuation(token));
+
+const isWithin = (spans: readonly Span[], offset: number): boolean => spans.some((span) => span.start <= offset && offset < span.end);
 
 const isVerbalNoun = (token: Token | undefined): token is Token => token?.features?.["VerbForm"] === "Vnoun";
 
@@ -50,11 +61,14 @@ const lightVerbsIn = (sentence: Sentence, lightVerbs: Lexicon, eventNouns: Reado
 /** Pure: every hidden verb in the document, in the order they are written. */
 export const hiddenVerbs = (doc: Pick<ProseDocument, "sentences" | "source" | "lexicons">): Hidden[] => {
   const eventNouns = new Set((doc.lexicons[EVENT_NOUNS] ?? []).map((entry) => entry.pattern));
+  const markers = (doc.lexicons[NAMING_MARKERS] ?? []).map((entry) => entry.pattern);
   return doc.sentences
-    .flatMap((sentence) => [
-      ...phrasesIn(sentence, doc.source, doc.lexicons[PHRASES] ?? []),
-      ...lightVerbsIn(sentence, doc.lexicons[LIGHT_VERBS] ?? [], eventNouns),
-    ])
+    .flatMap((sentence) => {
+      const named = namedPhrases(sentence, markers);
+      return [...phrasesIn(sentence, doc.source, doc.lexicons[PHRASES] ?? []), ...lightVerbsIn(sentence, doc.lexicons[LIGHT_VERBS] ?? [], eventNouns)].filter(
+        (found) => !isWithin(named, found.offset),
+      );
+    })
     .toSorted((left, right) => left.offset - right.offset);
 };
 
