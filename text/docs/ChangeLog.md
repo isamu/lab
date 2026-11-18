@@ -2,6 +2,80 @@
 
 Newest first.
 
+## 0.46.0 — 2026-11-18
+
+This release catches more AI-written closings, bold labels and stock wording, and fixes false positives found by
+judging the 0.45.0 findings in isamu/chaff-corpus, many of them in tables flattened into prose, forms, press releases
+and interviews.
+
+### AI-likeness
+
+- bold-label-list does not take paragraph-length tips for captions, and counts paragraphs opened by a whole bold
+  instruction (#2425).
+- closing-cliche reads a closing pledge that promises effort without saying what (#2389), and a proposal's closing
+  offer to discuss any questions (#2423).
+- bold-density reads a field label opening a line as a name, not emphasis (#2424).
+- paragraph-restatement leaves a summary that leads into a next step (#2410).
+- one-sentence-paragraph-run reads paragraphs keyed by a bold term as a list of entries (#2369).
+- colloquial-opener is quiet in a document written in a casual voice throughout (#2386).
+- very-adjective allows up to three per 1000 words by default (#2378).
+
+### Rules
+
+- total-mismatch reads more total words in Japanese sentences, and English counts of people, items and documents
+  (#2421).
+- stray-space reads a space inside a kanji compound in running text (#2422).
+- unbalanced-bracket pairs half-width ｢｣ (#2428).
+- Fewer false findings on real documents:
+  - Tables flattened into prose: teki-overuse (#2409), max-ten (#2429), repeated-sentence-head (#2435),
+    no-nakaguro-parallel (#2375).
+  - repeated-sentence-head ends a run at a heading, and reads one-sentence entries in one frame as a list (#2379).
+  - taigen-dome-in-prose skips table notes and list lead-ins (#2366).
+  - numeral-sentence-start does not read a worked sum as a sentence (#2368).
+  - katakana-density reads the front matter's title as the document's subject (#2370).
+  - comparative-without-baseline reads a place in a stack of layers and a figure with something taken out (#2371).
+  - number-style-consistency reads a list sharing one unit, and leaves native counts (二通り) out (#2372).
+  - orthographic-variant keeps a bracketed title's hyphens and reads イヤ as a sense of its own (#2373).
+  - clause-chain does not count a list of names or a repeated step (#2374).
+  - oxford-comma-consistency does not count the "and" inside a byline's title of office (#2376).
+  - title-case-consistency skips a leading letter label (b. / iv) / (c)) (#2377).
+  - list-item-form-mix reads noun phrases with a relative clause, an infinitive or a participle as phrases (#2381).
+  - email-subject-length does not count a reference number in brackets at the end (#2383), and reads a quoted title
+    under SUBJECT: (#2432).
+  - yori-as-from is off for press releases, where より開始いたします is the fixed wording (#2385).
+  - no-mixed-desumasu does not point at an interview's spoken answers (#2387).
+  - title-length and no-mixed-desumasu leave a video's title and caption (#2417).
+  - date-order reads a deadline column after the first as a list of actions, not a schedule (#2390).
+  - date-without-year reads a yearly schedule in one paragraph as any year's (#2391).
+  - duration-mismatch does not pair two start dates (#2430).
+  - broken-link skips a regex character class and mdBook rule-identifier labels (#2392).
+  - figure-reference-order allows a figure floated a heading ahead within a page (#2393).
+  - space-before-punctuation skips an empty capitalised field in a reference list (#2394).
+  - hyphen-as-dash skips a hyphen that joins a capitalised word onto a name (#2395).
+  - all-caps-shouting skips a label a sentence names as on a screen (#2396).
+  - bare-url-mix skips a URL template with placeholders (#2397).
+  - code-fence-language-mix skips a block a lead-in calls output (#2398).
+  - unqualified-superlative skips a superlative inside a condition (#2399).
+  - defined-term-form skips another instrument's term and a term picked out of its kind (#2400).
+  - dangling-participle skips an -ing phrase that is the subject of a verb (#2401).
+  - name-variant skips a word whose capitals spell out an acronym (#2402).
+  - outside-announced-list does not read ordinals as names (#2403).
+  - party-role-name skips a plural picked out with "of the" (#2404).
+  - undefined-term skips a capitalised run holding a run-together word (#2405).
+  - no-lead does not read a marker line under the title as the lead (#2406).
+  - request-without-deadline does not read the writer asking how to do something as a task (#2407).
+  - ngram-repetition reads a phrase a heading writes as one compound as the subject (#2411).
+  - requirement-smell reads a list a heading names as the page's subject (#2412).
+  - warning-without-action reads 〜べきです as an action (#2413).
+  - vague-word-density skips a table of contents and reads "reasonable accommodation" as a term of art (#2414).
+  - preamble-length does not measure a document whose only headings are front or back matter (#2415).
+  - missing-final-period skips a table cell laid out as a term line and its note (#2416).
+  - empty-intensifier reads 〜には、 as naming what a necessity is for (#2418).
+  - repeated-conjunction reads a run of paragraphs across a table's caption (#2419).
+  - person-consistency leaves a self-reference set against another person (僕は…、君は…) (#2420).
+  - summary-fact-mismatch reads no values inside code blocks (#2431).
+  - doubled-punctuation leaves the separator after a title ending with 。 in a reference (#2433).
+
 ## 0.45.0 — 2026-11-11
 
 This release catches more AI-written bold labels, email courtesies and restated headings, and fixes false positives
