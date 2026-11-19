@@ -138,7 +138,7 @@ type NameWords = {
   readonly addressees: AddresseeWords;
   /** 前に書いたものを指す語（上記、当該）。連なりの頭にあれば、後ろの語に付いた指示の語。 */
   readonly references: readonly string[];
-  /** 並べた物の後ろに付く語（等）。連なりの尻にあれば、名前の後ろに付いた語。 */
+  /** 並べた物の後ろに付く語（等）と、範囲の端や除くものを示す語（以外、以上）。連なりの尻にあれば、名前の後ろに付いた語。 */
   readonly listSuffixes: readonly string[];
   /** 連なりを閉じる、読み手が一つの語と知っている長い語（内閣総理大臣、許可事業者）。その前で連なりを割る。 */
   readonly knownWords: ReadonlySet<string>;
@@ -363,7 +363,7 @@ const nameWordsOf = (doc: ProseDocument): NameWords => {
     addressee: patterns("addressee-suffix"),
     addressees: { prefixes: patterns("addressee-prefix"), titles: patterns("addressee-title"), endings: organisation.units, forms: organisation.closingForms },
     references: patterns("reference-prefix"),
-    listSuffixes: patterns("list-suffix"),
+    listSuffixes: [...patterns("list-suffix"), ...patterns("range-suffix")],
     knownWords: new Set(patterns("kanji-known-word")),
     designations: patterns("designation-phrase"),
     noticeEndings: patterns("notice-title-ending"),
