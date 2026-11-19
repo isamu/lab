@@ -49,7 +49,7 @@ mlit-press-planned-suspension  2
 moriguchi-satsuki-gakuen-ijime-houshin  2
 nasa-press-prima-new-mission-class  3
 nih-research-matters-hpv-one-dose  1
-nsf-19-582-reu-solicitation  24
+nsf-19-582-reu-solicitation  23
 nta-taxanswer-1120  4
 openapi-spec-3-1-0  2
 python-code-quality-list-2016-03  23
@@ -57,7 +57,6 @@ rfc3693-geopriv-requirements  19
 rfc9293-tcp  50
 rfc9457  7
 rust-rfc-2094-nll  12
-soumu-kokumin-cyber-phishing  1
 soumu-wp-r06-ai-rules-japan  2
 soumu-wp-r06-misinformation  8
 tc39-agenda-2026-07  1
