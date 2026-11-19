@@ -238,6 +238,11 @@ describe("ngram-repetition: a record's and a form's fixed closing lines", () => 
     assert.equal(worst(ja, `# 諮問\n\n${JA_FILLER}\n\n${asks}\n`, "business/proposal"), undefined);
   });
 
+  it("does not count a form guide's instruction for each field (〜を記載してください。)", () => {
+    const fields = ITEMS.map((item) => `【${item}】の欄には、${item}の名前を記載してください。`).join("\n\n");
+    assert.equal(worst(ja, `# 書き方\n\n${JA_FILLER}\n\n${fields}\n`, "docs/manual"), undefined);
+  });
+
   it("still counts another repeated ending", () => {
     const pledges = ITEMS.map((item) => `${item}の改善に全力で取り組んでまいります。`).join("\n\n");
     assert.notEqual(worst(ja, `# 方針\n\n${JA_FILLER}\n\n${pledges}\n`, "business/report"), undefined);
