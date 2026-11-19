@@ -2,6 +2,28 @@
 
 Newest first.
 
+## 0.47.0 — 2026-11-20
+
+This release catches more bold benefit labels, stacked email closings and half-width/full-width slips in headings, and
+fixes false positives found by judging the 0.46.0 findings in isamu/chaff-corpus.
+
+### AI-likeness
+
+- bold-label-list counts labels that state a gain with the lead sentences (#2441).
+- closing-cliche counts an email courtesy stacked beside another stock closing (#2449).
+- adverb-overuse does not count stance adverbs (probably, apparently, honestly) (#2448).
+- ai-tell skips a phrase inside a title-cased name (#2442).
+
+### Rules
+
+- fullwidth-alnum-consistency counts a heading's letter and number written in different widths (Q５) (#2444), and does
+  not take one phone number as the document's way of writing (#2440).
+- unknown-word reports a closed compound the document writes apart (flagsalute beside flag salute) (#2443).
+- Fewer false findings on real documents:
+  - max-kanji-continuous reads a trailing range word (以外, 以上) like 等 (#2439).
+  - ngram-repetition leaves a form guide's per-field closing (〜を記載してください。) (#2445).
+  - date-outside-period leaves the dates of a report's follow-up section (今後の対応) (#2446).
+
 ## 0.46.0 — 2026-11-18
 
 This release catches more AI-written closings, bold labels and stock wording, and fixes false positives found by
