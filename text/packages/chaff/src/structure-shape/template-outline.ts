@@ -44,3 +44,13 @@ export const isWholeTemplateOutline = (headings: readonly string[], lexicon: Lex
   const inTemplate = headings.filter((words) => sectionOf(words, lexicon) !== undefined).length;
   return isTemplateOutline(templateSectionsOf(headings, lexicon)) && inTemplate >= headings.length * WHOLE_TEMPLATE_SHARE;
 };
+
+/**
+ * How many of the template's sections a whole template outline needs before it is the textbook end to end. The human
+ * proposals and design documents in the corpora hold at most four, among headings of their own.
+ */
+export const FULL_TEMPLATE_SECTIONS = 6;
+
+/** Whether the outline is the textbook from end to end: a whole template outline that runs through most of its sections. */
+export const isFullTemplateOutline = (headings: readonly string[], lexicon: Lexicon): boolean =>
+  isWholeTemplateOutline(headings, lexicon) && templateSectionsOf(headings, lexicon).length >= FULL_TEMPLATE_SECTIONS;

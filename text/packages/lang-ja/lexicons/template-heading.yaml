@@ -5,6 +5,7 @@ language: ja
 entries:
   - { pattern: 概要, group: summary }
   - { pattern: 要旨, group: summary }
+  - { pattern: 提案の概要, group: summary }
   - { pattern: 背景, group: background }
   - { pattern: 提案の背景, group: background }
   - { pattern: 現状, group: background }
@@ -21,6 +22,7 @@ entries:
   - { pattern: 予算, group: costs }
   - { pattern: スケジュール, group: implementation }
   - { pattern: 導入スケジュール, group: implementation }
+  - { pattern: 今後のスケジュール, group: implementation }
   - { pattern: 実施計画, group: implementation }
   - { pattern: 導入計画, group: implementation }
   - { pattern: リスク, group: risks }

@@ -6,6 +6,8 @@ entries:
   - { pattern: executive summary, group: summary }
   - { pattern: summary, group: summary }
   - { pattern: overview, group: summary }
+  - { pattern: proposal summary, group: summary }
+  - { pattern: proposal overview, group: summary }
   - { pattern: background, group: background }
   - { pattern: current situation, group: background }
   - { pattern: current state, group: background }

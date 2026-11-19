@@ -7,7 +7,7 @@ import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules, type Settings } from "../packages/chaff/src/run.ts";
 import type { Finding, LanguageAdapter } from "../packages/chaff/src/plugin.ts";
 import { aiStructure } from "../packages/chaff/src/detectors/ai-structure.ts";
-import { isWholeTemplateOutline, templateSectionsOf } from "../packages/chaff/src/structure-shape/template-outline.ts";
+import { isFullTemplateOutline, isWholeTemplateOutline, templateSectionsOf } from "../packages/chaff/src/structure-shape/template-outline.ts";
 import { headingWords } from "../packages/chaff/src/structure-shape/heading-words.ts";
 
 // ai-structure: several structure measures past 90% of human articles at once, the document-level rule over chaff
@@ -170,10 +170,13 @@ describe("isWholeTemplateOutline: the template with little of the writer's own",
 });
 
 describe("ai-structure in business documents", () => {
-  it("counts the textbook outline as one more measure, and one more again when it is the whole outline", () => {
+  it("counts the textbook outline as one more measure, one more when it is the whole outline, and a third when that runs through six sections", () => {
     const [finding] = ofRule(run(en, proposal("Proposal", TEXTBOOK_EN, SENTENCE_EN, LABELS_EN), {}, "business/proposal"), "ai-structure");
-    assert.equal(finding?.values["count"], 4);
-    assert.match(String(finding?.values["word"] ?? ""), /textbook proposal or report headings, almost no heading outside that outline$/u);
+    assert.equal(finding?.values["count"], 5);
+    assert.match(
+      String(finding?.values["word"] ?? ""),
+      /textbook proposal or report headings, almost no heading outside that outline, 6 or more of its sections$/u,
+    );
   });
 
   it("counts the template once when the writer's own headings stand among its sections", () => {
@@ -198,15 +201,42 @@ describe("ai-structure in business documents", () => {
     assert.deepEqual(ofRule(run(en, proposal("Proposal", three, SENTENCE_EN, LABELS_EN), {}, "business/proposal"), "ai-structure"), []);
   });
 
-  it("stays quiet on a whole textbook outline with no measure past the human articles: the template alone is not enough", () => {
-    const paragraphs = (index: number): string[] => [1, 3, 6].map((size) => SENTENCE_EN.repeat(size + index)).flatMap((paragraph) => [paragraph, ""]);
-    const plain = lines("# Proposal", "", ...TEXTBOOK_EN.flatMap((heading, index) => [`## ${heading}`, "", ...paragraphs(index)]));
-    assert.deepEqual(ofRule(run(en, plain, {}, "business/proposal"), "ai-structure"), []);
-    assert.equal(ofRule(run(en, plain, { "ai-structure": "strict" }, "business/proposal"), "ai-structure")[0]?.values["count"], 2);
+  /** A proposal of plain paragraphs whose sections differ in length, so no structure measure lies past the human articles. */
+  const plainProposal = (title: string, headings: readonly string[], sentence: string): string => {
+    const paragraphs = (index: number): string[] =>
+      [1, 3, 6].map((size) => sentence.repeat(size * (index % 3 === 0 ? 4 : 1) + index)).flatMap((paragraph) => [paragraph, ""]);
+    return lines(`# ${title}`, "", ...headings.flatMap((heading, index) => [`## ${heading}`, "", ...paragraphs(index)]));
+  };
+
+  const OUTLINE_JA = ["1. 提案の概要", "2. 背景", "3. 提案内容", "4. 費用", "5. 期待される効果", "6. 今後のスケジュール"];
+
+  it("reaches the normal level with the textbook end to end, six sections and nothing else past the human articles", () => {
+    const [english] = ofRule(run(en, plainProposal("Proposal", TEXTBOOK_EN, SENTENCE_EN), {}, "business/proposal"), "ai-structure");
+    assert.equal(english?.values["count"], 3);
+    const [japanese] = ofRule(run(ja, plainProposal("提案書", OUTLINE_JA, SENTENCE_JA), {}, "business/proposal"), "ai-structure");
+    assert.equal(japanese?.values["word"], "提案書・報告書の定型の見出し、見出しのほとんどが定型、定型の節が 6 種類以上");
+  });
+
+  it("stays quiet on a whole template outline of five sections with no measure past the human articles: that template alone is not enough", () => {
+    const five = plainProposal("提案書", OUTLINE_JA.slice(0, 5), SENTENCE_JA);
+    assert.deepEqual(ofRule(run(ja, five, {}, "business/proposal"), "ai-structure"), []);
+    assert.equal(ofRule(run(ja, five, { "ai-structure": "strict" }, "business/proposal"), "ai-structure")[0]?.values["count"], 2);
   });
 
   it("reaches the normal level with the whole textbook outline and one measure past the human articles", () => {
     const [finding] = ofRule(run(en, proposal("Proposal", TEXTBOOK_EN, SENTENCE_EN.repeat(6), []), {}, "business/proposal"), "ai-structure");
-    assert.equal(finding?.values["count"], 3);
+    assert.ok(Number(finding?.values["count"]) >= 3);
+  });
+});
+
+describe("isFullTemplateOutline: the textbook end to end", () => {
+  const lexiconOf = (adapter: LanguageAdapter) => adapter.lexicons["template-heading"] ?? [];
+
+  it("holds for a whole template outline of six or more sections, and not for five or for six among the writer's own", () => {
+    assert.equal(isFullTemplateOutline(englishWords(TEXTBOOK_EN), lexiconOf(en)), true);
+    assert.equal(isFullTemplateOutline(englishWords(TEXTBOOK_EN.slice(0, 6)), lexiconOf(en)), true);
+    assert.equal(isFullTemplateOutline(englishWords(TEXTBOOK_EN.slice(0, 5)), lexiconOf(en)), false);
+    assert.equal(isFullTemplateOutline(englishWords([...TEXTBOOK_EN.slice(0, 6), ...OWN_EN.slice(0, 3)]), lexiconOf(en)), false);
+    assert.equal(isFullTemplateOutline([], lexiconOf(en)), false);
   });
 });
