@@ -1,0 +1,18 @@
+# 太字の札で、得られることを言うものの末尾（- **作業時間の削減**：…、- **検索性の向上**：…）。bold-label-list は、
+# この札で始まる項目を、太字の一文で始まる項目と同じく言い分として数える。札がこの語より長く、この語で終わるときに当たる。
+# 「改善」「強化」は入れない：振り返りの札（**改善**：）や手順の名前に人も使う。
+id: benefit-label
+language: ja
+entries:
+  - pattern: 削減
+    position: after
+  - pattern: 向上
+    position: after
+  - pattern: 短縮
+    position: after
+  - pattern: 効率化
+    position: after
+  - pattern: 軽減
+    position: after
+  - pattern: 低減
+    position: after
