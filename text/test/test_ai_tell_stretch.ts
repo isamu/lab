@@ -76,3 +76,21 @@ describe("ai-tell: the densest stretch of a long document", () => {
     assert.deepEqual(aiTell(report(entries), en, "business/report"), []);
   });
 });
+
+describe("ai-tell: a phrase inside a name written in title case", () => {
+  const LIST = "The three styles we looked at were:\n\n1. Clean and Classic\n2. Inspiring and Empowering\n3. Modern American\n";
+  const LATER = "The way teams used the system has been multifaceted and surprising.";
+
+  it("does not count a word of a title-cased name (a mood board called Inspiring and Empowering)", () => {
+    assert.deepEqual(aiTell(`# Mood boards\n\n${LIST}\n${LATER}\n`, en, "blog/tech"), []);
+  });
+
+  it("still counts the same word written in the sentence, or opening it", () => {
+    assert.equal(aiTell(`# Mood boards\n\nThe styles felt inspiring and empowering.\n\n${LATER}\n`, en, "blog/tech").length, 1);
+    assert.equal(aiTell(`# Mood boards\n\nEmpowering teams was the goal.\n\n${LATER}\n`, en, "blog/tech").length, 1);
+  });
+
+  it("still counts a phrase in a title-cased heading", () => {
+    assert.equal(aiTell(`# How to Delve Into the Data\n\nWe read the logs. ${LATER}\n`, en, "blog/tech").length, 1);
+  });
+});

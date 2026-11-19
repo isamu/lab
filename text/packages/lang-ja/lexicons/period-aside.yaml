@@ -27,6 +27,9 @@ entries:
   - pattern: 前回
   - pattern: 昨年
   - pattern: 次回
+  # 報告書の後ろの節（今後の対応、フォローアップ）。出張や会議の後に片づける仕事の期限で、期間の後に来る（英語の follow-up）。
+  - pattern: 今後の対応
+  - pattern: フォローアップ
   - pattern: 延期
   - pattern: 発行
   - pattern: 更新

@@ -1,4 +1,4 @@
-import type { Detector, DetectorOptions, Finding, Paragraph, ProseDocument, Span, Token } from "../plugin.ts";
+import type { Detector, DetectorOptions, Finding, Lexicon, Paragraph, ProseDocument, Span, Token } from "../plugin.ts";
 
 /** A bold run longer than this is a bold sentence, not a label. */
 const MAX_LABEL_CHARS = 40;
@@ -161,6 +161,17 @@ const boldStatementOf = (doc: ProseDocument, paragraph: Paragraph): string | und
   return isStatement(tokens) || (run.stopped && isImperativeSentence(tokens)) ? run.words.replace(/[.!。！]$/u, "") : undefined;
 };
 
+/**
+ * A label that states a gain (**More timely:**, **Less work:**, **作業時間の削減**：): a claim, like a bold lead sentence, not
+ * the name of a step or a field. The lexicon says whether its word stands before the quality (More) or after it (削減).
+ */
+export const isBenefitLabel = (label: string, words: Lexicon): boolean =>
+  words.some((entry) =>
+    entry.position === "after"
+      ? label.length > entry.pattern.length && label.endsWith(entry.pattern)
+      : label.toLowerCase().split(/\s+/u)[0] === entry.pattern.toLowerCase() && label.includes(" "),
+  );
+
 /** The count reported and the limit it reached: all the labelled items, or else the bold lead sentences alone, or undefined. */
 const reached = (items: readonly Span[], leads: number, options: DetectorOptions): { count: number; limit: number } | undefined => {
   if (items.length >= options.limit) return { count: items.length, limit: options.limit };
@@ -202,7 +213,11 @@ const statementParagraphs = (doc: ProseDocument, options: DetectorOptions): Find
 export const boldLabelList: Detector = (doc, options): Finding[] => {
   const items = captionItems(doc, labelOrLeadOf);
   const first = items[0];
-  const leads = items.filter((span) => boldLabelOf(doc.source.slice(span.start, span.end)) === undefined).length;
+  const benefitWords = doc.lexicons["benefit-label"] ?? [];
+  const leads = items.filter((span) => {
+    const label = boldLabelOf(doc.source.slice(span.start, span.end));
+    return label === undefined || isBenefitLabel(label, benefitWords);
+  }).length;
   const found = reached(items, leads, options);
   const paragraphs = statementParagraphs(doc, options);
   if (first === undefined || found === undefined) return paragraphs;

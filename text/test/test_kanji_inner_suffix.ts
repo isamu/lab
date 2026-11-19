@@ -37,3 +37,23 @@ describe("max-kanji-continuous: 連なりの中ほどの「等」", () => {
     assert.deepEqual(kanjiWords("高齢運転者等級専用駐車区間を設けた。\n"), ["高齢運転者等級専用駐車区間"]);
   });
 });
+
+describe("max-kanji-continuous: 範囲の端や除くものを示す語（以外、以上）", () => {
+  before(async () => {
+    await ja.prepare?.({ pos: true });
+  });
+
+  it("valid: 連なりの尻の「以外」「以上」は、名前の後ろに付いた語なので数えない", () => {
+    assert.deepEqual(kanjiWords("自動車保険契約以外の保険契約は対象です。\n"), []);
+    assert.deepEqual(kanjiWords("大雪注意報基準以上の降雪が見込まれます。\n"), []);
+  });
+
+  it("valid: 連なりの中ほどの「以外」は語の終わりを見せるので、前後を別に数える", () => {
+    assert.deepEqual(kanjiWords("工事関係者以外立入禁止の札を掛けた。\n"), []);
+  });
+
+  it("invalid: 外した残りが上限を超えるものと、「以来」は数える", () => {
+    assert.deepEqual(kanjiWords("新規顧客獲得施策検討会議以外の会議を開いた。\n"), ["新規顧客獲得施策検討会議"]);
+    assert.deepEqual(kanjiWords("内閣総理大臣就任以来、取り組んできた。\n"), ["内閣総理大臣就任以来"]);
+  });
+});

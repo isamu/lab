@@ -1,0 +1,12 @@
+# 名詞の後ろに付き、その名詞を範囲の端や除くものとして示す語（自動車保険契約以外、注意報基準以上）。
+# max-kanji-continuous は、等（list-suffix）と同じに読む。漢字の連なりの尻にあり、解析が語の切れ目で分けたときは数えず、
+# 連なりの中ほどにあれば、語の終わりを見せるのでそこで割る。以来は入れない（内閣総理大臣就任以来は、就任して以来と割れるので数える）。
+id: range-suffix
+language: ja
+entries:
+  - pattern: 以外
+  - pattern: 以上
+  - pattern: 以下
+  - pattern: 未満
+  - pattern: 以内
+  - pattern: 以降

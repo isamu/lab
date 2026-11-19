@@ -244,6 +244,28 @@ describe("bold-label-list", () => {
     assert.ok(!idsFor(`# Post\n\n${englishList(2)}\n\nBody text.\n\n${leadList(2)}\n`, en).includes("bold-label-list"));
   });
 
+  it("invalid: three labels that each state a gain count like bold lead sentences", () => {
+    const gains = [
+      "- **More timely:** news would reach staff within a week.",
+      "- **More likely to be read:** shorter emails are opened more often.",
+      "- **Less work:** a weekly update takes half a day to prepare.",
+    ].join("\n");
+    assert.ok(idsFor(`# Proposal\n\n## Why this would work better\n\n${gains}\n`, en, "business/proposal").includes("bold-label-list"));
+    const gainsJa = [
+      "- **作業時間の削減**：入力作業がなくなります。",
+      "- **ミスの削減**：読み取り結果を自動で確かめます。",
+      "- **検索性の向上**：日付ですぐに探せます。",
+    ].join("\n");
+    assert.ok(idsFor(`# 提案\n\n## 導入の効果\n\n${gainsJa}\n`, ja, "business/proposal").includes("bold-label-list"));
+  });
+
+  it("valid: three labels naming steps, fields or a single word stay under the level for colon labels", () => {
+    const steps = ["- **Gather input**: count the visitors.", "- **Lower bound**: the least we expect.", "- **More**: see the appendix."].join("\n");
+    assert.ok(!idsFor(`# Post\n\n${steps}\n`, en).includes("bold-label-list"));
+    const fieldsJa = ["- **削減**：今期は無し。", "- **担当**：山田。", "- **期限**：月末。"].join("\n");
+    assert.ok(!idsFor(`# 記事\n\n${fieldsJa}\n`, ja).includes("bold-label-list"));
+  });
+
   it("reads the lead count from the rule's min_leads option", () => {
     const doc = buildDocument("t.md", `# Post\n\n${leadList(3)}\n`, en);
     assert.equal(boldLabelList(doc, { limit: 5, settings: { min_leads: 4 } }).length, 0);

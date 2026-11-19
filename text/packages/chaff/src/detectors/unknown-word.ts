@@ -13,8 +13,10 @@ import {
   inSearchTermList,
   isClosedCompound,
   isMention,
+  isQuotedAt,
   isNceSpelling,
   usedOnce,
+  writtenApart,
 } from "./unknown-word-context.ts";
 
 /** これより短い語は見ない。短い語は一字違いの語が多すぎて言い直しが決まらず（tost は test か toast か）、略した語（impl）も多い。 */
@@ -52,7 +54,7 @@ export const codeWordsOf = (source: string): Set<string> => {
   return words;
 };
 
-/** 辞書の語か、派生した語に活用の語尾を付けた語（operationalises、rightsized）か、四字以上の辞書の語二つを続けた語（crowdwork）か、-nse の語の -nce の綴り（recompence）。 */
+/** 辞書の語か、派生した語に活用の語尾を付けた語（operationalises、rightsized）か、四字以上の辞書の語二つを続けた語（crowdwork。文書が別の所で分けて書いていれば続けた打ち間違い）か、-nse の語の -nce の綴り（recompence）。 */
 const isFormedWord = (word: string, speller: Speller): boolean =>
   isKnownWord(word, speller) || hasTwoEndings(word, speller) || isClosedCompound(word, speller) || isNceSpelling(word, speller);
 
@@ -80,9 +82,20 @@ export const unknownWord: Detector = (doc): Finding[] => {
   const words = wordsToCheck(doc.prose ?? doc.source, MIN_LENGTH, MAX_LENGTH).filter(({ offset }) => !isSplitWord(doc.source, offset));
   const used = new Set(words.map(({ word }) => word).filter((word) => isKnownWord(word, speller)));
   const unformed = new Set(words.map(({ word }) => word).filter((word) => !known.has(word) && !isFormedWord(word, speller)));
+  const apartAt = (word: string, offset: number): string | undefined =>
+    known.has(word) || isKnownWord(word, speller) || !isClosedCompound(word, speller) || isQuotedAt(doc.source, offset, offset + word.length)
+      ? undefined
+      : writtenApart(word, speller, doc.prose ?? doc.source, offset);
   return usedOnce(words, speller).flatMap(({ offset, word }) => {
-    if (!unformed.has(word) || hasDrugStem(word, drugStems) || hasSiblingName(word, unformed) || isTermByPlace(doc.source, offset, word)) return [];
-    const suggestion = suggestionFor(word, speller, used);
+    const apart = apartAt(word, offset);
+    if (
+      !(unformed.has(word) || apart !== undefined) ||
+      hasDrugStem(word, drugStems) ||
+      hasSiblingName(word, unformed) ||
+      isTermByPlace(doc.source, offset, word)
+    )
+      return [];
+    const suggestion = apart ?? suggestionFor(word, speller, used);
     if (suggestion === undefined) return [];
     return [{ rule: "", severity: "warning", line: 0, column: 0, quote: quoteAt(doc.source, offset), values: { word, suggestion, offset } }];
   });
