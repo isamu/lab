@@ -2,7 +2,7 @@ import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { citationLead, isCitationSentence } from "../packages/chaff/src/detectors/citation-sentence.ts";
+import { authorListSaving, citationLead, isCitationSentence, withoutEarlierReference } from "../packages/chaff/src/detectors/citation-sentence.ts";
 import { wordsAroundCitation } from "../packages/chaff/src/detectors/citation-string.ts";
 
 // max-sentence-length and a footnote that is a bibliographic citation (authors, year, title, publisher). The citation is a
@@ -133,5 +133,41 @@ describe("a footnote that opens with a signal and names what it cites", () => {
     assert.deepEqual(emailFindings(`# Notes\n\n1. ${OWN_WORDS}`), ["This sentence runs 31 words (limit 18)"]);
     const longAround = `See also Letter 07-3, “Questions and Answers,” which the office sent to every lender last spring and which explains what a lender must do before it closes a loan in a small town.`;
     assert.equal(emailFindings(`# Notes\n\n1. ${longAround}`).length, 1);
+  });
+});
+
+describe("max-sentence-length: the authors of a reference and the tail of an earlier one", () => {
+  const blogFindings = (source: string): readonly string[] => namedRuleRun(RULE, `${source}\n`, en, "a.md", "blog/owned-media").findings;
+
+  it("counts a list of authors written as surname and initials (Vancouver style) as one word", () => {
+    const authors =
+      "Rivers AB, Okafor B, Mendes C, Hale D, Sato E, Lund F, Moreno G, Ito H, Park J, Quinn K, Webb L, Nash M, Ortiz N, Price P, Reyes R, Stone S, Tate T, Vance V, Wells W, Young Y, Zhou Z. Rural Health Rep. 2024 Mar 3;12(4):101-109.";
+    assert.equal(authorListSaving(authors), 41);
+    assert.deepEqual(blogFindings(`## References\n\nSmall Clinics in Rural Counties. ${authors}`), []);
+  });
+
+  it("does not read a sentence that names two or three people, or prose with capitals, as an author list", () => {
+    assert.equal(authorListSaving("Rivers AB and Okafor B wrote it."), 0);
+    assert.equal(authorListSaving("We met Ann Rivers, Ben Okafor, Carla Mendes and the mayor in the town hall."), 0);
+    assert.equal(authorListSaving("Ask IT, HR, QA and PR to sign the form before the end of the month."), 0);
+    assert.equal(authorListSaving(""), 0);
+  });
+
+  it("measures only the authors of a reference when the sentence begins inside the reference before it", () => {
+    const tail =
+      'Working Paper Series 2024-07 (Springfield: Prairie Housing Institute, March); and Dan Hale, Eve Sato, and Fay Lund (2021), "Lending in Small Towns," Regional Review, vol. 9 (May), pp. 11–26.';
+    assert.equal(
+      citationLead(tail, ["see"]),
+      "Working Paper Series 2024-07 (Springfield: Prairie Housing Institute, March); and Dan Hale, Eve Sato, and Fay Lund",
+    );
+    assert.equal(withoutEarlierReference(citationLead(tail, ["see"]) ?? ""), "Dan Hale, Eve Sato, and Fay Lund");
+    assert.deepEqual(findingsOf(`# Notes\n\n1. ${tail}`), []);
+  });
+
+  it("keeps the writer's words that follow an earlier reference", () => {
+    const lead = "As the institute (Springfield: Prairie Housing Institute) found in its survey of every county, building costs rose faster than wages";
+    assert.equal(withoutEarlierReference(lead), "found in its survey of every county, building costs rose faster than wages");
+    assert.equal(withoutEarlierReference("For example, see"), "For example, see");
+    assert.equal(withoutEarlierReference(""), "");
   });
 });

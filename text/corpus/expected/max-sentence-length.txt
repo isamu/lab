@@ -7,7 +7,7 @@ aoml-hurricane-faq  70
 apidatagov-developer-manual  1
 asf-board-minutes-2025-01  13
 automattic-offer-letter-us  53
-bls-glossary  31
+bls-glossary  30
 caa-mokebanashi-chuikanki  1
 chrome-blog-pwa-origin-migration-ja  1
 cisa-scuba-teams  2
@@ -22,7 +22,7 @@ da-legal-practice  2
 eip-1559-fee-market  8
 etax-oshirase-mail-templates  37
 fac-adr-0016-file-uploads  1
-fed-powell-2025-08-22-framework-review  55
+fed-powell-2025-08-22-framework-review  54
 fomc-minutes-2025-07  11
 fr-2026-16371-nvd-rfi  1
 ghdocs-basic-writing-and-formatting  1
@@ -48,8 +48,7 @@ mhlw-norovirus-qa  2
 mlit-press-planned-suspension  2
 moriguchi-satsuki-gakuen-ijime-houshin  2
 nasa-press-prima-new-mission-class  3
-nih-research-matters-hpv-one-dose  1
-nsf-19-582-reu-solicitation  24
+nsf-19-582-reu-solicitation  23
 nta-taxanswer-1120  4
 openapi-spec-3-1-0  2
 python-code-quality-list-2016-03  23

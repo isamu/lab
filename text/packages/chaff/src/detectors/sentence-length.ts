@@ -1,12 +1,12 @@
 import { lengthOf, proseText } from "../measure.ts";
 import type { Detector, DetectorOptions, Finding, LengthUnit, Sentence } from "../plugin.ts";
-import { citationLead } from "./citation-sentence.ts";
+import { authorListSaving, citationLead, withoutEarlierReference } from "./citation-sentence.ts";
 import { isCitationString, wordsAroundCitation } from "./citation-string.ts";
 import { isNameList } from "./name-list-sentence.ts";
 import { pageMarkerPattern, pageMarkerSize } from "./page-marker.ts";
 import { quotedSentenceParts } from "./quoted-sentences.ts";
 import { isReproduced, reproducedSpans } from "./reproduced-text.ts";
-import { colonQuotationParts, flattenedTableParts, isGrammarBlock, labelLineParts } from "./sentence-parts.ts";
+import { colonQuotationParts, flattenedTableParts, isGrammarBlock, labelLineParts, parentheticalSentenceParts } from "./sentence-parts.ts";
 import { isInListItem, isReferenceLine, isTitleLine, quotedTitleWords, remarkAfterTitle, termSeriesSaving } from "./sentence-title.ts";
 
 type Measure = { readonly size: number; readonly limit: number; readonly variant?: string };
@@ -25,7 +25,7 @@ type SentenceWords = {
  * Only where words are the unit: the shapes are read from capitals and spaces.
  */
 const unwrittenWords = (sentence: Sentence, text: string, listItems: SentenceWords["listItems"]): number =>
-  termSeriesSaving(text) + (isInListItem(sentence.span, listItems) || isReferenceLine(text) ? quotedTitleWords(text) : 0);
+  termSeriesSaving(text) + authorListSaving(text) + (isInListItem(sentence.span, listItems) || isReferenceLine(text) ? quotedTitleWords(text) : 0);
 
 const sizeOf = (text: string, unit: LengthUnit): number =>
   unit === "word" ? text.split(/\s+/u).filter((word) => word.length > 0).length : text.replace(/\s+/gu, "").length;
@@ -43,7 +43,7 @@ const longestQuotedPart = (text: string, size: number, markers: RegExp | undefin
  */
 const measureOf = (sentence: Sentence, unit: LengthUnit, options: DetectorOptions, words: SentenceWords): Measure => {
   const lead = citationLead(proseText(sentence), words.citationSignals);
-  if (lead !== undefined) return { size: sizeOf(lead, unit), limit: options.limit };
+  if (lead !== undefined) return { size: sizeOf(withoutEarlierReference(lead), unit), limit: options.limit };
   const embedded = sentence.embeddedLanguage;
   const limit = embedded === undefined ? undefined : options.embeddedLimits?.[embedded.id];
   if (embedded === undefined || limit === undefined) return { size: ownSize(sentence, unit, words), limit: options.limit };
@@ -56,7 +56,7 @@ const isUnwritten = (sentence: Sentence, text: string, unit: LengthUnit, words: 
 
 /** The parts measured one by one when the splitter ran several things into one sentence (label lines, table cells, a quotation). */
 const partsOf = (sentence: Sentence, text: string): readonly string[] | undefined =>
-  labelLineParts(sentence.text) ?? flattenedTableParts(text) ?? colonQuotationParts(text);
+  labelLineParts(sentence.text) ?? flattenedTableParts(text) ?? colonQuotationParts(text) ?? parentheticalSentenceParts(text);
 
 /** The length of a sentence in the document's language, without what the writer did not write as one. */
 const ownSize = (sentence: Sentence, unit: LengthUnit, words: SentenceWords): number => {
