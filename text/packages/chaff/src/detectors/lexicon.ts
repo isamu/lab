@@ -269,10 +269,23 @@ export const repeatedConjunction: Detector = (doc, options): Finding[] => {
  * 書き手が書いた語。引用符の中だけの語（words such as "delves" and "pivotal"）は、例に挙げたか人の言葉を引いたもの。
  * 品詞があれば当たった語の並びごとに見る（活用した形も原形で当たる）。無ければ字で照らす。
  */
-const writtenIn = (sentence: Sentence, entry: LexiconEntry): boolean =>
+const writtenIn = (sentence: Sentence, entry: LexiconEntry, isHeading: boolean): boolean =>
   sentence.tokens === undefined || entry.tokens === undefined || entry.tokens.length === 0
     ? entryIn(sentence, entry) && !onlyQuoted(sentence, entry)
-    : entryRanges(sentence, entry).some((range) => !quotedRange(sentence, range));
+    : entryRanges(sentence, entry).some((range) => !quotedRange(sentence, range) && (isHeading || !inTitleCasedName(sentence.tokens ?? [], range)));
+
+const LETTER = /\p{L}/u;
+const CAPITALISED = /^\p{Lu}/u;
+
+/**
+ * Whether the phrase is capitalised word by word past the sentence's first word: part of a name (a mood board called
+ * Inspiring and Empowering, a programme title), not the writer's own phrasing. A heading's title case is the writer's.
+ */
+const inTitleCasedName = (tokens: readonly Token[], range: TokenRange): boolean => {
+  const firstWord = tokens.findIndex((token) => LETTER.test(token.surface));
+  const words = tokens.slice(range.start, range.end).filter((token) => LETTER.test(token.surface));
+  return range.start > firstWord && words.length > 0 && words.every((token) => CAPITALISED.test(token.surface));
+};
 
 /**
  * How many sentences one pile-up may span. Generated articles fit inside it whole; a long text (a listing of many authors'
@@ -288,8 +301,10 @@ export const aiTell: Detector = (doc, options): Finding[] => {
   const entries = [...new Map((options.lexicon ?? []).map((entry) => [entry.pattern.toLowerCase(), entry])).values()];
   const sentences = sentencesWithHeadings(doc);
   const headings = new Set(headingSentences(doc).map((heading) => heading.span.start));
-  const counts = (sentence: Sentence, entry: LexiconEntry): boolean =>
-    (entry.heading_only !== true || headings.has(sentence.span.start)) && writtenIn(sentence, entry);
+  const counts = (sentence: Sentence, entry: LexiconEntry): boolean => {
+    const isHeading = headings.has(sentence.span.start);
+    return (entry.heading_only !== true || isHeading) && writtenIn(sentence, entry, isHeading);
+  };
   const hitsPerSentence = sentences.map((sentence) => entries.filter((entry) => counts(sentence, entry)));
   const stretch = densestStretch(hitsPerSentence, AI_TELL_STRETCH, (entry) => entry.weight ?? 1);
   const found = entries.filter((entry) => stretch?.keys.has(entry) === true);
