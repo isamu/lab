@@ -34,8 +34,8 @@ options:
     kind: count
     default: 3
     about:
-      ja: 太字の一文で始まる項目（- **範囲を固定する。** 〜）だけで指摘する数。人の文書は手順や欄の名前に太字の札を 3 つ 4 つ並べることはあっても、太字の一文で始まる項目を並べることはほとんどありません
-      en: How many items opening with a bold lead sentence (- **Lock your ranges.** ...) report on their own. Human documents may give three or four steps or fields a bold label, but rarely make a list of bold lead sentences
+      ja: 太字の一文で始まる項目（- **範囲を固定する。** 〜）だけで指摘する数。人の文書は手順や欄の名前に太字の札を 3 つ 4 つ並べることはあっても、太字の一文で始まる項目を並べることはほとんどありません。得られることを言う札（- **作業時間の削減**：〜、語彙表 benefit-label の語で終わるもの）も、手順や欄の名前ではなく言い分なので、一緒に数えます
+      en: How many items opening with a bold lead sentence (- **Lock your ranges.** ...) report on their own. Human documents may give three or four steps or fields a bold label, but rarely make a list of bold lead sentences. A label that states a gain (- **More timely:** ..., opening with a word of the benefit-label lexicon) is a claim, not the name of a step or a field, and counts with them
   min_clause_paragraphs:
     kind: count
     default: 3

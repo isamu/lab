@@ -1,0 +1,26 @@
+# Words that open a bold list label stating a gain (- **More timely:** …, - **Less work:** …). bold-label-list counts such
+# an item as a claim, with the bold lead sentences. Matched in lower case as the label's first word, with words after it.
+# Left out: lower, higher, greater, which name things (Lower bound, Higher education, Greater London).
+id: benefit-label
+language: en
+entries:
+  - pattern: more
+    position: before
+  - pattern: less
+    position: before
+  - pattern: better
+    position: before
+  - pattern: fewer
+    position: before
+  - pattern: faster
+    position: before
+  - pattern: easier
+    position: before
+  - pattern: simpler
+    position: before
+  - pattern: cheaper
+    position: before
+  - pattern: improved
+    position: before
+  - pattern: reduced
+    position: before
