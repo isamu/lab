@@ -22,11 +22,11 @@ const LETTER = /\p{L}/u;
 
 /**
  * 文の途中の頭だけ大文字の -ly の語は、解析器が語尾で副詞と当てた名前（July、Kelly）か、題の語（Frequently Asked Questions）。
- * どちらも動詞に畳める副詞ではない。
+ * どちらも動詞に畳める副詞ではない。書き手の確かさを言う副詞（probably、apparently）も、畳む先の動詞が無い。
  */
-const lyAdverbsOf = (tokens: readonly Token[]): Token[] => {
+const lyAdverbsOf = (tokens: readonly Token[], stance: ReadonlySet<string>): Token[] => {
   const first = tokens.findIndex((token) => LETTER.test(token.surface));
-  return tokens.filter((token, at) => isLyAdverb(token) && !(at > first && CAPITALISED.test(token.surface)));
+  return tokens.filter((token, at) => isLyAdverb(token) && !stance.has(token.surface.toLowerCase()) && !(at > first && CAPITALISED.test(token.surface)));
 };
 
 /**
@@ -35,7 +35,8 @@ const lyAdverbsOf = (tokens: readonly Token[]): Token[] => {
  */
 export const adverbDensity: Detector = (doc, options): Finding[] => {
   const words = wordsIn(doc);
-  const hits = doc.sentences.flatMap((sentence) => lyAdverbsOf(sentence.tokens ?? []).map((token) => ({ sentence, token })));
+  const stance = new Set((doc.lexicons["stance-adverb"] ?? []).map((entry) => entry.pattern));
+  const hits = doc.sentences.flatMap((sentence) => lyAdverbsOf(sentence.tokens ?? [], stance).map((token) => ({ sentence, token })));
   const density = words === 0 ? 0 : Math.round((hits.length / words) * PER);
   const first = hits[0];
   if (words < MIN_WORDS || first === undefined || density <= options.limit) return [];

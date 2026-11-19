@@ -40,6 +40,12 @@ describe("L3 英語", () => {
       assert.ok(idsFor(padded(source)).includes("adverb-overuse"));
     });
 
+    it("valid: 書き手の確かさを言う -ly 副詞（probably、apparently、obviously）は畳む動詞が無く、数えない", () => {
+      const source =
+        "It probably should have been an email. Apparently we all learned this in school. Obviously nobody does it now. Honestly, I actually liked the meeting. Possibly it was the coffee.";
+      assert.ok(!idsFor(padded(source)).includes("adverb-overuse"));
+    });
+
     it("短い文書は測らない。密度が暴れるため", () => {
       assert.ok(!idsFor("We moved quickly and carefully and thoroughly.").includes("adverb-overuse"));
     });
