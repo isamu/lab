@@ -1,7 +1,16 @@
 import type { ProseDocument, Span, Token } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { isKnownWord, type Speller } from "../spelling.ts";
-import { isInverseOrder, isListedPair, isOtherEnding, type WordEnding } from "../name-variant-shapes.ts";
+import {
+  isAcronymPair,
+  isContractionPair,
+  isInFileName,
+  isInverseOrder,
+  isListedPair,
+  isNameAndWord,
+  isOtherEnding,
+  type WordEnding,
+} from "../name-variant-shapes.ts";
 import { titleSlipsIn } from "../name-title-slip.ts";
 
 // name-variant が、似た二つの形を一つの名前の書き分けではなく別の二つと見る所。中黒で並べた二つの語、ある向きとその逆、語の別の
@@ -89,7 +98,8 @@ const inOneSentence = (sentences: readonly Span[], offset: number, other: number
 /**
  * A one-letter variant (near) that is two names: another form of the word (Texan), the usual form in the same sentence
  * (Constantinus and Constantius, two sons), the differing word written twice or more (Bandle, of Richard Bandle and
- * Mrs. Bandle), or a word capitalised by its place (Sprang).
+ * Mrs. Bandle), a word the document also writes in small letters (Stain, Vigil), two plural acronyms (SBLCs, SBDCs), or a
+ * word capitalised by its place (Sprang).
  */
 const isNearPair = (reading: Reading, found: Found): boolean => {
   const word = differingWord(found.name, found.usual);
@@ -97,13 +107,16 @@ const isNearPair = (reading: Reading, found: Found): boolean => {
     isOtherEnding(found.name, found.usual, reading.endings) ||
     offsetsOf(reading.text, found.usual).some((offset) => inOneSentence(reading.sentences, found.offset, offset)) ||
     (word !== undefined && offsetsOf(reading.text, word).length >= 2) ||
+    isNameAndWord(found.name, found.usual, reading.text) ||
+    isAcronymPair(found.name, found.usual) ||
     isCapitalisedByPlace(found, reading.text, reading.sentenceStarts, reading.speller, reading.ordinary)
   );
 };
 
 /**
  * The finding is not two forms of one name: a one-letter variant that is two names (isNearPair), ・ listing two words, a
- * direction and its inverse, a title quoted in capitals, a verb stem. ordinary holds the words read as names that are
+ * direction and its inverse, a title quoted in capitals, a contraction printed with and without its apostrophe, a piece of
+ * a file name or URL, a verb stem. ordinary holds the words read as names that are
  * ordinary words in small letters (name-ordinary-word.ts).
  */
 export const twoThingsIn = (
@@ -128,6 +141,8 @@ export const twoThingsIn = (
     isListedPair(found.name, found.usual) ||
     (found.kind === "order" && isInverseOrder(found.name, found.usual, reading.directions)) ||
     isQuotedTitleCase(found, reading.text) ||
+    (found.kind === "spelling" && isContractionPair(found.name, found.usual, reading.text)) ||
+    isInFileName(reading.text, found.offset, found.name.length) ||
     (found.kind === "reading" && isVerbStem(found, reading.tokenAt, reading.copulas));
 };
 
