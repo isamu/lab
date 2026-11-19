@@ -13,6 +13,7 @@ import {
   inSearchTermList,
   isClosedCompound,
   isMention,
+  isQuotedAt,
   isNceSpelling,
   usedOnce,
   writtenApart,
@@ -82,7 +83,7 @@ export const unknownWord: Detector = (doc): Finding[] => {
   const used = new Set(words.map(({ word }) => word).filter((word) => isKnownWord(word, speller)));
   const unformed = new Set(words.map(({ word }) => word).filter((word) => !known.has(word) && !isFormedWord(word, speller)));
   const apartAt = (word: string, offset: number): string | undefined =>
-    known.has(word) || isKnownWord(word, speller) || !isClosedCompound(word, speller)
+    known.has(word) || isKnownWord(word, speller) || !isClosedCompound(word, speller) || isQuotedAt(doc.source, offset, offset + word.length)
       ? undefined
       : writtenApart(word, speller, doc.prose ?? doc.source, offset);
   return usedOnce(words, speller).flatMap(({ offset, word }) => {

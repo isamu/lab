@@ -13,7 +13,7 @@ gitlab-meetings  1
 ietf-draft-httpapi-ratelimit-headers-10  2
 maff-kyodo-ryori-okaisan-en  1
 nodejs-tsc-minutes-2026-05-06  3
-nws-glossary-a  5
+nws-glossary-a  4
 python-code-quality-list-2016-03  1
 rust-lang-minutes-2022-11-22  1
 rust-rfc-2094-nll  3

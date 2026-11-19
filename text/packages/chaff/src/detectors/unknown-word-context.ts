@@ -29,13 +29,19 @@ const lineAround = (source: string, offset: number): readonly [number, number] =
   return [source.lastIndexOf("\n", offset - 1) + 1, end === -1 ? source.length : end];
 };
 
-/** A match set in quotation marks (Not "user name"): the spelling named, not used. */
-const isQuotedMatch = (source: string, match: RegExpExecArray): boolean =>
-  QUOTE_MARK.test(source.charAt(match.index - 1)) || QUOTE_MARK.test(source.charAt(match.index + match[0].length));
+/** Text set in quotation marks at either end (Not "user name", "factcheck this"): a spelling named or searched for, not used. */
+export const isQuotedAt = (source: string, start: number, end: number): boolean =>
+  QUOTE_MARK.test(source.charAt(start - 1)) || QUOTE_MARK.test(source.charAt(end));
+
+/**
+ * The fewest uses of the apart form before the joined one counts as a slip. A document that writes a compound both ways a
+ * few times (rule making twice, rulemaking once) is choosing between two spellings, which is orthographic-variant's.
+ */
+const MIN_APART_USES = 3;
 
 /**
  * How the document writes a closed compound apart elsewhere (flag salute, flag-salute beside flagsalute), its most common
- * such form in lower case, or undefined. Written apart, the joined form is two words run together, not the writer's term.
+ * such form in lower case, or undefined. Written apart three times or more, the joined form is two words run together, not the writer's term.
  * A form in quotation marks or on the word's own line (Do not use white list or whitelist) names spellings, not uses one.
  */
 export const writtenApart = (word: string, speller: Speller, source: string, offset: number): string | undefined => {
@@ -43,9 +49,10 @@ export const writtenApart = (word: string, speller: Speller, source: string, off
   const forms = compoundSplits(word, speller).flatMap((split) => {
     const apart = new RegExp(`(?<![\\p{L}-])${word.slice(0, split)}[ -]${word.slice(split)}(?![\\p{L}-])`, "giu");
     return [...source.matchAll(apart)]
-      .filter((match) => (match.index < lineStart || match.index >= lineEnd) && !isQuotedMatch(source, match))
+      .filter((match) => (match.index < lineStart || match.index >= lineEnd) && !isQuotedAt(source, match.index, match.index + match[0].length))
       .map((match) => match[0].toLowerCase());
   });
+  if (forms.length < MIN_APART_USES) return undefined;
   return [...countsOf(forms)].toSorted((left, right) => right[1] - left[1])[0]?.[0];
 };
 

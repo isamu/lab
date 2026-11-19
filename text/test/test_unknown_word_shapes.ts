@@ -55,18 +55,32 @@ describe("unknown-word: words built from dictionary words", () => {
     assert.deepEqual(unknown("It has been held to apply to misappropriation as well as misrepresenation."), [typo("misrepresenation", "misrepresentation")]);
   });
 
-  it("a closed compound the document writes apart elsewhere is two words run together", () => {
-    // West Virginia State Board of Education v. Barnette, 319 U.S. 624 (1943).
-    const barnette =
-      "The flag salute is a form of utterance.\n\nThe resolution made the flagsalute part of the program, and refusal to salute the flag was insubordination.";
+  it("a closed compound the document writes apart three times or more elsewhere is two words run together", () => {
+    // West Virginia State Board of Education v. Barnette, 319 U.S. 624 (1943), the first three lines shortened.
+    const barnette = [
+      "The flag salute is a form of utterance.",
+      "The compulsory flag salute and pledge require affirmation of a belief.",
+      "Children of this faith have been expelled from school for refusing the flag salute.",
+      "The resolution made the flagsalute part of the program, and refusal to salute the flag was insubordination.",
+    ].join("\n\n");
     assert.deepEqual(unknown(barnette), [typo("flagsalute", "flag salute")]);
-    assert.deepEqual(unknown("The flag-salute was required.\n\nPupils gave the flagsalute daily."), [typo("flagsalute", "flag-salute")]);
-    assert.deepEqual(unknown("Platform crowdwork pays by the task.\n\nCrowd work pays by the hour."), [typo("crowdwork", "crowd work")]);
-    assert.deepEqual(unknown("Platform crowdwork pays by the task, and the crowd rates the work."), []);
+    const hyphenated = [
+      "The flag-salute was required.",
+      "Each flag-salute was led by a teacher.",
+      "No flag-salute was skipped.",
+      "Pupils gave the flagsalute daily.",
+    ];
+    assert.deepEqual(unknown(hyphenated.join("\n\n")), [typo("flagsalute", "flag-salute")]);
+  });
+
+  it("a closed compound written apart only a few times, on its own line, or in quotation marks stays a compound", () => {
+    // 5 U.S.C. 551 writes rule making in its definitions and rulemaking in a note.
+    assert.deepEqual(unknown('"Rule making" means agency process.\n\nThe rule making is done.\n\nThe rulemaking was revoked.'), []);
     // A style guide names the spellings: on the word's own line, or in quotation marks.
-    assert.deepEqual(unknown("Use allow list as the noun. Do not use white list or whitelist."), []);
-    assert.deepEqual(unknown('Enter your username.\n\nNot "user name".'), []);
-    assert.deepEqual(unknown("The database was rebuilt.\n\nThe data base is old."), []);
+    const lines = (last: string): string => ["The white list is kept.", "Each white list is short.", "A white list helps.", last].join("\n\n");
+    assert.deepEqual(unknown(lines("Do not use white list or whitelist.")), []);
+    assert.deepEqual(unknown(lines('Search for "whitelist this" too.')), []);
+    assert.deepEqual(unknown(["The database was rebuilt.", "The data base is old.", "A data base", "The data base"].join("\n\n")), []);
   });
 
   it("a drug's name is read by its international stem, but a slip in the stem is still reported", () => {
