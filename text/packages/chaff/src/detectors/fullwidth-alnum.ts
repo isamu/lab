@@ -87,9 +87,11 @@ export type AlnumRun = {
   readonly offset: number;
   /** 表のセルを続けてしまった数字（8,457 と 95.7 の 8,45795.7）の中。幅は書き手のものだが、セルの切れ目が分からず桁の数は当てにならない。 */
   readonly glued: boolean;
+  /** 英字一字と数字を違う幅で書いた並び（Q５）を分けた片方。 */
+  readonly split: boolean;
 };
 
-type Piece = { readonly 0: string; readonly index: number };
+type Piece = { readonly 0: string; readonly index: number; readonly split?: boolean };
 
 /** 一つの幅で書いた部分。 */
 const SAME_WIDTH = /[A-Za-z0-9]+|[Ａ-Ｚａ-ｚ０-９]+/gu;
@@ -106,7 +108,7 @@ const isLetterAndNumber = (parts: readonly Piece[]): boolean =>
  */
 const widthPieces = (match: RegExpExecArray): Piece[] => {
   if (FULLWIDTH.test(match[0]) || HALFWIDTH.test(match[0])) return [match];
-  const parts = [...match[0].matchAll(SAME_WIDTH)].map((part) => ({ 0: part[0], index: match.index + part.index }));
+  const parts = [...match[0].matchAll(SAME_WIDTH)].map((part) => ({ 0: part[0], index: match.index + part.index, split: true }));
   return isLetterAndNumber(parts) ? parts : [];
 };
 
@@ -132,6 +134,7 @@ export const alnumRunsIn = (sentence: Sentence, source: string): AlnumRun[] => {
       written: match[0],
       offset: sentence.span.start + match.index,
       glued: isWithinAny(glued, { start: match.index, end: match.index + match[0].length }),
+      split: "split" in match && match.split === true,
     }));
 };
 
@@ -162,6 +165,18 @@ const datelineOf = (doc: ProseDocument): Span | undefined => {
   const first = doc.paragraphs[0];
   return first !== undefined && DATELINE.test(doc.source.slice(first.span.start, first.span.end).trim()) ? first.span : undefined;
 };
+
+/**
+ * 見出しの文字（### Q５：…の Q５：…）を、文と同じに読む一続き。文書の頭の題（# ノロウイルスに関するＱ＆Ａ）は載せたページの名前なので読まない。
+ * 見出しから数えるのは、英字一字と数字を違う幅で書いた並び（Q５）だけ。見出しはほかの数を本文と別の幅で書くことが多いが（## １ 概要）、
+ * 一つの並びの中で幅が変わるのは書き損じ。
+ */
+const headingSentences = (doc: ProseDocument): Sentence[] =>
+  (doc.markup?.headings ?? []).flatMap((heading, index) => {
+    if (index === 0 && heading.depth === 1) return [];
+    const start = doc.source.indexOf(heading.text, heading.start);
+    return start < 0 || start >= heading.end || heading.text === "" ? [] : [{ span: { start, end: start + heading.text.length }, text: heading.text }];
+  });
 
 /** 多いほうの英字の語が何種類あれば、文書の書き方と見るか。ＢＡＲ を二度書いただけなら、それはその語の書き方。 */
 const HABIT_WORDS = 2;
@@ -198,10 +213,13 @@ const findingOf = ({ sentence, run }: Located, count: number, of: number, limit:
  */
 export const fullwidthAlnum: Detector = (doc, options): Finding[] => {
   const dateline = datelineOf(doc);
-  const located: Located[] = doc.sentences
-    .filter((sentence) => sentence.embeddedLanguage === undefined && !isCitation(sentence, doc.source))
-    .filter((sentence) => dateline === undefined || !isWithinAny([dateline], sentence.span))
-    .flatMap((sentence) => alnumRunsIn(sentence, doc.source).map((run) => ({ sentence, run })));
+  const located: Located[] = [
+    ...doc.sentences
+      .filter((sentence) => sentence.embeddedLanguage === undefined && !isCitation(sentence, doc.source))
+      .filter((sentence) => dateline === undefined || !isWithinAny([dateline], sentence.span))
+      .flatMap((sentence) => alnumRunsIn(sentence, doc.source).map((run) => ({ sentence, run }))),
+    ...headingSentences(doc).flatMap((sentence) => alnumRunsIn(sentence, doc.source).flatMap((run) => (run.split ? [{ sentence, run }] : []))),
+  ];
   return KINDS.flatMap((kind) => {
     const ofKind = located.filter(({ run }) => run.kind === kind);
     const odd = minorityWithin(ofKind, ({ run }) => run.fullwidth, options.limit);
