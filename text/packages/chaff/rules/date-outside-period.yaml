@@ -60,5 +60,5 @@ example:
       - May 5: closing session
 
 not_flagged:
-  ja: 期間を書いていない文書、期間の外に置く語（前泊、事後、申込締切、予約、前回）のある日付、締め切りの語の付いた日付（9月18日までに）、年の無い期間が年をまたぐときの年明けの日付は比べません。旅行期間や会期の後の締め切り（精算書の提出）、支払の期限、成績発表や成績照会、再試験のように学期の後に来てよい日付、年をまたぐ開講期間に対する年の無い締め切りは指しません。
+  ja: 期間を書いていない文書、期間の外に置く語（前泊、事後、申込締切、予約、前回）のある日付と、報告書の「今後の対応」の節の日付、締め切りの語の付いた日付（9月18日までに）、年の無い期間が年をまたぐときの年明けの日付は比べません。旅行期間や会期の後の締め切り（精算書の提出）、支払の期限、成績発表や成績照会、再試験のように学期の後に来てよい日付、年をまたぐ開講期間に対する年の無い締め切りは指しません。
   en: 'A document with no stated period, a date marked as outside on purpose ("post-trip", "follow-up", "book by", "deadline", "previous"), a reply-by date ("by September 18", "no later than September 18"), and the new-year dates of a period without a year that runs past December 31 are not compared. A deadline after a trip or a conference (an expense report), a payment deadline, work that may come after a term (grades released, grade appeals, resits), and a deadline without a year against a term that runs across two years are not reported.'
