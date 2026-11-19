@@ -9,9 +9,11 @@ import { comparableText, entryIn, entryOpens } from "./lexicon-match.ts";
 //   last                      最後の段落にあるときだけ当たる言い回し（てみてほしい）。本文の途中なら普通の勧め
 //   lead:/open:/end:<name>    前の語と文の終わりの語の組（気軽に〜ください）。closing-exhortation と同じ書き方
 //   signoff                   最後の段落の、この語で始まり「!」で終わる短い一行（Happy brewing!）
+//   stacked                   結びにほかの定型があるときだけ当たる言い回し（feel free to）。一つなら普通の礼儀
 
 const LAST = "last";
 const SIGNOFF = "signoff";
+const STACKED = "stacked";
 
 /** 一行の結びの挨拶と読む語の数の上限。「Happy brewing!」は二語、「Happy holidays, everyone!」は三語。 */
 const SIGNOFF_WORDS = 3;
@@ -36,7 +38,12 @@ const lastParagraphSentences = (sentences: readonly Sentence[], paragraphs: read
   return paragraph === undefined ? [final] : sentences.filter((sentence) => sentence.span.start >= paragraph.span.start);
 };
 
-type Words = { readonly closing: ReturnType<typeof exhortationWords>; readonly last: readonly LexiconEntry[]; readonly signoff: readonly LexiconEntry[] };
+type Words = {
+  readonly closing: ReturnType<typeof exhortationWords>;
+  readonly last: readonly LexiconEntry[];
+  readonly signoff: readonly LexiconEntry[];
+  readonly stacked: readonly LexiconEntry[];
+};
 
 /** 最後の段落でだけ当たる語。言い回しなら語彙の語、挨拶の一行なら文そのもの。 */
 const lastIn = (sentence: Sentence, words: Words): string | undefined =>
@@ -45,11 +52,19 @@ const lastIn = (sentence: Sentence, words: Words): string | undefined =>
 
 type Hit = { readonly sentence: Sentence; readonly matched: string };
 
-/** 結びの、定型の言い回しのある文。一文に一つ。 */
+/** 結びの、定型の言い回しのある文。一文に一つ。stacked の語は、ほかの定型が結びにあるときだけ数える。 */
 export const closingClicheHits = (sentences: readonly Sentence[], paragraphs: readonly Paragraph[], words: Words): Hit[] => {
   const last = new Set(lastParagraphSentences(sentences, paragraphs));
+  const stock = new Map<Sentence, string>(
+    sentences.flatMap((sentence): [Sentence, string][] => {
+      const matched = exhortationIn(sentence, words.closing) ?? (last.has(sentence) ? lastIn(sentence, words) : undefined);
+      return matched === undefined ? [] : [[sentence, matched]];
+    }),
+  );
+  const stackedIn = (sentence: Sentence): string | undefined =>
+    stock.size === 0 ? undefined : words.stacked.find((entry) => entryIn(sentence, entry))?.pattern;
   return sentences.flatMap((sentence) => {
-    const matched = exhortationIn(sentence, words.closing) ?? (last.has(sentence) ? lastIn(sentence, words) : undefined);
+    const matched = stock.get(sentence) ?? stackedIn(sentence);
     return matched === undefined ? [] : [{ sentence, matched }];
   });
 };
@@ -58,6 +73,7 @@ export const closingClicheWords = (lexicon: readonly LexiconEntry[]): Words => (
   closing: exhortationWords(lexicon),
   last: lexicon.filter((entry) => entry.group === LAST),
   signoff: lexicon.filter((entry) => entry.group === SIGNOFF),
+  stacked: lexicon.filter((entry) => entry.group === STACKED),
 });
 
 /** 結び（最後の節の終わりの段落）の定型の言い回し。limit は指摘に要る文の数。 */

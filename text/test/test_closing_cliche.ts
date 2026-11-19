@@ -144,6 +144,14 @@ describe("closing-cliche: the stock last line of an email or a proposal", () => 
     assert.deepEqual(matchedFor(enjoy, en, "business/email"), ["enjoy"]);
   });
 
+  it("invalid: a courtesy beside a chirpy wish in an email's closing; alone it is ordinary", () => {
+    const stacked =
+      "Hi all,\n\nThe office closes at noon on Friday.\n\nIf you have any questions, feel free to reach out to me.\n\nWishing you all a restful holiday season!\n\nBest,\nKaren\n";
+    const alone = "Hi all,\n\nThe office closes at noon on Friday.\n\nIf you have any questions, feel free to reach out to me.\n\nBest,\nKaren\n";
+    assert.deepEqual(matchedFor(stacked, en, "business/email"), ["feel free to", "Wishing"]);
+    assert.ok(!flagged(alone, en, "business/email"));
+  });
+
   it("valid: the same wish outside an email, and a plain closing in one", () => {
     const post = "# The trail\n\nThe trail opens in May.\n\nMountaineering is welcome, but not required to enjoy the wilderness!\n";
     const plain =

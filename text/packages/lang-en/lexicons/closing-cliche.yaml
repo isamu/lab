@@ -37,3 +37,14 @@ entries:
   - pattern: "!"
     group: end:wish
     genres: [business/email]
+  # A courtesy in an email's closing ("feel free to reach out") is ordinary politeness alone; beside another stock
+  # closing (a chirpy wish) the closing is a stack of stock lines, and it counts too.
+  - pattern: feel free to
+    group: stacked
+    genres: [business/email]
+  - pattern: don't hesitate to
+    group: stacked
+    genres: [business/email]
+  - pattern: do not hesitate to
+    group: stacked
+    genres: [business/email]
