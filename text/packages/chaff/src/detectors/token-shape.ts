@@ -6,6 +6,7 @@ import type { Detector, Finding, ProseDocument, Sentence, Span, Token } from "..
 import { countedTokens, uncountedWordsOf, type UncountedWords } from "../uncounted-particles.ts";
 import { boundWordParticles } from "../bound-word-particles.ts";
 import { setPhraseParticles } from "../set-phrase-particles.ts";
+import { clauseEnds, determinerParticles, longestClausePart } from "../clause-particles.ts";
 import { noteSentences } from "../note-paragraphs.ts";
 import { labelledNoteSentences } from "../labelled-note-paragraphs.ts";
 import { listLeadSentences } from "../list-lead-sentence.ts";
@@ -121,12 +122,19 @@ const POSITION_LEXICON = "particle-run-position";
 /** 助詞を挟んで一語のように読む決まった言い回し（おそれのある）。中の助詞は入れ子の輪に数えない。 */
 const SET_PHRASE_LEXICON = "particle-run-set-phrase";
 
-/** 前の語と組んで一つの名前になる語（皆様、下）と決まった言い回し（おそれのある）。 */
-type Phrases = { readonly boundWords: readonly string[]; readonly setPhrases: readonly string[] };
+/** どれを指すかだけを言う語（他の）。直後の「の」は名詞を名詞の中に入れない。 */
+const DETERMINER_LEXICON = "particle-run-determiner";
 
-/** 数えない助詞（番号をつなぐ「の」、敬って呼ぶ語や置き場所を言う語の前の「の」、決まった言い回しの中の「の」）を除いた語。 */
-const chainTokens = (tokens: readonly Token[], numbering: UncountedWords, { boundWords, setPhrases }: Phrases): readonly Token[] => {
-  const uncounted = new Set([...boundWordParticles(tokens, numbering.particles, boundWords), ...setPhraseParticles(tokens, numbering.particles, setPhrases)]);
+/** 前の語と組んで一つの名前になる語（皆様、下）、決まった言い回し（おそれのある）、どれを指すかだけを言う語（他）。 */
+type Phrases = { readonly boundWords: readonly string[]; readonly setPhrases: readonly string[]; readonly determiners: readonly string[] };
+
+/** 数えない助詞（番号をつなぐ「の」、敬って呼ぶ語や置き場所を言う語の前の「の」、決まった言い回しの中の「の」、他の）を除いた語。 */
+const chainTokens = (tokens: readonly Token[], numbering: UncountedWords, { boundWords, setPhrases, determiners }: Phrases): readonly Token[] => {
+  const uncounted = new Set([
+    ...boundWordParticles(tokens, numbering.particles, boundWords),
+    ...setPhraseParticles(tokens, numbering.particles, setPhrases),
+    ...determinerParticles(tokens, numbering.particles, determiners),
+  ]);
   const counted = countedTokens(tokens, numbering);
   return uncounted.size === 0 ? counted : counted.filter((token) => !uncounted.has(token));
 };
@@ -139,6 +147,7 @@ export const doubledParticle: Detector = (doc, options): Finding[] => {
   const phrases: Phrases = {
     boundWords: [HONORIFIC_GROUP_LEXICON, POSITION_LEXICON].flatMap((id) => (doc.lexicons[id] ?? []).map((entry) => entry.pattern)),
     setPhrases: (doc.lexicons[SET_PHRASE_LEXICON] ?? []).map((entry) => entry.pattern),
+    determiners: (doc.lexicons[DETERMINER_LEXICON] ?? []).map((entry) => entry.pattern),
   };
   const prose = doc.prose ?? doc.source;
   const namingMarkers = (doc.lexicons[NAMING_LEXICON] ?? []).map((entry) => entry.pattern);
@@ -155,7 +164,10 @@ export const doubledParticle: Detector = (doc, options): Finding[] => {
         ...namedLongForms(sentence.text, sentence.span.start, sentence.tokens ?? [], namingMarkers, continuesName),
         ...quotedNameSpans(sentence.text, sentence.span.start, names),
       ];
-      const longRuns = (skipped: readonly Span[]): Run[] => runsOf(tokens, nesting, breaks, skipped).filter((run) => run.tokens.length > options.limit);
+      // 「の」で主語を示した節（番号のついた版）の前と後ろは別の句。どちらかの句の中で上限を超える連なりだけを、連なり全体で言う。
+      const ends = clauseEnds(tokens, nesting);
+      const isLong = (run: Run): boolean => run.tokens.length > options.limit && longestClausePart(run.tokens, ends) > options.limit;
+      const longRuns = (skipped: readonly Span[]): Run[] => runsOf(tokens, nesting, breaks, skipped).filter(isLong);
       const found = longRuns(quoted);
       // 文書の名前を読むのは長い連なりのある文だけ。名前は位置ごとに読むので、全部の文で読むと遅い。
       const runs = found.length === 0 ? found : longRuns([...quoted, ...documentNameSpans(prose, sentence.span, doc.namedDocument)]);
