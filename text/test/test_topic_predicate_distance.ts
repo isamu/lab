@@ -163,3 +163,20 @@ describe("topic-predicate-distance: 書き手の文でないもの", () => {
     assert.equal(distances(numbered).length, 1);
   });
 });
+
+describe("topic-predicate-distance: 副詞になる「は」（topic-adverb）", () => {
+  it("「最後は」（結局のところ）は主題ではないので数えない。前に「の」が付いた名詞句は主題（自作）", () => {
+    const adverb =
+      "むしろ、期限を切ってそこまでにまとめなければならないとすれば、最後は相手が納得しなければこちらが下りなければならなくなるので、期限を念頭に置いて交渉すると、私が負けるという表現をしたのが適当だったか、国益を損なうことになりかねないということであります。";
+    assert.deepEqual(distances(adverb, "speech/transcript"), []);
+    const phrase =
+      "交渉の最後は、相手が納得しなければこちらが下りなければならなくなるので、期限を念頭に置いて交渉すると、国益を損なうことになりかねないという点で、どの国との交渉でも、いつも最も難しい場面になります。";
+    assert.equal(distances(phrase, "speech/transcript").length, 1);
+  });
+
+  it("時を言う「今回は」は、後ろに別の主題が無ければ、その「は」から数え続ける（自作）", () => {
+    const time =
+      "今回は、期限を切ってそこまでにまとめなければならないとすれば、相手が納得しなければこちらが下りなければならなくなるので、期限を念頭に置いて交渉すると、私が負けるという表現をしたのが適当だったか、国益を損なうことになりかねないということであります。";
+    assert.equal(distances(time, "speech/transcript").length, 1);
+  });
+});
