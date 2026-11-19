@@ -55,6 +55,20 @@ describe("unknown-word: words built from dictionary words", () => {
     assert.deepEqual(unknown("It has been held to apply to misappropriation as well as misrepresenation."), [typo("misrepresenation", "misrepresentation")]);
   });
 
+  it("a closed compound the document writes apart elsewhere is two words run together", () => {
+    // West Virginia State Board of Education v. Barnette, 319 U.S. 624 (1943).
+    const barnette =
+      "The flag salute is a form of utterance.\n\nThe resolution made the flagsalute part of the program, and refusal to salute the flag was insubordination.";
+    assert.deepEqual(unknown(barnette), [typo("flagsalute", "flag salute")]);
+    assert.deepEqual(unknown("The flag-salute was required.\n\nPupils gave the flagsalute daily."), [typo("flagsalute", "flag-salute")]);
+    assert.deepEqual(unknown("Platform crowdwork pays by the task.\n\nCrowd work pays by the hour."), [typo("crowdwork", "crowd work")]);
+    assert.deepEqual(unknown("Platform crowdwork pays by the task, and the crowd rates the work."), []);
+    // A style guide names the spellings: on the word's own line, or in quotation marks.
+    assert.deepEqual(unknown("Use allow list as the noun. Do not use white list or whitelist."), []);
+    assert.deepEqual(unknown('Enter your username.\n\nNot "user name".'), []);
+    assert.deepEqual(unknown("The database was rebuilt.\n\nThe data base is old."), []);
+  });
+
   it("a drug's name is read by its international stem, but a slip in the stem is still reported", () => {
     assert.deepEqual(unknown("Any medications (e.g., paroxetine, sertraline) taken in the past month should be listed."), []);
     assert.deepEqual(unknown("The patients were given telmisartan daily."), []);

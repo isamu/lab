@@ -5,17 +5,48 @@ import { isAddress, isKnownWord, stemsOf, type CheckedWord, type Speller } from 
 /** Each half of a closed compound keeps this many letters: a shorter half (open + end, pip + line) is more often a slip at the joint. */
 const MIN_COMPOUND_PART = 4;
 
+/** Where a word splits into the two halves of a closed compound (flag + salute in flagsalute). */
+const compoundSplits = (word: string, speller: Speller): number[] => {
+  const listed: Speller = { ...speller, suffixes: [], prefixes: [] };
+  const inflected: Speller = { ...listed, suffixes: speller.suffixes.filter(({ inflection }) => inflection === true) };
+  return [...Array(Math.max(0, word.length - 2 * MIN_COMPOUND_PART + 1)).keys()]
+    .map((index) => index + MIN_COMPOUND_PART)
+    .filter((split) => isKnownWord(word.slice(0, split), listed) && isKnownWord(word.slice(split), inflected));
+};
+
 /**
  * Two dictionary words of four letters or more written as one (crowdwork, crowdworkers): a closed compound, not a slip. The
  * head is a word as listed and the tail takes only an inflection: a prefix or a derived ending on a half (misre + presenation)
  * reads too many slips as words.
  */
-export const isClosedCompound = (word: string, speller: Speller): boolean => {
-  const listed: Speller = { ...speller, suffixes: [], prefixes: [] };
-  const inflected: Speller = { ...listed, suffixes: speller.suffixes.filter(({ inflection }) => inflection === true) };
-  return [...Array(Math.max(0, word.length - 2 * MIN_COMPOUND_PART + 1)).keys()]
-    .map((index) => index + MIN_COMPOUND_PART)
-    .some((split) => isKnownWord(word.slice(0, split), listed) && isKnownWord(word.slice(split), inflected));
+export const isClosedCompound = (word: string, speller: Speller): boolean => compoundSplits(word, speller).length > 0;
+
+const QUOTE_MARK = /["“”‘’']/u;
+
+/** Where the line of source around offset starts and ends. */
+const lineAround = (source: string, offset: number): readonly [number, number] => {
+  const end = source.indexOf("\n", offset);
+  return [source.lastIndexOf("\n", offset - 1) + 1, end === -1 ? source.length : end];
+};
+
+/** A match set in quotation marks (Not "user name"): the spelling named, not used. */
+const isQuotedMatch = (source: string, match: RegExpExecArray): boolean =>
+  QUOTE_MARK.test(source.charAt(match.index - 1)) || QUOTE_MARK.test(source.charAt(match.index + match[0].length));
+
+/**
+ * How the document writes a closed compound apart elsewhere (flag salute, flag-salute beside flagsalute), its most common
+ * such form in lower case, or undefined. Written apart, the joined form is two words run together, not the writer's term.
+ * A form in quotation marks or on the word's own line (Do not use white list or whitelist) names spellings, not uses one.
+ */
+export const writtenApart = (word: string, speller: Speller, source: string, offset: number): string | undefined => {
+  const [lineStart, lineEnd] = lineAround(source, offset);
+  const forms = compoundSplits(word, speller).flatMap((split) => {
+    const apart = new RegExp(`(?<![\\p{L}-])${word.slice(0, split)}[ -]${word.slice(split)}(?![\\p{L}-])`, "giu");
+    return [...source.matchAll(apart)]
+      .filter((match) => (match.index < lineStart || match.index >= lineEnd) && !isQuotedMatch(source, match))
+      .map((match) => match[0].toLowerCase());
+  });
+  return [...countsOf(forms)].toSorted((left, right) => right[1] - left[1])[0]?.[0];
 };
 
 /**
