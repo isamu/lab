@@ -471,6 +471,29 @@ describe("date-outside-period: a deadline after the document's term", () => {
     );
     assert.deepEqual(foundEn(en), []);
   });
+
+  it("silent for a report's follow-up section (今後の対応, フォローアップ): its due dates come after the trip, as under Follow-up", () => {
+    const report = (heading: string): string =>
+      lines(
+        "# 出張報告書",
+        "",
+        "出張期間：2026年10月15日（木）〜10月16日（金）",
+        "",
+        "## 訪問内容",
+        "",
+        "- 10月15日 本社を訪問",
+        "",
+        heading,
+        "",
+        "| 内容 | 担当 | 期限 |",
+        "|---|---|---|",
+        "| 見積もりの確認 | 山田 | 10月23日 |",
+        "| 先方への回答 | 山田 | 11月13日 |",
+      );
+    assert.deepEqual(foundJa(report("## 今後の対応")), []);
+    assert.deepEqual(foundJa(report("## フォローアップ")), []);
+    assert.deepEqual(foundJa(report("## 訪問の記録")), ["10月23日", "11月13日"]);
+  });
 });
 
 // 項目と内容の二列の表に書いた仕事の期間（| 開講期間 | … |）。催しの期間の語（Conference、研修期間）の表の行は、催しを並べた表でもあるので読まない。
