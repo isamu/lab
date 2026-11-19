@@ -116,6 +116,8 @@ email.md   business/email · English   genre from --genre
                   date-weekday-mismatch
   15:91   warning "[Your Name]" was never filled in
                   unfilled-placeholder
+  17:1    warning Closes with "don't hesitate to"
+                  closing-cliche
   17:1    info    "please don't hesitate" and other stock courtesies in 2 sentences (2 needed)
                   email-stock-courtesy
   17:74   warning Closes with "hope this helps"
