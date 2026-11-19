@@ -75,6 +75,16 @@ describe("en sentences: initials before a word in lower case", () => {
     assert.deepEqual(sentencesOf("Hart, K.\nand J. Reed wrote it."), ["Hart, K.\nand J. Reed wrote it."]);
   });
 
+  it("small letters with full stops (a.m., p.m.) before a word in lower case do not end the sentence; before a capital they do", () => {
+    assert.deepEqual(sentencesOf("Open between 9 a.m. and 4 p.m., Monday through Friday. Call us."), [
+      "Open between 9 a.m. and 4 p.m., Monday through Friday.",
+      "Call us.",
+    ]);
+    assert.deepEqual(sentencesOf("It closes at 5 p.m. The office reopens."), ["It closes at 5 p.m.", "The office reopens."]);
+    const none = initialStops([], []);
+    assert.equal(unmarkInitialStops("at 9 a.m. and later", none), "at 9 a.mn and later");
+  });
+
   it("before a capital, a name in lower case at its head only, or as a list's label, it is left as before", () => {
     assert.deepEqual(sentencesOf("It is set by Regulation C. This guide applies."), ["It is set by Regulation C.", "This guide applies."]);
     assert.deepEqual(sentencesOf("The plan was called Plan B. iPhone sales rose."), ["The plan was called Plan B.", "iPhone sales rose."]);
