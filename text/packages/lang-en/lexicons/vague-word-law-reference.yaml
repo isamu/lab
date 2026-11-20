@@ -1,0 +1,61 @@
+# A vague word that a law or a section governs: "as required by applicable law", "as required under 45 CFR §164.528",
+# "as required by §164.410 of HIPAA". The law it names fixes what is required, so vague-word-density does not count the
+# word there. group: governor is a word written right after the vague word that hands it to a law (by, under); group:
+# reference is a word that names a law or a section, found among the next few words. A name a party gives ("as required
+# by Licensor") names no law, and the word is still counted.
+id: vague-word-law-reference
+language: en
+entries:
+  - pattern: by
+    group: governor
+  - pattern: under
+    group: governor
+  - pattern: pursuant to
+    group: governor
+  - pattern: in accordance with
+    group: governor
+  - pattern: law
+    group: reference
+  - pattern: laws
+    group: reference
+  - pattern: statute
+    group: reference
+  - pattern: statutes
+    group: reference
+  - pattern: regulation
+    group: reference
+  - pattern: regulations
+    group: reference
+  - pattern: rule
+    group: reference
+  - pattern: rules
+    group: reference
+  - pattern: act
+    group: reference
+  - pattern: code
+    group: reference
+  - pattern: section
+    group: reference
+  - pattern: subsection
+    group: reference
+  - pattern: article
+    group: reference
+  - pattern: §
+    group: reference
+  - pattern: cfr
+    group: reference
+  - pattern: c.f.r.
+    group: reference
+  - pattern: usc
+    group: reference
+  - pattern: u.s.c.
+    group: reference
+  # Laws and standards known by their short names.
+  - pattern: hipaa
+    group: reference
+  - pattern: gdpr
+    group: reference
+  - pattern: ccpa
+    group: reference
+  - pattern: gaap
+    group: reference
