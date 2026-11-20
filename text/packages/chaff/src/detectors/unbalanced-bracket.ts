@@ -112,13 +112,18 @@ type Heads = { readonly paragraphs: ReadonlySet<number>; readonly lines: Readonl
 /** 人の言葉を引く括弧。続く段落を同じ開きで始めて、引用が続くことを示す書き方がある。 */
 const QUOTATIONS: ReadonlySet<string> = new Set(["quote", "kagi", "double-kagi"]);
 
-const openWith = (scan: Scan, bracket: Bracket, offset: number, heads: Heads): void => {
+/** 空行。詩の連や、詩の一つ一つの区切り。 */
+const BLANK_LINE = /\n[ \t\u3000]*\n/u;
+
+const openWith = (scan: Scan, text: string, bracket: Bracket, offset: number, heads: Heads): void => {
   const top = scan.open.at(-1);
   const reopens = QUOTATIONS.has(bracket.family) && top?.bracket === bracket;
   // 段落をまたぐ台詞・引用（英語の小説）は、閉じずに次の段落を同じ開きで始める。前の開きはここで続く。
   if (reopens && heads.paragraphs.has(offset)) scan.open.pop();
   // 行の頭では、閉じるまで続きかどうか決められない。折り返した台詞の行の頭の開きは、中に引いた別の言葉のこともある。
-  const continues = reopens && !heads.paragraphs.has(offset) && heads.lines.has(offset) ? top : undefined;
+  // 続きと読むのは同じ連の中だけ。前の詩で閉じ忘れた開きを、次の詩の引用の続きにはしない。
+  const sameStanza = top !== undefined && !BLANK_LINE.test(text.slice(top.offset, offset));
+  const continues = reopens && sameStanza && !heads.paragraphs.has(offset) && heads.lines.has(offset) ? top : undefined;
   scan.open.push(continues === undefined ? { bracket, offset } : { bracket, offset, continues });
 };
 
@@ -134,7 +139,7 @@ export const bracketProblems = (text: string): BracketProblem[] => {
     if (isInchMark(text, match.index, quoteOpen) || isEmoticonMouth(text, match.index)) return;
     const opening = BY_OPEN.get(match[0]);
     const closing = BY_CLOSE.get(match[0]);
-    if (opening !== undefined) openWith(scan, opening, match.index, heads);
+    if (opening !== undefined) openWith(scan, text, opening, match.index, heads);
     else if (closing !== undefined) closeWith(scan, text, closing, match.index);
   });
   return [...scan.problems, ...scan.open.map(unclosedOf)].toSorted((left, right) => left.offset - right.offset);

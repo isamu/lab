@@ -124,6 +124,25 @@ describe("unbalanced-bracket: 括弧が組になっていない", () => {
     );
   });
 
+  it("前の詩で閉じ忘れた引用は、空行の後ろの詩の、行ごとに開き直す引用の続きにしない", () => {
+    const poems = [
+      "And at last I said, “These are not leaves,",
+      "Why, can you not see they are days?",
+      "",
+      "",
+      "The Second Stone",
+      "",
+      "She told me:",
+      "“The sum of it all",
+      "“Is that we go on,",
+      "“All of us, somewhere.”",
+    ].join("\n");
+    assert.deepEqual(
+      bracketProblems(poems).map((problem) => problem.offset),
+      [poems.indexOf("“These")],
+    );
+  });
+
   it("行の頭で一度だけ開いた引用符は、中に引いた言葉として組にする", () => {
     assert.deepEqual(
       bracketProblems("He said “I told her\n“go away” and left.”").map((problem) => problem.kind),
