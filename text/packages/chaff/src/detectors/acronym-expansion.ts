@@ -120,7 +120,13 @@ const isNamedBeforeAt = (body: string, acronym: string, at: number): boolean => 
  */
 export type DefinitionWords = { readonly markers: readonly string[]; readonly verbs: readonly string[]; readonly alternatives?: readonly string[] };
 
-type DefinitionPatterns = { readonly opened: RegExp; readonly closes: RegExp; readonly alternative: RegExp; readonly otherName: RegExp };
+type DefinitionPatterns = {
+  readonly opened: RegExp;
+  readonly closes: RegExp;
+  readonly alternative: RegExp;
+  readonly quotedAlternative: RegExp;
+  readonly otherName: RegExp;
+};
 
 const oneOf = (words: readonly string[]): string => (words.length === 0 ? "(?!)" : words.map(escapeRegExp).join("|"));
 
@@ -128,6 +134,7 @@ const definitionPatterns = (words: DefinitionWords): DefinitionPatterns => ({
   opened: new RegExp(String.raw`[(（]\s*(?<markers>(?:(?:${oneOf(words.markers)})${MARKER_GAP})*)${WRAP}(?<![A-Za-z])$`, "iu"),
   closes: new RegExp(String.raw`^${WRAP}(?<verb>(?:${oneOf(words.verbs)})[。.]?)?${WRAP}[)）]`, "iu"),
   alternative: new RegExp(String.raw`[,，、]\s*(?:${oneOf(words.alternatives ?? [])})\s*["“'‘]?$`, "iu"),
+  quotedAlternative: new RegExp(String.raw`(?<=["”'’])\s(?:${oneOf(words.alternatives ?? [])})\s*["“'‘]?$`, "iu"),
   otherName: new RegExp(String.raw`^${WRAP}[,，、]?\s*(?:${oneOf(words.alternatives ?? [])})\s[^()（）\n]{1,${String(DEFINITION_REACH)}}[)）]`, "iu"),
 });
 
@@ -244,13 +251,25 @@ const isPrefixedAt = (body: string, acronym: string, at: number): boolean => {
 /** 引用符で囲んで書き終えた名前（‘abstract syntax tree’）。小文字の語でも、囲みが名前の始まりと終わりを決める。 */
 const QUOTED_NAME_END = /(?:“(?<curly>[^“”\n]{1,60})”|‘(?<single>[^‘’\n]{1,60})’|"(?<straight>[^"\n]{1,60})")$/u;
 
-/** 名前の後ろの読点と言い換えの語に続く略語（Special Interest Groups, or SIGs、‘abstract syntax tree’, or ‘AST’）。名前の頭文字が略語と揃うときだけ。 */
-const isAlternativeAt = (patterns: DefinitionPatterns, body: string, acronym: string, at: number): boolean => {
-  const joined = patterns.alternative.exec(body.slice(Math.max(0, at - DEFINITION_REACH), at));
-  if (joined === null) return false;
-  const name = body.slice(0, at - joined[0].length);
+const quotedNameBefore = (name: string): string | undefined => {
   const groups = QUOTED_NAME_END.exec(name)?.groups;
-  const quoted = groups?.["curly"] ?? groups?.["single"] ?? groups?.["straight"];
+  return groups?.["curly"] ?? groups?.["single"] ?? groups?.["straight"];
+};
+
+/**
+ * 名前の後ろの読点と言い換えの語に続く略語（Special Interest Groups, or SIGs、‘abstract syntax tree’, or ‘AST’）。名前の頭文字が略語と揃うときだけ。
+ * 引用符で囲んだ名前なら読点が無くてもよい（“subject matter experts” or SME）。囲みが名前の終わりを決める。
+ */
+const isAlternativeAt = (patterns: DefinitionPatterns, body: string, acronym: string, at: number): boolean => {
+  const before = body.slice(Math.max(0, at - DEFINITION_REACH), at);
+  const joined = patterns.alternative.exec(before);
+  if (joined === null) {
+    const quotedJoin = patterns.quotedAlternative.exec(before);
+    const quoted = quotedJoin === null ? undefined : quotedNameBefore(body.slice(0, at - quotedJoin[0].length));
+    return quoted !== undefined && namesAcronym(quoted, acronym);
+  }
+  const name = body.slice(0, at - joined[0].length);
+  const quoted = quotedNameBefore(name);
   return spellsOut(name, acronym) || (quoted !== undefined && namesAcronym(quoted, acronym));
 };
 
@@ -447,6 +466,56 @@ const formTerms = (lines: readonly string[], form: EntryForm): string[] => {
 export const termEntryAcronyms = (source: string): ReadonlySet<string> => {
   const lines = proseLines(source.split(/\r?\n/u));
   return new Set(ENTRY_FORMS.flatMap((form) => formTerms(lines, form)));
+};
+
+/** 箇条書きの項目の行。字下げの幅と、印の後ろの文。 */
+const LIST_ITEM = /^(?<indent>[ \t]*)(?:[-*+]|\d+[.)])\s+(?<text>.*)$/u;
+const ITEM_ACRONYM = /(?<![\p{L}\p{N}_&])(?<acronym>[A-Z]{2,10})s?(?![\p{L}\p{N}_&])/gu;
+/** 親の項目の名前の語の短さの下限。of や to の頭文字は、2 字の略語にたまたま揃いやすい。 */
+const MIN_PARENT_WORD = 3;
+
+type ListItem = { readonly text: string; readonly children: string };
+
+const indentOf = (line: string): number => (/^[ \t]*/u.exec(line)?.[0] ?? "").length;
+
+/** at から始まる項目の、自分の文（続きの行も）と、それより深く字下げした子の項目の文。 */
+const itemAt = (lines: readonly string[], at: number): ListItem | undefined => {
+  const item = LIST_ITEM.exec(lines[at] ?? "")?.groups;
+  if (item === undefined) return undefined;
+  const indent = (item["indent"] ?? "").length;
+  const endIndex = lines.findIndex((line, index) => index > at && line.trim() !== "" && indentOf(line) <= indent);
+  const block = lines.slice(at + 1, endIndex === -1 ? lines.length : endIndex);
+  const firstChild = block.findIndex((line) => LIST_ITEM.test(line));
+  const own = firstChild === -1 ? block : block.slice(0, firstChild);
+  const children = firstChild === -1 ? [] : block.slice(firstChild);
+  return { text: [item["text"] ?? "", ...own].join(" "), children: children.join("\n") };
+};
+
+/** 文の中に、略語の文字を頭文字に持つ語が続けて並ぶか（product owner → PO）。大文字小文字を問わず、短い語は数えない。 */
+const spelledByRun = (text: string, acronym: string): boolean => {
+  const letters = [...acronym.toLowerCase()];
+  const words = text.toLowerCase().match(/\p{L}+/gu) ?? [];
+  const runStartsAt = (start: number): boolean =>
+    letters.every((letter, offset) => {
+      const word = words[start + offset] ?? "";
+      return word.length >= MIN_PARENT_WORD && word.startsWith(letter);
+    });
+  return words.some((_, start) => runStartsAt(start));
+};
+
+/**
+ * 子の項目で使う略語のうち、親の項目がその名前を書き出しているもの（- **No product owner:** … の下の - Unavailable PO: …）。
+ * 入れ子の箇条書きでは、親の項目が子の項目の話題を名指すので、親の語の頭文字が略語と揃えば展開と読む。
+ */
+export const parentItemAcronyms = (source: string): ReadonlySet<string> => {
+  const lines = withoutFences(source.split(/\r?\n/u));
+  return new Set(
+    lines.flatMap((_, index) => {
+      const item = itemAt(lines, index);
+      if (item === undefined || item.children === "") return [];
+      return [...item.children.matchAll(ITEM_ACRONYM)].map((match) => match.groups?.["acronym"] ?? "").filter((acronym) => spelledByRun(item.text, acronym));
+    }),
+  );
 };
 
 export type ExpandedAt = (body: string, acronym: string, at: number) => boolean;

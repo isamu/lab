@@ -105,6 +105,7 @@ entries:
   - pattern: HIV
   - pattern: UV
   - pattern: FYI
+  - pattern: NB # nota bene, a Latin abbreviation read like i.e. and e.g.
   - pattern: LGBTQ
   - pattern: CD
   - pattern: ROM
