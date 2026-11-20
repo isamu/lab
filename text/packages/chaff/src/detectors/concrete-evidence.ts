@@ -1,4 +1,4 @@
-import type { Sentence, Span, StructureKind, StructureNode, Token } from "../plugin.ts";
+import type { Section, Sentence, Span, StructureKind, StructureNode, Token } from "../plugin.ts";
 import { preOrder } from "../tree-walk.ts";
 import { isStatement } from "./technical-docs.ts";
 
@@ -146,3 +146,58 @@ export const isNavigationLine = (sentence: Pick<Sentence, "text">, lines: readon
 
 /** 条件を並べる節の見出し（Requirements、応募資格）。並ぶのは条件で、裏づけを求める主張ではない。 */
 export const isConditionHeading = (heading: string, headings: readonly string[]): boolean => headings.includes(bareLine(heading));
+
+/** 節と、その下の節（続く、見出しがより深い節）。親の節の本文は短い導入で、中身は下の節にある。導入部（深さ 0）は親ではない。 */
+export const withSubsections = <T extends Pick<Section, "depth">>(sections: readonly T[], section: T): T[] => {
+  const index = sections.indexOf(section);
+  const after = index === -1 ? [] : sections.slice(index + 1);
+  const next = section.depth === 0 ? 0 : after.findIndex((other) => other.depth <= section.depth);
+  return [section, ...(next === -1 ? after : after.slice(0, next))];
+};
+
+/** 大文字だけの略語（API、PDFs）。どの文書にも出る技術の語で、名指しした物ではない。 */
+const ACRONYM = /^\p{Lu}+s?$/u;
+const CAPITAL_HEAD = /^\p{Lu}/u;
+const WORD = /\p{L}/u;
+
+/** 一字の語（e-Tax の e）は、名前の切れ端。 */
+const MIN_NAME_CHARS = 2;
+
+/** 名前と読んだ語のうち、ふつうの語の大文字書き（Timeline、Changes）・強調（NEVER）・略語・切れ端でないもの。 */
+const isDistinctiveName = (token: Token): boolean =>
+  token.pos === "PROPN" &&
+  token.features?.["OrdinaryWord"] !== "Yes" &&
+  token.features?.["Emph"] !== "Yes" &&
+  !ACRONYM.test(token.surface) &&
+  Array.from(token.surface).length >= MIN_NAME_CHARS;
+
+/** 大文字で始まる文頭の語は、名前と区別がつかない（Chimneys）。大文字の無い文字（日本語）の文頭は名前のまま読む。 */
+const distinctiveIn = (sentence: Pick<Sentence, "tokens">): Span[] => {
+  const tokens = sentence.tokens ?? [];
+  const head = tokens.find((token) => WORD.test(token.surface));
+  const skipped = head !== undefined && CAPITAL_HEAD.test(head.surface) ? head : undefined;
+  return tokens.filter((token) => token !== skipped && isDistinctiveName(token)).map((token) => token.span);
+};
+
+/** 固有の名前（KubeCon、GitHub、大阪城ホール）の範囲。ふつうの語・略語・文頭の語だけでできた名前は除く。 */
+export const distinctiveNames = (sentences: readonly Pick<Sentence, "tokens">[], names: readonly Span[]): Span[] => {
+  const distinctive = sentences.flatMap(distinctiveIn);
+  return names.filter((name) => startsWithin(name, distinctive));
+};
+
+/** 名前が書かれた節の数がこの割合に届くなら、文書の主題（Kubernetes、Rust）で、その節が持ち帰らせる具体物ではない。 */
+const SUBJECT_SHARE = 0.5;
+
+const indexOfSection = (sections: readonly Pick<Section, "span">[], at: number): number =>
+  sections.findIndex((section) => at >= section.span.start && at < section.span.end);
+
+/** 固有の名前（KubeCon、GitHub）のうち、節の具体物として数えるもの。文書の半分以上の節に書かれた名前は主題なので除く。 */
+export const namesAsEvidence = (names: readonly Span[], source: string, sections: readonly Pick<Section, "span">[]): Span[] => {
+  const keyOf = (span: Span): string => source.slice(span.start, span.end).toLowerCase();
+  const sectionsOf = new Map<string, Set<number>>();
+  names.forEach((name) => {
+    const index = indexOfSection(sections, name.start);
+    if (index !== -1) sectionsOf.set(keyOf(name), (sectionsOf.get(keyOf(name)) ?? new Set<number>()).add(index));
+  });
+  return names.filter((name) => (sectionsOf.get(keyOf(name))?.size ?? 0) < sections.length * SUBJECT_SHARE);
+};

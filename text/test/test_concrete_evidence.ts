@@ -10,8 +10,10 @@ import {
   isConditionHeading,
   isLabelOnly,
   isNavigationLine,
+  namesAsEvidence,
   startsWithin,
   statesIntent,
+  withSubsections,
   type AdviceWords,
   type IntentWords,
 } from "../packages/chaff/src/detectors/concrete-evidence.ts";
@@ -592,5 +594,83 @@ describe("concrete-evidence-density: 条件・提言・案内の節", () => {
   it("invalid: 案内の行を除いた残りが主張なら指摘する", () => {
     const source = `ページの先頭です。\n\n# 方針\n\n## 公開\n\n${ABSTRACT_JA}\n\n## 信頼\n\n${ABSTRACT_JA}\n\n## 最後\n\n本文\n\n${ABSTRACT_JA}\n`;
     assert.deepEqual(flaggedIn(source, ja), ["公開", "信頼", "最後"]);
+  });
+});
+
+describe("withSubsections / namesAsEvidence", () => {
+  const at = (depth: number, start: number, end: number): { depth: number; span: { start: number; end: number } } => ({ depth, span: { start, end } });
+
+  it("節の下の、見出しがより深い節を続く限り含める", () => {
+    const sections = [at(0, 0, 5), at(2, 5, 10), at(3, 10, 15), at(3, 15, 20), at(2, 20, 25)];
+    assert.deepEqual(withSubsections(sections, sections[1]), sections.slice(1, 4));
+    assert.deepEqual(withSubsections(sections, sections[4]), [sections[4]]);
+  });
+
+  it("valid: 導入部（深さ 0）は親ではない。文書に無い節はその節だけ", () => {
+    const sections = [at(0, 0, 5), at(1, 5, 10)];
+    assert.deepEqual(withSubsections(sections, sections[0]), [sections[0]]);
+    const stray = at(2, 30, 40);
+    assert.deepEqual(withSubsections(sections, stray), [stray]);
+  });
+
+  it("半分以上の節に書かれた名前は主題で、具体物に数えない（大文字小文字は問わない）", () => {
+    const source = "Acme KubeCon. Acme. ACME. Plain.";
+    const sections = [at(1, 0, 14), at(1, 14, 20), at(1, 20, 26), at(1, 26, 33)];
+    const kubecon = { start: 5, end: 12 };
+    const names = [{ start: 0, end: 4 }, kubecon, { start: 14, end: 18 }, { start: 20, end: 24 }];
+    assert.deepEqual(namesAsEvidence(names, source, sections), [kubecon]);
+  });
+
+  it("valid: 名前が無ければ何も数えない。節の外の名前も数えない", () => {
+    assert.deepEqual(namesAsEvidence([], "", [at(1, 0, 1)]), []);
+    assert.deepEqual(namesAsEvidence([{ start: 0, end: 4 }], "Acme", []), []);
+  });
+});
+
+describe("concrete-evidence-density: 名前・ドメイン名・下の節", () => {
+  before(async () => {
+    await en.prepare?.({ pos: true });
+    await ja.prepare?.({ pos: true });
+  });
+
+  it("valid: 催しや場所の名前を挙げた節は具体物がある（KubeCon）", () => {
+    const named = "Contributors gain time for planning and testing. They can prepare for events like KubeCon. They can also rest.";
+    assert.deepEqual(flaggedIn(englishWith(named), en), OTHERS_EN);
+  });
+
+  it("valid: 地の文のドメイン名は確かめに行ける具体物（IdentityTheft.gov）", () => {
+    const pointer = "If a scammer has your information, go to IdentityTheft.gov. There you see the steps to take. The steps depend on what you lost.";
+    assert.deepEqual(flaggedIn(englishWith(pointer), en), OTHERS_EN);
+  });
+
+  it("valid: 親の節は下の節と合わせて見る。導入が短くても、下の節に数字があれば指摘しない", () => {
+    const source = `${englishWith(ABSTRACT_EN)}\n\n### Detail\n\nThe queue fell from 40 to 12 items.\n`;
+    assert.deepEqual(flaggedIn(source, en), OTHERS_EN);
+  });
+
+  it("valid: 日本語でも、固有の名前を挙げた節は具体物がある", () => {
+    const named = "研修は大阪城ホールで開きます。案内は総務部が送ります。持ち物は筆記用具です。";
+    assert.deepEqual(flaggedIn(japaneseWith(named), ja), OTHERS_JA);
+  });
+
+  it("invalid: どの節にも出る名前は文書の主題で、具体物に数えない", () => {
+    const subject = "Acme values openness. Acme believes in trust. Acme acts with care.";
+    const source = `# Values\n\n## Openness\n\n${subject}\n\n## Trust\n\n${subject}\n\n## Last\n\n${subject}`;
+    assert.deepEqual(flaggedIn(source, en), ["Openness", "Trust", "Last"]);
+  });
+
+  it("invalid: 下の節にも具体物が無い親の節は、今までどおり指摘する", () => {
+    const source = `${englishWith(ABSTRACT_EN)}\n\n### Detail\n\n${ABSTRACT_EN}\n`;
+    assert.deepEqual(flaggedIn(source, en), [...OTHERS_EN, "Last", "Detail"]);
+  });
+
+  it("invalid: 大文字だけの略語と、文頭の大文字の語は名前に数えない（API、Chimneys）", () => {
+    const generic = "We read the API notes first. Chimneys need care in winter. We keep the PDF copies safe.";
+    assert.ok(flaggedIn(englishWith(generic), en).includes("Last"));
+  });
+
+  it("invalid: 略語の点（e.g. i.e.）はドメイン名ではない", () => {
+    const abbreviated = "We value openness, e.g. in reviews. We believe in trust, i.e. good faith. We act with care.";
+    assert.ok(flaggedIn(englishWith(abbreviated), en).includes("Last"));
   });
 });
