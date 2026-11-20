@@ -15,6 +15,20 @@ const KANJI_OR_HIRAGANA = /[一-鿿ぁ-ゖ]/u;
 export const holdsName = (text: string, span: Span, start: number, end: number): boolean =>
   span.start <= start && end <= span.end && !KANJI_OR_HIRAGANA.test(text.slice(span.start, start) + text.slice(end, span.end));
 
+const HIRAGANA_HEAD = /^\s*[ぁ-ゖ]/u;
+
+/**
+ * 漢字の連なり [start, end) が、一行を漢字も平仮名も無い語（ダイヤル）とだけで埋め、その下に行が続くか。
+ * 番号や内容の上に置いた名前の行（児童相談所虐待対応ダイヤル / 189）。下の行が平仮名で始まれば、折り返した文の途中。
+ */
+export const labelsLines = (text: string, start: number, end: number): boolean => {
+  const lineStart = text.lastIndexOf("\n", start - 1) + 1;
+  const lineEnd = text.indexOf("\n", end);
+  if (start >= end || lineEnd < 0) return false;
+  const below = text.slice(lineEnd + 1);
+  return below.trim() !== "" && !HIRAGANA_HEAD.test(below) && holdsName(text, { start: lineStart, end: lineEnd }, start, end);
+};
+
 /** 連なりの前（before: 文の頭から連なりまで）が、空白を挟んだ法人格で終わるか（一般社団法人 全国銀行個人信用情報センター）。 */
 export const followsForm = (before: string, forms: readonly string[]): boolean => {
   const trimmed = before.trimEnd();
