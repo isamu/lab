@@ -25,7 +25,7 @@ react-ja-thinking  1
 saikosai-h18-09-14-bengoshi-chokai  4
 saikosai-h26-09-02-nagano  3
 soumu-kokumin-cyber-malware  3
-soumu-kokumin-cyber-phishing  2
+soumu-kokumin-cyber-phishing  1
 soumu-wp-r06-ai-rules-japan  3
 soumu-wp-r06-misinformation  3
 tcu-rishu-toroku-2026-kouki  2

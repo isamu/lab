@@ -25,7 +25,7 @@ import { emailParts, emailVocabulary } from "./email-parts.ts";
 import { cutTextSpans } from "./span-cut.ts";
 import { markdownFigures } from "./text-figures.ts";
 import { documentMarkup } from "./markup.ts";
-import { BARE_URL } from "./bare-url.ts";
+import { bareUrls } from "./bare-url.ts";
 import { lazyCells, tableCellsOf } from "./table-cells.ts";
 import type { BulletList, LanguageAdapter, Markup, ProseDocument, Sentence, Span, StructureNode, DocumentProfile } from "./plugin.ts";
 
@@ -81,7 +81,7 @@ const DIRECTIVE = /^[ \t]*:::[^\n]*/gmu;
 const matchSpans = (source: string, pattern: RegExp): Span[] =>
   [...source.matchAll(pattern)].map((match) => ({ start: match.index, end: match.index + match[0].length }));
 
-const directiveSpans = (source: string): Span[] => [...matchSpans(source, DIRECTIVE), ...matchSpans(source, BARE_URL)];
+const directiveSpans = (source: string): Span[] => [...matchSpans(source, DIRECTIVE), ...bareUrls(source)];
 
 const collectMasks = (root: Node, source: string, anchors: InPageAnchors, syntax: readonly Span[]): Span[] => {
   const spans: Span[] = [...directiveSpans(source), ...syntax];
