@@ -7,6 +7,7 @@ import { buildDocument } from "../packages/chaff/src/document.ts";
 import { entriesForGenre } from "../packages/chaff/src/lexicon-genres.ts";
 import { vagueWordsIn } from "../packages/chaff/src/detectors/vague-density.ts";
 import { specifiedByBracket } from "../packages/chaff/src/detectors/bracket-specified.ts";
+import { governedByLaw, lawReferenceOf, NO_LAW_REFERENCE } from "../packages/chaff/src/detectors/law-governed.ts";
 
 // あいまいな語の密度（vague-word-density）。例文はすべて自作。
 
@@ -150,6 +151,62 @@ describe("vague-word-density: すぐ後ろの括弧で中身を決めた語", ()
     assert.deepEqual(wordsWithMarkers("一定の事項を、記録（紙）に残します。"), ["一定の"]);
     assert.deepEqual(wordsWithMarkers("適切な措置（以下「本措置」という。）を講じます。"), ["適切な"]);
     assert.deepEqual(wordsWithMarkers('A reasonable fee (hereinafter the "Fee") applies.', en), ["reasonable"]);
+  });
+});
+
+/** The vague words of each sentence, as the rule reads them, with the language's law references. */
+const wordsUnderLaw = (text: string): string[] => {
+  const doc = buildDocument("a.md", `${text}\n`, en);
+  const law = lawReferenceOf(doc.lexicons["vague-word-law-reference"] ?? []);
+  return doc.sentences.flatMap((sentence) => vagueWordsIn(sentence, doc.lexicons["vague-word"] ?? [], [], [], law));
+};
+
+describe("vague-word-density: a vague word a law or a section governs", () => {
+  it("a law, a statute's section or a named law right after by / under fixes the requirement", () => {
+    assert.deepEqual(wordsUnderLaw("The Provider will not disclose it except as required by applicable law."), []);
+    assert.deepEqual(wordsUnderLaw("It keeps an accounting of disclosures as required under 45 CFR §164.528(a)."), []);
+    assert.deepEqual(wordsUnderLaw("It reports breaches as required by §164.410 of HIPAA and any incident."), []);
+    assert.deepEqual(wordsUnderLaw("It appoints officials as required under HIPAA."), []);
+    assert.deepEqual(wordsUnderLaw("It adopts the notice as required by the Privacy Rule."), []);
+    assert.deepEqual(wordsUnderLaw("It labels the food as required under the Food Safety Modernization Act."), []);
+    assert.deepEqual(wordsUnderLaw("It files the report as necessary pursuant to Section 4.1."), []);
+  });
+
+  it("a party, no governing word, a law past the clause or the next governor, and a bare word are still counted", () => {
+    assert.deepEqual(wordsUnderLaw("It sends the files as required by Licensor."), ["as required"]);
+    assert.deepEqual(wordsUnderLaw("It sends the files as required and keeps a log."), ["as required"]);
+    assert.deepEqual(wordsUnderLaw("It sends the files as required, and the law decides the rest."), ["as required"]);
+    assert.deepEqual(wordsUnderLaw("It sends the files as required by the customer under the law."), ["as required"]);
+    assert.deepEqual(wordsUnderLaw("It takes appropriate steps under applicable law."), ["appropriate"]);
+    assert.deepEqual(wordsUnderLaw("It sends the files as required by the lawyer."), ["as required"]);
+  });
+
+  it("a document full of law-governed words is not dense, and the bare ones still are", () => {
+    const governed = "The Provider discloses data as required by applicable law. It keeps records as required under 45 CFR §164.528. ";
+    const contract = findingsOf(`${PLAIN_EN.repeat(13)}${governed.repeat(2)}\n`, en, "legal/contract");
+    assert.deepEqual(contract, []);
+    const bare = "The Provider discloses data as required. It keeps records as needed. It reports as necessary. ";
+    assert.equal(findingsOf(`${PLAIN_EN.repeat(13)}${governed}${bare}\n`, en, "legal/contract").length, 3);
+  });
+});
+
+describe("governedByLaw", () => {
+  const law = { governors: ["by", "under", "pursuant to"], references: ["law", "§", "hipaa"] };
+
+  it("a governing word right after the end, then a law within the clause", () => {
+    assert.equal(governedByLaw("as required by law.", 11, law), true);
+    assert.equal(governedByLaw("as required pursuant to §164.410", 11, law), true);
+    assert.equal(governedByLaw("as required  Under HIPAA", 11, law), true);
+  });
+
+  it("no governing word, a governing word glued to another, a law after punctuation, or nothing to read", () => {
+    assert.equal(governedByLaw("as required for law", 11, law), false);
+    assert.equal(governedByLaw("as required bylaw", 11, law), false);
+    assert.equal(governedByLaw("as required by Company, law", 11, law), false);
+    assert.equal(governedByLaw("as required by lawyers", 11, law), false);
+    assert.equal(governedByLaw("as required", 11, law), false);
+    assert.equal(governedByLaw("", 0, law), false);
+    assert.equal(governedByLaw("as required by law", 11, NO_LAW_REFERENCE), false);
   });
 });
 
