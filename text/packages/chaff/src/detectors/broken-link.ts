@@ -68,6 +68,14 @@ const REFERENCE_LIKE = /(?<![\\A-Za-z0-9_\]])\[([^[\]\n]+)\]\[([^[\]\n]*)\]/gu;
 /** 数だけの括弧（[1][2]、[3, 4]）は、参照の記法ではなく文献の番号を並べたもの。 */
 const CITATION_NUMBERS = /^[\d\s,，、–-]+$/u;
 
+/**
+ * ファイルの種類と大きさの札（[PDF:47KB]、[PDFファイル／269KB]、[Excel 28 KB]）。役所のページがリンクの後ろに書く添え書きで、
+ * 写すと字のまま残る。名前の定義で呼ぶ参照の記法ではない。
+ */
+const FILE_SIZE_LABEL = /^(?:\p{L}[\p{L}\p{N}]*\s*[:：/／、,，\s]\s*)?\d[\d.,]*\s*(?:[KMGT]i?B|bytes?|バイト)$/iu;
+
+const fileSizeLabel = (match: RegExpMatchArray): boolean => FILE_SIZE_LABEL.test(match[1] ?? "") || FILE_SIZE_LABEL.test(match[2] ?? "");
+
 /** 画像の参照（`![alt][label]`）の頭の印。指摘の範囲に含める。 */
 const IMAGE_MARK = "!";
 
@@ -118,6 +126,7 @@ export const unresolvedReferences = (source: string, markup: Markup): Span[] => 
   return markup.texts.flatMap((text) =>
     [...source.slice(text.start, text.end).matchAll(REFERENCE_LIKE)]
       .filter((match) => !CITATION_NUMBERS.test(match[1] ?? "") && !siteDefinedImage(source, text.start + match.index, match[2] ?? ""))
+      .filter((match) => !fileSizeLabel(match))
       .filter((match) => !CHARACTER_CLASS.test(match[1] ?? "") && !CHARACTER_CLASS.test(match[2] ?? "") && !bookDefined(match[2] ?? ""))
       .map((match) => ({ start: text.start + match.index, end: text.start + match.index + match[0].length }))
       .map((span) => (imageAt(source, span.start) ? { start: span.start - 1, end: span.end } : span)),
