@@ -56,3 +56,66 @@ export const isOtherEnding = (name: string, usual: string, endings: readonly Wor
   const [nameEnd, usualEnd] = [name.slice(-1).toLowerCase(), usual.slice(-1).toLowerCase()];
   return endings.some(({ ending, insteadOf }) => (ending === nameEnd && insteadOf === usualEnd) || (ending === usualEnd && insteadOf === nameEnd));
 };
+
+/** Whether the document writes word in small letters somewhere (stain beside Stain, vigil beside Vigil): an ordinary word there. */
+export const isWrittenSmall = (text: string, word: string): boolean => {
+  const small = word.toLowerCase();
+  return ONE_WORD.test(word) && small !== word && new RegExp(`(?<![\\p{L}\\p{N}])${escapeRegExp(small)}(?![\\p{L}\\p{N}])`, "u").test(text);
+};
+
+/**
+ * Whether a pair of one-word forms holds a word the document writes in small letters: the pointed form (Stain beside stain
+ * and Spain), or the usual form when the pointed one is a dictionary word too (Virgil beside Vigil and vigil). A name beside
+ * an ordinary word, or two ordinary words, not one name written two ways. A pointed form no dictionary knows beside a word
+ * written in small letters (Affliates beside affiliates) is still a slip.
+ */
+export const isNameAndWord = (name: string, usual: string, text: string, isKnown: (word: string) => boolean): boolean =>
+  isWrittenSmall(text, name) || (isWrittenSmall(text, usual) && isKnown(name.toLowerCase()));
+
+const APOSTROPHES = /['’]/gu;
+const APOSTROPHE_WORD = /^\p{L}+(?:['’]\p{L}+)+$/u;
+/** A stem shorter than this (the O of O'Brien) is a name's prefix, not a word. */
+const MIN_CONTRACTED_STEM = 2;
+
+/**
+ * Whether two one-word forms differ only by an apostrophe and the part before it is a word the document writes in small
+ * letters (Look’ee and Lookee, Thank’ee and Thankee): a contraction of an ordinary word printed both ways, not a name.
+ */
+export const isContractionPair = (name: string, usual: string, text: string): boolean => {
+  const [marked, plain] = APOSTROPHE_WORD.test(name) ? [name, usual] : [usual, name];
+  const stem = marked.split(APOSTROPHES)[0] ?? "";
+  return (
+    APOSTROPHE_WORD.test(marked) &&
+    ONE_WORD.test(plain) &&
+    marked.replaceAll(APOSTROPHES, "") === plain &&
+    stem.length >= MIN_CONTRACTED_STEM &&
+    isWrittenSmall(text, stem)
+  );
+};
+
+/** An acronym in capitals with a plural s (SBLCs). Names in capitals alone are not compared at all. */
+const ACRONYM_PLURAL = /^\p{Lu}{2,}s$/u;
+
+/** Whether two forms are acronyms with a plural s (SBLCs and SBDCs): one letter tells two programmes apart. */
+export const isAcronymPair = (name: string, usual: string): boolean => ACRONYM_PLURAL.test(name) && ACRONYM_PLURAL.test(usual);
+
+const RUN_START = /\S*$/u;
+const SPACE = /\s/u;
+/** Marks a file name or a URL may end with in running text (Prosperity.pdf. or 2015.pdf;). */
+const TRAILING_MARKS = /[.,;:!?)\]]+$/u;
+/** A file name's extension in small letters after a letter or digit (.pdf, .html), or a URL's scheme. */
+const FILE_OR_URL = /[\p{L}\p{N}]\.\p{Ll}{2,4}$|:\/\//u;
+const EXTENSION = /\.\p{Ll}{2,4}$/u;
+
+/**
+ * Whether the form at offset is part of a file name or a URL: the text without spaces around it holds more than the form
+ * and its extension, and ends with an extension or holds a scheme (Low-Tax-Rates-to-Create-American-Economic-Prosperity.pdf).
+ * A name with only a domain after it (Borrowmoney.com) is still the name.
+ */
+export const isInFileName = (text: string, offset: number, length: number): boolean => {
+  const start = text.slice(0, offset).search(RUN_START);
+  const rest = text.slice(offset + length);
+  const after = rest.search(SPACE);
+  const run = text.slice(start, offset + length + (after < 0 ? rest.length : after)).replace(TRAILING_MARKS, "");
+  return run.replace(EXTENSION, "").length > length && FILE_OR_URL.test(run);
+};
