@@ -107,7 +107,7 @@ const isNearPair = (reading: Reading, found: Found): boolean => {
     isOtherEnding(found.name, found.usual, reading.endings) ||
     offsetsOf(reading.text, found.usual).some((offset) => inOneSentence(reading.sentences, found.offset, offset)) ||
     (word !== undefined && offsetsOf(reading.text, word).length >= 2) ||
-    isNameAndWord(found.name, found.usual, reading.text) ||
+    isNameAndWord(found.name, found.usual, reading.text, (word) => reading.speller !== undefined && isKnownWord(word, reading.speller)) ||
     isAcronymPair(found.name, found.usual) ||
     isCapitalisedByPlace(found, reading.text, reading.sentenceStarts, reading.speller, reading.ordinary)
   );

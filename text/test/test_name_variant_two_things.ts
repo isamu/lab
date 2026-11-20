@@ -99,12 +99,14 @@ describe("name-variant: two things, not one name", () => {
   });
 
   it("isNameAndWord: one of two one-word forms written in small letters elsewhere", () => {
-    assert.equal(isNameAndWord("Stain", "Spain", "Stain every page, stain every song."), true);
-    assert.equal(isNameAndWord("Virgil", "Vigil", "I kept a vigil."), true);
-    assert.equal(isNameAndWord("Spian", "Spain", "He sailed to Spain."), false);
-    assert.equal(isNameAndWord("Stain", "Spain", "Stain-resistant, stained."), false);
-    assert.equal(isNameAndWord("New Stain", "New Spain", "a stain"), false);
-    assert.equal(isNameAndWord("", "", ""), false);
+    const known = (word: string): boolean => ["virgil", "stain"].includes(word);
+    assert.equal(isNameAndWord("Stain", "Spain", "Stain every page, stain every song.", known), true);
+    assert.equal(isNameAndWord("Virgil", "Vigil", "I kept a vigil.", known), true);
+    assert.equal(isNameAndWord("Affliates", "Affiliates", "its affiliates", known), false);
+    assert.equal(isNameAndWord("Spian", "Spain", "He sailed to Spain.", known), false);
+    assert.equal(isNameAndWord("Stain", "Spain", "Stain-resistant, stained.", known), false);
+    assert.equal(isNameAndWord("New Stain", "New Spain", "a stain", known), false);
+    assert.equal(isNameAndWord("", "", "", known), false);
   });
 
   it("a name one letter from a word the document writes in small letters is two words", () => {
@@ -112,6 +114,12 @@ describe("name-variant: two things, not one name", () => {
     assert.deepEqual(variants(whitman, en, "a.txt"), []);
     const vigil = "The Vigil began. The Vigil ended.\n\nI kept a vigil there.\n\nNot Virgil and Dante, nor myriad memories.\n";
     assert.deepEqual(variants(vigil, en, "a.txt"), []);
+  });
+
+  it("a misspelt defined word is still reported beside the word in small letters", () => {
+    const contract =
+      "Licensor and its Affiliates grant this. The Affiliates agree. Licensor and its affiliates sign. Licensor and its Affliates hereby grant.\n";
+    assert.deepEqual(variants(contract), ['"Affliates" is one letter away from "Affiliates", which the document uses more than once']);
   });
 
   it("a slip of a name that is no ordinary word is still reported", () => {
@@ -155,6 +163,7 @@ describe("name-variant: two things, not one name", () => {
     assert.equal(isInFileName(url, url.indexOf("Risk"), "Risk-Assessment".length), true);
     const prose = "the Risk-Assessment. Then e.g. more";
     assert.equal(isInFileName(prose, prose.indexOf("Risk"), "Risk-Assessment".length), false);
+    assert.equal(isInFileName("Borrowmoney.com, inc.", 0, "Borrowmoney".length), false);
     assert.equal(isInFileName("e.g.", 0, 1), false);
     assert.equal(isInFileName("", 0, 0), false);
   });

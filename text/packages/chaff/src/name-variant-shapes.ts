@@ -64,10 +64,13 @@ export const isWrittenSmall = (text: string, word: string): boolean => {
 };
 
 /**
- * Whether a pair of one-word forms holds a word the document writes in small letters (Stain and Spain, Virgil and Vigil):
- * a name beside an ordinary word, or two ordinary words, not one name written two ways.
+ * Whether a pair of one-word forms holds a word the document writes in small letters: the pointed form (Stain beside stain
+ * and Spain), or the usual form when the pointed one is a dictionary word too (Virgil beside Vigil and vigil). A name beside
+ * an ordinary word, or two ordinary words, not one name written two ways. A pointed form no dictionary knows beside a word
+ * written in small letters (Affliates beside affiliates) is still a slip.
  */
-export const isNameAndWord = (name: string, usual: string, text: string): boolean => isWrittenSmall(text, name) || isWrittenSmall(text, usual);
+export const isNameAndWord = (name: string, usual: string, text: string, isKnown: (word: string) => boolean): boolean =>
+  isWrittenSmall(text, name) || (isWrittenSmall(text, usual) && isKnown(name.toLowerCase()));
 
 const APOSTROPHES = /['’]/gu;
 const APOSTROPHE_WORD = /^\p{L}+(?:['’]\p{L}+)+$/u;
@@ -102,15 +105,17 @@ const SPACE = /\s/u;
 const TRAILING_MARKS = /[.,;:!?)\]]+$/u;
 /** A file name's extension in small letters after a letter or digit (.pdf, .html), or a URL's scheme. */
 const FILE_OR_URL = /[\p{L}\p{N}]\.\p{Ll}{2,4}$|:\/\//u;
+const EXTENSION = /\.\p{Ll}{2,4}$/u;
 
 /**
- * Whether the form at offset is part of a file name or a URL: the text without spaces around it is longer than the form
- * and ends with an extension or holds a scheme (Low-Tax-Rates-to-Create-American-Economic-Prosperity.pdf).
+ * Whether the form at offset is part of a file name or a URL: the text without spaces around it holds more than the form
+ * and its extension, and ends with an extension or holds a scheme (Low-Tax-Rates-to-Create-American-Economic-Prosperity.pdf).
+ * A name with only a domain after it (Borrowmoney.com) is still the name.
  */
 export const isInFileName = (text: string, offset: number, length: number): boolean => {
   const start = text.slice(0, offset).search(RUN_START);
   const rest = text.slice(offset + length);
   const after = rest.search(SPACE);
   const run = text.slice(start, offset + length + (after < 0 ? rest.length : after)).replace(TRAILING_MARKS, "");
-  return run.length > length && FILE_OR_URL.test(run);
+  return run.replace(EXTENSION, "").length > length && FILE_OR_URL.test(run);
 };
