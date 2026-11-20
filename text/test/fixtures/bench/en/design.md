@@ -15,7 +15,7 @@ The screens are a single-page application that sends JSON to the server. Claims 
 
 ### 3.1 Sign-in
 
-Employees log in by SSO through the company identity provider over SAML. The approver, the department, and the cost centre of each claimant come from the HR system.
+Employees log in by SSO through the company identity provider over SAML. The approver, the department, and the cost centre of each claimant come from the ERP system.
 
 ### 3.2 Data
 

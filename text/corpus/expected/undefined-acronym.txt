@@ -19,6 +19,7 @@ da-priority-policy-program  3
 da-service-design-guidelines-2  4
 ecfr-16-cfr-310-telemarketing  3
 fed-powell-2025-08-22-framework-review  1
+genai-web-procedure  2
 github-general-privacy-statement  4
 gitlab-meetings  6
 gitlab-values  8
