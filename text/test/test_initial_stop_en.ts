@@ -7,7 +7,7 @@ import { initialStops, unmarkInitialStops } from "../packages/lang-en/src/initia
 // abbreviation before another capitalised word does not ("the U.S. Census Bureau"). Every sentence is self-written.
 
 const wordsOf = (id: string): string[] => (en.lexicons[id] ?? []).map((entry) => entry.pattern);
-const STOPS = initialStops(wordsOf("sentence-start-word"), wordsOf("prepositive-abbreviation"), wordsOf("name-abbreviation"));
+const STOPS = initialStops(wordsOf("sentence-start-word"), wordsOf("prepositive-abbreviation"), wordsOf("name-abbreviation"), wordsOf("closing-abbreviation"));
 const sentencesOf = (text: string): string[] => en.segment(text).sentences.map((sentence) => sentence.text);
 
 describe("en sentences: initials and prepositive abbreviations", () => {
@@ -62,6 +62,33 @@ describe("en sentences: name abbreviations", () => {
     assert.equal(unmarkInitialStops("BJas. Hart, jas. Hart, Wm.. Lee", names), "BJas. Hart, jas. Hart, Wm.. Lee");
     assert.equal(unmarkInitialStops("Jas. Hart", initialStops([], [], [])), "Jas. Hart");
     assert.equal(unmarkInitialStops("Jas. 12", names), "Jas. 12");
+  });
+});
+
+describe("en sentences: closing abbreviations", () => {
+  it("etc. before a sentence-start word ends the sentence, across a line break or two spaces", () => {
+    assert.deepEqual(sentencesOf("Rank them by preference, the second one second, etc.\n   In the example below, the first wins."), [
+      "Rank them by preference, the second one second, etc.",
+      "In the example below, the first wins.",
+    ]);
+    assert.deepEqual(sentencesOf("Bring pens, paper, etc.  The room opens at nine."), ["Bring pens, paper, etc.", "The room opens at nine."]);
+    assert.deepEqual(sentencesOf("Bring pens, paper, etc. If you forget, ask us."), ["Bring pens, paper, etc.", "If you forget, ask us."]);
+  });
+
+  it("before a word in lower case, a name, a comma or a bracket, etc. is left to the splitter", () => {
+    assert.deepEqual(sentencesOf("Bring pens, etc.\n   and paper too."), ["Bring pens, etc.\n   and paper too."]);
+    assert.equal(unmarkInitialStops("pens, etc.\n  Cathleen came", STOPS), "pens, etc.\n  Cathleen came");
+    assert.equal(unmarkInitialStops("pens, etc., The", STOPS), "pens, etc., The");
+    assert.equal(unmarkInitialStops("pens, etc.) The", STOPS), "pens, etc.) The");
+  });
+
+  it("only the letters change, the word must stand alone, and no lexicon means no change", () => {
+    assert.equal(unmarkInitialStops("pens, etc.\n The", STOPS), "pens, nnn.\n The");
+    assert.equal(unmarkInitialStops("pens, xetc.\n The", STOPS), "pens, xetc.\n The");
+    assert.equal(unmarkInitialStops("pens, etc.\n Thereby", STOPS), "pens, etc.\n Thereby");
+    assert.equal(unmarkInitialStops("pens, etc.\n The", initialStops(["The"], [], [], [])), "pens, etc.\n The");
+    assert.equal(unmarkInitialStops("pens, etc.\n The", initialStops([], [], [], ["etc."])), "pens, etc.\n The");
+    assert.equal(unmarkInitialStops("", STOPS), "");
   });
 });
 

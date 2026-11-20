@@ -21,6 +21,7 @@ const INITIAL_STOPS = initialStops(
   (LEXICONS["sentence-start-word"] ?? []).map((entry) => entry.pattern),
   (LEXICONS["prepositive-abbreviation"] ?? []).map((entry) => entry.pattern),
   (LEXICONS["name-abbreviation"] ?? []).map((entry) => entry.pattern),
+  (LEXICONS["closing-abbreviation"] ?? []).map((entry) => entry.pattern),
 );
 const LEAD_INITIALS = leadInitials(
   (LEXICONS["initial-lead-word"] ?? []).map((entry) => entry.pattern),

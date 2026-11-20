@@ -23,10 +23,19 @@ const itemAt = (lines: readonly string[], at: number): ListItem | undefined => {
   return { text: [item["text"] ?? "", ...own].join(" "), children: children.join("\n") };
 };
 
+/** リンクの行き先と URL。アドレスの語（…/cross-project-council/…）は、書き手が書いた名前ではない。 */
+const LINK_TARGET = /\]\([^()\s]*\)/gu;
+const BARE_URL = /\bhttps?:\/\/\S+/gu;
+
+const withoutAddresses = (text: string): string => text.replace(LINK_TARGET, "]").replace(BARE_URL, " ");
+
 /** 文の中に、略語の文字を頭文字に持つ語が続けて並ぶか（product owner → PO）。大文字小文字を問わず、短い語は数えない。 */
 const spelledByRun = (text: string, acronym: string): boolean => {
   const letters = [...acronym.toLowerCase()];
-  const words = text.toLowerCase().match(/\p{L}+/gu) ?? [];
+  const words =
+    withoutAddresses(text)
+      .toLowerCase()
+      .match(/\p{L}+/gu) ?? [];
   const runStartsAt = (start: number): boolean =>
     letters.every((letter, offset) => {
       const word = words[start + offset] ?? "";

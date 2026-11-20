@@ -68,6 +68,8 @@ by_genre:
   business: { strict: 1, normal: 2, relaxed: 5 }
   speech: { strict: 1, normal: 2, relaxed: 5 }
   docs/faq: { strict: 1, normal: 1, relaxed: 3 }
+  # 手引きも、日常の略語（HR）を数えなくなってから judged corpus で測り直して下げた。
+  docs/manual: { strict: 1, normal: 2, relaxed: 5 }
 
 use_for: [business, technical, legal, docs, academic, literature, speech]
 off_for:

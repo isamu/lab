@@ -1,0 +1,7 @@
+# Abbreviations that close a list or a phrase ("phone, mail, etc."), so their full stop can end a sentence. Before a
+# sentence-start-word the full stop ends it, even across two spaces or a line break, where the splitter joined the two
+# sentences. Matched as written.
+id: closing-abbreviation
+language: en
+entries:
+  - pattern: etc.
