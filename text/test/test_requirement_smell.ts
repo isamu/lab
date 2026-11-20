@@ -143,6 +143,13 @@ describe("requirement-smell (ja)", () => {
     assert.deepEqual(found("ログ等は、三十日保存するものとする。", ja), ["open-end:等"]);
     assert.deepEqual(found("一　ログ等は、三十日保存するものとする。", ja), ["open-end:等"]);
   });
+
+  it("等 in a term that law fixes (消費税等, 免許等) closes its own list, and a term not on the list stays open", () => {
+    assert.deepEqual(found("報酬の単価には、消費税等の税金が含まれるものとする。", ja, "legal/contract"), []);
+    assert.deepEqual(found("報酬の単価には、地方消費税等が含まれるものとする。", ja, "legal/contract"), []);
+    assert.deepEqual(found("期間は、免許等の日の翌日から起算するものとする。", ja, "legal/contract"), []);
+    assert.deepEqual(found("報酬の単価には、手数料等が含まれるものとする。", ja, "legal/contract"), ["open-end:等"]);
+  });
 });
 
 describe("requirement-smell (en)", () => {
