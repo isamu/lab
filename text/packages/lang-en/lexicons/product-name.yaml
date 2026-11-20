@@ -1,5 +1,6 @@
-# Product names that end in capitals (Adobe Acrobat Reader DC). The capitals are the edition's name inside the product's,
-# not an acronym the writer spells out. Only the whole name is matched, as written: DC alone stays an acronym.
+# Product names that end in capitals (Adobe Acrobat Reader DC), and names led by the maker's short name in capitals
+# (MS Excel). The capitals are part of the product's name, not an acronym the writer spells out. Only the whole name is
+# matched, as written: DC or MS alone stays an acronym.
 id: product-name
 language: en
 entries:
@@ -7,3 +8,10 @@ entries:
   - pattern: Acrobat Pro DC
   - pattern: Acrobat Standard DC
   - pattern: Acrobat DC
+  - pattern: MS Excel
+  - pattern: MS Word
+  - pattern: MS Office
+  - pattern: MS PowerPoint
+  - pattern: MS Outlook
+  - pattern: MS Access
+  - pattern: MS Teams

@@ -27,6 +27,7 @@ describe("undefined-acronym: the same acronym in other capitals", () => {
 
   it("caseVariantsIn: other spellings with two capitals or more, as whole words", () => {
     assert.deepEqual(caseVariantsIn("the SdCode list, the SDCODE notes, Sdcode, sdcode, SdCodes", "SDCODE"), ["SdCode"]);
+    assert.deepEqual(caseVariantsIn("two CRs passed", "CRS"), []);
     assert.deepEqual(caseVariantsIn("only SDCODE here", "SDCODE"), []);
     assert.deepEqual(caseVariantsIn("", "SDCODE"), []);
   });

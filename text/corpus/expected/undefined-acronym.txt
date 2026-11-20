@@ -1,5 +1,5 @@
 18f-handbook-one-on-ones  3
-18f-handbook-projects-in-distress  5
+18f-handbook-projects-in-distress  3
 18f-handbook-travel  4
 18f-handbook-travel-faq  13
 aoml-hurricane-faq  52
@@ -10,7 +10,7 @@ bonterms-cloud-terms  2
 cisa-scuba-teams  5
 cloudgov-security-ir-guide  9
 commonpaper-csa  5
-crs-r47235-budget-timeline  4
+crs-r47235-budget-timeline  3
 crs-r47585-subcontracting  9
 crs-rl32781-salt  3
 da-ai-advisory-board-1  10
@@ -24,7 +24,7 @@ gitlab-meetings  7
 gitlab-values  8
 go-1-23-release-notes  9
 govuk-cddo-roadmap-2022-2025  8
-govuk-incident-safe-browsing  3
+govuk-incident-safe-browsing  2
 govuk-style-guide-a-to-z  25
 irs-online-account-faq  5
 kep-2214-indexed-job  5

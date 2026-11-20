@@ -1,5 +1,5 @@
-# 大文字で終わる製品の名前（Adobe Acrobat Reader DC）。大文字は製品の名前の中の版の名前で、書き手が展開する略語ではない。
-# 名前のまま字面どおりに照らすので、DC だけなら略語のまま。
+# 大文字で終わる製品の名前（Adobe Acrobat Reader DC）と、作り手の大文字の短い名前を頭に置いた製品の名前（MS Excel）。
+# 大文字は製品の名前の一部で、書き手が展開する略語ではない。名前のまま字面どおりに照らすので、DC や MS だけなら略語のまま。
 id: product-name
 language: ja
 entries:
@@ -7,3 +7,10 @@ entries:
   - pattern: Acrobat Pro DC
   - pattern: Acrobat Standard DC
   - pattern: Acrobat DC
+  - pattern: MS Excel
+  - pattern: MS Word
+  - pattern: MS Office
+  - pattern: MS PowerPoint
+  - pattern: MS Outlook
+  - pattern: MS Access
+  - pattern: MS Teams
