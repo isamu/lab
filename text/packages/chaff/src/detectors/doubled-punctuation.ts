@@ -42,12 +42,28 @@ const PAGE_ROMAN = /^x{0,3}(?:ix|iv|v?i{0,3})$/u;
 
 const isPageNumber = (page: string): boolean => PAGE_DIGITS.test(page) || (page !== "" && PAGE_ROMAN.test(page));
 
-/** 並びの終わりの点がページ番号の前の点線なら、その点は目次の点線で、並びの印ではない。 */
+/** 点線の後ろの、揃えのための二つ以上の空白と次の欄（配役表の「NORA..  Emma Vernon」）。 */
+const LEADER_THEN_GAP = /^[ \t]{2,}\S/u;
+/** 同じ段落の、ほかの長い点線と揃えの空白（「MAURYA......  Honor Lavelle」）。 */
+const LONG_LEADER_THEN_GAP = /\.{3,}[ \t]{2,}\S/u;
+
+const paragraphAround = (text: string, offset: number): string => {
+  const before = text.lastIndexOf("\n\n", offset);
+  const after = text.indexOf("\n\n", offset);
+  return text.slice(before === -1 ? 0 : before + 2, after === -1 ? text.length : after);
+};
+
+/** 点線の後ろが揃えの空白で、同じ段落にほかの長い点線も揃えの空白に続く（点線で欄を揃えた表）。 */
+const isLeaderColumn = (text: string, leaderEnd: number): boolean =>
+  LEADER_THEN_GAP.test(text.slice(leaderEnd)) && LONG_LEADER_THEN_GAP.test(paragraphAround(text, leaderEnd));
+
+const isLeaderBefore = (text: string, leaderEnd: number): boolean =>
+  isPageNumber(LEADER_THEN_PAGE.exec(text.slice(leaderEnd))?.groups?.["page"] ?? "") || isLeaderColumn(text, leaderEnd);
+
+/** 並びの終わりの点がページ番号の前の点線か、点線で欄を揃えた表の点線なら、その点は点線で、並びの印ではない。 */
 const withoutLeader = (text: string, found: DoubledMarks): DoubledMarks => {
   const kept = found.run.slice(0, Array.from(found.run).findLastIndex((mark) => mark !== ".") + 1);
-  return kept !== found.run && isPageNumber(LEADER_THEN_PAGE.exec(text.slice(found.start + found.run.length))?.groups?.["page"] ?? "")
-    ? { start: found.start, run: kept }
-    : found;
+  return kept !== found.run && isLeaderBefore(text, found.start + found.run.length) ? { start: found.start, run: kept } : found;
 };
 
 /**
