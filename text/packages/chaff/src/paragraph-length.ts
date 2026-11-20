@@ -29,8 +29,8 @@ const MIN_GLUED = 2;
 export const lostLineBreaks = (sentences: readonly { readonly text: string }[]): boolean =>
   sentences.reduce((count, sentence) => count + [...sentence.text.matchAll(GLUED_SENTENCES)].length, 0) >= MIN_GLUED;
 
-/** 【】のラベルだけの文（【０００１】【技術分野】）。見出しで、文に数えない。 */
-const LABELS_ONLY = /^\s*(?:【[^】\n]+】\s*)+$/u;
+/** 【】のラベルだけの文（【０００１】【技術分野】、２【沿革】）。見出しで、文に数えない。 */
+const LABELS_ONLY = /^\s*(?:[0-9０-９①-⑳]{0,3}【[^】\n]+】\s*)+$/u;
 
 /**
  * 段落の文を、【】の見出しや段落番号だけの行で割った組。読み手にとってはその行が段落の切れ目で、ラベルだけの文は数えない。
@@ -38,13 +38,12 @@ const LABELS_ONLY = /^\s*(?:【[^】\n]+】\s*)+$/u;
  */
 export const labelledBlocks = <T extends Spanned>(text: string, start: number, sentences: readonly T[]): T[][] => {
   const cuts = [...text.matchAll(LABEL_LINE)].map((match) => start + match.index);
-  if (cuts.length === 0) return sentences.length === 0 ? [] : [[...sentences]];
+  const counted = sentences.filter((sentence) => !LABELS_ONLY.test(text.slice(sentence.span.start - start, sentence.span.end - start)));
+  if (cuts.length === 0) return counted.length === 0 ? [] : [counted];
   const blocks = new Map<number, T[]>();
-  sentences
-    .filter((sentence) => !LABELS_ONLY.test(text.slice(sentence.span.start - start, sentence.span.end - start)))
-    .forEach((sentence) => {
-      const block = cuts.filter((cut) => cut < sentence.span.end).length;
-      blocks.set(block, [...(blocks.get(block) ?? []), sentence]);
-    });
+  counted.forEach((sentence) => {
+    const block = cuts.filter((cut) => cut < sentence.span.end).length;
+    blocks.set(block, [...(blocks.get(block) ?? []), sentence]);
+  });
   return [...blocks.values()];
 };

@@ -1,7 +1,10 @@
+import { nameSpans } from "../compare/proper-nouns.ts";
 import { proseText } from "../measure.ts";
 import type { Detector, Finding, ProseDocument, Section, Sentence } from "../plugin.ts";
 import {
+  distinctiveNames,
   evidenceSpans,
+  namesAsEvidence,
   hasNumeral,
   isClaim,
   isConditionHeading,
@@ -9,6 +12,7 @@ import {
   isNavigationLine,
   startsWithin,
   statesIntent,
+  withSubsections,
   type AdviceWords,
   type IntentWords,
 } from "./concrete-evidence.ts";
@@ -18,7 +22,7 @@ import { letteredIndexEntries } from "./lettered-index.ts";
  * 具体物の密度。数値・コード・リンク・引用が 1 つも無い節は、
  * 読み終えても何も持ち帰れない。**少ないほうを指摘する**ので、他の密度 rule と向きが逆。
  */
-const CONCRETE = /\d|`|https?:\/\//u;
+const CONCRETE = /\d|`|https?:\/\/|(?<![/\\\w.-])[A-Za-z][A-Za-z\d-]+\.[a-z]{2,}\b/u;
 
 /**
  * 見出しのない導入部は、書き出しで呼ぶ。文書の言葉なので、message がどの言語でも混ざらない。
@@ -34,6 +38,10 @@ const openingOf = (sentence: Sentence | undefined, unit: ProseDocument["lengthUn
 };
 
 const hasNumeralIn = (section: Section): boolean => section.sentences.some((sentence) => hasNumeral(sentence.tokens ?? []));
+
+/** 数字・コード・リンク・ドメイン名が書かれているか、数の語があるか。 */
+const concreteIn = (doc: ProseDocument, section: Section): boolean =>
+  CONCRETE.test(doc.source.slice(section.span.start, section.span.end)) || hasNumeralIn(section) || startsWithin(section.span, doc.links);
 
 /** これより短い節は、具体物があるべきか判断できない。 */
 const MIN_SENTENCES = 3;
@@ -75,12 +83,15 @@ export const concreteEvidence: Detector = (doc, options): Finding[] => {
       mostlyClaims(sentences, doc.language, advice, intent)
     );
   });
-  const bare = sections.filter(
-    (section) => !CONCRETE.test(doc.source.slice(section.span.start, section.span.end)) && !hasNumeralIn(section) && !startsWithin(section.span, doc.links),
-  );
-  // 構造の木は作るのに手間がかかる。指摘に届かない文書では作らない。
-  const nodes = bare.length < options.limit ? [] : evidenceSpans(doc.structure);
-  const empty = bare.filter((section) => !startsWithin(section.span, nodes));
+  const families = new Map(sections.map((section) => [section, withSubsections(doc.sections, section)]));
+  const familyOf = (section: Section): Section[] => families.get(section) ?? [section];
+  const bare = sections.filter((section) => familyOf(section).every((member) => !concreteIn(doc, member)));
+  // 構造の木と名前は求めるのに手間がかかる。指摘に届かない文書では求めない。
+  const spans =
+    bare.length < options.limit
+      ? []
+      : [...evidenceSpans(doc.structure), ...namesAsEvidence(distinctiveNames(doc.sentences, nameSpans(doc)), doc.source, doc.sections)];
+  const empty = bare.filter((section) => familyOf(section).every((member) => !startsWithin(member.span, spans)));
   if (empty.length < options.limit) return [];
   return empty.map((section) => ({
     rule: "concrete-evidence-density",

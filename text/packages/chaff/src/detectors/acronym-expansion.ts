@@ -120,7 +120,13 @@ const isNamedBeforeAt = (body: string, acronym: string, at: number): boolean => 
  */
 export type DefinitionWords = { readonly markers: readonly string[]; readonly verbs: readonly string[]; readonly alternatives?: readonly string[] };
 
-type DefinitionPatterns = { readonly opened: RegExp; readonly closes: RegExp; readonly alternative: RegExp; readonly otherName: RegExp };
+type DefinitionPatterns = {
+  readonly opened: RegExp;
+  readonly closes: RegExp;
+  readonly alternative: RegExp;
+  readonly quotedAlternative: RegExp;
+  readonly otherName: RegExp;
+};
 
 const oneOf = (words: readonly string[]): string => (words.length === 0 ? "(?!)" : words.map(escapeRegExp).join("|"));
 
@@ -128,6 +134,7 @@ const definitionPatterns = (words: DefinitionWords): DefinitionPatterns => ({
   opened: new RegExp(String.raw`[(（]\s*(?<markers>(?:(?:${oneOf(words.markers)})${MARKER_GAP})*)${WRAP}(?<![A-Za-z])$`, "iu"),
   closes: new RegExp(String.raw`^${WRAP}(?<verb>(?:${oneOf(words.verbs)})[。.]?)?${WRAP}[)）]`, "iu"),
   alternative: new RegExp(String.raw`[,，、]\s*(?:${oneOf(words.alternatives ?? [])})\s*["“'‘]?$`, "iu"),
+  quotedAlternative: new RegExp(String.raw`(?<=["”'’])\s(?:${oneOf(words.alternatives ?? [])})\s*["“'‘]?$`, "iu"),
   otherName: new RegExp(String.raw`^${WRAP}[,，、]?\s*(?:${oneOf(words.alternatives ?? [])})\s[^()（）\n]{1,${String(DEFINITION_REACH)}}[)）]`, "iu"),
 });
 
@@ -244,13 +251,25 @@ const isPrefixedAt = (body: string, acronym: string, at: number): boolean => {
 /** 引用符で囲んで書き終えた名前（‘abstract syntax tree’）。小文字の語でも、囲みが名前の始まりと終わりを決める。 */
 const QUOTED_NAME_END = /(?:“(?<curly>[^“”\n]{1,60})”|‘(?<single>[^‘’\n]{1,60})’|"(?<straight>[^"\n]{1,60})")$/u;
 
-/** 名前の後ろの読点と言い換えの語に続く略語（Special Interest Groups, or SIGs、‘abstract syntax tree’, or ‘AST’）。名前の頭文字が略語と揃うときだけ。 */
-const isAlternativeAt = (patterns: DefinitionPatterns, body: string, acronym: string, at: number): boolean => {
-  const joined = patterns.alternative.exec(body.slice(Math.max(0, at - DEFINITION_REACH), at));
-  if (joined === null) return false;
-  const name = body.slice(0, at - joined[0].length);
+const quotedNameBefore = (name: string): string | undefined => {
   const groups = QUOTED_NAME_END.exec(name)?.groups;
-  const quoted = groups?.["curly"] ?? groups?.["single"] ?? groups?.["straight"];
+  return groups?.["curly"] ?? groups?.["single"] ?? groups?.["straight"];
+};
+
+/**
+ * 名前の後ろの読点と言い換えの語に続く略語（Special Interest Groups, or SIGs、‘abstract syntax tree’, or ‘AST’）。名前の頭文字が略語と揃うときだけ。
+ * 引用符で囲んだ名前なら読点が無くてもよい（“subject matter experts” or SME）。囲みが名前の終わりを決める。
+ */
+const isAlternativeAt = (patterns: DefinitionPatterns, body: string, acronym: string, at: number): boolean => {
+  const before = body.slice(Math.max(0, at - DEFINITION_REACH), at);
+  const joined = patterns.alternative.exec(before);
+  if (joined === null) {
+    const quotedJoin = patterns.quotedAlternative.exec(before);
+    const quoted = quotedJoin === null ? undefined : quotedNameBefore(body.slice(0, at - quotedJoin[0].length));
+    return quoted !== undefined && namesAcronym(quoted, acronym);
+  }
+  const name = body.slice(0, at - joined[0].length);
+  const quoted = quotedNameBefore(name);
   return spellsOut(name, acronym) || (quoted !== undefined && namesAcronym(quoted, acronym));
 };
 
@@ -363,7 +382,7 @@ const CLOSING_FENCE = /^ {0,3}(?<fence>`{3,}|~{3,})\s*$/u;
 const closes = (line: string, open: string): boolean => CLOSING_FENCE.exec(line)?.groups?.["fence"]?.startsWith(open) === true;
 
 /** コードの囲みの中の行（開き・閉じの行も）を空にする。閉じるのは同じ記号で、開きと同じか長い並び。 */
-const withoutFences = (lines: readonly string[]): string[] =>
+export const withoutFences = (lines: readonly string[]): string[] =>
   lines.reduce<FenceScan>(
     (scan, line) => {
       const fence = FENCE.exec(line)?.groups?.["fence"];

@@ -46,8 +46,8 @@ example:
       She hurried to the room and eased the door open. He needed the report and demanded it.
 
 not_flagged:
-  ja: 短い文書（200 語より短いもの）は測りません。文の途中の頭だけ大文字の -ly の語（July、Kelly）は名前か題の語なので数えません。書き手の確かさを言う副詞（probably、apparently、honestly）も、畳む先の動詞が無いので数えません（語の一覧は語彙表 stance-adverb）。
-  en: Documents under 200 words are not measured. A capitalised -ly word in mid-sentence (July, Kelly) is a name or a word of a title, and is not counted. Nor is an adverb that says how sure or frank the writer is (probably, apparently, honestly), since there is no verb to fold it into (the words are in the stance-adverb lexicon).
+  ja: 短い文書（200 語より短いもの）は測りません。文の途中の頭だけ大文字の -ly の語（July、Kelly）は名前か題の語なので数えません。題の書き方の行の頭の語（Frequently Asked Questions）も、題の語なので数えません。書き手の確かさを言う副詞（probably、apparently、honestly）も、畳む先の動詞が無いので数えません（語の一覧は語彙表 stance-adverb）。
+  en: Documents under 200 words are not measured. A capitalised -ly word in mid-sentence (July, Kelly) is a name or a word of a title, and is not counted; so is one that opens a line written in title case (Frequently Asked Questions). Nor is an adverb that says how sure or frank the writer is (probably, apparently, honestly), since there is no verb to fold it into (the words are in the stance-adverb lexicon).
 level_meaning:
   ja: 1000 語あたり -ly 副詞 {limit} 個まで
   en: up to {limit} -ly adverbs per 1000 words
