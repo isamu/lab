@@ -41,12 +41,20 @@ const clippedByForm = (doc: ProseDocument): ReadonlySet<Sentence> => {
   ]);
 };
 
+/** 問いを閉じる助詞の語彙表（か）。 */
+const QUESTION_PARTICLE_LEXICON = "question-particle";
+
+/** 最後の語の後ろに問いの助詞がある文（どのような見直しが必要か。）。問いで、名詞で止めた文ではない。 */
+const asksAfter = (sentence: Sentence, last: Token, questionParticles: ReadonlySet<string>): boolean =>
+  (sentence.tokens ?? []).some((token) => token.span.start >= last.span.end && token.pos === "PART" && questionParticles.has(token.surface));
+
 export const nounEnding: Detector = (doc, options): Finding[] => {
   const clipped = clippedByForm(doc);
+  const questionParticles = new Set((doc.lexicons[QUESTION_PARTICLE_LEXICON] ?? []).map((entry) => entry.pattern));
   const ended = doc.sentences.filter((sentence) => {
     if (inside(sentence.span, doc.listSpans) || clipped.has(sentence) || !isClosed(sentence) || !hasParticle(sentence)) return false;
     const last = lastContent(sentence);
-    return last !== undefined && NOMINAL.has(last.pos) && !isDependent(last);
+    return last !== undefined && NOMINAL.has(last.pos) && !isDependent(last) && !asksAfter(sentence, last, questionParticles);
   });
   const first = ended[0];
   // 文書全体の数についての指摘なので、1 文ずつ出さない。13 件並べても直す順番が分からない。
