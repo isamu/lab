@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { reportedAcronyms } from "./rule-run.ts";
-import { parentItemAcronyms } from "../packages/chaff/src/detectors/acronym-expansion.ts";
+import { parentItemAcronyms } from "../packages/chaff/src/detectors/acronym-parent-item.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 
 // undefined-acronym: a nested list whose parent item writes out the name the child items shorten, a quoted name joined to

@@ -72,9 +72,16 @@ const CITATION_NUMBERS = /^[\d\s,，、–-]+$/u;
  * ファイルの種類と大きさの札（[PDF:47KB]、[PDFファイル／269KB]、[Excel 28 KB]）。役所のページがリンクの後ろに書く添え書きで、
  * 写すと字のまま残る。名前の定義で呼ぶ参照の記法ではない。
  */
-const FILE_SIZE_LABEL = /^(?:\p{L}[\p{L}\p{N}]*\s*[:：/／、,，\s]\s*)?\d[\d.,]*\s*(?:[KMGT]i?B|bytes?|バイト)$/iu;
+const FILE_SIZE = /^\d[\d.,]*\s*(?:[KMGT]i?B|bytes?|バイト)$/iu;
+const FILE_TYPE_PREFIX = /^\p{L}[\p{L}\p{N}]*(?:\s*[:：/／、,，]\s*|\s+)/u;
 
-const fileSizeLabel = (match: RegExpMatchArray): boolean => FILE_SIZE_LABEL.test(match[1] ?? "") || FILE_SIZE_LABEL.test(match[2] ?? "");
+const isFileSizeLabel = (text: string): boolean => {
+  if (FILE_SIZE.test(text)) return true;
+  const prefix = FILE_TYPE_PREFIX.exec(text)?.[0];
+  return prefix !== undefined && FILE_SIZE.test(text.slice(prefix.length));
+};
+
+const fileSizeLabel = (match: RegExpMatchArray): boolean => isFileSizeLabel(match[1] ?? "") || isFileSizeLabel(match[2] ?? "");
 
 /** 画像の参照（`![alt][label]`）の頭の印。指摘の範囲に含める。 */
 const IMAGE_MARK = "!";

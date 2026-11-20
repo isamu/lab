@@ -601,14 +601,18 @@ describe("withSubsections / namesAsEvidence", () => {
   const at = (depth: number, start: number, end: number): { depth: number; span: { start: number; end: number } } => ({ depth, span: { start, end } });
 
   it("節の下の、見出しがより深い節を続く限り含める", () => {
-    const sections = [at(0, 0, 5), at(2, 5, 10), at(3, 10, 15), at(3, 15, 20), at(2, 20, 25)];
-    assert.deepEqual(withSubsections(sections, sections[1]), sections.slice(1, 4));
-    assert.deepEqual(withSubsections(sections, sections[4]), [sections[4]]);
+    const parent = at(2, 5, 10);
+    const children = [at(3, 10, 15), at(3, 15, 20)];
+    const sibling = at(2, 20, 25);
+    const sections = [at(0, 0, 5), parent, ...children, sibling];
+    assert.deepEqual(withSubsections(sections, parent), [parent, ...children]);
+    assert.deepEqual(withSubsections(sections, sibling), [sibling]);
   });
 
   it("valid: 導入部（深さ 0）は親ではない。文書に無い節はその節だけ", () => {
-    const sections = [at(0, 0, 5), at(1, 5, 10)];
-    assert.deepEqual(withSubsections(sections, sections[0]), [sections[0]]);
+    const intro = at(0, 0, 5);
+    const sections = [intro, at(1, 5, 10)];
+    assert.deepEqual(withSubsections(sections, intro), [intro]);
     const stray = at(2, 30, 40);
     assert.deepEqual(withSubsections(sections, stray), [stray]);
   });
