@@ -52,6 +52,8 @@ export type OpenEndNames = {
   readonly terms: ReadonlySet<string>;
   /** The document's headings: a noun a heading names with the word (## 出願書類等の送付先) is the page's subject, not an open list. */
   readonly headings: readonly string[];
+  /** Terms that law or usage fixes with the word (消費税等, 免許等), from the language's lexicon: no open list. */
+  readonly fixed: ReadonlySet<string>;
 };
 
 const attached = (left: Token | undefined, right: Token | undefined): boolean =>
@@ -145,13 +147,28 @@ const definedTerms = (doc: ProseDocument): Set<string> =>
       : inDocumentOrder(doc.structure).flatMap((node) => (node.kind === "definition" && typeof node.attrs["term"] === "string" ? [node.attrs["term"]] : [])),
   );
 
-/** The names a document gives that contain an open-end word. statements: the language's words of a definition (をいう, means). */
-export const openEndNames = (doc: ProseDocument, words: readonly LexiconEntry[], statements: readonly string[]): OpenEndNames => {
+/**
+ * The names a document gives that contain an open-end word. statements: the language's words of a definition (をいう, means);
+ * fixed: the terms law or usage fixes with the word (消費税等).
+ */
+export const openEndNames = (
+  doc: ProseDocument,
+  words: readonly LexiconEntry[],
+  statements: readonly string[],
+  fixed: readonly string[] = [],
+): OpenEndNames => {
   const occurrences = doc.sentences.flatMap((sentence) => words.flatMap((word) => occurrencesIn(sentence, word)));
   const defined = occurrences.filter((occurrence) => definedInAside(doc.source, occurrence, statements)).map((occurrence) => nounOf(doc.source, occurrence));
   const heads = occurrences.filter((occurrence) => headsItem(doc.source, occurrence, statements)).map((occurrence) => nounOf(doc.source, occurrence));
   const headings = doc.sections.map((section) => section.heading).filter((heading) => heading.trim() !== "");
-  return { quoted: quotedNames(doc.source, words), defined: new Set(defined), heads: [...new Set(heads)], terms: definedTerms(doc), headings };
+  return {
+    quoted: quotedNames(doc.source, words),
+    defined: new Set(defined),
+    heads: [...new Set(heads)],
+    terms: definedTerms(doc),
+    headings,
+    fixed: new Set(fixed),
+  };
 };
 
 /** Whether a quoted name holds this occurrence: the text around it reads the whole name (当該責任追及等 holds 「責任追及等」). */
@@ -183,7 +200,7 @@ const isNamed = (source: string, occurrence: Occurrence, names: OpenEndNames): b
   inQuotedName(source, occurrence, names.quoted) ||
   namedByHeading(source, occurrence, names.headings) ||
   followsTerm(source, occurrence, names.terms) ||
-  partsHoldingWord(source, occurrence).some((part) => names.defined.has(part) || names.heads.some((head) => head.startsWith(part)));
+  partsHoldingWord(source, occurrence).some((part) => names.defined.has(part) || names.fixed.has(part) || names.heads.some((head) => head.startsWith(part)));
 
 /** Whether the words around an occurrence bound its list; range: the tokens the word covers. */
 export type BoundedAfter = (tokens: readonly Token[], range: TokenRange) => boolean;
