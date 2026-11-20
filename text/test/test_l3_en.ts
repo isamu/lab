@@ -35,6 +35,18 @@ describe("L3 英語", () => {
       assert.ok(!idsFor(padded(source)).includes("adverb-overuse"));
     });
 
+    it("valid: 題の行の頭の -ly の語（Frequently Asked Questions）は題の語で、行が繰り返されても副詞に数えない", () => {
+      const title = "Frequently Asked Questions Regarding Treatment of Digital Credentials Under the Identification Rule";
+      const source = [
+        `SUBJECT:\n\n${title}`,
+        "The answers do not alter existing requirements.",
+        `Attachments:\n\n${title}`,
+        `Cross References:\n\n${title}`,
+        `${title}\n\n${title}`,
+      ].join("\n\n");
+      assert.ok(!idsFor(padded(source)).includes("adverb-overuse"));
+    });
+
     it("invalid: 文頭の大文字の -ly 副詞と、全部大文字の -ly 副詞は数える", () => {
       const source = "Finally, we shipped. Clearly, it worked. Honestly, we were lucky. Sadly, it broke. Luckily, we fixed it ONLY once QUICKLY.";
       assert.ok(idsFor(padded(source)).includes("adverb-overuse"));

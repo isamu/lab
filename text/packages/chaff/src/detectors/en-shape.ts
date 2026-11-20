@@ -21,12 +21,15 @@ const CAPITALISED = /^\p{Lu}\p{Ll}/u;
 const LETTER = /\p{L}/u;
 
 /**
- * 文の途中の頭だけ大文字の -ly の語は、解析器が語尾で副詞と当てた名前（July、Kelly）か、題の語（Frequently Asked Questions）。
- * どちらも動詞に畳める副詞ではない。書き手の確かさを言う副詞（probably、apparently）も、畳む先の動詞が無い。
+ * 頭だけ大文字の -ly の語は、文の途中なら解析器が語尾で副詞と当てた名前（July、Kelly）か題の語、文頭でも行全体が題の書き方なら
+ * 題の語（Frequently Asked Questions）。どちらも動詞に畳める副詞ではない。書き手の確かさを言う副詞（probably、apparently）も、畳む先の動詞が無い。
  */
-const lyAdverbsOf = (tokens: readonly Token[], stance: ReadonlySet<string>): Token[] => {
+const lyAdverbsOf = (sentence: Sentence, stance: ReadonlySet<string>): Token[] => {
+  const tokens = sentence.tokens ?? [];
   const first = tokens.findIndex((token) => LETTER.test(token.surface));
-  return tokens.filter((token, at) => isLyAdverb(token) && !stance.has(token.surface.toLowerCase()) && !(at > first && CAPITALISED.test(token.surface)));
+  const titleLine = isTitleCase(sentence.text) === true;
+  const isTitleWord = (token: Token, at: number): boolean => CAPITALISED.test(token.surface) && (at > first || titleLine);
+  return tokens.filter((token, at) => isLyAdverb(token) && !stance.has(token.surface.toLowerCase()) && !isTitleWord(token, at));
 };
 
 /**
@@ -36,7 +39,7 @@ const lyAdverbsOf = (tokens: readonly Token[], stance: ReadonlySet<string>): Tok
 export const adverbDensity: Detector = (doc, options): Finding[] => {
   const words = wordsIn(doc);
   const stance = new Set((doc.lexicons["stance-adverb"] ?? []).map((entry) => entry.pattern));
-  const hits = doc.sentences.flatMap((sentence) => lyAdverbsOf(sentence.tokens ?? [], stance).map((token) => ({ sentence, token })));
+  const hits = doc.sentences.flatMap((sentence) => lyAdverbsOf(sentence, stance).map((token) => ({ sentence, token })));
   const density = words === 0 ? 0 : Math.round((hits.length / words) * PER);
   const first = hits[0];
   if (words < MIN_WORDS || first === undefined || density <= options.limit) return [];
