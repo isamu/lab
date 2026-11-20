@@ -44,13 +44,31 @@ const singled = (text: string): string =>
 export const bracketDepth = (text: string): number => {
   // The closers still awaited, innermost last. Pushed and popped in place: copying it per character is quadratic on deep nesting.
   const awaited: string[] = [];
-  return [...singled(text.replace(FORMULA, " "))].reduce((deepest, char) => {
+  const chars = [...singled(text.replace(FORMULA, " "))];
+  const heads = lineHeads(chars);
+  return chars.reduce((deepest, char, at) => {
     const innermost = awaited.at(-1);
     if (innermost !== undefined && (innermost === char || innermost === OTHER_WIDTH[char])) awaited.pop();
-    else if (BRACKETS[char] !== undefined) awaited.push(BRACKETS[char]);
+    else if (BRACKETS[char] !== undefined && !(heads[at] === true && isReopening(char, innermost))) awaited.push(BRACKETS[char]);
     return Math.max(deepest, awaited.length);
   }, 0);
 };
+
+/** Quoted verse reopens the quotation mark at the head of each line and closes it once at the end: the same quotation goes on. */
+const isReopening = (char: string, innermost: string | undefined): boolean => char === "“" && innermost === "”";
+
+const INDENT = new Set([" ", "\t", "\u3000"]);
+
+/** Whether each character is the first of its line after the indent (not the first of the text). */
+const lineHeads = (chars: readonly string[]): boolean[] =>
+  chars.reduce<{ heads: boolean[]; afterBreak: boolean }>(
+    (state, char) => {
+      state.heads.push(state.afterBreak && !INDENT.has(char) && char !== "\n");
+      state.afterBreak = char === "\n" || (state.afterBreak && INDENT.has(char));
+      return state;
+    },
+    { heads: [], afterBreak: false },
+  ).heads;
 
 const PREDICATE = new Set(["VERB", "ADJ", "AUX"]);
 const COMMA = new Set(["、", "，"]);
