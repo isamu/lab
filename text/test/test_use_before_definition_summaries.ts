@@ -74,6 +74,20 @@ describe("use-before-definition: a summary section and a numbered heading are no
   });
 });
 
+describe("use-before-definition: a run-in item heading straight before the defining sentence is not a use", () => {
+  // Self-written: a report flattened to one line, where an item heading runs into the sentence that defines its term.
+  const LINE =
+    "業績は次のとおりであります。(1)営業成績等の概要当期における当社の財政状態及び営業成績（以下「営業成績等」という。）の概要は次のとおりであります。\n";
+
+  it("the heading names the term its own passage goes on to define", () => {
+    assert.deepEqual(early(LINE), []);
+  });
+
+  it("a use in a closed sentence before the definition is still reported", () => {
+    assert.deepEqual(early(LINE.replace("(1)営業成績等の概要", "営業成績等を述べます。")), ["「営業成績等」を、1 行目の定義より前で使っています"]);
+  });
+});
+
 describe("summarySections and summarisesLaterDefinition", () => {
   const heading = (source: string, text: string): MarkupHeading => {
     const start = source.indexOf(`# ${text}`);

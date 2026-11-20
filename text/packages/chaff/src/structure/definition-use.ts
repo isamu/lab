@@ -154,6 +154,20 @@ const sentenceAt = (texts: readonly BodyText[], offset: number): BodyText | unde
   return undefined;
 };
 
+/** 見出しの長さの上限。句点の無い長い行（箇条の項目）は見出しと読まない。 */
+const RUN_IN_HEADING_MAX = 40;
+const ENDS_OPEN = /[^。．.!?！？]$/u;
+
+/**
+ * 句点で終わらない短い文で、間を空けずに定義の文が続く: 本文に流し込んだ節の見出し（一行の報告書の「(1)経営成績等の概要」の
+ * すぐ後ろに「…（以下「経営成績等」という。）」が続く）。見出しは本文の語を先取りして名づけるので、定義より前の使い方ではない。
+ * 行を改めた項目（(2) 本件仮換地の指定等）は、定義の文と離れているので使い方に数える。
+ */
+const headsDefiningSentence = (body: BodyText | undefined, defining: number): boolean => {
+  const text = body?.text.trim() ?? "";
+  return body !== undefined && text.length <= RUN_IN_HEADING_MAX && ENDS_OPEN.test(text) && body.start + body.text.length === defining;
+};
+
 const LETTER = /\p{L}/gu;
 /** 札の文が語のほかに持ってよい字の数（"The Agreement." の The）。 */
 const LABEL_SLACK = 3;
@@ -412,6 +426,7 @@ export const usesBeforeDefinition = (
         (offset) =>
           !(namedFirst !== undefined && namedFirst < offset) &&
           !isLabel(sentenceAt(texts, offset), defined.term) &&
+          !headsDefiningSentence(sentenceAt(texts, offset), defining) &&
           !insideCaption(sentenceAt(texts, offset), offset) &&
           !isTitle(offset, defined.span.start) &&
           !continuesInHan(texts, defined.term, offset) &&
