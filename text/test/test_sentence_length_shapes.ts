@@ -197,6 +197,7 @@ describe("max-sentence-length: a sentence closed inside parentheses", () => {
 
   it("does not cut at a parenthesis that closes inside a sentence, and still reports a long part", () => {
     assert.equal(parentheticalSentenceParts("The tower (built in 1869.) stands here."), undefined);
+    assert.equal(parentheticalSentenceParts("It is kept as is.\n(The tool does this itself.) If it is not there, the tool leaves it out."), undefined);
     assert.equal(parentheticalSentenceParts("The tower (see the map) stands. Then walk on."), undefined);
     assert.equal(parentheticalSentenceParts(""), undefined);
     const longPart =
