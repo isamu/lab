@@ -2,6 +2,41 @@
 
 Newest first.
 
+## 0.48.0 — 2026-11-20
+
+This release fixes false positives found by judging the 0.46.0 and 0.47.0 findings in isamu/chaff-corpus: contracts,
+business reports, meeting notes, manuals and annual securities reports.
+
+### AI-likeness
+
+- concrete-evidence-density counts named things and domain names as concrete, and reads a parent section with its
+  subsections (#2491).
+- adverb-overuse does not count the -ly word that opens a title-case line (#2488).
+
+### Sentences
+
+- A run-in item heading of a one-line Japanese report starts its own sentence (#2492).
+- An English sentence ends at "etc." before a sentence-start word across a line break (#2529), does not end at a.m. or
+  p.m. before a word in lower case (#2480), and a bare URL hides only the address, not the sentence end after it (#2479).
+
+### Rules
+
+- undefined-acronym reads an expansion in the parent list item or in quotes, a definition across inline markup, NB, HR
+  and MS Excel as explained (#2490, #2496, #2531).
+- numbering-gap and dangling-reference read a subsection run into its section heading's line as an address (#2494).
+- vague-word-density does not count a word a law or a section governs (#2495); requirement-smell does not read 等 in a
+  term law fixes (消費税等) (#2497).
+- Fewer false findings on real documents:
+  - broken-link leaves file-type and size labels ([PDF:47KB]) (#2489).
+  - taigen-dome-in-prose does not count a question closed by か (#2493).
+  - max-sentence-length leaves a reference's author list and a leading parenthesised sentence (#2485).
+  - name-variant leaves ordinary words, contractions, plural acronyms and file names (#2481).
+  - no-doubled-joshi reads 他の, との間 and a clause subject の apart from a nesting chain (#2478).
+  - topic-predicate-distance reads 最後は as an adverb (#2486).
+  - unbalanced-bracket and bracket-nesting leave verse quoted with the mark reopening each line (#2483, #2484).
+  - doubled-punctuation leaves a dot leader in a table (#2477); space-before-punctuation leaves a spaced ellipsis
+    wrapped across a line break (#2482).
+
 ## 0.47.0 — 2026-11-20
 
 This release catches more bold benefit labels, stacked email closings and half-width/full-width slips in headings, and
