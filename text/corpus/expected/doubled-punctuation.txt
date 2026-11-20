@@ -1,4 +1,5 @@
 aoml-hurricane-faq  1
+arxiv-2609-27842-genai-assessment  1
 nodejs-tsc-minutes-2026-05-06  1
 ruby-3-4-0-released-ja  1
 rust-rfc-2094-nll  1
