@@ -110,6 +110,7 @@ const LABEL_STOPS = labelStops((LEXICONS["abbreviated-label"] ?? []).map((entry)
 const INITIAL_STOPS = initialStops(
   (LEXICONS["sentence-start-word"] ?? []).map((entry) => entry.pattern),
   (LEXICONS["prepositive-abbreviation"] ?? []).map((entry) => entry.pattern),
+  (LEXICONS["closing-abbreviation"] ?? []).map((entry) => entry.pattern),
 );
 
 /**
