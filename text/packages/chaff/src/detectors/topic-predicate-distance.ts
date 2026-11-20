@@ -6,6 +6,7 @@ import { overLimit, ownTokens } from "./sentence-load.ts";
 
 const CLOSER_LEXICON = "topic-clause-close";
 const ARTICLE_LEXICON = "statute-article-opener";
+const ADVERB_LEXICON = "topic-adverb";
 
 /**
  * Whether the sentence is an article of a statute quoted in another kind of document (第7条 … in a manual): the law's wording,
@@ -19,7 +20,8 @@ const quotesArticle = (doc: ProseDocument, genre: string | undefined): ((sentenc
 
 /** The distance from the sentence's topic (〜は) to the end, where its predicate is. Needs the language's tokens. */
 export const topicPredicateDistance: Detector = (doc, options) => {
-  const words: TopicClauseWords = { closers: (doc.lexicons[CLOSER_LEXICON] ?? []).map((entry) => entry.pattern) };
+  const patterns = (lexicon: string): string[] => (doc.lexicons[lexicon] ?? []).map((entry) => entry.pattern);
+  const words: TopicClauseWords = { closers: patterns(CLOSER_LEXICON), adverbs: patterns(ADVERB_LEXICON) };
   const quoted = quotesArticle(doc, options.genre);
   return overLimit((sentence) => (sentence.tokens === undefined || quoted(sentence) ? undefined : topicDistance(ownTokens(sentence), words)))(doc, options);
 };

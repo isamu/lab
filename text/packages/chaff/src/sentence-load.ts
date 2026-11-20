@@ -186,11 +186,16 @@ const isSettingAt = (tokens: readonly Token[], at: number): boolean => {
   return before < at - 1 && !narrows(tokens[before], tokens[at - 1]);
 };
 
+/** は on a listed noun standing alone (最後は, in the end): an adverb, not a topic. 交渉の最後は is a noun phrase, and a topic. */
+const isAdverbAt = (tokens: readonly Token[], at: number, adverbs: ReadonlySet<string>): boolean =>
+  adverbs.has(tokens[at - 1]?.surface ?? "") && !narrows(tokens[at - 2], tokens[at - 1]);
+
 /** The sentence's topic: the first は on a noun, past a setting (今夜は、…死ぬといふことは) when a topic of another kind follows it. -1 when none. */
-const firstTopic = (tokens: readonly Token[]): number => {
-  const first = tokens.findIndex((_, at) => isTopicAt(tokens, at));
+const firstTopic = (tokens: readonly Token[], adverbs: ReadonlySet<string>): number => {
+  const isTopic = (at: number): boolean => isTopicAt(tokens, at) && !isAdverbAt(tokens, at, adverbs);
+  const first = tokens.findIndex((_, at) => isTopic(at));
   if (first === -1 || !isSettingAt(tokens, first)) return first;
-  const after = tokens.findIndex((_, at) => at > first && isTopicAt(tokens, at) && !isSettingAt(tokens, at));
+  const after = tokens.findIndex((_, at) => at > first && isTopic(at) && !isSettingAt(tokens, at));
   return after === -1 ? first : after;
 };
 
@@ -202,7 +207,7 @@ const firstTopic = (tokens: readonly Token[]): number => {
  * topic is said to do anything.
  */
 export const topicDistance = (tokens: readonly Token[], words?: TopicClauseWords): number | undefined => {
-  const topic = firstTopic(tokens);
+  const topic = firstTopic(tokens, new Set(words?.adverbs ?? []));
   const last = tokens.findLastIndex((token) => !TRAILING.has(token.pos));
   if (topic === -1 || last <= topic) return undefined;
   return tokens
