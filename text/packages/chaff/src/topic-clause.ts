@@ -154,11 +154,17 @@ const subjectBetween = (tokens: readonly Token[], from: number, to: number): boo
 
 const isPoliteMasu = (token: Token | undefined): boolean => token?.pos === "AUX" && token.lemma === "ます";
 
-/** 〜ておりますが / 〜しましたが: a polite predicate and the contrastive が. */
+/** The auxiliaries a polite predicate may end on after ます: past (ました), negative (ません), negative past (ませんでした). */
+const POLITE_TAILS: readonly (readonly string[])[] = [[], ["た"], ["ん"], ["ん", "でし", "た"]];
+
+const endsPolite = (tokens: readonly Token[], at: number, tail: readonly string[]): boolean =>
+  isPoliteMasu(tokens[at - tail.length - 1]) &&
+  tail.every((surface, index) => tokens[at - tail.length + index]?.pos === "AUX" && tokens[at - tail.length + index]?.surface === surface);
+
+/** 〜ておりますが / 〜しましたが / 〜できませんでしたが: a polite predicate and the contrastive が. */
 const isPoliteGa = (tokens: readonly Token[], at: number): boolean => {
   if (tokens[at]?.surface !== "が" || tokens[at]?.pos !== "SCONJ") return false;
-  const before = tokens[at - 1];
-  return isPoliteMasu(before) || (before?.pos === "AUX" && before.surface === "た" && isPoliteMasu(tokens[at - 2]));
+  return POLITE_TAILS.some((tail) => endsPolite(tokens, at, tail));
 };
 
 const ownGaSubjectBetween = (tokens: readonly Token[], from: number, to: number): boolean =>
