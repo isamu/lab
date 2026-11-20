@@ -23,8 +23,17 @@ const MAX_TITLE = 80;
 
 const isTopSection = (line: string, rest: string): boolean => TOP_SECTION.test(line) && rest.length <= MAX_TITLE && !SENTENCE_END.test(rest);
 
+/**
+ * A section's first subsection run into its heading's line, as plain text extracted from a contract writes it
+ * ("7 Indemnification. 7.1 Each Party shall…"). Only the heading's own number followed by ".1" counts, after a short
+ * capitalised title closed by a full stop or a colon, so a decimal in a sentence ("7 days … 7.1 percent") is not read.
+ */
+const RUN_IN_SUBSECTION = /^[ \t]{0,3}(?<parent>\d{1,3})[ \t]+\p{Lu}[^.:;\n]{0,80}[.:][ \t]+(?<number>\k<parent>\.1)(?<gap>[ \t]+)(?<rest>\p{Lu}.*)$/u;
+
 const dottedGroups = (line: string, context: NumberingContext): Readonly<Record<string, string | undefined>> | undefined =>
-  DOTTED.exec(line)?.groups ?? (context.isHeading ? TIGHT_HEADING.exec(line)?.groups : undefined);
+  (context.isHeading ? undefined : RUN_IN_SUBSECTION.exec(line)?.groups) ??
+  DOTTED.exec(line)?.groups ??
+  (context.isHeading ? TIGHT_HEADING.exec(line)?.groups : undefined);
 
 /**
  * closedByDot: 番号を点で閉じたか（「5. 」）。「1.5 万人」の 1.5 は閉じていない。wideGap: 番号と題の間に全角の空白を置いたか
