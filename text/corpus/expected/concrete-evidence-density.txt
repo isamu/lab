@@ -1,10 +1,8 @@
-etax-oshirase-mail-templates  57
-gitlab-values  21
+etax-oshirase-mail-templates  52
+gitlab-values  15
 govuk-cddo-roadmap-2022-2025  3
 govuk-guidance-academy-senior-pay  9
-herp-da-data-product-manager  3
-moriguchi-satsuki-gakuen-ijime-houshin  7
+moriguchi-satsuki-gakuen-ijime-houshin  5
 nttcom-onboarding-week1  5
-tcu-rishu-toroku-2026-kouki  5
+tcu-rishu-toroku-2026-kouki  3
 usajobs-va-it-specialist-customer-support  3
-wikipedia-en-markdown  5
