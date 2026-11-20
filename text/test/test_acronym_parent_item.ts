@@ -31,6 +31,12 @@ describe("undefined-acronym: the parent list item writes out the name", () => {
     assert.deepEqual([...parentItemAcronyms("")], []);
     assert.deepEqual([...parentItemAcronyms("- subject matter experts\n")], []);
   });
+
+  it("the words of a link's address are not the parent's own words; its link text is", () => {
+    assert.deepEqual([...parentItemAcronyms("- Charter [#7](https://example.org/cross-project-council/issues/7)\n  - The CPC agreed.\n")], []);
+    assert.deepEqual([...parentItemAcronyms("- Charter https://example.org/cross-project-council/7\n  - The CPC agreed.\n")], []);
+    assert.deepEqual([...parentItemAcronyms("- [Cross Project Council](https://example.org/7)\n  - The CPC agreed.\n")], ["CPC"]);
+  });
 });
 
 describe("undefined-acronym: a quoted name, or the acronym", () => {
