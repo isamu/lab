@@ -99,13 +99,24 @@ const ACRONYM_PLURAL = /^\p{Lu}{2,}s$/u;
 /** Whether two forms are acronyms with a plural s (SBLCs and SBDCs): one letter tells two programmes apart. */
 export const isAcronymPair = (name: string, usual: string): boolean => ACRONYM_PLURAL.test(name) && ACRONYM_PLURAL.test(usual);
 
-const RUN_START = /\S*$/u;
 const SPACE = /\s/u;
 /** Marks a file name or a URL may end with in running text (Prosperity.pdf. or 2015.pdf;). */
-const TRAILING_MARKS = /[.,;:!?)\]]+$/u;
+const TRAILING_MARKS = ".,;:!?)]";
 /** A file name's extension in small letters after a letter or digit (.pdf, .html), or a URL's scheme. */
 const FILE_OR_URL = /[\p{L}\p{N}]\.\p{Ll}{2,4}$|:\/\//u;
 const EXTENSION = /\.\p{Ll}{2,4}$/u;
+
+const runStart = (text: string, offset: number): number => {
+  let start = offset;
+  while (start > 0 && !SPACE.test(text.charAt(start - 1))) start -= 1;
+  return start;
+};
+
+const withoutTrailingMarks = (run: string): string => {
+  let end = run.length;
+  while (end > 0 && TRAILING_MARKS.includes(run.charAt(end - 1))) end -= 1;
+  return run.slice(0, end);
+};
 
 /**
  * Whether the form at offset is part of a file name or a URL: the text without spaces around it holds more than the form
@@ -113,9 +124,9 @@ const EXTENSION = /\.\p{Ll}{2,4}$/u;
  * A name with only a domain after it (Borrowmoney.com) is still the name.
  */
 export const isInFileName = (text: string, offset: number, length: number): boolean => {
-  const start = text.slice(0, offset).search(RUN_START);
+  const start = runStart(text, offset);
   const rest = text.slice(offset + length);
   const after = rest.search(SPACE);
-  const run = text.slice(start, offset + length + (after < 0 ? rest.length : after)).replace(TRAILING_MARKS, "");
+  const run = withoutTrailingMarks(text.slice(start, offset + length + (after < 0 ? rest.length : after)));
   return run.replace(EXTENSION, "").length > length && FILE_OR_URL.test(run);
 };

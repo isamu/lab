@@ -45,7 +45,7 @@ const isPageNumber = (page: string): boolean => PAGE_DIGITS.test(page) || (page 
 /** 点線の後ろの、揃えのための二つ以上の空白と次の欄（配役表の「NORA..  Emma Vernon」）。 */
 const LEADER_THEN_GAP = /^[ \t]{2,}\S/u;
 /** 同じ段落の、ほかの長い点線と揃えの空白（「MAURYA......  Honor Lavelle」）。 */
-const LONG_LEADER_THEN_GAP = /\.{3,}[ \t]{2,}\S/u;
+const LONG_LEADER_THEN_GAP = /\.{3}[ \t]{2,}\S/u;
 
 const paragraphAround = (text: string, offset: number): string => {
   const before = text.lastIndexOf("\n\n", offset);

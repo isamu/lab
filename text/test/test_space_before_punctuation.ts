@@ -37,7 +37,8 @@ describe("space-before-punctuation: 句読点の前に空白がある", () => {
 
   it("行の折り返しをまたいだ、空白で区切った省略の点", () => {
     // Oscar Wilde, The Importance of Being Earnest (1895)（パブリックドメイン）。
-    const wrapped = "It produces absolutely no vibrations .\n. . I have known several Jacks.\nBut seriously, Cecily .\r\n. . [Moving to her] . . . if my name was Algy";
+    const wrapped =
+      "It produces absolutely no vibrations .\n. . I have known several Jacks.\nBut seriously, Cecily .\r\n. . [Moving to her] . . . if my name was Algy";
     assert.deepEqual(marksIn(wrapped), []);
     assert.deepEqual(findingsOf(`${wrapped}\n`), []);
   });
