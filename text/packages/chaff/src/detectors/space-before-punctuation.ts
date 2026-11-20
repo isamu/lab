@@ -8,10 +8,10 @@ import { quoteAround } from "./quote-around.ts";
  */
 const SPACED_MARK = /(?<=\p{L}[)\]}"'”’]?) (?=[.,;?!](?:[\s)\]"'”’]|$))/gu;
 
-/** 空白で区切った点の並び（". . ."）。省略の印と、目次の点線。 */
-const SPACED_DOTS = /^\. ?\./u;
+/** 空白で区切った点の並び（". . ."）。省略の印と、目次の点線。行の折り返しが点の間に入ってもよい（"vibrations .\n. . I"）。 */
+const SPACED_DOTS = /^\.(?: |\r?\n)?\./u;
 
-const DOTS_REACH = 3;
+const DOTS_REACH = 4;
 
 const isSpacedEllipsis = (text: string, space: number): boolean => SPACED_DOTS.test(text.slice(space + 1, space + 1 + DOTS_REACH));
 

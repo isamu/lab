@@ -97,6 +97,63 @@ describe("unbalanced-bracket: 括弧が組になっていない", () => {
     assert.deepEqual(findingsOf("“I went out,\n\n“and came back.”\n", en), []);
   });
 
+  it("行ごとに引用符で開き直し、終わりで一度だけ閉じる詩の引用は、続きとして数えない", () => {
+    // Walt Whitman, "Going Somewhere", Leaves of Grass (1891-92)（パブリックドメイン）。
+    const verse = [
+      "  Ended our talk--“The sum, concluding all we know of old or modern",
+      "      learning, intuitions deep,",
+      "  “Of all Geologies--Histories--of all Astronomy--of Evolution,",
+      "      Metaphysics all,",
+      "  “Is, that we all are onward, onward, speeding slowly, surely bettering,",
+      "  “Life, life an endless march, an endless army, (no halt, but it is",
+      "      duly over,)",
+      "  “All bound as is befitting each--all surely going somewhere.”",
+    ].join("\n");
+    assert.deepEqual(findingsOf(`${verse}\n`, en, "a.txt"), []);
+    assert.deepEqual(bracketProblems(`${verse}\nThen “a” and “b”.`), []);
+  });
+
+  it("行の頭で開き直した引用が閉じなければ、開きをすべて数える。閉じた後ろの余った閉じも数える", () => {
+    assert.deepEqual(
+      bracketProblems("He said “one\n“two\n“three").map((problem) => problem.offset),
+      [8, 13, 18],
+    );
+    assert.deepEqual(
+      bracketProblems("He said “one\n“two\n“three.”\nThen it ended.”").map((problem) => problem.kind),
+      ["unopened"],
+    );
+  });
+
+  it("前の詩で閉じ忘れた引用は、空行の後ろの詩の、行ごとに開き直す引用の続きにしない", () => {
+    const poems = [
+      "And at last I said, “These are not leaves,",
+      "Why, can you not see they are days?",
+      "",
+      "",
+      "The Second Stone",
+      "",
+      "She told me:",
+      "“The sum of it all",
+      "“Is that we go on,",
+      "“All of us, somewhere.”",
+    ].join("\n");
+    assert.deepEqual(
+      bracketProblems(poems).map((problem) => problem.offset),
+      [poems.indexOf("“These")],
+    );
+  });
+
+  it("行の頭で一度だけ開いた引用符は、中に引いた言葉として組にする", () => {
+    assert.deepEqual(
+      bracketProblems("He said “I told her\n“go away” and left.”").map((problem) => problem.kind),
+      [],
+    );
+    assert.deepEqual(
+      bracketProblems("He said “I told her\n“go away” and left.").map((problem) => problem.kind),
+      ["unclosed"],
+    );
+  });
+
   it("コードの中と、URL に続けて書いた括弧（読み手には見える）", () => {
     assert.deepEqual(findingsOf("`(` と ``「`` はコード。\n\nサイト（https://example.jp/）をご覧ください。\n"), []);
     assert.deepEqual(findingsOf("サイト（https://example.jp/をご覧ください。\n"), ["「（」が閉じていません"]);

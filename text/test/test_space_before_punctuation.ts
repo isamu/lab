@@ -35,6 +35,19 @@ describe("space-before-punctuation: 句読点の前に空白がある", () => {
     assert.deepEqual(marksIn("He paused . . . and left. Goals . . . . . 4. Wait .. what"), []);
   });
 
+  it("行の折り返しをまたいだ、空白で区切った省略の点", () => {
+    // Oscar Wilde, The Importance of Being Earnest (1895)（パブリックドメイン）。
+    const wrapped =
+      "It produces absolutely no vibrations .\n. . I have known several Jacks.\nBut seriously, Cecily .\r\n. . [Moving to her] . . . if my name was Algy";
+    assert.deepEqual(marksIn(wrapped), []);
+    assert.deepEqual(findingsOf(`${wrapped}\n`), []);
+  });
+
+  it("行の終わりの空白の後ろの点の次の行が点で始まらなければ、空白として数える", () => {
+    assert.deepEqual(marksIn("It produces no vibrations .\nI have known several Jacks."), ["."]);
+    assert.deepEqual(marksIn("It produces no vibrations .\n\n. Next"), ["."]);
+  });
+
   it("文献一覧で値を落とした大文字の欄（ISBN ,）は見ず、本文と小文字の語は見る", () => {
     const references =
       "# Paper\n\nText.\n\n## References\n\n- Ge, L. Data literacy. New York, pp. 1–5. External Links: ISBN , Document\n- Ito, K. Breaks , revisited.\n";

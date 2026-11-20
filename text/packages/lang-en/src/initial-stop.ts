@@ -11,8 +11,8 @@ import { escapeRegExp } from "./regexp.ts";
  * - a name abbreviation (Jas., Wm.) stands before a name, so it does not end it before any word but a
  *   sentence-start-word, even before a name and a comma ("Jas. Whittaker, J. Hocknell"). Its full stop is replaced
  *   with a letter;
- * - capitals with full stops (J., U.K.) before a word in lower case ("J. meacham", "Hart, K. and J. Reed") do not end
- *   it, since no sentence opens in lower case. A word that is lower case only at its head (iPhone) may be a name that
+ * - capitals with full stops (J., U.K.), or two or three small letters with them (a.m., p.m.), before a word in lower case
+ *   ("J. meacham", "Hart, K. and J. Reed", "9 a.m. and 4 p.m.") do not end it, since no sentence opens in lower case. A word that is lower case only at its head (iPhone) may be a name that
  *   opens one, so it is left out. Their last full stop is replaced with a letter.
  * The length does not change, so the spans fit the original text. Initials first on their line are a list's labels
  * (A. The first item) and are left as they are.
@@ -24,7 +24,7 @@ const EDGE_BEFORE = String.raw`(?<![\p{L}\p{N}_.'’])`;
 const WORD_END = String.raw`(?![\p{L}\p{N}_.'’-])`;
 const PLAIN_LETTER = "n";
 const CAPITAL = /\p{Lu}/gu;
-const BEFORE_LOWER_CASE = new RegExp(String.raw`${EDGE_BEFORE}(?:\p{Lu}\.){1,3}(?=[ \t\r\n]+\p{Ll}(?!\p{Lu}))`, "gu");
+const BEFORE_LOWER_CASE = new RegExp(String.raw`${EDGE_BEFORE}(?:(?:\p{Lu}\.){1,3}|(?:\p{Ll}\.){2,3})(?=[ \t\r\n]+\p{Ll}(?!\p{Lu}))`, "gu");
 
 const oneOf = (words: readonly string[]): string => `(?:${words.map(escapeRegExp).join("|")})`;
 

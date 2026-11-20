@@ -130,6 +130,8 @@ const closesIfNewSubject = (tokens: readonly Token[], at: number): boolean => {
 export type TopicClauseWords = {
   /** Words that end a clause right after its predicate (ことから, つつ, としても): the topic-clause-close lexicon. */
   readonly closers: readonly string[];
+  /** Nouns that は makes an adverb of (最後は, in the end): the topic-adverb lexicon. Such a は is no topic. */
+  readonly adverbs?: readonly string[];
 };
 
 const NO_WORDS: TopicClauseWords = { closers: [] };

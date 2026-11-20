@@ -54,6 +54,20 @@ describe("bracketDepth: 括弧の重なり", () => {
     assert.equal(bracketDepth("「a）"), 1);
   });
 
+  it("詩の引用が行の頭で開き直す引用符は、引用を深くしない", () => {
+    // Walt Whitman, "Going Somewhere", Leaves of Grass (1891-92)（パブリックドメイン）。
+    const verse = [
+      "Ended our talk--“The sum, concluding all we know of old or modern",
+      "  “Of all Geologies--Histories--of all Astronomy--of Evolution,",
+      "  “Life, life an endless march, an endless army, (no halt, but it is",
+      "      duly over,)",
+      "  “All bound as is befitting each--all surely going somewhere.”",
+    ].join("\n");
+    assert.equal(bracketDepth(verse), 2);
+    assert.equal(bracketDepth("He said “one “two “three”"), 3);
+    assert.equal(bracketDepth("He said\n“one (a [b])”"), 3);
+  });
+
   it("開きの無い閉じ括弧、閉じない開き括弧、数式、波括弧", () => {
     assert.equal(bracketDepth("1) 準備 2) 実行"), 0);
     assert.equal(bracketDepth("（閉じない（まま"), 2);

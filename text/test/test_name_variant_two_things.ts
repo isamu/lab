@@ -3,7 +3,16 @@ import assert from "node:assert/strict";
 import { namedRuleRun } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
-import { isInverseOrder, isListedPair, isOtherEnding, isSetInCapitals } from "../packages/chaff/src/name-variant-shapes.ts";
+import {
+  isAcronymPair,
+  isContractionPair,
+  isInFileName,
+  isInverseOrder,
+  isListedPair,
+  isNameAndWord,
+  isOtherEnding,
+  isSetInCapitals,
+} from "../packages/chaff/src/name-variant-shapes.ts";
 import { titleSlipsIn } from "../packages/chaff/src/name-title-slip.ts";
 
 // name-variant: two forms that look like one name written two ways but are two things, and a slip in a repeated title.
@@ -87,6 +96,85 @@ describe("name-variant: two things, not one name", () => {
     const poem =
       "Spring and Summer, Fall and Winter and Spring,\n\nVoices of Spring.\n\nAwaken roots under cover of soil—it is Spring again.\n\nSprang from your delusion that it was wantonness\n";
     assert.deepEqual(variants(poem, en, "a.txt"), []);
+  });
+
+  it("isNameAndWord: one of two one-word forms written in small letters elsewhere", () => {
+    const known = (word: string): boolean => ["virgil", "stain"].includes(word);
+    assert.equal(isNameAndWord("Stain", "Spain", "Stain every page, stain every song.", known), true);
+    assert.equal(isNameAndWord("Virgil", "Vigil", "I kept a vigil.", known), true);
+    assert.equal(isNameAndWord("Affliates", "Affiliates", "its affiliates", known), false);
+    assert.equal(isNameAndWord("Spian", "Spain", "He sailed to Spain.", known), false);
+    assert.equal(isNameAndWord("Stain", "Spain", "Stain-resistant, stained.", known), false);
+    assert.equal(isNameAndWord("New Stain", "New Spain", "a stain", known), false);
+    assert.equal(isNameAndWord("", "", "", known), false);
+  });
+
+  it("a name one letter from a word the document writes in small letters is two words", () => {
+    const whitman = "Spain is far. I sailed to Spain.\n\nStain every page, stain every song I sing.\n";
+    assert.deepEqual(variants(whitman, en, "a.txt"), []);
+    const vigil = "The Vigil began. The Vigil ended.\n\nI kept a vigil there.\n\nNot Virgil and Dante, nor myriad memories.\n";
+    assert.deepEqual(variants(vigil, en, "a.txt"), []);
+  });
+
+  it("a misspelt defined word is still reported beside the word in small letters", () => {
+    const contract =
+      "Licensor and its Affiliates grant this. The Affiliates agree. Licensor and its affiliates sign. Licensor and its Affliates hereby grant.\n";
+    assert.deepEqual(variants(contract), ['"Affliates" is one letter away from "Affiliates", which the document uses more than once']);
+  });
+
+  it("a slip of a name that is no ordinary word is still reported", () => {
+    assert.deepEqual(variants("Spain is far. I sailed to Spain. Spian is near.\n"), [
+      '"Spian" is one letter away from "Spain", which the document uses more than once',
+    ]);
+  });
+
+  it("isContractionPair: an apostrophe after an ordinary word, the only difference", () => {
+    assert.equal(isContractionPair("Look’ee", "Lookee", "look here"), true);
+    assert.equal(isContractionPair("Thankee", "Thank'ee", "thank you"), true);
+    assert.equal(isContractionPair("O’Brien", "OBrien", "o brien"), false);
+    assert.equal(isContractionPair("Look’ee", "Lookee", "Look here"), false);
+    assert.equal(isContractionPair("Look’ee", "Lookey", "look here"), false);
+    assert.equal(isContractionPair("Lookee", "Lookee", "look here"), false);
+    assert.equal(isContractionPair("", "", ""), false);
+  });
+
+  it("a dialect contraction printed with and without its apostrophe is not a name", () => {
+    const dickens = "Lookee here, Pip. Lookee there, Pip.\n\nI look at the marshes. Look’ee here, Pip.\n";
+    assert.deepEqual(variants(dickens, en, "a.txt"), []);
+  });
+
+  it("isAcronymPair: two acronyms in capitals with a plural s", () => {
+    assert.equal(isAcronymPair("SBLCs", "SBDCs"), true);
+    assert.equal(isAcronymPair("SBLCs", "Sables"), false);
+    assert.equal(isAcronymPair("Ss", "SBDCs"), false);
+    assert.equal(isAcronymPair("", ""), false);
+  });
+
+  it("two plural acronyms one letter apart are two programmes", () => {
+    const hearing =
+      "We recently reformed that announcing that Community\n\nAdvantage SBLCs licenses would be rescinded if they didn't meet\n\ncapital requirements.\n\nAnd so those SBDCs are critical in delivering those\n\nservices to our small businesses.\n\nYou are planning to integrate these veterans'\n\nprograms into the SBDCs and providing a $10 million increase\n\nthis year.\n\noutreach at 68 district offices in addition to 1,000 SBDCs. So,\n";
+    assert.deepEqual(variants(hearing), []);
+  });
+
+  it("isInFileName: the form inside a run without spaces that ends with an extension or holds a scheme", () => {
+    const pdf = "See Low-Tax-Rates-to-Create-American-Economic-Prosperity.pdf. Then";
+    assert.equal(isInFileName(pdf, pdf.indexOf("American"), "American-Economic-Prosperity".length), true);
+    const url = "at https://example.gov/Risk-Assessment today";
+    assert.equal(isInFileName(url, url.indexOf("Risk"), "Risk-Assessment".length), true);
+    const prose = "the Risk-Assessment. Then e.g. more";
+    assert.equal(isInFileName(prose, prose.indexOf("Risk"), "Risk-Assessment".length), false);
+    assert.equal(isInFileName("Borrowmoney.com, inc.", 0, "Borrowmoney".length), false);
+    assert.equal(isInFileName("e.g.", 0, 1), false);
+    assert.equal(isInFileName("", 0, 0), false);
+  });
+
+  it("a piece of a file name broken across lines is not a spelling of the name", () => {
+    const record =
+      "The American Economic Prosperity plan. American Economic Prosperity matters.\n\nwww.whitehouse.gov/wp-content/uploads/2025/03/Preserving-and-Expanding-\n\nLow-Tax-Rates-to-Create-American-Economic-Prosperity.pdf.\n";
+    assert.deepEqual(variants(record), []);
+    assert.deepEqual(variants("The American Economic Prosperity plan. American Economic Prosperity matters. American-Economic-Prosperity is here.\n"), [
+      '"American-Economic-Prosperity" is written "American Economic Prosperity" elsewhere in the document (case, width or punctuation)',
+    ]);
   });
 
   it("a title quoted in capitals as published is not a variant; capitals outside quotation marks still are", () => {

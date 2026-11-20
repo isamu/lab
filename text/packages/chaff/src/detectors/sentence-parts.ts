@@ -78,6 +78,18 @@ export const colonQuotationParts = (text: string): readonly string[] | undefined
   return nonEmpty([text.replace(COLON_QUOTATION, ":"), ...quotes]);
 };
 
+/**
+ * A sentence that opens the text inside parentheses and closes there ("(Don't bother … now.)"), then the next sentence: a
+ * splitter that does not cut after ".)" runs them together. Only at the start, where the splitter already cut before "(".
+ */
+const PARENTHETICAL_SENTENCE_HEAD = /^\([^()]*[.?!]\)(?=\s+["“]?\p{Lu})/u;
+
+/** A parenthesised sentence and the sentence after it, measured apart. */
+export const parentheticalSentenceParts = (text: string): readonly string[] | undefined => {
+  const head = PARENTHETICAL_SENTENCE_HEAD.exec(text)?.[0];
+  return head === undefined ? undefined : nonEmpty([head, text.slice(head.length)]);
+};
+
 /** A header cell closed by its unit in brackets (所有割合(％), 従業員数（人）, 資本金(百万円)). */
 const UNIT_HEADER = /[（(](?:％|%|人|名|株|件|台|社|円|千円|百万円)[）)]/gu;
 /** Fewer unit headers than this are a sentence that names a unit or two, not a table's header row. */

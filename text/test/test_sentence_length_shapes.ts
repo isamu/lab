@@ -4,7 +4,13 @@ import { namedRuleRun } from "./rule-run.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { isCitationString } from "../packages/chaff/src/detectors/citation-string.ts";
-import { colonQuotationParts, flattenedTableParts, isGrammarBlock, labelLineParts } from "../packages/chaff/src/detectors/sentence-parts.ts";
+import {
+  colonQuotationParts,
+  flattenedTableParts,
+  isGrammarBlock,
+  labelLineParts,
+  parentheticalSentenceParts,
+} from "../packages/chaff/src/detectors/sentence-parts.ts";
 import { isReferenceLine, remarkAfterTitle } from "../packages/chaff/src/detectors/sentence-title.ts";
 
 // max-sentence-length and the text a splitter hands over as one sentence although nobody wrote it as one: label lines,
@@ -175,5 +181,27 @@ describe("a title line with a remark, and a reference line", () => {
       "See River Towns Lending Program Expanded to Three More Counties and Five More Small Banks across the Northern Part of the State in the Spring.";
     assert.equal(isCitationString(title, SIGNALS), false);
     assert.deepEqual(enFindings(title, EMAIL), []);
+  });
+});
+
+describe("max-sentence-length: a sentence closed inside parentheses", () => {
+  it("measures a parenthesised sentence ending in .) apart from the sentence after it", () => {
+    const text =
+      "(Do not bother with the tour of the tower, though, since the rooms have been cleared of anything old and are now used now and then for small shows.) Behind the pumping station is an old firehouse that is still in use, and you may see the crew resting out front.";
+    assert.deepEqual(parentheticalSentenceParts(text), [
+      "(Do not bother with the tour of the tower, though, since the rooms have been cleared of anything old and are now used now and then for small shows.)",
+      "Behind the pumping station is an old firehouse that is still in use, and you may see the crew resting out front.",
+    ]);
+    assert.deepEqual(enFindings(`Walk one block south.\n\nThe tower is old. ${text}`, "blog/essay"), []);
+  });
+
+  it("does not cut at a parenthesis that closes inside a sentence, and still reports a long part", () => {
+    assert.equal(parentheticalSentenceParts("The tower (built in 1869.) stands here."), undefined);
+    assert.equal(parentheticalSentenceParts("It is kept as is.\n(The tool does this itself.) If it is not there, the tool leaves it out."), undefined);
+    assert.equal(parentheticalSentenceParts("The tower (see the map) stands. Then walk on."), undefined);
+    assert.equal(parentheticalSentenceParts(""), undefined);
+    const longPart =
+      "(Short note.) Behind the pumping station is an old firehouse that is still in use, and you may see the crew resting out front if they are not away on a call, which happens often in the busy summer months when the beaches are full and the streets are crowded with visitors from out of town.";
+    assert.equal(enFindings(longPart, "blog/essay").length, 1);
   });
 });

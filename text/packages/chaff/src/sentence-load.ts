@@ -44,13 +44,31 @@ const singled = (text: string): string =>
 export const bracketDepth = (text: string): number => {
   // The closers still awaited, innermost last. Pushed and popped in place: copying it per character is quadratic on deep nesting.
   const awaited: string[] = [];
-  return [...singled(text.replace(FORMULA, " "))].reduce((deepest, char) => {
+  const chars = [...singled(text.replace(FORMULA, " "))];
+  const heads = lineHeads(chars);
+  return chars.reduce((deepest, char, at) => {
     const innermost = awaited.at(-1);
     if (innermost !== undefined && (innermost === char || innermost === OTHER_WIDTH[char])) awaited.pop();
-    else if (BRACKETS[char] !== undefined) awaited.push(BRACKETS[char]);
+    else if (BRACKETS[char] !== undefined && !(heads[at] === true && isReopening(char, innermost))) awaited.push(BRACKETS[char]);
     return Math.max(deepest, awaited.length);
   }, 0);
 };
+
+/** Quoted verse reopens the quotation mark at the head of each line and closes it once at the end: the same quotation goes on. */
+const isReopening = (char: string, innermost: string | undefined): boolean => char === "“" && innermost === "”";
+
+const INDENT = new Set([" ", "\t", "\u3000"]);
+
+/** Whether each character is the first of its line after the indent (not the first of the text). */
+const lineHeads = (chars: readonly string[]): boolean[] =>
+  chars.reduce<{ heads: boolean[]; afterBreak: boolean }>(
+    (state, char) => {
+      state.heads.push(state.afterBreak && !INDENT.has(char) && char !== "\n");
+      state.afterBreak = char === "\n" || (state.afterBreak && INDENT.has(char));
+      return state;
+    },
+    { heads: [], afterBreak: false },
+  ).heads;
 
 const PREDICATE = new Set(["VERB", "ADJ", "AUX"]);
 const COMMA = new Set(["、", "，"]);
@@ -168,11 +186,16 @@ const isSettingAt = (tokens: readonly Token[], at: number): boolean => {
   return before < at - 1 && !narrows(tokens[before], tokens[at - 1]);
 };
 
+/** は on a listed noun standing alone (最後は, in the end): an adverb, not a topic. 交渉の最後は is a noun phrase, and a topic. */
+const isAdverbAt = (tokens: readonly Token[], at: number, adverbs: ReadonlySet<string>): boolean =>
+  adverbs.has(tokens[at - 1]?.surface ?? "") && !narrows(tokens[at - 2], tokens[at - 1]);
+
 /** The sentence's topic: the first は on a noun, past a setting (今夜は、…死ぬといふことは) when a topic of another kind follows it. -1 when none. */
-const firstTopic = (tokens: readonly Token[]): number => {
-  const first = tokens.findIndex((_, at) => isTopicAt(tokens, at));
+const firstTopic = (tokens: readonly Token[], adverbs: ReadonlySet<string>): number => {
+  const isTopic = (at: number): boolean => isTopicAt(tokens, at) && !isAdverbAt(tokens, at, adverbs);
+  const first = tokens.findIndex((_, at) => isTopic(at));
   if (first === -1 || !isSettingAt(tokens, first)) return first;
-  const after = tokens.findIndex((_, at) => at > first && isTopicAt(tokens, at) && !isSettingAt(tokens, at));
+  const after = tokens.findIndex((_, at) => at > first && isTopic(at) && !isSettingAt(tokens, at));
   return after === -1 ? first : after;
 };
 
@@ -184,7 +207,7 @@ const firstTopic = (tokens: readonly Token[]): number => {
  * topic is said to do anything.
  */
 export const topicDistance = (tokens: readonly Token[], words?: TopicClauseWords): number | undefined => {
-  const topic = firstTopic(tokens);
+  const topic = firstTopic(tokens, new Set(words?.adverbs ?? []));
   const last = tokens.findLastIndex((token) => !TRAILING.has(token.pos));
   if (topic === -1 || last <= topic) return undefined;
   return tokens
