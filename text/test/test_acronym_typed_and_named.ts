@@ -1,6 +1,9 @@
 import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { reportedAcronyms } from "./rule-run.ts";
+import { buildDocument } from "../packages/chaff/src/document.ts";
+import { loadRules } from "../packages/chaff/src/rule-load.ts";
+import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { chatLogSpans } from "../packages/chaff/src/detectors/chat-log-line.ts";
@@ -80,7 +83,20 @@ describe("undefined-acronym: everyday words and file formats", () => {
     assert.deepEqual(reportedAcronyms(ja, jaDoc("- 見積書(PDF形式, 120KB)\n- 物品供給見積書(DOCX形式, 44.27KB)\n- 内訳(XLSX形式, 20KB)")), []);
   });
 
+  it("does not report HR, the office every workplace has, alone or in a job title", () => {
+    assert.deepEqual(reportedAcronyms(en, enDoc("Ask your HR Specialist, or write to HR, before you take leave.")), []);
+  });
+
+  it("in a manual at normal, two unexplained acronyms beside HR are still reported", () => {
+    const manual = enDoc("The QMB sets the hours. Ask your HR Specialist before the TSU closes.");
+    const reportedInManual = runRules(buildDocument("t.md", manual, en), loadRules("en"), { "undefined-acronym": "normal" }, true, "docs/manual")
+      .findings.filter((finding) => finding.rule === "undefined-acronym")
+      .map((finding) => String(finding.values["word"]));
+    assert.deepEqual(reportedInManual, ["QMB", "TSU"]);
+  });
+
   it("still reports an acronym that is not one of them", () => {
+    assert.deepEqual(reportedAcronyms(en, enDoc("Ask your HRBP before you take leave.")), ["HRBP"]);
     assert.deepEqual(reportedAcronyms(ja, jaDoc("物品供給見積書(PSLPG形式, 44.27KB)")), ["PSLPG"]);
   });
 });

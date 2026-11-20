@@ -76,6 +76,7 @@ entries:
   - pattern: CEO
   - pattern: CTO
   - pattern: CFO
+  - pattern: HR # the office every workplace has (call HR), an everyday word
   - pattern: US
   - pattern: USA
   - pattern: UK
