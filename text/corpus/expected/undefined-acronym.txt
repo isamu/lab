@@ -9,7 +9,7 @@ bls-glossary  4
 bonterms-cloud-terms  2
 cisa-scuba-teams  5
 cloudgov-security-ir-guide  9
-commonpaper-csa  5
+commonpaper-csa  3
 crs-r47235-budget-timeline  3
 crs-r47585-subcontracting  9
 crs-rl32781-salt  3

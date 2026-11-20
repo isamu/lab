@@ -169,6 +169,17 @@ describe("labelWrittenBetween", () => {
     );
   });
 
+  it("finds a dotted label run into a sentence when its own first subsection follows it at once", () => {
+    const runIn =
+      "7.4 Supplier shall maintain the following insurance: 7.5 7.5.1 General Liability of not less than the limit.\n\n7.6 Supplier shall name Buyer.";
+    assert.equal(labelWrittenBetween(runIn, { label: "7.4", ordinal: 4, last: 4, start: 0 }, { label: "7.6", ordinal: 6, start: at(runIn, "7.6") }), true);
+    const mentioned = "7.4 Supplier shall maintain the insurance in 7.5 and 7.5.1 of the schedule.\n\n7.6 Supplier shall name Buyer.";
+    assert.equal(
+      labelWrittenBetween(mentioned, { label: "7.4", ordinal: 4, last: 4, start: 0 }, { label: "7.6", ordinal: 6, start: at(mentioned, "7.6") }),
+      false,
+    );
+  });
+
   it("does not find a label in a sentence, a label of another number, or one it cannot write", () => {
     const sentence = "(c) Exchange under clause (d) hereof.\n\n(e) Any portion";
     assert.equal(

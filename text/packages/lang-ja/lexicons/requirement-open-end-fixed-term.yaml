@@ -1,0 +1,8 @@
+# 法令や慣行が「等」まで含めて決めている語。「消費税等」は消費税と地方消費税、「免許等」「許可等」は法令の言う免許・許可の
+# まとまりを指し、開いた一覧ではない。requirement-smell は、この語の中の「等」を指さない（地方消費税等のように前に語が付いても同じ）。
+id: requirement-open-end-fixed-term
+language: ja
+entries:
+  - pattern: 消費税等
+  - pattern: 免許等
+  - pattern: 許可等

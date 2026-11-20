@@ -29,6 +29,8 @@ describe("statedAcronyms", () => {
     ["読点と引用符の後ろの言い換え", "Travel is for “temporary duty,” also known as “TDY” travel.", ["TDY"]],
     ["項目名の後ろの名前の行", "# Notice\n\nFrom:\n\nHM Revenue & Customs\n\nTell HMRC first.", ["HMRC"]],
     ["項目名の後ろの強調した名前", "Published by:\n**National Weather Service**\n", ["NWS"]],
+    ["語と定義の語の間の文中のタグ", '18. <span id="13.18">**"GDPR"**</span> means the regulation.', ["GDPR"]],
+    ["呼び名の並びの中の文中のタグ", '(<a href="#buyer">"Buyer"</a> or <strong>"PNC"</strong>)', ["PNC"]],
   ].forEach(([form, source, expected]) => {
     it(`valid: ${String(form)}`, () => assert.deepEqual(stated(String(source)), expected));
   });
@@ -49,6 +51,7 @@ describe("statedAcronyms", () => {
     ["項目名の後ろの頭文字が 2 文字の名前", "From:\nAdvance Purchase\n"],
     ["項目名の後ろの略語そのものを含む行", "From:\nNASA website team\n"],
     ["項目名の後ろの、大文字で始まる語が 1 つの行", "From:\nVAT registration number\n"],
+    ["表の欄で隔てた定義の語", '<td>"GDPR"</td><td>means of payment</td>'],
   ].forEach(([form, source]) => {
     it(`invalid: ${String(form)}`, () => assert.deepEqual(stated(String(source)), []));
   });

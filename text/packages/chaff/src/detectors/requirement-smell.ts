@@ -20,6 +20,8 @@ const LOOPHOLE = "requirement-loophole";
 const OPEN_QUESTION = "requirement-open-question";
 /** The words of a condition whose bracketed examples an open list may give. */
 const OPEN_CONDITION = "requirement-open-condition";
+/** The terms law or usage fixes with an open-end word (消費税等), which close their own list. The language may have none. */
+const FIXED_TERMS = "requirement-open-end-fixed-term";
 const TIME = "time";
 const CONCRETE_DEADLINE = "concrete-deadline";
 
@@ -77,7 +79,8 @@ const smellWords = (doc: ProseDocument, lexicon: string, genre: string | undefin
 /**
  * Where the word stands as a smell. An open-end word inside a name the document gives (業務執行取締役等), giving examples
  * of a class named right after it (印刷等、二次的に利用), ending a list a condition, a permission or a prohibition holds
- * (転載等をしてはならない), or ending a list a pointing word opens (当該改良、改善等), is none; without tokens none of these can be told apart.
+ * (転載等をしてはならない), ending a list a pointing word opens (当該改良、改善等), or part of a term law fixes (消費税等), is
+ * none; without tokens none of these can be told apart.
  */
 const smellAt = (doc: ProseDocument, sentence: Sentence, entry: LexiconEntry, lexicon: string, names: () => OpenEndNames): number | undefined => {
   if (!entryIn(sentence, entry) || boundedInTime(doc, sentence, entry, lexicon)) return undefined;
@@ -126,7 +129,8 @@ export const requirementSmell: Detector = (doc, options): Finding[] => {
   const statements = (doc.lexicons[STATEMENTS] ?? []).map((entry) => entry.pattern);
   // Read once, and only when a requirement has an open-end word to tell apart from a name.
   const cache: { names?: OpenEndNames } = {};
-  const names = (): OpenEndNames => (cache.names ??= openEndNames(doc, smellWords(doc, OPEN_END, options.genre), statements));
+  const fixed = (doc.lexicons[FIXED_TERMS] ?? []).map((entry) => entry.pattern);
+  const names = (): OpenEndNames => (cache.names ??= openEndNames(doc, smellWords(doc, OPEN_END, options.genre), statements, fixed));
   const onPurpose = scopeWordsOf(doc.lexicons[OPEN_END] ?? []).onPurpose;
   const openItems = itemsOpenOnPurpose(doc.source, doc.sentences, doc.lists, onPurpose);
   return doc.sentences.flatMap((sentence, index) => {
