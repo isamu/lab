@@ -38,7 +38,9 @@ const setOutIn = (text: string, label: string, lead: string): boolean => {
   const after = String.raw`(?![0-9A-Za-z])`;
   const atLineStart = new RegExp(String.raw`^[ \t]*${escapeRegExp(lead)}[ \t]*${escaped}${after}`, "mu");
   const afterSpaces = new RegExp(String.raw`\S[ \t]{2,}${escaped}${after}`, "u");
-  if (atLineStart.test(text) || afterSpaces.test(text)) return true;
+  // "…as follows: 7.5 7.5.1 General Liability": a dotted label followed at once by its own first subsection opens it.
+  const beforeOwnFirst = /\d\.\d/u.test(label) && new RegExp(String.raw`(?<![0-9.])${escaped}[ \t]+${escaped}\.1${after}`, "u").test(text);
+  if (atLineStart.test(text) || afterSpaces.test(text) || beforeOwnFirst) return true;
   const firstLine = text.split("\n", 1)[0] ?? "";
   const bracketed = BRACKETED.test(label);
   return bracketed && firstLine.trimStart().startsWith("#") && new RegExp(String.raw`\s${escaped}${after}`, "u").test(firstLine);
