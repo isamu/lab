@@ -3,6 +3,9 @@ import assert from "node:assert/strict";
 import { firedRules, namedRuleRun } from "./rule-run.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
+import { buildDocument } from "../packages/chaff/src/document.ts";
+import { loadRules } from "../packages/chaff/src/rule-load.ts";
+import { runRules } from "../packages/chaff/src/run.ts";
 
 // demonstrative-opener-run on English: sentences in a row opening with This, That, These, Those or It. Self-written text,
 // except the passages that name their public-domain source.
@@ -79,6 +82,18 @@ describe("demonstrative-opener-run: English", () => {
     const essay = "The old house stood empty. This was the year the river rose. It took the garden. That loss was never mended.\n";
     assert.equal(firedRules(en, essay, "literature/essay").includes(RULE), false);
     assert.equal(firedRules(en, essay, "legal/judgment").includes(RULE), true);
+  });
+
+  it("quotes the run with a space between English sentences, and none between Japanese ones", () => {
+    const quotesOf = (source: string, adapter: typeof en): string[] =>
+      runRules(buildDocument("a.md", source, adapter), loadRules(adapter.id), { [RULE]: "normal" }, false, "business/report")
+        .findings.filter((finding) => finding.rule === RULE)
+        .map((finding) => finding.quote);
+    const lines =
+      "Most claims are for small purchases.\nThis means most claims need only a receipt.\nThat keeps the approval quick.\nThese rules apply from April.\n";
+    assert.deepEqual(quotesOf(lines, en), ["This means most claims need only a receipt. That keeps the approval quick. These rules apply from April."]);
+    const japanese = "新しい手順を導入しました。\nこれは作業を減らすためです。\nその結果、残業が減りました。\nこの効果は来月も続く見込みです。\n";
+    assert.deepEqual(quotesOf(japanese, ja), ["これは作業を減らすためです。その結果、残業が減りました。この効果は来月も続く見込みです。"]);
   });
 
   it("still reports the Japanese run, which has no English exclusions", () => {
