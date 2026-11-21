@@ -30,6 +30,10 @@ describe("request-without-deadline: 期限も担当も無い依頼", () => {
     assert.deepEqual(findingsOf("添付の見積書を、来週の金曜までにご確認ください。"), []);
     assert.deepEqual(findingsOf("添付の見積書を2026年10月20日にご確認ください。"), []);
     assert.deepEqual(findingsOf("添付の見積書をご確認ください。15時に電話します。"), []);
+    assert.deepEqual(findingsOf("数えた結果は、その日のうちに表に入れ、物流部に送ってください。"), []);
+    assert.deepEqual(findingsOf("申込書は当日中にご提出ください。"), []);
+    assert.deepEqual(findingsOf("届いた荷物は当日のうちに開けてください。"), []);
+    assert.deepEqual(findingsOf("不具合は即日ご連絡ください。"), []);
     assert.deepEqual(findingsOf("Please review the attached quote by Friday.", en), []);
     assert.deepEqual(findingsOf("Please review the attached quote. We sign on Oct 20.", en), []);
   });
