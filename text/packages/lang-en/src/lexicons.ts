@@ -27,6 +27,7 @@ const toEntry = (raw: unknown): LexiconEntry | undefined => {
     ...(isStringList(genres) ? { genres } : {}),
     ...(raw["heading_only"] === true ? { heading_only: true } : {}),
     ...(raw["opens"] === true ? { opens: true } : {}),
+    ...(isStringList(raw["not_before_pos"]) ? { not_before_pos: raw["not_before_pos"] } : {}),
   };
 };
 

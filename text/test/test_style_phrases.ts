@@ -118,6 +118,12 @@ describe("homophone-slip", () => {
     assert.deepEqual(findingsOf(RULE, right), []);
     assert.deepEqual(findingsOf(RULE, "Its antenna is bent. Their arena is full.\n"), []);
   });
+
+  it('"your welcome" before a noun is a welcome email or pack, and is not reported; alone or before "to" it is', () => {
+    assert.deepEqual(findingsOf(RULE, "Sign in with the temporary password from your welcome email. Open your welcome pack.\n"), []);
+    assert.deepEqual(findingsOf(RULE, "Thank you for the help. Your welcome.\n"), ['"your welcome" has one homophone typed for another']);
+    assert.deepEqual(findingsOf(RULE, "Your welcome to join us.\n"), ['"your welcome" has one homophone typed for another']);
+  });
 });
 
 describe("sentence-initial-so", () => {

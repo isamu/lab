@@ -42,8 +42,8 @@ example:
       The team kept its own schedule. There are two reviews left.
 
 not_flagged:
-  ja: 一覧にある組だけを見ます。英語の文書だけで動きます。次の語で決まらない「its time」「they're people」は見ません。小説と話し言葉では使いません（方言や話しぶりをわざと綴るため）。
-  en: Only the pairs on chaff's list are checked, and only in English documents. Pairs the next word does not settle ("its time", "they're people") are not. Not used in fiction or speeches, which spell dialect on purpose.
+  ja: 一覧にある組だけを見ます。英語の文書だけで動きます。次の語で決まらない「its time」「they're people」は見ません。名詞の前の「your welcome」（your welcome email）は歓迎のメールなので言いません。小説と話し言葉では使いません（方言や話しぶりをわざと綴るため）。
+  en: Only the pairs on chaff's list are checked, and only in English documents. Pairs the next word does not settle ("its time", "they're people") are not, nor "your welcome" before a noun ("your welcome email"). Not used in fiction or speeches, which spell dialect on purpose.
 level_meaning:
   ja: 取り違えが {limit} 箇所あれば指摘
   en: reported once there are {limit}
