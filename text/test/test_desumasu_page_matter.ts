@@ -67,6 +67,18 @@ describe("no-mixed-desumasu: 「！」で終わる叫び", () => {
   it("「！」の無い常体の文は今までどおり指す", () => assert.equal(findingsOf(`# 性能\n\n${polite}\n\nこれでは原因がわからない。\n`, "blog/tech").length, 1));
 });
 
+describe("no-mixed-desumasu: 読み手に呼びかける終助詞（よ・ね・かな）", () => {
+  it("ですます調の子ども向けページの「…いるよ。」「…違うんだよ。」「…のかな？」を指さない", () => {
+    const asides = ["税金はどうやって納めているのかな？", "ヒント：値段には税が含まれているよ。", "住民税は地方税なので、納めるところが違うんだよ。"];
+    assert.deepEqual(findingsOf(`# 身近な税金\n\n${polite}\n\n${asides.join("\n\n")}\n`, "blog/owned-media"), []);
+  });
+
+  it("終助詞の無い常体の文と、「な」で終わる独り言は今までどおり指す", () => {
+    assert.equal(findingsOf(`# 身近な税金\n\n${polite}\n\n値段には税が含まれている。\n`, "blog/owned-media").length, 1);
+    assert.equal(findingsOf(`# 身近な税金\n\n${polite}\n\nこれでは原因がわからないな。\n`, "blog/owned-media").length, 1);
+  });
+});
+
 describe("no-mixed-desumasu: 「これだけで」で受ける行いの書き出し", () => {
   it("次の文が「これだけで」で受ける常体の文を指さない", () =>
     assert.deepEqual(findingsOf(`# 読書メモ\n\n${polite}たとえば、案内に決めることを書いて送る。これだけで、会議が短くなりました。\n`, "blog/essay"), []));
