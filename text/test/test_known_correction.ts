@@ -6,6 +6,7 @@ import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { correctionIn, editBetween } from "../packages/chaff/src/correction-edit.ts";
 import { buildDocument, type TeamRules } from "../packages/chaff/src/document.ts";
 import { knownCorrection } from "../packages/chaff/src/detectors/known-correction.ts";
+import { loadRules } from "../packages/chaff/src/rule-load.ts";
 
 // 誤りと正しい形の組の語彙表（known-misspelling、misconversion）。例文はすべて自作。
 
@@ -145,6 +146,15 @@ describe("known-correction: names", () => {
       knownCorrection(buildDocument("a.md", "黒ひげ危機一発で遊んだ。\n", ja, team), { limit: 1, lexicon }).map((finding) => finding.values["matched"]);
     assert.deepEqual(matched(), ["危機一発"]);
     assert.deepEqual(matched(team), []);
+  });
+
+  it("every rule on this detector tells, in both languages, that names keeps a form", () => {
+    const rules = loadRules("ja").filter((rule) => rule.how_to_find === "known-correction");
+    assert.ok(rules.length >= 2);
+    rules.forEach((rule) => {
+      assert.match(rule.how_to_fix.ja ?? "", /chaff\.yaml の names/u, rule.id);
+      assert.match(rule.how_to_fix.en ?? "", /names in chaff\.yaml/u, rule.id);
+    });
   });
 
   it("without tokens, a Latin form is matched as a whole word only", () => {
