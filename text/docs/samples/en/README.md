@@ -11,7 +11,7 @@ Or paste a draft into the [playground](https://isamu.github.io/lab/en/playground
 
 日本語の見本: [../ja/README.md](../ja/README.md)
 
-Rules with a sample: 53 / 259
+Rules with a sample: 65 / 259
 
 ## Readability
 
@@ -82,8 +82,18 @@ Skipped numbers, references to provisions that are not there, terms defined twic
 | [Headings that are only a label and a number](numbered-generic-heading.md) (`numbered-generic-heading`) | Headings such as "Benefit 1" and "Tip 2" that are only a label and a number |
 | [Skipped or repeated number](numbering-gap.md) (`numbering-gap`) | A numbered item that skips or repeats a number, such as Article 1 then 3 |
 | [Too long before the point](preamble-length.md) (`preamble-length`) | Too many paragraphs before the first heading, which delays the point |
-
-Rules with no sample yet: `prerequisite-after-step`, `required-listed-as-preferred`, `step-reference-missing`, `table-row-overflow`, `toc-heading-mismatch`, `unclosed-code-fence`, `unlisted-item-used`, `unrendered-emphasis`, `unused-definition`, `use-before-definition`, `vague-figure-reference`, `vague-link-text`
+| [Prerequisite written after the steps](prerequisite-after-step.md) (`prerequisite-after-step`) | "Before you begin" written after the numbered steps it should come before |
+| [A required skill listed again as preferred](required-listed-as-preferred.md) (`required-listed-as-preferred`) | A job posting that lists one skill both as required and as preferred |
+| [A reference to a step that does not exist](step-reference-missing.md) (`step-reference-missing`) | A reference such as "see step 5" past the last step the document has |
+| [Table row with more cells than the header](table-row-overflow.md) (`table-row-overflow`) | A table row with more cells than the header row (the extra ones are not shown) |
+| [A table-of-contents entry with no heading](toc-heading-mismatch.md) (`toc-heading-mismatch`) | A table of contents entry that matches no heading of the document |
+| [Unclosed code fence](unclosed-code-fence.md) (`unclosed-code-fence`) | A code block opened with "```" and never closed |
+| [A step uses something the list of what you need leaves out](unlisted-item-used.md) (`unlisted-item-used`) | A step that uses an ingredient or a tool missing from the document's own list |
+| [Unrendered emphasis marks](unrendered-emphasis.md) (`unrendered-emphasis`) | "**" or "__" that Markdown cannot pair and shows as written |
+| [Term defined but never used](unused-definition.md) (`unused-definition`) | A term the document defines and then never uses |
+| [Term used before it is defined](use-before-definition.md) (`use-before-definition`) | A term defined in passing, as in (the "Seller"), that is used before that point |
+| [A figure, table or clause pointed at by where it is](vague-figure-reference.md) (`vague-figure-reference`) | "The table below" in a document that numbers its tables and figures |
+| [Link text that does not say where it goes](vague-link-text.md) (`vague-link-text`) | A link whose whole text is "here", "click here" or "read more" |
 
 ## Facts that disagree
 
