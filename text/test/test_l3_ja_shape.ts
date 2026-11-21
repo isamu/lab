@@ -348,6 +348,15 @@ describe("L3 日本語 — 文字と語彙", () => {
       assert.ok(!idsFor("ほとんどの項目は完了しました。").includes("hiragana-fukushi"));
     });
 
+    it("invalid: 字は常用漢字でも読みが表外の副詞（直ぐ）", () => {
+      ["直ぐに連絡してください。", "直ぐ返事をします。"].forEach((text) => assert.ok(idsFor(text).includes("hiragana-fukushi"), text));
+      assert.ok(!idsFor("すぐに連絡してください。").includes("hiragana-fukushi"));
+    });
+
+    it("valid: 別の語の中の「直ぐ」（真っ直ぐ）は見ない", () => {
+      assert.ok(!idsFor("この道を真っ直ぐ進んでください。").includes("hiragana-fukushi"));
+    });
+
     it("valid: 公用文で漢字が認められる副詞は見ない", () => {
       // 「既に」「全く」は漢字でよい。どちらが正しいかで割れる語を入れない。
       assert.ok(!idsFor("既に完了しました。全く問題ありません。").includes("hiragana-fukushi"));
