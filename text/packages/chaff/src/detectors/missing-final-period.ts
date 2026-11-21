@@ -1,6 +1,7 @@
 import type { Detector, Finding, LexiconEntry, Paragraph, ProseDocument, Token } from "../plugin.ts";
 import { formMinority } from "./form-minority.ts";
 import { captionParagraphs, slotParagraphs } from "./final-period-captions.ts";
+import { isHeaderField } from "./email-letter.ts";
 
 // A paragraph whose last sentence stops without its closing mark, in a document whose other paragraphs end with one. It
 // takes no side: a document that ends none of its paragraphs with the mark (slides, labels) is not reported. The marks
@@ -113,16 +114,25 @@ const marksOf = (lexicon: readonly LexiconEntry[]): PeriodMarks => ({
   labels: lexicon.filter((entry) => entry.group === "label").map((entry) => entry.pattern),
 });
 
+/** A paragraph of one line opened by a header field (件名：…, Subject: …): a label and its value, not a sentence. Read from the source line, since the paragraph may start past the label. */
+const isFieldLine = (source: string, paragraph: Paragraph, fields: readonly string[]): boolean => {
+  const line = source.slice(source.lastIndexOf("\n", paragraph.span.start - 1) + 1, paragraph.span.end).trim();
+  return !line.includes("\n") && isHeaderField(line, fields);
+};
+
 export const missingFinalPeriod: Detector = (doc: ProseDocument, options): Finding[] => {
   const text = doc.prose ?? doc.source;
   const marks = marksOf(doc.lexicons["final-period"] ?? []);
+  const fields = (doc.lexicons["email-header-field"] ?? []).map((entry) => entry.pattern);
   const captions = captionParagraphs(
     text,
     doc.sections,
     slotParagraphs(text, doc.paragraphs, (line) => isClosed(line, marks.ends)),
   );
   const ends = doc.paragraphs.flatMap((paragraph, index) =>
-    captions.has(index) ? [] : (paragraphEnd(text, paragraph, marks, doc.paragraphs[index + 1], doc.paragraphs[index - 1]) ?? []),
+    captions.has(index) || isFieldLine(doc.source, paragraph, fields)
+      ? []
+      : (paragraphEnd(text, paragraph, marks, doc.paragraphs[index + 1], doc.paragraphs[index - 1]) ?? []),
   );
   const minority = formMinority(ends, options.limit);
   if (minority === undefined || minority.usual.form !== "closed") return [];
