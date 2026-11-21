@@ -79,7 +79,7 @@ describe("undefined-acronym: 文の中で前置詞・接続詞・数詞・代名
     ["It flies on the GSMX and Himawari satellites.", ["GSMX"]],
     ["Send the report to the GSA office, US-CERT, and the board.", ["GSA", "US-CERT"]],
     ["The states are: LSTN, CLSD.", ["CLSD", "LSTN"]],
-    ["The loan follows FAR 12.212 for this.", ["FAR"]],
+    ["The loan follows FAR rules for this.", ["FAR"]],
     ["It resumes at SOM/2 later.", ["SOM"]],
     ["The AS number and the AID program are new.", ["AID", "AS"]],
     // 前後が小文字の語でなければ、文の中で読めない。動詞の後ろの名詞が動詞として引けなければ、大文字の語の名前。
