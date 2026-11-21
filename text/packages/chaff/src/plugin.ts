@@ -79,6 +79,8 @@ export type LexiconEntry = {
   readonly heading_only?: boolean | undefined;
   /** The entry counts only where it opens the sentence (近年、… but not その後、近年の…). phrase-match honours it. */
   readonly opens?: boolean | undefined;
+  /** The entry does not count where the next word has one of these parts of speech: "your welcome email" is a welcome email, not "you're welcome". phrase-match honours it when tokens are read. */
+  readonly not_before_pos?: readonly string[] | undefined;
   /** pattern を adapter が語に分けたもの。品詞が読めるときだけ core が入れる。語彙表を書く側は書かない。 */
   readonly tokens?: readonly Token[] | undefined;
 };
