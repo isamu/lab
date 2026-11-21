@@ -79,6 +79,14 @@ describe("nominalization (en): a phrase hiding a verb", () => {
     assert.deepEqual(hidden("We made a decision. They will conduct an analysis of the data.", en), ["made a decision→decide", "conduct an analysis→analyze"]);
   });
 
+  it("matches the past tense of a verb the phrase alone reads as a noun (conduct)", () => {
+    assert.deepEqual(hidden("They conducted an analysis. She conducted a review. We are conducting an investigation.", en), [
+      "conducted an analysis→analyze",
+      "conducted a review→review",
+      "conducting an investigation→investigate",
+    ]);
+  });
+
   it("the verb itself, and a phrase not on the list, are not counted", () => {
     assert.deepEqual(hidden("We decided. They analyzed the data and made a cake.", en), []);
   });
