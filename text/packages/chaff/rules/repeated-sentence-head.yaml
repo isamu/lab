@@ -9,8 +9,8 @@ name:
   en: Repeated sentence opening
 
 why:
-  ja: 同じ書き出しが続くと、読者は文の切れ目を見失って読み飛ばします。
-  en: Identical openings blur the boundary between sentences.
+  ja: 同じ書き出しが続くと、読者は文の切れ目を見失って読み飛ばします。比べるのは文頭の 6 字（英語は最初の 3 語）で、そこまで同じ文が続くと数えます。
+  en: Identical openings blur the boundary between sentences. A sentence counts when its first three words (six characters in Japanese) match the sentence before it.
 
 message:
   ja: 「{head}」で始まる文が {count} 続いています（{limit} まで）
@@ -48,8 +48,8 @@ example:
       The tool is free and needs no account. It works on phones too, and it speaks Japanese as well.
 
 not_flagged:
-  ja: 箇条書きの項目どうしが同じ形で始まるのは書き方そのものなので、項目をまたいでは数えません。見出しをまたいでも数えません（FAQ の答えごとに「Learn more about …」で締める形）。どの文も一文だけの段落の連なり（案内ごとに一段落の「The government’s ‘How to …’ guide …」）は、印の無い項目の並びとして数えません。行の区切りが落ちて升の文字がつながった表（「（日本）100.0自動車…」のように行ごとに数の升がつながる段落）の行も数えません。
-  en: List items that open the same way are a format, not a slip, so a run does not continue across items. Nor does it continue across a heading (FAQ answers that each close with "Learn more about …"). A run in which every sentence is a paragraph of its own (one paragraph per guide, "The government’s ‘How to …’ guide …") is a list without markup and is not reported, and neither are the rows of a table whose cells ran together (a paragraph where a decimal cell joins the next cell row after row, "（日本）100.0自動車…").
+  ja: 箇条書きの項目どうしが同じ形で始まるのは書き方そのものなので、項目をまたいでは数えません。見出しをまたいでも数えません（FAQ の答えごとに「Learn more about …」で締める形）。どの文も一文だけの段落の連なり（案内ごとに一段落の「The government’s ‘How to …’ guide …」）は、印の無い項目の並びとして数えません。行の区切りが落ちて升の文字がつながった表（「（日本）100.0自動車…」のように行ごとに数の升がつながる段落）の行も数えません。英語で最初の 2 語だけが同じ文（You can upload … / You can share …）は、3 語目で分かれるので数えません。
+  en: List items that open the same way are a format, not a slip, so a run does not continue across items. Nor does it continue across a heading (FAQ answers that each close with "Learn more about …"). A run in which every sentence is a paragraph of its own (one paragraph per guide, "The government’s ‘How to …’ guide …") is a list without markup and is not reported, and neither are the rows of a table whose cells ran together (a paragraph where a decimal cell joins the next cell row after row, "（日本）100.0自動車…"). Sentences that share only their first two words ("You can upload …" / "You can share …") part at the third and are not counted.
 level_meaning:
   ja: 同じ書き出しの文の連続 {limit} 文まで
   en: up to {limit} {limit|sentence|sentences} in a row with the same opening
