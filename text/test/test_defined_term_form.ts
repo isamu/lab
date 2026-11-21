@@ -352,6 +352,19 @@ describe("defined-name-repeated: a long name used again after its short name", (
     assert.deepEqual(valuesOf(en, "defined-name-repeated", english, "term"), ["name Supplier"]);
   });
 
+  it("reads the second party after and, with or without a comma, as its own name", () => {
+    const opening = 'This agreement is made between Brookside Medical Centre (the "Client") and Harbour Works Ltd (the "Supplier").';
+    const sentence = tokensOf(en, opening);
+    assert.ok(sentence !== undefined);
+    assert.equal(nameBefore(sentence, opening.lastIndexOf("("), ["and"]), "Harbour Works Ltd");
+    const comma = 'This agreement is made between Brookside Medical Centre ("Client"), and Harbour Works Ltd ("Supplier").';
+    const commaSentence = tokensOf(en, comma);
+    assert.ok(commaSentence !== undefined);
+    assert.equal(nameBefore(commaSentence, comma.lastIndexOf("("), ["and"]), "Harbour Works Ltd");
+    const source = ["# Agreement", "", opening, "", "1. Harbour Works Ltd shall send an invoice every month.", ""].join("\n");
+    assert.deepEqual(valuesOf(en, "defined-name-repeated", source, "term"), ["name Supplier"]);
+  });
+
   it("does not read the last item of a list the definition names together (書面または電磁的記録（以下「書面等」）)", () => {
     const pair = "開示者の書面または電磁的記録（以下「書面等」という。）による承諾を得る。";
     const sentence = tokensOf(ja, pair);
