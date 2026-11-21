@@ -16,6 +16,9 @@ export type RequirementWords = {
   /** Headings and labels of what an applicant must have (必須, Required) and of what is welcome (歓迎, Preferred). */
   readonly required: readonly string[];
   readonly preferred: readonly string[];
+  /** What a heading's list is of (経験, 資格), written after the kind word with a joiner or none (歓迎する経験, 必須の資格, 歓迎スキル). */
+  readonly subjects: readonly string[];
+  readonly joiners: readonly string[];
   /** Units of a length of experience, valued in months (年 12, month 1). */
   readonly units: readonly ValuedWord[];
   /** Words that stand before or after a length and belong to it (at least, 以上, of). */
@@ -64,10 +67,19 @@ const LABEL_EDGE = /[\s【［[「(（】］\]」)）:：]/u;
 
 const asLabel = (text: string): string => trimWhere(plain(text).replace(/[-‐–]/gu, " "), (char) => LABEL_EDGE.test(char)).replace(/\s+/gu, " ");
 
+/** The rest of a label after its kind word names what the list is of, through a joiner or none (する経験, の資格, スキル). */
+const namesSubject = (rest: string, words: RequirementWords): boolean =>
+  ["", ...words.joiners].some((joiner) => words.subjects.some((subject) => rest === plain(joiner) + asLabel(subject)));
+
+const isKindWord = (label: string, word: string, words: RequirementWords): boolean => {
+  const head = asLabel(word);
+  return label === head || (head !== "" && label.startsWith(head) && namesSubject(label.slice(head.length), words));
+};
+
 const kindOfLabel = (label: string, words: RequirementWords): Kind | undefined => {
   if (label === "") return undefined;
-  if (words.required.some((word) => asLabel(word) === label)) return "required";
-  return words.preferred.some((word) => asLabel(word) === label) ? "preferred" : undefined;
+  if (words.required.some((word) => isKindWord(label, word, words))) return "required";
+  return words.preferred.some((word) => isKindWord(label, word, words)) ? "preferred" : undefined;
 };
 
 const HEADING_PARTS = /[・/／、,，(（:：]/u;
