@@ -11,7 +11,7 @@ chaff が見つけるまちがいを、ルールごとに一つずつ見本に�
 
 English samples: [../en/README.md](../en/README.md)
 
-見本のあるルール: 44 / 272
+見本のあるルール: 56 / 272
 
 ## 読みやすさ
 
@@ -66,9 +66,21 @@ English samples: [../en/README.md](../en/README.md)
 
 | ルール | 見つけるもの |
 | --- | --- |
+| [同じ略語の二通りの展開](acronym-expansion-conflict.md)（`acronym-expansion-conflict`） | 同じ略語を、文書の中で違う名前に展開している所 |
+| [同じ桁の金額を二通りに書いている](amount-scale-consistency.md)（`amount-scale-consistency`） | 「30万円」と「250,000円」のように、同じ桁の金額を「万」と数字だけの二通りで書いている所 |
+| [言葉のリンクの中に URL がそのまま混ざっている](bare-url-mix.md)（`bare-url-mix`） | 言葉でリンクを書く文書の中に、「https://…」がそのまま書かれている所 |
+| [括弧の全角と半角の混在](bracket-width-consistency.md)（`bracket-width-consistency`） | 日本語の文の中で、括弧の全角（（）［］）と半角（()[]）が混ざっている所 |
+| [引用の書き方が揃っていない](citation-style-mix.md)（`citation-style-mix`） | 一つの論文の中で、[1] の引用と（山田, 2020）の引用のように、引用の書き方が混ざっている所 |
+| [言語名の無いコードブロックが混ざっている](code-fence-language-mix.md)（`code-fence-language-mix`） | ほとんどのコードブロックに言語名があるのに、一部だけ無い所 |
+| [短い呼び名を定めた名前を、あとで正式の名前のまま書いている](defined-name-repeated.md)（`defined-name-repeated`） | 「株式会社みなと製作所（以下「甲」という。）」のあとで、甲を正式の名前のまま書いている所 |
+| [定義した語を、定義と違う形で使っている](defined-term-form.md)（`defined-term-form`） | 契約や規程で、定義した語を、定義のあとで違う形（括弧付き、言い換え、長くした形）で書いた所 |
+| [省略記号の書き方が混ざっている](ellipsis-consistency.md)（`ellipsis-consistency`） | 「……」と「・・・」、「…」と「...」のように、一つの文書で省略の記号を二通りに書いている所 |
+| [！？ の全角と半角の混在](exclamation-width-consistency.md)（`exclamation-width-consistency`） | 日本語の文の中で、！？ の全角と半角（!?）が混ざっている所 |
+| [英数字の全角と半角が混ざっている](fullwidth-alnum-consistency.md)（`fullwidth-alnum-consistency`） | 英字や数字を、全角（ＡＢＣ１２３）と半角（ABC123）で混ぜて書いている所 |
+| [見出しの終わりの記号が揃っていない](heading-end-punctuation-mix.md)（`heading-end-punctuation-mix`） | 記号なしの見出しの中に「準備：」「確認。」のように記号で終わる見出しが混ざっている所（またはその逆） |
 | [文末の調子が混ざっている](no-mixed-desumasu.md)（`no-mixed-desumasu`） | 「です・ます」の中に「だ・である」が混ざった文 |
 
-まだ見本の無いルール: `acronym-expansion-conflict`, `amount-scale-consistency`, `bare-url-mix`, `bracket-width-consistency`, `citation-style-mix`, `code-fence-language-mix`, `cross-doc-term-variant`, `currency-notation-consistency`, `date-format-consistency`, `defined-name-repeated`, `defined-term-form`, `ellipsis-consistency`, `exclamation-width-consistency`, `fullwidth-alnum-consistency`, `heading-end-punctuation-mix`, `katakana-long-vowel`, `kutoten-consistency`, `latin-spacing`, `list-item-form-mix`, `list-marker-mix`, `missing-final-period`, `name-variant`, `number-style-consistency`, `orthographic-variant`, `outside-announced-list`, `party-order`, `party-role-name`, `person-consistency`, `range-notation-consistency`, `shell-prompt-mix`, `table-header-variant`, `ui-label-variant`, `undefined-term`, `unit-spacing-consistency`
+まだ見本の無いルール: `cross-doc-term-variant`, `currency-notation-consistency`, `date-format-consistency`, `katakana-long-vowel`, `kutoten-consistency`, `latin-spacing`, `list-item-form-mix`, `list-marker-mix`, `missing-final-period`, `name-variant`, `number-style-consistency`, `orthographic-variant`, `outside-announced-list`, `party-order`, `party-role-name`, `person-consistency`, `range-notation-consistency`, `shell-prompt-mix`, `table-header-variant`, `ui-label-variant`, `undefined-term`, `unit-spacing-consistency`
 
 ## 構造
 
