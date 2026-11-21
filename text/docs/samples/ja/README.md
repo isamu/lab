@@ -11,7 +11,7 @@ chaff が見つけるまちがいを、ルールごとに一つずつ見本に�
 
 English samples: [../en/README.md](../en/README.md)
 
-見本のあるルール: 66 / 272
+見本のあるルール: 78 / 272
 
 ## 読みやすさ
 
@@ -87,10 +87,20 @@ English samples: [../en/README.md](../en/README.md)
 | [箇条書きの項目の形がそろっていない](list-item-form-mix.md)（`list-item-form-mix`） | 一つの箇条書きの中で、名詞で終わる項目と文で終わる項目（英語では動詞で始まる項目と名詞で始まる項目）が混ざっている所 |
 | [箇条書きの記号が揃っていない](list-marker-mix.md)（`list-marker-mix`） | 一つのリストや一つの文書の中で、「-」「*」「+」「・」の箇条書きの記号が混ざっている所 |
 | [「。」で終わらない段落](missing-final-period.md)（`missing-final-period`） | 「。」で終わる段落の多い文書で、「。」無しで終わった段落 |
+| [同じ名前の書き分け](name-variant.md)（`name-variant`） | 同じ人・会社・製品の名前を、少しだけ違う形で書いている所（山田太郎 と 山田太朗、GitHub と Github） |
 | [文末の調子が混ざっている](no-mixed-desumasu.md)（`no-mixed-desumasu`） | 「です・ます」の中に「だ・である」が混ざった文 |
 | [数の書き方が混ざっている](number-style-consistency.md)（`number-style-consistency`） | 3件と三件、1,000 と 1000、10% と 10％ のように、一つの文書で数の書き方が混ざっている所 |
-
-まだ見本の無いルール: `name-variant`, `orthographic-variant`, `outside-announced-list`, `party-order`, `party-role-name`, `person-consistency`, `range-notation-consistency`, `shell-prompt-mix`, `table-header-variant`, `ui-label-variant`, `undefined-term`, `unit-spacing-consistency`
+| [同じ語の書き方がゆれている](orthographic-variant.md)（`orthographic-variant`） | 「出来る」と「できる」のように、同じ語を一つの文書の中で二通りに書いている所 |
+| [挙げた一覧に無い名前](outside-announced-list.md)（`outside-announced-list`） | 「対応 OS は Windows と macOS」と挙げたあとで、一覧に無い「Linux」に対応すると書いている所 |
+| [当事者の呼び名を、ほかの所と逆の順に並べている](party-order.md)（`party-order`） | 「甲及び乙」と書く契約の中の「乙及び甲」 |
+| [当事者を、定めた呼び名でなく立場の語で書いている](party-role-name.md)（`party-role-name`） | 当事者を「甲」「乙」と定めたあとで、「委託者」「受託者」のような立場の語で書いている所 |
+| [自分や読み手の呼び方が揃っていない](person-consistency.md)（`person-consistency`） | 「私たち」と「弊社」、「私」と「筆者」のように、一つの文書が自分や読み手を二通りに呼んでいる所 |
+| [範囲の記号が混ざっている](range-notation-consistency.md)（`range-notation-consistency`） | 「10〜20」と「10-20」のように、一つの文書で数の範囲を二通りの記号で書いている所 |
+| [シェルのコマンドにプロンプトを付けたり付けなかったりしている](shell-prompt-mix.md)（`shell-prompt-mix`） | シェルのブロックで、「$」のプロンプトを付けたコマンドと付けないコマンドが混ざっている所 |
+| [表の見出しの書き方が表ごとに違う](table-header-variant.md)（`table-header-variant`） | 同じ欄の見出しを、表によって「担当者」と「担当」のように書き分けている所 |
+| [二通りに書いた画面の札](ui-label-variant.md)（`ui-label-variant`） | 太字や［］の画面の札で、大文字・小文字や空白、「を」「の」だけが違う二通りの書き方 |
+| [定義した語の形で書いたのに、どこにも定義が無い](undefined-term.md)（`undefined-term`） | 「本業務」のように定義した語と同じ形なのに、定義しないまま使っている語（本成果物） |
+| [数と単位の間の空白が混ざっている](unit-spacing-consistency.md)（`unit-spacing-consistency`） | 「5 GB」と「5GB」のように、一つの文書で数と単位記号の間を空けたり詰めたりしている所 |
 
 ## 構造
 
