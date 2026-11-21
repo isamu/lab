@@ -118,6 +118,15 @@ describe("orthographic-variant: カタカナ語と英字", () => {
       "",
     ].join("\n");
     assert.deepEqual(findingsOf(source, en), ['"e-mail" here, where the document usually writes "email" (1 of 6)']);
+    const code = [
+      "# Maps",
+      "",
+      "A ConfigMap holds settings. Each ConfigMap has a name. Mount the ConfigMap as a volume.",
+      "",
+      "## Create one with `kubectl create configmap`",
+      "",
+    ];
+    assert.deepEqual(findingsOf(code.join("\n"), en), []);
   });
 
   it("日本語の見出しの語は数えない（見出しは送り仮名を省く札、分類の語）", () => {

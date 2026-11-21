@@ -341,12 +341,17 @@ const cellPlace = (cell: TableCell, names: Names): Place => {
  * body does (e-mail, email); a Japanese heading is a label, whose compound nouns drop okurigana (申込受付期間 beside 申込み)
  * and whose category word (コーヒー) stands beside names in the body (大坊珈琲店).
  */
-const textPlace = (sentence: Sentence, names: Names, heading: boolean): Place => ({
-  sentence,
-  isOpen: isOpenIn(sentence, names),
-  readsLatin: true,
-  readsJapanese: !heading,
-  cited: citedSpans(sentence, names),
+const textPlace = (written: Sentence, names: Names, heading: boolean): Place => {
+  const sentence = heading ? withoutInlineCode(written) : written;
+  return { sentence, isOpen: isOpenIn(sentence, names), readsLatin: true, readsJapanese: !heading, cited: citedSpans(sentence, names) };
+};
+
+const INLINE_CODE = /`[^`]*`/gu;
+
+/** A heading with its code blanked out (`kubectl create configmap`): the body's prose masks code, a heading's text keeps it. */
+const withoutInlineCode = (sentence: Sentence): Sentence => ({
+  ...sentence,
+  text: sentence.text.replaceAll(INLINE_CODE, (code) => " ".repeat(code.length)),
 });
 
 /** The odd spellings among places that speak in one voice. */
