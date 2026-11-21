@@ -70,6 +70,26 @@ describe("contrast frames across two sentences (en)", () => {
   });
 });
 
+describe("a denial answered by its own subject saying the denied verb again (en)", () => {
+  it("counts We … We and You … You when the next sentence says the same verb", () => {
+    assert.deepEqual(framed(en, "We didn't build this for speed. We built it for teams."), ["We didn't build this for speed."]);
+    assert.deepEqual(framed(en, "You don't need more tools. You need better habits."), ["You don't need more tools."]);
+    assert.deepEqual(framed(en, "We weren't late. We were early."), ["We weren't late."]);
+  });
+
+  it("does not count the same subject going on with another verb: the story continues", () => {
+    assert.deepEqual(framed(en, "We didn't have backups. We lost three days of data."), []);
+    assert.deepEqual(framed(en, "We didn't finish the audit. We will finish it next week."), []);
+    assert.deepEqual(framed(en, "You didn't sign the form. You can sign it at the desk."), []);
+  });
+
+  it("does not count another subject, a denial again, or a subject that did not open the denial", () => {
+    assert.deepEqual(framed(en, "We didn't build it for speed. We didn't build it for cost either."), []);
+    assert.deepEqual(framed(en, "Our team didn't build this for speed. We built it for teams."), []);
+    assert.deepEqual(framed(en, "The build didn't pass. We fixed it on Monday."), []);
+  });
+});
+
 describe("what does not answer a bare denial (en)", () => {
   it("does not count a concession opened by But after the denial", () => {
     assert.deepEqual(framed(en, "Who has time for this? Fair. I don't always. But it takes ten minutes a day."), []);
