@@ -11,7 +11,7 @@ chaff が見つけるまちがいを、ルールごとに一つずつ見本に�
 
 English samples: [../en/README.md](../en/README.md)
 
-見本のあるルール: 44 / 272
+見本のあるルール: 70 / 272
 
 ## 読みやすさ
 
@@ -19,9 +19,33 @@ English samples: [../en/README.md](../en/README.md)
 
 | ルール | 見つけるもの |
 | --- | --- |
+| [一文に逆接の「が」が二度](adversative-ga-repeat.md)（`adversative-ga-repeat`） | 「〜だが、〜するが、」のように、一文の中で逆接の「が」を二度使った所 |
+| [太字の使いすぎ](bold-density.md)（`bold-density`） | 太字が多すぎて、どこが大事なのか分からなくなった所 |
+| [括弧の中に括弧が重なっている](bracket-nesting.md)（`bracket-nesting`） | 「（注（a（b）））」のように、括弧の中に括弧が何重にも重なった文 |
+| [一文に節がつながりすぎている](clause-chain.md)（`clause-chain`） | 「〜て、〜し、〜が、〜ので、」のように、一文の中で節を次々につないでいる所 |
+| [指示語で始まる文の連続](demonstrative-opener-run.md)（`demonstrative-opener-run`） | 「これは」「その」「この」のような指示語で始まる文が、同じ段落の中で続く所 |
+| [二重否定](double-negative.md)（`double-negative`） | 「〜ないわけではない」「〜しないことはない」のように、打ち消しを打ち消した言い方 |
+| [絵文字が多い](emoji-density.md)（`emoji-density`） | 絵文字が多すぎて、飾りのほうが目立つ所 |
+| [見出しの繰り返し](heading-echo.md)（`heading-echo`） | 見出しのすぐ後の文が、見出しをほぼそのまま繰り返している所 |
+| [副詞は ひらがなで](hiragana-fukushi.md)（`hiragana-fukushi`） | 「殆ど」「勿論」のように、ひらがなのほうが読みやすい副詞を漢字で書いた所 |
 | [漢字が続きすぎている](max-kanji-continuous.md)（`max-kanji-continuous`） | 「新規顧客獲得施策検討会議」のように、漢字だけが長く続く所 |
-
-まだ見本の無いルール: `adversative-ga-repeat`, `bold-density`, `bracket-nesting`, `clause-chain`, `demonstrative-opener-run`, `double-negative`, `emoji-density`, `heading-echo`, `hiragana-fukushi`, `max-paragraph-length`, `max-sentence-length`, `max-ten`, `ngram-repetition`, `no-doubled-joshi`, `no-nakaguro-parallel`, `one-sentence-paragraph-run`, `paragraph-restatement`, `proper-noun-density`, `repeated-conjunction`, `repeated-sentence-ending`, `repeated-sentence-head`, `sentence-initial-conjunction-run`, `taigen-dome-in-prose`, `title-length`, `topic-predicate-distance`, `undefined-acronym`
+| [段落が長すぎる](max-paragraph-length.md)（`max-paragraph-length`） | 文を詰めこみすぎて、息をつく場所がない段落 |
+| [一文が長すぎる](max-sentence-length.md)（`max-sentence-length`） | 読み終える前に主語を見失うほど長い一文 |
+| [一文の読点が多すぎる](max-ten.md)（`max-ten`） | 一文の中に読点（、）がいくつも入り、細かく切れている所 |
+| [同じ言い回しの繰り返し](ngram-repetition.md)（`ngram-repetition`） | 同じ言い回しが何度も出てきて、新しいことを言っていないように読める所 |
+| [同じ助詞が入れ子で続いている](no-doubled-joshi.md)（`no-doubled-joshi`） | 「会社の部の課の方針」のように、同じ助詞が区切りなしに続く所 |
+| [中黒で並べすぎている](no-nakaguro-parallel.md)（`no-nakaguro-parallel`） | 一つの文に「・」で並べた語が多すぎて、どれとどれが組なのか分からない所 |
+| [一文だけの段落が続いている](one-sentence-paragraph-run.md)（`one-sentence-paragraph-run`） | 一文ごとに段落を分けた所が続き、どの文が同じ話なのかが見えない所 |
+| [前の段落を言い直すだけの段落](paragraph-restatement.md)（`paragraph-restatement`） | 「つまり」「このように」で始まり、前の段落の語をほとんど繰り返すだけの段落 |
+| [固有名詞が多い](proper-noun-density.md)（`proper-noun-density`） | 製品名・会社名・人名が詰まりすぎて、知らない人には文の形が見えない所 |
+| [段落が同じ調子で始まり続ける](repeated-conjunction.md)（`repeated-conjunction`） | 「また、」「さらに、」のように、接続詞で始まる段落が続く所 |
+| [同じ文末が続く](repeated-sentence-ending.md)（`repeated-sentence-ending`） | 「〜です。〜です。〜です。」のように、同じ形で終わる文が続く所 |
+| [同じ書き出しの連続](repeated-sentence-head.md)（`repeated-sentence-head`） | 同じ言葉で始まる文が続き、文の切れ目がぼやける所 |
+| [接続詞で始まる文が続いている](sentence-initial-conjunction-run.md)（`sentence-initial-conjunction-run`） | 「そして」「しかし」（And、But）で始まる文が続く所 |
+| [体言止めが続いている](taigen-dome-in-prose.md)（`taigen-dome-in-prose`） | 名詞で終わる文（体言止め）が本文に続き、言いかけのように読める所 |
+| [題や見出しが長すぎる](title-length.md)（`title-length`） | 一目で読めないほど長い題や見出し |
+| [主題と述語が離れている](topic-predicate-distance.md)（`topic-predicate-distance`） | 「会議は」のように主題を出してから、文の終わりの述語まで長く待たせる文 |
+| [略語が説明なしで出てくる](undefined-acronym.md)（`undefined-acronym`） | 「KGI」「PMF」のように、説明なしで出てくる略語 |
 
 ## 言葉づかい
 
