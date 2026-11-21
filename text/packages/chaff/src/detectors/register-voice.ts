@@ -70,6 +70,25 @@ export const isTakenUp = (next: Sentence | undefined, between: string, openers: 
   return openers.some((opener) => opening.has(opener.pattern));
 };
 
+/** The particles a sentence closes with, joined (か/な → かな), after its last word and before its marks. */
+const closingParticles = (tokens: readonly Token[]): string => {
+  const words = tokens.filter((token) => token.pos !== "PUNCT" && !TRAILING_MARKS.has(token.surface));
+  const start = words.findLastIndex((token) => token.pos !== "PART") + 1;
+  return words
+    .slice(start)
+    .map((token) => token.surface)
+    .join("");
+};
+
+/**
+ * A sentence that closes with a particle of address from address-particle (…含まれているよ。…違うんだよ。…のかな？): the writer speaks
+ * to the reader on purpose, in a voice a polite page sets among its sentences, not a slip into the plain register.
+ */
+export const isAddressed = (sentence: Sentence, particles: readonly LexiconEntry[]): boolean => {
+  const closing = closingParticles(sentence.tokens ?? []);
+  return closing !== "" && particles.some((particle) => closing.endsWith(particle.pattern));
+};
+
 const EXCLAMATION = /[！!][\s」』）)]*$/u;
 
 /** A sentence closed by an exclamation mark (わかるかっ！！！): a cry in the writer's voice, said plainly in either register. */

@@ -11,7 +11,7 @@ import { chronologyRows } from "../chronology-rows.ts";
 import { isNeutralPlainShape } from "./register-neutral-shape.ts";
 import { spokenAnswerSentences } from "./register-interview.ts";
 import { contactBlockSentences, fieldValueSentences, labelledQuoteSentences, referenceNoteSentences, tableCellSentences } from "./register-set-apart.ts";
-import { endsInSetGreeting, isDeclaration, isExclamation, isTakenUp } from "./register-voice.ts";
+import { endsInSetGreeting, isAddressed, isDeclaration, isExclamation, isTakenUp } from "./register-voice.ts";
 import { entriesForGenre } from "../lexicon-genres.ts";
 import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 
@@ -34,7 +34,7 @@ import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span, To
 /**
  * quiet: 常体と読めるが、願い・問い・言いさしの形（register-neutral-shape.ts）の文。どちらの調子の文書にも現れるので指さない。
  * 丁寧な形でしか言わない挨拶（お疲れ様でした。）、演説の決意の言い切り（二度と繰り返さない。）、
- * 次の文が「そんな」「これだけ」で受ける場面の書き出し、「！」で終わる叫び（わかるかっ！）も quiet（register-voice.ts）。
+ * 次の文が「そんな」「これだけ」で受ける場面の書き出し、「！」で終わる叫び（わかるかっ！）、読み手に呼びかける終助詞で終わる文（…いるよ。）も quiet（register-voice.ts）。
  * ※で始まる行の注記と、行に並べ直した表のセル（制限なし。）は、どちらの調子でも quiet（register-set-apart.ts）。
  * インタビューの答え（聞き手の「――」の後の段落）は話した言葉なので quiet（register-interview.ts）。
  * 数には入れる。数から外すと、常体を何度も使う文書（演説）で少数派が閾値を下回り、残りの常体の文が新たに指されてしまう。
@@ -42,7 +42,8 @@ import type { Detector, Finding, LexiconEntry, ProseDocument, Sentence, Span, To
 type Entry = { readonly sentence: Sentence; readonly register: Register; readonly group: number | undefined; readonly quiet: boolean };
 
 /** 文の調子と quiet を決める語彙表。polite は polite-ending、neutral は neutral-ending、requests は neutral-request、wishes は neutral-wish、
- * greetings は set-polite-phrase、declaration と resolves は declaration-particle と declaration-ending を文書の genre で絞ったもの、openers は takeup-opener。 */
+ * greetings は set-polite-phrase、declaration と resolves は declaration-particle と declaration-ending を文書の genre で絞ったもの、openers は takeup-opener、
+ * address は address-particle。 */
 type EndingWords = {
   readonly polite: readonly LexiconEntry[];
   readonly neutral: readonly LexiconEntry[];
@@ -52,6 +53,7 @@ type EndingWords = {
   readonly declaration: readonly LexiconEntry[];
   readonly resolves: readonly LexiconEntry[];
   readonly openers: readonly LexiconEntry[];
+  readonly address: readonly LexiconEntry[];
 };
 
 type Read = { readonly register: Register; readonly quiet: boolean };
@@ -65,6 +67,7 @@ const endingWords = (doc: ProseDocument, polite: readonly LexiconEntry[], genre:
   declaration: entriesForGenre(doc.lexicons["declaration-particle"] ?? [], genre),
   resolves: entriesForGenre(doc.lexicons["declaration-ending"] ?? [], genre),
   openers: doc.lexicons["takeup-opener"] ?? [],
+  address: doc.lexicons["address-particle"] ?? [],
 });
 
 /** 調子を持つ文のうち、指さない形か。next は同じ文書の次の文、between はその間の文字列。 */
@@ -74,6 +77,7 @@ const isQuiet = (sentence: Sentence, ending: readonly Token[], register: Registe
     : isNeutralPlainShape(sentence, ending, words.requests, words.wishes) ||
       isDeclaration(sentence, ending, words.declaration, words.resolves) ||
       isExclamation(sentence) ||
+      isAddressed(sentence, words.address) ||
       isTakenUp(next, between, words.openers);
 
 const registerOfSentence = (doc: ProseDocument, index: number, words: EndingWords): Read | undefined => {
