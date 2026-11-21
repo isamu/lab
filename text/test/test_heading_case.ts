@@ -309,6 +309,14 @@ describe("isTitleCase と番号の札・曜日と月の名", () => {
     assert.equal(isTitleCase("Budget 2026: cuts"), false);
   });
 
+  it("札の後ろの括弧に入れた題（Section 1 (Labels)）も、札は語に数えない", () => {
+    assert.equal(isTitleCase("Section 1 (Labels)"), undefined);
+    assert.equal(isTitleCase("Section 2 (Clearing out)"), false);
+    assert.equal(isTitleCase("Section 2 (Clearing Out)"), true);
+    const source = ["# Kitchen rules", "## Section 1 (Labels)\n\nText.", "## Section 2 (Clearing out)\n\nText.", "## Section 4 (Dishes)\n\nText."].join("\n\n");
+    assert.deepEqual(quotesFor(source), []);
+  });
+
   it("invalid: May は月の名でもふつうの語でもあるので、証拠から外さない", () => {
     const source = ["## Release Notes\n\nText.", "## Deployment Guide\n\nText.", "## Support Contacts\n\nText.", "## May updates\n\nText."].join("\n\n");
     assert.deepEqual(quotesFor(source), ["May updates"]);
