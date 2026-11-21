@@ -158,7 +158,7 @@ $ npx chaffjs explain section-length-uniformity --genre blog/essay
     off      見ない
 
   オプション（chaff.yaml の options で決めます）:
-    min_sections: 5   (既定)
+    min_sections: 5   （既定）
       測る節の数の下限。節が少ないと長さのばらつきは偶然で小さく出て、人の書いた文書でも揃って見えます
 
   決める:  chaff.yaml に options: { section-length-uniformity: { <名前>: <値> } } を書く
