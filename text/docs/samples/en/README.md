@@ -11,7 +11,7 @@ Or paste a draft into the [playground](https://isamu.github.io/lab/en/playground
 
 日本語の見本: [../ja/README.md](../ja/README.md)
 
-Rules with a sample: 17 / 259
+Rules with a sample: 29 / 259
 
 ## Readability
 
@@ -44,8 +44,18 @@ Emphasis that says nothing, stock phrases, and passives that never say who acted
 | [A duty to act with no deadline (shall pay, shall return)](obligation-without-deadline.md) (`obligation-without-deadline`) | A duty to pay, deliver, return or notify with no deadline, where others have one |
 | [An ordinal with the wrong ending](ordinal-suffix-mismatch.md) (`ordinal-suffix-mismatch`) | An ordinal whose ending does not fit its number, such as "3th" or "11st" |
 | [Padded opening](padded-intro.md) (`padded-intro`) | An opening such as "In recent years, X has gained attention" that says nothing |
-
-Rules with no sample yet: `redundant-expression`, `request-without-deadline`, `requirement-smell`, `sentence-initial-so`, `uncomparable-graded`, `unqualified-superlative`, `vague-deadline`, `vague-word-density`, `very-adjective`, `warning-without-action`, `weasel-word`, `wordy-phrase`
+| [Redundant pair](redundant-expression.md) (`redundant-expression`) | Two words that say the same thing, such as "end result" or "each and every" |
+| [Request with no deadline or owner](request-without-deadline.md) (`request-without-deadline`) | A request ("Please send …") with no deadline and no one named to do it |
+| [A requirement that leaves its reader to decide](requirement-smell.md) (`requirement-smell`) | "As far as possible", "if necessary", "etc." or "and/or" in a requirement |
+| [Sentence opening with "So,"](sentence-initial-so.md) (`sentence-initial-so`) | A sentence that opens with "So,", a spoken pause carried into writing |
+| [An uncomparable adjective given a degree](uncomparable-graded.md) (`uncomparable-graded`) | A degree given to a word that has none, such as "very unique" |
+| [Superlative with nothing to compare](unqualified-superlative.md) (`unqualified-superlative`) | A superlative such as "the fastest" with nothing to compare it against |
+| [A time limit left to the reader (promptly)](vague-deadline.md) (`vague-deadline`) | A deadline written as "promptly" where other deadlines are in days |
+| [Too many vague words](vague-word-density.md) (`vague-word-density`) | Too many vague words ("as appropriate", "as needed") for the length |
+| [Too many "very" + adjective](very-adjective.md) (`very-adjective`) | "Very" + adjective, such as "very important", used too often |
+| [Warning that gives no action](warning-without-action.md) (`warning-without-action`) | A Warning that names a risk but not what the reader should do |
+| [Weasel words](weasel-word.md) (`weasel-word`) | Phrases like "many experts say" or "studies show" that credit no one |
+| [Wordy phrase](wordy-phrase.md) (`wordy-phrase`) | Phrases like "in order to" or "due to the fact that" where one word does |
 
 ## Slips
 
