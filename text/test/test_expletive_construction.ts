@@ -1,0 +1,60 @@
+import { describe, it, before } from "node:test";
+import assert from "node:assert/strict";
+import { firedRules } from "./rule-run.ts";
+import { adapter as en } from "../packages/lang-en/src/index.ts";
+import { speakerTurns } from "../packages/chaff/src/detectors/speaker-turns.ts";
+
+// expletive-construction in minutes of who said what. All text is self-written.
+
+const RULE = "expletive-construction";
+
+const fires = (source: string): boolean => firedRules(en, source, "business/meeting-notes").includes(RULE);
+
+const EXPLETIVES = ["There is a plan for the budget.", "There are risks in the schedule.", "It is clear that we must act.", "There is no answer yet."];
+
+/** Minutes in which each named person speaks in turn, and every turn holds one of the expletives. */
+const minutes = (names: readonly string[]): string =>
+  names.map((name, index) => `${name}: We met on Monday. ${EXPLETIVES[index % EXPLETIVES.length] ?? ""}`).join("\n\n");
+
+const THREE_SPEAKERS = ["Ana", "Ben", "oli", "Ana", "Ben", "oli", "Ana", "Ben", "oli"];
+
+before(async () => {
+  await en.prepare?.({ pos: true });
+});
+
+describe("speakerTurns", () => {
+  it("finds the paragraphs that open with a name when three names each speak three times", () => {
+    const source = minutes(THREE_SPEAKERS);
+    assert.equal(speakerTurns(source).length, THREE_SPEAKERS.length);
+    const first = speakerTurns(source)[0];
+    assert.ok(first);
+    assert.equal(source.slice(first.start, first.end).startsWith("Ana: "), true);
+  });
+
+  it("reads none when only two labels repeat, as fields do (Status:, Comments:)", () => {
+    assert.deepEqual(speakerTurns(minutes(["Status", "Comments", "Status", "Comments", "Status", "Comments"])), []);
+  });
+
+  it("reads none when the labelled paragraphs are a small share of the document", () => {
+    const prose = Array.from({ length: 40 }, () => "The committee reviewed the report and agreed on the next steps.").join("\n\n");
+    assert.deepEqual(speakerTurns(`${prose}\n\n${minutes(THREE_SPEAKERS)}`), []);
+  });
+
+  it("reads none for empty text, a label with nothing after it, an indented label or a URL", () => {
+    assert.deepEqual(speakerTurns(""), []);
+    assert.deepEqual(speakerTurns(THREE_SPEAKERS.map((name) => `${name}:`).join("\n\n")), []);
+    assert.deepEqual(speakerTurns(THREE_SPEAKERS.map((name) => `   ${name}: We agreed.`).join("\n\n")), []);
+    assert.deepEqual(speakerTurns(THREE_SPEAKERS.map(() => "https: //example.com").join("\n\n")), []);
+  });
+});
+
+describe("expletive-construction in minutes", () => {
+  it("does not count a speaker's own phrasing in near-verbatim minutes", () => {
+    assert.equal(fires(minutes(THREE_SPEAKERS)), false);
+  });
+
+  it("counts the note-taker's own sentences, and the same sentences in labelled fields", () => {
+    assert.equal(fires(EXPLETIVES.join(" ")), true);
+    assert.equal(fires(minutes(["Status", "Comments", "Status", "Comments"])), true);
+  });
+});

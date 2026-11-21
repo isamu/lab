@@ -84,6 +84,23 @@ describe("vague-word-density: あいまいな語が文書の長さに対して�
     assert.equal(elsewhere.length, 4, elsewhere.join("\n"));
   });
 
+  it("the safeguards and measures a data-protection law names are not counted in a contract, and are elsewhere", () => {
+    const duties =
+      "The Provider will implement appropriate administrative, physical, and technical safeguards to protect the data. " +
+      "The Provider will maintain appropriate technical and organizational safeguards against misuse. " +
+      "The Processor shall apply appropriate technical and organisational measures. Transfers rely on appropriate safeguards. ";
+    const source = `${PLAIN_EN.repeat(13)}${duties}\n`;
+    assert.deepEqual(findingsOf(source, en, "legal/contract"), []);
+    const elsewhere = findingsOf(source, en, "business/report");
+    assert.equal(elsewhere.length, 4, elsewhere.join("\n"));
+  });
+
+  it("契約でも、法律の名指さない appropriate measures は数える", () => {
+    const source = `${PLAIN_EN.repeat(13)}The Supplier shall take appropriate measures. It shall notify the appropriate people. It shall keep adequate records.\n`;
+    const findings = findingsOf(source, en, "legal/contract");
+    assert.equal(findings.length, 3, findings.join("\n"));
+  });
+
   it("契約でも、基準の無いあいまいな語は数える", () => {
     const source = `${PLAIN_EN.repeat(13)}The Supplier shall report incidents as needed. It shall notify the appropriate people where possible. It shall keep adequate records.\n`;
     const findings = findingsOf(source, en, "legal/contract");

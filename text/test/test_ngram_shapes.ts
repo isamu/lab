@@ -243,6 +243,14 @@ describe("ngram-repetition: a record's and a form's fixed closing lines", () => 
     assert.equal(worst(ja, `# 書き方\n\n${JA_FILLER}\n\n${fields}\n`, "docs/manual"), undefined);
   });
 
+  it("does not count the lead-in before each table (〜は次のとおりであります。)", () => {
+    const tables = ITEMS.map(
+      (item, index) =>
+        `${item}の状況は${index % 2 === 0 ? "次" : "以下"}のとおりであります。\n\n| 区分 | 金額 |\n| -- | --: |\n| ${item} | ${String(index + 1)}00 |`,
+    ).join("\n\n");
+    assert.equal(worst(ja, `# 業績\n\n${JA_FILLER}\n\n${tables}\n`, "business/report"), undefined);
+  });
+
   it("still counts another repeated ending", () => {
     const pledges = ITEMS.map((item) => `${item}の改善に全力で取り組んでまいります。`).join("\n\n");
     assert.notEqual(worst(ja, `# 方針\n\n${JA_FILLER}\n\n${pledges}\n`, "business/report"), undefined);
