@@ -163,7 +163,8 @@ export const sentenceCommaCount: Detector = (doc, options): Finding[] => {
     return known;
   };
   const counts: TokenTest = (token, at, tokens) => isComma(token) && !separatesItems(at, tokens) && !listedIn(tokens).has(at);
-  return sentencesOver({ ...doc, sentences: doc.sentences.filter((sentence) => !isFlattenedTable(sentence.text)) }, options.limit, counts);
+  const eras = (doc.lexicons["calendar-era"] ?? []).map((entry) => entry.pattern);
+  return sentencesOver({ ...doc, sentences: doc.sentences.filter((sentence) => !isFlattenedTable(sentence.text, eras)) }, options.limit, counts);
 };
 
 const CONJUNCTIVE = "SCONJ";
