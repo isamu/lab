@@ -130,3 +130,15 @@ export const isInFileName = (text: string, offset: number, length: number): bool
   const run = withoutTrailingMarks(text.slice(start, offset + length + (after < 0 ? rest.length : after)));
   return run.replace(EXTENSION, "").length > length && FILE_OR_URL.test(run);
 };
+
+/** What may stand between a wrong mark and the form it marks: spaces, a colon. */
+const MARK_GAP = /[\s:：]*$/u;
+
+/**
+ * Whether the form at offset follows a wrong mark from the lexicon name-wrong-mark on its own line (× Rspec beside ○ RSpec):
+ * a list showing a wrong spelling on purpose, not a use of the name.
+ */
+export const isMarkedWrong = (text: string, offset: number, marks: readonly string[]): boolean => {
+  const before = text.slice(text.lastIndexOf("\n", offset - 1) + 1, offset).replace(MARK_GAP, "");
+  return marks.some((mark) => before.endsWith(mark));
+};
