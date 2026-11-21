@@ -32,6 +32,10 @@ describe("agentless-passive", () => {
     );
   });
 
+  it("語の中の「から」（分からない）は、した人を言わない", () => {
+    assert.equal(messagesOf("見方が分からないという声が多く見られました。").length, 1);
+  });
+
   it("人や組織から受けた受け身の「から」は、した人を言う", () => {
     ["部長から注意されました。", "3社から指摘された。", "来月から、本社から変更が通知されました。"].forEach((text) =>
       assert.deepEqual(messagesOf(text), [], text),
