@@ -1,0 +1,10 @@
+# Words that open a relative clause set off by commas after a name ("Tom, who repaired radios for forty years, opened
+# the back"). Such a clause says more about the name; it is not an item of a list. "that" is left out: it opens no clause
+# between commas, and as a word it can be an item ("this, that and the other"). Read by oxford-comma-consistency.
+id: aside-relative
+language: en
+entries:
+  - pattern: who
+  - pattern: whom
+  - pattern: whose
+  - pattern: which
