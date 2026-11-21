@@ -40,6 +40,21 @@ describe("double-negative: 二重否定", () => {
     ["legal/contract", "literature/fiction", "speech/address"].forEach((genre) => assert.ok(!firedRules(ja, source, genre).includes(RULE), genre));
   });
 
+  it("一つの文に違う二重否定が二つあれば、指摘は一つで、両方を名指す", () => {
+    const source = "いまの様式も使えないわけではありませんが、新しい手順で出さないと、承認が遅れないとは限りません。\n";
+    assert.deepEqual(findingsOf(source), ["「ないわけではありません」と「ないとは限りません」は二重否定です"]);
+    assert.deepEqual(findingsOf("It is not uncommon, and not unlike the old one.\n", en), ['"not uncommon" and "not unlike" are double negatives']);
+  });
+
+  it("三つ以上なら数と、初めの二つを名指す", () => {
+    const source = "使えないわけではないし、遅れないとは限らないし、出せなくはない。\n";
+    assert.deepEqual(findingsOf(source), ["この文に二重否定が 3 つあります（「ないわけではない」「ないとは限らない」ほか）"]);
+  });
+
+  it("同じ言い回しを二度使った文は、一つとして名指す", () => {
+    assert.deepEqual(findingsOf("行かないわけではないが、来ないわけではない。\n"), ["「ないわけではない」は二重否定です"]);
+  });
+
   it("二重否定が無ければ何も言わない", () => {
     assert.deepEqual(findingsOf("その案に賛成します。\n"), []);
   });
