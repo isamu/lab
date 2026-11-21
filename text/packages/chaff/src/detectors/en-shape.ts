@@ -5,6 +5,7 @@ import { namesWrittenMidSentence } from "./heading-names.ts";
 import type { Detector, Finding, Lexicon, ProseDocument, Section, Sentence, Token } from "../plugin.ts";
 import { entryOpens } from "./lexicon-match.ts";
 import { opensWithPhrase } from "./opener-phrase.ts";
+import { speakerTurns } from "./speaker-turns.ts";
 
 const PER = 1000;
 
@@ -82,11 +83,16 @@ const expletiveAt = (tokens: readonly Token[]): Token | undefined => {
   return head;
 };
 
+/** In minutes of who said what, a speaker's sentences are their own phrasing, recorded as said: not the writer's to recast. */
 export const expletive: Detector = (doc, options): Finding[] => {
-  const hits = doc.sentences.flatMap((sentence) => {
-    const at = expletiveAt(sentence.tokens ?? []);
-    return at === undefined ? [] : [{ sentence, at }];
-  });
+  const turns = speakerTurns(doc.source);
+  const spoken = (sentence: Sentence): boolean => turns.some((turn) => turn.start <= sentence.span.start && sentence.span.start < turn.end);
+  const hits = doc.sentences
+    .filter((sentence) => !spoken(sentence))
+    .flatMap((sentence) => {
+      const at = expletiveAt(sentence.tokens ?? []);
+      return at === undefined ? [] : [{ sentence, at }];
+    });
   if (hits.length <= options.limit) return [];
   return hits.map(({ sentence, at }) => ({
     rule: "expletive-construction",
