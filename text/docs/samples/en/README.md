@@ -11,7 +11,7 @@ Or paste a draft into the [playground](https://isamu.github.io/lab/en/playground
 
 日本語の見本: [../ja/README.md](../ja/README.md)
 
-Rules with a sample: 27 / 259
+Rules with a sample: 46 / 259
 
 ## Readability
 
@@ -19,9 +19,26 @@ Sentences that run too long, packed paragraphs, and other places a reader stumbl
 
 | Rule | What it finds |
 | --- | --- |
+| [Too many -ly adverbs](adverb-overuse.md) (`adverb-overuse`) | Too many -ly adverbs, which usually prop up a weak verb |
+| [Shouting in capitals](all-caps-shouting.md) (`all-caps-shouting`) | Ordinary words run together in capitals, such as "DO NOT DELETE THIS" |
+| [Too much bold](bold-density.md) (`bold-density`) | So much bold text that nothing stands out any more |
+| [Brackets nested too deep](bracket-nesting.md) (`bracket-nesting`) | Brackets inside brackets inside brackets in one sentence |
+| [Sentences in a row opening with a demonstrative](demonstrative-opener-run.md) (`demonstrative-opener-run`) | Sentences in a row that open with a word pointing back (This, That, It) |
+| [Double negative](double-negative.md) (`double-negative`) | A negative negated, such as "not uncommon" or "not unlike" |
+| [Too many emoji](emoji-density.md) (`emoji-density`) | So many emoji that the decoration drowns the text |
+| [Expletive construction](expletive-construction.md) (`expletive-construction`) | Many sentences that open with "There is" or "It is ... that" |
+| [Heading echoed](heading-echo.md) (`heading-echo`) | A first sentence that only repeats the heading above it |
+| [Paragraph too long](max-paragraph-length.md) (`max-paragraph-length`) | A paragraph packed with so many sentences that the reader has nowhere to pause |
+| [Sentence too long](max-sentence-length.md) (`max-sentence-length`) | A sentence so long that the reader loses the subject before the verb |
+| [Repeated phrasing](ngram-repetition.md) (`ngram-repetition`) | The same phrase used over and over, so nothing new seems to be said |
+| [Run of one-sentence paragraphs](one-sentence-paragraph-run.md) (`one-sentence-paragraph-run`) | Paragraph after paragraph of a single sentence, so nothing is grouped |
+| [A paragraph that only restates the one before](paragraph-restatement.md) (`paragraph-restatement`) | A paragraph opening "In other words" that mostly repeats the one before |
+| [Too many proper nouns](proper-noun-density.md) (`proper-noun-density`) | So many product, company and personal names that a newcomer gets lost |
+| [Paragraphs keep opening the same way](repeated-conjunction.md) (`repeated-conjunction`) | Paragraph after paragraph opening with a connective such as "Also" or "Moreover" |
+| [Repeated sentence opening](repeated-sentence-head.md) (`repeated-sentence-head`) | Several sentences in a row that open with the same words |
+| [Run of sentences opening with a conjunction](sentence-initial-conjunction-run.md) (`sentence-initial-conjunction-run`) | A run of sentences that open with "And", "But" or "So" (そして, しかし) |
+| [Title or heading too long](title-length.md) (`title-length`) | A title or heading too long to take in at a glance |
 | [Acronym never expanded](undefined-acronym.md) (`undefined-acronym`) | An acronym such as "KGI" or "PMF" used without ever being spelled out |
-
-Rules with no sample yet: `adverb-overuse`, `all-caps-shouting`, `bold-density`, `bracket-nesting`, `demonstrative-opener-run`, `double-negative`, `emoji-density`, `expletive-construction`, `heading-echo`, `max-paragraph-length`, `max-sentence-length`, `ngram-repetition`, `one-sentence-paragraph-run`, `paragraph-restatement`, `proper-noun-density`, `repeated-conjunction`, `repeated-sentence-head`, `sentence-initial-conjunction-run`, `title-length`
 
 ## Wording
 
