@@ -1,4 +1,4 @@
-import { definedLevels, resolve, severityAt } from "../levels.ts";
+import { definedLevels, genreKeyFor, resolve, severityAt } from "../levels.ts";
 import { fill, localized, readableText } from "./text.ts";
 import { SEVERITY_NAME } from "./severity-name.ts";
 import { uiLanguageOf, type Texts } from "../ui.ts";
@@ -9,8 +9,10 @@ import { depthMeaning } from "../rewrite-depth.ts";
 
 const TEXT: Texts<{
   readonly off: string;
-  readonly defaultGenre: string;
-  readonly genreNote: (genre: string, others: string) => string;
+  readonly numbersFor: (key: string | undefined, genre: string | undefined) => string;
+  readonly othersOwn: (others: readonly string[]) => string;
+  readonly othersDefault: string;
+  readonly sentenceGap: string;
   readonly experimental: string;
   readonly alone: (id: string) => string;
   readonly howToFix: string;
@@ -27,8 +29,13 @@ const TEXT: Texts<{
 }> = {
   ja: {
     off: "見ない",
-    defaultGenre: "既定",
-    genreNote: (genre, others) => `この数字は ${genre} のものです。ほかに ${others} で別の数字を持っています。`,
+    numbersFor: (key, genre) => {
+      const owner = key === undefined ? "既定" : ` ${key} `;
+      return genre === undefined || genre === key ? `この数字は${owner}のものです。` : `この数字は${owner}のもので、${genre} はこれを使います。`;
+    },
+    othersOwn: (others) => `${others.join(" / ")} は別の数字を持っています。`,
+    othersDefault: "ほかのジャンルは既定の数字を使います。",
+    sentenceGap: "",
     experimental: "このルールはまだ試験中で、既定では動きません（--experimental で動きます）。",
     alone: (id) => `このルールだけを動かす:  npx chaffjs enable ${id}（chaff.yaml の rules に ${id}: normal と書くのと同じです）`,
     howToFix: "直しかた",
@@ -47,8 +54,14 @@ const TEXT: Texts<{
   },
   en: {
     off: "not checked",
-    defaultGenre: "the default genre",
-    genreNote: (genre, others) => `These numbers are for ${genre}. ${others} have numbers of their own.`,
+    numbersFor: (key, genre) => {
+      if (key === undefined)
+        return genre === undefined ? "These numbers are for the default genre." : `These numbers are the default ones, which ${genre} takes.`;
+      return genre === key ? `These numbers are for ${key}.` : `These numbers are for ${key}, which ${genre} takes.`;
+    },
+    othersOwn: (others) => `${others.join(" / ")} ${others.length === 1 ? "has numbers of its own" : "have numbers of their own"}.`,
+    othersDefault: "Other genres take the default numbers.",
+    sentenceGap: " ",
     experimental: "This rule is still experimental and does not run by default (--experimental runs it).",
     alone: (id) => `Turn on this rule alone:  npx chaffjs enable ${id}  (the same as rules: { ${id}: normal } in chaff.yaml)`,
     howToFix: "How to fix",
@@ -90,9 +103,11 @@ const levelLine = (rule: RuleDefinition, level: Level, current: Level | undefine
 
 /** ジャンルで数字が変わる rule は、それを言わないと「設定したのに効かない」に見える。 */
 const genreNote = (rule: RuleDefinition, genre: string | undefined, text: (typeof TEXT)["ja"]): string[] => {
-  const others = Object.keys(rule.by_genre).filter((key) => key !== genre);
-  if (others.length === 0) return [];
-  return ["", `  ${text.genreNote(genre ?? text.defaultGenre, others.join(" / "))}`];
+  const key = genreKeyFor(rule, genre);
+  const others = Object.keys(rule.by_genre).filter((other) => other !== key);
+  if (others.length === 0 && key === undefined) return [];
+  const othersLine = others.length === 0 ? text.othersDefault : text.othersOwn(others);
+  return ["", `  ${text.numbersFor(key, genre)}${text.sentenceGap}${othersLine}`];
 };
 
 /** A team's rule shows its example, before and after, and says where it was defined. */
