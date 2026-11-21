@@ -1,6 +1,6 @@
 import { before, describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { namedRuleRun } from "./rule-run.ts";
+import { namedRuleRun, ruleQuotes } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { quantitiesIn } from "../packages/chaff/src/detectors/unit-spacing.ts";
@@ -15,6 +15,11 @@ describe("unit-spacing-consistency: 数と単位の間の空白の混在", () =>
   before(async () => {
     await ja.prepare?.({ pos: true });
     await en.prepare?.({ pos: true });
+  });
+
+  it("quotes the sentence holding the quantity, not a window cut mid-word", () => {
+    const source = "Storage is 5 GB, transfer is 10 GB per month for every account. The cap is 20GB for each of the shared team folders. Ask us for more.";
+    assert.deepEqual(ruleQuotes(RULE, `${source}\n`, en), ["The cap is 20GB for each of the shared team folders."]);
   });
 
   it("少ないほうの書き方を指す", () => {

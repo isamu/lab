@@ -1,7 +1,7 @@
 import type { Detector, Finding } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { formMinority } from "./form-minority.ts";
-import { quoteAround } from "./quote-around.ts";
+import { quoteAround, sentenceQuoteAt } from "./quote-around.ts";
 
 // 一つの文書で、数の範囲を二通りの記号で書いた所（10〜20 と 10-20、10–20 と 10-20）。どちらが正しいかは決めず、少ないほうを指す。
 // 範囲の記号は語彙表 range-notation が言う。
@@ -90,7 +90,7 @@ export const rangeNotation: Detector = (doc, options): Finding[] => {
     severity: "info",
     line: 0,
     column: 0,
-    quote: quoteAround(text, range.offset, range.offset + range.written.length),
+    quote: sentenceQuoteAt(doc.sentences, range.offset) ?? quoteAround(text, range.offset, range.offset + range.written.length),
     values: { written: range.written, mark: range.form, usual: minority.usual.written, count: minority.odd.length, of: ranges.length, offset: range.offset },
   }));
 };
