@@ -29,6 +29,11 @@ describe("orthographic-variant: 二つの語に読める漢字の書き方", () 
     assert.equal(findingsOf(like).length, 1);
   });
 
+  it("寺の名前の「山」（さん）と「〜用」（よう）の漢字の接尾語は、同じ読みのかなの語（お遍路さん、言いよう）と比べない", () => {
+    assert.deepEqual(findingsOf("# 旅\n\nお遍路さんが歩きます。宿のおかみさんに聞きました。次は日照山に寄ります。\n"), []);
+    assert.deepEqual(findingsOf("# 手順\n\nそれ以外は言いようがありません。直しようがありません。Ruby用のライブラリです。\n"), []);
+  });
+
   it("解析器が「行う」と読んだ「行っ」は、おこなうのかなと比べる", () => {
     const conduct = ["調査を毎年おこなう。", "", "点検も毎月おこなう。", "", "昨年は交渉を行った。", ""].join("\n");
     assert.equal(findingsOf(conduct).length, 1);
