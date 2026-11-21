@@ -88,22 +88,30 @@ export const namesIn = (sentence: Sentence, listed: readonly string[], everyday:
 
 const everydayNamesOf = (doc: ProseDocument): string[] => (doc.lexicons[EVERYDAY_NAME] ?? []).map((entry) => entry.pattern);
 
+type Named = { readonly sentence: Sentence; readonly names: readonly Token[] };
+
+/** The sentence holding the most names, the first of equals: where the reader loses the sentence's shape, not where the first name is. */
+const densest = (named: readonly Named[]): Named | undefined =>
+  named.reduce<Named | undefined>((best, entry) => (best === undefined || entry.names.length > best.names.length ? entry : best), undefined);
+
 export const properNounDensity: Detector = (doc, options): Finding[] => {
   const prose = doc.sentences.filter(isProse);
   const everyday = everydayNamesOf(doc);
-  const hits = prose.flatMap((sentence) => namesIn(sentence, doc.names ?? [], everyday).map((token) => ({ sentence, token })));
+  const named = prose.map((sentence) => ({ sentence, names: namesIn(sentence, doc.names ?? [], everyday) })).filter((entry) => entry.names.length > 0);
+  const count = named.reduce((sum, entry) => sum + entry.names.length, 0);
   const length = prose.reduce((sum, sentence) => sum + lengthOf(sentence, doc.lengthUnit), 0);
-  const rate = length === 0 ? 0 : Math.round((hits.length / length) * PER);
-  const first = hits[0];
-  if (length < FLOOR[doc.lengthUnit] || first === undefined || rate <= options.limit) return [];
+  const rate = length === 0 ? 0 : Math.round((count / length) * PER);
+  const at = densest(named);
+  const first = at?.names[0];
+  if (length < FLOOR[doc.lengthUnit] || at === undefined || first === undefined || rate <= options.limit) return [];
   return [
     {
       rule: "proper-noun-density",
       severity: "info",
       line: 0,
       column: 0,
-      quote: proseText(first.sentence),
-      values: { count: hits.length, density: rate, limit: options.limit, offset: first.token.span.start },
+      quote: proseText(at.sentence),
+      values: { count, density: rate, limit: options.limit, offset: first.span.start },
     },
   ];
 };
