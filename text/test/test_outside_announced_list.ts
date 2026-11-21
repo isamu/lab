@@ -57,6 +57,18 @@ describe("outside-announced-list: 挙げた一覧に無い名前", () => {
     assert.equal(outside("対応OSはWindowsとmacOSです。Linux版では設定画面が違います。\n", ja).length, 1);
     assert.deepEqual(outside("対応OSはWindowsとmacOSです。Linuxには対応していません。\n", ja), []);
   });
+
+  it("「は」の後の読点と、「対応するOSは」も一覧を言う", () => {
+    assert.deepEqual(outside("動作環境は、WindowsとmacOSです。Androidにも対応しています。\n", ja), [
+      "「Android」は、1 行目で挙げた一覧（Windows, macOS）にありません",
+    ]);
+    assert.deepEqual(outside("対応するOSは、WindowsとmacOSです。Androidにも対応しています。\n", ja), [
+      "「Android」は、1 行目で挙げた一覧（Windows, macOS）にありません",
+    ]);
+    assert.deepEqual(outside("The app runs on, Windows and macOS. It is also supported on Linux.\n"), [
+      '"Linux" is not in the list given on line 1 (Windows, macOS)',
+    ]);
+  });
 });
 
 describe("the reading behind outside-announced-list", () => {
