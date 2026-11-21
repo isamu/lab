@@ -2,6 +2,7 @@ import { surfaceStarts } from "./surface-starts.ts";
 import { wellFormed } from "./well-formed.ts";
 import { analyserPieces } from "./analyser-pieces.ts";
 import { readCounterTsu, type Morpheme } from "./counter-tsu.ts";
+import { readCompoundNounEnding } from "./compound-noun-ending.ts";
 import { outsideTheReport, isPassiveForm, passiveVocabulary, readsAsPassive } from "./passive-reading.ts";
 import { loadLexicons } from "./lexicons.ts";
 import { predicateFrameAfter } from "./predicate-frame.ts";
@@ -334,7 +335,9 @@ const tokensOf = (read: readonly Placed[]): Token[] => {
 const PIECE_LIMIT = 1000;
 
 const analyse = (tokenizer: Tokenizer, text: string): Morpheme[] =>
-  readCounterTsu(analyserPieces(text, PIECE_LIMIT).flatMap((piece) => toArray(callMethod(tokenizer, "tokenize", [piece])).flatMap(toMorpheme)));
+  readCompoundNounEnding(
+    readCounterTsu(analyserPieces(text, PIECE_LIMIT).flatMap((piece) => toArray(callMethod(tokenizer, "tokenize", [piece])).flatMap(toMorpheme))),
+  );
 
 type Placed = { readonly morpheme: Morpheme; readonly start: number };
 
