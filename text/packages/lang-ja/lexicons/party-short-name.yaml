@@ -1,4 +1,5 @@
 # 契約が当事者に定める呼び名。この語を括弧に入れて定めた所（以下「甲」という）を、当事者の定義と読む（party-role-name）。
+# 一字の漢字の語（甲・乙）は、ここにあるものだけ定義より前の使用を探す（use-before-definition）。「法」「令」はふつうの語としても書くので探さない。
 id: party-short-name
 language: ja
 entries:
