@@ -11,7 +11,7 @@ bls-glossary  30
 caa-mokebanashi-chuikanki  1
 chrome-blog-pwa-origin-migration-ja  1
 cisa-scuba-teams  2
-cloudgov-security-ir-guide  3
+cloudgov-security-ir-guide  2
 crs-r47235-budget-timeline  11
 crs-r47585-subcontracting  18
 crs-rl32781-salt  14
@@ -60,7 +60,7 @@ soumu-wp-r06-ai-rules-japan  2
 soumu-wp-r06-misinformation  8
 tc39-agenda-2026-07  1
 typescript-5-4-release-notes  2
-usajobs-va-it-specialist-customer-support  8
+usajobs-va-it-specialist-customer-support  7
 w3c-secure-contexts  9
 wikipedia-en-markdown  1
 wikipedia-ja-talk-oden  1

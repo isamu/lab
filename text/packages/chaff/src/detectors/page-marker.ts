@@ -1,5 +1,6 @@
 import { escapeRegExp } from "../orthography.ts";
 import type { LengthUnit } from "../plugin.ts";
+import { wordCount } from "../measure.ts";
 
 /**
  * Page markers a converted print edition leaves inside a sentence ("( printed page 52044)", "[[Page 52044]]", 「－12－」).
@@ -16,8 +17,7 @@ const templatePattern = (template: string): string => [...template].map((char) =
 export const pageMarkerPattern = (templates: readonly string[]): RegExp | undefined =>
   templates.length === 0 ? undefined : new RegExp(String.raw`(?<!\p{Nd})(?:${templates.map(templatePattern).join("|")})(?!\p{Nd})`, "gu");
 
-const sizeOf = (marker: string, unit: LengthUnit): number =>
-  unit === "word" ? marker.split(/\s+/u).filter((word) => word.length > 0).length : marker.replace(/\s+/gu, "").length;
+const sizeOf = (marker: string, unit: LengthUnit): number => (unit === "word" ? wordCount(marker) : marker.replace(/\s+/gu, "").length);
 
 /** How much of a sentence its page markers take up, in the document's unit: their words, or their characters without spaces. */
 export const pageMarkerSize = (text: string, pattern: RegExp | undefined, unit: LengthUnit): number => {

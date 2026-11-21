@@ -1,4 +1,4 @@
-import { lengthOf, proseText } from "../measure.ts";
+import { lengthOf, proseText, wordCount } from "../measure.ts";
 import type { Detector, DetectorOptions, Finding, LengthUnit, Sentence } from "../plugin.ts";
 import { authorListSaving, citationLead, withoutEarlierReference } from "./citation-sentence.ts";
 import { isCitationString, wordsAroundCitation } from "./citation-string.ts";
@@ -28,8 +28,10 @@ type SentenceWords = {
 const unwrittenWords = (sentence: Sentence, text: string, listItems: SentenceWords["listItems"]): number =>
   termSeriesSaving(text) + authorListSaving(text) + (isInListItem(sentence.span, listItems) || isReferenceLine(text) ? quotedTitleWords(text) : 0);
 
-const sizeOf = (text: string, unit: LengthUnit): number =>
-  unit === "word" ? text.split(/\s+/u).filter((word) => word.length > 0).length : text.replace(/\s+/gu, "").length;
+const sizeOf = (text: string, unit: LengthUnit): number => (unit === "word" ? wordCount(text) : text.replace(/\s+/gu, "").length);
+
+/** A sentence's length, its words counted without loose punctuation (a "," set apart by spaces). */
+const sentenceSize = (sentence: Sentence, unit: LengthUnit): number => (unit === "word" ? wordCount(proseText(sentence)) : lengthOf(sentence, unit));
 
 /** 「」の中に句点で閉じた文が二つ以上あれば、その一つ一つと括弧の外を別に測る（引いた事故の報告「…転落。…入院。」）。 */
 const longestQuotedPart = (text: string, size: number, markers: RegExp | undefined): number => {
@@ -48,7 +50,7 @@ const measureOf = (sentence: Sentence, unit: LengthUnit, options: DetectorOption
   const embedded = sentence.embeddedLanguage;
   const limit = embedded === undefined ? undefined : options.embeddedLimits?.[embedded.id];
   if (embedded === undefined || limit === undefined) return { size: ownSize(sentence, unit, words), limit: options.limit };
-  return { size: lengthOf(sentence, embedded.lengthUnit), limit, variant: `embedded-${embedded.id}` };
+  return { size: sentenceSize(sentence, embedded.lengthUnit), limit, variant: `embedded-${embedded.id}` };
 };
 
 /** Code or a citation string: nothing in it is the writer's sentence. A title line too, where words are the unit. */
@@ -70,7 +72,7 @@ const ownSize = (sentence: Sentence, unit: LengthUnit, words: SentenceWords): nu
   const remark = unit === "word" ? remarkAfterTitle(text) : undefined;
   if (remark !== undefined) return sizeOf(remark, unit);
   const unwritten = unit === "word" ? unwrittenWords(sentence, text, words.listItems) : 0;
-  const size = lengthOf(sentence, unit) - pageMarkerSize(text, words.markers, unit) - unwritten;
+  const size = sentenceSize(sentence, unit) - pageMarkerSize(text, words.markers, unit) - unwritten;
   return unit === "char" ? longestQuotedPart(text, size, words.markers) : size;
 };
 

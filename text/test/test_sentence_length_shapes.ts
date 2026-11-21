@@ -227,3 +227,11 @@ describe("max-sentence-length: a sentence closed inside parentheses", () => {
     assert.equal(enFindings(longPart, "blog/essay").length, 1);
   });
 });
+
+describe("max-sentence-length: loose punctuation", () => {
+  it("does not count a comma or a stop set apart by spaces as a word", () => {
+    const loose = "The builder will use the same brick , and the work on the wall will take about four days .";
+    assert.deepEqual(enFindings(loose, EMAIL), []);
+    assert.deepEqual(enFindings(loose.replace("four", "four or five"), EMAIL), ["This sentence runs 20 words (limit 18)"]);
+  });
+});
