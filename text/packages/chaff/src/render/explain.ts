@@ -141,8 +141,8 @@ export const renderExplain = (rule: RuleDefinition, current: Level, language: st
     rule.status === "experimental" && genreStop === undefined
       ? [`  ${text.experimental}`, ...(settings.offOnlyAsExperimental === true ? [`  ${text.alone(rule.id)}`] : [])]
       : [];
-  const now =
-    genreStop === undefined ? `${nowLine(rule, current, limit, language)}${levelFrom === undefined ? "" : text.from(levelFrom)}` : text.notRun(genreStop);
+  const from = levelFrom === undefined ? "" : text.from(levelFrom);
+  const now = genreStop === undefined ? `${nowLine(rule, current, limit, language)}${from}` : text.notRun(genreStop);
   return [
     "",
     `  ${readableText(rule, rule.name, language)}   (${rule.id})`,
