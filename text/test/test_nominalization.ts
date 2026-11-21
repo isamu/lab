@@ -61,6 +61,12 @@ describe("nominalization (ja): a verbal noun carried by を行う / を実施す
     ]);
   });
 
+  it("a verbal noun that ends a compound is read with the whole compound (塗り直し, not 直し)", () => {
+    assert.deepEqual(hidden("壁の塗り直しを実施しました。", ja), ["塗り直しを実施する→塗り直しする"]);
+    assert.deepEqual(hidden("品質調査を実施した。", ja), ["品質調査を実施する→品質調査する"]);
+    assert.deepEqual(hidden("満足度の調査を実施した。", ja), ["調査を実施する→調査する"]);
+  });
+
   it("〜をする is ordinary and not counted", () => {
     assert.deepEqual(hidden("毎日、勉強をする。", ja), []);
   });
