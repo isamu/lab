@@ -125,7 +125,20 @@ const pointsAhead = (sentence: string, phrase: Phrase, anchors: readonly string[
   const lowered = anchors.map((anchor) => anchor.toLowerCase());
   if (!phrase.counted) return lowered.some((anchor) => endsWithWord(before.trimEnd(), anchor));
   if (lowered.some((anchor) => before.includes(anchor))) return true;
-  return COLON_END.test(sentence.trimEnd()) && !number.test(sentence.slice(phrase.end));
+  const after = sentence.slice(phrase.end);
+  return COLON_END.test(sentence.trimEnd()) && !number.test(after) && !inEarlierClause(after.toLowerCase(), lowered);
+};
+
+/** 句切りの読点やコンマの前に語がある。「3点、以下の」の読点は数のすぐ後ろで、数を前の節に閉じ込めない。 */
+const CLAUSE_BREAK = /[^\s、，,][^、，,]*[、，,]/u;
+
+/**
+ * 数の後ろに先を指す語があり、その手前で一度節が切れる（二人に聞いて分かった、困っていたことは以下のとおり）。
+ * 先を指す語が予告するのは後ろの節の語で、前の節の数（聞いた人数）は並べるものの数ではない。
+ */
+const inEarlierClause = (after: string, anchors: readonly string[]): boolean => {
+  const anchorAt = Math.min(...anchors.map((anchor) => after.indexOf(anchor)).filter((at) => at >= 0));
+  return Number.isFinite(anchorAt) && CLAUSE_BREAK.test(after.slice(0, anchorAt));
 };
 
 /**
