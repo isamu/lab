@@ -144,13 +144,18 @@ export const isAfterCountArticle = (text: string, offset: number, name: string, 
 };
 
 /** What may stand between a wrong mark and the form it marks: spaces, a colon. */
-const MARK_GAP = /[\s:：]*$/u;
+const MARK_GAP = /[\s:：]/u;
+
+const withoutTrailingGap = (text: string): string => {
+  const chars = [...text];
+  return chars.slice(0, chars.findLastIndex((char) => !MARK_GAP.test(char)) + 1).join("");
+};
 
 /**
  * Whether the form at offset follows a wrong mark from the lexicon name-wrong-mark on its own line (× Rspec beside ○ RSpec):
  * a list showing a wrong spelling on purpose, not a use of the name.
  */
 export const isMarkedWrong = (text: string, offset: number, marks: readonly string[]): boolean => {
-  const before = text.slice(text.lastIndexOf("\n", offset - 1) + 1, offset).replace(MARK_GAP, "");
+  const before = withoutTrailingGap(text.slice(text.lastIndexOf("\n", offset - 1) + 1, offset));
   return marks.some((mark) => before.endsWith(mark));
 };
