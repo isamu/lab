@@ -26,7 +26,9 @@ describe("speakerTurns", () => {
   it("finds the paragraphs that open with a name when three names each speak three times", () => {
     const source = minutes(THREE_SPEAKERS);
     assert.equal(speakerTurns(source).length, THREE_SPEAKERS.length);
-    assert.equal(source.slice(speakerTurns(source)[0]?.start, speakerTurns(source)[0]?.end).startsWith("Ana: "), true);
+    const first = speakerTurns(source)[0];
+    assert.ok(first);
+    assert.equal(source.slice(first.start, first.end).startsWith("Ana: "), true);
   });
 
   it("reads none when only two labels repeat, as fields do (Status:, Comments:)", () => {
