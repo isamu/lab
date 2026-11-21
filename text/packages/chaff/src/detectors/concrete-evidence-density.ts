@@ -12,7 +12,7 @@ import {
   isNavigationLine,
   startsWithin,
   statesIntent,
-  withSubsections,
+  familyWithSlots,
   type AdviceWords,
   type IntentWords,
 } from "./concrete-evidence.ts";
@@ -83,7 +83,7 @@ export const concreteEvidence: Detector = (doc, options): Finding[] => {
       mostlyClaims(sentences, doc.language, advice, intent)
     );
   });
-  const families = new Map(sections.map((section) => [section, withSubsections(doc.sections, section)]));
+  const families = new Map(sections.map((section) => [section, familyWithSlots(doc.sections, section)]));
   const familyOf = (section: Section): Section[] => families.get(section) ?? [section];
   const bare = sections.filter((section) => familyOf(section).every((member) => !concreteIn(doc, member)));
   // 構造の木と名前は求めるのに手間がかかる。指摘に届かない文書では求めない。
