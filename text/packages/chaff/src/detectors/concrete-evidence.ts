@@ -155,6 +155,33 @@ export const withSubsections = <T extends Pick<Section, "depth">>(sections: read
   return [section, ...(next === -1 ? after : after.slice(0, next))];
 };
 
+type SlotSection = Pick<Section, "depth" | "heading" | "unlabeledHeading">;
+
+/** 同じ見出しの節がこの数の親の下にあれば、項目ごとに繰り返す型の欄（状況・解決策・備考）。 */
+const MIN_SLOT_PARENTS = 3;
+
+const titleOf = (section: SlotSection): string => (section.unlabeledHeading ?? section.heading).trim();
+
+const parentOf = <T extends SlotSection>(sections: readonly T[], section: T): T | undefined => {
+  const index = sections.indexOf(section);
+  const parent = sections.slice(0, Math.max(index, 0)).findLast((other) => other.depth < section.depth);
+  return parent !== undefined && parent.depth > 0 ? parent : undefined;
+};
+
+/**
+ * 型の欄の節は、その欄を持つ項目（親の節）と、項目の他の欄と合わせて読む。具体物を何欄目に書くかは項目ごとに違い、
+ * 一つの欄だけでは持ち帰るものを決められない。型の欄でなければ、その節と下の節。
+ */
+export const familyWithSlots = <T extends SlotSection>(sections: readonly T[], section: T): T[] => {
+  const parent = parentOf(sections, section);
+  if (parent === undefined || titleOf(section) === "") return withSubsections(sections, section);
+  const parentsOfSameTitle = new Set(
+    sections.filter((other) => other.depth === section.depth && titleOf(other) === titleOf(section)).map((other) => parentOf(sections, other)),
+  );
+  parentsOfSameTitle.delete(undefined);
+  return parentsOfSameTitle.size >= MIN_SLOT_PARENTS ? withSubsections(sections, parent) : withSubsections(sections, section);
+};
+
 /** 大文字だけの略語（API、PDFs）。どの文書にも出る技術の語で、名指しした物ではない。 */
 const ACRONYM = /^\p{Lu}+s?$/u;
 const CAPITAL_HEAD = /^\p{Lu}/u;
