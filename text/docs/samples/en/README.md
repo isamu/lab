@@ -11,7 +11,7 @@ Or paste a draft into the [playground](https://isamu.github.io/lab/en/playground
 
 日本語の見本: [../ja/README.md](../ja/README.md)
 
-Rules with a sample: 3 / 259
+Rules with a sample: 17 / 259
 
 ## Readability
 
@@ -29,9 +29,23 @@ Emphasis that says nothing, stock phrases, and passives that never say who acted
 
 | Rule | What it finds |
 | --- | --- |
+| [Passive with no actor](agentless-passive.md) (`agentless-passive`) | A passive sentence ("the budget was approved") that never says who did it |
+| [Cliché](cliche.md) (`cliche`) | A worn phrase such as "at the end of the day" or "low-hanging fruit" |
+| [Cliched closing](closing-cliche.md) (`closing-cliche`) | A stock closing such as "Hope this helps" that leaves the reader nothing |
+| [A comparison with nothing to compare with](comparative-without-baseline.md) (`comparative-without-baseline`) | A comparison such as "is faster" that never says faster than what |
+| [Too many softeners](cushion-phrase-density.md) (`cushion-phrase-density`) | So many softeners ("sorry to bother", "just wanted to") that the ask gets lost |
+| [Dangling participle](dangling-participle.md) (`dangling-participle`) | An opening participle followed by an empty "it" or "there" as the subject |
 | [Empty intensifier](empty-intensifier.md) (`empty-intensifier`) | Words like "extremely important" that add weight without saying what matters |
+| [Too much hedging](excessive-hedging.md) (`excessive-hedging`) | Hedges piled up ("it may perhaps be possible") until nobody is saying anything |
+| [Open list that a limit closes](nado-closed-list.md) (`nado-closed-list`) | An open list (etc., and so on) that "only" or "limited to" closes |
+| [Verbs hidden in nouns](nominalization.md) (`nominalization`) | Verbs hidden in nouns ("make a decision", "conduct an analysis"), used too often |
+| [Nonstandard word](nonstandard-word.md) (`nonstandard-word`) | A word formal writing treats as nonstandard, such as "irregardless" |
+| [A sentence that opens with a numeral](numeral-sentence-start.md) (`numeral-sentence-start`) | A sentence that opens with a numeral, such as "20 people came." |
+| [A duty to act with no deadline (shall pay, shall return)](obligation-without-deadline.md) (`obligation-without-deadline`) | A duty to pay, deliver, return or notify with no deadline, where others have one |
+| [An ordinal with the wrong ending](ordinal-suffix-mismatch.md) (`ordinal-suffix-mismatch`) | An ordinal whose ending does not fit its number, such as "3th" or "11st" |
+| [Padded opening](padded-intro.md) (`padded-intro`) | An opening such as "In recent years, X has gained attention" that says nothing |
 
-Rules with no sample yet: `agentless-passive`, `cliche`, `closing-cliche`, `comparative-without-baseline`, `cushion-phrase-density`, `dangling-participle`, `excessive-hedging`, `nado-closed-list`, `nominalization`, `nonstandard-word`, `numeral-sentence-start`, `obligation-without-deadline`, `ordinal-suffix-mismatch`, `padded-intro`, `redundant-expression`, `request-without-deadline`, `requirement-smell`, `sentence-initial-so`, `uncomparable-graded`, `unqualified-superlative`, `vague-deadline`, `vague-word-density`, `very-adjective`, `warning-without-action`, `weasel-word`, `wordy-phrase`
+Rules with no sample yet: `redundant-expression`, `request-without-deadline`, `requirement-smell`, `sentence-initial-so`, `uncomparable-graded`, `unqualified-superlative`, `vague-deadline`, `vague-word-density`, `very-adjective`, `warning-without-action`, `weasel-word`, `wordy-phrase`
 
 ## Slips
 
