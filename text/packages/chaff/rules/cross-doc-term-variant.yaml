@@ -21,8 +21,8 @@ message:
   en: '"{matched}" here, but "{preferred}" in {count} other {count|file|files} checked with it (as in {other})'
 
 how_to_fix:
-  ja: 「{preferred}」に直してください。どちらに寄せるかをチームで決めているなら、chaff.yaml の prefer に書いておくと、どのファイルでも決めた書き方で見ます。
-  en: Change it to "{preferred}". If the team has decided which way, list the pair under prefer in chaff.yaml, and every file is checked against it.
+  ja: 「{preferred}」に直してください。どちらに寄せるかをチームで決めているなら、chaff.yaml の prefer に「使わない書き方」と「使う書き方」の組を書いておくと、preferred-term がどのファイルでも決めた書き方で見ます。
+  en: Change it to "{preferred}". If the team has decided which way, list the pair (the spelling to avoid, then the one to use) under prefer in chaff.yaml, and preferred-term checks every file against it.
 
 placeholders:
   matched:
