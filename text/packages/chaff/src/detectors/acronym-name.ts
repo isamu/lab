@@ -101,8 +101,8 @@ const TRADEMARKED = new RegExp(String.raw`${EDGE_BEFORE}\p{Lu}{2,}(?=[®™])`, 
 export const trademarkSpans = (text: string): Span[] => spansOf(text, TRADEMARKED);
 
 /**
- * 引用の形の中の、法令の名前（45 CFR Parts 160、CFR §164.524、21 USC §301、44 USC. 3502、22 CCR §§ 12701、94/820/EC）。後ろに条（§、Part、
- * 番号）があるか、/ で繋いだ番号の後ろのときだけ。名前の後ろの点（USC.）は略しの印で、条の前に書いてもよい。§ の前には大文字で始まる
+ * 引用の形の中の、法令の名前（45 CFR Parts 160、CFR §164.524、21 USC §301、44 USC. 3502、22 CCR §§ 12701、94/820/EC、FAR section 12.212）。
+ * 後ろに条（§、Part、section、番号）があるか、/ で繋いだ番号の後ろのときだけ。名前の後ろの点（USC.）は略しの印で、条の前に書いてもよい。§ の前には大文字で始まる
  * 1 語を挟んでもよい（15 USCA Appendix § 12）。巻の番号の後ろで点で終わる名前（See 44 USC. 3502）も引用で、文を分ける読み手は
  * 点の後ろの条を次の文に送る。法令集そのものを言う所（the CFR title、the 2 CFR export）は略語のまま数える。
  */
@@ -112,7 +112,10 @@ export const citationSpans = (text: string, series: readonly string[]): Span[] =
   const section = String.raw`(?:\p{Lu}\p{L}*\.?[ \t]+)?§`;
   return spansOf(
     text,
-    new RegExp(String.raw`(?<=\d/)${name}${EDGE_AFTER}|${EDGE_BEFORE}${name}(?=\.?[ \t]*(?:${section}|[Pp]arts?[ \t]+\d|\d))|(?<=\d[ \t]+)${name}(?=\.)`, "gu"),
+    new RegExp(
+      String.raw`(?<=\d/)${name}${EDGE_AFTER}|${EDGE_BEFORE}${name}(?=\.?[ \t]*(?:${section}|(?:[Pp]arts?|[Ss]ections?)[ \t]+\d|\d))|(?<=\d[ \t]+)${name}(?=\.)`,
+      "gu",
+    ),
   );
 };
 

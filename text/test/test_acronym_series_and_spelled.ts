@@ -127,6 +127,8 @@ describe("undefined-acronym: series, spelled names, reference entries, judges, c
     assert.deepEqual(reportedAcronyms(en, doc("The President, by Executive Order No. 6199 (15 USCA § 709 note), and (15 USCA Appendix § 12), acted.")), [
       "SRE",
     ]);
+    const governmentRights = "The Software is a commercial item according to FAR section 12.212 and DFARS 227.7202, and any other use is prohibited.";
+    assert.deepEqual(reportedAcronyms(en, doc(governmentRights)), ["SRE"]);
   });
 
   it("invalid: the same capitals without the title or the mark", () => {
@@ -134,6 +136,7 @@ describe("undefined-acronym: series, spelled names, reference entries, judges, c
     assert.deepEqual(reportedAcronyms(en, doc("The GT team owns the rights.")), ["GT", "SRE"]);
     assert.deepEqual(reportedAcronyms(en, doc("Use DC power here.")), ["DC", "SRE"]);
     assert.deepEqual(reportedAcronyms(en, doc("The USCA team met.")), ["USCA", "SRE"]);
+    assert.deepEqual(reportedAcronyms(en, doc("The FAR team met.")), ["FAR", "SRE"]);
   });
 
   it("invalid: an organisation's acronym inside its name stays reported: readers list such names under names in chaff.yaml", () => {
