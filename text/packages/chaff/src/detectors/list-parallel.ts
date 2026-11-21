@@ -113,7 +113,7 @@ const japaneseEnding = (item: readonly Sentence[], headlineEndings: ReadonlySet<
  * English: a sentence closes with a full stop and has a finite verb outside a noun phrase; a phrase has neither, nor any
  * verb but those of its noun phrase. Anything between is not judged.
  */
-const englishEnding = (item: readonly Sentence[]): string | undefined => {
+const englishEnding = (item: readonly Sentence[], context: HeadContext): string | undefined => {
   const sentences = ownEnding(item);
   const tokens = sentences.flatMap((sentence) => sentence.tokens ?? []);
   if (tokens.length === 0) return undefined;
@@ -122,7 +122,18 @@ const englishEnding = (item: readonly Sentence[]): string | undefined => {
   // A noun phrase with a stray full stop (Shelter – a charity who offer advice.) says nothing: neither form.
   const nounPhrase = isNounPhraseWithVerbs(tokens);
   if (closed) return tokens.some(isFiniteVerb) && !nounPhrase ? "sentence" : undefined;
+  if (opensWithClause(tokens, context)) return "sentence";
   return (nounPhrase || !tokens.some(isVerb)) && !isUnsure(tokens[0]) ? "phrase" : undefined;
+};
+
+/**
+ * An item that opens with a subject pronoun and its finite verb (you will also need a change of clothes) is a sentence
+ * whether or not its writer closed it with a full stop.
+ */
+const opensWithClause = (tokens: readonly Token[], context: HeadContext): boolean => {
+  const words = tokens.filter((token) => !SKIPPED_AT_END.has(token.pos));
+  const [subject, verb] = [words[0], words.find((token, index) => index > 0 && token.pos !== "ADV")];
+  return subject !== undefined && verb !== undefined && isSubjectPronoun(subject, context) && isFiniteVerb(verb);
 };
 
 /** English: the word an item opens with. Install and Running open with a verb; The, Fast and Docker with a noun phrase. */
@@ -316,7 +327,7 @@ const leadsIn = (sentences: readonly Sentence[]): boolean => LEAD_IN.test(senten
 export const formOf = (axis: Axis, sentences: readonly Sentence[], language: string, context: HeadContext = NO_HEAD_CONTEXT): string | undefined => {
   if (axis === "ending" && leadsIn(sentences)) return undefined;
   if (language === "ja") return axis === "ending" ? japaneseEnding(sentences, context.headlineEndings) : undefined;
-  return axis === "ending" ? englishEnding(sentences) : englishHead(sentences, context);
+  return axis === "ending" ? englishEnding(sentences, context) : englishHead(sentences, context);
 };
 
 const within = (inner: Span, outer: Span): boolean => inner.start >= outer.start && inner.end <= outer.end;

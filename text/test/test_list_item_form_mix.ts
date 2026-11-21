@@ -132,6 +132,12 @@ describe("list-item-form-mix: the minority form in one list", () => {
       "ending-sentence:The settings page has been redesigned.",
     ]));
 
+  it("reports a sentence among phrases when it opens in lower case with its subject and has no full stop (en)", () => {
+    const items = ["a packed lunch", "a bottle of water", "a warm hat", "you will also need a change of clothes, because the kayaks are wet"];
+    assert.deepEqual(flagged(en, list(...items)), ["ending-sentence:you will also need a change of clothes, because the kayaks are wet"]);
+    assert.deepEqual(flagged(en, list("a packed lunch", "a bottle of water", "a warm hat", "your swimming costume")), []);
+  });
+
   it("says how many items are in the minority, of how many", () => {
     const finding = findingsOf(ja, list("申込書の記入", "本人確認書類の用意", "手数料を払う"))[0];
     assert.equal(finding?.values["count"], 1);
