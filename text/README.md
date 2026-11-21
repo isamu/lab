@@ -39,6 +39,7 @@ text/                      yarn workspaces のルート
   scripts/                 corpus・bench・rules:measure・サイト用の生成など
   site/                    ドキュメントサイト（Astro）。https://isamu.github.io/lab/
   docs/ChangeLog.md        変更履歴
+  docs/samples/<言語>/     ルールごとの見本（元の文章・chaff の指摘・直した文章・設定）。指摘の画面は yarn samples:update が書く
 ```
 
 パッケージのあいだの import は型だけにしています。言語のアダプタは chaff の値に依存せず、単体で動きます。
@@ -71,6 +72,7 @@ yarn planted         # 誤りを仕込んだ文書の組（test/fixtures/planted
 yarn bench:ai        # AI っぽさのルールを、人・生成文・書き直しの見本と corpus にかけ、当たりと誤報を数える
 yarn rules:measure   # ルールごとに、各ジャンルの人の文書の何割で指摘するかと bench の成績を表にする
 yarn example         # examples/ の実文書にかける（--compact の短い形式。yarn example:friendly で既定の出力）
+yarn samples:update  # docs/samples/ の見本に載せた指摘と explain の画面、言語ごとの一覧を、chaff がいま出すものに書き換える（yarn samples:check は違いを出すだけ）
 yarn screens:update  # サイトの手引きに載せた画面を、chaff がいま出すものに書き換える（en/commands.md のようにページを渡すとそのページだけ）
 ```
 
@@ -128,7 +130,8 @@ and on [the English site](https://isamu.github.io/lab/en/). **Try chaff in your 
   real documents, on seeded mistakes and on the planted sets of whole documents with what is committed (`--update` to accept a change; `yarn planted` fails only on a regression and prints an improvement). `yarn rules:measure`
   measures each rule on the human documents pinned in `corpus/rules-measure-documents.json` (`--apply` sets its status
   and the genres it is off for); it stops when a pinned one has not been fetched (`yarn corpus:fetch`). `yarn screens:update`
-  rewrites the guide's screens to what chaff prints now.
+  rewrites the guide's screens to what chaff prints now, and `yarn samples:update` the screens of the per-rule samples in
+  `docs/samples/` and their indexes.
 - **Adding a rule:** a rule file under `packages/chaff/rules/` with `status: experimental`, a detector registered in
   `src/detectors/registry/` if it needs a new one, a test that fails first, then `yarn bench`, `yarn corpus` and
   `yarn rules:measure`.

@@ -226,6 +226,7 @@ example of every command on one page.
 - [Using chaff for AI evals](https://isamu.github.io/lab/en/guide/ai-evals/)
 - [CI](https://isamu.github.io/lab/en/guide/ci/)
 - [Every rule](https://isamu.github.io/lab/en/rules/)
+- [Samples of what chaff fixes](https://github.com/isamu/lab/tree/main/text/docs/samples/en): per rule, the original text, what chaff says, the corrected text and the settings
 
 The source is in [isamu/lab, under text/](https://github.com/isamu/lab/tree/main/text).
 

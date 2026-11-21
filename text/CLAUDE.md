@@ -53,7 +53,8 @@ The direction is tracked in isamu/lab#130.
   `corpus/rules-measure-documents.json`. `yarn rules:precision --corpus <chaff-corpus clone> --apply` turns a rule off
   for a genre where its judged precision is low (recorded in `corpus/rules-precision.json`); a rule file's `precision_hold`
   keeps a group on while a narrowing fix is due. `yarn screens:update`
-  regenerates the guide's screens.
+  regenerates the guide's screens, and `yarn samples:update` the screens of the per-rule samples
+  (`docs/samples/<ja|en>/<rule-id>.md`, checked by `test/test_rule_samples.ts`).
 - A change to a user-visible behaviour (a new rule, a new command, a new mechanism) updates the READMEs (en and ja),
   `packages/chaff/skills/chaff/SKILL.md` and the site guide in the same round.
 - A change that claims Japanese output is unchanged is proved by diffing the old and new builds over many

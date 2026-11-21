@@ -196,3 +196,4 @@ If you keep silencing the same rule, it is time to change the rule instead.
 - Everything chaff can find, with an example and its real output, is listed in the [Reference](./reference).
 - To fit rule strength and genre to your team, read [Configuration](./configuration).
 - Every command and option is listed in [Commands](./commands).
+- One rule at a time, a short document before and after the fix, with chaff's output and the settings, is in the [samples](https://github.com/isamu/lab/tree/main/text/docs/samples/en).

@@ -76,7 +76,9 @@ calls nothing. Ask the person before a real run; the passages leave the machine.
 | Change the rule | Wrong for this team or genre | `npx chaffjs relax <rule-id> --why "reason"` (or `strict` / `off`). The reason and date are written into `chaff.yaml`. |
 
 `npx chaffjs explain <rule-id>` shows why a rule exists, its levels and the current one. Read it before
-relaxing a rule.
+relaxing a rule. A worked before and after for a rule, with chaff's real output and the settings, is at
+`https://github.com/isamu/lab/blob/main/text/docs/samples/<ja|en>/<rule-id>.md` when that rule has one (the index:
+`docs/samples/<ja|en>/README.md`).
 
 When a finding is wrong for a reason that is not about this team (chaff misread the text), tell the person and offer
 `npx chaffjs feedback <file> --rule <rule-id> --line <n>`: it drafts a report and sends nothing. A document the

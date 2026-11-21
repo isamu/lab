@@ -1,15 +1,17 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { HEAVY_FILES, parsePart, partFiles } from "../scripts/test-parts.ts";
+import { HEAVY_FILES, OWN_JOB_FILES, parsePart, partFiles } from "../scripts/test-parts.ts";
 
-const FILES = ["test/test_a.ts", ...HEAVY_FILES, "test/test_b.ts", "test/test_c.ts", "test/test_d.ts", "examples/x/test/test_e.mjs"];
+const FILES = ["test/test_a.ts", ...HEAVY_FILES, "test/test_b.ts", "test/test_c.ts", ...OWN_JOB_FILES, "test/test_d.ts", "examples/x/test/test_e.mjs"];
+const SPLIT_FILES = FILES.filter((file) => !OWN_JOB_FILES.includes(file));
 
 describe("partFiles", () => {
-  it("どの分け方でも、全部の部分を合わせると元の一覧になり、二つの部分に入るファイルは無い", () => {
+  it("どの分け方でも、全部の部分を合わせると元の一覧（分けるときは自分の job で走るファイルを除く）になり、二つの部分に入るファイルは無い", () => {
     [1, 2, 3, 4, 5, 8].forEach((parts) => {
       const all = Array.from({ length: parts }, (_, index) => partFiles(FILES, index + 1, parts)).flat();
-      assert.equal(all.length, FILES.length, `${parts} parts`);
-      assert.deepEqual(new Set(all), new Set(FILES), `${parts} parts`);
+      const expected = parts === 1 ? FILES : SPLIT_FILES;
+      assert.equal(all.length, expected.length, `${parts} parts`);
+      assert.deepEqual(new Set(all), new Set(expected), `${parts} parts`);
     });
   });
 
