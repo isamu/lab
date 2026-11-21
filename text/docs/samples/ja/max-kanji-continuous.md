@@ -132,7 +132,7 @@ $ npx chaffjs explain max-kanji-continuous --genre business/report
   この数字は business のもので、business/report はこれを使います。ほかのジャンルは既定の数字を使います。
 
   オプション（chaff.yaml の options で決めます）:
-    headword_genres: [docs/glossary]   (既定)
+    headword_genres: [docs/glossary]   （既定）
       一行が漢字の連なりだけの行を、定義する見出し語と読んで数えない genre。見出し語は定義される語そのもので、書き換えられない
 
   決める:  chaff.yaml に options: { max-kanji-continuous: { <名前>: <値> } } を書く

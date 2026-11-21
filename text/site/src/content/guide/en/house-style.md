@@ -75,8 +75,8 @@ npx chaffjs explain katakana-long-vowel     this rule's settings, and where each
   Options (set under options in chaff.yaml):
     ending: drop   (from style: ieice)
       Which way the final ー goes
-        consistent No side taken; only checks that the document is consistent
-      → drop       Drop the final ー on words of min_morae morae or more (IEICE; JIS Z 8301 up to 2011)
+        consistent  No side taken; only checks that the document is consistent
+      → drop        Drop the final ー on words of min_morae morae or more (IEICE; JIS Z 8301 up to 2011)
 ```
 
 ## Add a rule of your own

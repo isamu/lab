@@ -160,9 +160,18 @@ describe("rule options", () => {
 
     it("explain shows each option's value and where it came from", async () => {
       const run = await runCli({ "chaff.yaml": CONFIG }, ["explain", "katakana-long-vowel"]);
-      assert.match(run.out, /ending: drop {3}\(.*chaff\.yaml から\)/u);
-      assert.match(run.out, /min_morae: 2 {3}\(既定\)/u);
+      assert.match(run.out, /ending: drop {3}（.*chaff\.yaml から）/u);
+      assert.match(run.out, /min_morae: 2 {3}（既定）/u);
       assert.match(run.out, /→ drop/u);
+    });
+
+    it("explain keeps a long choice name apart from its meaning, in both languages", async () => {
+      const ja = await runCli({ "chaff.yaml": "language: ja\n" }, ["explain", "requirement-modal"]);
+      assert.match(ja.out, /jis-z8301-2019 {2}JIS Z 8301/u);
+      assert.match(ja.out, /standard: none {3}（既定）/u);
+      const en = await runCli({ "chaff.yaml": "language: en\n" }, ["explain", "requirement-modal"]);
+      assert.match(en.out, /jis-z8301-2019 {2}JIS Z 8301/u);
+      assert.match(en.out, /standard: none {3}\(default\)/u);
     });
 
     it("rules --json carries the options with now and from", async () => {

@@ -200,7 +200,7 @@ $ npx chaffjs explain colon-lead-in --genre blog/tech
     off      見ない
 
   オプション（chaff.yaml の options で決めます）:
-    min_sections: 3   (既定)
+    min_sections: 3   （既定）
       前置きのある節の数の下限。1 つ 2 つの節だけなら、手順の前置きや対になった箇条書きで、節ごとに続く形ではありません。見出しの無い文書は前置きの数で数えます
 
   決める:  chaff.yaml に options: { colon-lead-in: { <名前>: <値> } } を書く

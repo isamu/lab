@@ -138,9 +138,9 @@ $ npx chaffjs explain bold-label-list --genre blog/tech
     off      見ない
 
   オプション（chaff.yaml の options で決めます）:
-    min_leads: 3   (既定)
+    min_leads: 3   （既定）
       太字の一文で始まる項目（- **範囲を固定する。** 〜）だけで指摘する数。人の文書は手順や欄の名前に太字の札を 3 つ 4 つ並べることはあっても、太字の一文で始まる項目を並べることはほとんどありません。得られることを言う札（- **作業時間の削減**：〜、語彙表 benefit-label の語で終わるもの）も、手順や欄の名前ではなく言い分なので、一緒に数えます
-    min_clause_paragraphs: 3   (既定)
+    min_clause_paragraphs: 3   （既定）
       言い切りの太字（述語のある文。**利用は毎週伸びた**：〜）で始まる段落だけで指摘する数。句点で閉じた英語の命令の一文（**Pick the quietest room you can.** 〜）も数えます。人の文書の段落の頭の太字は、語だけのもの（**勤務時間**：）、コロンで閉じた動詞で始まるもの（英語の命令形 **Talk to the people:**）、動名詞（**Examining the risks.**）、問い（**読み手は誰か？**）がほとんどで、これらは数えません。品詞が読めないときは段落を数えません
 
   決める:  chaff.yaml に options: { bold-label-list: { <名前>: <値> } } を書く

@@ -153,7 +153,7 @@ $ npx chaffjs explain paragraph-length-variance --genre blog/tech
     off      見ない
 
   オプション（chaff.yaml の options で決めます）:
-    min_paragraphs: 9   (既定)
+    min_paragraphs: 9   （既定）
       測る段落の数の下限。段落が少ないと長さのばらつきは偶然で小さく出て、人の書いた文書でも揃って見えます
 
   決める:  chaff.yaml に options: { paragraph-length-variance: { <名前>: <値> } } を書く
