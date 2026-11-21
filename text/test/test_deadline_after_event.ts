@@ -56,10 +56,27 @@ describe("deadline-after-event: 申込締切が催しの日より後", () => {
     assert.deepEqual(findingsOf(`${EN_EVENT}Registered guests will receive the invoice; payment is due by December 18, 2026.\n`, en), []);
   });
 
-  it("時刻の無い日付の行、年の無い日付、日付が二つある文は比べない", () => {
+  it("時刻の無い日付の行、片方にだけ年のある日付、日付が二つある文は比べない", () => {
     assert.deepEqual(findingsOf("# Memo\n\nDate: October 1, 2026\n\nPlease register by October 20, 2026.\n", en), []);
     assert.deepEqual(findingsOf(`${JA_EVENT}申込締切：11月27日（金）\n`), []);
     assert.deepEqual(findingsOf(`${EN_EVENT}Please register by November 13, 2026 for the follow-up session on December 4, 2026.\n`, en), []);
+  });
+
+  it("催しの日と締め切りの両方に年が無ければ、同じ年と読んで、催しから一月のうちの締め切りだけを指す", () => {
+    const notice = "# 説明会のお知らせ\n\n日時：12月12日（土）13:30〜15:30\n\n";
+    assert.deepEqual(findingsOf(`${notice}申込締切：12月18日（金）\n`), ["申込の締め切り（12月18日）が、催しの日（12月12日）より後です"]);
+    assert.deepEqual(findingsOf("# Fair\n\nWhen: Saturday 28 November, 10:00 to 15:00\n\nBooking deadline: Saturday 5 December\n", en), [
+      "The registration deadline 5 December is after the event on 28 November",
+    ]);
+    assert.deepEqual(findingsOf(`${notice}申込締切：12月4日（金）\n`), []);
+    assert.deepEqual(findingsOf("# 新年会のお知らせ\n\n日時：1月9日（土）18:00〜\n\n申込締切：12月18日（金）\n"), []);
+    assert.deepEqual(findingsOf("# 説明会のお知らせ\n\n日時：3月6日（土）13:30〜\n\n申込締切：5月31日（月）\n"), []);
+  });
+
+  it("年の無い催しの日が二つ以上あるか、片方にだけ年があれば比べない", () => {
+    const series = "# 連続講座\n\n日時：12月12日（土）13:30〜\n\n日時：1月9日（土）13:30〜\n\n申込締切：12月18日（金）\n";
+    assert.deepEqual(findingsOf(series), []);
+    assert.deepEqual(findingsOf("# 説明会のお知らせ\n\n日時：12月12日（土）13:30〜15:30\n\n申込締切：2026年12月18日（金）\n"), []);
   });
 
   it("催しの日が複数あれば、いちばん後の日と比べる", () => {
