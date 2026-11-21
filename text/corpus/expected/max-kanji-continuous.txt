@@ -8,7 +8,7 @@ kantei-unga81-general-debate-speech  1
 koho-tokyo-2026-06-suigai  1
 mhlw-icd-committee-26-minutes  1
 mhlw-kikan-gyomu-shokuin-boshu  1
-mhlw-norovirus-qa  8
+mhlw-norovirus-qa  3
 neeview-changelog-ja  4
 nstac-microdata-forum  1
 nta-taxanswer-1120  3
