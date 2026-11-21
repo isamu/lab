@@ -31,6 +31,7 @@ const withoutClosers = (text: string): string => {
 const MARKER = "marker";
 const INSTRUCTION = "instruction";
 const LABEL = "label";
+const CLOSING = "closing";
 
 const innerOf = (match: RegExpExecArray): string => (match[1] ?? match[2] ?? match[3] ?? "").trim().toLowerCase();
 
@@ -41,13 +42,27 @@ const holdsWord = (inner: string, words: Lexicon): boolean =>
     return inner === pattern || (inner.startsWith(pattern) && /^[\s'’]/u.test(inner.slice(pattern.length)));
   });
 
+/** A bracket a closing word ends: two to four words, each opening with a capital ([Candidate Name], [Start Date]). */
+const TITLED_BLANK = /^(?:\p{Lu}[\p{L}'’-]*\s+){1,3}\p{Lu}[\p{L}]*$/u;
+
+const rawInnerOf = (match: RegExpExecArray): string => (match[1] ?? match[2] ?? match[3] ?? "").trim();
+
+/**
+ * 括弧の中身が、語彙表の closing の語で終わる、語の頭がみな大文字の二語から四語か（[Candidate Name]、[Start Date]）。
+ * 小文字の語を挟む編者の補い（[the defendant's name]）や一語の注記（[sic]）は空欄ではない。
+ */
+const endsWithWord = (inner: string, words: Lexicon): boolean =>
+  TITLED_BLANK.test(inner) && words.some((word) => inner.toLowerCase().endsWith(` ${word.pattern.toLowerCase()}`));
+
 /** 括弧の中身が指示の書き出しで始まるか（ここに会社名を書く）。 */
 const opensWith = (inner: string, words: Lexicon): boolean => words.some((word) => inner.startsWith(word.pattern.toLowerCase()));
 
 const spanOf = (match: RegExpExecArray): Span => ({ start: match.index, end: match.index + match[0].length });
 
-const bracketedSpans = (text: string, pattern: RegExp, holds: (inner: string) => boolean): Span[] =>
-  [...text.matchAll(pattern)].filter((match) => !FILLED_AFTER.test(text.slice(match.index + match[0].length)) && holds(innerOf(match))).map(spanOf);
+const bracketedSpans = (text: string, pattern: RegExp, holds: (inner: string, raw: string) => boolean): Span[] =>
+  [...text.matchAll(pattern)]
+    .filter((match) => !FILLED_AFTER.test(text.slice(match.index + match[0].length)) && holds(innerOf(match), rawInnerOf(match)))
+    .map(spanOf);
 
 /**
  * A value left as a marker: the whole text is the marker ("TBD", 「未定」), or the marker opens it before a colon
@@ -163,13 +178,14 @@ export const placeholderSpans = (text: string, words: Lexicon): Span[] => {
   const instructions = words.filter((word) => word.group === INSTRUCTION);
   const markers = words.filter((word) => word.group === MARKER);
   const labels = words.filter((word) => word.group === LABEL);
+  const closings = words.filter((word) => word.group === CLOSING);
   const blankWords = {
     suffixes: words.filter((word) => word.group === BLANK_SUFFIX),
     prefixes: words.filter((word) => word.group === BLANK_PREFIX),
     units: words.filter((word) => word.group === BLANK_UNIT),
   };
   return [
-    ...bracketedSpans(text, BRACKETED, (inner) => holdsWord(inner, bracketWords)),
+    ...bracketedSpans(text, BRACKETED, (inner, raw) => holdsWord(inner, bracketWords) || endsWithWord(raw, closings)),
     ...(instructions.length === 0 ? [] : bracketedSpans(text, PARENTHESIZED, (inner) => opensWith(inner, instructions))),
     ...lineMarkerSpans(text, markers, labels),
     ...blankMarkSpans(text, blankWords),

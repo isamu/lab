@@ -102,6 +102,19 @@ describe("placeholderSpans: a note to the writer in parentheses", () => {
     assert.deepEqual(matched("Send it to us (your name and date) by Friday.", enWords), []);
   });
 
+  it("finds a capitalised bracket a closing word ends ([Candidate Name], [Start Date])", () => {
+    assert.deepEqual(matched("Dear [Candidate Name], thank you.", enWords), ["[Candidate Name]"]);
+    assert.deepEqual(matched("[First Name] starts on [Start Date].", enWords), ["[First Name]", "[Start Date]"]);
+    assert.deepEqual(matched("Send it to [Billing Address].", enWords), ["[Billing Address]"]);
+  });
+
+  it("leaves an editor's bracket, a note and a citation alone", () => {
+    assert.deepEqual(matched("He said that [the defendant's name] was false.", enWords), []);
+    assert.deepEqual(matched("The text says [sic] here, as in [12] and [Smith 2020].", enWords), []);
+    assert.deepEqual(matched("See [Release Date](https://example.com) for it.", enWords), []);
+    assert.deepEqual(matched("It was [His Excellency the Ambassador and his Name].", enWords), []);
+  });
+
   it("keeps the bracket forms as they were", () => {
     assert.deepEqual(matched("Dear [Your Name],", enWords), ["[Your Name]"]);
     assert.deepEqual(matched("【会社名】の田中です。", jaWords), ["【会社名】"]);

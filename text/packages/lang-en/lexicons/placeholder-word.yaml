@@ -15,6 +15,18 @@ entries:
   - pattern: describe
   - pattern: specific
   - pattern: add
+  # group: closing — a word that ends a template's blank ("[Candidate Name]", "[Start Date]"). It counts only when the
+  # bracket holds two to four words, each opening with a capital: "[the defendant's name]" is an editor's insertion.
+  - pattern: name
+    group: closing
+  - pattern: date
+    group: closing
+  - pattern: address
+    group: closing
+  - pattern: title
+    group: closing
+  - pattern: number
+    group: closing
   # group: marker — a value left as a note to fill it in later. It counts when it is the whole value ("TBD") or opens it
   # before a colon ("TODO: add expected output pattern"), in any case. Only the start of a value counts: "a todo app" is not one.
   - pattern: TODO
