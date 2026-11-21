@@ -11,7 +11,7 @@ chaff が見つけるまちがいを、ルールごとに一つずつ見本に�
 
 English samples: [../en/README.md](../en/README.md)
 
-見本のあるルール: 44 / 272
+見本のあるルール: 68 / 272
 
 ## 読みやすさ
 
@@ -74,9 +74,34 @@ English samples: [../en/README.md](../en/README.md)
 
 番号の抜け、無い条への参照、同じ語の二重定義、長い前置き。
 
-このグループの見本はまだありません。
+| ルール | 見つけるもの |
+| --- | --- |
+| [言い切った決まりに、別の所で例外がある](absolute-exception.md)（`absolute-exception`） | 「すべての〜は…しなければならない」と言い切った決まりに、別の条や段落で「ただし…を除く」と例外を書いた所 |
+| [行き先の無いリンク](broken-link.md)（`broken-link`） | 行き先が空のリンク、文書に無い見出しを指すリンク、定義の無い参照の形のリンク |
+| [参照先が無い](dangling-reference.md)（`dangling-reference`） | 「第5条に定める」と書いてあるのに、その第5条が文書に無い所 |
+| [同じ語の二重定義](duplicate-definition.md)（`duplicate-definition`） | 同じ語を、文書の二か所で定義している所 |
+| [同じ見出しが兄弟に二つある](duplicate-heading.md)（`duplicate-heading`） | 同じ親の見出しの下に、同じ言葉の見出しが二つある所 |
+| [中身の無い箇条書きの項目](empty-list-item.md)（`empty-list-item`） | 「担当：」のように見出しの語だけで値の無い項目と、記号だけの項目 |
+| [中身の無い節](empty-section.md)（`empty-section`） | 見出しのすぐ後ろに同じ深さか浅い見出しが来て、何も書かれていない節 |
+| [表の空欄](empty-table-cell.md)（`empty-table-cell`） | ほかの行がすべて埋めている列で、一つの行だけが空いている表のセル |
+| [注の無い注の印と、印の無い注](footnote-mismatch.md)（`footnote-mismatch`） | 本文の「※3」「[^3]」に対応する注が無い所と、本文のどこも指さない注 |
+| [見出しの深さが飛んでいる](heading-level-skip.md)（`heading-level-skip`） | 「##」の次に「####」が来るように、見出しの深さが一段以上飛んでいる所 |
+| [見出しの番号の付け方が揃っていない](heading-numbering-mix.md)（`heading-numbering-mix`） | 「1. 概要」「手順」「3. 費用」や「1.」「2.」「3）」のように、兄弟の見出しで番号の付け方が混ざっている所 |
+| [画像に代替テキストが無い](image-alt-text.md)（`image-alt-text`） | 「![](図.png)」のように、代替テキストの無い画像 |
+| [画像の代替テキストがファイル名](image-file-name-alt.md)（`image-file-name-alt`） | 「![IMG_1234.png](…)」のように、代替テキストがファイル名のままの画像 |
+| [同じ行為への逆の決まり](modal-conflict.md)（`modal-conflict`） | 同じ主語の同じ行為を、ある文では義務や許可に、別の文では禁止にしている所 |
+| [単位の無い数](number-without-unit.md)（`number-without-unit`） | 同じ列や同じ見出しの語のほかの値には単位があるのに、数だけを書いた値 |
+| [札と番号だけの見出し](numbered-generic-heading.md)（`numbered-generic-heading`） | 「メリット1」「ポイント2」「Benefit 3」のように、札と番号だけで中身を言わない見出しが並ぶ所 |
+| [番号の抜け・重なり](numbering-gap.md)（`numbering-gap`） | 第1条の次が第3条、(a) の次が (c) のように、番号が飛んだり重なったりしている所 |
+| [表の行のセルが見出しの行より多い](table-row-overflow.md)（`table-row-overflow`） | 見出しの行より多いセルを持つ表の行（多い分は表示されない） |
+| [見出しの無い目次の項目](toc-heading-mismatch.md)（`toc-heading-mismatch`） | 目次（「目次」「Contents」の見出しの下の箇条書き）の項目のうち、文書のどの見出しとも合わないもの |
+| [閉じていないコードブロック](unclosed-code-fence.md)（`unclosed-code-fence`） | 「```」で始めたまま閉じていないコードブロック（後ろがすべてコードになる） |
+| [太字にならずに見える「**」](unrendered-emphasis.md)（`unrendered-emphasis`） | 対にならず、太字にならないまま記号として見える「**」「__」 |
+| [定義したのに使っていない語](unused-definition.md)（`unused-definition`） | 定義した語が、本文のどこにも出てこない所 |
+| [定義より前で使っている語](use-before-definition.md)（`use-before-definition`） | 文の途中で括弧に入れて定義した語を、その定義より前で使っている所 |
+| [行き先を言わないリンクの言葉](vague-link-text.md)（`vague-link-text`） | 「[こちら](…)」「[ここをクリック](…)」のように、言葉だけでは行き先の分からないリンク |
 
-まだ見本の無いルール: `absolute-exception`, `abstract-length`, `broken-link`, `concrete-evidence-density`, `cross-doc-broken-link`, `cross-doc-duplicate-definition`, `dangling-reference`, `date-without-year`, `duplicate-definition`, `duplicate-heading`, `email-greeting-closing`, `email-subject-length`, `empty-list-item`, `empty-section`, `empty-table-cell`, `figure-reference-order`, `footnote-mismatch`, `heading-level-skip`, `heading-numbering-mix`, `image-alt-text`, `image-file-name-alt`, `modal-conflict`, `no-lead`, `number-without-unit`, `numbered-generic-heading`, `numbering-gap`, `preamble-length`, `prerequisite-after-step`, `required-listed-as-preferred`, `step-reference-missing`, `table-row-overflow`, `toc-heading-mismatch`, `unclosed-code-fence`, `unlisted-item-used`, `unrendered-emphasis`, `unused-definition`, `use-before-definition`, `vague-figure-reference`, `vague-link-text`
+まだ見本の無いルール: `abstract-length`, `concrete-evidence-density`, `cross-doc-broken-link`, `cross-doc-duplicate-definition`, `date-without-year`, `email-greeting-closing`, `email-subject-length`, `figure-reference-order`, `no-lead`, `preamble-length`, `prerequisite-after-step`, `required-listed-as-preferred`, `step-reference-missing`, `unlisted-item-used`, `vague-figure-reference`
 
 ## 事実の食い違い
 
