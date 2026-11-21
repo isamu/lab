@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { namedRuleRun } from "./rule-run.ts";
+import { namedRuleRun, ruleQuotes } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { amountsIn, currencyMinorities, type CurrencyForm } from "../packages/chaff/src/detectors/currency-notation.ts";
@@ -29,6 +29,12 @@ const formsIn = (text: string): string[] => amountsIn(text, FORMS, MULTIPLIERS).
 const oddIn = (text: string): string[] => currencyMinorities(amountsIn(text, FORMS, MULTIPLIERS), NORMAL_LIMIT).map((found) => found.odd.written);
 
 describe("currency-notation-consistency: 通貨の書き方が混ざっている", () => {
+  it("引用は語の途中で切らず、金額のある文をそのまま見せる", () => {
+    const source =
+      "The base fee is $300, the add-on is $50 and shipping is $20. Brochures were invoiced at USD 650 by the local printer. Payment is due in May.\n";
+    assert.deepEqual(ruleQuotes(RULE, source, en), ["Brochures were invoiced at USD 650 by the local printer."]);
+  });
+
   it("同じ通貨の少ないほうの書き方を指す", () => {
     assert.deepEqual(findingsOf("基本料金は 3,000円、追加料金は 500円、送料は 800円 です。割引は ¥200 です。\n"), [
       "「¥200」と書いています（この文書はこの通貨をふつう「3,000円」のように書きます。4 箇所のうち 1 箇所が違う）",

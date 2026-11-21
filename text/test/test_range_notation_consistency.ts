@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { namedRuleRun } from "./rule-run.ts";
+import { namedRuleRun, ruleQuotes } from "./rule-run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { rangesIn } from "../packages/chaff/src/detectors/range-notation.ts";
@@ -18,6 +18,11 @@ const findingsOf = (source: string, adapter = ja): readonly string[] => namedRul
 const rangesOf = (text: string): string[] => rangesIn(text, MARKS, AMBIGUOUS).map((range) => `${range.written}=${range.form}`);
 
 describe("range-notation-consistency: 範囲の記号が混ざっている", () => {
+  it("引用は語の途中で切らず、範囲のある文をそのまま見せる", () => {
+    const source = "Groups of 10–20 meet for 30–40 minutes, at 5–8 dollars each. Children aged 6-12 are welcome with an adult from the family. Book early.\n";
+    assert.deepEqual(ruleQuotes(RULE, source, en), ["Children aged 6-12 are welcome with an adult from the family."]);
+  });
+
   it("少ないほうの記号の範囲を指す", () => {
     assert.deepEqual(findingsOf("定員は 10〜20 名、所要は 30〜40 分、費用は 500〜800 円です。対象は 6-12 歳です。\n"), [
       "範囲を「6-12」と書いています（この文書はふつう「10〜20」のように書きます。4 箇所のうち 1 箇所が違う）",

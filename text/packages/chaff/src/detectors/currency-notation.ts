@@ -2,7 +2,7 @@ import type { Detector, Finding, ProseDocument } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { formMinority } from "./form-minority.ts";
 import { proseAndTablesOf } from "../table-text.ts";
-import { quoteAround } from "./quote-around.ts";
+import { quoteAround, sentenceQuoteAt } from "./quote-around.ts";
 
 // 一つの文書で、同じ通貨の金額を二通りに書いた所（1,000円 と ¥1,000、$20 と 20 dollars）。どちらが正しいかは決めず、少ないほうを指す。
 // 通貨の書き方、それを金額のどちら側に書くか、どの通貨か（group）は語彙表 currency-notation、桁の語は amount-multiplier が言う。
@@ -85,7 +85,7 @@ export const currencyNotation: Detector = (doc, options): Finding[] => {
     severity: "info",
     line: 0,
     column: 0,
-    quote: quoteAround(text, odd.offset, odd.offset + odd.written.length),
+    quote: sentenceQuoteAt(doc.sentences, odd.offset) ?? quoteAround(text, odd.offset, odd.offset + odd.written.length),
     values: { written: odd.written.trim(), usual: usual.trim(), count, of, offset: odd.offset },
   }));
 };

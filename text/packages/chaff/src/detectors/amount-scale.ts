@@ -4,7 +4,7 @@ import type { Detector, Finding, Lexicon, ProseDocument } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { amountValue, scaleMixes, withoutRoundTextFigures, type ScaleWord, type ScaledAmount } from "../structure/amount-scale.ts";
 import { AMOUNT, amountsIn, formsOf, type WrittenAmount } from "./currency-notation.ts";
-import { quoteAround } from "./quote-around.ts";
+import { quoteAround, sentenceQuoteAt } from "./quote-around.ts";
 import { proseAndTablesOf } from "../table-text.ts";
 
 /** How far back a larger part of one amount may start (1億2,000万円 is read from 2,000万円). */
@@ -90,7 +90,7 @@ export const amountScale: Detector = (doc): Finding[] => {
     severity: "info",
     line: 0,
     column: 0,
-    quote: quoteAround(text, odd.offset, odd.offset + odd.written.length),
+    quote: sentenceQuoteAt(doc.sentences, odd.offset) ?? quoteAround(text, odd.offset, odd.offset + odd.written.length),
     values: { written: odd.written.trim(), usual: usual.written.trim(), offset: odd.offset },
   }));
 };
