@@ -78,7 +78,19 @@ const maskedProse = (prose: string, profile: DocumentProfile | undefined, names:
  * 括弧でくくった名前は、書き手が 1 つの名前として示したもの（「登録業者情報検索入力ページ」）。
  */
 const fillsQuote = (sentence: Sentence, start: number, end: number): boolean =>
-  quotedSpans(sentence.text, NAME_MARKS).some((span) => holdsName(sentence.text, span, start, end));
+  quotedSpans(sentence.text, NAME_MARKS).some((span) => holdsName(sentence.text, span, start, end)) || fillsGloss(sentence.text, start, end);
+
+/** 丸括弧の補い。 */
+const GLOSS_MARKS = { "（": "）", "(": ")" };
+/** 補いの括弧のすぐ前に立つ、語の字（修士の学位（…）の「位」、ＥＢＩＴＤＡ＋（…）の「＋」）。 */
+const GLOSSED_WORD_END = /[\p{Script=Han}\p{Script=Katakana}\p{Script=Latin}\p{N}ー＋+]$/u;
+
+/**
+ * 語のすぐ後ろの丸括弧の中身が、この連なりだけか（ＥＢＩＴＤＡ＋（減価償却他調整前営業利益）、修士の学位（大学院修士課程修了程度））。
+ * 前の語の言い換えや展開で、書き手が 1 つの名前として示したもの。
+ */
+const fillsGloss = (text: string, start: number, end: number): boolean =>
+  quotedSpans(text, GLOSS_MARKS).some((span) => GLOSSED_WORD_END.test(text.slice(0, span.start - 1)) && holdsName(text, span, start, end));
 
 const runsOf = (sentence: Sentence, profile: DocumentProfile | undefined, names: readonly string[]): KanjiRun[] => {
   const prose = proseText(sentence);
