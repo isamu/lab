@@ -83,7 +83,7 @@ not_flagged:
   en: A document with two bold spans or fewer, and a short document, are not measured. Bold that opens its line and its paragraph or list item is a label, a lead sentence, a field or a run-in heading ("- **Speed**:", "- **Same pay.**", "**From:**", "**Pros:**") and is not counted; bold-label-list counts the list labels. A capitalised bold inside a sentence ("click **Add Printer**") names a button, a setting or a title and is not counted either, nor is bold inside a table cell or a heading. READMEs, meeting notes, documentation, legal, academic, literary and speech genres do not run this rule, since they bold feature names and fields as their layout.
 level_meaning:
   ja: 太字の強調が 1000 字あたり {limit} 箇所まで
-  en: up to {limit} bold spans of emphasis per 1000 words
+  en: up to {limit} {limit|bold span|bold spans} of emphasis per 1000 words
 rewrite:
   depth: light
   ja:

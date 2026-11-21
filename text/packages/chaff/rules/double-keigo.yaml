@@ -46,4 +46,4 @@ not_flagged:
   en: Only the forms on chaff's list are checked; a doubled honorific not on the list is not reported.
 level_meaning:
   ja: 当てはまる形が {limit} 箇所あれば指摘
-  en: reported once there are {limit}
+  en: reported once there {limit|is|are} {limit}

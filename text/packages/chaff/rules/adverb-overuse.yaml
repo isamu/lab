@@ -50,4 +50,4 @@ not_flagged:
   en: Documents under 200 words are not measured. A capitalised -ly word in mid-sentence (July, Kelly) is a name or a word of a title, and is not counted; so is one that opens a line written in title case (Frequently Asked Questions). Nor is an adverb that says how sure or frank the writer is (probably, apparently, honestly), since there is no verb to fold it into (the words are in the stance-adverb lexicon).
 level_meaning:
   ja: 1000 語あたり -ly 副詞 {limit} 個まで
-  en: up to {limit} -ly adverbs per 1000 words
+  en: up to {limit} {limit|-ly adverb|-ly adverbs} per 1000 words

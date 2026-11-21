@@ -105,7 +105,7 @@ not_flagged:
   en: 'Whether an abstract is present is checked only in a document with two or more headings that name a paper''s sections (Introduction, Methods, Results, Discussion); when they are only an opening and a closing (Introduction, Conclusion), the document is read as an essay or a review, which carries no abstract. The label itself ("Abstract:") is not counted. Only the academic paper genre runs this rule.'
 level_meaning:
   ja: 要旨 {limit} 字まで
-  en: up to {limit} words in the abstract
+  en: up to {limit} {limit|word|words} in the abstract
 rewrite:
   depth: structure
   ja:

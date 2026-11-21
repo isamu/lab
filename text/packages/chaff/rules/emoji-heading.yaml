@@ -103,7 +103,7 @@ not_flagged:
   en: Fewer headings than the level needs are not reported, nor symbols not drawn as emoji (→, ™). Documentation, legal, academic and literary genres do not run this rule.
 level_meaning:
   ja: 絵文字の付いた見出しが {limit} 個あれば指摘
-  en: reported once {limit} headings carry an emoji
+  en: reported once {limit} {limit|heading carries|headings carry} an emoji
 rewrite:
   depth: light
   ja:

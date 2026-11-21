@@ -58,7 +58,7 @@ not_flagged:
   en: Words that carry the argument (However, Therefore), a transition inside a sentence, and "In addition to …" are not counted. Short documents are not measured.
 level_meaning:
   ja: 決まった接ぎで始まる文が 1000 字あたり {limit} 個まで
-  en: up to {limit} sentences per 1000 words opening with a stock transition
+  en: up to {limit} {limit|sentence|sentences} per 1000 words opening with a stock transition
 rewrite:
   depth: light
   ja:

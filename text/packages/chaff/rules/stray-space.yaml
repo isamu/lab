@@ -56,4 +56,4 @@ not_flagged:
   en: Spaces between two nouns (except inside a kanji compound that starts after a comma or a nakaguro in running text), lines that do not end with a full stop, headings, tables, quotations and boundaries with Latin letters are not checked. A document that spaces every phrase on purpose is not reported.
 level_meaning:
   ja: 少ないほうの空け方が {limit} 箇所あれば指摘
-  en: reported once {limit} spaces go against the document's habit
+  en: reported once {limit} {limit|space goes|spaces go} against the document's habit

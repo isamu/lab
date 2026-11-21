@@ -57,7 +57,7 @@ not_flagged:
   en: Short documents are not measured. In English a dash is not called wrong; only a heavy hand is.
 level_meaning:
   ja: 1000 字あたりダッシュ {limit} 個まで
-  en: up to {limit} dashes per 1000 words
+  en: up to {limit} {limit|dash|dashes} per 1000 words
 rewrite:
   depth: light
   ja:

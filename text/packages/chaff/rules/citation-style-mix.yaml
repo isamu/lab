@@ -84,7 +84,7 @@ not_flagged:
   en: 'Citations inside the reference list or code, numbers at the start of a line (a numbered list), footnotes whose note gives no year, and a year after a month or a season ("(March 2020)") are not counted. When the minority style is used more than {limit} times, it is taken as a deliberate choice and not reported. Only the academic paper genre runs this rule.'
 level_meaning:
   ja: 少ないほうの書き方が {limit} 箇所以下のとき指摘
-  en: reported when the minority style appears {limit} times or fewer
+  en: reported when the minority style appears {limit} {limit|time|times} or fewer
 rewrite:
   depth: light
   ja:

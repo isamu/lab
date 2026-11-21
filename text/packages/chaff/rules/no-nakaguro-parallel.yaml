@@ -49,4 +49,4 @@ not_flagged:
   en: A 「・」 at the start of a line is a bullet and is not counted. Nor is a table or a bullet list a converter ran into one sentence (rows of a chronology joined at their dates, or items as long as phrases joined by 「・」), where a dot cannot be told from an item's mark.
 level_meaning:
   ja: 一文に中黒 {limit} 個まで
-  en: up to {limit} middle dots in a sentence
+  en: up to {limit} {limit|middle dot|middle dots} in a sentence

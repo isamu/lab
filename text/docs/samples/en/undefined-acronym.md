@@ -114,7 +114,7 @@ $ npx chaffjs explain undefined-acronym --genre business/report
   How to fix: Expand it in brackets at first use. If your readers know it as a name (a company, say), list it under names in chaff.yaml and it is not asked for.
 
   Levels:
-    strict   reported once 1 different acronyms go unexplained, or from the first one when the document itself spells out 1 others
+    strict   reported once 1 different acronym goes unexplained, or from the first one when the document itself spells out 1 other
   → normal   reported once 2 different acronyms go unexplained, or from the first one when the document itself spells out 2 others
     relaxed  reported once 5 different acronyms go unexplained, or from the first one when the document itself spells out 5 others
     off      not checked

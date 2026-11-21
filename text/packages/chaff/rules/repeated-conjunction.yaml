@@ -74,4 +74,4 @@ not_flagged:
   en: One paragraph opening with a connective is ordinary and is not reported. A figure or table caption between the paragraphs (Table 2 …) is not a paragraph of the text and does not end the run.
 level_meaning:
   ja: 接続詞で始まる段落の連続 {limit} まで
-  en: up to {limit} paragraphs in a row opening with a connective
+  en: up to {limit} {limit|paragraph|paragraphs} in a row opening with a connective

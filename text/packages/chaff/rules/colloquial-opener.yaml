@@ -46,7 +46,7 @@ not_flagged:
   en: なので and でも inside a sentence, and written conjunctions (そのため, しかし), are not reported, nor is a "sentence" with only an auxiliary after the word (だからである。, the end of the previous sentence cut by a line break). A document written in a casual voice throughout, with two or more headings asked as questions or sentences ending in an exclamation mark, is not checked, as the spoken word fits the voice the writer chose. Off for blogs, literature and speech.
 level_meaning:
   ja: 話し言葉の接続詞で始まる文が {limit} 個あれば指摘
-  en: reported from {limit} sentences opening with a spoken conjunction
+  en: reported from {limit} {limit|sentence|sentences} opening with a spoken conjunction
 rewrite:
   depth: light
   ja:

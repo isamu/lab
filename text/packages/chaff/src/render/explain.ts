@@ -45,7 +45,7 @@ const TEXT: Texts<{
     definedIn: (plugin) =>
       plugin === undefined ? "このルールはチームが chaff.yaml の custom_rules で決めたものです。" : `このルールはプラグイン ${plugin} のものです。`,
     values: "設定できる値:",
-    times: "回",
+    times: "{limit} 回",
     severities: "設定できる値（数える上限は無く、指摘の重さが変わります）:",
     now: (level) => `いまは ${level} です。`,
     nowNumber: (limit) => `いまは段階ではなく数です: ${limit}。`,
@@ -70,7 +70,7 @@ const TEXT: Texts<{
     definedIn: (plugin) =>
       plugin === undefined ? "The team defined this rule under custom_rules in chaff.yaml." : `This rule comes from the plugin ${plugin}.`,
     values: "Levels:",
-    times: "times",
+    times: "{limit} {limit|time|times}",
     severities: "Levels (there is no limit to count to; a level sets how a finding is marked):",
     now: (level) => `Now: ${level}.`,
     nowNumber: (limit) => `Now: ${limit}, set as a number rather than a level.`,
@@ -85,7 +85,7 @@ const TEXT: Texts<{
  */
 const limitText = (rule: RuleDefinition, limit: number, language: string): string => {
   const meaning = localized(rule.guide?.levelMeaning ?? {}, language);
-  return meaning === "" ? `${String(limit)} ${TEXT[uiLanguageOf(language)].times}` : fill(meaning, { limit });
+  return fill(meaning === "" ? TEXT[uiLanguageOf(language)].times : meaning, { limit });
 };
 
 /** What a level holds: the limit a detector counts to, or the severity a rule with nothing to count gives. */

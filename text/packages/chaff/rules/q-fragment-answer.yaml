@@ -49,7 +49,7 @@ not_flagged:
   en: A single question and answer, an answer with a verb ("Feeling stuck? That's normal."), an answer in brackets or quotes, a question followed by another question, and an answer in the next paragraph are not reported.
 level_meaning:
   ja: 自分で問うて断片で答える所が {limit} 個あれば指摘
-  en: reported once {limit} questions are answered with a fragment
+  en: reported once {limit} {limit|question is|questions are} answered with a fragment
 rewrite:
   depth: light
   en:

@@ -53,7 +53,7 @@ not_flagged:
   en: Only the phrases on chaff's list are checked. A citation right after the phrase does not silence it, since the sentence can name the study itself. In Japanese, 研究によると and 専門家によると, which often follow their source, are checked only as ある・最近の・多くの forms, と言われる only as と言われている (not よく言われる, which mostly talks about the saying itself), and 一般的に alone is not checked. Nor is a quotation reported as told on an occasion or by a named sayer (申し込んだら、「…」と言われています, 業者から「…」と言われている), since someone did say it.
 level_meaning:
   ja: 当てはまる言い回しが {limit} 箇所あれば指摘
-  en: reported once there are {limit}
+  en: reported once there {limit|is|are} {limit}
 rewrite:
   depth: light
   ja:
