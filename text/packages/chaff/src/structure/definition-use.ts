@@ -396,6 +396,16 @@ const citesSource = (texts: readonly BodyText[], markers: readonly string[], off
 };
 
 /**
+ * 言語の語の一覧。selfPrefixes は文書自身の名前の頭（この、本、this）、sourceMarkers は語の意味の出どころを言う言葉（所定の）、
+ * singleKanjiNames は前の使用を探す一字の漢字の語（当事者の呼び名の甲・乙）。
+ */
+export type EarlyUseWords = {
+  readonly selfPrefixes?: readonly string[];
+  readonly sourceMarkers?: readonly string[];
+  readonly singleKanjiNames?: ReadonlySet<string>;
+};
+
+/**
  * 文の途中で括弧に入れて定義した語（(the "Seller")、以下「甲」という）を、その定義の文より前で使っている所。最初の一つだけ。
  * 定義の文の中の現れ（株式会社GovTech東京（以下「GovTech東京」という。））は、定義する名前そのものなので数えない。札の文も、
  * isTitle が言う題・見出し・目次の行も、漢字で終わる語にさらに漢字が続く長い語の一部も、定義の括弧の前の長い名前を写した所も、
@@ -411,9 +421,7 @@ export const usesBeforeDefinition = (
   texts: readonly BodyText[],
   mentioned: Mentioned = NEVER_MENTIONED,
   isTitle: IsTitle = NEVER_TITLE,
-  selfPrefixes: readonly string[] = [],
-  sourceMarkers: readonly string[] = [],
-  singleKanjiNames: ReadonlySet<string> = new Set(),
+  { selfPrefixes = [], sourceMarkers = [], singleKanjiNames = new Set() }: EarlyUseWords = {},
 ): TermUse[] => {
   const inline = terms.filter((term) => term.inline);
   const names = definingNames(terms, texts);
