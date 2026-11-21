@@ -6,6 +6,7 @@ import { capitalisedGuessedVerbsAsNames, isOrdinaryWord, lowercasedAt, properNou
 import { isStativeParticiple, stativeVocabulary } from "./stative-participle.ts";
 import { isCapitalisedInterjection, isCapitalisedOrdinaryWord, isEmphasisedAdverb, isEmphasisedWord, isHyphenated, standsAlone } from "./emphasis.ts";
 import { gerundFeatures } from "./gerund.ts";
+import { degreeAdjectives } from "./degree-adjective.ts";
 import { namesReadAsVerbs, rereadAsNames, type NameReadings } from "./names-read-as-verbs.ts";
 import { winkLexiconWords, winkPosTagger, winkWordNet } from "./wink-modules.ts";
 
@@ -345,5 +346,6 @@ export const tokenize = (text: string): Token[] | undefined => {
   // 語は解析させた字（don't）で返す。語彙表の語と同じ字で比べられる。span は本文を指したまま。
   const words = straightApostrophes(blankLongRuns(text, RUN_LIMIT));
   const read = withNamesReread(tagger, words, tagged(tagger, words));
-  return locate(words, capitalisedGuessedVerbsAsNames(withSentenceInitialCase(tagger, words, read), state.vocabulary, state.senses));
+  const named = capitalisedGuessedVerbsAsNames(withSentenceInitialCase(tagger, words, read), state.vocabulary, state.senses);
+  return locate(words, degreeAdjectives(named, STATIVE.degreeAdverbs, state.vocabulary));
 };
