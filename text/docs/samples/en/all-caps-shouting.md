@@ -4,7 +4,7 @@ genre: docs/manual
 file: return.md
 -->
 
-# Words in capitals (`all-caps-shouting`)
+# Shouting in capitals (`all-caps-shouting`)
 
 **Where it helps:** instructions, notices, help pages. Any place where one warning matters more than the rest.
 

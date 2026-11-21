@@ -4,7 +4,7 @@ genre: business/proposal
 file: proposal.md
 -->
 
-# The same phrase again and again (`ngram-repetition`)
+# Repeated phrasing (`ngram-repetition`)
 
 **Where it helps:** proposals, pitches, business cases. Documents that try to win an argument by repeating the selling point.
 

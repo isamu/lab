@@ -4,7 +4,7 @@ genre: business/report
 file: tools.md
 -->
 
-# Paragraphs in a row opening with a connective (`repeated-conjunction`)
+# Paragraphs keep opening the same way (`repeated-conjunction`)
 
 **Where it helps:** reports, comparisons, recommendations. Documents that walk through several options one paragraph at a time.
 

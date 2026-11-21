@@ -4,7 +4,7 @@ genre: docs/manual
 file: welcome.md
 -->
 
-# Sentences in a row with the same opening (`repeated-sentence-head`)
+# Repeated sentence opening (`repeated-sentence-head`)
 
 **Where it helps:** welcome pages, product descriptions, help pages. Paragraphs that list what something can do.
 

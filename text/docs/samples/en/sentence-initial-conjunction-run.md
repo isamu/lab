@@ -4,7 +4,7 @@ genre: blog/essay
 file: essay.md
 -->
 
-# Sentences in a row opening with "And" or "But" (`sentence-initial-conjunction-run`)
+# Run of sentences opening with a conjunction (`sentence-initial-conjunction-run`)
 
 **Where it helps:** personal essays, blog posts, newsletters. Writing in a conversational voice, where "And" and "But" come easily.
 

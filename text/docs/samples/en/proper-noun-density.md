@@ -4,7 +4,7 @@ genre: business/report
 file: trip.md
 -->
 
-# Too many names (`proper-noun-density`)
+# Too many proper nouns (`proper-noun-density`)
 
 **Where it helps:** trip reports, meeting summaries, partner updates. Documents that record who was met, written by the person who met them.
 

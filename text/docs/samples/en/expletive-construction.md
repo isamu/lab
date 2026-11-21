@@ -4,7 +4,7 @@ genre: business/meeting-notes
 file: minutes.md
 -->
 
-# "There is" and "It is ... that" (`expletive-construction`)
+# Expletive construction (`expletive-construction`)
 
 **Where it helps:** meeting notes, action lists, status reports. Documents whose job is to say who does what.
 

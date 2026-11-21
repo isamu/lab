@@ -4,7 +4,7 @@ genre: business/report
 file: notice.md
 -->
 
-# Sentences in a row opening with "This" (`demonstrative-opener-run`)
+# Sentences in a row opening with a demonstrative (`demonstrative-opener-run`)
 
 **Where it helps:** internal notices, reports, policy changes. Paragraphs that explain one change and then its effects.
 

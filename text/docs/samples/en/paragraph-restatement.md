@@ -4,7 +4,7 @@ genre: business/report
 file: campaign.md
 -->
 
-# Paragraph restates the one before (`paragraph-restatement`)
+# A paragraph that only restates the one before (`paragraph-restatement`)
 
 **Where it helps:** reports, reviews, summaries. Anywhere a writer adds "In other words" to make sure the point got across.
 

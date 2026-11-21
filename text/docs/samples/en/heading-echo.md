@@ -4,7 +4,7 @@ genre: blog/owned-media
 file: article.md
 -->
 
-# First sentence repeats the heading (`heading-echo`)
+# Heading echoed (`heading-echo`)
 
 **Where it helps:** articles a company publishes for its customers, blog posts, reports with many short sections.
 
