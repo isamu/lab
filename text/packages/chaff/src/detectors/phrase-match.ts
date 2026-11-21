@@ -1,6 +1,7 @@
 import type { Detector, DetectorOptions, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence } from "../plugin.ts";
 import { entryEnds, entryIn, entryOpens } from "./lexicon-match.ts";
 import { externalLinkTitleSpans } from "../link-title.ts";
+import { referenceListSpans } from "../reference-lists.ts";
 import { mentionCuesOf, onlyInTitles, onlyMentioned } from "./mentioned-phrase.ts";
 import { closingSentences } from "../closing-paragraph.ts";
 import { quotedPattern } from "./quoted-pattern.ts";
@@ -64,11 +65,12 @@ export const phraseMatchWhere = (doc: ProseDocument, options: DetectorOptions, i
 
 /**
  * phrase-match の、言葉として名指しただけの言い回し（the phrase "…", 「…」という言い方）を数えない版（mentioned-phrase.ts）。
- * 参考文献のリンクに写した外のページの題名（[文章の極意は…](https://…)）の言い回しも、書き手の言葉ではないので数えない。
+ * 参考文献のリンクに写した外のページの題名（[文章の極意は…](https://…)）と、文献一覧に写した著作の題の言い回しも、書き手の言葉ではないので数えない。
  */
 export const phraseInUse: Detector = (doc, options): Finding[] => {
   const cues = mentionCuesOf(doc.lexicons["mention-cue"] ?? []);
-  const titles = externalLinkTitleSpans(doc.source, doc.links);
+  const headings = (doc.lexicons["reference-list-heading"] ?? []).map((entry) => entry.pattern);
+  const titles = [...externalLinkTitleSpans(doc.source, doc.links), ...referenceListSpans(doc.source, headings)];
   const hits = phraseHits(doc, options, (sentence, entry) => !onlyMentioned(sentence, entry, cues) && !onlyInTitles(sentence, entry, titles));
   return hits.length < options.limit ? [] : findingsOf(hits, options.limit);
 };

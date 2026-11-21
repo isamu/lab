@@ -28,6 +28,12 @@ describe("cliche: a worn phrase", () => {
     assert.deepEqual(findingsOf("We reinvented the wheel."), ['"reinvent the wheel" is a cliché']);
   });
 
+  it("does not report a phrase in the title of another work in the reference list", () => {
+    const source = "# Paper\n\nWe build on earlier work.\n\n## References\n\n- Doe (2025). Are we reinventing the wheel? A survey.\n";
+    assert.deepEqual(findingsOf(source), []);
+    assert.deepEqual(findingsOf("# Paper\n\nAre we reinventing the wheel?\n"), ['"reinvent the wheel" is a cliché']);
+  });
+
   it("does not read an inflected verb into a phrase that does not open with one", () => {
     assert.deepEqual(findingsOf("The needle moved. The base touched the frame."), []);
   });
