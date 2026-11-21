@@ -11,7 +11,7 @@ Or paste a draft into the [playground](https://isamu.github.io/lab/en/playground
 
 日本語の見本: [../ja/README.md](../ja/README.md)
 
-Rules with a sample: 53 / 259
+Rules with a sample: 75 / 259
 
 ## Readability
 
@@ -87,9 +87,32 @@ Rules with no sample yet: `absolute-exception`, `abstract-length`, `broken-link`
 
 A date and its weekday, dates out of order, a total and its items: disagreements a calendar or a sum can settle.
 
-No sample in this group yet.
+| Rule | What it finds |
+| --- | --- |
+| [A list that does not have the number of items announced](announced-count-mismatch.md) (`announced-count-mismatch`) | A list whose number of items differs from the number announced just before it |
+| [An arrival before its departure](arrival-before-departure.md) (`arrival-before-departure`) | A flight or a train in an itinerary that arrives before it departs |
+| [Attachment mentioned but not shown](attachment-not-attached.md) (`attachment-not-attached`) | A sent email that says something is attached but shows no attachment |
+| [A connection shorter than the stated travel time](connection-time-short.md) (`connection-time-short`) | An itinerary that leaves less time for a connection than the trip it states |
+| [A contact written two ways](contact-variant.md) (`contact-variant`) | An email or postal address written differently in one place |
+| [A date out of order in a schedule](date-order.md) (`date-order`) | One date out of order in an itinerary, a schedule or a changelog's headings |
+| [A period that ends before it starts](date-range-reversed.md) (`date-range-reversed`) | A period whose end date comes before its start date |
+| [Date and weekday disagree](date-weekday-mismatch.md) (`date-weekday-mismatch`) | A date and its weekday that disagree, such as "Friday, 1 October 2026" |
+| [A registration deadline after the event](deadline-after-event.md) (`deadline-after-event`) | A sign-up or RSVP deadline that falls after the event itself |
+| [A discount that the list price and the tier price do not give](discount-rate-mismatch.md) (`discount-rate-mismatch`) | A discount on a price list that the list price and the tier price do not give |
+| [A due date before the issue date](due-before-issue.md) (`due-before-issue`) | A due date or other later date that falls before the date it must follow |
+| [A start plus a length of time that does not reach the stated end](duration-mismatch.md) (`duration-mismatch`) | A start date plus a length of time that does not reach the end date given |
+| [A date the calendar does not have](impossible-date.md) (`impossible-date`) | A date not on the calendar ("February 30"), or a year two calendars disagree on |
+| [A time the clock does not have](impossible-time.md) (`impossible-time`) | A time the clock does not have, such as "13 PM", "午後13時" or "10:75" |
+| [Quantity times unit price is not the line amount](line-amount-mismatch.md) (`line-amount-mismatch`) | A line of a quote or invoice whose quantity times price is not its amount |
+| [Number in words differs from its figure](number-word-figure-mismatch.md) (`number-word-figure-mismatch`) | A number in words with a different figure in brackets, as "six (7) months" |
+| [Shares of a whole that do not add up to 100%](percent-sum-mismatch.md) (`percent-sum-mismatch`) | A breakdown whose percentages do not add up to 100% |
+| [Phone number with two digits swapped](phone-number-variant.md) (`phone-number-variant`) | A phone number written elsewhere with two digits swapped |
+| [A relative date that does not match its base date](relative-date-mismatch.md) (`relative-date-mismatch`) | A date given as "two weeks later, on May 16" that is not that far away |
+| [A tax that is not its rate of the subtotal](tax-mismatch.md) (`tax-mismatch`) | A tax line, or a price list's price with tax, that does not match the tax rate |
+| [A time range that ends before it starts](time-range-reversed.md) (`time-range-reversed`) | A time range whose end comes before its start |
+| [A total that is not the sum of its items](total-mismatch.md) (`total-mismatch`) | A total in a quote, invoice or contract that is not the sum of its items |
 
-Rules with no sample yet: `amount-range-reversed`, `announced-count-mismatch`, `annual-holidays-mismatch`, `annual-pay-mismatch`, `arrival-before-departure`, `attachment-not-attached`, `backorder-mismatch`, `bmi-mismatch`, `capacity-runtime-mismatch`, `change-rate-mismatch`, `citation-reference-mismatch`, `closing-balance-mismatch`, `connection-time-short`, `contact-variant`, `count-over-capacity`, `cross-doc-fact-conflict`, `cumulative-below-current`, `currency-column-mix`, `dangling-figure-reference`, `date-order`, `date-outside-period`, `date-range-reversed`, `date-stamp-order`, `date-weekday-mismatch`, `deadline-after-event`, `deductible-exceeds-limit`, `default-value-mismatch`, `delivered-over-ordered`, `deprecated-option-used`, `discount-rate-mismatch`, `due-before-issue`, `duration-mismatch`, `duration-product-mismatch`, `elapsed-years-mismatch`, `fact-conflict`, `formula-amount-mismatch`, `gpa-mismatch`, `heading-command-missing`, `impossible-date`, `impossible-time`, `installment-total-mismatch`, `interest-mismatch`, `interval-count-mismatch`, `layout-code-mismatch`, `line-amount-mismatch`, `meter-usage-mismatch`, `net-amount-mismatch`, `net-over-gross`, `number-word-figure-mismatch`, `parameter-table-mismatch`, `percent-sum-mismatch`, `period-label-conflict`, `period-multiple-mismatch`, `period-part-exceeds-whole`, `phone-number-variant`, `product-exceeds-maximum`, `quantity-range-reversed`, `quote-unnamed-speaker`, `quote-without-source`, `range-band-mismatch`, `ratio-mismatch`, `reference-flag-mismatch`, `reference-number-repeated`, `reference-number-variant`, `reference-title-mismatch`, `reference-topic-missing`, `reference-unit-mismatch`, `relative-date-mismatch`, `rent-multiple-mismatch`, `return-type-mismatch`, `revision-direction-mismatch`, `running-balance-mismatch`, `scaled-quantity-mismatch`, `serial-range-reversed`, `share-amount-mismatch`, `share-over-hundred`, `step-time-sum-mismatch`, `summary-fact-mismatch`, `table-unit-mix`, `tax-mismatch`, `tier-threshold-mismatch`, `time-order`, `time-range-reversed`, `total-mismatch`, `undefined-function-call`, `unit-mismatch`, `variance-mismatch`, `version-mismatch`, `version-order`, `walk-time-distance-mismatch`
+Rules with no sample yet: `amount-range-reversed`, `annual-holidays-mismatch`, `annual-pay-mismatch`, `backorder-mismatch`, `bmi-mismatch`, `capacity-runtime-mismatch`, `change-rate-mismatch`, `citation-reference-mismatch`, `closing-balance-mismatch`, `count-over-capacity`, `cross-doc-fact-conflict`, `cumulative-below-current`, `currency-column-mix`, `dangling-figure-reference`, `date-outside-period`, `date-stamp-order`, `deductible-exceeds-limit`, `default-value-mismatch`, `delivered-over-ordered`, `deprecated-option-used`, `duration-product-mismatch`, `elapsed-years-mismatch`, `fact-conflict`, `formula-amount-mismatch`, `gpa-mismatch`, `heading-command-missing`, `installment-total-mismatch`, `interest-mismatch`, `interval-count-mismatch`, `layout-code-mismatch`, `meter-usage-mismatch`, `net-amount-mismatch`, `net-over-gross`, `parameter-table-mismatch`, `period-label-conflict`, `period-multiple-mismatch`, `period-part-exceeds-whole`, `product-exceeds-maximum`, `quantity-range-reversed`, `quote-unnamed-speaker`, `quote-without-source`, `range-band-mismatch`, `ratio-mismatch`, `reference-flag-mismatch`, `reference-number-repeated`, `reference-number-variant`, `reference-title-mismatch`, `reference-topic-missing`, `reference-unit-mismatch`, `rent-multiple-mismatch`, `return-type-mismatch`, `revision-direction-mismatch`, `running-balance-mismatch`, `scaled-quantity-mismatch`, `serial-range-reversed`, `share-amount-mismatch`, `share-over-hundred`, `step-time-sum-mismatch`, `summary-fact-mismatch`, `table-unit-mix`, `tier-threshold-mismatch`, `time-order`, `undefined-function-call`, `unit-mismatch`, `variance-mismatch`, `version-mismatch`, `version-order`, `walk-time-distance-mismatch`
 
 ## Signs of generated text
 
