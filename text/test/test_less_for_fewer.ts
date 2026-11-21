@@ -34,6 +34,10 @@ describe("less-for-fewer: 数えられる名詞に less", () => {
     assert.deepEqual(findingsOf("The summary says (less errors on long files)."), ['"less errors" counts things; write "fewer errors"']);
   });
 
+  it("a plural before to still ends the phrase (less return trips to the depot)", () => {
+    assert.deepEqual(findingsOf("Drivers made less return trips to the depot."), ['"less return trips" counts things; write "fewer return trips"']);
+  });
+
   it("金額を言う複数は数えない", () => {
     assert.deepEqual(findingsOf("The division reported less earnings this quarter."), []);
     assert.deepEqual(findingsOf("We paid less fees after the change."), []);
