@@ -21,7 +21,6 @@ nodejs-tsc-minutes-2026-05-06  1
 nps-yellowstone-faqs  1
 nws-glossary-a  1
 python-code-quality-list-2016-03  2
-qiita-jnchito-good-sample-code  1
 typescript-5-4-release-notes  1
 usajobs-va-it-specialist-customer-support  2
 wikivoyage-belgian-coast-tram  4
