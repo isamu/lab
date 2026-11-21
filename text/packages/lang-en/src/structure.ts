@@ -3,6 +3,7 @@ import { citedDocumentAfter, citedDocumentBefore, enclosingUnitAfter, listedTagA
 import { citedCodeBefore, codeVocabulary, titledCodeAt } from "./code-citation.ts";
 import { citedLawAround, lawVocabulary } from "./law-citation.ts";
 import { loadLexicons } from "./lexicons.ts";
+import { provisionHeadings } from "./provision-heading.ts";
 import { membersAfter } from "./reference-list.ts";
 import { parseRoman } from "./roman.ts";
 import { dates } from "./dates.ts";
@@ -199,18 +200,11 @@ const glossedDocument = (gloss: Gloss): string | undefined => {
 
 const LEXICONS = loadLexicons();
 
-/** "Rule 3 (Labels)", "CLAUSE 4.2 Payment": a provision headed by a word from provision-heading-word, read as a Section is. */
-const PROVISION_WORDS = (LEXICONS["provision-heading-word"] ?? []).map((entry) => entry.pattern).filter((word) => /^\p{Lu}\p{Ll}+$/u.test(word));
-const PROVISIONS = PROVISION_WORDS.map((word) => ({
-  word,
-  pattern: new RegExp(`^\\s{0,3}(?:${word.toUpperCase()}|${word})\\s+(?<n>\\d{1,3}(?:\\.\\d{1,3}){0,5})\\b(?<rest>.*)$`, "u"),
-}));
+const PROVISIONS = provisionHeadings(LEXICONS["provision-heading-word"] ?? []);
 
 const provision = (line: string): NumberedLine | undefined =>
-  PROVISIONS.reduce<NumberedLine | undefined>(
-    (found, { word, pattern }) => found ?? headed(pattern, line, word.toLowerCase(), (n) => `${word} ${n}`),
-    undefined,
-  );
+  PROVISIONS.reduce<NumberedLine | undefined>((found, heading) => found ?? headed(heading.pattern, line, heading.numbering, heading.label), undefined);
+
 const CODES = codeVocabulary(LEXICONS);
 const LAWS = lawVocabulary(LEXICONS);
 const ENCLOSING_UNITS: ReadonlySet<string> = new Set((LEXICONS["enclosing-unit"] ?? []).map((entry) => entry.pattern.toLowerCase()));
