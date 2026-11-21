@@ -5,6 +5,7 @@ import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import { destinationOf, markersIn, showsInProse, standsAlone } from "../packages/chaff/src/detectors/chat-citation.ts";
+import { markExtent, wholeMarks } from "../packages/chaff/src/detectors/chat-mark-extent.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter, Lexicon } from "../packages/chaff/src/plugin.ts";
@@ -127,7 +128,26 @@ describe("chat-citation-residue", () => {
     const matched = runRules(buildDocument("t.md", source, en), loadRules("en"), {}, true, "blog/tech")
       .findings.filter((finding) => finding.rule === "chat-citation-residue")
       .map((finding) => finding.values["matched"]);
-    assert.ok(matched.includes("contentReference["), JSON.stringify(matched));
+    assert.deepEqual(matched, [":contentReference[oaicite:0]{index=0}"]);
+  });
+
+  it("invalid: one mark is one finding, quoting the whole mark (ja)", () => {
+    const source = "# メモ\n\nこのあたりは雨の日が多いようです。:contentReference[oaicite:2]{index=2}\n";
+    const findings = runRules(buildDocument("t.md", source, ja), loadRules("ja"), {}, true, "blog/tech").findings.filter(
+      (finding) => finding.rule === "chat-citation-residue",
+    );
+    assert.deepEqual(
+      findings.map((finding) => finding.quote),
+      [":contentReference[oaicite:2]{index=2}"],
+    );
+  });
+
+  it("invalid: two marks on one line are two findings", () => {
+    const source = "# Post\n\nIt rains. :contentReference[oaicite:1]{index=1} It is cold. :contentReference[oaicite:2]{index=2}\n";
+    const findings = runRules(buildDocument("t.md", source, en), loadRules("en"), {}, true, "blog/tech").findings.filter(
+      (finding) => finding.rule === "chat-citation-residue",
+    );
+    assert.equal(findings.length, 2);
   });
 
   it("valid: a marker in a quote is someone else's words", () => {
@@ -175,5 +195,37 @@ describe("chat-citation-residue", () => {
 
   it("valid: the parameter in a code block", () => {
     assert.ok(!idsFor("# Post\n\n```\ncurl https://example.com/?utm_source=chatgpt.com\n```\n", en).includes("chat-citation-residue"));
+  });
+});
+
+describe("markExtent / wholeMarks: a marker widened to the mark it belongs to", () => {
+  const extentOf = (source: string, marker: string): string => {
+    const start = source.indexOf(marker);
+    const span = markExtent(source, { start, end: start + marker.length });
+    return source.slice(span.start, span.end);
+  };
+  it("an opened bracket runs to its closer, the {…} after it and the colon before it", () => {
+    assert.equal(extentOf("ようです。:contentReference[oaicite:2]{index=2}", "contentReference["), ":contentReference[oaicite:2]{index=2}");
+    assert.equal(extentOf("x contentReference[oaicite:0] y", "contentReference["), "contentReference[oaicite:0]");
+  });
+  it("a closed bracket runs back to its opener", () => assert.equal(extentOf("text.【4:0†source】", "†source】"), "【4:0†source】"));
+  it("a marker that opens or closes nothing stays as written", () => {
+    assert.equal(extentOf("https://e.com/?utm_source=chatgpt.com", "utm_source=chatgpt.com"), "utm_source=chatgpt.com");
+    assert.equal(extentOf("[oaicite:0]", "oaicite"), "oaicite");
+  });
+  it("an unclosed bracket, or one closed on the next line, stays as written", () => {
+    assert.equal(extentOf("a contentReference[oaicite", "contentReference["), "contentReference[");
+    assert.equal(extentOf("a contentReference[oaicite\n]", "contentReference["), "contentReference[");
+    assert.equal(extentOf("a contentReference[x]{index", "contentReference["), "contentReference[x]");
+    assert.equal(extentOf("†source】", "†source】"), "†source】");
+  });
+  it("markers inside one mark become one; separate marks stay separate", () => {
+    const source = "a :contentReference[oaicite:1]{index=1} b oaicite c";
+    const marks = wholeMarks(source, markersIn(source, [{ pattern: "oaicite" }, { pattern: "contentReference[" }]));
+    assert.deepEqual(
+      marks.map((mark) => mark.matched),
+      [":contentReference[oaicite:1]{index=1}", "oaicite"],
+    );
+    assert.deepEqual(wholeMarks(source, []), []);
   });
 });
