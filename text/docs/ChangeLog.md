@@ -2,6 +2,46 @@
 
 Newest first.
 
+## 0.49.0 — 2026-11-21
+
+This release fixes false positives found by judging the 0.48.0 findings in isamu/chaff-corpus, and adds a page per
+rule showing a text chaff fixes: the original, what chaff says, the corrected text and the settings.
+
+### Samples
+
+- `docs/samples/ja/` and `docs/samples/en/` hold one page per rule: a realistic original, chaff's real output, the
+  corrected text, why it changed, and the chaff.yaml settings. A test runs chaff on every page, and
+  `yarn samples:update` regenerates the output (#2564). The first pages cover max-kanji-continuous, no-mixed-desumasu,
+  closing-exhortation, undefined-acronym, empty-intensifier and dangling-reference.
+
+### AI-likeness
+
+- concrete-evidence-density judges a subheading repeated under three or more items with its whole item (#2549).
+- vague-word-density treats the law's own security-duty wording (appropriate … safeguards) as a term of art in legal
+  documents (#2560).
+- expletive-construction leaves speaker turns of verbatim minutes alone (#2565).
+- ngram-repetition reads 「〜は次のとおりであります。」 before each table as a fixed ending (#2562).
+
+### Sentences
+
+- A Japanese bracket opened full-width and closed half-width after a full stop pairs with that close (#2553).
+
+### Rules
+
+- undefined-acronym reads FAR, DFARS and DFAR as citation series, with `section` before the number, and an RFC
+  reference entry with a long label as the cited work (#2548, #2550).
+- max-kanji-continuous reads a name set on a line of its own above its number, and a run that fills the brackets right
+  after a word (its gloss), as names (#2541, #2546).
+- topic-predicate-distance closes a topic at the polite negative ませんが and an act topic (〜することは) at 〜ますが
+  (#2545, #2547).
+- no-mixed-desumasu leaves ＊ notes and a plain sentence ending in よ, ね or かな that speaks to the reader (#2559,
+  #2566).
+- max-sentence-length and max-ten cut a chronology dated with era names into its rows (#2552).
+- name-variant leaves a dictionary word after a or an, and a spelling shown wrong after ×, ✗ (#2555, #2557).
+- orthographic-variant compares 〜ばよかった and よかったら apart from 良い, and leaves a kanji suffix (山, 用) beside an
+  unrelated kana word (#2556, #2558).
+- no-doubled-joshi reads のような / のように as a set phrase (#2551).
+
 ## 0.48.0 — 2026-11-20
 
 This release fixes false positives found by judging the 0.46.0 and 0.47.0 findings in isamu/chaff-corpus: contracts,
