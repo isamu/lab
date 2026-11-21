@@ -108,8 +108,6 @@ contract.md   blog/tech · English   genre from the default
                   date-weekday-mismatch
   31:20   warning "Services" is also defined on line 7
                   duplicate-definition
-  33:26   info    This heading's capitalisation differs from the rest (1 in this document)
-                  title-case-consistency
 
 {counts}
 ```
@@ -134,8 +132,6 @@ contract.md   legal/contract · English   genre from --genre
                   date-weekday-mismatch
   31:20   warning "Services" is also defined on line 7
                   duplicate-definition
-  33:26   info    This heading's capitalisation differs from the rest (1 in this document)
-                  title-case-consistency
 
 {counts}
 ```
