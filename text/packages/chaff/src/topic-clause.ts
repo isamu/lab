@@ -177,15 +177,21 @@ const newNameTopicRunsToEnd = (tokens: readonly Token[], comma: number, last: nu
   return topic > comma + 1 && wa !== undefined && isParticle(wa, "は") && lastOwnSubject(tokens, last) <= topic;
 };
 
+/** A topic on the nominaliser こと after a predicate (公表することは): an act made a noun. */
+const isActTopic = (tokens: readonly Token[], topic: number): boolean =>
+  tokens[topic - 1]?.surface === "こと" && tokens[topic - 1]?.pos === "NOUN" && PREDICATE.has(tokens[topic - 2]?.pos ?? "");
+
 /**
  * 当社は…を営んでおりますが、…の重要性が乏しいため、…の記載は行っておりません: after 〜ますが、 the words up to the next comma
  * say something of a subject of their own (が) and a new topic takes what comes after, so the predicate before が was the
  * topic's, when no other subject stands between the topic and it (需要の停滞がありましたが is not). A clause with no subject of
- * its own there is read to the end, unless a name stands as a new topic straight after the comma (〜ましたが、B大臣は…).
+ * its own there is read to the end, unless a name stands as a new topic straight after the comma (〜ましたが、B大臣は…), or the
+ * topic is an act made a noun (つまびらかにすることは差し控えますが、…): what is said of an act ends there, and the rest is the
+ * speaker's.
  */
 const closesWithPoliteGa = (tokens: readonly Token[], topic: number, at: number, last: number): boolean => {
   if (!isPoliteGa(tokens, at) || !isComma(tokens[at + 1]) || subjectBetween(tokens, topic, at)) return false;
-  if (newNameTopicRunsToEnd(tokens, at + 1, last)) return true;
+  if (isActTopic(tokens, topic) || newNameTopicRunsToEnd(tokens, at + 1, last)) return true;
   const comma = tokens.findIndex((token, index) => index > at + 1 && index < last && isComma(token));
   const clauseEnd = comma === -1 ? last : comma;
   return ownGaSubjectBetween(tokens, at + 1, clauseEnd) && newTopicAfter(tokens, clauseEnd, last);
