@@ -52,4 +52,4 @@ not_flagged:
   en: One sentence opening with "And" or "But" is not reported. An adverbial phrase that opens with the same word ("So far", "Yet another") is not counted. In Japanese, spoken openers (でも, だから, なので) are colloquial-opener's and さらに, 加えて are stock-transition's, so they are not counted.
 level_meaning:
   ja: 接続詞で始まる文の連続 {limit} 文まで
-  en: up to {limit} sentences in a row opening with a conjunction
+  en: up to {limit} {limit|sentence|sentences} in a row opening with a conjunction

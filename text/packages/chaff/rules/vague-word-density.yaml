@@ -57,7 +57,7 @@ not_flagged:
   en: 'A few vague words for the document''s length are not reported, and very short documents are not measured. Each sentence is reported once, and a word inside a longer phrase ("timely" in "in a timely manner") counts once. In legal documents, a word inside a term that law and practice define ("reasonable", "best efforts", "from time to time") is not counted; nor are the security duties data-protection law writes ("appropriate technical and organisational measures", "appropriate administrative, physical, and technical safeguards"), while a bare "appropriate measures" is counted. Inside a requirement, requirement-smell also reads "where possible" and "as needed". A word that the bracket right after it pins down ("a reasonable fee (USD 50)") is not counted either; a bracket that only names it ("(hereinafter the ""Fee"")") pins nothing down. Lines under a table of contents heading (the sections'' names) are not counted, and "reasonable accommodation" is the name of a legal duty in any genre. A word that a law or a section governs right after it ("as required by applicable law", "as required under 45 CFR §164.528", "as required under HIPAA") is not counted, since that law says what is required; one a party decides ("as required by Licensor") is.'
 level_meaning:
   ja: 1000 字あたりあいまいな語 {limit} 個まで
-  en: up to {limit} vague words per 1000 words
+  en: up to {limit} {limit|vague word|vague words} per 1000 words
 rewrite:
   depth: light
   ja:

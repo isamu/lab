@@ -47,7 +47,7 @@ not_flagged:
   en: Only "So," with its comma. "So far", "So that" and "So the board decided" are not counted. Only in English documents; the fiction and speech presets turn it off, since a spoken tone is their form.
 level_meaning:
   ja: 「So,」で始まる文が {limit} 個あれば指摘
-  en: reported once {limit} sentences open with "So,"
+  en: reported once {limit} {limit|sentence opens|sentences open} with "So,"
 rewrite:
   depth: light
   en:

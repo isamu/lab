@@ -65,4 +65,4 @@ not_flagged:
   en: The document's title (the first heading, when no other heading is as shallow) is a name and is not compared. Neither style is called right.
 level_meaning:
   ja: 少ないほうの流儀の見出しが {limit} 個以下のとき指摘
-  en: reported when the minority style has {limit} headings or fewer
+  en: reported when the minority style has {limit} {limit|heading|headings} or fewer

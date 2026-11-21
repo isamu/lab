@@ -46,7 +46,7 @@ not_flagged:
   en: Only 、 and ， are counted. Commas between two nouns (listed items) and commas inside 「」 quotations are not. Nor are the commas of a list of short bare words (快晴、晴れ、薄曇り、曇り、…) where most are nouns, even if the parser reads some as verbs, nor those of a table whose line breaks were lost (a chronology whose rows open with dates).
 level_meaning:
   ja: 一文の読点 {limit} 個まで
-  en: up to {limit} commas in a sentence
+  en: up to {limit} {limit|comma|commas} in a sentence
 rewrite:
   depth: light
   ja:

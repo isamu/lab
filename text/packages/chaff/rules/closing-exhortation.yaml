@@ -71,4 +71,4 @@ not_flagged:
   en: Cheering outside the closing, a single cheering line, and "I'm happy to help!" (Happy must open the sentence) are not reported.
 level_meaning:
   ja: 結びの励ます・請け合う文が {limit} 個あれば指摘
-  en: reported once {limit} closing sentences cheer the reader on
+  en: reported once {limit} {limit|closing sentence cheers|closing sentences cheer} the reader on

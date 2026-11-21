@@ -96,4 +96,4 @@ not_flagged:
   en: Different words (サーバー and ブラウザ) are not compared. Words of one mora before the final ー (カー), words the dictionary knows as proper nouns and the names under names in chaff.yaml are left alone. A word that becomes another word with a final ー (フリ and フリー, タブ (tab) and タブー (taboo), ベタ and ベター) is not compared, nor asked for a ー by keep, when it is in the long-vowel-distinct word list. drop leaves words ending in ュー, エー, イー and the like alone (メニュー, グレー, コピー).
 level_meaning:
   ja: 違う書き方の語が {limit} 箇所あれば指摘
-  en: reported once {limit} words go the other way
+  en: reported once {limit} {limit|word goes|words go} the other way

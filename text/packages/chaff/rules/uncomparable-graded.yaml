@@ -50,7 +50,7 @@ not_flagged:
   en: Only the pairs on chaff's list are checked. Words that say how close ("almost unique", "nearly impossible", ほぼ完璧) are not reported. A superlative stacked on a superlative (最も最適) is redundant-expression's, and より最適化する (optimise further) is not reported. Literature is not checked.
 level_meaning:
   ja: 当てはまる言い回しが {limit} 箇所あれば指摘
-  en: reported once there are {limit}
+  en: reported once there {limit|is|are} {limit}
 sources: [proselint]
 rewrite:
   depth: light

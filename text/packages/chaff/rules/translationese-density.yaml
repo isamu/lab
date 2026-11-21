@@ -47,7 +47,7 @@ not_flagged:
   en: None of these is wrong alone, so documents shorter than 500 characters are not measured. Phrasings common in human technical writing (を提供する, に焦点を当てる, することができる) are not counted. A document whose only such phrases address the reader (あなたの, あなたは) has chosen to speak to its reader and is not reported; beside other phrases they count. The literature preset turns it off, since a novel calls its characters 彼女.
 level_meaning:
   ja: 1000 字あたり翻訳調の言い回し {limit} 個まで
-  en: up to {limit} translated phrasings per 1000 characters
+  en: up to {limit} {limit|translated phrasing|translated phrasings} per 1000 characters
 rewrite:
   depth: light
   ja:

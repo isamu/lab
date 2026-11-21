@@ -134,7 +134,7 @@ not_flagged:
   en: A document without headings is not checked. A measure the document is too small for (a short text, few sections or lists) is not counted. Template headings count only when four or more sections of the textbook outline stand as headings; a real proposal has one or two. The headings under an FAQ heading are the readers' questions, so they are not counted as headings in a stock form ("What is …"). Legal, documentation, academic and speech genres do not run this rule (`chaff outline` and `chaff fix-plan` measure the structure in any genre; only this rule counts the template headings).
 level_meaning:
   ja: 人の記事の 9 割を超えた項目が {limit} 個そろえば指摘
-  en: reported once {limit} measures lie past 90% of human articles
+  en: reported once {limit} {limit|measure lies|measures lie} past 90% of human articles
 rewrite:
   depth: structure
   ja:

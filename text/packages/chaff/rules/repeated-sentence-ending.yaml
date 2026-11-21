@@ -47,7 +47,7 @@ not_flagged:
   en: Sentences in different paragraphs are not a run. A sentence that does not end with an auxiliary (a noun, a bare verb) is not compared and breaks the run. Different verbs (読みました, 書きました) are different endings. Three sentences or more in a row that close on the very same phrase, the word before the predicate included (いい船でした。…いい船でした。…いい船でした。), are a refrain and count once. Questions run together inside one sentence (これはリストか？順序付きか？…などです。) are not compared either. Sentences that each define a different term in the same frame (台風は〜を指します。ハリケーンは〜を指します。) share their ending on purpose and are not reported. A sentence that opens with a label (［通信関連］, 化学品事業……) starts a new item of a list and does not continue the run before it.
 level_meaning:
   ja: 同じ文末の文が {limit} 文続くまで
-  en: up to {limit} sentences in a row with the same ending
+  en: up to {limit} {limit|sentence|sentences} in a row with the same ending
 rewrite:
   depth: light
   ja:

@@ -48,7 +48,7 @@ not_flagged:
   en: Joins to a helper verb, anything quoted in 「」, and clauses up to the limit are not counted. Nor is a word inside a list of names written with commas (晴れ in 快晴、晴れ、曇り、…), or the same predicate repeated clause after clause after its first time (the second 調べ in 著者を調べ、所属を調べ、). Not used on English documents.
 level_meaning:
   ja: 一文の節 {limit} つまで
-  en: up to {limit} clauses in one sentence
+  en: up to {limit} {limit|clause|clauses} in one sentence
 rewrite:
   depth: light
   ja:

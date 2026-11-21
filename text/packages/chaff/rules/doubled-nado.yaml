@@ -47,7 +47,7 @@ not_flagged:
   en: Only the pairs on chaff's list. などなど, a spoken intensifier, is not counted. "Such as A, B, etc.", where words come between the two, cannot be matched as one phrase and is not checked.
 level_meaning:
   ja: 重ねた所が {limit} 箇所あれば指摘
-  en: reported once there are {limit}
+  en: reported once there {limit|is|are} {limit}
 rewrite:
   depth: light
   ja:

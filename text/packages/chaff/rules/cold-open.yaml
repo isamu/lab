@@ -60,7 +60,7 @@ not_flagged:
   en: An opening with only one of the shapes (a proposal's "We want to ..."), and sentences after the opening, are not reported.
 level_meaning:
   ja: 書き出しに形が {limit} つあれば指摘
-  en: reported once {limit} of the shapes appear in the opening
+  en: reported once {limit} of the shapes {limit|appears|appear} in the opening
 rewrite:
   depth: structure
   ja:

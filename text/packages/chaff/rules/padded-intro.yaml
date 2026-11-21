@@ -54,7 +54,7 @@ not_flagged:
   en: Only the opening (the first four sentences) is checked; "in recent years" later in the text is not reported.
 level_meaning:
   ja: 当てはまる書き出しが {limit} 箇所あれば指摘
-  en: reported once there are {limit}
+  en: reported once there {limit|is|are} {limit}
 rewrite:
   depth: light
   ja:
