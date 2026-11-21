@@ -11,7 +11,7 @@ Or paste a draft into the [playground](https://isamu.github.io/lab/en/playground
 
 日本語の見本: [../ja/README.md](../ja/README.md)
 
-Rules with a sample: 65 / 259
+Rules with a sample: 99 / 259
 
 ## Readability
 
@@ -45,9 +45,42 @@ Rules with no sample yet: `agreement-slip`, `article-sound`, `calendar-name-case
 
 Two ways of writing that are both right, mixed in one document. chaff does not pick a side; it points at whichever the document uses less.
 
-No sample in this group yet.
-
-Rules with no sample yet: `acronym-expansion-conflict`, `amount-scale-consistency`, `bare-url-mix`, `citation-style-mix`, `code-fence-language-mix`, `contraction-consistency`, `cross-doc-term-variant`, `currency-notation-consistency`, `date-format-consistency`, `defined-name-repeated`, `defined-term-form`, `ellipsis-consistency`, `heading-end-punctuation-mix`, `list-item-form-mix`, `list-marker-mix`, `name-variant`, `number-style-consistency`, `orthographic-variant`, `outside-announced-list`, `oxford-comma-consistency`, `party-role-name`, `person-consistency`, `quote-style-consistency`, `range-notation-consistency`, `sentence-spacing-consistency`, `shell-prompt-mix`, `spelling-consistency`, `step-statement-mix`, `table-header-variant`, `title-case-consistency`, `ui-label-variant`, `undefined-term`, `unit-spacing-consistency`, `which-that-consistency`
+| Rule | What it finds |
+| --- | --- |
+| [Abbreviation expanded two ways](acronym-expansion-conflict.md) (`acronym-expansion-conflict`) | The same abbreviation spelled out as two different names in one document |
+| [Amounts of one size written two ways](amount-scale-consistency.md) (`amount-scale-consistency`) | Amounts written with and without a scale word ("$1.5 million", "$2,500,000") |
+| [A bare URL among worded links](bare-url-mix.md) (`bare-url-mix`) | A URL written bare in a document whose other links are words |
+| [Citations written in more than one style](citation-style-mix.md) (`citation-style-mix`) | A paper that cites as [1] in one place and as (Smith, 2020) in another |
+| [Code blocks with and without a language](code-fence-language-mix.md) (`code-fence-language-mix`) | A code block without a language among blocks that name theirs |
+| [Contraction use is inconsistent](contraction-consistency.md) (`contraction-consistency`) | The same word written both contracted ("don't") and in full ("do not") |
+| [A word spelled differently in different files](cross-doc-term-variant.md) (`cross-doc-term-variant`) | The same word spelled one way in some files and another way in others |
+| [A currency written two ways](currency-notation-consistency.md) (`currency-notation-consistency`) | One currency written two ways in one document, such as "$20" and "USD 20" |
+| [Dates written two ways](date-format-consistency.md) (`date-format-consistency`) | Dates written two ways in one document, as "2026-10-02" and "October 2, 2026" |
+| [A long name used again after its short name was defined](defined-name-repeated.md) (`defined-name-repeated`) | A party given a short name ("the Supplier") and later written out in full |
+| [A defined term used in another form](defined-term-form.md) (`defined-term-form`) | A defined term later written in another form: quoted, lower case, or lengthened |
+| [Ellipses written two ways](ellipsis-consistency.md) (`ellipsis-consistency`) | An ellipsis written two ways in one document, such as "..." and "…" |
+| [Heading end punctuation mixed](heading-end-punctuation-mix.md) (`heading-end-punctuation-mix`) | Headings that end with a colon or full stop mixed with headings that do not |
+| [List items in mixed forms](list-item-form-mix.md) (`list-item-form-mix`) | One list mixing phrases with sentences, or verb-first items with noun-first ones |
+| [List bullets mixed](list-marker-mix.md) (`list-marker-mix`) | Bullets ("-", "*", "+", "・") mixed in one list or one document |
+| [One name written two ways](name-variant.md) (`name-variant`) | The same person, company or product name written slightly differently |
+| [Numbers written two ways](number-style-consistency.md) (`number-style-consistency`) | Numbers written two ways in one document, such as 1,000 and 1000 |
+| [One word spelled two ways](orthographic-variant.md) (`orthographic-variant`) | One word written two ways in one document, such as e-mail and email |
+| [A name outside the announced list](outside-announced-list.md) (`outside-announced-list`) | A platform or language named later that the list given earlier left out |
+| [Oxford comma use is inconsistent](oxford-comma-consistency.md) (`oxford-comma-consistency`) | Lists that put a comma before the final "and" in some places and not in others |
+| [A party named by its role instead of the name the contract gave it](party-role-name.md) (`party-role-name`) | A party given a short name ("the Supplier") and later called something else |
+| [The document names itself or its reader two ways](person-consistency.md) (`person-consistency`) | One document calling itself or its reader two ways ("you" and "one") |
+| [Straight and curly quotes mixed](quote-style-consistency.md) (`quote-style-consistency`) | Straight quotes (" ') and curly quotes (“ ” ’) mixed in one document |
+| [Ranges written with two marks](range-notation-consistency.md) (`range-notation-consistency`) | Ranges written with two marks in one document, such as "10–20" and "10-20" |
+| [One and two spaces between sentences mixed](sentence-spacing-consistency.md) (`sentence-spacing-consistency`) | One space between sentences in some places and two in others |
+| [Shell commands with and without a prompt](shell-prompt-mix.md) (`shell-prompt-mix`) | Shell commands written with a "$" prompt in some places and without in others |
+| [British and American spellings are mixed](spelling-consistency.md) (`spelling-consistency`) | British and American spellings (colour and color) mixed in one document |
+| [A step written as a statement among instructions](step-statement-mix.md) (`step-statement-mix`) | Numbered steps that mix statements (The tool asks) with orders (Run it) |
+| [One table header written two ways](table-header-variant.md) (`table-header-variant`) | The same column header written two ways across tables (Owner and Owners) |
+| [Heading capitalisation is inconsistent](title-case-consistency.md) (`title-case-consistency`) | Headings that mix Title Case and sentence case |
+| [Screen label written two ways](ui-label-variant.md) (`ui-label-variant`) | A screen label written two ways that differ only in case, spacing or a particle |
+| [A term written like a defined term but defined nowhere](undefined-term.md) (`undefined-term`) | A term written like a defined one (its Affiliates) that is never defined |
+| [Units spaced two ways](unit-spacing-consistency.md) (`unit-spacing-consistency`) | A number and its unit spaced in some places and not others (5 GB, 5GB) |
+| [Restrictive "which" and "that" mixed](which-that-consistency.md) (`which-that-consistency`) | Restrictive clauses opened with "which" in some places and "that" in others |
 
 ## Structure
 
