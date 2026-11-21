@@ -106,6 +106,28 @@ describe("orthographic-variant: カタカナ語と英字", () => {
     ]);
   });
 
+  it("reads an English heading's words with the body's", () => {
+    const source = [
+      "# Email help",
+      "",
+      "You can sign in with your email address. Each email we send has a link. Check your email for the code.",
+      "",
+      "## Can I have two accounts with one e-mail address?",
+      "",
+      "No. One email address holds one account.",
+      "",
+    ].join("\n");
+    assert.deepEqual(findingsOf(source, en), ['"e-mail" here, where the document usually writes "email" (1 of 6)']);
+  });
+
+  it("日本語の見出しの語は数えない（見出しは送り仮名を省く札、分類の語）", () => {
+    const source = ["# 好きな店", "", "## コーヒー", "", "珈琲を淹れる店です。珈琲の豆も買えます。珈琲に合う菓子もあります。", ""].join("\n");
+    assert.deepEqual(findingsOf(source), []);
+    assert.deepEqual(findingsOf(source.replace("## コーヒー", "コーヒーも出します。")), [
+      "「コーヒー」と書いています（この文書はふつう「珈琲」と書く語です。4 箇所のうち 1 箇所が違う）",
+    ]);
+  });
+
   it("語末の「ー」だけの違いは katakana-long-vowel に任せる", () => {
     assert.deepEqual(findingsOf("サーバーを止めます。サーバーを再起動します。サーバの設定を見ます。\n"), []);
     assert.deepEqual(findingsOf("コンピューターを使う。コンピューターを買う。コンピュータを直す。\n"), []);
