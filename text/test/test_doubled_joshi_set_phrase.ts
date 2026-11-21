@@ -26,6 +26,12 @@ describe("setPhraseParticles", () => {
     assert.deepEqual([...setPhraseParticles(whole, ["の"], phrases)], [whole[1]]);
   });
 
+  it("助詞で始まる言い回し（のよう）は、前の語を問わない", () => {
+    const like = tokensOf(["機能"], ["の"], ["よう"], ["な"]);
+    assert.deepEqual([...setPhraseParticles(like, ["の"], ["のよう"])], [like[1]]);
+    assert.equal(setPhraseParticles(tokensOf(["機能"], ["の"], ["ため"]), ["の"], ["のよう"]).size, 0);
+  });
+
   it("言い回しでない語、間の空いた語、数えない助詞、端の助詞、空の文は数えたまま", () => {
     assert.equal(setPhraseParticles(tokensOf(["高さ"], ["の"], ["ある"]), ["の"], phrases).size, 0);
     const gap: Token[] = [
@@ -50,9 +56,15 @@ describe("no-doubled-joshi: 決まった言い回し", () => {
     assert.deepEqual(chains("絶滅のおそれのある地域の個体群を保護しました。"), []);
   });
 
+  it("「のような」「のように」の「の」を連なりに数えない", () => {
+    assert.deepEqual(chains("フェッチはリソース共有のような現代のウェブの機能と統合されています。"), []);
+    assert.deepEqual(chains("小型の機械のように現場の作業の負担を減らします。"), []);
+  });
+
   it("ほかの「の」の連なりは今までどおり言う", () => {
     assert.equal(chains("テーブルの上等の高さのある場所に寝かせない。").length, 1);
     assert.equal(chains("本社の営業部の第二課の方針を確認しました。").length, 1);
     assert.equal(chains("地域の絶滅のおそれのある種の保護の計画です。").length, 1);
+    assert.equal(chains("共有のような現代のウェブの機能の一覧です。").length, 1);
   });
 });
