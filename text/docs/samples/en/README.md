@@ -11,7 +11,7 @@ Or paste a draft into the [playground](https://isamu.github.io/lab/en/playground
 
 日本語の見本: [../ja/README.md](../ja/README.md)
 
-Rules with a sample: 27 / 259
+Rules with a sample: 40 / 259
 
 ## Readability
 
@@ -55,9 +55,22 @@ Skipped numbers, references to provisions that are not there, terms defined twic
 
 | Rule | What it finds |
 | --- | --- |
+| [An absolute rule with an exception written elsewhere](absolute-exception.md) (`absolute-exception`) | A rule said to have no exception ("must always") that another part excepts |
+| [Abstract too long, or missing](abstract-length.md) (`abstract-length`) | An abstract over the length limit, or a paper with sections that has no abstract |
+| [Link that goes nowhere](broken-link.md) (`broken-link`) | A link that goes nowhere: no address, a missing heading, or no definition |
+| [Section with nothing concrete](concrete-evidence-density.md) (`concrete-evidence-density`) | A section with no number, code or link: nothing for the reader to take away |
+| [Link to another file that goes nowhere](cross-doc-broken-link.md) (`cross-doc-broken-link`) | A link to another of the files checked whose file or heading is not there |
+| [One term defined differently in different files](cross-doc-duplicate-definition.md) (`cross-doc-duplicate-definition`) | The same term defined in other words in different files |
 | [Reference to a missing provision](dangling-reference.md) (`dangling-reference`) | A reference such as "see Article 5" to an article the document does not have |
+| [Date without a year](date-without-year.md) (`date-without-year`) | A date with no year where the document's dates span years or cross a new year |
+| [Term defined twice](duplicate-definition.md) (`duplicate-definition`) | The same term defined in two places in one document |
+| [Duplicate sibling heading](duplicate-heading.md) (`duplicate-heading`) | Two headings with the same words under the same parent heading |
+| [Email without a greeting or a closing](email-greeting-closing.md) (`email-greeting-closing`) | A work email that opens without a greeting or ends without a closing |
+| [Subject line empty or too long](email-subject-length.md) (`email-subject-length`) | A work email whose "Subject:" line is empty or longer than the limit |
+| [Empty list item](empty-list-item.md) (`empty-list-item`) | A list item with only a label ("Owner:") and no value, or with nothing in it |
+| [Empty section](empty-section.md) (`empty-section`) | A heading with nothing under it before the next heading at its level or higher |
 
-Rules with no sample yet: `absolute-exception`, `abstract-length`, `broken-link`, `concrete-evidence-density`, `cross-doc-broken-link`, `cross-doc-duplicate-definition`, `date-without-year`, `duplicate-definition`, `duplicate-heading`, `email-greeting-closing`, `email-subject-length`, `empty-list-item`, `empty-section`, `empty-table-cell`, `figure-reference-order`, `footnote-mismatch`, `heading-level-skip`, `heading-numbering-mix`, `image-alt-text`, `image-file-name-alt`, `modal-conflict`, `no-lead`, `number-without-unit`, `numbered-generic-heading`, `numbering-gap`, `preamble-length`, `prerequisite-after-step`, `required-listed-as-preferred`, `step-reference-missing`, `table-row-overflow`, `toc-heading-mismatch`, `unclosed-code-fence`, `unlisted-item-used`, `unrendered-emphasis`, `unused-definition`, `use-before-definition`, `vague-figure-reference`, `vague-link-text`
+Rules with no sample yet: `empty-table-cell`, `figure-reference-order`, `footnote-mismatch`, `heading-level-skip`, `heading-numbering-mix`, `image-alt-text`, `image-file-name-alt`, `modal-conflict`, `no-lead`, `number-without-unit`, `numbered-generic-heading`, `numbering-gap`, `preamble-length`, `prerequisite-after-step`, `required-listed-as-preferred`, `step-reference-missing`, `table-row-overflow`, `toc-heading-mismatch`, `unclosed-code-fence`, `unlisted-item-used`, `unrendered-emphasis`, `unused-definition`, `use-before-definition`, `vague-figure-reference`, `vague-link-text`
 
 ## Facts that disagree
 
