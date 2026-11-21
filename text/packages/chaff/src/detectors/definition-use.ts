@@ -80,15 +80,11 @@ const ownDefinitions = (tree: StructureNode): DefinedTerm[] => {
 export const useBeforeDefinition: Detector = (doc): Finding[] =>
   doc.structure === undefined
     ? []
-    : usesBeforeDefinition(
-        ownDefinitions(doc.structure),
-        bodyOf(doc),
-        mentionedIn(doc),
-        titleIn(doc),
-        patternsOf(doc, "self-prefix"),
-        patternsOf(doc, "term-source-marker"),
-        new Set(patternsOf(doc, "party-short-name")),
-      ).map((use) => findingAt(doc, use.offset, { term: use.term.term, defined: use.term.line }));
+    : usesBeforeDefinition(ownDefinitions(doc.structure), bodyOf(doc), mentionedIn(doc), titleIn(doc), {
+        selfPrefixes: patternsOf(doc, "self-prefix"),
+        sourceMarkers: patternsOf(doc, "term-source-marker"),
+        singleKanjiNames: new Set(patternsOf(doc, "party-short-name")),
+      }).map((use) => findingAt(doc, use.offset, { term: use.term.term, defined: use.term.line }));
 
 /** 同じ略語を、文書の中で二通りに展開している所。 */
 export const acronymExpansionConflict: Detector = (doc): Finding[] => {
