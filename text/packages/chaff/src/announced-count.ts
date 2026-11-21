@@ -129,8 +129,16 @@ const pointsAhead = (sentence: string, phrase: Phrase, anchors: readonly string[
   return COLON_END.test(sentence.trimEnd()) && !number.test(after) && !inEarlierClause(after.toLowerCase(), lowered);
 };
 
-/** 句切りの読点やコンマの前に語がある。「3点、以下の」の読点は数のすぐ後ろで、数を前の節に閉じ込めない。 */
-const CLAUSE_BREAK = /[^\s、，,][^、，,]*[、，,]/u;
+/** 句切りの読点やコンマ。「3点、以下の」の読点は数のすぐ後ろで、手前に語が無いので、数を前の節に閉じ込めない。 */
+const CLAUSE_MARK = /[、，,]/u;
+const WRITTEN = /\S/u;
+
+/** 読点やコンマのどれかの手前（一つ前の読点から）に語がある。 */
+const hasClauseBreak = (text: string): boolean =>
+  text
+    .split(CLAUSE_MARK)
+    .slice(0, -1)
+    .some((part) => WRITTEN.test(part));
 
 /**
  * 数の後ろに先を指す語があり、その手前で一度節が切れる（二人に聞いて分かった、困っていたことは以下のとおり）。
@@ -138,7 +146,7 @@ const CLAUSE_BREAK = /[^\s、，,][^、，,]*[、，,]/u;
  */
 const inEarlierClause = (after: string, anchors: readonly string[]): boolean => {
   const anchorAt = Math.min(...anchors.map((anchor) => after.indexOf(anchor)).filter((at) => at >= 0));
-  return Number.isFinite(anchorAt) && CLAUSE_BREAK.test(after.slice(0, anchorAt));
+  return Number.isFinite(anchorAt) && hasClauseBreak(after.slice(0, anchorAt));
 };
 
 /**
