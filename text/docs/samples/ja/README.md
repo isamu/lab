@@ -11,7 +11,7 @@ chaff が見つけるまちがいを、ルールごとに一つずつ見本に�
 
 English samples: [../en/README.md](../en/README.md)
 
-見本のあるルール: 63 / 272
+見本のあるルール: 79 / 272
 
 ## 読みやすさ
 
@@ -73,9 +73,24 @@ English samples: [../en/README.md](../en/README.md)
 
 書き換えの途中で残った語や空白。
 
-このグループの見本はまだありません。
-
-まだ見本の無いルール: `chat-citation-residue`, `doubled-nado`, `doubled-punctuation`, `doubled-word`, `hankaku-kana`, `ime-residue`, `invisible-character`, `kanji-compound-slip`, `known-misspelling`, `link-text-url-mismatch`, `lookalike-character`, `misconversion`, `stray-space`, `unbalanced-bracket`, `unfilled-placeholder`, `url-run-on`
+| ルール | 見つけるもの |
+| --- | --- |
+| [チャットの出典の名残](chat-citation-residue.md)（`chat-citation-residue`） | 「?utm_source=chatgpt.com」の付いたリンクのように、チャットの答えを貼ったときに残る印 |
+| [「など」と「等」の重ね](doubled-nado.md)（`doubled-nado`） | 「書類等など」「and etc.」のように、「ほかにもある」を言う語を重ねた所 |
+| [句読点が重なっている](doubled-punctuation.md)（`doubled-punctuation`） | 「。。」「、。」のように、句読点が二つ並んだ所 |
+| [語を二度書いている](doubled-word.md)（`doubled-word`） | 「資料をを」「the the」のように、同じ語が続けて二度書かれている所 |
+| [半角の片仮名がある](hankaku-kana.md)（`hankaku-kana`） | 「ｱｲｳ」のような半角の片仮名と、半角の句読点・鉤括弧・中黒 |
+| [変換し損ねた英字](ime-residue.md)（`ime-residue`） | 「おもしrおい」「対応sた」のような、日本語の語の中に一字だけ残った英字 |
+| [見えない字がある](invisible-character.md)（`invisible-character`） | ゼロ幅の空白、途中の BOM、ソフトハイフン、文字の向きの指定、制御文字、隠れたタグ文字のような、画面に出ない字 |
+| [長い漢字の語の一字違い](kanji-compound-slip.md)（`kanji-compound-slip`） | 何度も書いた長い漢字の語を、一か所だけ一字違えて書いた所 |
+| [よくある書き誤り](known-misspelling.md)（`known-misspelling`） | 「シュミレーション」「コミニュケーション」「ふいんき」のような、よくある書き誤り |
+| [リンクの言葉の URL と行き先が違う](link-text-url-mismatch.md)（`link-text-url-mismatch`） | 見えている URL と、実際の行き先のサイトが違うリンク |
+| [見た目が同じで別の字](lookalike-character.md)（`lookalike-character`） | 部首の字（⼈）、互換漢字、分かれた濁点（か＋゛）、長音に見えるダッシュ（ニュ－ス）など、同じに見える別の字 |
+| [変換の誤り](misconversion.md)（`misconversion`） | 「以外と簡単」「始めて会う」「不可決」のような、仮名漢字変換の取り違え |
+| [語句の途中に空白がある](stray-space.md)（`stray-space`） | 「確認 しました」のように、ひとつながりの語句の途中に空白が紛れこんだ所 |
+| [括弧が組になっていない](unbalanced-bracket.md)（`unbalanced-bracket`） | 閉じ忘れた「（」や開きの無い「」」のように、組になっていない括弧と引用符 |
+| [埋め忘れた空欄](unfilled-placeholder.md)（`unfilled-placeholder`） | 「【会社名】」「TODO」のように、雛形の空欄が埋まらないまま残っている所 |
+| [URL のすぐ後ろに字が続いている](url-run-on.md)（`url-run-on`） | 「https://example.jp/をご覧ください」のように、URL のすぐ後ろに字が続き、リンクがそこまで伸びる所 |
 
 ## 表記の揃え
 
