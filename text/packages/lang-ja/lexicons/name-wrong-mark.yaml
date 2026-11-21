@@ -1,0 +1,10 @@
+# 誤りの例を示す印。表記の手引きは「× Rspec / ○ RSpec」のように、わざと誤った形を正しい形と並べて見せる。name-variant は、
+# 同じ行でこの印のすぐ後ろ（空白か「：」を挟んでよい）にある形を、名前の書き分けとして指さない。書いたとおりに当てる。
+id: name-wrong-mark
+language: ja
+entries:
+  - pattern: "×"
+  - pattern: "✕"
+  - pattern: "✖"
+  - pattern: "✗"
+  - pattern: "✘"

@@ -68,6 +68,21 @@ describe("orthographic-variant: 一語として比べる語（ただいま、昨
   });
 });
 
+describe("orthographic-variant: 決まった言い方の「よかった」（〜ばよかった、よかったら）", () => {
+  it("「〜ばよかった」と「よかったら」を、形容詞の「良い」と比べない", () => {
+    assert.deepEqual(findingsOf("# 振り返り\n\n部屋は取らなくて良い。資料は配らなくて良い。早めに確認しておけばよかった。\n"), []);
+    assert.deepEqual(findingsOf("# お知らせ\n\nこの本は良い。あの店は良い。よかったらこちらもどうぞ。\n"), []);
+  });
+
+  it("決まった言い方の書き方どうしは比べる", () => {
+    assert.equal(findingsOf("# 振り返り\n\n聞いておけばよかった。調べておけばよかった。確かめておけば良かった。\n").length, 1);
+  });
+
+  it("形容詞どうしは今までどおり比べる", () => {
+    assert.equal(findingsOf("# 振り返り\n\nこの案は良い。あの店は良い。その本はよい。\n").length, 1);
+  });
+});
+
 describe("orthographic-variant: 熟語の頭の一字の漢字", () => {
   it("「曇雨天」の「曇」を、「曇り」と比べない", () => {
     assert.deepEqual(

@@ -130,3 +130,32 @@ export const isInFileName = (text: string, offset: number, length: number): bool
   const run = withoutTrailingMarks(text.slice(start, offset + length + (after < 0 ? rest.length : after)));
   return run.replace(EXTENSION, "").length > length && FILE_OR_URL.test(run);
 };
+
+/** The word just before a form, with spaces or an opening quotation mark between (A in “A Coiner). */
+const WORD_BEFORE = /(?<!\p{L})(\p{L}+)[\s"“‘']*$/u;
+
+/**
+ * Whether the one-word form at offset follows an article from the lexicon name-count-article (a, an) and is a dictionary
+ * word ("A Coiner, a very good workman" beside Mrs. Coiler): a count noun, not a name.
+ */
+export const isAfterCountArticle = (text: string, offset: number, name: string, articles: readonly string[], isKnown: (word: string) => boolean): boolean => {
+  const before = WORD_BEFORE.exec(text.slice(text.lastIndexOf("\n", offset - 1) + 1, offset))?.[1]?.toLowerCase();
+  return ONE_WORD.test(name) && before !== undefined && articles.includes(before) && isKnown(name.toLowerCase());
+};
+
+/** What may stand between a wrong mark and the form it marks: spaces, a colon. */
+const MARK_GAP = /[\s:：]/u;
+
+const withoutTrailingGap = (text: string): string => {
+  const chars = [...text];
+  return chars.slice(0, chars.findLastIndex((char) => !MARK_GAP.test(char)) + 1).join("");
+};
+
+/**
+ * Whether the form at offset follows a wrong mark from the lexicon name-wrong-mark on its own line (× Rspec beside ○ RSpec):
+ * a list showing a wrong spelling on purpose, not a use of the name.
+ */
+export const isMarkedWrong = (text: string, offset: number, marks: readonly string[]): boolean => {
+  const before = withoutTrailingGap(text.slice(text.lastIndexOf("\n", offset - 1) + 1, offset));
+  return marks.some((mark) => before.endsWith(mark));
+};

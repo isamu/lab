@@ -1,0 +1,8 @@
+# Articles that count a noun (a coiner, an engineer). A name is not counted this way, so name-variant reads a dictionary
+# word right after one of these ("A Coiner, a very good workman" beside Mrs. Coiler) as a common noun, not as a slip of a
+# name one letter away. Matched without regard to case.
+id: name-count-article
+language: en
+entries:
+  - pattern: "a"
+  - pattern: "an"

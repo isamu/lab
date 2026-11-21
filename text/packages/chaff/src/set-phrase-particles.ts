@@ -18,13 +18,13 @@ const headBefore = (tokens: readonly Token[], at: number): string => {
     .join("");
 };
 
-/** Whether the particle at `at`, the words before it and the dictionary form of the word after it spell one of phrases (おそれのある). */
+/** Whether the particle at `at`, the words before it and the dictionary form of the word after it spell one of phrases (おそれのある). A phrase that starts with the particle (のよう) takes any word before it. */
 const isInPhrase = (tokens: readonly Token[], at: number, phrases: readonly string[]): boolean => {
   const [particle, after] = [tokens[at], tokens[at + 1]];
   if (particle === undefined || after === undefined || !touches(particle, after)) return false;
   const tail = `${particle.surface}${after.lemma ?? after.surface}`;
   const head = headBefore(tokens, at);
-  return phrases.some((phrase) => phrase.endsWith(tail) && phrase.length > tail.length && head.endsWith(phrase.slice(0, -tail.length)));
+  return phrases.some((phrase) => phrase.endsWith(tail) && head.endsWith(phrase.slice(0, -tail.length)));
 };
 
 /** The counted particles (particles) of a sentence that stand inside one of phrases, each written whole (おそれのある). */
