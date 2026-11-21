@@ -11,7 +11,7 @@ Or paste a draft into the [playground](https://isamu.github.io/lab/en/playground
 
 日本語の見本: [../ja/README.md](../ja/README.md)
 
-Rules with a sample: 53 / 259
+Rules with a sample: 57 / 259
 
 ## Readability
 
@@ -126,8 +126,11 @@ Traits common in generated text. None of them alone says the text was generated;
 
 Rules that check only what your team lists in chaff.yaml: spellings, jargon, required headings. With nothing listed, they say nothing.
 
-No sample in this group yet.
-
-Rules with no sample yet: `internal-jargon`, `preferred-term`, `required-sections`, `requirement-modal`
+| Rule | What it finds |
+| --- | --- |
+| [Words that only work inside](internal-jargon.md) (`internal-jargon`) | Words that only work inside your team, from jargon in chaff.yaml |
+| [Not the team's spelling](preferred-term.md) (`preferred-term`) | A spelling the team chose not to use ("e-mail" for "email"), from chaff.yaml |
+| [A required heading is missing](required-sections.md) (`required-sections`) | A heading the team requires (such as "Risks") missing, set in chaff.yaml |
+| [A provision's verb form is not the one the house rule uses](requirement-modal.md) (`requirement-modal`) | A requirement's verb ("must", "shall") that the team's house rule does not use |
 
 The checks that read meaning run under `npx chaffjs test`, which asks an AI, so they have no fixed output to show here: `empty-conclusion`, `generic-opening`, `risk-disclosure`, `unsourced-number`
