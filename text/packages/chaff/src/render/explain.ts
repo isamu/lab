@@ -22,6 +22,7 @@ const TEXT: Texts<{
   readonly severities: string;
   readonly now: (level: string) => string;
   readonly nowNumber: (limit: string) => string;
+  readonly notRun: (why: string) => string;
   readonly from: (source: string) => string;
   readonly change: (id: string) => string;
 }> = {
@@ -42,6 +43,7 @@ const TEXT: Texts<{
     severities: "設定できる値（数える上限は無く、指摘の重さが変わります）:",
     now: (level) => `いまは ${level} です。`,
     nowNumber: (limit) => `いまは段階ではなく数です: ${limit}。`,
+    notRun: (why) => `いまは動きません（${why}）。`,
     from: (source) => `（${source} で決めています）`,
     change: (id) => `変える:  npx chaffjs relax ${id} --why "理由"`,
   },
@@ -61,6 +63,7 @@ const TEXT: Texts<{
     severities: "Levels (there is no limit to count to; a level sets how a finding is marked):",
     now: (level) => `Now: ${level}.`,
     nowNumber: (limit) => `Now: ${limit}, set as a number rather than a level.`,
+    notRun: (why) => `Now: not run (${why}).`,
     from: (source) => ` (set by ${source})`,
     change: (id) => `Change it:  npx chaffjs relax ${id} --why "reason"`,
   },
@@ -117,6 +120,13 @@ export type ExplainSettings = {
   readonly limit?: number | undefined;
   /** The rule is off only because it is experimental, so naming it would run it: say how. */
   readonly offOnlyAsExperimental?: boolean;
+  /** Why the genre keeps the rule from running, as a run lists it: then no level is current. */
+  readonly genreStop?: string | undefined;
+};
+
+const nowLine = (rule: RuleDefinition, current: Level, limit: number | undefined, language: string): string => {
+  const text = TEXT[uiLanguageOf(language)];
+  return limit === undefined ? text.now(current) : text.nowNumber(limitText(rule, limit, language));
 };
 
 /** rule の意図と根拠を読む。指摘に納得できないときの入口。 */
@@ -124,10 +134,15 @@ export const renderExplain = (rule: RuleDefinition, current: Level, language: st
   const { optionLayers = [], levelFrom } = settings;
   // A rule with nothing to count has no number to set; chaff.yaml's number on it is reported as a problem and ignored.
   const limit = rule.level_sets === "severity" ? undefined : settings.limit;
-  const marked = limit === undefined ? current : undefined;
+  const { genreStop } = settings;
+  const marked = limit === undefined && genreStop === undefined ? current : undefined;
   const text = TEXT[uiLanguageOf(language)];
   const experimental =
-    rule.status === "experimental" ? [`  ${text.experimental}`, ...(settings.offOnlyAsExperimental === true ? [`  ${text.alone(rule.id)}`] : [])] : [];
+    rule.status === "experimental" && genreStop === undefined
+      ? [`  ${text.experimental}`, ...(settings.offOnlyAsExperimental === true ? [`  ${text.alone(rule.id)}`] : [])]
+      : [];
+  const now =
+    genreStop === undefined ? `${nowLine(rule, current, limit, language)}${levelFrom === undefined ? "" : text.from(levelFrom)}` : text.notRun(genreStop);
   return [
     "",
     `  ${readableText(rule, rule.name, language)}   (${rule.id})`,
@@ -143,7 +158,7 @@ export const renderExplain = (rule: RuleDefinition, current: Level, language: st
     ...genreNote(rule, genre, text),
     ...optionLines(rule, optionLayers, language),
     "",
-    `  ${limit === undefined ? text.now(current) : text.nowNumber(limitText(rule, limit, language))}${levelFrom === undefined ? "" : text.from(levelFrom)}`,
+    `  ${now}`,
     ...experimental,
     "",
     `  ${text.change(rule.id)}`,
