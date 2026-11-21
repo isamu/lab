@@ -130,3 +130,15 @@ export const isInFileName = (text: string, offset: number, length: number): bool
   const run = withoutTrailingMarks(text.slice(start, offset + length + (after < 0 ? rest.length : after)));
   return run.replace(EXTENSION, "").length > length && FILE_OR_URL.test(run);
 };
+
+/** The word just before a form, with spaces or an opening quotation mark between (A in “A Coiner). */
+const WORD_BEFORE = /(?<!\p{L})(\p{L}+)[\s"“‘']*$/u;
+
+/**
+ * Whether the one-word form at offset follows an article from the lexicon name-count-article (a, an) and is a dictionary
+ * word ("A Coiner, a very good workman" beside Mrs. Coiler): a count noun, not a name.
+ */
+export const isAfterCountArticle = (text: string, offset: number, name: string, articles: readonly string[], isKnown: (word: string) => boolean): boolean => {
+  const before = WORD_BEFORE.exec(text.slice(text.lastIndexOf("\n", offset - 1) + 1, offset))?.[1]?.toLowerCase();
+  return ONE_WORD.test(name) && before !== undefined && articles.includes(before) && isKnown(name.toLowerCase());
+};

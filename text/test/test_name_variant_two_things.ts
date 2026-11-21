@@ -5,6 +5,7 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import {
   isAcronymPair,
+  isAfterCountArticle,
   isContractionPair,
   isInFileName,
   isInverseOrder,
@@ -250,5 +251,30 @@ describe("name-variant: two things, not one name", () => {
     assert.deepEqual(variants(opinion), [
       '"National Industrial Recover Act" has one word a letter away from the title "National Industrial Recovery Act", which the document uses more than once',
     ]);
+  });
+
+  it("isAfterCountArticle: a dictionary word right after a or an on its line", () => {
+    const known = (word: string): boolean => word === "coiner";
+    const quote = 'said to me, "A Coiner, a good workman.';
+    assert.equal(isAfterCountArticle(quote, quote.indexOf("Coiner"), "Coiner", ["a", "an"], known), true);
+    assert.equal(isAfterCountArticle("Mrs. Coiner", 5, "Coiner", ["a", "an"], known), false);
+    assert.equal(isAfterCountArticle("Santa Coiner", 6, "Coiner", ["a", "an"], known), false);
+    assert.equal(isAfterCountArticle("a\nCoiner", 2, "Coiner", ["a", "an"], known), false);
+    assert.equal(isAfterCountArticle("a Blandley", 2, "Blandley", ["a", "an"], known), false);
+    assert.equal(isAfterCountArticle("a Coiner", 2, "Coiner", [], known), false);
+    assert.equal(isAfterCountArticle("Coiner", 0, "Coiner", ["a", "an"], known), false);
+  });
+
+  it("a dictionary word after a or an is a common noun, not a slip of a surname one letter away", () => {
+    const novel =
+      'This lady\'s name was Mrs. Coiler, and I sat beside her.\n\nMrs. Coiler then changed the subject.\n\nAs we walked away Wemmick said to me, "A Coiner, a very good workman."\n';
+    assert.deepEqual(variants(novel), []);
+  });
+
+  it("a slip of a surname without an article, or one no dictionary knows after an article, is still a variant", () => {
+    const novel = "This lady's name was Mrs. Coiler, and I sat beside her.\n\nMrs. Coiler then changed the subject.\n\nLater Mrs. Coiner smiled.\n";
+    assert.deepEqual(variants(novel), ['"Coiner" is one letter away from "Coiler", which the document uses more than once']);
+    const typo = "Mr. Brandley came in. Mr. Brandley sat down. Then a Blandley spoke.\n";
+    assert.deepEqual(variants(typo), ['"Blandley" is one letter away from "Brandley", which the document uses more than once']);
   });
 });

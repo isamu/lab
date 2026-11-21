@@ -3,6 +3,7 @@ import { escapeRegExp } from "../orthography.ts";
 import { isKnownWord, type Speller } from "../spelling.ts";
 import {
   isAcronymPair,
+  isAfterCountArticle,
   isContractionPair,
   isInFileName,
   isInverseOrder,
@@ -90,6 +91,7 @@ type Reading = {
   readonly tokenAt: ReadonlyMap<number, Token>;
   readonly speller: Speller | undefined;
   readonly ordinary: ReadonlySet<string>;
+  readonly countArticles: readonly string[];
 };
 
 const inOneSentence = (sentences: readonly Span[], offset: number, other: number): boolean =>
@@ -98,8 +100,8 @@ const inOneSentence = (sentences: readonly Span[], offset: number, other: number
 /**
  * A one-letter variant (near) that is two names: another form of the word (Texan), the usual form in the same sentence
  * (Constantinus and Constantius, two sons), the differing word written twice or more (Bandle, of Richard Bandle and
- * Mrs. Bandle), a word the document also writes in small letters (Stain, Vigil), two plural acronyms (SBLCs, SBDCs), or a
- * word capitalised by its place (Sprang).
+ * Mrs. Bandle), a word the document also writes in small letters (Stain, Vigil), two plural acronyms (SBLCs, SBDCs), a
+ * dictionary word after a or an (A Coiner), or a word capitalised by its place (Sprang).
  */
 const isNearPair = (reading: Reading, found: Found): boolean => {
   const word = differingWord(found.name, found.usual);
@@ -109,6 +111,13 @@ const isNearPair = (reading: Reading, found: Found): boolean => {
     (word !== undefined && offsetsOf(reading.text, word).length >= 2) ||
     isNameAndWord(found.name, found.usual, reading.text, (word) => reading.speller !== undefined && isKnownWord(word, reading.speller)) ||
     isAcronymPair(found.name, found.usual) ||
+    isAfterCountArticle(
+      reading.text,
+      found.offset,
+      found.name,
+      reading.countArticles,
+      (word) => reading.speller !== undefined && isKnownWord(word, reading.speller),
+    ) ||
     isCapitalisedByPlace(found, reading.text, reading.sentenceStarts, reading.speller, reading.ordinary)
   );
 };
@@ -135,6 +144,7 @@ export const twoThingsIn = (
     tokenAt: new Map(tokens.map((token) => [token.span.start, token])),
     speller,
     ordinary,
+    countArticles: patternsOf(doc, "name-count-article"),
   };
   return (found) =>
     (found.kind === "near" && isNearPair(reading, found)) ||
