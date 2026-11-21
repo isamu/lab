@@ -42,6 +42,8 @@ const CLOSING_MARK = new Set([".", ";", ":", "?", "!", ")"]);
  */
 const PHRASE_END = new Set(["AUX", "ADP", "SCONJ", "PRON", "DET", "ADV"]);
 const PREDICATE_TAIL = new Set(["DET", "ADJ", "PRON", "NUM"]);
+/** 所有の印（'s / '）。不変化詞のうち、これだけが名詞を重ねた語の途中（a children's book）。to や not は名詞句の外。 */
+const POSSESSIVE_MARK = /^['’]/u;
 
 const lower = (token: Token): string => token.surface.toLowerCase();
 
@@ -54,6 +56,7 @@ const isPlural = (token: Token): boolean => token.features?.["Number"] === "Plur
 /** 名詞の後ろの語で、名詞句が終わるか。分詞（a data driven approach）も名詞を重ねた語の途中。 */
 export const endsNounPhrase = (next: Token | undefined, finite: ReadonlySet<string>): boolean => {
   if (next === undefined || finite.has(lower(next))) return true;
+  if (next.pos === "PART") return !POSSESSIVE_MARK.test(next.surface);
   return next.pos === "PUNCT" ? CLOSING_MARK.has(next.surface) : PHRASE_END.has(next.pos);
 };
 
@@ -128,7 +131,8 @@ const mayBeNoun = (token: Token): boolean => token.features?.["AlsoNoun"] === "Y
 /**
  * 名詞が動詞にも読め（works）、その前に名詞句の頭になれる語があれば、限定詞と名詞ではなく主語と動詞かもしれない。
  * an individual works（individual は名詞にもなる）/ Those responsible report to the board（those は代名詞にもなる）。
- * 後ろが is / has なら、名詞は動詞ではない（these key result is）。
+ * 後ろが is / has なら、名詞は動詞ではない（these key result is）。後ろが to なら、解析器が動詞と知らない語も動詞かもしれない
+ * （every key maps to an array の maps）。
  */
 const mayBeVerb = (
   determiner: Determiner,
@@ -138,7 +142,7 @@ const mayBeVerb = (
   finite: ReadonlySet<string>,
   bound: boolean,
 ): boolean =>
-  noun.features?.["AlsoVerb"] === "Yes" &&
+  (noun.features?.["AlsoVerb"] === "Yes" || next?.pos === "PART") &&
   !(next !== undefined && finite.has(lower(next))) &&
   ((standsAlone(determiner) && !bound) || modifiers.some(mayBeNoun));
 
