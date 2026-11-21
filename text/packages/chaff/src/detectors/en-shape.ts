@@ -67,6 +67,38 @@ export const beforeConcession = (tokens: readonly Token[]): readonly Token[] => 
   return at === -1 ? tokens : tokens.slice(0, at);
 };
 
+/** The words a be can follow in the same verb: a modal (There will be), a perfect's have (There have been), a negation (There has never been). */
+const BEFORE_BE = new Set([
+  "will",
+  "would",
+  "may",
+  "might",
+  "can",
+  "could",
+  "should",
+  "must",
+  "shall",
+  "'ll",
+  "wo",
+  "ca",
+  "has",
+  "have",
+  "had",
+  "'ve",
+  "'d",
+  "not",
+  "n't",
+  "never",
+]);
+
+/** The be of the verb right after head, past the modal, have and negation before it: There were / There have been / There will not be. */
+const beAfter = (tokens: readonly Token[], head: Token): Token | undefined => {
+  const words = tokens.filter((token) => token.span.start >= head.span.end && token.pos !== "PUNCT");
+  const at = words.findIndex((token) => !BEFORE_BE.has(token.surface.toLowerCase()));
+  const verb = words[at];
+  return verb !== undefined && BE.has(verb.lemma ?? verb.surface.toLowerCase()) ? verb : undefined;
+};
+
 /**
  * There is / It is ... that は、主語を後ろへ押しやって誰が何をするのかを消す。
  * 「There is a need to review」は、誰が必要としているのかを言っていない。
@@ -76,8 +108,7 @@ const expletiveAt = (tokens: readonly Token[]): Token | undefined => {
   if (head === undefined) return undefined;
   const lead = head.surface.toLowerCase();
   if (lead !== "there" && lead !== "it") return undefined;
-  const next = tokens.find((token) => token.span.start >= head.span.end && token.pos !== "PUNCT");
-  if (next === undefined || !BE.has(next.lemma ?? next.surface.toLowerCase())) return undefined;
+  if (beAfter(tokens, head) === undefined) return undefined;
   // "it is" は "it is raining" のような正当な用法があるので、that 節を伴うときだけ数える。
   if (lead === "it" && !beforeConcession(tokens).some((token) => token.surface.toLowerCase() === "that")) return undefined;
   return head;
