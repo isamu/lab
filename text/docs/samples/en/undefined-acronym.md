@@ -119,7 +119,7 @@ $ npx chaffjs explain undefined-acronym --genre business/report
     relaxed  reported once 5 different acronyms go unexplained, or from the first one when the document itself spells out 5 others
     off      not checked
 
-  These numbers are for business/report. technical / business / speech / docs/faq / docs/manual have numbers of their own.
+  These numbers are for business, which business/report takes. technical / speech / docs/faq / docs/manual have numbers of their own.
 
   Now: normal.
 
