@@ -5,6 +5,8 @@ import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { oneSentenceRuns } from "../packages/chaff/src/paragraph-runs.ts";
+import { loadRules } from "../packages/chaff/src/rule-load.ts";
+import { runRules } from "../packages/chaff/src/run.ts";
 
 // 一文だけの段落の連続（one-sentence-paragraph-run）。例文はすべて自作。
 
@@ -68,6 +70,22 @@ describe("one-sentence-paragraph-run", () => {
   it("英語の文書は英語で言う", () => {
     const source = ["One.", "Two.", "Three.", "Four.", "Five."].map((word) => `Sentence ${word}`).join("\n\n");
     assert.deepEqual(findingsOf(`${source}\n`, en), ["5 one-sentence paragraphs in a row (limit 4)"]);
+  });
+
+  it("引用は最初の段落の文で止まり、次の段落へ続かない", () => {
+    const quotesOf = (source: string, adapter: typeof ja): string[] =>
+      runRules(buildDocument("a.md", source, adapter), loadRules(adapter.id), { [RULE]: "normal" }, false, "business/report")
+        .findings.filter((finding) => finding.rule === RULE)
+        .map((finding) => finding.quote);
+    const english = [
+      "The café opened for the first time.",
+      "We had queued since dawn.",
+      "The first customer ordered tea.",
+      "By noon the cakes were gone.",
+      "The owner smiled.",
+    ];
+    assert.deepEqual(quotesOf(`${english.join("\n\n")}\n`, en), ["The café opened for the first time."]);
+    assert.deepEqual(quotesOf(`${paragraphs(5)}\n`, ja), ["1番目の文です。"]);
   });
 
   it("途中に見出しがあれば数え直す", () => {
