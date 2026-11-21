@@ -296,6 +296,7 @@ npx chaffjs feedback a.md --rule <ルール> --line 42    誤った指摘の報�
 - [AI の評価（AI evals）に使う](https://isamu.github.io/lab/ja/guide/ai-evals/)
 - [CI](https://isamu.github.io/lab/ja/guide/ci/)
 - [ルールの一覧](https://isamu.github.io/lab/ja/rules/)
+- [直せる文章の見本](https://github.com/isamu/lab/tree/main/text/docs/samples/ja): ルールごとに、元の文章、chaff の指摘、直した文章、設定
 
 ソースは [GitHub の isamu/lab の text/](https://github.com/isamu/lab/tree/main/text) にあります。
 
