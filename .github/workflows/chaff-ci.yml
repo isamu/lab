@@ -70,6 +70,10 @@ jobs:
       - name: build
         run: yarn build
 
+      # rule の見本（docs/samples）は 1 ページで chaff を 3 回動かし、出力は OS に依らないので、3 OS の部分から外してここで 1 度だけ走らせる。
+      - name: rule samples
+        run: node --test test/test_rule_samples.ts
+
   # 公開しているパッケージなので 3 OS で回す。テストファイルを scripts/test-parts.ts の部分に分け、部分ごとに別の job で走らせる。
   # 部分 1 は全部の rule の例と手引きの画面を回す重いファイル、残りの部分はほかのファイルを分け合う。
   test:

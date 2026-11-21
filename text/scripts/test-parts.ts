@@ -6,12 +6,18 @@
  */
 export const HEAVY_FILES: readonly string[] = ["test/test_rule_reference.ts", "test/test_guide_screen_output.ts"];
 
-/** Part `part` of `parts` (counted from 1): part 1 is the heavy files, and the others share the rest file by file. */
+/**
+ * Files that a split run leaves out because CI runs them in a job of their own, on one OS: the rule samples run chaff
+ * three times per page, their output does not depend on the OS, and in the three-OS parts they would push a part past its time limit.
+ */
+export const OWN_JOB_FILES: readonly string[] = ["test/test_rule_samples.ts"];
+
+/** Part `part` of `parts` (counted from 1): part 1 is the heavy files, and the others share the rest file by file, leaving out OWN_JOB_FILES. */
 export const partFiles = (files: readonly string[], part: number, parts: number): string[] => {
   if (!Number.isInteger(parts) || parts < 1 || !Number.isInteger(part) || part < 1 || part > parts)
     throw new Error(`test parts: no part ${part} of ${parts} (a part is 1 to the number of parts)`);
   if (parts === 1) return [...files];
-  const rest = files.filter((file) => !HEAVY_FILES.includes(file));
+  const rest = files.filter((file) => !HEAVY_FILES.includes(file) && !OWN_JOB_FILES.includes(file));
   return part === 1 ? files.filter((file) => HEAVY_FILES.includes(file)) : rest.filter((_, index) => index % (parts - 1) === part - 2);
 };
 
