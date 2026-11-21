@@ -1,4 +1,5 @@
 import type { Span, Token } from "../plugin.ts";
+import { quotedSpans } from "../quoted-span.ts";
 
 /** 頭から外す語と、文書全体の座標でのその範囲。 */
 export type Edge = { readonly surface: string; readonly span: Span };
@@ -14,6 +15,20 @@ const KANJI_OR_HIRAGANA = /[一-鿿ぁ-ゖ]/u;
  */
 export const holdsName = (text: string, span: Span, start: number, end: number): boolean =>
   span.start <= start && end <= span.end && !KANJI_OR_HIRAGANA.test(text.slice(span.start, start) + text.slice(end, span.end));
+
+const HIRAGANA_HEAD = /^\s*[ぁ-ゖ]/u;
+
+/**
+ * 漢字の連なり [start, end) が、一行を漢字も平仮名も無い語（ダイヤル）とだけで埋め、その下に行が続くか。
+ * 番号や内容の上に置いた名前の行（児童相談所虐待対応ダイヤル / 189）。下の行が平仮名で始まれば、折り返した文の途中。
+ */
+export const labelsLines = (text: string, start: number, end: number): boolean => {
+  const lineStart = text.lastIndexOf("\n", start - 1) + 1;
+  const lineEnd = text.indexOf("\n", end);
+  if (start >= end || lineEnd < 0) return false;
+  const below = text.slice(lineEnd + 1);
+  return below.trim() !== "" && !HIRAGANA_HEAD.test(below) && holdsName(text, { start: lineStart, end: lineEnd }, start, end);
+};
 
 /** 連なりの前（before: 文の頭から連なりまで）が、空白を挟んだ法人格で終わるか（一般社団法人 全国銀行個人信用情報センター）。 */
 export const followsForm = (before: string, forms: readonly string[]): boolean => {
@@ -108,3 +123,15 @@ export const trailingConjunction = (tokens: readonly Token[], start: number, end
   if (token === undefined || token.pos !== "CCONJ" || token.span.start <= start) return undefined;
   return { surface: run.slice(run.length - (end - token.span.start)), start: token.span.start };
 };
+
+/** 丸括弧の補い。 */
+const GLOSS_MARKS = { "（": "）", "(": ")" };
+/** 補いの括弧のすぐ前に立つ、語の字（修士の学位（…）の「位」、ＥＢＩＴＤＡ＋（…）の「＋」）。 */
+const GLOSSED_WORD_END = /[\p{Script=Han}\p{Script=Katakana}\p{Script=Latin}\p{N}ー＋+]$/u;
+
+/**
+ * 語のすぐ後ろの丸括弧の中身が、この連なりだけか（ＥＢＩＴＤＡ＋（減価償却他調整前営業利益）、修士の学位（大学院修士課程修了程度））。
+ * 前の語の言い換えや展開で、書き手が 1 つの名前として示したもの。
+ */
+export const fillsGloss = (text: string, start: number, end: number): boolean =>
+  quotedSpans(text, GLOSS_MARKS).some((span) => GLOSSED_WORD_END.test(text.slice(0, span.start - 1)) && holdsName(text, span, start, end));

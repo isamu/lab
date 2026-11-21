@@ -6,8 +6,10 @@ import { leadingPrefix, trailingTitle, type AddresseeWords } from "./addressee-t
 import {
   followsForm,
   followsUnit,
+  fillsGloss,
   holdsName,
   isListItem,
+  labelsLines,
   leadingDate,
   leadingOrdinal,
   leadingReference,
@@ -45,6 +47,8 @@ type KanjiRun = {
   readonly text: string;
   readonly span: Span | undefined;
   readonly quoted: boolean;
+  /** 連なりが、下に番号や内容の行が続く一行の名前（labelsLines: 児童相談所虐待対応ダイヤル / 189）。 */
+  readonly label: boolean;
   readonly placed: boolean;
   readonly after: string | undefined;
   readonly before: string;
@@ -78,7 +82,7 @@ const maskedProse = (prose: string, profile: DocumentProfile | undefined, names:
  * 括弧でくくった名前は、書き手が 1 つの名前として示したもの（「登録業者情報検索入力ページ」）。
  */
 const fillsQuote = (sentence: Sentence, start: number, end: number): boolean =>
-  quotedSpans(sentence.text, NAME_MARKS).some((span) => holdsName(sentence.text, span, start, end));
+  quotedSpans(sentence.text, NAME_MARKS).some((span) => holdsName(sentence.text, span, start, end)) || fillsGloss(sentence.text, start, end);
 
 const runsOf = (sentence: Sentence, profile: DocumentProfile | undefined, names: readonly string[]): KanjiRun[] => {
   const prose = proseText(sentence);
@@ -92,6 +96,7 @@ const runsOf = (sentence: Sentence, profile: DocumentProfile | undefined, names:
         text: match[0],
         span: undefined,
         quoted: false,
+        label: false,
         placed: false,
         after: undefined,
         before: "",
@@ -112,6 +117,7 @@ const runsOf = (sentence: Sentence, profile: DocumentProfile | undefined, names:
       text: match[0],
       span,
       quoted,
+      label: labelsLines(sentence.text, start, last + 1),
       placed: isTitlePosition(sentence.text, start, last + 1),
       after,
       before: sentence.text.slice(0, start),
@@ -251,13 +257,17 @@ const measuredOf = (tokens: readonly Token[], run: KanjiRun, span: Span, words: 
   return { rest: { start: head?.span.end ?? span.start, end: tail?.start ?? span.end }, text: name.slice(head?.surface.length ?? 0), keptHead };
 };
 
+/** 書き手が名前として示した連なり（括弧でくくった、一行に置いた、用語集の見出し語、文脈で名前と分かる）。 */
+const isPresentedName = (run: KanjiRun, context: RunContext): boolean =>
+  run.quoted || run.label || (context.headwords && run.alone) || isNamedByContext(run, context.words);
+
 /**
  * 数えない連なりは空。頭の、数に付いた助数詞（2日日本弁護士連合会の「日」）と、尻の、数に付く接頭の語（施行令第172条の「第」）と
  * 宛先に付く語（市政情報課宛ての「宛」）は数えない。宛名の「各」と、宛名の行の役職（各国公私立高等専門学校長の「各」と「長」）も数えない。
  * 住所か名前かは、それを外した残りで決める（1日日本銀行の「日本銀行」）。品詞が無ければ判定しない。
  */
 const measuredRun = (tokens: readonly Token[] | undefined, run: KanjiRun, context: RunContext): string => {
-  if (run.quoted || (context.headwords && run.alone) || isNamedByContext(run, context.words)) return "";
+  if (isPresentedName(run, context)) return "";
   if (tokens === undefined || run.span === undefined) return run.text;
   const { rest, text, keptHead } = measuredOf(tokens, run, run.span, context.words);
   if (context.presented.has(text) || inStatuteTitle(tokens, run.brackets, context.words.fixedName)) return "";
@@ -340,6 +350,10 @@ const statuteTerms = (runs: readonly DocumentRun[], fixedName: TitleWords, max: 
     return terms.filter((term) => [...term].length >= MIN_TERM_LENGTH && [...term].length <= max);
   });
 
+/** 文書が一行の名前として置いた連なり（labelsLines）のうち MIN_TERM_LENGTH 字からのもの。文の中の連なり（〜相談電話窓口）を、その名前の後ろで割る。 */
+const labelNames = (runs: readonly DocumentRun[]): string[] =>
+  runs.flatMap(({ run }) => (run.label && [...run.text].length >= MIN_TERM_LENGTH ? [run.text] : []));
+
 /** 文書の genre が、rule の headword_genres（見出し語の行を数えない genre: 用語集）にあるか。 */
 const isHeadwordGenre = (options: DetectorOptions): boolean => {
   const genres = options.settings?.["headword_genres"];
@@ -384,8 +398,9 @@ const contextOf = (doc: ProseDocument, options: DetectorOptions): RunContext => 
     terms: new Set([
       ...standaloneNames([...inSentences, ...headingRuns(doc)], MIN_TERM_LENGTH, options.limit, words.organisation.units),
       ...statuteTerms(runs, words.fixedName, options.limit),
+      ...labelNames(runs),
     ]),
-    presented: new Set(runs.flatMap(({ run }) => (run.quoted ? [run.text] : []))),
+    presented: new Set(runs.flatMap(({ run }) => (run.quoted || run.label ? [run.text] : []))),
     headwords: isHeadwordGenre(options),
     maxKnownWords: Math.max(options.limit, ...[...words.knownWords].map((word) => [...word].length)),
   };

@@ -5,6 +5,7 @@ import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
 import {
   evidenceSpans,
+  familyWithSlots,
   hasNumeral,
   isClaim,
   isConditionHeading,
@@ -625,6 +626,27 @@ describe("withSubsections / namesAsEvidence", () => {
     assert.deepEqual(namesAsEvidence(names, source, sections), [kubecon]);
   });
 
+  const titled = (depth: number, heading: string): { depth: number; heading: string } => ({ depth, heading });
+
+  it("三つ以上の親の下に同じ見出しがある節は、親と親の下の節すべてと合わせる", () => {
+    const parentA = titled(2, "A");
+    const situationA = titled(3, "状況");
+    const solutionA = titled(3, "解決策");
+    const sections = [titled(1, "手引き"), parentA, situationA, solutionA, titled(2, "B"), titled(3, "状況"), titled(2, "C"), titled(3, "状況")];
+    assert.deepEqual(familyWithSlots(sections, situationA), [parentA, situationA, solutionA]);
+    assert.deepEqual(familyWithSlots(sections, solutionA), [solutionA]);
+  });
+
+  it("valid: 親が無い・導入部が親・見出しが空なら、その節と下の節だけ", () => {
+    const intro = { depth: 0, heading: "" };
+    const top = titled(1, "状況");
+    const blank = titled(2, "");
+    assert.deepEqual(familyWithSlots([intro, top, blank], top), [top, blank]);
+    assert.deepEqual(familyWithSlots([intro, top, blank, titled(2, ""), titled(2, "")], blank), [blank]);
+    const stray = titled(3, "状況");
+    assert.deepEqual(familyWithSlots([], stray), [stray]);
+  });
+
   it("valid: 名前が無ければ何も数えない。節の外の名前も数えない", () => {
     assert.deepEqual(namesAsEvidence([], "", [at(1, 0, 1)]), []);
     assert.deepEqual(namesAsEvidence([{ start: 0, end: 4 }], "Acme", []), []);
@@ -666,6 +688,23 @@ describe("concrete-evidence-density: 名前・ドメイン名・下の節", () =
   it("invalid: 下の節にも具体物が無い親の節は、今までどおり指摘する", () => {
     const source = `${englishWith(ABSTRACT_EN)}\n\n### Detail\n\n${ABSTRACT_EN}\n`;
     assert.deepEqual(flaggedIn(source, en), [...OTHERS_EN, "Last", "Detail"]);
+  });
+
+  /** 項目ごとに「状況」「解決策」の欄を繰り返す手引き。具体物は解決策の欄にだけある。 */
+  const slotGuide = (items: readonly string[], solution: string): string =>
+    ["# 手引き", ...items.map((item) => `## ${item}\n\n### 状況\n\n${ABSTRACT_JA}\n\n### 解決策\n\n${solution}`)].join("\n\n");
+  const CONCRETE_SOLUTION = "週に 1 回、面談を開きます。面談は担当者が開きます。記録は全員が読みます。";
+
+  it("valid: 項目ごとに繰り返す型の欄は、項目の他の欄と合わせて見る（状況の欄に数字が無くても、解決策の欄にあれば指摘しない）", () => {
+    assert.deepEqual(flaggedIn(slotGuide(["面談", "歓迎", "共有"], CONCRETE_SOLUTION), ja), []);
+  });
+
+  it("invalid: 型の欄でも、項目のどの欄にも具体物が無ければ指摘する", () => {
+    assert.deepEqual(flaggedIn(slotGuide(["面談", "歓迎", "共有"], ABSTRACT_JA), ja), ["状況", "解決策", "状況", "解決策", "状況", "解決策"]);
+  });
+
+  it("invalid: 同じ見出しが二つの項目にしか無ければ型の欄とは見ず、その節だけで見る", () => {
+    assert.deepEqual(flaggedIn(slotGuide(["面談", "歓迎"], CONCRETE_SOLUTION), ja), ["状況", "状況"]);
   });
 
   it("invalid: 大文字だけの略語と、文頭の大文字の語は名前に数えない（API、Chimneys）", () => {

@@ -92,9 +92,32 @@ describe("referenceEntrySpans", () => {
     assert.deepEqual(referenceEntrySpans("[FETCH] WHATWG says so."), []);
   });
 
+  it("valid: a label too long for its column, followed by one space or alone on its line", () => {
+    const long = [
+      '   [GUIDE.DISC] Example Institute, "The ACME Guide to',
+      '              Disclosure", August 2017.',
+      "",
+      "   [STD.1234.2018]",
+      '              ISO, "Security techniques", ISO/IEC 1234:2018.',
+      "",
+      "   The IANA registry is updated.",
+    ].join("\n");
+    const inEntry = (word: string): boolean => referenceEntrySpans(long).some((span) => span.start <= long.indexOf(word) && long.indexOf(word) < span.end);
+    assert.equal(inEntry("ACME"), true);
+    assert.equal(inEntry("Disclosure"), true);
+    assert.equal(inEntry("IEC"), true);
+    assert.equal(inEntry("IANA"), false);
+  });
+
+  it("invalid: prose opening a line with a bracketed citation, its next line no deeper", () => {
+    const prose = ["   [JSON] and XML [XML] formats describe the", "   specifics of a problem.", "", "   [XSLT]", "   is cited here."].join("\n");
+    assert.deepEqual(referenceEntrySpans(prose), []);
+  });
+
   it("abnormal input: empty text, a label alone", () => {
     assert.deepEqual(referenceEntrySpans(""), []);
     assert.deepEqual(referenceEntrySpans("[FETCH]"), []);
+    assert.deepEqual(referenceEntrySpans("[FETCH]\n"), []);
   });
 });
 
@@ -111,6 +134,15 @@ describe("undefined-acronym: series, spelled names, reference entries, judges, c
       "              STD 66, January 2005.",
     ];
     assert.deepEqual(reportedAcronyms(en, references.join("\n")), ["SRE"]);
+    const longLabel = [
+      "# Notes",
+      "",
+      "The SRE joins the call.",
+      "",
+      '   [GUIDE.DISC] Example Institute, "The ACME Guide to',
+      '              Disclosure", August 2017.',
+    ];
+    assert.deepEqual(reportedAcronyms(en, longLabel.join("\n")), ["SRE"]);
   });
 
   it("invalid: a lone DR, a name in another sentence, capitals in prose", () => {
@@ -127,6 +159,8 @@ describe("undefined-acronym: series, spelled names, reference entries, judges, c
     assert.deepEqual(reportedAcronyms(en, doc("The President, by Executive Order No. 6199 (15 USCA § 709 note), and (15 USCA Appendix § 12), acted.")), [
       "SRE",
     ]);
+    const governmentRights = "The Software is a commercial item according to FAR section 12.212 and DFARS 227.7202, and any other use is prohibited.";
+    assert.deepEqual(reportedAcronyms(en, doc(governmentRights)), ["SRE"]);
   });
 
   it("invalid: the same capitals without the title or the mark", () => {
@@ -134,6 +168,7 @@ describe("undefined-acronym: series, spelled names, reference entries, judges, c
     assert.deepEqual(reportedAcronyms(en, doc("The GT team owns the rights.")), ["GT", "SRE"]);
     assert.deepEqual(reportedAcronyms(en, doc("Use DC power here.")), ["DC", "SRE"]);
     assert.deepEqual(reportedAcronyms(en, doc("The USCA team met.")), ["USCA", "SRE"]);
+    assert.deepEqual(reportedAcronyms(en, doc("The FAR team met.")), ["FAR", "SRE"]);
   });
 
   it("invalid: an organisation's acronym inside its name stays reported: readers list such names under names in chaff.yaml", () => {

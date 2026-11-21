@@ -99,9 +99,13 @@ cases(
     ["§ の前", "under 21 USC §301 et seq and 22 CCR §§ 12801", ["USC", "CCR"]],
     ["Part と番号の前", "see CFR Part 117 today", ["CFR"]],
     ["スラッシュで繋いだ番号の後ろ", "Recommendation 94/820/EC provides", ["EC"]],
+    ["条の番号の前の調達規則", "a commercial item for purposes of FAR 12.212 and DFARS 227.7202", ["FAR", "DFARS"]],
+    ["section と番号の前", "according to FAR section 12.212 and DFAR section 227.7202", ["FAR", "DFAR"]],
   ],
   [
     ["文の中で法令集そのものを言う", "the number of the CFR title and each part"],
+    ["section の後ろに番号が無い", "the FAR section on pricing"],
+    ["大文字で書いた普通の語", "YOU ARE FAR FROM HOME"],
     ["引用の形でない", "the EC provides and the USC campus"],
     ["番号の後ろでも条が続かない", "The 2 CFR export was generated"],
   ],
