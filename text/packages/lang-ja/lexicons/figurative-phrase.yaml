@@ -2,12 +2,15 @@
 # figurative-density が文書の長さあたりの数で読む。一つ一つは誤りではないので、重なったときだけ言う。
 # 例を挙げる「〜のような」（A や B のような製品）は数えない。たとえだけに使う語を載せる。
 # 一つの文に二つの語が当たると二つと数えるので、ほかの語を含む長い形（魔法のよう）は載せない。
+# group: opener は、後ろのたとえを導く語（まるで魔法のように）。同じ文にほかの語が当たれば、合わせて一つのたとえと数える。
 id: figurative-phrase
 language: ja
 entries:
   - pattern: まるで
+    group: opener
     rewrite: 何がどう動くかをそのまま書く
   - pattern: あたかも
+    group: opener
     rewrite: 何がどう動くかをそのまま書く
   - pattern: かのよう
     rewrite: 実際にどうなるかを書く
