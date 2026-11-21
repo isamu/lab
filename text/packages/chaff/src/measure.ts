@@ -21,12 +21,6 @@ export const proseText = (sentence: Sentence): string =>
 
 export const charLength = (sentence: Sentence): number => sentence.text.replace(/\s+/gu, "").length;
 
-/** A piece between spaces counts as a word when it holds a letter, a digit or a symbol: a loose "," or "." is not one. */
-const WORD = /[\p{L}\p{N}\p{S}]/u;
-
-/** The words of text, split at spaces, without loose punctuation. max-sentence-length counts with it. */
-export const wordCount = (text: string): number => text.split(/\s+/u).filter((word) => WORD.test(word)).length;
-
 const wordLength = (sentence: Sentence): number =>
   proseText(sentence)
     .split(" ")

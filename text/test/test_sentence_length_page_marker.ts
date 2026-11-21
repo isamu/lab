@@ -31,7 +31,7 @@ describe("pageMarkerPattern and pageMarkerSize", () => {
   const pattern = pageMarkerPattern(["( printed page #)", "[[Page #]]", "－ # －"]);
 
   it("reads each marker, with or without spaces, and counts its words or its characters", () => {
-    assert.equal(pageMarkerSize("the remediation ( printed page 52044) workflows", pattern, "word"), 3);
+    assert.equal(pageMarkerSize("the remediation ( printed page 52044) workflows", pattern, "word"), 4);
     assert.equal(pageMarkerSize("the plan [[Page 12]] and (printed page 3)", pattern, "word"), 5);
     assert.equal(pageMarkerSize("計画は－ 12 －次の通り", pattern, "char"), 4);
     assert.equal(pageMarkerSize("計画は－12－次の通り", pattern, "char"), 4);

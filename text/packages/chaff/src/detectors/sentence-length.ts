@@ -1,4 +1,4 @@
-import { lengthOf, proseText, wordCount } from "../measure.ts";
+import { lengthOf, proseText } from "../measure.ts";
 import type { Detector, DetectorOptions, Finding, LengthUnit, Sentence } from "../plugin.ts";
 import { authorListSaving, citationLead, withoutEarlierReference } from "./citation-sentence.ts";
 import { isCitationString, wordsAroundCitation } from "./citation-string.ts";
@@ -28,10 +28,18 @@ type SentenceWords = {
 const unwrittenWords = (sentence: Sentence, text: string, listItems: SentenceWords["listItems"]): number =>
   termSeriesSaving(text) + authorListSaving(text) + (isInListItem(sentence.span, listItems) || isReferenceLine(text) ? quotedTitleWords(text) : 0);
 
-const sizeOf = (text: string, unit: LengthUnit): number => (unit === "word" ? wordCount(text) : text.replace(/\s+/gu, "").length);
+/**
+ * A comma or a stop typed with one space before it ("the same brick , and"). It is no word of its own. One space only:
+ * the spaces that hide markup ("**TITLE**.", "[link](url),") are left counted, as the measure has always read them.
+ */
+const TYPED_LOOSE_STOP = /(?<=[\p{L}\p{N}]) [,.;:!?]+(?=\s|$)/gu;
 
-/** A sentence's length, its words counted without loose punctuation (a "," set apart by spaces). */
-const sentenceSize = (sentence: Sentence, unit: LengthUnit): number => (unit === "word" ? wordCount(proseText(sentence)) : lengthOf(sentence, unit));
+/** A sentence's length; where words are the unit, a typed loose comma or stop is not counted. */
+const sentenceSize = (sentence: Sentence, unit: LengthUnit): number =>
+  lengthOf(sentence, unit) - (unit === "word" ? [...sentence.text.matchAll(TYPED_LOOSE_STOP)].length : 0);
+
+const sizeOf = (text: string, unit: LengthUnit): number =>
+  unit === "word" ? text.split(/\s+/u).filter((word) => word.length > 0).length : text.replace(/\s+/gu, "").length;
 
 /** 「」の中に句点で閉じた文が二つ以上あれば、その一つ一つと括弧の外を別に測る（引いた事故の報告「…転落。…入院。」）。 */
 const longestQuotedPart = (text: string, size: number, markers: RegExp | undefined): number => {
