@@ -157,6 +157,10 @@ const untagged = (rule: RuleDefinition, doc: ProseDocument): string | undefined 
 
 const suitsGenre = (rule: RuleDefinition, genre: string): boolean => rule.use_for.some((target) => genre.startsWith(target));
 
+/** Why the genre keeps the rule from running, in a run's words: use_for leaves the genre out, or its preset turns the rule off and chaff.yaml does not name it. */
+export const genreStop = (rule: RuleDefinition, settings: Settings, preset: Settings, genre: string, reasons: Reasons): string | undefined =>
+  !suitsGenre(rule, genre) || (settings[rule.id] === undefined && preset[rule.id] === "off") ? reasons.presetOff(genre) : undefined;
+
 const forGenre = (rules: readonly RuleDefinition[], genre: string): RuleDefinition[] => rules.filter((rule) => suitsGenre(rule, genre));
 
 /** A rule use_for keeps out of the genre. A rule for another language says that first: no genre would run it here. */
