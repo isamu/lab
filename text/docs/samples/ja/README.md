@@ -11,7 +11,7 @@ chaff が見つけるまちがいを、ルールごとに一つずつ見本に�
 
 English samples: [../en/README.md](../en/README.md)
 
-見本のあるルール: 63 / 272
+見本のあるルール: 162 / 272
 
 ## 読みやすさ
 
@@ -19,9 +19,33 @@ English samples: [../en/README.md](../en/README.md)
 
 | ルール | 見つけるもの |
 | --- | --- |
+| [一文に逆接の「が」が二度](adversative-ga-repeat.md)（`adversative-ga-repeat`） | 「〜だが、〜するが、」のように、一文の中で逆接の「が」を二度使った所 |
+| [太字の使いすぎ](bold-density.md)（`bold-density`） | 太字が多すぎて、どこが大事なのか分からなくなった所 |
+| [括弧の中に括弧が重なっている](bracket-nesting.md)（`bracket-nesting`） | 「（注（a（b）））」のように、括弧の中に括弧が何重にも重なった文 |
+| [一文に節がつながりすぎている](clause-chain.md)（`clause-chain`） | 「〜て、〜し、〜が、〜ので、」のように、一文の中で節を次々につないでいる所 |
+| [指示語で始まる文の連続](demonstrative-opener-run.md)（`demonstrative-opener-run`） | 「これは」「その」「この」のような指示語で始まる文が、同じ段落の中で続く所 |
+| [二重否定](double-negative.md)（`double-negative`） | 「〜ないわけではない」「〜しないことはない」のように、打ち消しを打ち消した言い方 |
+| [絵文字が多い](emoji-density.md)（`emoji-density`） | 絵文字が多すぎて、飾りのほうが目立つ所 |
+| [見出しの繰り返し](heading-echo.md)（`heading-echo`） | 見出しのすぐ後の文が、見出しをほぼそのまま繰り返している所 |
+| [副詞は ひらがなで](hiragana-fukushi.md)（`hiragana-fukushi`） | 「殆ど」「勿論」のように、ひらがなのほうが読みやすい副詞を漢字で書いた所 |
 | [漢字が続きすぎている](max-kanji-continuous.md)（`max-kanji-continuous`） | 「新規顧客獲得施策検討会議」のように、漢字だけが長く続く所 |
-
-まだ見本の無いルール: `adversative-ga-repeat`, `bold-density`, `bracket-nesting`, `clause-chain`, `demonstrative-opener-run`, `double-negative`, `emoji-density`, `heading-echo`, `hiragana-fukushi`, `max-paragraph-length`, `max-sentence-length`, `max-ten`, `ngram-repetition`, `no-doubled-joshi`, `no-nakaguro-parallel`, `one-sentence-paragraph-run`, `paragraph-restatement`, `proper-noun-density`, `repeated-conjunction`, `repeated-sentence-ending`, `repeated-sentence-head`, `sentence-initial-conjunction-run`, `taigen-dome-in-prose`, `title-length`, `topic-predicate-distance`, `undefined-acronym`
+| [段落が長すぎる](max-paragraph-length.md)（`max-paragraph-length`） | 文を詰めこみすぎて、息をつく場所がない段落 |
+| [一文が長すぎる](max-sentence-length.md)（`max-sentence-length`） | 読み終える前に主語を見失うほど長い一文 |
+| [一文の読点が多すぎる](max-ten.md)（`max-ten`） | 一文の中に読点（、）がいくつも入り、細かく切れている所 |
+| [同じ言い回しの繰り返し](ngram-repetition.md)（`ngram-repetition`） | 同じ言い回しが何度も出てきて、新しいことを言っていないように読める所 |
+| [同じ助詞が入れ子で続いている](no-doubled-joshi.md)（`no-doubled-joshi`） | 「会社の部の課の方針」のように、同じ助詞が区切りなしに続く所 |
+| [中黒で並べすぎている](no-nakaguro-parallel.md)（`no-nakaguro-parallel`） | 一つの文に「・」で並べた語が多すぎて、どれとどれが組なのか分からない所 |
+| [一文だけの段落が続いている](one-sentence-paragraph-run.md)（`one-sentence-paragraph-run`） | 一文ごとに段落を分けた所が続き、どの文が同じ話なのかが見えない所 |
+| [前の段落を言い直すだけの段落](paragraph-restatement.md)（`paragraph-restatement`） | 「つまり」「このように」で始まり、前の段落の語をほとんど繰り返すだけの段落 |
+| [固有名詞が多い](proper-noun-density.md)（`proper-noun-density`） | 製品名・会社名・人名が詰まりすぎて、知らない人には文の形が見えない所 |
+| [段落が同じ調子で始まり続ける](repeated-conjunction.md)（`repeated-conjunction`） | 「また、」「さらに、」のように、接続詞で始まる段落が続く所 |
+| [同じ文末が続く](repeated-sentence-ending.md)（`repeated-sentence-ending`） | 「〜です。〜です。〜です。」のように、同じ形で終わる文が続く所 |
+| [同じ書き出しの連続](repeated-sentence-head.md)（`repeated-sentence-head`） | 同じ言葉で始まる文が続き、文の切れ目がぼやける所 |
+| [接続詞で始まる文が続いている](sentence-initial-conjunction-run.md)（`sentence-initial-conjunction-run`） | 「そして」「しかし」（And、But）で始まる文が続く所 |
+| [体言止めが続いている](taigen-dome-in-prose.md)（`taigen-dome-in-prose`） | 名詞で終わる文（体言止め）が本文に続き、言いかけのように読める所 |
+| [題や見出しが長すぎる](title-length.md)（`title-length`） | 一目で読めないほど長い題や見出し |
+| [主題と述語が離れている](topic-predicate-distance.md)（`topic-predicate-distance`） | 「会議は」のように主題を出してから、文の終わりの述語まで長く待たせる文 |
+| [略語が説明なしで出てくる](undefined-acronym.md)（`undefined-acronym`） | 「KGI」「PMF」のように、説明なしで出てくる略語 |
 
 ## 言葉づかい
 
@@ -83,17 +107,87 @@ English samples: [../en/README.md](../en/README.md)
 
 | ルール | 見つけるもの |
 | --- | --- |
+| [同じ略語の二通りの展開](acronym-expansion-conflict.md)（`acronym-expansion-conflict`） | 同じ略語を、文書の中で違う名前に展開している所 |
+| [同じ桁の金額を二通りに書いている](amount-scale-consistency.md)（`amount-scale-consistency`） | 「30万円」と「250,000円」のように、同じ桁の金額を「万」と数字だけの二通りで書いている所 |
+| [言葉のリンクの中に URL がそのまま混ざっている](bare-url-mix.md)（`bare-url-mix`） | 言葉でリンクを書く文書の中に、「https://…」がそのまま書かれている所 |
+| [括弧の全角と半角の混在](bracket-width-consistency.md)（`bracket-width-consistency`） | 日本語の文の中で、括弧の全角（（）［］）と半角（()[]）が混ざっている所 |
+| [引用の書き方が揃っていない](citation-style-mix.md)（`citation-style-mix`） | 一つの論文の中で、[1] の引用と（山田, 2020）の引用のように、引用の書き方が混ざっている所 |
+| [言語名の無いコードブロックが混ざっている](code-fence-language-mix.md)（`code-fence-language-mix`） | ほとんどのコードブロックに言語名があるのに、一部だけ無い所 |
+| [ファイルによって書き方が違う語](cross-doc-term-variant.md)（`cross-doc-term-variant`） | 同じ語を、ファイルによって違う書き方で書いている所（サーバ／サーバー、e-mail／email） |
+| [通貨の書き方が混ざっている](currency-notation-consistency.md)（`currency-notation-consistency`） | 「1,000円」と「¥1,000」のように、一つの文書で同じ通貨の金額を二通りに書いた所 |
+| [日付の書き方が揃っていない](date-format-consistency.md)（`date-format-consistency`） | 「2026-10-02」と「2026年10月2日」のように、一つの文書で日付を二通りに書いている所 |
+| [短い呼び名を定めた名前を、あとで正式の名前のまま書いている](defined-name-repeated.md)（`defined-name-repeated`） | 「株式会社みなと製作所（以下「甲」という。）」のあとで、甲を正式の名前のまま書いている所 |
+| [定義した語を、定義と違う形で使っている](defined-term-form.md)（`defined-term-form`） | 契約や規程で、定義した語を、定義のあとで違う形（括弧付き、言い換え、長くした形）で書いた所 |
+| [省略記号の書き方が混ざっている](ellipsis-consistency.md)（`ellipsis-consistency`） | 「……」と「・・・」、「…」と「...」のように、一つの文書で省略の記号を二通りに書いている所 |
+| [！？ の全角と半角の混在](exclamation-width-consistency.md)（`exclamation-width-consistency`） | 日本語の文の中で、！？ の全角と半角（!?）が混ざっている所 |
+| [英数字の全角と半角が混ざっている](fullwidth-alnum-consistency.md)（`fullwidth-alnum-consistency`） | 英字や数字を、全角（ＡＢＣ１２３）と半角（ABC123）で混ぜて書いている所 |
+| [見出しの終わりの記号が揃っていない](heading-end-punctuation-mix.md)（`heading-end-punctuation-mix`） | 記号なしの見出しの中に「準備：」「確認。」のように記号で終わる見出しが混ざっている所（またはその逆） |
+| [カタカナ語の語末の「ー」がそろっていない](katakana-long-vowel.md)（`katakana-long-vowel`） | カタカナ語の語末の「ー」を、同じ語で付けたり省いたりしている所（コンピューター、コンピュータ） |
+| [句読点の書き方がそろっていない](kutoten-consistency.md)（`kutoten-consistency`） | 読点の「、」と「，」、句点の「。」と「．」が、一つの文書の中で混ざっている所 |
+| [英数字の前後の空白がそろっていない](latin-spacing.md)（`latin-spacing`） | 日本語と英数字のあいだの空白が、文書の中で付いたり付かなかったりしている所 |
+| [箇条書きの項目の形がそろっていない](list-item-form-mix.md)（`list-item-form-mix`） | 一つの箇条書きの中で、名詞で終わる項目と文で終わる項目（英語では動詞で始まる項目と名詞で始まる項目）が混ざっている所 |
+| [箇条書きの記号が揃っていない](list-marker-mix.md)（`list-marker-mix`） | 一つのリストや一つの文書の中で、「-」「*」「+」「・」の箇条書きの記号が混ざっている所 |
+| [「。」で終わらない段落](missing-final-period.md)（`missing-final-period`） | 「。」で終わる段落の多い文書で、「。」無しで終わった段落 |
+| [同じ名前の書き分け](name-variant.md)（`name-variant`） | 同じ人・会社・製品の名前を、少しだけ違う形で書いている所（山田太郎 と 山田太朗、GitHub と Github） |
 | [文末の調子が混ざっている](no-mixed-desumasu.md)（`no-mixed-desumasu`） | 「です・ます」の中に「だ・である」が混ざった文 |
-
-まだ見本の無いルール: `acronym-expansion-conflict`, `amount-scale-consistency`, `bare-url-mix`, `bracket-width-consistency`, `citation-style-mix`, `code-fence-language-mix`, `cross-doc-term-variant`, `currency-notation-consistency`, `date-format-consistency`, `defined-name-repeated`, `defined-term-form`, `ellipsis-consistency`, `exclamation-width-consistency`, `fullwidth-alnum-consistency`, `heading-end-punctuation-mix`, `katakana-long-vowel`, `kutoten-consistency`, `latin-spacing`, `list-item-form-mix`, `list-marker-mix`, `missing-final-period`, `name-variant`, `number-style-consistency`, `orthographic-variant`, `outside-announced-list`, `party-order`, `party-role-name`, `person-consistency`, `range-notation-consistency`, `shell-prompt-mix`, `table-header-variant`, `ui-label-variant`, `undefined-term`, `unit-spacing-consistency`
+| [数の書き方が混ざっている](number-style-consistency.md)（`number-style-consistency`） | 3件と三件、1,000 と 1000、10% と 10％ のように、一つの文書で数の書き方が混ざっている所 |
+| [同じ語の書き方がゆれている](orthographic-variant.md)（`orthographic-variant`） | 「出来る」と「できる」のように、同じ語を一つの文書の中で二通りに書いている所 |
+| [挙げた一覧に無い名前](outside-announced-list.md)（`outside-announced-list`） | 「対応 OS は Windows と macOS」と挙げたあとで、一覧に無い「Linux」に対応すると書いている所 |
+| [当事者の呼び名を、ほかの所と逆の順に並べている](party-order.md)（`party-order`） | 「甲及び乙」と書く契約の中の「乙及び甲」 |
+| [当事者を、定めた呼び名でなく立場の語で書いている](party-role-name.md)（`party-role-name`） | 当事者を「甲」「乙」と定めたあとで、「委託者」「受託者」のような立場の語で書いている所 |
+| [自分や読み手の呼び方が揃っていない](person-consistency.md)（`person-consistency`） | 「私たち」と「弊社」、「私」と「筆者」のように、一つの文書が自分や読み手を二通りに呼んでいる所 |
+| [範囲の記号が混ざっている](range-notation-consistency.md)（`range-notation-consistency`） | 「10〜20」と「10-20」のように、一つの文書で数の範囲を二通りの記号で書いている所 |
+| [シェルのコマンドにプロンプトを付けたり付けなかったりしている](shell-prompt-mix.md)（`shell-prompt-mix`） | シェルのブロックで、「$」のプロンプトを付けたコマンドと付けないコマンドが混ざっている所 |
+| [表の見出しの書き方が表ごとに違う](table-header-variant.md)（`table-header-variant`） | 同じ欄の見出しを、表によって「担当者」と「担当」のように書き分けている所 |
+| [二通りに書いた画面の札](ui-label-variant.md)（`ui-label-variant`） | 太字や［］の画面の札で、大文字・小文字や空白、「を」「の」だけが違う二通りの書き方 |
+| [定義した語の形で書いたのに、どこにも定義が無い](undefined-term.md)（`undefined-term`） | 「本業務」のように定義した語と同じ形なのに、定義しないまま使っている語（本成果物） |
+| [数と単位の間の空白が混ざっている](unit-spacing-consistency.md)（`unit-spacing-consistency`） | 「5 GB」と「5GB」のように、一つの文書で数と単位記号の間を空けたり詰めたりしている所 |
 
 ## 構造
 
 番号の抜け、無い条への参照、同じ語の二重定義、長い前置き。
 
-このグループの見本はまだありません。
-
-まだ見本の無いルール: `absolute-exception`, `abstract-length`, `broken-link`, `concrete-evidence-density`, `cross-doc-broken-link`, `cross-doc-duplicate-definition`, `dangling-reference`, `date-without-year`, `duplicate-definition`, `duplicate-heading`, `email-greeting-closing`, `email-subject-length`, `empty-list-item`, `empty-section`, `empty-table-cell`, `figure-reference-order`, `footnote-mismatch`, `heading-level-skip`, `heading-numbering-mix`, `image-alt-text`, `image-file-name-alt`, `modal-conflict`, `no-lead`, `number-without-unit`, `numbered-generic-heading`, `numbering-gap`, `preamble-length`, `prerequisite-after-step`, `required-listed-as-preferred`, `step-reference-missing`, `table-row-overflow`, `toc-heading-mismatch`, `unclosed-code-fence`, `unlisted-item-used`, `unrendered-emphasis`, `unused-definition`, `use-before-definition`, `vague-figure-reference`, `vague-link-text`
+| ルール | 見つけるもの |
+| --- | --- |
+| [言い切った決まりに、別の所で例外がある](absolute-exception.md)（`absolute-exception`） | 「すべての〜は…しなければならない」と言い切った決まりに、別の条や段落で「ただし…を除く」と例外を書いた所 |
+| [要旨が長すぎる、または無い](abstract-length.md)（`abstract-length`） | 字数（英語は語数）の上限を超える要旨と、節を立てた論文で要旨が無いもの |
+| [行き先の無いリンク](broken-link.md)（`broken-link`） | 行き先が空のリンク、文書に無い見出しを指すリンク、定義の無い参照の形のリンク |
+| [具体物のない節がある](concrete-evidence-density.md)（`concrete-evidence-density`） | 数字もコードもリンクも無く、読み手が持ち帰れるものの無い節 |
+| [ほかのファイルへの行き先の無いリンク](cross-doc-broken-link.md)（`cross-doc-broken-link`） | 一緒に見たほかのファイルへのリンクで、行き先のファイルか見出しが無いもの |
+| [ファイルによって違う定義](cross-doc-duplicate-definition.md)（`cross-doc-duplicate-definition`） | 同じ語を、ファイルによって違う言葉で定義している所 |
+| [参照先が無い](dangling-reference.md)（`dangling-reference`） | 「第5条に定める」と書いてあるのに、その第5条が文書に無い所 |
+| [年の無い日付](date-without-year.md)（`date-without-year`） | 文書の日付が二つ以上の年にわたるときや年の変わり目をまたぐときの、年の無い日付 |
+| [同じ語の二重定義](duplicate-definition.md)（`duplicate-definition`） | 同じ語を、文書の二か所で定義している所 |
+| [同じ見出しが兄弟に二つある](duplicate-heading.md)（`duplicate-heading`） | 同じ親の見出しの下に、同じ言葉の見出しが二つある所 |
+| [メールの挨拶か結びが無い](email-greeting-closing.md)（`email-greeting-closing`） | 仕事のメールで、書き出しの挨拶か終わりの結びが無いもの |
+| [件名が空か長すぎる](email-subject-length.md)（`email-subject-length`） | 「件名：」の行がある仕事のメールで、件名が空か、字数の上限を超えるもの |
+| [中身の無い箇条書きの項目](empty-list-item.md)（`empty-list-item`） | 「担当：」のように見出しの語だけで値の無い項目と、記号だけの項目 |
+| [中身の無い節](empty-section.md)（`empty-section`） | 見出しのすぐ後ろに同じ深さか浅い見出しが来て、何も書かれていない節 |
+| [表の空欄](empty-table-cell.md)（`empty-table-cell`） | ほかの行がすべて埋めている列で、一つの行だけが空いている表のセル |
+| [図や表を参照する順番と位置](figure-reference-order.md)（`figure-reference-order`） | 図2を図1より先に参照する、図を載せた節より後で初めて参照する、一度も参照しない図や表 |
+| [注の無い注の印と、印の無い注](footnote-mismatch.md)（`footnote-mismatch`） | 本文の「※3」「[^3]」に対応する注が無い所と、本文のどこも指さない注 |
+| [見出しの深さが飛んでいる](heading-level-skip.md)（`heading-level-skip`） | 「##」の次に「####」が来るように、見出しの深さが一段以上飛んでいる所 |
+| [見出しの番号の付け方が揃っていない](heading-numbering-mix.md)（`heading-numbering-mix`） | 「1. 概要」「手順」「3. 費用」や「1.」「2.」「3）」のように、兄弟の見出しで番号の付け方が混ざっている所 |
+| [画像に代替テキストが無い](image-alt-text.md)（`image-alt-text`） | 「![](図.png)」のように、代替テキストの無い画像 |
+| [画像の代替テキストがファイル名](image-file-name-alt.md)（`image-file-name-alt`） | 「![IMG_1234.png](…)」のように、代替テキストがファイル名のままの画像 |
+| [同じ行為への逆の決まり](modal-conflict.md)（`modal-conflict`） | 同じ主語の同じ行為を、ある文では義務や許可に、別の文では禁止にしている所 |
+| [題の後の段落が題を言い直しているだけ](no-lead.md)（`no-lead`） | 題のすぐ後の段落が、題を言い直すだけで何も足していない所 |
+| [単位の無い数](number-without-unit.md)（`number-without-unit`） | 同じ列や同じ見出しの語のほかの値には単位があるのに、数だけを書いた値 |
+| [札と番号だけの見出し](numbered-generic-heading.md)（`numbered-generic-heading`） | 「メリット1」「ポイント2」「Benefit 3」のように、札と番号だけで中身を言わない見出しが並ぶ所 |
+| [番号の抜け・重なり](numbering-gap.md)（`numbering-gap`） | 第1条の次が第3条、(a) の次が (c) のように、番号が飛んだり重なったりしている所 |
+| [本題に入るまでが長い](preamble-length.md)（`preamble-length`） | 最初の見出しまでの前置きが長く、本題になかなか入らない所 |
+| [手順の後に書いた前提](prerequisite-after-step.md)（`prerequisite-after-step`） | 節の番号付きの手順より後にある、「作業を始める前に」「始める前に」で始まる文 |
+| [必須の条件を歓迎の条件にも挙げている](required-listed-as-preferred.md)（`required-listed-as-preferred`） | 求人で、必須に挙げた資格や経験を歓迎にも挙げている所 |
+| [無い手順を指す参照](step-reference-missing.md)（`step-reference-missing`） | 「手順5を参照」のように、文書の手順の最後の番号を超える手順を指す参照 |
+| [表の行のセルが見出しの行より多い](table-row-overflow.md)（`table-row-overflow`） | 見出しの行より多いセルを持つ表の行（多い分は表示されない） |
+| [見出しの無い目次の項目](toc-heading-mismatch.md)（`toc-heading-mismatch`） | 目次（「目次」「Contents」の見出しの下の箇条書き）の項目のうち、文書のどの見出しとも合わないもの |
+| [閉じていないコードブロック](unclosed-code-fence.md)（`unclosed-code-fence`） | 「```」で始めたまま閉じていないコードブロック（後ろがすべてコードになる） |
+| [一覧に無い材料や道具を手順で使っている](unlisted-item-used.md)（`unlisted-item-used`） | 手順で使う材料や道具が、材料・用意するものの一覧に無い所 |
+| [太字にならずに見える「**」](unrendered-emphasis.md)（`unrendered-emphasis`） | 対にならず、太字にならないまま記号として見える「**」「__」 |
+| [定義したのに使っていない語](unused-definition.md)（`unused-definition`） | 定義した語が、本文のどこにも出てこない所 |
+| [定義より前で使っている語](use-before-definition.md)（`use-before-definition`） | 文の途中で括弧に入れて定義した語を、その定義より前で使っている所 |
+| [図や表、箇条を「上記の図」のように指している](vague-figure-reference.md)（`vague-figure-reference`） | 図や表、条に番号を付けた文書で、「上記の図」「下の表」「以下の箇条」のように置き場所で指している所 |
+| [行き先を言わないリンクの言葉](vague-link-text.md)（`vague-link-text`） | 「[こちら](…)」「[ここをクリック](…)」のように、言葉だけでは行き先の分からないリンク |
 
 ## 事実の食い違い
 
