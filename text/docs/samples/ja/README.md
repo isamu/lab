@@ -11,7 +11,7 @@ chaff が見つけるまちがいを、ルールごとに一つずつ見本に�
 
 English samples: [../en/README.md](../en/README.md)
 
-見本のあるルール: 117 / 272
+見本のあるルール: 162 / 272
 
 ## 読みやすさ
 
@@ -19,9 +19,33 @@ English samples: [../en/README.md](../en/README.md)
 
 | ルール | 見つけるもの |
 | --- | --- |
+| [一文に逆接の「が」が二度](adversative-ga-repeat.md)（`adversative-ga-repeat`） | 「〜だが、〜するが、」のように、一文の中で逆接の「が」を二度使った所 |
+| [太字の使いすぎ](bold-density.md)（`bold-density`） | 太字が多すぎて、どこが大事なのか分からなくなった所 |
+| [括弧の中に括弧が重なっている](bracket-nesting.md)（`bracket-nesting`） | 「（注（a（b）））」のように、括弧の中に括弧が何重にも重なった文 |
+| [一文に節がつながりすぎている](clause-chain.md)（`clause-chain`） | 「〜て、〜し、〜が、〜ので、」のように、一文の中で節を次々につないでいる所 |
+| [指示語で始まる文の連続](demonstrative-opener-run.md)（`demonstrative-opener-run`） | 「これは」「その」「この」のような指示語で始まる文が、同じ段落の中で続く所 |
+| [二重否定](double-negative.md)（`double-negative`） | 「〜ないわけではない」「〜しないことはない」のように、打ち消しを打ち消した言い方 |
+| [絵文字が多い](emoji-density.md)（`emoji-density`） | 絵文字が多すぎて、飾りのほうが目立つ所 |
+| [見出しの繰り返し](heading-echo.md)（`heading-echo`） | 見出しのすぐ後の文が、見出しをほぼそのまま繰り返している所 |
+| [副詞は ひらがなで](hiragana-fukushi.md)（`hiragana-fukushi`） | 「殆ど」「勿論」のように、ひらがなのほうが読みやすい副詞を漢字で書いた所 |
 | [漢字が続きすぎている](max-kanji-continuous.md)（`max-kanji-continuous`） | 「新規顧客獲得施策検討会議」のように、漢字だけが長く続く所 |
-
-まだ見本の無いルール: `adversative-ga-repeat`, `bold-density`, `bracket-nesting`, `clause-chain`, `demonstrative-opener-run`, `double-negative`, `emoji-density`, `heading-echo`, `hiragana-fukushi`, `max-paragraph-length`, `max-sentence-length`, `max-ten`, `ngram-repetition`, `no-doubled-joshi`, `no-nakaguro-parallel`, `one-sentence-paragraph-run`, `paragraph-restatement`, `proper-noun-density`, `repeated-conjunction`, `repeated-sentence-ending`, `repeated-sentence-head`, `sentence-initial-conjunction-run`, `taigen-dome-in-prose`, `title-length`, `topic-predicate-distance`, `undefined-acronym`
+| [段落が長すぎる](max-paragraph-length.md)（`max-paragraph-length`） | 文を詰めこみすぎて、息をつく場所がない段落 |
+| [一文が長すぎる](max-sentence-length.md)（`max-sentence-length`） | 読み終える前に主語を見失うほど長い一文 |
+| [一文の読点が多すぎる](max-ten.md)（`max-ten`） | 一文の中に読点（、）がいくつも入り、細かく切れている所 |
+| [同じ言い回しの繰り返し](ngram-repetition.md)（`ngram-repetition`） | 同じ言い回しが何度も出てきて、新しいことを言っていないように読める所 |
+| [同じ助詞が入れ子で続いている](no-doubled-joshi.md)（`no-doubled-joshi`） | 「会社の部の課の方針」のように、同じ助詞が区切りなしに続く所 |
+| [中黒で並べすぎている](no-nakaguro-parallel.md)（`no-nakaguro-parallel`） | 一つの文に「・」で並べた語が多すぎて、どれとどれが組なのか分からない所 |
+| [一文だけの段落が続いている](one-sentence-paragraph-run.md)（`one-sentence-paragraph-run`） | 一文ごとに段落を分けた所が続き、どの文が同じ話なのかが見えない所 |
+| [前の段落を言い直すだけの段落](paragraph-restatement.md)（`paragraph-restatement`） | 「つまり」「このように」で始まり、前の段落の語をほとんど繰り返すだけの段落 |
+| [固有名詞が多い](proper-noun-density.md)（`proper-noun-density`） | 製品名・会社名・人名が詰まりすぎて、知らない人には文の形が見えない所 |
+| [段落が同じ調子で始まり続ける](repeated-conjunction.md)（`repeated-conjunction`） | 「また、」「さらに、」のように、接続詞で始まる段落が続く所 |
+| [同じ文末が続く](repeated-sentence-ending.md)（`repeated-sentence-ending`） | 「〜です。〜です。〜です。」のように、同じ形で終わる文が続く所 |
+| [同じ書き出しの連続](repeated-sentence-head.md)（`repeated-sentence-head`） | 同じ言葉で始まる文が続き、文の切れ目がぼやける所 |
+| [接続詞で始まる文が続いている](sentence-initial-conjunction-run.md)（`sentence-initial-conjunction-run`） | 「そして」「しかし」（And、But）で始まる文が続く所 |
+| [体言止めが続いている](taigen-dome-in-prose.md)（`taigen-dome-in-prose`） | 名詞で終わる文（体言止め）が本文に続き、言いかけのように読める所 |
+| [題や見出しが長すぎる](title-length.md)（`title-length`） | 一目で読めないほど長い題や見出し |
+| [主題と述語が離れている](topic-predicate-distance.md)（`topic-predicate-distance`） | 「会議は」のように主題を出してから、文の終わりの述語まで長く待たせる文 |
+| [略語が説明なしで出てくる](undefined-acronym.md)（`undefined-acronym`） | 「KGI」「PMF」のように、説明なしで出てくる略語 |
 
 ## 言葉づかい
 
@@ -49,8 +73,25 @@ English samples: [../en/README.md](../en/README.md)
 | [動詞を名詞にして回りくどく書いている](nominalization.md)（`nominalization`） | 「調査を実施した」「確認を行う」のように、動詞を名詞にして別の動詞に運ばせた言い方が、文書の長さに対して多い所 |
 | [標準的でない語](nonstandard-word.md)（`nonstandard-word`） | 「違かった」「すいません」「irregardless」のように、書き言葉では標準的でない語 |
 | [時を決めてする義務に、期限が無い](obligation-without-deadline.md)（`obligation-without-deadline`） | ほかの義務に期限を書いた契約で、支払う・引き渡す・返還する・通知する義務に期限を書いていない所 |
-
-まだ見本の無いルール: `ordinal-suffix-mismatch`, `padded-intro`, `ra-nuki`, `redundant-expression`, `request-without-deadline`, `requirement-smell`, `sasete-itadaku`, `tari-unpaired`, `teki-overuse`, `toki-as-condition`, `uncomparable-graded`, `unqualified-superlative`, `vague-deadline`, `vague-word-density`, `very-adjective`, `warning-without-action`, `weasel-word`, `wordy-phrase`, `yori-as-from`
+| [数に合わない序数の字](ordinal-suffix-mismatch.md)（`ordinal-suffix-mismatch`） | 「3th」「22th」「11st」のように、英語の序数の字が数と合わない所 |
+| [水増しの導入](padded-intro.md)（`padded-intro`） | 「近年、〜が注目されています」のように、どの文書にも当てはまる書き出し |
+| [ら抜き言葉](ra-nuki.md)（`ra-nuki`） | 「見れる」「食べれる」「来れる」のような、ら抜き言葉 |
+| [重言](redundant-expression.md)（`redundant-expression`） | 「頭痛が痛い」「一番最初」「後で後悔」のような、同じ意味の語の重なり |
+| [期限も担当も無い依頼](request-without-deadline.md)（`request-without-deadline`） | 「ご確認ください」「Please send …」のような依頼で、その文にも次の文にも期限と担当が無いもの |
+| [要求の文に、決めきれない言い方がある](requirement-smell.md)（`requirement-smell`） | 仕様書や契約書の要求の文にある「可能な限り」「必要に応じて」「等」「及び／又は」 |
+| [「させていただく」が多い](sasete-itadaku.md)（`sasete-itadaku`） | 「させていただく」を繰り返して、誰が決めて何が起きるのかがぼやけた所 |
+| [対にならない「〜たり」](tari-unpaired.md)（`tari-unpaired`） | 「本を読んだり、映画を見ます」のように、「〜たり」が一つで止まって対になっていない所 |
+| [「〜的」の多用](teki-overuse.md)（`teki-overuse`） | 一文に「効果的」「具体的」「積極的」のような「〜的」がいくつも重なった所 |
+| [条件を言う「時」](toki-as-condition.md)（`toki-as-condition`） | 「認定を受けた時は」のように、条件を「とき」でなく「時」で書いた所 |
+| [比べられない形容詞に付けた程度](uncomparable-graded.md)（`uncomparable-graded`） | 「より最適な」「とても完璧」のように、程度の無い語に付けた程度 |
+| [比べる相手のない最上級](unqualified-superlative.md)（`unqualified-superlative`） | 「最速」「最高の品質」のように、何と比べたのかを書いていない最上級 |
+| [期限を「速やかに」のような語で残している](vague-deadline.md)（`vague-deadline`） | ほかの期限を日数で書いた契約で、一部の期限だけを「速やかに」「遅滞なく」と書いた所 |
+| [あいまいな語が多い](vague-word-density.md)（`vague-word-density`） | 「適宜」「必要に応じて」のように、どこまでを読み手に決めさせる語が多い所 |
+| [「とても + 形容詞」（very + 形容詞）の多用](very-adjective.md)（`very-adjective`） | 「とても便利」「非常に危険」（very important）のような強め + 形容詞が、文書の長さのわりに多い所 |
+| [することの書かれていない注意書き](warning-without-action.md)（`warning-without-action`） | 「注意」「警告」で始まる段落で、危険だけを書き、読み手のすること（〜してください、〜しないこと）が無いもの |
+| [出所を言わない「多くの専門家」](weasel-word.md)（`weasel-word`） | 「〜と言われています」「ある研究によると」のように、主張を名前の無い誰かに預ける言い方 |
+| [回りくどい言い回し](wordy-phrase.md)（`wordy-phrase`） | 「することが可能」「現時点において」のように、一語で言えることに何語もかける所 |
+| [起点を言う「より」](yori-as-from.md)（`yori-as-from`） | 「4月1日より開始」のように、起点を「から」でなく「より」で書いた所 |
 
 ## 書き損じ
 
