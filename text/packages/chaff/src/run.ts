@@ -247,6 +247,17 @@ export type Limits = Readonly<Record<string, number>>;
 
 export const limitFor = (rule: RuleDefinition, level: Level, genre: string, limits: Limits): number => limits[rule.id] ?? resolve(rule, level, genre).limit;
 
+type CompositeLevels = {
+  readonly levelOf: (rule: RuleDefinition) => Level;
+  readonly limitOf: (rule: RuleDefinition, level: Level) => number;
+  readonly context: CompositeContext;
+};
+
+const compositesOf = (applicable: readonly RuleDefinition[], found: readonly Finding[], levels: CompositeLevels): Finding[] =>
+  applicable
+    .filter((rule) => rule.from.length > 0 && levels.levelOf(rule) !== "off")
+    .flatMap((rule) => compositeOf(rule, found, levels.limitOf(rule, levels.levelOf(rule)), levels.context));
+
 /** 文書と違う言語で書いた文の上限。chaff.yaml の数値は文書の言語の単位で書いたものなので、ここには効かせない。 */
 const embeddedLimitsFor = (rule: RuleDefinition, level: Level, genre: string, embedded: readonly string[]): Record<string, number> =>
   Object.fromEntries(
@@ -339,15 +350,11 @@ export const runRulesWith = (doc: ProseDocument, rules: readonly RuleDefinition[
     },
     { findings: [], skipped: [] },
   );
-  const composites = applicable
-    .filter((rule) => rule.from.length > 0 && levelFor(rule, settings, experimental, preset) !== "off")
-    .flatMap((rule) =>
-      compositeOf(rule, outcome.findings, limitFor(rule, levelFor(rule, settings, experimental, preset), genre, limits), {
-        starts,
-        language: doc.language,
-        rules,
-      }),
-    );
+  const composites = compositesOf(applicable, outcome.findings, {
+    levelOf: (rule) => levelFor(rule, settings, experimental, preset),
+    limitOf: (rule, level) => limitFor(rule, level, genre, limits),
+    context: { starts, language: doc.language, rules },
+  });
   const all = [...outcome.findings, ...composites];
   return { ...outcome, findings: all.toSorted(byPosition), forcedExperimental: forced, presetExperimental: presetOn };
 };

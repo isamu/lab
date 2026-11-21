@@ -59,7 +59,7 @@ describe("level_meaning agrees with its number", () => {
 
   it("a rule that does not say what a level means counts times, one time at 1", () => {
     const rule = ruleOf("closing-exhortation");
-    const unsaid: RuleDefinition = { ...rule, guide: rule.guide === undefined ? undefined : { ...rule.guide, levelMeaning: {} } };
+    const unsaid: RuleDefinition = rule.guide === undefined ? rule : { ...rule, guide: { ...rule.guide, levelMeaning: {} } };
     assert.match(nowLine(unsaid, 1), /Now: 1 time,/u);
     assert.match(nowLine(unsaid, 2), /Now: 2 times,/u);
     assert.match(nowLine(unsaid, 1, "ja"), /いまは段階ではなく数です: 1 回。/u);
