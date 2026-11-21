@@ -4,6 +4,13 @@ language: en
 entries:
   - pattern: the best
   - pattern: the fastest
+  # The qualities a product page claims to lead in. Other -est words (the latest, the highest, the nearest) name a
+  # position more often than they claim one, and are left out.
+  - pattern: the lightest
+  - pattern: the cheapest
+  - pattern: the safest
+  - pattern: the quickest
+  - pattern: the smartest
   - pattern: the most
   - pattern: world-first
   - pattern: industry-leading
