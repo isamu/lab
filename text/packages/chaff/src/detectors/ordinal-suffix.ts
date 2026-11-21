@@ -1,6 +1,6 @@
 import type { Detector, Finding, Lexicon } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
-import { quoteAround } from "./quote-around.ts";
+import { quoteAround, sentenceQuoteAt } from "./quote-around.ts";
 
 // 数と序数の字が合わない所（3th、22th、11st）。どの数の終わりにどの字が付くかは語彙表 ordinal-suffix が言う。
 
@@ -34,7 +34,7 @@ export const ordinalSuffix: Detector = (doc): Finding[] => {
     severity: "warning",
     line: 0,
     column: 0,
-    quote: quoteAround(text, slip.offset, slip.offset + slip.written.length),
+    quote: sentenceQuoteAt(doc.sentences, slip.offset) ?? quoteAround(text, slip.offset, slip.offset + slip.written.length),
     values: { written: slip.written, expected: `${slip.number}${slip.expected[0] ?? ""}`, offset: slip.offset },
   }));
 };

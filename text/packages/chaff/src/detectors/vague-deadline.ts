@@ -5,6 +5,7 @@
 // promptly suspend, 速やかに解除することができる) sets no deadline. The words come from the language package's word
 // lists: vague-deadline, concrete-deadline (a stated limit: 日以内, "within … days") and deadline-permission. Pure.
 import { quoteAt } from "./structure-tree.ts";
+import { sentenceQuoteAt } from "./quote-around.ts";
 import type { Detector, Finding, LexiconEntry, ProseDocument } from "../plugin.ts";
 
 export type VagueDeadline = { readonly offset: number; readonly word: string };
@@ -127,6 +128,6 @@ export const vagueDeadline: Detector = (doc): Finding[] =>
     severity: "info",
     line: 0,
     column: 0,
-    quote: quoteAt(doc.source, hit.offset),
+    quote: sentenceQuoteAt(doc.sentences, hit.offset) ?? quoteAt(doc.source, hit.offset),
     values: { word: hit.word, offset: hit.offset },
   }));
