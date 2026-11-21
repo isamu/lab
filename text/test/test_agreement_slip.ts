@@ -274,7 +274,15 @@ describe("agreement-slip — 英語", () => {
     assert.deepEqual(findingsOf("These new version will ship in May."), ["1:1 These new version"]);
     assert.deepEqual(findingsOf("These key result is missing."), ["1:1 These key result"]);
     assert.deepEqual(findingsOf("Each new users is sent a welcome email."), ["1:1 Each new users"]);
-    assert.deepEqual(findingsOf("Their is no limit on requests."), ["1:1 Their is"]);
+  });
+
+  it("leaves a pair homophone-slip lists (Their are) to that rule", () => {
+    const source = "Their are three options for the board.";
+    const rules = runRules(buildDocument("t.md", source, en), RULES.en, {}, true, "business/report").findings.map((finding) => finding.rule);
+    assert.deepEqual(findingsOf(source), []);
+    assert.deepEqual(findingsOf("Their is no limit on requests."), []);
+    assert.ok(rules.includes("homophone-slip"));
+    assert.deepEqual(findingsOf("Your can check it, and their will be done."), ["1:1 Your can", "1:24 their will"]);
   });
 
   it("valid: 正しい文と、読みが一通りに決まらない文", () => {
