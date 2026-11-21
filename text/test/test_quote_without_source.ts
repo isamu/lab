@@ -56,6 +56,9 @@ describe("quote-without-source: 人の言葉として引いた文に出典がな
     assert.deepEqual(findingsOf("たとえば「来週の会議で予算の配分を決める」と書いて送る。\n"), []);
     assert.deepEqual(findingsOf('For instance, a new user says, "the setup screen never loads for me."\n', en), []);
     assert.deepEqual(findingsOf("「画面の容量がいっぱいになりました」と言われて、写真が保存できない。\n"), []);
+    ["と言われた。", "と言われました。", "と言われ、涙が出た。"].forEach((tail) =>
+      assert.deepEqual(findingsOf(`レジで奥さんに「長いあいだ、ありがとうございました」${tail}\n`, ja, "blog/essay"), [], tail),
+    );
     assert.deepEqual(findingsOf('At the corner there was a sign that said "KEEP LEFT AT ALL TIMES."\n', en), []);
     assert.deepEqual(findingsOf('The reviewer says the label must be "partially_supported" in that case.\n', en), []);
     // 例の語が無い、言われている（そう言われる）、人が言った、空白を含む英語の引用は、これまでどおり人の言葉として指す。
