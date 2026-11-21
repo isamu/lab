@@ -11,7 +11,7 @@ chaff が見つけるまちがいを、ルールごとに一つずつ見本に�
 
 English samples: [../en/README.md](../en/README.md)
 
-見本のあるルール: 44 / 272
+見本のあるルール: 63 / 272
 
 ## 読みやすさ
 
@@ -49,8 +49,25 @@ English samples: [../en/README.md](../en/README.md)
 | [動詞を名詞にして回りくどく書いている](nominalization.md)（`nominalization`） | 「調査を実施した」「確認を行う」のように、動詞を名詞にして別の動詞に運ばせた言い方が、文書の長さに対して多い所 |
 | [標準的でない語](nonstandard-word.md)（`nonstandard-word`） | 「違かった」「すいません」「irregardless」のように、書き言葉では標準的でない語 |
 | [時を決めてする義務に、期限が無い](obligation-without-deadline.md)（`obligation-without-deadline`） | ほかの義務に期限を書いた契約で、支払う・引き渡す・返還する・通知する義務に期限を書いていない所 |
-
-まだ見本の無いルール: `ordinal-suffix-mismatch`, `padded-intro`, `ra-nuki`, `redundant-expression`, `request-without-deadline`, `requirement-smell`, `sasete-itadaku`, `tari-unpaired`, `teki-overuse`, `toki-as-condition`, `uncomparable-graded`, `unqualified-superlative`, `vague-deadline`, `vague-word-density`, `very-adjective`, `warning-without-action`, `weasel-word`, `wordy-phrase`, `yori-as-from`
+| [数に合わない序数の字](ordinal-suffix-mismatch.md)（`ordinal-suffix-mismatch`） | 「3th」「22th」「11st」のように、英語の序数の字が数と合わない所 |
+| [水増しの導入](padded-intro.md)（`padded-intro`） | 「近年、〜が注目されています」のように、どの文書にも当てはまる書き出し |
+| [ら抜き言葉](ra-nuki.md)（`ra-nuki`） | 「見れる」「食べれる」「来れる」のような、ら抜き言葉 |
+| [重言](redundant-expression.md)（`redundant-expression`） | 「頭痛が痛い」「一番最初」「後で後悔」のような、同じ意味の語の重なり |
+| [期限も担当も無い依頼](request-without-deadline.md)（`request-without-deadline`） | 「ご確認ください」「Please send …」のような依頼で、その文にも次の文にも期限と担当が無いもの |
+| [要求の文に、決めきれない言い方がある](requirement-smell.md)（`requirement-smell`） | 仕様書や契約書の要求の文にある「可能な限り」「必要に応じて」「等」「及び／又は」 |
+| [「させていただく」が多い](sasete-itadaku.md)（`sasete-itadaku`） | 「させていただく」を繰り返して、誰が決めて何が起きるのかがぼやけた所 |
+| [対にならない「〜たり」](tari-unpaired.md)（`tari-unpaired`） | 「本を読んだり、映画を見ます」のように、「〜たり」が一つで止まって対になっていない所 |
+| [「〜的」の多用](teki-overuse.md)（`teki-overuse`） | 一文に「効果的」「具体的」「積極的」のような「〜的」がいくつも重なった所 |
+| [条件を言う「時」](toki-as-condition.md)（`toki-as-condition`） | 「認定を受けた時は」のように、条件を「とき」でなく「時」で書いた所 |
+| [比べられない形容詞に付けた程度](uncomparable-graded.md)（`uncomparable-graded`） | 「より最適な」「とても完璧」のように、程度の無い語に付けた程度 |
+| [比べる相手のない最上級](unqualified-superlative.md)（`unqualified-superlative`） | 「最速」「最高の品質」のように、何と比べたのかを書いていない最上級 |
+| [期限を「速やかに」のような語で残している](vague-deadline.md)（`vague-deadline`） | ほかの期限を日数で書いた契約で、一部の期限だけを「速やかに」「遅滞なく」と書いた所 |
+| [あいまいな語が多い](vague-word-density.md)（`vague-word-density`） | 「適宜」「必要に応じて」のように、どこまでを読み手に決めさせる語が多い所 |
+| [「とても + 形容詞」（very + 形容詞）の多用](very-adjective.md)（`very-adjective`） | 「とても便利」「非常に危険」（very important）のような強め + 形容詞が、文書の長さのわりに多い所 |
+| [することの書かれていない注意書き](warning-without-action.md)（`warning-without-action`） | 「注意」「警告」で始まる段落で、危険だけを書き、読み手のすること（〜してください、〜しないこと）が無いもの |
+| [出所を言わない「多くの専門家」](weasel-word.md)（`weasel-word`） | 「〜と言われています」「ある研究によると」のように、主張を名前の無い誰かに預ける言い方 |
+| [回りくどい言い回し](wordy-phrase.md)（`wordy-phrase`） | 「することが可能」「現時点において」のように、一語で言えることに何語もかける所 |
+| [起点を言う「より」](yori-as-from.md)（`yori-as-from`） | 「4月1日より開始」のように、起点を「から」でなく「より」で書いた所 |
 
 ## 書き損じ
 
