@@ -146,6 +146,7 @@ const numbered = (line: string, context: NumberingContext): NumberedLine | undef
   headed(ARTICLE, line, "article", (n) => `Article ${n}`) ??
   headed(SECTION, line, "section", (n) => `Section ${n}`) ??
   headed(ABBREVIATED_SECTION, line, "section", (n) => `Section ${n}`) ??
+  provision(line) ??
   lettered(line, context);
 
 const REFERENCE = /(?<word>\b[Ss]ections?|\b[Aa]rticles?|§) ?(?<n>\d{1,3}(?:\.\d{1,3}){0,5}|[IVXLC]{1,7})\b/gu;
@@ -197,6 +198,19 @@ const glossedDocument = (gloss: Gloss): string | undefined => {
 };
 
 const LEXICONS = loadLexicons();
+
+/** "Rule 3 (Labels)", "CLAUSE 4.2 Payment": a provision headed by a word from provision-heading-word, read as a Section is. */
+const PROVISION_WORDS = (LEXICONS["provision-heading-word"] ?? []).map((entry) => entry.pattern).filter((word) => /^\p{Lu}\p{Ll}+$/u.test(word));
+const PROVISIONS = PROVISION_WORDS.map((word) => ({
+  word,
+  pattern: new RegExp(`^\\s{0,3}(?:${word.toUpperCase()}|${word})\\s+(?<n>\\d{1,3}(?:\\.\\d{1,3}){0,5})\\b(?<rest>.*)$`, "u"),
+}));
+
+const provision = (line: string): NumberedLine | undefined =>
+  PROVISIONS.reduce<NumberedLine | undefined>(
+    (found, { word, pattern }) => found ?? headed(pattern, line, word.toLowerCase(), (n) => `${word} ${n}`),
+    undefined,
+  );
 const CODES = codeVocabulary(LEXICONS);
 const LAWS = lawVocabulary(LEXICONS);
 const ENCLOSING_UNITS: ReadonlySet<string> = new Set((LEXICONS["enclosing-unit"] ?? []).map((entry) => entry.pattern.toLowerCase()));
