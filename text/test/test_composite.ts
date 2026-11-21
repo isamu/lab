@@ -95,6 +95,23 @@ describe("no-em-dash", () => {
     assert.ok(idsFor(`# 報告\n\n${BULK}`).includes("no-em-dash"));
   });
 
+  it("二つ重ねて一本に組むダッシュ（——、――）は一つと数える", () => {
+    const countOf = (dash: string): unknown => {
+      const body = `本日の連絡です${dash}今日も順調に進めています。`.repeat(30);
+      return findingsFor(`# 報告\n\n${body}`).find((finding) => finding.rule === "no-em-dash")?.values["count"];
+    };
+    assert.equal(countOf("——"), 30);
+    assert.equal(countOf("――"), 30);
+    assert.equal(countOf("—"), 30);
+    assert.equal(countOf("—、—"), 60);
+  });
+
+  it("二つ重ねたダッシュで段落を終えて箇条を導くなら数えない", () => {
+    const lines = Array.from({ length: 30 }, () => "本日の連絡です——今日も順調に進めています。").join("");
+    const count = findingsFor(`# 報告\n\n${lines}\n\n次のとおりです——\n\n1. 予算\n2. 日程\n`).find((finding) => finding.rule === "no-em-dash")?.values["count"];
+    assert.equal(count, 30);
+  });
+
   it("valid: 読点で書いていれば指摘しない", () => {
     assert.ok(!idsFor(`# 報告\n\n${"本日の連絡です。今日も順調に進めています。".repeat(20)}`).includes("no-em-dash"));
   });
