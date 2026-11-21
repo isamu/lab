@@ -11,7 +11,7 @@ Or paste a draft into the [playground](https://isamu.github.io/lab/en/playground
 
 日本語の見本: [../ja/README.md](../ja/README.md)
 
-Rules with a sample: 53 / 259
+Rules with a sample: 74 / 259
 
 ## Readability
 
@@ -61,9 +61,29 @@ Emphasis that says nothing, stock phrases, and passives that never say who acted
 
 Words and spaces left over from an edit.
 
-No sample in this group yet.
-
-Rules with no sample yet: `agreement-slip`, `article-sound`, `calendar-name-case`, `chat-citation-residue`, `doubled-nado`, `doubled-punctuation`, `doubled-word`, `homophone-slip`, `hyphen-as-dash`, `invisible-character`, `known-misspelling`, `latin-abbreviation-form`, `less-for-fewer`, `link-text-url-mismatch`, `lookalike-character`, `missing-space-after-comma`, `space-before-punctuation`, `unbalanced-bracket`, `unfilled-placeholder`, `unknown-word`, `url-run-on`
+| Rule | What it finds |
+| --- | --- |
+| [Words that do not agree](agreement-slip.md) (`agreement-slip`) | Words that no longer agree after an edit, as in "these new version" |
+| ["a" or "an" against the next sound](article-sound.md) (`article-sound`) | "a" or "an" that does not fit the next sound, as in "a apple" or "an user" |
+| [Weekday or month in lower case](calendar-name-case.md) (`calendar-name-case`) | A weekday or month written in lower case, as in "on monday" |
+| [Chat citation residue](chat-citation-residue.md) (`chat-citation-residue`) | Marks a pasted chat answer leaves behind, such as "?utm_source=chatgpt.com" |
+| ["And so on" said twice](doubled-nado.md) (`doubled-nado`) | "And etc." or など with 等: two words for "and so on" written together |
+| [Doubled punctuation](doubled-punctuation.md) (`doubled-punctuation`) | Two punctuation marks side by side, as ",," or ".." |
+| [Word written twice](doubled-word.md) (`doubled-word`) | The same word written twice in a row, as in "the the" |
+| [Homophone typed for another (its / it's, their / there)](homophone-slip.md) (`homophone-slip`) | A sound-alike typed for another word, such as "it's own" or "their are" |
+| [Hyphen used as a dash](hyphen-as-dash.md) (`hyphen-as-dash`) | A spaced hyphen or a double hyphen standing in for a dash |
+| [Invisible character](invisible-character.md) (`invisible-character`) | Characters that do not show on screen, such as a zero-width space |
+| [Common misspelling](known-misspelling.md) (`known-misspelling`) | A common misspelling, such as "definately" or "seperate" |
+| [e.g. or i.e. missing a period](latin-abbreviation-form.md) (`latin-abbreviation-form`) | "e.g" or "eg." for "e.g.", and the same for "i.e." |
+| ["Less" with a countable plural](less-for-fewer.md) (`less-for-fewer`) | "Less" before a countable plural, as in "less errors" for "fewer errors" |
+| [Link text shows one address, the link goes to another](link-text-url-mismatch.md) (`link-text-url-mismatch`) | A link whose text is a URL on one site and whose target is on another |
+| [Look-alike character](lookalike-character.md) (`lookalike-character`) | A character that looks like an ordinary one but is a different one |
+| [No space after a comma](missing-space-after-comma.md) (`missing-space-after-comma`) | A comma between two words with no space after it, as in "address,and" |
+| [Space before punctuation](space-before-punctuation.md) (`space-before-punctuation`) | A space before a period, comma or other mark, as in "word ." |
+| [Unbalanced bracket](unbalanced-bracket.md) (`unbalanced-bracket`) | A bracket or quotation mark with no partner, such as a "(" that is never closed |
+| [Unfilled placeholder](unfilled-placeholder.md) (`unfilled-placeholder`) | A template blank left unfilled, such as "[Your Name]" or "TODO: …" |
+| [Word not in the dictionary](unknown-word.md) (`unknown-word`) | An English word not in the dictionary but one letter from one ("attched") |
+| [Text runs on after a URL](url-run-on.md) (`url-run-on`) | A URL followed straight away by text that the link swallows |
 
 ## Consistency
 
