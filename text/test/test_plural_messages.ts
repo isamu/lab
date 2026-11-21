@@ -45,10 +45,10 @@ const CASES: readonly Case[] = [
   [
     "ai-generated-composite",
     "count",
-    { word: "delve", limit: 3 },
-    '"delve" occur together in this document (0 signals, 3 needed)',
-    '"delve" occurs in this document (1 signal, 3 needed)',
-    '"delve" occur together in this document (2 signals, 3 needed)',
+    { word: "ai-tell", signals: "Phrasing common in generated text", limit: 3 },
+    "0 signals of generated text occur together in this document (3 needed): Phrasing common in generated text",
+    "1 signal of generated text occurs in this document (3 needed): Phrasing common in generated text",
+    "2 signals of generated text occur together in this document (3 needed): Phrasing common in generated text",
   ],
   [
     "ai-tell",
