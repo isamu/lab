@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { buildDocument } from "../packages/chaff/src/document.ts";
 import { loadRules } from "../packages/chaff/src/rule-load.ts";
 import { runRules } from "../packages/chaff/src/run.ts";
-import { partReferenceSpans, quotedClosingSpans, referenceClosings } from "../packages/chaff/src/detectors/gram-furniture.ts";
+import { figureAsideSpans, partReferenceSpans, quotedClosingSpans, referenceClosings } from "../packages/chaff/src/detectors/gram-furniture.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { LanguageAdapter } from "../packages/chaff/src/plugin.ts";
@@ -172,6 +172,46 @@ describe("ngram-repetition: a reference to a numbered part", () => {
       partReferenceSpans("表2と第3章を見る", "char").map((span) => span.end - span.start),
       [2, 3],
     );
+  });
+});
+
+describe("ngram-repetition: the words touching a figure's aside", () => {
+  const SEGMENTS = ["賃貸事業", "分譲事業", "索道事業", "飲食事業", "物流事業", "製造事業", "保守事業", "教育事業"];
+  const results = (aside: (index: number) => string): string =>
+    [
+      `# 業績\n\n${JA_FILLER}`,
+      SEGMENTS.map((segment, index) => `${segment}の売上高は${String(index + 3)}12,345千円${aside(index)}となりました。`).join(""),
+    ].join("\n\n");
+
+  it("does not count the closing after a comparison figure in parentheses（前期比99.6％）", () => {
+    assert.equal(
+      worst(
+        ja,
+        results((index) => `（前期比${String(90 + index)}.${String(index)}％）`),
+      ),
+      undefined,
+    );
+  });
+
+  it("still counts the same closing after an aside without a figure", () => {
+    assert.notEqual(
+      worst(
+        ja,
+        results(() => "（前期と同じ）"),
+      ),
+      undefined,
+    );
+  });
+
+  it("reads an aside holding a figure, short and on one line", () => {
+    assert.deepEqual(
+      figureAsideSpans("売上高は307,814千円（前期比99.6％）、利益は(同101.6%)となりました。", "char").map((span) => span.end - span.start),
+      ["（前期比99.6％）".length, "(同101.6%)".length],
+    );
+    assert.deepEqual(figureAsideSpans("売上高は（前期と同額）となりました。", "char"), []);
+    assert.deepEqual(figureAsideSpans("（この注は長く、2つの理由から、本文の読み方を変える場合があることを詳しく説明する注である）", "char"), []);
+    assert.deepEqual(figureAsideSpans("sales rose (up 3%) again", "word"), []);
+    assert.deepEqual(figureAsideSpans("", "char"), []);
   });
 });
 
