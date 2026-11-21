@@ -27,8 +27,8 @@ describe("figurative-density: 飾りのたとえが多い", () => {
       padded(JA_FILLER, 30, "まるで魔法のように設定が終わります。最初の一行は呪文のようなものなので、おまじないとして書いておきます。"),
       ja,
     );
-    assert.equal(jaFindings.length, 4);
-    assert.match(jaFindings[0] ?? "", /^「まるで」など、飾りのたとえが 1000 字あたり \d+ 個あります$/u);
+    assert.equal(jaFindings.length, 3);
+    assert.match(jaFindings[0] ?? "", /^「魔法の」など、飾りのたとえが 1000 字あたり \d+ 個あります$/u);
     const enFindings = findingsOf(padded(EN_FILLER, 20, "The installer works like magic. Our secret sauce is an incantation that magically fixes every path."));
     assert.equal(enFindings.length, 4);
   });
@@ -37,6 +37,13 @@ describe("figurative-density: 飾りのたとえが多い", () => {
     assert.deepEqual(findingsOf(padded(JA_FILLER, 30, "まるで魔法のように設定が終わります。"), ja), []);
     assert.deepEqual(findingsOf(padded(JA_FILLER, 30, "Excel や Numbers のような表計算ソフトで開けます。PDF のような形式も読めます。"), ja), []);
     assert.deepEqual(findingsOf(padded(EN_FILLER, 20, "Tools such as Excel and Numbers can open the file.")), []);
+  });
+
+  it("「まるで魔法のように」は一つのたとえと数え、たとえを閉じない「まるで」は一つと数える", () => {
+    const rest = "最初の一行は呪文のようなものなので、おまじないとして書いておきます。";
+    const matched = (body: string): string[] => findingsOf(padded(JA_FILLER, 30, body), ja).map((message) => /^「(.+?)」/u.exec(message)?.[1] ?? "");
+    assert.deepEqual(matched(`まるで魔法のように設定が終わります。${rest}`), ["魔法の", "呪文の", "おまじない"]);
+    assert.deepEqual(matched(`まるで別の製品です。${rest}`), ["まるで", "呪文の", "おまじない"]);
   });
 
   it("短い文書は測らない", () => {
