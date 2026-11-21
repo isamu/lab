@@ -2,7 +2,7 @@ import type { Detector, Finding } from "../plugin.ts";
 import { oneSentenceRuns } from "../paragraph-runs.ts";
 import { referenceListSpans } from "../reference-lists.ts";
 
-/** How much of the run's first paragraph the finding quotes. */
+/** How much of the run's first paragraph the finding quotes when it holds no sentence; it never runs past the paragraph. */
 const QUOTE_LENGTH = 80;
 
 /**
@@ -29,7 +29,7 @@ export const oneSentenceParagraphRun: Detector = (doc, options): Finding[] =>
           severity: "info",
           line: 0,
           column: 0,
-          quote: doc.source.slice(first.span.start, first.span.start + QUOTE_LENGTH).trim(),
+          quote: first.sentences[0]?.text.trim() ?? doc.source.slice(first.span.start, Math.min(first.span.start + QUOTE_LENGTH, first.span.end)).trim(),
           values: { count: run.length, limit: options.limit, offset: first.span.start },
         },
       ];
