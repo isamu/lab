@@ -50,8 +50,8 @@ example:
       The installer reads your config file and fills in the defaults. The fix is one command that rewrites every path to an absolute one.
 
 not_flagged:
-  ja: 一つ一つは誤りではないので、短い文書は測りません。例を挙げる「〜のような」（A や B のような製品）は数えません。文学と講演のジャンルでは止めています。
-  en: None of these is wrong alone, so short documents are not measured. A plain comparison or example ("tools such as A and B") is not counted. The literature and speech genres turn it off.
+  ja: 一つ一つは誤りではないので、短い文書は測りません。例を挙げる「〜のような」（A や B のような製品）は数えません。「まるで魔法のように」のように、たとえを導く語（まるで、あたかも）とたとえの語が同じ文にあれば、合わせて一つと数えます。文学と講演のジャンルでは止めています。
+  en: None of these is wrong alone, so short documents are not measured. A plain comparison or example ("tools such as A and B") is not counted. A word that opens a figure and the figure it opens in one sentence count as one. The literature and speech genres turn it off.
 level_meaning:
   ja: 1000 字あたり飾りのたとえ {limit} 個まで
   en: up to {limit} decorative figures per 1000 words
