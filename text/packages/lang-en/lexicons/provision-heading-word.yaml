@@ -1,0 +1,10 @@
+# Words besides Article and Section that head a numbered provision of a statute, a rule book or a contract (Rule 3,
+# Clause 4.2, Regulation 5). A line opening with one, a number and a title is read as a provision, as "Section 3" is,
+# so numbering-gap compares their numbers. Written with a capital, matched as written or in capitals (RULE 3).
+# "Rule 17(c) provides:" is a sentence citing it, not its heading, as for Section.
+id: provision-heading-word
+language: en
+entries:
+  - pattern: Rule
+  - pattern: Clause
+  - pattern: Regulation
