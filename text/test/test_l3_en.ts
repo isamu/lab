@@ -481,4 +481,14 @@ describe("L3 英語", () => {
     const head = findings.find((finding) => finding.rule === "repeated-sentence-head");
     assert.equal(head?.values["head"], "We continued the");
   });
+
+  it("sentences that share only their first two words are not one opening, as the rule's why says", () => {
+    const source = "You can upload photos from your phone. You can share an album with your family. You can also print a book. You can see who viewed it.";
+    const findings = runRules(buildDocument("t.md", source, en), RULES, {}, true, "blog/tech").findings;
+    assert.equal(
+      findings.some((finding) => finding.rule === "repeated-sentence-head"),
+      false,
+    );
+    assert.match(RULES.find((rule) => rule.id === "repeated-sentence-head")?.why.en ?? "", /first three words/u);
+  });
 });
