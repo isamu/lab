@@ -11,7 +11,7 @@ Or paste a draft into the [playground](https://isamu.github.io/lab/en/playground
 
 日本語の見本: [../ja/README.md](../ja/README.md)
 
-Rules with a sample: 53 / 259
+Rules with a sample: 144 / 259
 
 ## Readability
 
@@ -19,9 +19,26 @@ Sentences that run too long, packed paragraphs, and other places a reader stumbl
 
 | Rule | What it finds |
 | --- | --- |
+| [Too many -ly adverbs](adverb-overuse.md) (`adverb-overuse`) | Too many -ly adverbs, which usually prop up a weak verb |
+| [Shouting in capitals](all-caps-shouting.md) (`all-caps-shouting`) | Ordinary words run together in capitals, such as "DO NOT DELETE THIS" |
+| [Too much bold](bold-density.md) (`bold-density`) | So much bold text that nothing stands out any more |
+| [Brackets nested too deep](bracket-nesting.md) (`bracket-nesting`) | Brackets inside brackets inside brackets in one sentence |
+| [Sentences in a row opening with a demonstrative](demonstrative-opener-run.md) (`demonstrative-opener-run`) | Sentences in a row that open with a word pointing back (This, That, It) |
+| [Double negative](double-negative.md) (`double-negative`) | A negative negated, such as "not uncommon" or "not unlike" |
+| [Too many emoji](emoji-density.md) (`emoji-density`) | So many emoji that the decoration drowns the text |
+| [Expletive construction](expletive-construction.md) (`expletive-construction`) | Many sentences that open with "There is" or "It is ... that" |
+| [Heading echoed](heading-echo.md) (`heading-echo`) | A first sentence that only repeats the heading above it |
+| [Paragraph too long](max-paragraph-length.md) (`max-paragraph-length`) | A paragraph packed with so many sentences that the reader has nowhere to pause |
+| [Sentence too long](max-sentence-length.md) (`max-sentence-length`) | A sentence so long that the reader loses the subject before the verb |
+| [Repeated phrasing](ngram-repetition.md) (`ngram-repetition`) | The same phrase used over and over, so nothing new seems to be said |
+| [Run of one-sentence paragraphs](one-sentence-paragraph-run.md) (`one-sentence-paragraph-run`) | Paragraph after paragraph of a single sentence, so nothing is grouped |
+| [A paragraph that only restates the one before](paragraph-restatement.md) (`paragraph-restatement`) | A paragraph opening "In other words" that mostly repeats the one before |
+| [Too many proper nouns](proper-noun-density.md) (`proper-noun-density`) | So many product, company and personal names that a newcomer gets lost |
+| [Paragraphs keep opening the same way](repeated-conjunction.md) (`repeated-conjunction`) | Paragraph after paragraph opening with a connective such as "Also" or "Moreover" |
+| [Repeated sentence opening](repeated-sentence-head.md) (`repeated-sentence-head`) | Several sentences in a row that open with the same words |
+| [Run of sentences opening with a conjunction](sentence-initial-conjunction-run.md) (`sentence-initial-conjunction-run`) | A run of sentences that open with "And", "But" or "So" (そして, しかし) |
+| [Title or heading too long](title-length.md) (`title-length`) | A title or heading too long to take in at a glance |
 | [Acronym never expanded](undefined-acronym.md) (`undefined-acronym`) | An acronym such as "KGI" or "PMF" used without ever being spelled out |
-
-Rules with no sample yet: `adverb-overuse`, `all-caps-shouting`, `bold-density`, `bracket-nesting`, `demonstrative-opener-run`, `double-negative`, `emoji-density`, `expletive-construction`, `heading-echo`, `max-paragraph-length`, `max-sentence-length`, `ngram-repetition`, `one-sentence-paragraph-run`, `paragraph-restatement`, `proper-noun-density`, `repeated-conjunction`, `repeated-sentence-head`, `sentence-initial-conjunction-run`, `title-length`
 
 ## Wording
 
@@ -69,9 +86,42 @@ Rules with no sample yet: `agreement-slip`, `article-sound`, `calendar-name-case
 
 Two ways of writing that are both right, mixed in one document. chaff does not pick a side; it points at whichever the document uses less.
 
-No sample in this group yet.
-
-Rules with no sample yet: `acronym-expansion-conflict`, `amount-scale-consistency`, `bare-url-mix`, `citation-style-mix`, `code-fence-language-mix`, `contraction-consistency`, `cross-doc-term-variant`, `currency-notation-consistency`, `date-format-consistency`, `defined-name-repeated`, `defined-term-form`, `ellipsis-consistency`, `heading-end-punctuation-mix`, `list-item-form-mix`, `list-marker-mix`, `name-variant`, `number-style-consistency`, `orthographic-variant`, `outside-announced-list`, `oxford-comma-consistency`, `party-role-name`, `person-consistency`, `quote-style-consistency`, `range-notation-consistency`, `sentence-spacing-consistency`, `shell-prompt-mix`, `spelling-consistency`, `step-statement-mix`, `table-header-variant`, `title-case-consistency`, `ui-label-variant`, `undefined-term`, `unit-spacing-consistency`, `which-that-consistency`
+| Rule | What it finds |
+| --- | --- |
+| [Abbreviation expanded two ways](acronym-expansion-conflict.md) (`acronym-expansion-conflict`) | The same abbreviation spelled out as two different names in one document |
+| [Amounts of one size written two ways](amount-scale-consistency.md) (`amount-scale-consistency`) | Amounts written with and without a scale word ("$1.5 million", "$2,500,000") |
+| [A bare URL among worded links](bare-url-mix.md) (`bare-url-mix`) | A URL written bare in a document whose other links are words |
+| [Citations written in more than one style](citation-style-mix.md) (`citation-style-mix`) | A paper that cites as [1] in one place and as (Smith, 2020) in another |
+| [Code blocks with and without a language](code-fence-language-mix.md) (`code-fence-language-mix`) | A code block without a language among blocks that name theirs |
+| [Contraction use is inconsistent](contraction-consistency.md) (`contraction-consistency`) | The same word written both contracted ("don't") and in full ("do not") |
+| [A word spelled differently in different files](cross-doc-term-variant.md) (`cross-doc-term-variant`) | The same word spelled one way in some files and another way in others |
+| [A currency written two ways](currency-notation-consistency.md) (`currency-notation-consistency`) | One currency written two ways in one document, such as "$20" and "USD 20" |
+| [Dates written two ways](date-format-consistency.md) (`date-format-consistency`) | Dates written two ways in one document, as "2026-10-02" and "October 2, 2026" |
+| [A long name used again after its short name was defined](defined-name-repeated.md) (`defined-name-repeated`) | A party given a short name ("the Supplier") and later written out in full |
+| [A defined term used in another form](defined-term-form.md) (`defined-term-form`) | A defined term later written in another form: quoted, lower case, or lengthened |
+| [Ellipses written two ways](ellipsis-consistency.md) (`ellipsis-consistency`) | An ellipsis written two ways in one document, such as "..." and "…" |
+| [Heading end punctuation mixed](heading-end-punctuation-mix.md) (`heading-end-punctuation-mix`) | Headings that end with a colon or full stop mixed with headings that do not |
+| [List items in mixed forms](list-item-form-mix.md) (`list-item-form-mix`) | One list mixing phrases with sentences, or verb-first items with noun-first ones |
+| [List bullets mixed](list-marker-mix.md) (`list-marker-mix`) | Bullets ("-", "*", "+", "・") mixed in one list or one document |
+| [One name written two ways](name-variant.md) (`name-variant`) | The same person, company or product name written slightly differently |
+| [Numbers written two ways](number-style-consistency.md) (`number-style-consistency`) | Numbers written two ways in one document, such as 1,000 and 1000 |
+| [One word spelled two ways](orthographic-variant.md) (`orthographic-variant`) | One word written two ways in one document, such as e-mail and email |
+| [A name outside the announced list](outside-announced-list.md) (`outside-announced-list`) | A platform or language named later that the list given earlier left out |
+| [Oxford comma use is inconsistent](oxford-comma-consistency.md) (`oxford-comma-consistency`) | Lists that put a comma before the final "and" in some places and not in others |
+| [A party named by its role instead of the name the contract gave it](party-role-name.md) (`party-role-name`) | A party given a short name ("the Supplier") and later called something else |
+| [The document names itself or its reader two ways](person-consistency.md) (`person-consistency`) | One document calling itself or its reader two ways ("you" and "one") |
+| [Straight and curly quotes mixed](quote-style-consistency.md) (`quote-style-consistency`) | Straight quotes (" ') and curly quotes (“ ” ’) mixed in one document |
+| [Ranges written with two marks](range-notation-consistency.md) (`range-notation-consistency`) | Ranges written with two marks in one document, such as "10–20" and "10-20" |
+| [One and two spaces between sentences mixed](sentence-spacing-consistency.md) (`sentence-spacing-consistency`) | One space between sentences in some places and two in others |
+| [Shell commands with and without a prompt](shell-prompt-mix.md) (`shell-prompt-mix`) | Shell commands written with a "$" prompt in some places and without in others |
+| [British and American spellings are mixed](spelling-consistency.md) (`spelling-consistency`) | British and American spellings (colour and color) mixed in one document |
+| [A step written as a statement among instructions](step-statement-mix.md) (`step-statement-mix`) | Numbered steps that mix statements (The tool asks) with orders (Run it) |
+| [One table header written two ways](table-header-variant.md) (`table-header-variant`) | The same column header written two ways across tables (Owner and Owners) |
+| [Heading capitalisation is inconsistent](title-case-consistency.md) (`title-case-consistency`) | Headings that mix Title Case and sentence case |
+| [Screen label written two ways](ui-label-variant.md) (`ui-label-variant`) | A screen label written two ways that differ only in case, spacing or a particle |
+| [A term written like a defined term but defined nowhere](undefined-term.md) (`undefined-term`) | A term written like a defined one (its Affiliates) that is never defined |
+| [Units spaced two ways](unit-spacing-consistency.md) (`unit-spacing-consistency`) | A number and its unit spaced in some places and not others (5 GB, 5GB) |
+| [Restrictive "which" and "that" mixed](which-that-consistency.md) (`which-that-consistency`) | Restrictive clauses opened with "which" in some places and "that" in others |
 
 ## Structure
 
@@ -79,9 +129,45 @@ Skipped numbers, references to provisions that are not there, terms defined twic
 
 | Rule | What it finds |
 | --- | --- |
+| [An absolute rule with an exception written elsewhere](absolute-exception.md) (`absolute-exception`) | A rule said to have no exception ("must always") that another part excepts |
+| [Abstract too long, or missing](abstract-length.md) (`abstract-length`) | An abstract over the length limit, or a paper with sections that has no abstract |
+| [Link that goes nowhere](broken-link.md) (`broken-link`) | A link that goes nowhere: no address, a missing heading, or no definition |
+| [Section with nothing concrete](concrete-evidence-density.md) (`concrete-evidence-density`) | A section with no number, code or link: nothing for the reader to take away |
+| [Link to another file that goes nowhere](cross-doc-broken-link.md) (`cross-doc-broken-link`) | A link to another of the files checked whose file or heading is not there |
+| [One term defined differently in different files](cross-doc-duplicate-definition.md) (`cross-doc-duplicate-definition`) | The same term defined in other words in different files |
 | [Reference to a missing provision](dangling-reference.md) (`dangling-reference`) | A reference such as "see Article 5" to an article the document does not have |
-
-Rules with no sample yet: `absolute-exception`, `abstract-length`, `broken-link`, `concrete-evidence-density`, `cross-doc-broken-link`, `cross-doc-duplicate-definition`, `date-without-year`, `duplicate-definition`, `duplicate-heading`, `email-greeting-closing`, `email-subject-length`, `empty-list-item`, `empty-section`, `empty-table-cell`, `figure-reference-order`, `footnote-mismatch`, `heading-level-skip`, `heading-numbering-mix`, `image-alt-text`, `image-file-name-alt`, `modal-conflict`, `no-lead`, `number-without-unit`, `numbered-generic-heading`, `numbering-gap`, `preamble-length`, `prerequisite-after-step`, `required-listed-as-preferred`, `step-reference-missing`, `table-row-overflow`, `toc-heading-mismatch`, `unclosed-code-fence`, `unlisted-item-used`, `unrendered-emphasis`, `unused-definition`, `use-before-definition`, `vague-figure-reference`, `vague-link-text`
+| [Date without a year](date-without-year.md) (`date-without-year`) | A date with no year where the document's dates span years or cross a new year |
+| [Term defined twice](duplicate-definition.md) (`duplicate-definition`) | The same term defined in two places in one document |
+| [Duplicate sibling heading](duplicate-heading.md) (`duplicate-heading`) | Two headings with the same words under the same parent heading |
+| [Email without a greeting or a closing](email-greeting-closing.md) (`email-greeting-closing`) | A work email that opens without a greeting or ends without a closing |
+| [Subject line empty or too long](email-subject-length.md) (`email-subject-length`) | A work email whose "Subject:" line is empty or longer than the limit |
+| [Empty list item](empty-list-item.md) (`empty-list-item`) | A list item with only a label ("Owner:") and no value, or with nothing in it |
+| [Empty section](empty-section.md) (`empty-section`) | A heading with nothing under it before the next heading at its level or higher |
+| [Blank table cell](empty-table-cell.md) (`empty-table-cell`) | A table cell left blank in a column every other row fills |
+| [Figures and tables referred to out of order or out of place](figure-reference-order.md) (`figure-reference-order`) | A figure or table referred to out of order, too late, or never |
+| [A note mark with no note, or a note nothing points to](footnote-mismatch.md) (`footnote-mismatch`) | A note mark ("[^3]") with no note, or a note nothing points to |
+| [Heading level skipped](heading-level-skip.md) (`heading-level-skip`) | A heading that skips a level, such as "####" right after "##" |
+| [Heading numbering mixed](heading-numbering-mix.md) (`heading-numbering-mix`) | Sibling headings numbered in mixed ways: "1. Overview", "Steps", "3. Costs" |
+| [Image without alt text](image-alt-text.md) (`image-alt-text`) | An image with no alt text, as in "![](chart.png)" |
+| [Image alt text is a file name](image-file-name-alt.md) (`image-file-name-alt`) | An image whose alt text is a file name, as in "![IMG_1234.png](…)" |
+| [Opposite obligations on the same act](modal-conflict.md) (`modal-conflict`) | The same act required or allowed in one sentence and forbidden in another |
+| [The lead only restates the title](no-lead.md) (`no-lead`) | A first paragraph under the title that only says the title again |
+| [Number without its unit](number-without-unit.md) (`number-without-unit`) | A bare number where the other values in its column all have a unit |
+| [Headings that are only a label and a number](numbered-generic-heading.md) (`numbered-generic-heading`) | Headings such as "Benefit 1" and "Tip 2" that are only a label and a number |
+| [Skipped or repeated number](numbering-gap.md) (`numbering-gap`) | A numbered item that skips or repeats a number, such as Article 1 then 3 |
+| [Too long before the point](preamble-length.md) (`preamble-length`) | Too many paragraphs before the first heading, which delays the point |
+| [Prerequisite written after the steps](prerequisite-after-step.md) (`prerequisite-after-step`) | "Before you begin" written after the numbered steps it should come before |
+| [A required skill listed again as preferred](required-listed-as-preferred.md) (`required-listed-as-preferred`) | A job posting that lists one skill both as required and as preferred |
+| [A reference to a step that does not exist](step-reference-missing.md) (`step-reference-missing`) | A reference such as "see step 5" past the last step the document has |
+| [Table row with more cells than the header](table-row-overflow.md) (`table-row-overflow`) | A table row with more cells than the header row (the extra ones are not shown) |
+| [A table-of-contents entry with no heading](toc-heading-mismatch.md) (`toc-heading-mismatch`) | A table of contents entry that matches no heading of the document |
+| [Unclosed code fence](unclosed-code-fence.md) (`unclosed-code-fence`) | A code block opened with "```" and never closed |
+| [A step uses something the list of what you need leaves out](unlisted-item-used.md) (`unlisted-item-used`) | A step that uses an ingredient or a tool missing from the document's own list |
+| [Unrendered emphasis marks](unrendered-emphasis.md) (`unrendered-emphasis`) | "**" or "__" that Markdown cannot pair and shows as written |
+| [Term defined but never used](unused-definition.md) (`unused-definition`) | A term the document defines and then never uses |
+| [Term used before it is defined](use-before-definition.md) (`use-before-definition`) | A term defined in passing, as in (the "Seller"), that is used before that point |
+| [A figure, table or clause pointed at by where it is](vague-figure-reference.md) (`vague-figure-reference`) | "The table below" in a document that numbers its tables and figures |
+| [Link text that does not say where it goes](vague-link-text.md) (`vague-link-text`) | A link whose whole text is "here", "click here" or "read more" |
 
 ## Facts that disagree
 
