@@ -167,6 +167,19 @@ const opensAsNoun = (scope: ItemScope, item: TokenRange): boolean => {
 /** 項目が読点で閉じず、節の終わり（文の終わりか ; : —）まで続く。 */
 const runsToClauseEnd = (scope: ItemScope, item: TokenRange): boolean => scope.sentence.tokens[item.end]?.surface !== ",";
 
+/**
+ * 名前のすぐ後ろの、関係詞（who / which）で始まる項目は、読点で挟んで名前に添えた節（Tom, who repaired radios for forty years
+ * before he retired, gently opened the back and quickly found a loose wire）。名前も節も並びの項目ではなく、並びがあるなら節の後ろから
+ * （Alice, who leads design, Bob, Carol, and Dan は Bob からの 3 つ）。関係詞の語は語彙表 aside-relative が言う。
+ */
+const afterRelativeAside = (view: View): View => {
+  const { scope } = view.list;
+  const [name, aside] = [firstOf(view), secondOf(view)];
+  if (name === undefined || aside === undefined || !opensAsNoun(scope, name.item)) return view;
+  const opening = openingOf(scope, aside.item)?.surface.toLowerCase() ?? "";
+  return scope.sentence.words.asideRelative?.has(opening) === true ? after(view, aside) : view;
+};
+
 const opensAsPredicate = (scope: ItemScope, item: TokenRange): boolean => {
   const opening = openingOf(scope, item);
   return opening !== undefined && VERBAL.has(opening.pos) && !isParticiple(opening);
@@ -360,7 +373,7 @@ const listAt = (list: ItemList, at: number, walk: Walk): boolean | undefined => 
   const { scope } = list;
   if (closesExampleAside(wholeList(list), at)) return undefined;
   const afterItem = itemAfter(scope, at);
-  const opened = afterClosedList(withoutLead(afterVerbAside(afterClauseTurn(withoutCoordinateAdjective(wholeList(list)), afterItem))));
+  const opened = afterClosedList(withoutLead(afterRelativeAside(afterVerbAside(afterClauseTurn(withoutCoordinateAdjective(wholeList(list)), afterItem)))));
   const items = fromParticiplePhrase(fromExample(opened, afterItem), afterItem);
   if (listContinues(scope, afterItem, walk) || isAppositive(scope, at, items, afterItem) || insideLastItem(scope, at, items, afterItem)) return undefined;
   if (namesDivision(items) || qualifiesPrevious(items)) return undefined;
@@ -420,6 +433,7 @@ export const oxfordComma: Detector = (doc, options): Finding[] => {
     indefinite: patternsOf(doc.lexicons["indefinite-article"]),
     elision: (doc.lexicons["elision-mark"] ?? []).map((entry) => entry.pattern),
     openListEnd: patternsOf(doc.lexicons["open-list-end"]),
+    asideRelative: patternsOf(doc.lexicons["aside-relative"]),
   };
   const judged = doc.sentences.flatMap((sentence) => {
     const oxford = oxfordIn(sentence.tokens ?? [], words, doc.source);
