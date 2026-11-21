@@ -27,6 +27,8 @@ entries:
     rewrite: their own
   - pattern: your welcome
     rewrite: you're welcome
+    # "your welcome email", "your welcome pack": welcome modifies the noun that follows.
+    not_before_pos: [NOUN, PROPN]
   - pattern: you're own
     rewrite: your own
   - pattern: could of

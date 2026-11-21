@@ -1,5 +1,5 @@
 import type { Detector, DetectorOptions, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence } from "../plugin.ts";
-import { entryEnds, entryIn, entryOpens, entryWrittenIn } from "./lexicon-match.ts";
+import { entryEnds, entryIn, entryOpens, entryRanges, entryWrittenIn } from "./lexicon-match.ts";
 import { externalLinkTitleSpans } from "../link-title.ts";
 import { referenceListSpans } from "../reference-lists.ts";
 import { mentionCuesOf, onlyInTitles, onlyMentioned } from "./mentioned-phrase.ts";
@@ -24,8 +24,18 @@ type Hit = { readonly sentence: Sentence; readonly matched: string };
 /** Whether the entry's words in the sentence count as a use. phrase-match counts every one. */
 type IsUsed = (sentence: Sentence, entry: LexiconEntry) => boolean;
 
+/** Some place of the entry in the sentence is not followed by a word of a part of speech the entry names in not_before_pos. Without tokens every place counts. */
+const freeOfNextWord = (sentence: Sentence, entry: LexiconEntry): boolean => {
+  const blocked = entry.not_before_pos;
+  const tokens = sentence.tokens;
+  const ranges = entryRanges(sentence, entry);
+  if (blocked === undefined || tokens === undefined || ranges.length === 0) return true;
+  return ranges.some((range) => !blocked.includes(tokens[range.end]?.pos ?? ""));
+};
+
 /** An entry marked opens counts only at the head of the sentence: 「近年、」 opens a stock opening, 「その後、近年の」 is a plain word. */
-const writtenIn = (sentence: Sentence, entry: LexiconEntry): boolean => (entry.opens === true ? entryOpens(sentence, entry) : entryIn(sentence, entry));
+const writtenIn = (sentence: Sentence, entry: LexiconEntry): boolean =>
+  (entry.opens === true ? entryOpens(sentence, entry) : entryIn(sentence, entry)) && freeOfNextWord(sentence, entry);
 
 /** The entry the sentence holds; one written in the very form (reverted back) wins over one met through its base form (revert back). */
 const entryHeldBy = (sentence: Sentence, lexicon: Lexicon, isUsed: IsUsed): LexiconEntry | undefined => {
