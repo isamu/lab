@@ -10,7 +10,7 @@ import { depthMeaning } from "../rewrite-depth.ts";
 const TEXT: Texts<{
   readonly off: string;
   readonly defaultGenre: string;
-  readonly genreNote: (genre: string, others: string) => string;
+  readonly genreNote: (genre: string, others: readonly string[]) => string;
   readonly experimental: string;
   readonly alone: (id: string) => string;
   readonly howToFix: string;
@@ -28,7 +28,7 @@ const TEXT: Texts<{
   ja: {
     off: "見ない",
     defaultGenre: "既定",
-    genreNote: (genre, others) => `この数字は ${genre} のものです。ほかに ${others} で別の数字を持っています。`,
+    genreNote: (genre, others) => `この数字は ${genre} のものです。ほかに ${others.join(" / ")} で別の数字を持っています。`,
     experimental: "このルールはまだ試験中で、既定では動きません（--experimental で動きます）。",
     alone: (id) => `このルールだけを動かす:  npx chaffjs enable ${id}（chaff.yaml の rules に ${id}: normal と書くのと同じです）`,
     howToFix: "直しかた",
@@ -48,7 +48,8 @@ const TEXT: Texts<{
   en: {
     off: "not checked",
     defaultGenre: "the default genre",
-    genreNote: (genre, others) => `These numbers are for ${genre}. ${others} have numbers of their own.`,
+    genreNote: (genre, others) =>
+      `These numbers are for ${genre}. ${others.join(" / ")} ${others.length === 1 ? "has numbers of its own" : "have numbers of their own"}.`,
     experimental: "This rule is still experimental and does not run by default (--experimental runs it).",
     alone: (id) => `Turn on this rule alone:  npx chaffjs enable ${id}  (the same as rules: { ${id}: normal } in chaff.yaml)`,
     howToFix: "How to fix",
@@ -92,7 +93,7 @@ const levelLine = (rule: RuleDefinition, level: Level, current: Level | undefine
 const genreNote = (rule: RuleDefinition, genre: string | undefined, text: (typeof TEXT)["ja"]): string[] => {
   const others = Object.keys(rule.by_genre).filter((key) => key !== genre);
   if (others.length === 0) return [];
-  return ["", `  ${text.genreNote(genre ?? text.defaultGenre, others.join(" / "))}`];
+  return ["", `  ${text.genreNote(genre ?? text.defaultGenre, others)}`];
 };
 
 /** A team's rule shows its example, before and after, and says where it was defined. */
