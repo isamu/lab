@@ -6,6 +6,7 @@ import { leadingPrefix, trailingTitle, type AddresseeWords } from "./addressee-t
 import {
   followsForm,
   followsUnit,
+  fillsGloss,
   holdsName,
   isListItem,
   labelsLines,
@@ -82,18 +83,6 @@ const maskedProse = (prose: string, profile: DocumentProfile | undefined, names:
  */
 const fillsQuote = (sentence: Sentence, start: number, end: number): boolean =>
   quotedSpans(sentence.text, NAME_MARKS).some((span) => holdsName(sentence.text, span, start, end)) || fillsGloss(sentence.text, start, end);
-
-/** 丸括弧の補い。 */
-const GLOSS_MARKS = { "（": "）", "(": ")" };
-/** 補いの括弧のすぐ前に立つ、語の字（修士の学位（…）の「位」、ＥＢＩＴＤＡ＋（…）の「＋」）。 */
-const GLOSSED_WORD_END = /[\p{Script=Han}\p{Script=Katakana}\p{Script=Latin}\p{N}ー＋+]$/u;
-
-/**
- * 語のすぐ後ろの丸括弧の中身が、この連なりだけか（ＥＢＩＴＤＡ＋（減価償却他調整前営業利益）、修士の学位（大学院修士課程修了程度））。
- * 前の語の言い換えや展開で、書き手が 1 つの名前として示したもの。
- */
-const fillsGloss = (text: string, start: number, end: number): boolean =>
-  quotedSpans(text, GLOSS_MARKS).some((span) => GLOSSED_WORD_END.test(text.slice(0, span.start - 1)) && holdsName(text, span, start, end));
 
 const runsOf = (sentence: Sentence, profile: DocumentProfile | undefined, names: readonly string[]): KanjiRun[] => {
   const prose = proseText(sentence);
@@ -268,13 +257,17 @@ const measuredOf = (tokens: readonly Token[], run: KanjiRun, span: Span, words: 
   return { rest: { start: head?.span.end ?? span.start, end: tail?.start ?? span.end }, text: name.slice(head?.surface.length ?? 0), keptHead };
 };
 
+/** 書き手が名前として示した連なり（括弧でくくった、一行に置いた、用語集の見出し語、文脈で名前と分かる）。 */
+const isPresentedName = (run: KanjiRun, context: RunContext): boolean =>
+  run.quoted || run.label || (context.headwords && run.alone) || isNamedByContext(run, context.words);
+
 /**
  * 数えない連なりは空。頭の、数に付いた助数詞（2日日本弁護士連合会の「日」）と、尻の、数に付く接頭の語（施行令第172条の「第」）と
  * 宛先に付く語（市政情報課宛ての「宛」）は数えない。宛名の「各」と、宛名の行の役職（各国公私立高等専門学校長の「各」と「長」）も数えない。
  * 住所か名前かは、それを外した残りで決める（1日日本銀行の「日本銀行」）。品詞が無ければ判定しない。
  */
 const measuredRun = (tokens: readonly Token[] | undefined, run: KanjiRun, context: RunContext): string => {
-  if (run.quoted || run.label || (context.headwords && run.alone) || isNamedByContext(run, context.words)) return "";
+  if (isPresentedName(run, context)) return "";
   if (tokens === undefined || run.span === undefined) return run.text;
   const { rest, text, keptHead } = measuredOf(tokens, run, run.span, context.words);
   if (context.presented.has(text) || inStatuteTitle(tokens, run.brackets, context.words.fixedName)) return "";

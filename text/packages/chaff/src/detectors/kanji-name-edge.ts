@@ -1,4 +1,5 @@
 import type { Span, Token } from "../plugin.ts";
+import { quotedSpans } from "../quoted-span.ts";
 
 /** 頭から外す語と、文書全体の座標でのその範囲。 */
 export type Edge = { readonly surface: string; readonly span: Span };
@@ -122,3 +123,15 @@ export const trailingConjunction = (tokens: readonly Token[], start: number, end
   if (token === undefined || token.pos !== "CCONJ" || token.span.start <= start) return undefined;
   return { surface: run.slice(run.length - (end - token.span.start)), start: token.span.start };
 };
+
+/** 丸括弧の補い。 */
+const GLOSS_MARKS = { "（": "）", "(": ")" };
+/** 補いの括弧のすぐ前に立つ、語の字（修士の学位（…）の「位」、ＥＢＩＴＤＡ＋（…）の「＋」）。 */
+const GLOSSED_WORD_END = /[\p{Script=Han}\p{Script=Katakana}\p{Script=Latin}\p{N}ー＋+]$/u;
+
+/**
+ * 語のすぐ後ろの丸括弧の中身が、この連なりだけか（ＥＢＩＴＤＡ＋（減価償却他調整前営業利益）、修士の学位（大学院修士課程修了程度））。
+ * 前の語の言い換えや展開で、書き手が 1 つの名前として示したもの。
+ */
+export const fillsGloss = (text: string, start: number, end: number): boolean =>
+  quotedSpans(text, GLOSS_MARKS).some((span) => GLOSSED_WORD_END.test(text.slice(0, span.start - 1)) && holdsName(text, span, start, end));
