@@ -267,9 +267,20 @@ const isLongName = (name: string): boolean => {
   return !LATIN.test(name) || JAPANESE.test(name) || (words.length >= MIN_NAME_WORDS && words.some((word) => UPPER_START.test(word)));
 };
 
-/** A conjunction that joins the run to a name before it (書面または電磁的記録（以下「書面等」）): the bracket names them all. */
-const joinsList = (token: Token | undefined, joiners: readonly string[]): boolean =>
-  token !== undefined && token.pos === "CCONJ" && joiners.includes(token.surface.toLowerCase());
+const CLOSING_BRACKETS = new Set([")", "）"]);
+const COMMAS = new Set([",", "、", "，"]);
+
+/**
+ * A conjunction that joins the run to a name before it (書面または電磁的記録（以下「書面等」）): the bracket names them all.
+ * Right after another definition's bracket (Brookside Ltd (the "Client") and Harbour Works Ltd (the "Supplier")) it joins
+ * two parties, each given its own short name.
+ */
+const joinsList = (tokens: readonly Token[], at: number, joiners: readonly string[]): boolean => {
+  const token = tokens[at];
+  if (token === undefined || token.pos !== "CCONJ" || !joiners.includes(token.surface.toLowerCase())) return false;
+  const before = tokens.slice(0, at).findLast((candidate) => !COMMAS.has(candidate.surface));
+  return before === undefined || !CLOSING_BRACKETS.has(before.surface);
+};
 
 /**
  * The long name written right before an inline definition: the run of name words that ends at its opening bracket. A run
@@ -279,7 +290,7 @@ export const nameBefore = (sentence: Sentence, bracket: number, joiners: readonl
   if (LABELS_THE_CLAUSE.test(sentence.text.slice(bracket - sentence.span.start))) return undefined;
   const tokens = (sentence.tokens ?? []).filter((token) => token.span.end <= bracket);
   const firstOfRun = tokens.findLastIndex((token) => !isNamePart(token)) + 1;
-  if (isModifier(tokens[firstOfRun - 1]) || joinsList(tokens[firstOfRun - 1], joiners)) return undefined;
+  if (isModifier(tokens[firstOfRun - 1]) || joinsList(tokens, firstOfRun - 1, joiners)) return undefined;
   const run = tokens.slice(firstOfRun).filter((token, index, all) => index > 0 || !NAME_MARKS.has(token.surface) || all.length === 1);
   const first = run[0];
   const end = run.at(-1);
