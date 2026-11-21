@@ -57,7 +57,7 @@ not_flagged:
   en: Only blog posts and business documents are checked; papers, statutes, literature and transcripts are not. "Honestly" as manner ("live honestly") is not a marker and is not listed. A piling-up of sentence openers, "Honestly," among them, is announcing-opener's. A marker only named as a term (the word "honestly") is not reported.
 level_meaning:
   ja: 前置きが {limit} 箇所あれば指摘
-  en: reported once there are {limit}
+  en: reported once there {limit|is|are} {limit}
 rewrite:
   depth: light
   ja:

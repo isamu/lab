@@ -101,7 +101,7 @@ not_flagged:
   en: Blocks in other languages or without a language, blocks that show a command with its output, and comment lines (#) are not read. When the fewer kind is more than {limit} blocks, it is taken as a choice.
 level_meaning:
   ja: 少ないほうの書き方が {limit} ブロック以下のとき指摘
-  en: reported when the fewer style appears in {limit} blocks or fewer
+  en: reported when the fewer style appears in {limit} {limit|block|blocks} or fewer
 rewrite:
   depth: light
   ja:

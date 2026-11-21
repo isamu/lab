@@ -49,4 +49,4 @@ not_flagged:
   en: Up to the limit, the form reads as politeness and is not reported.
 level_meaning:
   ja: 文書の中で {limit} 回まで
-  en: up to {limit} times in a document
+  en: up to {limit} {limit|time|times} in a document

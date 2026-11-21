@@ -66,7 +66,7 @@ not_flagged:
   en: Only the last four paragraphs of the last section are checked, with or without headings; the document's first paragraph and "to sum up" earlier in the text are ordinary links and are not reported. List items are not checked. A send-off such as "Happy brewing!", "give it a try" or "and go from there" counts only in the last paragraph; earlier it is ordinary text. In emails and proposals the stock last line of a letter ("Thank you for your prompt attention to this matter") and a Japanese pledge that promises effort without saying what (その思いに応えられるよう、しっかり考えてみます) are read too, and so is a proposal's closing offer to talk it over ("We would be happy to discuss any questions"), and a chirpy wish ("Wishing you all ...!", "enjoy the long weekend!") in emails only; a courtesy in an email's closing ("feel free to reach out") is ordinary alone, and is reported only beside another stock closing such as that wish; reports and notices are not checked.
 level_meaning:
   ja: 当てはまる結びが {limit} 箇所あれば指摘
-  en: reported once there are {limit}
+  en: reported once there {limit|is|are} {limit}
 rewrite:
   depth: light
   ja:

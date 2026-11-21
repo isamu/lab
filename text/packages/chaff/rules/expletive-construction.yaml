@@ -49,4 +49,4 @@ not_flagged:
   en: '"It is" without a that-clause ("it is raining") is not counted. Nor is a sentence in a paragraph of minutes that opens with a speaker''s name ("Mara: There''s some history ..."): it is that person''s phrasing, recorded as said, not the writer''s to recast. Names are read only when three or more of them each open three or more paragraphs (two field labels such as Status: and Comments: are not names).'
 level_meaning:
   ja: この形の文 {limit} 回まで
-  en: up to {limit} such sentences
+  en: up to {limit} {limit|such sentence|such sentences}

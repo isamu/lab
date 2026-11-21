@@ -45,7 +45,7 @@ not_flagged:
   en: Only runs of three or more words. Runs of acronyms (words never written in lower case elsewhere) and code are not reported, and MUST or SHALL in a specification count as conventional capitals. A caption in capitals that opens a paragraph and ends in a colon or stands alone ("AGENCY:", "WORKING GROUP MEMBERS"), and prose naming such a caption, are not reported either. Nor is a paragraph whose lines are all in capitals and end no sentence, such as a letterhead, an addressee block ("BOARD OF GOVERNORS") or a heading a transcript sets on a line of its own ("OPENING STATEMENT OF HON. JANE DOE,"), nor a roster entry that gives a name in capitals and the place or office in ordinary case ("JANE Q. DOE, Ohio", "JANE Q. DOE, Ohio, Chairman"), nor a placeholder in square brackets wholly in capitals, which a publisher or editor puts where the text leaves something out ("[GRAPHIC(S) NOT AVAILABLE IN TIFF FORMAT]", "[NAME WITHHELD]"), nor a quotation wholly in capitals (states “THIS DOCUMENT CONTAINS CONFIDENTIAL INFORMATION.”), a label the reader is to write or will see as it stands rather than the writer raising their voice, nor a label a sentence names as the screen shows it ("in SUBMIT TO APPROVER status", "the SAVE AND CLOSE button"). The legal and literature presets turn it off, since contracts set disclaimers in capitals by rule and older texts set titles that way.
 level_meaning:
   ja: "{limit} 箇所あれば指摘"
-  en: reported once there are {limit}
+  en: reported once there {limit|is|are} {limit}
 rewrite:
   depth: light
   en:

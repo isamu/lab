@@ -7,6 +7,7 @@ import { rules } from "../../../lib/rules";
 import { entryOf, type RunsWhen } from "../../../lib/ruleCatalog";
 import { standingsOf, type RuleInGenre } from "../../../lib/genres";
 import { sourceLinks } from "../../../lib/bibliography";
+import { fill } from "../../../../../packages/chaff/src/render/text.ts";
 
 export const getStaticPaths = () => LANGS.flatMap((lang) => rules.map((rule) => ({ params: { lang, id: rule.id } })));
 
@@ -38,7 +39,7 @@ const meaning = rule.levelMeaning[lang];
 const bySeverity = rule.levelSets === "severity" || rule.layer === "L4";
 const levelRows = rule.levels[lang].map(([level, value]) => [
   level,
-  bySeverity ? term(lang, value) : meaning === "" ? value : meaning.replaceAll("{limit}", value),
+  bySeverity ? term(lang, value) : meaning === "" ? value : fill(meaning, { limit: value }),
 ]);
 const sameEverywhere = !bySeverity && meaning === "";
 

@@ -59,7 +59,7 @@ not_flagged:
   en: Sections under 200 characters are not measured, since one bold span would swing the rate. A short field label opening a line (**Date:**, **Motion:**) names the value after it and is not emphasis, so it is not counted; a bold label opening a list item is.
 level_meaning:
   ja: 1000 字あたり太字 {limit} 箇所まで
-  en: up to {limit} bold spans per 1000 characters
+  en: up to {limit} {limit|bold span|bold spans} per 1000 characters
 rewrite:
   depth: light
   ja:
