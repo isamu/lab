@@ -92,9 +92,32 @@ describe("referenceEntrySpans", () => {
     assert.deepEqual(referenceEntrySpans("[FETCH] WHATWG says so."), []);
   });
 
+  it("valid: a label too long for its column, followed by one space or alone on its line", () => {
+    const long = [
+      '   [GUIDE.DISC] Example Institute, "The ACME Guide to',
+      '              Disclosure", August 2017.',
+      "",
+      "   [STD.1234.2018]",
+      '              ISO, "Security techniques", ISO/IEC 1234:2018.',
+      "",
+      "   The IANA registry is updated.",
+    ].join("\n");
+    const inEntry = (word: string): boolean => referenceEntrySpans(long).some((span) => span.start <= long.indexOf(word) && long.indexOf(word) < span.end);
+    assert.equal(inEntry("ACME"), true);
+    assert.equal(inEntry("Disclosure"), true);
+    assert.equal(inEntry("IEC"), true);
+    assert.equal(inEntry("IANA"), false);
+  });
+
+  it("invalid: prose opening a line with a bracketed citation, its next line no deeper", () => {
+    const prose = ["   [JSON] and XML [XML] formats describe the", "   specifics of a problem.", "", "   [XSLT]", "   is cited here."].join("\n");
+    assert.deepEqual(referenceEntrySpans(prose), []);
+  });
+
   it("abnormal input: empty text, a label alone", () => {
     assert.deepEqual(referenceEntrySpans(""), []);
     assert.deepEqual(referenceEntrySpans("[FETCH]"), []);
+    assert.deepEqual(referenceEntrySpans("[FETCH]\n"), []);
   });
 });
 
@@ -111,6 +134,15 @@ describe("undefined-acronym: series, spelled names, reference entries, judges, c
       "              STD 66, January 2005.",
     ];
     assert.deepEqual(reportedAcronyms(en, references.join("\n")), ["SRE"]);
+    const longLabel = [
+      "# Notes",
+      "",
+      "The SRE joins the call.",
+      "",
+      '   [GUIDE.DISC] Example Institute, "The ACME Guide to',
+      '              Disclosure", August 2017.',
+    ];
+    assert.deepEqual(reportedAcronyms(en, longLabel.join("\n")), ["SRE"]);
   });
 
   it("invalid: a lone DR, a name in another sentence, capitals in prose", () => {
