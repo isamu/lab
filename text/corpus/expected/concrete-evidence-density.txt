@@ -3,6 +3,5 @@ gitlab-values  15
 govuk-cddo-roadmap-2022-2025  3
 govuk-guidance-academy-senior-pay  9
 moriguchi-satsuki-gakuen-ijime-houshin  5
-nttcom-onboarding-week1  5
 tcu-rishu-toroku-2026-kouki  3
 usajobs-va-it-specialist-customer-support  3
