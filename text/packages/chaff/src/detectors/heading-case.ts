@@ -38,7 +38,15 @@ const TITLE_DEPTH = 1;
  * 見出しの頭の番号の札（Section 3. / Day 1: / Part II:）。札の語は流儀によらず大文字で始まり、続く題の語数にも数えない。
  * 番号は 3 桁までで、後ろに「.」「:」「)」か ダッシュ、または括弧に入れた題（Rule 1 (Labels)）があるものだけ（Windows 11 Setup も Budget 2026: も札ではない）。
  */
-const LEADING_LABEL = /^\s*\p{Lu}\p{Ll}+\s+(?:\d{1,3}(?:\.\d{1,3})*|[IVXLC]+)(?:\s*[.:)\-\u2013\u2014]\s+|\s+(?=\())/u;
+const LABEL_HEAD = /^\s*\p{Lu}\p{Ll}+\s+(?:\d{1,3}(?:\.\d{1,3})*|[IVXLC]+)/u;
+/** What closes the label: a mark and a space, or a space before a bracketed title. */
+const LABEL_END = /^(?:\s*[.:)\-\u2013\u2014]\s+|\s+(?=\())/u;
+
+export const withoutLeadingLabel = (heading: string): string => {
+  const head = LABEL_HEAD.exec(heading)?.[0];
+  const end = head === undefined ? undefined : LABEL_END.exec(heading.slice(head.length))?.[0];
+  return head === undefined || end === undefined ? heading : heading.slice(head.length + end.length);
+};
 
 /**
  * 見出しの頭の字や小さいローマ数字の札（a. / b) / iv. / (c)）。札は流儀によらず小文字か大文字のまま書くので、語に数えない。
@@ -51,7 +59,7 @@ const LETTER_LABEL = /^\s*\(?(?:[A-Za-z]|[ivxlc]{2,6}|[IVXLC]{2,6})[.)]\s+/u;
  * どちらの流儀の証拠にもならないので数えない。
  */
 export const isTitleCase = (heading: string, fixedCase: ReadonlySet<string> = new Set()): boolean | undefined => {
-  const words = [...withoutCodeWords(straightApostrophes(heading.replace(LEADING_LABEL, "").replace(LETTER_LABEL, ""))).matchAll(WORD)]
+  const words = [...withoutCodeWords(straightApostrophes(withoutLeadingLabel(heading).replace(LETTER_LABEL, ""))).matchAll(WORD)]
     .map((match) => match[0])
     .filter((word) => !MINOR_WORDS.has(word.toLowerCase()) && !ACRONYM.test(word) && !fixedCase.has(word));
   // 1 語の見出しは、どちらの流儀でも先頭が大文字になる。判定できない。

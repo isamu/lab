@@ -108,8 +108,6 @@ contract.md   blog/tech · English   genre from the default
                   date-weekday-mismatch
   31:20   warning "Services" is also defined on line 7
                   duplicate-definition
-  33:26   info    This heading's capitalisation differs from the rest (1 in this document)
-                  title-case-consistency
 
 {counts}
 ```
@@ -134,8 +132,6 @@ contract.md   legal/contract · English   genre from --genre
                   date-weekday-mismatch
   31:20   warning "Services" is also defined on line 7
                   duplicate-definition
-  33:26   info    This heading's capitalisation differs from the rest (1 in this document)
-                  title-case-consistency
 
 {counts}
 ```
@@ -187,7 +183,6 @@ A team changes the lines with `guide:` in `chaff.yaml` ([Changing the genre's gu
 | 25 | `numbering-gap` | Article 5 follows Article 3 | Renumber, and fix every reference to the renumbered articles |
 | 27 | `date-weekday-mismatch` | December 5, 2026 is a Saturday | Fix the weekday, or move the date to a Monday |
 | 31 | `duplicate-definition` | "Services" is defined in Article 1 and in Article 6 | Keep one definition. If they differ, the parties decide which is right |
-| 33 | `title-case-consistency` | The heading "Article 7 (Good faith)" is in sentence case, and the rest are in Title Case | Write the heading the way the rest are |
 
 Renumbering turns Article 5 into Article 4, and moves the reference to Article 9 too.
 After fixing, run chaff again to check that the references still match.
