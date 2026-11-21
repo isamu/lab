@@ -14,6 +14,7 @@ extra_word_lists:
     finite-auxiliary,
     misnumbered-phrase,
     determiner-after-article,
+    homophone-slip,
   ]
 severity: warning
 
@@ -41,8 +42,8 @@ messages:
     en: '"{word}" puts two determiners in a row'
 
 how_to_fix:
-  ja: 限定詞か名詞のどちらかに揃えてください（a significant change / significant changes）。所有の語なら、主語の語に直してください（Your can → You can、their is → there is）。限定詞が二つ続いていれば、どちらかを消してください（the some roads → some roads か that some roads）。
-  en: Make the determiner and the noun agree ("a significant change" or "significant changes"). For a possessive, write the subject you meant ("Your can" becomes "You can", "their is" becomes "there is"). For two determiners in a row, drop one ("the some roads" becomes "some roads", or "that some roads" if that was meant).
+  ja: 限定詞か名詞のどちらかに揃えてください（a significant change / significant changes）。所有の語なら、主語の語に直してください（Your can → You can、their will → they will）。限定詞が二つ続いていれば、どちらかを消してください（the some roads → some roads か that some roads）。
+  en: Make the determiner and the noun agree ("a significant change" or "significant changes"). For a possessive, write the subject you meant ("Your can" becomes "You can", "their will" becomes "they will"). For two determiners in a row, drop one ("the some roads" becomes "some roads", or "that some roads" if that was meant).
 
 levels: { strict: error, normal: warning, relaxed: info }
 
@@ -61,5 +62,5 @@ example:
     after: This new version will ship in May.
 
 not_flagged:
-  ja: 単数と複数で形が同じ名詞（series、data）、this や these の直後の語、名詞を修飾する名詞（a sales team）、前置詞の後ろの所有の語と名詞の will や can（at its will）は指しません。
-  en: Nouns spelled alike in both numbers ("series", "data"), a word right after "this" or "these", nouns that modify another noun ("a sales team"), and a possessive after a preposition with "will" or "can" as its noun ("at its will") are not reported.
+  ja: 単数と複数で形が同じ名詞（series、data）、this や these の直後の語、名詞を修飾する名詞（a sales team）、前置詞の後ろの所有の語と名詞の will や can（at its will）は指しません。homophone-slip が一覧に持つ組（their are）は、正しい語まで言うその規則が指し、ここでは指しません。
+  en: Nouns spelled alike in both numbers ("series", "data"), a word right after "this" or "these", nouns that modify another noun ("a sales team"), and a possessive after a preposition with "will" or "can" as its noun ("at its will") are not reported. A pair homophone-slip lists ("their are") is reported by that rule, with the word meant, and not here.

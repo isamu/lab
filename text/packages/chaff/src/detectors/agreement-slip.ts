@@ -26,6 +26,8 @@ export type AgreementLists = {
   readonly afterArticle: ReadonlySet<string>;
   /** 名詞句を目的語に取る前置詞（on / of）。この後ろの this / these は主語にならない。 */
   readonly prepositions?: ReadonlySet<string>;
+  /** homophone-slip が言う組（their are）。その規則が正しい語まで言うので、ここでは数えない。 */
+  readonly homophones?: ReadonlySet<string>;
 };
 
 export type Slip = { readonly variant: "number" | "possessive" | "determiner"; readonly first: Token; readonly last: Token; readonly word: string };
@@ -192,7 +194,8 @@ const possessiveSlipAt = (source: string, tokens: readonly Token[], at: number, 
   const auxiliary = verb.pos === "AUX" && isBaseVerb(tokens[at + 2]) && !isNounAfterPreposition(tokens, at);
   const verbal = LOWER.test(verb.surface) && (lists.finite.has(lower(verb)) || auxiliary);
   if (!verbal || !joinedBySpace(source, [possessive, verb]) || isPartOfLongerWord(source, possessive, verb)) return undefined;
-  return slipOf("possessive", source, possessive, verb);
+  const slip = slipOf("possessive", source, possessive, verb);
+  return lists.homophones?.has(slip.word.toLowerCase()) === true ? undefined : slip;
 };
 
 /** ones of the most。前に限定詞・形容詞・代名詞があれば、ones は代名詞（the ones of the most use）。 */
@@ -240,6 +243,7 @@ const listsOf = (lexicons: Readonly<Record<string, Lexicon>>): AgreementLists =>
   misnumbered: lexicons["misnumbered-phrase"] ?? [],
   afterArticle: setOf(lexicons["determiner-after-article"]),
   prepositions: setOf(lexicons["object-preposition"]),
+  homophones: setOf(lexicons["homophone-slip"]),
 });
 
 export const agreementSlip: Detector = (doc): Finding[] => {
