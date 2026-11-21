@@ -116,7 +116,7 @@ $ npx chaffjs explain sentence-rhythm --genre blog/essay
     relaxed  文の長さのばらつきが 30% 未満なら指摘
     off      見ない
 
-  この数字は blog/essay のものです。ほかに blog で別の数字を持っています。
+  この数字は blog のもので、blog/essay はこれを使います。ほかのジャンルは既定の数字を使います。
 
   いまは normal です。
 

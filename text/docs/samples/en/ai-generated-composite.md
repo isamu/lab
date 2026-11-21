@@ -66,7 +66,7 @@ post.md   blog/essay · English   genre from --genre
 
   ⚠  Several signals of generated text together
 
-     "ai-tell, padded-intro, q-fragment-answer, closing-exhortation" occur together in this document (4 signals, 2 needed)
+     4 signals of generated text occur together in this document (2 needed): Phrasing common in generated text, Padded opening, Questions answered with a fragment, A closing that cheers the reader on
      Each of these appears in ordinary writing on its own. Only three or more in one document (two in a blog post) mean anything. **Even then it does not say the text was generated.** It marks a place to reread.
 
      → Read it through and check your own point is still there. Rewriting a paragraph is often faster than fixing each finding.
@@ -189,7 +189,7 @@ $ npx chaffjs explain ai-generated-composite --genre blog/essay
     relaxed  reported once 3 signals occur together
     off      not checked
 
-  These numbers are for blog/essay. blog have numbers of their own.
+  These numbers are for blog, which blog/essay takes. Other genres take the default numbers.
 
   Now: normal.
 

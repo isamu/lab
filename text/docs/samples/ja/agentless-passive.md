@@ -44,7 +44,7 @@ report.md   business/report · 日本語   ジャンルは --genre から
 
   ⚠  誰がしたのか書かれていない
 
-     この文は「れ」と受け身で書かれていますが、誰がしたのかがありません
+     この文は「決定され」と受け身で書かれていますが、誰がしたのかがありません
      受動のまま動作主を書かないと、誰が決めたのか・誰がやるのかが文から消えます。読み手は責任の所在をたどれません。
 
      → 主語を立てて能動にしてください。「決定されました」を「運営チームが決定しました」に。誰かを名指せないなら、書けない理由のほうが問題かもしれません。
@@ -117,9 +117,9 @@ $ npx chaffjs explain agentless-passive --genre business/report
     strict   一文に受け身が 1 個あれば指摘
     normal   一文に受け身が 1 個あれば指摘
     relaxed  一文に受け身が 2 個あれば指摘
-  → off      見ない
+    off      見ない
 
-  いまは off です。
+  いまは動きません（ジャンル business/report では見ないため）。
 
   変える:  npx chaffjs relax agentless-passive --why "理由"
 ```

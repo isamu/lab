@@ -168,7 +168,7 @@ $ npx chaffjs explain figurative-density --genre blog/tech
   Rewrite depth: register (the style is converted: polite to plain endings, comparatives removed and so on). With a shallower chaff fix-plan --depth, the plan names this rule without fixing it.
 
   Levels:
-    strict   up to 1 decorative figures per 1000 words
+    strict   up to 1 decorative figure per 1000 words
   → normal   up to 2 decorative figures per 1000 words
     relaxed  up to 3 decorative figures per 1000 words
     off      not checked

@@ -137,7 +137,7 @@ $ npx chaffjs explain ai-tell --genre blog/owned-media
     relaxed  言い回しの重みの合計が 10 点まで
     off      見ない
 
-  この数字は blog/owned-media のものです。ほかに blog で別の数字を持っています。
+  この数字は blog のもので、blog/owned-media はこれを使います。ほかのジャンルは既定の数字を使います。
 
   いまは normal です。
 

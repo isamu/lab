@@ -108,7 +108,7 @@ $ npx chaffjs explain ai-tell --genre blog/owned-media
     relaxed  up to a score of 10
     off      not checked
 
-  These numbers are for blog/owned-media. blog have numbers of their own.
+  These numbers are for blog, which blog/owned-media takes. Other genres take the default numbers.
 
   Now: normal.
 
