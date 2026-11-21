@@ -87,6 +87,7 @@ export const useBeforeDefinition: Detector = (doc): Finding[] =>
         titleIn(doc),
         patternsOf(doc, "self-prefix"),
         patternsOf(doc, "term-source-marker"),
+        new Set(patternsOf(doc, "party-short-name")),
       ).map((use) => findingAt(doc, use.offset, { term: use.term.term, defined: use.term.line }));
 
 /** 同じ略語を、文書の中で二通りに展開している所。 */

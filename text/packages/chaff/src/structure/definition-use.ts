@@ -303,9 +303,10 @@ const CAPITAL_OR_NON_LATIN = /\p{Lu}|[^\p{Script=Latin}\p{N}\s\p{P}]/u;
 
 /**
  * 前で使ったと言える語。小文字の英語（("vendors")）はふつうの語としても使うので、前の現れが定義した語の使用とは限らない。
- * 一字の漢字（「法」「令」）は、令和や方法の一部にも当たる。
+ * 一字の漢字（「法」「令」）は、ふつうの語としても書くので、当事者の呼び名（甲・乙）だけ。
  */
-const isDistinctive = (term: string): boolean => CAPITAL_OR_NON_LATIN.test(term) && !SINGLE_KANJI.test(term);
+const isDistinctive = (term: string, singleKanjiNames: ReadonlySet<string>): boolean =>
+  CAPITAL_OR_NON_LATIN.test(term) && (!SINGLE_KANJI.test(term) || singleKanjiNames.has(term));
 
 /** 文の途中の定義ごとの、括弧の前の名前。 */
 const definingNames = (terms: readonly DefinedTerm[], texts: readonly BodyText[]): Map<DefinedTerm, DefiningName> =>
@@ -412,12 +413,13 @@ export const usesBeforeDefinition = (
   isTitle: IsTitle = NEVER_TITLE,
   selfPrefixes: readonly string[] = [],
   sourceMarkers: readonly string[] = [],
+  singleKanjiNames: ReadonlySet<string> = new Set(),
 ): TermUse[] => {
   const inline = terms.filter((term) => term.inline);
   const names = definingNames(terms, texts);
   const insideLongerName = insideLongerNameIn(texts, terms, names);
   return groupsOf(terms)
-    .filter((group) => group.first.inline && isDistinctive(group.first.term))
+    .filter((group) => group.first.inline && isDistinctive(group.first.term, singleKanjiNames))
     .flatMap(({ first: defined, spans }) => {
       const defining = sentenceAt(texts, defined.span.start)?.start ?? defined.span.start;
       const uses = usesOf(defined.term, texts, spans, "exact", defined.bare === true ? mentioned : NEVER_MENTIONED).filter((offset) => offset < defining);
