@@ -11,10 +11,11 @@ import { isInListItem, isReferenceLine, isTitleLine, quotedTitleWords, remarkAft
 
 type Measure = { readonly size: number; readonly limit: number; readonly variant?: string };
 
-/** The page markers' pattern, the citation signals ("see") and the spans of the list items, read once per document. */
+/** The page markers' pattern, the citation signals ("see"), the era names and the spans of the list items, read once per document. */
 type SentenceWords = {
   readonly markers: RegExp | undefined;
   readonly citationSignals: readonly string[];
+  readonly eras: readonly string[];
   readonly listItems: readonly { readonly start: number; readonly end: number }[];
 };
 
@@ -55,8 +56,8 @@ const isUnwritten = (sentence: Sentence, text: string, unit: LengthUnit, words: 
   isGrammarBlock(sentence.text) || isCitationString(text, words.citationSignals) || (unit === "word" && isTitleLine(text));
 
 /** The parts measured one by one when the splitter ran several things into one sentence (label lines, table cells, a quotation). */
-const partsOf = (sentence: Sentence, text: string): readonly string[] | undefined =>
-  labelLineParts(sentence.text) ?? flattenedTableParts(text) ?? colonQuotationParts(text) ?? parentheticalSentenceParts(text);
+const partsOf = (sentence: Sentence, text: string, eras: readonly string[]): readonly string[] | undefined =>
+  labelLineParts(sentence.text) ?? flattenedTableParts(text, eras) ?? colonQuotationParts(text) ?? parentheticalSentenceParts(text);
 
 /** The length of a sentence in the document's language, without what the writer did not write as one. */
 const ownSize = (sentence: Sentence, unit: LengthUnit, words: SentenceWords): number => {
@@ -64,7 +65,7 @@ const ownSize = (sentence: Sentence, unit: LengthUnit, words: SentenceWords): nu
   if (isUnwritten(sentence, text, unit, words)) return 0;
   const aroundCitation = unit === "word" ? wordsAroundCitation(text, words.citationSignals) : undefined;
   if (aroundCitation !== undefined) return sizeOf(aroundCitation, unit);
-  const parts = partsOf(sentence, text);
+  const parts = partsOf(sentence, text, words.eras);
   if (parts !== undefined) return Math.max(0, ...parts.map((part) => sizeOf(part, unit) - pageMarkerSize(part, words.markers, unit)));
   const remark = unit === "word" ? remarkAfterTitle(text) : undefined;
   if (remark !== undefined) return sizeOf(remark, unit);
@@ -77,6 +78,7 @@ export const sentenceLength: Detector = (doc, options): Finding[] => {
   const words: SentenceWords = {
     markers: pageMarkerPattern((options.lexicon ?? []).map((entry) => entry.pattern)),
     citationSignals: (doc.lexicons["citation-signal"] ?? []).map((entry) => entry.pattern),
+    eras: (doc.lexicons["calendar-era"] ?? []).map((entry) => entry.pattern),
     listItems: doc.lists.flatMap((list) => list.itemSpans),
   };
   const long = doc.sentences

@@ -3,6 +3,7 @@
 // a converter ran together (…設立1945年７月日染興業…, 39,0439,677…), and a quotation the writer introduces with a colon.
 // Each is measured part by part, or not at all. Pure: the text in, the parts out.
 
+import { escapeRegExp } from "../orthography.ts";
 import type { Span } from "../plugin.ts";
 
 const LINE_BREAK = /\n/u;
@@ -46,11 +47,19 @@ const GLUED_NUMBER = /\d[,，]\d{4}|\d(?:[.．]\d+){4}/u;
 /** A run of numbers, signs and empty-cell dashes (39,0439,6773,503…△0.6); it is cut out when it holds glued cells. */
 const NUMBER_RUN = /[\d,，.．△▲－−%％-]+/gu;
 const CUT = "\n";
-/** A date that opens a row, run into the cell before it and the cell after it (…設立1945年７月日染興業…). */
-const GLUED_DATE =
-  /(?<=[\p{Script=Han}\p{Script=Katakana}\p{Script=Hiragana}ー])(?=[0-9０-９]{4}年[0-9０-９]{1,2}月[\p{Script=Han}\p{Script=Katakana}\p{L}])/gu;
+/** The year of a date that opens a row: four digits, or an era name and its year (昭和59年, 令和元年). */
+const rowYear = (eras: readonly string[]): string =>
+  eras.length === 0 ? "[0-9０-９]{4}" : `(?:[0-9０-９]{4}|(?:${eras.map(escapeRegExp).join("|")})(?:[0-9０-９]{1,2}|元))`;
+/** A date that opens a row, run into the cell before it and the cell after it (…設立1945年７月日染興業…, …を開始昭和59年４月東京…). */
+const gluedDate = (eras: readonly string[]): RegExp =>
+  new RegExp(
+    `(?<=[\\p{Script=Han}\\p{Script=Katakana}\\p{Script=Hiragana}ー])(?=${rowYear(eras)}年[0-9０-９]{1,2}月[\\p{Script=Han}\\p{Script=Katakana}\\p{L}])`,
+    "gu",
+  );
 /** Fewer glued dates than this are a sentence that names a date or two, not the rows of a chronology. */
 const MIN_GLUED_DATES = 3;
+/** A space between Japanese words inside a flattened table: where the converter kept a cell apart (…に開設 （注）１．…). */
+const CELL_SPACE = /(?<=[\p{Script=Han}\p{Script=Katakana}\p{Script=Hiragana}ー）」])\s+(?=[\p{Script=Han}\p{Script=Katakana}\p{Script=Hiragana}（「])/u;
 
 const nonEmpty = (parts: readonly string[]): string[] => parts.map((part) => part.trim()).filter((part) => part !== "");
 
@@ -61,11 +70,14 @@ export const hasGluedNumbers = (text: string): boolean => GLUED_NUMBER.test(text
 export const gluedNumberSpans = (text: string): Span[] =>
   [...text.matchAll(NUMBER_RUN)].filter((run) => GLUED_NUMBER.test(run[0])).map((run) => ({ start: run.index, end: run.index + run[0].length }));
 
-/** The cells of a table a converter flattened into one sentence, cut at the glued numbers or at each row's date. */
-export const flattenedTableParts = (text: string): readonly string[] | undefined => {
+/**
+ * The cells of a table a converter flattened into one sentence, cut at the glued numbers or at each row's date. eras are
+ * the era names a row's year may be written with (the calendar-era lexicon).
+ */
+export const flattenedTableParts = (text: string, eras: readonly string[] = []): readonly string[] | undefined => {
   if (hasGluedNumbers(text)) return nonEmpty(text.replace(NUMBER_RUN, (run) => (GLUED_NUMBER.test(run) ? CUT : run)).split(CUT));
-  const rows = text.split(GLUED_DATE);
-  return rows.length > MIN_GLUED_DATES ? nonEmpty(rows) : undefined;
+  const rows = text.split(gluedDate(eras));
+  return rows.length > MIN_GLUED_DATES ? nonEmpty(rows.flatMap((row) => row.split(CELL_SPACE))) : undefined;
 };
 
 /** A quotation the writer opens after a colon (has observed: "The credibility of money …"), in straight or curly quotes. */
@@ -102,8 +114,8 @@ const DITTO_CELLS = /〃\s*〃/u;
  * Whether a sentence is a table a converter flattened: glued numbers, rows opened by dates, a header row of cells closed by
  * units, or ditto cells.
  */
-export const isFlattenedTable = (text: string): boolean =>
-  flattenedTableParts(text) !== undefined || (text.match(UNIT_HEADER)?.length ?? 0) >= MIN_UNIT_HEADERS || DITTO_CELLS.test(text);
+export const isFlattenedTable = (text: string, eras: readonly string[] = []): boolean =>
+  flattenedTableParts(text, eras) !== undefined || (text.match(UNIT_HEADER)?.length ?? 0) >= MIN_UNIT_HEADERS || DITTO_CELLS.test(text);
 
 /** A decimal cell run in between a bracketed cell and the next cell's word (（日本）100.0自動車関連): where one row's cells meet. */
 const GLUED_DECIMAL_CELL = /[)）]\d{1,3}\.\d+(?=\p{L})/gu;

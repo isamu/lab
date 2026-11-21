@@ -84,6 +84,10 @@ const FLATTENED_NUMBERS =
 const CHRONOLOGY =
   "２【沿革】1950年４月東京都に資本金100万円で家庭用品の製造を目的として設立1955年７月大阪府に工場を建設し、生産を始める1962年10月東京証券取引所の市場第二部に株式を上場1970年３月本社を現在地に移転1985年６月米国に販売会社を設立1990年１月欧州に販売会社を設立";
 
+const ERAS = ["令和", "平成", "昭和"];
+const ERA_CHRONOLOGY =
+  "２【沿革】昭和50年４月東京都に資本金100万円で家庭用品の製造を目的として設立昭和55年７月大阪府に工場を建設し、生産を始める昭和62年10月東京証券取引所の市場第二部に株式を上場平成２年３月本社を現在地に移転平成17年６月米国に販売会社を設立令和元年７月欧州に販売会社を設立 （注）１．当社の製品は、家庭用品の製造を目的として設立した当時から、国内の工場で作った部品を海外の工場で組み立て、国内と海外の販売会社を通じて、家庭や事務所、学校、病院などに届けており、国内で作る部品の割合を少しずつ高めながら、組み立ての工程も国内に戻しております。";
+
 describe("a table a converter flattened into one sentence (ja)", () => {
   it("cuts the cells at glued numbers and at each row's date", () => {
     assert.equal(flattenedTableParts(FLATTENED_NUMBERS)?.at(-1)?.startsWith("当社グループは"), true);
@@ -92,13 +96,31 @@ describe("a table a converter flattened into one sentence (ja)", () => {
     assert.deepEqual(jaFindings(CHRONOLOGY), []);
   });
 
+  it("reads a row's year written with an era name, and cuts the note after the last row at its space", () => {
+    const parts = flattenedTableParts(ERA_CHRONOLOGY, ERAS);
+    assert.equal(parts?.length, 7);
+    assert.equal(parts?.at(-2), "令和元年７月欧州に販売会社を設立");
+    assert.equal(parts?.at(-1)?.startsWith("（注）１．"), true);
+    assert.equal(flattenedTableParts(ERA_CHRONOLOGY), undefined);
+    assert.deepEqual(jaFindings(ERA_CHRONOLOGY), []);
+  });
+
+  it("still reports a long note after the rows of a chronology", () => {
+    const longNote = ERA_CHRONOLOGY.replace(
+      "戻しております。",
+      "戻しており、今後も国内の工場の設備を順に新しくしながら、海外の工場との分担を見直し、品質と納期を保ってまいります。",
+    );
+    assert.equal(jaFindings(longNote).length, 1);
+  });
+
   it("leaves well-formed numbers, section numbers and a date or two alone", () => {
     [
       "連結売上高は83,494百万円、営業利益は5,000百万円となりました。",
       "See Section 3.5.3 and the address 192.168.1.1 for the details.",
       "当社は1950年４月に設立し、1955年７月に工場を建設しました。",
       "当社は1950年４月東京都で設立し、1955年７月大阪府に工場を建てました。",
-    ].forEach((text) => assert.equal(flattenedTableParts(text), undefined, text));
+      "当社は昭和50年４月東京都で設立し、平成２年３月大阪府に工場を建てました。",
+    ].forEach((text) => assert.equal(flattenedTableParts(text, ERAS), undefined, text));
   });
 
   it("still reports a long sentence that only names dates and amounts", () => {
