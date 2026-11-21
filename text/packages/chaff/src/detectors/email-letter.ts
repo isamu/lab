@@ -283,7 +283,7 @@ const nextText = (lines: readonly SourceLine[], index: number): string => {
 };
 
 /** A header field's line (From: Ann). Not any colon: a subject may hold one (Re: Lunch, 10:00 meeting, Q3: budget). */
-const isHeaderField = (line: string, headerFields: readonly string[]): boolean => {
+export const isHeaderField = (line: string, headerFields: readonly string[]): boolean => {
   const name = fieldOf(line)?.name.toLowerCase();
   return name !== undefined && headerFields.some((field) => field.toLowerCase() === name);
 };
