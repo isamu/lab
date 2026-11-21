@@ -35,8 +35,8 @@ why:
   en: Each of these appears in ordinary writing on its own. Only three or more in one document (two in a blog post) mean anything. **Even then it does not say the text was generated.** It marks a place to reread.
 
 message:
-  ja: 「{word}」が同じ文書にそろっています（{count} 種、{limit} 種から）
-  en: '"{word}" {count|occurs|occur together} in this document ({count} {count|signal|signals}, {limit} needed)'
+  ja: 生成文の特徴が {count} 種、同じ文書にそろっています（{limit} 種から）。{signals}
+  en: "{count} {count|signal|signals} of generated text {count|occurs|occur together} in this document ({limit} needed): {signals}"
 
 how_to_fix:
   ja: 自分が書きたかったことが残っているか、通して読み直してください。個々の指摘を 1 つずつ直すより、段落ごと書き直すほうが早いことがあります。

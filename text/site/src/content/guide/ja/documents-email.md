@@ -87,7 +87,7 @@ mail.md   blog/tech · 日本語   ジャンルは既定から
                   sasete-itadaku
   20:27   warning 「気軽に」で締めています
                   closing-cliche
-  20:27   warning 「closing-cliche、unfilled-placeholder」が同じ文書にそろっています（2 種、2 種から）
+  20:27   warning 生成文の特徴が 2 種、同じ文書にそろっています（2 種から）。定型の結び、埋め忘れた空欄
                   ai-generated-composite
   20:55   warning 「[担当者名]」が埋まっていません
                   unfilled-placeholder

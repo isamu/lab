@@ -84,7 +84,7 @@ email.md   blog/tech · English   genre from the default
                   unfilled-placeholder
   17:74   warning Closes with "hope this helps"
                   closing-cliche
-  17:74   warning "closing-cliche, unfilled-placeholder" occur together in this document (2 signals, 2 needed)
+  17:74   warning 2 signals of generated text occur together in this document (2 needed): Cliched closing, Unfilled placeholder
                   ai-generated-composite
 
 {counts}

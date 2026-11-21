@@ -19,7 +19,7 @@ import { PatternTimeout } from "./custom/pattern-timeout.ts";
 import { PluginRuleFailure } from "./extension/module-detector.ts";
 import { failureReason } from "./extension/failure-text.ts";
 import { tagCoverage } from "./tag-coverage.ts";
-import { compositeSignals } from "./composite-signals.ts";
+import { compositeSignals, signalNames } from "./composite-signals.ts";
 
 export type Skipped = {
   readonly rule: string;
@@ -212,7 +212,10 @@ export const place = (starts: readonly number[], finding: Finding): Finding => {
  * 元の指摘は消さない。`padded-intro` のように単独でも正しい指摘が混ざっており、
  * まとめるために消すと本物の指摘が見えなくなる。
  */
-const compositeOf = (rule: RuleDefinition, found: readonly Finding[], limit: number, starts: readonly number[], language: string): Finding[] => {
+type CompositeContext = { readonly starts: readonly number[]; readonly language: string; readonly rules: readonly RuleDefinition[] };
+
+const compositeOf = (rule: RuleDefinition, found: readonly Finding[], limit: number, context: CompositeContext): Finding[] => {
+  const { starts, language, rules } = context;
   const fired = compositeSignals(rule.from, found);
   if (fired.length < limit) return [];
   // 数えなかった signal も含めて、最初に出た所に置く。同じ形を 1 種に数えても、指摘の位置は動かない。
@@ -224,7 +227,13 @@ const compositeOf = (rule: RuleDefinition, found: readonly Finding[], limit: num
       line: 0,
       column: 0,
       quote: first?.quote ?? "",
-      values: { word: joinWords(fired, language), count: fired.length, limit, offset: first === undefined ? 0 : Number(first.values["offset"] ?? 0) },
+      values: {
+        word: joinWords(fired, language),
+        signals: joinWords(signalNames(fired, rules, uiLanguageOf(language)), language),
+        count: fired.length,
+        limit,
+        offset: first === undefined ? 0 : Number(first.values["offset"] ?? 0),
+      },
     }),
   ];
 };
@@ -329,7 +338,11 @@ export const runRulesWith = (doc: ProseDocument, rules: readonly RuleDefinition[
   const composites = applicable
     .filter((rule) => rule.from.length > 0 && levelFor(rule, settings, experimental, preset) !== "off")
     .flatMap((rule) =>
-      compositeOf(rule, outcome.findings, limitFor(rule, levelFor(rule, settings, experimental, preset), genre, limits), starts, doc.language),
+      compositeOf(rule, outcome.findings, limitFor(rule, levelFor(rule, settings, experimental, preset), genre, limits), {
+        starts,
+        language: doc.language,
+        rules,
+      }),
     );
   const all = [...outcome.findings, ...composites];
   return { ...outcome, findings: all.toSorted(byPosition), forcedExperimental: forced, presetExperimental: presetOn };
