@@ -155,6 +155,9 @@ describe("requirement-smell (ja)", () => {
 describe("requirement-smell (en)", () => {
   it("a loophole in a requirement with must, shall or is required to", () => {
     assert.deepEqual(found("The page must load as fast as possible.", en), ["loophole:as fast as possible"]);
+    assert.deepEqual(found("The supplier shall respond as quickly as possible.", en), ["loophole:as quickly as possible"]);
+    assert.deepEqual(found("The supplier shall report a breach as promptly as possible.", en), ["loophole:as promptly as possible"]);
+    assert.deepEqual(found("Staff must file the form as early as possible.", en), ["loophole:as early as possible"]);
     assert.deepEqual(found("The supplier shall report if necessary.", en), ["loophole:if necessary"]);
     assert.deepEqual(found("Staff are required to file the form where possible.", en), ["loophole:where possible"]);
   });
@@ -163,6 +166,7 @@ describe("requirement-smell (en)", () => {
     const bounded = "The closing shall take place as soon as possible, but in any event no later than two business days after the conditions are met.";
     assert.deepEqual(found(bounded, en, "legal/contract"), []);
     assert.deepEqual(found("The supplier shall reply as soon as possible, and in any case within five days.", en), []);
+    assert.deepEqual(found("The supplier shall reply as quickly as possible, and in any case within five days.", en), []);
     assert.deepEqual(found("The closing shall take place as soon as possible.", en, "legal/contract"), ["loophole:as soon as possible"]);
   });
 

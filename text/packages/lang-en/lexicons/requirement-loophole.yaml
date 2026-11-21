@@ -9,6 +9,14 @@ entries:
   # "as soon as possible, but in any event no later than two Business Days after".
   - pattern: as soon as possible
     group: time
+  - pattern: as quickly as possible
+    group: time
+  - pattern: as promptly as possible
+    group: time
+  - pattern: as early as possible
+    group: time
+  - pattern: as speedily as possible
+    group: time
   - pattern: as fast as possible
   - pattern: to the extent possible
   - pattern: if possible
