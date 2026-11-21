@@ -71,7 +71,10 @@ export const beforeConcession = (tokens: readonly Token[]): readonly Token[] => 
  * There is / It is ... that は、主語を後ろへ押しやって誰が何をするのかを消す。
  * 「There is a need to review」は、誰が必要としているのかを言っていない。
  */
-const expletiveAt = (tokens: readonly Token[]): Token | undefined => {
+/** The sentence's opening, from There / It through its be: the finding names the form this sentence uses (There were, It was). */
+type Opening = { readonly head: Token; readonly be: Token };
+
+const expletiveAt = (tokens: readonly Token[]): Opening | undefined => {
   const head = tokens.find((token) => token.pos !== "PUNCT");
   if (head === undefined) return undefined;
   const lead = head.surface.toLowerCase();
@@ -80,7 +83,7 @@ const expletiveAt = (tokens: readonly Token[]): Token | undefined => {
   if (next === undefined || !BE.has(next.lemma ?? next.surface.toLowerCase())) return undefined;
   // "it is" は "it is raining" のような正当な用法があるので、that 節を伴うときだけ数える。
   if (lead === "it" && !beforeConcession(tokens).some((token) => token.surface.toLowerCase() === "that")) return undefined;
-  return head;
+  return { head, be: next };
 };
 
 /** In minutes of who said what, a speaker's sentences are their own phrasing, recorded as said: not the writer's to recast. */
@@ -100,7 +103,7 @@ export const expletive: Detector = (doc, options): Finding[] => {
     line: 0,
     column: 0,
     quote: sentence.text.trim(),
-    values: { word: at.surface, count: hits.length, limit: options.limit, offset: at.span.start },
+    values: { form: doc.source.slice(at.head.span.start, at.be.span.end), count: hits.length, limit: options.limit, offset: at.head.span.start },
   }));
 };
 

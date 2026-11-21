@@ -15,8 +15,8 @@ why:
   en: '"There is" and "it is ... that" push the subject to the back and drop who does what.'
 
 message:
-  ja: '"{word} is ..." の形が文書内に {count} 回あります（{limit} 回まで）'
-  en: '"{word} is ..." appears {count} {count|time|times} (limit {limit})'
+  ja: '"{form} ..." を含め、There is か It is ... that の形で始まる文が文書内に {count} 文あります（{limit} 文まで）'
+  en: '"{form} ..." is one of {count} {count|sentence|sentences} that {count|opens|open} with "There is" or "It is ... that" (limit {limit})'
 
 how_to_fix:
   ja: 主語を前に出してください。"There is a need to review" を "The board must review" に。

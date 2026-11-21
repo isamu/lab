@@ -77,10 +77,10 @@ const CASES: readonly Case[] = [
   [
     "expletive-construction",
     "count",
-    { word: "It", limit: 3 },
-    '"It is ..." appears 0 times (limit 3)',
-    '"It is ..." appears 1 time (limit 3)',
-    '"It is ..." appears 2 times (limit 3)',
+    { form: "It is", limit: 3 },
+    '"It is ..." is one of 0 sentences that open with "There is" or "It is ... that" (limit 3)',
+    '"It is ..." is one of 1 sentence that opens with "There is" or "It is ... that" (limit 3)',
+    '"It is ..." is one of 2 sentences that open with "There is" or "It is ... that" (limit 3)',
   ],
   [
     "internal-jargon",
