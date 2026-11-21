@@ -28,6 +28,8 @@
     "knip": "knip",
     "lint": "eslint .",
     "screens:update": "node scripts/guide-screens.ts --update",
+    "samples:check": "node scripts/samples.ts",
+    "samples:update": "node scripts/samples.ts --update",
     "lint:oxlint": "npx --yes oxlint@1.82.0 -D correctness packages/",
     "test": "node scripts/test.ts",
     "typecheck": "tsc --noEmit"
