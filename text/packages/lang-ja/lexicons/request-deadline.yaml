@@ -8,6 +8,12 @@ entries:
   - pattern: 締切
   - pattern: 本日中
   - pattern: 今日中
+  - pattern: 当日中
+  - pattern: 即日
+  - pattern: その日のうち
+  - pattern: 当日のうち
+  - pattern: 今日のうち
+  - pattern: 本日のうち
   - pattern: 明日
   - pattern: 明朝
   - pattern: 今週
