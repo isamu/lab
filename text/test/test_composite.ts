@@ -96,10 +96,10 @@ describe("no-em-dash", () => {
   });
 
   it("二つ重ねて一本に組むダッシュ（——、――）は一つと数える", () => {
-    const countOf = (dash: string): unknown =>
-      findingsFor(`# 報告\n\n${`本日の連絡です${dash}今日も順調に進めています。`.repeat(30)}`).find((finding) => finding.rule === "no-em-dash")?.values[
-        "count"
-      ];
+    const countOf = (dash: string): unknown => {
+      const body = `本日の連絡です${dash}今日も順調に進めています。`.repeat(30);
+      return findingsFor(`# 報告\n\n${body}`).find((finding) => finding.rule === "no-em-dash")?.values["count"];
+    };
     assert.equal(countOf("——"), 30);
     assert.equal(countOf("――"), 30);
     assert.equal(countOf("—"), 30);
