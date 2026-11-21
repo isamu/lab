@@ -28,7 +28,7 @@ festival.md   business/press-release · English   genre from --genre
 
 ─── line 3 ───────────────────────────────────────────────────
 
-    ival celebrates its 23th year this autumn. T
+    The Riverside Book Festival celebrates its 23th year this autumn.
 
   ⚠  An ordinal with the wrong ending
 
@@ -42,7 +42,7 @@ festival.md   business/press-release · English   genre from --genre
 
 ─── line 6 ───────────────────────────────────────────────────
 
-    s go on sale on the 1th of July, and festiv
+    Tickets go on sale on the 1th of July, and festival friends can book a week earlier.
 
   ⚠  An ordinal with the wrong ending
 

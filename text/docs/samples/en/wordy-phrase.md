@@ -131,7 +131,7 @@ $ npx chaffjs explain wordy-phrase --genre business/email
   Rewrite depth: light (words and sentences; the structure and the voice stay). With a shallower chaff fix-plan --depth, the plan names this rule without fixing it.
 
   Levels:
-    strict   reported once 1 sentences hold one
+    strict   reported once 1 sentence holds one
   → normal   reported once 2 sentences hold one
     relaxed  reported once 4 sentences hold one
     off      not checked

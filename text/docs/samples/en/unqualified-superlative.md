@@ -105,12 +105,12 @@ $ npx chaffjs explain unqualified-superlative --genre business/press-release
   How to fix: Name the comparison. "The fastest of the three options we tried."
 
   Levels:
-    strict   reported once there are 1 such claims
+    strict   reported once there is 1 such claim
   → normal   reported once there are 2 such claims
     relaxed  reported once there are 4 such claims
     off      not checked
 
-  These numbers are for business/press-release. blog/tech have numbers of their own.
+  These numbers are the default ones, which business/press-release takes. blog/tech has numbers of its own.
 
   Now: normal.
 

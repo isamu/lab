@@ -94,8 +94,8 @@ $ npx chaffjs explain sentence-initial-so --genre blog/tech
   Rewrite depth: light (words and sentences; the structure and the voice stay). With a shallower chaff fix-plan --depth, the plan names this rule without fixing it.
 
   Levels:
-    strict   reported once 1 sentences open with "So,"
-  → normal   reported once 1 sentences open with "So,"
+    strict   reported once 1 sentence opens with "So,"
+  → normal   reported once 1 sentence opens with "So,"
     relaxed  reported once 3 sentences open with "So,"
     off      not checked
 

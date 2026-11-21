@@ -172,7 +172,7 @@ $ npx chaffjs explain nominalization --genre business/report
   Rewrite depth: light (words and sentences; the structure and the voice stay). With a shallower chaff fix-plan --depth, the plan names this rule without fixing it.
 
   Levels:
-    strict   up to 1 nominalized verbs ("make a decision") per 1000 words
+    strict   up to 1 nominalized verb ("make a decision") per 1000 words
   → normal   up to 2 nominalized verbs ("make a decision") per 1000 words
     relaxed  up to 4 nominalized verbs ("make a decision") per 1000 words
     off      not checked

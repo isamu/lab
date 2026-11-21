@@ -138,12 +138,12 @@ $ npx chaffjs explain agentless-passive --genre business/report
   Rewrite depth: light (words and sentences; the structure and the voice stay). With a shallower chaff fix-plan --depth, the plan names this rule without fixing it.
 
   Levels:
-    strict   reported when a sentence has 1 passives with no actor
-    normal   reported when a sentence has 1 passives with no actor
+    strict   reported when a sentence has 1 passive with no actor
+    normal   reported when a sentence has 1 passive with no actor
     relaxed  reported when a sentence has 2 passives with no actor
-  → off      not checked
+    off      not checked
 
-  Now: off.
+  Now: not run (the business/report genre does not check it).
 
   Change it:  npx chaffjs relax agentless-passive --why "reason"
 ```
