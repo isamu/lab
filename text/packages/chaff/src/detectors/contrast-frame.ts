@@ -1,4 +1,4 @@
-import type { Lexicon, LexiconEntry, Sentence } from "../plugin.ts";
+import type { Lexicon, LexiconEntry, Sentence, Token } from "../plugin.ts";
 import { escapeRegExp } from "../orthography.ts";
 import { comparableText, comparableWords, entryCloses, entryIn, entryOpens, entryRanges } from "./lexicon-match.ts";
 
@@ -67,6 +67,41 @@ const opensWithWord = (sentence: Sentence, entry: LexiconEntry): boolean => {
 const nextAffirms = (next: Sentence | undefined, words: ContrastWords): boolean =>
   next !== undefined && groupOf(words.turns, ACROSS).some((turn) => opensWithWord(next, turn)) && !words.leads.some((lead) => entryIn(next, lead));
 
+const ECHO = "echo";
+const VERBAL: ReadonlySet<string> = new Set(["VERB", "AUX"]);
+const SKIPPED: ReadonlySet<string> = new Set(["ADV", "PART"]);
+
+const lemmaOf = (token: Token): string => comparableWords(token.lemma ?? token.surface);
+
+/** The verb a denial denies: the verb right after it (didn't build → build), or its own (weren't → be). */
+const deniedVerb = (sentence: Sentence, lead: LexiconEntry): string | undefined => {
+  const tokens = sentence.tokens ?? [];
+  const range = entryRanges(sentence, lead)[0];
+  if (range === undefined) return undefined;
+  const next = tokens.slice(range.end).find((token) => !SKIPPED.has(token.pos));
+  const own = tokens.slice(range.start, range.end).find((token) => VERBAL.has(token.pos));
+  const verb = next?.pos === "VERB" ? next : own;
+  return verb === undefined ? undefined : lemmaOf(verb);
+};
+
+/** The verb right after the subject that opens the sentence (We built → build). */
+const affirmedVerb = (sentence: Sentence): string | undefined => {
+  const verb = (sentence.tokens ?? []).slice(1).find((token) => !SKIPPED.has(token.pos));
+  return verb !== undefined && VERBAL.has(verb.pos) ? lemmaOf(verb) : undefined;
+};
+
+/**
+ * A denial whose own subject (We, You) opens the next sentence and says the denied verb again, without a denial
+ * (We didn't build this for speed. We built it for teams.). Another verb is the story going on (We didn't have backups. We lost the data.).
+ */
+const echoAffirms = (sentence: Sentence, lead: LexiconEntry, next: Sentence | undefined, words: ContrastWords): boolean => {
+  if (next === undefined || sentence.tokens === undefined || next.tokens === undefined) return false;
+  if (words.leads.some((other) => entryIn(next, other))) return false;
+  const subject = groupOf(words.turns, ECHO).find((turn) => opensWithWord(sentence, turn) && opensWithWord(next, turn));
+  const denied = subject === undefined ? undefined : deniedVerb(sentence, lead);
+  return denied !== undefined && denied === affirmedVerb(next);
+};
+
 const AFTER = "after";
 const DIGIT_AFTER = /^\p{Nd}/u;
 /** 数字と、続く助数詞一字（1回、2つ）。 */
@@ -94,7 +129,7 @@ const framesIn = (sentence: Sentence, frame: LexiconEntry, amounts: Lexicon): bo
 const closesWithTurn = (sentence: Sentence, words: ContrastWords): boolean => groupOf(words.turns, CLOSING).some((turn) => entryCloses(sentence, turn));
 
 const answeredBy = (lead: LexiconEntry, sentence: Sentence, next: Sentence | undefined, words: ContrastWords): boolean => {
-  if (lead.group === ACROSS) return nextAffirms(next, words);
+  if (lead.group === ACROSS) return nextAffirms(next, words) || echoAffirms(sentence, lead, next, words);
   if (lead.group === CLOSING) return closesWithTurn(sentence, words);
   return turnAfter(sentence, lead, words) || nextTurns(next, words);
 };
