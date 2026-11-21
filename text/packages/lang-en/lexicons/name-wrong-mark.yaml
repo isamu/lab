@@ -1,0 +1,11 @@
+# Marks that show a wrong example. A style guide lists a wrong spelling on purpose beside the right one ("✗ Rspec / ✓ RSpec").
+# name-variant does not report a form right after one of these on its line (spaces or a colon may come between). Matched as
+# written.
+id: name-wrong-mark
+language: en
+entries:
+  - pattern: "×"
+  - pattern: "✕"
+  - pattern: "✖"
+  - pattern: "✗"
+  - pattern: "✘"

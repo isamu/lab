@@ -10,6 +10,7 @@ import {
   isInFileName,
   isInverseOrder,
   isListedPair,
+  isMarkedWrong,
   isNameAndWord,
   isOtherEnding,
   isSetInCapitals,
@@ -276,5 +277,33 @@ describe("name-variant: two things, not one name", () => {
     assert.deepEqual(variants(novel), ['"Coiner" is one letter away from "Coiler", which the document uses more than once']);
     const typo = "Mr. Brandley came in. Mr. Brandley sat down. Then a Blandley spoke.\n";
     assert.deepEqual(variants(typo), ['"Blandley" is one letter away from "Brandley", which the document uses more than once']);
+  });
+
+  it("isMarkedWrong: a wrong mark just before the form on its line", () => {
+    const marks = ["×", "✗"];
+    const list = "- × Rspec / ○ RSpec\n";
+    assert.equal(isMarkedWrong(list, list.indexOf("Rspec"), marks), true);
+    assert.equal(isMarkedWrong(list, list.indexOf("RSpec"), marks), false);
+    assert.equal(isMarkedWrong("✗Zendesk\n", 1, marks), true);
+    assert.equal(isMarkedWrong("×\nRspec", 2, marks), false);
+    assert.equal(isMarkedWrong("Rspec", 0, marks), false);
+    assert.equal(isMarkedWrong("- × Rspec", 4, []), false);
+  });
+
+  it("a form a list marks as wrong (×) beside the right one (○) is shown on purpose", () => {
+    const guide =
+      "表記ミスに気を付けましょう。\n\n- × JAVA / ○ Java\n- × Rspec / ○ RSpec\n\n（タイトル）RSpecでNoMethodErrorが出た場合の対処法\n\nRSpecを実行したらNoMethodErrorが出ました。\n";
+    assert.deepEqual(variants(guide, ja), []);
+    const english = "Mind the spelling of names.\n\n- ✗ Zendesk / ✓ ZenDesk\n\nWe use ZenDesk for tickets. ZenDesk sends mail.\n";
+    assert.deepEqual(variants(english), []);
+  });
+
+  it("a form without a wrong mark is still a variant", () => {
+    assert.deepEqual(variants("We use Zendesk for tickets. Zendesk sends mail. Open ZenDesk to reply.\n"), [
+      '"ZenDesk" is written "Zendesk" elsewhere in the document (case, width or punctuation)',
+    ]);
+    assert.deepEqual(variants("Mind the spelling of names.\n\n- Zendesk / ✓ ZenDesk\n\nWe use ZenDesk for tickets. ZenDesk sends mail.\n"), [
+      '"Zendesk" is written "ZenDesk" elsewhere in the document (case, width or punctuation)',
+    ]);
   });
 });

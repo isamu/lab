@@ -142,3 +142,15 @@ export const isAfterCountArticle = (text: string, offset: number, name: string, 
   const before = WORD_BEFORE.exec(text.slice(text.lastIndexOf("\n", offset - 1) + 1, offset))?.[1]?.toLowerCase();
   return ONE_WORD.test(name) && before !== undefined && articles.includes(before) && isKnown(name.toLowerCase());
 };
+
+/** What may stand between a wrong mark and the form it marks: spaces, a colon. */
+const MARK_GAP = /[\s:：]*$/u;
+
+/**
+ * Whether the form at offset follows a wrong mark from the lexicon name-wrong-mark on its own line (× Rspec beside ○ RSpec):
+ * a list showing a wrong spelling on purpose, not a use of the name.
+ */
+export const isMarkedWrong = (text: string, offset: number, marks: readonly string[]): boolean => {
+  const before = text.slice(text.lastIndexOf("\n", offset - 1) + 1, offset).replace(MARK_GAP, "");
+  return marks.some((mark) => before.endsWith(mark));
+};

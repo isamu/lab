@@ -8,6 +8,7 @@ import {
   isInFileName,
   isInverseOrder,
   isListedPair,
+  isMarkedWrong,
   isNameAndWord,
   isOtherEnding,
   type WordEnding,
@@ -92,6 +93,18 @@ type Reading = {
   readonly speller: Speller | undefined;
   readonly ordinary: ReadonlySet<string>;
   readonly countArticles: readonly string[];
+  readonly wrongMarks: readonly string[];
+};
+
+/** Where a form is written, as written, inside a longer run of letters too (RSpecで). */
+const placesOf = (text: string, surface: string): number[] =>
+  surface === "" ? [] : [...text.matchAll(new RegExp(escapeRegExp(surface), "gu"))].map((found) => found.index ?? 0);
+
+/** Whether one side of the pair is shown as wrong on purpose: the pointed form, or every place the usual form is written, after a wrong mark (× Rspec / ○ RSpec). */
+const isShownWrong = (reading: Reading, found: Found): boolean => {
+  const isMarked = (offset: number): boolean => isMarkedWrong(reading.text, offset, reading.wrongMarks);
+  const usualPlaces = placesOf(reading.text, found.usual);
+  return isMarked(found.offset) || (usualPlaces.length > 0 && usualPlaces.every(isMarked));
 };
 
 const inOneSentence = (sentences: readonly Span[], offset: number, other: number): boolean =>
@@ -125,7 +138,7 @@ const isNearPair = (reading: Reading, found: Found): boolean => {
 /**
  * The finding is not two forms of one name: a one-letter variant that is two names (isNearPair), ・ listing two words, a
  * direction and its inverse, a title quoted in capitals, a contraction printed with and without its apostrophe, a piece of
- * a file name or URL, a verb stem. ordinary holds the words read as names that are
+ * a file name or URL, a form shown as wrong on purpose, a verb stem. ordinary holds the words read as names that are
  * ordinary words in small letters (name-ordinary-word.ts).
  */
 export const twoThingsIn = (
@@ -145,6 +158,7 @@ export const twoThingsIn = (
     speller,
     ordinary,
     countArticles: patternsOf(doc, "name-count-article"),
+    wrongMarks: patternsOf(doc, "name-wrong-mark"),
   };
   return (found) =>
     (found.kind === "near" && isNearPair(reading, found)) ||
@@ -153,6 +167,7 @@ export const twoThingsIn = (
     isQuotedTitleCase(found, reading.text) ||
     (found.kind === "spelling" && isContractionPair(found.name, found.usual, reading.text)) ||
     isInFileName(reading.text, found.offset, found.name.length) ||
+    isShownWrong(reading, found) ||
     (found.kind === "reading" && isVerbStem(found, reading.tokenAt, reading.copulas));
 };
 
