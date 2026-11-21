@@ -125,6 +125,17 @@ describe("misconversion: 変換の誤り", () => {
     assert.deepEqual(misconverted("設定は意外と簡単でした。"), []);
   });
 
+  it("経験を言う動詞の前の「始めて」（初めて食べた・見る・使う・乗る）を指し、始める動作の「始めて」は指さない", () => {
+    const slip = ["「始めて」は「初めて」の変換の誤りです"];
+    assert.deepEqual(misconverted("昨日、始めて食べた料理がおいしかった。"), slip);
+    assert.deepEqual(misconverted("始めて見る景色だった。"), slip);
+    assert.deepEqual(misconverted("このアプリは始めて使うので不安です。"), slip);
+    assert.deepEqual(misconverted("始めて乗る飛行機でした。"), slip);
+    assert.deepEqual(misconverted("ブログを始めて見ました。勢いよく彫り始めて見たが、うまくいかない。"), []);
+    assert.deepEqual(misconverted("練習を始めて行きましょう。人が集まり始めて来る。"), []);
+    assert.deepEqual(misconverted("雨が降り始めて、傘を出した。準備ができたら始めてください。"), []);
+  });
+
   it("列挙を指す「揚げる」を指し、掲げる・挙げると、旗や天ぷらを揚げるは指さない", () => {
     assert.deepEqual(misconverted("応募者は次の各号に揚げる書類を出す。"), ["「各号に揚げる」は「各号に掲げる」の変換の誤りです"]);
     assert.deepEqual(misconverted("前項に揚げた者は除く。"), ["「前項に揚げ」は「前項に掲げ」の変換の誤りです"]);

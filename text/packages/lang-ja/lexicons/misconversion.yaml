@@ -44,7 +44,8 @@ entries:
     instead_of: 意外と便利
   - pattern: 以外と時間がかか
     instead_of: 意外と時間がかか
-  # 初めて（はじめて会う・知る・聞く・気づく・訪れる・経験する）
+  # 初めて（はじめて会う・知る・聞く・気づく・訪れる・経験する・食べる・見る・使う・乗る）
+  # 「始めて行く」「始めて来る」は載せない。解析器が「始め／て／行く」と切るので、「練習を始めて行きましょう」（始めていく）にも当たる。
   - pattern: 始めて会う
     instead_of: 初めて会う
   - pattern: 始めてお会い
@@ -61,6 +62,14 @@ entries:
     instead_of: 初めて訪れる
   - pattern: 始めて経験
     instead_of: 初めて経験
+  - pattern: 始めて食べる
+    instead_of: 初めて食べる
+  - pattern: 始めて見る
+    instead_of: 初めて見る
+  - pattern: 始めて使う
+    instead_of: 初めて使う
+  - pattern: 始めて乗る
+    instead_of: 初めて乗る
   # 確率と確立
   - pattern: 確立が高い
     instead_of: 確率が高い
