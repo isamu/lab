@@ -70,4 +70,33 @@ describe("expletive-construction: what a finding names", () => {
       `"There are ..." ${label}`,
     ]);
   });
+
+  it("names a perfect or modal opening through its be", () => {
+    const source = "There have been six complaints. There will be signs at the gate. There is a gap in the budget. There are two new members.\n";
+    const label = 'is one of 4 sentences that open with "There is" or "It is ... that" (limit 3)';
+    assert.deepEqual(namedRuleRun(RULE, source, en, "a.md", "business/meeting-notes").findings.slice(0, 2), [
+      `"There have been ..." ${label}`,
+      `"There will be ..." ${label}`,
+    ]);
+  });
+});
+
+describe("expletive-construction: the forms of be", () => {
+  const PLAIN = "The committee met on Tuesday. There were three items. There is a gap in the budget.";
+  const counted = (sentence: string): boolean => fires(`${PLAIN} There are two new members. ${sentence}\n`);
+
+  it("counts a perfect and a modal be, with or without a negation", () => {
+    assert.equal(counted("There have been six complaints about the car park."), true);
+    assert.equal(counted("There will be signs at the gate by May."), true);
+    assert.equal(counted("There has never been a meeting this short."), true);
+    assert.equal(counted("There won't be a vote today."), true);
+    assert.equal(counted("It has been agreed that the rota starts in April."), true);
+    assert.equal(counted("It could be argued that the fee is too high."), true);
+  });
+
+  it("does not count a modal or have that is not followed by be", () => {
+    assert.equal(counted("There must have seemed little point."), false);
+    assert.equal(counted("It will rain, so we know that the fete moves indoors."), false);
+    assert.equal(counted("There, we have a garden."), false);
+  });
 });
