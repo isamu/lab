@@ -11,7 +11,7 @@ chaff が見つけるまちがいを、ルールごとに一つずつ見本に�
 
 English samples: [../en/README.md](../en/README.md)
 
-見本のあるルール: 44 / 272
+見本のあるルール: 78 / 272
 
 ## 読みやすさ
 
@@ -66,9 +66,41 @@ English samples: [../en/README.md](../en/README.md)
 
 | ルール | 見つけるもの |
 | --- | --- |
+| [同じ略語の二通りの展開](acronym-expansion-conflict.md)（`acronym-expansion-conflict`） | 同じ略語を、文書の中で違う名前に展開している所 |
+| [同じ桁の金額を二通りに書いている](amount-scale-consistency.md)（`amount-scale-consistency`） | 「30万円」と「250,000円」のように、同じ桁の金額を「万」と数字だけの二通りで書いている所 |
+| [言葉のリンクの中に URL がそのまま混ざっている](bare-url-mix.md)（`bare-url-mix`） | 言葉でリンクを書く文書の中に、「https://…」がそのまま書かれている所 |
+| [括弧の全角と半角の混在](bracket-width-consistency.md)（`bracket-width-consistency`） | 日本語の文の中で、括弧の全角（（）［］）と半角（()[]）が混ざっている所 |
+| [引用の書き方が揃っていない](citation-style-mix.md)（`citation-style-mix`） | 一つの論文の中で、[1] の引用と（山田, 2020）の引用のように、引用の書き方が混ざっている所 |
+| [言語名の無いコードブロックが混ざっている](code-fence-language-mix.md)（`code-fence-language-mix`） | ほとんどのコードブロックに言語名があるのに、一部だけ無い所 |
+| [ファイルによって書き方が違う語](cross-doc-term-variant.md)（`cross-doc-term-variant`） | 同じ語を、ファイルによって違う書き方で書いている所（サーバ／サーバー、e-mail／email） |
+| [通貨の書き方が混ざっている](currency-notation-consistency.md)（`currency-notation-consistency`） | 「1,000円」と「¥1,000」のように、一つの文書で同じ通貨の金額を二通りに書いた所 |
+| [日付の書き方が揃っていない](date-format-consistency.md)（`date-format-consistency`） | 「2026-10-02」と「2026年10月2日」のように、一つの文書で日付を二通りに書いている所 |
+| [短い呼び名を定めた名前を、あとで正式の名前のまま書いている](defined-name-repeated.md)（`defined-name-repeated`） | 「株式会社みなと製作所（以下「甲」という。）」のあとで、甲を正式の名前のまま書いている所 |
+| [定義した語を、定義と違う形で使っている](defined-term-form.md)（`defined-term-form`） | 契約や規程で、定義した語を、定義のあとで違う形（括弧付き、言い換え、長くした形）で書いた所 |
+| [省略記号の書き方が混ざっている](ellipsis-consistency.md)（`ellipsis-consistency`） | 「……」と「・・・」、「…」と「...」のように、一つの文書で省略の記号を二通りに書いている所 |
+| [！？ の全角と半角の混在](exclamation-width-consistency.md)（`exclamation-width-consistency`） | 日本語の文の中で、！？ の全角と半角（!?）が混ざっている所 |
+| [英数字の全角と半角が混ざっている](fullwidth-alnum-consistency.md)（`fullwidth-alnum-consistency`） | 英字や数字を、全角（ＡＢＣ１２３）と半角（ABC123）で混ぜて書いている所 |
+| [見出しの終わりの記号が揃っていない](heading-end-punctuation-mix.md)（`heading-end-punctuation-mix`） | 記号なしの見出しの中に「準備：」「確認。」のように記号で終わる見出しが混ざっている所（またはその逆） |
+| [カタカナ語の語末の「ー」がそろっていない](katakana-long-vowel.md)（`katakana-long-vowel`） | カタカナ語の語末の「ー」を、同じ語で付けたり省いたりしている所（コンピューター、コンピュータ） |
+| [句読点の書き方がそろっていない](kutoten-consistency.md)（`kutoten-consistency`） | 読点の「、」と「，」、句点の「。」と「．」が、一つの文書の中で混ざっている所 |
+| [英数字の前後の空白がそろっていない](latin-spacing.md)（`latin-spacing`） | 日本語と英数字のあいだの空白が、文書の中で付いたり付かなかったりしている所 |
+| [箇条書きの項目の形がそろっていない](list-item-form-mix.md)（`list-item-form-mix`） | 一つの箇条書きの中で、名詞で終わる項目と文で終わる項目（英語では動詞で始まる項目と名詞で始まる項目）が混ざっている所 |
+| [箇条書きの記号が揃っていない](list-marker-mix.md)（`list-marker-mix`） | 一つのリストや一つの文書の中で、「-」「*」「+」「・」の箇条書きの記号が混ざっている所 |
+| [「。」で終わらない段落](missing-final-period.md)（`missing-final-period`） | 「。」で終わる段落の多い文書で、「。」無しで終わった段落 |
+| [同じ名前の書き分け](name-variant.md)（`name-variant`） | 同じ人・会社・製品の名前を、少しだけ違う形で書いている所（山田太郎 と 山田太朗、GitHub と Github） |
 | [文末の調子が混ざっている](no-mixed-desumasu.md)（`no-mixed-desumasu`） | 「です・ます」の中に「だ・である」が混ざった文 |
-
-まだ見本の無いルール: `acronym-expansion-conflict`, `amount-scale-consistency`, `bare-url-mix`, `bracket-width-consistency`, `citation-style-mix`, `code-fence-language-mix`, `cross-doc-term-variant`, `currency-notation-consistency`, `date-format-consistency`, `defined-name-repeated`, `defined-term-form`, `ellipsis-consistency`, `exclamation-width-consistency`, `fullwidth-alnum-consistency`, `heading-end-punctuation-mix`, `katakana-long-vowel`, `kutoten-consistency`, `latin-spacing`, `list-item-form-mix`, `list-marker-mix`, `missing-final-period`, `name-variant`, `number-style-consistency`, `orthographic-variant`, `outside-announced-list`, `party-order`, `party-role-name`, `person-consistency`, `range-notation-consistency`, `shell-prompt-mix`, `table-header-variant`, `ui-label-variant`, `undefined-term`, `unit-spacing-consistency`
+| [数の書き方が混ざっている](number-style-consistency.md)（`number-style-consistency`） | 3件と三件、1,000 と 1000、10% と 10％ のように、一つの文書で数の書き方が混ざっている所 |
+| [同じ語の書き方がゆれている](orthographic-variant.md)（`orthographic-variant`） | 「出来る」と「できる」のように、同じ語を一つの文書の中で二通りに書いている所 |
+| [挙げた一覧に無い名前](outside-announced-list.md)（`outside-announced-list`） | 「対応 OS は Windows と macOS」と挙げたあとで、一覧に無い「Linux」に対応すると書いている所 |
+| [当事者の呼び名を、ほかの所と逆の順に並べている](party-order.md)（`party-order`） | 「甲及び乙」と書く契約の中の「乙及び甲」 |
+| [当事者を、定めた呼び名でなく立場の語で書いている](party-role-name.md)（`party-role-name`） | 当事者を「甲」「乙」と定めたあとで、「委託者」「受託者」のような立場の語で書いている所 |
+| [自分や読み手の呼び方が揃っていない](person-consistency.md)（`person-consistency`） | 「私たち」と「弊社」、「私」と「筆者」のように、一つの文書が自分や読み手を二通りに呼んでいる所 |
+| [範囲の記号が混ざっている](range-notation-consistency.md)（`range-notation-consistency`） | 「10〜20」と「10-20」のように、一つの文書で数の範囲を二通りの記号で書いている所 |
+| [シェルのコマンドにプロンプトを付けたり付けなかったりしている](shell-prompt-mix.md)（`shell-prompt-mix`） | シェルのブロックで、「$」のプロンプトを付けたコマンドと付けないコマンドが混ざっている所 |
+| [表の見出しの書き方が表ごとに違う](table-header-variant.md)（`table-header-variant`） | 同じ欄の見出しを、表によって「担当者」と「担当」のように書き分けている所 |
+| [二通りに書いた画面の札](ui-label-variant.md)（`ui-label-variant`） | 太字や［］の画面の札で、大文字・小文字や空白、「を」「の」だけが違う二通りの書き方 |
+| [定義した語の形で書いたのに、どこにも定義が無い](undefined-term.md)（`undefined-term`） | 「本業務」のように定義した語と同じ形なのに、定義しないまま使っている語（本成果物） |
+| [数と単位の間の空白が混ざっている](unit-spacing-consistency.md)（`unit-spacing-consistency`） | 「5 GB」と「5GB」のように、一つの文書で数と単位記号の間を空けたり詰めたりしている所 |
 
 ## 構造
 
