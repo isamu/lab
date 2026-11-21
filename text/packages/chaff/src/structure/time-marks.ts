@@ -65,6 +65,17 @@ export const markBefore = (head: string, marks: readonly Mark[], letters: number
   return nearest?.mark;
 };
 
+/**
+ * 時刻のすぐ後ろに書く印を、地名に付けて時刻の前に書いたもの（「東京発 07:45」の発）。間は空白だけ。
+ * 印の前が字でなければ（「10:30発 09:50」の発は前の時刻のもの）、この時刻の印ではない。
+ */
+export const markAttachedBefore = (head: string, marks: readonly Mark[]): Mark | undefined => {
+  const trimmed = head.trimEnd();
+  return longestFirst(sidesOf(marks, "after")).find(
+    (mark) => trimmed.endsWith(mark.pattern) && /\p{L}/u.test(trimmed.charAt(trimmed.length - mark.pattern.length - 1)),
+  );
+};
+
 /** 時刻の後ろで、空白と開き括弧と発着の印を飛ばした所に書いた印。「0:15（翌日）」「9:50着 +1」。 */
 const SKIPPED_AFTER = /^[\s(（[［]*/u;
 
