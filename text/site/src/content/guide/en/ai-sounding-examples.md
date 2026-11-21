@@ -60,7 +60,7 @@ Rewrite depth: structure (sections, headings and paragraphs are reorganised).
 
 ## Document-level signals
 
-- `ai-generated-composite`: "ai-tell, padded-intro, closing-cliche" occur together in this document (3 signals, 2 needed)
+- `ai-generated-composite`: 3 signals of generated text occur together in this document (2 needed): Phrasing common in generated text, Padded opening, Cliched closing
 - `ai-tell`: "delve into, in today's fast-paced world, plays a crucial role, a testament to, meticulously" appear together (score 39, limit 4)
 - `padded-intro`: "in today's fast-paced world" is an opening that fits any article
 - `closing-cliche`: Closes with "in conclusion"
@@ -317,7 +317,7 @@ ai.md   blog/tech · English   genre from --genre
 
   3:1     info    "delve into, quietly" appear together (score 12, limit 4)
                   ai-tell
-  3:1     warning "ai-tell, rule-of-three, closing-cliche, contrast-framing, announcing-opener, bold-emphasis" occur together in this document (6 signals, 2 needed)
+  3:1     warning 6 signals of generated text occur together in this document (2 needed): Phrasing common in generated text, Everything comes in threes, Cliched closing, Too many contrast frames, Too many sentences that announce before they say, Bold emphasis scattered through the text
                   ai-generated-composite
   7:1     info    3 bold spans of emphasis: 10.8 per 1000 words (limit 4)
                   bold-emphasis
@@ -524,7 +524,7 @@ demo.md   blog/tech · English   genre from --genre
                   section-length-uniformity
   5:1     info    4 structure measures lie past 90% of human articles (3 needed): sections of one or two paragraphs, headings in a stock form, introduction / conclusion headings, list items opening with a bold label
                   ai-structure
-  5:1     warning "ai-tell, section-length-uniformity, padded-intro, closing-cliche, ai-structure" occur together in this document (5 signals, 2 needed)
+  5:1     warning 5 signals of generated text occur together in this document (2 needed): Phrasing common in generated text, Section lengths are too uniform, Padded opening, Cliched closing, The outline is unlike human articles
                   ai-generated-composite
   7:1     info    "in today's fast-paced world, it's not just" appear together (score 13, limit 4)
                   ai-tell
