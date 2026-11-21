@@ -1,7 +1,7 @@
 id: double-negative
 layer: L2
 status: stable
-how_to_find: phrase-match
+how_to_find: phrase-match-all
 word_list: double-negative
 uses: [pos]
 severity: info
@@ -17,6 +17,15 @@ why:
 message:
   ja: 「{matched}」は二重否定です
   en: '"{matched}" is a double negative'
+
+# 一つの文に違う二重否定が二つ以上あれば、指摘は一つのまま、みな名指す。
+messages:
+  both:
+    ja: 「{matched}」と「{other}」は二重否定です
+    en: '"{matched}" and "{other}" are double negatives'
+  many:
+    ja: この文に二重否定が {kinds} つあります（「{matched}」「{other}」ほか）
+    en: 'This sentence holds {kinds} double negatives ("{matched}", "{other}" and more)'
 
 how_to_fix:
   ja: 肯定で言い切るか（「行くこともある」）、どの程度なのかを書いてください（「月に一度は行く」）。
