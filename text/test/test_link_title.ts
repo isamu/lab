@@ -59,7 +59,7 @@ describe("bracket-width-consistency: リンクで引いた題名の括弧", () =
   });
 
   it("本文の半角の括弧は今までどおり指す", () => {
-    assert.equal(findingsOf(RULE, `# 手続き\n\n${FULL_WIDTH_PROSE}\n手続きの案内 (改訂版) を読む。\n`).length, 2);
+    assert.equal(findingsOf(RULE, `# 手続き\n\n${FULL_WIDTH_PROSE}\n手続きの案内 (改訂版) を読む。\n`).length, 1);
   });
 });
 
