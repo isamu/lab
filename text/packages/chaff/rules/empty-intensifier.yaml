@@ -49,7 +49,7 @@ not_flagged:
   en: Only the phrases on chaff's list are checked; whether a reason follows is not read. A Japanese statement of necessity (不可欠です, 欠かせません) that names its purpose in the same sentence (〜のためには) states a condition and is not reported. A 〜には followed by a comma (心の回復には、…が不可欠です) names the purpose too.
 level_meaning:
   ja: 当てはまる言い回しが {limit} 箇所あれば指摘
-  en: reported once there are {limit}
+  en: reported once there {limit|is|are} {limit}
 rewrite:
   depth: light
   ja:

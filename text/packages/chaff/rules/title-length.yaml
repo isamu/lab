@@ -91,7 +91,7 @@ not_flagged:
   en: "A number label at the head of a heading (Chapter 2, 1.) is not counted. Nor is a numbered series label in brackets at its end (“(490: Employee travel)”), and another document's title quoted in 「」 counts as one name. Reports, press releases, minutes, specifications and papers have a higher limit; legal, literary and speech genres, and FAQs (whose headings are questions), do not run this rule. In any genre, a heading that ends with a question mark, or with a Japanese question particle (…できますか。), is not counted, since its length is the reader's question. A heading ending with a running time in brackets (… (3:00)) is the title of a video or a recording and is not counted."
 level_meaning:
   ja: 題や見出しが {limit} 文字を超えたら指摘
-  en: reported when a title or heading runs past {limit} words
+  en: reported when a title or heading runs past {limit} {limit|word|words}
 rewrite:
   depth: light
   ja:

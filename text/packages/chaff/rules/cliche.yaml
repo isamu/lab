@@ -52,7 +52,7 @@ not_flagged:
   en: Only the phrases on chaff's list are checked, in body sentences; headings are not read. Phrases another rule reads (いかがでしたか in closing-cliche, "game-changer" in ai-tell, "needless to say" in empty-intensifier) are not on it. In Japanese, 結論から言うと is left out because human articles use it as often, and 〜まとめ and 〜な件 because ordinary sentences share them (まとめました, 重要な件). Literature and speech transcripts are not checked. A phrase that is only named as a term ("when saying raising the bar", the phrase "low-hanging fruit", 「徹底解説」という言い方) is not reported.
 level_meaning:
   ja: 当てはまる言い回しが {limit} 箇所あれば指摘
-  en: reported once there are {limit}
+  en: reported once there {limit|is|are} {limit}
 sources: [write-good, proselint]
 rewrite:
   depth: light

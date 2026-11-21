@@ -46,7 +46,7 @@ not_flagged:
   en: Only the pairs on chaff's list are checked, and only in English documents. Pairs the next word does not settle ("its time", "they're people") are not. Not used in fiction or speeches, which spell dialect on purpose.
 level_meaning:
   ja: 取り違えが {limit} 箇所あれば指摘
-  en: reported once there are {limit}
+  en: reported once there {limit|is|are} {limit}
 rewrite:
   depth: light
   en:

@@ -44,7 +44,7 @@ not_flagged:
   en: Only the forms on chaff's list are checked. になります for a change and から for a person are correct and not reported. Literature and speech do not run this rule.
 level_meaning:
   ja: 当てはまる形が {limit} 箇所あれば指摘
-  en: reported once there are {limit}
+  en: reported once there {limit|is|are} {limit}
 rewrite:
   depth: light
   ja:

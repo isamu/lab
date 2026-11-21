@@ -98,7 +98,7 @@ not_flagged:
   en: An item whose label is only code (a list of options or fields) is not counted, nor is one whose bold ends in neither a colon nor a full stop (a bold opening word of a sentence), or that has no text after it. A list whose items each run a paragraph after the bold (the middle item 40 words or more, 100 characters in Japanese) is a handbook's tips, the advice in bold and the item explaining it, and is not counted. A paragraph counts only when its bold is a statement, or a whole English instruction closed by its own stop (**Pick the quietest room you can.**), not a term, an imperative run-in head closed by a colon (**Talk to the people:**), a gerund or a question. Specification (technical/spec), legal, documentation, academic and literary genres do not run this rule.
 level_meaning:
   ja: 太字の札で始まる項目が {limit} 個あれば指摘（太字の一文で始まる項目は min_leads、言い切りの太字で始まる段落は min_clause_paragraphs の数から）
-  en: reported once {limit} list items open with a bold label (items opening with a bold lead sentence from min_leads, paragraphs opening with a bold statement from min_clause_paragraphs)
+  en: reported once {limit} {limit|list item opens|list items open} with a bold label (items opening with a bold lead sentence from min_leads, paragraphs opening with a bold statement from min_clause_paragraphs)
 rewrite:
   depth: structure
   ja:

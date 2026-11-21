@@ -52,4 +52,4 @@ not_flagged:
   en: Fixed forms such as "not without" are not reported. The legal, literature and speech presets turn it off, since the hedged form is part of how those are written.
 level_meaning:
   ja: 二重否定を含む文が {limit} 文あれば指摘
-  en: reported once {limit} sentences hold one
+  en: reported once {limit} {limit|sentence holds|sentences hold} one

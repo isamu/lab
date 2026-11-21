@@ -48,7 +48,7 @@ not_flagged:
   en: Noun endings in bullet lists, where the form is normal, are not counted. Nor are the entries of a list of notes or references written as paragraphs numbered (1), (2), (3) in order that cite sources (a URL or a year), which list names and titles. Nor are the paragraphs of a note to a table or a figure opened by its label ((注1), 注:), or the sentence right before a bullet list that hands the reader to it (以下のとおり説明。), which are written ending in a noun. Nor is a question closed by the particle か (どのような見直しが必要か。).
 level_meaning:
   ja: 本文の体言止め {limit} 文まで
-  en: up to {limit} noun-ending sentences in the body
+  en: up to {limit} {limit|noun-ending sentence|noun-ending sentences} in the body
 rewrite:
   depth: light
   ja:

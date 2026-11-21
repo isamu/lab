@@ -6,7 +6,8 @@ import { runRules } from "../packages/chaff/src/run.ts";
 import { adapter as ja } from "../packages/lang-ja/src/index.ts";
 import { adapter as en } from "../packages/lang-en/src/index.ts";
 import type { Finding } from "../packages/chaff/src/plugin.ts";
-import { compositeSignals, SAME_SHAPE_VALUE } from "../packages/chaff/src/composite-signals.ts";
+import { compositeSignals, SAME_SHAPE_VALUE, signalNames } from "../packages/chaff/src/composite-signals.ts";
+import { messageOf } from "../packages/chaff/src/render/text.ts";
 
 const RULES = loadRules("ja");
 
@@ -40,6 +41,24 @@ describe("複合シグナル", () => {
     const found = findingsFor(MANY).find((finding) => finding.rule === "ai-generated-composite");
     assert.match(String(found?.values["word"] ?? ""), /ai-tell/u);
     assert.ok(Number(found?.values["count"] ?? 0) >= 3);
+  });
+
+  it("文言は signal を rule の名前で挙げ、id は挙げない", () => {
+    const found = findingsFor(MANY).find((finding) => finding.rule === "ai-generated-composite");
+    assert.ok(found !== undefined);
+    const rule = RULES.find((entry) => entry.id === "ai-generated-composite");
+    assert.ok(rule !== undefined);
+    const message = messageOf(rule, found, "ja");
+    assert.match(message, /生成文にありがちな言い回し/u);
+    assert.match(message, /定型の結び/u);
+    assert.doesNotMatch(message, /ai-tell|closing-cliche|rule-of-three|padded-intro/u);
+    assert.match(String(found.values["word"]), /ai-tell/u);
+  });
+
+  it("名前の無い id はそのまま挙げる", () => {
+    assert.deepEqual(signalNames(["ai-tell", "no-such-rule"], RULES, "ja"), ["生成文にありがちな言い回し", "no-such-rule"]);
+    assert.deepEqual(signalNames(["ai-tell"], RULES, "en"), ["Phrasing common in generated text"]);
+    assert.deepEqual(signalNames([], RULES, "ja"), []);
   });
 
   it("valid: 1 種だけでは出さない", () => {
@@ -171,6 +190,19 @@ describe("the composite on an English document", () => {
     );
     const word = String(found?.values["word"] ?? "");
     assert.ok(word.includes(", ") && !word.includes("、"), word);
+  });
+
+  it("names the signals by their English names in the message, not their ids", () => {
+    const found = runRules(buildDocument("t.md", ENGLISH, en), RULES_EN, {}, true, "blog/tech").findings.find(
+      (finding) => finding.rule === "ai-generated-composite",
+    );
+    const rule = RULES_EN.find((entry) => entry.id === "ai-generated-composite");
+    assert.ok(found !== undefined && rule !== undefined);
+    const message = messageOf(rule, found, "en");
+    assert.match(message, /Phrasing common in generated text/u);
+    String(found.values["word"])
+      .split(", ")
+      .forEach((id) => assert.ok(!message.includes(id), `${id} in ${message}`));
   });
 });
 

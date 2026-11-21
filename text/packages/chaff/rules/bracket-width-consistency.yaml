@@ -48,7 +48,7 @@ not_flagged:
   en: Only brackets touching Japanese text, parentheses and square brackets compared apart; Markdown links are not counted, and note markers ([1], [^1]) are compared only with each other, and so are the labels opening a line ((1), [Web]) and an item's address in the prose (4(2)で), and a note's number cited in the prose (注(24)で) with the other cited note numbers. Brackets in English text (f(x)), brackets in a formula (賃金 × (1 - 時間 ÷ 月平均)), code, 「」 quotations, the title of an outside page quoted by a link at a line's head (- [Title (draft)](https://…)) and the document's own heading quoted in a line of other words (a self-citation) are not counted.
 level_meaning:
   ja: 少ないほうの書き方が {limit} 箇所あれば指摘
-  en: reported once the less common way appears {limit} times
+  en: reported once the less common way appears {limit} {limit|time|times}
 rewrite:
   depth: light
   ja:

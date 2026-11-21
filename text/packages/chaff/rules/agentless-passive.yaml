@@ -53,7 +53,7 @@ not_flagged:
   en: A passive that names the actor in the same sentence ("by the board") is not reported. Legal genres, where the passive is the form, do not run this rule.
 level_meaning:
   ja: 一文に受け身が {limit} 個あれば指摘
-  en: reported when a sentence has {limit} passives with no actor
+  en: reported when a sentence has {limit} {limit|passive|passives} with no actor
 rewrite:
   depth: light
   ja:

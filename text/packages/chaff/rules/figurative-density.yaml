@@ -54,7 +54,7 @@ not_flagged:
   en: None of these is wrong alone, so short documents are not measured. A plain comparison or example ("tools such as A and B") is not counted. The literature and speech genres turn it off.
 level_meaning:
   ja: 1000 字あたり飾りのたとえ {limit} 個まで
-  en: up to {limit} decorative figures per 1000 words
+  en: up to {limit} {limit|decorative figure|decorative figures} per 1000 words
 
 rewrite:
   depth: register
