@@ -21,6 +21,17 @@ describe("cliche: a worn phrase", () => {
     assert.deepEqual(findingsOf("We will touch base next week."), ['"touch base" is a cliché']);
   });
 
+  it("reports an idiom whose verb is inflected", () => {
+    assert.deepEqual(findingsOf("That change alone moved the needle."), ['"move the needle" is a cliché']);
+    assert.deepEqual(findingsOf("The plan moves the needle every quarter."), ['"move the needle" is a cliché']);
+    assert.deepEqual(findingsOf("They kept moving the goalposts."), ['"move the goalposts" is a cliché']);
+    assert.deepEqual(findingsOf("We reinvented the wheel."), ['"reinvent the wheel" is a cliché']);
+  });
+
+  it("does not read an inflected verb into a phrase that does not open with one", () => {
+    assert.deepEqual(findingsOf("The needle moved. The base touched the frame."), []);
+  });
+
   it("leaves literal uses of the same words alone", () => {
     assert.deepEqual(findingsOf("The meeting ends at the end of the month."), []);
     assert.deepEqual(findingsOf("The fruit on the low branches ripens first."), []);
