@@ -49,8 +49,8 @@ example:
     after: The board approved the budget for next year.
 
 not_flagged:
-  ja: 「〜によって」のように、した人が同じ文に書いてある受け身は指しません。法務のジャンルは、受け身が書き方そのものなので見ません。
-  en: A passive that names the actor in the same sentence ("by the board") is not reported. Legal genres, where the passive is the form, do not run this rule.
+  ja: 「〜によって」「部長から」のように、した人が同じ文に書いてある受け身は指しません。「来月から」「4月1日から」の「から」は時の起点で、した人ではないので、ほかに書いていなければ指します。法務のジャンルは、受け身が書き方そのものなので見ません。
+  en: A passive that names the actor in the same sentence ("by the board") is not reported. In Japanese, から after a time (来月から, from next month) marks when, not who, and does not count as the actor. Legal genres, where the passive is the form, do not run this rule.
 level_meaning:
   ja: 一文に受け身が {limit} 個あれば指摘
   en: reported when a sentence has {limit} passives with no actor
