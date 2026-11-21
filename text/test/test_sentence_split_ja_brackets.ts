@@ -141,6 +141,15 @@ describe("幅の違う閉じで閉じる番号（(1）、（注)）", () => {
     assert.deepEqual(textsOf("[注］数字は概算です。表を見てください。"), ["[注］数字は概算です。", "表を見てください。"]);
   });
 
+  it("句点で終わる括書きの幅の違う閉じ（以下「資金」という。)の後の句点で切る", () => {
+    const source = "現金及び現金同等物（以下「資金」という。)は、前期と比べて増加しました。営業活動の結果得られた資金は減少しました。";
+    assert.deepEqual(textsOf(source), [
+      "現金及び現金同等物（以下「資金」という。)は、前期と比べて増加しました。",
+      "営業活動の結果得られた資金は減少しました。",
+    ]);
+    assert.deepEqual(textsOf("費用(交通費を含む。）は本部が持つ。残りは各部が持つ。"), ["費用(交通費を含む。）は本部が持つ。", "残りは各部が持つ。"]);
+  });
+
   it("文の位置は元の文字列のまま", () => {
     const source = "(1）方針を定めた。(2）計画を立てた。";
     adapter.segment(source).sentences.forEach((sentence) => assert.equal(source.slice(sentence.span.start, sentence.span.end), sentence.text));
@@ -159,6 +168,7 @@ describe("pairMixedWidthBrackets: 短い番号の開きを閉じと同じ幅に"
     ["略号", "(株）と（GGP24)", "（株）と(GGP24)"],
     ["角括弧", "[注］と［1]", "［注］と[1]"],
     ["外の括弧の中の番号", "（詳細は(2）を参照）", "（詳細は（2）を参照）"],
+    ["句点で終わる括書き", "（以下「資金」という。)は", "(以下「資金」という。)は"],
   ].forEach(([label, text, expected]) => {
     it(`valid: ${String(label)}`, () => assert.equal(pairMixedWidthBrackets(String(text)), expected));
   });
@@ -167,6 +177,8 @@ describe("pairMixedWidthBrackets: 短い番号の開きを閉じと同じ幅に"
     ["同じ幅の組は替えない", "(1)と（2）"],
     ["中身に空白がある", "(see 1）"],
     ["中身が長い", "(これは長い中身の括弧です）"],
+    ["句点で終わっても中身が長すぎる", `(${"長".repeat(41)}。）`],
+    ["句点の後に字がある", "(交通費を含む。など）"],
     ["中身に同じ種類の括弧がある", "(a（b）c)"],
     ["中身が空", "(）"],
     ["行をまたがない", "(1\n）"],
