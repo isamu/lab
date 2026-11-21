@@ -1,0 +1,21 @@
+# Where a cliché whose words also have a plain sense is the figure (cliche). group is the phrase of the cliche word list;
+# pattern, a regular expression (case ignored) that the sentence matches when the phrase is used as the figure. A phrase
+# with entries here counts only in such a sentence; the others count everywhere.
+#
+# "at the end of the day": the figure is a sentence adverb, opening the sentence or a clause, or set off by a comma
+# ("At the end of the day, we …", "because at the end of the day, …"). After a verb and its object it is the time of
+# day ("Empty the grounds tray at the end of the day."), and so is the rare figure at a sentence's end ("what matters at
+# the end of the day"), which is left out.
+#
+# "on the same page": the figure says people agree, so a person stands as its subject or object, with only a verb of
+# being or keeping between ("we all need to be on the same page", "get everyone on the same page"). A thing on the same
+# page ("Every version is on the same page", "Print both tables on the same page") is where it is printed.
+id: cliche-figurative
+language: en
+entries:
+  - pattern: "(?:^\\W*|[,;:—–]\\s*|\\b(?:but|and|because|so|that|yet|or|since|though|although|which|what|when|as)\\s+)[\"“'‘(]*at the end of the day"
+    group: at the end of the day
+  - pattern: "at the end of the day\\s*[,—–]"
+    group: at the end of the day
+  - pattern: "\\b(?:we|you|they|us|them|everyone|everybody|all|team|teams|people|sides)(?:['’](?:re|ll|ve|d))?(?:\\s+(?:all|both|are|is|am|were|was|be|been|being|stay|stays|stayed|staying|remain|remains|get|gets|got|getting|keep|keeps|kept|keeping|need|needs|to|must|should|will|would|can|could|make|sure|not|always|really|still|now|finally))*\\s+on the same page"
+    group: on the same page
