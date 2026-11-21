@@ -11,7 +11,7 @@ Or paste a draft into the [playground](https://isamu.github.io/lab/en/playground
 
 日本語の見本: [../ja/README.md](../ja/README.md)
 
-Rules with a sample: 40 / 259
+Rules with a sample: 53 / 259
 
 ## Readability
 
@@ -69,8 +69,21 @@ Skipped numbers, references to provisions that are not there, terms defined twic
 | [Subject line empty or too long](email-subject-length.md) (`email-subject-length`) | A work email whose "Subject:" line is empty or longer than the limit |
 | [Empty list item](empty-list-item.md) (`empty-list-item`) | A list item with only a label ("Owner:") and no value, or with nothing in it |
 | [Empty section](empty-section.md) (`empty-section`) | A heading with nothing under it before the next heading at its level or higher |
+| [Blank table cell](empty-table-cell.md) (`empty-table-cell`) | A table cell left blank in a column every other row fills |
+| [Figures and tables referred to out of order or out of place](figure-reference-order.md) (`figure-reference-order`) | A figure or table referred to out of order, too late, or never |
+| [A note mark with no note, or a note nothing points to](footnote-mismatch.md) (`footnote-mismatch`) | A note mark ("[^3]") with no note, or a note nothing points to |
+| [Heading level skipped](heading-level-skip.md) (`heading-level-skip`) | A heading that skips a level, such as "####" right after "##" |
+| [Heading numbering mixed](heading-numbering-mix.md) (`heading-numbering-mix`) | Sibling headings numbered in mixed ways: "1. Overview", "Steps", "3. Costs" |
+| [Image without alt text](image-alt-text.md) (`image-alt-text`) | An image with no alt text, as in "![](chart.png)" |
+| [Image alt text is a file name](image-file-name-alt.md) (`image-file-name-alt`) | An image whose alt text is a file name, as in "![IMG_1234.png](…)" |
+| [Opposite obligations on the same act](modal-conflict.md) (`modal-conflict`) | The same act required or allowed in one sentence and forbidden in another |
+| [The lead only restates the title](no-lead.md) (`no-lead`) | A first paragraph under the title that only says the title again |
+| [Number without its unit](number-without-unit.md) (`number-without-unit`) | A bare number where the other values in its column all have a unit |
+| [Headings that are only a label and a number](numbered-generic-heading.md) (`numbered-generic-heading`) | Headings such as "Benefit 1" and "Tip 2" that are only a label and a number |
+| [Skipped or repeated number](numbering-gap.md) (`numbering-gap`) | A numbered item that skips or repeats a number, such as Article 1 then 3 |
+| [Too long before the point](preamble-length.md) (`preamble-length`) | Too many paragraphs before the first heading, which delays the point |
 
-Rules with no sample yet: `empty-table-cell`, `figure-reference-order`, `footnote-mismatch`, `heading-level-skip`, `heading-numbering-mix`, `image-alt-text`, `image-file-name-alt`, `modal-conflict`, `no-lead`, `number-without-unit`, `numbered-generic-heading`, `numbering-gap`, `preamble-length`, `prerequisite-after-step`, `required-listed-as-preferred`, `step-reference-missing`, `table-row-overflow`, `toc-heading-mismatch`, `unclosed-code-fence`, `unlisted-item-used`, `unrendered-emphasis`, `unused-definition`, `use-before-definition`, `vague-figure-reference`, `vague-link-text`
+Rules with no sample yet: `prerequisite-after-step`, `required-listed-as-preferred`, `step-reference-missing`, `table-row-overflow`, `toc-heading-mismatch`, `unclosed-code-fence`, `unlisted-item-used`, `unrendered-emphasis`, `unused-definition`, `use-before-definition`, `vague-figure-reference`, `vague-link-text`
 
 ## Facts that disagree
 
