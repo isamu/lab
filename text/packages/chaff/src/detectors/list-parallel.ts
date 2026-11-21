@@ -8,6 +8,7 @@ import type { BulletList, Detector, Finding, ProseDocument, Sentence, Span, Toke
 import { isLinkLabel } from "./link-label.ts";
 import { itemLayout, splitAtLeadIns } from "./list-layout.ts";
 import { closesAsSentence, isFiniteVerb, isNounPhraseWithVerbs, isPastForm, isVerb, NOMINAL, NOUN_HEAD, opensObject } from "./list-item-phrase.ts";
+import { opensWithClause } from "./list-item-clause.ts";
 
 /** What an item is made of: a phrase or a sentence (ending), and the word it opens with (head, English only). */
 export type Axis = "ending" | "head";
@@ -122,18 +123,9 @@ const englishEnding = (item: readonly Sentence[], context: HeadContext): string 
   // A noun phrase with a stray full stop (Shelter – a charity who offer advice.) says nothing: neither form.
   const nounPhrase = isNounPhraseWithVerbs(tokens);
   if (closed) return tokens.some(isFiniteVerb) && !nounPhrase ? "sentence" : undefined;
-  if (opensWithClause(tokens, context)) return "sentence";
-  return (nounPhrase || !tokens.some(isVerb)) && !isUnsure(tokens[0]) ? "phrase" : undefined;
-};
-
-/**
- * An item that opens with a subject pronoun and its finite verb (you will also need a change of clothes) is a sentence
- * whether or not its writer closed it with a full stop.
- */
-const opensWithClause = (tokens: readonly Token[], context: HeadContext): boolean => {
   const words = tokens.filter((token) => !SKIPPED_AT_END.has(token.pos));
-  const [subject, verb] = [words[0], words.find((token, index) => index > 0 && token.pos !== "ADV")];
-  return subject !== undefined && verb !== undefined && isSubjectPronoun(subject, context) && isFiniteVerb(verb);
+  if (opensWithClause(words, (token) => isSubjectPronoun(token, context))) return "sentence";
+  return (nounPhrase || !tokens.some(isVerb)) && !isUnsure(tokens[0]) ? "phrase" : undefined;
 };
 
 /** English: the word an item opens with. Install and Running open with a verb; The, Fast and Docker with a noun phrase. */
