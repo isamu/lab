@@ -1,5 +1,5 @@
 import type { Detector, DetectorOptions, Finding, Lexicon, LexiconEntry, ProseDocument, Sentence } from "../plugin.ts";
-import { entryEnds, entryIn, entryOpens } from "./lexicon-match.ts";
+import { entryEnds, entryIn, entryOpens, entryWrittenIn } from "./lexicon-match.ts";
 import { externalLinkTitleSpans } from "../link-title.ts";
 import { referenceListSpans } from "../reference-lists.ts";
 import { mentionCuesOf, onlyInTitles, onlyMentioned } from "./mentioned-phrase.ts";
@@ -27,9 +27,15 @@ type IsUsed = (sentence: Sentence, entry: LexiconEntry) => boolean;
 /** An entry marked opens counts only at the head of the sentence: 「近年、」 opens a stock opening, 「その後、近年の」 is a plain word. */
 const writtenIn = (sentence: Sentence, entry: LexiconEntry): boolean => (entry.opens === true ? entryOpens(sentence, entry) : entryIn(sentence, entry));
 
+/** The entry the sentence holds; one written in the very form (reverted back) wins over one met through its base form (revert back). */
+const entryHeldBy = (sentence: Sentence, lexicon: Lexicon, isUsed: IsUsed): LexiconEntry | undefined => {
+  const held = lexicon.filter((entry) => writtenIn(sentence, entry) && isUsed(sentence, entry));
+  return held.find((entry) => entryWrittenIn(sentence, entry)) ?? held[0];
+};
+
 const hitsIn = (sentences: readonly Sentence[], lexicon: Lexicon, isUsed: IsUsed = () => true): Hit[] =>
   sentences.flatMap((sentence) => {
-    const matched = lexicon.find((entry) => writtenIn(sentence, entry) && isUsed(sentence, entry));
+    const matched = entryHeldBy(sentence, lexicon, isUsed);
     return matched === undefined ? [] : [{ sentence, matched: quotedPattern(matched.pattern) }];
   });
 
