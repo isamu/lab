@@ -156,6 +156,20 @@ describe("cross-doc-duplicate-definition", () => {
   });
 });
 
+describe("cross-doc-duplicate-definition: an even split", () => {
+  const invited = '"Member" means a person invited to a workspace.\n';
+  const pays = '"Member" means a person who pays the fee.\n';
+
+  it("two files that disagree are both reported, whichever comes first", () => {
+    assert.deepEqual(definitions({ "a.md": invited, "b.md": pays }), ["a.md@0 term=Member count=1 example=b.md", "b.md@0 term=Member count=1 example=a.md"]);
+    assert.deepEqual(definitions({ "b.md": pays, "a.md": invited }), ["b.md@0 term=Member count=1 example=a.md", "a.md@0 term=Member count=1 example=b.md"]);
+  });
+
+  it("a minority is still reported alone", () => {
+    assert.deepEqual(definitions({ "a.md": pays, "b.md": invited, "c.md": invited }), ["a.md@0 term=Member count=2 example=b.md"]);
+  });
+});
+
 describe("on the command line", () => {
   it("both rules report in the file out of step", async () => {
     const files = {

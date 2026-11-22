@@ -37,16 +37,16 @@ The Customer will pay each invoice within thirty Business Days of receiving it.
 ```text chaff-output
 $ npx chaffjs --no-guide --genre legal/contract order-form.md master-agreement.md
 
-order-form.md   legal/contract · English   genre from --genre
+master-agreement.md   legal/contract · English   genre from --genre
 
-─── line 3 ───────────────────────────────────────────────────
+─── line 5 ───────────────────────────────────────────────────
 
-    "Business Day" means a day other than a Saturday or a Sunday.
+    "Business Day" means a day other than a Saturday, a Sunday or a public holiday i
 
   ⚠  One term defined differently in different files
 
-     "Business Day" is defined in other words than in 1 other file checked with it (as in master-agreement.md)
-     A bundle of contracts or a manual often defines the same term in several files (the agreement and its schedule, the glossary and the pages). When one is changed later and the other is not, the files disagree on what the term means. Across the files given together, the words after the term in each definition ("X" means …, 「X」とは、…をいう) are compared, and a file that defines the term in other words than most files do is pointed out. Width, spaces and the punctuation at either end do not count. Whether two wordings mean the same is not something a machine can decide, so chaff only shows where to look.
+     "Business Day" is defined in other words than in 1 other file checked with it (as in order-form.md)
+     A bundle of contracts or a manual often defines the same term in several files (the agreement and its schedule, the glossary and the pages). When one is changed later and the other is not, the files disagree on what the term means. Across the files given together, the words after the term in each definition ("X" means …, 「X」とは、…をいう) are compared, and a file that defines the term in other words than most files do is pointed out. When two wordings share the most files, neither is fewer, and the files of every wording are pointed out. Width, spaces and the punctuation at either end do not count. Whether two wordings mean the same is not something a machine can decide, so chaff only shows where to look.
 
      → Keep the definition in one place (the glossary, the main agreement) and refer to it from the other files. If the meaning is meant to differ, use a different term.
 
@@ -85,6 +85,7 @@ If the order form really needs a different meaning, it should use a different te
 
 A term defined in other words in another file is a warning at the default level; `strict` makes it an error and `relaxed` a note.
 The files have to be checked together, as in `npx chaffjs order-form.md master-agreement.md`.
+With one definition in each file, neither wording is fewer, so chaff points at both files; the screen above shows `master-agreement.md`, the one listed first.
 
 If your files are separate documents that are allowed to define the same word differently, relax it:
 
@@ -102,7 +103,7 @@ $ npx chaffjs explain cross-doc-duplicate-definition --genre legal/contract
 
   One term defined differently in different files   (cross-doc-duplicate-definition)
 
-  A bundle of contracts or a manual often defines the same term in several files (the agreement and its schedule, the glossary and the pages). When one is changed later and the other is not, the files disagree on what the term means. Across the files given together, the words after the term in each definition ("X" means …, 「X」とは、…をいう) are compared, and a file that defines the term in other words than most files do is pointed out. Width, spaces and the punctuation at either end do not count. Whether two wordings mean the same is not something a machine can decide, so chaff only shows where to look.
+  A bundle of contracts or a manual often defines the same term in several files (the agreement and its schedule, the glossary and the pages). When one is changed later and the other is not, the files disagree on what the term means. Across the files given together, the words after the term in each definition ("X" means …, 「X」とは、…をいう) are compared, and a file that defines the term in other words than most files do is pointed out. When two wordings share the most files, neither is fewer, and the files of every wording are pointed out. Width, spaces and the punctuation at either end do not count. Whether two wordings mean the same is not something a machine can decide, so chaff only shows where to look.
 
   How to fix: Keep the definition in one place (the glossary, the main agreement) and refer to it from the other files. If the meaning is meant to differ, use a different term.
 
