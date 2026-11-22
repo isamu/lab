@@ -307,6 +307,7 @@ export const documentYearFindings = (doc: ProseDocument, tree: StructureNode): F
     sentences: sentencesOf(doc),
     years: yearsOf(doc, tree, quantities),
     foundings: wordsOf(doc, "elapsed-origin"),
+    openings: wordsOf(doc, "elapsed-opening"),
     births: wordsOf(doc, "birth-origin"),
     elapsed: elapsedOf(doc, quantities),
     ages,

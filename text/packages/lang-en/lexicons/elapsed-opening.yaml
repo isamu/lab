@@ -1,0 +1,12 @@
+# Words that set the starting year of a count of years in their own sentence only, when the document names no founding
+# year (elapsed-years-mismatch): "Brookside Dental opened its doors in 2006, and this month marks 10 years since its
+# founding". They are too common ("the new wing opened in 2019") to date a count in another sentence, as the words of
+# elapsed-origin do.
+id: elapsed-opening
+language: en
+entries:
+  - pattern: "opened"
+  - pattern: "opened its doors"
+  - pattern: "opened our doors"
+  - pattern: "opened their doors"
+  - pattern: "first opened"
