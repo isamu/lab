@@ -162,6 +162,12 @@ const isNearPair = (reading: Reading, found: Found): boolean => {
   );
 };
 
+/** A case, width or punctuation variant that is not a slip: a form quoted by itself, a name after "the" beside its words run together, a contraction. */
+const isSpellingPair = (reading: Reading, found: Found): boolean =>
+  isQuotedForm(found, reading.text) ||
+  isArticleNamePair(found, reading.text, reading.definiteArticles) ||
+  isContractionPair(found.name, found.usual, reading.text);
+
 /**
  * The finding is not two forms of one name: a one-letter variant that is two names (isNearPair), ・ listing two words, a
  * direction and its inverse, a title quoted in capitals, a form quoted by itself, a name after "the" beside the same words
@@ -194,9 +200,7 @@ export const twoThingsIn = (
     isListedPair(found.name, found.usual) ||
     (found.kind === "order" && isInverseOrder(found.name, found.usual, reading.directions)) ||
     isQuotedTitleCase(found, reading.text) ||
-    isQuotedForm(found, reading.text) ||
-    (found.kind === "spelling" && isArticleNamePair(found, reading.text, reading.definiteArticles)) ||
-    (found.kind === "spelling" && isContractionPair(found.name, found.usual, reading.text)) ||
+    (found.kind === "spelling" && isSpellingPair(reading, found)) ||
     isInFileName(reading.text, found.offset, found.name.length) ||
     isShownWrong(reading, found) ||
     (found.kind === "reading" && isVerbStem(found, reading.tokenAt, reading.copulas));
