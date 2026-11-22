@@ -330,6 +330,27 @@ describe("summary-fact-mismatch", () => {
     assert.deepEqual(doc("- Seats: 40"), []);
   });
 
+  it("a sentence's label is measured without its article (The registration deadline is …) (en)", () => {
+    const doc = (opening: string, body: string): string[] => summaryEn("# Workshop", "", opening, "", "## Registration", "", body);
+    const deadline = "The registration deadline is September 25, 2026.";
+    assert.deepEqual(doc("The registration deadline is September 18, 2026.", deadline), ["The registration deadline:September 18, 2026≠September 25, 2026"]);
+    assert.deepEqual(doc("Registration deadline: September 18, 2026", deadline), ["Registration deadline:September 18, 2026≠September 25, 2026"]);
+    assert.deepEqual(doc("The registration deadline is September 25, 2026.", deadline), []);
+    assert.deepEqual(doc("Registration deadline: September 25, 2026", deadline), []);
+    assert.deepEqual(doc("The maximum group size is 30.", "The maximum group size is 40."), ["The maximum group size:30≠40"]);
+    assert.deepEqual(doc("The maximum group size is 40.", "The maximum group size is 40."), []);
+    assert.deepEqual(doc("The cancellation fee is $300.", "The cancellation fee is $350."), ["The cancellation fee:$300≠$350"]);
+    // Without the article the label is still over the limit, so it is not read as a label.
+    assert.deepEqual(doc("The total number of registered participants is 30.", "The total number of registered participants is 40."), []);
+  });
+
+  it("a sentence's label in the opening against the body (ja)", () => {
+    const doc = (opening: string, body: string): string[] => summaryJa("# 説明会", "", opening, "", "## 申し込み", "", body);
+    assert.deepEqual(doc("締切は9月18日です。", "締切は9月25日です。"), ["締切:9月18日≠9月25日"]);
+    assert.deepEqual(doc("締切：9月18日", "締切は9月25日です。"), ["締切:9月18日≠9月25日"]);
+    assert.deepEqual(doc("締切は9月25日です。", "締切は9月25日です。"), []);
+  });
+
   it("a body that gives the label two values settles nothing", () => {
     const lines = ["# Report", "", "Seats: 30", "", "## First", "", "Seats: 40", "", "## Second", "", "Seats: 50"];
     assert.deepEqual(summaryEn(...lines), []);
