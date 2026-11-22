@@ -36,7 +36,7 @@ forecast-revision.md   business/press-release · English   genre from --genre
 
 ─── line 7 ───────────────────────────────────────────────────
 
-    et sales | 48,000 | 45,500 | | Operating
+    et sales | 48,000 | 45,500 |
 
   ⚠  A forecast revision that moves the other way
 

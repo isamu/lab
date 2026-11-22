@@ -36,7 +36,7 @@ support-specialist.md   business/press-release · English   genre from --genre
 
 ─── line 11 ──────────────────────────────────────────────────
 
-    | Annual days off | 98 days | | Annual le
+    | Annual days off | 98 days |
 
   ⚠  Annual days off fewer than the weekly days off give
 

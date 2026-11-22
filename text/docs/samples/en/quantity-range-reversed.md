@@ -33,7 +33,7 @@ timer-spec.md   technical/spec · English   genre from --genre
 
 ─── line 6 ───────────────────────────────────────────────────
 
-    ng water pressure | 6 to 0.5 bar | | Wate
+    ng water pressure | 6 to 0.5 bar |
 
   ⚠  A measured range whose upper end is below its lower end
 

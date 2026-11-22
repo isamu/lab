@@ -39,7 +39,7 @@ move-in-costs.md   business/email · English   genre from --genre
 
 ─── line 10 ──────────────────────────────────────────────────
 
-    1,850 | | Deposit | 2 months ($3,600) | |
+    | Deposit | 2 months ($3,600) |
 
   ⚠  A deposit that is not the stated months of rent
 
