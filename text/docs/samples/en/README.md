@@ -11,7 +11,7 @@ Or paste a draft into the [playground](https://isamu.github.io/lab/en/playground
 
 日本語の見本: [../ja/README.md](../ja/README.md)
 
-Rules with a sample: 144 / 259
+Rules with a sample: 166 / 259
 
 ## Readability
 
@@ -173,9 +173,32 @@ Skipped numbers, references to provisions that are not there, terms defined twic
 
 A date and its weekday, dates out of order, a total and its items: disagreements a calendar or a sum can settle.
 
-No sample in this group yet.
+| Rule | What it finds |
+| --- | --- |
+| [Annual days off fewer than the weekly days off give](annual-holidays-mismatch.md) (`annual-holidays-mismatch`) | Annual days off fewer than the 104 days that two days off every week give |
+| [An example annual pay that is not the monthly pay and bonus](annual-pay-mismatch.md) (`annual-pay-mismatch`) | An example annual pay that is not 12 months' pay plus the bonus months |
+| [A backordered quantity that is not the ordered less the delivered](backorder-mismatch.md) (`backorder-mismatch`) | A backordered quantity that is not the ordered less the delivered on its row |
+| [A BMI the height and weight beside it do not give](bmi-mismatch.md) (`bmi-mismatch`) | A BMI in a checkup that the weight divided by the height squared does not give |
+| [A runtime longer than the battery capacity divided by the consumption](capacity-runtime-mismatch.md) (`capacity-runtime-mismatch`) | A runtime longer than the battery capacity divided by its consumption |
+| [Citations and reference list do not match](citation-reference-mismatch.md) (`citation-reference-mismatch`) | A citation with no entry in the reference list, or an entry the text never cites |
+| [One item given different values in different files](cross-doc-fact-conflict.md) (`cross-doc-fact-conflict`) | The same item (a fee, a deadline, a contact) given different values in two files |
+| [One amount in another currency in a column of amounts](currency-column-mix.md) (`currency-column-mix`) | A lone amount in another currency in a column, such as ¥12,500 among dollars |
+| [Reference to a missing figure or table](dangling-figure-reference.md) (`dangling-figure-reference`) | A figure or table the text refers to that the document does not have |
+| [A deductible larger than the most paid](deductible-exceeds-limit.md) (`deductible-exceeds-limit`) | A deductible or excess larger than the most paid for the same benefit |
+| [Default value stated two ways](default-value-mismatch.md) (`default-value-mismatch`) | A parameter's default that differs between the signature, a table and the text |
+| [Deprecated name used in an example](deprecated-option-used.md) (`deprecated-option-used`) | An option the document calls deprecated, still used in one of its examples |
+| [A number of sessions times their length that does not make the stated total](duration-product-mismatch.md) (`duration-product-mismatch`) | Sessions times the length of each that does not make the total given |
+| [One item given two different values](fact-conflict.md) (`fact-conflict`) | The same item (a deadline, a fee) given two different values in one section |
+| [An amount that is not what its label's formula gives](formula-amount-mismatch.md) (`formula-amount-mismatch`) | An amount that is not what its label's formula ("5% of the sale price") gives |
+| [A grade-point average the course rows do not give](gpa-mismatch.md) (`gpa-mismatch`) | A grade-point average that is not what the course grades and credits give |
+| [A heading names a command its section's code does not show](heading-command-missing.md) (`heading-command-missing`) | A command or option named in a heading that the section's examples never use |
+| [A minimum interval and a maximum count of uses that cannot both hold, or a count that differs from the table](interval-count-mismatch.md) (`interval-count-mismatch`) | A minimum gap and maximum count that conflict, or a maximum unlike the table's |
+| [A layout that does not match the rooms listed](layout-code-mismatch.md) (`layout-code-mismatch`) | A room layout such as "3 bedrooms" that does not match the rooms listed |
+| [The meter readings' difference is not the usage](meter-usage-mismatch.md) (`meter-usage-mismatch`) | A utility bill whose current minus previous meter reading is not the usage |
+| [Parameter table that does not match the signature](parameter-table-mismatch.md) (`parameter-table-mismatch`) | A parameter in only one of a signature and the parameter table under it |
+| [A period other than the one the title reports](period-label-conflict.md) (`period-label-conflict`) | Not the title's period: Q3 in a Q2 release, tax year 2025 in a 2026 statement |
 
-Rules with no sample yet: `amount-range-reversed`, `announced-count-mismatch`, `annual-holidays-mismatch`, `annual-pay-mismatch`, `arrival-before-departure`, `attachment-not-attached`, `backorder-mismatch`, `bmi-mismatch`, `capacity-runtime-mismatch`, `change-rate-mismatch`, `citation-reference-mismatch`, `closing-balance-mismatch`, `connection-time-short`, `contact-variant`, `count-over-capacity`, `cross-doc-fact-conflict`, `cumulative-below-current`, `currency-column-mix`, `dangling-figure-reference`, `date-order`, `date-outside-period`, `date-range-reversed`, `date-stamp-order`, `date-weekday-mismatch`, `deadline-after-event`, `deductible-exceeds-limit`, `default-value-mismatch`, `delivered-over-ordered`, `deprecated-option-used`, `discount-rate-mismatch`, `due-before-issue`, `duration-mismatch`, `duration-product-mismatch`, `elapsed-years-mismatch`, `fact-conflict`, `formula-amount-mismatch`, `gpa-mismatch`, `heading-command-missing`, `impossible-date`, `impossible-time`, `installment-total-mismatch`, `interest-mismatch`, `interval-count-mismatch`, `layout-code-mismatch`, `line-amount-mismatch`, `meter-usage-mismatch`, `net-amount-mismatch`, `net-over-gross`, `number-word-figure-mismatch`, `parameter-table-mismatch`, `percent-sum-mismatch`, `period-label-conflict`, `period-multiple-mismatch`, `period-part-exceeds-whole`, `phone-number-variant`, `product-exceeds-maximum`, `quantity-range-reversed`, `quote-unnamed-speaker`, `quote-without-source`, `range-band-mismatch`, `ratio-mismatch`, `reference-flag-mismatch`, `reference-number-repeated`, `reference-number-variant`, `reference-title-mismatch`, `reference-topic-missing`, `reference-unit-mismatch`, `relative-date-mismatch`, `rent-multiple-mismatch`, `return-type-mismatch`, `revision-direction-mismatch`, `running-balance-mismatch`, `scaled-quantity-mismatch`, `serial-range-reversed`, `share-amount-mismatch`, `share-over-hundred`, `step-time-sum-mismatch`, `summary-fact-mismatch`, `table-unit-mix`, `tax-mismatch`, `tier-threshold-mismatch`, `time-order`, `time-range-reversed`, `total-mismatch`, `undefined-function-call`, `unit-mismatch`, `variance-mismatch`, `version-mismatch`, `version-order`, `walk-time-distance-mismatch`
+Rules with no sample yet: `amount-range-reversed`, `announced-count-mismatch`, `arrival-before-departure`, `attachment-not-attached`, `change-rate-mismatch`, `closing-balance-mismatch`, `connection-time-short`, `contact-variant`, `count-over-capacity`, `cumulative-below-current`, `date-order`, `date-outside-period`, `date-range-reversed`, `date-stamp-order`, `date-weekday-mismatch`, `deadline-after-event`, `delivered-over-ordered`, `discount-rate-mismatch`, `due-before-issue`, `duration-mismatch`, `elapsed-years-mismatch`, `impossible-date`, `impossible-time`, `installment-total-mismatch`, `interest-mismatch`, `line-amount-mismatch`, `net-amount-mismatch`, `net-over-gross`, `number-word-figure-mismatch`, `percent-sum-mismatch`, `period-multiple-mismatch`, `period-part-exceeds-whole`, `phone-number-variant`, `product-exceeds-maximum`, `quantity-range-reversed`, `quote-unnamed-speaker`, `quote-without-source`, `range-band-mismatch`, `ratio-mismatch`, `reference-flag-mismatch`, `reference-number-repeated`, `reference-number-variant`, `reference-title-mismatch`, `reference-topic-missing`, `reference-unit-mismatch`, `relative-date-mismatch`, `rent-multiple-mismatch`, `return-type-mismatch`, `revision-direction-mismatch`, `running-balance-mismatch`, `scaled-quantity-mismatch`, `serial-range-reversed`, `share-amount-mismatch`, `share-over-hundred`, `step-time-sum-mismatch`, `summary-fact-mismatch`, `table-unit-mix`, `tax-mismatch`, `tier-threshold-mismatch`, `time-order`, `time-range-reversed`, `total-mismatch`, `undefined-function-call`, `unit-mismatch`, `variance-mismatch`, `version-mismatch`, `version-order`, `walk-time-distance-mismatch`
 
 ## Signs of generated text
 
