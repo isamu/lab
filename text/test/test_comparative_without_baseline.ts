@@ -208,4 +208,22 @@ describe("comparative-without-baseline: a compound aim, a set phrase, two exampl
     // A sentence that does not point at the example (The new engine) names its own subject.
     assert.deepEqual(findingsOf([...EXAMPLES, "The new engine is faster."].join("\n")), ['"faster" does not say what it is compared with']);
   });
+
+  it("a comparison right after one example whose comment names the behaviour before is not reported", () => {
+    const example = ["Checks are stricter now.", "", "```ts", "// Used to error, now doesn't.", "check();", "```", "", "This behavior is more desirable."];
+    assert.deepEqual(findingsOf(example.join("\n")), []);
+    // Without that comment, the one example gives no baseline.
+    assert.deepEqual(findingsOf(example.filter((line) => !line.startsWith("//")).join("\n")), ['"more desirable" does not say what it is compared with']);
+    // "used to" in prose ("is used to") does not name a baseline.
+    assert.deepEqual(findingsOf("The flag is used to cache results. Builds are faster."), ['"faster" does not say what it is compared with']);
+  });
+
+  it("「さらに新たな」、ほかの手立てがあると言う比較、「〜とよい」の中の比較は言わない", () => {
+    assert.deepEqual(findingsOf("届いた記録から、さらに新たな記録が生じた場合の扱いを決める。", ja), []);
+    assert.deepEqual(findingsOf("この言語にはより安全な繰り返しの書き方があるため、古い構文は使う場面が限られます。", ja), []);
+    assert.deepEqual(findingsOf("手引きでは、目指す姿をより明確に示していただけるとよい。", ja), []);
+    // 手立てでも願いでもない比較は、これまでどおり言う。
+    assert.deepEqual(findingsOf("新しい版はより安全な作りです。", ja), ["「より安全」は、何と比べているかが書かれていません"]);
+    assert.deepEqual(findingsOf("新しい画面では、手順をより明確に示していただけます。", ja), ["「より明確」は、何と比べているかが書かれていません"]);
+  });
 });
