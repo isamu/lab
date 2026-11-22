@@ -85,6 +85,25 @@ const phoneSpans = (text: string): Span[] => [...text.matchAll(PHONE_NUMBER)].ma
 
 const isListItemNumber = (source: string, offset: number): boolean => LIST_ITEM_HEAD.test(source.slice(source.lastIndexOf("\n", offset - 1) + 1, offset));
 
+/** 書き方の名前（全角英数字、半角カナ）の後ろの括弧（全角英数字（Ａ、１等））。中の字はその書き方の例で、文書の書き方の票ではない。 */
+const WIDTH_EXAMPLES = /[全半]角[^\s\p{Script=Hiragana}（(、。]{0,8}[（(][^）)]*[）)]/gu;
+
+const widthExampleSpans = (text: string): Span[] =>
+  [...text.matchAll(WIDTH_EXAMPLES)].map((match) => ({ start: match.index, end: match.index + match[0].length }));
+
+/**
+ * 日付で始まり、句点の無い箇条書きの項目（- 平成25年8月23日命を守るために…～８月３０日運用開始～）。報道発表やお知らせの一覧で、
+ * 日付に続けた題は出したときのまま引いたもの。書き手の書き方の票ではない。日付は一覧の書き手のもので、票に入れる。
+ */
+const DATED_TITLE_ITEM = /^([ \t]*[-*+][ \t]+(?:(?:令和|平成|昭和)[0-9０-９元]{1,2}|[0-9]{4})年[0-9０-９]{1,2}月[0-9０-９]{1,2}日)[^\s。\n][^。\n]*$/u;
+
+const isInDatedTitle = (source: string, offset: number): boolean => {
+  const lineStart = source.lastIndexOf("\n", offset - 1) + 1;
+  const lineEnd = source.indexOf("\n", offset);
+  const dated = DATED_TITLE_ITEM.exec(source.slice(lineStart, lineEnd < 0 ? source.length : lineEnd));
+  return dated !== null && offset >= lineStart + (dated[1]?.length ?? 0);
+};
+
 export type AlnumRun = {
   readonly kind: AlnumKind;
   readonly fullwidth: boolean;
@@ -127,9 +146,12 @@ export const alnumRunsIn = (sentence: Sentence, source: string): AlnumRun[] => {
   const quoted: readonly Span[] = quotedSpans(sentence.text, QUOTATION_MARKS);
   const glued = gluedNumberSpans(sentence.text);
   const phones = phoneSpans(sentence.text);
+  const examples = widthExampleSpans(sentence.text);
   return [...sentence.text.matchAll(ALNUM_RUN)]
     .flatMap(widthPieces)
     .filter((match) => !isWithinAny(quoted, { start: match.index, end: match.index + match[0].length }))
+    .filter((match) => !isWithinAny(examples, { start: match.index, end: match.index + match[0].length }))
+    .filter((match) => !isInDatedTitle(source, sentence.span.start + match.index))
     .filter((match) => !isLabel(sentence.text, match.index, match.index + match[0].length))
     .filter((match) => !isListItemNumber(source, sentence.span.start + match.index))
     .filter((match) => !isInAddress(sentence.text, match.index, match.index + match[0].length))
