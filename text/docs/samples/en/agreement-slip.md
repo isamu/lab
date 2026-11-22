@@ -41,7 +41,7 @@ booking-email.md   business/email · English   genre from --genre
      "These new version" mixes singular and plural
      A determiner and a noun that differ in number ("a significant changes", "these new version"), a possessive where the subject belongs ("Your can check"), or two determiners in a row ("the some roads"), is left over from an edit that fixed one word and not the other. The reader stumbles, and the document looks rushed. Only forms with one reading are counted; nouns spelled alike in both numbers ("series", "data"), a word right after "this" or "these" (which can stand alone), and nouns that modify another noun ("a sales team") are not.
 
-     → Make the determiner and the noun agree ("a significant change" or "significant changes"). For a possessive, write the subject you meant ("Your can" becomes "You can", "their is" becomes "there is"). For two determiners in a row, drop one ("the some roads" becomes "some roads", or "that some roads" if that was meant).
+     → Make the determiner and the noun agree ("a significant change" or "significant changes"). For a possessive, write the subject you meant ("Your can" becomes "You can", "their will" becomes "they will"). For two determiners in a row, drop one ("the some roads" becomes "some roads", or "that some roads" if that was meant).
 
      Relax this rule:  npx chaffjs relax agreement-slip
 
@@ -55,7 +55,7 @@ booking-email.md   business/email · English   genre from --genre
      "a significant changes" mixes singular and plural
      A determiner and a noun that differ in number ("a significant changes", "these new version"), a possessive where the subject belongs ("Your can check"), or two determiners in a row ("the some roads"), is left over from an edit that fixed one word and not the other. The reader stumbles, and the document looks rushed. Only forms with one reading are counted; nouns spelled alike in both numbers ("series", "data"), a word right after "this" or "these" (which can stand alone), and nouns that modify another noun ("a sales team") are not.
 
-     → Make the determiner and the noun agree ("a significant change" or "significant changes"). For a possessive, write the subject you meant ("Your can" becomes "You can", "their is" becomes "there is"). For two determiners in a row, drop one ("the some roads" becomes "some roads", or "that some roads" if that was meant).
+     → Make the determiner and the noun agree ("a significant change" or "significant changes"). For a possessive, write the subject you meant ("Your can" becomes "You can", "their will" becomes "they will"). For two determiners in a row, drop one ("the some roads" becomes "some roads", or "that some roads" if that was meant).
 
      Relax this rule:  npx chaffjs relax agreement-slip
 
@@ -116,7 +116,7 @@ $ npx chaffjs explain agreement-slip --genre business/email
 
   A determiner and a noun that differ in number ("a significant changes", "these new version"), a possessive where the subject belongs ("Your can check"), or two determiners in a row ("the some roads"), is left over from an edit that fixed one word and not the other. The reader stumbles, and the document looks rushed. Only forms with one reading are counted; nouns spelled alike in both numbers ("series", "data"), a word right after "this" or "these" (which can stand alone), and nouns that modify another noun ("a sales team") are not.
 
-  How to fix: Make the determiner and the noun agree ("a significant change" or "significant changes"). For a possessive, write the subject you meant ("Your can" becomes "You can", "their is" becomes "there is"). For two determiners in a row, drop one ("the some roads" becomes "some roads", or "that some roads" if that was meant).
+  How to fix: Make the determiner and the noun agree ("a significant change" or "significant changes"). For a possessive, write the subject you meant ("Your can" becomes "You can", "their will" becomes "they will"). For two determiners in a row, drop one ("the some roads" becomes "some roads", or "that some roads" if that was meant).
 
   Levels (there is no limit to count to; a level sets how a finding is marked):
     strict   error

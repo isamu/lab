@@ -43,25 +43,11 @@ office-move.md   business/report · English   genre from --genre
 
 ─── line 5 ───────────────────────────────────────────────────
 
-    contentReference[
+    :contentReference[oaicite:0]{index=0}
 
   ⚠  Chat citation residue
 
-     "contentReference[" is left over from a chat answer
-     A link ending in "?utm_source=chatgpt.com" and a ":contentReference[oaicite:0]" are marks a chat answer leaves when it is pasted. This is not a matter of style: it shows the paste was never checked, and that nobody has confirmed the link supports the sentence it sits on.
-
-     → Open the link and check it supports the sentence. If it does, keep the link and drop the "?utm_source=…" at its end. Delete citation marks (oaicite, contentReference).
-
-     Relax this rule:  npx chaffjs relax chat-citation-residue
-
-
-─── line 5 ───────────────────────────────────────────────────
-
-    oaicite
-
-  ⚠  Chat citation residue
-
-     "oaicite" is left over from a chat answer
+     ":contentReference[oaicite:0]{index=0}" is left over from a chat answer
      A link ending in "?utm_source=chatgpt.com" and a ":contentReference[oaicite:0]" are marks a chat answer leaves when it is pasted. This is not a matter of style: it shows the paste was never checked, and that nobody has confirmed the link supports the sentence it sits on.
 
      → Open the link and check it supports the sentence. If it does, keep the link and drop the "?utm_source=…" at its end. Delete citation marks (oaicite, contentReference).
@@ -71,7 +57,7 @@ office-move.md   business/report · English   genre from --genre
 
 ────────────────────────────────────────────────────────────
 
-  3 warnings   All judged by machine
+  2 warnings   All judged by machine
               (the same text gives the same result every time)
 
   The text was not changed. Fixing it is the writer's job.
@@ -124,8 +110,8 @@ $ npx chaffjs explain chat-citation-residue --genre business/report
   Rewrite depth: light (words and sentences; the structure and the voice stay). With a shallower chaff fix-plan --depth, the plan names this rule without fixing it.
 
   Levels:
-    strict   reported once there are 1
-  → normal   reported once there are 1
+    strict   reported once there is 1
+  → normal   reported once there is 1
     relaxed  reported once there are 2
     off      not checked
 

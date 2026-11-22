@@ -120,8 +120,8 @@ $ npx chaffjs explain homophone-slip --genre business/email
   Rewrite depth: light (words and sentences; the structure and the voice stay). With a shallower chaff fix-plan --depth, the plan names this rule without fixing it.
 
   Levels:
-    strict   reported once there are 1
-  → normal   reported once there are 1
+    strict   reported once there is 1
+  → normal   reported once there is 1
     relaxed  reported once there are 2
     off      not checked
 

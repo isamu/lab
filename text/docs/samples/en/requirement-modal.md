@@ -135,8 +135,8 @@ $ npx chaffjs explain requirement-modal --genre technical/spec
   Options (set under options in chaff.yaml):
     standard: none   (default)
       Which standard's verbal forms a Japanese provision is checked against
-      → none       Not checked
-        jis-z8301-2019JIS Z 8301:2019, 7.3 to 7.5: a closing すべきである, すべきでない, できる or できない
+      → none            Not checked
+        jis-z8301-2019  JIS Z 8301:2019, 7.3 to 7.5: a closing すべきである, すべきでない, できる or できない
     shall: allow   (default)
       Whether "shall" is checked in English
       → allow      Not checked

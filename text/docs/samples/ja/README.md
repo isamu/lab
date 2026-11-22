@@ -11,7 +11,7 @@ chaff が見つけるまちがいを、ルールごとに一つずつ見本に�
 
 English samples: [../en/README.md](../en/README.md)
 
-見本のあるルール: 162 / 272
+見本のあるルール: 204 / 272
 
 ## 読みやすさ
 
@@ -97,9 +97,24 @@ English samples: [../en/README.md](../en/README.md)
 
 書き換えの途中で残った語や空白。
 
-このグループの見本はまだありません。
-
-まだ見本の無いルール: `chat-citation-residue`, `doubled-nado`, `doubled-punctuation`, `doubled-word`, `hankaku-kana`, `ime-residue`, `invisible-character`, `kanji-compound-slip`, `known-misspelling`, `link-text-url-mismatch`, `lookalike-character`, `misconversion`, `stray-space`, `unbalanced-bracket`, `unfilled-placeholder`, `url-run-on`
+| ルール | 見つけるもの |
+| --- | --- |
+| [チャットの出典の名残](chat-citation-residue.md)（`chat-citation-residue`） | 「?utm_source=chatgpt.com」の付いたリンクのように、チャットの答えを貼ったときに残る印 |
+| [「など」と「等」の重ね](doubled-nado.md)（`doubled-nado`） | 「書類等など」「and etc.」のように、「ほかにもある」を言う語を重ねた所 |
+| [句読点が重なっている](doubled-punctuation.md)（`doubled-punctuation`） | 「。。」「、。」のように、句読点が二つ並んだ所 |
+| [語を二度書いている](doubled-word.md)（`doubled-word`） | 「資料をを」「the the」のように、同じ語が続けて二度書かれている所 |
+| [半角の片仮名がある](hankaku-kana.md)（`hankaku-kana`） | 「ｱｲｳ」のような半角の片仮名と、半角の句読点・鉤括弧・中黒 |
+| [変換し損ねた英字](ime-residue.md)（`ime-residue`） | 「おもしrおい」「対応sた」のような、日本語の語の中に一字だけ残った英字 |
+| [見えない字がある](invisible-character.md)（`invisible-character`） | ゼロ幅の空白、途中の BOM、ソフトハイフン、文字の向きの指定、制御文字、隠れたタグ文字のような、画面に出ない字 |
+| [長い漢字の語の一字違い](kanji-compound-slip.md)（`kanji-compound-slip`） | 何度も書いた長い漢字の語を、一か所だけ一字違えて書いた所 |
+| [よくある書き誤り](known-misspelling.md)（`known-misspelling`） | 「シュミレーション」「コミニュケーション」「ふいんき」のような、よくある書き誤り |
+| [リンクの言葉の URL と行き先が違う](link-text-url-mismatch.md)（`link-text-url-mismatch`） | 見えている URL と、実際の行き先のサイトが違うリンク |
+| [見た目が同じで別の字](lookalike-character.md)（`lookalike-character`） | 部首の字（⼈）、互換漢字、分かれた濁点（か＋゛）、長音に見えるダッシュ（ニュ－ス）など、同じに見える別の字 |
+| [変換の誤り](misconversion.md)（`misconversion`） | 「以外と簡単」「始めて会う」「不可決」のような、仮名漢字変換の取り違え |
+| [語句の途中に空白がある](stray-space.md)（`stray-space`） | 「確認 しました」のように、ひとつながりの語句の途中に空白が紛れこんだ所 |
+| [括弧が組になっていない](unbalanced-bracket.md)（`unbalanced-bracket`） | 閉じ忘れた「（」や開きの無い「」」のように、組になっていない括弧と引用符 |
+| [埋め忘れた空欄](unfilled-placeholder.md)（`unfilled-placeholder`） | 「【会社名】」「TODO」のように、雛形の空欄が埋まらないまま残っている所 |
+| [URL のすぐ後ろに字が続いている](url-run-on.md)（`url-run-on`） | 「https://example.jp/をご覧ください」のように、URL のすぐ後ろに字が続き、リンクがそこまで伸びる所 |
 
 ## 表記の揃え
 
@@ -193,9 +208,32 @@ English samples: [../en/README.md](../en/README.md)
 
 日付と曜日、日付の順番、合計と内訳のように、暦や計算で確かめられる食い違い。
 
-このグループの見本はまだありません。
+| ルール | 見つけるもの |
+| --- | --- |
+| [予告した数と箇条書きの数が合わない](announced-count-mismatch.md)（`announced-count-mismatch`） | 「以下の3点」と書いたのに、下の箇条書きの数が違う所 |
+| [着が発より前](arrival-before-departure.md)（`arrival-before-departure`） | 旅程の便や列車で、着の時刻が発の時刻より前の所 |
+| [添付に触れているのに、添付が見当たらない](attachment-not-attached.md)（`attachment-not-attached`） | 本文が「添付します」と書いているのに、添付の欄もファイル名も無い送ったメール |
+| [移動の時間より短い乗り継ぎ](connection-time-short.md)（`connection-time-short`） | 旅程で、次の予定までの間が文書に書いた移動の時間より短い所 |
+| [連絡先の書き違い](contact-variant.md)（`contact-variant`） | 同じメールアドレスや住所が、一か所だけ違って書かれている所（hibari-lab と hibarilab） |
+| [日程の順番が前後している](date-order.md)（`date-order`） | 旅程や予定表、変更履歴の見出しで、一つだけ日付の順番が前後している所 |
+| [期間の終わりが始まりより前](date-range-reversed.md)（`date-range-reversed`） | 「4月1日〜3月31日」のように、期間の終わりが始まりより前の所 |
+| [日付と曜日の食い違い](date-weekday-mismatch.md)（`date-weekday-mismatch`） | 「2026年10月1日（金）」のように、日付と曜日が暦と合っていない所 |
+| [申込締切が催しの日より後](deadline-after-event.md)（`deadline-after-event`） | 案内状やお知らせで、申込や出欠の返信の締め切りが催しの日より後の所 |
+| [割引率が定価と単価から出る率と合わない](discount-rate-mismatch.md)（`discount-rate-mismatch`） | 価格表で、割引率が定価と単価から出る率と合わない所 |
+| [期限が発行日より前](due-before-issue.md)（`due-before-issue`） | 支払期限や締切など、後に来るはずの日付が先の日付より前の所 |
+| [始まりと期間から計算した終わりが、書いた終わりと合わない](duration-mismatch.md)（`duration-mismatch`） | 「4月1日から3か月間（7月31日まで）」のように、始まりに期間を足しても書いた終わりにならない所 |
+| [暦に無い日付](impossible-date.md)（`impossible-date`） | 「2月30日」「2023年2月29日」のような暦に無い日付と、和暦と西暦の年が食い違う日付 |
+| [時計に無い時刻](impossible-time.md)（`impossible-time`） | 「午後13時」「13 PM」「10時75分」のように、時計に無い時刻 |
+| [数量×単価が金額と合わない](line-amount-mismatch.md)（`line-amount-mismatch`） | 見積書や請求書の明細で、数量×単価がその行の金額と合わない所 |
+| [文字で書いた数と括弧の数字が違う](number-word-figure-mismatch.md)（`number-word-figure-mismatch`） | 「三（4）か月」「金参拾万円（30,000円）」のように、文字で書いた数と後ろの括弧の数字が違う所 |
+| [内訳の割合を足しても 100% にならない](percent-sum-mismatch.md)（`percent-sum-mismatch`） | 構成比や内訳の百分率を足しても 100% にならない所 |
+| [電話番号の数字の入れ違い](phone-number-variant.md)（`phone-number-variant`） | 同じ文書で、電話番号の隣り合う数字が一か所だけ入れ違っている所（0120-123-456 と 0120-123-465） |
+| [「3日後の10月5日」の日付が、基準の日付から数えた日と合わない](relative-date-mismatch.md)（`relative-date-mismatch`） | 「3日後の10月6日」のように、相対で書いた日付が基準の日付から数えた日と合わない所 |
+| [税額が小計に税率を掛けた額と合わない](tax-mismatch.md)（`tax-mismatch`） | 請求書の消費税や価格表の税込価格が、税率で計算した額と合わない所 |
+| [時刻の範囲の終わりが始まりより前](time-range-reversed.md)（`time-range-reversed`） | 「15:15〜14:15」のように、時刻の範囲の終わりが始まりより前の所 |
+| [合計が内訳の和と合わない](total-mismatch.md)（`total-mismatch`） | 見積もりや請求書、契約書で、合計が内訳に並べた金額の和と合わない所 |
 
-まだ見本の無いルール: `amount-range-reversed`, `announced-count-mismatch`, `annual-holidays-mismatch`, `annual-pay-mismatch`, `arrival-before-departure`, `attachment-not-attached`, `backorder-mismatch`, `bmi-mismatch`, `capacity-runtime-mismatch`, `change-rate-mismatch`, `citation-reference-mismatch`, `closing-balance-mismatch`, `connection-time-short`, `contact-variant`, `count-over-capacity`, `cross-doc-fact-conflict`, `cumulative-below-current`, `currency-column-mix`, `dangling-figure-reference`, `date-order`, `date-outside-period`, `date-range-reversed`, `date-stamp-order`, `date-weekday-mismatch`, `deadline-after-event`, `deductible-exceeds-limit`, `default-value-mismatch`, `delivered-over-ordered`, `deprecated-option-used`, `discount-rate-mismatch`, `due-before-issue`, `duration-mismatch`, `duration-product-mismatch`, `elapsed-years-mismatch`, `fact-conflict`, `formula-amount-mismatch`, `gpa-mismatch`, `heading-command-missing`, `impossible-date`, `impossible-time`, `installment-total-mismatch`, `interest-mismatch`, `interval-count-mismatch`, `layout-code-mismatch`, `line-amount-mismatch`, `meter-usage-mismatch`, `net-amount-mismatch`, `net-over-gross`, `number-word-figure-mismatch`, `parameter-table-mismatch`, `percent-sum-mismatch`, `period-label-conflict`, `period-multiple-mismatch`, `period-part-exceeds-whole`, `phone-number-variant`, `product-exceeds-maximum`, `quantity-range-reversed`, `quote-unnamed-speaker`, `quote-without-source`, `range-band-mismatch`, `ratio-mismatch`, `reference-flag-mismatch`, `reference-number-repeated`, `reference-number-variant`, `reference-title-mismatch`, `reference-topic-missing`, `reference-unit-mismatch`, `relative-date-mismatch`, `rent-multiple-mismatch`, `return-type-mismatch`, `revision-direction-mismatch`, `running-balance-mismatch`, `scaled-quantity-mismatch`, `serial-range-reversed`, `share-amount-mismatch`, `share-over-hundred`, `step-time-sum-mismatch`, `summary-fact-mismatch`, `table-unit-mix`, `tax-mismatch`, `tier-threshold-mismatch`, `time-order`, `time-range-reversed`, `total-mismatch`, `undefined-function-call`, `unit-mismatch`, `variance-mismatch`, `version-mismatch`, `version-order`, `walk-time-distance-mismatch`
+まだ見本の無いルール: `amount-range-reversed`, `annual-holidays-mismatch`, `annual-pay-mismatch`, `backorder-mismatch`, `bmi-mismatch`, `capacity-runtime-mismatch`, `change-rate-mismatch`, `citation-reference-mismatch`, `closing-balance-mismatch`, `count-over-capacity`, `cross-doc-fact-conflict`, `cumulative-below-current`, `currency-column-mix`, `dangling-figure-reference`, `date-outside-period`, `date-stamp-order`, `deductible-exceeds-limit`, `default-value-mismatch`, `delivered-over-ordered`, `deprecated-option-used`, `duration-product-mismatch`, `elapsed-years-mismatch`, `fact-conflict`, `formula-amount-mismatch`, `gpa-mismatch`, `heading-command-missing`, `installment-total-mismatch`, `interest-mismatch`, `interval-count-mismatch`, `layout-code-mismatch`, `meter-usage-mismatch`, `net-amount-mismatch`, `net-over-gross`, `parameter-table-mismatch`, `period-label-conflict`, `period-multiple-mismatch`, `period-part-exceeds-whole`, `product-exceeds-maximum`, `quantity-range-reversed`, `quote-unnamed-speaker`, `quote-without-source`, `range-band-mismatch`, `ratio-mismatch`, `reference-flag-mismatch`, `reference-number-repeated`, `reference-number-variant`, `reference-title-mismatch`, `reference-topic-missing`, `reference-unit-mismatch`, `rent-multiple-mismatch`, `return-type-mismatch`, `revision-direction-mismatch`, `running-balance-mismatch`, `scaled-quantity-mismatch`, `serial-range-reversed`, `share-amount-mismatch`, `share-over-hundred`, `step-time-sum-mismatch`, `summary-fact-mismatch`, `table-unit-mix`, `tier-threshold-mismatch`, `time-order`, `undefined-function-call`, `unit-mismatch`, `variance-mismatch`, `version-mismatch`, `version-order`, `walk-time-distance-mismatch`
 
 ## AIっぽさ
 
@@ -230,8 +268,11 @@ English samples: [../en/README.md](../en/README.md)
 
 chaff.yaml にチームが書いた表記・社内用語・必須の見出しだけを見るルール。書かなければ何も言いません。
 
-このグループの見本はまだありません。
-
-まだ見本の無いルール: `internal-jargon`, `preferred-term`, `required-sections`, `requirement-modal`
+| ルール | 見つけるもの |
+| --- | --- |
+| [社内でしか通じない言葉](internal-jargon.md)（`internal-jargon`） | 「横展開」「握る」のように、社内でしか通じない言葉。chaff.yaml の jargon に書いた語だけを見ます |
+| [チームの表記と違う](preferred-term.md)（`preferred-term`） | チームで決めた表記と違う書き方（「サーバー」と決めたのに「サーバ」）。chaff.yaml の prefer で決めます |
+| [必要な見出しが無い](required-sections.md)（`required-sections`） | チームが必須と決めた見出し（「リスク」「費用」など）が無い文書。chaff.yaml で決めます |
+| [規定の文末が、決めた書き方と違う](requirement-modal.md)（`requirement-modal`） | 規格・規程の文末が、チームの選んだ決まり（JIS Z 8301 など）と違う所（選んだときだけ） |
 
 意味を読む検査は `npx chaffjs test` で AI に尋ねて動くので、決まった出力を見せるこの見本には入れていません: `empty-conclusion`, `generic-opening`, `risk-disclosure`, `unsourced-number`

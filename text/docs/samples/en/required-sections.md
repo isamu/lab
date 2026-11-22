@@ -131,8 +131,8 @@ $ npx chaffjs explain required-sections --genre business/proposal
   How to fix: Add the heading. If it is not needed, the honest fix is to remove it from `required_sections`.
 
   Levels:
-    strict   reported once 1 required headings are missing
-  → normal   reported once 1 required headings are missing
+    strict   reported once 1 required heading is missing
+  → normal   reported once 1 required heading is missing
     relaxed  reported once 2 required headings are missing
     off      not checked
 

@@ -140,8 +140,8 @@ $ npx chaffjs explain internal-jargon --genre business/email
   How to fix: Use ordinary words, or explain it in brackets at first use. A verb entered in its dictionary form also finds its other forms; a stem works too.
 
   Levels:
-    strict   reported once there are 1
-  → normal   reported once there are 1
+    strict   reported once there is 1
+  → normal   reported once there is 1
     relaxed  reported once there are 3
     off      not checked
 

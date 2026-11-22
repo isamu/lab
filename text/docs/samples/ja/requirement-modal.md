@@ -140,11 +140,11 @@ $ npx chaffjs explain requirement-modal --genre technical/spec
     off      見ない
 
   オプション（chaff.yaml の options で決めます）:
-    standard: none   (既定)
+    standard: none   （既定）
       規定の文末を、どの規格の決まりで見るか（日本語）
-      → none       見ない
-        jis-z8301-2019JIS Z 8301:2019 の 7.3〜7.5。文末の「すべきである」「すべきでない」「できる」「できない」を指す
-    shall: allow   (既定)
+      → none            見ない
+        jis-z8301-2019  JIS Z 8301:2019 の 7.3〜7.5。文末の「すべきである」「すべきでない」「できる」「できない」を指す
+    shall: allow   （既定）
       英語の "shall" を見るか
       → allow      見ない
         must       "shall" を指し、"must" と書かせる（Federal Plain Language Guidelines）

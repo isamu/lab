@@ -128,11 +128,11 @@ $ npx chaffjs explain preferred-term --genre docs/manual
 
   Writing the same thing two ways ("e-mail" and "email") makes a reader wonder whether they differ, and a search misses one of them. Which way wins is the team's choice, so list pairs (the spelling to avoid, then the one to use) under `prefer` in chaff.yaml. With nothing listed, this rule says nothing.
 
-  How to fix: Change it to "the spelling listed under prefer". Where it must stay (a product's own name, a quotation), silence it with stet and the reason.
+  How to fix: Change it to the spelling listed under prefer. Where it must stay (a product's own name, a quotation), silence it with stet and the reason.
 
   Levels:
-    strict   reported once there are 1
-  → normal   reported once there are 1
+    strict   reported once there is 1
+  → normal   reported once there is 1
     relaxed  reported once there are 3
     off      not checked
 
