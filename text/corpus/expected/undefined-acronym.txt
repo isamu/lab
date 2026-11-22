@@ -21,7 +21,7 @@ genai-web-procedure  2
 github-general-privacy-statement  4
 gitlab-meetings  6
 gitlab-values  8
-go-1-23-release-notes  9
+go-1-23-release-notes  8
 govuk-cddo-roadmap-2022-2025  8
 govuk-incident-safe-browsing  2
 govuk-style-guide-a-to-z  25
