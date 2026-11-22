@@ -1,0 +1,11 @@
+# The labels of the row that catches every case the rows above leave (the last row of an if-then table). Its condition
+# cells are blank because no condition applies. Matched at the start of the row's first cell, ignoring case.
+id: catch-all-row-label
+language: en
+entries:
+  - pattern: None of the above
+  - pattern: Otherwise
+  - pattern: In all other cases
+  - pattern: All other cases
+  - pattern: In any other case
+  - pattern: Any other case
