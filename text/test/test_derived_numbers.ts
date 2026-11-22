@@ -359,6 +359,23 @@ describe("elapsed-years-mismatch", () => {
     assert.deepEqual(elapsedEn("Acme was founded in 2015.", "", "We mark 11 years since its founding."), []);
   });
 
+  it("en: the year a word of opening gives in the same sentence starts the count since founding", () => {
+    const doors = "Brookside Dental opened its doors in 2006, and this month marks 10 years since its founding.";
+    assert.deepEqual(elapsedEn(doors), ["10 years/20"]);
+    assert.deepEqual(elapsedEn(doors.replace("10 years", "20 years")), []);
+    assert.deepEqual(elapsedEn("The practice opened in 2006, and this month marks 10 years since its founding."), ["10 years/20"]);
+    assert.deepEqual(elapsedEn("The practice was founded in 2006, and this month marks 10 years since its founding."), ["10 years/20"]);
+    assert.deepEqual(elapsedEn("The shop first opened in 2016, and we mark 20 years since our founding."), ["20 years/10"]);
+  });
+
+  it("en: a word of opening does not date a count in another sentence, nor one with two years", () => {
+    assert.deepEqual(elapsedEn("Our new wing opened in 2019.", "", "We mark 25 years since our founding."), []);
+    assert.deepEqual(elapsedEn("The clinic opened in 2006 and the lab opened in 2012, 10 years since its founding."), []);
+    assert.deepEqual(elapsedEn("The clinic opened in 2006, and 3 years after its founding we added a lab."), []);
+    assert.deepEqual(elapsedEn("Acme was founded in 2006.", "", "Our new wing opened in 2019, and we mark 20 years since our founding."), []);
+    assert.deepEqual(elapsedEn("Acme was founded in 2006.", "", "Our new wing opened in 2019, and we mark 10 years since our founding."), ["10 years/20"]);
+  });
+
   it("a count of years written as a word", () => {
     assert.deepEqual(elapsedEn("Acme was founded in 2010.", "", "Twelve years since its founding, we have 25 people."), ["Twelve years/16"]);
     assert.deepEqual(elapsedEn("In the twelve years since our founding in 2016, the team has grown."), ["twelve years/10"]);

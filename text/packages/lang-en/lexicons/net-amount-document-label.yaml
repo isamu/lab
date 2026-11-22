@@ -1,0 +1,12 @@
+# The three names of a payslip (net-amount-mismatch), grouped gross, deduction and net as in net-amount-label. Many
+# payslips set the gross pay in the earnings table, the total deductions in the deductions table and the net pay on its
+# own, so no one table or section holds the three. These names alone are compared across the whole document, in separate
+# tables or sections, when each labels one cell or one "name: amount" line of the document with one amount and no other
+# net-amount-label word has an amount. Words of deposit settlements and tuition notices are left out (Total deductions
+# also sits beside Deposit held, but only a payslip has Gross pay and Net pay together).
+id: net-amount-document-label
+language: en
+entries:
+  - { pattern: Gross pay, group: gross }
+  - { pattern: Total deductions, group: deduction }
+  - { pattern: Net pay, group: net }

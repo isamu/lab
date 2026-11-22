@@ -11,6 +11,7 @@ import { tableRateMismatches, type ChangeTable, type ColumnRole, type ColumnWord
 import { cellsOf, tablesOf } from "../facts/table-facts.ts";
 import { linesOf } from "../structure/lines.ts";
 import { proseAndTablesOf } from "../table-text.ts";
+import { withTiedFigures } from "../structure/change-rate-tied.ts";
 
 const patternsOf = (doc: ProseDocument, id: string): string[] => (doc.lexicons[id] ?? []).map((entry) => entry.pattern);
 
@@ -152,6 +153,15 @@ const columnWordsOf = (doc: ProseDocument): ColumnWord[] =>
 const changeTablesOf = (doc: ProseDocument): ChangeTable[] =>
   tablesOf(linesOf(proseAndTablesOf(doc))).map((table) => ({ header: cellsOf(table.header), rows: table.rows.map(cellsOf) }));
 
+const NOUN: ReadonlySet<string> = new Set(["NOUN", "PROPN"]);
+
+/** Whether the token starting at offset is a noun, as the tagger says; undefined when no token starts there or none is tagged. */
+const nounAt = (doc: ProseDocument, offset: number): boolean | undefined => {
+  const { tokens, index } = tokenAt(doc, offset);
+  const pos = tokens[index]?.pos ?? "";
+  return pos === "" ? undefined : NOUN.has(pos);
+};
+
 const tableIssues = (doc: ProseDocument): StructureIssue[] => {
   const words = columnWordsOf(doc);
   return words.length === 0 ? [] : tableRateMismatches(changeTablesOf(doc), words);
@@ -163,13 +173,28 @@ const sentenceIssues = (doc: ProseDocument): StructureIssue[] => {
   const units = patternsOf(doc, "percent-unit");
   const multipliers = patternsOf(doc, "amount-multiplier").map((word) => word.toLowerCase());
   const taken = nodes.map((node) => node.span);
-  const figures = [...treeFigures(doc, nodes, units, multipliers), ...countedFigures(doc, taken, multipliers)];
+  const counted = countedFigures(doc, taken, multipliers);
+  const rates = ratesOf(doc, nodes, units);
+  const directions = directionsOf(doc);
+  const marks = marksOf(doc, "change-base");
+  const tie = {
+    source: doc.source,
+    rates,
+    directions,
+    marks,
+    counted,
+    quantities: taken,
+    percentWords: units,
+    multipliers,
+    isNounAt: (offset: number) => nounAt(doc, offset),
+  };
+  const figures = withTiedFigures(tie, [...treeFigures(doc, nodes, units, multipliers), ...counted]);
   const text = {
     sentences: doc.sentences.map((sentence) => sentence.span),
     figures,
-    rates: ratesOf(doc, nodes, units),
-    directions: directionsOf(doc),
-    marks: marksOf(doc, "change-base"),
+    rates,
+    directions,
+    marks,
     targets: marksOf(doc, "change-target"),
     periods: periodsOf(doc, figures),
     breaks: breaksOf(doc),

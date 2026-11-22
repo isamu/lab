@@ -234,10 +234,49 @@ export const tableNetMismatches = (header: readonly NetCell[], rows: readonly (r
 /** A line that is a label and its amount (総支給額：117,380円, - Net pay: $1,396.41). */
 export type LabelledLine = { readonly label: string; readonly value: NetCell };
 
+/** Every labelled amount of one section's labelled lines. */
+export const sectionAmounts = (lines: readonly LabelledLine[], words: NetWords): LabelledAmount[] =>
+  lines.flatMap((line) => labelledCells([{ start: 0, text: line.label }], [line.value], words));
+
 /** The labelled lines of one section: each label that names a role, with its amount. */
 export const sectionNetMismatch = (lines: readonly LabelledLine[], words: NetWords): NetIssue | undefined =>
-  netMismatch(
-    lines.flatMap((line) => labelledCells([{ start: 0, text: line.label }], [line.value], words)),
-    words,
-    namesNet(labelCellsOf(lines), words),
-  );
+  netMismatch(sectionAmounts(lines, words), words, namesNet(labelCellsOf(lines), words));
+
+/** Every labelled amount of one table, read both ways: under a header that names its column, and beside a first cell that names its row. */
+export const tableAmounts = (header: readonly NetCell[], rows: readonly (readonly NetCell[])[], words: NetWords): LabelledAmount[] => [
+  ...rows.filter((row) => row.length === header.length).flatMap((row) => labelledCells(header, row, words)),
+  ...rows.flatMap((row) => {
+    const [label] = row;
+    return label === undefined ? [] : row.slice(1).flatMap((cell) => labelledCells([label], [cell], words));
+  }),
+];
+
+const DOCUMENT_ROLES = ["gross", "deduction", "net"] as const;
+type DocumentRole = (typeof DOCUMENT_ROLES)[number];
+
+/** The names a document may set out in scopes of their own (lexicon net-amount-document-label: 総支給額, 控除合計, 差引支給額). */
+export type DocumentLabels = Readonly<Record<DocumentRole, readonly string[]>>;
+
+const isDocumentLabel = (amount: LabelledAmount, labels: DocumentLabels): boolean =>
+  DOCUMENT_ROLES.some((role) => role === amount.role && labels[role].some((label) => keyOf(label) === amount.label));
+
+/** Whether each listed name is the label of one cell or line at most, its amount readable or not (差引支給額：— counts). */
+const isEachLabelledOnce = (labelTexts: readonly string[], labels: DocumentLabels): boolean =>
+  DOCUMENT_ROLES.flatMap((role) => labels[role]).every((label) => labelTexts.filter((text) => labelKey(text) === keyOf(label)).length <= 1);
+
+/**
+ * A payslip that sets the three out in sections of their own (総支給額 under 支給, 控除合計 under 控除, 差引支給額 under 差引). Read
+ * only where nothing else can be meant: amounts holds every labelled amount of the document, and each must be one of the
+ * listed names, each name labelling one cell or line of the whole document (labelTexts: every table cell and every
+ * line's label) with one amount.
+ */
+export const documentNetMismatch = (
+  amounts: readonly LabelledAmount[],
+  labelTexts: readonly string[],
+  labels: DocumentLabels,
+  words: NetWords,
+): NetIssue | undefined => {
+  if (amounts.length !== DOCUMENT_ROLES.length || !amounts.every((amount) => isDocumentLabel(amount, labels))) return undefined;
+  if (DOCUMENT_ROLES.some((role) => !amounts.some((amount) => amount.role === role)) || !isEachLabelledOnce(labelTexts, labels)) return undefined;
+  return netMismatch(amounts, words, true);
+};
