@@ -144,8 +144,18 @@ describe("rule-of-three", () => {
 });
 
 describe("preamble-length", () => {
-  it("invalid: 中見出しまでに 3 段落", () => {
-    assert.ok(idsFor("# 表題\n\n前置き一。\n\n前置き二。\n\n前置き三。\n\n## 本題\n\n中身です。", "business/report").includes("preamble-length"));
+  it("invalid: 中見出しまでに 5 段落", () => {
+    assert.ok(
+      idsFor("# 表題\n\n前置き一。\n\n前置き二。\n\n前置き三。\n\n前置き四。\n\n前置き五。\n\n## 本題\n\n中身です。", "business/report").includes(
+        "preamble-length",
+      ),
+    );
+  });
+
+  it("valid: 表題の下の 4 段落までのリードは指摘しない", () => {
+    assert.ok(
+      !idsFor("# 表題\n\n前置き一。\n\n前置き二。\n\n前置き三。\n\n前置き四。\n\n## 本題\n\n中身です。", "business/report").includes("preamble-length"),
+    );
   });
 
   it("valid: すぐ本題に入れば指摘しない", () => {

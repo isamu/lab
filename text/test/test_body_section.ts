@@ -79,6 +79,8 @@ describe("preamble-length with top-level sections", () => {
       "Electromagnetic fields are energy fields produced by moving electrically charged particles.",
       "EMFs occur across a broad range of frequencies.",
       "Public concern about potential health effects has increased.",
+      "Studies of those effects have reached different conclusions.",
+      "Agencies have published guidance on exposure limits.",
       "# Request for Information",
       "HHS is seeking input from the public.",
     ].join("\n\n");
@@ -91,6 +93,8 @@ describe("preamble-length with top-level sections", () => {
       "We opened stores near stations.",
       "The number of stores doubled.",
       "Suburban stores struggled.",
+      "Rents near stations rose.",
+      "Two leases end next year.",
       "## Decision",
       "We will close two stores.",
     ].join("\n\n");

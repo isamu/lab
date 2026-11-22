@@ -303,7 +303,7 @@ describe("a Japanese email reply", () => {
 });
 
 describe("preamble-length on a document with no headings", () => {
-  const PARAGRAPHS = lines("First paragraph.", "", "Second paragraph.", "", "Third paragraph.", "", "Fourth paragraph.");
+  const PARAGRAPHS = lines("First paragraph.", "", "Second paragraph.", "", "Third paragraph.", "", "Fourth paragraph.", "", "Fifth paragraph.");
 
   it("does not run, and says why", () => {
     const result = findingsOf("note.md", PARAGRAPHS, en, "business/report");
@@ -329,7 +329,7 @@ describe("preamble-length on a document with no headings", () => {
     const result = findingsOf("note.md", lines(PARAGRAPHS, "", "## Body", "", "Text."), en, "business/report");
     assert.deepEqual(
       result.findings.filter((finding) => finding.rule === "preamble-length").map((finding) => finding.values["count"]),
-      [4],
+      [5],
     );
     assert.deepEqual(
       result.skipped.filter((skipped) => skipped.rule === "preamble-length"),

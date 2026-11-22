@@ -111,15 +111,15 @@ describe("preamble-length と更新日の刻印", () => {
   });
 
   it("日本語: 刻印を除いても上限を超えれば指摘し、数と位置は刻印の後から", () => {
-    const source = "# 表題\n\n最終更新日:\n\n2025年6月20日\n\n前置き一。\n\n前置き二。\n\n前置き三。\n\n## 本題\n\n中身です。";
+    const source = "# 表題\n\n最終更新日:\n\n2025年6月20日\n\n前置き一。\n\n前置き二。\n\n前置き三。\n\n前置き四。\n\n前置き五。\n\n## 本題\n\n中身です。";
     const [finding] = findingsFor(source, ja);
-    assert.equal(finding?.values["count"], 3);
+    assert.equal(finding?.values["count"], 5);
     assert.equal(finding?.values["offset"], source.indexOf("前置き一"));
   });
 
   it("日本語: 文の中に日付がある前置きは数える", () => {
-    const source = "# 表題\n\n2025年6月20日に決めました。\n\n前置き二。\n\n前置き三。\n\n## 本題\n\n中身です。";
-    assert.equal(findingsFor(source, ja)[0]?.values["count"], 3);
+    const source = "# 表題\n\n2025年6月20日に決めました。\n\n前置き二。\n\n前置き三。\n\n前置き四。\n\n前置き五。\n\n## 本題\n\n中身です。";
+    assert.equal(findingsFor(source, ja)[0]?.values["count"], 5);
   });
 
   it("English: a date-only paragraph and a labelled date are not preamble", () => {
@@ -128,7 +128,7 @@ describe("preamble-length と更新日の刻印", () => {
   });
 
   it("English: a date inside a sentence still counts", () => {
-    const source = "# Title\n\nOn March 3, 2026 we decided.\n\nSecond.\n\nThird.\n\n## Body\n\nContent.";
-    assert.equal(findingsFor(source, en)[0]?.values["count"], 3);
+    const source = "# Title\n\nOn March 3, 2026 we decided.\n\nSecond.\n\nThird.\n\nFourth.\n\nFifth.\n\n## Body\n\nContent.";
+    assert.equal(findingsFor(source, en)[0]?.values["count"], 5);
   });
 });
