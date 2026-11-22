@@ -3,8 +3,10 @@ import { TABLE_RULE } from "./runs.ts";
 import {
   crossesZones,
   dayShiftOf,
+  markAttachedBefore,
   markBefore,
   markRightAfter,
+  withoutDayShiftBefore,
   wordOffsets,
   zonesIn,
   SECONDS_PER_DAY,
@@ -75,7 +77,11 @@ const legsInLine = (start: number, end: number, inputs: Inputs): Leg[] =>
   timesWithin(inputs.times, start, end).flatMap((time, index, all) => {
     const from = all[index - 1]?.end ?? start;
     const to = all[index + 1]?.start ?? end;
-    const side = markRightAfter(inputs.source, time.end, inputs.words.legs)?.group ?? sideBefore(inputs.source.slice(from, time.start), inputs.words.legs);
+    const head = inputs.source.slice(from, time.start);
+    const side =
+      markRightAfter(inputs.source, time.end, inputs.words.legs)?.group ??
+      sideBefore(head, inputs.words.legs) ??
+      markAttachedBefore(withoutDayShiftBefore(head, inputs.words), inputs.words.legs)?.group;
     return side === DEPARTURE || side === ARRIVAL ? [{ ...legTimeOf(time, from, to, inputs), side }] : [];
   });
 

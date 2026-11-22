@@ -143,6 +143,18 @@ describe("arrival-before-departure", () => {
     assert.deepEqual(legsJa(list("11:30 JAL 316便（福岡 11:30発、羽田 13:05着）")), []);
   });
 
+  it("発 and 着 after the station, before the time (ja)", () => {
+    assert.deepEqual(legsJa(list("07:45 のぞみ1号　東京発 07:45、新大阪着 07:15")), ["07:15<07:45"]);
+    assert.deepEqual(legsJa(list("07:45 のぞみ1号　東京発07:45、新大阪着07:15")), ["07:15<07:45"]);
+    assert.deepEqual(legsJa(list("07:45 のぞみ1号　東京発 07:45、新大阪着 10:15")), []);
+    assert.deepEqual(legsJa("夜行バスは東京発 23:30、大阪着 翌06:10です。"), []);
+  });
+
+  it("a 発 or 着 that ends the time before it, or opens a word, is not the next time's", () => {
+    assert.deepEqual(legsJa(list("10:30発 09:50 集合")), []);
+    assert.deepEqual(legsJa(list("発表 14:00、着席 13:50")), []);
+  });
+
   it("departs and arrives, dep and arr before the times (en)", () => {
     assert.deepEqual(legsEn(list("1:30 PM Flight AA 2177 (departs Washington Reagan 1:30 PM, arrives Boston 1:05 PM)")), ["1:05 PM<1:30 PM"]);
     assert.deepEqual(legsEn("Train 12: dep 10:30 arr 09:50."), ["09:50<10:30"]);
