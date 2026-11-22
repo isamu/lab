@@ -1,6 +1,6 @@
 import type { Detector, Finding, Sentence, Span, TableCell, Token } from "../plugin.ts";
 import { groupBy, oddSpellings, type KeyedWord, type OddSpelling } from "../spelling-variants.ts";
-import { dropsOkurigana, kanjiKeyAmong, katakanaKey, lemmaReading } from "../kana-spelling.ts";
+import { dropsOkurigana, kanjiKeyAmong, kanjiSkeleton, katakanaKey, lemmaReading } from "../kana-spelling.ts";
 import { isKatakanaWord, stemOf } from "../long-vowel.ts";
 import { withNounsAfterParticles } from "../nominal-stem.ts";
 import { isWithinAny } from "../quoted-span.ts";
@@ -12,7 +12,7 @@ import { withoutCoinedNames } from "../coined-hyphen-name.ts";
 import { wholeWordRuns, type WholeWordRun } from "../whole-word-runs.ts";
 import { entriesForGenre } from "../lexicon-genres.ts";
 import { asNounWhereNominal, documentNounKeys } from "../nominal-stem.ts";
-import { isCompoundHead } from "../compound-head.ts";
+import { compoundTailOf } from "../compound-head.ts";
 import { voiceAt, voiceStarts } from "../voice-parts.ts";
 import {
   HIRAGANA_ONLY,
@@ -41,6 +41,8 @@ type Placed = KeyedWord &
     readonly offset: number;
     readonly shown?: string;
     readonly compoundHead?: boolean;
+    /** The noun a compound head is written onto, by its reading (締切 of 申込締切). */
+    readonly compoundTail?: string;
     /** Whether a verb's stem written in kana is read as its noun (つき of つきたて, from つく). */
     readonly kanaStem?: boolean;
     /** Where a run of words ends (タイヤレバー). */
@@ -164,9 +166,10 @@ const readingWords = (sentence: Sentence, isOpen: IsOpen, skips: Skips): Placed[
       const key = readingKeyOf(word, skips);
       const local = token.span.start - sentence.span.start;
       if (key === undefined || token.lemma === undefined || !isOpen(local, local + token.surface.length)) return [];
-      const compoundHead = isCompoundHead(token, tokens, at, skips.phraseSuffixes);
+      const tail = compoundTailOf(token, tokens, at, skips.phraseSuffixes);
+      const compound = tail === undefined ? { compoundHead: false } : { compoundHead: true, compoundTail: tail.reading ?? tail.surface };
       const kanaStem = written.pos === "VERB" && token.pos === "NOUN" && HIRAGANA_ONLY.test(token.surface);
-      return [{ key, spelling: token.lemma, sentence, offset: token.span.start, compoundHead, kanaStem, ...teFormOf(word, tokens, at) }];
+      return [{ key, spelling: token.lemma, sentence, offset: token.span.start, ...compound, kanaStem, ...teFormOf(word, tokens, at) }];
     }),
   ];
 };
@@ -190,6 +193,24 @@ const isOneKanjiElement = (word: Placed, spellings: readonly string[]): boolean 
 const isStemWithoutItsKanji = (word: Placed, spellings: readonly string[], skeletonOf: (spelling: string) => string): boolean =>
   word.kanaStem === true && !spellings.some((spelling) => skeletonOf(spelling) !== "" && spelling.endsWith(word.spelling.slice(-1)));
 
+/** Okurigana between two kanji (the し of 申し込み), which the general rules keep and official Japanese drops (申込み). */
+const KANA_BETWEEN_KANJI = /\p{Script=Han}[ぁ-ゖ]+\p{Script=Han}/u;
+
+/**
+ * A compound head in kanji alone (申込 of 申込締切, 申込書) beside spellings that keep okurigana between its kanji
+ * (申し込み画面): the general rules write the word that way and a set compound in kanji alone, so the two are one
+ * convention. It is still compared where the document writes the word in kanji alone outside a compound (休業の申出 beside
+ * 申し出期限), writes it the official way with okurigana only at the end (取扱い方法 beside 事務取扱担当者), or writes the
+ * same compound both ways (申込方法 and 申し込み方法).
+ */
+const isSetCompoundBesideGeneralRules = (word: Placed, group: readonly Placed[]): boolean => {
+  if (word.compoundTail === undefined) return false;
+  const others = group.filter((other) => other.spelling !== word.spelling && kanjiSkeleton(other.spelling) === word.spelling);
+  if (others.length === 0 || !others.every((other) => KANA_BETWEEN_KANJI.test(other.spelling))) return false;
+  const alone = group.some((other) => other.spelling === word.spelling && other.compoundTail === undefined);
+  return !alone && !others.some((other) => other.compoundTail === word.compoundTail);
+};
+
 const byKanji = (words: readonly Placed[]): Placed[] =>
   [...groupBy(words, (word) => word.key).values()].flatMap((group) => {
     const spellings = [...new Set(group.map((word) => word.spelling))];
@@ -199,6 +220,7 @@ const byKanji = (words: readonly Placed[]): Placed[] =>
     return group.flatMap((word): Placed[] => {
       const own = skeletonOf(word.spelling);
       if ((own === "" && (skeletons.length > 1 || isStemWithoutItsKanji(word, spellings, skeletonOf))) || isOneKanjiElement(word, spellings)) return [];
+      if (isSetCompoundBesideGeneralRules(word, group)) return [];
       const use = word.compoundHead === true ? apart : "";
       return [{ ...word, key: `${word.key}|${own === "" ? (skeletons[0] ?? "") : own}${use}` }];
     });
