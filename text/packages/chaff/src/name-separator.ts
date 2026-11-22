@@ -132,8 +132,9 @@ const LABEL_JOINER_POS = "CCONJ";
 const isPairLabel = (text: string, label: Span, labelTokens: readonly Token[], base: number): boolean => {
   const joiners = labelTokens.filter((token) => token.pos === LABEL_JOINER_POS);
   if (labelTokens.length === 0 || labelTokens.some((token) => token.pos !== LABEL_JOINER_POS && !PAIR_LABEL_POS.has(token.pos))) return false;
-  const cuts = [label.start, ...joiners.flatMap((token) => [token.span.start - base, token.span.end - base]), label.end];
-  const parts = cuts.flatMap((cut, index) => (index % 2 === 0 ? [text.slice(cut, cuts[index + 1])] : []));
+  const starts = [label.start, ...joiners.map((token) => token.span.end - base)];
+  const ends = [...joiners.map((token) => token.span.start - base), label.end];
+  const parts = starts.map((start, index) => text.slice(start, ends[index] ?? label.end));
   return parts.every((part) => PAIR_LABEL.test(part));
 };
 
