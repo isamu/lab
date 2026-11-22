@@ -7,21 +7,29 @@ import type { RangeAmount } from "./amount-range.ts";
 /** Fewer digits than this are a section or a grade (A1, B12), not a serial number. */
 const MIN_DIGITS = 3;
 
-/** One to four capital letters, an optional hyphen, the digits; not inside a longer word or number (XA2400, A2400B). */
-const CODE = new RegExp(`(?<![A-Za-zＡ-Ｚａ-ｚ0-9０-９_])([A-ZＡ-Ｚ]{1,4})([-‐－]?)([0-9０-９]{${MIN_DIGITS},})(?![A-Za-zＡ-Ｚａ-ｚ0-9０-９_])`, "gu");
+const HYPHEN = "[-‐－]";
+/**
+ * The series before the serial digits: one to four capital letters, then at most one group that a hyphen closes, of digits
+ * (BW24-) or of letters and digits after a hyphen (SN-2024-). Digits right after the letters need the hyphen, or they would
+ * run into the serial (BW248600).
+ */
+const PREFIX = `[A-ZＡ-Ｚ]{1,4}(?:[0-9０-９]{1,4}${HYPHEN}|${HYPHEN}[0-9A-ZＡ-Ｚ０-９]{1,6}${HYPHEN})?`;
+/** The series, an optional hyphen, the digits; not inside a longer word or number (XA2400, A2400B). */
+const CODE = new RegExp(`(?<![A-Za-zＡ-Ｚａ-ｚ0-9０-９_])(${PREFIX})(${HYPHEN}?)([0-9０-９]{${MIN_DIGITS},})(?![A-Za-zＡ-Ｚａ-ｚ0-9０-９_])`, "gu");
+const HYPHENS = new RegExp(HYPHEN, "gu");
 
 /**
- * A code as one end of a range: two ends compare only when their letters, their hyphen and their number of digits agree
- * (A2400 with A1800; not with B0100, A-1800 or A240).
+ * A code as one end of a range: two ends compare only when their series, their hyphen and their number of digits agree
+ * (A2400 with A1800, BW24-8600 with BW24-8100; not with B0100, A-1800, A240 or BW25-8100).
  */
 const rangeEndOf = (match: RegExpMatchArray): RangeAmount => {
-  const [whole, letters = "", hyphen = "", digits = ""] = match;
+  const [whole, series = "", hyphen = "", digits = ""] = match;
   const offset = match.index ?? 0;
   const width = digits.length;
   return {
     offset,
     end: offset + whole.length,
-    currency: `${letters.normalize("NFKC")}|${hyphen === "" ? "" : "-"}|${width}`,
+    currency: `${series.normalize("NFKC").replaceAll(HYPHENS, "-")}|${hyphen === "" ? "" : "-"}|${width}`,
     value: Number(digits.normalize("NFKC")),
     scale: undefined,
     position: "after",

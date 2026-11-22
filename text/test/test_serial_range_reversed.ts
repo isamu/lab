@@ -57,6 +57,21 @@ describe("serial-range-reversed, English", () => {
     assert.deepEqual(found(doc("S/N A1500 to A1200")), ["A1500 to A1200"]);
   });
 
+  it("a code with a group of digits or a second group before the serial", () => {
+    assert.deepEqual(found(doc("Kettles with serial numbers BW24-8600 to BW24-8100 are affected.")), ["BW24-8600 to BW24-8100"]);
+    assert.deepEqual(found(doc("Kettles with serial numbers BW24-8100 to BW24-8600 are affected.")), []);
+    assert.deepEqual(found(doc("Serial numbers SN-2024-0120 to SN-2024-0090")), ["SN-2024-0120 to SN-2024-0090"]);
+    assert.deepEqual(found(doc("Serial numbers SN-2024-0090 to SN-2024-0120")), []);
+    assert.deepEqual(found(doc("Lot numbers: X1-500–X1-400")), ["X1-500–X1-400"]);
+  });
+
+  it("codes whose series before the serial differ are not compared", () => {
+    assert.deepEqual(found(doc("Serial numbers BW24-8600 to BW25-8100")), []);
+    assert.deepEqual(found(doc("Serial numbers BW24-8600 to BW-8100")), []);
+    assert.deepEqual(found(doc("Serial numbers SN-2024-0120 to SN-2023-0090")), []);
+    assert.deepEqual(found(doc("Serial numbers BW24-8600 to BW248100")), []);
+  });
+
   it("a range in order is not reported", () => {
     assert.deepEqual(found(doc("Serial numbers: B3100 to B3900")), []);
     assert.deepEqual(found(doc("Lots L5210 through L5240")), []);
@@ -94,6 +109,18 @@ describe("serial codes as range ends", () => {
     assert.equal(first?.currency, second?.currency);
     assert.equal(first?.value, 1200);
     assert.equal(second?.value, 900);
+  });
+
+  it("reads a series with digits before a hyphen as part of the series", () => {
+    const [first, second, third] = serialRangeEnds("BW24-8600 to BW24-8100 or BW-8100");
+    assert.equal(first?.currency, second?.currency);
+    assert.notEqual(first?.currency, third?.currency);
+    assert.equal(first?.value, 8600);
+    assert.equal(second?.end, 22);
+    assert.deepEqual(
+      serialRangeEnds("BW248600 A1200-1100").map((end) => end.value),
+      [248600, 1100],
+    );
   });
 
   it("does not read a code inside a word or a longer number, or one with too few digits", () => {
