@@ -2,6 +2,7 @@ import { hasParticle, isClosed, lastContent } from "../sentence-shape.ts";
 import { isWithinAny, quotedIn } from "../quoted-span.ts";
 import { chronologyRows } from "../chronology-rows.ts";
 import { externalLinkTitleSpans } from "../link-title.ts";
+import { referenceListSpans } from "../reference-lists.ts";
 import type { Detector, Finding, ProseDocument, Sentence, Span, Token } from "../plugin.ts";
 import { countedTokens, uncountedWordsOf, type UncountedWords } from "../uncounted-particles.ts";
 import { boundWordParticles } from "../bound-word-particles.ts";
@@ -149,7 +150,9 @@ const chainTokens = (tokens: readonly Token[], numbering: UncountedWords, { boun
 
 export const doubledParticle: Detector = (doc, options): Finding[] => {
   const nesting = (options.lexicon ?? []).map((entry) => entry.pattern);
-  const titles = externalLinkTitleSpans(doc.source, doc.links);
+  // 文献一覧の項目に写した著作の題（在宅勤務の日の時間の使い方）は、鉤括弧で引いた題と同じく書き手が言い換えられない。
+  const headings = (doc.lexicons["reference-list-heading"] ?? []).map((entry) => entry.pattern);
+  const titles = [...externalLinkTitleSpans(doc.source, doc.links), ...referenceListSpans(doc.source, headings)];
   const breaks = (doc.lexicons[RUN_BREAK_LEXICON] ?? []).map((entry) => entry.pattern);
   const numbering = uncountedWordsOf(doc.lexicons, nesting);
   const phrases: Phrases = {
