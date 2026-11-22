@@ -122,7 +122,7 @@ $ npx chaffjs explain reference-number-variant --genre business/email
     off      見ない
 
   オプション（chaff.yaml の options で決めます）:
-    listed_kinds: [item, model]   (既定)
+    listed_kinds: [item, model]   （既定）
       文書が多くを並べる番号の種類（reference-label の group）。この種類の、語の後ろや表にある番号どうしは比べず、語の無い番号だけを比べる
 
   決める:  chaff.yaml に options: { reference-number-variant: { <名前>: <値> } } を書く
