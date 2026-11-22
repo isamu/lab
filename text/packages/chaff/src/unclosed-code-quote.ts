@@ -1,5 +1,6 @@
 const CODE_MARK = "`";
 const PARAGRAPH_BREAK = /\n[ \t]*\n/u;
+const PARAGRAPH_BREAKS = new RegExp(PARAGRAPH_BREAK.source, "gu");
 /** The quote that opens right after a code mark, and the mark that closes it. */
 const CLOSER: Readonly<Record<string, string>> = { '"': '"', "'": "'", "“": "”", "‘": "’" };
 
@@ -17,18 +18,25 @@ const quoteAfter = (paragraph: string, mark: number): number[] => {
   return closing === -1 || (lineEnd !== -1 && closing > lineEnd) ? [] : [opening, closing];
 };
 
+/** Where each paragraph of `source` starts and ends (its break excluded). */
+const paragraphSpans = (source: string): { start: number; end: number }[] => {
+  const breaks = [...source.matchAll(PARAGRAPH_BREAKS)];
+  const starts = [0, ...breaks.map((match) => match.index + match[0].length)];
+  return starts.map((start, at) => ({ start, end: breaks[at]?.index ?? source.length }));
+};
+
+/** The quote offsets in `source` of the one paragraph from start to end. */
+const unclosedIn = (source: string, start: number, end: number): number[] => {
+  const paragraph = source.slice(start, end);
+  const marks = codeMarksIn(paragraph);
+  const last = marks.at(-1);
+  return last !== undefined && marks.length % 2 === 1 ? quoteAfter(paragraph, last).map((at) => start + at) : [];
+};
+
 /**
  * The offsets in `source` of the quote marks of a quoted value that opens right after a code mark left unclosed in its
  * paragraph (`"my-secure-password" (don't use this)): the writer meant the value as code and dropped the closing mark, so
  * its quotes are the code's, not the prose's. Code marks pair from the left, so with an odd count the last one is unclosed.
  */
-export const unclosedCodeQuoteOffsets = (source: string): ReadonlySet<number> => {
-  const offsets = new Set<number>();
-  source.split(PARAGRAPH_BREAK).reduce((start, paragraph) => {
-    const marks = codeMarksIn(paragraph);
-    const last = marks.at(-1);
-    if (last !== undefined && marks.length % 2 === 1) quoteAfter(paragraph, last).forEach((at) => offsets.add(start + at));
-    return start + paragraph.length + (PARAGRAPH_BREAK.exec(source.slice(start + paragraph.length))?.[0].length ?? 0);
-  }, 0);
-  return offsets;
-};
+export const unclosedCodeQuoteOffsets = (source: string): ReadonlySet<number> =>
+  new Set(paragraphSpans(source).flatMap(({ start, end }) => unclosedIn(source, start, end)));
