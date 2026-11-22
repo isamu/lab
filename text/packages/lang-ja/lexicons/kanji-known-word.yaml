@@ -7,6 +7,8 @@ language: ja
 entries:
   - pattern: 内閣総理大臣
   - pattern: 総理大臣
+  # 会議体の名前の後ろに付く職（異常気象分析検討会委員）。
+  - pattern: 委員
   - pattern: 許可事業者
   - pattern: 登録事業者
   - pattern: 認定事業者

@@ -146,6 +146,8 @@ type NameWords = {
   readonly references: readonly string[];
   /** 並べた物の後ろに付く語（等）と、範囲の端や除くものを示す語（以外、以上）。連なりの尻にあれば、名前の後ろに付いた語。 */
   readonly listSuffixes: readonly string[];
+  /** 連なりの中ほどで語の切れ目を見せる語: 並べた物の後ろに付く語（等）と範囲の語と、後ろの語の頭に付く指示の語（事業当連結会計年度の「当」）。 */
+  readonly innerBreaks: readonly string[];
   /** 連なりを閉じる、読み手が一つの語と知っている長い語（内閣総理大臣、許可事業者）。その前で連なりを割る。 */
   readonly knownWords: ReadonlySet<string>;
   /** 制度が区分に入れることを言う句（として認定）。連なりのすぐ後ろに続けば、連なりは区分の名前。 */
@@ -293,11 +295,11 @@ const longestUnknown = (tokens: readonly Token[], rest: Span, keptHead: string, 
   const words = runTokens.map((token) => surfaceWithin(token, rest));
   const whole = words.join("");
   // A run as long as the text holds no known word; reading it word by word would take a pass per word.
-  if (!holdsKnown(words, [...context.terms, ...context.words.knownWords], context.words.listSuffixes)) return keptHead + whole;
+  if (!holdsKnown(words, [...context.terms, ...context.words.knownWords], context.words.innerBreaks)) return keptHead + whole;
   const isKnown = (start: number, end: number): boolean => {
     const piece = words.slice(start, end).join("");
     return (
-      (end === start + 1 && isInnerSuffix(words, start, context.words.listSuffixes)) ||
+      (end === start + 1 && isInnerSuffix(words, start, context.words.innerBreaks)) ||
       context.terms.has(piece) ||
       (end === words.length && context.words.knownWords.has(piece)) ||
       isTitledPerson(runTokens, words, { start, end }, context.words.knownWords, context.maxKnownWords)
@@ -378,6 +380,7 @@ const nameWordsOf = (doc: ProseDocument): NameWords => {
     addressees: { prefixes: patterns("addressee-prefix"), titles: patterns("addressee-title"), endings: organisation.units, forms: organisation.closingForms },
     references: patterns("reference-prefix"),
     listSuffixes: [...patterns("list-suffix"), ...patterns("range-suffix")],
+    innerBreaks: [...patterns("list-suffix"), ...patterns("range-suffix"), ...patterns("reference-prefix")],
     knownWords: new Set(patterns("kanji-known-word")),
     designations: patterns("designation-phrase"),
     noticeEndings: patterns("notice-title-ending"),
